@@ -1126,7 +1126,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 			if (randint0(100) < 10)
 			{
 				/* Create a simple object */
-				place_object(y, x, p_ptr->depth, FALSE, FALSE);
+				place_object(cave, y, x, p_ptr->depth, FALSE, FALSE);
 
 				/* Observe the new object */
 				if (!squelch_item_ok(&o_list[cave->o_idx[y][x]]) &&

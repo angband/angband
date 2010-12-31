@@ -333,8 +333,8 @@ void wr_player(void)
 	wr_string(p_ptr->history);
 
 	/* Race/Class/Gender/Spells */
-	wr_byte(p_ptr->prace);
-	wr_byte(p_ptr->pclass);
+	wr_byte(p_ptr->race->ridx);
+	wr_byte(p_ptr->class->cidx);
 	wr_byte(p_ptr->psex);
 	wr_byte(op_ptr->name_suffix);
 

@@ -1360,7 +1360,7 @@ enum
  */
 #define object_kind_attr(K) \
 	(use_flavor_glyph(K) ? \
-	 (flavor_info[k_info[(K)].flavor].x_attr) : \
+	 (k_info[(K)].flavor->x_attr) : \
 	 (k_info[(K)].x_attr))
 
 /*
@@ -1370,7 +1370,7 @@ enum
  */
 #define object_kind_char(K) \
 	(use_flavor_glyph(K) ? \
-	 (flavor_info[k_info[(K)].flavor].x_char) : \
+	 (k_info[(K)].flavor->x_char) : \
 	 (k_info[(K)].x_char))
 
 /*
@@ -1388,27 +1388,6 @@ enum
  */
 #define object_char(T) \
 	(object_kind_char((T)->k_idx))
-
-
-/*
- * Return the "attr" for a given item.
- * Use "flavor" if available.
- * Use default definitions.
- */
-#define object_attr_default(T) \
-	((k_info[(T)->k_idx].flavor) ? \
-	 (flavor_info[k_info[(T)->k_idx].flavor].d_attr) : \
-	 (k_info[(T)->k_idx].d_attr))
-
-/*
- * Return the "char" for a given item.
- * Use "flavor" if available.
- * Use default definitions.
- */
-#define object_char_default(T) \
-	((k_info[(T)->k_idx].flavor) ? \
-	 (flavor_info[k_info[(T)->k_idx].flavor].d_char) : \
-	 (k_info[(T)->k_idx].d_char))
 
 /*
  * Artifacts use the "name1" field

@@ -46,17 +46,9 @@ test_max(a_max, 'A');
 test_max(e_max, 'E');
 test_max(r_max, 'R');
 test_max(v_max, 'V');
-test_max(p_max, 'P');
-test_max(c_max, 'C');
-test_max(h_max, 'H');
-test_max(b_max, 'B');
 test_max(s_max, 'S');
 test_max(o_max, 'O');
 test_max(m_max, 'M');
-
-test_max(flavor_max, 'L');
-test_max(fake_name_size, 'N');
-test_max(fake_text_size, 'T');
 
 static const char *suite_name = "parse/z-info";
 static struct test tests[] = {
@@ -67,15 +59,8 @@ static struct test tests[] = {
 	{ "emax", test_e_max },
 	{ "rmax", test_r_max },
 	{ "vmax", test_v_max },
-	{ "pmax", test_p_max },
-	{ "cmax", test_c_max },
-	{ "hmax", test_h_max },
-	{ "bmax", test_b_max },
 	{ "smax", test_s_max },
 	{ "omax", test_o_max },
 	{ "mmax", test_m_max },
-	{ "flavormax", test_flavor_max },
-	{ "fake-name-size", test_fake_name_size },
-	{ "fake-text-size", test_fake_text_size },
 	{ NULL, NULL }
 };

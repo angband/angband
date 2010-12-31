@@ -1048,39 +1048,34 @@ static u32b randart_version;
 int rd_player(void)
 {
 	int i;
-
 	byte num;
-
 
 	rd_string(op_ptr->full_name, sizeof(op_ptr->full_name));
 	rd_string(p_ptr->died_from, 80);
+	p_ptr->history = mem_zalloc(250);
 	rd_string(p_ptr->history, 250);
 
 	/* Player race */
-	rd_byte(&p_ptr->prace);
+	rd_byte(&num);
+	p_ptr->race = player_id2race(num);
 
 	/* Verify player race */
-	if (p_ptr->prace >= z_info->p_max)
-	{
-		note(format("Invalid player race (%d).", p_ptr->prace));
-		return (-1);
+	if (!p_ptr->race) {
+		note(format("Invalid player race (%d).", num));
+		return -1;
 	}
-	rp_ptr = &p_info[p_ptr->prace];
-	p_ptr->race = rp_ptr;
+	rp_ptr = p_ptr->race;
 
 	/* Player class */
-	rd_byte(&p_ptr->pclass);
+	rd_byte(&num);
+	p_ptr->class = player_id2class(num);
 
-	/* Verify player class */
-	if (p_ptr->pclass >= z_info->c_max)
-	{
-		note(format("Invalid player class (%d).", p_ptr->pclass));
-		return (-1);
+	if (!p_ptr->class) {
+		note(format("Invalid player class (%d).", num));
+		return -1;
 	}
-	cp_ptr = &c_info[p_ptr->pclass];
-	p_ptr->class = cp_ptr;
-	mp_ptr = &cp_ptr->spells;
-
+	cp_ptr = p_ptr->class;
+	mp_ptr = &p_ptr->class->spells;
 
 	/* Player gender */
 	rd_byte(&p_ptr->psex);
@@ -1825,15 +1820,8 @@ int rd_stores_2(void)
 		rd_byte(&own);
 		rd_byte(&num);
 		
-		/* XXs */
+		/* XXX */
 		strip_bytes(4);
-		
-		/* Paranoia */
-		if (own >= z_info->b_max)
-		{
-			note("Illegal store owner!");
-			return (-1);
-		}
 	
 		/* XXX: refactor into store.c */
 		st_ptr->owner = store_ownerbyidx(st_ptr, own);
@@ -1900,13 +1888,6 @@ int rd_stores_1(void)
 		/* XXs */
 		strip_bytes(4);
 		
-		/* Paranoia */
-		if (own >= z_info->b_max)
-		{
-			note("Illegal store owner!");
-			return (-1);
-		}
-	
 		/* XXX: refactor into store.c */
 		st_ptr->owner = store_ownerbyidx(st_ptr, own);
 		

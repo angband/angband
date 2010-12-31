@@ -30,21 +30,6 @@ M:R:618
 # Maximum number of vaults
 M:V:71
 
-# Maximum number of player races
-M:P:11
-
-# Maximum number of player classes
-M:C:6
-
-# Maximum number of player history lines
-M:H:165
-
-# Maximum number of owners per store
-M:B:4
-
-# Maximum number of flavors
-M:L:313
-
 # Maximum number of spells
 M:S:122
 
@@ -53,16 +38,3 @@ M:O:1024
 
 # Maximum number of monsters on the level
 M:M:1024
-
-#
-# Array sizes (in bytes) for some initialization stuff
-#
-
-# Size of the "fake" array for reading in names of monsters, objects,
-# artifacts, store-owners, player-races, ...
-M:N:20480
-
-# Size of the "fake" array for reading in the descriptions of monsters,
-# vaults, and the player-histories
-M:T:61440
-

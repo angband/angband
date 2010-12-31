@@ -402,16 +402,14 @@ void dump_features(ang_file *fff)
 /* Dump flavors */
 void dump_flavors(ang_file *fff)
 {
-	int i;
+	struct flavor *f;
 
-	for (i = 0; i < z_info->flavor_max; i++)
-	{
-		flavor_type *x_ptr = &flavor_info[i];
-		byte attr = x_ptr->x_attr;
-		byte chr = x_ptr->x_char;
+	for (f = flavors; f; f = f->next) {
+		byte attr = f->x_attr;
+		byte chr = f->x_char;
 
-		file_putf(fff, "# Item flavor: %s\n", x_ptr->text);
-		file_putf(fff, "L:%d:0x%02X:0x%02X\n\n", i, attr, chr);
+		file_putf(fff, "# Item flavor: %s\n", f->text);
+		file_putf(fff, "L:%d:0x%02X:0x%02X\n\n", f->fidx, attr, chr);
 	}
 }
 
@@ -814,18 +812,21 @@ static enum parser_error parse_prefs_s(struct parser *p)
 
 static enum parser_error parse_prefs_l(struct parser *p)
 {
-	int idx;
-	flavor_type *flavor;
+	unsigned int idx;
+	struct flavor *flavor;
 
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
 	idx = parser_getuint(p, "idx");
-	if (idx >= z_info->flavor_max)
-		return PARSE_ERROR_OUT_OF_BOUNDS;
+	for (flavor = flavors; flavor; flavor = flavor->next)
+		if (flavor->fidx == idx)
+			break;
 
-	flavor = &flavor_info[idx];
+	if (!flavor)
+		quit_fmt("flavor for unknown idx %d", idx);
+
 	flavor->x_attr = (byte)parser_getint(p, "attr");
 	flavor->x_char = (char)parser_getint(p, "char");
 

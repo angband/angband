@@ -5,6 +5,8 @@
 #include "object/types.h"
 #include "player/types.h"
 #include "store.h"
+#include "types.h"
+#include "x-char.h"
 #include "z-file.h"
 #include "z-msg.h"
 
@@ -121,12 +123,11 @@ extern object_kind *k_info;
 extern artifact_type *a_info;
 extern ego_item_type *e_info;
 extern monster_race *r_info;
-extern player_race *p_info;
-extern player_class *c_info;
-extern hist_type *h_info;
 extern owner_type *b_info;
 extern byte *g_info;
-extern flavor_type *flavor_info;
+extern struct player_race *races;
+extern struct player_class *classes;
+extern struct flavor *flavors;
 extern spell_type *s_info;
 extern s16b spell_list[MAX_REALMS][BOOKS_PER_REALM][SPELLS_PER_BOOK];
 extern struct hint *hints;

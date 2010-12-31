@@ -115,8 +115,6 @@ typedef struct player
 	s16b px;			/* Player location */
 
 	byte psex;			/* Sex index */
-	byte prace;			/* Race index */
-	byte pclass;		/* Class index */
 	byte oops;			/* Unused */
 
 	const struct player_sex *sex;
@@ -173,7 +171,7 @@ typedef struct player
 	s16b player_hp[PY_MAX_LEVEL];	/* HP Array */
 
 	char died_from[80];		/* Cause of death */
-	char history[250];	/* Initial history */
+	char *history;
 
 	u16b total_winner;		/* Total winner */
 	u16b panic_save;		/* Panic save */
@@ -313,8 +311,7 @@ typedef struct player_race
 	byte infra;			/* Infra-vision	range */
 	
 	byte choice;		/* Legal class choices */
-	
-	s16b hist;			/* Starting history index */
+	struct history_chart *history;
 	
 	bitflag flags[OF_SIZE];   /* Racial (object) flags */
 	bitflag pflags[PF_SIZE];  /* Racial (player) flags */
@@ -389,23 +386,42 @@ typedef struct player_class
 	player_magic spells; /* Magic spells */
 } player_class;
 
-
-/*
- * Player background information
+/* Histories are a graph of charts; each chart contains a set of individual
+ * entries for that chart, and each entry contains a text description and a
+ * successor chart to move history generation to.
+ * For example:
+ * 	chart 1 {
+ * 		entry {
+ * 			desc "You are the illegitimate and unacknowledged child";
+ * 			next 2;
+ * 		};
+ * 		entry {
+ * 			desc "You are the illegitimate but acknowledged child";
+ * 			next 2;
+ * 		};
+ * 		entry {
+ * 			desc "You are one of several children";
+ * 			next 3;
+ * 		};
+ * 	};
+ *
+ * History generation works by walking the graph from the starting chart for
+ * each race, picking a random entry (with weighted probability) each time.
  */
-typedef struct history
-{
-	struct history *nextp;
-	unsigned int hidx;
+struct history_entry {
+	struct history_entry *next;
+	struct history_chart *succ;
+	int isucc;
+	int roll;
+	int bonus;
 	char *text;
-	
-	byte roll;			    /* Frequency of this entry */
-	byte chart;			    /* Chart index */
-	byte next;			    /* Next chart index */
-	byte bonus;			    /* Social Class Bonus + 50 */
-} hist_type;
+};
 
-
+struct history_chart {
+	struct history_chart *next;
+	struct history_entry *entries;
+	unsigned int idx;
+};
 
 /*
  * Some more player information

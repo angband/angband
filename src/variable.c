@@ -580,19 +580,12 @@ flag_cache *slay_cache;
  */
 monster_race *r_info;
 
-player_race *p_info;
-player_class *c_info;
-/*
- * The player history arrays
- */
-hist_type *h_info;
+struct player_race *races;
+struct player_class *classes;
 
 owner_type *b_info;
 
-/*
- * The object flavor arrays
- */
-flavor_type *flavor_info;
+struct flavor *flavors;
 
 /*
  * The spell arrays

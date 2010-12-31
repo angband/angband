@@ -55,20 +55,12 @@ typedef struct color_type color_type;
  */
 typedef struct maxima
 {
-	u32b fake_text_size;  /**< Max size of all descriptions read in from lib/edit */
-	u32b fake_name_size;  /**< Max size of all names read in from lib/edit */
-
 	u16b f_max;       /**< Maximum number of terrain features */
 	u16b k_max;       /**< Maximum number of object base kinds */
 	u16b a_max;       /**< Maximum number of artifact kinds */
 	u16b e_max;       /**< Maximum number of ego-item kinds */
 	u16b r_max;       /**< Maximum number of monster races */
 	u16b v_max;       /**< Maximum number of vault kinds */
-	u16b p_max;       /**< Maximum number of player races */
-	u16b h_max;       /**< Maximum number of chained player history entries */
-	u16b b_max;       /**< Maximum number of shop owners per store kind */
-	u16b c_max;       /**< Maximum number of player classes */
-	u16b flavor_max;  /**< Maximum number of item flavour kinds */
 	u16b s_max;       /**< Maximum number of magic spells */
 
 	u16b o_max;       /**< Maximum number of objects on a given level */
