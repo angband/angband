@@ -2817,7 +2817,7 @@ static enum parser_error parse_c_e(struct parser *p) {
 	if (sval < 0)
 		return PARSE_ERROR_UNRECOGNISED_SVAL;
 
-	for (i = 0; i <= MAX_START_ITEMS; i++)
+	for (i = 0; i < MAX_START_ITEMS; i++)
 		if (!c->start_items[i].min)
 			break;
 	if (i > MAX_START_ITEMS)
