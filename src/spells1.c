@@ -1400,7 +1400,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 			/* Reveal secret doors */
 			if (cave->feat[y][x] == FEAT_SECRET)
 			{
-				place_closed_door(y, x);
+				place_closed_door(cave, y, x);
 
 				/* Check line of sight */
 				if (player_has_los_bold(y, x))
@@ -1528,7 +1528,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 				cave_set_feat(cave, y, x, FEAT_FLOOR);
 
 				/* Place some gold */
-				place_gold(y, x, p_ptr->depth);
+				place_gold(cave, y, x, p_ptr->depth);
 			}
 
 			/* Quartz / Magma */

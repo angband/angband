@@ -83,7 +83,7 @@ static int test_i0(void *state) {
 	eq(r, PARSE_ERROR_NONE);
 	pr = parser_priv(state);
 	require(pr);
-	eq(pr->history, NULL);
+	ptreq(pr->history, NULL);
 	eq(pr->b_age, 10);
 	eq(pr->m_age, 3);
 	ok;
