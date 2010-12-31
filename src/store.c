@@ -331,8 +331,7 @@ static void prt_welcome(const owner_type *ot_ptr)
 
 	if (one_in_(3)) {
 		size_t i = randint0(N_ELEMENTS(comment_hint));
-		/*msg_format(comment_hint[i], short_name, random_hint());*/
-		msg_format(comment_hint[i], random_hint());
+		msg(comment_hint[i], random_hint());
 	} else if (p_ptr->lev > 5) {
 		const char *player_name;
 
