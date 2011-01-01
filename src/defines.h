@@ -186,11 +186,6 @@
  */
 #define TEMP_MAX 1536
 
-/*
- * OPTION: Maximum number of autoinscriptions(see "object1.c")
- */
-#define AUTOINSCRIPTIONS_MAX 216
-
 /* History message types */
 #define HISTORY_PLAYER_BIRTH     0x0001	/* Player was born */
 #define HISTORY_ARTIFACT_UNKNOWN 0x0002	/* Player found but not IDd an artifact */
@@ -1596,9 +1591,6 @@ enum
 #define NOSCORE_DEBUG		0x0008
 #define NOSCORE_BORG		0x0010
 
-#endif /* !INCLUDED_DEFINES_H */
-
-
 #define SCAN_INSTANT ((u32b) -1)
 #define SCAN_OFF 0
 #define SCAN_MACRO 45
@@ -1625,3 +1617,5 @@ enum
  */
 #define MAX_PVALS 3
 #define DEFAULT_PVAL 0
+
+#endif /* !INCLUDED_DEFINES_H */
