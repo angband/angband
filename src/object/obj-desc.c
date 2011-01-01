@@ -646,7 +646,7 @@ static size_t obj_desc_pval(const object_type *o_ptr, char *buf, size_t max, siz
 
 	if (!flags_test(f, OF_SIZE, OF_PVAL_MASK, FLAG_END)) return end;
 
-	strnfcat(buf, max, &end, " (");
+	strnfcat(buf, max, &end, " <");
 	for (i = 0; i < o_ptr->num_pvals; i++) {
 		if (object_this_pval_is_visible(o_ptr, i)) {
 			if (i > 0)
@@ -669,7 +669,7 @@ static size_t obj_desc_pval(const object_type *o_ptr, char *buf, size_t max, siz
 			strnfcat(buf, max, &end, " attack%s", PLURAL(o_ptr->pval[which_pval(o_ptr, OF_BLOWS)]));
 	}
 
-	strnfcat(buf, max, &end, ")");
+	strnfcat(buf, max, &end, ">");
 
 	return end;
 }
