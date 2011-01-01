@@ -104,14 +104,14 @@ Walk (with pickup) (;)
         direction.  This command may take a count, requires a direction,
         and takes some energy.
 
-Walk (flip pickup/disarm/open) (-)
+Walk (flip pickup/disarm/open) (W)
         This is just like normal move, except that the "Pick things up"
         option is inverted.  In other words, if you normally pick up
         anything you encounter (the default), you will not pick things up
         when using this command.  If you normally do not pick things up,
-        you will when using this command.  Similarly if you normally disarm 
-        a known trap on movement, you will not disarm, and if you normally 
-        open a closed door you will instead walk into it.  This command may 
+        you will when using this command.  Similarly, you normally disarm 
+        a known trap or open a closed door on movement, but you will not
+        disarm or open - you will instead walk into them.  This command may 
         take a count, requires a direction, and takes some energy.
 
 Run (.) or Run (,)
