@@ -97,22 +97,16 @@ Moving (arrow keys, number keys) or (arrow keys, number keys and 'yuhjklbn')
 Walk (with pickup) (;)
         Moves one step in the given direction.  The square you are moving
         into must not be blocked by walls or doors.  You will pick up any
-        items in the destination grid if the "always_pickup" option is set,
-        or if the "query_pickup" option is set and you respond correctly.
+        items in the destination grid if the "always_pickup" option is set.
         You may also use the "original" direction keys (both keysets) or
         the "roguelike" direction keys (roguelike keyset) to walk in a
         direction.  This command may take a count, requires a direction,
         and takes some energy.
 
-Walk (flip pickup/disarm/open) (W)
-        This is just like normal move, except that the "Pick things up"
-        option is inverted.  In other words, if you normally pick up
-        anything you encounter (the default), you will not pick things up
-        when using this command.  If you normally do not pick things up,
-        you will when using this command.  Similarly, you normally disarm 
-        a known trap or open a closed door on movement, but you will not
-        disarm or open - you will instead walk into them.  This command may 
-        take a count, requires a direction, and takes some energy.
+Walk (W)
+        The walk command lets you willingly walk into a trap or a closed door,
+        without trying to open or disarm it.  This command may take a count,
+        requires a direction, and takes some energy.
 
 Run (.) or Run (,)
         This command will move in the given direction, following any bends
