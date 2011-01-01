@@ -401,6 +401,13 @@ int main(int argc, char *argv[])
 	/* Install "quit" hook */
 	quit_aux = quit_hook;
 
+	/* If we were told which mode to use, then use it */
+	if (mstr)
+		ANGBAND_SYS = mstr;
+
+	/* Get the file paths */
+	init_stuff();
+
 	/* Try the modules in the order specified by modules[] */
 	for (i = 0; i < (int)N_ELEMENTS(modules); i++)
 	{
@@ -415,9 +422,6 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
-
-	/* Get the file paths */
-	init_stuff();
 
 	/* Make sure we have a display! */
 	if (!done) quit("Unable to prepare any 'display module'!");
