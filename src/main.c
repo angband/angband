@@ -398,9 +398,6 @@ int main(int argc, char *argv[])
 		argv[1] = NULL;
 	}
 
-	/* Get the file paths */
-	init_stuff();
-
 	/* Install "quit" hook */
 	quit_aux = quit_hook;
 
@@ -414,11 +411,13 @@ int main(int argc, char *argv[])
 			if (0 == modules[i].init(argc, argv))
 			{
 				done = TRUE;
-				/*quit_fmt("ggg %s", ANGBAND_SYS);*/
 				break;
 			}
 		}
 	}
+
+	/* Get the file paths */
+	init_stuff();
 
 	/* Make sure we have a display! */
 	if (!done) quit("Unable to prepare any 'display module'!");
