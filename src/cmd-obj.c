@@ -55,7 +55,7 @@ static int check_devices(object_type *o_ptr)
 	if (randint1(1000) < fail)
 	{
 		flush();
-		msg("You failed to %s properly.", msg);
+		msg("You failed to %s properly.", action);
 		return FALSE;
 	}
 
