@@ -1740,11 +1740,9 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
 	}
 
 	/* Hack -- Require compatible inscriptions */
-	if (o_ptr->note != j_ptr->note)
-	{
-		/* Never combine different inscriptions */
-		if (o_ptr->note && j_ptr->note) return (FALSE);
-	}
+	if (o_ptr->note && j_ptr->note)
+		if (strcmp(o_ptr->note, j_ptr->note))
+			return FALSE;
 
 	/* They must be similar enough */
 	return (TRUE);
@@ -1779,7 +1777,8 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 	of_union(o_ptr->known_flags, j_ptr->known_flags);
 
 	/* Hack -- Blend "notes" */
-	if (j_ptr->note != 0) o_ptr->note = j_ptr->note;
+	if (j_ptr->note != 0)
+		o_ptr->note = string_make(j_ptr->note);
 
 	/* Hack -- if rods are stacking, re-calculate the timeouts */
 	if (o_ptr->tval == TV_ROD)
