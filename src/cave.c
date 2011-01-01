@@ -1470,35 +1470,20 @@ static const int priority_table[14][2] =
 
 
 /*
- * Hack -- a priority function (see below)
+ * Determine the priority of a terrain feature when mapping
  */
-static byte priority(byte a, char c)
+static byte priority(int feature)
 {
-	int i, p0, p1;
+	size_t i;
 
-	feature_type *f_ptr;
-
-	/* Scan the table */
-	for (i = 0; TRUE; i++)
+	for (i = 0; i < N_ELEMENTS(priority_table); i++)
 	{
-		/* Priority level */
-		p1 = priority_table[i][1];
-
-		/* End of table */
-		if (!p1) break;
-
-		/* Feature index */
-		p0 = priority_table[i][0];
-
-		/* Get the feature */
-		f_ptr = &f_info[p0];
-
-		/* Check character and attribute, accept matches */
-		if ((f_ptr->x_char == c) && (f_ptr->x_attr == a)) return (p1);
+		if (feature == priority_table[i][0])
+			return priority_table[i][1];
 	}
 
 	/* Default */
-	return (20);
+	return 20;
 }
 
 
@@ -1581,31 +1566,28 @@ void display_map(int *cy, int *cx)
 			col = (x * map_wid / dungeon_wid);
 
 			if (tile_width > 1)
-			{
-			        col = col - (col % tile_width);
-			}
+				col = col - (col % tile_width);
 			if (tile_height > 1)
-			{
-			        row = row - (row % tile_height);
-			}
+				row = row - (row % tile_height);
 
 			/* Get the attr/char at that map location */
 			map_info(y, x, &g);
-			grid_data_as_text(&g, &ta, &tc, &ta, &tc);
 
 			/* Get the priority of that attr/char */
-			tp = priority(ta, tc);
+			tp = priority(g.f_idx);
 
 			/* Save "best" */
 			if (mp[row][col] < tp)
 			{
+				/* Hack - make every grid on the map lit */
+				g.lighting = LIGHT_GLOW;
+				grid_data_as_text(&g, &ta, &tc, &ta, &tc);
+
 				/* Add the character */
 				Term_putch(col + 1, row + 1, ta, tc);
 
 				if ((tile_width > 1) || (tile_height > 1))
-				{
-				        Term_big_putch(col + 1, row + 1, ta, tc);
-				}
+					Term_big_putch(col + 1, row + 1, ta, tc);
 
 				/* Save priority */
 				mp[row][col] = tp;
@@ -1613,35 +1595,26 @@ void display_map(int *cy, int *cx)
 		}
 	}
 
+	/*** Display the player ***/
 
 	/* Player location */
 	row = (py * map_hgt / dungeon_hgt);
 	col = (px * map_wid / dungeon_wid);
 
 	if (tile_width > 1)
-	{
-	        col = col - (col % tile_width);
-	}
+		col = col - (col % tile_width);
 	if (tile_height > 1)
-	{
 		row = row - (row % tile_height);
-	}
 
-	/*** Make sure the player is visible ***/
-
-	/* Get the "player" attr */
+	/* Get the "player" tile */
 	ta = r_ptr->x_attr;
-
-	/* Get the "player" char */
 	tc = r_ptr->x_char;
 
 	/* Draw the player */
 	Term_putch(col + 1, row + 1, ta, tc);
 
 	if ((tile_width > 1) || (tile_height > 1))
-	{
-	        Term_big_putch(col + 1, row + 1, ta, tc);
-	}
+		Term_big_putch(col + 1, row + 1, ta, tc);
   
 	/* Return player location */
 	if (cy != NULL) (*cy) = row + 1;
