@@ -1871,6 +1871,7 @@ void object_copy_amt(object_type *dst, object_type *src, int amt)
 
 	/* Modify quantity */
 	dst->number = amt;
+	dst->note = string_make(src->note);
 
 	/* 
 	 * If the item has charges/timeouts, set them to the correct level 
@@ -1893,6 +1894,19 @@ void object_copy_amt(object_type *dst, object_type *src, int amt)
 	}
 }
 
+/**
+ * Split off 'at' items from 'src' into 'dest'.
+ */
+void object_split(struct object *dest, struct object *src, int amt)
+{
+	/* Distribute charges of wands, staves, or rods */
+	distribute_charges(src, dest, amt);
+
+	/* Modify quantity */
+	dest->number = amt;
+	if (src->note)
+		dest->note = string_make(src->note);
+}
 
 /**
  * Find and return the index to the oldest object on the given grid marked as
@@ -2998,17 +3012,10 @@ void inven_drop(int item, int amt)
 	}
 
 
-	/* Get local object */
 	i_ptr = &object_type_body;
 
-	/* Obtain local object */
 	object_copy(i_ptr, o_ptr);
-
-	/* Distribute charges of wands, staves, or rods */
-	distribute_charges(o_ptr, i_ptr, amt);
-
-	/* Modify quantity */
-	i_ptr->number = amt;
+	object_split(i_ptr, o_ptr, amt);
 
 	/* Describe local object */
 	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_PREFIX | ODESC_FULL);
