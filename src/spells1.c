@@ -879,7 +879,8 @@ static int inven_damage(inven_func typ, int cperc)
 			if (amt)
 			{
 				/* Get a description */
-				object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);
+				object_desc(o_name, sizeof(o_name), o_ptr,
+					ODESC_BASE);
 
 				/* Message */
 				msgt(MSG_DESTROY, "%sour %s (%c) %s %s!",
