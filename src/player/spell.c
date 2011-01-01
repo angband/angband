@@ -28,15 +28,11 @@
  */
 int spell_collect_from_book(const object_type *o_ptr, int *spells)
 {
-	int i;
+	struct spell *sp;
 	int n_spells = 0;
 
-	for (i = 0; i < SPELLS_PER_BOOK; i++)
-	{
-		int spell = get_spell_index(o_ptr, i);
-		if (spell >= 0)
-			spells[n_spells++] = spell;
-	}
+	for (sp = o_ptr->kind->spells; sp; sp = sp->next)
+		spells[n_spells++] = sp->spell_index;
 
 	return n_spells;
 }
@@ -48,15 +44,12 @@ int spell_collect_from_book(const object_type *o_ptr, int *spells)
 int spell_book_count_spells(const object_type *o_ptr,
 		bool (*tester)(int spell))
 {
-	int i;
+	struct spell *sp;
 	int n_spells = 0;
 
-	for (i = 0; i < SPELLS_PER_BOOK; i++)
-	{
-		int spell = get_spell_index(o_ptr, i);
-		if (spell >= 0 && tester(spell))
+	for (sp = o_ptr->kind->spells; sp; sp = sp->next)
+		if (tester(sp->spell_index))
 			n_spells++;
-	}
 
 	return n_spells;
 }
@@ -182,14 +175,12 @@ s16b spell_chance(int spell)
 /* Check if the given spell is in the given book. */
 bool spell_in_book(int spell, int book)
 {
-	int i;
+	struct spell *sp;
 	object_type *o_ptr = object_from_item_idx(book);
 
-	for (i = 0; i < SPELLS_PER_BOOK; i++)
-	{
-		if (spell == get_spell_index(o_ptr, i))
+	for (sp = o_ptr->kind->spells; sp; sp = sp->next)
+		if (spell == sp->spell_index)
 			return TRUE;
-	}
 
 	return FALSE;
 }

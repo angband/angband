@@ -329,22 +329,6 @@ typedef enum
 #define PY_MAX_SPELLS 64
 
 /*
- * Number of spells per book
- */
-#define SPELLS_PER_BOOK 9
-
-/*
- * Maximum number of spells per realm
- */
-#define BOOKS_PER_REALM 9
-
-/*
- * Maximum number realms
- */
-#define MAX_REALMS 2
-
-
-/*
  * Flags for player_type.spell_flags[]
  */
 #define PY_SPELL_LEARNED    0x01 /* Spell has been learned */
