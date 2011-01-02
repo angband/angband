@@ -21,7 +21,7 @@
 /* Types of slay (including brands) */
 typedef enum
 {
-	#define SLAY(a, b, c, d, e, f, g, h, i, j)    SL_##x,
+	#define SLAY(a, b, c, d, e, f, g, h, i, j)    SL_##a,
 	#include "list-slays.h"
 	#undef SLAY
 
