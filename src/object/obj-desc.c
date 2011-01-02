@@ -637,7 +637,8 @@ static size_t obj_desc_light(const object_type *o_ptr, char *buf, size_t max, si
 	return end;
 }
 
-static size_t obj_desc_pval(const object_type *o_ptr, char *buf, size_t max, size_t end)
+static size_t obj_desc_pval(const object_type *o_ptr, char *buf, size_t max,
+	size_t end, bool spoil)
 {
 	bitflag f[OF_SIZE];
 	int i;
@@ -648,7 +649,7 @@ static size_t obj_desc_pval(const object_type *o_ptr, char *buf, size_t max, siz
 
 	strnfcat(buf, max, &end, " <");
 	for (i = 0; i < o_ptr->num_pvals; i++) {
-		if (object_this_pval_is_visible(o_ptr, i)) {
+		if (spoil || object_this_pval_is_visible(o_ptr, i)) {
 			if (i > 0)
 				strnfcat(buf, max, &end, ", ");
 			strnfcat(buf, max, &end, "%+d", o_ptr->pval[i]);
@@ -851,7 +852,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 	if (mode & ODESC_EXTRA)
 	{
 		if (spoil || object_pval_is_visible(o_ptr))
-			end = obj_desc_pval(o_ptr, buf, max, end);
+			end = obj_desc_pval(o_ptr, buf, max, end, spoil);
 
 		end = obj_desc_charges(o_ptr, buf, max, end);
 

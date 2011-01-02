@@ -498,6 +498,7 @@ static s16b choose_item(int a_idx)
 	of_copy(a_ptr->flags, k_ptr->flags);
 	for (i = 0; i < MAX_PVALS; i++)
 		of_copy(a_ptr->pval_flags[i], k_ptr->pval_flags[i]);
+	a_ptr->num_pvals = k_ptr->num_pvals;
 	a_ptr->effect = 0;
 
 	/* Artifacts ignore everything */
