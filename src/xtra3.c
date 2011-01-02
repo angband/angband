@@ -1740,16 +1740,14 @@ static void see_floor_items(game_event_type type, game_event_data *data, void *u
 
 	const char *p = "see";
 	int can_pickup = 0;
-	int i;
+	size_t i;
 
 	/* Scan all marked objects in the grid */
 	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x03);
 	if (floor_num == 0) return;
 
 	for (i = 0; i < floor_num; i++)
-	{
 	    can_pickup += inven_carry_okay(&o_list[floor_list[i]]);
-	}
 	
 	/* One object */
 	if (floor_num == 1)
@@ -1758,8 +1756,10 @@ static void see_floor_items(game_event_type type, game_event_data *data, void *u
 		object_type *o_ptr = &o_list[floor_list[0]];
 		char o_name[80];
 
-		if (!can_pickup)	p = "have no room for";
-		else if (blind)     p = "feel";
+		if (!can_pickup)
+			p = "have no room for";
+		else if (blind)
+			p = "feel";
 
 		/* Describe the object.  Less detail if blind. */
 		if (blind)

@@ -164,7 +164,8 @@ static void py_pickup_gold(void)
 	s32b total_gold = 0L;
 	byte *treasure;
 
-	s16b this_o_idx, next_o_idx = 0;
+	s16b this_o_idx = 0;
+	s16b next_o_idx = 0;
 
 	object_type *o_ptr;
 
