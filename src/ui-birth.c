@@ -159,12 +159,16 @@ static menu_type sex_menu, race_menu, class_menu, roller_menu;
 #define RACE_COL        14
 #define RACE_AUX_COL    29
 #define CLASS_COL       29
-#define CLASS_AUX_COL   50
+#define CLASS_AUX_COL   43
+#define ROLLER_COL 43
 
-static region gender_region = {SEX_COL, TABLE_ROW, 15, -2};
-static region race_region = {RACE_COL, TABLE_ROW, 15, -2};
-static region class_region = {CLASS_COL, TABLE_ROW, 19, -2};
-static region roller_region = {44, TABLE_ROW, 21, -2};
+#define MENU_ROWS TABLE_ROW + 14
+
+/* upper left column and row, width, and lower column */
+static region gender_region = {SEX_COL, TABLE_ROW, 14, MENU_ROWS};
+static region race_region = {RACE_COL, TABLE_ROW, 14, MENU_ROWS};
+static region class_region = {CLASS_COL, TABLE_ROW, 14, MENU_ROWS};
+static region roller_region = {ROLLER_COL, TABLE_ROW, 28, MENU_ROWS};
 
 /* We use different menu "browse functions" to display the help text
    sometimes supplied with the menu items - currently just the list
@@ -199,6 +203,20 @@ static void birthmenu_display(menu_type *menu, int oid, bool cursor,
    only defining the display and handler parts). */
 static const menu_iter birth_iter = { NULL, NULL, birthmenu_display, NULL, NULL };
 
+static void skill_help(s16b skills[], int mhp, int exp, int infra)
+{
+	text_out_e("Hit/Shoot/Throw: %+d/%+d/%+d\n", skills[SKILL_TO_HIT_MELEE], skills[SKILL_TO_HIT_BOW], skills[SKILL_TO_HIT_THROW]);
+	text_out_e("Hit die: %2d   XP mod: %d%%\n", mhp, exp);
+	text_out_e("Disarm: %+3d   Devices: %+3d\n", skills[SKILL_DISARM], skills[SKILL_DEVICE]);
+	text_out_e("Save:   %+3d   Stealth: %+3d\n", skills[SKILL_SAVE], skills[SKILL_STEALTH]);
+	if (infra >= 0)
+		text_out_e("Infravision:  %d ft\n", infra * 10);
+	text_out_e("Digging:      %+d\n", skills[SKILL_DIGGING]);
+	text_out_e("Search:       %+d/%d", skills[SKILL_SEARCH], skills[SKILL_SEARCH_FREQUENCY]);
+	if (infra < 0)
+		text_out_e("\n");
+}
+
 static void race_help(int i, void *db, const region *l)
 {
 	int j;
@@ -219,10 +237,9 @@ static void race_help(int i, void *db, const region *l)
 		text_out_e("%s%+d\n", stat_names_reduced[j], r->r_adj[j]);
 	}
 	
-	text_out_e("Hit die: %d\n", r->r_mhp);
-	text_out_e("Experience: %d%%\n", r->r_exp);
-	text_out_e("Infravision: %d ft", r->infra * 10);
-	
+	text_out_e("\n");
+	skill_help(r->r_skills, r->r_mhp, r->r_exp, r->infra);
+
 	/* Reset text_out() indentation */
 	text_out_indent = 0;
 }
@@ -247,9 +264,10 @@ static void class_help(int i, void *db, const region *l)
 		text_out_e("%s%+d\n", stat_names_reduced[j], c->c_adj[j]);
 	}
 
-	text_out_e("Hit die: %d\n", c->c_mhp);   
-	text_out_e("Experience: %d%%", c->c_exp);
+	text_out_e("\n");
 	
+	skill_help(c->c_skills, c->c_mhp, c->c_exp, -1);
+
 	/* Reset text_out() indentation */
 	text_out_indent = 0;
 }
