@@ -23,7 +23,7 @@ JUST_C = -std=c99 -Wdeclaration-after-statement
 OBJ_CFLAGS = -std=c99 -x objective-c -mmacosx-version-min=10.0
 CFLAGS = -I. $(WARNINGS) $(OPT) -DMACH_O_CARBON -DHAVE_MKSTEMP \
 	-DPRIVATE_USER_PATH=\"~/Library/Preferences\" -DUSE_PRIVATE_PATHS \
-	$(ARCH)
+	-fno-stack-protector $(ARCH)
 LIBS = -framework CoreFoundation -framework QuickTime -framework Carbon \
 	-framework Cocoa
 
