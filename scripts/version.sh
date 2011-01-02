@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # This scripts adds local version information from git.
 #
