@@ -2687,7 +2687,7 @@ static bool room_build(struct cave *c, int by0, int bx0, int typ)
 	int by, bx;
 	int by1, bx1, by2, bx2;
 
-	assert(typ > 0 && typ <= 8);
+	assert(typ > 0 && typ < ROOM_MAX);
 
 	/* Restrict level */
 	if (c->depth < room[typ].level) return (FALSE);
