@@ -453,7 +453,7 @@ byte py_pickup(int pickup)
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	s16b this_o_idx;
+	s16b this_o_idx = 0;
 
 	size_t floor_num = 0;
 	int floor_list[MAX_FLOOR_STACK + 1];
