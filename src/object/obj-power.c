@@ -20,6 +20,7 @@
 #include "object/tvalsval.h"
 #include "init.h"
 #include "effects.h"
+#include "slays.h"
 
 /*
  * Constants for the power algorithm:

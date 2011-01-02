@@ -23,6 +23,7 @@
 #include "cmds.h"
 #include "tvalsval.h"
 #include "z-textblock.h"
+#include "slays.h"
 
 /*
  * Describes a flag-name pair.
@@ -172,51 +173,6 @@ static const flag_type misc_flags[] =
 };
 
 
-/** Slays **/
-/*
- * Entries in this table should be in ascending order of multiplier, to
- * ensure that the highest one takes precedence
- * object flag, vulnerable flag, resist flag, multiplier, ranged verb,
- * melee verb, verb describing what the thing branded does when it is active,
- * description of affected creatures, brand
- */
-const slay_t slay_table[] =
-{
-	{ OF_SLAY_ANIMAL, RF_ANIMAL, FLAG_END,   2,
-	  "pierces",  "smite",   "glows",      "animals", NULL },
-	{ OF_SLAY_EVIL,   RF_EVIL,   FLAG_END,   2,
-	  "pierces",  "smite",   "glows",      "evil creatures", NULL },
-	{ OF_SLAY_UNDEAD, RF_UNDEAD, FLAG_END,   3,
-	  "pierces",  "smite",   "glows",      "undead", NULL },
-	{ OF_SLAY_DEMON,  RF_DEMON,  FLAG_END,   3,
-	  "pierces",  "smite",   "glows",      "demons", NULL },
-	{ OF_SLAY_ORC,    RF_ORC,    FLAG_END,   3,
-	  "pierces",  "smite",   "glows",      "orcs", NULL },
-	{ OF_SLAY_TROLL,  RF_TROLL,  FLAG_END,   3,
-	  "pierces",  "smite",   "glows",      "trolls", NULL },
-	{ OF_SLAY_GIANT,  RF_GIANT,  FLAG_END,   3,
-	  "pierces",  "smite",   "glows",      "giants", NULL },
-	{ OF_SLAY_DRAGON, RF_DRAGON, FLAG_END,   3,
-	  "pierces",  "smite",   "glows",      "dragons", NULL },
-	{ OF_BRAND_ACID,  FLAG_END,  RF_IM_ACID, 3,
-	  "corrodes", "corrode", "spits",      "creatures not resistant to acid", "acid" },
-	{ OF_BRAND_ELEC,  FLAG_END,  RF_IM_ELEC, 3,
-	  "zaps",     "zap",     "crackles",   "creatures not resistant to electricity", "lightning" },
-	{ OF_BRAND_FIRE,  FLAG_END,  RF_IM_FIRE, 3,
-	  "burns",    "burn",    "flares",     "creatures not resistant to fire", "flames" },
-	{ OF_BRAND_COLD,  FLAG_END,  RF_IM_COLD, 3,
-	  "freezes" , "freeze",  "grows cold", "creatures not resistant to cold", "frost" },
-	{ OF_BRAND_POIS,  FLAG_END,  RF_IM_POIS, 3,
-	  "poisons",  "poison",  "seethes",    "creatures not resistant to poison", "venom" },
-	{ OF_KILL_DRAGON, RF_DRAGON, FLAG_END,   5, 
-	 "deeply pierces",  "fiercely smite", "glows brightly", "dragons", NULL },
-	{ OF_KILL_DEMON,  RF_DEMON,  FLAG_END,   5,
-	  "deeply pierces", "fiercely smite", "glows brightly", "demons", NULL },
-	{ OF_KILL_UNDEAD, RF_UNDEAD, FLAG_END,   5,
-	  "deeply pierces", "fiercely smite", "glows brightly", "undead", NULL },
-	{ FLAG_END,       FLAG_END,  FLAG_END,   0, NULL, NULL, NULL, NULL, NULL }
-};
-
 /*
  * Slays which are in some sense duplicates. *Slay* dragon supercedes slay
  * dragon, for example.
@@ -231,15 +187,6 @@ const struct {
 	{ OF_SLAY_UNDEAD, OF_KILL_UNDEAD },
 };
 
-
-/*
- * Helper function to externalise N_ELEMENTS(slay_table), which itself is not
- * available outside this compilation unit
- */
-size_t num_slays(void)
-{
-	return N_ELEMENTS(slay_table);
-}
 
 /*** Code that makes use of the data tables ***/
 
@@ -439,9 +386,9 @@ static bool describe_slays(textblock *tb, const bitflag flags[OF_SIZE],
 {
 	bool printed = FALSE;
 
-	const char *slay_descs[N_ELEMENTS(slay_table)];
-	const char *kill_descs[N_ELEMENTS(slay_table)];
-	const char *brand_descs[N_ELEMENTS(slay_table)];
+	const char *slay_descs[num_slays()];
+	const char *kill_descs[num_slays()];
+	const char *brand_descs[num_slays()];
 	const slay_t *s_ptr;
 	bitflag slay_mask[OF_SIZE], kill_mask[OF_SIZE], brand_mask[OF_SIZE];
 

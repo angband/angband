@@ -264,6 +264,7 @@ typedef struct flavor {
  */
 typedef struct
 {
+	u16b index;		/* Numerical index */
 	int slay_flag;		/* Object flag for the slay */
 	int monster_flag;	/* Which monster flag(s) make it vulnerable */
 	int resist_flag;	/* Which monster flag(s) make it resist */

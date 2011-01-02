@@ -25,6 +25,7 @@
 #include "object/tvalsval.h"
 #include "spells.h"
 #include "target.h"
+#include "slays.h"
 
 /* Returns percent chance of an object breaking after throwing or shooting. */
 int breakage_chance(const object_type *o_ptr)
