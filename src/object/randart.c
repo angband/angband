@@ -471,7 +471,7 @@ static s16b choose_item(int a_idx)
 		tval == TV_FOOD || tval == TV_MAGIC_BOOK || tval ==
 		TV_PRAYER_BOOK || tval == TV_GOLD || tval == TV_LIGHT ||
 		tval == TV_AMULET || tval == TV_RING || sval == SV_GROND ||
-		sval == SV_MORGOTH)
+		sval == SV_MORGOTH || k_info[i].alloc_prob == 0)
 	{
 		r = randint1(base_freq[z_info->k_max - 1]);
 		i = 0;
@@ -496,6 +496,8 @@ static s16b choose_item(int a_idx)
 	a_ptr->ds = k_ptr->ds;
 	a_ptr->weight = k_ptr->weight;
 	of_copy(a_ptr->flags, k_ptr->flags);
+	for (i = 0; i < MAX_PVALS; i++)
+		of_copy(a_ptr->pval_flags[i], k_ptr->pval_flags[i]);
 	a_ptr->effect = 0;
 
 	/* Artifacts ignore everything */
@@ -1811,6 +1813,7 @@ static bool add_flag(artifact_type *a_ptr, int flag)
 static void add_pval_flag(artifact_type *a_ptr, int flag)
 {
 	of_on(a_ptr->flags, flag);
+	of_on(a_ptr->pval_flags[DEFAULT_PVAL], flag);
 	do_pval(a_ptr);
 	LOG_PRINT2("Adding ability: %s (now %+d)\n", flag_names[flag], a_ptr->pval[DEFAULT_PVAL]);
 }
@@ -1825,6 +1828,7 @@ static bool add_fixed_pval_flag(artifact_type *a_ptr, int flag)
 		return FALSE;
 
 	of_on(a_ptr->flags, flag);
+	of_on(a_ptr->pval_flags[DEFAULT_PVAL], flag);
 	do_pval(a_ptr);
 	LOG_PRINT2("Adding ability: %s (now %+d)\n", flag_names[flag], a_ptr->pval[DEFAULT_PVAL]);
 
@@ -1838,6 +1842,7 @@ static bool add_fixed_pval_flag(artifact_type *a_ptr, int flag)
 static bool add_first_pval_flag(artifact_type *a_ptr, int flag)
 {
 	of_on(a_ptr->flags, flag);
+	of_on(a_ptr->pval_flags[DEFAULT_PVAL], flag);
 
 	if (a_ptr->pval[DEFAULT_PVAL] == 0)
 	{
