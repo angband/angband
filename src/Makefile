@@ -20,6 +20,7 @@ angband.o: $(OBJECTS)
 	@printf "%10s %-20s\n" LINK $@
 
 clean: test-clean
+	-rm angband.o
 
 clean-extra:
 	-rm autoconf.h
