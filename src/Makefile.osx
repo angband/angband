@@ -46,8 +46,8 @@ ifneq (,$(findstring borg, $(MAKECMDGOALS)))
 CFLAGS += -DALLOW_BORG
 endif
 
-# Check for autoconfig.h; warn on nonexistence
-autoconf= $(shell ls autoconf.h)
+# Check for autoconf.h; do not warn on nonexistence
+autoconf= $(wildcard autoconf.h)
 ifneq ($(autoconf),)
 CFLAGS += -DHAVE_CONFIG_H
 endif
