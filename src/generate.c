@@ -118,7 +118,7 @@
  * Dungeon generation values
  */
 #define DUN_ROOMS	50	/* Number of rooms to attempt */
-#define DUN_UNUSUAL	0	/* Level/chance of unusual room */
+#define DUN_UNUSUAL 200	/* Level/chance of unusual room */
 #define DUN_DEST	30	/* 1/chance of having a destroyed level */
 
 /*
