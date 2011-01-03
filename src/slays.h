@@ -31,7 +31,9 @@ typedef enum
 /*
  * Slay type.  Used for the global table of brands/slays and their effects.
  */
-typedef struct {
+typedef struct slays slays;
+
+struct slays {
 	u16b index;			/* Numerical index */
 	int slay_flag;			/* Object flag for the slay */
 	int monster_flag;		/* Which monster flag(s) make it vulnerable */
@@ -42,17 +44,19 @@ typedef struct {
 	const char *active_verb; 	/* verb for when the object is active */
 	const char *desc;		/* description of vulnerable creatures */
 	const char *brand;		/* name of brand */
-} slays;
+};
 
 extern const slays slay_table[];
 
 /*
  * Slay cache. Used for looking up slay values in obj-power.c
  */
-typedef struct {
+typedef struct flag_cache flag_cache;
+
+struct flag_cache {
         bitflag flags[OF_SIZE];   /* Combination of slays and brands */
         s32b value;            /* Value of this combination */
-} flag_cache;
+};
 
 /*** Functions ***/
 
