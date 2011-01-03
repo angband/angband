@@ -449,7 +449,7 @@ static s16b choose_item(int a_idx)
 	int tval = 0;
 	int sval = 0;
 	object_kind *k_ptr;
-	int i;
+	int i = 0;
 	s16b k_idx, r;
 
 	/*
