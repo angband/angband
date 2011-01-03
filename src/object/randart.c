@@ -1980,7 +1980,7 @@ static void add_slay(artifact_type *a_ptr, bool brand)
 
 	for(count = 0; count < MAX_TRIES; count++)
 	{
-		s_ptr = &slay_table[randint1(SL_MAX)];
+		s_ptr = &slay_table[randint1(SL_MAX - 1)];
 		if (brand && s_ptr->brand && !of_has(a_ptr->flags, s_ptr->slay_flag))
 		{
 			of_on(a_ptr->flags, s_ptr->slay_flag);
