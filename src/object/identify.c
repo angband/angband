@@ -627,7 +627,7 @@ void object_notice_slay(object_type *o_ptr, int flag)
 	{
 		object_notice_ego(o_ptr);
 
-		for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
+		for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++)
 		{
 			if (s_ptr->slay_flag == flag)
 			{
@@ -887,7 +887,7 @@ void object_notice_on_wield(object_type *o_ptr)
 	if (!obvious) return;
 
 	/* Messages */
-	for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
+	for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++)
 	{
 		if (of_has(f, s_ptr->slay_flag) && s_ptr->brand)
 		{

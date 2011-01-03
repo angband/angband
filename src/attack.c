@@ -204,7 +204,7 @@ void improve_attack_modifier(object_type *o_ptr, const monster_type *m_ptr, cons
 	object_flags(o_ptr, f);
 	object_flags_known(o_ptr, known_f);
 
-	for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
+	for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++)
 	{
 		if (!of_has(f, s_ptr->slay_flag)) continue;
 

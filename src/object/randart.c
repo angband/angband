@@ -774,7 +774,7 @@ static void parse_frequencies(void)
 				temp = 0;
 				temp2 = 0;
 
-				for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
+				for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++)
 				{
 					if (of_has(a_ptr->flags, s_ptr->slay_flag))
 					{
@@ -911,7 +911,7 @@ static void parse_frequencies(void)
 				temp = 0;
 				temp2 = 0;
 
-				for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
+				for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++)
 				{
 					if (of_has(a_ptr->flags, s_ptr->slay_flag))
 					{
@@ -1035,7 +1035,7 @@ static void parse_frequencies(void)
 				temp = 0;
 				temp2 = 0;
 
-				for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
+				for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++)
 				{
 					if (of_has(a_ptr->flags, s_ptr->slay_flag))
 					{
@@ -1975,13 +1975,12 @@ static void add_high_resist(artifact_type *a_ptr)
 
 static void add_slay(artifact_type *a_ptr, bool brand)
 {
-	int size = SL_MAX - 1;
 	int count = 0;
 	const slays *s_ptr;
 
 	for(count = 0; count < MAX_TRIES; count++)
 	{
-		s_ptr = &slay_table[randint0(size)];
+		s_ptr = &slay_table[randint1(SL_MAX)];
 		if (brand && s_ptr->brand && !of_has(a_ptr->flags, s_ptr->slay_flag))
 		{
 			of_on(a_ptr->flags, s_ptr->slay_flag);

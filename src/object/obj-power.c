@@ -149,7 +149,7 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 		 * Do the following in ascending order so that the best
 		 * multiple is retained
 		 */
-		for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
+		for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++)
 		{
 			if (!of_has(flags, s_ptr->slay_flag)) continue;
 
@@ -417,7 +417,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			 */
 			i = 0;
 
-			for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
+			for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++)
 			{
 				if (!of_has(flags, s_ptr->slay_flag)) continue;
 

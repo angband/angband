@@ -409,7 +409,7 @@ static bool describe_slays(textblock *tb, const bitflag flags[OF_SIZE],
 	else
 		fulldesc = TRUE;
 
-	for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
+	for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++)
 	{
 		if (!of_has(flags, s_ptr->slay_flag)) continue;
 
@@ -479,7 +479,7 @@ static int collect_slays(const char *desc[], int mult[], bitflag *flags)
 	}
 
 	/* Collect slays */
-	for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++) {
+	for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++) {
 		if (of_has(flags, s_ptr->slay_flag)) {
 			mult[cnt] = s_ptr->mult;
 			desc[cnt++] = s_ptr->desc;
