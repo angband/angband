@@ -768,7 +768,7 @@ static void parse_frequencies(void)
 			/* Brands or slays - count all together */
 			if (flags_test(a_ptr->flags, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END))
 			{
-				const slay_t *s_ptr;
+				const slays *s_ptr;
 
 				/* We have some brands or slays - count them */
 				temp = 0;
@@ -905,7 +905,7 @@ static void parse_frequencies(void)
 			/* Brands or slays - count all together */
 			if (flags_test(a_ptr->flags, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END))
 			{
-				const slay_t *s_ptr;
+				const slays *s_ptr;
 
 				/* We have some brands or slays - count them */
 				temp = 0;
@@ -1029,7 +1029,7 @@ static void parse_frequencies(void)
 			/* Brands or slays - count all together */
 			if (flags_test(a_ptr->flags, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END))
 			{
-				const slay_t *s_ptr;
+				const slays *s_ptr;
 
 				/* We have some brands or slays - count them */
 				temp = 0;
@@ -1975,10 +1975,9 @@ static void add_high_resist(artifact_type *a_ptr)
 
 static void add_slay(artifact_type *a_ptr, bool brand)
 {
-	/* The last slay entry is a NULL slay_t */
-	int size = num_slays() - 1;
+	int size = SL_MAX - 1;
 	int count = 0;
-	const slay_t *s_ptr;
+	const slays *s_ptr;
 
 	for(count = 0; count < MAX_TRIES; count++)
 	{

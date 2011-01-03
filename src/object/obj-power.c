@@ -113,7 +113,7 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 	s32b sv = 0;
 	int i;
 	int mult;
-	const slay_t *s_ptr;
+	const slays *s_ptr;
 
 	/* Combine the slay bytes into an index value */
 	of_copy(s_index, flags);
@@ -242,7 +242,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	int extra_stat_bonus = 0;
 	int i;
 	bitflag flags[OF_SIZE];
-	const slay_t *s_ptr;
+	const slays *s_ptr;
 
 	/* Extract the flags */
 	if (known)

@@ -151,9 +151,6 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, odesc_detail
 int which_pval(const object_type *o_ptr, const int flag);
 
 /* obj-info.c */
-extern const slay_t slay_table[];
-size_t num_slays(void);
-
 textblock *object_info(const object_type *o_ptr, oinfo_detail_t mode);
 textblock *object_info_ego(struct ego_item *ego);
 void object_info_spoil(ang_file *f, const object_type *o_ptr, int wrap);

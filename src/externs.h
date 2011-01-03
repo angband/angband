@@ -9,6 +9,7 @@
 #include "x-char.h"
 #include "z-file.h"
 #include "z-msg.h"
+#include "slays.h"
 
 /* This file was automatically generated. It is now obsolete (it was never a
  * good idea to begin with; you should include only what you use instead of

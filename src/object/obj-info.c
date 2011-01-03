@@ -386,10 +386,10 @@ static bool describe_slays(textblock *tb, const bitflag flags[OF_SIZE],
 {
 	bool printed = FALSE;
 
-	const char *slay_descs[num_slays()];
-	const char *kill_descs[num_slays()];
-	const char *brand_descs[num_slays()];
-	const slay_t *s_ptr;
+	const char *slay_descs[SL_MAX - 1];
+	const char *kill_descs[SL_MAX - 1];
+	const char *brand_descs[SL_MAX - 1];
+	const slays *s_ptr;
 	bitflag slay_mask[OF_SIZE], kill_mask[OF_SIZE], brand_mask[OF_SIZE];
 
 	size_t x = 0;
@@ -466,7 +466,7 @@ static int collect_slays(const char *desc[], int mult[], bitflag *flags)
 {
 	int cnt = 0;
 	u16b i;
-	const slay_t *s_ptr;
+	const slays *s_ptr;
 
 	/* Remove "duplicate" flags e.g. *slay* and slay the same
 	 * monster type

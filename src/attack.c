@@ -193,9 +193,9 @@ static int critical_norm(int weight, int plus, int dam, u32b *msg_type)
  *  slay already known
  *
  */
-void improve_attack_modifier(object_type *o_ptr, const monster_type *m_ptr, const slay_t **best_s_ptr)
+void improve_attack_modifier(object_type *o_ptr, const monster_type *m_ptr, const slays **best_s_ptr)
 {
-	const slay_t *s_ptr;
+	const slays *s_ptr;
 
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
@@ -319,7 +319,7 @@ bool py_attack_real(int y, int x)
 	if (o_ptr->k_idx)
 	{
 		int i;
-		const slay_t *best_s_ptr = NULL;
+		const slays *best_s_ptr = NULL;
 
 		hit_verb = "hit";
 
@@ -631,7 +631,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 			int multiplier = 1;
 
 			const char *hit_verb = "hits";
-			const slay_t *best_s_ptr = NULL;
+			const slays *best_s_ptr = NULL;
 
 			/* Note the collision */
 			hit_body = TRUE;
@@ -1027,7 +1027,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 			{
 				const char *hit_verb = "hits";
 				bool fear = FALSE;
-				const slay_t *best_s_ptr = NULL;
+				const slays *best_s_ptr = NULL;
 
 				/* Assume a default death */
 				cptr note_dies = " dies.";

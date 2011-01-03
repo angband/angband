@@ -980,7 +980,7 @@ const xchar_type latin1_encode[] =
 /*
  * Info about slays (see src/object/types.h for structure)
  */
-const slay_t slay_table[] =
+const slays slay_table[] =
 {
         #define SLAY(a, b, c, d, e, f, g, h, i, j)  { SL_##a, b, c, d, e, f, g, h, i, j},
         #include "list-slays.h"
@@ -988,19 +988,9 @@ const slay_t slay_table[] =
 };
 
 /*
- * Helper function to externalise N_ELEMENTS(slay_table), which itself is not
- * available outside this compilation unit
- */
-size_t num_slays(void)
-{
-        return N_ELEMENTS(slay_table);
-}
-
-/*
  * Structure for elements
  */
-typedef struct
-{
+struct element {
 	u16b index;		/* Numerical index (EL_FOO) */
 	int cap;		/* Breath damage cap */
 	int divisor;		/* Breath divisor (monhp / this) */
@@ -1011,7 +1001,7 @@ typedef struct
 	int vuln_flag;		/* Object flag for vulnerability */
 	int mon_res_flag;	/* Monster flag for resistance */
 	int mon_vuln_flag;	/* Monster flag for vulnerability */
-} elem_t;
+};
 	
 /*
  * Details of the different elemental attacks in the game.

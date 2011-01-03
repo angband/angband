@@ -619,7 +619,7 @@ void object_notice_effect(object_type *o_ptr)
  */
 void object_notice_slay(object_type *o_ptr, int flag)
 {
-	const slay_t *s_ptr;
+	const slays *s_ptr;
 	bool learned = object_notice_flag(o_ptr, flag);
 
 	/* if you learn a slay, learn the ego and print a message */
@@ -818,7 +818,7 @@ void object_notice_on_wield(object_type *o_ptr)
 {
 	bitflag f[OF_SIZE], obvious_mask[OF_SIZE];
 	bool obvious = FALSE;
-	const slay_t *s_ptr;
+	const slays *s_ptr;
 
 	flags_init(obvious_mask, OF_SIZE, OF_OBVIOUS_MASK, FLAG_END);
 
