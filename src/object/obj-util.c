@@ -2573,7 +2573,9 @@ void floor_item_charges(int item)
 	if (!object_is_known(o_ptr)) return;
 
 	/* Print a message */
-	msg("There are %d charge%s remaining.", o_ptr->pval[DEFAULT_PVAL],
+	msg("There %s %d charge%s remaining.",
+	    (o_ptr->pval[DEFAULT_PVAL] != 1) ? "are" : "is",
+	     o_ptr->pval[DEFAULT_PVAL],
 	    (o_ptr->pval[DEFAULT_PVAL] != 1) ? "s" : "");
 }
 
