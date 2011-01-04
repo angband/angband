@@ -59,6 +59,7 @@ struct flag_cache {
 };
 
 /*** Functions ***/
-
+int collect_slays(const char *desc[], int mult[], bitflag *flags);
+int slay_descriptions(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE], const char ***list_p);
 
 #endif /* INCLUDED_SLAYS_H */

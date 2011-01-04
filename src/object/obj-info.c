@@ -386,15 +386,10 @@ static bool describe_slays(textblock *tb, const bitflag flags[OF_SIZE],
 {
 	bool printed = FALSE;
 
-	const char *slay_descs[SL_MAX - 1];
-	const char *kill_descs[SL_MAX - 1];
-	const char *brand_descs[SL_MAX - 1];
-	const slays *s_ptr;
+	const char **slay_descs;
 	bitflag slay_mask[OF_SIZE], kill_mask[OF_SIZE], brand_mask[OF_SIZE];
 
-	size_t x = 0;
-	size_t y = 0;
-	size_t z = 0;
+	size_t count;
 
 	bool fulldesc;
 
@@ -409,87 +404,44 @@ static bool describe_slays(textblock *tb, const bitflag flags[OF_SIZE],
 	else
 		fulldesc = TRUE;
 
-	for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++)
-	{
-		if (!of_has(flags, s_ptr->slay_flag)) continue;
-
-		if (of_has(slay_mask, s_ptr->slay_flag))
-			slay_descs[x++] = s_ptr->desc;
-		else if (of_has(kill_mask, s_ptr->slay_flag))
-			kill_descs[y++] = s_ptr->desc;
-		else if (of_has(brand_mask, s_ptr->slay_flag))
-			brand_descs[z++] = s_ptr->brand;
-	}
-
 	/* Slays */
-	if (x)
+	count = slay_descriptions(flags, slay_mask, &slay_descs);
+	if (count)
 	{
 		if (fulldesc)
 			textblock_append(tb, "It causes your melee attacks to slay ");
 		else
 			textblock_append(tb, "Slays ");
-		info_out_list(tb, slay_descs, x);
+		info_out_list(tb, slay_descs, count);
 		printed = TRUE;
 	}
 
 	/* Kills */
-	if (y)
+	count = slay_descriptions(flags, kill_mask, &slay_descs);
+	if (count)
 	{
 		if (fulldesc)
 			textblock_append(tb, "It causes your melee attacks to *slay* ");
 		else
 			textblock_append(tb, "*Slays* ");
-		info_out_list(tb, kill_descs, y);
+		info_out_list(tb, slay_descs, count);
 		printed = TRUE;
 	}
 
 	/* Brands */
-	if (z)
+	count = slay_descriptions(flags, brand_mask, &slay_descs);
+	if (count)
 	{
 		if (fulldesc)
 			textblock_append(tb, "It brands your melee attacks with ");
 		else
 			textblock_append(tb, "Branded with ");
-		info_out_list(tb, brand_descs, z);
+		info_out_list(tb, slay_descs, count);
 		printed = TRUE;
 	}
 
 	return printed;
 }
-
-
-
-/*
- * list[] and mult[] must be > 16 in size
- */
-static int collect_slays(const char *desc[], int mult[], bitflag *flags)
-{
-	int cnt = 0;
-	u16b i;
-	const slays *s_ptr;
-
-	/* Remove "duplicate" flags e.g. *slay* and slay the same
-	 * monster type
-	 */
-	for (i = 0; i < N_ELEMENTS(slay_dups); i++) {
-		if (of_has(flags, slay_dups[i].minor) &&
-				of_has(flags, slay_dups[i].major)) {
-			of_off(flags, slay_dups[i].minor);
-		}
-	}
-
-	/* Collect slays */
-	for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++) {
-		if (of_has(flags, s_ptr->slay_flag)) {
-			mult[cnt] = s_ptr->mult;
-			desc[cnt++] = s_ptr->desc;
-		}
-	}
-
-	return cnt;
-}
-
-
 
 /*
  * Account for criticals in the calculation of melee prowess

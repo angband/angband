@@ -978,16 +978,6 @@ const xchar_type latin1_encode[] =
 
 
 /*
- * Info about slays (see src/object/types.h for structure)
- */
-const slays slay_table[] =
-{
-        #define SLAY(a, b, c, d, e, f, g, h, i, j)  { SL_##a, b, c, d, e, f, g, h, i, j},
-        #include "list-slays.h"
-        #undef SLAY
-};
-
-/*
  * Structure for elements
  */
 struct element {
