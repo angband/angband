@@ -173,21 +173,6 @@ static const flag_type misc_flags[] =
 };
 
 
-/*
- * Slays which are in some sense duplicates. *Slay* dragon supercedes slay
- * dragon, for example.
- */
-const struct {
-	u16b minor;
-	u16b major;
-} slay_dups[] =
-{
-	{ OF_SLAY_DRAGON, OF_KILL_DRAGON },
-	{ OF_SLAY_DEMON, OF_KILL_DEMON },
-	{ OF_SLAY_UNDEAD, OF_KILL_UNDEAD },
-};
-
-
 /*** Code that makes use of the data tables ***/
 
 /*

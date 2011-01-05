@@ -768,25 +768,10 @@ static void parse_frequencies(void)
 			/* Brands or slays - count all together */
 			if (flags_test(a_ptr->flags, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END))
 			{
-				const slays *s_ptr;
-
 				/* We have some brands or slays - count them */
-				temp = 0;
-				temp2 = 0;
+				temp2 = count_brands(a_ptr->flags);
+				temp = count_slays(a_ptr->flags) - temp2;
 
-				for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++)
-				{
-					if (of_has(a_ptr->flags, s_ptr->slay_flag))
-					{
-						bitflag slay_kill_mask[OF_SIZE], brand_mask[OF_SIZE];
-
-						flags_init(brand_mask, OF_SIZE, OF_BRAND_MASK, FLAG_END);
-						flags_init(slay_kill_mask, OF_SIZE, OF_SLAY_MASK, OF_KILL_MASK, FLAG_END);
-
-						if (of_has(slay_kill_mask, s_ptr->slay_flag)) temp++;
-						if (of_has(brand_mask, s_ptr->slay_flag)) temp2++;
-					}
-				}
 				LOG_PRINT1("Adding %d for slays\n", temp);
 				LOG_PRINT1("Adding %d for brands\n", temp2);
 
@@ -905,26 +890,10 @@ static void parse_frequencies(void)
 			/* Brands or slays - count all together */
 			if (flags_test(a_ptr->flags, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END))
 			{
-				const slays *s_ptr;
-
 				/* We have some brands or slays - count them */
-				temp = 0;
-				temp2 = 0;
+				temp2 = count_brands(a_ptr->flags);
+				temp = count_slays(a_ptr->flags) - temp2;
 
-				for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++)
-				{
-					if (of_has(a_ptr->flags, s_ptr->slay_flag))
-					{
-						bitflag slay_kill_mask[OF_SIZE], brand_mask[OF_SIZE];
-
-						flags_init(brand_mask, OF_SIZE, OF_BRAND_MASK, FLAG_END);
-						flags_init(slay_kill_mask, OF_SIZE, OF_SLAY_MASK, FLAG_END);
-						flags_set(slay_kill_mask, OF_SIZE, OF_KILL_MASK, FLAG_END);
-
-						if (of_has(slay_kill_mask, s_ptr->slay_flag)) temp++;
-						if (of_has(brand_mask, s_ptr->slay_flag)) temp2++;
-					}
-				}
 				LOG_PRINT1("Adding %d for slays\n", temp);
 				LOG_PRINT1("Adding %d for brands\n", temp2);
 
@@ -1029,26 +998,10 @@ static void parse_frequencies(void)
 			/* Brands or slays - count all together */
 			if (flags_test(a_ptr->flags, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END))
 			{
-				const slays *s_ptr;
-
 				/* We have some brands or slays - count them */
-				temp = 0;
-				temp2 = 0;
+				temp2 = count_brands(a_ptr->flags);
+				temp = count_slays(a_ptr->flags) - temp2;
 
-				for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++)
-				{
-					if (of_has(a_ptr->flags, s_ptr->slay_flag))
-					{
-						bitflag slay_kill_mask[OF_SIZE], brand_mask[OF_SIZE];
-
-						flags_init(brand_mask, OF_SIZE, OF_BRAND_MASK, FLAG_END);
-						flags_init(slay_kill_mask, OF_SIZE, OF_SLAY_MASK, FLAG_END);
-						flags_set(slay_kill_mask, OF_SIZE, OF_KILL_MASK, FLAG_END);
-
-						if (of_has(slay_kill_mask, s_ptr->slay_flag)) temp++;
-						if (of_has(brand_mask, s_ptr->slay_flag)) temp2++;
-					}
-				}
 				LOG_PRINT1("Adding %d for slays\n", temp);
 				LOG_PRINT1("Adding %d for brands\n", temp2);
 
@@ -1976,21 +1929,16 @@ static void add_high_resist(artifact_type *a_ptr)
 static void add_slay(artifact_type *a_ptr, bool brand)
 {
 	int count = 0;
-	const slays *s_ptr;
+	slays *s_ptr;
 
-	for(count = 0; count < MAX_TRIES; count++)
-	{
-		s_ptr = &slay_table[randint1(SL_MAX - 1)];
-		if (brand && s_ptr->brand && !of_has(a_ptr->flags, s_ptr->slay_flag))
-		{
+	for(count = 0; count < MAX_TRIES; count++) {
+		s_ptr = random_slay(brand);
+
+		if (!of_has(a_ptr->flags, s_ptr->slay_flag)) {
 			of_on(a_ptr->flags, s_ptr->slay_flag);
-			LOG_PRINT1("Adding brand: %s\n", s_ptr->brand);
-			return;
-		}
-		if (!brand && !s_ptr->brand && !of_has(a_ptr->flags, s_ptr->slay_flag))
-		{
-			of_on(a_ptr->flags, s_ptr->slay_flag);
-			LOG_PRINT1("Adding slay: %s\n", s_ptr->desc);
+
+			LOG_PRINT2("Adding %s: %s\n", brand ? "brand" : "slay",
+				brand ? s_ptr->brand : s_ptr->desc);
 			return;
 		}
 	}

@@ -18,6 +18,7 @@
 #ifndef INCLUDED_SLAYS_H
 #define INCLUDED_SLAYS_H
 
+
 /* Types of slay (including brands) */
 typedef enum
 {
@@ -27,6 +28,7 @@ typedef enum
 
 	SL_MAX
 } slay_type;
+
 
 /*
  * Slay type.  Used for the global table of brands/slays and their effects.
@@ -46,7 +48,6 @@ struct slays {
 	const char *brand;		/* name of brand */
 };
 
-extern const slays slay_table[];
 
 /*
  * Slay cache. Used for looking up slay values in obj-power.c
@@ -58,8 +59,16 @@ struct flag_cache {
         s32b value;            /* Value of this combination */
 };
 
+
 /*** Functions ***/
+int count_slays(bitflag *flags);
+int count_brands(bitflag *flags);
+slays random_slay(bool brand);
 int collect_slays(const char *desc[], int mult[], bitflag *flags);
-int slay_descriptions(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE], const char ***list_p);
+int slay_descriptions(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE],
+	const char ***list_p);
+void improve_attack_modifier(object_type *o_ptr, const monster_type *m_ptr,
+        const slays **best_s_ptr);
+void object_notice_brands(object_type *o_ptr);
 
 #endif /* INCLUDED_SLAYS_H */
