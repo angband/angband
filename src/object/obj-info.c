@@ -1,4 +1,4 @@
-/*
+/**
  * File: obj-info.c
  * Purpose: Object description code.
  *
@@ -370,13 +370,11 @@ static bool describe_slays(textblock *tb, const bitflag flags[OF_SIZE],
 		int tval)
 {
 	bool printed = FALSE;
-
-	const char **slay_descs;
+	const char **slay_descs = NULL;
 	bitflag slay_mask[OF_SIZE], kill_mask[OF_SIZE], brand_mask[OF_SIZE];
-
 	size_t count;
-
 	bool fulldesc;
+	int mult[SL_MAX];
 
 	flags_init(slay_mask, OF_SIZE, OF_SLAY_MASK, FLAG_END);
 	flags_init(kill_mask, OF_SIZE, OF_KILL_MASK, FLAG_END);
@@ -390,7 +388,7 @@ static bool describe_slays(textblock *tb, const bitflag flags[OF_SIZE],
 		fulldesc = TRUE;
 
 	/* Slays */
-	count = slay_descriptions(flags, slay_mask, &slay_descs);
+	count = list_slays(flags, slay_mask, slay_descs, mult, TRUE);
 	if (count)
 	{
 		if (fulldesc)
@@ -402,7 +400,7 @@ static bool describe_slays(textblock *tb, const bitflag flags[OF_SIZE],
 	}
 
 	/* Kills */
-	count = slay_descriptions(flags, kill_mask, &slay_descs);
+	count = list_slays(flags, kill_mask, slay_descs, mult, TRUE);
 	if (count)
 	{
 		if (fulldesc)
@@ -414,7 +412,7 @@ static bool describe_slays(textblock *tb, const bitflag flags[OF_SIZE],
 	}
 
 	/* Brands */
-	count = slay_descriptions(flags, brand_mask, &slay_descs);
+	count = list_slays(flags, brand_mask, slay_descs, mult, TRUE);
 	if (count)
 	{
 		if (fulldesc)
@@ -499,9 +497,9 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 {
 	bool full = mode & OINFO_FULL;
 
-	const char *desc[16];
+	const char *desc[SL_MAX];
 	int i;
-	int mult[16];
+	int mult[SL_MAX];
 	int cnt, dam, total_dam, plus = 0;
 	int xtra_postcrit = 0, xtra_precrit = 0;
 	int crit_mult, crit_div, crit_add;
@@ -509,8 +507,7 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 	int str_done = -1;
 	object_type *j_ptr = &p_ptr->inventory[INVEN_BOW];
 
-	bitflag f[OF_SIZE];
-	bitflag tmp_f[OF_SIZE];
+	bitflag f[OF_SIZE], tmp_f[OF_SIZE], mask[OF_SIZE];
 
 	bool weapon = (wield_slot(o_ptr) == INVEN_WIELD);
 	bool ammo   = (p_ptr->state.ammo_tval == o_ptr->tval) &&
@@ -683,7 +680,9 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 
 	if (ammo) multiplier = p_ptr->state.ammo_mult;
 
-	cnt = collect_slays(desc, mult, f);
+	flags_init(mask, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END);
+
+	cnt = list_slays(f, mask, desc, mult, TRUE);
 	for (i = 0; i < cnt; i++)
 	{
 		int melee_adj_mult = ammo ? 0 : 1; /* ammo mult adds fully, melee mult is times 1, so adds 1 less */

@@ -854,8 +854,8 @@ void object_notice_on_wield(object_type *o_ptr)
 
 	if (!obvious) return;
 
-	/* Brands are obvious on wield */
-	object_notice_brands(o_ptr);
+	/* Notice any obvious brands or slays */
+	object_notice_slays(o_ptr, obvious_mask);
 
 	/* XXX Eddie need to add stealth here, also need to assert/double-check everything is covered */
 	if (of_has(f, OF_STR))

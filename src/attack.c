@@ -254,7 +254,7 @@ bool py_attack_real(int y, int x)
 	if (o_ptr->k_idx)
 	{
 		int i;
-		const slays *best_s_ptr = NULL;
+		const slay *best_s_ptr = NULL;
 
 		hit_verb = "hit";
 
@@ -262,9 +262,10 @@ bool py_attack_real(int y, int x)
 		 * brands on all non-launcher equipment */
 		for (i = INVEN_LEFT; i < INVEN_TOTAL; i++)
 			improve_attack_modifier(&p_ptr->inventory[i], m_ptr,
-			&best_s_ptr);
+					&best_s_ptr, TRUE, p_ptr->inventory[i].flags);
 
-		improve_attack_modifier(o_ptr, m_ptr, &best_s_ptr);
+		improve_attack_modifier(o_ptr, m_ptr, &best_s_ptr, TRUE,
+				o_ptr->flags);
 		if (best_s_ptr != NULL)
 			hit_verb = best_s_ptr->melee_verb;
 
@@ -566,7 +567,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 			int multiplier = 1;
 
 			const char *hit_verb = "hits";
-			const slays *best_s_ptr = NULL;
+			const slay *best_s_ptr = NULL;
 
 			/* Note the collision */
 			hit_body = TRUE;
@@ -579,8 +580,10 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 				/* Assume a default death */
 				cptr note_dies = " dies.";
 
-				improve_attack_modifier(o_ptr, m_ptr, &best_s_ptr);
-				improve_attack_modifier(j_ptr, m_ptr, &best_s_ptr);
+				improve_attack_modifier(o_ptr, m_ptr, &best_s_ptr, TRUE,
+					o_ptr->flags);
+				improve_attack_modifier(j_ptr, m_ptr, &best_s_ptr, TRUE,
+					j_ptr->flags);
 				if (best_s_ptr != NULL)
 					hit_verb = best_s_ptr->range_verb;
 
@@ -725,6 +728,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 	/* Drop (or break) near that location */
 	drop_near(cave, i_ptr, j, y, x, TRUE);
 }
+
 
 void textui_cmd_fire_at_nearest(void)
 {
@@ -879,7 +883,8 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 	tdam += i_ptr->to_d;
 
 	/* Chance of hitting */
-	chance = (p_ptr->state.skills[SKILL_TO_HIT_THROW] + (p_ptr->state.to_h * BTH_PLUS_ADJ));
+	chance = (p_ptr->state.skills[SKILL_TO_HIT_THROW] +
+		(p_ptr->state.to_h * BTH_PLUS_ADJ));
 
 
 	/* Take a turn */
@@ -962,7 +967,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 			{
 				const char *hit_verb = "hits";
 				bool fear = FALSE;
-				const slays *best_s_ptr = NULL;
+				const slay *best_s_ptr = NULL;
 
 				/* Assume a default death */
 				cptr note_dies = " dies.";
@@ -975,7 +980,8 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 				}
 
 				/* Apply special damage  - brought forward to fill in hit_verb XXX XXX XXX */
-				improve_attack_modifier(i_ptr, m_ptr, &best_s_ptr);
+				improve_attack_modifier(i_ptr, m_ptr, &best_s_ptr, TRUE,
+					i_ptr->flags);
 				if (best_s_ptr != NULL)
 				{
 					tdam *= best_s_ptr->mult;

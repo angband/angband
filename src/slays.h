@@ -33,19 +33,19 @@ typedef enum
 /*
  * Slay type.  Used for the global table of brands/slays and their effects.
  */
-typedef struct slays slays;
+typedef struct slay slay;
 
-struct slays {
-	u16b index;			/* Numerical index */
-	int slay_flag;			/* Object flag for the slay */
-	int monster_flag;		/* Which monster flag(s) make it vulnerable */
-	int resist_flag;		/* Which monster flag(s) make it resist */
-	int mult;			/* Slay multiplier */
+struct slay {
+	u16b index;					/* Numerical index */
+	int slay_flag;				/* Object flag for the slay */
+	int monster_flag;			/* Which monster flag(s) make it vulnerable */
+	int resist_flag;			/* Which monster flag(s) make it resist */
+	int mult;					/* Slay multiplier */
 	const char *range_verb;		/* attack verb for ranged hits */
 	const char *melee_verb; 	/* attack verb for melee hits */
 	const char *active_verb; 	/* verb for when the object is active */
-	const char *desc;		/* description of vulnerable creatures */
-	const char *brand;		/* name of brand */
+	const char *desc;			/* description of vulnerable creatures */
+	const char *brand;			/* name of brand */
 };
 
 
@@ -55,20 +55,18 @@ struct slays {
 typedef struct flag_cache flag_cache;
 
 struct flag_cache {
-        bitflag flags[OF_SIZE];   /* Combination of slays and brands */
-        s32b value;            /* Value of this combination */
+        bitflag flags[OF_SIZE];   	/* Combination of slays and brands */
+        s32b value;            		/* Value of this combination */
 };
 
 
 /*** Functions ***/
-int count_slays(bitflag *flags);
-int count_brands(bitflag *flags);
-slays random_slay(bool brand);
-int collect_slays(const char *desc[], int mult[], bitflag *flags);
-int slay_descriptions(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE],
-	const char ***list_p);
-void improve_attack_modifier(object_type *o_ptr, const monster_type *m_ptr,
-        const slays **best_s_ptr);
-void object_notice_brands(object_type *o_ptr);
+int dedup_slays(bitflag flags[OF_SIZE]);
+void random_slay(const slay *s_ptr, bool brand);
+int list_slays(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE],
+	const char *desc[], int mult[], bool dedup);
+void object_notice_slays(object_type *o_ptr, const bitflag mask[OF_SIZE]);
+void improve_attack_modifier(object_type *o_ptr, const monster_type
+	*m_ptr, const slay **best_s_ptr, bool lore, const bitflag flags[OF_SIZE]);
 
 #endif /* INCLUDED_SLAYS_H */

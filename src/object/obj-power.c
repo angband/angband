@@ -53,12 +53,12 @@
 #define AVG_SLING_MULT          4 /* i.e. 2 */
 #define AVG_BOW_MULT            5 /* i.e. 2.5 */
 #define AVG_XBOW_MULT           7 /* i.e. 3.5 */
-#define AVG_LAUNCHER_DMG	9
+#define AVG_LAUNCHER_DMG		9
 #define MELEE_DAMAGE_BOOST     30 /* fudge to boost extra blows */
 #define RING_BRAND_DMG	       60 /* fudge to boost off-weapon brand power */
 #define BASE_LIGHT_POWER        6
-#define BASE_JEWELRY_POWER	4
-#define BASE_ARMOUR_POWER	1
+#define BASE_JEWELRY_POWER		4
+#define BASE_ARMOUR_POWER		1
 #define DAMAGE_POWER            5 /* i.e. 2.5 */
 #define TO_HIT_POWER            3 /* i.e. 1.5 */
 #define BASE_AC_POWER           2 /* i.e. 1 */
@@ -70,18 +70,18 @@
 #define INHIBIT_SHOTS           4
 #define IMMUNITY_POWER         25 /* for each immunity after the first */
 #define INHIBIT_IMMUNITIES      4
-#define STR_POWER	        9
-#define INT_POWER	        5
-#define WIS_POWER	        5
-#define DEX_POWER		6
-#define CON_POWER	       12
-#define CHR_POWER		2
-#define STEALTH_POWER		8
-#define SEARCH_POWER		2
-#define INFRA_POWER		4
-#define TUNN_POWER		2
-#define RBASE_POWER		5
-#define SUST_POWER		5
+#define STR_POWER	        	9
+#define INT_POWER	        	5
+#define WIS_POWER	        	5
+#define DEX_POWER				6
+#define CON_POWER	    	   12
+#define CHR_POWER				2
+#define STEALTH_POWER			8
+#define SEARCH_POWER			2
+#define INFRA_POWER				4
+#define TUNN_POWER				2
+#define RBASE_POWER				5
+#define SUST_POWER				5
 
 /*
  * Table giving speed power ratings
@@ -113,7 +113,10 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 	s32b sv = 0;
 	int i;
 	int mult;
-	const slays *best_s_ptr;
+	const slay *best_s_ptr;
+	monster_race *r_ptr;
+	monster_type *m_ptr;
+	monster_type monster_type_body;
 
 	/* Combine the slay bytes into an index value */
 	of_copy(s_index, flags);
@@ -121,10 +124,7 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 
 	/* Look in the cache to see if we know this one yet */
 	for (i = 0; !of_is_empty(slay_cache[i].flags); i++)
-	{
-		if (of_is_equal(s_index, slay_cache[i].flags))
-			break;
-	}
+		if (of_is_equal(s_index, slay_cache[i].flags)) break;
 
 	sv = slay_cache[i].value;
 
@@ -142,11 +142,14 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 	 */
 	for (i = 0; i < z_info->r_max; i++)
 	{
-		monster_race *r_ptr = &r_info[i];
 		mult = 1;
+		r_ptr = &r_info[i];
+		m_ptr = &monster_type_body;
+		m_ptr->r_idx = i;
 
 		/* Find the best multiplier against this monster */
-		improve_attack_modifier(o_ptr, r_ptr, &best_s_ptr);
+		improve_attack_modifier((object_type *)o_ptr, m_ptr, &best_s_ptr,
+				FALSE, flags);
 		mult = best_s_ptr->mult;
 
 		/* Add the multiple to sv */
@@ -158,8 +161,7 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 	 * average damage from base dice by sv, and divide by the
 	 * total number of monsters.
 	 */
-	if (verbose)
-	{
+	if (verbose) {
 		/* Write info about the slay combination and multiplier */
 		file_putf(log_file,"Slay multiplier for:");
 
@@ -187,10 +189,8 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 	}
 
 	/* Add to the cache */
-	for (i = 0; !of_is_empty(slay_cache[i].flags); i++)
-	{
-		if (of_is_equal(s_index, slay_cache[i].flags))
-		{
+	for (i = 0; !of_is_empty(slay_cache[i].flags); i++)	{
+		if (of_is_equal(s_index, slay_cache[i].flags)) {
 			slay_cache[i].value = sv;
 			LOG_PRINT("Added to slay cache\n");
 			break;
@@ -229,22 +229,20 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	int sustains = 0;
 	int extra_stat_bonus = 0;
 	int i;
-	bitflag flags[OF_SIZE];
+	bitflag flags[OF_SIZE], mask[OF_SIZE];
+	const char *desc[SL_MAX];
+	int mult[SL_MAX];
 
 	/* Extract the flags */
-	if (known)
-	{
+	if (known) {
 		LOG_PRINT("Object is known\n");
 		object_flags(o_ptr, flags);
-	}
-	else
-	{
+	} else {
 		LOG_PRINT("Object is not fully known\n");
 		object_flags_known(o_ptr, flags);
 	}
 
-	if (verbose)
-	{
+	if (verbose) {
 		LOG_PRINT("Object flags =");
 		for (i = 0; i < (int)OF_SIZE; i++)
 			LOG_PRINT1(" %02x", flags[i]);
@@ -402,7 +400,8 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			 * add extra power for multiple slays/brands, as these
 			 * add diminishing amounts to average damage
 			 */
-			i = count_slays(o_ptr);
+			flags_init(mask, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END);
+			i = list_slays(flags, mask, desc, mult, FALSE);
 			if (i > 1)
 				p += (i * 3);
 			LOG_PRINT1("Adding power for multiple slays/brands, total is %d\n", p);
