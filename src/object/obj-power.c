@@ -113,7 +113,7 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 	s32b sv = 0;
 	int i;
 	int mult;
-	const slay *best_s_ptr;
+	const slay *best_s_ptr = NULL;
 	monster_race *r_ptr;
 	monster_type *m_ptr;
 	monster_type monster_type_body;
@@ -150,7 +150,8 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 		/* Find the best multiplier against this monster */
 		improve_attack_modifier((object_type *)o_ptr, m_ptr, &best_s_ptr,
 				FALSE, flags);
-		mult = best_s_ptr->mult;
+		if (best_s_ptr)
+			mult = best_s_ptr->mult;
 
 		/* Add the multiple to sv */
 		sv += mult * r_ptr->power;
@@ -230,8 +231,8 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	int extra_stat_bonus = 0;
 	int i;
 	bitflag flags[OF_SIZE], mask[OF_SIZE];
-	const char *desc[SL_MAX];
-	int mult[SL_MAX];
+	const char *desc[SL_MAX] = { 0 }, *brand_desc[SL_MAX] = { 0 };
+	int mult[SL_MAX] = { 0 };
 
 	/* Extract the flags */
 	if (known) {
@@ -401,7 +402,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			 * add diminishing amounts to average damage
 			 */
 			flags_init(mask, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END);
-			i = list_slays(flags, mask, desc, mult, FALSE);
+			i = list_slays(flags, mask, desc, brand_desc, mult, FALSE);
 			if (i > 1)
 				p += (i * 3);
 			LOG_PRINT1("Adding power for multiple slays/brands, total is %d\n", p);

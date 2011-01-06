@@ -88,19 +88,18 @@ void random_slay(const slay *s_ptr, bool brand)
  * \param flags is the flagset to analyse for matches
  * \param mask is the flagset against which to test
  * \param desc[] is the array of descriptions of matching slays
+ * \param brand[] is the array of descriptions of brands
  * \param mult[] is the array of multipliers of those slays
  * \param dedup is whether or not to remove duplicates
+ *
+ * desc[] and mult[] must be >= SL_MAX in size
  */
 int list_slays(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE],
-	const char *desc[], int mult[], bool dedup)
+	const char *desc[], const char *brand[], int mult[], bool dedup)
 {
 	int i, count = 0;
 	const slay *s_ptr;
 	bitflag f[OF_SIZE];
-
-	/* desc[] and mult[] must be >= SL_MAX in size */ 
-	assert (N_ELEMENTS(mult) >= SL_MAX);
-	assert (N_ELEMENTS(desc) >= SL_MAX);
 
 	/* We are only interested in the flags specified in mask */
 	of_copy(f, flags);
@@ -114,6 +113,7 @@ int list_slays(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE],
 	for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++) {
 		if (of_has(f, s_ptr->slay_flag)) {
 			mult[count] = s_ptr->mult;
+			brand[count] = s_ptr->brand;
 			desc[count++] = s_ptr->desc;
 		}
 	}
