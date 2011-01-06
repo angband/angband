@@ -1684,6 +1684,7 @@ void play_game(void)
 		if (p_ptr->is_dead) {
 			if (arg_wizard) {
 				p_ptr->is_dead = FALSE;
+				p_ptr->chp = p_ptr->mhp;
 				p_ptr->noscore |= NOSCORE_WIZARD;
 			} else {
 				existing_dead_save = TRUE;
