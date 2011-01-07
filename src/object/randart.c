@@ -688,7 +688,7 @@ static void parse_frequencies(void)
 	object_kind *k_ptr;
 	s32b temp, temp2;
 	s16b k_idx;
-	const char *desc[SL_MAX] = { 0 }, brand_desc[SL_MAX] = { 0 };
+	const char *desc[SL_MAX] = { 0 }, *brand_desc[SL_MAX] = { 0 };
 	bitflag mask[OF_SIZE];
 
 	LOG_PRINT("\n****** BEGINNING GENERATION OF FREQUENCIES\n\n");
@@ -1942,7 +1942,7 @@ static void add_high_resist(artifact_type *a_ptr)
 static void add_slay(artifact_type *a_ptr, bool brand)
 {
 	int count = 0;
-	slay *s_ptr = NULL;
+	struct slay *s_ptr = NULL;
 
 	for(count = 0; count < MAX_TRIES; count++) {
 		random_slay(s_ptr, brand);

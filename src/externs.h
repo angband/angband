@@ -165,7 +165,7 @@ extern int text_out_pad;
 extern bool use_transparency;
 extern void (*sound_hook)(int);
 
-extern flag_cache *slay_cache;
+extern struct flag_cache *slay_cache;
 
 extern u16b daycount;
 

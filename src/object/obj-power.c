@@ -113,7 +113,7 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 	s32b sv = 0;
 	int i;
 	int mult;
-	const slay *best_s_ptr = NULL;
+	const struct slay *best_s_ptr = NULL;
 	monster_race *r_ptr;
 	monster_type *m_ptr;
 	monster_type monster_type_body;

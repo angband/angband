@@ -30,7 +30,6 @@
 #include "parser.h"
 #include "prefs.h"
 #include "squelch.h"
-#include "types.h"
 
 static struct history_chart *histories;
 
@@ -1262,7 +1261,7 @@ static errr eval_e_slays(struct ego_item *items)
 	}
 
 	/* Allocate slay_cache with an extra empty element for an iteration stop */
-	slay_cache = C_ZNEW((count + 1), flag_cache);
+	slay_cache = C_ZNEW((count + 1), struct flag_cache);
 	count = 0;
 
 	/* Populate the slay_cache */

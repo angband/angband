@@ -33,8 +33,6 @@ typedef enum
 /*
  * Slay type.  Used for the global table of brands/slays and their effects.
  */
-typedef struct slay slay;
-
 struct slay {
 	u16b index;					/* Numerical index */
 	int slay_flag;				/* Object flag for the slay */
@@ -52,8 +50,6 @@ struct slay {
 /*
  * Slay cache. Used for looking up slay values in obj-power.c
  */
-typedef struct flag_cache flag_cache;
-
 struct flag_cache {
         bitflag flags[OF_SIZE];   	/* Combination of slays and brands */
         s32b value;            		/* Value of this combination */
@@ -62,11 +58,12 @@ struct flag_cache {
 
 /*** Functions ***/
 int dedup_slays(bitflag flags[OF_SIZE]);
-void random_slay(const slay *s_ptr, bool brand);
+void random_slay(const struct slay *s_ptr, bool brand);
 int list_slays(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE],
 	const char *desc[], const char *brand[], int mult[], bool dedup);
 void object_notice_slays(object_type *o_ptr, const bitflag mask[OF_SIZE]);
 void improve_attack_modifier(object_type *o_ptr, const monster_type
-	*m_ptr, const slay **best_s_ptr, bool lore, const bitflag flags[OF_SIZE]);
+	*m_ptr, const struct slay **best_s_ptr, bool lore, const bitflag
+	flags[OF_SIZE]);
 
 #endif /* INCLUDED_SLAYS_H */

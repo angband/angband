@@ -23,7 +23,7 @@
 /*
  * Info about slays (see src/slays.h for structure)
  */
-const slay slay_table[] =
+const struct slay slay_table[] =
 {
 	#define SLAY(a, b, c, d, e, f, g, h, i, j) \
 		{ SL_##a, b, c, d, e, f, g, h, i, j},
@@ -41,7 +41,7 @@ const slay slay_table[] =
  */
 int dedup_slays(bitflag flags[OF_SIZE])
 {
-	const slay *s_ptr, *t_ptr;
+	const struct slay *s_ptr, *t_ptr;
 	int count = 0;
 
 	for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++) {
@@ -72,7 +72,7 @@ int dedup_slays(bitflag flags[OF_SIZE])
  * \param s_ptr is the slay we are returning.
  * \param brand is TRUE if we want a brand, FALSE if we want a slay.
  */
-void random_slay(const slay *s_ptr, bool brand)
+void random_slay(const struct slay *s_ptr, bool brand)
 {
 	while ((brand && !s_ptr->brand) || (!brand && s_ptr->brand) ||
 			!s_ptr->index) {
@@ -98,7 +98,7 @@ int list_slays(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE],
 	const char *desc[], const char *brand[], int mult[], bool dedup)
 {
 	int i, count = 0;
-	const slay *s_ptr;
+	const struct slay *s_ptr;
 	bitflag f[OF_SIZE];
 
 	/* We are only interested in the flags specified in mask */
@@ -130,7 +130,7 @@ int list_slays(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE],
  */
 void object_notice_slays(object_type *o_ptr, const bitflag mask[OF_SIZE])
 {
-	const slay *s_ptr;
+	const struct slay *s_ptr;
 	bool learned;
 	bitflag f[OF_SIZE];
 	char o_name[40];
@@ -167,9 +167,9 @@ void object_notice_slays(object_type *o_ptr, const bitflag mask[OF_SIZE])
  * \param flags is the set of flags to be considered - i.e. known or full
  */
 void improve_attack_modifier(object_type *o_ptr, const monster_type
-	*m_ptr, const slay **best_s_ptr, bool real, const bitflag flags[OF_SIZE])
+	*m_ptr, const struct slay **best_s_ptr, bool real, const bitflag flags[OF_SIZE])
 {
-	const slay *s_ptr;
+	const struct slay *s_ptr;
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 	bitflag known_f[OF_SIZE], note_f[OF_SIZE];

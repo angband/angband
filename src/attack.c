@@ -254,7 +254,7 @@ bool py_attack_real(int y, int x)
 	if (o_ptr->k_idx)
 	{
 		int i;
-		const slay *best_s_ptr = NULL;
+		const struct slay *best_s_ptr = NULL;
 
 		hit_verb = "hit";
 
@@ -567,7 +567,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 			int multiplier = 1;
 
 			const char *hit_verb = "hits";
-			const slay *best_s_ptr = NULL;
+			const struct slay *best_s_ptr = NULL;
 
 			/* Note the collision */
 			hit_body = TRUE;
@@ -967,7 +967,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 			{
 				const char *hit_verb = "hits";
 				bool fear = FALSE;
-				const slay *best_s_ptr = NULL;
+				const struct slay *best_s_ptr = NULL;
 
 				/* Assume a default death */
 				cptr note_dies = " dies.";

@@ -571,7 +571,7 @@ artifact_type *a_info;
  * The ego-item arrays
  */
 ego_item_type *e_info;
-flag_cache *slay_cache;
+struct flag_cache *slay_cache;
 
 /*
  * The monster race arrays
