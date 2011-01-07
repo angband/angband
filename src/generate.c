@@ -194,22 +194,6 @@
 #define UNDEAD_NEST_OBJ 5
 
 /*
- * Room type information
- */
-
-typedef struct room_data room_data;
-
-struct room_data
-{
-	/* Required size in blocks */
-	s16b dy1, dy2, dx1, dx2;
-
-	/* Hack -- minimum level */
-	s16b level;
-};
-
-
-/*
  * Structure to hold all "dungeon generation" data
  */
 
@@ -242,25 +226,6 @@ struct dun_data {
 };
 
 static struct dun_data *dun;
-
-
-/*
- * Array of room types (assumes 11x11 blocks)
- */
-static const room_data room[ROOM_MAX] =
-{
-	{ 0, 0, 0, 0, 0 },		/* 0 = Nothing */
-	{ 0, 0, -1, 1, 1 },		/* 1 = Simple (33x11) */
-	{ 0, 0, -1, 1, 1 },		/* 2 = Overlapping (33x11) */
-	{ 0, 0, -1, 1, 3 },		/* 3 = Crossed (33x11) */
-	{ 0, 0, -1, 1, 3 },		/* 4 = Large (33x11) */
-	{ 0, 0, -1, 1, 5 },		/* 5 = Monster nest (33x11) */
-	{ 0, 0, -1, 1, 5 },		/* 6 = Monster pit (33x11) */
-	{ 0, 1, -1, 1, 5 },		/* 7 = Lesser vault (33x22) */
-	{ 0, 1, -1, 1, 5 },		/* 8 = Medium vault (33x22) */
-	{ -1, 2, -2, 3, 10 }	/* 9 = Greater vault (66x44) */
-};
-
 
 
 /*
@@ -897,7 +862,7 @@ static void generate_hole(struct cave *c, int y1, int x1, int y2, int x2, int fe
 /*
  * Type 1 -- normal rectangular rooms
  */
-static void build_type1(struct cave *c, int y0, int x0)
+static bool build_type1(struct cave *c, int y0, int x0)
 {
 	int y, x;
 
@@ -954,13 +919,14 @@ static void build_type1(struct cave *c, int y0, int x0)
 			cave_set_feat(c, y2, x, FEAT_WALL_INNER);
 		}
 	}
+	return TRUE;
 }
 
 
 /*
  * Type 2 -- Overlapping rectangular rooms
  */
-static void build_type2(struct cave *c, int y0, int x0)
+static bool build_type2(struct cave *c, int y0, int x0)
 {
 	int y1a, x1a, y2a, x2a;
 	int y1b, x1b, y2b, x2b;
@@ -1003,6 +969,8 @@ static void build_type2(struct cave *c, int y0, int x0)
 
 	/* Generate inner floors (b) */
 	generate_fill(c, y1b, x1b, y2b, x2b, FEAT_FLOOR);
+
+	return TRUE;
 }
 
 
@@ -1017,7 +985,7 @@ static void build_type2(struct cave *c, int y0, int x0)
  * the code below will work for 5x5 (and perhaps even for unsymetric
  * values like 4x3 or 5x3 or 3x4 or 3x5).
  */
-static void build_type3(struct cave *c, int y0, int x0)
+static bool build_type3(struct cave *c, int y0, int x0)
 {
 	int y, x;
 
@@ -1157,6 +1125,8 @@ static void build_type3(struct cave *c, int y0, int x0)
 			break;
 		}
 	}
+
+	return TRUE;
 }
 
 
@@ -1170,7 +1140,7 @@ static void build_type3(struct cave *c, int y0, int x0)
  *	4 - An inner room with a checkerboard
  *	5 - An inner room with four compartments
  */
-static void build_type4(struct cave *c, int y0, int x0)
+static bool build_type4(struct cave *c, int y0, int x0)
 {
 	int y, x, y1, x1, y2, x2;
 
@@ -1383,6 +1353,8 @@ static void build_type4(struct cave *c, int y0, int x0)
 			break;
 		}
 	}
+
+	return TRUE;
 }
 
 
@@ -1584,7 +1556,7 @@ static bool vault_aux_demon(int r_idx)
  *
  * Note that "monster nests" will never contain "unique" monsters.
  */
-static void build_type5(struct cave *c, int y0, int x0)
+static bool build_type5(struct cave *c, int y0, int x0)
 {
 	int y, x, y1, x1, y2, x2;
 
@@ -1696,7 +1668,7 @@ static void build_type5(struct cave *c, int y0, int x0)
 
 
 	/* Oops */
-	if (empty) return;
+	if (empty) return FALSE;
 
 
 	/* Describe */
@@ -1733,6 +1705,8 @@ static void build_type5(struct cave *c, int y0, int x0)
 				place_object(c, y, x, c->depth + 10, one_in_(3), FALSE);
 		}
 	}
+
+	return TRUE;
 }
 
 
@@ -1780,7 +1754,7 @@ static void build_type5(struct cave *c, int y0, int x0)
  *
  * Note that "monster pits" will never contain "unique" monsters.
  */
-static void build_type6(struct cave *c, int y0, int x0)
+static bool build_type6(struct cave *c, int y0, int x0)
 {
 	int tmp, what[16];
 
@@ -1980,7 +1954,7 @@ static void build_type6(struct cave *c, int y0, int x0)
 
 
 	/* Oops */
-	if (empty) return;
+	if (empty) return FALSE;
 
 
 	/* Sort the entries XXX XXX XXX */
@@ -2080,6 +2054,8 @@ static void build_type6(struct cave *c, int y0, int x0)
 
 	/* Center monster */
 	place_monster_aux(c, y0, x0, what[7], FALSE, FALSE);
+
+	return TRUE;
 }
 
 
@@ -2258,7 +2234,7 @@ struct vault *random_vault(void) {
 /*
  * Type 7 -- simple vaults (see "vault.txt")
  */
-static void build_type7(struct cave *c, int y0, int x0)
+static bool build_type7(struct cave *c, int y0, int x0)
 {
 	vault_type *v_ptr;
 
@@ -2283,6 +2259,8 @@ static void build_type7(struct cave *c, int y0, int x0)
 
 	/* Hack -- Build the vault */
 	build_vault(c, y0, x0, v_ptr->hgt, v_ptr->wid, v_ptr->text);
+
+	return TRUE;
 }
 
 
@@ -2290,7 +2268,7 @@ static void build_type7(struct cave *c, int y0, int x0)
 /*
  * Type 8 -- medium vaults (see "vault.txt")
  */
-static void build_type8(struct cave *c, int y0, int x0)
+static bool build_type8(struct cave *c, int y0, int x0)
 {
 	vault_type *v_ptr;
 
@@ -2315,14 +2293,56 @@ static void build_type8(struct cave *c, int y0, int x0)
 
 	/* Hack -- Build the vault */
 	build_vault(c, y0, x0, v_ptr->hgt, v_ptr->wid, v_ptr->text);
+
+	return TRUE;
 }
 
 /*
  * Type 9 -- greater vaults (see "vault.txt")
  */
-static void build_type9(struct cave *c, int y0, int x0)
+static bool build_type9(struct cave *c, int y0, int x0)
 {
 	vault_type *v_ptr;
+
+	int i;
+	int numerator   = 2;
+	int denominator = 3;
+
+	/* There are two problems with GV creation, overlapping other rooms, 
+	 * and running off the boundaries. Moving GV creation to the beginning 
+	 * automatically solves the overlapping problem, but makes no claims
+ 	* that the block picked will fit on the map.
+     *
+	 * The dungeon is 6 blocks tall and 18 wide and the size of a GV is 4
+     * tall and 6 wide. That means a GV will fall out of bounds 63% of the
+     * time!
+     *
+	 * The following code should make a greater vault with frequencies:
+	 * dlvl   freq
+	 * 100    18%
+	 * 90-99	 16-18%
+	 * 80-89	 10 -11%
+	 * 70-79	 5.7 - 6.5%
+	 * 60-69	 3.3 - 3.8%
+	 * 50-59	 1.8 - 2.1%
+	 * 0-49   <1%
+	 */
+	
+	/* We only allow a GV to be built as the first room... if there are other
+	 * rooms already then we abort. */
+	if (dun->cent_n > 0) return FALSE;
+
+	/* For building greater vaults, we make a check based on depth:
+	* At level 90 and above, you have a 2/3 chance of trying to build
+	* a GV. At levels 80-89 you have a 4/9 chance, and so on... */
+	for(i = 90; i > c->depth; i -= 10)
+	{
+		numerator *= 2;
+		denominator *= 3;
+	}
+
+	/* Attempt to pass the depth check and build a GV */
+	if (randint0(denominator) >= numerator) return FALSE;
 
 	/* Pick a greater vault */
 	while (TRUE) {
@@ -2345,7 +2365,64 @@ static void build_type9(struct cave *c, int y0, int x0)
 
 	/* Hack -- Build the vault */
 	build_vault(c, y0, x0, v_ptr->hgt, v_ptr->wid, v_ptr->text);
+
+	return TRUE;
 }
+
+
+/*
+ * room_builder is a function pointer which builds rooms in the cave given
+ * anchor coordinates.
+ */
+typedef bool (*room_builder) (struct cave *c, int y0, int x0);
+
+/*
+ * This is a more advanced replacement for room_data -- it tracks information
+ * needed to generate the room, including the funciton used to build it.
+ */
+struct room_profile {
+	const char *name;
+	
+	/* the function used to build the room */
+	room_builder builder;
+
+	/* required size in blocks */
+	int height, width;
+
+	/* minimum level */
+	int level;
+
+	/* whether the room is crowded or not */
+	bool crowded;
+
+	/* how unusual the room is */
+	int rarity;
+
+	/* used to decide which room of a given rarity to generate */
+	int cutoff;
+};
+
+/*
+ * TODO: write me!
+ */
+/* greater vaults' rarity is artificially low due to other constraints */
+#define GV_PROFILE 0
+#define MAX_RARITY 5
+#define NUM_ROOM_PROFILES 9
+static const struct room_profile room_profiles[NUM_ROOM_PROFILES] = {
+	/* name function width height min-depth crowded? rarity cutoff */
+	{"greater vault", build_type9, 4, 6, 10, FALSE, 1, 100},
+	{"medium vault",  build_type8, 2, 2, 5, FALSE, 2, 10},
+	{"lesser vault",  build_type7, 2, 3, 5, FALSE, 2, 25},
+	{"monster pit",   build_type6, 1, 3, 5, TRUE, 2, 40},
+	{"monster nest",  build_type5, 1, 3, 5, TRUE, 2, 50},
+	{"large room",    build_type4, 1, 3, 3, FALSE, 1, 25},
+	{"crossed room",  build_type3, 1, 3, 3, FALSE, 1, 50},
+	{"overlap room",  build_type2, 1, 3, 1, FALSE, 1, 100},
+	{"simple room",   build_type1, 1, 3, 1, FALSE, 0, 100}
+};
+
+
 
 /*
  * Constructs a tunnel between two points
@@ -2681,57 +2758,39 @@ static void try_door(struct cave *c, int y, int x)
  * Note that we restrict the number of "crowded" rooms to reduce
  * the chance of overflowing the monster list during level creation.
  */
-static bool room_build(struct cave *c, int by0, int bx0, int typ)
+static bool room_build(struct cave *c, int by0, int bx0, struct room_profile profile)
 {
+	/* Extract blocks */
+	int by1 = by0;
+	int bx1 = bx0;
+	int by2 = by0 + profile.height;
+	int bx2 = bx0 + profile.width;
+
 	int y, x;
 	int by, bx;
-	int by1, bx1, by2, bx2;
 
-	assert(typ > 0 && typ < ROOM_MAX);
+	/* Enforce the room profile's minimum depth */
+	if (c->depth < profile.level) return FALSE;
 
-	/* Restrict level */
-	if (c->depth < room[typ].level) return (FALSE);
-
-	/* Restrict "crowded" rooms */
-	if (dun->crowded && ((typ == 5) || (typ == 6))) return (FALSE);
-
-	/* Extract blocks */
-	by1 = by0 + room[typ].dy1;
-	bx1 = bx0 + room[typ].dx1;
-	by2 = by0 + room[typ].dy2;
-	bx2 = bx0 + room[typ].dx2;
+	/* Only allow one crowded room per level */
+	if (dun->crowded && profile.crowded) return FALSE;
 
 	/* Never run off the screen */
-	if ((by1 < 0) || (by2 >= dun->row_rooms)) return (FALSE);
-	if ((bx1 < 0) || (bx2 >= dun->col_rooms)) return (FALSE);
+	if (by1 < 0 || by2 >= dun->row_rooms) return FALSE;
+	if (bx1 < 0 || bx2 >= dun->col_rooms) return FALSE;
 
 	/* Verify open space */
 	for (by = by1; by <= by2; by++)
-	{
 		for (bx = bx1; bx <= bx2; bx++)
-		{
-			if (dun->room_map[by][bx]) return (FALSE);
-		}
-	}
+			if (dun->room_map[by][bx])
+				return FALSE;
 
 	/* Get the location of the room */
 	y = ((by1 + by2 + 1) * BLOCK_HGT) / 2;
 	x = ((bx1 + bx2 + 1) * BLOCK_WID) / 2;
 
-	/* Build a room */
-	switch (typ)
-	{
-		/* Build an appropriate room */
-		case 9: build_type9(c, y, x); break;
-		case 8: build_type8(c, y, x); break;
-		case 7: build_type7(c, y, x); break;
-		case 6: build_type6(c, y, x); break;
-		case 5: build_type5(c, y, x); break;
-		case 4: build_type4(c, y, x); break;
-		case 3: build_type3(c, y, x); break;
-		case 2: build_type2(c, y, x); break;
-		case 1: build_type1(c, y, x); break;
-	}
+	/* Try to build a room */
+	if (!profile.builder(c, y, x)) return FALSE;
 
 	/* Save the room location */
 	if (dun->cent_n < CENT_MAX)
@@ -2743,15 +2802,11 @@ static bool room_build(struct cave *c, int by0, int bx0, int typ)
 
 	/* Reserve some blocks */
 	for (by = by1; by <= by2; by++)
-	{
 		for (bx = bx1; bx <= bx2; bx++)
-		{
 			dun->room_map[by][bx] = TRUE;
-		}
-	}
 
 	/* Count "crowded" rooms */
-	if ((typ == 5) || (typ == 6)) dun->crowded = TRUE;
+	if (profile.crowded) dun->crowded = TRUE;
 
 	/* Success */
 	return TRUE;
@@ -2764,7 +2819,7 @@ static bool room_build(struct cave *c, int by0, int bx0, int typ)
 static void cave_gen(struct cave *c, struct player *p)
 {
 	int i, j, k, l, y, x, y1, x1;
-	int by, bx;
+	int by, bx, key, rarity, tries;
 	int num_rooms, size_percent;
 
 	bool blocks_tried[MAX_ROOMS_ROW][MAX_ROOMS_COL];
@@ -2816,27 +2871,27 @@ static void cave_gen(struct cave *c, struct player *p)
 	dun->cent_n = 0;
 
 	/* Build some rooms */
-	i = 0;
-	while(i < num_rooms)
+	tries = 0;
+	while(tries < num_rooms)
 	{
-		i++;
+		tries++;
 
-		/* Pick a block for the room; j counts blocks we haven't tried */
+		/* Count the room blocks we haven't tried yet. */
 		j = 0;
 		for(by=0; by < dun->row_rooms; by++)
 			for(bx=0; bx < dun->col_rooms; bx++)
 				if (!blocks_tried[by][bx]) j++;
 
-		/* If we've tried all blocks we're done */
+		/* If we've tried all blocks we're done. */
 		if (j == 0) break;
 
-		/* OK, choose one of the j blocks we haven't tried. Then figure out */
-		/* which one that actually was */
+		/* Choose one of the j blocks we haven't tried, saving its bx and by
+		 * coordinates. */
 		k = randint0(j);
 		l = 0;
-		for(by=0; by < dun->row_rooms; by++)
+		for(by = 0; by < dun->row_rooms; by++)
 		{
-			for(bx=0; bx < dun->col_rooms; bx++)
+			for(bx = 0; bx < dun->col_rooms; bx++)
 			{
 				if (blocks_tried[by][bx]) continue;
 				if (l == k) break;
@@ -2844,81 +2899,38 @@ static void cave_gen(struct cave *c, struct player *p)
 			}
 			if (l == k) break;
 		}
-		
+
+		/* Mark that we are trying this block. */
 		blocks_tried[by][bx] = TRUE;
 
-		/* Move GV vault creation to the beginning */
-		/* There are two problems with GV creation, overlapping other rooms, 
-		 * and running off the boundaries.  Moving GV creation to the beginning 
-		 * automatically solves the overlapping problem, but makes
-		 * no claims that the block picked will fit on the map.  
-		 * The dungeon is 6 blocks tall and 18 wide and the size of a GV is 4 tall
-		 * and 6 wide.  That means a GV will fall out of bounds 63% of the time!
-		 * The following code should therefore make a greater vault frequencies like:
-		 * Dlevel         GV frequency
-		 * 100		18%
-		 * 90-99		16-18%
-		 * 80-89		10 -11%
-		 * 70-79		5.7 - 6.5%
-		 * 60-69		3.3 - 3.8%
-		 * 50-59		1.8 - 2.1%
-		 * and less than 1% below 50 */
-		
-		/* Only attempt a GV if you are on the first room */ 
-		if (i == 1 && randint0(DUN_UNUSUAL) < c->depth)
-		{
-			int i;
-			int numerator   = 2;
-			int denominator = 3;
+		/* Roll for random key (to be compared against a profile's cutoff) */
+		key = randint0(100);
 
-			/* For building greater vaults, we make a check based on depth:
-			 * At level 90 and above, you have a 2/3 chance of trying to build
-			 * a GV. At levels 80-89 you have a 4/9 chance, and so on... */
-			for(i = 90; i > c->depth; i -= 10)
-			{
-				numerator *= 2;
-				denominator *= 3;
-			}
-
-			/* Attempt to pass the depth check and build a GV */
-			if (randint0(denominator) < numerator && room_build(c, by, bx, 9))
-				continue;
+		/* We generate a rarity number to figure out how exotic to make the
+		 * room. This number has a depth/DUN_UNUSUAL chance of being > 0,
+		 * a depth^2/DUN_UNUSUAL^2 chance of being > 1, up to MAX_RARITY.
+		 */
+		i = 0;
+		rarity = 0;
+		while (i == rarity && i < MAX_RARITY) {
+			if (randint0(DUN_UNUSUAL) < c->depth) rarity++;
+			i++;
 		}
 
-		/* Attempt an "unusual" room */
-		if (randint0(DUN_UNUSUAL) < c->depth)
-		{
-			/* Roll for room type */
-			k = randint0(100);
-
-			/* Attempt a very unusual room */
-			if (randint0(DUN_UNUSUAL) < c->depth)
-			{
-				/* Type 8 -- Medium vault (10%) */
-				if ((k < 10) && room_build(c, by, bx, 8)) continue;
-
-				/* Type 7 -- Lesser vault (15%) */
-				if ((k < 25) && room_build(c, by, bx, 7)) continue;
-
-				/* Type 6 -- Monster pit (15%) */
-				if ((k < 40) && room_build(c, by, bx, 6)) continue;
-
-				/* Type 5 -- Monster nest (10%) */
-				if ((k < 50) && room_build(c, by, bx, 5)) continue;
-			}
-
-			/* Type 4 -- Large room (25%) */
-			if ((k < 25) && room_build(c, by, bx, 4)) continue;
-
-			/* Type 3 -- Cross room (25%) */
-			if ((k < 50) && room_build(c, by, bx, 3)) continue;
-
-			/* Type 2 -- Overlapping (50%) */
-			if ((k < 100) && room_build(c, by, bx, 2)) continue;
+		/* Once we have a key and a rarity, we iterate through out list of
+		 * room profiles looking for a match (whose cutoff > key and whose
+		 * rarity > this rarity). We try building the room, and if it works
+		 * then we are done with this iteration. We keep going until we find
+		 * a room that we can build successfully or we exhaust the profiles.
+         */
+		i = 0;
+		for (i = 0; i < NUM_ROOM_PROFILES; i++) {
+			struct room_profile profile = room_profiles[i];
+			if (profile.rarity > rarity) continue;
+			if (profile.cutoff <= k) continue;
+			
+			if (room_build(c, by, bx, profile)) break;
 		}
-
-		/* Attempt a trivial room */
-		if (room_build(c, by, bx, 1)) continue;
 	}
 
 	/* Special boundary walls -- Bottom */
