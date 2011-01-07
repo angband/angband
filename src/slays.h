@@ -57,13 +57,12 @@ struct flag_cache {
 
 
 /*** Functions ***/
-int dedup_slays(bitflag flags[OF_SIZE]);
+int dedup_slays(bitflag *flags);
 const struct slay *random_slay(bool brand);
 int list_slays(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE],
 	const char *desc[], const char *brand[], int mult[], bool dedup);
 void object_notice_slays(object_type *o_ptr, const bitflag mask[OF_SIZE]);
 void improve_attack_modifier(object_type *o_ptr, const monster_type
-	*m_ptr, const struct slay **best_s_ptr, bool lore, const bitflag
-	flags[OF_SIZE]);
+	*m_ptr, const struct slay **best_s_ptr, bool lore, bool known_only);
 
 #endif /* INCLUDED_SLAYS_H */

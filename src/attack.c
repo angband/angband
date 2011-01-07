@@ -261,11 +261,10 @@ bool py_attack_real(int y, int x)
 		/* Get the best attack from all slays or
 		 * brands on all non-launcher equipment */
 		for (i = INVEN_LEFT; i < INVEN_TOTAL; i++)
-			improve_attack_modifier(&p_ptr->inventory[i], m_ptr,
-					&best_s_ptr, TRUE, p_ptr->inventory[i].flags);
+			improve_attack_modifier(&p_ptr->inventory[i], m_ptr, &best_s_ptr,
+					TRUE, FALSE);
 
-		improve_attack_modifier(o_ptr, m_ptr, &best_s_ptr, TRUE,
-				o_ptr->flags);
+		improve_attack_modifier(o_ptr, m_ptr, &best_s_ptr, TRUE, FALSE);
 		if (best_s_ptr != NULL)
 			hit_verb = best_s_ptr->melee_verb;
 
@@ -581,9 +580,9 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 				cptr note_dies = " dies.";
 
 				improve_attack_modifier(o_ptr, m_ptr, &best_s_ptr, TRUE,
-					o_ptr->flags);
+						FALSE);
 				improve_attack_modifier(j_ptr, m_ptr, &best_s_ptr, TRUE,
-					j_ptr->flags);
+						FALSE);
 				if (best_s_ptr != NULL)
 					hit_verb = best_s_ptr->range_verb;
 
@@ -981,7 +980,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 
 				/* Apply special damage  - brought forward to fill in hit_verb XXX XXX XXX */
 				improve_attack_modifier(i_ptr, m_ptr, &best_s_ptr, TRUE,
-					i_ptr->flags);
+						FALSE);
 				if (best_s_ptr != NULL)
 				{
 					tdam *= best_s_ptr->mult;

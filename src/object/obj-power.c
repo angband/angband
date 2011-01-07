@@ -106,10 +106,10 @@ static s16b ability_power[25] =
 /*
  * Calculate the rating for a given slay combination
  */
-static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file,
-	const bitflag flags[OF_SIZE])
+static s32b slay_power(const object_type *o_ptr, int verbose, ang_file*
+	log_file, bool known)
 {
-	bitflag s_index[OF_SIZE];
+	bitflag s_index[OF_SIZE], f[OF_SIZE];
 	s32b sv = 0;
 	int i;
 	int mult;
@@ -118,8 +118,13 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 	monster_type *m_ptr;
 	monster_type monster_type_body;
 
+	if (known)
+		object_flags(o_ptr, f);
+	else
+		object_flags_known(o_ptr, f);
+
 	/* Combine the slay bytes into an index value */
-	of_copy(s_index, flags);
+	of_copy(s_index, f);
 	flags_mask(s_index, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END);
 
 	/* Look in the cache to see if we know this one yet */
@@ -149,7 +154,7 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 
 		/* Find the best multiplier against this monster */
 		improve_attack_modifier((object_type *)o_ptr, m_ptr, &best_s_ptr,
-				FALSE, flags);
+				FALSE, !known);
 		if (best_s_ptr)
 			mult = best_s_ptr->mult;
 
@@ -166,22 +171,22 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 		/* Write info about the slay combination and multiplier */
 		file_putf(log_file,"Slay multiplier for:");
 
-		if (of_has(flags, OF_SLAY_EVIL)) file_putf(log_file,"Evl ");
-		if (of_has(flags, OF_KILL_DRAGON)) file_putf(log_file,"XDr ");
-		if (of_has(flags, OF_KILL_DEMON)) file_putf(log_file,"XDm ");
-		if (of_has(flags, OF_KILL_UNDEAD)) file_putf(log_file,"XUn ");
-		if (of_has(flags, OF_SLAY_ANIMAL)) file_putf(log_file,"Ani ");
-		if (of_has(flags, OF_SLAY_UNDEAD)) file_putf(log_file,"Und ");
-		if (of_has(flags, OF_SLAY_DRAGON)) file_putf(log_file,"Drg ");
-		if (of_has(flags, OF_SLAY_DEMON)) file_putf(log_file,"Dmn ");
-		if (of_has(flags, OF_SLAY_TROLL)) file_putf(log_file,"Tro ");
-		if (of_has(flags, OF_SLAY_ORC)) file_putf(log_file,"Orc ");
-		if (of_has(flags, OF_SLAY_GIANT)) file_putf(log_file,"Gia ");
-		if (of_has(flags, OF_BRAND_ACID)) file_putf(log_file,"Acd ");
-		if (of_has(flags, OF_BRAND_ELEC)) file_putf(log_file,"Elc ");
-		if (of_has(flags, OF_BRAND_FIRE)) file_putf(log_file,"Fir ");
-		if (of_has(flags, OF_BRAND_COLD)) file_putf(log_file,"Cld ");
-		if (of_has(flags, OF_BRAND_POIS)) file_putf(log_file,"Poi ");
+		if (of_has(f, OF_SLAY_EVIL)) file_putf(log_file,"Evl ");
+		if (of_has(f, OF_KILL_DRAGON)) file_putf(log_file,"XDr ");
+		if (of_has(f, OF_KILL_DEMON)) file_putf(log_file,"XDm ");
+		if (of_has(f, OF_KILL_UNDEAD)) file_putf(log_file,"XUn ");
+		if (of_has(f, OF_SLAY_ANIMAL)) file_putf(log_file,"Ani ");
+		if (of_has(f, OF_SLAY_UNDEAD)) file_putf(log_file,"Und ");
+		if (of_has(f, OF_SLAY_DRAGON)) file_putf(log_file,"Drg ");
+		if (of_has(f, OF_SLAY_DEMON)) file_putf(log_file,"Dmn ");
+		if (of_has(f, OF_SLAY_TROLL)) file_putf(log_file,"Tro ");
+		if (of_has(f, OF_SLAY_ORC)) file_putf(log_file,"Orc ");
+		if (of_has(f, OF_SLAY_GIANT)) file_putf(log_file,"Gia ");
+		if (of_has(f, OF_BRAND_ACID)) file_putf(log_file,"Acd ");
+		if (of_has(f, OF_BRAND_ELEC)) file_putf(log_file,"Elc ");
+		if (of_has(f, OF_BRAND_FIRE)) file_putf(log_file,"Fir ");
+		if (of_has(f, OF_BRAND_COLD)) file_putf(log_file,"Cld ");
+		if (of_has(f, OF_BRAND_POIS)) file_putf(log_file,"Poi ");
 
 		file_putf(log_file,"sv is: %d\n", sv);
 		file_putf(log_file," and t_m_p is: %d \n", tot_mon_power);
@@ -333,7 +338,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			}
 
 			/* Apply the correct slay multiplier */
-			p = (p * slay_power(o_ptr, verbose, log_file, flags)) / tot_mon_power;
+			p = (p * slay_power(o_ptr, verbose, log_file, known)) / tot_mon_power;
 			LOG_PRINT1("Adjusted for slay power, total is %d\n", p);
 
 			if (o_ptr->weight < k_ptr->weight)
@@ -370,7 +375,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			LOG_PRINT1("Adding power for dam dice, total is %d\n", p);
 
 			/* Apply the correct slay multiplier */
-			p = (p * slay_power(o_ptr, verbose, log_file, flags)) / tot_mon_power;
+			p = (p * slay_power(o_ptr, verbose, log_file, known)) / tot_mon_power;
 			LOG_PRINT1("Adjusted for slay power, total is %d\n", p);
 
 			p += (o_ptr->to_d * DAMAGE_POWER / 2);
@@ -476,7 +481,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 
 			/* Apply the correct brand/slay multiplier */
 			p += (((2 * (o_ptr->to_d + RING_BRAND_DMG)
-				* slay_power(o_ptr, verbose, log_file, flags))
+				* slay_power(o_ptr, verbose, log_file, known))
 				/ tot_mon_power) - (2 * (o_ptr->to_d + RING_BRAND_DMG)));
 			LOG_PRINT1("Adjusted for brand/slay power, total is %d\n", p);
 
@@ -529,7 +534,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 
 			/* Apply the correct brand/slay multiplier */
 			p += (((2 * (o_ptr->to_d + RING_BRAND_DMG)
-				* slay_power(o_ptr, verbose, log_file, flags))
+				* slay_power(o_ptr, verbose, log_file, known))
 				/ tot_mon_power) - (2 * (o_ptr->to_d + RING_BRAND_DMG)));
 			LOG_PRINT1("Adjusted for brand/slay power, total is %d\n", p);
 
@@ -589,7 +594,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 
 			/* Apply the correct brand/slay multiplier */
 			p += (((2 * (o_ptr->to_d + RING_BRAND_DMG)
-				* slay_power(o_ptr, verbose, log_file, flags))
+				* slay_power(o_ptr, verbose, log_file, known))
 				/ tot_mon_power) - (2 * (o_ptr->to_d + RING_BRAND_DMG)));
 			LOG_PRINT1("Adjusted for brand/slay power, total is %d\n", p);
 

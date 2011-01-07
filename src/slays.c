@@ -169,21 +169,23 @@ void object_notice_slays(object_type *o_ptr, const bitflag mask[OF_SIZE])
  *  slay already known
  * \param lore is whether this is a real attack (where we update lore) or a
  *  simulation (where we don't)
- * \param flags is the set of flags to be considered - i.e. known or full
+ * \param known_only is whether we are using all the object flags, or only
+ * the ones we *already* know about
  */
 void improve_attack_modifier(object_type *o_ptr, const monster_type
-	*m_ptr, const struct slay **best_s_ptr, bool real, const bitflag
-	flags[OF_SIZE])
+	*m_ptr, const struct slay **best_s_ptr, bool real, bool known_only)
 {
 	const struct slay *s_ptr;
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
-	bitflag known_f[OF_SIZE], note_f[OF_SIZE];
+	bitflag f[OF_SIZE], known_f[OF_SIZE], note_f[OF_SIZE];
 
+	object_flags(o_ptr, f);
 	object_flags_known(o_ptr, known_f);
 
 	for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++) {
-		if (!of_has(flags, s_ptr->slay_flag)) continue;
+		if ((known_only && !of_has(known_f, s_ptr->slay_flag)) ||
+				(!known_only && !of_has(f, s_ptr->slay_flag))) continue;
 
 		/* In a real attack, learn about monster resistance or slay match if:
 		 * EITHER the slay flag on the object is known,
