@@ -39,7 +39,7 @@ const struct slay slay_table[] =
  * \param flags is the flagset from which to remove duplicates.
  * count is the number of dups removed.
  */
-int dedup_slays(bitflag flags[OF_SIZE])
+int dedup_slays(bitflag *flags)
 {
 	const struct slay *s_ptr, *t_ptr;
 	int count = 0;
@@ -69,15 +69,16 @@ int dedup_slays(bitflag flags[OF_SIZE])
  * Get a random slay (or brand).
  * We use randint1 because the first entry in slay_table is null.
  *
- * \param s_ptr is the slay we are returning.
  * \param brand is TRUE if we want a brand, FALSE if we want a slay.
  */
-void random_slay(const struct slay *s_ptr, bool brand)
+const struct slay *random_slay(bool brand)
 {
-	while ((brand && !s_ptr->brand) || (!brand && s_ptr->brand) ||
-			!s_ptr->index) {
+	const struct slay *s_ptr;
+	do {
 		s_ptr = &slay_table[randint1(SL_MAX - 1)];
-	}
+	} while ((brand && !s_ptr->brand) || (!brand && s_ptr->brand));
+
+	return s_ptr;
 }
 
 
@@ -87,9 +88,9 @@ void random_slay(const struct slay *s_ptr, bool brand)
  * count is the number of matches
  * \param flags is the flagset to analyse for matches
  * \param mask is the flagset against which to test
- * \param desc[] is the array of descriptions of matching slays
- * \param brand[] is the array of descriptions of brands
- * \param mult[] is the array of multipliers of those slays
+ * \param desc[] is the array of descriptions of matching slays - can be null
+ * \param brand[] is the array of descriptions of brands - can be null
+ * \param mult[] is the array of multipliers of those slays - can be null
  * \param dedup is whether or not to remove duplicates
  *
  * desc[] and mult[] must be >= SL_MAX in size
@@ -112,9 +113,13 @@ int list_slays(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE],
 	/* Collect slays */
 	for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++) {
 		if (of_has(f, s_ptr->slay_flag)) {
-			mult[count] = s_ptr->mult;
-			brand[count] = s_ptr->brand;
-			desc[count++] = s_ptr->desc;
+			if (mult)
+				mult[count] = s_ptr->mult;
+			if (brand)
+				brand[count] = s_ptr->brand;
+			if (desc)
+				desc[count] = s_ptr->desc;
+			count++;
 		}
 	}
 
@@ -167,7 +172,8 @@ void object_notice_slays(object_type *o_ptr, const bitflag mask[OF_SIZE])
  * \param flags is the set of flags to be considered - i.e. known or full
  */
 void improve_attack_modifier(object_type *o_ptr, const monster_type
-	*m_ptr, const struct slay **best_s_ptr, bool real, const bitflag flags[OF_SIZE])
+	*m_ptr, const struct slay **best_s_ptr, bool real, const bitflag
+	flags[OF_SIZE])
 {
 	const struct slay *s_ptr;
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];

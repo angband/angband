@@ -370,11 +370,10 @@ static bool describe_slays(textblock *tb, const bitflag flags[OF_SIZE],
 		int tval)
 {
 	bool printed = FALSE;
-	const char *slay_descs[SL_MAX] = { 0 }, *brand_descs[SL_MAX] = { 0 };
+	const char *slay_descs[SL_MAX] = { 0 };
 	bitflag slay_mask[OF_SIZE], kill_mask[OF_SIZE], brand_mask[OF_SIZE];
 	size_t count;
 	bool fulldesc;
-	int mult[SL_MAX] = { 0 };
 
 	flags_init(slay_mask, OF_SIZE, OF_SLAY_MASK, FLAG_END);
 	flags_init(kill_mask, OF_SIZE, OF_KILL_MASK, FLAG_END);
@@ -388,7 +387,7 @@ static bool describe_slays(textblock *tb, const bitflag flags[OF_SIZE],
 		fulldesc = TRUE;
 
 	/* Slays */
-	count = list_slays(flags, slay_mask, slay_descs, brand_descs, mult, TRUE);
+	count = list_slays(flags, slay_mask, slay_descs, NULL, NULL, TRUE);
 	if (count)
 	{
 		if (fulldesc)
@@ -400,7 +399,7 @@ static bool describe_slays(textblock *tb, const bitflag flags[OF_SIZE],
 	}
 
 	/* Kills */
-	count = list_slays(flags, kill_mask, slay_descs, brand_descs, mult, TRUE);
+	count = list_slays(flags, kill_mask, slay_descs, NULL, NULL, TRUE);
 	if (count)
 	{
 		if (fulldesc)
@@ -412,14 +411,14 @@ static bool describe_slays(textblock *tb, const bitflag flags[OF_SIZE],
 	}
 
 	/* Brands */
-	count = list_slays(flags, brand_mask, slay_descs, brand_descs, mult, TRUE);
+	count = list_slays(flags, brand_mask, NULL, slay_descs, NULL, TRUE);
 	if (count)
 	{
 		if (fulldesc)
 			textblock_append(tb, "It brands your melee attacks with ");
 		else
 			textblock_append(tb, "Branded with ");
-		info_out_list(tb, brand_descs, count);
+		info_out_list(tb, slay_descs, count);
 		printed = TRUE;
 	}
 
@@ -497,7 +496,7 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 {
 	bool full = mode & OINFO_FULL;
 
-	const char *desc[SL_MAX] = { 0 }, *brand_desc[SL_MAX] = { 0 };
+	const char *desc[SL_MAX] = { 0 };
 	int i;
 	int mult[SL_MAX];
 	int cnt, dam, total_dam, plus = 0;
@@ -682,7 +681,7 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 
 	flags_init(mask, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END);
 
-	cnt = list_slays(f, mask, desc, brand_desc, mult, TRUE);
+	cnt = list_slays(f, mask, desc, NULL, mult, TRUE);
 	for (i = 0; i < cnt; i++)
 	{
 		int melee_adj_mult = ammo ? 0 : 1; /* ammo mult adds fully, melee mult is times 1, so adds 1 less */

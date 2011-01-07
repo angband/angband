@@ -683,12 +683,11 @@ static void adjust_freqs(void)
  */
 static void parse_frequencies(void)
 {
-	int i, j, mult[SL_MAX];
+	int i, j;
 	const artifact_type *a_ptr;
 	object_kind *k_ptr;
 	s32b temp, temp2;
 	s16b k_idx;
-	const char *desc[SL_MAX] = { 0 }, *brand_desc[SL_MAX] = { 0 };
 	bitflag mask[OF_SIZE];
 
 	LOG_PRINT("\n****** BEGINNING GENERATION OF FREQUENCIES\n\n");
@@ -771,11 +770,10 @@ static void parse_frequencies(void)
 			{
 				/* We have some brands or slays - count them */
 				flags_init(mask, OF_SIZE, OF_BRAND_MASK, FLAG_END);
-				temp2 = list_slays(a_ptr->flags, mask, desc, brand_desc, mult,
-						FALSE);
+				temp2 = list_slays(a_ptr->flags, mask, NULL, NULL, NULL, FALSE);
 				flags_init(mask, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END);
-				temp = list_slays(a_ptr->flags, mask, desc, brand_desc, mult,
-						FALSE) - temp2;
+				temp = list_slays(a_ptr->flags, mask, NULL, NULL, NULL,	FALSE)
+						- temp2;
 
 				LOG_PRINT1("Adding %d for slays\n", temp);
 				LOG_PRINT1("Adding %d for brands\n", temp2);
@@ -897,11 +895,10 @@ static void parse_frequencies(void)
 			{
 				/* We have some brands or slays - count them */
                 flags_init(mask, OF_SIZE, OF_BRAND_MASK, FLAG_END);
-                temp2 = list_slays(a_ptr->flags, mask, desc, brand_desc, mult,
-						FALSE);
+                temp2 = list_slays(a_ptr->flags, mask, NULL, NULL, NULL, FALSE);
                 flags_init(mask, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END);
-                temp = list_slays(a_ptr->flags, mask, desc, brand_desc, mult,
-						FALSE) - temp2;
+                temp = list_slays(a_ptr->flags, mask, NULL, NULL, NULL, FALSE)
+						- temp2;
 
 				LOG_PRINT1("Adding %d for slays\n", temp);
 				LOG_PRINT1("Adding %d for brands\n", temp2);
@@ -1009,11 +1006,10 @@ static void parse_frequencies(void)
 			{
 				/* We have some brands or slays - count them */
                 flags_init(mask, OF_SIZE, OF_BRAND_MASK, FLAG_END);
-                temp2 = list_slays(a_ptr->flags, mask, desc, brand_desc, mult,
-						FALSE);
+                temp2 = list_slays(a_ptr->flags, mask, NULL, NULL, NULL, FALSE);
                 flags_init(mask, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END);
-                temp = list_slays(a_ptr->flags, mask, desc, brand_desc, mult,
-						FALSE) - temp2;
+                temp = list_slays(a_ptr->flags, mask, NULL, NULL, NULL, FALSE)
+						- temp2;
 
 				LOG_PRINT1("Adding %d for slays\n", temp);
 				LOG_PRINT1("Adding %d for brands\n", temp2);
@@ -1942,10 +1938,10 @@ static void add_high_resist(artifact_type *a_ptr)
 static void add_slay(artifact_type *a_ptr, bool brand)
 {
 	int count = 0;
-	struct slay *s_ptr = NULL;
+	const struct slay *s_ptr;
 
 	for(count = 0; count < MAX_TRIES; count++) {
-		random_slay(s_ptr, brand);
+		s_ptr = random_slay(brand);
 
 		if (!of_has(a_ptr->flags, s_ptr->slay_flag)) {
 			of_on(a_ptr->flags, s_ptr->slay_flag);
