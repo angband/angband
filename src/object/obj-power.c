@@ -146,6 +146,7 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file*
 	 */
 	for (i = 0; i < z_info->r_max; i++)
 	{
+		best_s_ptr = NULL;
 		mult = 1;
 		r_ptr = &r_info[i];
 		m_ptr = &monster_type_body;
