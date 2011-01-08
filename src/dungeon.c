@@ -247,7 +247,7 @@ static void recharged_notice(const object_type *o_ptr, bool all)
 	else if (o_ptr->note)
 	{
 		/* Find a '!' */
-		s = strchr(o_ptr->note, '!');
+		s = strchr(quark_str(o_ptr->note), '!');
 
 		/* Process notification request */
 		while (s)

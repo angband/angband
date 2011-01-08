@@ -161,7 +161,7 @@ void autoinsc_dump(ang_file *fff)
 		if (!k->note)
 			continue;
 		file_putf(fff, "# Autoinscription for %s\n", k->name);
-		file_putf(fff, "B:%d:%s\n\n", k->kidx, k->note);
+		file_putf(fff, "B:%d:%s\n\n", k->kidx, quark_str(k->note));
 	}
 
 	file_putf(fff, "\n");

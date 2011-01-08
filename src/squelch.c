@@ -133,7 +133,7 @@ void squelch_birth_init(void)
 const char *get_autoinscription(s16b kind_idx)
 {
 	struct object_kind *k = objkind_byid(kind_idx);
-	return k ? k->note : NULL;
+	return k ? quark_str(k->note) : NULL;
 }
 
 /* Put the autoinscription on an object */
@@ -154,9 +154,9 @@ int apply_autoinscription(object_type *o_ptr)
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 	if (note[0] != 0)
-		o_ptr->note = string_make(note);
+		o_ptr->note = quark_add(note);
 	else
-		o_ptr->note = NULL;
+		o_ptr->note = 0;
 
 	msg("You autoinscribe %s.", o_name);
 
@@ -169,8 +169,7 @@ int remove_autoinscription(s16b kind)
 	struct object_kind *k = objkind_byid(kind);
 	if (!k || !k->note)
 		return 0;
-	string_free(k->note);
-	k->note = NULL;
+	k->note = 0;
 	return 1;
 }
 
@@ -182,7 +181,7 @@ int add_autoinscription(s16b kind, cptr inscription)
 		return 0;
 	if (!inscription)
 		return remove_autoinscription(kind);
-	k->note = string_make(inscription);
+	k->note = quark_add(inscription);
 	return 1;
 }
 

@@ -263,7 +263,7 @@ void textui_obj_inscribe(object_type *o_ptr, int item)
 
 	/* Use old inscription */
 	if (o_ptr->note)
-		strnfmt(tmp, sizeof(tmp), "%s", o_ptr->note);
+		strnfmt(tmp, sizeof(tmp), "%s", quark_str(o_ptr->note));
 
 	/* Get a new inscription (possibly empty) */
 	if (get_string("Inscription: ", tmp, sizeof(tmp)))

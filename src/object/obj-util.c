@@ -510,7 +510,7 @@ int get_inscribed_ammo_slot(const object_type *o_ptr)
 {
 	char *s;
 	if (!o_ptr->note) return 0;
-	s = strchr(o_ptr->note, 'f');
+	s = strchr(quark_str(o_ptr->note), 'f');
 	if (!s || s[1] < '0' || s[1] > '9') return 0;
 
 	return QUIVER_START + (s[1] - '0');
@@ -1740,9 +1740,8 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
 	}
 
 	/* Require compatible inscriptions */
-	if (o_ptr->note && j_ptr->note)
-		if (!streq(o_ptr->note, j_ptr->note))
-			return FALSE;
+	if (o_ptr->note != j_ptr->note)
+		return FALSE;
 
 	/* They must be similar enough */
 	return (TRUE);
@@ -1777,12 +1776,8 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 	of_union(o_ptr->known_flags, j_ptr->known_flags);
 
 	/* Merge inscriptions */
-	if (j_ptr->note) {
-		if (o_ptr->note)
-			string_free(o_ptr->note);
-
+	if (j_ptr->note)
 		o_ptr->note = j_ptr->note;
-	}
 
 	/* Combine timeouts for rod stacking */
 	if (o_ptr->tval == TV_ROD)
@@ -1871,7 +1866,7 @@ void object_copy_amt(object_type *dst, object_type *src, int amt)
 
 	/* Modify quantity */
 	dst->number = amt;
-	dst->note = string_make(src->note);
+	dst->note = src->note;
 
 	/* 
 	 * If the item has charges/timeouts, set them to the correct level 
@@ -1905,7 +1900,7 @@ void object_split(struct object *dest, struct object *src, int amt)
 	/* Modify quantity */
 	dest->number = amt;
 	if (src->note)
-		dest->note = string_make(src->note);
+		dest->note = src->note;
 }
 
 /**
@@ -3408,10 +3403,9 @@ unsigned check_for_inscrip(const object_type *o_ptr, const char *inscrip)
 	unsigned i = 0;
 	const char *s;
 
-	if (!o_ptr->note)
-		return 0;
+	if (!o_ptr->note) return 0;
 
-	s = o_ptr->note;
+	s = quark_str(o_ptr->note);
 
 	do {
 		s = strstr(s, inscrip);
