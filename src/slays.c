@@ -231,7 +231,7 @@ void react_to_slay(bitflag *obj_flags, bitflag *mon_flags)
 	const struct slay *s_ptr;
 
 	for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++) {
-		if (of_has(obj_flags, s_ptr->slay_flag))
+		if (of_has(obj_flags, s_ptr->slay_flag) && s_ptr->monster_flag)
 			rf_on(mon_flags, s_ptr->monster_flag);
 	}
 }
