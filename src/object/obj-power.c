@@ -128,10 +128,7 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file*
 	flags_mask(s_index, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END);
 
 	/* Look in the cache to see if we know this one yet */
-	for (i = 0; !of_is_empty(slay_cache[i].flags); i++)
-		if (of_is_equal(s_index, slay_cache[i].flags)) break;
-
-	sv = slay_cache[i].value;
+	sv = check_slay_cache(s_index);
 
 	/* If it's cached (or there are no slays), return the value */
 	if (sv)
@@ -195,13 +192,8 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file*
 	}
 
 	/* Add to the cache */
-	for (i = 0; !of_is_empty(slay_cache[i].flags); i++)	{
-		if (of_is_equal(s_index, slay_cache[i].flags)) {
-			slay_cache[i].value = sv;
-			LOG_PRINT("Added to slay cache\n");
-			break;
-		}
-	}
+	if (fill_slay_cache(s_index, sv))
+		LOG_PRINT("Added to slay cache\n");
 
 	return sv;
 }

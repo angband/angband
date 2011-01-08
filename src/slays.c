@@ -235,3 +235,40 @@ void react_to_slay(bitflag *obj_flags, bitflag *mon_flags)
 			rf_on(mon_flags, s_ptr->monster_flag);
 	}
 }
+
+
+/**
+ * Check the slay cache for a combination of slays and return a slay value
+ * 
+ * \param index is the set of slay flags to look for
+ */
+s32b check_slay_cache(bitflag *index)
+{
+	int i;
+
+	for (i = 0; !of_is_empty(slay_cache[i].flags); i++)
+		if (of_is_equal(index, slay_cache[i].flags)) break;
+
+	return slay_cache[i].value;
+}
+
+
+/**
+ * Fill in a value in the slay cache. Return TRUE if a change is made.
+ *
+ * \param index is the set of slay flags whose value we are adding
+ * \param value is the value of the slay flags in index
+ */
+bool fill_slay_cache(bitflag *index, s32b value)
+{
+	int i;
+
+	for (i = 0; !of_is_empty(slay_cache[i].flags); i++) {
+		if (of_is_equal(index, slay_cache[i].flags)) {
+			slay_cache[i].value = value;
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
