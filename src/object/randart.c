@@ -1939,15 +1939,21 @@ static void add_slay(artifact_type *a_ptr, bool brand)
 {
 	int count = 0;
 	const struct slay *s_ptr;
+	bitflag mask[OF_SIZE];
+
+	if (brand)
+		flags_init(mask, OF_SIZE, OF_BRAND_MASK, FLAG_END);
+	else
+		flags_init(mask, OF_SIZE, OF_SLAY_MASK, OF_KILL_MASK, FLAG_END);
 
 	for(count = 0; count < MAX_TRIES; count++) {
-		s_ptr = random_slay(brand);
+		s_ptr = random_slay(mask);
 
 		if (!of_has(a_ptr->flags, s_ptr->object_flag)) {
 			of_on(a_ptr->flags, s_ptr->object_flag);
 
-			LOG_PRINT2("Adding %s: %s\n", brand ? "brand" : "slay",
-				brand ? s_ptr->brand : s_ptr->desc);
+			LOG_PRINT2("Adding %s: %s\n", s_ptr->brand ? "brand" : "slay",
+				s_ptr->brand ? s_ptr->brand : s_ptr->desc);
 			return;
 		}
 	}

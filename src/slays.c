@@ -69,14 +69,14 @@ int dedup_slays(bitflag *flags)
  * Get a random slay (or brand).
  * We use randint1 because the first entry in slay_table is null.
  *
- * \param brand is TRUE if we want a brand, FALSE if we want a slay.
+ * \param mask is the set of slays from which we are choosing.
  */
-const struct slay *random_slay(bool brand)
+const struct slay *random_slay(const bitflag mask[OF_SIZE])
 {
 	const struct slay *s_ptr;
 	do {
 		s_ptr = &slay_table[randint1(SL_MAX - 1)];
-	} while ((brand && !s_ptr->brand) || (!brand && s_ptr->brand));
+	} while (!of_has(mask, s_ptr->object_flag));
 
 	return s_ptr;
 }
