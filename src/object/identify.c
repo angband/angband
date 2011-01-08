@@ -24,6 +24,7 @@
 #include "object/tvalsval.h"
 #include "spells.h"
 #include "squelch.h"
+#include "slays.h"
 
 /** Time last item was wielded */
 s32b object_last_wield;
@@ -611,36 +612,6 @@ void object_notice_effect(object_type *o_ptr)
 }
 
 
-/*
- * Notice slays on a particular object.
- *
- * \param known_f0 is the list of flags to notice
- */
-void object_notice_slay(object_type *o_ptr, int flag)
-{
-	const slay_t *s_ptr;
-	bool learned = object_notice_flag(o_ptr, flag);
-
-	/* if you learn a slay, learn the ego and print a message */
-	if (EASY_LEARN && learned)
-	{
-		object_notice_ego(o_ptr);
-
-		for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
-		{
-			if (s_ptr->slay_flag == flag)
-			{
-				char o_name[40];
-				object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
-				msg("Your %s %s!", o_name, s_ptr->active_verb);
-			}
-		}
-	}
-
-	object_check_for_ident(o_ptr);
-}
-
-
 static void object_notice_defence_plusses(object_type *o_ptr)
 {
 	if (!o_ptr->k_idx) return;
@@ -817,7 +788,6 @@ void object_notice_on_wield(object_type *o_ptr)
 {
 	bitflag f[OF_SIZE], obvious_mask[OF_SIZE];
 	bool obvious = FALSE;
-	const slay_t *s_ptr;
 
 	flags_init(obvious_mask, OF_SIZE, OF_OBVIOUS_MASK, FLAG_END);
 
@@ -832,7 +802,7 @@ void object_notice_on_wield(object_type *o_ptr)
 	if (object_add_ident_flags(o_ptr, IDENT_WORN))
 		object_check_for_ident(o_ptr);
 
-	/* CC: may wish to be more subtle about this once we have ego types
+	/* CC: may wish to be more subtle about this once we have ego lights
 	 * with multiple pvals */
 	if (obj_is_light(o_ptr) && ego_item_p(o_ptr))
 		object_notice_ego(o_ptr);
@@ -867,7 +837,6 @@ void object_notice_on_wield(object_type *o_ptr)
 
 	/* XXX Eddie should these next NOT call object_check_for_ident due to worries about repairing? */
 
-
 	/* XXX Eddie this is a small hack, but jewelry with anything noticeable really is obvious */
 	/* XXX Eddie learn =soulkeeping vs =bodykeeping when notice sustain_str */
 	if (object_is_jewelry(o_ptr))
@@ -885,16 +854,8 @@ void object_notice_on_wield(object_type *o_ptr)
 
 	if (!obvious) return;
 
-	/* Messages */
-	for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
-	{
-		if (of_has(f, s_ptr->slay_flag) && s_ptr->brand)
-		{
-			char o_name[40];
-			object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
-			msg("Your %s %s!", o_name, s_ptr->active_verb);
-		}
-	}
+	/* Notice any obvious brands or slays */
+	object_notice_slays(o_ptr, obvious_mask);
 
 	/* XXX Eddie need to add stealth here, also need to assert/double-check everything is covered */
 	if (of_has(f, OF_STR))
@@ -935,11 +896,6 @@ void object_notice_on_wield(object_type *o_ptr)
 
 	/* WARNING -- masking f by obvious mask -- this should be at the end of this function */
 	flags_mask(f, OF_SIZE, OF_OBVIOUS_MASK, FLAG_END);
-
-	/* learn the ego on any obvious brand or slay */
-	if (EASY_LEARN && ego_item_p(o_ptr) && obvious &&
-	    flags_test(f, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END))
-		object_notice_ego(o_ptr);
 
 	/* Remember the flags */
 	object_notice_sensing(o_ptr);

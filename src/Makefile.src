@@ -25,6 +25,7 @@ HEADERS = \
 	main.h \
 	option.h \
 	parser.h \
+	slays.h \
 	types.h \
 	ui-event.h \
 	ui.h \
@@ -107,6 +108,7 @@ ANGFILES = \
 	signals.o \
 	save.o \
 	savefile.o \
+	slays.o \
 	spells1.o \
 	spells2.o \
 	squelch.o \

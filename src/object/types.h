@@ -259,29 +259,5 @@ typedef struct flavor {
 	char x_char;    /* Desired flavor character */
 } flavor_type;
 
-/*
- * Slay type.  Used for the global table of brands/slays and their effects.
- */
-typedef struct
-{
-	int slay_flag;		/* Object flag for the slay */
-	int monster_flag;	/* Which monster flag(s) make it vulnerable */
-	int resist_flag;	/* Which monster flag(s) make it resist */
-	int mult;		/* Slay multiplier */
-	const char *range_verb;	/* attack verb for ranged hits */
-	const char *melee_verb; /* attack verb for melee hits */
-	const char *active_verb; /* verb for when the object is active */
-	const char *desc;	/* description of vulnerable creatures */
-	const char *brand;	/* name of brand */
-} slay_t;
-
-/*
- * Slay cache. Used for looking up slay values in obj-power.c
- */
-typedef struct
-{
-	bitflag flags[OF_SIZE];   /* Combination of slays and brands */
-	s32b value;            /* Value of this combination */
-} flag_cache;
 
 #endif /* INCLUDED_OBJECT_TYPES_H */
