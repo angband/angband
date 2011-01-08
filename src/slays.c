@@ -215,7 +215,8 @@ void improve_attack_modifier(object_type *o_ptr, const monster_type
 
 		/* If the monster doesn't resist or the slay flag matches */
 		if ((s_ptr->brand && !rf_has(r_ptr->flags, s_ptr->resist_flag)) ||
-				rf_has(r_ptr->flags, s_ptr->monster_flag)) {
+				(s_ptr->monster_flag && rf_has(r_ptr->flags,
+				s_ptr->monster_flag))) {
 
 			/* compare multipliers to determine best attack */
 			if ((*best_s_ptr == NULL) || ((*best_s_ptr)->mult < s_ptr->mult))

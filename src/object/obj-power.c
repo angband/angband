@@ -111,12 +111,14 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file*
 {
 	bitflag s_index[OF_SIZE], f[OF_SIZE];
 	s32b sv = 0;
-	int i;
+	int i, j;
 	int mult;
 	const struct slay *best_s_ptr = NULL;
 	monster_race *r_ptr;
 	monster_type *m_ptr;
 	monster_type monster_type_body;
+	const char *desc[SL_MAX] = { 0 }, *brand[SL_MAX] = { 0 };
+	int s_mult[SL_MAX] = { 0 };
 
 	if (known)
 		object_flags(o_ptr, f);
@@ -166,29 +168,26 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file*
 	 */
 	if (verbose) {
 		/* Write info about the slay combination and multiplier */
-		file_putf(log_file,"Slay multiplier for:");
+		LOG_PRINT("Slay multiplier for: ");
 
-		if (of_has(f, OF_SLAY_EVIL)) file_putf(log_file,"Evl ");
-		if (of_has(f, OF_KILL_DRAGON)) file_putf(log_file,"XDr ");
-		if (of_has(f, OF_KILL_DEMON)) file_putf(log_file,"XDm ");
-		if (of_has(f, OF_KILL_UNDEAD)) file_putf(log_file,"XUn ");
-		if (of_has(f, OF_SLAY_ANIMAL)) file_putf(log_file,"Ani ");
-		if (of_has(f, OF_SLAY_UNDEAD)) file_putf(log_file,"Und ");
-		if (of_has(f, OF_SLAY_DRAGON)) file_putf(log_file,"Drg ");
-		if (of_has(f, OF_SLAY_DEMON)) file_putf(log_file,"Dmn ");
-		if (of_has(f, OF_SLAY_TROLL)) file_putf(log_file,"Tro ");
-		if (of_has(f, OF_SLAY_ORC)) file_putf(log_file,"Orc ");
-		if (of_has(f, OF_SLAY_GIANT)) file_putf(log_file,"Gia ");
-		if (of_has(f, OF_BRAND_ACID)) file_putf(log_file,"Acd ");
-		if (of_has(f, OF_BRAND_ELEC)) file_putf(log_file,"Elc ");
-		if (of_has(f, OF_BRAND_FIRE)) file_putf(log_file,"Fir ");
-		if (of_has(f, OF_BRAND_COLD)) file_putf(log_file,"Cld ");
-		if (of_has(f, OF_BRAND_POIS)) file_putf(log_file,"Poi ");
+		j = list_slays(s_index, s_index, desc, brand, s_mult, FALSE);
 
-		file_putf(log_file,"sv is: %d\n", sv);
-		file_putf(log_file," and t_m_p is: %d \n", tot_mon_power);
+		for (i = 0; i < j; i++) {
+			if (brand[i]) {
+				LOG_PRINT(brand[i]);
+			}
+			else {
+				LOG_PRINT(desc[i]);
+				LOG_PRINT1("x%d", s_mult[i]); 
+			}
 
-		file_putf(log_file,"times 1000 is: %d\n", (1000 * sv) / tot_mon_power);
+			LOG_PRINT(" ");
+		}
+
+		LOG_PRINT1("\nsv is: %d\n", sv);
+		LOG_PRINT1(" and t_m_p is: %d \n", tot_mon_power);
+
+		LOG_PRINT1("times 1000 is: %d\n", (1000 * sv) / tot_mon_power);
 	}
 
 	/* Add to the cache */
