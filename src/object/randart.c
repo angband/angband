@@ -1943,8 +1943,8 @@ static void add_slay(artifact_type *a_ptr, bool brand)
 	for(count = 0; count < MAX_TRIES; count++) {
 		s_ptr = random_slay(brand);
 
-		if (!of_has(a_ptr->flags, s_ptr->slay_flag)) {
-			of_on(a_ptr->flags, s_ptr->slay_flag);
+		if (!of_has(a_ptr->flags, s_ptr->object_flag)) {
+			of_on(a_ptr->flags, s_ptr->object_flag);
 
 			LOG_PRINT2("Adding %s: %s\n", brand ? "brand" : "slay",
 				brand ? s_ptr->brand : s_ptr->desc);

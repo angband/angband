@@ -45,17 +45,17 @@ int dedup_slays(bitflag *flags)
 	int count = 0;
 
 	for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++) {
-		if (of_has(flags, s_ptr->slay_flag)) {
+		if (of_has(flags, s_ptr->object_flag)) {
 			for (t_ptr = s_ptr; t_ptr->index < SL_MAX; t_ptr++) {
-				if (of_has(flags, t_ptr->slay_flag) &&
+				if (of_has(flags, t_ptr->object_flag) &&
 						(t_ptr->monster_flag == s_ptr->monster_flag) &&
 						(t_ptr->resist_flag == s_ptr->resist_flag) &&
 						(t_ptr->mult != s_ptr->mult)) {
 					count++;
 					if (t_ptr->mult > s_ptr->mult)
-						of_off(flags, s_ptr->slay_flag);
+						of_off(flags, s_ptr->object_flag);
 					else
-						of_off(flags, t_ptr->slay_flag);
+						of_off(flags, t_ptr->object_flag);
 				}
 			}
 		}
@@ -93,7 +93,7 @@ const struct slay *random_slay(bool brand)
  * \param mult[] is the array of multipliers of those slays - can be null
  * \param dedup is whether or not to remove duplicates
  *
- * desc[] and mult[] must be >= SL_MAX in size
+ * desc[], brand[] and mult[] must be >= SL_MAX in size
  */
 int list_slays(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE],
 	const char *desc[], const char *brand[], int mult[], bool dedup)
@@ -112,7 +112,7 @@ int list_slays(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE],
 
 	/* Collect slays */
 	for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++) {
-		if (of_has(f, s_ptr->slay_flag)) {
+		if (of_has(f, s_ptr->object_flag)) {
 			if (mult)
 				mult[count] = s_ptr->mult;
 			if (brand)
@@ -146,8 +146,8 @@ void object_notice_slays(object_type *o_ptr, const bitflag mask[OF_SIZE])
 
 	/* if you learn a slay, learn the ego and print a message */
 	for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++) {
-		if (of_has(f, s_ptr->slay_flag)) {
-			learned = object_notice_flag(o_ptr, s_ptr->slay_flag);
+		if (of_has(f, s_ptr->object_flag)) {
+			learned = object_notice_flag(o_ptr, s_ptr->object_flag);
 			if (EASY_LEARN && learned) {
 				object_notice_ego(o_ptr);
 				object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
@@ -184,21 +184,21 @@ void improve_attack_modifier(object_type *o_ptr, const monster_type
 	object_flags_known(o_ptr, known_f);
 
 	for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++) {
-		if ((known_only && !of_has(known_f, s_ptr->slay_flag)) ||
-				(!known_only && !of_has(f, s_ptr->slay_flag))) continue;
+		if ((known_only && !of_has(known_f, s_ptr->object_flag)) ||
+				(!known_only && !of_has(f, s_ptr->object_flag))) continue;
 
 		/* In a real attack, learn about monster resistance or slay match if:
 		 * EITHER the slay flag on the object is known,
 		 * OR the monster is vulnerable to the slay/brand
 		 */
-		if (real && (of_has(known_f, s_ptr->slay_flag) || (s_ptr->monster_flag
+		if (real && (of_has(known_f, s_ptr->object_flag) || (s_ptr->monster_flag
 				&& rf_has(r_ptr->flags,	s_ptr->monster_flag)) ||
 				(s_ptr->resist_flag && !rf_has(r_ptr->flags,
 				s_ptr->resist_flag)))) {
 
 			/* notice any brand or slay that would affect monster */
 			of_wipe(note_f);
-			of_on(note_f, s_ptr->slay_flag);
+			of_on(note_f, s_ptr->object_flag);
 			object_notice_slays(o_ptr, note_f);
 
 			if (m_ptr->ml && s_ptr->monster_flag)
@@ -231,7 +231,7 @@ void react_to_slay(bitflag *obj_flags, bitflag *mon_flags)
 	const struct slay *s_ptr;
 
 	for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++) {
-		if (of_has(obj_flags, s_ptr->slay_flag) && s_ptr->monster_flag)
+		if (of_has(obj_flags, s_ptr->object_flag) && s_ptr->monster_flag)
 			rf_on(mon_flags, s_ptr->monster_flag);
 	}
 }
