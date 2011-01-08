@@ -11,49 +11,60 @@ void place_random_door(struct cave *c, int y, int x);
 
 extern struct vault *random_vault(void);
 
+struct tunnel_profile {
+	const char *name;
+    int rnd; /* % chance of choosing random direction */
+    int chg; /* % chance of changing direction */
+    int con; /* % chance of extra tunneling */
+    int pen; /* % chance of placing doors at room entrances */
+    int jct; /* % chance of doors at tunnel junctions */
+};
 
-struct dungeon_profile {
+struct streamer_profile {
+	const char *name;
+    int den; /* Density of streamers */    
+    int rng; /* Width of streamers */
+    int mag; /* Number of magma streamers */
+    int mc; /* 1/chance of treasure per magma */
+    int qua; /* Number of quartz streamers */
+    int qc; /* 1/chance of treasure per quartz */
+};
+
+/*
+* room_builder is a function pointer which builds rooms in the cave given
+* anchor coordinates.
+*/
+typedef void (*cave_builder) (struct cave *c, struct player *p);
+
+struct cave_profile {
+	const char *name;
+	  	
+	/* Function used to build the level */
+	cave_builder builder;
+
     /* Number of rooms to attempt */
-    int DUN_ROOMS;
+    int dun_rooms;
+
     /* Level/chance of unusual room */
-    int DUN_UNUSUAL;
+    int dun_unusual;
 
-    /* Chance of random direction */
-    int DUN_TUN_RND;
-    /* Chance of changing direction */
-    int DUN_TUN_CHG;
-	  	/* Chance of extra tunneling */
-    int DUN_TUN_CON;
-    /* Chance of doors at room entrances */
-    int DUN_TUN_PEN;
-	  	/* Chance of doors at tunnel junctions */
-    int DUN_TUN_JCT;
-    
-    /* Density of streamers */
-    int DUN_STR_DEN;
-    /* Width of streamers */
-    int DUN_STR_RNG;
-    /* Number of magma streamers */
-    int DUN_STR_MAG;
-    /* 1/chance of treasure per magma */
-    int DUN_STR_MC;
-    /* Number of quartz streamers */
-    int DUN_STR_QUA;
-    /* 1/chance of treasure per quartz */
-    int DUN_STR_QC;
+	/* Max number of rarity levels used in room generation */
+    int max_rarity;
 
-    int GV_PROFILE;
-    int MAX_RARITY;
+	/* Profiles for building tunnels and streamers */
+	const struct tunnel_profile tun;
+	const struct streamer_profile str;
 
+	/* Profiles used to build rooms */
     int n_room_profiles;
     const struct room_profile *room_profiles;
 };
 
 
 /*
- * room_builder is a function pointer which builds rooms in the cave given
- * anchor coordinates.
- */
+* room_builder is a function pointer which builds rooms in the cave given
+* anchor coordinates.
+*/
 typedef bool (*room_builder) (struct cave *c, int y0, int x0);
 
 
@@ -62,26 +73,25 @@ typedef bool (*room_builder) (struct cave *c, int y0, int x0);
  * needed to generate the room, including the funciton used to build it.
  */
 struct room_profile {
-	  	const char *name;
+	const char *name;
 	  	
-	  	/* the function used to build the room */
-	  	room_builder builder;
-
-	  	/* required size in blocks */
-	  	int height, width;
-
-	  	/* minimum level */
-	  	int level;
-
-	  	/* whether the room is crowded or not */
-	  	bool crowded;
-
-	  	/* how unusual the room is */
-	  	int rarity;
-
-	  	/* used to decide which room of a given rarity to generate */
-	  	int cutoff;
+	/* the function used to build the room */
+	room_builder builder;
+	
+	/* required size in blocks */
+	int height, width;
+	
+	/* minimum level */
+	int level;
+	
+	/* whether the room is crowded or not */
+	bool crowded;
+	
+	/* how unusual the room is */
+	int rarity;
+	
+	/* used to decide which room of a given rarity to generate */
+	int cutoff;
 };
-
 
 #endif /* !GENERATE_H */

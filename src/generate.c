@@ -174,7 +174,7 @@
 
 struct dun_data {
 	/* The profile used to generate the level */
-	struct dungeon_profile profile;
+	struct cave_profile profile;
 
 	/* Array of centers of rooms */
 	int cent_n;
@@ -205,6 +205,8 @@ struct dun_data {
 
 static struct dun_data *dun;
 
+static void cave_gen(struct cave *c, struct player *p);
+
 static bool build_type1(struct cave *c, int y0, int x0);
 static bool build_type2(struct cave *c, int y0, int x0);
 static bool build_type3(struct cave *c, int y0, int x0);
@@ -217,65 +219,91 @@ static bool build_type9(struct cave *c, int y0, int x0);
 
 static bool alloc_object(struct cave *c, int set, int typ, int depth);
 
-static void room_log(const char *fmt, const char *s) {
-	if (OPT(cheat_room)) msg(fmt, s);
-}
+#define ROOM_LOG(fmt, ...) if (OPT(cheat_room)) msg(fmt, __VA_ARGS__);
+
 
 /*
  * TODO: write me!
  */
 /* greater vaults' rarity is artificially low due to other constraints */
-#define GV_PROFILE 0
 #define MAX_RARITY 5
 #define NUM_ROOM_PROFILES 9
+
+/* name function width height min-depth crowded? rarity %cutoff */
 static const struct room_profile room_profiles[NUM_ROOM_PROFILES] = {
-	/* name function width height min-depth crowded? rarity cutoff */
+	/* greater vaults only have rarity 1 but they have other checks */
 	{"greater vault", build_type9, 4, 6, 10, FALSE, 1, 100},
+
+	/* very rare rooms (rarity=2) */
 	{"medium vault",  build_type8, 2, 2, 5, FALSE, 2, 10},
 	{"lesser vault",  build_type7, 2, 3, 5, FALSE, 2, 25},
 	{"monster pit",   build_type6, 1, 3, 5, TRUE, 2, 40},
 	{"monster nest",  build_type5, 1, 3, 5, TRUE, 2, 50},
+
+	/* unusual rooms (rarity=1) */
 	{"large room",    build_type4, 1, 3, 3, FALSE, 1, 25},
 	{"crossed room",  build_type3, 1, 3, 3, FALSE, 1, 50},
 	{"overlap room",  build_type2, 1, 3, 1, FALSE, 1, 100},
+
+	/* normal rooms */
 	{"simple room",   build_type1, 1, 3, 1, FALSE, 0, 100}
 };
 
 
-#define NUM_DUN_PROFILES 1
-/* ROOMS UNUSUAL*/
-/* TUN_RND TUN_CHG TUN_CON TUN_PEN TUN_JCT */
-/* STR_DEN STR_RNG STR_MAG STR_MC STR_QUA STR_QC */
-/* GV_PROFILE MAX_RARITY n_room_profiles*/
-/* room_profiles */
-static const struct dungeon_profile dun_profiles[NUM_DUN_PROFILES] = {
+#define NUM_CAVE_PROFILES 1
+
+/* name builder nrooms unusual */
+/* tunnel-profile */
+/* streamer-profile */
+/* max-rarity n-room_profiles room-profiles */
+static const struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
 	{
-		50, 200,
-		10, 30, 15, 25, 90,
-		5, 2, 3, 90, 2, 40,
-		0, 5, 9,
-		room_profiles
+		"default", cave_gen, 50, 200, 2,
+		{"default", 10, 30, 15, 25, 90},
+		{"default", 5, 2, 3, 90, 2, 40},
+		9, room_profiles
 	}
 };
 
+/**
+ * Locate an empty square for 0 <= y < ymax, 0 <= x < xmax.
+ *
+ * This function will crash if it can't find an empty square after 100M
+ * attempts. If there is a chance that there isn't an empty square available
+ * you should do something else.
+ *
+ * TODO: Rewrite this function so that it tries every cave location exactly
+ * once in a random order and only crashes if there are no empty squares.
+ */
 static void find_empty(struct cave *c, int *y, int ymax, int *x, int xmax) {
-	while (TRUE) {
+	int tries = 0;
+	while (tries < 100000000) {
 		*y = randint0(ymax);
 		*x = randint0(xmax);
 		if (cave_isempty(c, *y, *x)) return;
+		tries++;
 	}
+	quit_fmt("find_empty <%d, %d> failed", ymax, xmax);
 }
 
+/**
+ * Locate an empty square for y1 <= y <= y2, x1 <= x <= x2.
+ *
+ * This function has similar behavior as find_empty() and the same caveats.
+ */
 static void find_empty_range(struct cave *c, int *y, int y1, int y2, int *x, int x1, int x2) {
-	while (TRUE) {
+	int tries = 0;
+	while (tries < 100000000) {
 		*y = rand_range(y1, y2);
 		*x = rand_range(x1, x2);
 		if (cave_isempty(c, *y, *x)) return;
+		tries++;
 	}
+	quit_fmt("find_empty_range <%d, %d, %d, %d> failed", y1, y2, x1, x2);
 }
 
-/*
- * Always picks a correct direction
+/**
+ * Given two points, pick a valid cardinal direction from one to the other.
  */
 static void correct_dir(int *rdir, int *cdir, int y1, int x1, int y2, int x2) {
 	/* Extract vertical and horizontal directions */
@@ -293,8 +321,8 @@ static void correct_dir(int *rdir, int *cdir, int y1, int x1, int y2, int x2) {
 }
 
 
-/*
- * Pick a random direction
+/**
+ * Pick a random cardinal direction.
  */
 static void rand_dir(int *rdir, int *cdir) {
 	/* Pick a random direction and extract the dy/dx components */
@@ -304,8 +332,8 @@ static void rand_dir(int *rdir, int *cdir) {
 }
 
 
-/*
- * Returns random co-ordinates for player/monster/object
+/**
+ * Place the player at a random starting location.
  */
 static void new_player_spot(struct cave *c, struct player *p) {
 	int y, x;
@@ -329,6 +357,9 @@ static void new_player_spot(struct cave *c, struct player *p) {
 	player_place(c, p, y, x);
 }
 
+/**
+ * Return how many cardinal directions around (x, y) contain walls.
+ */
 static int next_to_walls(struct cave *c, int y, int x) {
 	int k = 0;
 
@@ -342,10 +373,16 @@ static int next_to_walls(struct cave *c, int y, int x) {
 	return k;
 }
 
+/**
+ * Place rubble at (x, y).
+ */
 static void place_rubble(struct cave *c, int y, int x) {
 	cave_set_feat(c, y, x, FEAT_RUBBLE);
 }
 
+/**
+ * Place stairs (of the requested type 'feat' if allowed) at (x, y).
+ */
 static void place_stairs(struct cave *c, int y, int x, int feat) {
 	if (!c->depth)
 		/* All stairs from town go down */
@@ -358,34 +395,24 @@ static void place_stairs(struct cave *c, int y, int x, int feat) {
 		cave_set_feat(c, y, x, feat);
 }
 
-static void place_up_stairs(struct cave *c, int y, int x) {
-	cave_set_feat(c, y, x, FEAT_LESS);
-}
-
-static void place_down_stairs(struct cave *c, int y, int x) {
-	cave_set_feat(c, y, x, FEAT_MORE);
-}
-
+/**
+ * Place random stairs at (x, y).
+ */
 static void place_random_stairs(struct cave *c, int y, int x) {
-	if (!cave_canputitem(c, y, x))
-		return;
-	else if (!c->depth)
-		place_down_stairs(c, y, x);
-	else if (is_quest(c->depth) || (c->depth >= MAX_DEPTH-1))
-		place_up_stairs(c, y, x);
-	else if (randint0(100) < 50)
-		place_down_stairs(c, y, x);
-	else
-		place_up_stairs(c, y, x);
+	int feat = randint0(100) < 50 ? FEAT_LESS : FEAT_MORE;
+	if (cave_canputitem(c, y, x))
+		place_stairs(c, y, x, feat);
 }
 
+/**
+ * Place a random object at (x, y).
+ */
 void place_object(struct cave *c, int y, int x, int level, bool good, bool great) {
 	object_type otype;
 
 	assert(cave_in_bounds(c, y, x));
 
-	if (!cave_canputitem(c, y, x))
-		return;
+	if (!cave_canputitem(c, y, x)) return;
 
 	object_wipe(&otype);
 	if (make_object(c, &otype, level, good, great)) {
@@ -400,6 +427,9 @@ void place_object(struct cave *c, int y, int x, int level, bool good, bool great
 	}
 }
 
+/**
+ * Place a random amount of gold at (x, y).
+ */
 void place_gold(struct cave *c, int y, int x, int level) {
 	object_type *i_ptr;
 	object_type object_type_body;
@@ -414,10 +444,16 @@ void place_gold(struct cave *c, int y, int x, int level) {
 	floor_carry(c, y, x, i_ptr);
 }
 
+/**
+ * Place a secret door at (x, y).
+ */
 void place_secret_door(struct cave *c, int y, int x) {
 	cave_set_feat(c, y, x, FEAT_SECRET);
 }
 
+/**
+ * Place a closed door at (x, y).
+ */
 void place_closed_door(struct cave *c, int y, int x) {
 	int tmp = randint0(400);
 
@@ -429,6 +465,11 @@ void place_closed_door(struct cave *c, int y, int x) {
 		cave_set_feat(c, y, x, FEAT_DOOR_HEAD + 0x08 + randint0(8));
 }
 
+/**
+ * Place a random door at (x, y).
+ *
+ * The door generated could be closed, open, broken, or secret.
+ */
 void place_random_door(struct cave *c, int y, int x) {
 	int tmp = randint0(1000);
 
@@ -442,11 +483,8 @@ void place_random_door(struct cave *c, int y, int x) {
 		place_closed_door(c, y, x);
 }
 
-/*
- * Places some staircases near walls
- * XXX: Might loop infinitely if there are no free spaces for stairs. This
- * method is stupid - we should just collect all the plausible places and
- * allocate stairs into those in random order. Fix me!
+/**
+ * Place some staircases near walls.
  */
 static void alloc_stairs(struct cave *c, int feat, int num, int walls) {
 	int y, x, i, j, done;
@@ -472,8 +510,10 @@ static void alloc_stairs(struct cave *c, int feat, int num, int walls) {
 }
 
 
-/*
- * Allocates some objects (using "place" and "type")
+/**
+ * Allocates 'num' random objects in the dungeon.
+ *
+ * See alloc_object() for more information.
  */
 static void alloc_objects(struct cave *c, int set, int typ, int num, int depth) {
 	int k;
@@ -482,6 +522,12 @@ static void alloc_objects(struct cave *c, int set, int typ, int num, int depth) 
 }
 
 
+/**
+ * Allocates a single random object in the dungeon.
+ *
+ * 'set' controls where the object is placed (corridor, room, either).
+ * 'typ' conrols the kind of object (rubble, trap, gold, item).
+ */
 static bool alloc_object(struct cave *c, int set, int typ, int depth) {
 	int x, y;
 	int tries = 0;
@@ -515,16 +561,15 @@ static bool alloc_object(struct cave *c, int set, int typ, int depth) {
 }
 
 
-/*
- * Places "streamers" of rock through dungeon
+/**
+ * Places a streamer of rock through dungeon.
  *
- * Note that their are actually six different terrain features used
- * to represent streamers.  Three each of magma and quartz, one for
- * basic vein, one with hidden gold, and one with known gold.  The
- * hidden gold types are currently unused.
+ * Note that their are actually six different terrain features used to
+ * represent streamers. Three each of magma and quartz, one for basic vein, one
+ * with hidden gold, and one with known gold. The hidden gold types are
+ * currently unused.
  */
-static void build_streamer(struct cave *c, int feat, int chance)
-{
+static void build_streamer(struct cave *c, int feat, int chance) {
 	int i, tx, ty;
 	int y, x, dir;
 
@@ -532,7 +577,7 @@ static void build_streamer(struct cave *c, int feat, int chance)
 	y = rand_spread(DUNGEON_HGT / 2, 10);
 	x = rand_spread(DUNGEON_WID / 2, 15);
 
-	/* Choose a random compass direction */
+	/* Choose a random direction */
 	dir = ddd[randint0(8)];
 
 	/* Place streamer into dungeon */
@@ -571,12 +616,10 @@ static void build_streamer(struct cave *c, int feat, int chance)
 }
 
 
-/*
- * Create up to "num" objects near the given coordinates
- * Only really called by some of the "vault" routines.
+/**
+ * Create up to 'num' objects near the given coordinates in a vault.
  */
-static void vault_objects(struct cave *c, int y, int x, int depth, int num)
-{
+static void vault_objects(struct cave *c, int y, int x, int depth, int num) {
 	int i, j, k;
 
 	/* Attempt to place 'num' objects */
@@ -606,12 +649,10 @@ static void vault_objects(struct cave *c, int y, int x, int depth, int num)
 	}
 }
 
-
-/*
- * Place a trap with a given displacement of point
+/**
+ * Place a trap near (x, y), with a given displacement.
  */
-static void vault_trap_aux(struct cave *c, int y, int x, int yd, int xd)
-{
+static void vault_trap_aux(struct cave *c, int y, int x, int yd, int xd) {
 	int count, y1, x1;
 
 	for (count = 0; count <= 5; count++) {
@@ -630,19 +671,18 @@ static void vault_trap_aux(struct cave *c, int y, int x, int yd, int xd)
 }
 
 
-/*
- * Place some traps with a given displacement of given location
+/**
+ * Place 'num' traps near (x, y), with a given displacement.
  */
-static void vault_traps(struct cave *c, int y, int x, int yd, int xd, int num)
-{
+static void vault_traps(struct cave *c, int y, int x, int yd, int xd, int num) {
 	int i;
 	for (i = 0; i < num; i++)
 		vault_trap_aux(c, y, x, yd, xd);
 }
 
 
-/*
- * Place some sleeping monsters near the given location
+/**
+ * Place 'num' sleeping monsters near (x, y).
  */
 static void vault_monsters(struct cave *c, int y1, int x1, int depth, int num)
 {
@@ -669,24 +709,26 @@ static void vault_monsters(struct cave *c, int y1, int x1, int depth, int num)
 }
 
 
-
-/*
- * Generate helper -- create a new room with optional light
+/**
+ * Mark squares as being in a room, and optionally light them.
+ *
+ * The boundaries (y1, x1, y2, x2) are inclusive.
  */
 static void generate_room(struct cave *c, int y1, int x1, int y2, int x2, int light) {
 	int y, x;
-
+	int feat_add = CAVE_ROOM | (light ? CAVE_GLOW : 0);
 	for (y = y1; y <= y2; y++)
 		for (x = x1; x <= x2; x++)
-			c->info[y][x] |= CAVE_ROOM | (light ? CAVE_GLOW : 0);
+			c->info[y][x] |= feat_add;
 }
 
 
-/*
- * Generate helper -- fill a rectangle with a feature
+/**
+ * Fill a rectangle with a feature.
+ *
+ * The boundaries (y1, x1, y2, x2) are inclusive.
  */
-static void generate_fill(struct cave *c, int y1, int x1, int y2, int x2, int feat)
-{
+static void generate_fill(struct cave *c, int y1, int x1, int y2, int x2, int feat) {
 	int y, x;
 	for (y = y1; y <= y2; y++)
 		for (x = x1; x <= x2; x++)
@@ -694,11 +736,12 @@ static void generate_fill(struct cave *c, int y1, int x1, int y2, int x2, int fe
 }
 
 
-/*
- * Generate helper -- draw a rectangle with a feature
+/**
+ * Fill the edges of a rectangle with a feature.
+ *
+ * The boundaries (y1, x1, y2, x2) are inclusive.
  */
-static void generate_draw(struct cave *c, int y1, int x1, int y2, int x2, int feat)
-{
+static void generate_draw(struct cave *c, int y1, int x1, int y2, int x2, int feat) {
 	int y, x;
 
 	for (y = y1; y <= y2; y++) {
@@ -713,33 +756,31 @@ static void generate_draw(struct cave *c, int y1, int x1, int y2, int x2, int fe
 }
 
 
-/*
- * Generate helper -- split a rectangle with a feature
+/**
+ * Fill the lines of a cross/plus with a feature.
+ *
+ * The boundaries (y1, x1, y2, x2) are inclusive. When combined with
+ * generate_draw() this will generate a large rectangular room which is split
+ * into four sub-rooms.
  */
-static void generate_plus(struct cave *c, int y1, int x1, int y2, int x2, int feat)
-{
+static void generate_plus(struct cave *c, int y1, int x1, int y2, int x2, int feat) {
 	int y, x;
-	int y0, x0;
+
+	/* Find the center */
+	int y0 = (y1 + y2) / 2;
+	int x0 = (x1 + x2) / 2;
 
 	assert(c);
 
-	/* Center */
-	y0 = (y1 + y2) / 2;
-	x0 = (x1 + x2) / 2;
-
-	for (y = y1; y <= y2; y++)
-		cave_set_feat(c, y, x0, feat);
-
-	for (x = x1; x <= x2; x++)
-		cave_set_feat(c, y0, x, feat);
+	for (y = y1; y <= y2; y++) cave_set_feat(c, y, x0, feat);
+	for (x = x1; x <= x2; x++) cave_set_feat(c, y0, x, feat);
 }
 
 
-/*
+/**
  * Generate helper -- open all sides of a rectangle with a feature
  */
-static void generate_open(struct cave *c, int y1, int x1, int y2, int x2, int feat)
-{
+static void generate_open(struct cave *c, int y1, int x1, int y2, int x2, int feat) {
 	int y0, x0;
 
 	/* Center */
@@ -754,18 +795,15 @@ static void generate_open(struct cave *c, int y1, int x1, int y2, int x2, int fe
 }
 
 
-/*
+/**
  * Generate helper -- open one side of a rectangle with a feature
  */
-static void generate_hole(struct cave *c, int y1, int x1, int y2, int x2, int feat)
-{
-	int y0, x0;
+static void generate_hole(struct cave *c, int y1, int x1, int y2, int x2, int feat) {
+	/* Find the center */
+	int y0 = (y1 + y2) / 2;
+	int x0 = (x1 + x2) / 2;
 
 	assert(c);
-
-	/* Center */
-	y0 = (y1 + y2) / 2;
-	x0 = (x1 + x2) / 2;
 
 	/* Open random side */
 	switch (randint0(4)) {
@@ -777,40 +815,21 @@ static void generate_hole(struct cave *c, int y1, int x1, int y2, int x2, int fe
 }
 
 
-/*
- * Room building routines.
- *
- * Six basic room types:
- *   1 -- normal
- *   2 -- overlapping
- *   3 -- cross shaped
- *   4 -- large room with features
- *   5 -- monster nests
- *   6 -- monster pits
- *   7 -- simple vaults
- *   8 -- greater vaults
+/**
+ * Builds a normal rectangular room.
  */
-
-
-/*
- * Type 1 -- normal rectangular rooms
- */
-static bool build_type1(struct cave *c, int y0, int x0)
-{
+static bool build_type1(struct cave *c, int y0, int x0) {
 	int y, x;
-
-	int y1, x1, y2, x2;
-
 	int light = FALSE;
+
+	/* Pick a room size */
+	int y1 = y0 - randint1(4);
+	int x1 = x0 - randint1(11);
+	int y2 = y0 + randint1(3);
+	int x2 = x0 + randint1(11);
 
 	/* Occasional light */
 	if (c->depth <= randint1(25)) light = TRUE;
-
-	/* Pick a room size */
-	y1 = y0 - randint1(4);
-	x1 = x0 - randint1(11);
-	y2 = y0 + randint1(3);
-	x2 = x0 + randint1(11);
 
 	/* Generate new room */
 	generate_room(c, y1-1, x1-1, y2+1, x2+1, light);
@@ -843,11 +862,10 @@ static bool build_type1(struct cave *c, int y0, int x0)
 }
 
 
-/*
- * Type 2 -- Overlapping rectangular rooms
+/**
+ * Builds an overlapping rectangular room.
  */
-static bool build_type2(struct cave *c, int y0, int x0)
-{
+static bool build_type2(struct cave *c, int y0, int x0) {
 	int y1a, x1a, y2a, x2a;
 	int y1b, x1b, y2b, x2b;
 
@@ -889,20 +907,17 @@ static bool build_type2(struct cave *c, int y0, int x0)
 	return TRUE;
 }
 
-
-
-/*
- * Type 3 -- Cross shaped rooms
+/**
+ * Builds a cross-shaped room.
  *
- * Room "a" runs north/south, and Room "b" runs east/east
+ * Room "a" runs north/south, and Room "b" runs east/east 
  * So a "central pillar" would run from x1a,y1b to x2a,y2b.
  *
- * Note that currently, the "center" is always 3x3, but I think that
- * the code below will work for 5x5 (and perhaps even for unsymetric
- * values like 4x3 or 5x3 or 3x4 or 3x5).
+ * Note that currently, the "center" is always 3x3, but I think that the code
+ * below will work for 5x5 (and perhaps even for unsymetric values like 4x3 or
+ * 5x3 or 3x4 or 3x5).
  */
-static bool build_type3(struct cave *c, int y0, int x0)
-{
+static bool build_type3(struct cave *c, int y0, int x0) {
 	int y, x;
 
 	int y1a, x1a, y2a, x2a;
@@ -1024,8 +1039,8 @@ static bool build_type3(struct cave *c, int y0, int x0)
 }
 
 
-/*
- * Type 4 -- Large room with an inner room
+/**
+ * Build a large room with an inner room.
  *
  * Possible sub-types:
  *	1 - An inner room
@@ -1034,8 +1049,7 @@ static bool build_type3(struct cave *c, int y0, int x0)
  *	4 - An inner room with a checkerboard
  *	5 - An inner room with four compartments
  */
-static bool build_type4(struct cave *c, int y0, int x0)
-{
+static bool build_type4(struct cave *c, int y0, int x0) {
 	int y, x, y1, x1, y2, x2;
 
 	int light = FALSE;
@@ -1079,8 +1093,7 @@ static bool build_type4(struct cave *c, int y0, int x0)
 
 
 		/* An inner room with a small inner room */
-		case 2:
-		{
+		case 2: {
 			/* Open the inner room with a secret door */
 			generate_hole(c, y1-1, x1-1, y2+1, x2+1, FEAT_SECRET);
 
@@ -1215,19 +1228,19 @@ static bool build_type4(struct cave *c, int y0, int x0)
  * is appropriate for inclusion in a monster nest or monster pit or
  * the given type.
  *
- * None of the pits/nests are allowed to include "unique" monsters,
- * or monsters which can "multiply".
- *
- * Some of the pits/nests are asked to avoid monsters which can blink
- * away or which are invisible.  This is probably a hack.
+ * None of the pits/nests are allowed to include "unique" monsters.
  *
  * The old method used monster "names", which was bad, but the new
  * method uses monster race characters, which is also bad.  XXX XXX XXX
  */
 
+
+/**
+ * For a given flag, this function returns true if the given r_idx represents
+ * a non-unique monster with that flag.
+ */
 static bool vault_aux_flag(int r_idx, bitflag flag) {
 	monster_race *r_ptr = &r_info[r_idx];
-
 	if (rf_has(r_ptr->flags, RF_UNIQUE))
 		return FALSE;
 	else if (!rf_has(r_ptr->flags, flag))
@@ -1236,9 +1249,13 @@ static bool vault_aux_flag(int r_idx, bitflag flag) {
 		return TRUE;
 }
 
+
+/**
+ * For a given string, this function returns true if the given r_idx represents
+ * a non-unique monster whose symbol is present in the string.
+ */
 static bool vault_aux_str(int r_idx, const char *s) {
 	monster_race *r_ptr = &r_info[r_idx];
-
 	if (rf_has(r_ptr->flags, RF_UNIQUE))
 		return FALSE;
 	else if (!strchr(s, r_ptr->d_char))
@@ -1248,8 +1265,7 @@ static bool vault_aux_str(int r_idx, const char *s) {
 }
 
 
-
-/*
+/**
  * Helper function for "monster nest (jelly)"
  */
 static bool vault_aux_jelly(int r_idx) {
@@ -1257,7 +1273,7 @@ static bool vault_aux_jelly(int r_idx) {
 }
 
 
-/*
+/**
  * Helper function for "monster nest (animal)"
  */
 static bool vault_aux_animal(int r_idx) {
@@ -1265,7 +1281,7 @@ static bool vault_aux_animal(int r_idx) {
 }
 
 
-/*
+/**
  * Helper function for "monster nest (undead)"
  */
 static bool vault_aux_undead(int r_idx) {
@@ -1273,7 +1289,7 @@ static bool vault_aux_undead(int r_idx) {
 }
 
 
-/*
+/**
  * Helper function for "monster pit (orc)"
  */
 static bool vault_aux_orc(int r_idx) {
@@ -1281,14 +1297,14 @@ static bool vault_aux_orc(int r_idx) {
 }
 
 
-/*
+/**
  * Helper function for "monster pit (troll)"
  */
 static bool vault_aux_troll(int r_idx) {
 	return vault_aux_str(r_idx, "T");
 }
 
-/*
+/**
  * Helper function for "monster pit (giant)"
  */
 static bool vault_aux_giant(int r_idx) {
@@ -1302,7 +1318,7 @@ static bool vault_aux_giant(int r_idx) {
 static bitflag vault_aux_dragon_mask[RSF_SIZE];
 
 
-/*
+/**
  * Helper function for "monster pit (dragon)"
  */
 static bool vault_aux_dragon(int r_idx)
@@ -1353,8 +1369,7 @@ static bool vault_aux_demon(int r_idx) {
  *
  * Note that "monster nests" will never contain "unique" monsters.
  */
-static bool build_type5(struct cave *c, int y0, int x0)
-{
+static bool build_type5(struct cave *c, int y0, int x0) {
 	int y, x, y1, x1, y2, x2;
 	int tmp, i;
 	int alloc_obj;
@@ -1390,7 +1405,7 @@ static bool build_type5(struct cave *c, int y0, int x0)
 	/* Open the inner room with a secret door */
 	generate_hole(c, y1-1, x1-1, y2+1, x2+1, FEAT_SECRET);
 
-	/* Hack -- Choose a nest type */
+	/* Choose a nest type */
 	tmp = randint1(c->depth);
 
 	if (tmp < 30) {
@@ -1434,9 +1449,8 @@ static bool build_type5(struct cave *c, int y0, int x0)
 	/* Oops */
 	if (empty) return FALSE;
 
-
 	/* Describe */
-	room_log("Monster nest (%s)", name);
+	ROOM_LOG("Monster nest (%s)", name);
 
 	/* Increase the level rating */
 	c->rating += 10;
@@ -1642,7 +1656,7 @@ static bool build_type6(struct cave *c, int y0, int x0) {
 	for (i = 0; i < 8; i++)
 		what[i] = what[i * 2];
 
-	room_log("Monster pit (%s)", name);
+	ROOM_LOG("Monster pit (%s)", name);
 
 	/* Increase the level rating */
 	c->rating += 10;
@@ -1850,7 +1864,7 @@ static bool build_type7(struct cave *c, int y0, int x0) {
 	}
 
 	/* Message */
-	room_log("Lesser vault (%s)", v_ptr->name);
+	ROOM_LOG("Lesser vault (%s)", v_ptr->name);
 
 	/* Boost the rating */
 	c->rating += v_ptr->rat;
@@ -1880,7 +1894,7 @@ static bool build_type8(struct cave *c, int y0, int x0) {
 	}
 
 	/* Message */
-	room_log("Medium vault (%s)", v_ptr->name);
+	ROOM_LOG("Medium vault (%s)", v_ptr->name);
 
 	/* Boost the rating */
 	c->rating += v_ptr->rat;
@@ -1947,7 +1961,7 @@ static bool build_type9(struct cave *c, int y0, int x0) {
 	}
 
 	/* Message */
-	room_log("Greater vault (%s)", v_ptr->name);
+	ROOM_LOG("Greater vault (%s)", v_ptr->name);
 
 	/* Boost the rating */
 	c->rating += v_ptr->rat;
@@ -2759,10 +2773,11 @@ void cave_generate(struct cave *c, struct player *p) {
 		   obj-util.c */
 		character_dungeon = FALSE;
 
-		if (!p->depth)
+		if (!p->depth) {
 			town_gen(c, p);
-		else
+		} else {
 			cave_gen(c, p);
+		}
 
 		c->feeling = calculate_feeling(c);
 
@@ -2772,7 +2787,7 @@ void cave_generate(struct cave *c, struct player *p) {
 		if (mon_max >= z_info->m_max)
 			error = "too many monsters";
 
-		if (error) room_log("Generation restarted: %s.", error);
+		if (error) ROOM_LOG("Generation restarted: %s.", error);
 	}
 
 	if (counter >= 100) quit_fmt("cave_gen() failed 100 times!");
