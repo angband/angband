@@ -3153,7 +3153,7 @@ void brand_object(object_type *o_ptr, int brand_type)
 		i = list_slays(f, f, NULL, brand, NULL, FALSE);
 		
 		/* Describe */
-		msg("The %s %s surrounded with an aura of %s", o_name,
+		msg("The %s %s surrounded with an aura of %s.", o_name,
 				(o_ptr->number > 1) ? "are" : "is", brand[0]);
 
 		/* Get the right ego type for the object - the first one
