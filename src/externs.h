@@ -9,7 +9,6 @@
 #include "x-char.h"
 #include "z-file.h"
 #include "z-msg.h"
-#include "slays.h"
 
 /* This file was automatically generated. It is now obsolete (it was never a
  * good idea to begin with; you should include only what you use instead of
@@ -164,8 +163,6 @@ extern int text_out_indent;
 extern int text_out_pad;
 extern bool use_transparency;
 extern void (*sound_hook)(int);
-
-extern struct flag_cache *slay_cache;
 
 extern u16b daycount;
 

@@ -20,7 +20,7 @@
 #include "slays.h"
 
 
-/*
+/**
  * Info about slays (see src/slays.h for structure)
  */
 const struct slay slay_table[] =
@@ -30,6 +30,11 @@ const struct slay slay_table[] =
 	#include "list-slays.h"
 	#undef SLAY
 };
+
+/**
+ * Cache of slay values (for object_power)
+ */
+struct flag_cache *slay_cache;
 
 
 /**
@@ -272,3 +277,70 @@ bool fill_slay_cache(bitflag *index, s32b value)
 
 	return FALSE;
 }
+
+/**
+ * Create a cache of slay combinations found on ego items, and the values of
+ * these combinations. This is to speed up slay_power(), which will be called
+ * many times for ego items during the game.
+ *
+ * \param items is the set of ego types from which we are extracting slay
+ * combinations
+ */
+errr create_slay_cache(struct ego_item *items)
+{
+    int i;
+    int j;
+    int count = 0;
+    bitflag cacheme[OF_SIZE];
+    bitflag slay_mask[OF_SIZE];
+    bitflag **dupcheck;
+    ego_item_type *e_ptr;
+
+    /* Build the slay mask */
+    flags_init(slay_mask, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END);
+
+    /* Calculate necessary size of slay_cache */
+    dupcheck = C_ZNEW(z_info->e_max, bitflag *);
+
+    for (i = 0; i < z_info->e_max; i++) {
+        dupcheck[i] = C_ZNEW(OF_SIZE, bitflag);
+        e_ptr = items + i;
+
+        /* Find the slay flags on this ego */
+        of_copy(cacheme, e_ptr->flags);
+        of_inter(cacheme, slay_mask);
+
+        /* Only consider non-empty combinations of slay flags */
+        if (!of_is_empty(cacheme)) {
+            /* Skip previously scanned combinations */
+            for (j = 0; j < i; j++)
+                if (of_is_equal(cacheme, dupcheck[j])) continue;
+
+            /* msg("Found a new slay combo on an ego item"); */
+            count++;
+            of_copy(dupcheck[i], cacheme);
+        }
+    }
+
+    /* Allocate slay_cache with an extra empty element for an iteration stop */
+    slay_cache = C_ZNEW((count + 1), struct flag_cache);
+    count = 0;
+
+    /* Populate the slay_cache */
+    for (i = 0; i < z_info->e_max; i++) {
+        if (!of_is_empty(dupcheck[i])) {
+            of_copy(slay_cache[count].flags, dupcheck[i]);
+            slay_cache[count].value = 0;
+            count++;
+            /*msg("Cached a slay combination");*/
+        }
+    }
+
+    for (i = 0; i < z_info->e_max; i++)
+        FREE(dupcheck[i]);
+    FREE(dupcheck);
+
+    /* Success */
+    return 0;
+}
+

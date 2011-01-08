@@ -26,6 +26,7 @@
 #include "squelch.h"
 #include "target.h"
 #include "trap.h"
+#include "slays.h"
 
 /*
  * Increase players hit points, notice effects

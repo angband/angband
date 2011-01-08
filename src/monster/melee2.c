@@ -23,6 +23,7 @@
 #include "object/tvalsval.h"
 #include "spells.h"
 #include "squelch.h"
+#include "slays.h"
 
 /*
  * Determine if a bolt will arrive, checking that no monsters are in the way
