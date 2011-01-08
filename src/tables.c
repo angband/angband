@@ -17,7 +17,6 @@
  */
 #include "angband.h"
 #include "object/tvalsval.h"
-#include "slays.h"
 
 
 /*
@@ -975,31 +974,3 @@ const xchar_type latin1_encode[] =
     { "ucirc", 251 }, { "uuml", 252 }, { "yacute", 253 }, { "thorn", 254 },
     { "yuml", 255 },   { "\0", 0 }
 };
-
-
-/*
- * Structure for elements
- */
-struct element {
-	u16b index;		/* Numerical index (EL_FOO) */
-	int cap;		/* Breath damage cap */
-	int divisor;		/* Breath divisor (monhp / this) */
-	int br_flag;		/* Monster flag for breath */
-	int res_flag;		/* Object flag for resistance */
-	int opp_flag;		/* Timed flag for temporary resistance */
-	int imm_flag;		/* Object flag for total immunity */
-	int vuln_flag;		/* Object flag for vulnerability */
-	int mon_res_flag;	/* Monster flag for resistance */
-	int mon_vuln_flag;	/* Monster flag for vulnerability */
-};
-	
-/*
- * Details of the different elemental attacks in the game.
- *
-extern const elem_t elem_table[] =
-{
-        #define ELEMENT(a, b, c, d, e, f, g, h, i, j)  { EL_##a, b, c, d, e, f, g, h, i, j},
-        #include "list-elements.h"
-        #undef ELEMENT
-};
-.... not ready yet */

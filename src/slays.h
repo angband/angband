@@ -64,5 +64,6 @@ int list_slays(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE],
 void object_notice_slays(object_type *o_ptr, const bitflag mask[OF_SIZE]);
 void improve_attack_modifier(object_type *o_ptr, const monster_type
 	*m_ptr, const struct slay **best_s_ptr, bool lore, bool known_only);
+void react_to_slay(bitflag *obj_flags, bitflag *mon_flags);
 
 #endif /* INCLUDED_SLAYS_H */

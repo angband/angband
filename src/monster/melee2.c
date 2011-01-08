@@ -3694,17 +3694,7 @@ static void process_monster(struct cave *c, int m_idx)
 					monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND1);
 
 					/* React to objects that hurt the monster */
-					if (of_has(obj_flags, OF_KILL_DRAGON)) rf_on(mon_flags, RF_DRAGON);
-					if (of_has(obj_flags, OF_KILL_DEMON))  rf_on(mon_flags, RF_DEMON);
-					if (of_has(obj_flags, OF_KILL_UNDEAD)) rf_on(mon_flags, RF_UNDEAD);
-					if (of_has(obj_flags, OF_SLAY_DRAGON)) rf_on(mon_flags, RF_DRAGON);
-					if (of_has(obj_flags, OF_SLAY_TROLL))  rf_on(mon_flags, RF_TROLL);
-					if (of_has(obj_flags, OF_SLAY_GIANT))  rf_on(mon_flags, RF_GIANT);
-					if (of_has(obj_flags, OF_SLAY_ORC))    rf_on(mon_flags, RF_ORC);
-					if (of_has(obj_flags, OF_SLAY_DEMON))  rf_on(mon_flags, RF_DEMON);
-					if (of_has(obj_flags, OF_SLAY_UNDEAD)) rf_on(mon_flags, RF_UNDEAD);
-					if (of_has(obj_flags, OF_SLAY_ANIMAL)) rf_on(mon_flags, RF_ANIMAL);
-					if (of_has(obj_flags, OF_SLAY_EVIL))   rf_on(mon_flags, RF_EVIL);
+					react_to_slay(obj_flags, mon_flags);
 
 					/* The object cannot be picked up by the monster */
 					if (artifact_p(o_ptr) || rf_is_inter(r_ptr->flags, mon_flags))

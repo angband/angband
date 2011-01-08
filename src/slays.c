@@ -218,3 +218,20 @@ void improve_attack_modifier(object_type *o_ptr, const monster_type
 		}
 	}
 }
+
+
+/**
+ * React to slays which hurt a monster
+ * 
+ * \param obj_flags is the set of flags we're testing for slays
+ * \param mon_flags is the set of flags we're adjusting as a result
+ */
+void react_to_slay(bitflag *obj_flags, bitflag *mon_flags)
+{
+	const struct slay *s_ptr;
+
+	for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++) {
+		if (of_has(obj_flags, s_ptr->slay_flag))
+			rf_on(mon_flags, s_ptr->monster_flag);
+	}
+}
