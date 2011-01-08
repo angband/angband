@@ -2,6 +2,7 @@
 #define INCLUDED_OBJECT_TYPES_H
 
 #include "z-bitflag.h"
+#include "z-quark.h"
 #include "z-rand.h"
 
 /**
@@ -177,6 +178,9 @@ typedef struct ego_item
  * Object information, for a specific object.
  *
  * Note that a "discount" on an item is permanent and never goes away.
+ *
+ * Note that inscriptions are now handled via the "quark_str()" function
+ * applied to the "note" field, which will return NULL if "note" is zero.
  *
  * Note that "object" records are "copied" on a fairly regular basis,
  * and care must be taken when handling such objects.
