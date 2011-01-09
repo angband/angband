@@ -17,10 +17,10 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "object/slays.h"
 #include "object/tvalsval.h"
 #include "init.h"
 #include "effects.h"
-#include "slays.h"
 
 /*
  * Original random artifact generator (randart) by Greg Wooledge.

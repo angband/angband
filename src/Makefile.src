@@ -25,7 +25,6 @@ HEADERS = \
 	main.h \
 	option.h \
 	parser.h \
-	slays.h \
 	types.h \
 	ui-event.h \
 	ui.h \
@@ -93,6 +92,7 @@ ANGFILES = \
 	object/obj-ui.o \
 	object/obj-util.o \
 	object/randart.o \
+	object/slays.o \
 	option.o \
 	parser.o \
 	randname.o \
@@ -109,7 +109,6 @@ ANGFILES = \
 	signals.o \
 	save.o \
 	savefile.o \
-	slays.o \
 	spells1.o \
 	spells2.o \
 	squelch.o \

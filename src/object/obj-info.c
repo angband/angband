@@ -23,7 +23,7 @@
 #include "cmds.h"
 #include "tvalsval.h"
 #include "z-textblock.h"
-#include "slays.h"
+#include "object/slays.h"
 
 /*
  * Describes a flag-name pair.

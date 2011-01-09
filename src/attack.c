@@ -19,13 +19,11 @@
 
 #include "cave.h"
 #include "cmds.h"
-#include "game-cmd.h"
 #include "monster/monster.h"
-#include "object/object.h"
+#include "object/slays.h"
 #include "object/tvalsval.h"
 #include "spells.h"
 #include "target.h"
-#include "slays.h"
 
 /* Returns percent chance of an object breaking after throwing or shooting. */
 int breakage_chance(const object_type *o_ptr)

@@ -21,12 +21,12 @@
 #include "generate.h"
 #include "history.h"
 #include "monster/monster.h"
+#include "object/slays.h"
 #include "object/tvalsval.h"
 #include "spells.h"
 #include "squelch.h"
 #include "target.h"
 #include "trap.h"
-#include "slays.h"
 
 /*
  * Increase players hit points, notice effects

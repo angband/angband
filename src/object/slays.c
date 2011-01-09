@@ -17,7 +17,7 @@
  */
 
 #include "angband.h"
-#include "slays.h"
+#include "object/slays.h"
 
 
 /**

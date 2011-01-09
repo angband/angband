@@ -20,10 +20,10 @@
 #include "cave.h"
 #include "monster/constants.h"
 #include "monster/monster.h"
+#include "object/slays.h"
 #include "object/tvalsval.h"
 #include "spells.h"
 #include "squelch.h"
-#include "slays.h"
 
 /*
  * Determine if a bolt will arrive, checking that no monsters are in the way
