@@ -3185,7 +3185,7 @@ static errr init_other(void)
 	/*** Prepare entity arrays ***/
 
 	/* Objects */
-	o_list = C_ZNEW(z_info->o_max, object_type);
+	objects_init();
 
 	/* Monsters */
 	mon_list = C_ZNEW(z_info->m_max, monster_type);
@@ -3627,7 +3627,7 @@ void cleanup_angband(void)
 	/* Free the lore, monster, and object lists */
 	FREE(l_list);
 	FREE(mon_list);
-	FREE(o_list);
+	objects_destroy();
 
 	/* Free the "update_view()" array */
 	FREE(view_g);

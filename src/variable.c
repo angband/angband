@@ -428,11 +428,6 @@ byte *temp_y;
 byte *temp_x;
 
 /*
- * Array[z_info->o_max] of dungeon objects
- */
-object_type *o_list;
-
-/*
  * Array[z_info->m_max] of dungeon monsters
  */
 monster_type *mon_list;

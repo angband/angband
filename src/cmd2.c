@@ -151,7 +151,7 @@ static s16b chest_check(int y, int x)
 		object_type *o_ptr;
 
 		/* Get the object */
-		o_ptr = &o_list[this_o_idx];
+		o_ptr = object_byid(this_o_idx);
 
 		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
@@ -191,7 +191,7 @@ static void chest_death(int y, int x, s16b o_idx)
 
 
 	/* Get the chest */
-	o_ptr = &o_list[o_idx];
+	o_ptr = object_byid(o_idx);
 
 	/* Small chests often hold "gold" */
 	tiny = (o_ptr->sval < SV_CHEST_MIN_LARGE);
@@ -259,7 +259,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 {
 	int i, trap;
 
-	object_type *o_ptr = &o_list[o_idx];
+	object_type *o_ptr = object_byid(o_idx);
 
 
 	/* Ignore disarmed chests */
@@ -342,7 +342,7 @@ static bool do_cmd_open_chest(int y, int x, s16b o_idx)
 
 	bool more = FALSE;
 
-	object_type *o_ptr = &o_list[o_idx];
+	object_type *o_ptr = object_byid(o_idx);
 
 
 	/* Attempt to unlock it */
@@ -416,7 +416,7 @@ static bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 
 	bool more = FALSE;
 
-	object_type *o_ptr = &o_list[o_idx];
+	object_type *o_ptr = object_byid(o_idx);
 
 
 	/* Get the "disarm" factor */
@@ -573,7 +573,7 @@ int count_chests(int *y, int *x, bool trapped)
 		if ((o_idx = chest_check(yy, xx)) == 0) continue;
 
 		/* Grab the object */
-		o_ptr = &o_list[o_idx];
+		o_ptr = object_byid(o_idx);
 
 		/* Already open */
 		if (o_ptr->pval[DEFAULT_PVAL] == 0) continue;
@@ -1130,7 +1130,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 				place_object(cave, y, x, p_ptr->depth, FALSE, FALSE);
 
 				/* Observe the new object */
-				if (!squelch_item_ok(&o_list[cave->o_idx[y][x]]) &&
+				if (!squelch_item_ok(object_byid(cave->o_idx[y][x])) &&
 				    player_can_see_bold(y, x))
 				{
 					msg("You have found something!");

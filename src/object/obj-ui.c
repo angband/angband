@@ -349,7 +349,7 @@ void show_floor(const int *floor_list, int floor_num, olist_detail_t mode)
 	/* Build the object list */
 	for (i = 0; i < floor_num; i++)
 	{
-		o_ptr = &o_list[floor_list[i]];
+		o_ptr = object_byid(floor_list[i]);
 
 		/* Tester always skips gold. When gold should be displayed,
 		 * only test items that are not gold.
@@ -393,7 +393,7 @@ bool verify_item(cptr prompt, int item)
 	/* Floor */
 	else
 	{
-		o_ptr = &o_list[0 - item];
+		o_ptr = object_byid(0 - item);
 	}
 
 	/* Describe */
@@ -423,7 +423,7 @@ static bool get_item_allow(int item, unsigned char ch, bool is_harmless)
 	if (item >= 0)
 		o_ptr = &p_ptr->inventory[item];
 	else
-		o_ptr = &o_list[0 - item];
+		o_ptr = object_byid(0 - item);
 
 	/* Check for a "prevention" inscription */
 	verify_inscrip[1] = ch;

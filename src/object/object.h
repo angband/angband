@@ -317,4 +317,8 @@ char *artifact_gen_name(struct artifact *a, const char ***wordlist);
                 file_putf(log_file, (string), (val1), (val2)); \
         } while (0);
 
+extern struct object *object_byid(s16b oidx);
+extern void objects_init(void);
+extern void objects_destroy(void);
+
 #endif /* !INCLUDED_OBJECT_H */

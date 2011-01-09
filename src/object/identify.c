@@ -399,7 +399,7 @@ void object_flavor_aware(object_type *o_ptr)
 
 	for (i = 1; i < o_max; i++)
 	{
-		const object_type *floor_o_ptr = &o_list[i];
+		const object_type *floor_o_ptr = object_byid(i);
 
 		/* Some objects change tile on awareness */
 		/* So update display for all floor objects of this kind */
