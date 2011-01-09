@@ -88,7 +88,7 @@ static const struct {
 	bool trans;			// Use transparent foreground tiles
 } graphics_modes[] = {
 	{ kGrafNone, NULL, NULL, 0, false },
-	{ kGraf8x8, "8x8", "old",	8,	false },
+	{ kGraf8x8, "8x8", "old",	8,	true },
 	{ kGraf16x16, "16x16",	"new",	16,	true },
 	{ kGraf32x32, "32x32",	"david", 32,	true },
 	{ kGraf8x16, "8x16",	"nomad", 16,	true },
