@@ -863,11 +863,10 @@ static enum parser_error parse_prefs_l(struct parser *p)
 		if (flavor->fidx == idx)
 			break;
 
-	if (!flavor)
-		quit_fmt("flavor for unknown idx %d", idx);
-
-	flavor->x_attr = (byte)parser_getint(p, "attr");
-	flavor->x_char = (char)parser_getint(p, "char");
+	if (flavor) {
+		flavor->x_attr = (byte)parser_getint(p, "attr");
+		flavor->x_char = (char)parser_getint(p, "char");
+	}
 
 	return PARSE_ERROR_NONE;
 }
