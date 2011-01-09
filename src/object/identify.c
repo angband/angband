@@ -832,6 +832,12 @@ void object_notice_on_wield(object_type *o_ptr)
 	if (of_is_inter(f, obvious_mask)) obvious = TRUE;
 	flags_init(obvious_mask, OF_SIZE, OF_OBVIOUS_MASK, FLAG_END);
 
+	/* Notice any obvious brands or slays */
+	object_notice_slays(o_ptr, obvious_mask);
+
+	/* Learn about obvious flags */
+	of_union(o_ptr->known_flags, obvious_mask);
+
 	/* XXX Eddie should these next NOT call object_check_for_ident due to worries about repairing? */
 
 	/* XXX Eddie this is a small hack, but jewelry with anything noticeable really is obvious */
@@ -850,12 +856,6 @@ void object_notice_on_wield(object_type *o_ptr)
 	object_check_for_ident(o_ptr);
 
 	if (!obvious) return;
-
-	/* Notice any obvious brands or slays */
-	object_notice_slays(o_ptr, obvious_mask);
-
-	/* Learn about obvious flags */
-	of_union(o_ptr->known_flags, obvious_mask);
 
 	/* XXX Eddie need to add stealth here, also need to assert/double-check everything is covered */
 	if (of_has(f, OF_STR))
