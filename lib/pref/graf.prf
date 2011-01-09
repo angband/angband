@@ -14,25 +14,22 @@
 %:font-xxx.prf
 
 
-##### System Specific Subfiles #####
+##### Load graphics tiles if appropriate #####
 
-?:[IOR [EQU $SYS xaw] [EQU $SYS x11]]
-%:graf-x11.prf
+# Standard file
+?:[EQU $GRAF old]
+%:graf-xxx.prf
 
-?:[EQU $SYS gtk]
-%:graf-gtk.prf
+# New tiles
+?:[EQU $GRAF new]
+%:graf-new.prf
 
-?:[EQU $SYS mac]
-%:graf-mac.prf
+# New tiles
+?:[EQU $GRAF nomad]
+%:graf-nmd.prf
 
-?:[IOR [EQU $SYS win]]
-%:graf-win.prf
-
-?:[EQU $SYS acn]
-%:graf-acn.prf
-
-?:[EQU $SYS sdl]
-%:graf-sdl.prf
+# David Gervais' tiles
+?:[EQU $GRAF david]
+%:graf-dvg.prf
 
 ?:1
-
