@@ -831,20 +831,59 @@ static enum parser_error parse_prefs_f(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_prefs_s(struct parser *p)
+static enum parser_error parse_prefs_gf(struct parser *p)
 {
-	size_t idx;
+	bool types[GF_MAX] = { 0 };
+	const char *direction;
+	int motion;
+
+	char *s, *t;
+
+	size_t i;
 
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	idx = parser_getuint(p, "idx");
-	if (idx >= N_ELEMENTS(misc_to_attr))
-		return PARSE_ERROR_OUT_OF_BOUNDS;
+	/* Parse the type, which is a | seperated list of GF_ constants */
+	s = string_make(parser_getsym(p, "type"));
+	t = strtok(s, "| ");
+	while (t) {
+		if (streq(t, "*")) {
+			memset(types, TRUE, sizeof types);
+		} else {
+			int idx = gf_name_to_idx(t);
+			if (idx == -1)
+				return PARSE_ERROR_INVALID_VALUE;
 
-	misc_to_attr[idx] = (byte)parser_getint(p, "attr");
-	misc_to_char[idx] = (char)parser_getint(p, "char");
+			types[idx] = TRUE;
+		}
+
+		t = strtok(NULL, "| ");
+	}
+
+	string_free(s);
+
+	direction = parser_getsym(p, "direction");
+	if (streq(direction, "static"))
+		motion = BOLT_NO_MOTION;
+	else if (streq(direction, "0"))
+		motion = BOLT_0;
+	else if (streq(direction, "45"))
+		motion = BOLT_45;
+	else if (streq(direction, "90"))
+		motion = BOLT_90;
+	else if (streq(direction, "135"))
+		motion = BOLT_135;
+	else
+		return PARSE_ERROR_INVALID_VALUE;
+
+	for (i = 0; i < GF_MAX; i++) {
+		if (!types[i]) continue;
+
+		gf_to_attr[i][motion] = (byte)parser_getuint(p, "attr");
+		gf_to_char[i][motion] = (char)parser_getuint(p, "char");
+	}
 
 	return PARSE_ERROR_NONE;
 }
@@ -1214,7 +1253,7 @@ static struct parser *init_parse_prefs(void)
 	parser_reg(p, "K sym tval sym sval int attr int char", parse_prefs_k);
 	parser_reg(p, "R uint idx int attr int char", parse_prefs_r);
 	parser_reg(p, "F uint idx sym lighting int attr int char", parse_prefs_f);
-	parser_reg(p, "S uint idx int attr int char", parse_prefs_s);
+	parser_reg(p, "GF sym type sym direction uint attr uint char", parse_prefs_gf);
 	parser_reg(p, "L uint idx int attr int char", parse_prefs_l);
 	parser_reg(p, "E sym tval int attr", parse_prefs_e);
 	parser_reg(p, "Q sym idx sym n ?sym sval ?sym flag", parse_prefs_q);

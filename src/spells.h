@@ -4,19 +4,21 @@
 #define SPELLS_H
 
 /* spells1.c */
-extern s16b poly_r_idx(int r_idx);
-extern void teleport_away(int m_idx, int dis);
-extern void teleport_player(int dis);
-extern void teleport_player_to(int ny, int nx);
-extern void teleport_player_level(void);
-extern void take_hit(int dam, cptr kb_str);
-extern void acid_dam(int dam, cptr kb_str);
-extern void elec_dam(int dam, cptr kb_str);
-extern void fire_dam(int dam, cptr kb_str);
-extern void cold_dam(int dam, cptr kb_str);
-extern bool res_stat(int stat);
-extern bool apply_disenchant(int mode);
-extern bool project(int who, int rad, int y, int x, int dam, int typ, int flg);
+s16b poly_r_idx(int r_idx);
+void teleport_away(int m_idx, int dis);
+void teleport_player(int dis);
+void teleport_player_to(int ny, int nx);
+void teleport_player_level(void);
+int gf_name_to_idx(const char *name);
+const char *gf_idx_to_name(int type);
+void take_hit(int dam, cptr kb_str);
+void acid_dam(int dam, cptr kb_str);
+void elec_dam(int dam, cptr kb_str);
+void fire_dam(int dam, cptr kb_str);
+void cold_dam(int dam, cptr kb_str);
+bool res_stat(int stat);
+bool apply_disenchant(int mode);
+bool project(int who, int rad, int y, int x, int dam, int typ, int flg);
 
 /* spells2.c */
 extern bool hp_player(int num);

@@ -578,6 +578,19 @@ enum
 };
 
 
+/**
+ * Bolt motion (used in prefs.c, spells1.c)
+ */
+enum
+{
+	BOLT_NO_MOTION,
+	BOLT_0,
+	BOLT_45,
+	BOLT_90,
+	BOLT_135,
+	BOLT_MAX
+};
+
 
 /*** Feature Indexes (see "lib/edit/terrain.txt") ***/
 

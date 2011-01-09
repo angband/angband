@@ -338,8 +338,32 @@ void teleport_player_level(void)
 	}
 }
 
+static const char *gf_name_list[] =
+{
+	#define GF(a) #a,
+	#include "list-gf-types.h"
+	#undef GF
+	NULL
+};
 
+int gf_name_to_idx(const char *name)
+{
+	int i;
+	for (i = 0; gf_name_list[i]; i++) {
+		if (!my_stricmp(name, gf_name_list[i]))
+			return i;
+	}
 
+	return -1;
+}
+
+const char *gf_idx_to_name(int type)
+{
+	assert(type >= 0);
+	assert(type < GF_MAX);
+
+	return gf_name_list[type];
+}
 
 
 
@@ -396,68 +420,32 @@ static byte spell_color(int type)
  */
 static void bolt_pict(int y, int x, int ny, int nx, int typ, byte *a, char *c)
 {
-	int base;
+	int motion;
 
-	byte k;
-
-	if (!(use_graphics && (arg_graphics == GRAPHICS_DAVID_GERVAIS)))
-	{
-		/* No motion (*) */
-		if ((ny == y) && (nx == x)) base = 0x30;
-
-		/* Vertical (|) */
-		else if (nx == x) base = 0x40;
-
-		/* Horizontal (-) */
-		else if (ny == y) base = 0x50;
-
-		/* Diagonal (/) */
-		else if ((ny-y) == (x-nx)) base = 0x60;
-
-		/* Diagonal (\) */
-		else if ((ny-y) == (nx-x)) base = 0x70;
-
-		/* Weird (*) */
-		else base = 0x30;
-
-		/* Basic spell color */
-		k = spell_color(typ);
-
-		/* Reduce to allowed colour range for spell bolts/balls - see e.g. font-xxx.prf */
-		k = get_color(k, ATTR_MISC, 1);
-
-		/* Obtain attr/char */
-		*a = misc_to_attr[base+k];
-		*c = misc_to_char[base+k];
-	}
+	/* Convert co-ordinates into motion */
+	if ((ny == y) && (nx == x))
+		motion = BOLT_NO_MOTION;
+	else if (nx == x)
+		motion = BOLT_0;
+	else if ((ny-y) == (x-nx))
+		motion = BOLT_45;
+	else if (ny == y)
+		motion = BOLT_90;
+	else if ((ny-y) == (nx-x))
+		motion = BOLT_135;
 	else
-	{
-		int add;
+		motion = BOLT_NO_MOTION;
 
-		/* No motion (*) */
-		if ((ny == y) && (nx == x)) {base = 0x00; add = 0;}
+	/* Decide on output char */
+	if (use_graphics == GRAPHICS_NONE || use_graphics == GRAPHICS_PSEUDO) {
+		/* ASCII is simple */
+		char chars[] = "*|/-\\";
 
-		/* Vertical (|) */
-		else if (nx == x) {base = 0x40; add = 0;}
-
-		/* Horizontal (-) */
-		else if (ny == y) {base = 0x40; add = 1;}
-
-		/* Diagonal (/) */
-		else if ((ny-y) == (x-nx)) {base = 0x40; add = 2;}
-
-		/* Diagonal (\) */
-		else if ((ny-y) == (nx-x)) {base = 0x40; add = 3;}
-
-		/* Weird (*) */
-		else {base = 0x00; add = 0;}
-
-		if (typ >= 0x40) k = 0;
-		else k = typ;
-
-		/* Obtain attr/char */
-		*a = misc_to_attr[base+k];
-		*c = misc_to_char[base+k] + add;
+		*c = chars[motion];
+		*a = spell_color(typ);
+	} else {
+		*a = gf_to_attr[typ][motion];
+		*c = gf_to_char[typ][motion];
 	}
 }
 
