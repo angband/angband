@@ -506,89 +506,39 @@ enum
 /*
  * Legal restrictions for "summon_specific()"
  */
-#define SUMMON_ANIMAL       11
-#define SUMMON_SPIDER       12
-#define SUMMON_HOUND        13
-#define SUMMON_HYDRA        14
-#define SUMMON_ANGEL        15
-#define SUMMON_DEMON        16
-#define SUMMON_UNDEAD       17
-#define SUMMON_DRAGON       18
-/* xxx */
-#define SUMMON_HI_DEMON     26
-#define SUMMON_HI_UNDEAD    27
-#define SUMMON_HI_DRAGON    28
-/* xxx */
-#define SUMMON_WRAITH       31
-#define SUMMON_UNIQUE       32
-#define SUMMON_KIN          33
-/* xxx */
-#define SUMMON_MONSTER      41
-#define SUMMON_MONSTERS     42
+enum
+{
+	SUMMON_ANIMAL = 11,
+	SUMMON_SPIDER = 12,
+	SUMMON_HOUND = 13,
+	SUMMON_HYDRA = 14,
+	SUMMON_ANGEL = 15,
+	SUMMON_DEMON = 16,
+	SUMMON_UNDEAD = 17,
+	SUMMON_DRAGON = 18,
+	SUMMON_HI_DEMON = 26,
+	SUMMON_HI_UNDEAD = 27,
+	SUMMON_HI_DRAGON = 28,
+	SUMMON_WRAITH = 31,
+	SUMMON_UNIQUE = 32,
+	SUMMON_KIN = 33,
+	SUMMON_MONSTER = 41,
+	SUMMON_MONSTERS = 42,
+};
 
 
 /*
  * Spell types used by project(), and related functions.
  */
-#define GF_XXX1			1
-#define GF_ARROW        2
-#define GF_MISSILE      3
-#define GF_MANA         4
-#define GF_HOLY_ORB     5
-#define GF_LIGHT_WEAK	6
-#define GF_DARK_WEAK	7
-#define GF_WATER        8
-#define GF_PLASMA       9
-#define GF_METEOR       10
-#define GF_ICE          11
-#define GF_GRAVITY      12
-#define GF_INERTIA      13
-#define GF_FORCE        14
-#define GF_TIME         15
-#define GF_ACID         16
-#define GF_ELEC         17
-#define GF_FIRE         18
-#define GF_COLD         19
-#define GF_POIS         20
-#define GF_XXX2			21
-#define GF_LIGHT        22
-#define GF_DARK         23
-#define GF_XXX3			24
-#define GF_CONFUSION    25
-#define GF_SOUND        26
-#define GF_SHARD        27
-#define GF_NEXUS        28
-#define GF_NETHER       29
-#define GF_CHAOS        30
-#define GF_DISENCHANT   31
-#define GF_XXX4			32
-#define GF_KILL_WALL	33
-#define GF_KILL_DOOR	34
-#define GF_KILL_TRAP	35
-#define GF_MAKE_WALL	36
-#define GF_MAKE_DOOR	37
-#define GF_MAKE_TRAP	38
-#define GF_XXX5			39
-#define GF_XXX6			40
-#define GF_AWAY_UNDEAD	41
-#define GF_AWAY_EVIL	42
-#define GF_AWAY_ALL	43
-#define GF_TURN_UNDEAD	44
-#define GF_TURN_EVIL	45
-#define GF_TURN_ALL	46
-#define GF_DISP_UNDEAD	47
-#define GF_DISP_EVIL	48
-#define GF_DISP_ALL	49
-#define GF_XXX7			50
-#define GF_OLD_CLONE	51
-#define GF_OLD_POLY	52
-#define GF_OLD_HEAL	53
-#define GF_OLD_SPEED	54
-#define GF_OLD_SLOW	55
-#define GF_OLD_CONF	56
-#define GF_OLD_SLEEP	57
-#define GF_OLD_DRAIN	58
-#define GF_XXX8			59
+enum
+{
+	#define GF(x) GF_##x,
+	#include "list-gf-types.h"
+	#undef GF
+	GF_MAX
+};
+
+
 
 
 /*
@@ -628,8 +578,29 @@ enum
 };
 
 
+/**
+ * Bolt motion (used in prefs.c, spells1.c)
+ */
+enum
+{
+	BOLT_NO_MOTION,
+	BOLT_0,
+	BOLT_45,
+	BOLT_90,
+	BOLT_135,
+	BOLT_MAX
+};
+
 
 /*** Feature Indexes (see "lib/edit/terrain.txt") ***/
+
+enum
+{
+	FEAT_LIGHTING_BRIGHT = 0,
+	FEAT_LIGHTING_LIT,
+	FEAT_LIGHTING_DARK,
+	FEAT_LIGHTING_MAX
+};
 
 /* Nothing */
 #define FEAT_NONE		0x00
@@ -1421,24 +1392,6 @@ enum
 #define monster_is_unusual(R) \
 	(flags_test((R)->flags, RF_SIZE, RF_DEMON, RF_UNDEAD, RF_STUPID, FLAG_END) || \
 	strchr("Evg", (R)->d_char))
-
-/*
- * Convert an "attr"/"char" pair into a "pict" (P)
- */
-#define PICT(A,C) \
-	((((u16b)(A)) << 8) | ((byte)(C)))
-
-/*
- * Convert a "pict" (P) into an "attr" (A)
- */
-#define PICT_A(P) \
-	((byte)((P) >> 8))
-
-/*
- * Convert a "pict" (P) into an "char" (C)
- */
-#define PICT_C(P) \
-	((char)((byte)(P)))
 
 
 /*

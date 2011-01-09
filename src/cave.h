@@ -14,7 +14,6 @@ extern bool los(int y1, int x1, int y2, int x2);
 extern bool no_light(void);
 extern bool cave_valid_bold(int y, int x);
 extern byte get_color(byte a, int attr, int n);
-extern bool feat_supports_lighting(int feat);
 extern void map_info(unsigned x, unsigned y, grid_data *g);
 extern void move_cursor_relative(int y, int x);
 extern void print_rel(char c, byte a, int y, int x);

@@ -29,6 +29,59 @@
 
 
 #ifdef ALLOW_DEBUG
+static void gf_display(menu_type *m, int type, bool cursor,
+		int row, int col, int wid)
+{
+	size_t i;
+
+	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
+	const char *gf_name = gf_idx_to_name(type);
+
+	if (type % 2)
+		c_prt(attr, ".........................", row, col);
+	c_put_str(attr, gf_name, row, col);
+
+	col += 25;
+
+	if (tile_height == 1) {
+		for (i = 0; i < BOLT_MAX; i++) {
+			col += big_pad(col, row, gf_to_attr[type][i], gf_to_char[type][i]);
+		}
+	} else {
+		prt("Change tile_height to 1 to see graphics.", row, col);
+	}
+}
+
+static const menu_iter gf_iter = {
+	NULL, /* get_tag */
+	NULL, /* validity */
+	gf_display,
+	NULL, /* action */
+	NULL /* resize */
+};
+
+static void wiz_gf_demo(void)
+{
+	menu_type *m = menu_new(MN_SKIN_SCROLL, &gf_iter);
+	region loc = { 0, 0, 0, 0 };
+
+	menu_setpriv(m, GF_MAX, NULL);
+
+	m->title = "GF_ types display";
+	menu_layout(m, &loc);
+
+	screen_save();
+	clear_from(0);
+	menu_select(m, 0);
+	screen_load();
+}
+
+
+
+
+
+
+
 
 /*
  * This is a nice utility function; it determines if a (NULL-terminated)
@@ -1662,6 +1715,14 @@ void do_cmd_debug(void)
 			break;
 		}
 
+
+		/* GF demo */
+		case 'G':
+		{
+			wiz_gf_demo();
+			break;
+		}
+
 		/* Hitpoint rerating */
 		case 'h':
 		{
@@ -1850,5 +1911,4 @@ void do_cmd_debug(void)
 }
 
 #endif
-
 
