@@ -824,9 +824,6 @@ void object_notice_on_wield(object_type *o_ptr)
 	if (object_FA_would_be_obvious(o_ptr))
 		of_on(obvious_mask, OF_FREE_ACT);
 
-	/* Learn about obvious flags */
-	of_union(o_ptr->known_flags, obvious_mask);
-
 	/* Extract the flags */
 	object_flags(o_ptr, f);
 
@@ -856,6 +853,9 @@ void object_notice_on_wield(object_type *o_ptr)
 
 	/* Notice any obvious brands or slays */
 	object_notice_slays(o_ptr, obvious_mask);
+
+	/* Learn about obvious flags */
+	of_union(o_ptr->known_flags, obvious_mask);
 
 	/* XXX Eddie need to add stealth here, also need to assert/double-check everything is covered */
 	if (of_has(f, OF_STR))
