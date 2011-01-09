@@ -641,7 +641,7 @@ D:Attempts to improve the armour class bonus of a piece of armour.
 
 N:115:Elemental Brand
 I:91:7:5
-D:Brands the currently wielded melee weapon with fire (25%) or cold (75%),
+D:Brands the currently wielded melee weapon with fire (50%) or cold (50%),
 D: and at the same time attempts to improve the to-hit bonus and the
 D: to-dam bonus of the same weapon.
 D:  The prayer has no effect if the weapon is an artifact or ego item,

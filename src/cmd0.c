@@ -194,6 +194,7 @@ static struct generic_command cmd_hidden[] =
 
 	{ "Toggle wizard mode",  KTRL('W'), CMD_NULL, do_cmd_wizard },
 	{ "Repeat previous command",  KTRL('V'), CMD_REPEAT, NULL },
+	{ "Do autopickup",           KTRL('G'), CMD_AUTOPICKUP, NULL },
 
 #ifdef ALLOW_DEBUG
 	{ "Debug mode commands", KTRL('A'), CMD_NULL, do_cmd_try_debug },
@@ -681,13 +682,13 @@ static bool textui_process_key(unsigned char c)
 	if (c == '\n' || c == '\r')
 		c = textui_action_menu_choose();
 
+	if (c == '\0' || c == ESCAPE || c == ' ' || c == '\a')
+		return TRUE;
+
 	cmd = &converted_list[c];
 	command = cmd->command;
 	if (!command)
 		return FALSE;
-
-	if (c == ESCAPE || c == ' ' || c == '\a')
-		return TRUE;
 
 	if (key_confirm_command(c) &&
 			(!command->prereq || command->prereq()))

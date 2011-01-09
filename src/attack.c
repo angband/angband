@@ -19,9 +19,8 @@
 
 #include "cave.h"
 #include "cmds.h"
-#include "game-cmd.h"
 #include "monster/monster.h"
-#include "object/object.h"
+#include "object/slays.h"
 #include "object/tvalsval.h"
 #include "spells.h"
 #include "target.h"
@@ -178,71 +177,6 @@ static int critical_norm(int weight, int plus, int dam, u32b *msg_type)
 }
 
 
-
-/**
- * Extract the multiplier from a given object hitting a given monster.
- *
- * If there is a slay or brand in effect, change the verb for hitting
- * to something interesting ('burn', 'smite', etc.).  Also, note which
- * flags had an effect in o_ptr->known_flags[].
- *
- * \param o_ptr is the object being used to attack
- * \param m_ptr is the monster being attacked
- * \param best_s_ptr is the best applicable slay_table entry, or NULL if no
- *  slay already known
- *
- */
-void improve_attack_modifier(object_type *o_ptr, const monster_type *m_ptr, const slay_t **best_s_ptr)
-{
-	const slay_t *s_ptr;
-
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
-	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
-
-	bitflag f[OF_SIZE], known_f[OF_SIZE];
-	object_flags(o_ptr, f);
-	object_flags_known(o_ptr, known_f);
-
-	for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
-	{
-		if (!of_has(f, s_ptr->slay_flag)) continue;
-
-		/* Learn about monster resistance/vulnerability IF:
-		 * 1) The slay flag on the object is known OR
-		 * 2) The monster does not possess the appropriate resistance flag OR
-		 * 3) The monster does possess the appropriate vulnerability flag
-		 */
-		if (of_has(known_f, s_ptr->slay_flag) ||
-		    (s_ptr->monster_flag && rf_has(r_ptr->flags, s_ptr->monster_flag)) ||
-		    (s_ptr->resist_flag && !rf_has(r_ptr->flags, s_ptr->resist_flag)))
-		{
-			if (m_ptr->ml && s_ptr->monster_flag)
-			{
-				rf_on(l_ptr->flags, s_ptr->monster_flag);
-			}
-
-			if (m_ptr->ml && s_ptr->resist_flag)
-			{
-				rf_on(l_ptr->flags, s_ptr->resist_flag);
-			}
-		}
-
-		/* If the monster doesn't match or the slay flag does */
-		if ((s_ptr->brand && !rf_has(r_ptr->flags, s_ptr->resist_flag)) || 
-		    rf_has(r_ptr->flags, s_ptr->monster_flag))
-		{
-			/* notice any brand or slay that would affect the monster */
-			object_notice_slay(o_ptr, s_ptr->slay_flag);
-
-			/* compare multipliers to determine best attack, would be more complex for O-style brands */
-			if ((*best_s_ptr == NULL) || ((*best_s_ptr)->mult < s_ptr->mult))
-				*best_s_ptr = s_ptr;
-		}
-	}
-}
-
-
-
 /*
  * Attack the monster at the given location
  *
@@ -318,17 +252,17 @@ bool py_attack_real(int y, int x)
 	if (o_ptr->k_idx)
 	{
 		int i;
-		const slay_t *best_s_ptr = NULL;
+		const struct slay *best_s_ptr = NULL;
 
 		hit_verb = "hit";
 
 		/* Get the best attack from all slays or
 		 * brands on all non-launcher equipment */
 		for (i = INVEN_LEFT; i < INVEN_TOTAL; i++)
-			improve_attack_modifier(&p_ptr->inventory[i], m_ptr,
-			&best_s_ptr);
+			improve_attack_modifier(&p_ptr->inventory[i], m_ptr, &best_s_ptr,
+					TRUE, FALSE);
 
-		improve_attack_modifier(o_ptr, m_ptr, &best_s_ptr);
+		improve_attack_modifier(o_ptr, m_ptr, &best_s_ptr, TRUE, FALSE);
 		if (best_s_ptr != NULL)
 			hit_verb = best_s_ptr->melee_verb;
 
@@ -630,7 +564,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 			int multiplier = 1;
 
 			const char *hit_verb = "hits";
-			const slay_t *best_s_ptr = NULL;
+			const struct slay *best_s_ptr = NULL;
 
 			/* Note the collision */
 			hit_body = TRUE;
@@ -643,8 +577,10 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 				/* Assume a default death */
 				cptr note_dies = " dies.";
 
-				improve_attack_modifier(o_ptr, m_ptr, &best_s_ptr);
-				improve_attack_modifier(j_ptr, m_ptr, &best_s_ptr);
+				improve_attack_modifier(o_ptr, m_ptr, &best_s_ptr, TRUE,
+						FALSE);
+				improve_attack_modifier(j_ptr, m_ptr, &best_s_ptr, TRUE,
+						FALSE);
 				if (best_s_ptr != NULL)
 					hit_verb = best_s_ptr->range_verb;
 
@@ -789,6 +725,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 	/* Drop (or break) near that location */
 	drop_near(cave, i_ptr, j, y, x, TRUE);
 }
+
 
 void textui_cmd_fire_at_nearest(void)
 {
@@ -943,7 +880,8 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 	tdam += i_ptr->to_d;
 
 	/* Chance of hitting */
-	chance = (p_ptr->state.skills[SKILL_TO_HIT_THROW] + (p_ptr->state.to_h * BTH_PLUS_ADJ));
+	chance = (p_ptr->state.skills[SKILL_TO_HIT_THROW] +
+		(p_ptr->state.to_h * BTH_PLUS_ADJ));
 
 
 	/* Take a turn */
@@ -1026,7 +964,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 			{
 				const char *hit_verb = "hits";
 				bool fear = FALSE;
-				const slay_t *best_s_ptr = NULL;
+				const struct slay *best_s_ptr = NULL;
 
 				/* Assume a default death */
 				cptr note_dies = " dies.";
@@ -1039,7 +977,8 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 				}
 
 				/* Apply special damage  - brought forward to fill in hit_verb XXX XXX XXX */
-				improve_attack_modifier(i_ptr, m_ptr, &best_s_ptr);
+				improve_attack_modifier(i_ptr, m_ptr, &best_s_ptr, TRUE,
+						FALSE);
 				if (best_s_ptr != NULL)
 				{
 					tdam *= best_s_ptr->mult;

@@ -21,6 +21,7 @@
 #include "generate.h"
 #include "history.h"
 #include "monster/monster.h"
+#include "object/slays.h"
 #include "object/tvalsval.h"
 #include "spells.h"
 #include "squelch.h"
@@ -3141,26 +3142,19 @@ void brand_object(object_type *o_ptr, int brand_type)
 	if (o_ptr->k_idx && !cursed_p(o_ptr) && k_info[o_ptr->k_idx].cost &&
 	    !artifact_p(o_ptr) && !ego_item_p(o_ptr))
 	{
-		cptr act = "magical";
 		char o_name[80];
+		bitflag f[OF_SIZE];
+		const char *brand[SL_MAX];
 
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
 
-		switch (brand_type)
-		{
-			case OF_BRAND_FIRE:
-				act = "fiery";
-				break;
-			case OF_BRAND_COLD:
-				act = "frosty";
-				break;
-			case OF_BRAND_POIS:
-				act = "sickly";
-				break;
-		}
-
+		of_wipe(f);
+		of_on(f, brand_type);
+		i = list_slays(f, f, NULL, brand, NULL, FALSE);
+		
 		/* Describe */
-		msg("A %s aura surrounds the %s.", act, o_name);
+		msg("The %s %s surrounded with an aura of %s.", o_name,
+				(o_ptr->number > 1) ? "are" : "is", brand[0]);
 
 		/* Get the right ego type for the object - the first one
 		 * with the correct flag for this type of object - we assume
@@ -3204,18 +3198,17 @@ void brand_object(object_type *o_ptr, int brand_type)
 void brand_weapon(void)
 {
 	object_type *o_ptr;
-	int brand_type;
+	bitflag f[OF_SIZE];
+	const struct slay *s_ptr;
 
 	o_ptr = &p_ptr->inventory[INVEN_WIELD];
 
 	/* Select a brand */
-	if (randint0(100) < 25)
-		brand_type = OF_BRAND_FIRE;
-	else
-		brand_type = OF_BRAND_COLD;
+	flags_init(f, OF_SIZE, OF_BRAND_FIRE, OF_BRAND_COLD, FLAG_END);
+	s_ptr = random_slay(f);	
 
 	/* Brand the weapon */
-	brand_object(o_ptr, brand_type);
+	brand_object(o_ptr, s_ptr->object_flag);
 }
 
 
@@ -3246,8 +3239,8 @@ bool brand_ammo(void)
 	int item;
 	object_type *o_ptr;
 	cptr q, s;
-	int r;
-	int brand_type;
+	const struct slay *s_ptr;
+	bitflag f[OF_SIZE];
 
 	/* Only accept ammo */
 	item_tester_hook = item_tester_hook_ammo;
@@ -3259,18 +3252,13 @@ bool brand_ammo(void)
 
 	o_ptr = object_from_item_idx(item);
 
-	r = randint0(100);
-
 	/* Select the brand */
-	if (r < 33)
-		brand_type = OF_BRAND_FIRE;
-	else if (r < 67)
-		brand_type = OF_BRAND_COLD;
-	else
-		brand_type = OF_BRAND_POIS;
+	flags_init(f, OF_SIZE, OF_BRAND_FIRE, OF_BRAND_COLD, OF_BRAND_POIS,
+			FLAG_END);
+	s_ptr = random_slay(f);
 
 	/* Brand the ammo */
-	brand_object(o_ptr, brand_type);
+	brand_object(o_ptr, s_ptr->object_flag);
 
 	/* Done */
 	return (TRUE);

@@ -381,7 +381,7 @@ static GfxInfo GfxDesc[GfxModes] =
 	/* No gfx (GRAPHICS_NONE) */
 	{"None", NULL, -1, -1, NULL, 0, 0, TRUE},
 	/* 8x8 tiles (GRAPHICS_ORIGINAL) */
-	{"8x8", "8x8.png", 8, 8, "old", 0, 0, TRUE},
+	{"8x8", "8x8.png", 8, 8, "old", 0, 17, TRUE},
 	/* 16x16 tiles (GRAPHICS_ADAM_BOLT) */
 	{"16x16", "16x16.png", 16, 16, "new", 0, 65, TRUE},
 	/* XXX (GRAPHICS_DAVID_GERVAIS) */

@@ -107,8 +107,8 @@ extern s16b alloc_ego_size;
 extern alloc_entry *alloc_ego_table;
 extern s16b alloc_race_size;
 extern alloc_entry *alloc_race_table;
-extern byte misc_to_attr[256];
-extern char misc_to_char[256];
+extern byte gf_to_attr[GF_MAX][BOLT_MAX];
+extern char gf_to_char[GF_MAX][BOLT_MAX];
 extern byte tval_to_attr[128];
 extern char macro_buffer[1024];
 extern const player_sex *sp_ptr;
@@ -164,8 +164,6 @@ extern int text_out_pad;
 extern bool use_transparency;
 extern void (*sound_hook)(int);
 
-extern flag_cache *slay_cache;
-
 extern u16b daycount;
 
 /* util.c */
@@ -178,6 +176,7 @@ extern void player_birth(bool quickstart_allowed);
 
 /* cmd1.c */
 extern bool search(bool verbose);
+extern int do_autopickup(void);
 extern byte py_pickup(int pickup);
 extern void move_player(int dir, bool disarm);
 

@@ -118,7 +118,7 @@
  * Dungeon generation values
  */
 #define DUN_ROOMS	50	/* Number of rooms to attempt */
-#define DUN_UNUSUAL	200	/* Level/chance of unusual room */
+#define DUN_UNUSUAL 200	/* Level/chance of unusual room */
 #define DUN_DEST	30	/* 1/chance of having a destroyed level */
 
 /*
@@ -2687,7 +2687,7 @@ static bool room_build(struct cave *c, int by0, int bx0, int typ)
 	int by, bx;
 	int by1, bx1, by2, bx2;
 
-	assert(typ > 0 && typ <= 8);
+	assert(typ > 0 && typ < ROOM_MAX);
 
 	/* Restrict level */
 	if (c->depth < room[typ].level) return (FALSE);

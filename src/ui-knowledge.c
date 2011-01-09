@@ -214,14 +214,14 @@ static int feat_order(int feat)
 
 
 /* Emit a 'graphical' symbol and a padding character if appropriate */
-extern void big_pad(int col, int row, byte a, byte c)
+extern int big_pad(int col, int row, byte a, byte c)
 {
 	Term_putch(col, row, a, c);
 
 	if ((tile_width > 1) || (tile_height > 1))
-	{
 	        Term_big_putch(col, row, a, c);
-	}
+
+	return tile_width;
 }
 
 /* Return the actual width of a symbol */
@@ -942,17 +942,16 @@ static void display_monster(int col, int row, bool cursor, int oid)
 	/* Display the name */
 	c_prt(attr, r_ptr->name, row, col);
 
-	if ((tile_width > 1) || (tile_height > 1))
-		return;
+	if (tile_height == 1) {
+		/* Display symbol */
+		big_pad(66, row, a, c);
 
-	/* Display symbol */
-	big_pad(66, row, a, c);
-
-	/* Display kills */
-	if (rf_has(r_ptr->flags, RF_UNIQUE))
-		put_str(format("%s", (r_ptr->max_num == 0)?  " dead" : "alive"), row, 70);
-	else
-		put_str(format("%5d", l_ptr->pkills), row, 70);
+		/* Display kills */
+		if (rf_has(r_ptr->flags, RF_UNIQUE))
+			put_str(format("%s", (r_ptr->max_num == 0)?  " dead" : "alive"), row, 70);
+		else
+			put_str(format("%5d", l_ptr->pkills), row, 70);
+	}
 }
 
 
@@ -1483,12 +1482,9 @@ static void display_object(int col, int row, bool cursor, int oid)
 	if (aware && inscrip)
 		c_put_str(TERM_YELLOW, inscrip, row, 55);
 
-	/* Hack - don't use if double tile */
-	if ((tile_width > 1) || (tile_height > 1))
-		return;
-
-	/* Display symbol */
-	big_pad(76, row, a, c);
+	if (tile_height == 1) {
+		big_pad(76, row, a, c);
+	}
 }
 
 /*
@@ -1732,25 +1728,21 @@ void textui_browse_object_knowledge(const char *name, int row)
  */
 static void display_feature(int col, int row, bool cursor, int oid )
 {
-	/* Get the feature index */
-	int f_idx = oid;
-
-	/* Access the feature */
-	feature_type *f_ptr = &f_info[f_idx];
-
-	/* Choose a color */
+	feature_type *f_ptr = &f_info[oid];
 	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
 
-	/* Display the name */
 	c_prt(attr, f_ptr->name, row, col);
 
-	if ((tile_width > 1) || (tile_height > 1)) return;
-
-	/* Display symbol */
-	big_pad(68, row, f_ptr->x_attr, f_ptr->x_char);
-
-	/* ILLUMINATION AND DARKNESS GO HERE */
-
+	if (tile_height == 1) {
+		/* Display symbols */
+		col = 66;
+		col += big_pad(col, row, f_ptr->x_attr[FEAT_LIGHTING_DARK],
+				f_ptr->x_char[FEAT_LIGHTING_DARK]);
+		col += big_pad(col, row, f_ptr->x_attr[FEAT_LIGHTING_LIT],
+				f_ptr->x_char[FEAT_LIGHTING_LIT]);
+		col += big_pad(col, row, f_ptr->x_attr[FEAT_LIGHTING_BRIGHT],
+				f_ptr->x_char[FEAT_LIGHTING_BRIGHT]);
+	}
 }
 
 
@@ -1768,8 +1760,9 @@ static int f_cmp_fkind(const void *a, const void *b)
 }
 
 static const char *fkind_name(int gid) { return feature_group_text[gid]; }
-static byte *f_xattr(int oid) { return &f_info[oid].x_attr; }
-static char *f_xchar(int oid) { return &f_info[oid].x_char; }
+/* XXX needs retooling for multi-light terrain */
+static byte *f_xattr(int oid) { return &f_info[oid].x_attr[FEAT_LIGHTING_LIT]; }
+static char *f_xchar(int oid) { return &f_info[oid].x_char[FEAT_LIGHTING_LIT]; }
 static void feat_lore(int oid) { (void)oid; /* noop */ }
 
 /*

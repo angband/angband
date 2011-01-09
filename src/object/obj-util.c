@@ -224,11 +224,15 @@ void reset_visuals(bool load_prefs)
 	/* Extract default attr/char code for features */
 	for (i = 0; i < z_info->f_max; i++)
 	{
+		int j;
 		feature_type *f_ptr = &f_info[i];
 
 		/* Assume we will use the underlying values */
-		f_ptr->x_attr = f_ptr->d_attr;
-		f_ptr->x_char = f_ptr->d_char;
+		for (j = 0; j < FEAT_LIGHTING_MAX; j++)
+		{
+			f_ptr->x_attr[j] = f_ptr->d_attr;
+			f_ptr->x_char[j] = f_ptr->d_char;
+		}
 	}
 
 	/* Extract default attr/char code for objects */
@@ -510,7 +514,7 @@ int get_inscribed_ammo_slot(const object_type *o_ptr)
 {
 	char *s;
 	if (!o_ptr->note) return 0;
-	s = strchr(o_ptr->note, 'f');
+	s = strchr(quark_str(o_ptr->note), 'f');
 	if (!s || s[1] < '0' || s[1] > '9') return 0;
 
 	return QUIVER_START + (s[1] - '0');
@@ -1716,16 +1720,16 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
 			if (o_ptr->name2 != j_ptr->name2) return (FALSE);
 
 			/* Hack - Never stack recharging wearables ... */
-			if ((o_ptr->timeout || j_ptr->timeout) && (o_ptr->tval
-				!= TV_LIGHT)) return FALSE;
+			if ((o_ptr->timeout || j_ptr->timeout) &&
+					o_ptr->tval != TV_LIGHT) return FALSE;
 
 			/* ... and lights must have same amount of fuel */
 			else if ((o_ptr->timeout != j_ptr->timeout) &&
-				(o_ptr->tval == TV_LIGHT)) return FALSE;
+					o_ptr->tval == TV_LIGHT) return FALSE;
 
 			/* Prevent unIDd items stacking in the object list */
-			if ((mode & OSTACK_LIST) && !(o_ptr->ident &
-				j_ptr->ident & IDENT_KNOWN)) return FALSE;
+			if (mode & OSTACK_LIST &&
+					!(o_ptr->ident & j_ptr->ident & IDENT_KNOWN)) return FALSE;
 
 			/* Probably okay */
 			break;
@@ -1739,12 +1743,9 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
 		}
 	}
 
-	/* Hack -- Require compatible inscriptions */
+	/* Require compatible inscriptions */
 	if (o_ptr->note != j_ptr->note)
-	{
-		/* Never combine different inscriptions */
-		if (o_ptr->note && j_ptr->note) return (FALSE);
-	}
+		return FALSE;
 
 	/* They must be similar enough */
 	return (TRUE);
@@ -1778,31 +1779,29 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 	o_ptr->ident |= (j_ptr->ident & ~IDENT_EMPTY);
 	of_union(o_ptr->known_flags, j_ptr->known_flags);
 
-	/* Hack -- Blend "notes" */
-	if (j_ptr->note != 0) o_ptr->note = j_ptr->note;
+	/* Merge inscriptions */
+	if (j_ptr->note)
+		o_ptr->note = j_ptr->note;
 
-	/* Hack -- if rods are stacking, re-calculate the timeouts */
+	/* Combine timeouts for rod stacking */
 	if (o_ptr->tval == TV_ROD)
-	{
 		o_ptr->timeout += j_ptr->timeout;
-	}
 
-	/* Hack -- if wands or staves are stacking, combine the charges */
-	/* If gold is stacking combine the amount */
+	/* Combine pvals for wands and staves */
 	if (o_ptr->tval == TV_WAND || o_ptr->tval == TV_STAFF ||
-		o_ptr->tval == TV_GOLD)
+			o_ptr->tval == TV_GOLD)
 	{
 		int total = o_ptr->pval[DEFAULT_PVAL] + j_ptr->pval[DEFAULT_PVAL];
 		o_ptr->pval[DEFAULT_PVAL] = total >= MAX_PVAL ? MAX_PVAL : total;
 	}
 
-	if ((o_ptr->origin != j_ptr->origin) ||
-	    (o_ptr->origin_depth != j_ptr->origin_depth) ||
-	    (o_ptr->origin_xtra != j_ptr->origin_xtra))
+	if (o_ptr->origin != j_ptr->origin ||
+			o_ptr->origin_depth != j_ptr->origin_depth ||
+			o_ptr->origin_xtra != j_ptr->origin_xtra)
 	{
 		int act = 2;
 
-		if ((o_ptr->origin == ORIGIN_DROP) && (o_ptr->origin == j_ptr->origin))
+		if (o_ptr->origin == ORIGIN_DROP && o_ptr->origin == j_ptr->origin)
 		{
 			monster_race *r_ptr = &r_info[o_ptr->origin_xtra];
 			monster_race *s_ptr = &r_info[j_ptr->origin_xtra];
@@ -1871,6 +1870,7 @@ void object_copy_amt(object_type *dst, object_type *src, int amt)
 
 	/* Modify quantity */
 	dst->number = amt;
+	dst->note = src->note;
 
 	/* 
 	 * If the item has charges/timeouts, set them to the correct level 
@@ -1893,6 +1893,19 @@ void object_copy_amt(object_type *dst, object_type *src, int amt)
 	}
 }
 
+/**
+ * Split off 'at' items from 'src' into 'dest'.
+ */
+void object_split(struct object *dest, struct object *src, int amt)
+{
+	/* Distribute charges of wands, staves, or rods */
+	distribute_charges(src, dest, amt);
+
+	/* Modify quantity */
+	dest->number = amt;
+	if (src->note)
+		dest->note = src->note;
+}
 
 /**
  * Find and return the index to the oldest object on the given grid marked as
@@ -3000,17 +3013,10 @@ void inven_drop(int item, int amt)
 	}
 
 
-	/* Get local object */
 	i_ptr = &object_type_body;
 
-	/* Obtain local object */
 	object_copy(i_ptr, o_ptr);
-
-	/* Distribute charges of wands, staves, or rods */
-	distribute_charges(o_ptr, i_ptr, amt);
-
-	/* Modify quantity */
-	i_ptr->number = amt;
+	object_split(i_ptr, o_ptr, amt);
 
 	/* Describe local object */
 	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_PREFIX | ODESC_FULL);
@@ -3403,10 +3409,9 @@ unsigned check_for_inscrip(const object_type *o_ptr, const char *inscrip)
 	unsigned i = 0;
 	const char *s;
 
-	if (!o_ptr->note)
-		return 0;
+	if (!o_ptr->note) return 0;
 
-	s = o_ptr->note;
+	s = quark_str(o_ptr->note);
 
 	do {
 		s = strstr(s, inscrip);

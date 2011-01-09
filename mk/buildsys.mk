@@ -325,7 +325,7 @@ uninstall: uninstall-extra
 
 uninstall-extra:
 
-clean:
+clean::
 	for i in ${SUBDIRS}; do \
 		${DIR_ENTER}; \
 		${MAKE} ${MFLAGS} clean || exit 1; \

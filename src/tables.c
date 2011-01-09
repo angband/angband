@@ -19,7 +19,6 @@
 #include "object/tvalsval.h"
 
 
-
 /*
  * Global array for looping through the "keypad directions".
  */
@@ -975,5 +974,3 @@ const xchar_type latin1_encode[] =
     { "ucirc", 251 }, { "uuml", 252 }, { "yacute", 253 }, { "thorn", 254 },
     { "yuml", 255 },   { "\0", 0 }
 };
-
-

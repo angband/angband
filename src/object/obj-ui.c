@@ -484,7 +484,7 @@ static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
 		if (!o_ptr->note) continue;
 
 		/* Find a '@' */
-		s = strchr(o_ptr->note, '@');
+		s = strchr(quark_str(o_ptr->note), '@');
 
 		/* Process all tags */
 		while (s)

@@ -417,6 +417,7 @@ bool make_fake_artifact(object_type *o_ptr, byte name1)
 	/* Extract the fields */
 	for (j = 0; j < a_ptr->num_pvals; j++)
 		o_ptr->pval[j] = a_ptr->pval[j];
+	o_ptr->num_pvals = a_ptr->num_pvals;
 	o_ptr->ac = a_ptr->ac;
 	o_ptr->dd = a_ptr->dd;
 	o_ptr->ds = a_ptr->ds;
@@ -503,8 +504,8 @@ static void spoil_artifact(cptr fname)
 			if (!make_fake_artifact(i_ptr, (byte)j)) continue;
 
 			/* Grab artifact name */
-			object_desc(buf, sizeof(buf), i_ptr,
-						ODESC_PREFIX | ODESC_COMBAT | ODESC_SPOIL);
+			object_desc(buf, sizeof(buf), i_ptr, ODESC_PREFIX |
+				ODESC_COMBAT | ODESC_EXTRA | ODESC_SPOIL);
 
 			/* Print name and underline */
 			spoiler_underline(buf, '-');

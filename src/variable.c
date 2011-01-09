@@ -492,11 +492,10 @@ alloc_entry *alloc_race_table;
 
 
 /*
- * Specify attr/char pairs for visual special effects
- * Be sure to use "index & 0xff" to avoid illegal access
+ * Specify attr/char pairs for visual special effects for project()
  */
-byte misc_to_attr[256];
-char misc_to_char[256];
+byte gf_to_attr[GF_MAX][BOLT_MAX];
+char gf_to_char[GF_MAX][BOLT_MAX];
 
 
 /*
@@ -571,7 +570,6 @@ artifact_type *a_info;
  * The ego-item arrays
  */
 ego_item_type *e_info;
-flag_cache *slay_cache;
 
 /*
  * The monster race arrays

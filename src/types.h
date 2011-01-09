@@ -93,8 +93,8 @@ typedef struct feature
 	byte d_attr;   /**< Default feature attribute */
 	char d_char;   /**< Default feature character */
 
-	byte x_attr;   /**< Desired feature attribute (set by user/pref file) */
-	char x_char;   /**< Desired feature character (set by user/pref file) */
+	byte x_attr[3];   /**< Desired feature attribute (set by user/pref file) */
+	char x_char[3];   /**< Desired feature character (set by user/pref file) */
 } feature_type;
 
 

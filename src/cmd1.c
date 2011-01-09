@@ -21,6 +21,7 @@
 #include "attack.h"
 #include "cave.h"
 #include "cmds.h"
+#include "game-event.h"
 #include "generate.h"
 #include "history.h"
 #include "monster/monster.h"
@@ -29,6 +30,7 @@
 #include "object/object.h"
 #include "squelch.h"
 #include "trap.h"
+
 
 /*
  * Search for hidden things.  Returns true if a search was attempted, returns
@@ -162,7 +164,8 @@ static void py_pickup_gold(void)
 	s32b total_gold = 0L;
 	byte *treasure;
 
-	s16b this_o_idx, next_o_idx = 0;
+	s16b this_o_idx = 0;
+	s16b next_o_idx = 0;
 
 	object_type *o_ptr;
 
@@ -345,46 +348,10 @@ static void py_pickup_aux(int o_idx, bool domsg)
 	if (quiver_slot) wield_item(o_ptr, slot, quiver_slot);
 }
 
-
-/*
- * Pick up objects and treasure on the floor.  -LM-
- *
- * Called with pickup:
- * 0 to act according to the player's settings
- * 1 to quickly pickup single objects or present a menu for more
- * 2 to force a menu for any number of objects
- *
- * Scan the list of objects in that floor grid. Pick up gold automatically.
- * Pick up objects automatically until backpack space is full if
- * auto-pickup option is on, Otherwise, store objects on
- * floor in an array, and tally both how many there are and can be picked up.
- *
- * If not picking up anything, indicate objects on the floor.
- *
- * [This paragraph is not true, intentional?]
- * If we are picking up objects automatically, and have room for at least
- * one, allow the "OPT(pickup_detail)" option to display information about objects
- * and prompt the player.  Otherwise, automatically pick up a single object
- * or use a menu for more than one.
- *
- * Pick up multiple objects using Tim Baker's menu system.   Recursively
- * call this function (forcing menus for any number of objects) until
- * objects are gone, backpack is full, or player is satisfied.
- *
- * We keep track of number of objects picked up to calculate time spent.
- * This tally is incremented even for automatic pickup, so we are careful
- * (in "dungeon.c" and elsewhere) to handle pickup as either a separate
- * automated move or a no-cost part of the stay still or 'g'et command.
- *
- * Note the lack of chance for the character to be disturbed by unmarked
- * objects.  They are truly "unknown".
- */
-byte py_pickup(int pickup)
+int do_autopickup(void)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
-
-	char o_name[80];
 
 	s16b this_o_idx, next_o_idx = 0;
 
@@ -394,18 +361,10 @@ byte py_pickup(int pickup)
 	byte objs_picked_up = 0;
 
 	size_t floor_num = 0;
-	int floor_list[MAX_FLOOR_STACK + 1], floor_o_idx = 0;
-
-	int can_pickup = 0;
-	bool call_function_again = FALSE;
-
-	bool blind = ((p_ptr->timed[TMD_BLIND]) || (no_light()));
-	bool domsg = TRUE;
-
+	int floor_list[MAX_FLOOR_STACK + 1];
 
 	/* Nothing to pick up -- return */
 	if (!cave->o_idx[py][px]) return (0);
-
 
 	/* Always pickup gold, effortlessly */
 	py_pickup_gold();
@@ -447,86 +406,91 @@ byte py_pickup(int pickup)
 
 		/* Count non-gold objects that remain on the floor. */
 		floor_num++;
-
-		/* Tally objects that can be picked up.*/
-		if (inven_carry_okay(o_ptr))
-			can_pickup++;
 	}
 
-	/* There are no objects left */
-	if (!floor_num)
-		return objs_picked_up;
-
-
-	/* Get hold of the last floor index */
-	floor_o_idx = floor_list[floor_num - 1];
+	return objs_picked_up;
+}
 
 
 
-	/* Mention the objects if player is not picking them up. */
-	if (pickup == 0 || !can_pickup)
+/*
+ * Pick up objects and treasure on the floor.  -LM-
+ *
+ * Called with pickup:
+ * 0 to act according to the player's settings
+ * 1 to quickly pickup single objects or present a menu for more
+ * 2 to force a menu for any number of objects
+ *
+ * Scan the list of objects in that floor grid. Pick up gold automatically.
+ * Pick up objects automatically until backpack space is full if
+ * auto-pickup option is on, Otherwise, store objects on
+ * floor in an array, and tally both how many there are and can be picked up.
+ *
+ * If not picking up anything, indicate objects on the floor.  Show more
+ * details if the "OPT(pickup_detail)" option is set.  Do the same thing if we
+ * don't have room for anything.
+ *
+ * [This paragraph is not true, intentional?]
+ * If we are picking up objects automatically, and have room for at least
+ * one, allow the "OPT(pickup_detail)" option to display information about objects
+ * and prompt the player.  Otherwise, automatically pick up a single object
+ * or use a menu for more than one.
+ *
+ * Pick up multiple objects using Tim Baker's menu system.   Recursively
+ * call this function (forcing menus for any number of objects) until
+ * objects are gone, backpack is full, or player is satisfied.
+ *
+ * We keep track of number of objects picked up to calculate time spent.
+ * This tally is incremented even for automatic pickup, so we are careful
+ * (in "dungeon.c" and elsewhere) to handle pickup as either a separate
+ * automated move or a no-cost part of the stay still or 'g'et command.
+ *
+ * Note the lack of chance for the character to be disturbed by unmarked
+ * objects.  They are truly "unknown".
+ */
+byte py_pickup(int pickup)
+{
+	int py = p_ptr->py;
+	int px = p_ptr->px;
+
+	s16b this_o_idx = 0;
+
+	size_t floor_num = 0;
+	int floor_list[MAX_FLOOR_STACK + 1];
+
+	size_t i;
+	int can_pickup = 0;
+	bool call_function_again = FALSE;
+
+	bool domsg = TRUE;
+
+	/* Objects picked up.  Used to determine time cost of command. */
+	byte objs_picked_up = 0;
+
+	/* Nothing else to pick up -- return */
+	if (!cave->o_idx[py][px]) return objs_picked_up;
+
+	/* Tally objects that can be picked up.*/
+	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x03);
+	for (i = 0; i < floor_num; i++)
 	{
-		const char *p = "see";
-
-		/* One object */
-		if (floor_num == 1)
-		{
-			if (!can_pickup)	p = "have no room for";
-			else if (blind)     p = "feel";
-
-			/* Get the object */
-			o_ptr = &o_list[floor_o_idx];
-
-			/* Describe the object.  Less detail if blind. */
-			if (blind)
-				object_desc(o_name, sizeof(o_name), o_ptr,
-							ODESC_PREFIX | ODESC_BASE);
-			else
-				object_desc(o_name, sizeof(o_name), o_ptr,
-							ODESC_PREFIX | ODESC_FULL);
-
-			/* Message */
-			message_flush();
-			msg("You %s %s.", p, o_name);
-		}
-		else
-		{
-			ui_event_data e;
-
-			if (!can_pickup)	p = "have no room for the following objects";
-			else if (blind)     p = "feel something on the floor";
-
-			/* Scan all marked objects in the grid */
-			floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x03);
-
-			screen_save();
-			prt(format("You %s: ", p), 0, 0);
-			show_floor(floor_list, floor_num, (OLIST_WEIGHT));
-
-			/* Wait for it.  Use key as next command. */
-			e = inkey_ex();
-			Term_event_push(&e);
-
-			/* Restore screen */
-			screen_load();
-		}
-
-		/* Done */
-		return (objs_picked_up);
+	    can_pickup += inven_carry_okay(&o_list[floor_list[i]]);
+	}
+	
+	if (!can_pickup)
+	{
+	    /* Can't pick up, but probably want to know what's there. */
+	    event_signal(EVENT_SEEFLOOR);
+	    return objs_picked_up;
 	}
 
-
-	/* We can pick up objects.  Menus are not requested (yet). */
+	/* Use a menu interface for multiple objects, or pickup single objects */
 	if (pickup == 1)
 	{
-		/* Scan floor (again) */
-		floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x03);
-
-		/* Use a menu interface for multiple objects, or pickup single objects */
 		if (floor_num > 1)
 			pickup = 2;
 		else
-			this_o_idx = floor_o_idx;
+			this_o_idx = floor_list[0];
 	}
 
 
@@ -571,7 +535,6 @@ byte py_pickup(int pickup)
 	/* Indicate how many objects have been picked up. */
 	return (objs_picked_up);
 }
-
 
 
 /*

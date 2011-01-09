@@ -2,6 +2,7 @@
 #define INCLUDED_OBJECT_TYPES_H
 
 #include "z-bitflag.h"
+#include "z-quark.h"
 #include "z-rand.h"
 
 /**
@@ -62,7 +63,7 @@ typedef struct object_kind
 
 	/** Also saved in savefile **/
 
-	char *note;
+	quark_t note; /**< Autoinscription quark number */
 
 	bool aware;    /**< Set if player is aware of the kind's effects */
 	bool tried;    /**< Set if kind has been tried */
@@ -178,6 +179,9 @@ typedef struct ego_item
  *
  * Note that a "discount" on an item is permanent and never goes away.
  *
+ * Note that inscriptions are now handled via the "quark_str()" function
+ * applied to the "note" field, which will return NULL if "note" is zero.
+ *
  * Note that "object" records are "copied" on a fairly regular basis,
  * and care must be taken when handling such objects.
  *
@@ -241,7 +245,7 @@ typedef struct object
 	byte origin_depth;  /* What depth the item was found at */
 	u16b origin_xtra;   /* Extra information about origin */
 
-	char *note;
+	quark_t note; /* Inscription index */
 } object_type;
 
 typedef struct flavor {
@@ -259,29 +263,5 @@ typedef struct flavor {
 	char x_char;    /* Desired flavor character */
 } flavor_type;
 
-/*
- * Slay type.  Used for the global table of brands/slays and their effects.
- */
-typedef struct
-{
-	int slay_flag;		/* Object flag for the slay */
-	int monster_flag;	/* Which monster flag(s) make it vulnerable */
-	int resist_flag;	/* Which monster flag(s) make it resist */
-	int mult;		/* Slay multiplier */
-	const char *range_verb;	/* attack verb for ranged hits */
-	const char *melee_verb; /* attack verb for melee hits */
-	const char *active_verb; /* verb for when the object is active */
-	const char *desc;	/* description of vulnerable creatures */
-	const char *brand;	/* name of brand */
-} slay_t;
-
-/*
- * Slay cache. Used for looking up slay values in obj-power.c
- */
-typedef struct
-{
-	bitflag flags[OF_SIZE];   /* Combination of slays and brands */
-	s32b value;            /* Value of this combination */
-} flag_cache;
 
 #endif /* INCLUDED_OBJECT_TYPES_H */

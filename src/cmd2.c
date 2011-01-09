@@ -22,6 +22,7 @@
 #include "cmds.h"
 #include "files.h"
 #include "game-cmd.h"
+#include "game-event.h"
 #include "generate.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
@@ -2043,7 +2044,7 @@ void do_cmd_hold(cmd_code code, cmd_arg args[])
 	}
 
 	/* Pick things up, not using extra energy */
-	(void)py_pickup(0);
+	do_autopickup();
 
 	/* Hack -- enter a store if we are on one */
 	if ((cave->feat[p_ptr->py][p_ptr->px] >= FEAT_SHOP_HEAD) &&
@@ -2056,6 +2057,10 @@ void do_cmd_hold(cmd_code code, cmd_arg args[])
 
 		/* Free turn XXX XXX XXX */
 		p_ptr->energy_use = 0;
+	}
+	else
+	{
+	    event_signal(EVENT_SEEFLOOR);
 	}
 }
 
@@ -2071,13 +2076,17 @@ void do_cmd_pickup(cmd_code code, cmd_arg args[])
 	/* Pick up floor objects, forcing a menu for multiple objects. */
 	energy_cost = py_pickup(1) * 10;
 
-	/* Maximum time expenditure is a full turn. */
-	if (energy_cost > 100) energy_cost = 100;
-
 	/* Charge this amount of energy. */
 	p_ptr->energy_use = energy_cost;
 }
 
+/*
+ * Pick up objects on the floor beneath you.  -LM-
+ */
+void do_cmd_autopickup(cmd_code code, cmd_arg args[])
+{
+	p_ptr->energy_use = do_autopickup() * 10;
+}
 
 
 /*

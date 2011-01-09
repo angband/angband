@@ -191,7 +191,7 @@ void do_cmd_uninscribe(cmd_code code, cmd_arg args[])
 	if (obj_has_inscrip(o_ptr))
 		msg("Inscription removed.");
 
-	o_ptr->note = NULL;
+	o_ptr->note = 0;
 
 	p_ptr->notice |= (PN_COMBINE | PN_SQUELCH | PN_SORT_QUIVER);
 	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
@@ -202,7 +202,7 @@ void do_cmd_inscribe(cmd_code code, cmd_arg args[])
 {
 	object_type *o_ptr = object_from_item_idx(args[0].item);
 
-	o_ptr->note = string_make(args[1].string);
+	o_ptr->note = quark_add(args[1].string);
 
 	p_ptr->notice |= (PN_COMBINE | PN_SQUELCH | PN_SORT_QUIVER);
 	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);

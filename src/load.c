@@ -118,7 +118,7 @@ static int rd_item_2(object_type *o_ptr)
 	rd_string(buf, sizeof(buf));
 
 	/* Save the inscription */
-	if (buf[0]) o_ptr->note = string_make(buf);
+	if (buf[0]) o_ptr->note = quark_add(buf);
 
 
 	/* Lookup item kind */
@@ -342,7 +342,7 @@ static int rd_item_1(object_type *o_ptr)
 	rd_string(buf, sizeof(buf));
 
 	/* Save the inscription */
-	if (buf[0]) o_ptr->note = string_make(buf);
+	if (buf[0]) o_ptr->note = quark_add(buf);
 
 
 	/* Lookup item kind */
@@ -1242,7 +1242,7 @@ int rd_squelch(void)
 		if (!k)
 			quit_fmt("objkind_byid(%d) failed", kidx);
 		rd_string(tmp, sizeof(tmp));
-		k->note = string_make(tmp);
+		k->note = quark_add(tmp);
 	}
 	
 	return 0;

@@ -17,6 +17,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "object/slays.h"
 #include "object/tvalsval.h"
 #include "init.h"
 #include "effects.h"
@@ -449,7 +450,7 @@ static s16b choose_item(int a_idx)
 	int tval = 0;
 	int sval = 0;
 	object_kind *k_ptr;
-	int i;
+	int i = 0;
 	s16b k_idx, r;
 
 	/*
@@ -471,7 +472,7 @@ static s16b choose_item(int a_idx)
 		tval == TV_FOOD || tval == TV_MAGIC_BOOK || tval ==
 		TV_PRAYER_BOOK || tval == TV_GOLD || tval == TV_LIGHT ||
 		tval == TV_AMULET || tval == TV_RING || sval == SV_GROND ||
-		sval == SV_MORGOTH)
+		sval == SV_MORGOTH || k_info[i].alloc_prob == 0)
 	{
 		r = randint1(base_freq[z_info->k_max - 1]);
 		i = 0;
@@ -496,6 +497,9 @@ static s16b choose_item(int a_idx)
 	a_ptr->ds = k_ptr->ds;
 	a_ptr->weight = k_ptr->weight;
 	of_copy(a_ptr->flags, k_ptr->flags);
+	for (i = 0; i < MAX_PVALS; i++)
+		of_copy(a_ptr->pval_flags[i], k_ptr->pval_flags[i]);
+	a_ptr->num_pvals = k_ptr->num_pvals;
 	a_ptr->effect = 0;
 
 	/* Artifacts ignore everything */
@@ -684,7 +688,7 @@ static void parse_frequencies(void)
 	object_kind *k_ptr;
 	s32b temp, temp2;
 	s16b k_idx;
-
+	bitflag mask[OF_SIZE];
 
 	LOG_PRINT("\n****** BEGINNING GENERATION OF FREQUENCIES\n\n");
 
@@ -764,25 +768,13 @@ static void parse_frequencies(void)
 			/* Brands or slays - count all together */
 			if (flags_test(a_ptr->flags, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END))
 			{
-				const slay_t *s_ptr;
-
 				/* We have some brands or slays - count them */
-				temp = 0;
-				temp2 = 0;
+				flags_init(mask, OF_SIZE, OF_BRAND_MASK, FLAG_END);
+				temp2 = list_slays(a_ptr->flags, mask, NULL, NULL, NULL, FALSE);
+				flags_init(mask, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END);
+				temp = list_slays(a_ptr->flags, mask, NULL, NULL, NULL,	FALSE)
+						- temp2;
 
-				for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
-				{
-					if (of_has(a_ptr->flags, s_ptr->slay_flag))
-					{
-						bitflag slay_kill_mask[OF_SIZE], brand_mask[OF_SIZE];
-
-						flags_init(brand_mask, OF_SIZE, OF_BRAND_MASK, FLAG_END);
-						flags_init(slay_kill_mask, OF_SIZE, OF_SLAY_MASK, OF_KILL_MASK, FLAG_END);
-
-						if (of_has(slay_kill_mask, s_ptr->slay_flag)) temp++;
-						if (of_has(brand_mask, s_ptr->slay_flag)) temp2++;
-					}
-				}
 				LOG_PRINT1("Adding %d for slays\n", temp);
 				LOG_PRINT1("Adding %d for brands\n", temp2);
 
@@ -901,26 +893,13 @@ static void parse_frequencies(void)
 			/* Brands or slays - count all together */
 			if (flags_test(a_ptr->flags, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END))
 			{
-				const slay_t *s_ptr;
-
 				/* We have some brands or slays - count them */
-				temp = 0;
-				temp2 = 0;
+                flags_init(mask, OF_SIZE, OF_BRAND_MASK, FLAG_END);
+                temp2 = list_slays(a_ptr->flags, mask, NULL, NULL, NULL, FALSE);
+                flags_init(mask, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END);
+                temp = list_slays(a_ptr->flags, mask, NULL, NULL, NULL, FALSE)
+						- temp2;
 
-				for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
-				{
-					if (of_has(a_ptr->flags, s_ptr->slay_flag))
-					{
-						bitflag slay_kill_mask[OF_SIZE], brand_mask[OF_SIZE];
-
-						flags_init(brand_mask, OF_SIZE, OF_BRAND_MASK, FLAG_END);
-						flags_init(slay_kill_mask, OF_SIZE, OF_SLAY_MASK, FLAG_END);
-						flags_set(slay_kill_mask, OF_SIZE, OF_KILL_MASK, FLAG_END);
-
-						if (of_has(slay_kill_mask, s_ptr->slay_flag)) temp++;
-						if (of_has(brand_mask, s_ptr->slay_flag)) temp2++;
-					}
-				}
 				LOG_PRINT1("Adding %d for slays\n", temp);
 				LOG_PRINT1("Adding %d for brands\n", temp2);
 
@@ -1025,26 +1004,13 @@ static void parse_frequencies(void)
 			/* Brands or slays - count all together */
 			if (flags_test(a_ptr->flags, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END))
 			{
-				const slay_t *s_ptr;
-
 				/* We have some brands or slays - count them */
-				temp = 0;
-				temp2 = 0;
+                flags_init(mask, OF_SIZE, OF_BRAND_MASK, FLAG_END);
+                temp2 = list_slays(a_ptr->flags, mask, NULL, NULL, NULL, FALSE);
+                flags_init(mask, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END);
+                temp = list_slays(a_ptr->flags, mask, NULL, NULL, NULL, FALSE)
+						- temp2;
 
-				for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
-				{
-					if (of_has(a_ptr->flags, s_ptr->slay_flag))
-					{
-						bitflag slay_kill_mask[OF_SIZE], brand_mask[OF_SIZE];
-
-						flags_init(brand_mask, OF_SIZE, OF_BRAND_MASK, FLAG_END);
-						flags_init(slay_kill_mask, OF_SIZE, OF_SLAY_MASK, FLAG_END);
-						flags_set(slay_kill_mask, OF_SIZE, OF_KILL_MASK, FLAG_END);
-
-						if (of_has(slay_kill_mask, s_ptr->slay_flag)) temp++;
-						if (of_has(brand_mask, s_ptr->slay_flag)) temp2++;
-					}
-				}
 				LOG_PRINT1("Adding %d for slays\n", temp);
 				LOG_PRINT1("Adding %d for brands\n", temp2);
 
@@ -1811,6 +1777,7 @@ static bool add_flag(artifact_type *a_ptr, int flag)
 static void add_pval_flag(artifact_type *a_ptr, int flag)
 {
 	of_on(a_ptr->flags, flag);
+	of_on(a_ptr->pval_flags[DEFAULT_PVAL], flag);
 	do_pval(a_ptr);
 	LOG_PRINT2("Adding ability: %s (now %+d)\n", flag_names[flag], a_ptr->pval[DEFAULT_PVAL]);
 }
@@ -1825,6 +1792,7 @@ static bool add_fixed_pval_flag(artifact_type *a_ptr, int flag)
 		return FALSE;
 
 	of_on(a_ptr->flags, flag);
+	of_on(a_ptr->pval_flags[DEFAULT_PVAL], flag);
 	do_pval(a_ptr);
 	LOG_PRINT2("Adding ability: %s (now %+d)\n", flag_names[flag], a_ptr->pval[DEFAULT_PVAL]);
 
@@ -1838,6 +1806,7 @@ static bool add_fixed_pval_flag(artifact_type *a_ptr, int flag)
 static bool add_first_pval_flag(artifact_type *a_ptr, int flag)
 {
 	of_on(a_ptr->flags, flag);
+	of_on(a_ptr->pval_flags[DEFAULT_PVAL], flag);
 
 	if (a_ptr->pval[DEFAULT_PVAL] == 0)
 	{
@@ -1968,24 +1937,23 @@ static void add_high_resist(artifact_type *a_ptr)
 
 static void add_slay(artifact_type *a_ptr, bool brand)
 {
-	/* The last slay entry is a NULL slay_t */
-	int size = num_slays() - 1;
 	int count = 0;
-	const slay_t *s_ptr;
+	const struct slay *s_ptr;
+	bitflag mask[OF_SIZE];
 
-	for(count = 0; count < MAX_TRIES; count++)
-	{
-		s_ptr = &slay_table[randint0(size)];
-		if (brand && s_ptr->brand && !of_has(a_ptr->flags, s_ptr->slay_flag))
-		{
-			of_on(a_ptr->flags, s_ptr->slay_flag);
-			LOG_PRINT1("Adding brand: %s\n", s_ptr->brand);
-			return;
-		}
-		if (!brand && !s_ptr->brand && !of_has(a_ptr->flags, s_ptr->slay_flag))
-		{
-			of_on(a_ptr->flags, s_ptr->slay_flag);
-			LOG_PRINT1("Adding slay: %s\n", s_ptr->desc);
+	if (brand)
+		flags_init(mask, OF_SIZE, OF_BRAND_MASK, FLAG_END);
+	else
+		flags_init(mask, OF_SIZE, OF_SLAY_MASK, OF_KILL_MASK, FLAG_END);
+
+	for(count = 0; count < MAX_TRIES; count++) {
+		s_ptr = random_slay(mask);
+
+		if (!of_has(a_ptr->flags, s_ptr->object_flag)) {
+			of_on(a_ptr->flags, s_ptr->object_flag);
+
+			LOG_PRINT2("Adding %s: %s\n", s_ptr->brand ? "brand" : "slay",
+				s_ptr->brand ? s_ptr->brand : s_ptr->desc);
 			return;
 		}
 	}

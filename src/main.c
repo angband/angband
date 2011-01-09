@@ -398,11 +398,15 @@ int main(int argc, char *argv[])
 		argv[1] = NULL;
 	}
 
-	/* Get the file paths */
-	init_stuff();
-
 	/* Install "quit" hook */
 	quit_aux = quit_hook;
+
+	/* If we were told which mode to use, then use it */
+	if (mstr)
+		ANGBAND_SYS = mstr;
+
+	/* Get the file paths */
+	init_stuff();
 
 	/* Try the modules in the order specified by modules[] */
 	for (i = 0; i < (int)N_ELEMENTS(modules); i++)
@@ -414,7 +418,6 @@ int main(int argc, char *argv[])
 			if (0 == modules[i].init(argc, argv))
 			{
 				done = TRUE;
-				/*quit_fmt("ggg %s", ANGBAND_SYS);*/
 				break;
 			}
 		}

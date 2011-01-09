@@ -28,6 +28,9 @@ void do_cmd_study_spell(cmd_code code, cmd_arg args[]);
 void do_cmd_cast(cmd_code code, cmd_arg args[]);
 void do_cmd_study_book(cmd_code code, cmd_arg args[]);
 
+/* cmd1.c */
+int do_autopickup(void);
+
 /* cmd2.c */
 void do_cmd_go_up(cmd_code code, cmd_arg args[]);
 void do_cmd_go_down(cmd_code code, cmd_arg args[]);
@@ -46,6 +49,7 @@ void do_cmd_run(cmd_code code, cmd_arg args[]);
 void do_cmd_pathfind(cmd_code code, cmd_arg args[]);
 void do_cmd_hold(cmd_code code, cmd_arg args[]);
 void do_cmd_pickup(cmd_code code, cmd_arg args[]);
+void do_cmd_autopickup(cmd_code code, cmd_arg args[]);
 void do_cmd_rest(cmd_code code, cmd_arg args[]);
 void do_cmd_suicide(cmd_code code, cmd_arg args[]);
 void do_cmd_save_game(cmd_code code, cmd_arg args[]);
@@ -128,7 +132,7 @@ void textui_obj_study(void);
 void textui_obj_cast(void);
 
 /* ui-knowledge.c */
-extern void big_pad(int col, int row, byte a, byte c);
+extern int big_pad(int col, int row, byte a, byte c);
 extern void textui_browse_object_knowledge(void *obj, const char *name);
 extern void textui_knowledge_init(void);
 extern void textui_browse_knowledge(void);

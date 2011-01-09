@@ -20,17 +20,16 @@
 #include "button.h"
 #include "cave.h"
 #include "cmds.h"
-#include "game-cmd.h"
 #include "game-event.h"
 #include "init.h"
 #include "macro.h"
 #include "monster/constants.h"
+#include "object/slays.h"
 #include "object/tvalsval.h"
 #include "option.h"
 #include "parser.h"
 #include "prefs.h"
 #include "squelch.h"
-#include "types.h"
 
 static struct history_chart *histories;
 
@@ -1219,72 +1218,6 @@ static errr run_parse_e(struct parser *p) {
 	return parse_file(p, "ego_item");
 }
 
-/* Create the slay cache for slay combinations on ego items */
-static errr eval_e_slays(struct ego_item *items)
-{
-	int i;
-	int j;
-	int count = 0;
-	bitflag cacheme[OF_SIZE];
-	bitflag slay_mask[OF_SIZE];
-	bitflag **dupcheck;
-	ego_item_type *e_ptr;
-
-	/* Build the slay mask */
-	flags_init(slay_mask, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END);
-
-	/* Calculate necessary size of slay_cache */
-	dupcheck = C_ZNEW(z_info->e_max, bitflag *);
-	
-	for (i = 0; i < z_info->e_max; i++)
-	{
-		dupcheck[i] = C_ZNEW(OF_SIZE, bitflag);
-		e_ptr = items + i;
-
-		/* Find the slay flags on this ego */		
-		of_copy(cacheme, e_ptr->flags);
-		of_inter(cacheme, slay_mask);
-
-		/* Only consider non-empty combinations of slay flags */
-		if (!of_is_empty(cacheme))
-		{
-			/* Skip previously scanned combinations */
-			for (j = 0; j < i; j++)
-			{
-				if (of_is_equal(cacheme, dupcheck[j]))
-					continue;
-			}
-
-			/* msg("Found a new slay combo on an ego item"); */
-			count++;
-			of_copy(dupcheck[i], cacheme);
-		}
-	}
-
-	/* Allocate slay_cache with an extra empty element for an iteration stop */
-	slay_cache = C_ZNEW((count + 1), flag_cache);
-	count = 0;
-
-	/* Populate the slay_cache */
-	for (i = 0; i < z_info->e_max; i++)
-	{
-		if (!of_is_empty(dupcheck[i]))
-		{
-			of_copy(slay_cache[count].flags, dupcheck[i]);
-			slay_cache[count].value = 0;
-			count++;
-			/*msg("Cached a slay combination");*/
-		}
-	}
-
-	for (i = 0; i < z_info->e_max; i++)
-		FREE(dupcheck[i]);
-	FREE(dupcheck);
-
-	/* Success */
-	return 0;
-}
-
 static errr finish_parse_e(struct parser *p) {
 	struct ego_item *e, *n;
 
@@ -1295,7 +1228,7 @@ static errr finish_parse_e(struct parser *p) {
 		memcpy(&e_info[e->eidx], e, sizeof(*e));
 	}
 
-	eval_e_slays(e_info);
+	create_slay_cache(e_info);
 
 	e = parser_priv(p);
 	while (e) {
@@ -3219,6 +3152,9 @@ static errr init_other(void)
 	/* Initialize the "macro" package */
 	(void)macro_init();
 
+	/* Initialize the "quark" package */
+	(void)quarks_init();
+
 	/* Initialize squelch things */
 	squelch_init();
 	textui_knowledge_init();
@@ -3701,6 +3637,9 @@ void cleanup_angband(void)
 
 	/* Free the messages */
 	messages_free();
+
+	/* Free the "quarks" */
+	quarks_free();
 
 	mem_free(k_info);
 	mem_free(a_info);

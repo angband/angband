@@ -1620,12 +1620,11 @@ static void describe_monster_toughness(int r_idx, const monster_lore *l_ptr)
 			((p_ptr->state.to_h +
 			p_ptr->inventory[INVEN_WIELD].to_h) * BTH_PLUS_ADJ));
 
-		chance2 = 100 * (chance - (3 * r_ptr->ac / 4)) / chance;
+		/* Avoid division by zero errors */
+		if (chance < 1)
+			chance = 1;
 
-		if (chance2 > 95)
-			chance2 = 95;
-		if (chance2 < 5)
-			chance2 = 5;
+		chance2 = 90 * (chance - (3 * r_ptr->ac / 4)) / chance + 5;
 
 		text_out("You have a");
 		if ((chance2 == 8) || ((chance2 / 10) == 8))

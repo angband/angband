@@ -247,7 +247,7 @@ static void recharged_notice(const object_type *o_ptr, bool all)
 	else if (o_ptr->note)
 	{
 		/* Find a '!' */
-		s = strchr(o_ptr->note, '!');
+		s = strchr(quark_str(o_ptr->note), '!');
 
 		/* Process notification request */
 		while (s)
@@ -1029,11 +1029,13 @@ static void process_player(void)
 		/* Picking up objects */
 		else if (p_ptr->notice & PN_PICKUP)
 		{
-			/* Recursively call the pickup function, use energy */
-			p_ptr->energy_use = py_pickup(0) * 10;
+			p_ptr->energy_use = do_autopickup() * 10;
 			if (p_ptr->energy_use > 100)
 				p_ptr->energy_use = 100;
 			p_ptr->notice &= ~(PN_PICKUP);
+			
+			/* Appropriate time for the player to see objects */
+			event_signal(EVENT_SEEFLOOR);
 		}
 
 		/* Resting */
@@ -1682,6 +1684,7 @@ void play_game(void)
 		if (p_ptr->is_dead) {
 			if (arg_wizard) {
 				p_ptr->is_dead = FALSE;
+				p_ptr->chp = p_ptr->mhp;
 				p_ptr->noscore |= NOSCORE_WIZARD;
 			} else {
 				existing_dead_save = TRUE;

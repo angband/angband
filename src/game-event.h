@@ -27,6 +27,7 @@ typedef enum game_event_type
 	EVENT_MOUSEBUTTONS,     /* Displayed mouse buttons need changing */
 
 	EVENT_PLAYERMOVED,
+	EVENT_SEEFLOOR,         /* When the player would "see" floor objects */
 
 	EVENT_INVENTORY,
 	EVENT_EQUIPMENT,

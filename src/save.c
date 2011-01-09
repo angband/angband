@@ -93,7 +93,7 @@ static void wr_item(const object_type *o_ptr)
 	/* Save the inscription (if any) */
 	if (o_ptr->note)
 	{
-		wr_string(o_ptr->note);
+		wr_string(quark_str(o_ptr->note));
 	}
 	else
 	{
@@ -443,7 +443,7 @@ void wr_squelch(void)
 		if (!k_info[i].note)
 			continue;
 		wr_s16b(i);
-		wr_string(k_info[i].note);
+		wr_string(quark_str(k_info[i].note));
 	}
 
 	return;

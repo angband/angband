@@ -126,7 +126,6 @@ void object_notice_ego(object_type *o_ptr);
 void object_notice_sensing(object_type *o_ptr);
 void object_sense_artifact(object_type *o_ptr);
 void object_notice_effect(object_type *o_ptr);
-void object_notice_slay(object_type *o_ptr, int flag);
 void object_notice_attack_plusses(object_type *o_ptr);
 bool object_notice_flag(object_type *o_ptr, int flag);
 bool object_notice_flags(object_type *o_ptr, bitflag flags[OF_SIZE]);
@@ -151,9 +150,6 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, odesc_detail
 int which_pval(const object_type *o_ptr, const int flag);
 
 /* obj-info.c */
-extern const slay_t slay_table[];
-size_t num_slays(void);
-
 textblock *object_info(const object_type *o_ptr, oinfo_detail_t mode);
 textblock *object_info_ego(struct ego_item *ego);
 void object_info_spoil(ang_file *f, const object_type *o_ptr, int wrap);
@@ -214,6 +210,7 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr);
 void object_wipe(object_type *o_ptr);
 void object_copy(object_type *o_ptr, const object_type *j_ptr);
 void object_copy_amt(object_type *dst, object_type *src, int amt);
+void object_split(struct object *dest, struct object *src, int amt);
 s16b floor_carry(struct cave *c, int y, int x, object_type *j_ptr);
 void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x, bool verbose);
 void acquirement(int y1, int x1, int level, int num, bool great);
