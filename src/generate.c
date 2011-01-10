@@ -1760,7 +1760,6 @@ static bool build_type6(struct cave *c, int y0, int x0) {
 }
 
 
-
 /**
  * Build a vault from its string representation.
  */
@@ -1848,6 +1847,10 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cptr
 	}
 }
 
+
+/**
+ * Helper function for building vaults.
+ */
 static bool build_vault_type(struct cave*c, int y0, int x0, int typ, const char *label) {
 	vault_type *v_ptr = random_vault(typ);
 	if (v_ptr == NULL) {
@@ -1867,6 +1870,7 @@ static bool build_vault_type(struct cave*c, int y0, int x0, int typ, const char 
 	return TRUE;
 }
 
+
 /**
  * Build a lesser vault.
  */
@@ -1883,8 +1887,8 @@ static bool build_type8(struct cave *c, int y0, int x0) {
 }
 
 
-/*
- * Type 9 -- greater vaults (see "vault.txt")
+/**
+ * Build a greater vaults.
  *
  * Since Greater Vaults are so large (4x6 blocks, in a 6x18 dungeon) there is
  * a 63% chance that a randomly chosen quadrant to start a GV on won't work.
@@ -1894,7 +1898,7 @@ static bool build_type8(struct cave *c, int y0, int x0) {
  *
  * The following code should make a greater vault with frequencies:
  * dlvl  freq
-	* 100+  18%
+ * 100+  18%
 	* 90-99	16-18%
 	* 80-89	10 -11%
 	* 70-79	5.7 - 6.5%
@@ -1910,9 +1914,7 @@ static bool build_type9(struct cave *c, int y0, int x0) {
 	/* Only try to build a GV as the first room. */
 	if (dun->cent_n > 0) return FALSE;
 
-	/* At level 90 and above, you have a 2/3 chance trying a GV.
-	   	* At levels 80-89 you have a 4/9 chance, and so on...
-     */
+	/* Level 90+ has a 2/3 chance, level 80-89 has 4/9, ... */
 	for(i = 90; i > c->depth; i -= 10) {
 		numerator *= 2;
 		denominator *= 3;
@@ -1928,36 +1930,22 @@ static bool build_type9(struct cave *c, int y0, int x0) {
 /**
  * Constructs a tunnel between two points
  *
- * This function must be called BEFORE any streamers are created,
- * since we use the special "granite wall" sub-types to keep track
- * of legal places for corridors to pierce rooms.
+ * This function must be called BEFORE any streamers are created, since we use
+ * the special "granite wall" sub-types to keep track of legal places for
+ * corridors to pierce rooms.
  *
- * We use "door_flag" to prevent excessive construction of doors
- * along overlapping corridors.
- *
- * We queue the tunnel grids to prevent door creation along a corridor
- * which intersects itself.
+ * We queue the tunnel grids to prevent door creation along a corridor which
+ * intersects itself.
  *
  * We queue the wall piercing grids to prevent a corridor from leaving
  * a room and then coming back in through the same entrance.
  *
- * We "pierce" grids which are "outer" walls of rooms, and when we
- * do so, we change all adjacent "outer" walls of rooms into "solid"
- * walls so that no two corridors may use adjacent grids for exits.
+ * We pierce grids which are outer walls of rooms, and when we do so, we change
+ * all adjacent outer walls of rooms into solid walls so that no two corridors
+ * may use adjacent grids for exits.
  *
- * The "solid" wall check prevents corridors from "chopping" the
- * corners of rooms off, as well as "silly" door placement, and
- * "excessively wide" room entrances.
- *
- * Useful "feat" values:
- *   FEAT_WALL_EXTRA -- granite walls
- *   FEAT_WALL_INNER -- inner room walls
- *   FEAT_WALL_OUTER -- outer room walls
- *   FEAT_WALL_SOLID -- solid room walls
- *   FEAT_PERM_EXTRA -- shop walls (perma)
- *   FEAT_PERM_INNER -- inner room walls (perma)
- *   FEAT_PERM_OUTER -- outer room walls (perma)
- *   FEAT_PERM_SOLID -- dungeon border (perma)
+ * The solid wall check prevents corridors from chopping the corners of rooms
+ * off, as well as silly door placement, and excessively wide room entrances.
  */
 static void build_tunnel(struct cave *c, int row1, int col1, int row2, int col2) {
 	int i, y, x;
@@ -1966,12 +1954,13 @@ static void build_tunnel(struct cave *c, int row1, int col1, int row2, int col2)
 	int start_row, start_col;
 	int main_loop_count = 0;
 
+	/* Used to prevent excessive door creation along overlapping corridors. */
 	bool door_flag = FALSE;
-
+	
 	/* Reset the arrays */
 	dun->tunn_n = 0;
 	dun->wall_n = 0;
-
+	
 	/* Save the starting location */
 	start_row = row1;
 	start_col = col1;
@@ -2136,12 +2125,13 @@ static void build_tunnel(struct cave *c, int row1, int col1, int row2, int col2)
 	}
 }
 
-/*
- * Count the number of "corridor" grids adjacent to the given grid.
+/**
+ * Count the number of corridor grids adjacent to the given grid.
  *
- * This routine currently only counts actual "empty floor" grids
- * which are not in rooms.  We might want to also count stairs,
- * open doors, closed doors, etc.  XXX XXX
+ * This routine currently only counts actual "empty floor" grids which are not
+ * in rooms.
+ *
+ * TODO: count stairs, open doors, closed doors?
  */
 static int next_to_corr(struct cave *c, int y1, int x1) {
 	int i, y, x, k = 0;
@@ -2167,8 +2157,11 @@ static int next_to_corr(struct cave *c, int y1, int x1) {
 	return k;
 }
 
-/* Returns whether a doorway can be built in a space. To have a doorway, a space
- * must be adjacent to at least two corridors and be between two walls.
+/**
+ * Returns whether a doorway can be built in a space.
+ *
+ * To have a doorway, a space must be adjacent to at least two corridors and be
+ * between two walls.
  */
 static bool possible_doorway(struct cave *c, int y, int x) {
 	assert(cave_in_bounds_fully(c, y, x));
