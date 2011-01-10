@@ -9,7 +9,7 @@ void place_secret_door(struct cave *c, int y, int x);
 void place_closed_door(struct cave *c, int y, int x);
 void place_random_door(struct cave *c, int y, int x);
 
-extern struct vault *random_vault(void);
+extern struct vault *random_vault(int typ);
 
 struct tunnel_profile {
 	const char *name;
@@ -35,6 +35,7 @@ struct streamer_profile {
 * anchor coordinates.
 */
 typedef void (*cave_builder) (struct cave *c, struct player *p);
+
 
 struct cave_profile {
 	const char *name;
@@ -68,9 +69,9 @@ struct cave_profile {
 typedef bool (*room_builder) (struct cave *c, int y0, int x0);
 
 
-/*
- * This is a more advanced replacement for room_data -- it tracks information
- * needed to generate the room, including the funciton used to build it.
+/**
+ * This is a replacement for room_data -- it tracks information
+ * needed to generate the room, including the function used to build it.
  */
 struct room_profile {
 	const char *name;
