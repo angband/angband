@@ -432,7 +432,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 	int path_n;
 	u16b path_g[256];
 
-	int msec = op_ptr->delay_factor * op_ptr->delay_factor;
+	int msec = op_ptr->delay_factor;
 
 	/* Get the "bow" */
 	j_ptr = &p_ptr->inventory[INVEN_BOW];
@@ -805,7 +805,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 	int path_n;
 	u16b path_g[256];
 
-	int msec = op_ptr->delay_factor * op_ptr->delay_factor;
+	int msec = op_ptr->delay_factor;
 
 	/* Get item to throw and direction in which to throw it. */
 	item = args[0].item;

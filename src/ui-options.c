@@ -995,9 +995,8 @@ static bool askfor_aux_numbers(char *buf, size_t buflen, size_t *curs, size_t *l
  */
 static void do_cmd_delay(const char *name, int row)
 {
-	bool res;
 	char tmp[4] = "";
-	int msec = op_ptr->delay_factor * op_ptr->delay_factor;
+	int msec = op_ptr->delay_factor;
 
 	strnfmt(tmp, sizeof(tmp), "%i", op_ptr->delay_factor);
 
@@ -1006,17 +1005,14 @@ static void do_cmd_delay(const char *name, int row)
 	/* Prompt */
 	prt("Command: Base Delay Factor", 20, 0);
 
-	prt(format("Current base delay factor: %d (%d msec)",
+	prt(format("Current base delay factor: %d msec",
 			   op_ptr->delay_factor, msec), 22, 0);
 	prt("New base delay factor (0-255): ", 21, 0);
 
-	/* Ask the user for a string */
-	res = askfor_aux(tmp, sizeof(tmp), askfor_aux_numbers);
-
-	/* Process input */
-	if (res)
-	{
-		op_ptr->delay_factor = (u16b) strtoul(tmp, NULL, 0);
+	/* Ask for a numeric value */
+	if (askfor_aux(tmp, sizeof(tmp), askfor_aux_numbers)) {
+		u16b val = (u16b) strtoul(tmp, NULL, 0);
+		op_ptr->delay_factor = MIN(val, 255);
 	}
 
 	screen_load();
