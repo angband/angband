@@ -388,22 +388,8 @@ static bool obj_desc_show_weapon(const object_type *o_ptr)
 	if (o_ptr->to_h && o_ptr->to_d) return TRUE;
 
 	/* You need to list both to_h and to_d for things like unaware rings of accuracy and damage e.g. to differentiate (+8) */
-	if ((o_ptr->to_h || o_ptr->to_d) && !object_flavor_is_aware(o_ptr)) return TRUE;
-
-	switch (o_ptr->tval)
-	{
-		case TV_SHOT:
-		case TV_BOLT:
-		case TV_ARROW:
-		case TV_BOW:
-		case TV_HAFTED:
-		case TV_POLEARM:
-		case TV_SWORD:
-		case TV_DIGGING:
-		{
-			return TRUE;
-		}
-	}
+	if ((o_ptr->to_h || o_ptr->to_d) && !object_flavor_is_aware(o_ptr))
+		return TRUE;
 
 	return FALSE;
 }
@@ -508,39 +494,24 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 	object_flags(o_ptr, flags);
 	object_flags_known(o_ptr, flags_known);
 
-	/* Dump base weapon info */
-	switch (o_ptr->tval)
+	if (of_has(flags, OF_SHOW_DICE))
 	{
-		/* Weapons */
-		case TV_SHOT:
-		case TV_BOLT:
-		case TV_ARROW:
-		case TV_HAFTED:
-		case TV_POLEARM:
-		case TV_SWORD:
-		case TV_DIGGING:
-		{
-			/* Only display the real damage dice if the combat stats are known */
-			if (spoil || object_attack_plusses_are_visible(o_ptr))
-				strnfcat(buf, max, &end, " (%dd%d)", o_ptr->dd, o_ptr->ds);
-			else
-				strnfcat(buf, max, &end, " (%dd%d)", k_ptr->dd, k_ptr->ds);
-			break;
-		}
-
-		/* Missile launchers */
-		case TV_BOW:
-		{
-			/* Display shooting power as part of the multiplier */
-			if (of_has(flags, OF_MIGHT) &&
-			    (spoil || object_flag_is_known(o_ptr, OF_MIGHT)))
-				strnfcat(buf, max, &end, " (x%d)", (o_ptr->sval % 10) + o_ptr->pval[which_pval(o_ptr, OF_MIGHT)]);
-			else
-				strnfcat(buf, max, &end, " (x%d)", o_ptr->sval % 10);
-			break;
-		}
+		/* Only display the real damage dice if the combat stats are known */
+		if (spoil || object_attack_plusses_are_visible(o_ptr))
+			strnfcat(buf, max, &end, " (%dd%d)", o_ptr->dd, o_ptr->ds);
+		else
+			strnfcat(buf, max, &end, " (%dd%d)", k_ptr->dd, k_ptr->ds);
 	}
 
+	if (of_has(flags, OF_SHOW_MULTIPLIER))
+	{
+		/* Display shooting power as part of the multiplier */
+		if (of_has(flags, OF_MIGHT) &&
+		    (spoil || object_flag_is_known(o_ptr, OF_MIGHT)))
+			strnfcat(buf, max, &end, " (x%d)", (o_ptr->sval % 10) + o_ptr->pval[which_pval(o_ptr, OF_MIGHT)]);
+		else
+			strnfcat(buf, max, &end, " (x%d)", o_ptr->sval % 10);
+	}
 
 	/* Show weapon bonuses */
 	if (spoil || object_attack_plusses_are_visible(o_ptr))
