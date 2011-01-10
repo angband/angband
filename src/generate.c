@@ -25,6 +25,29 @@
 #include "trap.h"
 #include "z-type.h"
 
+static struct dun_data *dun;
+
+static void town_gen(struct cave *c, struct player *p);
+static void cave_gen(struct cave *c, struct player *p);
+
+static bool build_abc(struct cave *c, int y0, int x0);
+static bool build_xyz(struct cave *c, int y0, int x0);
+
+static bool build_type1(struct cave *c, int y0, int x0);
+static bool build_type2(struct cave *c, int y0, int x0);
+static bool build_type3(struct cave *c, int y0, int x0);
+static bool build_type4(struct cave *c, int y0, int x0);
+static bool build_type5(struct cave *c, int y0, int x0);
+static bool build_type6(struct cave *c, int y0, int x0);
+static bool build_type7(struct cave *c, int y0, int x0);
+static bool build_type8(struct cave *c, int y0, int x0);
+static bool build_type9(struct cave *c, int y0, int x0);
+
+static void alloc_objects(struct cave *c, int set, int typ, int num, int depth);
+static bool alloc_object(struct cave *c, int set, int typ, int depth);
+
+#define ROOM_LOG(fmt, ...) if (OPT(cheat_room)) msg(fmt, __VA_ARGS__);
+
 /*
  * Note that Level generation is *not* an important bottleneck, though it can
  * be annoyingly slow on older machines...  Thus we emphasize "simplicity" and
@@ -99,7 +122,7 @@
  * Dungeon allocation places and types, used with alloc_object().
  */
 #define SET_CORR	1 /* Hallway */
-#define SET_ROOM	2	/* Room */
+#define SET_ROOM 2 /* Room */
 #define SET_BOTH 3	/* Anywhere */
 
 #define TYP_RUBBLE 1 /* Rubble */
@@ -120,8 +143,9 @@
  */
 #define CENT_MAX 100
 #define DOOR_MAX 200
-#define WALL_MAX	500
+#define WALL_MAX 500
 #define TUNN_MAX	900
+
 
 /**
  * Structure to hold all "dungeon generation" data
@@ -157,26 +181,6 @@ struct dun_data {
 	bool crowded;
 };
 
-static struct dun_data *dun;
-
-static void town_gen(struct cave *c, struct player *p);
-static void cave_gen(struct cave *c, struct player *p);
-
-static bool build_type1(struct cave *c, int y0, int x0);
-static bool build_type2(struct cave *c, int y0, int x0);
-static bool build_type3(struct cave *c, int y0, int x0);
-static bool build_type4(struct cave *c, int y0, int x0);
-static bool build_type5(struct cave *c, int y0, int x0);
-static bool build_type6(struct cave *c, int y0, int x0);
-static bool build_type7(struct cave *c, int y0, int x0);
-static bool build_type8(struct cave *c, int y0, int x0);
-static bool build_type9(struct cave *c, int y0, int x0);
-
-static void alloc_objects(struct cave *c, int set, int typ, int num, int depth);
-static bool alloc_object(struct cave *c, int set, int typ, int depth);
-
-#define ROOM_LOG(fmt, ...) if (OPT(cheat_room)) msg(fmt, __VA_ARGS__);
-
 
 /*
  * Profile used for generating the town level.
@@ -195,21 +199,24 @@ static struct cave_profile town_profile = {
 	NULL
 };
 
+
 /* name function width height min-depth crowded? rarity %cutoff */
-static struct room_profile default_rooms[9] = {
+static struct room_profile default_rooms[] = {
 	/* greater vaults only have rarity 1 but they have other checks */
 	{"greater vault", build_type9, 4, 6, 10, FALSE, 1, 100},
 
 	/* very rare rooms (rarity=2) */
-	{"medium vault",  build_type8, 2, 2, 5, FALSE, 2, 10},
-	{"lesser vault",  build_type7, 2, 3, 5, FALSE, 2, 25},
-	{"monster pit",   build_type6, 1, 3, 5, TRUE, 2, 40},
-	{"monster nest",  build_type5, 1, 3, 5, TRUE, 2, 50},
+	{"medium vault", build_type8, 2, 2, 5, FALSE, 2, 10},
+	{"lesser vault", build_type7, 2, 3, 5, FALSE, 2, 25},
+	{"monster pit", build_type6, 1, 3, 5, TRUE, 2, 40},
+	{"monster nest", build_type5, 1, 3, 5, TRUE, 2, 50},
 
 	/* unusual rooms (rarity=1) */
-	{"large room",    build_type4, 1, 3, 3, FALSE, 1, 25},
-	{"crossed room",  build_type3, 1, 3, 3, FALSE, 1, 50},
-	{"overlap room",  build_type2, 1, 3, 1, FALSE, 1, 100},
+	{"large room", build_type4, 1, 3, 3, FALSE, 1, 25},
+	{"crossed room", build_type3, 1, 3, 3, FALSE, 1, 50},
+	{"abc room", build_abc, 1, 3, 3, FALSE, 1, 52},
+	{"xyz room", build_xyz, 1, 3, 3, FALSE, 1, 54},
+	{"overlap room", build_type2, 1, 3, 1, FALSE, 1, 100},
 
 	/* normal rooms */
 	{"simple room",   build_type1, 1, 3, 1, FALSE, 0, 100}
@@ -223,7 +230,7 @@ static struct room_profile default_rooms[9] = {
 static struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
 	{
 		/* name builder dun_rooms dun_unusual max_rarity n_room_profiles */
-		"cave-default", cave_gen, 50, 200, 2, 9,
+		"cave-default", cave_gen, 50, 200, 2, N_ELEMENTS(default_rooms),
 
 		/* name rnd chg con pen jct */
 		{"tunnel-default", 10, 30, 15, 25, 90},
@@ -597,7 +604,7 @@ static bool alloc_object(struct cave *c, int set, int typ, int depth) {
 
 
 /**
- *
+ * Add visible treasure to a mineral square.
  */
 static void upgrade_mineral(struct cave *c, int y, int x) {
 	switch (c->feat[y][x]) {
@@ -842,6 +849,15 @@ static void generate_hole(struct cave *c, int y1, int x1, int y2, int x2, int fe
 		case 2: cave_set_feat(c, y2, x0, feat); break;
 		case 3: cave_set_feat(c, y0, x2, feat); break;
 	}
+}
+
+
+static bool build_abc(struct cave *c, int y0, int x0) {
+	return FALSE;
+}
+
+static bool build_xyz(struct cave *c, int y0, int x0) {
+	return FALSE;
 }
 
 
@@ -1943,10 +1959,6 @@ static bool build_type9(struct cave *c, int y0, int x0) {
  *   FEAT_PERM_OUTER -- outer room walls (perma)
  *   FEAT_PERM_SOLID -- dungeon border (perma)
  */
-#define DUN_TUN_RND 10	/* Chance of random direction */
-#define DUN_TUN_CHG	30	/* Chance of changing direction */
-#define DUN_TUN_CON	15	/* Chance of extra tunneling */
-#define DUN_TUN_PEN	25 /* Chance of doors at room entrances */
 static void build_tunnel(struct cave *c, int row1, int col1, int row2, int col2) {
 	int i, y, x;
 	int tmp_row, tmp_col;
@@ -1973,12 +1985,12 @@ static void build_tunnel(struct cave *c, int row1, int col1, int row2, int col2)
 		if (main_loop_count++ > 2000) break;
 
 		/* Allow bends in the tunnel */
-		if (randint0(100) < DUN_TUN_CHG) {
+		if (randint0(100) < dun->profile->tun.chg) {
 			/* Get the correct direction */
 			correct_dir(&row_dir, &col_dir, row1, col1, row2, col2);
 
 			/* Random direction */
-			if (randint0(100) < DUN_TUN_RND)
+			if (randint0(100) < dun->profile->tun.rnd)
 				rand_dir(&row_dir, &col_dir);
 		}
 
@@ -1991,7 +2003,7 @@ static void build_tunnel(struct cave *c, int row1, int col1, int row2, int col2)
 			correct_dir(&row_dir, &col_dir, row1, col1, row2, col2);
 
 			/* Random direction */
-			if (randint0(100) < DUN_TUN_RND)
+			if (randint0(100) < dun->profile->tun.rnd)
 				rand_dir(&row_dir, &col_dir);
 
 			/* Get the next location */
@@ -2082,7 +2094,7 @@ static void build_tunnel(struct cave *c, int row1, int col1, int row2, int col2)
 			}
 
 			/* Hack -- allow pre-emptive tunnel termination */
-			if (randint0(100) >= DUN_TUN_CON) {
+			if (randint0(100) >= dun->profile->tun.con) {
 				/* Distance between row1 and start_row */
 				tmp_row = row1 - start_row;
 				if (tmp_row < 0) tmp_row = (-tmp_row);
@@ -2119,7 +2131,7 @@ static void build_tunnel(struct cave *c, int row1, int col1, int row2, int col2)
 		cave_set_feat(c, y, x, FEAT_FLOOR);
 
 		/* Place a random door */
-		if (randint0(100) < DUN_TUN_PEN)
+		if (randint0(100) < dun->profile->tun.pen)
 			place_random_door(c, y, x);
 	}
 }
@@ -2172,25 +2184,23 @@ static bool possible_doorway(struct cave *c, int y, int x) {
 }
 
 
-/*
+/**
  * Places door at y, x position if at least 2 walls found
  */
-#define DUN_TUN_JCT 90 /* Chance of doors at tunnel junctions */
 static void try_door(struct cave *c, int y, int x) {
 	assert(cave_in_bounds(c, y, x));
 
-	if (c->feat[y][x] >= FEAT_MAGMA)
-		return;
-	else if (c->info[y][x] & CAVE_ROOM)
-		return;
-	else if (randint0(100) < DUN_TUN_JCT && possible_doorway(c, y, x))
+	if (c->feat[y][x] >= FEAT_MAGMA) return;
+	if (c->info[y][x] & CAVE_ROOM) return;
+
+	if (randint0(100) < dun->profile->tun.jct && possible_doorway(c, y, x))
 		place_random_door(c, y, x);
 }
 
 
 
 
-/*
+/**
  * Attempt to build a room of the given type at the given block
  *
  * Note that we restrict the number of "crowded" rooms to reduce
@@ -2253,7 +2263,7 @@ static bool room_build(struct cave *c, int by0, int bx0, struct room_profile pro
  * Generate a new dungeon level.
  */
 #define DUN_AMT_ROOM 7	/* Number of objects for rooms */
-#define DUN_AMT_ITEM	2	/* Number of objects for rooms/corridors */
+#define DUN_AMT_ITEM 2 /* Number of objects for rooms/corridors */
 #define DUN_AMT_GOLD	3 /* Amount of treasure for rooms/corridors */
 static void cave_gen(struct cave *c, struct player *p) {
 	int i, j, k, l, y, x, y1, x1;
@@ -2462,20 +2472,12 @@ static void cave_gen(struct cave *c, struct player *p) {
 	alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(DUN_AMT_GOLD, 3), c->depth);
 }
 
-/*
+
+/**
  * Builds a store at a given pseudo-location
  *
- * As of 2.7.4 (?) the stores are placed in a more "user friendly"
- * configuration, such that the four "center" buildings always
- * have at least four grids between them, to allow easy running,
- * and the store doors tend to face the middle of town.
- *
- * The stores now lie inside boxes from 3-9 and 12-18 vertically,
- * and from 7-17, 21-31, 35-45, 49-59.  Note that there are thus
- * always at least 2 open grids between any disconnected walls.
- *
- * Note the use of "town_illuminate()" to handle all "illumination"
- * and "memorization" issues.
+ * Currently, there is a main street horizontally through the middle of town,
+ * and all the shops face it (e.g. the shops on the north side face south).
  */
 static void build_store(struct cave *c, int n, int yy, int xx) {
 	/* Find the "center" of the store */
@@ -2499,16 +2501,19 @@ static void build_store(struct cave *c, int n, int yy, int xx) {
 	cave_set_feat(c, dy, dx, FEAT_SHOP_HEAD + n);
 }
 
-/*
+
+/**
  * Generate the "consistent" town features, and place the player
  *
- * Hack -- play with the R.N.G. to always yield the same town
- * layout, including the size and shape of the buildings, the
- * locations of the doorways, and the location of the stairs.
+ * HACK: We seed the simple RNG, so we always get the same town layout,
+ * including the size and shape of the buildings, the locations of the
+ * doorways, and the location of the stairs. This means that if any of the
+ * functions used to build the town change the way they use the RNG, the
+ * town layout will be generated differently.
  *
  * XXX: Remove this gross hack when this piece of code is fully reentrant -
- * i.e., when all we need to do is swing a pointer to change caves, we just need
- * to generate the town once.
+ * i.e., when all we need to do is swing a pointer to change caves, we just
+ * need to generate the town once (we will also need to save/load the town).
  */
 static void town_gen_hack(struct cave *c, struct player *p) {
 	int y, x, n, k;
@@ -2553,21 +2558,13 @@ static void town_gen_hack(struct cave *c, struct player *p) {
 	Rand_quick = FALSE;
 }
 
-/*
- * Town logic flow for generation of new town
+
+/**
+ * Town logic flow for generation of new town.
  *
- * We start with a fully wiped cave of normal floors.
- *
- * Note that town_gen_hack() plays games with the RNG.
- *
- * This function does NOT do anything about the owners of the stores,
- * nor the contents thereof.  It only handles the physical layout.
- *
- * We place the player on the stairs at the same time we make them.
- *
- * Hack -- since the player always leaves the dungeon by the stairs,
- * he is always placed on the stairs, even if he left the dungeon via
- * word of recall or teleport level.
+ * We start with a fully wiped cave of normal floors. This function does NOT do
+ * anything about the owners of the stores, nor the contents thereof. It only
+ * handles the physical layout.
  */
 static void town_gen(struct cave *c, struct player *p) {
 	int i;
@@ -2582,7 +2579,8 @@ static void town_gen(struct cave *c, struct player *p) {
 	/* Start with solid walls. We can't use c->height and c->width here
 	 * because then there'll be a bunch of empty space in the level that
 	 * monsters might spawn in (or teleport might take you to, or whatever).
-	 * XXX: fix this to use c->height and c->width when all the 'choose
+	 *
+	 * TODO: fix this to use c->height and c->width when all the 'choose
 	 * random location' things honor them.
 	 */
 	generate_fill(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, FEAT_PERM_SOLID);
@@ -2601,7 +2599,8 @@ static void town_gen(struct cave *c, struct player *p) {
 		alloc_monster(c, loc(p->px, p->py), 3, TRUE, c->depth);
 }
 
-/*
+
+/**
  * Clear the dungeon, ready for generation to begin.
  */
 static void cave_clear(struct cave *c, struct player *p) {
@@ -2613,30 +2612,24 @@ static void cave_clear(struct cave *c, struct player *p) {
 	/* Clear flags and flow information. */
 	for (y = 0; y < DUNGEON_HGT; y++) {
 		for (x = 0; x < DUNGEON_WID; x++) {
-			/* No features */
+			/* Erase features */
 			c->feat[y][x] = 0;
 
-			/* No flags */
+			/* Erase flags */
 			c->info[y][x] = 0;
 			c->info2[y][x] = 0;
 
-			/* No flow */
+			/* Erase flow */
 			c->cost[y][x] = 0;
 			c->when[y][x] = 0;
 
-			/* Clear any left-over monsters (should be none) and the player. */
+			/* Erase monsters/player */
 			c->m_idx[y][x] = 0;
 		}
 	}
 
-	/* Mega-Hack -- no player in dungeon yet */
+	/* Unset the player's coordinates */
 	p->px = p->py = 0;
-
-	/* Hack -- illegal panel */
-#ifdef WTF
-	Term->offset_y = DUNGEON_HGT;
-	Term->offset_x = DUNGEON_WID;
-#endif
 
 	/* Nothing special here yet */
 	c->good_item = FALSE;
@@ -2645,31 +2638,25 @@ static void cave_clear(struct cave *c, struct player *p) {
 	c->rating = 0;
 }
 
-/*
- * Calculate the level feeling, using a "rating" and the player's depth.
+/**
+ * Calculate the level feeling.
  */
-static int calculate_feeling(struct cave *c)
-{
-	int feeling;
-
+static int calculate_feeling(struct cave *c) {
 	/* Town gets no feeling */
 	if (c->depth == 0) return 0;
 
-	/* Extract the feeling */
-	if      (c->rating > 50 +     c->depth    ) feeling = 2;
-	else if (c->rating > 40 + 4 * c->depth / 5) feeling = 3;
-	else if (c->rating > 30 + 3 * c->depth / 5) feeling = 4;
-	else if (c->rating > 20 + 2 * c->depth / 5) feeling = 5;
-	else if (c->rating > 15 + 1 * c->depth / 3) feeling = 6;
-	else if (c->rating > 10 + 1 * c->depth / 5) feeling = 7;
-	else if (c->rating >  5 + 1 * c->depth /10) feeling = 8;
-	else if (c->rating >  0) feeling = 9;
-	else feeling = 10;
+	/* Artifacts trigger a special feeling when preserve=no */
+	if (c->good_item && OPT(birth_no_preserve)) return 1;
 
-	/* Hack -- Have a special feeling sometimes */
-	if (c->good_item && OPT(birth_no_preserve)) feeling = 1;
-
-	return feeling;
+	if (c->rating > 50 + c->depth) return 2;
+	if (c->rating > 40 + 4 * c->depth / 5) return 3;
+	if (c->rating > 30 + 3 * c->depth / 5) return 4;
+	if (c->rating > 20 + 2 * c->depth / 5) return 5;
+	if (c->rating > 15 + c->depth / 3) return 6;
+	if (c->rating > 10 + c->depth / 5) return 7;
+	if (c->rating > 5 + c->depth / 10) return 8;
+	if (c->rating > 0) return 9;
+	return 10;
 }
 
 /**
