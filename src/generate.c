@@ -104,7 +104,7 @@
 
 #define TYP_RUBBLE 1 /* Rubble */
 #define TYP_TRAP 3	/* Trap */
-#define TYP_GOLD	4	/* Gold */
+#define TYP_GOLD 4	/* Gold */
 #define TYP_OBJECT 5	/* Object */
 
 /*
@@ -112,14 +112,14 @@
  * Used for building fixed-size arrays.
  */
 #define MAX_ROOMS_ROW (DUNGEON_HGT / BLOCK_HGT)
-#define MAX_ROOMS_COL	(DUNGEON_WID / BLOCK_WID)
+#define MAX_ROOMS_COL (DUNGEON_WID / BLOCK_WID)
 
 /*
  * Bounds on some arrays used in the "dun_data" structure.
  * These bounds are checked, though usually this is a formality.
  */
 #define CENT_MAX 100
-#define DOOR_MAX	200
+#define DOOR_MAX 200
 #define WALL_MAX	500
 #define TUNN_MAX	900
 
@@ -128,7 +128,7 @@
  */
 struct dun_data {
 	/* The profile used to generate the level */
-	struct cave_profile *profile;
+	const struct cave_profile *profile;
 
 	/* Array of centers of rooms */
 	int cent_n;
@@ -159,6 +159,7 @@ struct dun_data {
 
 static struct dun_data *dun;
 
+static void town_gen(struct cave *c, struct player *p);
 static void cave_gen(struct cave *c, struct player *p);
 
 static bool build_type1(struct cave *c, int y0, int x0);
@@ -178,14 +179,24 @@ static bool alloc_object(struct cave *c, int set, int typ, int depth);
 
 
 /*
- * TODO: write me!
+ * Profile used for generating the town level.
  */
-/* greater vaults' rarity is artificially low due to other constraints */
-#define MAX_RARITY 5
-#define NUM_ROOM_PROFILES 9
+static struct cave_profile town_profile = {
+	/* name builder dun_rooms dun_unusual max_rarity n_room_profiles */
+	"town-default", town_gen, 50, 200, 2, 0,
+
+	/* name rnd chg con pen jct */
+	{"tunnel-default", 10, 30, 15, 25, 90},
+
+	/* name den rng mag mc qua qc */
+	{"streamer-default", 5, 2, 3, 90, 2, 40},
+
+	/* room_profiles */
+	NULL
+};
 
 /* name function width height min-depth crowded? rarity %cutoff */
-static const struct room_profile room_profiles[NUM_ROOM_PROFILES] = {
+static struct room_profile default_rooms[9] = {
 	/* greater vaults only have rarity 1 but they have other checks */
 	{"greater vault", build_type9, 4, 6, 10, FALSE, 1, 100},
 
@@ -205,18 +216,23 @@ static const struct room_profile room_profiles[NUM_ROOM_PROFILES] = {
 };
 
 
+/*
+ * Profiles used for generating dungeon levels.
+ */
 #define NUM_CAVE_PROFILES 1
-
-/* name builder nrooms unusual */
-/* tunnel-profile */
-/* streamer-profile */
-/* max-rarity n-room_profiles room-profiles */
-static const struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
+static struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
 	{
-		"cave-default", cave_gen, 50, 200, 2,
+		/* name builder dun_rooms dun_unusual max_rarity n_room_profiles */
+		"cave-default", cave_gen, 50, 200, 2, 9,
+
+		/* name rnd chg con pen jct */
 		{"tunnel-default", 10, 30, 15, 25, 90},
+
+		/* name den rng mag mc qua qc */
 		{"streamer-default", 5, 2, 3, 90, 2, 40},
-		9, room_profiles
+
+		/* room_profiles */
+		default_rooms
 	}
 };
 
@@ -599,8 +615,6 @@ static void upgrade_mineral(struct cave *c, int y, int x) {
  * with hidden gold, and one with known gold. The hidden gold types are
  * currently unused.
  */
-#define DUN_STR_DEN	5	/* Density of streamers */
-#define DUN_STR_RNG 2 /* Width of streamers */
 static void build_streamer(struct cave *c, int feat, int chance) {
 	int i, tx, ty;
 	int y, x, dir;
@@ -615,8 +629,8 @@ static void build_streamer(struct cave *c, int feat, int chance) {
 	/* Place streamer into dungeon */
 	while (TRUE) {
 		/* One grid per density */
-		for (i = 0; i < DUN_STR_DEN; i++) {
-			int d = DUN_STR_RNG;
+		for (i = 0; i < dun->profile->str.den; i++) {
+			int d = dun->profile->str.rng;
 
 			/* Pick a nearby grid */
 			find_nearby_grid(c, &ty, y, d, &tx, x, d);
@@ -2238,14 +2252,6 @@ static bool room_build(struct cave *c, int by0, int bx0, struct room_profile pro
 /**
  * Generate a new dungeon level.
  */
-#define DUN_ROOMS	50	/* Number of rooms to attempt */
-#define DUN_UNUSUAL 200	/* Level/chance of unusual room */
-
-#define DUN_STR_MAG 3	/* Number of magma streamers */
-#define DUN_STR_MC 90	/* 1/chance of treasure per magma */
-#define DUN_STR_QUA 2	/* Number of quartz streamers */
-#define DUN_STR_QC 40 /* 1/chance of treasure per quartz */
-
 #define DUN_AMT_ROOM 7	/* Number of objects for rooms */
 #define DUN_AMT_ITEM	2	/* Number of objects for rooms/corridors */
 #define DUN_AMT_GOLD	3 /* Amount of treasure for rooms/corridors */
@@ -2253,6 +2259,7 @@ static void cave_gen(struct cave *c, struct player *p) {
 	int i, j, k, l, y, x, y1, x1;
 	int by, bx, key, rarity, tries;
 	int num_rooms, size_percent;
+	int dun_unusual = dun->profile->dun_unusual;
 
 	bool blocks_tried[MAX_ROOMS_ROW][MAX_ROOMS_COL];
 
@@ -2272,7 +2279,7 @@ static void cave_gen(struct cave *c, struct player *p) {
 	size_percent = 100;
 
 	/* scale the various generation variables */
-	num_rooms = DUN_ROOMS * size_percent / 100;
+	num_rooms = dun->profile->dun_rooms * size_percent / 100;
 	c->height = DUNGEON_HGT * size_percent / 100;
 	c->width  = DUNGEON_WID * size_percent / 100;
 
@@ -2330,8 +2337,8 @@ static void cave_gen(struct cave *c, struct player *p) {
 		 */
 		i = 0;
 		rarity = 0;
-		while (i == rarity && i < MAX_RARITY) {
-			if (randint0(DUN_UNUSUAL) < c->depth) rarity++;
+		while (i == rarity && i < dun->profile->max_rarity) {
+			if (randint0(dun_unusual) < c->depth) rarity++;
 			i++;
 		}
 
@@ -2342,8 +2349,8 @@ static void cave_gen(struct cave *c, struct player *p) {
 		 * a room that we can build successfully or we exhaust the profiles.
          */
 		i = 0;
-		for (i = 0; i < NUM_ROOM_PROFILES; i++) {
-			struct room_profile profile = room_profiles[i];
+		for (i = 0; i < dun->profile->n_room_profiles; i++) {
+			struct room_profile profile = dun->profile->room_profiles[i];
 			if (profile.rarity > rarity) continue;
 			if (profile.cutoff <= key) continue;
 			
@@ -2397,12 +2404,12 @@ static void cave_gen(struct cave *c, struct player *p) {
 	}
 
 	/* Add some magma streamers */
-	for (i = 0; i < DUN_STR_MAG; i++)
-		build_streamer(c, FEAT_MAGMA, DUN_STR_MC);
+	for (i = 0; i < dun->profile->str.mag; i++)
+		build_streamer(c, FEAT_MAGMA, dun->profile->str.mc);
 
 	/* Add some quartz streamers */
-	for (i = 0; i < DUN_STR_QUA; i++)
-		build_streamer(c, FEAT_QUARTZ, DUN_STR_QC);
+	for (i = 0; i < dun->profile->str.qua; i++)
+		build_streamer(c, FEAT_QUARTZ, dun->profile->str.qc);
 
 	/* Place 3 or 4 down stairs near some walls */
 	alloc_stairs(c, FEAT_MORE, rand_range(3, 4), 3);
@@ -2692,10 +2699,12 @@ void cave_generate(struct cave *c, struct player *p) {
 		dun = &dun_body;
 		
 		if (!p->depth) {
-			town_gen(c, p);
+			dun->profile = &town_profile;
 		} else {
-			cave_gen(c, p);
+			dun->profile = &cave_profiles[0];
 		}
+
+		dun->profile->builder(c, p);
 
 		c->feeling = calculate_feeling(c);
 

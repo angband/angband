@@ -31,34 +31,21 @@ struct streamer_profile {
 };
 
 /*
-* room_builder is a function pointer which builds rooms in the cave given
-* anchor coordinates.
+* cave_builder is a function pointer which builds a level.
 */
 typedef void (*cave_builder) (struct cave *c, struct player *p);
 
 
 struct cave_profile {
 	const char *name;
-	  	
-	/* Function used to build the level */
-	cave_builder builder;
-
-    /* Number of rooms to attempt */
-    int dun_rooms;
-
-    /* Level/chance of unusual room */
-    int dun_unusual;
-
-	/* Max number of rarity levels used in room generation */
-    int max_rarity;
-
-	/* Profiles for building tunnels and streamers */
-	const struct tunnel_profile tun;
-	const struct streamer_profile str;
-
-	/* Profiles used to build rooms */
-    int n_room_profiles;
-    const struct room_profile *room_profiles;
+	cave_builder builder; /* Function used to build the level */
+    int dun_rooms; /* Number of rooms to attempt */
+    int dun_unusual; /* Level/chance of unusual room */
+    int max_rarity; /* Max number of rarity levels used in room generation */
+    int n_room_profiles; /* Number of room profiles */
+	struct tunnel_profile tun; /* Used to build tunnels */
+	struct streamer_profile str; /* Used to build mineral streamers*/
+    const struct room_profile *room_profiles; /* Used to build rooms */
 };
 
 
@@ -70,29 +57,17 @@ typedef bool (*room_builder) (struct cave *c, int y0, int x0);
 
 
 /**
- * This is a replacement for room_data -- it tracks information
- * needed to generate the room, including the function used to build it.
+ * This tracks information needed to generate the room, including the room's
+ * name and the function used to build it.
  */
 struct room_profile {
 	const char *name;
-	  	
-	/* the function used to build the room */
-	room_builder builder;
-	
-	/* required size in blocks */
-	int height, width;
-	
-	/* minimum level */
-	int level;
-	
-	/* whether the room is crowded or not */
-	bool crowded;
-	
-	/* how unusual the room is */
-	int rarity;
-	
-	/* used to decide which room of a given rarity to generate */
-	int cutoff;
+	room_builder builder; /* Function used to build the room */
+	int height, width; /* Space required in blocks */
+	int level; /* Minimum dungeon level */
+	bool crowded; /* Whether this room is crowded or not */
+	int rarity; /* How unusual this room is */
+	int cutoff; /* Upper limit of 1-100 random roll for room generation */
 };
 
 #endif /* !GENERATE_H */
