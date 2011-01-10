@@ -221,6 +221,15 @@ static const struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
 };
 
 
+/* FAILSAFE defines the maximum number of iterations that the find_* functions
+ * will run before dying.
+ *
+ * TODO: Fix the find_* functions so they are guaranteed to test all legal open
+ * squares in a reasonable amount of time.
+ */
+#define FAILSAFE 10000000
+
+
 /**
  * Locate an empty square for 0 <= y < ymax, 0 <= x < xmax.
  *
@@ -231,7 +240,6 @@ static const struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
  * TODO: Rewrite this function so that it tries every cave location exactly
  * once in a random order and only crashes if there are no empty squares.
  */
-#define FAILSAFE 10000000
 static void find_empty(struct cave *c, int *y, int ymax, int *x, int xmax) {
 	int tries = 0;
 	while (tries < FAILSAFE) {
@@ -263,8 +271,6 @@ static void find_empty_range(struct cave *c, int *y, int y1, int y2, int *x, int
 
 /**
  * Locate a grid nearby (y0, x0) within +/- yd, xd.
- *
- * TODO: Unsafe! Do not use this yet.
  */
 static void find_nearby_grid(struct cave *c, int *y, int y0, int yd, int *x, int x0, int xd) {
 	int tries = 0;
