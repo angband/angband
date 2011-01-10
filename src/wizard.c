@@ -495,68 +495,20 @@ menu_iter wiz_create_item_submenu =
 
 /** Object base kind selection **/
 
-/*
- * A structure to hold a tval and its description
- */
-struct tval_desc
-{
-	int tval;
-	const char *desc;
-};
-
-/*
- * A list of tvals and their textual names
- */
-static struct tval_desc tvals[] =
-{
-	{ TV_SWORD,             "Sword"                },
-	{ TV_POLEARM,           "Polearm"              },
-	{ TV_HAFTED,            "Hafted Weapon"        },
-	{ TV_BOW,               "Bow"                  },
-	{ TV_ARROW,             "Arrows"               },
-	{ TV_BOLT,              "Bolts"                },
-	{ TV_SHOT,              "Shots"                },
-	{ TV_SHIELD,            "Shield"               },
-	{ TV_CROWN,             "Crown"                },
-	{ TV_HELM,              "Helm"                 },
-	{ TV_GLOVES,            "Gloves"               },
-	{ TV_BOOTS,             "Boots"                },
-	{ TV_CLOAK,             "Cloak"                },
-	{ TV_DRAG_ARMOR,        "Dragon Scale Mail"    },
-	{ TV_HARD_ARMOR,        "Hard Armor"           },
-	{ TV_SOFT_ARMOR,        "Soft Armor"           },
-	{ TV_RING,              "Ring"                 },
-	{ TV_AMULET,            "Amulet"               },
-	{ TV_LIGHT,             "Light"                },
-	{ TV_POTION,            "Potion"               },
-	{ TV_SCROLL,            "Scroll"               },
-	{ TV_WAND,              "Wand"                 },
-	{ TV_STAFF,             "Staff"                },
-	{ TV_ROD,               "Rod"                  },
-	{ TV_PRAYER_BOOK,       "Priest Book"          },
-	{ TV_MAGIC_BOOK,        "Magic Book"           },
-	{ TV_SPIKE,             "Spikes"               },
-	{ TV_DIGGING,           "Digger"               },
-	{ TV_CHEST,             "Chest"                },
-	{ TV_FOOD,              "Food"                 },
-	{ TV_FLASK,             "Flask"                },
-	{ TV_SKELETON,          "Skeletons"            },
-	{ TV_BOTTLE,            "Empty bottle"         },
-	{ TV_JUNK,              "Junk"                 },
-	{ TV_GOLD,              "Gold"                 }
-};
-
-void wiz_create_item_display(menu_type *m, int oid, bool cursor,
+static void wiz_create_item_display(menu_type *m, int oid, bool cursor,
 		int row, int col, int width)
 {
-	struct tval_desc *tvals = menu_priv(m);
-	c_prt(curs_attrs[CURS_KNOWN][0 != cursor], tvals[oid].desc, row, col);
+	char buf[80];
+	object_base_name(buf, sizeof buf, oid, TRUE);
+	c_prt(curs_attrs[CURS_KNOWN][0 != cursor], buf, row, col);
 }
 
-bool wiz_create_item_action(menu_type *m, const ui_event_data *e, int oid)
+static bool wiz_create_item_action(menu_type *m, const ui_event_data *e, int oid)
 {
 	ui_event_data ret;
 	menu_type *menu;
+
+	char buf[80];
 
 	int choice[60];
 	int n_choices;
@@ -570,7 +522,7 @@ bool wiz_create_item_action(menu_type *m, const ui_event_data *e, int oid)
 	{
 		object_kind *kind = &k_info[i];
 
-		if (kind->tval != tvals[oid].tval ||
+		if (kind->tval != oid ||
 				of_has(kind->flags, OF_INSTA_ART))
 			continue;
 
@@ -582,7 +534,9 @@ bool wiz_create_item_action(menu_type *m, const ui_event_data *e, int oid)
 
 	menu = menu_new(MN_SKIN_COLUMNS, &wiz_create_item_submenu);
 	menu->selections = all_letters;
-	menu->title = format("What kind of %s?", tvals[oid].desc);
+
+	object_base_name(buf, sizeof buf, oid, TRUE);
+	menu->title = format("What kind of %s?", buf);
 
 	menu_setpriv(menu, n_choices, choice);
 	menu_layout(menu, &wiz_create_item_area);
@@ -593,7 +547,7 @@ bool wiz_create_item_action(menu_type *m, const ui_event_data *e, int oid)
 	return (ret.type == EVT_ESCAPE);
 }
 
-menu_iter wiz_create_item_menu =
+static const menu_iter wiz_create_item_menu =
 {
 	NULL,
 	NULL,
@@ -608,15 +562,27 @@ menu_iter wiz_create_item_menu =
  */
 static void wiz_create_item(void)
 {
+	int tvals[TV_MAX];
+	size_t i, n;
+
 	menu_type *menu = menu_new(MN_SKIN_COLUMNS, &wiz_create_item_menu);
 
 	menu->selections = all_letters;
 	menu->title = "What kind of object?";
 
+	/* Make a list of all tvals for the filter */
+	for (i = 0, n = 0; i < TV_MAX; i++) {
+		if (!kb_info[i].name)
+			continue;
+
+		tvals[n++] = i;
+	}
+
 	screen_save();
 	clear_from(0);
 
-	menu_setpriv(menu, N_ELEMENTS(tvals), tvals);
+	menu_setpriv(menu, TV_MAX, kb_info);
+	menu_set_filter(menu, tvals, n);
 	menu_layout(menu, &wiz_create_item_area);
 	menu_select(menu, 0);
 

@@ -394,6 +394,8 @@ static enum parser_error parse_kb_n(struct parser *p) {
 	if (kb->tval == -1)
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
 
+	kb->name = string_make(parser_getstr(p, "name"));
+
 	return PARSE_ERROR_NONE;
 }
 
@@ -442,7 +444,7 @@ struct parser *init_parse_kb(void) {
 
 	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "D sym label int value", parse_kb_d);
-	parser_reg(p, "N sym tval", parse_kb_n);
+	parser_reg(p, "N sym tval str name", parse_kb_n);
 	parser_reg(p, "B int breakage", parse_kb_b);
 	parser_reg(p, "F str flags", parse_kb_f);
 	return p;
@@ -456,7 +458,7 @@ static errr finish_parse_kb(struct parser *p) {
 	struct kb_parsedata *d = parser_priv(p);
 	assert(d);
 
-	kb_info = mem_alloc(TV_MAX * sizeof(*kb_info));
+	kb_info = mem_zalloc(TV_MAX * sizeof(*kb_info));
 
 	for (object_base *kb = d->kb; kb; kb = kb->next) {
 		if (kb->tval >= TV_MAX)

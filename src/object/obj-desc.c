@@ -38,6 +38,55 @@ int which_pval(const object_type *o_ptr, const int flag)
 	assert(0);
 }
 
+/**
+ * Puts the object base kind's name into buf.
+ */
+void object_base_name(char *buf, size_t max, int tval, bool plural)
+{
+	object_base *kb = &kb_info[tval];
+	const char *str = kb->name;
+
+	char *t = buf;
+
+	/* Copy useful chars */
+	for (; *str && max > 1; str++)
+	{
+		/* Pluralizer for irregular plurals */
+		/* Useful for languages where adjective changes for plural */
+		if (*str == '|')
+		{
+			/* Process singular part */
+			for (str++; *str != '|' && max > 1; str++)
+			{
+				if (!plural)
+				{
+					*t++ = *str;
+					max--;
+				}
+			}
+
+			/* Process plural part */
+			for (str++; *str != '|' && max > 1; str++)
+			{
+				if (plural)
+				{
+					*t++ = *str;
+					max--;
+				}
+			}
+		}
+
+		else if (*str != '~')
+		{
+			*t++ = 's';
+		}
+	}
+
+	/* Terminate the new name */
+	*t = '\0';
+}
+
+
 /*
  * Puts a very stripped-down version of an object's name into buf.
  * If easy_know is TRUE, then the IDed names are used, otherwise

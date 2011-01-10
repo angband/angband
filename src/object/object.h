@@ -145,6 +145,7 @@ bool object_name_is_visible(const object_type *o_ptr);
 void object_know_all_flags(object_type *o_ptr);
 
 /* obj-desc.c */
+void object_base_name(char *buf, size_t max, int tval, bool plural);
 void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know);
 size_t object_desc(char *buf, size_t max, const object_type *o_ptr, odesc_detail_t mode);
 int which_pval(const object_type *o_ptr, const int flag);

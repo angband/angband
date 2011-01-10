@@ -10,6 +10,8 @@
  */
 typedef struct object_base
 {
+	char *name;
+
 	int tval;
 	struct object_base *next;
 

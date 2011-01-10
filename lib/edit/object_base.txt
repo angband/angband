@@ -6,98 +6,98 @@
 
 D:B:10
 
-N:SPIKE
+N:spike:Spike~
 B:25
 
-N:CHEST
+N:chest:Chest~
 F:HATES_ACID | HATES_FIRE
 
-N:SHOT
+N:shot:Shot~
 B:25
 
-N:ARROW
+N:arrow:Arrow~
 B:35
 F:HATES_ACID | HATES_FIRE
 
-N:BOLT
+N:bolt:Bolt~
 B:25
 F:HATES_ACID
 
-N:BOW
+N:bow:Bow~
 F:HATES_ACID | HATES_FIRE
 
-N:DIGGER
+N:digger:Digger~
 
-N:HAFTED
+N:hafted:Hafted weapon~
 F:HATES_ACID | HATES_FIRE
 
-N:POLEARM
+N:polearm:Polearm~
 F:HATES_ACID | HATES_FIRE
 
-N:SWORD
+N:sword:Bladed weapon~
 F:HATES_ACID
 
-N:BOOTS
+N:boots:Boot~
 F:HATES_ACID | HATES_FIRE
 
-N:GLOVES
+N:gloves:Glove~
 F:HATES_ACID | HATES_FIRE
 
-N:HELM
+N:helm:Helm~
 F:HATES_ACID
 
-N:CROWN
+N:crown:Crown~
 F:HATES_ACID
 
-N:SHIELD
+N:shield:Shield~
 F:HATES_ACID
 
-N:CLOAK
+N:cloak:Cloak~
 F:HATES_ACID | HATES_FIRE
 
-N:SOFT ARMOR
+N:soft armor:Soft Armor~
 F:HATES_ACID | HATES_FIRE
 
-N:HARD ARMOR
+N:hard armor:Hard Armor~
 F:HATES_ACID
 
-N:DRAGON ARMOR
+N:dragon armor:Dragon Armor~
 F:HATES_ACID
 
-N:LIGHT
+N:light:Light~
 B:50
 F:HATES_FIRE
 
-N:AMULET
+N:amulet:Amulet~
 
-N:RING
+N:ring:Ring~
 F:HATES_ELEC
 
-N:STAFF
+N:staff:Staff~
 F:HATES_ACID | HATES_FIRE
 
-N:WAND
+N:wand:Wand~
 F:HATES_ELEC
 
-N:ROD
+N:rod:Rod~
 F:HATES_ELEC
 
-N:SCROLL
+N:scroll:Scroll~
 F:HATES_ACID | HATES_FIRE
 
-N:POTION
+N:potion:Potion~
 B:100
 F:HATES_COLD
 
-N:FLASK
+N:flask:Flask~
 B:100
 F:HATES_COLD
 
-N:FOOD
+N:food:Food
 B:100
 
-N:MAGIC BOOK
+N:magic book:Magic Book~
 F:HATES_FIRE
 
-N:PRAYER BOOK
+N:prayer book:Prayer Book~
 F:HATES_FIRE
