@@ -376,25 +376,6 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 }
 
 /*
- * Is o_ptr a weapon?
- */
-static bool obj_desc_show_weapon(const object_type *o_ptr)
-{
-	bitflag f[OF_SIZE];
-
-	object_flags(o_ptr, f);
-
-	if (of_has(f, OF_SHOW_MODS)) return TRUE;
-	if (o_ptr->to_h && o_ptr->to_d) return TRUE;
-
-	/* You need to list both to_h and to_d for things like unaware rings of accuracy and damage e.g. to differentiate (+8) */
-	if ((o_ptr->to_h || o_ptr->to_d) && !object_flavor_is_aware(o_ptr))
-		return TRUE;
-
-	return FALSE;
-}
-
-/*
  * Is o_ptr armor?
  */
 static bool obj_desc_show_armor(const object_type *o_ptr)
@@ -516,7 +497,7 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 	/* Show weapon bonuses */
 	if (spoil || object_attack_plusses_are_visible(o_ptr))
 	{
-		if (obj_desc_show_weapon(o_ptr) || o_ptr->to_d || o_ptr->to_h)
+		if (of_has(flags, OF_SHOW_MODS) || o_ptr->to_d || o_ptr->to_h)
 		{
 			/* Make an exception for body armor with only a to-hit penalty */
 			if (o_ptr->to_h < 0 && o_ptr->to_d == 0 &&
