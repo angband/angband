@@ -693,8 +693,6 @@ static const char *process_pref_file_expr(char **sp, char *fp)
 				v = cp_ptr->name;
 			else if (streq(b+1, "PLAYER"))
 				v = op_ptr->base_name;
-			else if (streq(b+1, "VERSION"))
-				v = VERSION_STRING;
 		}
 
 		/* Constant */

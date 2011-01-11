@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "buildid.h"
 #include "cmds.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
@@ -259,7 +260,7 @@ static void spoil_obj_desc(cptr fname)
 
 
 	/* Header */
-	file_putf(fh, "Spoiler File -- Basic Items (%s)\n\n\n", VERSION_STRING);
+	file_putf(fh, "Spoiler File -- Basic Items (%s)\n\n\n", buildid);
 
 	/* More Header */
 	file_putf(fh, format, "Description", "Dam/AC", "Wgt", "Lev", "Cost");
@@ -471,8 +472,7 @@ static void spoil_artifact(cptr fname)
 	text_out_file = fh;
 
 	/* Dump the header */
-	spoiler_underline(format("Artifact Spoilers for %s %s",
-	                         VERSION_NAME, VERSION_STRING), '=');
+	spoiler_underline(format("Artifact Spoilers for %s", buildid), '=');
 
 	/* List the artifacts by tval */
 	for (i = 0; group_artifact[i].tval; i++)
@@ -578,8 +578,7 @@ static void spoil_mon_desc(cptr fname)
 	}
 
 	/* Dump the header */
-	x_file_putf(fh, encoding, "Monster Spoilers for %s Version %s\n",
-	        VERSION_NAME, VERSION_STRING);
+	x_file_putf(fh, encoding, "Monster Spoilers for %s\n", buildid);
 	x_file_putf(fh, encoding, "------------------------------------------\n\n");
 
 	/* Dump the header */
@@ -708,8 +707,7 @@ static void spoil_mon_info(cptr fname)
 	text_out_file = fh;
 
 	/* Dump the header */
-	text_out("Monster Spoilers for %s Version %s\n",
-	        VERSION_NAME, VERSION_STRING);
+	text_out("Monster Spoilers for %s\n", buildid);
 	text_out("------------------------------------------\n\n");
 
 	/* Allocate the "who" array */

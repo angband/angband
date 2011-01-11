@@ -16,6 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "buildid.h"
 
 
 /*
@@ -361,7 +362,7 @@ static void build_score(high_score *entry, const char *died_from, time_t *death_
 	WIPE(entry, high_score);
 
 	/* Save the version */
-	strnfmt(entry->what, sizeof(entry->what), "%s", VERSION_STRING);
+	strnfmt(entry->what, sizeof(entry->what), "%s", buildid);
 
 	/* Calculate and save the points */
 	strnfmt(entry->pts, sizeof(entry->pts), "%9lu", (long)total_points());

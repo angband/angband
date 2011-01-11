@@ -32,22 +32,6 @@
  * You have been warned.
  */
 
-
-/*
- * Name of the version/variant and its version string
- */
-#define VERSION_NAME   "Angband"
-#define SAVEFILE_NAME  "VNLA"
-
-#ifdef BUILD_ID
-# define STR(x) #x
-# define XSTR(x) STR(x)
-# define VERSION_STRING XSTR(BUILD_ID)
-#else
-# define VERSION_STRING "3.2.0"
-#endif
-
-
 /*
  * Current savefile version
  */

@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "buildid.h"
 #include "cave.h"
 #include "cmds.h"
 #include "game-cmd.h"
@@ -983,8 +984,7 @@ errr file_character(const char *path, bool full)
  	if (!OPT(xchars_to_file)) Term->xchar_hook = NULL;
 
 	/* Begin dump */
-	file_putf(fp, "  [%s %s Character Dump]\n\n",
-	        VERSION_NAME, VERSION_STRING);
+	file_putf(fp, "  [%s Character Dump]\n\n", buildid);
 
 
 	/* Display player */
@@ -1474,7 +1474,7 @@ bool show_file(cptr name, cptr what, int line, int mode)
 
 
 		/* Show a general "title" */
-		prt(format("[%s %s, %s, Line %d-%d/%d]", VERSION_NAME, VERSION_STRING,
+		prt(format("[%s, %s, Line %d-%d/%d]", buildid,
 		           caption, line, line + hgt - 4, size), 0, 0);
 
 
@@ -1924,8 +1924,7 @@ void html_screenshot(cptr name, int mode)
 	if (mode == 0)
 	{
 		file_putf(fp, "<!DOCTYPE html><html><head>\n");
-		file_putf(fp, "  <meta='generator' content='%s %s'>\n",
-	            	VERSION_NAME, VERSION_STRING);
+		file_putf(fp, "  <meta='generator' content='%s'>\n", buildid);
 		file_putf(fp, "  <title>%s</title>\n", name);
 		file_putf(fp, "</head>\n\n");
 		file_putf(fp, "<body style='color: #fff; background: #000;'>\n");

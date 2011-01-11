@@ -23,7 +23,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
-
+#include "buildid.h"
 
 /*
  * Notes:
@@ -2323,7 +2323,7 @@ static void init_aboutdialogcontent()
 	OSStatus err;
 	
 	/* Set the application name from the constants set in defines.h */
-	char *applicationName = format("%s %s", VERSION_NAME, VERSION_STRING);
+	char *applicationName = format("%s", buildid);
 	CFStringRef cfstr_applicationName = CFStringCreateWithBytes(NULL, (byte *)applicationName,
 										strlen(applicationName), kCFStringEncodingASCII, false);
 	HIViewFindByID(HIViewGetRoot(aboutDialog), aboutDialogName, &aboutDialogViewRef);

@@ -19,6 +19,7 @@
  */
 
 #include "angband.h"
+#include "buildid.h"
 #include "cave.h"
 #include "cmds.h"
 #include "externs.h"
@@ -467,8 +468,7 @@ void do_cmd_note(void)
 void do_cmd_version(void)
 {
 	/* Silly message */
-	msg("You are playing %s %s.  Type '?' for more info.",
-		       VERSION_NAME, VERSION_STRING);
+	msg("You are playing %s.  Type '?' for more info.", buildver);
 }
 
 
