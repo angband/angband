@@ -121,14 +121,14 @@ static bool alloc_object(struct cave *c, int set, int typ, int depth);
 /*
  * Dungeon allocation places and types, used with alloc_object().
  */
-#define SET_CORR	1 /* Hallway */
+#define SET_CORR 1 /* Hallway */
 #define SET_ROOM 2 /* Room */
-#define SET_BOTH 3	/* Anywhere */
+#define SET_BOTH 3 /* Anywhere */
 
 #define TYP_RUBBLE 1 /* Rubble */
-#define TYP_TRAP 3	/* Trap */
-#define TYP_GOLD 4	/* Gold */
-#define TYP_OBJECT 5	/* Object */
+#define TYP_TRAP 3 /* Trap */
+#define TYP_GOLD 4 /* Gold */
+#define TYP_OBJECT 5 /* Object */
 
 /*
  * Maximum numbers of rooms along each axis (currently 6x18).
@@ -144,7 +144,7 @@ static bool alloc_object(struct cave *c, int set, int typ, int depth);
 #define CENT_MAX 100
 #define DOOR_MAX 200
 #define WALL_MAX 500
-#define TUNN_MAX	900
+#define TUNN_MAX 900
 
 
 /**
@@ -349,9 +349,9 @@ static void new_player_spot(struct cave *c, struct player *p) {
 	do {
 		find_empty_range(c, &y, 1, c->height - 2, &x, 1, c->width - 2);
 		tries++;
-	} while (c->info[y][x] & CAVE_ICKY && tries < 1);
+	} while (c->info[y][x] & CAVE_ICKY && tries < 100);
 
-	if (tries == 10000) quit_fmt("couldn't place the player");
+	if (tries == 100) quit_fmt("couldn't place the player");
 
 	/* Create stairs if allowed and necessary */
 	if (OPT(birth_no_stairs)) {
