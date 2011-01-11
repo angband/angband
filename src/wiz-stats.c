@@ -2622,4 +2622,8 @@ void stats_collect(void)
 	msg("Statistics generation not turned on in this build.");
 }
 
+void disconnect_stats(void)
+{
+	msg("Statistics generation not turned on in this build.");
+}
 #endif /* WITH_STATS */
