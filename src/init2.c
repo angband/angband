@@ -2839,7 +2839,7 @@ static enum parser_error parse_c_t(struct parser *p) {
 
 static enum parser_error parse_c_e(struct parser *p) {
 	struct player_class *c = parser_priv(p);
-	int i;
+	struct start_item *si;
 	int tval, sval;
 
 	if (!c)
@@ -2853,17 +2853,19 @@ static enum parser_error parse_c_e(struct parser *p) {
 	if (sval < 0)
 		return PARSE_ERROR_UNRECOGNISED_SVAL;
 
-	for (i = 0; i < MAX_START_ITEMS; i++)
-		if (!c->start_items[i].min)
-			break;
-	if (i > MAX_START_ITEMS)
-		return PARSE_ERROR_TOO_MANY_ENTRIES;
-	c->start_items[i].kind = objkind_get(tval, sval);
-	c->start_items[i].min = parser_getuint(p, "min");
-	c->start_items[i].max = parser_getuint(p, "max");
-	/* XXX: MAX_ITEM_STACK? */
-	if (c->start_items[i].min > 99 || c->start_items[i].max > 99)
+	si = mem_zalloc(sizeof *si);
+	si->kind = objkind_get(tval, sval);
+	si->min = parser_getuint(p, "min");
+	si->max = parser_getuint(p, "max");
+
+	if (si->min > 99 || si->max > 99) {
+		mem_free(si->kind);
 		return PARSE_ERROR_INVALID_ITEM_NUMBER;
+	}
+
+	si->next = c->start_items;
+	c->start_items = si;
+
 	return PARSE_ERROR_NONE;
 }
 

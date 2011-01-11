@@ -140,7 +140,6 @@
 /*
  * Maximum amount of starting equipment, and starting gold
  */
-#define MAX_START_ITEMS	5
 #define STARTING_GOLD 600
 
 /*

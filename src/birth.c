@@ -551,37 +551,30 @@ static void wield_all(struct player *p)
  */
 void player_outfit(struct player *p)
 {
-	int i;
-	const start_item *e_ptr;
+	const struct start_item *si;
+
 	object_type *i_ptr;
 	object_type object_type_body;
 
 
-	/* Hack -- Give the player his equipment */
-	for (i = 0; i < MAX_START_ITEMS; i++)
+	/* Give the player starting equipment */
+	for (si = cp_ptr->start_items; si; si = si->next)
 	{
-		/* Access the item */
-		e_ptr = &(cp_ptr->start_items[i]);
-
 		/* Get local object */
 		i_ptr = &object_type_body;
 
-		/* Hack	-- Give the player an object */
-		if (e_ptr->kind)
-		{
-			/* Prepare the item */
-			object_prep(i_ptr, e_ptr->kind, 0, MINIMISE);
-			i_ptr->number = (byte)rand_range(e_ptr->min, e_ptr->max);
-			i_ptr->origin = ORIGIN_BIRTH;
+		/* Prepare the item */
+		object_prep(i_ptr, si->kind, 0, MINIMISE);
+		i_ptr->number = (byte)rand_range(si->min, si->max);
+		i_ptr->origin = ORIGIN_BIRTH;
 
-			object_flavor_aware(i_ptr);
-			object_notice_everything(i_ptr);
-			inven_carry(p, i_ptr);
-			e_ptr->kind->everseen = TRUE;
+		object_flavor_aware(i_ptr);
+		object_notice_everything(i_ptr);
+		inven_carry(p, i_ptr);
+		si->kind->everseen = TRUE;
 
-			/* Deduct the cost of the item from starting cash */
-			p->au -= object_value(i_ptr, i_ptr->number, FALSE);
-		}
+		/* Deduct the cost of the item from starting cash */
+		p->au -= object_value(i_ptr, i_ptr->number, FALSE);
 	}
 
 
