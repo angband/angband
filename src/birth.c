@@ -55,6 +55,12 @@
  */
 
 
+/* 
+ * Maximum amount of starting equipment, and starting gold
+ */
+#define STARTING_GOLD 600
+
+
 /*
  * Forward declare
  */

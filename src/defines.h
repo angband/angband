@@ -138,11 +138,6 @@
 
 
 /*
- * Maximum amount of starting equipment, and starting gold
- */
-#define STARTING_GOLD 600
-
-/*
  * Number of tval/min-sval/max-sval slots per ego_item
  */
 #define EGO_TVALS_MAX 3
