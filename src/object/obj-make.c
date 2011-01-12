@@ -21,6 +21,21 @@
 #include "tvalsval.h"
 
 
+/*
+ * There is a 1/20 (5%) chance of inflating the requested object level
+ * during the creation of an object (see "get_obj_num()" in "object.c").
+ * Lower values yield better objects more often.
+ */
+#define GREAT_OBJ   20
+  
+/*
+ * There is a 1/20 (5%) chance that ego-items with an inflated base-level are
+ * generated when an object is turned into an ego-item (see make_ego_item()
+ * in object2.c). As above, lower values yield better ego-items more often.
+ */
+#define GREAT_EGO   20
+
+
 static bool kind_is_good(const object_kind *);
 
 static u32b obj_total[MAX_DEPTH];
