@@ -1039,9 +1039,6 @@ int rd_artifacts(void)
 }
 
 
-static u32b randart_version;
-
-
 /*
  * Read the "extra" information
  */
@@ -1254,7 +1251,7 @@ int rd_misc(void)
 	byte tmp8u;
 	
 	/* Read the randart version */
-	rd_u32b(&randart_version);
+	strip_bytes(4);
 
 	/* Read the randart seed */
 	rd_u32b(&seed_randart);
@@ -1493,133 +1490,108 @@ int rd_randarts_1(void)
 	if (!OPT(birth_randarts))
 		return 0;
 
-	if (FALSE)
-	{
-		/*
-		 * XXX XXX XXX
-		 * Importing old savefiles with random artifacts is dangerous
-		 * since the randart-generators differ and produce different
-		 * artifacts from the same random seed.
-		 *
-		 * Switching off the check for incompatible randart versions
-		 * allows to import such a savefile - do it at your own risk.
-		 */
+	/* Read the number of artifacts */
+	rd_u16b(&artifact_count);
 
-		/* Check for incompatible randart version */
-		if (randart_version != RANDART_VERSION)
+	/* Alive or cheating death */
+	if (!p_ptr->is_dead || arg_wizard)
+	{
+		/* Incompatible save files */
+		if (artifact_count > z_info->a_max)
 		{
-			note(format("Incompatible random artifacts version!"));
+			note(format("Too many (%u) random artifacts!", artifact_count));
 			return (-1);
 		}
 
-		/* Initialize randarts */
-		do_randart(seed_randart, TRUE);
+		/* Mark the old artifacts as "empty" */
+		for (i = 0; i < z_info->a_max; i++)
+		{
+			artifact_type *a_ptr = &a_info[i];
+			a_ptr->name = 0;
+			a_ptr->tval = 0;
+			a_ptr->sval = 0;
+		}
+
+		/* Read the artifacts */
+		for (i = 0; i < artifact_count; i++)
+		{
+			artifact_type *a_ptr = &a_info[i];
+			u16b time_base, time_dice, time_sides;
+
+			rd_byte(&a_ptr->tval);
+			rd_byte(&a_ptr->sval);
+			rd_s16b(&a_ptr->pval[DEFAULT_PVAL]);
+
+			rd_s16b(&a_ptr->to_h);
+			rd_s16b(&a_ptr->to_d);
+			rd_s16b(&a_ptr->to_a);
+			rd_s16b(&a_ptr->ac);
+
+			rd_byte(&a_ptr->dd);
+			rd_byte(&a_ptr->ds);
+
+			rd_s16b(&a_ptr->weight);
+
+			rd_s32b(&a_ptr->cost);
+
+			/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
+			for (j = 0; j < 12 && j < OF_SIZE; j++)
+				rd_byte(&a_ptr->flags[j]);
+			if (j < 12) strip_bytes(OF_SIZE - j);
+
+			rd_byte(&a_ptr->level);
+			rd_byte(&a_ptr->rarity);
+			rd_byte(&a_ptr->alloc_prob);
+			rd_byte(&a_ptr->alloc_min);
+			rd_byte(&a_ptr->alloc_max);
+
+			rd_u16b(&a_ptr->effect);
+			rd_u16b(&time_base);
+			rd_u16b(&time_dice);
+			rd_u16b(&time_sides);
+			a_ptr->time.base = time_base;
+			a_ptr->time.dice = time_dice;
+			a_ptr->time.sides = time_sides;
+		}
+
+		/* Initialize only the randart names */
+		do_randart(seed_randart, FALSE);
 	}
 	else
 	{
-		/* Read the number of artifacts */
-		rd_u16b(&artifact_count);
-
-		/* Alive or cheating death */
-		if (!p_ptr->is_dead || arg_wizard)
+		/* Read the artifacts */
+		for (i = 0; i < artifact_count; i++)
 		{
-			/* Incompatible save files */
-			if (artifact_count > z_info->a_max)
-			{
-				note(format("Too many (%u) random artifacts!", artifact_count));
-				return (-1);
-			}
+			rd_byte(&tmp8u); /* a_ptr->tval */
+			rd_byte(&tmp8u); /* a_ptr->sval */
+			rd_s16b(&tmp16s); /* a_ptr->pval */
 
-			/* Mark the old artifacts as "empty" */
-			for (i = 0; i < z_info->a_max; i++)
-			{
-				artifact_type *a_ptr = &a_info[i];
-				a_ptr->name = 0;
-				a_ptr->tval = 0;
-				a_ptr->sval = 0;
-			}
+			rd_s16b(&tmp16s); /* a_ptr->to_h */
+			rd_s16b(&tmp16s); /* a_ptr->to_d */
+			rd_s16b(&tmp16s); /* a_ptr->to_a */
+			rd_s16b(&tmp16s); /* a_ptr->ac */
 
-			/* Read the artifacts */
-			for (i = 0; i < artifact_count; i++)
-			{
-				artifact_type *a_ptr = &a_info[i];
-				u16b time_base, time_dice, time_sides;
+			rd_byte(&tmp8u); /* a_ptr->dd */
+			rd_byte(&tmp8u); /* a_ptr->ds */
 
-				rd_byte(&a_ptr->tval);
-				rd_byte(&a_ptr->sval);
-				rd_s16b(&a_ptr->pval[DEFAULT_PVAL]);
+			rd_s16b(&tmp16s); /* a_ptr->weight */
 
-				rd_s16b(&a_ptr->to_h);
-				rd_s16b(&a_ptr->to_d);
-				rd_s16b(&a_ptr->to_a);
-				rd_s16b(&a_ptr->ac);
+			rd_s32b(&tmp32s); /* a_ptr->cost */
 
-				rd_byte(&a_ptr->dd);
-				rd_byte(&a_ptr->ds);
+			rd_u32b(&tmp32u); /* a_ptr->flags1 */
+			rd_u32b(&tmp32u); /* a_ptr->flags2 */
+			rd_u32b(&tmp32u); /* a_ptr->flags3 */
 
-				rd_s16b(&a_ptr->weight);
+			rd_byte(&tmp8u); /* a_ptr->level */
+			rd_byte(&tmp8u); /* a_ptr->rarity */
+			rd_byte(&tmp8u); /* a_ptr->alloc_prob */
+			rd_byte(&tmp8u); /* a_ptr->alloc_min */
+			rd_byte(&tmp8u); /* a_ptr->alloc_max */
 
-				rd_s32b(&a_ptr->cost);
-
-				/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
-				for (j = 0; j < 12 && j < OF_SIZE; j++)
-					rd_byte(&a_ptr->flags[j]);
-				if (j < 12) strip_bytes(OF_SIZE - j);
-
-				rd_byte(&a_ptr->level);
-				rd_byte(&a_ptr->rarity);
-				rd_byte(&a_ptr->alloc_prob);
-				rd_byte(&a_ptr->alloc_min);
-				rd_byte(&a_ptr->alloc_max);
-
-				rd_u16b(&a_ptr->effect);
-				rd_u16b(&time_base);
-				rd_u16b(&time_dice);
-				rd_u16b(&time_sides);
-				a_ptr->time.base = time_base;
-				a_ptr->time.dice = time_dice;
-				a_ptr->time.sides = time_sides;
-			}
-
-			/* Initialize only the randart names */
-			do_randart(seed_randart, FALSE);
-		}
-		else
-		{
-			/* Read the artifacts */
-			for (i = 0; i < artifact_count; i++)
-			{
-				rd_byte(&tmp8u); /* a_ptr->tval */
-				rd_byte(&tmp8u); /* a_ptr->sval */
-				rd_s16b(&tmp16s); /* a_ptr->pval */
-
-				rd_s16b(&tmp16s); /* a_ptr->to_h */
-				rd_s16b(&tmp16s); /* a_ptr->to_d */
-				rd_s16b(&tmp16s); /* a_ptr->to_a */
-				rd_s16b(&tmp16s); /* a_ptr->ac */
-
-				rd_byte(&tmp8u); /* a_ptr->dd */
-				rd_byte(&tmp8u); /* a_ptr->ds */
-
-				rd_s16b(&tmp16s); /* a_ptr->weight */
-
-				rd_s32b(&tmp32s); /* a_ptr->cost */
-
-				rd_u32b(&tmp32u); /* a_ptr->flags1 */
-				rd_u32b(&tmp32u); /* a_ptr->flags2 */
-				rd_u32b(&tmp32u); /* a_ptr->flags3 */
-
-				rd_byte(&tmp8u); /* a_ptr->level */
-				rd_byte(&tmp8u); /* a_ptr->rarity */
-				rd_byte(&tmp8u); /* a_ptr->alloc_prob */
-				rd_byte(&tmp8u); /* a_ptr->alloc_min */
-				rd_byte(&tmp8u); /* a_ptr->alloc_max */
-
-				rd_u16b(&tmp16u); /* a_ptr->effect */
-				rd_u16b(&tmp16u); /* a_ptr->time_base */
-				rd_u16b(&tmp16u); /* a_ptr->time_dice */
-				rd_u16b(&tmp16u); /* a_ptr->time_sides */
-			}
+			rd_u16b(&tmp16u); /* a_ptr->effect */
+			rd_u16b(&tmp16u); /* a_ptr->time_base */
+			rd_u16b(&tmp16u); /* a_ptr->time_dice */
+			rd_u16b(&tmp16u); /* a_ptr->time_sides */
 		}
 	}
 

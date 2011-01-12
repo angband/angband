@@ -32,18 +32,6 @@
  * You have been warned.
  */
 
-/*
- * Current savefile version
- */
-#define VERSION_MAJOR	3
-#define VERSION_MINOR	0
-#define VERSION_PATCH	14
-#define VERSION_EXTRA	0
-
-/*
- * Version of random artifact code.
- */
-#define RANDART_VERSION	63
 
 /*
  * Number of grids in each block (vertically)

@@ -453,8 +453,8 @@ void wr_squelch(void)
 void wr_misc(void)
 {
 
-	/* Random artifact version */
-	wr_u32b(RANDART_VERSION);
+	/* XXX Old random artifact version, remove after 3.3 */
+	wr_u32b(63);
 
 	/* Random artifact seed */
 	wr_u32b(seed_randart);
