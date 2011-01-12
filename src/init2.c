@@ -31,6 +31,7 @@
 #include "option.h"
 #include "parser.h"
 #include "prefs.h"
+#include "randname.h"
 #include "squelch.h"
 
 static struct history_chart *histories;

@@ -27,6 +27,7 @@
 #include "prefs.h"
 #include "spells.h"
 #include "squelch.h"
+#include "randname.h"
 #include "tvalsval.h"
 
 /*

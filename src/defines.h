@@ -120,11 +120,6 @@
  */
 #define MAX_Q_IDX	4
 
-/*
- * Maximum number of high scores in the high score file
- */
-#define MAX_HISCORES	100
-
 
 /*
  * Maximum dungeon level.  The player can never reach this level
@@ -179,18 +174,6 @@
 #define MON_MULT_ADJ		8 	/* High value slows multiplication */
 #define MON_DRAIN_LIFE		2	/* Percent of player exp drained per hit */
 
-/*
- * The different types of name randname.c can generate
- * which is also the number of sections in names.txt
- */
-typedef enum
-{
-  RANDNAME_TOLKIEN = 1,
-  RANDNAME_SCROLL,
-
-  /* End of type marker - not a valid name type */
-  RANDNAME_NUM_TYPES
-} randname_type;
 
 /*
  * There is a 1/20 (5%) chance of inflating the requested object level

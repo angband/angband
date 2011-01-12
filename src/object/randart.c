@@ -21,6 +21,7 @@
 #include "object/tvalsval.h"
 #include "init.h"
 #include "effects.h"
+#include "randname.h"
 
 /*
  * Original random artifact generator (randart) by Greg Wooledge.

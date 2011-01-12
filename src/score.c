@@ -20,6 +20,12 @@
 
 
 /*
+ * Maximum number of high scores in the high score file
+ */
+#define MAX_HISCORES    100
+
+
+/*
  * Semi-Portable High Score List Entry (128 bytes)
  *
  * All fields listed below are null terminated ascii strings.
