@@ -558,16 +558,13 @@ static void wield_all(struct player *p)
 void player_outfit(struct player *p)
 {
 	const struct start_item *si;
-
-	object_type *i_ptr;
 	object_type object_type_body;
-
 
 	/* Give the player starting equipment */
 	for (si = cp_ptr->start_items; si; si = si->next)
 	{
 		/* Get local object */
-		i_ptr = &object_type_body;
+		struct object *i_ptr = &object_type_body;
 
 		/* Prepare the item */
 		object_prep(i_ptr, si->kind, 0, MINIMISE);
@@ -576,6 +573,10 @@ void player_outfit(struct player *p)
 
 		object_flavor_aware(i_ptr);
 		object_notice_everything(i_ptr);
+
+		/* apply_magic ensures that torches have light set */
+		apply_magic(i_ptr, 0, FALSE, FALSE, FALSE);
+
 		inven_carry(p, i_ptr);
 		si->kind->everseen = TRUE;
 
@@ -583,38 +584,9 @@ void player_outfit(struct player *p)
 		p->au -= object_value(i_ptr, i_ptr->number, FALSE);
 	}
 
-
-	/* Hack -- give the player hardcoded equipment XXX */
-
-	/* Get local object */
-	i_ptr = &object_type_body;
-
-	/* Hack -- Give the player some food */
-	object_prep(i_ptr, objkind_get(TV_FOOD, SV_FOOD_RATION), 0, MINIMISE);
-	i_ptr->number = (byte)rand_range(3, 7);
-	i_ptr->origin = ORIGIN_BIRTH;
-	object_flavor_aware(i_ptr);
-	object_notice_everything(i_ptr);
-	k_info[i_ptr->k_idx].everseen = TRUE;
-	inven_carry(p, i_ptr);
-	p->au -= object_value(i_ptr, i_ptr->number, FALSE);
-
-	/* Get local object */
-	i_ptr = &object_type_body;
-
-	/* Hack -- Give the player some torches */
-	object_prep(i_ptr, objkind_get(TV_LIGHT, SV_LIGHT_TORCH), 0, MINIMISE);
-	apply_magic(i_ptr, 0, FALSE, FALSE, FALSE);
-	i_ptr->number = (byte)rand_range(3, 7);
-	i_ptr->origin = ORIGIN_BIRTH;
-	object_flavor_aware(i_ptr);
-	object_notice_everything(i_ptr);
-	k_info[i_ptr->k_idx].everseen = TRUE;
-	inven_carry(p, i_ptr);
-	p->au -= object_value(i_ptr, i_ptr->number, FALSE);
-
-	/* sanity check */
-	if (p->au < 0) p->au = 0;
+	/* Sanity check */
+	if (p->au < 0)
+		p->au = 0;
 
 	/* Now try wielding everything */
 	wield_all(p);
