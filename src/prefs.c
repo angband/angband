@@ -21,6 +21,7 @@
 #include "macro.h"
 #include "prefs.h"
 #include "squelch.h"
+#include "spells.h"
 
 
 /*** Pref file saving code ***/
@@ -349,7 +350,7 @@ void dump_monsters(ang_file *fff)
 		if (!r_ptr->name) continue;
 
 		file_putf(fff, "# Monster: %s\n", r_ptr->name);
-		file_putf(fff, "R:%d:0x%02X:0x%02X\n", i, attr, chr);
+		file_putf(fff, "R:%d:%d:%d\n", i, attr, chr);
 	}
 }
 
@@ -406,7 +407,7 @@ void dump_features(ang_file *fff)
 
 			assert(light);
 
-			file_putf(fff, "F:%d:%s:0x%02X:0x%02X\n", i, light, attr, chr);
+			file_putf(fff, "F:%d:%s:%d:%d\n", i, light, attr, chr);
 		}
 	}
 }
@@ -421,7 +422,7 @@ void dump_flavors(ang_file *fff)
 		byte chr = f->x_char;
 
 		file_putf(fff, "# Item flavor: %s\n", f->text);
-		file_putf(fff, "L:%d:0x%02X:0x%02X\n\n", f->fidx, attr, chr);
+		file_putf(fff, "L:%d:%d:%d\n\n", f->fidx, attr, chr);
 	}
 }
 
@@ -446,7 +447,7 @@ void dump_colors(ang_file *fff)
 		if (i < BASIC_COLORS) name = color_table[i].name;
 
 		file_putf(fff, "# Color: %s\n", name);
-		file_putf(fff, "V:%d:0x%02X:0x%02X:0x%02X:0x%02X\n\n", i, kv, rv, gv, bv);
+		file_putf(fff, "V:%d:%d:%d:%d:%d\n\n", i, kv, rv, gv, bv);
 	}
 }
 

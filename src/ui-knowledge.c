@@ -271,7 +271,7 @@ static void display_group_member(menu_type *menu, int oid,
 		byte c = *o_funcs->xchar(oid);
 		byte a = *o_funcs->xattr(oid);
 
-		c_put_str(attr, format((c & 0x80) ? "%02x/%02x" : "%02x/%d", a, c), row, 60);
+		c_put_str(attr, format("%d/%d", a, c), row, 60);
 	}
 }
 
