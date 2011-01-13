@@ -1036,7 +1036,8 @@ void do_cmd_study_book(cmd_code code, cmd_arg args[])
 	object_type *o_ptr = object_from_item_idx(book);
 
 	int spell = -1;
-	int i, k = 0;
+	struct spell *sp;
+	int k = 0;
 
 	cptr p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
@@ -1052,19 +1053,12 @@ void do_cmd_study_book(cmd_code code, cmd_arg args[])
 	}
 
 	/* Extract spells */
-	for (i = 0; i < SPELLS_PER_BOOK; i++)
-	{
-		int s = get_spell_index(o_ptr, i);
-		
-		/* Skip non-OK spells */
-		if (s == -1) continue;
-		if (!spell_okay_to_study(s)) continue;
-		
-		/* Apply the randomizer */
-		if ((++k > 1) && (randint0(k) != 0)) continue;
-		
-		/* Track it */
-		spell = s;
+	for (sp = o_ptr->kind->spells; sp; sp = sp->next) {
+		if (!spell_okay_to_study(sp->spell_index))
+			continue;
+		if ((++k > 1) && (randint0(k) != 0))
+			continue;
+		spell = sp->spell_index;
 	}
 
 	if (spell < 0)

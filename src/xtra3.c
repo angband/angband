@@ -1748,13 +1748,13 @@ static void see_floor_items(game_event_type type, game_event_data *data, void *u
 	if (floor_num == 0) return;
 
 	for (i = 0; i < floor_num; i++)
-	    can_pickup += inven_carry_okay(&o_list[floor_list[i]]);
+	    can_pickup += inven_carry_okay(object_byid(floor_list[i]));
 	
 	/* One object */
 	if (floor_num == 1)
 	{
 		/* Get the object */
-		object_type *o_ptr = &o_list[floor_list[0]];
+		object_type *o_ptr = object_byid(floor_list[0]);
 		char o_name[80];
 
 		if (!can_pickup)

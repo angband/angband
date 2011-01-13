@@ -30,6 +30,8 @@
 #include "randname.h"
 #include "tvalsval.h"
 
+struct object *o_list;
+
 /*
  * Hold the titles of scrolls, 6 to 14 characters each, plus quotes.
  */
@@ -784,7 +786,7 @@ int scan_floor(int *items, int max_size, int y, int x, int mode)
 
 
 		/* Get the object */
-		o_ptr = &o_list[this_o_idx];
+		o_ptr = object_byid(this_o_idx);
 
 		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
@@ -822,7 +824,7 @@ void excise_object_idx(int o_idx)
 
 
 	/* Object */
-	j_ptr = &o_list[o_idx];
+	j_ptr = object_byid(o_idx);
 
 	/* Monster */
 	if (j_ptr->held_m_idx)
@@ -838,7 +840,7 @@ void excise_object_idx(int o_idx)
 			object_type *o_ptr;
 
 			/* Get the object */
-			o_ptr = &o_list[this_o_idx];
+			o_ptr = object_byid(this_o_idx);
 
 			/* Get the next object */
 			next_o_idx = o_ptr->next_o_idx;
@@ -859,7 +861,7 @@ void excise_object_idx(int o_idx)
 					object_type *i_ptr;
 
 					/* Previous object */
-					i_ptr = &o_list[prev_o_idx];
+					i_ptr = object_byid(prev_o_idx);
 
 					/* Remove from list */
 					i_ptr->next_o_idx = next_o_idx;
@@ -889,7 +891,7 @@ void excise_object_idx(int o_idx)
 			object_type *o_ptr;
 
 			/* Get the object */
-			o_ptr = &o_list[this_o_idx];
+			o_ptr = object_byid(this_o_idx);
 
 			/* Get the next object */
 			next_o_idx = o_ptr->next_o_idx;
@@ -910,7 +912,7 @@ void excise_object_idx(int o_idx)
 					object_type *i_ptr;
 
 					/* Previous object */
-					i_ptr = &o_list[prev_o_idx];
+					i_ptr = object_byid(prev_o_idx);
 
 					/* Remove from list */
 					i_ptr->next_o_idx = next_o_idx;
@@ -943,7 +945,7 @@ void delete_object_idx(int o_idx)
 	excise_object_idx(o_idx);
 
 	/* Object */
-	j_ptr = &o_list[o_idx];
+	j_ptr = object_byid(o_idx);
 
 	/* Dungeon floor */
 	if (!(j_ptr->held_m_idx))
@@ -983,7 +985,7 @@ void delete_object(int y, int x)
 		object_type *o_ptr;
 
 		/* Get the object */
-		o_ptr = &o_list[this_o_idx];
+		o_ptr = object_byid(this_o_idx);
 
 		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
@@ -1022,7 +1024,7 @@ static void compact_objects_aux(int i1, int i2)
 	for (i = 1; i < o_max; i++)
 	{
 		/* Get the object */
-		o_ptr = &o_list[i];
+		o_ptr = object_byid(i);
 
 		/* Skip "dead" objects */
 		if (!o_ptr->kind) continue;
@@ -1037,7 +1039,7 @@ static void compact_objects_aux(int i1, int i2)
 
 
 	/* Get the object */
-	o_ptr = &o_list[i1];
+	o_ptr = object_byid(i1);
 
 
 	/* Monster */
@@ -1075,7 +1077,7 @@ static void compact_objects_aux(int i1, int i2)
 
 
 	/* Hack -- move object */
-	COPY(&o_list[i2], &o_list[i1], object_type);
+	COPY(object_byid(i2), object_byid(i1), object_type);
 
 	/* Hack -- wipe hole */
 	object_wipe(o_ptr);
@@ -1113,7 +1115,7 @@ void compact_objects(int size)
 		/* Excise dead objects (backwards!) */
 		for (i = o_max - 1; i >= 1; i--)
 		{
-			object_type *o_ptr = &o_list[i];
+			object_type *o_ptr = object_byid(i);
 			if (o_ptr->kind) continue;
 
 			/* Move last object into open hole */
@@ -1135,7 +1137,7 @@ void compact_objects(int size)
 	/* First do gold */
 	for (i = 1; (i < o_max) && (size); i++)
 	{
-		object_type *o_ptr = &o_list[i];
+		object_type *o_ptr = object_byid(i);
 
 		/* Nuke gold or squelched items */
 		if (o_ptr->tval == TV_GOLD || squelch_item_ok(o_ptr))
@@ -1158,7 +1160,7 @@ void compact_objects(int size)
 		/* Examine the objects */
 		for (i = 1; (i < o_max) && (size); i++)
 		{
-			object_type *o_ptr = &o_list[i];
+			object_type *o_ptr = object_byid(i);
 			if (!o_ptr->kind) continue;
 
 			/* Hack -- High level objects start out "immune" */
@@ -1246,7 +1248,7 @@ void wipe_o_list(struct cave *c)
 	/* Delete the existing objects */
 	for (i = 1; i < o_max; i++)
 	{
-		object_type *o_ptr = &o_list[i];
+		object_type *o_ptr = object_byid(i);
 		artifact_type *a_ptr = artifact_of(o_ptr);
 		if (!o_ptr->kind) continue;
 
@@ -1334,8 +1336,8 @@ s16b o_pop(void)
 	/* Recycle dead objects */
 	for (i = 1; i < o_max; i++)
 	{
-		object_type *o_ptr = &o_list[i];
-		if (o_ptr->kind) continue;
+		object_type *o_ptr = object_byid(i);
+		if (o_ptr->k_idx) continue;
 
 		/* Count objects */
 		o_cnt++;
@@ -1361,7 +1363,8 @@ object_type *get_first_object(int y, int x)
 {
 	s16b o_idx = cave->o_idx[y][x];
 
-	if (o_idx) return (&o_list[o_idx]);
+	if (o_idx)
+		return object_byid(o_idx);
 
 	/* No object */
 	return (NULL);
@@ -1373,10 +1376,11 @@ object_type *get_first_object(int y, int x)
  */
 object_type *get_next_object(const object_type *o_ptr)
 {
-	if (o_ptr->next_o_idx) return (&o_list[o_ptr->next_o_idx]);
+	if (o_ptr->next_o_idx)
+		return object_byid(o_ptr->next_o_idx);
 
 	/* No more objects */
-	return (NULL);
+	return NULL;
 }
 
 
@@ -1899,7 +1903,7 @@ static s16b floor_get_idx_oldest_squelched(int y, int x)
 
 	for (this_o_idx = cave->o_idx[y][x]; this_o_idx; this_o_idx = o_ptr->next_o_idx)
 	{
-		o_ptr = &o_list[this_o_idx];
+		o_ptr = object_byid(this_o_idx);
 
 		if (squelch_item_ok(o_ptr))
 			squelch_idx = this_o_idx;
@@ -1925,7 +1929,7 @@ s16b floor_carry(struct cave *c, int y, int x, object_type *j_ptr)
 	/* Scan objects in that grid for combination */
 	for (this_o_idx = c->o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
 	{
-		object_type *o_ptr = &o_list[this_o_idx];
+		object_type *o_ptr = object_byid(this_o_idx);
 
 		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
@@ -1969,7 +1973,7 @@ s16b floor_carry(struct cave *c, int y, int x, object_type *j_ptr)
 		object_type *o_ptr;
 
 		/* Get the object */
-		o_ptr = &o_list[o_idx];
+		o_ptr = object_byid(o_idx);
 
 		/* Structure Copy */
 		object_copy(o_ptr, j_ptr);
@@ -2556,7 +2560,7 @@ void inven_item_optimize(int item)
  */
 void floor_item_charges(int item)
 {
-	object_type *o_ptr = &o_list[item];
+	object_type *o_ptr = object_byid(item);
 
 	/* Require staff/wand */
 	if ((o_ptr->tval != TV_STAFF) && (o_ptr->tval != TV_WAND)) return;
@@ -2565,7 +2569,9 @@ void floor_item_charges(int item)
 	if (!object_is_known(o_ptr)) return;
 
 	/* Print a message */
-	msg("There are %d charge%s remaining.", o_ptr->pval[DEFAULT_PVAL],
+	msg("There %s %d charge%s remaining.",
+	    (o_ptr->pval[DEFAULT_PVAL] != 1) ? "are" : "is",
+	     o_ptr->pval[DEFAULT_PVAL],
 	    (o_ptr->pval[DEFAULT_PVAL] != 1) ? "s" : "");
 }
 
@@ -2576,7 +2582,7 @@ void floor_item_charges(int item)
  */
 void floor_item_describe(int item)
 {
-	object_type *o_ptr = &o_list[item];
+	object_type *o_ptr = object_byid(item);
 
 	char o_name[80];
 
@@ -2593,7 +2599,7 @@ void floor_item_describe(int item)
  */
 void floor_item_increase(int item, int num)
 {
-	object_type *o_ptr = &o_list[item];
+	object_type *o_ptr = object_byid(item);
 
 	/* Apply */
 	num += o_ptr->number;
@@ -2615,7 +2621,7 @@ void floor_item_increase(int item, int num)
  */
 void floor_item_optimize(int item)
 {
-	object_type *o_ptr = &o_list[item];
+	object_type *o_ptr = object_byid(item);
 
 	/* Paranoia -- be sure it exists */
 	if (!o_ptr->kind) return;
@@ -3727,7 +3733,7 @@ void display_itemlist(void)
 			/* Iterate over all the items found on this square */
 			for (i = 0; i < num; i++)
 			{
-				object_type *o_ptr = &o_list[floor_list[i]];
+				object_type *o_ptr = object_byid(floor_list[i]);
 				unsigned j;
 
 				/* Skip gold/squelched */
@@ -4068,7 +4074,7 @@ object_type *object_from_item_idx(int item)
 	if (item >= 0)
 		return &p_ptr->inventory[item];
 	else
-		return &o_list[0 - item];
+		return object_byid(0 - item);
 }
 
 
@@ -4259,4 +4265,21 @@ void pack_overflow(void)
 
 	/* Redraw stuff (if needed) */
 	if (p_ptr->redraw) redraw_stuff();
+}
+
+struct object *object_byid(s16b oidx)
+{
+	assert(oidx >= 0);
+	assert(oidx <= z_info->o_max);
+	return &o_list[oidx];
+}
+
+void objects_init(void)
+{
+	o_list = C_ZNEW(z_info->o_max, struct object);
+}
+
+void objects_destroy(void)
+{
+	mem_free(o_list);
 }

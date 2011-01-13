@@ -1154,8 +1154,8 @@ static object_type *find_artifact(int a_idx)
 	/* Look for the artifact, either in inventory, store or the object list */
 	for (i = 0; i < z_info->o_max; i++)
 	{
-		if (o_list[i].name1 == a_idx)
-			return &o_list[i];
+		if (object_byid(i)->name1 == a_idx)
+			return object_byid(i);
 	}
 
 	for (i = 0; i < INVEN_TOTAL; i++)

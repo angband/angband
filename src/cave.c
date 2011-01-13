@@ -2984,7 +2984,7 @@ void wiz_light(void)
 	/* Memorize objects */
 	for (i = 1; i < o_max; i++)
 	{
-		object_type *o_ptr = &o_list[i];
+		object_type *o_ptr = object_byid(i);
 
 		/* Skip dead objects */
 		if (!o_ptr->kind) continue;
@@ -3052,7 +3052,7 @@ void wiz_dark(void)
 	/* Forget all objects */
 	for (i = 1; i < o_max; i++)
 	{
-		object_type *o_ptr = &o_list[i];
+		object_type *o_ptr = object_byid(i);
 
 		/* Skip dead objects */
 		if (!o_ptr->kind) continue;

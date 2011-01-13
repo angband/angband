@@ -2102,7 +2102,7 @@ int rd_objects_2(void)
 		}
 
 		/* Get the object */
-		o_ptr = &o_list[o_idx];
+		o_ptr = object_byid(o_idx);
 
 		/* Structure Copy */
 		object_copy(o_ptr, i_ptr);
@@ -2180,7 +2180,7 @@ int rd_objects_1(void)
 		}
 
 		/* Get the object */
-		o_ptr = &o_list[o_idx];
+		o_ptr = object_byid(o_idx);
 
 		/* Structure Copy */
 		object_copy(o_ptr, i_ptr);
@@ -2263,7 +2263,7 @@ int rd_monsters(void)
 		monster_type *m_ptr;
 
 		/* Get the object */
-		o_ptr = &o_list[i];
+		o_ptr = object_byid(i);
 
 		/* Ignore dungeon objects */
 		if (!o_ptr->held_m_idx) continue;

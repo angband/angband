@@ -70,7 +70,7 @@ void delete_monster_idx(int i)
 		object_type *o_ptr;
 
 		/* Get the object */
-		o_ptr = &o_list[this_o_idx];
+		o_ptr = object_byid(this_o_idx);
 
 		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
@@ -139,7 +139,7 @@ static void compact_monsters_aux(int i1, int i2)
 		object_type *o_ptr;
 
 		/* Get the object */
-		o_ptr = &o_list[this_o_idx];
+		o_ptr = object_byid(this_o_idx);
 
 		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
@@ -1438,7 +1438,7 @@ s16b monster_carry(int m_idx, object_type *j_ptr)
 		object_type *o_ptr;
 
 		/* Get the object */
-		o_ptr = &o_list[this_o_idx];
+		o_ptr = object_byid(this_o_idx);
 
 		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
@@ -1464,7 +1464,7 @@ s16b monster_carry(int m_idx, object_type *j_ptr)
 		object_type *o_ptr;
 
 		/* Get new object */
-		o_ptr = &o_list[o_idx];
+		o_ptr = object_byid(o_idx);
 
 		/* Copy object */
 		object_copy(o_ptr, j_ptr);
@@ -2906,7 +2906,7 @@ void monster_death(int m_idx)
 		object_type *o_ptr;
 
 		/* Get the object */
-		o_ptr = &o_list[this_o_idx];
+		o_ptr = object_byid(this_o_idx);
 
 		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;

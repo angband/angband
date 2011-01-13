@@ -370,7 +370,7 @@ static void recharge_objects(void)
 	for (i = 1; i < o_max; i++)
 	{
 		/* Get the object */
-		o_ptr = &o_list[i];
+		o_ptr = object_byid(i);
 
 		/* Skip dead objects */
 		if (!o_ptr->kind) continue;

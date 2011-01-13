@@ -3658,7 +3658,7 @@ static void process_monster(struct cave *c, int m_idx)
 				object_type *o_ptr;
 
 				/* Get the object */
-				o_ptr = &o_list[this_o_idx];
+				o_ptr = object_byid(this_o_idx);
 
 				/* Get the next object */
 				next_o_idx = o_ptr->next_o_idx;

@@ -180,7 +180,7 @@ static void py_pickup_gold(void)
 	for (this_o_idx = cave->o_idx[py][px]; this_o_idx; this_o_idx = next_o_idx)
 	{
 		/* Get the object */
-		o_ptr = &o_list[this_o_idx];
+		o_ptr = object_byid(this_o_idx);
 
 		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
@@ -293,7 +293,7 @@ static void py_pickup_aux(int o_idx, bool domsg)
 	int slot, quiver_slot = 0;
 
 	char o_name[80];
-	object_type *o_ptr = &o_list[o_idx];
+	object_type *o_ptr = object_byid(o_idx);
 
 	/* Carry the object */
 	slot = inven_carry(p_ptr, o_ptr);
@@ -373,7 +373,7 @@ int do_autopickup(void)
 	for (this_o_idx = cave->o_idx[py][px]; this_o_idx; this_o_idx = next_o_idx)
 	{
 		/* Get the object and the next object */
-		o_ptr = &o_list[this_o_idx];
+		o_ptr = object_byid(this_o_idx);
 		next_o_idx = o_ptr->next_o_idx;
 
 		/* Ignore all hidden objects and non-objects */
@@ -473,7 +473,7 @@ byte py_pickup(int pickup)
 	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x03);
 	for (i = 0; i < floor_num; i++)
 	{
-	    can_pickup += inven_carry_okay(&o_list[floor_list[i]]);
+	    can_pickup += inven_carry_okay(object_byid(floor_list[i]));
 	}
 	
 	if (!can_pickup)

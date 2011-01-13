@@ -788,7 +788,7 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode)
 					object_type *o_ptr;
 
 					/* Get the object */
-					o_ptr = &o_list[this_o_idx];
+					o_ptr = object_byid(this_o_idx);
 
 					/* Get the next object */
 					next_o_idx = o_ptr->next_o_idx;
@@ -916,7 +916,7 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode)
 				char o_name[80];
 
 				/* Get the single object in the list */
-				object_type *o_ptr = &o_list[floor_list[0]];
+				object_type *o_ptr = object_byid(floor_list[0]);
 
 				/* Not boring */
 				boring = FALSE;
