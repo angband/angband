@@ -1655,7 +1655,12 @@ void do_cmd_debug(void)
 			detect_all(TRUE);
 			break;
 		}
-
+		
+		/* Test for disconnected dungeon */
+		case 'D':
+		{
+			disconnect_stats();
+		}
 		/* Edit character */
 		case 'e':
 		{
@@ -1789,6 +1794,12 @@ void do_cmd_debug(void)
 			if (p_ptr->command_arg <= 0) p_ptr->command_arg = 1;
 			do_cmd_wiz_summon(p_ptr->command_arg);
 			break;
+		}
+		
+		/* Collect stats (S) */
+		case 'S':
+		{
+			stats_collect();
 		}
 
 		/* Teleport */

@@ -281,5 +281,6 @@ typedef int errr;
 /* Analogous to isdigit() etc in ctypes */
 #define isarrow(c)	((c >= ARROW_DOWN) && (c <= ARROW_UP))
 
+#define WITH_STATS
 
 #endif /* INCLUDED_H_BASIC_H */

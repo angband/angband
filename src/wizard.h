@@ -6,6 +6,7 @@ extern void do_cmd_debug(void);
 
 /* wiz-stats.c */
 void stats_collect(void);
+void disconnect_stats(void);
 
 /* wiz-spoil.c */
 void do_cmd_spoilers(void);
