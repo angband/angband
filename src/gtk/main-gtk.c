@@ -2286,7 +2286,7 @@ static int last_inv_slot(void)
 		o_ptr = &p_ptr->inventory[i];
 
 		/* Skip non-objects */
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		/* Track */
 		z = i + 1;
@@ -2565,7 +2565,7 @@ static void cr_print_equippy(xtra_win_data *xd, int y)
 		strnfmt(c, sizeof(c), "%c",object_char(o_ptr)); 
 
 		/* Clear the part of the screen */
-		if (!o_ptr->k_idx)
+		if (!o_ptr->kind)
 		{
 			c [0]= ' ';
 			a = TERM_WHITE;
