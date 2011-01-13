@@ -38,6 +38,22 @@ int which_pval(const object_type *o_ptr, const int flag)
 	assert(0);
 }
 
+static size_t obj_desc_name_format(char *buf, size_t max, size_t end,
+		const char *fmt, const char *modstr, bool pluralise);
+
+
+/**
+ * Puts the object base kind's name into buf.
+ */
+void object_base_name(char *buf, size_t max, int tval, bool plural)
+{
+	object_base *kb = &kb_info[tval];
+	size_t end = 0;
+
+	end = obj_desc_name_format(buf, max, end, kb->name, NULL, plural);
+}
+
+
 /*
  * Puts a very stripped-down version of an object's name into buf.
  * If easy_know is TRUE, then the IDed names are used, otherwise
@@ -45,32 +61,28 @@ int which_pval(const object_type *o_ptr, const int flag)
  *
  * Just truncates if the buffer isn't big enough.
  */
-void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know)
+void object_kind_name(char *buf, size_t max, const object_kind *kind, bool easy_know)
 {
-	char *t;
-
-	object_kind *k_ptr = &k_info[k_idx];
-
 	/* If not aware, use flavor */
-	if (!easy_know && !k_ptr->aware && k_ptr->flavor)
+	if (!easy_know && !kind->aware && kind->flavor)
 	{
-		if (k_ptr->tval == TV_FOOD && k_ptr->sval > SV_FOOD_MIN_SHROOM)
+		if (kind->tval == TV_FOOD && kind->sval > SV_FOOD_MIN_SHROOM)
 		{
-			strnfmt(buf, max, "%s Mushroom", k_ptr->flavor->text);
+			strnfmt(buf, max, "%s Mushroom", kind->flavor->text);
 		}
 		else
 		{
 			/* Plain flavour (e.g. Copper) will do. */
-			my_strcpy(buf, k_ptr->flavor->text, max);
+			my_strcpy(buf, kind->flavor->text, max);
 		}
 	}
 
 	/* Use proper name (Healing, or whatever) */
 	else
 	{
-		cptr str = k_ptr->name;
+		char *t;
 
-		if (k_ptr->tval == TV_FOOD && k_ptr->sval > SV_FOOD_MIN_SHROOM)
+		if (kind->tval == TV_FOOD && kind->sval > SV_FOOD_MIN_SHROOM)
 		{
 			my_strcpy(buf, "Mushroom of ", max);
 			max -= strlen(buf);
@@ -81,47 +93,16 @@ void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know)
 			t = buf;
 		}
 
-		/* Skip past leading characters */
-		while ((*str == ' ') || (*str == '&')) str++;
-
-		/* Copy useful chars */
-		for (; *str && max > 1; str++)
-		{
-			/* Pluralizer for irregular plurals */
-			/* Useful for languages where adjective changes for plural */
-			if (*str == '|')
-			{
-				/* Process singular part */
-				for (str++; *str != '|' && max > 1; str++)
-				{
-					*t++ = *str;
-					max--;
-				}
-
-				/* Process plural part */
-				for (str++; *str != '|'; str++) ;
-			}
-
-			/* English plural indicator can simply be skipped */
-			else if (*str != '~')
-			{
-				*t++ = *str;
-				max--;
-			}
-		}
-
-		/* Terminate the new name */
-		*t = '\0';
+		/* Format remainder of the string */
+		obj_desc_name_format(t, max, 0, kind->name, NULL, FALSE);
 	}
 }
 
 
 
-static const char *obj_desc_get_modstr(const object_type *o_ptr)
+static const char *obj_desc_get_modstr(const object_kind *kind)
 {
-	object_kind *k_ptr = &k_info[o_ptr->k_idx];
-
-	switch (o_ptr->tval)
+	switch (kind->tval)
 	{
 		case TV_AMULET:
 		case TV_RING:
@@ -131,11 +112,11 @@ static const char *obj_desc_get_modstr(const object_type *o_ptr)
 		case TV_POTION:
 		case TV_FOOD:
 		case TV_SCROLL:
-			return k_ptr->flavor ? k_ptr->flavor->text : "";
+			return kind->flavor ? kind->flavor->text : "";
 
 		case TV_MAGIC_BOOK:
 		case TV_PRAYER_BOOK:
-			return k_ptr->name;
+			return kind->name;
 	}
 
 	return "";
@@ -143,9 +124,7 @@ static const char *obj_desc_get_modstr(const object_type *o_ptr)
 
 static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware)
 {
-	object_kind *k_ptr = &k_info[o_ptr->k_idx];
-
-	bool show_flavor = k_ptr->flavor ? TRUE : FALSE;
+	bool show_flavor = o_ptr->kind->flavor ? TRUE : FALSE;
 
 
 	if (o_ptr->ident & IDENT_STORE) show_flavor = FALSE;
@@ -155,7 +134,7 @@ static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware)
 
 	/* Known artifacts get special treatment */
 	if (artifact_p(o_ptr) && aware)
-		return k_ptr->name;
+		return o_ptr->kind->name;
 
 	/* Analyze the object */
 	switch (o_ptr->tval)
@@ -184,7 +163,7 @@ static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware)
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:
 		case TV_LIGHT:
-			return k_ptr->name;
+			return o_ptr->kind->name;
 
 		case TV_AMULET:
 			return (show_flavor ? "& # Amulet~" : "& Amulet~");
@@ -217,113 +196,84 @@ static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware)
 			if (o_ptr->sval > SV_FOOD_MIN_SHROOM)
 				return (show_flavor ? "& # Mushroom~" : "& Mushroom~");
 			else
-				return k_ptr->name;
+				return o_ptr->kind->name;
 	}
 
 	return "(nothing)";
 }
 
 
-
-
-
-
-/*
- * Copy 'src' into 'buf, replacing '#' with 'modstr' (if found), putting a plural
- * in the place indicated by '~' if required, or using alterate...
- */
-static size_t obj_desc_name(char *buf, size_t max, size_t end,
-		const object_type *o_ptr, bool prefix, odesc_detail_t mode,
-		bool spoil)
+static size_t obj_desc_name_prefix(char *buf, size_t max, size_t end,
+		const object_type *o_ptr, bool known, const char *basename,
+		const char *modstr)
 {
-	object_kind *k_ptr = &k_info[o_ptr->k_idx];
+	if (o_ptr->number <= 0)
+		strnfcat(buf, max, &end, "no more ");
+	else if (o_ptr->number > 1)
+		strnfcat(buf, max, &end, "%d ", o_ptr->number);
+	else if ((object_name_is_visible(o_ptr) || known) && artifact_p(o_ptr))
+		strnfcat(buf, max, &end, "The ");
 
-	bool known = object_is_known(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
-	bool aware = object_flavor_is_aware(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
-
-	const char *basename = obj_desc_get_basename(o_ptr, aware);
-	const char *modstr = obj_desc_get_modstr(o_ptr);
-
-	bool pluralise = (mode & ODESC_PLURAL) ? TRUE : FALSE;
-
-	if (aware && !k_ptr->everseen)
-		k_ptr->everseen = TRUE;
-
-	if (o_ptr->number > 1)
-		pluralise = TRUE;
-	if (mode & ODESC_SINGULAR)
-		pluralise = FALSE;
-
-	/* Add a pseudo-numerical prefix if desired */
-	if (prefix)
+	else if (*basename == '&')
 	{
-		if (o_ptr->number <= 0)
+		bool an = FALSE;
+		const char *lookahead = basename + 1;
+
+		while (*lookahead == ' ') lookahead++;
+
+		if (*lookahead == '#')
 		{
-			strnfcat(buf, max, &end, "no more ");
-			
-			/* Pluralise for grammatical correctness */
-			pluralise = TRUE;
-		}
-		else if (o_ptr->number > 1)
-			strnfcat(buf, max, &end, "%d ", o_ptr->number);
-		else if ((object_name_is_visible(o_ptr) || known) && artifact_p(o_ptr))
-			strnfcat(buf, max, &end, "The ");
-
-		else if (*basename == '&')
-		{
-			bool an = FALSE;
-			const char *lookahead = basename + 1;
-
-			while (*lookahead == ' ') lookahead++;
-
-			if (*lookahead == '#')
-			{
-				if (modstr && is_a_vowel(*modstr))
-					an = TRUE;
-			}
-			else if (is_a_vowel(*lookahead))
-			{
+			if (modstr && is_a_vowel(*modstr))
 				an = TRUE;
-			}
-
-			if (an)
-				strnfcat(buf, max, &end, "an ");
-			else
-				strnfcat(buf, max, &end, "a ");
 		}
+		else if (is_a_vowel(*lookahead))
+		{
+			an = TRUE;
+		}
+
+		if (an)
+			strnfcat(buf, max, &end, "an ");
+		else
+			strnfcat(buf, max, &end, "a ");
 	}
 
+	return end;
+}
 
-/*
- * Names have the following elements:
+
+
+/**
+ * Formats 'fmt' into 'buf', with the following formatting characters:
  *
- * '~' indicates where to place an 's' or an 'es'.  Other plural forms should
- * be handled with the syntax '|singular|plural|', e.g. "kni|fe|ves|".
+ * '~' at the end of a word (e.g. "fridge~") will pluralise
  *
- * '#' indicates the position of the "modifier", e.g. the flavour or spellbook
- * name.
+ * '|x|y|' will be output as 'x' if singular or 'y' if plural
+ *    (e.g. "kni|fe|ves|")
+ *
+ * '#' will be replaced with 'modstr' (which may contain the pluralising
+ * formats given above).
  */
-
-
-
+static size_t obj_desc_name_format(char *buf, size_t max, size_t end,
+		const char *fmt, const char *modstr, bool pluralise)
+{
 	/* Copy the string */
-	while (*basename)
+	while (*fmt)
 	{
-		if (*basename == '&')
+		if (*fmt == '&')
 		{
-			while (*basename == ' ' || *basename == '&')
-				basename++;
+			while (*fmt == ' ' || *fmt == '&')
+				fmt++;
 			continue;
 		}
 
 		/* Pluralizer (regular English plurals) */
-		else if (*basename == '~')
+		else if (*fmt == '~')
 		{
-			char prev = *(basename - 1);
+			char prev = *(fmt - 1);
 
 			if (!pluralise)
 			{
-				basename++;
+				fmt++;
 				continue;
 			}
 
@@ -335,11 +285,11 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 		}
 
 		/* Special plurals */
-		else if (*basename == '|')
+		else if (*fmt == '|')
 		{
-			/* e.g. & Wooden T|o|e|rch~
-			 *                 ^ ^^ */
-			const char *singular = basename + 1;
+			/* e.g. kni|fe|ves|
+			 *          ^  ^  ^ */
+			const char *singular = fmt + 1;
 			const char *plural   = strchr(singular, '|');
 			const char *endmark  = NULL;
 
@@ -356,56 +306,50 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 			else
 				strnfcat(buf, max, &end, "%.*s", endmark - plural, plural);
 
-			basename = endmark;
+			fmt = endmark;
 		}
 
-		/* Handle pluralisation in the modifier XXX */
-		else if (*basename == '#')
+		/* Add modstr, with pluralisation if relevant */
+		else if (*fmt == '#')
 		{
-			const char *basename = modstr;
-
-			while (basename && *basename && (end < max - 1))
-			{
-				/* Special plurals */
-				if (*basename == '|')
-				{
-					/* e.g. & Wooden T|o|e|rch~
-					 *                 ^ ^^ */
-					const char *singular = basename + 1;
-					const char *plural   = strchr(singular, '|');
-					const char *endmark  = NULL;
-
-					if (plural)
-					{
-						plural++;
-						endmark = strchr(plural, '|');
-					}
-
-					if (!singular || !plural || !endmark) return end;
-
-					if (!pluralise)
-						strnfcat(buf, max, &end, "%.*s", plural - singular - 1, singular);
-					else
-						strnfcat(buf, max, &end, "%.*s", endmark - plural, plural);
-
-					basename = endmark;
-				}
-
-				else
-					buf[end++] = *basename;
-
-				basename++;
-			}
+			end = obj_desc_name_format(buf, max, end, modstr, NULL,
+					pluralise);
 		}
 
 		else
-			buf[end++] = *basename;
+			buf[end++] = *fmt;
 
-		basename++;
+		fmt++;
 	}
 
-	/* 0-terminate, just in case XXX */
 	buf[end] = 0;
+
+	return end;
+}
+
+
+/*
+ * Format object o_ptr's name into 'buf'.
+ */
+static size_t obj_desc_name(char *buf, size_t max, size_t end,
+		const object_type *o_ptr, bool prefix, odesc_detail_t mode,
+		bool spoil)
+{
+	bool known = object_is_known(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
+	bool aware = object_flavor_is_aware(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
+
+	const char *basename = obj_desc_get_basename(o_ptr, aware);
+	const char *modstr = obj_desc_get_modstr(o_ptr->kind);
+
+	if (aware && !o_ptr->kind->everseen)
+		o_ptr->kind->everseen = TRUE;
+
+	if (prefix)
+		end = obj_desc_name_prefix(buf, max, end, o_ptr, mode,
+				basename, modstr);
+
+	end = obj_desc_name_format(buf, max, end, basename, modstr,
+			!(o_ptr->number == 1 || mode & ODESC_SINGULAR));
 
 
 	/** Append extra names of various kinds **/
@@ -416,43 +360,11 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 	else if ((spoil && o_ptr->name2) || object_ego_is_visible(o_ptr))
 		strnfcat(buf, max, &end, " %s", e_info[o_ptr->name2].name);
 
-	else if (aware && !artifact_p(o_ptr) && (k_ptr->flavor || k_ptr->tval == TV_SCROLL))
-		strnfcat(buf, max, &end, " of %s", k_ptr->name);
+	else if (aware && !artifact_p(o_ptr) &&
+			(o_ptr->kind->flavor || o_ptr->kind->tval == TV_SCROLL))
+		strnfcat(buf, max, &end, " of %s", o_ptr->kind->name);
 
 	return end;
-}
-
-/*
- * Is o_ptr a weapon?
- */
-static bool obj_desc_show_weapon(const object_type *o_ptr)
-{
-	bitflag f[OF_SIZE];
-
-	object_flags(o_ptr, f);
-
-	if (of_has(f, OF_SHOW_MODS)) return TRUE;
-	if (o_ptr->to_h && o_ptr->to_d) return TRUE;
-
-	/* You need to list both to_h and to_d for things like unaware rings of accuracy and damage e.g. to differentiate (+8) */
-	if ((o_ptr->to_h || o_ptr->to_d) && !object_flavor_is_aware(o_ptr)) return TRUE;
-
-	switch (o_ptr->tval)
-	{
-		case TV_SHOT:
-		case TV_BOLT:
-		case TV_ARROW:
-		case TV_BOW:
-		case TV_HAFTED:
-		case TV_POLEARM:
-		case TV_SWORD:
-		case TV_DIGGING:
-		{
-			return TRUE;
-		}
-	}
-
-	return FALSE;
 }
 
 /*
@@ -548,51 +460,35 @@ static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max, si
 static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max, 
 		size_t end, bool spoil)
 {
-	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 	bitflag flags[OF_SIZE];
 	bitflag flags_known[OF_SIZE];
 
 	object_flags(o_ptr, flags);
 	object_flags_known(o_ptr, flags_known);
 
-	/* Dump base weapon info */
-	switch (o_ptr->tval)
+	if (of_has(flags, OF_SHOW_DICE))
 	{
-		/* Weapons */
-		case TV_SHOT:
-		case TV_BOLT:
-		case TV_ARROW:
-		case TV_HAFTED:
-		case TV_POLEARM:
-		case TV_SWORD:
-		case TV_DIGGING:
-		{
-			/* Only display the real damage dice if the combat stats are known */
-			if (spoil || object_attack_plusses_are_visible(o_ptr))
-				strnfcat(buf, max, &end, " (%dd%d)", o_ptr->dd, o_ptr->ds);
-			else
-				strnfcat(buf, max, &end, " (%dd%d)", k_ptr->dd, k_ptr->ds);
-			break;
-		}
-
-		/* Missile launchers */
-		case TV_BOW:
-		{
-			/* Display shooting power as part of the multiplier */
-			if (of_has(flags, OF_MIGHT) &&
-			    (spoil || object_flag_is_known(o_ptr, OF_MIGHT)))
-				strnfcat(buf, max, &end, " (x%d)", (o_ptr->sval % 10) + o_ptr->pval[which_pval(o_ptr, OF_MIGHT)]);
-			else
-				strnfcat(buf, max, &end, " (x%d)", o_ptr->sval % 10);
-			break;
-		}
+		/* Only display the real damage dice if the combat stats are known */
+		if (spoil || object_attack_plusses_are_visible(o_ptr))
+			strnfcat(buf, max, &end, " (%dd%d)", o_ptr->dd, o_ptr->ds);
+		else
+			strnfcat(buf, max, &end, " (%dd%d)", o_ptr->kind->dd, o_ptr->kind->ds);
 	}
 
+	if (of_has(flags, OF_SHOW_MULTIPLIER))
+	{
+		/* Display shooting power as part of the multiplier */
+		if (of_has(flags, OF_MIGHT) &&
+		    (spoil || object_flag_is_known(o_ptr, OF_MIGHT)))
+			strnfcat(buf, max, &end, " (x%d)", (o_ptr->sval % 10) + o_ptr->pval[which_pval(o_ptr, OF_MIGHT)]);
+		else
+			strnfcat(buf, max, &end, " (x%d)", o_ptr->sval % 10);
+	}
 
 	/* Show weapon bonuses */
 	if (spoil || object_attack_plusses_are_visible(o_ptr))
 	{
-		if (obj_desc_show_weapon(o_ptr) || o_ptr->to_d || o_ptr->to_h)
+		if (of_has(flags, OF_SHOW_MODS) || o_ptr->to_d || o_ptr->to_h)
 		{
 			/* Make an exception for body armor with only a to-hit penalty */
 			if (o_ptr->to_h < 0 && o_ptr->to_d == 0 &&
@@ -677,8 +573,6 @@ static size_t obj_desc_pval(const object_type *o_ptr, char *buf, size_t max,
 
 static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max, size_t end)
 {
-	object_kind *k_ptr = &k_info[o_ptr->k_idx];
-
 	bool aware = object_flavor_is_aware(o_ptr) || (o_ptr->ident & IDENT_STORE);
 
 	/* Wands and Staffs have charges */
@@ -691,7 +585,7 @@ static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max, 
 		if (o_ptr->tval == TV_ROD && o_ptr->number > 1)
 		{
 			int power;
-			int time_base = randcalc(k_ptr->time, 0, MINIMISE);
+			int time_base = randcalc(o_ptr->kind->time, 0, MINIMISE);
 
 			if (!time_base) time_base = 1;
 
@@ -810,8 +704,6 @@ static size_t obj_desc_aware(const object_type *o_ptr, char *buf, size_t max,
 size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 				   odesc_detail_t mode)
 {
-	object_kind *k_ptr = &k_info[o_ptr->k_idx];
-
 	bool prefix = mode & ODESC_PREFIX;
 	bool spoil = (mode & ODESC_SPOIL);
 	bool known = object_is_known(o_ptr) ||
@@ -828,7 +720,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 
 	if (o_ptr->tval == TV_GOLD)
 		return strnfmt(buf, max, "%d gold pieces worth of %s%s",
-				o_ptr->pval[DEFAULT_PVAL], k_ptr->name,
+				o_ptr->pval[DEFAULT_PVAL], o_ptr->kind->name,
 				squelch_item_ok(o_ptr) ? " {squelch}" : "");
 	else if (!o_ptr->tval)
 		return strnfmt(buf, max, "(nothing)");

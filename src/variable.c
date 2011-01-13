@@ -16,6 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "buildid.h"
 
 
 /*
@@ -560,6 +561,7 @@ maxima *z_info;
 feature_type *f_info;
 
 object_kind *k_info;
+object_base *kb_info;
 
 /*
  * The artifact arrays
@@ -655,13 +657,6 @@ bool (*item_tester_hook)(const object_type*);
  * Hack -- function hook to restrict "get_mon_num_prep()" function
  */
 bool (*get_mon_num_hook)(int r_idx);
-
-
-
-/*
- * Hack -- function hook to restrict "get_obj_num_prep()" function
- */
-bool (*get_obj_num_hook)(int k_idx);
 
 
 

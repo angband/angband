@@ -34,7 +34,7 @@ static void wr_item(const object_type *o_ptr)
 	wr_u16b(0xffff);
 	wr_byte(ITEM_VERSION);
 
-	wr_s16b(o_ptr->k_idx);
+	wr_s16b(0);
 
 	/* Location */
 	wr_byte(o_ptr->iy);
@@ -453,8 +453,8 @@ void wr_squelch(void)
 void wr_misc(void)
 {
 
-	/* Random artifact version */
-	wr_u32b(RANDART_VERSION);
+	/* XXX Old random artifact version, remove after 3.3 */
+	wr_u32b(63);
 
 	/* Random artifact seed */
 	wr_u32b(seed_randart);
@@ -581,7 +581,7 @@ void wr_inventory(void)
 		object_type *o_ptr = &p_ptr->inventory[i];
 
 		/* Skip non-objects */
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		/* Dump index */
 		wr_u16b((u16b)i);

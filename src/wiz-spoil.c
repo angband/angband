@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "buildid.h"
 #include "cmds.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
@@ -146,7 +147,7 @@ static void kind_info(char *buf, size_t buf_len,
 	object_prep(i_ptr, &k_info[k], 0, MAXIMISE);
 
 	/* Obtain the "kind" info */
-	k_ptr = &k_info[i_ptr->k_idx];
+	k_ptr = i_ptr->kind;
 
 	/* Cancel bonuses */
 	for (i = 0; i < MAX_PVALS; i++)
@@ -259,7 +260,7 @@ static void spoil_obj_desc(cptr fname)
 
 
 	/* Header */
-	file_putf(fh, "Spoiler File -- Basic Items (%s)\n\n\n", VERSION_STRING);
+	file_putf(fh, "Spoiler File -- Basic Items (%s)\n\n\n", buildid);
 
 	/* More Header */
 	file_putf(fh, format, "Description", "Dam/AC", "Wgt", "Lev", "Cost");
@@ -394,22 +395,20 @@ static const grouper group_artifact[] =
  */
 bool make_fake_artifact(object_type *o_ptr, byte name1)
 {
-	int i, j;
+	int j;
 
+	object_kind *kind;
 	artifact_type *a_ptr = &a_info[name1];
-
 
 	/* Ignore "empty" artifacts */
 	if (!a_ptr->name) return FALSE;
 
 	/* Get the "kind" index */
-	i = lookup_kind(a_ptr->tval, a_ptr->sval);
-
-	/* Oops */
-	if (!i) return (FALSE);
+	kind = lookup_kind(a_ptr->tval, a_ptr->sval);
+	if (!kind) return FALSE;
 
 	/* Create the artifact */
-	object_prep(o_ptr, &k_info[i], 0, MAXIMISE);
+	object_prep(o_ptr, kind, 0, MAXIMISE);
 
 	/* Save the name */
 	o_ptr->name1 = name1;
@@ -471,8 +470,7 @@ static void spoil_artifact(cptr fname)
 	text_out_file = fh;
 
 	/* Dump the header */
-	spoiler_underline(format("Artifact Spoilers for %s %s",
-	                         VERSION_NAME, VERSION_STRING), '=');
+	spoiler_underline(format("Artifact Spoilers for %s", buildid), '=');
 
 	/* List the artifacts by tval */
 	for (i = 0; group_artifact[i].tval; i++)
@@ -578,8 +576,7 @@ static void spoil_mon_desc(cptr fname)
 	}
 
 	/* Dump the header */
-	x_file_putf(fh, encoding, "Monster Spoilers for %s Version %s\n",
-	        VERSION_NAME, VERSION_STRING);
+	x_file_putf(fh, encoding, "Monster Spoilers for %s\n", buildid);
 	x_file_putf(fh, encoding, "------------------------------------------\n\n");
 
 	/* Dump the header */
@@ -708,8 +705,7 @@ static void spoil_mon_info(cptr fname)
 	text_out_file = fh;
 
 	/* Dump the header */
-	text_out("Monster Spoilers for %s Version %s\n",
-	        VERSION_NAME, VERSION_STRING);
+	text_out("Monster Spoilers for %s\n", buildid);
 	text_out("------------------------------------------\n\n");
 
 	/* Allocate the "who" array */

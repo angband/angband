@@ -152,7 +152,7 @@ static void activation_message(object_type *o_ptr, const char *message)
 				end += object_desc(buf, 1024, o_ptr, ODESC_PREFIX | ODESC_BASE); 
 				break;
 			case ART_TAG_KIND:
-				object_kind_name(&buf[end], 1024-end, o_ptr->k_idx, TRUE);
+				object_kind_name(&buf[end], 1024-end, o_ptr->kind, TRUE);
 				end += strlen(&buf[end]);
 				break;
 			case ART_TAG_VERB:
@@ -290,7 +290,7 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	else 
 	{
 		/* Take off existing item */
-		if (o_ptr->k_idx)
+		if (o_ptr->kind)
 			(void)inven_takeoff(slot, 255);
 
 		/* If we are wielding ammo we may need to "open" the slot by shifting
@@ -383,7 +383,7 @@ void do_cmd_wield(cmd_code code, cmd_arg args[])
 	equip_o_ptr = &p_ptr->inventory[slot];
 
 	/* If the slot is open, wield and be done */
-	if (!equip_o_ptr->k_idx) 
+	if (!equip_o_ptr->kind)
 	{
 		wield_item(o_ptr, item, slot);
 		return;
@@ -614,7 +614,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 		{
 			/* Make a noise! */
 			sound(snd);
-			level = k_info[o_ptr->k_idx].level;
+			level = o_ptr->kind->level;
 		}
 
 		/* A bit of a hack to make ID work better.
@@ -634,7 +634,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	}
 
 	/* If the item is a null pointer or has been wiped, be done now */
-	if (!o_ptr || o_ptr->k_idx <= 1) return;
+	if (!o_ptr || !o_ptr->kind) return;
 
 	if (ident) object_notice_effect(o_ptr);
 
@@ -657,7 +657,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	if (ident && !was_aware)
 	{
 		/* Object level */
-		int lev = k_info[o_ptr->k_idx].level;
+		int lev = o_ptr->kind->level;
 
 		object_flavor_aware(o_ptr);
 		if (o_ptr->tval == TV_ROD) object_notice_everything(o_ptr);
@@ -694,8 +694,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 		}
 		else
 		{
-			const object_kind *k_ptr = &k_info[o_ptr->k_idx];
-			o_ptr->timeout += randcalc(k_ptr->time, 0, RANDOMISE);
+			o_ptr->timeout += randcalc(o_ptr->kind->time, 0, RANDOMISE);
 		}
 	}
 	else if (used && use == USE_SINGLE)

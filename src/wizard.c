@@ -382,7 +382,7 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 	           o_ptr->dd, o_ptr->ds, o_ptr->to_h, o_ptr->to_d, o_ptr->ac, o_ptr->to_a), 4, j);
 
 	prt(format("kind = %-5d  tval = %-5d  sval = %-5d  wgt = %-3d     timeout = %-d",
-	           o_ptr->k_idx, o_ptr->tval, o_ptr->sval, o_ptr->weight, o_ptr->timeout), 5, j);
+	           o_ptr->kind->kidx, o_ptr->tval, o_ptr->sval, o_ptr->weight, o_ptr->timeout), 5, j);
 
 	/* CC: multiple pvals not shown, pending #1290 */
 	prt(format("number = %-3d  pval = %-5d  name1 = %-4d  name2 = %-4d  cost = %ld",
@@ -409,8 +409,7 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 	prt("+------------FLAGS2------------+", 8, j+34);
 	prt("s   ts hn    tadiiii   aiehs  hp", 9, j+34);
 	prt("lf  eefoo    egrgggg  bcnaih  vr", 10, j+34);
-	prt("we  lerlf   ilgannnn  ltssdo  ym", 11, j+34);
-	prt("da reiedu   merirrrr  eityew ccc", 12, j+34);
+	prt("we  lerlf   ilgannnn  ltssdo  ym", 11, j+34);	prt("da reiedu   merirrrr  eityew ccc", 12, j+34);
 	prt("itlepnele   ppanaefc  svaktm uuu", 13, j+34);
 	prt("ghigavail   aoveclio  saanyo rrr", 14, j+34);
 	prt("seteticf    craxierl  etropd sss", 15, j+34);
@@ -442,7 +441,7 @@ static const region wiz_create_item_area = { 0, 0, 0, 0 };
 void wiz_create_item_subdisplay(menu_type *m, int oid, bool cursor,
 		int row, int col, int width)
 {
-	int *choices = menu_priv(m);
+	object_kind **choices = menu_priv(m);
 	char buf[80];
 
 	object_kind_name(buf, sizeof buf, choices[oid], TRUE);
@@ -451,9 +450,8 @@ void wiz_create_item_subdisplay(menu_type *m, int oid, bool cursor,
 
 bool wiz_create_item_subaction(menu_type *m, const ui_event_data *e, int oid)
 {
-	int *choices = menu_priv(m);
-
-	object_kind *kind = &k_info[choices[oid]];
+	object_kind **choices = menu_priv(m);
+	object_kind *kind = choices[oid];
 
 	object_type *i_ptr;
 	object_type object_type_body;
@@ -466,7 +464,7 @@ bool wiz_create_item_subaction(menu_type *m, const ui_event_data *e, int oid)
 	i_ptr = &object_type_body;
 
 	/* Create the item */
-	object_prep(i_ptr, &k_info[choices[oid]], p_ptr->depth, RANDOMISE);
+	object_prep(i_ptr, kind, p_ptr->depth, RANDOMISE);
 
 	/* Apply magic (no messages, no artifacts) */
 	apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);
@@ -495,70 +493,22 @@ menu_iter wiz_create_item_submenu =
 
 /** Object base kind selection **/
 
-/*
- * A structure to hold a tval and its description
- */
-struct tval_desc
-{
-	int tval;
-	const char *desc;
-};
-
-/*
- * A list of tvals and their textual names
- */
-static struct tval_desc tvals[] =
-{
-	{ TV_SWORD,             "Sword"                },
-	{ TV_POLEARM,           "Polearm"              },
-	{ TV_HAFTED,            "Hafted Weapon"        },
-	{ TV_BOW,               "Bow"                  },
-	{ TV_ARROW,             "Arrows"               },
-	{ TV_BOLT,              "Bolts"                },
-	{ TV_SHOT,              "Shots"                },
-	{ TV_SHIELD,            "Shield"               },
-	{ TV_CROWN,             "Crown"                },
-	{ TV_HELM,              "Helm"                 },
-	{ TV_GLOVES,            "Gloves"               },
-	{ TV_BOOTS,             "Boots"                },
-	{ TV_CLOAK,             "Cloak"                },
-	{ TV_DRAG_ARMOR,        "Dragon Scale Mail"    },
-	{ TV_HARD_ARMOR,        "Hard Armor"           },
-	{ TV_SOFT_ARMOR,        "Soft Armor"           },
-	{ TV_RING,              "Ring"                 },
-	{ TV_AMULET,            "Amulet"               },
-	{ TV_LIGHT,             "Light"                },
-	{ TV_POTION,            "Potion"               },
-	{ TV_SCROLL,            "Scroll"               },
-	{ TV_WAND,              "Wand"                 },
-	{ TV_STAFF,             "Staff"                },
-	{ TV_ROD,               "Rod"                  },
-	{ TV_PRAYER_BOOK,       "Priest Book"          },
-	{ TV_MAGIC_BOOK,        "Magic Book"           },
-	{ TV_SPIKE,             "Spikes"               },
-	{ TV_DIGGING,           "Digger"               },
-	{ TV_CHEST,             "Chest"                },
-	{ TV_FOOD,              "Food"                 },
-	{ TV_FLASK,             "Flask"                },
-	{ TV_SKELETON,          "Skeletons"            },
-	{ TV_BOTTLE,            "Empty bottle"         },
-	{ TV_JUNK,              "Junk"                 },
-	{ TV_GOLD,              "Gold"                 }
-};
-
-void wiz_create_item_display(menu_type *m, int oid, bool cursor,
+static void wiz_create_item_display(menu_type *m, int oid, bool cursor,
 		int row, int col, int width)
 {
-	struct tval_desc *tvals = menu_priv(m);
-	c_prt(curs_attrs[CURS_KNOWN][0 != cursor], tvals[oid].desc, row, col);
+	char buf[80];
+	object_base_name(buf, sizeof buf, oid, TRUE);
+	c_prt(curs_attrs[CURS_KNOWN][0 != cursor], buf, row, col);
 }
 
-bool wiz_create_item_action(menu_type *m, const ui_event_data *e, int oid)
+static bool wiz_create_item_action(menu_type *m, const ui_event_data *e, int oid)
 {
 	ui_event_data ret;
 	menu_type *menu;
 
-	int choice[60];
+	char buf[80];
+
+	object_kind *choice[60];
 	int n_choices;
 
 	int i;
@@ -570,11 +520,11 @@ bool wiz_create_item_action(menu_type *m, const ui_event_data *e, int oid)
 	{
 		object_kind *kind = &k_info[i];
 
-		if (kind->tval != tvals[oid].tval ||
+		if (kind->tval != oid ||
 				of_has(kind->flags, OF_INSTA_ART))
 			continue;
 
-		choice[n_choices++] = i;
+		choice[n_choices++] = kind;
 	}
 
 	screen_save();
@@ -582,7 +532,9 @@ bool wiz_create_item_action(menu_type *m, const ui_event_data *e, int oid)
 
 	menu = menu_new(MN_SKIN_COLUMNS, &wiz_create_item_submenu);
 	menu->selections = all_letters;
-	menu->title = format("What kind of %s?", tvals[oid].desc);
+
+	object_base_name(buf, sizeof buf, oid, TRUE);
+	menu->title = format("What kind of %s?", buf);
 
 	menu_setpriv(menu, n_choices, choice);
 	menu_layout(menu, &wiz_create_item_area);
@@ -593,7 +545,7 @@ bool wiz_create_item_action(menu_type *m, const ui_event_data *e, int oid)
 	return (ret.type == EVT_ESCAPE);
 }
 
-menu_iter wiz_create_item_menu =
+static const menu_iter wiz_create_item_menu =
 {
 	NULL,
 	NULL,
@@ -608,15 +560,27 @@ menu_iter wiz_create_item_menu =
  */
 static void wiz_create_item(void)
 {
+	int tvals[TV_MAX];
+	size_t i, n;
+
 	menu_type *menu = menu_new(MN_SKIN_COLUMNS, &wiz_create_item_menu);
 
 	menu->selections = all_letters;
 	menu->title = "What kind of object?";
 
+	/* Make a list of all tvals for the filter */
+	for (i = 0, n = 0; i < TV_MAX; i++) {
+		if (!kb_info[i].name)
+			continue;
+
+		tvals[n++] = i;
+	}
+
 	screen_save();
 	clear_from(0);
 
-	menu_setpriv(menu, N_ELEMENTS(tvals), tvals);
+	menu_setpriv(menu, TV_MAX, kb_info);
+	menu_set_filter(menu, tvals, n);
 	menu_layout(menu, &wiz_create_item_area);
 	menu_select(menu, 0);
 
@@ -1113,7 +1077,8 @@ static void wiz_create_artifact(int a_idx)
 {
 	object_type *i_ptr;
 	object_type object_type_body;
-	int k_idx, i;
+	int i;
+	object_kind *kind;
 
 	artifact_type *a_ptr = &a_info[a_idx];
 
@@ -1127,13 +1092,12 @@ static void wiz_create_artifact(int a_idx)
 	object_wipe(i_ptr);
 
 	/* Acquire the "kind" index */
-	k_idx = lookup_kind(a_ptr->tval, a_ptr->sval);
-
-	/* Oops */
-	if (!k_idx) return;
+	kind = lookup_kind(a_ptr->tval, a_ptr->sval);
+	if (!kind)
+		return;
 
 	/* Create the artifact */
-	object_prep(i_ptr, &k_info[k_idx], a_ptr->alloc_min, RANDOMISE);
+	object_prep(i_ptr, kind, a_ptr->alloc_min, RANDOMISE);
 
 	/* Save the name */
 	i_ptr->name1 = a_idx;
@@ -1543,26 +1507,24 @@ static void wiz_test_kind(int tval)
 
 	for (sval = 0; sval < 255; sval++)
 	{
-		int k_idx = lookup_kind(tval, sval);
+		object_kind *kind = lookup_kind(tval, sval);
+		if (!kind) continue;
 
-		if (k_idx)
-		{
-			/* Create the item */
-			object_prep(i_ptr, &k_info[k_idx], p_ptr->depth, RANDOMISE);
+		/* Create the item */
+		object_prep(i_ptr, kind, p_ptr->depth, RANDOMISE);
 
-			/* Apply magic (no messages, no artifacts) */
-			apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);
+		/* Apply magic (no messages, no artifacts) */
+		apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);
 
-			/* Mark as cheat, and where created */
-			i_ptr->origin = ORIGIN_CHEAT;
-			i_ptr->origin_depth = p_ptr->depth;
+		/* Mark as cheat, and where created */
+		i_ptr->origin = ORIGIN_CHEAT;
+		i_ptr->origin_depth = p_ptr->depth;
 
-			if (k_info[k_idx].tval == TV_GOLD)
-				make_gold(i_ptr, p_ptr->depth, sval);
+		if (tval == TV_GOLD)
+			make_gold(i_ptr, p_ptr->depth, sval);
 
-			/* Drop the object from heaven */
-			drop_near(cave, i_ptr, 0, py, px, TRUE);
-		}
+		/* Drop the object from heaven */
+		drop_near(cave, i_ptr, 0, py, px, TRUE);
 	}
 
 	msg("Done.");

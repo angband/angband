@@ -23,7 +23,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
-
+#include "buildid.h"
 
 /*
  * Notes:
@@ -2019,6 +2019,12 @@ static bool load_pref_short(const char *key, short *vptr)
 	return ret;
 }
 
+/* XXX Version number for pref file */
+#define VERSION_MAJOR   3
+#define VERSION_MINOR   0
+#define VERSION_PATCH   14
+#define VERSION_EXTRA   0
+
 /*
  * Save preferences to preferences file for current host+current user+
  * current application.
@@ -2323,7 +2329,7 @@ static void init_aboutdialogcontent()
 	OSStatus err;
 	
 	/* Set the application name from the constants set in defines.h */
-	char *applicationName = format("%s %s", VERSION_NAME, VERSION_STRING);
+	char *applicationName = format("%s", buildid);
 	CFStringRef cfstr_applicationName = CFStringCreateWithBytes(NULL, (byte *)applicationName,
 										strlen(applicationName), kCFStringEncodingASCII, false);
 	HIViewFindByID(HIViewGetRoot(aboutDialog), aboutDialogName, &aboutDialogViewRef);

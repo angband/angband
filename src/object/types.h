@@ -6,6 +6,22 @@
 #include "z-rand.h"
 
 /**
+ * Information about object types, like rods, wands, etc.
+ */
+typedef struct object_base
+{
+	char *name;
+
+	int tval;
+	struct object_base *next;
+
+	bitflag flags[OF_SIZE];
+
+	int break_perc;
+} object_base;
+
+
+/**
  * Information about object kinds, including player knowledge.
  *
  * TODO: split out the user-changeable bits into a separate struct so this
@@ -15,6 +31,8 @@ typedef struct object_kind
 {
 	char *name;
 	char *text;
+
+	object_base *base;
 
 	struct object_kind *next;
 	u32b kidx;
@@ -203,7 +221,6 @@ typedef struct ego_item
  */
 typedef struct object
 {
-	s16b k_idx;			/* Kind index (zero if "dead") */
 	struct object_kind *kind;
 
 	byte iy;			/* Y-position on map, or zero */

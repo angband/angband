@@ -19,6 +19,7 @@
  */
 
 #include "angband.h"
+#include "buildid.h"
 #include "button.h"
 #include "cave.h"
 #include "files.h"
@@ -257,7 +258,7 @@ static void prt_equippy(int row, int col)
 		c = object_char(o_ptr);
 
 		/* Clear the part of the screen */
-		if (!o_ptr->k_idx)
+		if (!o_ptr->kind)
 		{
 			c = ' ';
 			a = TERM_WHITE;
@@ -1706,7 +1707,7 @@ static void show_splashscreen(game_event_type type, game_event_data *data, void 
 			if (version_marker)
 			{
 				ptrdiff_t pos = version_marker - buf;
-				strnfmt(version_marker, sizeof(buf) - pos, "%-8s", VERSION_STRING);
+				strnfmt(version_marker, sizeof(buf) - pos, "%-8s", buildver);
 			}
 
 			text_out_e("%s", buf);

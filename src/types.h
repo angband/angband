@@ -208,7 +208,7 @@ typedef struct
 {
 	u32b m_idx;		/* Monster index */
 	u32b f_idx;		/* Feature index */
-	u32b first_k_idx;	/* The "Kind" of the first item on the grid */
+	struct object_kind *first_kind;	/* The "kind" of the first item on the grid */
 	bool multiple_objects;	/* Is there more than one item there? */
 
 	enum grid_light_level lighting; /* Light level */

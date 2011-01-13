@@ -317,12 +317,14 @@ typedef struct player_race
 	bitflag pflags[PF_SIZE];  /* Racial (player) flags */
 } player_race;
 
-typedef struct start_item
+struct start_item
 {
 	object_kind *kind;
 	byte min;	/* Minimum starting amount */
 	byte max;	/* Maximum starting amount */
-} start_item;
+
+	struct start_item *next;
+};
 
 
 /*
@@ -381,7 +383,7 @@ typedef struct player_class
 	u32b sense_base;   /* Base pseudo-id value */
 	u16b sense_div;    /* Pseudo-id divisor */
 	
-	start_item start_items[MAX_START_ITEMS]; /**< The starting inventory */
+	struct start_item *start_items; /**< The starting inventory */
 	
 	player_magic spells; /* Magic spells */
 } player_class;

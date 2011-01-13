@@ -21,6 +21,7 @@
 #include "macro.h"
 #include "prefs.h"
 #include "squelch.h"
+#include "spells.h"
 
 
 /*** Pref file saving code ***/
@@ -349,7 +350,7 @@ void dump_monsters(ang_file *fff)
 		if (!r_ptr->name) continue;
 
 		file_putf(fff, "# Monster: %s\n", r_ptr->name);
-		file_putf(fff, "R:%d:0x%02X:0x%02X\n", i, attr, chr);
+		file_putf(fff, "R:%d:%d:%d\n", i, attr, chr);
 	}
 }
 
@@ -406,7 +407,7 @@ void dump_features(ang_file *fff)
 
 			assert(light);
 
-			file_putf(fff, "F:%d:%s:0x%02X:0x%02X\n", i, light, attr, chr);
+			file_putf(fff, "F:%d:%s:%d:%d\n", i, light, attr, chr);
 		}
 	}
 }
@@ -421,7 +422,7 @@ void dump_flavors(ang_file *fff)
 		byte chr = f->x_char;
 
 		file_putf(fff, "# Item flavor: %s\n", f->text);
-		file_putf(fff, "L:%d:0x%02X:0x%02X\n\n", f->fidx, attr, chr);
+		file_putf(fff, "L:%d:%d:%d\n\n", f->fidx, attr, chr);
 	}
 }
 
@@ -446,7 +447,7 @@ void dump_colors(ang_file *fff)
 		if (i < BASIC_COLORS) name = color_table[i].name;
 
 		file_putf(fff, "# Color: %s\n", name);
-		file_putf(fff, "V:%d:0x%02X:0x%02X:0x%02X:0x%02X\n\n", i, kv, rv, gv, bv);
+		file_putf(fff, "V:%d:%d:%d:%d:%d\n\n", i, kv, rv, gv, bv);
 	}
 }
 
@@ -693,8 +694,6 @@ static const char *process_pref_file_expr(char **sp, char *fp)
 				v = cp_ptr->name;
 			else if (streq(b+1, "PLAYER"))
 				v = op_ptr->base_name;
-			else if (streq(b+1, "VERSION"))
-				v = VERSION_STRING;
 		}
 
 		/* Constant */
@@ -738,7 +737,7 @@ static enum parser_error parse_prefs_expr(struct parser *p)
 
 static enum parser_error parse_prefs_k(struct parser *p)
 {
-	int tvi, svi, idx;
+	int tvi, svi;
 	object_kind *kind;
 
 	struct prefs_data *d = parser_priv(p);
@@ -753,11 +752,10 @@ static enum parser_error parse_prefs_k(struct parser *p)
 	if (svi < 0)
 		return PARSE_ERROR_UNRECOGNISED_SVAL;
 
-	idx = lookup_kind(tvi, svi);
-	if (idx < 0)
+	kind = lookup_kind(tvi, svi);
+	if (!kind)
 		return PARSE_ERROR_UNRECOGNISED_SVAL;
 
-	kind = &k_info[idx];
 	kind->x_attr = (byte)parser_getint(p, "attr");
 	kind->x_char = (char)parser_getint(p, "char");
 
@@ -937,7 +935,7 @@ static enum parser_error parse_prefs_q(struct parser *p)
 	if (parser_hasval(p, "sval") && parser_hasval(p, "flag"))
 	{
 		object_kind *kind;
-		int tvi, svi, idx;
+		int tvi, svi;
 
 		tvi = tval_find_idx(parser_getsym(p, "n"));
 		if (tvi < 0)
@@ -947,11 +945,10 @@ static enum parser_error parse_prefs_q(struct parser *p)
 		if (svi < 0)
 			return PARSE_ERROR_UNRECOGNISED_SVAL;
 
-		idx = lookup_kind(tvi, svi);
-		if (idx < 0)
+		kind = lookup_kind(tvi, svi);
+		if (!kind)
 			return PARSE_ERROR_UNRECOGNISED_SVAL;
 
-		kind = &k_info[idx];
 		kind->squelch = parser_getint(p, "flag");
 	}
 	else

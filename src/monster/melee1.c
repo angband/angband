@@ -514,7 +514,7 @@ bool make_attack_normal(int m_idx)
 						o_ptr = &p_ptr->inventory[i];
 
 						/* Skip non-objects */
-						if (!o_ptr->k_idx) continue;
+						if (!o_ptr->kind) continue;
 
 						/* Drain charged wands/staves */
 						if ((o_ptr->tval == TV_STAFF) ||
@@ -668,7 +668,7 @@ bool make_attack_normal(int m_idx)
 						o_ptr = &p_ptr->inventory[i];
 
 						/* Skip non-objects */
-						if (!o_ptr->k_idx) continue;
+						if (!o_ptr->kind) continue;
 
 						/* Skip artifacts */
 						if (artifact_p(o_ptr)) continue;
@@ -731,7 +731,7 @@ bool make_attack_normal(int m_idx)
 						o_ptr = &p_ptr->inventory[i];
 
 						/* Skip non-objects */
-						if (!o_ptr->k_idx) continue;
+						if (!o_ptr->kind) continue;
 
 						/* Skip non-food objects */
 						if (o_ptr->tval != TV_FOOD) continue;

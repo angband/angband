@@ -37,9 +37,7 @@ s32b object_last_wield;
  */
 bool easy_know(const object_type *o_ptr)
 {
-	object_kind *k_ptr = &k_info[o_ptr->k_idx];
-
-	if (k_ptr->aware && of_has(k_ptr->flags, OF_EASY_KNOW))
+	if (o_ptr->kind->aware && of_has(o_ptr->kind->flags, OF_EASY_KNOW))
 		return TRUE;
 	else
 		return FALSE;
@@ -130,7 +128,7 @@ bool object_was_sensed(const object_type *o_ptr)
  */
 bool object_flavor_is_aware(const object_type *o_ptr)
 {
-	return k_info[o_ptr->k_idx].aware;
+	return o_ptr->kind->aware;
 }
 
 /**
@@ -138,7 +136,7 @@ bool object_flavor_is_aware(const object_type *o_ptr)
  */
 bool object_flavor_was_tried(const object_type *o_ptr)
 {
-	return k_info[o_ptr->k_idx].tried;
+	return o_ptr->kind->tried;
 }
 
 /**
@@ -147,7 +145,7 @@ bool object_flavor_was_tried(const object_type *o_ptr)
 bool object_effect_is_known(const object_type *o_ptr)
 {
 	return (easy_know(o_ptr) || (o_ptr->ident & IDENT_EFFECT)
-		|| (object_flavor_is_aware(o_ptr) && k_info[o_ptr->k_idx].effect)
+		|| (object_flavor_is_aware(o_ptr) && o_ptr->kind->effect)
 		|| (o_ptr->ident & IDENT_STORE)) ? TRUE : FALSE;
 }
 
@@ -164,9 +162,7 @@ bool object_this_pval_is_visible(const object_type *o_ptr, int pval)
 	/* Aware jewelry with non-variable pval */
 	if (object_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr))
 	{
-		const object_kind *k_ptr = &k_info[o_ptr->k_idx];
-
-		if (!randcalc_varies(k_ptr->pval[pval]))
+		if (!randcalc_varies(o_ptr->kind->pval[pval]))
 			return TRUE;
 	}
 
@@ -195,10 +191,8 @@ bool object_pval_is_visible(const object_type *o_ptr)
 	/* Aware jewelry with any non-variable pvals */
 	if (object_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr))
 	{
-		const object_kind *k_ptr = &k_info[o_ptr->k_idx];
-
-		for (i = 0; i < k_ptr->num_pvals; i++)
-			if (!randcalc_varies(k_ptr->pval[i]))
+		for (i = 0; i < o_ptr->kind->num_pvals; i++)
+			if (!randcalc_varies(o_ptr->kind->pval[i]))
 				return TRUE;
 	}
 
@@ -251,9 +245,7 @@ bool object_attack_plusses_are_visible(const object_type *o_ptr)
 	/* Aware jewelry with non-variable bonuses */
 	if (object_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr))
 	{
-		const object_kind *k_ptr = &k_info[o_ptr->k_idx];
-
-		if (!randcalc_varies(k_ptr->to_h) && !randcalc_varies(k_ptr->to_d))
+		if (!randcalc_varies(o_ptr->kind->to_h) && !randcalc_varies(o_ptr->kind->to_d))
 			return TRUE;
 	}
 
@@ -272,9 +264,7 @@ bool object_defence_plusses_are_visible(const object_type *o_ptr)
 	/* Aware jewelry with non-variable bonuses */
 	if (object_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr))
 	{
-		const object_kind *k_ptr = &k_info[o_ptr->k_idx];
-
-		if (!randcalc_varies(k_ptr->to_a))
+		if (!randcalc_varies(o_ptr->kind->to_a))
 			return TRUE;
 	}
 
@@ -404,7 +394,7 @@ void object_flavor_aware(object_type *o_ptr)
 		/* Some objects change tile on awareness */
 		/* So update display for all floor objects of this kind */
 		if (!floor_o_ptr->held_m_idx &&
-				floor_o_ptr->k_idx == o_ptr->k_idx)
+				floor_o_ptr->kind == o_ptr->kind)
 			cave_light_spot(cave, floor_o_ptr->iy, floor_o_ptr->ix);
 	}
 }
@@ -417,11 +407,10 @@ void object_flavor_aware(object_type *o_ptr)
  */
 void object_flavor_tried(object_type *o_ptr)
 {
-	assert(o_ptr != NULL);
-	assert(o_ptr->k_idx > 0);
-	assert(o_ptr->k_idx < z_info->k_max);
+	assert(o_ptr);
+	assert(o_ptr->kind);
 
-	k_info[o_ptr->k_idx].tried = TRUE;
+	o_ptr->kind->tried = TRUE;
 }
 
 /**
@@ -614,7 +603,8 @@ void object_notice_effect(object_type *o_ptr)
 
 static void object_notice_defence_plusses(object_type *o_ptr)
 {
-	if (!o_ptr->k_idx) return;
+	assert(o_ptr && o_ptr->kind);
+
 	if (object_defence_plusses_are_visible(o_ptr))
 		return;
 
@@ -639,7 +629,8 @@ static void object_notice_defence_plusses(object_type *o_ptr)
 
 void object_notice_attack_plusses(object_type *o_ptr)
 {
-	if (!o_ptr->k_idx) return;
+	assert(o_ptr && o_ptr->kind);
+
 	if (object_attack_plusses_are_visible(o_ptr))
 		return;
 
@@ -924,7 +915,7 @@ static void object_notice_after_time(void)
 	{
 		o_ptr = &p_ptr->inventory[i];
 
-		if (!o_ptr->k_idx || object_is_known(o_ptr)) continue;
+		if (!o_ptr->kind || object_is_known(o_ptr)) continue;
 
 		/* Check for timed notice flags */
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
@@ -979,7 +970,7 @@ void wieldeds_notice_flag(int flag)
 		object_type *o_ptr = &p_ptr->inventory[i];
 		bitflag f[OF_SIZE];
 
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		object_flags(o_ptr, f);
 
@@ -1038,19 +1029,15 @@ void wieldeds_notice_on_attack(void)
 
 bool object_FA_would_be_obvious(const object_type *o_ptr)
 {
-	bitflag flags[OF_SIZE];
-	
-	if (!player_has(PF_CUMBER_GLOVE))
-		return FALSE;
+	if (player_has(PF_CUMBER_GLOVE) && wield_slot(o_ptr) == INVEN_HANDS) {
+		bitflag flags[OF_SIZE];
+		object_flags(o_ptr, flags);
 
-	if ((wield_slot(o_ptr) != INVEN_HANDS) || (o_ptr->sval == SV_SET_OF_ALCHEMISTS_GLOVES))
-		return FALSE;
+		if (!of_has(flags, OF_DEX) && !of_has(flags, OF_SPELLS_OK))
+			return TRUE;
+	}
 
-	object_flags(o_ptr, flags);
-	if (of_has(flags, OF_DEX))
-		return FALSE;
-
-	return TRUE;
+	return FALSE;
 }
 
 /*
@@ -1059,7 +1046,6 @@ bool object_FA_would_be_obvious(const object_type *o_ptr)
  */
 obj_pseudo_t object_pseudo(const object_type *o_ptr)
 {
-	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 	bitflag flags[OF_SIZE];
 
 	/* Get the known and obvious flags on the object,
@@ -1075,7 +1061,7 @@ obj_pseudo_t object_pseudo(const object_type *o_ptr)
 		flags_mask(flags, OF_SIZE, OF_OBVIOUS_MASK, FLAG_END);
 
 	flags_clear(flags, OF_SIZE, OF_CURSE_MASK, FLAG_END);
-	of_diff(flags, k_ptr->flags);
+	of_diff(flags, o_ptr->kind->flags);
 
 	if (o_ptr->ident & IDENT_INDESTRUCT)
 		return INSCRIP_SPECIAL;
@@ -1104,19 +1090,19 @@ obj_pseudo_t object_pseudo(const object_type *o_ptr)
 			return INSCRIP_EXCELLENT;
 	}
 
-	if (o_ptr->to_a == randcalc(k_ptr->to_a, 0, MINIMISE) &&
-	    o_ptr->to_h == randcalc(k_ptr->to_h, 0, MINIMISE) &&
-		 o_ptr->to_d == randcalc(k_ptr->to_d, 0, MINIMISE))
+	if (o_ptr->to_a == randcalc(o_ptr->kind->to_a, 0, MINIMISE) &&
+	    o_ptr->to_h == randcalc(o_ptr->kind->to_h, 0, MINIMISE) &&
+		 o_ptr->to_d == randcalc(o_ptr->kind->to_d, 0, MINIMISE))
 		return INSCRIP_AVERAGE;
 
-	if (o_ptr->to_a >= randcalc(k_ptr->to_a, 0, MINIMISE) &&
-	    o_ptr->to_h >= randcalc(k_ptr->to_h, 0, MINIMISE) &&
-	    o_ptr->to_d >= randcalc(k_ptr->to_d, 0, MINIMISE))
+	if (o_ptr->to_a >= randcalc(o_ptr->kind->to_a, 0, MINIMISE) &&
+	    o_ptr->to_h >= randcalc(o_ptr->kind->to_h, 0, MINIMISE) &&
+	    o_ptr->to_d >= randcalc(o_ptr->kind->to_d, 0, MINIMISE))
 		return INSCRIP_MAGICAL;
 
-	if (o_ptr->to_a <= randcalc(k_ptr->to_a, 0, MINIMISE) &&
-	    o_ptr->to_h <= randcalc(k_ptr->to_h, 0, MINIMISE) &&
-	    o_ptr->to_d <= randcalc(k_ptr->to_d, 0, MINIMISE))
+	if (o_ptr->to_a <= randcalc(o_ptr->kind->to_a, 0, MINIMISE) &&
+	    o_ptr->to_h <= randcalc(o_ptr->kind->to_h, 0, MINIMISE) &&
+	    o_ptr->to_d <= randcalc(o_ptr->kind->to_d, 0, MINIMISE))
 		return INSCRIP_MAGICAL;
 
 	return INSCRIP_STRANGE;
@@ -1168,7 +1154,7 @@ void sense_inventory(void)
 		bool okay = FALSE;
 
 		/* Skip empty slots */
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		/* Valid "tval" codes */
 		switch (o_ptr->tval)

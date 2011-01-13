@@ -21,6 +21,21 @@
 #include "tvalsval.h"
 
 
+/*
+ * There is a 1/20 (5%) chance of inflating the requested object level
+ * during the creation of an object (see "get_obj_num()" in "object.c").
+ * Lower values yield better objects more often.
+ */
+#define GREAT_OBJ   20
+  
+/*
+ * There is a 1/20 (5%) chance that ego-items with an inflated base-level are
+ * generated when an object is turned into an ego-item (see make_ego_item()
+ * in object2.c). As above, lower values yield better ego-items more often.
+ */
+#define GREAT_EGO   20
+
+
 static bool kind_is_good(const object_kind *);
 
 static u32b obj_total[MAX_DEPTH];
@@ -66,18 +81,18 @@ bool init_obj_alloc(void)
 	/* Init allocation data */
 	for (item = 1; item < k_max; item++)
 	{
-		const object_kind *k_ptr = &k_info[item];
+		const object_kind *kind = &k_info[item];
 
-		int min = k_ptr->alloc_min;
-		int max = k_ptr->alloc_max;
+		int min = kind->alloc_min;
+		int max = kind->alloc_max;
 
 		/* If an item doesn't have a rarity, move on */
-		if (!k_ptr->alloc_prob) continue;
+		if (!kind->alloc_prob) continue;
 
 		/* Go through all the dungeon levels */
 		for (lev = 0; lev <= MAX_O_DEPTH; lev++)
 		{
-			int rarity = k_ptr->alloc_prob;
+			int rarity = kind->alloc_prob;
 
 			/* Save the probability in the standard table */
 			if ((lev < min) || (lev > max)) rarity = 0;
@@ -85,7 +100,7 @@ bool init_obj_alloc(void)
 			obj_alloc[(lev * k_max) + item] = rarity;
 
 			/* Save the probability in the "great" table if relevant */
-			if (!kind_is_good(k_ptr)) rarity = 0;
+			if (!kind_is_good(kind)) rarity = 0;
 			obj_total_great[lev] += rarity;
 			obj_alloc_great[(lev * k_max) + item] = rarity;
 		}
@@ -100,7 +115,7 @@ bool init_obj_alloc(void)
 /*
  * Choose an object kind given a dungeon level to choose it for.
  */
-s16b get_obj_num(int level, bool good)
+object_kind *get_obj_num(int level, bool good)
 {
 	/* This is the base index into obj_alloc for this dlev */
 	size_t ind, item;
@@ -147,7 +162,7 @@ s16b get_obj_num(int level, bool good)
 
 
 	/* Return the item index */
-	return item;
+	return objkind_byid(item);
 }
 
 
@@ -337,7 +352,7 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 {
 	int i;
 
-	int k_idx;
+	object_kind *kind;
 
 
 	/* No artifacts, do nothing */
@@ -374,20 +389,20 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 		if (randint1(100) > a_ptr->alloc_prob) continue;
 
 		/* Find the base object */
-		k_idx = lookup_kind(a_ptr->tval, a_ptr->sval);
+		kind = lookup_kind(a_ptr->tval, a_ptr->sval);
 
 		/* Enforce minimum "object" level (loosely) */
-		if (k_info[k_idx].level > level)
+		if (kind->level > level)
 		{
 			/* Get the "out-of-depth factor" */
-			int d = (k_info[k_idx].level - level) * 5;
+			int d = (kind->level - level) * 5;
 
 			/* Roll for out-of-depth creation */
 			if (randint0(d) != 0) continue;
 		}
 
 		/* Assign the template */
-		object_prep(o_ptr, &k_info[k_idx], a_ptr->alloc_min, RANDOMISE);
+		object_prep(o_ptr, kind, a_ptr->alloc_min, RANDOMISE);
 
 		/* Mark the item as an artifact */
 		o_ptr->name1 = i;
@@ -783,10 +798,10 @@ static void a_m_aux_4(object_type *o_ptr, int level, int power)
 		case TV_CHEST:
 		{
 			/* Hack -- skip ruined chests */
-			if (k_info[o_ptr->k_idx].level <= 0) break;
+			if (o_ptr->kind->level <= 0) break;
 
 			/* Hack -- pick a "difficulty" */
-			o_ptr->pval[DEFAULT_PVAL] = randint1(k_info[o_ptr->k_idx].level);
+			o_ptr->pval[DEFAULT_PVAL] = randint1(o_ptr->kind->level);
 
 			/* Never exceed "difficulty" of 55 to 59 */
 			if (o_ptr->pval[DEFAULT_PVAL] > 55) o_ptr->pval[DEFAULT_PVAL] = (s16b)(55 + randint0(5));
@@ -898,7 +913,6 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev, aspect rand
 	(void)WIPE(o_ptr, object_type);
 
 	o_ptr->kind = k;
-	o_ptr->k_idx = k->kidx;
 
 	/* Efficiency -- tval/sval */
 	o_ptr->tval = k->tval;
@@ -1172,20 +1186,14 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 	}
 
 
-	/* Examine real objects */
-	if (o_ptr->k_idx)
+	/* Hack -- acquire "cursed" flag */
+	if (o_ptr->kind && cursed_p(o_ptr->kind))
 	{
-		object_kind *k_ptr = &k_info[o_ptr->k_idx];
+		bitflag curse_flags[OF_SIZE];
 
-		/* Hack -- acquire "cursed" flag */
-		if (cursed_p(k_ptr))
-		{
-			bitflag curse_flags[OF_SIZE];
-
-			of_copy(curse_flags, k_ptr->flags);
-			flags_mask(curse_flags, OF_SIZE, OF_CURSE_MASK, FLAG_END);
-			of_union(o_ptr->flags, curse_flags);
-		}
+		of_copy(curse_flags, o_ptr->kind->flags);
+		flags_mask(curse_flags, OF_SIZE, OF_CURSE_MASK, FLAG_END);
+		of_union(o_ptr->flags, curse_flags);
 	}
 }
 
@@ -1199,10 +1207,10 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
  * the actual object to be cursed.  We do explicitly forbid objects
  * which are known to be boring or which start out somewhat damaged.
  */
-static bool kind_is_good(const object_kind *k_ptr)
+static bool kind_is_good(const object_kind *kind)
 {
 	/* Analyze the item type */
-	switch (k_ptr->tval)
+	switch (kind->tval)
 	{
 		/* Armor -- Good unless damaged */
 		case TV_HARD_ARMOR:
@@ -1215,7 +1223,7 @@ static bool kind_is_good(const object_kind *k_ptr)
 		case TV_HELM:
 		case TV_CROWN:
 		{
-			if (randcalc(k_ptr->to_a, 0, MINIMISE) < 0) return (FALSE);
+			if (randcalc(kind->to_a, 0, MINIMISE) < 0) return (FALSE);
 			return (TRUE);
 		}
 
@@ -1226,8 +1234,8 @@ static bool kind_is_good(const object_kind *k_ptr)
 		case TV_POLEARM:
 		case TV_DIGGING:
 		{
-			if (randcalc(k_ptr->to_h, 0, MINIMISE) < 0) return (FALSE);
-			if (randcalc(k_ptr->to_d, 0, MINIMISE) < 0) return (FALSE);
+			if (randcalc(kind->to_h, 0, MINIMISE) < 0) return (FALSE);
+			if (randcalc(kind->to_d, 0, MINIMISE) < 0) return (FALSE);
 			return (TRUE);
 		}
 
@@ -1242,24 +1250,24 @@ static bool kind_is_good(const object_kind *k_ptr)
 		case TV_MAGIC_BOOK:
 		case TV_PRAYER_BOOK:
 		{
-			if (k_ptr->sval >= SV_BOOK_MIN_GOOD) return (TRUE);
+			if (kind->sval >= SV_BOOK_MIN_GOOD) return (TRUE);
 			return (FALSE);
 		}
 
 		/* Rings -- Rings of Speed are good */
 		case TV_RING:
 		{
-			if (k_ptr->sval == SV_RING_SPEED) return (TRUE);
+			if (kind->sval == SV_RING_SPEED) return (TRUE);
 			return (FALSE);
 		}
 
 		/* Amulets -- Amulets of the Magi are good */
 		case TV_AMULET:
 		{
-			if (k_ptr->sval == SV_AMULET_THE_MAGI) return (TRUE);
-			if (k_ptr->sval == SV_AMULET_DEVOTION) return (TRUE);
-			if (k_ptr->sval == SV_AMULET_WEAPONMASTERY) return (TRUE);
-			if (k_ptr->sval == SV_AMULET_TRICKERY) return (TRUE);
+			if (kind->sval == SV_AMULET_THE_MAGI) return (TRUE);
+			if (kind->sval == SV_AMULET_DEVOTION) return (TRUE);
+			if (kind->sval == SV_AMULET_WEAPONMASTERY) return (TRUE);
+			if (kind->sval == SV_AMULET_TRICKERY) return (TRUE);
 			return (FALSE);
 		}
 	}
@@ -1279,8 +1287,8 @@ static bool kind_is_good(const object_kind *k_ptr)
  */
 bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good, bool great)
 {
-	int k_idx, base;
-	object_kind *k_ptr;
+	int base;
+	object_kind *kind;
 
 	/* Try to make a special artifact */
 	if (one_in_(good ? 10 : 1000))
@@ -1294,31 +1302,28 @@ bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good, bool gr
 	base = (good ? (lev + 10) : lev);
 
 	/* Get the object */
-	k_idx = get_obj_num(base, good || great);
-	if (!k_idx) return FALSE;
+	kind = get_obj_num(base, good || great);
+	if (!kind) return FALSE;
 
 	/* Prepare the object */
-	object_prep(j_ptr, &k_info[k_idx], lev, RANDOMISE);
+	object_prep(j_ptr, kind, lev, RANDOMISE);
 
 	/* Apply magic (allow artifacts) */
 	apply_magic(j_ptr, lev, TRUE, good, great);
 
-
 	/* Generate multiple items */
-	k_ptr = &k_info[j_ptr->k_idx];
-
-	if (k_ptr->gen_mult_prob >= 100 ||
-	    k_ptr->gen_mult_prob >= randint1(100))
+	if (kind->gen_mult_prob >= 100 ||
+	    kind->gen_mult_prob >= randint1(100))
 	{
-		j_ptr->number = randcalc(k_ptr->stack_size, lev, RANDOMISE);
+		j_ptr->number = randcalc(kind->stack_size, lev, RANDOMISE);
 	}
 
 
 	/* Notice "okay" out-of-depth objects */
-	if (!cursed_p(j_ptr) && (k_info[j_ptr->k_idx].level > c->depth))
+	if (!cursed_p(j_ptr) && (kind->level > c->depth))
 	{
 		/* Rating increase */
-		c->rating += (k_info[j_ptr->k_idx].alloc_min - c->depth);
+		c->rating += (kind->alloc_min - c->depth);
 
 		/* Cheat -- peek at items */
 		if (OPT(cheat_peek)) object_mention(j_ptr);
@@ -1339,7 +1344,6 @@ bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good, bool gr
 void make_gold(object_type *j_ptr, int lev, int coin_type)
 {
 	int sval;
-	int k_idx;
 
 	/* This average is 20 at dlev0, 105 at dlev40, 220 at dlev100. */
 	/* Follows the formula: y=2x+20 */
@@ -1361,8 +1365,7 @@ void make_gold(object_type *j_ptr, int lev, int coin_type)
 	if (sval >= SV_GOLD_MAX) sval = SV_GOLD_MAX - 1;
 
 	/* Prepare a gold object */
-	k_idx = lookup_kind(TV_GOLD, sval);
-	object_prep(j_ptr, &k_info[k_idx], lev, RANDOMISE);
+	object_prep(j_ptr, lookup_kind(TV_GOLD, sval), lev, RANDOMISE);
 
 	/* If we're playing with no_selling, increase the value */
 	if (OPT(birth_no_selling) && p_ptr->depth)

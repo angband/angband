@@ -519,30 +519,20 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 
 
 	/* If there's an object, deal with that. */
-	if (g->first_k_idx)
+	if (g->first_kind)
 	{
-		if (g->hallucinate)
-		{
+		if (g->hallucinate) {
 			/* Just pick a random object to display. */
 			hallucinatory_object(&a, &c);
-		}
-		else
-		{
-			object_kind *k_ptr = &k_info[g->first_k_idx];
-			
+		} else if (g->multiple_objects) {
+			/* Get the "pile" feature instead */
+			a = object_kind_attr(&k_info[0]);
+			c = object_kind_char(&k_info[0]);
+		} else {
 			/* Normal attr and char */
-			a = object_kind_attr(g->first_k_idx);
-			c = object_kind_char(g->first_k_idx);
-			
-			if (g->multiple_objects)
-			{
-				/* Get the "pile" feature instead */
-				k_ptr = &k_info[0];
-				
-				a = k_ptr->x_attr;
-				c = k_ptr->x_char;
-			}
-		}
+			a = object_kind_attr(g->first_kind);
+			c = object_kind_char(g->first_kind);
+		}			
 	}
 
 	/* If there's a monster */
@@ -716,9 +706,8 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
  *    not necessarily the real terrain.
  *  - g->m_idx is set to the monster index, or 0 if there is none (or the
  *    player doesn't know it).
- *  - g->first_k_idx is set to the index of the first object in a grid
- *    that the player knows (and cares, as per OPT(hide_squelchable)) about,
- *    or zero for no object in the grid.
+ *  - g->first_kind is set to the object_kind of the first object in a grid
+ *    that the player knows about, or NULL for no objects.
  *  - g->muliple_objects is TRUE if there is more than one object in the
  *    grid that the player knows and cares about (to facilitate any special
  *    floor stack symbol that might be used).
@@ -733,7 +722,7 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
  *  - g->is_player is TRUE if the player is on the given grid.
  *  - g->hallucinate is TRUE if the player is hallucinating something "strange"
  *    for this grid - this should pick a random monster to show if the m_idx
- *    is non-zero, and a random object if first_k_idx is non-zero.
+ *    is non-zero, and a random object if first_kind is non-zero.
  *       
  * NOTES:
  * This is called pretty frequently, whenever a grid on the map display
@@ -761,7 +750,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	info2 = cave->info2[y][x];
 	
 	/* Default "clear" values, others will be set later where appropriate. */
-	g->first_k_idx = 0;
+	g->first_kind = NULL;
 	g->multiple_objects = FALSE;
 	g->lighting = FEAT_LIGHTING_DARK;
 
@@ -795,9 +784,9 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 		if (o_ptr->marked && !squelch_item_ok(o_ptr))
 		{
 			/* First item found */
-			if (g->first_k_idx == 0)
+			if (!g->first_kind)
 			{
-				g->first_k_idx = o_ptr->k_idx;
+				g->first_kind = k_info;
 			}
 			else
 			{
@@ -819,30 +808,19 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	}
 
 	/* Rare random hallucination on non-outer walls */
-	if (g->hallucinate && g->m_idx == 0 && g->first_k_idx == 0)
+	if (g->hallucinate && g->m_idx == 0 && g->first_kind == 0)
 	{
-		if (one_in_(256) && (g->f_idx < FEAT_PERM_SOLID))
-		{
-			/* Normally, make an imaginary monster */
-			if (randint0(100) < 75)
-			{
-				g->m_idx = 1;
-			}
-			/* Otherwise, an imaginary object */
-			else
-			{
-				g->first_k_idx = 1;
-			}
-		}
+		if (one_in_(128) && g->f_idx < FEAT_PERM_SOLID)
+			g->m_idx = 1;
+		else if (one_in_(128) && g->f_idx < FEAT_PERM_SOLID)
+			/* XXX if hallucinating, we just need first_kind to not be NULL */
+			g->first_kind = k_info;
 		else
-		{
 			g->hallucinate = FALSE;
-		}
 	}
 
 	assert(g->f_idx <= FEAT_PERM_SOLID);
 	assert(g->m_idx < (u32b) mon_max);
-	assert(g->first_k_idx < z_info->k_max);
 	/* All other g fields are 'flags', mostly booleans. */
 }
 
@@ -3009,7 +2987,7 @@ void wiz_light(void)
 		object_type *o_ptr = &o_list[i];
 
 		/* Skip dead objects */
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		/* Skip held objects */
 		if (o_ptr->held_m_idx) continue;
@@ -3077,7 +3055,7 @@ void wiz_dark(void)
 		object_type *o_ptr = &o_list[i];
 
 		/* Skip dead objects */
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		/* Skip held objects */
 		if (o_ptr->held_m_idx) continue;

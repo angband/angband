@@ -1,7 +1,7 @@
 /* list-object-flags.h - object flags
  *
  * Changing flag order will break savefiles. There is a hard-coded limit of
- * 96 flags, due to 12 bytes of storage for item flags in the savefile. Flags
+ * 256 flags, due to 32 bytes of storage for item flags in the savefile. Flags
  * below start from 1 on line 11, so a flag's sequence number is its line
  * number minus 10.
  */
@@ -104,3 +104,10 @@ OF(XXX7,        "")
 OF(LIGHT_CURSE, "")
 OF(HEAVY_CURSE, "")
 OF(PERMA_CURSE, "")
+OF(HATES_ACID,  "")
+OF(HATES_ELEC,  "")
+OF(HATES_FIRE,  "")
+OF(HATES_COLD,  "")
+OF(SPELLS_OK,   "")
+OF(SHOW_DICE,   "")
+OF(SHOW_MULTIPLIER, "")

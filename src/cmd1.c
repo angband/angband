@@ -208,7 +208,8 @@ static void py_pickup_gold(void)
 	{
 		char buf[1024];
 		char tmp[80];
-		int i, count, total, k_idx;
+		int i, count, total;
+		object_kind *kind;
 
 		/* Build a message */
 		(void)strnfmt(buf, sizeof(buf), "You have found %ld gold pieces worth of ", (long)total_gold);
@@ -226,13 +227,11 @@ static void py_pickup_gold(void)
 			if (!treasure[i]) continue;
 
 			/* Get this object index */
-			k_idx = lookup_kind(TV_GOLD, i);
-
-			/* Skip past errors  XXX */
-			if (k_idx <= 0) continue;
+			kind = lookup_kind(TV_GOLD, i);
+			if (!kind) continue;
 
 			/* Get the object name */
-			object_kind_name(tmp, sizeof tmp, k_idx, TRUE);
+			object_kind_name(tmp, sizeof tmp, kind, TRUE);
 
 			/* Build up the pickup string */
 			my_strcat(buf, tmp, sizeof(buf));
@@ -309,7 +308,7 @@ static void py_pickup_aux(int o_idx, bool domsg)
 		int i;
 		for (i = QUIVER_START; i < QUIVER_END; i++) 
 		{
-			if (!p_ptr->inventory[i].k_idx) continue;
+			if (!p_ptr->inventory[i].kind) continue;
 			if (!object_similar(&p_ptr->inventory[i], o_ptr,
 				OSTACK_QUIVER)) continue;
 			quiver_slot = i;
@@ -378,7 +377,7 @@ int do_autopickup(void)
 		next_o_idx = o_ptr->next_o_idx;
 
 		/* Ignore all hidden objects and non-objects */
-		if (squelch_item_ok(o_ptr) || !o_ptr->k_idx) continue;
+		if (squelch_item_ok(o_ptr) || !o_ptr->kind) continue;
 
 		/* XXX Hack -- Enforce limit */
 		if (floor_num >= N_ELEMENTS(floor_list)) break;

@@ -34,34 +34,6 @@
 
 
 /*
- * Name of the version/variant and its version string
- */
-#define VERSION_NAME   "Angband"
-#define SAVEFILE_NAME  "VNLA"
-
-#ifdef BUILD_ID
-# define STR(x) #x
-# define XSTR(x) STR(x)
-# define VERSION_STRING XSTR(BUILD_ID)
-#else
-# define VERSION_STRING "3.2.0"
-#endif
-
-
-/*
- * Current savefile version
- */
-#define VERSION_MAJOR	3
-#define VERSION_MINOR	0
-#define VERSION_PATCH	14
-#define VERSION_EXTRA	0
-
-/*
- * Version of random artifact code.
- */
-#define RANDART_VERSION	63
-
-/*
  * Number of grids in each block (vertically)
  * Probably hard-coded to 11, see "generate.c"
  */
@@ -138,12 +110,6 @@
 
 
 /*
- * Maximum amount of starting equipment, and starting gold
- */
-#define MAX_START_ITEMS	5
-#define STARTING_GOLD 600
-
-/*
  * Number of tval/min-sval/max-sval slots per ego_item
  */
 #define EGO_TVALS_MAX 3
@@ -153,11 +119,6 @@
  * Hack -- Maximum number of quests
  */
 #define MAX_Q_IDX	4
-
-/*
- * Maximum number of high scores in the high score file
- */
-#define MAX_HISCORES	100
 
 
 /*
@@ -213,32 +174,6 @@
 #define MON_MULT_ADJ		8 	/* High value slows multiplication */
 #define MON_DRAIN_LIFE		2	/* Percent of player exp drained per hit */
 
-/*
- * The different types of name randname.c can generate
- * which is also the number of sections in names.txt
- */
-typedef enum
-{
-  RANDNAME_TOLKIEN = 1,
-  RANDNAME_SCROLL,
-
-  /* End of type marker - not a valid name type */
-  RANDNAME_NUM_TYPES
-} randname_type;
-
-/*
- * There is a 1/20 (5%) chance of inflating the requested object level
- * during the creation of an object (see "get_obj_num()" in "object.c").
- * Lower values yield better objects more often.
- */
-#define GREAT_OBJ	20
-
-/*
- * There is a 1/20 (5%) chance that ego-items with an inflated base-level are
- * generated when an object is turned into an ego-item (see make_ego_item()
- * in object2.c). As above, lower values yield better ego-items more often.
- */
-#define GREAT_EGO	20
 
 /*
  * There is a 1/50 (2%) chance of inflating the requested monster level
@@ -1322,29 +1257,29 @@ enum
  *
  * Identified scrolls should use their own tile.
  */
-#define use_flavor_glyph(K) \
-	((k_info[(K)].flavor) && \
-	 !((k_info[(K)].tval == TV_SCROLL) && k_info[(K)].aware))
+#define use_flavor_glyph(kind) \
+	((kind)->flavor && \
+	 !((kind)->tval == TV_SCROLL && (kind)->aware))
 
 /*
  * Return the "attr" for a given item kind.
  * Use "flavor" if available.
  * Default to user definitions.
  */
-#define object_kind_attr(K) \
-	(use_flavor_glyph(K) ? \
-	 (k_info[(K)].flavor->x_attr) : \
-	 (k_info[(K)].x_attr))
+#define object_kind_attr(kind) \
+	(use_flavor_glyph((kind)) ? \
+	 ((kind)->flavor->x_attr) : \
+	 ((kind)->x_attr))
 
 /*
  * Return the "char" for a given item kind.
  * Use "flavor" if available.
  * Default to user definitions.
  */
-#define object_kind_char(K) \
-	(use_flavor_glyph(K) ? \
-	 (k_info[(K)].flavor->x_char) : \
-	 (k_info[(K)].x_char))
+#define object_kind_char(kind) \
+	(use_flavor_glyph(kind) ? \
+	 ((kind)->flavor->x_char) : \
+	 ((kind)->x_char))
 
 /*
  * Return the "attr" for a given item.
@@ -1352,7 +1287,7 @@ enum
  * Default to user definitions.
  */
 #define object_attr(T) \
-	(object_kind_attr((T)->k_idx))
+	(object_kind_attr((T)->kind))
 
 /*
  * Return the "char" for a given item.
@@ -1360,7 +1295,7 @@ enum
  * Default to user definitions.
  */
 #define object_char(T) \
-	(object_kind_char((T)->k_idx))
+	(object_kind_char((T)->kind))
 
 /*
  * Artifacts use the "name1" field

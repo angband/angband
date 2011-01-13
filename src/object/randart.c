@@ -21,6 +21,7 @@
 #include "object/tvalsval.h"
 #include "init.h"
 #include "effects.h"
+#include "randname.h"
 
 /*
  * Original random artifact generator (randart) by Greg Wooledge.
@@ -362,7 +363,6 @@ static void store_base_power (void)
 	int i, j;
 	artifact_type *a_ptr;
 	object_kind *k_ptr;
-	s16b k_idx;
 	int *fake_power;
 
 	max_power = 0;
@@ -386,8 +386,7 @@ static void store_base_power (void)
 			j--;
 
 		a_ptr = &a_info[i];
-		k_idx = lookup_kind(a_ptr->tval, a_ptr->sval);
-		k_ptr = &k_info[k_idx];
+		k_ptr = lookup_kind(a_ptr->tval, a_ptr->sval);
 		base_item_level[i] = k_ptr->level;
 		base_item_prob[i] = k_ptr->alloc_prob;
 		base_art_alloc[i] = a_ptr->alloc_prob;
@@ -444,14 +443,14 @@ static void store_base_power (void)
  * passed a pointer to a rarity value in order to return the rarity of the
  * new item.
  */
-static s16b choose_item(int a_idx)
+static object_kind *choose_item(int a_idx)
 {
 	artifact_type *a_ptr = &a_info[a_idx];
 	int tval = 0;
 	int sval = 0;
 	object_kind *k_ptr;
 	int i = 0;
-	s16b k_idx, r;
+	s16b r;
 
 	/*
 	 * Pick a base item from the cumulative frequency table.
@@ -484,8 +483,7 @@ static s16b choose_item(int a_idx)
 		sval = k_info[i].sval;
 	}
 	LOG_PRINT2("Creating tval %d sval %d\n", tval, sval);
-	k_idx = lookup_kind(tval, sval);
-	k_ptr = &k_info[k_idx];
+	k_ptr = lookup_kind(tval, sval);
 	a_ptr->tval = k_ptr->tval;
 	a_ptr->sval = k_ptr->sval;
 	a_ptr->pval[DEFAULT_PVAL] = randcalc(k_ptr->pval[DEFAULT_PVAL], 0, MINIMISE);
@@ -542,7 +540,7 @@ static s16b choose_item(int a_idx)
 	}
 
 	/* Done - return the index of the new object kind. */
-	return k_idx;
+	return k_ptr;
 }
 
 
@@ -687,7 +685,6 @@ static void parse_frequencies(void)
 	const artifact_type *a_ptr;
 	object_kind *k_ptr;
 	s32b temp, temp2;
-	s16b k_idx;
 	bitflag mask[OF_SIZE];
 
 	LOG_PRINT("\n****** BEGINNING GENERATION OF FREQUENCIES\n\n");
@@ -724,12 +721,11 @@ static void parse_frequencies(void)
 		if (base_power[i] < 0) continue;
 
 		/* Get a pointer to the base item for this artifact */
-		k_idx = lookup_kind(a_ptr->tval, a_ptr->sval);
-		k_ptr = &k_info[k_idx];
+		k_ptr = lookup_kind(a_ptr->tval, a_ptr->sval);
 
 		/* Add the base item to the baseprobs array */
-		baseprobs[k_idx]++;
-		LOG_PRINT1("Base item is %d\n", k_idx);
+		baseprobs[k_ptr->kidx]++;
+		LOG_PRINT1("Base item is %d\n", k_ptr->kidx);
 
 		/* Count up the abilities for this artifact */
 		if (a_ptr->tval == TV_BOW)
@@ -2698,7 +2694,6 @@ static void scramble_artifact(int a_idx)
 	object_kind *k_ptr;
 	s32b power;
 	int tries = 0;
-	s16b k_idx;
 	byte alloc_old, base_alloc_old, alloc_new;
 	s32b ap = 0;
 	bool curse_me = FALSE;
@@ -2754,8 +2749,7 @@ static void scramble_artifact(int a_idx)
 		do
 		{
 			/* Get the new item kind */
-			k_idx = choose_item(a_idx);
-			k_ptr = &k_info[k_idx];
+			k_ptr = choose_item(a_idx);
 
 			/*
 			 * Hack: if power is positive but very low, and if we're not having
@@ -2803,8 +2797,7 @@ static void scramble_artifact(int a_idx)
 		/* Special artifact (light source, ring, or amulet) */
 
 		/* Keep the item kind */
-		k_idx = lookup_kind(a_ptr->tval, a_ptr->sval);
-		k_ptr = &k_info[k_idx];
+		k_ptr = lookup_kind(a_ptr->tval, a_ptr->sval);
 
 		/* Clear the following fields; leave the rest alone */
 		a_ptr->pval[DEFAULT_PVAL] = 0;

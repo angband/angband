@@ -302,7 +302,6 @@ static void recharge_objects(void)
 	bool charged = FALSE, discharged_stack;
 
 	object_type *o_ptr;
-	object_kind *k_ptr;
 
 	/*** Recharge equipment ***/
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
@@ -311,7 +310,7 @@ static void recharge_objects(void)
 		o_ptr = &p_ptr->inventory[i];
 
 		/* Skip non-objects */
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		/* Recharge activatable objects */
 		if (recharge_timeout(o_ptr))
@@ -336,10 +335,9 @@ static void recharge_objects(void)
 	for (i = 0; i < INVEN_PACK; i++)
 	{
 		o_ptr = &p_ptr->inventory[i];
-		k_ptr = &k_info[o_ptr->k_idx];
 
 		/* Skip non-objects */
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		discharged_stack = (number_charging(o_ptr) == o_ptr->number) ? TRUE : FALSE;
 
@@ -350,15 +348,11 @@ static void recharge_objects(void)
 
 			/* Entire stack is recharged */
 			if (o_ptr->timeout == 0)
-			{
 				recharged_notice(o_ptr, TRUE);
-			}
 
 			/* Previously exhausted stack has acquired a charge */
 			else if (discharged_stack)
-			{
 				recharged_notice(o_ptr, FALSE);
-			}
 		}
 	}
 
@@ -379,7 +373,7 @@ static void recharge_objects(void)
 		o_ptr = &o_list[i];
 
 		/* Skip dead objects */
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		/* Recharge rods on the ground */
 		if (o_ptr->tval == TV_ROD)

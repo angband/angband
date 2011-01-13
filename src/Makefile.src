@@ -131,3 +131,6 @@ ANGFILES = \
 	x-spell.o \
 	xtra2.o \
 	xtra3.o
+
+buildid.o: $(ANGFILES)
+ANGFILES += buildid.o

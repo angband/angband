@@ -118,6 +118,7 @@ extern const player_magic *mp_ptr;
 extern player_other *op_ptr;
 extern player_type *p_ptr;
 extern feature_type *f_info;
+extern object_base *kb_info;
 extern object_kind *k_info;
 extern artifact_type *a_info;
 extern ego_item_type *e_info;
@@ -153,9 +154,8 @@ extern char *ANGBAND_DIR_XTRA_ICON;
 
 extern bool item_tester_full;
 extern byte item_tester_tval;
-extern bool (*item_tester_hook)(const object_type*);
+extern bool (*item_tester_hook)(const object_type *);
 extern bool (*get_mon_num_hook)(int r_idx);
-extern bool (*get_obj_num_hook)(int k_idx);
 extern ang_file *text_out_file;
 extern void (*text_out_hook)(byte a, cptr str);
 extern int text_out_wrap;
@@ -215,9 +215,6 @@ extern void run_step(int dir);
 
 /* randart.c */
 extern errr do_randart(u32b randart_seed, bool full);
-
-/* randname.c */
-extern size_t randname_make(randname_type name_type, size_t min, size_t max, char *word_buf, size_t buflen, const char ***wordlist);
 
 /* score.c */
 extern void enter_score(time_t *death_time);

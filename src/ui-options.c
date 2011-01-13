@@ -1193,7 +1193,6 @@ static tval_desc sval_dependent[] =
  */
 typedef struct
 {
-	s16b k_idx;
 	object_kind *kind;
 	bool aware;
 } squelch_choice;
@@ -1206,16 +1205,16 @@ static int cmp_squelch(const void *a, const void *b)
 {
 	char bufa[80];
 	char bufb[80];
-	const squelch_choice *x = (squelch_choice *)a;
-	const squelch_choice *y = (squelch_choice *)b;
+	const squelch_choice *x = a;
+	const squelch_choice *y = b;
 
 	if (!x->aware && y->aware)
 		return 1;
 	if (x->aware && !y->aware)
 		return -1;
 
-	object_kind_name(bufa, sizeof(bufa), x->k_idx, x->aware);
-	object_kind_name(bufb, sizeof(bufb), y->k_idx, y->aware);
+	object_kind_name(bufa, sizeof(bufa), x->kind, x->aware);
+	object_kind_name(bufb, sizeof(bufb), y->kind, y->aware);
 
 	return strcmp(bufa, bufb);
 }
@@ -1342,7 +1341,7 @@ static void squelch_sval_menu_display(menu_type *menu, int oid, bool cursor,
 	byte attr = curs_attrs[aware][0 != cursor];
 
 	/* Acquire the "name" of object "i" */
-	object_kind_name(buf, sizeof(buf), choice[oid].k_idx, aware);
+	object_kind_name(buf, sizeof(buf), kind, aware);
 
 	/* Print it */
 	c_put_str(attr, format("[ ] %s", buf), row, col);
@@ -1412,7 +1411,6 @@ static int squelch_collect_kind(int tval, squelch_choice **ch)
 		{
 			/* can unaware squelch anything */
 			choice[num].kind = k_ptr;
-			choice[num].k_idx = i;
 			choice[num++].aware = FALSE;
 		}
 
@@ -1421,7 +1419,6 @@ static int squelch_collect_kind(int tval, squelch_choice **ch)
 			/* aware squelch requires everseen */
 			/* do not require awareness for aware squelch, so people can set at game start */
 			choice[num].kind = k_ptr;
-			choice[num].k_idx = i;
 			choice[num++].aware = TRUE;
 		}
 	}

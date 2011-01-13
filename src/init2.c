@@ -17,10 +17,12 @@
  */
 
 #include "angband.h"
+#include "buildid.h"
 #include "button.h"
 #include "cave.h"
 #include "cmds.h"
 #include "game-event.h"
+#include "game-cmd.h"
 #include "init.h"
 #include "macro.h"
 #include "monster/constants.h"
@@ -29,6 +31,7 @@
 #include "option.h"
 #include "parser.h"
 #include "prefs.h"
+#include "randname.h"
 #include "squelch.h"
 
 static struct history_chart *histories;
@@ -353,7 +356,134 @@ static struct file_parser z_parser = {
 	finish_parse_z
 };
 
+/* Parsing functions for object_base.txt */
+
+struct kb_parsedata {
+	object_base defaults;
+	object_base *kb;
+};
+
+static enum parser_error parse_kb_d(struct parser *p) {
+	const char *label;
+	int value;
+
+	struct kb_parsedata *d = parser_priv(p);
+	assert(d);
+
+	label = parser_getsym(p, "label");
+	value = parser_getint(p, "value");
+
+	if (streq(label, "B"))
+		d->defaults.break_perc = value;
+	else
+		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_kb_n(struct parser *p) {
+	struct object_base *kb;
+
+	struct kb_parsedata *d = parser_priv(p);
+	assert(d);
+
+	kb = mem_alloc(sizeof *kb);
+	memcpy(kb, &d->defaults, sizeof(*kb));
+	kb->next = d->kb;
+	d->kb = kb;
+
+	kb->tval = tval_find_idx(parser_getsym(p, "tval"));
+	if (kb->tval == -1)
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+
+	kb->name = string_make(parser_getstr(p, "name"));
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_kb_b(struct parser *p) {
+	struct object_base *kb;
+
+	struct kb_parsedata *d = parser_priv(p);
+	assert(d);
+
+	kb = d->kb;
+	assert(kb);
+
+	kb->break_perc = parser_getint(p, "breakage");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_kb_f(struct parser *p) {
+	struct object_base *kb;
+	char *s, *t;
+
+	struct kb_parsedata *d = parser_priv(p);
+	assert(d);
+
+	kb = d->kb;
+	assert(kb);
+
+	s = string_make(parser_getstr(p, "flags"));
+	t = strtok(s, " |");
+	while (t) {
+		if (grab_flag(kb->flags, OF_SIZE, k_info_flags, t))
+			break;
+		t = strtok(NULL, " |");
+	}
+	mem_free(s);
+
+	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_kb(void) {
+	struct parser *p = parser_new();
+
+	struct kb_parsedata *d = mem_alloc(sizeof(*d));
+	memset(d, 0, sizeof(*d));
+	parser_setpriv(p, d);
+
+	parser_reg(p, "V sym version", ignored);
+	parser_reg(p, "D sym label int value", parse_kb_d);
+	parser_reg(p, "N sym tval str name", parse_kb_n);
+	parser_reg(p, "B int breakage", parse_kb_b);
+	parser_reg(p, "F str flags", parse_kb_f);
+	return p;
+}
+
+static errr run_parse_kb(struct parser *p) {
+	return parse_file(p, "object_base");
+}
+
+static errr finish_parse_kb(struct parser *p) {
+	struct kb_parsedata *d = parser_priv(p);
+	assert(d);
+
+	kb_info = mem_zalloc(TV_MAX * sizeof(*kb_info));
+
+	for (object_base *kb = d->kb; kb; kb = kb->next) {
+		if (kb->tval >= TV_MAX)
+			continue;
+		memcpy(&kb_info[kb->tval], kb, sizeof(*kb));
+	}
+
+	mem_free(d);
+
+	return 0;
+}
+
+struct file_parser kb_parser = {
+	"object_base",
+	init_parse_kb,
+	run_parse_kb,
+	finish_parse_kb
+};
+
+
+
 /* Parsing functions for object.txt */
+
 static enum parser_error parse_k_n(struct parser *p) {
 	int idx = parser_getint(p, "index");
 	const char *name = parser_getstr(p, "name");
@@ -395,6 +525,8 @@ static enum parser_error parse_k_i(struct parser *p) {
 
 	k->tval = tval;
 	k->sval = parser_getint(p, "sval");
+
+	k->base = &kb_info[k->tval];
 
 	return PARSE_ERROR_NONE;
 }
@@ -2709,7 +2841,7 @@ static enum parser_error parse_c_t(struct parser *p) {
 
 static enum parser_error parse_c_e(struct parser *p) {
 	struct player_class *c = parser_priv(p);
-	int i;
+	struct start_item *si;
 	int tval, sval;
 
 	if (!c)
@@ -2723,17 +2855,19 @@ static enum parser_error parse_c_e(struct parser *p) {
 	if (sval < 0)
 		return PARSE_ERROR_UNRECOGNISED_SVAL;
 
-	for (i = 0; i < MAX_START_ITEMS; i++)
-		if (!c->start_items[i].min)
-			break;
-	if (i > MAX_START_ITEMS)
-		return PARSE_ERROR_TOO_MANY_ENTRIES;
-	c->start_items[i].kind = objkind_get(tval, sval);
-	c->start_items[i].min = parser_getuint(p, "min");
-	c->start_items[i].max = parser_getuint(p, "max");
-	/* XXX: MAX_ITEM_STACK? */
-	if (c->start_items[i].min > 99 || c->start_items[i].max > 99)
+	si = mem_zalloc(sizeof *si);
+	si->kind = objkind_get(tval, sval);
+	si->min = parser_getuint(p, "min");
+	si->max = parser_getuint(p, "max");
+
+	if (si->min > 99 || si->max > 99) {
+		mem_free(si->kind);
 		return PARSE_ERROR_INVALID_ITEM_NUMBER;
+	}
+
+	si->next = c->start_items;
+	c->start_items = si;
+
 	return PARSE_ERROR_NONE;
 }
 
@@ -3486,6 +3620,10 @@ bool init_angband(void)
 	/* Initialize feature info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (features)");
 	if (run_parser(&f_parser)) quit("Cannot initialize features");
+
+	/* Initialize object base info */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (object bases)");
+	if (run_parser(&kb_parser)) quit("Cannot initialize object bases");
 
 	/* Initialize object info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (objects)");

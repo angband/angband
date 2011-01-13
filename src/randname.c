@@ -16,6 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "randname.h"
 
 /* Markers for the start and end of words. */
 #define S_WORD 26

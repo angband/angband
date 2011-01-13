@@ -69,7 +69,7 @@
 
 /** Magic bits at beginning of savefile */
 static const byte savefile_magic[4] = { 83, 97, 118, 101 };
-static const byte savefile_name[4] = SAVEFILE_NAME;
+static const byte savefile_name[4] = "VNLA";
 
 /** Savefile saving functions */
 static const struct {
@@ -518,7 +518,7 @@ bool savefile_load(const char *path)
 	if (f) {
 		if (file_read(f, (char *) &head, 8) == 8 &&
 				memcmp(&head[0], savefile_magic, 4) == 0 &&
-				memcmp(&head[4], SAVEFILE_NAME, 4) == 0) {
+				memcmp(&head[4], savefile_name, 4) == 0) {
 			if (!try_load(f)) {
 				ok = FALSE;
 				note("Failed loading savefile.");

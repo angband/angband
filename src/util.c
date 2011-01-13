@@ -18,9 +18,10 @@
 
 #include "angband.h"
 #include "button.h"
+#include "cmds.h"
 #include "game-event.h"
 #include "macro.h"
-#include "cmds.h"
+#include "randname.h"
 
 /*
  * Convert a decimal to a single digit hex number

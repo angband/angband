@@ -236,12 +236,16 @@ static enum parser_error parse_i(struct parser *p) {
 	struct store *s = parser_priv(p);
 	unsigned int slots = parser_getuint(p, "slots");
 	int tval = tval_find_idx(parser_getsym(p, "tval"));
-	int kidx = lookup_name(tval, parser_getsym(p, "sval"));
+	int sval = lookup_sval(tval, parser_getsym(p, "sval"));
+	object_kind *kind = lookup_kind(tval, sval);
+
+	if (!kind)
+		return PARSE_ERROR_UNRECOGNISED_SVAL;
 
 	if (s->table_num + slots > s->table_size)
 		return PARSE_ERROR_TOO_MANY_ENTRIES;
 	while (slots--) {
-		s->table[s->table_num++] = kidx;
+		s->table[s->table_num++] = kind;
 	}
 	/* XXX: get rid of this table_size/table_num/indexing thing. It's
 	 * stupid. Dynamically allocate. */
@@ -965,7 +969,7 @@ static int store_carry(int st, object_type *o_ptr)
 	object_type *j_ptr;
 
 	store_type *st_ptr = &store[st];
-	object_kind *k_ptr = &k_info[o_ptr->k_idx];
+	object_kind *kind;
 
 	/* Evaluate the object */
 	value = object_value(o_ptr, 1, FALSE);
@@ -1013,7 +1017,7 @@ static int store_carry(int st, object_type *o_ptr)
 			/* Recharge without fail if the store normally carries that type */
 			for (i = 0; i < st_ptr->table_num; i++)
 			{
-				if (st_ptr->table[i] == o_ptr->k_idx)
+				if (st_ptr->table[i] == o_ptr->kind)
 					recharge = TRUE;
 			}
 
@@ -1023,7 +1027,7 @@ static int store_carry(int st, object_type *o_ptr)
 
 				/* Calculate the recharged number of charges */
 				for (i = 0; i < o_ptr->number; i++)
-					charges += randcalc(k_ptr->charge, 0, RANDOMISE);
+					charges += randcalc(kind->charge, 0, RANDOMISE);
 
 				/* Use recharged value only if greater */
 				if (charges > o_ptr->pval[DEFAULT_PVAL])
@@ -1134,7 +1138,7 @@ static void store_item_optimize(int st, int item)
 	o_ptr = &st_ptr->stock[item];
 
 	/* Must exist */
-	if (!o_ptr->k_idx) return;
+	if (!o_ptr->kind) return;
 
 	/* Must have no items */
 	if (o_ptr->number) return;
@@ -1303,7 +1307,7 @@ static bool black_market_ok(const object_type *o_ptr)
 			object_type *j_ptr = &store[i].stock[j];
 
 			/* Compare object kinds */
-			if (o_ptr->k_idx == j_ptr->k_idx)
+			if (o_ptr->kind == j_ptr->kind)
 				return (FALSE);
 		}
 	}
@@ -1317,7 +1321,7 @@ static bool black_market_ok(const object_type *o_ptr)
 /*
  * Get a choice from the store allocation table, in tables.c
  */
-static s16b store_get_choice(int st)
+static object_kind *store_get_choice(int st)
 {
 	int r;
 	store_type *st_ptr = &store[st];
@@ -1335,7 +1339,7 @@ static s16b store_get_choice(int st)
  */
 static bool store_create_random(int st)
 {
-	int k_idx, tries, level, tval, sval;
+	int tries, level;
 
 	object_type *i_ptr;
 	object_type object_type_body;
@@ -1362,29 +1366,23 @@ static bool store_create_random(int st)
 	/* Consider up to six items */
 	for (tries = 0; tries < 6; tries++)
 	{
+		object_kind *kind;
+
 		/* Work out the level for objects to be generated at */
 		level = rand_range(min_level, max_level);
 
 
 		/* Black Markets have a random object, of a given level */
-		if (st == STORE_B_MARKET) k_idx = get_obj_num(level, FALSE);
-
-		/* Normal stores use a big table of choices */
-		else k_idx = store_get_choice(st);
-
-
-		/* Get tval/sval; if not found, item isn't real, so try again */
-		if (!lookup_reverse(k_idx, &tval, &sval))
-		{
-			msg("Invalid object index in store_create_random()!");
-			continue;
-		}
+		if (st == STORE_B_MARKET)
+			kind = get_obj_num(level, FALSE);
+		else
+			kind = store_get_choice(st);
 
 
 		/*** Pre-generation filters ***/
 
 		/* No chests in stores XXX */
-		if (tval == TV_CHEST) continue;
+		if (kind->tval == TV_CHEST) continue;
 
 
 		/*** Generate the item ***/
@@ -1393,7 +1391,7 @@ static bool store_create_random(int st)
 		i_ptr = &object_type_body;
 
 		/* Create a new object of the chosen kind */
-		object_prep(i_ptr, &k_info[k_idx], level, RANDOMISE);
+		object_prep(i_ptr, kind, level, RANDOMISE);
 
 		/* Apply some "low-level" magic (no artifacts) */
 		apply_magic(i_ptr, level, FALSE, FALSE, FALSE);
@@ -1468,13 +1466,13 @@ static bool store_create_random(int st)
 static int store_create_item(int st, int tval, int sval)
 {
 	object_type object;
-	int k_idx;
+	object_kind *kind;
 
 	/* Resolve tval,sval pair into an index */
-	k_idx = lookup_kind(tval, sval);
+	kind = lookup_kind(tval, sval);
 
 	/* Validation - do something more substantial here? XXX */
-	if (!k_idx)
+	if (!kind)
 	{
 		msg("No object in store_create_item().");
 		return -1;
@@ -1484,7 +1482,7 @@ static int store_create_item(int st, int tval, int sval)
 	object_wipe(&object);
 
 	/* Create a new object of the chosen kind */
-	object_prep(&object, &k_info[k_idx], 0, RANDOMISE);
+	object_prep(&object, kind, 0, RANDOMISE);
 
 	/* Item belongs to a store */
 	object.ident |= IDENT_STORE;
@@ -2063,7 +2061,7 @@ static int find_inven(const object_type *o_ptr)
 		if (j >= INVEN_WIELD && j < QUIVER_START) continue;
 
 		/* Require identical object types */
-		if (!j_ptr->k_idx || o_ptr->k_idx != j_ptr->k_idx) continue;
+		if (o_ptr->kind != j_ptr->kind) continue;
 
 		/* Analyze the items */
 		switch (o_ptr->tval)

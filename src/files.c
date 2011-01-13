@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "buildid.h"
 #include "cave.h"
 #include "cmds.h"
 #include "game-cmd.h"
@@ -141,7 +142,7 @@ static void display_player_equippy(int y, int x)
 		o_ptr = &p_ptr->inventory[i];
 
 		/* Skip empty objects */
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		/* Get attr/char for display */
 		a = object_attr(o_ptr);
@@ -244,7 +245,7 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 			/* Wipe flagset */
 			of_wipe(f);
 
-			if (j < INVEN_TOTAL && o_ptr->k_idx)
+			if (j < INVEN_TOTAL && o_ptr->kind)
 			{
 				object_flags_known(o_ptr, f);
 			}
@@ -271,7 +272,7 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 			if (vuln) sym = '-';
 			else if (imm) sym = '*';
 			else if (res) sym = '+';
-			else if ((j < INVEN_TOTAL) && o_ptr->k_idx && 
+			else if ((j < INVEN_TOTAL) && o_ptr->kind && 
 				!object_flag_is_known(o_ptr, resists[i].res_flag)) sym = '?';
 			Term_addch(attr, sym);
 		}
@@ -475,7 +476,7 @@ static void display_player_sust_info(void)
 				if (c == '.') c = 's';
 			}
 
-			if ((c == '.') && o_ptr->k_idx && !object_flag_is_known(o_ptr, sustain_flags[stat]))
+			if ((c == '.') && o_ptr->kind && !object_flag_is_known(o_ptr, sustain_flags[stat]))
 				c = '?';
 
 			/* Dump proper character */
@@ -983,8 +984,7 @@ errr file_character(const char *path, bool full)
  	if (!OPT(xchars_to_file)) Term->xchar_hook = NULL;
 
 	/* Begin dump */
-	file_putf(fp, "  [%s %s Character Dump]\n\n",
-	        VERSION_NAME, VERSION_STRING);
+	file_putf(fp, "  [%s Character Dump]\n\n", buildid);
 
 
 	/* Display player */
@@ -1099,7 +1099,7 @@ errr file_character(const char *path, bool full)
 				ODESC_PREFIX | ODESC_FULL);
 
 		x_file_putf(fp, encoding, "%c) %s\n", index_to_label(i), o_name);
-		if (p_ptr->inventory[i].k_idx)
+		if (p_ptr->inventory[i].kind)
 			object_info_chardump(fp, &p_ptr->inventory[i], 5, 72);
 	}
 
@@ -1107,7 +1107,7 @@ errr file_character(const char *path, bool full)
 	file_putf(fp, "\n\n  [Character Inventory]\n\n");
 	for (i = 0; i < INVEN_PACK; i++)
 	{
-		if (!p_ptr->inventory[i].k_idx) break;
+		if (!p_ptr->inventory[i].kind) break;
 
 		object_desc(o_name, sizeof(o_name), &p_ptr->inventory[i],
 					ODESC_PREFIX | ODESC_FULL);
@@ -1474,7 +1474,7 @@ bool show_file(cptr name, cptr what, int line, int mode)
 
 
 		/* Show a general "title" */
-		prt(format("[%s %s, %s, Line %d-%d/%d]", VERSION_NAME, VERSION_STRING,
+		prt(format("[%s, %s, Line %d-%d/%d]", buildid,
 		           caption, line, line + hgt - 4, size), 0, 0);
 
 
@@ -1924,8 +1924,7 @@ void html_screenshot(cptr name, int mode)
 	if (mode == 0)
 	{
 		file_putf(fp, "<!DOCTYPE html><html><head>\n");
-		file_putf(fp, "  <meta='generator' content='%s %s'>\n",
-	            	VERSION_NAME, VERSION_STRING);
+		file_putf(fp, "  <meta='generator' content='%s'>\n", buildid);
 		file_putf(fp, "  <title>%s</title>\n", name);
 		file_putf(fp, "</head>\n\n");
 		file_putf(fp, "<body style='color: #fff; background: #000;'>\n");

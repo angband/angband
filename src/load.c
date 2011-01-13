@@ -36,10 +36,8 @@ static int rd_item_2(object_type *o_ptr)
 	byte old_ds;
 	byte tmp8u;
 	u16b tmp16u;
-
+	
 	size_t i, j;
-
-	object_kind *k_ptr;
 
 	char buf[128];
 
@@ -49,12 +47,7 @@ static int rd_item_2(object_type *o_ptr)
 	rd_byte(&ver);
 	assert(tmp16u == 0xffff);
 
-	rd_s16b(&o_ptr->k_idx);
-
-	/* Paranoia */
-	if ((o_ptr->k_idx < 0) || (o_ptr->k_idx >= z_info->k_max))
-		return (-1);
-	o_ptr->kind = &k_info[o_ptr->k_idx];
+	strip_bytes(2);
 
 	/* Location */
 	rd_byte(&o_ptr->iy);
@@ -115,44 +108,35 @@ static int rd_item_2(object_type *o_ptr)
 	/* Monster holding object */
 	rd_s16b(&o_ptr->held_m_idx);
 
-	rd_string(buf, sizeof(buf));
-
 	/* Save the inscription */
+	rd_string(buf, sizeof(buf));
 	if (buf[0]) o_ptr->note = quark_add(buf);
 
 
 	/* Lookup item kind */
-	o_ptr->k_idx = lookup_kind(o_ptr->tval, o_ptr->sval);
-	assert(o_ptr->k_idx);	/* XXX-elly: handle nonfatally */
-
-	k_ptr = &k_info[o_ptr->k_idx];
-
-	/* Return now in case of "blank" or "empty" objects */
-	if (!k_ptr->name || !o_ptr->k_idx)
-	{
-		o_ptr->k_idx = 0;
+	o_ptr->kind = lookup_kind(o_ptr->tval, o_ptr->sval);
+	if (!o_ptr->kind)
 		return 0;
-	}
 
 
 	/* Repair non "wearable" items */
 	if (!wearable_p(o_ptr))
 	{
 		/* Get the correct fields */
-		if (!randcalc_valid(k_ptr->to_h, o_ptr->to_h))
-			o_ptr->to_h = randcalc(k_ptr->to_h, o_ptr->origin_depth, RANDOMISE);
-		if (!randcalc_valid(k_ptr->to_d, o_ptr->to_d))
-			o_ptr->to_d = randcalc(k_ptr->to_d, o_ptr->origin_depth, RANDOMISE);
-		if (!randcalc_valid(k_ptr->to_a, o_ptr->to_a))
-			o_ptr->to_a = randcalc(k_ptr->to_a, o_ptr->origin_depth, RANDOMISE);
+		if (!randcalc_valid(o_ptr->kind->to_h, o_ptr->to_h))
+			o_ptr->to_h = randcalc(o_ptr->kind->to_h, o_ptr->origin_depth, RANDOMISE);
+		if (!randcalc_valid(o_ptr->kind->to_d, o_ptr->to_d))
+			o_ptr->to_d = randcalc(o_ptr->kind->to_d, o_ptr->origin_depth, RANDOMISE);
+		if (!randcalc_valid(o_ptr->kind->to_a, o_ptr->to_a))
+			o_ptr->to_a = randcalc(o_ptr->kind->to_a, o_ptr->origin_depth, RANDOMISE);
 
 		/* Get the correct fields */
-		o_ptr->ac = k_ptr->ac;
-		o_ptr->dd = k_ptr->dd;
-		o_ptr->ds = k_ptr->ds;
+		o_ptr->ac = o_ptr->kind->ac;
+		o_ptr->dd = o_ptr->kind->dd;
+		o_ptr->ds = o_ptr->kind->ds;
 
 		/* Get the correct weight */
-		o_ptr->weight = k_ptr->weight;
+		o_ptr->weight = o_ptr->kind->weight;
 
 		/* Paranoia */
 		o_ptr->name1 = o_ptr->name2 = 0;
@@ -195,12 +179,12 @@ static int rd_item_2(object_type *o_ptr)
 
 
 	/* Get the standard fields */
-	o_ptr->ac = k_ptr->ac;
-	o_ptr->dd = k_ptr->dd;
-	o_ptr->ds = k_ptr->ds;
+	o_ptr->ac = o_ptr->kind->ac;
+	o_ptr->dd = o_ptr->kind->dd;
+	o_ptr->ds = o_ptr->kind->ds;
 
 	/* Get the standard weight */
-	o_ptr->weight = k_ptr->weight;
+	o_ptr->weight = o_ptr->kind->weight;
 
 
 	/* Artifacts */
@@ -268,8 +252,6 @@ static int rd_item_1(object_type *o_ptr)
 
 	size_t i;
 
-	object_kind *k_ptr;
-
 	char buf[128];
 
 	byte ver = 1;
@@ -278,12 +260,8 @@ static int rd_item_1(object_type *o_ptr)
 	rd_byte(&ver);
 	assert(tmp16u == 0xffff);
 
-	rd_s16b(&o_ptr->k_idx);
 
-	/* Paranoia */
-	if ((o_ptr->k_idx < 0) || (o_ptr->k_idx >= z_info->k_max))
-		return (-1);
-	o_ptr->kind = &k_info[o_ptr->k_idx];
+	strip_bytes(2);
 
 	/* Location */
 	rd_byte(&o_ptr->iy);
@@ -345,18 +323,10 @@ static int rd_item_1(object_type *o_ptr)
 	if (buf[0]) o_ptr->note = quark_add(buf);
 
 
-	/* Lookup item kind */
-	o_ptr->k_idx = lookup_kind(o_ptr->tval, o_ptr->sval);
-	assert(o_ptr->k_idx);	/* XXX-elly: handle nonfatally */
-
-	k_ptr = &k_info[o_ptr->k_idx];
-
-	/* Return now in case of "blank" or "empty" objects */
-	if (!k_ptr->name || !o_ptr->k_idx)
-	{
-		o_ptr->k_idx = 0;
+	o_ptr->kind = lookup_kind(o_ptr->tval, o_ptr->sval);
+	if (!o_ptr->kind)
 		return 0;
-	}
+
 
 	/* Copy flags into pval_flags to ensure pvals function */
 	if (o_ptr->pval) {
@@ -368,20 +338,20 @@ static int rd_item_1(object_type *o_ptr)
 	if (!wearable_p(o_ptr))
 	{
 		/* Get the correct fields */
-		if (!randcalc_valid(k_ptr->to_h, o_ptr->to_h))
-			o_ptr->to_h = randcalc(k_ptr->to_h, o_ptr->origin_depth, RANDOMISE);
-		if (!randcalc_valid(k_ptr->to_d, o_ptr->to_d))
-			o_ptr->to_d = randcalc(k_ptr->to_d, o_ptr->origin_depth, RANDOMISE);
-		if (!randcalc_valid(k_ptr->to_a, o_ptr->to_a))
-			o_ptr->to_a = randcalc(k_ptr->to_a, o_ptr->origin_depth, RANDOMISE);
+		if (!randcalc_valid(o_ptr->kind->to_h, o_ptr->to_h))
+			o_ptr->to_h = randcalc(o_ptr->kind->to_h, o_ptr->origin_depth, RANDOMISE);
+		if (!randcalc_valid(o_ptr->kind->to_d, o_ptr->to_d))
+			o_ptr->to_d = randcalc(o_ptr->kind->to_d, o_ptr->origin_depth, RANDOMISE);
+		if (!randcalc_valid(o_ptr->kind->to_a, o_ptr->to_a))
+			o_ptr->to_a = randcalc(o_ptr->kind->to_a, o_ptr->origin_depth, RANDOMISE);
 
 		/* Get the correct fields */
-		o_ptr->ac = k_ptr->ac;
-		o_ptr->dd = k_ptr->dd;
-		o_ptr->ds = k_ptr->ds;
+		o_ptr->ac = o_ptr->kind->ac;
+		o_ptr->dd = o_ptr->kind->dd;
+		o_ptr->ds = o_ptr->kind->ds;
 
 		/* Get the correct weight */
-		o_ptr->weight = k_ptr->weight;
+		o_ptr->weight = o_ptr->kind->weight;
 
 		/* Paranoia */
 		o_ptr->name1 = o_ptr->name2 = 0;
@@ -424,12 +394,12 @@ static int rd_item_1(object_type *o_ptr)
 
 
 	/* Get the standard fields */
-	o_ptr->ac = k_ptr->ac;
-	o_ptr->dd = k_ptr->dd;
-	o_ptr->ds = k_ptr->ds;
+	o_ptr->ac = o_ptr->kind->ac;
+	o_ptr->dd = o_ptr->kind->dd;
+	o_ptr->ds = o_ptr->kind->ds;
 
 	/* Get the standard weight */
-	o_ptr->weight = k_ptr->weight;
+	o_ptr->weight = o_ptr->kind->weight;
 
 
 	/* Artifacts */
@@ -1039,9 +1009,6 @@ int rd_artifacts(void)
 }
 
 
-static u32b randart_version;
-
-
 /*
  * Read the "extra" information
  */
@@ -1254,7 +1221,7 @@ int rd_misc(void)
 	byte tmp8u;
 	
 	/* Read the randart version */
-	rd_u32b(&randart_version);
+	strip_bytes(4);
 
 	/* Read the randart seed */
 	rd_u32b(&seed_randart);
@@ -1493,133 +1460,108 @@ int rd_randarts_1(void)
 	if (!OPT(birth_randarts))
 		return 0;
 
-	if (FALSE)
-	{
-		/*
-		 * XXX XXX XXX
-		 * Importing old savefiles with random artifacts is dangerous
-		 * since the randart-generators differ and produce different
-		 * artifacts from the same random seed.
-		 *
-		 * Switching off the check for incompatible randart versions
-		 * allows to import such a savefile - do it at your own risk.
-		 */
+	/* Read the number of artifacts */
+	rd_u16b(&artifact_count);
 
-		/* Check for incompatible randart version */
-		if (randart_version != RANDART_VERSION)
+	/* Alive or cheating death */
+	if (!p_ptr->is_dead || arg_wizard)
+	{
+		/* Incompatible save files */
+		if (artifact_count > z_info->a_max)
 		{
-			note(format("Incompatible random artifacts version!"));
+			note(format("Too many (%u) random artifacts!", artifact_count));
 			return (-1);
 		}
 
-		/* Initialize randarts */
-		do_randart(seed_randart, TRUE);
+		/* Mark the old artifacts as "empty" */
+		for (i = 0; i < z_info->a_max; i++)
+		{
+			artifact_type *a_ptr = &a_info[i];
+			a_ptr->name = 0;
+			a_ptr->tval = 0;
+			a_ptr->sval = 0;
+		}
+
+		/* Read the artifacts */
+		for (i = 0; i < artifact_count; i++)
+		{
+			artifact_type *a_ptr = &a_info[i];
+			u16b time_base, time_dice, time_sides;
+
+			rd_byte(&a_ptr->tval);
+			rd_byte(&a_ptr->sval);
+			rd_s16b(&a_ptr->pval[DEFAULT_PVAL]);
+
+			rd_s16b(&a_ptr->to_h);
+			rd_s16b(&a_ptr->to_d);
+			rd_s16b(&a_ptr->to_a);
+			rd_s16b(&a_ptr->ac);
+
+			rd_byte(&a_ptr->dd);
+			rd_byte(&a_ptr->ds);
+
+			rd_s16b(&a_ptr->weight);
+
+			rd_s32b(&a_ptr->cost);
+
+			/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
+			for (j = 0; j < 12 && j < OF_SIZE; j++)
+				rd_byte(&a_ptr->flags[j]);
+			if (j < 12) strip_bytes(OF_SIZE - j);
+
+			rd_byte(&a_ptr->level);
+			rd_byte(&a_ptr->rarity);
+			rd_byte(&a_ptr->alloc_prob);
+			rd_byte(&a_ptr->alloc_min);
+			rd_byte(&a_ptr->alloc_max);
+
+			rd_u16b(&a_ptr->effect);
+			rd_u16b(&time_base);
+			rd_u16b(&time_dice);
+			rd_u16b(&time_sides);
+			a_ptr->time.base = time_base;
+			a_ptr->time.dice = time_dice;
+			a_ptr->time.sides = time_sides;
+		}
+
+		/* Initialize only the randart names */
+		do_randart(seed_randart, FALSE);
 	}
 	else
 	{
-		/* Read the number of artifacts */
-		rd_u16b(&artifact_count);
-
-		/* Alive or cheating death */
-		if (!p_ptr->is_dead || arg_wizard)
+		/* Read the artifacts */
+		for (i = 0; i < artifact_count; i++)
 		{
-			/* Incompatible save files */
-			if (artifact_count > z_info->a_max)
-			{
-				note(format("Too many (%u) random artifacts!", artifact_count));
-				return (-1);
-			}
+			rd_byte(&tmp8u); /* a_ptr->tval */
+			rd_byte(&tmp8u); /* a_ptr->sval */
+			rd_s16b(&tmp16s); /* a_ptr->pval */
 
-			/* Mark the old artifacts as "empty" */
-			for (i = 0; i < z_info->a_max; i++)
-			{
-				artifact_type *a_ptr = &a_info[i];
-				a_ptr->name = 0;
-				a_ptr->tval = 0;
-				a_ptr->sval = 0;
-			}
+			rd_s16b(&tmp16s); /* a_ptr->to_h */
+			rd_s16b(&tmp16s); /* a_ptr->to_d */
+			rd_s16b(&tmp16s); /* a_ptr->to_a */
+			rd_s16b(&tmp16s); /* a_ptr->ac */
 
-			/* Read the artifacts */
-			for (i = 0; i < artifact_count; i++)
-			{
-				artifact_type *a_ptr = &a_info[i];
-				u16b time_base, time_dice, time_sides;
+			rd_byte(&tmp8u); /* a_ptr->dd */
+			rd_byte(&tmp8u); /* a_ptr->ds */
 
-				rd_byte(&a_ptr->tval);
-				rd_byte(&a_ptr->sval);
-				rd_s16b(&a_ptr->pval[DEFAULT_PVAL]);
+			rd_s16b(&tmp16s); /* a_ptr->weight */
 
-				rd_s16b(&a_ptr->to_h);
-				rd_s16b(&a_ptr->to_d);
-				rd_s16b(&a_ptr->to_a);
-				rd_s16b(&a_ptr->ac);
+			rd_s32b(&tmp32s); /* a_ptr->cost */
 
-				rd_byte(&a_ptr->dd);
-				rd_byte(&a_ptr->ds);
+			rd_u32b(&tmp32u); /* a_ptr->flags1 */
+			rd_u32b(&tmp32u); /* a_ptr->flags2 */
+			rd_u32b(&tmp32u); /* a_ptr->flags3 */
 
-				rd_s16b(&a_ptr->weight);
+			rd_byte(&tmp8u); /* a_ptr->level */
+			rd_byte(&tmp8u); /* a_ptr->rarity */
+			rd_byte(&tmp8u); /* a_ptr->alloc_prob */
+			rd_byte(&tmp8u); /* a_ptr->alloc_min */
+			rd_byte(&tmp8u); /* a_ptr->alloc_max */
 
-				rd_s32b(&a_ptr->cost);
-
-				/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
-				for (j = 0; j < 12 && j < OF_SIZE; j++)
-					rd_byte(&a_ptr->flags[j]);
-				if (j < 12) strip_bytes(OF_SIZE - j);
-
-				rd_byte(&a_ptr->level);
-				rd_byte(&a_ptr->rarity);
-				rd_byte(&a_ptr->alloc_prob);
-				rd_byte(&a_ptr->alloc_min);
-				rd_byte(&a_ptr->alloc_max);
-
-				rd_u16b(&a_ptr->effect);
-				rd_u16b(&time_base);
-				rd_u16b(&time_dice);
-				rd_u16b(&time_sides);
-				a_ptr->time.base = time_base;
-				a_ptr->time.dice = time_dice;
-				a_ptr->time.sides = time_sides;
-			}
-
-			/* Initialize only the randart names */
-			do_randart(seed_randart, FALSE);
-		}
-		else
-		{
-			/* Read the artifacts */
-			for (i = 0; i < artifact_count; i++)
-			{
-				rd_byte(&tmp8u); /* a_ptr->tval */
-				rd_byte(&tmp8u); /* a_ptr->sval */
-				rd_s16b(&tmp16s); /* a_ptr->pval */
-
-				rd_s16b(&tmp16s); /* a_ptr->to_h */
-				rd_s16b(&tmp16s); /* a_ptr->to_d */
-				rd_s16b(&tmp16s); /* a_ptr->to_a */
-				rd_s16b(&tmp16s); /* a_ptr->ac */
-
-				rd_byte(&tmp8u); /* a_ptr->dd */
-				rd_byte(&tmp8u); /* a_ptr->ds */
-
-				rd_s16b(&tmp16s); /* a_ptr->weight */
-
-				rd_s32b(&tmp32s); /* a_ptr->cost */
-
-				rd_u32b(&tmp32u); /* a_ptr->flags1 */
-				rd_u32b(&tmp32u); /* a_ptr->flags2 */
-				rd_u32b(&tmp32u); /* a_ptr->flags3 */
-
-				rd_byte(&tmp8u); /* a_ptr->level */
-				rd_byte(&tmp8u); /* a_ptr->rarity */
-				rd_byte(&tmp8u); /* a_ptr->alloc_prob */
-				rd_byte(&tmp8u); /* a_ptr->alloc_min */
-				rd_byte(&tmp8u); /* a_ptr->alloc_max */
-
-				rd_u16b(&tmp16u); /* a_ptr->effect */
-				rd_u16b(&tmp16u); /* a_ptr->time_base */
-				rd_u16b(&tmp16u); /* a_ptr->time_dice */
-				rd_u16b(&tmp16u); /* a_ptr->time_sides */
-			}
+			rd_u16b(&tmp16u); /* a_ptr->effect */
+			rd_u16b(&tmp16u); /* a_ptr->time_base */
+			rd_u16b(&tmp16u); /* a_ptr->time_dice */
+			rd_u16b(&tmp16u); /* a_ptr->time_sides */
 		}
 	}
 
@@ -1664,7 +1606,7 @@ int rd_inventory_2(void)
 		}
 
 		/* Hack -- verify item */
-		if (!i_ptr->k_idx) continue;;
+		if (!i_ptr->kind) continue;
 
 		/* Verify slot */
 		if (n >= ALL_INVEN_TOTAL) return (-1);
@@ -1752,7 +1694,7 @@ int rd_inventory_1(void)
 		}
 
 		/* Hack -- verify item */
-		if (!i_ptr->k_idx) continue;;
+		if (!i_ptr->kind) continue;
 
 		/* Verify slot */
 		if (n >= ALL_INVEN_TOTAL) return (-1);
@@ -1854,8 +1796,7 @@ int rd_stores_2(void)
 				i_ptr->ident |= IDENT_STORE;
 			
 			/* Accept any valid items */
-			if ((st_ptr->stock_num < STORE_INVEN_MAX) &&
-				(i_ptr->k_idx))
+			if (st_ptr->stock_num < STORE_INVEN_MAX && i_ptr->kind)
 			{
 				int k = st_ptr->stock_num++;
 
@@ -1919,8 +1860,7 @@ int rd_stores_1(void)
 				i_ptr->ident |= IDENT_STORE;
 			
 			/* Accept any valid items */
-			if ((st_ptr->stock_num < STORE_INVEN_MAX) &&
-				(i_ptr->k_idx))
+			if (st_ptr->stock_num < STORE_INVEN_MAX && i_ptr->kind)
 			{
 				int k = st_ptr->stock_num++;
 

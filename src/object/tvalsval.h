@@ -60,7 +60,7 @@
 #define TV_MAGIC_BOOK   90
 #define TV_PRAYER_BOOK  91
 #define TV_GOLD         100	/* Gold can only be picked up by players */
-
+#define TV_MAX		101
 
 
 /* The "sval" codes for TV_SHOT/TV_ARROW/TV_BOLT */

@@ -226,7 +226,7 @@ void textui_obj_wield(object_type *o_ptr, int item)
 	/* Usually if the slot is taken we'll just replace the item in the slot,
 	 * but in some cases we need to ask the user which slot they actually
 	 * want to replace */
-	if (p_ptr->inventory[slot].k_idx)
+	if (p_ptr->inventory[slot].kind)
 	{
 		if (o_ptr->tval == TV_RING)
 		{

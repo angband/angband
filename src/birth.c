@@ -55,6 +55,12 @@
  */
 
 
+/* 
+ * Maximum amount of starting equipment, and starting gold
+ */
+#define STARTING_GOLD 600
+
+
 /*
  * Forward declare
  */
@@ -493,23 +499,18 @@ static void wield_all(struct player *p)
 		is_ammo = obj_is_ammo(o_ptr);
 
 		/* Skip non-objects */
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		/* Make sure we can wield it */
 		slot = wield_slot(o_ptr);
 		if (slot < INVEN_WIELD) continue;
+
 		i_ptr = &p->inventory[slot];
+		if (!i_ptr->kind) continue;
 
 		/* Make sure that there's an available slot */
-		if (is_ammo)
-		{
-			if (i_ptr->k_idx && !object_similar(o_ptr, i_ptr,
-				OSTACK_PACK)) continue;
-		}
-		else
-		{
-			if (i_ptr->k_idx) continue;
-		}
+		if (is_ammo && !object_similar(o_ptr, i_ptr, OSTACK_PACK))
+			continue;
 
 		/* Figure out how much of the item we'll be wielding */
 		num = is_ammo ? o_ptr->number : 1;
@@ -551,71 +552,36 @@ static void wield_all(struct player *p)
  */
 void player_outfit(struct player *p)
 {
-	int i;
-	const start_item *e_ptr;
-	object_type *i_ptr;
+	const struct start_item *si;
 	object_type object_type_body;
 
-
-	/* Hack -- Give the player his equipment */
-	for (i = 0; i < MAX_START_ITEMS; i++)
+	/* Give the player starting equipment */
+	for (si = cp_ptr->start_items; si; si = si->next)
 	{
-		/* Access the item */
-		e_ptr = &(cp_ptr->start_items[i]);
-
 		/* Get local object */
-		i_ptr = &object_type_body;
+		struct object *i_ptr = &object_type_body;
 
-		/* Hack	-- Give the player an object */
-		if (e_ptr->kind)
-		{
-			/* Prepare the item */
-			object_prep(i_ptr, e_ptr->kind, 0, MINIMISE);
-			i_ptr->number = (byte)rand_range(e_ptr->min, e_ptr->max);
-			i_ptr->origin = ORIGIN_BIRTH;
+		/* Prepare the item */
+		object_prep(i_ptr, si->kind, 0, MINIMISE);
+		i_ptr->number = (byte)rand_range(si->min, si->max);
+		i_ptr->origin = ORIGIN_BIRTH;
 
-			object_flavor_aware(i_ptr);
-			object_notice_everything(i_ptr);
-			inven_carry(p, i_ptr);
-			e_ptr->kind->everseen = TRUE;
+		object_flavor_aware(i_ptr);
+		object_notice_everything(i_ptr);
 
-			/* Deduct the cost of the item from starting cash */
-			p->au -= object_value(i_ptr, i_ptr->number, FALSE);
-		}
+		/* apply_magic ensures that torches have light set */
+		apply_magic(i_ptr, 0, FALSE, FALSE, FALSE);
+
+		inven_carry(p, i_ptr);
+		si->kind->everseen = TRUE;
+
+		/* Deduct the cost of the item from starting cash */
+		p->au -= object_value(i_ptr, i_ptr->number, FALSE);
 	}
 
-
-	/* Hack -- give the player hardcoded equipment XXX */
-
-	/* Get local object */
-	i_ptr = &object_type_body;
-
-	/* Hack -- Give the player some food */
-	object_prep(i_ptr, objkind_get(TV_FOOD, SV_FOOD_RATION), 0, MINIMISE);
-	i_ptr->number = (byte)rand_range(3, 7);
-	i_ptr->origin = ORIGIN_BIRTH;
-	object_flavor_aware(i_ptr);
-	object_notice_everything(i_ptr);
-	k_info[i_ptr->k_idx].everseen = TRUE;
-	inven_carry(p, i_ptr);
-	p->au -= object_value(i_ptr, i_ptr->number, FALSE);
-
-	/* Get local object */
-	i_ptr = &object_type_body;
-
-	/* Hack -- Give the player some torches */
-	object_prep(i_ptr, objkind_get(TV_LIGHT, SV_LIGHT_TORCH), 0, MINIMISE);
-	apply_magic(i_ptr, 0, FALSE, FALSE, FALSE);
-	i_ptr->number = (byte)rand_range(3, 7);
-	i_ptr->origin = ORIGIN_BIRTH;
-	object_flavor_aware(i_ptr);
-	object_notice_everything(i_ptr);
-	k_info[i_ptr->k_idx].everseen = TRUE;
-	inven_carry(p, i_ptr);
-	p->au -= object_value(i_ptr, i_ptr->number, FALSE);
-
-	/* sanity check */
-	if (p->au < 0) p->au = 0;
+	/* Sanity check */
+	if (p->au < 0)
+		p->au = 0;
 
 	/* Now try wielding everything */
 	wield_all(p);

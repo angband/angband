@@ -134,7 +134,7 @@ void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MAX])
 		object_type *o_ptr = &p_ptr->inventory[i];
 
 		/* Only occupied slots */
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		object_flags_known(o_ptr, f);
 

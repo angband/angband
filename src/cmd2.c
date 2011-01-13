@@ -1732,7 +1732,7 @@ static bool get_spike(int *ip)
 		object_type *o_ptr = &p_ptr->inventory[i];
 
 		/* Skip non-objects */
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		/* Check the "tval" code */
 		if (o_ptr->tval == TV_SPIKE)
