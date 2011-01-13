@@ -1365,7 +1365,8 @@ void make_gold(object_type *j_ptr, int lev, int coin_type)
 	object_prep(j_ptr, &k_info[k_idx], lev, RANDOMISE);
 
 	/* If we're playing with no_selling, increase the value */
-	if (OPT(birth_no_selling)) value = 5 * value;
+	if (OPT(birth_no_selling) && p_ptr->depth)
+		value = value * MIN(5, p_ptr->depth);
 
 	j_ptr->pval[DEFAULT_PVAL] = value;
 }
