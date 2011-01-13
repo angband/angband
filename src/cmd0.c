@@ -652,7 +652,7 @@ static bool key_confirm_command(unsigned char c)
 		unsigned n;
 
 		object_type *o_ptr = &p_ptr->inventory[i];
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		/* Set up string to look for, e.g. "^d" */
 		verify_inscrip[1] = c;

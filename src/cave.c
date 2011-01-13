@@ -531,8 +531,8 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 			object_kind *k_ptr = &k_info[g->first_k_idx];
 			
 			/* Normal attr and char */
-			a = object_kind_attr(g->first_k_idx);
-			c = object_kind_char(g->first_k_idx);
+			a = object_kind_attr(objkind_byid(g->first_k_idx));
+			c = object_kind_char(objkind_byid(g->first_k_idx));
 			
 			if (g->multiple_objects)
 			{
@@ -797,7 +797,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 			/* First item found */
 			if (g->first_k_idx == 0)
 			{
-				g->first_k_idx = o_ptr->k_idx;
+				g->first_k_idx = o_ptr->kind->kidx;
 			}
 			else
 			{
@@ -3009,7 +3009,7 @@ void wiz_light(void)
 		object_type *o_ptr = &o_list[i];
 
 		/* Skip dead objects */
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		/* Skip held objects */
 		if (o_ptr->held_m_idx) continue;
@@ -3077,7 +3077,7 @@ void wiz_dark(void)
 		object_type *o_ptr = &o_list[i];
 
 		/* Skip dead objects */
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		/* Skip held objects */
 		if (o_ptr->held_m_idx) continue;

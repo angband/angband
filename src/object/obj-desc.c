@@ -61,21 +61,19 @@ void object_base_name(char *buf, size_t max, int tval, bool plural)
  *
  * Just truncates if the buffer isn't big enough.
  */
-void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know)
+void object_kind_name(char *buf, size_t max, const object_kind *kind, bool easy_know)
 {
-	object_kind *k_ptr = &k_info[k_idx];
-
 	/* If not aware, use flavor */
-	if (!easy_know && !k_ptr->aware && k_ptr->flavor)
+	if (!easy_know && !kind->aware && kind->flavor)
 	{
-		if (k_ptr->tval == TV_FOOD && k_ptr->sval > SV_FOOD_MIN_SHROOM)
+		if (kind->tval == TV_FOOD && kind->sval > SV_FOOD_MIN_SHROOM)
 		{
-			strnfmt(buf, max, "%s Mushroom", k_ptr->flavor->text);
+			strnfmt(buf, max, "%s Mushroom", kind->flavor->text);
 		}
 		else
 		{
 			/* Plain flavour (e.g. Copper) will do. */
-			my_strcpy(buf, k_ptr->flavor->text, max);
+			my_strcpy(buf, kind->flavor->text, max);
 		}
 	}
 
@@ -84,7 +82,7 @@ void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know)
 	{
 		char *t;
 
-		if (k_ptr->tval == TV_FOOD && k_ptr->sval > SV_FOOD_MIN_SHROOM)
+		if (kind->tval == TV_FOOD && kind->sval > SV_FOOD_MIN_SHROOM)
 		{
 			my_strcpy(buf, "Mushroom of ", max);
 			max -= strlen(buf);
@@ -96,17 +94,15 @@ void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know)
 		}
 
 		/* Format remainder of the string */
-		obj_desc_name_format(t, max, 0, k_ptr->name, NULL, FALSE);
+		obj_desc_name_format(t, max, 0, kind->name, NULL, FALSE);
 	}
 }
 
 
 
-static const char *obj_desc_get_modstr(const object_type *o_ptr)
+static const char *obj_desc_get_modstr(const object_kind *kind)
 {
-	object_kind *k_ptr = &k_info[o_ptr->k_idx];
-
-	switch (o_ptr->tval)
+	switch (kind->tval)
 	{
 		case TV_AMULET:
 		case TV_RING:
@@ -116,11 +112,11 @@ static const char *obj_desc_get_modstr(const object_type *o_ptr)
 		case TV_POTION:
 		case TV_FOOD:
 		case TV_SCROLL:
-			return k_ptr->flavor ? k_ptr->flavor->text : "";
+			return kind->flavor ? kind->flavor->text : "";
 
 		case TV_MAGIC_BOOK:
 		case TV_PRAYER_BOOK:
-			return k_ptr->name;
+			return kind->name;
 	}
 
 	return "";
@@ -128,9 +124,7 @@ static const char *obj_desc_get_modstr(const object_type *o_ptr)
 
 static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware)
 {
-	object_kind *k_ptr = &k_info[o_ptr->k_idx];
-
-	bool show_flavor = k_ptr->flavor ? TRUE : FALSE;
+	bool show_flavor = o_ptr->kind->flavor ? TRUE : FALSE;
 
 
 	if (o_ptr->ident & IDENT_STORE) show_flavor = FALSE;
@@ -140,7 +134,7 @@ static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware)
 
 	/* Known artifacts get special treatment */
 	if (artifact_p(o_ptr) && aware)
-		return k_ptr->name;
+		return o_ptr->kind->name;
 
 	/* Analyze the object */
 	switch (o_ptr->tval)
@@ -169,7 +163,7 @@ static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware)
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:
 		case TV_LIGHT:
-			return k_ptr->name;
+			return o_ptr->kind->name;
 
 		case TV_AMULET:
 			return (show_flavor ? "& # Amulet~" : "& Amulet~");
@@ -202,7 +196,7 @@ static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware)
 			if (o_ptr->sval > SV_FOOD_MIN_SHROOM)
 				return (show_flavor ? "& # Mushroom~" : "& Mushroom~");
 			else
-				return k_ptr->name;
+				return o_ptr->kind->name;
 	}
 
 	return "(nothing)";
@@ -341,16 +335,14 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 		const object_type *o_ptr, bool prefix, odesc_detail_t mode,
 		bool spoil)
 {
-	object_kind *k_ptr = &k_info[o_ptr->k_idx];
-
 	bool known = object_is_known(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
 	bool aware = object_flavor_is_aware(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
 
 	const char *basename = obj_desc_get_basename(o_ptr, aware);
-	const char *modstr = obj_desc_get_modstr(o_ptr);
+	const char *modstr = obj_desc_get_modstr(o_ptr->kind);
 
-	if (aware && !k_ptr->everseen)
-		k_ptr->everseen = TRUE;
+	if (aware && !o_ptr->kind->everseen)
+		o_ptr->kind->everseen = TRUE;
 
 	if (prefix)
 		end = obj_desc_name_prefix(buf, max, end, o_ptr, mode,
@@ -369,8 +361,8 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 		strnfcat(buf, max, &end, " %s", e_info[o_ptr->name2].name);
 
 	else if (aware && !artifact_p(o_ptr) &&
-			(k_ptr->flavor || k_ptr->tval == TV_SCROLL))
-		strnfcat(buf, max, &end, " of %s", k_ptr->name);
+			(o_ptr->kind->flavor || o_ptr->kind->tval == TV_SCROLL))
+		strnfcat(buf, max, &end, " of %s", o_ptr->kind->name);
 
 	return end;
 }
@@ -468,7 +460,6 @@ static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max, si
 static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max, 
 		size_t end, bool spoil)
 {
-	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 	bitflag flags[OF_SIZE];
 	bitflag flags_known[OF_SIZE];
 
@@ -481,7 +472,7 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 		if (spoil || object_attack_plusses_are_visible(o_ptr))
 			strnfcat(buf, max, &end, " (%dd%d)", o_ptr->dd, o_ptr->ds);
 		else
-			strnfcat(buf, max, &end, " (%dd%d)", k_ptr->dd, k_ptr->ds);
+			strnfcat(buf, max, &end, " (%dd%d)", o_ptr->kind->dd, o_ptr->kind->ds);
 	}
 
 	if (of_has(flags, OF_SHOW_MULTIPLIER))
@@ -582,8 +573,6 @@ static size_t obj_desc_pval(const object_type *o_ptr, char *buf, size_t max,
 
 static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max, size_t end)
 {
-	object_kind *k_ptr = &k_info[o_ptr->k_idx];
-
 	bool aware = object_flavor_is_aware(o_ptr) || (o_ptr->ident & IDENT_STORE);
 
 	/* Wands and Staffs have charges */
@@ -596,7 +585,7 @@ static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max, 
 		if (o_ptr->tval == TV_ROD && o_ptr->number > 1)
 		{
 			int power;
-			int time_base = randcalc(k_ptr->time, 0, MINIMISE);
+			int time_base = randcalc(o_ptr->kind->time, 0, MINIMISE);
 
 			if (!time_base) time_base = 1;
 
@@ -715,8 +704,6 @@ static size_t obj_desc_aware(const object_type *o_ptr, char *buf, size_t max,
 size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 				   odesc_detail_t mode)
 {
-	object_kind *k_ptr = &k_info[o_ptr->k_idx];
-
 	bool prefix = mode & ODESC_PREFIX;
 	bool spoil = (mode & ODESC_SPOIL);
 	bool known = object_is_known(o_ptr) ||
@@ -733,7 +720,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 
 	if (o_ptr->tval == TV_GOLD)
 		return strnfmt(buf, max, "%d gold pieces worth of %s%s",
-				o_ptr->pval[DEFAULT_PVAL], k_ptr->name,
+				o_ptr->pval[DEFAULT_PVAL], o_ptr->kind->name,
 				squelch_item_ok(o_ptr) ? " {squelch}" : "");
 	else if (!o_ptr->tval)
 		return strnfmt(buf, max, "(nothing)");

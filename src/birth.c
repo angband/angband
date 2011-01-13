@@ -499,23 +499,18 @@ static void wield_all(struct player *p)
 		is_ammo = obj_is_ammo(o_ptr);
 
 		/* Skip non-objects */
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		/* Make sure we can wield it */
 		slot = wield_slot(o_ptr);
 		if (slot < INVEN_WIELD) continue;
+
 		i_ptr = &p->inventory[slot];
+		if (!i_ptr->kind) continue;
 
 		/* Make sure that there's an available slot */
-		if (is_ammo)
-		{
-			if (i_ptr->k_idx && !object_similar(o_ptr, i_ptr,
-				OSTACK_PACK)) continue;
-		}
-		else
-		{
-			if (i_ptr->k_idx) continue;
-		}
+		if (is_ammo && !object_similar(o_ptr, i_ptr, OSTACK_PACK))
+			continue;
 
 		/* Figure out how much of the item we'll be wielding */
 		num = is_ammo ? o_ptr->number : 1;

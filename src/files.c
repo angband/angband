@@ -142,7 +142,7 @@ static void display_player_equippy(int y, int x)
 		o_ptr = &p_ptr->inventory[i];
 
 		/* Skip empty objects */
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		/* Get attr/char for display */
 		a = object_attr(o_ptr);
@@ -245,7 +245,7 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 			/* Wipe flagset */
 			of_wipe(f);
 
-			if (j < INVEN_TOTAL && o_ptr->k_idx)
+			if (j < INVEN_TOTAL && o_ptr->kind)
 			{
 				object_flags_known(o_ptr, f);
 			}
@@ -272,7 +272,7 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 			if (vuln) sym = '-';
 			else if (imm) sym = '*';
 			else if (res) sym = '+';
-			else if ((j < INVEN_TOTAL) && o_ptr->k_idx && 
+			else if ((j < INVEN_TOTAL) && o_ptr->kind && 
 				!object_flag_is_known(o_ptr, resists[i].res_flag)) sym = '?';
 			Term_addch(attr, sym);
 		}
@@ -476,7 +476,7 @@ static void display_player_sust_info(void)
 				if (c == '.') c = 's';
 			}
 
-			if ((c == '.') && o_ptr->k_idx && !object_flag_is_known(o_ptr, sustain_flags[stat]))
+			if ((c == '.') && o_ptr->kind && !object_flag_is_known(o_ptr, sustain_flags[stat]))
 				c = '?';
 
 			/* Dump proper character */
@@ -1099,7 +1099,7 @@ errr file_character(const char *path, bool full)
 				ODESC_PREFIX | ODESC_FULL);
 
 		x_file_putf(fp, encoding, "%c) %s\n", index_to_label(i), o_name);
-		if (p_ptr->inventory[i].k_idx)
+		if (p_ptr->inventory[i].kind)
 			object_info_chardump(fp, &p_ptr->inventory[i], 5, 72);
 	}
 
@@ -1107,7 +1107,7 @@ errr file_character(const char *path, bool full)
 	file_putf(fp, "\n\n  [Character Inventory]\n\n");
 	for (i = 0; i < INVEN_PACK; i++)
 	{
-		if (!p_ptr->inventory[i].k_idx) break;
+		if (!p_ptr->inventory[i].kind) break;
 
 		object_desc(o_name, sizeof(o_name), &p_ptr->inventory[i],
 					ODESC_PREFIX | ODESC_FULL);

@@ -301,18 +301,14 @@ void reset_visuals(bool load_prefs)
  */
 void object_flags(const object_type *o_ptr, bitflag flags[OF_SIZE])
 {
-	object_kind *k_ptr;
-
-	k_ptr = o_ptr->kind;
-
 	of_wipe(flags);
 
 	if (!o_ptr->kind)
 		return;
 
 	/* Obtain kind flags */
-	of_union(flags, k_ptr->base->flags);
-	of_union(flags, k_ptr->flags);
+	of_union(flags, o_ptr->kind->base->flags);
+	of_union(flags, o_ptr->kind->flags);
 
 	/* Obtain artifact flags */
 	if (o_ptr->name1)
@@ -360,9 +356,6 @@ void object_flags_known(const object_type *o_ptr, bitflag flags[OF_SIZE])
 void object_pval_flags(const object_type *o_ptr, bitflag flags[MAX_PVALS][OF_SIZE])
 {
 	int i;
-	object_kind *k_ptr;
-
-	k_ptr = o_ptr->kind;
 
 	if (!o_ptr->kind)
 		return;
@@ -371,7 +364,7 @@ void object_pval_flags(const object_type *o_ptr, bitflag flags[MAX_PVALS][OF_SIZ
 		of_wipe(flags[i]);
 
 		/* Obtain kind flags */
-		of_union(flags[i], k_ptr->pval_flags[i]);
+		of_union(flags[i], o_ptr->kind->pval_flags[i]);
 
 		/* Obtain artifact flags */
 		if (o_ptr->name1)
@@ -408,7 +401,7 @@ void object_pval_flags_known(const object_type *o_ptr, bitflag flags[MAX_PVALS][
 		of_inter(flags[i], o_ptr->known_flags);
 
 		if (object_flavor_is_aware(o_ptr))
-			of_union(flags[i], k_info[o_ptr->k_idx].pval_flags[i]);
+			of_union(flags[i], o_ptr->kind->pval_flags[i]);
 
 		if (o_ptr->name2 && easy_know(o_ptr))
 			of_union(flags[i], e_info[o_ptr->name2].pval_flags[i]);
@@ -447,7 +440,7 @@ s16b label_to_inven(int c)
 	if ((i < 0) || (i > INVEN_PACK)) return (-1);
 
 	/* Empty slots can never be chosen */
-	if (!p_ptr->inventory[i].k_idx) return (-1);
+	if (!p_ptr->inventory[i].kind) return (-1);
 
 	/* Return the index */
 	return (i);
@@ -471,7 +464,7 @@ s16b label_to_equip(int c)
 	if (i == INVEN_TOTAL) return (-1);
 
 	/* Empty slots can never be chosen */
-	if (!p_ptr->inventory[i].k_idx) return (-1);
+	if (!p_ptr->inventory[i].kind) return (-1);
 
 	/* Return the index */
 	return (i);
@@ -533,11 +526,11 @@ s16b wield_slot_ammo(const object_type *o_ptr)
 	/* If the ammo is inscribed with a slot number, we'll try to put it in */
 	/* that slot, if possible. */
 	i = get_inscribed_ammo_slot(o_ptr);
-	if (i && !p_ptr->inventory[i].k_idx) return i;
+	if (i && !p_ptr->inventory[i].kind) return i;
 
 	for (i = QUIVER_START; i < QUIVER_END; i++)
 	{
-		if (!p_ptr->inventory[i].k_idx)
+		if (!p_ptr->inventory[i].kind)
 		{
 			/* Save the open slot if we haven't found one already */
 			if (!open) open = i;
@@ -577,7 +570,7 @@ s16b wield_slot(const object_type *o_ptr)
 		case TV_BOW: return (INVEN_BOW);
 
 		case TV_RING:
-			return p_ptr->inventory[INVEN_RIGHT].k_idx ? INVEN_LEFT : INVEN_RIGHT;
+			return p_ptr->inventory[INVEN_RIGHT].kind ? INVEN_LEFT : INVEN_RIGHT;
 
 		case TV_AMULET: return (INVEN_NECK);
 
@@ -739,7 +732,7 @@ bool item_tester_okay(const object_type *o_ptr)
 	if (item_tester_full) return (TRUE);
 
 	/* Require an item */
-	if (!o_ptr->k_idx) return (FALSE);
+	if (!o_ptr->kind) return (FALSE);
 
 	/* Hack -- ignore "gold" */
 	if (o_ptr->tval == TV_GOLD) return (FALSE);
@@ -1032,7 +1025,7 @@ static void compact_objects_aux(int i1, int i2)
 		o_ptr = &o_list[i];
 
 		/* Skip "dead" objects */
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		/* Repair "next" pointers */
 		if (o_ptr->next_o_idx == i1)
@@ -1121,9 +1114,7 @@ void compact_objects(int size)
 		for (i = o_max - 1; i >= 1; i--)
 		{
 			object_type *o_ptr = &o_list[i];
-
-			/* Skip real objects */
-			if (o_ptr->k_idx) continue;
+			if (o_ptr->kind) continue;
 
 			/* Move last object into open hole */
 			compact_objects_aux(o_max - 1, i);
@@ -1168,13 +1159,10 @@ void compact_objects(int size)
 		for (i = 1; (i < o_max) && (size); i++)
 		{
 			object_type *o_ptr = &o_list[i];
-			object_kind *k_ptr = &k_info[o_ptr->k_idx];
-
-			/* Skip dead objects */
-			if (!o_ptr->k_idx) continue;
+			if (!o_ptr->kind) continue;
 
 			/* Hack -- High level objects start out "immune" */
-			if (k_ptr->level > cur_lev && !k_ptr->squelch)
+			if (o_ptr->kind->level > cur_lev && !o_ptr->kind->squelch)
 				continue;
 
 			/* Monster */
@@ -1190,7 +1178,7 @@ void compact_objects(int size)
 				x = m_ptr->fx;
 
 				/* Monsters protect their objects */
-				if ((randint0(100) < 90) && !k_ptr->squelch)
+				if ((randint0(100) < 90) && !o_ptr->kind->squelch)
 					continue;
 			}
 
@@ -1203,7 +1191,7 @@ void compact_objects(int size)
 			}
 
 			/* Nearby objects start out "immune" */
-			if ((cur_dis > 0) && (distance(py, px, y, x) < cur_dis) && !k_ptr->squelch)
+			if ((cur_dis > 0) && (distance(py, px, y, x) < cur_dis) && !o_ptr->kind->squelch)
 				continue;
 
 			/* Saving throw */
@@ -1260,12 +1248,11 @@ void wipe_o_list(struct cave *c)
 	{
 		object_type *o_ptr = &o_list[i];
 		artifact_type *a_ptr = artifact_of(o_ptr);
-
-		/* Skip dead objects */
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		/* Preserve artifacts or mark them as lost in the history */
-		if (a_ptr) {
+		if (a_ptr)
+		{
 			/* Preserve if dungeon creation failed, or preserve mode, and only artifacts not seen */
 			if ((!character_dungeon || !OPT(birth_no_preserve)) && !object_was_sensed(o_ptr))
 			{
@@ -1347,13 +1334,8 @@ s16b o_pop(void)
 	/* Recycle dead objects */
 	for (i = 1; i < o_max; i++)
 	{
-		object_type *o_ptr;
-
-		/* Get the object */
-		o_ptr = &o_list[i];
-
-		/* Skip live objects */
-		if (o_ptr->k_idx) continue;
+		object_type *o_ptr = &o_list[i];
+		if (o_ptr->kind) continue;
 
 		/* Count objects */
 		o_cnt++;
@@ -1421,11 +1403,9 @@ bool is_blessed(const object_type *o_ptr)
  */
 static s32b object_value_base(const object_type *o_ptr)
 {
-	object_kind *k_ptr = &k_info[o_ptr->k_idx];
-
 	/* Use template cost for aware objects */
 	if (object_flavor_is_aware(o_ptr) || o_ptr->ident & IDENT_STORE)
-		return k_ptr->cost;
+		return o_ptr->kind->cost;
 
 	/* Analyze the type */
 	switch (o_ptr->tval)
@@ -1464,8 +1444,6 @@ static s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 {
 	s32b value, total_value;
 
-	object_kind *k_ptr = &k_info[o_ptr->k_idx];
-
 	s32b power;
 	int a = 1;
 	int b = 1;
@@ -1488,7 +1466,7 @@ static s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 			pricing_mode = MODE_APPEND;
 		}
 
-		LOG_PRINT1("object is %s", k_ptr->name);
+		LOG_PRINT1("object is %s", o_ptr->kind->name);
 		power = object_power(o_ptr, verbose, log_file, known);
 		value = sign(power) * ((a * power * power) + (b * power));
 
@@ -1518,10 +1496,10 @@ static s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 	}
 
 	/* Hack -- "worthless" items */
-	if (!k_ptr->cost) return (0L);
+	if (!o_ptr->kind->cost) return (0L);
 
 	/* Base cost */
-	value = k_ptr->cost;
+	value = o_ptr->kind->cost;
 
 	/* Analyze the item type and quantity*/
 	switch (o_ptr->tval)
@@ -1639,7 +1617,7 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
 	if (o_ptr == j_ptr) return FALSE;
 
 	/* Require identical object kinds */
-	if (o_ptr->k_idx != j_ptr->k_idx) return FALSE;
+	if (o_ptr->kind != j_ptr->kind) return FALSE;
 
 	/* Different flags don't stack */
 	if (!of_is_equal(o_ptr->flags, j_ptr->flags)) return FALSE;
@@ -1864,8 +1842,7 @@ void object_copy(object_type *o_ptr, const object_type *j_ptr)
  */
 void object_copy_amt(object_type *dst, object_type *src, int amt)
 {
-	const object_kind *k_ptr = &k_info[src->k_idx];
-	int charge_time = randcalc(k_ptr->time, 0, AVERAGE), max_time;
+	int charge_time = randcalc(src->kind->time, 0, AVERAGE), max_time;
 
 	/* Get a copy of the object */
 	object_copy(dst, src);
@@ -2360,7 +2337,7 @@ void save_quiver_size(struct player *p)
 {
 	int i, count = 0;
 	for (i = QUIVER_START; i < QUIVER_END; i++)
-		if (p->inventory[i].k_idx)
+		if (p->inventory[i].kind)
 			count += p->inventory[i].number;
 
 	p->quiver_size = count;
@@ -2418,7 +2395,7 @@ void sort_quiver(void)
 		o_ptr = &p_ptr->inventory[j];
 
 		/* Skip this slot if it doesn't have ammo */
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		/* Figure out which slot this ammo prefers, if any */
 		k = get_inscribed_ammo_slot(o_ptr);
@@ -2446,12 +2423,12 @@ void sort_quiver(void)
 	for (i=0; i < QUIVER_SIZE; i++)
 	{
 		/* If the slot isn't empty, skip it */
-		if (p_ptr->inventory[QUIVER_START + i].k_idx) continue;
+		if (p_ptr->inventory[QUIVER_START + i].kind) continue;
 
 		/* Start from the end and find an unlocked item to put here. */
 		for (j=QUIVER_SIZE - 1; j > i; j--)
 		{
-			if (!p_ptr->inventory[QUIVER_START + j].k_idx || locked[j]) continue;
+			if (!p_ptr->inventory[QUIVER_START + j].kind || locked[j]) continue;
 			swap_quiver_slots(i, j);
 			break;
 		}
@@ -2481,10 +2458,10 @@ void open_quiver_slot(int slot)
 	if (slot < QUIVER_START) return;
 
 	/* Quiver is full */
-	if (p_ptr->inventory[QUIVER_END - 1].k_idx) return;
+	if (p_ptr->inventory[QUIVER_END - 1].kind) return;
 
 	/* Find the first open quiver slot */
-	while (p_ptr->inventory[dest].k_idx) dest++;
+	while (p_ptr->inventory[dest].kind) dest++;
 
 	/* Swap things with the space one higher (essentially moving the open space
 	 * towards our goal slot. */
@@ -2515,7 +2492,7 @@ void inven_item_optimize(int item)
 	if (item >= QUIVER_START) save_quiver_size(p_ptr);
 
 	/* Only optimize real items which are empty */
-	if (!o_ptr->k_idx || o_ptr->number) return;
+	if (!o_ptr->kind || o_ptr->number) return;
 
 	/* Items in the pack are treated differently from other items */
 	if (item < INVEN_WIELD)
@@ -2551,7 +2528,7 @@ void inven_item_optimize(int item)
 	/* Slide everything down */
 	for (j = item, i = item + 1; i < limit; i++)
 	{
-		if (limit == QUIVER_END && p_ptr->inventory[i].k_idx)
+		if (limit == QUIVER_END && p_ptr->inventory[i].kind)
 		{
 			/* If we have an item with an inscribed location (and it's in */
 			/* that location) then we won't move it. */
@@ -2641,7 +2618,7 @@ void floor_item_optimize(int item)
 	object_type *o_ptr = &o_list[item];
 
 	/* Paranoia -- be sure it exists */
-	if (!o_ptr->k_idx) return;
+	if (!o_ptr->kind) return;
 
 	/* Only optimize empty items */
 	if (o_ptr->number) return;
@@ -2696,7 +2673,7 @@ bool inven_stack_okay(const object_type *o_ptr)
 
 		/* Skip equipped items and non-objects */
 		if (j >= INVEN_PACK && j < QUIVER_START) continue;
-		if (!j_ptr->k_idx) continue;
+		if (!j_ptr->kind) continue;
 
 		/* Check if the two items can be combined */
 		if (object_similar(j_ptr, o_ptr, OSTACK_PACK)) return (TRUE);
@@ -2736,9 +2713,7 @@ extern s16b inven_carry(struct player *p, struct object *o)
 	for (j = 0; j < INVEN_PACK; j++)
 	{
 		j_ptr = &p->inventory[j];
-
-		/* Skip non-objects */
-		if (!j_ptr->k_idx) continue;
+		if (!j_ptr->kind) continue;
 
 		/* Hack -- track last item */
 		n = j;
@@ -2775,9 +2750,7 @@ extern s16b inven_carry(struct player *p, struct object *o)
 	for (j = 0; j <= INVEN_MAX_PACK; j++)
 	{
 		j_ptr = &p->inventory[j];
-
-		/* Use it if found */
-		if (!j_ptr->k_idx) break;
+		if (!j_ptr->kind) break;
 	}
 
 	/* Use that slot */
@@ -2795,9 +2768,7 @@ extern s16b inven_carry(struct player *p, struct object *o)
 		for (j = 0; j < INVEN_MAX_PACK; j++)
 		{
 			j_ptr = &p->inventory[j];
-
-			/* Use empty slots */
-			if (!j_ptr->k_idx) break;
+			if (!j_ptr->kind) break;
 
 			/* Hack -- readable books always come first */
 			if ((o->tval == cp_ptr->spell_book) &&
@@ -3060,7 +3031,7 @@ void combine_pack(void)
 		o_ptr = &p_ptr->inventory[i];
 
 		/* Skip empty items */
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		/* Absorb gold */
 		if (o_ptr->tval == TV_GOLD)
@@ -3077,7 +3048,7 @@ void combine_pack(void)
 			j_ptr = &p_ptr->inventory[j];
 
 			/* Skip empty items */
-			if (!j_ptr->k_idx) continue;
+			if (!j_ptr->kind) continue;
 
 			/* Can we drop "o_ptr" onto "j_ptr"? */
 			if (object_similar(j_ptr, o_ptr, OSTACK_PACK))
@@ -3153,10 +3124,10 @@ void reorder_pack(void)
 		o_ptr = &p_ptr->inventory[i];
 
 		/* Skip empty slots */
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		/* Get the "value" of the item */
-		o_value = k_info[o_ptr->k_idx].cost;
+		o_value = o_ptr->kind->cost;
 
 		/* Scan every occupied slot */
 		for (j = 0; j < INVEN_PACK; j++)
@@ -3165,7 +3136,7 @@ void reorder_pack(void)
 			j_ptr = &p_ptr->inventory[j];
 
 			/* Use empty slots */
-			if (!j_ptr->k_idx) break;
+			if (!j_ptr->kind) break;
 
 			/* Hack -- readable books always come first */
 			if ((o_ptr->tval == cp_ptr->spell_book) &&
@@ -3197,7 +3168,7 @@ void reorder_pack(void)
 			}
 
 			/* Determine the "value" of the pack item */
-			j_value = k_info[j_ptr->k_idx].cost;
+			j_value = j_ptr->kind->cost;
 
 			/* Objects sort by decreasing value */
 			if (o_value > j_value) break;
@@ -3259,7 +3230,7 @@ int get_use_device_chance(const object_type *o_ptr)
 	if (artifact_p(o_ptr))
 		lev = a_info[o_ptr->name1].level;
 	else
-		lev = k_info[o_ptr->k_idx].level;
+		lev = o_ptr->kind->level;
 
 	/* TODO: maybe use something a little less convoluted? */
 	numerator   = (skill - lev) - (skill_max - diff_min);
@@ -3287,8 +3258,7 @@ int get_use_device_chance(const object_type *o_ptr)
  */
 void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt)
 {
-	const object_kind *k_ptr = &k_info[o_ptr->k_idx];
-	int charge_time = randcalc(k_ptr->time, 0, AVERAGE), max_time;
+	int charge_time = randcalc(o_ptr->kind->time, 0, AVERAGE), max_time;
 
 	/*
 	 * Hack -- If rods, staves, or wands are dropped, the total maximum
@@ -3357,7 +3327,7 @@ int number_charging(const object_type *o_ptr)
 	if(o_ptr->name1)
 		timeout = a_info[o_ptr->name1].time;
 	else
-		timeout = k_info[o_ptr->k_idx].time;
+		timeout = o_ptr->kind->time;
 
 	charge_time = randcalc(timeout, 0, AVERAGE);
 
@@ -3427,56 +3397,33 @@ unsigned check_for_inscrip(const object_type *o_ptr, const char *inscrip)
 /*** Object kind lookup functions ***/
 
 /**
- * Return the k_idx of the object kind with the given `tval` and `sval`, or 0.
+ * Return the object kind with the given `tval` and `sval`, or NULL.
  */
-int lookup_kind(int tval, int sval)
+object_kind *lookup_kind(int tval, int sval)
 {
 	int k;
 
 	/* Look for it */
 	for (k = 1; k < z_info->k_max; k++)
 	{
-		object_kind *k_ptr = &k_info[k];
-
-		/* Found a match */
-		if ((k_ptr->tval == tval) && (k_ptr->sval == sval)) return (k);
+		object_kind *kind = &k_info[k];
+		if (kind->tval == tval && kind->sval == sval)
+			return kind;
 	}
 
 	/* Failure */
 	msg("No object: %d:%d (%s)", tval, sval, tval_find_name(tval));
-	return 0;
+	return NULL;
 }
 
 struct object_kind *objkind_get(int tval, int sval) {
-	int k = lookup_kind(tval, sval);
-	return &k_info[k];
+	return lookup_kind(tval, sval);
 }
 
 struct object_kind *objkind_byid(int kidx) {
 	if (kidx < 1 || kidx > z_info->k_max)
 		return NULL;
 	return &k_info[kidx];
-}
-
-/**
- * Find the tval and sval of object kind `k_idx`, and return via the pointers
- * `tval` and `sval`.
- */
-bool lookup_reverse(s16b k_idx, int *tval, int *sval)
-{
-	object_kind *k_ptr;
-
-	/* Validate k_idx */
-	if ((k_idx < 1) || (k_idx > z_info->k_max))
-		return FALSE;
-
-	/* Get pointer */
-	k_ptr = &k_info[k_idx];
-	*tval = k_ptr->tval;
-	*sval = k_ptr->sval;
-
-	/* Done */
-	return TRUE;
 }
 
 
@@ -3657,9 +3604,6 @@ static int compare_types(const object_type *o1, const object_type *o2)
 		return CMP(o1->tval, o2->tval);
 }
 
-/* some handy macros for sorting */
-#define object_is_worthless(o) (k_info[o->k_idx].cost == 0)
-
 /**
  * Sort comparator for objects
  * -1 if o1 should be first
@@ -3683,8 +3627,8 @@ static int compare_items(const object_type *o1, const object_type *o2)
 	if (!object_flavor_is_aware(o2)) return 1;
 
 	/* if only one of them is worthless, the other comes first */
-	if (object_is_worthless(o1) && !object_is_worthless(o2)) return 1;
-	if (!object_is_worthless(o1) && object_is_worthless(o2)) return -1;
+	if (o1->kind->cost == 0 && o2->kind->cost != 0) return 1;
+	if (o1->kind->cost != 0 && o2->kind->cost == 0) return -1;
 
 	/* otherwise, just compare tvals and svals */
 	/* NOTE: arguably there could be a better order than this */
@@ -3917,15 +3861,15 @@ void display_itemlist(void)
 		else if (!object_flavor_is_aware(o_ptr))
 			/* unaware of kind */
 			attr = TERM_RED;
-		else if (object_is_worthless(o_ptr))
+		else if (o_ptr->kind->cost == 0)
 			/* worthless */
 			attr = TERM_SLATE;
 		else
 			/* default */
 			attr = TERM_WHITE;
 
-		a = object_kind_attr(o_ptr->k_idx);
-		c = object_kind_char(o_ptr->k_idx);
+		a = object_kind_attr(o_ptr->kind);
+		c = object_kind_char(o_ptr->kind);
 
 		/* Display the pict */
 		if ((tile_width == 1) && (tile_height == 1))
@@ -3965,12 +3909,6 @@ artifact_type *artifact_of(const object_type *o_ptr)
 
 	return NULL;
 }
-
-object_kind *object_kind_of(const object_type *o_ptr)
-{
-	return &k_info[o_ptr->k_idx];
-}
-
 
 
 
@@ -4121,7 +4059,7 @@ u16b object_effect(const object_type *o_ptr)
 	if (o_ptr->name1)
 		return a_info[o_ptr->name1].effect;
 	else
-		return k_info[o_ptr->k_idx].effect;
+		return o_ptr->kind->effect;
 }
 
 /* Get an o_ptr from an item number */
@@ -4145,7 +4083,7 @@ bool obj_needs_aim(object_type *o_ptr)
 	if (o_ptr->name1)
 		effect = a_info[o_ptr->name1].effect;
 	else
-		effect = k_info[o_ptr->k_idx].effect;
+		effect = o_ptr->kind->effect;
 
 	/* If the effect needs aiming, or if the object type needs
 	   aiming, this object needs aiming. */
@@ -4265,7 +4203,7 @@ bool item_is_available(int item, bool (*tester)(const object_type *), int mode)
  */
 bool pack_is_full(void)
 {
-	return p_ptr->inventory[INVEN_MAX_PACK - 1].k_idx ? TRUE : FALSE;
+	return p_ptr->inventory[INVEN_MAX_PACK - 1].kind ? TRUE : FALSE;
 }
 
 /*
@@ -4276,7 +4214,7 @@ bool pack_is_full(void)
  */
 bool pack_is_overfull(void)
 {
-	return p_ptr->inventory[INVEN_MAX_PACK].k_idx ? TRUE : FALSE;
+	return p_ptr->inventory[INVEN_MAX_PACK].kind ? TRUE : FALSE;
 }
 
 /*

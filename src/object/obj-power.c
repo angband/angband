@@ -219,7 +219,6 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	bool known)
 {
 	s32b p = 0;
-	object_kind *k_ptr;
 	int immunities = 0;
 	int misc = 0;
 	int lowres = 0;
@@ -244,8 +243,6 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			LOG_PRINT1(" %02x", flags[i]);
 		LOG_PRINT("\n");
 	}
-
-	k_ptr = &k_info[o_ptr->k_idx];
 
 	/* Evaluate certain abilities based on type of object. */
 	switch (o_ptr->tval)
@@ -333,7 +330,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			p = (p * slay_power(o_ptr, verbose, log_file, known)) / tot_mon_power;
 			LOG_PRINT1("Adjusted for slay power, total is %d\n", p);
 
-			if (o_ptr->weight < k_ptr->weight)
+			if (o_ptr->weight < o_ptr->kind->weight)
 			{
 				p++;
 				LOG_PRINT("Incrementing power by one for low weight\n");
@@ -424,9 +421,9 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			LOG_PRINT1("Adding power for to hit, total is %d\n", p);
 
 			/* Remember, weight is in 0.1 lb. units. */
-			if (o_ptr->weight < k_ptr->weight)
+			if (o_ptr->weight < o_ptr->kind->weight)
 			{
-				p += (k_ptr->weight - o_ptr->weight) / 20;
+				p += (o_ptr->kind->weight - o_ptr->weight) / 20;
 				LOG_PRINT1("Adding power for low weight, total is %d\n", p);
 			}
 
@@ -896,7 +893,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		}
 		else
 		{
-			p += effect_power(k_info[o_ptr->k_idx].effect);
+			p += effect_power(o_ptr->kind->effect);
 			LOG_PRINT1("Adding power for item activation, total is %d\n", p);
 		}
 	}

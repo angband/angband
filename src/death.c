@@ -115,7 +115,7 @@ static void death_knowledge(void)
 	for (i = 0; i < ALL_INVEN_TOTAL; i++)
 	{
 		o_ptr = &p_ptr->inventory[i];
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		object_flavor_aware(o_ptr);
 		object_notice_everything(o_ptr);
@@ -124,7 +124,7 @@ static void death_knowledge(void)
 	for (i = 0; i < st_ptr->stock_num; i++)
 	{
 		o_ptr = &st_ptr->stock[i];
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		object_flavor_aware(o_ptr);
 		object_notice_everything(o_ptr);

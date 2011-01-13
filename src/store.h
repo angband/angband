@@ -42,7 +42,7 @@ typedef struct store {
 
 	unsigned int table_num;     /* Table -- Number of entries */
 	unsigned int table_size;    /* Table -- Total Size of Array */
-	s16b *table;        /* Table -- Legal item kinds */
+	object_kind **table;        /* Table -- Legal item kinds */
 } store_type;
 
 void store_init(void);

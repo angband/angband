@@ -661,13 +661,6 @@ bool (*get_mon_num_hook)(int r_idx);
 
 
 /*
- * Hack -- function hook to restrict "get_obj_num_prep()" function
- */
-bool (*get_obj_num_hook)(int k_idx);
-
-
-
-/*
  * Hack - the destination file for text_out_to_file.
  */
 ang_file *text_out_file = NULL;

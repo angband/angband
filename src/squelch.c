@@ -130,17 +130,16 @@ void squelch_birth_init(void)
 
 /*** Autoinscription stuff ***/
 
-const char *get_autoinscription(s16b kind_idx)
+const char *get_autoinscription(object_kind *kind)
 {
-	struct object_kind *k = objkind_byid(kind_idx);
-	return k ? quark_str(k->note) : NULL;
+	return kind ? quark_str(kind->note) : NULL;
 }
 
 /* Put the autoinscription on an object */
 int apply_autoinscription(object_type *o_ptr)
 {
 	char o_name[80];
-	const char *note = get_autoinscription(o_ptr->k_idx);
+	const char *note = get_autoinscription(o_ptr->kind);
 
 	/* Don't inscribe unaware objects */
 	if (!note || !object_flavor_is_aware(o_ptr))
@@ -211,7 +210,7 @@ void autoinscribe_pack(void)
 	for (i = INVEN_PACK; i >= 0; i--)
 	{
 		/* Skip empty items */
-		if (!p_ptr->inventory[i].k_idx) continue;
+		if (!p_ptr->inventory[i].kind) continue;
 
 		/* Apply the inscription */
 		apply_autoinscription(&p_ptr->inventory[i]);
@@ -231,9 +230,9 @@ void autoinscribe_pack(void)
 void object_squelch_flavor_of(const object_type *o_ptr)
 {
 	if (object_flavor_is_aware(o_ptr))
-		k_info[o_ptr->k_idx].squelch |= SQUELCH_IF_AWARE;
+		o_ptr->kind->squelch |= SQUELCH_IF_AWARE;
 	else
-		k_info[o_ptr->k_idx].squelch |= SQUELCH_IF_UNAWARE;
+		o_ptr->kind->squelch |= SQUELCH_IF_UNAWARE;
 }
 
 
@@ -265,7 +264,6 @@ squelch_type_t squelch_type_of(const object_type *o_ptr)
  */
 byte squelch_level_of(const object_type *o_ptr)
 {
-	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 	byte value;
 	bitflag f[OF_SIZE];
 	int i;
@@ -351,11 +349,11 @@ byte squelch_level_of(const object_type *o_ptr)
 			/* This is the interesting case */
 			case INSCRIP_MAGICAL:
 				value = SQUELCH_GOOD;
-				if ((object_attack_plusses_are_visible(o_ptr) || (randcalc_valid(k_ptr->to_h, o_ptr->to_h) && randcalc_valid(k_ptr->to_d, o_ptr->to_d))) &&
-				    (object_defence_plusses_are_visible(o_ptr) || (randcalc_valid(k_ptr->to_a, o_ptr->to_a))) &&
-				    (o_ptr->to_h <= randcalc(k_ptr->to_h, 0, MINIMISE)) &&
-				    (o_ptr->to_d <= randcalc(k_ptr->to_d, 0, MINIMISE)) &&
-				    (o_ptr->to_a <= randcalc(k_ptr->to_a, 0, MINIMISE)))
+				if ((object_attack_plusses_are_visible(o_ptr) || (randcalc_valid(o_ptr->kind->to_h, o_ptr->to_h) && randcalc_valid(o_ptr->kind->to_d, o_ptr->to_d))) &&
+				    (object_defence_plusses_are_visible(o_ptr) || (randcalc_valid(o_ptr->kind->to_a, o_ptr->to_a))) &&
+				    (o_ptr->to_h <= randcalc(o_ptr->kind->to_h, 0, MINIMISE)) &&
+				    (o_ptr->to_d <= randcalc(o_ptr->kind->to_d, 0, MINIMISE)) &&
+				    (o_ptr->to_a <= randcalc(o_ptr->kind->to_a, 0, MINIMISE)))
 					value = SQUELCH_BAD;
 				break;
 
@@ -415,7 +413,6 @@ void kind_squelch_when_unaware(object_kind *k_ptr)
  */
 bool squelch_item_ok(const object_type *o_ptr)
 {
-	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 	byte type;
 
 	if (p_ptr->unignoring)
@@ -436,8 +433,8 @@ bool squelch_item_ok(const object_type *o_ptr)
 
 	/* Do squelching by kind */
 	if (object_flavor_is_aware(o_ptr) ?
-		 kind_is_squelched_aware(k_ptr) :
-		 kind_is_squelched_unaware(k_ptr))
+		 kind_is_squelched_aware(o_ptr->kind) :
+		 kind_is_squelched_unaware(o_ptr->kind))
 		return TRUE;
 
 	type = squelch_type_of(o_ptr);
@@ -468,7 +465,7 @@ void squelch_drop(void)
 		object_type *o_ptr = &p_ptr->inventory[n];
 
 		/* Skip non-objects and unsquelchable objects */
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 		if (!squelch_item_ok(o_ptr)) continue;
 
 		/* Check for !d (no drop) inscription */

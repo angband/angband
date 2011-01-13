@@ -146,7 +146,7 @@ void object_know_all_flags(object_type *o_ptr);
 
 /* obj-desc.c */
 void object_base_name(char *buf, size_t max, int tval, bool plural);
-void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know);
+void object_kind_name(char *buf, size_t max, const object_kind *kind, bool easy_know);
 size_t object_desc(char *buf, size_t max, const object_type *o_ptr, odesc_detail_t mode);
 int which_pval(const object_type *o_ptr, const int flag);
 
@@ -159,7 +159,7 @@ void object_info_chardump(ang_file *f, const object_type *o_ptr, int indent, int
 /* obj-make.c */
 void free_obj_alloc(void);
 bool init_obj_alloc(void);
-s16b get_obj_num(int level, bool good);
+object_kind *get_obj_num(int level, bool good);
 void object_prep(object_type *o_ptr, struct object_kind *kind, int lev, aspect rand_aspect);
 void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great);
 bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good, bool great);
@@ -238,15 +238,13 @@ void reduce_charges(object_type *o_ptr, int amt);
 int number_charging(const object_type *o_ptr);
 bool recharge_timeout(object_type *o_ptr);
 unsigned check_for_inscrip(const object_type *o_ptr, const char *inscrip);
-int lookup_kind(int tval, int sval);
-bool lookup_reverse(s16b k_idx, int *tval, int *sval);
+object_kind *lookup_kind(int tval, int sval);
 int lookup_name(int tval, const char *name);
 int lookup_artifact_name(const char *name);
 int lookup_sval(int tval, const char *name);
 int tval_find_idx(const char *name);
 const char *tval_find_name(int tval);
 artifact_type *artifact_of(const object_type *o_ptr);
-object_kind *object_kind_of(const object_type *o_ptr);
 bool obj_is_staff(const object_type *o_ptr);
 bool obj_is_wand(const object_type *o_ptr);
 bool obj_is_rod(const object_type *o_ptr);

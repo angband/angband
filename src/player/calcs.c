@@ -1056,7 +1056,7 @@ static void calc_mana(void)
 		object_flags(o_ptr, f);
 
 		/* Normal gloves hurt mage-type spells */
-		if (o_ptr->k_idx &&
+		if (o_ptr->kind &&
 				!of_has(f, OF_FREE_ACT) && !of_has(f, OF_SPELLS_OK) &&
 				!(of_has(f, OF_DEX) && (o_ptr->pval[which_pval(o_ptr, OF_DEX)] > 0)))
 		{
@@ -1215,7 +1215,7 @@ static void calc_torch(void)
 		object_type *o_ptr = &p_ptr->inventory[i];
 
 		/* Skip empty slots */
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		/* Extract the flags */
 		object_flags(o_ptr, f);
@@ -1411,7 +1411,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		o_ptr = &inventory[i];
 
 		/* Skip non-objects */
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		/* Extract the item flags */
 		if (id_only)
@@ -1852,7 +1852,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	}
 
 	/* Analyze launcher */
-	if (o_ptr->k_idx)
+	if (o_ptr->kind)
 	{
 		/* Get to shoot */
 		state->num_fire = 1;
@@ -1902,7 +1902,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		}
 
 		/* Apply special flags */
-		if (o_ptr->k_idx && !state->heavy_shoot)
+		if (o_ptr->kind && !state->heavy_shoot)
 		{
 			/* Extra shots */
 			state->num_fire += extra_shots;
@@ -1947,7 +1947,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	}
 
 	/* Non-object means barehanded attacks */
-	if (!o_ptr->k_idx)
+	if (!o_ptr->kind)
 		assert(o_ptr->weight == 0);
 
 	/* Normal weapons */
@@ -2084,17 +2084,11 @@ static void update_bonuses(void)
 	{
 		/* Message */
 		if (state->heavy_shoot)
-		{
 			msg("You have trouble wielding such a heavy bow.");
-		}
-		else if (p_ptr->inventory[INVEN_BOW].k_idx)
-		{
+		else if (p_ptr->inventory[INVEN_BOW].kind)
 			msg("You have no trouble wielding your bow.");
-		}
 		else
-		{
 			msg("You feel relieved to put down your heavy bow.");
-		}
 	}
 
 	/* Take note when "heavy weapon" changes */
@@ -2102,17 +2096,11 @@ static void update_bonuses(void)
 	{
 		/* Message */
 		if (state->heavy_wield)
-		{
 			msg("You have trouble wielding such a heavy weapon.");
-		}
-		else if (p_ptr->inventory[INVEN_WIELD].k_idx)
-		{
+		else if (p_ptr->inventory[INVEN_WIELD].kind)
 			msg("You have no trouble wielding your weapon.");
-		}
 		else
-		{
 			msg("You feel relieved to put down your heavy weapon.");	
-		}
 	}
 
 	/* Take note when "illegal weapon" changes */
@@ -2120,17 +2108,11 @@ static void update_bonuses(void)
 	{
 		/* Message */
 		if (state->icky_wield)
-		{
 			msg("You do not feel comfortable with your weapon.");
-		}
-		else if (p_ptr->inventory[INVEN_WIELD].k_idx)
-		{
+		else if (p_ptr->inventory[INVEN_WIELD].kind)
 			msg("You feel comfortable with your weapon.");
-		}
 		else
-		{
 			msg("You feel more comfortable after removing your weapon.");
-		}
 	}
 }
 

@@ -504,13 +504,13 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 	int crit_mult, crit_div, crit_add;
 	int str_plus, dex_plus, old_blows = 0, new_blows, extra_blows;
 	int str_done = -1;
-	object_type *j_ptr = &p_ptr->inventory[INVEN_BOW];
+	object_type *bow = &p_ptr->inventory[INVEN_BOW];
 
 	bitflag f[OF_SIZE], tmp_f[OF_SIZE], mask[OF_SIZE];
 
 	bool weapon = (wield_slot(o_ptr) == INVEN_WIELD);
 	bool ammo   = (p_ptr->state.ammo_tval == o_ptr->tval) &&
-	              (j_ptr->k_idx);
+	              (bow->kind);
 	int multiplier = 1;
 
 	/* Abort if we've nothing to say */
@@ -641,13 +641,13 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 
 		if (object_attack_plusses_are_visible(o_ptr))
 			dam += (o_ptr->to_d * 10);
-		if (object_attack_plusses_are_visible(j_ptr))
-			dam += (j_ptr->to_d * 10);
+		if (object_attack_plusses_are_visible(bow))
+			dam += (bow->to_d * 10);
 
 		/* Apply brands/slays from the shooter to the ammo, but only if known
 		 * Note that this is not dependent on mode, so that viewing shop-held
 		 * ammo (fully known) does not leak information about launcher */
-		object_flags_known(j_ptr, tmp_f);
+		object_flags_known(bow, tmp_f);
 		of_union(f, tmp_f);
 
 		textblock_append(tb, "Hits targets up to ");
@@ -913,7 +913,6 @@ static bool describe_light(textblock *tb, const object_type *o_ptr,
 static bool describe_effect(textblock *tb, const object_type *o_ptr, bool full,
 		bool only_artifacts, bool subjective)
 {
-	const object_kind *k_ptr = &k_info[o_ptr->k_idx];
 	const char *desc;
 	random_value timeout = {0, 0, 0, 0};
 
@@ -941,12 +940,12 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr, bool full,
 
 		if (object_effect_is_known(o_ptr) || full)
 		{
-			effect = k_ptr->effect;
-			timeout = k_ptr->time;
+			effect = o_ptr->kind->effect;
+			timeout = o_ptr->kind->time;
 		}
 		else if (object_effect(o_ptr) != 0)
 		{
-			if (effect_aim(k_ptr->effect))
+			if (effect_aim(o_ptr->kind->effect))
 				textblock_append(tb, "It can be aimed.\n");
 			else if (o_ptr->tval == TV_FOOD)
 				textblock_append(tb, "It can be eaten.\n");
@@ -1123,9 +1122,9 @@ static void describe_flavor_text(textblock *tb, const object_type *o_ptr)
 	{
 		bool did_desc = FALSE;
 
-		if (k_info[o_ptr->k_idx].text)
+		if (o_ptr->kind->text)
 		{
-			textblock_append(tb, "%s", k_info[o_ptr->k_idx].text);
+			textblock_append(tb, "%s", o_ptr->kind->text);
 			did_desc = TRUE;
 		}
 

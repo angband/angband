@@ -220,7 +220,7 @@ void show_inven(olist_detail_t mode)
 	for (i = 0; i < INVEN_PACK; i++)
 	{
 		o_ptr = &p_ptr->inventory[i];
-		if (o_ptr->k_idx) last_slot = i;
+		if (o_ptr->kind) last_slot = i;
 	}
 
 	/* Build the object list */
@@ -272,7 +272,7 @@ void show_equip(olist_detail_t mode)
 	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
 	{
 		o_ptr = &p_ptr->inventory[i];
-		if (i < INVEN_TOTAL || o_ptr->k_idx) last_slot = i;
+		if (i < INVEN_TOTAL || o_ptr->kind) last_slot = i;
 	}
 
 	/* Build the object list */
@@ -464,7 +464,7 @@ static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
 	if (quiver_tags)
 	{
 		i = QUIVER_START + tag - '0';
-		if (p_ptr->inventory[i].k_idx)
+		if (p_ptr->inventory[i].kind)
 		{
 			*cp = i;
 			return (TRUE);
@@ -478,7 +478,7 @@ static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
 		object_type *o_ptr = &p_ptr->inventory[i];
 
 		/* Skip non-objects */
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		/* Skip empty inscriptions */
 		if (!o_ptr->note) continue;

@@ -382,7 +382,7 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 	           o_ptr->dd, o_ptr->ds, o_ptr->to_h, o_ptr->to_d, o_ptr->ac, o_ptr->to_a), 4, j);
 
 	prt(format("kind = %-5d  tval = %-5d  sval = %-5d  wgt = %-3d     timeout = %-d",
-	           o_ptr->k_idx, o_ptr->tval, o_ptr->sval, o_ptr->weight, o_ptr->timeout), 5, j);
+	           o_ptr->kind->kidx, o_ptr->tval, o_ptr->sval, o_ptr->weight, o_ptr->timeout), 5, j);
 
 	/* CC: multiple pvals not shown, pending #1290 */
 	prt(format("number = %-3d  pval = %-5d  name1 = %-4d  name2 = %-4d  cost = %ld",
@@ -409,8 +409,7 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 	prt("+------------FLAGS2------------+", 8, j+34);
 	prt("s   ts hn    tadiiii   aiehs  hp", 9, j+34);
 	prt("lf  eefoo    egrgggg  bcnaih  vr", 10, j+34);
-	prt("we  lerlf   ilgannnn  ltssdo  ym", 11, j+34);
-	prt("da reiedu   merirrrr  eityew ccc", 12, j+34);
+	prt("we  lerlf   ilgannnn  ltssdo  ym", 11, j+34);	prt("da reiedu   merirrrr  eityew ccc", 12, j+34);
 	prt("itlepnele   ppanaefc  svaktm uuu", 13, j+34);
 	prt("ghigavail   aoveclio  saanyo rrr", 14, j+34);
 	prt("seteticf    craxierl  etropd sss", 15, j+34);
@@ -442,7 +441,7 @@ static const region wiz_create_item_area = { 0, 0, 0, 0 };
 void wiz_create_item_subdisplay(menu_type *m, int oid, bool cursor,
 		int row, int col, int width)
 {
-	int *choices = menu_priv(m);
+	object_kind **choices = menu_priv(m);
 	char buf[80];
 
 	object_kind_name(buf, sizeof buf, choices[oid], TRUE);
@@ -451,9 +450,8 @@ void wiz_create_item_subdisplay(menu_type *m, int oid, bool cursor,
 
 bool wiz_create_item_subaction(menu_type *m, const ui_event_data *e, int oid)
 {
-	int *choices = menu_priv(m);
-
-	object_kind *kind = &k_info[choices[oid]];
+	object_kind **choices = menu_priv(m);
+	object_kind *kind = choices[oid];
 
 	object_type *i_ptr;
 	object_type object_type_body;
@@ -466,7 +464,7 @@ bool wiz_create_item_subaction(menu_type *m, const ui_event_data *e, int oid)
 	i_ptr = &object_type_body;
 
 	/* Create the item */
-	object_prep(i_ptr, &k_info[choices[oid]], p_ptr->depth, RANDOMISE);
+	object_prep(i_ptr, kind, p_ptr->depth, RANDOMISE);
 
 	/* Apply magic (no messages, no artifacts) */
 	apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);
@@ -510,7 +508,7 @@ static bool wiz_create_item_action(menu_type *m, const ui_event_data *e, int oid
 
 	char buf[80];
 
-	int choice[60];
+	object_kind *choice[60];
 	int n_choices;
 
 	int i;
@@ -526,7 +524,7 @@ static bool wiz_create_item_action(menu_type *m, const ui_event_data *e, int oid
 				of_has(kind->flags, OF_INSTA_ART))
 			continue;
 
-		choice[n_choices++] = i;
+		choice[n_choices++] = kind;
 	}
 
 	screen_save();
@@ -1079,7 +1077,8 @@ static void wiz_create_artifact(int a_idx)
 {
 	object_type *i_ptr;
 	object_type object_type_body;
-	int k_idx, i;
+	int i;
+	object_kind *kind;
 
 	artifact_type *a_ptr = &a_info[a_idx];
 
@@ -1093,13 +1092,12 @@ static void wiz_create_artifact(int a_idx)
 	object_wipe(i_ptr);
 
 	/* Acquire the "kind" index */
-	k_idx = lookup_kind(a_ptr->tval, a_ptr->sval);
-
-	/* Oops */
-	if (!k_idx) return;
+	kind = lookup_kind(a_ptr->tval, a_ptr->sval);
+	if (!kind)
+		return;
 
 	/* Create the artifact */
-	object_prep(i_ptr, &k_info[k_idx], a_ptr->alloc_min, RANDOMISE);
+	object_prep(i_ptr, kind, a_ptr->alloc_min, RANDOMISE);
 
 	/* Save the name */
 	i_ptr->name1 = a_idx;
@@ -1509,26 +1507,24 @@ static void wiz_test_kind(int tval)
 
 	for (sval = 0; sval < 255; sval++)
 	{
-		int k_idx = lookup_kind(tval, sval);
+		object_kind *kind = lookup_kind(tval, sval);
+		if (!kind) continue;
 
-		if (k_idx)
-		{
-			/* Create the item */
-			object_prep(i_ptr, &k_info[k_idx], p_ptr->depth, RANDOMISE);
+		/* Create the item */
+		object_prep(i_ptr, kind, p_ptr->depth, RANDOMISE);
 
-			/* Apply magic (no messages, no artifacts) */
-			apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);
+		/* Apply magic (no messages, no artifacts) */
+		apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);
 
-			/* Mark as cheat, and where created */
-			i_ptr->origin = ORIGIN_CHEAT;
-			i_ptr->origin_depth = p_ptr->depth;
+		/* Mark as cheat, and where created */
+		i_ptr->origin = ORIGIN_CHEAT;
+		i_ptr->origin_depth = p_ptr->depth;
 
-			if (k_info[k_idx].tval == TV_GOLD)
-				make_gold(i_ptr, p_ptr->depth, sval);
+		if (tval == TV_GOLD)
+			make_gold(i_ptr, p_ptr->depth, sval);
 
-			/* Drop the object from heaven */
-			drop_near(cave, i_ptr, 0, py, px, TRUE);
-		}
+		/* Drop the object from heaven */
+		drop_near(cave, i_ptr, 0, py, px, TRUE);
 	}
 
 	msg("Done.");

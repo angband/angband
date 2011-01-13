@@ -1413,17 +1413,17 @@ static void do_cmd_knowledge_ego_items(const char *name, int row)
  * to be an artifact*.  Behaviour is distinctly unfriendly if passed
  * flavours which don't correspond to an artifact.
  */
-static int get_artifact_from_kind(object_kind *k_ptr)
+static int get_artifact_from_kind(object_kind *kind)
 {
 	int i;
 
-	assert(of_has(k_ptr->flags, OF_INSTA_ART));
+	assert(of_has(kind->flags, OF_INSTA_ART));
 
 	/* Look for the corresponding artifact */
 	for (i = 0; i < z_info->a_max; i++)
 	{
-		if (k_ptr->tval == a_info[i].tval &&
-		    k_ptr->sval == a_info[i].sval)
+		if (kind->tval == a_info[i].tval &&
+		    kind->sval == a_info[i].sval)
 		{
 			break;
 		}
@@ -1438,43 +1438,37 @@ static int get_artifact_from_kind(object_kind *k_ptr)
  */
 static void display_object(int col, int row, bool cursor, int oid)
 {
-	int k_idx = oid;
-
-	object_kind *k_ptr = &k_info[k_idx];
-	const char *inscrip = get_autoinscription(oid);
+	object_kind *kind = &k_info[oid];
+	const char *inscrip = get_autoinscription(kind);
 
 	char o_name[80];
 
 	/* Choose a color */
-	bool aware = (!k_ptr->flavor || k_ptr->aware);
+	bool aware = (!kind->flavor || kind->aware);
 	byte attr = curs_attrs[(int)aware][(int)cursor];
 
 	/* Find graphics bits -- versions of the object_char and object_attr defines */
-	bool use_flavour = (k_ptr->flavor) && !(aware && k_ptr->tval == TV_SCROLL);
+	bool use_flavour = (kind->flavor) && !(aware && kind->tval == TV_SCROLL);
 
-	byte a = use_flavour ? k_ptr->flavor->x_attr : k_ptr->x_attr;
-	byte c = use_flavour ? k_ptr->flavor->x_char : k_ptr->x_char;
+	byte a = use_flavour ? kind->flavor->x_attr : kind->x_attr;
+	byte c = use_flavour ? kind->flavor->x_char : kind->x_char;
 
 	/* Display known artifacts differently */
-	if (of_has(k_ptr->flags, OF_INSTA_ART) && artifact_is_known(get_artifact_from_kind(k_ptr)))
-	{
-		get_artifact_display_name(o_name, sizeof(o_name), get_artifact_from_kind(k_ptr));
-	}
+	if (of_has(kind->flags, OF_INSTA_ART) && artifact_is_known(get_artifact_from_kind(kind)))
+		get_artifact_display_name(o_name, sizeof(o_name), get_artifact_from_kind(kind));
 	else
-	{
- 		object_kind_name(o_name, sizeof(o_name), k_idx, OPT(cheat_know));
-	}
+ 		object_kind_name(o_name, sizeof(o_name), kind, OPT(cheat_know));
 
 	/* If the type is "tried", display that */
-	if (k_ptr->tried && !aware)
+	if (kind->tried && !aware)
 		my_strcat(o_name, " {tried}", sizeof(o_name));
 
 	/* Display the name */
 	c_prt(attr, o_name, row, col);
 
 	/* Show squelch status */
-	if ((aware && kind_is_squelched_aware(k_ptr)) ||
-		(!aware && kind_is_squelched_unaware(k_ptr)))
+	if ((aware && kind_is_squelched_aware(kind)) ||
+		(!aware && kind_is_squelched_unaware(kind)))
 		c_put_str(attr, "Yes", row, 46);
 
 
@@ -1492,7 +1486,7 @@ static void display_object(int col, int row, bool cursor, int oid)
  */
 static void desc_obj_fake(int k_idx)
 {
-	object_kind *k_ptr = &k_info[k_idx];
+	object_kind *kind = &k_info[k_idx];
 	object_type object_type_body;
 	object_type *o_ptr = &object_type_body;
 
@@ -1502,9 +1496,9 @@ static void desc_obj_fake(int k_idx)
 	region area = { 0, 0, 0, 0 };
 
 	/* Check for known artifacts, display them as artifacts */
-	if (of_has(k_ptr->flags, OF_INSTA_ART) && artifact_is_known(get_artifact_from_kind(k_ptr)))
+	if (of_has(kind->flags, OF_INSTA_ART) && artifact_is_known(get_artifact_from_kind(kind)))
 	{
-		desc_art_fake(get_artifact_from_kind(k_ptr));
+		desc_art_fake(get_artifact_from_kind(kind));
 		return;
 	}
 
@@ -1516,13 +1510,13 @@ static void desc_obj_fake(int k_idx)
 	object_wipe(o_ptr);
 
 	/* Create the artifact */
-	object_prep(o_ptr, k_ptr, 0, EXTREMIFY);
+	object_prep(o_ptr, kind, 0, EXTREMIFY);
 
 	/* Hack -- its in the store */
-	if (k_info[k_idx].aware) o_ptr->ident |= (IDENT_STORE);
+	if (kind->aware) o_ptr->ident |= (IDENT_STORE);
 
 	/* It's fully know */
-	if (!k_info[k_idx].flavor) object_notice_everything(o_ptr);
+	if (!kind->flavor) object_notice_everything(o_ptr);
 
 	/* Hack -- Handle stuff */
 	handle_stuff();
@@ -1576,22 +1570,22 @@ static int obj2gid(int oid) { return obj_group_order[k_info[oid].tval]; }
 
 static char *o_xchar(int oid)
 {
-	object_kind *k_ptr = &k_info[oid];
+	object_kind *kind = objkind_byid(oid);
 
-	if (!k_ptr->flavor || k_ptr->aware)
-		return &k_ptr->x_char;
+	if (!kind->flavor || kind->aware)
+		return &kind->x_char;
 	else
-		return &k_ptr->flavor->x_char;
+		return &kind->flavor->x_char;
 }
 
 static byte *o_xattr(int oid)
 {
-	object_kind *k_ptr = &k_info[oid];
+	object_kind *kind = objkind_byid(oid);
 
-	if (!k_ptr->flavor || k_ptr->aware)
-		return &k_ptr->x_attr;
+	if (!kind->flavor || kind->aware)
+		return &kind->x_attr;
 	else
-		return &k_ptr->flavor->x_attr;
+		return &kind->flavor->x_attr;
 }
 
 /*
@@ -1659,7 +1653,7 @@ static void o_xtra_act(char ch, int oid)
 
 		/* Default note */
 		if (k->note)
-			strnfmt(note_text, sizeof(note_text), "%s", get_autoinscription(oid));
+			strnfmt(note_text, sizeof(note_text), "%s", get_autoinscription(k));
 
 		/* Get an inscription */
 		if (askfor_aux(note_text, sizeof(note_text), NULL))
@@ -1694,21 +1688,21 @@ void textui_browse_object_knowledge(const char *name, int row)
 	int *objects;
 	int o_count = 0;
 	int i;
-	object_kind *k_ptr;
+	object_kind *kind;
 
 	objects = C_ZNEW(z_info->k_max, int);
 
 	for (i = 0; i < z_info->k_max; i++)
 	{
-		k_ptr = &k_info[i];
+		kind = &k_info[i];
 		/* It's in the list if we've ever seen it, or it has a flavour,
 		 * and either it's not one of the special artifacts, or if it is,
 		 * we're not aware of it yet. This way the flavour appears in the list
 		 * until it is found.
 		 */
-		if ((k_ptr->everseen || k_ptr->flavor || OPT(cheat_xtra)) &&
-				(!of_has(k_ptr->flags, OF_INSTA_ART) ||
-				 !artifact_is_known(get_artifact_from_kind(k_ptr))))
+		if ((kind->everseen || kind->flavor || OPT(cheat_xtra)) &&
+				(!of_has(kind->flags, OF_INSTA_ART) ||
+				 !artifact_is_known(get_artifact_from_kind(kind))))
 		{
 			int c = obj_group_order[k_info[i].tval];
 			if (c >= 0) objects[o_count++] = i;

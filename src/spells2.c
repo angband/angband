@@ -281,7 +281,7 @@ void identify_pack(void)
 		object_type *o_ptr = &p_ptr->inventory[i];
 
 		/* Skip non-objects */
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		/* Aware and Known */
 		if (object_is_known(o_ptr)) continue;
@@ -325,7 +325,7 @@ static int remove_curse_aux(bool heavy)
 	{
 		object_type *o_ptr = &p_ptr->inventory[i];
 
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 		if (!cursed_p(o_ptr)) continue;
 
 		/* Heavily cursed items need a special spell */
@@ -727,7 +727,7 @@ bool detect_treasure(bool aware)
 		object_type *o_ptr = &o_list[i];
 
 		/* Skip dead objects */
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		/* Skip held objects */
 		if (o_ptr->held_m_idx) continue;
@@ -851,7 +851,7 @@ bool detect_objects_magic(bool aware)
 		object_type *o_ptr = &o_list[i];
 
 		/* Skip dead objects */
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		/* Skip held objects */
 		if (o_ptr->held_m_idx) continue;
@@ -1580,7 +1580,7 @@ bool recharge(int num)
 
 
 	/* Extract the object "level" */
-	lev = k_info[o_ptr->k_idx].level;
+	lev = o_ptr->kind->level;
 
 	/* Recharge power */
 	i = (num + 100 - lev - (10 * (o_ptr->pval[DEFAULT_PVAL] / o_ptr->number))) / 15;
@@ -3030,7 +3030,7 @@ bool curse_armor(void)
 	o_ptr = &p_ptr->inventory[INVEN_BODY];
 
 	/* Nothing to curse */
-	if (!o_ptr->k_idx) return (FALSE);
+	if (!o_ptr->kind) return (FALSE);
 
 
 	/* Describe */
@@ -3084,7 +3084,7 @@ bool curse_weapon(void)
 	o_ptr = &p_ptr->inventory[INVEN_WIELD];
 
 	/* Nothing to curse */
-	if (!o_ptr->k_idx) return (FALSE);
+	if (!o_ptr->kind) return (FALSE);
 
 
 	/* Describe */
@@ -3139,7 +3139,7 @@ void brand_object(object_type *o_ptr, int brand_type)
 
 	/* you can never modify artifacts / ego-items */
 	/* you can never modify cursed / worthless items */
-	if (o_ptr->k_idx && !cursed_p(o_ptr) && k_info[o_ptr->k_idx].cost &&
+	if (o_ptr->kind && !cursed_p(o_ptr) && o_ptr->kind->cost &&
 	    !artifact_p(o_ptr) && !ego_item_p(o_ptr))
 	{
 		char o_name[80];

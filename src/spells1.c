@@ -620,7 +620,7 @@ static int inven_damage(inven_func typ, int cperc)
 		o_ptr = &p_ptr->inventory[i];
 
 		/* Skip non-objects */
-		if (!o_ptr->k_idx) continue;
+		if (!o_ptr->kind) continue;
 
 		/* Hack -- for now, skip artifacts */
 		if (artifact_p(o_ptr)) continue;
@@ -782,7 +782,7 @@ static int minus_ac(void)
 	}
 
 	/* Nothing to damage */
-	if (!o_ptr->k_idx) return (FALSE);
+	if (!o_ptr->kind) return (FALSE);
 
 	/* No damage left to be done */
 	if (o_ptr->ac + o_ptr->to_a <= 0) return (FALSE);
@@ -1053,7 +1053,7 @@ bool apply_disenchant(int mode)
 	o_ptr = &p_ptr->inventory[t];
 
 	/* No item, nothing happens */
-	if (!o_ptr->k_idx) return (FALSE);
+	if (!o_ptr->kind) return (FALSE);
 
 
 	/* Nothing to disenchant */

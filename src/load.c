@@ -36,10 +36,8 @@ static int rd_item_2(object_type *o_ptr)
 	byte old_ds;
 	byte tmp8u;
 	u16b tmp16u;
-
+	
 	size_t i, j;
-
-	object_kind *k_ptr;
 
 	char buf[128];
 
@@ -49,12 +47,7 @@ static int rd_item_2(object_type *o_ptr)
 	rd_byte(&ver);
 	assert(tmp16u == 0xffff);
 
-	rd_s16b(&o_ptr->k_idx);
-
-	/* Paranoia */
-	if ((o_ptr->k_idx < 0) || (o_ptr->k_idx >= z_info->k_max))
-		return (-1);
-	o_ptr->kind = &k_info[o_ptr->k_idx];
+	strip_bytes(2);
 
 	/* Location */
 	rd_byte(&o_ptr->iy);
@@ -115,44 +108,35 @@ static int rd_item_2(object_type *o_ptr)
 	/* Monster holding object */
 	rd_s16b(&o_ptr->held_m_idx);
 
-	rd_string(buf, sizeof(buf));
-
 	/* Save the inscription */
+	rd_string(buf, sizeof(buf));
 	if (buf[0]) o_ptr->note = quark_add(buf);
 
 
 	/* Lookup item kind */
-	o_ptr->k_idx = lookup_kind(o_ptr->tval, o_ptr->sval);
-	assert(o_ptr->k_idx);	/* XXX-elly: handle nonfatally */
-
-	k_ptr = &k_info[o_ptr->k_idx];
-
-	/* Return now in case of "blank" or "empty" objects */
-	if (!k_ptr->name || !o_ptr->k_idx)
-	{
-		o_ptr->k_idx = 0;
+	o_ptr->kind = lookup_kind(o_ptr->tval, o_ptr->sval);
+	if (!o_ptr->kind)
 		return 0;
-	}
 
 
 	/* Repair non "wearable" items */
 	if (!wearable_p(o_ptr))
 	{
 		/* Get the correct fields */
-		if (!randcalc_valid(k_ptr->to_h, o_ptr->to_h))
-			o_ptr->to_h = randcalc(k_ptr->to_h, o_ptr->origin_depth, RANDOMISE);
-		if (!randcalc_valid(k_ptr->to_d, o_ptr->to_d))
-			o_ptr->to_d = randcalc(k_ptr->to_d, o_ptr->origin_depth, RANDOMISE);
-		if (!randcalc_valid(k_ptr->to_a, o_ptr->to_a))
-			o_ptr->to_a = randcalc(k_ptr->to_a, o_ptr->origin_depth, RANDOMISE);
+		if (!randcalc_valid(o_ptr->kind->to_h, o_ptr->to_h))
+			o_ptr->to_h = randcalc(o_ptr->kind->to_h, o_ptr->origin_depth, RANDOMISE);
+		if (!randcalc_valid(o_ptr->kind->to_d, o_ptr->to_d))
+			o_ptr->to_d = randcalc(o_ptr->kind->to_d, o_ptr->origin_depth, RANDOMISE);
+		if (!randcalc_valid(o_ptr->kind->to_a, o_ptr->to_a))
+			o_ptr->to_a = randcalc(o_ptr->kind->to_a, o_ptr->origin_depth, RANDOMISE);
 
 		/* Get the correct fields */
-		o_ptr->ac = k_ptr->ac;
-		o_ptr->dd = k_ptr->dd;
-		o_ptr->ds = k_ptr->ds;
+		o_ptr->ac = o_ptr->kind->ac;
+		o_ptr->dd = o_ptr->kind->dd;
+		o_ptr->ds = o_ptr->kind->ds;
 
 		/* Get the correct weight */
-		o_ptr->weight = k_ptr->weight;
+		o_ptr->weight = o_ptr->kind->weight;
 
 		/* Paranoia */
 		o_ptr->name1 = o_ptr->name2 = 0;
@@ -195,12 +179,12 @@ static int rd_item_2(object_type *o_ptr)
 
 
 	/* Get the standard fields */
-	o_ptr->ac = k_ptr->ac;
-	o_ptr->dd = k_ptr->dd;
-	o_ptr->ds = k_ptr->ds;
+	o_ptr->ac = o_ptr->kind->ac;
+	o_ptr->dd = o_ptr->kind->dd;
+	o_ptr->ds = o_ptr->kind->ds;
 
 	/* Get the standard weight */
-	o_ptr->weight = k_ptr->weight;
+	o_ptr->weight = o_ptr->kind->weight;
 
 
 	/* Artifacts */
@@ -268,8 +252,6 @@ static int rd_item_1(object_type *o_ptr)
 
 	size_t i;
 
-	object_kind *k_ptr;
-
 	char buf[128];
 
 	byte ver = 1;
@@ -278,12 +260,8 @@ static int rd_item_1(object_type *o_ptr)
 	rd_byte(&ver);
 	assert(tmp16u == 0xffff);
 
-	rd_s16b(&o_ptr->k_idx);
 
-	/* Paranoia */
-	if ((o_ptr->k_idx < 0) || (o_ptr->k_idx >= z_info->k_max))
-		return (-1);
-	o_ptr->kind = &k_info[o_ptr->k_idx];
+	strip_bytes(2);
 
 	/* Location */
 	rd_byte(&o_ptr->iy);
@@ -345,18 +323,10 @@ static int rd_item_1(object_type *o_ptr)
 	if (buf[0]) o_ptr->note = quark_add(buf);
 
 
-	/* Lookup item kind */
-	o_ptr->k_idx = lookup_kind(o_ptr->tval, o_ptr->sval);
-	assert(o_ptr->k_idx);	/* XXX-elly: handle nonfatally */
-
-	k_ptr = &k_info[o_ptr->k_idx];
-
-	/* Return now in case of "blank" or "empty" objects */
-	if (!k_ptr->name || !o_ptr->k_idx)
-	{
-		o_ptr->k_idx = 0;
+	o_ptr->kind = lookup_kind(o_ptr->tval, o_ptr->sval);
+	if (!o_ptr->kind)
 		return 0;
-	}
+
 
 	/* Copy flags into pval_flags to ensure pvals function */
 	if (o_ptr->pval) {
@@ -368,20 +338,20 @@ static int rd_item_1(object_type *o_ptr)
 	if (!wearable_p(o_ptr))
 	{
 		/* Get the correct fields */
-		if (!randcalc_valid(k_ptr->to_h, o_ptr->to_h))
-			o_ptr->to_h = randcalc(k_ptr->to_h, o_ptr->origin_depth, RANDOMISE);
-		if (!randcalc_valid(k_ptr->to_d, o_ptr->to_d))
-			o_ptr->to_d = randcalc(k_ptr->to_d, o_ptr->origin_depth, RANDOMISE);
-		if (!randcalc_valid(k_ptr->to_a, o_ptr->to_a))
-			o_ptr->to_a = randcalc(k_ptr->to_a, o_ptr->origin_depth, RANDOMISE);
+		if (!randcalc_valid(o_ptr->kind->to_h, o_ptr->to_h))
+			o_ptr->to_h = randcalc(o_ptr->kind->to_h, o_ptr->origin_depth, RANDOMISE);
+		if (!randcalc_valid(o_ptr->kind->to_d, o_ptr->to_d))
+			o_ptr->to_d = randcalc(o_ptr->kind->to_d, o_ptr->origin_depth, RANDOMISE);
+		if (!randcalc_valid(o_ptr->kind->to_a, o_ptr->to_a))
+			o_ptr->to_a = randcalc(o_ptr->kind->to_a, o_ptr->origin_depth, RANDOMISE);
 
 		/* Get the correct fields */
-		o_ptr->ac = k_ptr->ac;
-		o_ptr->dd = k_ptr->dd;
-		o_ptr->ds = k_ptr->ds;
+		o_ptr->ac = o_ptr->kind->ac;
+		o_ptr->dd = o_ptr->kind->dd;
+		o_ptr->ds = o_ptr->kind->ds;
 
 		/* Get the correct weight */
-		o_ptr->weight = k_ptr->weight;
+		o_ptr->weight = o_ptr->kind->weight;
 
 		/* Paranoia */
 		o_ptr->name1 = o_ptr->name2 = 0;
@@ -424,12 +394,12 @@ static int rd_item_1(object_type *o_ptr)
 
 
 	/* Get the standard fields */
-	o_ptr->ac = k_ptr->ac;
-	o_ptr->dd = k_ptr->dd;
-	o_ptr->ds = k_ptr->ds;
+	o_ptr->ac = o_ptr->kind->ac;
+	o_ptr->dd = o_ptr->kind->dd;
+	o_ptr->ds = o_ptr->kind->ds;
 
 	/* Get the standard weight */
-	o_ptr->weight = k_ptr->weight;
+	o_ptr->weight = o_ptr->kind->weight;
 
 
 	/* Artifacts */
@@ -1636,7 +1606,7 @@ int rd_inventory_2(void)
 		}
 
 		/* Hack -- verify item */
-		if (!i_ptr->k_idx) continue;;
+		if (!i_ptr->kind) continue;
 
 		/* Verify slot */
 		if (n >= ALL_INVEN_TOTAL) return (-1);
@@ -1724,7 +1694,7 @@ int rd_inventory_1(void)
 		}
 
 		/* Hack -- verify item */
-		if (!i_ptr->k_idx) continue;;
+		if (!i_ptr->kind) continue;
 
 		/* Verify slot */
 		if (n >= ALL_INVEN_TOTAL) return (-1);
@@ -1826,8 +1796,7 @@ int rd_stores_2(void)
 				i_ptr->ident |= IDENT_STORE;
 			
 			/* Accept any valid items */
-			if ((st_ptr->stock_num < STORE_INVEN_MAX) &&
-				(i_ptr->k_idx))
+			if (st_ptr->stock_num < STORE_INVEN_MAX && i_ptr->kind)
 			{
 				int k = st_ptr->stock_num++;
 
@@ -1891,8 +1860,7 @@ int rd_stores_1(void)
 				i_ptr->ident |= IDENT_STORE;
 			
 			/* Accept any valid items */
-			if ((st_ptr->stock_num < STORE_INVEN_MAX) &&
-				(i_ptr->k_idx))
+			if (st_ptr->stock_num < STORE_INVEN_MAX && i_ptr->kind)
 			{
 				int k = st_ptr->stock_num++;
 

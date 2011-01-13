@@ -221,7 +221,6 @@ typedef struct ego_item
  */
 typedef struct object
 {
-	s16b k_idx;			/* Kind index (zero if "dead") */
 	struct object_kind *kind;
 
 	byte iy;			/* Y-position on map, or zero */

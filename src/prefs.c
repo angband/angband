@@ -737,7 +737,7 @@ static enum parser_error parse_prefs_expr(struct parser *p)
 
 static enum parser_error parse_prefs_k(struct parser *p)
 {
-	int tvi, svi, idx;
+	int tvi, svi;
 	object_kind *kind;
 
 	struct prefs_data *d = parser_priv(p);
@@ -752,11 +752,10 @@ static enum parser_error parse_prefs_k(struct parser *p)
 	if (svi < 0)
 		return PARSE_ERROR_UNRECOGNISED_SVAL;
 
-	idx = lookup_kind(tvi, svi);
-	if (idx < 0)
+	kind = lookup_kind(tvi, svi);
+	if (!kind)
 		return PARSE_ERROR_UNRECOGNISED_SVAL;
 
-	kind = &k_info[idx];
 	kind->x_attr = (byte)parser_getint(p, "attr");
 	kind->x_char = (char)parser_getint(p, "char");
 
@@ -936,7 +935,7 @@ static enum parser_error parse_prefs_q(struct parser *p)
 	if (parser_hasval(p, "sval") && parser_hasval(p, "flag"))
 	{
 		object_kind *kind;
-		int tvi, svi, idx;
+		int tvi, svi;
 
 		tvi = tval_find_idx(parser_getsym(p, "n"));
 		if (tvi < 0)
@@ -946,11 +945,10 @@ static enum parser_error parse_prefs_q(struct parser *p)
 		if (svi < 0)
 			return PARSE_ERROR_UNRECOGNISED_SVAL;
 
-		idx = lookup_kind(tvi, svi);
-		if (idx < 0)
+		kind = lookup_kind(tvi, svi);
+		if (!kind)
 			return PARSE_ERROR_UNRECOGNISED_SVAL;
 
-		kind = &k_info[idx];
 		kind->squelch = parser_getint(p, "flag");
 	}
 	else

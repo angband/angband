@@ -1257,29 +1257,29 @@ enum
  *
  * Identified scrolls should use their own tile.
  */
-#define use_flavor_glyph(K) \
-	((k_info[(K)].flavor) && \
-	 !((k_info[(K)].tval == TV_SCROLL) && k_info[(K)].aware))
+#define use_flavor_glyph(kind) \
+	((kind)->flavor && \
+	 !((kind)->tval == TV_SCROLL && (kind)->aware))
 
 /*
  * Return the "attr" for a given item kind.
  * Use "flavor" if available.
  * Default to user definitions.
  */
-#define object_kind_attr(K) \
-	(use_flavor_glyph(K) ? \
-	 (k_info[(K)].flavor->x_attr) : \
-	 (k_info[(K)].x_attr))
+#define object_kind_attr(kind) \
+	(use_flavor_glyph((kind)) ? \
+	 ((kind)->flavor->x_attr) : \
+	 ((kind)->x_attr))
 
 /*
  * Return the "char" for a given item kind.
  * Use "flavor" if available.
  * Default to user definitions.
  */
-#define object_kind_char(K) \
-	(use_flavor_glyph(K) ? \
-	 (k_info[(K)].flavor->x_char) : \
-	 (k_info[(K)].x_char))
+#define object_kind_char(kind) \
+	(use_flavor_glyph(kind) ? \
+	 ((kind)->flavor->x_char) : \
+	 ((kind)->x_char))
 
 /*
  * Return the "attr" for a given item.
@@ -1287,7 +1287,7 @@ enum
  * Default to user definitions.
  */
 #define object_attr(T) \
-	(object_kind_attr((T)->k_idx))
+	(object_kind_attr((T)->kind))
 
 /*
  * Return the "char" for a given item.
@@ -1295,7 +1295,7 @@ enum
  * Default to user definitions.
  */
 #define object_char(T) \
-	(object_kind_char((T)->k_idx))
+	(object_kind_char((T)->kind))
 
 /*
  * Artifacts use the "name1" field

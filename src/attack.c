@@ -224,7 +224,7 @@ bool py_attack_real(int y, int x)
 	}
 
 	/* Handle normal weapon */
-	if (o_ptr->k_idx)
+	if (o_ptr->kind)
 	{
 		int i;
 		const struct slay *best_s_ptr = NULL;
