@@ -1337,7 +1337,7 @@ s16b o_pop(void)
 	for (i = 1; i < o_max; i++)
 	{
 		object_type *o_ptr = object_byid(i);
-		if (o_ptr->k_idx) continue;
+		if (o_ptr->kind) continue;
 
 		/* Count objects */
 		o_cnt++;

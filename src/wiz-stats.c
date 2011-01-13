@@ -709,7 +709,7 @@ static void delete_object_stat(int o_idx)
 	excise_object_idx(o_idx);
 
 	/* Object */
-	j_ptr = &o_list[o_idx];
+	j_ptr = object_byid(o_idx);
 
 	
 	/* Wipe the object */
