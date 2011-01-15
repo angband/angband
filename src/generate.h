@@ -33,7 +33,7 @@ struct streamer_profile {
 /*
 * cave_builder is a function pointer which builds a level.
 */
-typedef void (*cave_builder) (struct cave *c, struct player *p);
+typedef bool (*cave_builder) (struct cave *c, struct player *p);
 
 
 struct cave_profile {
