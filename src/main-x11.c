@@ -17,6 +17,7 @@
  */
 #include "angband.h"
 #include "macro.h"
+#include "buildid.h"
 
 /*
  * This file helps Angband work with UNIX/X11 computers.

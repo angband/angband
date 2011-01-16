@@ -17,6 +17,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "buildid.h"
 #include "cmds.h"
 #include "files.h"
 

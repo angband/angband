@@ -72,6 +72,7 @@
  */
 
 #include "angband.h"
+#include "buildid.h"
 #include "cmds.h"
 #include "cave.h"
 #include "init.h"

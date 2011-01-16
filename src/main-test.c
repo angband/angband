@@ -5,6 +5,7 @@
 
 #include "angband.h"
 #include "birth.h"
+#include "buildid.h"
 
 static int prompt = 0;
 static int verbose = 0;

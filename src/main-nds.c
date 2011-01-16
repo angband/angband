@@ -14,6 +14,7 @@
 #include <fat.h>
 
 #include "angband.h"
+#include "buildid.h"
 #include "main.h"
 
 /* DS includes */
