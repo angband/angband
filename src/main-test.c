@@ -3,10 +3,11 @@
  *  @author Elly <elly+angband@leptoquark.net>
  */
 
-#ifdef USE_TEST
 #include "angband.h"
 #include "birth.h"
 #include "buildid.h"
+
+#ifdef USE_TEST
 
 static int prompt = 0;
 static int verbose = 0;
