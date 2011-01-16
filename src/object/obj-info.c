@@ -586,6 +586,8 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 		 * state does not track these */
 		for (i = INVEN_BOW; i < INVEN_TOTAL; i++)
 		{
+			if (!p_ptr->inventory[i].kind)
+				continue;
 			object_flags_known(&p_ptr->inventory[i], tmp_f);
 
 			if (of_has(tmp_f, OF_BLOWS))
@@ -663,6 +665,8 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 
 		for (i = INVEN_LEFT; i < INVEN_TOTAL; i++)
 		{
+			if (!p_ptr->inventory[i].kind)
+				continue;
 			object_flags_known(&p_ptr->inventory[i], tmp_f);
 
 			flags_mask(tmp_f, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END);

@@ -969,7 +969,7 @@ static int store_carry(int st, object_type *o_ptr)
 	object_type *j_ptr;
 
 	store_type *st_ptr = &store[st];
-	object_kind *kind;
+	object_kind *kind = o_ptr->kind;
 
 	/* Evaluate the object */
 	value = object_value(o_ptr, 1, FALSE);
