@@ -91,7 +91,7 @@ static void show_obj_list(int num_obj, char labels[50][80], object_type *objects
 		put_str(labels[i], row + i, col);
 
 		/* Print the object */
-		if (o_ptr != NULL)
+		if (o_ptr && o_ptr->kind)
 		{
 			/* Limit object name */
 			if (strlen(labels[i]) + strlen(o_name[i]) > (size_t)ex_offset)

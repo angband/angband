@@ -128,6 +128,7 @@ bool object_was_sensed(const object_type *o_ptr)
  */
 bool object_flavor_is_aware(const object_type *o_ptr)
 {
+	assert(o_ptr->kind);
 	return o_ptr->kind->aware;
 }
 
@@ -136,6 +137,7 @@ bool object_flavor_is_aware(const object_type *o_ptr)
  */
 bool object_flavor_was_tried(const object_type *o_ptr)
 {
+	assert(o_ptr->kind);
 	return o_ptr->kind->tried;
 }
 
@@ -144,6 +146,7 @@ bool object_flavor_was_tried(const object_type *o_ptr)
  */
 bool object_effect_is_known(const object_type *o_ptr)
 {
+	assert(o_ptr->kind);
 	return (easy_know(o_ptr) || (o_ptr->ident & IDENT_EFFECT)
 		|| (object_flavor_is_aware(o_ptr) && o_ptr->kind->effect)
 		|| (o_ptr->ident & IDENT_STORE)) ? TRUE : FALSE;
@@ -155,6 +158,8 @@ bool object_effect_is_known(const object_type *o_ptr)
 bool object_this_pval_is_visible(const object_type *o_ptr, int pval)
 {
 	bitflag f[MAX_PVALS][OF_SIZE];
+
+	assert(o_ptr->kind);
 
 	if (o_ptr->ident & IDENT_STORE)
 		return TRUE;
@@ -184,6 +189,8 @@ bool object_pval_is_visible(const object_type *o_ptr)
 {
 	bitflag f[MAX_PVALS][OF_SIZE];
 	int i;
+
+	assert(o_ptr->kind);
 
 	if (o_ptr->ident & IDENT_STORE)
 		return TRUE;
@@ -747,7 +754,8 @@ void object_notice_on_defend(void)
 	int i;
 
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
-		object_notice_defence_plusses(&p_ptr->inventory[i]);
+		if (p_ptr->inventory[i].kind)
+			object_notice_defence_plusses(&p_ptr->inventory[i]);
 
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
@@ -1018,7 +1026,8 @@ void wieldeds_notice_on_attack(void)
 	int i;
 
 	for (i = INVEN_WIELD + 2; i < INVEN_TOTAL; i++)
-		object_notice_attack_plusses(&p_ptr->inventory[i]);
+		if (p_ptr->inventory[i].kind)
+			object_notice_attack_plusses(&p_ptr->inventory[i]);
 
 	/* XXX Eddie print message? */
 	/* XXX Eddie do we need to do more about ammo? */

@@ -234,8 +234,9 @@ bool py_attack_real(int y, int x)
 		/* Get the best attack from all slays or
 		 * brands on all non-launcher equipment */
 		for (i = INVEN_LEFT; i < INVEN_TOTAL; i++)
-			improve_attack_modifier(&p_ptr->inventory[i], m_ptr, &best_s_ptr,
-					TRUE, FALSE);
+			if (p_ptr->inventory[i].kind)
+				improve_attack_modifier(&p_ptr->inventory[i], m_ptr, &best_s_ptr,
+				                        TRUE, FALSE);
 
 		improve_attack_modifier(o_ptr, m_ptr, &best_s_ptr, TRUE, FALSE);
 		if (best_s_ptr != NULL)
