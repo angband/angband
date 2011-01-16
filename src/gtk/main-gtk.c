@@ -2561,12 +2561,10 @@ static void cr_print_equippy(xtra_win_data *xd, int y)
 		/* Object */
 		o_ptr = &p_ptr->inventory[i];
 
-		a = object_attr(o_ptr);
-		strnfmt(c, sizeof(c), "%c",object_char(o_ptr)); 
-
-		/* Clear the part of the screen */
-		if (!o_ptr->kind)
-		{
+		if (o_ptr->kind) {
+			a = object_attr(o_ptr);
+			strnfmt(c, sizeof(c), "%c",object_char(o_ptr)); 
+		} else {
 			c [0]= ' ';
 			a = TERM_WHITE;
 		}

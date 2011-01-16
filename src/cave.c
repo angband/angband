@@ -786,7 +786,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 			/* First item found */
 			if (!g->first_kind)
 			{
-				g->first_kind = k_info;
+				g->first_kind = o_ptr->kind;
 			}
 			else
 			{

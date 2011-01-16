@@ -48,7 +48,7 @@ static void show_obj_list(int num_obj, char labels[50][80], object_type *objects
 		o_ptr = objects[i];
 
 		/* Null objects are used to skip lines, or display only a label */		
-		if (o_ptr == NULL) continue;
+		if (!o_ptr || !o_ptr->kind) continue;
 
 		/* Max length of label + object name */
 		object_desc(o_name[i], sizeof(o_name[i]), o_ptr, ODESC_PREFIX | ODESC_FULL);
@@ -91,7 +91,7 @@ static void show_obj_list(int num_obj, char labels[50][80], object_type *objects
 		put_str(labels[i], row + i, col);
 
 		/* Print the object */
-		if (o_ptr != NULL)
+		if (o_ptr && o_ptr->kind)
 		{
 			/* Limit object name */
 			if (strlen(labels[i]) + strlen(o_name[i]) > (size_t)ex_offset)

@@ -3,6 +3,7 @@
  *  @author Elly <elly+angband@leptoquark.net>
  */
 
+#ifdef USE_TEST
 #include "angband.h"
 #include "birth.h"
 #include "buildid.h"
@@ -309,3 +310,4 @@ errr init_test(int argc, char *argv[]) {
 	term_data_link(0);
 	return 0;
 }
+#endif
