@@ -17,6 +17,7 @@
  */
  
 #include "angband.h"
+#include "buildid.h"
 
 #ifdef USE_GTK
 #include "main-gtk.h"
