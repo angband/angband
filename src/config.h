@@ -54,7 +54,7 @@
  */
 #ifdef SET_UID
 # ifndef PRIVATE_USER_PATH
-#  define PRIVATE_USER_PATH "~/.angband-upstream"
+#  define PRIVATE_USER_PATH "~/.angband"
 # endif /* PRIVATE_USER_PATH */
 #endif /* SET_UID */
 
