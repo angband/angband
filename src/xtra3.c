@@ -246,20 +246,17 @@ static void prt_equippy(int row, int col)
 	object_type *o_ptr;
 
 	/* No equippy chars in bigtile mode */
-	if ((tile_width > 1) || (tile_height > 1)) return;
+	if (tile_width > 1 || tile_height > 1) return;
 
 	/* Dump equippy chars */
-	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
-	{
+	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++) {
 		/* Object */
 		o_ptr = &p_ptr->inventory[i];
 
-		a = object_attr(o_ptr);
-		c = object_char(o_ptr);
-
-		/* Clear the part of the screen */
-		if (!o_ptr->kind)
-		{
+		if (o_ptr->kind) {
+			c = object_char(o_ptr);
+			a = object_attr(o_ptr);
+		} else {
 			c = ' ';
 			a = TERM_WHITE;
 		}
