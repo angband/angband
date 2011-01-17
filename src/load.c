@@ -1935,6 +1935,9 @@ int rd_dungeon(void)
 		return (0);
 	}
 
+	cave->width = xmax;
+	cave->height = ymax;
+
 	/* Ignore illegal dungeons */
 	if ((px < 0) || (px >= DUNGEON_WID) ||
 	    (py < 0) || (py >= DUNGEON_HGT))

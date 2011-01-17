@@ -656,8 +656,8 @@ void wr_dungeon(void)
 	wr_u16b(daycount);
 	wr_u16b(p_ptr->py);
 	wr_u16b(p_ptr->px);
-	wr_u16b(DUNGEON_HGT);
-	wr_u16b(DUNGEON_WID);
+	wr_u16b(cave->height);
+	wr_u16b(cave->width);
 	wr_u16b(0);
 	wr_u16b(0);
 
