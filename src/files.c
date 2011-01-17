@@ -424,6 +424,11 @@ static void display_player_sust_info(void)
 		/* Get the object */
 		o_ptr = &p_ptr->inventory[i];
 
+		if (!o_ptr->kind) {
+			col++;
+			continue;
+		}
+
 		/* Get the "known" flags */
 		object_flags_known(o_ptr, f);
 
