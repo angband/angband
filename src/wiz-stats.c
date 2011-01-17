@@ -2433,8 +2433,8 @@ void clear_cave_dist()
 
 void calc_cave_distances()
 {
-	int dist,i;
-	int oy,ox,ty,tx,d;
+	int dist, i;
+	int oy, ox, ty, tx, d;
 
 	/* Squares with distance from player of n-1 */  
 	int d_x_old[DIST_MAX];
@@ -2450,8 +2450,8 @@ void calc_cave_distances()
 	clear_cave_dist();
 	
 	/* Get player location */
-	d_y_old[0] = p_ptr->py;
-	d_x_old[0] = p_ptr->px;
+	oy = d_y_old[0] = p_ptr->py;
+	ox = d_x_old[0] = p_ptr->px;
 	d_old_max = 1;
 	
 	/* distance from player starts at 0*/
