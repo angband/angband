@@ -290,6 +290,10 @@ if test "$enable_sdl_mixer" = "yes"; then
 	fi
 fi
 
+
+LDFLAGS="${LDFLAGS} -lm"
+
+
 dnl Test checking
 if test "$enable_test" = "yes"; then
 	AC_DEFINE(USE_TEST, 1, [Define to 1 to build the test frontend])
