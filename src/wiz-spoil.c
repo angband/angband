@@ -401,7 +401,7 @@ bool make_fake_artifact(object_type *o_ptr, byte name1)
 	artifact_type *a_ptr = &a_info[name1];
 
 	/* Ignore "empty" artifacts */
-	if (!a_ptr->name) return FALSE;
+	if (!a_ptr->tval) return FALSE;
 
 	/* Get the "kind" index */
 	kind = lookup_kind(a_ptr->tval, a_ptr->sval);
