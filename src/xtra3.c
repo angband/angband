@@ -1858,6 +1858,7 @@ static void ui_leave_game(game_event_type type, game_event_data *data, void *use
 #endif
 	/* Check if the panel should shift when the player's moved */
 	event_remove_handler(EVENT_PLAYERMOVED, check_panel, NULL);
+	event_remove_handler(EVENT_SEEFLOOR, see_floor_items, NULL);
 }
 
 errr textui_get_cmd(cmd_context context, bool wait)
