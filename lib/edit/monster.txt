@@ -137,15 +137,20 @@ G:@:w
 
 ### Dungeon level 0 ###
 
-N:1:Filthy street urchin
-G:t:D
-I:110:3:4:1:40
-W:0:2:0:0
-B:BEG
-B:TOUCH:EAT_GOLD
-F:MALE | FRIENDS
-F:RAND_25 | OPEN_DOOR | TAKE_ITEM
-D:He looks squalid and thoroughly revolting.
+N:614:Storm of Unmagic
+G:v:v
+I:120:315:50:40:0
+W:53:3:0:4000
+B:ENGULF:UN_POWER:5d5
+B:ENGULF:UN_BONUS:5d5
+F:EMPTY_MIND | POWERFUL
+F:RAND_25 | RAND_50 | BASH_DOOR
+F:RES_DISE | NO_FEAR | NO_CONF | NO_SLEEP
+F:ATTR_MULTI | FORCE_SLEEP
+S:1_IN_6
+S:BR_DISE
+D:Howling through the disintegrating dungeon, this whirlpool of Unmagic rips the
+D: enchantments from everything it touches.
 
 N:2:Scrawny cat
 G:f:U
@@ -155,6 +160,16 @@ B:CLAW:HURT:1d1
 F:ANIMAL
 F:RAND_25
 D:A skinny little furball with sharp claws and a menacing look.
+
+N:1:Filthy street urchin
+G:t:D
+I:110:3:4:1:40
+W:0:2:0:0
+B:BEG
+B:TOUCH:EAT_GOLD
+F:MALE | FRIENDS
+F:RAND_25 | OPEN_DOOR | TAKE_ITEM
+D:He looks squalid and thoroughly revolting.
 
 N:3:Scruffy little dog
 G:C:U
@@ -9915,23 +9930,6 @@ S:BR_SHAR
 D:A howling blast of razor-sharp mountain fragments, kept intact by perilous
 D: magics.
 
-### Dungeon level 53 ###
-
-N:614:Storm of Unmagic
-G:v:v
-I:120:315:50:40:0
-W:53:3:0:4000
-B:ENGULF:UN_POWER:5d5
-B:ENGULF:UN_BONUS:5d5
-F:EMPTY_MIND | POWERFUL
-F:RAND_25 | RAND_50 | BASH_DOOR
-F:RES_DISE | NO_FEAR | NO_CONF | NO_SLEEP
-F:ATTR_MULTI | FORCE_SLEEP
-S:1_IN_6
-S:BR_DISE
-D:Howling through the disintegrating dungeon, this whirlpool of Unmagic rips the
-D: enchantments from everything it touches.
-
 ### Dungeon level 36 ###
 
 N:615:Greater mummy
@@ -9955,8 +9953,6 @@ S:BA_COLD | BA_POIS
 S:BO_NETH
 S:S_UNDEAD
 D:Once a powerful ruler, now an even more powerful undead menace.
-
-### Dungeon level 43 ###
 
 N:616:Multi-hued hound
 G:Z:v

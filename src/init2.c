@@ -25,6 +25,7 @@
 #include "init.h"
 #include "macro.h"
 #include "monster/constants.h"
+#include "monster/rval.h"
 #include "object/tvalsval.h"
 #include "option.h"
 #include "parser.h"
@@ -1249,6 +1250,93 @@ struct file_parser e_parser = {
 	finish_parse_e
 };
 
+/* Parsing functions for monster_base.txt */
+
+static enum parser_error parse_rb_n(struct parser *p) {
+	struct monster_base *h = parser_priv(p);
+	struct monster_base *rb = mem_alloc(sizeof *rb);
+	memset(rb, 0, sizeof(*rb));
+	rb->next = h;
+	rb->rval = parser_getuint(p, "index");
+	parser_setpriv(p, rb);
+	return PARSE_ERROR_NONE;
+}
+
+static const char *r_info_flags[] =
+{
+	#define RF(a, b) #a,
+	#include "list-mon-flags.h"
+	#undef RF
+	NULL
+};
+
+static enum parser_error parse_rb_f(struct parser *p) {
+	struct monster_base *rb = parser_priv(p);
+	char *flags;
+	char *s;
+
+	if (!rb)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!parser_hasval(p, "flags"))
+		return PARSE_ERROR_NONE;
+	flags = string_make(parser_getstr(p, "flags"));
+	s = strtok(flags, " |");
+	while (s) {
+		if (grab_flag(rb->flags, RF_SIZE, r_info_flags, s)) {
+			mem_free(flags);
+			return PARSE_ERROR_INVALID_FLAG;
+		}
+		s = strtok(NULL, " |");
+	}
+
+	mem_free(flags);
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_rb(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+
+	parser_reg(p, "V sym version", ignored);
+	parser_reg(p, "F ?str flags", parse_rb_f);
+	parser_reg(p, "N uint index", parse_rb_n);
+	/* Add rest of fields */
+	return p;
+}
+
+static errr run_parse_rb(struct parser *p) {
+	return parse_file(p, "monster_base");
+}
+
+static errr finish_parse_rb(struct parser *p) {
+	struct monster_base *rb, *n;
+		
+	rb_info = mem_alloc(RV_MAX * sizeof(*rb_info));
+	for (rb = parser_priv(p); rb; rb = rb->next) {
+		if (rb->rval >= RV_MAX)
+			continue;
+		memcpy(&rb_info[rb->rval], rb, sizeof(*rb));
+	}
+	
+	rb = parser_priv(p);
+	while (rb) {
+		n = rb->next;
+		mem_free(rb);
+		rb = n;
+	}
+	
+	parser_destroy(p);
+	return 0;
+}
+
+struct file_parser rb_parser = {
+	"monster_base",
+	init_parse_rb,
+	run_parse_rb,
+	finish_parse_rb
+};
+
+
 /* Parsing functions for monster.txt */
 static enum parser_error parse_r_n(struct parser *p) {
 	struct monster_race *h = parser_priv(p);
@@ -1366,14 +1454,6 @@ static enum parser_error parse_r_b(struct parser *p) {
 
 	return PARSE_ERROR_NONE;
 }
-
-static const char *r_info_flags[] =
-{
-	#define RF(a, b) #a,
-	#include "list-mon-flags.h"
-	#undef RF
-	NULL
-};
 
 static enum parser_error parse_r_f(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
