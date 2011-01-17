@@ -1412,8 +1412,8 @@ static bool vault_aux_jelly(int r_idx)
 	/* Decline unique monsters */
 	if (rf_has(r_ptr->flags, RF_UNIQUE)) return (FALSE);
 
-	/* Require icky thing, jelly, mold, or mushroom */
-	if (!strchr("ijm,", r_ptr->d_char)) return (FALSE);
+	/* Require "icky" flag */ 
+	if (!rf_has(r_ptr->flags, RF_ICKY)) return (FALSE);
 
 	/* Okay */
 	return (TRUE);
@@ -1466,8 +1466,9 @@ static bool vault_aux_orc(int r_idx)
 	/* Decline unique monsters */
 	if (rf_has(r_ptr->flags, RF_UNIQUE)) return (FALSE);
 
-	/* Hack -- Require "o" monsters */
-	if (!strchr("o", r_ptr->d_char)) return (FALSE);
+	/* Require non-undead orcs */
+	if (!rf_has(r_ptr->flags, RF_ORC)) return (FALSE);
+	if (rf_has(r_ptr->flags, RF_UNDEAD)) return (FALSE);
 
 	/* Okay */
 	return (TRUE);
@@ -1484,8 +1485,9 @@ static bool vault_aux_troll(int r_idx)
 	/* Decline unique monsters */
 	if (rf_has(r_ptr->flags, RF_UNIQUE)) return (FALSE);
 
-	/* Hack -- Require "T" monsters */
-	if (!strchr("T", r_ptr->d_char)) return (FALSE);
+	/* Require non-undead trolls */
+	if (!rf_has(r_ptr->flags, RF_TROLL)) return (FALSE);
+	if (rf_has(r_ptr->flags, RF_UNDEAD)) return (FALSE);
 
 	/* Okay */
 	return (TRUE);
@@ -1502,8 +1504,9 @@ static bool vault_aux_giant(int r_idx)
 	/* Decline unique monsters */
 	if (rf_has(r_ptr->flags, RF_UNIQUE)) return (FALSE);
 
-	/* Hack -- Require "P" monsters */
-	if (!strchr("P", r_ptr->d_char)) return (FALSE);
+	/* Require non-troll giants */
+	if (!rf_has(r_ptr->flags, RF_TROLL)) return (FALSE);
+	if (rf_has(r_ptr->flags, RF_GIANT)) return (FALSE);
 
 	/* Okay */
 	return (TRUE);
@@ -1527,8 +1530,8 @@ static bool vault_aux_dragon(int r_idx)
 	/* Decline unique monsters */
 	if (rf_has(r_ptr->flags, RF_UNIQUE)) return (FALSE);
 
-	/* Hack -- Require "d" or "D" monsters */
-	if (!strchr("Dd", r_ptr->d_char)) return (FALSE);
+	/* Require dragons */
+	if (!rf_has(r_ptr->flags, RF_DRAGON)) return (FALSE);
 
 	/* Hack -- Require correct "breath attack" */
 	rsf_copy(mon_breath, r_ptr->spell_flags);
@@ -1551,8 +1554,9 @@ static bool vault_aux_demon(int r_idx)
 	/* Decline unique monsters */
 	if (rf_has(r_ptr->flags, RF_UNIQUE)) return (FALSE);
 
-	/* Hack -- Require "U" monsters */
-	if (!strchr("U", r_ptr->d_char)) return (FALSE);
+	/* Require a "powerful" demon */
+	if (!rf_has(r_ptr->flags, RF_DEMON)) return (FALSE);
+	if (!rf_has(r_ptr->flags, RF_POWERFUL)) return (FALSE);
 
 	/* Okay */
 	return (TRUE);
