@@ -29,6 +29,7 @@
 static void show_obj_list(int num_obj, char labels[50][80], object_type *objects[50], olist_detail_t mode)
 {
 	int i, row = 0, col = 0;
+	int attr;
 	size_t max_len = 0;
 	int ex_width = 0, ex_offset, ex_offset_ctr;
 
@@ -48,10 +49,12 @@ static void show_obj_list(int num_obj, char labels[50][80], object_type *objects
 		o_ptr = objects[i];
 
 		/* Null objects are used to skip lines, or display only a label */		
-		if (!o_ptr || !o_ptr->kind) continue;
+		if (!o_ptr || !o_ptr->kind)
+			strnfmt(o_name[i], sizeof(o_name[i]), "(nothing)");
+		else
+			object_desc(o_name[i], sizeof(o_name[i]), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 		/* Max length of label + object name */
-		object_desc(o_name[i], sizeof(o_name[i]), o_ptr, ODESC_PREFIX | ODESC_FULL);
 		max_len = MAX(max_len, strlen(labels[i]) + strlen(o_name[i]));
 	}
 
@@ -87,56 +90,63 @@ static void show_obj_list(int num_obj, char labels[50][80], object_type *objects
 		/* Clear the line */
 		prt("", row + i, MAX(col - 2, 0));
 
+		/* If we have no label then we won't display anything */
+		if (!strlen(labels[i])) continue;
+
 		/* Print the label */
 		put_str(labels[i], row + i, col);
 
-		/* Print the object */
-		if (o_ptr && o_ptr->kind)
+		/* Limit object name */
+		if (strlen(labels[i]) + strlen(o_name[i]) > (size_t)ex_offset)
 		{
-			/* Limit object name */
-			if (strlen(labels[i]) + strlen(o_name[i]) > (size_t)ex_offset)
-			{
-				int truncate = ex_offset - strlen(labels[i]);
-				
-				if (truncate < 0) truncate = 0;
-				if ((size_t)truncate > sizeof(o_name[i]) - 1) truncate = sizeof(o_name[i]) - 1;
-
-				o_name[i][truncate] = '\0';
-			}
-
-			/* Object name */
-			c_put_str(tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)], o_name[i],
-			          row + i, col + strlen(labels[i]));
-
-			/* Extra fields */
-			ex_offset_ctr = ex_offset;
+			int truncate = ex_offset - strlen(labels[i]);
 			
-			if (mode & OLIST_PRICE)
-			{
-				int price = price_item(o_ptr, TRUE, o_ptr->number);
-				strnfmt(tmp_val, sizeof(tmp_val), "%6d au", price);
-				put_str(tmp_val, row + i, col + ex_offset_ctr);
-				ex_offset_ctr += 9;
-			}
+			if (truncate < 0) truncate = 0;
+			if ((size_t)truncate > sizeof(o_name[i]) - 1) truncate = sizeof(o_name[i]) - 1;
 
-			if (mode & OLIST_FAIL)
-			{
-				int fail = (9 + get_use_device_chance(o_ptr)) / 10;
-				if (object_effect_is_known(o_ptr))
-					strnfmt(tmp_val, sizeof(tmp_val), "%4d%% fail", fail);
-				else
-					my_strcpy(tmp_val, "    ? fail", sizeof(tmp_val));
-				put_str(tmp_val, row + i, col + ex_offset_ctr);
-				ex_offset_ctr += 10;
-			}
+			o_name[i][truncate] = '\0';
+		}
+		
+		/* Item kind determines the color of the output */
+		if (o_ptr && o_ptr->kind)
+			attr = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
+		else
+			attr = TERM_SLATE;
 
-			if (mode & OLIST_WEIGHT)
-			{
-				int weight = o_ptr->weight * o_ptr->number;
-				strnfmt(tmp_val, sizeof(tmp_val), "%4d.%1d lb", weight / 10, weight % 10);
-				put_str(tmp_val, row + i, col + ex_offset_ctr);
-				ex_offset_ctr += 9;
-			}
+		/* Object name */
+		c_put_str(attr, o_name[i], row + i, col + strlen(labels[i]));
+
+		/* If we don't have an object, we can skip the rest of the output */
+		if (!(o_ptr && o_ptr->kind)) continue;
+
+		/* Extra fields */
+		ex_offset_ctr = ex_offset;
+		
+		if (mode & OLIST_PRICE)
+		{
+			int price = price_item(o_ptr, TRUE, o_ptr->number);
+			strnfmt(tmp_val, sizeof(tmp_val), "%6d au", price);
+			put_str(tmp_val, row + i, col + ex_offset_ctr);
+			ex_offset_ctr += 9;
+		}
+
+		if (mode & OLIST_FAIL)
+		{
+			int fail = (9 + get_use_device_chance(o_ptr)) / 10;
+			if (object_effect_is_known(o_ptr))
+				strnfmt(tmp_val, sizeof(tmp_val), "%4d%% fail", fail);
+			else
+				my_strcpy(tmp_val, "    ? fail", sizeof(tmp_val));
+			put_str(tmp_val, row + i, col + ex_offset_ctr);
+			ex_offset_ctr += 10;
+		}
+
+		if (mode & OLIST_WEIGHT)
+		{
+			int weight = o_ptr->weight * o_ptr->number;
+			strnfmt(tmp_val, sizeof(tmp_val), "%4d.%1d lb", weight / 10, weight % 10);
+			put_str(tmp_val, row + i, col + ex_offset_ctr);
+			ex_offset_ctr += 9;
 		}
 	}
 
