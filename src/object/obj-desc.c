@@ -706,11 +706,16 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 {
 	bool prefix = mode & ODESC_PREFIX;
 	bool spoil = (mode & ODESC_SPOIL);
-	bool known = object_is_known(o_ptr) ||
-			(o_ptr->ident & IDENT_STORE) || spoil;
+	bool known; 
 
 	size_t end = 0;
 
+	/* Simple description for null item */
+	if (!o_ptr->tval)
+		return strnfmt(buf, max, "(nothing)");
+
+	known = object_is_known(o_ptr) ||
+			(o_ptr->ident & IDENT_STORE) || spoil;
 
 	/* We've seen it at least once now we're aware of it */
 	if (known && o_ptr->name2) e_info[o_ptr->name2].everseen = TRUE;
@@ -722,9 +727,6 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 		return strnfmt(buf, max, "%d gold pieces worth of %s%s",
 				o_ptr->pval[DEFAULT_PVAL], o_ptr->kind->name,
 				squelch_item_ok(o_ptr) ? " {squelch}" : "");
-	else if (!o_ptr->tval)
-		return strnfmt(buf, max, "(nothing)");
-
 
 	/** Construct the name **/
 
