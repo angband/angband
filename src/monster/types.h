@@ -26,14 +26,14 @@ typedef struct
  */
 typedef struct monster_base
 {
-	/* char *name; */
+	char *name;
 	
 	int rval;
 	struct monster_base *next;
 
 	bitflag flags[RF_SIZE];         /* Flags */
 
-	/* char d_char;	*/		/* Default monster character */
+	char d_char;			/* Default monster character */
 } monster_base;
  
 /*

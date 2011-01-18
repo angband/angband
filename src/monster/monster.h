@@ -15,6 +15,7 @@ extern void display_roff(int r_idx);
 extern int lookup_monster(const char *name);
 extern int rval_find_idx(const char *name);
 extern const char *rval_find_name(int rval);
+extern int lookup_monster_base(const char *name);
 
 /* monster2.c */
 extern bool wake_monster(monster_type *m_ptr);

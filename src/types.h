@@ -59,6 +59,7 @@ typedef struct maxima
 	u16b a_max;       /**< Maximum number of artifact kinds */
 	u16b e_max;       /**< Maximum number of ego-item kinds */
 	u16b r_max;       /**< Maximum number of monster races */
+	u16b rb_max;	  /**< Maximum number of monster bases */
 	u16b s_max;       /**< Maximum number of magic spells */
 
 	u16b o_max;       /**< Maximum number of objects on a given level */

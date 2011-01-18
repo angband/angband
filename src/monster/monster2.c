@@ -2237,28 +2237,29 @@ static bool summon_specific_okay(int r_idx)
 
 		case SUMMON_SPIDER:
 		{
-			okay = (r_ptr->d_char == 'S' &&
+			okay = (r_ptr->rval == lookup_monster_base("spider") &&
 			        !rf_has(r_ptr->flags, RF_UNIQUE));
 			break;
 		}
 
 		case SUMMON_HOUND:
 		{
-			okay = ((r_ptr->d_char == 'C' || r_ptr->d_char == 'Z') &&
+			okay = ((r_ptr->rval == lookup_monster_base("dog") || 
+					r_ptr->rval == lookup_monster_base("zephyr hound")) &&
 			        !rf_has(r_ptr->flags, RF_UNIQUE));
 			break;
 		}
 
 		case SUMMON_HYDRA:
 		{
-			okay = (r_ptr->d_char == 'M' &&
+			okay = (r_ptr->rval == lookup_monster_base("hydra") &&
 			        !rf_has(r_ptr->flags, RF_UNIQUE));
 			break;
 		}
 
 		case SUMMON_ANGEL:
 		{
-			okay = (r_ptr->d_char == 'A' &&
+			okay = (r_ptr->rval == lookup_monster_base("angel") &&
 			        !flags_test_all(r_ptr->flags, RF_SIZE, RF_UNIQUE,
 			                              RF_FRIEND, RF_FRIENDS, RF_ESCORT,
 			                              RF_ESCORTS, FLAG_END));
@@ -2301,27 +2302,27 @@ static bool summon_specific_okay(int r_idx)
 
 		case SUMMON_HI_UNDEAD:
 		{
-			okay = (r_ptr->d_char == 'L' ||
-			        r_ptr->d_char == 'V' ||
-			        r_ptr->d_char == 'W');
+			okay = (r_ptr->rval == lookup_monster_base("lich") ||
+			        r_ptr->rval == lookup_monster_base("vampire") ||
+			        r_ptr->rval == lookup_monster_base("wraith"));
 			break;
 		}
 
 		case SUMMON_HI_DRAGON:
 		{
-			okay = (r_ptr->d_char == 'D');
+			okay = (r_ptr->rval == lookup_monster_base("ancient dragon"));
 			break;
 		}
 
 		case SUMMON_HI_DEMON:
 		{
-			okay = (r_ptr->d_char == 'U');
+			okay = (r_ptr->rval == lookup_monster_base("greater demon"));
 			break;
 		}
 
 		case SUMMON_WRAITH:
 		{
-			okay = (r_ptr->d_char == 'W' &&
+			okay = (r_ptr->rval == lookup_monster_base("wraith") &&
 			        rf_has(r_ptr->flags, RF_UNIQUE));
 			break;
 		}

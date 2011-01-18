@@ -26,7 +26,6 @@
 #include "macro.h"
 #include "monster/constants.h"
 #include "monster/monster.h"
-#include "monster/rval.h"
 #include "object/tvalsval.h"
 #include "option.h"
 #include "parser.h"
@@ -317,6 +316,8 @@ static enum parser_error parse_z(struct parser *p) {
 		z->e_max = value;
 	else if (streq(label, "R"))
 		z->r_max = value;
+	else if (streq(label, "B"))
+		z->rb_max = value;
 	else if (streq(label, "S"))
 		z->s_max = value;
 	else if (streq(label, "O"))
@@ -1259,7 +1260,18 @@ static enum parser_error parse_rb_n(struct parser *p) {
 	memset(rb, 0, sizeof(*rb));
 	rb->next = h;
 	rb->rval = parser_getuint(p, "index");
+	rb->name = string_make(parser_getstr(p, "name"));
 	parser_setpriv(p, rb);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_rb_g(struct parser *p) {
+	struct monster_base *rb = parser_priv(p);
+
+	if (!rb)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	rb->d_char = parser_getchar(p, "glyph");
 	return PARSE_ERROR_NONE;
 }
 
@@ -1299,9 +1311,9 @@ struct parser *init_parse_rb(void) {
 	parser_setpriv(p, NULL);
 
 	parser_reg(p, "V sym version", ignored);
-	parser_reg(p, "N uint index", parse_rb_n);
+	parser_reg(p, "N uint index str name", parse_rb_n);
+	parser_reg(p, "G char glyph", parse_rb_g);
 	parser_reg(p, "F ?str flags", parse_rb_f);
-	/* Add rest of fields */
 	return p;
 }
 
@@ -1312,9 +1324,9 @@ static errr run_parse_rb(struct parser *p) {
 static errr finish_parse_rb(struct parser *p) {
 	struct monster_base *rb, *n;
 		
-	rb_info = mem_alloc(RV_MAX * sizeof(*rb_info));
+	rb_info = mem_zalloc(sizeof(*rb) * z_info->rb_max);
 	for (rb = parser_priv(p); rb; rb = rb->next) {
-		if (rb->rval >= RV_MAX)
+		if (rb->rval >= z_info->rb_max)
 			continue;
 		memcpy(&rb_info[rb->rval], rb, sizeof(*rb));
 	}
@@ -1354,7 +1366,7 @@ static enum parser_error parse_r_t(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
 	int rval;
 	
-	rval = rval_find_idx(parser_getsym(p, "rval"));
+	rval = lookup_monster_base(parser_getsym(p, "rval"));
 	if (rval < 0)
 		/* Todo: make new error for this */
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
@@ -1488,7 +1500,8 @@ static enum parser_error parse_r_f(struct parser *p) {
 	}
 	
 	/* Add the "base monster" flags to the monster */
-	rf_union(r->flags, rb_info[r->rval].flags);
+	if (r->rval > 0)
+		rf_union(r->flags, rb_info[r->rval].flags);
 
 	mem_free(flags);
 	return PARSE_ERROR_NONE;

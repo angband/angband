@@ -19,7 +19,6 @@
 #include "angband.h"
 #include "monster/constants.h"
 #include "monster/monster.h"
-#include "monster/rval.h"
 #include "object/tvalsval.h"
 
 /*
@@ -2067,47 +2066,23 @@ int lookup_monster(const char *name)
 }
 
 /*
- * List of { rval, name } pairs.
+ * Return the rb_idx of the monster with the given name.
  */
-static const grouper rval_names[] =
+int lookup_monster_base(const char *name)
 {
-	{ RV_ANGEL,    "angel" },
-	{ RV_ANT,      "ant" },
-	{ RV_BAT,        "bat" },
-};
+	int i;
 
-/*
- * Returns the numeric equivalent rval of the textual rval `name`.
- */
-int rval_find_idx(const char *name)
-{
-	size_t i = 0;
-	unsigned int r;
-
-	if (sscanf(name, "%u", &r) == 1)
-		return r;
-
-	for (i = 0; i < N_ELEMENTS(rval_names); i++)
+	/* Look for it */
+	for (i = 1; i < z_info->rb_max; i++)
 	{
-		if (!my_stricmp(name, rval_names[i].name))
-			return rval_names[i].tval;
+		monster_base *rb_ptr = &rb_info[i];
+		const char *nm = rb_ptr->name;
+
+		/* Found a match */
+		if (streq(name, nm))
+			return i;
+
 	}
 
 	return -1;
-}
-
-/*
- * Returns the textual equivalent rval of the numeric rval `name`.
- */
-const char *rval_find_name(int rval)
-{
-	size_t i = 0;
-
-	for (i = 0; i < N_ELEMENTS(rval_names); i++)
-	{
-		if (rval == rval_names[i].tval)
-			return rval_names[i].name;
-	}
-
-	return "unknown";
 }
