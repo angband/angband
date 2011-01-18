@@ -1728,7 +1728,7 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
 	}
 
 	/* Require compatible inscriptions */
-	if (o_ptr->note != j_ptr->note)
+	if (o_ptr->note && j_ptr->note && (o_ptr->note != j_ptr->note))
 		return FALSE;
 
 	/* They must be similar enough */
