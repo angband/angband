@@ -973,9 +973,18 @@ enum
 #define OF_IGNORE_MASK \
 	OF_IGNORE_ACID, OF_IGNORE_ELEC, OF_IGNORE_FIRE, OF_IGNORE_COLD
 
+/* Flag set for "can be damaged by" flags */
+#define OF_HATE_MASK \
+	OF_HATES_ACID, OF_HATES_FIRE, OF_HATES_COLD, OF_HATES_ELEC
+
+/* Flag set for "show stuff before ID" flags */
+#define OF_SHOW_MASK \
+	OF_SHOW_MODS, OF_SHOW_DICE, OF_SHOW_MULTIPLIER
+
 /* Flag set for flags on an object that do not affect the player */
 #define OF_OBJ_ONLY_MASK \
-	OF_INSTA_ART, OF_EASY_KNOW, OF_HIDE_TYPE, OF_SHOW_MODS, OF_IGNORE_MASK
+	OF_INSTA_ART, OF_EASY_KNOW, OF_HIDE_TYPE, OF_SHOW_MASK, OF_IGNORE_MASK, \
+	OF_HATE_MASK
 
 /* Flag sets for slays and brands. */
 #define OF_SLAY_MASK \
