@@ -13,6 +13,8 @@ extern void roff_top(int r_idx);
 extern void screen_roff(int r_idx);
 extern void display_roff(int r_idx);
 extern int lookup_monster(const char *name);
+extern int rval_find_idx(const char *name);
+extern const char *rval_find_name(int rval);
 
 /* monster2.c */
 extern bool wake_monster(monster_type *m_ptr);

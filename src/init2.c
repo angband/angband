@@ -25,6 +25,7 @@
 #include "init.h"
 #include "macro.h"
 #include "monster/constants.h"
+#include "monster/monster.h"
 #include "monster/rval.h"
 #include "object/tvalsval.h"
 #include "option.h"
@@ -1298,8 +1299,8 @@ struct parser *init_parse_rb(void) {
 	parser_setpriv(p, NULL);
 
 	parser_reg(p, "V sym version", ignored);
-	parser_reg(p, "F ?str flags", parse_rb_f);
 	parser_reg(p, "N uint index", parse_rb_n);
+	parser_reg(p, "F ?str flags", parse_rb_f);
 	/* Add rest of fields */
 	return p;
 }
@@ -1346,6 +1347,18 @@ static enum parser_error parse_r_n(struct parser *p) {
 	r->ridx = parser_getuint(p, "index");
 	r->name = string_make(parser_getstr(p, "name"));
 	parser_setpriv(p, r);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_r_t(struct parser *p) {
+	struct monster_race *r = parser_priv(p);
+	int rval;
+	
+	rval = rval_find_idx(parser_getsym(p, "rval"));
+	if (rval < 0)
+		/* Todo: make new error for this */
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+	r->rval = rval;
 	return PARSE_ERROR_NONE;
 }
 
@@ -1473,6 +1486,9 @@ static enum parser_error parse_r_f(struct parser *p) {
 		}
 		s = strtok(NULL, " |");
 	}
+	
+	/* Add the "base monster" flags to the monster */
+	rf_union(r->flags, rb_info[r->rval].flags);
 
 	mem_free(flags);
 	return PARSE_ERROR_NONE;
@@ -1533,6 +1549,7 @@ struct parser *init_parse_r(void) {
 
 	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "N uint index str name", parse_r_n);
+	parser_reg(p, "T sym rval", parse_r_t);
 	parser_reg(p, "G char glyph sym color", parse_r_g);
 	parser_reg(p, "I int speed int hp int aaf int ac int sleep", parse_r_i);
 	parser_reg(p, "W int level int rarity int power int mexp", parse_r_w);
@@ -3573,6 +3590,10 @@ bool init_angband(void)
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (ego-items)");
 	if (run_parser(&e_parser)) quit("Cannot initialize ego-items");
 
+	/* Initialize monster-base info */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (monster bases)");
+	if (run_parser(&rb_parser)) quit("Cannot initialize monster bases");
+	
 	/* Initialize monster info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (monsters)");
 	if (run_parser(&r_parser)) quit("Cannot initialize monsters");

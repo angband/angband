@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "monster/constants.h"
 #include "monster/monster.h"
+#include "monster/rval.h"
 #include "object/tvalsval.h"
 
 /*
@@ -2063,4 +2064,50 @@ int lookup_monster(const char *name)
 	}
 
 	return -1;
+}
+
+/*
+ * List of { rval, name } pairs.
+ */
+static const grouper rval_names[] =
+{
+	{ RV_ANGEL,    "angel" },
+	{ RV_ANT,      "ant" },
+	{ RV_BAT,        "bat" },
+};
+
+/*
+ * Returns the numeric equivalent rval of the textual rval `name`.
+ */
+int rval_find_idx(const char *name)
+{
+	size_t i = 0;
+	unsigned int r;
+
+	if (sscanf(name, "%u", &r) == 1)
+		return r;
+
+	for (i = 0; i < N_ELEMENTS(rval_names); i++)
+	{
+		if (!my_stricmp(name, rval_names[i].name))
+			return rval_names[i].tval;
+	}
+
+	return -1;
+}
+
+/*
+ * Returns the textual equivalent rval of the numeric rval `name`.
+ */
+const char *rval_find_name(int rval)
+{
+	size_t i = 0;
+
+	for (i = 0; i < N_ELEMENTS(rval_names); i++)
+	{
+		if (rval == rval_names[i].tval)
+			return rval_names[i].name;
+	}
+
+	return "unknown";
 }

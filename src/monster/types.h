@@ -61,7 +61,7 @@ typedef struct monster_race
 	char *name;
 	char *text;
 
-	/* monster_base *base; */
+	int rval;
 	
 	u16b avg_hp;				/* Average HP for this creature */
 
