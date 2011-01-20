@@ -1280,7 +1280,7 @@ static void calc_torch(void)
  * "o_ptr". NOTE - this function does not take any extra blows from items
  * into account.
  *
- * N.B. state->num_blow is now 100x the number of blows.
+ * N.B. state->num_blows is now 100x the number of blows.
  */
 int calc_blows(const object_type *o_ptr, player_state *state, int extra_blows)
 {
@@ -1384,7 +1384,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 
 	/* Set various defaults */
 	state->speed = 110;
-	state->num_blow = 100;
+	state->num_blows = 100;
 
 
 	/*** Extract race/class info ***/
@@ -1855,7 +1855,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	if (o_ptr->kind)
 	{
 		/* Get to shoot */
-		state->num_fire = 1;
+		state->num_shots = 1;
 
 		/* Analyze the launcher */
 		switch (o_ptr->sval)
@@ -1905,7 +1905,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		if (o_ptr->kind && !state->heavy_shoot)
 		{
 			/* Extra shots */
-			state->num_fire += extra_shots;
+			state->num_shots += extra_shots;
 
 			/* Extra might */
 			state->ammo_mult += extra_might;
@@ -1915,15 +1915,15 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 			    (state->ammo_tval == TV_ARROW))
 			{
 				/* Extra shot at level 20 */
-				if (p_ptr->lev >= 20) state->num_fire++;
+				if (p_ptr->lev >= 20) state->num_shots++;
 
 				/* Extra shot at level 40 */
-				if (p_ptr->lev >= 40) state->num_fire++;
+				if (p_ptr->lev >= 40) state->num_shots++;
 			}
 		}
 
 		/* Require at least one shot */
-		if (state->num_fire < 1) state->num_fire = 1;
+		if (state->num_shots < 1) state->num_shots = 1;
 	}
 
 
@@ -1954,7 +1954,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	if (!state->heavy_wield)
 	{
 		/* Calculate number of blows */
-		state->num_blow = calc_blows(o_ptr, state, extra_blows);
+		state->num_blows = calc_blows(o_ptr, state, extra_blows);
 
 		/* Boost digging skill by weapon weight */
 		state->skills[SKILL_DIGGING] += (o_ptr->weight / 10);

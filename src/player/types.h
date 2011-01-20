@@ -9,8 +9,8 @@ typedef struct
 {
 	s16b speed;		/* Current speed */
 
-	s16b num_blow;		/* Number of blows x100 */
-	s16b num_fire;		/* Number of shots */
+	s16b num_blows;		/* Number of blows x100 */
+	s16b num_shots;		/* Number of shots */
 
 	byte ammo_mult;		/* Ammo multiplier */
 	byte ammo_tval;		/* Ammo variety */
