@@ -336,7 +336,7 @@ void py_attack(int y, int x)
 	disturb(0,0);
 
 	/* calculate energy per blow */
-	blow_energy = 10000 / p_ptr->state.num_blow;
+	blow_energy = 10000 / p_ptr->state.num_blows;
 
 	/*
 	 * set energy use to zero, overriding whatever was set before we
@@ -476,7 +476,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 	missile_char = object_char(o_ptr);
 
 	/* Use the proper number of shots */
-	thits = p_ptr->state.num_fire;
+	thits = p_ptr->state.num_shots;
 
 	/* Actually "fire" the object */
 	bonus = (p_ptr->state.to_h + o_ptr->to_h + j_ptr->to_h);

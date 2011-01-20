@@ -574,12 +574,12 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 			textblock_append_c(tb, TERM_L_RED, "You are too weak to use this weapon.\n");
 
 		textblock_append_c(tb, TERM_L_GREEN, "%d.%d ",
-				state.num_blow / 100, (state.num_blow / 10) % 10);
+				state.num_blows / 100, (state.num_blows / 10) % 10);
 		textblock_append(tb, "blow%s/round.\n",
-				(state.num_blow > 100) ? "s" : "");
+				(state.num_blows > 100) ? "s" : "");
 
 		/* Check to see if extra STR or DEX would yield extra blows */
-		old_blows = state.num_blow;
+		old_blows = state.num_blows;
 		extra_blows = 0;
 
 		/* First we need to look for extra blows on other items, as
@@ -712,7 +712,7 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 		if (weapon) 
 			total_dam = (total_dam * old_blows) / 100;
 		else
-			total_dam *= p_ptr->state.num_fire;
+			total_dam *= p_ptr->state.num_shots;
 		
 
 		if (total_dam <= 0)
@@ -736,7 +736,7 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 	if (weapon)
 		total_dam = (total_dam * old_blows) / 100;
 	else
-		total_dam *= p_ptr->state.num_fire;
+		total_dam *= p_ptr->state.num_shots;
 
 	if (total_dam <= 0)
 		textblock_append_c(tb, TERM_L_RED, "%d", 0);
