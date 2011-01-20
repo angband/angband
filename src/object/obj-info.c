@@ -629,7 +629,9 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 				 */
 				if (new_blows > old_blows &&
 					(str_plus < str_faster ||
-					str_faster == -1))
+					str_faster == -1) &&
+					(str_plus < str_done ||
+					str_done == -1))
 				{
 					textblock_append(tb, "With +%d STR and +%d DEX you would attack a bit faster\n",
 						str_plus, dex_plus);
