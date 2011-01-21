@@ -418,36 +418,10 @@ static cptr ident_info[] =
 {
 	" :A dark grid",
 	"!:A potion (or oil)",
-	"\":An amulet (or necklace)",
 	"#:A wall (or secret door)",
-	"$:Treasure (gold or gems)",
-	"%:A vein (magma or quartz)",
 	/* "&:unused", */
-	"':An open door",
-	"(:Soft armor",
-	"):A shield",
-	"*:A vein with treasure",
-	"+:A closed door",
 	",:Food (or mushroom patch)",
 	"-:A wand (or rod)",
-	".:Floor",
-	"/:A polearm (Axe/Pike/etc)",
-	/* "0:unused", */
-	"1:Entrance to General Store",
-	"2:Entrance to Armory",
-	"3:Entrance to Weaponsmith",
-	"4:Entrance to Temple",
-	"5:Entrance to Alchemy shop",
-	"6:Entrance to Magic store",
-	"7:Entrance to Black Market",
-	"8:Entrance to your home",
-	/* "9:unused", */
-	"::Rubble",
-	";:A glyph of warding",
-	"<:An up staircase",
-	"=:A ring",
-	">:A down staircase",
-	"?:A scroll",
 	"@:You",
 	"A:Angel",
 	"B:Bird",
@@ -564,6 +538,60 @@ int cmp_monsters(const void *a, const void *b)
 }
 
 /*
+ * Search the monster, item, and feature types to find the
+ * meaning for the given symbol.
+ *
+ * Note: We currently search items first, then features, then
+ * monsters, and we return the first hit for a symbol.
+ * This is to prevent mimics and lurkers from matching
+ * a symbol instead of the item or feature it is mimicking.
+ *
+ * Todo: Should this take the user's pref files into account?
+ */
+void lookup_symbol(char sym, char *buf, size_t max)
+{
+	int i;
+
+	/* Look through items */
+	/* Note: We currently look through all items, and grab the tval when we find a match.
+	It would make more sense to loop through tvals, but then we need to associate
+	a display character with each tval. */
+	for (i = 1; i < z_info->k_max; i++)
+	{
+		if(k_info[i].d_char == sym)
+		{
+			strnfmt(buf, max, "%c - %s.", sym, tval_find_name(k_info[i].tval));
+			return;
+		}
+	}
+
+	/* Look through features */
+	for (i = 1; i < z_info->f_max; i++)
+	{
+		if(f_info[i].d_char == sym)
+		{
+			strnfmt(buf, max, "%c - %s.", sym, f_info[i].name);
+			return;
+		}
+	}
+	
+	/* Look through monster templates */
+	for (i = 1; i < z_info->rb_max; i++)
+	{
+		if(rb_info[i].d_char == sym)
+		{
+			strnfmt(buf, max, "%c - %s.", sym, rb_info[i].name);
+			return;
+		}
+	}
+
+	/* No matches */
+	strnfmt(buf, max, "%c - %s.", sym, "Unknown Symbol");
+	
+	return;
+}
+
+/*
  * Identify a character, allow recall of monsters
  *
  * Several "special" responses recall "multiple" monsters:
@@ -591,15 +619,8 @@ void do_cmd_query_symbol(void)
 
 	u16b *who;
 
-
 	/* Get a character, or abort */
 	if (!get_com("Enter character to be identified, or control+[ANU]: ", &sym)) return;
-
-	/* Find that character info, and describe it */
-	for (i = 0; ident_info[i]; ++i)
-	{
-		if (sym == ident_info[i][0]) break;
-	}
 
 	/* Describe */
 	if (sym == KTRL('A'))
@@ -617,18 +638,13 @@ void do_cmd_query_symbol(void)
 		all = norm = TRUE;
 		my_strcpy(buf, "Non-unique monster list.", sizeof(buf));
 	}
-	else if (ident_info[i])
-	{
-		strnfmt(buf, sizeof(buf), "%c - %s.", sym, ident_info[i] + 2);
-	}
 	else
 	{
-		strnfmt(buf, sizeof(buf), "%c - %s.", sym, "Unknown Symbol");
+		lookup_symbol(sym, buf, sizeof(buf));
 	}
 
 	/* Display the result */
 	prt(buf, 0, 0);
-
 
 	/* Allocate the "who" array */
 	who = C_ZNEW(z_info->r_max, u16b);
