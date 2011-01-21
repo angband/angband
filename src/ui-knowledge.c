@@ -827,7 +827,7 @@ static bool visual_mode_command(ui_event ke, bool *visual_list_ptr,
 					mx = logical_width(mx);
 
 					if ((my >= 0) && (my < eff_height) && (mx >= 0) && (mx < eff_width)
-						&& ((ke.index) || (a != *attr_top_ptr + my)
+						&& ((ke.mousebutton) || (a != *attr_top_ptr + my)
 							|| (c != *char_left_ptr + mx)))
 					{
 						/* Set the visual */
@@ -848,14 +848,14 @@ static bool visual_mode_command(ui_event ke, bool *visual_list_ptr,
 						*delay = 100;
 
 						/* Accept change */
-						if (ke.index) 
+						if (ke.mousebutton) 
 						  remove_visual_list(col, row, visual_list_ptr, width, height);
 
 						return TRUE;
 					}
 
 					/* Cancel change */
-					else if (ke.index)
+					else if (ke.mousebutton)
 					{
 						*cur_attr_ptr = attr_old;
 						*cur_char_ptr = char_old;

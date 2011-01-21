@@ -689,19 +689,12 @@ static ui_event inkey_aux(int scan_cutoff)
 {
 	int k = 0, n, p = 0, w = 0;
 	
-	ui_event ke, ke0;
+	ui_event ke, ke0 = EVENT_EMPTY;
 	char ch;
 	
 	const char *pat, *act;
 	
 	char buf[1024];
-
-	/* Initialize the no return */
-	ke0.type = EVT_NONE;
-	ke0.key = 0;
-	ke0.index = 0; /* To fix GCC warnings on X11 */
-	ke0.mousey = 0;
-	ke0.mousex = 0;
  
 	/* Wait for a keypress */
 	if (scan_cutoff == SCAN_OFF)
@@ -1128,7 +1121,7 @@ ui_event inkey_ex(void)
 				/* Rewrite the event */
 				ke.type = EVT_BUTTON;
 				ke.key = key;
-				ke.index = 0;
+				ke.mousebutton = 0;
 				ke.mousey = 0;
 				ke.mousex = 0;
 

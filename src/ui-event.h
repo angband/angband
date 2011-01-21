@@ -23,8 +23,8 @@ typedef struct
 {
 	ui_event_type type;
 	byte mousex, mousey;
+	int mousebutton;
 	char key;
-	short index;
 } ui_event;
 
 #define EVENT_EMPTY		{ EVT_NONE, 0, 0, 0, 0 }

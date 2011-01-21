@@ -1966,7 +1966,6 @@ errr Term_keypress(int k)
   
   /* Store the char, advance the queue */
   Term->key_queue[Term->key_head].key = k;
-  Term->key_queue[Term->key_head].index = 0;
   Term->key_queue[Term->key_head].type = EVT_KBRD;
   Term->key_head++;
   
@@ -1989,7 +1988,7 @@ errr Term_mousepress(int x, int y, char button)
   Term->key_queue[Term->key_head].key = 0;
   Term->key_queue[Term->key_head].mousex = x;
   Term->key_queue[Term->key_head].mousey = y;
-  Term->key_queue[Term->key_head].index = button;
+  Term->key_queue[Term->key_head].mousebutton = button;
   Term->key_queue[Term->key_head].type = EVT_MOUSE;
   Term->key_head++;
   
@@ -2019,7 +2018,6 @@ errr Term_key_push(int k)
 	if (!k) return (-1);
 
 	ke.type = EVT_KBRD;
-	ke.index = 0;
 	ke.key = k;
 
 	return Term_event_push(&ke);
