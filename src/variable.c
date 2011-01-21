@@ -572,6 +572,7 @@ ego_item_type *e_info;
  * The monster race arrays
  */
 monster_race *r_info;
+monster_base *rb_info;
 
 struct player_race *races;
 struct player_class *classes;

@@ -21,8 +21,21 @@ typedef struct
 	byte d_side;
 } monster_blow;
 
+/*
+ * Information about "base" monster type.
+ */
+typedef struct monster_base
+{
+	char *name;
+	
+	int rval;
+	struct monster_base *next;
 
+	bitflag flags[RF_SIZE];         /* Flags */
 
+	char d_char;			/* Default monster character */
+} monster_base;
+ 
 /*
  * Monster "race" information, including racial memories
  *
@@ -48,6 +61,8 @@ typedef struct monster_race
 	char *name;
 	char *text;
 
+	int rval;
+	
 	u16b avg_hp;				/* Average HP for this creature */
 
 	s16b ac;				/* Armour Class */

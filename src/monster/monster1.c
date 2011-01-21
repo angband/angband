@@ -2064,3 +2064,25 @@ int lookup_monster(const char *name)
 
 	return -1;
 }
+
+/*
+ * Return the rb_idx of the monster with the given name.
+ */
+int lookup_monster_base(const char *name)
+{
+	int i;
+
+	/* Look for it */
+	for (i = 1; i < z_info->rb_max; i++)
+	{
+		monster_base *rb_ptr = &rb_info[i];
+		const char *nm = rb_ptr->name;
+
+		/* Found a match */
+		if (streq(name, nm))
+			return i;
+
+	}
+
+	return -1;
+}

@@ -1313,8 +1313,7 @@ enum
  * Some monster types are different.
  */
 #define monster_is_unusual(R) \
-	(flags_test((R)->flags, RF_SIZE, RF_DEMON, RF_UNDEAD, RF_STUPID, FLAG_END) || \
-	strchr("Evg", (R)->d_char))
+	(flags_test((R)->flags, RF_SIZE, RF_DEMON, RF_UNDEAD, RF_STUPID, RF_MATERIAL, FLAG_END))
 
 
 /*

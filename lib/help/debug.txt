@@ -105,6 +105,11 @@ Zap monsters (z)
 		monsters whose distance to the character is at most the command-count
 		instead.
 
+--- Miscellaneous ---
+
+Create a trap (T)		
+		Creates a random trap on your square.
+		
 --- Undocumented ---
 		
 Query the dungeon (q)

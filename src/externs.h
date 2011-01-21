@@ -121,6 +121,7 @@ extern object_base *kb_info;
 extern object_kind *k_info;
 extern artifact_type *a_info;
 extern ego_item_type *e_info;
+extern monster_base *rb_info;
 extern monster_race *r_info;
 extern owner_type *b_info;
 extern byte *g_info;
