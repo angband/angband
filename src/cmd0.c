@@ -273,7 +273,7 @@ static bool cmd_menu(command_list *list, void *selection_p)
 	menu_iter commands_menu = { NULL, NULL, cmd_sub_entry, NULL, NULL };
 	region area = { 23, 4, 37, 13 };
 
-	ui_event_data evt;
+	ui_event evt;
 	struct generic_command *selection = selection_p;
 
 	/* Set up th emenu */
@@ -299,7 +299,7 @@ static bool cmd_menu(command_list *list, void *selection_p)
 
 
 
-static bool cmd_list_action(menu_type *m, const ui_event_data *event, int oid)
+static bool cmd_list_action(menu_type *m, const ui_event *event, int oid)
 {
 	if (event->type == EVT_SELECT)
 		return cmd_menu(&cmds_all[oid], menu_priv(m));
@@ -432,7 +432,7 @@ static int textui_get_count(void)
 
 	while (1)
 	{
-		ui_event_data ke;
+		ui_event ke;
 
 		prt(format("Count: %d", count), 0, 0);
 
@@ -492,13 +492,13 @@ static char request_command_buffer[256];
  * Note that "backslash" is treated specially, and is used to bypass any
  * keymap entry for the following character.  This is useful for macros.
  */
-static ui_event_data textui_get_command(void)
+static ui_event textui_get_command(void)
 {
 	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
 	char tmp[2] = { '\0', '\0' };
 
-	ui_event_data ke = EVENT_EMPTY;
+	ui_event ke = EVENT_EMPTY;
 
 	const char *act = NULL;
 
@@ -599,7 +599,7 @@ static ui_event_data textui_get_command(void)
 /**
  * Handle a textui mouseclick.
  */
-static void textui_process_click(ui_event_data e)
+static void textui_process_click(ui_event e)
 {
 	int x, y;
 
@@ -732,7 +732,7 @@ static bool textui_process_key(unsigned char c)
 void textui_process_command(bool no_request)
 {
 	bool done = TRUE;
-	ui_event_data e;
+	ui_event e;
 
 	/* Reset argument before getting command */
 	p_ptr->command_arg = 0;

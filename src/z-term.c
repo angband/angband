@@ -2014,7 +2014,7 @@ errr Term_mousepress(int x, int y, char button)
  */
 errr Term_key_push(int k)
 {
-	ui_event_data ke;
+	ui_event ke;
 
 	if (!k) return (-1);
 
@@ -2025,7 +2025,7 @@ errr Term_key_push(int k)
 	return Term_event_push(&ke);
 }
 
-errr Term_event_push(const ui_event_data *ke)
+errr Term_event_push(const ui_event *ke)
 {
 	/* Hack -- Refuse to enqueue non-keys */
 	if (!ke) return (-1);
@@ -2063,7 +2063,7 @@ errr Term_event_push(const ui_event_data *ke)
  *
  * Remove the keypress if "take" is true.
  */
-errr Term_inkey(ui_event_data *ch, bool wait, bool take)
+errr Term_inkey(ui_event *ch, bool wait, bool take)
 {
 	/* Assume no key */
 	ch->type = ch->key = 0;
@@ -2215,7 +2215,7 @@ errr Term_resize(int w, int h)
 	term_win *hold_mem;
 	term_win *hold_tmp;
 
-	ui_event_data evt = { EVT_RESIZE, 0, 0, 0, 0 };
+	ui_event evt = { EVT_RESIZE, 0, 0, 0, 0 };
 
 
 	/* Resizing is forbidden */
@@ -2505,7 +2505,7 @@ errr term_init(term *t, int w, int h, int k)
 	t->key_size = k;
 
 	/* Allocate the input queue */
-	t->key_queue = C_ZNEW(t->key_size, ui_event_data);
+	t->key_queue = C_ZNEW(t->key_size, ui_event);
 
 
 	/* Save the size */

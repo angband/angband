@@ -92,7 +92,7 @@ static void option_toggle_display(menu_type *m, int oid, bool cursor,
 /**
  * Handle keypresses for an option entry.
  */
-static bool option_toggle_handle(menu_type *m, const ui_event_data *event,
+static bool option_toggle_handle(menu_type *m, const ui_event *event,
 		int oid)
 {
 	bool next = FALSE;
@@ -202,7 +202,7 @@ static void do_cmd_options_win(const char *name, int row)
 	int y = 0;
 	int x = 0;
 
-	ui_event_data ke;
+	ui_event ke;
 
 	u32b new_flags[ANGBAND_TERM_MAX];
 
@@ -362,7 +362,7 @@ static void do_cmd_options_win(const char *name, int row)
  */
 static void do_cmd_macro_aux(char *buf)
 {
-	ui_event_data e;
+	ui_event e;
 
 	int n = 0;
 	int curs_x, curs_y;
@@ -1251,12 +1251,12 @@ static void quality_subdisplay(menu_type *menu, int oid, bool cursor, int row, i
 /*
  * Handle keypresses.
  */
-static bool quality_action(menu_type *m, const ui_event_data *event, int oid)
+static bool quality_action(menu_type *m, const ui_event *event, int oid)
 {
 	menu_type menu;
 	menu_iter menu_f = { NULL, NULL, quality_subdisplay, NULL, NULL };
 	region area = { 27, 2, 29, SQUELCH_MAX };
-	ui_event_data evt;
+	ui_event evt;
 	int cursor;
 	int count;
 
@@ -1354,7 +1354,7 @@ static void squelch_sval_menu_display(menu_type *menu, int oid, bool cursor,
 /*
  * Deal with events on the sval menu
  */
-static bool squelch_sval_menu_action(menu_type *m, const ui_event_data *event,
+static bool squelch_sval_menu_action(menu_type *m, const ui_event *event,
 		int oid)
 {
 	const squelch_choice *choice = menu_priv(m);
@@ -1580,7 +1580,7 @@ static void display_options_item(menu_type *menu, int oid, bool cursor, int row,
 	}
 }
 
-bool handle_options_item(menu_type *menu, const ui_event_data *event, int oid)
+bool handle_options_item(menu_type *menu, const ui_event *event, int oid)
 {
 	if (event->type == EVT_SELECT)
 	{

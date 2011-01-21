@@ -451,7 +451,7 @@ void wiz_create_item_subdisplay(menu_type *m, int oid, bool cursor,
 	c_prt(curs_attrs[CURS_KNOWN][0 != cursor], buf, row, col);
 }
 
-bool wiz_create_item_subaction(menu_type *m, const ui_event_data *e, int oid)
+bool wiz_create_item_subaction(menu_type *m, const ui_event *e, int oid)
 {
 	object_kind **choices = menu_priv(m);
 	object_kind *kind = choices[oid];
@@ -504,9 +504,9 @@ static void wiz_create_item_display(menu_type *m, int oid, bool cursor,
 	c_prt(curs_attrs[CURS_KNOWN][0 != cursor], buf, row, col);
 }
 
-static bool wiz_create_item_action(menu_type *m, const ui_event_data *e, int oid)
+static bool wiz_create_item_action(menu_type *m, const ui_event *e, int oid)
 {
-	ui_event_data ret;
+	ui_event ret;
 	menu_type *menu;
 
 	char buf[80];

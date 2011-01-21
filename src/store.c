@@ -2990,7 +2990,7 @@ static bool store_process_command_key(char cmd)
 /*
  *
  */
-bool store_menu_handle(menu_type *m, const ui_event_data *event, int oid)
+bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
 {
 	bool processed = TRUE;
 

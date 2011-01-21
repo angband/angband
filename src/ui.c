@@ -60,7 +60,7 @@ void region_erase(const region *loc)
 		Term_erase(calc.col, calc.row + i, calc.width);
 }
 
-bool region_inside(const region *loc, const ui_event_data *key)
+bool region_inside(const region *loc, const ui_event *key)
 {
 	if ((loc->col > key->mousex) || (loc->col + loc->width <= key->mousex))
 		return FALSE;

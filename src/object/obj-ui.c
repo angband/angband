@@ -593,7 +593,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 	int px = p_ptr->px;
 	unsigned char cmdkey = cmd_lookup_key(cmd);
 
-	ui_event_data which;
+	ui_event which;
 
 	int j, k;
 

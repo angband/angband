@@ -25,7 +25,7 @@ typedef struct
 	byte mousex, mousey;
 	char key;
 	short index;
-} ui_event_data;
+} ui_event;
 
 #define EVENT_EMPTY		{ EVT_NONE, 0, 0, 0, 0 }
 

@@ -685,11 +685,11 @@ static bool parse_under = FALSE;
  * macro trigger, 500 milliseconds must pass before the key sequence is
  * known not to be that macro trigger.  XXX XXX XXX
  */
-static ui_event_data inkey_aux(int scan_cutoff)
+static ui_event inkey_aux(int scan_cutoff)
 {
 	int k = 0, n, p = 0, w = 0;
 	
-	ui_event_data ke, ke0;
+	ui_event ke, ke0;
 	char ch;
 	
 	const char *pat, *act;
@@ -948,11 +948,11 @@ char (*inkey_hack)(int flush_first) = NULL;
  * Mega-Hack -- Note the use of "inkey_hack" to allow the "Borg" to steal
  * control of the keyboard from the user.
  */
-ui_event_data inkey_ex(void)
+ui_event inkey_ex(void)
 {
 	bool cursor_state;
-	ui_event_data kk;
-	ui_event_data ke;
+	ui_event kk;
+	ui_event ke;
 
 	bool done = FALSE;
 
@@ -1214,7 +1214,7 @@ ui_event_data inkey_ex(void)
  */
 char anykey(void)
 {
-	ui_event_data ke = EVENT_EMPTY;
+	ui_event ke = EVENT_EMPTY;
   
 	/* Only accept a keypress or mouse click*/
 	do
@@ -1230,7 +1230,7 @@ char anykey(void)
  */
 char inkey(void)
 {
-	ui_event_data ke = EVENT_EMPTY;
+	ui_event ke = EVENT_EMPTY;
 
 	/* Only accept a keypress */
 	do
@@ -2432,7 +2432,7 @@ s16b get_quantity(const char *prompt, int max)
  */
 bool get_check(const char *prompt)
 {
-	ui_event_data ke;
+	ui_event ke;
 
 	char buf[80];
 
@@ -2587,7 +2587,7 @@ bool (*get_file)(const char *suggested_name, char *path, size_t len) = get_file_
  */
 bool get_com(const char *prompt, char *command)
 {
-	ui_event_data ke;
+	ui_event ke;
 	bool result;
 
 	result = get_com_ex(prompt, &ke);
@@ -2597,9 +2597,9 @@ bool get_com(const char *prompt, char *command)
 }
 
 
-bool get_com_ex(const char *prompt, ui_event_data *command)
+bool get_com_ex(const char *prompt, ui_event *command)
 {
-	ui_event_data ke;
+	ui_event ke;
 
 	/* Paranoia XXX XXX XXX */
 	message_flush();

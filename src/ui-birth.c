@@ -92,7 +92,7 @@ static bool quickstart_allowed = FALSE;
 static enum birth_stage get_quickstart_command(void)
 {
 	const char *prompt = "['Y' to use this character, 'N' to start afresh, 'C' to change name]";
-	ui_event_data ke;
+	ui_event ke;
 
 	enum birth_stage next = BIRTH_QUICKSTART;
 
@@ -542,7 +542,7 @@ static void print_menu_instructions(void)
 static enum birth_stage menu_question(enum birth_stage current, menu_type *current_menu, cmd_code choice_command)
 {
 	struct birthmenu_data *menu_data = menu_priv(current_menu);
-	ui_event_data cx;
+	ui_event cx;
 
 	enum birth_stage next = BIRTH_RESET;
 	
@@ -641,7 +641,7 @@ static enum birth_stage roller_command(bool first_call)
 	char prompt[80] = "";
 	size_t promptlen = 0;
 
-	ui_event_data ke;
+	ui_event ke;
 	char ch;
 
 	enum birth_stage next = BIRTH_ROLLER;
@@ -902,7 +902,7 @@ static enum birth_stage get_name_command(void)
 static enum birth_stage get_confirm_command(void)
 {
 	const char *prompt = "['ESC' to step back, 'S' to start over, or any other key to continue]";
-	ui_event_data ke;
+	ui_event ke;
 
 	enum birth_stage next;
 

@@ -81,7 +81,7 @@ static void menu_action_display(menu_type *m, int oid, bool cursor, int row, int
 	display_action_aux(&acts[oid], color, row, col, width);
 }
 
-static bool menu_action_handle(menu_type *m, const ui_event_data *event, int oid)
+static bool menu_action_handle(menu_type *m, const ui_event *event, int oid)
 {
 	menu_action *acts = menu_priv(m);
 
@@ -196,9 +196,9 @@ static char scroll_get_tag(menu_type *menu, int pos)
 	return 0;
 }
 
-static ui_event_data scroll_process_direction(menu_type *m, int dir)
+static ui_event scroll_process_direction(menu_type *m, int dir)
 {
-	ui_event_data out = EVENT_EMPTY;
+	ui_event out = EVENT_EMPTY;
 
 	/* Reject diagonals */
 	if (ddx[dir] && ddy[dir])
@@ -285,9 +285,9 @@ static char column_get_tag(menu_type *menu, int pos)
 	return 0;
 }
 
-static ui_event_data column_process_direction(menu_type *m, int dir)
+static ui_event column_process_direction(menu_type *m, int dir)
 {
-	ui_event_data out = EVENT_EMPTY;
+	ui_event out = EVENT_EMPTY;
 
 	int n = m->filter_list ? m->filter_count : m->count;
 
@@ -469,8 +469,8 @@ void menu_refresh(menu_type *menu)
  * Mouse output is either moving, selecting, escaping, or nothing.  Returns
  * TRUE if something changes as a result of the click.
  */
-bool menu_handle_mouse(menu_type *menu, const ui_event_data *in,
-		ui_event_data *out)
+bool menu_handle_mouse(menu_type *menu, const ui_event *in,
+		ui_event *out)
 {
 	int new_cursor;
 
@@ -509,7 +509,7 @@ bool menu_handle_mouse(menu_type *menu, const ui_event_data *in,
  * Returns TRUE if the key was handled at all (including if it's not handled
  * and just ignored).
  */
-bool menu_handle_action(menu_type *m, const ui_event_data *in)
+bool menu_handle_action(menu_type *m, const ui_event *in)
 {
 	if (m->row_funcs->row_handler)
 	{
@@ -530,8 +530,8 @@ bool menu_handle_action(menu_type *m, const ui_event_data *in)
  * Returns TRUE if they key was intelligible as navigation, regardless of
  * whether any action was taken.
  */
-bool menu_handle_keypress(menu_type *menu, const ui_event_data *in,
-		ui_event_data *out)
+bool menu_handle_keypress(menu_type *menu, const ui_event *in,
+		ui_event *out)
 {
 	bool eat = FALSE;
 	int count = menu->filter_list ? menu->filter_count : menu->count;
@@ -615,9 +615,9 @@ bool menu_handle_keypress(menu_type *menu, const ui_event_data *in,
 /* 
  * Run a menu.
  */
-ui_event_data menu_select(menu_type *menu, int notify)
+ui_event menu_select(menu_type *menu, int notify)
 {
-	ui_event_data in = EVENT_EMPTY;
+	ui_event in = EVENT_EMPTY;
 	bool no_act = (menu->flags & MN_NO_ACTION) ? TRUE : FALSE;
 
 	assert(menu->active.width != 0 && menu->active.page_rows != 0);
@@ -628,7 +628,7 @@ ui_event_data menu_select(menu_type *menu, int notify)
 	while (!(in.type & notify))
 	{
 		bool ignore;
-		ui_event_data out = EVENT_EMPTY;
+		ui_event out = EVENT_EMPTY;
 
 		menu_refresh(menu);
 		in = inkey_ex();
@@ -902,7 +902,7 @@ size_t menu_dynamic_longest_entry(menu_type *m)
 
 int menu_dynamic_select(menu_type *m)
 {
-	ui_event_data e = menu_select(m, 0);
+	ui_event e = menu_select(m, 0);
 	struct menu_entry *entry;
 	int cursor = m->cursor;
 

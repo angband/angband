@@ -602,7 +602,7 @@ static void target_display_help(bool monster, bool free)
  *
  * This function must handle blindness/hallucination.
  */
-static ui_event_data target_set_interactive_aux(int y, int x, int mode)
+static ui_event target_set_interactive_aux(int y, int x, int mode)
 {
 	s16b this_o_idx = 0, next_o_idx = 0;
 
@@ -617,7 +617,7 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode)
 	int floor_list[MAX_FLOOR_STACK];
 	int floor_num;
 
-	ui_event_data query;
+	ui_event query;
 
 	char out_val[256];
 
@@ -1139,7 +1139,7 @@ bool target_set_interactive(int mode, int x, int y)
 	bool flag = TRUE;
 	bool help = FALSE;
 
-	ui_event_data query;
+	ui_event query;
 
 	/* If we haven't been given an initial location, start on the
 	   player. */

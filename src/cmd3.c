@@ -33,7 +33,7 @@
  */
 void do_cmd_inven(void)
 {
-	ui_event_data e;
+	ui_event e;
 	int diff = weight_remaining();
 
 	/* Hack -- Start in "inventory" mode */
@@ -73,7 +73,7 @@ void do_cmd_inven(void)
  */
 void do_cmd_equip(void)
 {
-	ui_event_data e;
+	ui_event e;
 
 	/* Hack -- Start in "equipment" mode */
 	p_ptr->command_wrk = (USE_EQUIP);
@@ -527,7 +527,7 @@ void do_cmd_query_symbol(void)
 	char sym;
 	char buf[128];
 
-	ui_event_data query;
+	ui_event query;
 
 	bool all = FALSE;
 	bool uniq = FALSE;

@@ -93,7 +93,7 @@ typedef struct
 
 	/* Handle 'positive' events (selections or cmd_keys) */
 	/* XXX split out into a select handler and a cmd_key handler */
-	bool (*row_handler)(menu_type *menu, const ui_event_data *event, int oid);
+	bool (*row_handler)(menu_type *menu, const ui_event *event, int oid);
 
 	/* Called when the screen resizes */
 	void (*resize)(menu_type *m);
@@ -126,7 +126,7 @@ typedef struct
 	char (*get_tag)(menu_type *menu, int pos);
 
 	/* Process a direction */
-	ui_event_data (*process_dir)(menu_type *menu, int dir);
+	ui_event (*process_dir)(menu_type *menu, int dir);
 } menu_skin;
 
 
@@ -293,7 +293,7 @@ void menu_refresh(menu_type *menu);
  * 
  * XXX remove 'notify'
  */
-ui_event_data menu_select(menu_type *menu, int notify);
+ui_event menu_select(menu_type *menu, int notify);
 
 /**
  * Set the menu cursor to the next valid row.
@@ -302,8 +302,8 @@ void menu_ensure_cursor_valid(menu_type *m);
 
 
 /* Interal menu stuff that cmd-know needs because it's quite horrible */
-bool menu_handle_mouse(menu_type *menu, const ui_event_data *in, ui_event_data *out);
-bool menu_handle_keypress(menu_type *menu, const ui_event_data *in, ui_event_data *out);
+bool menu_handle_mouse(menu_type *menu, const ui_event *in, ui_event *out);
+bool menu_handle_keypress(menu_type *menu, const ui_event *in, ui_event *out);
 
 
 /*** Dynamic menu handling ***/

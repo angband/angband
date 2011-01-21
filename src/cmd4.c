@@ -119,7 +119,7 @@ void do_cmd_redraw(void)
  */
 void do_cmd_change_name(void)
 {
-	ui_event_data ke;
+	ui_event ke;
 
 	int mode = 0;
 
@@ -236,7 +236,7 @@ void do_cmd_message_one(void)
  */
 void do_cmd_messages(void)
 {
-	ui_event_data ke;
+	ui_event ke;
 
 	int i, j, n, q;
 	int wid, hgt;

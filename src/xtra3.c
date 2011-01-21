@@ -1773,7 +1773,7 @@ static void see_floor_items(game_event_type type, game_event_data *data, void *u
 	}
 	else
 	{
-		ui_event_data e;
+		ui_event e;
 
 		if (!can_pickup)	p = "have no room for the following objects";
 		else if (blind)     p = "feel something on the floor";

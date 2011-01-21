@@ -265,7 +265,7 @@ extern int int_to_roman(int n, char *roman, size_t bufsize);
 extern void flush(void);
 extern void flush_fail(void);
 extern char inkey(void);
-extern ui_event_data inkey_ex(void);
+extern ui_event inkey_ex(void);
 extern char anykey(void);
 extern void bell(const char *reason);
 extern void sound(int val);
@@ -292,7 +292,7 @@ extern char get_char(const char *prompt, const char *options, size_t len, char f
 extern bool get_check(const char *prompt);
 extern bool (*get_file)(const char *suggested_name, char *path, size_t len);
 extern bool get_com(const char *prompt, char *command);
-extern bool get_com_ex(const char *prompt, ui_event_data *command);
+extern bool get_com_ex(const char *prompt, ui_event *command);
 extern void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp);
 extern void pause_line(int row);
 extern bool is_a_vowel(int ch);
