@@ -477,7 +477,7 @@ F:ANIMAL | WEIRD_MIND
 F:RAND_50 | BASH_DOOR
 D:It is about four feet long and carnivorous.
 
-N:35:Novice warrior
+N:35:Squire
 G:p:u
 I:110:23:20:16:5
 W:2:1:0:6
@@ -486,9 +486,9 @@ B:HIT:HURT:1d7
 F:MALE | HAS_LITE
 F:DROP_60
 F:OPEN_DOOR | BASH_DOOR
-D:He looks inexperienced but tough.
+D:An inexperienced but tough warrior.
 
-N:36:Novice rogue
+N:36:Pickpocket
 G:p:b
 I:110:20:20:12:5
 W:2:1:0:6
@@ -499,7 +499,7 @@ F:DROP_60
 F:OPEN_DOOR | BASH_DOOR | TAKE_ITEM
 D:A rather shifty individual.
 
-N:37:Novice priest
+N:37:Acolyte
 G:p:g
 I:110:18:20:10:10
 W:2:1:0:6
@@ -512,7 +512,7 @@ S:1_IN_12
 S:CAUSE_1 | HEAL | SCARE
 D:He is tripping over his priestly robes.
 
-N:38:Novice mage
+N:38:Hedge mage
 G:p:r
 I:110:15:20:6:5
 W:2:1:0:6
@@ -862,7 +862,7 @@ B:BITE:HURT:1d5
 F:ANIMAL
 D:It is an armoured lizard with a powerful bite.
 
-N:69:Novice ranger
+N:69:Scout
 G:p:W
 I:110:27:20:8:5
 W:4:1:0:18
@@ -876,7 +876,7 @@ S:1_IN_9
 S:ARROW_1 | MISSILE
 D:An agile hunter, ready and relaxed.
 
-N:70:Novice paladin
+N:70:Defender
 G:p:w
 I:110:27:20:16:5
 W:4:1:0:18
@@ -1108,7 +1108,7 @@ D: terrible smell it exudes is also very hard to get rid of...
 
 ### Dungeon level 6 ###
 
-N:77:Novice mage
+N:77:Wizard's apprentice
 G:p:r
 I:110:15:20:6:10
 W:6:2:0:6
@@ -1133,7 +1133,7 @@ F:NEVER_MOVE
 F:NO_FEAR | NO_CONF | NO_SLEEP
 D:Yum!  It looks quite tasty.
 
-N:89:Novice priest
+N:89:Adept
 G:p:g
 I:110:18:20:10:5
 W:6:2:0:6
@@ -1146,7 +1146,7 @@ S:1_IN_12
 S:CAUSE_1 | HEAL | SCARE
 D:He is tripping over his priestly robes.
 
-N:90:Novice warrior
+N:90:Soldier
 G:p:u
 I:110:23:20:16:5
 W:6:2:0:6
@@ -1157,7 +1157,7 @@ F:DROP_40
 F:OPEN_DOOR | BASH_DOOR
 D:He looks inexperienced but tough.
 
-N:91:Novice rogue
+N:91:Footpad
 G:p:b
 I:110:20:20:12:5
 W:6:2:0:6
@@ -1416,7 +1416,7 @@ F:OPEN_DOOR | BASH_DOOR
 F:IM_ACID
 D:It is a strange small humanoid.
 
-N:114:Novice ranger
+N:114:Tracker
 G:p:W
 I:110:27:20:8:5
 W:8:2:0:18
@@ -1463,7 +1463,7 @@ F:OPEN_DOOR | BASH_DOOR
 F:IM_COLD | IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP
 D:It is an animated orc skeleton.
 
-N:118:Novice paladin
+N:118:Honor guard
 G:p:w
 I:110:27:20:16:5
 W:8:2:0:18
@@ -9657,3 +9657,5 @@ D: visage, twisted with evil, is crowned with iron, the two remaining Silmarils
 D: forever burning him.  Grond, the mighty Hammer of the Underworld, cries
 D: defiance as he strides towards you to crush you to a pulp!
 
+
+# Max is currently N:616
