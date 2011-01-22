@@ -147,7 +147,7 @@ bool flag_is_subset(const bitflag *flags1, const bitflag *flags2, const size_t s
 	size_t i;
 
 	for (i = 0; i < size; i++)
-		if (!(~flags1[i] & flags2[i])) return FALSE;
+		if (~flags1[i] & flags2[i]) return FALSE;
 
 	return TRUE;
 }
