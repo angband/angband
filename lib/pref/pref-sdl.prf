@@ -106,16 +106,16 @@ T:KP_Comma:[,]
 T:KP_Subtract:[-]
 T:KP_Decimal:[.]
 T:KP_Divide:[/]
-T:KP_0:[0]
-T:KP_1:[1]
-T:KP_2:[2]
-T:KP_3:[3]
-T:KP_4:[4]
-T:KP_5:[5]
-T:KP_6:[6]
-T:KP_7:[7]
-T:KP_8:[8]
-T:KP_9:[9]
+T:KP_0:KP_0
+T:KP_1:KP_1
+T:KP_2:KP_2
+T:KP_3:KP_3
+T:KP_4:KP_4
+T:KP_5:KP_5
+T:KP_6:KP_6
+T:KP_7:KP_7
+T:KP_8:KP_8
+T:KP_9:KP_9
 T:F1:f1
 T:F2:f2
 T:F3:f3
@@ -305,64 +305,8 @@ A:.
 P:^_[kp_decimal]
 
 
-# Keypad With Shift (run) - Num Lock on
-
-A:\a\\.1
-P:^_S[[1]]
-
-A:\a\\.2
-P:^_S[[2]]
-
-A:\a\\.3
-P:^_S[[3]]
-
-A:\a\\.4
-P:^_S[[4]]
-
-A:\a\\.5
-P:^_S[[5]]
-
-A:\a\\.6
-P:^_S[[6]]
-
-A:\a\\.7
-P:^_S[[7]]
-
-A:\a\\.8
-P:^_S[[8]]
-
-A:\a\\.9
-P:^_S[[9]]
-
-
-# Keypad With Control (modify)
-
-A:\a\\+1
-P:^_C[[1]]
-
-A:\a\\+2
-P:^_C[[2]]
-
-A:\a\\+3
-P:^_C[[3]]
-
-A:\a\\+4
-P:^_C[[4]]
-
-A:\a\\+5
-P:^_C[[5]]
-
-A:\a\\+6
-P:^_C[[6]]
-
-A:\a\\+7
-P:^_C[[7]]
-
-A:\a\\+8
-P:^_C[[8]]
-
-A:\a\\+9
-P:^_C[[9]]
+# include common running macros
+%:pref-run.prf
 
 
 
