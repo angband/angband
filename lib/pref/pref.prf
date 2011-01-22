@@ -13,16 +13,6 @@
 # and your digger (or secondary weapon) as "@2@0".
 #
 
-
-##### Force certain options #####
-
-## # Option -- Default to original commands
-## X:rogue_like_commands
-
-## # Option -- Default to roguelike commands
-## Y:rogue_like_commands
-
-
 ##### Original Keyset Mappings #####
 
 # Stay still (numerical)
@@ -231,11 +221,8 @@ C:0:g
 
 ##### System Specific Subfiles #####
 
-?:[IOR [EQU $SYS xaw] [EQU $SYS x11] [EQU $SYS xpj] [EQU $SYS gtk]]
+?:[IOR [EQU $SYS x11] [EQU $SYS gtk]]
 %:pref-x11.prf
-
-?:[IOR [EQU $SYS gcu] [EQU $SYS lsl] [EQU $SYS cap] [EQU $SYS vcs] [EQU $SYS sla]]
-%:pref-gcu.prf
 
 ?:[EQU $SYS mac]
 %:pref-mac.prf
