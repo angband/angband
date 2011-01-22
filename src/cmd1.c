@@ -339,6 +339,11 @@ static void py_pickup_aux(int o_idx, bool domsg)
 		msg("You have %s (%c).", o_name, index_to_label(slot));
 	}
 
+	/* Update object_idx if necessary */
+	if (p_ptr->object_idx == (0 - o_idx))
+	{
+		track_object(slot);
+	}
 
 	/* Delete the object */
 	delete_object_idx(o_idx);
