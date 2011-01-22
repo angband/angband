@@ -1,7 +1,9 @@
 #ifndef INCLUDED_UI_EVENT_H
 #define INCLUDED_UI_EVENT_H
 
-/* The various UI events that can occur */
+/**
+ * The various UI events that can occur.
+ */
 typedef enum
 {
 	EVT_NONE	= 0x0000,
@@ -18,6 +20,20 @@ typedef enum
 	EVT_MOVE	= 0x0020,	/* Menu movement */
 	EVT_SELECT	= 0x0040	/* Menu selection */
 } ui_event_type;
+
+
+/**
+ * Keyset mappings for various keys.
+ */
+#define ESCAPE      '\033'
+#define ARROW_DOWN  '\x8A'
+#define ARROW_LEFT  '\x8B'
+#define ARROW_RIGHT '\x8C'
+#define ARROW_UP    '\x8D'
+
+/* Analogous to isdigit() etc in ctypes */
+#define isarrow(c)  ((c >= ARROW_DOWN) && (c <= ARROW_UP))
+
 
 typedef struct
 {
