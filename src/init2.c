@@ -1502,10 +1502,23 @@ static enum parser_error parse_r_t(struct parser *p) {
 		/* Todo: make new error for this */
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
 	r->rval = rval;
+	
+	/* The template sets the default display character */
+	r->d_char = rb_info[r->rval].d_char;
+	
 	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_r_g(struct parser *p) {
+	struct monster_race *r = parser_priv(p);
+	
+	/* If the display character is specified, it overrides any template */
+	r->d_char = parser_getchar(p, "glyph");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_r_c(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
 	const char *color;
 	int attr;
@@ -1520,7 +1533,6 @@ static enum parser_error parse_r_g(struct parser *p) {
 	if (attr < 0)
 		return PARSE_ERROR_INVALID_COLOR;
 	r->d_attr = attr;
-	r->d_char = parser_getchar(p, "glyph");
 	return PARSE_ERROR_NONE;
 }
 
@@ -1694,7 +1706,8 @@ struct parser *init_parse_r(void) {
 	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "N uint index str name", parse_r_n);
 	parser_reg(p, "T sym rval", parse_r_t);
-	parser_reg(p, "G char glyph sym color", parse_r_g);
+	parser_reg(p, "G char glyph", parse_r_g);
+	parser_reg(p, "C sym color", parse_r_c);
 	parser_reg(p, "I int speed int hp int aaf int ac int sleep", parse_r_i);
 	parser_reg(p, "W int level int rarity int power int mexp", parse_r_w);
 	parser_reg(p, "B sym method ?sym effect ?rand damage", parse_r_b);

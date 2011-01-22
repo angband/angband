@@ -47,7 +47,7 @@ N:5:bird
 G:B
 F:ANIMAL
 
-N:6:cat
+N:6:feline
 G:f
 F:ANIMAL
 
@@ -55,14 +55,14 @@ N:7:centipede
 G:c
 F:ANIMAL | WEIRD_MIND
 
-N:8:coins
+N:8:creeping coins
 G:$
 F:COLD_BLOOD | METAL
 F:ONLY_GOLD
 F:BASH_DOOR
 F:IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 
-N:9:dog
+N:9:canine
 G:C
 F:ANIMAL
 
@@ -105,7 +105,7 @@ F:EMPTY_MIND
 F:IM_ELEC | NO_FEAR | NO_CONF | NO_SLEEP
 F:MATERIAL
 
-N:17:greater demon
+N:17:major demon
 G:U
 F:DEMON | EVIL
 F:ONLY_ITEM
@@ -158,7 +158,7 @@ F:EVIL
 F:OPEN_DOOR | BASH_DOOR
 F:IM_POIS
 
-N:26:lesser demon
+N:26:minor demon
 G:u
 F:DEMON | EVIL
 F:IM_FIRE
@@ -227,7 +227,7 @@ N:37:quadruped
 G:q
 F:BASH_DOOR
 
-N:38:Quylthulg
+N:38:quylthulg
 G:Q
 F:ANIMAL | EMPTY_MIND | INVISIBLE
 F:NEVER_BLOW | NEVER_MOVE
