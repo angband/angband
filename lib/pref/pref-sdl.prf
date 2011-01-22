@@ -224,51 +224,6 @@ T:|:|
 
 
 
-# Basic Arrow Movement
-
-A:\x8D
-P:^_[up]
-
-A:\x8C
-P:^_[right]
-
-A:\x8B
-P:^_[left]
-
-A:\x8A
-P:^_[down]
-
-
-# Basic Arrows with Shift Down (run)
-
-A:\a\\.8
-P:^_S[up]
-
-A:\a\\.6
-P:^_S[right]
-
-A:\a\\.4
-P:^_S[left]
-
-A:\a\\.2
-P:^_S[down]
-
-
-# Basic Arrows with Control Down (modify)
-
-A:\a\\+8
-P:^_C[up]
-
-A:\a\\+6
-P:^_C[right]
-
-A:\a\\+4
-P:^_C[left]
-
-A:\a\\+2
-P:^_C[down]
-
-
 # Keypad
 
 A:1
@@ -307,10 +262,3 @@ P:^_[kp_decimal]
 
 # include common running macros
 %:pref-run.prf
-
-
-
-# Map the keypad enter to press return
-A:\r
-P:^_[enter]
-
