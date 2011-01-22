@@ -314,22 +314,6 @@ static int Zorder[ANGBAND_TERM_MAX];
 static mouse_info mouse;
 
 /*
- * Hack -- define which keys should be ignored
- */
-static bool ignore_key[1024];
-
-/*
- * We ignore all keypresses involving only modifier keys
- */
-static int ignore_key_list[] =
-{
-	SDLK_NUMLOCK, SDLK_CAPSLOCK, SDLK_SCROLLOCK, SDLK_RSHIFT,
-	SDLK_LSHIFT, SDLK_RCTRL, SDLK_LCTRL, SDLK_RALT, SDLK_LALT,
-	SDLK_RMETA, SDLK_LMETA, SDLK_LSUPER, SDLK_RSUPER, SDLK_MODE,
-	SDLK_COMPOSE, 0
-};
-
-/*
  * The number pad consists of 10 keys, each with an SDL identifier
  */
 #define is_numpad(k) \
@@ -2470,66 +2454,88 @@ static void sdl_keypress(SDL_keysym keysym)
 {
 	u16b key_code = keysym.unicode;
 	SDLKey key_sym = keysym.sym;
-	
+
+	int ch = 0;
+
 	/* Store the value of various modifier keys */
-	bool mc = (keysym.mod & (KMOD_CTRL)) > 0;
-	bool ms = (keysym.mod & (KMOD_SHIFT)) > 0;
-	bool ma = (keysym.mod & (KMOD_ALT)) > 0;
-	bool mm = (keysym.mod & (KMOD_META)) > 0;
-	
-	
+	bool mc = (keysym.mod & KMOD_CTRL) > 0;
+	bool ms = (keysym.mod & KMOD_SHIFT) > 0;
+	bool ma = (keysym.mod & KMOD_ALT) > 0;
+	bool mm = (keysym.mod & KMOD_META) > 0;
+	bool kp = FALSE;
+
 	/* Ignore if main term is not initialized */
 	if (!Term) return;
-	
-	/* Handle print screen */
-	if (key_sym == SDLK_PRINT)
-	{
-		/* sdl_print_screen();*/
-		return;
-	}
-	
-	/* Ignore various keypress, including pure modifier keys */
-	if (ignore_key[key_sym]) return;
-	
-	/*
-	 * If the keycode is 7-bit ASCII (except numberpad), and ALT and META are not
-	 * pressed, send it directly to the application.
-	 */
-	if ((key_code) && !(key_code & (0xFF80)) && !is_numpad(key_sym) && !ma && !mm)
-	{
-		(void)Term_keypress(key_code);
-	}
-	
+
 	/* Handle all other valid SDL keys */
-	else if (key_sym < SDLK_LAST)
-	{
-		char buf[80];
-		int i;
-		
-		/* Begin the macro trigger */
-		(void)Term_keypress(31);
-		
-		/* Send the modifiers */
-		if (mc) Term_keypress('C');
-		if (ms) Term_keypress('S');
-		if (ma) Term_keypress('A');
-		if (mm) Term_keypress('M');
-		
-		/* Build the SDL key name */
-		my_strcpy(buf, format("[%s]", SDL_GetKeyName(key_sym)), 80);
-		
-		/* Convert and store key name */
-		for (i = 0; buf[i]; i++)
-		{
-			/* Make lowercase */
-			buf[i] = tolower(buf[i]);
-			
-			/* Replace spaces with underscores */
-			if (buf[i] == ' ') buf[i] = '_';
-			
-			/* Add to the keyqueue */
-			(void)Term_keypress(buf[i]);
-		}
+	switch (key_sym) {
+		/* keypad */
+		case SDLK_KP0: ch = '0'; kp = TRUE; break;
+		case SDLK_KP1: ch = '1'; kp = TRUE; break;
+		case SDLK_KP2: ch = '2'; kp = TRUE; break;
+		case SDLK_KP3: ch = '3'; kp = TRUE; break;
+		case SDLK_KP4: ch = '4'; kp = TRUE; break;
+		case SDLK_KP5: ch = '5'; kp = TRUE; break;
+		case SDLK_KP6: ch = '6'; kp = TRUE; break;
+		case SDLK_KP7: ch = '7'; kp = TRUE; break;
+		case SDLK_KP8: ch = '8'; kp = TRUE; break;
+		case SDLK_KP9: ch = '9'; kp = TRUE; break;
+		case SDLK_KP_PERIOD: ch = '.'; kp = TRUE; break;
+		case SDLK_KP_DIVIDE: ch = '/'; kp = TRUE; break;
+		case SDLK_KP_MULTIPLY: ch = '*'; kp = TRUE; break;
+		case SDLK_KP_MINUS: ch = '-'; kp = TRUE; break;
+		case SDLK_KP_PLUS: ch = '+'; kp = TRUE; break;
+		case SDLK_KP_ENTER: ch = '\n'; kp = TRUE; break;
+		case SDLK_KP_EQUALS: ch = '='; kp = TRUE; break;
+
+		/* have have these to get consistent ctrl-shift behaviour */
+		case SDLK_0: if (!ms || mc || ma) ch = '0'; break;
+		case SDLK_1: if (!ms || mc || ma) ch = '1'; break;
+		case SDLK_2: if (!ms || mc || ma) ch = '2'; break;
+		case SDLK_3: if (!ms || mc || ma) ch = '3'; break;
+		case SDLK_4: if (!ms || mc || ma) ch = '4'; break;
+		case SDLK_5: if (!ms || mc || ma) ch = '5'; break;
+		case SDLK_6: if (!ms || mc || ma) ch = '6'; break;
+		case SDLK_7: if (!ms || mc || ma) ch = '7'; break;
+		case SDLK_8: if (!ms || mc || ma) ch = '8'; break;
+		case SDLK_9: if (!ms || mc || ma) ch = '9'; break;
+
+		case SDLK_UP: ch = ARROW_UP; break;
+		case SDLK_DOWN: ch = ARROW_DOWN; break;
+		case SDLK_RIGHT: ch = ARROW_RIGHT; break;
+		case SDLK_LEFT: ch = ARROW_LEFT; break;
+
+		case SDLK_INSERT: ch = KC_INSERT; break;
+		case SDLK_HOME: ch = KC_HOME; break;
+		case SDLK_PAGEUP: ch = KC_PGUP; break;
+		case SDLK_DELETE: ch = KC_DELETE; break;
+		case SDLK_END: ch = KC_END; break;
+		case SDLK_PAGEDOWN: ch = KC_PGDOWN; break;
+
+		case SDLK_F1: ch = KC_F1; break;
+		case SDLK_F2: ch = KC_F2; break;
+		case SDLK_F3: ch = KC_F3; break;
+		case SDLK_F4: ch = KC_F4; break;
+		case SDLK_F5: ch = KC_F5; break;
+		case SDLK_F6: ch = KC_F6; break;
+		case SDLK_F7: ch = KC_F7; break;
+		case SDLK_F8: ch = KC_F8; break;
+		case SDLK_F9: ch = KC_F9; break;
+		case SDLK_F10: ch = KC_F10; break;
+		case SDLK_F11: ch = KC_F11; break;
+		case SDLK_F12: ch = KC_F12; break;
+		case SDLK_F13: ch = KC_F13; break;
+		case SDLK_F14: ch = KC_F14; break;
+		case SDLK_F15: ch = KC_F15; break;
+	}
+
+	if (ch) {
+		/* XXX need to do something with mods, incl. kp */
+		Term_keypress(ch);
+	} else if (key_code) {
+		/* If the keycode is 7-bit ASCII (except numberpad), and ALT and META
+		 * are not pressed, send it directly to the game */
+		Term_keypress(key_code);
 	}
 }
 
@@ -3461,12 +3467,6 @@ static void init_sdl_local(void)
 	
 	/* Set the window caption */
 	SDL_WM_SetCaption(VERSION_NAME, NULL);
-	
-	/* Initialize the ignored keypresses */
-	for (i = 0; ignore_key_list[i]; i++)
-	{
-		ignore_key[ignore_key_list[i]] = TRUE;
-	}
 	
 	/* Enable key repeating; use defaults */
 	(void)SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);

@@ -231,6 +231,6 @@ C:0:g
 %:pref-win.prf
 
 ?:[EQU $SYS sdl]
-%:pref-sdl.prf
+%:pref-run.prf
 
 ?:1
