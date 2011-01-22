@@ -218,14 +218,10 @@ C:0:g
 # Message colors
 %:message.prf
 
-
 ##### System Specific Subfiles #####
 
 ?:[EQU $SYS mac]
 %:pref-run.prf
-
-?:[EQU $SYS win]
-%:pref-win.prf
 
 ?:[EQU $SYS sdl]
 %:pref-run.prf
