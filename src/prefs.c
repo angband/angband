@@ -937,116 +937,6 @@ static enum parser_error parse_prefs_c(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_prefs_t(struct parser *p)
-{
-	struct prefs_data *d = parser_priv(p);
-	assert(d != NULL);
-	if (d->bypass) return PARSE_ERROR_NONE;
-
-	/* set macro trigger names and a template */
-	/* Process "T:<template>:<modifier chr>:<modifier name>:..." */
-	if (parser_hasval(p, "n4"))
-	{
-		const char *template = parser_getsym(p, "n1");
-		const char *chars = parser_getsym(p, "n2");
-		const char *name0 = parser_getsym(p, "n3");
-		const char *namelist = parser_getstr(p, "n4");
-
-		char *modifiers;
-		char *t;
-		const char *names[MAX_MACRO_MOD];
-		int i = 1, j;
-
-		/* Free existing macro triggers and trigger template */
-		macro_trigger_free();
-
-		/* Clear template? */
-		if (template[0] == '\0')
-			return PARSE_ERROR_NONE;
-
-		/* Tokenise last field... */
-		modifiers = string_make(namelist);
-
-		/* first token is name0 */
-		names[0] = name0;
-
-		t = strtok(modifiers, ":");
-		while (t) {
-			names[i++] = t;
-			t = strtok(NULL, ":");
-		}
-
-		/* The number of modifiers must equal the number of names */
-		if (strlen(chars) != (size_t) i)
-		{
-			string_free(modifiers);
-			return (strlen(chars) > (size_t) i) ?
-					PARSE_ERROR_TOO_FEW_ENTRIES : PARSE_ERROR_TOO_MANY_ENTRIES;
-		}
-
-		/* OK, now copy the data across */
-		macro_template = string_make(template);
-		macro_modifier_chr = string_make(chars);
-		for (j = 0; j < i; j++)
-			macro_modifier_name[j] = string_make(names[j]);
-
-		string_free(modifiers);
-	}
-
-	/* Macro trigger */
-	/* Process "T:<trigger>:<keycode>:<shift-keycode>" */
-	else
-	{
-		const char *trigger = parser_getsym(p, "n1");
-		const char *kc = parser_getsym(p, "n2");
-		const char *shift_kc = NULL;
-
-		char *buf;
-		const char *s;
-		char *t;
-
-		if (parser_hasval(p, "n3"))
-			shift_kc = parser_getsym(p, "n3");
-
-		if (max_macrotrigger >= MAX_MACRO_TRIGGER)
-			return PARSE_ERROR_TOO_MANY_ENTRIES;
-
-		/* Buffer for the trigger name */
-		buf = C_ZNEW(strlen(trigger) + 1, char);
-
-		/* Simulate strcpy() and skip the '\' escape character */
-		s = trigger;
-		t = buf;
-
-		while (*s)
-		{
-			if ('\\' == *s) s++;
-			*t++ = *s++;
-		}
-
-		/* Terminate the trigger name */
-		*t = '\0';
-
-		/* Store the trigger name */
-		macro_trigger_name[max_macrotrigger] = string_make(buf);
-
-		/* Free the buffer */
-		FREE(buf);
-
-		/* Normal keycode */
-		macro_trigger_keycode[0][max_macrotrigger] = string_make(kc);
-		if (shift_kc)
-			macro_trigger_keycode[1][max_macrotrigger] = string_make(shift_kc);
-		else
-			macro_trigger_keycode[1][max_macrotrigger] = string_make(kc);
-
-		/* Count triggers */
-		max_macrotrigger++;
-	}
-
-	return PARSE_ERROR_NONE;
-}
-
 static enum parser_error parse_prefs_m(struct parser *p)
 {
 	int a, type;
@@ -1164,8 +1054,6 @@ static struct parser *init_parse_prefs(void)
 	parser_reg(p, "A str act", parse_prefs_a);
 	parser_reg(p, "P str key", parse_prefs_p);
 	parser_reg(p, "C int mode str key", parse_prefs_c);
-	parser_reg(p, "T sym n1 sym n2 ?sym n3 ?str n4", parse_prefs_t);
-		/* XXX should be two separate codes again */
 	parser_reg(p, "M int type sym attr", parse_prefs_m);
 	parser_reg(p, "V uint idx int k int r int g int b", parse_prefs_v);
 	parser_reg(p, "W int window uint flag uint value", parse_prefs_w);

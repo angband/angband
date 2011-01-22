@@ -4163,9 +4163,6 @@ void cleanup_angband(void)
 	macro_free();
 	keymap_free();
 
-	/* Free the macro triggers */
-	macro_trigger_free();
-
 	/* Free the allocation tables */
 	free_obj_alloc();
 	FREE(alloc_ego_table);

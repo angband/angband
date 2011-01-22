@@ -41,140 +41,6 @@ static int dehex(char c)
 	return (0);
 }
 
-
-/*
- * Transform macro trigger name ('\[alt-D]' etc..)
- * into macro trigger key code ('^_O_64\r' or etc..)
- */
-static size_t trigger_text_to_ascii(char *buf, size_t max, const char **strptr)
-{
-	const char *str = *strptr;
-	bool mod_status[MAX_MACRO_MOD];
-
-	int i, len = 0;
-	int shiftstatus = 0;
-	const char *key_code;
-	
-	size_t current_len = strlen(buf);
-
-	/* No definition of trigger names */
-	if (macro_template == NULL) return 0;
-
-	/* Initialize modifier key status */	
-	for (i = 0; macro_modifier_chr[i]; i++)
-		mod_status[i] = FALSE;
-
-	str++;
-
-	/* Examine modifier keys */
-	while (1)
-	{
-		/* Look for modifier key name */
-		for (i = 0; macro_modifier_chr[i]; i++)
-		{
-			len = strlen(macro_modifier_name[i]);
-
-			if (!my_strnicmp(str, macro_modifier_name[i], len))
-				break;
-		}
-
-		/* None found? */
-		if (!macro_modifier_chr[i]) break;
-
-		/* Proceed */
-		str += len;
-
-		/* This modifier key is pressed */
-		mod_status[i] = TRUE;
-
-		/* Shift key might be going to change keycode */
-		if (macro_modifier_chr[i] == 'S')
-			shiftstatus = 1;
-	}
-
-	/* Look for trigger name */
-	for (i = 0; i < max_macrotrigger; i++)
-	{
-		len = strlen(macro_trigger_name[i]);
-
-		/* Found it and it is ending with ']' */
-		if (!my_strnicmp(str, macro_trigger_name[i], len) && (']' == str[len]))
-			break;
-	}
-
-	/* Invalid trigger name? */
-	if (i == max_macrotrigger)
-	{
-		/*
-		 * If this invalid trigger name is ending with ']',
-		 * skip whole of it to avoid defining strange macro trigger
-		 */
-		str = strchr(str, ']');
-
-		if (str)
-		{
-			strnfcat(buf, max, &current_len, "\x1F\r");
-
-			*strptr = str; /* where **strptr == ']' */
-		}
-
-		return current_len;
-	}
-
-	/* Get keycode for this trigger name */
-	key_code = macro_trigger_keycode[shiftstatus][i];
-
-	/* Proceed */
-	str += len;
-
-	/* Begin with '^_' */
-	strnfcat(buf, max, &current_len, "\x1F");
-
-	/* Write key code style trigger using template */
-	for (i = 0; macro_template[i]; i++)
-	{
-		char ch = macro_template[i];
-
-		switch (ch)
-		{
-			/* Modifier key character */
-			case '&':
-			{
-				size_t j;
-				for (j = 0; macro_modifier_chr[j]; j++)
-				{
-					if (mod_status[j])
-						strnfcat(buf, max, &current_len, "%c", macro_modifier_chr[j]);
-				}
-				break;
-			}
-
-			/* Key code */
-			case '#':
-			{
-				strnfcat(buf, max, &current_len, "%s", key_code);
-				break;
-			}
-
-			/* Fixed string */
-			default:
-			{
-				strnfcat(buf, max, &current_len, "%c", ch);
-				break;
-			}
-		}
-	}
-
-	/* End with '\r' */
-	strnfcat(buf, max, &current_len, "\r");
-
-	/* Succeed */
-	*strptr = str; /* where **strptr == ']' */
-	
-	return current_len;
-}
-
-
 /*
  * Hack -- convert a printable string into real ascii
  *
@@ -200,15 +66,6 @@ void text_to_ascii(char *buf, size_t len, const char *str)
 
 			switch (*str)
 			{
-				/* Macro trigger */
-				case '[':
-				{
-					/* Terminate before appending the trigger */
-					*s = '\0';
-					s += trigger_text_to_ascii(buf, len, &str);
-					break;
-				}
-
 				/* Hex-mode */
 				case 'x':
 				{
@@ -284,88 +141,6 @@ void text_to_ascii(char *buf, size_t len, const char *str)
 	*s = '\0';
 }
 
-
-/*
- * Transform macro trigger key code ('^_O_64\r' or etc..) 
- * into macro trigger name ('\[alt-D]' etc..)
- */
-static size_t trigger_ascii_to_text(char *buf, size_t max, const char **strptr)
-{
-	const char *str = *strptr;
-	char key_code[100];
-	int i;
-	const char *tmp;
-	size_t current_len = strlen(buf);
-	
-
-	/* No definition of trigger names */
-	if (macro_template == NULL) return 0;
-
-	/* Trigger name will be written as '\[name]' */
-	strnfcat(buf, max, &current_len, "\\[");
-
-	/* Use template to read key-code style trigger */
-	for (i = 0; macro_template[i]; i++)
-	{
-		char ch = macro_template[i];
-
-		switch (ch)
-		{
-			/* Read modifier */
-			case '&':
-			{
-				size_t j;
-				while ((tmp = strchr(macro_modifier_chr, *str)) != 0)
-				{
-					j = tmp - macro_modifier_chr;
-					strnfcat(buf, max, &current_len, "%s", macro_modifier_name[j]);
-					str++;
-				}
-				break;
-			}
-
-			/* Read key code */
-			case '#':
-			{
-				size_t j;
-				for (j = 0; *str && (*str != '\r') && (j < sizeof(key_code) - 1); j++)
-					key_code[j] = *str++;
-				key_code[j] = '\0';
-				break;
-			}
-
-			/* Skip fixed strings */
-			default:
-			{
-				if (ch != *str) return 0;
-				str++;
-			}
-		}
-	}
-
-	/* Key code style triggers always end with '\r' */
-	if (*str++ != '\r') return 0;
-
-	/* Look for trigger name with given keycode (normal or shifted keycode) */
-	for (i = 0; i < max_macrotrigger; i++)
-	{
-		if (!my_stricmp(key_code, macro_trigger_keycode[0][i]) ||
-		    !my_stricmp(key_code, macro_trigger_keycode[1][i]))
-			break;
-	}
-
-	/* Not found? */
-	if (i == max_macrotrigger) return 0;
-
-	/* Write trigger name + "]" */
-	strnfcat(buf, max, &current_len, "%s]", macro_trigger_name[i]);
-
-	/* Succeed */
-	*strptr = str;
-	return current_len;
-}
-
-
 /*
  * Hack -- convert a string into a printable form
  *
@@ -428,25 +203,6 @@ void ascii_to_text(char *buf, size_t len, const char *str)
 		{
 			*s++ = '\\';
 			*s++ = '^';
-		}
-		/* Macro Trigger */
-		else if (i == 31)
-		{
-			size_t offset;
-
-			/* Terminate before appending the trigger */
-			*s = '\0';
-
-			offset = trigger_ascii_to_text(buf, len, &str);
-			
-			if (offset == 0)
-			{
-				/* No trigger found */
-				*s++ = '^';
-				*s++ = '_';
-			}
-			else
-				s += offset;
 		}
 		else if (i < 32)
 		{
@@ -660,15 +416,6 @@ static bool parse_macro = FALSE;
 
 
 /*
- * Local variable -- we are inside a "macro trigger"
- *
- * Strip all keypresses until a low ascii value is found.
- */
-static bool parse_under = FALSE;
-
-
-
-/*
  * Helper function called only from "inkey()"
  *
  * This function does almost all of the "macro" processing.
@@ -735,9 +482,6 @@ static ui_event inkey_aux(int scan_cutoff)
 	
 	/* Inside "macro action" */
 	if (parse_macro) return (ke);
-	
-	/* Inside "macro trigger" */
-	if (parse_under) return (ke);
 	
 
 	/* Save the first key, advance */
@@ -995,9 +739,6 @@ ui_event inkey_ex(void)
 		/* End "macro action" */
 		parse_macro = FALSE;
 
-		/* End "macro trigger" */
-		parse_under = FALSE;
-
 		/* Forget old keypresses */
 		Term_flush();
 	}
@@ -1145,38 +886,8 @@ ui_event inkey_ex(void)
 		if (ke.key == '`') ke.key = ESCAPE;
 
 
-		/* End "macro trigger" */
-		if (parse_under && ke.key <= 32)
-		{
-			/* Strip this key */
-			ke.type = EVT_NONE;
-			ke.key = 0;
-
-			/* End "macro trigger" */
-			parse_under = FALSE;
-		}
-
 		/* Handle "control-caret" */
 		if (ke.key == 30)
-		{
-			/* Strip this key */
-			ke.type = EVT_NONE;
-			ke.key = 0;
-		}
-
-		/* Handle "control-underscore" */
-		else if (ke.key == 31)
-		{
-			/* Strip this key */
-			ke.type = EVT_NONE;
-			ke.key = 0;
-
-			/* Begin "macro trigger" */
-			parse_under = TRUE;
-		}
-
-		/* Inside "macro trigger" */
-    	else if (parse_under)
 		{
 			/* Strip this key */
 			ke.type = EVT_NONE;

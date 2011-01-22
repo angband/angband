@@ -9,11 +9,8 @@
 #include "z-virt.h"
 
 int max_macrotrigger = 0;
-char *macro_template = NULL;
 char *macro_modifier_chr;
 char *macro_modifier_name[MAX_MACRO_MOD];
-char *macro_trigger_name[MAX_MACRO_TRIGGER];
-char *macro_trigger_keycode[2][MAX_MACRO_TRIGGER];
 
 s16b macro__num;
 char **macro__pat;
@@ -207,48 +204,6 @@ errr macro_free(void)
 
 	FREE(macro__pat);
 	FREE(macro__act);
-
-	/* Success */
-	return (0);
-}
-
-
-/*
- * Free the macro trigger package
- */
-errr macro_trigger_free(void)
-{
-	int i;
-	int num;
-
-	if (macro_template != NULL)
-	{
-		/* Free the template */
-		string_free(macro_template);
-		macro_template = NULL;
-
-		/* Free the trigger names and keycodes */
-		for (i = 0; i < max_macrotrigger; i++)
-		{
-			string_free(macro_trigger_name[i]);
-
-			string_free(macro_trigger_keycode[0][i]);
-			string_free(macro_trigger_keycode[1][i]);
-		}
-
-		/* No more macro triggers */
-		max_macrotrigger = 0;
-
-		/* Count modifier-characters */
-		num = strlen(macro_modifier_chr);
-
-		/* Free modifier names */
-		for (i = 0; i < num; i++)
-			string_free(macro_modifier_name[i]);
-
-		/* Free modifier chars */
-		string_free(macro_modifier_chr);
-	}
 
 	/* Success */
 	return (0);
