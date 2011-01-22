@@ -1028,119 +1028,97 @@ gboolean delete_event_handler(GtkWidget *widget, GdkEvent *event, gpointer user_
 
 gboolean keypress_event_handler(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
-	int i, mc, ms, mo, mx;
-	guint modifiers;
+	int ch = 0;
+	guint modifiers = gtk_accelerator_get_default_mod_mask();
 
-	char msg[128];
-
-	modifiers = gtk_accelerator_get_default_mod_mask ();
-	
 	/* Extract four "modifier flags" */
-	mc = ((event->state & modifiers) == GDK_CONTROL_MASK) ? TRUE : FALSE;
-	ms = ((event->state & modifiers) == GDK_SHIFT_MASK) ? TRUE : FALSE;
-	mo = ((event->state & modifiers) == GDK_MOD1_MASK) ? TRUE : FALSE;
-	mx = ((event->state & modifiers) == GDK_MOD3_MASK) ? TRUE : FALSE;
+	int mc = ((event->state & modifiers) == GDK_CONTROL_MASK) ? TRUE : FALSE;
+	int ms = ((event->state & modifiers) == GDK_SHIFT_MASK) ? TRUE : FALSE;
+	int mo = ((event->state & modifiers) == GDK_MOD1_MASK) ? TRUE : FALSE;
+	int mx = ((event->state & modifiers) == GDK_MOD3_MASK) ? TRUE : FALSE;
+	int kp = FALSE;
 
-	/*
-	 * Hack XXX
-	 * Parse shifted numeric (keypad) keys specially.
-	 */
-	if (ms && (event->keyval >= GDK_KP_0) && (event->keyval <= GDK_KP_9))
-	{
-		/* Build the macro trigger string */
-		strnfmt(msg, sizeof(msg), "%cS_%X%c", 31, event->keyval, 13);
+	/* see gdk/gdkkeysyms.h */
+	// http://www.koders.com/c/fidD9E5E78FD91FE6ABDD6D3F78DA5E4A0FADE79933.aspx
+	switch (event->keyval) {
+		case GDK_Shift_L: case GDK_Shift_R: case GDK_Control_L:
+		case GDK_Control_R: case GDK_Caps_Lock: case GDK_Shift_Lock:
+		case GDK_Meta_L: case GDK_Meta_R: case GDK_Alt_L: case GDK_Alt_R:
+		case GDK_Super_L: case GDK_Super_R: case GDK_Hyper_L:
+		case GDK_Hyper_R:
+			/* ignore things that are just modifiers */
+			return TRUE;
 
-		/* Enqueue the "macro trigger" string */
-		for (i = 0; msg[i]; i++) Term_keypress(msg[i]);
+		case GDK_BackSpace: ch = KC_BACKSPACE; break;
+		case GDK_Tab: ch = '\t'; break;
+		case GDK_Return: ch = '\n'; break;
+		case GDK_Escape: ch = ESCAPE; break;
+		case GDK_Delete: ch = KC_DELETE; break;
 
-		/* Hack -- auto-define macros as needed */
-		if (event->length && (macro_find_exact(msg) < 0))
-		{
-			/* Create a macro */
-			macro_add(msg, event->string);
-		}
+		case GDK_Home: ch = KC_HOME; break;
+		case GDK_Left: ch = ARROW_LEFT; break;
+		case GDK_Up: ch = ARROW_UP; break;
+		case GDK_Right: ch = ARROW_RIGHT; break;
+		case GDK_Down: ch = ARROW_DOWN; break;
+		case GDK_Page_Up: ch = KC_PGUP; break;
+		case GDK_Page_Down: ch = KC_PGDOWN; break;
+		case GDK_End: ch = KC_END; break;
+		case GDK_Insert: ch = KC_INSERT; break;
 
-		return (TRUE);
+		/* keypad */
+		case GDK_KP_0: ch = '0'; kp = TRUE; break;
+		case GDK_KP_1: ch = '1'; kp = TRUE; break;
+		case GDK_KP_2: ch = '2'; kp = TRUE; break;
+		case GDK_KP_3: ch = '3'; kp = TRUE; break;
+		case GDK_KP_4: ch = '4'; kp = TRUE; break;
+		case GDK_KP_5: ch = '5'; kp = TRUE; break;
+		case GDK_KP_6: ch = '6'; kp = TRUE; break;
+		case GDK_KP_7: ch = '7'; kp = TRUE; break;
+		case GDK_KP_8: ch = '8'; kp = TRUE; break;
+		case GDK_KP_9: ch = '9'; kp = TRUE; break;
+
+		case GDK_KP_Decimal: ch = '.'; kp = TRUE; break;
+		case GDK_KP_Divide: ch = '/'; kp = TRUE; break;
+		case GDK_KP_Multiply: ch = '*'; kp = TRUE; break;
+		case GDK_KP_Subtract: ch = '-'; kp = TRUE; break;
+		case GDK_KP_Add: ch = '+'; kp = TRUE; break;
+		case GDK_KP_Enter: ch = '\n'; kp = TRUE; break;
+		case GDK_KP_Equal: ch = '='; kp = TRUE; break;
+
+		case GDK_F1: ch = KC_F1; break;
+		case GDK_F2: ch = KC_F2; break;
+		case GDK_F3: ch = KC_F3; break;
+		case GDK_F4: ch = KC_F4; break;
+		case GDK_F5: ch = KC_F5; break;
+		case GDK_F6: ch = KC_F6; break;
+		case GDK_F7: ch = KC_F7; break;
+		case GDK_F8: ch = KC_F8; break;
+		case GDK_F9: ch = KC_F9; break;
+		case GDK_F10: ch = KC_F10; break;
+		case GDK_F11: ch = KC_F11; break;
+		case GDK_F12: ch = KC_F12; break;
+		case GDK_F13: ch = KC_F13; break;
+		case GDK_F14: ch = KC_F14; break;
+		case GDK_F15: ch = KC_F15; break;
 	}
 
-	/* Normal keys with no modifiers (except control) */
-	if (event->length && !mo && !mx)
-	{
-		/* Enqueue the normal key(s) */
-		for (i = 0; i < event->length; i++) Term_keypress(event->string[i]);
+	if (ch) {
+		/* XXX need to do something about modifiers, incl keypad */
+		Term_keypress(ch);
+	} else if (event->length) {
+		int i;
+
+		/* Enqueue GDK's textual representation */
+		for (i = 0; i < event->length; i++)
+			Term_keypress(event->string[i]);
 
 		if (!mc)
-			return (TRUE); /* Not a control key, so the keypress is handled */
+			return TRUE; /* Not a control key, so the keypress is handled */
 		else
-			return(FALSE); /* Pass the keypress along, so the menus get it */
+			return FALSE; /* Pass the keypress along, so the menus get it */
 	}
 
-
-	/* Handle a few standard keys (bypass modifiers) XXX XXX XXX */
-	switch (event->keyval)
-	{
-		case GDK_Escape:
-		{
-			Term_keypress(ESCAPE);
-			return (TRUE);
-		}
-
-		case GDK_Return:
-		{
-			Term_keypress('\r');
-			return (TRUE);
-		}
-
-		case GDK_Tab:
-		{
-			Term_keypress('\t');
-			return (TRUE);
-		}
-
-		case GDK_Delete:
-		case GDK_BackSpace:
-		{
-			Term_keypress('\010');
-			return (TRUE);
-		}
-
-		case GDK_Shift_L:
-		case GDK_Shift_R:
-		case GDK_Control_L:
-		case GDK_Control_R:
-		case GDK_Caps_Lock:
-		case GDK_Shift_Lock:
-		case GDK_Meta_L:
-		case GDK_Meta_R:
-		case GDK_Alt_L:
-		case GDK_Alt_R:
-		case GDK_Super_L:
-		case GDK_Super_R:
-		case GDK_Hyper_L:
-		case GDK_Hyper_R:
-		{
-			/* Hack - do nothing to control characters */
-			return (TRUE);
-		}
-	}
-
-	/* Build the macro trigger string */
-	strnfmt(msg, sizeof(msg), "%c%s%s%s%s_%X%c", 31,
-	        mc ? "N" : "", ms ? "S" : "",
-	        mo ? "O" : "", mx ? "M" : "",
-	        event->keyval, 13);
-
-	/* Enqueue the "macro trigger" string */
-	for (i = 0; msg[i]; i++) Term_keypress(msg[i]);
-
-	/* Hack -- auto-define macros as needed */
-	if (event->length && (macro_find_exact(msg) < 0))
-	{
-		/* Create a macro */
-		macro_add(msg, event->string);
-	}
-
-	return (TRUE);
+	return TRUE;
 }
 
 static void save_prefs(void)
