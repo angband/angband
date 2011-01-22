@@ -132,6 +132,8 @@ static bool alloc_object(struct cave *c, int set, int typ, int depth);
 #define TYP_TRAP 3 /* Trap */
 #define TYP_GOLD 4 /* Gold */
 #define TYP_OBJECT 5 /* Object */
+#define TYP_GOOD 6 /* Great object */
+#define TYP_GREAT 7 /* Great object */
 
 /*
  * Maximum numbers of rooms along each axis (currently 6x18).
@@ -198,8 +200,11 @@ static struct cave_profile town_profile = {
 	/* name den rng mag mc qua qc */
 	{"streamer-default", 5, 2, 3, 90, 2, 40},
 
-	/* room_profiles */
-	NULL
+	/* room_profiles -- not applicable */
+	NULL,
+
+	/* cutoff -- not applicable */
+	0
 };
 
 
@@ -231,6 +236,21 @@ static struct room_profile default_rooms[] = {
 #define NUM_CAVE_PROFILES 2
 static struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
 	{
+		"cave-labyrinth", labyrinth_gen, 0, 200, 0, 0,
+
+		/* tunnels -- not applicable */
+		{"tunnel-default", 10, 30, 15, 25, 90},
+
+		/* streamers -- not applicable */
+		{"streamer-default", 5, 2, 3, 90, 2, 40},
+
+		/* room_profiles -- not applicable */
+		NULL,
+
+		/* cutoff -- unused becauase of internal checks in labyrinth_gen  */
+		100
+	},
+	{
 		/* name builder dun_rooms dun_unusual max_rarity n_room_profiles */
 		"cave-default", cave_gen, 50, 200, 2, N_ELEMENTS(default_rooms),
 
@@ -241,18 +261,10 @@ static struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
 		{"streamer-default", 5, 2, 3, 90, 2, 40},
 
 		/* room_profiles */
-		default_rooms
-	},
-	{
-		"cave-labyrinth", labyrinth_gen, 0, 200, 0, 0,
+		default_rooms,
 
-		/* name rnd chg con pen jct */
-		{"tunnel-default", 10, 30, 15, 25, 90},
-
-		/* name den rng mag mc qua qc */
-		{"streamer-default", 5, 2, 3, 90, 2, 40},
-
-		NULL
+		/* cutoff */
+		100
 	}
 };
 
@@ -572,8 +584,11 @@ static void alloc_stairs(struct cave *c, int feat, int num, int walls) {
  */
 static void alloc_objects(struct cave *c, int set, int typ, int num, int depth) {
 	int k;
-	for (k = 0; k < num; k++)
-		alloc_object(c, set, typ, depth);
+	int l = 0;
+	for (k = 0; k < num; k++) {
+		bool ok = alloc_object(c, set, typ, depth);
+		if (!ok) l++;
+	}
 }
 
 
@@ -594,12 +609,14 @@ static bool alloc_object(struct cave *c, int set, int typ, int depth) {
 
 		find_empty(c, &y, c->height, &x, c->width);
 
-		/* See if our spot is in a room, and whether we care */
+		/* See if our spot is in a room or not */
 		room = (c->info[y][x] & CAVE_ROOM) ? TRUE : FALSE;
-		if (set & SET_CORR && room) continue;
-		if (set & SET_ROOM && !room) continue;
 
-		break;
+		/* If we are ok with a corridor and we're in one, we're done */
+		if (set & SET_CORR && !room) break;
+
+		/* If we are ok with a room and we're in one, we're done */
+		if (set & SET_ROOM && room) break;
 	}
 
 	if (tries == 2000) return FALSE;
@@ -610,6 +627,8 @@ static bool alloc_object(struct cave *c, int set, int typ, int depth) {
 		case TYP_TRAP: place_trap(c, y, x); break;
 		case TYP_GOLD: place_gold(c, y, x, depth); break;
 		case TYP_OBJECT: place_object(c, y, x, depth, FALSE, FALSE); break;
+		case TYP_GOOD: place_object(c, y, x, depth, TRUE, FALSE); break;
+		case TYP_GREAT: place_object(c, y, x, depth, TRUE, TRUE); break;
 	}
 	return TRUE;
 }
@@ -1902,7 +1921,7 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cptr
 				case '8': {
 					/* Nasty monster and treasure */
 					place_monster(c, y, x, c->depth + 40, TRUE, TRUE);
-					place_object(c, y, x, c->depth + 20, TRUE, FALSE);
+					place_object(c, y, x, c->depth + 20, TRUE, TRUE);
 					break;
 				}
 
@@ -2341,7 +2360,8 @@ static bool cave_gen(struct cave *c, struct player *p) {
 	 * Since we scale row_rooms and col_rooms by the same amount, DUN_ROOMS
 	 * gives the same "room density" no matter what size the level turns out
 	 * to be. TODO: vary room density slightly? */
-	/* XXX: Until vault generation is improved, scaling variance is reduced */
+
+	/* XXX: Until vault generation is improved, scaling variance is removed */
 	i = randint1(10);
 	if (is_quest(c->depth)) size_percent = 100;
 	else if (i < 2) size_percent = 75;
@@ -2570,6 +2590,26 @@ static void lab_get_adjoin(int i, int w, int *a, int *b) {
 	}
 }
 
+/**
+ * Return whether (x, y) is a tunnel.
+ *
+ * For our purposes a tunnel is a horizontal or vertical path, not an
+ * intersection. Thus, we want the squares on either side to walls in one
+ * case (e.g. up/down) and open in the other case (e.g. left/right). We don't
+ * want a square that represents an intersection point.
+ *
+ * The high-level idea is that these are squares which can't be avoided (by
+ * walking diagonally around them).
+ */
+static bool lab_is_tunnel(struct cave *c, int y, int x) {
+	bool left = cave_iswall(c, y, x - 1);
+	bool right = cave_iswall(c, y, x + 1);
+	bool up = cave_iswall(c, y - 1, x);
+	bool down = cave_iswall(c, y + 1, x);
+
+	return up == down && left == right && up != left;
+}
+
 
 /**
  *
@@ -2577,32 +2617,65 @@ static void lab_get_adjoin(int i, int w, int *a, int *b) {
 static bool labyrinth_gen(struct cave *c, struct player *p) {
 	int i, j, k, y, x;
 
-	/* Height and width must be odd. */
-	int h = c->height = 17;
-	int w = c->width  = 59;
+	/* Size of the actual labyrinth part must be odd. */
+	/* NOTE: these are not the actual dungeon size, but rather the size of the
+     * area we're genearting a labyrinth in (which doesn't count theh enclosing
+     * outer walls. */
+	/*int h = 17;*/
+	int h = 15 + randint0(c->depth / 10) * 2;
+	int w = 51 + randint0(c->depth / 10) * 2;
 
+	/* This is the number of squares in the labyrinth */
 	int n = h * w;
 
-	/* NOTE: these arrays are too large... we really only need to use about
+	/* NOTE: 'sets' and 'walls' are too large... we only need to use about
 	 * 1/4 as much memory. However, in that case, the addressing math becomes
 	 * a lot more complicated, so let's just stick with this because it's
 	 * easier to read. */
 
-	/* sets tracks connectedness; if sets[i] == sets[j] then cells i and j
+	/* 'sets' tracks connectedness; if sets[i] == sets[j] then cells i and j
 	 * are connected to each other in the maze. */
 	int sets[n];
 
-	/* walls is a list of wall coordinates which we will randomize */
+	/* 'walls' is a list of wall coordinates which we will randomize */
 	int walls[n];
+
+	/* Most labyrinths are lit */
+	bool lit = randint0(c->depth) < 25 || randint0(2) < 1;
+
+	/* Many labyrinths are known */
+	bool known = lit && randint0(c->depth) < 25;
+
+	/* Most labyrinths have soft (diggable) walls */
+	bool soft = randint0(c->depth) < 35 || randint0(3) < 2;
+
+	/* There's a base 1 in 100 to accept the labyrinth */
+	int chance = 1;
 
 	/* Don't try this on quest levels, kids... */
 	if (is_quest(c->depth)) return FALSE;
+
+	/* Certain numbers increase the chance of having a labyrinth */
+	if (c->depth % 3 == 0) chance += 2;
+	if (c->depth % 5 == 0) chance += 3;
+	if (c->depth % 7 == 0) chance += 5;
+	if (c->depth % 11 == 0) chance += 7;
+	if (c->depth % 13 == 0) chance += 11;
+
+	/* Only generate the level if we pass a check */
+	/* NOTE: This test gets performed after we pass the test to use the
+	 * labyrinth cave profile (which is a 50% chance currently). */
+	if (randint0(100) >= chance) return FALSE;
+
+	/* This is the dungeon size, which does include the enclosing walls */
+	c->height = h + 2;
+	c->width = w + 2;
 
 	/* Fill whole level with perma-rock */
 	fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, FEAT_PERM_SOLID);
 
 	/* Fill the labyrinth area with rock */
-	fill_rectangle(c, 1, 1, h, w, FEAT_WALL_SOLID);
+	fill_rectangle(c, 1, 1, h, w, soft ? FEAT_WALL_SOLID : FEAT_PERM_SOLID);
 
 	/* Initialize each wall. */
 	for (i = 0; i < n; i++) {
@@ -2616,6 +2689,7 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 			int k = lab_toi(y, x, w);
 			sets[k] = k;
 			cave_set_feat(c, y + 1, x + 1, FEAT_FLOOR);
+			if (lit) c->info[y + 1][x + 1] |= CAVE_GLOW;
 		}
 	}
 
@@ -2650,6 +2724,7 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 			int sa = sets[a];
 			int sb = sets[b];
 			cave_set_feat(c, y + 1, x + 1, FEAT_FLOOR);
+			if (lit) c->info[y + 1][x + 1] |= CAVE_GLOW;
 
 			for (k = 0; k < n; k++) {
 				if (sets[k] == sb) sets[k] = sa;
@@ -2665,7 +2740,18 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 	if (OPT(birth_no_stairs) || !p->create_down_stair)
 		alloc_stairs(c, FEAT_LESS, 1, 3);
 
-	/* General amount of rubble, traps and monsters */
+	/* Generate a door for every 100 squares in the labyrinth */
+	for (i = n / 100; i > 0; i--) {
+		/* Try 10 times to find a useful place for a door, then place it */
+		for (j = 0; j < 10; j++) {
+			find_empty_range(c, &y, 1, h, &x, 1, w);
+			if (lab_is_tunnel(c, y, x)) break;
+		}
+
+		place_closed_door(c, y, x);
+	}
+
+	/* General some rubble, traps and monsters */
 	k = MAX(MIN(c->depth / 3, 10), 2);
 
 	/* Put some rubble in corridors */
@@ -2677,117 +2763,25 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 	/* Determine the character location */
 	new_player_spot(c, p);
 
-	/* Pick a base number of monsters */
-	i = MIN_M_ALLOC_LEVEL + randint1(8) + k;
-
 	/* Put some monsters in the dungeon */
-	for (; i > 0; i--)
+	for (i = MIN_M_ALLOC_LEVEL + randint1(8) + k; i > 0; i--)
 		alloc_monster(c, loc(p->px, p->py), 0, TRUE, c->depth);
 
 	/* Put some objects/gold in the dungeon */
 	alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(6, 3), c->depth);
 	alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(6, 3), c->depth);
+	alloc_objects(c, SET_BOTH, TYP_GOOD, randint0(2), c->depth);
 
-	return TRUE;
-}
+	/* Unlit labyrinths will have some good items */
+	if (!lit)
+		alloc_objects(c, SET_BOTH, TYP_GOOD, Rand_normal(3, 2), c->depth);
 
-static bool bad_labyrinth_gen(struct cave *c, struct player *p) {
-	/* must be odd? */
-	int height = c->height = 21;
-	int width = c->width  = 65;
+	/* Hard (non-diggable) labyrinths will have some great items */
+	if (!soft)
+		alloc_objects(c, SET_BOTH, TYP_GREAT, Rand_normal(2, 1), c->depth);
 
-	int complexity = (75 * 5 * (height + width)) / 100;
-	int density = (75 * (height / 2 + width / 2)) / 100;
-
-	int i, j, k;
-
-	/* Don't try this on quest levels, kids... */
-	if (is_quest(c->depth)) return FALSE;
-
-	/* Fill whole level with perma-rock, then labyrinth area with open space */
-	fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, FEAT_PERM_SOLID);
-	fill_rectangle(c, 1, 1, height - 2, width - 2, FEAT_FLOOR);
-
-	/* Generate the actual labyrinth structure. */
-	for (i = 0; i < density; i++) {
-		/* Choose a random set of even coordinates */
-		int x = randint0(width / 2) * 2;
-		int y = randint0(height / 2) * 2;
-
-		cave_set_feat(c, y, x, FEAT_WALL_SOLID);
-
-		for (j = 0; j < complexity; j++) {
-			/* We are going to choose a random neighbor, so we need to track
-			 * n (the number of neighbors so far), and (nx, ny) the coordinates
-			 * the neighbor we currently have.
-			 */
-			int n = 0;
-			int nx = 0;
-			int ny = 0;
-
-			for (k = 0; k < 4; k++) {
-				/* Choose one of the four cardinal directions, and get the
-				 * neighbor that is two moves in that direction */
-				int kx = x - ddx_ddd[k] * 2;
-				int ky = y - ddy_ddd[k] * 2;
-
-				/* We can only use coordinates within the labyrinth */
-				if (kx < 0 || kx >= width || ky < 0 || ky >= height) continue;
-
-				/* Possibly update the neighbor we've chosen */
-				n++;
-				if (one_in_(n)) {
-					nx = kx;
-					ny = ky;
-				}
-			}
-
-			/* If the neighbor isn't a wall yet, fill both it and the
-			 * intermediate square. */
-			if (c->feat[ny][nx] == FEAT_FLOOR) {
-				int ox = (nx + x) / 2;
-				int oy = (ny + y) / 2;
-				cave_set_feat(c, oy, ox, FEAT_WALL_SOLID);
-				cave_set_feat(c, ny, nx, FEAT_WALL_SOLID);
-			}
-
-			/* Continue traversing from our neighbor */
-			x = nx;
-			y = ny;
-		}
-	}
-
-	/* XYZ: Generate permanent walls around the edge of the dungeon */
-	draw_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, FEAT_PERM_SOLID);
-
-	/* Place 3 or 4 down stairs near some walls */
-	alloc_stairs(c, FEAT_MORE, rand_range(3, 4), 3);
-
-	/* Place 1 or 2 up stairs near some walls */
-	alloc_stairs(c, FEAT_LESS, rand_range(1, 2), 3);
-
-	/* General amount of rubble, traps and monsters */
-	k = MAX(MIN(c->depth / 3, 10), 2);
-
-	/* Put some rubble in corridors */
-	alloc_objects(c, SET_BOTH, TYP_RUBBLE, randint1(k), c->depth);
-
-	/* Place some traps in the dungeon */
-	alloc_objects(c, SET_BOTH, TYP_TRAP, randint1(k), c->depth);
-
-	/* Determine the character location */
-	new_player_spot(c, p);
-
-	/* Pick a base number of monsters */
-	i = MIN_M_ALLOC_LEVEL + randint1(8) + k;
-
-	/* Put some monsters in the dungeon */
-	for (; i > 0; i--)
-		alloc_monster(c, loc(p->px, p->py), 0, TRUE, c->depth);
-
-	/* Put some objects/gold in the dungeon */
-	alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(DUN_AMT_ITEM, 3), c->depth);
-	alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(DUN_AMT_GOLD, 3), c->depth);
+	/* If we want the players to see the maze layout, do that now */
+	if (known) wiz_light();
 
 	return TRUE;
 }
@@ -3009,12 +3003,22 @@ void cave_generate(struct cave *c, struct player *p) {
 		
 		if (!p->depth) {
 			dun->profile = &town_profile;
+			dun->profile->builder(c, p);
 		} else {
-			//dun->profile = &cave_profiles[0];
-			dun->profile = &cave_profiles[1];
-		}
+			int perc = randint0(100);
+			int last = NUM_CAVE_PROFILES - 1;
+			int i;
+			for (i = 0; i < NUM_CAVE_PROFILES; i++) {
+				bool ok;
+				const struct cave_profile *profile;
 
-		dun->profile->builder(c, p);
+				profile = dun->profile = &cave_profiles[i];
+				if (i < last && profile->cutoff < perc) continue;
+            
+				ok = dun->profile->builder(c, p);
+				if (ok) break;
+			}
+		}
 
 		c->feeling = calculate_feeling(c);
 
