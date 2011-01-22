@@ -3662,6 +3662,21 @@ bool cave_isempty(struct cave *c, int y, int x) {
 	return c->feat[y][x] == FEAT_FLOOR && !c->o_idx[y][x] && !c->m_idx[y][x];
 }
 
+bool cave_iswall(struct cave *c, int y, int x) {
+	switch (c->feat[y][x]) {
+		case FEAT_WALL_EXTRA:
+		case FEAT_WALL_INNER:
+		case FEAT_WALL_OUTER:
+		case FEAT_WALL_SOLID:
+		case FEAT_PERM_EXTRA:
+		case FEAT_PERM_INNER:
+		case FEAT_PERM_OUTER:
+		case FEAT_PERM_SOLID: return TRUE;
+
+		default: return FALSE;
+	}
+}
+
 bool cave_canputitem(struct cave *c, int y, int x) {
 	return c->feat[y][x] == FEAT_FLOOR && !c->o_idx[y][x];
 }
