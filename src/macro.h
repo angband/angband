@@ -18,8 +18,6 @@ extern char *macro_modifier_name[MAX_MACRO_MOD];
 extern char *macro_trigger_name[MAX_MACRO_TRIGGER];
 extern char *macro_trigger_keycode[2][MAX_MACRO_TRIGGER];
 
-extern char *keymap_act[KEYMAP_MODES][256];
-
 extern int macro_find_check(const char *pat);
 extern int macro_find_exact(const char *pat);
 extern int macro_find_maybe(const char *pat);

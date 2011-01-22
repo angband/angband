@@ -18,6 +18,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "keymap.h"
 #include "macro.h"
 #include "prefs.h"
 #include "squelch.h"

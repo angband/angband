@@ -79,6 +79,7 @@ ANGFILES = \
 	guid.o \
 	history.o \
 	init2.o \
+	keymap.o \
 	load.o \
 	macro.o \
 	monster/melee1.o \

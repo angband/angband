@@ -1,6 +1,7 @@
 /* macro.c - macro implementation */
 
 #include "defines.h"
+#include "keymap.h"
 #include "macro.h"
 #include "z-util.h"
 #include "z-virt.h"

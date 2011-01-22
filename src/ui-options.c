@@ -19,6 +19,7 @@
  */
 #include "angband.h"
 #include "cmds.h"
+#include "keymap.h"
 #include "macro.h"
 #include "squelch.h"
 #include "prefs.h"
