@@ -1,6 +1,8 @@
 /* macro.c - macro implementation */
 
+#include "angband.h"
 #include "defines.h"
+#include "ui-event.h"
 #include "keymap.h"
 #include "macro.h"
 #include "z-util.h"
@@ -195,7 +197,6 @@ errr macro_init(void)
 errr macro_free(void)
 {
 	int i;
-	size_t j;
 
 	/* Free the macros */
 	for (i = 0; i < macro__num; ++i)
@@ -206,16 +207,6 @@ errr macro_free(void)
 
 	FREE(macro__pat);
 	FREE(macro__act);
-
-	/* Free the keymaps */
-	for (i = 0; i < KEYMAP_MODES; ++i)
-	{
-		for (j = 0; j < N_ELEMENTS(keymap_act[i]); ++j)
-		{
-			string_free(keymap_act[i][j]);
-			keymap_act[i][j] = NULL;
-		}
-	}
 
 	/* Success */
 	return (0);

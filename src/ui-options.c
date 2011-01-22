@@ -415,16 +415,20 @@ static void do_cmd_macro_aux(char *buf)
  * Note that both "flush()" calls are extremely important.  This may
  * no longer be true, since "util.c" is much simpler now.  XXX XXX XXX
  */
-static char keymap_get_trigger(void)
+static keycode_t keymap_get_trigger(void)
 {
+	keycode_t ch;
+
 	char tmp[80];
 	char buf[2];
 
 	/* Flush */
 	flush();
 
+	ch = inkey();
+
 	/* Get a key */
-	buf[0] = inkey();
+	buf[0] = (unsigned)ch;
 	buf[1] = '\0';
 
 	/* Convert to ascii */
@@ -437,7 +441,7 @@ static char keymap_get_trigger(void)
 	flush();
 
 	/* Return trigger */
-	return buf[0];
+	return ch;
 }
 
 
@@ -557,7 +561,7 @@ static void keymap_query(const char *title, int row)
 {
 	char tmp[1024];
 	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
-	char c;
+	keycode_t c;
 	const char *act;
 
 	prt(title, 13, 0);
@@ -565,7 +569,7 @@ static void keymap_query(const char *title, int row)
 	
 	/* Get a keymap trigger & mapping */
 	c = keymap_get_trigger();
-	act = keymap_act[mode][(byte) c];
+	act = keymap_find(mode, c);
 	
 	/* Nothing found */
 	if (!act)
@@ -595,7 +599,7 @@ static void keymap_query(const char *title, int row)
 
 static void keymap_create(const char *title, int row)
 {
-	char c;
+	keycode_t c;
 	char tmp[1024];
 	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
@@ -614,8 +618,7 @@ static void keymap_create(const char *title, int row)
 		text_to_ascii(macro_buffer, sizeof(macro_buffer), tmp);
 	
 		/* Make new keymap */
-		string_free(keymap_act[mode][(byte) c]);
-		keymap_act[mode][(byte) c] = string_make(macro_buffer);
+		keymap_add(mode, c, macro_buffer);
 
 		/* Prompt */
 		prt("Keymap added.  Press any key to continue.", 17, 0);
@@ -623,9 +626,9 @@ static void keymap_create(const char *title, int row)
 	}
 }
 
-static void keymap_remove(const char *title, int row)
+static void ui_keymap_remove(const char *title, int row)
 {
-	char c;
+	keycode_t c;
 	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
 	prt(title, 13, 0);
@@ -633,18 +636,10 @@ static void keymap_remove(const char *title, int row)
 
 	c = keymap_get_trigger();
 
-	if (keymap_act[mode][(byte) c])
-	{
-		/* Free old keymap */
-		string_free(keymap_act[mode][(byte) c]);
-		keymap_act[mode][(byte) c] = NULL;
-
+	if (keymap_remove(mode, c))
 		prt("Removed.", 16, 0);
-	}
 	else
-	{
 		prt("No keymap to remove!", 16, 0);
-	}
 
 	/* Prompt */
 	prt("Press any key to continue.", 17, 0);
@@ -692,7 +687,7 @@ static menu_action macro_actions[] =
 	{ 0, 0, "Append keymaps to a file", keymap_pref_append },
 	{ 0, 0, "Query a keymap",           keymap_query },
 	{ 0, 0, "Create a keymap",          keymap_create },
-	{ 0, 0, "Remove a keymap",          keymap_remove },
+	{ 0, 0, "Remove a keymap",          ui_keymap_remove },
 	{ 0, 0, "Enter a new action",       macro_enter },
 };
 

@@ -239,56 +239,6 @@ void macro_dump(ang_file *fff)
 }
 
 
-
-/*
- * Hack -- Append all keymaps to the given file.
- *
- * Hack -- We only append the keymaps for the "active" mode.
- */
-void keymap_dump(ang_file *fff)
-{
-	size_t i;
-	int mode;
-	char buf[1024];
-
-	if (OPT(rogue_like_commands))
-		mode = KEYMAP_MODE_ROGUE;
-	else
-		mode = KEYMAP_MODE_ORIG;
-
-	for (i = 0; i < N_ELEMENTS(keymap_act[mode]); i++)
-	{
-		char key[2] = "?";
-		const char *act;
-
-		/* Loop up the keymap */
-		act = keymap_act[mode][i];
-
-		/* Skip empty keymaps */
-		if (!act) continue;
-
-		/* Encode the action */
-		ascii_to_text(buf, sizeof(buf), act);
-
-		/* Dump the keymap action */
-		file_putf(fff, "A:%s\n", buf);
-
-		/* Convert the key into a string */
-		key[0] = i;
-
-		/* Encode the key */
-		ascii_to_text(buf, sizeof(buf), key);
-
-		/* Dump the keymap pattern */
-		file_putf(fff, "C:%d:%s\n", mode, buf);
-
-		/* Skip a line */
-		file_putf(fff, "\n");
-	}
-
-}
-
-
 #endif 
 
 
@@ -968,7 +918,6 @@ static enum parser_error parse_prefs_p(struct parser *p)
 static enum parser_error parse_prefs_c(struct parser *p)
 {
 	int mode;
-	byte j;
 	char tmp[1024];
 
 	struct prefs_data *d = parser_priv(p);
@@ -983,10 +932,7 @@ static enum parser_error parse_prefs_c(struct parser *p)
 	if (!tmp[0] || tmp[1])
 		return PARSE_ERROR_FIELD_TOO_LONG;
 
-	j = (byte)tmp[0];
-
-	string_free(keymap_act[mode][j]);
-	keymap_act[mode][j] = string_make(d->macro_buffer);
+	keymap_add(mode, tmp[0], d->macro_buffer);
 
 	return PARSE_ERROR_NONE;
 }

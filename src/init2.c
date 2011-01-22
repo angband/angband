@@ -24,6 +24,7 @@
 #include "game-event.h"
 #include "game-cmd.h"
 #include "generate.h"
+#include "keymap.h"
 #include "init.h"
 #include "macro.h"
 #include "monster/constants.h"
@@ -4160,6 +4161,7 @@ void cleanup_angband(void)
 
 	/* Free the macros */
 	macro_free();
+	keymap_free();
 
 	/* Free the macro triggers */
 	macro_trigger_free();

@@ -571,8 +571,7 @@ static ui_event textui_get_command(void)
 		}
 		else if (ke.type == EVT_KBRD)
 		{
-			/* Look up applicable keymap */
-			act = keymap_act[mode][(byte)(ke.key)];
+			act = keymap_find(mode, ke.key);
 		}
 
 		/* Apply keymap if not inside a keymap already */

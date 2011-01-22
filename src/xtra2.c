@@ -435,20 +435,13 @@ int target_dir(keycode_t ch)
 	}
 	else
 	{
-		/* Roguelike */
 		if (OPT(rogue_like_commands))
-		{
 			mode = KEYMAP_MODE_ROGUE;
-		}
-
-		/* Original */
 		else
-		{
 			mode = KEYMAP_MODE_ORIG;
-		}
 
 		/* Extract the action (if any) */
-		act = keymap_act[mode][(byte)(ch)];
+		act = keymap_find(mode, ch);
 
 		/* Analyze */
 		if (act)
