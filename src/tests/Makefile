@@ -1,6 +1,7 @@
 # Makefile for tests - builds unit-test binaries
 
 CFLAGS+=-I../ -I. -g
+LDFLAGS+=-lm
 -include config
 
 all : build run
@@ -14,7 +15,7 @@ run :
 	./run-tests
 
 % : %.o
-	$(CC) -o $@ $^ ../angband.o
+	$(CC) -o $@ $^ ../angband.o $(LDFLAGS)
 
 clean :
 	$(RM) $(TESTPROGS)
