@@ -1146,7 +1146,7 @@ ui_event inkey_ex(void)
 
 
 		/* End "macro trigger" */
-		if (parse_under && (ke.key >=0 && ke.key <= 32))
+		if (parse_under && ke.key <= 32)
 		{
 			/* Strip this key */
 			ke.type = EVT_NONE;
@@ -1221,7 +1221,7 @@ char anykey(void)
 /*
  * Get a "keypress" from the user.
  */
-char inkey(void)
+keycode_t inkey(void)
 {
 	ui_event ke = EVENT_EMPTY;
 
@@ -2056,7 +2056,7 @@ void clear_from(int row)
  * It should return TRUE when editing of the buffer is "complete" (e.g. on
  * the press of RETURN).
  */
-bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, char keypress, bool firsttime)
+bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, keycode_t keypress, bool firsttime)
 {
 	switch (keypress)
 	{
@@ -2190,7 +2190,7 @@ bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, ch
  * 'askfor_aux_keypress' (the default handler if you supply NULL for
  * 'keypress_h') for an example.
  */
-bool askfor_aux(char *buf, size_t len, bool keypress_h(char *, size_t, size_t *, size_t *, char, bool))
+bool askfor_aux(char *buf, size_t len, bool keypress_h(char *, size_t, size_t *, size_t *, keycode_t, bool))
 {
 	int y, x;
 
@@ -2258,7 +2258,7 @@ bool askfor_aux(char *buf, size_t len, bool keypress_h(char *, size_t, size_t *,
  * case of '*' for a new random "name" and passes any other "keypress"
  * through to the default "editing" handler.
  */
-static bool get_name_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, char keypress, bool firsttime)
+static bool get_name_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, keycode_t keypress, bool firsttime)
 {
 	bool result;
 
@@ -2578,7 +2578,7 @@ bool (*get_file)(const char *suggested_name, char *path, size_t len) = get_file_
  *
  * Returns TRUE unless the character is "Escape"
  */
-bool get_com(const char *prompt, char *command)
+bool get_com(const char *prompt, keycode_t *command)
 {
 	ui_event ke;
 	bool result;

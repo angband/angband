@@ -152,7 +152,7 @@ void textui_textblock_show(textblock *tb, region orig_area, const char *header)
 
 		/* Pager mode */
 		while (1) {
-			char ch;
+			keycode_t ch;
 
 			display_area(text, attrs, line_starts, line_lengths, n_lines,
 					area, start_line);

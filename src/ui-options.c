@@ -957,7 +957,7 @@ void do_cmd_colors(const char *title, int row)
 
 /*** Non-complex menu actions ***/
 
-static bool askfor_aux_numbers(char *buf, size_t buflen, size_t *curs, size_t *len, char keypress, bool firsttime)
+static bool askfor_aux_numbers(char *buf, size_t buflen, size_t *curs, size_t *len, keycode_t keypress, bool firsttime)
 {
 	switch (keypress)
 	{

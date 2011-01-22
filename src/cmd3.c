@@ -379,7 +379,7 @@ void do_cmd_locate(void)
 		/* Get a direction */
 		while (!dir)
 		{
-			char command;
+			keycode_t command;
 
 			/* Get a command (or Cancel) */
 			if (!get_com(out_val, &command)) break;
@@ -524,7 +524,7 @@ void lookup_symbol(char sym, char *buf, size_t max)
 void do_cmd_query_symbol(void)
 {
 	int i, n, r_idx;
-	char sym;
+	keycode_t sym;
 	char buf[128];
 
 	ui_event query;
@@ -583,7 +583,7 @@ void do_cmd_query_symbol(void)
 		if (uniq && !rf_has(r_ptr->flags, RF_UNIQUE)) continue;
 
 		/* Collect "appropriate" monsters */
-		if (all || (r_ptr->d_char == sym)) who[n++] = i;
+		if (all || (r_ptr->d_char == (char)sym)) who[n++] = i;
 	}
 
 	/* Nothing to recall */

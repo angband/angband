@@ -1173,7 +1173,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 				/* Convert letter to floor index */
 				else
 				{
-					k = (islower((unsigned char)which.key) ? A2I(which.key) : -1);
+					k = (islower((unsigned char)which.key) ? A2I((unsigned char)which.key) : -1);
 
 					if (k < 0 || k >= floor_num)
 					{

@@ -1203,7 +1203,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 {
 	int i, k, n;
 
-	char ch;
+	keycode_t ch;
 
 	/* Number of "real" lines passed by */
 	int next = 0;

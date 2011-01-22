@@ -642,7 +642,7 @@ static void wiz_reroll_item(object_type *o_ptr)
 	object_type *i_ptr;
 	object_type object_type_body;
 
-	char ch;
+	keycode_t ch;
 
 	bool changed = FALSE;
 
@@ -746,7 +746,7 @@ static void wiz_statistics(object_type *o_ptr, int level)
 	long i, matches, better, worse, other;
 	int j;
 
-	char ch;
+	keycode_t ch;
 	const char *quality;
 
 	bool good, great, ismatch, isbetter, isworse;
@@ -991,7 +991,7 @@ static void do_cmd_wiz_play(void)
 
 	object_type *o_ptr;
 
-	char ch;
+	keycode_t ch;
 
 	const char *q, *s;
 
@@ -1436,7 +1436,7 @@ static void do_cmd_wiz_query(void)
 
 	int y, x;
 
-	char cmd;
+	keycode_t cmd;
 
 	u16b mask = 0x00;
 
@@ -1609,7 +1609,7 @@ void do_cmd_debug(void)
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	char cmd;
+	keycode_t cmd;
 
 
 	/* Get a "debug command" */
@@ -1875,7 +1875,7 @@ void do_cmd_debug(void)
 			}
 			else
 			{
-				char sym;
+				keycode_t sym;
 				char *prompt =
 					"Full recall for [a]ll monsters or [s]pecific monster? ";
 
@@ -2002,7 +2002,7 @@ void do_cmd_debug(void)
 			}
 			else
 			{
-				char sym;
+				keycode_t sym;
 				char *prompt =
 					"Wipe recall for [a]ll monsters or [s]pecific monster? ";
 

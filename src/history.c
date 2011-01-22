@@ -363,7 +363,7 @@ void history_display(void)
 
 	while (1)
 	{
-		char ch;
+		keycode_t ch;
 
 		Term_clear();
 

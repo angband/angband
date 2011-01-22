@@ -407,7 +407,7 @@ int motion_dir(int y1, int x1, int y2, int x2)
 /*
  * Extract a direction (or zero) from a character
  */
-int target_dir(char ch)
+int target_dir(keycode_t ch)
 {
 	int d = 0;
 
