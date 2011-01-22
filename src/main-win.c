@@ -470,7 +470,6 @@ static HPALETTE hPal;
  */
 static HWND hwndSaver;
 
-static bool screensaver = FALSE;
 static bool screensaver_active = FALSE;
 
 static HANDLE screensaverSemaphore;

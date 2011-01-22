@@ -44,6 +44,10 @@ bool arg_rebalance;			/* Command arg -- Rebalance monsters */
 int arg_graphics;			/* Command arg -- Request graphics mode */
 bool arg_graphics_nice;			/* Command arg -- Request nice graphics mode */
 
+#ifdef ALLOW_BORG
+bool screensaver = FALSE;
+#endif /* ALLOW_BORG */
+
 /*
  * Various things
  */
