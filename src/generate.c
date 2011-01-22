@@ -1418,7 +1418,7 @@ static bool vault_aux_template(int r_idx, const char *s) {
  * Helper function for "monster nest (jelly)"
  */
 static bool vault_aux_jelly(int r_idx) {
-	return vault_aux_str(r_idx, RF_ICKY);
+	return vault_aux_flag(r_idx, RF_ICKY);
 }
 
 
@@ -1457,6 +1457,7 @@ static bool vault_aux_troll(int r_idx) {
  * Helper function for "monster pit (giant)"
  */
 static bool vault_aux_giant(int r_idx) {
+	/* Hack - check the monster template so that we don't match ogres. */
 	return vault_aux_template(r_idx, "giant");
 }
 

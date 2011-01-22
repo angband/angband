@@ -2518,8 +2518,8 @@ void message_pain(int m_idx, int dam)
 	percentage = (int)(tmp);
 
 
-	/* Jelly's, Mold's, Vortex's, Quthl's */
-	if (strchr("jmvQ", r_ptr->d_char))
+	/* Gross things */
+	if (rf_has(r_ptr->flags, RF_ICKY) || r_ptr->rval == lookup_monster_base("quylthulg"))
 	{
 		if (percentage > 95)
 			msg("%^s barely notices.", m_name);
@@ -2538,7 +2538,8 @@ void message_pain(int m_idx, int dam)
 	}
 
 	/* Dogs and Hounds */
-	else if (strchr("CZ", r_ptr->d_char))
+	else if (r_ptr->rval == lookup_monster_base("canine") ||
+			 r_ptr->rval == lookup_monster_base("zephyr hound"))
 	{
 		if (percentage > 95)
 			msg("%^s shrugs off the attack.", m_name);
@@ -2556,8 +2557,8 @@ void message_pain(int m_idx, int dam)
 			msg("%^s yelps feebly.", m_name);
 	}
 
-	/* One type of monsters (ignore,squeal,shriek) */
-	else if (strchr("FIKMRSXabclqrst", r_ptr->d_char))
+	/* Other animals */
+	else if (rf_has(r_ptr->flags, RF_ANIMAL))
 	{
 		if (percentage > 95)
 			msg("%^s ignores the attack.", m_name);
