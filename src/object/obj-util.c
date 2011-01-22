@@ -964,6 +964,12 @@ void delete_object_idx(int o_idx)
 
 	/* Count objects */
 	o_cnt--;
+
+	/* Stop tracking deleted objects if necessary */
+	if (p_ptr->object_idx == (0 - o_idx))
+	{
+		track_object(0);
+	}
 }
 
 
@@ -2373,6 +2379,17 @@ void swap_quiver_slots(int slot1, int slot2)
 	object_copy(&o, &p_ptr->inventory[i]);
 	object_copy(&p_ptr->inventory[i], &p_ptr->inventory[j]);
 	object_copy(&p_ptr->inventory[j], &o);
+
+	/* Update object_idx if necessary */
+	if (p_ptr->object_idx == i)
+	{
+		track_object(j);
+	}
+
+	if (p_ptr->object_idx == j)
+	{
+		track_object(i);
+	}
 }
 
 /**
@@ -2476,10 +2493,18 @@ void open_quiver_slot(int slot)
 		pref = get_inscribed_ammo_slot(&p_ptr->inventory[i]);
 		if (i != slot && pref && pref == i) continue;
 
+		/* Update object_idx if necessary */
+		if (p_ptr->object_idx == i)
+		{
+			track_object(dest);
+		}
+
 		/* Copy the item up and wipe the old slot */
 		COPY(&p_ptr->inventory[dest], &p_ptr->inventory[i], object_type);
 		dest = i;
 		object_wipe(&p_ptr->inventory[dest]);
+
+
 	}
 }
 
@@ -2497,6 +2522,12 @@ void inven_item_optimize(int item)
 
 	/* Only optimize real items which are empty */
 	if (!o_ptr->kind || o_ptr->number) return;
+
+	/* Stop tracking erased item if necessary */
+	if (p_ptr->object_idx == item)
+	{
+		track_object(0);
+	}
 
 	/* Items in the pack are treated differently from other items */
 	if (item < INVEN_WIELD)
@@ -2541,6 +2572,13 @@ void inven_item_optimize(int item)
 				continue;
 		}
 		COPY(&p_ptr->inventory[j], &p_ptr->inventory[i], object_type);
+
+		/* Update object_idx if necessary */
+		if (p_ptr->object_idx == i)
+		{
+			track_object(j);
+		}
+
 		j = i;
 	}
 
@@ -2821,6 +2859,12 @@ extern s16b inven_carry(struct player *p, struct object *o)
 		{
 			/* Hack -- Slide the item */
 			object_copy(&p->inventory[k+1], &p->inventory[k]);
+
+			/* Update object_idx if necessary */
+			if (p_ptr->object_idx == k)
+			{
+				track_object(k+1);
+			}
 		}
 
 		/* Wipe the empty slot */
@@ -2888,6 +2932,8 @@ s16b inven_takeoff(int item, int amt)
 
 	char o_name[80];
 
+	bool track_removed_item = FALSE;
+
 
 	/* Get the item to take off */
 	o_ptr = &p_ptr->inventory[item];
@@ -2934,12 +2980,24 @@ s16b inven_takeoff(int item, int amt)
 		act = "You were wearing";
 	}
 
+	/* Update object_idx if necessary, after optimization */
+	if (p_ptr->object_idx == item)
+	{
+		track_removed_item = TRUE;
+	}
+
 	/* Modify, Optimize */
 	inven_item_increase(item, -amt);
 	inven_item_optimize(item);
 
 	/* Carry the object */
 	slot = inven_carry(p_ptr, i_ptr);
+
+	/* Track removed item if necessary */
+	if (track_removed_item)
+	{
+		track_object(slot);
+	}
 
 	/* Message */
 	msgt(MSG_WIELD, "%s %s (%c).", act, o_name, index_to_label(slot));
@@ -2989,6 +3047,11 @@ void inven_drop(int item, int amt)
 		o_ptr = &p_ptr->inventory[item];
 	}
 
+	/* Stop tracking items no longer in the inventory */
+	if (item == p_ptr->object_idx && amt == o_ptr->number)
+	{
+		track_object(0);
+	}
 
 	i_ptr = &object_type_body;
 
@@ -3081,6 +3144,12 @@ void combine_pack(void)
 			{
 				/* Hack -- slide object */
 				COPY(&p_ptr->inventory[k], &p_ptr->inventory[k+1], object_type);
+
+				/* Update object_idx if necessary */
+				if (p_ptr->object_idx == k+1)
+				{
+					track_object(k);
+				}
 			}
 
 			/* Hack -- wipe hole */
@@ -3198,10 +3267,22 @@ void reorder_pack(void)
 		{
 			/* Slide the item */
 			object_copy(&p_ptr->inventory[k], &p_ptr->inventory[k-1]);
+
+			/* Update object_idx if necessary */
+			if (p_ptr->object_idx == k-1)
+			{
+				track_object(k);
+			}
 		}
 
 		/* Insert the moving item */
 		object_copy(&p_ptr->inventory[j], i_ptr);
+
+		/* Update object_idx if necessary */
+		if (p_ptr->object_idx == i)
+		{
+			track_object(j);
+		}
 
 		/* Redraw stuff */
 		p_ptr->redraw |= (PR_INVEN);

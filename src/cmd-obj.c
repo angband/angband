@@ -246,6 +246,7 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	char o_name[80];
 
 	bool combined_ammo = FALSE;
+	bool track_wielded_item = FALSE;
 	int num = 1;
 
 	/* If we are stacking ammo in the quiver */
@@ -264,6 +265,12 @@ void wield_item(object_type *o_ptr, int item, int slot)
 
 	/* Modify quantity */
 	i_ptr->number = num;
+
+	/* Update object_idx if necessary, once object is in slot */
+	if (p_ptr->object_idx == item)
+	{
+		track_wielded_item = TRUE;
+	}
 
 	/* Decrease the item (from the pack) */
 	if (item >= 0)
@@ -308,6 +315,12 @@ void wield_item(object_type *o_ptr, int item, int slot)
 
 	/* Increase the weight */
 	p_ptr->total_weight += i_ptr->weight * num;
+
+	/* Track object if necessary */
+	if (track_wielded_item)
+	{
+		track_object(slot);
+	}
 
 	/* Do any ID-on-wield */
 	object_notice_on_wield(o_ptr);
