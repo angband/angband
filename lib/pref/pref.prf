@@ -225,7 +225,7 @@ C:0:g
 %:pref-x11.prf
 
 ?:[EQU $SYS mac]
-%:pref-mac.prf
+%:pref-run.prf
 
 ?:[EQU $SYS win]
 %:pref-win.prf
