@@ -1627,36 +1627,26 @@ static int term_windows_open;
  */
 static void react_keypress(XKeyEvent *ev)
 {
-	int i, n, mc, ms, mo, mx;
-
-	unsigned int ks1;
+	int i, n;
+	int ch;
 
 	KeySym ks;
 
 	char buf[128];
-	char msg[128];
 
+	/* Extract four "modifier flags" */
+	int mc = (ev->state & ControlMask) ? TRUE : FALSE;
+	int ms = (ev->state & ShiftMask) ? TRUE : FALSE;
+	int mo = (ev->state & Mod1Mask) ? TRUE : FALSE;
+	int mx = (ev->state & Mod2Mask) ? TRUE : FALSE;
+	int kp = FALSE;
 
 	/* Check for "normal" keypresses */
 	n = XLookupString(ev, buf, 125, &ks, NULL);
-
-	/* Terminate */
 	buf[n] = '\0';
 
-
-	/* Hack -- Ignore "modifier keys" */
+	/* Ignore modifier keys by themselves */
 	if (IsModifierKey(ks)) return;
-
-
-	/* Hack -- convert into an unsigned int */
-	ks1 = (unsigned int)(ks);
-
-	/* Extract four "modifier flags" */
-	mc = (ev->state & ControlMask) ? TRUE : FALSE;
-	ms = (ev->state & ShiftMask) ? TRUE : FALSE;
-	mo = (ev->state & Mod1Mask) ? TRUE : FALSE;
-	mx = (ev->state & Mod2Mask) ? TRUE : FALSE;
-
 
 	/* Normal keys with no modifiers */
 	if (n && !mo && !mx && !IsSpecialKey(ks))
@@ -1668,64 +1658,77 @@ static void react_keypress(XKeyEvent *ev)
 		return;
 	}
 
+	switch (ks) {
+		case XK_BackSpace: ch = KC_BACKSPACE; break;
+		case XK_Tab: ch = '\t'; break;
+		case XK_Return: ch = '\n'; break;
+		case XK_Escape: ch = ESCAPE; break;
 
-	/* Handle a few standard keys (bypass modifiers) XXX XXX XXX */
-	switch (ks1)
-	{
-		case XK_Escape:
-		{
-			Term_keypress(ESCAPE);
-			return;
-		}
+		case XK_Delete: ch = KC_DELETE; break;
+		case XK_Home: ch = KC_HOME; break;
+		case XK_Left: ch = ARROW_LEFT; break;
+		case XK_Up: ch = ARROW_UP; break;
+		case XK_Right: ch = ARROW_RIGHT; break;
+		case XK_Down: ch = ARROW_DOWN; break;
+		case XK_Page_Up: ch = KC_PGUP; break;
+		case XK_Page_Down: ch = KC_PGDOWN; break;
+		case XK_End: ch = KC_END; break;
+		case XK_Insert: ch = KC_INSERT; break;
+		case XK_Pause: ch = KC_PAUSE; break;
+		case XK_Break: ch = KC_BREAK; break;
 
-		case XK_Return:
-		{
-			Term_keypress('\r');
-			return;
-		}
+		/* keypad */
+		case XK_KP_0: ch = '0'; kp = TRUE; break;
+		case XK_KP_1: ch = '1'; kp = TRUE; break;
+		case XK_KP_2: ch = '2'; kp = TRUE; break;
+		case XK_KP_3: ch = '3'; kp = TRUE; break;
+		case XK_KP_4: ch = '4'; kp = TRUE; break;
+		case XK_KP_5: ch = '5'; kp = TRUE; break;
+		case XK_KP_6: ch = '6'; kp = TRUE; break;
+		case XK_KP_7: ch = '7'; kp = TRUE; break;
+		case XK_KP_8: ch = '8'; kp = TRUE; break;
+		case XK_KP_9: ch = '9'; kp = TRUE; break;
 
-		case XK_Tab:
-		{
-			Term_keypress('\t');
-			return;
-		}
+		case XK_KP_Decimal: ch = '.'; kp = TRUE; break;
+		case XK_KP_Divide: ch = '/'; kp = TRUE; break;
+		case XK_KP_Multiply: ch = '*'; kp = TRUE; break;
+		case XK_KP_Subtract: ch = '-'; kp = TRUE; break;
+		case XK_KP_Add: ch = '+'; kp = TRUE; break;
+		case XK_KP_Enter: ch = '\n'; kp = TRUE; break;
+		case XK_KP_Equal: ch = '='; kp = TRUE; break;
 
-		case XK_Delete:
-		case XK_BackSpace:
-		{
-			Term_keypress('\010');
-			return;
-		}
+		case XK_KP_Delete: ch = KC_DELETE; kp = TRUE; break;
+		case XK_KP_Home: ch = KC_HOME; kp = TRUE; break;
+		case XK_KP_Left: ch = ARROW_LEFT; kp = TRUE; break;
+		case XK_KP_Up: ch = ARROW_UP; kp = TRUE; break;
+		case XK_KP_Right: ch = ARROW_RIGHT; kp = TRUE; break;
+		case XK_KP_Down: ch = ARROW_DOWN; kp = TRUE; break;
+		case XK_KP_Page_Up: ch = KC_PGUP; kp = TRUE; break;
+		case XK_KP_Page_Down: ch = KC_PGDOWN; kp = TRUE; break;
+		case XK_KP_End: ch = KC_END; kp = TRUE; break;
+		case XK_KP_Insert: ch = KC_INSERT; kp = TRUE; break;
+
+		case XK_F1: ch = KC_F1; break;
+		case XK_F2: ch = KC_F2; break;
+		case XK_F3: ch = KC_F3; break;
+		case XK_F4: ch = KC_F4; break;
+		case XK_F5: ch = KC_F5; break;
+		case XK_F6: ch = KC_F6; break;
+		case XK_F7: ch = KC_F7; break;
+		case XK_F8: ch = KC_F8; break;
+		case XK_F9: ch = KC_F9; break;
+		case XK_F10: ch = KC_F10; break;
+		case XK_F11: ch = KC_F11; break;
+		case XK_F12: ch = KC_F12; break;
+		case XK_F13: ch = KC_F13; break;
+		case XK_F14: ch = KC_F14; break;
+		case XK_F15: ch = KC_F15; break;
 	}
 
-
-	/* Hack -- Use the KeySym */
-	if (ks)
-	{
-		strnfmt(msg, sizeof(msg), "%c%s%s%s%s_%lX%c", 31,
-		        mc ? "N" : "", ms ? "S" : "",
-		        mo ? "O" : "", mx ? "M" : "",
-		        (unsigned long)(ks), 13);
-	}
-
-	/* Hack -- Use the Keycode */
-	else
-	{
-		strnfmt(msg, sizeof(msg), "%c%s%s%s%sK_%X%c", 31,
-		        mc ? "N" : "", ms ? "S" : "",
-		        mo ? "O" : "", mx ? "M" : "",
-		        ev->keycode, 13);
-	}
-
-	/* Enqueue the "macro trigger" string */
-	for (i = 0; msg[i]; i++) Term_keypress(msg[i]);
-
-
-	/* Hack -- auto-define macros as needed */
-	if (n && (macro_find_exact(msg) < 0))
-	{
-		/* Create a macro */
-		macro_add(msg, buf);
+	if (ch) {
+		/* need to something a tad more advanced than this */
+		Term_keypress(ch);
+		return;
 	}
 }
 

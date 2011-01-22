@@ -221,9 +221,6 @@ C:0:g
 
 ##### System Specific Subfiles #####
 
-?:[IOR [EQU $SYS x11] [EQU $SYS gtk]]
-%:pref-x11.prf
-
 ?:[EQU $SYS mac]
 %:pref-run.prf
 
