@@ -148,7 +148,7 @@ void do_cmd_change_name(void)
 
 		/* Change name */
 		if (ke.key == 'c' ||
-			(ke.mousey == 2 && ke.mousex < 26))
+			(ke.mouse.y == 2 && ke.mouse.x < 26))
 		{
 			char namebuf[32] = "";
 
@@ -322,7 +322,7 @@ void do_cmd_messages(void)
 		if (ke.type == EVT_MOUSE)
 		{
 			/* Go older if legal */
-			if (ke.mousey <= hgt / 2)
+			if (ke.mouse.y <= hgt / 2)
 			{
 				if (i + 20 < n)
 					i += 20;

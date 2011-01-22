@@ -284,15 +284,15 @@ static void do_cmd_options_win(const char *name, int row)
 		/* Mouse interaction */
 		if (ke.type == EVT_MOUSE)
 		{
-			int choicey = ke.mousey - 5;
-			int choicex = (ke.mousex - 35)/5;
+			int choicey = ke.mouse.y - 5;
+			int choicex = (ke.mouse.x - 35)/5;
 
 			if ((choicey >= 0) && (choicey < PW_MAX_FLAGS)
 				&& (choicex > 0) && (choicex < ANGBAND_TERM_MAX)
-				&& !(ke.mousex % 5))
+				&& !(ke.mouse.x % 5))
 			{
 				y = choicey;
-				x = (ke.mousex - 35)/5;
+				x = (ke.mouse.x - 35)/5;
 			}
 		}
 
@@ -303,21 +303,15 @@ static void do_cmd_options_win(const char *name, int row)
 		{
 			/* Hack -- ignore the main window */
 			if (x == 0)
-			{
 				bell("Cannot set main window flags!");
-			}
 
 			/* Toggle flag (off) */
 			else if (new_flags[x] & (1L << y))
-			{
 				new_flags[x] &= ~(1L << y);
-			}
 
 			/* Toggle flag (on) */
 			else
-			{
 				new_flags[x] |= (1L << y);
-			}
 
 			/* Continue */
 			continue;

@@ -22,11 +22,14 @@ typedef enum
 typedef struct
 {
 	ui_event_type type;
-	byte mousex, mousey;
-	int mousebutton;
+	struct {
+		byte x;
+		byte y;
+		byte button;
+	} mouse;
 	char key;
 } ui_event;
 
-#define EVENT_EMPTY		{ EVT_NONE, 0, 0, 0, 0 }
+#define EVENT_EMPTY		{ 0 }
 
 #endif /* INCLUDED_UI_EVENT_H */

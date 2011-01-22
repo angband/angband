@@ -820,14 +820,14 @@ static bool visual_mode_command(ui_event ke, bool *visual_list_ptr,
 				/* Get mouse movement */
 				if (ke.type == EVT_MOUSE)
 				{
-					int my = ke.mousey - row;
-					int mx = ke.mousex - col;
+					int my = ke.mouse.y - row;
+					int mx = ke.mouse.x - col;
 
 					my = logical_height(my);
 					mx = logical_width(mx);
 
 					if ((my >= 0) && (my < eff_height) && (mx >= 0) && (mx < eff_width)
-						&& ((ke.mousebutton) || (a != *attr_top_ptr + my)
+						&& ((ke.mouse.button) || (a != *attr_top_ptr + my)
 							|| (c != *char_left_ptr + mx)))
 					{
 						/* Set the visual */
@@ -848,14 +848,14 @@ static bool visual_mode_command(ui_event ke, bool *visual_list_ptr,
 						*delay = 100;
 
 						/* Accept change */
-						if (ke.mousebutton) 
+						if (ke.mouse.button)
 						  remove_visual_list(col, row, visual_list_ptr, width, height);
 
 						return TRUE;
 					}
 
 					/* Cancel change */
-					else if (ke.mousebutton)
+					else if (ke.mouse.button)
 					{
 						*cur_attr_ptr = attr_old;
 						*cur_char_ptr = char_old;

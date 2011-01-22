@@ -1986,9 +1986,9 @@ errr Term_mousepress(int x, int y, char button)
 {
   /* Store the char, advance the queue */
   Term->key_queue[Term->key_head].key = 0;
-  Term->key_queue[Term->key_head].mousex = x;
-  Term->key_queue[Term->key_head].mousey = y;
-  Term->key_queue[Term->key_head].mousebutton = button;
+  Term->key_queue[Term->key_head].mouse.x = x;
+  Term->key_queue[Term->key_head].mouse.y = y;
+  Term->key_queue[Term->key_head].mouse.button = button;
   Term->key_queue[Term->key_head].type = EVT_MOUSE;
   Term->key_head++;
   
@@ -2213,7 +2213,8 @@ errr Term_resize(int w, int h)
 	term_win *hold_mem;
 	term_win *hold_tmp;
 
-	ui_event evt = { EVT_RESIZE, 0, 0, 0, 0 };
+	ui_event evt = EVENT_EMPTY;
+	evt.type = EVT_RESIZE;
 
 
 	/* Resizing is forbidden */

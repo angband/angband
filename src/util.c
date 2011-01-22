@@ -1114,16 +1114,16 @@ ui_event inkey_ex(void)
 			/* Check to see if we've hit a button */
 			/* Assuming text buttons here for now - this would have to
 			 * change for GUI buttons */
-			char key = button_get_key(ke.mousex, ke.mousey);
+			char key = button_get_key(ke.mouse.x, ke.mouse.y);
 
 			if (key)
 			{
 				/* Rewrite the event */
 				ke.type = EVT_BUTTON;
 				ke.key = key;
-				ke.mousebutton = 0;
-				ke.mousey = 0;
-				ke.mousex = 0;
+				ke.mouse.button = 0;
+				ke.mouse.y = 0;
+				ke.mouse.x = 0;
 
 				/* Done */
 				break;
