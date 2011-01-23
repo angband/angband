@@ -94,4 +94,14 @@ typedef struct
 
 #define EVENT_EMPTY		{ 0 }
 
+
+/*** Functions ***/
+
+/** Given a string (and that string's length), return the corresponding keycode */
+keycode_t keycode_find_code(const char *str, size_t len);
+
+/** Given a keycode, return its description */
+const char *keycode_find_desc(keycode_t kc);
+
+
 #endif /* INCLUDED_UI_EVENT_H */
