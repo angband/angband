@@ -33,7 +33,8 @@ typedef struct monster_base
 	struct monster_base *next;
 
 	bitflag flags[RF_SIZE];         /* Flags */
-
+	bitflag spell_flags[RSF_SIZE];  /* Spell flags */
+	
 	char d_char;			/* Default monster character */
 } monster_base;
  

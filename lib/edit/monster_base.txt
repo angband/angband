@@ -3,6 +3,7 @@
 # N : serial number : template name
 # G : default display character
 # F : flag | flag | ...
+# S : spell flag | spell flag | ...
 # D : description
 #
 # 'N' indicates the beginning of an entry. The serial number must increase for
@@ -13,6 +14,8 @@
 # of the same "type" for things like the ESCORT flag or the S_KIN summon.
 #
 # 'F' indicates the flags that every monster inherits from this template.
+#
+# 'S' indicates the spell flags that every monster inherits from this template.
 #
 # 'D' indicates the textual description of this template that is used by
 # the '/' command in-game.
@@ -37,8 +40,8 @@ F:ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR | TAKE_ITEM
 F:IM_POIS | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-# Uniques don't have NO_CONF or NO_SLEEP
 D:Angel
+# Uniques don't have NO_CONF or NO_SLEEP
 
 N:3:ant
 G:a
@@ -115,6 +118,7 @@ N:15:giant
 G:P
 F:GIANT | EVIL
 F:BASH_DOOR
+S:BOULDER
 D:Giant Humanoid
 
 N:16:golem
@@ -197,6 +201,7 @@ F:UNDEAD | EVIL | COLD_BLOOD | SMART
 F:OPEN_DOOR | BASH_DOOR
 F:IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
+S:BRAIN_SMASH
 D:Lich
 
 N:28:louse
@@ -219,6 +224,7 @@ F:COLD_BLOOD | EMPTY_MIND
 F:NEVER_MOVE
 F:NO_FEAR | NO_CONF | NO_SLEEP
 F:CHAR_MULTI | FORCE_SLEEP
+S:BLIND | CAUSE_2 | CONF | SCARE
 D:Mimic
 
 N:31:mold
@@ -315,6 +321,7 @@ F:UNDEAD | EVIL | COLD_BLOOD | REGENERATE
 F:OPEN_DOOR | BASH_DOOR
 F:HURT_LIGHT | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
+S:HOLD | SCARE
 D:Vampire
 
 N:47:vortex
@@ -331,10 +338,10 @@ G:w
 F:ANIMAL | WEIRD_MIND | MULTIPLY | STUPID
 F:RAND_25 | RAND_50
 F:HURT_LIGHT | NO_FEAR
+D:Worm/Worm Mass
 # Red has EMPTY_MIND instead of WEIRD_MIND
 # Wereworm has almost none of these flags. Ditto Purple worm.
 # Disenchanter worm mass doesn't have RAND_25
-D:Worm/Worm Mass
 
 N:49:wraith
 G:W

@@ -1437,6 +1437,38 @@ static enum parser_error parse_rb_f(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static const char *r_info_spell_flags[] =
+{
+	#define RSF(a, b) #a,
+	#include "list-mon-spells.h"
+	#undef RSF
+	NULL
+};
+
+static enum parser_error parse_rb_s(struct parser *p) {
+	struct monster_base *rb = parser_priv(p);
+	char *flags;
+	char *s;
+
+	if (!rb)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!parser_hasval(p, "spells"))
+		return PARSE_ERROR_NONE;
+	flags = string_make(parser_getstr(p, "spells"));
+	s = strtok(flags, " |");
+	while (s) {
+		if (grab_flag(rb->spell_flags, RSF_SIZE, r_info_spell_flags, s)) {
+			mem_free(flags);
+			return PARSE_ERROR_INVALID_FLAG;
+		}
+		s = strtok(NULL, " |");
+	}
+
+	mem_free(flags);
+	return PARSE_ERROR_NONE;
+}
+
+
 static enum parser_error parse_rb_d(struct parser *p) {
 	struct monster_base *rb = parser_priv(p);
 
@@ -1455,6 +1487,7 @@ struct parser *init_parse_rb(void) {
 	parser_reg(p, "N uint index str name", parse_rb_n);
 	parser_reg(p, "G char glyph", parse_rb_g);
 	parser_reg(p, "F ?str flags", parse_rb_f);
+	parser_reg(p, "S ?str spells", parse_rb_s);
 	parser_reg(p, "D str desc", parse_rb_d);
 	return p;
 }
@@ -1670,14 +1703,6 @@ static enum parser_error parse_r_d(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static const char *r_info_spell_flags[] =
-{
-	#define RSF(a, b) #a,
-	#include "list-mon-spells.h"
-	#undef RSF
-	NULL
-};
-
 static enum parser_error parse_r_s(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
 	char *flags;
@@ -1705,6 +1730,10 @@ static enum parser_error parse_r_s(struct parser *p) {
 		}
 		s = strtok(NULL, " |");
 	}
+
+	/* Add the "base monster" flags to the monster */
+	if (r->rval > 0)
+		rsf_union(r->spell_flags, rb_info[r->rval].spell_flags);
 
 	mem_free(flags);
 	return ret;
