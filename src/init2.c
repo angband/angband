@@ -1437,6 +1437,16 @@ static enum parser_error parse_rb_f(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_rb_d(struct parser *p) {
+	struct monster_base *rb = parser_priv(p);
+
+	if (!rb)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	rb->text = string_append(rb->text, parser_getstr(p, "desc"));
+	return PARSE_ERROR_NONE;
+}
+
+
 struct parser *init_parse_rb(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -1445,6 +1455,7 @@ struct parser *init_parse_rb(void) {
 	parser_reg(p, "N uint index str name", parse_rb_n);
 	parser_reg(p, "G char glyph", parse_rb_g);
 	parser_reg(p, "F ?str flags", parse_rb_f);
+	parser_reg(p, "D str desc", parse_rb_d);
 	return p;
 }
 

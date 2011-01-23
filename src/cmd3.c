@@ -580,7 +580,7 @@ void lookup_symbol(char sym, char *buf, size_t max)
 	{
 		if(rb_info[i].d_char == sym)
 		{
-			strnfmt(buf, max, "%c - %s.", sym, rb_info[i].name);
+			strnfmt(buf, max, "%c - %s.", sym, rb_info[i].text);
 			return;
 		}
 	}

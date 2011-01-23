@@ -27,6 +27,7 @@ typedef struct
 typedef struct monster_base
 {
 	char *name;
+	char *text;
 	
 	int rval;
 	struct monster_base *next;
