@@ -366,7 +366,7 @@ extern errr Term_what(int x, int y, byte *a, char *c);
 
 extern errr Term_flush(void);
 extern errr Term_mousepress(int x, int y, char button);
-extern errr Term_keypress(int k);
+extern errr Term_keypress(keycode_t k, byte mods);
 extern errr Term_key_push(int k);
 extern errr Term_event_push(const ui_event *ke);
 extern errr Term_inkey(ui_event *ch, bool wait, bool take);

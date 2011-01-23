@@ -4004,10 +4004,9 @@ static void handle_keydown(WPARAM wParam, LPARAM lParam)
 	/* see http://source.winehq.org/source/include/dinput.h#L468 */
 
 	if (ch) {
-		/* XXX use mods */
 		int mods = (mc ? KC_MOD_CONTROL : 0) | (ms ? KC_MOD_SHIFT : 0) |
 				(ma ? KC_MOD_ALT : 0) | (kp ? KC_MOD_KEYPAD : 0) |
-		Term_keypress(ch);
+		Term_keypress(ch, mods);
 	}
 }
 
@@ -4094,7 +4093,7 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 
 		case WM_CHAR:
 		{
-			Term_keypress(wParam);
+			Term_keypress(wParam, 0);
 			return 0;
 		}
 
@@ -4464,7 +4463,7 @@ static LRESULT FAR PASCAL AngbandListProc(HWND hWnd, UINT uMsg,
 
 		case WM_CHAR:
 		{
-			Term_keypress(wParam);
+			Term_keypress(wParam, 0);
 			return 0;
 		}
 

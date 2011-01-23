@@ -658,7 +658,7 @@ static errr Term_xtra_gcu_event(int v)
 #endif
 
 	/* Enqueue the keypress */
-	Term_keypress(i);
+	Term_keypress(i, 0);
 
 	/* Success */
 	return (0);

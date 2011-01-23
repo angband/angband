@@ -1959,24 +1959,25 @@ errr Term_flush(void)
 /*
  * Add a keypress to the "queue"
  */
-errr Term_keypress(int k)
+errr Term_keypress(keycode_t k, byte mods)
 {
-  /* Hack -- Refuse to enqueue non-keys */
-  if (!k) return (-1);
-  
-  /* Store the char, advance the queue */
-  Term->key_queue[Term->key_head].key = k;
-  Term->key_queue[Term->key_head].type = EVT_KBRD;
-  Term->key_head++;
-  
-  /* Circular queue, handle wrap */
-  if (Term->key_head == Term->key_size) Term->key_head = 0;
-  
-  /* Success (unless overflow) */
-  if (Term->key_head != Term->key_tail) return (0);
-  
-  /* Problem */
-  return (1);
+	/* Hack -- Refuse to enqueue non-keys */
+	if (!k) return (-1);
+
+	/* Store the char, advance the queue */
+	Term->key_queue[Term->key_head].type = EVT_KBRD;
+	Term->key_queue[Term->key_head].key = k;
+	Term->key_queue[Term->key_head].keymods = mods;
+	Term->key_head++;
+
+	/* Circular queue, handle wrap */
+	if (Term->key_head == Term->key_size) Term->key_head = 0;
+
+	/* Success (unless overflow) */
+	if (Term->key_head != Term->key_tail) return (0);
+
+	/* Problem */
+	return (1);
 }
 
 /*

@@ -2464,6 +2464,9 @@ static void sdl_keypress(SDL_keysym keysym)
 	bool mm = (keysym.mod & KMOD_META) > 0;
 	bool kp = FALSE;
 
+	byte mods = (mc ? KC_MOD_CONTROL : 0) | (ms ? KC_MOD_SHIFT : 0) |
+			(ma ? KC_MOD_ALT : 0) | (mm ? KC_MOD_META : 0);
+
 	/* Ignore if main term is not initialized */
 	if (!Term) return;
 
@@ -2530,12 +2533,12 @@ static void sdl_keypress(SDL_keysym keysym)
 	}
 
 	if (ch) {
-		/* XXX need to do something with mods, incl. kp */
-		Term_keypress(ch);
+		mods |= (kp ? KC_MOD_KEYPAD : 0);
+		Term_keypress(ch, mods);
 	} else if (key_code) {
 		/* If the keycode is 7-bit ASCII (except numberpad), and ALT and META
 		 * are not pressed, send it directly to the game */
-		Term_keypress(key_code);
+		Term_keypress(key_code, mods);
 	}
 }
 

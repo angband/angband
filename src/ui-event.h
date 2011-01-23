@@ -89,6 +89,7 @@ typedef struct
 		byte button;
 	} mouse;
 	keycode_t key;
+	byte keymods;
 } ui_event;
 
 #define EVENT_EMPTY		{ 0 }

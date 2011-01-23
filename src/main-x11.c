@@ -1641,6 +1641,9 @@ static void react_keypress(XKeyEvent *ev)
 	int mx = (ev->state & Mod2Mask) ? TRUE : FALSE;
 	int kp = FALSE;
 
+	byte mods = (mc ? KC_MOD_CONTROL : 0) | (ms ? KC_MOD_SHIFT : 0) |
+			(mo ? KC_MOD_ALT : 0) | (mx ? KC_MOD_META : 0);
+
 	/* Check for "normal" keypresses */
 	n = XLookupString(ev, buf, 125, &ks, NULL);
 	buf[n] = '\0';
@@ -1652,7 +1655,7 @@ static void react_keypress(XKeyEvent *ev)
 	if (n && !mo && !mx && !IsSpecialKey(ks))
 	{
 		/* Enqueue the normal key(s) */
-		for (i = 0; buf[i]; i++) Term_keypress(buf[i]);
+		for (i = 0; buf[i]; i++) Term_keypress(buf[i], mods);
 
 		/* All done */
 		return;
@@ -1725,9 +1728,11 @@ static void react_keypress(XKeyEvent *ev)
 		case XK_F15: ch = KC_F15; break;
 	}
 
+	mods |= (kp ? KC_MOD_KEYPAD : 0);
+
 	if (ch) {
 		/* need to something a tad more advanced than this */
-		Term_keypress(ch);
+		Term_keypress(ch, mods);
 		return;
 	}
 }

@@ -3583,19 +3583,18 @@ static OSStatus KeyboardCommand ( EventHandlerCallRef inCallRef,
 	}
 
 	if (ch) {
-		mods = (mc ? KC_MOD_CONTROL : 0) | (ms ? KC_MOD_SHIFT : 0) |
+		mods |= (mc ? KC_MOD_CONTROL : 0) | (ms ? KC_MOD_SHIFT : 0) |
 				(kp ? KC_MOD_KEYPAD : 0);
 
-		/* XXX use mods */
-		Term_keypress(ch);
+		Term_keypress(ch, mods);
 	} else if (evt_keycode < 64) {
 		/* Keycodes under 64 = main part of the keyboard, printables (mostly) */
 		char ch;
 		GetEventParameter(inEvent, kEventParamKeyMacCharCodes, typeChar, NULL,
 				sizeof(char), NULL, &ch);
 
-		/* XXX use mods */
-		Term_keypress(ch);
+		/* Ignore control and shift for "standard" characters */
+		Term_keypress(ch, mods);
 	}
 
 	return noErr;

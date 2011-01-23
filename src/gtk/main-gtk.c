@@ -1028,6 +1028,8 @@ gboolean delete_event_handler(GtkWidget *widget, GdkEvent *event, gpointer user_
 
 gboolean keypress_event_handler(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
+	byte mods;
+
 	int ch = 0;
 	guint modifiers = gtk_accelerator_get_default_mod_mask();
 
@@ -1102,15 +1104,18 @@ gboolean keypress_event_handler(GtkWidget *widget, GdkEventKey *event, gpointer 
 		case GDK_F15: ch = KC_F15; break;
 	}
 
+	mods = (mc ? KC_MOD_CONTROL : 0) | (ms ? KC_MOD_SHIFT : 0) |
+			(mo ? KC_MOD_ALT : 0) | (mx ? KC_MOD_META : 0) |
+			(kp ? KC_MOD_KEYPAD : 0);
+
 	if (ch) {
-		/* XXX need to do something about modifiers, incl keypad */
-		Term_keypress(ch);
+		Term_keypress(ch, mods);
 	} else if (event->length) {
 		int i;
 
 		/* Enqueue GDK's textual representation */
 		for (i = 0; i < event->length; i++)
-			Term_keypress(event->string[i]);
+			Term_keypress(event->string[i], mods);
 
 		if (!mc)
 			return TRUE; /* Not a control key, so the keypress is handled */
