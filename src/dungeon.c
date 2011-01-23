@@ -1384,10 +1384,12 @@ static void dungeon(struct cave *c)
 	/* If autosave is pending, do it now. */
 	if (p_ptr->autosave)
 	{
+/* The borg runs so quickly that this is a bad idea. */
+#ifndef ALLOW_BORG 
 		save_game();
+#endif
 		p_ptr->autosave = FALSE;
 	}
-
 
 	/* Choose panel */
 	verify_panel();
