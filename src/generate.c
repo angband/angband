@@ -1389,32 +1389,6 @@ static bool vault_aux_flag(int r_idx, bitflag flag) {
 
 
 /**
- * For a given string, this function returns true if the given r_idx represents
- * a non-unique monster whose symbol is present in the string.
- */
-static bool vault_aux_str(int r_idx, const char *s) {
-	monster_race *r_ptr = &r_info[r_idx];
-	if (rf_has(r_ptr->flags, RF_UNIQUE))
-		return FALSE;
-	else if (!strchr(s, r_ptr->d_char))
-		return FALSE;
-	else
-		return TRUE;
-}
-
-
-static bool vault_aux_template(int r_idx, const char *s) {
-	monster_race *r_ptr = &r_info[r_idx];
-	if (rf_has(r_ptr->flags, RF_UNIQUE))
-		return FALSE;
-	else if (r_ptr->rval != lookup_monster_base(s))
-		return FALSE;
-	else
-		return TRUE;
-}
-
-
-/**
  * Helper function for "monster nest (jelly)"
  */
 static bool vault_aux_jelly(int r_idx) {
@@ -1457,8 +1431,12 @@ static bool vault_aux_troll(int r_idx) {
  * Helper function for "monster pit (giant)"
  */
 static bool vault_aux_giant(int r_idx) {
-	/* Hack - check the monster template so that we don't match ogres. */
-	return vault_aux_template(r_idx, "giant");
+	monster_race *r_ptr = &r_info[r_idx];
+	
+	if (!vault_aux_flag(r_idx, RF_GIANT)) return FALSE;
+	
+	/* Hack - check the monster for the "Boulder" spell so that we don't match ogres. */
+	return rsf_has(r_ptr->spell_flags, RSF_BOULDER);
 }
 
 
