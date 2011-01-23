@@ -276,6 +276,10 @@ bool py_attack_real(int y, int x) {
 	return dead;
 }
 
+
+/**
+ * TODO: write me!
+ */
 void py_attack(int y, int x) {
 	int blow_energy = 10000 / p_ptr->state.num_blows;
 	int blows = 0;
@@ -297,6 +301,13 @@ void py_attack(int y, int x) {
 }
 
 
+/**
+ * This is a helper function used by do_cmd_throw and do_cmd_fire.
+ *
+ * It abstracts out the projectile path, display code, identify and clean up
+ * logic, while using the 'attack' parameter to do work particular to each
+ * kind of attack.
+ */
 void ranged_helper(int item, int dir, int range, int shots, ranged_attack attack) {
 	/* Get the ammo */
 	object_type *o_ptr = object_from_item_idx(item);
@@ -395,57 +406,59 @@ void ranged_helper(int item, int dir, int range, int shots, ranged_attack attack
 		int visible = m_ptr->ml;
 
 		bool fear = FALSE;
-		int dmg;
-		u32b msg_type;
-		const char *hit_verb = "hits";
 		char m_name[80];
 		cptr note_dies = monster_is_unusual(r_ptr) ? " is destroyed." : " dies.";
 
-		/* Get "the monster" or "it" */
-		monster_desc(m_name, sizeof(m_name), m_ptr, 0);
+		struct attack_result result = attack(o_ptr, y, x);
+		int dmg = result.dmg;
+		u32b msg_type = result.msg_type;
+		const char *hit_verb = result.hit_verb;
 
-		hit_body = attack(o_ptr, y, x, &dmg, &msg_type, hit_verb);
-	
-		object_notice_attack_plusses(o_ptr);
-	
-		/* No negative damage; change verb if no damage done */
-		if (dmg <= 0) {
-			dmg = 0;
-			hit_verb = "fail to harm";
-		}
-	
-		if (!visible) {
-			/* Invisible monster */
-			msgt(MSG_SHOOT_HIT, "The %s finds a mark.", o_name);
-		} else {
-			/* Visible monster */
-			if (msg_type == MSG_SHOOT_HIT)
-				msgt(MSG_SHOOT_HIT, "The %s %s %s.", o_name, hit_verb, m_name);
-			else if (msg_type == MSG_HIT_GOOD) {
-				msgt(MSG_HIT_GOOD, "The %s %s %s. %s", o_name, hit_verb, m_name, "It was a good hit!");
-			} else if (msg_type == MSG_HIT_GREAT) {
-				msgt(MSG_HIT_GREAT, "The %s %s %s. %s", o_name, hit_verb, m_name,
-					 "It was a great hit!");
-			} else if (msg_type == MSG_HIT_SUPERB) {
-				msgt(MSG_HIT_SUPERB, "The %s %s %s. %s", o_name, hit_verb, m_name,
-					 "It was a superb hit!");
+		if (result.success) {
+			/* Get "the monster" or "it" */
+			monster_desc(m_name, sizeof(m_name), m_ptr, 0);
+		
+			object_notice_attack_plusses(o_ptr);
+		
+			/* No negative damage; change verb if no damage done */
+			if (dmg <= 0) {
+				dmg = 0;
+				hit_verb = "fail to harm";
 			}
-	
-			/* Track this monster */
-			if (m_ptr->ml) monster_race_track(m_ptr->r_idx);
-			if (m_ptr->ml) health_track(p_ptr, cave->m_idx[y][x]);
-		}
-	
-		/* Complex message */
-		if (p_ptr->wizard)
-			msg("You do %d (out of %d) damage.", dmg, m_ptr->hp);
-	
-		/* Hit the monster, check for death */
-		if (mon_take_hit(cave->m_idx[y][x], dmg, &fear, note_dies)) {
-			/* Dead monster */
-		} else {
-			message_pain(cave->m_idx[y][x], dmg);
-			if (fear && m_ptr->ml) msgt(MSG_FLEE, "%^s flees in terror!", m_name);
+		
+			if (!visible) {
+				/* Invisible monster */
+				msgt(MSG_SHOOT_HIT, "The %s finds a mark.", o_name);
+			} else {
+				/* Visible monster */
+				if (msg_type == MSG_SHOOT_HIT)
+					msgt(MSG_SHOOT_HIT, "The %s %s %s.", o_name, hit_verb, m_name);
+				else if (msg_type == MSG_HIT_GOOD) {
+					msgt(MSG_HIT_GOOD, "The %s %s %s. %s", o_name, hit_verb, m_name, "It was a good hit!");
+				} else if (msg_type == MSG_HIT_GREAT) {
+					msgt(MSG_HIT_GREAT, "The %s %s %s. %s", o_name, hit_verb, m_name,
+						 "It was a great hit!");
+				} else if (msg_type == MSG_HIT_SUPERB) {
+					msgt(MSG_HIT_SUPERB, "The %s %s %s. %s", o_name, hit_verb, m_name,
+						 "It was a superb hit!");
+				}
+		
+				/* Track this monster */
+				if (m_ptr->ml) monster_race_track(m_ptr->r_idx);
+				if (m_ptr->ml) health_track(p_ptr, cave->m_idx[y][x]);
+			}
+		
+			/* Complex message */
+			if (p_ptr->wizard)
+				msg("You do %d (out of %d) damage.", dmg, m_ptr->hp);
+		
+			/* Hit the monster, check for death */
+			if (mon_take_hit(cave->m_idx[y][x], dmg, &fear, note_dies)) {
+				/* Dead monster */
+			} else {
+				message_pain(cave->m_idx[y][x], dmg);
+				if (fear && m_ptr->ml) msgt(MSG_FLEE, "%^s flees in terror!", m_name);
+			}
 		}
 	}
 
@@ -477,7 +490,9 @@ void ranged_helper(int item, int dir, int range, int shots, ranged_attack attack
 /**
  * Helper function used with ranged_helper by do_cmd_fire.
  */
-bool make_ranged_shot(object_type *o_ptr, int y, int x, int *dmg, u32b *msg_type, const char *hit_verb) {
+struct attack_result make_ranged_shot(object_type *o_ptr, int y, int x) {
+	struct attack_result result = {FALSE, 0, 0, "hit"};
+
 	object_type *j_ptr = &p_ptr->inventory[INVEN_BOW];
 
 	monster_type *m_ptr = &mon_list[cave->m_idx[y][x]];
@@ -491,33 +506,37 @@ bool make_ranged_shot(object_type *o_ptr, int y, int x, int *dmg, u32b *msg_type
 	const struct slay *best_s_ptr = NULL;
 
 	/* Did we hit it (penalize distance travelled) */
-	if (!test_hit(chance2, r_ptr->ac, m_ptr->ml)) return 0;
+	if (!test_hit(chance2, r_ptr->ac, m_ptr->ml)) return result;
+
+	result.success = TRUE;
 
 	improve_attack_modifier(o_ptr, m_ptr, &best_s_ptr, TRUE, FALSE);
 	improve_attack_modifier(j_ptr, m_ptr, &best_s_ptr, TRUE, FALSE);
 
 	/* If we have a slay, modify the multiplier appropriately */
 	if (best_s_ptr != NULL) {
-		hit_verb = best_s_ptr->range_verb;
+		result.hit_verb = best_s_ptr->range_verb;
 		multiplier += best_s_ptr->mult;
 	}
 
 	/* Apply damage: multiplier, slays, criticals, bonuses */
-	*dmg = damroll(o_ptr->dd, o_ptr->ds);
-	*dmg += o_ptr->to_d + j_ptr->to_d;
-	*dmg *= multiplier;
-	*dmg = critical_shot(o_ptr->weight, o_ptr->to_h, *dmg, msg_type);
+	result.dmg = damroll(o_ptr->dd, o_ptr->ds);
+	result.dmg += o_ptr->to_d + j_ptr->to_d;
+	result.dmg *= multiplier;
+	result.dmg = critical_shot(o_ptr->weight, o_ptr->to_h, result.dmg, &result.msg_type);
 
 	object_notice_attack_plusses(&p_ptr->inventory[INVEN_BOW]);
 
-	return TRUE;
+	return result;
 }
 
 
 /**
  * Helper function used with ranged_helper by do_cmd_throw.
  */
-bool make_ranged_throw(object_type *o_ptr, int y, int x, int *dmg, u32b *msg_type, const char *hit_verb) {
+struct attack_result make_ranged_throw(object_type *o_ptr, int y, int x) {
+	struct attack_result result = {FALSE, 0, 0, "hit"};
+
 	monster_type *m_ptr = &mon_list[cave->m_idx[y][x]];
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
@@ -529,23 +548,25 @@ bool make_ranged_throw(object_type *o_ptr, int y, int x, int *dmg, u32b *msg_typ
 	const struct slay *best_s_ptr = NULL;
 
 	/* If we missed then we're done */
-	if (!test_hit(chance2, r_ptr->ac, m_ptr->ml)) return 0;
+	if (!test_hit(chance2, r_ptr->ac, m_ptr->ml)) return result;
+
+	result.success = TRUE;
 
 	improve_attack_modifier(o_ptr, m_ptr, &best_s_ptr, TRUE, FALSE);
 
 	/* If we have a slay, modify the multiplier appropriately */
 	if (best_s_ptr != NULL) {
-		hit_verb = best_s_ptr->range_verb;
+		result.hit_verb = best_s_ptr->range_verb;
 		multiplier += best_s_ptr->mult;
 	}
 
 	/* Apply damage: multiplier, slays, criticals, bonuses */
-	*dmg = damroll(o_ptr->dd, o_ptr->ds);
-	*dmg += o_ptr->to_d;
-	*dmg *= multiplier;
-	*dmg = critical_norm(o_ptr->weight, o_ptr->to_h, *dmg, msg_type);
+	result.dmg = damroll(o_ptr->dd, o_ptr->ds);
+	result.dmg += o_ptr->to_d;
+	result.dmg *= multiplier;
+	result.dmg = critical_norm(o_ptr->weight, o_ptr->to_h, result.dmg, &result.msg_type);
 
-	return TRUE;
+	return result;
 }
 
 
@@ -557,6 +578,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[]) {
 	int dir = args[1].direction;
 	int range = 6 + 2 * p_ptr->state.ammo_mult;
 	int shots = p_ptr->state.num_shots;
+
 	ranged_attack attack = make_ranged_shot;
 
 	object_type *j_ptr = &p_ptr->inventory[INVEN_BOW];
@@ -615,6 +637,9 @@ void do_cmd_throw(cmd_code code, cmd_arg args[]) {
 }
 
 
+/**
+ * Front-end 'throw' command.
+ */
 void textui_cmd_throw(void) {
 	int item, dir;
 	cptr q, s;
@@ -638,6 +663,9 @@ void textui_cmd_throw(void) {
 }
 
 
+/**
+ * Front-end command which fires at the nearest target with default ammo.
+ */
 void textui_cmd_fire_at_nearest(void) {
 	/* the direction '5' means 'use the target' */
 	int i, dir = 5, item = -1;
