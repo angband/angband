@@ -20,7 +20,6 @@
 #include "angband.h"
 #include "cmds.h"
 #include "keymap.h"
-#include "macro.h"
 #include "squelch.h"
 #include "prefs.h"
 #include "object/tvalsval.h"
@@ -348,66 +347,6 @@ static void do_cmd_options_win(const char *name, int row)
 #ifdef ALLOW_MACROS
 
 /*
- * Hack -- ask for a "trigger" (see below)
- *
- * Note the complex use of the "inkey()" function from "util.c".
- *
- * Note that both "flush()" calls are extremely important.  This may
- * no longer be true, since "util.c" is much simpler now.  XXX XXX XXX
- */
-static void do_cmd_macro_aux(char *buf)
-{
-	ui_event e;
-
-	int n = 0;
-	int curs_x, curs_y;
-
-	char tmp[1024] = "";
-
-	/* Get cursor position */
-	Term_locate(&curs_x, &curs_y);
-
-	/* Flush */
-	flush();
-
-
-	/* Do not process macros */
-	inkey_base = TRUE;
-
-	/* First key */
-	e = inkey_ex();
-
-	/* Read the pattern */
-	while (e.key != 0 && e.type != EVT_MOUSE)
-	{
-		/* Save the key */
-		buf[n++] = e.key;
-		buf[n] = 0;
-
-		/* Get representation of the sequence so far */
-		ascii_to_text(tmp, sizeof(tmp), buf);
-
-		/* Echo it after the prompt */
-		Term_erase(curs_x, curs_y, 80);
-		Term_gotoxy(curs_x, curs_y);
-		Term_addstr(-1, TERM_WHITE, tmp);
-		
-		/* Do not process macros */
-		inkey_base = TRUE;
-
-		/* Do not wait for keys */
-		inkey_scan = SCAN_INSTANT;
-
-		/* Attempt to read a key */
-		e = inkey_ex();
-	}
-
-	/* Convert the trigger */
-	ascii_to_text(tmp, sizeof(tmp), buf);
-}
-
-
-/*
  * Ask for, and display, a keymap trigger.
  *
  * Returns the trigger input.
@@ -452,104 +391,6 @@ static keycode_t keymap_get_trigger(void)
 static void macro_pref_load(const char *title, int row)
 {
 	do_cmd_pref_file_hack(16);
-}
-
-static void macro_pref_append(const char *title, int row)
-{
-	(void)dump_pref_file(macro_dump, "Dump macros", 15);
-}
-
-static void macro_query(const char *title, int row)
-{
-	int k;
-	char buf[1024];
-	
-	prt("Command: Query a macro", 16, 0);
-	prt("Trigger: ", 18, 0);
-	
-	/* Get a macro trigger */
-	do_cmd_macro_aux(buf);
-	
-	/* Get the action */
-	k = macro_find_exact(buf);
-	
-	/* Nothing found */
-	if (k < 0)
-	{
-		/* Prompt */
-		prt("", 0, 0);
-		msg("Found no macro.");
-	}
-	
-	/* Found one */
-	else
-	{
-		/* Obtain the action */
-		my_strcpy(macro_buffer, macro__act[k], sizeof(macro_buffer));
-	
-		/* Analyze the current action */
-		ascii_to_text(buf, sizeof(buf), macro_buffer);
-	
-		/* Display the current action */
-		prt(buf, 22, 0);
-	
-		/* Prompt */
-		prt("", 0, 0);
-		msg("Found a macro.");
-	}
-}
-
-static void macro_create(const char *title, int row)
-{
-	char pat[1024];
-	char tmp[1024];
-
-	prt("Command: Create a macro", 16, 0);
-	prt("Trigger: ", 18, 0);
-	
-	/* Get a macro trigger */
-	do_cmd_macro_aux(pat);
-	
-	/* Clear */
-	clear_from(20);
-	
-	/* Prompt */
-	prt("Action: ", 20, 0);
-	
-	/* Convert to text */
-	ascii_to_text(tmp, sizeof(tmp), macro_buffer);
-	
-	/* Get an encoded action */
-	if (askfor_aux(tmp, sizeof tmp, NULL))
-	{
-		/* Convert to ascii */
-		text_to_ascii(macro_buffer, sizeof(macro_buffer), tmp);
-		
-		/* Link the macro */
-		macro_add(pat, macro_buffer);
-		
-		/* Prompt */
-		prt("", 0, 0);
-		msg("Added a macro.");
-	}					
-}
-
-static void macro_remove(const char *title, int row)
-{
-	char pat[1024];
-
-	prt("Command: Remove a macro", 16, 0);
-	prt("Trigger: ", 18, 0);
-	
-	/* Get a macro trigger */
-	do_cmd_macro_aux(pat);
-	
-	/* Link the macro */
-	macro_add(pat, pat);
-	
-	/* Prompt */
-	prt("", 0, 0);
-	msg("Removed a macro.");
 }
 
 static void keymap_pref_append(const char *title, int row)
@@ -680,10 +521,6 @@ static menu_type *macro_menu;
 static menu_action macro_actions[] =
 {
 	{ 0, 0, "Load a user pref file",    macro_pref_load },
-	{ 0, 0, "Append macros to a file",  macro_pref_append },
-	{ 0, 0, "Query a macro",            macro_query },
-	{ 0, 0, "Create a macro",           macro_create },
-	{ 0, 0, "Remove a macro",           macro_remove },
 	{ 0, 0, "Append keymaps to a file", keymap_pref_append },
 	{ 0, 0, "Query a keymap",           keymap_query },
 	{ 0, 0, "Create a keymap",          keymap_create },

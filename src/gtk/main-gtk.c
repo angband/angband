@@ -23,7 +23,6 @@
 #include "main-gtk.h"
 #include "textui.h"
 #include "files.h"
-#include "macro.h"
 #include "init.h"
 
 /* this is used to draw the various terrain characters */

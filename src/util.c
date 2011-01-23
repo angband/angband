@@ -1,6 +1,6 @@
 /*
  * File: util.c
- * Purpose: Macro code, gamma correction, some high-level UI functions, inkey()
+ * Purpose: Gamma correction, some high-level UI functions, inkey()
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -20,7 +20,6 @@
 #include "button.h"
 #include "cmds.h"
 #include "game-event.h"
-#include "macro.h"
 #include "randname.h"
 
 /*
@@ -407,47 +406,21 @@ void flush(void)
 }
 
 
-/*
- * Local variable -- we are inside a "macro action"
- *
- * Do not match any macros until "ascii 30" is found.
- */
-static bool parse_macro = FALSE;
 
 
 /*
  * Helper function called only from "inkey()"
- *
- * This function does almost all of the "macro" processing.
- *
- * We use the "Term_key_push()" function to handle "failed" macros, as well
- * as "extra" keys read in while choosing the proper macro, and also to hold
- * the action for the macro, plus a special "ascii 30" character indicating
- * that any macro action in progress is complete.  Embedded macros are thus
- * illegal, unless a macro action includes an explicit "ascii 30" character,
- * which would probably be a massive hack, and might break things.
- *
- * Only 500 (0+1+2+...+29+30) milliseconds may elapse between each key in
- * the macro trigger sequence.  If a key sequence forms the "prefix" of a
- * macro trigger, 500 milliseconds must pass before the key sequence is
- * known not to be that macro trigger.  XXX XXX XXX
  */
 static ui_event inkey_aux(int scan_cutoff)
 {
-	int k = 0, n, p = 0, w = 0;
-	
+	int w = 0;	
+
 	ui_event ke, ke0 = EVENT_EMPTY;
-	char ch;
 	
-	const char *pat, *act;
-	
-	char buf[1024];
- 
 	/* Wait for a keypress */
 	if (scan_cutoff == SCAN_OFF)
 	{
 		(void)(Term_inkey(&ke, TRUE, TRUE));
-		ch = ke.key;
 	}
 	else
 	{
@@ -469,132 +442,9 @@ static ui_event inkey_aux(int scan_cutoff)
 			/* Delay */
 			Term_xtra(TERM_XTRA_DELAY, 10);
 		}
-		ch = ke.key;
 	}
 
-	
-	/* End "macro action" */
-	if (ke.key == 30 || ke.type == EVT_MOUSE)
-	{
-		parse_macro = FALSE;
-		return (ke);
-	}
-	
-	/* Inside "macro action" */
-	if (parse_macro) return (ke);
-	
-
-	/* Save the first key, advance */
-	buf[p++] = ke.key;
-	buf[p] = '\0';
-	
-	
-	/* Check for possible macro */
-	k = macro_find_check(buf);
-	
-	/* No macro pending */
-	if (k < 0) return (ke);
-	
-	
-	/* Wait for a macro, or a timeout */
-	while (TRUE)
-	{
-		/* Check for pending macro */
-		k = macro_find_maybe(buf);
-		
-		/* No macro pending */
-		if (k < 0) break;
-		
-		/* Check for (and remove) a pending key */
-		if (0 == Term_inkey(&ke, FALSE, TRUE))
-		{
-			/* Append the key */
-			buf[p++] = ke.key;
-			buf[p] = '\0';
-		
-			/* Restart wait */
-			w = 0;
-		}
-		
-		/* No key ready */
-		else
-		{
-			/* Increase "wait" */
-			w ++;
-		
-			/* Excessive delay */
-			if (w >= SCAN_MACRO) break;
-		
-			/* Delay */
-			Term_xtra(TERM_XTRA_DELAY, 10);
-		}
-	}
-	
-	
-	/* Check for available macro */
-	k = macro_find_ready(buf);
-
-	/* No macro available */
-	if (k < 0)
-	{
-		/* Push all the "keys" back on the queue */
-		/* The most recent event may not be a keypress. */
-		if(p)
-		{
-			if(Term_event_push(&ke)) return (ke0);
-			p--;
-		}
-		while (p > 0)
-		{
-			/* Push the key, notice over-flow */
-			if (Term_key_push(buf[--p])) return (ke0);
-		}
-		
-		/* Wait for (and remove) a pending key */
-		(void)Term_inkey(&ke, TRUE, TRUE);
-		
-		/* Return the key */
-		return (ke);
-	}
-	
-	
-	/* Get the pattern */
-	pat = macro__pat[k];
-	
-	/* Get the length of the pattern */
-	n = strlen(pat);
-	
-	/* Push the "extra" keys back on the queue */
-	while (p > n)
-	{
-		/* Push the key, notice over-flow */
-		if (Term_key_push(buf[--p])) return (ke0);
-	}
-	
-	
-	/* Begin "macro action" */
-	parse_macro = TRUE;
-	
-	/* Push the "end of macro action" key */
-	if (Term_key_push(30)) return (ke0);
-	
-	
-	/* Access the macro action */
-	act = macro__act[k];
-	
-	/* Get the length of the action */
-	n = strlen(act);
-	
-	/* Push the macro "action" onto the key queue */
-	while (n > 0)
-	{
-		/* Push the key, notice over-flow */
-		if (Term_key_push(act[--n])) return (ke0);
-	}
-	
-	
-	/* Hack -- Force "inkey()" to call us again */
-	return (ke0);
+	return (ke);
 }
 
 
@@ -733,15 +583,9 @@ ui_event inkey_ex(void)
 
 #endif /* ALLOW_BORG */
 
-	/* Hack -- handle delayed "flush()" */
+	/* Forget old keypresses XXX */
 	if (inkey_xtra)
-	{
-		/* End "macro action" */
-		parse_macro = FALSE;
-
-		/* Forget old keypresses */
 		Term_flush();
-	}
 
 
 	/* Get the cursor state */

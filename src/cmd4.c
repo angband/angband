@@ -25,7 +25,6 @@
 #include "externs.h"
 #include "files.h"
 #include "history.h"
-#include "macro.h"
 #include "object/tvalsval.h"
 #include "option.h"
 #include "prefs.h"

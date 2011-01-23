@@ -19,7 +19,6 @@
  */
 #include "angband.h"
 #include "keymap.h"
-#include "macro.h"
 #include "prefs.h"
 #include "squelch.h"
 #include "spells.h"
@@ -202,44 +201,10 @@ void option_dump(ang_file *fff)
 	}
 
 #ifdef ALLOW_MACROS
-	macro_dump(fff);
 	keymap_dump(fff);
 #endif
-
 }
 
-
-
-#ifdef ALLOW_MACROS
-
-/*
- * Append all current macros to the given file
- */
-void macro_dump(ang_file *fff)
-{
-	int i;
-	char buf[1024];
-
-	/* Dump them */
-	for (i = 0; i < macro__num; i++)
-	{
-		/* Start the macro */
-		file_putf(fff, "# Macro '%d'\n", i);
-
-		/* Extract the macro action */
-		ascii_to_text(buf, sizeof(buf), macro__act[i]);
-		file_putf(fff, "A:%s\n", buf);
-
-		/* Extract the macro pattern */
-		ascii_to_text(buf, sizeof(buf), macro__pat[i]);
-		file_putf(fff, "P:%s\n", buf);
-
-		file_putf(fff, "\n");
-	}
-}
-
-
-#endif 
 
 
 
@@ -901,20 +866,6 @@ static enum parser_error parse_prefs_a(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_prefs_p(struct parser *p)
-{
-	char tmp[1024];
-
-	struct prefs_data *d = parser_priv(p);
-	assert(d != NULL);
-	if (d->bypass) return PARSE_ERROR_NONE;
-
-	text_to_ascii(tmp, sizeof(tmp), parser_getstr(p, "key"));
-	macro_add(tmp, d->macro_buffer);
-
-	return PARSE_ERROR_NONE;
-}
-
 static enum parser_error parse_prefs_c(struct parser *p)
 {
 	int mode;
@@ -1052,7 +1003,6 @@ static struct parser *init_parse_prefs(void)
 	parser_reg(p, "B uint idx str text", parse_prefs_b);
 		/* XXX idx should be {tval,sval} pair! */
 	parser_reg(p, "A str act", parse_prefs_a);
-	parser_reg(p, "P str key", parse_prefs_p);
 	parser_reg(p, "C int mode str key", parse_prefs_c);
 	parser_reg(p, "M int type sym attr", parse_prefs_m);
 	parser_reg(p, "V uint idx int k int r int g int b", parse_prefs_v);

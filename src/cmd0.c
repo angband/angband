@@ -22,7 +22,6 @@
 #include "files.h"
 #include "game-cmd.h"
 #include "keymap.h"
-#include "macro.h"
 #include "monster/monster.h"
 #include "ui-menu.h"
 #include "wizard.h"

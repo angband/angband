@@ -26,7 +26,6 @@
 #include "generate.h"
 #include "keymap.h"
 #include "init.h"
-#include "macro.h"
 #include "monster/constants.h"
 #include "monster/monster.h"
 #include "object/slays.h"
@@ -3689,9 +3688,6 @@ static errr init_other(void)
 
 	/*** Prepare the various "bizarre" arrays ***/
 
-	/* Initialize the "macro" package */
-	(void)macro_init();
-
 	/* Initialize the "quark" package */
 	(void)quarks_init();
 
@@ -4160,7 +4156,6 @@ void cleanup_angband(void)
 
 
 	/* Free the macros */
-	macro_free();
 	keymap_free();
 
 	/* Free the allocation tables */
