@@ -369,8 +369,6 @@ struct GfxInfo
 	int width;				/* Width of a tile */
 	int height;				/* Height of a tile */
 	cptr pref;				/* Preference file to use */
-	int x;					/* Yuk - Pixel location of colour key */
-	int y;					/* ditto */
 	bool avail;				/* Are the appropriate files available? */
 };
 
@@ -379,18 +377,12 @@ static SDL_Surface *GfxSurface = NULL;	/* A surface for the graphics */
 #define GfxModes 5
 static GfxInfo GfxDesc[GfxModes] =
 {
-	/* No gfx (GRAPHICS_NONE) */
-	{"None", NULL, -1, -1, NULL, 0, 0, TRUE},
-	/* 8x8 tiles (GRAPHICS_ORIGINAL) */
-	{"8x8", "8x8.png", 8, 8, "old", 0, 17, TRUE},
-	/* 16x16 tiles (GRAPHICS_ADAM_BOLT) */
-	{"16x16", "16x16.png", 16, 16, "new", 0, 65, TRUE},
-	/* XXX (GRAPHICS_DAVID_GERVAIS) */
-	{"32x32", "32x32.png", 32, 32, "david", 0, 0, TRUE},
-	{"8x16", "8x16.png", 16, 16, "nomad", 0, 0, TRUE},
-	
+	{"None", NULL, -1, -1, NULL, TRUE},
+	{"8x8", "8x8.png", 8, 8, "old", TRUE},
+	{"16x16", "16x16.png", 16, 16, "new", TRUE},
+	{"32x32", "32x32.png", 32, 32, "david", TRUE},
+	{"8x16", "8x16.png", 16, 16, "nomad", TRUE},
 	/* XXX (GRAPHICS_PSEUDO ???) */
-	/*{NULL, NULL, NULL, -1, -1},	*/						
 };
 
 
@@ -3069,9 +3061,9 @@ static errr sdl_BuildTileset(term_window *win)
 	
 	/* Make it */
 	win->tiles = SDL_CreateRGBSurface(SDL_SWSURFACE, x, y,
-									  GfxSurface->format->BitsPerPixel,
-									  GfxSurface->format->Rmask, GfxSurface->format->Gmask,
-									  GfxSurface->format->Bmask, GfxSurface->format->Amask);
+			GfxSurface->format->BitsPerPixel,
+			GfxSurface->format->Rmask, GfxSurface->format->Gmask,
+			GfxSurface->format->Bmask, GfxSurface->format->Amask);
 	
 	/* Bugger */
 	if (!win->tiles) return (1);
@@ -3083,23 +3075,19 @@ static errr sdl_BuildTileset(term_window *win)
 		{
 			SDL_Rect src, dest;
                         int dwid = win->tile_wid * tile_width;
-                        
                         int dhgt = win->tile_hgt * tile_height;
-			
+
 			/* Source rectangle (on GfxSurface) */
 			RECT(xx * info->width, yy * info->height, info->width, info->height, &src);
-			
+
 			/* Destination rectangle (win->tiles) */
 			RECT(xx * dwid, yy * dhgt, dwid, dhgt, &dest);
-			
+
 			/* Do the stretch thing */
 			sdl_StretchBlit(GfxSurface, &src, win->tiles, &dest);
 		}
 	}
-	
-	/* Copy across the colour key */
-	SDL_SetColorKey(win->tiles, SDL_SRCCOLORKEY, GfxSurface->format->colorkey);
-					
+
 	return (0);
 }
 #endif
@@ -3315,67 +3303,27 @@ static errr load_gfx(void)
 	char buf[1024];
 	cptr filename = GfxDesc[use_graphics].gfxfile;
 	SDL_Surface *temp;
-	Uint8 r, g, b;
-	Uint32 key;
-	Uint32 Pixel = 0;
-	int x = GfxDesc[use_graphics].x, y = GfxDesc[use_graphics].y;
-	
+
 	/* This may be called when GRAPHICS_NONE is set */
 	if (!filename) return (0);
-	
+
 	/* Free the old surface */
 	if (GfxSurface) SDL_FreeSurface(GfxSurface);
-	
+
 	/* Find and load the file into a temporary surface */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_GRAF, filename);
 	temp = IMG_Load(buf);
-	
-	/* Oops */
 	if (!temp) return (1);
-	
+
 	/* Change the surface type to the current video surface format */
-	GfxSurface = SDL_DisplayFormat(temp);
-	
-	/* Use a colour key */
-	/* Get a pixel value depending on bit-depth */
-	switch (GfxSurface->format->BytesPerPixel)
-	{
-		case 1:
-		{
-			Uint8 *p = (Uint8*)GfxSurface->pixels + x + (y * GfxSurface->pitch);
-			Pixel = *p;
-		}
-		case 2:
-		{
-			Uint16 *p = (Uint16*)GfxSurface->pixels + (x * 2) + (y * GfxSurface->pitch);
-			Pixel = *p;
-		}
-		case 3:
-		case 4:
-		{
-			Uint32 *p = (Uint32*)GfxSurface->pixels + (x * GfxSurface->format->BytesPerPixel) + (y * GfxSurface->pitch);
-			Pixel = *p;
-		}
-	}
-	
-	/* Get the colour values */
-	SDL_GetRGB(Pixel, GfxSurface->format, &r, &g, &b);
-	
-	/* Create a key */
-	key = SDL_MapRGB(GfxSurface->format, r, g, b);
-	
-	/* Set the colour key */
-	SDL_SetColorKey(GfxSurface, SDL_SRCCOLORKEY, key);
-	
-	/* Lose the temporary surface */
-	SDL_FreeSurface(temp);
-	
+	GfxSurface = SDL_DisplayFormatAlpha(temp);
+
 	/* Make sure we know what pref file to use */
 	ANGBAND_GRAF = GfxDesc[use_graphics].pref;
-	
+
 	/* Reset the graphics mapping for this tileset */
 	if (character_dungeon) reset_visuals(TRUE);
-	
+
 	/* All good */
 	return (0);
 }
