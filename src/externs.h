@@ -255,8 +255,6 @@ extern void signals_init(void);
 void do_cmd_store_knowledge(void);
 
 /* util.c */
-extern void text_to_ascii(struct keypress *buf, size_t len, const char *str);
-extern void ascii_to_text(char *buf, size_t len, const struct keypress *str);
 extern char *find_roman_suffix_start(const char *buf);
 extern int roman_to_int(const char *roman);
 extern int int_to_roman(int n, char *roman, size_t bufsize);

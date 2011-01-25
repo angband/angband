@@ -125,5 +125,10 @@ keycode_t keycode_find_code(const char *str, size_t len);
 /** Given a keycode, return its description */
 const char *keycode_find_desc(keycode_t kc);
 
+/** Convert a string of keypresses into their textual representation */
+void keypress_to_text(char *buf, size_t len, const struct keypress *src);
+
+/** Covert a textual representation of keypresses into actual keypresses */
+void keypress_from_text(struct keypress *buf, size_t len, const char *str);
 
 #endif /* INCLUDED_UI_EVENT_H */

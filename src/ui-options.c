@@ -370,7 +370,7 @@ static struct keypress keymap_get_trigger(void)
 	buf[0] = inkey();
 
 	/* Convert to ascii */
-	ascii_to_text(tmp, sizeof(tmp), buf);
+	keypress_to_text(tmp, sizeof(tmp), buf);
 
 	/* Hack -- display the trigger */
 	Term_addstr(-1, TERM_WHITE, tmp);
@@ -423,7 +423,7 @@ static void keymap_query(const char *title, int row)
 	else
 	{
 		/* Analyze the current action */
-		ascii_to_text(tmp, sizeof(tmp), act);
+		keypress_to_text(tmp, sizeof(tmp), act);
 	
 		/* Display the current action */
 		prt("Found: ", 15, 0);
@@ -448,11 +448,11 @@ static void keymap_create(const char *title, int row)
 	prt("Action: ", 15, 0);
 
 	/* Get an encoded action, with a default response */
-	ascii_to_text(tmp, sizeof(tmp), macro_buffer);
+	keypress_to_text(tmp, sizeof(tmp), macro_buffer);
 	if (askfor_aux(tmp, sizeof tmp, NULL))
 	{
 		/* Convert to ascii */
-		text_to_ascii(macro_buffer, N_ELEMENTS(macro_buffer), tmp);
+		keypress_from_text(macro_buffer, N_ELEMENTS(macro_buffer), tmp);
 	
 		/* Make new keymap */
 		keymap_add(mode, c, macro_buffer);
@@ -491,11 +491,11 @@ static void macro_enter(const char *title, int row)
 	prt("Action: ", 17, 0);
 
 	/* Get an action, with a default response */
-	ascii_to_text(tmp, sizeof(tmp), macro_buffer);
+	keypress_to_text(tmp, sizeof(tmp), macro_buffer);
 	if (askfor_aux(tmp, sizeof tmp, NULL))
 	{
 		/* Save to global macro buffer */
-		text_to_ascii(macro_buffer, N_ELEMENTS(macro_buffer), tmp);
+		keypress_from_text(macro_buffer, N_ELEMENTS(macro_buffer), tmp);
 	}
 }
 
@@ -509,7 +509,7 @@ static void macro_browse_hook(int oid, void *db, const region *loc)
 
 	/* Show current action */
 	prt("Current action (if any) shown below:", 13, 0);
-	ascii_to_text(tmp, sizeof(tmp), macro_buffer);
+	keypress_to_text(tmp, sizeof(tmp), macro_buffer);
 	prt(tmp, 14, 0);
 }
 

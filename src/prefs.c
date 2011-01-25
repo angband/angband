@@ -862,7 +862,7 @@ static enum parser_error parse_prefs_a(struct parser *p)
 	if (d->bypass) return PARSE_ERROR_NONE;
 
 	act = parser_getstr(p, "act");
-	text_to_ascii(d->macro_buffer, N_ELEMENTS(d->macro_buffer), act);
+	keypress_from_text(d->macro_buffer, N_ELEMENTS(d->macro_buffer), act);
 
 	return PARSE_ERROR_NONE;
 }
@@ -880,7 +880,7 @@ static enum parser_error parse_prefs_c(struct parser *p)
 	if (mode < 0 || mode >= KEYMAP_MODES)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 
-	text_to_ascii(tmp, N_ELEMENTS(tmp), parser_getstr(p, "key"));
+	keypress_from_text(tmp, N_ELEMENTS(tmp), parser_getstr(p, "key"));
 	if (tmp[0].type != EVT_KBRD || tmp[1].type != EVT_NONE)
 		return PARSE_ERROR_FIELD_TOO_LONG;
 
