@@ -152,19 +152,19 @@ void textui_textblock_show(textblock *tb, region orig_area, const char *header)
 
 		/* Pager mode */
 		while (1) {
-			keycode_t ch;
+			struct keypress ch;
 
 			display_area(text, attrs, line_starts, line_lengths, n_lines,
 					area, start_line);
 
 			ch = inkey();
-			if (ch == ARROW_UP)
+			if (ch.code == ARROW_UP)
 				start_line--;
-			else if (ch == ESCAPE || ch == 'q')
+			else if (ch.code== ESCAPE || ch.code == 'q')
 				break;
-			else if (ch == ARROW_DOWN)
+			else if (ch.code == ARROW_DOWN)
 				start_line++;
-			else if (ch == ' ')
+			else if (ch.code == ' ')
 				start_line += area.page_rows;
 
 			if (start_line < 0)

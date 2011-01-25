@@ -60,7 +60,7 @@ void do_cmd_inven(void)
 
 	/* Get a new command */
 	e = inkey_ex();
-	if (!(e.type == EVT_KBRD && e.key == ESCAPE))
+	if (!(e.type == EVT_KBRD && e.key.code == ESCAPE))
 		Term_event_push(&e);
 
 	/* Load screen */
@@ -95,7 +95,7 @@ void do_cmd_equip(void)
 
 	/* Get a new command */
 	e = inkey_ex();
-	if (!(e.type == EVT_KBRD && e.key == ESCAPE))
+	if (!(e.type == EVT_KBRD && e.key.code == ESCAPE))
 		Term_event_push(&e);
 
 	/* Load screen */
@@ -379,7 +379,7 @@ void do_cmd_locate(void)
 		/* Get a direction */
 		while (!dir)
 		{
-			keycode_t command;
+			struct keypress command;
 
 			/* Get a command (or Cancel) */
 			if (!get_com(out_val, &command)) break;
@@ -469,7 +469,7 @@ int cmp_monsters(const void *a, const void *b)
  *
  * Todo: Should this take the user's pref files into account?
  */
-void lookup_symbol(char sym, char *buf, size_t max)
+void lookup_symbol(struct keypress sym, char *buf, size_t max)
 {
 	int i;
 	monster_base *race;
@@ -479,8 +479,8 @@ void lookup_symbol(char sym, char *buf, size_t max)
 	It would make more sense to loop through tvals, but then we need to associate
 	a display character with each tval. */
 	for (i = 1; i < z_info->k_max; i++) {
-		if (k_info[i].d_char == sym) {
-			strnfmt(buf, max, "%c - %s.", sym, tval_find_name(k_info[i].tval));
+		if (k_info[i].d_char == (char)sym.code) {
+			strnfmt(buf, max, "%c - %s.", (char)sym.code, tval_find_name(k_info[i].tval));
 			return;
 		}
 	}
@@ -489,22 +489,22 @@ void lookup_symbol(char sym, char *buf, size_t max)
 	/* Note: We need a better way of doing this. Currently '#' matches secret door,
 	and '^' matches trap door (instead of the more generic "trap"). */
 	for (i = 1; i < z_info->f_max; i++) {
-		if (f_info[i].d_char == sym) {
-			strnfmt(buf, max, "%c - %s.", sym, f_info[i].name);
+		if (f_info[i].d_char == (char)sym.code) {
+			strnfmt(buf, max, "%c - %s.", (char)sym.code, f_info[i].name);
 			return;
 		}
 	}
 	
 	/* Look through monster templates */
 	for (race = rb_info; race; race = race->next){
-		if (sym == race->d_char) {
-			strnfmt(buf, max, "%c - %s.", sym, rb_info[i].text);
+		if ((char)sym.code == race->d_char) {
+			strnfmt(buf, max, "%c - %s.", (char)sym.code, rb_info[i].text);
 			return;
 		}
 	}
 
 	/* No matches */
-	strnfmt(buf, max, "%c - %s.", sym, "Unknown Symbol");
+	strnfmt(buf, max, "%c - %s.", (char)sym.code, "Unknown Symbol");
 	
 	return;
 }
@@ -524,10 +524,10 @@ void lookup_symbol(char sym, char *buf, size_t max)
 void do_cmd_query_symbol(void)
 {
 	int i, n, r_idx;
-	keycode_t sym;
 	char buf[128];
 
-	ui_event query;
+	struct keypress sym;
+	struct keypress query;
 
 	bool all = FALSE;
 	bool uniq = FALSE;
@@ -538,20 +538,21 @@ void do_cmd_query_symbol(void)
 	u16b *who;
 
 	/* Get a character, or abort */
-	if (!get_com("Enter character to be identified, or control+[ANU]: ", &sym)) return;
+	if (!get_com("Enter character to be identified, or control+[ANU]: ", &sym))
+		return;
 
 	/* Describe */
-	if (sym == KTRL('A'))
+	if (sym.code == KTRL('A'))
 	{
 		all = TRUE;
 		my_strcpy(buf, "Full monster list.", sizeof(buf));
 	}
-	else if (sym == KTRL('U'))
+	else if (sym.code == KTRL('U'))
 	{
 		all = uniq = TRUE;
 		my_strcpy(buf, "Unique monster list.", sizeof(buf));
 	}
-	else if (sym == KTRL('N'))
+	else if (sym.code == KTRL('N'))
 	{
 		all = norm = TRUE;
 		my_strcpy(buf, "Non-unique monster list.", sizeof(buf));
@@ -583,7 +584,7 @@ void do_cmd_query_symbol(void)
 		if (uniq && !rf_has(r_ptr->flags, RF_UNIQUE)) continue;
 
 		/* Collect "appropriate" monsters */
-		if (all || (r_ptr->d_char == (char)sym)) who[n++] = i;
+		if (all || (r_ptr->d_char == (char)sym.code)) who[n++] = i;
 	}
 
 	/* Nothing to recall */
@@ -606,7 +607,7 @@ void do_cmd_query_symbol(void)
 	put_str("Recall details? (y/k/n): ", 0, 40);
 
 	/* Query */
-	query = inkey_ex();
+	query = inkey();
 
 	/* Restore */
 	prt(buf, 0, 0);
@@ -618,12 +619,12 @@ void do_cmd_query_symbol(void)
 	redraw_stuff();
 
 	/* Interpret the response */
-	if (query.key == 'k')
+	if (query.code == 'k')
 	{
 		/* Sort by kills (and level) */
 		sort(who, n, sizeof(*who), cmp_pkill);
 	}
-	else if (query.key == 'y' || query.key == 'p')
+	else if (query.code == 'y' || query.code == 'p')
 	{
 		/* Sort by level; accept 'p' as legacy */
 		sort(who, n, sizeof(*who), cmp_level);
@@ -682,7 +683,7 @@ void do_cmd_query_symbol(void)
 			}
 
 			/* Command */
-			query = inkey_ex();
+			query = inkey();
 
 			/* Unrecall */
 			if (recall)
@@ -692,17 +693,17 @@ void do_cmd_query_symbol(void)
 			}
 
 			/* Normal commands */
-			if (query.key != 'r') break;
+			if (query.code != 'r') break;
 
 			/* Toggle recall */
 			recall = !recall;
 		}
 
 		/* Stop scanning */
-		if (query.key == ESCAPE) break;
+		if (query.code == ESCAPE) break;
 
 		/* Move to "prev" monster */
-		if (query.key == '-')
+		if (query.code == '-')
 		{
 			if (++i == n)
 				i = 0;

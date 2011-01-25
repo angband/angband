@@ -378,7 +378,8 @@ static struct parser *init_parse_prefs(void);
 struct prefs_data
 {
 	bool bypass;
-	char macro_buffer[1024];
+	/* XXXmacro this number should be defined somewhere */
+	struct keypress macro_buffer[42];
 };
 
 
@@ -861,7 +862,7 @@ static enum parser_error parse_prefs_a(struct parser *p)
 	if (d->bypass) return PARSE_ERROR_NONE;
 
 	act = parser_getstr(p, "act");
-	text_to_ascii(d->macro_buffer, sizeof(d->macro_buffer), act);
+	text_to_ascii(d->macro_buffer, N_ELEMENTS(d->macro_buffer), act);
 
 	return PARSE_ERROR_NONE;
 }
@@ -869,7 +870,7 @@ static enum parser_error parse_prefs_a(struct parser *p)
 static enum parser_error parse_prefs_c(struct parser *p)
 {
 	int mode;
-	char tmp[1024];
+	struct keypress tmp[2];
 
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
@@ -879,8 +880,8 @@ static enum parser_error parse_prefs_c(struct parser *p)
 	if (mode < 0 || mode >= KEYMAP_MODES)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 
-	text_to_ascii(tmp, sizeof(tmp), parser_getstr(p, "key"));
-	if (!tmp[0] || tmp[1])
+	text_to_ascii(tmp, N_ELEMENTS(tmp), parser_getstr(p, "key"));
+	if (tmp[0].type != EVT_KBRD || tmp[1].type != EVT_NONE)
 		return PARSE_ERROR_FIELD_TOO_LONG;
 
 	keymap_add(mode, tmp[0], d->macro_buffer);

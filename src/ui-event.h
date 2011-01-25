@@ -23,7 +23,7 @@ typedef enum
 
 
 /**
- * Key modifiers
+ * Key modifiers.
  */
 #define KC_MOD_CONTROL  0x01
 #define KC_MOD_SHIFT    0x02
@@ -78,20 +78,42 @@ typedef enum
 /* Analogous to isdigit() etc in ctypes */
 #define isarrow(c)  ((c >= ARROW_DOWN) && (c <= ARROW_UP))
 
+
+/**
+ * Type capable of holding any input key we might want to use.
+ */
 typedef u32b keycode_t;
 
-typedef struct
-{
+
+/**
+ * Struct holding all relevant info for keypresses.
+ */
+struct keypress {
 	ui_event_type type;
-	struct {
-		byte x;
-		byte y;
-		byte button;
-	} mouse;
-	keycode_t key;
-	byte keymods;
+	keycode_t code;
+	byte mods;
+};
+
+/**
+ * Struct holding all relevant info for mouse clicks.
+ */
+struct mouseclick {
+	ui_event_type type;
+	byte x;
+	byte y;
+	byte button;
+};
+
+/**
+ * Union type to hold information about any given event.
+ */
+typedef union {
+	ui_event_type type;
+	struct mouseclick mouse;
+	struct keypress key;
 } ui_event;
 
+/** Easy way to initialise a ui_event without seeing the gory bits. */
 #define EVENT_EMPTY		{ 0 }
 
 

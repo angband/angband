@@ -61,7 +61,7 @@ typedef struct
 	byte *(*xattr)(int oid);     /* Get color attr for OID (by address) */
 
 	const char *(*xtra_prompt)(int oid);  /* Returns optional extra prompt */
-	void (*xtra_act)(char ch, int oid);   /* Handles optional extra actions */
+	void (*xtra_act)(struct keypress ch, int oid);   /* Handles optional extra actions */
 
 	bool is_visual;                       /* Does this kind have visual editing? */
 
@@ -550,7 +550,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 		{
 			case EVT_KBRD:
 			{
-				if (ke.key == 'r' || ke.key == 'R')
+				if (ke.key.code == 'r' || ke.key.code == 'R')
 					recall = TRUE;
 				else if (o_funcs.xtra_act)
 					o_funcs.xtra_act(ke.key, oid);
@@ -720,7 +720,67 @@ static bool visual_mode_command(ui_event ke, bool *visual_list_ptr,
 	int frame_top = logical_height(4);
 	int frame_bottom = logical_height(4);
 
-	switch (ke.key)
+
+	/* Get mouse movement */
+	if (ke.type == EVT_MOUSE)
+	{
+		int eff_width = actual_width(width);
+		int eff_height = actual_height(height);
+		byte a = *cur_attr_ptr;
+		byte c = *cur_char_ptr;
+
+		int my = logical_height(ke.mouse.y - row);
+		int mx = logical_width(ke.mouse.x - col);
+
+		if ((my >= 0) && (my < eff_height) && (mx >= 0) && (mx < eff_width)
+			&& ((ke.mouse.button) || (a != *attr_top_ptr + my)
+				|| (c != *char_left_ptr + mx)))
+		{
+			/* Set the visual */
+			*cur_attr_ptr = a = *attr_top_ptr + my;
+			*cur_char_ptr = c = *char_left_ptr + mx;
+
+			/* Move the frame */
+			if (*char_left_ptr > MAX(0, (int)c - frame_left))
+				(*char_left_ptr)--;
+			if (*char_left_ptr + eff_width <= MIN(255, (int)c + frame_right))
+				(*char_left_ptr)++;
+			if (*attr_top_ptr > MAX(0, (int)a - frame_top))
+				(*attr_top_ptr)--;
+			if (*attr_top_ptr + eff_height <= MIN(255, (int)a + frame_bottom))
+				(*attr_top_ptr)++;
+
+			/* Delay */
+			*delay = 100;
+
+			/* Accept change */
+			if (ke.mouse.button)
+			  remove_visual_list(col, row, visual_list_ptr, width, height);
+
+			return TRUE;
+		}
+
+		/* Cancel change */
+		else if (ke.mouse.button)
+		{
+			*cur_attr_ptr = attr_old;
+			*cur_char_ptr = char_old;
+			remove_visual_list(col, row, visual_list_ptr, width, height);
+
+			return TRUE;
+		}
+
+		else
+		{
+			return FALSE;
+		}
+	}
+
+	if (ke.type != EVT_KBRD)
+		return FALSE;
+
+
+	switch (ke.key.code)
 	{
 		case ESCAPE:
 		{
@@ -807,102 +867,50 @@ static bool visual_mode_command(ui_event ke, bool *visual_list_ptr,
 
 		default:
 		{
-			if (*visual_list_ptr)
-			{
-				int eff_width = actual_width(width);
-				int eff_height = actual_height(height);
-				int d = target_dir(ke.key);
-				byte a = *cur_attr_ptr;
-				byte c = *cur_char_ptr;
+			int d = target_dir(ke.key);
+			byte a = *cur_attr_ptr;
+			byte c = *cur_char_ptr;
 
-				bigcurs = TRUE;
+			if (!*visual_list_ptr)
+				break;
 
-				/* Get mouse movement */
-				if (ke.type == EVT_MOUSE)
-				{
-					int my = ke.mouse.y - row;
-					int mx = ke.mouse.x - col;
+			bigcurs = TRUE;
 
-					my = logical_height(my);
-					mx = logical_width(mx);
+			/* Restrict direction */
+			if ((a == 0) && (ddy[d] < 0)) d = 0;
+			if ((c == 0) && (ddx[d] < 0)) d = 0;
+			if ((a == 255) && (ddy[d] > 0)) d = 0;
+			if ((c == 255) && (ddx[d] > 0)) d = 0;
 
-					if ((my >= 0) && (my < eff_height) && (mx >= 0) && (mx < eff_width)
-						&& ((ke.mouse.button) || (a != *attr_top_ptr + my)
-							|| (c != *char_left_ptr + mx)))
-					{
-						/* Set the visual */
-						*cur_attr_ptr = a = *attr_top_ptr + my;
-						*cur_char_ptr = c = *char_left_ptr + mx;
+			a += ddy[d];
+			c += ddx[d];
 
-						/* Move the frame */
-						if (*char_left_ptr > MAX(0, (int)c - frame_left))
-							(*char_left_ptr)--;
-						if (*char_left_ptr + eff_width <= MIN(255, (int)c + frame_right))
-							(*char_left_ptr)++;
-						if (*attr_top_ptr > MAX(0, (int)a - frame_top))
-							(*attr_top_ptr)--;
-						if (*attr_top_ptr + eff_height <= MIN(255, (int)a + frame_bottom))
-							(*attr_top_ptr)++;
+			/* Set the visual */
+			*cur_attr_ptr = a;
+			*cur_char_ptr = c;
 
-						/* Delay */
-						*delay = 100;
+			/* Move the frame */
+			if (ddx[d] < 0 &&
+					*char_left_ptr > MAX(0, (int)c - frame_left))
+				(*char_left_ptr)--;
+			if ((ddx[d] > 0) &&
+					*char_left_ptr + (width / tile_width) <=
+							MIN(255, (int)c + frame_right))
+			(*char_left_ptr)++;
 
-						/* Accept change */
-						if (ke.mouse.button)
-						  remove_visual_list(col, row, visual_list_ptr, width, height);
+			if (ddy[d] < 0 &&
+					*attr_top_ptr > MAX(0, (int)a - frame_top))
+				(*attr_top_ptr)--;
+			if (ddy[d] > 0 &&
+					*attr_top_ptr + (height / tile_height) <=
+							MIN(255, (int)a + frame_bottom))
+				(*attr_top_ptr)++;
 
-						return TRUE;
-					}
-
-					/* Cancel change */
-					else if (ke.mouse.button)
-					{
-						*cur_attr_ptr = attr_old;
-						*cur_char_ptr = char_old;
-						remove_visual_list(col, row, visual_list_ptr, width, height);
-
-						return TRUE;
-					}
-				}
-				else
-				{
-					/* Restrict direction */
-					if ((a == 0) && (ddy[d] < 0)) d = 0;
-					if ((c == 0) && (ddx[d] < 0)) d = 0;
-					if ((a == 255) && (ddy[d] > 0)) d = 0;
-					if ((c == 255) && (ddx[d] > 0)) d = 0;
-
-					a += ddy[d];
-					c += ddx[d];
-
-					/* Set the visual */
-					*cur_attr_ptr = a;
-					*cur_char_ptr = c;
-
-					/* Move the frame */
-					if (ddx[d] < 0 &&
-							*char_left_ptr > MAX(0, (int)c - frame_left))
-						(*char_left_ptr)--;
-					if ((ddx[d] > 0) &&
-							*char_left_ptr + (width / tile_width) <=
-									MIN(255, (int)c + frame_right))
-					(*char_left_ptr)++;
-
-					if (ddy[d] < 0 &&
-							*attr_top_ptr > MAX(0, (int)a - frame_top))
-						(*attr_top_ptr)--;
-					if (ddy[d] > 0 &&
-							*attr_top_ptr + (height / tile_height) <=
-									MIN(255, (int)a + frame_bottom))
-						(*attr_top_ptr)++;
-
-					/* We need to always eat the input even if it is clipped,
-					 * otherwise it will be interpreted as a change object
-					 * selection command with messy results.
-					 */
-					return TRUE;
-				}
-			}
+			/* We need to always eat the input even if it is clipped,
+			 * otherwise it will be interpreted as a change object
+			 * selection command with messy results.
+			 */
+			return TRUE;
 		}
 	}
 
@@ -1606,12 +1614,12 @@ static const char *o_xtra_prompt(int oid)
 /*
  * Special key actions for object inscription.
  */
-static void o_xtra_act(char ch, int oid)
+static void o_xtra_act(struct keypress ch, int oid)
 {
 	object_kind *k = objkind_byid(oid);
 
 	/* Toggle squelch */
-	if (squelch_tval(k->tval) && (ch == 's' || ch == 'S'))
+	if (squelch_tval(k->tval) && (ch.code == 's' || ch.code == 'S'))
 	{
 		if (k->aware)
 		{
@@ -1636,10 +1644,10 @@ static void o_xtra_act(char ch, int oid)
 		return;
 
 	/* Uninscribe */
-	if (ch == '}') {
+	if (ch.code == '}') {
 		if (k->note)
 			remove_autoinscription(oid);
-	} else if (ch == '{') {
+	} else if (ch.code == '{') {
 		/* Inscribe */
 		char note_text[80] = "";
 

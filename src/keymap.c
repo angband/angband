@@ -22,8 +22,8 @@
  * Struct for a keymap.
  */
 struct keymap {
-	keycode_t key;
-	char *actions;
+	struct keypress key;
+	struct keypress *actions;
 
 	struct keymap *next;
 };
@@ -37,11 +37,14 @@ struct keymap {
 struct keymap *keymaps[2];
 
 
-const char *keymap_find(int keymap, keycode_t kc)
+/**
+ * Find a keymap, given a keypress.
+ */
+const struct keypress *keymap_find(int keymap, struct keypress kc)
 {
 	struct keymap *k;
 	for (k = keymaps[keymap]; k; k = k->next) {
-		if (k->key == kc)
+		if (k->key.code == kc.code && k->key.mods == kc.mods)
 			return k->actions;
 	}
 
@@ -50,16 +53,39 @@ const char *keymap_find(int keymap, keycode_t kc)
 
 
 /**
+ *
+ */
+static struct keypress *keymap_make(const struct keypress *actions)
+{
+	struct keypress *new;
+	size_t n = 0;
+	while (actions[n].type) {
+		n++;
+	}
+
+	/* Make room for the terminator */
+	n += 1;
+
+	new = mem_zalloc(sizeof *new * n);
+	memcpy(new, actions, sizeof *new * n);
+
+	new[n - 1].type = EVT_NONE;
+
+	return new;
+}
+
+
+/**
  * Add a keymap to the mappings table.
  */
-void keymap_add(int keymap, keycode_t trigger, char *actions)
+void keymap_add(int keymap, struct keypress trigger, struct keypress *actions)
 {
 	struct keymap *k = mem_zalloc(sizeof *k);
 
 	keymap_remove(keymap, trigger);
 
 	k->key = trigger;
-	k->actions = string_make(actions);
+	k->actions = keymap_make(actions);
 
 	k->next = keymaps[keymap];
 	keymaps[keymap] = k;
@@ -71,14 +97,14 @@ void keymap_add(int keymap, keycode_t trigger, char *actions)
 /**
  * Remove a keymap.  Return TRUE if one was removed.
  */
-bool keymap_remove(int keymap, keycode_t trigger)
+bool keymap_remove(int keymap, struct keypress trigger)
 {
 	struct keymap *k;
 	struct keymap *prev = NULL;
 
 	for (k = keymaps[keymap]; k; k = k->next) {
-		if (k->key == trigger) {
-			string_free(k->actions);
+		if (k->key.code == trigger.code && k->key.mods == trigger.mods) {
+			mem_free(k->actions);
 			if (prev)
 				prev->next = k->next;
 			else
@@ -105,7 +131,7 @@ void keymap_free(void)
 		k = keymaps[i];
 		while (k) {
 			struct keymap *next = k->next;
-			string_free(k->actions);
+			mem_free(k->actions);
 			mem_free(k);
 			k = next;
 		}
@@ -129,15 +155,14 @@ void keymap_dump(ang_file *fff)
 
 	for (k = keymaps[mode]; k; k = k->next) {
 		char buf[1024];
-
-		char key[2] = "?";
+		struct keypress key[2] = { { 0 }, { 0 } };
 
 		/* Encode the action */
 		ascii_to_text(buf, sizeof(buf), k->actions);
 		file_putf(fff, "A:%s\n", buf);
 
 		/* Convert the key into a string */
-		key[0] = (unsigned char) k->key;
+		key[0] = k->key;
 		ascii_to_text(buf, sizeof(buf), key);
 		file_putf(fff, "C:%d:%s\n", mode, buf);
 

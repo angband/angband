@@ -100,13 +100,13 @@ static bool option_toggle_handle(menu_type *m, const ui_event *event,
 	if (event->type == EVT_SELECT) {
 		option_set(option_name(oid), !op_ptr->opt[oid]);
 	} else if (event->type == EVT_KBRD) {
-		if (event->key == 'y' || event->key == 'Y') {
+		if (event->key.code == 'y' || event->key.code == 'Y') {
 			option_set(option_name(oid), TRUE);
 			next = TRUE;
-		} else if (event->key == 'n' || event->key == 'N') {
+		} else if (event->key.code == 'n' || event->key.code == 'N') {
 			option_set(option_name(oid), FALSE);
 			next = TRUE;
-		} else if (event->key == '?') {
+		} else if (event->key.code == '?') {
 			screen_save();
 			show_file(format("option.txt#%s", option_name(oid)), NULL, 0, 0);
 			screen_load();
@@ -278,9 +278,6 @@ static void do_cmd_options_win(const char *name, int row)
 		/* Get key */
 		ke = inkey_ex();
 
-		/* Allow escape */
-		if ((ke.key == ESCAPE) || (ke.key == 'q')) break;
-
 		/* Mouse interaction */
 		if (ke.type == EVT_MOUSE)
 		{
@@ -296,41 +293,41 @@ static void do_cmd_options_win(const char *name, int row)
 			}
 		}
 
-		/* Toggle */
-		else if ((ke.key == '5') || (ke.key == 't') ||
-				(ke.key == '\n') || (ke.key == '\r') ||
-				(ke.type == EVT_MOUSE))
+		/* Allow escape */
+		else if (ke.type == EVT_KBRD)
 		{
-			/* Hack -- ignore the main window */
-			if (x == 0)
-				bell("Cannot set main window flags!");
+			if (ke.key.code == ESCAPE || ke.key.code == 'q')
+				break;
 
-			/* Toggle flag (off) */
-			else if (new_flags[x] & (1L << y))
-				new_flags[x] &= ~(1L << y);
+			/* Toggle */
+			else if (ke.key.code == '5' || ke.key.code == 't' ||
+					ke.key.code == '\n' || ke.key.code == '\r')
+			{
+				/* Hack -- ignore the main window */
+				if (x == 0)
+					bell("Cannot set main window flags!");
 
-			/* Toggle flag (on) */
-			else
-				new_flags[x] |= (1L << y);
+				/* Toggle flag (off) */
+				else if (new_flags[x] & (1L << y))
+					new_flags[x] &= ~(1L << y);
 
-			/* Continue */
-			continue;
-		}
+				/* Toggle flag (on) */
+				else
+					new_flags[x] |= (1L << y);
 
-		/* Extract direction */
-		d = target_dir(ke.key);
+				/* Continue */
+				continue;
+			}
 
-		/* Move */
-		if (d != 0)
-		{
-			x = (x + ddx[d] + 8) % ANGBAND_TERM_MAX;
-			y = (y + ddy[d] + 16) % PW_MAX_FLAGS;
-		}
+			/* Extract direction */
+			d = target_dir(ke.key);
 
-		/* Oops */
-		else
-		{
-			bell("Illegal command for window options!");
+			/* Move */
+			if (d != 0)
+			{
+				x = (x + ddx[d] + 8) % ANGBAND_TERM_MAX;
+				y = (y + ddy[d] + 16) % PW_MAX_FLAGS;
+			}
 		}
 	}
 
@@ -347,6 +344,13 @@ static void do_cmd_options_win(const char *name, int row)
 #ifdef ALLOW_MACROS
 
 /*
+ * Current (or recent) macro action
+ */
+/* XXXmacro this number needs saving somewhere */
+static struct keypress macro_buffer[42];
+
+
+/*
  * Ask for, and display, a keymap trigger.
  *
  * Returns the trigger input.
@@ -354,21 +358,16 @@ static void do_cmd_options_win(const char *name, int row)
  * Note that both "flush()" calls are extremely important.  This may
  * no longer be true, since "util.c" is much simpler now.  XXX XXX XXX
  */
-static keycode_t keymap_get_trigger(void)
+static struct keypress keymap_get_trigger(void)
 {
-	keycode_t ch;
-
 	char tmp[80];
-	char buf[2];
+	struct keypress buf[2] = { { 0 }, { 0 } };
 
 	/* Flush */
 	flush();
 
-	ch = inkey();
-
 	/* Get a key */
-	buf[0] = (unsigned)ch;
-	buf[1] = '\0';
+	buf[0] = inkey();
 
 	/* Convert to ascii */
 	ascii_to_text(tmp, sizeof(tmp), buf);
@@ -380,7 +379,7 @@ static keycode_t keymap_get_trigger(void)
 	flush();
 
 	/* Return trigger */
-	return ch;
+	return buf[0];
 }
 
 
@@ -402,8 +401,8 @@ static void keymap_query(const char *title, int row)
 {
 	char tmp[1024];
 	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
-	keycode_t c;
-	const char *act;
+	struct keypress c;
+	const struct keypress *act;
 
 	prt(title, 13, 0);
 	prt("Key: ", 14, 0);
@@ -423,11 +422,8 @@ static void keymap_query(const char *title, int row)
 	/* Found one */
 	else
 	{
-		/* Obtain the action */
-		my_strcpy(macro_buffer, act, sizeof(macro_buffer));
-	
 		/* Analyze the current action */
-		ascii_to_text(tmp, sizeof(tmp), macro_buffer);
+		ascii_to_text(tmp, sizeof(tmp), act);
 	
 		/* Display the current action */
 		prt("Found: ", 15, 0);
@@ -440,7 +436,7 @@ static void keymap_query(const char *title, int row)
 
 static void keymap_create(const char *title, int row)
 {
-	keycode_t c;
+	struct keypress c;
 	char tmp[1024];
 	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
@@ -456,7 +452,7 @@ static void keymap_create(const char *title, int row)
 	if (askfor_aux(tmp, sizeof tmp, NULL))
 	{
 		/* Convert to ascii */
-		text_to_ascii(macro_buffer, sizeof(macro_buffer), tmp);
+		text_to_ascii(macro_buffer, N_ELEMENTS(macro_buffer), tmp);
 	
 		/* Make new keymap */
 		keymap_add(mode, c, macro_buffer);
@@ -469,7 +465,7 @@ static void keymap_create(const char *title, int row)
 
 static void ui_keymap_remove(const char *title, int row)
 {
-	keycode_t c;
+	struct keypress c;
 	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
 	prt(title, 13, 0);
@@ -499,7 +495,7 @@ static void macro_enter(const char *title, int row)
 	if (askfor_aux(tmp, sizeof tmp, NULL))
 	{
 		/* Save to global macro buffer */
-		text_to_ascii(macro_buffer, sizeof(macro_buffer), tmp);
+		text_to_ascii(macro_buffer, N_ELEMENTS(macro_buffer), tmp);
 	}
 }
 
@@ -669,7 +665,6 @@ static void colors_pref_dump(const char *title, int row)
 static void colors_modify(const char *title, int row)
 {
 	int i;
-	int cx;
 
 	static byte a = 0;
 
@@ -681,6 +676,8 @@ static void colors_modify(const char *title, int row)
 	{
 		const char *name;
 		char index;
+
+		struct keypress cx;
 
 		/* Clear */
 		clear_from(10);
@@ -723,19 +720,19 @@ static void colors_modify(const char *title, int row)
 		cx = inkey();
 
 		/* All done */
-		if (cx == ESCAPE) break;
+		if (cx.code == ESCAPE) break;
 
 		/* Analyze */
-		if (cx == 'n') a = (byte)(a + 1);
-		if (cx == 'N') a = (byte)(a - 1);
-		if (cx == 'k') angband_color_table[a][0] = (byte)(angband_color_table[a][0] + 1);
-		if (cx == 'K') angband_color_table[a][0] = (byte)(angband_color_table[a][0] - 1);
-		if (cx == 'r') angband_color_table[a][1] = (byte)(angband_color_table[a][1] + 1);
-		if (cx == 'R') angband_color_table[a][1] = (byte)(angband_color_table[a][1] - 1);
-		if (cx == 'g') angband_color_table[a][2] = (byte)(angband_color_table[a][2] + 1);
-		if (cx == 'G') angband_color_table[a][2] = (byte)(angband_color_table[a][2] - 1);
-		if (cx == 'b') angband_color_table[a][3] = (byte)(angband_color_table[a][3] + 1);
-		if (cx == 'B') angband_color_table[a][3] = (byte)(angband_color_table[a][3] - 1);
+		if (cx.code == 'n') a = (byte)(a + 1);
+		if (cx.code == 'N') a = (byte)(a - 1);
+		if (cx.code == 'k') angband_color_table[a][0] = (byte)(angband_color_table[a][0] + 1);
+		if (cx.code == 'K') angband_color_table[a][0] = (byte)(angband_color_table[a][0] - 1);
+		if (cx.code == 'r') angband_color_table[a][1] = (byte)(angband_color_table[a][1] + 1);
+		if (cx.code == 'R') angband_color_table[a][1] = (byte)(angband_color_table[a][1] - 1);
+		if (cx.code == 'g') angband_color_table[a][2] = (byte)(angband_color_table[a][2] + 1);
+		if (cx.code == 'G') angband_color_table[a][2] = (byte)(angband_color_table[a][2] - 1);
+		if (cx.code == 'b') angband_color_table[a][3] = (byte)(angband_color_table[a][3] + 1);
+		if (cx.code == 'B') angband_color_table[a][3] = (byte)(angband_color_table[a][3] - 1);
 
 		/* Hack -- react to changes */
 		Term_xtra(TERM_XTRA_REACT, 0);
@@ -789,9 +786,9 @@ void do_cmd_colors(const char *title, int row)
 
 /*** Non-complex menu actions ***/
 
-static bool askfor_aux_numbers(char *buf, size_t buflen, size_t *curs, size_t *len, keycode_t keypress, bool firsttime)
+static bool askfor_aux_numbers(char *buf, size_t buflen, size_t *curs, size_t *len, struct keypress keypress, bool firsttime)
 {
-	switch (keypress)
+	switch (keypress.code)
 	{
 		case ESCAPE:
 		case '\n':

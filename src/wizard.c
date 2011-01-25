@@ -22,6 +22,7 @@
 #include "files.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
+#include "ui-event.h"
 #include "ui-menu.h"
 #include "spells.h"
 #include "target.h"
@@ -104,6 +105,8 @@ static void do_cmd_wiz_hack_ben(void)
 
 	int i, y, x;
 
+	struct keypress kp;
+
 
 	for (i = 0; i < MONSTER_FLOW_DEPTH; ++i)
 	{
@@ -121,23 +124,15 @@ static void do_cmd_wiz_hack_ben(void)
 
 				/* Reliability in yellow */
 				if (cave->when[y][x] == cave->when[py][px])
-				{
 					a = TERM_YELLOW;
-				}
 
 				/* Display player/floors/walls */
 				if ((y == py) && (x == px))
-				{
 					print_rel('@', a, y, x);
-				}
 				else if (cave_floor_bold(y, x))
-				{
 					print_rel('*', a, y, x);
-				}
 				else
-				{
 					print_rel('#', a, y, x);
-				}
 			}
 		}
 
@@ -145,7 +140,8 @@ static void do_cmd_wiz_hack_ben(void)
 		prt(format("Depth %d: ", i), 0, 0);
 
 		/* Get key */
-		if (inkey() == ESCAPE) break;
+		kp = inkey();
+		if (kp.code == ESCAPE) break;
 
 		/* Redraw map */
 		prt_map();
@@ -642,7 +638,7 @@ static void wiz_reroll_item(object_type *o_ptr)
 	object_type *i_ptr;
 	object_type object_type_body;
 
-	keycode_t ch;
+	struct keypress ch;
 
 	bool changed = FALSE;
 
@@ -669,28 +665,28 @@ static void wiz_reroll_item(object_type *o_ptr)
 			break;
 
 		/* Create/change it! */
-		if (ch == 'A' || ch == 'a')
+		if (ch.code == 'A' || ch.code == 'a')
 		{
 			changed = TRUE;
 			break;
 		}
 
 		/* Apply normal magic, but first clear object */
-		else if (ch == 'n' || ch == 'N')
+		else if (ch.code == 'n' || ch.code == 'N')
 		{
 			object_prep(i_ptr, o_ptr->kind, p_ptr->depth, RANDOMISE);
 			apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);
 		}
 
 		/* Apply good magic, but first clear object */
-		else if (ch == 'g' || ch == 'G')
+		else if (ch.code == 'g' || ch.code == 'G')
 		{
 			object_prep(i_ptr, o_ptr->kind, p_ptr->depth, RANDOMISE);
 			apply_magic(i_ptr, p_ptr->depth, FALSE, TRUE, FALSE);
 		}
 
 		/* Apply great magic, but first clear object */
-		else if (ch == 'e' || ch == 'E')
+		else if (ch.code == 'e' || ch.code == 'E')
 		{
 			object_prep(i_ptr, o_ptr->kind, p_ptr->depth, RANDOMISE);
 			apply_magic(i_ptr, p_ptr->depth, FALSE, TRUE, TRUE);
@@ -746,7 +742,7 @@ static void wiz_statistics(object_type *o_ptr, int level)
 	long i, matches, better, worse, other;
 	int j;
 
-	keycode_t ch;
+	struct keypress ch;
 	const char *quality;
 
 	bool good, great, ismatch, isbetter, isworse;
@@ -772,19 +768,19 @@ static void wiz_statistics(object_type *o_ptr, int level)
 		/* Get choices */
 		if (!get_com(pmt, &ch)) break;
 
-		if (ch == 'n' || ch == 'N')
+		if (ch.code == 'n' || ch.code == 'N')
 		{
 			good = FALSE;
 			great = FALSE;
 			quality = "normal";
 		}
-		else if (ch == 'g' || ch == 'G')
+		else if (ch.code == 'g' || ch.code == 'G')
 		{
 			good = TRUE;
 			great = FALSE;
 			quality = "good";
 		}
-		else if (ch == 'e' || ch == 'E')
+		else if (ch.code == 'e' || ch.code == 'E')
 		{
 			good = TRUE;
 			great = TRUE;
@@ -813,16 +809,16 @@ static void wiz_statistics(object_type *o_ptr, int level)
 			/* Output every few rolls */
 			if ((i < 100) || (i % 100 == 0))
 			{
+				struct keypress kp;
+
 				/* Do not wait */
 				inkey_scan = SCAN_INSTANT;
 
 				/* Allow interupt */
-				if (inkey())
+				kp = inkey();
+				if (kp.type != EVT_NONE)
 				{
-					/* Flush */
 					flush();
-
-					/* Stop rolling */
 					break;
 				}
 
@@ -991,7 +987,7 @@ static void do_cmd_wiz_play(void)
 
 	object_type *o_ptr;
 
-	keycode_t ch;
+	struct keypress ch;
 
 	const char *q, *s;
 
@@ -1027,22 +1023,22 @@ static void do_cmd_wiz_play(void)
 		if (!get_com("[a]ccept [s]tatistics [r]eroll [t]weak [c]urse [q]uantity [k]nown? ", &ch))
 			break;
 
-		if (ch == 'A' || ch == 'a')
+		if (ch.code == 'A' || ch.code == 'a')
 		{
 			changed = TRUE;
 			break;
 		}
-		else if (ch == 'c' || ch == 'C')
+		else if (ch.code == 'c' || ch.code == 'C')
 			wiz_tweak_curse(i_ptr);
-		else if (ch == 's' || ch == 'S')
+		else if (ch.code == 's' || ch.code == 'S')
 			wiz_statistics(i_ptr, p_ptr->depth);
-		else if (ch == 'r' || ch == 'R')
+		else if (ch.code == 'r' || ch.code == 'R')
 			wiz_reroll_item(i_ptr);
-		else if (ch == 't' || ch == 'T')
+		else if (ch.code == 't' || ch.code == 'T')
 			wiz_tweak_item(i_ptr);
-		else if (ch == 'k' || ch == 'K')
+		else if (ch.code == 'k' || ch.code == 'K')
 			all = !all;
-		else if (ch == 'q' || ch == 'Q')
+		else if (ch.code == 'q' || ch.code == 'Q')
 		{
 			bool carried = (item >= 0) ? TRUE : FALSE;
 			wiz_quantity_item(i_ptr, carried);
@@ -1436,7 +1432,7 @@ static void do_cmd_wiz_query(void)
 
 	int y, x;
 
-	keycode_t cmd;
+	struct keypress cmd;
 
 	u16b mask = 0x00;
 
@@ -1445,7 +1441,7 @@ static void do_cmd_wiz_query(void)
 	if (!get_com("Debug Command Query: ", &cmd)) return;
 
 	/* Extract a flag */
-	switch (cmd)
+	switch (cmd.code)
 	{
 		case '0': mask = (1 << 0); break;
 		case '1': mask = (1 << 1); break;
@@ -1486,17 +1482,11 @@ static void do_cmd_wiz_query(void)
 
 			/* Display player/floors/walls */
 			if ((y == py) && (x == px))
-			{
 				print_rel('@', a, y, x);
-			}
 			else if (cave_floor_bold(y, x))
-			{
 				print_rel('*', a, y, x);
-			}
 			else
-			{
 				print_rel('#', a, y, x);
-			}
 		}
 	}
 
@@ -1609,14 +1599,14 @@ void do_cmd_debug(void)
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	keycode_t cmd;
+	struct keypress cmd;
 
 
 	/* Get a "debug command" */
 	if (!get_com("Debug Command: ", &cmd)) return;
 
 	/* Analyze the command */
-	switch (cmd)
+	switch (cmd.code)
 	{
 		/* Ignore */
 		case ESCAPE:
@@ -1875,20 +1865,20 @@ void do_cmd_debug(void)
 			}
 			else
 			{
-				keycode_t sym;
+				struct keypress sym;
 				char *prompt =
 					"Full recall for [a]ll monsters or [s]pecific monster? ";
 
 				if (!get_com(prompt, &sym)) return;
 
-				if (sym == 'a' || sym == 'A')
+				if (sym.code == 'a' || sym.code == 'A')
 				{
 					int i;
 					for (i = 0; i < z_info->r_max; i++)
 						cheat_monster_lore(i, &l_list[i]);
 					break;
 				}
-				else if (sym == 's' || sym == 'S')
+				else if (sym.code == 's' || sym.code == 'S')
 				{
 					char name[80] = "";
 					
@@ -2002,20 +1992,20 @@ void do_cmd_debug(void)
 			}
 			else
 			{
-				keycode_t sym;
+				struct keypress sym;
 				char *prompt =
 					"Wipe recall for [a]ll monsters or [s]pecific monster? ";
 
 				if (!get_com(prompt, &sym)) return;
 
-				if (sym == 'a' || sym == 'A')
+				if (sym.code == 'a' || sym.code == 'A')
 				{
 					int i;
 					for (i = 0; i < z_info->r_max; i++)
 						wipe_monster_lore(i, &l_list[i]);
 					break;
 				}
-				else if (sym == 's' || sym == 'S')
+				else if (sym.code == 's' || sym.code == 'S')
 				{
 					char name[80] = "";
 					

@@ -406,50 +406,36 @@ int motion_dir(int y1, int x1, int y2, int x2)
 /*
  * Extract a direction (or zero) from a character
  */
-int target_dir(keycode_t ch)
+int target_dir(struct keypress ch)
 {
 	int d = 0;
 
-	int mode;
-
-	const char *act;
-
-	const char *s;
-
-
 	/* Already a direction? */
-	if (isdigit((unsigned char)ch))
-	{
-		d = D2I(ch);
-	}
-	else if (isarrow(ch))
-	{
-		switch (ch)
-		{
-			case ARROW_DOWN:	d = 2; break;
-			case ARROW_LEFT:	d = 4; break;
-			case ARROW_RIGHT:	d = 6; break;
-			case ARROW_UP:		d = 8; break;
+	if (isdigit((unsigned char)ch.code)) {
+		d = D2I(ch.code);
+	} else if (isarrow(ch.code)) {
+		switch (ch.code) {
+			case ARROW_DOWN:  d = 2; break;
+			case ARROW_LEFT:  d = 4; break;
+			case ARROW_RIGHT: d = 6; break;
+			case ARROW_UP:    d = 8; break;
 		}
-	}
-	else
-	{
+	} else {
+		int mode;
+		const struct keypress *act;
+
 		if (OPT(rogue_like_commands))
 			mode = KEYMAP_MODE_ROGUE;
 		else
 			mode = KEYMAP_MODE_ORIG;
 
-		/* Extract the action (if any) */
+		/* XXX see if this key has a digit in the keymap we can use */
 		act = keymap_find(mode, ch);
-
-		/* Analyze */
-		if (act)
-		{
-			/* Convert to a direction */
-			for (s = act; *s; ++s)
-			{
-				/* Use any digits in keymap */
-				if (isdigit((unsigned char)*s)) d = D2I(*s);
+		if (act) {
+			const struct keypress *cur;
+			for (cur = act; cur->type == EVT_KBRD; cur++) {
+				if (isdigit((unsigned char) cur->code))
+					d = D2I(cur->code);
 			}
 		}
 	}
@@ -526,20 +512,20 @@ bool get_aim_dir(int *dp)
 		}
 		else if (ke.type == EVT_KBRD)
 		{
-			if (ke.key == '*')
+			if (ke.key.code == '*')
 			{
 				/* Set new target, use target if legal */
 				if (target_set_interactive(TARGET_KILL, -1, -1))
 					dir = 5;
 			}
-			else if (ke.key == '\'')
+			else if (ke.key.code == '\'')
 			{
 				/* Set to closest target */
 				if (target_set_closest(TARGET_KILL))
 					dir = 5;
 			}
-			else if (ke.key == 't' || ke.key == '5' ||
-					ke.key == '0' || ke.key == '.')
+			else if (ke.key.code == 't' || ke.key.code == '5' ||
+					ke.key.code == '0' || ke.key.code == '.')
 			{
 				if (target_okay())
 					dir = 5;
@@ -549,7 +535,7 @@ bool get_aim_dir(int *dp)
 				/* Possible direction */
 				int keypresses_handled = 0;
 				
-				while (ke.key != 0)
+				while (ke.key.code != 0)
 				{
 					int this_dir;
 					
@@ -643,7 +629,8 @@ bool get_rep_dir(int *dp)
 		ke = inkey_ex();
 		inkey_scan = SCAN_OFF;
 
-		if (ke.type == EVT_KBRD && target_dir(ke.key) == 0)
+		if (ke.type == EVT_NONE ||
+				(ke.type == EVT_KBRD && target_dir(ke.key) == 0))
 		{
 			prt("Direction or <click> (Escape to cancel)? ", 0, 0);
 			ke = inkey_ex();
@@ -674,15 +661,15 @@ bool get_rep_dir(int *dp)
 		}
 
 		/* Get other keypresses until a direction is chosen. */
-		else
+		else if (ke.type == EVT_KBRD)
 		{
 			int keypresses_handled = 0;
 
-			while (ke.key != 0)
+			while (ke.type == EVT_KBRD && ke.key.code != 0)
 			{
 				int this_dir;
 
-				if (ke.key == ESCAPE) 
+				if (ke.key.code == ESCAPE) 
 				{
 					/* Clear the prompt */
 					prt("", 0, 0);
@@ -695,9 +682,7 @@ bool get_rep_dir(int *dp)
 				this_dir = target_dir(ke.key);
 
 				if (this_dir)
-				{
 					dir = dir_transitions[dir][this_dir];
-				}
 
 				if (lazymove_delay == 0 || ++keypresses_handled > 1)
 					break;

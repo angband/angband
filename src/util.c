@@ -23,14 +23,6 @@
 #include "randname.h"
 
 /*
- * Convert a decimal to a single digit hex number
- */
-static char hexify(int i)
-{
-	return (hexsym[i % 16]);
-}
-
-/*
  * Convert a hexidecimal-digit into a decimal
  */
 static int dehex(char c)
@@ -40,22 +32,19 @@ static int dehex(char c)
 	return (0);
 }
 
-/*
- * Hack -- convert a printable string into real ascii
- *
- * This function will not work on non-ascii systems.
- *
- * To be safe, "buf" should be at least as large as "str".
+/**
+ * Convert an encoding of a set of keypresses into actual keypresses.
  */
-void text_to_ascii(char *buf, size_t len, const char *str)
+void text_to_ascii(struct keypress *buf, size_t len, const char *str)
 {
-	char *s = buf;
+	size_t cur = 0;
+
+	memset(buf, 0, len * sizeof *buf);
 
 	/* Analyze the "ascii" string */
-	while (*str)
+	while (*str && cur < len)
 	{
-		/* Check if the buffer is long enough */
-		if (s >= buf + len - 1) break;
+		buf[cur].type = EVT_KBRD;
 
 		/* Backslash codes */
 		if (*str == '\\')
@@ -71,48 +60,28 @@ void text_to_ascii(char *buf, size_t len, const char *str)
 					if (isxdigit((unsigned char)(*(str + 1))) &&
 					    isxdigit((unsigned char)(*(str + 2))))
 					{
-						*s = 16 * dehex(*++str);
-						*s++ += dehex(*++str);
+						buf[cur].code = 16 * dehex(*++str);
+						buf[cur].code += 16 * dehex(*++str);
+						cur++;
 					}
 					else
 					{
 						/* HACK - Invalid hex number */
-						*s++ = '?';
+						buf[cur++].code = '?';
 					}
 					break;
 				}
 
-				case 'e':
-					*s++ = ESCAPE;
-					break;
-				case 's':
-					*s++ = ' ';
-					break;
-				case 'b':
-					*s++ = '\b';
-					break;
-				case 'n':
-					*s++ = '\n';
-					break;
-				case 'r':
-					*s++ = '\r';
-					break;
-				case 't':
-					*s++ = '\t';
-					break;
-				case 'a':
-					*s++ = '\a';
-					break;
-				case '\\':
-					*s++ = '\\';
-					break;
-				case '^':
-					*s++ = '^';
-					break;
-
-				default:
-					*s = *str;
-					break;
+				case 'e': buf[cur++].code = ESCAPE; break;
+				case 's': buf[cur++].code = ' '; break;
+				case 'b': buf[cur++].code = '\b'; break;
+				case 'n': buf[cur++].code = '\n'; break;
+				case 'r': buf[cur++].code = '\r'; break;
+				case 't': buf[cur++].code = '\t'; break;
+				case 'a': buf[cur++].code = '\a'; break;
+				case '\\': buf[cur++].code = '\\'; break;
+				case '^': buf[cur++].code = '^'; break;
+				default: buf[cur++].code = *str; break;
 			}
 
 			/* Skip the final char */
@@ -125,104 +94,60 @@ void text_to_ascii(char *buf, size_t len, const char *str)
 			str++;
 			if (*str == '\0') break;
 
-			*s++ = KTRL(*str);
+			buf[cur].code = KTRL(*str);
+			buf[cur++].mods = KC_MOD_CONTROL;
 			str++;
 		}
 
 		/* Normal chars */
 		else
 		{
-			*s++ = *str++;
+			buf[cur++].code = *str++;
 		}
 	}
 
 	/* Terminate */
-	*s = '\0';
+	cur = MIN(cur, len);
+	buf[cur].type = EVT_NONE;
 }
 
 /*
- * Hack -- convert a string into a printable form
- *
- * This function will not work on non-ascii systems.
+ * Convert a string of keypresses into their textual equivalent.
  */
-void ascii_to_text(char *buf, size_t len, const char *str)
+void ascii_to_text(char *buf, size_t len, const struct keypress *src)
 {
-	char *s = buf;
+	size_t cur = 0;
+	size_t end = 0;
 
-	/* Analyze the "ascii" string */
-	while (*str)
-	{
-		byte i = (byte)(*str++);
+	while (src[cur].type == EVT_KBRD) {
+		keycode_t i = src[cur].code;
 
-		/* Check if the buffer is long enough */
-		/* HACK - always assume worst case (hex-value + '\0') */
-		if (s >= buf + len - 5) break;
+		switch (i) {
+			case ESCAPE: strnfcat(buf, len, &end, "\e"); break;
+			case ' ':    strnfcat(buf, len, &end, " "); break;
+			case '\b': strnfcat(buf, len, &end, "\b"); break;
+			case '\t': strnfcat(buf, len, &end, "\t"); break;
+			case '\a': strnfcat(buf, len, &end, "\a"); break;
+			case '\n': strnfcat(buf, len, &end, "\n"); break;
+			case '\r': strnfcat(buf, len, &end, "\r"); break;
+			case '\\': strnfcat(buf, len, &end, "\\"); break;
+			case '^': strnfcat(buf, len, &end, "\\^"); break;
+			default: {
+				if (i < 32)
+					strnfcat(buf, len, &end, "^%c", UN_KTRL(i));
+				else if (i < 127)
+					strnfcat(buf, len, &end, "%c", i);
+				else
+					strnfcat(buf, len, &end, "\\x%02x", (int)i);
+				break;
+			}
+		}
 
-		if (i == ESCAPE)
-		{
-			*s++ = '\\';
-			*s++ = 'e';
-		}
-		else if (i == ' ')
-		{
-			*s++ = '\\';
-			*s++ = 's';
-		}
-		else if (i == '\b')
-		{
-			*s++ = '\\';
-			*s++ = 'b';
-		}
-		else if (i == '\t')
-		{
-			*s++ = '\\';
-			*s++ = 't';
-		}
-		else if (i == '\a')
-		{
-			*s++ = '\\';
-			*s++ = 'a';
-		}
-		else if (i == '\n')
-		{
-			*s++ = '\\';
-			*s++ = 'n';
-		}
-		else if (i == '\r')
-		{
-			*s++ = '\\';
-			*s++ = 'r';
-		}
-		else if (i == '\\')
-		{
-			*s++ = '\\';
-			*s++ = '\\';
-		}
-		else if (i == '^')
-		{
-			*s++ = '\\';
-			*s++ = '^';
-		}
-		else if (i < 32)
-		{
-			*s++ = '^';
-			*s++ = UN_KTRL(i);
-		}
-		else if (i < 127)
-		{
-			*s++ = i;
-		}
-		else
-		{
-			*s++ = '\\';
-			*s++ = 'x';
-			*s++ = hexify((int)i / 16);
-			*s++ = hexify((int)i % 16);
-		}
+		cur++;
 	}
 
 	/* Terminate */
-	*s = '\0';
+	buf[end] = '\0';
 }
 
 
@@ -415,7 +340,7 @@ static ui_event inkey_aux(int scan_cutoff)
 {
 	int w = 0;	
 
-	ui_event ke, ke0 = EVENT_EMPTY;
+	ui_event ke;
 	
 	/* Wait for a keypress */
 	if (scan_cutoff == SCAN_OFF)
@@ -435,8 +360,8 @@ static ui_event inkey_aux(int scan_cutoff)
 			/* Excessive delay */
 			if (w >= scan_cutoff)
 			{
-				ke0.type = EVT_KBRD;
-				return ke0;
+				ui_event empty = EVENT_EMPTY;
+				return empty;
 			}
 
 			/* Delay */
@@ -444,6 +369,9 @@ static ui_event inkey_aux(int scan_cutoff)
 		}
 	}
 
+	if (ke.type == EVT_KBRD)
+		printf("key event! %c %d %02x\n",
+				(unsigned)ke.key.code, ke.key.code, ke.key.mods);
 	return (ke);
 }
 
@@ -457,7 +385,7 @@ static ui_event inkey_aux(int scan_cutoff)
  * trigger any macros, and cannot be bypassed by the Borg.  It is used
  * in Angband to handle "keymaps".
  */
-const char *inkey_next = NULL;
+struct keypress *inkey_next = NULL;
 
 
 #ifdef ALLOW_BORG
@@ -489,12 +417,6 @@ char (*inkey_hack)(int flush_first) = NULL;
  *
  * If "inkey_scan" is TRUE, then we will immediately return "zero" if no
  * keypress is available, instead of waiting for a keypress.
- *
- * If "inkey_base" is TRUE, then all macro processing will be bypassed.
- * If "inkey_base" and "inkey_scan" are both TRUE, then this function will
- * not return immediately, but will wait for a keypress for as long as the
- * normal macro matching code would, allowing the direct entry of macro
- * triggers.  The "inkey_base" flag is extremely dangerous!
  *
  * If "inkey_flag" is TRUE, then we will assume that we are waiting for a
  * normal command, and we will only show the cursor if "OPT(highlight_player)" is
@@ -539,25 +461,20 @@ ui_event inkey_ex(void)
 {
 	bool cursor_state;
 	ui_event kk;
-	ui_event ke;
+	ui_event ke = EVENT_EMPTY;
 
 	bool done = FALSE;
 
 	term *old = Term;
 
-	/* Initialise keypress */
-	ke.key = 0;
-	ke.type = EVT_NONE;
-
 	/* Hack -- Use the "inkey_next" pointer */
-	if (inkey_next && *inkey_next && !inkey_xtra)
+	if (inkey_next && inkey_next->code && !inkey_xtra)
 	{
 		/* Get next character, and advance */
 		ke.key = *inkey_next++;
-		ke.type = EVT_KBRD;
 
 		/* Cancel the various "global parameters" */
-		inkey_base = inkey_xtra = inkey_flag = FALSE;
+		inkey_xtra = inkey_flag = FALSE;
 		inkey_scan = 0;
 
 		/* Accept result */
@@ -573,7 +490,7 @@ ui_event inkey_ex(void)
 	if (inkey_hack && ((ke.key = (*inkey_hack)(inkey_xtra)) != 0))
 	{
 		/* Cancel the various "global parameters" */
-		inkey_base = inkey_xtra = inkey_flag = FALSE;
+		inkey_xtra = inkey_flag = FALSE;
 		inkey_scan = 0;
 		ke.type = EVT_KBRD;
 
@@ -607,18 +524,14 @@ ui_event inkey_ex(void)
 	while (ke.type == EVT_NONE)
 	{
 		/* Hack -- Handle "inkey_scan == SCAN_INSTANT */
-		if (!inkey_base && inkey_scan == SCAN_INSTANT &&
-		   (0 != Term_inkey(&kk, FALSE, FALSE)))
-		{
-			ke.type = EVT_KBRD;
+		if (inkey_scan == SCAN_INSTANT &&
+				(0 != Term_inkey(&kk, FALSE, FALSE)))
 			break;
-		}
 
 
 		/* Hack -- Flush output once when no key ready */
 		if (!done && (0 != Term_inkey(&kk, FALSE, FALSE)))
 		{
-
 			/* Hack -- activate proper term */
 			Term_activate(old);
 
@@ -639,57 +552,6 @@ ui_event inkey_ex(void)
 		}
 
 
-		/* Hack -- Handle "inkey_base" */
-		if (inkey_base)
-		{
-			int w = 0;
-
-			/* Wait forever */
-			if (!inkey_scan)
-			{
-				/* Wait for (and remove) a pending key */
-				if (0 == Term_inkey(&ke, TRUE, TRUE))
-				{
-					/* Done */
-					ke.type = EVT_KBRD;
-					break;
-				}
-
-				/* Oops */
-				break;
-			}
-
-			/* Wait only as long as macro activation would wait*/
-			while (TRUE)
-			{
-				/* Check for (and remove) a pending key */
-				if (0 == Term_inkey(&ke, FALSE, TRUE))
-				{
-					/* Done */
-					ke.type = EVT_KBRD;
-					break;
-				}
-
-				/* No key ready */
-				else
-				{
-					/* Increase "wait" */
-					w ++;
-
-					/* Excessive delay */
-					if (w >= SCAN_MACRO) break;
-
-					/* Delay */
-					Term_xtra(TERM_XTRA_DELAY, 10);
-
-				}
-			}
-
-			/* Done */
-			ke.type = EVT_KBRD;
-			break;
-		}
-
 		/* Get a key (see above) */
 		ke = inkey_aux(inkey_scan);
 
@@ -704,38 +566,23 @@ ui_event inkey_ex(void)
 			if (key)
 			{
 				/* Rewrite the event */
+				/* XXXmacro button implementation needs updating */
 				ke.type = EVT_BUTTON;
-				ke.key = key;
-				ke.mouse.button = 0;
-				ke.mouse.y = 0;
-				ke.mouse.x = 0;
+				ke.key.code = key;
+				ke.key.mods = 0;
 
 				/* Done */
 				break;
 			}
 		}
 
-		/* Handle "control-right-bracket" */
-		if (ke.key == 29)
-		{
-			/* Strip this key */
-			ke.type = EVT_NONE;
+		switch (ke.key.code) {
+			/* XXXmacro We strip 29 and 30 for historical reasons */
+			case 29:
+			case 30: ke.type = EVT_NONE; continue;
 
-			/* Continue */
-			continue;
-		}
-
-
-		/* Treat back-quote as escape */
-		if (ke.key == '`') ke.key = ESCAPE;
-
-
-		/* Handle "control-caret" */
-		if (ke.key == 30)
-		{
-			/* Strip this key */
-			ke.type = EVT_NONE;
-			ke.key = 0;
+			/* Treat back-quote as escape */
+			case '`': ke.key.code = ESCAPE; break;
 		}
 	}
 
@@ -749,7 +596,7 @@ ui_event inkey_ex(void)
 
 
 	/* Cancel the various "global parameters" */
-	inkey_base = inkey_xtra = inkey_flag = FALSE;
+	inkey_xtra = inkey_flag = FALSE;
 	inkey_scan = 0;
 
 	/* Return the keypress */
@@ -760,34 +607,33 @@ ui_event inkey_ex(void)
 /*
  * Get a keypress or mouse click from the user.
  */
-char anykey(void)
+void anykey(void)
 {
 	ui_event ke = EVENT_EMPTY;
   
-	/* Only accept a keypress or mouse click*/
-	do
-	{
+	/* Only accept a keypress or mouse click */
+	while (ke.type != EVT_MOUSE && ke.type != EVT_KBRD)
 		ke = inkey_ex();
-	} while ((ke.type != EVT_MOUSE) && (ke.type != EVT_KBRD));
-
-	return ke.key;
 }
 
 /*
  * Get a "keypress" from the user.
  */
-keycode_t inkey(void)
+struct keypress inkey(void)
 {
 	ui_event ke = EVENT_EMPTY;
 
 	/* Only accept a keypress */
-	do
-	{
+	while (ke.type != EVT_ESCAPE && ke.type != EVT_KBRD)
 		ke = inkey_ex();
-	} while ((ke.type != EVT_ESCAPE) && (ke.type != EVT_KBRD));
 
 	/* Paranoia */
-	if (ke.type == EVT_ESCAPE) ke.key = ESCAPE;
+	if (ke.type == EVT_ESCAPE) {
+		ke.type = EVT_KBRD;
+		ke.key.code = ESCAPE;
+		ke.key.mods = 0;
+	}
+
 	return ke.key;
 }
 
@@ -1611,9 +1457,9 @@ void clear_from(int row)
  * It should return TRUE when editing of the buffer is "complete" (e.g. on
  * the press of RETURN).
  */
-bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, keycode_t keypress, bool firsttime)
+bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, struct keypress keypress, bool firsttime)
 {
-	switch (keypress)
+	switch (keypress.code)
 	{
 		case ESCAPE:
 		{
@@ -1677,8 +1523,7 @@ bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, ke
 		{
 			bool atnull = (buf[*curs] == 0);
 
-
-			if (!my_isprint((unsigned char)keypress))
+			if (!my_isprint((unsigned char)keypress.code))
 			{
 				bell("Illegal edit key!");
 				break;
@@ -1708,7 +1553,7 @@ bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, ke
 			}
 
 			/* Insert the character */
-			buf[(*curs)++] = keypress;
+			buf[(*curs)++] = (char)keypress.code;
 			(*len)++;
 
 			/* Terminate */
@@ -1745,14 +1590,14 @@ bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, ke
  * 'askfor_aux_keypress' (the default handler if you supply NULL for
  * 'keypress_h') for an example.
  */
-bool askfor_aux(char *buf, size_t len, bool keypress_h(char *, size_t, size_t *, size_t *, keycode_t, bool))
+bool askfor_aux(char *buf, size_t len, bool keypress_h(char *, size_t, size_t *, size_t *, struct keypress, bool))
 {
 	int y, x;
 
 	size_t k = 0;		/* Cursor position */
 	size_t nul = 0;		/* Position of the null byte in the string */
 
-	char ch = '\0';
+	struct keypress ch = { 0 };
 
 	bool done = FALSE;
 	bool firsttime = TRUE;
@@ -1804,7 +1649,7 @@ bool askfor_aux(char *buf, size_t len, bool keypress_h(char *, size_t, size_t *,
 	}
 
 	/* Done */
-	return (ch != ESCAPE);
+	return (ch.code != ESCAPE);
 }
 
 
@@ -1813,11 +1658,11 @@ bool askfor_aux(char *buf, size_t len, bool keypress_h(char *, size_t, size_t *,
  * case of '*' for a new random "name" and passes any other "keypress"
  * through to the default "editing" handler.
  */
-static bool get_name_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, keycode_t keypress, bool firsttime)
+static bool get_name_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, struct keypress keypress, bool firsttime)
 {
 	bool result;
 
-	switch (keypress)
+	switch (keypress.code)
 	{
 		case '*':
 		{
@@ -1827,8 +1672,7 @@ static bool get_name_keypress(char *buf, size_t buflen, size_t *curs, size_t *le
 			result = FALSE;
 			break;
 		}
-		
-		
+
 		default:
 		{
 			result = askfor_aux_keypress(buf, buflen, curs, len, keypress, firsttime);
@@ -1980,7 +1824,7 @@ s16b get_quantity(const char *prompt, int max)
  */
 bool get_check(const char *prompt)
 {
-	ui_event ke;
+	struct keypress ke;
 
 	char buf[80];
 
@@ -2002,7 +1846,7 @@ bool get_check(const char *prompt)
   
 	/* Prompt for it */
 	prt(buf, 0, 0);
-	ke = inkey_ex();
+	ke = inkey();
 
 	/* Kill the buttons */
 	button_kill('y');
@@ -2016,7 +1860,7 @@ bool get_check(const char *prompt)
 	prt("", 0, 0);
 
 	/* Normal negation */
-	if ((ke.key != 'Y') && (ke.key != 'y')) return (FALSE);
+	if ((ke.code != 'Y') && (ke.code != 'y')) return (FALSE);
 
 	/* Success */
 	return (TRUE);
@@ -2035,7 +1879,8 @@ bool get_check(const char *prompt)
 char get_char(const char *prompt, const char *options, size_t len, char fallback)
 {
 	size_t i;
-	char button[4], buf[80], key;
+	struct keypress key;
+	char button[4], buf[80];
 	bool repeat = FALSE;
   
 	/* Paranoia XXX XXX XXX */
@@ -2059,15 +1904,14 @@ char get_char(const char *prompt, const char *options, size_t len, char fallback
 	prt(buf, 0, 0);
 
 	/* Get an acceptable answer */
-	key = inkey_ex().key;
+	key = inkey();
 
 	/* Lowercase answer if necessary */
-	if (key >= 'A' && key <= 'Z') key += 32;
+	if (key.code >= 'A' && key.code <= 'Z') key.code += 32;
 
 	/* See if key is in our options string */
-	if (!strchr(options, key)) {
-		key = fallback;
-	}
+	if (!strchr(options, (char)key.code))
+		key.code = fallback;
 
 	/* Kill the buttons */
 	for (i = 0; i < len; i++) button_kill(options[i]);
@@ -2080,7 +1924,7 @@ char get_char(const char *prompt, const char *options, size_t len, char fallback
 	prt("", 0, 0);
 
 	/* Success */
-	return key;
+	return key.code;
 }
 
 
@@ -2133,7 +1977,7 @@ bool (*get_file)(const char *suggested_name, char *path, size_t len) = get_file_
  *
  * Returns TRUE unless the character is "Escape"
  */
-bool get_com(const char *prompt, keycode_t *command)
+bool get_com(const char *prompt, struct keypress *command)
 {
 	ui_event ke;
 	bool result;
@@ -2165,7 +2009,9 @@ bool get_com_ex(const char *prompt, ui_event *command)
 	*command = ke;
 
 	/* Done */
-	return (ke.key != ESCAPE);
+	if (ke.type == EVT_KBRD && ke.key.code == ESCAPE)
+		return FALSE;
+	return TRUE;
 }
 
 

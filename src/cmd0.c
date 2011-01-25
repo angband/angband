@@ -432,25 +432,22 @@ static int textui_get_count(void)
 
 	while (1)
 	{
-		ui_event ke;
+		struct keypress ke;
 
 		prt(format("Count: %d", count), 0, 0);
 
-		ke = inkey_ex();
-		if (ke.type != EVT_KBRD)
-			continue;
-
-		if (ke.key == ESCAPE)
+		ke = inkey();
+		if (ke.code == ESCAPE)
 			return -1;
 
 		/* Simple editing (delete or backspace) */
-		else if (ke.key == 0x7F || ke.key == KTRL('H'))
+		else if (ke.code == 0x7F || ke.code == KTRL('H'))
 			count = count / 10;
 
 		/* Actual numeric data */
-		else if (isdigit((unsigned char) ke.key))
+		else if (isdigit((unsigned char) ke.code))
 		{
-			count = count * 10 + D2I(ke.key);
+			count = count * 10 + D2I(ke.code);
 
 			if (count >= 9999)
 			{
@@ -463,8 +460,8 @@ static int textui_get_count(void)
 		else
 		{
 			/* XXX nasty hardcoding of action menu key */
-			if (ke.key != '\n' && ke.key != '\r')
-				Term_event_push(&ke);
+			if (ke.code != '\n' && ke.code != '\r')
+				Term_keypress(ke.code, ke.mods);
 
 			break;
 		}
@@ -478,7 +475,7 @@ static int textui_get_count(void)
 /*
  * Hack -- special buffer to hold the action of the current keymap
  */
-static char request_command_buffer[256];
+static struct keypress request_command_buffer[256];
 
 
 /*
@@ -496,11 +493,11 @@ static ui_event textui_get_command(void)
 {
 	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
-	char tmp[2] = { '\0', '\0' };
+	struct keypress tmp[2] = { { 0 }, { 0 } };
 
 	ui_event ke = EVENT_EMPTY;
 
-	const char *act = NULL;
+	const struct keypress *act = NULL;
 
 
 
@@ -516,51 +513,48 @@ static ui_event textui_get_command(void)
 		/* Get a command */
 		ke = inkey_ex();
 
+		if (ke.type == EVT_KBRD) {
+			switch (ke.key.code) {
+				case '0': {
+					int count = textui_get_count();
 
-		/* Command Count */
-		if (ke.key == '0')
-		{
-			int count = textui_get_count();
+					if (count == -1 || !get_com_ex("Command: ", &ke))
+						continue;
+					else
+						p_ptr->command_arg = count;
+					break;
+				}
 
-			if (count == -1 || !get_com_ex("Command: ", &ke))
-				continue;
-			else
-				p_ptr->command_arg = count;
-		}
+#if 0
+				case '\\': {
+					/* Allow "keymaps" to be bypassed */
+					(void)get_com_ex("Command: ", &ke);
+					/* XXXmacro how to do this when inkey_next is not char? */
+					if (!inkey_next) inkey_next = "";
+					break;
+				}
+#endif
 
-		/* Allow "keymaps" to be bypassed */
-		else if (ke.key == '\\')
-		{
-			/* Get a real command */
-			(void)get_com("Command: ", &ke.key);
+				case '^': {
+					/* Allow "control chars" to be entered */
+					if (get_com("Control: ", &ke.key))
+						ke.key.code = KTRL(ke.key.code);
+					break;
+				}
 
-			/* Hack -- bypass keymaps */
-			if (!inkey_next) inkey_next = "";
-		}
-
-		/* Allow "control chars" to be entered */
-		else if (ke.key == '^')
-		{
-			/* Get a new command and controlify it */
-			if (get_com("Control: ", &ke.key))
-				ke.key = KTRL(ke.key);
-		}
-
-		/* Special case for the arrow keys */
-		else if (isarrow(ke.key))
-		{
-			switch (ke.key)
-			{
-				case ARROW_DOWN:    ke.key = '2'; break;
-				case ARROW_LEFT:    ke.key = '4'; break;
-				case ARROW_RIGHT:   ke.key = '6'; break;
-				case ARROW_UP:      ke.key = '8'; break;
+				/* XXXmacro these should be removed in lieu of keymaps */
+				case ARROW_DOWN:    ke.key.code = '2'; break;
+				case ARROW_LEFT:    ke.key.code = '4'; break;
+				case ARROW_RIGHT:   ke.key.code = '6'; break;
+				case ARROW_UP:      ke.key.code = '8'; break;
 			}
+
+			/* Find any relevant keymap */
+			act = keymap_find(mode, ke.key);
 		}
 
 		/* Erase the message line */
 		prt("", 0, 0);
-
 
 		if (ke.type == EVT_BUTTON)
 		{
@@ -568,16 +562,12 @@ static ui_event textui_get_command(void)
 			act = tmp;
 			tmp[0] = ke.key;
 		}
-		else if (ke.type == EVT_KBRD)
-		{
-			act = keymap_find(mode, ke.key);
-		}
 
 		/* Apply keymap if not inside a keymap already */
-		if (ke.key && act && !inkey_next)
+		if (ke.key.code && act && !inkey_next)
 		{
 			/* Install the keymap */
-			my_strcpy(request_command_buffer, act,
+			memcpy(request_command_buffer, act,
 			          sizeof(request_command_buffer));
 
 			/* Start using the buffer */
@@ -673,10 +663,13 @@ static bool key_confirm_command(unsigned char c)
 /**
  * Process a textui keypress.
  */
-static bool textui_process_key(unsigned char c)
+static bool textui_process_key(struct keypress kp)
 {
 	struct command *cmd;
 	struct generic_command *command;
+
+	/* XXXmacro this needs rewriting */
+	unsigned char c = (unsigned char)kp.code;
 
 	if (c == '\n' || c == '\r')
 		c = textui_action_menu_choose();

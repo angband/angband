@@ -119,10 +119,11 @@ void do_cmd_redraw(void)
 void do_cmd_change_name(void)
 {
 	ui_event ke;
-
 	int mode = 0;
 
 	const char *p;
+
+	bool more = TRUE;
 
 	/* Prompt */
 	p = "['c' to change name, 'f' to file, 'h' to change mode, or ESC]";
@@ -131,7 +132,7 @@ void do_cmd_change_name(void)
 	screen_save();
 
 	/* Forever */
-	while (1)
+	while (more)
 	{
 		/* Display the player */
 		display_player(mode);
@@ -142,61 +143,53 @@ void do_cmd_change_name(void)
 		/* Query */
 		ke = inkey_ex();
 
-		/* Exit */
-		if (ke.key == ESCAPE) break;
+		if (ke.type == EVT_KBRD) {
+			switch (ke.key.code) {
+				case ESCAPE: more = FALSE; break;
+				case 'c': {
+					char namebuf[32] = "";
 
-		/* Change name */
-		if (ke.key == 'c' ||
-			(ke.mouse.y == 2 && ke.mouse.x < 26))
-		{
-			char namebuf[32] = "";
+					if (get_name(namebuf, sizeof namebuf))
+					{
+						/* Set player name */
+						my_strcpy(op_ptr->full_name, namebuf,
+								  sizeof(op_ptr->full_name));
 
-			if (get_name(namebuf, sizeof namebuf))
-			{
-				/* Set player name */
-				my_strcpy(op_ptr->full_name, namebuf,
-						  sizeof(op_ptr->full_name));
+						/* Don't change savefile name. */
+						process_player_name(FALSE);
+					}
+					break;
+				}
 
-				/* Don't change savefile name. */
-				process_player_name(FALSE);
+				case 'f': {
+					char buf[1024];
+					char fname[80];
+
+					strnfmt(fname, sizeof fname, "%s.txt", op_ptr->base_name);
+
+					if (get_file(fname, buf, sizeof buf))
+					{
+						if (file_character(buf, FALSE) != 0)
+							msg("Character dump failed!");
+						else
+							msg("Character dump successful.");
+					}
+				}
+				
+				case 'h':
+				case ARROW_LEFT:
+				case ' ':
+					mode = (mode + 1) % INFO_SCREENS;
+					break;
+
+				case 'l':
+				case ARROW_RIGHT:
+					mode = (mode - 1) % INFO_SCREENS;
+					break;
 			}
-		}
-
-		/* File dump */
-		else if (ke.key == 'f')
-		{
-			char buf[1024];
-			char fname[80];
-
-			strnfmt(fname, sizeof fname, "%s.txt", op_ptr->base_name);
-
-			if (get_file(fname, buf, sizeof buf))
-			{
-				if (file_character(buf, FALSE) != 0)
-					msg("Character dump failed!");
-				else
-					msg("Character dump successful.");
-			}
-		}
-
-		/* Toggle mode */
-		else if (ke.key == 'h' || ke.key == ARROW_LEFT ||
-				ke.key == ' ' || ke.type == EVT_MOUSE)
-		{
+		} else if (ke.type == EVT_MOUSE) {
+			/* Just flip through the screens */			
 			mode = (mode + 1) % INFO_SCREENS;
-		}
-
-		/* Toggle mode */
-		else if ((ke.key == 'l') || ke.key == ARROW_RIGHT)
-		{
-			mode = (mode - 1) % INFO_SCREENS;
-		}
-
-
-		/* Oops */
-		else
-		{
-			bell(NULL);
 		}
 
 		/* Flush messages */
@@ -237,6 +230,8 @@ void do_cmd_messages(void)
 {
 	ui_event ke;
 
+	bool more = TRUE;
+
 	int i, j, n, q;
 	int wid, hgt;
 
@@ -260,7 +255,7 @@ void do_cmd_messages(void)
 	screen_save();
 
 	/* Process requests until done */
-	while (1)
+	while (more)
 	{
 		/* Clear screen */
 		Term_clear();
@@ -318,96 +313,69 @@ void do_cmd_messages(void)
 
 
 		/* Scroll forwards or backwards using mouse clicks */
-		if (ke.type == EVT_MOUSE)
-		{
-			/* Go older if legal */
-			if (ke.mouse.y <= hgt / 2)
-			{
+		if (ke.type == EVT_MOUSE) {
+			if (ke.mouse.y <= hgt / 2) {
+				/* Go older if legal */
 				if (i + 20 < n)
 					i += 20;
-			}
-
-			/* Go newer (if able) */
-			else
-			{
+			} else {
+				/* Go newer */
 				i = (i >= 20) ? (i - 20) : 0;
 			}
+		} else if (ke.type == EVT_KBRD) {
+			switch (ke.key.code) {
+				case ESCAPE: {
+					more = FALSE;
+					break;
+				}
+
+				case '=': {
+					/* Get the string to find */
+					prt("Find: ", hgt - 1, 0);
+					if (!askfor_aux(shower, sizeof shower, NULL)) continue;
+		
+					/* Set to find */
+					ke.key.code = '-';
+					break;
+				}
+
+				case ARROW_LEFT:
+				case '4':
+					q = (q >= wid / 2) ? (q - wid / 2) : 0;
+					break;
+
+				case ARROW_RIGHT:
+				case '6':
+					q = q + wid / 2;
+					break;
+
+				case ARROW_UP:
+				case '8':
+					if (i + 1 < n) i += 1;
+					break;
+
+				case ARROW_DOWN:
+				case '2':
+				case '\r':
+				case '\n':
+					i = (i >= 1) ? (i - 1) : 0;
+					break;
+
+				case KC_PGUP:
+				case 'p':
+				case ' ':
+					if (i + 20 < n) i += 20;
+					break;
+
+				case KC_PGDOWN:
+				case 'n':
+					i = (i >= 20) ? (i - 20) : 0;
+					break;
+			}
 		}
-
-		/* Exit on Escape */
-		else if (ke.key == ESCAPE)
-		{
-			break;
-		}
-
-		/* Find text */
-		else if (ke.key == '=')
-		{
-			/* Get the string to find */
-			prt("Find: ", hgt - 1, 0);
-			if (!askfor_aux(shower, sizeof shower, NULL)) continue;
-
-			/* Set to find */
-			ke.key = '-';
-		}
-
-		/* Horizontal scroll */
-		else if (ke.key == '4' || ke.key == ARROW_LEFT)
-		{
-			/* Scroll left */
-			q = (q >= wid / 2) ? (q - wid / 2) : 0;
-
-			/* Success */
-			continue;
-		}
-
-		/* Horizontal scroll */
-		else if (ke.key == '6'|| ke.key == ARROW_RIGHT)
-		{
-			/* Scroll right */
-			q = q + wid / 2;
-
-			/* Success */
-			continue;
-		}
-
-		/* Recall 1 older message */
-		else if (ke.key == '8' || ke.key == ARROW_UP)
-		{
-			/* Go older if legal */
-			if (i + 1 < n) i += 1;
-		}
-
-		/* Recall 1 newer messages */
-		else if (ke.key == '2' || ke.key == ARROW_DOWN || ke.key == '\r' || ke.key == '\n')
-		{
-			/* Go newer (if able) */
-			i = (i >= 1) ? (i - 1) : 0;
-		}
-
-		/* Recall 20 older messages */
-		else if ((ke.key == 'p') || (ke.key == KTRL('P')) || (ke.key == ' '))
-		{
-			/* Go older if legal */
-			if (i + 20 < n) i += 20;
-		}
-
-		/* Recall 20 newer messages */
-		else if ((ke.key == 'n') || (ke.key == KTRL('N')))
-		{
-			/* Go newer (if able) */
-			i = (i >= 20) ? (i - 20) : 0;
-		}
-
-		/* Error time */
-		else
-		{
-			bell(NULL);
-		}
-
 
 		/* Find the next item */
-		if (ke.key == '-' && shower[0])
+		if (ke.key.code == '-' && shower[0])
 		{
 			s16b z;
 
@@ -785,29 +753,14 @@ static void do_cmd_save_screen_html(int mode)
  */
 void do_cmd_save_screen(void)
 {
-	msg("Dump type [(t)ext; (h)tml; (f)orum embedded html]:");
+	char ch;
+	ch = get_char("Dump as (T)ext, (H)TML, or (F)orum text? ", "thf", 3, ' ');
 
-	while (TRUE)
+	switch (ch)
 	{
-		char c = inkey();
-
-		switch (c)
-		{
-			case ESCAPE:
-				return;
-
-			case 't':
-				do_cmd_save_screen_text();
-				return;
-
-			case 'h':
-				do_cmd_save_screen_html(0);
-				return;
-
-			case 'f':
-				do_cmd_save_screen_html(1);
-				return;
-		}
+		case 't': do_cmd_save_screen_text(); break;
+		case 'h': do_cmd_save_screen_html(0); break;
+		case 'f': do_cmd_save_screen_html(1); break;
 	}
 }
 

@@ -1823,7 +1823,7 @@ bool banishment(void)
 	int i;
 	unsigned dam = 0;
 
-	keycode_t typ;
+	struct keypress typ;
 
 
 	/* Mega-Hack -- Get a monster symbol */
@@ -1843,7 +1843,7 @@ bool banishment(void)
 		if (rf_has(r_ptr->flags, RF_UNIQUE)) continue;
 
 		/* Skip "wrong" monsters */
-		if (r_ptr->d_char != (char)typ) continue;
+		if (r_ptr->d_char != (char)typ.code) continue;
 
 		/* Delete the monster */
 		delete_monster_idx(i);

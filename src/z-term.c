@@ -1966,8 +1966,8 @@ errr Term_keypress(keycode_t k, byte mods)
 
 	/* Store the char, advance the queue */
 	Term->key_queue[Term->key_head].type = EVT_KBRD;
-	Term->key_queue[Term->key_head].key = k;
-	Term->key_queue[Term->key_head].keymods = mods;
+	Term->key_queue[Term->key_head].key.code = k;
+	Term->key_queue[Term->key_head].key.mods = mods;
 	Term->key_head++;
 
 	/* Circular queue, handle wrap */
@@ -1986,11 +1986,10 @@ errr Term_keypress(keycode_t k, byte mods)
 errr Term_mousepress(int x, int y, char button)
 {
   /* Store the char, advance the queue */
-  Term->key_queue[Term->key_head].key = 0;
+  Term->key_queue[Term->key_head].type = EVT_MOUSE;
   Term->key_queue[Term->key_head].mouse.x = x;
   Term->key_queue[Term->key_head].mouse.y = y;
   Term->key_queue[Term->key_head].mouse.button = button;
-  Term->key_queue[Term->key_head].type = EVT_MOUSE;
   Term->key_head++;
   
   /* Circular queue, handle wrap */
@@ -2019,7 +2018,8 @@ errr Term_key_push(int k)
 	if (!k) return (-1);
 
 	ke.type = EVT_KBRD;
-	ke.key = k;
+	ke.key.code = k;
+	ke.key.mods = 0;
 
 	return Term_event_push(&ke);
 }
@@ -2065,7 +2065,7 @@ errr Term_event_push(const ui_event *ke)
 errr Term_inkey(ui_event *ch, bool wait, bool take)
 {
 	/* Assume no key */
-	ch->type = ch->key = 0;
+	memset(ch, 0, sizeof *ch);
 
 	/* Hack -- get bored */
 	if (!Term->never_bored)

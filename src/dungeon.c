@@ -954,19 +954,17 @@ static void process_player(void)
 	    cmd_get_nrepeats() > 0 ||
 	    (p_ptr->resting && !(turn & 0x7F)))
 	{
+		ui_event e;
+
 		/* Do not wait */
 		inkey_scan = SCAN_INSTANT;
 
 		/* Check for a key */
-		if (inkey())
-		{
-			/* Flush input */
+		e = inkey_ex();
+		if (e.type != EVT_NONE) {
+			/* Flush and disturb */
 			flush();
-
-			/* Disturb */
 			disturb(0, 0);
-
-			/* Hack -- Show a Message */
 			msg("Cancelled.");
 		}
 	}

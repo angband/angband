@@ -240,7 +240,7 @@ static void highscore_write(const high_score scores[], size_t sz)
  */
 static void display_scores_aux(const high_score scores[], int from, int to, int highlight)
 {
-	char ch;
+	struct keypress ch;
 
 	int j, k, n, place;
 	int count;
@@ -357,7 +357,7 @@ static void display_scores_aux(const high_score scores[], int from, int to, int 
 		prt("", 23, 0);
 
 		/* Hack -- notice Escape */
-		if (ch == ESCAPE) break;
+		if (ch.code == ESCAPE) break;
 	}
 
 	return;

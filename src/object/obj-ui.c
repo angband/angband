@@ -593,7 +593,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 	int px = p_ptr->px;
 	unsigned char cmdkey = cmd_lookup_key(cmd);
 
-	ui_event which;
+	struct keypress which;
 
 	int j, k;
 
@@ -915,10 +915,10 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 
 
 		/* Get a key */
-		which = inkey_ex();
+		which = inkey();
 
 		/* Parse it */
-		switch (which.key)
+		switch (which.code)
 		{
 			case ESCAPE:
 			{
@@ -1038,7 +1038,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 			case '7': case '8': case '9':
 			{
 				/* Look up the tag */
-				if (!get_tag(&k, which.key, cmd, quiver_tags))
+				if (!get_tag(&k, which.code, cmd, quiver_tags))
 				{
 					bell("Illegal object choice (tag)!");
 					break;
@@ -1141,15 +1141,15 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 				bool verify;
 
 				/* Note verify */
-				verify = (isupper((unsigned char)which.key) ? TRUE : FALSE);
+				verify = (isupper((unsigned char)which.code) ? TRUE : FALSE);
 
 				/* Lowercase */
-				which.key = tolower((unsigned char)which.key);
+				which.code = tolower((unsigned char)which.code);
 
 				/* Convert letter to inventory index */
 				if (p_ptr->command_wrk == USE_INVEN)
 				{
-					k = label_to_inven(which.key);
+					k = label_to_inven(which.code);
 
 					if (k < 0)
 					{
@@ -1161,7 +1161,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 				/* Convert letter to equipment index */
 				else if (p_ptr->command_wrk == USE_EQUIP)
 				{
-					k = label_to_equip(which.key);
+					k = label_to_equip(which.code);
 
 					if (k < 0)
 					{
@@ -1173,7 +1173,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 				/* Convert letter to floor index */
 				else
 				{
-					k = (islower((unsigned char)which.key) ? A2I((unsigned char)which.key) : -1);
+					k = (islower((unsigned char)which.code) ? A2I((unsigned char)which.code) : -1);
 
 					if (k < 0 || k >= floor_num)
 					{

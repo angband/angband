@@ -602,7 +602,7 @@ static void target_display_help(bool monster, bool free)
  *
  * This function must handle blindness/hallucination.
  */
-static ui_event target_set_interactive_aux(int y, int x, int mode)
+static struct keypress target_set_interactive_aux(int y, int x, int mode)
 {
 	s16b this_o_idx = 0, next_o_idx = 0;
 
@@ -617,7 +617,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 	int floor_list[MAX_FLOOR_STACK];
 	int floor_num;
 
-	ui_event query;
+	struct keypress query;
 
 	char out_val[256];
 
@@ -630,7 +630,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 	while (1)
 	{
 		/* Paranoia */
-		query.key = ' ';
+		query.code = ' ';
 
 		/* Assume boring */
 		boring = TRUE;
@@ -658,25 +658,21 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 
 			/* Display a message */
 			if (p_ptr->wizard)
-			{
-				strnfmt(out_val, sizeof(out_val),
-						"%s%s%s%s, %s (%d:%d).", s1, s2, s3, name, coords, y, x);
-			}
+				strnfmt(out_val, sizeof(out_val), "%s%s%s%s, %s (%d:%d).",
+						s1, s2, s3, name, coords, y, x);
 			else
-			{
-				strnfmt(out_val, sizeof(out_val),
-						"%s%s%s%s, %s.", s1, s2, s3, name, coords);
-			}
+				strnfmt(out_val, sizeof(out_val), "%s%s%s%s, %s.",
+						s1, s2, s3, name, coords);
 
 			prt(out_val, 0, 0);
 			move_cursor_relative(y, x);
-			query = inkey_ex();
+			query = inkey();
 
 			/* Stop on everything but "return" */
-			if ((query.key != '\n') && (query.key != '\r')) break;
+			if (query.code == '\n' || query.code == '\r')
+				continue;
 
-			/* Repeat forever */
-			continue;
+			return query;
 		}
 
 		/* Actual monsters */
@@ -720,7 +716,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 						screen_roff(m_ptr->r_idx);
 
 						/* Command */
-						query = inkey_ex();
+						query = inkey();
 
 						/* Load screen */
 						screen_load();
@@ -754,28 +750,27 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 						move_cursor_relative(y, x);
 
 						/* Command */
-						query = inkey_ex();
+						query = inkey();
 					}
 
 					/* Normal commands */
-					if (query.key != 'r') break;
-
-					/* Toggle recall */
-					recall = !recall;
+					if (query.code == 'r')
+						recall = !recall;
+					else
+						break;
 				}
 
 				/* Stop on everything but "return"/"space" */
-				if ((query.key != '\n') && (query.key != '\r') && (query.key != ' ')) break;
+				if (query.code != '\n' && query.code != '\r' && query.code != ' ')
+					break;
 
 				/* Sometimes stop at "space" key */
-				if ((query.key == ' ') && !(mode & (TARGET_LOOK))) break;
+				if ((query.code == ' ') && !(mode & (TARGET_LOOK))) break;
 
-				/* Change the intro */
-				s1 = "It is ";
-
-				/* Hack -- take account of gender */
+				/* Take account of gender */
 				if (rf_has(r_ptr->flags, RF_FEMALE)) s1 = "She is ";
 				else if (rf_has(r_ptr->flags, RF_MALE)) s1 = "He is ";
+				else s1 = "It is ";
 
 				/* Use a preposition */
 				s2 = "carrying ";
@@ -812,13 +807,13 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 
 					prt(out_val, 0, 0);
 					move_cursor_relative(y, x);
-					query = inkey_ex();
+					query = inkey();
 
 					/* Stop on everything but "return"/"space" */
-					if ((query.key != '\n') && (query.key != '\r') && (query.key != ' ')) break;
+					if ((query.code != '\n') && (query.code != '\r') && (query.code != ' ')) break;
 
 					/* Sometimes stop at "space" key */
-					if ((query.key == ' ') && !(mode & (TARGET_LOOK))) break;
+					if ((query.code == ' ') && !(mode & (TARGET_LOOK))) break;
 
 					/* Change the intro */
 					s2 = "also carrying ";
@@ -869,10 +864,10 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 
 				prt(out_val, 0, 0);
 				move_cursor_relative(y, x);
-				query = inkey_ex();
+				query = inkey();
 
 				/* Display objects */
-				if (query.key == 'r')
+				if (query.code == 'r')
 				{
 					int rdone = 0;
 					int pos;
@@ -886,12 +881,12 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 
 						/* Describe the pile */
 						prt(out_val, 0, 0);
-						query = inkey_ex();
+						query = inkey();
 
 						/* Load screen */
 						screen_load();
 
-						pos = query.key - 'a';
+						pos = query.code - 'a';
 						if (0 <= pos && pos < floor_num)
 						{
 							track_object(-floor_list[pos]);
@@ -940,13 +935,13 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 
 				prt(out_val, 0, 0);
 				move_cursor_relative(y, x);
-				query = inkey_ex();
+				query = inkey();
 
 				/* Stop on everything but "return"/"space" */
-				if ((query.key != '\n') && (query.key != '\r') && (query.key != ' ')) break;
+				if ((query.code != '\n') && (query.code != '\r') && (query.code != ' ')) break;
 
 				/* Sometimes stop at "space" key */
-				if ((query.key == ' ') && !(mode & (TARGET_LOOK))) break;
+				if ((query.code == ' ') && !(mode & (TARGET_LOOK))) break;
 
 				/* Change the intro */
 				s1 = "It is ";
@@ -1008,14 +1003,14 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 
 			prt(out_val, 0, 0);
 			move_cursor_relative(y, x);
-			query = inkey_ex();
+			query = inkey();
 
 			/* Stop on everything but "return"/"space" */
-			if ((query.key != '\n') && (query.key != '\r') && (query.key != ' ')) break;
+			if ((query.code != '\n') && (query.code != '\r') && (query.code != ' ')) break;
 		}
 
 		/* Stop on everything but "return" */
-		if ((query.key != '\n') && (query.key != '\r')) break;
+		if ((query.code != '\n') && (query.code != '\r')) break;
 	}
 
 	/* Keep going */
@@ -1139,7 +1134,7 @@ bool target_set_interactive(int mode, int x, int y)
 	bool flag = TRUE;
 	bool help = FALSE;
 
-	ui_event query;
+	struct keypress query;
 
 	/* If we haven't been given an initial location, start on the
 	   player. */
@@ -1209,21 +1204,8 @@ bool target_set_interactive(int mode, int x, int y)
 			d = 0;
 
 
-			/* If we click, move the target location to the click and
-			   switch to "free targetting" mode by unsetting 'flag'.
-			   This means we get some info about wherever we've picked. */
-			if (query.type == EVT_MOUSE)
-			{
-				x = KEY_GRID_X(query);
-				y = KEY_GRID_Y(query);
-				flag = FALSE;
-				break;
-			}
-			else
-			{
-
 			/* Analyze */
-			switch (query.key)
+			switch (query.code)
 			{
 				case ESCAPE:
 				case 'q':
@@ -1318,15 +1300,13 @@ bool target_set_interactive(int mode, int x, int y)
 				default:
 				{
 					/* Extract direction */
-					d = target_dir(query.key);
+					d = target_dir(query);
 
 					/* Oops */
 					if (!d) bell("Illegal command for target mode!");
 
 					break;
 				}
-			}
-
 			}
 
 			/* Hack -- move around */
@@ -1389,46 +1369,8 @@ bool target_set_interactive(int mode, int x, int y)
 			/* Assume no direction */
 			d = 0;
 
-			if (query.type == EVT_MOUSE)
-			{
-				/* We only target if we click somewhere where the cursor
-				   is already (i.e. a double-click without a time limit) */
-				if (KEY_GRID_X(query) == x && KEY_GRID_Y(query) == y)
-				{
-					/* Make an attempt to target the monster on the given
-					   square rather than the square itself (it seems this
-					   is the more likely intention of clicking on a 
-					   monster). */
-					int m_idx = cave->m_idx[y][x];
-
-					if ((m_idx > 0) && target_able(m_idx))
-					{
-						health_track(p_ptr, m_idx);
-						target_set_monster(m_idx);
-					}
-					else
-					{
-						/* There is no monster, or it isn't targettable,
-						   so target the location instead. */
-						target_set_location(y, x);
-					}
-
-					done = TRUE;
-				}
-				else
-				{
-					/* Just move the cursor for now - another click will
-					   target. */
-					x = KEY_GRID_X(query);
-					y = KEY_GRID_Y(query);
-				}
-				break;
-			}
-			else
-			{
-
 			/* Analyze the keypress */
-			switch (query.key)
+			switch (query.code)
 			{
 				case ESCAPE:
 				case 'q':
@@ -1523,15 +1465,13 @@ bool target_set_interactive(int mode, int x, int y)
 				default:
 				{
 					/* Extract a direction */
-					d = target_dir(query.key);
+					d = target_dir(query);
 
 					/* Oops */
 					if (!d) bell("Illegal command for target mode!");
 
 					break;
 				}
-			}
-
 			}
 
 			/* Handle "direction" */

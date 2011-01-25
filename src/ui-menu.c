@@ -342,13 +342,13 @@ static bool is_valid_row(menu_type *menu, int cursor)
  * Return a new position in the menu based on the key
  * pressed and the flags and various handler functions.
  */
-static int get_cursor_key(menu_type *menu, int top, char key)
+static int get_cursor_key(menu_type *menu, int top, struct keypress key)
 {
 	int i;
 	int n = menu->filter_list ? menu->filter_count : menu->count;
 
 	if (menu->flags & MN_CASELESS_TAGS)
-		key = toupper((unsigned char) key);
+		key.code = toupper((unsigned char) key.code);
 
 	if (menu->flags & MN_NO_TAGS)
 	{
@@ -363,7 +363,7 @@ static int get_cursor_key(menu_type *menu, int top, char key)
 			if ((menu->flags & MN_CASELESS_TAGS) && c)
 				c = toupper((unsigned char) c);
 
-			if (c && c == key)
+			if (c && c == (char)key.code)
 				return i + menu->top;
 		}
 	}
@@ -376,7 +376,7 @@ static int get_cursor_key(menu_type *menu, int top, char key)
 			if (menu->flags & MN_CASELESS_TAGS)
 				c = toupper((unsigned char) c);
 
-			if (c == key)
+			if (c == (char)key.code)
 				return i;
 		}
 	}
@@ -390,7 +390,7 @@ static int get_cursor_key(menu_type *menu, int top, char key)
 			if ((menu->flags & MN_CASELESS_TAGS) && c)
 				c = toupper((unsigned char) c);
 
-			if (c && c == key)
+			if (c && c == (char)key.code)
 				return i;
 		}
 	}
@@ -549,7 +549,7 @@ bool menu_handle_keypress(menu_type *menu, const ui_event *in,
 	}
 
 	/* Escape stops us here */
-	else if (in->key == ESCAPE)
+	else if (in->key.code == ESCAPE)
 		out->type = EVT_ESCAPE;
 
 	/* Menus with no rows can't be navigated or used, so eat all keypresses */
@@ -557,7 +557,7 @@ bool menu_handle_keypress(menu_type *menu, const ui_event *in,
 		eat = TRUE;
 
 	/* Try existing, known keys */
-	else if (in->key == ' ')
+	else if (in->key.code == ' ')
 	{
 		int rows = menu->active.page_rows;
 		int total = count;
@@ -577,7 +577,7 @@ bool menu_handle_keypress(menu_type *menu, const ui_event *in,
 		}
 	}
 
-	else if (in->key == '\n' || in->key == '\r')
+	else if (in->key.code == '\n' || in->key.code == '\r')
 		out->type = EVT_SELECT;
 
 	/* Try directional movement */
@@ -638,7 +638,7 @@ ui_event menu_select(menu_type *menu, int notify)
 			ignore = menu_handle_mouse(menu, &in, &out);
 		} else if (in.type == EVT_KBRD) {
 			if (!no_act && menu->cmd_keys &&
-					strchr(menu->cmd_keys, in.key) &&
+					strchr(menu->cmd_keys, (char)in.key.code) &&
 					menu_handle_action(menu, &in))
 				continue;
 
