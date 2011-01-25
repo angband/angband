@@ -220,10 +220,10 @@ C:0:g
 
 ##### System Specific Subfiles #####
 
-?:[EQU $SYS mac]
-%:pref-run.prf
+#?:[EQU $SYS mac]
+#%:pref-run.prf
 
-?:[EQU $SYS sdl]
-%:pref-run.prf
+#?:[EQU $SYS sdl]
+#%:pref-run.prf
 
 ?:1
