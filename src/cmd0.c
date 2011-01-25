@@ -541,12 +541,6 @@ static ui_event textui_get_command(void)
 						ke.key.code = KTRL(ke.key.code);
 					break;
 				}
-
-				/* XXXmacro these should be removed in lieu of keymaps */
-				case ARROW_DOWN:    ke.key.code = '2'; break;
-				case ARROW_LEFT:    ke.key.code = '4'; break;
-				case ARROW_RIGHT:   ke.key.code = '6'; break;
-				case ARROW_UP:      ke.key.code = '8'; break;
 			}
 
 			/* Find any relevant keymap */
