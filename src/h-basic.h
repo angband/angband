@@ -255,15 +255,12 @@ typedef int errr;
 
 /*
  * Note that all "index" values must be "lowercase letters", while
- * all "digits" must be "digits".  Control characters can be made
- * from any legal characters.  XXX XXX XXX
+ * all "digits" must be "digits".
  */
 #define A2I(X)	((X) - 'a')
 #define I2A(X)	((X) + 'a')
 #define D2I(X)	((X) - '0')
 #define I2D(X)	((X) + '0')
-#define KTRL(X)	((X) & 0x1F)
-#define UN_KTRL(X)	((X) + 64)
 
 #define WITH_STATS
 

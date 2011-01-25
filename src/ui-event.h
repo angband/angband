@@ -33,6 +33,32 @@ typedef enum
 
 
 /**
+ * If keycode you're trying to apply control to is between 0x40-0x5F
+ * inclusive, then you should take 0x40 from the keycode and leave
+ * KC_MOD_CONTROL unset.  Otherwise, leave the keycode alone and set
+ * KC_MOD_CONTROL in mods.
+ *
+ * This macro returns TRUE in the former case and FALSE in the latter.
+ */
+#define ENCODE_KTRL(v) \
+	(((v) >= 0x40 && (v) <= 0x5F) ? TRUE : FALSE)
+
+
+/**
+ * Given a character X, turn it into a control character.
+ */
+#define KTRL(X) \
+	((X) & 0x1F)
+
+
+/**
+ * Given a control character X, turn it into its uppercase ASCII equivalent.
+ */
+#define UN_KTRL(X) \
+	((X) + 64)
+
+
+/**
  * Keyset mappings for various keys.
  */
 #define ESCAPE        0x1B

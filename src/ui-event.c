@@ -107,71 +107,107 @@ static int dehex(char c)
 void keypress_from_text(struct keypress *buf, size_t len, const char *str)
 {
 	size_t cur = 0;
+	byte mods = 0;
 
 	memset(buf, 0, len * sizeof *buf);
+
+#define STORE(buffer, pos, mod, cod) \
+	{ \
+		int p = (pos); \
+		keycode_t c = (cod); \
+		byte m = (mod); \
+\
+		if ((m & KC_MOD_CONTROL) && ENCODE_KTRL(c)) { \
+			m &= ~KC_MOD_CONTROL; \
+			c = KTRL(c); \
+		} \
+\
+		buffer[p].mods = m; \
+		buffer[p].code = c; \
+	}
 
 	/* Analyze the "ascii" string */
 	while (*str && cur < len)
 	{
 		buf[cur].type = EVT_KBRD;
 
-		/* Backslash codes */
 		if (*str == '\\')
 		{
 			str++;
 			if (*str == '\0') break;
 
-			switch (*str)
-			{
+			switch (*str) {
 				/* Hex-mode */
-				case 'x':
-				{
+				case 'x': {
 					if (isxdigit((unsigned char)(*(str + 1))) &&
-					    isxdigit((unsigned char)(*(str + 2))))
-					{
-						buf[cur].code = 16 * dehex(*++str);
-						buf[cur].code += 16 * dehex(*++str);
-						cur++;
-					}
-					else
-					{
-						/* HACK - Invalid hex number */
-						buf[cur++].code = '?';
+							isxdigit((unsigned char)(*(str + 2)))) {
+						/* store a nice hex digit */
+						STORE(buf, cur++, mods,
+								16 * dehex(*++str) + 16 * dehex(*++str));
+					} else {
+						/* invalids get ignored */
+						STORE(buf, cur++, mods, '?');
 					}
 					break;
 				}
 
-				case 'e': buf[cur++].code = ESCAPE; break;
-				case 's': buf[cur++].code = ' '; break;
-				case 'b': buf[cur++].code = '\b'; break;
-				case 'n': buf[cur++].code = '\n'; break;
-				case 'r': buf[cur++].code = '\r'; break;
-				case 't': buf[cur++].code = '\t'; break;
-				case 'a': buf[cur++].code = '\a'; break;
-				case '\\': buf[cur++].code = '\\'; break;
-				case '^': buf[cur++].code = '^'; break;
-				default: buf[cur++].code = *str; break;
+				case 'a': STORE(buf, cur++, mods, '\a'); break;
+				case '\\': STORE(buf, cur++, mods, '\\'); break;
+				case '^': STORE(buf, cur++, mods, '^'); break;
+				case '[': STORE(buf, cur++, mods, '['); break;
+				default: STORE(buf, cur++, mods, *str); break;
 			}
+
+			mods = 0;
 
 			/* Skip the final char */
 			str++;
-		}
+		} else if (*str == '[') {
+			/* parse non-ascii keycodes */
+			char *end;
+			keycode_t kc;
 
-		/* Normal Control codes */
-		else if (*str == '^')
-		{
+			if (*str++ == 0) return;
+
+			end = strchr(str, (unsigned char) ']');
+			if (!end) return;
+
+			kc = keycode_find_code(str, (size_t) (end - str));
+			if (!kc) return;
+
+			STORE(buf, cur++, mods, kc);
+			mods = 0;
+			str = end + 1;
+		} else if (*str == '{') {
+			/* Specify modifier for next character */
 			str++;
-			if (*str == '\0') break;
+			if (*str == '\0' || !strchr(str, (unsigned char) '}'))
+				return;
 
-			buf[cur].code = KTRL(*str);
-			buf[cur++].mods = KC_MOD_CONTROL;
+			/* analyze modifier chars */
+			while (*str != '}') {
+				switch (*str) {
+					case '^': mods |= KC_MOD_CONTROL; break;
+					case 'S': mods |= KC_MOD_SHIFT; break;
+					case 'A': mods |= KC_MOD_ALT; break;
+					case 'M': mods |= KC_MOD_META; break;
+					case 'K': mods |= KC_MOD_KEYPAD; break;
+					default:
+						return;
+				}
+
+				str++;
+			}
+
+			/* skip ending bracket */
 			str++;
-		}
-
-		/* Normal chars */
-		else
-		{
-			buf[cur++].code = *str++;
+		} else if (*str == '^') {
+			mods |= KC_MOD_CONTROL;
+			str++;
+		} else {
+			/* everything else */
+			STORE(buf, cur++, mods, *str++);
+			mods = 0;
 		}
 	}
 
@@ -190,25 +226,46 @@ void keypress_to_text(char *buf, size_t len, const struct keypress *src)
 
 	while (src[cur].type == EVT_KBRD) {
 		keycode_t i = src[cur].code;
+		int mods = src[cur].mods;
+		const char *desc = keycode_find_desc(i);
 
-		switch (i) {
-			case ESCAPE: strnfcat(buf, len, &end, "\e"); break;
-			case ' ':    strnfcat(buf, len, &end, " "); break;
-			case '\b': strnfcat(buf, len, &end, "\b"); break;
-			case '\t': strnfcat(buf, len, &end, "\t"); break;
-			case '\a': strnfcat(buf, len, &end, "\a"); break;
-			case '\n': strnfcat(buf, len, &end, "\n"); break;
-			case '\r': strnfcat(buf, len, &end, "\r"); break;
-			case '\\': strnfcat(buf, len, &end, "\\"); break;
-			case '^': strnfcat(buf, len, &end, "\\^"); break;
-			default: {
-				if (i < 32)
-					strnfcat(buf, len, &end, "^%c", UN_KTRL(i));
-				else if (i < 127)
-					strnfcat(buf, len, &end, "%c", i);
-				else
-					strnfcat(buf, len, &end, "\\x%02x", (int)i);
-				break;
+		/* un-ktrl control characters if they don't have a description */
+		/* this is so that Tab (^I) doesn't get turned into ^I but gets
+		 * displayed as [Tab] */
+		if (i < 0x20 && !desc) {
+			mods |= KC_MOD_CONTROL;
+			i = UN_KTRL(i);
+		}
+
+		if (mods) {
+			if (mods & KC_MOD_CONTROL && !(mods & ~KC_MOD_CONTROL)) {
+				strnfcat(buf, len, &end, "^");			
+			} else {
+				strnfcat(buf, len, &end, "{");
+				if (mods & KC_MOD_CONTROL) strnfcat(buf, len, &end, "^");
+				if (mods & KC_MOD_SHIFT) strnfcat(buf, len, &end, "S");
+				if (mods & KC_MOD_ALT) strnfcat(buf, len, &end, "A");
+				if (mods & KC_MOD_META) strnfcat(buf, len, &end, "M");
+				if (mods & KC_MOD_KEYPAD) strnfcat(buf, len, &end, "K");
+				strnfcat(buf, len, &end, "}");
+			}
+		}
+
+		if (desc) {
+			strnfcat(buf, len, &end, "[%s]", desc);
+		} else {
+			switch (i) {
+				case '\a': strnfcat(buf, len, &end, "\a"); break;
+				case '\\': strnfcat(buf, len, &end, "\\"); break;
+				case '^': strnfcat(buf, len, &end, "\\^"); break;
+				case '[': strnfcat(buf, len, &end, "\\["); break;
+				default: {
+					if (i < 127)
+						strnfcat(buf, len, &end, "%c", i);
+					else
+						strnfcat(buf, len, &end, "\\x%02x", (int)i);
+					break;
+				}
 			}
 		}
 
