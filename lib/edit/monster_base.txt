@@ -41,7 +41,6 @@ F:OPEN_DOOR | BASH_DOOR | TAKE_ITEM
 F:IM_POIS | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 D:Angel
-# Uniques don't have NO_CONF or NO_SLEEP
 
 N:3:ant
 G:a
@@ -59,10 +58,10 @@ G:B
 F:ANIMAL
 D:Bird
 
-N:6:feline
-G:f
+N:9:canine
+G:C
 F:ANIMAL
-D:Feline (Cat)
+D:Canine (Dog)
 
 N:7:centipede
 G:c
@@ -77,18 +76,13 @@ F:BASH_DOOR
 F:IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 D:Creeping Coins
 
-N:9:canine
-G:C
-F:ANIMAL
-D:Canine (Dog)
-
 N:10:dragon
 G:d
 F:DRAGON | EVIL
 F:FORCE_SLEEP
 D:Dragon
 
-N:11:dragonfly
+N:11:dragon fly
 G:F
 F:ANIMAL | WEIRD_MIND
 F:RAND_50 | BASH_DOOR
@@ -106,13 +100,17 @@ F:IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP
 F:MATERIAL
 D:Elemental
 
+N:6:feline
+G:f
+F:ANIMAL
+D:Feline (Cat)
+
 N:14:ghost
 G:G
-F:UNDEAD | EVIL | INVISIBLE
+F:UNDEAD | EVIL | INVISIBLE | COLD-BLOOD
 F:PASS_WALL
 F:NO_CONF | NO_SLEEP
 D:Ghost
-# (almost all are cold-blood)
 
 N:15:giant
 G:P
@@ -127,15 +125,6 @@ F:EMPTY_MIND
 F:IM_ELEC | NO_FEAR | NO_CONF | NO_SLEEP
 F:MATERIAL
 D:Golem
-
-N:17:major demon
-G:U
-F:DEMON | EVIL
-F:ONLY_ITEM
-F:OPEN_DOOR | BASH_DOOR
-F:NO_CONF | NO_SLEEP
-F:FORCE_SLEEP
-D:Major Demon
 
 N:18:humanoid
 G:h
@@ -156,12 +145,9 @@ D:Hydra
 
 N:21:icky thing
 G:i
-F:EMPTY_MIND
 F:RAND_50
 F:ICKY
 D:Icky Thing
-# All have empty mind except blue icky thing
-# Some also have RAND_25
 
 N:22:insect
 G:I
@@ -189,12 +175,6 @@ F:OPEN_DOOR | BASH_DOOR
 F:IM_POIS
 D:Kobold
 
-N:26:minor demon
-G:u
-F:DEMON | EVIL
-F:IM_FIRE
-D:Minor Demon
-
 N:27:lich
 G:L
 F:UNDEAD | EVIL | COLD_BLOOD | SMART
@@ -218,6 +198,15 @@ F:NO_FEAR | NO_CONF | NO_SLEEP
 F:CHAR_CLEAR | ATTR_CLEAR
 D:Lurker
 
+N:17:major demon
+G:U
+F:DEMON | EVIL
+F:ONLY_ITEM
+F:OPEN_DOOR | BASH_DOOR
+F:NO_CONF | NO_SLEEP
+F:FORCE_SLEEP
+D:Major Demon
+
 N:30:mimic
 G:?
 F:COLD_BLOOD | EMPTY_MIND
@@ -226,6 +215,12 @@ F:NO_FEAR | NO_CONF | NO_SLEEP
 F:CHAR_MULTI | FORCE_SLEEP
 S:BLIND | CAUSE_2 | CONF | SCARE
 D:Mimic
+
+N:26:minor demon
+G:u
+F:DEMON | EVIL
+F:IM_FIRE
+D:Minor Demon
 
 N:31:mold
 G:m
@@ -256,7 +251,6 @@ D:Ogre
 N:35:orc
 G:o
 F:MALE | ORC | EVIL
-F:DROP_20
 F:OPEN_DOOR | BASH_DOOR
 D:Orc
 
@@ -335,13 +329,8 @@ D:Vortex
 
 N:48:worm
 G:w
-F:ANIMAL | WEIRD_MIND | MULTIPLY | STUPID
-F:RAND_25 | RAND_50
-F:HURT_LIGHT | NO_FEAR
+F:ANIMAL
 D:Worm/Worm Mass
-# Red has EMPTY_MIND instead of WEIRD_MIND
-# Wereworm has almost none of these flags. Ditto Purple worm.
-# Disenchanter worm mass doesn't have RAND_25
 
 N:49:wraith
 G:W
