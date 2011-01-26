@@ -253,9 +253,8 @@ static ui_event inkey_aux(int scan_cutoff)
  * Mega-Hack -- special "inkey_next" pointer.  XXX XXX XXX
  *
  * This special pointer allows a sequence of keys to be "inserted" into
- * the stream of keys returned by "inkey()".  This key sequence will not
- * trigger any macros, and cannot be bypassed by the Borg.  It is used
- * in Angband to handle "keymaps".
+ * the stream of keys returned by "inkey()".  This key sequence cannot be
+ * bypassed by the Borg.  We use it to implement keymaps.
  */
 struct keypress *inkey_next = NULL;
 
@@ -282,40 +281,21 @@ struct keypress (*inkey_hack)(int flush_first) = NULL;
  * before this function returns.  Thus they function just like normal
  * parameters, except that most calls to this function can ignore them.
  *
- * If "inkey_xtra" is TRUE, then all pending keypresses will be flushed,
- * and any macro processing in progress will be aborted.  This flag is
- * set by the "flush()" function, which does not actually flush anything
- * itself, but rather, triggers delayed input flushing via "inkey_xtra".
+ * If "inkey_xtra" is TRUE, then all pending keypresses will be flushed.
+ * This is set by flush(), which doesn't actually flush anything itself
+ * but uses that flag to trigger delayed flushing.
  *
  * If "inkey_scan" is TRUE, then we will immediately return "zero" if no
  * keypress is available, instead of waiting for a keypress.
  *
- * If "inkey_flag" is TRUE, then we will assume that we are waiting for a
- * normal command, and we will only show the cursor if "OPT(highlight_player)" is
- * TRUE (or if the player is in a store), instead of always showing the
- * cursor.  The various "main-xxx.c" files should avoid saving the game
- * in response to a "menu item" request unless "inkey_flag" is TRUE, to
- * prevent savefile corruption.
+ * If "inkey_flag" is TRUE, then we are waiting for a command in the main
+ * map interface, and we shouldn't show a cursor.
  *
  * If we are waiting for a keypress, and no keypress is ready, then we will
  * refresh (once) the window which was active when this function was called.
  *
  * Note that "back-quote" is automatically converted into "escape" for
- * convenience on machines with no "escape" key.  This is done after the
- * macro matching, so the user can still make a macro for "backquote".
- *
- * Note the special handling of "ascii 30" (ctrl-caret, aka ctrl-shift-six)
- * and "ascii 31" (ctrl-underscore, aka ctrl-shift-minus), which are used to
- * provide support for simple keyboard "macros".  These keys are so strange
- * that their loss as normal keys will probably be noticed by nobody.  The
- * "ascii 30" key is used to indicate the "end" of a macro action, which
- * allows recursive macros to be avoided.  The "ascii 31" key is used by
- * some of the "main-xxx.c" files to introduce macro trigger sequences.
- *
- * Hack -- we use "ascii 29" (ctrl-right-bracket) as a special "magic" key,
- * which can be used to give a variety of "sub-commands" which can be used
- * any time.  These sub-commands could include commands to take a picture of
- * the current screen, to start/stop recording a macro action, etc.
+ * convenience on machines with no "escape" key.
  *
  * If "angband_term[0]" is not active, we will make it active during this
  * function, so that the various "main-xxx.c" files can assume that input
@@ -323,8 +303,6 @@ struct keypress (*inkey_hack)(int flush_first) = NULL;
  *
  * Mega-Hack -- This function is used as the entry point for clearing the
  * "signal_count" variable, and of the "character_saved" variable.
- *
- * Hack -- Note the use of "inkey_next" to allow "keymaps" to be processed.
  *
  * Mega-Hack -- Note the use of "inkey_hack" to allow the "Borg" to steal
  * control of the keyboard from the user.
