@@ -268,7 +268,7 @@ struct keypress *inkey_next = NULL;
  * This special function hook allows the "Borg" (see elsewhere) to take
  * control of the "inkey()" function, and substitute in fake keypresses.
  */
-char (*inkey_hack)(int flush_first) = NULL;
+struct keypress (*inkey_hack)(int flush_first) = NULL;
 
 #endif /* ALLOW_BORG */
 
@@ -448,14 +448,9 @@ ui_event inkey_ex(void)
 			}
 		}
 
-		switch (ke.key.code) {
-			/* XXXmacro We strip 29 and 30 for historical reasons */
-			case 29:
-			case 30: ke.type = EVT_NONE; continue;
-
-			/* Treat back-quote as escape */
-			case '`': ke.key.code = ESCAPE; break;
-		}
+		/* Treat back-quote as escape */
+		if (ke.key.code == '`')
+			ke.key.code = ESCAPE;
 	}
 
 
