@@ -341,8 +341,6 @@ static void do_cmd_options_win(const char *name, int row)
 
 /*** Interact with macros and keymaps ***/
 
-#ifdef ALLOW_MACROS
-
 /*
  * Current (or recent) macro action
  */
@@ -545,8 +543,6 @@ static void do_cmd_macros(const char *title, int row)
 
 	screen_load();
 }
-
-#endif /* ALLOW_MACROS */
 
 
 
@@ -1478,11 +1474,7 @@ static menu_action option_actions[] =
 	{ 0, 'l', "Load a user pref file", options_load_pref_file },
 	{ 0, 'o', "Save options", do_dump_options }, 
 	{0, 0, 0, 0}, /* Interact with */	
-
-#ifdef ALLOW_MACROS
 	{ 0, 'm', "Interact with macros (advanced)", do_cmd_macros },
-#endif /* ALLOW_MACROS */
-
 	{ 0, 'v', "Interact with visuals (advanced)", do_cmd_visuals },
 
 #ifdef ALLOW_COLORS

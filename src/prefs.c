@@ -200,9 +200,7 @@ void option_dump(ang_file *fff)
 		}
 	}
 
-#ifdef ALLOW_MACROS
 	keymap_dump(fff);
-#endif
 }
 
 
