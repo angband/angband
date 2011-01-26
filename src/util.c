@@ -317,14 +317,21 @@ ui_event inkey_ex(void)
 
 	term *old = Term;
 
+	/* Delayed flush */
+	if (inkey_xtra) {
+		Term_flush();
+		inkey_next = NULL;
+		inkey_xtra = FALSE;
+	}
+
 	/* Hack -- Use the "inkey_next" pointer */
-	if (inkey_next && inkey_next->code && !inkey_xtra)
+	if (inkey_next && inkey_next->code)
 	{
 		/* Get next character, and advance */
 		ke.key = *inkey_next++;
 
 		/* Cancel the various "global parameters" */
-		inkey_xtra = inkey_flag = FALSE;
+		inkey_flag = FALSE;
 		inkey_scan = 0;
 
 		/* Accept result */
@@ -340,7 +347,7 @@ ui_event inkey_ex(void)
 	if (inkey_hack && ((ke.key = (*inkey_hack)(inkey_xtra)) != 0))
 	{
 		/* Cancel the various "global parameters" */
-		inkey_xtra = inkey_flag = FALSE;
+		inkey_flag = FALSE;
 		inkey_scan = 0;
 		ke.type = EVT_KBRD;
 
@@ -350,20 +357,13 @@ ui_event inkey_ex(void)
 
 #endif /* ALLOW_BORG */
 
-	/* Forget old keypresses XXX */
-	if (inkey_xtra)
-		Term_flush();
-
 
 	/* Get the cursor state */
 	(void)Term_get_cursor(&cursor_state);
 
 	/* Show the cursor if waiting, except sometimes in "command" mode */
 	if (!inkey_scan && (!inkey_flag || character_icky))
-	{
-		/* Show the cursor */
 		(void)Term_set_cursor(TRUE);
-	}
 
 
 	/* Hack -- Activate main screen */
@@ -441,7 +441,7 @@ ui_event inkey_ex(void)
 
 
 	/* Cancel the various "global parameters" */
-	inkey_xtra = inkey_flag = FALSE;
+	inkey_flag = FALSE;
 	inkey_scan = 0;
 
 	/* Return the keypress */
