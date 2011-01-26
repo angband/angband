@@ -877,7 +877,7 @@ static enum parser_error parse_prefs_c(struct parser *p)
 	if (d->bypass) return PARSE_ERROR_NONE;
 
 	mode = parser_getint(p, "mode");
-	if (mode < 0 || mode >= KEYMAP_MODES)
+	if (mode < 0 || mode >= KEYMAP_MODE_MAX)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 
 	keypress_from_text(tmp, N_ELEMENTS(tmp), parser_getstr(p, "key"));

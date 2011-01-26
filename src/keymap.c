@@ -2,7 +2,7 @@
  * File: keymap.c
  * Purpose: Keymap handling
  *
- * Copyright (c) 2010 Andi Sidwell
+ * Copyright (c) 2011 Andi Sidwell
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -19,6 +19,22 @@
 #include "keymap.h"
 
 /**
+ * Keymap implementation.
+ *
+ * Keymaps are defined in pref files and map onto the internal game keyset,
+ * which is roughly what you get if you have roguelike keys turned off.
+ *
+ * We store keymaps by pairing triggers with actions; the trigger is a single
+ * keypress and the action is stored as a string of keypresses, terminated
+ * with a keypress with type == EVT_NONE.
+ *
+ * XXX We should note when we read in keymaps that are "official game" keymaps
+ * and ones which are user-defined.  Then we can avoid writing out official
+ * game ones and messing up everyone's pref files with a load of junk.
+ */
+
+
+/**
  * Struct for a keymap.
  */
 struct keymap {
@@ -31,10 +47,8 @@ struct keymap {
 
 /**
  * List of keymaps.
- *
- * XXX the number of keymap listings should be macro'd
  */
-struct keymap *keymaps[2];
+static struct keymap *keymaps[KEYMAP_MODE_MAX];
 
 
 /**
@@ -43,6 +57,7 @@ struct keymap *keymaps[2];
 const struct keypress *keymap_find(int keymap, struct keypress kc)
 {
 	struct keymap *k;
+	assert(keymap >= 0 && keymap < KEYMAP_MODE_MAX);
 	for (k = keymaps[keymap]; k; k = k->next) {
 		if (k->key.code == kc.code && k->key.mods == kc.mods)
 			return k->actions;
@@ -53,7 +68,7 @@ const struct keypress *keymap_find(int keymap, struct keypress kc)
 
 
 /**
- *
+ * Duplicate a given keypress string and return the duplicate.
  */
 static struct keypress *keymap_make(const struct keypress *actions)
 {
@@ -81,6 +96,7 @@ static struct keypress *keymap_make(const struct keypress *actions)
 void keymap_add(int keymap, struct keypress trigger, struct keypress *actions)
 {
 	struct keymap *k = mem_zalloc(sizeof *k);
+	assert(keymap >= 0 && keymap < KEYMAP_MODE_MAX);
 
 	keymap_remove(keymap, trigger);
 
@@ -101,6 +117,7 @@ bool keymap_remove(int keymap, struct keypress trigger)
 {
 	struct keymap *k;
 	struct keymap *prev = NULL;
+	assert(keymap >= 0 && keymap < KEYMAP_MODE_MAX);
 
 	for (k = keymaps[keymap]; k; k = k->next) {
 		if (k->key.code == trigger.code && k->key.mods == trigger.mods) {
@@ -139,7 +156,6 @@ void keymap_free(void)
 }
 
 
-
 /*
  * Append active keymaps to a given file.
  */
@@ -168,6 +184,4 @@ void keymap_dump(ang_file *fff)
 
 		file_putf(fff, "\n");
 	}
-
 }
-

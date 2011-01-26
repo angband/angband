@@ -429,18 +429,6 @@ enum
 };
 
 
-/*
- * Keymap modes.
- */
-enum
-{
-	KEYMAP_MODE_ORIG = 0,
-	KEYMAP_MODE_ROGUE,
-
-	KEYMAP_MODES		/* Total */
-};
-
-
 /**
  * Bolt motion (used in prefs.c, spells1.c)
  */
