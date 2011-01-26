@@ -133,7 +133,6 @@
 /*** Define the basic game types ***/
 
 /*
- * const char * is a shortcut type for "const char *".  XXX
  * errr is an error code
  *
  * A "byte" is an unsigned byte of memory.
