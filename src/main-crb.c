@@ -3593,7 +3593,9 @@ static OSStatus KeyboardCommand ( EventHandlerCallRef inCallRef,
 		GetEventParameter(inEvent, kEventParamKeyMacCharCodes, typeChar, NULL,
 				sizeof(char), NULL, &ch);
 
-		/* Ignore control and shift for "standard" characters */
+		if (mc && MODS_INCLUDE_CONTROL(ch)) mods |= KC_MOD_CONTROL;
+		if (ms && MODS_INCLUDE_SHIFT(ch)) mods |= KC_MOD_SHIFT;
+
 		Term_keypress(ch, mods);
 	}
 

@@ -2464,8 +2464,7 @@ static void sdl_keypress(SDL_keysym keysym)
 	bool mm = (keysym.mod & KMOD_META) > 0;
 	bool kp = FALSE;
 
-	byte mods = (mc ? KC_MOD_CONTROL : 0) | (ms ? KC_MOD_SHIFT : 0) |
-			(ma ? KC_MOD_ALT : 0) | (mm ? KC_MOD_META : 0);
+	byte mods = (ma ? KC_MOD_ALT : 0) | (mm ? KC_MOD_META : 0);
 
 	/* Ignore if main term is not initialized */
 	if (!Term) return;
@@ -2533,11 +2532,19 @@ static void sdl_keypress(SDL_keysym keysym)
 	}
 
 	if (ch) {
-		mods |= (kp ? KC_MOD_KEYPAD : 0);
+		if (kp) mods |= KC_MOD_KEYPAD;
+		if (mc) mods |= KC_MOD_CONTROL;
+		if (ms) mods |= KC_MOD_SHIFT;
 		Term_keypress(ch, mods);
 	} else if (key_code) {
-		/* If the keycode is 7-bit ASCII (except numberpad), and ALT and META
-		 * are not pressed, send it directly to the game */
+		/* If the keycode is 7-bit ASCII (except numberpad) send
+		 * directly to the game. */
+		if (mc && (key_sym == SDLK_TAB || key_sym == SDLK_RETURN ||
+				key_sym == SDLK_BACKSPACE ||
+				MODS_INCLUDE_CONTROL(key_code)))
+			mods |= KC_MOD_CONTROL;
+		if (ms && MODS_INCLUDE_SHIFT(key_code)) mods |= KC_MOD_SHIFT;
+
 		Term_keypress(key_code, mods);
 	}
 }

@@ -4004,8 +4004,10 @@ static void handle_keydown(WPARAM wParam, LPARAM lParam)
 	/* see http://source.winehq.org/source/include/dinput.h#L468 */
 
 	if (ch) {
-		int mods = (mc ? KC_MOD_CONTROL : 0) | (ms ? KC_MOD_SHIFT : 0) |
-				(ma ? KC_MOD_ALT : 0) | (kp ? KC_MOD_KEYPAD : 0) |
+		int mods =
+				(mc && (kp || MODS_INCLUDE_CONTROL(ch)) ? KC_MOD_CONTROL : 0) |
+				(ms && (kp || MODS_INCLUDE_SHIFT(ch)) ? KC_MOD_SHIFT : 0) |
+				(ma ? KC_MOD_ALT : 0) | (kp ? KC_MOD_KEYPAD : 0);
 		Term_keypress(ch, mods);
 	}
 }

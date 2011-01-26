@@ -33,6 +33,32 @@ typedef enum
 
 
 /**
+ * The game assumes that in certain cases, the effect of a modifer key will
+ * be encoded in the keycode itself (e.g. 'A' is shift-'a').  In these cases
+ * (specified below), a keypress' 'mods' value should not encode them also.
+ *
+ * If the character has come from the keypad:
+ *   Include all mods
+ * Else if the character is in the range 0x01-0x1F, and the keypress was
+ * from a key that without modifiers would be in the range 0x40-0x5F:
+ *   CONTROL is encoded in the keycode, and should not be in mods
+ * Else if the character is in the range 0x21-0x2F, 0x3A-0x60 or 0x7B-0x7E:
+ *   SHIFT is often used to produce these should not be encoded in mods
+ *
+ * (All ranges are inclusive.)
+ *
+ * You can use these macros for part of the above conditions.
+ */
+#define MODS_INCLUDE_CONTROL(v) \
+	(((v) >= 0x01 && (v) <= 0x1F) ? FALSE : TRUE)
+
+#define MODS_INCLUDE_SHIFT(v) \
+	((((v) >= 0x21 && (v) <= 0x2F) || \
+			((v) >= 0x3A && (v) <= 0x60) || \
+			((v) >= 0x7B && (v) <= 0x7E)) ? FALSE : TRUE)
+
+
+/**
  * If keycode you're trying to apply control to is between 0x40-0x5F
  * inclusive, then you should take 0x40 from the keycode and leave
  * KC_MOD_CONTROL unset.  Otherwise, leave the keycode alone and set

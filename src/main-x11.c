@@ -1626,8 +1626,7 @@ static int term_windows_open;
  */
 static void react_keypress(XKeyEvent *ev)
 {
-	int i, n;
-	int ch;
+	int n, ch = 0;
 
 	KeySym ks;
 
@@ -1640,8 +1639,7 @@ static void react_keypress(XKeyEvent *ev)
 	int mx = (ev->state & Mod2Mask) ? TRUE : FALSE;
 	int kp = FALSE;
 
-	byte mods = (mc ? KC_MOD_CONTROL : 0) | (ms ? KC_MOD_SHIFT : 0) |
-			(mo ? KC_MOD_ALT : 0) | (mx ? KC_MOD_META : 0);
+	byte mods = (mo ? KC_MOD_ALT : 0) | (mx ? KC_MOD_META : 0);
 
 	/* Check for "normal" keypresses */
 	n = XLookupString(ev, buf, 125, &ks, NULL);
@@ -1650,20 +1648,10 @@ static void react_keypress(XKeyEvent *ev)
 	/* Ignore modifier keys by themselves */
 	if (IsModifierKey(ks)) return;
 
-	/* Normal keys with no modifiers */
-	if (n && !mo && !mx && !IsSpecialKey(ks))
-	{
-		/* Enqueue the normal key(s) */
-		for (i = 0; buf[i]; i++) Term_keypress(buf[i], mods);
-
-		/* All done */
-		return;
-	}
-
 	switch (ks) {
 		case XK_BackSpace: ch = KC_BACKSPACE; break;
-		case XK_Tab: ch = '\t'; break;
-		case XK_Return: ch = '\n'; break;
+		case XK_Tab: ch = KC_TAB; break;
+		case XK_Return: ch = KC_ENTER; break;
 		case XK_Escape: ch = ESCAPE; break;
 
 		case XK_Delete: ch = KC_DELETE; break;
@@ -1727,12 +1715,20 @@ static void react_keypress(XKeyEvent *ev)
 		case XK_F15: ch = KC_F15; break;
 	}
 
-	mods |= (kp ? KC_MOD_KEYPAD : 0);
+	if (kp) mods |= KC_MOD_KEYPAD;
 
 	if (ch) {
-		/* need to something a tad more advanced than this */
+		if (mc) mods |= KC_MOD_CONTROL;
+		if (ms) mods |= KC_MOD_SHIFT;
 		Term_keypress(ch, mods);
 		return;
+	} else if (n && !IsSpecialKey(ks)) {
+		keycode_t code = buf[0];
+
+		if (mc && MODS_INCLUDE_CONTROL(code)) mods |= KC_MOD_CONTROL;
+		if (ms && MODS_INCLUDE_SHIFT(code)) mods |= KC_MOD_SHIFT;
+
+		Term_keypress(code, mods);
 	}
 }
 

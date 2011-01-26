@@ -1051,8 +1051,8 @@ gboolean keypress_event_handler(GtkWidget *widget, GdkEventKey *event, gpointer 
 			return TRUE;
 
 		case GDK_BackSpace: ch = KC_BACKSPACE; break;
-		case GDK_Tab: ch = '\t'; break;
-		case GDK_Return: ch = '\n'; break;
+		case GDK_Tab: ch = KC_TAB; break;
+		case GDK_Return: ch = KC_RETURN; break;
 		case GDK_Escape: ch = ESCAPE; break;
 		case GDK_Delete: ch = KC_DELETE; break;
 
@@ -1067,16 +1067,10 @@ gboolean keypress_event_handler(GtkWidget *widget, GdkEventKey *event, gpointer 
 		case GDK_Insert: ch = KC_INSERT; break;
 
 		/* keypad */
-		case GDK_KP_0: ch = '0'; kp = TRUE; break;
-		case GDK_KP_1: ch = '1'; kp = TRUE; break;
-		case GDK_KP_2: ch = '2'; kp = TRUE; break;
-		case GDK_KP_3: ch = '3'; kp = TRUE; break;
-		case GDK_KP_4: ch = '4'; kp = TRUE; break;
-		case GDK_KP_5: ch = '5'; kp = TRUE; break;
-		case GDK_KP_6: ch = '6'; kp = TRUE; break;
-		case GDK_KP_7: ch = '7'; kp = TRUE; break;
-		case GDK_KP_8: ch = '8'; kp = TRUE; break;
-		case GDK_KP_9: ch = '9'; kp = TRUE; break;
+		case GDK_KP_0: case GDK_KP_1: case GDK_KP_2:
+		case GDK_KP_3: case GDK_KP_4: case GDK_KP_5:
+		case GDK_KP_6: case GDK_KP_7: case GDK_KP_8:
+		case GDK_KP_9: kp = TRUE; break;
 
 		case GDK_KP_Decimal: ch = '.'; kp = TRUE; break;
 		case GDK_KP_Divide: ch = '/'; kp = TRUE; break;
@@ -1103,23 +1097,22 @@ gboolean keypress_event_handler(GtkWidget *widget, GdkEventKey *event, gpointer 
 		case GDK_F15: ch = KC_F15; break;
 	}
 
-	mods = (mc ? KC_MOD_CONTROL : 0) | (ms ? KC_MOD_SHIFT : 0) |
-			(mo ? KC_MOD_ALT : 0) | (mx ? KC_MOD_META : 0) |
+	mods = (mo ? KC_MOD_ALT : 0) | (mx ? KC_MOD_META : 0) |
 			(kp ? KC_MOD_KEYPAD : 0);
 
 	if (ch) {
+		mods |= (mc ? KC_MOD_CONTROL : 0) | (ms ? KC_MOD_SHIFT : 0);
 		Term_keypress(ch, mods);
-	} else if (event->length) {
-		int i;
+	} else if (event->length == 1) {
+		keycode_t code = event->string[0];
 
-		/* Enqueue GDK's textual representation */
-		for (i = 0; i < event->length; i++)
-			Term_keypress(event->string[i], mods);
+		if (mc && MODS_INCLUDE_CONTROL(code)) mods |= KC_MOD_CONTROL;
+		if (ms && MODS_INCLUDE_SHIFT(code)) mods |= KC_MOD_SHIFT;
 
-		if (!mc)
-			return TRUE; /* Not a control key, so the keypress is handled */
-		else
-			return FALSE; /* Pass the keypress along, so the menus get it */
+		Term_keypress(code, mods);
+
+		/* Control keys get passed along to menus, are not "handled" */
+		return !mc;
 	}
 
 	return TRUE;
