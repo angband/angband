@@ -594,7 +594,7 @@ static void wiz_create_item(void)
  */
 static void wiz_tweak_item(object_type *o_ptr)
 {
-	cptr p;
+	const char * p;
 	char tmp_val[80];
 	int i;
 
@@ -734,14 +734,14 @@ static void wiz_statistics(object_type *o_ptr, int level)
 	int j;
 
 	char ch;
-	cptr quality;
+	const char * quality;
 
 	bool good, great, ismatch, isbetter, isworse;
 
 	object_type *i_ptr;
 	object_type object_type_body;
 
-	cptr q = "Rolls: %ld, Matches: %ld, Better: %ld, Worse: %ld, Other: %ld";
+	const char * q = "Rolls: %ld, Matches: %ld, Better: %ld, Worse: %ld, Other: %ld";
 
 
 	artifact_type *a_ptr = artifact_of(o_ptr);
@@ -753,7 +753,7 @@ static void wiz_statistics(object_type *o_ptr, int level)
 	/* Interact */
 	while (TRUE)
 	{
-		cptr pmt = "Roll for [n]ormal, [g]ood, or [e]xcellent treasure? ";
+		const char * pmt = "Roll for [n]ormal, [g]ood, or [e]xcellent treasure? ";
 
 		/* Display item */
 		wiz_display_item(o_ptr, TRUE);
@@ -983,7 +983,7 @@ static void do_cmd_wiz_play(void)
 
 	char ch;
 
-	cptr q, s;
+	const char *q, *s;
 
 	bool changed = FALSE;
 	bool all = TRUE;

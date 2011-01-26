@@ -294,7 +294,7 @@ void get_font_size(font_info *font)
 	#endif
 }
 
-void draw_text(cairo_surface_t *surface, font_info *font, measurements *actual, int x, int y, int n, byte a, cptr s)
+void draw_text(cairo_surface_t *surface, font_info *font, measurements *actual, int x, int y, int n, byte a, const char * s)
 {
 	cairo_t *cr;
 	
@@ -368,7 +368,7 @@ void get_toy_font_size(font_info *font)
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
 }
-void draw_toy_text(cairo_t *cr, font_info *font, measurements *actual, int x, int y, int n, byte a, cptr s)
+void draw_toy_text(cairo_t *cr, font_info *font, measurements *actual, int x, int y, int n, byte a, const char * s)
 {
 	char str[255];
 	cairo_rectangle_t r;

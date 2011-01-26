@@ -1512,7 +1512,7 @@ static bool build_nest(struct cave *c, int y0, int x0) {
 	int tmp, i;
 	int alloc_obj;
 	s16b what[64];
-	cptr name;
+	const char * name;
 	bool empty = FALSE;
 	int light = FALSE;
 
@@ -1661,7 +1661,7 @@ static bool build_pit(struct cave *c, int y0, int x0) {
 	int i, j, y, x, y1, x1, y2, x2;
 	bool empty = FALSE;
 	int light = FALSE;
-	cptr name;
+	const char * name;
 
 	/* Large room */
 	y1 = y0 - 4;
@@ -1854,9 +1854,9 @@ static bool build_pit(struct cave *c, int y0, int x0) {
 /**
  * Build a vault from its string representation.
  */
-static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cptr data) {
+static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, const char * data) {
 	int dx, dy, x, y;
-	cptr t;
+	const char * t;
 
 	assert(c);
 

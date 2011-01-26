@@ -407,7 +407,7 @@ void ranged_helper(int item, int dir, int range, int shots, ranged_attack attack
 
 		bool fear = FALSE;
 		char m_name[80];
-		cptr note_dies = monster_is_unusual(r_ptr) ? " is destroyed." : " dies.";
+		const char * note_dies = monster_is_unusual(r_ptr) ? " is destroyed." : " dies.";
 
 		struct attack_result result = attack(o_ptr, y, x);
 		int dmg = result.dmg;
@@ -642,7 +642,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[]) {
  */
 void textui_cmd_throw(void) {
 	int item, dir;
-	cptr q, s;
+	const char *q, *s;
 
 	/* Get an item */
 	q = "Throw which item? ";

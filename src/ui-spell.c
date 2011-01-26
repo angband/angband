@@ -335,7 +335,7 @@ void textui_obj_cast(void)
 	int item;
 	int spell;
 
-	cptr verb = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
+	const char * verb = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
 
 	item_tester_hook = obj_can_cast_from;
 	if (!get_item(&item, "Cast from which book? ",

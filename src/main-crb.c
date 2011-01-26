@@ -433,7 +433,7 @@ static OSErr spec_to_path(const FSSpec *spec, char *buf, size_t size)
  * Set creator and filetype of a file specified by POSIX-style pathname.
  * Returns 0 on success, -1 in case of errors.
  */
-static void fsetfileinfo(cptr pathname, u32b fcreator, u32b ftype)
+static void fsetfileinfo(const char * pathname, u32b fcreator, u32b ftype)
 {
 	OSErr err;
 	FSSpec spec;
@@ -556,7 +556,7 @@ static void hibernate()
 /*
  * Display a warning message
  */
-static void mac_warning(cptr warning)
+static void mac_warning(const char * warning)
 {
 	CFStringRef msg;
 	msg = CFStringCreateWithCString(NULL, warning, kTextEncodingUS_ASCII);
@@ -3827,7 +3827,7 @@ static bool CheckEvents(int wait)
 /*
  * Hook to tell the user something important
  */
-static void hook_plog(cptr str)
+static void hook_plog(const char * str)
 {
 	/* Warning message */
 	mac_warning(str);
@@ -3837,7 +3837,7 @@ static void hook_plog(cptr str)
 /*
  * Hook to tell the user something, and then quit
  */
-static void hook_quit(cptr str)
+static void hook_quit(const char * str)
 {
 	/* Warning if needed */
 	if (str) mac_warning(str);

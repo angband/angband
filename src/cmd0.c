@@ -500,7 +500,7 @@ static ui_event_data textui_get_command(void)
 
 	ui_event_data ke = EVENT_EMPTY;
 
-	cptr act = NULL;
+	const char * act = NULL;
 
 
 

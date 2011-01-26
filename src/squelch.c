@@ -173,7 +173,7 @@ int remove_autoinscription(s16b kind)
 }
 
 
-int add_autoinscription(s16b kind, cptr inscription)
+int add_autoinscription(s16b kind, const char * inscription)
 {
 	struct object_kind *k = objkind_byid(kind);
 	if (!k)

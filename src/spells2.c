@@ -123,7 +123,7 @@ void warding_glyph(void)
 /*
  * Array of stat "descriptions"
  */
-static cptr desc_stat_pos[] =
+static const char * desc_stat_pos[] =
 {
 	"strong",
 	"smart",
@@ -137,7 +137,7 @@ static cptr desc_stat_pos[] =
 /*
  * Array of stat "descriptions"
  */
-static cptr desc_stat_neg[] =
+static const char * desc_stat_neg[] =
 {
 	"weak",
 	"stupid",
@@ -1398,7 +1398,7 @@ bool enchant_spell(int num_hit, int num_dam, int num_ac)
 
 	char o_name[80];
 
-	cptr q, s;
+	const char *q, *s;
 
 
 	/* Assume enchant weapon */
@@ -1506,7 +1506,7 @@ bool ident_spell(void)
 
 	object_type *o_ptr;
 
-	cptr q, s;
+	const char *q, *s;
 
 	/* Only un-id'ed items */
 	item_tester_hook = item_tester_unknown;
@@ -1565,7 +1565,7 @@ bool recharge(int num)
 
 	object_type *o_ptr;
 
-	cptr q, s;
+	const char *q, *s;
 
 
 	/* Only accept legal items */
@@ -3238,7 +3238,7 @@ bool brand_ammo(void)
 {
 	int item;
 	object_type *o_ptr;
-	cptr q, s;
+	const char *q, *s;
 	const struct slay *s_ptr;
 	bitflag f[OF_SIZE];
 
@@ -3272,7 +3272,7 @@ bool brand_bolts(void)
 {
 	int item;
 	object_type *o_ptr;
-	cptr q, s;
+	const char *q, *s;
 
 
 	/* Restrict choices to bolts */

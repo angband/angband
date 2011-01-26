@@ -96,7 +96,7 @@ void cnv_stat(int val, char *out_val, size_t out_len)
 /*
  * Print character info at given row, column in a 13 char field
  */
-static void prt_field(cptr info, int row, int col)
+static void prt_field(const char * info, int row, int col)
 {
 	/* Dump 13 spaces to clear */
 	c_put_str(TERM_WHITE, "             ", row, col);
@@ -142,7 +142,7 @@ static void prt_stat(int stat, int row, int col)
  */
 static void prt_title(int row, int col)
 {
-	cptr p;
+	const char * p;
 
 	/* Wizard */
 	if (p_ptr->wizard)
@@ -1647,7 +1647,7 @@ void subwindows_set_flags(u32b *new_flags, size_t n_subwindows)
 /*
  * Hack -- Explain a broken "lib" folder and quit (see below).
  */
-static void init_angband_aux(cptr why)
+static void init_angband_aux(const char * why)
 {
 	quit_fmt("%s\n\n%s", why,
 	         "The 'lib' directory is probably missing or broken.\n"

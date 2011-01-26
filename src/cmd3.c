@@ -230,8 +230,8 @@ void textui_obj_wield(object_type *o_ptr, int item)
 	{
 		if (o_ptr->tval == TV_RING)
 		{
-			cptr q = "Replace which ring? ";
-			cptr s = "Error in obj_wield, please report";
+			const char * q = "Replace which ring? ";
+			const char *s = "Error in obj_wield, please report";
 			item_tester_hook = obj_is_ring;
 			if (!get_item(&slot, q, s, CMD_WIELD, USE_EQUIP)) return;
 		}
@@ -239,8 +239,8 @@ void textui_obj_wield(object_type *o_ptr, int item)
 		if (obj_is_ammo(o_ptr) && !object_similar(&p_ptr->inventory[slot],
 			o_ptr, OSTACK_QUIVER))
 		{
-			cptr q = "Replace which ammunition? ";
-			cptr s = "Error in obj_wield, please report";
+			const char * q = "Replace which ammunition? ";
+			const char *s = "Error in obj_wield, please report";
 			item_tester_hook = obj_is_ammo;
 			if (!get_item(&slot, q, s, CMD_WIELD, USE_EQUIP)) return;
 		}
@@ -414,7 +414,7 @@ void do_cmd_locate(void)
  * The table of "symbol info" -- each entry is a string of the form
  * "X:desc" where "X" is the trigger, and "desc" is the "info".
  */
-static cptr ident_info[] =
+static const char * ident_info[] =
 {
 	" :A dark grid",
 	"!:A potion (or oil)",

@@ -356,7 +356,7 @@ struct _term_data
 {
 	term t;
 
-	cptr s;
+	const char * s;
 
 	HWND w;
 
@@ -533,12 +533,12 @@ static char *ini_file = NULL;
 /*
  * Name of application
  */
-static cptr AppName = VERSION_NAME;
+static const char * AppName = VERSION_NAME;
 
 /*
  * Name of sub-window type
  */
-static cptr AngList = "AngList";
+static const char * AngList = "AngList";
 
 /*
  * The "complex" color values
@@ -675,9 +675,9 @@ static game_command cmd = { CMD_NULL, 0, {{NULL}} };
 /*
  * Hack -- given a pathname, point at the filename
  */
-static cptr extract_file_name(cptr s)
+static const char * extract_file_name(const char * s)
 {
-	cptr p;
+	const char * p;
 
 	/* Start at the end */
 	p = s + strlen(s) - 1;
@@ -754,7 +754,7 @@ static char *analyze_font(char *path, int *wp, int *hp)
 /*
  * Check for existance of a directory
  */
-static bool check_dir(cptr s)
+static bool check_dir(const char * s)
 {
 	int i;
 
@@ -788,7 +788,7 @@ static bool check_dir(cptr s)
 /*
  * Validate a file
  */
-static void validate_file(cptr s)
+static void validate_file(const char * s)
 {
 	/* Verify or fail */
 	if (!file_exists(s))
@@ -799,7 +799,7 @@ static void validate_file(cptr s)
 /*
  * Validate a directory
  */
-static void validate_dir(cptr s)
+static void validate_dir(const char * s)
 {
 	/* Verify or fail */
 	if (!check_dir(s))
@@ -930,7 +930,7 @@ static void term_getsize(term_data *td)
 /*
  * Write the "prefs" for a single term
  */
-static void save_prefs_aux(term_data *td, cptr sec_name)
+static void save_prefs_aux(term_data *td, const char * sec_name)
 {
 	char buf[1024];
 
@@ -1038,7 +1038,7 @@ static void save_prefs(void)
 /*
  * Load the "prefs" for a single term
  */
-static void load_prefs_aux(term_data *td, cptr sec_name)
+static void load_prefs_aux(term_data *td, const char * sec_name)
 {
 	char tmp[1024];
 
@@ -1368,8 +1368,8 @@ static bool init_graphics(void)
 	{
 		char buf[1024];
 		int wid, hgt;
-		cptr name;
-		cptr mask = NULL;
+		const char * name;
+		const char * mask = NULL;
 
 		if (arg_graphics == GRAPHICS_DAVID_GERVAIS)
 		{
@@ -1531,7 +1531,7 @@ static void term_remove_font(const char *name)
  *
  * Note that the "font name" must be capitalized!!!
  */
-static errr term_force_font(term_data *td, cptr path)
+static errr term_force_font(term_data *td, const char * path)
 {
 	int i;
 
@@ -2283,7 +2283,7 @@ static errr Term_wipe_win(int x, int y, int n)
  * what color it should be using to draw with, but perhaps simply changing
  * it every time is not too inefficient.  XXX XXX XXX
  */
-static errr Term_text_win(int x, int y, int n, byte a, cptr s)
+static errr Term_text_win(int x, int y, int n, byte a, const char * s)
 {
 	term_data *td = (term_data*)(Term->data);
 	RECT rc;
@@ -3278,7 +3278,7 @@ static void start_screensaver(void)
 /*
  * Display a help file
  */
-static void display_help(cptr filename)
+static void display_help(const char * filename)
 {
 	char tmp[1024];
 
@@ -4723,7 +4723,7 @@ LRESULT FAR PASCAL AngbandSaverProc(HWND hWnd, UINT uMsg,
 /*
  * Display warning message (see "z-util.c")
  */
-static void hack_plog(cptr str)
+static void hack_plog(const char * str)
 {
 	/* Give a warning */
 	if (str)
@@ -4737,7 +4737,7 @@ static void hack_plog(cptr str)
 /*
  * Display error message and quit (see "z-util.c")
  */
-static void hack_quit(cptr str)
+static void hack_quit(const char * str)
 {
 	/* Give a warning */
 	if (str)
@@ -4768,7 +4768,7 @@ static void hack_quit(cptr str)
 /*
  * Display warning message (see "z-util.c")
  */
-static void hook_plog(cptr str)
+static void hook_plog(const char * str)
 {
 #ifdef USE_SAVER
 	if (screensaver_active) return;
@@ -4786,7 +4786,7 @@ static void hook_plog(cptr str)
 /*
  * Display error message and quit (see "z-util.c")
  */
-static void hook_quit(cptr str)
+static void hook_quit(const char * str)
 {
 	int i;
 

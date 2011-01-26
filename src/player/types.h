@@ -273,8 +273,8 @@ typedef struct player
  */
 typedef struct player_sex
 {
-	cptr title;			/* Type of sex */
-	cptr winner;		/* Name of winner */
+	const char * title;			/* Type of sex */
+	const char * winner;		/* Name of winner */
 } player_sex;
 
 

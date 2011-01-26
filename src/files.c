@@ -34,7 +34,7 @@
  * Returns a "rating" of x depending on y, and sets "attr" to the
  * corresponding "attribute".
  */
-static cptr likert(int x, int y, byte *attr)
+static const char * likert(int x, int y, byte *attr)
 {
 	/* Paranoia */
 	if (y <= 0) y = 1;
@@ -1197,7 +1197,7 @@ static void string_lower(char *buf)
  * functionality, especially when moving backwards through a file, or
  * forwards through a file by less than a page at a time.  XXX XXX XXX
  */
-bool show_file(cptr name, cptr what, int line, int mode)
+bool show_file(const char * name, const char * what, int line, int mode)
 {
 	int i, k, n;
 
@@ -1225,7 +1225,7 @@ bool show_file(cptr name, cptr what, int line, int mode)
 	char *find = NULL;
 
 	/* Jump to this tag */
-	cptr tag = NULL;
+	const char * tag = NULL;
 
 	/* Hold a string to find */
 	char finder[80] = "";
@@ -1449,7 +1449,7 @@ bool show_file(cptr name, cptr what, int line, int mode)
 			/* Highlight "shower" */
 			if (shower[0])
 			{
-				cptr str = lc_buf;
+				const char * str = lc_buf;
 
 				/* Display matches */
 				while ((str = strstr(str, shower)) != NULL)
@@ -1892,7 +1892,7 @@ static void write_html_escape_char(ang_file *fp, char c)
 
 
 /* Take an html screenshot */
-void html_screenshot(cptr name, int mode)
+void html_screenshot(const char * name, int mode)
 {
 	int y, x;
 	int wid, hgt;

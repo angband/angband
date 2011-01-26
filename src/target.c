@@ -606,7 +606,7 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode)
 {
 	s16b this_o_idx = 0, next_o_idx = 0;
 
-	cptr s1, s2, s3;
+	const char *s1, *s2, *s3;
 
 	bool boring;
 
@@ -654,7 +654,7 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode)
 		/* Hack -- hallucination */
 		if (p_ptr->timed[TMD_IMAGE])
 		{
-			cptr name = "something strange";
+			const char * name = "something strange";
 
 			/* Display a message */
 			if (p_ptr->wizard)
@@ -977,7 +977,7 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode)
 		/* Terrain feature if needed */
 		if (boring || (feat > FEAT_INVIS))
 		{
-			cptr name = f_info[feat].name;
+			const char * name = f_info[feat].name;
 
 			/* Hack -- handle unknown grids */
 			if (feat == FEAT_NONE) name = "unknown grid";

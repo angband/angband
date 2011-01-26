@@ -261,7 +261,7 @@ color_type color_table[MAX_COLORS] =
 /*
  * Standard sound (and message) names
  */
-const cptr angband_sound_name[MSG_MAX] =
+const const char * angband_sound_name[MSG_MAX] =
 {
 	"",
 	"hit",
@@ -467,7 +467,7 @@ int store_knowledge = STORE_NONE;
 /*
  * Array[RANDNAME_NUM_TYPES][num_names] of random names
  */
-cptr** name_sections;
+const char *** name_sections;
 
 /*
  * The size of the "alloc_ego_table"
@@ -669,7 +669,7 @@ ang_file *text_out_file = NULL;
  * Hack -- function hook to output (colored) text to the
  * screen or to a file.
  */
-void (*text_out_hook)(byte a, cptr str);
+void (*text_out_hook)(byte a, const char * str);
 
 
 /*

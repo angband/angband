@@ -11,11 +11,11 @@ void teleport_player_to(int ny, int nx);
 void teleport_player_level(void);
 int gf_name_to_idx(const char *name);
 const char *gf_idx_to_name(int type);
-void take_hit(int dam, cptr kb_str);
-void acid_dam(int dam, cptr kb_str);
-void elec_dam(int dam, cptr kb_str);
-void fire_dam(int dam, cptr kb_str);
-void cold_dam(int dam, cptr kb_str);
+void take_hit(int dam, const char * kb_str);
+void acid_dam(int dam, const char * kb_str);
+void elec_dam(int dam, const char * kb_str);
+void fire_dam(int dam, const char * kb_str);
+void cold_dam(int dam, const char * kb_str);
 bool res_stat(int stat);
 bool apply_disenchant(int mode);
 bool project(int who, int rad, int y, int x, int dam, int typ, int flg);
@@ -103,7 +103,7 @@ extern void ring_of_power(int dir);
 
 /* x-spell.c */
 extern int get_spell_index(const object_type *o_ptr, int index);
-extern cptr get_spell_name(int tval, int index);
+extern const char * get_spell_name(int tval, int index);
 extern void get_spell_info(int tval, int index, char *buf, size_t len);
 extern bool cast_spell(int tval, int index, int dir);
 extern bool spell_needs_aim(int tval, int spell);

@@ -108,7 +108,7 @@ void hit_trap(int y, int x)
 {
 	int i, num, dam;
 
-	cptr name = "a trap";
+	const char * name = "a trap";
 
 
 	/* Disturb the player */

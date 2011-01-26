@@ -80,7 +80,7 @@ static const struct module sound_modules[] =
  *
  * Close down, then fall back into "quit()".
  */
-static void quit_hook(cptr s)
+static void quit_hook(const char * s)
 {
 	int j;
 
@@ -163,7 +163,7 @@ static void init_stuff(void)
  * The "<path>" can be any legal path for the given system, and should
  * not end in any special path separator (i.e. "/tmp" or "~/.ang-info").
  */
-static void change_path(cptr info)
+static void change_path(const char * info)
 {
 	if (!info || !info[0])
 		quit_fmt("Try '-d<path>'.", info);
@@ -288,7 +288,7 @@ int main(int argc, char *argv[])
 	/* Process the command line arguments */
 	for (i = 1; args && (i < argc); i++)
 	{
-		cptr arg = argv[i];
+		const char * arg = argv[i];
 
 		/* Require proper options */
 		if (*arg++ != '-') goto usage;

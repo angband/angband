@@ -107,7 +107,7 @@
  *   Append the character "c".
  *   Do not use the "+" or "0" flags.
  *
- * Format("%s", cptr s)
+ * Format("%s", const char * s)
  *   Append the string "s".
  *   Do not use the "+" or "0" flags.
  *   Note that a "NULL" value of "s" is converted to the empty string.
@@ -191,9 +191,9 @@
  * the given buffer to a length of zero, and return a "length" of zero.
  * The contents of "buf", except for "buf[0]", may then be undefined.
  */
-size_t vstrnfmt(char *buf, size_t max, cptr fmt, va_list vp)
+size_t vstrnfmt(char *buf, size_t max, const char * fmt, va_list vp)
 {
-	cptr s;
+	const char * s;
 
 	/* The argument is "long" */
 	bool do_long;
@@ -538,7 +538,7 @@ size_t vstrnfmt(char *buf, size_t max, cptr fmt, va_list vp)
 			/* String */
 			case 's':
 			{
-				cptr arg;
+				const char * arg;
 				char arg2[1024];
 
 				/* XXX There is a big bug here: if one
@@ -548,7 +548,7 @@ size_t vstrnfmt(char *buf, size_t max, cptr fmt, va_list vp)
 				 */
 
 				/* Get the next argument */
-				arg = tval.t == T_END ? va_arg(vp, cptr) : tval.u.s;
+				arg = tval.t == T_END ? va_arg(vp, const char *) : tval.u.s;
 
 				/* Hack -- convert NULL to EMPTY */
 				if (!arg) arg = "";
@@ -659,7 +659,7 @@ size_t vstrnfmt(char *buf, size_t max, cptr fmt, va_list vp)
 /*
  * Add a formatted string to the end of a string
  */
-void strnfcat(char *str, size_t max, size_t *end, cptr fmt, ...)
+void strnfcat(char *str, size_t max, size_t *end, const char * fmt, ...)
 {
 	size_t len;
 
@@ -690,7 +690,7 @@ static size_t format_len = 0;
  * Do a vstrnfmt (see above) into a (growable) static buffer.
  * This buffer is usable for very short term formatting of results.
  */
-char *vformat(cptr fmt, va_list vp)
+char *vformat(const char * fmt, va_list vp)
 {
 	/* Initial allocation */
 	if (!format_buf)
@@ -735,7 +735,7 @@ void vformat_kill(void)
 /*
  * Do a vstrnfmt (see above) into a buffer of a given size.
  */
-size_t strnfmt(char *buf, size_t max, cptr fmt, ...)
+size_t strnfmt(char *buf, size_t max, const char * fmt, ...)
 {
 	size_t len;
 
@@ -761,7 +761,7 @@ size_t strnfmt(char *buf, size_t max, cptr fmt, ...)
  * Note that the buffer is (technically) writable, but only up to
  * the length of the string contained inside it.
  */
-char *format(cptr fmt, ...)
+char *format(const char * fmt, ...)
 {
 	char *res;
 	va_list vp;
@@ -785,7 +785,7 @@ char *format(cptr fmt, ...)
 /*
  * Vararg interface to plog()
  */
-void plog_fmt(cptr fmt, ...)
+void plog_fmt(const char * fmt, ...)
 {
 	char *res;
 	va_list vp;
@@ -808,7 +808,7 @@ void plog_fmt(cptr fmt, ...)
 /*
  * Vararg interface to quit()
  */
-void quit_fmt(cptr fmt, ...)
+void quit_fmt(const char * fmt, ...)
 {
 	char *res;
 	va_list vp;

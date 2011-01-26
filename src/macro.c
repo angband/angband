@@ -20,7 +20,7 @@ static bool macro__use[256];
 /*
  * Find the macro (if any) which exactly matches the given pattern
  */
-int macro_find_exact(cptr pat)
+int macro_find_exact(const char * pat)
 {
 	int i;
 
@@ -43,7 +43,7 @@ int macro_find_exact(cptr pat)
 /*
  * Find the first macro (if any) which contains the given pattern
  */
-int macro_find_check(cptr pat)
+int macro_find_check(const char * pat)
 {
 	int i;
 
@@ -66,7 +66,7 @@ int macro_find_check(cptr pat)
 /*
  * Find the first macro (if any) which contains the given pattern and more
  */
-int macro_find_maybe(cptr pat)
+int macro_find_maybe(const char * pat)
 {
 	int i;
 
@@ -90,7 +90,7 @@ int macro_find_maybe(cptr pat)
 /*
  * Find the longest macro (if any) which starts with the given pattern
  */
-int macro_find_ready(cptr pat)
+int macro_find_ready(const char * pat)
 {
 	int i, t, n = -1, s = -1;
 
@@ -133,7 +133,7 @@ int macro_find_ready(cptr pat)
  * with some kind of "powerful keymap" ability, but this might make it hard
  * to change the "roguelike" option from inside the game.  XXX XXX XXX
  */
-errr macro_add(cptr pat, cptr act)
+errr macro_add(const char * pat, const char * act)
 {
 	int n;
 
