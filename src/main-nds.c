@@ -1615,7 +1615,7 @@ bool nds_load_tiles()
 /*
  * Display warning message (see "z-util.c")
  */
-static void hook_plog(const char * str)
+static void hook_plog(const char *str)
 {
   /* Warning */
   if (str)
@@ -1628,7 +1628,7 @@ static void hook_plog(const char * str)
 /*
  * Display error message and quit (see "z-util.c")
  */
-static void hook_quit(const char * str)
+static void hook_quit(const char *str)
 {
   int i, j;
   

@@ -24,8 +24,8 @@
 /*
  * Pronoun arrays, by gender.
  */
-static const char * wd_he[3] = { "it", "he", "she" };
-static const char * wd_his[3] = { "its", "his", "her" };
+static const char *wd_he[3] = { "it", "he", "she" };
+static const char *wd_his[3] = { "its", "his", "her" };
 
 
 /*
@@ -96,7 +96,7 @@ static void output_list_dam(const char *list[], int num, int col[], int dam[])
 }
 
 
-static void output_desc_list(int msex, const char * intro, const char * list[], int n, byte attr)
+static void output_desc_list(int msex, const char *intro, const char *list[], int n, byte attr)
 {
 	if (n != 0)
 	{
@@ -510,7 +510,7 @@ static void describe_monster_spells(int r_idx, const monster_lore *l_ptr, const 
 	bool breath = FALSE;
 	bool magic = FALSE;
 	int vn; /* list size */
-	const char * vp[64]; /* list item names */
+	const char *vp[64]; /* list item names */
 	int vc[64]; /* list colors */
 	int vd[64]; /* list avg damage values */
 	int known_hp;
@@ -1316,7 +1316,7 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 	bitflag f[RF_SIZE];
 
 	int vn;
-	const char * vp[64];
+	const char *vp[64];
 	bool prev = FALSE;
 
 	int msex = 0;
@@ -1436,7 +1436,7 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 	    (l_ptr->ignore == MAX_UCHAR) ||
 	    ((r_ptr->sleep == 0) && (l_ptr->tkills >= 10)))
 	{
-		const char * act;
+		const char *act;
 
 		if (r_ptr->sleep > 200)     act = "prefers to ignore";
 		else if (r_ptr->sleep > 95) act = "pays very little attention to";

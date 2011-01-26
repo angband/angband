@@ -242,7 +242,7 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	object_type object_type_body;
 	object_type *i_ptr = &object_type_body;
 
-	const char * fmt;
+	const char *fmt;
 	char o_name[80];
 
 	bool combined_ammo = FALSE;
@@ -991,8 +991,8 @@ void do_cmd_cast(cmd_code code, cmd_arg args[])
 	int item_num;
 	int i;
 
-	const char * verb = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
-	const char * noun = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+	const char *verb = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
+	const char *noun = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
 	/* Check the player can cast spells at all */
 	if (!player_can_cast())
@@ -1052,7 +1052,7 @@ void do_cmd_study_book(cmd_code code, cmd_arg args[])
 	struct spell *sp;
 	int k = 0;
 
-	const char * p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+	const char *p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
 	/* Check the player can study at all atm */
 	if (!player_can_study())

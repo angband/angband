@@ -386,7 +386,7 @@ void show_floor(const int *floor_list, int floor_num, olist_detail_t mode)
  *
  * The item can be negative to mean "item on floor".
  */
-bool verify_item(const char * prompt, int item)
+bool verify_item(const char *prompt, int item)
 {
 	char o_name[80];
 
@@ -468,7 +468,7 @@ static bool get_item_allow(int item, unsigned char ch, bool is_harmless)
 static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
 {
 	int i;
-	const char * s;
+	const char *s;
 
 	/* (f)ire is handled differently from all others, due to the quiver */
 	if (quiver_tags)
@@ -578,7 +578,7 @@ static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
  * Note that only "acceptable" floor objects get indexes, so between two
  * commands, the indexes of floor objects may change.  XXX XXX XXX
  */
-bool get_item(int *cp, const char * pmt, const char * str, cmd_code cmd, int mode)
+bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;

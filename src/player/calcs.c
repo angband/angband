@@ -820,7 +820,7 @@ static void calc_spells(void)
 
 	s16b old_spells;
 
-	const char * p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+	const char *p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
 	/* Hack -- must be literate */
 	if (!cp_ptr->spell_book) return;

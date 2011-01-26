@@ -78,7 +78,7 @@
 typedef struct xchar_type xchar_type;
 struct xchar_type
 {
-	const char * tag;
+	const char *tag;
 	byte c;
 };
 

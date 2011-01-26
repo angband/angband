@@ -1291,7 +1291,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 {
 	int i, j, power;
 
-	const char * name;
+	const char *name;
 
 	bool more = FALSE;
 

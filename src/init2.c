@@ -1055,7 +1055,7 @@ static const char *f_info_flags[] =
 	NULL
 };
 
-static errr grab_one_flag(u32b *flags, const char * names[], const char * what)
+static errr grab_one_flag(u32b *flags, const char *names[], const char *what)
 {
 	int i;
 

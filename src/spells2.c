@@ -123,7 +123,7 @@ void warding_glyph(void)
 /*
  * Array of stat "descriptions"
  */
-static const char * desc_stat_pos[] =
+static const char *desc_stat_pos[] =
 {
 	"strong",
 	"smart",
@@ -137,7 +137,7 @@ static const char * desc_stat_pos[] =
 /*
  * Array of stat "descriptions"
  */
-static const char * desc_stat_neg[] =
+static const char *desc_stat_neg[] =
 {
 	"weak",
 	"stupid",

@@ -27,7 +27,7 @@ extern int my_stricmp(const char *s1, const char *s2);
 /**
  * Case insensitive comparison between two strings, up to n characters long.
  */
-extern int my_strnicmp(const char * a, const char * b, int n);
+extern int my_strnicmp(const char *a, const char *b, int n);
 
 /**
  * Case-insensitive strstr
@@ -60,18 +60,18 @@ extern size_t my_strcpy(char *buf, const char *src, size_t bufsize);
 extern size_t my_strcat(char *buf, const char *src, size_t bufsize);
 
 /* Test equality, prefix, suffix */
-extern bool streq(const char * s, const char * t);
-extern bool prefix(const char * s, const char * t);
-extern bool suffix(const char * s, const char * t);
+extern bool streq(const char *s, const char *t);
+extern bool prefix(const char *s, const char *t);
+extern bool suffix(const char *s, const char *t);
 
 #define streq(s, t)		(!strcmp(s, t))
 
 
 /* Print an error message */
-extern void plog(const char * str);
+extern void plog(const char *str);
 
 /* Exit, with optional message */
-extern void quit(const char * str);
+extern void quit(const char *str);
 
 
 /* Sorting functions */

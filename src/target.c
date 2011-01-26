@@ -654,7 +654,7 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode)
 		/* Hack -- hallucination */
 		if (p_ptr->timed[TMD_IMAGE])
 		{
-			const char * name = "something strange";
+			const char *name = "something strange";
 
 			/* Display a message */
 			if (p_ptr->wizard)
@@ -977,7 +977,7 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode)
 		/* Terrain feature if needed */
 		if (boring || (feat > FEAT_INVIS))
 		{
-			const char * name = f_info[feat].name;
+			const char *name = f_info[feat].name;
 
 			/* Hack -- handle unknown grids */
 			if (feat == FEAT_NONE) name = "unknown grid";

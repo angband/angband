@@ -47,7 +47,7 @@ iconv_t conv;
 #define VERBOSE_DEBUG
 
 #ifdef GTK_DEBUG
-static void surface_status(const char * function_name, term_data *td)
+static void surface_status(const char *function_name, term_data *td)
 {
 	if (td->surface == NULL) 
 		glog("No Surface for %s in '%s'", function_name, td->name);
@@ -62,12 +62,12 @@ static void surface_status(const char * function_name, term_data *td)
 #ifdef USE_GTK_BUILDER
 #define GTK_XML "angband.xml"
 
-static GtkWidget *get_widget(GtkBuilder *xml, const char * name)
+static GtkWidget *get_widget(GtkBuilder *xml, const char *name)
 {
 	return GTK_WIDGET(gtk_builder_get_object(xml, name));
 }
 
-static GtkBuilder *get_gtk_xml(const char * buf, const char * secondary)
+static GtkBuilder *get_gtk_xml(const char *buf, const char *secondary)
 {
 	GtkBuilder *xml;
 	int e = 0;
@@ -81,12 +81,12 @@ static GtkBuilder *get_gtk_xml(const char * buf, const char * secondary)
 #else
 #define GTK_XML "angband.glade"
 
-static GtkWidget *get_widget(GladeXML *xml, const char * name)
+static GtkWidget *get_widget(GladeXML *xml, const char *name)
 {
 	return GTK_WIDGET(glade_xml_get_widget(xml, name));
 }
 
-static GladeXML *get_gtk_xml(const char * buf, const char * secondary)
+static GladeXML *get_gtk_xml(const char *buf, const char *secondary)
 {
 	return glade_xml_new(buf, secondary, NULL);
 }
@@ -124,7 +124,7 @@ static bool get_term_menu(int number)
 
 }
 
-static int xtra_window_from_name(const char * s)
+static int xtra_window_from_name(const char *s)
 {
 	xtra_win_data *xd;
 	int i = 0,t = -1;
@@ -138,7 +138,7 @@ static int xtra_window_from_name(const char * s)
 	return(t);
 }
 
-static int xtra_window_from_drawing_area(const char * s)
+static int xtra_window_from_drawing_area(const char *s)
 {
 	xtra_win_data *xd;
 	int i = 0,t = -1;
@@ -155,17 +155,17 @@ static int xtra_window_from_widget(GtkWidget *widget)
 	return xtra_window_from_name(gtk_widget_get_name(widget));
 }
 
-static int td_from_name(const char * s, const char * pattern)
+static int td_from_name(const char *s, const char *pattern)
 {
 	int t = -1;
 	sscanf(s, pattern, &t);
 	return(t);
 }
-static int term_window_from_name(const char * s)
+static int term_window_from_name(const char *s)
 {
 	return td_from_name(s, "term_window_%d");
 }
-static int td_from_widget(GtkWidget *widget, const char * pattern)
+static int td_from_widget(GtkWidget *widget, const char *pattern)
 {
 	return td_from_name(gtk_widget_get_name(widget), pattern);
 }
@@ -530,7 +530,7 @@ static byte Term_xchar_gtk(byte c)
 	return c;
 }
 
-char *process_control_chars(int n, const char * s)
+char *process_control_chars(int n, const char *s)
 {
 	char *s2 = (char *)malloc(sizeof(char) * n);
 	int i;
@@ -548,7 +548,7 @@ char *process_control_chars(int n, const char * s)
 	return s2;
 }
 
-char *latin1_to_utf8(int n, const char * s)
+char *latin1_to_utf8(int n, const char *s)
 {
 	size_t inbytes = n;
 	char *s2 = process_control_chars(n, s);
@@ -573,7 +573,7 @@ char *latin1_to_utf8(int n, const char * s)
 /*
  * Draw some textual characters.
  */
-static errr Term_text_gtk(int x, int y, int n, byte a, const char * s)
+static errr Term_text_gtk(int x, int y, int n, byte a, const char *s)
 {
 	term_data *td = (term_data*)(Term->data);
 	cairo_rectangle_t r;
@@ -740,7 +740,7 @@ static bool save_game_gtk(void)
 	return(TRUE);
 }
 
-static void hook_quit(const char * str)
+static void hook_quit(const char *str)
 {
 	gtk_log_fmt(TERM_RED,"%s", str);
 	save_prefs();
@@ -784,7 +784,7 @@ gboolean new_event_handler(GtkWidget *widget, GdkEventButton *event, gpointer us
 	}
 }
 
-static void load_font_by_name(term_data *td, const char * font_name)
+static void load_font_by_name(term_data *td, const char *font_name)
 {	
 	PangoFontDescription *temp_font;
 	char buf[80];
@@ -1215,7 +1215,7 @@ static void save_prefs(void)
 
 static int check_env_i(char* name, int i, int dfault)
 {
-	const char * str;
+	const char *str;
 	int val;
 	char buf[1024];
 	
@@ -1228,9 +1228,9 @@ static int check_env_i(char* name, int i, int dfault)
 	return val;
 }
 
-static int get_value(const char * buf)
+static int get_value(const char *buf)
 {
-	const char * str;
+	const char *str;
 	int i;
 	
 	str = strstr(buf, "=");
@@ -1242,7 +1242,7 @@ static int get_value(const char * buf)
 static void load_term_prefs()
 {
 	int t = 0, x = 0, line = 0, val = 0, section = 0;
-	const char * str;
+	const char *str;
 	char buf[1024];
 	ang_file *fff;
 	term_data *td = &data[0];
@@ -1447,7 +1447,7 @@ gboolean expose_event_handler(GtkWidget *widget, GdkEventExpose *event, gpointer
 	int i;
 	term_data *td;
 	int t = -1;
-	const char * str;
+	const char *str;
 	
 	str = gtk_widget_get_name(widget);
 	sscanf(str, "term_drawing_area_%d", &t);
@@ -2176,7 +2176,7 @@ static void text_view_print(xtra_win_data *xd, const char *str, byte color)
 	text_view_put(xd, "\n", color);
 }
 
-void gtk_log_fmt(byte c, const char * fmt, ...)
+void gtk_log_fmt(byte c, const char *fmt, ...)
 {
 	xtra_win_data *xd = &xdata[4];
 	
@@ -2209,7 +2209,7 @@ void gtk_log_fmt(byte c, const char * fmt, ...)
 		plog(str);
 }
 
-static void glog(const char * fmt, ...)
+static void glog(const char *fmt, ...)
 {
 	xtra_win_data *xd = &xdata[4];
 	
@@ -2500,7 +2500,7 @@ static void handle_mons_list(game_event_type type, game_event_data *data, void *
 	FREE(race_count);
 }
 
-static void draw_xtra_cr_text(xtra_win_data *xd, int x, int y, byte color, const char * str)
+static void draw_xtra_cr_text(xtra_win_data *xd, int x, int y, byte color, const char *str)
 {
 	measurements size;
 	cairo_rectangle_t r;

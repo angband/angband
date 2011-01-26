@@ -200,7 +200,7 @@ static bool describe_curses(textblock *tb, const object_type *o_ptr,
 static bool describe_stats(textblock *tb, const object_type *o_ptr,
 		bitflag flags[MAX_PVALS][OF_SIZE], oinfo_detail_t mode)
 {
-	const char * descs[N_ELEMENTS(pval_flags)];
+	const char *descs[N_ELEMENTS(pval_flags)];
 	size_t count, i;
 	bool full = mode & OINFO_FULL;
 	bool dummy = mode & OINFO_DUMMY;

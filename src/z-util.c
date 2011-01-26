@@ -63,7 +63,7 @@ int my_stricmp(const char *s1, const char *s2)
 /*
  * Case insensitive comparison between the first n characters of two strings
  */
-int my_strnicmp(const char * a, const char * b, int n)
+int my_strnicmp(const char *a, const char *b, int n)
 {
 	const char *s1, *s2;
 	char z1, z2;
@@ -182,7 +182,7 @@ size_t my_strcat(char *buf, const char *src, size_t bufsize)
  * Determine if string "a" is equal to string "b"
  */
 #undef streq
-bool streq(const char * a, const char * b)
+bool streq(const char *a, const char *b)
 {
 	return (!strcmp(a, b));
 }
@@ -191,7 +191,7 @@ bool streq(const char * a, const char * b)
 /*
  * Determine if string "t" is a suffix of string "s"
  */
-bool suffix(const char * s, const char * t)
+bool suffix(const char *s, const char *t)
 {
 	size_t tlen = strlen(t);
 	size_t slen = strlen(s);
@@ -207,7 +207,7 @@ bool suffix(const char * s, const char * t)
 /*
  * Determine if string "t" is a prefix of string "s"
  */
-bool prefix(const char * s, const char * t)
+bool prefix(const char *s, const char *t)
 {
 	/* Scan "t" */
 	while (*t)
@@ -231,7 +231,7 @@ void (*plog_aux)(const char *) = NULL;
  * Print (or log) a "warning" message (ala "perror()")
  * Note the use of the (optional) "plog_aux" hook.
  */
-void plog(const char * str)
+void plog(const char *str)
 {
 	/* Use the "alternative" function if possible */
 	if (plog_aux) (*plog_aux)(str);
@@ -252,7 +252,7 @@ void (*quit_aux)(const char *) = NULL;
  * Otherwise, plog() 'str' and exit with an error code of -1.
  * But always use 'quit_aux', if set, before anything else.
  */
-void quit(const char * str)
+void quit(const char *str)
 {
 	/* Attempt to use the aux function */
 	if (quit_aux) (*quit_aux)(str);

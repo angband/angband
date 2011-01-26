@@ -912,11 +912,11 @@ void display_monlist(void)
  */
 void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode)
 {
-	const char * res;
+	const char *res;
 
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
-	const char * name = r_ptr->name;
+	const char *name = r_ptr->name;
 
 	bool seen, pron;
 
@@ -1700,7 +1700,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 	monster_type *n_ptr;
 	monster_type monster_type_body;
 
-	const char * name;
+	const char *name;
 
 
 	/* Paranoia */
@@ -3099,7 +3099,7 @@ bool wake_monster(monster_type *m_ptr)
  * worth more than subsequent monsters.  This would also need to
  * induce changes in the monster recall code.  XXX XXX XXX
  */
-bool mon_take_hit(int m_idx, int dam, bool *fear, const char * note)
+bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note)
 {
 	monster_type *m_ptr = &mon_list[m_idx];
 

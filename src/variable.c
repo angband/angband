@@ -261,7 +261,7 @@ color_type color_table[MAX_COLORS] =
 /*
  * Standard sound (and message) names
  */
-const const char * angband_sound_name[MSG_MAX] =
+const const char *angband_sound_name[MSG_MAX] =
 {
 	"",
 	"hit",
@@ -669,7 +669,7 @@ ang_file *text_out_file = NULL;
  * Hack -- function hook to output (colored) text to the
  * screen or to a file.
  */
-void (*text_out_hook)(byte a, const char * str);
+void (*text_out_hook)(byte a, const char *str);
 
 
 /*

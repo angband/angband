@@ -674,9 +674,9 @@ const char *mention_use(int slot)
  * Return a string describing how a given item is being worn.
  * Currently, only used for items in the equipment, not inventory.
  */
-const char * describe_use(int i)
+const char *describe_use(int i)
 {
-	const char * p;
+	const char *p;
 
 	switch (i)
 	{
@@ -2928,7 +2928,7 @@ s16b inven_takeoff(int item, int amt)
 	object_type *i_ptr;
 	object_type object_type_body;
 
-	const char * act;
+	const char *act;
 
 	char o_name[80];
 

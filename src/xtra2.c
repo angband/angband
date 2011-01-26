@@ -412,9 +412,9 @@ int target_dir(char ch)
 
 	int mode;
 
-	const char * act;
+	const char *act;
 
-	const char * s;
+	const char *s;
 
 
 	/* Already a direction? */
@@ -506,7 +506,7 @@ bool get_aim_dir(int *dp)
 	
 	ui_event_data ke;
 
-	const char * p;
+	const char *p;
 
 	/* Initialize */
 	(*dp) = 0;

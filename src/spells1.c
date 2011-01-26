@@ -461,7 +461,7 @@ static void bolt_pict(int y, int x, int ny, int nx, int typ, byte *a, char *c)
  * when he dies, since the "You die." message is shown before setting
  * the player to "dead".
  */
-void take_hit(int dam, const char * kb_str)
+void take_hit(int dam, const char *kb_str)
 {
 	int old_chp = p_ptr->chp;
 
@@ -822,7 +822,7 @@ static int minus_ac(void)
 /*
  * Hurt the player with Acid
  */
-void acid_dam(int dam, const char * kb_str)
+void acid_dam(int dam, const char *kb_str)
 {
 	int n;
 	int inv;
@@ -865,7 +865,7 @@ void acid_dam(int dam, const char * kb_str)
 /*
  * Hurt the player with electricity
  */
-void elec_dam(int dam, const char * kb_str)
+void elec_dam(int dam, const char *kb_str)
 {
 	int n;
 	int inv;
@@ -905,7 +905,7 @@ void elec_dam(int dam, const char * kb_str)
 /*
  * Hurt the player with Fire
  */
-void fire_dam(int dam, const char * kb_str)
+void fire_dam(int dam, const char *kb_str)
 {
 	int n;
 	int inv;
@@ -945,7 +945,7 @@ void fire_dam(int dam, const char * kb_str)
 /*
  * Hurt the player with Cold
  */
-void cold_dam(int dam, const char * kb_str)
+void cold_dam(int dam, const char *kb_str)
 {
 	int n;
 	int inv;
@@ -1580,7 +1580,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvio
 		bool plural = FALSE;
 		bool do_kill = FALSE;
 
-		const char * note_kill = NULL;
+		const char *note_kill = NULL;
 
 		/* Get the object */
 		o_ptr = object_byid(this_o_idx);
@@ -1855,7 +1855,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 	monster_race *r_ptr;
 	monster_lore *l_ptr;
 
-	const char * name;
+	const char *name;
 
 	/* Is the monster "seen"? */
 	bool seen = FALSE;
@@ -1890,10 +1890,10 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 	char m_poss[80];
 
 	/* Assume no note */
-	const char * note = NULL;
+	const char *note = NULL;
 
 	/* Assume a default death */
-	const char * note_dies = " dies.";
+	const char *note_dies = " dies.";
 
 
 	/* Walls protect monsters */
@@ -3147,7 +3147,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 	char killer[80];
 
 	/* Hack -- messages */
-	const char * act = NULL;
+	const char *act = NULL;
 
 
 	/* No player here */

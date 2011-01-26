@@ -1418,7 +1418,7 @@ void display_map(int *cy, int *cx)
 void do_cmd_view_map(void)
 {
 	int cy, cx;
-	const char * prompt = "Hit any key to continue";
+	const char *prompt = "Hit any key to continue";
 	
 	/* Save screen */
 	screen_save();

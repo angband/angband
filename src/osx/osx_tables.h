@@ -82,8 +82,8 @@ static const HIViewID aboutDialogCopyright = { 'DLOG', 4 };
 /* graf_mode variable is index of current mode */
 static const struct {
 	int menuItem;		// Index in Graphics Menu
- 	  const char * file;			// Base name of png file (if any)
-	const char * name;			// Value of ANGBAND_GRAF variable
+ 	  const char *file;			// Base name of png file (if any)
+	const char *name;			// Value of ANGBAND_GRAF variable
 	int size;			// Tile size (in pixels)
 	bool trans;			// Use transparent foreground tiles
 } graphics_modes[] = {

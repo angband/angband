@@ -136,7 +136,7 @@ static char *ANGBAND_DIR_USER_SDL;
 /*
  * Used as 'system' font
  */
-static const char * DEFAULT_FONT_FILE = "6x10x.fon";
+static const char *DEFAULT_FONT_FILE = "6x10x.fon";
 
 #define MAX_FONTS 40
 char *FontList[MAX_FONTS];
@@ -364,11 +364,11 @@ static SDL_Rect SizingRect;		/* Rect to describe the current resize window */
 typedef struct GfxInfo GfxInfo;
 struct GfxInfo
 {
-	const char * name;				/* Name to show on button */
-	const char * gfxfile;			/* The file with tiles */
+	const char *name;				/* Name to show on button */
+	const char *gfxfile;			/* The file with tiles */
 	int width;				/* Width of a tile */
 	int height;				/* Height of a tile */
-	const char * pref;				/* Preference file to use */
+	const char *pref;				/* Preference file to use */
 	bool avail;				/* Are the appropriate files available? */
 };
 
@@ -462,7 +462,7 @@ static void sdl_DrawBox(SDL_Surface *surface, SDL_Rect *rect, Uint32 colour, int
 /*
  * Get the width and height of a given font file
  */
-static errr sdl_CheckFont(const char * fontname, int *width, int *height)
+static errr sdl_CheckFont(const char *fontname, int *width, int *height)
 {
 	char buf[1024];
 	
@@ -504,7 +504,7 @@ static void sdl_FontFree(sdl_Font *font)
  * Create new font data with font fontname, optimizing the data
  * for the surface given
  */
-static errr sdl_FontCreate(sdl_Font *font, const char * fontname, SDL_Surface *surface)
+static errr sdl_FontCreate(sdl_Font *font, const char *fontname, SDL_Surface *surface)
 {
 	char buf[1024];
 	int i;
@@ -616,7 +616,7 @@ static errr sdl_FontCreate(sdl_Font *font, const char * fontname, SDL_Surface *s
  * You can, I suppose, use one font on many surfaces, but it is
  * definately not recommended. One font per surface is good enough.
  */
-static errr sdl_FontDraw(sdl_Font *font, SDL_Surface *surface, Uint32 colour, int x, int y, int n , const char * s)
+static errr sdl_FontDraw(sdl_Font *font, SDL_Surface *surface, Uint32 colour, int x, int y, int n , const char *s)
 {
 	Uint8 bpp = surface->format->BytesPerPixel;
 	Uint16 pitch = surface->pitch;
@@ -744,7 +744,7 @@ static void sdl_ButtonSize(sdl_Button *button, int w, int h)
 /*
  * Set the caption
  */
-static void sdl_ButtonCaption(sdl_Button *button, const char * s)
+static void sdl_ButtonCaption(sdl_Button *button, const char *s)
 {
 	my_strcpy(button->caption, s, sizeof(button->caption));
 	button->owner->need_update = TRUE;
@@ -986,7 +986,7 @@ static void sdl_WindowFree(sdl_Window* window)
 /*
  * Initialize a window
  */
-static void sdl_WindowInit(sdl_Window* window, int w, int h, SDL_Surface *owner, const char * fontname)
+static void sdl_WindowInit(sdl_Window* window, int w, int h, SDL_Surface *owner, const char *fontname)
 {
 	sdl_WindowFree(window);
 	window->owner = owner;
@@ -1015,7 +1015,7 @@ static void sdl_WindowBlit(sdl_Window* window)
 	SDL_UpdateRects(window->owner, 1, &rc);
 }
 
-static void sdl_WindowText(sdl_Window* window, Uint32 c, int x, int y, const char * s)
+static void sdl_WindowText(sdl_Window* window, Uint32 c, int x, int y, const char *s)
 {
 	sdl_FontDraw(&window->font, window->surface, c, x, y, strlen(s), s);
 }
@@ -1067,7 +1067,7 @@ static void term_windowFree(term_window* win)
 }
 
 static errr save_prefs(void);
-static void hook_quit(const char * str)
+static void hook_quit(const char *str)
 {
 	int i;
 	
@@ -1132,7 +1132,7 @@ static void BringToTop(void)
 /*
  * Validate a file
  */
-static void validate_file(const char * s)
+static void validate_file(const char *s)
 {
 	if (!file_exists(s))
 		quit_fmt("Cannot find required file:\n%s", s);
@@ -2937,7 +2937,7 @@ static errr Term_wipe_sdl(int col, int row, int n)
 /*
  * Draw some text to a window
  */
-static errr Term_text_sdl(int col, int row, int n, byte a, const char * s)
+static errr Term_text_sdl(int col, int row, int n, byte a, const char *s)
 {
 	term_window *win = (term_window*)(Term->data);
 	Uint32 colour = text_colours[a];
@@ -3301,7 +3301,7 @@ static void init_morewindows(void)
 static errr load_gfx(void)
 {
 	char buf[1024];
-	const char * filename = GfxDesc[use_graphics].gfxfile;
+	const char *filename = GfxDesc[use_graphics].gfxfile;
 	SDL_Surface *temp;
 
 	/* This may be called when GRAPHICS_NONE is set */

@@ -236,7 +236,7 @@ static void recharged_notice(const object_type *o_ptr, bool all)
 {
 	char o_name[120];
 
-	const char * s;
+	const char *s;
 
 	bool notify = FALSE;
 

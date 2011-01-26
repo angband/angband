@@ -174,8 +174,8 @@ void set_ego_xtra_power(bitflag flags[OF_SIZE]);
 void show_inven(olist_detail_t mode);
 void show_equip(olist_detail_t mode);
 void show_floor(const int *floor_list, int floor_num, olist_detail_t mode);
-bool verify_item(const char * prompt, int item);
-bool get_item(int *cp, const char * pmt, const char * str, cmd_code cmd, int mode);
+bool verify_item(const char *prompt, int item);
+bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode);
 
 /* obj-util.c */
 struct object_kind *objkind_get(int tval, int sval);
@@ -193,7 +193,7 @@ bool wearable_p(const object_type *o_ptr);
 s16b wield_slot(const object_type *o_ptr);
 bool slot_can_wield_item(int slot, const object_type *o_ptr);
 const char *mention_use(int slot);
-const char * describe_use(int i);
+const char *describe_use(int i);
 bool item_tester_okay(const object_type *o_ptr);
 int scan_floor(int *items, int max_size, int y, int x, int mode);
 void excise_object_idx(int o_idx);

@@ -527,7 +527,7 @@ const byte chest_traps[64] =
 /*
  * Abbreviations of healthy stats
  */
-const char * stat_names[A_MAX] =
+const char *stat_names[A_MAX] =
 {
 	"STR: ", "INT: ", "WIS: ", "DEX: ", "CON: ", "CHR: "
 };
@@ -535,7 +535,7 @@ const char * stat_names[A_MAX] =
 /*
  * Abbreviations of damaged stats
  */
-const char * stat_names_reduced[A_MAX] =
+const char *stat_names_reduced[A_MAX] =
 {
 	"Str: ", "Int: ", "Wis: ", "Dex: ", "Con: ", "Chr: "
 };
@@ -543,7 +543,7 @@ const char * stat_names_reduced[A_MAX] =
 /*
  * Full stat names
  */
-const char * stat_names_full[A_MAX] =
+const char *stat_names_full[A_MAX] =
 {
 	"strength",
 	"intelligence",

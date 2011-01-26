@@ -192,7 +192,7 @@ bool spell_in_book(int spell, int book)
 void spell_learn(int spell)
 {
 	int i;
-	const char * p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+	const char *p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
 	/* Learn the spell */
 	p_ptr->spell_flags[spell] |= PY_SPELL_LEARNED;

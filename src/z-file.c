@@ -107,7 +107,7 @@ void safe_setuid_grab(void)
 /*
  * Apply special system-specific processing before dealing with a filename.
  */
-static void path_parse(char *buf, size_t max, const char * file)
+static void path_parse(char *buf, size_t max, const char *file)
 {
 	/* Accept the filename */
 	my_strcpy(buf, file, max);

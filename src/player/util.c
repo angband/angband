@@ -82,7 +82,7 @@ bool player_can_study(void)
 
 	if (!p_ptr->new_spells)
 	{
-		const char * p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+		const char *p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 		msg("You cannot learn any new %ss!", p);
 		return FALSE;
 	}

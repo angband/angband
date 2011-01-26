@@ -97,8 +97,8 @@ static int *obj_group_order = NULL;
  */
 static struct
 {
-	const char * chars;
-	const char * name;
+	const char *chars;
+	const char *name;
 } monster_group[] =
 {
 	{ (const char *)-1,   "Uniques" },
