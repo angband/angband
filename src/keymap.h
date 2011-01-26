@@ -1,6 +1,9 @@
 #ifndef KEYMAP_H
 #define KEYMAP_H
 
+/** Maximum number of keypresses a trigger can map to. **/
+#define KEYMAP_ACTION_MAX	20
+
 /** Keymap modes. */
 enum {
 	KEYMAP_MODE_ORIG = 0,

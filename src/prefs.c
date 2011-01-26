@@ -378,8 +378,7 @@ static struct parser *init_parse_prefs(void);
 struct prefs_data
 {
 	bool bypass;
-	/* XXXmacro this number should be defined somewhere */
-	struct keypress macro_buffer[42];
+	struct keypress macro_buffer[KEYMAP_ACTION_MAX];
 };
 
 

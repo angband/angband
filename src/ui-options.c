@@ -346,8 +346,7 @@ static void do_cmd_options_win(const char *name, int row)
 /*
  * Current (or recent) macro action
  */
-/* XXXmacro this number needs saving somewhere */
-static struct keypress macro_buffer[42];
+static struct keypress macro_buffer[KEYMAP_ACTION_MAX];
 
 
 /*
