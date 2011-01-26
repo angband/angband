@@ -2497,9 +2497,10 @@ void message_pain(int m_idx, int dam)
 
 	monster_type *m_ptr = &mon_list[m_idx];
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
-
+	monster_base *rb_ptr = &rb_info[r_ptr->rval];
+	monster_pain *mp_ptr = &pain_messages[rb_ptr->pain_idx];
+	
 	char m_name[80];
-
 
 	/* Get the monster name */
 	monster_desc(m_name, sizeof(m_name), m_ptr, 0);
@@ -2516,84 +2517,21 @@ void message_pain(int m_idx, int dam)
 	oldhp = newhp + (long)(dam);
 	tmp = (newhp * 100L) / oldhp;
 	percentage = (int)(tmp);
-
-
-	/* Gross things */
-	if (rf_has(r_ptr->flags, RF_ICKY) || r_ptr->rval == lookup_monster_base("quylthulg"))
-	{
-		if (percentage > 95)
-			msg("%^s barely notices.", m_name);
-		else if (percentage > 75)
-			msg("%^s flinches.", m_name);
-		else if (percentage > 50)
-			msg("%^s squelches.", m_name);
-		else if (percentage > 35)
-			msg("%^s quivers in pain.", m_name);
-		else if (percentage > 20)
-			msg("%^s writhes about.", m_name);
-		else if (percentage > 10)
-			msg("%^s writhes in agony.", m_name);
-		else
-			msg("%^s jerks limply.", m_name);
-	}
-
-	/* Dogs and Hounds */
-	else if (r_ptr->rval == lookup_monster_base("canine") ||
-			 r_ptr->rval == lookup_monster_base("zephyr hound"))
-	{
-		if (percentage > 95)
-			msg("%^s shrugs off the attack.", m_name);
-		else if (percentage > 75)
-			msg("%^s snarls with pain.", m_name);
-		else if (percentage > 50)
-			msg("%^s yelps in pain.", m_name);
-		else if (percentage > 35)
-			msg("%^s howls in pain.", m_name);
-		else if (percentage > 20)
-			msg("%^s howls in agony.", m_name);
-		else if (percentage > 10)
-			msg("%^s writhes in agony.", m_name);
-		else
-			msg("%^s yelps feebly.", m_name);
-	}
-
-	/* Other animals */
-	else if (rf_has(r_ptr->flags, RF_ANIMAL))
-	{
-		if (percentage > 95)
-			msg("%^s ignores the attack.", m_name);
-		else if (percentage > 75)
-			msg("%^s grunts with pain.", m_name);
-		else if (percentage > 50)
-			msg("%^s squeals in pain.", m_name);
-		else if (percentage > 35)
-			msg("%^s shrieks in pain.", m_name);
-		else if (percentage > 20)
-			msg("%^s shrieks in agony.", m_name);
-		else if (percentage > 10)
-			msg("%^s writhes in agony.", m_name);
-		else
-			msg("%^s cries out feebly.", m_name);
-	}
-
-	/* Another type of monsters (shrug,cry,scream) */
+	
+	if (percentage > 95)
+		msg("%^s %s.", m_name, mp_ptr->messages[0]);
+	else if (percentage > 75)
+		msg("%^s %s.", m_name, mp_ptr->messages[1]);
+	else if (percentage > 50)
+		msg("%^s %s.", m_name, mp_ptr->messages[2]);
+	else if (percentage > 35)
+		msg("%^s %s.", m_name, mp_ptr->messages[3]);
+	else if (percentage > 20)
+		msg("%^s %s.", m_name, mp_ptr->messages[4]);
+	else if (percentage > 10)
+		msg("%^s %s.", m_name, mp_ptr->messages[5]);
 	else
-	{
-		if (percentage > 95)
-			msg("%^s shrugs off the attack.", m_name);
-		else if (percentage > 75)
-			msg("%^s grunts with pain.", m_name);
-		else if (percentage > 50)
-			msg("%^s cries out in pain.", m_name);
-		else if (percentage > 35)
-			msg("%^s screams in pain.", m_name);
-		else if (percentage > 20)
-			msg("%^s screams in agony.", m_name);
-		else if (percentage > 10)
-			msg("%^s writhes in agony.", m_name);
-		else
-			msg("%^s cries out feebly.", m_name);
-	}
+		msg("%^s %s.", m_name, mp_ptr->messages[6]);
 }
 
 

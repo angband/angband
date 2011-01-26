@@ -1,0 +1,56 @@
+# File: pain.txt
+
+
+# This file is used to initialize the monster pain messages for Angband.
+
+# === Understanding artifact.txt ===
+
+# N: serial number
+# M: message
+# M: message
+# etc.
+
+# 'N' indicates the beginning of an entry. The serial number must
+# increase for each new item.
+
+# 'M' is for the pain message. Each entry must have 7 messages --
+# each one corresponds to a range of health, with higher messages 
+# being displayed when a monster is damaged only a little, and lower
+# messages being displayed when a monster is near death.
+
+N:1
+M:shrugs off the attack
+M:grunts with pain
+M:cries out in pain
+M:screams in pain
+M:screams in agony
+M:writhes in agony
+M:cries out feebly
+
+N:2
+M:barely notices
+M:flinches
+M:squelches
+M:quivers in pain
+M:writhes about
+M:writhes in agony
+M:jerks limply
+
+N:3
+M:shrugs off the attack
+M:snarls with pain
+M:yelps in pain
+M:howls in pain
+M:howls in agony
+M:writhes in agony
+M:yelps feebly
+
+N:4
+M:ignores the attack
+M:grunts with pain
+M:squeals in pain
+M:shrieks in pain
+M:shrieks in agony
+M:writhes in agony
+M:cries out feebly
+

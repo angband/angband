@@ -573,6 +573,7 @@ ego_item_type *e_info;
  */
 monster_race *r_info;
 monster_base *rb_info;
+monster_pain *pain_messages;
 
 struct player_race *races;
 struct player_class *classes;
