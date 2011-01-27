@@ -1367,9 +1367,6 @@ static bool build_large(struct cave *c, int y0, int x0) {
  * the given type.
  *
  * None of the pits/nests are allowed to include "unique" monsters.
- *
- * The old method used monster "names", which was bad, but the new
- * method uses monster race characters, which is also bad.  XXX XXX XXX
  */
 
 

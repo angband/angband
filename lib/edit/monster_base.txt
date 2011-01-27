@@ -25,7 +25,8 @@
 #
 # Note that some templates have hardcoded references. In particular, changing
 # the name of the following templates will cause certain summon spells to break:
-# ancient dragon, angel, dog, greater demon, hydra, lich, spider, vampire, wraith, zephyr hound...
+# ancient dragon, angel, canine, hydra, lich, major demon, spider, vampire, wraith, zephyr hound.
+# Changing other characteristics of these monsters is fine.
 
 ##### Normal monster templates #####
 

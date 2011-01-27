@@ -2244,7 +2244,7 @@ static bool summon_specific_okay(int r_idx)
 
 		case SUMMON_HOUND:
 		{
-			okay = ((r_ptr->rval == lookup_monster_base("dog") || 
+			okay = ((r_ptr->rval == lookup_monster_base("canine") || 
 					r_ptr->rval == lookup_monster_base("zephyr hound")) &&
 			        !rf_has(r_ptr->flags, RF_UNIQUE));
 			break;
@@ -2316,7 +2316,7 @@ static bool summon_specific_okay(int r_idx)
 
 		case SUMMON_HI_DEMON:
 		{
-			okay = (r_ptr->rval == lookup_monster_base("greater demon"));
+			okay = (r_ptr->rval == lookup_monster_base("major demon"));
 			break;
 		}
 
