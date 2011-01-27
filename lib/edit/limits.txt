@@ -28,7 +28,7 @@ M:E:128
 M:R:618
 
 # Maximum number of monster bases
-M:B:55
+M:B:56
 
 # Maximum number of monster pain message sets
 M:P:5

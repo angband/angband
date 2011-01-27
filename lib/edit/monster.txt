@@ -138,7 +138,7 @@ V:3.0.11
 ##### Non-race (contains the "player" picture) #####
 
 N:0:<player>
-G:@
+T:player
 C:w
 
 

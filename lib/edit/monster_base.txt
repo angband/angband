@@ -27,6 +27,8 @@
 # the name of the following templates will cause certain summon spells to break:
 # ancient dragon, angel, dog, greater demon, hydra, lich, spider, vampire, wraith, zephyr hound...
 
+##### Normal monster templates #####
+
 N:1:ancient dragon
 G:D
 M:1
@@ -66,7 +68,7 @@ M:1
 F:ANIMAL
 D:Bird
 
-N:9:canine
+N:6:canine
 G:C
 M:3
 F:ANIMAL
@@ -87,14 +89,14 @@ F:BASH_DOOR
 F:IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 D:Creeping Coins
 
-N:10:dragon
+N:9:dragon
 G:d
 M:1
 F:DRAGON | EVIL
 F:FORCE_SLEEP
 D:Dragon
 
-N:11:dragon fly
+N:10:dragon fly
 G:F
 M:4
 F:ANIMAL | WEIRD_MIND
@@ -102,12 +104,12 @@ F:RAND_50 | BASH_DOOR
 F:FORCE_SLEEP
 D:Dragon Fly
 
-N:12:eye
+N:11:eye
 G:e
 M:1
 D:Floating Eye
 
-N:13:elemental
+N:12:elemental
 G:E
 M:1
 F:EMPTY_MIND
@@ -115,7 +117,7 @@ F:IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP
 F:MATERIAL
 D:Elemental
 
-N:6:feline
+N:13:feline
 G:f
 M:1
 F:ANIMAL
@@ -145,18 +147,18 @@ F:IM_ELEC | NO_FEAR | NO_CONF | NO_SLEEP
 F:MATERIAL
 D:Golem
 
-N:18:humanoid
+N:17:humanoid
 G:h
 M:1
 F:OPEN_DOOR | BASH_DOOR
 D:Hobbit/Elf/Dwarf
 
-N:19:hybrid
+N:18:hybrid
 G:H
 M:1
 D:Hybrid
 
-N:20:hydra
+N:19:hydra
 G:M
 M:4
 F:ANIMAL
@@ -165,21 +167,21 @@ F:BASH_DOOR
 F:FORCE_SLEEP
 D:Hydra
 
-N:21:icky thing
+N:20:icky thing
 G:i
 M:2
 F:RAND_50
 F:ICKY
 D:Icky Thing
 
-N:22:insect
+N:21:insect
 G:I
 M:4
 F:ANIMAL | WEIRD_MIND | MULTIPLY
 F:RAND_25 | RAND_50
 D:Insect
 
-N:23:jelly
+N:22:jelly
 G:j
 M:2
 F:EMPTY_MIND | STUPID
@@ -187,14 +189,14 @@ F:NO_FEAR
 F:ICKY
 D:Jelly
 
-N:24:killer beetle
+N:23:killer beetle
 G:K
 M:4
 F:ANIMAL | WEIRD_MIND
 F:BASH_DOOR
 D:Killer Beetle
 
-N:25:kobold
+N:24:kobold
 G:k
 M:1
 F:EVIL
@@ -202,7 +204,7 @@ F:OPEN_DOOR | BASH_DOOR
 F:IM_POIS
 D:Kobold
 
-N:27:lich
+N:25:lich
 G:L
 M:1
 F:UNDEAD | EVIL | COLD_BLOOD | SMART
@@ -212,14 +214,14 @@ F:FORCE_SLEEP
 S:BRAIN_SMASH
 D:Lich
 
-N:28:louse
+N:26:louse
 G:l
 M:4
 F:ANIMAL | WEIRD_MIND | MULTIPLY
 F:RAND_50
 D:Louse
 
-N:29:lurker
+N:27:lurker
 G:.
 M:1
 F:COLD_BLOOD | EMPTY_MIND | INVISIBLE
@@ -228,7 +230,7 @@ F:NO_FEAR | NO_CONF | NO_SLEEP
 F:CHAR_CLEAR | ATTR_CLEAR
 D:Lurker
 
-N:17:major demon
+N:28:major demon
 G:U
 M:1
 F:DEMON | EVIL
@@ -238,7 +240,7 @@ F:NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 D:Major Demon
 
-N:30:mimic
+N:29:mimic
 G:?
 M:1
 F:COLD_BLOOD | EMPTY_MIND
@@ -248,7 +250,7 @@ F:CHAR_MULTI | FORCE_SLEEP
 S:BLIND | CAUSE_2 | CONF | SCARE
 D:Mimic
 
-N:26:minor demon
+N:30:minor demon
 G:u
 M:1
 F:DEMON | EVIL
@@ -426,3 +428,9 @@ F:UNDEAD | EVIL | COLD_BLOOD
 F:OPEN_DOOR | BASH_DOOR
 F:IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 D:Zombie/Mummy
+
+##### Special template #####
+
+N:55:player
+G:@
+D:You
