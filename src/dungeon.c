@@ -585,10 +585,10 @@ static void process_world(struct cave *c)
 			i = extract_energy[p_ptr->state.speed] * 2;
 
 			/* Regeneration takes more food */
-			if (p_ptr->state.regenerate) i += 30;
+			if (p_ptr->state.flags[OF_REGEN]) i += 30;
 
 			/* Slow digestion takes less food */
-			if (p_ptr->state.slow_digest) i -= 10;
+			if (p_ptr->state.flags[OF_SLOW_DIGEST]) i -= 10;
 
 			/* Minimal digestion */
 			if (i < 1) i = 1;
@@ -644,13 +644,13 @@ static void process_world(struct cave *c)
 		regen_amount = PY_REGEN_WEAK;
 
 	/* Various things speed up regeneration */
-	if (p_ptr->state.regenerate)
+	if (p_ptr->state.flags[OF_REGEN])
 		regen_amount *= 2;
 	if (p_ptr->searching || p_ptr->resting)
 		regen_amount *= 2;
 
 	/* Some things slow it down */
-	if (p_ptr->state.impair_hp)
+	if (p_ptr->state.flags[OF_IMPAIR_HP])
 		regen_amount /= 2;
 
 	/* Various things interfere with physical healing */
@@ -670,13 +670,13 @@ static void process_world(struct cave *c)
 	regen_amount = PY_REGEN_NORMAL;
 
 	/* Various things speed up regeneration */
-	if (p_ptr->state.regenerate)
+	if (p_ptr->state.flags[OF_REGEN])
 		regen_amount *= 2;
 	if (p_ptr->searching || p_ptr->resting)
 		regen_amount *= 2;
 
 	/* Some things slow it down */
-	if (p_ptr->state.impair_mana)
+	if (p_ptr->state.flags[OF_IMPAIR_MANA])
 		regen_amount /= 2;
 
 	/* Regenerate mana */
@@ -756,7 +756,7 @@ static void process_world(struct cave *c)
 	/*** Process Inventory ***/
 
 	/* Handle experience draining */
-	if (p_ptr->state.exp_drain)
+	if (p_ptr->state.flags[OF_DRAIN_EXP])
 	{
 		if ((p_ptr->exp > 0) && one_in_(10))
 		{
@@ -778,7 +778,7 @@ static void process_world(struct cave *c)
 	/*** Involuntary Movement ***/
 
 	/* Random teleportation */
-	if (p_ptr->state.teleport && one_in_(100))
+	if (p_ptr->state.flags[OF_TELEPORT] && one_in_(100))
 	{
 		wieldeds_notice_flag(OF_TELEPORT);
 		teleport_player(40);

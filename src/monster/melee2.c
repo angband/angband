@@ -124,14 +124,14 @@ static void remove_bad_spells(int m_idx, bitflag f[RSF_SIZE])
 	if (OPT(birth_ai_cheat))
 	{
 		/* Know weirdness */
-		if (p_ptr->state.free_act) smart |= (SM_IMM_FREE);
+		if (p_ptr->state.flags[OF_FREE_ACT]) smart |= (SM_IMM_FREE);
 		if (!p_ptr->msp) smart |= (SM_IMM_MANA);
 
 		/* Know immunities */
-		if (p_ptr->state.immune_acid) smart |= (SM_IMM_ACID);
-		if (p_ptr->state.immune_elec) smart |= (SM_IMM_ELEC);
-		if (p_ptr->state.immune_fire) smart |= (SM_IMM_FIRE);
-		if (p_ptr->state.immune_cold) smart |= (SM_IMM_COLD);
+		if (p_ptr->state.flags[OF_IM_ACID]) smart |= (SM_IMM_ACID);
+		if (p_ptr->state.flags[OF_IM_ELEC]) smart |= (SM_IMM_ELEC);
+		if (p_ptr->state.flags[OF_IM_FIRE]) smart |= (SM_IMM_FIRE);
+		if (p_ptr->state.flags[OF_IM_COLD]) smart |= (SM_IMM_COLD);
 
 		/* Know oppositions */
 		if (p_ptr->timed[TMD_OPP_ACID]) smart |= (SM_OPP_ACID);
@@ -141,22 +141,22 @@ static void remove_bad_spells(int m_idx, bitflag f[RSF_SIZE])
 		if (p_ptr->timed[TMD_OPP_POIS]) smart |= (SM_OPP_POIS);
 
 		/* Know resistances */
-		if (p_ptr->state.resist_acid) smart |= (SM_RES_ACID);
-		if (p_ptr->state.resist_elec) smart |= (SM_RES_ELEC);
-		if (p_ptr->state.resist_fire) smart |= (SM_RES_FIRE);
-		if (p_ptr->state.resist_cold) smart |= (SM_RES_COLD);
-		if (p_ptr->state.resist_pois) smart |= (SM_RES_POIS);
-		if (p_ptr->state.resist_fear) smart |= (SM_RES_FEAR);
-		if (p_ptr->state.resist_light) smart |= (SM_RES_LIGHT);
-		if (p_ptr->state.resist_dark) smart |= (SM_RES_DARK);
-		if (p_ptr->state.resist_blind) smart |= (SM_RES_BLIND);
-		if (p_ptr->state.resist_confu) smart |= (SM_RES_CONFU);
-		if (p_ptr->state.resist_sound) smart |= (SM_RES_SOUND);
-		if (p_ptr->state.resist_shard) smart |= (SM_RES_SHARD);
-		if (p_ptr->state.resist_nexus) smart |= (SM_RES_NEXUS);
-		if (p_ptr->state.resist_nethr) smart |= (SM_RES_NETHR);
-		if (p_ptr->state.resist_chaos) smart |= (SM_RES_CHAOS);
-		if (p_ptr->state.resist_disen) smart |= (SM_RES_DISEN);
+		if (p_ptr->state.flags[OF_RES_ACID]) smart |= (SM_RES_ACID);
+		if (p_ptr->state.flags[OF_RES_ELEC]) smart |= (SM_RES_ELEC);
+		if (p_ptr->state.flags[OF_RES_FIRE]) smart |= (SM_RES_FIRE);
+		if (p_ptr->state.flags[OF_RES_COLD]) smart |= (SM_RES_COLD);
+		if (p_ptr->state.flags[OF_RES_POIS]) smart |= (SM_RES_POIS);
+		if (p_ptr->state.flags[OF_RES_FEAR]) smart |= (SM_RES_FEAR);
+		if (p_ptr->state.flags[OF_RES_LIGHT]) smart |= (SM_RES_LIGHT);
+		if (p_ptr->state.flags[OF_RES_DARK]) smart |= (SM_RES_DARK);
+		if (p_ptr->state.flags[OF_RES_BLIND]) smart |= (SM_RES_BLIND);
+		if (p_ptr->state.flags[OF_RES_CONFU]) smart |= (SM_RES_CONFU);
+		if (p_ptr->state.flags[OF_RES_SOUND]) smart |= (SM_RES_SOUND);
+		if (p_ptr->state.flags[OF_RES_SHARD]) smart |= (SM_RES_SHARD);
+		if (p_ptr->state.flags[OF_RES_NEXUS]) smart |= (SM_RES_NEXUS);
+		if (p_ptr->state.flags[OF_RES_NETHR]) smart |= (SM_RES_NETHR);
+		if (p_ptr->state.flags[OF_RES_CHAOS]) smart |= (SM_RES_CHAOS);
+		if (p_ptr->state.flags[OF_RES_DISEN]) smart |= (SM_RES_DISEN);
 	}
 
 
@@ -1230,7 +1230,7 @@ bool make_attack_spell(int m_idx)
 			else
 			{
 				msg("Your mind is blasted by psionic energy.");
-				if (!p_ptr->state.resist_confu)
+				if (!p_ptr->state.flags[OF_RES_CONFU])
 					(void)inc_timed(TMD_CONFUSED, randint0(4) + 4, TRUE);
 				else
 					wieldeds_notice_flag(OF_RES_CONFU);
@@ -1257,17 +1257,17 @@ bool make_attack_spell(int m_idx)
 			{
 				msg("Your mind is blasted by psionic energy.");
 				take_hit(BRAIN_SMASH_DMG(rlev, RANDOMISE), ddesc);
-				if (!p_ptr->state.resist_blind)
+				if (!p_ptr->state.flags[OF_RES_BLIND])
 					(void)inc_timed(TMD_BLIND, 8 + randint0(8), TRUE);
 				else
 					wieldeds_notice_flag(OF_RES_BLIND);
 
-				if (!p_ptr->state.resist_confu)
+				if (!p_ptr->state.flags[OF_RES_CONFU])
 					(void)inc_timed(TMD_CONFUSED, randint0(4) + 4, TRUE);
 				else
 					wieldeds_notice_flag(OF_RES_CONFU);
 
-				if (!p_ptr->state.free_act)
+				if (!p_ptr->state.flags[OF_FREE_ACT])
 					(void)inc_timed(TMD_PARALYZED, randint0(4) + 4, TRUE);
 				else
 					wieldeds_notice_flag(OF_FREE_ACT);
@@ -1463,7 +1463,7 @@ bool make_attack_spell(int m_idx)
 			disturb(1, 0);
 			if (blind) msgt(MSG_CAST_FEAR, "%^s mumbles, and you hear scary noises.", m_name);
 			else msgt(MSG_CAST_FEAR, "%^s casts a fearful illusion.", m_name);
-			if (p_ptr->state.resist_fear)
+			if (p_ptr->state.flags[OF_RES_FEAR])
 			{
 				msg("You refuse to be frightened.");
 				wieldeds_notice_flag(OF_RES_FEAR);
@@ -1486,7 +1486,7 @@ bool make_attack_spell(int m_idx)
 			disturb(1, 0);
 			if (blind) msg("%^s mumbles.", m_name);
 			else msg("%^s casts a spell, burning your eyes!", m_name);
-			if (p_ptr->state.resist_blind)
+			if (p_ptr->state.flags[OF_RES_BLIND])
 			{
 				msg("You are unaffected!");
 				wieldeds_notice_flag(OF_RES_BLIND);
@@ -1509,7 +1509,7 @@ bool make_attack_spell(int m_idx)
 			disturb(1, 0);
 			if (blind) msg("%^s mumbles, and you hear puzzling noises.", m_name);
 			else msg("%^s creates a mesmerising illusion.", m_name);
-			if (p_ptr->state.resist_confu)
+			if (p_ptr->state.flags[OF_RES_CONFU])
 			{
 				msg("You disbelieve the feeble spell.");
 				wieldeds_notice_flag(OF_RES_CONFU);
@@ -1531,7 +1531,7 @@ bool make_attack_spell(int m_idx)
 			if (!direct) break;
 			disturb(1, 0);
 			msg("%^s drains power from your muscles!", m_name);
-			if (p_ptr->state.free_act)
+			if (p_ptr->state.flags[OF_FREE_ACT])
 			{
 				msg("You are unaffected!");
 				wieldeds_notice_flag(OF_FREE_ACT);
@@ -1554,7 +1554,7 @@ bool make_attack_spell(int m_idx)
 			disturb(1, 0);
 			if (blind) msg("%^s mumbles.", m_name);
 			else msg("%^s stares deep into your eyes!", m_name);
-			if (p_ptr->state.free_act)
+			if (p_ptr->state.flags[OF_FREE_ACT])
 			{
 				msg("You are unaffected!");
 				wieldeds_notice_flag(OF_FREE_ACT);
@@ -1705,7 +1705,7 @@ bool make_attack_spell(int m_idx)
 			disturb(1, 0);
 			if (blind) msg("%^s mumbles strangely.", m_name);
 			else msg("%^s gestures at your feet.", m_name);
-			if (p_ptr->state.resist_nexus)
+			if (p_ptr->state.flags[OF_RES_NEXUS])
 			{
 				msg("You are unaffected!");
 				wieldeds_notice_flag(OF_RES_NEXUS);
@@ -3024,7 +3024,7 @@ static void process_monster(struct cave *c, int m_idx)
 		u32b notice;
 
 		/* Aggravation */
-		if (p_ptr->state.aggravate)
+		if (p_ptr->state.flags[OF_AGGRAVATE])
 		{
 			/* Reset sleep counter */
 			woke_up = wake_monster(m_ptr);

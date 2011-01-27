@@ -159,27 +159,27 @@ bool do_dec_stat(int stat, bool perma)
 	switch (stat)
 	{
 		case A_STR:
-			if (p_ptr->state.sustain_str) sust = TRUE;
+			if (p_ptr->state.flags[OF_SUST_STR]) sust = TRUE;
 			wieldeds_notice_flag(OF_SUST_STR);
 			break;
 		case A_INT:
-			if (p_ptr->state.sustain_int) sust = TRUE;
+			if (p_ptr->state.flags[OF_SUST_INT]) sust = TRUE;
 			wieldeds_notice_flag(OF_SUST_INT);
 			break;
 		case A_WIS:
-			if (p_ptr->state.sustain_wis) sust = TRUE;
+			if (p_ptr->state.flags[OF_SUST_WIS]) sust = TRUE;
 			wieldeds_notice_flag(OF_SUST_WIS);
 			break;
 		case A_DEX:
-			if (p_ptr->state.sustain_dex) sust = TRUE;
+			if (p_ptr->state.flags[OF_SUST_DEX]) sust = TRUE;
 			wieldeds_notice_flag(OF_SUST_DEX);
 			break;
 		case A_CON:
-			if (p_ptr->state.sustain_con) sust = TRUE;
+			if (p_ptr->state.flags[OF_SUST_CON]) sust = TRUE;
 			wieldeds_notice_flag(OF_SUST_CON);
 			break;
 		case A_CHR:
-			if (p_ptr->state.sustain_chr) sust = TRUE;
+			if (p_ptr->state.flags[OF_SUST_CHR]) sust = TRUE;
 			wieldeds_notice_flag(OF_SUST_CHR);
 			break;
 	}
@@ -2069,7 +2069,7 @@ void destroy_area(int y1, int x1, int r, bool full)
 		msg("There is a searing blast of light!");
 
 		/* Blind the player */
-		if (!p_ptr->state.resist_blind && !p_ptr->state.resist_light)
+		if (!p_ptr->state.flags[OF_RES_BLIND] && !p_ptr->state.flags[OF_RES_LIGHT])
 		{
 			/* Become blind */
 			(void)inc_timed(TMD_BLIND, 10 + randint1(10), TRUE);

@@ -1509,68 +1509,9 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 
 	/*** Update all flags ***/
 
-	/* Good flags */
-	if (of_has(collect_f, OF_SLOW_DIGEST)) state->slow_digest = TRUE;
-	if (of_has(collect_f, OF_FEATHER)) state->ffall = TRUE;
-	if (of_has(collect_f, OF_REGEN)) state->regenerate = TRUE;
-	if (of_has(collect_f, OF_TELEPATHY)) state->telepathy = TRUE;
-	if (of_has(collect_f, OF_SEE_INVIS)) state->see_inv = TRUE;
-	if (of_has(collect_f, OF_FREE_ACT)) state->free_act = TRUE;
-	if (of_has(collect_f, OF_HOLD_LIFE)) state->hold_life = TRUE;
-
-	/* Weird flags */
-	if (of_has(collect_f, OF_BLESSED)) state->bless_blade = TRUE;
-
-	/* Bad flags */
-	if (of_has(collect_f, OF_IMPACT)) state->impact = TRUE;
-	if (of_has(collect_f, OF_AGGRAVATE)) state->aggravate = TRUE;
-	if (of_has(collect_f, OF_TELEPORT)) state->teleport = TRUE;
-	if (of_has(collect_f, OF_DRAIN_EXP)) state->exp_drain = TRUE;
-	if (of_has(collect_f, OF_IMPAIR_HP)) state->impair_hp = TRUE;
-	if (of_has(collect_f, OF_IMPAIR_MANA)) state->impair_mana = TRUE;
-	if (of_has(collect_f, OF_AFRAID)) state->afraid = TRUE;
-
-	/* Vulnerability flags */
-	if (of_has(collect_f, OF_VULN_FIRE)) state->vuln_fire = TRUE;
-	if (of_has(collect_f, OF_VULN_ACID)) state->vuln_acid = TRUE;
-	if (of_has(collect_f, OF_VULN_COLD)) state->vuln_cold = TRUE;
-	if (of_has(collect_f, OF_VULN_ELEC)) state->vuln_elec = TRUE;
-
-	/* Immunity flags */
-	if (of_has(collect_f, OF_IM_FIRE)) state->immune_fire = TRUE;
-	if (of_has(collect_f, OF_IM_ACID)) state->immune_acid = TRUE;
-	if (of_has(collect_f, OF_IM_COLD)) state->immune_cold = TRUE;
-	if (of_has(collect_f, OF_IM_ELEC)) state->immune_elec = TRUE;
-
-	/* Resistance flags */
-	if (of_has(collect_f, OF_RES_ACID)) state->resist_acid = TRUE;
-	if (of_has(collect_f, OF_RES_ELEC)) state->resist_elec = TRUE;
-	if (of_has(collect_f, OF_RES_FIRE)) state->resist_fire = TRUE;
-	if (of_has(collect_f, OF_RES_COLD)) state->resist_cold = TRUE;
-	if (of_has(collect_f, OF_RES_POIS)) state->resist_pois = TRUE;
-	if (of_has(collect_f, OF_RES_LIGHT)) state->resist_light = TRUE;
-	if (of_has(collect_f, OF_RES_DARK)) state->resist_dark = TRUE;
-	if (of_has(collect_f, OF_RES_SOUND)) state->resist_sound = TRUE;
-	if (of_has(collect_f, OF_RES_SHARD)) state->resist_shard = TRUE;
-	if (of_has(collect_f, OF_RES_NEXUS)) state->resist_nexus = TRUE;
-	if (of_has(collect_f, OF_RES_NETHR)) state->resist_nethr = TRUE;
-	if (of_has(collect_f, OF_RES_CHAOS)) state->resist_chaos = TRUE;
-	if (of_has(collect_f, OF_RES_DISEN)) state->resist_disen = TRUE;
-
-	/* Protection flags */
-	if (of_has(collect_f, OF_RES_FEAR)) state->resist_fear = TRUE;
-	if (of_has(collect_f, OF_RES_BLIND)) state->resist_blind = TRUE;
-	if (of_has(collect_f, OF_RES_CONFU)) state->resist_confu = TRUE;
-	if (of_has(collect_f, OF_RES_STUN)) state->resist_stun = TRUE;
-
-	/* Sustain flags */
-	if (of_has(collect_f, OF_SUST_STR)) state->sustain_str = TRUE;
-	if (of_has(collect_f, OF_SUST_INT)) state->sustain_int = TRUE;
-	if (of_has(collect_f, OF_SUST_WIS)) state->sustain_wis = TRUE;
-	if (of_has(collect_f, OF_SUST_DEX)) state->sustain_dex = TRUE;
-	if (of_has(collect_f, OF_SUST_CON)) state->sustain_con = TRUE;
-	if (of_has(collect_f, OF_SUST_CHR)) state->sustain_chr = TRUE;
-
+	for (i = 0; i < OF_MAX; i++)
+		if (of_has(collect_f, i))
+			state->flags[i] = TRUE;
 
 
 	/*** Handle stats ***/
@@ -1681,7 +1622,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	{
 		state->to_h += 12;
 		state->dis_to_h += 12;
-		state->resist_fear = TRUE;
+		state->flags[OF_RES_FEAR] = TRUE;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
 			* 105 / 100;
 	}
@@ -1693,7 +1634,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		state->dis_to_h += 24;
 		state->to_a -= 10;
 		state->dis_to_a -= 10;
-		state->resist_fear = TRUE;
+		state->flags[OF_RES_FEAR] = TRUE;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
 			* 9 / 10;
 	}
@@ -1708,7 +1649,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 
 	/* Temporary see invisible */
 	if (p_ptr->timed[TMD_SINVIS])
-		state->see_inv = TRUE;
+		state->flags[OF_SEE_INVIS] = TRUE;
 
 	/* Temporary infravision boost */
 	if (p_ptr->timed[TMD_SINFRA])
@@ -1716,21 +1657,21 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 
 	/* Temporary telepathy */
 	if (p_ptr->timed[TMD_TELEPATHY])
-		state->telepathy = TRUE;
+		state->flags[OF_TELEPATHY] = TRUE;
 
 	/* Temporary resist confusion */
 	if (p_ptr->timed[TMD_OPP_CONF])
-		state->resist_confu = TRUE;
+		state->flags[OF_RES_CONFU] = TRUE;
 
 	/* Fear */
 	if (p_ptr->timed[TMD_AFRAID] || p_ptr->timed[TMD_TERROR])
-		state->afraid = TRUE;
+		state->flags[OF_AFRAID] = TRUE;
 
 	if (p_ptr->timed[TMD_TERROR])
 		state->speed += 5;
 
 	/* Fear can come from item flags too */
-	if (state->afraid)
+	if (state->flags[OF_AFRAID])
 	{
 		state->to_h -= 20;
 		state->dis_to_h -= 20;
@@ -1965,7 +1906,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	state->icky_wield = FALSE;
 
 	/* Priest weapon penalty for non-blessed edged weapons */
-	if (player_has(PF_BLESS_WEAPON) && (!state->bless_blade) &&
+	if (player_has(PF_BLESS_WEAPON) && (!state->flags[OF_BLESSED]) &&
 	    ((o_ptr->tval == TV_SWORD) || (o_ptr->tval == TV_POLEARM)))
 	{
 		/* Reduce the real bonuses */
@@ -2049,14 +1990,14 @@ static void update_bonuses(void)
 
 
 	/* Hack -- Telepathy Change */
-	if (state->telepathy != old.telepathy)
+	if (state->flags[OF_TELEPATHY] != old.flags[OF_TELEPATHY])
 	{
 		/* Update monster visibility */
 		p_ptr->update |= (PU_MONSTERS);
 	}
 
 	/* Hack -- See Invis Change */
-	if (state->see_inv != old.see_inv)
+	if (state->flags[OF_SEE_INVIS] != old.flags[OF_SEE_INVIS])
 	{
 		/* Update monster visibility */
 		p_ptr->update |= (PU_MONSTERS);

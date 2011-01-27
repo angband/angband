@@ -1219,7 +1219,7 @@ void update_mon(int m_idx, bool full)
 	if (d <= MAX_SIGHT)
 	{
 		/* Basic telepathy */
-		if (p_ptr->state.telepathy)
+		if (p_ptr->state.flags[OF_TELEPATHY])
 		{
 			/* Empty mind, no telepathy */
 			if (rf_has(r_ptr->flags, RF_EMPTY_MIND))
@@ -1285,7 +1285,7 @@ void update_mon(int m_idx, bool full)
 				if (rf_has(r_ptr->flags, RF_INVISIBLE))
 				{
 					/* See invisible */
-					if (p_ptr->state.see_inv)
+					if (p_ptr->state.flags[OF_SEE_INVIS])
 					{
 						/* Easy to see */
 						easy = flag = TRUE;
@@ -1307,7 +1307,7 @@ void update_mon(int m_idx, bool full)
 	if (flag)
 	{
 		/* Learn about the monster's mind */
-		if (p_ptr->state.telepathy)
+		if (p_ptr->state.flags[OF_TELEPATHY])
 		{
 			flags_set(l_ptr->flags, RF_SIZE, RF_EMPTY_MIND, RF_WEIRD_MIND, RF_SMART, RF_STUPID, FLAG_END);
 		}
@@ -2672,7 +2672,7 @@ void update_smart_learn(int m_idx, int what)
 	{
 		case DRS_FREE:
 		{
-			if (p_ptr->state.free_act) m_ptr->smart |= (SM_IMM_FREE);
+			if (p_ptr->state.flags[OF_FREE_ACT]) m_ptr->smart |= (SM_IMM_FREE);
 			break;
 		}
 
@@ -2684,106 +2684,106 @@ void update_smart_learn(int m_idx, int what)
 
 		case DRS_RES_ACID:
 		{
-			if (p_ptr->state.resist_acid) m_ptr->smart |= (SM_RES_ACID);
+			if (p_ptr->state.flags[OF_RES_ACID]) m_ptr->smart |= (SM_RES_ACID);
 			if (p_ptr->timed[TMD_OPP_ACID]) m_ptr->smart |= (SM_OPP_ACID);
-			if (p_ptr->state.immune_acid) m_ptr->smart |= (SM_IMM_ACID);
+			if (p_ptr->state.flags[OF_IM_ACID]) m_ptr->smart |= (SM_IMM_ACID);
 			break;
 		}
 
 		case DRS_RES_ELEC:
 		{
-			if (p_ptr->state.resist_elec) m_ptr->smart |= (SM_RES_ELEC);
+			if (p_ptr->state.flags[OF_RES_ELEC]) m_ptr->smart |= (SM_RES_ELEC);
 			if (p_ptr->timed[TMD_OPP_ELEC]) m_ptr->smart |= (SM_OPP_ELEC);
-			if (p_ptr->state.immune_elec) m_ptr->smart |= (SM_IMM_ELEC);
+			if (p_ptr->state.flags[OF_IM_ELEC]) m_ptr->smart |= (SM_IMM_ELEC);
 			break;
 		}
 
 		case DRS_RES_FIRE:
 		{
-			if (p_ptr->state.resist_fire) m_ptr->smart |= (SM_RES_FIRE);
+			if (p_ptr->state.flags[OF_RES_FIRE]) m_ptr->smart |= (SM_RES_FIRE);
 			if (p_ptr->timed[TMD_OPP_FIRE]) m_ptr->smart |= (SM_OPP_FIRE);
-			if (p_ptr->state.immune_fire) m_ptr->smart |= (SM_IMM_FIRE);
+			if (p_ptr->state.flags[OF_IM_FIRE]) m_ptr->smart |= (SM_IMM_FIRE);
 			break;
 		}
 
 		case DRS_RES_COLD:
 		{
-			if (p_ptr->state.resist_cold) m_ptr->smart |= (SM_RES_COLD);
+			if (p_ptr->state.flags[OF_RES_COLD]) m_ptr->smart |= (SM_RES_COLD);
 			if (p_ptr->timed[TMD_OPP_COLD]) m_ptr->smart |= (SM_OPP_COLD);
-			if (p_ptr->state.immune_cold) m_ptr->smart |= (SM_IMM_COLD);
+			if (p_ptr->state.flags[OF_IM_COLD]) m_ptr->smart |= (SM_IMM_COLD);
 			break;
 		}
 
 		case DRS_RES_POIS:
 		{
-			if (p_ptr->state.resist_pois) m_ptr->smart |= (SM_RES_POIS);
+			if (p_ptr->state.flags[OF_RES_POIS]) m_ptr->smart |= (SM_RES_POIS);
 			if (p_ptr->timed[TMD_OPP_POIS]) m_ptr->smart |= (SM_OPP_POIS);
 			break;
 		}
 
 		case DRS_RES_FEAR:
 		{
-			if (p_ptr->state.resist_fear) m_ptr->smart |= (SM_RES_FEAR);
+			if (p_ptr->state.flags[OF_RES_FEAR]) m_ptr->smart |= (SM_RES_FEAR);
 			break;
 		}
 
 		case DRS_RES_LIGHT:
 		{
-			if (p_ptr->state.resist_light) m_ptr->smart |= (SM_RES_LIGHT);
+			if (p_ptr->state.flags[OF_RES_LIGHT]) m_ptr->smart |= (SM_RES_LIGHT);
 			break;
 		}
 
 		case DRS_RES_DARK:
 		{
-			if (p_ptr->state.resist_dark) m_ptr->smart |= (SM_RES_DARK);
+			if (p_ptr->state.flags[OF_RES_DARK]) m_ptr->smart |= (SM_RES_DARK);
 			break;
 		}
 
 		case DRS_RES_BLIND:
 		{
-			if (p_ptr->state.resist_blind) m_ptr->smart |= (SM_RES_BLIND);
+			if (p_ptr->state.flags[OF_RES_BLIND]) m_ptr->smart |= (SM_RES_BLIND);
 			break;
 		}
 
 		case DRS_RES_CONFU:
 		{
-			if (p_ptr->state.resist_confu) m_ptr->smart |= (SM_RES_CONFU);
+			if (p_ptr->state.flags[OF_RES_CONFU]) m_ptr->smart |= (SM_RES_CONFU);
 			break;
 		}
 
 		case DRS_RES_SOUND:
 		{
-			if (p_ptr->state.resist_sound) m_ptr->smart |= (SM_RES_SOUND);
+			if (p_ptr->state.flags[OF_RES_SOUND]) m_ptr->smart |= (SM_RES_SOUND);
 			break;
 		}
 
 		case DRS_RES_SHARD:
 		{
-			if (p_ptr->state.resist_shard) m_ptr->smart |= (SM_RES_SHARD);
+			if (p_ptr->state.flags[OF_RES_SHARD]) m_ptr->smart |= (SM_RES_SHARD);
 			break;
 		}
 
 		case DRS_RES_NEXUS:
 		{
-			if (p_ptr->state.resist_nexus) m_ptr->smart |= (SM_RES_NEXUS);
+			if (p_ptr->state.flags[OF_RES_NEXUS]) m_ptr->smart |= (SM_RES_NEXUS);
 			break;
 		}
 
 		case DRS_RES_NETHR:
 		{
-			if (p_ptr->state.resist_nethr) m_ptr->smart |= (SM_RES_NETHR);
+			if (p_ptr->state.flags[OF_RES_NETHR]) m_ptr->smart |= (SM_RES_NETHR);
 			break;
 		}
 
 		case DRS_RES_CHAOS:
 		{
-			if (p_ptr->state.resist_chaos) m_ptr->smart |= (SM_RES_CHAOS);
+			if (p_ptr->state.flags[OF_RES_CHAOS]) m_ptr->smart |= (SM_RES_CHAOS);
 			break;
 		}
 
 		case DRS_RES_DISEN:
 		{
-			if (p_ptr->state.resist_disen) m_ptr->smart |= (SM_RES_DISEN);
+			if (p_ptr->state.flags[OF_RES_DISEN]) m_ptr->smart |= (SM_RES_DISEN);
 			break;
 		}
 	}

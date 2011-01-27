@@ -288,9 +288,9 @@ static void chest_trap(int y, int x, s16b o_idx)
 	if (trap & (CHEST_POISON))
 	{
 		msg("A puff of green gas surrounds you!");
-		if (!(p_ptr->state.resist_pois || p_ptr->timed[TMD_OPP_POIS]))
+		if (!(p_ptr->state.flags[OF_RES_POIS] || p_ptr->timed[TMD_OPP_POIS]))
 			(void)inc_timed(TMD_POISONED, 10 + randint1(20), TRUE);
-		else if (p_ptr->state.resist_pois)
+		else if (p_ptr->state.flags[OF_RES_POIS])
 			wieldeds_notice_flag(OF_RES_POIS);
 	}
 
@@ -298,7 +298,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 	if (trap & (CHEST_PARALYZE))
 	{
 		msg("A puff of yellow gas surrounds you!");
-		if (!p_ptr->state.free_act)
+		if (!p_ptr->state.flags[OF_FREE_ACT])
 			(void)inc_timed(TMD_PARALYZED, 10 + randint1(20), TRUE);
 		else
 			wieldeds_notice_flag(OF_FREE_ACT);
@@ -1871,7 +1871,7 @@ static bool do_cmd_walk_test(int y, int x)
 	if ((cave->m_idx[y][x] > 0) && (mon_list[cave->m_idx[y][x]].ml))
 	{
 		/* Handle player fear */
-		if(p_ptr->state.afraid)
+		if(p_ptr->state.flags[OF_AFRAID])
 		{
 			/* Extract monster name (or "it") */
 			char m_name[80];
