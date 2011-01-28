@@ -1850,24 +1850,17 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 /*
  * Maximum size of a group of monsters
  */
-#define GROUP_MAX	32
-
+#define GROUP_MAX	25
 
 /*
- * Attempt to place a "group" of monsters around the given location
+ * Pick a monster group size. Used for monsters with the FRIENDS
+ * flag and monsters with the ESCORT/ESCORTS flags.
  */
-static bool place_monster_group(struct cave *c, int y, int x, int r_idx, bool slp)
+static int group_size_1(int r_idx)
 {
 	monster_race *r_ptr = &r_info[r_idx];
 
-	int old, n, i;
 	int total, extra = 0;
-
-	int hack_n;
-
-	byte hack_y[GROUP_MAX];
-	byte hack_x[GROUP_MAX];
-
 
 	/* Pick a group size */
 	total = randint1(13);
@@ -1886,9 +1879,6 @@ static bool place_monster_group(struct cave *c, int y, int x, int r_idx, bool sl
 		extra = randint1(extra);
 	}
 
-	/* Hack -- limit group reduction */
-	if (extra > 12) extra = 12;
-
 	/* Modify the group size */
 	total += extra;
 
@@ -1898,6 +1888,50 @@ static bool place_monster_group(struct cave *c, int y, int x, int r_idx, bool sl
 	/* Maximum size */
 	if (total > GROUP_MAX) total = GROUP_MAX;
 
+	return total;
+}
+		
+/*
+ * Pick a monster group size. Used for monsters with the FRIEND
+ * flag.
+ */
+static int group_size_2(int r_idx)
+{
+	monster_race *r_ptr = &r_info[r_idx];
+
+	int total, extra = 0;
+
+	/* Start small */
+	total = 1;
+
+	/* Easy monsters, large groups */
+	if (r_ptr->level < p_ptr->depth)
+	{
+		extra = 2 * (p_ptr->depth - r_ptr->level);
+		extra = randint1(extra);
+	}
+
+	/* Modify the group size */
+	total += extra;
+
+	/* Maximum size */
+	if (total > GROUP_MAX) total = GROUP_MAX;
+
+	return total;
+}
+
+		
+/*
+ * Attempt to place a "group" of monsters around the given location
+ */
+static bool place_monster_group(struct cave *c, int y, int x, int r_idx, bool slp, int total)
+{
+	int old, n, i;
+
+	int hack_n;
+
+	byte hack_y[GROUP_MAX];
+	byte hack_x[GROUP_MAX];
 
 	/* Save the rating */
 	old = c->rating;
@@ -2007,14 +2041,27 @@ bool place_monster_aux(struct cave *c, int y, int x, int r_idx, bool slp, bool g
 	/* Require the "group" flag */
 	if (!grp) return (TRUE);
 
+	/* Friends for certain monsters */
+	if (rf_has(r_ptr->flags, RF_FRIEND))
+	{
+		int total;
+		
+		total = group_size_2(r_idx);
+		
+		/* Attempt to place a group */
+		(void)place_monster_group(c, y, x, r_idx, slp, total);
+	}
 
 	/* Friends for certain monsters */
 	if (rf_has(r_ptr->flags, RF_FRIENDS))
 	{
+		int total;
+		
+		total = group_size_1(r_idx);
+		
 		/* Attempt to place a group */
-		(void)place_monster_group(c, y, x, r_idx, slp);
+		(void)place_monster_group(c, y, x, r_idx, slp, total);
 	}
-
 
 	/* Escorts for certain monsters */
 	if (rf_has(r_ptr->flags, RF_ESCORT))
@@ -2060,11 +2107,25 @@ bool place_monster_aux(struct cave *c, int y, int x, int r_idx, bool slp, bool g
 			(void)place_monster_one(ny, nx, z, slp);
 
 			/* Place a "group" of escorts if needed */
+			if (rf_has(r_info[z].flags, RF_FRIEND))
+			{
+				int total;
+				
+				total = group_size_2(r_idx);
+				
+				/* Attempt to place a group */
+				(void)place_monster_group(c, y, x, r_idx, slp, total);
+			}
+			
 			if (rf_has(r_info[z].flags, RF_FRIENDS) ||
 			    rf_has(r_ptr->flags, RF_ESCORTS))
 			{
+				int total;
+				
+				total = group_size_1(r_idx);
+				
 				/* Place a group of monsters */
-				(void)place_monster_group(c, ny, nx, z, slp);
+				(void)place_monster_group(c, ny, nx, z, slp, total);
 			}
 		}
 	}

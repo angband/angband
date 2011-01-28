@@ -499,7 +499,7 @@ I:110:23:20:16:5
 W:2:1:0:6
 B:HIT:HURT:1d7
 B:HIT:HURT:1d7
-F:MALE | HAS_LITE
+F:MALE | HAS_LITE | FRIEND
 F:DROP_60
 F:OPEN_DOOR
 D:An inexperienced but tough warrior.
@@ -511,7 +511,7 @@ I:110:20:20:12:5
 W:2:1:0:6
 B:HIT:HURT:1d6
 B:TOUCH:EAT_GOLD
-F:MALE | EVIL
+F:MALE | EVIL | FRIEND
 F:DROP_60
 F:OPEN_DOOR | TAKE_ITEM
 D:A rather shifty individual.
@@ -522,7 +522,7 @@ C:g
 I:110:18:20:10:10
 W:2:1:0:6
 B:HIT:HURT:1d5
-F:MALE | HAS_LITE
+F:MALE | HAS_LITE | FRIEND
 F:DROP_60
 F:OPEN_DOOR
 F:FORCE_SLEEP
@@ -536,7 +536,7 @@ C:r
 I:110:15:20:6:5
 W:2:1:0:6
 B:HIT:HURT:1d4
-F:MALE | HAS_LITE
+F:MALE | HAS_LITE | FRIEND
 F:DROP_60
 F:OPEN_DOOR
 F:FORCE_SLEEP
@@ -891,7 +891,7 @@ I:110:27:20:8:5
 W:4:1:0:18
 B:HIT:HURT:1d5
 B:HIT:HURT:1d5
-F:MALE | HAS_LITE
+F:MALE | HAS_LITE | FRIEND
 F:DROP_60
 F:OPEN_DOOR
 F:FORCE_SLEEP
@@ -906,7 +906,7 @@ I:110:27:20:16:5
 W:4:1:0:18
 B:HIT:HURT:1d7
 B:HIT:HURT:1d7
-F:MALE | HAS_LITE
+F:MALE | HAS_LITE | FRIEND
 F:DROP_60
 F:OPEN_DOOR
 F:FORCE_SLEEP
@@ -1131,19 +1131,8 @@ D: terrible smell it exudes is also very hard to get rid of...
 
 ### Dungeon level 6 ###
 
-N:77:Wizard's apprentice
-T:person
-C:r
-I:110:15:20:6:10
-W:6:2:0:6
-B:HIT:HURT:1d4
-F:MALE | FRIENDS
-F:DROP_60
-F:OPEN_DOOR
-F:FORCE_SLEEP
-S:1_IN_12
-S:BLIND | BLINK | CONF | MISSILE
-D:He is leaving behind a trail of dropped spell components.
+#N:77:Wizard's apprentice
+#Deleted
 
 N:88:Purple mushroom patch
 T:mushroom
@@ -1156,43 +1145,14 @@ B:SPORE:LOSE_CON:1d2
 F:NEVER_MOVE
 D:Yum!  It looks quite tasty.
 
-N:89:Adept
-T:person
-C:g
-I:110:18:20:10:5
-W:6:2:0:6
-B:HIT:HURT:1d5
-F:MALE | FRIENDS
-F:DROP_40
-F:OPEN_DOOR
-F:FORCE_SLEEP
-S:1_IN_12
-S:CAUSE_1 | HEAL | SCARE
-D:He is tripping over his priestly robes.
+#N:89:Adept
+#Deleted
 
-N:90:Soldier
-T:person
-C:u
-I:110:23:20:16:5
-W:6:2:0:6
-B:HIT:HURT:1d7
-B:HIT:HURT:1d7
-F:MALE | FRIENDS
-F:DROP_40
-F:OPEN_DOOR
-D:He looks inexperienced but tough.
+#N:90:Soldier
+#Deleted
 
-N:91:Footpad
-T:person
-C:b
-I:110:20:20:12:5
-W:6:2:0:6
-B:HIT:HURT:1d6
-B:TOUCH:EAT_GOLD
-F:MALE | EVIL | FRIENDS
-F:DROP_40
-F:OPEN_DOOR | TAKE_ITEM
-D:A rather shifty individual.
+#N:91:Footpad
+#Deleted
 
 N:92:Brown mold
 T:mold
@@ -1439,20 +1399,8 @@ B:HIT:HURT:1d6
 F:DROP_40
 D:It is a strange small humanoid.
 
-N:114:Tracker
-T:person
-C:W
-I:110:27:20:8:5
-W:8:2:0:18
-B:HIT:HURT:1d5
-B:HIT:HURT:1d5
-F:MALE | FRIENDS
-F:DROP_60
-F:OPEN_DOOR
-F:FORCE_SLEEP
-S:1_IN_9
-S:ARROW_1 | MISSILE
-D:An agile hunter, ready and relaxed.
+#N:114:Tracker
+#Deleted
 
 N:115:Giant salamander
 T:reptile
@@ -1487,20 +1435,8 @@ F:ORC | EMPTY_MIND
 F:OPEN_DOOR | BASH_DOOR
 D:It is an animated orc skeleton.
 
-N:118:Honor guard
-T:person
-C:w
-I:110:27:20:16:5
-W:8:2:0:18
-B:HIT:HURT:1d7
-B:HIT:HURT:1d7
-F:MALE | FRIENDS
-F:DROP_60
-F:OPEN_DOOR
-F:FORCE_SLEEP
-S:1_IN_9
-S:CAUSE_1 | SCARE
-D:An adventurer both devoutly religious and skillful in combat.
+#N:118:Honor guard
+#Deleted
 
 N:119:Lemure
 T:minor demon
@@ -3847,7 +3783,7 @@ I:110:130:15:40:10
 W:25:2:0:60
 B:STING:PARALYZE:2d6
 B:STING:PARALYZE:2d6
-F:RAND_25 | BASH_DOOR
+F:RAND_25 | BASH_DOOR | FRIEND
 F:IM_POIS
 D:A hideous centipede covered in slime and with glowing tentacles around its
 D: head.
@@ -5187,18 +5123,8 @@ D: deep within your body.
 
 ### Dungeon level 34 ###
 
-N:353:Carrion crawler
-T:centipede
-C:o
-I:110:130:15:40:10
-W:34:2:0:100
-B:STING:PARALYZE:2d6
-B:STING:PARALYZE:2d6
-F:FRIENDS
-F:RAND_25 | BASH_DOOR
-F:IM_POIS
-D:A hideous centipede covered in slime and with glowing tentacles around its
-D: head.
+#N:353:Carrion crawler
+#Deleted
 
 N:354:Master thief
 T:person
@@ -5406,11 +5332,11 @@ N:361:Hellhound
 T:canine
 C:r
 I:120:352:25:80:30
-W:35:3:0:600
+W:35:2:0:600
 B:BITE:FIRE:3d12
 B:BITE:FIRE:3d12
 B:BITE:FIRE:3d12
-F:EVIL | HAS_LITE
+F:EVIL | HAS_LITE | FRIEND
 F:RAND_25 | BASH_DOOR | MOVE_BODY
 F:IM_FIRE
 F:FORCE_SLEEP
@@ -5525,11 +5451,11 @@ N:373:M[^u]mak
 T:quadruped
 C:s
 I:110:495:20:55:100
-W:35:3:0:2100
+W:35:2:0:2100
 B:BUTT:HURT:4d6
 B:BUTT:HURT:4d6
 B:CRUSH:HURT:4d4
-F:ANIMAL
+F:ANIMAL | FRIEND
 D:A massive elephantine form with eyes twisted by madness.
 
 N:374:Giant fire ant
@@ -6968,16 +6894,7 @@ S:BO_FIRE
 S:S_DEMON
 D:It is demon with arms and pincers, its form a true mockery of life.
 
-N:461:M[^u]mak
-T:quadruped
-C:s
-I:110:495:20:55:100
-W:43:2:0:2100
-B:BUTT:HURT:4d6
-B:BUTT:HURT:4d6
-B:CRUSH:HURT:4d4
-F:ANIMAL | FRIENDS
-D:A massive elephantine form with eyes twisted by madness.
+#N:461:M[^u]mak
 
 N:462:Ancient multi-hued dragon
 T:ancient dragon
@@ -9172,21 +9089,8 @@ D: demon armies.
 
 ### Dungeon level 78 ###
 
-N:537:Hellhound
-T:canine
-C:r
-I:120:352:25:80:30
-W:78:2:0:600
-B:BITE:FIRE:3d12
-B:BITE:FIRE:3d12
-B:BITE:FIRE:3d12
-F:EVIL | FRIENDS | HAS_LITE
-F:RAND_25 | BASH_DOOR | MOVE_BODY
-F:IM_FIRE
-F:FORCE_SLEEP
-S:1_IN_5
-S:BR_FIRE
-D:It is a giant dog that glows with heat.  Flames pour from its nostrils.
+#N:537:Hellhound
+#Deleted
 
 ### Dungeon level 79 ###
 
