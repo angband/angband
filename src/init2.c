@@ -1563,6 +1563,9 @@ static enum parser_error parse_r_t(struct parser *p) {
 	/* The template sets the default display character */
 	r->d_char = rb_info[r->rval].d_char;
 	
+	/* Give the monster its default flags */
+	rf_union(r->flags, rb_info[r->rval].flags);
+	
 	return PARSE_ERROR_NONE;
 }
 
@@ -1699,10 +1702,6 @@ static enum parser_error parse_r_f(struct parser *p) {
 		s = strtok(NULL, " |");
 	}
 	
-	/* Add the "base monster" flags to the monster */
-	if (r->rval > 0)
-		rf_union(r->flags, rb_info[r->rval].flags);
-
 	mem_free(flags);
 	return PARSE_ERROR_NONE;
 }
