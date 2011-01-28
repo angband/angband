@@ -383,7 +383,7 @@ void dump_features(ang_file *fff)
 	for (i = 0; i < z_info->f_max; i++)
 	{
 		feature_type *f_ptr = &f_info[i];
-		size_t i;
+		size_t j;
 
 		/* Skip non-entries */
 		if (!f_ptr->name) continue;
@@ -392,22 +392,22 @@ void dump_features(ang_file *fff)
 		if ((f_ptr->mimic != i) && (i != FEAT_INVIS)) continue;
 
 		file_putf(fff, "# Terrain: %s\n", f_ptr->name);
-		for (i = 0; i < FEAT_LIGHTING_MAX; i++)
+		for (j = 0; j < FEAT_LIGHTING_MAX; j++)
 		{
-			byte attr = f_ptr->x_attr[i];
-			byte chr = f_ptr->x_char[i];
+			byte attr = f_ptr->x_attr[j];
+			byte chr = f_ptr->x_char[j];
 
 			const char *light = NULL;
-			if (i == FEAT_LIGHTING_BRIGHT)
+			if (j == FEAT_LIGHTING_BRIGHT)
 				light = "bright";
-			else if (i == FEAT_LIGHTING_LIT)
+			else if (j == FEAT_LIGHTING_LIT)
 				light = "lit";
-			else if (i == FEAT_LIGHTING_DARK)
+			else if (j == FEAT_LIGHTING_DARK)
 				light = "dark";
 
 			assert(light);
 
-			file_putf(fff, "F:%d:%s:%d:%d\n", i, light, attr, chr);
+			file_putf(fff, "F:%d:%s:%d:%d\n", j, light, attr, chr);
 		}
 	}
 }

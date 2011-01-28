@@ -145,12 +145,12 @@ bool set_timed(int idx, int v, bool notify)
 	if (idx == TMD_STUN) return set_stun(v);
 	else if (idx == TMD_CUT) return set_cut(v);
 
-	/* Don't mention some effects. */
-	if (idx == TMD_OPP_ACID && p_ptr->state.immune_acid) notify = FALSE;
-	else if (idx == TMD_OPP_ELEC && p_ptr->state.immune_elec) notify = FALSE;
-	else if (idx == TMD_OPP_FIRE && p_ptr->state.immune_fire) notify = FALSE;
-	else if (idx == TMD_OPP_COLD && p_ptr->state.immune_cold) notify = FALSE;
-	else if (idx == TMD_OPP_CONF && p_ptr->state.resist_confu) notify = FALSE;
+	/* Don't mention effects which already match the player state. */
+	if (idx == TMD_OPP_ACID && p_ptr->state.flags[OF_IM_ACID]) notify = FALSE;
+	else if (idx == TMD_OPP_ELEC && p_ptr->state.flags[OF_IM_ELEC]) notify = FALSE;
+	else if (idx == TMD_OPP_FIRE && p_ptr->state.flags[OF_IM_FIRE]) notify = FALSE;
+	else if (idx == TMD_OPP_COLD && p_ptr->state.flags[OF_IM_COLD]) notify = FALSE;
+	else if (idx == TMD_OPP_CONF && p_ptr->state.flags[OF_RES_CONFU]) notify = FALSE;
 
 	/* Find the effect */
 	effect = &effects[idx];

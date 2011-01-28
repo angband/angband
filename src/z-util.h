@@ -13,8 +13,8 @@ extern char *argv0;
 
 
 /* Aux functions */
-extern void (*plog_aux)(cptr);
-extern void (*quit_aux)(cptr);
+extern void (*plog_aux)(const char *);
+extern void (*quit_aux)(const char *);
 
 
 /**** Available Functions ****/
@@ -27,7 +27,7 @@ extern int my_stricmp(const char *s1, const char *s2);
 /**
  * Case insensitive comparison between two strings, up to n characters long.
  */
-extern int my_strnicmp(cptr a, cptr b, int n);
+extern int my_strnicmp(const char *a, const char *b, int n);
 
 /**
  * Case-insensitive strstr
@@ -60,18 +60,18 @@ extern size_t my_strcpy(char *buf, const char *src, size_t bufsize);
 extern size_t my_strcat(char *buf, const char *src, size_t bufsize);
 
 /* Test equality, prefix, suffix */
-extern bool streq(cptr s, cptr t);
-extern bool prefix(cptr s, cptr t);
-extern bool suffix(cptr s, cptr t);
+extern bool streq(const char *s, const char *t);
+extern bool prefix(const char *s, const char *t);
+extern bool suffix(const char *s, const char *t);
 
 #define streq(s, t)		(!strcmp(s, t))
 
 
 /* Print an error message */
-extern void plog(cptr str);
+extern void plog(const char *str);
 
 /* Exit, with optional message */
-extern void quit(cptr str);
+extern void quit(const char *str);
 
 
 /* Sorting functions */

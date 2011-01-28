@@ -1058,7 +1058,7 @@ static const char *f_info_flags[] =
 	NULL
 };
 
-static errr grab_one_flag(u32b *flags, cptr names[], cptr what)
+static errr grab_one_flag(u32b *flags, const char *names[], const char *what)
 {
 	int i;
 
@@ -3825,6 +3825,15 @@ bool init_angband(void)
 
 	/* Sneakily init command list */
 	cmd_init();
+
+#ifdef ALLOW_BORG /* apw */
+	/* Allow the screensaver to do its work  */
+	if (screensaver)
+	{
+		event_signal(EVENT_LEAVE_INIT);
+		return !file_exists(savefile);
+	}
+#endif /* ALLOW_BORG */
 
 	/* Ask for a "command" until we get one we like. */
 	while (1)

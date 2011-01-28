@@ -123,7 +123,7 @@ void do_cmd_change_name(void)
 
 	int mode = 0;
 
-	cptr p;
+	const char *p;
 
 	/* Prompt */
 	p = "['c' to change name, 'f' to file, 'h' to change mode, or ESC]";

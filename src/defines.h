@@ -163,7 +163,8 @@
 /*
  * Misc constants
  */
-#define TOWN_DAWN		10000	/* Number of turns from dawn to dawn XXX */
+#define TOWN_DAWN		10000	/* Number of turns from dawn to dawn */
+#define TOWN_DUSK         5000    /* Number of turns from dawn to dusk */
 #define BREAK_GLYPH		550	/* Rune of protection resistance */
 #define BTH_PLUS_ADJ    	3 	/* Adjust BTH per plus-to-hit */
 #define MON_MULT_ADJ		8 	/* High value slows multiplication */

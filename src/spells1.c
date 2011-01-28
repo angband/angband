@@ -461,7 +461,7 @@ static void bolt_pict(int y, int x, int ny, int nx, int typ, byte *a, char *c)
  * when he dies, since the "You die." message is shown before setting
  * the player to "dead".
  */
-void take_hit(int dam, cptr kb_str)
+void take_hit(int dam, const char *kb_str)
 {
 	int old_chp = p_ptr->chp;
 
@@ -822,7 +822,7 @@ static int minus_ac(void)
 /*
  * Hurt the player with Acid
  */
-void acid_dam(int dam, cptr kb_str)
+void acid_dam(int dam, const char *kb_str)
 {
 	int n;
 	int inv;
@@ -830,11 +830,11 @@ void acid_dam(int dam, cptr kb_str)
 	if (dam <= 0) return;
 
 	/* Resist the damage */
-	if (p_ptr->state.immune_acid) n = 3;
-	else if (p_ptr->state.resist_acid) n = 1;
+	if (p_ptr->state.flags[OF_IM_ACID]) n = 3;
+	else if (p_ptr->state.flags[OF_RES_ACID]) n = 1;
 	else n = 0;
 
-	if (p_ptr->state.vuln_acid) n--;
+	if (p_ptr->state.flags[OF_VULN_ACID]) n--;
 	if (p_ptr->timed[TMD_OPP_ACID]) n++;
 
 	/* Notice flags */
@@ -865,7 +865,7 @@ void acid_dam(int dam, cptr kb_str)
 /*
  * Hurt the player with electricity
  */
-void elec_dam(int dam, cptr kb_str)
+void elec_dam(int dam, const char *kb_str)
 {
 	int n;
 	int inv;
@@ -873,11 +873,11 @@ void elec_dam(int dam, cptr kb_str)
 	if (dam <= 0) return;
 
 	/* Resist the damage */
-	if (p_ptr->state.immune_elec) n = 3;
-	else if (p_ptr->state.resist_elec) n = 1;
+	if (p_ptr->state.flags[OF_IM_ELEC]) n = 3;
+	else if (p_ptr->state.flags[OF_RES_ELEC]) n = 1;
 	else n = 0;
 
-	if (p_ptr->state.vuln_elec) n--;
+	if (p_ptr->state.flags[OF_VULN_ELEC]) n--;
 	if (p_ptr->timed[TMD_OPP_ELEC]) n++;
 
 	/* Notice flags */
@@ -905,7 +905,7 @@ void elec_dam(int dam, cptr kb_str)
 /*
  * Hurt the player with Fire
  */
-void fire_dam(int dam, cptr kb_str)
+void fire_dam(int dam, const char *kb_str)
 {
 	int n;
 	int inv;
@@ -913,11 +913,11 @@ void fire_dam(int dam, cptr kb_str)
 	if (dam <= 0) return;
 
 	/* Resist the damage */
-	if (p_ptr->state.immune_fire) n = 3;
-	else if (p_ptr->state.resist_fire) n = 1;
+	if (p_ptr->state.flags[OF_IM_FIRE]) n = 3;
+	else if (p_ptr->state.flags[OF_RES_FIRE]) n = 1;
 	else n = 0;
 
-	if (p_ptr->state.vuln_fire) n--;
+	if (p_ptr->state.flags[OF_VULN_FIRE]) n--;
 	if (p_ptr->timed[TMD_OPP_FIRE]) n++;
 
 	/* Notice flags */
@@ -945,7 +945,7 @@ void fire_dam(int dam, cptr kb_str)
 /*
  * Hurt the player with Cold
  */
-void cold_dam(int dam, cptr kb_str)
+void cold_dam(int dam, const char *kb_str)
 {
 	int n;
 	int inv;
@@ -953,11 +953,11 @@ void cold_dam(int dam, cptr kb_str)
 	if (dam <= 0) return;
 
 	/* Resist the damage */
-	if (p_ptr->state.immune_cold) n = 3;
-	else if (p_ptr->state.resist_cold) n = 1;
+	if (p_ptr->state.flags[OF_IM_COLD]) n = 3;
+	else if (p_ptr->state.flags[OF_RES_COLD]) n = 1;
 	else n = 0;
 
-	if (p_ptr->state.vuln_cold) n--;
+	if (p_ptr->state.flags[OF_VULN_COLD]) n--;
 	if (p_ptr->timed[TMD_OPP_COLD]) n++;
 
 	/* Notice flags */
@@ -1580,7 +1580,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvio
 		bool plural = FALSE;
 		bool do_kill = FALSE;
 
-		cptr note_kill = NULL;
+		const char *note_kill = NULL;
 
 		/* Get the object */
 		o_ptr = object_byid(this_o_idx);
@@ -1855,7 +1855,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 	monster_race *r_ptr;
 	monster_lore *l_ptr;
 
-	cptr name;
+	const char *name;
 
 	/* Is the monster "seen"? */
 	bool seen = FALSE;
@@ -1890,10 +1890,10 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 	char m_poss[80];
 
 	/* Assume no note */
-	cptr note = NULL;
+	const char *note = NULL;
 
 	/* Assume a default death */
-	cptr note_dies = " dies.";
+	const char *note_dies = " dies.";
 
 
 	/* Walls protect monsters */
@@ -3147,7 +3147,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 	char killer[80];
 
 	/* Hack -- messages */
-	cptr act = NULL;
+	const char *act = NULL;
 
 
 	/* No player here */
@@ -3213,7 +3213,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_POIS:
 		{
 			if (blind) msg("You are hit by poison!");
-			if (p_ptr->state.resist_pois)
+			if (p_ptr->state.flags[OF_RES_POIS])
 			{
 				dam = RES_POIS_ADJ(dam, NOT_USED);
 				wieldeds_notice_flag(OF_RES_POIS);
@@ -3223,7 +3223,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 				dam = RES_POIS_ADJ(dam, NOT_USED);
 
 			take_hit(dam, killer);
-			if (!(p_ptr->state.resist_pois || p_ptr->timed[TMD_OPP_POIS]))
+			if (!(p_ptr->state.flags[OF_RES_POIS] || p_ptr->timed[TMD_OPP_POIS]))
 			{
 				(void)inc_timed(TMD_POISONED, randint0(dam) + 10, TRUE);
 			}
@@ -3260,7 +3260,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		{
 			if (blind) msg("You are hit by something!");
 			take_hit(dam, killer);
-			if (!p_ptr->state.resist_stun)
+			if (!p_ptr->state.flags[OF_RES_STUN])
 			{
 				int k = (randint1((dam > 40) ? 35 : (dam * 3 / 4 + 5)));
 				(void)inc_timed(TMD_STUN, k, TRUE);
@@ -3276,14 +3276,14 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_NETHER:
 		{
 			if (blind) msg("You are hit by something strange!");
-			if (p_ptr->state.resist_nethr)
+			if (p_ptr->state.flags[OF_RES_NETHR])
 			{
 				dam = RES_NETH_ADJ(dam, RANDOMISE);
 				wieldeds_notice_flag(OF_RES_NETHR);
 			}
 			else
 			{
-				if (p_ptr->state.hold_life && (randint0(100) < 75))
+				if (p_ptr->state.flags[OF_HOLD_LIFE] && (randint0(100) < 75))
 				{
 					msg("You keep hold of your life force!");
 					wieldeds_notice_flag(OF_HOLD_LIFE);
@@ -3292,7 +3292,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 				{
 					s32b d = 200 + (p_ptr->exp / 100) * MON_DRAIN_LIFE;
 
-					if (p_ptr->state.hold_life)
+					if (p_ptr->state.flags[OF_HOLD_LIFE])
 					{
 						msg("You feel your life slipping away!");
 						lose_exp(d / 10);
@@ -3313,12 +3313,12 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_WATER:
 		{
 			if (blind) msg("You are hit by something!");
-			if (!p_ptr->state.resist_stun)
+			if (!p_ptr->state.flags[OF_RES_STUN])
 				(void)inc_timed(TMD_STUN, randint1(40), TRUE);
 			else
 				wieldeds_notice_flag(OF_RES_STUN);
 
-			if (!p_ptr->state.resist_confu)
+			if (!p_ptr->state.flags[OF_RES_CONFU])
 				(void)inc_timed(TMD_CONFUSED, randint1(5) + 5, TRUE);
 			else
 				wieldeds_notice_flag(OF_RES_CONFU);
@@ -3331,24 +3331,25 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_CHAOS:
 		{
 			if (blind) msg("You are hit by something strange!");
-			if (p_ptr->state.resist_chaos)
+			if (p_ptr->state.flags[OF_RES_CHAOS])
 			{
 				dam = RES_CHAO_ADJ(dam, RANDOMISE);
 				wieldeds_notice_flag(OF_RES_CHAOS);
 			}
-			if (!p_ptr->state.resist_confu && !p_ptr->state.resist_chaos)
+			if (!p_ptr->state.flags[OF_RES_CONFU] &&
+					!p_ptr->state.flags[OF_RES_CHAOS])
 			{
 				(void)inc_timed(TMD_CONFUSED, randint0(20) + 10, TRUE);
 			}
 
-			if (!p_ptr->state.resist_chaos)
+			if (!p_ptr->state.flags[OF_RES_CHAOS])
 				(void)inc_timed(TMD_IMAGE, randint1(10), TRUE);
 			else
 				wieldeds_notice_flag(OF_RES_CHAOS);
 
-			if (!p_ptr->state.resist_chaos)
+			if (!p_ptr->state.flags[OF_RES_CHAOS])
 			{
-				if (p_ptr->state.hold_life && (randint0(100) < 75))
+				if (p_ptr->state.flags[OF_HOLD_LIFE] && (randint0(100) < 75))
 				{
 					msg("You keep hold of your life force!");
 					wieldeds_notice_flag(OF_HOLD_LIFE);
@@ -3357,7 +3358,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 				{
 					s32b d = 5000 + (p_ptr->exp / 100) * MON_DRAIN_LIFE;
 
-					if (p_ptr->state.hold_life)
+					if (p_ptr->state.flags[OF_HOLD_LIFE])
 					{
 						msg("You feel your life slipping away!");
 						lose_exp(d / 10);
@@ -3383,7 +3384,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_SHARD:
 		{
 			if (blind) msg("You are hit by something sharp!");
-			if (p_ptr->state.resist_shard)
+			if (p_ptr->state.flags[OF_RES_SHARD])
 			{
 				dam = RES_SHAR_ADJ(dam, RANDOMISE);
 				wieldeds_notice_flag(OF_RES_SHARD);
@@ -3400,10 +3401,10 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_SOUND:
 		{
 			if (blind) msg("You are hit by something!");
-			if (p_ptr->state.resist_sound) {
+			if (p_ptr->state.flags[OF_RES_SOUND]) {
 				dam = RES_SOUN_ADJ(dam, RANDOMISE);
 				wieldeds_notice_flag(OF_RES_SOUND);
-			} else if (!p_ptr->state.resist_stun) {
+			} else if (!p_ptr->state.flags[OF_RES_STUN]) {
 				int k = (randint1((dam > 90) ? 35 : (dam / 3 + 5)));
 				(void)inc_timed(TMD_STUN, k, TRUE);
 			} else {
@@ -3418,7 +3419,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_DISENCHANT:
 		{
 			if (blind) msg("You are hit by something strange!");
-			if (p_ptr->state.resist_disen)
+			if (p_ptr->state.flags[OF_RES_DISEN])
 			{
 				dam = RES_DISE_ADJ(dam, RANDOMISE);
 				wieldeds_notice_flag(OF_RES_DISEN);
@@ -3435,7 +3436,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_NEXUS:
 		{
 			if (blind) msg("You are hit by something strange!");
-			if (p_ptr->state.resist_nexus)
+			if (p_ptr->state.flags[OF_RES_NEXUS])
 			{
 				dam = RES_NEXU_ADJ(dam, RANDOMISE);
 				wieldeds_notice_flag(OF_RES_NEXUS);
@@ -3452,7 +3453,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_FORCE:
 		{
 			if (blind) msg("You are hit by something!");
-			if (!p_ptr->state.resist_stun)
+			if (!p_ptr->state.flags[OF_RES_STUN])
 				(void)inc_timed(TMD_STUN, randint1(20), TRUE);
 			else
 				wieldeds_notice_flag(OF_RES_STUN);
@@ -3474,16 +3475,16 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_LIGHT:
 		{
 			if (blind) msg("You are hit by something!");
-			if (p_ptr->state.resist_light)
+			if (p_ptr->state.flags[OF_RES_LIGHT])
 			{
 				dam = RES_LIGHT_ADJ(dam, RANDOMISE);
 				wieldeds_notice_flag(OF_RES_LIGHT);
 			}
-			else if (!blind && !p_ptr->state.resist_blind)
+			else if (!blind && !p_ptr->state.flags[OF_RES_BLIND])
 			{
 				(void)inc_timed(TMD_BLIND, randint1(5) + 2, TRUE);
 			}
-			else if (p_ptr->state.resist_blind)
+			else if (p_ptr->state.flags[OF_RES_BLIND])
 			{
 				wieldeds_notice_flag(OF_RES_BLIND);
 			}
@@ -3495,16 +3496,16 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_DARK:
 		{
 			if (blind) msg("You are hit by something!");
-			if (p_ptr->state.resist_dark)
+			if (p_ptr->state.flags[OF_RES_DARK])
 			{
 				dam = RES_DARK_ADJ(dam, RANDOMISE);
 				wieldeds_notice_flag(OF_RES_DARK);
 			}
-			else if (!blind && !p_ptr->state.resist_blind)
+			else if (!blind && !p_ptr->state.flags[OF_RES_BLIND])
 			{
 				(void)inc_timed(TMD_BLIND, randint1(5) + 2, TRUE);
 			}
-			else if (p_ptr->state.resist_blind)
+			else if (p_ptr->state.flags[OF_RES_BLIND])
 			{
 				wieldeds_notice_flag(OF_RES_BLIND);
 			}
@@ -3572,7 +3573,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 				teleport_player(5);
 
 			(void)inc_timed(TMD_SLOW, randint0(4) + 4, TRUE);
-			if (!p_ptr->state.resist_stun)
+			if (!p_ptr->state.flags[OF_RES_STUN])
 			{
 				int k = (randint1((dam > 90) ? 35 : (dam / 3 + 5)));
 				(void)inc_timed(TMD_STUN, k, TRUE);
@@ -3607,12 +3608,12 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (blind) msg("You are hit by something sharp!");
 			cold_dam(dam, killer);
 
-			if (!p_ptr->state.resist_shard)
+			if (!p_ptr->state.flags[OF_RES_SHARD])
 				(void)inc_timed(TMD_CUT, damroll(5, 8), TRUE);
 			else
 				wieldeds_notice_flag(OF_RES_SHARD);
 
-			if (!p_ptr->state.resist_stun)
+			if (!p_ptr->state.flags[OF_RES_STUN])
 				(void)inc_timed(TMD_STUN, randint1(15), TRUE);
 			else
 				wieldeds_notice_flag(OF_RES_STUN);

@@ -42,59 +42,7 @@ typedef struct
 	bool heavy_shoot;	/* Heavy shooter */
 	bool icky_wield;	/* Icky weapon */
 
-	bool sustain_str;	/* Keep strength */
-	bool sustain_int;	/* Keep intelligence */
-	bool sustain_wis;	/* Keep wisdom */
-	bool sustain_dex;	/* Keep dexterity */
-	bool sustain_con;	/* Keep constitution */
-	bool sustain_chr;	/* Keep charisma */
-
-	bool vuln_acid;
-	bool vuln_elec;
-	bool vuln_fire;
-	bool vuln_cold;
-
-	bool immune_acid;	/* Immunity to acid */
-	bool immune_elec;	/* Immunity to lightning */
-	bool immune_fire;	/* Immunity to fire */
-	bool immune_cold;	/* Immunity to cold */
-
-	bool resist_acid;	/* Resist acid */
-	bool resist_elec;	/* Resist lightning */
-	bool resist_fire;	/* Resist fire */
-	bool resist_cold;	/* Resist cold */
-	bool resist_pois;	/* Resist poison */
-
-	bool resist_fear;	/* Resist fear */
-	bool resist_light;	/* Resist light */
-	bool resist_dark;	/* Resist darkness */
-	bool resist_blind;	/* Resist blindness */
-	bool resist_confu;	/* Resist confusion */
-	bool resist_sound;	/* Resist sound */
-	bool resist_shard;	/* Resist shards */
-	bool resist_nexus;	/* Resist nexus */
-	bool resist_nethr;	/* Resist nether */
-	bool resist_chaos;	/* Resist chaos */
-	bool resist_disen;	/* Resist disenchant */
-	bool resist_stun;	/* Resist stunning */
-
-	bool slow_digest;	/* Slower digestion */
-	bool impair_hp;   	/* Slow HP regeneration */
-	bool impair_mana; 	/* Slow mana regeneration */
-	bool ffall;		/* Feather falling */
-	bool regenerate;	/* Regeneration */
-	bool telepathy;		/* Telepathy */
-	bool see_inv;		/* See invisible */
-	bool free_act;		/* Free action */
-	bool hold_life;		/* Hold life */
-	bool afraid; 		/* Afraid */
-
-	bool impact;		/* Earthquake blows */
-	bool aggravate;		/* Aggravate monsters */
-	bool teleport;		/* Random teleporting */
-	bool exp_drain;		/* Experience draining */
-
-	bool bless_blade;	/* Blessed blade */
+	bool flags[OF_MAX];	/* Status flags from race and items */
 } player_state;
 
 
@@ -273,8 +221,8 @@ typedef struct player
  */
 typedef struct player_sex
 {
-	cptr title;			/* Type of sex */
-	cptr winner;		/* Name of winner */
+	const char *title;			/* Type of sex */
+	const char *winner;		/* Name of winner */
 } player_sex;
 
 

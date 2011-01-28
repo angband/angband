@@ -22,8 +22,10 @@
 #include "files.h"
 #include "game-cmd.h"
 #include "game-event.h"
+#include "object/tvalsval.h"
 #include "ui-birth.h"
 #include "ui-menu.h"
+
 
 /*
  * Overview
@@ -152,7 +154,7 @@ static menu_type sex_menu, race_menu, class_menu, roller_menu;
 /* Locations of the menus, etc. on the screen */
 #define HEADER_ROW       1
 #define QUESTION_ROW     7
-#define TABLE_ROW       10
+#define TABLE_ROW       9
 
 #define QUESTION_COL     2
 #define SEX_COL          2
@@ -217,13 +219,56 @@ static void skill_help(s16b skills[], int mhp, int exp, int infra)
 		text_out_e("\n");
 }
 
+static const char *get_flag_desc(bitflag flag)
+{
+	switch (flag)
+	{
+		case OF_SUST_STR: return "Sustains strength";
+		case OF_SUST_DEX: return "Sustains dexterity";
+		case OF_SUST_CON: return "Sustains constitution";
+		case OF_RES_POIS: return "Resists poison";
+		case OF_RES_LIGHT: return "Resists light damage";
+		case OF_RES_DARK: return "Resists darkness damage";
+		case OF_RES_BLIND: return "Resists blindness";
+		case OF_HOLD_LIFE: return "Sustains experience";
+		case OF_FREE_ACT: return "Resists paralysis";
+		case OF_REGEN: return "Regenerates quickly";
+		case OF_SEE_INVIS: return "Sees invisible creatures";
+
+		default: return "Undocumented flag";
+	}
+}
+
+static const char *get_pflag_desc(bitflag flag)
+{
+	switch (flag)
+	{
+		case PF_EXTRA_SHOT: return "Gains extra shots with bow";
+		case PF_BRAVERY_30: return "Gains immunity to fear";
+		case PF_BLESS_WEAPON: return "Prefers blunt/blessed weapons";
+		case PF_CUMBER_GLOVE: return NULL;
+		case PF_ZERO_FAIL: return "Advanced spellcasting";
+		case PF_BEAM: return NULL;
+		case PF_CHOOSE_SPELLS: return NULL;
+		case PF_PSEUDO_ID_IMPROV: return NULL;
+		case PF_KNOW_MUSHROOM: return "Identifies mushrooms";
+		case PF_KNOW_ZAPPER: return "Identifies magic devices";
+		case PF_SEE_ORE: return "Senses ore/minerals";
+		default: return "Undocumented pflag";
+	}
+}
+
 static void race_help(int i, void *db, const region *l)
 {
 	int j;
+	size_t k;
 	struct player_race *r = player_id2race(i);
+	int len = (A_MAX + 1) / 2;
 
-	if (!r)
-		return;
+	int n_flags = 0;
+	int flag_space = 3;
+
+	if (!r) return;
 
 	/* Output to the screen */
 	text_out_hook = text_out_to_screen;
@@ -232,13 +277,42 @@ static void race_help(int i, void *db, const region *l)
 	text_out_indent = RACE_AUX_COL;
 	Term_gotoxy(RACE_AUX_COL, TABLE_ROW);
 
-	for (j = 0; j < A_MAX; j++) 
+	for (j = 0; j < len; j++)
 	{  
-		text_out_e("%s%+d\n", stat_names_reduced[j], r->r_adj[j]);
+		const char *name1 = stat_names_reduced[j];
+		const char *name2 = stat_names_reduced[j + len];
+
+		int adj1 = r->r_adj[j];
+		int adj2 = r->r_adj[j + len];
+
+		text_out_e("%s%+3d  %s%+3d\n", name1, adj1, name2, adj2);
 	}
 	
 	text_out_e("\n");
 	skill_help(r->r_skills, r->r_mhp, r->r_exp, r->infra);
+	text_out_e("\n");
+
+	for (k = 0; k < OF_MAX; k++)
+	{
+		if (n_flags >= flag_space) break;
+		if (!of_has(r->flags, k)) continue;
+		text_out_e("\n%s", get_flag_desc(k));
+		n_flags++;
+	}
+
+	for (k = 0; k < PF_MAX; k++)
+	{
+		if (n_flags >= flag_space) break;
+		if (!pf_has(r->pflags, k)) continue;
+		text_out_e("\n%s", get_pflag_desc(k));
+		n_flags++;
+	}
+
+	while(n_flags < flag_space)
+	{
+		text_out_e("\n");
+		n_flags++;
+	}
 
 	/* Reset text_out() indentation */
 	text_out_indent = 0;
@@ -247,10 +321,14 @@ static void race_help(int i, void *db, const region *l)
 static void class_help(int i, void *db, const region *l)
 {
 	int j;
+	size_t k;
 	struct player_class *c = player_id2class(i);
+	int len = (A_MAX + 1) / 2;
 
-	if (!c)
-		return;
+	int n_flags = 0;
+	int flag_space = 5;
+
+	if (!c) return;
 
 	/* Output to the screen */
 	text_out_hook = text_out_to_screen;
@@ -259,14 +337,43 @@ static void class_help(int i, void *db, const region *l)
 	text_out_indent = CLASS_AUX_COL;
 	Term_gotoxy(CLASS_AUX_COL, TABLE_ROW);
 
-	for (j = 0; j < A_MAX; j++) 
+	for (j = 0; j < len; j++)
 	{  
-		text_out_e("%s%+d\n", stat_names_reduced[j], c->c_adj[j]);
+		const char *name1 = stat_names_reduced[j];
+		const char *name2 = stat_names_reduced[j + len];
+
+		int adj1 = c->c_adj[j];
+		int adj2 = c->c_adj[j + len];
+
+		text_out_e("%s%+3d  %s%+3d\n", name1, adj1, name2, adj2);
 	}
 
 	text_out_e("\n");
 	
 	skill_help(c->c_skills, c->c_mhp, c->c_exp, -1);
+
+	if (c->spell_book == TV_MAGIC_BOOK) {
+		text_out_e("\nLearns arcane magic");
+	} else if (c->spell_book == TV_PRAYER_BOOK) {
+		text_out_e("\nLearns divine magic");
+	}
+
+	for (k = 0; k < PF_MAX; k++)
+	{
+		const char *s;
+		if (n_flags >= flag_space) break;
+		if (!pf_has(c->pflags, k)) continue;
+		s = get_pflag_desc(k);
+		if (!s) continue;
+		text_out_e("\n%s", s);
+		n_flags++;
+	}
+
+	while(n_flags < flag_space)
+	{
+		text_out_e("\n");
+		n_flags++;
+	}
 
 	/* Reset text_out() indentation */
 	text_out_indent = 0;

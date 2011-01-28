@@ -1615,7 +1615,7 @@ bool nds_load_tiles()
 /*
  * Display warning message (see "z-util.c")
  */
-static void hook_plog(cptr str)
+static void hook_plog(const char *str)
 {
   /* Warning */
   if (str)
@@ -1628,7 +1628,7 @@ static void hook_plog(cptr str)
 /*
  * Display error message and quit (see "z-util.c")
  */
-static void hook_quit(cptr str)
+static void hook_quit(const char *str)
 {
   int i, j;
   
@@ -1793,7 +1793,7 @@ int main(int argc, char *argv[])
     raw_print("Cannot create lock file");
   } else {
     hackpid = 1;
-    write(fd, (genericptr_t) &hackpid, sizeof(hackpid));
+    write(fd, (genericonst char *_t) &hackpid, sizeof(hackpid));
     close(fd);
   }
   

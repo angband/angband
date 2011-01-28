@@ -44,7 +44,7 @@ extern bool multiply_monster(int m_idx);
 extern void message_pain(int m_idx, int dam);
 extern void update_smart_learn(int m_idx, int what);
 void monster_death(int m_idx);
-bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note);
+bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note);
 extern void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr, bitflag flags[RF_SIZE]);
 
 extern void process_monsters(struct cave *c, byte min_energy);

@@ -123,7 +123,7 @@ void warding_glyph(void)
 /*
  * Array of stat "descriptions"
  */
-static cptr desc_stat_pos[] =
+static const char *desc_stat_pos[] =
 {
 	"strong",
 	"smart",
@@ -137,7 +137,7 @@ static cptr desc_stat_pos[] =
 /*
  * Array of stat "descriptions"
  */
-static cptr desc_stat_neg[] =
+static const char *desc_stat_neg[] =
 {
 	"weak",
 	"stupid",
@@ -159,27 +159,27 @@ bool do_dec_stat(int stat, bool perma)
 	switch (stat)
 	{
 		case A_STR:
-			if (p_ptr->state.sustain_str) sust = TRUE;
+			if (p_ptr->state.flags[OF_SUST_STR]) sust = TRUE;
 			wieldeds_notice_flag(OF_SUST_STR);
 			break;
 		case A_INT:
-			if (p_ptr->state.sustain_int) sust = TRUE;
+			if (p_ptr->state.flags[OF_SUST_INT]) sust = TRUE;
 			wieldeds_notice_flag(OF_SUST_INT);
 			break;
 		case A_WIS:
-			if (p_ptr->state.sustain_wis) sust = TRUE;
+			if (p_ptr->state.flags[OF_SUST_WIS]) sust = TRUE;
 			wieldeds_notice_flag(OF_SUST_WIS);
 			break;
 		case A_DEX:
-			if (p_ptr->state.sustain_dex) sust = TRUE;
+			if (p_ptr->state.flags[OF_SUST_DEX]) sust = TRUE;
 			wieldeds_notice_flag(OF_SUST_DEX);
 			break;
 		case A_CON:
-			if (p_ptr->state.sustain_con) sust = TRUE;
+			if (p_ptr->state.flags[OF_SUST_CON]) sust = TRUE;
 			wieldeds_notice_flag(OF_SUST_CON);
 			break;
 		case A_CHR:
-			if (p_ptr->state.sustain_chr) sust = TRUE;
+			if (p_ptr->state.flags[OF_SUST_CHR]) sust = TRUE;
 			wieldeds_notice_flag(OF_SUST_CHR);
 			break;
 	}
@@ -1398,7 +1398,7 @@ bool enchant_spell(int num_hit, int num_dam, int num_ac)
 
 	char o_name[80];
 
-	cptr q, s;
+	const char *q, *s;
 
 
 	/* Assume enchant weapon */
@@ -1506,7 +1506,7 @@ bool ident_spell(void)
 
 	object_type *o_ptr;
 
-	cptr q, s;
+	const char *q, *s;
 
 	/* Only un-id'ed items */
 	item_tester_hook = item_tester_unknown;
@@ -1565,7 +1565,7 @@ bool recharge(int num)
 
 	object_type *o_ptr;
 
-	cptr q, s;
+	const char *q, *s;
 
 
 	/* Only accept legal items */
@@ -2069,7 +2069,7 @@ void destroy_area(int y1, int x1, int r, bool full)
 		msg("There is a searing blast of light!");
 
 		/* Blind the player */
-		if (!p_ptr->state.resist_blind && !p_ptr->state.resist_light)
+		if (!p_ptr->state.flags[OF_RES_BLIND] && !p_ptr->state.flags[OF_RES_LIGHT])
 		{
 			/* Become blind */
 			(void)inc_timed(TMD_BLIND, 10 + randint1(10), TRUE);
@@ -3238,7 +3238,7 @@ bool brand_ammo(void)
 {
 	int item;
 	object_type *o_ptr;
-	cptr q, s;
+	const char *q, *s;
 	const struct slay *s_ptr;
 	bitflag f[OF_SIZE];
 
@@ -3272,7 +3272,7 @@ bool brand_bolts(void)
 {
 	int item;
 	object_type *o_ptr;
-	cptr q, s;
+	const char *q, *s;
 
 
 	/* Restrict choices to bolts */

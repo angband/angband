@@ -501,7 +501,7 @@ byte py_pickup(int pickup)
 	/* Display a list if requested. */
 	if (pickup == 2)
 	{
-		cptr q, s;
+		const char *q, *s;
 		int item;
 
 		/* Restrict the choices */

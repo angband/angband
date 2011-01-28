@@ -287,7 +287,7 @@ static void display_scores_aux(const high_score scores[], int from, int to, int 
 			byte attr;
 
 			int clev, mlev, cdun, mdun;
-			cptr user, gold, when, aged;
+			const char *user, *gold, *when, *aged;
 			struct player_class *c;
 			struct player_race *r;
 

@@ -150,7 +150,7 @@ s16b spell_chance(int spell)
 	/* Fear makes spells harder (before minfail) */
 	/* Note that spells that remove fear have a much lower fail rate than
 	 * surrounding spells, to make sure this doesn't cause mega fail */
-	if (p_ptr->state.afraid) chance += 20;
+	if (p_ptr->state.flags[OF_AFRAID]) chance += 20;
 
 	/* Minimal and maximal failure rate */
 	if (chance < minfail) chance = minfail;
@@ -192,7 +192,7 @@ bool spell_in_book(int spell, int book)
 void spell_learn(int spell)
 {
 	int i;
-	cptr p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+	const char *p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
 	/* Learn the spell */
 	p_ptr->spell_flags[spell] |= PY_SPELL_LEARNED;

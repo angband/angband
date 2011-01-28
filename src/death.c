@@ -328,7 +328,7 @@ static void death_scores(const char *title, int row)
 static void death_examine(const char *title, int row)
 {
 	int item;
-	cptr q, s;
+	const char *q, *s;
 
 	/* Get an item */
 	q = "Examine which item? ";

@@ -61,9 +61,9 @@ font_info *font, measurements *actual, measurements *tile);
 extern void cairo_draw_from_surface(cairo_t *cr, cairo_surface_t *surface, cairo_rectangle_t r);
 extern void init_cairo(cairo_t *cr, cairo_surface_t *surface, measurements size);
 extern void get_font_size(font_info *font);
-extern void draw_text(cairo_surface_t *surface, font_info *font, measurements *actual, int x, int y, int n, byte a, cptr s);
+extern void draw_text(cairo_surface_t *surface, font_info *font, measurements *actual, int x, int y, int n, byte a, const char *s);
 extern void drawn_progress_bar(cairo_surface_t *surface, font_info *font, int x, int y, float curr, float max, byte color, int size);
 
 extern void get_toy_font_size(font_info *font);
-extern void draw_toy_text(cairo_t *cr, font_info *font, measurements *actual, int x, int y, int n, byte a, cptr s);
+extern void draw_toy_text(cairo_t *cr, font_info *font, measurements *actual, int x, int y, int n, byte a, const char *s);
 #endif /* INCLUDED_CAIRO_UTILS_H*/

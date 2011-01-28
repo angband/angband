@@ -16,6 +16,23 @@
  * new entries to this file.
  */
 
+#ifdef ALLOW_BORG
+/* Screensaver variables for the borg.  apw */
+extern bool screensaver;
+extern const byte adj_dex_ta[];
+extern const byte adj_str_td[];
+extern const byte adj_dex_th[];
+extern const byte adj_str_th[];
+extern const byte adj_dex_blow[];
+extern const byte adj_dex_dis[];
+extern const byte adj_int_dis[];
+extern const byte adj_int_dev[];
+extern const byte adj_wis_sav[];
+extern const byte adj_str_dig[];
+extern const byte adj_str_wgt[];
+extern const int adj_con_mhp[];
+#endif /* ALLOW_BORG */
+
 /* pathfind.c */
 extern char pf_result[];
 extern int pf_result_index;
@@ -36,10 +53,10 @@ extern const byte extract_energy[200];
 extern const s32b player_exp[PY_MAX_LEVEL];
 extern const player_sex sex_info[MAX_SEXES];
 extern const byte chest_traps[64];
-/*XYZ extern cptr color_names[BASIC_COLORS];*/
-extern cptr stat_names[A_MAX];
-extern cptr stat_names_reduced[A_MAX];
-extern cptr stat_names_full[A_MAX];
+/*XYZ extern const char *color_names[BASIC_COLORS];*/
+extern const char *stat_names[A_MAX];
+extern const char *stat_names_reduced[A_MAX];
+extern const char *stat_names_full[A_MAX];
 extern const char *window_flag_desc[32];
 extern const char *inscrip_text[];
 extern const grouper object_text_order[];
@@ -47,7 +64,7 @@ extern const byte char_tables[256][CHAR_TABLE_SLOTS];
 extern const xchar_type latin1_encode[];
 
 /* variable.c */
-extern cptr copyright;
+extern const char *copyright;
 extern bool arg_wizard;
 extern bool arg_rebalance;
 extern int arg_graphics;
@@ -87,7 +104,7 @@ extern term *angband_term[ANGBAND_TERM_MAX];
 extern char angband_term_name[ANGBAND_TERM_MAX][16];
 extern byte angband_color_table[MAX_COLORS][4];
 extern color_type color_table[MAX_COLORS];
-extern const cptr angband_sound_name[MSG_MAX];
+extern const const char *angband_sound_name[MSG_MAX];
 extern int view_n;
 extern u16b *view_g;
 extern int temp_n;
@@ -101,7 +118,7 @@ extern monster_lore *l_list;
 extern quest *q_list;
 extern store_type *store;
 extern int store_knowledge;
-extern cptr** name_sections;
+extern const char *** name_sections;
 extern s16b alloc_ego_size;
 extern alloc_entry *alloc_ego_table;
 extern s16b alloc_race_size;
@@ -157,7 +174,7 @@ extern byte item_tester_tval;
 extern bool (*item_tester_hook)(const object_type *);
 extern bool (*get_mon_num_hook)(int r_idx);
 extern ang_file *text_out_file;
-extern void (*text_out_hook)(byte a, cptr str);
+extern void (*text_out_hook)(byte a, const char *str);
 extern int text_out_wrap;
 extern int text_out_indent;
 extern int text_out_pad;
@@ -167,7 +184,7 @@ extern void (*sound_hook)(int);
 extern u16b daycount;
 
 /* util.c */
-extern cptr inkey_next;
+extern const char *inkey_next;
 
 
 
@@ -231,9 +248,9 @@ extern void signals_init(void);
 void do_cmd_store_knowledge(void);
 
 /* util.c */
-extern void text_to_ascii(char *buf, size_t len, cptr str);
-extern void ascii_to_text(char *buf, size_t len, cptr str);
-extern char *find_roman_suffix_start(cptr buf);
+extern void text_to_ascii(char *buf, size_t len, const char *str);
+extern void ascii_to_text(char *buf, size_t len, const char *str);
+extern char *find_roman_suffix_start(const char *buf);
 extern int roman_to_int(const char *roman);
 extern int int_to_roman(int n, char *roman, size_t bufsize);
 extern void flush(void);
@@ -241,38 +258,38 @@ extern void flush_fail(void);
 extern char inkey(void);
 extern ui_event_data inkey_ex(void);
 extern char anykey(void);
-extern void bell(cptr reason);
+extern void bell(const char *reason);
 extern void sound(int val);
 extern void msg(const char *fmt, ...);
 extern void msgt(unsigned int type, const char *fmt, ...);
 extern void message_flush(void);
 extern void screen_save(void);
 extern void screen_load(void);
-extern void c_put_str(byte attr, cptr str, int row, int col);
-extern void put_str(cptr str, int row, int col);
-extern void c_prt(byte attr, cptr str, int row, int col);
-extern void prt(cptr str, int row, int col);
-extern void text_out_to_file(byte attr, cptr str);
-extern void text_out_to_screen(byte a, cptr str);
+extern void c_put_str(byte attr, const char *str, int row, int col);
+extern void put_str(const char *str, int row, int col);
+extern void c_prt(byte attr, const char *str, int row, int col);
+extern void prt(const char *str, int row, int col);
+extern void text_out_to_file(byte attr, const char *str);
+extern void text_out_to_screen(byte a, const char *str);
 extern void text_out(const char *fmt, ...);
 extern void text_out_c(byte a, const char *fmt, ...);
 extern void text_out_e(const char *fmt, ...);
 extern void clear_from(int row);
 extern bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, char keypress, bool firsttime);
 extern bool askfor_aux(char *buf, size_t len, bool keypress_h(char *, size_t, size_t *, size_t *, char, bool));
-extern bool get_string(cptr prompt, char *buf, size_t len);
-extern s16b get_quantity(cptr prompt, int max);
-extern char get_char(cptr prompt, const char *options, size_t len, char fallback);
-extern bool get_check(cptr prompt);
+extern bool get_string(const char *prompt, char *buf, size_t len);
+extern s16b get_quantity(const char *prompt, int max);
+extern char get_char(const char *prompt, const char *options, size_t len, char fallback);
+extern bool get_check(const char *prompt);
 extern bool (*get_file)(const char *suggested_name, char *path, size_t len);
-extern bool get_com(cptr prompt, char *command);
-extern bool get_com_ex(cptr prompt, ui_event_data *command);
+extern bool get_com(const char *prompt, char *command);
+extern bool get_com_ex(const char *prompt, ui_event_data *command);
 extern void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp);
 extern void pause_line(int row);
 extern bool is_a_vowel(int ch);
 extern int color_char_to_attr(char c);
-extern int color_text_to_attr(cptr name);
-extern cptr attr_to_text(byte a);
+extern int color_text_to_attr(const char *name);
+extern const char *attr_to_text(byte a);
 
 #ifdef SUPPORT_GAMMA
 extern void build_gamma_table(int gamma);
@@ -282,7 +299,7 @@ extern byte gamma_table[256];
 /* x-char.c */
 extern void xchar_trans_hook(char *s, int encoding);
 extern void xstr_trans(char *str, int encoding);
-extern void escape_latin1(char *dest, size_t max, cptr src);
+extern void escape_latin1(char *dest, size_t max, const char *src);
 extern const char seven_bit_translation[128];
 extern char xchar_trans(byte c);
 

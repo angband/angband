@@ -154,7 +154,7 @@ static u32b buffer_check;
  *
  * Avoid the top two lines, to avoid interference with "note()".
  */
-void note(cptr msg)
+void note(const char *msg)
 {
 	static int y = 2;
 
@@ -233,7 +233,7 @@ void wr_s32b(s32b v)
 	wr_u32b((u32b)v);
 }
 
-void wr_string(cptr str)
+void wr_string(const char *str)
 {
 	while (*str)
 	{
