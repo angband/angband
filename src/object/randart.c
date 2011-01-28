@@ -2303,6 +2303,8 @@ static int choose_ability (s16b *freq_table)
 
 static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 {
+	int i;
+
 	switch(r)
 	{
 		case ART_IDX_BOW_SHOTS:
@@ -2539,6 +2541,11 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 			if (!a_ptr->effect) add_activation(a_ptr, target_power);
 			break;
 	}
+
+	/* Count pvals and set num_pvals accordingly*/
+	a_ptr->num_pvals = 0;
+	for (i = 0; i < MAX_PVALS; i++)
+		if (a_ptr->pval[i] != 0) a_ptr->num_pvals++;
 }
 
 /*
@@ -2802,6 +2809,7 @@ static void scramble_artifact(int a_idx)
 		/* Clear the following fields; leave the rest alone */
 		a_ptr->pval[DEFAULT_PVAL] = 0;
 		a_ptr->to_h = a_ptr->to_d = a_ptr->to_a = 0;
+		a_ptr->num_pvals = 0;
 		of_wipe(a_ptr->flags);
 
 		/* Clear the activations for rings and amulets but not lights */
