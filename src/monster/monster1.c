@@ -2056,12 +2056,10 @@ int lookup_monster(const char *name)
 	for (i = 1; i < z_info->r_max; i++)
 	{
 		monster_race *r_ptr = &r_info[i];
-		const char *nm = r_ptr->name;
 
 		/* Found a match */
-		if (streq(name, nm))
+		if (r_ptr->name && streq(name, r_ptr->name))
 			return i;
-
 	}
 
 	return -1;
@@ -2078,12 +2076,10 @@ int lookup_monster_base(const char *name)
 	for (i = 1; i < z_info->rb_max; i++)
 	{
 		monster_base *rb_ptr = &rb_info[i];
-		const char *nm = rb_ptr->name;
 
 		/* Found a match */
-		if (streq(name, nm))
+		if (rb_ptr->name && streq(name, rb_ptr->name))
 			return i;
-
 	}
 
 	return -1;

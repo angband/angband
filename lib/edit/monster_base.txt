@@ -2,322 +2,436 @@
 # 
 # N : serial number : template name
 # G : default display character
+# M : pain message index
 # F : flag | flag | ...
+# S : spell flag | spell flag | ...
+# D : description
 #
 # 'N' indicates the beginning of an entry. The serial number must increase for
-# each new item.
+# each new item. The template name is used in monster.txt.
 #
 # 'G' indicates the default display character. This is used for displaying the
 # monster in ASCII mode, and also for determining which monsters are
 # of the same "type" for things like the ESCORT flag or the S_KIN summon.
 #
+# 'M' indicates which set of "pain messages" (from pain.txt) is used.
+#
 # 'F' indicates the flags that every monster inherits from this template.
+#
+# 'S' indicates the spell flags that every monster inherits from this template.
+#
+# 'D' indicates the textual description of this template that is used by
+# the '/' command in-game.
 #
 # Note that some templates have hardcoded references. In particular, changing
 # the name of the following templates will cause certain summon spells to break:
-# ancient dragon, angel, dog, greater demon, hydra, lich, spider, vampire, wraith, zephyr hound...
+# ancient dragon, angel, canine, hydra, lich, major demon, spider, vampire, wraith, zephyr hound.
+# Changing other characteristics of these monsters is fine.
+
+##### Normal monster templates #####
 
 N:1:ancient dragon
 G:D
+M:1
 F:DRAGON | EVIL | POWERFUL
 F:DROP_4
 F:MOVE_BODY
 F:NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
+D:Ancient Dragon/Wyrm
 
 N:2:angel
 G:A
+M:1
 F:POWERFUL
 F:ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR | TAKE_ITEM
 F:IM_POIS | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
-# Uniques don't have NO_CONF or NO_SLEEP
+D:Angel
 
 N:3:ant
 G:a
+M:4
 F:ANIMAL | WEIRD_MIND
 F:BASH_DOOR
+D:Ant
 
 N:4:bat
 G:b
+M:4
 F:ANIMAL
+D:Bat
 
 N:5:bird
 G:B
+M:1
 F:ANIMAL
+D:Bird
 
-N:6:feline
-G:f
+N:6:canine
+G:C
+M:3
 F:ANIMAL
+D:Canine (Dog)
 
 N:7:centipede
 G:c
+M:4
 F:ANIMAL | WEIRD_MIND
+D:Centipede
 
 N:8:creeping coins
 G:$
+M:1
 F:COLD_BLOOD | METAL
 F:ONLY_GOLD
 F:BASH_DOOR
 F:IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
+D:Creeping Coins
 
-N:9:canine
-G:C
-F:ANIMAL
-
-N:10:dragon
+N:9:dragon
 G:d
+M:1
 F:DRAGON | EVIL
 F:FORCE_SLEEP
+D:Dragon
 
-N:11:dragonfly
+N:10:dragon fly
 G:F
+M:4
 F:ANIMAL | WEIRD_MIND
 F:RAND_50 | BASH_DOOR
 F:FORCE_SLEEP
+D:Dragon Fly
 
-N:12:eye
+N:11:eye
 G:e
+M:1
+D:Floating Eye
 
-N:13:elemental
+N:12:elemental
 G:E
+M:1
 F:EMPTY_MIND
 F:IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP
 F:MATERIAL
+D:Elemental
+
+N:13:feline
+G:f
+M:1
+F:ANIMAL
+D:Feline (Cat)
 
 N:14:ghost
 G:G
-F:UNDEAD | EVIL | INVISIBLE
+M:1
+F:UNDEAD | EVIL | INVISIBLE | COLD_BLOOD
 F:PASS_WALL
 F:NO_CONF | NO_SLEEP
-# (almost all are cold-blood)
+D:Ghost
 
 N:15:giant
 G:P
+M:1
 F:GIANT | EVIL
 F:BASH_DOOR
-# Morgoth isn't giant or bash_door
+S:BOULDER
+D:Giant Humanoid
 
 N:16:golem
 G:g
+M:1
 F:EMPTY_MIND
 F:IM_ELEC | NO_FEAR | NO_CONF | NO_SLEEP
 F:MATERIAL
+D:Golem
 
-N:17:major demon
+N:17:humanoid
+G:h
+M:1
+F:OPEN_DOOR | BASH_DOOR
+D:Hobbit/Elf/Dwarf
+
+N:18:hybrid
+G:H
+M:1
+D:Hybrid
+
+N:19:hydra
+G:M
+M:4
+F:ANIMAL
+F:ONLY_GOLD
+F:BASH_DOOR
+F:FORCE_SLEEP
+D:Hydra
+
+N:20:icky thing
+G:i
+M:2
+F:RAND_50
+F:ICKY
+D:Icky Thing
+
+N:21:insect
+G:I
+M:4
+F:ANIMAL | WEIRD_MIND | MULTIPLY
+F:RAND_25 | RAND_50
+D:Insect
+
+N:22:jelly
+G:j
+M:2
+F:EMPTY_MIND | STUPID
+F:NO_FEAR
+F:ICKY
+D:Jelly
+
+N:23:killer beetle
+G:K
+M:4
+F:ANIMAL | WEIRD_MIND
+F:BASH_DOOR
+D:Killer Beetle
+
+N:24:kobold
+G:k
+M:1
+F:EVIL
+F:OPEN_DOOR | BASH_DOOR
+F:IM_POIS
+D:Kobold
+
+N:25:lich
+G:L
+M:1
+F:UNDEAD | EVIL | COLD_BLOOD | SMART
+F:OPEN_DOOR | BASH_DOOR
+F:IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
+F:FORCE_SLEEP
+S:BRAIN_SMASH
+D:Lich
+
+N:26:louse
+G:l
+M:4
+F:ANIMAL | WEIRD_MIND | MULTIPLY
+F:RAND_50
+D:Louse
+
+N:27:lurker
+G:.
+M:1
+F:COLD_BLOOD | EMPTY_MIND | INVISIBLE
+F:NEVER_MOVE
+F:NO_FEAR | NO_CONF | NO_SLEEP
+F:CHAR_CLEAR | ATTR_CLEAR
+D:Lurker
+
+N:28:major demon
 G:U
+M:1
 F:DEMON | EVIL
 F:ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR
 F:NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
+D:Major Demon
 
-N:18:humanoid
-G:h
-F:OPEN_DOOR | BASH_DOOR
-#All but one (Mindflayer) is male
-
-N:19:hybrid
-G:H
-
-N:20:hydra
-G:M
-F:ANIMAL
-F:ONLY_GOLD
-F:BASH_DOOR
-F:FORCE_SLEEP
-
-N:21:icky thing
-G:i
-F:EMPTY_MIND
-F:RAND_50
-F:ICKY
-# All have empty mind except blue icky thing
-# Some also have RAND_25
-
-N:22:insect
-G:I
-F:ANIMAL | WEIRD_MIND | MULTIPLY
-F:RAND_25 | RAND_50
-
-N:23:jelly
-G:j
-F:EMPTY_MIND | STUPID
-F:NO_FEAR
-F:ICKY
-
-N:24:killer beetle
-G:K
-F:ANIMAL | WEIRD_MIND
-F:BASH_DOOR
-
-N:25:kobold
-G:k
-F:EVIL
-F:OPEN_DOOR | BASH_DOOR
-F:IM_POIS
-
-N:26:minor demon
-G:u
-F:DEMON | EVIL
-F:IM_FIRE
-
-N:27:lich
-G:L
-F:UNDEAD | EVIL | COLD_BLOOD | SMART
-F:OPEN_DOOR | BASH_DOOR
-F:IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
-F:FORCE_SLEEP
-
-N:28:louse
-G:l
-F:ANIMAL | WEIRD_MIND | MULTIPLY
-F:RAND_50
-
-N:29:lurker
-G:.
-F:COLD_BLOOD | EMPTY_MIND | INVISIBLE
-F:NEVER_MOVE
-F:NO_FEAR | NO_CONF | NO_SLEEP
-F:CHAR_CLEAR | ATTR_CLEAR
-
-N:30:mimic
+N:29:mimic
 G:?
+M:1
 F:COLD_BLOOD | EMPTY_MIND
 F:NEVER_MOVE
 F:NO_FEAR | NO_CONF | NO_SLEEP
 F:CHAR_MULTI | FORCE_SLEEP
+S:BLIND | CAUSE_2 | CONF | SCARE
+D:Mimic
+
+N:30:minor demon
+G:u
+M:1
+F:DEMON | EVIL
+F:IM_FIRE
+D:Minor Demon
 
 N:31:mold
 G:m
+M:2
 F:NEVER_MOVE
 F:IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP
 F:ICKY
-#All but death mold have empty mind and stupid
+D:Mold
 
 N:32:mushroom
 G:,
+M:2
 F:EMPTY_MIND | STUPID
 F:NO_FEAR | NO_CONF | NO_SLEEP
 F:ICKY
-# Shambling mound is only mushroom without NEVER_MOVE
+D:Mushroom
 
 N:33:naga
 G:n
+M:1
 F:FEMALE | EVIL
 F:BASH_DOOR
+D:Naga
 
 N:34:ogre
 G:O
+M:1
 F:GIANT | EVIL
 F:OPEN_DOOR | BASH_DOOR
+D:Ogre
 
 N:35:orc
 G:o
+M:1
 F:MALE | ORC | EVIL
-F:DROP_20
 F:OPEN_DOOR | BASH_DOOR
+D:Orc
 
 N:36:person
 G:p
+M:1
 F:BASH_DOOR
+D:Person/Human
 
 N:37:quadruped
 G:q
+M:4
 F:BASH_DOOR
+D:Quadruped
 
 N:38:quylthulg
 G:Q
+M:2
 F:ANIMAL | EMPTY_MIND | INVISIBLE
 F:NEVER_BLOW | NEVER_MOVE
 F:NO_FEAR | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
+D:Quylthulg
 
 N:39:reptile
 G:R
+M:4
 F:ANIMAL
+D:Reptile/Amphibian
 
 N:40:rodent
 G:r
+M:4
 F:ANIMAL
+D:Rodent
 
 N:41:skeleton
 G:s
+M:4
 F:UNDEAD | EVIL | COLD_BLOOD
 F:IM_COLD | IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP
-# drujs don't have empty_mind, or open/bash door
+D:Skeleton
 
 N:42:snake
 G:J
+M:1
 F:ANIMAL
 F:BASH_DOOR
-# Some are RAND_25, others RAND_50
+D:Snake
 
 N:43:spider
 G:S
+M:4
 F:BASH_DOOR
+D:Spider/Scorpion/Tick
 
 N:44:townsfolk
 G:t
+M:4
+D:Townsfolk
 
 N:45:troll
 G:T
+M:1
 F:TROLL | EVIL
 F:OPEN_DOOR | BASH_DOOR
+D:Troll
 
 N:46:vampire
 G:V
+M:1
 F:UNDEAD | EVIL | COLD_BLOOD | REGENERATE
 F:OPEN_DOOR | BASH_DOOR
 F:HURT_LIGHT | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
+S:HOLD | SCARE
+D:Vampire
 
 N:47:vortex
 G:v
+M:1
 F:EMPTY_MIND | POWERFUL
 F:RAND_50 | BASH_DOOR
 F:NO_FEAR | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 F:MATERIAL
+D:Vortex
 
 N:48:worm
 G:w
-F:ANIMAL | WEIRD_MIND | MULTIPLY | STUPID
-F:RAND_25 | RAND_50
-F:HURT_LIGHT | NO_FEAR
-# Red has EMPTY_MIND instead of WEIRD_MIND
-# Wereworm has almost none of these flags. Ditto Purple worm.
-# Disenchanter worm mass doesn't have RAND_25
+M:1
+F:ANIMAL
+D:Worm/Worm Mass
 
 N:49:wraith
 G:W
+M:1
 F:UNDEAD | EVIL | COLD_BLOOD
 F:HURT_LIGHT | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
+D:Wight/Wraith
 
 N:50:xorn
 G:X
+M:4
 F:COLD_BLOOD | EMPTY_MIND
 F:HURT_ROCK | IM_POIS | NO_CONF | NO_SLEEP
+D:Xorn/Xaren
 
 N:51:yeek
 G:y
+M:1
 F:ANIMAL
 F:OPEN_DOOR | BASH_DOOR
 F:IM_ACID
+D:Yeek
 
 N:52:yeti
 G:Y
+M:1
 F:ANIMAL
 F:OPEN_DOOR | BASH_DOOR
 F:IM_COLD
+D:Yeti
 
 N:53:zephyr hound
 G:Z
+M:3
 F:ANIMAL | FRIENDS
+D:Zephyr Hound
 
 N:54:zombie
 G:z
+M:1
 F:UNDEAD | EVIL | COLD_BLOOD
 F:OPEN_DOOR | BASH_DOOR
 F:IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
+D:Zombie/Mummy
+
+##### Special template #####
+
+N:55:player
+G:@
+D:You

@@ -22,18 +22,33 @@ typedef struct
 } monster_blow;
 
 /*
+ * Monster pain messages.
+ */
+typedef struct monster_pain
+{
+	const char *messages[7];
+	int pain_idx;
+	
+	struct monster_pain *next;
+} monster_pain;
+ 
+/*
  * Information about "base" monster type.
  */
 typedef struct monster_base
 {
 	char *name;
+	char *text;
 	
 	int rval;
 	struct monster_base *next;
 
 	bitflag flags[RF_SIZE];         /* Flags */
-
+	bitflag spell_flags[RSF_SIZE];  /* Spell flags */
+	
 	char d_char;			/* Default monster character */
+	
+	int pain_idx;			/* Set of pain messages */
 } monster_base;
  
 /*

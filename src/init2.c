@@ -320,6 +320,8 @@ static enum parser_error parse_z(struct parser *p) {
 		z->r_max = value;
 	else if (streq(label, "B"))
 		z->rb_max = value;
+	else if (streq(label, "P"))
+		z->mp_max = value;
 	else if (streq(label, "S"))
 		z->s_max = value;
 	else if (streq(label, "O"))
@@ -1406,6 +1408,16 @@ static enum parser_error parse_rb_g(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_rb_m(struct parser *p) {
+	struct monster_base *rb = parser_priv(p);
+
+	if (!rb)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	rb->pain_idx = parser_getuint(p, "pain");
+	return PARSE_ERROR_NONE;
+}
+
 static const char *r_info_flags[] =
 {
 	#define RF(a, b) #a,
@@ -1437,6 +1449,48 @@ static enum parser_error parse_rb_f(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static const char *r_info_spell_flags[] =
+{
+	#define RSF(a, b) #a,
+	#include "list-mon-spells.h"
+	#undef RSF
+	NULL
+};
+
+static enum parser_error parse_rb_s(struct parser *p) {
+	struct monster_base *rb = parser_priv(p);
+	char *flags;
+	char *s;
+
+	if (!rb)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!parser_hasval(p, "spells"))
+		return PARSE_ERROR_NONE;
+	flags = string_make(parser_getstr(p, "spells"));
+	s = strtok(flags, " |");
+	while (s) {
+		if (grab_flag(rb->spell_flags, RSF_SIZE, r_info_spell_flags, s)) {
+			mem_free(flags);
+			return PARSE_ERROR_INVALID_FLAG;
+		}
+		s = strtok(NULL, " |");
+	}
+
+	mem_free(flags);
+	return PARSE_ERROR_NONE;
+}
+
+
+static enum parser_error parse_rb_d(struct parser *p) {
+	struct monster_base *rb = parser_priv(p);
+
+	if (!rb)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	rb->text = string_append(rb->text, parser_getstr(p, "desc"));
+	return PARSE_ERROR_NONE;
+}
+
+
 struct parser *init_parse_rb(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -1444,7 +1498,10 @@ struct parser *init_parse_rb(void) {
 	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "N uint index str name", parse_rb_n);
 	parser_reg(p, "G char glyph", parse_rb_g);
+	parser_reg(p, "M uint pain", parse_rb_m);
 	parser_reg(p, "F ?str flags", parse_rb_f);
+	parser_reg(p, "S ?str spells", parse_rb_s);
+	parser_reg(p, "D str desc", parse_rb_d);
 	return p;
 }
 
@@ -1659,14 +1716,6 @@ static enum parser_error parse_r_d(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static const char *r_info_spell_flags[] =
-{
-	#define RSF(a, b) #a,
-	#include "list-mon-spells.h"
-	#undef RSF
-	NULL
-};
-
 static enum parser_error parse_r_s(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
 	char *flags;
@@ -1694,6 +1743,10 @@ static enum parser_error parse_r_s(struct parser *p) {
 		}
 		s = strtok(NULL, " |");
 	}
+
+	/* Add the "base monster" flags to the monster */
+	if (r->rval > 0)
+		rsf_union(r->spell_flags, rb_info[r->rval].spell_flags);
 
 	mem_free(flags);
 	return ret;
@@ -3396,6 +3449,75 @@ static struct file_parser hints_parser = {
 	finish_parse_hints,
 };
 
+/* Initialise monster pain messages */
+static enum parser_error parse_mp_n(struct parser *p) {
+	struct monster_pain *h = parser_priv(p);
+	struct monster_pain *mp = mem_alloc(sizeof *mp);
+	memset(mp, 0, sizeof(*mp));
+	mp->next = h;
+	mp->pain_idx = parser_getuint(p, "index");
+	parser_setpriv(p, mp);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mp_m(struct parser *p) {
+	struct monster_pain *mp = parser_priv(p);
+	int i;
+
+	if (!mp)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	for (i = 0; i < 7; i++)
+		if (!mp->messages[i])
+			break;
+	if (i == 7)
+		return PARSE_ERROR_TOO_MANY_ENTRIES;
+	mp->messages[i] = string_make(parser_getstr(p, "message"));
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_mp(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+
+	parser_reg(p, "N uint index", parse_mp_n);
+	parser_reg(p, "M str message", parse_mp_m);
+	return p;
+}
+
+static errr run_parse_mp(struct parser *p) {
+	return parse_file(p, "pain");
+}
+
+static errr finish_parse_mp(struct parser *p) {
+	struct monster_pain *mp, *n;
+		
+	pain_messages = mem_zalloc(sizeof(*mp) * z_info->mp_max);
+	for (mp = parser_priv(p); mp; mp = mp->next) {
+		if (mp->pain_idx >= z_info->mp_max)
+			continue;
+		memcpy(&pain_messages[mp->pain_idx], mp, sizeof(*mp));
+	}
+	
+	mp = parser_priv(p);
+	while (mp) {
+		n = mp->next;
+		mem_free(mp);
+		mp = n;
+	}
+	
+	parser_destroy(p);
+	return 0;
+}
+
+struct file_parser mp_parser = {
+	"pain messages",
+	init_parse_mp,
+	run_parse_mp,
+	finish_parse_mp
+};
+
+
+
 /*
  * Initialize some other arrays
  */
@@ -3764,6 +3886,10 @@ bool init_angband(void)
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (monsters)");
 	if (run_parser(&r_parser)) quit("Cannot initialize monsters");
 
+	/* Initialize monster pain messages */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (pain messages)");
+	if (run_parser(&mp_parser)) quit("Cannot initialize monster pain messages");
+	
 	/* Initialize artifact info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (artifacts)");
 	if (run_parser(&a_parser)) quit("Cannot initialize artifacts");

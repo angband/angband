@@ -405,89 +405,6 @@ void do_cmd_locate(void)
 	verify_panel();
 }
 
-
-
-
-
-
-/*
- * The table of "symbol info" -- each entry is a string of the form
- * "X:desc" where "X" is the trigger, and "desc" is the "info".
- */
-static const char *ident_info[] =
-{
-	" :A dark grid",
-	"!:A potion (or oil)",
-	"#:A wall (or secret door)",
-	/* "&:unused", */
-	",:Food (or mushroom patch)",
-	"-:A wand (or rod)",
-	"@:You",
-	"A:Angel",
-	"B:Bird",
-	"C:Canine",
-	"D:Ancient Dragon/Wyrm",
-	"E:Elemental",
-	"F:Dragon Fly",
-	"G:Ghost",
-	"H:Hybrid",
-	"I:Insect",
-	"J:Snake",
-	"K:Killer Beetle",
-	"L:Lich",
-	"M:Multi-Headed Reptile",
-	/* "N:unused", */
-	"O:Ogre",
-	"P:Giant Humanoid",
-	"Q:Quylthulg (Pulsing Flesh Mound)",
-	"R:Reptile/Amphibian",
-	"S:Spider/Scorpion/Tick",
-	"T:Troll",
-	"U:Major Demon",
-	"V:Vampire",
-	"W:Wight/Wraith/etc",
-	"X:Xorn/Xaren/etc",
-	"Y:Yeti",
-	"Z:Zephyr Hound",
-	"[:Hard armor",
-	"\\:A hafted weapon (mace/whip/etc)",
-	"]:Misc. armor",
-	"^:A trap",
-	"_:A staff",
-	/* "`:unused", */
-	"a:Ant",
-	"b:Bat",
-	"c:Centipede",
-	"d:Dragon",
-	"e:Floating Eye",
-	"f:Feline",
-	"g:Golem",
-	"h:Hobbit/Elf/Dwarf",
-	"i:Icky Thing",
-	"j:Jelly",
-	"k:Kobold",
-	"l:Louse",
-	"m:Mold",
-	"n:Naga",
-	"o:Orc",
-	"p:Person/Human",
-	"q:Quadruped",
-	"r:Rodent",
-	"s:Skeleton",
-	"t:Townsperson",
-	"u:Minor Demon",
-	"v:Vortex",
-	"w:Worm/Worm-Mass",
-	/* "x:unused", */
-	"y:Yeek",
-	"z:Zombie/Mummy",
-	"{:A missile (arrow/bolt/shot)",
-	"|:An edged weapon (sword/dagger/etc)",
-	"}:A launcher (bow/crossbow/sling)",
-	"~:A tool (or miscellaneous item)",
-	NULL
-};
-
 static int cmp_mexp(const void *a, const void *b)
 {
 	u16b ia = *(const u16b *)a;
@@ -546,6 +463,10 @@ int cmp_monsters(const void *a, const void *b)
  * This is to prevent mimics and lurkers from matching
  * a symbol instead of the item or feature it is mimicking.
  *
+ * Todo: concatenate all matches into buf. This will be much
+ * easier once we can loop through item tvals instead of items
+ * (see note below.)
+ *
  * Todo: Should this take the user's pref files into account?
  */
 void lookup_symbol(char sym, char *buf, size_t max)
@@ -566,6 +487,8 @@ void lookup_symbol(char sym, char *buf, size_t max)
 	}
 
 	/* Look through features */
+	/* Note: We need a better way of doing this. Currently '#' matches secret door,
+	and '^' matches trap door (instead of the more generic "trap"). */
 	for (i = 1; i < z_info->f_max; i++)
 	{
 		if(f_info[i].d_char == sym)
@@ -580,7 +503,7 @@ void lookup_symbol(char sym, char *buf, size_t max)
 	{
 		if(rb_info[i].d_char == sym)
 		{
-			strnfmt(buf, max, "%c - %s.", sym, rb_info[i].name);
+			strnfmt(buf, max, "%c - %s.", sym, rb_info[i].text);
 			return;
 		}
 	}
