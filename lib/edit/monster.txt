@@ -312,7 +312,7 @@ C:s
 I:110:2:2:1:0
 W:1:1:0:1
 B:SPORE:CONFUSE:1d4
-F:IM_POIS
+F:IM_POIS | NEVER_MOVE
 D:Yum!  It looks quite tasty.
 
 N:17:Giant yellow centipede
