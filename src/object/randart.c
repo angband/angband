@@ -2721,6 +2721,7 @@ static void scramble_artifact(int a_idx)
 	s32b ap = 0;
 	bool curse_me = FALSE;
 	bool success = FALSE;
+	int i;
 
 	/* Special cases -- don't randomize these! */
 	if ((a_idx == ART_POWER) ||
@@ -2823,10 +2824,14 @@ static void scramble_artifact(int a_idx)
 		k_ptr = lookup_kind(a_ptr->tval, a_ptr->sval);
 
 		/* Clear the following fields; leave the rest alone */
-		a_ptr->pval[DEFAULT_PVAL] = 0;
 		a_ptr->to_h = a_ptr->to_d = a_ptr->to_a = 0;
 		a_ptr->num_pvals = 0;
 		of_wipe(a_ptr->flags);
+		for (i = 0; i < MAX_PVALS; i++)
+		{
+			a_ptr->pval[i] = 0;
+			of_wipe(a_ptr->pval_flags[i]);
+		}
 
 		/* Clear the activations for rings and amulets but not lights */
 		if (a_ptr->tval != TV_LIGHT) a_ptr->effect = 0;
