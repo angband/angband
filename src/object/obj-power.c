@@ -244,7 +244,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		LOG_PRINT("\n");
 		if (o_ptr->num_pvals) {
 			object_pval_flags(o_ptr, pval_flags);
-			for (j = 0; j < MAX_PVALS; j++) {
+			for (j = 0; j < o_ptr->num_pvals; j++) {
 				LOG_PRINT1("PVAL %d flags =", j);
 				for (i = 0; i < (int)OF_SIZE; i++)
 					LOG_PRINT1(" %02x", pval_flags[j][i]);
