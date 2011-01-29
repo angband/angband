@@ -27,6 +27,7 @@
 #include "macro.h"
 #include "monster/constants.h"
 #include "object/slays.h"
+#include "monster/monster.h"
 #include "object/tvalsval.h"
 #include "option.h"
 #include "parser.h"
@@ -317,6 +318,10 @@ static enum parser_error parse_z(struct parser *p) {
 		z->e_max = value;
 	else if (streq(label, "R"))
 		z->r_max = value;
+	else if (streq(label, "B"))
+		z->rb_max = value;
+	else if (streq(label, "P"))
+		z->mp_max = value;
 	else if (streq(label, "S"))
 		z->s_max = value;
 	else if (streq(label, "O"))
@@ -1380,6 +1385,159 @@ struct file_parser e_parser = {
 	finish_parse_e
 };
 
+/* Parsing functions for monster_base.txt */
+
+static enum parser_error parse_rb_n(struct parser *p) {
+	struct monster_base *h = parser_priv(p);
+	struct monster_base *rb = mem_alloc(sizeof *rb);
+	memset(rb, 0, sizeof(*rb));
+	rb->next = h;
+	rb->rval = parser_getuint(p, "index");
+	rb->name = string_make(parser_getstr(p, "name"));
+	parser_setpriv(p, rb);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_rb_g(struct parser *p) {
+	struct monster_base *rb = parser_priv(p);
+
+	if (!rb)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	rb->d_char = parser_getchar(p, "glyph");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_rb_m(struct parser *p) {
+	struct monster_base *rb = parser_priv(p);
+
+	if (!rb)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	rb->pain_idx = parser_getuint(p, "pain");
+	return PARSE_ERROR_NONE;
+}
+
+static const char *r_info_flags[] =
+{
+	#define RF(a, b) #a,
+	#include "list-mon-flags.h"
+	#undef RF
+	NULL
+};
+
+static enum parser_error parse_rb_f(struct parser *p) {
+	struct monster_base *rb = parser_priv(p);
+	char *flags;
+	char *s;
+
+	if (!rb)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!parser_hasval(p, "flags"))
+		return PARSE_ERROR_NONE;
+	flags = string_make(parser_getstr(p, "flags"));
+	s = strtok(flags, " |");
+	while (s) {
+		if (grab_flag(rb->flags, RF_SIZE, r_info_flags, s)) {
+			mem_free(flags);
+			return PARSE_ERROR_INVALID_FLAG;
+		}
+		s = strtok(NULL, " |");
+	}
+
+	mem_free(flags);
+	return PARSE_ERROR_NONE;
+}
+
+static const char *r_info_spell_flags[] =
+{
+	#define RSF(a, b) #a,
+	#include "list-mon-spells.h"
+	#undef RSF
+	NULL
+};
+
+static enum parser_error parse_rb_s(struct parser *p) {
+	struct monster_base *rb = parser_priv(p);
+	char *flags;
+	char *s;
+
+	if (!rb)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!parser_hasval(p, "spells"))
+		return PARSE_ERROR_NONE;
+	flags = string_make(parser_getstr(p, "spells"));
+	s = strtok(flags, " |");
+	while (s) {
+		if (grab_flag(rb->spell_flags, RSF_SIZE, r_info_spell_flags, s)) {
+			mem_free(flags);
+			return PARSE_ERROR_INVALID_FLAG;
+		}
+		s = strtok(NULL, " |");
+	}
+
+	mem_free(flags);
+	return PARSE_ERROR_NONE;
+}
+
+
+static enum parser_error parse_rb_d(struct parser *p) {
+	struct monster_base *rb = parser_priv(p);
+
+	if (!rb)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	rb->text = string_append(rb->text, parser_getstr(p, "desc"));
+	return PARSE_ERROR_NONE;
+}
+
+
+struct parser *init_parse_rb(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+
+	parser_reg(p, "V sym version", ignored);
+	parser_reg(p, "N uint index str name", parse_rb_n);
+	parser_reg(p, "G char glyph", parse_rb_g);
+	parser_reg(p, "M uint pain", parse_rb_m);
+	parser_reg(p, "F ?str flags", parse_rb_f);
+	parser_reg(p, "S ?str spells", parse_rb_s);
+	parser_reg(p, "D str desc", parse_rb_d);
+	return p;
+}
+
+static errr run_parse_rb(struct parser *p) {
+	return parse_file(p, "monster_base");
+}
+
+static errr finish_parse_rb(struct parser *p) {
+	struct monster_base *rb, *n;
+		
+	rb_info = mem_zalloc(sizeof(*rb) * z_info->rb_max);
+	for (rb = parser_priv(p); rb; rb = rb->next) {
+		if (rb->rval >= z_info->rb_max)
+			continue;
+		memcpy(&rb_info[rb->rval], rb, sizeof(*rb));
+	}
+	
+	rb = parser_priv(p);
+	while (rb) {
+		n = rb->next;
+		mem_free(rb);
+		rb = n;
+	}
+	
+	parser_destroy(p);
+	return 0;
+}
+
+struct file_parser rb_parser = {
+	"monster_base",
+	init_parse_rb,
+	run_parse_rb,
+	finish_parse_rb
+};
+
+
 /* Parsing functions for monster.txt */
 static enum parser_error parse_r_n(struct parser *p) {
 	struct monster_race *h = parser_priv(p);
@@ -1392,7 +1550,35 @@ static enum parser_error parse_r_n(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_r_t(struct parser *p) {
+	struct monster_race *r = parser_priv(p);
+	int rval;
+	
+	rval = lookup_monster_base(parser_getsym(p, "rval"));
+	if (rval < 0)
+		/* Todo: make new error for this */
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+	r->rval = rval;
+	
+	/* The template sets the default display character */
+	r->d_char = rb_info[r->rval].d_char;
+	
+	/* Give the monster its default flags */
+	rf_union(r->flags, rb_info[r->rval].flags);
+	
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_r_g(struct parser *p) {
+	struct monster_race *r = parser_priv(p);
+	
+	/* If the display character is specified, it overrides any template */
+	r->d_char = parser_getchar(p, "glyph");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_r_c(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
 	const char *color;
 	int attr;
@@ -1407,7 +1593,6 @@ static enum parser_error parse_r_g(struct parser *p) {
 	if (attr < 0)
 		return PARSE_ERROR_INVALID_COLOR;
 	r->d_attr = attr;
-	r->d_char = parser_getchar(p, "glyph");
 	return PARSE_ERROR_NONE;
 }
 
@@ -1498,14 +1683,6 @@ static enum parser_error parse_r_b(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static const char *r_info_flags[] =
-{
-	#define RF(a, b) #a,
-	#include "list-mon-flags.h"
-	#undef RF
-	NULL
-};
-
 static enum parser_error parse_r_f(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
 	char *flags;
@@ -1524,7 +1701,7 @@ static enum parser_error parse_r_f(struct parser *p) {
 		}
 		s = strtok(NULL, " |");
 	}
-
+	
 	mem_free(flags);
 	return PARSE_ERROR_NONE;
 }
@@ -1537,14 +1714,6 @@ static enum parser_error parse_r_d(struct parser *p) {
 	r->text = string_append(r->text, parser_getstr(p, "desc"));
 	return PARSE_ERROR_NONE;
 }
-
-static const char *r_info_spell_flags[] =
-{
-	#define RSF(a, b) #a,
-	#include "list-mon-spells.h"
-	#undef RSF
-	NULL
-};
 
 static enum parser_error parse_r_s(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
@@ -1574,6 +1743,10 @@ static enum parser_error parse_r_s(struct parser *p) {
 		s = strtok(NULL, " |");
 	}
 
+	/* Add the "base monster" flags to the monster */
+	if (r->rval > 0)
+		rsf_union(r->spell_flags, rb_info[r->rval].spell_flags);
+
 	mem_free(flags);
 	return ret;
 }
@@ -1584,7 +1757,9 @@ struct parser *init_parse_r(void) {
 
 	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "N uint index str name", parse_r_n);
-	parser_reg(p, "G char glyph sym color", parse_r_g);
+	parser_reg(p, "T sym rval", parse_r_t);
+	parser_reg(p, "G char glyph", parse_r_g);
+	parser_reg(p, "C sym color", parse_r_c);
 	parser_reg(p, "I int speed int hp int aaf int ac int sleep", parse_r_i);
 	parser_reg(p, "W int level int rarity int power int mexp", parse_r_w);
 	parser_reg(p, "B sym method ?sym effect ?rand damage", parse_r_b);
@@ -3273,6 +3448,75 @@ static struct file_parser hints_parser = {
 	finish_parse_hints,
 };
 
+/* Initialise monster pain messages */
+static enum parser_error parse_mp_n(struct parser *p) {
+	struct monster_pain *h = parser_priv(p);
+	struct monster_pain *mp = mem_alloc(sizeof *mp);
+	memset(mp, 0, sizeof(*mp));
+	mp->next = h;
+	mp->pain_idx = parser_getuint(p, "index");
+	parser_setpriv(p, mp);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mp_m(struct parser *p) {
+	struct monster_pain *mp = parser_priv(p);
+	int i;
+
+	if (!mp)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	for (i = 0; i < 7; i++)
+		if (!mp->messages[i])
+			break;
+	if (i == 7)
+		return PARSE_ERROR_TOO_MANY_ENTRIES;
+	mp->messages[i] = string_make(parser_getstr(p, "message"));
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_mp(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+
+	parser_reg(p, "N uint index", parse_mp_n);
+	parser_reg(p, "M str message", parse_mp_m);
+	return p;
+}
+
+static errr run_parse_mp(struct parser *p) {
+	return parse_file(p, "pain");
+}
+
+static errr finish_parse_mp(struct parser *p) {
+	struct monster_pain *mp, *n;
+		
+	pain_messages = mem_zalloc(sizeof(*mp) * z_info->mp_max);
+	for (mp = parser_priv(p); mp; mp = mp->next) {
+		if (mp->pain_idx >= z_info->mp_max)
+			continue;
+		memcpy(&pain_messages[mp->pain_idx], mp, sizeof(*mp));
+	}
+	
+	mp = parser_priv(p);
+	while (mp) {
+		n = mp->next;
+		mem_free(mp);
+		mp = n;
+	}
+	
+	parser_destroy(p);
+	return 0;
+}
+
+struct file_parser mp_parser = {
+	"pain messages",
+	init_parse_mp,
+	run_parse_mp,
+	finish_parse_mp
+};
+
+
+
 /*
  * Initialize some other arrays
  */
@@ -3633,10 +3877,18 @@ bool init_angband(void)
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (ego-items)");
 	if (run_parser(&e_parser)) quit("Cannot initialize ego-items");
 
+	/* Initialize monster-base info */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (monster bases)");
+	if (run_parser(&rb_parser)) quit("Cannot initialize monster bases");
+	
 	/* Initialize monster info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (monsters)");
 	if (run_parser(&r_parser)) quit("Cannot initialize monsters");
 
+	/* Initialize monster pain messages */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (pain messages)");
+	if (run_parser(&mp_parser)) quit("Cannot initialize monster pain messages");
+	
 	/* Initialize artifact info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (artifacts)");
 	if (run_parser(&a_parser)) quit("Cannot initialize artifacts");

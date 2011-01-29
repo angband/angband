@@ -1367,9 +1367,6 @@ static bool build_large(struct cave *c, int y0, int x0) {
  * the given type.
  *
  * None of the pits/nests are allowed to include "unique" monsters.
- *
- * The old method used monster "names", which was bad, but the new
- * method uses monster race characters, which is also bad.  XXX XXX XXX
  */
 
 
@@ -1389,25 +1386,10 @@ static bool vault_aux_flag(int r_idx, bitflag flag) {
 
 
 /**
- * For a given string, this function returns true if the given r_idx represents
- * a non-unique monster whose symbol is present in the string.
- */
-static bool vault_aux_str(int r_idx, const char *s) {
-	monster_race *r_ptr = &r_info[r_idx];
-	if (rf_has(r_ptr->flags, RF_UNIQUE))
-		return FALSE;
-	else if (!strchr(s, r_ptr->d_char))
-		return FALSE;
-	else
-		return TRUE;
-}
-
-
-/**
  * Helper function for "monster nest (jelly)"
  */
 static bool vault_aux_jelly(int r_idx) {
-	return vault_aux_str(r_idx, "ijm,");
+	return vault_aux_flag(r_idx, RF_ICKY);
 }
 
 
@@ -1431,7 +1413,7 @@ static bool vault_aux_undead(int r_idx) {
  * Helper function for "monster pit (orc)"
  */
 static bool vault_aux_orc(int r_idx) {
-	return vault_aux_str(r_idx, "o");
+	return (vault_aux_flag(r_idx, RF_ORC) && !vault_aux_flag(r_idx, RF_UNDEAD)) ;
 }
 
 
@@ -1439,14 +1421,19 @@ static bool vault_aux_orc(int r_idx) {
  * Helper function for "monster pit (troll)"
  */
 static bool vault_aux_troll(int r_idx) {
-	return vault_aux_str(r_idx, "T");
+	return (vault_aux_flag(r_idx, RF_TROLL) && !vault_aux_flag(r_idx, RF_UNDEAD));
 }
 
 /**
  * Helper function for "monster pit (giant)"
  */
 static bool vault_aux_giant(int r_idx) {
-	return vault_aux_str(r_idx, "P");
+	monster_race *r_ptr = &r_info[r_idx];
+	
+	if (!vault_aux_flag(r_idx, RF_GIANT)) return FALSE;
+	
+	/* Hack - check the monster for the "Boulder" spell so that we don't match ogres. */
+	return rsf_has(r_ptr->spell_flags, RSF_BOULDER);
 }
 
 
@@ -1464,7 +1451,7 @@ static bool vault_aux_dragon(int r_idx)
 	monster_race *r_ptr = &r_info[r_idx];
 	bitflag mon_breath[RSF_SIZE];
 
-	if (!vault_aux_str(r_idx, "Dd")) return FALSE;
+	if (!vault_aux_flag(r_idx, RF_DRAGON)) return FALSE;
 
 	/* Hack -- Require correct "breath attack" */
 	rsf_copy(mon_breath, r_ptr->spell_flags);
@@ -1478,7 +1465,7 @@ static bool vault_aux_dragon(int r_idx)
  * Helper function for "monster pit (demon)"
  */
 static bool vault_aux_demon(int r_idx) {
-	return vault_aux_str(r_idx, "U");
+	return (vault_aux_flag(r_idx, RF_DEMON) && vault_aux_flag(r_idx, RF_POWERFUL));
 }
 
 
