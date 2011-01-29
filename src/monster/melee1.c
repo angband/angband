@@ -500,7 +500,7 @@ bool make_attack_normal(int m_idx)
 
 				case RBE_UN_POWER:
 				{
-					int drained = 0;
+					int drained = 0, unpower, newcharge;
 
 					/* Take damage */
 					take_hit(damage, ddesc);
@@ -527,12 +527,13 @@ bool make_attack_normal(int m_idx)
 								drained = o_ptr->pval[DEFAULT_PVAL];
 
 								/* Get number of charge to drain */
-								int unpower = (rlev / (o_ptr->kind->level + 2)) + 1;
-								
+								unpower = (rlev / (o_ptr->kind->level + 2)) + 1;
+
 								/* Get new charge value, don't allow negative */
-								int newcharge = MAX((o_ptr->pval[DEFAULT_PVAL]-unpower),0);
+								newcharge = MAX((o_ptr->pval[DEFAULT_PVAL]
+										- unpower),0);
 								
-								/* Remove the charges */							
+								/* Remove the charges */
 								o_ptr->pval[DEFAULT_PVAL] = newcharge;
 							}
 						}
