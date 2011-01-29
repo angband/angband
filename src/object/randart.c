@@ -342,6 +342,7 @@ static errr init_names(void)
 static s32b artifact_power(int a_idx)
 {
 	object_type obj;
+	char buf[256];
 
 	LOG_PRINT("********** ENTERING EVAL POWER ********\n");
 	LOG_PRINT1("Artifact index is %d\n", a_idx);
@@ -350,6 +351,9 @@ static s32b artifact_power(int a_idx)
 	{
 		return 0;
 	}
+
+	object_desc(buf, 256*sizeof(char), &obj, ODESC_PREFIX | ODESC_FULL | ODESC_SPOIL);
+	LOG_PRINT1("%s\n", buf);
 
 	return object_power(&obj, verbose, log_file, TRUE);
 }
@@ -1819,6 +1823,17 @@ static bool add_first_pval_flag(artifact_type *a_ptr, int flag)
 	return FALSE;
 }
 
+/* Count pvals and set num_pvals accordingly*/
+static void recalc_num_pvals(artifact_type *a_ptr)
+{
+	int i;
+
+	a_ptr->num_pvals = 0;
+	for (i = 0; i < MAX_PVALS; i++)
+		if (a_ptr->pval[i] != 0) a_ptr->num_pvals++;
+	LOG_PRINT1("a_ptr->num_pvals is now %d.\n", a_ptr->num_pvals);
+}
+
 static void add_stat(artifact_type *a_ptr)
 {
 	int r;
@@ -2303,8 +2318,6 @@ static int choose_ability (s16b *freq_table)
 
 static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 {
-	int i;
-
 	switch(r)
 	{
 		case ART_IDX_BOW_SHOTS:
@@ -2542,10 +2555,7 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 			break;
 	}
 
-	/* Count pvals and set num_pvals accordingly*/
-	a_ptr->num_pvals = 0;
-	for (i = 0; i < MAX_PVALS; i++)
-		if (a_ptr->pval[i] != 0) a_ptr->num_pvals++;
+	recalc_num_pvals(a_ptr);
 }
 
 /*
@@ -2592,6 +2602,7 @@ static void try_supercharge(artifact_type *a_ptr, s32b target_power)
 		else if (randint0(z_info->a_max) < artprobs[ART_IDX_MELEE_BLOWS_SUPER])
 		{
 			of_on(a_ptr->flags, OF_BLOWS);
+			of_on(a_ptr->pval_flags[DEFAULT_PVAL], OF_BLOWS);
 			a_ptr->pval[DEFAULT_PVAL] = 3;
 			LOG_PRINT("Supercharging melee blows! (+3 blows)\n");
 		}
@@ -2603,12 +2614,14 @@ static void try_supercharge(artifact_type *a_ptr, s32b target_power)
 		if (randint0(z_info->a_max) < artprobs[ART_IDX_BOW_SHOTS_SUPER])
 		{
 			of_on(a_ptr->flags, OF_SHOTS);
+			of_on(a_ptr->pval_flags[DEFAULT_PVAL], OF_SHOTS);
 			a_ptr->pval[DEFAULT_PVAL] = 3;
 			LOG_PRINT("Supercharging shots for bow!  (3 extra shots)\n");
 		}
 		else if (randint0(z_info->a_max) < artprobs[ART_IDX_BOW_MIGHT_SUPER])
 		{
 			of_on(a_ptr->flags, OF_MIGHT);
+			of_on(a_ptr->pval_flags[DEFAULT_PVAL], OF_MIGHT);
 			a_ptr->pval[DEFAULT_PVAL] = 3;
 			LOG_PRINT("Supercharging might for bow!  (3 extra might)\n");
 		}
@@ -2620,6 +2633,7 @@ static void try_supercharge(artifact_type *a_ptr, s32b target_power)
 		artprobs[ART_IDX_BOOT_SPEED]))
 	{
 		of_on(a_ptr->flags, OF_SPEED);
+		of_on(a_ptr->pval_flags[DEFAULT_PVAL], OF_SPEED);
 		a_ptr->pval[DEFAULT_PVAL] = 5 + randint0(6);
 		if (INHIBIT_WEAK) a_ptr->pval[DEFAULT_PVAL] += randint1(3);
 		if (INHIBIT_STRONG) a_ptr->pval[DEFAULT_PVAL] += 1 + randint1(6);
@@ -2656,6 +2670,8 @@ static void try_supercharge(artifact_type *a_ptr, s32b target_power)
 			LOG_PRINT("Adding aggravation\n");
 		}
 	}
+
+	recalc_num_pvals(a_ptr);
 }
 
 /*
