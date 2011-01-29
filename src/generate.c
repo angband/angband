@@ -2720,11 +2720,11 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 	}
 
 	/* Place 1-2 down stairs near some walls */
-	if (OPT(birth_no_stairs) || !p->create_up_stair)
+	if (OPT(birth_no_stairs) || p->create_up_stair)
 		alloc_stairs(c, FEAT_MORE, 1, 3);
     
 	/* Place 1 up stairs near some walls */
-	if (OPT(birth_no_stairs) || !p->create_down_stair)
+	if (OPT(birth_no_stairs) || p->create_down_stair)
 		alloc_stairs(c, FEAT_LESS, 1, 3);
 
 	/* Generate a door for every 100 squares in the labyrinth */
