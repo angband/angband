@@ -526,8 +526,14 @@ bool make_attack_normal(int m_idx)
 							{
 								drained = o_ptr->pval[DEFAULT_PVAL];
 
-								/* Uncharge */
-								o_ptr->pval[DEFAULT_PVAL] = 0;
+								/* Get number of charge to drain */
+								int unpower = (rlev / (o_ptr->kind->level + 2)) + 1;
+								
+								/* Get new charge value, don't allow negative */
+								int newcharge = MAX((o_ptr->pval[DEFAULT_PVAL]-unpower),0);
+								
+								/* Remove the charges */							
+								o_ptr->pval[DEFAULT_PVAL] = newcharge;
 							}
 						}
 

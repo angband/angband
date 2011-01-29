@@ -1559,7 +1559,7 @@ static bool item_tester_hook_recharge(const object_type *o_ptr)
  * new "auto_sort_pack" option would correctly handle replacing
  * the "broken" wand with any other item (i.e. a broken stick).
  */
-bool recharge(int num)
+bool recharge(int spell_strength)
 {
 	int i, t, item, lev;
 
@@ -1582,8 +1582,11 @@ bool recharge(int num)
 	/* Extract the object "level" */
 	lev = o_ptr->kind->level;
 
-	/* Recharge power */
-	i = (num + 100 - lev - (10 * (o_ptr->pval[DEFAULT_PVAL] / o_ptr->number))) / 15;
+	/* 
+	 * Chance of failure = 1 time in 
+	 * [Spell_strength + 100 - item_level - 10 * charge_per_item]/15 
+	 */
+	i = (spell_strength + 100 - lev - (10 * (o_ptr->pval[DEFAULT_PVAL] / o_ptr->number))) / 15;
 
 	/* Back-fire */
 	if ((i <= 1) || one_in_(i))
@@ -1614,7 +1617,7 @@ bool recharge(int num)
 	else
 	{
 		/* Extract a "power" */
-		t = (num / (lev + 2)) + 1;
+		t = (spell_strength / (lev + 2)) + 1;
 
 		/* Recharge based on the power */
 		if (t > 0) o_ptr->pval[DEFAULT_PVAL] += 2 + randint1(t);
