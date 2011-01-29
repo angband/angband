@@ -334,7 +334,7 @@ void ranged_helper(int item, int dir, int range, int shots, ranged_attack attack
 	s16b ty = y + 99 * ddy[dir];
 	s16b tx = x + 99 * ddx[dir];
 
-	bool hit_body = FALSE;
+	bool hit_target = FALSE;
 
 	/* Check for target validity */
 	if ((dir == 5) && target_okay()) {
@@ -415,6 +415,8 @@ void ranged_helper(int item, int dir, int range, int shots, ranged_attack attack
 		const char *hit_verb = result.hit_verb;
 
 		if (result.success) {
+			hit_target = TRUE;
+
 			/* Get "the monster" or "it" */
 			monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 		
@@ -468,6 +470,12 @@ void ranged_helper(int item, int dir, int range, int shots, ranged_attack attack
 	/* Single object */
 	i_ptr->number = 1;
 
+	/* See if the ammunition broke or not */
+	j = (hit_target ? breakage_chance(i_ptr) : 0);
+
+	/* Drop (or break) near that location */
+	drop_near(cave, i_ptr, j, y, x, TRUE);
+
 	if (item >= 0) {
 		/* The ammo is from the inventory */
 		inven_item_increase(item, -1);
@@ -478,12 +486,6 @@ void ranged_helper(int item, int dir, int range, int shots, ranged_attack attack
 		floor_item_increase(0 - item, -1);
 		floor_item_optimize(0 - item);
 	}
-
-	/* See if the ammunition broke or not */
-	j = (hit_body ? breakage_chance(i_ptr) : 0);
-
-	/* Drop (or break) near that location */
-	drop_near(cave, i_ptr, j, y, x, TRUE);
 }
 
 
