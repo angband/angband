@@ -500,7 +500,7 @@ bool make_attack_normal(int m_idx)
 
 				case RBE_UN_POWER:
 				{
-					int drained = 0, unpower, newcharge;
+					int unpower = 0, newcharge;
 
 					/* Take damage */
 					take_hit(damage, ddesc);
@@ -524,8 +524,6 @@ bool make_attack_normal(int m_idx)
 							/* Charged? */
 							if (o_ptr->pval[DEFAULT_PVAL])
 							{
-								drained = o_ptr->pval[DEFAULT_PVAL];
-
 								/* Get number of charge to drain */
 								unpower = (rlev / (o_ptr->kind->level + 2)) + 1;
 
@@ -538,9 +536,9 @@ bool make_attack_normal(int m_idx)
 							}
 						}
 
-						if (drained)
+						if (unpower)
 						{
-							int heal = rlev * drained;
+							int heal = rlev * unpower;
 
 							msg("Energy drains from your pack!");
 
