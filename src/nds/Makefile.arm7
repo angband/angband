@@ -15,7 +15,7 @@ include $(DEVKITARM)/ds_rules
 # all directories are relative to this makefile
 #	IN THIS MODIFIED VERSION, YOU MAY ONLY HAVE ONE SOURCE DIRECTORY!!
 #------------------------------------------------------------------------------
-TARGET		:=	angband
+TARGET		:=	$(NAME)
 BUILD		:=	$(CURDIR)
 SOURCES		:=	$(CURDIR)/nds
 #INCLUDES	:=	sys/nds/arm7/include
