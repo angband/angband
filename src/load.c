@@ -2243,12 +2243,15 @@ int rd_monsters(void)
 		rd_byte(&m_ptr->fx);
 		rd_s16b(&m_ptr->hp);
 		rd_s16b(&m_ptr->maxhp);
-		rd_s16b(&m_ptr->csleep);
+		rd_s16b(&m_ptr->m_timed[MON_TMD_SLEEP]);
 		rd_byte(&m_ptr->mspeed);
 		rd_byte(&m_ptr->energy);
-		rd_byte(&m_ptr->stunned);
-		rd_byte(&m_ptr->confused);
-		rd_byte(&m_ptr->monfear);
+
+
+		rd_s16b(&m_ptr->m_timed[MON_TMD_STUN]);
+		rd_s16b(&m_ptr->m_timed[MON_TMD_CONF]);
+		rd_s16b(&m_ptr->m_timed[MON_TMD_FEAR]);
+
 		strip_bytes(1);
 
 		/* Place monster in dungeon */

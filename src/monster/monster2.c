@@ -26,6 +26,166 @@
 #include "target.h"
 
 /*
+ * Mega-hack - Fix plural names of monsters
+ *
+ * Taken from PernAngband via EY, modified to fit NPP monster list
+ *
+ * Note: It should handle all regular Angband monsters.
+ */
+void plural_aux(char *name, size_t max)
+{
+	int name_len = strlen(name);
+
+	if (strstr(name, " of "))
+	{
+		char *aider = strstr(name, " of ");
+		char dummy[80];
+		int i = 0;
+		char *ctr = name;
+
+		while (ctr < aider)
+		{
+			dummy[i] = *ctr;
+			ctr++;
+			i++;
+		}
+
+		if (dummy[i - 1] == 's')
+		{
+			strcpy (&(dummy[i]), "es");
+			i++;
+		}
+		else
+		{
+			strcpy (&(dummy[i]), "s");
+		}
+
+		strcpy(&(dummy[i + 1]), aider);
+		my_strcpy(name, dummy, max);
+	}
+	else if ((strstr(name, "coins")) || (strstr(name, "gems")))
+	{
+		char dummy[80];
+		strcpy (dummy, "Piles of c");
+		my_strcat (dummy, &(name[1]), sizeof(dummy));
+		my_strcpy (name, dummy, max);
+		return;
+	}
+
+	else if (strstr(name, "Greater Servant of"))
+	{
+		char dummy[80];
+		strcpy (dummy, "Greater Servants of ");
+		my_strcat (dummy, &(name[1]), sizeof(dummy));
+		my_strcpy (name, dummy, max);
+		return;
+	}
+	else if (strstr(name, "Lesser Servant of"))
+	{
+		char dummy[80];
+		strcpy (dummy, "Greater Servants of ");
+		my_strcat (dummy, &(name[1]), sizeof(dummy));
+		my_strcpy (name, dummy, max);
+		return;
+	}
+	else if (strstr(name, "Servant of"))
+	{
+		char dummy[80];
+		strcpy (dummy, "Servants of ");
+		my_strcat (dummy, &(name[1]), sizeof(dummy));
+		my_strcpy (name, dummy, max);
+		return;
+	}
+	else if (strstr(name, "Great Wyrm"))
+	{
+		char dummy[80];
+		strcpy (dummy, "Great Wyrms ");
+		my_strcat (dummy, &(name[1]), sizeof(dummy));
+		my_strcpy (name, dummy, max);
+		return;
+	}
+	else if (strstr(name, "Spawn of"))
+	{
+		char dummy[80];
+		strcpy (dummy, "Spawn of ");
+		my_strcat (dummy, &(name[1]), sizeof(dummy));
+		my_strcpy (name, dummy, max);
+		return;
+	}
+	else if (strstr(name, "Descendant of"))
+	{
+		char dummy[80];
+		strcpy (dummy, "Descendant of ");
+		my_strcat (dummy, &(name[1]), sizeof(dummy));
+		my_strcpy (name, dummy, max);
+		return;
+	}
+	else if ((strstr(name, "Manes")) || (name[name_len-1] == 'u') || (strstr(name, "Yeti")) ||
+		(streq(&(name[name_len-2]), "ua")) || (streq(&(name[name_len-3]), "nee")) ||
+		(streq(&(name[name_len-4]), "idhe")))
+	{
+		return;
+	}
+	else if (name[name_len-1] == 'y')
+	{
+		strcpy(&(name[name_len - 1]), "ies");
+	}
+	else if (streq(&(name[name_len - 4]), "ouse"))
+	{
+		strcpy (&(name[name_len - 4]), "ice");
+	}
+	else if (streq(&(name[name_len - 4]), "lung"))
+	{
+		strcpy (&(name[name_len - 4]), "lungen");
+	}
+	else if (streq(&(name[name_len - 3]), "sus"))
+	{
+		strcpy (&(name[name_len - 3]), "si");
+	}
+	else if (streq(&(name[name_len - 4]), "star"))
+	{
+		strcpy (&(name[name_len - 4]), "stari");
+	}
+	else if (streq(&(name[name_len - 3]), "aia"))
+	{
+		strcpy (&(name[name_len - 3]), "aiar");
+	}
+	else if (streq(&(name[name_len - 3]), "inu"))
+	{
+		strcpy (&(name[name_len - 3]), "inur");
+	}
+	else if (streq(&(name[name_len - 5]), "culus"))
+	{
+		strcpy (&(name[name_len - 5]), "culi");
+	}
+	else if (streq(&(name[name_len - 4]), "sman"))
+	{
+		strcpy (&(name[name_len - 4]), "smen");
+	}
+	else if (streq(&(name[name_len - 4]), "lman"))
+	{
+		strcpy (&(name[name_len - 4]), "lmen");
+	}
+	else if (streq(&(name[name_len - 2]), "ex"))
+	{
+		strcpy (&(name[name_len - 2]), "ices");
+	}
+	else if ((name[name_len - 1] == 'f') && (!streq(&(name[name_len - 2]), "ff")))
+	{
+		strcpy (&(name[name_len - 1]), "ves");
+	}
+	else if (((streq(&(name[name_len - 2]), "ch")) || (name[name_len - 1] == 's')) &&
+			(!streq(&(name[name_len - 5]), "iarch")))
+	{
+		strcpy (&(name[name_len]), "es");
+	}
+	else
+	{
+		strcpy (&(name[name_len]), "s");
+	}
+}
+
+/*
  * Delete a monster by index.
  *
  * When a monster is deleted, all of its objects are deleted.
@@ -536,6 +696,41 @@ s16b get_mon_num(int level)
 	return (table[i].index);
 }
 
+/*
+ * Helper function for display monlist.  Prints the number of creatures, followed
+ * by either a singular or plural version of the race name as appropriate.
+ */
+static void get_mon_name(char *output_name, size_t max, int r_idx, int in_los)
+{
+	/* Get monster race and name */
+	monster_race *r_ptr = &r_info[r_idx];
+
+	char race_name[80];
+
+	my_strcpy(race_name, r_ptr->name, sizeof(race_name));
+
+	/* Unique names don't have a number */
+	if (rf_has(r_ptr->flags, RF_UNIQUE))
+	{
+		my_strcpy(output_name, "[U] ", max);
+	}
+
+	/* Normal races*/
+	else
+	{
+		my_strcpy(output_name, format("%3d ", in_los), max);
+
+		/* Make it plural, if needed. */
+		if (in_los > 1)
+		{
+			plural_aux(race_name, sizeof(race_name));
+		}
+	}
+
+	/* Mix the quantity and the header. */
+	my_strcat(output_name, race_name, max);
+}
+
 
 /*
  * Display visible monsters in a window
@@ -550,7 +745,7 @@ void display_monlist(void)
 
 	byte attr;
 
-	char *m_name;
+	char m_name[80];
 	char buf[80];
 
 	monster_type *m_ptr;
@@ -624,10 +819,10 @@ void display_monlist(void)
 			v->los++;
 			
 			/* Check if asleep and increment accordingly */
-			if (m_ptr->csleep) v->los_asleep++;
+			if (m_ptr->m_timed[MON_TMD_SLEEP]) v->los_asleep++;
 		}
 		/* Not in LOS so increment if asleep */
-		else if (m_ptr->csleep) v->asleep++;
+		else if (m_ptr->m_timed[MON_TMD_SLEEP]) v->asleep++;
 
 		/* Bump the count for this race, and the total count */
 		v->count++;
@@ -714,7 +909,9 @@ void display_monlist(void)
 
 		/* Get monster race and name */
 		r_ptr = &r_info[order[i]];
-		m_name = r_ptr->name;
+
+		/* Get monster race and name */
+		get_mon_name(m_name, sizeof(m_name), order[i], list[order[i]].los);
 
 		/* Display uniques in a special colour */
 		if (rf_has(r_ptr->flags, RF_UNIQUE))
@@ -729,8 +926,7 @@ void display_monlist(void)
 			strnfmt(buf, sizeof(buf), (list[order[i]].los_asleep ==
 			1 ? "%s (asleep) " : "%s "), m_name);
 		else strnfmt(buf, sizeof(buf), (list[order[i]].los_asleep > 0 ?
-			"%s (x%d, %d asleep) " : "%s (x%d)"), m_name, 
-			list[order[i]].los, list[order[i]].los_asleep);
+			"%s (%d asleep) " : "%s"), m_name, list[order[i]].los_asleep);
 
 		/* Display the pict */
 		if ((tile_width == 1) && (tile_height == 1))
@@ -777,6 +973,8 @@ void display_monlist(void)
 	/* Print out non-LOS monsters in descending order */
 	for (i = 0; (i < type_count) && (line < max); i++)
 	{
+		int out_of_los = list[order[i]].count - list[order[i]].los;
+
 		/* Skip if there are none of these out of LOS */
 		if (list[order[i]].count == list[order[i]].los) continue;
 
@@ -784,11 +982,11 @@ void display_monlist(void)
 		cur_x = x;
 
 		/* Note that these have been displayed */
-		disp_count += (list[order[i]].count - list[order[i]].los);
+		disp_count += out_of_los;
 
 		/* Get monster race and name */
 		r_ptr = &r_info[order[i]];
-		m_name = r_ptr->name;
+		get_mon_name(m_name, sizeof(m_name), order[i], out_of_los);
 
 		/* Display uniques in a special colour */
 		if (rf_has(r_ptr->flags, RF_UNIQUE))
@@ -799,12 +997,11 @@ void display_monlist(void)
 			attr = TERM_WHITE;
 
 		/* Build the monster name */
-		if ((list[order[i]].count - list[order[i]].los) == 1)
+		if (out_of_los == 1)
 			strnfmt(buf, sizeof(buf), (list[order[i]].asleep ==
 			1 ? "%s (asleep) " : "%s "), m_name);
 		else strnfmt(buf, sizeof(buf), (list[order[i]].asleep > 0 ? 
-			"%s (x%d, %d asleep) " : "%s (x%d) "), m_name, 
-			(list[order[i]].count - list[order[i]].los),
+			"%s (%d asleep) " : "%s"), m_name,
 			list[order[i]].asleep);
 
 		/* Display the pict */
@@ -1789,7 +1986,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 	if (slp && r_ptr->sleep)
 	{
 		int val = r_ptr->sleep;
-		n_ptr->csleep = ((val * 2) + randint1(val * 10));
+		n_ptr->m_timed[MON_TMD_SLEEP] = ((val * 2) + randint1(val * 10));
 	}
 
 
@@ -2504,6 +2701,128 @@ bool summon_specific(int y1, int x1, int lev, int type, int delay)
 }
 
 
+/*
+ * The NULL-terminated array of string actions used to format stacked messages.
+ * Singular and plural modifiers are encoded in the same string. Example:
+ * "[is|are] hurt" is expanded to "is hurt" if you request the singular form.
+ * The string is expanded to "are hurt" if the plural form is requested.
+ * The singular and plural parts are optional. Example:
+ * "rear[s] up in anger" only includes a modifier for the singular form.
+ * Any of these strings can start with "~", in which case we consider that
+ * string as a whole message, not as a part of a larger message. This
+ * is useful to display Moria-like death messages.
+ */
+static char *msg_repository[MAX_MON_MSG + 1] =
+{
+	/* Dummy action */
+	"[is|are] hurt.",    		/* MON_MSG_NONE */
+
+	/* From message_pain */
+	"[is|are] unharmed.",		/* MON_MSG_UNHARMED  */
+	"barely notice[s].",		/* MON_MSG_BARELY_NOTICE  */
+	"flinch[es].",				/*  MON_MSG_FLINCH */
+	"squelch[es].",				/* MON_MSG_SQUELCH  */
+	"quiver[s] in pain.",		/* MON_MSG_QUIVER  */
+	"writhe[s] about.",			/*  MON_MSG_WRITHE_ABOUT */
+	"writhe[s] in agony.",		/* MON_MSG_WRITHE_IN_AGONY  */
+	"jerk[s].",					/* MON_MSG_JERK  */
+	"jerk[s] limply.",			/*  MON_MSG_JERK_LIMPLY */
+	"jerk[s] in pain.",			/* MON_MSG_JERK_IN_PAIN  */
+	"jerk[s] in agony.",		/* MON_MSG_JERK_IN_AGONY  */
+	"jerk[s] feebly.", 			/* MON_MSG_JERK_FEEBLY */
+	"shrug[s] off the attack.",  /*  MON_MSG_SHRUG_OFF */
+	"snarl[s].",				/*  MON_MSG_SNARL */
+	"snarl[s] with pain.",		/* MON_MSG_SNARL_WITH_PAIN  */
+	"howl[s] in pain.",			/* MON_MSG_HOWL_IN_PAIN  */
+	"howl[s] in agony.",		/* MON_MSG_HOWL_IN_AGONY  */
+	"yelp[s] feebly.",			/* MON_MSG_YELP_FEEBLY  */
+	"yelp[s] in pain.",			/* MON_MSG_YELP_IN_PAIN  */
+	"hiss[es].",				/* MON_MSG_HISS  */
+	"hiss[es] furiously.",		/* MON_MSG_HISS_FURIOUSLY  */
+	"hiss[es] with pain.",		/* MON_MSG_HISS_WITH_PAIN  */
+	"hiss[es] in agony.",		/* MON_MSG_HISS_IN_AGONY  */
+	"rear[s] up in anger.",		/* MON_MSG_REAR_UP_IN_ANGER  */
+	"growl[s] angrily.",		/* MON_MSG_GROWL_ANGRILY  */
+	"mewl[s] in pain.",			/* MON_MSG_MEWL_IN_PAIN  */
+	"mewl[s] pitifully.",		/* MON_MSG_MEWL_PITIFULLY  */
+	"ignore[s] the attack.",	/* MON_MSG_IGNORE_ATTACK  */
+	"looks briefly puzzled",	/* MON_MSG_BRIEF_PUZZLE */
+	"maintain[s] the same shape.", /* MON_MSG_MAINTAIN_SHAPE */
+	"drone[s] angrily.",		/* MON_MSG_DRONE_ANGRILY  */
+	"scuttle[s] about.",		/* MON_MSG_SCUTTLE_ABOUT  */
+	"twitch[es] in pain.",		/* MON_MSG_TWITCH_IN_PAIN  */
+	"flap[s] angrily.",			/* MON_MSG_FLAP_ANGRILY  */
+	"jeer[s] in pain.",			/* MON_MSG_JEER_IN_PAIN  */
+	"squawk[s] with pain.",		/* MON_MSG_SQUAWK_WITH_PAIN  */
+	"twitter[s] in agony.",		/* MON_MSG_TWITTER_IN_AGONY  */
+	"flutter[s] about.",		/* MON_MSG_FLUTTER_ABOUT  */
+	"chirp[s] feebly.",			/* MON_MSG_CHIRP_FEEBLY  */
+	"rattle[s].",				/* MON_MSG_RATTLE  */
+	"clatter[s].",				/* MON_MSG_CLATTER  */
+	"shake[s].",				/* MON_MSG_SHAKE  */
+	"stagger[s].",				/* MON_MSG_STAGGER  */
+	"crumple[s].",				/* MON_MSG_CRUMPLE  */
+	"grunt[s].",				/* MON_MSG_GRUNT  */
+	"grunt[s] with pain.",		/* MON_MSG_GRUNT_WITH_PAIN  */
+	"moan[s].",					/* MON_MSG_MOAN  */
+	"groan[s].",				/* MON_MSG_GROAN  */
+	"hesitate[s].",				/* MON_MSG_HESITATE  */
+	"squeal[s] in pain.",		/* MON_MSG_SQUEAL_IN_PAIN  */
+	"shriek[s] in pain.",		/* MON_MSG_SHRIEK_IN_PAIN  */
+	"shriek[s] in agony.",		/* MON_MSG_SHRIEK_IN_AGONY  */
+	"cr[ies|y] out feebly.",	/* MON_MSG_CRY_OUT_FEEBLY  */
+	"cr[ies|y] out in pain.",	/* MON_MSG_CRY_OUT_IN_PAIN  */
+	"scream[s] in pain.",		/* MON_MSG_SCREAM_IN_PAIN  */
+	"scream[s] in agony.",		/* MON_MSG_SCREAM_IN_AGONY  */
+
+	/* From project_m */ 		/* MON_MSG_DIE */
+	"die[s].",   				/* MON_MSG_DIE  */
+	"[is|are] destroyed.",		/* MON_MSG_DESTROYED */
+	"resist[s] a lot.",			/* MON_MSG_RESIST_A_LOT */
+	"[is|are] hit hard.",		/* MON_MSG_HIT_HARD */
+	"resist[s].",				/* MON_MSG_RESIST */
+	"[is|are] immune.",			/* MON_MSG_IMMUNE */
+	"resist[s] somewhat.",		/* MON_MSG_RESIST_SOMEWHAT */
+	"[is|are] unaffected!",		/* MON_MSG_UNAFFECTED */
+	"spawn[s]!",				/* MON_MSG_SPAWN */
+	"look[s] healthier.",		/* MON_MSG_HEALTHIER */
+	"fall[s] asleep!",			/* MON_MSG_FALL_ASLEEP */
+	"wake[s] up.",				/* MON_MSG_WAKES_UP */
+	"cringe[s] from the light!",/* MON_MSG_CRINGE_LIGHT */
+	"shrivel[s] away in the light!",	/* MON_MSG_SHRIVEL_LIGHT */
+	"lose[s] some skin!",		/* MON_MSG_LOSE_SKIN */
+	"dissolve[s]!",				/* MON_MSG_DISSOLVE */
+	"catch[es] fire!",			/* MON_MSG_CATCH_FIRE */
+	"[is|are] badly frozen.", 	 /* MON_MSG_BADLY_FROZEN */
+	"shudder[s].",				/* MON_MSG_SHUDDER */
+	"change[s]!",				/* MON_MSG_CHANGE */
+	"disappear[s]!",			/* MON_MSG_DISAPPEAR */
+	"[is|are] even more stunned.",		/* MON_MSG_MORE_DAZED */
+	"[is|are] stunned.",		/* MON_MSG_DAZED*/
+	"[is|are] no longer stunned.",	/* MON_MSG_NOT_DAZED */
+	"look[s] more confused.",	/* MON_MSG_MORE_CONFUSED */
+	"look[s] confused.",		/* MON_MSG_CONFUSED */
+	"[is|are] no longer confused.",/* MON_MSG_NOT_CONFUSED */
+	"look[s] more slowed.",		/* MON_MSG_MORE_SLOWED */
+	"look[s] slowed.",			/* MON_MSG_SLOWED */
+	"speed[s] up.",				/* MON_SNG_NOT_SLOWED */
+	"look[s] more hasted.",		/* MON_MSG_MORE_HASTED */
+	"look[s] hasted.",			/* MON_MSG_HASTED */
+	"[is|are] no longer hasted.",/* MON_MSG_NOT_HASTED */
+	"look[s] more terrified!",	/* MON_MSG_MORE_AFRAID */
+	"flee[s] in terror!",		/* MON_MSG_FLEE_IN_TERROR */
+	"[is|are] no longer afraid.",/* MON_MSG_NOT_AFRAID */
+	"~You hear [a|several] scream[|s] of agony!",/* MON_MSG_MORIA_DEATH */
+	"disintegrates!",		/* MON_MSG_DISENTEGRATES */
+	"freez[es] and shatter[s]",  /* MON_MSG_FREEZE_SHATTER */
+	"lose[s] some mana!",		/* MON_MSG_MANA_DRAIN */
+
+
+
+	NULL						/* MAX_MON_MSG */
+};
+
+
 
 
 
@@ -2561,6 +2880,7 @@ void message_pain(int m_idx, int dam)
 	monster_base *rb_ptr = &rb_info[r_ptr->rval];
 	monster_pain *mp_ptr = &pain_messages[rb_ptr->pain_idx];
 	
+	int msg_code = MON_MSG_UNHARMED;
 	char m_name[80];
 
 	/* Get the monster name */
@@ -2569,7 +2889,8 @@ void message_pain(int m_idx, int dam)
 	/* Notice non-damage */
 	if (dam == 0)
 	{
-		msg("%^s is unharmed.", m_name);
+		add_monster_message(m_name, m_idx, msg_code);
+
 		return;
 	}
 
@@ -3060,24 +3381,6 @@ void monster_death(int m_idx)
 
 
 /*
- * If the monster is asleep, then wake it up. Otherwise, do nothing.
- * Returns TRUE if the monster just woke up, or FALSE if it was already awake.
- */
-bool wake_monster(monster_type *m_ptr)
-{
-	if (m_ptr->csleep <= 0)
-		return FALSE;
-
-	m_ptr->csleep = 0;
-
-	/* If it just woke up, update the monster list */
-	p_ptr->redraw |= PR_MONLIST;
-	
-	return TRUE;
-}
-
-
-/*
  * Decrease a monster's hit points, handle monster death.
  *
  * We return TRUE if the monster has been killed (and deleted).
@@ -3115,7 +3418,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note)
 	if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
 
 	/* Wake it up */
-	wake_monster(m_ptr);
+	mon_clear_timed(m_idx, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
 
 	/* Hurt it */
 	m_ptr->hp -= dam;
@@ -3145,7 +3448,13 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note)
 		/* Death by Missile/Spell attack */
 		if (note)
 		{
-			msgt(soundfx, "%^s%s", m_name, note);
+			/* Hack -- allow message suppression */
+			if (strlen(note) <= 1)
+			{
+				/* Be silent */
+			}
+
+			else msgt(soundfx, "%^s%s", m_name, note);
 		}
 
 		/* Death by physical attack -- invisible monster */
@@ -3232,22 +3541,22 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note)
 
 
 	/* Mega-Hack -- Pain cancels fear */
-	if (m_ptr->monfear && (dam > 0))
+	if (m_ptr->m_timed[MON_TMD_FEAR] && (dam > 0))
 	{
 		int tmp = randint1(dam);
 
 		/* Cure a little fear */
-		if (tmp < m_ptr->monfear)
+		if (tmp < m_ptr->m_timed[MON_TMD_FEAR])
 		{
 			/* Reduce fear */
-			m_ptr->monfear -= tmp;
+			mon_dec_timed(m_idx, MON_TMD_FEAR, tmp , MON_TMD_FLG_NOMESSAGE);
 		}
 
 		/* Cure all the fear */
 		else
 		{
 			/* Cure fear */
-			m_ptr->monfear = 0;
+			mon_clear_timed(m_idx, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE);
 
 			/* No more fear */
 			(*fear) = FALSE;
@@ -3255,7 +3564,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note)
 	}
 
 	/* Sometimes a monster gets scared by damage */
-	if (!m_ptr->monfear && !rf_has(r_ptr->flags, RF_NO_FEAR) && dam > 0)
+	if (!m_ptr->m_timed[MON_TMD_FEAR] && !rf_has(r_ptr->flags, RF_NO_FEAR) && dam > 0)
 	{
 		int percentage;
 
@@ -3269,13 +3578,13 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note)
 		if ((randint1(10) >= percentage) ||
 		    ((dam >= m_ptr->hp) && (randint0(100) < 80)))
 		{
+			int timer = randint1(10) + (((dam >= m_ptr->hp) && (percentage > 7)) ?
+	                   20 : ((11 - percentage) * 5));
+
 			/* Hack -- note fear */
 			(*fear) = TRUE;
 
-			/* Hack -- Add some timed fear */
-			m_ptr->monfear = (randint1(10) +
-			                  (((dam >= m_ptr->hp) && (percentage > 7)) ?
-			                   20 : ((11 - percentage) * 5)));
+			mon_inc_timed(m_idx, MON_TMD_FEAR, timer, MON_TMD_FLG_NOMESSAGE);
 		}
 	}
 

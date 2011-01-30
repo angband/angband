@@ -26,6 +26,7 @@
 #include "init.h"
 #include "macro.h"
 #include "monster/constants.h"
+#include "monster/monster.h"
 #include "object/slays.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
@@ -3554,6 +3555,10 @@ static errr init_other(void)
 
 	cave = cave_new();
 
+	/* Array of stacked monster messages */
+	mon_msg = C_ZNEW(MAX_STORED_MON_MSG, monster_race_message);
+	mon_message_hist = C_ZNEW(MAX_STORED_MON_CODES, monster_message_history);
+
 	/*** Prepare "vinfo" array ***/
 
 	/* Used by "update_view()" */
@@ -4033,6 +4038,10 @@ void cleanup_angband(void)
 
 	/* Free the temp array */
 	FREE(temp_g);
+
+	/* Free the stacked monster messages */
+	FREE(mon_msg);
+	FREE(mon_message_hist);
 
 	/* Free the messages */
 	messages_free();

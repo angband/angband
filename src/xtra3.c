@@ -398,16 +398,16 @@ byte monster_health_attr(void)
 		if (pct >= 100) attr = TERM_L_GREEN;
 
 		/* Afraid */
-		if (m_ptr->monfear) attr = TERM_VIOLET;
+		if (m_ptr->m_timed[MON_TMD_FEAR]) attr = TERM_VIOLET;
 
 		/* Confused */
-		if (m_ptr->confused) attr = TERM_UMBER;
+		if (m_ptr->m_timed[MON_TMD_CONF]) attr = TERM_UMBER;
 
 		/* Stunned */
-		if (m_ptr->stunned) attr = TERM_L_BLUE;
+		if (m_ptr->m_timed[MON_TMD_STUN]) attr = TERM_L_BLUE;
 
 		/* Asleep */
-		if (m_ptr->csleep) attr = TERM_BLUE;
+		if (m_ptr->m_timed[MON_TMD_SLEEP]) attr = TERM_BLUE;
 	}
 	
 	return attr;

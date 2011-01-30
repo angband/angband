@@ -79,10 +79,10 @@ static void look_mon_desc(char *buf, size_t max, int m_idx)
 			my_strcpy(buf, (living ? "almost dead" : "almost destroyed"), max);
 	}
 
-	if (m_ptr->csleep) my_strcat(buf, ", asleep", max);
-	if (m_ptr->confused) my_strcat(buf, ", confused", max);
-	if (m_ptr->monfear) my_strcat(buf, ", afraid", max);
-	if (m_ptr->stunned) my_strcat(buf, ", stunned", max);
+	if (m_ptr->m_timed[MON_TMD_SLEEP]) my_strcat(buf, ", asleep", max);
+	if (m_ptr->m_timed[MON_TMD_CONF]) my_strcat(buf, ", confused", max);
+	if (m_ptr->m_timed[MON_TMD_FEAR]) my_strcat(buf, ", afraid", max);
+	if (m_ptr->m_timed[MON_TMD_STUN]) my_strcat(buf, ", stunned", max);
 }
 
 

@@ -135,7 +135,6 @@ bool py_attack_real(int y, int x) {
 	/* Information about the target of the attack */
 	monster_type *m_ptr = &mon_list[cave->m_idx[y][x]];
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
-	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 	char m_name[80];
 	bool dead = FALSE;
 	bool fear = FALSE;
@@ -170,7 +169,7 @@ bool py_attack_real(int y, int x) {
 	}
 
 	/* Disturb the monster */
-	wake_monster(m_ptr);
+	mon_clear_timed(cave->m_idx[y][x], MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
 
 	/* See if the player hit */
 	success = test_hit(chance, r_ptr->ac, m_ptr->ml);
@@ -249,18 +248,8 @@ bool py_attack_real(int y, int x) {
 		p_ptr->confusing = FALSE;
 		msg("Your hands stop glowing.");
 
-		/* Update the lore */
-		if (m_ptr->ml) rf_on(l_ptr->flags, RF_NO_CONF);
-
-		/* Confuse the monster */
-		if (rf_has(r_ptr->flags, RF_NO_CONF)) {
-			msg("%^s is unaffected.", m_name);
-		} else if (randint0(100) < r_ptr->level) {
-			msg("%^s is unaffected.", m_name);
-		} else {
-			msg("%^s appears confused.", m_name);
-			m_ptr->confused += 10 + randint0(p_ptr->lev) / 5;
-		}
+		mon_inc_timed(cave->m_idx[y][x], MON_TMD_CONF,
+				(10 + randint0(p_ptr->lev) / 10), MON_TMD_FLG_NOTIFY);
 	}
 
 	/* Damage, check for fear and death */

@@ -9,3 +9,5 @@ lib/save/1000.*
 .project
 .cproject
 .gitignore
+*.orig
+*.rej

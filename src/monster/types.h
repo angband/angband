@@ -166,14 +166,10 @@ typedef struct
 	s16b hp;			/* Current Hit points */
 	s16b maxhp;			/* Max Hit points */
 
-	s16b csleep;		/* Inactive counter */
+	s16b m_timed[MON_TMD_MAX];
 
 	byte mspeed;		/* Monster "speed" */
 	byte energy;		/* Monster "energy" */
-
-	byte stunned;		/* Monster is stunned */
-	byte confused;		/* Monster is confused */
-	byte monfear;		/* Monster is afraid */
 
 	byte cdis;			/* Current dis from player */
 
@@ -199,5 +195,22 @@ typedef struct
 	u16b los_asleep;	/* number asleep and in LOS */
 	byte attr; /* attr to use for drawing */
 } monster_vis; 
+
+/*
+ * A stacked monster message entry
+ */
+typedef struct monster_race_message
+{
+	s16b mon_race;		/* The race of the monster */
+	byte mon_flags;		/* Flags: 0x01 means hidden monster, 0x02 means offscreen monster */
+ 	int  msg_code;		/* The coded message */
+	byte mon_count;		/* How many monsters triggered this message */
+} monster_race_message;
+
+typedef struct monster_message_history
+{
+	int monster_idx;	/* The monster */
+	int message_code;		/* The coded message */
+} monster_message_history;
 
 #endif /* INCLUDED_MONSTER_TYPES_H */

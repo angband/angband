@@ -1,0 +1,564 @@
+--- src/monster/monster2.c	2011-01-25 21:39:57.160000000 -0500
++++ src/monster/monster2.c	2011-01-29 14:10:12.537537300 -0500
+@@ -2816,8 +3135,9 @@
+ 	monster_type *m_ptr = &mon_list[m_idx];
+ 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
+ 
+-	char m_name[80];
++	int msg_code = MON_MSG_UNHARMED;
+ 
++	char m_name[80];
+ 
+ 	/* Get the monster name */
+ 	monster_desc(m_name, sizeof(m_name), m_ptr, 0);
+@@ -2841,80 +3162,522 @@
+ 	if (strchr("jmvQ", r_ptr->d_char))
+ 	{
+ 		if (percentage > 95)
+-			msg("%^s barely notices.", m_name);
++			msg_code = MON_MSG_BARELY_NOTICE;
+ 		else if (percentage > 75)
+-			msg("%^s flinches.", m_name);
++			msg_code = MON_MSG_FLINCH;
+ 		else if (percentage > 50)
+-			msg("%^s squelches.", m_name);
++			msg_code = MON_MSG_SQUELCH;
+ 		else if (percentage > 35)
+-			msg("%^s quivers in pain.", m_name);
++			msg_code = MON_MSG_QUIVER;
+ 		else if (percentage > 20)
+-			msg("%^s writhes about.", m_name);
++			msg_code = MON_MSG_WRITHE_ABOUT;
+ 		else if (percentage > 10)
+-			msg("%^s writhes in agony.", m_name);
++			msg_code = MON_MSG_WRITHE_IN_AGONY;
+ 		else
+-			msg("%^s jerks limply.", m_name);
++			msg_code = MON_MSG_JERK_LIMPLY;
+ 	}
+ 
+ 	/* Dogs and Hounds */
+ 	else if (strchr("CZ", r_ptr->d_char))
+ 	{
+ 		if (percentage > 95)
+-			msg("%^s shrugs off the attack.", m_name);
++			msg_code = MON_MSG_SHRUG_OFF;
+ 		else if (percentage > 75)
+-			msg("%^s snarls with pain.", m_name);
++			msg_code = MON_MSG_SNARL_WITH_PAIN;
+ 		else if (percentage > 50)
+-			msg("%^s yelps in pain.", m_name);
++			msg_code = MON_MSG_YELP_IN_PAIN;
+ 		else if (percentage > 35)
+-			msg("%^s howls in pain.", m_name);
++			msg_code = MON_MSG_HOWL_IN_PAIN;
+ 		else if (percentage > 20)
+-			msg("%^s howls in agony.", m_name);
++			msg_code = MON_MSG_HOWL_IN_AGONY;
+ 		else if (percentage > 10)
+-			msg("%^s writhes in agony.", m_name);
++			msg_code = MON_MSG_WRITHE_IN_AGONY;
+ 		else
+-			msg("%^s yelps feebly.", m_name);
++			msg_code = MON_MSG_YELP_FEEBLY;
+ 	}
+ 
++	/* I included the extra pain messages
++	 * supported by this patch.  The following lines can be deleted
++	 * from below and in the tables if not wanted.  They just add
++	 * a little extra flavor from the game. -JG
++	 *
++	 * They are from Leon Marrick's old 4gai patch, called demoband.
++	 */
++
++	/* Snakes, Reptiles, Centipedes */
++	else if (strchr("cJR", r_ptr->d_char))
++	{
++		if (percentage > 95)
++			msg_code = MON_MSG_BARELY_NOTICE;
++		else if (percentage > 75)
++			msg_code = MON_MSG_HISS;
++		else if (percentage > 50)
++			msg_code = MON_MSG_REAR_UP_IN_ANGER;
++		else if (percentage > 35)
++			msg_code = MON_MSG_HISS_FURIOUSLY;
++		else if (percentage > 20)
++			msg_code = MON_MSG_WRITHE_ABOUT;
++		else if (percentage > 10)
++			msg_code = MON_MSG_WRITHE_IN_AGONY;
++		else
++			msg_code = MON_MSG_JERK_LIMPLY;
++	}
++
++	/* Felines */
++	else if (strchr("f", r_ptr->d_char))
++	{
++		if (percentage > 95)
++			msg_code = MON_MSG_SHRUG_OFF;
++		else if (percentage > 75)
++			msg_code = MON_MSG_SNARL;
++		else if (percentage > 50)
++			msg_code = MON_MSG_GROWL_ANGRILY;
++		else if (percentage > 35)
++			msg_code = MON_MSG_HISS_WITH_PAIN;
++		else if (percentage > 20)
++			msg_code = MON_MSG_MEWL_IN_PAIN;
++		else if (percentage > 10)
++			msg_code = MON_MSG_HISS_IN_AGONY;
++		else
++			msg_code = MON_MSG_MEWL_PITIFULLY;
++	}
++
++	/* Ants, Lice, Flies, Insects, Beetles, Spiders */
++	else if (strchr("alFIKS", r_ptr->d_char))
++	{
++		if (percentage > 95)
++			msg_code = MON_MSG_IGNORE_ATTACK;
++		else if (percentage > 75)
++			msg_code = MON_MSG_DRONE_ANGRILY;
++		else if (percentage > 50)
++			msg_code = MON_MSG_SCUTTLE_ABOUT;
++		else if (percentage > 35)
++			msg_code = MON_MSG_TWITCH_IN_PAIN;
++		else if (percentage > 20)
++			msg_code = MON_MSG_JERK_IN_PAIN;
++		else if (percentage > 10)
++			msg_code = MON_MSG_JERK_IN_AGONY;
++		else
++			msg_code = MON_MSG_JERK_FEEBLY;
++	}
++
++	/* Birds */
++	else if (strchr("B", r_ptr->d_char))
++	{
++		if (percentage > 95)
++			msg_code = MON_MSG_SHRUG_OFF;
++		else if (percentage > 75)
++			msg_code = MON_MSG_FLAP_ANGRILY;
++		else if (percentage > 50)
++			msg_code = MON_MSG_JEER_IN_PAIN;
++		else if (percentage > 35)
++			msg_code = MON_MSG_SQUAWK_WITH_PAIN;
++		else if (percentage > 20)
++			msg_code = MON_MSG_TWITTER_IN_AGONY;
++		else if (percentage > 10)
++			msg_code = MON_MSG_FLUTTER_ABOUT;
++		else
++			msg_code = MON_MSG_CHIRP_FEEBLY;
++	}
++
++	/* Skeletons (ignore, rattle, stagger) */
++	else if (strchr("s", r_ptr->d_char))
++	{
++		if (percentage > 95)
++			msg_code = MON_MSG_IGNORE_ATTACK;
++		else if (percentage > 75)
++			msg_code = MON_MSG_JERK;
++		else if (percentage > 50)
++		msg_code = MON_MSG_RATTLE;
++		else if (percentage > 35)
++			msg_code = MON_MSG_CLATTER;
++		else if (percentage > 20)
++			msg_code = MON_MSG_SHAKE;
++		else if (percentage > 10)
++			msg_code = MON_MSG_STAGGER;
++		else
++			msg_code = MON_MSG_CRUMPLE;
++	}
++
++	/* Zombies and Mummies (ignore, groan, stagger) */
++	else if (strchr("z", r_ptr->d_char))
++	{
++		if (percentage > 95)
++			msg_code = MON_MSG_IGNORE_ATTACK;
++		else if (percentage > 75)
++			msg_code = MON_MSG_GRUNT;
++		else if (percentage > 50)
++			msg_code = MON_MSG_JERK;
++		else if (percentage > 35)
++			msg_code = MON_MSG_MOAN;
++		else if (percentage > 20)
++			msg_code = MON_MSG_GROAN;
++		else if (percentage > 10)
++			msg_code = MON_MSG_HESITATE;
++		else
++			msg_code = MON_MSG_STAGGER;
++	}
++
++	/*
++	 * End extra monster pain messages
++	 * If they are kept, the strchr if statement below
++	 * should probably be edited.  -JG */
++
+ 	/* One type of monsters (ignore,squeal,shriek) */
+ 	else if (strchr("FIKMRSXabclqrst", r_ptr->d_char))
+ 	{
+ 		if (percentage > 95)
+-			msg("%^s ignores the attack.", m_name);
++			msg_code = MON_MSG_IGNORE_ATTACK;
+ 		else if (percentage > 75)
+-			msg("%^s grunts with pain.", m_name);
++			msg_code = MON_MSG_GRUNT_WITH_PAIN;
+ 		else if (percentage > 50)
+-			msg("%^s squeals in pain.", m_name);
++			msg_code = MON_MSG_SQUEAL_IN_PAIN;
+ 		else if (percentage > 35)
+-			msg("%^s shrieks in pain.", m_name);
++			msg_code = MON_MSG_SHRIEK_IN_PAIN;
+ 		else if (percentage > 20)
+-			msg("%^s shrieks in agony.", m_name);
++			msg_code = MON_MSG_SHRIEK_IN_AGONY;
+ 		else if (percentage > 10)
+-			msg("%^s writhes in agony.", m_name);
++			msg_code = MON_MSG_WRITHE_IN_AGONY;
+ 		else
+-			msg("%^s cries out feebly.", m_name);
++			msg_code = MON_MSG_CRY_OUT_FEEBLY;
+ 	}
+ 
+ 	/* Another type of monsters (shrug,cry,scream) */
+ 	else
+ 	{
+ 		if (percentage > 95)
+-			msg("%^s shrugs off the attack.", m_name);
++			msg_code = MON_MSG_SHRUG_OFF;
+ 		else if (percentage > 75)
+-			msg("%^s grunts with pain.", m_name);
++			msg_code = MON_MSG_GRUNT_WITH_PAIN;
+ 		else if (percentage > 50)
+-			msg("%^s cries out in pain.", m_name);
++			msg_code = MON_MSG_CRY_OUT_IN_PAIN;
+ 		else if (percentage > 35)
+-			msg("%^s screams in pain.", m_name);
++			msg_code = MON_MSG_SCREAM_IN_PAIN;
+ 		else if (percentage > 20)
+-			msg("%^s screams in agony.", m_name);
++			msg_code = MON_MSG_SCREAM_IN_AGONY;
+ 		else if (percentage > 10)
+-			msg("%^s writhes in agony.", m_name);
++			msg_code = MON_MSG_WRITHE_IN_AGONY;
+ 		else
+-			msg("%^s cries out feebly.", m_name);
++			msg_code = MON_MSG_CRY_OUT_FEEBLY;
++	}
++
++	/* Save the message for later */
++	add_monster_message(m_name, m_idx, msg_code);
++}
++
++
++
++#define SINGULAR_MON	1
++#define PLURAL_MON		2
++
++/*
++ * Returns a pointer to a statically allocatted string containing a formatted
++ * message based on the given message code and the quantity flag.
++ * The contents of the returned value will change with the next call
++ * to this function
++ */
++static char *get_mon_msg_action(byte msg_code, bool do_plural)
++{
++	static char buf[200];
++	char *action;
++
++	u16b n = 0;
++	/* Regular text */
++	byte flag = 0;
++
++	/* Put the message characters in the buffer */
++	for (action = msg_repository[msg_code]; *action; action++)
++	{
++		/* Check available space */
++		if (n >= (sizeof(buf) - 1)) break;
++
++		/* Are we parsing a quantity modifier? */
++		if (flag)
++		{
++			/* Check the presence of the modifier's terminator */
++			if (*action == ']')
++			{
++				/* Go back to parsing regular text */
++				flag = 0;
++
++				/* Skip the mark */
++				continue;
++			}
++
++			/* Check if we have to parse the plural modifier */
++			if (*action == '|')
++			{
++				/* Switch to plural modifier */
++				flag = PLURAL_MON;
++
++				/* Skip the mark */
++				continue;
++			}
++
++			/* Ignore the character if we need the other part */
++			if ((flag == PLURAL_MON) != do_plural) continue;
++		}
++
++		/* Do we need to parse a new quantity modifier? */
++		else if (*action == '[')
++		{
++			/* Switch to singular modifier */
++			flag = SINGULAR_MON;
++
++			/* Skip the mark */
++			continue;
++		}
++
++		/* Append the character to the buffer */
++		buf[n++] = *action;
++	}
++
++	/* Terminate the buffer */
++	buf[n] = '\0';
++
++	/* Done */
++	return (buf);
++}
++
++/*
++ * Tracks which monster has had which pain message stored, so redundant messages
++ * don't happen due to monster attacks hitting other monsters.
++ * Returns TRUE if the message is redundant.
++ */
++static bool redundant_monster_message(int m_idx, int msg_code)
++{
++	int i;
++
++	/* No messages yet */
++	if (!size_mon_hist) return FALSE;
++
++	for (i = 0; i < size_mon_hist; i++)
++	{
++		/* Not the same monster */
++		if (m_idx != mon_message_hist[i].monster_idx) continue;
++
++		/* Not the same code */
++		if (msg_code != mon_message_hist[i].message_code) continue;
++
++		/* We have a match. */
++		return (TRUE);
++	}
++
++	return (FALSE);
++}
++
++
++
++/*
++ * Stack a codified message for the given monster race. You must supply
++ * the description of some monster of this race. You can also supply
++ * different monster descriptions for the same race.
++ * Return TRUE on success.
++ */
++bool add_monster_message(char *mon_name, int m_idx, int msg_code)
++{
++	int i;
++	byte mon_flags = 0;
++
++	monster_type *m_ptr = &mon_list[m_idx];
++	int r_idx = m_ptr->r_idx;
++
++	if (redundant_monster_message(m_idx, msg_code)) return (FALSE);
++
++	/* Paranoia */
++	if (!mon_name || !mon_name[0]) mon_name = "it";
++
++	/* Monster is invisible or out of LOS */
++	if (streq(mon_name, "it") || streq(mon_name, "something"))
++	{
++		/* Special mark */
++		r_idx = 0;
++	}
++
++	/* Save the "hidden" mark, if present */
++	if (strstr(mon_name, "(hidden)")) mon_flags |= 0x01;
++
++	/* Save the "offscreen" mark, if present */
++	if (strstr(mon_name, "(offscreen)")) mon_flags |= 0x02;
++
++	/* Query if the message is already stored */
++	for (i = 0; i < size_mon_msg; i++)
++	{
++		/* We found the race and the message code */
++		if ((mon_msg[i].mon_race == r_idx) &&
++			(mon_msg[i].mon_flags == mon_flags) &&
++			(mon_msg[i].msg_code == msg_code))
++		{
++			/* Can we increment the counter? */
++			if (mon_msg[i].mon_count < MAX_UCHAR)
++			{
++				/* Stack the message */
++				++(mon_msg[i].mon_count);
++			}
++
++			/* Success */
++			return (TRUE);
++		}
+ 	}
++
++	/* The message isn't stored. Check free space */
++	if (size_mon_msg >= MAX_STORED_MON_MSG) return (FALSE);
++
++	/* Assign the message data to the free slot */
++	mon_msg[i].mon_race = r_idx;
++	mon_msg[i].mon_flags = mon_flags;
++	mon_msg[i].msg_code = msg_code;
++	/* Just this monster so far */
++	mon_msg[i].mon_count = 1;
++
++	/* One more entry */
++	++size_mon_msg;
++
++	p_ptr->notice |= PN_MON_MESSAGE;
++
++	/* record which monster had this message stored */
++	if (size_mon_hist >= MAX_STORED_MON_CODES) return (TRUE);
++	mon_message_hist[size_mon_hist].monster_idx = m_idx;
++	mon_message_hist[size_mon_hist].message_code = msg_code;
++	size_mon_hist++;
++
++	/* Success */
++	return (TRUE);
+ }
+ 
+ 
++/*
++ * Show and delete the stacked monster messages.
++ */
++void flush_monster_messages(void)
++{
++	int i;
++	int r_idx;
++	int count;
++	monster_race *r_ptr;
++	char buf[512];
++	char *action;
++	bool action_only;
++
++	/* We use either ascii or system-specific encoding */
++	int encoding = (OPT(xchars_to_file)) ? SYSTEM_SPECIFIC : ASCII;
++
++	/* Show every message */
++	for (i = 0; i < size_mon_msg; i++)
++	{
++		/* Cache the monster count */
++		count = mon_msg[i].mon_count;
++
++		/* Paranoia */
++		if (count < 1) continue;
++
++		/* Start with an empty string */
++		buf[0] = '\0';
++
++		/* Cache the race index */
++		r_idx = mon_msg[i].mon_race;
++
++		/* Is it a regular race? */
++		if (r_idx > 0)
++		{
++			/* Get the race */
++			r_ptr = &r_info[r_idx];
++		}
++		/* It's the special mark for non-visible monsters */
++		else
++		{
++			/* No race */
++			r_ptr = NULL;
++		}
++
++		/* Get the proper message action */
++		action = get_mon_msg_action(mon_msg[i].msg_code, (count > 1));
++
++		/* Special message? */
++		action_only = (*action == '~');
++
++		/* Format the proper message for visible monsters */
++		if (r_ptr && !action_only)
++		{
++			char race_name[80];
++
++			/* Get the race name */
++			my_strcpy(race_name, r_ptr->name, sizeof(buf));
++
++			/* Uniques */
++			if (rf_has(r_ptr->flags, RF_UNIQUE))
++			{
++				/* Just copy the race name */
++				my_strcpy(buf, (r_ptr->name), sizeof(buf));
++			}
++			/* We have more than one monster */
++			else if (count > 1)
++			{
++				/* Get the plural of the race name */
++				plural_aux(race_name, sizeof(race_name));
++
++				/* Put the count and the race name together */
++				strnfmt(buf, sizeof(buf), "%d %s", count, race_name);
++			}
++			/* Normal lonely monsters */
++			else
++			{
++				/* Just add a slight flavor */
++				strnfmt(buf, sizeof(buf), "the %s", race_name);
++			}
++
++		}
++		/* Format the message for non-viewable monsters if necessary */
++		else if (!r_ptr && !action_only)
++		{
++			if (count > 1)
++			{
++				/* Show the counter */
++				strnfmt(buf, sizeof(buf), "%d monsters", count);
++			}
++			else
++			{
++				/* Just one non-visible monster */
++				my_strcpy(buf, "it", sizeof(buf));
++			}
++		}
++
++		/* Special message. Nuke the mark */
++		if (action_only)
++		{
++			++action;
++		}
++		/* Regular message */
++		else
++		{
++			/* Add special mark. Monster is offscreen */
++			if (mon_msg[i].mon_flags & 0x02) my_strcat(buf, " (offscreen)", sizeof(buf));
++
++			/* Add the separator */
++		    my_strcat(buf, " ", sizeof(buf));
++		}
++
++		/* Append the action to the message */
++		my_strcat(buf, action, sizeof(buf));
++
++		/* Translate to accented characters */
++		/* Translate the note to the desired encoding */
++		xstr_trans(buf, encoding);
++
++		/* Capitalize the message */
++		*buf = my_toupper((unsigned char)*buf);
++
++		/* Show the message */
++		msg(buf);
++	}
++
++	/* Delete all the stacked messages and history */
++	size_mon_msg = 0;
++	size_mon_hist = 0;
++}
++
++
++
+ /* XXX Eddie This is ghastly.  The monster should have known_flags similar to in the object_type structure. */
+ typedef struct {
+ 	int idx;

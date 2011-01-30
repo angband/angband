@@ -637,6 +637,7 @@ enum
 #define PN_PICKUP       0x00000008L    /* Pick stuff up */
 #define PN_SQUELCH      0x00000010L    /* Squelch stuff */
 #define PN_SORT_QUIVER  0x00000020L    /* Sort the quiver */
+#define PN_MON_MESSAGE	0x00000040L	   /* flush monster pain messages */
 /* xxx (many) */
 
 
@@ -1215,5 +1216,23 @@ enum
  */
 #define MAX_PVALS 3
 #define DEFAULT_PVAL 0
+
+
+/*
+ * Monster Timed Effects
+ */
+enum
+{
+	MON_TMD_SLEEP = 0,
+	MON_TMD_STUN,
+	MON_TMD_CONF,
+	MON_TMD_FEAR,
+
+	MON_TMD_MAX
+};
+
+#define MON_FAST MON_TMD_MAX 
+#define MON_SLOW MON_TMD_MAX + 1
+
 
 #endif /* !INCLUDED_DEFINES_H */

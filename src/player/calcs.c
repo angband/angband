@@ -2106,6 +2106,15 @@ void notice_stuff(void)
 		p_ptr->notice &= ~(PN_SORT_QUIVER);
 		sort_quiver();
 	}
+
+	/* Dump the monster messages */
+	if (p_ptr->notice & PN_MON_MESSAGE)
+	{
+		p_ptr->notice &= ~(PN_MON_MESSAGE);
+
+		/* Make sure this comes after all of the monster messages */
+		if (size_mon_msg > 0) flush_monster_messages();
+	}
 }
 
 /*
