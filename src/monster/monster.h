@@ -1,11 +1,36 @@
-/* monster/monster.h - monster interface */
-
+/*
+ * File: monster.h
+ * Purpose: structures and functions for monsters
+ *
+ * Copyright (c) 2007 Andi Sidwell
+ * Copyright (c) 2010 Chris Carr
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
+ */
 #ifndef MONSTER_MONSTER_H
 #define MONSTER_MONSTER_H
 
 #include "cave.h"
 #include "monster/types.h"
 #include "player/types.h"
+
+
+/*** Functions ***/
+
+/* mon-spell.c */
+void do_mon_spell(int spell, int m_idx, bool seen);
+void do_side_effects(int spell, int dam);
+bool test_spells(bitflag f[RSF_SIZE], mon_spell_type type);
+void set_spells(bitflag *f[RSF_SIZE], mon_spell_type type);
 
 /* monster1.c */
 extern bool mon_inc_timed(int m_idx, int idx, int v, u16b flag);

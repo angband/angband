@@ -4,6 +4,7 @@
 #include "defines.h"
 #include "h-basic.h"
 #include "z-bitflag.h"
+#include "z-rand.h"
 
 /*
  * Monster blow structure
@@ -13,13 +14,12 @@
  *	- Damage Dice
  *	- Damage Sides
  */
-typedef struct
-{
+struct monster_blow {
 	byte method;
 	byte effect;
 	byte d_dice;
 	byte d_side;
-} monster_blow;
+};
 
 /*
  * Monster pain messages.
@@ -99,7 +99,7 @@ typedef struct monster_race
 	bitflag flags[RF_SIZE];         /* Flags */
 	bitflag spell_flags[RSF_SIZE];  /* Spell flags */
 
-	monster_blow blow[MONSTER_BLOW_MAX]; /* Up to four blows per round */
+	struct monster_blow blow[MONSTER_BLOW_MAX]; /* Up to four blows per round */
 
 	byte level;				/* Level of creature */
 	byte rarity;			/* Rarity of creature */
@@ -215,5 +215,39 @@ typedef struct monster_message_history
 	int monster_idx;	/* The monster */
 	int message_code;		/* The coded message */
 } monster_message_history;
+
+/**
+ * Structure for monster spell types
+ */
+struct mon_spell {
+    u16b index;             /* Numerical index (RSF_FOO) */
+    int type;               /* Type bitflag */
+    const char *desc;       /* Verbal description */
+    int cap;                /* Damage cap */
+    int div;                /* Damage divisor (monhp / this) */
+    int gf;                 /* Flag for projection type (GF_FOO) */
+    int msgt;               /* Flag for message colouring */
+    bool save;              /* Does this attack allow a saving throw? */
+    int hit;                /* To-hit level for the attack */
+    const char *verb;       /* Description of the attack */
+    random_value base_dam;  /* Base damage for the attack */
+    random_value rlev_dam;  /* Monster-level-dependent damage */
+    const char *blind_verb; /* Description of the attack if unseen */
+};
+
+/**
+ * Structure for side effects of spell attacks
+ */
+struct spell_effect {
+    u16b index;             /* Numerical index (RAE_#) */
+    u16b method;            /* What attack has this effect (RSF_ or GF_) */
+    bool timed;             /* TRUE if timed, FALSE if permanent */
+    int flag;               /* Effect flag */
+    random_value base;      /* The base duration or impact */
+    random_value dam;       /* Damage-dependent duration or impact */
+    int chance;             /* Chance of this effect if >1 available */
+    bool save;              /* Does this effect allow a saving throw? */
+    int res_flag;           /* Resistance to this specific effect */
+};
 
 #endif /* INCLUDED_MONSTER_TYPES_H */

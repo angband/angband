@@ -21,7 +21,6 @@
 #include "math.h"
 #include "files.h"
 #include "generate.h"
-#include "monster/monster.h"
 #include "object/tvalsval.h"
 #include "trap.h"
 #include "z-queue.h"
@@ -1460,10 +1459,8 @@ static int set_pit_type(int depth, int type)
 		}
 	}
 
-	pit_type = &pit_info[pit_idx];
-	get_mon_num_hook = mon_pit_hook;
-	
-	return pit_idx;
+	/* Hack - check the monster for the "Boulder" spell so that we don't match ogres. */
+	return rsf_has(r_ptr->spell_flags, RSF_BOULDER);
 }
 
 

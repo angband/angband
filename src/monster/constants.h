@@ -1,6 +1,6 @@
 /*
  * File: monster/constants.h
- * Purpose: magic numbers for monster spell attacks and player resistances
+ * Purpose: constants for monsters
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2009 Chris Carr
@@ -17,166 +17,8 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-/*
- * These macros are used in three places:
- *
- * melee2.c  - to calculate the damage for monster spell and breath attacks
- * spells1.c - to apply resistances to reduce this damage
- * init1.c   - to evaluate the "power" of monsters
- *
- * The first two uses can involve randomness, but the third requires minimum
- * values (of resistance) and maxima (of damage). So we use z-rand.c's
- * damcalc() as a wrapper for damroll(), which allows us to obtain the values
- * we need in each case. All uses of randint1(x) have been replaced with
- * damroll(1, x) in order to pass cleanly through the wrapper.
- *
- * If you want to change any damage or resistance calculations, you only have
- * to edit this file, without touching init1.c or melee2.c or spells1.c
- *
- * This complexity does not apply to breath damage, because there is
- * no random element. But it also means that if you want to make breath
- * damage dependent on rlev (for example), you have more work to do.
- */
 #ifndef INCLUDED_MONSTER_CONSTANTS_H
 #define INCLUDED_MONSTER_CONSTANTS_H
-
-#define NOT_USED	/* to avoid confusion in spells1.c */
-
-#define ARROW1_HIT				40
-#define ARROW1_DMG(level, dam_aspect)		(damcalc(1, 6, (dam_aspect)))
-
-#define ARROW2_HIT				40
-#define ARROW2_DMG(level, dam_aspect)		(damcalc(3, 6, (dam_aspect)))
-
-#define ARROW3_HIT				50
-#define ARROW3_DMG(level, dam_aspect)		(damcalc(5, 6, (dam_aspect)))
-
-#define ARROW4_HIT				50
-#define ARROW4_DMG(level, dam_aspect)		(damcalc(7, 6, (dam_aspect)))
-
-#define BR_ACID_MAX				1600
-#define BR_ACID_DIVISOR				3
-#define RES_ACID_ADJ(dam, dam_aspect)		(((dam) + 2) / 3)
-#define DBLRES_ACID_ADJ(dam, dam_aspect)	(((dam) + 8) / 9)
-#define VULN_ACID_ADJ(dam, dam_aspect)		(((dam) * 4) / 3)
-
-#define BR_ELEC_MAX				1600
-#define BR_ELEC_DIVISOR				3
-#define RES_ELEC_ADJ(dam, dam_aspect)		(((dam) + 2) / 3)
-#define DBLRES_ELEC_ADJ(dam, dam_aspect)	(((dam) + 8) / 9)
-#define VULN_ELEC_ADJ(dam, dam_aspect)		(((dam) * 4) / 3)
-
-#define BR_FIRE_MAX				1600
-#define BR_FIRE_DIVISOR				3
-#define RES_FIRE_ADJ(dam, dam_aspect)		(((dam) + 2) / 3)
-#define DBLRES_FIRE_ADJ(dam, dam_aspect)	(((dam) + 8) / 9)
-#define VULN_FIRE_ADJ(dam, dam_aspect)		(((dam) * 4) / 3)
-
-#define BR_COLD_MAX				1600
-#define BR_COLD_DIVISOR				3
-#define RES_COLD_ADJ(dam, dam_aspect)		(((dam) + 2) / 3)
-#define DBLRES_COLD_ADJ(dam, dam_aspect)	(((dam) + 8) / 9)
-#define VULN_COLD_ADJ(dam, dam_aspect)		(((dam) * 4) / 3)
-
-#define BR_POIS_MAX				800
-#define BR_POIS_DIVISOR				3
-#define RES_POIS_ADJ(dam, dam_aspect)		(((dam) + 2) / 3)
-#define DBLRES_POIS_ADJ(dam, dam_aspect)	(((dam) + 8) / 9)
-
-#define BR_NETH_MAX				550
-#define BR_NETH_DIVISOR				6
-#define RES_NETH_ADJ(dam, dam_aspect)		(((dam) * 6) / (damcalc(1, 6, dam_aspect) + 6))
-
-#define BR_LIGHT_MAX				400
-#define BR_LIGHT_DIVISOR			6
-#define RES_LIGHT_ADJ(dam, dam_aspect)		(((dam) * 4) / (damcalc(1, 6, dam_aspect) + 6))
-
-#define BR_DARK_MAX				400
-#define BR_DARK_DIVISOR				6
-#define RES_DARK_ADJ(dam, dam_aspect)           (((dam) * 4) / (damcalc(1, 6, dam_aspect) + 6))
-/* Confusion no longer used as an element, post-3.2 
-#define BR_CONF_MAX				400
-#define BR_CONF_DIVISOR				6
-#define RES_CONF_ADJ(dam, dam_aspect)           (((dam) * 5) / (damcalc(1, 6, dam_aspect) + 6))
- */
-#define BR_SOUN_MAX				500
-#define BR_SOUN_DIVISOR				6
-#define RES_SOUN_ADJ(dam, dam_aspect)           (((dam) * 5) / (damcalc(1, 6, dam_aspect) + 6))
-
-#define BR_CHAO_MAX				500
-#define BR_CHAO_DIVISOR				6
-#define RES_CHAO_ADJ(dam, dam_aspect)           (((dam) * 6) / (damcalc(1, 6, dam_aspect) + 6))
-
-#define BR_DISE_MAX				500
-#define BR_DISE_DIVISOR				6
-#define RES_DISE_ADJ(dam, dam_aspect)           (((dam) * 6) / (damcalc(1, 6, dam_aspect) + 6))
-
-#define BR_NEXU_MAX				400
-#define BR_NEXU_DIVISOR				6
-#define RES_NEXU_ADJ(dam, dam_aspect)           (((dam) * 6) / (damcalc(1, 6, dam_aspect) + 6))
-
-#define BR_TIME_MAX				150
-#define BR_TIME_DIVISOR				3
-/* no resist */
-
-#define BR_INER_MAX				200
-#define BR_INER_DIVISOR				6
-/* no resist */
-
-#define BR_GRAV_MAX				200
-#define BR_GRAV_DIVISOR				3
-/* no resist */
-
-#define BR_SHAR_MAX				500
-#define BR_SHAR_DIVISOR				6
-#define RES_SHAR_ADJ(dam, dam_aspect)           (((dam) * 6) / (damcalc(1, 6, dam_aspect) + 6))
-
-#define BR_PLAS_MAX				150
-#define BR_PLAS_DIVISOR				6
-/* no resist */
-
-#define BR_FORC_MAX				200
-#define BR_FORC_DIVISOR				6
-/* no resist */
-
-/*
-#define BR_MANA_MAX	1600
-#define BR_MANA_DIVISOR 3
-*/
-
-#define BOULDER_HIT			60
-#define BOULDER_DMG(level, dam_aspect)	(damcalc(1 + ((level) / 7), 12, (dam_aspect)))
-
-#define BA_ACID_DMG(level, dam_aspect)	(damcalc(1, ((level) * 3), (dam_aspect)) + 15)
-#define BA_ELEC_DMG(level, dam_aspect)	(damcalc(1, ((level) * 3 / 2), (dam_aspect)) + 8)
-#define BA_FIRE_DMG(level, dam_aspect)	(damcalc(1, ((level) * 7 / 2), (dam_aspect)) + 10)
-#define BA_COLD_DMG(level, dam_aspect)	(damcalc(1, ((level) * 3 / 2), (dam_aspect)) + 10)
-#define BA_POIS_DMG(level, dam_aspect)	(damcalc(12, 2, (dam_aspect)))
-#define BA_NETH_DMG(level, dam_aspect)	(damcalc(10, 10, (dam_aspect)) + (level) + 50)
-#define BA_WATE_DMG(level, dam_aspect)	(damcalc(1, ((level) * 5 / 2), (dam_aspect)) + 50)
-#define BA_MANA_DMG(level, dam_aspect)	(damcalc(10, 10, (dam_aspect)) + ((level) * 5))  /* manastorm */
-#define BA_DARK_DMG(level, dam_aspect)	(damcalc(10, 10, (dam_aspect)) + ((level) * 5))  /* darkness storm */
-
-#define MIND_BLAST_DMG(level, dam_aspect)	(damcalc(8, 8, (dam_aspect)))
-#define BRAIN_SMASH_DMG(level, dam_aspect)	(damcalc(12, 15, (dam_aspect)))
-
-#define CAUSE1_DMG(level, dam_aspect)	(damcalc(3, 8, (dam_aspect)))
-#define CAUSE2_DMG(level, dam_aspect)	(damcalc(8, 8, (dam_aspect)))
-#define CAUSE3_DMG(level, dam_aspect)	(damcalc(10, 15, (dam_aspect)))
-#define CAUSE4_DMG(level, dam_aspect)	(damcalc(15, 15, (dam_aspect)))
-#define CAUSE4_CUT			damroll(10, 10)
-
-#define BO_ACID_DMG(level, dam_aspect)	(damcalc(7, 8, (dam_aspect)) + ((level) / 3))
-#define BO_ELEC_DMG(level, dam_aspect)	(damcalc(4, 8, (dam_aspect)) + ((level) / 3))
-#define BO_FIRE_DMG(level, dam_aspect) 	(damcalc(9, 8, (dam_aspect)) + ((level) / 3))
-#define BO_COLD_DMG(level, dam_aspect) 	(damcalc(6, 8, (dam_aspect)) + ((level) / 3))
-/* #define BO_POIS_DMG(level, dam_aspect) 	(damcalc(9, 8, (dam_aspect)) + ((level) / 3)) */
-#define BO_NETH_DMG(level, dam_aspect) 	(damcalc(5, 5, (dam_aspect)) + ((level) * 3 / 2) + 30)
-#define BO_WATE_DMG(level, dam_aspect)	(damcalc(10, 10, (dam_aspect)) + (level))
-#define BO_MANA_DMG(level, dam_aspect)	(damcalc(1, ((level) * 7 / 2), (dam_aspect)) + 50)
-#define BO_PLAS_DMG(level, dam_aspect)	(damcalc(8, 7, (dam_aspect)) + (level) + 10)
-#define BO_ICEE_DMG(level, dam_aspect)	(damcalc(6, 6, (dam_aspect)) + (level))
-#define MISSILE_DMG(level, dam_aspect)	(damcalc(2, 6, (dam_aspect)) + ((level) / 3))
 
 /*
  * Legal restrictions for "summon_specific()"
@@ -358,11 +200,28 @@ enum
  */
 enum
 {
-	#define RSF(a,b) RSF_##a,
+	#define RSF(a, b, c, d, e, f, g, h, i, j, k, l, m) RSF_##a,
 	#include "list-mon-spells.h"
 	#undef RSF
 	RSF_MAX
 };
+
+/*
+ * Spell type bitflags
+ */
+typedef enum
+{
+	RST_BOLT	= 0x001,
+	RST_BALL	= 0x002,
+	RST_BREATH 	= 0x004,
+	RST_ATTACK	= 0x008,	/* Direct (non-projectable) attacks */
+	RST_ANNOY	= 0x010,	/* Irritant spells, usually non-fatal */
+	RST_HASTE	= 0x020,	/* Relative speed advantage */
+	RST_HEAL	= 0x040,
+	RST_TACTIC	= 0x080,	/* Get a better position */
+	RST_ESCAPE	= 0x100,
+	RST_SUMMON	= 0x200
+} mon_spell_type;
 
 #define RSF_SIZE               FLAG_SIZE(RSF_MAX)
 
@@ -387,71 +246,31 @@ enum
 /* Minimum flag which can fail */
 #define MIN_NONINNATE_SPELL    (FLAG_START + 32)
 
+/* List of spell effects */
+enum
+{
+	#define RSE(a, b, c, d, e, f, g, h, i) \
+            RSE_##a,
+	#include "list-spell-effects.h"
+	#undef RSE
 
-/* "Bolt" spells that may hurt fellow monsters */
-#define RSF_BOLT_MASK \
-	RSF_ARROW_1, RSF_ARROW_2, RSF_ARROW_3, RSF_ARROW_4, RSF_BOULDER, \
-	RSF_BO_ACID, RSF_BO_ELEC, RSF_BO_FIRE, RSF_BO_COLD, \
-	RSF_BO_POIS, RSF_BO_NETH, RSF_BO_WATE, RSF_BO_MANA, \
-	RSF_BO_PLAS, RSF_BO_ICEE, RSF_MISSILE
+    RSE_MAX
+};
 
-#define RSF_BALL_MASK \
-	RSF_BA_ACID, RSF_BA_ELEC, RSF_BA_FIRE, RSF_BA_COLD, RSF_BA_POIS, \
-	RSF_BA_NETH, RSF_BA_WATE, RSF_BA_MANA, RSF_BA_DARK
+/* Flags for non-timed side effects */
+enum spell_effect_flag {
+    S_INV_DAM,
+    S_TELEPORT,
+    S_TELE_TO,
+    S_TELE_LEV,
+    S_DRAIN_LIFE,
+    S_DRAIN_STAT,
+    S_SWAP_STAT,
+    S_DRAIN_ALL,
 
-#define RSF_BREATH_MASK \
-	RSF_BR_ACID, RSF_BR_ELEC,  RSF_BR_FIRE, RSF_BR_COLD, RSF_BR_POIS, \
-	RSF_BR_NETH, RSF_BR_LIGHT, RSF_BR_DARK, RSF_BR_CONF, RSF_BR_SOUN, \
-	RSF_BR_CHAO, RSF_BR_DISE,  RSF_BR_NEXU, RSF_BR_TIME, RSF_BR_INER, \
-	RSF_BR_GRAV, RSF_BR_SHAR,  RSF_BR_PLAS, RSF_BR_WALL, RSF_BR_MANA
+    S_MAX
+};
 
-/* Spells that allow the caster to escape */
-#define RSF_ESCAPE_MASK \
-	RSF_BLINK, RSF_TPORT, RSF_TELE_AWAY, RSF_TELE_LEVEL
-
-/* Spells that hurt the player directly */
-#define RSF_ATTACK_MASK \
-	RSF_BOLT_MASK, RSF_BALL_MASK, RSF_BREATH_MASK, \
-	RSF_MIND_BLAST, RSF_BRAIN_SMASH, \
-	RSF_CAUSE_1, RSF_CAUSE_2, RSF_CAUSE_3, RSF_CAUSE_4
-
-/* Summoning spells */
-#define RSF_SUMMON_MASK \
-	RSF_S_KIN, RSF_S_MONSTER, RSF_S_MONSTERS, RSF_S_ANIMAL, \
-	RSF_S_SPIDER, RSF_S_HOUND, RSF_S_HYDRA, RSF_S_ANGEL, \
-	RSF_S_DEMON, RSF_S_UNDEAD, RSF_S_DRAGON, RSF_S_HI_UNDEAD, \
-	RSF_S_HI_DEMON, RSF_S_HI_DRAGON, RSF_S_WRAITH, RSF_S_UNIQUE
-
-/* Spells that improve the caster's tactical position */
-#define RSF_TACTIC_MASK \
-	RSF_BLINK
-
-/* Annoying spells */
-#define RSF_ANNOY_MASK \
-	RSF_SHRIEK, RSF_DRAIN_MANA, RSF_MIND_BLAST, RSF_BRAIN_SMASH, RSF_SCARE, \
-	RSF_BLIND, RSF_CONF, RSF_SLOW, RSF_HOLD, \
-	RSF_TELE_TO, RSF_DARKNESS, RSF_TRAPS, RSF_FORGET
-
-/* Spells that increase the caster's relative speed */
-#define RSF_HASTE_MASK \
-	RSF_SLOW, RSF_HOLD, RSF_HASTE
-
-/* Healing spells */
-#define RSF_HEAL_MASK \
-	RSF_HEAL
-
-/* Innate spell-like effects */
-#define RSF_INNATE_MASK \
-	RSF_ARROW_1, RSF_ARROW_2, RSF,_ARROW_3, RSF_ARROW_4, \
-	RSF_BOULDER, RSF_SHRIEK, \
-	RSF_BREATH_MASK
-
-/* Choose "intelligent" spells when desperate */
-#define RSF_INT_MASK \
-	RSF_HOLD, RSF_SLOW, RSF_CONF, RSF_BLIND, RSF_SCARE, \
-	RSF_BLINK,  RSF_TPORT, RSF_TELE_LEVEL, RSF_TELE_AWAY, \
-	RSF_HEAL, RSF_HASTE, RSF_TRAPS, \
-	RSF_SUMMON_MASK
 
 /*
  * Some monster types are different.
@@ -462,4 +281,165 @@ enum
 #define monster_is_nonliving(R) \
 	flags_test((R)->flags, RF_SIZE, RF_DEMON, RF_UNDEAD, RF_NONLIVING, FLAG_END)
 	
+
+/*** Obsolete - these will be removed soon ***/
+
+/*
+ * These macros are used in three places:
+ *
+ * melee2.c  - to calculate the damage for monster spell and breath attacks
+ * spells1.c - to apply resistances to reduce this damage
+ * init1.c   - to evaluate the "power" of monsters
+ *
+ * The first two uses can involve randomness, but the third requires minimum
+ * values (of resistance) and maxima (of damage). So we use z-rand.c's
+ * damcalc() as a wrapper for damroll(), which allows us to obtain the values
+ * we need in each case. All uses of randint1(x) have been replaced with
+ * damroll(1, x) in order to pass cleanly through the wrapper.
+ *
+ * If you want to change any damage or resistance calculations, you only have
+ * to edit this file, without touching init1.c or melee2.c or spells1.c
+ *
+ * This complexity does not apply to breath damage, because there is
+ * no random element. But it also means that if you want to make breath
+ * damage dependent on rlev (for example), you have more work to do.
+ */
+#define NOT_USED	/* to avoid confusion in spells1.c */
+
+#define ARROW1_HIT				40
+#define ARROW1_DMG(level, dam_aspect)		(damcalc(1, 6, (dam_aspect)))
+
+#define ARROW2_HIT				40
+#define ARROW2_DMG(level, dam_aspect)		(damcalc(3, 6, (dam_aspect)))
+
+#define ARROW3_HIT				50
+#define ARROW3_DMG(level, dam_aspect)		(damcalc(5, 6, (dam_aspect)))
+
+#define ARROW4_HIT				50
+#define ARROW4_DMG(level, dam_aspect)		(damcalc(7, 6, (dam_aspect)))
+
+#define BR_ACID_MAX				1600
+#define BR_ACID_DIVISOR				3
+#define RES_ACID_ADJ(dam, dam_aspect)		(((dam) + 2) / 3)
+#define DBLRES_ACID_ADJ(dam, dam_aspect)	(((dam) + 8) / 9)
+#define VULN_ACID_ADJ(dam, dam_aspect)		(((dam) * 4) / 3)
+
+#define BR_ELEC_MAX				1600
+#define BR_ELEC_DIVISOR				3
+#define RES_ELEC_ADJ(dam, dam_aspect)		(((dam) + 2) / 3)
+#define DBLRES_ELEC_ADJ(dam, dam_aspect)	(((dam) + 8) / 9)
+#define VULN_ELEC_ADJ(dam, dam_aspect)		(((dam) * 4) / 3)
+
+#define BR_FIRE_MAX				1600
+#define BR_FIRE_DIVISOR				3
+#define RES_FIRE_ADJ(dam, dam_aspect)		(((dam) + 2) / 3)
+#define DBLRES_FIRE_ADJ(dam, dam_aspect)	(((dam) + 8) / 9)
+#define VULN_FIRE_ADJ(dam, dam_aspect)		(((dam) * 4) / 3)
+
+#define BR_COLD_MAX				1600
+#define BR_COLD_DIVISOR				3
+#define RES_COLD_ADJ(dam, dam_aspect)		(((dam) + 2) / 3)
+#define DBLRES_COLD_ADJ(dam, dam_aspect)	(((dam) + 8) / 9)
+#define VULN_COLD_ADJ(dam, dam_aspect)		(((dam) * 4) / 3)
+
+#define BR_POIS_MAX				800
+#define BR_POIS_DIVISOR				3
+#define RES_POIS_ADJ(dam, dam_aspect)		(((dam) + 2) / 3)
+#define DBLRES_POIS_ADJ(dam, dam_aspect)	(((dam) + 8) / 9)
+
+#define BR_NETH_MAX				550
+#define BR_NETH_DIVISOR				6
+#define RES_NETH_ADJ(dam, dam_aspect)		(((dam) * 6) / (damcalc(1, 6, dam_aspect) + 6))
+
+#define BR_LIGHT_MAX				400
+#define BR_LIGHT_DIVISOR			6
+#define RES_LIGHT_ADJ(dam, dam_aspect)		(((dam) * 4) / (damcalc(1, 6, dam_aspect) + 6))
+
+#define BR_DARK_MAX				400
+#define BR_DARK_DIVISOR				6
+#define RES_DARK_ADJ(dam, dam_aspect)           (((dam) * 4) / (damcalc(1, 6, dam_aspect) + 6))
+/* Confusion no longer used as an element, post-3.2 
+#define BR_CONF_MAX				400
+#define BR_CONF_DIVISOR				6
+#define RES_CONF_ADJ(dam, dam_aspect)           (((dam) * 5) / (damcalc(1, 6, dam_aspect) + 6))
+ */
+#define BR_SOUN_MAX				500
+#define BR_SOUN_DIVISOR				6
+#define RES_SOUN_ADJ(dam, dam_aspect)           (((dam) * 5) / (damcalc(1, 6, dam_aspect) + 6))
+
+#define BR_CHAO_MAX				500
+#define BR_CHAO_DIVISOR				6
+#define RES_CHAO_ADJ(dam, dam_aspect)           (((dam) * 6) / (damcalc(1, 6, dam_aspect) + 6))
+
+#define BR_DISE_MAX				500
+#define BR_DISE_DIVISOR				6
+#define RES_DISE_ADJ(dam, dam_aspect)           (((dam) * 6) / (damcalc(1, 6, dam_aspect) + 6))
+
+#define BR_NEXU_MAX				400
+#define BR_NEXU_DIVISOR				6
+#define RES_NEXU_ADJ(dam, dam_aspect)           (((dam) * 6) / (damcalc(1, 6, dam_aspect) + 6))
+
+#define BR_TIME_MAX				150
+#define BR_TIME_DIVISOR				3
+/* no resist */
+
+#define BR_INER_MAX				200
+#define BR_INER_DIVISOR				6
+/* no resist */
+
+#define BR_GRAV_MAX				200
+#define BR_GRAV_DIVISOR				3
+/* no resist */
+
+#define BR_SHAR_MAX				500
+#define BR_SHAR_DIVISOR				6
+#define RES_SHAR_ADJ(dam, dam_aspect)           (((dam) * 6) / (damcalc(1, 6, dam_aspect) + 6))
+
+#define BR_PLAS_MAX				150
+#define BR_PLAS_DIVISOR				6
+/* no resist */
+
+#define BR_FORC_MAX				200
+#define BR_FORC_DIVISOR				6
+/* no resist */
+
+/*
+#define BR_MANA_MAX	1600
+#define BR_MANA_DIVISOR 3
+*/
+
+#define BOULDER_HIT			60
+#define BOULDER_DMG(level, dam_aspect)	(damcalc(1 + ((level) / 7), 12, (dam_aspect)))
+
+#define BA_ACID_DMG(level, dam_aspect)	(damcalc(1, ((level) * 3), (dam_aspect)) + 15)
+#define BA_ELEC_DMG(level, dam_aspect)	(damcalc(1, ((level) * 3 / 2), (dam_aspect)) + 8)
+#define BA_FIRE_DMG(level, dam_aspect)	(damcalc(1, ((level) * 7 / 2), (dam_aspect)) + 10)
+#define BA_COLD_DMG(level, dam_aspect)	(damcalc(1, ((level) * 3 / 2), (dam_aspect)) + 10)
+#define BA_POIS_DMG(level, dam_aspect)	(damcalc(12, 2, (dam_aspect)))
+#define BA_NETH_DMG(level, dam_aspect)	(damcalc(10, 10, (dam_aspect)) + (level) + 50)
+#define BA_WATE_DMG(level, dam_aspect)	(damcalc(1, ((level) * 5 / 2), (dam_aspect)) + 50)
+#define BA_MANA_DMG(level, dam_aspect)	(damcalc(10, 10, (dam_aspect)) + ((level) * 5))  /* manastorm */
+#define BA_DARK_DMG(level, dam_aspect)	(damcalc(10, 10, (dam_aspect)) + ((level) * 5))  /* darkness storm */
+
+#define MIND_BLAST_DMG(level, dam_aspect)	(damcalc(8, 8, (dam_aspect)))
+#define BRAIN_SMASH_DMG(level, dam_aspect)	(damcalc(12, 15, (dam_aspect)))
+
+#define CAUSE1_DMG(level, dam_aspect)	(damcalc(3, 8, (dam_aspect)))
+#define CAUSE2_DMG(level, dam_aspect)	(damcalc(8, 8, (dam_aspect)))
+#define CAUSE3_DMG(level, dam_aspect)	(damcalc(10, 15, (dam_aspect)))
+#define CAUSE4_DMG(level, dam_aspect)	(damcalc(15, 15, (dam_aspect)))
+#define CAUSE4_CUT			damroll(10, 10)
+
+#define BO_ACID_DMG(level, dam_aspect)	(damcalc(7, 8, (dam_aspect)) + ((level) / 3))
+#define BO_ELEC_DMG(level, dam_aspect)	(damcalc(4, 8, (dam_aspect)) + ((level) / 3))
+#define BO_FIRE_DMG(level, dam_aspect) 	(damcalc(9, 8, (dam_aspect)) + ((level) / 3))
+#define BO_COLD_DMG(level, dam_aspect) 	(damcalc(6, 8, (dam_aspect)) + ((level) / 3))
+/* #define BO_POIS_DMG(level, dam_aspect) 	(damcalc(9, 8, (dam_aspect)) + ((level) / 3)) */
+#define BO_NETH_DMG(level, dam_aspect) 	(damcalc(5, 5, (dam_aspect)) + ((level) * 3 / 2) + 30)
+#define BO_WATE_DMG(level, dam_aspect)	(damcalc(10, 10, (dam_aspect)) + (level))
+#define BO_MANA_DMG(level, dam_aspect)	(damcalc(1, ((level) * 7 / 2), (dam_aspect)) + 50)
+#define BO_PLAS_DMG(level, dam_aspect)	(damcalc(8, 7, (dam_aspect)) + (level) + 10)
+#define BO_ICEE_DMG(level, dam_aspect)	(damcalc(6, 6, (dam_aspect)) + (level))
+#define MISSILE_DMG(level, dam_aspect)	(damcalc(2, 6, (dam_aspect)) + ((level) / 3))
+
 #endif /* INCLUDED_MONSTER_CONSTANTS_H */

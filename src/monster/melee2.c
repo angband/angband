@@ -18,8 +18,6 @@
 
 #include "angband.h"
 #include "cave.h"
-#include "monster/constants.h"
-#include "monster/monster.h"
 #include "object/slays.h"
 #include "object/tvalsval.h"
 #include "spells.h"
@@ -370,49 +368,6 @@ static bool summon_possible(int y1, int x1)
 }
 
 
-
-/*
- * Cast a bolt at the player
- * Stop if we hit a monster
- * Affect monsters and the player
- */
-static void bolt(int m_idx, int typ, int dam_hp)
-{
-	int py = p_ptr->py;
-	int px = p_ptr->px;
-
-	int flg = PROJECT_STOP | PROJECT_KILL;
-
-	/* Target the player with a bolt attack */
-	(void)project(m_idx, 0, py, px, dam_hp, typ, flg);
-}
-
-
-/*
- * Cast a breath (or ball) attack at the player
- * Pass over any monsters that may be in the way
- * Affect grids, objects, monsters, and the player
- */
-static void breath(int m_idx, int typ, int dam_hp)
-{
-	int py = p_ptr->py;
-	int px = p_ptr->px;
-
-	int rad;
-
-	int flg = PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
-
-	monster_type *m_ptr = &mon_list[m_idx];
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
-
-	/* Determine the radius of the blast */
-	rad = rf_has(r_ptr->flags, RF_POWERFUL) ? 3 : 2;
-
-	/* Target the player with a ball attack */
-	(void)project(m_idx, rad, py, px, dam_hp, typ, flg);
-}
-
-
 /*
  * Offsets for the spell indices
  */
@@ -471,13 +426,13 @@ static int choose_attack_spell(int m_idx, bitflag f[RSF_SIZE])
 	if (OPT(birth_ai_smart) && !rf_has(r_ptr->flags, RF_STUPID))
 	{
 		/* What have we got? */
-		has_escape = flags_test(f, RSF_SIZE, RSF_ESCAPE_MASK, FLAG_END);
-		has_attack = flags_test(f, RSF_SIZE, RSF_ATTACK_MASK, FLAG_END);
-		has_summon = flags_test(f, RSF_SIZE, RSF_SUMMON_MASK, FLAG_END);
-		has_tactic = flags_test(f, RSF_SIZE, RSF_TACTIC_MASK, FLAG_END);
-		has_annoy = flags_test(f, RSF_SIZE, RSF_ANNOY_MASK, FLAG_END);
-		has_haste = flags_test(f, RSF_SIZE, RSF_HASTE_MASK, FLAG_END);
-		has_heal = flags_test(f, RSF_SIZE, RSF_HEAL_MASK, FLAG_END);
+		has_escape = test_spells(f, RST_ESCAPE);
+		has_attack = test_spells(f, RST_ATTACK | RST_BOLT | RST_BALL | RST_BREATH);
+		has_summon = test_spells(f, RST_SUMMON);
+		has_tactic = test_spells(f, RST_TACTIC);
+		has_annoy = test_spells(f, RST_ANNOY);
+		has_haste = test_spells(f, RST_HASTE);
+		has_heal = test_spells(f, RST_HEAL);
 
 		/*** Try to pick an appropriate spell type ***/
 
@@ -485,14 +440,14 @@ static int choose_attack_spell(int m_idx, bitflag f[RSF_SIZE])
 		if (has_escape && ((m_ptr->hp < m_ptr->maxhp / 4) || m_ptr->m_timed[MON_TMD_FEAR]))
 		{
 			/* Choose escape spell */
-			flags_mask(f, RSF_SIZE, RSF_ESCAPE_MASK, FLAG_END);
+			set_spells(&f, RST_ESCAPE);
 		}
 
 		/* Still hurt badly, couldn't flee, attempt to heal */
 		else if (has_heal && m_ptr->hp < m_ptr->maxhp / 4)
 		{
 			/* Choose heal spell */
-			flags_mask(f, RSF_SIZE, RSF_HEAL_MASK, FLAG_END);
+			set_spells(&f, RST_HEAL);
 		}
 
 		/* Player is close and we have attack spells, blink away */
@@ -500,7 +455,7 @@ static int choose_attack_spell(int m_idx, bitflag f[RSF_SIZE])
 		         has_attack && (randint0(100) < 75))
 		{
 			/* Choose tactical spell */
-			flags_mask(f, RSF_SIZE, RSF_TACTIC_MASK, FLAG_END);
+			set_spells(&f, RST_TACTIC);
 		}
 
 		/* We're hurt (not badly), try to heal */
@@ -508,42 +463,42 @@ static int choose_attack_spell(int m_idx, bitflag f[RSF_SIZE])
 		         (randint0(100) < 60))
 		{
 			/* Choose heal spell */
-			flags_mask(f, RSF_SIZE, RSF_HEAL_MASK, FLAG_END);
+			set_spells(&f, RST_HEAL);
 		}
 
 		/* Summon if possible (sometimes) */
 		else if (has_summon && (randint0(100) < 50))
 		{
 			/* Choose summon spell */
-			flags_mask(f, RSF_SIZE, RSF_SUMMON_MASK, FLAG_END);
+			set_spells(&f, RST_SUMMON);
 		}
 
 		/* Attack spell (most of the time) */
 		else if (has_attack && (randint0(100) < 85))
 		{
 			/* Choose attack spell */
-			flags_mask(f, RSF_SIZE, RSF_ATTACK_MASK, FLAG_END);
+			set_spells(&f, RST_ATTACK | RST_BOLT | RST_BALL | RST_BREATH);
 		}
 
 		/* Try another tactical spell (sometimes) */
 		else if (has_tactic && (randint0(100) < 50))
 		{
 			/* Choose tactic spell */
-			flags_mask(f, RSF_SIZE, RSF_TACTIC_MASK, FLAG_END);
+			set_spells(&f, RST_TACTIC);
 		}
 
 		/* Haste self if we aren't already somewhat hasted (rarely) */
 		else if (has_haste && (randint0(100) < (20 + r_ptr->speed - m_ptr->mspeed)))
 		{
 			/* Choose haste spell */
-			flags_mask(f, RSF_SIZE, RSF_HASTE_MASK, FLAG_END);
+			set_spells(&f, RST_HASTE);
 		}
 
 		/* Annoy player (most of the time) */
 		else if (has_annoy && (randint0(100) < 85))
 		{
 			/* Choose annoyance spell */
-			flags_mask(f, RSF_SIZE, RSF_ANNOY_MASK, FLAG_END);
+			set_spells(&f, RST_ANNOY);
 		}
 
 		/* Else choose no spell */
@@ -617,12 +572,7 @@ static int choose_attack_spell(int m_idx, bitflag f[RSF_SIZE])
  */
 bool make_attack_spell(int m_idx)
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
-
-	int k, chance, thrown_spell, rlev;
-
-	int failrate;
+	int k, chance, thrown_spell, rlev, failrate;
 
 	bitflag f[RSF_SIZE];
 
@@ -635,16 +585,18 @@ bool make_attack_spell(int m_idx)
 
 	char ddesc[80];
 
+	/* Player position */
+	int px = p_ptr->px;
+	int py = p_ptr->py;
+
 	/* Summon count */
 	int count = 0;
-
 
 	/* Extract the blind-ness */
 	bool blind = (p_ptr->timed[TMD_BLIND] ? TRUE : FALSE);
 
 	/* Extract the "see-able-ness" */
 	bool seen = (!blind && m_ptr->ml);
-
 
 	/* Assume "normal" target */
 	bool normal = TRUE;
@@ -653,86 +605,72 @@ bool make_attack_spell(int m_idx)
 	bool direct = TRUE;
 
 
+	/* Handle "leaving" */
+	if (p_ptr->leaving) return FALSE;
+
 	/* Cannot cast spells when confused */
 	if (m_ptr->m_timed[MON_TMD_CONF]) return (FALSE);
 
 	/* Cannot cast spells when nice */
-	if (m_ptr->mflag & (MFLAG_NICE)) return (FALSE);
+	if (m_ptr->mflag & MFLAG_NICE) return FALSE;
 
 	/* Hack -- Extract the spell probability */
 	chance = (r_ptr->freq_innate + r_ptr->freq_spell) / 2;
 
 	/* Not allowed to cast spells */
-	if (!chance) return (FALSE);
-
+	if (!chance) return FALSE;
 
 	/* Only do spells occasionally */
-	if (randint0(100) >= chance) return (FALSE);
-
+	if (randint0(100) >= chance) return FALSE;
 
 	/* Hack -- require projectable player */
 	if (normal)
 	{
 		/* Check range */
-		if (m_ptr->cdis > MAX_RANGE) return (FALSE);
+		if (m_ptr->cdis > MAX_RANGE) return FALSE;
 
 		/* Check path */
 		if (!projectable(m_ptr->fy, m_ptr->fx, py, px, PROJECT_NONE))
-			return (FALSE);
+			return FALSE;
 	}
 
 
 	/* Extract the monster level */
 	rlev = ((r_ptr->level >= 1) ? r_ptr->level : 1);
 
-
 	/* Extract the racial spell flags */
 	rsf_copy(f, r_ptr->spell_flags);
-
 
 	/* Hack -- allow "desperate" spells */
 	if (rf_has(r_ptr->flags, RF_SMART) &&
 	    m_ptr->hp < m_ptr->maxhp / 10 &&
 	    randint0(100) < 50)
-	{
+
 		/* Require intelligent spells */
-		flags_mask(f, RSF_SIZE, RSF_INT_MASK, FLAG_END);
-
-		/* No spells left */
-		if (rsf_is_empty(f)) return (FALSE);
-	}
-
+		set_spells(&f, RST_HASTE | RST_ANNOY | RST_ESCAPE | RST_HEAL | RST_TACTIC | RST_SUMMON);
 
 	/* Remove the "ineffective" spells */
 	remove_bad_spells(m_idx, f);
-
-	/* No spells left */
-	if (rsf_is_empty(f)) return (FALSE);
 
 	/* Check whether summons and bolts are worth it. */
 	if (!rf_has(r_ptr->flags, RF_STUPID))
 	{
 		/* Check for a clean bolt shot */
-		if (flags_test(f, RSF_SIZE, RSF_BOLT_MASK, FLAG_END) &&
+		if (test_spells(f, RST_BOLT) &&
 			!clean_shot(m_ptr->fy, m_ptr->fx, py, px))
-		{
+
 			/* Remove spells that will only hurt friends */
-			flags_clear(f, RSF_SIZE, RSF_BOLT_MASK, FLAG_END);
-		}
+			set_spells(&f, ~RST_BOLT);
 
 		/* Check for a possible summon */
 		if (!(summon_possible(m_ptr->fy, m_ptr->fx)))
-		{
-			/* Remove summoning spells */
-			flags_clear(f, RSF_SIZE, RSF_SUMMON_MASK, FLAG_END);
-		}
 
-		/* No spells left */
-		if (rsf_is_empty(f)) return (FALSE);
+			/* Remove summoning spells */
+			set_spells(&f, ~RST_SUMMON);
 	}
 
-	/* Handle "leaving" */
-	if (p_ptr->leaving) return (FALSE);
+	/* No spells left */
+	if (rsf_is_empty(f)) return FALSE;
 
 
 	/* Get the monster name (or "it") */
@@ -744,12 +682,11 @@ bool make_attack_spell(int m_idx)
 	/* Hack -- Get the "died from" name */
 	monster_desc(ddesc, sizeof(ddesc), m_ptr, MDESC_SHOW | MDESC_IND2);
 
-
 	/* Choose a spell to cast */
 	thrown_spell = choose_attack_spell(m_idx, f);
 
 	/* Abort if no spell was chosen */
-	if (!thrown_spell) return (FALSE);
+	if (!thrown_spell) return FALSE;
 
 	/* If we see an unaware monster try to cast a spell, become aware of it */
 	if (m_ptr->unaware)
@@ -774,7 +711,7 @@ bool make_attack_spell(int m_idx)
 		/* Message */
 		msg("%^s tries to cast a spell, but fails.", m_name);
 
-		return (TRUE);
+		return TRUE;
 	}
 
 	/* Cast the spell. */
@@ -786,384 +723,6 @@ bool make_attack_spell(int m_idx)
 			disturb(1, 0);
 			msgt(MSG_SHRIEK, "%^s makes a high pitched shriek.", m_name);
 			aggravate_monsters(m_idx);
-			break;
-		}
-
-		case RSF_ARROW_1:
-		{
-			bool hits = check_hit(ARROW1_HIT, rlev);
-			int dam = ARROW1_DMG(rlev, RANDOMISE);
-			disturb(1, 0);
-
-			if (blind) msg("%^s makes a strange noise.", m_name);
-			else if (hits) msg("%^s fires an arrow!", m_name);
-			else msg("%^s fires an arrow, but misses.", m_name);
-
-			/* dam -= (dam * ((p_ptr->state.ac < 150) ? p_ptr->state.ac : 150) / 250); */
-			if (hits) bolt(m_idx, GF_ARROW, dam);
-
-			break;
-		}
-
-		case RSF_ARROW_2:
-		{
-			bool hits = check_hit(ARROW2_HIT, rlev);
-			int dam = ARROW2_DMG(rlev, RANDOMISE);
-			disturb(1, 0);
-
-			if (blind) msg("%^s makes a strange noise.", m_name);
-			else if (hits) msg("%^s fires an arrow!", m_name);
-			else msg("%^s fires an arrow, but misses.", m_name);
-
-			/* dam -= (dam * ((p_ptr->state.ac < 150) ? p_ptr->state.ac : 150) / 250); */
-			if (hits) bolt(m_idx, GF_ARROW, dam);
-
-			break;
-		}
-
-		case RSF_ARROW_3:
-		{
-			bool hits = check_hit(ARROW3_HIT, rlev);
-			int dam = ARROW3_DMG(rlev, RANDOMISE);
-			disturb(1, 0);
-
-			if (blind) msg("%^s makes a strange noise.", m_name);
-			else if (hits) msg("%^s fires a missile!", m_name);
-			else msg("%^s fires a missile, but misses.", m_name);
-
-			/* dam -= (dam * ((p_ptr->state.ac < 150) ? p_ptr->state.ac : 150) / 250); */
-			if (hits) bolt(m_idx, GF_ARROW, dam);
-
-			break;
-		}
-
-		case RSF_ARROW_4:
-		{
-			bool hits = check_hit(ARROW4_HIT, rlev);
-			int dam = ARROW4_DMG(rlev, RANDOMISE);
-			disturb(1, 0);
-
-			if (blind) msg("%^s makes a strange noise.", m_name);
-			else if (hits) msg("%^s fires a missile!", m_name);
-			else msg("%^s fires a missile, but misses.", m_name);
-
-			/* dam -= (dam * ((p_ptr->state.ac < 150) ? p_ptr->state.ac : 150) / 250); */
-			if (hits) bolt(m_idx, GF_ARROW, dam);
-
-			break;
-		}
-
-		case RSF_BR_ACID:
-		{
-			disturb(1, 0);
-			if (blind) msgt(MSG_BR_ELEMENTS, "%^s breathes.", m_name);
-			else msgt(MSG_BR_ACID, "%^s breathes acid.", m_name);
-			breath(m_idx, GF_ACID,
-			       ((m_ptr->hp / BR_ACID_DIVISOR) > BR_ACID_MAX ? BR_ACID_MAX : (m_ptr->hp / BR_ACID_DIVISOR)));
-			update_smart_learn(m_idx, DRS_RES_ACID);
-			break;
-		}
-
-		case RSF_BR_ELEC:
-		{
-			disturb(1, 0);
-			if (blind) msgt(MSG_BR_ELEMENTS, "%^s breathes.", m_name);
-			else msgt(MSG_BR_ELEC, "%^s breathes lightning.", m_name);
-			breath(m_idx, GF_ELEC,
-			       ((m_ptr->hp / BR_ELEC_DIVISOR) > BR_ELEC_MAX ? BR_ELEC_MAX : (m_ptr->hp / BR_ELEC_DIVISOR)));
-			update_smart_learn(m_idx, DRS_RES_ELEC);
-			break;
-		}
-
-		case RSF_BR_FIRE:
-		{
-			disturb(1, 0);
-			if (blind) msgt(MSG_BR_ELEMENTS, "%^s breathes.", m_name);
-			else msgt(MSG_BR_FIRE, "%^s breathes fire.", m_name);
-			breath(m_idx, GF_FIRE,
-			       ((m_ptr->hp / BR_FIRE_DIVISOR) > BR_FIRE_MAX ? BR_FIRE_MAX : (m_ptr->hp / BR_FIRE_DIVISOR)));
-			update_smart_learn(m_idx, DRS_RES_FIRE);
-			break;
-		}
-
-		case RSF_BR_COLD:
-		{
-			disturb(1, 0);
-			if (blind) msgt(MSG_BR_ELEMENTS, "%^s breathes.", m_name);
-			else msgt(MSG_BR_FROST, "%^s breathes frost.", m_name);
-			breath(m_idx, GF_COLD,
-			       ((m_ptr->hp / BR_COLD_DIVISOR) > BR_COLD_MAX ? BR_COLD_MAX : (m_ptr->hp / BR_COLD_DIVISOR)));
-			update_smart_learn(m_idx, DRS_RES_COLD);
-			break;
-		}
-
-		case RSF_BR_POIS:
-		{
-			disturb(1, 0);
-			if (blind) msgt(MSG_BR_ELEMENTS, "%^s breathes.", m_name);
-			else msgt(MSG_BR_GAS, "%^s breathes gas.", m_name);
-			breath(m_idx, GF_POIS,
-			       ((m_ptr->hp / BR_POIS_DIVISOR) > BR_POIS_MAX ? BR_POIS_MAX : (m_ptr->hp / BR_POIS_DIVISOR)));
-			update_smart_learn(m_idx, DRS_RES_POIS);
-			break;
-		}
-
-		case RSF_BR_NETH:
-		{
-			disturb(1, 0);
-			if (blind) msgt(MSG_BR_ELEMENTS, "%^s breathes.", m_name);
-			else msgt(MSG_BR_NETHER, "%^s breathes nether.", m_name);
-			breath(m_idx, GF_NETHER,
-			       ((m_ptr->hp / BR_NETH_DIVISOR) > BR_NETH_MAX ? BR_NETH_MAX : (m_ptr->hp / BR_NETH_DIVISOR)));
-			update_smart_learn(m_idx, DRS_RES_NETHR);
-			break;
-		}
-
-		case RSF_BR_LIGHT:
-		{
-			disturb(1, 0);
-			if (blind) msgt(MSG_BR_ELEMENTS, "%^s breathes.", m_name);
-			else msgt(MSG_BR_LIGHT, "%^s breathes light.", m_name);
-			breath(m_idx, GF_LIGHT,
-			       ((m_ptr->hp / BR_LIGHT_DIVISOR) > BR_LIGHT_MAX ? BR_LIGHT_MAX : (m_ptr->hp / BR_LIGHT_DIVISOR)));
-			update_smart_learn(m_idx, DRS_RES_LIGHT);
-			break;
-		}
-
-		case RSF_BR_DARK:
-		{
-			disturb(1, 0);
-			if (blind) msgt(MSG_BR_ELEMENTS, "%^s breathes.", m_name);
-			else msgt(MSG_BR_DARK, "%^s breathes darkness.", m_name);
-			breath(m_idx, GF_DARK,
-			       ((m_ptr->hp / BR_DARK_DIVISOR) > BR_DARK_MAX ? BR_DARK_MAX : (m_ptr->hp / BR_DARK_DIVISOR)));
-			update_smart_learn(m_idx, DRS_RES_DARK);
-			break;
-		}
-
-		case RSF_BR_SOUN:
-		{
-			disturb(1, 0);
-			if (blind) msgt(MSG_BR_ELEMENTS, "%^s breathes.", m_name);
-			else msgt(MSG_BR_SOUND, "%^s breathes sound.", m_name);
-			breath(m_idx, GF_SOUND,
-			       ((m_ptr->hp / BR_SOUN_DIVISOR) > BR_SOUN_MAX ? BR_SOUN_MAX : (m_ptr->hp / BR_SOUN_DIVISOR)));
-			update_smart_learn(m_idx, DRS_RES_SOUND);
-			break;
-		}
-
-		case RSF_BR_CHAO:
-		{
-			disturb(1, 0);
-			if (blind) msgt(MSG_BR_ELEMENTS, "%^s breathes.", m_name);
-			else msgt(MSG_BR_CHAOS, "%^s breathes chaos.", m_name);
-			breath(m_idx, GF_CHAOS,
-			       ((m_ptr->hp / BR_CHAO_DIVISOR) > BR_CHAO_MAX ? BR_CHAO_MAX : (m_ptr->hp / BR_CHAO_DIVISOR)));
-			update_smart_learn(m_idx, DRS_RES_CHAOS);
-			break;
-		}
-
-		case RSF_BR_DISE:
-		{
-			disturb(1, 0);
-			if (blind) msgt(MSG_BR_ELEMENTS, "%^s breathes.", m_name);
-			else msgt(MSG_BR_DISENCHANT, "%^s breathes disenchantment.", m_name);
-			breath(m_idx, GF_DISENCHANT,
-			       ((m_ptr->hp / BR_DISE_DIVISOR) > BR_DISE_MAX ? BR_DISE_MAX : (m_ptr->hp / BR_DISE_DIVISOR)));
-			update_smart_learn(m_idx, DRS_RES_DISEN);
-			break;
-		}
-
-		case RSF_BR_NEXU:
-		{
-			disturb(1, 0);
-			if (blind) msgt(MSG_BR_ELEMENTS, "%^s breathes.", m_name);
-			else msgt(MSG_BR_NEXUS, "%^s breathes nexus.", m_name);
-			breath(m_idx, GF_NEXUS,
-			       ((m_ptr->hp / BR_NEXU_DIVISOR) > BR_NEXU_MAX ? BR_NEXU_MAX : (m_ptr->hp / BR_NEXU_DIVISOR)));
-			update_smart_learn(m_idx, DRS_RES_NEXUS);
-			break;
-		}
-
-		case RSF_BR_TIME:
-		{
-			disturb(1, 0);
-			if (blind) msgt(MSG_BR_ELEMENTS, "%^s breathes.", m_name);
-			else msgt(MSG_BR_TIME, "%^s breathes time.", m_name);
-			breath(m_idx, GF_TIME,
-			       ((m_ptr->hp / BR_TIME_DIVISOR) > BR_TIME_MAX ? BR_TIME_MAX : (m_ptr->hp / BR_TIME_DIVISOR)));
-			break;
-		}
-
-		case RSF_BR_INER:
-		{
-			disturb(1, 0);
-			if (blind) msgt(MSG_BR_ELEMENTS, "%^s breathes.", m_name);
-			else msgt(MSG_BR_INERTIA, "%^s breathes inertia.", m_name);
-			breath(m_idx, GF_INERTIA,
-			       ((m_ptr->hp / BR_INER_DIVISOR) > BR_INER_MAX ? BR_INER_MAX : (m_ptr->hp / BR_INER_DIVISOR)));
-			break;
-		}
-
-		case RSF_BR_GRAV:
-		{
-			disturb(1, 0);
-			if (blind) msgt(MSG_BR_ELEMENTS, "%^s breathes.", m_name);
-			else msgt(MSG_BR_GRAVITY, "%^s breathes gravity.", m_name);
-			breath(m_idx, GF_GRAVITY,
-			       ((m_ptr->hp / BR_GRAV_DIVISOR) > BR_GRAV_MAX ? BR_GRAV_MAX : (m_ptr->hp / BR_GRAV_DIVISOR)));
-			break;
-		}
-
-		case RSF_BR_SHAR:
-		{
-			disturb(1, 0);
-			if (blind) msgt(MSG_BR_ELEMENTS, "%^s breathes.", m_name);
-			else msgt(MSG_BR_SHARDS, "%^s breathes shards.", m_name);
-			breath(m_idx, GF_SHARD,
-			       ((m_ptr->hp / BR_SHAR_DIVISOR) > BR_SHAR_MAX ? BR_SHAR_MAX : (m_ptr->hp / BR_SHAR_DIVISOR)));
-			update_smart_learn(m_idx, DRS_RES_SHARD);
-			break;
-		}
-
-		case RSF_BR_PLAS:
-		{
-			disturb(1, 0);
-			if (blind) msgt(MSG_BR_ELEMENTS, "%^s breathes.", m_name);
-			else msgt(MSG_BR_PLASMA, "%^s breathes plasma.", m_name);
-			breath(m_idx, GF_PLASMA,
-			       ((m_ptr->hp / BR_PLAS_DIVISOR) > BR_PLAS_MAX ? BR_PLAS_MAX : (m_ptr->hp / BR_PLAS_DIVISOR)));
-			break;
-		}
-
-		case RSF_BR_WALL:
-		{
-			disturb(1, 0);
-			if (blind) msgt(MSG_BR_ELEMENTS, "%^s breathes.", m_name);
-			else msgt(MSG_BR_FORCE, "%^s breathes force.", m_name);
-			breath(m_idx, GF_FORCE,
-			       ((m_ptr->hp / BR_FORC_DIVISOR) > BR_FORC_MAX ? BR_FORC_MAX : (m_ptr->hp / BR_FORC_DIVISOR)));
-			break;
-		}
-
-		case RSF_BR_MANA:
-		{
-			/* XXX XXX XXX */
-			break;
-		}
-
-		case RSF_BOULDER:
-		{
-			bool hits = check_hit(BOULDER_HIT, rlev);
-			int dam = BOULDER_DMG(rlev, RANDOMISE);
-			disturb(1, 0);
-
-			if (blind) msg("You hear something grunt with exertion.", m_name);
-			else if (hits) msg("%^s hurls a boulder at you!", m_name);
-			else msg("%^s hurls a boulder at you, but misses.", m_name);
-
-			/* dam -= (dam * ((p_ptr->state.ac < 150) ? p_ptr->state.ac : 150) / 250); */
-			if (hits) bolt(m_idx, GF_ARROW, dam);
-
-			break;
-		}
-
-
-		case RSF_BA_ACID:
-		{
-			disturb(1, 0);
-			if (blind) msg("%^s mumbles.", m_name);
-			else msg("%^s casts an acid ball.", m_name);
-			breath(m_idx, GF_ACID,
-			       BA_ACID_DMG(rlev, RANDOMISE));
-			update_smart_learn(m_idx, DRS_RES_ACID);
-			break;
-		}
-
-		case RSF_BA_ELEC:
-		{
-			disturb(1, 0);
-			if (blind) msg("%^s mumbles.", m_name);
-			else msg("%^s casts a lightning ball.", m_name);
-			breath(m_idx, GF_ELEC,
-			       BA_ELEC_DMG(rlev, RANDOMISE));
-			update_smart_learn(m_idx, DRS_RES_ELEC);
-			break;
-		}
-
-		case RSF_BA_FIRE:
-		{
-			disturb(1, 0);
-			if (blind) msg("%^s mumbles.", m_name);
-			else msg("%^s casts a fire ball.", m_name);
-			breath(m_idx, GF_FIRE,
-			       BA_FIRE_DMG(rlev, RANDOMISE));
-			update_smart_learn(m_idx, DRS_RES_FIRE);
-			break;
-		}
-
-		case RSF_BA_COLD:
-		{
-			disturb(1, 0);
-			if (blind) msg("%^s mumbles.", m_name);
-			else msg("%^s casts a frost ball.", m_name);
-			breath(m_idx, GF_COLD,
-			       BA_COLD_DMG(rlev, RANDOMISE));
-			update_smart_learn(m_idx, DRS_RES_COLD);
-			break;
-		}
-
-		case RSF_BA_POIS:
-		{
-			disturb(1, 0);
-			if (blind) msg("%^s mumbles.", m_name);
-			else msg("%^s casts a stinking cloud.", m_name);
-			breath(m_idx, GF_POIS,
-			       BA_POIS_DMG(rlev, RANDOMISE));
-			update_smart_learn(m_idx, DRS_RES_POIS);
-			break;
-		}
-
-		case RSF_BA_NETH:
-		{
-			disturb(1, 0);
-			if (blind) msg("%^s mumbles.", m_name);
-			else msg("%^s casts a nether ball.", m_name);
-			breath(m_idx, GF_NETHER,
-			       BA_NETH_DMG(rlev, RANDOMISE));
-			update_smart_learn(m_idx, DRS_RES_NETHR);
-			break;
-		}
-
-		case RSF_BA_WATE:
-		{
-			disturb(1, 0);
-			if (blind) msg("%^s mumbles.", m_name);
-			else msg("%^s gestures fluidly.", m_name);
-			msg("You are engulfed in a whirlpool.");
-			breath(m_idx, GF_WATER,
-			       BA_WATE_DMG(rlev, RANDOMISE));
-			break;
-		}
-
-		case RSF_BA_MANA:
-		{
-			disturb(1, 0);
-			if (blind) msg("%^s mumbles powerfully.", m_name);
-			else msg("%^s invokes a mana storm.", m_name);
-			breath(m_idx, GF_MANA,
-			       BA_MANA_DMG(rlev, RANDOMISE));
-			break;
-		}
-
-		case RSF_BA_DARK:
-		{
-			disturb(1, 0);
-			if (blind) msg("%^s mumbles powerfully.", m_name);
-			else msg("%^s invokes a darkness storm.", m_name);
-			breath(m_idx, GF_DARK,
-			       BA_DARK_DMG(rlev, RANDOMISE));
-			update_smart_learn(m_idx, DRS_RES_DARK);
 			break;
 		}
 
@@ -1218,253 +777,6 @@ bool make_attack_spell(int m_idx)
 				}
 			}
 			update_smart_learn(m_idx, DRS_MANA);
-			break;
-		}
-
-		case RSF_MIND_BLAST:
-		{
-			if (!direct) break;
-			disturb(1, 0);
-			if (!seen)
-			{
-				msg("You feel something focusing on your mind.");
-			}
-			else
-			{
-				msg("%^s gazes deep into your eyes.", m_name);
-			}
-
-			if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
-			{
-				msg("You resist the effects!");
-			}
-			else
-			{
-				msg("Your mind is blasted by psionic energy.");
-				if (!p_ptr->state.flags[OF_RES_CONFU])
-					(void)inc_timed(TMD_CONFUSED, randint0(4) + 4, TRUE);
-				else
-					wieldeds_notice_flag(OF_RES_CONFU);
-
-				take_hit(MIND_BLAST_DMG(rlev, RANDOMISE), ddesc);
-			}
-			break;
-		}
-
-		case RSF_BRAIN_SMASH:
-		{
-			if (!direct) break;
-			disturb(1, 0);
-			if (!seen)
-				msg("You feel something focusing on your mind.");
-			else
-				msg("%^s looks deep into your eyes.", m_name);
-
-			if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
-			{
-				msg("You resist the effects!");
-			}
-			else
-			{
-				msg("Your mind is blasted by psionic energy.");
-				take_hit(BRAIN_SMASH_DMG(rlev, RANDOMISE), ddesc);
-				if (!p_ptr->state.flags[OF_RES_BLIND])
-					(void)inc_timed(TMD_BLIND, 8 + randint0(8), TRUE);
-				else
-					wieldeds_notice_flag(OF_RES_BLIND);
-
-				if (!p_ptr->state.flags[OF_RES_CONFU])
-					(void)inc_timed(TMD_CONFUSED, randint0(4) + 4, TRUE);
-				else
-					wieldeds_notice_flag(OF_RES_CONFU);
-
-				if (!p_ptr->state.flags[OF_FREE_ACT])
-					(void)inc_timed(TMD_PARALYZED, randint0(4) + 4, TRUE);
-				else
-					wieldeds_notice_flag(OF_FREE_ACT);
-
-				(void)inc_timed(TMD_SLOW, randint0(4) + 4, TRUE);
-			}
-			break;
-		}
-
-		case RSF_CAUSE_1:
-		{
-			if (!direct) break;
-			disturb(1, 0);
-			if (blind) msg("%^s mumbles.", m_name);
-			else msg("%^s points at you and curses.", m_name);
-			if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
-			{
-				msg("You resist the effects!");
-			}
-			else
-			{
-				take_hit(CAUSE1_DMG(rlev, RANDOMISE), ddesc);
-			}
-			break;
-		}
-
-		case RSF_CAUSE_2:
-		{
-			if (!direct) break;
-			disturb(1, 0);
-			if (blind) msg("%^s mumbles.", m_name);
-			else msg("%^s points at you and curses horribly.", m_name);
-			if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
-			{
-				msg("You resist the effects!");
-			}
-			else
-			{
-				take_hit(CAUSE2_DMG(rlev, RANDOMISE), ddesc);
-			}
-			break;
-		}
-
-		case RSF_CAUSE_3:
-		{
-			if (!direct) break;
-			disturb(1, 0);
-			if (blind) msg("%^s mumbles loudly.", m_name);
-			else msg("%^s points at you, incanting terribly!", m_name);
-			if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
-			{
-				msg("You resist the effects!");
-			}
-			else
-			{
-				take_hit(CAUSE3_DMG(rlev, RANDOMISE), ddesc);
-			}
-			break;
-		}
-
-		case RSF_CAUSE_4:
-		{
-			if (!direct) break;
-			disturb(1, 0);
-			if (blind) msg("%^s screams the word 'DIE!'", m_name);
-			else msg("%^s points at you, screaming the word DIE!", m_name);
-			if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
-			{
-				msg("You resist the effects!");
-			}
-			else
-			{
-				take_hit(CAUSE4_DMG(rlev, RANDOMISE), ddesc);
-				(void)inc_timed(TMD_CUT, CAUSE4_CUT, TRUE);
-			}
-			break;
-		}
-
-		case RSF_BO_ACID:
-		{
-			disturb(1, 0);
-			if (blind) msg("%^s mumbles.", m_name);
-			else msg("%^s casts a acid bolt.", m_name);
-			bolt(m_idx, GF_ACID,
-			     BO_ACID_DMG(rlev, RANDOMISE));
-			update_smart_learn(m_idx, DRS_RES_ACID);
-			break;
-		}
-
-		case RSF_BO_ELEC:
-		{
-			disturb(1, 0);
-			if (blind) msg("%^s mumbles.", m_name);
-			else msg("%^s casts a lightning bolt.", m_name);
-			bolt(m_idx, GF_ELEC,
-			     BO_ELEC_DMG(rlev, RANDOMISE));
-			update_smart_learn(m_idx, DRS_RES_ELEC);
-			break;
-		}
-
-		case RSF_BO_FIRE:
-		{
-			disturb(1, 0);
-			if (blind) msg("%^s mumbles.", m_name);
-			else msg("%^s casts a fire bolt.", m_name);
-			bolt(m_idx, GF_FIRE,
-			     BO_FIRE_DMG(rlev, RANDOMISE));
-			update_smart_learn(m_idx, DRS_RES_FIRE);
-			break;
-		}
-
-		case RSF_BO_COLD:
-		{
-			disturb(1, 0);
-			if (blind) msg("%^s mumbles.", m_name);
-			else msg("%^s casts a frost bolt.", m_name);
-			bolt(m_idx, GF_COLD,
-			     BO_COLD_DMG(rlev, RANDOMISE));
-			update_smart_learn(m_idx, DRS_RES_COLD);
-			break;
-		}
-
-		case RSF_BO_POIS:
-		{
-			/* XXX XXX XXX */
-			break;
-		}
-
-		case RSF_BO_NETH:
-		{
-			disturb(1, 0);
-			if (blind) msg("%^s mumbles.", m_name);
-			else msg("%^s casts a nether bolt.", m_name);
-			bolt(m_idx, GF_NETHER,
-			     BO_NETH_DMG(rlev, RANDOMISE));
-			update_smart_learn(m_idx, DRS_RES_NETHR);
-			break;
-		}
-
-		case RSF_BO_WATE:
-		{
-			disturb(1, 0);
-			if (blind) msg("%^s mumbles.", m_name);
-			else msg("%^s casts a water bolt.", m_name);
-			bolt(m_idx, GF_WATER,
-			     BO_WATE_DMG(rlev, RANDOMISE));
-			break;
-		}
-
-		case RSF_BO_MANA:
-		{
-			disturb(1, 0);
-			if (blind) msg("%^s mumbles.", m_name);
-			else msg("%^s casts a mana bolt.", m_name);
-			bolt(m_idx, GF_MANA,
-			     BO_MANA_DMG(rlev, RANDOMISE));
-			break;
-		}
-
-		case RSF_BO_PLAS:
-		{
-			disturb(1, 0);
-			if (blind) msg("%^s mumbles.", m_name);
-			else msg("%^s casts a plasma bolt.", m_name);
-			bolt(m_idx, GF_PLASMA,
-			     BO_PLAS_DMG(rlev, RANDOMISE));
-			break;
-		}
-
-		case RSF_BO_ICEE:
-		{
-			disturb(1, 0);
-			if (blind) msg("%^s mumbles.", m_name);
-			else msg("%^s casts an ice bolt.", m_name);
-			bolt(m_idx, GF_ICE,
-			     BO_ICEE_DMG(rlev, RANDOMISE));
-			update_smart_learn(m_idx, DRS_RES_COLD);
-			break;
-		}
-
-		case RSF_MISSILE:
-		{
-			disturb(1, 0);
-			if (blind) msg("%^s mumbles.", m_name);
-			else msg("%^s casts a magic missile.", m_name);
-			bolt(m_idx, GF_MISSILE, MISSILE_DMG(rlev, RANDOMISE));
 			break;
 		}
 
@@ -1581,7 +893,6 @@ bool make_attack_spell(int m_idx)
 			update_smart_learn(m_idx, DRS_FREE);
 			break;
 		}
-
 
 		case RSF_HASTE:
 		{
@@ -2023,9 +1334,8 @@ bool make_attack_spell(int m_idx)
 
 		default:
 		{
-			/* Unimplemented spell flag */
-
-			break;
+			/* It's a bolt, ball or breath attack */
+			do_mon_spell(thrown_spell, m_idx, seen);
 		}
 	}
 

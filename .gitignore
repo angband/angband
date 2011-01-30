@@ -10,3 +10,4 @@ lib/save/1000.*
 .cproject
 *.orig
 *.rej
+.gitignore
