@@ -209,7 +209,7 @@ void xstr_trans(char *str, int encoding)
  *  Translate a Latin-1 string into escaped ASCII
  *  We assume that the contents of the source string use the Latin-1 encoding
  */
-void escape_latin1(char *dest, size_t max, cptr src)
+void escape_latin1(char *dest, size_t max, const char *src)
 {
 	size_t i = 0;
 

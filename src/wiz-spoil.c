@@ -54,7 +54,7 @@ static void spoiler_blanklines(int n)
 /*
  * Write a line to the spoiler file and then "underline" it with hypens
  */
-static void spoiler_underline(cptr str, char c)
+static void spoiler_underline(const char *str, char c)
 {
 	text_out("%s", str);
 	text_out("\n");
@@ -231,7 +231,7 @@ static void kind_info(char *buf, size_t buf_len,
 /*
  * Create a spoiler file for items
  */
-static void spoil_obj_desc(cptr fname)
+static void spoil_obj_desc(const char *fname)
 {
 	int i, k, s, t, n = 0;
 
@@ -242,7 +242,7 @@ static void spoil_obj_desc(cptr fname)
 	char wgt[80];
 	char dam[80];
 
-	cptr format = "%-51s  %7s%6s%4s%9s\n";
+	const char *format = "%-51s  %7s%6s%4s%9s\n";
 
 	/* We use either ascii or system-specific encoding */
  	int encoding = (OPT(xchars_to_file)) ? SYSTEM_SPECIFIC : ASCII;
@@ -444,7 +444,7 @@ bool make_fake_artifact(object_type *o_ptr, byte name1)
 /*
  * Create a spoiler file for artifacts
  */
-static void spoil_artifact(cptr fname)
+static void spoil_artifact(const char *fname)
 {
 	int i, j;
 
@@ -545,7 +545,7 @@ static void spoil_artifact(cptr fname)
 /*
  * Create a spoiler file for monsters
  */
-static void spoil_mon_desc(cptr fname)
+static void spoil_mon_desc(const char *fname)
 {
 	int i, n = 0;
 
@@ -605,7 +605,7 @@ static void spoil_mon_desc(cptr fname)
 	{
 		monster_race *r_ptr = &r_info[who[i]];
 
-		cptr name = r_ptr->name;
+		const char *name = r_ptr->name;
 
 		/* Get the "name" */
 		if (rf_has(r_ptr->flags, RF_QUESTOR))
@@ -681,7 +681,7 @@ static void spoil_mon_desc(cptr fname)
 /*
  * Create a spoiler file for monsters (-SHAWN-)
  */
-static void spoil_mon_info(cptr fname)
+static void spoil_mon_info(const char *fname)
 {
 	char buf[1024];
 	int i, n;

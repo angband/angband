@@ -225,8 +225,8 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	int highres = 0;
 	int sustains = 0;
 	int extra_stat_bonus = 0;
-	int i;
-	bitflag flags[OF_SIZE], mask[OF_SIZE];
+	int i, j;
+	bitflag flags[OF_SIZE], mask[OF_SIZE], pval_flags[MAX_PVALS][OF_SIZE];
 
 	/* Extract the flags */
 	if (known) {
@@ -242,6 +242,15 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		for (i = 0; i < (int)OF_SIZE; i++)
 			LOG_PRINT1(" %02x", flags[i]);
 		LOG_PRINT("\n");
+		if (o_ptr->num_pvals) {
+			object_pval_flags(o_ptr, pval_flags);
+			for (j = 0; j < o_ptr->num_pvals; j++) {
+				LOG_PRINT1("PVAL %d flags =", j);
+				for (i = 0; i < (int)OF_SIZE; i++)
+					LOG_PRINT1(" %02x", pval_flags[j][i]);
+				LOG_PRINT("\n");
+			}
+		}
 	}
 
 	/* Evaluate certain abilities based on type of object. */

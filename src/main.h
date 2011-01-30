@@ -54,8 +54,8 @@ extern const char help_test[];
 
 struct module
 {
-	cptr name;
-	cptr help;
+	const char *name;
+	const char *help;
 	errr (*init)(int argc, char **argv);
 };
 

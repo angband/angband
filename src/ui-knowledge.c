@@ -97,11 +97,11 @@ static int *obj_group_order = NULL;
  */
 static struct
 {
-	cptr chars;
-	cptr name;
+	const char *chars;
+	const char *name;
 } monster_group[] =
 {
-	{ (cptr)-1,   "Uniques" },
+	{ (const char *)-1,   "Uniques" },
 	{ "A",        "Angels" },
 	{ "a",        "Ants" },
 	{ "b",        "Bats" },

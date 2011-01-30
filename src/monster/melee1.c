@@ -89,7 +89,7 @@ bool check_hit(int power, int level)
 /*
  * Hack -- possible "insult" messages
  */
-static cptr desc_insult[MAX_DESC_INSULT] =
+static const char *desc_insult[MAX_DESC_INSULT] =
 {
 	"insults you!",
 	"insults your mother!",
@@ -108,7 +108,7 @@ static cptr desc_insult[MAX_DESC_INSULT] =
 /*
  * Hack -- possible "insult" messages
  */
-static cptr desc_moan[MAX_DESC_MOAN] =
+static const char *desc_moan[MAX_DESC_MOAN] =
 {
 	"wants his mushrooms back.",
 	"tells you to get off his land.",
@@ -182,7 +182,7 @@ bool make_attack_normal(int m_idx)
 		int power = 0;
 		int damage = 0;
 
-		cptr act = NULL;
+		const char *act = NULL;
 
 		/* Extract the attack infomation */
 		int effect = r_ptr->blow[ap_cnt].effect;
@@ -465,7 +465,8 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Take "poison" effect */
-					if (!(p_ptr->state.resist_pois || p_ptr->timed[TMD_OPP_POIS]))
+					if (!(p_ptr->state.flags[OF_RES_POIS] ||
+							p_ptr->timed[TMD_OPP_POIS]))
 					{
 						if (inc_timed(TMD_POISONED, randint1(rlev) + 5, TRUE))
 						{
@@ -485,7 +486,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Allow complete resist */
-					if (!p_ptr->state.resist_disen)
+					if (!p_ptr->state.flags[OF_RES_DISEN])
 					{
 						/* Apply disenchantment */
 						if (apply_disenchant(0)) obvious = TRUE;
@@ -499,7 +500,7 @@ bool make_attack_normal(int m_idx)
 
 				case RBE_UN_POWER:
 				{
-					int drained = 0;
+					int unpower = 0, newcharge;
 
 					/* Take damage */
 					take_hit(damage, ddesc);
@@ -523,16 +524,21 @@ bool make_attack_normal(int m_idx)
 							/* Charged? */
 							if (o_ptr->pval[DEFAULT_PVAL])
 							{
-								drained = o_ptr->pval[DEFAULT_PVAL];
+								/* Get number of charge to drain */
+								unpower = (rlev / (o_ptr->kind->level + 2)) + 1;
 
-								/* Uncharge */
-								o_ptr->pval[DEFAULT_PVAL] = 0;
+								/* Get new charge value, don't allow negative */
+								newcharge = MAX((o_ptr->pval[DEFAULT_PVAL]
+										- unpower),0);
+								
+								/* Remove the charges */
+								o_ptr->pval[DEFAULT_PVAL] = newcharge;
 							}
 						}
 
-						if (drained)
+						if (unpower)
 						{
-							int heal = rlev * drained;
+							int heal = rlev * unpower;
 
 							msg("Energy drains from your pack!");
 
@@ -865,7 +871,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Increase "blind" */
-					if (!p_ptr->state.resist_blind)
+					if (!p_ptr->state.flags[OF_RES_BLIND])
 					{
 						if (inc_timed(TMD_BLIND, 10 + randint1(rlev), TRUE))
 						{
@@ -885,7 +891,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Increase "confused" */
-					if (!p_ptr->state.resist_confu)
+					if (!p_ptr->state.flags[OF_RES_CONFU])
 					{
 						if (inc_timed(TMD_CONFUSED, 3 + randint1(rlev), TRUE))
 						{
@@ -905,7 +911,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Increase "afraid" */
-					if (p_ptr->state.resist_fear)
+					if (p_ptr->state.flags[OF_RES_FEAR])
 					{
 						msg("You stand your ground!");
 						obvious = TRUE;
@@ -936,7 +942,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Increase "paralyzed" */
-					if (p_ptr->state.free_act)
+					if (p_ptr->state.flags[OF_FREE_ACT])
 					{
 						msg("You are unaffected!");
 						obvious = TRUE;
@@ -1078,14 +1084,14 @@ bool make_attack_normal(int m_idx)
 					/* XXX Eddie need a DRS for HOLD_LIFE */
 					wieldeds_notice_flag(OF_HOLD_LIFE);
 
-					if (p_ptr->state.hold_life && (randint0(100) < 95))
+					if (p_ptr->state.flags[OF_HOLD_LIFE] && (randint0(100) < 95))
 					{
 						msg("You keep hold of your life force!");
 					}
 					else
 					{
 						s32b d = damroll(10, 6) + (p_ptr->exp/100) * MON_DRAIN_LIFE;
-						if (p_ptr->state.hold_life)
+						if (p_ptr->state.flags[OF_HOLD_LIFE])
 						{
 							msg("You feel your life slipping away!");
 							lose_exp(d/10);
@@ -1109,7 +1115,7 @@ bool make_attack_normal(int m_idx)
 
 					wieldeds_notice_flag(OF_HOLD_LIFE);
 
-					if (p_ptr->state.hold_life && (randint0(100) < 90))
+					if (p_ptr->state.flags[OF_HOLD_LIFE] && (randint0(100) < 90))
 					{
 						msg("You keep hold of your life force!");
 					}
@@ -1117,7 +1123,7 @@ bool make_attack_normal(int m_idx)
 					{
 						s32b d = damroll(20, 6) + (p_ptr->exp / 100) * MON_DRAIN_LIFE;
 
-						if (p_ptr->state.hold_life)
+						if (p_ptr->state.flags[OF_HOLD_LIFE])
 						{
 							msg("You feel your life slipping away!");
 							lose_exp(d / 10);
@@ -1141,7 +1147,7 @@ bool make_attack_normal(int m_idx)
 
 					wieldeds_notice_flag(OF_HOLD_LIFE);
 
-					if (p_ptr->state.hold_life && (randint0(100) < 75))
+					if (p_ptr->state.flags[OF_HOLD_LIFE] && (randint0(100) < 75))
 					{
 						msg("You keep hold of your life force!");
 					}
@@ -1149,7 +1155,7 @@ bool make_attack_normal(int m_idx)
 					{
 						s32b d = damroll(40, 6) + (p_ptr->exp / 100) * MON_DRAIN_LIFE;
 
-						if (p_ptr->state.hold_life)
+						if (p_ptr->state.flags[OF_HOLD_LIFE])
 						{
 							msg("You feel your life slipping away!");
 							lose_exp(d / 10);
@@ -1173,7 +1179,7 @@ bool make_attack_normal(int m_idx)
 
 					wieldeds_notice_flag(OF_HOLD_LIFE);
 
-					if (p_ptr->state.hold_life && (randint0(100) < 50))
+					if (p_ptr->state.flags[OF_HOLD_LIFE] && (randint0(100) < 50))
 					{
 						msg("You keep hold of your life force!");
 					}
@@ -1181,7 +1187,7 @@ bool make_attack_normal(int m_idx)
 					{
 						s32b d = damroll(80, 6) + (p_ptr->exp / 100) * MON_DRAIN_LIFE;
 
-						if (p_ptr->state.hold_life)
+						if (p_ptr->state.flags[OF_HOLD_LIFE])
 						{
 							msg("You feel your life slipping away!");
 							lose_exp(d / 10);
@@ -1201,7 +1207,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Increase "image" */
-					if (!p_ptr->state.resist_chaos)
+					if (!p_ptr->state.flags[OF_RES_CHAOS])
 					{
 						if (inc_timed(TMD_IMAGE, 3 + randint1(rlev / 2), TRUE))
 						{

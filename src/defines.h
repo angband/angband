@@ -163,7 +163,8 @@
 /*
  * Misc constants
  */
-#define TOWN_DAWN		10000	/* Number of turns from dawn to dawn XXX */
+#define TOWN_DAWN		10000	/* Number of turns from dawn to dawn */
+#define TOWN_DUSK         5000    /* Number of turns from dawn to dusk */
 #define BREAK_GLYPH		550	/* Rune of protection resistance */
 #define BTH_PLUS_ADJ    	3 	/* Adjust BTH per plus-to-hit */
 #define MON_MULT_ADJ		8 	/* High value slows multiplication */
@@ -1313,8 +1314,7 @@ enum
  * Some monster types are different.
  */
 #define monster_is_unusual(R) \
-	(flags_test((R)->flags, RF_SIZE, RF_DEMON, RF_UNDEAD, RF_STUPID, FLAG_END) || \
-	strchr("Evg", (R)->d_char))
+	(flags_test((R)->flags, RF_SIZE, RF_DEMON, RF_UNDEAD, RF_STUPID, RF_MATERIAL, FLAG_END))
 
 
 /*

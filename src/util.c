@@ -46,14 +46,14 @@ static int dehex(char c)
  * Transform macro trigger name ('\[alt-D]' etc..)
  * into macro trigger key code ('^_O_64\r' or etc..)
  */
-static size_t trigger_text_to_ascii(char *buf, size_t max, cptr *strptr)
+static size_t trigger_text_to_ascii(char *buf, size_t max, const char **strptr)
 {
-	cptr str = *strptr;
+	const char *str = *strptr;
 	bool mod_status[MAX_MACRO_MOD];
 
 	int i, len = 0;
 	int shiftstatus = 0;
-	cptr key_code;
+	const char *key_code;
 	
 	size_t current_len = strlen(buf);
 
@@ -182,7 +182,7 @@ static size_t trigger_text_to_ascii(char *buf, size_t max, cptr *strptr)
  *
  * To be safe, "buf" should be at least as large as "str".
  */
-void text_to_ascii(char *buf, size_t len, cptr str)
+void text_to_ascii(char *buf, size_t len, const char *str)
 {
 	char *s = buf;
 
@@ -289,12 +289,12 @@ void text_to_ascii(char *buf, size_t len, cptr str)
  * Transform macro trigger key code ('^_O_64\r' or etc..) 
  * into macro trigger name ('\[alt-D]' etc..)
  */
-static size_t trigger_ascii_to_text(char *buf, size_t max, cptr *strptr)
+static size_t trigger_ascii_to_text(char *buf, size_t max, const char **strptr)
 {
-	cptr str = *strptr;
+	const char *str = *strptr;
 	char key_code[100];
 	int i;
-	cptr tmp;
+	const char *tmp;
 	size_t current_len = strlen(buf);
 	
 
@@ -371,7 +371,7 @@ static size_t trigger_ascii_to_text(char *buf, size_t max, cptr *strptr)
  *
  * This function will not work on non-ascii systems.
  */
-void ascii_to_text(char *buf, size_t len, cptr str)
+void ascii_to_text(char *buf, size_t len, const char *str)
 {
 	char *s = buf;
 
@@ -478,7 +478,7 @@ void ascii_to_text(char *buf, size_t len, cptr str)
  * 
  * Return the start position, or NULL if there isn't a valid suffix. 
  */
-char *find_roman_suffix_start(cptr buf)
+char *find_roman_suffix_start(const char *buf)
 {
 	const char *start = strrchr(buf, ' ');
 	const char *p;
@@ -692,7 +692,7 @@ static ui_event_data inkey_aux(int scan_cutoff)
 	ui_event_data ke, ke0;
 	char ch;
 	
-	cptr pat, act;
+	const char *pat, *act;
 	
 	char buf[1024];
 
@@ -870,7 +870,7 @@ static ui_event_data inkey_aux(int scan_cutoff)
  * trigger any macros, and cannot be bypassed by the Borg.  It is used
  * in Angband to handle "keymaps".
  */
-cptr inkey_next = NULL;
+const char *inkey_next = NULL;
 
 
 #ifdef ALLOW_BORG
@@ -1248,7 +1248,7 @@ char inkey(void)
 /*
  * Flush the screen, make a noise
  */
-void bell(cptr reason)
+void bell(const char *reason)
 {
 	/* Mega-Hack -- Flush the output */
 	Term_fresh();
@@ -1328,7 +1328,7 @@ static int message_column = 0;
  * Hack -- Note that "msg("%s", NULL)" will clear the top line even if no
  * messages are pending.
  */
-static void msg_print_aux(u16b type, cptr msg)
+static void msg_print_aux(u16b type, const char *msg)
 {
 	int n;
 	char *t;
@@ -1534,7 +1534,7 @@ void screen_load(void)
  * At the given location, using the given attribute, if allowed,
  * add the given string.  Do not clear the line.
  */
-void c_put_str(byte attr, cptr str, int row, int col)
+void c_put_str(byte attr, const char *str, int row, int col)
 {
 	/* Position cursor, Dump the attr/text */
 	Term_putstr(col, row, -1, attr, str);
@@ -1544,7 +1544,7 @@ void c_put_str(byte attr, cptr str, int row, int col)
 /*
  * As above, but in "white"
  */
-void put_str(cptr str, int row, int col)
+void put_str(const char *str, int row, int col)
 {
 	/* Spawn */
 	Term_putstr(col, row, -1, TERM_WHITE, str);
@@ -1556,7 +1556,7 @@ void put_str(cptr str, int row, int col)
  * Display a string on the screen using an attribute, and clear
  * to the end of the line.
  */
-void c_prt(byte attr, cptr str, int row, int col)
+void c_prt(byte attr, const char *str, int row, int col)
 {
 	/* Clear line, position cursor */
 	Term_erase(col, row, 255);
@@ -1569,7 +1569,7 @@ void c_prt(byte attr, cptr str, int row, int col)
 /*
  * As above, but in "white"
  */
-void prt(cptr str, int row, int col)
+void prt(const char *str, int row, int col)
 {
 	/* Spawn */
 	c_prt(TERM_WHITE, str, row, col);
@@ -1590,7 +1590,7 @@ void prt(cptr str, int row, int col)
  * This function will correctly handle any width up to the maximum legal
  * value of 256, though it works best for a standard 80 character width.
  */
-void text_out_to_screen(byte a, cptr str)
+void text_out_to_screen(byte a, const char *str)
 {
 	int x, y;
 
@@ -1598,7 +1598,7 @@ void text_out_to_screen(byte a, cptr str)
 
 	int wrap;
 
-	cptr s;
+	const char *s;
 	char buf[1024];
 
 	/* We use either ascii or system-specific encoding */
@@ -1720,9 +1720,9 @@ void text_out_to_screen(byte a, cptr str)
  * You must be careful to end all file output with a newline character
  * to "flush" the stored line position.
  */
-void text_out_to_file(byte a, cptr str)
+void text_out_to_file(byte a, const char *str)
 {
-	cptr s;
+	const char *s;
 	char buf[1024];
 
 	/* Current position on the line */
@@ -2337,7 +2337,7 @@ bool get_name(char *buf, size_t buflen)
  * See "askfor_aux" for some notes about "buf" and "len", and about
  * the return value of this function.
  */
-bool get_string(cptr prompt, char *buf, size_t len)
+bool get_string(const char *prompt, char *buf, size_t len)
 {
 	bool res;
 
@@ -2367,7 +2367,7 @@ bool get_string(cptr prompt, char *buf, size_t len)
  *
  * Allow "p_ptr->command_arg" to specify a quantity
  */
-s16b get_quantity(cptr prompt, int max)
+s16b get_quantity(const char *prompt, int max)
 {
 	int amt = 1;
 
@@ -2430,7 +2430,7 @@ s16b get_quantity(cptr prompt, int max)
  *
  * Note that "[y/n]" is appended to the prompt.
  */
-bool get_check(cptr prompt)
+bool get_check(const char *prompt)
 {
 	ui_event_data ke;
 
@@ -2484,7 +2484,7 @@ bool get_check(cptr prompt)
  *     This prompts "Study? [yns]" and defaults to 'n'.
  *
  */
-char get_char(cptr prompt, const char *options, size_t len, char fallback)
+char get_char(const char *prompt, const char *options, size_t len, char fallback)
 {
 	size_t i;
 	char button[4], buf[80], key;
@@ -2585,7 +2585,7 @@ bool (*get_file)(const char *suggested_name, char *path, size_t len) = get_file_
  *
  * Returns TRUE unless the character is "Escape"
  */
-bool get_com(cptr prompt, char *command)
+bool get_com(const char *prompt, char *command)
 {
 	ui_event_data ke;
 	bool result;
@@ -2597,7 +2597,7 @@ bool get_com(cptr prompt, char *command)
 }
 
 
-bool get_com_ex(cptr prompt, ui_event_data *command)
+bool get_com_ex(const char *prompt, ui_event_data *command)
 {
 	ui_event_data ke;
 
@@ -2692,7 +2692,7 @@ int color_char_to_attr(char c)
 /*
  * Converts a string to a terminal color byte.
  */
-int color_text_to_attr(cptr name)
+int color_text_to_attr(const char *name)
 {
 	int a;
 
@@ -2709,7 +2709,7 @@ int color_text_to_attr(cptr name)
 /*
  * Extract a textual representation of an attribute
  */
-cptr attr_to_text(byte a)
+const char *attr_to_text(byte a)
 {
 	if (a < BASIC_COLORS)
 		return (color_table[a].name);

@@ -136,7 +136,7 @@ static char *ANGBAND_DIR_USER_SDL;
 /*
  * Used as 'system' font
  */
-static cptr DEFAULT_FONT_FILE = "6x10x.fon";
+static const char *DEFAULT_FONT_FILE = "6x10x.fon";
 
 #define MAX_FONTS 40
 char *FontList[MAX_FONTS];
@@ -364,13 +364,11 @@ static SDL_Rect SizingRect;		/* Rect to describe the current resize window */
 typedef struct GfxInfo GfxInfo;
 struct GfxInfo
 {
-	cptr name;				/* Name to show on button */
-	cptr gfxfile;			/* The file with tiles */
+	const char *name;				/* Name to show on button */
+	const char *gfxfile;			/* The file with tiles */
 	int width;				/* Width of a tile */
 	int height;				/* Height of a tile */
-	cptr pref;				/* Preference file to use */
-	int x;					/* Yuk - Pixel location of colour key */
-	int y;					/* ditto */
+	const char *pref;				/* Preference file to use */
 	bool avail;				/* Are the appropriate files available? */
 };
 
@@ -379,18 +377,12 @@ static SDL_Surface *GfxSurface = NULL;	/* A surface for the graphics */
 #define GfxModes 5
 static GfxInfo GfxDesc[GfxModes] =
 {
-	/* No gfx (GRAPHICS_NONE) */
-	{"None", NULL, -1, -1, NULL, 0, 0, TRUE},
-	/* 8x8 tiles (GRAPHICS_ORIGINAL) */
-	{"8x8", "8x8.png", 8, 8, "old", 0, 17, TRUE},
-	/* 16x16 tiles (GRAPHICS_ADAM_BOLT) */
-	{"16x16", "16x16.png", 16, 16, "new", 0, 65, TRUE},
-	/* XXX (GRAPHICS_DAVID_GERVAIS) */
-	{"32x32", "32x32.png", 32, 32, "david", 0, 0, TRUE},
-	{"8x16", "8x16.png", 16, 16, "nomad", 0, 0, TRUE},
-	
+	{"None", NULL, -1, -1, NULL, TRUE},
+	{"8x8", "8x8.png", 8, 8, "old", TRUE},
+	{"16x16", "16x16.png", 16, 16, "new", TRUE},
+	{"32x32", "32x32.png", 32, 32, "david", TRUE},
+	{"8x16", "8x16.png", 16, 16, "nomad", TRUE},
 	/* XXX (GRAPHICS_PSEUDO ???) */
-	/*{NULL, NULL, NULL, -1, -1},	*/						
 };
 
 
@@ -470,7 +462,7 @@ static void sdl_DrawBox(SDL_Surface *surface, SDL_Rect *rect, Uint32 colour, int
 /*
  * Get the width and height of a given font file
  */
-static errr sdl_CheckFont(cptr fontname, int *width, int *height)
+static errr sdl_CheckFont(const char *fontname, int *width, int *height)
 {
 	char buf[1024];
 	
@@ -512,7 +504,7 @@ static void sdl_FontFree(sdl_Font *font)
  * Create new font data with font fontname, optimizing the data
  * for the surface given
  */
-static errr sdl_FontCreate(sdl_Font *font, cptr fontname, SDL_Surface *surface)
+static errr sdl_FontCreate(sdl_Font *font, const char *fontname, SDL_Surface *surface)
 {
 	char buf[1024];
 	int i;
@@ -624,7 +616,7 @@ static errr sdl_FontCreate(sdl_Font *font, cptr fontname, SDL_Surface *surface)
  * You can, I suppose, use one font on many surfaces, but it is
  * definately not recommended. One font per surface is good enough.
  */
-static errr sdl_FontDraw(sdl_Font *font, SDL_Surface *surface, Uint32 colour, int x, int y, int n , cptr s)
+static errr sdl_FontDraw(sdl_Font *font, SDL_Surface *surface, Uint32 colour, int x, int y, int n , const char *s)
 {
 	Uint8 bpp = surface->format->BytesPerPixel;
 	Uint16 pitch = surface->pitch;
@@ -752,7 +744,7 @@ static void sdl_ButtonSize(sdl_Button *button, int w, int h)
 /*
  * Set the caption
  */
-static void sdl_ButtonCaption(sdl_Button *button, cptr s)
+static void sdl_ButtonCaption(sdl_Button *button, const char *s)
 {
 	my_strcpy(button->caption, s, sizeof(button->caption));
 	button->owner->need_update = TRUE;
@@ -994,7 +986,7 @@ static void sdl_WindowFree(sdl_Window* window)
 /*
  * Initialize a window
  */
-static void sdl_WindowInit(sdl_Window* window, int w, int h, SDL_Surface *owner, cptr fontname)
+static void sdl_WindowInit(sdl_Window* window, int w, int h, SDL_Surface *owner, const char *fontname)
 {
 	sdl_WindowFree(window);
 	window->owner = owner;
@@ -1023,7 +1015,7 @@ static void sdl_WindowBlit(sdl_Window* window)
 	SDL_UpdateRects(window->owner, 1, &rc);
 }
 
-static void sdl_WindowText(sdl_Window* window, Uint32 c, int x, int y, cptr s)
+static void sdl_WindowText(sdl_Window* window, Uint32 c, int x, int y, const char *s)
 {
 	sdl_FontDraw(&window->font, window->surface, c, x, y, strlen(s), s);
 }
@@ -1075,7 +1067,7 @@ static void term_windowFree(term_window* win)
 }
 
 static errr save_prefs(void);
-static void hook_quit(cptr str)
+static void hook_quit(const char *str)
 {
 	int i;
 	
@@ -1140,7 +1132,7 @@ static void BringToTop(void)
 /*
  * Validate a file
  */
-static void validate_file(cptr s)
+static void validate_file(const char *s)
 {
 	if (!file_exists(s))
 		quit_fmt("Cannot find required file:\n%s", s);
@@ -2945,7 +2937,7 @@ static errr Term_wipe_sdl(int col, int row, int n)
 /*
  * Draw some text to a window
  */
-static errr Term_text_sdl(int col, int row, int n, byte a, cptr s)
+static errr Term_text_sdl(int col, int row, int n, byte a, const char *s)
 {
 	term_window *win = (term_window*)(Term->data);
 	Uint32 colour = text_colours[a];
@@ -3069,9 +3061,9 @@ static errr sdl_BuildTileset(term_window *win)
 	
 	/* Make it */
 	win->tiles = SDL_CreateRGBSurface(SDL_SWSURFACE, x, y,
-									  GfxSurface->format->BitsPerPixel,
-									  GfxSurface->format->Rmask, GfxSurface->format->Gmask,
-									  GfxSurface->format->Bmask, GfxSurface->format->Amask);
+			GfxSurface->format->BitsPerPixel,
+			GfxSurface->format->Rmask, GfxSurface->format->Gmask,
+			GfxSurface->format->Bmask, GfxSurface->format->Amask);
 	
 	/* Bugger */
 	if (!win->tiles) return (1);
@@ -3083,23 +3075,19 @@ static errr sdl_BuildTileset(term_window *win)
 		{
 			SDL_Rect src, dest;
                         int dwid = win->tile_wid * tile_width;
-                        
                         int dhgt = win->tile_hgt * tile_height;
-			
+
 			/* Source rectangle (on GfxSurface) */
 			RECT(xx * info->width, yy * info->height, info->width, info->height, &src);
-			
+
 			/* Destination rectangle (win->tiles) */
 			RECT(xx * dwid, yy * dhgt, dwid, dhgt, &dest);
-			
+
 			/* Do the stretch thing */
 			sdl_StretchBlit(GfxSurface, &src, win->tiles, &dest);
 		}
 	}
-	
-	/* Copy across the colour key */
-	SDL_SetColorKey(win->tiles, SDL_SRCCOLORKEY, GfxSurface->format->colorkey);
-					
+
 	return (0);
 }
 #endif
@@ -3313,69 +3301,29 @@ static void init_morewindows(void)
 static errr load_gfx(void)
 {
 	char buf[1024];
-	cptr filename = GfxDesc[use_graphics].gfxfile;
+	const char *filename = GfxDesc[use_graphics].gfxfile;
 	SDL_Surface *temp;
-	Uint8 r, g, b;
-	Uint32 key;
-	Uint32 Pixel = 0;
-	int x = GfxDesc[use_graphics].x, y = GfxDesc[use_graphics].y;
-	
+
 	/* This may be called when GRAPHICS_NONE is set */
 	if (!filename) return (0);
-	
+
 	/* Free the old surface */
 	if (GfxSurface) SDL_FreeSurface(GfxSurface);
-	
+
 	/* Find and load the file into a temporary surface */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_GRAF, filename);
 	temp = IMG_Load(buf);
-	
-	/* Oops */
 	if (!temp) return (1);
-	
+
 	/* Change the surface type to the current video surface format */
-	GfxSurface = SDL_DisplayFormat(temp);
-	
-	/* Use a colour key */
-	/* Get a pixel value depending on bit-depth */
-	switch (GfxSurface->format->BytesPerPixel)
-	{
-		case 1:
-		{
-			Uint8 *p = (Uint8*)GfxSurface->pixels + x + (y * GfxSurface->pitch);
-			Pixel = *p;
-		}
-		case 2:
-		{
-			Uint16 *p = (Uint16*)GfxSurface->pixels + (x * 2) + (y * GfxSurface->pitch);
-			Pixel = *p;
-		}
-		case 3:
-		case 4:
-		{
-			Uint32 *p = (Uint32*)GfxSurface->pixels + (x * GfxSurface->format->BytesPerPixel) + (y * GfxSurface->pitch);
-			Pixel = *p;
-		}
-	}
-	
-	/* Get the colour values */
-	SDL_GetRGB(Pixel, GfxSurface->format, &r, &g, &b);
-	
-	/* Create a key */
-	key = SDL_MapRGB(GfxSurface->format, r, g, b);
-	
-	/* Set the colour key */
-	SDL_SetColorKey(GfxSurface, SDL_SRCCOLORKEY, key);
-	
-	/* Lose the temporary surface */
-	SDL_FreeSurface(temp);
-	
+	GfxSurface = SDL_DisplayFormatAlpha(temp);
+
 	/* Make sure we know what pref file to use */
 	ANGBAND_GRAF = GfxDesc[use_graphics].pref;
-	
+
 	/* Reset the graphics mapping for this tileset */
 	if (character_dungeon) reset_visuals(TRUE);
-	
+
 	/* All good */
 	return (0);
 }

@@ -912,11 +912,11 @@ void display_monlist(void)
  */
 void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode)
 {
-	cptr res;
+	const char *res;
 
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
-	cptr name = r_ptr->name;
+	const char *name = r_ptr->name;
 
 	bool seen, pron;
 
@@ -1219,7 +1219,7 @@ void update_mon(int m_idx, bool full)
 	if (d <= MAX_SIGHT)
 	{
 		/* Basic telepathy */
-		if (p_ptr->state.telepathy)
+		if (p_ptr->state.flags[OF_TELEPATHY])
 		{
 			/* Empty mind, no telepathy */
 			if (rf_has(r_ptr->flags, RF_EMPTY_MIND))
@@ -1285,7 +1285,7 @@ void update_mon(int m_idx, bool full)
 				if (rf_has(r_ptr->flags, RF_INVISIBLE))
 				{
 					/* See invisible */
-					if (p_ptr->state.see_inv)
+					if (p_ptr->state.flags[OF_SEE_INVIS])
 					{
 						/* Easy to see */
 						easy = flag = TRUE;
@@ -1307,7 +1307,7 @@ void update_mon(int m_idx, bool full)
 	if (flag)
 	{
 		/* Learn about the monster's mind */
-		if (p_ptr->state.telepathy)
+		if (p_ptr->state.flags[OF_TELEPATHY])
 		{
 			flags_set(l_ptr->flags, RF_SIZE, RF_EMPTY_MIND, RF_WEIRD_MIND, RF_SMART, RF_STUPID, FLAG_END);
 		}
@@ -1700,7 +1700,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 	monster_type *n_ptr;
 	monster_type monster_type_body;
 
-	cptr name;
+	const char *name;
 
 
 	/* Paranoia */
@@ -1850,24 +1850,17 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 /*
  * Maximum size of a group of monsters
  */
-#define GROUP_MAX	32
-
+#define GROUP_MAX	25
 
 /*
- * Attempt to place a "group" of monsters around the given location
+ * Pick a monster group size. Used for monsters with the FRIENDS
+ * flag and monsters with the ESCORT/ESCORTS flags.
  */
-static bool place_monster_group(struct cave *c, int y, int x, int r_idx, bool slp)
+static int group_size_1(int r_idx)
 {
 	monster_race *r_ptr = &r_info[r_idx];
 
-	int old, n, i;
 	int total, extra = 0;
-
-	int hack_n;
-
-	byte hack_y[GROUP_MAX];
-	byte hack_x[GROUP_MAX];
-
 
 	/* Pick a group size */
 	total = randint1(13);
@@ -1886,9 +1879,6 @@ static bool place_monster_group(struct cave *c, int y, int x, int r_idx, bool sl
 		extra = randint1(extra);
 	}
 
-	/* Hack -- limit group reduction */
-	if (extra > 12) extra = 12;
-
 	/* Modify the group size */
 	total += extra;
 
@@ -1898,6 +1888,50 @@ static bool place_monster_group(struct cave *c, int y, int x, int r_idx, bool sl
 	/* Maximum size */
 	if (total > GROUP_MAX) total = GROUP_MAX;
 
+	return total;
+}
+		
+/*
+ * Pick a monster group size. Used for monsters with the FRIEND
+ * flag.
+ */
+static int group_size_2(int r_idx)
+{
+	monster_race *r_ptr = &r_info[r_idx];
+
+	int total, extra = 0;
+
+	/* Start small */
+	total = 1;
+
+	/* Easy monsters, large groups */
+	if (r_ptr->level < p_ptr->depth)
+	{
+		extra = 2 * (p_ptr->depth - r_ptr->level);
+		extra = randint1(extra);
+	}
+
+	/* Modify the group size */
+	total += extra;
+
+	/* Maximum size */
+	if (total > GROUP_MAX) total = GROUP_MAX;
+
+	return total;
+}
+
+		
+/*
+ * Attempt to place a "group" of monsters around the given location
+ */
+static bool place_monster_group(struct cave *c, int y, int x, int r_idx, bool slp, int total)
+{
+	int old, n, i;
+
+	int hack_n;
+
+	byte hack_y[GROUP_MAX];
+	byte hack_x[GROUP_MAX];
 
 	/* Save the rating */
 	old = c->rating;
@@ -2007,14 +2041,27 @@ bool place_monster_aux(struct cave *c, int y, int x, int r_idx, bool slp, bool g
 	/* Require the "group" flag */
 	if (!grp) return (TRUE);
 
+	/* Friends for certain monsters */
+	if (rf_has(r_ptr->flags, RF_FRIEND))
+	{
+		int total;
+		
+		total = group_size_2(r_idx);
+		
+		/* Attempt to place a group */
+		(void)place_monster_group(c, y, x, r_idx, slp, total);
+	}
 
 	/* Friends for certain monsters */
 	if (rf_has(r_ptr->flags, RF_FRIENDS))
 	{
+		int total;
+		
+		total = group_size_1(r_idx);
+		
 		/* Attempt to place a group */
-		(void)place_monster_group(c, y, x, r_idx, slp);
+		(void)place_monster_group(c, y, x, r_idx, slp, total);
 	}
-
 
 	/* Escorts for certain monsters */
 	if (rf_has(r_ptr->flags, RF_ESCORT))
@@ -2060,11 +2107,25 @@ bool place_monster_aux(struct cave *c, int y, int x, int r_idx, bool slp, bool g
 			(void)place_monster_one(ny, nx, z, slp);
 
 			/* Place a "group" of escorts if needed */
+			if (rf_has(r_info[z].flags, RF_FRIEND))
+			{
+				int total;
+				
+				total = group_size_2(r_idx);
+				
+				/* Attempt to place a group */
+				(void)place_monster_group(c, y, x, r_idx, slp, total);
+			}
+			
 			if (rf_has(r_info[z].flags, RF_FRIENDS) ||
 			    rf_has(r_ptr->flags, RF_ESCORTS))
 			{
+				int total;
+				
+				total = group_size_1(r_idx);
+				
 				/* Place a group of monsters */
-				(void)place_monster_group(c, ny, nx, z, slp);
+				(void)place_monster_group(c, ny, nx, z, slp, total);
 			}
 		}
 	}
@@ -2237,28 +2298,29 @@ static bool summon_specific_okay(int r_idx)
 
 		case SUMMON_SPIDER:
 		{
-			okay = (r_ptr->d_char == 'S' &&
+			okay = (r_ptr->rval == lookup_monster_base("spider") &&
 			        !rf_has(r_ptr->flags, RF_UNIQUE));
 			break;
 		}
 
 		case SUMMON_HOUND:
 		{
-			okay = ((r_ptr->d_char == 'C' || r_ptr->d_char == 'Z') &&
+			okay = ((r_ptr->rval == lookup_monster_base("canine") || 
+					r_ptr->rval == lookup_monster_base("zephyr hound")) &&
 			        !rf_has(r_ptr->flags, RF_UNIQUE));
 			break;
 		}
 
 		case SUMMON_HYDRA:
 		{
-			okay = (r_ptr->d_char == 'M' &&
+			okay = (r_ptr->rval == lookup_monster_base("hydra") &&
 			        !rf_has(r_ptr->flags, RF_UNIQUE));
 			break;
 		}
 
 		case SUMMON_ANGEL:
 		{
-			okay = (r_ptr->d_char == 'A' &&
+			okay = (r_ptr->rval == lookup_monster_base("angel") &&
 			        !flags_test_all(r_ptr->flags, RF_SIZE, RF_UNIQUE,
 			                              RF_FRIEND, RF_FRIENDS, RF_ESCORT,
 			                              RF_ESCORTS, FLAG_END));
@@ -2301,27 +2363,27 @@ static bool summon_specific_okay(int r_idx)
 
 		case SUMMON_HI_UNDEAD:
 		{
-			okay = (r_ptr->d_char == 'L' ||
-			        r_ptr->d_char == 'V' ||
-			        r_ptr->d_char == 'W');
+			okay = (r_ptr->rval == lookup_monster_base("lich") ||
+			        r_ptr->rval == lookup_monster_base("vampire") ||
+			        r_ptr->rval == lookup_monster_base("wraith"));
 			break;
 		}
 
 		case SUMMON_HI_DRAGON:
 		{
-			okay = (r_ptr->d_char == 'D');
+			okay = (r_ptr->rval == lookup_monster_base("ancient dragon"));
 			break;
 		}
 
 		case SUMMON_HI_DEMON:
 		{
-			okay = (r_ptr->d_char == 'U');
+			okay = (r_ptr->rval == lookup_monster_base("major demon"));
 			break;
 		}
 
 		case SUMMON_WRAITH:
 		{
-			okay = (r_ptr->d_char == 'W' &&
+			okay = (r_ptr->rval == lookup_monster_base("wraith") &&
 			        rf_has(r_ptr->flags, RF_UNIQUE));
 			break;
 		}
@@ -2496,9 +2558,10 @@ void message_pain(int m_idx, int dam)
 
 	monster_type *m_ptr = &mon_list[m_idx];
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
-
+	monster_base *rb_ptr = &rb_info[r_ptr->rval];
+	monster_pain *mp_ptr = &pain_messages[rb_ptr->pain_idx];
+	
 	char m_name[80];
-
 
 	/* Get the monster name */
 	monster_desc(m_name, sizeof(m_name), m_ptr, 0);
@@ -2515,83 +2578,21 @@ void message_pain(int m_idx, int dam)
 	oldhp = newhp + (long)(dam);
 	tmp = (newhp * 100L) / oldhp;
 	percentage = (int)(tmp);
-
-
-	/* Jelly's, Mold's, Vortex's, Quthl's */
-	if (strchr("jmvQ", r_ptr->d_char))
-	{
-		if (percentage > 95)
-			msg("%^s barely notices.", m_name);
-		else if (percentage > 75)
-			msg("%^s flinches.", m_name);
-		else if (percentage > 50)
-			msg("%^s squelches.", m_name);
-		else if (percentage > 35)
-			msg("%^s quivers in pain.", m_name);
-		else if (percentage > 20)
-			msg("%^s writhes about.", m_name);
-		else if (percentage > 10)
-			msg("%^s writhes in agony.", m_name);
-		else
-			msg("%^s jerks limply.", m_name);
-	}
-
-	/* Dogs and Hounds */
-	else if (strchr("CZ", r_ptr->d_char))
-	{
-		if (percentage > 95)
-			msg("%^s shrugs off the attack.", m_name);
-		else if (percentage > 75)
-			msg("%^s snarls with pain.", m_name);
-		else if (percentage > 50)
-			msg("%^s yelps in pain.", m_name);
-		else if (percentage > 35)
-			msg("%^s howls in pain.", m_name);
-		else if (percentage > 20)
-			msg("%^s howls in agony.", m_name);
-		else if (percentage > 10)
-			msg("%^s writhes in agony.", m_name);
-		else
-			msg("%^s yelps feebly.", m_name);
-	}
-
-	/* One type of monsters (ignore,squeal,shriek) */
-	else if (strchr("FIKMRSXabclqrst", r_ptr->d_char))
-	{
-		if (percentage > 95)
-			msg("%^s ignores the attack.", m_name);
-		else if (percentage > 75)
-			msg("%^s grunts with pain.", m_name);
-		else if (percentage > 50)
-			msg("%^s squeals in pain.", m_name);
-		else if (percentage > 35)
-			msg("%^s shrieks in pain.", m_name);
-		else if (percentage > 20)
-			msg("%^s shrieks in agony.", m_name);
-		else if (percentage > 10)
-			msg("%^s writhes in agony.", m_name);
-		else
-			msg("%^s cries out feebly.", m_name);
-	}
-
-	/* Another type of monsters (shrug,cry,scream) */
+	
+	if (percentage > 95)
+		msg("%^s %s.", m_name, mp_ptr->messages[0]);
+	else if (percentage > 75)
+		msg("%^s %s.", m_name, mp_ptr->messages[1]);
+	else if (percentage > 50)
+		msg("%^s %s.", m_name, mp_ptr->messages[2]);
+	else if (percentage > 35)
+		msg("%^s %s.", m_name, mp_ptr->messages[3]);
+	else if (percentage > 20)
+		msg("%^s %s.", m_name, mp_ptr->messages[4]);
+	else if (percentage > 10)
+		msg("%^s %s.", m_name, mp_ptr->messages[5]);
 	else
-	{
-		if (percentage > 95)
-			msg("%^s shrugs off the attack.", m_name);
-		else if (percentage > 75)
-			msg("%^s grunts with pain.", m_name);
-		else if (percentage > 50)
-			msg("%^s cries out in pain.", m_name);
-		else if (percentage > 35)
-			msg("%^s screams in pain.", m_name);
-		else if (percentage > 20)
-			msg("%^s screams in agony.", m_name);
-		else if (percentage > 10)
-			msg("%^s writhes in agony.", m_name);
-		else
-			msg("%^s cries out feebly.", m_name);
-	}
+		msg("%^s %s.", m_name, mp_ptr->messages[6]);
 }
 
 
@@ -2672,7 +2673,7 @@ void update_smart_learn(int m_idx, int what)
 	{
 		case DRS_FREE:
 		{
-			if (p_ptr->state.free_act) m_ptr->smart |= (SM_IMM_FREE);
+			if (p_ptr->state.flags[OF_FREE_ACT]) m_ptr->smart |= (SM_IMM_FREE);
 			break;
 		}
 
@@ -2684,106 +2685,106 @@ void update_smart_learn(int m_idx, int what)
 
 		case DRS_RES_ACID:
 		{
-			if (p_ptr->state.resist_acid) m_ptr->smart |= (SM_RES_ACID);
+			if (p_ptr->state.flags[OF_RES_ACID]) m_ptr->smart |= (SM_RES_ACID);
 			if (p_ptr->timed[TMD_OPP_ACID]) m_ptr->smart |= (SM_OPP_ACID);
-			if (p_ptr->state.immune_acid) m_ptr->smart |= (SM_IMM_ACID);
+			if (p_ptr->state.flags[OF_IM_ACID]) m_ptr->smart |= (SM_IMM_ACID);
 			break;
 		}
 
 		case DRS_RES_ELEC:
 		{
-			if (p_ptr->state.resist_elec) m_ptr->smart |= (SM_RES_ELEC);
+			if (p_ptr->state.flags[OF_RES_ELEC]) m_ptr->smart |= (SM_RES_ELEC);
 			if (p_ptr->timed[TMD_OPP_ELEC]) m_ptr->smart |= (SM_OPP_ELEC);
-			if (p_ptr->state.immune_elec) m_ptr->smart |= (SM_IMM_ELEC);
+			if (p_ptr->state.flags[OF_IM_ELEC]) m_ptr->smart |= (SM_IMM_ELEC);
 			break;
 		}
 
 		case DRS_RES_FIRE:
 		{
-			if (p_ptr->state.resist_fire) m_ptr->smart |= (SM_RES_FIRE);
+			if (p_ptr->state.flags[OF_RES_FIRE]) m_ptr->smart |= (SM_RES_FIRE);
 			if (p_ptr->timed[TMD_OPP_FIRE]) m_ptr->smart |= (SM_OPP_FIRE);
-			if (p_ptr->state.immune_fire) m_ptr->smart |= (SM_IMM_FIRE);
+			if (p_ptr->state.flags[OF_IM_FIRE]) m_ptr->smart |= (SM_IMM_FIRE);
 			break;
 		}
 
 		case DRS_RES_COLD:
 		{
-			if (p_ptr->state.resist_cold) m_ptr->smart |= (SM_RES_COLD);
+			if (p_ptr->state.flags[OF_RES_COLD]) m_ptr->smart |= (SM_RES_COLD);
 			if (p_ptr->timed[TMD_OPP_COLD]) m_ptr->smart |= (SM_OPP_COLD);
-			if (p_ptr->state.immune_cold) m_ptr->smart |= (SM_IMM_COLD);
+			if (p_ptr->state.flags[OF_IM_COLD]) m_ptr->smart |= (SM_IMM_COLD);
 			break;
 		}
 
 		case DRS_RES_POIS:
 		{
-			if (p_ptr->state.resist_pois) m_ptr->smart |= (SM_RES_POIS);
+			if (p_ptr->state.flags[OF_RES_POIS]) m_ptr->smart |= (SM_RES_POIS);
 			if (p_ptr->timed[TMD_OPP_POIS]) m_ptr->smart |= (SM_OPP_POIS);
 			break;
 		}
 
 		case DRS_RES_FEAR:
 		{
-			if (p_ptr->state.resist_fear) m_ptr->smart |= (SM_RES_FEAR);
+			if (p_ptr->state.flags[OF_RES_FEAR]) m_ptr->smart |= (SM_RES_FEAR);
 			break;
 		}
 
 		case DRS_RES_LIGHT:
 		{
-			if (p_ptr->state.resist_light) m_ptr->smart |= (SM_RES_LIGHT);
+			if (p_ptr->state.flags[OF_RES_LIGHT]) m_ptr->smart |= (SM_RES_LIGHT);
 			break;
 		}
 
 		case DRS_RES_DARK:
 		{
-			if (p_ptr->state.resist_dark) m_ptr->smart |= (SM_RES_DARK);
+			if (p_ptr->state.flags[OF_RES_DARK]) m_ptr->smart |= (SM_RES_DARK);
 			break;
 		}
 
 		case DRS_RES_BLIND:
 		{
-			if (p_ptr->state.resist_blind) m_ptr->smart |= (SM_RES_BLIND);
+			if (p_ptr->state.flags[OF_RES_BLIND]) m_ptr->smart |= (SM_RES_BLIND);
 			break;
 		}
 
 		case DRS_RES_CONFU:
 		{
-			if (p_ptr->state.resist_confu) m_ptr->smart |= (SM_RES_CONFU);
+			if (p_ptr->state.flags[OF_RES_CONFU]) m_ptr->smart |= (SM_RES_CONFU);
 			break;
 		}
 
 		case DRS_RES_SOUND:
 		{
-			if (p_ptr->state.resist_sound) m_ptr->smart |= (SM_RES_SOUND);
+			if (p_ptr->state.flags[OF_RES_SOUND]) m_ptr->smart |= (SM_RES_SOUND);
 			break;
 		}
 
 		case DRS_RES_SHARD:
 		{
-			if (p_ptr->state.resist_shard) m_ptr->smart |= (SM_RES_SHARD);
+			if (p_ptr->state.flags[OF_RES_SHARD]) m_ptr->smart |= (SM_RES_SHARD);
 			break;
 		}
 
 		case DRS_RES_NEXUS:
 		{
-			if (p_ptr->state.resist_nexus) m_ptr->smart |= (SM_RES_NEXUS);
+			if (p_ptr->state.flags[OF_RES_NEXUS]) m_ptr->smart |= (SM_RES_NEXUS);
 			break;
 		}
 
 		case DRS_RES_NETHR:
 		{
-			if (p_ptr->state.resist_nethr) m_ptr->smart |= (SM_RES_NETHR);
+			if (p_ptr->state.flags[OF_RES_NETHR]) m_ptr->smart |= (SM_RES_NETHR);
 			break;
 		}
 
 		case DRS_RES_CHAOS:
 		{
-			if (p_ptr->state.resist_chaos) m_ptr->smart |= (SM_RES_CHAOS);
+			if (p_ptr->state.flags[OF_RES_CHAOS]) m_ptr->smart |= (SM_RES_CHAOS);
 			break;
 		}
 
 		case DRS_RES_DISEN:
 		{
-			if (p_ptr->state.resist_disen) m_ptr->smart |= (SM_RES_DISEN);
+			if (p_ptr->state.flags[OF_RES_DISEN]) m_ptr->smart |= (SM_RES_DISEN);
 			break;
 		}
 	}
@@ -3099,7 +3100,7 @@ bool wake_monster(monster_type *m_ptr)
  * worth more than subsequent monsters.  This would also need to
  * induce changes in the monster recall code.  XXX XXX XXX
  */
-bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
+bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note)
 {
 	monster_type *m_ptr = &mon_list[m_idx];
 

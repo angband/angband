@@ -230,8 +230,8 @@ void textui_obj_wield(object_type *o_ptr, int item)
 	{
 		if (o_ptr->tval == TV_RING)
 		{
-			cptr q = "Replace which ring? ";
-			cptr s = "Error in obj_wield, please report";
+			const char *q = "Replace which ring? ";
+			const char *s = "Error in obj_wield, please report";
 			item_tester_hook = obj_is_ring;
 			if (!get_item(&slot, q, s, CMD_WIELD, USE_EQUIP)) return;
 		}
@@ -239,8 +239,8 @@ void textui_obj_wield(object_type *o_ptr, int item)
 		if (obj_is_ammo(o_ptr) && !object_similar(&p_ptr->inventory[slot],
 			o_ptr, OSTACK_QUIVER))
 		{
-			cptr q = "Replace which ammunition? ";
-			cptr s = "Error in obj_wield, please report";
+			const char *q = "Replace which ammunition? ";
+			const char *s = "Error in obj_wield, please report";
 			item_tester_hook = obj_is_ammo;
 			if (!get_item(&slot, q, s, CMD_WIELD, USE_EQUIP)) return;
 		}
@@ -405,115 +405,6 @@ void do_cmd_locate(void)
 	verify_panel();
 }
 
-
-
-
-
-
-/*
- * The table of "symbol info" -- each entry is a string of the form
- * "X:desc" where "X" is the trigger, and "desc" is the "info".
- */
-static cptr ident_info[] =
-{
-	" :A dark grid",
-	"!:A potion (or oil)",
-	"\":An amulet (or necklace)",
-	"#:A wall (or secret door)",
-	"$:Treasure (gold or gems)",
-	"%:A vein (magma or quartz)",
-	/* "&:unused", */
-	"':An open door",
-	"(:Soft armor",
-	"):A shield",
-	"*:A vein with treasure",
-	"+:A closed door",
-	",:Food (or mushroom patch)",
-	"-:A wand (or rod)",
-	".:Floor",
-	"/:A polearm (Axe/Pike/etc)",
-	/* "0:unused", */
-	"1:Entrance to General Store",
-	"2:Entrance to Armory",
-	"3:Entrance to Weaponsmith",
-	"4:Entrance to Temple",
-	"5:Entrance to Alchemy shop",
-	"6:Entrance to Magic store",
-	"7:Entrance to Black Market",
-	"8:Entrance to your home",
-	/* "9:unused", */
-	"::Rubble",
-	";:A glyph of warding",
-	"<:An up staircase",
-	"=:A ring",
-	">:A down staircase",
-	"?:A scroll",
-	"@:You",
-	"A:Angel",
-	"B:Bird",
-	"C:Canine",
-	"D:Ancient Dragon/Wyrm",
-	"E:Elemental",
-	"F:Dragon Fly",
-	"G:Ghost",
-	"H:Hybrid",
-	"I:Insect",
-	"J:Snake",
-	"K:Killer Beetle",
-	"L:Lich",
-	"M:Multi-Headed Reptile",
-	/* "N:unused", */
-	"O:Ogre",
-	"P:Giant Humanoid",
-	"Q:Quylthulg (Pulsing Flesh Mound)",
-	"R:Reptile/Amphibian",
-	"S:Spider/Scorpion/Tick",
-	"T:Troll",
-	"U:Major Demon",
-	"V:Vampire",
-	"W:Wight/Wraith/etc",
-	"X:Xorn/Xaren/etc",
-	"Y:Yeti",
-	"Z:Zephyr Hound",
-	"[:Hard armor",
-	"\\:A hafted weapon (mace/whip/etc)",
-	"]:Misc. armor",
-	"^:A trap",
-	"_:A staff",
-	/* "`:unused", */
-	"a:Ant",
-	"b:Bat",
-	"c:Centipede",
-	"d:Dragon",
-	"e:Floating Eye",
-	"f:Feline",
-	"g:Golem",
-	"h:Hobbit/Elf/Dwarf",
-	"i:Icky Thing",
-	"j:Jelly",
-	"k:Kobold",
-	"l:Louse",
-	"m:Mold",
-	"n:Naga",
-	"o:Orc",
-	"p:Person/Human",
-	"q:Quadruped",
-	"r:Rodent",
-	"s:Skeleton",
-	"t:Townsperson",
-	"u:Minor Demon",
-	"v:Vortex",
-	"w:Worm/Worm-Mass",
-	/* "x:unused", */
-	"y:Yeek",
-	"z:Zombie/Mummy",
-	"{:A missile (arrow/bolt/shot)",
-	"|:An edged weapon (sword/dagger/etc)",
-	"}:A launcher (bow/crossbow/sling)",
-	"~:A tool (or miscellaneous item)",
-	NULL
-};
-
 static int cmp_mexp(const void *a, const void *b)
 {
 	u16b ia = *(const u16b *)a;
@@ -564,6 +455,66 @@ int cmp_monsters(const void *a, const void *b)
 }
 
 /*
+ * Search the monster, item, and feature types to find the
+ * meaning for the given symbol.
+ *
+ * Note: We currently search items first, then features, then
+ * monsters, and we return the first hit for a symbol.
+ * This is to prevent mimics and lurkers from matching
+ * a symbol instead of the item or feature it is mimicking.
+ *
+ * Todo: concatenate all matches into buf. This will be much
+ * easier once we can loop through item tvals instead of items
+ * (see note below.)
+ *
+ * Todo: Should this take the user's pref files into account?
+ */
+void lookup_symbol(char sym, char *buf, size_t max)
+{
+	int i;
+
+	/* Look through items */
+	/* Note: We currently look through all items, and grab the tval when we find a match.
+	It would make more sense to loop through tvals, but then we need to associate
+	a display character with each tval. */
+	for (i = 1; i < z_info->k_max; i++)
+	{
+		if(k_info[i].d_char == sym)
+		{
+			strnfmt(buf, max, "%c - %s.", sym, tval_find_name(k_info[i].tval));
+			return;
+		}
+	}
+
+	/* Look through features */
+	/* Note: We need a better way of doing this. Currently '#' matches secret door,
+	and '^' matches trap door (instead of the more generic "trap"). */
+	for (i = 1; i < z_info->f_max; i++)
+	{
+		if(f_info[i].d_char == sym)
+		{
+			strnfmt(buf, max, "%c - %s.", sym, f_info[i].name);
+			return;
+		}
+	}
+	
+	/* Look through monster templates */
+	for (i = 1; i < z_info->rb_max; i++)
+	{
+		if(rb_info[i].d_char == sym)
+		{
+			strnfmt(buf, max, "%c - %s.", sym, rb_info[i].text);
+			return;
+		}
+	}
+
+	/* No matches */
+	strnfmt(buf, max, "%c - %s.", sym, "Unknown Symbol");
+	
+	return;
+}
+
+/*
  * Identify a character, allow recall of monsters
  *
  * Several "special" responses recall "multiple" monsters:
@@ -591,15 +542,8 @@ void do_cmd_query_symbol(void)
 
 	u16b *who;
 
-
 	/* Get a character, or abort */
 	if (!get_com("Enter character to be identified, or control+[ANU]: ", &sym)) return;
-
-	/* Find that character info, and describe it */
-	for (i = 0; ident_info[i]; ++i)
-	{
-		if (sym == ident_info[i][0]) break;
-	}
 
 	/* Describe */
 	if (sym == KTRL('A'))
@@ -617,18 +561,13 @@ void do_cmd_query_symbol(void)
 		all = norm = TRUE;
 		my_strcpy(buf, "Non-unique monster list.", sizeof(buf));
 	}
-	else if (ident_info[i])
-	{
-		strnfmt(buf, sizeof(buf), "%c - %s.", sym, ident_info[i] + 2);
-	}
 	else
 	{
-		strnfmt(buf, sizeof(buf), "%c - %s.", sym, "Unknown Symbol");
+		lookup_symbol(sym, buf, sizeof(buf));
 	}
 
 	/* Display the result */
 	prt(buf, 0, 0);
-
 
 	/* Allocate the "who" array */
 	who = C_ZNEW(z_info->r_max, u16b);

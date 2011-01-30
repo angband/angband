@@ -13,6 +13,9 @@ extern void roff_top(int r_idx);
 extern void screen_roff(int r_idx);
 extern void display_roff(int r_idx);
 extern int lookup_monster(const char *name);
+extern int rval_find_idx(const char *name);
+extern const char *rval_find_name(int rval);
+extern int lookup_monster_base(const char *name);
 
 /* monster2.c */
 extern bool wake_monster(monster_type *m_ptr);
@@ -41,7 +44,7 @@ extern bool multiply_monster(int m_idx);
 extern void message_pain(int m_idx, int dam);
 extern void update_smart_learn(int m_idx, int what);
 void monster_death(int m_idx);
-bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note);
+bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note);
 extern void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr, bitflag flags[RF_SIZE]);
 
 extern void process_monsters(struct cave *c, byte min_energy);

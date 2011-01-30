@@ -63,7 +63,7 @@ typedef struct xtra_win_data xtra_win_data;
 struct term_data 
 {
 	term t;
-	cptr name;
+	const char *name;
 	int number;
 	
 	bool visible, initialized;
@@ -85,7 +85,7 @@ struct term_data
 struct xtra_win_data
 {
 	int x;
-	cptr name, win_name, text_view_name, item_name, drawing_area_name, font_button_name;
+	const char *name, *win_name, *text_view_name, *item_name, *drawing_area_name, *font_button_name;
 	bool visible;
 	font_info font;
 	
@@ -240,7 +240,7 @@ static errr Term_clear_gtk(void);
 static errr Term_wipe_gtk(int x, int y, int n);
 
 /* Draw some textual characters. */
-static errr Term_text_gtk(int x, int y, int n, byte a, cptr s);
+static errr Term_text_gtk(int x, int y, int n, byte a, const char *s);
 
 /* Draw pretty pictures instead. */
 static errr Term_pict_gtk(int x, int y, int n, const byte *ap, const char *cp, const byte *tap, const char *tcp);
@@ -271,7 +271,7 @@ static errr CheckEvent(bool wait);
 static bool save_game_gtk(void);
 
 /* Quit the game - from Angband */
-static void hook_quit(cptr str);
+static void hook_quit(const char *str);
 
 /* Quit the game - from Gtk */
 gboolean quit_event_handler(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
@@ -289,7 +289,7 @@ gboolean xtra_hide_event_handler(GtkWidget *widget, GdkEventButton *event, gpoin
 gboolean new_event_handler(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 
 /* Given a term window and font, load the font */
-static void load_font_by_name(term_data *td, cptr font_name);
+static void load_font_by_name(term_data *td, const char *font_name);
 
 /* Set the name of a font for a term window and load it. */
 void set_term_font(GtkFontButton *widget, gpointer user_data);
@@ -320,7 +320,7 @@ static void save_prefs(void);
 
 /* Util functions for prefs */
 static int check_env_i(char* name, int i, int dfault);
-static int get_value(cptr buf);
+static int get_value(const char *buf);
 static void load_term_prefs();
 
 /* Load the prefs */
@@ -383,7 +383,7 @@ static void text_view_put(xtra_win_data *xd, const char *str, byte color);
 static void text_view_print(xtra_win_data *xd, const char *str, byte color);
 
 /* plog_fmt reborn */
-void gtk_log_fmt(byte c, cptr fmt, ...);
+void gtk_log_fmt(byte c, const char *fmt, ...);
 
 /* Update our own personal message window. */
 static void handle_message(game_event_type type, game_event_data *data, void *user);
@@ -405,7 +405,7 @@ static void handle_mons_list(game_event_type type, game_event_data *data, void *
 
 /* Print the sidebar */
 static void handle_sidebar(game_event_type type, game_event_data *data, void *user);
-static void glog(cptr fmt, ...);
+static void glog(const char *fmt, ...);
 
 /* More Stubs */
 static void handle_init_status(game_event_type type, game_event_data *data, void *user);

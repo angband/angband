@@ -851,7 +851,7 @@ static errr Term_wipe_gcu(int x, int y, int n)
 /*
  * Place some text on the screen using an attribute
  */
-static errr Term_text_gcu(int x, int y, int n, byte a, cptr s)
+static errr Term_text_gcu(int x, int y, int n, byte a, const char *s)
 {
 	term_data *td = (term_data *)(Term->data);
 
@@ -953,7 +953,7 @@ static errr term_data_init_gcu(term_data *td, int rows, int cols, int y, int x)
 }
 
 
-static void hook_quit(cptr str)
+static void hook_quit(const char *str)
 {
 	/* Unused */
 	(void)str;

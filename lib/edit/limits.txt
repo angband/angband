@@ -27,6 +27,12 @@ M:E:128
 # Maximum number of monster races
 M:R:618
 
+# Maximum number of monster bases
+M:B:56
+
+# Maximum number of monster pain message sets
+M:P:5
+
 # Maximum number of spells
 M:S:122
 

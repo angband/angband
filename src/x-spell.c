@@ -181,7 +181,7 @@ int get_spell_index(const struct object *object, int index)
 }
 
 
-cptr get_spell_name(int tval, int spell)
+const char *get_spell_name(int tval, int spell)
 {
 	if (tval == TV_MAGIC_BOOK)
 		return s_info[spell].name;

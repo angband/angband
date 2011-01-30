@@ -1418,7 +1418,7 @@ void display_map(int *cy, int *cx)
 void do_cmd_view_map(void)
 {
 	int cy, cx;
-	cptr prompt = "Hit any key to continue";
+	const char *prompt = "Hit any key to continue";
 	
 	/* Save screen */
 	screen_save();
@@ -3660,6 +3660,21 @@ void cave_free(struct cave *c) {
 
 bool cave_isempty(struct cave *c, int y, int x) {
 	return c->feat[y][x] == FEAT_FLOOR && !c->o_idx[y][x] && !c->m_idx[y][x];
+}
+
+bool cave_iswall(struct cave *c, int y, int x) {
+	switch (c->feat[y][x]) {
+		case FEAT_WALL_EXTRA:
+		case FEAT_WALL_INNER:
+		case FEAT_WALL_OUTER:
+		case FEAT_WALL_SOLID:
+		case FEAT_PERM_EXTRA:
+		case FEAT_PERM_INNER:
+		case FEAT_PERM_OUTER:
+		case FEAT_PERM_SOLID: return TRUE;
+
+		default: return FALSE;
+	}
 }
 
 bool cave_canputitem(struct cave *c, int y, int x) {
