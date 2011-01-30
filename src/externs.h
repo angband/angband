@@ -1,6 +1,7 @@
 #ifndef INCLUDED_EXTERNS_H
 #define INCLUDED_EXTERNS_H
 
+#include "monster/constants.h"
 #include "monster/types.h"
 #include "object/types.h"
 #include "player/types.h"

@@ -417,31 +417,6 @@ enum
 
 /*** General index values ***/
 
-
-/*
- * Legal restrictions for "summon_specific()"
- */
-enum
-{
-	SUMMON_ANIMAL = 11,
-	SUMMON_SPIDER = 12,
-	SUMMON_HOUND = 13,
-	SUMMON_HYDRA = 14,
-	SUMMON_ANGEL = 15,
-	SUMMON_DEMON = 16,
-	SUMMON_UNDEAD = 17,
-	SUMMON_DRAGON = 18,
-	SUMMON_HI_DEMON = 26,
-	SUMMON_HI_UNDEAD = 27,
-	SUMMON_HI_DRAGON = 28,
-	SUMMON_WRAITH = 31,
-	SUMMON_UNIQUE = 32,
-	SUMMON_KIN = 33,
-	SUMMON_MONSTER = 41,
-	SUMMON_MONSTERS = 42,
-};
-
-
 /*
  * Spell types used by project(), and related functions.
  */
@@ -452,33 +427,6 @@ enum
 	#undef GF
 	GF_MAX
 };
-
-
-
-
-/*
- * Some constants for the "learn" code
- *
- * Most of these come from the "SM_xxx" flags
- */
-#define DRS_FREE	14
-#define DRS_MANA	15
-#define DRS_RES_ACID	16
-#define DRS_RES_ELEC	17
-#define DRS_RES_FIRE	18
-#define DRS_RES_COLD	19
-#define DRS_RES_POIS	20
-#define DRS_RES_FEAR	21
-#define DRS_RES_LIGHT	22
-#define DRS_RES_DARK	23
-#define DRS_RES_BLIND	24
-#define DRS_RES_CONFU	25
-#define DRS_RES_SOUND	26
-#define DRS_RES_SHARD	27
-#define DRS_RES_NEXUS	28
-#define DRS_RES_NETHR	29
-#define DRS_RES_CHAOS	30
-#define DRS_RES_DISEN	31
 
 
 /*
@@ -596,41 +544,6 @@ enum
  * rings, amulets), and the ones from 16 to 127 are "normal".
  */
 #define ART_MIN_NORMAL		16
-
-
-/*** Monster AI stuff ***/
-
-/*
- * Maximum flow depth when using "MONSTER_FLOW"
- */
-#define MONSTER_FLOW_DEPTH 32
-
-
-/*** Monster blow constants ***/
-#define MONSTER_BLOW_MAX 4
-
-/*
- * New monster blow methods
- */
-enum
-{
-	#define RBM(x, y) RBM_##x,
-	#include "list-blow-methods.h"
-	#undef RBM
-	RBM_MAX
-};
-
-
-/*
- * New monster blow effects
- */
-enum
-{
-	#define RBE(x, y) RBE_##x,
-	#include "list-blow-effects.h"
-	#undef RBE
-	RBE_MAX
-};
 
 
 /*** Function flags ***/
@@ -867,50 +780,9 @@ enum
 /* ... */
 
 
-
-/*
- * Some bit-flags for the "smart" field of "monster_type".
- *
- * Most of these map to the "OF_xxx" flags.
- */
-#define SM_OPP_ACID		0x00000001
-#define SM_OPP_ELEC		0x00000002
-#define SM_OPP_FIRE		0x00000004
-#define SM_OPP_COLD		0x00000008
-#define SM_OPP_POIS		0x00000010
-#define SM_OPP_XXX1		0x00000020
-#define SM_OPP_XXX2		0x00000040
-#define SM_OPP_XXX3		0x00000080
-#define SM_IMM_XXX5		0x00000100
-#define SM_IMM_XXX6		0x00000200
-#define SM_IMM_FREE		0x00000400
-#define SM_IMM_MANA		0x00000800
-#define SM_IMM_ACID		0x00001000
-#define SM_IMM_ELEC		0x00002000
-#define SM_IMM_FIRE		0x00004000
-#define SM_IMM_COLD		0x00008000
-#define SM_RES_ACID		0x00010000
-#define SM_RES_ELEC		0x00020000
-#define SM_RES_FIRE		0x00040000
-#define SM_RES_COLD		0x00080000
-#define SM_RES_POIS		0x00100000
-#define SM_RES_FEAR		0x00200000
-#define SM_RES_LIGHT		0x00400000
-#define SM_RES_DARK		0x00800000
-#define SM_RES_BLIND		0x01000000
-#define SM_RES_CONFU		0x02000000
-#define SM_RES_SOUND		0x04000000
-#define SM_RES_SHARD		0x08000000
-#define SM_RES_NEXUS		0x10000000
-#define SM_RES_NETHR		0x20000000
-#define SM_RES_CHAOS		0x40000000
-#define SM_RES_DISEN		0x80000000
-
-
 /*
  * Object flags
  */
-
 enum
 {
 	#define OF(a,b) OF_##a,
@@ -1068,172 +940,7 @@ enum
 };
 
 
-
-
-/*** Monster flags ***/
-
-
-/*
- * Special Monster Flags (all temporary)
- */
-#define MFLAG_VIEW	0x01	/* Monster is in line of sight */
-/* xxx */
-#define MFLAG_NICE	0x20	/* Monster is still being nice */
-#define MFLAG_SHOW	0x40	/* Monster is recently memorized */
-#define MFLAG_MARK	0x80	/* Monster is currently memorized */
-
-
-/*
- * Monster property and ability flags (race flags)
- */
-
-enum
-{
-	#define RF(a,b) RF_##a,
-	#include "list-mon-flags.h"
-	#undef RF
-	RF_MAX
-};
-
-#define RF_SIZE                FLAG_SIZE(RF_MAX)
-#define RF_BYTES	       32 /* savefile bytes, i.e. 256 flags */
-
-#define rf_has(f, flag)        flag_has_dbg(f, RF_SIZE, flag, #f, #flag)
-#define rf_next(f, flag)       flag_next(f, RF_SIZE, flag)
-#define rf_is_empty(f)         flag_is_empty(f, RF_SIZE)
-#define rf_is_full(f)          flag_is_full(f, RF_SIZE)
-#define rf_is_inter(f1, f2)    flag_is_inter(f1, f2, RF_SIZE)
-#define rf_is_subset(f1, f2)   flag_is_subset(f1, f2, RF_SIZE)
-#define rf_is_equal(f1, f2)    flag_is_equal(f1, f2, RF_SIZE)
-#define rf_on(f, flag)         flag_on_dbg(f, RF_SIZE, flag, #f, #flag)
-#define rf_off(f, flag)        flag_off(f, RF_SIZE, flag)
-#define rf_wipe(f)             flag_wipe(f, RF_SIZE)
-#define rf_setall(f)           flag_setall(f, RF_SIZE)
-#define rf_negate(f)           flag_negate(f, RF_SIZE)
-#define rf_copy(f1, f2)        flag_copy(f1, f2, RF_SIZE)
-#define rf_union(f1, f2)       flag_union(f1, f2, RF_SIZE)
-#define rf_comp_union(f1, f2)  flag_comp_union(f1, f2, RF_SIZE)
-#define rf_inter(f1, f2)       flag_inter(f1, f2, RF_SIZE)
-#define rf_diff(f1, f2)        flag_diff(f1, f2, RF_SIZE)
-
-/* Some flags are obvious */
-#define RF_OBVIOUS_MASK \
-	RF_UNIQUE, RF_QUESTOR, RF_MALE, RF_FEMALE, \
-	RF_FRIEND, RF_FRIENDS, RF_ESCORT, RF_ESCORTS
-
-/* "race" flags */
-#define RF_RACE_MASK \
-	RF_ORC, RF_TROLL, RF_GIANT, RF_DRAGON, \
-	RF_DEMON, RF_UNDEAD, RF_EVIL, RF_ANIMAL, RF_METAL
-
-
-
-/*
- * Monster spell flags
- */
-
-enum
-{
-	#define RSF(a,b) RSF_##a,
-	#include "list-mon-spells.h"
-	#undef RSF
-	RSF_MAX
-};
-
-#define RSF_SIZE               FLAG_SIZE(RSF_MAX)
-
-#define rsf_has(f, flag)       flag_has_dbg(f, RSF_SIZE, flag, #f, #flag)
-#define rsf_next(f, flag)      flag_next(f, RSF_SIZE, flag)
-#define rsf_is_empty(f)        flag_is_empty(f, RSF_SIZE)
-#define rsf_is_full(f)         flag_is_full(f, RSF_SIZE)
-#define rsf_is_inter(f1, f2)   flag_is_inter(f1, f2, RSF_SIZE)
-#define rsf_is_subset(f1, f2)  flag_is_subset(f1, f2, RSF_SIZE)
-#define rsf_is_equal(f1, f2)   flag_is_equal(f1, f2, RSF_SIZE)
-#define rsf_on(f, flag)        flag_on_dbg(f, RSF_SIZE, flag, #f, #flag)
-#define rsf_off(f, flag)       flag_off(f, RSF_SIZE, flag)
-#define rsf_wipe(f)            flag_wipe(f, RSF_SIZE)
-#define rsf_setall(f)          flag_setall(f, RSF_SIZE)
-#define rsf_negate(f)          flag_negate(f, RSF_SIZE)
-#define rsf_copy(f1, f2)       flag_copy(f1, f2, RSF_SIZE)
-#define rsf_union(f1, f2)      flag_union(f1, f2, RSF_SIZE)
-#define rsf_comp_union(f1, f2) flag_comp_union(f1, f2, RSF_SIZE)
-#define rsf_inter(f1, f2)      flag_inter(f1, f2, RSF_SIZE)
-#define rsf_diff(f1, f2)       flag_diff(f1, f2, RSF_SIZE)
-
-/* Minimum flag which can fail */
-#define MIN_NONINNATE_SPELL    (FLAG_START + 32)
-
-
-/* "Bolt" spells that may hurt fellow monsters */
-#define RSF_BOLT_MASK \
-	RSF_ARROW_1, RSF_ARROW_2, RSF_ARROW_3, RSF_ARROW_4, RSF_BOULDER, \
-	RSF_BO_ACID, RSF_BO_ELEC, RSF_BO_FIRE, RSF_BO_COLD, \
-	RSF_BO_POIS, RSF_BO_NETH, RSF_BO_WATE, RSF_BO_MANA, \
-	RSF_BO_PLAS, RSF_BO_ICEE, RSF_MISSILE
-
-#define RSF_BALL_MASK \
-	RSF_BA_ACID, RSF_BA_ELEC, RSF_BA_FIRE, RSF_BA_COLD, RSF_BA_POIS, \
-	RSF_BA_NETH, RSF_BA_WATE, RSF_BA_MANA, RSF_BA_DARK
-
-#define RSF_BREATH_MASK \
-	RSF_BR_ACID, RSF_BR_ELEC,  RSF_BR_FIRE, RSF_BR_COLD, RSF_BR_POIS, \
-	RSF_BR_NETH, RSF_BR_LIGHT, RSF_BR_DARK, RSF_BR_CONF, RSF_BR_SOUN, \
-	RSF_BR_CHAO, RSF_BR_DISE,  RSF_BR_NEXU, RSF_BR_TIME, RSF_BR_INER, \
-	RSF_BR_GRAV, RSF_BR_SHAR,  RSF_BR_PLAS, RSF_BR_WALL, RSF_BR_MANA
-
-/* Spells that allow the caster to escape */
-#define RSF_ESCAPE_MASK \
-	RSF_BLINK, RSF_TPORT, RSF_TELE_AWAY, RSF_TELE_LEVEL
-
-/* Spells that hurt the player directly */
-#define RSF_ATTACK_MASK \
-	RSF_BOLT_MASK, RSF_BALL_MASK, RSF_BREATH_MASK, \
-	RSF_MIND_BLAST, RSF_BRAIN_SMASH, \
-	RSF_CAUSE_1, RSF_CAUSE_2, RSF_CAUSE_3, RSF_CAUSE_4
-
-/* Summoning spells */
-#define RSF_SUMMON_MASK \
-	RSF_S_KIN, RSF_S_MONSTER, RSF_S_MONSTERS, RSF_S_ANIMAL, \
-	RSF_S_SPIDER, RSF_S_HOUND, RSF_S_HYDRA, RSF_S_ANGEL, \
-	RSF_S_DEMON, RSF_S_UNDEAD, RSF_S_DRAGON, RSF_S_HI_UNDEAD, \
-	RSF_S_HI_DEMON, RSF_S_HI_DRAGON, RSF_S_WRAITH, RSF_S_UNIQUE
-
-/* Spells that improve the caster's tactical position */
-#define RSF_TACTIC_MASK \
-	RSF_BLINK
-
-/* Annoying spells */
-#define RSF_ANNOY_MASK \
-	RSF_SHRIEK, RSF_DRAIN_MANA, RSF_MIND_BLAST, RSF_BRAIN_SMASH, RSF_SCARE, \
-	RSF_BLIND, RSF_CONF, RSF_SLOW, RSF_HOLD, \
-	RSF_TELE_TO, RSF_DARKNESS, RSF_TRAPS, RSF_FORGET
-
-/* Spells that increase the caster's relative speed */
-#define RSF_HASTE_MASK \
-	RSF_SLOW, RSF_HOLD, RSF_HASTE
-
-/* Healing spells */
-#define RSF_HEAL_MASK \
-	RSF_HEAL
-
-/* Innate spell-like effects */
-#define RSF_INNATE_MASK \
-	RSF_ARROW_1, RSF_ARROW_2, RSF,_ARROW_3, RSF_ARROW_4, \
-	RSF_BOULDER, RSF_SHRIEK, \
-	RSF_BREATH_MASK
-
-/* Choose "intelligent" spells when desperate */
-#define RSF_INT_MASK \
-	RSF_HOLD, RSF_SLOW, RSF_CONF, RSF_BLIND, RSF_SCARE, \
-	RSF_BLINK,  RSF_TPORT, RSF_TELE_LEVEL, RSF_TELE_AWAY, \
-	RSF_HEAL, RSF_HASTE, RSF_TRAPS, \
-	RSF_SUMMON_MASK
-
-
-
-
 /*** Macro Definitions ***/
-
 
 /*
  * Hack -- The main "screen"
@@ -1309,12 +1016,6 @@ enum
  */
 #define object_is_jewelry(T) \
 	(((T)->tval == TV_RING) || ((T)->tval == TV_AMULET))
-
-/*
- * Some monster types are different.
- */
-#define monster_is_unusual(R) \
-	(flags_test((R)->flags, RF_SIZE, RF_DEMON, RF_UNDEAD, RF_STUPID, RF_MATERIAL, FLAG_END))
 
 
 /*
