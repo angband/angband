@@ -2717,64 +2717,6 @@ static char *msg_repository[MAX_MON_MSG + 1] =
 	/* Dummy action */
 	"[is|are] hurt.",    		/* MON_MSG_NONE */
 
-	/* From message_pain */
-	"[is|are] unharmed.",		/* MON_MSG_UNHARMED  */
-	"barely notice[s].",		/* MON_MSG_BARELY_NOTICE  */
-	"flinch[es].",				/*  MON_MSG_FLINCH */
-	"squelch[es].",				/* MON_MSG_SQUELCH  */
-	"quiver[s] in pain.",		/* MON_MSG_QUIVER  */
-	"writhe[s] about.",			/*  MON_MSG_WRITHE_ABOUT */
-	"writhe[s] in agony.",		/* MON_MSG_WRITHE_IN_AGONY  */
-	"jerk[s].",					/* MON_MSG_JERK  */
-	"jerk[s] limply.",			/*  MON_MSG_JERK_LIMPLY */
-	"jerk[s] in pain.",			/* MON_MSG_JERK_IN_PAIN  */
-	"jerk[s] in agony.",		/* MON_MSG_JERK_IN_AGONY  */
-	"jerk[s] feebly.", 			/* MON_MSG_JERK_FEEBLY */
-	"shrug[s] off the attack.",  /*  MON_MSG_SHRUG_OFF */
-	"snarl[s].",				/*  MON_MSG_SNARL */
-	"snarl[s] with pain.",		/* MON_MSG_SNARL_WITH_PAIN  */
-	"howl[s] in pain.",			/* MON_MSG_HOWL_IN_PAIN  */
-	"howl[s] in agony.",		/* MON_MSG_HOWL_IN_AGONY  */
-	"yelp[s] feebly.",			/* MON_MSG_YELP_FEEBLY  */
-	"yelp[s] in pain.",			/* MON_MSG_YELP_IN_PAIN  */
-	"hiss[es].",				/* MON_MSG_HISS  */
-	"hiss[es] furiously.",		/* MON_MSG_HISS_FURIOUSLY  */
-	"hiss[es] with pain.",		/* MON_MSG_HISS_WITH_PAIN  */
-	"hiss[es] in agony.",		/* MON_MSG_HISS_IN_AGONY  */
-	"rear[s] up in anger.",		/* MON_MSG_REAR_UP_IN_ANGER  */
-	"growl[s] angrily.",		/* MON_MSG_GROWL_ANGRILY  */
-	"mewl[s] in pain.",			/* MON_MSG_MEWL_IN_PAIN  */
-	"mewl[s] pitifully.",		/* MON_MSG_MEWL_PITIFULLY  */
-	"ignore[s] the attack.",	/* MON_MSG_IGNORE_ATTACK  */
-	"looks briefly puzzled",	/* MON_MSG_BRIEF_PUZZLE */
-	"maintain[s] the same shape.", /* MON_MSG_MAINTAIN_SHAPE */
-	"drone[s] angrily.",		/* MON_MSG_DRONE_ANGRILY  */
-	"scuttle[s] about.",		/* MON_MSG_SCUTTLE_ABOUT  */
-	"twitch[es] in pain.",		/* MON_MSG_TWITCH_IN_PAIN  */
-	"flap[s] angrily.",			/* MON_MSG_FLAP_ANGRILY  */
-	"jeer[s] in pain.",			/* MON_MSG_JEER_IN_PAIN  */
-	"squawk[s] with pain.",		/* MON_MSG_SQUAWK_WITH_PAIN  */
-	"twitter[s] in agony.",		/* MON_MSG_TWITTER_IN_AGONY  */
-	"flutter[s] about.",		/* MON_MSG_FLUTTER_ABOUT  */
-	"chirp[s] feebly.",			/* MON_MSG_CHIRP_FEEBLY  */
-	"rattle[s].",				/* MON_MSG_RATTLE  */
-	"clatter[s].",				/* MON_MSG_CLATTER  */
-	"shake[s].",				/* MON_MSG_SHAKE  */
-	"stagger[s].",				/* MON_MSG_STAGGER  */
-	"crumple[s].",				/* MON_MSG_CRUMPLE  */
-	"grunt[s].",				/* MON_MSG_GRUNT  */
-	"grunt[s] with pain.",		/* MON_MSG_GRUNT_WITH_PAIN  */
-	"moan[s].",					/* MON_MSG_MOAN  */
-	"groan[s].",				/* MON_MSG_GROAN  */
-	"hesitate[s].",				/* MON_MSG_HESITATE  */
-	"squeal[s] in pain.",		/* MON_MSG_SQUEAL_IN_PAIN  */
-	"shriek[s] in pain.",		/* MON_MSG_SHRIEK_IN_PAIN  */
-	"shriek[s] in agony.",		/* MON_MSG_SHRIEK_IN_AGONY  */
-	"cr[ies|y] out feebly.",	/* MON_MSG_CRY_OUT_FEEBLY  */
-	"cr[ies|y] out in pain.",	/* MON_MSG_CRY_OUT_IN_PAIN  */
-	"scream[s] in pain.",		/* MON_MSG_SCREAM_IN_PAIN  */
-	"scream[s] in agony.",		/* MON_MSG_SCREAM_IN_AGONY  */
-
 	/* From project_m */ 		/* MON_MSG_DIE */
 	"die[s].",   				/* MON_MSG_DIE  */
 	"[is|are] destroyed.",		/* MON_MSG_DESTROYED */
@@ -2816,8 +2758,20 @@ static char *msg_repository[MAX_MON_MSG + 1] =
 	"disintegrates!",		/* MON_MSG_DISENTEGRATES */
 	"freez[es] and shatter[s]",  /* MON_MSG_FREEZE_SHATTER */
 	"lose[s] some mana!",		/* MON_MSG_MANA_DRAIN */
+	"looks briefly puzzled",	/* MON_MSG_BRIEF_PUZZLE */
+	"maintain[s] the same shape.", /* MON_MSG_MAINTAIN_SHAPE */
 
-
+	/* From message_pain */
+	"[is|are] unharmed.",		/* MON_MSG_UNHARMED  */
+	
+	/* Dummy messages for monster pain - we use edit file info instead. */
+	"",							/* MON_MSG_95 */
+	"",							/* MON_MSG_75 */
+	"",							/* MON_MSG_50 */
+	"",							/* MON_MSG_35 */
+	"",							/* MON_MSG_20 */
+	"",							/* MON_MSG_10 */
+	"",							/* MON_MSG_0 */
 
 	NULL						/* MAX_MON_MSG */
 };
@@ -2864,8 +2818,6 @@ bool multiply_monster(int m_idx)
 
 /*
  * Dump a message describing a monster's reaction to damage
- *
- * Technically should attempt to treat "Beholder"'s as jelly's
  */
 void message_pain(int m_idx, int dam)
 {
@@ -2873,9 +2825,6 @@ void message_pain(int m_idx, int dam)
 	int percentage;
 
 	monster_type *m_ptr = &mon_list[m_idx];
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
-/*	monster_base *rb_ptr = &rb_info[r_ptr->rval]; */
-/*	monster_pain *mp_ptr = &pain_messages[rb_ptr->pain_idx]; */
 	
 	int msg_code = MON_MSG_UNHARMED;
 	char m_name[80];
@@ -2897,212 +2846,23 @@ void message_pain(int m_idx, int dam)
 	tmp = (newhp * 100L) / oldhp;
 	percentage = (int)(tmp);
 	
-    if (strchr("jmvQ", r_ptr->d_char))
-    {
-        if (percentage > 95)
-           msg_code = MON_MSG_BARELY_NOTICE;
-        else if (percentage > 75)
-           msg_code = MON_MSG_FLINCH;
-        else if (percentage > 50)
-           msg_code = MON_MSG_SQUELCH;
-        else if (percentage > 35)
-           msg_code = MON_MSG_QUIVER;
-        else if (percentage > 20)
-           msg_code = MON_MSG_WRITHE_ABOUT;
-        else if (percentage > 10)
-           msg_code = MON_MSG_WRITHE_IN_AGONY;
-        else
-           msg_code = MON_MSG_JERK_LIMPLY;
-    }
-
-    /* Dogs and Hounds */
-    else if (strchr("CZ", r_ptr->d_char))
-    {
-        if (percentage > 95)
-           msg_code = MON_MSG_SHRUG_OFF;
-        else if (percentage > 75)
-           msg_code = MON_MSG_SNARL_WITH_PAIN;
-        else if (percentage > 50)
-           msg_code = MON_MSG_YELP_IN_PAIN;
-        else if (percentage > 35)
-           msg_code = MON_MSG_HOWL_IN_PAIN;
-        else if (percentage > 20)
-           msg_code = MON_MSG_HOWL_IN_AGONY;
-        else if (percentage > 10)
-           msg_code = MON_MSG_WRITHE_IN_AGONY;
-        else
-           msg_code = MON_MSG_YELP_FEEBLY;
-    }
-
-   /* I included the extra pain messages
-    * supported by this patch.  The following lines can be deleted
-    * from below and in the tables if not wanted.  They just add
-    * a little extra flavor from the game. -JG
-    *
-    * They are from Leon Marrick's old 4gai patch, called demoband.
-    */
-
-   /* Snakes, Reptiles, Centipedes */
-   else if (strchr("cJR", r_ptr->d_char))
-   {
-       if (percentage > 95)
-           msg_code = MON_MSG_BARELY_NOTICE;
-       else if (percentage > 75)
-           msg_code = MON_MSG_HISS;
-       else if (percentage > 50)
-           msg_code = MON_MSG_REAR_UP_IN_ANGER;
-       else if (percentage > 35)
-           msg_code = MON_MSG_HISS_FURIOUSLY;
-       else if (percentage > 20)
-           msg_code = MON_MSG_WRITHE_ABOUT;
-       else if (percentage > 10)
-           msg_code = MON_MSG_WRITHE_IN_AGONY;
-       else
-           msg_code = MON_MSG_JERK_LIMPLY;
-   }
-
-   /* Felines */
-   else if (strchr("f", r_ptr->d_char))
-   {
-       if (percentage > 95)
-           msg_code = MON_MSG_SHRUG_OFF;
-       else if (percentage > 75)
-           msg_code = MON_MSG_SNARL;
-       else if (percentage > 50)
-           msg_code = MON_MSG_GROWL_ANGRILY;
-       else if (percentage > 35)
-           msg_code = MON_MSG_HISS_WITH_PAIN;
-       else if (percentage > 20)
-           msg_code = MON_MSG_MEWL_IN_PAIN;
-       else if (percentage > 10)
-           msg_code = MON_MSG_HISS_IN_AGONY;
-       else
-           msg_code = MON_MSG_MEWL_PITIFULLY;
-   }
-
-   /* Ants, Lice, Flies, Insects, Beetles, Spiders */
-   else if (strchr("alFIKS", r_ptr->d_char))
-   {
-       if (percentage > 95)
-           msg_code = MON_MSG_IGNORE_ATTACK;
-       else if (percentage > 75)
-           msg_code = MON_MSG_DRONE_ANGRILY;
-       else if (percentage > 50)
-           msg_code = MON_MSG_SCUTTLE_ABOUT;
-       else if (percentage > 35)
-           msg_code = MON_MSG_TWITCH_IN_PAIN;
-       else if (percentage > 20)
-           msg_code = MON_MSG_JERK_IN_PAIN;
-       else if (percentage > 10)
-           msg_code = MON_MSG_JERK_IN_AGONY;
-       else
-           msg_code = MON_MSG_JERK_FEEBLY;
-   }
-
-   /* Birds */
-   else if (strchr("B", r_ptr->d_char))
-   {
-       if (percentage > 95)
-           msg_code = MON_MSG_SHRUG_OFF;
-       else if (percentage > 75)
-           msg_code = MON_MSG_FLAP_ANGRILY;
-       else if (percentage > 50)
-           msg_code = MON_MSG_JEER_IN_PAIN;
-       else if (percentage > 35)
-           msg_code = MON_MSG_SQUAWK_WITH_PAIN;
-       else if (percentage > 20)
-           msg_code = MON_MSG_TWITTER_IN_AGONY;
-       else if (percentage > 10)
-           msg_code = MON_MSG_FLUTTER_ABOUT;
-       else
-           msg_code = MON_MSG_CHIRP_FEEBLY;
-   }
-
-   /* Skeletons (ignore, rattle, stagger) */
-   else if (strchr("s", r_ptr->d_char))
-   {
-       if (percentage > 95)
-           msg_code = MON_MSG_IGNORE_ATTACK;
-       else if (percentage > 75)
-           msg_code = MON_MSG_JERK;
-       else if (percentage > 50)
-       msg_code = MON_MSG_RATTLE;
-       else if (percentage > 35)
-           msg_code = MON_MSG_CLATTER;
-       else if (percentage > 20)
-           msg_code = MON_MSG_SHAKE;
-       else if (percentage > 10)
-           msg_code = MON_MSG_STAGGER;
-       else
-           msg_code = MON_MSG_CRUMPLE;
-   }
-
-   /* Zombies and Mummies (ignore, groan, stagger) */
-   else if (strchr("z", r_ptr->d_char))
-   {
-       if (percentage > 95)
-           msg_code = MON_MSG_IGNORE_ATTACK;
-       else if (percentage > 75)
-           msg_code = MON_MSG_GRUNT;
-       else if (percentage > 50)
-           msg_code = MON_MSG_JERK;
-       else if (percentage > 35)
-           msg_code = MON_MSG_MOAN;
-       else if (percentage > 20)
-           msg_code = MON_MSG_GROAN;
-       else if (percentage > 10)
-           msg_code = MON_MSG_HESITATE;
-       else
-           msg_code = MON_MSG_STAGGER;
-   }
-
-   /*
-    * End extra monster pain messages
-    * If they are kept, the strchr if statement below
-    * should probably be edited.  -JG */
-
-    /* One type of monsters (ignore,squeal,shriek) */
-    else if (strchr("FIKMRSXabclqrst", r_ptr->d_char))
-    {
-        if (percentage > 95)
-           msg_code = MON_MSG_IGNORE_ATTACK;
-        else if (percentage > 75)
-           msg_code = MON_MSG_GRUNT_WITH_PAIN;
-        else if (percentage > 50)
-           msg_code = MON_MSG_SQUEAL_IN_PAIN;
-        else if (percentage > 35)
-           msg_code = MON_MSG_SHRIEK_IN_PAIN;
-        else if (percentage > 20)
-           msg_code = MON_MSG_SHRIEK_IN_AGONY;
-        else if (percentage > 10)
-           msg_code = MON_MSG_WRITHE_IN_AGONY;
-        else
-           msg_code = MON_MSG_CRY_OUT_FEEBLY;
-    }
-
-    /* Another type of monsters (shrug,cry,scream) */
-    else
-    {
-        if (percentage > 95)
-           msg_code = MON_MSG_SHRUG_OFF;
-        else if (percentage > 75)
-           msg_code = MON_MSG_GRUNT_WITH_PAIN;
-        else if (percentage > 50)
-           msg_code = MON_MSG_CRY_OUT_IN_PAIN;
-        else if (percentage > 35)
-           msg_code = MON_MSG_SCREAM_IN_PAIN;
-        else if (percentage > 20)
-           msg_code = MON_MSG_SCREAM_IN_AGONY;
-        else if (percentage > 10)
-           msg_code = MON_MSG_WRITHE_IN_AGONY;
-        else
-           msg_code = MON_MSG_CRY_OUT_FEEBLY;
-   }
-       
-   /* Save the message for later */
+	if (percentage > 95)
+	   msg_code = MON_MSG_95;
+	else if (percentage > 75)
+	   msg_code = MON_MSG_75;
+	else if (percentage > 50)
+	   msg_code = MON_MSG_50;
+	else if (percentage > 35)
+	   msg_code = MON_MSG_35;
+	else if (percentage > 20)
+	   msg_code = MON_MSG_20;
+	else if (percentage > 10)
+	   msg_code = MON_MSG_10;
+	else
+	   msg_code = MON_MSG_0;
+	
    add_monster_message(m_name, m_idx, msg_code);
 }
-
 
 #define SINGULAR_MON   1
 #define PLURAL_MON     2
@@ -3113,17 +2873,39 @@ void message_pain(int m_idx, int dam)
  * The contents of the returned value will change with the next call
  * to this function
  */
-static char *get_mon_msg_action(byte msg_code, bool do_plural)
+static char *get_mon_msg_action(byte msg_code, bool do_plural, int r_idx)
 {
    static char buf[200];
-   char *action;
+   const char *action;
+   monster_race *r_ptr = &r_info[r_idx];
+   int pain_idx = rb_info[r_ptr->rval].pain_idx;
+   monster_pain *mp_ptr = &pain_messages[pain_idx];
 
    u16b n = 0;
    /* Regular text */
    byte flag = 0;
-
+   
+	/* Find the action string */
+	if (msg_code == MON_MSG_95)
+		action = mp_ptr->messages[0];
+	else if (msg_code == MON_MSG_75)
+		action = mp_ptr->messages[1];
+	else if (msg_code == MON_MSG_50)
+		action = mp_ptr->messages[2];
+	else if (msg_code == MON_MSG_35)
+		action = mp_ptr->messages[3];
+	else if (msg_code == MON_MSG_20)
+		action = mp_ptr->messages[4];
+	else if (msg_code == MON_MSG_10)
+		action = mp_ptr->messages[5];
+	else if (msg_code == MON_MSG_0)
+		action = mp_ptr->messages[6];
+	else
+		action = msg_repository[msg_code];
+   
+   
    /* Put the message characters in the buffer */
-   for (action = msg_repository[msg_code]; *action; action++)
+   for (; *action; action++)
    {
        /* Check available space */
        if (n >= (sizeof(buf) - 1)) break;
@@ -3328,7 +3110,7 @@ void flush_monster_messages(void)
        }
 
        /* Get the proper message action */
-       action = get_mon_msg_action(mon_msg[i].msg_code, (count > 1));
+       action = get_mon_msg_action(mon_msg[i].msg_code, (count > 1), r_idx);
 
        /* Special message? */
        action_only = (*action == '~');

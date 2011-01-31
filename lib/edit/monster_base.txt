@@ -52,7 +52,7 @@ D:Angel
 
 N:3:ant
 G:a
-M:4
+M:7
 F:ANIMAL | WEIRD_MIND
 F:BASH_DOOR
 D:Ant
@@ -65,7 +65,7 @@ D:Bat
 
 N:5:bird
 G:B
-M:1
+M:8
 F:ANIMAL
 D:Bird
 
@@ -77,7 +77,7 @@ D:Canine (Dog)
 
 N:7:centipede
 G:c
-M:4
+M:5
 F:ANIMAL | WEIRD_MIND
 D:Centipede
 
@@ -99,7 +99,7 @@ D:Dragon
 
 N:10:dragon fly
 G:F
-M:4
+M:7
 F:ANIMAL | WEIRD_MIND
 F:RAND_50 | BASH_DOOR
 F:FORCE_SLEEP
@@ -120,7 +120,7 @@ D:Elemental
 
 N:13:feline
 G:f
-M:1
+M:6
 F:ANIMAL
 D:Feline (Cat)
 
@@ -177,7 +177,7 @@ D:Icky Thing
 
 N:21:insect
 G:I
-M:4
+M:7
 F:ANIMAL | WEIRD_MIND | MULTIPLY
 F:RAND_25 | RAND_50
 D:Insect
@@ -192,7 +192,7 @@ D:Jelly
 
 N:23:killer beetle
 G:K
-M:4
+M:7
 F:ANIMAL | WEIRD_MIND
 F:BASH_DOOR
 D:Killer Beetle
@@ -217,7 +217,7 @@ D:Lich
 
 N:26:louse
 G:l
-M:4
+M:7
 F:ANIMAL | WEIRD_MIND | MULTIPLY
 F:RAND_50
 D:Louse
@@ -318,7 +318,7 @@ D:Quylthulg
 
 N:39:reptile
 G:R
-M:4
+M:5
 F:ANIMAL
 D:Reptile/Amphibian
 
@@ -330,21 +330,21 @@ D:Rodent
 
 N:41:skeleton
 G:s
-M:4
+M:9
 F:UNDEAD | EVIL | COLD_BLOOD
 F:IM_COLD | IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP
 D:Skeleton
 
 N:42:snake
 G:J
-M:1
+M:5
 F:ANIMAL
 F:BASH_DOOR
 D:Snake
 
 N:43:spider
 G:S
-M:4
+M:7
 F:BASH_DOOR
 D:Spider/Scorpion/Tick
 
@@ -424,7 +424,7 @@ D:Zephyr Hound
 
 N:54:zombie
 G:z
-M:1
+M:10
 F:UNDEAD | EVIL | COLD_BLOOD
 F:OPEN_DOOR | BASH_DOOR
 F:IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
