@@ -2026,8 +2026,8 @@ void destroy_area(int y1, int x1, int r, bool full)
 			/* Delete the monster (if any) */
 			delete_monster(y, x);
 
-			/* Destroy "valid" grids */
-			if (cave_valid_bold(y, x))
+			/* Destroy any grid that isn't a permament wall */
+			if (!cave_isperm(cave, y, x))
 			{
 				int feat = FEAT_FLOOR;
 
@@ -2971,7 +2971,7 @@ bool fear_monster(int dir, int plev, bool aware)
 
 bool teleport_monster(int dir)
 {
-	int flg = PROJECT_BEAM | PROJECT_KILL;
+	int flg = PROJECT_STOP | PROJECT_KILL;
 	return (project_hook(GF_AWAY_ALL, dir, MAX_SIGHT * 5, flg));
 }
 

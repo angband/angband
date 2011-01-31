@@ -3663,11 +3663,22 @@ bool cave_isempty(struct cave *c, int y, int x) {
 }
 
 bool cave_iswall(struct cave *c, int y, int x) {
+	return cave_isrock(c, y, x) || cave_isperm(c, y, x);
+}
+
+bool cave_isrock(struct cave*c, int y, int x) {
 	switch (c->feat[y][x]) {
 		case FEAT_WALL_EXTRA:
 		case FEAT_WALL_INNER:
 		case FEAT_WALL_OUTER:
-		case FEAT_WALL_SOLID:
+		case FEAT_WALL_SOLID: return TRUE;
+	
+		default: return FALSE;
+	}
+	}
+
+bool cave_isperm(struct cave *c, int y, int x) {
+	switch (c->feat[y][x]) {
 		case FEAT_PERM_EXTRA:
 		case FEAT_PERM_INNER:
 		case FEAT_PERM_OUTER:

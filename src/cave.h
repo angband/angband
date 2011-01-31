@@ -81,6 +81,9 @@ extern bool cave_isempty(struct cave *c, int y, int x);
  */
 extern bool cave_iswall(struct cave *c, int y, int x);
 
+extern bool cave_isrock(struct cave *c, int y, int x);
+extern bool cave_isperm(struct cave *c, int y, int x);
+
 /* Old cave_clean_bold() */
 extern bool cave_canputitem(struct cave *c, int y, int x);
 /* Old cave_floor_bold() */

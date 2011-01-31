@@ -996,6 +996,13 @@ void delete_object(int y, int x)
 		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
 
+		/* Preserve unseen artifacts */
+		if artifact_p(o_ptr)
+		{
+			artifact_type *a_ptr = artifact_of(o_ptr);
+			if (!object_was_sensed(o_ptr)) a_ptr->created=FALSE;
+		}
+
 		/* Wipe the object */
 		object_wipe(o_ptr);
 
