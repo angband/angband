@@ -119,6 +119,9 @@ bool target_able(int m_idx)
 
 	/* Monster must be visible */
 	if (!m_ptr->ml) return (FALSE);
+	
+	/* Player must be aware this is a monster */
+	if (m_ptr->unaware) return (FALSE);
 
 	/* Monster must be projectable */
 	if (!projectable(py, px, m_ptr->fy, m_ptr->fx, PROJECT_NONE))
@@ -126,9 +129,6 @@ bool target_able(int m_idx)
 
 	/* Hack -- no targeting hallucinations */
 	if (p_ptr->timed[TMD_IMAGE]) return (FALSE);
-
-	/* Hack -- Never target trappers XXX XXX XXX */
-	/* if (CLEAR_ATTR && (CLEAR_CHAR)) return (FALSE); */
 
 	/* Assume okay */
 	return (TRUE);
@@ -343,7 +343,7 @@ static bool target_set_interactive_accept(int y, int x)
 		monster_type *m_ptr = &mon_list[cave->m_idx[y][x]];
 
 		/* Visible monsters */
-		if (m_ptr->ml) return (TRUE);
+		if (m_ptr->ml && !m_ptr->unaware) return (TRUE);
 	}
 
 	/* Scan all objects in the grid */
@@ -686,7 +686,7 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode)
 			monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 			/* Visible */
-			if (m_ptr->ml)
+			if (m_ptr->ml && !m_ptr->unaware)
 			{
 				bool recall = FALSE;
 

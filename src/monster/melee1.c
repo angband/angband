@@ -155,6 +155,12 @@ bool make_attack_normal(int m_idx)
 	/* Not allowed to attack */
 	if (rf_has(r_ptr->flags, RF_NEVER_BLOW)) return (FALSE);
 
+	/* Become aware of monster
+	if (m_ptr->unaware)
+	{
+		m_ptr->unaware = FALSE;
+		update_mon(m_idx, FALSE);
+	} */
 
 	/* Total armor */
 	ac = p_ptr->state.ac + p_ptr->state.to_a;

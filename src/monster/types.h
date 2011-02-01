@@ -176,6 +176,7 @@ typedef struct
 	byte mflag;			/* Extra monster flags */
 
 	bool ml;			/* Monster is "visible" */
+	bool unaware;		/* Player doesn't know this is a monster */
 
 	s16b hold_o_idx;	/* Object being held (if any) */
 

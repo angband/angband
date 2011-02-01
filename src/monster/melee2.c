@@ -751,6 +751,10 @@ bool make_attack_spell(int m_idx)
 	/* Abort if no spell was chosen */
 	if (!thrown_spell) return (FALSE);
 
+	/* If we see an unaware monster try to cast a spell, become aware of it */
+	if (m_ptr->unaware)
+		m_ptr->unaware = FALSE;
+
 	/* Calculate spell failure rate */
 	failrate = 25 - (rlev + 3) / 4;
 
@@ -3029,6 +3033,21 @@ static void process_monster(struct cave *c, int m_idx)
 			/* Wake the monster */
 			mon_clear_timed(m_idx, MON_TMD_SLEEP, MON_TMD_FLG_NOTIFY);
 
+			/* Notice the "waking up" */
+			if (m_ptr->ml && !m_ptr->unaware)
+			{
+				char m_name[80];
+
+				/* Get the monster name */
+				monster_desc(m_name, sizeof(m_name), m_ptr, 0);
+
+				/* Dump a message */
+				msg("%^s wakes up.", m_name);
+
+				/* Hack -- Update the health bar */
+				if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
+			}
+
 			/* Efficiency XXX XXX */
 			return;
 		}
@@ -3051,7 +3070,7 @@ static void process_monster(struct cave *c, int m_idx)
 				mon_dec_timed(m_idx, MON_TMD_SLEEP, d , MON_TMD_FLG_NOMESSAGE);
 
 				/* Notice the "not waking up" */
-				if (m_ptr->ml)
+				if (m_ptr->ml && !m_ptr->unaware)
 				{
 					/* Hack -- Count the ignores */
 					if (l_ptr->ignore < MAX_UCHAR)
@@ -3068,7 +3087,7 @@ static void process_monster(struct cave *c, int m_idx)
 				woke_up = mon_clear_timed(m_idx, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
 
 				/* Notice the "waking up" */
-				if (m_ptr->ml)
+				if (m_ptr->ml && !m_ptr->unaware)
 				{
 					char m_name[80];
 
@@ -3716,6 +3735,10 @@ static void process_monster(struct cave *c, int m_idx)
 	{
 		mon_clear_timed(m_idx, MON_TMD_FEAR, MON_TMD_FLG_NOTIFY);
 	}
+	
+	/* If we see an unaware monster do something, become aware of it */
+	if (do_turn && m_ptr->unaware)
+		m_ptr->unaware = FALSE;
 }
 
 

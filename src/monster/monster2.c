@@ -794,8 +794,8 @@ void display_monlist(void)
 		m_ptr = &mon_list[i];
 		r_ptr = &r_info[m_ptr->r_idx];
 
-		/* Only consider visible monsters */
-		if (!m_ptr->ml) continue;
+		/* Only consider visible, aware monsters */
+		if (!m_ptr->ml || m_ptr->unaware) continue;
 
 		/* Take a pointer to this monster visibility entry */
 		v = &list[m_ptr->r_idx];
@@ -1449,7 +1449,7 @@ void update_mon(int m_idx, bool full)
 			}
 		}
 
-		/* Normal line of sight, and not blind */
+		/* Normal line of sight and player is not blind */
 		if (player_has_los_bold(fy, fx) && !p_ptr->timed[TMD_BLIND])
 		{
 			/* Use "infravision" */
@@ -2031,7 +2031,14 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 
 	/* Radiate light? */
 	if (rf_has(r_ptr->flags, RF_HAS_LITE)) p_ptr->update |= PU_UPDATE_VIEW;
-
+	
+	/* Is this obviously a monster? (Mimics etc. aren't) */
+	if (rf_has(r_ptr->flags, RF_UNAWARE)) 
+		n_ptr->unaware = TRUE;
+	else
+		n_ptr->unaware = FALSE;
+	
+		
 	/* Place the monster in the dungeon */
 	if (!monster_place(y, x, n_ptr)) return (FALSE);
 
