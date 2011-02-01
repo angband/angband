@@ -1933,6 +1933,10 @@ void do_cmd_walk(cmd_code code, cmd_arg args[])
 	/* Apply confusion if necessary */
 	confuse_dir(&dir);
 
+	/* Confused movements use energy no matter what */
+	if (dir != args[0].direction)	
+		p_ptr->energy_use = 100;
+	
 	/* Verify walkability */
 	y = p_ptr->py + ddy[dir];
 	x = p_ptr->px + ddx[dir];
