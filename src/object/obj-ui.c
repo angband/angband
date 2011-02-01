@@ -26,7 +26,7 @@
  * Used by show_inven(), show_equip(), and show_floor().  Mode flags are
  * documented in object.h
  */
-static void show_obj_list(int num_obj, char labels[50][80], object_type *objects[50], olist_detail_t mode)
+static void show_obj_list(int num_obj, int num_head, char labels[50][80], object_type *objects[50], olist_detail_t mode)
 {
 	int i, row = 0, col = 0;
 	int attr;
@@ -50,7 +50,12 @@ static void show_obj_list(int num_obj, char labels[50][80], object_type *objects
 
 		/* Null objects are used to skip lines, or display only a label */		
 		if (!o_ptr || !o_ptr->kind)
-			strnfmt(o_name[i], sizeof(o_name[i]), "(nothing)");
+		{
+			if (i < num_head)
+				strnfmt(o_name[i], sizeof(o_name[i]), "");
+			else
+				strnfmt(o_name[i], sizeof(o_name[i]), "(nothing)");
+		}
 		else
 			object_desc(o_name[i], sizeof(o_name[i]), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
@@ -255,7 +260,11 @@ void show_inven(olist_detail_t mode)
 	}
 
 	/* Display the object list */
-	show_obj_list(num_obj, labels, objects, mode);
+	if (in_term)
+		/* Term window starts with a burden header */
+		show_obj_list(num_obj, 1, labels, objects, mode);
+	else
+		show_obj_list(num_obj, 0, labels, objects, mode);
 }
 
 
@@ -335,7 +344,7 @@ void show_equip(olist_detail_t mode)
 	}
 
 	/* Display the object list */
-	show_obj_list(num_obj, labels, objects, mode);
+	show_obj_list(num_obj, 0, labels, objects, mode);
 }
 
 
@@ -377,7 +386,7 @@ void show_floor(const int *floor_list, int floor_num, olist_detail_t mode)
 	}
 
 	/* Display the object list */
-	show_obj_list(num_obj, labels, objects, mode);
+	show_obj_list(num_obj, 0, labels, objects, mode);
 }
 
 
