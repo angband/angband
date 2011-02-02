@@ -1927,14 +1927,6 @@ int rd_dungeon(void)
 		return (0);
 	}
 
-	/* Ignore illegal dungeons */
-	if ((ymax != DUNGEON_HGT) || (xmax != DUNGEON_WID))
-	{
-		/* XXX XXX XXX */
-		note(format("Ignoring illegal dungeon size (%d,%d).", ymax, xmax));
-		return (0);
-	}
-
 	cave->width = xmax;
 	cave->height = ymax;
 
