@@ -492,7 +492,7 @@ B:CRAWL:HURT:1d1
 F:RAND_50 | BASH_DOOR
 D:It is about four feet long and carnivorous.
 
-N:35:Squire
+N:35:Novice warrior
 T:person
 C:u
 I:110:23:20:16:5
@@ -504,7 +504,7 @@ F:DROP_60
 F:OPEN_DOOR
 D:An inexperienced but tough warrior.
 
-N:36:Pickpocket
+N:36:Novice rogue
 T:person
 C:b
 I:110:20:20:12:5
@@ -516,7 +516,7 @@ F:DROP_60
 F:OPEN_DOOR | TAKE_ITEM
 D:A rather shifty individual.
 
-N:37:Acolyte
+N:37:Novice priest
 T:person
 C:g
 I:110:18:20:10:10
@@ -530,7 +530,7 @@ S:1_IN_12
 S:CAUSE_1 | HEAL | SCARE
 D:He is tripping over his priestly robes.
 
-N:38:Hedge mage
+N:38:Novice mage
 T:person
 C:r
 I:110:15:20:6:5
@@ -884,7 +884,7 @@ W:4:1:0:8
 B:BITE:HURT:1d5
 D:It is an armoured lizard with a powerful bite.
 
-N:69:Scout
+N:69:Novice ranger
 T:person
 C:W
 I:110:27:20:8:5
@@ -899,7 +899,7 @@ S:1_IN_9
 S:ARROW_1 | MISSILE
 D:An agile hunter, ready and relaxed.
 
-N:70:Defender
+N:70:Novice paladin
 T:person
 C:w
 I:110:27:20:16:5
