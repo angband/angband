@@ -24,6 +24,7 @@
 #include "object/tvalsval.h"
 #include "object/object.h"
 #include "target.h"
+#include "z-term.h"
 
 /*
  * Mega-hack - Fix plural names of monsters
@@ -2037,7 +2038,10 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 		n_ptr->unaware = TRUE;
 	else
 		n_ptr->unaware = FALSE;
-	
+
+	/* Set the color if necessary */
+	if (rf_has(r_ptr->flags, RF_ATTR_RAND))
+		n_ptr->attr = randint1(BASIC_COLORS - 1);
 		
 	/* Place the monster in the dungeon */
 	if (!monster_place(y, x, n_ptr)) return (FALSE);

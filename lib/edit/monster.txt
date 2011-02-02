@@ -2913,6 +2913,7 @@ W:18:3:0:60
 B:HIT:POISON:3d4
 B:HIT:HURT:2d3
 B:HIT:HURT:2d3
+F:ATTR_RAND
 S:1_IN_6
 S:BO_COLD
 D:A strange creature that disguises itself as a discarded potion bottle to lure
@@ -4406,6 +4407,7 @@ B:HIT:POISON:3d4
 B:HIT:POISON:3d4
 B:HIT:POISON:3d4
 B:HIT:POISON:3d4
+F:ATTR_RAND
 S:1_IN_4
 S:BO_ACID | BO_COLD | BO_ELEC | BO_FIRE
 S:S_MONSTER
