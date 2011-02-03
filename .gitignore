@@ -6,3 +6,7 @@ configure
 lib/apex/scores.*
 *.out
 lib/save/1000.*
+.project
+.cproject
+*.orig
+*.rej
