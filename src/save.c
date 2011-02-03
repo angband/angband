@@ -811,7 +811,7 @@ void wr_objects(void)
 
 void wr_monsters(void)
 {
-	int i;
+	int i, j;
 
 	if (p_ptr->is_dead)
 		return;
@@ -820,8 +820,7 @@ void wr_monsters(void)
 	wr_u16b(mon_max);
 
 	/* Dump the monsters */
-	for (i = 1; i < mon_max; i++)
-	{
+	for (i = 1; i < mon_max; i++) {
 		const monster_type *m_ptr = &mon_list[i];
 
 		wr_s16b(m_ptr->r_idx);
@@ -832,9 +831,10 @@ void wr_monsters(void)
 		wr_s16b(m_ptr->m_timed[MON_TMD_SLEEP]);
 		wr_byte(m_ptr->mspeed);
 		wr_byte(m_ptr->energy);
-		wr_s16b(m_ptr->m_timed[MON_TMD_STUN]);
-		wr_s16b(m_ptr->m_timed[MON_TMD_CONF]);
-		wr_s16b(m_ptr->m_timed[MON_TMD_FEAR]);
+
+		for (j = 0; j < MON_TMD_MAX; j++)
+			wr_s16b(m_ptr->m_timed[j]);
+
 		wr_byte(0);
 	}
 }

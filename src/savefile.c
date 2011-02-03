@@ -94,7 +94,7 @@ static const struct {
 	{ "stores", wr_stores, 2 },
 	{ "dungeon", wr_dungeon, 1 },
 	{ "objects", wr_objects, 2 },
-	{ "monsters", wr_monsters, 1 },
+	{ "monsters", wr_monsters, 2 },
 	{ "ghost", wr_ghost, 1 },
 	{ "history", wr_history, 1 },
 };
@@ -128,7 +128,8 @@ static const struct {
 	{ "dungeon", rd_dungeon, 1 },
 	{ "objects", rd_objects_1, 1 },
 	{ "objects", rd_objects_2, 2 },
-	{ "monsters", rd_monsters, 1 },
+	{ "monsters", rd_monsters_1, 1 },
+	{ "monsters", rd_monsters_2, 2 },
 	{ "ghost", rd_ghost, 1 },
 	{ "history", rd_history, 1 },
 };
@@ -154,12 +155,13 @@ static u32b buffer_check;
  *
  * Avoid the top two lines, to avoid interference with "note()".
  */
-void note(const char *msg)
+void note(const char *message)
 {
 	static int y = 2;
 
 	/* Draw the message */
-	prt(msg, y, 0);
+	prt(message, y, 0);
+	pause_line(Term->hgt - 1);
 
 	/* Advance one line (wrap if needed) */
 	if (++y >= 24) y = 2;
