@@ -2,6 +2,7 @@
 
 #include "unit-test.h"
 #include "init.h"
+#include "monster/constants.h"
 #include "monster/types.h"
 #include "types.h"
 
