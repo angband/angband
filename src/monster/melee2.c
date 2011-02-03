@@ -440,14 +440,14 @@ static int choose_attack_spell(int m_idx, bitflag f[RSF_SIZE])
 		if (has_escape && ((m_ptr->hp < m_ptr->maxhp / 4) || m_ptr->m_timed[MON_TMD_FEAR]))
 		{
 			/* Choose escape spell */
-			set_spells(&f, RST_ESCAPE);
+			set_spells(f, RST_ESCAPE);
 		}
 
 		/* Still hurt badly, couldn't flee, attempt to heal */
 		else if (has_heal && m_ptr->hp < m_ptr->maxhp / 4)
 		{
 			/* Choose heal spell */
-			set_spells(&f, RST_HEAL);
+			set_spells(f, RST_HEAL);
 		}
 
 		/* Player is close and we have attack spells, blink away */
@@ -455,7 +455,7 @@ static int choose_attack_spell(int m_idx, bitflag f[RSF_SIZE])
 		         has_attack && (randint0(100) < 75))
 		{
 			/* Choose tactical spell */
-			set_spells(&f, RST_TACTIC);
+			set_spells(f, RST_TACTIC);
 		}
 
 		/* We're hurt (not badly), try to heal */
@@ -463,42 +463,42 @@ static int choose_attack_spell(int m_idx, bitflag f[RSF_SIZE])
 		         (randint0(100) < 60))
 		{
 			/* Choose heal spell */
-			set_spells(&f, RST_HEAL);
+			set_spells(f, RST_HEAL);
 		}
 
 		/* Summon if possible (sometimes) */
 		else if (has_summon && (randint0(100) < 50))
 		{
 			/* Choose summon spell */
-			set_spells(&f, RST_SUMMON);
+			set_spells(f, RST_SUMMON);
 		}
 
 		/* Attack spell (most of the time) */
 		else if (has_attack && (randint0(100) < 85))
 		{
 			/* Choose attack spell */
-			set_spells(&f, RST_ATTACK | RST_BOLT | RST_BALL | RST_BREATH);
+			set_spells(f, RST_ATTACK | RST_BOLT | RST_BALL | RST_BREATH);
 		}
 
 		/* Try another tactical spell (sometimes) */
 		else if (has_tactic && (randint0(100) < 50))
 		{
 			/* Choose tactic spell */
-			set_spells(&f, RST_TACTIC);
+			set_spells(f, RST_TACTIC);
 		}
 
 		/* Haste self if we aren't already somewhat hasted (rarely) */
 		else if (has_haste && (randint0(100) < (20 + r_ptr->speed - m_ptr->mspeed)))
 		{
 			/* Choose haste spell */
-			set_spells(&f, RST_HASTE);
+			set_spells(f, RST_HASTE);
 		}
 
 		/* Annoy player (most of the time) */
 		else if (has_annoy && (randint0(100) < 85))
 		{
 			/* Choose annoyance spell */
-			set_spells(&f, RST_ANNOY);
+			set_spells(f, RST_ANNOY);
 		}
 
 		/* Else choose no spell */
@@ -647,7 +647,7 @@ bool make_attack_spell(int m_idx)
 	    randint0(100) < 50)
 
 		/* Require intelligent spells */
-		set_spells(&f, RST_HASTE | RST_ANNOY | RST_ESCAPE | RST_HEAL | RST_TACTIC | RST_SUMMON);
+		set_spells(f, RST_HASTE | RST_ANNOY | RST_ESCAPE | RST_HEAL | RST_TACTIC | RST_SUMMON);
 
 	/* Remove the "ineffective" spells */
 	remove_bad_spells(m_idx, f);
@@ -660,13 +660,13 @@ bool make_attack_spell(int m_idx)
 			!clean_shot(m_ptr->fy, m_ptr->fx, py, px))
 
 			/* Remove spells that will only hurt friends */
-			set_spells(&f, ~RST_BOLT);
+			set_spells(f, ~RST_BOLT);
 
 		/* Check for a possible summon */
 		if (!(summon_possible(m_ptr->fy, m_ptr->fx)))
 
 			/* Remove summoning spells */
-			set_spells(&f, ~RST_SUMMON);
+			set_spells(f, ~RST_SUMMON);
 	}
 
 	/* No spells left */

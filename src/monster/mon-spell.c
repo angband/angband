@@ -43,7 +43,7 @@ const struct spell_effect spell_effect_table[] =
         #define RSE(a, b, c, d, e, f, g, h, i) \
 				{ RSE_##a, b, c, d, e, f, g, h, i },
 		#define RV(b, x, y, m) {b, x, y, m}
-        #include "list-ranged-effects.h"
+        #include "list-spell-effects.h"
         #undef RSE
 		#undef RV
 };
@@ -147,12 +147,12 @@ void do_side_effects(int spell, int dam)
 			 * 2. Resistance to the attack type if it affords no immunity
 			 * 3. Resistance to the specific side-effect
 			 */
-			if ((rs_ptr->gf && check_for_resist(rs_ptr->gf)) ||
+/*			if ((rs_ptr->gf && check_for_resist(rs_ptr->gf)) ||
 					p_ptr->state.flags[re_ptr->res_flag]) {
 				msg("You resist the effects!");
 				continue;
 			}
-
+*/
 			/* Allow saving throw if available */
 			if (re_ptr->save &&
 					randint0(100) < p_ptr->state.skills[SKILL_SAVE]) {
@@ -244,7 +244,7 @@ void do_mon_spell(int spell, int m_idx, bool seen)
 
 	/* Calculate the damage */
 	if (rs_ptr->div)
-		dam = hp_dam(spell, rlev, RANDOMISE);
+		dam = hp_dam(spell, rlev);
 	else
 		dam = nonhp_dam(spell, rlev, RANDOMISE);
 
@@ -260,10 +260,10 @@ void do_mon_spell(int spell, int m_idx, bool seen)
 	}
 
 	if (rs_ptr->gf)
-		(void)project(m_idx, rad, p_ptr->py, p_ptr->px, dam, ra_ptr->gf, flag);
+		(void)project(m_idx, rad, p_ptr->py, p_ptr->px, dam, rs_ptr->gf, flag);
 	else {
 		take_hit(dam, ddesc);
-		do_side_effects(spell);
+		do_side_effects(spell, dam);
 	}
 
 	/* Update monster awareness - XXX need to do opp/imm/vuln also */
@@ -278,7 +278,7 @@ void do_mon_spell(int spell, int m_idx, bool seen)
  * \param f is the set of spell flags we're testing
  * \param type is the spell type(s) we're looking for
  */
-bool test_spells(bitflag f[RSF_SIZE], mon_spell_type type)
+bool test_spells(bitflag *f, mon_spell_type type)
 {
 	const struct mon_spell *rs_ptr;
 	
@@ -295,14 +295,13 @@ bool test_spells(bitflag f[RSF_SIZE], mon_spell_type type)
  * \param f is the set of spell flags we're pruning
  * \param type is the spell type(s) we're allowing
  */
-void set_spells(bitflag *f[RSF_SIZE], mon_spell_type type)
+void set_spells(bitflag *f, mon_spell_type type)
 {
 	const struct mon_spell *rs_ptr;
 
 	for (rs_ptr = mon_spell_table; rs_ptr->index < RSF_MAX; rs_ptr++)
 		if (rsf_has(f, rs_ptr->index) && !(rs_ptr->type & type))
 			rsf_off(f, rs_ptr->index);
-	}
 
 	return;
 }

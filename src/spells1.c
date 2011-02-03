@@ -387,9 +387,9 @@ static byte spell_color(int type)
 		case GF_WATER:		return (TERM_SLATE);
 		case GF_NETHER:		return (TERM_L_GREEN);
 		case GF_CHAOS:		return (TERM_VIOLET);
-		case GF_DISENCHANT:	return (TERM_VIOLET);
+		case GF_DISEN:		return (TERM_VIOLET);
 		case GF_NEXUS:		return (TERM_L_RED);
-		case GF_CONFUSION:	return (TERM_L_UMBER);
+		case GF_CONFU:		return (TERM_L_UMBER);
 		case GF_SOUND:		return (TERM_YELLOW);
 		case GF_SHARD:		return (TERM_UMBER);
 		case GF_FORCE:		return (TERM_UMBER);
@@ -2195,7 +2195,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		}
 
 /* Confusion - no longer used for breaths post-3.2 
-		case GF_CONFUSION:
+		case GF_CONFU:
 		{
 			if (seen) obvious = TRUE;
 			if (seen) rf_on(l_ptr->flags, RF_NO_CONF);
@@ -2215,7 +2215,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		}
 */
 		/* Disenchantment */
-		case GF_DISENCHANT:
+		case GF_DISEN:
 		{
 			if (seen) obvious = TRUE;
 			if (seen) rf_on(l_ptr->flags, RF_RES_DISE);
@@ -3292,7 +3292,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		}
 
 		/* Disenchantment -- see above */
-		case GF_DISENCHANT:
+		case GF_DISEN:
 		{
 			if (blind) msg("You are hit by something strange!");
 			if (p_ptr->state.flags[OF_RES_DISEN])

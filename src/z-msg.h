@@ -107,7 +107,7 @@ enum
 	MSG_BR_GAS        = 94,
 	MSG_BR_FIRE       = 95,
 	MSG_BR_CONF       = 96,
-	MSG_BR_DISENCHANT = 97,
+	MSG_BR_DISEN 	  = 97,
 	MSG_BR_CHAOS      = 98,
 	MSG_BR_SHARDS     = 99,
 	MSG_BR_SOUND      = 100,

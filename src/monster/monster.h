@@ -29,8 +29,8 @@
 /* mon-spell.c */
 void do_mon_spell(int spell, int m_idx, bool seen);
 void do_side_effects(int spell, int dam);
-bool test_spells(bitflag f[RSF_SIZE], mon_spell_type type);
-void set_spells(bitflag *f[RSF_SIZE], mon_spell_type type);
+extern bool test_spells(bitflag *f, mon_spell_type type);
+extern void set_spells(bitflag *f, mon_spell_type type);
 
 /* monster1.c */
 extern bool mon_inc_timed(int m_idx, int idx, int v, u16b flag);

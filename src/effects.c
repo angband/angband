@@ -1894,7 +1894,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			dam = 120 * (100 + boost) / 100;
 			msgt(MSG_BR_CONF, "You breathe confusion.");
-			fire_ball(GF_CONFUSION, dir, dam, 2);
+			fire_ball(GF_CONFU, dir, dam, 2);
 			return TRUE;
 		}
 
@@ -1910,10 +1910,10 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			dam = 220 * (100 + boost) / 100;
 			chance = randint0(2);
-			msgt((chance == 1 ? MSG_BR_CHAOS : MSG_BR_DISENCHANT),
+			msgt((chance == 1 ? MSG_BR_CHAOS : MSG_BR_DISEN),
 					"You breathe %s.",
 					((chance == 1 ? "chaos" : "disenchantment")));
-			fire_ball((chance == 1 ? GF_CHAOS : GF_DISENCHANT),
+			fire_ball((chance == 1 ? GF_CHAOS : GF_DISEN),
 			          dir, dam, 2);
 			return TRUE;
 		}
@@ -1938,7 +1938,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			            ((chance == 2) ? "disenchantment" :
 			             ((chance == 3) ? "sound" : "shards"))));
 			fire_ball(((chance == 1) ? GF_CHAOS :
-			           ((chance == 2) ? GF_DISENCHANT :
+			           ((chance == 2) ? GF_DISEN :
 			            ((chance == 3) ? GF_SOUND : GF_SHARD))),
 			          dir, dam, 2);
 			return TRUE;
