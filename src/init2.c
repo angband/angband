@@ -26,6 +26,7 @@
 #include "init.h"
 #include "macro.h"
 #include "monster/constants.h"
+#include "monster/monster.h"
 #include "object/slays.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
@@ -1421,7 +1422,7 @@ static enum parser_error parse_rb_m(struct parser *p) {
 static const char *r_info_flags[] =
 {
 	#define RF(a, b) #a,
-	#include "list-mon-flags.h"
+	#include "monster/list-mon-flags.h"
 	#undef RF
 	NULL
 };
@@ -1452,7 +1453,7 @@ static enum parser_error parse_rb_f(struct parser *p) {
 static const char *r_info_spell_flags[] =
 {
 	#define RSF(a, b) #a,
-	#include "list-mon-spells.h"
+	#include "monster/list-mon-spells.h"
 	#undef RSF
 	NULL
 };
@@ -1624,7 +1625,7 @@ static enum parser_error parse_r_w(struct parser *p) {
 static const char *r_info_blow_method[] =
 {
 	#define RBM(a, b) #a,
-	#include "list-blow-methods.h"
+	#include "monster/list-blow-methods.h"
 	#undef RBM
 	NULL
 };
@@ -1640,7 +1641,7 @@ static int find_blow_method(const char *name) {
 static const char *r_info_blow_effect[] =
 {
 	#define RBE(a, b) #a,
-	#include "list-blow-effects.h"
+	#include "monster/list-blow-effects.h"
 	#undef RBE
 	NULL
 };
@@ -3554,6 +3555,10 @@ static errr init_other(void)
 
 	cave = cave_new();
 
+	/* Array of stacked monster messages */
+	mon_msg = C_ZNEW(MAX_STORED_MON_MSG, monster_race_message);
+	mon_message_hist = C_ZNEW(MAX_STORED_MON_CODES, monster_message_history);
+
 	/*** Prepare "vinfo" array ***/
 
 	/* Used by "update_view()" */
@@ -4033,6 +4038,10 @@ void cleanup_angband(void)
 
 	/* Free the temp array */
 	FREE(temp_g);
+
+	/* Free the stacked monster messages */
+	FREE(mon_msg);
+	FREE(mon_message_hist);
 
 	/* Free the messages */
 	messages_free();

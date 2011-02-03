@@ -1874,26 +1874,39 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 
 	/* Confusion setting (amount to confuse) */
 	int do_conf = 0;
+	int conf_note = 0;
 
 	/* Stunning setting (amount to stun) */
 	int do_stun = 0;
+	int stun_note = 0;
+
+	/* Slow setting (amount to haste) */
+	int do_slow = 0;
+	int slow_note = 0;
+
+	/* Haste setting (amount to haste) */
+	int do_haste = 0;
+	int haste_note = 0;
 
 	/* Sleep amount (amount to sleep) */
-	int do_sleep = 0;
+	bool do_sleep = FALSE;
+	int sleep_note = 0;
 
 	/* Fear amount (amount to fear) */
 	int do_fear = 0;
-
+	int fear_note = 0;
 
 	/* Hold the monster name */
 	char m_name[80];
 	char m_poss[80];
 
+	int m_idx = cave->m_idx[y][x];
+
 	/* Assume no note */
-	const char *note = NULL;
+	int m_note = MON_MSG_NONE;
 
 	/* Assume a default death */
-	const char *note_dies = " dies.";
+	byte note_dies = MON_MSG_DIE;
 
 
 	/* Walls protect monsters */
@@ -1901,14 +1914,14 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 
 
 	/* No monster here */
-	if (!(cave->m_idx[y][x] > 0)) return (FALSE);
+	if (!(m_idx > 0)) return (FALSE);
 
 	/* Never affect projector */
-	if (cave->m_idx[y][x] == who) return (FALSE);
+	if (m_idx == who) return (FALSE);
 
 
 	/* Obtain monster info */
-	m_ptr = &mon_list[cave->m_idx[y][x]];
+	m_ptr = &mon_list[m_idx];
 	r_ptr = &r_info[m_ptr->r_idx];
 	l_ptr = &l_list[m_ptr->r_idx];
 	name = r_ptr->name;
@@ -1930,7 +1943,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 	if (monster_is_unusual(r_ptr))
 	{
 		/* Special note at death */
-		note_dies = " is destroyed.";
+		note_dies = MON_MSG_DESTROYED;
 	}
 
 
@@ -1951,7 +1964,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (seen) rf_on(l_ptr->flags, RF_IM_ACID);
 			if (rf_has(r_ptr->flags, RF_IM_ACID))
 			{
-				note = " resists a lot.";
+				m_note = MON_MSG_RESIST_A_LOT;
 				dam /= 9;
 			}
 			break;
@@ -1964,7 +1977,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (seen) rf_on(l_ptr->flags, RF_IM_ELEC);
 			if (rf_has(r_ptr->flags, RF_IM_ELEC))
 			{
-				note = " resists a lot.";
+				m_note = MON_MSG_RESIST_A_LOT;
 				dam /= 9;
 			}
 			break;
@@ -1981,13 +1994,13 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			}
 			if (rf_has(r_ptr->flags, RF_IM_FIRE))
 			{
-				note = " resists a lot.";
+				m_note = MON_MSG_RESIST_A_LOT;
 				dam /= 9;
 			}
 			else if (rf_has(r_ptr->flags, RF_HURT_FIRE))
 			{
-				note = " catches on fire!";
-				note_dies = " disintegrates!";
+				m_note = MON_MSG_CATCH_FIRE;
+				note_dies = MON_MSG_DISENTEGRATES;
 				dam *= 2;
 			}
 			break;
@@ -2012,13 +2025,13 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			
 			if (rf_has(r_ptr->flags, RF_IM_COLD))
 			{
-				note = " resists a lot.";
+				m_note = MON_MSG_RESIST_A_LOT;
 				dam /= 9;
 			}
 			else if (rf_has(r_ptr->flags, RF_HURT_COLD))
 			{
-				note = " is badly frozen!";
-				note_dies = " freezes and shatters!";
+				m_note = MON_MSG_BADLY_FROZEN;
+				note_dies = MON_MSG_FREEZE_SHATTER;
 				dam *= 2;
 			}
 			break;
@@ -2031,7 +2044,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (seen) rf_on(l_ptr->flags, RF_IM_POIS);
 			if (rf_has(r_ptr->flags, RF_IM_POIS))
 			{
-				note = " resists a lot.";
+				m_note = MON_MSG_RESIST_A_LOT;
 				dam /= 9;
 			}
 			break;
@@ -2045,7 +2058,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (rf_has(r_ptr->flags, RF_EVIL))
 			{
 				dam *= 2;
-				note = " is hit hard.";
+				m_note = MON_MSG_HIT_HARD;
 			}
 			break;
 		}
@@ -2064,7 +2077,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (seen) rf_on(l_ptr->flags, RF_RES_PLAS);
 			if (rf_has(r_ptr->flags, RF_RES_PLAS))
 			{
-				note = " resists.";
+				m_note = MON_MSG_RESIST;
 				dam *= 3; dam /= (randint1(6)+6);
 			}
 			break;
@@ -2101,19 +2114,19 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 
 			if (rf_has(r_ptr->flags, RF_UNDEAD))
 			{
-				note = " is immune.";
+				m_note = MON_MSG_IMMUNE;
 				dam = 0;
 			}
 			else if (rf_has(r_ptr->flags, RF_RES_NETH) ||
 			         rsf_has(r_ptr->spell_flags, RSF_BR_NETH))
 			{
-				note = " resists.";
+				m_note = MON_MSG_RESIST;
 				dam *= 3; dam /= (randint1(6)+6);
 			}
 			else if (rf_has(r_ptr->flags, RF_EVIL))
 			{
 				dam /= 2;
-				note = " resists somewhat.";
+				m_note = MON_MSG_RESIST_SOMEWHAT;
 			}
 			break;
 		}
@@ -2125,7 +2138,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (seen) rf_on(l_ptr->flags, RF_IM_WATER);
 			if (rf_has(r_ptr->flags, RF_IM_WATER))
 			{
-				note = " is immune.";
+				m_note = MON_MSG_IMMUNE;
 				dam = 0;
 			}
 			break;
@@ -2143,7 +2156,6 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 				/* Learn about breathers through resistance */
 				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_CHAO);
 
-				note = " resists.";
 				dam *= 3; dam /= (randint1(6)+6);
 				do_poly = FALSE;
 			}
@@ -2159,7 +2171,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 				/* Learn about breathers through resistance */
 				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_SHAR);
 
-				note = " resists.";
+				m_note = MON_MSG_RESIST;
 				dam *= 3; dam /= (randint1(6)+6);
 			}
 			break;
@@ -2176,7 +2188,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 				/* Learn about breathers through resistance */
 				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_SOUN);
 
-				note = " resists.";
+				m_note = MON_MSG_RESIST;
 				dam *= 2; dam /= (randint1(6)+6);
 			}
 			break;
@@ -2193,12 +2205,10 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			{
 				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_CONF);
 
-				note = " resists.";
 				dam *= 2; dam /= (randint1(6)+6);
 			}
 			else if (rf_has(r_ptr->flags, RF_NO_CONF))
 			{
-				note = " resists somewhat.";
 				dam /= 2;
 			}
 			break;
@@ -2211,7 +2221,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (seen) rf_on(l_ptr->flags, RF_RES_DISE);
 			if (rf_has(r_ptr->flags, RF_RES_DISE))
 			{
-				note = " resists.";
+				m_note = MON_MSG_RESIST;
 				dam *= 3; dam /= (randint1(6)+6);
 			}
 			break;
@@ -2224,7 +2234,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (seen) rf_on(l_ptr->flags, RF_RES_NEXUS);
 			if (rf_has(r_ptr->flags, RF_RES_NEXUS))
 			{
-				note = " resists.";
+				m_note = MON_MSG_RESIST;
 				dam *= 3; dam /= (randint1(6)+6);
 			}
 			break;
@@ -2241,7 +2251,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 				/* Learn about breathers through resistance */
 				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_WALL);
 
-				note = " resists.";
+				m_note = MON_MSG_RESIST;
 				dam *= 3; dam /= (randint1(6)+6);
 			}
 			break;
@@ -2256,7 +2266,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 				/* Learn about breathers through resistance */
 				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_INER);
 
-				note = " resists.";
+				m_note = MON_MSG_RESIST;
 				dam *= 3; dam /= (randint1(6)+6);
 			}
 			break;
@@ -2271,7 +2281,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 				/* Learn about breathers through resistance */
 				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_TIME);
 
-				note = " resists.";
+				m_note = MON_MSG_RESIST;
 				dam *= 3; dam /= (randint1(6)+6);
 			}
 			break;
@@ -2291,7 +2301,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 				/* Learn about breathers through resistance */
 				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_GRAV);
 
-				note = " resists.";
+				m_note = MON_MSG_RESIST;
 				dam *= 3; dam /= (randint1(6)+6);
 				do_dist = 0;
 			}
@@ -2323,7 +2333,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			}
 			if (monster_is_unusual(r_ptr))
 			{
-				note = " is unaffected!";
+				m_note = MON_MSG_UNAFFECTED;
 				obvious = FALSE;
 				dam = 0;
 			}
@@ -2357,7 +2367,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			/* Attempt to clone. */
 			if (multiply_monster(cave->m_idx[y][x]))
 			{
-				note = " spawns!";
+				m_note = MON_MSG_SPAWN;
 			}
 
 			/* No "real" damage */
@@ -2373,7 +2383,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (seen) obvious = TRUE;
 
 			/* Wake up */
-			wake_monster(m_ptr);
+			mon_clear_timed(m_idx, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
 
 			/* Heal */
 			m_ptr->hp += dam;
@@ -2385,7 +2395,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (p_ptr->health_who == cave->m_idx[y][x]) p_ptr->redraw |= (PR_HEALTH);
 
 			/* Message */
-			note = " looks healthier.";
+			else m_note = MON_MSG_HEALTHIER;
 
 			/* No "real" damage */
 			dam = 0;
@@ -2399,8 +2409,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (seen) obvious = TRUE;
 
 			/* Speed up */
-			if (m_ptr->mspeed < 150) m_ptr->mspeed += 10;
-			note = " starts moving faster.";
+			do_haste = TRUE;
 
 			/* No "real" damage */
 			dam = 0;
@@ -2413,20 +2422,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		{
 			if (seen) obvious = TRUE;
 
-			/* Powerful monsters can resist */
-			if (rf_has(r_ptr->flags, RF_UNIQUE) ||
-			    (r_ptr->level > randint1((dam - 10) < 1 ? 1 : (dam - 10)) + 10))
-			{
-				note = " is unaffected!";
-				obvious = FALSE;
-			}
-
-			/* Normal monsters slow down */
-			else
-			{
-				if (m_ptr->mspeed > 60) m_ptr->mspeed -= 10;
-				note = " starts moving slower.";
-			}
+			do_slow = TRUE;
 
 			/* No "real" damage */
 			dam = 0;
@@ -2468,8 +2464,8 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (rf_has(r_ptr->flags, RF_HURT_LIGHT))
 			{
 				/* Special effect */
-				note = " cringes from the light!";
-				note_dies = " shrivels away in the light!";
+				m_note = MON_MSG_CRINGE_LIGHT;
+				note_dies = MON_MSG_SHRIVEL_LIGHT;
 			}
 
 			/* Normally no damage */
@@ -2494,13 +2490,13 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 				/* Learn about breathers through resistance */
 				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_LIGHT);
 
-				note = " resists.";
+				m_note = MON_MSG_RESIST;
 				dam *= 2; dam /= (randint1(6)+6);
 			}
 			else if (rf_has(r_ptr->flags, RF_HURT_LIGHT))
 			{
-				note = " cringes from the light!";
-				note_dies = " shrivels away in the light!";
+				m_note = MON_MSG_CRINGE_LIGHT;
+				note_dies = MON_MSG_SHRIVEL_LIGHT;
 				dam *= 2;
 			}
 			break;
@@ -2516,7 +2512,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 				/* Learn about breathers through resistance */
 				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_DARK);
 
-				note = " resists.";
+				m_note = MON_MSG_RESIST;
 				dam *= 2; dam /= (randint1(6)+6);
 			}
 			break;
@@ -2533,8 +2529,8 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (rf_has(r_ptr->flags, RF_HURT_ROCK))
 			{
 				/* Cute little message */
-				note = " loses some skin!";
-				note_dies = " dissolves!";
+				m_note = MON_MSG_LOSE_SKIN;
+				note_dies = MON_MSG_DISSOLVE;
 			}
 
 			/* Usually, ignore the effects */
@@ -2683,8 +2679,8 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 				if (seen) obvious = TRUE;
 
 				/* Message */
-				note = " shudders.";
-				note_dies = " dissolves!";
+				m_note = MON_MSG_SHUDDER;
+				note_dies = MON_MSG_DISSOLVE;
 			}
 
 			/* Others ignore */
@@ -2713,8 +2709,8 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 				if (seen) obvious = TRUE;
 
 				/* Message */
-				note = " shudders.";
-				note_dies = " dissolves!";
+				m_note = MON_MSG_SHUDDER;
+				note_dies = MON_MSG_DISSOLVE;
 			}
 
 			/* Others ignore */
@@ -2738,8 +2734,8 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (seen) obvious = TRUE;
 
 			/* Message */
-			note = " shudders.";
-			note_dies = " dissolves!";
+			m_note = MON_MSG_SHUDDER;
+			note_dies = MON_MSG_DISSOLVE;
 
 			break;
 		}
@@ -2775,17 +2771,19 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 	if (dam > m_ptr->hp)
 	{
 		/* Extract method of death */
-		note = note_dies;
+		m_note = note_dies;
 	}
 
 	/* Handle polymorph */
 	else if (do_poly)
 	{
+		/* Default -- assume no polymorph */
+		m_note = MON_MSG_UNAFFECTED;
+
 		/* Uniques cannot be polymorphed */
 		if (rf_has(r_ptr->flags, RF_UNIQUE))
 		{
-			/* Don't print a message for chaos side effects */
-			if (obvious && typ == GF_OLD_POLY) note = " is unaffected!";
+			/* no action */
 		}
 		
 		else
@@ -2796,7 +2794,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (r_ptr->level > randint1(90) ||
 			    (typ == GF_OLD_POLY && r_ptr->level > randint1(MAX(1, do_poly - 10)) + 10))
 			{
-				if (typ == GF_OLD_POLY) note = format(" maintains %s shape.", m_poss);
+				if (typ == GF_OLD_POLY) m_note = MON_MSG_MAINTAIN_SHAPE;
 			}
 
 			/* Failed to save */
@@ -2809,7 +2807,13 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 				if (tmp != m_ptr->r_idx)
 				{
 					/* Monster polymorphs */
-					note = " changes!";
+					m_note = MON_MSG_CHANGE;
+
+					/* Add the message now before changing the monster race */
+					add_monster_message(m_name, cave->m_idx[y][x], m_note);
+
+					/* No more messages */
+					m_note = MON_MSG_NONE;
 
 					/* Turn off the damage */
 					dam = 0;
@@ -2839,7 +2843,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		if (seen) obvious = TRUE;
 
 		/* Message */
-		note = " disappears!";
+		m_note = MON_MSG_DISAPPEAR;
 
 		/* Teleport */
 		teleport_away(cave->m_idx[y][x], do_dist);
@@ -2852,126 +2856,90 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 	/* Handle stunning */
 	else if (do_stun)
 	{
-		/* Monsters can be immune, as are sound and force breathers */
-		if (rf_has(r_ptr->flags, RF_NO_STUN) ||
-	       flags_test(r_ptr->spell_flags, RSF_SIZE, RSF_BR_SOUN, RSF_BR_WALL, FLAG_END))
-	   {
-			/* Immune to stunning */
-			if (seen && obvious) rf_on(l_ptr->flags, RF_NO_STUN);
-		}
-	   else
+		int tmp = do_stun;
+
+		bool was_stunned = (m_ptr->m_timed[MON_TMD_STUN] ? TRUE : FALSE);
+
+		if (was_stunned) tmp /= 2;
+
+		if (mon_inc_timed(m_idx, MON_TMD_STUN, tmp, MON_TMD_FLG_NOMESSAGE))
 		{
-			if (seen) obvious = TRUE;
-			if (seen) rf_on(l_ptr->flags, RF_NO_STUN);
-
-			tmp = do_stun;
-
-			/* Get stunned */
-			if (m_ptr->stunned)
-			{
-				note = " is more dazed.";
-				tmp /= 2;
-			}
-			else
-			{
-				note = " is dazed.";
-			}
-
-			m_ptr->stunned += tmp;
-
-			if (m_ptr->stunned > 200) m_ptr->stunned = 200;
+			if (was_stunned) stun_note = MON_MSG_MORE_DAZED;
+			else stun_note = MON_MSG_DAZED;
 		}
+
+		else if (dam > 0)
+		{
+			/* No resist message. They will get a damage message instead */
+		}
+
+		/*some creatures are resistant to stunning*/
+		else if ((rf_has(r_ptr->flags, RF_NO_STUN)) || (rf_has(r_ptr->spell_flags, RSF_BR_SOUN)) ||
+				 (rsf_has(r_ptr->spell_flags, RSF_BR_WALL)))
+		{
+			stun_note = MON_MSG_UNAFFECTED;
+		}
+		else stun_note = MON_MSG_RESIST;
 	}
 
 	/* Handle confusion */
 	else if (do_conf)
 	{
-		/* Uniques, confusion breathers, and chaos breathers are also immune */
-		if (rf_has(r_ptr->flags, RF_NO_CONF) ||
-			 rf_has(r_ptr->flags, RF_UNIQUE) ||
-		    flags_test(r_ptr->spell_flags, RSF_SIZE, RSF_BR_CONF, RSF_BR_CHAO, FLAG_END))
+		int tmp = damroll(3, (do_conf / 2)) + 1;
+		bool was_confused = (m_ptr->m_timed[MON_TMD_CONF] ? TRUE : FALSE);
+
+		if (typ == GF_OLD_CONF && r_ptr->level > randint1(MAX(1, do_conf - 10)) + 10)
 		{
-			/* Immune. Learn about confusion and get a message only if it's already obvious */
-			if (seen && obvious)
-			{
-				rf_on(l_ptr->flags, RF_NO_CONF);
-
-				/* Don't print a message for chaos and confusion damage side effects */
-				if (typ == GF_OLD_CONF) note = " is unaffected!";
-			}
+			stun_note = MON_MSG_UNAFFECTED;
 		}
-		else
+
+		/* Apply confusion */
+		else if (mon_inc_timed(cave->m_idx[y][x], MON_TMD_CONF, tmp, MON_TMD_FLG_NOMESSAGE))
 		{
-			/* Monster is not immune to confusion */
-			if (seen) obvious = TRUE;
-			if (seen) rf_on(l_ptr->flags, RF_NO_CONF);
-
-			/* Normal confusion has a saving throw. */
-			if (typ == GF_OLD_CONF && r_ptr->level > randint1(MAX(1, do_conf - 10)) + 10)
-			{
-				note = " looks briefly puzzled.";
-			}
-
-			/* Failed to save, or cannot save (vs chaos/confusion damage) */
-			else
-			{
-				tmp = damroll(3, (do_conf / 2)) + 1;
-
-				if (m_ptr->confused)
-				{
-					note = " looks more confused.";
-					tmp /= 2;
-				}
-				else
-				{
-					note = " looks confused.";
-				}
-
-				m_ptr->confused += tmp;
-
-				if (m_ptr->confused > 200) m_ptr->confused = 200;
-			}
+			if (was_confused) conf_note = MON_MSG_MORE_CONFUSED;
+			/* Was not confused */
+			else conf_note = MON_MSG_CONFUSED;
 		}
+
+		else if (dam > 0)
+		{
+			/* No message. They will get a damage message instead */
+		}
+		else conf_note =  MON_MSG_RESIST;
+
+	}
+
+	else if (do_slow)
+	{
+		if(mon_inc_timed(cave->m_idx[y][x], MON_SLOW, do_slow, MON_TMD_FLG_NOMESSAGE))
+		{
+			slow_note = MON_MSG_SLOWED;
+		}
+		else slow_note = MON_MSG_UNAFFECTED;
+	}
+
+	else if (do_haste)
+	{
+		if(mon_inc_timed(cave->m_idx[y][x], MON_FAST, do_haste, MON_TMD_FLG_NOMESSAGE))
+		{
+			haste_note = MON_MSG_HASTED;
+		}
+		else haste_note = MON_MSG_UNAFFECTED;
 	}
 
 
 	/* Handle fear */
 	if (do_fear)
 	{
-		/* Normal fear - monsters can be immune, uniques are immune */
-		if (typ == GF_TURN_ALL &&
-		    (rf_has(r_ptr->flags, RF_NO_FEAR) ||
-		     rf_has(r_ptr->flags, RF_UNIQUE)))
+		bool was_afraid = (m_ptr->m_timed[MON_TMD_FEAR] ? TRUE : FALSE);
+		if (mon_inc_timed(cave->m_idx[y][x], MON_TMD_FEAR, do_fear, MON_TMD_FLG_NOMESSAGE))
 		{
-			/* Immune. Learn about fear and get a message only if it's already obvious */
-			if (seen && obvious)
-			{
-				rf_on(l_ptr->flags, RF_NO_FEAR);
-				note = " is unaffected!";
-			}
+			if (was_afraid) fear_note = MON_MSG_MORE_AFRAID;
+			else fear_note = MON_MSG_FLEE_IN_TERROR;
 		}
-		else
-		{
-			/* Monster is not immune */
-			if (seen) obvious = TRUE;
+		/* Message only if no damage */
+		else if (dam == 0) fear_note = MON_MSG_UNAFFECTED;
 
-			/* Learn about fear (NO_FEAR doesn't apply to turn evil/undead) */
-			if (seen && typ == GF_TURN_ALL) rf_on(l_ptr->flags, RF_NO_FEAR);
-
-			/* All fear has a saving throw. */
-			if (r_ptr->level > randint1(MAX(1, do_fear - 10)) + 10)
-			{
-				note = format(" stands %s ground.", m_poss);
-			}
-
-			/* Failed to save */
-			else
-			{
-				m_ptr->monfear += (damroll(3, (do_fear / 2)) + 1);
-
-				if (m_ptr->monfear > 200) m_ptr->monfear = 200;
-			}
-		}
 	}
 
 
@@ -2982,7 +2950,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		if (p_ptr->health_who == cave->m_idx[y][x]) p_ptr->redraw |= (PR_HEALTH);
 
 		/* Wake the monster up */
-		wake_monster(m_ptr);
+		mon_clear_timed(cave->m_idx[y][x], MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
 
 		/* Hurt the monster */
 		m_ptr->hp -= dam;
@@ -2990,14 +2958,17 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Dead monster */
 		if (m_ptr->hp < 0)
 		{
+			/* Give detailed messages if destroyed */
+			if (!seen) note_dies = MON_MSG_MORIA_DEATH;
+
+			/* dump the note*/
+			add_monster_message(m_name, cave->m_idx[y][x], note_dies);
+
 			/* Generate treasure, etc */
 			monster_death(cave->m_idx[y][x]);
 
 			/* Delete the monster */
 			delete_monster_idx(cave->m_idx[y][x]);
-
-			/* Give detailed messages if destroyed */
-			if (note) msg("%^s%s", m_name, note);
 
 			mon_died = TRUE;
 		}
@@ -3006,7 +2977,10 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		else
 		{
 			/* Give detailed messages if visible or destroyed */
-			if (note && seen) msg("%^s%s", m_name, note);
+			if ((m_note != MON_MSG_NONE) && seen)
+			{
+				add_monster_message(m_name, cave->m_idx[y][x], m_note);
+			}
 
 			/* Hack -- Pain message */
 			else if (dam > 0) message_pain(cave->m_idx[y][x], dam);
@@ -3018,8 +2992,18 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 	{
 		bool fear = FALSE;
 
+		/* The monster is going to be killed */
+		if (dam > m_ptr->hp)
+		{
+			/* Adjust message for unseen monsters */
+			if (!seen) note_dies = MON_MSG_MORIA_DEATH;
+
+			/* Save the death notification for later */
+			add_monster_message(m_name, cave->m_idx[y][x], note_dies);
+		}
+
 		/* Hurt the monster, check for fear and death */
-		if (mon_take_hit(cave->m_idx[y][x], dam, &fear, note_dies))
+		if (mon_take_hit(cave->m_idx[y][x], dam, &fear, ""))
 		{
 			/* Dead monster */
 			mon_died = TRUE;
@@ -3029,62 +3013,51 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		else
 		{
 			/* Give detailed messages if visible or destroyed */
-			if (note && seen) msg("%^s%s", m_name, note);
+			if ((m_note != MON_MSG_NONE) && seen)
+			{
+				add_monster_message(m_name, cave->m_idx[y][x], m_note);
+			}
 
 			/* Hack -- Pain message */
-			else if (dam > 0) message_pain(cave->m_idx[y][x], dam);
+			else if (dam > 0) message_pain(m_idx, dam);
 
 			/* Take note */
-			if (seen && (fear || m_ptr->monfear))
+			if (seen && (fear || m_ptr->m_timed[MON_TMD_FEAR]))
 			{
 				/* Message */
-				msgt(MSG_FLEE, "%^s flees in terror!", m_name);
+				fear_note = MON_MSG_FLEE_IN_TERROR;
 			}
+
 		}
 	}
 	
 	/* Handle sleep */
 	if(!mon_died && do_sleep)
 	{
-		/* Monsters can be immune, and so are uniques */
-		if (rf_has(r_ptr->flags, RF_NO_SLEEP) ||
-		    rf_has(r_ptr->flags, RF_UNIQUE))
+		if (mon_inc_timed(m_idx, MON_TMD_SLEEP, 500, MON_TMD_FLG_NOTIFY))
 		{
-			/* Immune.  Learn about sleep and get a message only if it's already obvious */
-			if (seen && obvious)
-			{
-				rf_on(l_ptr->flags, RF_NO_SLEEP);
-				note = " is unaffected!";
-			}
+			sleep_note = MON_MSG_FALL_ASLEEP;
 		}
-		else
-		{
-			if (seen) obvious = TRUE;
-			if (seen) rf_on(l_ptr->flags, RF_NO_SLEEP);
+		/* No note if the monster was already asleep */
+		else if (!m_ptr->m_timed[MON_TMD_SLEEP]) sleep_note = MON_MSG_UNAFFECTED;
+	}
 
-			/* Monsters may still make a saving throw */
-			if (r_ptr->level > randint1(MAX(1, do_sleep - 10)) + 10)
-			{
-				note = " looks drowsy for a moment.";
-			}
-			
-			/* Failed to save */
-			else
-			{
-				note = " falls asleep!";
-				m_ptr->csleep = 500;
-			}
-		}
-
-		/* Print the message */
-		if (seen && note) msg("%^s%s", m_name, note);
+	if (!mon_died)
+	{
+		/* Do the effect messages here so they appear after the pain messages */
+		if (stun_note) add_monster_message(m_name, cave->m_idx[y][x], stun_note);
+		if (conf_note) add_monster_message(m_name, cave->m_idx[y][x], conf_note);
+		if (slow_note) add_monster_message(m_name, cave->m_idx[y][x], slow_note);
+		if (haste_note) add_monster_message(m_name, cave->m_idx[y][x], haste_note);
+		if (fear_note) add_monster_message(m_name, cave->m_idx[y][x], fear_note);
+		if (sleep_note) add_monster_message(m_name, cave->m_idx[y][x], sleep_note);
 	}
 
 
 	/* Verify this code XXX XXX XXX */
 
 	/* Update the monster */
-	update_mon(cave->m_idx[y][x], FALSE);
+	update_mon(m_idx, FALSE);
 
 	/* Redraw the monster grid */
 	cave_light_spot(cave, y, x);

@@ -1228,6 +1228,9 @@ static void process_player(void)
 	}
 
 	while (!p_ptr->energy_use && !p_ptr->leaving);
+
+	/* Notice stuff (if needed) */
+	if (p_ptr->notice) notice_stuff();
 }
 
 byte flicker = 0;

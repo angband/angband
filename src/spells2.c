@@ -1785,10 +1785,10 @@ void aggravate_monsters(int who)
 		if (m_ptr->cdis < MAX_SIGHT * 2)
 		{
 			/* Wake up */
-			if (m_ptr->csleep)
+			if (m_ptr->m_timed[MON_TMD_SLEEP])
 			{
 				/* Wake up */
-				wake_monster(m_ptr);
+				mon_clear_timed(i, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
 				sleep = TRUE;
 			}
 		}
@@ -2328,7 +2328,7 @@ void earthquake(int cy, int cx, int r)
 					damage = (sn ? damroll(4, 8) : (m_ptr->hp + 1));
 
 					/* Monster is certainly awake */
-					wake_monster(m_ptr);
+					mon_clear_timed(cave->m_idx[yy][xx], MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
 
 					/* Apply damage directly */
 					m_ptr->hp -= damage;
@@ -2504,22 +2504,11 @@ static void cave_temp_room_light(void)
 			if (rf_has(r_ptr->flags, RF_SMART)) chance = 100;
 
 			/* Sometimes monsters wake up */
-			if (m_ptr->csleep && (randint0(100) < chance))
+			if (m_ptr->m_timed[MON_TMD_SLEEP] && (randint0(100) < chance))
 			{
 				/* Wake up! */
-				wake_monster(m_ptr);
+				mon_clear_timed(cave->m_idx[y][x], MON_TMD_SLEEP, MON_TMD_FLG_NOTIFY);
 
-				/* Notice the "waking up" */
-				if (m_ptr->ml)
-				{
-					char m_name[80];
-
-					/* Get the monster name */
-					monster_desc(m_name, sizeof(m_name), m_ptr, 0);
-
-					/* Dump a message */
-					msg("%^s wakes up.", m_name);
-				}
 			}
 		}
 	}

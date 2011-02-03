@@ -482,7 +482,7 @@ static int choose_attack_spell(int m_idx, bitflag f[RSF_SIZE])
 		/*** Try to pick an appropriate spell type ***/
 
 		/* Hurt badly or afraid, attempt to flee */
-		if (has_escape && ((m_ptr->hp < m_ptr->maxhp / 4) || m_ptr->monfear))
+		if (has_escape && ((m_ptr->hp < m_ptr->maxhp / 4) || m_ptr->m_timed[MON_TMD_FEAR]))
 		{
 			/* Choose escape spell */
 			flags_mask(f, RSF_SIZE, RSF_ESCAPE_MASK, FLAG_END);
@@ -654,7 +654,7 @@ bool make_attack_spell(int m_idx)
 
 
 	/* Cannot cast spells when confused */
-	if (m_ptr->confused) return (FALSE);
+	if (m_ptr->m_timed[MON_TMD_CONF]) return (FALSE);
 
 	/* Cannot cast spells when nice */
 	if (m_ptr->mflag & (MFLAG_NICE)) return (FALSE);
@@ -1653,10 +1653,10 @@ bool make_attack_spell(int m_idx)
 			if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
 
 			/* Cancel fear */
-			if (m_ptr->monfear)
+			if (m_ptr->m_timed[MON_TMD_FEAR])
 			{
 				/* Cancel fear */
-				m_ptr->monfear = 0;
+				mon_clear_timed(m_idx, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE);
 
 				/* Message */
 				msg("%^s recovers %s courage.", m_name, m_poss);
@@ -2099,7 +2099,7 @@ static int mon_will_run(int m_idx)
 	if (m_ptr->cdis > MAX_SIGHT + 5) return (FALSE);
 
 	/* All "afraid" monsters will run away */
-	if (m_ptr->monfear) return (TRUE);
+	if (m_ptr->m_timed[MON_TMD_FEAR]) return (TRUE);
 
 	/* Nearby monsters will not become terrified */
 	if (m_ptr->cdis <= 5) return (FALSE);
@@ -3019,30 +3019,15 @@ static void process_monster(struct cave *c, int m_idx)
 
 
 	/* Handle "sleep" */
-	if (m_ptr->csleep)
+	if (m_ptr->m_timed[MON_TMD_SLEEP])
 	{
 		u32b notice;
 
 		/* Aggravation */
 		if (p_ptr->state.flags[OF_AGGRAVATE])
 		{
-			/* Reset sleep counter */
-			woke_up = wake_monster(m_ptr);
-
-			/* Notice the "waking up" */
-			if (m_ptr->ml)
-			{
-				char m_name[80];
-
-				/* Get the monster name */
-				monster_desc(m_name, sizeof(m_name), m_ptr, 0);
-
-				/* Dump a message */
-				msg("%^s wakes up.", m_name);
-
-				/* Hack -- Update the health bar */
-				if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
-			}
+			/* Wake the monster */
+			mon_clear_timed(m_idx, MON_TMD_SLEEP, MON_TMD_FLG_NOTIFY);
 
 			/* Efficiency XXX XXX */
 			return;
@@ -3060,10 +3045,10 @@ static void process_monster(struct cave *c, int m_idx)
 			if (m_ptr->cdis < 50) d = (100 / m_ptr->cdis);
 
 			/* Still asleep */
-			if (m_ptr->csleep > d)
+			if (m_ptr->m_timed[MON_TMD_SLEEP] > d)
 			{
 				/* Monster wakes up "a little bit" */
-				m_ptr->csleep -= d;
+				mon_dec_timed(m_idx, MON_TMD_SLEEP, d , MON_TMD_FLG_NOMESSAGE);
 
 				/* Notice the "not waking up" */
 				if (m_ptr->ml)
@@ -3080,7 +3065,7 @@ static void process_monster(struct cave *c, int m_idx)
 			else
 			{
 				/* Reset sleep counter */
-				woke_up = wake_monster(m_ptr);
+				woke_up = mon_clear_timed(m_idx, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
 
 				/* Notice the "waking up" */
 				if (m_ptr->ml)
@@ -3106,14 +3091,14 @@ static void process_monster(struct cave *c, int m_idx)
 		}
 
 		/* Still sleeping */
-		if (m_ptr->csleep) return;
+		if (m_ptr->m_timed[MON_TMD_SLEEP]) return;
 	}
 
 	/* If the monster just woke up, then it doesn't act */
 	if (woke_up) return;
 
 	/* Handle "stun" */
-	if (m_ptr->stunned)
+	if (m_ptr->m_timed[MON_TMD_STUN])
 	{
 		int d = 1;
 
@@ -3121,115 +3106,60 @@ static void process_monster(struct cave *c, int m_idx)
 		if (randint0(5000) <= r_ptr->level * r_ptr->level)
 		{
 			/* Recover fully */
-			d = m_ptr->stunned;
+			d = m_ptr->m_timed[MON_TMD_STUN];
 		}
 
 		/* Hack -- Recover from stun */
-		if (m_ptr->stunned > d)
+		if (m_ptr->m_timed[MON_TMD_STUN] > d)
 		{
 			/* Recover somewhat */
-			m_ptr->stunned -= d;
+			mon_dec_timed(m_idx, MON_TMD_STUN, 1 , MON_TMD_FLG_NOMESSAGE);
 		}
 
 		/* Fully recover */
 		else
 		{
-			/* Recover fully */
-			m_ptr->stunned = 0;
-
-			/* Message if visible */
-			if (m_ptr->ml)
-			{
-				char m_name[80];
-
-				/* Get the monster name */
-				monster_desc(m_name, sizeof(m_name), m_ptr, 0);
-
-				/* Dump a message */
-				msg("%^s is no longer stunned.", m_name);
-
-				/* Hack -- Update the health bar */
-				if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
-			}
+			mon_clear_timed(m_idx, MON_TMD_STUN, MON_TMD_FLG_NOTIFY);
 		}
 
 		/* Still stunned */
-		if (m_ptr->stunned) return;
+		if (m_ptr->m_timed[MON_TMD_STUN]) return;
 	}
 
 
 	/* Handle confusion */
-	if (m_ptr->confused)
+	if (m_ptr->m_timed[MON_TMD_CONF])
 	{
 		int d = randint1(r_ptr->level / 10 + 1);
 
 		/* Still confused */
-		if (m_ptr->confused > d)
+		if (m_ptr->m_timed[MON_TMD_CONF] > d)
 		{
 			/* Reduce the confusion */
-			m_ptr->confused -= d;
+			mon_dec_timed(m_idx, MON_TMD_CONF, d , MON_TMD_FLG_NOMESSAGE);
 		}
 
 		/* Recovered */
-		else
-		{
-			/* No longer confused */
-			m_ptr->confused = 0;
+		else mon_clear_timed(m_idx, MON_TMD_CONF, MON_TMD_FLG_NOTIFY);
 
-			/* Message if visible */
-			if (m_ptr->ml)
-			{
-				char m_name[80];
-
-				/* Get the monster name */
-				monster_desc(m_name, sizeof(m_name), m_ptr, 0);
-
-				/* Dump a message */
-				msg("%^s is no longer confused.", m_name);
-
-				/* Hack -- Update the health bar */
-				if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
-			}
-		}
 	}
 
 
 	/* Handle "fear" */
-	if (m_ptr->monfear)
+	if (m_ptr->m_timed[MON_TMD_FEAR])
 	{
 		/* Amount of "boldness" */
 		int d = randint1(r_ptr->level / 10 + 1);
 
 		/* Still afraid */
-		if (m_ptr->monfear > d)
+		if (m_ptr->m_timed[MON_TMD_FEAR] > d)
 		{
 			/* Reduce the fear */
-			m_ptr->monfear -= d;
+			mon_dec_timed(m_idx, MON_TMD_FEAR, d , MON_TMD_FLG_NOMESSAGE);
 		}
 
 		/* Recover from fear, take note if seen */
-		else
-		{
-			/* No longer afraid */
-			m_ptr->monfear = 0;
-
-			/* Visual note */
-			if (m_ptr->ml)
-			{
-				char m_name[80];
-				char m_poss[80];
-
-				/* Get the monster name/poss */
-				monster_desc(m_name, sizeof(m_name), m_ptr, 0);
-				monster_desc(m_poss, sizeof(m_poss), m_ptr, MDESC_PRO2 | MDESC_POSS);
-
-				/* Dump a message */
-				msg("%^s recovers %s courage.", m_name, m_poss);
-
-				/* Hack -- Update the health bar */
-				if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
-			}
-		}
+		else mon_clear_timed(m_idx, MON_TMD_FEAR, MON_TMD_FLG_NOTIFY);
 	}
 
 
@@ -3285,7 +3215,7 @@ static void process_monster(struct cave *c, int m_idx)
 	stagger = FALSE;
 
 	/* Confused */
-	if (m_ptr->confused)
+	if (m_ptr->m_timed[MON_TMD_CONF])
 	{
 		/* Stagger */
 		stagger = TRUE;
@@ -3782,24 +3712,9 @@ static void process_monster(struct cave *c, int m_idx)
 
 
 	/* Hack -- get "bold" if out of options */
-	if (!do_turn && !do_move && m_ptr->monfear)
+	if (!do_turn && !do_move && m_ptr->m_timed[MON_TMD_FEAR])
 	{
-		/* No longer afraid */
-		m_ptr->monfear = 0;
-
-		/* Message if seen */
-		if (m_ptr->ml)
-		{
-			char m_name[80];
-
-			/* Get the monster name */
-			monster_desc(m_name, sizeof(m_name), m_ptr, 0);
-
-			/* Dump a message */
-			msg("%^s turns to fight!", m_name);
-		}
-
-		/* XXX XXX XXX Actually do something now (?) */
+		mon_clear_timed(m_idx, MON_TMD_FEAR, MON_TMD_FLG_NOTIFY);
 	}
 }
 

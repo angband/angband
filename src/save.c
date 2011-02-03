@@ -829,12 +829,12 @@ void wr_monsters(void)
 		wr_byte(m_ptr->fx);
 		wr_s16b(m_ptr->hp);
 		wr_s16b(m_ptr->maxhp);
-		wr_s16b(m_ptr->csleep);
+		wr_s16b(m_ptr->m_timed[MON_TMD_SLEEP]);
 		wr_byte(m_ptr->mspeed);
 		wr_byte(m_ptr->energy);
-		wr_byte(m_ptr->stunned);
-		wr_byte(m_ptr->confused);
-		wr_byte(m_ptr->monfear);
+		wr_s16b(m_ptr->m_timed[MON_TMD_STUN]);
+		wr_s16b(m_ptr->m_timed[MON_TMD_CONF]);
+		wr_s16b(m_ptr->m_timed[MON_TMD_FEAR]);
 		wr_byte(0);
 	}
 }

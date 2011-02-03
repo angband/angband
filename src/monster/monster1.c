@@ -21,6 +21,375 @@
 #include "monster/monster.h"
 #include "object/tvalsval.h"
 
+
+
+
+typedef struct
+{
+  int message_begin;
+  int message_end;
+  int message_increase;
+  u32b flag_resist;
+} mon_timed_effect;
+
+/*
+ * Monster timed effects.
+ * '0' means no message.
+ */
+
+static mon_timed_effect effects[] =
+{
+	/*TMD_MON_SLEEP*/
+	{MON_MSG_FALL_ASLEEP, MON_MSG_WAKES_UP, FALSE, RF_NO_SLEEP},
+	/*TMD_MON_STUN*/
+	{MON_MSG_DAZED, MON_MSG_NOT_DAZED, MON_MSG_MORE_DAZED, RF_NO_STUN },
+	/*TMD_MON_CONF*/
+	{MON_MSG_CONFUSED, MON_MSG_NOT_CONFUSED, MON_MSG_MORE_CONFUSED, RF_NO_CONF },
+	/*TMD_MON_FEAR*/
+	{MON_MSG_FLEE_IN_TERROR, MON_MSG_NOT_AFRAID, MON_MSG_MORE_AFRAID, RF_NO_FEAR },
+	/*TMD_MON_SLOW*/
+	{MON_MSG_SLOWED, MON_SNG_NOT_SLOWED, MON_MSG_MORE_SLOWED,  0L  },
+	/*TMD_MON_FAST*/
+	{MON_MSG_HASTED, MON_MSG_NOT_HASTED, MON_MSG_MORE_HASTED, 0L  },
+
+};
+
+
+/*
+ * Helper function for mon_set_timed.  This determined if the monster
+ * Successfully resisted the effect.  Also marks the lore for any
+ * appropriate resists.
+ */
+static int mon_resist_effect(int m_idx, int idx, u16b flag)
+{
+	mon_timed_effect *effect = &effects[idx];
+	int resist_chance;
+	monster_type *m_ptr = &mon_list[m_idx];
+	monster_race *r_ptr = &r_info[m_ptr->r_idx];
+	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
+
+	/* Hasting never fails */
+	if (idx == MON_FAST) return (FALSE);
+
+	/* Some effects are marked to never fail */
+	if (flag & (MON_TMD_FLG_NOFAIL)) return (FALSE);
+
+	/* Stupid, weird, or empty monsters aren't affected by some effects*/
+	if ((rf_has(r_ptr->flags, RF_STUPID)) || (rf_has(r_ptr->flags, RF_EMPTY_MIND)) ||
+		(rf_has(r_ptr->flags, RF_WEIRD_MIND)))
+	{
+		if (idx == MON_TMD_CONF) return (TRUE);
+		if (idx == MON_TMD_SLEEP) return (TRUE);
+	}
+
+	/* Calculate the chance of the monster resisting. */
+	if (flag & (MON_TMD_MON_SOURCE))
+	{
+		resist_chance = r_ptr->level;
+	}
+	else
+	{
+		resist_chance = r_ptr->level + 25 - p_ptr->lev / 5;
+	}
+
+	/* Monsters who resist get half the duration, at most */
+	if (rf_has(r_ptr->flags, (effect->flag_resist)))
+	{
+		/* Mark the lore */
+		if (flag & MON_TMD_FLG_SEEN) rf_on(l_ptr->flags, effect->flag_resist);
+
+		return (TRUE);
+	}
+
+	/* Uniques are doubly hard to affect */
+	if (rf_has(r_ptr->flags, RF_UNIQUE))
+	{
+		if (randint0(100) < resist_chance) return (TRUE);
+	}
+
+	/* Monsters with specific breaths and undead resist stunning*/
+	if ((idx == MON_TMD_STUN) &&
+			((rf_has(r_ptr->flags, RSF_BR_SOUN)) ||
+			 (rsf_has(r_ptr->spell_flags, RSF_BR_WALL))) )
+	{
+
+		/* Add the lore */
+		if (flag & MON_TMD_FLG_SEEN)
+		{
+			if (rf_has(r_ptr->flags, RSF_BR_SOUN))
+			{
+				rf_on(l_ptr->flags, RSF_BR_SOUN);
+			}
+			if (rf_has(r_ptr->flags, RSF_BR_WALL))
+			{
+				rf_on(l_ptr->flags, RSF_BR_WALL);
+			}
+		}
+
+		return (TRUE);
+	}
+
+	/* Monsters with specific breaths resist confusion */
+	if ((idx == MON_TMD_CONF) &&
+		((rf_has(r_ptr->flags, RSF_BR_CHAO)) ||
+		 (rsf_has(r_ptr->spell_flags, RSF_BR_CONF))) )
+	{
+
+		/* Add the lore */
+		if (flag & MON_TMD_FLG_SEEN)
+		{
+			if (rf_has(r_ptr->flags, RSF_BR_CHAO))
+			{
+				rf_on(l_ptr->flags, RSF_BR_CHAO);
+			}
+			if (rf_has(r_ptr->flags, RSF_BR_CONF))
+			{
+				rf_on(l_ptr->flags, RSF_BR_CONF);
+			}
+
+		}
+			return (TRUE);
+	}
+
+	/* Can't make non-living creatures sleep */
+	if ((idx == MON_TMD_SLEEP) &&  (rf_has(r_ptr->flags, RF_UNDEAD)))
+	{
+		return (TRUE);
+	}
+
+	/* Inertia breathers resist slowing*/
+	if ((idx == MON_SLOW) && (rsf_has(r_ptr->spell_flags, RSF_BR_INER)))
+	{
+			rf_on(l_ptr->flags, RSF_BR_INER);
+		return (TRUE);
+	}
+
+	if (randint0(100) < resist_chance) return (TRUE);
+
+	/* Uniques are doubly hard to affect */
+	if (rf_has(r_ptr->flags, RF_UNIQUE))
+	{
+		if (randint0(100) < resist_chance) return (TRUE);
+	}
+
+	return (FALSE);
+}
+
+/*
+ * Set a timed monster event to 'v'.  Give messages if the right flags are set.
+ * Check if the monster is able to resist the spell.  Mark the lore
+ * Returns TRUE if the monster was affected
+ * Return FALSE if the monster was unaffected.
+ */
+static bool mon_set_timed(int m_idx, int idx, int v, u16b flag)
+{
+	mon_timed_effect *effect = &effects[idx];
+	monster_type *m_ptr = &mon_list[m_idx];
+	monster_race *r_ptr = &r_info[m_ptr->r_idx];
+
+	char m_name[80];
+	int m_note = 0;
+
+	int resisted;
+
+	/* Get monster name*/
+	monster_desc(m_name, sizeof(m_name), m_ptr, 0);
+
+
+	/* The line below would cause a crash if it were for slowing or hasting */
+	if (idx < MON_TMD_MAX)
+	{
+		/* No change */
+		if (m_ptr->m_timed[idx] == v) return FALSE;
+	}
+
+	/* Turning off, usually mention */
+	if (v == 0)
+	{
+		m_note = effect->message_end;
+
+		flag |= MON_TMD_FLG_NOTIFY;
+	}
+
+	/* skip the next two checks, to avoid a crash */
+	else if (idx >= MON_TMD_MAX)
+	{
+		/* do nothing */
+	}
+
+	/* Turning on, usually mention */
+	else if (m_ptr->m_timed[idx] == 0)
+	{
+
+		flag |= MON_TMD_FLG_NOTIFY;
+
+		m_note = effect->message_begin;
+	}
+	/* Different message for increases, but don't automatically mention. */
+	else if (v > m_ptr->m_timed[idx])
+	{
+		m_note = effect->message_increase;
+	}
+
+	/* Determine if the monster resisted or not */
+	resisted = mon_resist_effect(m_idx, idx, flag);
+
+	if (resisted)
+	{
+		m_note = MON_MSG_UNAFFECTED;
+	}
+
+	else if (idx == MON_FAST)
+	{
+		if (m_ptr->mspeed > r_ptr->speed + 10) return (FALSE);
+
+	 	 m_ptr->mspeed += 10;
+	}
+
+	else if (idx == MON_SLOW)
+	{
+		if (m_ptr->mspeed < r_ptr->speed - 10) return (FALSE);
+
+		m_ptr->mspeed -= 10;
+	}
+
+	/* Apply the value, unless they fully resisted */
+	else m_ptr->m_timed[idx] = v;
+
+	/*possibly update the monster health bar*/
+	if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
+
+	/* Update the visuals, as appropriate. */
+	p_ptr->redraw |= (PR_MONLIST);
+
+	/* Return result without any messages */
+	if ((flag & (MON_TMD_FLG_NOMESSAGE)) || (!m_note) ||
+		(!(flag & (MON_TMD_FLG_SEEN))) ||
+		(!(flag & (MON_TMD_FLG_NOTIFY))))
+	{
+		if (resisted) return FALSE;
+		return (TRUE);
+	}
+
+	/* Finally, handle the message */
+	add_monster_message(m_name, m_idx, m_note);
+
+	if (resisted) return FALSE;
+	return (TRUE);
+}
+
+
+/*
+ * Increase the timed effect `idx` by `v`.
+ */
+bool mon_inc_timed(int m_idx, int idx, int v, u16b flag)
+{
+	monster_type *m_ptr = &mon_list[m_idx];
+
+	/* Ignore dead monsters */
+	if (!m_ptr->r_idx) return FALSE;
+
+	if (v < 0) return (FALSE);
+
+	/* Check we have a valid effect */
+	if ((idx < 0) || (idx > MON_SLOW)) return FALSE;
+
+	/* mark if seen */
+	if (m_ptr->ml) flag |= MON_TMD_FLG_SEEN;
+
+	/* Hasting never fails */
+	if (idx == MON_FAST) flag |= MON_TMD_FLG_NOFAIL;
+
+	/* Can't prolong sleep of sleeping monsters */
+	if ((idx == MON_TMD_SLEEP) &&
+		(m_ptr->m_timed[MON_TMD_SLEEP])) return FALSE;
+
+	/* The lines below would cause a crash if it were for slowing or hasting */
+	if (idx < MON_TMD_MAX)
+	{
+		/* Make it last for a mimimum # of turns if it is a new effect */
+		if ((!m_ptr->m_timed[idx]) && (v < 2)) v = 2;
+
+		/* New counter amount */
+		v = m_ptr->m_timed[idx] + v;
+	}
+
+	if ((idx == MON_TMD_STUN) || (idx == MON_TMD_CONF))
+	{
+		if (v > 200) v = 200;
+	}
+
+	/* Boundry Control */
+	else if (v > 10000) v = 10000;
+
+	return mon_set_timed(m_idx, idx, v, flag);
+}
+
+/*
+ * Decrease the timed effect `idx` by `v`.
+ */
+bool mon_dec_timed(int m_idx, int idx, int v, u16b flag)
+{
+	monster_type *m_ptr = &mon_list[m_idx];
+
+	/* Ignore dead monsters */
+	if (!m_ptr->r_idx) return FALSE;
+
+	if (v < 0) return (FALSE);
+
+	/* Check we have a valid effect */
+	if ((idx < 0) || (idx > MON_SLOW)) return FALSE;
+
+	/* mark if seen */
+	if (m_ptr->ml) flag |= MON_TMD_FLG_SEEN;
+
+	/* Decreasing is never resisted */
+	flag |= MON_TMD_FLG_NOFAIL;
+
+	/* The line below would cause a crash if it were for slowing or hasting */
+	if (idx < MON_TMD_MAX)
+	{
+		/* New counter amount */
+		v = m_ptr->m_timed[idx] - v;
+	}
+
+	/* Use clear function if appropriate */
+	if (v < 0) return (mon_clear_timed(m_idx, idx, flag));
+
+	return mon_set_timed(m_idx, idx, v, flag);
+}
+
+/**
+ * Clear the timed effect `idx`.
+ */
+bool mon_clear_timed(int m_idx, int idx, u16b flag)
+{
+	monster_type *m_ptr = &mon_list[m_idx];
+
+	/* Ignore dead monsters */
+	if (!m_ptr->r_idx) return FALSE;
+
+	/* Check we have a valid effect */
+	if ((idx < 0) || (idx > MON_SLOW)) return FALSE;
+
+	/* The lines below would cause a crash if it were for slowing or hasting */
+	if (idx < MON_TMD_MAX)
+	{
+
+		if (!m_ptr->m_timed[idx]) return FALSE;
+	}
+
+	/* mark if seen */
+	if (m_ptr->ml) flag |= MON_TMD_FLG_SEEN;
+
+	/* Clearing never fails */
+	flag |= MON_TMD_FLG_NOFAIL;
+
+	return mon_set_timed(m_idx, idx, 0, flag);
+}
+
+
+
 /*
  * Pronoun arrays, by gender.
  */

@@ -1,6 +1,7 @@
 #ifndef INCLUDED_EXTERNS_H
 #define INCLUDED_EXTERNS_H
 
+#include "monster/constants.h"
 #include "monster/types.h"
 #include "object/types.h"
 #include "player/types.h"
@@ -150,6 +151,12 @@ extern struct vault *vaults;
 extern struct object_kind *objkinds;
 extern spell_type *s_info;
 extern struct hint *hints;
+
+extern monster_race_message *mon_msg;
+extern monster_message_history *mon_message_hist;
+extern u16b size_mon_msg;
+extern u16b size_mon_hist;
+
 
 extern const char *ANGBAND_SYS;
 extern const char *ANGBAND_GRAF;
