@@ -2877,36 +2877,41 @@ static char *get_mon_msg_action(byte msg_code, bool do_plural, int r_idx)
 {
    static char buf[200];
    const char *action;
-   monster_race *r_ptr = &r_info[r_idx];
-   int pain_idx = rb_info[r_ptr->rval].pain_idx;
-   monster_pain *mp_ptr = &pain_messages[pain_idx];
-
    u16b n = 0;
    /* Regular text */
    byte flag = 0;
-   
-	/* Find the action string */
-	if (msg_code == MON_MSG_95)
-		action = mp_ptr->messages[0];
-	else if (msg_code == MON_MSG_75)
-		action = mp_ptr->messages[1];
-	else if (msg_code == MON_MSG_50)
-		action = mp_ptr->messages[2];
-	else if (msg_code == MON_MSG_35)
-		action = mp_ptr->messages[3];
-	else if (msg_code == MON_MSG_20)
-		action = mp_ptr->messages[4];
-	else if (msg_code == MON_MSG_10)
-		action = mp_ptr->messages[5];
-	else if (msg_code == MON_MSG_0)
-		action = mp_ptr->messages[6];
+
+   if (r_idx > 0)
+   {
+		monster_race *r_ptr = &r_info[r_idx];
+		monster_base *rb_ptr = &rb_info[r_ptr->rval];
+		monster_pain *mp_ptr = &pain_messages[rb_ptr->pain_idx];
+	   
+		/* Find the action string */
+		if (msg_code == MON_MSG_95)
+			action = mp_ptr->messages[0];
+		else if (msg_code == MON_MSG_75)
+			action = mp_ptr->messages[1];
+		else if (msg_code == MON_MSG_50)
+			action = mp_ptr->messages[2];
+		else if (msg_code == MON_MSG_35)
+			action = mp_ptr->messages[3];
+		else if (msg_code == MON_MSG_20)
+			action = mp_ptr->messages[4];
+		else if (msg_code == MON_MSG_10)
+			action = mp_ptr->messages[5];
+		else if (msg_code == MON_MSG_0)
+			action = mp_ptr->messages[6];
+		else 
+			action = msg_repository[msg_code];
+   }
 	else
 		action = msg_repository[msg_code];
-   
    
    /* Put the message characters in the buffer */
    for (; *action; action++)
    {
+   
        /* Check available space */
        if (n >= (sizeof(buf) - 1)) break;
 
@@ -3006,18 +3011,15 @@ bool add_monster_message(char *mon_name, int m_idx, int msg_code)
    /* Paranoia */
    if (!mon_name || !mon_name[0]) mon_name = "it";
 
-   /* Monster is invisible or out of LOS */
-   if (streq(mon_name, "it") || streq(mon_name, "something"))
-   {
-       /* Special mark */
-       r_idx = 0;
-   }
-
    /* Save the "hidden" mark, if present */
    if (strstr(mon_name, "(hidden)")) mon_flags |= 0x01;
 
    /* Save the "offscreen" mark, if present */
    if (strstr(mon_name, "(offscreen)")) mon_flags |= 0x02;
+
+   /* Monster is invisible or out of LOS */
+   if (streq(mon_name, "it") || streq(mon_name, "something"))
+      mon_flags |= 0x04;
 
    /* Query if the message is already stored */
    for (i = 0; i < size_mon_msg; i++)
@@ -3096,6 +3098,9 @@ void flush_monster_messages(void)
        /* Cache the race index */
        r_idx = mon_msg[i].mon_race;
            
+       /* Get the proper message action */
+       action = get_mon_msg_action(mon_msg[i].msg_code, (count > 1), r_idx);
+
        /* Is it a regular race? */
        if (r_idx > 0)
        {
@@ -3109,9 +3114,9 @@ void flush_monster_messages(void)
            r_ptr = NULL;
        }
 
-       /* Get the proper message action */
-       action = get_mon_msg_action(mon_msg[i].msg_code, (count > 1), r_idx);
-
+	   /* Monster is marked as invisible */
+	   if(mon_msg[i].mon_flags & 0x04) r_ptr = NULL;
+	   
        /* Special message? */
        action_only = (*action == '~');
 
