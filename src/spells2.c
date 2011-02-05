@@ -2698,7 +2698,7 @@ bool light_area(int dam, int rad)
 	(void)project(-1, rad, py, px, dam, GF_LIGHT_WEAK, flg);
 
 	/* Light up the room */
-	/*light_room(py, px);*/
+	light_room(py, px);
 
 	/* Assume seen */
 	return (TRUE);
