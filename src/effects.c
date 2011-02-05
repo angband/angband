@@ -1133,7 +1133,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_ILLUMINATION:
 		{
-			if (light_area(damroll(2, 15), 3)) *ident = TRUE;
+			if (light_area(damroll(2, 15), 7)) *ident = TRUE;
 			return TRUE;
 		}
 

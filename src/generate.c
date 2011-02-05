@@ -250,7 +250,7 @@ static struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
 		NULL,
 
 		/* cutoff -- debug  */
-		10
+		0
 	},
 	{
 		"labyrinth", labyrinth_gen, 0, 200, 0, 0,
@@ -3093,14 +3093,23 @@ void join_regions(struct cave *c, int colors[], int counts[]) {
 }
 
 
+int open_count(struct cave *c) {
+	int x, y;
+    int h = c->height;
+    int w = c->width;
+	int num = 0;
+	for (y = 0; y < h; y++)
+		for (x = 0; x < w; x++)
+			num++;
+	return num;
+}
+
 /**
  * The program's main function.
  */
 bool cavern_gen(struct cave *c, struct player *p) {
     int i, k;
 
-    /*int h = c->height = DUNGEON_HGT;
-    int w = c->width = DUNGEON_WID;*/
     int h = c->height = rand_range(DUNGEON_HGT / 3, DUNGEON_HGT);
     int w = c->width = rand_range(DUNGEON_WID / 5, DUNGEON_WID);
 	int size = h * w;
@@ -3117,6 +3126,8 @@ bool cavern_gen(struct cave *c, struct player *p) {
 
     for (i = 0; i < times; i++)
 		mutate_cavern(c);
+
+	if (open_count(c) < size / 20) return FALSE;
 
     build_colors(c, colors, counts);
     clear_small_regions(c, colors, counts);

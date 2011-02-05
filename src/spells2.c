@@ -2692,15 +2692,13 @@ bool light_area(int dam, int rad)
 
 	/* Hack -- Message */
 	if (!p_ptr->timed[TMD_BLIND])
-	{
 		msg("You are surrounded by a white light.");
-	}
 
 	/* Hook into the "project()" function */
 	(void)project(-1, rad, py, px, dam, GF_LIGHT_WEAK, flg);
 
 	/* Light up the room */
-	light_room(py, px);
+	/*light_room(py, px);*/
 
 	/* Assume seen */
 	return (TRUE);

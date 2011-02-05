@@ -1823,48 +1823,44 @@ s16b monster_place(int y, int x, monster_type *n_ptr)
 	monster_type *m_ptr;
 	monster_race *r_ptr;
 
-
 	/* Paranoia XXX XXX */
-	if (cave->m_idx[y][x] != 0) return (0);
-
+	if (cave->m_idx[y][x] != 0) return 0;
 
 	/* Get a new record */
 	m_idx = mon_pop();
 
-	/* Oops */
-	if (m_idx)
-	{
-		/* Make a new monster */
-		cave->m_idx[y][x] = m_idx;
+	if (!m_idx) return 0;
 
-		/* Get the new monster */
-		m_ptr = &mon_list[m_idx];
+	/* Make a new monster */
+	cave->m_idx[y][x] = m_idx;
 
-		/* Copy the monster XXX */
-		COPY(m_ptr, n_ptr, monster_type);
+	/* Get the new monster */
+	m_ptr = &mon_list[m_idx];
 
-		/* Location */
-		m_ptr->fy = y;
-		m_ptr->fx = x;
+	/* Copy the monster XXX */
+	COPY(m_ptr, n_ptr, monster_type);
 
-		/* Update the monster */
-		update_mon(m_idx, TRUE);
+	/* Location */
+	m_ptr->fy = y;
+	m_ptr->fx = x;
 
-		/* Get the new race */
-		r_ptr = &r_info[m_ptr->r_idx];
+	/* Update the monster */
+	update_mon(m_idx, TRUE);
 
-		/* Hack -- Notice new multi-hued monsters */
-		if (rf_has(r_ptr->flags, RF_ATTR_MULTI)) shimmer_monsters = TRUE;
+	/* Get the new race */
+	r_ptr = &r_info[m_ptr->r_idx];
 
-		/* Hack -- Count the number of "reproducers" */
-		if (rf_has(r_ptr->flags, RF_MULTIPLY)) num_repro++;
+	/* Hack -- Notice new multi-hued monsters */
+	if (rf_has(r_ptr->flags, RF_ATTR_MULTI)) shimmer_monsters = TRUE;
 
-		/* Count racial occurances */
-		r_ptr->cur_num++;
-	}
+	/* Hack -- Count the number of "reproducers" */
+	if (rf_has(r_ptr->flags, RF_MULTIPLY)) num_repro++;
+
+	/* Count racial occurances */
+	r_ptr->cur_num++;
 
 	/* Result */
-	return (m_idx);
+	return m_idx;
 }
 
 
