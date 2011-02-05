@@ -24,14 +24,16 @@
 #include "monster/monster.h"
 #include "object/tvalsval.h"
 #include "trap.h"
+#include "z-queue.h"
 #include "z-type.h"
 
 static struct dun_data *dun;
 
 static bool town_gen(struct cave *c, struct player *p);
 
-static bool cave_gen(struct cave *c, struct player *p);
+static bool default_gen(struct cave *c, struct player *p);
 static bool labyrinth_gen(struct cave *c, struct player *p);
+static bool cavern_gen(struct cave *c, struct player *p);
 
 static bool build_simple(struct cave *c, int y0, int x0);
 static bool build_circular(struct cave *c, int y0, int x0);
@@ -233,10 +235,25 @@ static struct room_profile default_rooms[] = {
 /*
  * Profiles used for generating dungeon levels.
  */
-#define NUM_CAVE_PROFILES 2
+#define NUM_CAVE_PROFILES 3
 static struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
 	{
-		"cave-labyrinth", labyrinth_gen, 0, 200, 0, 0,
+		"cavern", cavern_gen, 0, 200, 0, 0,
+
+		/* tunnels -- not applicable */
+		{"tunnel-default", 10, 30, 15, 25, 90},
+
+		/* streamers -- not applicable */
+		{"streamer-default", 5, 2, 3, 90, 2, 40},
+
+		/* room_profiles -- not applicable */
+		NULL,
+
+		/* cutoff -- debug  */
+		10
+	},
+	{
+		"labyrinth", labyrinth_gen, 0, 200, 0, 0,
 
 		/* tunnels -- not applicable */
 		{"tunnel-default", 10, 30, 15, 25, 90},
@@ -252,7 +269,7 @@ static struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
 	},
 	{
 		/* name builder dun_rooms dun_unusual max_rarity n_room_profiles */
-		"cave-default", cave_gen, 50, 200, 2, N_ELEMENTS(default_rooms),
+		"default", default_gen, 50, 200, 2, N_ELEMENTS(default_rooms),
 
 		/* name rnd chg con pen jct */
 		{"tunnel-default", 10, 30, 15, 25, 90},
@@ -2335,7 +2352,7 @@ static bool room_build(struct cave *c, int by0, int bx0, struct room_profile pro
 #define DUN_AMT_ROOM 7	/* Number of objects for rooms */
 #define DUN_AMT_ITEM 2 /* Number of objects for rooms/corridors */
 #define DUN_AMT_GOLD 3 /* Amount of treasure for rooms/corridors */
-static bool cave_gen(struct cave *c, struct player *p) {
+static bool default_gen(struct cave *c, struct player *p) {
 	int i, j, k, l, y, x, y1, x1;
 	int by, bx, key, rarity, tries;
 	int num_rooms, size_percent;
@@ -2544,6 +2561,10 @@ static bool cave_gen(struct cave *c, struct player *p) {
 	return TRUE;
 }
 
+
+/*
+ * ------------------ LABYRINTH ----------------
+ */
 
 /**
  * Used to convert (x, y) into an array index (i) in labyrinth_gen().
@@ -2773,6 +2794,369 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 	return TRUE;
 }
 
+
+/*
+ * ---------------- CAVERNS ----------------------
+ */
+/**
+ * Initialize the dungeon array, with a random percentage of squares open.
+ */
+void init_cavern(struct cave *c, struct player *p, int density) {
+	int h = c->height;
+	int w = c->width;
+	int size = h * w;
+
+    int count = (size * density) / 100;
+
+	/* Fill the edges with perma-rock, and rest with rock */
+	draw_rectangle(c, 0, 0, h - 1, w - 1, FEAT_PERM_SOLID);
+	fill_rectangle(c, 1, 1, h - 2, w - 2, FEAT_WALL_SOLID);
+
+    while (count > 0) {
+        int y = randint1(h - 2);
+        int x = randint1(w - 2);
+        if (c->feat[y][x] == FEAT_WALL_SOLID) {
+			cave_set_feat(c, y, x, FEAT_FLOOR);
+            count--;
+        }
+    }
+}
+
+/**
+ * Return the number of walls (0-8) adjacent to this square.
+ */
+int count_adj_walls(struct cave *c, int y, int x) {
+    int yd, xd;
+    int count = 0;
+
+    for (yd = -1; yd <= 1; yd++) {
+        for (xd = -1; xd <= 1; xd++) {
+            if (yd == 0 && xd == 0) continue;
+            if (cave->feat[y + yd][x + xd] == FEAT_FLOOR) continue;
+            count++;
+        }
+    }
+    
+    return count;
+}
+
+/**
+ * Run a single pass of the cellular automata rules (4,5) on the dungeon.
+ */
+void mutate_cavern(struct cave *c) {
+    int y, x;
+	int h = c->height;
+	int w = c->width;
+	int temp[h][w];
+
+    for (y = 1; y < h - 1; y++) {
+        for (x = 1; x < w - 1; x++) {
+            int count = count_adj_walls(c, y, x);
+            if (count > 5)
+                temp[y][x] = FEAT_WALL_SOLID;
+            else if (count < 4)
+                temp[y][x] = FEAT_FLOOR;
+            else
+                temp[y][x] = cave->feat[y][x];
+        }
+    }
+
+    for (y = 1; y < h - 1; y++) {
+        for (x = 1; x < w - 1; x++) {
+			cave_set_feat(c, y, x, temp[y][x]);
+		}
+	}
+}
+
+/**
+ * Fill an int[] with a single value.
+ */
+void array_filler(int data[], int value, int size) {
+	int i;
+	for (i = 0; i < size; i++) data[i] = value;
+}
+
+/**
+ * Determine if we need to worry about coloring a point, or can ignore it.
+ */
+int ignore_point(struct cave *c, int colors[], int y, int x) {
+	int h = c->height;
+	int w = c->width;
+    int n = lab_toi(y, x, w);
+
+    if (y < 0 || x < 0 || y >= h || x >= w) return TRUE;
+    if (c->feat[y][x] != FEAT_FLOOR || colors[n]) return TRUE;
+    return FALSE;
+}
+
+static int xds[] = {0, 0, 1, -1};
+static int yds[] = {1, -1, 0, 0};
+
+void glow_point(struct cave *c, int y, int x) {
+	int i, j;
+	for (i = -1; i <= -1; i++)
+		for (j = -1; j <= -1; j++)
+			c->info[y + i][x + j] |= CAVE_GLOW;
+}
+
+/**
+ * Color a particular point, and all adjacent points.
+ */
+void build_color_point(struct cave *c, int colors[], int counts[], int y, int x, int color, bool lit) {
+	int h = c->height;
+	int w = c->width;
+	int size = h * w;
+    struct queue *queue = q_new(size);
+
+	int added[size];
+	array_filler(added, 0, size);
+
+    q_push_int(queue, lab_toi(y, x, w));
+
+    counts[color] = 0;
+
+    while (q_len(queue) > 0) {
+        int i, y2, x2;
+        int n2 = q_pop_int(queue);
+
+        lab_toyx(n2, w, &y2, &x2);
+
+        if (ignore_point(cave, colors, y2, x2)) continue;
+
+        colors[n2] = color;
+        counts[color]++;
+
+		/*if (lit) glow_point(c, y2, x2);*/
+
+        for (i = 0; i < 4; i++) {
+            int y3 = y2 + yds[i];
+            int x3 = x2 + xds[i];
+            int n3 = lab_toi(y3, x3, w);
+            if (ignore_point(cave, colors, y3, x3)) continue;
+            if (added[n3]) continue;
+
+            q_push_int(queue, n3);
+            added[n3] = 1;
+        }
+    }
+
+    q_free(queue);
+}
+
+/**
+ * Create a color for each "NESW contiguous" region of the dungeon.
+ */
+void build_colors(struct cave *c, int colors[], int counts[]) {
+    int y, x;
+	int h = c->height;
+	int w = c->width;
+    int color = 1;
+
+    for (y = 0; y < h; y++) {
+        for (x = 0; x < w; x++) {
+            if (ignore_point(cave, colors, y, x)) continue;
+            build_color_point(cave, colors, counts, y, x, color, TRUE);
+            color++;
+        }
+    }
+}
+
+/**
+ * Find and delete all small (<9 square) open regions.
+ */
+void clear_small_regions(struct cave *c, int colors[], int counts[]) {
+    int i;
+	int h = c->height;
+	int w = c->width;
+	int size = h * w;
+
+	int deleted[size];
+	array_filler(deleted, 0, size);
+
+    for (i = 0; i < size; i++) {
+        if (counts[i] < 9) {
+            deleted[i] = 1;
+            counts[i] = 0;
+        }
+    }
+
+    for (i = 0; i < size; i++) {
+        if (deleted[colors[i]]) {
+			int x, y;
+			lab_toyx(i, w, &y, &x);
+            colors[i] = 0;
+            cave_set_feat(c, y, x, FEAT_WALL_SOLID);
+        }
+    }
+}
+
+/**
+ * Return the number of colors which have active cells.
+ */
+int count_colors(int counts[], int size) {
+    int i;
+    int num = 0;
+    for (i = 0; i < size; i++) if (counts[i] > 0) num++;
+    return num;
+}
+
+/**
+ * Return the first color which has one or more active cells.
+ */
+int first_color(int counts[], int size) {
+    int i;
+    for (i = 0; i < size; i++) if (counts[i] > 0) return i;
+    return -1;
+}
+
+/**
+ * Find all cells of 'fromcolor' and repaint them to 'tocolor'.
+ */
+void fix_colors(int colors[], int counts[], int from, int to, int size) {
+    int i;
+    for (i = 0; i < size; i++) if (colors[i] == from) colors[i] = to;
+    counts[to] += counts[from];
+    counts[from] = 0;
+}
+
+/**
+ * Create a tunnel connecting a region to one of its nearest neighbors.
+ */
+void join_region(struct cave *c, int colors[], int counts[], int color) {
+    int i;
+	int h = c->height;
+	int w = c->width;
+	int size = h * w;
+
+    struct queue *queue = q_new(size);
+
+    int previous[size];
+	array_filler(previous, -1, size);
+
+    for (i = 0; i < size; i++) {
+        if (colors[i] == color) {
+            q_push_int(queue, i);
+            previous[i] = i;
+        }
+    }
+
+    while (q_len(queue) > 0) {
+        int n = q_pop_int(queue);
+
+        int color2 = colors[n];
+        if (color2 && color2 != color) {
+            while (colors[n] != color) {
+				int x, y;
+				lab_toyx(n, w, &y, &x);
+                colors[n] = color;
+                cave_set_feat(c, y, x, FEAT_FLOOR);
+                n = previous[n];
+            }
+            fix_colors(colors, counts, color2, color, size);
+            return;
+        }
+
+        for (i = 0; i < 4; i++) {
+            int y, x, y2, x2, n2;
+            lab_toyx(n, w, &y, &x);
+
+            y2 = y + yds[i];
+            x2 = x + xds[i];
+            if (y2 < 0 || y2 >= h) continue;
+            if (x2 < 0 || x2 >= w) continue;
+
+            n2 = lab_toi(y2, x2, w);
+            if (previous[n2] >= 0) continue;
+
+            q_push_int(queue, n2);
+            previous[n2] = n;
+        }
+    }
+
+    q_free(queue);
+}
+
+/**
+ * Start connecting regions, stopping when the cave is entirely connected.
+ */
+void join_regions(struct cave *c, int colors[], int counts[]) {
+	int h = c->height;
+	int w = c->width;
+	int size = h * w;
+    int num = count_colors(counts, size);
+
+    while (num > 1) {
+        int color = first_color(counts, size);
+        join_region(c, colors, counts, color);
+        num--;
+    }
+}
+
+
+/**
+ * The program's main function.
+ */
+bool cavern_gen(struct cave *c, struct player *p) {
+    int i, k;
+
+    /*int h = c->height = DUNGEON_HGT;
+    int w = c->width = DUNGEON_WID;*/
+    int h = c->height = rand_range(DUNGEON_HGT / 3, DUNGEON_HGT);
+    int w = c->width = rand_range(DUNGEON_WID / 5, DUNGEON_WID);
+	int size = h * w;
+
+	int density = rand_range(25, 40);
+	int times = rand_range(3, 6);
+
+	int colors[size];
+	int counts[size];
+	array_filler(colors, 0, size);
+	array_filler(counts, 0, size);
+
+    init_cavern(c, p, density);
+
+    for (i = 0; i < times; i++)
+		mutate_cavern(c);
+
+    build_colors(c, colors, counts);
+    clear_small_regions(c, colors, counts);
+    join_regions(c, colors, counts);
+
+	/* Place 2-3 down stairs near some walls */
+	if (OPT(birth_no_stairs) || p->create_up_stair)
+		alloc_stairs(c, FEAT_MORE, rand_range(2, 3), 3);
+    
+	/* Place 1-2 up stairs near some walls */
+	if (OPT(birth_no_stairs) || p->create_down_stair)
+		alloc_stairs(c, FEAT_LESS, rand_range(1, 2), 3);
+
+	/* General some rubble, traps and monsters */
+	k = MAX(MIN(c->depth / 3, 10), 2);
+
+	/* Put some rubble in corridors */
+	alloc_objects(c, SET_BOTH, TYP_RUBBLE, randint1(k), c->depth);
+
+	/* Place some traps in the dungeon */
+	alloc_objects(c, SET_BOTH, TYP_TRAP, randint1(k), c->depth);
+
+	/* Determine the character location */
+	new_player_spot(c, p);
+
+	/* Put some monsters in the dungeon */
+	for (i = MIN_M_ALLOC_LEVEL + randint1(8) + k; i > 0; i--)
+		alloc_monster(c, loc(p->px, p->py), 0, TRUE, c->depth);
+
+	/* Put some objects/gold in the dungeon */
+	alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(6, 3), c->depth);
+	alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(6, 3), c->depth);
+	alloc_objects(c, SET_BOTH, TYP_GOOD, randint0(2), c->depth);
+
+    return TRUE;
+}
+
+/*
+ * ------------------ TOWN ----------------
+ */
 
 /**
  * Builds a store at a given pseudo-location
