@@ -68,6 +68,7 @@ int rd_objects_1(void);
 int rd_objects_2(void);
 int rd_monsters_1(void);
 int rd_monsters_2(void);
+int rd_monsters_3(void);
 int rd_ghost(void);
 int rd_history(void);
 

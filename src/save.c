@@ -821,6 +821,8 @@ void wr_monsters(void)
 
 	/* Dump the monsters */
 	for (i = 1; i < mon_max; i++) {
+		byte unaware = 0;
+	
 		const monster_type *m_ptr = &mon_list[i];
 
 		wr_s16b(m_ptr->r_idx);
@@ -830,9 +832,12 @@ void wr_monsters(void)
 		wr_s16b(m_ptr->maxhp);
 		wr_byte(m_ptr->mspeed);
 		wr_byte(m_ptr->energy);
-
+		
 		for (j = 0; j < MON_TMD_MAX; j++)
 			wr_s16b(m_ptr->m_timed[j]);
+
+		if (m_ptr->unaware) unaware |= 0x01;
+		wr_byte(unaware);
 
 		wr_byte(0);
 	}
