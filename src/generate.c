@@ -238,21 +238,6 @@ static struct room_profile default_rooms[] = {
 #define NUM_CAVE_PROFILES 3
 static struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
 	{
-		"cavern", cavern_gen, 0, 200, 0, 0,
-
-		/* tunnels -- not applicable */
-		{"tunnel-default", 10, 30, 15, 25, 90},
-
-		/* streamers -- not applicable */
-		{"streamer-default", 5, 2, 3, 90, 2, 40},
-
-		/* room_profiles -- not applicable */
-		NULL,
-
-		/* cutoff -- debug  */
-		0
-	},
-	{
 		"labyrinth", labyrinth_gen, 0, 200, 0, 0,
 
 		/* tunnels -- not applicable */
@@ -266,6 +251,21 @@ static struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
 
 		/* cutoff -- unused becauase of internal checks in labyrinth_gen  */
 		100
+	},
+	{
+		"cavern", cavern_gen, 0, 200, 0, 0,
+
+		/* tunnels -- not applicable */
+		{"tunnel-default", 10, 30, 15, 25, 90},
+
+		/* streamers -- not applicable */
+		{"streamer-default", 5, 2, 3, 90, 2, 40},
+
+		/* room_profiles -- not applicable */
+		NULL,
+
+		/* cutoff -- debug  */
+		15
 	},
 	{
 		/* name builder dun_rooms dun_unusual max_rarity n_room_profiles */
