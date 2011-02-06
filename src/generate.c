@@ -578,7 +578,7 @@ static void alloc_stairs(struct cave *c, int feat, int num, int walls) {
 		/* Place some stairs */
 		for (done = FALSE; !done; ) {
 			/* Try several times, then decrease "walls" */
-			for (j = 0; !done && j <= 300; j++) {
+			for (j = 0; !done && j <= 1000; j++) {
 				find_empty(c, &y, c->height, &x, c->width);
 
 				if (next_to_walls(c, y, x) < walls) continue;
@@ -2740,13 +2740,21 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 		}
 	}
 
-	/* Place 1-2 down stairs near some walls */
-	if (OPT(birth_no_stairs) || p->create_up_stair)
-		alloc_stairs(c, FEAT_MORE, 1, 3);
+	/* Determine the character location */
+	new_player_spot(c, p);
 
-	/* Place 1 up stairs near some walls */
-	if (OPT(birth_no_stairs) || p->create_down_stair)
+	/* The level should have exactly one down and one up staircase */
+	if (OPT(birth_no_stairs)) {
+		/* new_player_spot() won't have created stairs, so make both*/
+		alloc_stairs(c, FEAT_MORE, 1, 3);
 		alloc_stairs(c, FEAT_LESS, 1, 3);
+	} else if (p->create_down_stair) {
+		/* new_player_spot() will have created down, so only create up */
+		alloc_stairs(c, FEAT_LESS, 1, 3);
+	} else {
+		/* new_player_spot() will have created up, so only create down */
+		alloc_stairs(c, FEAT_MORE, 1, 3);
+	}
 
 	/* Generate a door for every 100 squares in the labyrinth */
 	for (i = n / 100; i > 0; i--) {
@@ -2767,9 +2775,6 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 
 	/* Place some traps in the dungeon */
 	alloc_objects(c, SET_BOTH, TYP_TRAP, randint1(k), c->depth);
-
-	/* Determine the character location */
-	new_player_spot(c, p);
 
 	/* Put some monsters in the dungeon */
 	for (i = MIN_M_ALLOC_LEVEL + randint1(8) + k; i > 0; i--)
@@ -3134,12 +3139,10 @@ bool cavern_gen(struct cave *c, struct player *p) {
 	join_regions(c, colors, counts);
 
 	/* Place 2-3 down stairs near some walls */
-	if (OPT(birth_no_stairs) || p->create_up_stair)
-		alloc_stairs(c, FEAT_MORE, rand_range(2, 3), 3);
+	alloc_stairs(c, FEAT_MORE, rand_range(1, 3), 3);
 
 	/* Place 1-2 up stairs near some walls */
-	if (OPT(birth_no_stairs) || p->create_down_stair)
-		alloc_stairs(c, FEAT_LESS, rand_range(1, 2), 3);
+	alloc_stairs(c, FEAT_LESS, rand_range(1, 2), 3);
 
 	/* General some rubble, traps and monsters */
 	k = MAX(MIN(c->depth / 3, 10), 2);
