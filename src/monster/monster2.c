@@ -3711,6 +3711,14 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note)
 	/* Wake it up */
 	mon_clear_timed(m_idx, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
 
+	/* Become aware of its presence */
+	if (m_ptr->unaware)
+	{
+		m_ptr->unaware = FALSE;
+		if (rf_has(r_ptr->flags, RF_UNAWARE))
+			rf_on(l_ptr->flags, RF_UNAWARE);
+	}
+
 	/* Hurt it */
 	m_ptr->hp -= dam;
 
