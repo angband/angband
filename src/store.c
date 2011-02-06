@@ -1621,6 +1621,8 @@ void store_maint(int which)
 	if (stock < STORE_MIN_KEEP) stock = STORE_MIN_KEEP;
 
 	/* For the rest, we just choose items randomlyish */
+	/* XXX this means that we can get stuck in infinite loops if stores
+	 * don't have enough items they can stock! */
 	while (st_ptr->stock_num < stock) store_create_random(which);
 
 	cave = oldcave;

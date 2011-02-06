@@ -2142,53 +2142,7 @@ E:RESTORE_MANA
 
 ### Stat restore ###
 
-N:326:Restore Strength
-G:!:d
-I:75:17
-W:25:0:4:300
-A:50:10 to 60
-F:EASY_KNOW
-E:RESTORE_STR
-
-N:327:Restore Intelligence
-G:!:d
-I:75:18
-W:50:0:4:300
-A:50:10 to 60
-F:EASY_KNOW
-E:RESTORE_INT
-
-N:328:Restore Wisdom
-G:!:d
-I:75:19
-W:25:0:4:300
-A:50:10 to 60
-F:EASY_KNOW
-E:RESTORE_WIS
-
-N:329:Restore Dexterity
-G:!:d
-I:75:20
-W:25:0:4:300
-A:50:10 to 60
-F:EASY_KNOW
-E:RESTORE_DEX
-
-N:330:Restore Constitution
-G:!:d
-I:75:21
-W:25:0:4:300
-A:50:10 to 60
-F:EASY_KNOW
-E:RESTORE_CON
-
-N:331:Restore Charisma
-G:!:d
-I:75:22
-W:20:0:4:300
-A:50:10 to 60
-F:EASY_KNOW
-E:RESTORE_CHR
+# removed: old stat restoration
 
 N:332:Restore Life Levels
 G:!:d

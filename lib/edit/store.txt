@@ -61,7 +61,7 @@ I:2:arrow:Arrow~
 I:2:bolt:Bolt~
 
 # Temple
-S:4:36
+S:4:24
 I:1:hafted:Whip~
 I:1:hafted:Quarterstaff~
 I:2:hafted:Mace~
@@ -73,23 +73,19 @@ I:1:hafted:Lead-Filled Mace~
 I:1:scroll:Remove Curse
 I:1:scroll:Blessing
 I:1:scroll:Holy Chant
+I:1:scroll:Light
 I:1:potion:Boldness
 I:1:potion:Heroism
-I:2:potion:Cure Light Wounds
-I:4:potion:Cure Serious Wounds
-I:4:potion:Cure Critical Wounds
-I:3:potion:Restore Life Levels
 I:3:prayer book:[Beginners Handbook]
 I:2:prayer book:[Words of Wisdom]
 I:2:prayer book:[Chants and Blessings]
 I:1:prayer book:[Exorcism and Dispelling]
 
 # Alchemist
-S:5:30
+S:5:36
 I:4:scroll:Word of Recall
 I:4:scroll:Identify
 I:3:scroll:Phase Door
-I:1:scroll:Light
 I:1:scroll:Monster Confusion
 I:1:scroll:Magic Mapping
 I:2:scroll:Treasure Detection
@@ -101,12 +97,10 @@ I:1:scroll:Satisfy Hunger
 I:1:scroll:Restore Item
 I:1:potion:Resist Heat
 I:1:potion:Resist Cold
-I:1:potion:Restore Strength
-I:1:potion:Restore Intelligence
-I:1:potion:Restore Wisdom
-I:1:potion:Restore Dexterity
-I:1:potion:Restore Constitution
-I:1:potion:Restore Charisma
+I:3:potion:Restore Life Levels
+I:2:potion:Cure Light Wounds
+I:4:potion:Cure Serious Wounds
+I:4:potion:Cure Critical Wounds
 
 # Magic-user's
 S:6:29

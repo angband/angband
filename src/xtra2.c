@@ -97,6 +97,14 @@ void check_experience(void)
 		p_ptr->sc += randint1(2);
 		if (p_ptr->sc > 150) p_ptr->sc = 150;
 
+		/* Restore stats */
+		do_res_stat(A_STR);
+		do_res_stat(A_INT);
+		do_res_stat(A_WIS);
+		do_res_stat(A_DEX);
+		do_res_stat(A_CON);
+		do_res_stat(A_CHR);
+
 		/* Update some stuff */
 		p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
 
