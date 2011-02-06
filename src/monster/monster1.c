@@ -1725,6 +1725,8 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 
 
 	/* Describe special things */
+	if (rf_has(f, RF_UNAWARE))
+		text_out("%^s disguises itself to look like something else.  ", wd_he[msex]);
 	if (rf_has(f, RF_MULTIPLY))
 		text_out_c(TERM_ORANGE, "%^s breeds explosively.  ", wd_he[msex]);
 	if (rf_has(f, RF_REGENERATE))
