@@ -49,7 +49,7 @@ static bool build_greater_vault(struct cave *c, int y0, int x0);
 static void alloc_objects(struct cave *c, int set, int typ, int num, int depth);
 static bool alloc_object(struct cave *c, int set, int typ, int depth);
 
-#define ROOM_DEBUG(...) if (1) msg(__VA_ARGS__);
+#define ROOM_DEBUG(...) if (0) msg(__VA_ARGS__);
 
 #define ROOM_LOG(...) if (OPT(cheat_room)) msg(__VA_ARGS__);
 
@@ -265,7 +265,7 @@ static struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
 		NULL,
 
 		/* cutoff -- debug  */
-		15
+		12
 	},
 	{
 		/* name builder dun_rooms dun_unusual max_rarity n_room_profiles */
@@ -2809,8 +2809,8 @@ void init_cavern(struct cave *c, struct player *p, int density) {
 	int count = (size * density) / 100;
 	
 	/* Fill the edges with perma-rock, and rest with rock */
-	draw_rectangle(c, 0, 0, h - 1, w - 1, FEAT_PERM_SOLID);
-	fill_rectangle(c, 1, 1, h - 2, w - 2, FEAT_WALL_SOLID);
+	draw_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, FEAT_PERM_SOLID);
+	fill_rectangle(c, 1, 1, DUNGEON_HGT - 2, DUNGEON_WID - 2, FEAT_WALL_SOLID);
 	
 	while (count > 0) {
 		int y = randint1(h - 2);
