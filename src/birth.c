@@ -506,10 +506,8 @@ void wield_all(struct player *p)
 		if (slot < INVEN_WIELD) continue;
 
 		i_ptr = &p->inventory[slot];
-		if (!i_ptr->kind) continue;
-
-		/* Make sure that there's an available slot */
-		if (is_ammo && !object_similar(o_ptr, i_ptr, OSTACK_PACK))
+		if (i_ptr->kind && (!is_ammo ||
+				(is_ammo && !object_similar(o_ptr, i_ptr, OSTACK_PACK))))
 			continue;
 
 		/* Figure out how much of the item we'll be wielding */
