@@ -501,111 +501,28 @@ static bool make_artifact(object_type *o_ptr)
 }
 
 
-
-
 /*
- * Apply magic to an item known to be a "weapon"
- *
- * Hack -- note special base damage dice boosting
- * Hack -- note special processing for weapon/digger
- * Hack -- note special rating boost for dragon scale mail
+ * Apply magic to a weapon.
  */
-static void a_m_aux_1(object_type *o_ptr, int level, int power)
+static void apply_magic_weapon(object_type *o_ptr, int level, int power)
 {
-	int tohit1 = randint1(5) + m_bonus(5, level);
-	int tohit2 = m_bonus(10, level);
+	assert(power > 0);
 
-	int todam1 = randint1(5) + m_bonus(5, level);
-	int todam2 = m_bonus(10, level);
+	o_ptr->to_h += randint1(5) + m_bonus(5, level);
+	o_ptr->to_d += randint1(5) + m_bonus(5, level);
 
-	switch (power)
-	{
-		case -2:
-			o_ptr->to_h -= tohit2;
-			o_ptr->to_d -= todam2;
+	if (power > 1) {
+		o_ptr->to_h += m_bonus(10, level);
+		o_ptr->to_d += m_bonus(10, level);
 
-		case -1:
-			o_ptr->to_h -= tohit1;
-			o_ptr->to_d -= todam1;
-			break;
+		if (wield_slot(o_ptr) == INVEN_WIELD || obj_is_ammo(o_ptr)) {
+			/* Super-charge the damage dice */
+			while ((o_ptr->dd * o_ptr->ds > 0) &&
+					one_in_(10L * o_ptr->dd * o_ptr->ds))
+				o_ptr->dd++;
 
-		case 2:
-			o_ptr->to_h += tohit2;
-			o_ptr->to_d += todam2;
-
-		case 1:
-			o_ptr->to_h += tohit1;
-			o_ptr->to_d += todam1;
-			break;
-	}
-
-
-	/* Analyze type */
-	switch (o_ptr->tval)
-	{
-		case TV_DIGGING:
-		{
-			/* Very bad */
-			if (power < -1)
-			{
-				/* Hack -- Horrible digging bonus */
-				o_ptr->pval[which_pval(o_ptr, OF_TUNNEL)]
-					= 0 - (5 + randint1(5));
-			}
-
-			/* Bad */
-			else if (power < 0)
-			{
-				/* Hack -- Reverse digging bonus */
-				o_ptr->pval[which_pval(o_ptr, OF_TUNNEL)]
-					= -o_ptr->pval[which_pval(o_ptr, OF_TUNNEL)];
-			}
-
-			break;
-		}
-
-
-		case TV_HAFTED:
-		case TV_POLEARM:
-		case TV_SWORD:
-		{
-			/* Very Good */
-			if (power > 1)
-			{
-				/* Hack -- Super-charge the damage dice */
-				while ((o_ptr->dd * o_ptr->ds > 0) &&
-				       one_in_(10L * o_ptr->dd * o_ptr->ds))
-				{
-					o_ptr->dd++;
-				}
-
-				/* Hack -- Lower the damage dice */
-				if (o_ptr->dd > 9) o_ptr->dd = 9;
-			}
-
-			break;
-		}
-
-
-		case TV_BOLT:
-		case TV_ARROW:
-		case TV_SHOT:
-		{
-			/* Very good */
-			if (power > 1)
-			{
-				/* Hack -- super-charge the damage dice */
-				while ((o_ptr->dd * o_ptr->ds > 0) &&
-				       one_in_(10L * o_ptr->dd * o_ptr->ds))
-				{
-					o_ptr->dd++;
-				}
-
-				/* Hack -- restrict the damage dice */
-				if (o_ptr->dd > 9) o_ptr->dd = 9;
-			}
-
-			break;
+			/* But not too high */
+			if (o_ptr->dd > 9) o_ptr->dd = 9;
 		}
 	}
 }
@@ -614,21 +531,15 @@ static void a_m_aux_1(object_type *o_ptr, int level, int power)
 /*
  * Apply magic to armour
  */
-static void a_m_aux_2(object_type *o_ptr, int level, int power)
+static void apply_magic_armour(object_type *o_ptr, int level, int power)
 {
 	int toac1 = randint1(5) + m_bonus(5, level);
 	int toac2 = m_bonus(10, level);
 
-
-	if (power == -2)
-		o_ptr->to_a -= toac1 + toac2;
-	else if (power == -1)
-		o_ptr->to_a -= toac1;
-	else if (power == 1)
+	if (power == 1)
 		o_ptr->to_a += toac1;
 	else if (power == 2)
 		o_ptr->to_a += toac1 + toac2;
-
 
 	/* Analyze type */
 	switch (o_ptr->tval)
@@ -646,47 +557,6 @@ static void a_m_aux_2(object_type *o_ptr, int level, int power)
 	}
 }
 
-
-/*
- * Apply magic to an item known to be "boring"
- *
- * Hack -- note the special code for various items
- */
-static void a_m_aux_4(object_type *o_ptr, int level, int power)
-{
-	/* Unused parameters */
-	(void)level;
-	(void)power;
-
-	/* Apply magic (good or bad) according to type */
-	switch (o_ptr->tval)
-	{
-		case TV_LIGHT:
-		{
-			/* Default fuel levels */
-			if (o_ptr->sval == SV_LIGHT_TORCH)
-				o_ptr->timeout = DEFAULT_TORCH;
-			else if (o_ptr->sval == SV_LIGHT_LANTERN)
-				o_ptr->timeout = DEFAULT_LAMP;
-
-			break;
-		}
-
-		case TV_CHEST:
-		{
-			/* Hack -- skip ruined chests */
-			if (o_ptr->kind->level <= 0) break;
-
-			/* Hack -- pick a "difficulty" */
-			o_ptr->pval[DEFAULT_PVAL] = randint1(o_ptr->kind->level);
-
-			/* Never exceed "difficulty" of 55 to 59 */
-			if (o_ptr->pval[DEFAULT_PVAL] > 55) o_ptr->pval[DEFAULT_PVAL] = (s16b)(55 + randint0(5));
-
-			break;
-		}
-	}
-}
 
 static const int ego_sustains[] =
 {
@@ -907,7 +777,8 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 				if (ego_power) power = ego_power;
 			}
 
-			if (power) a_m_aux_1(o_ptr, lev, power);
+			if (power > 0)
+				apply_magic_weapon(o_ptr, lev, power);
 
 			break;
 		}
@@ -931,7 +802,7 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 				if (ego_power) power = ego_power;
 			}
 
-			if (power) a_m_aux_2(o_ptr, lev, power);
+			if (power) apply_magic_armour(o_ptr, lev, power);
 
 			break;
 		}
@@ -965,14 +836,26 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 			if (power == 2)
 				make_ego_item(o_ptr, lev, (bool)(power > 0));
 
-			/* Fuel it */
-			a_m_aux_4(o_ptr, lev, power);
+			/* Default fuel levels */
+			if (o_ptr->sval == SV_LIGHT_TORCH)
+				o_ptr->timeout = DEFAULT_TORCH;
+			else if (o_ptr->sval == SV_LIGHT_LANTERN)
+				o_ptr->timeout = DEFAULT_LAMP;
+
 			break;
 		}
 
-		default:
+		case TV_CHEST:
 		{
-			a_m_aux_4(o_ptr, lev, power);
+			/* Hack -- skip ruined chests */
+			if (o_ptr->kind->level <= 0) break;
+
+			/* Hack -- pick a "difficulty" */
+			o_ptr->pval[DEFAULT_PVAL] = randint1(o_ptr->kind->level);
+
+			/* Never exceed "difficulty" of 55 to 59 */
+			if (o_ptr->pval[DEFAULT_PVAL] > 55) o_ptr->pval[DEFAULT_PVAL] = (s16b)(55 + randint0(5));
+
 			break;
 		}
 	}
