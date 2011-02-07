@@ -187,14 +187,12 @@ static void object_mention(const object_type *o_ptr)
 
 
 /*
- * Attempt to change an object into an ego-item -MWK-
- * Better only called by apply_magic().
- * The return value says if we picked a cursed item (if allowed) and is
- * passed on to a_m_aux1/2().
- * If no legal ego item is found, this routine returns 0, resulting in
- * an unenchanted item.
+ * Try to find an ego-item for an object, setting name2 if successful.  We do
+ * not apply any bonuses here, that's all done in apply_magic().
+ *
+ * Returns TRUE if an ego item is created, FALSE otherwise.
  */
-static int make_ego_item(object_type *o_ptr, int level, bool force_uncursed)
+static bool make_ego_item(object_type *o_ptr, int level)
 {
 	int i, j;
 
@@ -240,8 +238,8 @@ static int make_ego_item(object_type *o_ptr, int level, bool force_uncursed)
 		/* Get the actual kind */
 		e_ptr = &e_info[e_idx];
 
-		/* Avoid cursed items if specified */
-		if (force_uncursed && cursed_p(e_ptr)) continue;
+		/* XXX Avoid cursed items */
+		if (cursed_p(e_ptr)) continue;
 
 		/* Test if this is a legal ego-item type for this object */
 		for (j = 0; j < EGO_TVALS_MAX; j++)
@@ -267,7 +265,8 @@ static int make_ego_item(object_type *o_ptr, int level, bool force_uncursed)
 	}
 
 	/* No legal ego-items -- create a normal unenchanted one */
-	if (total == 0) return (0);
+	if (total == 0)
+		return FALSE;
 
 
 	/* Pick an ego-item */
@@ -287,7 +286,7 @@ static int make_ego_item(object_type *o_ptr, int level, bool force_uncursed)
 	e_idx = (byte)table[i].index;
 	o_ptr->name2 = e_idx;
 
-	return (flags_test(e_info[e_idx].flags, OF_SIZE, OF_CURSE_MASK, FLAG_END) ? -2 : 2);
+	return TRUE;
 }
 
 
@@ -506,7 +505,8 @@ static bool make_artifact(object_type *o_ptr)
  */
 static void apply_magic_weapon(object_type *o_ptr, int level, int power)
 {
-	assert(power > 0);
+	if (power <= 0)
+		return;
 
 	o_ptr->to_h += randint1(5) + m_bonus(5, level);
 	o_ptr->to_d += randint1(5) + m_bonus(5, level);
@@ -755,6 +755,9 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 		}
 	}
 
+	/* Try to make an ego item */
+	if (power == 2)
+		make_ego_item(o_ptr, lev);
 
 	/* Apply magic */
 	switch (o_ptr->tval)
@@ -767,21 +770,8 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 		case TV_SHOT:
 		case TV_ARROW:
 		case TV_BOLT:
-		{
-			if (power == 2)
-			{
-				int ego_power;
-
-				ego_power = make_ego_item(o_ptr, lev, (bool)(power > 0));
-
-				if (ego_power) power = ego_power;
-			}
-
-			if (power > 0)
-				apply_magic_weapon(o_ptr, lev, power);
-
+			apply_magic_weapon(o_ptr, lev, power);
 			break;
-		}
 
 		case TV_DRAG_ARMOR:
 		case TV_HARD_ARMOR:
@@ -792,22 +782,10 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 		case TV_CLOAK:
 		case TV_GLOVES:
 		case TV_BOOTS:
-		{
-			if (power == 2)
-			{
-				int ego_power;
-
-				ego_power = make_ego_item(o_ptr, lev, (bool)(power > 0));
-
-				if (ego_power) power = ego_power;
-			}
-
-			if (power) apply_magic_armour(o_ptr, lev, power);
-
+			apply_magic_armour(o_ptr, lev, power);
 			break;
-		}
 
-		case TV_RING: {
+		case TV_RING:
 			if (o_ptr->sval == SV_RING_SPEED) {
 				/* Super-charge the ring */
 				while (one_in_(2))
@@ -817,9 +795,8 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 				if (OPT(cheat_peek)) object_mention(o_ptr);
 			}
 			break;
-		}
 
-		case TV_AMULET: {
+		case TV_AMULET:
 			switch (o_ptr->sval) {
 				case SV_AMULET_THE_MAGI:
 				case SV_AMULET_DEVOTION:
@@ -829,13 +806,8 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 					if (OPT(cheat_peek)) object_mention(o_ptr);
 			}
 			break;
-		}
 
 		case TV_LIGHT:
-		{
-			if (power == 2)
-				make_ego_item(o_ptr, lev, (bool)(power > 0));
-
 			/* Default fuel levels */
 			if (o_ptr->sval == SV_LIGHT_TORCH)
 				o_ptr->timeout = DEFAULT_TORCH;
@@ -843,10 +815,8 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 				o_ptr->timeout = DEFAULT_LAMP;
 
 			break;
-		}
 
 		case TV_CHEST:
-		{
 			/* Hack -- skip ruined chests */
 			if (o_ptr->kind->level <= 0) break;
 
@@ -854,10 +824,10 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 			o_ptr->pval[DEFAULT_PVAL] = randint1(o_ptr->kind->level);
 
 			/* Never exceed "difficulty" of 55 to 59 */
-			if (o_ptr->pval[DEFAULT_PVAL] > 55) o_ptr->pval[DEFAULT_PVAL] = (s16b)(55 + randint0(5));
+			if (o_ptr->pval[DEFAULT_PVAL] > 55)
+				o_ptr->pval[DEFAULT_PVAL] = (s16b)(55 + randint0(5));
 
 			break;
-		}
 	}
 
 
