@@ -62,6 +62,7 @@ extern size_t my_strcat(char *buf, const char *src, size_t bufsize);
 /* Test equality, prefix, suffix */
 extern bool streq(const char *s, const char *t);
 extern bool prefix(const char *s, const char *t);
+extern bool prefix_i(const char *s, const char *t);
 extern bool suffix(const char *s, const char *t);
 
 #define streq(s, t)		(!strcmp(s, t))

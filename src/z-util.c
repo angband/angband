@@ -221,6 +221,27 @@ bool prefix(const char *s, const char *t)
 }
 
 
+/*
+ * Determine if string "t" is a prefix of string "s" - case insensitive.
+ */
+bool prefix_i(const char *s, const char *t)
+{
+	/* Scan "t" */
+	while (*t)
+	{
+		if (toupper((unsigned char)*t) != toupper((unsigned char)*s))
+			return (FALSE);
+		else
+		{
+			t++;
+			s++;
+		}
+	}
+
+	/* Matched, we have a prefix */
+	return (TRUE);
+}
+
 
 /*
  * Redefinable "plog" action

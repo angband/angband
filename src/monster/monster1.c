@@ -2413,15 +2413,13 @@ void display_roff(int r_idx)
 
 /*
  * Return the r_idx of the monster with the given name.
- *
- * Note: on the rare occasions where two different entries have
- * the same name (such as novice mages), we return the index of the
- * first entry that matches. It would probably be a good idea in the
- * future to make sure all monsters have distinct names.
+ * If no monster has the exact name given, returns the r_idx
+ * of the first monster having the given name as a prefix.
  */
 int lookup_monster(const char *name)
 {
 	int i;
+	int best_match = -1;
 
 	/* Look for it */
 	for (i = 1; i < z_info->r_max; i++)
@@ -2429,11 +2427,16 @@ int lookup_monster(const char *name)
 		monster_race *r_ptr = &r_info[i];
 
 		/* Found a match */
-		if (r_ptr->name && streq(name, r_ptr->name))
-			return i;
+		if (r_ptr->name && prefix_i(r_ptr->name, name))
+		{
+			if (my_stricmp(r_ptr->name, name) == 0)
+				return i;
+			else if (best_match == -1)
+				best_match = i;
+		}
 	}
 
-	return -1;
+	return best_match;
 }
 
 /*
