@@ -36,6 +36,7 @@
 #define GREAT_EGO   20
 
 
+
 static bool kind_is_good(const object_kind *);
 
 static u32b obj_total[MAX_DEPTH];
@@ -186,9 +187,102 @@ static void object_mention(const object_type *o_ptr)
 }
 
 
+
+/*** Make an ego item ***/
+
+static const int ego_sustains[] =
+{
+	OF_SUST_STR,
+	OF_SUST_INT,
+	OF_SUST_WIS,
+	OF_SUST_DEX,
+	OF_SUST_CON,
+	OF_SUST_CHR,
+};
+
+void set_ego_xtra_sustain(bitflag flags[OF_SIZE])
+{
+	size_t i;
+
+	of_wipe(flags);
+
+	for (i = 0; i < N_ELEMENTS(ego_sustains); i++)
+		of_on(flags, ego_sustains[i]);
+}
+
+static const int ego_resists[] =
+{
+	OF_RES_POIS,
+	OF_RES_LIGHT,
+	OF_RES_DARK,
+	OF_RES_SOUND,
+	OF_RES_SHARD,
+	OF_RES_NEXUS,
+	OF_RES_NETHR,
+	OF_RES_CHAOS,
+	OF_RES_DISEN,
+};
+
+void set_ego_xtra_resist(bitflag flags[OF_SIZE])
+{
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(ego_resists); i++)
+		of_on(flags, ego_resists[i]);
+}
+
+static const int ego_powers[] =
+{
+	OF_SLOW_DIGEST,
+	OF_FEATHER,
+	OF_LIGHT,
+	OF_REGEN,
+	OF_TELEPATHY,
+	OF_SEE_INVIS,
+	OF_FREE_ACT,
+	OF_HOLD_LIFE,
+	OF_RES_BLIND,
+	OF_RES_CONFU,
+	OF_RES_FEAR,
+};
+
+void set_ego_xtra_power(bitflag flags[OF_SIZE])
+{
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(ego_powers); i++)
+		of_on(flags, ego_powers[i]);
+}
+
+/**
+ * This is a safe way to choose a random new flag to add to an object.
+ * It takes the existing flags, an array of new attrs, and the size of
+ * the array, and returns an entry from attrs, or 0 if there are no
+ * new attrs.
+ */
+static int get_new_attr(bitflag flags[OF_SIZE], const int attrs[], size_t size)
+{
+	size_t i;
+	int options = 0;
+	int flag = 0;
+
+	for (i = 0; i < size; i++)
+	{
+		/* skip this one if the flag is already present */
+		if (of_has(flags, attrs[i])) continue;
+
+		/* each time we find a new possible option, we have a 1-in-N chance of
+		 * choosing it and an (N-1)-in-N chance of keeping a previous one */
+		if (one_in_(++options)) flag = attrs[i];
+	}
+
+	return flag;
+}
+
+
 /*
- * Try to find an ego-item for an object, setting name2 if successful.  We do
- * not apply any bonuses here, that's all done in apply_magic().
+ * Try to find an ego-item for an object, setting name2 if successful and
+ * applying various bonuses.
  *
  * Returns TRUE if an ego item is created, FALSE otherwise.
  */
@@ -200,9 +294,11 @@ static bool make_ego_item(object_type *o_ptr, int level)
 
 	long value, total;
 
-	ego_item_type *e_ptr;
-
 	alloc_entry *table = alloc_ego_table;
+
+	ego_item_type *ego;
+
+	bitflag flags[OF_SIZE];
 
 
 	/* Fail if object already is ego or artifact */
@@ -236,22 +332,22 @@ static bool make_ego_item(object_type *o_ptr, int level)
 		e_idx = table[i].index;
 
 		/* Get the actual kind */
-		e_ptr = &e_info[e_idx];
+		ego = &e_info[e_idx];
 
 		/* XXX Avoid cursed items */
-		if (cursed_p(e_ptr)) continue;
+		if (cursed_p(ego)) continue;
 
 		/* Test if this is a legal ego-item type for this object */
 		for (j = 0; j < EGO_TVALS_MAX; j++)
 		{
 			/* Require identical base type */
-			if (o_ptr->tval == e_ptr->tval[j])
+			if (o_ptr->tval == ego->tval[j])
 			{
 				/* Require sval in bounds, lower */
-				if (o_ptr->sval >= e_ptr->min_sval[j])
+				if (o_ptr->sval >= ego->min_sval[j])
 				{
 					/* Require sval in bounds, upper */
-					if (o_ptr->sval <= e_ptr->max_sval[j])
+					if (o_ptr->sval <= ego->max_sval[j])
 					{
 						/* Accept */
 						table[i].prob3 = table[i].prob2;
@@ -285,6 +381,37 @@ static bool make_ego_item(object_type *o_ptr, int level)
 	/* We have one */
 	e_idx = (byte)table[i].index;
 	o_ptr->name2 = e_idx;
+
+	ego = &e_info[o_ptr->name2];
+	object_flags(o_ptr, flags);
+
+	/* Extra powers */
+	if (ego->xtra == OBJECT_XTRA_TYPE_SUSTAIN)
+		of_on(o_ptr->flags,
+				get_new_attr(flags, ego_sustains, N_ELEMENTS(ego_sustains)));
+	else if (ego->xtra == OBJECT_XTRA_TYPE_RESIST)
+		of_on(o_ptr->flags,
+				get_new_attr(flags, ego_resists, N_ELEMENTS(ego_resists)));
+	else if (ego->xtra == OBJECT_XTRA_TYPE_POWER)
+		of_on(o_ptr->flags,
+				get_new_attr(flags, ego_powers, N_ELEMENTS(ego_powers)));
+
+	/* Apply extra ego bonuses */
+	o_ptr->to_h += randcalc(ego->to_h, level, RANDOMISE);
+	o_ptr->to_d += randcalc(ego->to_d, level, RANDOMISE);
+	o_ptr->to_a += randcalc(ego->to_a, level, RANDOMISE);
+
+	/* Apply ego pvals */
+	for (i = 0; i < ego->num_pvals; i++) {
+		if (!o_ptr->pval[i]) o_ptr->num_pvals++;
+		o_ptr->pval[i] += randcalc(ego->pval[i], level, RANDOMISE);
+	}
+
+	/* Hack -- apply rating bonus */
+	cave->rating += ego->rating;
+
+	/* Cheat -- describe the item */
+	if (OPT(cheat_peek)) object_mention(o_ptr);
 
 	return TRUE;
 }
@@ -558,96 +685,6 @@ static void apply_magic_armour(object_type *o_ptr, int level, int power)
 }
 
 
-static const int ego_sustains[] =
-{
-	OF_SUST_STR,
-	OF_SUST_INT,
-	OF_SUST_WIS,
-	OF_SUST_DEX,
-	OF_SUST_CON,
-	OF_SUST_CHR,
-};
-
-void set_ego_xtra_sustain(bitflag flags[OF_SIZE])
-{
-	size_t i;
-
-	of_wipe(flags);
-
-	for (i = 0; i < N_ELEMENTS(ego_sustains); i++)
-		of_on(flags, ego_sustains[i]);
-}
-
-static const int ego_resists[] =
-{
-	OF_RES_POIS,
-	OF_RES_LIGHT,
-	OF_RES_DARK,
-	OF_RES_SOUND,
-	OF_RES_SHARD,
-	OF_RES_NEXUS,
-	OF_RES_NETHR,
-	OF_RES_CHAOS,
-	OF_RES_DISEN,
-};
-
-void set_ego_xtra_resist(bitflag flags[OF_SIZE])
-{
-	size_t i;
-
-	for (i = 0; i < N_ELEMENTS(ego_resists); i++)
-		of_on(flags, ego_resists[i]);
-}
-
-static const int ego_powers[] =
-{
-	OF_SLOW_DIGEST,
-	OF_FEATHER,
-	OF_LIGHT,
-	OF_REGEN,
-	OF_TELEPATHY,
-	OF_SEE_INVIS,
-	OF_FREE_ACT,
-	OF_HOLD_LIFE,
-	OF_RES_BLIND,
-	OF_RES_CONFU,
-	OF_RES_FEAR,
-};
-
-void set_ego_xtra_power(bitflag flags[OF_SIZE])
-{
-	size_t i;
-
-	for (i = 0; i < N_ELEMENTS(ego_powers); i++)
-		of_on(flags, ego_powers[i]);
-}
-
-/**
- * This is a safe way to choose a random new flag to add to an object.
- * It takes the existing flags, an array of new attrs, and the size of
- * the array, and returns an entry from attrs, or 0 if there are no
- * new attrs.
- */
-static int get_new_attr(bitflag flags[OF_SIZE], const int attrs[], size_t size)
-{
-	size_t i;
-	int options = 0;
-	int flag = 0;
-
-	for (i = 0; i < size; i++)
-	{
-		/* skip this one if the flag is already present */
-		if (of_has(flags, attrs[i])) continue;
-
-		/* each time we find a new possible option, we have a 1-in-N chance of
-		 * choosing it and an (N-1)-in-N chance of keeping a previous one */
-		if (one_in_(++options)) flag = attrs[i];
-	}
-
-	return flag;
-}
-
-
 /*
  * Prepare an object based on an object kind.
  * Use the specified randomization aspect
@@ -830,106 +867,17 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 			break;
 	}
 
+	/* Apply minimums from ego items */
+	if (o_ptr->name2) {
+		ego_item_type *ego = &e_info[o_ptr->name2];
 
-	/* Hack -- analyze ego-items */
-	if (o_ptr->name2)
-	{
-		ego_item_type *e_ptr = &e_info[o_ptr->name2];
-		bitflag flags[OF_SIZE];
+		if (o_ptr->to_h < ego->min_to_h) o_ptr->to_h = ego->min_to_h;
+		if (o_ptr->to_d < ego->min_to_d) o_ptr->to_d = ego->min_to_d;
+		if (o_ptr->to_a < ego->min_to_a) o_ptr->to_a = ego->min_to_a;
 
-		object_flags(o_ptr, flags);
-
-		/* Extra powers */
-		if (e_ptr->xtra == OBJECT_XTRA_TYPE_SUSTAIN)
-			of_on(o_ptr->flags, get_new_attr(flags, ego_sustains,
-											N_ELEMENTS(ego_sustains)));
-		else if (e_ptr->xtra == OBJECT_XTRA_TYPE_RESIST)
-			of_on(o_ptr->flags, get_new_attr(flags, ego_resists,
-											N_ELEMENTS(ego_resists)));
-		else if (e_ptr->xtra == OBJECT_XTRA_TYPE_POWER)
-			of_on(o_ptr->flags, get_new_attr(flags, ego_powers,
-											N_ELEMENTS(ego_powers)));
-
-		/* Hack -- acquire "cursed" flags */
-		if (cursed_p(e_ptr))
-		{
-			bitflag curse_flags[OF_SIZE];
-
-			of_copy(curse_flags, e_ptr->flags);
-			flags_mask(curse_flags, OF_SIZE, OF_CURSE_MASK, FLAG_END);
-			of_union(o_ptr->flags, curse_flags);
-		}
-
-		/* Hack -- apply extra penalties if needed */
-		if (cursed_p(o_ptr))
-		{
-			/* Apply extra ego bonuses */
-			o_ptr->to_h -= randcalc(e_ptr->to_h, lev, RANDOMISE);
-			o_ptr->to_d -= randcalc(e_ptr->to_d, lev, RANDOMISE);
-			o_ptr->to_a -= randcalc(e_ptr->to_a, lev, RANDOMISE);
-
-			/* CC: multiple pvals left untouched pending new curses */
-			o_ptr->pval[DEFAULT_PVAL] -= randcalc(e_ptr->pval[DEFAULT_PVAL], lev, RANDOMISE);
-
-			/* Apply minima */
-			if (o_ptr->to_h > -1 * e_ptr->min_to_h)
-				o_ptr->to_h = -1 * e_ptr->min_to_h;
-			if (o_ptr->to_d > -1 * e_ptr->min_to_d)
-				o_ptr->to_d = -1 * e_ptr->min_to_d;
-			if (o_ptr->to_a > -1 * e_ptr->min_to_a)
-				o_ptr->to_a = -1 * e_ptr->min_to_a;
-
-			if (o_ptr->pval[DEFAULT_PVAL]
-				> -1 * e_ptr->min_pval[DEFAULT_PVAL])
-				o_ptr->pval[DEFAULT_PVAL]
-					= -1 * e_ptr->min_pval[DEFAULT_PVAL];
-		}
-
-		/* Hack -- apply extra bonuses if needed */
-		else
-		{
-			/* Apply extra ego bonuses */
-			o_ptr->to_h += randcalc(e_ptr->to_h, lev, RANDOMISE);
-			o_ptr->to_d += randcalc(e_ptr->to_d, lev, RANDOMISE);
-			o_ptr->to_a += randcalc(e_ptr->to_a, lev, RANDOMISE);
-
-			/* Apply ego pvals */
-			for (i = 0; i < e_ptr->num_pvals; i++) {
-				if (!o_ptr->pval[i]) o_ptr->num_pvals++;
-				o_ptr->pval[i] += randcalc(e_ptr->pval[i], lev, RANDOMISE);
-			}
-
-			/* Apply minimums */
-			if (o_ptr->to_h < e_ptr->min_to_h) o_ptr->to_h = e_ptr->min_to_h;
-			if (o_ptr->to_d < e_ptr->min_to_d) o_ptr->to_d = e_ptr->min_to_d;
-			if (o_ptr->to_a < e_ptr->min_to_a) o_ptr->to_a = e_ptr->min_to_a;
-
-			for (i = 0; i < e_ptr->num_pvals; i++)
-			{
-				if (o_ptr->pval[i] < e_ptr->min_pval[i])
-					o_ptr->pval[i] = e_ptr->min_pval[i];
-			}
-		}
-
-		/* Hack -- apply rating bonus */
-		cave->rating += e_ptr->rating;
-
-		/* Cheat -- describe the item */
-		if (OPT(cheat_peek)) object_mention(o_ptr);
-
-		/* Done */
-		return;
-	}
-
-
-	/* Hack -- acquire "cursed" flag */
-	if (o_ptr->kind && cursed_p(o_ptr->kind))
-	{
-		bitflag curse_flags[OF_SIZE];
-
-		of_copy(curse_flags, o_ptr->kind->flags);
-		flags_mask(curse_flags, OF_SIZE, OF_CURSE_MASK, FLAG_END);
-		of_union(o_ptr->flags, curse_flags);
+		for (i = 0; i < ego->num_pvals; i++)
+			if (o_ptr->pval[i] < ego->min_pval[i])
+					o_ptr->pval[i] = ego->min_pval[i];
 	}
 }
 
