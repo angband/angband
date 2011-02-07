@@ -2068,7 +2068,7 @@ E:GAIN_EXP
 N:318:Cure Light Wounds
 G:!:d
 I:75:9
-W:0:0:4:30
+W:0:0:4:20
 A:100:1 to 15
 M:100:2d3
 F:EASY_KNOW
