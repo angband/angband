@@ -647,129 +647,6 @@ static void a_m_aux_2(object_type *o_ptr, int level, int power)
 }
 
 
-
-/*
- * Apply magic to an item known to be a "ring" or "amulet"
- *
- * Hack -- note special rating boost for ring of speed
- * Hack -- note special rating boost for certain amulets
- * Hack -- note special "pval boost" code for ring of speed
- * Hack -- note that some items must be cursed (or blessed)
- */
-static void a_m_aux_3(object_type *o_ptr, int level, int power)
-{
-	/* Apply curses */
-	if (power < 0)
-	{
-		/* Rings */
-		if (o_ptr->tval == TV_RING)
-		{
-			switch (o_ptr->sval)
-			{
-				case SV_RING_STRENGTH:
-				case SV_RING_CONSTITUTION:
-				case SV_RING_DEXTERITY:
-				case SV_RING_INTELLIGENCE:
-				case SV_RING_SEARCHING:
-				case SV_RING_DAMAGE:
-				case SV_RING_ACCURACY:
-				case SV_RING_PROTECTION:
-				case SV_RING_SLAYING:
-				{
-					/* CC: multiple pvals deliberately not 
-					 * affected pending new curses */
-					o_ptr->pval[DEFAULT_PVAL] = -o_ptr->pval[DEFAULT_PVAL];
-					o_ptr->to_h = -o_ptr->to_h;
-					o_ptr->to_d = -o_ptr->to_d;
-					o_ptr->to_a = -o_ptr->to_a;
-					of_on(o_ptr->flags, OF_LIGHT_CURSE);
-
-					break;
-				}
-			}
-		}
-
-		/* Amulets */
-		else if (o_ptr->tval == TV_AMULET)
-		{
-			switch (o_ptr->sval)
-			{
-				case SV_AMULET_WISDOM:
-				case SV_AMULET_CHARISMA:
-				case SV_AMULET_INFRAVISION:
-				case SV_AMULET_SEARCHING:
-				{
-					/* CC: multiple pvals deliberately not 
-					 * affected pending new curses */
-					o_ptr->pval[DEFAULT_PVAL] = -o_ptr->pval[DEFAULT_PVAL];
-					o_ptr->to_h = -o_ptr->to_h;
-					o_ptr->to_d = -o_ptr->to_d;
-					o_ptr->to_a = -o_ptr->to_a;
-					of_on(o_ptr->flags, OF_LIGHT_CURSE);
-
-					break;
-				}
-			}
-		}
-	}
-
-
-	/* Apply magic (good or bad) according to type */
-	switch (o_ptr->tval)
-	{
-		case TV_RING:
-		{
-			/* Analyze */
-			
-			switch (o_ptr->sval)
-			{
-				case SV_RING_SPEED:
-				{
-					/* Super-charge the ring */
-					while (randint0(100) < 50) o_ptr->pval[which_pval(o_ptr, OF_SPEED)]++;
-
-					if (power >= 0)
-					{
-						/* Rating boost */
-						cave->rating += 25;
-
-						/* Mention the item */
-						if (OPT(cheat_peek)) object_mention(o_ptr);
-					}
-
-					break;
-				}
-			}
-
-			break;
-		}
-
-		case TV_AMULET:
-		{
-			/* Analyze */
-			switch (o_ptr->sval)
-			{
-				case SV_AMULET_THE_MAGI:
-				case SV_AMULET_DEVOTION:
-				case SV_AMULET_WEAPONMASTERY:
-				case SV_AMULET_TRICKERY:
-				{
-					/* Boost the rating */
-					cave->rating += 25;
-
-					/* Mention the item */
-					if (OPT(cheat_peek)) object_mention(o_ptr);
-
-					break;
-				}
-			}
-
-			break;
-		}
-	}
-}
-
-
 /*
  * Apply magic to an item known to be "boring"
  *
@@ -988,16 +865,6 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 		if (great || (randint0(100) < great_chance)) power = 2;
 	}
 
-	/* Roll for "cursed" */
-	else if (randint0(100) < good_chance)
-	{
-		/* Assume "cursed" */
-		power = -1;
-
-		/* Roll for "broken" */
-		if (randint0(100) < great_chance) power = -2;
-	}
-
 
 	/* Roll for artifact creation */
 	if (allow_artifacts)
@@ -1031,7 +898,7 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 		case TV_ARROW:
 		case TV_BOLT:
 		{
-			if (power == 2 || power == -2)
+			if (power == 2)
 			{
 				int ego_power;
 
@@ -1055,7 +922,7 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 		case TV_GLOVES:
 		case TV_BOOTS:
 		{
-			if (power == 2 || power == -2)
+			if (power == 2)
 			{
 				int ego_power;
 
@@ -1069,17 +936,33 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 			break;
 		}
 
-		case TV_RING:
-		case TV_AMULET:
-		{
-			if (!power && (randint0(100) < 50)) power = -1;
-			a_m_aux_3(o_ptr, lev, power);
+		case TV_RING: {
+			if (o_ptr->sval == SV_RING_SPEED) {
+				/* Super-charge the ring */
+				while (one_in_(2))
+					o_ptr->pval[which_pval(o_ptr, OF_SPEED)]++;
+
+				cave->rating += 25;
+				if (OPT(cheat_peek)) object_mention(o_ptr);
+			}
+			break;
+		}
+
+		case TV_AMULET: {
+			switch (o_ptr->sval) {
+				case SV_AMULET_THE_MAGI:
+				case SV_AMULET_DEVOTION:
+				case SV_AMULET_WEAPONMASTERY:
+				case SV_AMULET_TRICKERY:
+					cave->rating += 25;
+					if (OPT(cheat_peek)) object_mention(o_ptr);
+			}
 			break;
 		}
 
 		case TV_LIGHT:
 		{
-			if (power == 2 || power == -2)
+			if (power == 2)
 				make_ego_item(o_ptr, lev, (bool)(power > 0));
 
 			/* Fuel it */
