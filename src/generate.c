@@ -418,6 +418,7 @@ static int next_to_walls(struct cave *c, int y, int x) {
 
 	assert(in_bounds_fully(y, x));
 
+	/* XXX this should include secret doors too */
 	if (c->feat[y+1][x] >= FEAT_WALL_EXTRA) k++;
 	if (c->feat[y-1][x] >= FEAT_WALL_EXTRA) k++;
 	if (c->feat[y][x+1] >= FEAT_WALL_EXTRA) k++;

@@ -567,9 +567,6 @@ void player_outfit(struct player *p)
 		object_flavor_aware(i_ptr);
 		object_notice_everything(i_ptr);
 
-		/* apply_magic ensures that torches have light set */
-		apply_magic(i_ptr, 0, FALSE, FALSE, FALSE);
-
 		inven_carry(p, i_ptr);
 		si->kind->everseen = TRUE;
 
