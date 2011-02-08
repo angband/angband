@@ -2168,7 +2168,7 @@ static void describe_monster_movement(int r_idx, const monster_lore *l_ptr)
 /*
  * Learn everything about a monster (by cheating)
  */
-static void cheat_monster_lore(int r_idx, monster_lore *l_ptr)
+void cheat_monster_lore(int r_idx, monster_lore *l_ptr)
 {
 	const monster_race *r_ptr = &r_info[r_idx];
 

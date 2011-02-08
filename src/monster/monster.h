@@ -11,6 +11,7 @@
 extern bool mon_inc_timed(int m_idx, int idx, int v, u16b flag);
 extern bool mon_dec_timed(int m_idx, int idx, int v, u16b flag);
 extern bool mon_clear_timed(int m_idx, int idx, u16b flag);
+extern void cheat_monster_lore(int r_idx, monster_lore *l_ptr);
 extern void describe_monster(int r_idx, bool spoilers);
 extern void roff_top(int r_idx);
 extern void screen_roff(int r_idx);

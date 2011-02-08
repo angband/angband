@@ -1793,6 +1793,70 @@ void do_cmd_debug(void)
 			break;
 		}
 
+		/* Get full recall for a monster */
+		case 'r':
+		{
+			s16b r_idx = 0; 
+
+			if (p_ptr->command_arg > 0)
+			{
+				r_idx = p_ptr->command_arg;
+			}
+			else
+			{
+				char sym;
+				char *prompt =
+					"Full recall for [a]ll monsters or [s]pecific monster? ";
+
+				if (!get_com(prompt, &sym)) return;
+
+				if (sym == 'a' || sym == 'A')
+				{
+					int i;
+					for (i = 0; i < z_info->r_max; i++)
+						cheat_monster_lore(i, &l_list[i]);
+					break;
+				}
+				else if (sym == 's' || sym == 'S')
+				{
+					char name[80] = "";
+					
+					/* Avoid the prompt getting in the way */
+					screen_save();
+
+					/* Prompt */
+					prt("Which monster? ", 0, 0);
+
+					/* Get the name */
+					if (askfor_aux(name, sizeof(name), NULL))
+					{
+						/* See if a r_idx was entered */
+						r_idx = get_idx_from_name(name);
+						
+						/* If not, find the monster with that name */
+						if (r_idx < 1)
+							r_idx = lookup_monster(name); 
+					}
+					
+					/* Reload the screen */
+					screen_load();
+				}
+				else
+				{
+					/* Assume user aborts */
+					break;
+				}
+			}
+
+			/* Did we find a valid monster? */
+			if (r_idx > 0)
+				cheat_monster_lore(r_idx, &l_list[r_idx]);
+			else
+				msg("No monster found.");
+	
+			break;
+		}
+
 		/* Summon Random Monster(s) */
 		case 's':
 		{
