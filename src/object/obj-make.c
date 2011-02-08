@@ -511,25 +511,16 @@ static void apply_magic_weapon(object_type *o_ptr, int level, int power)
  */
 static void apply_magic_armour(object_type *o_ptr, int level, int power)
 {
-	int toac1 = randint1(5) + m_bonus(5, level);
-	int toac2 = m_bonus(10, level);
+	if (power <= 0)
+		return;
 
-	if (power == 1)
-		o_ptr->to_a += toac1;
-	else if (power == 2)
-		o_ptr->to_a += toac1 + toac2;
+	o_ptr->to_a += randint1(5) + m_bonus(5, level);
+	if (power > 1)
+		o_ptr->to_a += m_bonus(10, level);
 
-	/* Analyze type */
-	switch (o_ptr->tval)
-	{
-		case TV_DRAG_ARMOR:
-		{
-			/* Rating boost */
-			cave->rating += object_power(o_ptr, FALSE, NULL, TRUE) / 15;
-
-			break;
-		}
-	}
+	/* Rating boost */
+	if (o_ptr->tval == TV_DRAG_ARMOR)
+		cave->rating += object_power(o_ptr, FALSE, NULL, TRUE) / 15;
 }
 
 
