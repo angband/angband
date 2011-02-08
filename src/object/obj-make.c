@@ -517,10 +517,6 @@ static void apply_magic_armour(object_type *o_ptr, int level, int power)
 	o_ptr->to_a += randint1(5) + m_bonus(5, level);
 	if (power > 1)
 		o_ptr->to_a += m_bonus(10, level);
-
-	/* Rating boost */
-	if (o_ptr->tval == TV_DRAG_ARMOR)
-		cave->rating += object_power(o_ptr, FALSE, NULL, TRUE) / 15;
 }
 
 
@@ -659,18 +655,6 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 				/* Super-charge the ring */
 				while (one_in_(2))
 					o_ptr->pval[which_pval(o_ptr, OF_SPEED)]++;
-
-				cave->rating += 25;
-			}
-			break;
-
-		case TV_AMULET:
-			switch (o_ptr->sval) {
-				case SV_AMULET_THE_MAGI:
-				case SV_AMULET_DEVOTION:
-				case SV_AMULET_WEAPONMASTERY:
-				case SV_AMULET_TRICKERY:
-					cave->rating += 25;
 			}
 			break;
 
@@ -690,6 +674,9 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 
 	/* Apply minima from ego items if necessary */
 	ego_apply_minima(o_ptr);
+
+	/* Add a certain amount to the rating of the level */
+	cave->rating += object_power(o_ptr, FALSE, NULL, TRUE) / 15;
 }
 
 
