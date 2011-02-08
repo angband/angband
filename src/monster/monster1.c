@@ -2193,14 +2193,16 @@ void cheat_monster_lore(int r_idx, monster_lore *l_ptr)
 	}
 
 	/* Hack -- maximal drops */
+	l_ptr->drop_item = 0;
+	
 	if (rf_has(r_ptr->flags, RF_DROP_4))
-		l_ptr->drop_item = 6;
-	else if (rf_has(r_ptr->flags, RF_DROP_3))
-		l_ptr->drop_item = 4;
-	else if (rf_has(r_ptr->flags, RF_DROP_2))
-		l_ptr->drop_item = 3;
-	else if (rf_has(r_ptr->flags, RF_DROP_1))
-		l_ptr->drop_item = 3;
+		l_ptr->drop_item += 6;
+	if (rf_has(r_ptr->flags, RF_DROP_3))
+		l_ptr->drop_item += 4;
+	if (rf_has(r_ptr->flags, RF_DROP_2))
+		l_ptr->drop_item += 3;
+	if (rf_has(r_ptr->flags, RF_DROP_1))
+		l_ptr->drop_item++;
 
 	if (rf_has(r_ptr->flags, RF_DROP_40))
 		l_ptr->drop_item++;

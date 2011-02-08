@@ -675,14 +675,14 @@ static void wiz_reroll_item(object_type *o_ptr)
 		}
 
 		/* Apply good magic, but first clear object */
-		else if (ch == 'g' || ch == 'g')
+		else if (ch == 'g' || ch == 'G')
 		{
 			object_prep(i_ptr, o_ptr->kind, p_ptr->depth, RANDOMISE);
 			apply_magic(i_ptr, p_ptr->depth, FALSE, TRUE, FALSE);
 		}
 
 		/* Apply great magic, but first clear object */
-		else if (ch == 'e' || ch == 'e')
+		else if (ch == 'e' || ch == 'E')
 		{
 			object_prep(i_ptr, o_ptr->kind, p_ptr->depth, RANDOMISE);
 			apply_magic(i_ptr, p_ptr->depth, FALSE, TRUE, TRUE);
@@ -1031,7 +1031,7 @@ static void do_cmd_wiz_play(void)
 			wiz_tweak_curse(i_ptr);
 		else if (ch == 's' || ch == 'S')
 			wiz_statistics(i_ptr, p_ptr->depth);
-		else if (ch == 'r' || ch == 'r')
+		else if (ch == 'r' || ch == 'R')
 			wiz_reroll_item(i_ptr);
 		else if (ch == 't' || ch == 'T')
 			wiz_tweak_item(i_ptr);
@@ -1187,6 +1187,9 @@ static void do_cmd_wiz_cure_all(void)
 
 	/* Redraw everything */
 	do_cmd_redraw();
+	
+	/* Give the player some feedback */
+	msg("You feel *much* better!");
 }
 
 
@@ -1260,6 +1263,8 @@ static void do_cmd_wiz_learn(void)
 			object_flavor_aware(i_ptr);
 		}
 	}
+	
+	msg("You now know about many items!");
 }
 
 
@@ -1646,6 +1651,8 @@ void do_cmd_debug(void)
 					/* Did we find a valid artifact? */
 					if (a_idx != -1)
 						wiz_create_artifact(a_idx);
+					else
+						msg("No artifact found.");
 				}
 				
 				/* Reload the screen */
@@ -1666,6 +1673,7 @@ void do_cmd_debug(void)
 		{
 			disconnect_stats();
 		}
+
 		/* Edit character */
 		case 'e':
 		{
@@ -1686,7 +1694,6 @@ void do_cmd_debug(void)
 			acquirement(py, px, p_ptr->depth, p_ptr->command_arg, FALSE);
 			break;
 		}
-
 
 		/* GF demo */
 		case 'G':
@@ -1733,14 +1740,15 @@ void do_cmd_debug(void)
 		/* Summon Named Monster */
 		case 'n':
 		{
+			s16b r_idx = 0; 
+
 			if (p_ptr->command_arg > 0)
 			{
-				do_cmd_wiz_named(p_ptr->command_arg, TRUE);
+				r_idx = p_ptr->command_arg;
 			}
 			else
 			{
 				char name[80] = "";
-				s16b r_idx;
 
 				/* Avoid the prompt getting in the way */
 				screen_save();
@@ -1758,17 +1766,18 @@ void do_cmd_debug(void)
 					if (r_idx < 1)
 						r_idx = lookup_monster(name); 
 					
-					/* Did we find a valid monster? */
-					if (r_idx != -1)
-						do_cmd_wiz_named(r_idx, TRUE);
+					p_ptr->redraw |= (PR_MAP | PR_MONLIST);
+
+					/* Reload the screen */
+					screen_load();
 				}
-
-				p_ptr->redraw |= (PR_MAP | PR_MONLIST);
-
-				/* Reload the screen */
-				screen_load();
 			}
 
+			if (r_idx > 0)
+				do_cmd_wiz_named(r_idx, TRUE);
+			else
+				msg("No monster found.");
+			
 			break;
 		}
 
