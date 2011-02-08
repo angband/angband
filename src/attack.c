@@ -389,7 +389,7 @@ void ranged_helper(int item, int dir, int range, int shots, ranged_attack attack
 	}
 
 	/* Try the attack on the monster at (x, y) if any */
-	if (cave->m_idx[y][x]) {
+	if (cave->m_idx[y][x] > 0) {
 		monster_type *m_ptr = &mon_list[cave->m_idx[y][x]];
 		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 		int visible = m_ptr->ml;
