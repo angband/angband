@@ -1230,18 +1230,6 @@ void compact_objects(int size)
 	compact_objects(0);
 }
 
-/*
- * Mention artifact preservation for peeking wizards
- */
-static void mention_preserve(const object_type *o_ptr)
-{
-	char o_name[80];
-
-	/* Describe */
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE | ODESC_SPOIL);
-
-	msg("Preserving (%s)", o_name);
-}
 
 /*
  * Delete all the items when player leaves the level
@@ -1272,9 +1260,6 @@ void wipe_o_list(struct cave *c)
 			if ((!character_dungeon || !OPT(birth_no_preserve)) && !object_was_sensed(o_ptr))
 			{
 				a_ptr->created = FALSE;
-
-				/* Cheat -- Mention preserving */
-				if (OPT(cheat_peek)) mention_preserve(o_ptr);
 			}
 			else
 			{

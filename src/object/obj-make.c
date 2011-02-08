@@ -35,26 +35,6 @@
 #define GREAT_EGO   20
 
 
-/*
- * Cheat -- describe a created object for the user
- */
-static void object_mention(const object_type *o_ptr)
-{
-	char o_name[80];
-
-	/* Describe */
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE | ODESC_SPOIL);
-
-	/* Provide a silly message */
-	if (artifact_p(o_ptr))
-		msg("Artifact (%s)", o_name);
-	else if (ego_item_p(o_ptr))
-		msg("Ego-item (%s)", o_name);
-	else
-		msg("Object (%s)", o_name);
-}
-
-
 
 /*** Make an ego item ***/
 
@@ -278,9 +258,6 @@ static bool make_ego_item(object_type *o_ptr, int level)
 	/* Hack -- apply rating bonus */
 	cave->rating += ego->rating;
 
-	/* Cheat -- describe the item */
-	if (OPT(cheat_peek)) object_mention(o_ptr);
-
 	return TRUE;
 }
 
@@ -327,9 +304,6 @@ static void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
 
 	/* Set the good item flag */
 	cave->good_item = TRUE;
-
-	/* Cheat -- peek at the item */
-	if (OPT(cheat_peek)) object_mention(o_ptr);
 }
 
 
@@ -548,9 +522,6 @@ static void apply_magic_armour(object_type *o_ptr, int level, int power)
 			/* Rating boost */
 			cave->rating += object_power(o_ptr, FALSE, NULL, TRUE) / 15;
 
-			/* Mention the item */
-			if (OPT(cheat_peek)) object_mention(o_ptr);
-
 			break;
 		}
 	}
@@ -701,7 +672,6 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 					o_ptr->pval[which_pval(o_ptr, OF_SPEED)]++;
 
 				cave->rating += 25;
-				if (OPT(cheat_peek)) object_mention(o_ptr);
 			}
 			break;
 
@@ -712,7 +682,6 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 				case SV_AMULET_WEAPONMASTERY:
 				case SV_AMULET_TRICKERY:
 					cave->rating += 25;
-					if (OPT(cheat_peek)) object_mention(o_ptr);
 			}
 			break;
 
@@ -1004,13 +973,7 @@ bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good, bool gr
 
 	/* Notice "okay" out-of-depth objects */
 	if (!cursed_p(j_ptr) && (kind->level > c->depth))
-	{
-		/* Rating increase */
 		c->rating += (kind->alloc_min - c->depth);
-
-		/* Cheat -- peek at items */
-		if (OPT(cheat_peek)) object_mention(j_ptr);
-	}
 
 	return TRUE;
 }

@@ -66,14 +66,12 @@ extern const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 #define OPT_mouse_buttons		22
 #define OPT_notify_recharge			23
 
-#define OPT_cheat_peek				(OPT_CHEAT+0)
 #define OPT_cheat_hear				(OPT_CHEAT+1)
 #define OPT_cheat_room				(OPT_CHEAT+2)
 #define OPT_cheat_xtra				(OPT_CHEAT+3)
 #define OPT_cheat_know				(OPT_CHEAT+4)
 #define OPT_cheat_live				(OPT_CHEAT+5)
 
-#define OPT_score_peek				(OPT_SCORE+0)
 #define OPT_score_hear				(OPT_SCORE+1)
 #define OPT_score_room				(OPT_SCORE+2)
 #define OPT_score_xtra				(OPT_SCORE+3)

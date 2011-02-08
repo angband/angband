@@ -85,12 +85,12 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 
 	/* Cheat */
 	{
-		OPT_cheat_peek,
 		OPT_cheat_hear,
 		OPT_cheat_room,
 		OPT_cheat_xtra,
 		OPT_cheat_know,
 		OPT_cheat_live,
+		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
@@ -144,7 +144,7 @@ static const struct option options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 27 */
 { NULL,                  NULL,                                          FALSE }, /* 28 */
 { NULL,                  NULL,                                          FALSE }, /* 29 */
-{ "cheat_peek",          "Cheat: Peek into object creation",            FALSE }, /* 30 */
+{ NULL,                  NULL,                                          FALSE }, /* 30 */
 { "cheat_hear",          "Cheat: Peek into monster creation",           FALSE }, /* 31 */
 { "cheat_room",          "Cheat: Peek into dungeon creation",           FALSE }, /* 32 */
 { "cheat_xtra",          "Cheat: Peek into something else",             FALSE }, /* 33 */
@@ -154,7 +154,7 @@ static const struct option options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 37 */
 { NULL,                  NULL,                                          FALSE }, /* 38 */
 { NULL,                  NULL,                                          FALSE }, /* 39 */
-{ "score_peek",          "Score: Peek into object creation",            FALSE }, /* 40 */
+{ NULL,                  NULL,                                          FALSE }, /* 40 */
 { "score_hear",          "Score: Peek into monster creation",           FALSE }, /* 41 */
 { "score_room",          "Score: Peek into dungeon creation",           FALSE }, /* 42 */
 { "score_xtra",          "Score: Peek into something else",             FALSE }, /* 43 */
