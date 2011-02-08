@@ -321,12 +321,8 @@ void object_flags(const object_type *o_ptr, bitflag flags[OF_SIZE])
 	}
 
 	/* Obtain ego flags */
-	if (o_ptr->name2)
-	{
-		ego_item_type *e_ptr = &e_info[o_ptr->name2];
-
-		of_union(flags, e_ptr->flags);
-	}
+	if (o_ptr->ego)
+		of_union(flags, o_ptr->ego->flags);
 
 	/* Remove curse flags (use only the object's curse flags) */
 	flags_clear(flags, OF_SIZE, OF_CURSE_MASK, FLAG_END);
@@ -348,8 +344,8 @@ void object_flags_known(const object_type *o_ptr, bitflag flags[OF_SIZE])
 	if (object_flavor_is_aware(o_ptr))
 		of_union(flags, o_ptr->kind->flags);
 
-	if (o_ptr->name2 && easy_know(o_ptr))
-		of_union(flags, e_info[o_ptr->name2].flags);
+	if (o_ptr->ego && easy_know(o_ptr))
+		of_union(flags, o_ptr->ego->flags);
 }
 
 /*
@@ -377,12 +373,8 @@ void object_pval_flags(const object_type *o_ptr, bitflag flags[MAX_PVALS][OF_SIZ
 		}
 
 		/* Obtain ego flags */
-		if (o_ptr->name2)
-		{
-			ego_item_type *e_ptr = &e_info[o_ptr->name2];
-
-			of_union(flags[i], e_ptr->pval_flags[i]);
-		}
+		if (o_ptr->ego)
+			of_union(flags[i], o_ptr->ego->pval_flags[i]);
 
 		/* Obtain the object's flags */
 		of_union(flags[i], o_ptr->pval_flags[i]);
@@ -405,8 +397,8 @@ void object_pval_flags_known(const object_type *o_ptr, bitflag flags[MAX_PVALS][
 		if (object_flavor_is_aware(o_ptr))
 			of_union(flags[i], o_ptr->kind->pval_flags[i]);
 
-		if (o_ptr->name2 && easy_know(o_ptr))
-			of_union(flags[i], e_info[o_ptr->name2].pval_flags[i]);
+		if (o_ptr->ego && easy_know(o_ptr))
+			of_union(flags[i], o_ptr->ego->pval_flags[i]);
 	}
 }
 
@@ -1474,7 +1466,7 @@ static s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 
 		if ( (o_ptr->tval == TV_SHOT) || (o_ptr->tval == TV_ARROW) ||
   			(o_ptr->tval == TV_BOLT) || ((o_ptr->tval == TV_LIGHT)
-			&& (o_ptr->sval == SV_LIGHT_TORCH) && !o_ptr->name2) )
+			&& (o_ptr->sval == SV_LIGHT_TORCH) && !o_ptr->ego) )
 		{
 			value = value / AMMO_RESCALER;
 			if (value < 1) value = 1;
@@ -1699,7 +1691,7 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
 					return (FALSE);
 
 			/* Require identical ego-item types */
-			if (o_ptr->name2 != j_ptr->name2) return (FALSE);
+			if (o_ptr->ego != j_ptr->ego) return (FALSE);
 
 			/* Hack - Never stack recharging wearables ... */
 			if ((o_ptr->timeout || j_ptr->timeout) &&

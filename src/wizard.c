@@ -385,8 +385,8 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 	           o_ptr->kind->kidx, o_ptr->tval, o_ptr->sval, o_ptr->weight, o_ptr->timeout), 5, j);
 
 	/* CC: multiple pvals not shown, pending #1290 */
-	prt(format("number = %-3d  pval = %-5d  name1 = %-4d  name2 = %-4d  cost = %ld",
-	           o_ptr->number, o_ptr->pval[DEFAULT_PVAL], o_ptr->name1, o_ptr->name2, (long)object_value(o_ptr, 1, FALSE)), 6, j);
+	prt(format("number = %-3d  pval = %-5d  name1 = %-4d  egoidx = %-4d  cost = %ld",
+	           o_ptr->number, o_ptr->pval[DEFAULT_PVAL], o_ptr->name1, o_ptr->ego->eidx, (long)object_value(o_ptr, 1, FALSE)), 6, j);
 
 	prt("+------------FLAGS0------------+", 8, j);
 	prt("AFFECT..........SLAY.......BRAND", 9, j);
@@ -617,7 +617,12 @@ static void wiz_tweak_item(object_type *o_ptr)
 	WIZ_TWEAK(to_h);
 	WIZ_TWEAK(to_d);
 	WIZ_TWEAK(name1);
-	WIZ_TWEAK(name2);
+
+	p = "Enter new ego item index: ";
+	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->ego->eidx);
+	if (!get_string(p, tmp_val, 6)) return;
+	o_ptr->ego = &e_info[atoi(tmp_val)];
+	wiz_display_item(o_ptr, TRUE);
 }
 
 

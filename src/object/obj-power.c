@@ -411,17 +411,17 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			/* add launcher bonus for ego ammo, and multiply */
 			if (o_ptr->tval == TV_SHOT)
 			{
-				if (o_ptr->name2) p += (AVG_LAUNCHER_DMG * DAMAGE_POWER / 2);
+				if (o_ptr->ego) p += (AVG_LAUNCHER_DMG * DAMAGE_POWER / 2);
 				p = p * AVG_SLING_MULT * BOW_RESCALER / (20 * MAX_BLOWS);
 			}
 			if (o_ptr->tval == TV_ARROW)
 			{
-				if (o_ptr->name2) p += (AVG_LAUNCHER_DMG * DAMAGE_POWER / 2);
+				if (o_ptr->ego) p += (AVG_LAUNCHER_DMG * DAMAGE_POWER / 2);
 				p = p * AVG_BOW_MULT * BOW_RESCALER / (20 * MAX_BLOWS);
 			}
 			if (o_ptr->tval == TV_BOLT)
 			{
-				if (o_ptr->name2) p += (AVG_LAUNCHER_DMG * DAMAGE_POWER / 2);
+				if (o_ptr->ego) p += (AVG_LAUNCHER_DMG * DAMAGE_POWER / 2);
 				p = p * AVG_XBOW_MULT * BOW_RESCALER / (20 * MAX_BLOWS);
 			}
 			LOG_PRINT1("After multiplying ammo and rescaling, power is %d\n", p);

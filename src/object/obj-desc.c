@@ -357,8 +357,8 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 	if ((object_name_is_visible(o_ptr) || known) && o_ptr->name1)
 		strnfcat(buf, max, &end, " %s", a_info[o_ptr->name1].name);
 
-	else if ((spoil && o_ptr->name2) || object_ego_is_visible(o_ptr))
-		strnfcat(buf, max, &end, " %s", e_info[o_ptr->name2].name);
+	else if ((spoil && o_ptr->ego) || object_ego_is_visible(o_ptr))
+		strnfcat(buf, max, &end, " %s", o_ptr->ego->name);
 
 	else if (aware && !artifact_p(o_ptr) &&
 			(o_ptr->kind->flavor || o_ptr->kind->tval == TV_SCROLL))
@@ -629,7 +629,7 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, 
 	if (!object_is_known(o_ptr) && feel)
 	{
 		/* cannot tell excellent vs strange vs splendid until wield */
-		if (!object_was_worn(o_ptr) && ego_item_p(o_ptr))
+		if (!object_was_worn(o_ptr) && o_ptr->ego)
 			u[n++] = "ego";
 		else
 			u[n++] = inscrip_text[feel];
@@ -718,7 +718,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 			(o_ptr->ident & IDENT_STORE) || spoil;
 
 	/* We've seen it at least once now we're aware of it */
-	if (known && o_ptr->name2) e_info[o_ptr->name2].everseen = TRUE;
+	if (known && o_ptr->ego) o_ptr->ego->everseen = TRUE;
 
 
 	/*** Some things get really simple descriptions ***/

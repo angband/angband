@@ -1151,10 +1151,10 @@ static void describe_flavor_text(textblock *tb, const object_type *o_ptr)
 		}
 
 		/* Display an additional ego-item description */
-		if (object_ego_is_visible(o_ptr) && e_info[o_ptr->name2].text)
+		if (object_ego_is_visible(o_ptr) && o_ptr->ego->text)
 		{
 			if (did_desc) textblock_append(tb, "  ");
-			textblock_append(tb, "%s\n\n", e_info[o_ptr->name2].text);
+			textblock_append(tb, "%s\n\n", o_ptr->ego->text);
 		}
 		else if (did_desc)
 		{
@@ -1164,11 +1164,9 @@ static void describe_flavor_text(textblock *tb, const object_type *o_ptr)
 }
 
 
-bool describe_ego(textblock *tb, const object_type *o_ptr)
+static bool describe_ego(textblock *tb, const struct ego_item *ego)
 {
-	struct ego_item *ego = &e_info[o_ptr->name2];
-
-	if (ego->name && ego->xtra)
+	if (ego && ego->xtra)
 	{
 		const char *xtra[] = { "sustain", "higher resistance", "ability" };
 		textblock_append(tb, "It provides one random %s.  ",
@@ -1223,7 +1221,7 @@ static textblock *object_info_out(const object_type *o_ptr, oinfo_detail_t mode)
 	if (describe_ignores(tb, flags)) something = TRUE;
 	if (describe_sustains(tb, flags)) something = TRUE;
 	if (describe_misc_magic(tb, flags)) something = TRUE;
-	if (ego && describe_ego(tb, o_ptr)) something = TRUE;
+	if (ego && describe_ego(tb, o_ptr->ego)) something = TRUE;
 	if (something) textblock_append(tb, "\n");
 
 	if (describe_effect(tb, o_ptr, full, terse, subjective))
@@ -1284,7 +1282,7 @@ textblock *object_info_ego(struct ego_item *ego)
 	obj.kind = kind;
 	obj.tval = kind->tval;
 	obj.sval = kind->sval;
-	obj.name2 = ego->eidx;
+	obj.ego = ego;
 	of_union(obj.flags, ego->flags);
 
 	return object_info_out(&obj, OINFO_FULL | OINFO_EGO | OINFO_DUMMY);

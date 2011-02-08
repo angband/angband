@@ -856,8 +856,8 @@ static void refuel_torch(object_type *j_ptr, object_type *o_ptr, int item)
 	if (of_has(f, OF_LIGHT) && !of_has(g, OF_LIGHT))
 	{
 		of_on(j_ptr->flags, OF_LIGHT);
-		if (!j_ptr->name2 && o_ptr->name2)
-			j_ptr->name2 = o_ptr->name2;
+		if (!j_ptr->ego && o_ptr->ego)
+			j_ptr->ego = o_ptr->ego;
 		msg("Your torch shines further!");
 	}
 

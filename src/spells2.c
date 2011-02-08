@@ -868,7 +868,7 @@ bool detect_objects_magic(bool aware)
 		tv = o_ptr->tval;
 
 		/* Artifacts, misc magic items, or enchanted wearables */
-		if (artifact_p(o_ptr) || ego_item_p(o_ptr) ||
+		if (artifact_p(o_ptr) || o_ptr->ego ||
 		    (tv == TV_AMULET) || (tv == TV_RING) ||
 		    (tv == TV_STAFF) || (tv == TV_WAND) || (tv == TV_ROD) ||
 		    (tv == TV_SCROLL) || (tv == TV_POTION) ||
@@ -3130,7 +3130,7 @@ void brand_object(object_type *o_ptr, int brand_type)
 	/* you can never modify artifacts / ego-items */
 	/* you can never modify cursed / worthless items */
 	if (o_ptr->kind && !cursed_p(o_ptr) && o_ptr->kind->cost &&
-	    !artifact_p(o_ptr) && !ego_item_p(o_ptr))
+	    !artifact_p(o_ptr) && !o_ptr->ego)
 	{
 		char o_name[80];
 		bitflag f[OF_SIZE];
@@ -3161,8 +3161,8 @@ void brand_object(object_type *o_ptr, int brand_type)
 			}
 			if (ok) break;
 		}
-				
-		o_ptr->name2 = i;
+
+		o_ptr->ego = &e_info[i];
 		object_notice_ego(o_ptr);
 
 		/* Combine / Reorder the pack (later) */
@@ -3393,24 +3393,13 @@ void do_ident_item(int item, object_type *o_ptr)
 			bad = FALSE;
 
 	if (bad)
-	{
-		/* This is a bad item. */
 		msg_type = MSG_IDENT_BAD;
-	}
 	else if (o_ptr->name1 != 0)
-	{
-		/* We have a good artifact. */
 		msg_type = MSG_IDENT_ART;
-	}
-	else if (o_ptr->name2 != 0)
-	{
-		/* We have a good ego item. */
+	else if (o_ptr->ego)
 		msg_type = MSG_IDENT_EGO;
-	}
 	else
-	{
 		msg_type = MSG_GENERIC;
-	}
 
 	/* Log artifacts to the history list. */
 	if (artifact_p(o_ptr))

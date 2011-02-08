@@ -131,9 +131,9 @@ static int get_new_attr(bitflag flags[OF_SIZE], const int attrs[], size_t size)
 /**
  * Select an ego-item that fits the object's tval and sval.
  */
-static int ego_find_random(object_type *o_ptr, int level)
+static struct ego_item *ego_find_random(object_type *o_ptr, int level)
 {
-	int i, j, e_idx = 0;
+	int i, j;
 	long total = 0L;
 
 	/* XXX alloc_ego_table &c should be static to this file */
@@ -179,10 +179,10 @@ static int ego_find_random(object_type *o_ptr, int level)
 			value = value - table[i].prob3;
 		}
 
-		e_idx = table[i].index;
+		return &e_info[table[i].index];
 	}
 
-	return e_idx;
+	return NULL;
 }
 
 
@@ -193,35 +193,33 @@ static void ego_apply_magic(object_type *o_ptr, int level)
 {
 	int i;
 
-	ego_item_type *ego = &e_info[o_ptr->name2];
 	bitflag flags[OF_SIZE];
-
 	object_flags(o_ptr, flags);
 
 	/* Extra powers */
-	if (ego->xtra == OBJECT_XTRA_TYPE_SUSTAIN)
+	if (o_ptr->ego->xtra == OBJECT_XTRA_TYPE_SUSTAIN)
 		of_on(o_ptr->flags,
 				get_new_attr(flags, ego_sustains, N_ELEMENTS(ego_sustains)));
-	else if (ego->xtra == OBJECT_XTRA_TYPE_RESIST)
+	else if (o_ptr->ego->xtra == OBJECT_XTRA_TYPE_RESIST)
 		of_on(o_ptr->flags,
 				get_new_attr(flags, ego_resists, N_ELEMENTS(ego_resists)));
-	else if (ego->xtra == OBJECT_XTRA_TYPE_POWER)
+	else if (o_ptr->ego->xtra == OBJECT_XTRA_TYPE_POWER)
 		of_on(o_ptr->flags,
 				get_new_attr(flags, ego_powers, N_ELEMENTS(ego_powers)));
 
-	/* Apply extra ego bonuses */
-	o_ptr->to_h += randcalc(ego->to_h, level, RANDOMISE);
-	o_ptr->to_d += randcalc(ego->to_d, level, RANDOMISE);
-	o_ptr->to_a += randcalc(ego->to_a, level, RANDOMISE);
+	/* Apply extra o_ptr->ego bonuses */
+	o_ptr->to_h += randcalc(o_ptr->ego->to_h, level, RANDOMISE);
+	o_ptr->to_d += randcalc(o_ptr->ego->to_d, level, RANDOMISE);
+	o_ptr->to_a += randcalc(o_ptr->ego->to_a, level, RANDOMISE);
 
-	/* Apply ego pvals */
-	for (i = 0; i < ego->num_pvals; i++) {
+	/* Apply pvals */
+	for (i = 0; i < o_ptr->ego->num_pvals; i++) {
 		if (!o_ptr->pval[i]) o_ptr->num_pvals++;
-		o_ptr->pval[i] += randcalc(ego->pval[i], level, RANDOMISE);
+		o_ptr->pval[i] += randcalc(o_ptr->ego->pval[i], level, RANDOMISE);
 	}
 
 	/* XXX ick ick ick */
-	cave->rating += ego->rating;
+	cave->rating += o_ptr->ego->rating;
 }
 
 
@@ -232,18 +230,15 @@ static void ego_apply_minima(object_type *o_ptr)
 {
 	int i;
 
-	ego_item_type *ego;
-	if (!o_ptr->name2) return;
+	if (!o_ptr->ego) return;
 
-	ego = &e_info[o_ptr->name2];
+	if (o_ptr->to_h < o_ptr->ego->min_to_h) o_ptr->to_h = o_ptr->ego->min_to_h;
+	if (o_ptr->to_d < o_ptr->ego->min_to_d) o_ptr->to_d = o_ptr->ego->min_to_d;
+	if (o_ptr->to_a < o_ptr->ego->min_to_a) o_ptr->to_a = o_ptr->ego->min_to_a;
 
-	if (o_ptr->to_h < ego->min_to_h) o_ptr->to_h = ego->min_to_h;
-	if (o_ptr->to_d < ego->min_to_d) o_ptr->to_d = ego->min_to_d;
-	if (o_ptr->to_a < ego->min_to_a) o_ptr->to_a = ego->min_to_a;
-
-	for (i = 0; i < ego->num_pvals; i++)
-		if (o_ptr->pval[i] < ego->min_pval[i])
-				o_ptr->pval[i] = ego->min_pval[i];
+	for (i = 0; i < o_ptr->ego->num_pvals; i++)
+		if (o_ptr->pval[i] < o_ptr->ego->min_pval[i])
+				o_ptr->pval[i] = o_ptr->ego->min_pval[i];
 }
 
 
@@ -255,15 +250,15 @@ static void ego_apply_minima(object_type *o_ptr)
  */
 static bool make_ego_item(object_type *o_ptr, int level)
 {
-	/* XXX name1 and name2 should be changed */
-	if (o_ptr->name1 || o_ptr->name2) return FALSE;
+	/* XXX name1 should be changed */
+	if (o_ptr->name1 || o_ptr->ego) return FALSE;
 
 	/* Occasionally boost the generation level of an item */
 	if (level > 0 && one_in_(GREAT_EGO))
 		level = 1 + (level * MAX_DEPTH / randint1(MAX_DEPTH));
 
-	o_ptr->name2 = ego_find_random(o_ptr, level);
-	if (o_ptr->name2) {
+	o_ptr->ego = ego_find_random(o_ptr, level);
+	if (o_ptr->ego) {
 		ego_apply_magic(o_ptr, level);
 		return TRUE;
 	}

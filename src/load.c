@@ -24,6 +24,19 @@
 #include "savefile.h"
 #include "squelch.h"
 
+
+/**
+ * Find an ego item from its index
+ */
+static struct ego_item *lookup_ego(int idx)
+{
+	if (idx > 0 && idx < z_info->e_max)
+		return &e_info[idx];
+
+	return NULL;
+}
+
+
 /*
  * Read an object, version 2
  *
@@ -36,7 +49,9 @@ static int rd_item_2(object_type *o_ptr)
 	byte old_ds;
 	byte tmp8u;
 	u16b tmp16u;
-	
+
+	byte ego_idx;
+
 	size_t i, j;
 
 	char buf[128];
@@ -68,7 +83,7 @@ static int rd_item_2(object_type *o_ptr)
 	rd_s16b(&o_ptr->weight);
 
 	rd_byte(&o_ptr->name1);
-	rd_byte(&o_ptr->name2);
+	rd_byte(&ego_idx);
 
 	rd_s16b(&o_ptr->timeout);
 
@@ -118,6 +133,7 @@ static int rd_item_2(object_type *o_ptr)
 	if (!o_ptr->kind)
 		return 0;
 
+	o_ptr->ego = lookup_ego(ego_idx);
 
 	/* Repair non "wearable" items */
 	if (!wearable_p(o_ptr))
@@ -139,7 +155,7 @@ static int rd_item_2(object_type *o_ptr)
 		o_ptr->weight = o_ptr->kind->weight;
 
 		/* Paranoia */
-		o_ptr->name1 = o_ptr->name2 = 0;
+		o_ptr->name1 = 0;
 
 		/* All done */
 		return (0);
@@ -160,21 +176,6 @@ static int rd_item_2(object_type *o_ptr)
 
 		/* Verify that artifact */
 		if (!a_ptr->name) o_ptr->name1 = 0;
-	}
-
-	/* Paranoia */
-	if (o_ptr->name2)
-	{
-		ego_item_type *e_ptr;
-
-		/* Paranoia */
-		if (o_ptr->name2 >= z_info->e_max) return (-1);
-
-		/* Obtain the ego-item info */
-		e_ptr = &e_info[o_ptr->name2];
-
-		/* Verify that ego-item */
-		if (!e_ptr->name) o_ptr->name2 = 0;
 	}
 
 
@@ -209,33 +210,6 @@ static int rd_item_2(object_type *o_ptr)
 		o_ptr->weight = a_ptr->weight;
 	}
 
-	/* Ego items */
-	if (o_ptr->name2)
-	{
-		ego_item_type *e_ptr;
-
-		/* Obtain the ego-item info */
-		e_ptr = &e_info[o_ptr->name2];
-
-		/* Hack -- keep some old fields */
-		if ((o_ptr->dd < old_dd) && (o_ptr->ds == old_ds))
-		{
-			/* Keep old boosted damage dice */
-			o_ptr->dd = old_dd;
-		}
-
-		/* Hack -- enforce legal pval */
-		for (i = 0; i < MAX_PVALS; i++) {
-			if (flags_test(e_ptr->pval_flags[i], OF_SIZE,
-				OF_PVAL_MASK, FLAG_END))
-
-				/* Force a meaningful pval */
-				if (!o_ptr->pval[i])
-					o_ptr->pval[i] = e_ptr->min_pval[i];
-		}
-	}
-
-
 	/* Success */
 	return (0);
 }
@@ -249,6 +223,8 @@ static int rd_item_1(object_type *o_ptr)
 	byte old_ds;
 	byte tmp8u;
 	u16b tmp16u;
+
+	byte ego_idx;
 
 	size_t i;
 
@@ -279,7 +255,7 @@ static int rd_item_1(object_type *o_ptr)
 	rd_s16b(&o_ptr->weight);
 
 	rd_byte(&o_ptr->name1);
-	rd_byte(&o_ptr->name2);
+	rd_byte(&ego_idx);
 
 	rd_s16b(&o_ptr->timeout);
 
@@ -327,6 +303,8 @@ static int rd_item_1(object_type *o_ptr)
 	if (!o_ptr->kind)
 		return 0;
 
+	o_ptr->ego = lookup_ego(ego_idx);
+
 
 	/* Copy flags into pval_flags to ensure pvals function */
 	if (o_ptr->pval) {
@@ -354,7 +332,7 @@ static int rd_item_1(object_type *o_ptr)
 		o_ptr->weight = o_ptr->kind->weight;
 
 		/* Paranoia */
-		o_ptr->name1 = o_ptr->name2 = 0;
+		o_ptr->name1 = 0;
 
 		/* All done */
 		return (0);
@@ -375,21 +353,6 @@ static int rd_item_1(object_type *o_ptr)
 
 		/* Verify that artifact */
 		if (!a_ptr->name) o_ptr->name1 = 0;
-	}
-
-	/* Paranoia */
-	if (o_ptr->name2)
-	{
-		ego_item_type *e_ptr;
-
-		/* Paranoia */
-		if (o_ptr->name2 >= z_info->e_max) return (-1);
-
-		/* Obtain the ego-item info */
-		e_ptr = &e_info[o_ptr->name2];
-
-		/* Verify that ego-item */
-		if (!e_ptr->name) o_ptr->name2 = 0;
 	}
 
 
@@ -420,30 +383,6 @@ static int rd_item_1(object_type *o_ptr)
 
 		/* Get the new artifact weight */
 		o_ptr->weight = a_ptr->weight;
-	}
-
-	/* Ego items */
-	if (o_ptr->name2)
-	{
-		ego_item_type *e_ptr;
-
-		/* Obtain the ego-item info */
-		e_ptr = &e_info[o_ptr->name2];
-
-		/* Hack -- keep some old fields */
-		if ((o_ptr->dd < old_dd) && (o_ptr->ds == old_ds))
-		{
-			/* Keep old boosted damage dice */
-			o_ptr->dd = old_dd;
-		}
-
-		/* Hack -- enforce legal pval */
-		if (flags_test(e_ptr->flags, OF_SIZE, OF_PVAL_MASK, FLAG_END))
-		{
-			/* Force a meaningful pval */
-			if (!o_ptr->pval[DEFAULT_PVAL])
-				o_ptr->pval[DEFAULT_PVAL] = 1;
-		}
 	}
 
 

@@ -1414,7 +1414,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 			if ((o_ptr->to_h > 0) && (o_ptr->to_d > 0))
 				add_stats( gdammo_total,  gdammo_mon,  gdammo_vault, vault, mon,number);
 				
-			if (ego_item_p(o_ptr))
+			if (o_ptr->ego)
 				add_stats( egammo_total,  egammo_mon,  egammo_vault, vault, mon,number);
 		
 			if ((o_ptr->sval == SV_AMMO_HEAVY) || (o_ptr->sval == SV_AMMO_SILVER))
@@ -1423,7 +1423,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 				add_stats( vgammo_total,  vgammo_mon,  vgammo_vault, vault, mon,number);
 				
 				/* Ego mithril and seeker ammo */
-				if (ego_item_p(o_ptr))
+				if (o_ptr->ego)
 					add_stats( awammo_total,  awammo_mon,  awammo_vault, vault, mon,number);
 			
 				if (of_has(f,OF_SLAY_EVIL))

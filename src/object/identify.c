@@ -228,7 +228,7 @@ bool object_name_is_visible(const object_type *o_ptr)
  */
 bool object_ego_is_visible(const object_type *o_ptr)
 {
-	if (!ego_item_p(o_ptr))
+	if (!o_ptr->ego)
 		return FALSE;
 
 	if (o_ptr->tval == TV_LIGHT)
@@ -367,7 +367,7 @@ bool object_check_for_ident(object_type *o_ptr)
 	}
 
 	/* We still know all the flags, so we still know if it's an ego */
-	else if (ego_item_p(o_ptr))
+	else if (o_ptr->ego)
 	{
 		/* require worn status so you don't learn launcher of accuracy or gloves of slaying before wield */
 		if (object_was_worn(o_ptr))
@@ -506,26 +506,23 @@ void object_notice_indestructible(object_type *o_ptr)
  */
 void object_notice_ego(object_type *o_ptr)
 {
-	ego_item_type *e_ptr;
 	bitflag learned_flags[OF_SIZE];
 	bitflag xtra_flags[OF_SIZE];
 
-	if (!o_ptr->name2)
+	if (!o_ptr->ego)
 		return;
-
-	e_ptr = &e_info[o_ptr->name2];
 
 
 	/* XXX Eddie print a message on notice ego if not already noticed? */
 	/* XXX Eddie should we do something about everseen of egos here? */
 
 	/* Learn ego flags */
-	of_union(o_ptr->known_flags, e_ptr->flags);
+	of_union(o_ptr->known_flags, o_ptr->ego->flags);
 
 	/* Learn all flags except random abilities */
 	of_setall(learned_flags);
 
-	switch (e_ptr->xtra)
+	switch (o_ptr->ego->xtra)
 	{
 		case OBJECT_XTRA_TYPE_NONE:
 			break;
@@ -803,7 +800,7 @@ void object_notice_on_wield(object_type *o_ptr)
 
 	/* CC: may wish to be more subtle about this once we have ego lights
 	 * with multiple pvals */
-	if (obj_is_light(o_ptr) && ego_item_p(o_ptr))
+	if (obj_is_light(o_ptr) && o_ptr->ego)
 		object_notice_ego(o_ptr);
 
 	if (object_flavor_is_aware(o_ptr) && easy_know(o_ptr))
@@ -1090,10 +1087,10 @@ obj_pseudo_t object_pseudo(const object_type *o_ptr)
 	if (!object_is_known(o_ptr) && !object_was_sensed(o_ptr))
 		return INSCRIP_NULL;
 
-	if (ego_item_p(o_ptr))
+	if (o_ptr->ego)
 	{
 		/* uncursed bad egos are not excellent */
-		if (flags_test(e_info[o_ptr->name2].flags, OF_SIZE, OF_CURSE_MASK, FLAG_END))
+		if (flags_test(o_ptr->ego->flags, OF_SIZE, OF_CURSE_MASK, FLAG_END))
 			return INSCRIP_STRANGE; /* XXX Eddie need something worse */
 		else
 			return INSCRIP_EXCELLENT;

@@ -222,6 +222,7 @@ typedef struct ego_item
 typedef struct object
 {
 	struct object_kind *kind;
+	struct ego_item *ego;
 
 	byte iy;			/* Y-position on map, or zero */
 	byte ix;			/* X-position on map, or zero */
@@ -235,7 +236,6 @@ typedef struct object
 	s16b weight;			/* Item weight */
 
 	byte name1;			/* Artifact type, if any */
-	byte name2;			/* Ego-Item type, if any */
 
 	bitflag flags[OF_SIZE];		/**< Flags */
 	bitflag known_flags[OF_SIZE];	/**< Player-known flags */

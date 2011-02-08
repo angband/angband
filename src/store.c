@@ -714,7 +714,7 @@ static void mass_produce(object_type *o_ptr)
 		case TV_DIGGING:
 		case TV_BOW:
 		{
-			if (o_ptr->name2) break;
+			if (o_ptr->ego) break;
 			if (cost <= 10L) size += mass_roll(3, 5);
 			if (cost <= 100L) size += mass_roll(3, 5);
 			break;
@@ -1283,7 +1283,7 @@ static bool black_market_ok(const object_type *o_ptr)
 	int i, j;
 
 	/* Ego items are always fine */
-	if (ego_item_p(o_ptr)) return (TRUE);
+	if (o_ptr->ego) return (TRUE);
 
 	/* Good items are normally fine */
 	if (o_ptr->to_a > 2) return (TRUE);
@@ -2154,7 +2154,7 @@ static int find_inven(const object_type *o_ptr)
 				if (o_ptr->name1 != j_ptr->name1) continue;
 
 				/* Require identical "ego-item" names */
-				if (o_ptr->name2 != j_ptr->name2) continue;
+				if (o_ptr->ego != j_ptr->ego) continue;
 
 				/* Lights must have same amount of fuel */
 				else if (o_ptr->timeout != j_ptr->timeout && o_ptr->tval == TV_LIGHT)

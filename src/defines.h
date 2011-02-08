@@ -1001,12 +1001,6 @@ enum
 	((T)->name1 ? TRUE : FALSE)
 
 /*
- * Ego-Items use the "name2" field
- */
-#define ego_item_p(T) \
-	((T)->name2 ? TRUE : FALSE)
-
-/*
  * Cursed items.
  */
 #define cursed_p(T) \
