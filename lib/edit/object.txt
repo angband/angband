@@ -1151,7 +1151,7 @@ N:190:Strength
 G:=:d
 I:45:1
 W:30:0:2:500
-A:50:10 to 100
+A:50:30 to 100
 F:SUST_STR | HIDE_TYPE
 L:1+M5:STR
 
