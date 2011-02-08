@@ -524,22 +524,25 @@ static void apply_magic_armour(object_type *o_ptr, int level, int power)
 }
 
 
-/*
- * Prepare an object based on an object kind.
- * Use the specified randomization aspect
+/**
+ * Wipe an object clean and make it a standard object of the specified kind.
  */
-void object_prep(object_type *o_ptr, struct object_kind *k, int lev, aspect rand_aspect)
+void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
+		aspect rand_aspect)
 {
 	int i;
 
-	/* Clear the record */
-	(void)WIPE(o_ptr, object_type);
+	/* Clean slate */
+	WIPE(o_ptr, object_type);
 
+	/* Assign the kind and copy across data */
 	o_ptr->kind = k;
-
-	/* Efficiency -- tval/sval */
 	o_ptr->tval = k->tval;
 	o_ptr->sval = k->sval;
+	o_ptr->ac = k->ac;
+	o_ptr->dd = k->dd;
+	o_ptr->ds = k->ds;
+	o_ptr->weight = k->weight;
 
 	/* Default number */
 	o_ptr->number = 1;
@@ -548,58 +551,48 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev, aspect rand
 	for (i = 0; i < k->num_pvals; i++)
 		o_ptr->pval[i] = randcalc(k->pval[i], lev, rand_aspect);
 	o_ptr->num_pvals = k->num_pvals;
-
-	/* Default weight */
-	o_ptr->weight = k->weight;
 	
 	/* Assign charges (wands/staves only) */
 	if (o_ptr->tval == TV_WAND || o_ptr->tval == TV_STAFF)
 		o_ptr->pval[DEFAULT_PVAL] = randcalc(k->charge, lev, rand_aspect);
 
+	/* Default fuel for lamps */
+	if (o_ptr->tval == TV_LIGHT) {
+		if (o_ptr->sval == SV_LIGHT_TORCH)
+			o_ptr->timeout = DEFAULT_TORCH;
+		else if (o_ptr->sval == SV_LIGHT_LANTERN)
+			o_ptr->timeout = DEFAULT_LAMP;
+	}
+
 	/* Default magic */
 	o_ptr->to_h = randcalc(k->to_h, lev, rand_aspect);
 	o_ptr->to_d = randcalc(k->to_d, lev, rand_aspect);
 	o_ptr->to_a = randcalc(k->to_a, lev, rand_aspect);
-
-	/* Default power */
-	o_ptr->ac = k->ac;
-	o_ptr->dd = k->dd;
-	o_ptr->ds = k->ds;
-
-	/* Hack -- cursed items are always "cursed" */
-	if (of_has(k->flags, OF_LIGHT_CURSE))
-	    of_on(o_ptr->flags, OF_LIGHT_CURSE);
 }
 
 
 /**
- * Complete object creation by applying magic to it.
- *
- * Magic includes rolling for random bonuses, applying flags to ego-items,
- * charging charged items, fuelling lights, and trapping chests.
+ * Applying magic to an object, which includes creating ego-items, and applying
+ * random bonuses,
  *
  * The `good` argument forces the item to be at least `good`, and the `great`
  * argument does likewise.  Setting `allow_artifacts` to TRUE allows artifacts
  * to be created here.
  *
  * If `good` or `great` are not set, then the `lev` argument controls the
- * quality of item.  See the function itself for the specifics of the
- * calculations involved.
+ * quality of item.
  */
-void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, bool great)
+void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
+		bool good, bool great)
 {
-	int power = 0;
 	int i;
-	/*u32b xtra = 0;*/
-	/*bool new = FALSE;*/
+	int power = 0;
 
 	/* Chance of being `good` and `great` */
 	int good_chance = (lev+2) * 3;
 	int great_chance = MIN(lev/4 + lev, 50);
 
-
-	/* Limit depth */
-	if (lev > MAX_DEPTH - 1) lev = MAX_DEPTH - 1;
+	assert(lev < MAX_DEPTH);
 
 	/* Roll for "good" */
 	if (good || (randint0(100) < good_chance))
@@ -679,15 +672,6 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 				case SV_AMULET_TRICKERY:
 					cave->rating += 25;
 			}
-			break;
-
-		case TV_LIGHT:
-			/* Default fuel levels */
-			if (o_ptr->sval == SV_LIGHT_TORCH)
-				o_ptr->timeout = DEFAULT_TORCH;
-			else if (o_ptr->sval == SV_LIGHT_LANTERN)
-				o_ptr->timeout = DEFAULT_LAMP;
-
 			break;
 
 		case TV_CHEST:
