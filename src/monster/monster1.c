@@ -2220,8 +2220,47 @@ void cheat_monster_lore(int r_idx, monster_lore *l_ptr)
 	l_ptr->cast_spell = MAX_UCHAR;
 
 	/* Hack -- know all the flags */
-	rsf_setall(l_ptr->flags);
+	rf_setall(l_ptr->flags);
 	rsf_copy(l_ptr->spell_flags, r_ptr->spell_flags);
+}
+
+
+/*
+ * Forget everything about a monster.
+ */
+void wipe_monster_lore(int r_idx, monster_lore *l_ptr)
+{
+	const monster_race *r_ptr = &r_info[r_idx];
+
+	int i;
+
+	/* Hack -- No kills */
+	l_ptr->tkills = 0;
+
+	/* Hack -- No info */
+	l_ptr->wake = l_ptr->ignore = 0;
+
+	/* Observe "maximal" attacks */
+	for (i = 0; i < MONSTER_BLOW_MAX; i++)
+	{
+		/* Examine "actual" blows */
+		if (r_ptr->blow[i].effect || r_ptr->blow[i].method)
+		{
+			/* Hack -- no observations */
+			l_ptr->blows[i] = 0;
+		}
+	}
+
+	/* Hack -- no drops */
+	l_ptr->drop_item = l_ptr->drop_gold = 0;
+	
+	/* Hack -- forget all spells */
+	l_ptr->cast_innate = 0;
+	l_ptr->cast_spell = 0;
+
+	/* Hack -- wipe all the flags */
+	rf_wipe(l_ptr->flags);
+	rsf_wipe(l_ptr->spell_flags);
 }
 
 
