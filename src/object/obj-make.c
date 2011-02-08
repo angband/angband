@@ -128,79 +128,40 @@ static int get_new_attr(bitflag flags[OF_SIZE], const int attrs[], size_t size)
 }
 
 
-/*
- * Try to find an ego-item for an object, setting name2 if successful and
- * applying various bonuses.
- *
- * Returns TRUE if an ego item is created, FALSE otherwise.
+/**
+ * Select an ego-item that fits the object's tval and sval.
  */
-static bool make_ego_item(object_type *o_ptr, int level)
+static int ego_find_random(object_type *o_ptr, int level)
 {
-	int i, j;
+	int i, j, e_idx = 0;
+	long total = 0L;
 
-	int e_idx;
-
-	long value, total;
-
+	/* XXX alloc_ego_table &c should be static to this file */
 	alloc_entry *table = alloc_ego_table;
-
 	ego_item_type *ego;
 
-	bitflag flags[OF_SIZE];
-
-
-	/* Fail if object already is ego or artifact */
-	if (o_ptr->name1) return (FALSE);
-	if (o_ptr->name2) return (FALSE);
-
-	/* Boost level (like with object base types) */
-	if (level > 0)
-	{
-		/* Occasional "boost" */
-		if (one_in_(GREAT_EGO))
-		{
-			/* The bizarre calculation again */
-			level = 1 + (level * MAX_DEPTH / randint1(MAX_DEPTH));
-		}
-	}
-
-	/* Reset total */
-	total = 0L;
-
-	/* Process probabilities */
-	for (i = 0; i < alloc_ego_size; i++)
-	{
-		/* Default */
+	/* Go through all possible ego items and find oens which fit this item */
+	for (i = 0; i < alloc_ego_size; i++) {
+		/* Reset any previous probability of this type being picked */
 		table[i].prob3 = 0;
 
-		/* Objects are sorted by depth */
-		if (table[i].level > level) continue;
+		if (level < table[i].level)
+			continue;
 
-		/* Get the index */
-		e_idx = table[i].index;
+		/* Access the ego item */
+		ego = &e_info[table[i].index];
 
-		/* Get the actual kind */
-		ego = &e_info[e_idx];
-
-		/* XXX Avoid cursed items */
+		/* XXX Ignore cursed items for now */
 		if (cursed_p(ego)) continue;
 
 		/* Test if this is a legal ego-item type for this object */
-		for (j = 0; j < EGO_TVALS_MAX; j++)
-		{
+		for (j = 0; j < EGO_TVALS_MAX; j++) {
 			/* Require identical base type */
-			if (o_ptr->tval == ego->tval[j])
-			{
-				/* Require sval in bounds, lower */
-				if (o_ptr->sval >= ego->min_sval[j])
-				{
-					/* Require sval in bounds, upper */
-					if (o_ptr->sval <= ego->max_sval[j])
-					{
-						/* Accept */
-						table[i].prob3 = table[i].prob2;
-					}
-				}
+			if (o_ptr->tval == ego->tval[j] &&
+					o_ptr->sval >= ego->min_sval[j] &&
+					o_ptr->sval <= ego->max_sval[j]) {
+				table[i].prob3 = table[i].prob2;
+				break;
 			}
 		}
 
@@ -208,29 +169,33 @@ static bool make_ego_item(object_type *o_ptr, int level)
 		total += table[i].prob3;
 	}
 
-	/* No legal ego-items -- create a normal unenchanted one */
-	if (total == 0)
-		return FALSE;
+	if (total) {
+		long value = randint0(total);
+		for (i = 0; i < alloc_ego_size; i++) {
+			/* Found the entry */
+			if (value < table[i].prob3) break;
+	
+			/* Decrement */
+			value = value - table[i].prob3;
+		}
 
-
-	/* Pick an ego-item */
-	value = randint0(total);
-
-	/* Find the object */
-	for (i = 0; i < alloc_ego_size; i++)
-	{
-		/* Found the entry */
-		if (value < table[i].prob3) break;
-
-		/* Decrement */
-		value = value - table[i].prob3;
+		e_idx = table[i].index;
 	}
 
-	/* We have one */
-	e_idx = (byte)table[i].index;
-	o_ptr->name2 = e_idx;
+	return e_idx;
+}
 
-	ego = &e_info[o_ptr->name2];
+
+/**
+ * Apply generation magic to an ego-item.
+ */
+static void ego_apply_magic(object_type *o_ptr, int level)
+{
+	int i;
+
+	ego_item_type *ego = &e_info[o_ptr->name2];
+	bitflag flags[OF_SIZE];
+
 	object_flags(o_ptr, flags);
 
 	/* Extra powers */
@@ -255,10 +220,55 @@ static bool make_ego_item(object_type *o_ptr, int level)
 		o_ptr->pval[i] += randcalc(ego->pval[i], level, RANDOMISE);
 	}
 
-	/* Hack -- apply rating bonus */
+	/* XXX ick ick ick */
 	cave->rating += ego->rating;
+}
 
-	return TRUE;
+
+/**
+ * Apply minimum standards for ego-items.
+ */
+static void ego_apply_minima(object_type *o_ptr)
+{
+	int i;
+
+	ego_item_type *ego;
+	if (!o_ptr->name2) return;
+
+	ego = &e_info[o_ptr->name2];
+
+	if (o_ptr->to_h < ego->min_to_h) o_ptr->to_h = ego->min_to_h;
+	if (o_ptr->to_d < ego->min_to_d) o_ptr->to_d = ego->min_to_d;
+	if (o_ptr->to_a < ego->min_to_a) o_ptr->to_a = ego->min_to_a;
+
+	for (i = 0; i < ego->num_pvals; i++)
+		if (o_ptr->pval[i] < ego->min_pval[i])
+				o_ptr->pval[i] = ego->min_pval[i];
+}
+
+
+/**
+ * Try to find an ego-item for an object, setting name2 if successful and
+ * applying various bonuses.
+ *
+ * Returns TRUE if an ego item is created, FALSE otherwise.
+ */
+static bool make_ego_item(object_type *o_ptr, int level)
+{
+	/* XXX name1 and name2 should be changed */
+	if (o_ptr->name1 || o_ptr->name2) return FALSE;
+
+	/* Occasionally boost the generation level of an item */
+	if (level > 0 && one_in_(GREAT_EGO))
+		level = 1 + (level * MAX_DEPTH / randint1(MAX_DEPTH));
+
+	o_ptr->name2 = ego_find_random(o_ptr, level);
+	if (o_ptr->name2) {
+		ego_apply_magic(o_ptr, level);
+		return TRUE;
+	}
+
+	return FALSE;
 }
 
 
@@ -708,18 +718,8 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 			break;
 	}
 
-	/* Apply minimums from ego items */
-	if (o_ptr->name2) {
-		ego_item_type *ego = &e_info[o_ptr->name2];
-
-		if (o_ptr->to_h < ego->min_to_h) o_ptr->to_h = ego->min_to_h;
-		if (o_ptr->to_d < ego->min_to_d) o_ptr->to_d = ego->min_to_d;
-		if (o_ptr->to_a < ego->min_to_a) o_ptr->to_a = ego->min_to_a;
-
-		for (i = 0; i < ego->num_pvals; i++)
-			if (o_ptr->pval[i] < ego->min_pval[i])
-					o_ptr->pval[i] = ego->min_pval[i];
-	}
+	/* Apply minima from ego items if necessary */
+	ego_apply_minima(o_ptr);
 }
 
 
