@@ -81,6 +81,10 @@ Cure all maladies (a)
 		Removes all curses, restores all stats, xp, hp, and sp, cures
 		all bad effects, and satisfies your hunger.
 
+Advance the character (A)
+		Advances your character to level 50, maxes all stats, and gives
+		you a million gold.
+		
 Edit character (e)
 		Lets you specify your base stats, xp, and gold.
 		
