@@ -312,6 +312,7 @@ extern const char seven_bit_translation[128];
 extern char xchar_trans(byte c);
 
 /* xtra2.c */
+void check_experience_aux(bool verbose);
 void check_experience(void);
 void gain_exp(s32b amount);
 void lose_exp(s32b amount);

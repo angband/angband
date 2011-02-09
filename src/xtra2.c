@@ -27,9 +27,9 @@
 void verify_panel_int(bool centered);
 
 /*
- * Advance experience levels and print experience
+ * Helper function for check_experience.
  */
-void check_experience(void)
+void check_experience_aux(bool verbose)
 {
 	/* Hack -- lower limit */
 	if (p_ptr->exp < 0) p_ptr->exp = 0;
@@ -43,7 +43,6 @@ void check_experience(void)
 	/* Hack -- upper limit */
 	if (p_ptr->max_exp > PY_MAX_EXP) p_ptr->max_exp = PY_MAX_EXP;
 
-
 	/* Hack -- maintain "max" experience */
 	if (p_ptr->exp > p_ptr->max_exp) p_ptr->max_exp = p_ptr->exp;
 
@@ -53,7 +52,6 @@ void check_experience(void)
 	/* Handle stuff */
 	handle_stuff();
 
-
 	/* Lose levels while possible */
 	while ((p_ptr->lev > 1) &&
 	       (p_ptr->exp < (player_exp[p_ptr->lev-2] *
@@ -61,15 +59,6 @@ void check_experience(void)
 	{
 		/* Lose a level */
 		p_ptr->lev--;
-
-		/* Update some stuff */
-		p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
-
-		/* Redraw some stuff */
-		p_ptr->redraw |= (PR_LEV | PR_TITLE | PR_EXP);
-
-		/* Handle stuff */
-		handle_stuff();
 	}
 
 
@@ -86,12 +75,15 @@ void check_experience(void)
 		/* Save the highest level */
 		if (p_ptr->lev > p_ptr->max_lev) p_ptr->max_lev = p_ptr->lev;
 
-		/* Log level updates */
-		strnfmt(buf, sizeof(buf), "Reached level %d", p_ptr->lev);
-		history_add(buf, HISTORY_GAIN_LEVEL, 0);
+		if (verbose)
+		{
+			/* Log level updates */
+			strnfmt(buf, sizeof(buf), "Reached level %d", p_ptr->lev);
+			history_add(buf, HISTORY_GAIN_LEVEL, 0);
 
-		/* Message */
-		msgt(MSG_LEVEL, "Welcome to level %d.",	p_ptr->lev);
+			/* Message */
+			msgt(MSG_LEVEL, "Welcome to level %d.",	p_ptr->lev);
+		}
 
 		/* Add to social class */
 		p_ptr->sc += randint1(2);
@@ -104,15 +96,6 @@ void check_experience(void)
 		do_res_stat(A_DEX);
 		do_res_stat(A_CON);
 		do_res_stat(A_CHR);
-
-		/* Update some stuff */
-		p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
-
-		/* Redraw some stuff */
-		p_ptr->redraw |= (PR_LEV | PR_TITLE | PR_EXP);
-
-		/* Handle stuff */
-		handle_stuff();
 	}
 
 	/* Gain max levels while possible */
@@ -122,16 +105,24 @@ void check_experience(void)
 	{
 		/* Gain max level */
 		p_ptr->max_lev++;
-
-		/* Update some stuff */
-		p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
-
-		/* Redraw some stuff */
-		p_ptr->redraw |= (PR_LEV | PR_TITLE | PR_EXP);
-
-		/* Handle stuff */
-		handle_stuff();
 	}
+
+	/* Update some stuff */
+	p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
+
+	/* Redraw some stuff */
+	p_ptr->redraw |= (PR_LEV | PR_TITLE | PR_EXP);
+
+	/* Handle stuff */
+	handle_stuff();
+}
+
+/*
+ * Advance experience levels and print experience
+ */
+void check_experience(void)
+{
+	check_experience_aux(TRUE);
 }
 
 

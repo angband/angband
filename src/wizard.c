@@ -1553,6 +1553,48 @@ static void do_cmd_wiz_help(void)
 }
 
 /*
+ * Advance the player to level 50 with max stats and other bonuses.
+ */
+static void do_cmd_wiz_advance(void)
+{
+	int i;
+
+	/* Max stats */
+	for (i = 0; i < A_MAX; i++)
+		p_ptr->stat_cur[i] = p_ptr->stat_max[i] = 118;
+
+	/* Lots of money */
+	p_ptr->au = 1000000L;
+
+	/* Level 50 */
+	p_ptr->exp = p_ptr->max_exp = player_exp[49] * p_ptr->expfact / 100L;
+	check_experience_aux(FALSE);
+
+	/* Heal the player */
+	p_ptr->chp = p_ptr->mhp;
+	p_ptr->chp_frac = 0;
+
+	/* Restore mana */
+	p_ptr->csp = p_ptr->msp;
+	p_ptr->csp_frac = 0;
+
+	/* Get some awesome equipment */
+	/* Artifacts: 3, 5, 12, ...*/
+	
+	/* Update stuff */
+	p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
+
+	/* Redraw everything */
+	p_ptr->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_INVEN | PR_EQUIP |
+	                  PR_MESSAGE | PR_MONSTER | PR_OBJECT |
+					  PR_MONLIST | PR_ITEMLIST);
+
+	/* Hack -- update */
+	handle_stuff();
+
+}
+
+/*
  * Ask for and parse a "debug command"
  *
  * The "p_ptr->command_arg" may have been set.
@@ -1606,6 +1648,13 @@ void do_cmd_debug(void)
 			break;
 		}
 
+		/* Make the player powerful */
+		case 'A':
+		{
+			do_cmd_wiz_advance();
+			break;
+		}
+		
 		/* Teleport to target */
 		case 'b':
 		{
