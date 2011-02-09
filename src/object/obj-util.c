@@ -3578,19 +3578,24 @@ int lookup_name(int tval, const char *name)
 int lookup_artifact_name(const char *name)
 {
 	int i;
+	int a_idx = -1;
 	
 	/* Look for it */
 	for (i = 1; i < z_info->a_max; i++)
 	{
 		artifact_type *a_ptr = &a_info[i];
 		
-		/* Found a match */
+		/* Test for equality */
 		if (a_ptr->name && streq(name, a_ptr->name))
 			return i;
 		
+		/* Test for close matches */
+		if (a_ptr->name && my_stristr(a_ptr->name, name) && a_idx == -1)
+			a_idx = i;
 	} 
-	
-	return -1;
+
+	/* Return our best match */
+	return a_idx;
 }
 
 
