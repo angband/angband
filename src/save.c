@@ -109,7 +109,7 @@ static void wr_item(const object_type *o_ptr)
  * Write RNG state
  *
  * There were originally 64 bytes of randomizer saved. Now we only need
- * 32 + 4 bytes saved, so we'll write an extra 28 bytes at the end which won't
+ * 32 + 5 bytes saved, so we'll write an extra 27 bytes at the end which won't
  * be used.
  */
 void wr_randomizer(void)
@@ -132,7 +132,7 @@ void wr_randomizer(void)
 		wr_u32b(STATE[i]);
 
 	/* NULL padding */
-	for (i = 0; i < 60 - RAND_DEG; i++)
+	for (i = 0; i < 59 - RAND_DEG; i++)
 		wr_u32b(0);
 }
 
