@@ -1721,6 +1721,7 @@ void do_cmd_debug(void)
 		case 'D':
 		{
 			disconnect_stats();
+			break;
 		}
 
 		/* Edit character */
@@ -1844,6 +1845,13 @@ void do_cmd_debug(void)
 			break;
 		}
 
+		/* Monster pit stats */
+		case 'P':
+		{
+			pit_stats();
+			break;
+		}
+		
 		/* Query the dungeon */
 		case 'q':
 		{
@@ -1927,6 +1935,7 @@ void do_cmd_debug(void)
 		case 'S':
 		{
 			stats_collect();
+			break;
 		}
 
 		/* Teleport */

@@ -23,6 +23,7 @@
 #include "monster/monster.h"
 #include "monster/constants.h"
 #include "effects.h"
+#include "generate.h"
 /*
  * The stats programs here will provide information on the dungeon, the monsters
  * in it, and the items that they drop.  Statistics are gotten from a given level
@@ -2514,6 +2515,92 @@ void calc_cave_distances()
 	
 		
 	} while ((d_old_max > 0) || dist == DIST_MAX);
+}
+
+void pit_stats()
+{
+	int tries = 1000;
+	int depth = p_ptr->command_arg;
+	int hist[z_info->pit_max];
+	int j, p;
+	int type = 1;
+
+	char tmp_val[100];
+	
+	/* Initialize hist */
+	for (p = 0; p < z_info->pit_max; p++)
+		hist[p] = 0;
+	
+	/* Format default value */
+	strnfmt(tmp_val, sizeof(tmp_val), "%d", tries);
+	
+	/* Ask for the input - take the first 7 characters*/
+	if (!get_string("Num of simulations: ", tmp_val, 7)) return;
+	
+	/* get the new value */
+	tries = atoi(tmp_val);
+	if (tries < 1) tries = 1;
+	
+	/* Format second default value */	
+	strnfmt(tmp_val, sizeof(tmp_val), "%d", type);
+	
+	/* Ask for the input - take the first 7 characters*/
+	if (!get_string("Pit type: ", tmp_val, 7)) return;
+
+	/* get the new value */
+	type = atoi(tmp_val);
+	if (type < 1) type = 1;
+	
+	if (depth <= 0)
+	{
+		/* Format second default value */	
+		strnfmt(tmp_val, sizeof(tmp_val), "%d", p_ptr->depth);
+	
+		/* Ask for the input - take the first 7 characters*/
+		if (!get_string("Depth: ", tmp_val, 7)) return;
+
+		/* get the new value */
+		depth = atoi(tmp_val);
+		if (depth < 1) depth = 1;
+	
+	}
+
+
+	for (j = 0; j < tries; j++)
+	{
+		int i;
+		int pit_idx = 0;
+		int pit_dist = 999;
+		
+		for (i = 0; i < z_info->pit_max; i++)
+		{
+			int offset, dist;
+			pit_profile *pit = &pit_info[i];
+			
+			if (!pit->name || pit->room_type != type) continue;
+
+			offset = Rand_normal(pit->ave, 10);
+			dist = ABS(offset - depth);
+
+			if (dist < pit_dist && one_in_(pit->rarity))
+			{
+				pit_idx = i;
+				pit_dist = dist;
+			}
+		}
+
+		hist[pit_idx]++;
+	}
+
+	for (p = 0; p < z_info->pit_max; p++)
+	{
+		pit_profile *pit = &pit_info[p];
+		if (pit->name)
+			msg("Type: %s, Number: %d.", pit->name, hist[p]);
+	}
+
+	return;
+
 }
 
 
