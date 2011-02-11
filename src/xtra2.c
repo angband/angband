@@ -21,6 +21,7 @@
 #include "history.h"
 #include "macro.h"
 #include "object/tvalsval.h"
+#include "spells.h"
 #include "target.h"
 
 /* Private function that is shared by verify_panel() and center_panel() */
