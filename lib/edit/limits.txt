@@ -41,3 +41,6 @@ M:O:1024
 
 # Maximum number of monsters on the level
 M:M:1024
+
+# Maximum number of pit types
+M:I:14

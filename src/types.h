@@ -62,6 +62,7 @@ typedef struct maxima
 	u16b rb_max;	  /**< Maximum number of monster bases */
 	u16b mp_max;	  /**< Maximum number of monster pain message sets */
 	u16b s_max;       /**< Maximum number of magic spells */
+	u16b pit_max;	  /**< Maximum number of monster pit types */
 
 	u16b o_max;       /**< Maximum number of objects on a given level */
 	u16b m_max;       /**< Maximum number of monsters on a given level */

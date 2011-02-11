@@ -1379,113 +1379,87 @@ static bool build_large(struct cave *c, int y0, int x0) {
 }
 
 
-/*
- * The following functions are used to determine if the given monster
- * is appropriate for inclusion in a monster nest or monster pit or
- * the given type.
- *
- * None of the pits/nests are allowed to include "unique" monsters.
- */
-
+/* Hook for which type of pit we are building */
+pit_profile *pit_type = NULL;
 
 /**
- * For a given flag, this function returns true if the given r_idx represents
- * a non-unique monster with that flag.
+ * Hook for picking monsters appropriate to a nest/pit.
+ *
+ * Requires pit_type to be set.
  */
-static bool vault_aux_flag(int r_idx, bitflag flag) {
+bool mon_pit_hook(int r_idx)
+{
 	monster_race *r_ptr = &r_info[r_idx];
+
+	/* pit_type needs to be set */
+	assert(pit_type);
+
 	if (rf_has(r_ptr->flags, RF_UNIQUE))
 		return FALSE;
-	else if (!rf_has(r_ptr->flags, flag))
+	else if (!rf_is_subset(r_ptr->flags, pit_type->flags))
 		return FALSE;
+	else if (!rsf_is_subset(r_ptr->spell_flags, pit_type->spell_flags))
+		return FALSE;
+	else if (rsf_is_inter(r_ptr->spell_flags, pit_type->forbidden_spell_flags))
+		return FALSE;
+	else if (pit_type->num_rvals > 0)
+	{
+		int i;
+		for (i = 0; i < pit_type->num_rvals; i++)
+		{
+			if (r_ptr->rval == pit_type->rval[i])
+				return TRUE;
+		}
+		
+		return FALSE;
+	}
 	else
 		return TRUE;
 }
 
-
 /**
- * Helper function for "monster nest (jelly)"
+ * Pick a type of monster pit, based on the level.
+ *
+ * We scan through all pits, and for each one generate a random depth
+ * using a normal distribution, with the mean given in pit.txt, and a
+ * standard deviation of 10. Then we pick the pit that gave us a depth that
+ * is closest to the player's actual depth.
+ *
+ * Sets pit_type, which is required for mon_pit_hook.
+ * Returns the index of the chosen pit.
  */
-static bool vault_aux_jelly(int r_idx) {
-	return vault_aux_flag(r_idx, RF_ICKY);
-}
-
-
-/**
- * Helper function for "monster nest (animal)"
- */
-static bool vault_aux_animal(int r_idx) {
-	return vault_aux_flag(r_idx, RF_ANIMAL);
-}
-
-
-/**
- * Helper function for "monster nest (undead)"
- */
-static bool vault_aux_undead(int r_idx) {
-	return vault_aux_flag(r_idx, RF_UNDEAD);
-}
-
-
-/**
- * Helper function for "monster pit (orc)"
- */
-static bool vault_aux_orc(int r_idx) {
-	return (vault_aux_flag(r_idx, RF_ORC) && !vault_aux_flag(r_idx, RF_UNDEAD)) ;
-}
-
-
-/**
- * Helper function for "monster pit (troll)"
- */
-static bool vault_aux_troll(int r_idx) {
-	return (vault_aux_flag(r_idx, RF_TROLL) && !vault_aux_flag(r_idx, RF_UNDEAD));
-}
-
-/**
- * Helper function for "monster pit (giant)"
- */
-static bool vault_aux_giant(int r_idx) {
-	monster_race *r_ptr = &r_info[r_idx];
-	
-	if (!vault_aux_flag(r_idx, RF_GIANT)) return FALSE;
-	
-	/* Hack - check the monster for the "Boulder" spell so that we don't match ogres. */
-	return rsf_has(r_ptr->spell_flags, RSF_BOULDER);
-}
-
-
-/*
- * Hack -- breath type for "vault_aux_dragon()"
- */
-static bitflag vault_aux_dragon_mask[RSF_SIZE];
-
-
-/**
- * Helper function for "monster pit (dragon)"
- */
-static bool vault_aux_dragon(int r_idx)
+static int set_pit_type(int depth, int type)
 {
-	monster_race *r_ptr = &r_info[r_idx];
-	bitflag mon_breath[RSF_SIZE];
+	int i;
+	int pit_idx = 0;
+	
+	/* Hack -- set initial distance large */
+	int pit_dist = 999;
+	
+	for (i = 0; i < z_info->pit_max; i++)
+	{
+		int offset, dist;
+		pit_profile *pit = &pit_info[i];
+		
+		/* Skip empty pits or pits of the wrong room type */
+		if (!pit->name || pit->room_type != type) continue;
+		
+		offset = Rand_normal(pit->ave, 10);
+		dist = ABS(offset - depth);
+		
+		if (dist < pit_dist && one_in_(pit->rarity))
+		{
+			/* This pit is the closest so far */
+			pit_idx = i;
+			pit_dist = dist;
+		}
+	}
 
-	if (!vault_aux_flag(r_idx, RF_DRAGON)) return FALSE;
-
-	/* Hack -- Require correct "breath attack" */
-	rsf_copy(mon_breath, r_ptr->spell_flags);
-	flags_mask(mon_breath, RSF_SIZE, RSF_BREATH_MASK, FLAG_END);
-
-	return rsf_is_equal(mon_breath, vault_aux_dragon_mask);
+	pit_type = &pit_info[pit_idx];
+	get_mon_num_hook = mon_pit_hook;
+	
+	return pit_idx;
 }
-
-
-/*
- * Helper function for "monster pit (demon)"
- */
-static bool vault_aux_demon(int r_idx) {
-	return (vault_aux_flag(r_idx, RF_DEMON) && vault_aux_flag(r_idx, RF_POWERFUL));
-}
-
 
 
 /**
@@ -1502,10 +1476,7 @@ static bool vault_aux_demon(int r_idx) {
  * allocation table" in such a way as to optimize the selection of
  * "appropriate" non-unique monsters for the nest.
  *
- * Currently, a monster nest is one of
- *   a nest of "jelly" monsters (dungeon level 5 and deeper)
- *   a nest of "animal" monsters (dungeon level 30 and deeper)
- *   a nest of "undead" monsters (dungeon level 50 and deeper)
+ * The available monster nests are specified in edit/pit.txt.
  *
  * Note that get_mon_num() function can fail, in which case the nest will be
  * empty, and will not affect the level rating.
@@ -1514,12 +1485,12 @@ static bool vault_aux_demon(int r_idx) {
  */
 static bool build_nest(struct cave *c, int y0, int x0) {
 	int y, x, y1, x1, y2, x2;
-	int tmp, i;
+	int i;
 	int alloc_obj;
 	s16b what[64];
-	const char *name;
 	bool empty = FALSE;
 	int light = FALSE;
+	int pit_idx;
 
 	/* Large room */
 	y1 = y0 - 4;
@@ -1548,28 +1519,12 @@ static bool build_nest(struct cave *c, int y0, int x0) {
 	/* Open the inner room with a secret door */
 	generate_hole(c, y1-1, x1-1, y2+1, x2+1, FEAT_SECRET);
 
-	/* Choose a nest type */
-	tmp = randint1(c->depth);
+	/* Set get_mon_num_hook */
+	pit_idx = set_pit_type(c->depth, 2);
 
-	if (tmp < 30) {
-		/* Monster nest (jelly) */
-		name = "jelly";
-		get_mon_num_hook = vault_aux_jelly;
-		alloc_obj = 30;
-
-	} else if (tmp < 50) {
-		/* Monster nest (animal) */
-		name = "animal";
-		get_mon_num_hook = vault_aux_animal;
-		alloc_obj = 10;
-
-	} else {
-		/* Monster nest (undead) */
-		name = "undead";
-		get_mon_num_hook = vault_aux_undead;
-		alloc_obj = 5;
-	}
-
+	/* Chance of objects on the floor */
+	alloc_obj = pit_info[pit_idx].obj_rarity;
+	
 	/* Prepare allocation table */
 	get_mon_num_prep();
 
@@ -1592,7 +1547,7 @@ static bool build_nest(struct cave *c, int y0, int x0) {
 	if (empty) return FALSE;
 
 	/* Describe */
-	ROOM_LOG("Monster nest (%s)", name);
+	ROOM_LOG("Monster nest (%s)", pit_info[pit_idx].name);
 
 	/* Increase the level rating */
 	c->rating += 10;
@@ -1617,19 +1572,12 @@ static bool build_nest(struct cave *c, int y0, int x0) {
 	return TRUE;
 }
 
-
-
 /**
- * Build a monster pits
+ * Build a monster pit
  *
  * Monster pits are laid-out similarly to monster nests.
  *
- * Monster types in the pit
- *   orc pit (dungeon Level 5 and deeper)
- *   troll pit (dungeon Level 20 and deeper)
- *   giant pit	(dungeon Level 40 and deeper)
- *   dragon pit (dungeon Level 60 and deeper)
- *   demon pit (dungeon Level 80 and deeper)
+ * The available monster pits are specified in edit/pit.txt.
  *
  * The inside room in a monster pit appears as shown below, where the
  * actual monsters in each location depend on the type of the pit
@@ -1646,11 +1594,6 @@ static bool build_nest(struct cave *c, int y0, int x0) {
  * request 16 "appropriate" monsters, sorting them by level, and using the
  * "even" entries in this sorted list for the contents of the pit.
  *
- * All of the dragons in a dragon pit must be the same color, which is handled
- * by requiring a specific "breath" attack for all of the dragons. This may
- * include "multi-hued" breath.  Note that "wyrms" may be present in many of
- * the dragon pits, if they have the proper breath.
- *
  * Note the use of the get_mon_num_prep() function, and the special
  * get_mon_num_hook() restriction function, to prepare the monster allocation
  * table in such a way as to optimize the selection of appropriate non-unique
@@ -1662,11 +1605,11 @@ static bool build_nest(struct cave *c, int y0, int x0) {
  * Like monster nests, monster pits will never contain unique monsters.
  */
 static bool build_pit(struct cave *c, int y0, int x0) {
-	int tmp, what[16];
+	int what[16];
 	int i, j, y, x, y1, x1, y2, x2;
 	bool empty = FALSE;
 	int light = FALSE;
-	const char *name;
+	int pit_idx;
 
 	/* Large room */
 	y1 = y0 - 4;
@@ -1689,69 +1632,8 @@ static bool build_pit(struct cave *c, int y0, int x0) {
 	draw_rectangle(c, y1-1, x1-1, y2+1, x2+1, FEAT_WALL_INNER);
 	generate_hole(c, y1-1, x1-1, y2+1, x2+1, FEAT_SECRET);
 
-	/* Choose a pit type */
-	tmp = randint1(c->depth);
-
-	if (tmp < 20) {
-		/* Orc pit */
-		name = "orc";
-		get_mon_num_hook = vault_aux_orc;
-	} else if (tmp < 40) {
-		/* Troll pit */
-		name = "troll";
-		get_mon_num_hook = vault_aux_troll;
-	} else if (tmp < 60) {
-		/* Giant pit */
-		name = "giant";
-		get_mon_num_hook = vault_aux_giant;
-	} else if (tmp < 80) {
-		/* Pick type of dragon pit */
-		switch (randint0(6)) {
-			case 0: {
-				name = "acid dragon";
-				flags_init(vault_aux_dragon_mask, RSF_SIZE, RSF_BR_ACID, FLAG_END);
-				break;
-			}
-
-			case 1: {
-				name = "electric dragon";
-				flags_init(vault_aux_dragon_mask, RSF_SIZE, RSF_BR_ELEC, FLAG_END);
-				break;
-			}
-
-			case 2: {
-				name = "fire dragon";
-				flags_init(vault_aux_dragon_mask, RSF_SIZE, RSF_BR_FIRE, FLAG_END);
-				break;
-			}
-
-			case 3: {
-				name = "cold dragon";
-				flags_init(vault_aux_dragon_mask, RSF_SIZE, RSF_BR_COLD, FLAG_END);
-				break;
-			}
-
-			case 4: {
-				name = "poison dragon";
-				flags_init(vault_aux_dragon_mask, RSF_SIZE, RSF_BR_POIS, FLAG_END);
-				break;
-			}
-
-			default: {
-				name = "multi-hued dragon";
-				flags_init(vault_aux_dragon_mask, RSF_SIZE, RSF_BR_ACID, RSF_BR_ELEC,
-				           RSF_BR_FIRE, RSF_BR_COLD, RSF_BR_POIS, FLAG_END);
-				break;
-			}
-
-		}
-
-		/* Restrict monster selection */
-		get_mon_num_hook = vault_aux_dragon;
-	} else {
-		name = "demon";
-		get_mon_num_hook = vault_aux_demon;
-	}
+	/* Set get_mon_num_hook */
+	pit_idx = set_pit_type(c->depth, 1);
 
 	/* Prepare allocation table */
 	get_mon_num_prep();
@@ -1772,7 +1654,10 @@ static bool build_pit(struct cave *c, int y0, int x0) {
 	get_mon_num_prep();
 
 	/* Oops */
-	if (empty) return FALSE;
+	if (empty)
+		return FALSE;
+
+	ROOM_LOG("Monster pit (%s)", pit_info[pit_idx].name);
 
 	/* Sort the entries XXX XXX XXX */
 	for (i = 0; i < 16 - 1; i++) {
@@ -1796,8 +1681,6 @@ static bool build_pit(struct cave *c, int y0, int x0) {
 	/* Select every other entry */
 	for (i = 0; i < 8; i++)
 		what[i] = what[i * 2];
-
-	ROOM_LOG("Monster pit (%s)", name);
 
 	/* Increase the level rating */
 	c->rating += 10;

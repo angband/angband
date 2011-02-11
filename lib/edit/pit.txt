@@ -1,0 +1,146 @@
+# File: pit.txt
+
+# This file is used to initialize the "monster nest/pit" information for Angband.
+
+# Do not modify this file unless you know exactly what you are doing, unless
+# you wish to risk possible system crashes and broken savefiles.
+
+# If you add more pits to the file, make sure to update limits.txt.
+
+# === Understanding pit.txt ===
+
+# N: serial number : name
+# R: room type
+# A: rarity : average level
+# O: object rarity
+# T: template name
+# T: template name
+# F: flag | flag | ...
+# S: spell | spell | ...
+# s: forbidden spell | ...
+#
+# Each entry must start with an 'N' line, with a new serial number,
+# and a name.
+#
+# 'R' is for room type. Currently, room type is one of the following:
+#   (1) Pits (large room filled with many monsters of a few types in an ordered fashion)
+#   (2) Nests (large room filled with many types of monsters in a disordered fashion)
+#
+# 'A' is for rarity and average level. A rarity of N means that the pit is N times
+# more rare than a pit with a rarity of 1. The average level is the dungeon level
+# at which this pit is most common.
+#
+# 'O' is for object rarity. A rarity of N means that every square of the pit has a
+# 1 in N chance of having an item.
+#
+# 'T' is for monster template (see monster_base.txt). Up to 4 'T' lines may be present.
+# If there are no 'T' lines, then monsters may have any monster template. Otherwise,
+# every monster in this pit/nest will be one of the listed templates.
+#
+# 'F' is for monster flags. Every monster in this pit/nest will have every listed flag.
+# As many 'F' lines as are necessary may be used.
+#
+# 'S' is for spell flags. Every monster in this nest/pit will have every listed spell flag.
+# As many 'S' lines as are necessary may be used.
+#
+# 's' is for forbidden spell flags. No monster in this nest/pit will have any of the listed
+# spell flags. As many 's' lines as are necessary may be used.
+
+N:1:Orc
+R:1
+A:1:25
+O:0
+T:orc
+
+N:2:Troll
+R:1
+A:1:45
+O:0
+T:troll
+
+N:3:Giant
+R:1
+A:1:65
+O:0
+T:giant
+
+N:4:Acid dragons
+R:1
+A:6:85
+O:0
+T:dragon
+T:ancient dragon
+S:BR_ACID
+s:BR_ELEC
+
+N:5:Electric dragons
+R:1
+A:6:85
+O:0
+T:dragon
+T:ancient dragon
+S:BR_ELEC
+s:BR_ACID
+
+N:6:Fire dragons
+R:1
+A:6:85
+O:0
+T:dragon
+T:ancient dragon
+S:BR_FIRE
+s:BR_COLD
+
+N:7:Ice dragons
+R:1
+A:6:85
+O:0
+T:dragon
+T:ancient dragon
+S:BR_COLD
+s:BR_FIRE
+
+N:8:Poison dragons
+R:1
+A:6:85
+O:0
+T:dragon
+T:ancient dragon
+S:BR_POIS
+s:BR_FIRE
+
+N:9:Multi-hued dragons
+R:1
+A:6:85
+O:0
+T:dragon
+T:ancient dragon
+S:BR_ACID | BR_ELEC | BR_FIRE |
+S:BR_COLD | BR_POIS
+
+N:10:Demons
+R:1
+A:1:105
+O:0
+T:major demon
+
+N:11:Jelly
+R:2
+A:1:20
+O:30
+T:icky thing
+T:jelly
+T:mold
+T:mushroom
+
+N:12:Animals
+R:2
+A:1:50
+O:10
+F:ANIMAL
+
+N:13:Undead
+R:2
+A:1:80
+O:5
+F:UNDEAD

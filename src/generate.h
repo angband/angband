@@ -71,4 +71,20 @@ struct room_profile {
 	int cutoff; /* Upper limit of 1-100 random roll for room generation */
 };
 
+typedef struct pit_profile {
+	struct pit_profile *next;
+
+	int pit_idx; /* Index in pit_info */
+	const char* name;
+	int room_type; /* Is this a pit or a nest? */
+	int ave; /* Level where this pit is most common */
+	int rarity; /* How unusual this pit is */
+	int obj_rarity; /* How rare objects are in this pit */
+	bitflag flags[RF_SIZE];         /* Required flags */
+	bitflag spell_flags[RSF_SIZE];  /* Required spell flags */
+	bitflag forbidden_spell_flags[RSF_SIZE]; 
+	int num_rvals; 
+	int rval[MAX_RVALS]; /* Allowable rvals (mosnter templates) */
+} pit_profile;
+
 #endif /* !GENERATE_H */

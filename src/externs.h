@@ -151,6 +151,7 @@ extern struct vault *vaults;
 extern struct object_kind *objkinds;
 extern spell_type *s_info;
 extern struct hint *hints;
+extern struct pit_profile *pit_info;
 
 extern monster_race_message *mon_msg;
 extern monster_message_history *mon_message_hist;

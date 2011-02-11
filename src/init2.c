@@ -23,6 +23,7 @@
 #include "cmds.h"
 #include "game-event.h"
 #include "game-cmd.h"
+#include "generate.h"
 #include "init.h"
 #include "macro.h"
 #include "monster/constants.h"
@@ -329,6 +330,8 @@ static enum parser_error parse_z(struct parser *p) {
 		z->o_max = value;
 	else if (streq(label, "M"))
 		z->m_max = value;
+	else if (streq(label, "I"))
+		z->pit_max = value;
 	else
 		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
 
@@ -3517,6 +3520,184 @@ struct file_parser mp_parser = {
 };
 
 
+/*
+ * Initialize monster pits
+ */
+
+static enum parser_error parse_pit_n(struct parser *p) {
+	struct pit_profile *h = parser_priv(p);
+	struct pit_profile *pit = mem_alloc(sizeof *pit);
+	memset(pit, 0, sizeof(*pit));
+	pit->next = h;
+	pit->pit_idx = parser_getuint(p, "index");
+	pit->name = string_make(parser_getstr(p, "name"));	
+	parser_setpriv(p, pit);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_pit_r(struct parser *p) {
+	struct pit_profile *pit = parser_priv(p);
+
+	if (!pit)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	pit->room_type = parser_getuint(p, "type");
+	return PARSE_ERROR_NONE;
+}
+static enum parser_error parse_pit_a(struct parser *p) {
+	struct pit_profile *pit = parser_priv(p);
+
+	if (!pit)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	pit->rarity = parser_getuint(p, "rarity");
+	pit->ave = parser_getuint(p, "level");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_pit_o(struct parser *p) {
+	struct pit_profile *pit = parser_priv(p);
+
+	if (!pit)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	pit->obj_rarity = parser_getuint(p, "obj_rarity");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_pit_t(struct parser *p) {
+	struct pit_profile *pit = parser_priv(p);
+	int rval = lookup_monster_base(parser_getsym(p, "rval"));
+
+	if (!pit)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	else if (pit->num_rvals == MAX_RVALS)
+		return PARSE_ERROR_TOO_MANY_ENTRIES;
+	else if (rval < 0)
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+	else
+	{
+		pit->rval[pit->num_rvals++] = rval;
+		return PARSE_ERROR_NONE;		
+	}
+}
+
+static enum parser_error parse_pit_f(struct parser *p) {
+	struct pit_profile *pit = parser_priv(p);
+	char *flags;
+	char *s;
+
+	if (!pit)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!parser_hasval(p, "flags"))
+		return PARSE_ERROR_NONE;
+	flags = string_make(parser_getstr(p, "flags"));
+	s = strtok(flags, " |");
+	while (s) {
+		if (grab_flag(pit->flags, RF_SIZE, r_info_flags, s)) {
+			mem_free(flags);
+			return PARSE_ERROR_INVALID_FLAG;
+		}
+		s = strtok(NULL, " |");
+	}
+	
+	mem_free(flags);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_pit_s(struct parser *p) {
+	struct pit_profile *pit = parser_priv(p);
+	char *flags;
+	char *s;
+
+	if (!pit)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!parser_hasval(p, "spells"))
+		return PARSE_ERROR_NONE;
+	flags = string_make(parser_getstr(p, "spells"));
+	s = strtok(flags, " |");
+	while (s) {
+		if (grab_flag(pit->spell_flags, RSF_SIZE, r_info_spell_flags, s)) {
+			mem_free(flags);
+			return PARSE_ERROR_INVALID_FLAG;
+		}
+		s = strtok(NULL, " |");
+	}
+	
+	mem_free(flags);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_pit_s2(struct parser *p) {
+	struct pit_profile *pit = parser_priv(p);
+	char *flags;
+	char *s;
+
+	if (!pit)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!parser_hasval(p, "spells"))
+		return PARSE_ERROR_NONE;
+	flags = string_make(parser_getstr(p, "spells"));
+	s = strtok(flags, " |");
+	while (s) {
+		if (grab_flag(pit->forbidden_spell_flags, RSF_SIZE, r_info_spell_flags, s)) {
+			mem_free(flags);
+			return PARSE_ERROR_INVALID_FLAG;
+		}
+		s = strtok(NULL, " |");
+	}
+	
+	mem_free(flags);
+	return PARSE_ERROR_NONE;
+}
+struct parser *init_parse_pit(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+
+	parser_reg(p, "N uint index str name", parse_pit_n);
+	parser_reg(p, "R uint type", parse_pit_r);
+	parser_reg(p, "A uint rarity uint level", parse_pit_a);
+	parser_reg(p, "O uint obj_rarity", parse_pit_o);
+	parser_reg(p, "T sym rval", parse_pit_t);
+	parser_reg(p, "F ?str flags", parse_pit_f);
+	parser_reg(p, "S ?str spells", parse_pit_s);
+	parser_reg(p, "s ?str spells", parse_pit_s2);
+	return p;
+}
+
+static errr run_parse_pit(struct parser *p) {
+	return parse_file(p, "pit");
+}
+ 
+static errr finish_parse_pit(struct parser *p) {
+	struct pit_profile *pit, *n;
+		
+	pit_info = mem_zalloc(sizeof(*pit) * z_info->pit_max);
+	for (pit = parser_priv(p); pit; pit = pit->next) {
+		if (pit->pit_idx >= z_info->pit_max)
+			continue;
+		memcpy(&pit_info[pit->pit_idx], pit, sizeof(*pit));
+	}
+	
+	pit = parser_priv(p);
+	while (pit) {
+		n = pit->next;
+		mem_free(pit);
+		pit = n;
+	}
+	
+	parser_destroy(p);
+	return 0;
+}
+
+struct file_parser pit_parser = {
+	"pits",
+	init_parse_pit,
+	run_parse_pit,
+	finish_parse_pit
+};
+
+
 
 /*
  * Initialize some other arrays
@@ -3894,6 +4075,10 @@ bool init_angband(void)
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (pain messages)");
 	if (run_parser(&mp_parser)) quit("Cannot initialize monster pain messages");
 	
+	/* Initialize monster pits */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (monster pits)");
+	if (run_parser(&pit_parser)) quit("Cannot initialize monster pits");
+
 	/* Initialize artifact info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (artifacts)");
 	if (run_parser(&a_parser)) quit("Cannot initialize artifacts");

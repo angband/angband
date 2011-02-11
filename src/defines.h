@@ -1212,6 +1212,11 @@ enum
 #define DEFAULT_PVAL 0
 
 
+/**
+ * Maximum number of rvals (monster templates) that a pit can specify.
+ */
+#define MAX_RVALS 4
+
 /*
  * Monster Timed Effects
  */

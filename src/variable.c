@@ -599,6 +599,11 @@ spell_type *s_info;
 struct hint *hints;
 
 /*
+ * Array of pit types
+ */
+struct pit_profile *pit_info;
+ 
+/*
  * Hack -- The special Angband "System Suffix"
  * This variable is used to choose an appropriate "pref-xxx" file
  */
