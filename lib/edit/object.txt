@@ -786,7 +786,7 @@ N:131:& Pair~ of Leather Boots
 G:]:U
 I:30:2
 W:3:0:20:7
-A:110:3 to 100
+A:20:3 to 100
 P:2:1d1:0:0:0
 
 N:132:& Pair~ of Iron Shod Boots
