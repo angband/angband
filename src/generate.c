@@ -1550,11 +1550,7 @@ static bool build_nest(struct cave *c, int y0, int x0) {
 	ROOM_LOG("Monster nest (%s)", pit_info[pit_idx].name);
 
 	/* Increase the level rating */
-	c->rating += 10;
-
-	/* (Sometimes) Cause a "special feeling" (for "Monster Nests") */
-	if (c->depth <= 40 && randint1(c->depth * c->depth + 1) < 300)
-		c->good_item = TRUE;
+	c->rating += (5 + pit_info[pit_idx].ave / 10);
 
 	/* Place some monsters */
 	for (y = y0 - 2; y <= y0 + 2; y++) {
@@ -1683,11 +1679,7 @@ static bool build_pit(struct cave *c, int y0, int x0) {
 		what[i] = what[i * 2];
 
 	/* Increase the level rating */
-	c->rating += 10;
-
-	/* (Sometimes) Cause a "special feeling" (for "Monster Pits") */
-	if (c->depth <= 40 && randint1(c->depth * c->depth + 1) < 300)
-		c->good_item = TRUE;
+	c->rating += (5 + pit_info[pit_idx].ave / 10);
 
 	/* Top and bottom rows */
 	for (x = x0 - 9; x <= x0 + 9; x++) {
