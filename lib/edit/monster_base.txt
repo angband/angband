@@ -172,7 +172,6 @@ N:20:icky thing
 G:i
 M:2
 F:RAND_50
-F:ICKY
 D:Icky Thing
 
 N:21:insect
@@ -187,7 +186,6 @@ G:j
 M:2
 F:EMPTY_MIND | STUPID
 F:NO_FEAR
-F:ICKY
 D:Jelly
 
 N:23:killer beetle
@@ -263,7 +261,6 @@ G:m
 M:2
 F:NEVER_MOVE
 F:IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP
-F:ICKY
 D:Mold
 
 N:32:mushroom
@@ -271,7 +268,6 @@ G:,
 M:2
 F:EMPTY_MIND | STUPID
 F:NO_FEAR | NO_CONF | NO_SLEEP
-F:ICKY
 D:Mushroom
 
 N:33:naga
