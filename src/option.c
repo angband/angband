@@ -215,7 +215,7 @@ bool option_set(const char *name, bool on)
 
 		op_ptr->opt[opt] = on;
 		if (on && option_is_cheat(opt)) {
-			op_ptr->opt[opt + (OPT_CHEAT - OPT_SCORE)] = TRUE;
+			op_ptr->opt[opt + (OPT_SCORE - OPT_CHEAT)] = TRUE;
 		}
 
 		return TRUE;
