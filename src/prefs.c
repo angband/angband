@@ -148,49 +148,6 @@ static void pref_footer(ang_file *fff, const char *mark)
 
 
 /*
- * Save autoinscription data to a pref file.
- */
-/* XXX should be renamed dump_* */
-void autoinsc_dump(ang_file *fff)
-{
-	struct object_kind *k;
-
-	file_putf(fff, "# Autoinscription settings\n");
-	file_putf(fff, "# B:item kind:inscription\n\n");
-
-	for (k = objkinds; k; k = k->next) {
-		if (!k->note)
-			continue;
-		file_putf(fff, "# Autoinscription for %s\n", k->name);
-		file_putf(fff, "B:%d:%s\n\n", k->kidx, quark_str(k->note));
-	}
-
-	file_putf(fff, "\n");
-}
-
-/*
- * Save squelch data to a pref file.
- */
-void squelch_dump(ang_file *fff)
-{
-	int i;
-	file_putf(fff, "# Squelch settings\n");
-
-	for (i = 1; i < z_info->k_max; i++)
-	{
-		int tval = k_info[i].tval;
-		int sval = k_info[i].sval;
-		bool squelch = k_info[i].squelch;
-
-		/* Dump the squelch info */
-		if (tval || sval)
-			file_putf(fff, "Q:%d:%d:%d:%d\n", i, tval, sval, squelch);
-	}
-
-	file_putf(fff, "\n");
-}
-
-/*
  * Write all current options to a user preference file.
  */
 void option_dump(ang_file *fff)
@@ -242,12 +199,6 @@ void option_dump(ang_file *fff)
 			file_putf(fff, "\n");
 		}
 	}
-
-	autoinsc_dump(fff);
-#if 0
-	/* Dumping squelch settings caused problems, see #784 */
-	squelch_dump(fff);
-#endif
 }
 
 
