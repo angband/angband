@@ -3287,7 +3287,7 @@ void cave_generate(struct cave *c, struct player *p) {
 				const struct cave_profile *profile;
 
 				profile = dun->profile = &cave_profiles[i];
-				if (i < last && profile->cutoff < perc) continue;
+				if (i < last && profile->cutoff >= perc) continue;
 
 				ok = dun->profile->builder(c, p);
 				if (ok) break;
