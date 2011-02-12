@@ -924,6 +924,8 @@ void display_player(int mode)
 	/* Erase screen */
 	clear_from(0);
 
+	/* When not playing, do not display in subwindows */
+	if (Term != angband_term[0] && !p_ptr->playing) return;
 
 	/* Stat info */
 	display_player_stat_info();
