@@ -113,6 +113,9 @@ void warding_glyph(void)
 		return;
 	}
 
+	/* Push objects off the grid */
+	if (cave->o_idx[py][px]) push_object(py, px);
+	
 	/* Create a glyph */
 	cave_set_feat(cave, py, px, FEAT_GLYPH);
 }
