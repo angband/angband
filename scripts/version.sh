@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # This scripts adds local version information from git.
 #
@@ -19,7 +19,7 @@ if head=$(git rev-parse --verify --short HEAD 2>/dev/null); then
 	# If we are past a tagged commit (like "v3.2.0-64-g72357d5"),
 	# we pretty print it.
 	if atag="$(git describe 2>/dev/null)"; then
-		echo -n "$atag"
+		printf "$atag"
 
 	# If we don't have a tag at all we print -g{commitish}.
 	else
