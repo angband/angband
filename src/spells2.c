@@ -1140,16 +1140,16 @@ void stair_creation(void)
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	/* XXX XXX XXX */
-	if (!cave_valid_bold(py, px))
+	/* Only allow stairs to be created on empty floor */
+	if (cave->feat[py][px] != FEAT_FLOOR)
 	{
-		msg("The object resists the spell.");
+		msg("There is no empty floor here.");
 		return;
 	}
 
-	/* XXX XXX XXX */
-	delete_object(py, px);
-
+	/* Push objects off the grid */
+	if (cave->o_idx[py][px]) push_object(py, px);
+	
 	/* Create a staircase */
 	if (!p_ptr->depth)
 	{
