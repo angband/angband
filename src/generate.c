@@ -265,7 +265,7 @@ static struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
 		NULL,
 
 		/* cutoff -- debug  */
-		12
+		10
 	},
 	{
 		/* name builder dun_rooms dun_unusual max_rarity n_room_profiles */
@@ -2536,6 +2536,9 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 	/* There's a base 1 in 100 to accept the labyrinth */
 	int chance = 1;
 
+	/* If we're too shallow then don't do it */
+	if (c->depth < 10) return FALSE;
+
 	/* Don't try this on quest levels, kids... */
 	if (is_quest(c->depth)) return FALSE;
 
@@ -2645,6 +2648,9 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 
 	/* General some rubble, traps and monsters */
 	k = MAX(MIN(c->depth / 3, 10), 2);
+
+	/* Scale number of monsters items by labyrinth size */
+	k = (2 * k * (h + w)) / (DUNGEON_HGT + DUNGEON_WID);
 
 	/* Put some rubble in corridors */
 	alloc_objects(c, SET_BOTH, TYP_RUBBLE, randint1(k), c->depth);
@@ -3000,6 +3006,10 @@ bool cavern_gen(struct cave *c, struct player *p) {
 
 	int colors[size];
 	int counts[size];
+
+	/* If we're too shallow then don't do it */
+	if (c->depth < 8) return FALSE;
+
 	array_filler(colors, 0, size);
 	array_filler(counts, 0, size);
 
@@ -3022,6 +3032,9 @@ bool cavern_gen(struct cave *c, struct player *p) {
 
 	/* General some rubble, traps and monsters */
 	k = MAX(MIN(c->depth / 3, 10), 2);
+
+	/* Scale number of monsters items by cavern size */
+	k = (k * (h + w)) / (DUNGEON_HGT + DUNGEON_WID);
 
 	/* Put some rubble in corridors */
 	alloc_objects(c, SET_BOTH, TYP_RUBBLE, randint1(k), c->depth);
