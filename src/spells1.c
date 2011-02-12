@@ -1449,8 +1449,14 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Make doors */
 		case GF_MAKE_DOOR:
 		{
-			/* Require a "naked" floor grid */
-			if (!cave_naked_bold(y, x)) break;
+			/* Require a grid without monsters */
+			if (cave->m_idx[y][x]) break;
+			
+			/* Require a floor grid */
+			if (!(cave->feat[y][x] == FEAT_FLOOR)) break;
+			
+			/* Push objects off the grid */
+			if (cave->o_idx[y][x]) push_object(y,x);
 
 			/* Create closed door */
 			cave_set_feat(cave, y, x, FEAT_DOOR_HEAD + 0x00);
