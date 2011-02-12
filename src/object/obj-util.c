@@ -2208,53 +2208,44 @@ void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x, boo
 	}
 }
 
-/* 
- * This will push objects off a square.  The methodology is to
- * load all objects on the square into a queue.  Replace the previous square
- * with a type that does not allow for objects.  Drop the objects.  Last, put the
- * square back to its original type.
+/**
+ * This will push objects off a square.
+ * 
+ * The methodology is to load all objects on the square into a queue. Replace
+ * the previous square with a type that does not allow for objects. Drop the
+ * objects. Last, put the square back to its original type.
  */
-
 void push_object(int y, int x)
 {
-	int feat_old;
-	int q_size = MAX_FLOOR_STACK;
-	
+	/* Save the original terrain feature */
+	int feat_old = cave->feat[y][x];
+
 	object_type *o_ptr;
    
-	struct queue *queue = q_new(q_size);
+	struct queue *queue = q_new(MAX_FLOOR_STACK);
 
-	/* Go through all objects on the square */
-	 for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
-	{
-	
-		/* Push object into the queue */
+	/* Push all objects on the square into the queue */
+	for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
 		q_push_ptr(queue, o_ptr);
-		
-	}
-   
-	/* Get old terrain feature */
-	feat_old = cave->feat[y][x];
 
-	/* Set feature to closed door */
-	cave_set_feat(cave,y,x,FEAT_OPEN);
+	/* Set feature to an open door */
+	cave_set_feat(cave, y, x, FEAT_OPEN);
 	
 	/* Drop objects back onto the floor */
-	while (q_len(queue) > 0) {
-	
+	while (q_len(queue) > 0)
+	{
 		/* Take object from the queue */
 		o_ptr = q_pop_ptr(queue);
 	
 		/* Drop the object */
 		drop_near(cave, o_ptr, 0, y, x, FALSE);
-	
 	}
 	
 	/* Delete original objects */
-	delete_object(y,x);
+	delete_object(y, x);
 	
 	/* Reset cave feature */
-	cave_set_feat(cave,y,x,feat_old);
+	cave_set_feat(cave, y, x, feat_old);
 	
 	q_free(queue);
 }
