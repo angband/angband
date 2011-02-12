@@ -9,7 +9,7 @@ SRCS    = ${OBJECTS:.o=.c} ${MAINFILES:.o=.c}
 SUBDIRS = gtk monster object player
 PROG    = angband
 VERSION = `../scripts/version.sh`
-CFLAGS += -DBUILD_ID=${VERSION} -I. -std=c99 -Wdeclaration-after-statement -Wall -Wextra -O0
+CFLAGS += -DBUILD_ID=${VERSION} -I. -std=c99 -Wdeclaration-after-statement -O0
 
 angband: angband.o $(MAINFILES)
 	$(CC) -o angband angband.o $(MAINFILES) $(LDFLAGS) $(LDADD)
