@@ -1043,7 +1043,7 @@ errr init_gcu(int argc, char **argv)
 
 	/* Can we change colors? */
 	can_fix_color = (can_use_color && can_change_color() &&
-	                 orig_colors && (COLORS >= 16) && (COLOR_PAIRS > 8));
+	                 (COLORS >= 16) && (COLOR_PAIRS > 8));
 
 #endif
 
