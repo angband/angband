@@ -199,6 +199,12 @@ void option_dump(ang_file *fff)
 			file_putf(fff, "\n");
 		}
 	}
+
+#ifdef ALLOW_MACROS
+	macro_dump(fff);
+	keymap_dump(fff);
+#endif
+
 }
 
 
