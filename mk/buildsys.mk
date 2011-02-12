@@ -190,7 +190,7 @@ install: ${LIB} ${STATIC_LIB} ${PLUGIN} ${PROG} ${CONFIG} ${LIBDATA} ${VARDATA} 
 			${INSTALL_FAILED}; \
 		fi \
 	done
-	
+
 	for i in ${LIBDATA}; do \
 		${INSTALL_STATUS}; \
 		if ${MKDIR_P} $$(dirname ${DESTDIR}${libdatadir}${PACKAGE}/$$i) && ${INSTALL} -m 644 $$i ${DESTDIR}${libdatadir}${PACKAGE}/$$i; then \
@@ -199,7 +199,7 @@ install: ${LIB} ${STATIC_LIB} ${PLUGIN} ${PROG} ${CONFIG} ${LIBDATA} ${VARDATA} 
 			${INSTALL_FAILED}; \
 		fi \
 	done
-	
+
 	for i in ${CONFIG}; do \
 		${INSTALL_STATUS}; \
 		if ${MKDIR_P} $$(dirname ${DESTDIR}${configdir}${PACKAGE}/$$i) && ${INSTALL} -m 644 $$i ${DESTDIR}${configdir}${PACKAGE}/$$i; then \
@@ -331,7 +331,7 @@ clean::
 		${MAKE} ${MFLAGS} clean || exit 1; \
 		${DIR_LEAVE}; \
 	done
-	
+
 	for i in ${OBJS} ${CLEAN} ${CLEAN_LIB} .deps; do \
 		if test -f $$i -o -d $$i; then \
 			if rm -fr $$i; then \
@@ -348,7 +348,7 @@ distclean: clean
 		${MAKE} ${MFLAGS} distclean || exit 1; \
 		${DIR_LEAVE}; \
 	done
-	
+
 	for i in ${PROG} ${PROG_NOINST} ${LIB} ${LIB_NOINST} ${STATIC_LIB} ${STATIC_LIB_NOINST} ${PLUGIN} ${PLUGIN_NOINST} ${DISTCLEAN} *~; do \
 		if test -f $$i -o -d $$i; then \
 			if rm -fr $$i; then \
