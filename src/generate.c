@@ -2650,7 +2650,7 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 	k = MAX(MIN(c->depth / 3, 10), 2);
 
 	/* Scale number of monsters items by labyrinth size */
-	k = (2 * k * (h + w)) / (DUNGEON_HGT + DUNGEON_WID);
+	k = (2 * k * (h * w)) / (DUNGEON_HGT * DUNGEON_WID);
 
 	/* Put some rubble in corridors */
 	alloc_objects(c, SET_BOTH, TYP_RUBBLE, randint1(k), c->depth);
@@ -3034,7 +3034,7 @@ bool cavern_gen(struct cave *c, struct player *p) {
 	k = MAX(MIN(c->depth / 3, 10), 2);
 
 	/* Scale number of monsters items by cavern size */
-	k = (k * (h + w)) / (DUNGEON_HGT + DUNGEON_WID);
+	k = (k * (h *  w)) / (DUNGEON_HGT * DUNGEON_WID);
 
 	/* Put some rubble in corridors */
 	alloc_objects(c, SET_BOTH, TYP_RUBBLE, randint1(k), c->depth);
@@ -3287,7 +3287,7 @@ void cave_generate(struct cave *c, struct player *p) {
 				const struct cave_profile *profile;
 
 				profile = dun->profile = &cave_profiles[i];
-				if (i < last && profile->cutoff >= perc) continue;
+				if (i < last && profile->cutoff < perc) continue;
 
 				ok = dun->profile->builder(c, p);
 				if (ok) break;
