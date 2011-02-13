@@ -2765,7 +2765,7 @@ static char *msg_repository[MAX_MON_MSG + 1] =
 	"disintegrates!",		/* MON_MSG_DISENTEGRATES */
 	"freez[es] and shatter[s]",  /* MON_MSG_FREEZE_SHATTER */
 	"lose[s] some mana!",		/* MON_MSG_MANA_DRAIN */
-	"looks briefly puzzled",	/* MON_MSG_BRIEF_PUZZLE */
+	"looks briefly puzzled.",	/* MON_MSG_BRIEF_PUZZLE */
 	"maintain[s] the same shape.", /* MON_MSG_MAINTAIN_SHAPE */
 
 	/* From message_pain */
