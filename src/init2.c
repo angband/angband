@@ -447,8 +447,7 @@ static enum parser_error parse_kb_f(struct parser *p) {
 struct parser *init_parse_kb(void) {
 	struct parser *p = parser_new();
 
-	struct kb_parsedata *d = mem_alloc(sizeof(*d));
-	memset(d, 0, sizeof(*d));
+	struct kb_parsedata *d = mem_zalloc(sizeof(*d));
 	parser_setpriv(p, d);
 
 	parser_reg(p, "V sym version", ignored);
@@ -496,8 +495,7 @@ static enum parser_error parse_k_n(struct parser *p) {
 	const char *name = parser_getstr(p, "name");
 	struct object_kind *h = parser_priv(p);
 
-	struct object_kind *k = mem_alloc(sizeof *k);
-	memset(k, 0, sizeof(*k));
+	struct object_kind *k = mem_zalloc(sizeof *k);
 	k->next = h;
 	parser_setpriv(p, k);
 	k->kidx = idx;
@@ -1179,8 +1177,7 @@ static enum parser_error parse_e_n(struct parser *p) {
 	const char *name = parser_getstr(p, "name");
 	struct ego_item *h = parser_priv(p);
 
-	struct ego_item *e = mem_alloc(sizeof *e);
-	memset(e, 0, sizeof(*e));
+	struct ego_item *e = mem_zalloc(sizeof *e);
 	e->next = h;
 	parser_setpriv(p, e);
 	e->eidx = idx;
@@ -1533,8 +1530,7 @@ struct file_parser rb_parser = {
 /* Parsing functions for monster.txt */
 static enum parser_error parse_r_n(struct parser *p) {
 	struct monster_race *h = parser_priv(p);
-	struct monster_race *r = mem_alloc(sizeof *r);
-	memset(r, 0, sizeof(*r));
+	struct monster_race *r = mem_zalloc(sizeof *r);
 	r->next = h;
 	r->ridx = parser_getuint(p, "index");
 	r->name = string_make(parser_getstr(p, "name"));
@@ -3441,8 +3437,7 @@ static struct file_parser hints_parser = {
 /* Initialise monster pain messages */
 static enum parser_error parse_mp_n(struct parser *p) {
 	struct monster_pain *h = parser_priv(p);
-	struct monster_pain *mp = mem_alloc(sizeof *mp);
-	memset(mp, 0, sizeof(*mp));
+	struct monster_pain *mp = mem_zalloc(sizeof *mp);
 	mp->next = h;
 	mp->pain_idx = parser_getuint(p, "index");
 	parser_setpriv(p, mp);
@@ -3512,8 +3507,7 @@ struct file_parser mp_parser = {
 
 static enum parser_error parse_pit_n(struct parser *p) {
 	struct pit_profile *h = parser_priv(p);
-	struct pit_profile *pit = mem_alloc(sizeof *pit);
-	memset(pit, 0, sizeof(*pit));
+	struct pit_profile *pit = mem_zalloc(sizeof *pit);
 	pit->next = h;
 	pit->pit_idx = parser_getuint(p, "index");
 	pit->name = string_make(parser_getstr(p, "name"));	
