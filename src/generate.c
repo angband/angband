@@ -2650,7 +2650,7 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 	k = MAX(MIN(c->depth / 3, 10), 2);
 
 	/* Scale number of monsters items by labyrinth size */
-	k = (2 * k * (h * w)) / (DUNGEON_HGT * DUNGEON_WID);
+	k = (3 * k * (h * w)) / (DUNGEON_HGT * DUNGEON_WID);
 
 	/* Put some rubble in corridors */
 	alloc_objects(c, SET_BOTH, TYP_RUBBLE, randint1(k), c->depth);
@@ -2991,14 +2991,15 @@ int open_count(struct cave *c) {
 	return num;
 }
 
+#define MAX_CAVERN_TRIES 10
 /**
  * The program's main function.
  */
 bool cavern_gen(struct cave *c, struct player *p) {
 	int i, k;
 
-	int h = c->height = rand_range(DUNGEON_HGT / 3, DUNGEON_HGT);
-	int w = c->width = rand_range(DUNGEON_WID / 5, DUNGEON_WID);
+	int h = c->height = rand_range(DUNGEON_HGT / 2, DUNGEON_HGT);
+	int w = c->width = rand_range(DUNGEON_WID / 3, DUNGEON_WID);
 	int size = h * w;
 
 	int density = rand_range(25, 40);
@@ -3007,18 +3008,25 @@ bool cavern_gen(struct cave *c, struct player *p) {
 	int colors[size];
 	int counts[size];
 
+	int tries = 0;
+
 	/* If we're too shallow then don't do it */
 	if (c->depth < 8) return FALSE;
 
 	array_filler(colors, 0, size);
 	array_filler(counts, 0, size);
 
-	init_cavern(c, p, density);
+	for (tries = 0; tries < MAX_CAVERN_TRIES; tries++) {
+		/* Build a random cavern and mutate it a number of times */
+		init_cavern(c, p, density);
+		for (i = 0; i < times; i++) mutate_cavern(c);
 
-	for (i = 0; i < times; i++)
-		mutate_cavern(c);
+		/* If there are enough open squares then we're done */
+		if (open_count(c) >= size / 20) break;
+	}
 
-	if (open_count(c) < size / 20) return FALSE;
+	/* If we couldn't make a big enough cavern then fail */
+	if (tries == MAX_CAVERN_TRIES) return FALSE;
 
 	build_colors(c, colors, counts);
 	clear_small_regions(c, colors, counts);
@@ -3034,7 +3042,7 @@ bool cavern_gen(struct cave *c, struct player *p) {
 	k = MAX(MIN(c->depth / 3, 10), 2);
 
 	/* Scale number of monsters items by cavern size */
-	k = (k * (h *  w)) / (DUNGEON_HGT * DUNGEON_WID);
+	k = (2 * k * (h *  w)) / (DUNGEON_HGT * DUNGEON_WID);
 
 	/* Put some rubble in corridors */
 	alloc_objects(c, SET_BOTH, TYP_RUBBLE, randint1(k), c->depth);
