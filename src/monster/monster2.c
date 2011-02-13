@@ -2895,12 +2895,19 @@ static char *get_mon_msg_action(byte msg_code, bool do_plural,
 	if (race->base && race->base->pain) {
 		switch (msg_code) {
 			case MON_MSG_95: action = race->base->pain->messages[0];
+				break;
 			case MON_MSG_75: action = race->base->pain->messages[1];
+				break;
 			case MON_MSG_50: action = race->base->pain->messages[2];
+				break;
 			case MON_MSG_35: action = race->base->pain->messages[3];
+				break;
 			case MON_MSG_20: action = race->base->pain->messages[4];
+				break;
 			case MON_MSG_10: action = race->base->pain->messages[5];
+				break;
 			case MON_MSG_0: action = race->base->pain->messages[6];
+				break;
 		}
 	}
 
