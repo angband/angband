@@ -116,3 +116,12 @@ M:twist[s] around.
 M:spin[s] slowly.
 M:swirl[s] weakly.
 M:twist[s] limply.
+
+N:12
+M:laugh[s] off the attack.
+M:sneer[s].
+M:scowl[s].
+M:bellow[s] in rage.
+M:scream[s] in fury.
+M:grunt[s].
+M:wince[s].

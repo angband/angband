@@ -1,14 +1,13 @@
 # This file provides information for monster "templates".
 # 
-# N : serial number : template name
+# N : template name
 # G : default display character
 # M : pain message index
 # F : flag | flag | ...
 # S : spell flag | spell flag | ...
 # D : description
 #
-# 'N' indicates the beginning of an entry. The serial number must increase for
-# each new item. The template name is used in monster.txt.
+# 'N' indicates the beginning of an entry. The template name is used in monster.txt.
 #
 # 'G' indicates the default display character. This is used for displaying the
 # monster in ASCII mode, and also for determining which monsters are
@@ -426,8 +425,14 @@ F:OPEN_DOOR | BASH_DOOR
 F:IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 D:Zombie/Mummy
 
-##### Special template #####
+##### Special templates #####
 
 N:player
 G:@
+M:1
 D:You
+
+N:Morgoth
+G:P
+M:12
+D:Morgoth
