@@ -1961,8 +1961,9 @@ static void describe_monster_toughness(int r_idx, const monster_lore *l_ptr)
 	const monster_race *r_ptr = &r_info[r_idx];
 	bitflag f[RF_SIZE];
 
-	int msex = 0, chance = 0, chance2 = 0;
-
+	int msex = 0;
+	long chance=0, chance2=0;
+	
 	/* Get the known monster flags */
 	monster_flags_known(r_ptr, l_ptr, f);
 
@@ -1998,6 +1999,9 @@ static void describe_monster_toughness(int r_idx, const monster_lore *l_ptr)
 			chance = 1;
 
 		chance2 = 90 * (chance - (3 * r_ptr->ac / 4)) / chance + 5;
+		
+		/* There is always a 5 percent chance to hit */
+		if (chance2 < 5) chance2=5;
 
 		text_out("You have a");
 		if ((chance2 == 8) || ((chance2 / 10) == 8))
