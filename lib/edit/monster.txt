@@ -24,7 +24,7 @@
 # each new item. Entry 0 is used for the player.
 
 # 'T' is for the template (see monster_base.txt). This provides the
-# default display symbol, as well as some default flags.
+# default display symbol, some default flags, and the monster's pain messages.
 
 # 'G' is for the display symbol. If present, this overrides the default display
 # symbol from the template.
@@ -9514,7 +9514,7 @@ D: your soul.  He has many servants, and rarely fights without them.
 ### Dungeon level 100 ###
 
 N:547:Morgoth, Lord of Darkness
-G:P
+T:Morgoth
 C:D
 I:140:20000:100:150:0
 W:100:1:0:60000
