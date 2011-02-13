@@ -46,8 +46,8 @@ typedef struct monster_base
 	bitflag spell_flags[RSF_SIZE];  /* Spell flags */
 	
 	char d_char;			/* Default monster character */
-	
-	int pain_idx;			/* Set of pain messages */
+
+	monster_pain *pain;		/* Pain messages */
 } monster_base;
  
 /*

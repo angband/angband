@@ -1391,8 +1391,7 @@ struct file_parser e_parser = {
 
 static enum parser_error parse_rb_n(struct parser *p) {
 	struct monster_base *h = parser_priv(p);
-	struct monster_base *rb = mem_alloc(sizeof *rb);
-	memset(rb, 0, sizeof(*rb));
+	struct monster_base *rb = mem_zalloc(sizeof *rb);
 	rb->next = h;
 	rb->name = string_make(parser_getstr(p, "name"));
 	parser_setpriv(p, rb);
@@ -1411,11 +1410,18 @@ static enum parser_error parse_rb_g(struct parser *p) {
 
 static enum parser_error parse_rb_m(struct parser *p) {
 	struct monster_base *rb = parser_priv(p);
+	int pain_idx;
 
 	if (!rb)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
-	rb->pain_idx = parser_getuint(p, "pain");
+	pain_idx = parser_getuint(p, "pain");
+	if (pain_idx >= z_info->mp_max)
+		/* XXX need a real error code for this */
+		return PARSE_ERROR_GENERIC;
+
+	rb->pain = &pain_messages[pain_idx];
+
 	return PARSE_ERROR_NONE;
 }
 
@@ -4042,6 +4048,10 @@ bool init_angband(void)
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (ego-items)");
 	if (run_parser(&e_parser)) quit("Cannot initialize ego-items");
 
+	/* Initialize monster pain messages */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (pain messages)");
+	if (run_parser(&mp_parser)) quit("Cannot initialize monster pain messages");
+
 	/* Initialize monster-base info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (monster bases)");
 	if (run_parser(&rb_parser)) quit("Cannot initialize monster bases");
@@ -4050,10 +4060,6 @@ bool init_angband(void)
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (monsters)");
 	if (run_parser(&r_parser)) quit("Cannot initialize monsters");
 
-	/* Initialize monster pain messages */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (pain messages)");
-	if (run_parser(&mp_parser)) quit("Cannot initialize monster pain messages");
-	
 	/* Initialize monster pits */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (monster pits)");
 	if (run_parser(&pit_parser)) quit("Cannot initialize monster pits");

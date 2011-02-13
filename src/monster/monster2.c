@@ -2880,39 +2880,29 @@ void message_pain(int m_idx, int dam)
  * The contents of the returned value will change with the next call
  * to this function
  */
-static char *get_mon_msg_action(byte msg_code, bool do_plural, int r_idx)
+static char *get_mon_msg_action(byte msg_code, bool do_plural,
+		struct monster_race *race)
 {
 	static char buf[200];
-	const char *action;
+	const char *action = msg_repository[msg_code];
 	u16b n = 0;
 
 	/* Regular text */
 	byte flag = 0;
 
-	if (r_idx > 0) {
-		monster_race *race = &r_info[r_idx];
-		monster_pain *mp_ptr = &pain_messages[race->base->pain_idx];
-	   
-		/* Find the action string */
-		if (msg_code == MON_MSG_95)
-			action = mp_ptr->messages[0];
-		else if (msg_code == MON_MSG_75)
-			action = mp_ptr->messages[1];
-		else if (msg_code == MON_MSG_50)
-			action = mp_ptr->messages[2];
-		else if (msg_code == MON_MSG_35)
-			action = mp_ptr->messages[3];
-		else if (msg_code == MON_MSG_20)
-			action = mp_ptr->messages[4];
-		else if (msg_code == MON_MSG_10)
-			action = mp_ptr->messages[5];
-		else if (msg_code == MON_MSG_0)
-			action = mp_ptr->messages[6];
-		else 
-			action = msg_repository[msg_code];
-	} else {
-		action = msg_repository[msg_code];
-	}   
+	assert(race->base && race->base->pain);
+
+	if (race->base && race->base->pain) {
+		switch (msg_code) {
+			case MON_MSG_95: action = race->base->pain->messages[0];
+			case MON_MSG_75: action = race->base->pain->messages[1];
+			case MON_MSG_50: action = race->base->pain->messages[2];
+			case MON_MSG_35: action = race->base->pain->messages[3];
+			case MON_MSG_20: action = race->base->pain->messages[4];
+			case MON_MSG_10: action = race->base->pain->messages[5];
+			case MON_MSG_0: action = race->base->pain->messages[6];
+		}
+	}
 
    /* Put the message characters in the buffer */
    for (; *action; action++)
@@ -3104,7 +3094,8 @@ void flush_monster_messages(void)
        r_idx = mon_msg[i].mon_race;
            
        /* Get the proper message action */
-       action = get_mon_msg_action(mon_msg[i].msg_code, (count > 1), r_idx);
+       action = get_mon_msg_action(mon_msg[i].msg_code, (count > 1),
+				&r_info[r_idx]);
 
        /* Is it a regular race? */
        if (r_idx > 0)
