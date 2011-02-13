@@ -320,8 +320,6 @@ static enum parser_error parse_z(struct parser *p) {
 		z->e_max = value;
 	else if (streq(label, "R"))
 		z->r_max = value;
-	else if (streq(label, "B"))
-		z->rb_max = value;
 	else if (streq(label, "P"))
 		z->mp_max = value;
 	else if (streq(label, "S"))
@@ -1396,7 +1394,6 @@ static enum parser_error parse_rb_n(struct parser *p) {
 	struct monster_base *rb = mem_alloc(sizeof *rb);
 	memset(rb, 0, sizeof(*rb));
 	rb->next = h;
-	rb->rval = parser_getuint(p, "index");
 	rb->name = string_make(parser_getstr(p, "name"));
 	parser_setpriv(p, rb);
 	return PARSE_ERROR_NONE;
@@ -1500,7 +1497,7 @@ struct parser *init_parse_rb(void) {
 	parser_setpriv(p, NULL);
 
 	parser_reg(p, "V sym version", ignored);
-	parser_reg(p, "N uint index str name", parse_rb_n);
+	parser_reg(p, "N str name", parse_rb_n);
 	parser_reg(p, "G char glyph", parse_rb_g);
 	parser_reg(p, "M uint pain", parse_rb_m);
 	parser_reg(p, "F ?str flags", parse_rb_f);
@@ -1514,22 +1511,7 @@ static errr run_parse_rb(struct parser *p) {
 }
 
 static errr finish_parse_rb(struct parser *p) {
-	struct monster_base *rb, *n;
-		
-	rb_info = mem_zalloc(sizeof(*rb) * z_info->rb_max);
-	for (rb = parser_priv(p); rb; rb = rb->next) {
-		if (rb->rval >= z_info->rb_max)
-			continue;
-		memcpy(&rb_info[rb->rval], rb, sizeof(*rb));
-	}
-	
-	rb = parser_priv(p);
-	while (rb) {
-		n = rb->next;
-		mem_free(rb);
-		rb = n;
-	}
-	
+	rb_info = parser_priv(p);
 	parser_destroy(p);
 	return 0;
 }
@@ -1556,19 +1538,17 @@ static enum parser_error parse_r_n(struct parser *p) {
 
 static enum parser_error parse_r_t(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
-	int rval;
 	
-	rval = lookup_monster_base(parser_getsym(p, "rval"));
-	if (rval < 0)
+	r->base = lookup_monster_base(parser_getsym(p, "base"));
+	if (r->base == NULL)
 		/* Todo: make new error for this */
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
-	r->rval = rval;
 	
 	/* The template sets the default display character */
-	r->d_char = rb_info[r->rval].d_char;
+	r->d_char = r->base->d_char;
 	
 	/* Give the monster its default flags */
-	rf_union(r->flags, rb_info[r->rval].flags);
+	rf_union(r->flags, r->base->flags);
 	
 	return PARSE_ERROR_NONE;
 }
@@ -1748,8 +1728,8 @@ static enum parser_error parse_r_s(struct parser *p) {
 	}
 
 	/* Add the "base monster" flags to the monster */
-	if (r->rval > 0)
-		rsf_union(r->spell_flags, rb_info[r->rval].spell_flags);
+	if (r->base)
+		rsf_union(r->spell_flags, r->base->spell_flags);
 
 	mem_free(flags);
 	return ret;
@@ -1761,7 +1741,7 @@ struct parser *init_parse_r(void) {
 
 	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "N uint index str name", parse_r_n);
-	parser_reg(p, "T sym rval", parse_r_t);
+	parser_reg(p, "T sym base", parse_r_t);
 	parser_reg(p, "G char glyph", parse_r_g);
 	parser_reg(p, "C sym color", parse_r_c);
 	parser_reg(p, "I int speed int hp int aaf int ac int sleep", parse_r_i);
@@ -3567,17 +3547,16 @@ static enum parser_error parse_pit_o(struct parser *p) {
 
 static enum parser_error parse_pit_t(struct parser *p) {
 	struct pit_profile *pit = parser_priv(p);
-	int rval = lookup_monster_base(parser_getsym(p, "rval"));
+	monster_base *base = lookup_monster_base(parser_getsym(p, "base"));
 
 	if (!pit)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	else if (pit->num_rvals == MAX_RVALS)
+	else if (pit->n_bases == MAX_RVALS)
 		return PARSE_ERROR_TOO_MANY_ENTRIES;
-	else if (rval < 0)
+	else if (!base)
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
-	else
-	{
-		pit->rval[pit->num_rvals++] = rval;
+	else {
+		pit->base[pit->n_bases++] = base;
 		return PARSE_ERROR_NONE;		
 	}
 }
@@ -3658,7 +3637,7 @@ struct parser *init_parse_pit(void) {
 	parser_reg(p, "R uint type", parse_pit_r);
 	parser_reg(p, "A uint rarity uint level", parse_pit_a);
 	parser_reg(p, "O uint obj_rarity", parse_pit_o);
-	parser_reg(p, "T sym rval", parse_pit_t);
+	parser_reg(p, "T sym base", parse_pit_t);
 	parser_reg(p, "F ?str flags", parse_pit_f);
 	parser_reg(p, "S ?str spells", parse_pit_s);
 	parser_reg(p, "s ?str spells", parse_pit_s2);

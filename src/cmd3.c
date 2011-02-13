@@ -472,15 +472,14 @@ int cmp_monsters(const void *a, const void *b)
 void lookup_symbol(char sym, char *buf, size_t max)
 {
 	int i;
+	monster_base *race;
 
 	/* Look through items */
 	/* Note: We currently look through all items, and grab the tval when we find a match.
 	It would make more sense to loop through tvals, but then we need to associate
 	a display character with each tval. */
-	for (i = 1; i < z_info->k_max; i++)
-	{
-		if(k_info[i].d_char == sym)
-		{
+	for (i = 1; i < z_info->k_max; i++) {
+		if (k_info[i].d_char == sym) {
 			strnfmt(buf, max, "%c - %s.", sym, tval_find_name(k_info[i].tval));
 			return;
 		}
@@ -489,20 +488,16 @@ void lookup_symbol(char sym, char *buf, size_t max)
 	/* Look through features */
 	/* Note: We need a better way of doing this. Currently '#' matches secret door,
 	and '^' matches trap door (instead of the more generic "trap"). */
-	for (i = 1; i < z_info->f_max; i++)
-	{
-		if(f_info[i].d_char == sym)
-		{
+	for (i = 1; i < z_info->f_max; i++) {
+		if (f_info[i].d_char == sym) {
 			strnfmt(buf, max, "%c - %s.", sym, f_info[i].name);
 			return;
 		}
 	}
 	
 	/* Look through monster templates */
-	for (i = 1; i < z_info->rb_max; i++)
-	{
-		if(rb_info[i].d_char == sym)
-		{
+	for (race = rb_info; race; race = race->next){
+		if (sym == race->d_char) {
 			strnfmt(buf, max, "%c - %s.", sym, rb_info[i].text);
 			return;
 		}

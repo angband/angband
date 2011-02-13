@@ -1402,19 +1402,17 @@ bool mon_pit_hook(int r_idx)
 		return FALSE;
 	else if (rsf_is_inter(r_ptr->spell_flags, pit_type->forbidden_spell_flags))
 		return FALSE;
-	else if (pit_type->num_rvals > 0)
-	{
+	else if (pit_type->n_bases > 0) {
 		int i;
-		for (i = 0; i < pit_type->num_rvals; i++)
-		{
-			if (r_ptr->rval == pit_type->rval[i])
+		for (i = 0; i < pit_type->n_bases; i++) {
+			if (r_ptr->base == pit_type->base[i])
 				return TRUE;
 		}
 		
 		return FALSE;
 	}
-	else
-		return TRUE;
+
+	return TRUE;
 }
 
 /**

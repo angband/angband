@@ -30,7 +30,7 @@
 
 ##### Normal monster templates #####
 
-N:1:ancient dragon
+N:ancient dragon
 G:D
 M:1
 F:DRAGON | EVIL | POWERFUL
@@ -40,7 +40,7 @@ F:NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 D:Ancient Dragon/Wyrm
 
-N:2:angel
+N:angel
 G:A
 M:1
 F:POWERFUL
@@ -50,38 +50,38 @@ F:IM_POIS | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 D:Angel
 
-N:3:ant
+N:ant
 G:a
 M:7
 F:ANIMAL | WEIRD_MIND
 F:BASH_DOOR
 D:Ant
 
-N:4:bat
+N:bat
 G:b
 M:4
 F:ANIMAL
 D:Bat
 
-N:5:bird
+N:bird
 G:B
 M:8
 F:ANIMAL
 D:Bird
 
-N:6:canine
+N:canine
 G:C
 M:3
 F:ANIMAL
 D:Canine (Dog)
 
-N:7:centipede
+N:centipede
 G:c
 M:5
 F:ANIMAL | WEIRD_MIND
 D:Centipede
 
-N:8:creeping coins
+N:creeping coins
 G:$
 M:1
 F:COLD_BLOOD | METAL | UNAWARE | EMPTY_MIND
@@ -90,14 +90,14 @@ F:BASH_DOOR
 F:IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 D:Creeping Coins
 
-N:9:dragon
+N:dragon
 G:d
 M:1
 F:DRAGON | EVIL
 F:FORCE_SLEEP
 D:Dragon
 
-N:10:dragon fly
+N:dragon fly
 G:F
 M:7
 F:ANIMAL | WEIRD_MIND
@@ -105,12 +105,12 @@ F:RAND_50 | BASH_DOOR
 F:FORCE_SLEEP
 D:Dragon Fly
 
-N:11:eye
+N:eye
 G:e
 M:1
 D:Floating Eye
 
-N:12:elemental
+N:elemental
 G:E
 M:1
 F:EMPTY_MIND
@@ -118,13 +118,13 @@ F:IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP
 F:MATERIAL
 D:Elemental
 
-N:13:feline
+N:feline
 G:f
 M:6
 F:ANIMAL
 D:Feline (Cat)
 
-N:14:ghost
+N:ghost
 G:G
 M:1
 F:UNDEAD | EVIL | INVISIBLE | COLD_BLOOD
@@ -132,7 +132,7 @@ F:PASS_WALL
 F:NO_CONF | NO_SLEEP
 D:Ghost
 
-N:15:giant
+N:giant
 G:P
 M:1
 F:GIANT | EVIL
@@ -140,7 +140,7 @@ F:BASH_DOOR
 S:BOULDER
 D:Giant Humanoid
 
-N:16:golem
+N:golem
 G:g
 M:1
 F:EMPTY_MIND
@@ -148,18 +148,18 @@ F:IM_ELEC | NO_FEAR | NO_CONF | NO_SLEEP
 F:MATERIAL
 D:Golem
 
-N:17:humanoid
+N:humanoid
 G:h
 M:1
 F:OPEN_DOOR | BASH_DOOR
 D:Hobbit/Elf/Dwarf
 
-N:18:hybrid
+N:hybrid
 G:H
 M:1
 D:Hybrid
 
-N:19:hydra
+N:hydra
 G:M
 M:4
 F:ANIMAL
@@ -168,34 +168,34 @@ F:BASH_DOOR
 F:FORCE_SLEEP
 D:Hydra
 
-N:20:icky thing
+N:icky thing
 G:i
 M:2
 F:RAND_50
 D:Icky Thing
 
-N:21:insect
+N:insect
 G:I
 M:7
 F:ANIMAL | WEIRD_MIND | MULTIPLY
 F:RAND_25 | RAND_50
 D:Insect
 
-N:22:jelly
+N:jelly
 G:j
 M:2
 F:EMPTY_MIND | STUPID
 F:NO_FEAR
 D:Jelly
 
-N:23:killer beetle
+N:killer beetle
 G:K
 M:7
 F:ANIMAL | WEIRD_MIND
 F:BASH_DOOR
 D:Killer Beetle
 
-N:24:kobold
+N:kobold
 G:k
 M:1
 F:EVIL
@@ -203,7 +203,7 @@ F:OPEN_DOOR | BASH_DOOR
 F:IM_POIS
 D:Kobold
 
-N:25:lich
+N:lich
 G:L
 M:1
 F:UNDEAD | EVIL | COLD_BLOOD | SMART
@@ -213,14 +213,14 @@ F:FORCE_SLEEP
 S:BRAIN_SMASH
 D:Lich
 
-N:26:louse
+N:louse
 G:l
 M:7
 F:ANIMAL | WEIRD_MIND | MULTIPLY
 F:RAND_50
 D:Louse
 
-N:27:lurker
+N:lurker
 G:.
 M:1
 F:COLD_BLOOD | EMPTY_MIND | INVISIBLE | UNAWARE
@@ -229,7 +229,7 @@ F:NO_FEAR | NO_CONF | NO_SLEEP
 F:CHAR_CLEAR | ATTR_CLEAR
 D:Lurker
 
-N:28:major demon
+N:major demon
 G:U
 M:1
 F:DEMON | EVIL
@@ -239,7 +239,7 @@ F:NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 D:Major Demon
 
-N:29:mimic
+N:mimic
 G:?
 M:1
 F:COLD_BLOOD | EMPTY_MIND | UNAWARE
@@ -249,61 +249,61 @@ F:FORCE_SLEEP
 S:BLIND | CAUSE_2 | CONF | SCARE
 D:Mimic
 
-N:30:minor demon
+N:minor demon
 G:u
 M:1
 F:DEMON | EVIL
 F:IM_FIRE
 D:Minor Demon
 
-N:31:mold
+N:mold
 G:m
 M:2
 F:NEVER_MOVE
 F:IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP
 D:Mold
 
-N:32:mushroom
+N:mushroom
 G:,
 M:2
 F:EMPTY_MIND | STUPID
 F:NO_FEAR | NO_CONF | NO_SLEEP
 D:Mushroom
 
-N:33:naga
+N:naga
 G:n
 M:1
 F:FEMALE | EVIL
 F:BASH_DOOR
 D:Naga
 
-N:34:ogre
+N:ogre
 G:O
 M:1
 F:GIANT | EVIL
 F:OPEN_DOOR | BASH_DOOR
 D:Ogre
 
-N:35:orc
+N:orc
 G:o
 M:1
 F:MALE | ORC | EVIL
 F:OPEN_DOOR | BASH_DOOR
 D:Orc
 
-N:36:person
+N:person
 G:p
 M:1
 F:BASH_DOOR
 D:Person/Human
 
-N:37:quadruped
+N:quadruped
 G:q
 M:4
 F:BASH_DOOR
 D:Quadruped
 
-N:38:quylthulg
+N:quylthulg
 G:Q
 M:2
 F:ANIMAL | EMPTY_MIND | INVISIBLE
@@ -312,51 +312,51 @@ F:NO_FEAR | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 D:Quylthulg
 
-N:39:reptile
+N:reptile
 G:R
 M:5
 F:ANIMAL
 D:Reptile/Amphibian
 
-N:40:rodent
+N:rodent
 G:r
 M:4
 F:ANIMAL
 D:Rodent
 
-N:41:skeleton
+N:skeleton
 G:s
 M:9
 F:UNDEAD | EVIL | COLD_BLOOD
 F:IM_COLD | IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP
 D:Skeleton
 
-N:42:snake
+N:snake
 G:J
 M:5
 F:ANIMAL
 F:BASH_DOOR
 D:Snake
 
-N:43:spider
+N:spider
 G:S
 M:7
 F:BASH_DOOR
 D:Spider/Scorpion/Tick
 
-N:44:townsfolk
+N:townsfolk
 G:t
 M:4
 D:Townsfolk
 
-N:45:troll
+N:troll
 G:T
 M:1
 F:TROLL | EVIL
 F:OPEN_DOOR | BASH_DOOR
 D:Troll
 
-N:46:vampire
+N:vampire
 G:V
 M:1
 F:UNDEAD | EVIL | COLD_BLOOD | REGENERATE
@@ -366,7 +366,7 @@ F:FORCE_SLEEP
 S:HOLD | SCARE
 D:Vampire
 
-N:47:vortex
+N:vortex
 G:v
 M:1
 F:EMPTY_MIND | POWERFUL
@@ -376,27 +376,27 @@ F:FORCE_SLEEP
 F:MATERIAL
 D:Vortex
 
-N:48:worm
+N:worm
 G:w
 M:1
 F:ANIMAL
 D:Worm/Worm Mass
 
-N:49:wraith
+N:wraith
 G:W
 M:1
 F:UNDEAD | EVIL | COLD_BLOOD
 F:HURT_LIGHT | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 D:Wight/Wraith
 
-N:50:xorn
+N:xorn
 G:X
 M:4
 F:COLD_BLOOD | EMPTY_MIND
 F:HURT_ROCK | IM_POIS | NO_CONF | NO_SLEEP
 D:Xorn/Xaren
 
-N:51:yeek
+N:yeek
 G:y
 M:1
 F:ANIMAL
@@ -404,7 +404,7 @@ F:OPEN_DOOR | BASH_DOOR
 F:IM_ACID
 D:Yeek
 
-N:52:yeti
+N:yeti
 G:Y
 M:1
 F:ANIMAL
@@ -412,13 +412,13 @@ F:OPEN_DOOR | BASH_DOOR
 F:IM_COLD
 D:Yeti
 
-N:53:zephyr hound
+N:zephyr hound
 G:Z
 M:3
 F:ANIMAL | FRIENDS
 D:Zephyr Hound
 
-N:54:zombie
+N:zombie
 G:z
 M:10
 F:UNDEAD | EVIL | COLD_BLOOD
@@ -428,6 +428,6 @@ D:Zombie/Mummy
 
 ##### Special template #####
 
-N:55:player
+N:player
 G:@
 D:You

@@ -37,11 +37,10 @@ typedef struct monster_pain
  */
 typedef struct monster_base
 {
+	struct monster_base *next;
+
 	char *name;
 	char *text;
-	
-	int rval;
-	struct monster_base *next;
 
 	bitflag flags[RF_SIZE];         /* Flags */
 	bitflag spell_flags[RSF_SIZE];  /* Spell flags */
@@ -72,11 +71,13 @@ typedef struct monster_base
 typedef struct monster_race
 {
 	struct monster_race *next;
+
 	unsigned int ridx;
+
 	char *name;
 	char *text;
 
-	int rval;
+	struct monster_base *base;
 	
 	u16b avg_hp;				/* Average HP for this creature */
 

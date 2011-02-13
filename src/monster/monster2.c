@@ -2502,29 +2502,29 @@ static bool summon_specific_okay(int r_idx)
 
 		case SUMMON_SPIDER:
 		{
-			okay = (r_ptr->rval == lookup_monster_base("spider") &&
+			okay = (r_ptr->base == lookup_monster_base("spider") &&
 			        !rf_has(r_ptr->flags, RF_UNIQUE));
 			break;
 		}
 
 		case SUMMON_HOUND:
 		{
-			okay = ((r_ptr->rval == lookup_monster_base("canine") || 
-					r_ptr->rval == lookup_monster_base("zephyr hound")) &&
+			okay = ((r_ptr->base == lookup_monster_base("canine") || 
+					r_ptr->base == lookup_monster_base("zephyr hound")) &&
 			        !rf_has(r_ptr->flags, RF_UNIQUE));
 			break;
 		}
 
 		case SUMMON_HYDRA:
 		{
-			okay = (r_ptr->rval == lookup_monster_base("hydra") &&
+			okay = (r_ptr->base == lookup_monster_base("hydra") &&
 			        !rf_has(r_ptr->flags, RF_UNIQUE));
 			break;
 		}
 
 		case SUMMON_ANGEL:
 		{
-			okay = (r_ptr->rval == lookup_monster_base("angel") &&
+			okay = (r_ptr->base == lookup_monster_base("angel") &&
 			        !flags_test_all(r_ptr->flags, RF_SIZE, RF_UNIQUE,
 			                              RF_FRIEND, RF_FRIENDS, RF_ESCORT,
 			                              RF_ESCORTS, FLAG_END));
@@ -2567,27 +2567,27 @@ static bool summon_specific_okay(int r_idx)
 
 		case SUMMON_HI_UNDEAD:
 		{
-			okay = (r_ptr->rval == lookup_monster_base("lich") ||
-			        r_ptr->rval == lookup_monster_base("vampire") ||
-			        r_ptr->rval == lookup_monster_base("wraith"));
+			okay = (r_ptr->base == lookup_monster_base("lich") ||
+			        r_ptr->base == lookup_monster_base("vampire") ||
+			        r_ptr->base == lookup_monster_base("wraith"));
 			break;
 		}
 
 		case SUMMON_HI_DRAGON:
 		{
-			okay = (r_ptr->rval == lookup_monster_base("ancient dragon"));
+			okay = (r_ptr->base == lookup_monster_base("ancient dragon"));
 			break;
 		}
 
 		case SUMMON_HI_DEMON:
 		{
-			okay = (r_ptr->rval == lookup_monster_base("major demon"));
+			okay = (r_ptr->base == lookup_monster_base("major demon"));
 			break;
 		}
 
 		case SUMMON_WRAITH:
 		{
-			okay = (r_ptr->rval == lookup_monster_base("wraith") &&
+			okay = (r_ptr->base == lookup_monster_base("wraith") &&
 			        rf_has(r_ptr->flags, RF_UNIQUE));
 			break;
 		}
@@ -2882,17 +2882,16 @@ void message_pain(int m_idx, int dam)
  */
 static char *get_mon_msg_action(byte msg_code, bool do_plural, int r_idx)
 {
-   static char buf[200];
-   const char *action;
-   u16b n = 0;
-   /* Regular text */
-   byte flag = 0;
+	static char buf[200];
+	const char *action;
+	u16b n = 0;
 
-   if (r_idx > 0)
-   {
-		monster_race *r_ptr = &r_info[r_idx];
-		monster_base *rb_ptr = &rb_info[r_ptr->rval];
-		monster_pain *mp_ptr = &pain_messages[rb_ptr->pain_idx];
+	/* Regular text */
+	byte flag = 0;
+
+	if (r_idx > 0) {
+		monster_race *race = &r_info[r_idx];
+		monster_pain *mp_ptr = &pain_messages[race->base->pain_idx];
 	   
 		/* Find the action string */
 		if (msg_code == MON_MSG_95)
@@ -2911,14 +2910,13 @@ static char *get_mon_msg_action(byte msg_code, bool do_plural, int r_idx)
 			action = mp_ptr->messages[6];
 		else 
 			action = msg_repository[msg_code];
-   }
-	else
+	} else {
 		action = msg_repository[msg_code];
-   
+	}   
+
    /* Put the message characters in the buffer */
    for (; *action; action++)
    {
-   
        /* Check available space */
        if (n >= (sizeof(buf) - 1)) break;
 

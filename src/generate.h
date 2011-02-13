@@ -83,8 +83,8 @@ typedef struct pit_profile {
 	bitflag flags[RF_SIZE];         /* Required flags */
 	bitflag spell_flags[RSF_SIZE];  /* Required spell flags */
 	bitflag forbidden_spell_flags[RSF_SIZE]; 
-	int num_rvals; 
-	int rval[MAX_RVALS]; /* Allowable rvals (mosnter templates) */
+	int n_bases; 
+	struct monster_base *base[MAX_RVALS];
 } pit_profile;
 
 #endif /* !GENERATE_H */

@@ -2484,22 +2484,18 @@ int lookup_monster(const char *name)
 	return best_match;
 }
 
-/*
- * Return the rb_idx of the monster with the given name.
+/**
+ * Return the monster base matching the given name.
  */
-int lookup_monster_base(const char *name)
+monster_base *lookup_monster_base(const char *name)
 {
-	int i;
+	monster_base *base;
 
 	/* Look for it */
-	for (i = 1; i < z_info->rb_max; i++)
-	{
-		monster_base *rb_ptr = &rb_info[i];
-
-		/* Found a match */
-		if (rb_ptr->name && streq(name, rb_ptr->name))
-			return i;
+	for (base = rb_info; base; base = base->next) {
+		if (streq(name, base->name))
+			return base;
 	}
 
-	return -1;
+	return NULL;
 }
