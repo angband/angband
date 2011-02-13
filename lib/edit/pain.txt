@@ -3,7 +3,7 @@
 
 # This file is used to initialize the monster pain messages for Angband.
 
-# === Understanding artifact.txt ===
+# === Understanding pain.txt ===
 
 # N: serial number
 # M: message
@@ -107,3 +107,12 @@ M:moan[s].
 M:groan[s].
 M:hesitate[s].
 M:stagger[s].
+
+N:11
+M:ignore[s] the attack.
+M:spin[s] fiercely.
+M:swirl[s] about.
+M:twist[s] around.
+M:spin[s] slowly.
+M:swirl[s] weakly.
+M:twist[s] limply.
