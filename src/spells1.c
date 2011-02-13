@@ -2337,7 +2337,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 				rf_on(l_ptr->flags, RF_UNDEAD);
 				rf_on(l_ptr->flags, RF_DEMON);
 			}
-			if (monster_is_unusual(r_ptr))
+			if (monster_is_nonliving(r_ptr))
 			{
 				m_note = MON_MSG_UNAFFECTED;
 				obvious = FALSE;
