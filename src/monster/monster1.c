@@ -2083,6 +2083,7 @@ static void describe_monster_movement(int r_idx, const monster_lore *l_ptr)
 	if (rf_has(r_ptr->flags, RF_ANIMAL)) text_out_c(TERM_L_BLUE, " natural");
 	if (rf_has(r_ptr->flags, RF_EVIL)) text_out_c(TERM_L_BLUE, " evil");
 	if (rf_has(r_ptr->flags, RF_UNDEAD)) text_out_c(TERM_L_BLUE, " undead");
+	if (rf_has(r_ptr->flags, RF_NONLIVING)) text_out_c(TERM_L_BLUE, " nonliving");
 	if (rf_has(r_ptr->flags, RF_METAL)) text_out_c(TERM_L_BLUE, " metal");
 
 	if (rf_has(r_ptr->flags, RF_DRAGON)) text_out_c(TERM_L_BLUE, " dragon");
