@@ -384,17 +384,17 @@ static struct keypress keymap_get_trigger(void)
  * Macro menu action functions
  */
 
-static void macro_pref_load(const char *title, int row)
+static void ui_keymap_pref_load(const char *title, int row)
 {
 	do_cmd_pref_file_hack(16);
 }
 
-static void keymap_pref_append(const char *title, int row)
+static void ui_keymap_pref_append(const char *title, int row)
 {
 	(void)dump_pref_file(keymap_dump, "Dump keymaps", 13);
 }
 
-static void keymap_query(const char *title, int row)
+static void ui_keymap_query(const char *title, int row)
 {
 	char tmp[1024];
 	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
@@ -431,8 +431,11 @@ static void keymap_query(const char *title, int row)
 	}
 }
 
-static void keymap_create(const char *title, int row)
+static void ui_keymap_create(const char *title, int row)
 {
+	bool done = FALSE, first = TRUE;
+	size_t n = 0;
+
 	struct keypress c;
 	char tmp[1024];
 	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
@@ -442,19 +445,41 @@ static void keymap_create(const char *title, int row)
 
 	c = keymap_get_trigger();
 
-	prt("Action: ", 15, 0);
-
 	/* Get an encoded action, with a default response */
-	keypress_to_text(tmp, sizeof(tmp), macro_buffer);
-	if (askfor_aux(tmp, sizeof tmp, NULL))
-	{
-		/* Convert to ascii */
-		keypress_from_text(macro_buffer, N_ELEMENTS(macro_buffer), tmp);
-	
-		/* Make new keymap */
-		keymap_add(mode, c, macro_buffer);
+	while (!done) {
+		struct keypress kp;
 
-		/* Prompt */
+		keypress_to_text(tmp, sizeof(tmp), macro_buffer);
+		c_prt(first ? TERM_YELLOW : TERM_WHITE,
+				format("Action: %s", tmp), 15, 0);
+
+		kp = inkey();
+		switch (kp.code) {
+			case ESCAPE: c.code = 0; done = TRUE; continue;
+			case KC_ENTER: case KC_RETURN: done = TRUE; continue;
+			case KC_BACKSPACE:
+				if (n > 0) {
+					n -= 1;
+					macro_buffer[n].type = macro_buffer[n].code =
+							macro_buffer[n].mods = 0;
+				}
+				break;
+			case KTRL('U'):
+				memset(macro_buffer, 0, sizeof macro_buffer);
+				n = 0;
+				break;
+			default:
+				if (first) {
+					memset(macro_buffer, 0, sizeof macro_buffer);
+					first = FALSE;
+				}
+				macro_buffer[n++] = kp;
+				break;
+		}
+	}
+
+	if (c.code) {
+		keymap_add(mode, c, macro_buffer);
 		prt("Keymap added.  Press any key to continue.", 17, 0);
 		inkey();
 	}
@@ -480,22 +505,6 @@ static void ui_keymap_remove(const char *title, int row)
 	inkey();
 }
 
-static void macro_enter(const char *title, int row)
-{
-	char tmp[1024];
-
-	prt(title, 16, 0);
-	prt("Action: ", 17, 0);
-
-	/* Get an action, with a default response */
-	keypress_to_text(tmp, sizeof(tmp), macro_buffer);
-	if (askfor_aux(tmp, sizeof tmp, NULL))
-	{
-		/* Save to global macro buffer */
-		keypress_from_text(macro_buffer, N_ELEMENTS(macro_buffer), tmp);
-	}
-}
-
 static void macro_browse_hook(int oid, void *db, const region *loc)
 {
 	char tmp[1024];
@@ -513,12 +522,11 @@ static void macro_browse_hook(int oid, void *db, const region *loc)
 static menu_type *macro_menu;
 static menu_action macro_actions[] =
 {
-	{ 0, 0, "Load a user pref file",    macro_pref_load },
-	{ 0, 0, "Append keymaps to a file", keymap_pref_append },
-	{ 0, 0, "Query a keymap",           keymap_query },
-	{ 0, 0, "Create a keymap",          keymap_create },
+	{ 0, 0, "Load a user pref file",    ui_keymap_pref_load },
+	{ 0, 0, "Append keymaps to a file", ui_keymap_pref_append },
+	{ 0, 0, "Query a keymap",           ui_keymap_query },
+	{ 0, 0, "Create a keymap",          ui_keymap_create },
 	{ 0, 0, "Remove a keymap",          ui_keymap_remove },
-	{ 0, 0, "Enter a new action",       macro_enter },
 };
 
 static void do_cmd_macros(const char *title, int row)
