@@ -1587,27 +1587,19 @@ bool make_attack_spell(int m_idx)
 		{
 			disturb(1, 0);
 			if (blind)
-			{
 				msg("%^s mumbles.", m_name);
-			}
 			else
-			{
 				msg("%^s concentrates on %s body.", m_name, m_poss);
-			}
 
-			/* Allow quick speed increases to base+10 */
-			if (m_ptr->mspeed < r_ptr->speed + 10)
-			{
-				msg("%^s starts moving faster.", m_name);
-				m_ptr->mspeed += 10;
-			}
-
-			/* Allow small speed increases to base+20 */
-			else if (m_ptr->mspeed < r_ptr->speed + 20)
-			{
+			/* XXX Allow slow speed increases past +10 */
+			if (m_ptr->m_timed[MON_TMD_FAST] &&
+					m_ptr->mspeed > r_ptr->speed + 10 &&
+					m_ptr->mspeed < r_ptr->speed + 20) {
 				msg("%^s starts moving faster.", m_name);
 				m_ptr->mspeed += 2;
 			}
+
+			(void)mon_inc_timed(m_idx, MON_TMD_FAST, 50, 0);
 
 			break;
 		}
@@ -1618,13 +1610,9 @@ bool make_attack_spell(int m_idx)
 
 			/* Message */
 			if (blind)
-			{
 				msg("%^s mumbles.", m_name);
-			}
 			else
-			{
 				msg("%^s concentrates on %s wounds.", m_name, m_poss);
-			}
 
 			/* Heal some */
 			m_ptr->hp += (rlev * 6);
@@ -1637,13 +1625,9 @@ bool make_attack_spell(int m_idx)
 
 				/* Message */
 				if (seen)
-				{
 					msg("%^s looks REALLY healthy!", m_name);
-				}
 				else
-				{
 					msg("%^s sounds REALLY healthy!", m_name);
-				}
 			}
 
 			/* Partially healed */
@@ -1651,13 +1635,9 @@ bool make_attack_spell(int m_idx)
 			{
 				/* Message */
 				if (seen)
-				{
 					msg("%^s looks healthier.", m_name);
-				}
 				else
-				{
 					msg("%^s sounds healthier.", m_name);
-				}
 			}
 
 			/* Redraw (later) if needed */

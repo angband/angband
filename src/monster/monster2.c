@@ -2755,9 +2755,9 @@ static char *msg_repository[MAX_MON_MSG + 1] =
 	"look[s] more slowed.",		/* MON_MSG_MORE_SLOWED */
 	"look[s] slowed.",			/* MON_MSG_SLOWED */
 	"speed[s] up.",				/* MON_MSG_NOT_SLOWED */
-	"look[s] more hasted.",		/* MON_MSG_MORE_HASTED */
-	"look[s] hasted.",			/* MON_MSG_HASTED */
-	"[is|are] no longer hasted.",/* MON_MSG_NOT_HASTED */
+	"look[s] even faster!",		/* MON_MSG_MORE_HASTED */
+	"start[s|] moving faster.",	/* MON_MSG_HASTED */
+	"slows down.",				/* MON_MSG_NOT_HASTED */
 	"look[s] more terrified!",	/* MON_MSG_MORE_AFRAID */
 	"flee[s] in terror!",		/* MON_MSG_FLEE_IN_TERROR */
 	"[is|are] no longer afraid.",/* MON_MSG_NOT_AFRAID */
