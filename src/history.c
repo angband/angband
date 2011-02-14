@@ -109,8 +109,7 @@ size_t history_get_num(void)
 static bool history_know_artifact(struct artifact *artifact)
 {
 	size_t i = history_ctr;
-
-	if (!artifact) return FALSE;
+	assert(artifact);
 
 	while (i--) {
 		if (history_list[i].a_idx == artifact->aidx) {
@@ -130,8 +129,7 @@ static bool history_know_artifact(struct artifact *artifact)
 bool history_lose_artifact(struct artifact *artifact)
 {
 	size_t i = history_ctr;
-
-	if (!artifact) return FALSE;
+	assert(artifact);
 
 	while (i--) {
 		if (history_list[i].a_idx == artifact->aidx) {
@@ -199,8 +197,7 @@ bool history_add(const char *event, u16b type, struct artifact *artifact)
 bool history_is_artifact_known(struct artifact *artifact)
 {
 	size_t i = history_ctr;
-
-	if (!artifact) return FALSE;
+	assert(artifact);
 
 	while (i--) {
 		if (history_list[i].type & HISTORY_ARTIFACT_KNOWN &&
@@ -221,8 +218,7 @@ bool history_is_artifact_known(struct artifact *artifact)
 static bool history_is_artifact_logged(struct artifact *artifact)
 {
 	size_t i = history_ctr;
-
-	if (!artifact) return FALSE;
+	assert(artifact);
 
 	while (i--) {
 		/* Don't count ARTIFACT_LOST entries; then we can handle
@@ -254,7 +250,7 @@ bool history_add_artifact(struct artifact *artifact, bool known, bool found)
 	char buf[80];
 	u16b type;
 
-	if (!artifact) return FALSE;
+	assert(artifact);
 
 	/* Make fake artifact for description purposes */
 	object_wipe(o_ptr);
