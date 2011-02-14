@@ -835,7 +835,8 @@ void wr_monsters(void)
 		wr_s16b(m_ptr->maxhp);
 		wr_byte(m_ptr->mspeed);
 		wr_byte(m_ptr->energy);
-		
+		wr_byte(MON_TMD_MAX);
+
 		for (j = 0; j < MON_TMD_MAX; j++)
 			wr_s16b(m_ptr->m_timed[j]);
 

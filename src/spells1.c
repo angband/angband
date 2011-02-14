@@ -2415,7 +2415,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (seen) obvious = TRUE;
 
 			/* Speed up */
-			do_haste = TRUE;
+			do_haste = dam;
 
 			/* No "real" damage */
 			dam = 0;
@@ -2428,7 +2428,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		{
 			if (seen) obvious = TRUE;
 
-			do_slow = TRUE;
+			do_slow = dam;
 
 			/* No "real" damage */
 			dam = 0;
@@ -2892,7 +2892,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 
 	else if (do_slow)
 	{
-		if (mon_inc_timed(cave->m_idx[y][x], MON_SLOW, do_slow, MON_TMD_FLG_NOMESSAGE))
+		if (mon_inc_timed(cave->m_idx[y][x], MON_TMD_SLOW, do_slow, MON_TMD_FLG_NOMESSAGE))
 			slow_note = MON_MSG_SLOWED;
 		else
 			slow_note = MON_MSG_UNAFFECTED;
@@ -2900,7 +2900,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 
 	else if (do_haste)
 	{
-		if (mon_inc_timed(cave->m_idx[y][x], MON_FAST, do_haste, MON_TMD_FLG_NOMESSAGE))
+		if (mon_inc_timed(cave->m_idx[y][x], MON_TMD_FAST, do_haste, MON_TMD_FLG_NOMESSAGE))
 			haste_note = MON_MSG_HASTED;
 		else
 			haste_note = MON_MSG_UNAFFECTED;

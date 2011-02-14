@@ -92,7 +92,7 @@ enum {
 	MON_MSG_NOT_CONFUSED,
 	MON_MSG_MORE_SLOWED,
 	MON_MSG_SLOWED,
-	MON_SNG_NOT_SLOWED,
+	MON_MSG_NOT_SLOWED,
 	MON_MSG_MORE_HASTED,
 	MON_MSG_HASTED,
 	MON_MSG_NOT_HASTED,
@@ -103,8 +103,8 @@ enum {
 	MON_MSG_DISENTEGRATES,
 	MON_MSG_FREEZE_SHATTER,
 	MON_MSG_MANA_DRAIN,
-	MON_MSG_MAINTAIN_SHAPE,
 	MON_MSG_BRIEF_PUZZLE,
+	MON_MSG_MAINTAIN_SHAPE,
 	
 	/* message_pain */
 	MON_MSG_UNHARMED,
@@ -127,16 +127,11 @@ enum {
 
 
 /* Flags for the monster timed functions */
-
-#define MON_TMD_FLG_SEEN		0x0001	/* Monster is seen */
-#define MON_TMD_FLG_NOTIFY		0x0002	/* Give notification */
-#define MON_TMD_MON_SOURCE		0x0004  /* Monster is causing the damage */
-#define MON_TMD_FLG_NOMESSAGE	0x0010  /*  Never show a message */
-#define MON_TMD_FLG_NOFAIL		0x0020	/*  Never Fail the tests. */
+#define MON_TMD_FLG_NOTIFY		0x01 /* Give notification */
+#define MON_TMD_MON_SOURCE		0x02 /* Monster is causing the damage */
+#define MON_TMD_FLG_NOMESSAGE	0x04 /* Never show a message */
+#define MON_TMD_FLG_NOFAIL		0x08 /* Never fail */
 /* XXX */
-
-
-
 
 
 #endif /* !MONSTER_MONSTER_H */

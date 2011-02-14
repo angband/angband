@@ -22,10 +22,7 @@
 #include "object/tvalsval.h"
 
 
-
-
-typedef struct
-{
+typedef struct {
   int message_begin;
   int message_end;
   int message_increase;
@@ -36,22 +33,14 @@ typedef struct
  * Monster timed effects.
  * '0' means no message.
  */
-
 static mon_timed_effect effects[] =
 {
-	/*TMD_MON_SLEEP*/
-	{MON_MSG_FALL_ASLEEP, MON_MSG_WAKES_UP, FALSE, RF_NO_SLEEP},
-	/*TMD_MON_STUN*/
-	{MON_MSG_DAZED, MON_MSG_NOT_DAZED, MON_MSG_MORE_DAZED, RF_NO_STUN },
-	/*TMD_MON_CONF*/
-	{MON_MSG_CONFUSED, MON_MSG_NOT_CONFUSED, MON_MSG_MORE_CONFUSED, RF_NO_CONF },
-	/*TMD_MON_FEAR*/
-	{MON_MSG_FLEE_IN_TERROR, MON_MSG_NOT_AFRAID, MON_MSG_MORE_AFRAID, RF_NO_FEAR },
-	/*TMD_MON_SLOW*/
-	{MON_MSG_SLOWED, MON_SNG_NOT_SLOWED, MON_MSG_MORE_SLOWED,  0L  },
-	/*TMD_MON_FAST*/
-	{MON_MSG_HASTED, MON_MSG_NOT_HASTED, MON_MSG_MORE_HASTED, 0L  },
-
+	{ MON_MSG_FALL_ASLEEP, MON_MSG_WAKES_UP, FALSE, RF_NO_SLEEP },
+	{ MON_MSG_DAZED, MON_MSG_NOT_DAZED, MON_MSG_MORE_DAZED, RF_NO_STUN },
+	{ MON_MSG_CONFUSED, MON_MSG_NOT_CONFUSED, MON_MSG_MORE_CONFUSED, RF_NO_CONF },
+	{ MON_MSG_FLEE_IN_TERROR, MON_MSG_NOT_AFRAID, MON_MSG_MORE_AFRAID, RF_NO_FEAR },
+	{ MON_MSG_SLOWED, MON_MSG_NOT_SLOWED, MON_MSG_MORE_SLOWED, 0L },
+	{ MON_MSG_HASTED, MON_MSG_NOT_HASTED, MON_MSG_MORE_HASTED, 0L },
 };
 
 
@@ -69,34 +58,31 @@ static int mon_resist_effect(int m_idx, int idx, u16b flag)
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
 	/* Hasting never fails */
-	if (idx == MON_FAST) return (FALSE);
+	if (idx == MON_TMD_FAST) return (FALSE);
 
 	/* Some effects are marked to never fail */
-	if (flag & (MON_TMD_FLG_NOFAIL)) return (FALSE);
+	if (flag & MON_TMD_FLG_NOFAIL) return (FALSE);
 
-	/* Stupid, weird, or empty monsters aren't affected by some effects*/
-	if ((rf_has(r_ptr->flags, RF_STUPID)) || (rf_has(r_ptr->flags, RF_EMPTY_MIND)) ||
-		(rf_has(r_ptr->flags, RF_WEIRD_MIND)))
+	/* Stupid, weird, or empty monsters aren't affected by some effects */
+	if (rf_has(r_ptr->flags, RF_STUPID) ||
+			rf_has(r_ptr->flags, RF_EMPTY_MIND) ||
+			rf_has(r_ptr->flags, RF_WEIRD_MIND))
 	{
 		if (idx == MON_TMD_CONF) return (TRUE);
 		if (idx == MON_TMD_SLEEP) return (TRUE);
 	}
 
 	/* Calculate the chance of the monster resisting. */
-	if (flag & (MON_TMD_MON_SOURCE))
-	{
+	if (flag & MON_TMD_MON_SOURCE)
 		resist_chance = r_ptr->level;
-	}
 	else
-	{
 		resist_chance = r_ptr->level + 25 - p_ptr->lev / 5;
-	}
 
 	/* Monsters who resist get half the duration, at most */
-	if (rf_has(r_ptr->flags, (effect->flag_resist)))
+	if (rf_has(r_ptr->flags, effect->flag_resist))
 	{
 		/* Mark the lore */
-		if (flag & MON_TMD_FLG_SEEN) rf_on(l_ptr->flags, effect->flag_resist);
+		if (m_ptr->ml) rf_on(l_ptr->flags, effect->flag_resist);
 
 		return (TRUE);
 	}
@@ -108,22 +94,16 @@ static int mon_resist_effect(int m_idx, int idx, u16b flag)
 	}
 
 	/* Monsters with specific breaths and undead resist stunning*/
-	if ((idx == MON_TMD_STUN) &&
-			((rf_has(r_ptr->flags, RSF_BR_SOUN)) ||
-			 (rsf_has(r_ptr->spell_flags, RSF_BR_WALL))) )
+	if (idx == MON_TMD_STUN && (rf_has(r_ptr->flags, RSF_BR_SOUN) ||
+			rsf_has(r_ptr->spell_flags, RSF_BR_WALL)))
 	{
-
 		/* Add the lore */
-		if (flag & MON_TMD_FLG_SEEN)
+		if (m_ptr->ml)
 		{
 			if (rf_has(r_ptr->flags, RSF_BR_SOUN))
-			{
 				rf_on(l_ptr->flags, RSF_BR_SOUN);
-			}
 			if (rf_has(r_ptr->flags, RSF_BR_WALL))
-			{
 				rf_on(l_ptr->flags, RSF_BR_WALL);
-			}
 		}
 
 		return (TRUE);
@@ -134,33 +114,26 @@ static int mon_resist_effect(int m_idx, int idx, u16b flag)
 		((rf_has(r_ptr->flags, RSF_BR_CHAO)) ||
 		 (rsf_has(r_ptr->spell_flags, RSF_BR_CONF))) )
 	{
-
 		/* Add the lore */
-		if (flag & MON_TMD_FLG_SEEN)
+		if (m_ptr->ml)
 		{
 			if (rf_has(r_ptr->flags, RSF_BR_CHAO))
-			{
 				rf_on(l_ptr->flags, RSF_BR_CHAO);
-			}
 			if (rf_has(r_ptr->flags, RSF_BR_CONF))
-			{
 				rf_on(l_ptr->flags, RSF_BR_CONF);
-			}
-
 		}
-			return (TRUE);
+
+		return (TRUE);
 	}
 
 	/* Can't make non-living creatures sleep */
 	if ((idx == MON_TMD_SLEEP) &&  (rf_has(r_ptr->flags, RF_UNDEAD)))
-	{
 		return (TRUE);
-	}
 
-	/* Inertia breathers resist slowing*/
-	if ((idx == MON_SLOW) && (rsf_has(r_ptr->spell_flags, RSF_BR_INER)))
+	/* Inertia breathers resist slowing */
+	if (idx == MON_TMD_SLOW && rsf_has(r_ptr->spell_flags, RSF_BR_INER))
 	{
-			rf_on(l_ptr->flags, RSF_BR_INER);
+		rf_on(l_ptr->flags, RSF_BR_INER);
 		return (TRUE);
 	}
 
@@ -168,9 +141,7 @@ static int mon_resist_effect(int m_idx, int idx, u16b flag)
 
 	/* Uniques are doubly hard to affect */
 	if (rf_has(r_ptr->flags, RF_UNIQUE))
-	{
 		if (randint0(100) < resist_chance) return (TRUE);
-	}
 
 	return (FALSE);
 }
@@ -187,47 +158,24 @@ static bool mon_set_timed(int m_idx, int idx, int v, u16b flag)
 	monster_type *m_ptr = &mon_list[m_idx];
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
-	char m_name[80];
 	int m_note = 0;
-
 	int resisted;
 
-	/* Get monster name*/
-	monster_desc(m_name, sizeof(m_name), m_ptr, 0);
+	assert(idx >= 0 && idx < MON_TMD_MAX);
 
+	/* No change */
+	if (m_ptr->m_timed[idx] == v) return FALSE;
 
-	/* The line below would cause a crash if it were for slowing or hasting */
-	if (idx < MON_TMD_MAX)
-	{
-		/* No change */
-		if (m_ptr->m_timed[idx] == v) return FALSE;
-	}
-
-	/* Turning off, usually mention */
-	if (v == 0)
-	{
+	if (v == 0) {
+		/* Turning off, usually mention */
 		m_note = effect->message_end;
-
 		flag |= MON_TMD_FLG_NOTIFY;
-	}
-
-	/* skip the next two checks, to avoid a crash */
-	else if (idx >= MON_TMD_MAX)
-	{
-		/* do nothing */
-	}
-
-	/* Turning on, usually mention */
-	else if (m_ptr->m_timed[idx] == 0)
-	{
-
+	} else if (m_ptr->m_timed[idx] == 0) {
+		/* Turning on, usually mention */
 		flag |= MON_TMD_FLG_NOTIFY;
-
 		m_note = effect->message_begin;
-	}
-	/* Different message for increases, but don't automatically mention. */
-	else if (v > m_ptr->m_timed[idx])
-	{
+	} else if (v > m_ptr->m_timed[idx]) {
+		/* Different message for increases, but don't automatically mention. */
 		m_note = effect->message_increase;
 	}
 
@@ -235,47 +183,39 @@ static bool mon_set_timed(int m_idx, int idx, int v, u16b flag)
 	resisted = mon_resist_effect(m_idx, idx, flag);
 
 	if (resisted)
-	{
 		m_note = MON_MSG_UNAFFECTED;
+	else
+		m_ptr->m_timed[idx] = v;
+
+	if (idx == MON_TMD_FAST) {
+		if (v) {
+			if (m_ptr->mspeed > r_ptr->speed + 10) return (FALSE);
+		 	m_ptr->mspeed += 10;
+		} else {
+			m_ptr->mspeed = r_ptr->speed;
+		}
+	} else if (idx == MON_TMD_SLOW) {
+		if (v) {
+			if (m_ptr->mspeed < r_ptr->speed - 10) return (FALSE);
+			m_ptr->mspeed -= 10;
+		} else {
+			m_ptr->mspeed = r_ptr->speed;
+		}
 	}
 
-	else if (idx == MON_FAST)
-	{
-		if (m_ptr->mspeed > r_ptr->speed + 10) return (FALSE);
-
-	 	 m_ptr->mspeed += 10;
-	}
-
-	else if (idx == MON_SLOW)
-	{
-		if (m_ptr->mspeed < r_ptr->speed - 10) return (FALSE);
-
-		m_ptr->mspeed -= 10;
-	}
-
-	/* Apply the value, unless they fully resisted */
-	else m_ptr->m_timed[idx] = v;
-
-	/*possibly update the monster health bar*/
 	if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
 
 	/* Update the visuals, as appropriate. */
 	p_ptr->redraw |= (PR_MONLIST);
 
-	/* Return result without any messages */
-	if ((flag & (MON_TMD_FLG_NOMESSAGE)) || (!m_note) ||
-		(!(flag & (MON_TMD_FLG_SEEN))) ||
-		(!(flag & (MON_TMD_FLG_NOTIFY))))
-	{
-		if (resisted) return FALSE;
-		return (TRUE);
+	if (m_note && m_ptr->ml && !(flag & MON_TMD_FLG_NOMESSAGE) &&
+			(flag & MON_TMD_FLG_NOTIFY)) {
+		char m_name[80];
+		monster_desc(m_name, sizeof(m_name), m_ptr, 0);
+		add_monster_message(m_name, m_idx, m_note);
 	}
 
-	/* Finally, handle the message */
-	add_monster_message(m_name, m_idx, m_note);
-
-	if (resisted) return FALSE;
-	return (TRUE);
+	return !resisted;
 }
 
 
@@ -285,42 +225,27 @@ static bool mon_set_timed(int m_idx, int idx, int v, u16b flag)
 bool mon_inc_timed(int m_idx, int idx, int v, u16b flag)
 {
 	monster_type *m_ptr = &mon_list[m_idx];
+	assert(idx >= 0 && idx < MON_TMD_MAX);
 
 	/* Ignore dead monsters */
 	if (!m_ptr->r_idx) return FALSE;
-
 	if (v < 0) return (FALSE);
-
-	/* Check we have a valid effect */
-	if ((idx < 0) || (idx > MON_SLOW)) return FALSE;
-
-	/* mark if seen */
-	if (m_ptr->ml) flag |= MON_TMD_FLG_SEEN;
-
-	/* Hasting never fails */
-	if (idx == MON_FAST) flag |= MON_TMD_FLG_NOFAIL;
 
 	/* Can't prolong sleep of sleeping monsters */
 	if ((idx == MON_TMD_SLEEP) &&
 		(m_ptr->m_timed[MON_TMD_SLEEP])) return FALSE;
 
-	/* The lines below would cause a crash if it were for slowing or hasting */
-	if (idx < MON_TMD_MAX)
-	{
-		/* Make it last for a mimimum # of turns if it is a new effect */
-		if ((!m_ptr->m_timed[idx]) && (v < 2)) v = 2;
+	/* Make it last for a mimimum # of turns if it is a new effect */
+	if ((!m_ptr->m_timed[idx]) && (v < 2)) v = 2;
 
-		/* New counter amount */
-		v = m_ptr->m_timed[idx] + v;
-	}
+	/* New counter amount */
+	v += m_ptr->m_timed[idx];
 
-	if ((idx == MON_TMD_STUN) || (idx == MON_TMD_CONF))
-	{
+	if (idx == MON_TMD_STUN || idx == MON_TMD_CONF) {
 		if (v > 200) v = 200;
+	} else if (v > 10000) {
+		v = 10000;
 	}
-
-	/* Boundry Control */
-	else if (v > 10000) v = 10000;
 
 	return mon_set_timed(m_idx, idx, v, flag);
 }
@@ -331,27 +256,17 @@ bool mon_inc_timed(int m_idx, int idx, int v, u16b flag)
 bool mon_dec_timed(int m_idx, int idx, int v, u16b flag)
 {
 	monster_type *m_ptr = &mon_list[m_idx];
+	assert(idx >= 0 && idx < MON_TMD_MAX);
 
 	/* Ignore dead monsters */
 	if (!m_ptr->r_idx) return FALSE;
-
-	if (v < 0) return (FALSE);
-
-	/* Check we have a valid effect */
-	if ((idx < 0) || (idx > MON_SLOW)) return FALSE;
-
-	/* mark if seen */
-	if (m_ptr->ml) flag |= MON_TMD_FLG_SEEN;
+	if (v < 0) return FALSE;
 
 	/* Decreasing is never resisted */
 	flag |= MON_TMD_FLG_NOFAIL;
 
-	/* The line below would cause a crash if it were for slowing or hasting */
-	if (idx < MON_TMD_MAX)
-	{
-		/* New counter amount */
-		v = m_ptr->m_timed[idx] - v;
-	}
+	/* New counter amount */
+	v = m_ptr->m_timed[idx] - v;
 
 	/* Use clear function if appropriate */
 	if (v < 0) return (mon_clear_timed(m_idx, idx, flag));
@@ -365,22 +280,10 @@ bool mon_dec_timed(int m_idx, int idx, int v, u16b flag)
 bool mon_clear_timed(int m_idx, int idx, u16b flag)
 {
 	monster_type *m_ptr = &mon_list[m_idx];
+	assert(idx >= 0 && idx < MON_TMD_MAX);
 
-	/* Ignore dead monsters */
 	if (!m_ptr->r_idx) return FALSE;
-
-	/* Check we have a valid effect */
-	if ((idx < 0) || (idx > MON_SLOW)) return FALSE;
-
-	/* The lines below would cause a crash if it were for slowing or hasting */
-	if (idx < MON_TMD_MAX)
-	{
-
-		if (!m_ptr->m_timed[idx]) return FALSE;
-	}
-
-	/* mark if seen */
-	if (m_ptr->ml) flag |= MON_TMD_FLG_SEEN;
+	if (!m_ptr->m_timed[idx]) return FALSE;
 
 	/* Clearing never fails */
 	flag |= MON_TMD_FLG_NOFAIL;

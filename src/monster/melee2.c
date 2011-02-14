@@ -3123,7 +3123,12 @@ static void process_monster(struct cave *c, int m_idx)
 	/* If the monster just woke up, then it doesn't act */
 	if (woke_up) return;
 
-	/* Handle "stun" */
+	if (m_ptr->m_timed[MON_TMD_FAST])
+		mon_dec_timed(m_idx, MON_TMD_FAST, 1, 0);
+
+	if (m_ptr->m_timed[MON_TMD_SLOW])
+		mon_dec_timed(m_idx, MON_TMD_SLOW, 1, 0);
+
 	if (m_ptr->m_timed[MON_TMD_STUN])
 	{
 		int d = 1;
@@ -3137,55 +3142,34 @@ static void process_monster(struct cave *c, int m_idx)
 
 		/* Hack -- Recover from stun */
 		if (m_ptr->m_timed[MON_TMD_STUN] > d)
-		{
-			/* Recover somewhat */
-			mon_dec_timed(m_idx, MON_TMD_STUN, 1 , MON_TMD_FLG_NOMESSAGE);
-		}
-
-		/* Fully recover */
+			mon_dec_timed(m_idx, MON_TMD_STUN, 1, MON_TMD_FLG_NOMESSAGE);
 		else
-		{
 			mon_clear_timed(m_idx, MON_TMD_STUN, MON_TMD_FLG_NOTIFY);
-		}
 
 		/* Still stunned */
 		if (m_ptr->m_timed[MON_TMD_STUN]) return;
 	}
 
-
-	/* Handle confusion */
 	if (m_ptr->m_timed[MON_TMD_CONF])
 	{
 		int d = randint1(r_ptr->level / 10 + 1);
 
 		/* Still confused */
 		if (m_ptr->m_timed[MON_TMD_CONF] > d)
-		{
-			/* Reduce the confusion */
 			mon_dec_timed(m_idx, MON_TMD_CONF, d , MON_TMD_FLG_NOMESSAGE);
-		}
-
-		/* Recovered */
-		else mon_clear_timed(m_idx, MON_TMD_CONF, MON_TMD_FLG_NOTIFY);
-
+		else
+			mon_clear_timed(m_idx, MON_TMD_CONF, MON_TMD_FLG_NOTIFY);
 	}
 
-
-	/* Handle "fear" */
 	if (m_ptr->m_timed[MON_TMD_FEAR])
 	{
 		/* Amount of "boldness" */
 		int d = randint1(r_ptr->level / 10 + 1);
 
-		/* Still afraid */
 		if (m_ptr->m_timed[MON_TMD_FEAR] > d)
-		{
-			/* Reduce the fear */
-			mon_dec_timed(m_idx, MON_TMD_FEAR, d , MON_TMD_FLG_NOMESSAGE);
-		}
-
-		/* Recover from fear, take note if seen */
-		else mon_clear_timed(m_idx, MON_TMD_FEAR, MON_TMD_FLG_NOTIFY);
+			mon_dec_timed(m_idx, MON_TMD_FEAR, d, MON_TMD_FLG_NOMESSAGE);
+		else
+			mon_clear_timed(m_idx, MON_TMD_FEAR, MON_TMD_FLG_NOTIFY);
 	}
 
 

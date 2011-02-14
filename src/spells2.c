@@ -1687,7 +1687,7 @@ bool project_los(int typ, int dam, bool obvious)
  */
 bool speed_monsters(void)
 {
-	return (project_los(GF_OLD_SPEED, p_ptr->lev, FALSE));
+	return (project_los(GF_OLD_SPEED, 50, FALSE));
 }
 
 /*
@@ -1695,7 +1695,7 @@ bool speed_monsters(void)
  */
 bool slow_monsters(void)
 {
-	return (project_los(GF_OLD_SLOW, p_ptr->lev, FALSE));
+	return (project_los(GF_OLD_SLOW, 50, FALSE));
 }
 
 /*
@@ -2916,13 +2916,13 @@ bool heal_monster(int dir)
 bool speed_monster(int dir)
 {
 	int flg = PROJECT_STOP | PROJECT_KILL;
-	return (project_hook(GF_OLD_SPEED, dir, p_ptr->lev, flg));
+	return (project_hook(GF_OLD_SPEED, dir, 100, flg));
 }
 
 bool slow_monster(int dir)
 {
 	int flg = PROJECT_STOP | PROJECT_KILL;
-	return (project_hook(GF_OLD_SLOW, dir, p_ptr->lev, flg));
+	return (project_hook(GF_OLD_SLOW, dir, 100, flg));
 }
 
 bool sleep_monster(int dir, bool aware)

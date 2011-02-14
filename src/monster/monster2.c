@@ -2724,7 +2724,7 @@ static char *msg_repository[MAX_MON_MSG + 1] =
 	/* Dummy action */
 	"[is|are] hurt.",    		/* MON_MSG_NONE */
 
-	/* From project_m */ 		/* MON_MSG_DIE */
+	/* From project_m */
 	"die[s].",   				/* MON_MSG_DIE  */
 	"[is|are] destroyed.",		/* MON_MSG_DESTROYED */
 	"resist[s] a lot.",			/* MON_MSG_RESIST_A_LOT */
@@ -2747,14 +2747,14 @@ static char *msg_repository[MAX_MON_MSG + 1] =
 	"change[s]!",				/* MON_MSG_CHANGE */
 	"disappear[s]!",			/* MON_MSG_DISAPPEAR */
 	"[is|are] even more stunned.",		/* MON_MSG_MORE_DAZED */
-	"[is|are] stunned.",		/* MON_MSG_DAZED*/
+	"[is|are] stunned.",		/* MON_MSG_DAZED */
 	"[is|are] no longer stunned.",	/* MON_MSG_NOT_DAZED */
 	"look[s] more confused.",	/* MON_MSG_MORE_CONFUSED */
 	"look[s] confused.",		/* MON_MSG_CONFUSED */
 	"[is|are] no longer confused.",/* MON_MSG_NOT_CONFUSED */
 	"look[s] more slowed.",		/* MON_MSG_MORE_SLOWED */
 	"look[s] slowed.",			/* MON_MSG_SLOWED */
-	"speed[s] up.",				/* MON_SNG_NOT_SLOWED */
+	"speed[s] up.",				/* MON_MSG_NOT_SLOWED */
 	"look[s] more hasted.",		/* MON_MSG_MORE_HASTED */
 	"look[s] hasted.",			/* MON_MSG_HASTED */
 	"[is|are] no longer hasted.",/* MON_MSG_NOT_HASTED */
