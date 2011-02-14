@@ -207,6 +207,7 @@ typedef struct monster_race_message
 	byte mon_flags;		/* Flags: 0x01 means hidden monster, 0x02 means offscreen monster */
  	int  msg_code;		/* The coded message */
 	byte mon_count;		/* How many monsters triggered this message */
+	bool delay;			/* Should this message be put off to the end */
 } monster_race_message;
 
 typedef struct monster_message_history

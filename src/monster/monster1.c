@@ -212,7 +212,7 @@ static bool mon_set_timed(int m_idx, int idx, int v, u16b flag)
 			(flag & MON_TMD_FLG_NOTIFY)) {
 		char m_name[80];
 		monster_desc(m_name, sizeof(m_name), m_ptr, 0);
-		add_monster_message(m_name, m_idx, m_note);
+		add_monster_message(m_name, m_idx, m_note, TRUE);
 	}
 
 	return !resisted;

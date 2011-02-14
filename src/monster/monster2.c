@@ -2842,7 +2842,7 @@ void message_pain(int m_idx, int dam)
 	/* Notice non-damage */
 	if (dam == 0)
 	{
-		add_monster_message(m_name, m_idx, msg_code);
+		add_monster_message(m_name, m_idx, msg_code, FALSE);
 
 		return;
 	}
@@ -2868,7 +2868,7 @@ void message_pain(int m_idx, int dam)
 	else
 	   msg_code = MON_MSG_0;
 	
-   add_monster_message(m_name, m_idx, msg_code);
+   add_monster_message(m_name, m_idx, msg_code, FALSE);
 }
 
 #define SINGULAR_MON   1
@@ -3000,7 +3000,7 @@ static bool redundant_monster_message(int m_idx, int msg_code)
  * different monster descriptions for the same race.
  * Return TRUE on success.
  */
-bool add_monster_message(char *mon_name, int m_idx, int msg_code)
+bool add_monster_message(char *mon_name, int m_idx, int msg_code, bool delay)
 {
    int i;
    byte mon_flags = 0;
@@ -3050,6 +3050,7 @@ bool add_monster_message(char *mon_name, int m_idx, int msg_code)
    mon_msg[i].mon_race = r_idx;
    mon_msg[i].mon_flags = mon_flags;
    mon_msg[i].msg_code = msg_code;
+   mon_msg[i].delay = delay;
    /* Just this monster so far */
    mon_msg[i].mon_count = 1;
     
@@ -3068,11 +3069,10 @@ bool add_monster_message(char *mon_name, int m_idx, int msg_code)
    return (TRUE);
 }
 
-
 /*
  * Show and delete the stacked monster messages.
  */
-void flush_monster_messages(void)
+void flush_monster_messages(bool delay)
 {
    int i;
    int r_idx;
@@ -3088,6 +3088,8 @@ void flush_monster_messages(void)
    /* Show every message */
    for (i = 0; i < size_mon_msg; i++)
    {
+	   if (mon_msg[i].delay != delay) continue;
+   
        /* Cache the monster count */
        count = mon_msg[i].mon_count;
  
@@ -3197,12 +3199,19 @@ void flush_monster_messages(void)
        /* Show the message */
        msg(buf);
    }
+}
 
-   /* Delete all the stacked messages and history */
+
+void flush_all_monster_messages(void)
+{
+	/* Flush regular messages, then delayed messages */
+	flush_monster_messages(FALSE);
+	flush_monster_messages(TRUE);
+
+	/* Delete all the stacked messages and history */
    size_mon_msg = 0;
    size_mon_hist = 0;
 }
-
 
 /* XXX Eddie This is ghastly.  The monster should have known_flags similar to in the object_type structure. */
 typedef struct {
@@ -3667,8 +3676,8 @@ void monster_death(int m_idx)
 }
 
 
-/*
- * Decrease a monster's hit points, handle monster death.
+/**
+ * Decrease a monster's hit points and handle monster death.
  *
  * We return TRUE if the monster has been killed (and deleted).
  *
@@ -3689,7 +3698,7 @@ void monster_death(int m_idx)
  * of simply "(m_exp * m_lev) / (p_lev)", to make the first monster
  * worth more than subsequent monsters.  This would also need to
  * induce changes in the monster recall code.  XXX XXX XXX
- */
+ **/
 bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note)
 {
 	monster_type *m_ptr = &mon_list[m_idx];
@@ -3836,8 +3845,9 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note)
 
 
 	/* Mega-Hack -- Pain cancels fear */
-	if (m_ptr->m_timed[MON_TMD_FEAR] && (dam > 0))
+	if (!(*fear) && m_ptr->m_timed[MON_TMD_FEAR] && (dam > 0))
 	{
+		msg("fear reduced.");
 		int tmp = randint1(dam);
 
 		/* Cure a little fear */
@@ -3879,7 +3889,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note)
 			/* Hack -- note fear */
 			(*fear) = TRUE;
 
-			mon_inc_timed(m_idx, MON_TMD_FEAR, timer, MON_TMD_FLG_NOMESSAGE);
+			mon_inc_timed(m_idx, MON_TMD_FEAR, timer, MON_TMD_FLG_NOTIFY);
 		}
 	}
 
