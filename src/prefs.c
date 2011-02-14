@@ -684,10 +684,10 @@ static enum parser_error parse_prefs_expr(struct parser *p)
 	/* Parse the expr */
 	v = process_pref_file_expr(&expr, &f);
 
-	string_free(str);
-
 	/* Set flag */
 	d->bypass = streq(v, "0");
+
+	string_free(str);
 
 	return PARSE_ERROR_NONE;
 }
