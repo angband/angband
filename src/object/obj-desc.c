@@ -133,7 +133,7 @@ static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware)
 
 
 	/* Known artifacts get special treatment */
-	if (artifact_p(o_ptr) && aware)
+	if (o_ptr->artifact && aware)
 		return o_ptr->kind->name;
 
 	/* Analyze the object */
@@ -211,7 +211,7 @@ static size_t obj_desc_name_prefix(char *buf, size_t max, size_t end,
 		strnfcat(buf, max, &end, "no more ");
 	else if (o_ptr->number > 1)
 		strnfcat(buf, max, &end, "%d ", o_ptr->number);
-	else if ((object_name_is_visible(o_ptr) || known) && artifact_p(o_ptr))
+	else if ((object_name_is_visible(o_ptr) || known) && o_ptr->artifact)
 		strnfcat(buf, max, &end, "The ");
 
 	else if (*basename == '&')
@@ -354,13 +354,13 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 
 	/** Append extra names of various kinds **/
 
-	if ((object_name_is_visible(o_ptr) || known) && o_ptr->name1)
-		strnfcat(buf, max, &end, " %s", a_info[o_ptr->name1].name);
+	if ((object_name_is_visible(o_ptr) || known) && o_ptr->artifact)
+		strnfcat(buf, max, &end, " %s", o_ptr->artifact->name);
 
 	else if ((spoil && o_ptr->ego) || object_ego_is_visible(o_ptr))
 		strnfcat(buf, max, &end, " %s", o_ptr->ego->name);
 
-	else if (aware && !artifact_p(o_ptr) &&
+	else if (aware && !o_ptr->artifact &&
 			(o_ptr->kind->flavor || o_ptr->kind->tval == TV_SCROLL))
 		strnfcat(buf, max, &end, " of %s", o_ptr->kind->name);
 
@@ -603,7 +603,7 @@ static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max, 
 		}
 
 		/* Artifacts, single rods */
-		else if (!(o_ptr->tval == TV_LIGHT && !artifact_p(o_ptr)))
+		else if (!(o_ptr->tval == TV_LIGHT && !o_ptr->artifact))
 		{
 			strnfcat(buf, max, &end, " (charging)");
 		}

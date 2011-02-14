@@ -502,15 +502,13 @@ void drop_on_square(object_type *j_ptr, int y, int x, bool verbose)
 	/* Give it to the floor */
 	if (!floor_carry(cave, by, bx, j_ptr))
 	{
-		artifact_type *a_ptr = artifact_of(j_ptr);
-
 		/* Message */
 		msg("The %s disappear%s.", o_name, PLURAL(plural));
 
 		/* Debug */
 		if (p_ptr->wizard) msg("Breakage (too many objects).");
 
-		if (a_ptr) a_ptr->created = FALSE;
+		if (j_ptr->artifact) j_ptr->artifact->created = FALSE;
 
 		/* Failure */
 		return;
@@ -879,7 +877,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		case TV_DRAG_ARMOR:
 		{	
 			/* do not include artifacts */
-			if artifact_p(o_ptr) break;
+			if (o_ptr->artifact) break;
 			
 			/* add to armor total */
 			add_stats( arm_total,  arm_mon,  arm_vault,vault,mon,number);
@@ -923,7 +921,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		case TV_SWORD:
 		{
 			/* do not include artifacts */
-			if artifact_p(o_ptr) break;
+			if (o_ptr->artifact) break;
 				
 			/* add to weapon total */
 			add_stats( weap_total,  weap_mon,  weap_vault, vault, mon,number);
@@ -1041,7 +1039,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		case TV_BOW:
 		{
 			/* do not include artifacts */
-			if artifact_p(o_ptr) break;
+			if (o_ptr->artifact) break;
 			
 			/* add to launcher total */
 			add_stats( bow_total,  bow_mon,  bow_vault, vault, mon,number);
@@ -1512,7 +1510,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		}
 	}
 	/* check to see if we have an artifact */
-	if artifact_p(o_ptr) 
+	if (o_ptr->artifact)
 	{	
 		/* add to artifact level total */
 		art_total[lvl] += addval;
@@ -1521,8 +1519,8 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		if (iter < TRIES_SIZE) art_it[iter]++;
 				
 		/* Obtain the artifact info */
-		a_ptr = &a_info[o_ptr->name1];
-				
+		a_ptr = o_ptr->artifact;
+
 		//debugging, print out that we found the artifact
 		//msg_format("Found artifact %s",a_ptr->name);
 		
@@ -1542,11 +1540,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		{
 			/* increment special artifact counter */
 			art_spec[lvl] += addval;
-			
-				
-			
 		} else {
-		
 			/* increment normal artifacts */
 			art_norm[lvl] += addval;
 		
@@ -1559,16 +1553,12 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 			/* was it in a vault? */
 			if (vault)
 			{
-							
 				/* did a monster drop it ?*/
 				if ((mon) || (uniq)) art_mon_vault[lvl] += addval;
 				else art_vault[lvl] += addval;
-				
-			} else {
-		
-			/* was it just lyin' on the floor? */
-			if ((!uniq) && (!mon)) art_floor[lvl] += addval;
-		
+			} else {	
+				/* was it just lyin' on the floor? */
+				if ((!uniq) && (!mon)) art_floor[lvl] += addval;
 			}
 		}
 		/* preserve the artifact */

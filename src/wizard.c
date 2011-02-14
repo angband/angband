@@ -386,7 +386,10 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 
 	/* CC: multiple pvals not shown, pending #1290 */
 	prt(format("number = %-3d  pval = %-5d  name1 = %-4d  egoidx = %-4d  cost = %ld",
-	           o_ptr->number, o_ptr->pval[DEFAULT_PVAL], o_ptr->name1, o_ptr->ego->eidx, (long)object_value(o_ptr, 1, FALSE)), 6, j);
+			o_ptr->number, o_ptr->pval[DEFAULT_PVAL],
+			o_ptr->artifact ? o_ptr->artifact->aidx : 0,
+			o_ptr->ego ? o_ptr->ego->eidx : 0,
+			(long)object_value(o_ptr, 1, FALSE)), 6, j);
 
 	prt("+------------FLAGS0------------+", 8, j);
 	prt("AFFECT..........SLAY.......BRAND", 9, j);
@@ -599,7 +602,7 @@ static void wiz_tweak_item(object_type *o_ptr)
 	int i;
 
 	/* Hack -- leave artifacts alone */
-	if (artifact_p(o_ptr)) return;
+	if (o_ptr->artifact) return;
 
 #define WIZ_TWEAK(attribute) do {\
 	p = "Enter new '" #attribute "' setting: ";\
@@ -616,12 +619,17 @@ static void wiz_tweak_item(object_type *o_ptr)
 	WIZ_TWEAK(to_a);
 	WIZ_TWEAK(to_h);
 	WIZ_TWEAK(to_d);
-	WIZ_TWEAK(name1);
 
 	p = "Enter new ego item index: ";
 	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->ego->eidx);
 	if (!get_string(p, tmp_val, 6)) return;
 	o_ptr->ego = &e_info[atoi(tmp_val)];
+	wiz_display_item(o_ptr, TRUE);
+
+	p = "Enter new artifact index: ";
+	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->artifact->aidx);
+	if (!get_string(p, tmp_val, 6)) return;
+	o_ptr->artifact = &a_info[atoi(tmp_val)];
 	wiz_display_item(o_ptr, TRUE);
 }
 
@@ -640,7 +648,7 @@ static void wiz_reroll_item(object_type *o_ptr)
 
 
 	/* Hack -- leave artifacts alone */
-	if (artifact_p(o_ptr)) return;
+	if (o_ptr->artifact) return;
 
 
 	/* Get local object */
@@ -749,10 +757,8 @@ static void wiz_statistics(object_type *o_ptr, int level)
 	const char *q = "Rolls: %ld, Matches: %ld, Better: %ld, Worse: %ld, Other: %ld";
 
 
-	artifact_type *a_ptr = artifact_of(o_ptr);
-
 	/* Allow multiple artifacts, because breaking the game is fine here */
-	if (a_ptr) a_ptr->created = FALSE;
+	if (o_ptr->artifact) o_ptr->artifact->created = FALSE;
 
 
 	/* Interact */
@@ -836,8 +842,7 @@ static void wiz_statistics(object_type *o_ptr, int level)
 			make_object(cave, i_ptr, level, good, great);
 
 			/* Allow multiple artifacts, because breaking the game is fine here */
-			a_ptr = artifact_of(o_ptr);
-			if (a_ptr) a_ptr->created = FALSE;
+			if (o_ptr->artifact) o_ptr->artifact->created = FALSE;
 
 			/* Test for the same tval and sval. */
 			if ((o_ptr->tval) != (i_ptr->tval)) continue;
@@ -898,7 +903,7 @@ static void wiz_statistics(object_type *o_ptr, int level)
 
 
 	/* Hack -- Normally only make a single artifact */
-	if (artifact_p(o_ptr)) a_info[o_ptr->name1].created = TRUE;
+	if (o_ptr->artifact) o_ptr->artifact->created = TRUE;
 }
 
 
@@ -912,7 +917,7 @@ static void wiz_quantity_item(object_type *o_ptr, bool carried)
 	char tmp_val[3];
 
 	/* Never duplicate artifacts */
-	if (artifact_p(o_ptr)) return;
+	if (o_ptr->artifact) return;
 
 	/* Default */
 	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->number);
@@ -1105,7 +1110,7 @@ static void wiz_create_artifact(int a_idx)
 	object_prep(i_ptr, kind, a_ptr->alloc_min, RANDOMISE);
 
 	/* Save the name */
-	i_ptr->name1 = a_idx;
+	i_ptr->artifact = a_ptr;
 
 	/* Extract the fields */
 	for (i = 0; i < a_ptr->num_pvals; i++) {

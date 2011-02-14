@@ -623,7 +623,7 @@ static int inven_damage(inven_func typ, int cperc)
 		if (!o_ptr->kind) continue;
 
 		/* Hack -- for now, skip artifacts */
-		if (artifact_p(o_ptr)) continue;
+		if (o_ptr->artifact) continue;
 
 		/* Give this item slot a shot at death */
 		if ((*typ)(o_ptr))
@@ -1069,7 +1069,7 @@ bool apply_disenchant(int mode)
 
 
 	/* Artifacts have 60% chance to resist */
-	if (artifact_p(o_ptr) && (randint0(100) < 60))
+	if (o_ptr->artifact && (randint0(100) < 60))
 	{
 		/* Message */
 		msg("Your %s (%c) resist%s disenchantment!",
@@ -1601,7 +1601,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvio
 		if (o_ptr->number > 1) plural = TRUE;
 
 		/* Check for artifact */
-		if (artifact_p(o_ptr)) is_art = TRUE;
+		if (o_ptr->artifact) is_art = TRUE;
 
 		/* Analyze the type */
 		switch (typ)

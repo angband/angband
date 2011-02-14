@@ -51,6 +51,7 @@ static int rd_item_2(object_type *o_ptr)
 	u16b tmp16u;
 
 	byte ego_idx;
+	byte art_idx;
 
 	size_t i, j;
 
@@ -82,7 +83,7 @@ static int rd_item_2(object_type *o_ptr)
 	rd_byte(&o_ptr->number);
 	rd_s16b(&o_ptr->weight);
 
-	rd_byte(&o_ptr->name1);
+	rd_byte(&art_idx);
 	rd_byte(&ego_idx);
 
 	rd_s16b(&o_ptr->timeout);
@@ -135,6 +136,11 @@ static int rd_item_2(object_type *o_ptr)
 
 	o_ptr->ego = lookup_ego(ego_idx);
 
+	if (art_idx >= z_info->a_max)
+		return -1;
+	if (art_idx > 0)
+		o_ptr->artifact = &a_info[art_idx];
+
 	/* Repair non "wearable" items */
 	if (!wearable_p(o_ptr))
 	{
@@ -154,28 +160,8 @@ static int rd_item_2(object_type *o_ptr)
 		/* Get the correct weight */
 		o_ptr->weight = o_ptr->kind->weight;
 
-		/* Paranoia */
-		o_ptr->name1 = 0;
-
 		/* All done */
 		return (0);
-	}
-
-
-
-	/* Paranoia */
-	if (o_ptr->name1)
-	{
-		artifact_type *a_ptr;
-
-		/* Paranoia */
-		if (o_ptr->name1 >= z_info->a_max) return (-1);
-
-		/* Obtain the artifact info */
-		a_ptr = &a_info[o_ptr->name1];
-
-		/* Verify that artifact */
-		if (!a_ptr->name) o_ptr->name1 = 0;
 	}
 
 
@@ -187,28 +173,6 @@ static int rd_item_2(object_type *o_ptr)
 	/* Get the standard weight */
 	o_ptr->weight = o_ptr->kind->weight;
 
-
-	/* Artifacts */
-	if (o_ptr->name1)
-	{
-		artifact_type *a_ptr;
-
-		/* Obtain the artifact info */
-		a_ptr = &a_info[o_ptr->name1];
-
-		/* Get the new artifact "pvals" */
-		for (i = 0; i < MAX_PVALS; i++)
-			o_ptr->pval[i] = a_ptr->pval[i];
-		o_ptr->num_pvals = a_ptr->num_pvals;
-
-		/* Get the new artifact fields */
-		o_ptr->ac = a_ptr->ac;
-		o_ptr->dd = a_ptr->dd;
-		o_ptr->ds = a_ptr->ds;
-
-		/* Get the new artifact weight */
-		o_ptr->weight = a_ptr->weight;
-	}
 
 	/* Success */
 	return (0);
@@ -224,6 +188,7 @@ static int rd_item_1(object_type *o_ptr)
 	byte tmp8u;
 	u16b tmp16u;
 
+	byte art_idx;
 	byte ego_idx;
 
 	size_t i;
@@ -254,7 +219,7 @@ static int rd_item_1(object_type *o_ptr)
 	rd_byte(&o_ptr->number);
 	rd_s16b(&o_ptr->weight);
 
-	rd_byte(&o_ptr->name1);
+	rd_byte(&art_idx);
 	rd_byte(&ego_idx);
 
 	rd_s16b(&o_ptr->timeout);
@@ -305,6 +270,10 @@ static int rd_item_1(object_type *o_ptr)
 
 	o_ptr->ego = lookup_ego(ego_idx);
 
+	if (art_idx >= z_info->a_max)
+		return -1;
+	if (art_idx > 0)
+		o_ptr->artifact = &a_info[art_idx];
 
 	/* Copy flags into pval_flags to ensure pvals function */
 	if (o_ptr->pval) {
@@ -331,30 +300,9 @@ static int rd_item_1(object_type *o_ptr)
 		/* Get the correct weight */
 		o_ptr->weight = o_ptr->kind->weight;
 
-		/* Paranoia */
-		o_ptr->name1 = 0;
-
 		/* All done */
 		return (0);
 	}
-
-
-
-	/* Paranoia */
-	if (o_ptr->name1)
-	{
-		artifact_type *a_ptr;
-
-		/* Paranoia */
-		if (o_ptr->name1 >= z_info->a_max) return (-1);
-
-		/* Obtain the artifact info */
-		a_ptr = &a_info[o_ptr->name1];
-
-		/* Verify that artifact */
-		if (!a_ptr->name) o_ptr->name1 = 0;
-	}
-
 
 	/* Get the standard fields */
 	o_ptr->ac = o_ptr->kind->ac;
@@ -363,28 +311,6 @@ static int rd_item_1(object_type *o_ptr)
 
 	/* Get the standard weight */
 	o_ptr->weight = o_ptr->kind->weight;
-
-
-	/* Artifacts */
-	if (o_ptr->name1)
-	{
-		artifact_type *a_ptr;
-
-		/* Obtain the artifact info */
-		a_ptr = &a_info[o_ptr->name1];
-
-		/* Get the new artifact "pval" */
-		o_ptr->pval[DEFAULT_PVAL] = a_ptr->pval[DEFAULT_PVAL];
-
-		/* Get the new artifact fields */
-		o_ptr->ac = a_ptr->ac;
-		o_ptr->dd = a_ptr->dd;
-		o_ptr->ds = a_ptr->ds;
-
-		/* Get the new artifact weight */
-		o_ptr->weight = a_ptr->weight;
-	}
-
 
 	/* Success */
 	return (0);
@@ -2453,7 +2379,7 @@ int rd_history(void)
 		rd_byte(&art_name);
 		rd_string(text, sizeof(text));
 		
-		history_add_full(type, art_name, dlev, clev, turn, text);
+		history_add_full(type, &a_info[art_name], dlev, clev, turn, text);
 	}
 
 	return 0;

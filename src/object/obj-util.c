@@ -314,12 +314,8 @@ void object_flags(const object_type *o_ptr, bitflag flags[OF_SIZE])
 	of_union(flags, o_ptr->kind->flags);
 
 	/* Obtain artifact flags */
-	if (o_ptr->name1)
-	{
-		artifact_type *a_ptr = &a_info[o_ptr->name1];
-
-		of_union(flags, a_ptr->flags);
-	}
+	if (o_ptr->artifact)
+		of_union(flags, o_ptr->artifact->flags);
 
 	/* Obtain ego flags */
 	if (o_ptr->ego)
@@ -366,12 +362,8 @@ void object_pval_flags(const object_type *o_ptr, bitflag flags[MAX_PVALS][OF_SIZ
 		of_union(flags[i], o_ptr->kind->pval_flags[i]);
 
 		/* Obtain artifact flags */
-		if (o_ptr->name1)
-		{
-			artifact_type *a_ptr = &a_info[o_ptr->name1];
-
-			of_union(flags[i], a_ptr->pval_flags[i]);
-		}
+		if (o_ptr->artifact)
+			of_union(flags[i], o_ptr->artifact->pval_flags[i]);
 
 		/* Obtain ego flags */
 		if (o_ptr->ego)
@@ -990,11 +982,8 @@ void delete_object(int y, int x)
 		next_o_idx = o_ptr->next_o_idx;
 
 		/* Preserve unseen artifacts */
-		if artifact_p(o_ptr)
-		{
-			artifact_type *a_ptr = artifact_of(o_ptr);
-			if (!object_was_sensed(o_ptr)) a_ptr->created=FALSE;
-		}
+		if (o_ptr->artifact && !object_was_sensed(o_ptr))
+			o_ptr->artifact->created = FALSE;
 
 		/* Wipe the object */
 		object_wipe(o_ptr);
@@ -1207,7 +1196,7 @@ void compact_objects(int size)
 
 
 			/* Hack -- only compact artifacts in emergencies */
-			if (artifact_p(o_ptr) && (cnt < 1000)) chance = 100;
+			if (o_ptr->artifact && (cnt < 1000)) chance = 100;
 
 			/* Apply the saving throw */
 			if (randint0(100) < chance) continue;
@@ -1243,22 +1232,15 @@ void wipe_o_list(struct cave *c)
 	for (i = 1; i < o_max; i++)
 	{
 		object_type *o_ptr = object_byid(i);
-		artifact_type *a_ptr = artifact_of(o_ptr);
 		if (!o_ptr->kind) continue;
 
 		/* Preserve artifacts or mark them as lost in the history */
-		if (a_ptr)
-		{
+		if (o_ptr->artifact) {
 			/* Preserve if dungeon creation failed, or preserve mode, and only artifacts not seen */
 			if ((!character_dungeon || !OPT(birth_no_preserve)) && !object_was_sensed(o_ptr))
-			{
-				a_ptr->created = FALSE;
-			}
+				o_ptr->artifact->created = FALSE;
 			else
-			{
-				/* Mark artifact as lost in logs */
-				history_lose_artifact(o_ptr->name1);
-			}
+				history_lose_artifact(o_ptr->artifact);
 		}
 
 		/* Monster */
@@ -1618,7 +1600,7 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
 	if (!of_is_equal(o_ptr->flags, j_ptr->flags)) return FALSE;
 
 	/* Artifacts never stack */
-	if (o_ptr->name1 || j_ptr->name1) return FALSE;
+	if (o_ptr->artifact || j_ptr->artifact) return FALSE;
 
 	/* Analyze the items */
 	switch (o_ptr->tval)
@@ -2033,7 +2015,7 @@ void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x, boo
 
 
 	/* Handle normal "breakage" */
-	if (!artifact_p(j_ptr) && (randint0(100) < chance))
+	if (!j_ptr->artifact && (randint0(100) < chance))
 	{
 		/* Message */
 		msg("The %s break%s.", o_name, PLURAL(plural));
@@ -2135,7 +2117,7 @@ void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x, boo
 
 
 	/* Handle lack of space */
-	if (!flag && !artifact_p(j_ptr))
+	if (!flag && !j_ptr->artifact)
 	{
 		/* Message */
 		msg("The %s disappear%s.", o_name, PLURAL(plural));
@@ -2183,15 +2165,13 @@ void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x, boo
 	/* Give it to the floor */
 	if (!floor_carry(c, by, bx, j_ptr))
 	{
-		artifact_type *a_ptr = artifact_of(j_ptr);
-
 		/* Message */
 		msg("The %s disappear%s.", o_name, PLURAL(plural));
 
 		/* Debug */
 		if (p_ptr->wizard) msg("Breakage (too many objects).");
 
-		if (a_ptr) a_ptr->created = FALSE;
+		if (j_ptr->artifact) j_ptr->artifact->created = FALSE;
 
 		/* Failure */
 		return;
@@ -2306,7 +2286,7 @@ void inven_item_describe(int item)
 
 	char o_name[80];
 
-	if (artifact_p(o_ptr) && object_is_known(o_ptr))
+	if (o_ptr->artifact && object_is_known(o_ptr))
 	{
 		/* Get a description */
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);
@@ -3340,8 +3320,8 @@ int get_use_device_chance(const object_type *o_ptr)
 	int diff_max  = 100;
 
 	/* Extract the item level, which is the difficulty rating */
-	if (artifact_p(o_ptr))
-		lev = a_info[o_ptr->name1].level;
+	if (o_ptr->artifact)
+		lev = o_ptr->artifact->level;
 	else
 		lev = o_ptr->kind->level;
 
@@ -3437,8 +3417,8 @@ int number_charging(const object_type *o_ptr)
 	random_value timeout;
 
 	/* Artifacts have a special timeout */	
-	if(o_ptr->name1)
-		timeout = a_info[o_ptr->name1].time;
+	if (o_ptr->artifact)
+		timeout = o_ptr->artifact->time;
 	else
 		timeout = o_ptr->kind->time;
 
@@ -3626,7 +3606,7 @@ int lookup_artifact_name(const char *name)
 	for (i = 1; i < z_info->a_max; i++)
 	{
 		artifact_type *a_ptr = &a_info[i];
-		
+
 		/* Test for equality */
 		if (a_ptr->name && streq(name, a_ptr->name))
 			return i;
@@ -3973,7 +3953,7 @@ void display_itemlist(void)
 		/* Note that the number of items actually displayed */
 		disp_count++;
 
-		if (artifact_p(o_ptr) && object_is_known(o_ptr))
+		if (o_ptr->artifact && object_is_known(o_ptr))
 			/* known artifact */
 			attr = TERM_VIOLET;
 		else if (!object_flavor_is_aware(o_ptr))
@@ -4016,18 +3996,6 @@ void display_itemlist(void)
 	if (Term == angband_term[0])
 		Term_addstr(-1, TERM_WHITE, "  (Press any key to continue.)");
 }
-
-
-/* Accessor functions, for prettier code */
-
-artifact_type *artifact_of(const object_type *o_ptr)
-{
-	if (o_ptr->name1)
-		return &a_info[o_ptr->name1];
-
-	return NULL;
-}
-
 
 
 /* Basic tval testers */
@@ -4174,8 +4142,8 @@ bool obj_has_inscrip(const object_type *o_ptr)
  */
 u16b object_effect(const object_type *o_ptr)
 {
-	if (o_ptr->name1)
-		return a_info[o_ptr->name1].effect;
+	if (o_ptr->artifact)
+		return o_ptr->artifact->effect;
 	else
 		return o_ptr->kind->effect;
 }
@@ -4195,23 +4163,14 @@ object_type *object_from_item_idx(int item)
  */ 
 bool obj_needs_aim(object_type *o_ptr)
 {
-	int effect;
-
-	/* Figure out effect the object would use */
-	if (o_ptr->name1)
-		effect = a_info[o_ptr->name1].effect;
-	else
-		effect = o_ptr->kind->effect;
+	int effect = object_effect(o_ptr);
 
 	/* If the effect needs aiming, or if the object type needs
 	   aiming, this object needs aiming. */
-	if (effect_aim(effect) || o_ptr->tval == TV_BOLT ||
+	return effect_aim(effect) || o_ptr->tval == TV_BOLT ||
 			o_ptr->tval == TV_SHOT || o_ptr->tval == TV_ARROW ||
 			o_ptr->tval == TV_WAND ||
-			(o_ptr->tval == TV_ROD && !object_flavor_is_aware(o_ptr)))
-		return TRUE;
-	else
-		return FALSE;
+			(o_ptr->tval == TV_ROD && !object_flavor_is_aware(o_ptr));
 }
 
 

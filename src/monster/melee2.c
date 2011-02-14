@@ -3654,7 +3654,7 @@ static void process_monster(struct cave *c, int m_idx)
 					react_to_slay(obj_flags, mon_flags);
 
 					/* The object cannot be picked up by the monster */
-					if (artifact_p(o_ptr) || rf_is_inter(r_ptr->flags, mon_flags))
+					if (o_ptr->artifact || rf_is_inter(r_ptr->flags, mon_flags))
 					{
 						/* Only give a message for "take_item" */
 						if (rf_has(r_ptr->flags, RF_TAKE_ITEM))

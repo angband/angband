@@ -250,8 +250,7 @@ static void ego_apply_minima(object_type *o_ptr)
  */
 static bool make_ego_item(object_type *o_ptr, int level)
 {
-	/* XXX name1 should be changed */
-	if (o_ptr->name1 || o_ptr->ego) return FALSE;
+	if (o_ptr->artifact || o_ptr->ego) return FALSE;
 
 	/* Occasionally boost the generation level of an item */
 	if (level > 0 && one_in_(GREAT_EGO))
@@ -380,7 +379,7 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 		object_prep(o_ptr, kind, a_ptr->alloc_min, RANDOMISE);
 
 		/* Mark the item as an artifact */
-		o_ptr->name1 = i;
+		o_ptr->artifact = a_ptr;
 
 		/* Copy across all the data from the artifact struct */
 		copy_artifact_data(o_ptr, a_ptr);
@@ -398,9 +397,9 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 
 
 /*
- * Attempt to change an object into an artifact.  If the object's name1
- * is already set, use that artifact.  Otherwise, look for a suitable
- * artifact and attempt to use it.
+ * Attempt to change an object into an artifact.  If the object is already
+ * set to be an artifact, use that, or otherwise use a suitable randomly-
+ * selected artifact.
  *
  * This routine should only be called by "apply_magic()"
  *
@@ -414,8 +413,9 @@ static bool make_artifact(object_type *o_ptr)
 
 	/* No artifacts, do nothing */
 	if (OPT(birth_no_artifacts) &&
-	    o_ptr->name1 != ART_GROND &&
-	    o_ptr->name1 != ART_MORGOTH)
+			o_ptr->artifact &&
+			o_ptr->artifact->aidx != ART_GROND &&
+			o_ptr->artifact->aidx != ART_MORGOTH)
 		return (FALSE);
 
 	/* No artifacts in the town */
@@ -425,7 +425,7 @@ static bool make_artifact(object_type *o_ptr)
 	if (o_ptr->number != 1) return (FALSE);
 
 	/* Check the artifact list (skip the "specials") */
-	for (i = ART_MIN_NORMAL; !o_ptr->name1 && i < z_info->a_max; i++)
+	for (i = ART_MIN_NORMAL; !o_ptr->artifact && i < z_info->a_max; i++)
 	{
 		a_ptr = &a_info[i];
 
@@ -456,18 +456,13 @@ static bool make_artifact(object_type *o_ptr)
 		if (randint1(100) > a_ptr->alloc_prob) continue;
 
 		/* Mark the item as an artifact */
-		o_ptr->name1 = i;
+		o_ptr->artifact = a_ptr;
 	}
 
-	if (o_ptr->name1)
+	if (o_ptr->artifact)
 	{
-		a_ptr = &a_info[o_ptr->name1];
-
-		/* Copy across all the data from the artifact struct */
-		copy_artifact_data(o_ptr, a_ptr);
-
-		/* Mark the artifact as "created" */
-		a_ptr->created = 1;
+		copy_artifact_data(o_ptr, o_ptr->artifact);
+		o_ptr->artifact->created = 1;
 
 		return TRUE;
 	}

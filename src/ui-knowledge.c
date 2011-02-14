@@ -1129,7 +1129,7 @@ static void get_artifact_display_name(char *o_name, size_t namelen, int a_idx)
 	object_type object_type_body = { 0 };
 	object_type *o_ptr = &object_type_body;
 
-	make_fake_artifact(o_ptr, a_idx);
+	make_fake_artifact(o_ptr, &a_info[a_idx]);
 	object_desc(o_name, namelen, o_ptr,
 			ODESC_PREFIX | ODESC_BASE | ODESC_SPOIL);
 }
@@ -1147,20 +1147,20 @@ static void display_artifact(int col, int row, bool cursor, int oid)
 	c_prt(attr, o_name, row, col);
 }
 
-static object_type *find_artifact(int a_idx)
+static object_type *find_artifact(struct artifact *artifact)
 {
 	int i, j;
 
 	/* Look for the artifact, either in inventory, store or the object list */
 	for (i = 0; i < z_info->o_max; i++)
 	{
-		if (object_byid(i)->name1 == a_idx)
+		if (object_byid(i)->artifact == artifact)
 			return object_byid(i);
 	}
 
 	for (i = 0; i < INVEN_TOTAL; i++)
 	{
-		if (p_ptr->inventory[i].name1 == a_idx)
+		if (p_ptr->inventory[i].artifact == artifact)
 			return &p_ptr->inventory[i];
 	}
 
@@ -1168,7 +1168,7 @@ static object_type *find_artifact(int a_idx)
 	{
 		for (i = 0; i < store[j].stock_size; i++)
 		{
-			if (store[j].stock[i].name1 == a_idx)
+			if (store[j].stock[i].artifact == artifact)
 				return &store[j].stock[i];
 		}
 	}
@@ -1189,22 +1189,20 @@ static void desc_art_fake(int a_idx)
 	textblock *tb;
 	region area = { 0, 0, 0, 0 };
 
-	o_ptr = find_artifact(a_idx);
+	o_ptr = find_artifact(&a_info[a_idx]);
 
 	/* If it's been lost, make a fake artifact for it */
 	if (!o_ptr)
 	{
 		o_ptr = &object_type_body;
 
-		make_fake_artifact(o_ptr, a_idx);
+		make_fake_artifact(o_ptr, &a_info[a_idx]);
 		o_ptr->ident |= IDENT_NAME;
 
 		/* Check the history entry, to see if it was fully known before it
 		 * was lost */
-		if (history_is_artifact_known(a_idx))
-		{
+		if (history_is_artifact_known(o_ptr->artifact))
 			object_notice_everything(o_ptr);
-		}
 	}
 
 	/* Hack -- Handle stuff */
@@ -1257,7 +1255,7 @@ static bool artifact_is_known(int a_idx)
 		return FALSE;
 
 	/* Check all objects to see if it exists but hasn't been IDed */
-	o_ptr = find_artifact(a_idx);
+	o_ptr = find_artifact(&a_info[a_idx]);
 	if (o_ptr && !object_is_known_artifact(o_ptr))
 		return FALSE;
 

@@ -223,6 +223,7 @@ typedef struct object
 {
 	struct object_kind *kind;
 	struct ego_item *ego;
+	struct artifact *artifact;
 
 	byte iy;			/* Y-position on map, or zero */
 	byte ix;			/* X-position on map, or zero */
@@ -234,8 +235,6 @@ typedef struct object
 	byte num_pvals;			/* Number of pvals in use */
 
 	s16b weight;			/* Item weight */
-
-	byte name1;			/* Artifact type, if any */
 
 	bitflag flags[OF_SIZE];		/**< Flags */
 	bitflag known_flags[OF_SIZE];	/**< Player-known flags */

@@ -478,8 +478,8 @@ void place_object(struct cave *c, int y, int x, int level, bool good, bool great
 
 		/* Give it to the floor */
 		/* XXX Should this be done in floor_carry? */
-		if (!floor_carry(c, y, x, &otype) && otype.name1)
-			a_info[otype.name1].created = FALSE;
+		if (!floor_carry(c, y, x, &otype) && otype.artifact)
+			otype.artifact->created = FALSE;
 	}
 }
 

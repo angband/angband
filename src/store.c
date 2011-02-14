@@ -1221,9 +1221,8 @@ static void store_delete_index(int st, int what)
 
 	}
 
-	/* Is the item an artifact? Mark it as lost if the player has it in history list */
-	if (artifact_p(o_ptr))
-		history_lose_artifact(o_ptr->name1);
+	if (o_ptr->artifact)
+		history_lose_artifact(o_ptr->artifact);
 
 	/* Delete the item */
 	store_item_increase(st, what, -num);
@@ -2151,7 +2150,7 @@ static int find_inven(const object_type *o_ptr)
 					continue;
 
 				/* Require identical "artifact" names */
-				if (o_ptr->name1 != j_ptr->name1) continue;
+				if (o_ptr->artifact != j_ptr->artifact) continue;
 
 				/* Require identical "ego-item" names */
 				if (o_ptr->ego != j_ptr->ego) continue;
@@ -2582,8 +2581,8 @@ void do_cmd_sell(cmd_code code, cmd_arg args[])
 	store_flags |= STORE_GOLD_CHANGE;
 
 	/* Update the auto-history if selling an artifact that was previously un-IDed. (Ouch!) */
-	if (artifact_p(o_ptr))
-		history_add_artifact(o_ptr->name1, TRUE, TRUE);
+	if (o_ptr->artifact)
+		history_add_artifact(o_ptr->artifact, TRUE, TRUE);
 
 	/* Combine / Reorder the pack (later) */
 	p_ptr->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);

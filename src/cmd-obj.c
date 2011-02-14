@@ -616,12 +616,12 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	    check_devices(o_ptr))
 	{
 		/* Special message for artifacts */
-		if (artifact_p(o_ptr))
+		if (o_ptr->artifact)
 		{
 			msgt(snd, "You activate it.");
-			if (a_info[o_ptr->name1].effect_msg)
-				activation_message(o_ptr, a_info[o_ptr->name1].effect_msg);
-			level = a_info[o_ptr->name1].level;
+			if (o_ptr->artifact->effect_msg)
+				activation_message(o_ptr, o_ptr->artifact->effect_msg);
+			level = o_ptr->artifact->level;
 		}
 		else
 		{
@@ -700,15 +700,10 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	else if (used && use == USE_TIMEOUT)
 	{
 		/* Artifacts use their own special field */
-		if (o_ptr->name1)
-		{
-			const artifact_type *a_ptr = &a_info[o_ptr->name1];
-			o_ptr->timeout = randcalc(a_ptr->time, 0, RANDOMISE);
-		}
+		if (o_ptr->artifact)
+			o_ptr->timeout = randcalc(o_ptr->artifact->time, 0, RANDOMISE);
 		else
-		{
 			o_ptr->timeout += randcalc(o_ptr->kind->time, 0, RANDOMISE);
-		}
 	}
 	else if (used && use == USE_SINGLE)
 	{

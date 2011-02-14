@@ -1230,7 +1230,7 @@ static void calc_torch(void)
 			int flag_inc = of_has(f, OF_LIGHT) ? 1 : 0;
 
 			/* Artifact lights provide permanent bright light */
-			if (artifact_p(o_ptr))
+			if (o_ptr->artifact)
 				amt = 3 + flag_inc;
 
 			/* Non-artifact lights and those without fuel provide no light */

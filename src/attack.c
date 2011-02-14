@@ -31,7 +31,7 @@
  */
 int breakage_chance(const object_type *o_ptr) {
 	/* Artifacts never break */
-	if (artifact_p(o_ptr)) return 0;
+	if (o_ptr->artifact) return 0;
 
 	return o_ptr->kind->base->break_perc;
 }

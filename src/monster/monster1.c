@@ -518,7 +518,7 @@ void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MAX])
 			melee_colors[RBE_UN_POWER] = TERM_L_RED;
 
 		/* Steal item - requires non-artifacts */
-		if (i < INVEN_PACK && (!known || !artifact_p(o_ptr)) &&
+		if (i < INVEN_PACK && (!known || !o_ptr->artifact) &&
 				p_ptr->lev + adj_dex_safe[st.stat_ind[A_DEX]] < 100)
 			melee_colors[RBE_EAT_ITEM] = TERM_L_RED;
 

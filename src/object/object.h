@@ -245,7 +245,6 @@ int lookup_artifact_name(const char *name);
 int lookup_sval(int tval, const char *name);
 int tval_find_idx(const char *name);
 const char *tval_find_name(int tval);
-artifact_type *artifact_of(const object_type *o_ptr);
 bool obj_is_staff(const object_type *o_ptr);
 bool obj_is_wand(const object_type *o_ptr);
 bool obj_is_rod(const object_type *o_ptr);

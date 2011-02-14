@@ -337,7 +337,7 @@ void subwindows_set_flags(u32b *new_flags, size_t n_subwindows);
 char* random_hint(void);
 
 /* wiz-spoil.c */
-bool make_fake_artifact(object_type *o_ptr, byte name1);
+bool make_fake_artifact(object_type *o_ptr, struct artifact *artifact);
 
 
 

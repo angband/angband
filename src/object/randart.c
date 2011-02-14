@@ -347,10 +347,8 @@ static s32b artifact_power(int a_idx)
 	LOG_PRINT("********** ENTERING EVAL POWER ********\n");
 	LOG_PRINT1("Artifact index is %d\n", a_idx);
 
-	if(!make_fake_artifact(&obj, a_idx))
-	{
+	if (!make_fake_artifact(&obj, &a_info[a_idx]))
 		return 0;
-	}
 
 	object_desc(buf, 256*sizeof(char), &obj, ODESC_PREFIX | ODESC_FULL | ODESC_SPOIL);
 	LOG_PRINT1("%s\n", buf);

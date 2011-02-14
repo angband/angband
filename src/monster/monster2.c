@@ -3548,7 +3548,7 @@ void monster_death(int m_idx)
 
 		/* Mega-Hack -- Make "Grond" */
 		object_prep(i_ptr, objkind_get(TV_HAFTED, SV_GROND), 0, MAXIMISE);
-		i_ptr->name1 = ART_GROND;
+		i_ptr->artifact = &a_info[ART_GROND];
 		apply_magic(i_ptr, 0, TRUE, TRUE, TRUE);
 
 		i_ptr->origin = ORIGIN_DROP;
@@ -3564,7 +3564,7 @@ void monster_death(int m_idx)
 
 		/* Mega-Hack -- Make "Morgoth" */
 		object_prep(i_ptr, objkind_get(TV_CROWN, SV_MORGOTH), 0, MAXIMISE);
-		i_ptr->name1 = ART_MORGOTH;
+		i_ptr->artifact = &a_info[ART_MORGOTH];
 		apply_magic(i_ptr, 0, TRUE, TRUE, TRUE);
 
 		i_ptr->origin = ORIGIN_DROP;

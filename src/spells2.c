@@ -871,7 +871,7 @@ bool detect_objects_magic(bool aware)
 		tv = o_ptr->tval;
 
 		/* Artifacts, misc magic items, or enchanted wearables */
-		if (artifact_p(o_ptr) || o_ptr->ego ||
+		if (o_ptr->artifact || o_ptr->ego ||
 		    (tv == TV_AMULET) || (tv == TV_RING) ||
 		    (tv == TV_STAFF) || (tv == TV_WAND) || (tv == TV_ROD) ||
 		    (tv == TV_SCROLL) || (tv == TV_POTION) ||
@@ -1321,7 +1321,7 @@ bool enchant_curse(object_type *o_ptr, bool is_artifact)
 bool enchant2(object_type *o_ptr, s16b *score)
 {
 	bool result = FALSE;
-	bool is_artifact = artifact_p(o_ptr);
+	bool is_artifact = o_ptr->artifact;
 	if (enchant_score(score, is_artifact)) result = TRUE;
 	if (enchant_curse(o_ptr, is_artifact)) result = TRUE;
 	return result;
@@ -1449,9 +1449,9 @@ static bool item_tester_restore(const struct object *o)
 	if (o->to_d < 0 || o->to_h < 0 || o->to_a < 0)
 		return TRUE;
 
-	if (o->name1) {
-		struct artifact *a = &a_info[o->name1];
-		if (o->to_d < a->to_d || o->to_h < a->to_h || o->to_a < a->to_a)
+	if (o->artifact) {
+		if (o->to_d < o->artifact->to_d || o->to_h < o->artifact->to_h ||
+				o->to_a < o->artifact->to_a)
 			return TRUE;
 	}
 
@@ -1479,11 +1479,10 @@ bool restore_item(void)
 	/*** Restore the item (ish) ***/
 
 	/* Artifacts get replenished */
-	if (o->name1) {
-		struct artifact *a = &a_info[o->name1];
-		o->to_d = a->to_d;
-		o->to_h = a->to_h;
-		o->to_a = a->to_a;
+	if (o->artifact) {
+		o->to_d = o->artifact->to_d;
+		o->to_h = o->artifact->to_h;
+		o->to_a = o->artifact->to_a;
 	} else {
 		o->to_d = MAX(o->to_d, 0);
 		o->to_h = MAX(o->to_h, 0);
@@ -3030,7 +3029,7 @@ bool curse_armor(void)
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);
 
 	/* Attempt a saving throw for artifacts */
-	if (artifact_p(o_ptr) && (randint0(100) < 50))
+	if (o_ptr->artifact && (randint0(100) < 50))
 	{
 		/* Cool */
 		msg("A %s tries to %s, but your %s resists the effects!",
@@ -3084,7 +3083,7 @@ bool curse_weapon(void)
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);
 
 	/* Attempt a saving throw */
-	if (artifact_p(o_ptr) && (randint0(100) < 50))
+	if (o_ptr->artifact && (randint0(100) < 50))
 	{
 		/* Cool */
 		msg("A %s tries to %s, but your %s resists the effects!",
@@ -3133,7 +3132,7 @@ void brand_object(object_type *o_ptr, int brand_type)
 	/* you can never modify artifacts / ego-items */
 	/* you can never modify cursed / worthless items */
 	if (o_ptr->kind && !cursed_p(o_ptr) && o_ptr->kind->cost &&
-	    !artifact_p(o_ptr) && !o_ptr->ego)
+	    !o_ptr->artifact && !o_ptr->ego)
 	{
 		char o_name[80];
 		bitflag f[OF_SIZE];
@@ -3397,7 +3396,7 @@ void do_ident_item(int item, object_type *o_ptr)
 
 	if (bad)
 		msg_type = MSG_IDENT_BAD;
-	else if (o_ptr->name1 != 0)
+	else if (o_ptr->artifact)
 		msg_type = MSG_IDENT_ART;
 	else if (o_ptr->ego)
 		msg_type = MSG_IDENT_EGO;
@@ -3405,8 +3404,8 @@ void do_ident_item(int item, object_type *o_ptr)
 		msg_type = MSG_GENERIC;
 
 	/* Log artifacts to the history list. */
-	if (artifact_p(o_ptr))
-		history_add_artifact(o_ptr->name1, TRUE, TRUE);
+	if (o_ptr->artifact)
+		history_add_artifact(o_ptr->artifact, TRUE, TRUE);
 
 	/* Describe */
 	if (item >= INVEN_WIELD)

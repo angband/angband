@@ -58,7 +58,7 @@ bool object_is_known(const object_type *o_ptr)
 bool object_is_known_artifact(const object_type *o_ptr)
 {
 	return (o_ptr->ident & IDENT_INDESTRUCT) ||
-			(artifact_p(o_ptr) && object_was_sensed(o_ptr));
+			(o_ptr->artifact && object_was_sensed(o_ptr));
 }
 
 /**
@@ -446,12 +446,9 @@ bool object_is_not_known_consistently(const object_type *o_ptr)
 		return TRUE;
 	if (o_ptr->ident & IDENT_EMPTY)
 		return TRUE;
-	else if (o_ptr->name1)
-	{
-		artifact_type *a_ptr = &a_info[o_ptr->name1];
-		if (!(a_ptr->seen || a_ptr->everseen))
-			return TRUE;
-	}
+	else if (o_ptr->artifact &&
+			!(o_ptr->artifact->seen || o_ptr->artifact->everseen))
+		return TRUE;
 
 	if (!of_is_full(o_ptr->known_flags))
 		return TRUE;
@@ -463,14 +460,11 @@ bool object_is_not_known_consistently(const object_type *o_ptr)
 
 /**
  * Mark as object as fully known, a.k.a identified. 
- * Mark as object as fully known, a.k.a identified.
  *
  * \param o_ptr is the object to mark as identified
  */
 void object_notice_everything(object_type *o_ptr)
 {
-	artifact_type *a_ptr = artifact_of(o_ptr);
-
 	/* The object is "empty" */
 	o_ptr->ident &= ~(IDENT_EMPTY);
 
@@ -479,10 +473,10 @@ void object_notice_everything(object_type *o_ptr)
 	object_add_ident_flags(o_ptr, IDENTS_SET_BY_IDENTIFY);
 
 	/* Artifact has now been seen */
-	if (a_ptr && !(o_ptr->ident & IDENT_FAKE))
+	if (o_ptr->artifact && !(o_ptr->ident & IDENT_FAKE))
 	{
-		a_ptr->seen = a_ptr->everseen = TRUE;
-		history_add_artifact(o_ptr->name1, TRUE, TRUE);
+		o_ptr->artifact->seen = o_ptr->artifact->everseen = TRUE;
+		history_add_artifact(o_ptr->artifact, TRUE, TRUE);
 	}
 
 	/* Know all flags there are to be known */
@@ -559,15 +553,11 @@ void object_notice_ego(object_type *o_ptr)
  */
 void object_notice_sensing(object_type *o_ptr)
 {
-	artifact_type *a_ptr = artifact_of(o_ptr);
-
 	if (object_was_sensed(o_ptr))
 		return;
 
-
-	if (a_ptr)
-	{
-		a_ptr->seen = a_ptr->everseen = TRUE;
+	if (o_ptr->artifact) {
+		o_ptr->artifact->seen = o_ptr->artifact->everseen = TRUE;
 		o_ptr->ident |= IDENT_NAME;
 	}
 
@@ -582,7 +572,7 @@ void object_notice_sensing(object_type *o_ptr)
  */
 void object_sense_artifact(object_type *o_ptr)
 {
-	if (artifact_p(o_ptr))
+	if (o_ptr->artifact)
 		object_notice_sensing(o_ptr);
 	else
 		o_ptr->ident |= IDENT_NOTART;
@@ -813,8 +803,8 @@ void object_notice_on_wield(object_type *o_ptr)
 	object_sense_artifact(o_ptr);
 
 	/* Note artifacts when found */
-	if (artifact_p(o_ptr))
-		history_add_artifact(o_ptr->name1, object_is_known(o_ptr), TRUE);
+	if (o_ptr->artifact)
+		history_add_artifact(o_ptr->artifact, object_is_known(o_ptr), TRUE);
 
 	/* special case FA, needed at least for mages wielding gloves */
 	if (object_FA_would_be_obvious(o_ptr))
@@ -845,7 +835,7 @@ void object_notice_on_wield(object_type *o_ptr)
 			object_flavor_aware(o_ptr);
 
 		/* Learn all flags on any aware non-artifact jewelry */
-		if (object_flavor_is_aware(o_ptr) && !artifact_p(o_ptr))
+		if (object_flavor_is_aware(o_ptr) && !o_ptr->artifact)
 			object_know_all_flags(o_ptr);
 	}
 
@@ -1071,7 +1061,7 @@ obj_pseudo_t object_pseudo(const object_type *o_ptr)
 
 	if (o_ptr->ident & IDENT_INDESTRUCT)
 		return INSCRIP_SPECIAL;
-	if ((object_was_sensed(o_ptr) || object_was_worn(o_ptr)) && artifact_p(o_ptr))
+	if ((object_was_sensed(o_ptr) || object_was_worn(o_ptr)) && o_ptr->artifact)
 		return INSCRIP_SPECIAL;
 
 	/* jewelry does not pseudo */
@@ -1199,7 +1189,7 @@ void sense_inventory(void)
 		if (object_was_sensed(o_ptr))
 		{
 			/* Small chance of wielded, sensed items getting complete ID */
-			if (!o_ptr->name1 && (i >= INVEN_WIELD) && one_in_(1000))
+			if (!o_ptr->artifact && (i >= INVEN_WIELD) && one_in_(1000))
 				do_ident_item(i, o_ptr);
 
 			continue;

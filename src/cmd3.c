@@ -142,7 +142,7 @@ void textui_cmd_destroy(void)
 
 	/* Flavour-aware squelch */
 	if (squelch_tval(o_ptr->tval) &&
-			(!artifact_p(o_ptr) || !object_flavor_is_aware(o_ptr))) {
+			(!o_ptr->artifact || !object_flavor_is_aware(o_ptr))) {
 		bool squelched = kind_is_squelched_aware(o_ptr->kind) ||
 				kind_is_squelched_unaware(o_ptr->kind);
 

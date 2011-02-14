@@ -419,7 +419,7 @@ bool squelch_item_ok(const object_type *o_ptr)
 		return FALSE;
 
 	/* Don't squelch artifacts unless marked to be squelched */
-	if (artifact_p(o_ptr) ||
+	if (o_ptr->artifact ||
 			check_for_inscrip(o_ptr, "!k") || check_for_inscrip(o_ptr, "!*"))
 		return FALSE;
 

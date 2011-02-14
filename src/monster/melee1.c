@@ -683,7 +683,7 @@ bool make_attack_normal(int m_idx)
 						if (!o_ptr->kind) continue;
 
 						/* Skip artifacts */
-						if (artifact_p(o_ptr)) continue;
+						if (o_ptr->artifact) continue;
 
 						/* Get a description */
 						object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);

@@ -995,12 +995,6 @@ enum
 	(object_kind_char((T)->kind))
 
 /*
- * Artifacts use the "name1" field
- */
-#define artifact_p(T) \
-	((T)->name1 ? TRUE : FALSE)
-
-/*
  * Cursed items.
  */
 #define cursed_p(T) \

@@ -281,7 +281,7 @@ static void recharged_notice(const object_type *o_ptr, bool all)
 	}
 
 	/* Artifacts */
-	else if (o_ptr->name1)
+	else if (o_ptr->artifact)
 	{
 		msg("The %s has recharged.", o_name);
 	}

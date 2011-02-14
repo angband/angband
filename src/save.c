@@ -53,11 +53,11 @@ static void wr_item(const object_type *o_ptr)
 	wr_byte(o_ptr->number);
 	wr_s16b(o_ptr->weight);
 
-	wr_byte(o_ptr->name1);
-	if (o_ptr->ego)
-		wr_byte(o_ptr->ego->eidx);
-	else
-		wr_byte(0);
+	if (o_ptr->artifact) wr_byte(o_ptr->artifact->aidx);
+	else wr_byte(0);
+
+	if (o_ptr->ego) wr_byte(o_ptr->ego->eidx);
+	else wr_byte(0);
 
 	wr_s16b(o_ptr->timeout);
 

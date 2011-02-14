@@ -326,8 +326,8 @@ static void py_pickup_aux(int o_idx, bool domsg)
 	object_sense_artifact(o_ptr);
 
 	/* Log artifacts if found */
-	if (artifact_p(o_ptr))
-		history_add_artifact(o_ptr->name1, object_is_known(o_ptr), TRUE);
+	if (o_ptr->artifact)
+		history_add_artifact(o_ptr->artifact, object_is_known(o_ptr), TRUE);
 
 	/* Optionally, display a message */
 	if (domsg && !quiver_slot)

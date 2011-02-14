@@ -889,7 +889,7 @@ static bool describe_light(textblock *tb, const object_type *o_ptr,
 {
 	int rad = 0;
 
-	bool artifact = artifact_p(o_ptr);
+	bool artifact = o_ptr->artifact;
 	bool no_fuel = of_has(flags, OF_NO_FUEL) ? TRUE : FALSE;
 	bool is_light = (o_ptr->tval == TV_LIGHT) ? TRUE : FALSE;
 
@@ -940,14 +940,12 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr, bool full,
 
 	int effect = 0, fail;
 
-	if (o_ptr->name1)
+	if (o_ptr->artifact)
 	{
-		const artifact_type *a_ptr = &a_info[o_ptr->name1];
-
 		if (object_effect_is_known(o_ptr) || full)
 		{
-			effect = a_ptr->effect;
-			timeout = a_ptr->time;
+			effect = o_ptr->artifact->effect;
+			timeout = o_ptr->artifact->time;
 		}
 		else if (object_effect(o_ptr))
 		{
@@ -1133,11 +1131,9 @@ bool describe_origin(textblock *tb, const object_type *o_ptr)
 static void describe_flavor_text(textblock *tb, const object_type *o_ptr)
 {
 	/* Display the known artifact description */
-	if (!OPT(birth_randarts) && o_ptr->name1 &&
-			object_is_known(o_ptr) && a_info[o_ptr->name1].text)
-	{
-		textblock_append(tb, "%s\n\n", a_info[o_ptr->name1].text);
-	}
+	if (!OPT(birth_randarts) && o_ptr->artifact &&
+			object_is_known(o_ptr) && o_ptr->artifact->text)
+		textblock_append(tb, "%s\n\n", o_ptr->artifact->text);
 
 	/* Display the known object description */
 	else if (object_flavor_is_aware(o_ptr) || object_is_known(o_ptr))

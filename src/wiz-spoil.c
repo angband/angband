@@ -393,46 +393,41 @@ static const grouper group_artifact[] =
 /*
  * Hack -- Create a "forged" artifact
  */
-bool make_fake_artifact(object_type *o_ptr, byte name1)
+bool make_fake_artifact(object_type *o_ptr, struct artifact *artifact)
 {
 	int j;
-
 	object_kind *kind;
-	artifact_type *a_ptr = &a_info[name1];
-
-	/* Ignore "empty" artifacts */
-	if (!a_ptr->tval) return FALSE;
 
 	/* Get the "kind" index */
-	kind = lookup_kind(a_ptr->tval, a_ptr->sval);
+	kind = lookup_kind(artifact->tval, artifact->sval);
 	if (!kind) return FALSE;
 
 	/* Create the artifact */
 	object_prep(o_ptr, kind, 0, MAXIMISE);
 
 	/* Save the name */
-	o_ptr->name1 = name1;
+	o_ptr->artifact = artifact;
 
 	/* Extract the fields */
-	for (j = 0; j < a_ptr->num_pvals; j++)
-		o_ptr->pval[j] = a_ptr->pval[j];
-	o_ptr->num_pvals = a_ptr->num_pvals;
-	o_ptr->ac = a_ptr->ac;
-	o_ptr->dd = a_ptr->dd;
-	o_ptr->ds = a_ptr->ds;
-	o_ptr->to_a = a_ptr->to_a;
-	o_ptr->to_h = a_ptr->to_h;
-	o_ptr->to_d = a_ptr->to_d;
-	o_ptr->weight = a_ptr->weight;
+	for (j = 0; j < o_ptr->artifact->num_pvals; j++)
+		o_ptr->pval[j] = o_ptr->artifact->pval[j];
+	o_ptr->num_pvals = o_ptr->artifact->num_pvals;
+	o_ptr->ac = o_ptr->artifact->ac;
+	o_ptr->dd = o_ptr->artifact->dd;
+	o_ptr->ds = o_ptr->artifact->ds;
+	o_ptr->to_a = o_ptr->artifact->to_a;
+	o_ptr->to_h = o_ptr->artifact->to_h;
+	o_ptr->to_d = o_ptr->artifact->to_d;
+	o_ptr->weight = o_ptr->artifact->weight;
 
 	/* Hack -- extract the "cursed" flags */
-	if (of_has(a_ptr->flags, OF_LIGHT_CURSE))
+	if (of_has(o_ptr->artifact->flags, OF_LIGHT_CURSE))
 		of_on(o_ptr->flags, OF_LIGHT_CURSE);
 
-	if (of_has(a_ptr->flags, OF_HEAVY_CURSE))
+	if (of_has(o_ptr->artifact->flags, OF_HEAVY_CURSE))
 		of_on(o_ptr->flags, OF_HEAVY_CURSE);
 
-	if (of_has(a_ptr->flags, OF_PERMA_CURSE))
+	if (of_has(o_ptr->artifact->flags, OF_PERMA_CURSE))
 		of_on(o_ptr->flags, OF_PERMA_CURSE);
 
 	/* Success */
@@ -499,7 +494,7 @@ static void spoil_artifact(const char *fname)
 			object_wipe(i_ptr);
 
 			/* Attempt to "forge" the artifact */
-			if (!make_fake_artifact(i_ptr, (byte)j)) continue;
+			if (!make_fake_artifact(i_ptr, a_ptr)) continue;
 
 			/* Grab artifact name */
 			object_desc(buf, sizeof(buf), i_ptr, ODESC_PREFIX |

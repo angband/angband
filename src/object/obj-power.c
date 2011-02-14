@@ -895,13 +895,10 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	/* add power for effect */
 	if (known || object_effect_is_known(o_ptr))
 	{
-		if (o_ptr->name1 && a_info[o_ptr->name1].effect)
-		{
-			p += effect_power(a_info[o_ptr->name1].effect);
+		if (o_ptr->artifact && o_ptr->artifact->effect) {
+			p += effect_power(o_ptr->artifact->effect);
 			LOG_PRINT1("Adding power for artifact activation, total is %d\n", p);
-		}
-		else
-		{
+		} else {
 			p += effect_power(o_ptr->kind->effect);
 			LOG_PRINT1("Adding power for item activation, total is %d\n", p);
 		}
