@@ -214,7 +214,7 @@ static errr term_xtra_alive(int v) {
 static errr term_xtra_event(int v) {
 	if (verbose) printf("term-xtra-event %d\n", v);
 	if (nextkey) {
-		Term_keypress(nextkey);
+		Term_keypress(nextkey, 0);
 		nextkey = 0;
 	}
 	return test_docmd();
