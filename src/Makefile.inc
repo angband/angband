@@ -68,7 +68,7 @@ depgen:
   z-textblock.h z-file.h monster/types.h defines.h h-basic.h z-bitflag.h \
   player/types.h object/types.h option.h ui-event.h player/player.h \
   guid.h player/types.h store.h parser.h x-char.h ui.h z-textblock.h \
-  z-type.h externs.h cave.h cmds.h files.h macro.h monster/monster.h \
+  z-type.h externs.h cave.h cmds.h files.h  monster/monster.h \
   cave.h monster/types.h player/types.h ui-menu.h wizard.h
 ./cmd1.o: cmd1.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
   defines.h monster/list-blow-methods.h monster/list-blow-effects.h list-object-flags.h \
@@ -115,7 +115,7 @@ depgen:
   z-textblock.h z-file.h monster/types.h defines.h h-basic.h z-bitflag.h \
   player/types.h object/types.h option.h ui-event.h player/player.h \
   guid.h player/types.h store.h parser.h x-char.h ui.h z-textblock.h \
-  z-type.h externs.h cave.h cmds.h files.h history.h macro.h \
+  z-type.h externs.h cave.h cmds.h files.h history.h  \
   object/tvalsval.h prefs.h squelch.h ui-menu.h
 ./cmd-misc.o: cmd-misc.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
   defines.h monster/list-blow-methods.h monster/list-blow-effects.h list-object-flags.h \
@@ -236,7 +236,7 @@ depgen:
   z-textblock.h z-file.h monster/types.h defines.h h-basic.h z-bitflag.h \
   player/types.h object/types.h option.h ui-event.h player/player.h \
   guid.h player/types.h store.h parser.h x-char.h ui.h z-textblock.h \
-  z-type.h externs.h button.h cave.h cmds.h game-event.h init.h macro.h \
+  z-type.h externs.h button.h cave.h cmds.h game-event.h init.h  \
   monster/constants.h object/tvalsval.h prefs.h squelch.h list-effects.h
 ./load.o: load.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
   defines.h monster/list-blow-methods.h monster/list-blow-effects.h list-object-flags.h \
@@ -251,7 +251,7 @@ depgen:
   monster/types.h player/types.h object/tvalsval.h savefile.h squelch.h
 ./macro.o: macro.c defines.h monster/list-blow-methods.h monster/list-blow-effects.h \
   list-object-flags.h list-player-flags.h monster/list-mon-flags.h \
-  monster/list-mon-spells.h macro.h h-basic.h z-util.h z-virt.h
+  monster/list-mon-spells.h h-basic.h z-util.h z-virt.h
 ./monster/melee1.o: monster/melee1.c angband.h h-basic.h z-bitflag.h z-form.h \
   z-virt.h defines.h monster/list-blow-methods.h monster/list-blow-effects.h \
   list-object-flags.h list-player-flags.h monster/list-mon-flags.h \
@@ -425,7 +425,7 @@ depgen:
   z-textblock.h z-file.h monster/types.h defines.h h-basic.h z-bitflag.h \
   player/types.h object/types.h option.h ui-event.h player/player.h \
   guid.h player/types.h store.h parser.h x-char.h ui.h z-textblock.h \
-  z-type.h externs.h macro.h prefs.h squelch.h
+  z-type.h externs.h  prefs.h squelch.h
 ./player/calcs.o: player/calcs.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
   defines.h monster/list-blow-methods.h monster/list-blow-effects.h list-object-flags.h \
   list-player-flags.h monster/list-mon-flags.h monster/list-mon-spells.h z-file.h \
@@ -656,7 +656,7 @@ depgen:
   monster/types.h defines.h h-basic.h z-bitflag.h player/types.h \
   object/types.h option.h ui-event.h player/player.h guid.h \
   player/types.h store.h parser.h x-char.h ui.h z-textblock.h z-type.h \
-  externs.h cmds.h macro.h squelch.h prefs.h object/tvalsval.h ui-menu.h \
+  externs.h cmds.h  squelch.h prefs.h object/tvalsval.h ui-menu.h \
   files.h
 ./ui-spell.o: ui-spell.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
   defines.h monster/list-blow-methods.h monster/list-blow-effects.h list-object-flags.h \
@@ -677,7 +677,7 @@ depgen:
   z-textblock.h z-file.h monster/types.h defines.h h-basic.h z-bitflag.h \
   player/types.h object/types.h option.h ui-event.h player/player.h \
   guid.h player/types.h store.h parser.h x-char.h ui.h z-textblock.h \
-  z-type.h externs.h button.h game-event.h macro.h cmds.h
+  z-type.h externs.h button.h game-event.h  cmds.h
 ./variable.o: variable.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
   defines.h monster/list-blow-methods.h monster/list-blow-effects.h list-object-flags.h \
   list-player-flags.h monster/list-mon-flags.h monster/list-mon-spells.h z-file.h \
@@ -753,7 +753,7 @@ depgen:
   z-textblock.h z-file.h monster/types.h defines.h h-basic.h z-bitflag.h \
   player/types.h object/types.h option.h ui-event.h player/player.h \
   guid.h player/types.h store.h parser.h x-char.h ui.h z-textblock.h \
-  z-type.h externs.h cmds.h history.h macro.h object/tvalsval.h target.h
+  z-type.h externs.h cmds.h history.h  object/tvalsval.h target.h
 ./xtra3.o: xtra3.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
   defines.h monster/list-blow-methods.h monster/list-blow-effects.h list-object-flags.h \
   list-player-flags.h monster/list-mon-flags.h monster/list-mon-spells.h z-file.h \

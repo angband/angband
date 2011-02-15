@@ -631,6 +631,17 @@ static errr Term_xtra_gcu_event(int v)
 		case KEY_UP:    i = ARROW_UP;    break;
 		case KEY_LEFT:  i = ARROW_LEFT;  break;
 		case KEY_RIGHT: i = ARROW_RIGHT; break;
+
+		/* keypad keys */
+		case 0xFC: i = '0'; break;
+		case 0xFD: i = '.'; break;
+		case 0xC0: i = '\b'; break;
+		case 0xDF: i = '1'; break;
+		case 0xF5: i = '3'; break;
+		case 0xE9: i = '5'; break;
+		case 0xC1: i = '7'; break;
+		case 0xF4: i = '9'; break;
+
 		default:
 			if (i < KEY_MIN) break;
 
@@ -647,7 +658,7 @@ static errr Term_xtra_gcu_event(int v)
 #endif
 
 	/* Enqueue the keypress */
-	Term_keypress(i);
+	Term_keypress(i, 0);
 
 	/* Success */
 	return (0);

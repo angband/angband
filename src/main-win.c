@@ -581,91 +581,6 @@ static int gamma_correction;
 #endif /* SUPPORT_GAMMA */
 
 
-/*
- * Hack -- define which keys are "special"
- */
-static bool special_key[256];
-
-/*
- * Hack -- initialization list for "special_key"
- *
- * We ignore the modifier keys (shift, control, alt, num lock, scroll lock),
- * and the normal keys (escape, tab, return, letters, numbers, etc), but we
- * catch the keypad keys (with and without numlock set, including keypad 5),
- * the function keys (including the "menu" key which maps to F10), and the
- * "pause" key (between scroll lock and numlock).  We also catch a few odd
- * keys which I do not recognize, but which are listed among keys which we
- * do catch, so they should be harmless to catch.
- */
-static const byte special_key_list[] =
-{
-	VK_CLEAR,		/* 0x0C (KP<5>) */
-
-	VK_PAUSE,		/* 0x13 (pause) */
-
-	VK_PRIOR,		/* 0x21 (KP<9>) */
-	VK_NEXT,		/* 0x22 (KP<3>) */
-	VK_END,			/* 0x23 (KP<1>) */
-	VK_HOME,		/* 0x24 (KP<7>) */
-	VK_LEFT,		/* 0x25 (KP<4>) */
-	VK_UP,			/* 0x26 (KP<8>) */
-	VK_RIGHT,		/* 0x27 (KP<6>) */
-	VK_DOWN,		/* 0x28 (KP<2>) */
-	VK_SELECT,		/* 0x29 (?) */
-	VK_PRINT,		/* 0x2A (?) */
-	VK_EXECUTE,		/* 0x2B (?) */
-	VK_SNAPSHOT,	/* 0x2C (?) */
-	VK_INSERT,		/* 0x2D (KP<0>) */
-	VK_DELETE,		/* 0x2E (KP<.>) */
-	VK_HELP,		/* 0x2F (?) */
-
-#if 0
-	VK_NUMPAD0,		/* 0x60 (KP<0>) */
-	VK_NUMPAD1,		/* 0x61 (KP<1>) */
-	VK_NUMPAD2,		/* 0x62 (KP<2>) */
-	VK_NUMPAD3,		/* 0x63 (KP<3>) */
-	VK_NUMPAD4,		/* 0x64 (KP<4>) */
-	VK_NUMPAD5,		/* 0x65 (KP<5>) */
-	VK_NUMPAD6,		/* 0x66 (KP<6>) */
-	VK_NUMPAD7,		/* 0x67 (KP<7>) */
-	VK_NUMPAD8,		/* 0x68 (KP<8>) */
-	VK_NUMPAD9,		/* 0x69 (KP<9>) */
-	VK_MULTIPLY,	/* 0x6A (KP<*>) */
-	VK_ADD,			/* 0x6B (KP<+>) */
-	VK_SEPARATOR,	/* 0x6C (?????) */
-	VK_SUBTRACT,	/* 0x6D (KP<->) */
-	VK_DECIMAL,		/* 0x6E (KP<.>) */
-	VK_DIVIDE,		/* 0x6F (KP</>) */
-#endif /* 0 */
-
-	VK_F1,			/* 0x70 */
-	VK_F2,			/* 0x71 */
-	VK_F3,			/* 0x72 */
-	VK_F4,			/* 0x73 */
-	VK_F5,			/* 0x74 */
-	VK_F6,			/* 0x75 */
-	VK_F7,			/* 0x76 */
-	VK_F8,			/* 0x77 */
-	VK_F9,			/* 0x78 */
-	VK_F10,			/* 0x79 */
-	VK_F11,			/* 0x7A */
-	VK_F12,			/* 0x7B */
-	VK_F13,			/* 0x7C */
-	VK_F14,			/* 0x7D */
-	VK_F15,			/* 0x7E */
-	VK_F16,			/* 0x7F */
-	VK_F17,			/* 0x80 */
-	VK_F18,			/* 0x81 */
-	VK_F19,			/* 0x82 */
-	VK_F20,			/* 0x83 */
-	VK_F21,			/* 0x84 */
-	VK_F22,			/* 0x85 */
-	VK_F23,			/* 0x86 */
-	VK_F24,			/* 0x87 */
-
-	0
-};
-
 #include "cmds.h"
 #include "textui.h"
 
@@ -2595,7 +2510,7 @@ static void windows_map_aux(void)
 static void windows_map(void)
 {
 	term_data *td = &data[0];
-	ui_event_data ch;
+	ui_event ch;
 
 	/* Only in graphics mode since the fonts can't be scaled */
 	if (!use_graphics) return;
@@ -4001,6 +3916,104 @@ static void handle_wm_paint(HWND hWnd)
 }
 
 
+/*
+ * We ignore the modifier keys (shift, control, alt, num lock, scroll lock),
+ * and the normal keys (escape, tab, return, letters, numbers, etc), but we
+ * catch the keypad keys (with and without numlock set, including keypad 5),
+ * the function keys (including the "menu" key which maps to F10), and the
+ * "pause" key (between scroll lock and numlock).  We also catch a few odd
+ * keys which I do not recognize, but which are listed among keys which we
+ * do catch, so they should be harmless to catch.
+ */
+static void handle_keydown(WPARAM wParam, LPARAM lParam)
+{
+	keycode_t ch = 0;
+
+	bool mc = FALSE;
+	bool ms = FALSE;
+	bool ma = FALSE;
+	bool kp = FALSE;
+
+#ifdef USE_SAVER
+	if (screensaver_active)
+	{
+		stop_screensaver();
+		return 0;
+	}
+#endif /* USE_SAVER */
+
+	/* Extract the modifiers */
+	if (GetKeyState(VK_CONTROL) & 0x8000) mc = TRUE;
+	if (GetKeyState(VK_SHIFT)   & 0x8000) ms = TRUE;
+	if (GetKeyState(VK_MENU)    & 0x8000) ma = TRUE;
+
+	/* for VK_ http://msdn.microsoft.com/en-us/library/dd375731(v=vs.85).aspx */
+	switch (wParam) {
+		case VK_F1: ch = KC_F1; break;
+		case VK_F2: ch = KC_F2; break;
+		case VK_F3: ch = KC_F3; break;
+		case VK_F4: ch = KC_F4; break;
+		case VK_F5: ch = KC_F5; break;
+		case VK_F6: ch = KC_F6; break;
+		case VK_F7: ch = KC_F7; break;
+		case VK_F8: ch = KC_F8; break;
+		case VK_F9: ch = KC_F9; break;
+		case VK_F10: ch = KC_F10; break;
+		case VK_F11: ch = KC_F11; break;
+		case VK_F12: ch = KC_F12; break;
+		case VK_F13: ch = KC_F13; break;
+		case VK_F14: ch = KC_F14; break;
+		case VK_F15: ch = KC_F15; break;
+
+		case VK_INSERT: ch = KC_INSERT; break;
+		case VK_DELETE: ch = KC_DELETE; break;
+		case VK_BACK: ch = KC_BACKSPACE; break;
+
+		case VK_TAB: ch = KC_TAB; break;
+		case VK_PRIOR: ch = KC_PGUP; break;
+		case VK_NEXT: ch = KC_PGDOWN; break;
+		case VK_END: ch = KC_END; break;
+		case VK_HOME: ch = KC_HOME; break;
+		case VK_LEFT: ch = ARROW_LEFT; break;
+		case VK_RIGHT: ch = ARROW_RIGHT; break;
+		case VK_UP: ch = ARROW_UP; break;
+		case VK_DOWN: ch = ARROW_DOWN; break;
+
+		case VK_PAUSE: ch = KC_PAUSE; break;
+
+		case VK_NUMPAD0: ch = '0'; kp = TRUE; break;
+		case VK_NUMPAD1: ch = '1'; kp = TRUE; break;
+		case VK_NUMPAD2: ch = '2'; kp = TRUE; break;
+		case VK_NUMPAD3: ch = '3'; kp = TRUE; break;
+		case VK_NUMPAD4: ch = '4'; kp = TRUE; break;
+		case VK_NUMPAD5: ch = '5'; kp = TRUE; break;
+		case VK_NUMPAD6: ch = '6'; kp = TRUE; break;
+		case VK_NUMPAD7: ch = '7'; kp = TRUE; break;
+		case VK_NUMPAD8: ch = '8'; kp = TRUE; break;
+		case VK_NUMPAD9: ch = '9'; kp = TRUE; break;
+
+		case VK_ADD: ch = '+'; kp = TRUE; break;
+		case VK_SUBTRACT: ch = '-'; kp = TRUE; break;
+		case VK_MULTIPLY: ch = '*'; kp = TRUE; break;
+		case VK_DIVIDE: ch = '/'; kp = TRUE; break;
+		case VK_DECIMAL: ch = '.'; kp = TRUE; break;
+	}
+
+	/* we could fall back on using the scancode */
+	/* obtained using LOBYTE(HIWORD(lParam)) */
+	/* see http://source.winehq.org/source/include/dinput.h#L468 */
+
+	if (ch) {
+		int mods =
+				(mc && (kp || MODS_INCLUDE_CONTROL(ch)) ? KC_MOD_CONTROL : 0) |
+				(ms && (kp || MODS_INCLUDE_SHIFT(ch)) ? KC_MOD_SHIFT : 0) |
+				(ma ? KC_MOD_ALT : 0) | (kp ? KC_MOD_KEYPAD : 0);
+		Term_keypress(ch, mods);
+	}
+}
+
+
+
 static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
                                           WPARAM wParam, LPARAM lParam)
 {
@@ -4076,56 +4089,13 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 		case WM_SYSKEYDOWN:
 		case WM_KEYDOWN:
 		{
-			bool mc = FALSE;
-			bool ms = FALSE;
-			bool ma = FALSE;
-
-#ifdef USE_SAVER
-			if (screensaver_active)
-			{
-				stop_screensaver();
-				return 0;
-			}
-#endif /* USE_SAVER */
-
-			/* Extract the modifiers */
-			if (GetKeyState(VK_CONTROL) & 0x8000) mc = TRUE;
-			if (GetKeyState(VK_SHIFT)   & 0x8000) ms = TRUE;
-			if (GetKeyState(VK_MENU)    & 0x8000) ma = TRUE;
-
-			/* Handle "special" keys */
-			if (special_key[(byte)(wParam)])
-			{
-				/* Begin the macro trigger */
-				Term_keypress(31);
-
-				/* Send the modifiers */
-				if (mc) Term_keypress('C');
-				if (ms) Term_keypress('S');
-				if (ma) Term_keypress('A');
-
-				/* Extract "scan code" */
-				i = LOBYTE(HIWORD(lParam));
-
-				/* Introduce the scan code */
-				Term_keypress('x');
-
-				/* Encode the hexidecimal scan code */
-				Term_keypress(hexsym[i/16]);
-				Term_keypress(hexsym[i%16]);
-
-				/* End the macro trigger */
-				Term_keypress(13);
-
-				return 0;
-			}
-
+			handle_keydown(wParam, lParam);
 			break;
 		}
 
 		case WM_CHAR:
 		{
-			Term_keypress(wParam);
+			Term_keypress(wParam, 0);
 			return 0;
 		}
 
@@ -4489,56 +4459,13 @@ static LRESULT FAR PASCAL AngbandListProc(HWND hWnd, UINT uMsg,
 		case WM_SYSKEYDOWN:
 		case WM_KEYDOWN:
 		{
-			bool mc = FALSE;
-			bool ms = FALSE;
-			bool ma = FALSE;
-
-#ifdef USE_SAVER
-			if (screensaver_active)
-			{
-				stop_screensaver();
-				return 0;
-			}
-#endif /* USE_SAVER */
-
-			/* Extract the modifiers */
-			if (GetKeyState(VK_CONTROL) & 0x8000) mc = TRUE;
-			if (GetKeyState(VK_SHIFT)   & 0x8000) ms = TRUE;
-			if (GetKeyState(VK_MENU)    & 0x8000) ma = TRUE;
-
-			/* Handle "special" keys */
-			if (special_key[(byte)(wParam)])
-			{
-				/* Begin the macro trigger */
-				Term_keypress(31);
-
-				/* Send the modifiers */
-				if (mc) Term_keypress('C');
-				if (ms) Term_keypress('S');
-				if (ma) Term_keypress('A');
-
-				/* Extract "scan code" */
-				i = LOBYTE(HIWORD(lParam));
-
-				/* Introduce the scan code */
-				Term_keypress('x');
-
-				/* Encode the hexidecimal scan code */
-				Term_keypress(hexsym[i/16]);
-				Term_keypress(hexsym[i%16]);
-
-				/* End the macro trigger */
-				Term_keypress(13);
-
-				return 0;
-			}
-
+			handle_keydown(wParam, lParam);
 			break;
 		}
 
 		case WM_CHAR:
 		{
-			Term_keypress(wParam);
+			Term_keypress(wParam, 0);
 			return 0;
 		}
 
@@ -5147,12 +5074,6 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 
 	/* Prepare the filepaths */
 	init_stuff();
-
-	/* Initialize the keypress analyzer */
-	for (i = 0; special_key_list[i]; i++)
-	{
-		special_key[special_key_list[i]] = TRUE;
-	}
 
 	/* Determine if display is 16/256/true color */
 	hdc = GetDC(NULL);

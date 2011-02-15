@@ -37,7 +37,7 @@ void region_erase_bordered(const region *loc);
 region region_calculate(region loc);
 
 /* Check whether a (mouse) event is inside a region */
-bool region_inside(const region *loc, const ui_event_data *key);
+bool region_inside(const region *loc, const ui_event *key);
 
 
 /*** Text ***/

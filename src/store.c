@@ -2026,7 +2026,7 @@ static void store_redraw(void)
 
 static bool store_get_check(const char *prompt)
 {
-	char ch;
+	struct keypress ch;
 
 	/* Prompt for it */
 	prt(prompt, 0, 0);
@@ -2037,8 +2037,8 @@ static bool store_get_check(const char *prompt)
 	/* Erase the prompt */
 	prt("", 0, 0);
 
-	if (ch == ESCAPE) return (FALSE);
-	if (strchr("Nn", ch)) return (FALSE);
+	if (ch.code == ESCAPE) return (FALSE);
+	if (strchr("Nn", ch.code)) return (FALSE);
 
 	/* Success */
 	return (TRUE);
@@ -2898,10 +2898,10 @@ void store_menu_recalc(menu_type *m)
  * which are not allowed in the dungeon, and we must disable some commands
  * which are allowed in the dungeon but not in the stores, to prevent chaos.
  */
-static bool store_process_command_key(char cmd)
+static bool store_process_command_key(struct keypress cmd)
 {
 	/* Parse the command */
-	switch (cmd)
+	switch (cmd.code)
 	{
 		/*** Inventory Commands ***/
 
@@ -2917,7 +2917,8 @@ static bool store_process_command_key(char cmd)
 		case '}':
 		case '~':
 		{
-			Term_key_push(cmd);
+			/* XXXmacro this is less than ideal */
+			Term_key_push(cmd.code);
 			textui_process_command(TRUE);
 			break;
 		}
@@ -2990,7 +2991,7 @@ static bool store_process_command_key(char cmd)
 /*
  *
  */
-bool store_menu_handle(menu_type *m, const ui_event_data *event, int oid)
+bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
 {
 	bool processed = TRUE;
 
@@ -3002,54 +3003,52 @@ bool store_menu_handle(menu_type *m, const ui_event_data *event, int oid)
 	}
 	else if (event->type == EVT_KBRD)
 	{
-		char key = event->key;
 		bool storechange = FALSE;
 
-		if (key == 's' || key == 'd')
-		{
-			storechange = store_sell();
-		}
-		else if (key == 'p' || key == 'g')
-		{
-			storechange = store_purchase(oid);
-		}
-		else if (key == 'l' || key == 'x')
-			store_examine(oid);
-		/* XXX redraw functionality should be another menu_iter handler */
-		else if (key == KTRL('R'))
-		{
-			Term_clear();
-			store_flags |= (STORE_FRAME_CHANGE | STORE_GOLD_CHANGE);
-		}
-		else if (key == '?')
-		{
-			/* Toggle help */
-			if (store_flags & STORE_SHOW_HELP)
-				store_flags &= ~(STORE_SHOW_HELP);
-			else
-				store_flags |= STORE_SHOW_HELP;
+		switch (event->key.code) {
+			case 's':
+			case 'd': storechange = store_sell(); break;
+			case 'p':
+			case 'g': storechange = store_purchase(oid); break;
+			case 'l':
+			case 'x': store_examine(oid); break;
 
-			/* Redisplay */
-			store_flags |= STORE_INIT_CHANGE;
+			/* XXX redraw functionality should be another menu_iter handler */
+			case KTRL('R'): {
+				Term_clear();
+				store_flags |= (STORE_FRAME_CHANGE | STORE_GOLD_CHANGE);
+				break;
+			}
+
+			case '?': {
+				/* Toggle help */
+				if (store_flags & STORE_SHOW_HELP)
+					store_flags &= ~(STORE_SHOW_HELP);
+				else
+					store_flags |= STORE_SHOW_HELP;
+
+				/* Redisplay */
+				store_flags |= STORE_INIT_CHANGE;
+				break;
+			}
+
+			case '=': {
+				do_cmd_options();
+				store_menu_set_selections(m, FALSE);
+				break;
+			}
+
+			default:
+				processed = store_process_command_key(event->key);
 		}
-		else if (key == '=')
-		{
-			do_cmd_options();
-			store_menu_set_selections(m, FALSE);
-		}
-		else
-			processed = store_process_command_key(key);
 
 		/* Let the game handle any core commands (equipping, etc) */
 		process_command(CMD_STORE, TRUE);
 
 		if (storechange)
-		{
 			store_menu_recalc(m);
-		}
 
-		if (processed)
-		{
+		if (processed) {
 			event_signal(EVENT_INVENTORY);
 			event_signal(EVENT_EQUIPMENT);
 		}

@@ -3480,82 +3480,125 @@ static OSStatus MouseCommand (EventHandlerCallRef inCallRef, EventRef inEvent,
 static OSStatus KeyboardCommand ( EventHandlerCallRef inCallRef,
 	EventRef inEvent, void *inUserData )
 {
-
-	EventRecord event;
-	ConvertEventRefToEventRecord(inEvent, &event);
-
 	/* Don't handle keyboard events in open/save dialogs, to prevent a 10.4 keyboard interaction bug */
 	UInt32 windowClass;
 	GetWindowClass(GetUserFocusWindow(), &windowClass);
-	if (windowClass == kMovableModalWindowClass) return eventNotHandledErr;
+	if (windowClass == kMovableModalWindowClass)
+		return eventNotHandledErr;
+
+	UInt32 evt_mods;
+	UInt32 evt_keycode;
+
+	/* Get various aspects of the keycode */
+	GetEventParameter(inEvent, kEventParamKeyModifiers, typeUInt32, NULL,
+			sizeof(UInt32), NULL, &evt_mods);
+	GetEventParameter(inEvent, kEventParamKeyCode, typeUInt32, NULL,
+			sizeof(UInt32), NULL, &evt_keycode);
 
 	/* Extract some modifiers */
-	int mc = (event.modifiers & controlKey) ? TRUE : FALSE;
-	int ms = (event.modifiers & shiftKey) ? TRUE : FALSE;
-	int mo = (event.modifiers & optionKey) ? TRUE : FALSE;
-	int mx = (event.modifiers & cmdKey) ? TRUE : FALSE;
+	bool mc = (evt_mods & controlKey) ? TRUE : FALSE;
+	bool ms = (evt_mods & shiftKey) ? TRUE : FALSE;
+	bool mo = (evt_mods & optionKey) ? TRUE : FALSE;
+	bool mx = (evt_mods & cmdKey) ? TRUE : FALSE;
+	bool kp = FALSE;
+	byte mods = (mo ? KC_MOD_ALT : 0) | (mx ? KC_MOD_META : 0);
 
-	/* Keypress: (only "valid" if ck < 96) */
-	int ch = (event.message & charCodeMask) & 255;
-
-	/* Keycode: see table above */
-	int ck = ((event.message & keyCodeMask) >> 8) & 255;
+	keycode_t ch = 0;
 
 	/* Command + "normal key" -> menu action */
-	if (mx && (ck < 64))
-	{
+	if (mx && evt_keycode < 64)
 		return eventNotHandledErr;
-	}
 
 	/* Hide the mouse pointer */
 	hibernate();
 	ObscureCursor();
 
-	/* Normal key -> simple keypress */
-	if ((ck < 64) || (ck == 93))
-	{
-		/* Enqueue the keypress */
-		Term_keypress(ch);
+	/* see http://www.classicteck.com/rbarticles/mackeyboard.php */
+	switch (evt_keycode) {
+		/* top number keys */
+		case 18: if (!ms || mo) ch = '1'; break;
+		case 19: if (!ms || mo) ch = '2'; break;
+		case 20: if (!ms || mo) ch = '3'; break;
+		case 21: if (!ms || mo) ch = '4'; break;
+		case 23: if (!ms || mo) ch = '5'; break;
+		case 22: if (!ms || mo) ch = '6'; break;
+		case 26: if (!ms || mo) ch = '7'; break;
+		case 28: if (!ms || mo) ch = '8'; break;
+		case 25: if (!ms || mo) ch = '9'; break;
+		case 29: if (!ms || mo) ch = '0'; break;
+
+		/* keypad keys */
+		case 65: ch = '.'; kp = TRUE; break;
+		case 67: ch = '*'; kp = TRUE; break;
+		case 69: ch = '+'; kp = TRUE; break;
+		case 75: ch = '/'; kp = TRUE; break;
+		case 76: ch = '\n'; kp = TRUE; break;
+		case 78: ch = '-'; kp = TRUE; break;
+		case 81: ch = '='; kp = TRUE; break;
+		case 82: ch = '0'; kp = TRUE; break;
+		case 83: ch = '1'; kp = TRUE; break;
+		case 84: ch = '2'; kp = TRUE; break;
+		case 85: ch = '3'; kp = TRUE; break;
+		case 86: ch = '4'; kp = TRUE; break;
+		case 87: ch = '5'; kp = TRUE; break;
+		case 88: ch = '6'; kp = TRUE; break;
+		case 89: ch = '7'; kp = TRUE; break;
+		case 91: ch = '8'; kp = TRUE; break;
+		case 92: ch = '9'; kp = TRUE; break;
+
+		/* main keyboard but deal with here */
+		case 48: ch = KC_TAB; break;
+		case 36: ch = KC_RETURN; break;
+		case 51: ch = KC_BACKSPACE; break;
+
+		/* middle bit */
+		case 114: ch = KC_HELP; break;
+		case 115: ch = KC_HOME; break;
+		case 116: ch = KC_PGUP; break;
+		case 117: ch = KC_DELETE; break;
+		case 119: ch = KC_END; break;
+		case 121: ch = KC_PGDOWN; break;
+
+		case 123: ch = ARROW_LEFT; break;
+		case 124: ch = ARROW_RIGHT; break;
+		case 125: ch = ARROW_DOWN; break;
+		case 126: ch = ARROW_UP; break;
+
+		/* function keys */
+		case 122: ch = KC_F1; break;
+		case 120: ch = KC_F2; break;
+		case 99: ch = KC_F3; break;
+		case 118: ch = KC_F4; break;
+		case 96: ch = KC_F5; break;
+		case 97: ch = KC_F6; break;
+		case 98: ch = KC_F7; break;
+		case 100: ch = KC_F8; break;
+		case 101: ch = KC_F9; break;
+		case 109: ch = KC_F10; break;
+		case 103: ch = KC_F11; break;
+		case 111: ch = KC_F12; break;
+		case 105: ch = KC_F13; break;
+		case 107: ch = KC_F14; break;
+		case 113: ch = KC_F15; break;
 	}
 
-	/* Keypad keys -> trigger plus simple keypress */
-	else if (!mc && !ms && !mo && !mx && (ck < 96))
-	{
-		/* Hack -- "enter" is confused */
-		if (ck == 76) ch = '\n';
+	if (ch) {
+		mods |= (mc ? KC_MOD_CONTROL : 0) | (ms ? KC_MOD_SHIFT : 0) |
+				(kp ? KC_MOD_KEYPAD : 0);
 
-		/* Begin special trigger */
-		Term_keypress(31);
+		Term_keypress(ch, mods);
+	} else if (evt_keycode < 64) {
+		/* Keycodes under 64 = main part of the keyboard, printables (mostly) */
+		char ch;
+		GetEventParameter(inEvent, kEventParamKeyMacCharCodes, typeChar, NULL,
+				sizeof(char), NULL, &ch);
 
-		/* Send the "keypad" modifier */
-		Term_keypress('K');
+		if (mc && MODS_INCLUDE_CONTROL(ch)) mods |= KC_MOD_CONTROL;
+		if (ms && MODS_INCLUDE_SHIFT(ch)) mods |= KC_MOD_SHIFT;
 
-		/* Terminate the trigger */
-		Term_keypress(13);
-
-		/* Send the "ascii" keypress */
-		Term_keypress(ch);
+		Term_keypress(ch, mods);
 	}
 
-	/* Bizarre key -> encoded keypress */
-	else if (ck <= 127)
-	{
-		/* Begin special trigger */
-		Term_keypress(31);
-
-		/* Send some modifier keys */
-		if (mc) Term_keypress('C');
-		if (ms) Term_keypress('S');
-		if (mo) Term_keypress('O');
-		if (mx) Term_keypress('X');
-
-		/* Downshift and encode the keycode */
-		Term_keypress(I2D((ck - 64) / 10));
-		Term_keypress(I2D((ck - 64) % 10));
-
-		/* Terminate the trigger */
-		Term_keypress(13);
-	}
 	return noErr;
 }
 

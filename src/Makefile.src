@@ -79,8 +79,8 @@ ANGFILES = \
 	guid.o \
 	history.o \
 	init2.o \
+	keymap.o \
 	load.o \
-	macro.o \
 	monster/melee1.o \
 	monster/melee2.o \
 	monster/monster1.o \
@@ -119,6 +119,7 @@ ANGFILES = \
 	trap.o \
 	ui.o \
 	ui-birth.o \
+	ui-event.o \
 	ui-knowledge.o \
 	ui-menu.o \
 	ui-options.o \

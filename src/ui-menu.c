@@ -81,7 +81,7 @@ static void menu_action_display(menu_type *m, int oid, bool cursor, int row, int
 	display_action_aux(&acts[oid], color, row, col, width);
 }
 
-static bool menu_action_handle(menu_type *m, const ui_event_data *event, int oid)
+static bool menu_action_handle(menu_type *m, const ui_event *event, int oid)
 {
 	menu_action *acts = menu_priv(m);
 
@@ -196,9 +196,9 @@ static char scroll_get_tag(menu_type *menu, int pos)
 	return 0;
 }
 
-static ui_event_data scroll_process_direction(menu_type *m, int dir)
+static ui_event scroll_process_direction(menu_type *m, int dir)
 {
-	ui_event_data out = EVENT_EMPTY;
+	ui_event out = EVENT_EMPTY;
 
 	/* Reject diagonals */
 	if (ddx[dir] && ddy[dir])
@@ -285,9 +285,9 @@ static char column_get_tag(menu_type *menu, int pos)
 	return 0;
 }
 
-static ui_event_data column_process_direction(menu_type *m, int dir)
+static ui_event column_process_direction(menu_type *m, int dir)
 {
-	ui_event_data out = EVENT_EMPTY;
+	ui_event out = EVENT_EMPTY;
 
 	int n = m->filter_list ? m->filter_count : m->count;
 
@@ -342,13 +342,13 @@ static bool is_valid_row(menu_type *menu, int cursor)
  * Return a new position in the menu based on the key
  * pressed and the flags and various handler functions.
  */
-static int get_cursor_key(menu_type *menu, int top, char key)
+static int get_cursor_key(menu_type *menu, int top, struct keypress key)
 {
 	int i;
 	int n = menu->filter_list ? menu->filter_count : menu->count;
 
 	if (menu->flags & MN_CASELESS_TAGS)
-		key = toupper((unsigned char) key);
+		key.code = toupper((unsigned char) key.code);
 
 	if (menu->flags & MN_NO_TAGS)
 	{
@@ -363,7 +363,7 @@ static int get_cursor_key(menu_type *menu, int top, char key)
 			if ((menu->flags & MN_CASELESS_TAGS) && c)
 				c = toupper((unsigned char) c);
 
-			if (c && c == key)
+			if (c && c == (char)key.code)
 				return i + menu->top;
 		}
 	}
@@ -376,7 +376,7 @@ static int get_cursor_key(menu_type *menu, int top, char key)
 			if (menu->flags & MN_CASELESS_TAGS)
 				c = toupper((unsigned char) c);
 
-			if (c == key)
+			if (c == (char)key.code)
 				return i;
 		}
 	}
@@ -390,7 +390,7 @@ static int get_cursor_key(menu_type *menu, int top, char key)
 			if ((menu->flags & MN_CASELESS_TAGS) && c)
 				c = toupper((unsigned char) c);
 
-			if (c && c == key)
+			if (c && c == (char)key.code)
 				return i;
 		}
 	}
@@ -469,8 +469,8 @@ void menu_refresh(menu_type *menu)
  * Mouse output is either moving, selecting, escaping, or nothing.  Returns
  * TRUE if something changes as a result of the click.
  */
-bool menu_handle_mouse(menu_type *menu, const ui_event_data *in,
-		ui_event_data *out)
+bool menu_handle_mouse(menu_type *menu, const ui_event *in,
+		ui_event *out)
 {
 	int new_cursor;
 
@@ -478,14 +478,14 @@ bool menu_handle_mouse(menu_type *menu, const ui_event_data *in,
 	{
 		/* A click to the left of the active region is 'back' */
 		if (!region_inside(&menu->active, in) &&
-				in->mousex < menu->active.col)
+				in->mouse.x < menu->active.col)
 			out->type = EVT_ESCAPE;
 	}
 	else
 	{
 		int count = menu->filter_list ? menu->filter_count : menu->count;
 
-		new_cursor = menu->skin->get_cursor(in->mousey, in->mousex,
+		new_cursor = menu->skin->get_cursor(in->mouse.y, in->mouse.x,
 				count, menu->top, &menu->active);
 	
 		if (is_valid_row(menu, new_cursor))
@@ -509,7 +509,7 @@ bool menu_handle_mouse(menu_type *menu, const ui_event_data *in,
  * Returns TRUE if the key was handled at all (including if it's not handled
  * and just ignored).
  */
-bool menu_handle_action(menu_type *m, const ui_event_data *in)
+bool menu_handle_action(menu_type *m, const ui_event *in)
 {
 	if (m->row_funcs->row_handler)
 	{
@@ -530,8 +530,8 @@ bool menu_handle_action(menu_type *m, const ui_event_data *in)
  * Returns TRUE if they key was intelligible as navigation, regardless of
  * whether any action was taken.
  */
-bool menu_handle_keypress(menu_type *menu, const ui_event_data *in,
-		ui_event_data *out)
+bool menu_handle_keypress(menu_type *menu, const ui_event *in,
+		ui_event *out)
 {
 	bool eat = FALSE;
 	int count = menu->filter_list ? menu->filter_count : menu->count;
@@ -549,7 +549,7 @@ bool menu_handle_keypress(menu_type *menu, const ui_event_data *in,
 	}
 
 	/* Escape stops us here */
-	else if (in->key == ESCAPE)
+	else if (in->key.code == ESCAPE)
 		out->type = EVT_ESCAPE;
 
 	/* Menus with no rows can't be navigated or used, so eat all keypresses */
@@ -557,7 +557,7 @@ bool menu_handle_keypress(menu_type *menu, const ui_event_data *in,
 		eat = TRUE;
 
 	/* Try existing, known keys */
-	else if (in->key == ' ')
+	else if (in->key.code == ' ')
 	{
 		int rows = menu->active.page_rows;
 		int total = count;
@@ -577,7 +577,7 @@ bool menu_handle_keypress(menu_type *menu, const ui_event_data *in,
 		}
 	}
 
-	else if (in->key == '\n' || in->key == '\r')
+	else if (in->key.code == '\n' || in->key.code == '\r')
 		out->type = EVT_SELECT;
 
 	/* Try directional movement */
@@ -615,9 +615,9 @@ bool menu_handle_keypress(menu_type *menu, const ui_event_data *in,
 /* 
  * Run a menu.
  */
-ui_event_data menu_select(menu_type *menu, int notify)
+ui_event menu_select(menu_type *menu, int notify)
 {
-	ui_event_data in = EVENT_EMPTY;
+	ui_event in = EVENT_EMPTY;
 	bool no_act = (menu->flags & MN_NO_ACTION) ? TRUE : FALSE;
 
 	assert(menu->active.width != 0 && menu->active.page_rows != 0);
@@ -628,7 +628,7 @@ ui_event_data menu_select(menu_type *menu, int notify)
 	while (!(in.type & notify))
 	{
 		bool ignore;
-		ui_event_data out = EVENT_EMPTY;
+		ui_event out = EVENT_EMPTY;
 
 		menu_refresh(menu);
 		in = inkey_ex();
@@ -638,7 +638,7 @@ ui_event_data menu_select(menu_type *menu, int notify)
 			ignore = menu_handle_mouse(menu, &in, &out);
 		} else if (in.type == EVT_KBRD) {
 			if (!no_act && menu->cmd_keys &&
-					strchr(menu->cmd_keys, in.key) &&
+					strchr(menu->cmd_keys, (char)in.key.code) &&
 					menu_handle_action(menu, &in))
 				continue;
 
@@ -902,7 +902,7 @@ size_t menu_dynamic_longest_entry(menu_type *m)
 
 int menu_dynamic_select(menu_type *m)
 {
-	ui_event_data e = menu_select(m, 0);
+	ui_event e = menu_select(m, 0);
 	struct menu_entry *entry;
 	int cursor = m->cursor;
 

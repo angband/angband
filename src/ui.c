@@ -60,12 +60,12 @@ void region_erase(const region *loc)
 		Term_erase(calc.col, calc.row + i, calc.width);
 }
 
-bool region_inside(const region *loc, const ui_event_data *key)
+bool region_inside(const region *loc, const ui_event *key)
 {
-	if ((loc->col > key->mousex) || (loc->col + loc->width <= key->mousex))
+	if ((loc->col > key->mouse.x) || (loc->col + loc->width <= key->mouse.x))
 		return FALSE;
 
-	if ((loc->row > key->mousey) || (loc->row + loc->page_rows <= key->mousey))
+	if ((loc->row > key->mouse.y) || (loc->row + loc->page_rows <= key->mouse.y))
 		return FALSE;
 
 	return TRUE;
@@ -152,19 +152,19 @@ void textui_textblock_show(textblock *tb, region orig_area, const char *header)
 
 		/* Pager mode */
 		while (1) {
-			char ch;
+			struct keypress ch;
 
 			display_area(text, attrs, line_starts, line_lengths, n_lines,
 					area, start_line);
 
 			ch = inkey();
-			if (ch == ARROW_UP)
+			if (ch.code == ARROW_UP)
 				start_line--;
-			else if (ch == ESCAPE || ch == 'q')
+			else if (ch.code== ESCAPE || ch.code == 'q')
 				break;
-			else if (ch == ARROW_DOWN)
+			else if (ch.code == ARROW_DOWN)
 				start_line++;
-			else if (ch == ' ')
+			else if (ch.code == ' ')
 				start_line += area.page_rows;
 
 			if (start_line < 0)

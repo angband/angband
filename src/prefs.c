@@ -18,7 +18,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
-#include "macro.h"
+#include "keymap.h"
 #include "prefs.h"
 #include "squelch.h"
 #include "spells.h"
@@ -200,95 +200,9 @@ void option_dump(ang_file *fff)
 		}
 	}
 
-#ifdef ALLOW_MACROS
-	macro_dump(fff);
 	keymap_dump(fff);
-#endif
-
 }
 
-
-
-#ifdef ALLOW_MACROS
-
-/*
- * Append all current macros to the given file
- */
-void macro_dump(ang_file *fff)
-{
-	int i;
-	char buf[1024];
-
-	/* Dump them */
-	for (i = 0; i < macro__num; i++)
-	{
-		/* Start the macro */
-		file_putf(fff, "# Macro '%d'\n", i);
-
-		/* Extract the macro action */
-		ascii_to_text(buf, sizeof(buf), macro__act[i]);
-		file_putf(fff, "A:%s\n", buf);
-
-		/* Extract the macro pattern */
-		ascii_to_text(buf, sizeof(buf), macro__pat[i]);
-		file_putf(fff, "P:%s\n", buf);
-
-		file_putf(fff, "\n");
-	}
-}
-
-
-
-/*
- * Hack -- Append all keymaps to the given file.
- *
- * Hack -- We only append the keymaps for the "active" mode.
- */
-void keymap_dump(ang_file *fff)
-{
-	size_t i;
-	int mode;
-	char buf[1024];
-
-	if (OPT(rogue_like_commands))
-		mode = KEYMAP_MODE_ROGUE;
-	else
-		mode = KEYMAP_MODE_ORIG;
-
-	for (i = 0; i < N_ELEMENTS(keymap_act[mode]); i++)
-	{
-		char key[2] = "?";
-		const char *act;
-
-		/* Loop up the keymap */
-		act = keymap_act[mode][i];
-
-		/* Skip empty keymaps */
-		if (!act) continue;
-
-		/* Encode the action */
-		ascii_to_text(buf, sizeof(buf), act);
-
-		/* Dump the keymap action */
-		file_putf(fff, "A:%s\n", buf);
-
-		/* Convert the key into a string */
-		key[0] = i;
-
-		/* Encode the key */
-		ascii_to_text(buf, sizeof(buf), key);
-
-		/* Dump the keymap pattern */
-		file_putf(fff, "C:%d:%s\n", mode, buf);
-
-		/* Skip a line */
-		file_putf(fff, "\n");
-	}
-
-}
-
-
-#endif 
 
 
 
@@ -462,7 +376,7 @@ static struct parser *init_parse_prefs(void);
 struct prefs_data
 {
 	bool bypass;
-	char macro_buffer[1024];
+	struct keypress macro_buffer[KEYMAP_ACTION_MAX];
 };
 
 
@@ -945,21 +859,7 @@ static enum parser_error parse_prefs_a(struct parser *p)
 	if (d->bypass) return PARSE_ERROR_NONE;
 
 	act = parser_getstr(p, "act");
-	text_to_ascii(d->macro_buffer, sizeof(d->macro_buffer), act);
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_prefs_p(struct parser *p)
-{
-	char tmp[1024];
-
-	struct prefs_data *d = parser_priv(p);
-	assert(d != NULL);
-	if (d->bypass) return PARSE_ERROR_NONE;
-
-	text_to_ascii(tmp, sizeof(tmp), parser_getstr(p, "key"));
-	macro_add(tmp, d->macro_buffer);
+	keypress_from_text(d->macro_buffer, N_ELEMENTS(d->macro_buffer), act);
 
 	return PARSE_ERROR_NONE;
 }
@@ -967,135 +867,21 @@ static enum parser_error parse_prefs_p(struct parser *p)
 static enum parser_error parse_prefs_c(struct parser *p)
 {
 	int mode;
-	byte j;
-	char tmp[1024];
+	struct keypress tmp[2];
 
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
 	mode = parser_getint(p, "mode");
-	if (mode < 0 || mode >= KEYMAP_MODES)
+	if (mode < 0 || mode >= KEYMAP_MODE_MAX)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 
-	text_to_ascii(tmp, sizeof(tmp), parser_getstr(p, "key"));
-	if (!tmp[0] || tmp[1])
+	keypress_from_text(tmp, N_ELEMENTS(tmp), parser_getstr(p, "key"));
+	if (tmp[0].type != EVT_KBRD || tmp[1].type != EVT_NONE)
 		return PARSE_ERROR_FIELD_TOO_LONG;
 
-	j = (byte)tmp[0];
-
-	string_free(keymap_act[mode][j]);
-	keymap_act[mode][j] = string_make(d->macro_buffer);
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_prefs_t(struct parser *p)
-{
-	struct prefs_data *d = parser_priv(p);
-	assert(d != NULL);
-	if (d->bypass) return PARSE_ERROR_NONE;
-
-	/* set macro trigger names and a template */
-	/* Process "T:<template>:<modifier chr>:<modifier name>:..." */
-	if (parser_hasval(p, "n4"))
-	{
-		const char *template = parser_getsym(p, "n1");
-		const char *chars = parser_getsym(p, "n2");
-		const char *name0 = parser_getsym(p, "n3");
-		const char *namelist = parser_getstr(p, "n4");
-
-		char *modifiers;
-		char *t;
-		const char *names[MAX_MACRO_MOD];
-		int i = 1, j;
-
-		/* Free existing macro triggers and trigger template */
-		macro_trigger_free();
-
-		/* Clear template? */
-		if (template[0] == '\0')
-			return PARSE_ERROR_NONE;
-
-		/* Tokenise last field... */
-		modifiers = string_make(namelist);
-
-		/* first token is name0 */
-		names[0] = name0;
-
-		t = strtok(modifiers, ":");
-		while (t) {
-			names[i++] = t;
-			t = strtok(NULL, ":");
-		}
-
-		/* The number of modifiers must equal the number of names */
-		if (strlen(chars) != (size_t) i)
-		{
-			string_free(modifiers);
-			return (strlen(chars) > (size_t) i) ?
-					PARSE_ERROR_TOO_FEW_ENTRIES : PARSE_ERROR_TOO_MANY_ENTRIES;
-		}
-
-		/* OK, now copy the data across */
-		macro_template = string_make(template);
-		macro_modifier_chr = string_make(chars);
-		for (j = 0; j < i; j++)
-			macro_modifier_name[j] = string_make(names[j]);
-
-		string_free(modifiers);
-	}
-
-	/* Macro trigger */
-	/* Process "T:<trigger>:<keycode>:<shift-keycode>" */
-	else
-	{
-		const char *trigger = parser_getsym(p, "n1");
-		const char *kc = parser_getsym(p, "n2");
-		const char *shift_kc = NULL;
-
-		char *buf;
-		const char *s;
-		char *t;
-
-		if (parser_hasval(p, "n3"))
-			shift_kc = parser_getsym(p, "n3");
-
-		if (max_macrotrigger >= MAX_MACRO_TRIGGER)
-			return PARSE_ERROR_TOO_MANY_ENTRIES;
-
-		/* Buffer for the trigger name */
-		buf = C_ZNEW(strlen(trigger) + 1, char);
-
-		/* Simulate strcpy() and skip the '\' escape character */
-		s = trigger;
-		t = buf;
-
-		while (*s)
-		{
-			if ('\\' == *s) s++;
-			*t++ = *s++;
-		}
-
-		/* Terminate the trigger name */
-		*t = '\0';
-
-		/* Store the trigger name */
-		macro_trigger_name[max_macrotrigger] = string_make(buf);
-
-		/* Free the buffer */
-		FREE(buf);
-
-		/* Normal keycode */
-		macro_trigger_keycode[0][max_macrotrigger] = string_make(kc);
-		if (shift_kc)
-			macro_trigger_keycode[1][max_macrotrigger] = string_make(shift_kc);
-		else
-			macro_trigger_keycode[1][max_macrotrigger] = string_make(kc);
-
-		/* Count triggers */
-		max_macrotrigger++;
-	}
+	keymap_add(mode, tmp[0], d->macro_buffer);
 
 	return PARSE_ERROR_NONE;
 }
@@ -1215,10 +1001,7 @@ static struct parser *init_parse_prefs(void)
 	parser_reg(p, "B uint idx str text", parse_prefs_b);
 		/* XXX idx should be {tval,sval} pair! */
 	parser_reg(p, "A str act", parse_prefs_a);
-	parser_reg(p, "P str key", parse_prefs_p);
 	parser_reg(p, "C int mode str key", parse_prefs_c);
-	parser_reg(p, "T sym n1 sym n2 ?sym n3 ?str n4", parse_prefs_t);
-		/* XXX should be two separate codes again */
 	parser_reg(p, "M int type sym attr", parse_prefs_m);
 	parser_reg(p, "V uint idx int k int r int g int b", parse_prefs_v);
 	parser_reg(p, "W int window uint flag uint value", parse_prefs_w);

@@ -79,7 +79,6 @@ s16b signal_count;		/* Hack -- Count interrupts */
 
 bool msg_flag;			/* Player has pending message */
 
-bool inkey_base;		/* See the "inkey()" function */
 bool inkey_xtra;		/* See the "inkey()" function */
 u32b inkey_scan;		/* See the "inkey()" function */
 bool inkey_flag;		/* See the "inkey()" function */
@@ -504,17 +503,6 @@ char gf_to_char[GF_MAX][BOLT_MAX];
  */
 byte tval_to_attr[128];
 
-
-/*
- * Current (or recent) macro action
- */
-char macro_buffer[1024];
-
-
-/*
- * Keymaps for each "mode" associated with each keypress.
- */
-char *keymap_act[KEYMAP_MODES][256];
 
 
 

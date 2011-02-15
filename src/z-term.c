@@ -1959,25 +1959,25 @@ errr Term_flush(void)
 /*
  * Add a keypress to the "queue"
  */
-errr Term_keypress(int k)
+errr Term_keypress(keycode_t k, byte mods)
 {
-  /* Hack -- Refuse to enqueue non-keys */
-  if (!k) return (-1);
-  
-  /* Store the char, advance the queue */
-  Term->key_queue[Term->key_head].key = k;
-  Term->key_queue[Term->key_head].index = 0;
-  Term->key_queue[Term->key_head].type = EVT_KBRD;
-  Term->key_head++;
-  
-  /* Circular queue, handle wrap */
-  if (Term->key_head == Term->key_size) Term->key_head = 0;
-  
-  /* Success (unless overflow) */
-  if (Term->key_head != Term->key_tail) return (0);
-  
-  /* Problem */
-  return (1);
+	/* Hack -- Refuse to enqueue non-keys */
+	if (!k) return (-1);
+
+	/* Store the char, advance the queue */
+	Term->key_queue[Term->key_head].type = EVT_KBRD;
+	Term->key_queue[Term->key_head].key.code = k;
+	Term->key_queue[Term->key_head].key.mods = mods;
+	Term->key_head++;
+
+	/* Circular queue, handle wrap */
+	if (Term->key_head == Term->key_size) Term->key_head = 0;
+
+	/* Success (unless overflow) */
+	if (Term->key_head != Term->key_tail) return (0);
+
+	/* Problem */
+	return (1);
 }
 
 /*
@@ -1986,11 +1986,10 @@ errr Term_keypress(int k)
 errr Term_mousepress(int x, int y, char button)
 {
   /* Store the char, advance the queue */
-  Term->key_queue[Term->key_head].key = 0;
-  Term->key_queue[Term->key_head].mousex = x;
-  Term->key_queue[Term->key_head].mousey = y;
-  Term->key_queue[Term->key_head].index = button;
   Term->key_queue[Term->key_head].type = EVT_MOUSE;
+  Term->key_queue[Term->key_head].mouse.x = x;
+  Term->key_queue[Term->key_head].mouse.y = y;
+  Term->key_queue[Term->key_head].mouse.button = button;
   Term->key_head++;
   
   /* Circular queue, handle wrap */
@@ -2014,18 +2013,18 @@ errr Term_mousepress(int x, int y, char button)
  */
 errr Term_key_push(int k)
 {
-	ui_event_data ke;
+	ui_event ke;
 
 	if (!k) return (-1);
 
 	ke.type = EVT_KBRD;
-	ke.index = 0;
-	ke.key = k;
+	ke.key.code = k;
+	ke.key.mods = 0;
 
 	return Term_event_push(&ke);
 }
 
-errr Term_event_push(const ui_event_data *ke)
+errr Term_event_push(const ui_event *ke)
 {
 	/* Hack -- Refuse to enqueue non-keys */
 	if (!ke) return (-1);
@@ -2063,10 +2062,10 @@ errr Term_event_push(const ui_event_data *ke)
  *
  * Remove the keypress if "take" is true.
  */
-errr Term_inkey(ui_event_data *ch, bool wait, bool take)
+errr Term_inkey(ui_event *ch, bool wait, bool take)
 {
 	/* Assume no key */
-	ch->type = ch->key = 0;
+	memset(ch, 0, sizeof *ch);
 
 	/* Hack -- get bored */
 	if (!Term->never_bored)
@@ -2215,7 +2214,8 @@ errr Term_resize(int w, int h)
 	term_win *hold_mem;
 	term_win *hold_tmp;
 
-	ui_event_data evt = { EVT_RESIZE, 0, 0, 0, 0 };
+	ui_event evt = EVENT_EMPTY;
+	evt.type = EVT_RESIZE;
 
 
 	/* Resizing is forbidden */
@@ -2505,7 +2505,7 @@ errr term_init(term *t, int w, int h, int k)
 	t->key_size = k;
 
 	/* Allocate the input queue */
-	t->key_queue = C_ZNEW(t->key_size, ui_event_data);
+	t->key_queue = C_ZNEW(t->key_size, ui_event);
 
 
 	/* Save the size */

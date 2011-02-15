@@ -1203,7 +1203,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 {
 	int i, k, n;
 
-	char ch;
+	struct keypress ch;
 
 	/* Number of "real" lines passed by */
 	int next = 0;
@@ -1510,16 +1510,16 @@ bool show_file(const char *name, const char *what, int line, int mode)
 		ch = inkey();
 
 		/* Exit the help */
-		if (ch == '?') break;
+		if (ch.code == '?') break;
 
 		/* Toggle case sensitive on/off */
-		if (ch == '!')
+		if (ch.code == '!')
 		{
 			case_sensitive = !case_sensitive;
 		}
 
 		/* Try showing */
-		if (ch == '&')
+		if (ch.code == '&')
 		{
 			/* Get "shower" */
 			prt("Show: ", hgt - 1, 0);
@@ -1530,7 +1530,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 		}
 
 		/* Try finding */
-		if (ch == '/')
+		if (ch.code == '/')
 		{
 			/* Get "finder" */
 			prt("Find: ", hgt - 1, 0);
@@ -1550,7 +1550,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 		}
 
 		/* Go to a specific line */
-		if (ch == '#')
+		if (ch.code == '#')
 		{
 			char tmp[80] = "0";
 
@@ -1560,7 +1560,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 		}
 
 		/* Go to a specific file */
-		if (ch == '%')
+		if (ch.code == '%')
 		{
 			char ftmp[80] = "help.hlp";
 
@@ -1568,69 +1568,63 @@ bool show_file(const char *name, const char *what, int line, int mode)
 			if (askfor_aux(ftmp, sizeof(ftmp), NULL))
 			{
 				if (!show_file(ftmp, NULL, 0, mode))
-					ch = ESCAPE;
+					ch.code = ESCAPE;
 			}
 		}
 
-		/* Back up one line */
-		if (ch == ARROW_UP || ch == '8')
-		{
-			line = line - 1;
-		}
+		switch (ch.code) {
+			/* up a line */
+			case ARROW_UP:
+			case '8': line--; break;
 
-		/* Back up one full page */
-		if ((ch == '9') || (ch == '-'))
-		{
-			line = line - (hgt - 4);
-		}
+			/* up a page */
+			case KC_PGUP:
+			case '9':
+			case '-': line -= (hgt - 4); break;
 
-		/* Back to the top */
-		if (ch == '7')
-		{
-			line = 0;
-		}
+			/* home */
+			case KC_HOME:
+			case '7': line = 0; break;
 
-		/* Advance one line */
-		if ((ch == ARROW_DOWN) || (ch == '2') || (ch == '\n') || (ch == '\r'))
-		{
-			line = line + 1;
-		}
+			/* down a line */
+			case ARROW_DOWN:
+			case '2':
+			case '\n':
+			case '\r': line++; break;
 
-		/* Advance one full page */
-		if ((ch == '3') || (ch == ' '))
-		{
-			line = line + (hgt - 4);
-		}
+			/* down a page */
+			case KC_PGDOWN:
+			case '3':
+			case ' ': line += hgt - 4; break;
 
-		/* Advance to the bottom */
-		if (ch == '1')
-		{
-			line = size;
+			/* end */
+			case KC_END:
+			case '1': line = size; break;
 		}
 
 		/* Recurse on letters */
-		if (menu && isalpha((unsigned char)ch))
+		if (menu && isalpha((unsigned char)ch.code))
 		{
 			/* Extract the requested menu item */
-			k = A2I(ch);
+			k = A2I(ch.code);
 
 			/* Verify the menu item */
 			if ((k >= 0) && (k <= 25) && hook[k][0])
 			{
 				/* Recurse on that file */
-				if (!show_file(hook[k], NULL, 0, mode)) ch = ESCAPE;
+				if (!show_file(hook[k], NULL, 0, mode)) ch.code = ESCAPE;
 			}
 		}
 
 		/* Exit on escape */
-		if (ch == ESCAPE) break;
+		if (ch.code == ESCAPE) break;
 	}
 
 	/* Close the file */
 	file_close(fff);
 
 	/* Done */
-	return (ch != '?');
+	return (ch.code != '?');
 }
 
 
@@ -1808,11 +1802,12 @@ void close_game(void)
 
 		if (Term->mapped_flag)
 		{
-			/* Prompt for scores XXX XXX XXX */
-			prt("Press Return (or Escape).", 0, 40);
+			struct keypress ch;
 
-			/* Predict score (or ESCAPE) */
-			if (inkey() != ESCAPE) predict_score();
+			prt("Press Return (or Escape).", 0, 40);
+			ch = inkey();
+			if (ch.code != ESCAPE)
+				predict_score();
 		}
 	}
 

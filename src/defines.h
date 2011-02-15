@@ -429,18 +429,6 @@ enum
 };
 
 
-/*
- * Keymap modes.
- */
-enum
-{
-	KEYMAP_MODE_ORIG = 0,
-	KEYMAP_MODE_ROGUE,
-
-	KEYMAP_MODES		/* Total */
-};
-
-
 /**
  * Bolt motion (used in prefs.c, spells1.c)
  */
@@ -1030,13 +1018,13 @@ enum
  * Convert a "key event" into a "location" (Y)
  */
 #define KEY_GRID_Y(K) \
-  ((int) (((K.mousey - ROW_MAP) / tile_height) + Term->offset_y))
+  ((int) (((K.mouse.y - ROW_MAP) / tile_height) + Term->offset_y))
 
 /*
  * Convert a "key event" into a "location" (X)
  */
 #define KEY_GRID_X(K) \
-	((int) (((K.mousex - COL_MAP) / tile_width) + Term->offset_x))
+	((int) (((K.mouse.x - COL_MAP) / tile_width) + Term->offset_x))
 
 
 /*
