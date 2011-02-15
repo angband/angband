@@ -25,12 +25,13 @@
  * only armor and weapons and a few other items use any of these flags.
  */
 
+#define TV_NULL		 0
 #define TV_SKELETON      1	/* Skeletons ('s') */
-#define TV_BOTTLE		 2	/* Empty bottles ('!') */
+#define TV_BOTTLE	 2	/* Empty bottles ('!') */
 #define TV_JUNK          3	/* Sticks, Pottery, etc ('~') */
 #define TV_SPIKE         5	/* Spikes ('~') */
 #define TV_CHEST         7	/* Chests ('~') */
-#define TV_SHOT			16	/* Ammo for slings */
+#define TV_SHOT		16	/* Ammo for slings */
 #define TV_ARROW        17	/* Ammo for bows */
 #define TV_BOLT         18	/* Ammo for x-bows */
 #define TV_BOW          19	/* Slings/Bows/Xbows */
