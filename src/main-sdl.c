@@ -2529,6 +2529,8 @@ static void sdl_keypress(SDL_keysym keysym)
 		case SDLK_F13: ch = KC_F13; break;
 		case SDLK_F14: ch = KC_F14; break;
 		case SDLK_F15: ch = KC_F15; break;
+
+		default: break;
 	}
 
 	if (ch) {
