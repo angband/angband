@@ -272,7 +272,7 @@ void py_attack(int y, int x) {
 	int blows = 0;
 	bool fear = FALSE;
 	monster_type *m_ptr = &mon_list[cave->m_idx[y][x]];
-
+	
 	/* disturb the player */
 	disturb(0,0);
 
@@ -288,17 +288,12 @@ void py_attack(int y, int x) {
 		blows++;
 	}
 	
-	/* Hack -- delay fear messages
-	if (m_ptr->m_timed[MON_TMD_FEAR] && m_ptr->ml)
-	{
-		msg("inside fear block.");
+	/* Hack - delay fear messages */
+	if (fear && m_ptr->ml) {
 		char m_name[80];
-		
-		/* Extract monster name (or "it")
 		monster_desc(m_name, sizeof(m_name), m_ptr, 0);
-
-		add_monster_message(m_name, cave->m_idx[y][x], MON_MSG_FLEE_IN_TERROR);
-	}*/
+		add_monster_message(m_name, cave->m_idx[y][x], MON_MSG_FLEE_IN_TERROR, TRUE);
+	}
 }
 
 
@@ -456,11 +451,10 @@ void ranged_helper(int item, int dir, int range, int shots, ranged_attack attack
 				msg("You do %d (out of %d) damage.", dmg, m_ptr->hp);
 		
 			/* Hit the monster, check for death */
-			if (mon_take_hit(cave->m_idx[y][x], dmg, &fear, note_dies)) {
-				/* Dead monster */
-			} else {
+			if (!mon_take_hit(cave->m_idx[y][x], dmg, &fear, note_dies)) {
 				message_pain(cave->m_idx[y][x], dmg);
-				if (fear && m_ptr->ml) msgt(MSG_FLEE, "%^s flees in terror!", m_name);
+				if (fear && m_ptr->ml)
+					add_monster_message(m_name, cave->m_idx[y][x], MON_MSG_FLEE_IN_TERROR, TRUE);
 			}
 		}
 	}

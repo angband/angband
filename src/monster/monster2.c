@@ -3195,7 +3195,11 @@ void flush_monster_messages(bool delay)
 
        /* Capitalize the message */
        *buf = my_toupper((unsigned char)*buf);
-        
+
+	   /* Hack - play sound for fear message */
+	   if (mon_msg[i].msg_code == MON_MSG_FLEE_IN_TERROR)
+			sound(MSG_FLEE);
+	   
        /* Show the message */
        msg(buf);
    }
@@ -3847,7 +3851,6 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note)
 	/* Mega-Hack -- Pain cancels fear */
 	if (!(*fear) && m_ptr->m_timed[MON_TMD_FEAR] && (dam > 0))
 	{
-		msg("fear reduced.");
 		int tmp = randint1(dam);
 
 		/* Cure a little fear */
@@ -3889,7 +3892,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note)
 			/* Hack -- note fear */
 			(*fear) = TRUE;
 
-			mon_inc_timed(m_idx, MON_TMD_FEAR, timer, MON_TMD_FLG_NOTIFY);
+			mon_inc_timed(m_idx, MON_TMD_FEAR, timer, MON_TMD_FLG_NOMESSAGE | MON_TMD_FLG_NOFAIL);
 		}
 	}
 
