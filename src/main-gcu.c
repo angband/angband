@@ -181,6 +181,10 @@ static unsigned int acs_table[32] = {
 	'+', '+', '+', '+', '~', '-', '-', '-', '_', '+', '+', '+',
 	'+', '|', '?', '?', '?', '?', '?', '.'
 };
+static unsigned int acs_attrs[32] = {
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+};
 
 #define PAIR_WHITE 0
 #define PAIR_RED 1
@@ -858,6 +862,21 @@ static errr Term_wipe_gcu(int x, int y, int n)
 }
 
 
+/* Hack - replace non-ASCII characters to
+ * avoid display glitches in selectors.
+ *
+ * Note that we do this after the ACS mapping,
+ * because the display glitches we are avoiding
+ * are in curses itself.
+ */
+char filter_char(char c)
+{
+	if (c < ' ' || c >= 127)
+		return '?';
+	else
+		return c;
+}
+
 
 /*
  * Place some text on the screen using an attribute
@@ -876,25 +895,20 @@ static errr Term_text_gcu(int x, int y, int n, byte a, const char *s)
 
 	/* Write to screen */
 	while (n--) {
-		unsigned int c = (unsigned char) *(s++);
+		unsigned char c = *(s++);
 
 #ifdef A_ALTCHARSET
-		/* Map high-bit characters down using the $TERM-specific
-		 * alternate character set. */
-		if (c < 32) c = acs_table[c];
+		if (c < 32) {
+			int attr = acs_attrs[c];
+			wattron(td->win, A_REVERSE);
+			waddch(td->win, filter_char(acs_table[c]));
+			wattroff(td->win, A_REVERSE);
+		} else {
+			waddch(td->win, filter_char(c));
+		}
+#else
+		waddch(td->win, filter_char(c));
 #endif
-
-		if ((c & 255) < ' ' || (c & 255) == 127)
-			/* Hack - replace non-ASCII characters to
-			 * avoid display glitches in selectors.
-			 *
-			 * Note that we do this after the ACS mapping,
-			 * because the display glitches we are avoiding
-			 * are in curses itself.
-			 */
-			waddch(td->win, '?');
-		else
-			waddch(td->win, c);
 	}
 
 #if defined(A_COLOR)
@@ -1141,9 +1155,15 @@ errr init_gcu(int argc, char **argv)
 		acs_table[13] = ACS_ULCORNER;  acs_table[24] = ACS_TTEE;
 		acs_table[14] = ACS_LLCORNER;  acs_table[25] = ACS_VLINE;
 		acs_table[15] = ACS_PLUS;      acs_table[31] = ACS_BULLET;
+
 	}
 #endif
 
+	/* wall tiles should have reverse video */
+	acs_table[2] = ' ';
+	acs_attrs[2] = A_REVERSE;
+	acs_table[1] = '*';
+	acs_attrs[1] = A_REVERSE;
 
 	/*** Low level preparation ***/
 
