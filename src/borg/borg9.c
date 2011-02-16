@@ -3314,7 +3314,7 @@ static void borg_prt_binary(u32b flags, int row, int col)
  * item has.  Select the item by inven # prior to hitting
  * the ^zo.
  */
-static void borg_display_item(object_type *item2)
+static void borg_display_item(object_type *item2, int n)
 {
 	int j = 0;
 
@@ -3322,7 +3322,7 @@ static void borg_display_item(object_type *item2)
 
 	borg_item *item;
 
-	item = &borg_items[p_ptr->command_arg];
+	item = &borg_items[n];
 
 	/* Extract the flags */
 	object_flags(item2, f);
@@ -5757,7 +5757,7 @@ void do_cmd_borg(void)
             borg_cancel = FALSE;
 
             /* Step N times */
-			borg_step  = (p_ptr->command_arg ? p_ptr->command_arg : 1);
+			borg_step = get_quantity("Step how many times? ", 10);
 
             /* need to check all stats */
             my_need_stat_check[0] = TRUE;
@@ -6377,7 +6377,7 @@ void do_cmd_borg(void)
 			target_get(&tx, &ty);
 
             /* Turns */
-            n = (p_ptr->command_arg ? p_ptr->command_arg : 1);
+            n = get_quantity("Quantity: ", 1);
 
             /* Danger of grid */
             msg("Danger(%d,%d,%d) is %d",
@@ -6869,7 +6869,8 @@ void do_cmd_borg(void)
 			object_type *item2;
 
 			/* use this item */
-            n = (p_ptr->command_arg ? p_ptr->command_arg : 1);
+			// XXX replace this with an item selector
+			n = get_quantity("Which item?", 1);
 
             /* Cheat the "equip" screen */
             borg_cheat_equip();
@@ -6894,7 +6895,7 @@ void do_cmd_borg(void)
 			item2 = &p_ptr->inventory[n];
 
 			/* Display the special screen */
-			borg_display_item(item2);
+			borg_display_item(item2, n);
 
 			/* pause for study */
             msg("Borg believes: ");

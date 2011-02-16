@@ -1293,10 +1293,6 @@ static void dungeon(struct cave *c)
 	p_ptr->leaving = FALSE;
 
 
-	/* Reset the "command" vars */
-	p_ptr->command_arg = 0;
-
-
 	/* Cancel the target */
 	target_set_monster(0);
 

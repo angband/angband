@@ -2448,7 +2448,7 @@ void calc_cave_distances(void)
 void pit_stats(void)
 {
 	int tries = 1000;
-	int depth = p_ptr->command_arg;
+	int depth = 0;
 	int hist[z_info->pit_max];
 	int j, p;
 	int type = 1;
@@ -2478,21 +2478,16 @@ void pit_stats(void)
 	/* get the new value */
 	type = atoi(tmp_val);
 	if (type < 1) type = 1;
-	
-	if (depth <= 0){
-	
-		/* Format second default value */	
-		strnfmt(tmp_val, sizeof(tmp_val), "%d", p_ptr->depth);
-	
-		/* Ask for the input - take the first 7 characters*/
-		if (!get_string("Depth: ", tmp_val, 7)) return;
 
-		/* get the new value */
-		depth = atoi(tmp_val);
-		if (depth < 1) depth = 1;
+	/* Format second default value */	
+	strnfmt(tmp_val, sizeof(tmp_val), "%d", p_ptr->depth);
 	
-	}
+	/* Ask for the input - take the first 7 characters*/
+	if (!get_string("Depth: ", tmp_val, 7)) return;
 
+	/* get the new value */
+	depth = atoi(tmp_val);
+	if (depth < 1) depth = 1;
 
 	for (j = 0; j < tries; j++){
 	

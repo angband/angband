@@ -377,7 +377,7 @@ static int textui_get_count(void)
 	{
 		struct keypress ke;
 
-		prt(format("Count: %d", count), 0, 0);
+		prt(format("Repeat: %d", count), 0, 0);
 
 		ke = inkey();
 		if (ke.code == ESCAPE)
@@ -432,7 +432,7 @@ static struct keypress request_command_buffer[256];
  * Note that "backslash" is treated specially, and is used to bypass any
  * keymap entry for the following character.  This is useful for macros.
  */
-static ui_event textui_get_command(void)
+static ui_event textui_get_command(int *count)
 {
 	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
@@ -460,12 +460,12 @@ static ui_event textui_get_command(void)
 			bool keymap_ok = TRUE;
 			switch (ke.key.code) {
 				case '0': {
-					int count = textui_get_count();
+					int c = textui_get_count();
 
-					if (count == -1 || !get_com_ex("Command: ", &ke))
+					if (c == -1 || !get_com_ex("Command: ", &ke))
 						continue;
 					else
-						p_ptr->command_arg = count;
+						*count = c;
 					break;
 				}
 
@@ -863,7 +863,7 @@ static bool key_confirm_command(unsigned char c)
 /**
  * Process a textui keypress.
  */
-static bool textui_process_key(struct keypress kp)
+static bool textui_process_key(struct keypress kp, int count)
 {
 	struct cmd_info *cmd;
 	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
@@ -887,7 +887,7 @@ static bool textui_process_key(struct keypress kp)
 		if (cmd->hook)
 			cmd->hook();
 		else if (cmd->cmd)
-			cmd_insert_repeated(cmd->cmd, p_ptr->command_arg);
+			cmd_insert_repeated(cmd->cmd, count);
 	}
 
 	return TRUE;
@@ -900,24 +900,19 @@ static bool textui_process_key(struct keypress kp)
  */
 void textui_process_command(bool no_request)
 {
+	int count = 0;
 	bool done = TRUE;
 	ui_event e;
 
-	/* Reset argument before getting command */
-	p_ptr->command_arg = 0;
-	e = textui_get_command();
+	e = textui_get_command(&count);
 
-	if (e.type == EVT_RESIZE)
-		do_cmd_redraw();
-
-	else if (e.type == EVT_MOUSE)
-		textui_process_click(e);
-
-	else if (e.type == EVT_KBRD)
-		done = textui_process_key(e.key);
-
-	else if (e.type == EVT_BUTTON)
-		done = textui_process_key(e.key);
+	switch (e.type) {
+		case EVT_RESIZE: do_cmd_redraw(); break;
+		case EVT_MOUSE: textui_process_click(e); break;
+		case EVT_BUTTON:
+		case EVT_KBRD: done = textui_process_key(e.key, count); break;
+		default: ;
+	}
 
 	if (!done)
 		do_cmd_unknown();

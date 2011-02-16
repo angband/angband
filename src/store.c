@@ -3132,10 +3132,6 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 	/* Forget the view */
 	forget_view();
 
-	/* Reset the command variables */
-	p_ptr->command_arg = 0;
-
-
 
 	/*** Display ***/
 

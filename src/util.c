@@ -1677,29 +1677,15 @@ bool get_string(const char *prompt, char *buf, size_t len)
 
 /*
  * Request a "quantity" from the user
- *
- * Allow "p_ptr->command_arg" to specify a quantity
  */
 s16b get_quantity(const char *prompt, int max)
 {
 	int amt = 1;
 
-
-	/* Use "command_arg" */
-	if (p_ptr->command_arg)
-	{
-		/* Extract a number */
-		amt = p_ptr->command_arg;
-
-		/* Clear "command_arg" */
-		p_ptr->command_arg = 0;
-	}
-
 	/* Prompt if needed */
-	else if ((max != 1))
+	if (max != 1)
 	{
 		char tmp[80];
-
 		char buf[80];
 
 		/* Build a prompt if needed */

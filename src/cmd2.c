@@ -1697,47 +1697,43 @@ void do_cmd_rest(cmd_code code, cmd_arg args[])
 
 void textui_cmd_rest(void)
 {
-  	/* Prompt for time if needed */
-	if (p_ptr->command_arg <= 0)
+	const char *p = "Rest (0-9999, '!' for HP or SP, '*' for HP and SP, '&' as needed): ";
+
+	char out_val[5] = "& ";
+
+	/* Ask for duration */
+	if (!get_string(p, out_val, sizeof(out_val))) return;
+
+	/* Rest until done */
+	if (out_val[0] == '&')
 	{
-		const char *p = "Rest (0-9999, '!' for HP or SP, '*' for HP and SP, '&' as needed): ";
+		cmd_insert(CMD_REST);
+		cmd_set_arg_choice(cmd_get_top(), 0, REST_COMPLETE);
+	}
 
-		char out_val[5] = "& ";
+	/* Rest a lot */
+	else if (out_val[0] == '*')
+	{
+		cmd_insert(CMD_REST);
+		cmd_set_arg_choice(cmd_get_top(), 0, REST_ALL_POINTS);
+	}
 
-		/* Ask for duration */
-		if (!get_string(p, out_val, sizeof(out_val))) return;
-
-		/* Rest until done */
-		if (out_val[0] == '&')
-		{
-			cmd_insert(CMD_REST);
-			cmd_set_arg_choice(cmd_get_top(), 0, REST_COMPLETE);
-		}
-
-		/* Rest a lot */
-		else if (out_val[0] == '*')
-		{
-			cmd_insert(CMD_REST);
-			cmd_set_arg_choice(cmd_get_top(), 0, REST_ALL_POINTS);
-		}
-
-		/* Rest until HP or SP filled */
-		else if (out_val[0] == '!')
-		{
-			cmd_insert(CMD_REST);
-			cmd_set_arg_choice(cmd_get_top(), 0, REST_SOME_POINTS);
-		}
+	/* Rest until HP or SP filled */
+	else if (out_val[0] == '!')
+	{
+		cmd_insert(CMD_REST);
+		cmd_set_arg_choice(cmd_get_top(), 0, REST_SOME_POINTS);
+	}
+	
+	/* Rest some */
+	else
+	{
+		int turns = atoi(out_val);
+		if (turns <= 0) return;
+		if (turns > 9999) turns = 9999;
 		
-		/* Rest some */
-		else
-		{
-			int turns = atoi(out_val);
-			if (turns <= 0) return;
-			if (turns > 9999) turns = 9999;
-			
-			cmd_insert(CMD_REST);
-			cmd_set_arg_choice(cmd_get_top(), 0, turns);
-		}
+		cmd_insert(CMD_REST);
+		cmd_set_arg_choice(cmd_get_top(), 0, turns);
 	}
 }
 
