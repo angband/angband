@@ -141,9 +141,10 @@ void keypress_from_text(struct keypress *buf, size_t len, const char *str)
 				case 'x': {
 					if (isxdigit((unsigned char)(*(str + 1))) &&
 							isxdigit((unsigned char)(*(str + 2)))) {
+						int v1 = dehex(*++str) * 16;
+						int v2 = dehex(*++str);
 						/* store a nice hex digit */
-						STORE(buf, cur++, mods,
-								16 * dehex(*++str) + 16 * dehex(*++str));
+						STORE(buf, cur++, mods, v1 + v2);
 					} else {
 						/* invalids get ignored */
 						STORE(buf, cur++, mods, '?');
