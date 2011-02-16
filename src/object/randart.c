@@ -387,6 +387,7 @@ static void store_base_power (void)
 		else
 			j--;
 
+		if (!base_power[i]) continue;
 		a_ptr = &a_info[i];
 		k_ptr = lookup_kind(a_ptr->tval, a_ptr->sval);
 		base_item_level[i] = k_ptr->level;
@@ -427,6 +428,8 @@ static void store_base_power (void)
 			art_glove_total++; break;
 		case TV_BOOTS:
 			art_boot_total++; break;
+		case TV_NULL:
+			break;
 		default:
 			art_other_total++;
 		}
@@ -719,8 +722,8 @@ static void parse_frequencies(void)
 			(i == ART_MORGOTH))
 			continue;
 
-		/* Also don't parse cursed items */
-		if (base_power[i] < 0) continue;
+		/* Also don't parse cursed or null items */
+		if (base_power[i] < 0 || a_ptr->tval == 0) continue;
 
 		/* Get a pointer to the base item for this artifact */
 		k_ptr = lookup_kind(a_ptr->tval, a_ptr->sval);

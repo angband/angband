@@ -398,6 +398,9 @@ bool make_fake_artifact(object_type *o_ptr, struct artifact *artifact)
 	int j;
 	object_kind *kind;
 
+	/* Don't bother with empty artifacts */
+	if (!artifact->tval) return FALSE;
+
 	/* Get the "kind" index */
 	kind = lookup_kind(artifact->tval, artifact->sval);
 	if (!kind) return FALSE;
