@@ -241,9 +241,6 @@ static ui_event inkey_aux(int scan_cutoff)
 		}
 	}
 
-	if (ke.type == EVT_KBRD)
-		printf("key event! %c %d %02x\n",
-				(unsigned)ke.key.code, ke.key.code, ke.key.mods);
 	return (ke);
 }
 
