@@ -1880,27 +1880,21 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 
 	/* Confusion setting (amount to confuse) */
 	int do_conf = 0;
-	int conf_note = 0;
 
 	/* Stunning setting (amount to stun) */
 	int do_stun = 0;
-	int stun_note = 0;
 
 	/* Slow setting (amount to haste) */
 	int do_slow = 0;
-	int slow_note = 0;
 
 	/* Haste setting (amount to haste) */
 	int do_haste = 0;
-	int haste_note = 0;
 
 	/* Sleep amount (amount to sleep) */
 	bool do_sleep = FALSE;
-	int sleep_note = 0;
 
 	/* Fear amount (amount to fear) */
 	int do_fear = 0;
-	int fear_note = 0;
 
 	/* Hold the monster name */
 	char m_name[80];
@@ -2371,7 +2365,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (m_ptr->mspeed < 150) m_ptr->mspeed += 10;
 
 			/* Attempt to clone. */
-			if (multiply_monster(cave->m_idx[y][x]))
+			if (multiply_monster(m_idx))
 			{
 				m_note = MON_MSG_SPAWN;
 			}
@@ -2398,7 +2392,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (m_ptr->hp > m_ptr->maxhp) m_ptr->hp = m_ptr->maxhp;
 
 			/* Redraw (later) if needed */
-			if (p_ptr->health_who == cave->m_idx[y][x]) p_ptr->redraw |= (PR_HEALTH);
+			if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
 
 			/* Message */
 			else m_note = MON_MSG_HEALTHIER;
@@ -2809,7 +2803,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 					m_note = MON_MSG_CHANGE;
 
 					/* Add the message now before changing the monster race */
-					add_monster_message(m_name, cave->m_idx[y][x], m_note);
+					add_monster_message(m_name, m_idx, m_note, FALSE);
 
 					/* No more messages */
 					m_note = MON_MSG_NONE;
@@ -2818,7 +2812,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 					dam = 0;
 
 					/* "Kill" the "old" monster */
-					delete_monster_idx(cave->m_idx[y][x]);
+					delete_monster_idx(m_idx);
 
 					/* Create a new monster (no groups) */
 					(void)place_monster_aux(cave, y, x, tmp, FALSE, FALSE);
@@ -2826,7 +2820,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 					/* Hack -- Assume success XXX XXX XXX */
 
 					/* Hack -- Get new monster */
-					m_ptr = &mon_list[cave->m_idx[y][x]];
+					m_ptr = &mon_list[m_idx];
 
 					/* Hack -- Get new race */
 					r_ptr = &r_info[m_ptr->r_idx];
@@ -2845,7 +2839,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		m_note = MON_MSG_DISAPPEAR;
 
 		/* Teleport */
-		teleport_away(cave->m_idx[y][x], do_dist);
+		teleport_away(m_idx, do_dist);
 
 		/* Hack -- get new location */
 		y = m_ptr->fy;
@@ -2861,73 +2855,36 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 
 		if (was_stunned) tmp /= 2;
 
-		if (mon_inc_timed(m_idx, MON_TMD_STUN, tmp, MON_TMD_FLG_NOMESSAGE)) {
-			if (was_stunned) stun_note = MON_MSG_MORE_DAZED;
-			else stun_note = MON_MSG_DAZED;
-		} else if (rf_has(r_ptr->flags, RF_NO_STUN) ||
-				rf_has(r_ptr->spell_flags, RSF_BR_SOUN) ||
-				rsf_has(r_ptr->spell_flags, RSF_BR_WALL)) {
-			/* Some creatures are resistant to stunning */
-			stun_note = MON_MSG_UNAFFECTED;
-		} else if (dam == 0) {
-			stun_note = MON_MSG_RESIST;
-		}
+		obvious = mon_inc_timed(m_idx, MON_TMD_STUN, tmp, MON_TMD_FLG_NOTIFY);
 	}
 
 	else if (do_conf)
 	{
 		int tmp = damroll(3, (do_conf / 2)) + 1;
-		bool was_confused = (m_ptr->m_timed[MON_TMD_CONF] ? TRUE : FALSE);
 
 		/* Saving throw */
-		if (typ == GF_OLD_CONF && r_ptr->level > randint1(MAX(1, do_conf - 10)) + 10) {
-			stun_note = MON_MSG_UNAFFECTED;
-		} else if (mon_inc_timed(cave->m_idx[y][x], MON_TMD_CONF, tmp, MON_TMD_FLG_NOMESSAGE)) {
-			if (was_confused) conf_note = MON_MSG_MORE_CONFUSED;
-			else conf_note = MON_MSG_CONFUSED;
-		} else if (dam == 0) {
-			conf_note = MON_MSG_RESIST;
-		}
+		if (typ == GF_OLD_CONF && r_ptr->level > randint1(MAX(1, do_conf - 10)) + 10)
+			add_monster_message(m_name, m_idx, MON_MSG_UNAFFECTED, TRUE);
+		else
+			obvious = mon_inc_timed(m_idx, MON_TMD_CONF, tmp, MON_TMD_FLG_NOTIFY);
 	}
 
 	else if (do_slow)
-	{
-		if (mon_inc_timed(cave->m_idx[y][x], MON_TMD_SLOW, do_slow, MON_TMD_FLG_NOMESSAGE))
-			slow_note = MON_MSG_SLOWED;
-		else
-			slow_note = MON_MSG_UNAFFECTED;
-	}
-
+		obvious = mon_inc_timed(m_idx, MON_TMD_SLOW, do_slow, MON_TMD_FLG_NOTIFY);
 	else if (do_haste)
-	{
-		if (mon_inc_timed(cave->m_idx[y][x], MON_TMD_FAST, do_haste, MON_TMD_FLG_NOMESSAGE))
-			haste_note = MON_MSG_HASTED;
-		else
-			haste_note = MON_MSG_UNAFFECTED;
-	}
+		obvious = mon_inc_timed(m_idx, MON_TMD_FAST, do_haste, MON_TMD_FLG_NOTIFY);
 
 	if (do_fear)
-	{
-		bool was_afraid = (m_ptr->m_timed[MON_TMD_FEAR] ? TRUE : FALSE);
-		if (mon_inc_timed(cave->m_idx[y][x], MON_TMD_FEAR, do_fear, MON_TMD_FLG_NOMESSAGE)) {
-			if (was_afraid)
-				fear_note = MON_MSG_MORE_AFRAID;
-			else
-				fear_note = MON_MSG_FLEE_IN_TERROR;
-		} else if (dam == 0) {
-			fear_note = MON_MSG_UNAFFECTED;
-		}
-	}
-
+		obvious = mon_inc_timed(m_idx, MON_TMD_FEAR, do_fear, MON_TMD_FLG_NOTIFY);
 
 	/* If another monster did the damage, hurt the monster by hand */
 	if (who > 0)
 	{
 		/* Redraw (later) if needed */
-		if (p_ptr->health_who == cave->m_idx[y][x]) p_ptr->redraw |= (PR_HEALTH);
+		if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
 
 		/* Wake the monster up */
-		mon_clear_timed(cave->m_idx[y][x], MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
+		mon_clear_timed(m_idx, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
 
 		/* Hurt the monster */
 		m_ptr->hp -= dam;
@@ -2939,13 +2896,13 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (!seen) note_dies = MON_MSG_MORIA_DEATH;
 
 			/* dump the note*/
-			add_monster_message(m_name, cave->m_idx[y][x], note_dies);
+			add_monster_message(m_name, m_idx, note_dies, FALSE);
 
 			/* Generate treasure, etc */
-			monster_death(cave->m_idx[y][x]);
+			monster_death(m_idx);
 
 			/* Delete the monster */
-			delete_monster_idx(cave->m_idx[y][x]);
+			delete_monster_idx(m_idx);
 
 			mon_died = TRUE;
 		}
@@ -2956,11 +2913,11 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			/* Give detailed messages if visible or destroyed */
 			if ((m_note != MON_MSG_NONE) && seen)
 			{
-				add_monster_message(m_name, cave->m_idx[y][x], m_note);
+				add_monster_message(m_name, m_idx, m_note, FALSE);
 			}
 
 			/* Hack -- Pain message */
-			else if (dam > 0) message_pain(cave->m_idx[y][x], dam);
+			else if (dam > 0) message_pain(m_idx, dam);
 		}
 	}
 
@@ -2976,64 +2933,30 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (!seen) note_dies = MON_MSG_MORIA_DEATH;
 
 			/* Save the death notification for later */
-			add_monster_message(m_name, cave->m_idx[y][x], note_dies);
+			add_monster_message(m_name, m_idx, note_dies, FALSE);
 		}
 
-		/* Hurt the monster, check for fear and death */
-		if (mon_take_hit(cave->m_idx[y][x], dam, &fear, ""))
-		{
-			/* Dead monster */
+		if (do_sleep)
+			obvious = mon_inc_timed(m_idx, MON_TMD_SLEEP, 500, MON_TMD_FLG_NOTIFY);
+		else if (mon_take_hit(m_idx, dam, &fear, ""))
 			mon_died = TRUE;
-		}
-
-		/* Damaged monster */
 		else
 		{
 			/* Give detailed messages if visible or destroyed */
 			if ((m_note != MON_MSG_NONE) && seen)
 			{
-				add_monster_message(m_name, cave->m_idx[y][x], m_note);
+				add_monster_message(m_name, m_idx, m_note, FALSE);
 			}
 
 			/* Hack -- Pain message */
-			else if (dam > 0) message_pain(m_idx, dam);
+			else if (dam > 0)
+				message_pain(m_idx, dam);
 
-			/* Take note */
-			if (seen && (fear || m_ptr->m_timed[MON_TMD_FEAR]))
-			{
-				/* Message */
-				fear_note = MON_MSG_FLEE_IN_TERROR;
-			}
-
+			if (fear && m_ptr->ml)
+				add_monster_message(m_name, m_idx, MON_MSG_FLEE_IN_TERROR, TRUE);
 		}
 	}
 	
-	/* Handle sleep */
-	if (!mon_died && do_sleep)
-	{
-		if (mon_inc_timed(m_idx, MON_TMD_SLEEP, 500, MON_TMD_FLG_NOTIFY))
-			sleep_note = MON_MSG_FALL_ASLEEP;
-		/* No note if the monster was already asleep */
-		else if (!m_ptr->m_timed[MON_TMD_SLEEP])
-			sleep_note = MON_MSG_UNAFFECTED;
-	}
-
-	if (!mon_died)
-	{
-		/* Do the effect messages here so they appear after the pain messages */
-		if (stun_note) add_monster_message(m_name, cave->m_idx[y][x], stun_note);
-		if (conf_note) add_monster_message(m_name, cave->m_idx[y][x], conf_note);
-		if (slow_note) add_monster_message(m_name, cave->m_idx[y][x], slow_note);
-		if (haste_note) add_monster_message(m_name, cave->m_idx[y][x], haste_note);
-		if (fear_note) add_monster_message(m_name, cave->m_idx[y][x], fear_note);
-		if (sleep_note) add_monster_message(m_name, cave->m_idx[y][x], sleep_note);
-	}
-
-	/* Notice obvious effects */
-	if (stun_note || conf_note || slow_note || haste_note || fear_note ||
-			sleep_note)
-		obvious = TRUE;
-
 	/* Verify this code XXX XXX XXX */
 
 	/* Update the monster */

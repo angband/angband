@@ -131,13 +131,12 @@ static int critical_norm(int weight, int plus, int dam, u32b *msg_type) {
  * blows. We don't allow @ to spend more than 100 energy in one go, to avoid
  * slower monsters getting double moves.
  */
-bool py_attack_real(int y, int x) {
+bool py_attack_real(int y, int x, bool *fear) {
 	/* Information about the target of the attack */
 	monster_type *m_ptr = &mon_list[cave->m_idx[y][x]];
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	char m_name[80];
 	bool dead = FALSE;
-	bool fear = FALSE;
 
 	/* The weapon used */
 	object_type *o_ptr = &p_ptr->inventory[INVEN_WIELD];
@@ -253,11 +252,10 @@ bool py_attack_real(int y, int x) {
 	}
 
 	/* Damage, check for fear and death */
-	dead = mon_take_hit(cave->m_idx[y][x], dmg, &fear, NULL);
+	dead = mon_take_hit(cave->m_idx[y][x], dmg, fear, NULL);
 
-	/* Hack -- delay fear messages */
-	if (fear && m_ptr->ml)
-		msgt(MSG_FLEE, "%^s flees in terror!", m_name);
+	if (dead)
+		(*fear) = FALSE;
 
 	/* Apply earthquake brand */
 	if (do_quake) earthquake(p_ptr->py, p_ptr->px, 10);
@@ -272,7 +270,9 @@ bool py_attack_real(int y, int x) {
 void py_attack(int y, int x) {
 	int blow_energy = 10000 / p_ptr->state.num_blows;
 	int blows = 0;
-
+	bool fear = FALSE;
+	monster_type *m_ptr = &mon_list[cave->m_idx[y][x]];
+	
 	/* disturb the player */
 	disturb(0,0);
 
@@ -282,10 +282,17 @@ void py_attack(int y, int x) {
 	/* Attack until energy runs out or enemy dies. We limit energy use to 100
 	 * to avoid giving monsters a possible double move. */
 	while (p_ptr->energy >= blow_energy * (blows + 1)) {
-		bool stop = py_attack_real(y, x);
+		bool stop = py_attack_real(y, x, &fear);
 		p_ptr->energy_use += blow_energy;
 		if (stop || p_ptr->energy_use + blow_energy > 100) break;
 		blows++;
+	}
+	
+	/* Hack - delay fear messages */
+	if (fear && m_ptr->ml) {
+		char m_name[80];
+		monster_desc(m_name, sizeof(m_name), m_ptr, 0);
+		add_monster_message(m_name, cave->m_idx[y][x], MON_MSG_FLEE_IN_TERROR, TRUE);
 	}
 }
 
@@ -444,11 +451,10 @@ void ranged_helper(int item, int dir, int range, int shots, ranged_attack attack
 				msg("You do %d (out of %d) damage.", dmg, m_ptr->hp);
 		
 			/* Hit the monster, check for death */
-			if (mon_take_hit(cave->m_idx[y][x], dmg, &fear, note_dies)) {
-				/* Dead monster */
-			} else {
+			if (!mon_take_hit(cave->m_idx[y][x], dmg, &fear, note_dies)) {
 				message_pain(cave->m_idx[y][x], dmg);
-				if (fear && m_ptr->ml) msgt(MSG_FLEE, "%^s flees in terror!", m_name);
+				if (fear && m_ptr->ml)
+					add_monster_message(m_name, cave->m_idx[y][x], MON_MSG_FLEE_IN_TERROR, TRUE);
 			}
 		}
 	}

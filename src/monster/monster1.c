@@ -62,6 +62,9 @@ static int mon_resist_effect(int m_idx, int idx, u16b flag)
 
 	/* Some effects are marked to never fail */
 	if (flag & MON_TMD_FLG_NOFAIL) return (FALSE);
+	
+	/* A sleeping monster resists further sleeping */
+	if (idx == MON_TMD_SLEEP && m_ptr->m_timed[idx]) return (TRUE);
 
 	/* Stupid, weird, or empty monsters aren't affected by some effects */
 	if (rf_has(r_ptr->flags, RF_STUPID) ||
@@ -189,15 +192,23 @@ static bool mon_set_timed(int m_idx, int idx, int v, u16b flag)
 
 	if (idx == MON_TMD_FAST) {
 		if (v) {
-			if (m_ptr->mspeed > r_ptr->speed + 10) return (FALSE);
-		 	m_ptr->mspeed += 10;
+			if (m_ptr->mspeed > r_ptr->speed + 10) {
+				m_note = MON_MSG_UNAFFECTED;
+				resisted =  TRUE;
+ 			} else {
+				m_ptr->mspeed += 10;
+			}
 		} else {
 			m_ptr->mspeed = r_ptr->speed;
 		}
 	} else if (idx == MON_TMD_SLOW) {
 		if (v) {
-			if (m_ptr->mspeed < r_ptr->speed - 10) return (FALSE);
-			m_ptr->mspeed -= 10;
+			if (m_ptr->mspeed < r_ptr->speed - 10) {
+				m_note = MON_MSG_UNAFFECTED;
+				resisted = TRUE;
+			} else {
+				m_ptr->mspeed -= 10;
+			}
 		} else {
 			m_ptr->mspeed = r_ptr->speed;
 		}
@@ -212,7 +223,7 @@ static bool mon_set_timed(int m_idx, int idx, int v, u16b flag)
 			(flag & MON_TMD_FLG_NOTIFY)) {
 		char m_name[80];
 		monster_desc(m_name, sizeof(m_name), m_ptr, 0);
-		add_monster_message(m_name, m_idx, m_note);
+		add_monster_message(m_name, m_idx, m_note, TRUE);
 	}
 
 	return !resisted;
@@ -230,10 +241,6 @@ bool mon_inc_timed(int m_idx, int idx, int v, u16b flag)
 	/* Ignore dead monsters */
 	if (!m_ptr->r_idx) return FALSE;
 	if (v < 0) return (FALSE);
-
-	/* Can't prolong sleep of sleeping monsters */
-	if ((idx == MON_TMD_SLEEP) &&
-		(m_ptr->m_timed[MON_TMD_SLEEP])) return FALSE;
 
 	/* Make it last for a mimimum # of turns if it is a new effect */
 	if ((!m_ptr->m_timed[idx]) && (v < 2)) v = 2;

@@ -47,8 +47,8 @@ extern bool alloc_monster(struct cave *c, struct loc loc, int dis, bool slp, int
 extern bool summon_specific(int y1, int x1, int lev, int type, int delay);
 extern bool multiply_monster(int m_idx);
 extern void message_pain(int m_idx, int dam);
-extern bool add_monster_message(char *mon_name, int m_idx, int msg_code);
-extern void flush_monster_messages(void);
+extern bool add_monster_message(char *mon_name, int m_idx, int msg_code, bool delay);
+extern void flush_all_monster_messages(void);
 extern void update_smart_learn(int m_idx, int what);
 void monster_death(int m_idx);
 bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note);
