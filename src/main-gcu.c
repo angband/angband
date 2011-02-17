@@ -128,13 +128,22 @@ static term_data data[MAX_TERM_DATA];
 /* Number of initialized "term" structures */
 static int active = 0;
 
-#ifdef A_ALTCHARSET
 
-/* Whether or not to use the special ACS characters */
-static int use_alt_charset = 1;
+#define CTRL_ORE 1
+#define CTRL_WALL 2
+#define CTRL_ROCK 3
 
-#endif
+static char ctrl_char[32] = {
+	'\0', '*', '#', '%', '?', '?', '?', '\'', '+', '?', '?', '+',
+	'+', '+', '+', '+', '~', '-', '-', '-', '_', '+', '+', '+',
+	'+', '|', '?', '?', '?', '?', '?', '.'
+};
 
+static int ctrl_attr[32] = {
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0
+};
 
 #ifdef A_COLOR
 
@@ -169,22 +178,6 @@ static bool use_big_screen;
  */
 static int bg_color = COLOR_BLACK;
 
-/*
- * Lookup table for the "alternate character set".
- *
- * It's worth noting that curses already has this, as an undocumented
- * (but exported) internal variable named acs_map.  I wish I could use
- * it.
- */
-static unsigned int acs_table[32] = {
-	0, '*', '#', '?', '?', '?', '?', '\'', '+', '?', '?', '+',
-	'+', '+', '+', '+', '~', '-', '-', '-', '_', '+', '+', '+',
-	'+', '|', '?', '?', '?', '?', '?', '.'
-};
-static unsigned int acs_attrs[32] = {
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-};
 
 #define PAIR_WHITE 0
 #define PAIR_RED 1
@@ -869,8 +862,7 @@ static errr Term_wipe_gcu(int x, int y, int n)
  * because the display glitches we are avoiding
  * are in curses itself.
  */
-char filter_char(char c)
-{
+char filter_char(char c) {
 	if (c < ' ' || c >= 127)
 		return '?';
 	else
@@ -897,18 +889,13 @@ static errr Term_text_gcu(int x, int y, int n, byte a, const char *s)
 	while (n--) {
 		unsigned char c = *(s++);
 
-#ifdef A_ALTCHARSET
 		if (c < 32) {
-			int attr = acs_attrs[c];
-			wattron(td->win, A_REVERSE);
-			waddch(td->win, filter_char(acs_table[c]));
-			wattroff(td->win, A_REVERSE);
+			wattron(td->win, ctrl_attr[c]);
+			waddch(td->win, filter_char(ctrl_char[c]));
+			wattroff(td->win, ctrl_attr[c]);
 		} else {
 			waddch(td->win, filter_char(c));
 		}
-#else
-		waddch(td->win, filter_char(c));
-#endif
 	}
 
 #if defined(A_COLOR)
@@ -1001,29 +988,30 @@ errr init_gcu(int argc, char **argv)
 	int i;
 	int rows, cols, y, x;
 	int next_win = 0;
+	bool graphics = TRUE;
 
 	/* Initialize info about terminal capabilities */
 	termtype = getenv("TERM");
 	loaded_terminfo = termtype && tgetent(0, termtype) == 1;
-
-	/* Let's learn about our terminal */
-	use_alt_charset = loaded_terminfo && tgetstr("acs_chars", NULL);
 
 	/* Parse args */
 	for (i = 1; i < argc; i++)
 	{
 		if (prefix(argv[i], "-b"))
 			use_big_screen = TRUE;
-
-#ifdef A_ALTCHARSET
 		else if (prefix(argv[i], "-a"))
-			use_alt_charset = 0;
+			graphics = FALSE;
 		else if (prefix(argv[i], "-g"))
-			use_alt_charset = 1;
-#endif
-
+			graphics = TRUE;
 		else
 			plog_fmt("Ignoring option: %s", argv[i]);
+	}
+
+	if (graphics) {
+		ctrl_char[CTRL_WALL] = ' ';
+		ctrl_attr[CTRL_ORE] = A_REVERSE;
+		ctrl_attr[CTRL_WALL] = A_REVERSE;
+		ctrl_attr[CTRL_ROCK] = A_REVERSE;
 	}
 
 	/* Extract the normal keymap */
@@ -1141,29 +1129,6 @@ errr init_gcu(int argc, char **argv)
 	}
 
 #endif
-
-#ifdef A_ALTCHARSET
-	/* Build a quick access table for the "alternate character set". */
-	if (use_alt_charset)
-	{
-		acs_table[1] = ACS_DIAMOND;    acs_table[16] = ACS_S1;
-		acs_table[2] = ACS_CKBOARD;    acs_table[18] = ACS_HLINE;
-		acs_table[7] = ACS_DEGREE;     acs_table[20] = ACS_S9;
-		acs_table[8] = ACS_PLMINUS;    acs_table[21] = ACS_LTEE;
-		acs_table[11] = ACS_LRCORNER;  acs_table[22] = ACS_RTEE;
-		acs_table[12] = ACS_URCORNER;  acs_table[23] = ACS_BTEE;
-		acs_table[13] = ACS_ULCORNER;  acs_table[24] = ACS_TTEE;
-		acs_table[14] = ACS_LLCORNER;  acs_table[25] = ACS_VLINE;
-		acs_table[15] = ACS_PLUS;      acs_table[31] = ACS_BULLET;
-
-	}
-#endif
-
-	/* wall tiles should have reverse video */
-	acs_table[2] = ' ';
-	acs_attrs[2] = A_REVERSE;
-	acs_table[1] = '*';
-	acs_attrs[1] = A_REVERSE;
 
 	/*** Low level preparation ***/
 
