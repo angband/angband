@@ -514,6 +514,7 @@ static ui_event textui_get_command(void)
 		ke = inkey_ex();
 
 		if (ke.type == EVT_KBRD) {
+			bool keymap_ok = TRUE;
 			switch (ke.key.code) {
 				case '0': {
 					int count = textui_get_count();
@@ -525,15 +526,12 @@ static ui_event textui_get_command(void)
 					break;
 				}
 
-#if 0
 				case '\\': {
-					/* Allow "keymaps" to be bypassed */
+					/* Allow keymaps to be bypassed */
 					(void)get_com_ex("Command: ", &ke);
-					/* XXXmacro how to do this when inkey_next is not char? */
-					if (!inkey_next) inkey_next = "";
+					keymap_ok = FALSE;
 					break;
 				}
-#endif
 
 				case '^': {
 					/* Allow "control chars" to be entered */
@@ -544,7 +542,8 @@ static ui_event textui_get_command(void)
 			}
 
 			/* Find any relevant keymap */
-			act = keymap_find(mode, ke.key);
+			if (keymap_ok)
+				act = keymap_find(mode, ke.key);
 		}
 
 		/* Erase the message line */
