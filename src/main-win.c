@@ -3980,7 +3980,7 @@ static void handle_keydown(WPARAM wParam, LPARAM lParam)
 		case VK_DOWN: ch = ARROW_DOWN; break;
 
 		case VK_PAUSE: ch = KC_PAUSE; break;
-
+/*
 		case VK_NUMPAD0: ch = '0'; kp = TRUE; break;
 		case VK_NUMPAD1: ch = '1'; kp = TRUE; break;
 		case VK_NUMPAD2: ch = '2'; kp = TRUE; break;
@@ -3991,7 +3991,7 @@ static void handle_keydown(WPARAM wParam, LPARAM lParam)
 		case VK_NUMPAD7: ch = '7'; kp = TRUE; break;
 		case VK_NUMPAD8: ch = '8'; kp = TRUE; break;
 		case VK_NUMPAD9: ch = '9'; kp = TRUE; break;
-
+*/
 		case VK_ADD: ch = '+'; kp = TRUE; break;
 		case VK_SUBTRACT: ch = '-'; kp = TRUE; break;
 		case VK_MULTIPLY: ch = '*'; kp = TRUE; break;
