@@ -2375,24 +2375,24 @@ void display_roff(int r_idx)
 int lookup_monster(const char *name)
 {
 	int i;
-	int best_match = -1;
-
+	int r_idx = -1;
+	
 	/* Look for it */
 	for (i = 1; i < z_info->r_max; i++)
 	{
 		monster_race *r_ptr = &r_info[i];
 
-		/* Found a match */
-		if (r_ptr->name && prefix_i(r_ptr->name, name))
-		{
-			if (my_stricmp(r_ptr->name, name) == 0)
-				return i;
-			else if (best_match == -1)
-				best_match = i;
-		}
-	}
+		/* Test for equality */
+		if (r_ptr->name && streq(name, r_ptr->name))
+			return i;
+		
+		/* Test for close matches */
+		if (r_ptr->name && my_stristr(r_ptr->name, name) && r_idx == -1)
+			r_idx = i;
+	} 
 
-	return best_match;
+	/* Return our best match */
+	return r_idx;
 }
 
 /**
