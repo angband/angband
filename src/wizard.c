@@ -584,6 +584,11 @@ static void wiz_create_item(void)
 	menu_select(menu, 0);
 
 	screen_load();
+	
+	/* Redraw map */
+	p_ptr->redraw |= (PR_MAP | PR_ITEMLIST);
+	handle_stuff();
+
 }
 
 
@@ -1141,6 +1146,10 @@ static void wiz_create_artifact(int a_idx)
 
 	/* All done */
 	msg("Allocated.");
+	
+	/* Redraw map */
+	p_ptr->redraw |= (PR_MAP | PR_ITEMLIST);
+	handle_stuff();
 }
 
 
