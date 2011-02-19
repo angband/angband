@@ -71,13 +71,10 @@ _stdcall void Sleep(int);
 # include <termios.h>
 #endif
 
-
-
 /*
  * If you have errors relating to curs_set(), comment out the following line
  */ 
 #define USE_CURS_SET
-
 
 /*
  * If you have errors with any of the functions mentioned below, try
@@ -86,8 +83,6 @@ _stdcall void Sleep(int);
 /* #define cbreak() crmode() */
 /* #define nonl() */
 /* #define nl() */
-
-
 
 /*
  * Save the "normal" and "angband" terminal settings
@@ -160,7 +155,8 @@ static int can_use_color = FALSE;
 static int colortable[BASIC_COLORS];
 
 /* Screen info: use one big Term 0, or other subwindows? */
-static bool use_big_screen;
+static bool use_big_screen = FALSE;
+static bool bold_extended = FALSE;
 
 /*
  * Background color we should draw with; either BLACK or DEFAULT
@@ -621,7 +617,10 @@ static errr Term_xtra_gcu_react(void) {
 		for (i = 0; i < BASIC_COLORS; i++) {
 			int fg = create_color(i, scale);
 			init_pair(i + 1, fg, bg_color);
-			colortable[i] = COLOR_PAIR(i + 1) | A_BRIGHT;
+			if (bold_extended)
+				colortable[i] = COLOR_PAIR(i + 1) | A_BRIGHT;
+			else
+				colortable[i] = COLOR_PAIR(i + 1);
 		}
 	}
 #endif
@@ -843,6 +842,8 @@ errr init_gcu(int argc, char **argv) {
 	for (i = 1; i < argc; i++) {
 		if (prefix(argv[i], "-b"))
 			use_big_screen = TRUE;
+		else if (prefix(argv[i], "-B"))
+			bold_extended = TRUE;
 		else if (prefix(argv[i], "-a"))
 			graphics = FALSE;
 		else if (prefix(argv[i], "-g"))
