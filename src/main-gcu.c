@@ -17,6 +17,7 @@
  */
 #include "angband.h"
 #include "buildid.h"
+#include "cmds.h"
 
 #ifdef USE_GCU
 #include "main.h"
@@ -25,9 +26,6 @@
 /* locale junk */
 #include "locale.h"
 #include "langinfo.h"
-
-/* included for redrawing code, to prevent warnings */
-#include "cmds.h"
 
 /* Avoid 'struct term' name conflict with <curses.h> (via <term.h>) on AIX */
 #define term System_term
@@ -905,7 +903,7 @@ errr init_gcu(int argc, char **argv) {
 		colortable[TERM_DARK]     = (COLOR_PAIR(PAIR_BLACK));
 		colortable[TERM_WHITE]    = (COLOR_PAIR(PAIR_WHITE) | A_BRIGHT);
 		colortable[TERM_SLATE]    = (COLOR_PAIR(PAIR_WHITE));
-		colortable[TERM_ORANGE]   = (COLOR_PAIR(PAIR_RED) | A_BRIGHT);
+		colortable[TERM_ORANGE]   = (COLOR_PAIR(PAIR_YELLOW) | A_BRIGHT);
 		colortable[TERM_RED]      = (COLOR_PAIR(PAIR_RED));
 		colortable[TERM_GREEN]    = (COLOR_PAIR(PAIR_GREEN));
 		colortable[TERM_BLUE]     = (COLOR_PAIR(PAIR_BLUE));
