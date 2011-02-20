@@ -345,7 +345,7 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 		o_ptr->kind->everseen = TRUE;
 
 	if (prefix)
-		end = obj_desc_name_prefix(buf, max, end, o_ptr, mode,
+		end = obj_desc_name_prefix(buf, max, end, o_ptr, known,
 				basename, modstr);
 
 	end = obj_desc_name_format(buf, max, end, basename, modstr,
