@@ -44,14 +44,15 @@ struct flag_cache *slay_cache;
  * \param flags is the flagset from which to remove duplicates.
  * count is the number of dups removed.
  */
-int dedup_slays(bitflag *flags)
-{
-	const struct slay *s_ptr, *t_ptr;
+int dedup_slays(bitflag *flags) {
+	int i, j;
 	int count = 0;
 
-	for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++) {
+	for (i = 0; i < SL_MAX; i++) {
+		const struct slay *s_ptr = &slay_table[i];
 		if (of_has(flags, s_ptr->object_flag)) {
-			for (t_ptr = s_ptr; t_ptr->index < SL_MAX; t_ptr++) {
+			for (j = i + 1; j < SL_MAX; j++) {
+				const struct slay *t_ptr = &slay_table[j];
 				if (of_has(flags, t_ptr->object_flag) &&
 						(t_ptr->monster_flag == s_ptr->monster_flag) &&
 						(t_ptr->resist_flag == s_ptr->resist_flag) &&
@@ -104,7 +105,6 @@ int list_slays(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE],
 	const char *desc[], const char *brand[], int mult[], bool dedup)
 {
 	int i, count = 0;
-	const struct slay *s_ptr;
 	bitflag f[OF_SIZE];
 
 	/* We are only interested in the flags specified in mask */
@@ -112,11 +112,11 @@ int list_slays(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE],
 	of_inter(f, mask);
 
 	/* Remove "duplicate" flags if desired */
-	if (dedup)
-		i = dedup_slays(f);
+	if (dedup) dedup_slays(f);
 
 	/* Collect slays */
-	for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++) {
+	for (i = 0; i < SL_MAX; i++) {
+		const struct slay *s_ptr = &slay_table[i];
 		if (of_has(f, s_ptr->object_flag)) {
 			if (mult)
 				mult[count] = s_ptr->mult;
@@ -140,17 +140,18 @@ int list_slays(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE],
  */
 void object_notice_slays(object_type *o_ptr, const bitflag mask[OF_SIZE])
 {
-	const struct slay *s_ptr;
 	bool learned;
 	bitflag f[OF_SIZE];
 	char o_name[40];
+	int i;
 
 	/* We are only interested in the flags specified in mask */
 	object_flags(o_ptr, f);
 	of_inter(f, mask);
 
 	/* if you learn a slay, learn the ego and print a message */
-	for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++) {
+	for (i = 0; i < SL_MAX; i++) {
+		const struct slay *s_ptr = &slay_table[i];
 		if (of_has(f, s_ptr->object_flag)) {
 			learned = object_notice_flag(o_ptr, s_ptr->object_flag);
 			if (EASY_LEARN && learned) {
@@ -180,15 +181,16 @@ void object_notice_slays(object_type *o_ptr, const bitflag mask[OF_SIZE])
 void improve_attack_modifier(object_type *o_ptr, const monster_type
 	*m_ptr, const struct slay **best_s_ptr, bool real, bool known_only)
 {
-	const struct slay *s_ptr;
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 	bitflag f[OF_SIZE], known_f[OF_SIZE], note_f[OF_SIZE];
+	int i;
 
 	object_flags(o_ptr, f);
 	object_flags_known(o_ptr, known_f);
 
-	for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++) {
+	for (i = 0; i < SL_MAX; i++) {
+		const struct slay *s_ptr = &slay_table[i];
 		if ((known_only && !of_has(known_f, s_ptr->object_flag)) ||
 				(!known_only && !of_has(f, s_ptr->object_flag))) continue;
 
@@ -234,9 +236,9 @@ void improve_attack_modifier(object_type *o_ptr, const monster_type
  */
 void react_to_slay(bitflag *obj_flags, bitflag *mon_flags)
 {
-	const struct slay *s_ptr;
-
-	for (s_ptr = slay_table; s_ptr->index < SL_MAX; s_ptr++) {
+	int i;
+	for (i = 0; i < SL_MAX; i++) {
+		const struct slay *s_ptr = &slay_table[i];
 		if (of_has(obj_flags, s_ptr->object_flag) && s_ptr->monster_flag)
 			rf_on(mon_flags, s_ptr->monster_flag);
 	}
