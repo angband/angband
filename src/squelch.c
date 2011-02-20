@@ -94,7 +94,7 @@ quality_name_struct quality_values[SQUELCH_MAX] =
 	{ SQUELCH_GOOD,		"good" },
 	{ SQUELCH_EXCELLENT_NO_HI,	"excellent with no high resists" },
 	{ SQUELCH_EXCELLENT_NO_SPL,	"excellent but not splendid" },
-	{ SQUELCH_ALL,		"everything except artifacts" },
+	{ SQUELCH_ALL,		"non-artifact" },
 };
 
 byte squelch_level[TYPE_MAX];
