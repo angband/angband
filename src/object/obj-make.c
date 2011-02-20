@@ -968,6 +968,10 @@ void make_gold(object_type *j_ptr, int lev, int coin_type)
 	/* If we're playing with no_selling, increase the value */
 	if (OPT(birth_no_selling) && p_ptr->depth)
 		value = value * MIN(5, p_ptr->depth);
+		
+	/* Cap gold at max short (or alternatively make pvals s32b) */
+	if (value > MAX_SHORT)
+		value = MAX_SHORT;
 
 	j_ptr->pval[DEFAULT_PVAL] = value;
 }
