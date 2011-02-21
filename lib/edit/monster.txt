@@ -492,7 +492,7 @@ B:CRAWL:HURT:1d1
 F:RAND_50 | BASH_DOOR
 D:It is about four feet long and carnivorous.
 
-N:35:Solider
+N:35:Soldier
 T:person
 C:u
 I:110:23:20:16:5
