@@ -175,7 +175,7 @@ F:SEE_INVIS | FREE_ACT | REGEN | LIGHT | RES_FEAR |
 F:INSTA_ART
 L:3:STR | CON
 L:5:INFRA 
-D:The Nauglamir; a carencet of gold set with a multitude of shining gems of 
+D:The Nauglamir; a carcanet of gold set with a multitude of shining gems of 
 D:Valinor, accenting a radiant Silmaril.  The sturdy spirits of Dwarvish 
 D:craftsmen who labored long in mountain smithies lie within it still, and 
 D:as gossamer it rests upon the bearer.
@@ -443,8 +443,8 @@ F:HIDE_TYPE | RES_FEAR |
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_CONFU | RES_SOUND
 L:2:STR | DEX
 D:Small metal plates cover an inner layer of sturdy canvas, and both bear 
-D:scenes of hunting and war.  You feel the spirit of Eorl the Young, matchless 
-D:in combat, around you as you put his armour on.
+D:scenes of hunting and war.  As you don the armour of Eorl the Young, 
+D:matchless in combat, you feel his spirit surround you.
 
 
 N:22:'Belegennon'
@@ -528,7 +528,7 @@ P:10:0d0:0:0:20
 F:HIDE_TYPE | 
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_DARK | RES_NETHR
 L:4:STEALTH
-D:Familar with the secret ways hidden in darkness, this leather cuirass is 
+D:Familiar with the secret ways hidden in darkness, this leather cuirass is 
 D:truly more than it appears.
 
 
