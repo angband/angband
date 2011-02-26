@@ -416,6 +416,9 @@ unsigned char cmd_lookup_key(cmd_code cmd)
 
 cmd_code cmd_lookup(unsigned char key)
 {
+	/* Sanity checking for keys without corresponding commands */
+	if (converted_list[key].command == NULL) return CMD_NULL;
+
 	return converted_list[key].command->cmd;
 }
 
