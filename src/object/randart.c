@@ -1,3 +1,4 @@
+
 /*
  * File: randart.c
  * Purpose: Random artifact generation
@@ -689,7 +690,7 @@ static void parse_frequencies(void)
 	int i, j;
 	const artifact_type *a_ptr;
 	object_kind *k_ptr;
-	s32b temp, temp2;
+	s32b m, temp, temp2;
 	bitflag mask[OF_SIZE];
 
 	LOG_PRINT("\n****** BEGINNING GENERATION OF FREQUENCIES\n\n");
@@ -791,56 +792,30 @@ static void parse_frequencies(void)
 			a_ptr->tval == TV_HAFTED || a_ptr->tval == TV_POLEARM ||
 			a_ptr->tval == TV_SWORD)
 		{
-			if (a_ptr->to_h - randcalc(k_ptr->to_h, 0, MINIMISE) - mean_hit_startval > 0)
-			{
-				temp = (a_ptr->to_d - randcalc(k_ptr->to_d, 0, MINIMISE) - mean_dam_startval) /
-					mean_dam_increment;
-				if (temp > 0)
-				{
-					LOG_PRINT1("Adding %d instances of extra to-hit bonus for weapon\n", temp);
 
-					(artprobs[ART_IDX_WEAPON_HIT]) += temp;
-				}
-			}
-			else if (a_ptr->to_h - randcalc(k_ptr->to_h, 0, MINIMISE) - mean_hit_startval < 0)
-			{
-				temp = ( -(a_ptr->to_d - randcalc(k_ptr->to_d, 0, MINIMISE) - mean_dam_startval) ) /
-					mean_dam_increment;
-				if (temp > 0)
-				{
-					LOG_PRINT1("Subtracting %d instances of extra to-hit bonus for weapon\n", temp);
+			m = randcalc(k_ptr->to_h, 0, MINIMISE);
+			temp = (a_ptr->to_h - m - mean_hit_startval) / mean_hit_increment;
+			if (temp > 0)
+				LOG_PRINT1("Adding %d instances of extra to-hit bonus for weapon\n", temp);
+			else if (temp < 0)
+				LOG_PRINT1("Subtracting %d instances of extra to-hit bonus for weapon\n", temp);
+			
+			artprobs[ART_IDX_WEAPON_HIT] += temp;
 
-					(artprobs[ART_IDX_WEAPON_HIT]) -= temp;
-				}
-			}
-			if (a_ptr->to_d - randcalc(k_ptr->to_d, 0, MINIMISE) - mean_dam_startval > 0)
-			{
-				temp = (a_ptr->to_d - randcalc(k_ptr->to_d, 0, MINIMISE) - mean_dam_startval) /
-					mean_dam_increment;
-				if (temp > 0)
-				{
-					LOG_PRINT1("Adding %d instances of extra to-dam bonus for weapon\n", temp);
+			m = randcalc(k_ptr->to_d, 0, MINIMISE);
+			temp = (a_ptr->to_d - m - mean_dam_startval) / mean_dam_increment;
+			if (temp > 0)
+				LOG_PRINT1("Adding %d instances of extra to-dam bonus for weapon\n", temp);
+			else
+				LOG_PRINT1("Subtracting %d instances of extra to-dam bonus for weapon\n", temp);
 
-					(artprobs[ART_IDX_WEAPON_DAM]) += temp;
-				}
-			}
-			else if (a_ptr->to_d - randcalc(k_ptr->to_d, 0, MINIMISE) - mean_dam_startval < 0)
-			{
-				temp = ( -(a_ptr->to_d - randcalc(k_ptr->to_d, 0, MINIMISE) - mean_dam_startval)) /
-					mean_dam_increment;
-				if (temp > 0)
-				{
-					LOG_PRINT1("Subtracting %d instances of extra to-dam bonus for weapon\n", temp);
-
-					(artprobs[ART_IDX_WEAPON_DAM]) -= temp;
-				}
-			}
+			artprobs[ART_IDX_WEAPON_DAM] += temp;
 
 			/* Aggravation */
 			if (of_has(a_ptr->flags, OF_AGGRAVATE))
 			{
 				LOG_PRINT("Adding 1 for aggravation - weapon\n");
-				(artprobs[ART_IDX_WEAPON_AGGR])++;
+				artprobs[ART_IDX_WEAPON_AGGR]++;
 			}
 
 			/* End weapon stuff */

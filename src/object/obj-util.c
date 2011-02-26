@@ -4358,3 +4358,12 @@ void objects_destroy(void)
 {
 	mem_free(o_list);
 }
+
+void log_file_putf(ang_file *f, const char *fmt, ...)
+{
+	va_list vp;
+	if (0) return;
+	va_start(vp, fmt);
+	file_putf(f, fmt, vp);
+	va_end(vp);
+}
