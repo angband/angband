@@ -146,14 +146,13 @@ void textui_cmd_destroy(void)
 		bool squelched = kind_is_squelched_aware(o_ptr->kind) ||
 				kind_is_squelched_unaware(o_ptr->kind);
 
-		char sval_name[50];
-		object_desc(sval_name, sizeof sval_name, o_ptr,
-				ODESC_BASE | ODESC_PLURAL);
+		char tmp[70];
+		object_desc(tmp, sizeof(tmp), o_ptr, ODESC_BASE | ODESC_PLURAL);
 		if (!squelched) {
-			strnfmt(out_val, sizeof out_val, "All %s", sval_name);
+			strnfmt(out_val, sizeof out_val, "All %s", tmp);
 			menu_dynamic_add(m, out_val, IGNORE_THIS_FLAVOR);
 		} else {
-			strnfmt(out_val, sizeof out_val, "Unignore all %s", sval_name);
+			strnfmt(out_val, sizeof out_val, "Unignore all %s", tmp);
 			menu_dynamic_add(m, out_val, UNIGNORE_THIS_FLAVOR);
 		}
 	}
