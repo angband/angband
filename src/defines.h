@@ -454,50 +454,52 @@ enum
 };
 
 /* Nothing */
-#define FEAT_NONE		0x00
+#define FEAT_NONE 0x00
 
 /* Various */
-#define FEAT_FLOOR		0x01
-#define FEAT_INVIS		0x02
-#define FEAT_GLYPH		0x03
-#define FEAT_OPEN		0x04
-#define FEAT_BROKEN		0x05
-#define FEAT_LESS		0x06
-#define FEAT_MORE		0x07
+#define FEAT_FLOOR 0x01
+#define FEAT_INVIS 0x02
+#define FEAT_GLYPH 0x03
+#define FEAT_OPEN 0x04
+#define FEAT_BROKEN 0x05
+#define FEAT_LESS 0x06
+#define FEAT_MORE 0x07
 
 /* Shops */
-#define FEAT_SHOP_HEAD		0x08
-#define FEAT_SHOP_TAIL		0x0F
+#define FEAT_SHOP_HEAD 0x08
+#define FEAT_SHOP_TAIL 0x0F
 
 /* Traps */
-#define FEAT_TRAP_HEAD		0x10
-#define FEAT_TRAP_TAIL		0x1F
+#define FEAT_TRAP_HEAD 0x10
+#define FEAT_TRAP_TAIL 0x1F
 
 /* Doors */
-#define FEAT_DOOR_HEAD		0x20
-#define FEAT_DOOR_TAIL		0x2F
+#define FEAT_DOOR_HEAD 0x20
+#define FEAT_DOOR_TAIL 0x2F
 
-/* Extra */
-#define FEAT_SECRET		0x30
-#define FEAT_RUBBLE		0x31
+/* Secret door */
+#define FEAT_SECRET 0x30
 
-/* Seams */
-#define FEAT_MAGMA		0x32
-#define FEAT_QUARTZ		0x33
-#define FEAT_MAGMA_H		0x34
-#define FEAT_QUARTZ_H		0x35
-#define FEAT_MAGMA_K		0x36
-#define FEAT_QUARTZ_K		0x37
+/* Rubble */
+#define FEAT_RUBBLE 0x31
+
+/* Mineral seams */
+#define FEAT_MAGMA 0x32
+#define FEAT_QUARTZ 0x33
+#define FEAT_MAGMA_H 0x34
+#define FEAT_QUARTZ_H 0x35
+#define FEAT_MAGMA_K 0x36
+#define FEAT_QUARTZ_K 0x37
 
 /* Walls */
-#define FEAT_WALL_EXTRA		0x38
-#define FEAT_WALL_INNER		0x39
-#define FEAT_WALL_OUTER		0x3A
-#define FEAT_WALL_SOLID		0x3B
-#define FEAT_PERM_EXTRA		0x3C
-#define FEAT_PERM_INNER		0x3D
-#define FEAT_PERM_OUTER		0x3E
-#define FEAT_PERM_SOLID		0x3F
+#define FEAT_WALL_EXTRA 0x38
+#define FEAT_WALL_INNER 0x39
+#define FEAT_WALL_OUTER 0x3A
+#define FEAT_WALL_SOLID 0x3B
+#define FEAT_PERM_EXTRA 0x3C
+#define FEAT_PERM_INNER 0x3D
+#define FEAT_PERM_OUTER 0x3E
+#define FEAT_PERM_SOLID 0x3F
 
 
 

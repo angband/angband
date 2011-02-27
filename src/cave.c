@@ -3659,8 +3659,12 @@ void cave_free(struct cave *c) {
 	mem_free(c);
 }
 
+bool cave_isopen(struct cave *c, int y, int x) {
+	return c->feat[y][x] == FEAT_FLOOR && !c->m_idx[y][x];
+}
+
 bool cave_isempty(struct cave *c, int y, int x) {
-	return c->feat[y][x] == FEAT_FLOOR && !c->o_idx[y][x] && !c->m_idx[y][x];
+	return cave_isopen(c, y, x) && !c->o_idx[y][x];
 }
 
 bool cave_iswall(struct cave *c, int y, int x) {
@@ -3676,7 +3680,7 @@ bool cave_isrock(struct cave*c, int y, int x) {
 	
 		default: return FALSE;
 	}
-	}
+}
 
 bool cave_isperm(struct cave *c, int y, int x) {
 	switch (c->feat[y][x]) {
@@ -3695,4 +3699,14 @@ bool cave_canputitem(struct cave *c, int y, int x) {
 
 bool cave_isfloor(struct cave *c, int y, int x) {
 	return !(c->info[y][x] & CAVE_WALL);
+}
+
+bool cave_isdoor(struct cave*c, int y, int x) {
+	int feat = c->feat[y][x];
+	return feat >= FEAT_DOOR_HEAD && feat <= FEAT_DOOR_TAIL;
+}
+
+bool cave_istrap(struct cave*c, int y, int x) {
+	int feat = c->feat[y][x];
+	return feat >= FEAT_TRAP_HEAD && feat <= FEAT_TRAP_TAIL;
 }

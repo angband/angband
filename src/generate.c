@@ -863,14 +863,21 @@ static void fill_yrange(struct cave *c, int x, int y1, int y2, int feat, int inf
 }
 
 
-static void fill_circle(struct cave *c, int y0, int x0, int radius, int feat, int info) {
-	int i;
+static void fill_circle(struct cave *c, int y0, int x0, int radius, int border, int feat, int info) {
+	int i, last;
 	int r2 = radius * radius;
-	for(i = -radius; i <= radius; i++) {
+	for(i = 0; i <= radius; i++) {
 		double j = sqrt(r2 - (i * i));
 		int k = round(j);
-		fill_xrange(c, y0 + i, x0 - k, x0 + k, feat, info);
-		fill_yrange(c, x0 + i, y0 - k, y0 + k, feat, info);
+
+		int b = border;
+		if (border && last > k) b++;
+		
+		fill_xrange(c, y0 - i, x0 - k - b, x0 + k + b, feat, info);
+		fill_xrange(c, y0 + i, x0 - k - b, x0 + k + b, feat, info);
+		fill_yrange(c, x0 - i, y0 - k - b, y0 + k + b, feat, info);
+		fill_yrange(c, x0 + i, y0 - k - b, y0 + k + b, feat, info);
+		last = k;
 	}
 }
 
@@ -948,8 +955,8 @@ static bool build_circular(struct cave *c, int y0, int x0) {
 	int info = CAVE_ROOM | (light ? CAVE_GLOW : 0);
 
 	/* Generate outer walls and inner floors */
-	fill_circle(c, y0, x0, radius + 1, FEAT_WALL_OUTER, 0);
-	fill_circle(c, y0, x0, radius, FEAT_FLOOR, info);
+	fill_circle(c, y0, x0, radius + 1, 1, FEAT_WALL_OUTER, 0);
+	fill_circle(c, y0, x0, radius, 0, FEAT_FLOOR, info);
 
 	/* Especially large circular rooms will have a middle chamber */
 	if (radius - 4 > 0 && randint0(4) < radius - 4) {
@@ -2484,12 +2491,12 @@ static void lab_get_adjoin(int i, int w, int *a, int *b) {
  * walking diagonally around them).
  */
 static bool lab_is_tunnel(struct cave *c, int y, int x) {
-	bool left = cave_iswall(c, y, x - 1);
-	bool right = cave_iswall(c, y, x + 1);
-	bool up = cave_iswall(c, y - 1, x);
-	bool down = cave_iswall(c, y + 1, x);
+	bool west = cave_isopen(c, y, x - 1);
+	bool east = cave_isopen(c, y, x + 1);
+	bool north = cave_isopen(c, y - 1, x);
+	bool south = cave_isopen(c, y + 1, x);
 
-	return up == down && left == right && up != left;
+	return north == south && west == east && north != west;
 }
 
 
@@ -2639,6 +2646,7 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 		for (j = 0; j < 10; j++) {
 			find_empty_range(c, &y, 1, h, &x, 1, w);
 			if (lab_is_tunnel(c, y, x)) break;
+
 		}
 
 		place_closed_door(c, y, x);

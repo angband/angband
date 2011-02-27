@@ -4362,7 +4362,8 @@ void objects_destroy(void)
 void log_file_putf(ang_file *f, const char *fmt, ...)
 {
 	va_list vp;
-	if (0) return;
+	if (1) return;
+	if (!f) return;
 	va_start(vp, fmt);
 	file_putf(f, fmt, vp);
 	va_end(vp);
