@@ -816,31 +816,31 @@ static void describe_monster_spells(int r_idx, const monster_lore *l_ptr, const 
 	{
 		vp[vn] = "fire an arrow";
 		vc[vn] = colors[RSF_ARROW_1];
-		vd[vn++] = ARROW1_DMG(r_ptr->level, AVERAGE);
+		vd[vn++] = ARROW1_DMG(r_ptr->level, MAXIMISE);
 	}
 	if (rsf_has(l_ptr->spell_flags, RSF_ARROW_2))
 	{
 		vp[vn] = "fire arrows";
 		vc[vn] = colors[RSF_ARROW_2];
-		vd[vn++] = ARROW2_DMG(r_ptr->level, AVERAGE);
+		vd[vn++] = ARROW2_DMG(r_ptr->level, MAXIMISE);
 	}
 	if (rsf_has(l_ptr->spell_flags, RSF_ARROW_3))
 	{
 		vp[vn] = "fire a missile";
 		vc[vn] = colors[RSF_ARROW_3];
-		vd[vn++] = ARROW3_DMG(r_ptr->level, AVERAGE);
+		vd[vn++] = ARROW3_DMG(r_ptr->level, MAXIMISE);
 	}
 	if (rsf_has(l_ptr->spell_flags, RSF_ARROW_4))
 	{
 		vp[vn] = "fire missiles";
 		vc[vn] = colors[RSF_ARROW_4];
-		vd[vn++] = ARROW4_DMG(r_ptr->level, AVERAGE);
+		vd[vn++] = ARROW4_DMG(r_ptr->level, MAXIMISE);
 	}
 	if (rsf_has(l_ptr->spell_flags, RSF_BOULDER))
 	{
 		vp[vn] = "throw boulders";
 		vc[vn] = colors[RSF_BOULDER];
-		vd[vn++] = BOULDER_DMG(r_ptr->level, AVERAGE);
+		vd[vn++] = BOULDER_DMG(r_ptr->level, MAXIMISE);
 	}
 
 	/* Describe innate attacks */
@@ -994,55 +994,55 @@ static void describe_monster_spells(int r_idx, const monster_lore *l_ptr, const 
 	{
 		vp[vn] = "invoke mana storms";
 		vc[vn] = colors[RSF_BA_MANA];
-		vd[vn++] = BA_MANA_DMG(r_ptr->level, AVERAGE);
+		vd[vn++] = BA_MANA_DMG(r_ptr->level, MAXIMISE);
 	}
 	if (rsf_has(l_ptr->spell_flags, RSF_BA_DARK))
 	{
 		vp[vn] = "invoke darkness storms";
 		vc[vn] = colors[RSF_BA_DARK];
-		vd[vn++] = BA_DARK_DMG(r_ptr->level, AVERAGE);
+		vd[vn++] = BA_DARK_DMG(r_ptr->level, MAXIMISE);
 	}
 	if (rsf_has(l_ptr->spell_flags, RSF_BA_WATE))
 	{
 		vp[vn] = "produce water balls";
 		vc[vn] = colors[RSF_BA_WATE];
-		vd[vn++] = BA_WATE_DMG(r_ptr->level, AVERAGE);
+		vd[vn++] = BA_WATE_DMG(r_ptr->level, MAXIMISE);
 	}
 	if (rsf_has(l_ptr->spell_flags, RSF_BA_NETH))
 	{
 		vp[vn] = "produce nether balls";
 		vc[vn] = colors[RSF_BA_NETH];
-		vd[vn++] = BA_NETH_DMG(r_ptr->level, AVERAGE);
+		vd[vn++] = BA_NETH_DMG(r_ptr->level, MAXIMISE);
 	}
 	if (rsf_has(l_ptr->spell_flags, RSF_BA_FIRE))
 	{
 		vp[vn] = "produce fire balls";
 		vc[vn] = colors[RSF_BA_FIRE];
-		vd[vn++] = BA_FIRE_DMG(r_ptr->level, AVERAGE);
+		vd[vn++] = BA_FIRE_DMG(r_ptr->level, MAXIMISE);
 	}
 	if (rsf_has(l_ptr->spell_flags, RSF_BA_ACID))
 	{
 		vp[vn] = "produce acid balls";
 		vc[vn] = colors[RSF_BA_ACID];
-		vd[vn++] = BA_ACID_DMG(r_ptr->level, AVERAGE);
+		vd[vn++] = BA_ACID_DMG(r_ptr->level, MAXIMISE);
 	}
 	if (rsf_has(l_ptr->spell_flags, RSF_BA_COLD))
 	{
 		vp[vn] = "produce frost balls";
 		vc[vn] = colors[RSF_BA_COLD];
-		vd[vn++] = BA_COLD_DMG(r_ptr->level, AVERAGE);
+		vd[vn++] = BA_COLD_DMG(r_ptr->level, MAXIMISE);
 	}
 	if (rsf_has(l_ptr->spell_flags, RSF_BA_ELEC))
 	{
 		vp[vn] = "produce lightning balls";
 		vc[vn] = colors[RSF_BA_ELEC];
-		vd[vn++] = BA_ELEC_DMG(r_ptr->level, AVERAGE);
+		vd[vn++] = BA_ELEC_DMG(r_ptr->level, MAXIMISE);
 	}
 	if (rsf_has(l_ptr->spell_flags, RSF_BA_POIS))
 	{
 		vp[vn] = "produce poison balls";
 		vc[vn] = colors[RSF_BA_POIS];
-		vd[vn++] = BA_POIS_DMG(r_ptr->level, AVERAGE);
+		vd[vn++] = BA_POIS_DMG(r_ptr->level, MAXIMISE);
 	}
 
 	/* Bolt spells */
@@ -1050,55 +1050,55 @@ static void describe_monster_spells(int r_idx, const monster_lore *l_ptr, const 
 	{
 		vp[vn] = "produce mana bolts";
 		vc[vn] = colors[RSF_BO_MANA];
-		vd[vn++] = BO_MANA_DMG(r_ptr->level, AVERAGE);
+		vd[vn++] = BO_MANA_DMG(r_ptr->level, MAXIMISE);
 	}
 	if (rsf_has(l_ptr->spell_flags, RSF_BO_PLAS))
 	{
 		vp[vn] = "produce plasma bolts";
 		vc[vn] = colors[RSF_BO_PLAS];
-		vd[vn++] = BO_PLAS_DMG(r_ptr->level, AVERAGE);
+		vd[vn++] = BO_PLAS_DMG(r_ptr->level, MAXIMISE);
 	}
 	if (rsf_has(l_ptr->spell_flags, RSF_BO_ICEE))
 	{
 		vp[vn] = "produce ice bolts";
 		vc[vn] = colors[RSF_BO_ICEE];
-		vd[vn++] = BO_ICEE_DMG(r_ptr->level, AVERAGE);
+		vd[vn++] = BO_ICEE_DMG(r_ptr->level, MAXIMISE);
 	}
 	if (rsf_has(l_ptr->spell_flags, RSF_BO_WATE))
 	{
 		vp[vn] = "produce water bolts";
 		vc[vn] = colors[RSF_BO_WATE];
-		vd[vn++] = BO_WATE_DMG(r_ptr->level, AVERAGE);
+		vd[vn++] = BO_WATE_DMG(r_ptr->level, MAXIMISE);
 	}
 	if (rsf_has(l_ptr->spell_flags, RSF_BO_NETH))
 	{
 		vp[vn] = "produce nether bolts";
 		vc[vn] = colors[RSF_BO_NETH];
-		vd[vn++] = BO_NETH_DMG(r_ptr->level, AVERAGE);
+		vd[vn++] = BO_NETH_DMG(r_ptr->level, MAXIMISE);
 	}
 	if (rsf_has(l_ptr->spell_flags, RSF_BO_FIRE))
 	{
 		vp[vn] = "produce fire bolts";
 		vc[vn] = colors[RSF_BO_FIRE];
-		vd[vn++] = BO_FIRE_DMG(r_ptr->level, AVERAGE);
+		vd[vn++] = BO_FIRE_DMG(r_ptr->level, MAXIMISE);
 	}
 	if (rsf_has(l_ptr->spell_flags, RSF_BO_ACID))
 	{
 		vp[vn] = "produce acid bolts";
 		vc[vn] = colors[RSF_BO_ACID];
-		vd[vn++] = BO_ACID_DMG(r_ptr->level, AVERAGE);
+		vd[vn++] = BO_ACID_DMG(r_ptr->level, MAXIMISE);
 	}
 	if (rsf_has(l_ptr->spell_flags, RSF_BO_COLD))
 	{
 		vp[vn] = "produce frost bolts";
 		vc[vn] = colors[RSF_BO_COLD];
-		vd[vn++] = BO_COLD_DMG(r_ptr->level, AVERAGE);
+		vd[vn++] = BO_COLD_DMG(r_ptr->level, MAXIMISE);
 	}
 	if (rsf_has(l_ptr->spell_flags, RSF_BO_ELEC))
 	{
 		vp[vn] = "produce lightning bolts";
 		vc[vn] = colors[RSF_BO_ELEC];
-		vd[vn++] = BO_ELEC_DMG(r_ptr->level, AVERAGE);
+		vd[vn++] = BO_ELEC_DMG(r_ptr->level, MAXIMISE);
 	}
 	if (rsf_has(l_ptr->spell_flags, RSF_BO_POIS))
 	{
@@ -1110,7 +1110,7 @@ static void describe_monster_spells(int r_idx, const monster_lore *l_ptr, const 
 	{
 		vp[vn] = "produce magic missiles";
 		vc[vn] = colors[RSF_MISSILE];
-		vd[vn++] = MISSILE_DMG(r_ptr->level, AVERAGE);
+		vd[vn++] = MISSILE_DMG(r_ptr->level, MAXIMISE);
 	}
 
 	/* Curses */
@@ -1118,37 +1118,37 @@ static void describe_monster_spells(int r_idx, const monster_lore *l_ptr, const 
 	{
 		vp[vn] = "cause brain smashing";
 		vc[vn] = colors[RSF_BRAIN_SMASH];
-		vd[vn++] = BRAIN_SMASH_DMG(r_ptr->level, AVERAGE);
+		vd[vn++] = BRAIN_SMASH_DMG(r_ptr->level, MAXIMISE);
 	}
 	if (rsf_has(l_ptr->spell_flags, RSF_MIND_BLAST))
 	{
 		vp[vn] = "cause mind blasting";
 		vc[vn] = colors[RSF_MIND_BLAST];
-		vd[vn++] = MIND_BLAST_DMG(r_ptr->level, AVERAGE);
+		vd[vn++] = MIND_BLAST_DMG(r_ptr->level, MAXIMISE);
 	}
 	if (rsf_has(l_ptr->spell_flags, RSF_CAUSE_4))
 	{
 		vp[vn] = "cause mortal wounds";
 		vc[vn] = colors[RSF_CAUSE_4];
-		vd[vn++] = CAUSE4_DMG(r_ptr->level, AVERAGE);
+		vd[vn++] = CAUSE4_DMG(r_ptr->level, MAXIMISE);
 	}
 	if (rsf_has(l_ptr->spell_flags, RSF_CAUSE_3))
 	{
 		vp[vn] = "cause critical wounds";
 		vc[vn] = colors[RSF_CAUSE_3];
-		vd[vn++] = CAUSE3_DMG(r_ptr->level, AVERAGE);
+		vd[vn++] = CAUSE3_DMG(r_ptr->level, MAXIMISE);
 	}
 	if (rsf_has(l_ptr->spell_flags, RSF_CAUSE_2))
 	{
 		vp[vn] = "cause serious wounds";
 		vc[vn] = colors[RSF_CAUSE_2];
-		vd[vn++] = CAUSE2_DMG(r_ptr->level, AVERAGE);
+		vd[vn++] = CAUSE2_DMG(r_ptr->level, MAXIMISE);
 	}
 	if (rsf_has(l_ptr->spell_flags, RSF_CAUSE_1))
 	{
 		vp[vn] = "cause light wounds";
 		vc[vn] = colors[RSF_CAUSE_1];
-		vd[vn++] = CAUSE1_DMG(r_ptr->level, AVERAGE);
+		vd[vn++] = CAUSE1_DMG(r_ptr->level, MAXIMISE);
 	}
 	if (rsf_has(l_ptr->spell_flags, RSF_FORGET))
 	{
