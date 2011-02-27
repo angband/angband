@@ -21,6 +21,7 @@ extern int lookup_monster(const char *name);
 extern int rval_find_idx(const char *name);
 extern const char *rval_find_name(int rval);
 monster_base *lookup_monster_base(const char *name);
+bool match_monster_bases(monster_base *base, ...);
 
 /* monster2.c */
 extern void plural_aux(char *name, size_t max);

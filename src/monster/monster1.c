@@ -2410,3 +2410,22 @@ monster_base *lookup_monster_base(const char *name)
 
 	return NULL;
 }
+
+/**
+ * Return whether the given base matches any of the names given.
+ *
+ * Accepts a variable-length list of name strings. The list must end with NULL.
+ */
+bool match_monster_bases(monster_base *base, ...)
+{
+	bool ok = TRUE;
+	va_list vp;
+	char *name;
+
+	va_start(vp, base);
+	while (ok && (name = va_arg(vp, char *)) != NULL)
+		ok = base == lookup_monster_base(name);
+	va_end(vp);
+
+	return ok;
+}

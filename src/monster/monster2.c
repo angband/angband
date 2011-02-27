@@ -2484,137 +2484,34 @@ static int summon_specific_type = 0;
 static bool summon_specific_okay(int r_idx)
 {
 	monster_race *r_ptr = &r_info[r_idx];
+	bitflag *flags = r_ptr->flags;
+	struct monster_base *base = r_ptr->base;
 
-	bool okay = FALSE;
-
-	/* Hack -- no specific type specified */
-	if (!summon_specific_type) return (TRUE);
+	bool unique = rf_has(r_ptr->flags, RF_UNIQUE);
+	bool scary = flags_test(flags, RF_SIZE, RF_UNIQUE, RF_FRIEND, RF_FRIENDS, RF_ESCORT, RF_ESCORTS, FLAG_END);
 
 	/* Check our requirements */
 	switch (summon_specific_type)
 	{
-		case SUMMON_ANIMAL:
-		{
-			okay = (rf_has(r_ptr->flags, RF_ANIMAL) &&
-			        !rf_has(r_ptr->flags, RF_UNIQUE));
-			break;
-		}
+		case SUMMON_ANIMAL: return !unique && rf_has(flags, RF_ANIMAL);
+		case SUMMON_SPIDER: return !unique && match_monster_bases(base, "spider", NULL);
+		case SUMMON_HOUND: return !unique && match_monster_bases(base, "canine", "zephyr hound", NULL);
+		case SUMMON_HYDRA: return !unique && match_monster_bases(base, "hydra", NULL);
+		case SUMMON_ANGEL: return !scary && match_monster_bases(base, "angel", NULL);
+		case SUMMON_DEMON: return !scary && rf_has(flags, RF_DEMON);
+		case SUMMON_UNDEAD: return !scary && rf_has(flags, RF_UNDEAD);
+		case SUMMON_DRAGON: return !scary && rf_has(flags, RF_DRAGON);
+		case SUMMON_KIN: return !unique && r_ptr->d_char == summon_kin_type;
+		case SUMMON_HI_UNDEAD: return match_monster_bases(base, "lich", "vampire", "wraith", NULL);
+		case SUMMON_HI_DRAGON: return match_monster_bases(base, "ancient dragon", NULL);
+		case SUMMON_HI_DEMON: return match_monster_bases(base, "major demon", NULL);
+		case SUMMON_WRAITH: return unique && match_monster_bases(base, "wraith", NULL);
+		case SUMMON_UNIQUE: return unique;
+		case SUMMON_MONSTER: return !scary;
+		case SUMMON_MONSTERS: return !unique;
 
-		case SUMMON_SPIDER:
-		{
-			okay = (r_ptr->base == lookup_monster_base("spider") &&
-			        !rf_has(r_ptr->flags, RF_UNIQUE));
-			break;
-		}
-
-		case SUMMON_HOUND:
-		{
-			okay = ((r_ptr->base == lookup_monster_base("canine") || 
-					r_ptr->base == lookup_monster_base("zephyr hound")) &&
-			        !rf_has(r_ptr->flags, RF_UNIQUE));
-			break;
-		}
-
-		case SUMMON_HYDRA:
-		{
-			okay = (r_ptr->base == lookup_monster_base("hydra") &&
-			        !rf_has(r_ptr->flags, RF_UNIQUE));
-			break;
-		}
-
-		case SUMMON_ANGEL:
-		{
-			okay = (r_ptr->base == lookup_monster_base("angel") &&
-			        !flags_test_all(r_ptr->flags, RF_SIZE, RF_UNIQUE,
-			                              RF_FRIEND, RF_FRIENDS, RF_ESCORT,
-			                              RF_ESCORTS, FLAG_END));
-			break;
-		}
-
-		case SUMMON_DEMON:
-		{
-			okay = (rf_has(r_ptr->flags, RF_DEMON) &&
-			        !flags_test_all(r_ptr->flags, RF_SIZE, RF_UNIQUE,
-			                              RF_FRIEND, RF_FRIENDS, RF_ESCORT,
-			                              RF_ESCORTS, FLAG_END));
-			break;
-		}
-
-		case SUMMON_UNDEAD:
-		{
-			okay = (rf_has(r_ptr->flags, RF_UNDEAD) &&
-			        !flags_test_all(r_ptr->flags, RF_SIZE, RF_UNIQUE,
-			                              RF_FRIEND, RF_FRIENDS, RF_ESCORT,
-			                              RF_ESCORTS, FLAG_END));
-			break;
-		}
-
-		case SUMMON_DRAGON:
-		{
-			okay = (rf_has(r_ptr->flags, RF_DRAGON) &&
-			        !flags_test_all(r_ptr->flags, RF_SIZE, RF_UNIQUE,
-			                              RF_FRIEND, RF_FRIENDS, RF_ESCORT,
-			                              RF_ESCORTS, FLAG_END));
-			break;
-		}
-
-		case SUMMON_KIN:
-		{
-			okay = (r_ptr->d_char == summon_kin_type &&
-			        !rf_has(r_ptr->flags, RF_UNIQUE));
-			break;
-		}
-
-		case SUMMON_HI_UNDEAD:
-		{
-			okay = (r_ptr->base == lookup_monster_base("lich") ||
-			        r_ptr->base == lookup_monster_base("vampire") ||
-			        r_ptr->base == lookup_monster_base("wraith"));
-			break;
-		}
-
-		case SUMMON_HI_DRAGON:
-		{
-			okay = (r_ptr->base == lookup_monster_base("ancient dragon"));
-			break;
-		}
-
-		case SUMMON_HI_DEMON:
-		{
-			okay = (r_ptr->base == lookup_monster_base("major demon"));
-			break;
-		}
-
-		case SUMMON_WRAITH:
-		{
-			okay = (r_ptr->base == lookup_monster_base("wraith") &&
-			        rf_has(r_ptr->flags, RF_UNIQUE));
-			break;
-		}
-
-		case SUMMON_UNIQUE:
-		{
-			okay = (rf_has(r_ptr->flags, RF_UNIQUE)) ? TRUE : FALSE;
-			break;
-		}
-
-		case SUMMON_MONSTER:
-		{
-			okay = (!flags_test_all(r_ptr->flags, RF_SIZE, RF_UNIQUE,
-			                              RF_FRIEND, RF_FRIENDS, RF_ESCORT,
-			                              RF_ESCORTS, FLAG_END));
-			break;
-		}
-
-		case SUMMON_MONSTERS:
-		{
-			okay = (!rf_has(r_ptr->flags, RF_UNIQUE));
-			break;
-		}
+		default: return TRUE;
 	}
-
-	/* Result */
-	return (okay);
 }
 
 
