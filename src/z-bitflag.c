@@ -63,7 +63,7 @@ bool flag_has_dbg(const bitflag *flags, const size_t size, const int flag, const
 /**
  * Interates over the flags which are "on" in a bitflag set.
  *
- * Returns the next on flag in `flags`, starting from (but not including)
+ * Returns the next on flag in `flags`, starting from (and including)
  * `flag`. FLAG_END will be returned when the end of the flag set is reached.
  * Iteration will start at the beginning of the flag set when `flag` is
  * FLAG_END. The bitfield size is supplied in `size`.
