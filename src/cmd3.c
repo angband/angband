@@ -497,7 +497,7 @@ void lookup_symbol(struct keypress sym, char *buf, size_t max)
 	/* Look through monster templates */
 	for (race = rb_info; race; race = race->next){
 		if ((char)sym.code == race->d_char) {
-			strnfmt(buf, max, "%c - %s.", (char)sym.code, rb_info[i].text);
+			strnfmt(buf, max, "%c - %s.", (char)sym.code, race->text);
 			return;
 		}
 	}
