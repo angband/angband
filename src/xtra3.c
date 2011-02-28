@@ -925,6 +925,20 @@ static size_t prt_tmd(int row, int col)
 	return len;
 }
 
+/**
+ * Print "unignoring" status
+ */
+static size_t prt_unignore(int row, int col)
+{
+	if (p_ptr->unignoring) {
+		const char *str = "Unignoring";
+		put_str(str, row, col);
+		return strlen(str);
+	}
+
+	return 0;
+}
+
 /*
  * Print mouse buttons
  */
@@ -941,8 +955,8 @@ static size_t prt_buttons(int row, int col)
 typedef size_t status_f(int row, int col);
 
 status_f *status_handlers[] =
-{ prt_recall, prt_state, prt_cut, prt_stun, prt_hunger, prt_study, prt_tmd,
-  prt_dtrap, prt_buttons };
+{ prt_buttons, prt_unignore, prt_recall, prt_state, prt_cut, prt_stun,
+  prt_hunger, prt_study, prt_tmd, prt_dtrap };
 
 
 /*
