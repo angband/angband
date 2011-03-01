@@ -21,6 +21,8 @@ angband.o: $(OBJECTS)
 
 clean:: test-clean
 	-rm -f angband.o
+	-rm -f angband.exe
+	-rm -f win/angband.res
 
 clean-extra:
 	-rm -f autoconf.h
