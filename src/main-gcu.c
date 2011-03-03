@@ -293,7 +293,7 @@ static errr Term_xtra_gcu_alive(int v) {
 	return 0;
 }
 
-const char help_gcu[] = "Text mode, subopts -b(ig screen) -a(scii) -g(raphics)";
+const char help_gcu[] = "Text mode, subopts -b(ig screen) -a(scii) -B(old)";
 
 /*
  * Init the "curses" system
@@ -846,8 +846,6 @@ errr init_gcu(int argc, char **argv) {
 			bold_extended = TRUE;
 		else if (prefix(argv[i], "-a"))
 			graphics = FALSE;
-		else if (prefix(argv[i], "-g"))
-			graphics = TRUE;
 		else
 			plog_fmt("Ignoring option: %s", argv[i]);
 	}
