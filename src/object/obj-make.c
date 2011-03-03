@@ -409,15 +409,24 @@ static bool make_artifact(object_type *o_ptr)
 {
 	artifact_type *a_ptr;
 	int i;
+	bool art_ok = TRUE;
+	
+	/* Make sure birth no artifacts isn't set */
+	if (OPT(birth_no_artifacts)) art_ok = FALSE;
+	
+	/* Special handling of Grond/Morgoth */
+	if (o_ptr->artifact)
+	{
+		switch (o_ptr->artifact->aidx)
+		{
+			case ART_GROND:
+			case ART_MORGOTH:
+				art_ok = TRUE;
+		}
+	}
 
-
-	/* No artifacts, do nothing */
-	if (OPT(birth_no_artifacts) &&
-			o_ptr->artifact &&
-			o_ptr->artifact->aidx != ART_GROND &&
-			o_ptr->artifact->aidx != ART_MORGOTH)
-		return (FALSE);
-
+	if (!art_ok) return (FALSE);
+			
 	/* No artifacts in the town */
 	if (!p_ptr->depth) return (FALSE);
 
