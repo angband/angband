@@ -123,6 +123,7 @@ typedef enum
 #define KC_INSERT     0x97
 #define KC_PAUSE      0x98
 #define KC_BREAK      0x99
+#define KC_BEGIN      0x9a
 
 /* we have up until 0x9F before we start edging into displayable Unicode */
 /* then we could move into private use area 1, 0xE000 onwards */

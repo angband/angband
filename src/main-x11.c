@@ -1697,6 +1697,7 @@ static void react_keypress(XKeyEvent *ev)
 		case XK_KP_Page_Down: ch = KC_PGDOWN; kp = TRUE; break;
 		case XK_KP_End: ch = KC_END; kp = TRUE; break;
 		case XK_KP_Insert: ch = KC_INSERT; kp = TRUE; break;
+		case XK_KP_Begin: ch = KC_BEGIN; kp = TRUE; break;
 
 		case XK_F1: ch = KC_F1; break;
 		case XK_F2: ch = KC_F2; break;

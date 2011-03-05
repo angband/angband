@@ -57,7 +57,8 @@ static const struct {
 	{ KC_PGDOWN, "PageDown" },
 	{ KC_INSERT, "Insert" },
 	{ KC_PAUSE, "Pause" },
-	{ KC_BREAK, "Break" }
+	{ KC_BREAK, "Break" },
+	{ KC_BEGIN, "Begin" },
 };
 
 
