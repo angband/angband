@@ -392,6 +392,7 @@ static menu_action death_actions[] =
  */
 void death_screen(void)
 {
+	bool done = FALSE;
 	const region area = { 51, 2, 0, N_ELEMENTS(death_actions) };
 
 	/* Retire in the town in a good state */
@@ -435,8 +436,16 @@ void death_screen(void)
 
 	menu_layout(death_menu, &area);
 
-	do
+	while (!done)
 	{
-		menu_select(death_menu, 0);
-	} while (!get_check("Do you want to quit? "));
+		ui_event e = menu_select(death_menu, EVT_KBRD);
+		if (e.type == EVT_KBRD)
+		{
+			if (e.key.code == KTRL('X')) break;
+		}
+		else if (e.type == EVT_SELECT)
+		{
+			done = get_check("Do you want to quit? ");
+		}
+	}
 }
