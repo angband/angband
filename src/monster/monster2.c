@@ -1723,7 +1723,7 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 		/* Radiate light? */
 		r_ptr = &r_info[m_ptr->r_idx];
-		if (rf_has(r_ptr->flags, RF_HAS_LITE)) p_ptr->redraw |= PU_UPDATE_VIEW;
+		if (rf_has(r_ptr->flags, RF_HAS_LITE)) p_ptr->update |= PU_UPDATE_VIEW;
 
 		/* Redraw monster list */
 		p_ptr->redraw |= (PR_MONLIST);
