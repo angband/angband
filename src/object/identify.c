@@ -427,7 +427,7 @@ void object_flavor_tried(object_type *o_ptr)
  */
 void object_know_all_flags(object_type *o_ptr)
 {
-	memset(o_ptr->known_flags, 0xff, sizeof(o_ptr->known_flags));
+	of_setall(o_ptr->known_flags);
 }
 
 

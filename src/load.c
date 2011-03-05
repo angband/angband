@@ -109,7 +109,7 @@ static int rd_item_2(object_type *o_ptr)
 		rd_byte(&o_ptr->flags[i]);
 	if (i < OF_BYTES) strip_bytes(OF_BYTES - i);
 
-	memset(&o_ptr->known_flags, 0, sizeof(o_ptr->known_flags));
+	of_wipe(o_ptr->known_flags);
 
 	for (i = 0; i < OF_BYTES && i < OF_SIZE; i++)
 		rd_byte(&o_ptr->known_flags[i]);
@@ -246,8 +246,7 @@ static int rd_item_1(object_type *o_ptr)
 		rd_byte(&o_ptr->flags[i]);
 	if (i < 12) strip_bytes(12 - i);
 	
-
-	memset(&o_ptr->known_flags, 0, sizeof(o_ptr->known_flags));
+	of_wipe(o_ptr->known_flags);
 
 	/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
 	for (i = 0; i < 12 && i < OF_SIZE; i++)
