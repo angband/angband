@@ -339,7 +339,7 @@ I:23:5
 W:5:0:110:120
 A:20:5 to 100
 P:0:1d8:0:0:0
-D:A thicker and slightly longer dagger, the sabre is a slashing sword.  It
+D:A thicker and slightly longer dagger, the cutlass is a slashing sword.  It
 D: possesses a slight curve and only one side is sharp.
 
 N:35:& Tulwar~
