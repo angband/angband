@@ -1509,7 +1509,7 @@ D:cold into the breasts of your enemies lay upon this perfectly balanced
 D:spear.
 
 
-N:100:of Eorlingas
+N:100:of the Eorlingas
 I:polearm:Lance~
 W:20:23:360:55000
 A:4:20 to 100
