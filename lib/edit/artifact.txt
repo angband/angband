@@ -1611,9 +1611,9 @@ D:creatures of earth.
 
 N:107:of Wrath
 I:polearm:Trident~
-W:15:35:300:90000
+W:15:35:70:90000
 A:3:15 to 100
-P:0:3d8:16:18:0 
+P:0:3d10:16:18:0 
 F:HIDE_TYPE | BRAND_POIS | 
 F:SLAY_EVIL | KILL_UNDEAD | RES_LIGHT | RES_DARK | SEE_INVIS | 
 F:BLESSED | SHOW_MODS
@@ -1627,7 +1627,7 @@ N:108:of Ulmo
 I:polearm:Trident~
 W:30:90:70:120000
 A:1:30 to 127
-P:0:4d8:15:19:0
+P:0:4d10:15:19:0
 F:HIDE_TYPE | 
 F:SLAY_DRAGON | SLAY_ANIMAL | FREE_ACT | HOLD_LIFE | 
 F:IM_ACID | RES_ACID | RES_NETHR | 
@@ -1966,9 +1966,9 @@ D:although N['a]in himself fell before their lord Azog.
 
 N:131:of Erebor
 I:digger:Pick~
-W:55:5:200:30000
+W:55:5:180:30000
 A:20:55 to 100
-P:0:3d4:5:20:0
+P:0:4d3:5:20:0
 F:SUST_STR | HIDE_TYPE | LIGHT | 
 F:SLAY_ORC | SLAY_TROLL | SLAY_DEMON | BRAND_ACID | 
 F:RES_CHAOS | RES_LIGHT | RES_DARK
