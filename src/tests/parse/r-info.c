@@ -28,15 +28,25 @@ static int test_n0(void *state) {
 	ok;
 }
 
-static int test_g0(void *state) {
-	enum parser_error r = parser_parse(state, "G:C:v");
+static int test_t0(void *state) {
+	enum parser_error r = parser_parse(state, "T:townsfolk");
+	struct monster_race *mr;
+
+	eq(r, PARSE_ERROR_NONE);
+	mr = parser_priv(state);
+	require(mr);
+	require(streq(mr->base->name, "townsfolk"));
+	ok;
+}
+
+static int test_c0(void *state) {
+	enum parser_error r = parser_parse(state, "C:v");
 	struct monster_race *mr;
 
 	eq(r, PARSE_ERROR_NONE);
 	mr = parser_priv(state);
 	require(mr);
 	eq(mr->d_attr, TERM_VIOLET);
-	eq(mr->d_char, 'C');
 	ok;
 }
 
@@ -137,7 +147,8 @@ static int test_s0(void *state) {
 static const char *suite_name = "parse/r-info";
 static struct test tests[] = {
 	{ "n0", test_n0 },
-	{ "g0", test_g0 },
+	{ "c0", test_c0 },
+	{ "t0", test_t0 },
 	{ "i0", test_i0 },
 	{ "w0", test_w0 },
 	{ "b0", test_b0 },
