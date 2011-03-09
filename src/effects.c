@@ -1637,8 +1637,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			};
 			/* pick a random (type, damage) tuple in the table */
 			int which = 2 * randint0(sizeof(breath_types) / (2 * sizeof(int)));
-			if (fire_ball(breath_types[which], dir, breath_types[which + 1], 3))
-				*ident = TRUE;
+			fire_ball(breath_types[which], dir, breath_types[which + 1], 3);
+			*ident = TRUE;
 			return TRUE;
 		}
 
