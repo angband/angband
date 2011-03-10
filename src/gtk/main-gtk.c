@@ -2725,12 +2725,13 @@ void init_handlers()
 
 errr init_gtk(int argc, char **argv)
 {
-	int i;
+	int i, ok;
 	game_saved = FALSE;
 	toolbar_size = 0;
 	
 	/* Initialize the environment */
-	gtk_init(&argc, &argv);
+	ok = gtk_init_check(&argc, &argv);
+	if (ok == FALSE) return -1;
 	
 	/* Parse args */
 	for (i = 1; i < argc; i++)
