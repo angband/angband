@@ -417,32 +417,6 @@ enum
 
 /*** General index values ***/
 
-/*
- * Spell types used by project(), and related functions.
- */
-enum
-{
-	#define GF(x) GF_##x,
-	#include "list-gf-types.h"
-	#undef GF
-	GF_MAX
-};
-
-
-/**
- * Bolt motion (used in prefs.c, spells1.c)
- */
-enum
-{
-	BOLT_NO_MOTION,
-	BOLT_0,
-	BOLT_45,
-	BOLT_90,
-	BOLT_135,
-	BOLT_MAX
-};
-
-
 /*** Feature Indexes (see "lib/edit/terrain.txt") ***/
 
 enum
@@ -540,40 +514,6 @@ enum
 
 
 /*
- * Bit flags for the "project()" function
- *
- *   NONE: No flags
- *   JUMP: Jump directly to the target location (this is a hack)
- *   BEAM: Work as a beam weapon (affect every grid passed through)
- *   THRU: Continue "through" the target (used for "bolts"/"beams")
- *   STOP: Stop as soon as we hit a monster (used for "bolts")
- *   GRID: Affect each grid in the "blast area" in some way
- *   ITEM: Affect each object in the "blast area" in some way
- *   KILL: Affect each monster in the "blast area" in some way
- *   HIDE: Hack -- disable "visual" feedback from projection
- *   AWARE: Effects are already obvious to the player
- */
-#define PROJECT_NONE  0x000
-#define PROJECT_JUMP  0x001
-#define PROJECT_BEAM  0x002
-#define PROJECT_THRU  0x004
-#define PROJECT_STOP  0x008
-#define PROJECT_GRID  0x010
-#define PROJECT_ITEM  0x020
-#define PROJECT_KILL  0x040
-#define PROJECT_HIDE  0x080
-#define PROJECT_AWARE 0x100
-
-
-/*
- * Bit flags for the "enchant()" function
- */
-#define ENCH_TOHIT   0x01
-#define ENCH_TODAM   0x02
-#define ENCH_TOAC    0x04
-
-
-/*
  * Bit flags for the "target_set" function
  *
  *	KILL: Target monsters
@@ -641,11 +581,11 @@ enum
 #define PU_MANA			0x00000020L	/* Calculate csp and msp */
 #define PU_SPELLS		0x00000040L	/* Calculate spells */
 /* xxx (many) */
-#define PU_FORGET_VIEW		0x00010000L	/* Forget field of view */
-#define PU_UPDATE_VIEW		0x00020000L	/* Update field of view */
+#define PU_FORGET_VIEW	0x00010000L	/* Forget field of view */
+#define PU_UPDATE_VIEW	0x00020000L	/* Update field of view */
 /* xxx (many) */
-#define PU_FORGET_FLOW		0x00100000L	/* Forget flow data */
-#define PU_UPDATE_FLOW		0x00200000L	/* Update flow data */
+#define PU_FORGET_FLOW	0x00100000L	/* Forget flow data */
+#define PU_UPDATE_FLOW	0x00200000L	/* Update flow data */
 /* xxx (many) */
 #define PU_MONSTERS		0x10000000L	/* Update monsters */
 #define PU_DISTANCE		0x20000000L	/* Update distances */
@@ -671,18 +611,18 @@ enum
 #define PR_STUDY		0x00002000L	/* Display Extra (Study) */
 #define PR_DEPTH		0x00004000L	/* Display Depth */
 #define PR_STATUS		0x00008000L
-#define PR_DTRAP		0x00010000L 	/* Trap detection indicator */
+#define PR_DTRAP		0x00010000L /* Trap detection indicator */
 #define PR_STATE		0x00020000L	/* Display Extra (State) */
 #define PR_MAP			0x00040000L	/* Redraw whole map */
 
-#define PR_INVEN		0x00080000L 	/* Display inven/equip */
-#define PR_EQUIP		0x00100000L 	/* Display equip/inven */
-#define PR_MESSAGE		0x00200000L 	/* Display messages */
-#define PR_MONSTER		0x00400000L 	/* Display monster recall */
-#define PR_OBJECT		0x00800000L 	/* Display object recall */
-#define PR_MONLIST		0x01000000L 	/* Display monster list */
-#define PR_BUTTONS              0x02000000L     /* Display mouse buttons */
-#define PR_ITEMLIST             0x04000000L 	/* Display item list */
+#define PR_INVEN		0x00080000L /* Display inven/equip */
+#define PR_EQUIP		0x00100000L /* Display equip/inven */
+#define PR_MESSAGE		0x00200000L /* Display messages */
+#define PR_MONSTER		0x00400000L /* Display monster recall */
+#define PR_OBJECT		0x00800000L /* Display object recall */
+#define PR_MONLIST		0x01000000L /* Display monster list */
+#define PR_BUTTONS      0x02000000L /* Display mouse buttons */
+#define PR_ITEMLIST     0x04000000L /* Display item list */
 
 /* Display Basic Info */
 #define PR_BASIC \
@@ -764,10 +704,10 @@ enum
 #define IDENT_EFFECT	0x0080	/* Know item activation/effect */
 /* xxx */
 #define IDENT_INDESTRUCT 0x0200	/* Tried to destroy it and failed */
-#define IDENT_NAME	0x0400	/* Know the name of ego or artifact if there is one */
-#define IDENT_FIRED	0x0800  /* Has been used as a missile */
+#define IDENT_NAME		0x0400	/* Know the name of ego or artifact if there is one */
+#define IDENT_FIRED		0x0800  /* Has been used as a missile */
 #define IDENT_NOTART	0x1000  /* Item is known not to be an artifact */
-#define IDENT_FAKE	0x2000  /* Item is a fake, for displaying knowledge */
+#define IDENT_FAKE		0x2000  /* Item is a fake, for displaying knowledge */
 /* ... */
 
 

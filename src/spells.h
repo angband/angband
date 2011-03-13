@@ -1,7 +1,87 @@
-/* spells.h - spell implementations and helpers */
+/*
+ * File: src/spells.h
+ * Purpose: spell implementations and helpers
+ */
 
 #ifndef SPELLS_H
 #define SPELLS_H
+
+
+/*
+ * Spell types used by project(), and related functions.
+ */
+enum
+{
+    #define GF(a, b, c, d, e, f, g, h, i) GF_##a,
+    #include "list-gf-types.h"
+    #undef GF
+};
+
+/**
+ * Structure for GF types and their resistances/immunities/vulnerabilities
+ */
+struct gf_type {
+    u16b name;      	/* numerical index (GF_#) */
+	int resist;			/* object flag for resistance */
+	int num;			/* numerator for resistance */
+	random_value denom;	/* denominator for resistance */
+	int opp;			/* timed flag for temporary resistance ("opposition") */
+	int immunity;		/* object flag for total immunity */
+	int vuln;			/* object flag for vulnerability */
+	int mon_res;		/* monster flag for resistance */
+	int mon_vuln;		/* monster flag for vulnerability */
+};
+
+
+/**
+ * Bolt motion (used in prefs.c, spells1.c)
+ */
+enum
+{
+    BOLT_NO_MOTION,
+    BOLT_0,
+    BOLT_45,
+    BOLT_90,
+    BOLT_135,
+    BOLT_MAX
+};
+
+
+/*
+ * Bit flags for the "project()" function
+ *
+ *   NONE: No flags
+ *   JUMP: Jump directly to the target location (this is a hack)
+ *   BEAM: Work as a beam weapon (affect every grid passed through)
+ *   THRU: Continue "through" the target (used for "bolts"/"beams")
+ *   STOP: Stop as soon as we hit a monster (used for "bolts")
+ *   GRID: Affect each grid in the "blast area" in some way
+ *   ITEM: Affect each object in the "blast area" in some way
+ *   KILL: Affect each monster in the "blast area" in some way
+ *   HIDE: Hack -- disable "visual" feedback from projection
+ *   AWARE: Effects are already obvious to the player
+ */
+#define PROJECT_NONE  0x000
+#define PROJECT_JUMP  0x001
+#define PROJECT_BEAM  0x002
+#define PROJECT_THRU  0x004
+#define PROJECT_STOP  0x008
+#define PROJECT_GRID  0x010
+#define PROJECT_ITEM  0x020
+#define PROJECT_KILL  0x040
+#define PROJECT_HIDE  0x080
+#define PROJECT_AWARE 0x100
+
+
+/*
+ * Bit flags for the "enchant()" function
+ */
+#define ENCH_TOHIT   0x01
+#define ENCH_TODAM   0x02
+#define ENCH_TOAC    0x04
+
+
+/** Functions **/
 
 /* spells1.c */
 s16b poly_r_idx(int r_idx);

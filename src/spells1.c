@@ -25,6 +25,22 @@
 #include "monster/monster.h"
 #include "squelch.h"
 #include "trap.h"
+#include "spells.h"
+
+/**
+ * Details of the different projectable attack types in the game.
+ * See src/spells.h for structure
+ */
+const struct gf_type gf_table[] =
+{
+        #define GF(a, b, c, d, e, f, g, h, i) \
+                                { GF_##a, b, c, d, e, f, g, h, i },
+                #define RV(b, x, y, m) {b, x, y, m}
+        #include "list-gf-types.h"
+        #undef GF
+                #undef RV
+};
+
 
 /*
  * Helper function -- return a "nearby" race for polymorphing
@@ -338,33 +354,33 @@ void teleport_player_level(void)
 	}
 }
 
+
 static const char *gf_name_list[] =
 {
-	#define GF(a) #a,
-	#include "list-gf-types.h"
-	#undef GF
-	NULL
+    #define GF(a, b, c, d, e, f, g, h, i) #a,
+    #include "list-gf-types.h"
+    #undef GF
+    NULL
 };
 
 int gf_name_to_idx(const char *name)
 {
-	int i;
-	for (i = 0; gf_name_list[i]; i++) {
-		if (!my_stricmp(name, gf_name_list[i]))
-			return i;
-	}
+    int i;
+    for (i = 0; gf_name_list[i]; i++) {
+        if (!my_stricmp(name, gf_name_list[i]))
+            return i;
+    }
 
-	return -1;
+    return -1;
 }
 
 const char *gf_idx_to_name(int type)
 {
-	assert(type >= 0);
-	assert(type < GF_MAX);
+    assert(type >= 0);
+    assert(type < GF_MAX);
 
-	return gf_name_list[type];
+    return gf_name_list[type];
 }
-
 
 
 /*

@@ -1459,8 +1459,10 @@ static int set_pit_type(int depth, int type)
 		}
 	}
 
-	/* Hack - check the monster for the "Boulder" spell so that we don't match ogres. */
-	return rsf_has(r_ptr->spell_flags, RSF_BOULDER);
+	pit_type = &pit_info[pit_idx];
+	get_mon_num_hook = mon_pit_hook;
+        
+	return pit_idx;
 }
 
 
