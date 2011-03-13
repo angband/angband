@@ -42,6 +42,37 @@ const struct gf_type gf_table[] =
 };
 
 
+/**
+ * Check for resistance to a GF_ attack type. Return codes:
+ * -1 = vulnerability
+ * 0 = no resistance (or resistance plus vulnerability)
+ * 1 = single resistance or opposition (or double resist plus vulnerability)
+ * 2 = double resistance (including opposition)
+ * 3 = total immunity
+ *
+ * \param type is the attack type we are trying to resist
+ */
+int check_for_resist(int type)
+{
+	const struct gf_type *gf_ptr = &gf_table[type];
+	int result = 0;
+
+	if (p_ptr->state.flags[gf_ptr->vuln])
+		result--;
+
+	if (p_ptr->state.flags[gf_ptr->opp])
+		result++;
+
+	if (p_ptr->state.flags[gf_ptr->resist])
+		result++;
+
+	if (p_ptr->state.flags[gf_ptr->immunity])
+		result = 3;
+
+	return result;
+}
+
+
 /*
  * Helper function -- return a "nearby" race for polymorphing
  *

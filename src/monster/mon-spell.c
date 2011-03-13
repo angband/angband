@@ -25,11 +25,11 @@
  */
 const struct mon_spell mon_spell_table[] =
 {
-        #define RSF(a, b, c, d, e, f, g, h, i, j, k, l, m) \
-				{ RSF_##a, b, c, d, e, f, g, h, i, j, k, l, m },
+    #define RSF(a, b, c, d, e, f, g, h, i, j, k, l, m) \
+			{ RSF_##a, b, c, d, e, f, g, h, i, j, k, l, m },
 		#define RV(b, x, y, m) {b, x, y, m}
-        #include "list-mon-spells.h"
-        #undef RSF
+    #include "list-mon-spells.h"
+    #undef RSF
 		#undef RV
 };
 
@@ -40,11 +40,11 @@ const struct mon_spell mon_spell_table[] =
  */
 const struct spell_effect spell_effect_table[] =
 {
-        #define RSE(a, b, c, d, e, f, g, h, i) \
-				{ RSE_##a, b, c, d, e, f, g, h, i },
+    #define RSE(a, b, c, d, e, f, g, h, i) \
+			{ RSE_##a, b, c, d, e, f, g, h, i },
 		#define RV(b, x, y, m) {b, x, y, m}
-        #include "list-spell-effects.h"
-        #undef RSE
+    #include "list-spell-effects.h"
+    #undef RSE
 		#undef RV
 };
 
@@ -147,12 +147,12 @@ void do_side_effects(int spell, int dam)
 			 * 2. Resistance to the attack type if it affords no immunity
 			 * 3. Resistance to the specific side-effect
 			 */
-/*			if ((rs_ptr->gf && check_for_resist(rs_ptr->gf)) ||
+			if ((rs_ptr->gf && check_for_resist(rs_ptr->gf)) ||
 					p_ptr->state.flags[re_ptr->res_flag]) {
 				msg("You resist the effects!");
 				continue;
 			}
-*/
+
 			/* Allow saving throw if available */
 			if (re_ptr->save &&
 					randint0(100) < p_ptr->state.skills[SKILL_SAVE]) {
@@ -238,7 +238,7 @@ void do_mon_spell(int spell, int m_idx, bool seen)
 
 	/* Try a saving throw if available */
 	if (rs_ptr->save && randint0(100) < p_ptr->state.skills[SKILL_SAVE]) {
-		msg("You resist the effects!");
+		msg("You avoid the effects!");
 		return;
 	}
 

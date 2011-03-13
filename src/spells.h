@@ -99,6 +99,7 @@ void cold_dam(int dam, const char *kb_str);
 bool res_stat(int stat);
 bool apply_disenchant(int mode);
 bool project(int who, int rad, int y, int x, int dam, int typ, int flg);
+int check_for_resist(int type);
 
 /* spells2.c */
 extern bool hp_player(int num);
