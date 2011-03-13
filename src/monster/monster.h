@@ -28,7 +28,7 @@
 
 /* mon-spell.c */
 void do_mon_spell(int spell, int m_idx, bool seen);
-void do_side_effects(int spell, int dam);
+void do_side_effects(int spell, int dam, int m_idx);
 extern bool test_spells(bitflag *f, mon_spell_type type);
 extern void set_spells(bitflag *f, mon_spell_type type);
 

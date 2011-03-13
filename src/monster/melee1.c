@@ -812,7 +812,11 @@ bool make_attack_normal(int m_idx)
 					msg("You are covered in acid!");
 
 					/* Special damage */
-					acid_dam(damage, ddesc);
+					damage = adjust_dam(GF_ACID, damage);
+					if (damage) {
+						take_hit(damage, ddesc);
+						inven_damage(GF_ACID, MIN(damage * 5, 300));
+					}
 
 					/* Learn about the player */
 					update_smart_learn(m_idx, DRS_RES_ACID);
@@ -829,7 +833,11 @@ bool make_attack_normal(int m_idx)
 					msg("You are struck by electricity!");
 
 					/* Take damage (special) */
-					elec_dam(damage, ddesc);
+					damage = adjust_dam(GF_ELEC, damage);
+					if (damage) {
+						take_hit(damage, ddesc);
+						inven_damage(GF_ELEC, MIN(damage * 5, 300));
+					}
 
 					/* Learn about the player */
 					update_smart_learn(m_idx, DRS_RES_ELEC);
@@ -846,7 +854,11 @@ bool make_attack_normal(int m_idx)
 					msg("You are enveloped in flames!");
 
 					/* Take damage (special) */
-					fire_dam(damage, ddesc);
+					damage = adjust_dam(GF_FIRE, damage);
+					if (damage) {
+						take_hit(damage, ddesc);
+						inven_damage(GF_FIRE, MIN(damage * 5, 300));
+					}
 
 					/* Learn about the player */
 					update_smart_learn(m_idx, DRS_RES_FIRE);
@@ -863,7 +875,11 @@ bool make_attack_normal(int m_idx)
 					msg("You are covered with frost!");
 
 					/* Take damage (special) */
-					cold_dam(damage, ddesc);
+					damage = adjust_dam(GF_COLD, damage);
+					if (damage) {
+						take_hit(damage, ddesc);
+						inven_damage(GF_COLD, MIN(damage * 5, 300));
+					}
 
 					/* Learn about the player */
 					update_smart_learn(m_idx, DRS_RES_COLD);

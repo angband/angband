@@ -12,7 +12,7 @@
  */
 enum
 {
-    #define GF(a, b, c, d, e, f, g, h, i) GF_##a,
+    #define GF(a, b, c, d, e, f, g, h, i, j, k, l) GF_##a,
     #include "list-gf-types.h"
     #undef GF
 };
@@ -22,6 +22,7 @@ enum
  */
 struct gf_type {
     u16b name;      	/* numerical index (GF_#) */
+	char *desc;			/* text description (if blind) */
 	int resist;			/* object flag for resistance */
 	int num;			/* numerator for resistance */
 	random_value denom;	/* denominator for resistance */
@@ -30,6 +31,8 @@ struct gf_type {
 	int vuln;			/* object flag for vulnerability */
 	int mon_res;		/* monster flag for resistance */
 	int mon_vuln;		/* monster flag for vulnerability */
+	int obj_hates;		/* object flag for object vulnerability */
+	int obj_imm;		/* object flag for object immunity */
 };
 
 
@@ -100,6 +103,9 @@ bool res_stat(int stat);
 bool apply_disenchant(int mode);
 bool project(int who, int rad, int y, int x, int dam, int typ, int flg);
 int check_for_resist(int type);
+bool immunity_possible(int type);
+int inven_damage(int type, int cperc);
+int adjust_dam(int type, int dam);
 
 /* spells2.c */
 extern bool hp_player(int num);

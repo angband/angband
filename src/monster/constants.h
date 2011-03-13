@@ -249,12 +249,10 @@ typedef enum
 /* List of spell effects */
 enum
 {
-	#define RSE(a, b, c, d, e, f, g, h, i) \
+	#define RSE(a, b, c, d, e, f, g, h, i, j) \
             RSE_##a,
 	#include "list-spell-effects.h"
 	#undef RSE
-
-    RSE_MAX
 };
 
 /* Flags for non-timed side effects */
@@ -267,6 +265,7 @@ enum spell_effect_flag {
     S_DRAIN_STAT,
     S_SWAP_STAT,
     S_DRAIN_ALL,
+	S_DISEN,
 
     S_MAX
 };

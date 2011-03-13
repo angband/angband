@@ -40,8 +40,8 @@ const struct mon_spell mon_spell_table[] =
  */
 const struct spell_effect spell_effect_table[] =
 {
-    #define RSE(a, b, c, d, e, f, g, h, i) \
-			{ RSE_##a, b, c, d, e, f, g, h, i },
+    #define RSE(a, b, c, d, e, f, g, h, i, j) \
+			{ RSE_##a, b, c, d, e, f, g, h, i, j },
 		#define RV(b, x, y, m) {b, x, y, m}
     #include "list-spell-effects.h"
     #undef RSE
@@ -102,31 +102,92 @@ static int hp_dam(int spell, int m_idx)
 }
 
 /**
- * Apply side effects from an attack to the player
+ * Drain stats at random
+ *
+ * \param num is the number of points to drain
+ * \param sustain is whether sustains will prevent draining
+ * \param perma is whether the drains are permanent
+ */
+void drain_stats(int num, bool sustain, bool perma)
+{
+	int i, k;
+	const char *act = NULL;
+
+	for (i = 0; i < num; i++) {
+		switch (randint1(6)) {
+			case 1: k = A_STR; act = "strong"; break;
+			case 2: k = A_INT; act = "bright"; break;
+			case 3: k = A_WIS; act = "wise"; break;
+			case 4: k = A_DEX; act = "agile"; break;
+			case 5: k = A_CON; act = "hale"; break;
+			case 6: k = A_CHR; act = "beautiful"; break;
+		}
+
+		if (sustain)
+			do_dec_stat(k, perma);
+		else {
+			msg("You're not as %s as you used to be...", act);
+			player_stat_dec(p_ptr, k, perma);
+		}
+	}
+
+	return;
+}
+
+/**
+ * Swap a random pair of stats
+ */
+static void swap_stats(void)
+{
+    int max1, cur1, max2, cur2, ii, jj;
+
+    msg("Your body starts to scramble...");
+
+    /* Pick a pair of stats */
+    ii = randint0(A_MAX);
+    for (jj = ii; jj == ii; jj = randint0(A_MAX)) /* loop */;
+
+    max1 = p_ptr->stat_max[ii];
+    cur1 = p_ptr->stat_cur[ii];
+    max2 = p_ptr->stat_max[jj];
+    cur2 = p_ptr->stat_cur[jj];
+
+    p_ptr->stat_max[ii] = max2;
+    p_ptr->stat_cur[ii] = cur2;
+    p_ptr->stat_max[jj] = max1;
+    p_ptr->stat_cur[jj] = cur1;
+
+    p_ptr->update |= (PU_BONUS);
+
+    return;
+}
+
+/**
+ * Apply side effects from a spell attack to the player
  *
  * \param spell is the attack type
  * \param dam is the amount of damage caused by the attack
+ * \param m_idx is the attacking monster
  */
-void do_side_effects(int spell, int dam)
+void do_side_effects(int spell, int dam, int m_idx)
 {
 	const struct spell_effect *re_ptr;
 	const struct mon_spell *rs_ptr = &mon_spell_table[spell];
+	monster_type *m_ptr = &mon_list[m_idx];
 	int i, choice[99], dur = 0, j = 0;
-	bool chosen[RSE_MAX] = { 0 };
+	bool sustain = FALSE, perma = FALSE, chosen[RSE_MAX] = { 0 };
+	s32b d = 0;
 
 	/* First we note all the effects we'll be doing. */
 	for (re_ptr = spell_effect_table; re_ptr->index < RSE_MAX; re_ptr++) {
-		if (re_ptr->method == rs_ptr->index) {
+		if ((re_ptr->method == rs_ptr->index) ||
+				(re_ptr->gf == rs_ptr->gf)) {
 
 			/* If we have a choice of effects, we create a cum freq table */
 			if (re_ptr->chance) {
 				for (i = j; i < (j + re_ptr->chance); i++)
 					choice[i] = re_ptr->index;
 				j = i;
-
-				/* Sanity check - chances should always sum to 100 */
-				if (j != 99)
-					assert (0);
 			}
 			else
 				chosen[re_ptr->index] = TRUE;
@@ -135,7 +196,7 @@ void do_side_effects(int spell, int dam)
 
 	/* If we have built a cum freq table, choose an effect from it */
 	if (j)
-		chosen[choice[randint0(100)]] = TRUE;
+		chosen[choice[randint0(j)]] = TRUE;
 
 	/* Now we cycle through again to activate the chosen effects */
 	for (re_ptr = spell_effect_table; re_ptr->index < RSE_MAX; re_ptr++) {
@@ -147,16 +208,19 @@ void do_side_effects(int spell, int dam)
 			 * 2. Resistance to the attack type if it affords no immunity
 			 * 3. Resistance to the specific side-effect
 			 */
-			if ((rs_ptr->gf && check_for_resist(rs_ptr->gf)) ||
+			if ((rs_ptr->gf && (check_for_resist(rs_ptr->gf) == 3)) ||
+					(rs_ptr->gf && !immunity_possible(rs_ptr->gf) &&
+					(check_for_resist(rs_ptr->gf) > 0)) ||
 					p_ptr->state.flags[re_ptr->res_flag]) {
-				msg("You resist the effects!");
+				msg("You resist the effect!");
+				wieldeds_notice_flag(re_ptr->res_flag);
 				continue;
 			}
 
 			/* Allow saving throw if available */
 			if (re_ptr->save &&
 					randint0(100) < p_ptr->state.skills[SKILL_SAVE]) {
-				msg("You avoid the effects!");
+				msg("You avoid the effect!");
 				continue;
 			}
 
@@ -178,10 +242,65 @@ void do_side_effects(int spell, int dam)
 				(void)inc_timed(re_ptr->flag, dur, TRUE);
 
 			} else {
-/*				do_effect(
 				switch (re_ptr->flag) {
-					case
-*/		
+					case S_INV_DAM:
+						if (dam > 0)
+							inven_damage(re_ptr->gf, MIN(dam *
+								randcalc(re_ptr->dam, 0, RANDOMISE), 300));
+						break;
+
+					case S_TELEPORT: /* m_bonus is used as a clev filter */
+						if (!re_ptr->dam.m_bonus || 
+								randint1(re_ptr->dam.m_bonus) > p_ptr->lev)
+							teleport_player(randcalc(re_ptr->base, 0,
+								RANDOMISE));
+						break;
+
+					case S_TELE_TO:
+						teleport_player_to(m_ptr->fy, m_ptr->fx);
+						break;
+
+					case S_TELE_LEV:
+						teleport_player_level();
+						break;
+
+					case S_DRAIN_LIFE:
+						d = re_ptr->base.base + (p_ptr->exp *
+							re_ptr->base.sides / 100) * MON_DRAIN_LIFE;						
+
+						msg("You feel your life force draining away!");
+						lose_exp(d);
+						break;
+
+					case S_DRAIN_STAT: /* m_bonus is used as a flag */
+						if (re_ptr->dam.m_bonus > 0)
+							sustain = TRUE;
+
+						if (abs(re_ptr->dam.m_bonus) > 1)
+							perma = TRUE;
+
+						drain_stats(randcalc(re_ptr->base, 0, RANDOMISE),
+							sustain, perma);
+						break;
+
+					case S_SWAP_STAT:
+						swap_stats();
+						break;
+
+					case S_DRAIN_ALL:
+						msg("You're not as powerful as you used to be...");
+
+						for (i = 0; i < A_MAX; i++)
+							player_stat_dec(p_ptr, i, FALSE);
+						break;
+
+					case S_DISEN:
+						(void)apply_disenchant(0);
+						break;
+
+					default:
+						quit_fmt("Unknown side effect flag %d", re_ptr->flag);
+				}		
 			}
 		}
 	}
@@ -191,7 +310,7 @@ void do_side_effects(int spell, int dam)
 /**
  * Process a monster spell 
  *
- * \param spell is the monster attack flag (RSF_FOO)
+ * \param spell is the monster spell flag (RSF_FOO)
  * \param m_idx is the attacking monster
  * \param seen is whether the player can see the monster at this moment
  */
@@ -261,10 +380,10 @@ void do_mon_spell(int spell, int m_idx, bool seen)
 
 	if (rs_ptr->gf)
 		(void)project(m_idx, rad, p_ptr->py, p_ptr->px, dam, rs_ptr->gf, flag);
-	else {
+	else /* Note that non-projectable attacks are unresistable */
 		take_hit(dam, ddesc);
-		do_side_effects(spell, dam);
-	}
+
+	do_side_effects(spell, dam, m_idx);
 
 	/* Update monster awareness - XXX need to do opp/imm/vuln also */
 /*	if (ra_ptr->res_flag)

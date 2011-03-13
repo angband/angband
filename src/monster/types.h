@@ -240,7 +240,8 @@ struct mon_spell {
  */
 struct spell_effect {
     u16b index;             /* Numerical index (RAE_#) */
-    u16b method;            /* What attack has this effect (RSF_ or GF_) */
+    u16b method;            /* What RSF_ attack has this effect */
+	int gf;					/* What GF_ type has this effect */
     bool timed;             /* TRUE if timed, FALSE if permanent */
     int flag;               /* Effect flag */
     random_value base;      /* The base duration or impact */

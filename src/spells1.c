@@ -33,8 +33,8 @@
  */
 const struct gf_type gf_table[] =
 {
-        #define GF(a, b, c, d, e, f, g, h, i) \
-                                { GF_##a, b, c, d, e, f, g, h, i },
+        #define GF(a, b, c, d, e, f, g, h, i, j, k, l) \
+			{ GF_##a, b, c, d, e, f, g, h, i, j, k, l },
                 #define RV(b, x, y, m) {b, x, y, m}
         #include "list-gf-types.h"
         #undef GF
@@ -57,21 +57,41 @@ int check_for_resist(int type)
 	const struct gf_type *gf_ptr = &gf_table[type];
 	int result = 0;
 
-	if (p_ptr->state.flags[gf_ptr->vuln])
+	if (gf_ptr->vuln && p_ptr->state.flags[gf_ptr->vuln])
 		result--;
 
-	if (p_ptr->state.flags[gf_ptr->opp])
+	if (gf_ptr->opp && p_ptr->timed[gf_ptr->opp])
 		result++;
 
-	if (p_ptr->state.flags[gf_ptr->resist])
+	if (gf_ptr->resist && p_ptr->state.flags[gf_ptr->resist])
 		result++;
 
-	if (p_ptr->state.flags[gf_ptr->immunity])
+	if (gf_ptr->immunity && p_ptr->state.flags[gf_ptr->immunity])
 		result = 3;
+
+	/* Notice flags */
+	wieldeds_notice_flag(gf_ptr->immunity);
+	wieldeds_notice_flag(gf_ptr->resist);
+	wieldeds_notice_flag(gf_ptr->vuln);
 
 	return result;
 }
 
+/**
+ * Check whether a GF_ attack type affords immunity. Returns TRUE if
+ * an IMM_ flag exists, false if it doesn't.
+ *
+ * \param type is the attack type we are checking.
+ */
+bool immunity_possible(int type)
+{
+	const struct gf_type *gf_ptr = &gf_table[type];
+
+	if (gf_ptr->immunity)
+		return TRUE;
+
+	return FALSE;
+}
 
 /*
  * Helper function -- return a "nearby" race for polymorphing
@@ -388,7 +408,7 @@ void teleport_player_level(void)
 
 static const char *gf_name_list[] =
 {
-    #define GF(a, b, c, d, e, f, g, h, i) #a,
+    #define GF(a, b, c, d, e, f, g, h, i, j, k, l) #a,
     #include "list-gf-types.h"
     #undef GF
     NULL
@@ -570,75 +590,6 @@ void take_hit(int dam, const char *kb_str)
 }
 
 
-
-
-/*
- * Melt something
- */
-static int set_acid_destroy(const object_type *o_ptr)
-{
-	bitflag f[OF_SIZE];
-	object_flags(o_ptr, f);
-
-	if (of_has(f, OF_HATES_ACID) && !of_has(f, OF_IGNORE_ACID))
-		return TRUE;
-
-	return FALSE;
-}
-
-
-/*
- * Electrical damage
- */
-static int set_elec_destroy(const object_type *o_ptr)
-{
-	bitflag f[OF_SIZE];
-	object_flags(o_ptr, f);
-
-	if (of_has(f, OF_HATES_ELEC) && !of_has(f, OF_IGNORE_ELEC))
-		return TRUE;
-
-	return FALSE;
-}
-
-
-/*
- * Burn something
- */
-static int set_fire_destroy(const object_type *o_ptr)
-{
-	bitflag f[OF_SIZE];
-	object_flags(o_ptr, f);
-
-	if (of_has(f, OF_HATES_FIRE) && !of_has(f, OF_IGNORE_FIRE))
-		return TRUE;
-
-	return FALSE;
-}
-
-
-/*
- * Freeze things
- */
-static int set_cold_destroy(const object_type *o_ptr)
-{
-	bitflag f[OF_SIZE];
-	object_flags(o_ptr, f);
-
-	if (of_has(f, OF_HATES_COLD) && !of_has(f, OF_IGNORE_COLD))
-		return TRUE;
-
-	return FALSE;
-}
-
-
-
-
-/*
- * This seems like a pretty standard "typedef"
- */
-typedef int (*inven_func)(const object_type *);
-
 /*
  * Destroys a type of item on a given percent chance.
  * The chance 'cperc' is in hundredths of a percent (1-in-10000)
@@ -646,8 +597,10 @@ typedef int (*inven_func)(const object_type *);
  *
  * Returns number of items destroyed.
  */
-static int inven_damage(inven_func typ, int cperc)
+int inven_damage(int type, int cperc)
 {
+	const struct gf_type *gf_ptr = &gf_table[type];
+
 	int i, j, k, amt;
 
 	object_type *o_ptr;
@@ -655,6 +608,8 @@ static int inven_damage(inven_func typ, int cperc)
 	char o_name[80];
 	
 	bool damage;
+
+	bitflag f[OF_SIZE];
 
 	/* Count the casualties */
 	k = 0;
@@ -666,14 +621,18 @@ static int inven_damage(inven_func typ, int cperc)
 
 		o_ptr = &p_ptr->inventory[i];
 
+		of_wipe(f);
+		object_flags(o_ptr, f);
+
 		/* Skip non-objects */
 		if (!o_ptr->kind) continue;
 
 		/* Hack -- for now, skip artifacts */
 		if (o_ptr->artifact) continue;
 
-		/* Give this item slot a shot at death */
-		if ((*typ)(o_ptr))
+		/* Give this item slot a shot at death if it is vulnerable */
+		if (of_has(f, gf_ptr->obj_hates) &&
+				!of_has(f, gf_ptr->obj_imm))
 		{
 			/* Chance to destroy this item */
 			int chance = cperc;
@@ -865,177 +824,34 @@ static int minus_ac(void)
 	return (TRUE);
 }
 
-
-/*
- * Hurt the player with Acid
- */
-void acid_dam(int dam, const char *kb_str)
-{
-	int n;
-	int inv;
-
-	if (dam <= 0) return;
-
-	/* Resist the damage */
-	if (p_ptr->state.flags[OF_IM_ACID]) n = 3;
-	else if (p_ptr->state.flags[OF_RES_ACID]) n = 1;
-	else n = 0;
-
-	if (p_ptr->state.flags[OF_VULN_ACID]) n--;
-	if (p_ptr->timed[TMD_OPP_ACID]) n++;
-
-	/* Notice flags */
-	wieldeds_notice_flag(OF_IM_ACID);
-	wieldeds_notice_flag(OF_RES_ACID);
-	wieldeds_notice_flag(OF_VULN_ACID);
-
-	/* Change damage */
-	if (n >= 3) return;
-	else if (n >= 2)  dam = DBLRES_ACID_ADJ(dam, NOT_USED);
-	else if (n == 1)  dam = RES_ACID_ADJ(dam, NOT_USED);
-	else if (n == -1) dam = VULN_ACID_ADJ(dam, NOT_USED);
-
-	/* If any armor gets hit, defend the player */
-	if (minus_ac()) dam = (dam + 1) / 2;
-
-	/* Take damage */
-	take_hit(dam, kb_str);
-
-	/* Inventory damage */
-	inv = (MIN(dam, 60) * 100) / 20;
-	inven_damage(set_acid_destroy, inv);
-}
-
-
-
-
-/*
- * Hurt the player with electricity
- */
-void elec_dam(int dam, const char *kb_str)
-{
-	int n;
-	int inv;
-
-	if (dam <= 0) return;
-
-	/* Resist the damage */
-	if (p_ptr->state.flags[OF_IM_ELEC]) n = 3;
-	else if (p_ptr->state.flags[OF_RES_ELEC]) n = 1;
-	else n = 0;
-
-	if (p_ptr->state.flags[OF_VULN_ELEC]) n--;
-	if (p_ptr->timed[TMD_OPP_ELEC]) n++;
-
-	/* Notice flags */
-	wieldeds_notice_flag(OF_IM_ELEC);
-	wieldeds_notice_flag(OF_RES_ELEC);
-	wieldeds_notice_flag(OF_VULN_ELEC);
-
-	/* Change damage */
-	if (n >= 3) return;
-	else if (n >= 2) dam = DBLRES_ELEC_ADJ(dam, NOT_USED);
-	else if (n == 1) dam = RES_ELEC_ADJ(dam, NOT_USED);
-	else if (n == -1) dam = VULN_ELEC_ADJ(dam, NOT_USED);
-
-	/* Take damage */
-	take_hit(dam, kb_str);
-
-	/* Inventory damage */
-	inv = (MIN(dam, 60) * 100) / 20;
-	inven_damage(set_elec_destroy, inv);
-}
-
-
-
-
-/*
- * Hurt the player with Fire
- */
-void fire_dam(int dam, const char *kb_str)
-{
-	int n;
-	int inv;
-
-	if (dam <= 0) return;
-
-	/* Resist the damage */
-	if (p_ptr->state.flags[OF_IM_FIRE]) n = 3;
-	else if (p_ptr->state.flags[OF_RES_FIRE]) n = 1;
-	else n = 0;
-
-	if (p_ptr->state.flags[OF_VULN_FIRE]) n--;
-	if (p_ptr->timed[TMD_OPP_FIRE]) n++;
-
-	/* Notice flags */
-	wieldeds_notice_flag(OF_IM_FIRE);
-	wieldeds_notice_flag(OF_RES_FIRE);
-	wieldeds_notice_flag(OF_VULN_FIRE);
-
-	/* Change damage */
-	if (n >= 3) return;
-	else if (n >= 2) dam = DBLRES_FIRE_ADJ(dam, NOT_USED);
-	else if (n == 1) dam = RES_FIRE_ADJ(dam, NOT_USED);
-	else if (n == -1) dam = VULN_FIRE_ADJ(dam, NOT_USED);
-
-	/* Take damage */
-	take_hit(dam, kb_str);
-
-	/* Inventory damage */
-	inv = (MIN(dam, 60) * 100) / 20;
-	inven_damage(set_fire_destroy, inv);
-}
-
-
-
-
-/*
- * Hurt the player with Cold
- */
-void cold_dam(int dam, const char *kb_str)
-{
-	int n;
-	int inv;
-
-	if (dam <= 0) return;
-
-	/* Resist the damage */
-	if (p_ptr->state.flags[OF_IM_COLD]) n = 3;
-	else if (p_ptr->state.flags[OF_RES_COLD]) n = 1;
-	else n = 0;
-
-	if (p_ptr->state.flags[OF_VULN_COLD]) n--;
-	if (p_ptr->timed[TMD_OPP_COLD]) n++;
-
-	/* Notice flags */
-	wieldeds_notice_flag(OF_IM_COLD);
-	wieldeds_notice_flag(OF_RES_COLD);
-	wieldeds_notice_flag(OF_VULN_COLD);
-
-	/* Change damage */
-	if (n >= 3) return;
-	else if (n >= 2) dam = DBLRES_COLD_ADJ(dam, NOT_USED);
-	else if (n == 1) dam = RES_COLD_ADJ(dam, NOT_USED);
-	else if (n == -1) dam = VULN_COLD_ADJ(dam, NOT_USED);
-
-	/* Take damage */
-	take_hit(dam, kb_str);
-
-	/* Inventory damage */
-	inv = (MIN(dam, 60) * 100) / 20;
-	inven_damage(set_cold_destroy, inv);
-}
-
-/*
- * Decreases a stat by an amount indended to vary from 0 to 100 percent.
+/**
+ * Adjust damage according to resistance or vulnerability.
  *
- * Note that "permanent" means that the *given* amount is permanent,
- * not that the new value becomes permanent.  This may not work exactly
- * as expected, due to "weirdness" in the algorithm, but in general,
- * if your stat is already drained, the "max" value will not drop all
- * the way down to the "cur" value.
+ * \param type is the attack type we are checking.
+ * \param dam is the unadjusted damage.
  */
+int adjust_dam(int type, int dam)
+{
+	const struct gf_type *gf_ptr = &gf_table[type];
+	int x, i;
 
+	x = check_for_resist(type);
+
+	if (x == 3) /* immune */
+		return 0;
+
+	/* Hack - acid damage is halved by armour, holy orb is halved */
+	if ((type == GF_ACID && minus_ac()) || type == GF_HOLY_ORB)
+		dam = (dam + 1) / 2;
+
+	if (x == -1) /* vulnerable */
+		return (dam * 4 / 3);
+
+	for (i = x; i > 0; i--)
+		dam = dam * gf_ptr->num / randcalc(gf_ptr->denom, 0, RANDOMISE);
+
+	return dam;
+}
 
 /*
  * Restore a stat.  Return TRUE only if this actually makes a difference.
@@ -1157,81 +973,11 @@ bool apply_disenchant(int mode)
 
 
 /*
- * Apply Nexus
- */
-static void apply_nexus(const monster_type *m_ptr)
-{
-	int max1, cur1, max2, cur2, ii, jj;
-
-	switch (randint1(7))
-	{
-		case 1: case 2: case 3:
-		{
-			teleport_player(200);
-			break;
-		}
-
-		case 4: case 5:
-		{
-			teleport_player_to(m_ptr->fy, m_ptr->fx);
-			break;
-		}
-
-		case 6:
-		{
-			if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
-			{
-				msg("You resist the effects!");
-				break;
-			}
-
-			/* Teleport Level */
-			teleport_player_level();
-			break;
-		}
-
-		case 7:
-		{
-			if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
-			{
-				msg("You resist the effects!");
-				break;
-			}
-
-			msg("Your body starts to scramble...");
-
-			/* Pick a pair of stats */
-			ii = randint0(A_MAX);
-			for (jj = ii; jj == ii; jj = randint0(A_MAX)) /* loop */;
-
-			max1 = p_ptr->stat_max[ii];
-			cur1 = p_ptr->stat_cur[ii];
-			max2 = p_ptr->stat_max[jj];
-			cur2 = p_ptr->stat_cur[jj];
-
-			p_ptr->stat_max[ii] = max2;
-			p_ptr->stat_cur[ii] = cur2;
-			p_ptr->stat_max[jj] = max1;
-			p_ptr->stat_cur[jj] = cur1;
-
-			p_ptr->update |= (PU_BONUS);
-
-			break;
-		}
-	}
-}
-
-
-
-
-
-/*
  * Mega-Hack -- track "affected" monsters (see "project()" comments)
  */
 static int project_m_n;
 static int project_m_x;
 static int project_m_y;
-
 
 
 /*
@@ -3031,11 +2777,6 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 	return (obvious);
 }
 
-
-
-
-
-
 /*
  * Helper function for "project()" below.
  *
@@ -3055,7 +2796,8 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
  */
 static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvious)
 {
-	int k = 0;
+	/* Get the damage type details */
+	const struct gf_type *gf_ptr = &gf_table[typ];
 
 	/* Player blind-ness */
 	bool blind = (p_ptr->timed[TMD_BLIND] ? TRUE : FALSE);
@@ -3069,23 +2811,14 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 	/* Monster name (for damage) */
 	char killer[80];
 
-	/* Hack -- messages */
-	const char *act = NULL;
-
-
 	/* No player here */
 	if (!(cave->m_idx[y][x] < 0)) return (FALSE);
 
 	/* Never affect projector */
 	if (cave->m_idx[y][x] == who) return (FALSE);
 
-
-	/* Limit maximum damage XXX XXX XXX */
-	if (dam > 1600) dam = 1600;
-
 	/* Reduce damage by distance */
 	dam = (dam + r) / (r + 1);
-
 
 	/* Get the source monster */
 	m_ptr = &mon_list[who];
@@ -3096,476 +2829,24 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 	/* Get the monster's real name */
 	monster_desc(killer, sizeof(killer), m_ptr, MDESC_SHOW | MDESC_IND2);
 
+	/* Let a blind player know what is going on */
+	if (blind)
+		msg("You are hit by %s!", gf_ptr->desc);
 
-	/* Analyze the damage */
-	switch (typ)
-	{
-		/* Standard damage -- hurts inventory too */
-		case GF_ACID:
-		{
-			if (blind) msg("You are hit by acid!");
-			acid_dam(dam, killer);
-			break;
-		}
+	if (typ == GF_GRAVITY)
+		msg("Gravity warps around you.");
 
-		/* Standard damage -- hurts inventory too */
-		case GF_FIRE:
-		{
-			if (blind) msg("You are hit by fire!");
-			fire_dam(dam, killer);
-			break;
-		}
-
-		/* Standard damage -- hurts inventory too */
-		case GF_COLD:
-		{
-			if (blind) msg("You are hit by cold!");
-			cold_dam(dam, killer);
-			break;
-		}
-
-		/* Standard damage -- hurts inventory too */
-		case GF_ELEC:
-		{
-			if (blind) msg("You are hit by lightning!");
-			elec_dam(dam, killer);
-			break;
-		}
-
-		/* Standard damage -- also poisons player */
-		case GF_POIS:
-		{
-			if (blind) msg("You are hit by poison!");
-			if (p_ptr->state.flags[OF_RES_POIS])
-			{
-				dam = RES_POIS_ADJ(dam, NOT_USED);
-				wieldeds_notice_flag(OF_RES_POIS);
-			}
-
-			if (p_ptr->timed[TMD_OPP_POIS])
-				dam = RES_POIS_ADJ(dam, NOT_USED);
-
-			take_hit(dam, killer);
-			if (!(p_ptr->state.flags[OF_RES_POIS] || p_ptr->timed[TMD_OPP_POIS]))
-			{
-				(void)inc_timed(TMD_POISONED, randint0(dam) + 10, TRUE);
-			}
-			break;
-		}
-
-		/* Standard damage */
-		case GF_MISSILE:
-		{
-			if (blind) msg("You are hit by something!");
-			take_hit(dam, killer);
-			break;
-		}
-
-		/* Holy Orb -- Player only takes partial damage */
-		case GF_HOLY_ORB:
-		{
-			if (blind) msg("You are hit by something!");
-			dam /= 2;
-			take_hit(dam, killer);
-			break;
-		}
-
-		/* Arrow -- no dodging XXX */
-		case GF_ARROW:
-		{
-			if (blind) msg("You are hit by something sharp!");
-			take_hit(dam, killer);
-			break;
-		}
-
-		/* Plasma -- No resist XXX */
-		case GF_PLASMA:
-		{
-			if (blind) msg("You are hit by something!");
-			take_hit(dam, killer);
-			if (!p_ptr->state.flags[OF_RES_STUN])
-			{
-				int k = (randint1((dam > 40) ? 35 : (dam * 3 / 4 + 5)));
-				(void)inc_timed(TMD_STUN, k, TRUE);
-			}
-			else
-			{
-				wieldeds_notice_flag(OF_RES_STUN);
-			}
-			break;
-		}
-
-		/* Nether -- drain experience */
-		case GF_NETHER:
-		{
-			if (blind) msg("You are hit by something strange!");
-			if (p_ptr->state.flags[OF_RES_NETHR])
-			{
-				dam = RES_NETH_ADJ(dam, RANDOMISE);
-				wieldeds_notice_flag(OF_RES_NETHR);
-			}
-			else
-			{
-				if (p_ptr->state.flags[OF_HOLD_LIFE] && (randint0(100) < 75))
-				{
-					msg("You keep hold of your life force!");
-					wieldeds_notice_flag(OF_HOLD_LIFE);
-				}
-				else
-				{
-					s32b d = 200 + (p_ptr->exp / 100) * MON_DRAIN_LIFE;
-
-					if (p_ptr->state.flags[OF_HOLD_LIFE])
-					{
-						msg("You feel your life slipping away!");
-						lose_exp(d / 10);
-						wieldeds_notice_flag(OF_HOLD_LIFE);
-					}
-					else
-					{
-						msg("You feel your life draining away!");
-						lose_exp(d);
-					}
-				}
-			}
-			take_hit(dam, killer);
-			break;
-		}
-
-		/* Water -- stun/confuse */
-		case GF_WATER:
-		{
-			if (blind) msg("You are hit by something!");
-			if (!p_ptr->state.flags[OF_RES_STUN])
-				(void)inc_timed(TMD_STUN, randint1(40), TRUE);
-			else
-				wieldeds_notice_flag(OF_RES_STUN);
-
-			if (!p_ptr->state.flags[OF_RES_CONFU])
-				(void)inc_timed(TMD_CONFUSED, randint1(5) + 5, TRUE);
-			else
-				wieldeds_notice_flag(OF_RES_CONFU);
-
-			take_hit(dam, killer);
-			break;
-		}
-
-		/* Chaos -- many effects */
-		case GF_CHAOS:
-		{
-			if (blind) msg("You are hit by something strange!");
-			if (p_ptr->state.flags[OF_RES_CHAOS])
-			{
-				dam = RES_CHAO_ADJ(dam, RANDOMISE);
-				wieldeds_notice_flag(OF_RES_CHAOS);
-			}
-			if (!p_ptr->state.flags[OF_RES_CONFU] &&
-					!p_ptr->state.flags[OF_RES_CHAOS])
-			{
-				(void)inc_timed(TMD_CONFUSED, randint0(20) + 10, TRUE);
-			}
-
-			if (!p_ptr->state.flags[OF_RES_CHAOS])
-				(void)inc_timed(TMD_IMAGE, randint1(10), TRUE);
-			else
-				wieldeds_notice_flag(OF_RES_CHAOS);
-
-			if (!p_ptr->state.flags[OF_RES_CHAOS])
-			{
-				if (p_ptr->state.flags[OF_HOLD_LIFE] && (randint0(100) < 75))
-				{
-					msg("You keep hold of your life force!");
-					wieldeds_notice_flag(OF_HOLD_LIFE);
-				}
-				else
-				{
-					s32b d = 5000 + (p_ptr->exp / 100) * MON_DRAIN_LIFE;
-
-					if (p_ptr->state.flags[OF_HOLD_LIFE])
-					{
-						msg("You feel your life slipping away!");
-						lose_exp(d / 10);
-						wieldeds_notice_flag(OF_HOLD_LIFE);
-					}
-					else
-					{
-						msg("You feel your life draining away!");
-						lose_exp(d);
-					}
-				}
-			}
-			else
-			{
-				wieldeds_notice_flag(OF_RES_CHAOS);
-			}
-
-			take_hit(dam, killer);
-			break;
-		}
-
-		/* Shards -- mostly cutting */
-		case GF_SHARD:
-		{
-			if (blind) msg("You are hit by something sharp!");
-			if (p_ptr->state.flags[OF_RES_SHARD])
-			{
-				dam = RES_SHAR_ADJ(dam, RANDOMISE);
-				wieldeds_notice_flag(OF_RES_SHARD);
-			}
-			else
-			{
-				(void)inc_timed(TMD_CUT, dam, TRUE);
-			}
-			take_hit(dam, killer);
-			break;
-		}
-
-		/* Sound -- mostly stunning */
-		case GF_SOUND:
-		{
-			if (blind) msg("You are hit by something!");
-			if (p_ptr->state.flags[OF_RES_SOUND]) {
-				dam = RES_SOUN_ADJ(dam, RANDOMISE);
-				wieldeds_notice_flag(OF_RES_SOUND);
-			} else if (!p_ptr->state.flags[OF_RES_STUN]) {
-				int k = (randint1((dam > 90) ? 35 : (dam / 3 + 5)));
-				(void)inc_timed(TMD_STUN, k, TRUE);
-			} else {
-				wieldeds_notice_flag(OF_RES_STUN);
-			}
-
-			take_hit(dam, killer);
-			break;
-		}
-
-		/* Disenchantment -- see above */
-		case GF_DISEN:
-		{
-			if (blind) msg("You are hit by something strange!");
-			if (p_ptr->state.flags[OF_RES_DISEN])
-			{
-				dam = RES_DISE_ADJ(dam, RANDOMISE);
-				wieldeds_notice_flag(OF_RES_DISEN);
-			}
-			else
-			{
-				(void)apply_disenchant(0);
-			}
-			take_hit(dam, killer);
-			break;
-		}
-
-		/* Nexus -- see above */
-		case GF_NEXUS:
-		{
-			if (blind) msg("You are hit by something strange!");
-			if (p_ptr->state.flags[OF_RES_NEXUS])
-			{
-				dam = RES_NEXU_ADJ(dam, RANDOMISE);
-				wieldeds_notice_flag(OF_RES_NEXUS);
-			}
-			else
-			{
-				apply_nexus(m_ptr);
-			}
-			take_hit(dam, killer);
-			break;
-		}
-
-		/* Force -- mostly stun */
-		case GF_FORCE:
-		{
-			if (blind) msg("You are hit by something!");
-			if (!p_ptr->state.flags[OF_RES_STUN])
-				(void)inc_timed(TMD_STUN, randint1(20), TRUE);
-			else
-				wieldeds_notice_flag(OF_RES_STUN);
-
-			take_hit(dam, killer);
-			break;
-		}
-
-		/* Inertia -- slowness */
-		case GF_INERTIA:
-		{
-			if (blind) msg("You are hit by something strange!");
-			(void)inc_timed(TMD_SLOW, randint0(4) + 4, TRUE);
-			take_hit(dam, killer);
-			break;
-		}
-
-		/* Light -- blinding */
-		case GF_LIGHT:
-		{
-			if (blind) msg("You are hit by something!");
-			if (p_ptr->state.flags[OF_RES_LIGHT])
-			{
-				dam = RES_LIGHT_ADJ(dam, RANDOMISE);
-				wieldeds_notice_flag(OF_RES_LIGHT);
-			}
-			else if (!blind && !p_ptr->state.flags[OF_RES_BLIND])
-			{
-				(void)inc_timed(TMD_BLIND, randint1(5) + 2, TRUE);
-			}
-			else if (p_ptr->state.flags[OF_RES_BLIND])
-			{
-				wieldeds_notice_flag(OF_RES_BLIND);
-			}
-			take_hit(dam, killer);
-			break;
-		}
-
-		/* Dark -- blinding */
-		case GF_DARK:
-		{
-			if (blind) msg("You are hit by something!");
-			if (p_ptr->state.flags[OF_RES_DARK])
-			{
-				dam = RES_DARK_ADJ(dam, RANDOMISE);
-				wieldeds_notice_flag(OF_RES_DARK);
-			}
-			else if (!blind && !p_ptr->state.flags[OF_RES_BLIND])
-			{
-				(void)inc_timed(TMD_BLIND, randint1(5) + 2, TRUE);
-			}
-			else if (p_ptr->state.flags[OF_RES_BLIND])
-			{
-				wieldeds_notice_flag(OF_RES_BLIND);
-			}
-
-			take_hit(dam, killer);
-			break;
-		}
-
-		/* Time -- bolt fewer effects XXX */
-		case GF_TIME:
-		{
-			if (blind) msg("You are hit by something strange!");
-
-			switch (randint1(10))
-			{
-				case 1: case 2: case 3: case 4: case 5:
-				{
-					msg("You feel life has clocked back.");
-					lose_exp(100 + (p_ptr->exp / 100) * MON_DRAIN_LIFE);
-					break;
-				}
-
-				case 6: case 7: case 8: case 9:
-				{
-					switch (randint1(6))
-					{
-						case 1: k = A_STR; act = "strong"; break;
-						case 2: k = A_INT; act = "bright"; break;
-						case 3: k = A_WIS; act = "wise"; break;
-						case 4: k = A_DEX; act = "agile"; break;
-						case 5: k = A_CON; act = "hale"; break;
-						case 6: k = A_CHR; act = "beautiful"; break;
-					}
-
-					msg("You're not as %s as you used to be...", act);
-
-					player_stat_dec(p_ptr, k, FALSE);
-					player_stat_dec(p_ptr, k, FALSE);
-					break;
-				}
-
-				case 10:
-				{
-					msg("You're not as powerful as you used to be...");
-
-					for (k = 0; k < A_MAX; k++)
-					{
-						player_stat_dec(p_ptr, k, FALSE);
-					}
-					break;
-				}
-			}
-			take_hit(dam, killer);
-			break;
-		}
-
-		/* Gravity -- stun plus slowness plus teleport */
-		case GF_GRAVITY:
-		{
-			if (blind) msg("You are hit by something strange!");
-			msg("Gravity warps around you.");
-
-			/* Higher level players can resist the teleportation better */
-			if (randint1(127) > p_ptr->lev)
-				teleport_player(5);
-
-			(void)inc_timed(TMD_SLOW, randint0(4) + 4, TRUE);
-			if (!p_ptr->state.flags[OF_RES_STUN])
-			{
-				int k = (randint1((dam > 90) ? 35 : (dam / 3 + 5)));
-				(void)inc_timed(TMD_STUN, k, TRUE);
-			}
-			else
-			{
-				wieldeds_notice_flag(OF_RES_STUN);
-			}
-			take_hit(dam, killer);
-			break;
-		}
-
-		/* Pure damage */
-		case GF_MANA:
-		{
-			if (blind) msg("You are hit by something!");
-			take_hit(dam, killer);
-			break;
-		}
-
-		/* Pure damage */
-		case GF_METEOR:
-		{
-			if (blind) msg("You are hit by something!");
-			take_hit(dam, killer);
-			break;
-		}
-
-		/* Ice -- cold plus stun plus cuts */
-		case GF_ICE:
-		{
-			if (blind) msg("You are hit by something sharp!");
-			cold_dam(dam, killer);
-
-			if (!p_ptr->state.flags[OF_RES_SHARD])
-				(void)inc_timed(TMD_CUT, damroll(5, 8), TRUE);
-			else
-				wieldeds_notice_flag(OF_RES_SHARD);
-
-			if (!p_ptr->state.flags[OF_RES_STUN])
-				(void)inc_timed(TMD_STUN, randint1(15), TRUE);
-			else
-				wieldeds_notice_flag(OF_RES_STUN);
-
-			break;
-		}
-
-
-		/* Default */
-		default:
-		{
-			/* No damage */
-			dam = 0;
-
-			break;
-		}
-	}
-
+	/* Adjust damage for resistance, immunity or vulnerability, and apply it */
+	dam = adjust_dam(typ, dam);
+	if (dam)
+		take_hit(dam, killer);
 
 	/* Disturb */
 	disturb(1, 0);
 
-
 	/* Return "Anything seen?" */
 	return (obvious);
 }
-
-
-
 
 
 /*
