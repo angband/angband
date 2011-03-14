@@ -120,3 +120,4 @@ RSF(S_HI_UNDEAD,RST_SUMMON,	"fiends of darkness",0,	0,	0,			MSG_SUM_HI_UNDEAD,FA
 RSF(S_HI_DRAGON,RST_SUMMON,	"ancient dragons",	0,	0,	0,			MSG_SUM_HI_DRAGON,FALSE,100,	"summons",				RV(0,0,0,0),	RV(0,0,0,0),	"mumbles")
 RSF(S_WRAITH,   RST_SUMMON,	"ringwraiths",		0,	0,	0,			MSG_SUM_WRAITH,	FALSE,	100,	"summons",				RV(0,0,0,0),	RV(0,0,0,0),	"mumbles")
 RSF(S_UNIQUE,   RST_SUMMON,	"his servants",		0,	0,	0,			MSG_SUM_UNIQUE,	FALSE,	100,	"summons",				RV(0,0,0,0),	RV(0,0,0,0),	"mumbles")
+RSF(MAX,		0,			NULL,			    0,	0, 	0,			0,				FALSE,	0,		NULL,					RV(0,0,0,0),	RV(0,0,0,0),	NULL)

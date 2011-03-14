@@ -203,7 +203,6 @@ enum
 	#define RSF(a, b, c, d, e, f, g, h, i, j, k, l, m) RSF_##a,
 	#include "list-mon-spells.h"
 	#undef RSF
-	RSF_MAX
 };
 
 /*
