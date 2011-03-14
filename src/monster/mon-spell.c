@@ -379,16 +379,16 @@ void do_mon_spell(int spell, int m_idx, bool seen)
 		rad = rf_has(r_ptr->flags, RF_POWERFUL) ? 3 : 2;
 	}
 
-	if (rs_ptr->gf)
+	if (rs_ptr->gf) {
 		(void)project(m_idx, rad, p_ptr->py, p_ptr->px, dam, rs_ptr->gf, flag);
+		monster_learn_resists(m_idx, rs_ptr->gf);
+	}
 	else /* Note that non-projectable attacks are unresistable */
 		take_hit(dam, ddesc);
 
 	do_side_effects(spell, dam, m_idx);
 
-	/* Update monster awareness - XXX need to do opp/imm/vuln also */
-/*	if (ra_ptr->res_flag)
-		update_smart_learn(m_idx, ra_ptr->res_flag); */
+	return;
 }
 
 /**

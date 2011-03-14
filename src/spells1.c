@@ -96,6 +96,23 @@ bool immunity_possible(int type)
 	return FALSE;
 }
 
+/**
+ * Update monster knowledge of player resists.
+ *
+ * \param m_idx is the monster who is learning
+ * \param type is the GF_ type to which it's learning about the player's
+ *    resistance (or lack of)
+ */
+void monster_learn_resists(int m_idx, int type)
+{
+	const struct gf_type *gf_ptr = &gf_table[type];
+
+	if (gf_ptr->learn)
+		update_smart_learn(m_idx, gf_ptr->learn);
+
+	return;
+}
+
 /*
  * Helper function -- return a "nearby" race for polymorphing
  *

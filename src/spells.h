@@ -107,6 +107,7 @@ int check_for_resist(int type);
 bool immunity_possible(int type);
 int inven_damage(int type, int cperc);
 int adjust_dam(int type, int dam);
+void monster_learn_resists(int m_idx, int type);
 
 /* spells2.c */
 extern bool hp_player(int num);
