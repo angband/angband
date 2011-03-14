@@ -70,9 +70,12 @@ int check_for_resist(int type)
 		result = 3;
 
 	/* Notice flags */
-	wieldeds_notice_flag(gf_ptr->immunity);
-	wieldeds_notice_flag(gf_ptr->resist);
-	wieldeds_notice_flag(gf_ptr->vuln);
+	if (gf_ptr->immunity)
+		wieldeds_notice_flag(gf_ptr->immunity);
+	if (gf_ptr->resist)
+		wieldeds_notice_flag(gf_ptr->resist);
+	if (gf_ptr->vuln)
+		wieldeds_notice_flag(gf_ptr->vuln);
 
 	return result;
 }

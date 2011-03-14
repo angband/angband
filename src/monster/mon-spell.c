@@ -213,7 +213,8 @@ void do_side_effects(int spell, int dam, int m_idx)
 					(check_for_resist(rs_ptr->gf) > 0)) ||
 					p_ptr->state.flags[re_ptr->res_flag]) {
 				msg("You resist the effect!");
-				wieldeds_notice_flag(re_ptr->res_flag);
+				if (re_ptr->res_flag)
+					wieldeds_notice_flag(re_ptr->res_flag);
 				continue;
 			}
 
