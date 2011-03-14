@@ -12,7 +12,7 @@
  */
 enum
 {
-    #define GF(a, b, c, d, e, f, g, h, i, j, k, l) GF_##a,
+    #define GF(a, b, c, d, e, f, g, h, i, j, k, l, m) GF_##a,
     #include "list-gf-types.h"
     #undef GF
 };
@@ -23,6 +23,7 @@ enum
 struct gf_type {
     u16b name;      	/* numerical index (GF_#) */
 	char *desc;			/* text description (if blind) */
+	int learn;			/* AI flag for monster learning about player resists */
 	int resist;			/* object flag for resistance */
 	int num;			/* numerator for resistance */
 	random_value denom;	/* denominator for resistance */

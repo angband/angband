@@ -33,8 +33,8 @@
  */
 const struct gf_type gf_table[] =
 {
-        #define GF(a, b, c, d, e, f, g, h, i, j, k, l) \
-			{ GF_##a, b, c, d, e, f, g, h, i, j, k, l },
+        #define GF(a, b, c, d, e, f, g, h, i, j, k, l, m) \
+			{ GF_##a, b, c, d, e, f, g, h, i, j, k, l, m },
                 #define RV(b, x, y, m) {b, x, y, m}
         #include "list-gf-types.h"
         #undef GF
@@ -411,7 +411,7 @@ void teleport_player_level(void)
 
 static const char *gf_name_list[] =
 {
-    #define GF(a, b, c, d, e, f, g, h, i, j, k, l) #a,
+    #define GF(a, b, c, d, e, f, g, h, i, j, k, l, m) #a,
     #include "list-gf-types.h"
     #undef GF
     NULL
