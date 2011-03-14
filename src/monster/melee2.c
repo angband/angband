@@ -557,11 +557,6 @@ static int choose_attack_spell(int m_idx, bitflag f[RSF_SIZE])
  * could be left in a bizarre situation after the player ducked behind a
  * pillar and then teleported away, for example.
  *
- * Note that certain spell attacks do not use the "project()" function
- * but "simulate" it via the "direct" variable, which is always at least
- * as restrictive as the "project()" function.  This is necessary to
- * prevent "blindness" attacks and such from bending around walls.
- *
  * Note that this function attempts to optimize the use of spells for the
  * cases in which the monster has no spells, or has spells but cannot use
  * them, or has spells but they will have no "useful" effect.  Note that
@@ -600,10 +595,6 @@ bool make_attack_spell(int m_idx)
 
 	/* Assume "normal" target */
 	bool normal = TRUE;
-
-	/* Assume "projectable" */
-	bool direct = TRUE;
-
 
 	/* Handle "leaving" */
 	if (p_ptr->leaving) return FALSE;
@@ -715,12 +706,12 @@ bool make_attack_spell(int m_idx)
 	}
 
 	/* Cast the spell. */
+	disturb(1, 0);
+
 	switch (thrown_spell)
 	{
 		case RSF_SHRIEK:
 		{
-			if (!direct) break;
-			disturb(1, 0);
 			msgt(MSG_SHRIEK, "%^s makes a high pitched shriek.", m_name);
 			aggravate_monsters(m_idx);
 			break;
@@ -728,13 +719,9 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_DRAIN_MANA:
 		{
-			if (!direct) break;
 			if (p_ptr->csp)
 			{
 				int r1;
-
-				/* Disturb if legal */
-				disturb(1, 0);
 
 				/* Basic message */
 				msg("%^s draws psychic energy from you!", m_name);
@@ -743,8 +730,7 @@ bool make_attack_spell(int m_idx)
 				r1 = (randint1(rlev) / 2) + 1;
 
 				/* Full drain */
-				if (r1 >= p_ptr->csp)
-				{
+				if (r1 >= p_ptr->csp) {
 					r1 = p_ptr->csp;
 					p_ptr->csp = 0;
 					p_ptr->csp_frac = 0;
@@ -752,28 +738,26 @@ bool make_attack_spell(int m_idx)
 
 				/* Partial drain */
 				else
-				{
 					p_ptr->csp -= r1;
-				}
 
 				/* Redraw mana */
 				p_ptr->redraw |= (PR_MANA);
 
 				/* Heal the monster */
-				if (m_ptr->hp < m_ptr->maxhp)
-				{
+				if (m_ptr->hp < m_ptr->maxhp) {
+
 					/* Heal */
 					m_ptr->hp += (6 * r1);
-					if (m_ptr->hp > m_ptr->maxhp) m_ptr->hp = m_ptr->maxhp;
+					if (m_ptr->hp > m_ptr->maxhp)
+						m_ptr->hp = m_ptr->maxhp;
 
 					/* Redraw (later) if needed */
-					if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
+					if (p_ptr->health_who == m_idx)
+						p_ptr->redraw |= (PR_HEALTH);
 
 					/* Special message */
 					if (seen)
-					{
 						msg("%^s appears healthier.", m_name);
-					}
 				}
 			}
 			update_smart_learn(m_idx, DRS_MANA);
@@ -782,8 +766,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_SCARE:
 		{
-			if (!direct) break;
-			disturb(1, 0);
 			if (blind) msgt(MSG_CAST_FEAR, "%^s mumbles, and you hear scary noises.", m_name);
 			else msgt(MSG_CAST_FEAR, "%^s casts a fearful illusion.", m_name);
 			if (p_ptr->state.flags[OF_RES_FEAR])
@@ -805,8 +787,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_BLIND:
 		{
-			if (!direct) break;
-			disturb(1, 0);
 			if (blind) msg("%^s mumbles.", m_name);
 			else msg("%^s casts a spell, burning your eyes!", m_name);
 			if (p_ptr->state.flags[OF_RES_BLIND])
@@ -828,8 +808,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_CONF:
 		{
-			if (!direct) break;
-			disturb(1, 0);
 			if (blind) msg("%^s mumbles, and you hear puzzling noises.", m_name);
 			else msg("%^s creates a mesmerising illusion.", m_name);
 			if (p_ptr->state.flags[OF_RES_CONFU])
@@ -851,8 +829,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_SLOW:
 		{
-			if (!direct) break;
-			disturb(1, 0);
 			msg("%^s drains power from your muscles!", m_name);
 			if (p_ptr->state.flags[OF_FREE_ACT])
 			{
@@ -873,8 +849,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_HOLD:
 		{
-			if (!direct) break;
-			disturb(1, 0);
 			if (blind) msg("%^s mumbles.", m_name);
 			else msg("%^s stares deep into your eyes!", m_name);
 			if (p_ptr->state.flags[OF_FREE_ACT])
@@ -896,7 +870,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_HASTE:
 		{
-			disturb(1, 0);
 			if (blind)
 				msg("%^s mumbles.", m_name);
 			else
@@ -917,8 +890,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_HEAL:
 		{
-			disturb(1, 0);
-
 			/* Message */
 			if (blind)
 				msg("%^s mumbles.", m_name);
@@ -969,7 +940,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_BLINK:
 		{
-			disturb(1, 0);
 			msg("%^s blinks away.", m_name);
 			teleport_away(m_idx, 10);
 			break;
@@ -977,7 +947,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_TPORT:
 		{
-			disturb(1, 0);
 			msg("%^s teleports away.", m_name);
 			teleport_away(m_idx, MAX_SIGHT * 2 + 5);
 			break;
@@ -985,8 +954,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_TELE_TO:
 		{
-			if (!direct) break;
-			disturb(1, 0);
 			msg("%^s commands you to return.", m_name);
 			teleport_player_to(m_ptr->fy, m_ptr->fx);
 			break;
@@ -994,8 +961,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_TELE_AWAY:
 		{
-			if (!direct) break;
-			disturb(1, 0);
 			msg("%^s teleports you away.", m_name);
 			teleport_player(100);
 			break;
@@ -1003,8 +968,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_TELE_LEVEL:
 		{
-			if (!direct) break;
-			disturb(1, 0);
 			if (blind) msg("%^s mumbles strangely.", m_name);
 			else msg("%^s gestures at your feet.", m_name);
 			if (p_ptr->state.flags[OF_RES_NEXUS])
@@ -1026,8 +989,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_DARKNESS:
 		{
-			if (!direct) break;
-			disturb(1, 0);
 			if (blind) msg("%^s mumbles.", m_name);
 			else msg("%^s gestures in shadow.", m_name);
 			(void)unlight_area(0, 3);
@@ -1036,8 +997,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_TRAPS:
 		{
-			if (!direct) break;
-			disturb(1, 0);
 			if (blind) msgt(MSG_CREATE_TRAP, "%^s mumbles, and then cackles evilly.", m_name);
 			else msgt(MSG_CREATE_TRAP, "%^s casts a spell and cackles evilly.", m_name);
 			(void)trap_creation();
@@ -1046,8 +1005,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_FORGET:
 		{
-			if (!direct) break;
-			disturb(1, 0);
 			msg("%^s tries to blank your mind.", m_name);
 
 			if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
@@ -1060,7 +1017,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_S_KIN:
 		{
-			disturb(1, 0);
 			if (blind) msg("%^s mumbles.", m_name);
 			else msgt(MSG_SUM_MONSTER, "%^s magically summons %s %s.", m_name, m_poss,
 			                (rf_has(r_ptr->flags, RF_UNIQUE) ?
@@ -1081,7 +1037,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_S_HI_DEMON:
 		{
-			disturb(1, 0);
 			if (blind) msg("%^s mumbles.", m_name);
 			else msgt(MSG_SUM_HI_DEMON, "%^s magically summons greater demons!", m_name);
 			for (k = 0; k < 8; k++)
@@ -1098,7 +1053,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_S_MONSTER:
 		{
-			disturb(1, 0);
 			if (blind) msg("%^s mumbles.", m_name);
 			else msgt(MSG_SUM_MONSTER, "%^s magically summons help!", m_name);
 			for (k = 0; k < 1; k++)
@@ -1114,7 +1068,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_S_MONSTERS:
 		{
-			disturb(1, 0);
 			if (blind) msg("%^s mumbles.", m_name);
 			else msgt(MSG_SUM_MONSTER, "%^s magically summons monsters!", m_name);
 			for (k = 0; k < 8; k++)
@@ -1130,7 +1083,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_S_ANIMAL:
 		{
-			disturb(1, 0);
 			if (blind) msg("%^s mumbles.", m_name);
 			else msgt(MSG_SUM_ANIMAL, "%^s magically summons animals.", m_name);
 			for (k = 0; k < 6; k++)
@@ -1146,7 +1098,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_S_SPIDER:
 		{
-			disturb(1, 0);
 			if (blind) msg("%^s mumbles.", m_name);
 			else msgt(MSG_SUM_SPIDER, "%^s magically summons spiders.", m_name);
 			for (k = 0; k < 6; k++)
@@ -1162,7 +1113,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_S_HOUND:
 		{
-			disturb(1, 0);
 			if (blind) msg("%^s mumbles.", m_name);
 			else msgt(MSG_SUM_HOUND, "%^s magically summons hounds.", m_name);
 			for (k = 0; k < 6; k++)
@@ -1178,7 +1128,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_S_HYDRA:
 		{
-			disturb(1, 0);
 			if (blind) msg("%^s mumbles.", m_name);
 			else msgt(MSG_SUM_HYDRA, "%^s magically summons hydras.", m_name);
 			for (k = 0; k < 6; k++)
@@ -1194,7 +1143,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_S_ANGEL:
 		{
-			disturb(1, 0);
 			if (blind) msg("%^s mumbles.", m_name);
 			else msgt(MSG_SUM_ANGEL, "%^s magically summons an angel!", m_name);
 			for (k = 0; k < 1; k++)
@@ -1210,7 +1158,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_S_DEMON:
 		{
-			disturb(1, 0);
 			if (blind) msg("%^s mumbles.", m_name);
 			else msgt(MSG_SUM_DEMON, "%^s magically summons a hellish adversary!", m_name);
 			for (k = 0; k < 1; k++)
@@ -1226,7 +1173,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_S_UNDEAD:
 		{
-			disturb(1, 0);
 			if (blind) msg("%^s mumbles.", m_name);
 			else msgt(MSG_SUM_UNDEAD, "%^s magically summons an undead adversary!", m_name);
 			for (k = 0; k < 1; k++)
@@ -1242,7 +1188,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_S_DRAGON:
 		{
-			disturb(1, 0);
 			if (blind) msg("%^s mumbles.", m_name);
 			else msgt(MSG_SUM_DRAGON, "%^s magically summons a dragon!", m_name);
 			for (k = 0; k < 1; k++)
@@ -1258,7 +1203,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_S_HI_UNDEAD:
 		{
-			disturb(1, 0);
 			if (blind) msg("%^s mumbles.", m_name);
 			else msgt(MSG_SUM_HI_UNDEAD, "%^s magically summons greater undead!", m_name);
 			for (k = 0; k < 8; k++)
@@ -1275,7 +1219,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_S_HI_DRAGON:
 		{
-			disturb(1, 0);
 			if (blind) msg("%^s mumbles.", m_name);
 			else msgt(MSG_SUM_HI_DRAGON, "%^s magically summons ancient dragons!", m_name);
 			for (k = 0; k < 8; k++)
@@ -1292,7 +1235,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_S_WRAITH:
 		{
-			disturb(1, 0);
 			if (blind) msg("%^s mumbles.", m_name);
 			else msgt(MSG_SUM_WRAITH, "%^s magically summons mighty undead opponents!", m_name);
 			for (k = 0; k < 8; k++)
@@ -1313,7 +1255,6 @@ bool make_attack_spell(int m_idx)
 
 		case RSF_S_UNIQUE:
 		{
-			disturb(1, 0);
 			if (blind) msg("%^s mumbles.", m_name);
 			else msgt(MSG_SUM_UNIQUE, "%^s magically summons special opponents!", m_name);
 			for (k = 0; k < 8; k++)
