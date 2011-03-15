@@ -82,17 +82,15 @@ static int nonhp_dam(int spell, int rlev, aspect dam_aspect)
  * Determine the damage of a monster attack which depends on its hp
  *
  * \param spell is the attack type
- * \param m_idx is the monster attacking
+ * \param hp is the monster's hp
  */
-static int hp_dam(int spell, int m_idx)
+static int hp_dam(int spell, int hp)
 {
 	const struct mon_spell *rs_ptr = &mon_spell_table[spell];
 	int dam;
 
-	monster_type *m_ptr = &mon_list[m_idx];
-
 	/* Damage is based on monster's current hp */
-	dam = m_ptr->hp / rs_ptr->div;
+	dam = hp / rs_ptr->div;
 
 	/* Check for maximum damage */
 	if (dam > rs_ptr->cap)
@@ -364,7 +362,7 @@ void do_mon_spell(int spell, int m_idx, bool seen)
 
 	/* Calculate the damage */
 	if (rs_ptr->div)
-		dam = hp_dam(spell, rlev);
+		dam = hp_dam(spell, m_ptr->hp);
 	else
 		dam = nonhp_dam(spell, rlev, RANDOMISE);
 
