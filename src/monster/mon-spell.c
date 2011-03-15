@@ -234,7 +234,7 @@ void do_side_effects(int spell, int dam, int m_idx)
 				dur += damcalc(re_ptr->dam.dice, re_ptr->dam.sides *
 						dam / 100, RANDOMISE);
 
-				if (dur > re_ptr->dam.m_bonus)
+				if (re_ptr->dam.m_bonus && (dur > re_ptr->dam.m_bonus))
 					dur = re_ptr->dam.m_bonus;
 
 				/* Apply the effect */
