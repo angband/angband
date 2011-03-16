@@ -114,7 +114,6 @@ extern byte *temp_y;
 extern byte *temp_x;
 extern maxima *z_info;
 extern monster_type *mon_list;
-extern s32b tot_mon_power;
 extern monster_lore *l_list;
 extern quest *q_list;
 extern store_type *store;

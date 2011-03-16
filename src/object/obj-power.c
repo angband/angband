@@ -21,6 +21,7 @@
 #include "object/tvalsval.h"
 #include "init.h"
 #include "effects.h"
+#include "monster/mon-power.h"
 
 /*
  * Constants for the power algorithm:
