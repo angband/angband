@@ -33,8 +33,8 @@
  */
 const struct gf_type gf_table[] =
 {
-        #define GF(a, b, c, d, e, f, g, h, i, j, k, l, m) \
-			{ GF_##a, b, c, d, e, f, g, h, i, j, k, l, m },
+        #define GF(a, b, c, d, e, f, g, h, i, j, k, l, m, n) \
+			{ GF_##a, b, c, d, e, f, g, h, i, j, k, l, m, n },
                 #define RV(b, x, y, m) {b, x, y, m}
         #include "list-gf-types.h"
         #undef GF
@@ -51,6 +51,11 @@ const struct gf_type gf_table[] =
  * 3 = total immunity
  *
  * \param type is the attack type we are trying to resist
+ *
+ * N.B. As of March 2011, two TMD_ statuses are read across to 
+ * p_ptr->state.flags in calc_bonuses (TMD_FEAR and TMD_CONF). If this is
+ * done with any GF_ resistances, it will result in double-counting of
+ * temporary resistance.
  */
 int check_for_resist(int type)
 {
@@ -80,17 +85,20 @@ int check_for_resist(int type)
 	return result;
 }
 
+
 /**
- * Check whether a GF_ attack type affords immunity. Returns TRUE if
- * an IMM_ flag exists, false if it doesn't.
+ * Check whether the player is immune to side effects of a GF_ type.
  *
- * \param type is the attack type we are checking.
+ * \param type is the GF_ type we are checking.
  */
-bool immunity_possible(int type)
+bool check_side_immune(int type)
 {
 	const struct gf_type *gf_ptr = &gf_table[type];
 
-	if (gf_ptr->immunity)
+	if (gf_ptr->immunity) {
+		if (gf_ptr->side_immune && p_ptr->state.flags[gf_ptr->immunity])
+			return TRUE;
+	} else if (gf_ptr->resist && p_ptr->state.flags[gf_ptr->resist])
 		return TRUE;
 
 	return FALSE;
@@ -428,7 +436,7 @@ void teleport_player_level(void)
 
 static const char *gf_name_list[] =
 {
-    #define GF(a, b, c, d, e, f, g, h, i, j, k, l, m) #a,
+    #define GF(a, b, c, d, e, f, g, h, i, j, k, l, m, n) #a,
     #include "list-gf-types.h"
     #undef GF
     NULL

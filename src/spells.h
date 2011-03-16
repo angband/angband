@@ -12,7 +12,7 @@
  */
 enum
 {
-    #define GF(a, b, c, d, e, f, g, h, i, j, k, l, m) GF_##a,
+    #define GF(a, b, c, d, e, f, g, h, i, j, k, l, m, n) GF_##a,
     #include "list-gf-types.h"
     #undef GF
 };
@@ -29,6 +29,7 @@ struct gf_type {
 	random_value denom;	/* denominator for resistance */
 	int opp;			/* timed flag for temporary resistance ("opposition") */
 	int immunity;		/* object flag for total immunity */
+	bool side_immune;	/* whether immunity protects from ALL side effects */
 	int vuln;			/* object flag for vulnerability */
 	int mon_res;		/* monster flag for resistance */
 	int mon_vuln;		/* monster flag for vulnerability */
@@ -104,7 +105,7 @@ bool res_stat(int stat);
 bool apply_disenchant(int mode);
 bool project(int who, int rad, int y, int x, int dam, int typ, int flg);
 int check_for_resist(int type);
-bool immunity_possible(int type);
+bool check_side_immune(int type);
 int inven_damage(int type, int cperc);
 int adjust_dam(int type, int dam);
 void monster_learn_resists(int m_idx, int type);

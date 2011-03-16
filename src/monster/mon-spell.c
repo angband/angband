@@ -202,13 +202,11 @@ void do_side_effects(int spell, int dam, int m_idx)
 
 			/*
 			 * Check for resistance - there are three possibilities:
-			 * 1. Immunity to the attack type
+			 * 1. Immunity to the attack type if side_immune is TRUE
 			 * 2. Resistance to the attack type if it affords no immunity
 			 * 3. Resistance to the specific side-effect
 			 */
-			if ((rs_ptr->gf && (check_for_resist(rs_ptr->gf) == 3)) ||
-					(rs_ptr->gf && !immunity_possible(rs_ptr->gf) &&
-					(check_for_resist(rs_ptr->gf) > 0)) ||
+			if ((rs_ptr->gf && check_side_immune(rs_ptr->gf)) ||
 					p_ptr->state.flags[re_ptr->res_flag]) {
 				msg("You resist the effect!");
 				if (re_ptr->res_flag)
