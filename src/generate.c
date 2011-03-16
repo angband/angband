@@ -863,7 +863,7 @@ static void fill_yrange(struct cave *c, int x, int y1, int y2, int feat, int inf
 
 
 static void fill_circle(struct cave *c, int y0, int x0, int radius, int border, int feat, int info) {
-	int i, last;
+	int i, last = 0;
 	int r2 = radius * radius;
 	for(i = 0; i <= radius; i++) {
 		double j = sqrt(r2 - (i * i));

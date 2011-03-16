@@ -108,7 +108,7 @@ static int hp_dam(int spell, int hp)
  */
 void drain_stats(int num, bool sustain, bool perma)
 {
-	int i, k;
+	int i, k = 0;
 	const char *act = NULL;
 
 	for (i = 0; i < num; i++) {
