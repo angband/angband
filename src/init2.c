@@ -2399,15 +2399,6 @@ errr eval_r_power(struct monster_race *races)
 
 	int iteration;
 
-	/* If we came here from the .raw file, the monster power data is already done */
-	/* Hack - use Morgy (#547) as the test case */
-	r_ptr = &races[547];
-	if (r_ptr->power)
-	{
-	     /*	msg("Monster power array already filled - returning."); */
-		return 0;
-	}
-
 	/* Allocate space for power */
 	power = C_ZNEW(z_info->r_max, long);
 
