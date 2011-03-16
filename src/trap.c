@@ -251,7 +251,7 @@ void hit_trap(int y, int x)
 		{
 			msg("You are enveloped in flames!");
 			dam = damroll(4, 6);
-			dam = adjust_dam(GF_FIRE, dam);
+			dam = adjust_dam(GF_FIRE, dam, RANDOMISE, check_for_resist(GF_FIRE));
 			if (dam) {
 				take_hit(dam, "a fire trap");
 				inven_damage(GF_FIRE, MIN(dam * 5, 300));
@@ -263,7 +263,7 @@ void hit_trap(int y, int x)
 		{
 			msg("You are splashed with acid!");
 			dam = damroll(4, 6);
-			dam = adjust_dam(GF_ACID, dam);
+			dam = adjust_dam(GF_ACID, dam, RANDOMISE, check_for_resist(GF_ACID));
 			if (dam) {
 				take_hit(dam, "an acid trap");
 				inven_damage(GF_ACID, MIN(dam * 5, 300));

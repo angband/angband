@@ -857,26 +857,39 @@ static int minus_ac(void)
  *
  * \param type is the attack type we are checking.
  * \param dam is the unadjusted damage.
+ * \param dam_aspect is the calc we want (min, avg, max, random).
+ * \param resist is the degree of resistance (-1 = vuln, 3 = immune).
  */
-int adjust_dam(int type, int dam)
+int adjust_dam(int type, int dam, aspect dam_aspect, int resist)
 {
 	const struct gf_type *gf_ptr = &gf_table[type];
-	int x, i;
+	int i, denom;
 
-	x = check_for_resist(type);
-
-	if (x == 3) /* immune */
+	if (resist == 3) /* immune */
 		return 0;
 
 	/* Hack - acid damage is halved by armour, holy orb is halved */
 	if ((type == GF_ACID && minus_ac()) || type == GF_HOLY_ORB)
 		dam = (dam + 1) / 2;
 
-	if (x == -1) /* vulnerable */
+	if (resist == -1) /* vulnerable */
 		return (dam * 4 / 3);
 
-	for (i = x; i > 0; i--)
-		dam = dam * gf_ptr->num / randcalc(gf_ptr->denom, 0, RANDOMISE);
+	/* Variable resists vary the denominator, so we need to invert the logic
+	 * of dam_aspect. (m_bonus is unused) */
+	switch (dam_aspect) {
+		case MINIMISE:
+			denom = randcalc(gf_ptr->denom, 0, MAXIMISE);
+			break;
+		case MAXIMISE:
+			denom = randcalc(gf_ptr->denom, 0, MINIMISE);
+			break;
+		default:
+			denom = randcalc(gf_ptr->denom, 0, dam_aspect);
+	}
+
+	for (i = resist; i > 0; i--)
+		dam = dam * gf_ptr->num / denom;
 
 	return dam;
 }
@@ -2865,7 +2878,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		msg("Gravity warps around you.");
 
 	/* Adjust damage for resistance, immunity or vulnerability, and apply it */
-	dam = adjust_dam(typ, dam);
+	dam = adjust_dam(typ, dam, RANDOMISE, check_for_resist(typ));
 	if (dam)
 		take_hit(dam, killer);
 

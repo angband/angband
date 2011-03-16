@@ -107,7 +107,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg);
 int check_for_resist(int type);
 bool check_side_immune(int type);
 int inven_damage(int type, int cperc);
-int adjust_dam(int type, int dam);
+int adjust_dam(int type, int dam, aspect dam_aspect, int resist);
 void monster_learn_resists(int m_idx, int type);
 
 /* spells2.c */

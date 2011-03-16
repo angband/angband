@@ -812,7 +812,8 @@ bool make_attack_normal(int m_idx)
 					msg("You are covered in acid!");
 
 					/* Special damage */
-					damage = adjust_dam(GF_ACID, damage);
+					damage = adjust_dam(GF_ACID, damage, RANDOMISE, 
+						check_for_resist(GF_ACID));
 					if (damage) {
 						take_hit(damage, ddesc);
 						inven_damage(GF_ACID, MIN(damage * 5, 300));
@@ -833,7 +834,8 @@ bool make_attack_normal(int m_idx)
 					msg("You are struck by electricity!");
 
 					/* Take damage (special) */
-					damage = adjust_dam(GF_ELEC, damage);
+					damage = adjust_dam(GF_ELEC, damage, RANDOMISE,
+						check_for_resist(GF_ELEC));
 					if (damage) {
 						take_hit(damage, ddesc);
 						inven_damage(GF_ELEC, MIN(damage * 5, 300));
@@ -854,7 +856,8 @@ bool make_attack_normal(int m_idx)
 					msg("You are enveloped in flames!");
 
 					/* Take damage (special) */
-					damage = adjust_dam(GF_FIRE, damage);
+					damage = adjust_dam(GF_FIRE, damage, RANDOMISE,
+						check_for_resist(GF_FIRE));
 					if (damage) {
 						take_hit(damage, ddesc);
 						inven_damage(GF_FIRE, MIN(damage * 5, 300));
@@ -875,7 +878,8 @@ bool make_attack_normal(int m_idx)
 					msg("You are covered with frost!");
 
 					/* Take damage (special) */
-					damage = adjust_dam(GF_COLD, damage);
+					damage = adjust_dam(GF_COLD, damage, RANDOMISE,
+						check_for_resist(GF_COLD));
 					if (damage) {
 						take_hit(damage, ddesc);
 						inven_damage(GF_COLD, MIN(damage * 5, 300));
