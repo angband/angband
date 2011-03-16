@@ -2030,6 +2030,17 @@ static long eval_max_dam(monster_race *r_ptr)
 		spell_dam = (BO_PLAS_DMG(rlev, MAXIMISE));
 	if (rsf_has(r_ptr->spell_flags, RSF_BO_ICEE) && spell_dam < (RES_COLD_ADJ(BO_ICEE_DMG(rlev, MAXIMISE), MINIMISE)))
 		spell_dam = (RES_COLD_ADJ(BO_ICEE_DMG(rlev, MAXIMISE), MINIMISE));
+	/* Projectile spells */
+	if (rsf_has(r_ptr->spell_flags, RSF_ARROW_1) && spell_dam < (ARROW1_DMG(rlev, MAXIMISE)))
+		spell_dam = (ARROW1_DMG(rlev, MAXIMISE));
+	if (rsf_has(r_ptr->spell_flags, RSF_ARROW_2) && spell_dam < (ARROW2_DMG(rlev, MAXIMISE)))
+		spell_dam = (ARROW2_DMG(rlev, MAXIMISE));
+	if (rsf_has(r_ptr->spell_flags, RSF_ARROW_3) && spell_dam < (ARROW3_DMG(rlev, MAXIMISE)))
+		spell_dam = (ARROW3_DMG(rlev, MAXIMISE));
+	if (rsf_has(r_ptr->spell_flags, RSF_ARROW_4) && spell_dam < (ARROW4_DMG(rlev, MAXIMISE)))
+		spell_dam = (ARROW4_DMG(rlev, MAXIMISE));
+	if (rsf_has(r_ptr->spell_flags, RSF_BOULDER) && spell_dam < (BOULDER_DMG(rlev, MAXIMISE)))
+		spell_dam = (BOULDER_DMG(rlev, MAXIMISE));
 	if (rsf_has(r_ptr->spell_flags, RSF_MISSILE) && spell_dam < (MISSILE_DMG(rlev, MAXIMISE)))
 		spell_dam = (MISSILE_DMG(rlev, MAXIMISE));
 	/* Small annoyance value */
@@ -2037,7 +2048,7 @@ static long eval_max_dam(monster_race *r_ptr)
 		spell_dam = 5;
 	/* Somewhat higher annoyance values */
 	if (rsf_has(r_ptr->spell_flags, RSF_BLIND) && spell_dam < 10)
-		spell_dam = 8;
+		spell_dam = 10;
 	if (rsf_has(r_ptr->spell_flags, RSF_CONF) && spell_dam < 10)
 		spell_dam = 10;
 	/* A little more dangerous */
@@ -2051,24 +2062,27 @@ static long eval_max_dam(monster_race *r_ptr)
 		spell_dam = 70;
 	if (rsf_has(r_ptr->spell_flags, RSF_HEAL) && spell_dam < 30)
 		spell_dam = 30;
-	if (rsf_has(r_ptr->spell_flags, RSF_BLINK) && spell_dam < 5)
+	if (rsf_has(r_ptr->spell_flags, RSF_BLINK) && spell_dam < 15)
 		spell_dam = 15;
 	if (rsf_has(r_ptr->spell_flags, RSF_TELE_TO) && spell_dam < 25)
 		spell_dam = 25;
 	if (rsf_has(r_ptr->spell_flags, RSF_TELE_AWAY) && spell_dam < 25)
 		spell_dam = 25;
 	if (rsf_has(r_ptr->spell_flags, RSF_TELE_LEVEL) && spell_dam < 40)
-		spell_dam = 25;
+		spell_dam = 40;
 	if (rsf_has(r_ptr->spell_flags, RSF_DARKNESS) && spell_dam < 5)
-		spell_dam = 6;
+		spell_dam = 5;
 	if (rsf_has(r_ptr->spell_flags, RSF_TRAPS) && spell_dam < 10)
-		spell_dam = 5;
+		spell_dam = 10;
 	if (rsf_has(r_ptr->spell_flags, RSF_FORGET) && spell_dam < 25)
-		spell_dam = 5;
+		spell_dam = 25;
 	/* All summons are assigned arbitrary values */
 	/* Summon kin is more dangerous at deeper levels */
 	if (rsf_has(r_ptr->spell_flags, RSF_S_KIN) && spell_dam < rlev * 2)
 		spell_dam = rlev * 2;
+	/* Shriek can bring dangerous combinations together */
+	if (rsf_has(r_ptr->spell_flags, RSF_SHRIEK) && spell_dam < rlev * 3 / 2)
+		spell_dam = rlev * 3 / 2;
 	/* Dangerous! */
 	if (rsf_has(r_ptr->spell_flags, RSF_S_HI_DEMON) && spell_dam < 250)
 		spell_dam = 250;
@@ -2233,13 +2247,13 @@ static long eval_max_dam(monster_race *r_ptr)
 		if (melee_dam < 1) melee_dam = 1;
 
 	/*
-	 * Get the max damage attack
+	 * Combine spell and melee damage
 	 */
-
-	if (dam < spell_dam) dam = spell_dam;
-	if (dam < melee_dam) dam = melee_dam;
-
+	dam = (spell_dam + melee_dam);
+	
 	r_ptr->highest_threat = dam;
+	r_ptr->spell_dam = spell_dam;	/*AMF:DEBUG*/
+	r_ptr->melee_dam = melee_dam;	/*AMF:DEBUG*/
 
 	/*
 	 * Adjust for speed.  Monster at speed 120 will do double damage,
@@ -2333,6 +2347,7 @@ static long eval_hp_adjust(monster_race *r_ptr)
 	if (resists >= 6)
 	{
 		if (rf_has(r_ptr->flags, RF_HURT_ROCK)) resists -= 1;
+		if (rf_has(r_ptr->flags, RF_HURT_LIGHT)) resists -= 1;
 		if (!rf_has(r_ptr->flags, RF_NO_SLEEP)) resists -= 3;
 		if (!rf_has(r_ptr->flags, RF_NO_FEAR)) resists -= 2;
 		if (!rf_has(r_ptr->flags, RF_NO_CONF)) resists -= 2;
@@ -2478,22 +2493,11 @@ for (iteration = 0; iteration < 3; iteration ++)
 
 		/*
 		 * Hack - We have to use an adjustment factor to prevent overflow.
+		 * Try to scale evenly across all levels instead of scaling by level.
 		 */
-		if (lvl >= 90)
-		{
-			hp /= 1000;
-			dam /= 1000;
-		}
-		else if (lvl >= 65)
-		{
-			hp /= 100;
-			dam /= 100;
-		}
-		else if (lvl >= 40)
-		{
-			hp /= 10;
-			dam /= 10;
-		}
+		hp /= 2;
+		if(hp < 1) hp = 1;
+		r_ptr->hp = hp;		/*AMF:DEBUG*/
 
 		/* Define the power rating */
 		power[i] = hp * dam;
@@ -2504,6 +2508,10 @@ for (iteration = 0; iteration < 3; iteration ++)
 		else if (rf_has(r_ptr->flags, RF_FRIEND)) power[i] *= 2;
 
 		else if (rf_has(r_ptr->flags, RF_FRIENDS)) power[i] *= 5;
+	
+		/* Adjust for escorts */
+		if (rf_has(r_ptr->flags, RF_ESCORTS)) power[i] *= 3;
+		if (rf_has(r_ptr->flags, RF_ESCORT) && !rf_has(r_ptr->flags, RF_ESCORTS)) power[i] *= 2;
 
 		/* Adjust for multiplying monsters. This is modified by the speed,
                  * as fast multipliers are much worse than slow ones. We also adjust for
@@ -2620,12 +2628,15 @@ for (iteration = 0; iteration < 3; iteration ++)
 			av_hp = tot_hp[lvl] * 10 / mon_count[lvl];
 			av_dam = tot_dam[lvl] * 10 / mon_count[lvl];
 
+			/* Assign monster power */
+			r_ptr->power = power[i];
+
 			/* XXX Justifiable paranoia - avoid divide by zero errors */
 			if (av_hp > 0) power[i] = power[i] / av_hp;
 			if (av_dam > 0) power[i] = power[i] / av_dam;
 
-			/* Assign monster power */
-			r_ptr->power = (s16b)power[i];
+			/* Assign monster scaled power */
+			r_ptr->scaled_power = power[i];
 
 			/* Never less than 1 */
 			if (r_ptr->power < 1) r_ptr->power = 1;

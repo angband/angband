@@ -89,9 +89,16 @@ typedef struct monster_race
 
 	s32b mexp;				/* Exp value for kill */
 
-	s16b power;				/* Monster power */
+	long power;				/* Monster power */
+	long scaled_power;		/* Monster power scaled by level */
 
 	s16b highest_threat;	/* Monster highest threat */
+	
+	/*AMF:DEBUG*/			/**/
+	long melee_dam;			/**/
+	long spell_dam;			/**/
+	long hp;				/**/
+	/*END AMF:DEBUG*/		/**/
 
 	byte freq_innate;		/* Innate spell frequency */
 	byte freq_spell;		/* Other spell frequency */
