@@ -21,8 +21,7 @@
 #include "generate.h"
 #include "object/tvalsval.h"
 #include "object/object.h"
-#include "monster/constants.h"
-#include "monster/monster.h"
+#include "monster/mon-spell.h"
 #include "squelch.h"
 #include "trap.h"
 #include "spells.h"
@@ -803,6 +802,8 @@ static int minus_ac(void)
 
 	char o_name[80];
 
+	/* Avoid crash during monster power calculations */
+	if (!p_ptr->inventory) return FALSE;
 
 	/* Pick a (possibly empty) inventory slot */
 	switch (randint1(6))
@@ -820,7 +821,6 @@ static int minus_ac(void)
 
 	/* No damage left to be done */
 	if (o_ptr->ac + o_ptr->to_a <= 0) return (FALSE);
-
 
 	/* Describe */
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
@@ -889,7 +889,8 @@ int adjust_dam(int type, int dam, aspect dam_aspect, int resist)
 	}
 
 	for (i = resist; i > 0; i--)
-		dam = dam * gf_ptr->num / denom;
+		if (denom)
+			dam = dam * gf_ptr->num / denom;
 
 	return dam;
 }

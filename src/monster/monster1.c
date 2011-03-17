@@ -17,8 +17,7 @@
  */
 
 #include "angband.h"
-#include "monster/constants.h"
-#include "monster/monster.h"
+#include "monster/mon-spell.h"
 #include "object/tvalsval.h"
 
 

@@ -25,6 +25,7 @@
 #include "generate.h"
 #include "init.h"
 #include "monster/monster.h"
+#include "monster/mon-spell.h"
 #include "object/tvalsval.h"
 #include "prefs.h"
 #include "savefile.h"

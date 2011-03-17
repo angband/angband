@@ -2,7 +2,7 @@
 #define INCLUDED_EXTERNS_H
 
 #include "monster/constants.h"
-#include "monster/types.h"
+#include "monster/monster.h"
 #include "object/types.h"
 #include "player/types.h"
 #include "store.h"

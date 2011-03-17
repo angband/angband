@@ -20,9 +20,8 @@
 #include "cave.h"
 #include "generate.h"
 #include "history.h"
-#include "monster/monster.h"
+#include "monster/mon-spell.h"
 #include "object/tvalsval.h"
-#include "object/object.h"
 #include "target.h"
 #include "z-term.h"
 
@@ -1864,7 +1863,32 @@ s16b monster_place(int y, int x, monster_type *n_ptr)
 	return m_idx;
 }
 
+/**
+ * Calculate hp for a monster. This function assumes that the Rand_normal
+ * function has limits of +/- 4x std_dev. If that changes, this function
+ * will become inaccurate.
+ *
+ * \param r_ptr is the race of the monster in question.
+ * \param hp_aspect is the hp calc we want (min, max, avg, random).
+ */
+int mon_hp(const struct monster_race *r_ptr, aspect hp_aspect)
+{
+		int std_dev = (((r_ptr->avg_hp * 10) / 8) + 5) / 10;
 
+		if (r_ptr->avg_hp > 1) std_dev++;
+
+		switch (hp_aspect) {
+			case MINIMISE:
+				return (r_ptr->avg_hp - (4 * std_dev));
+			case MAXIMISE:
+			case EXTREMIFY:
+				return (r_ptr->avg_hp + (4 * std_dev));
+			case AVERAGE:
+				return r_ptr->avg_hp;
+			default:
+				return Rand_normal(r_ptr->avg_hp, std_dev);
+		}
+}
 
 /*
  * Attempt to place a monster of the given race at the given location.
@@ -1989,15 +2013,9 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 
 	/* Uniques get a fixed amount of HP */
 	if (rf_has(r_ptr->flags, RF_UNIQUE))
-	{
 		n_ptr->maxhp = r_ptr->avg_hp;
-	}
-	else
-	{
-		int std_dev = (((r_ptr->avg_hp * 10) / 8) + 5) / 10;
-		if (r_ptr->avg_hp > 1) std_dev++;
-
-		n_ptr->maxhp = Rand_normal(r_ptr->avg_hp, std_dev);
+	else {
+		n_ptr->maxhp = mon_hp(r_ptr, RANDOMISE);
 		n_ptr->maxhp = MAX(n_ptr->maxhp, 1);
 	}
 
@@ -2493,22 +2511,22 @@ static bool summon_specific_okay(int r_idx)
 	/* Check our requirements */
 	switch (summon_specific_type)
 	{
-		case SUMMON_ANIMAL: return !unique && rf_has(flags, RF_ANIMAL);
-		case SUMMON_SPIDER: return !unique && match_monster_bases(base, "spider", NULL);
-		case SUMMON_HOUND: return !unique && match_monster_bases(base, "canine", "zephyr hound", NULL);
-		case SUMMON_HYDRA: return !unique && match_monster_bases(base, "hydra", NULL);
-		case SUMMON_ANGEL: return !scary && match_monster_bases(base, "angel", NULL);
-		case SUMMON_DEMON: return !scary && rf_has(flags, RF_DEMON);
-		case SUMMON_UNDEAD: return !scary && rf_has(flags, RF_UNDEAD);
-		case SUMMON_DRAGON: return !scary && rf_has(flags, RF_DRAGON);
-		case SUMMON_KIN: return !unique && r_ptr->d_char == summon_kin_type;
-		case SUMMON_HI_UNDEAD: return match_monster_bases(base, "lich", "vampire", "wraith", NULL);
-		case SUMMON_HI_DRAGON: return match_monster_bases(base, "ancient dragon", NULL);
-		case SUMMON_HI_DEMON: return match_monster_bases(base, "major demon", NULL);
-		case SUMMON_WRAITH: return unique && match_monster_bases(base, "wraith", NULL);
-		case SUMMON_UNIQUE: return unique;
-		case SUMMON_MONSTER: return !scary;
-		case SUMMON_MONSTERS: return !unique;
+		case S_ANIMAL: return !unique && rf_has(flags, RF_ANIMAL);
+		case S_SPIDER: return !unique && match_monster_bases(base, "spider", NULL);
+		case S_HOUND: return !unique && match_monster_bases(base, "canine", "zephyr hound", NULL);
+		case S_HYDRA: return !unique && match_monster_bases(base, "hydra", NULL);
+		case S_ANGEL: return !scary && match_monster_bases(base, "angel", NULL);
+		case S_DEMON: return !scary && rf_has(flags, RF_DEMON);
+		case S_UNDEAD: return !scary && rf_has(flags, RF_UNDEAD);
+		case S_DRAGON: return !scary && rf_has(flags, RF_DRAGON);
+		case S_KIN: return !unique && r_ptr->d_char == summon_kin_type;
+		case S_HI_UNDEAD: return match_monster_bases(base, "lich", "vampire", "wraith", NULL);
+		case S_HI_DRAGON: return match_monster_bases(base, "ancient dragon", NULL);
+		case S_HI_DEMON: return match_monster_bases(base, "major demon", NULL);
+		case S_WRAITH: return unique && match_monster_bases(base, "wraith", NULL);
+		case S_UNIQUE: return unique;
+		case S_MONSTER: return !scary;
+		case S_MONSTERS: return !unique;
 
 		default: return TRUE;
 	}
@@ -2521,8 +2539,8 @@ static bool summon_specific_okay(int r_idx)
  *
  * We will attempt to place the monster up to 10 times before giving up.
  *
- * Note: SUMMON_UNIQUE and SUMMON_WRAITH (XXX) will summon Uniques
- * Note: SUMMON_HI_UNDEAD and SUMMON_HI_DRAGON may summon Uniques
+ * Note: S_UNIQUE and S_WRAITH (XXX) will summon Uniques
+ * Note: S_HI_UNDEAD and S_HI_DRAGON may summon Uniques
  * Note: None of the other summon codes will ever summon Uniques.
  *
  * This function has been changed.  We now take the "monster level"

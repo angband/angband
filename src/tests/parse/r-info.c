@@ -3,7 +3,7 @@
 #include "unit-test.h"
 #include "init.h"
 #include "monster/constants.h"
-#include "monster/types.h"
+#include "monster/monster.h"
 #include "types.h"
 
 static int setup(void **state) {

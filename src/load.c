@@ -19,7 +19,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "history.h"
-#include "monster/monster.h"
+#include "monster/mon-spell.h"
 #include "object/tvalsval.h"
 #include "savefile.h"
 #include "squelch.h"

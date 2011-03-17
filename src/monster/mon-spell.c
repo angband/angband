@@ -18,6 +18,7 @@
 #include "angband.h"
 #include "spells.h"
 #include "effects.h"
+#include "monster/mon-spell.h"
 
 /**
  * Details of the different monster spells in the game.
@@ -40,8 +41,8 @@ const struct mon_spell mon_spell_table[] =
  */
 const struct spell_effect spell_effect_table[] =
 {
-    #define RSE(a, b, c, d, e, f, g, h, i, j) \
-			{ RSE_##a, b, c, d, e, f, g, h, i, j },
+    #define RSE(a, b, c, d, e, f, g, h, i, j, k) \
+			{ RSE_##a, b, c, d, e, f, g, h, i, j, k },
 		#define RV(b, x, y, m) {b, x, y, m}
     #include "list-spell-effects.h"
     #undef RSE
@@ -106,7 +107,7 @@ static int hp_dam(int spell, int hp)
  * \param sustain is whether sustains will prevent draining
  * \param perma is whether the drains are permanent
  */
-void drain_stats(int num, bool sustain, bool perma)
+static void drain_stats(int num, bool sustain, bool perma)
 {
 	int i, k = 0;
 	const char *act = NULL;
@@ -167,7 +168,7 @@ static void swap_stats(void)
  * \param dam is the amount of damage caused by the attack
  * \param m_idx is the attacking monster
  */
-void do_side_effects(int spell, int dam, int m_idx)
+static void do_side_effects(int spell, int dam, int m_idx)
 {
 	const struct spell_effect *re_ptr;
 	const struct mon_spell *rs_ptr = &mon_spell_table[spell];
@@ -205,6 +206,9 @@ void do_side_effects(int spell, int dam, int m_idx)
 			 * 1. Immunity to the attack type if side_immune is TRUE
 			 * 2. Resistance to the attack type if it affords no immunity
 			 * 3. Resistance to the specific side-effect
+			 *
+			 * TODO - add interesting messages to the RSE_ and GF_ tables
+			 * to replace the generic ones below.
 			 */
 			if ((rs_ptr->gf && check_side_immune(rs_ptr->gf)) ||
 					p_ptr->state.flags[re_ptr->res_flag]) {
@@ -295,14 +299,43 @@ void do_side_effects(int spell, int dam, int m_idx)
 						(void)apply_disenchant(0);
 						break;
 
+					case S_DRAIN_MANA:
+					case S_HEAL:
+					case S_BLINK:
+					case S_DARKEN:
+					case S_TRAPS:
+					case S_AGGRAVATE:
+					case S_KIN:
+					case S_MONSTER:
+					case S_MONSTERS:
+						/* XXX Fixme */
 					default:
-						quit_fmt("Unknown side effect flag %d", re_ptr->flag);
+						break;
 				}		
 			}
 		}
 	}
 	return;
 }
+
+/**
+ * Calculate the damage of a monster spell.
+ *
+ * \param spell is the spell in question.
+ * \param hp is the hp of the casting monster.
+ * \param rlev is the level of the casting monster.
+ * \param dam_aspect is the damage calc we want (min, max, avg, random).
+ */
+static int mon_spell_dam(int spell, int hp, int rlev, aspect dam_aspect)
+{
+	const struct mon_spell *rs_ptr = &mon_spell_table[spell];
+
+	if (rs_ptr->div)
+		return hp_dam(spell, hp);
+	else
+		return nonhp_dam(spell, rlev, dam_aspect);
+}
+
 
 /**
  * Process a monster spell 
@@ -359,10 +392,7 @@ void do_mon_spell(int spell, int m_idx, bool seen)
 	}
 
 	/* Calculate the damage */
-	if (rs_ptr->div)
-		dam = hp_dam(spell, m_ptr->hp);
-	else
-		dam = nonhp_dam(spell, rlev, RANDOMISE);
+	dam = mon_spell_dam(spell, m_ptr->hp, rlev, RANDOMISE);
 
 	/* Get the "died from" name in case this attack kills @ */
 	monster_desc(ddesc, sizeof(ddesc), m_ptr, MDESC_SHOW | MDESC_IND2);
@@ -394,10 +424,10 @@ void do_mon_spell(int spell, int m_idx, bool seen)
  * \param f is the set of spell flags we're testing
  * \param type is the spell type(s) we're looking for
  */
-bool test_spells(bitflag *f, mon_spell_type type)
+bool test_spells(bitflag *f, enum mon_spell_type type)
 {
 	const struct mon_spell *rs_ptr;
-	
+
 	for (rs_ptr = mon_spell_table; rs_ptr->index < RSF_MAX; rs_ptr++)
 		if (rsf_has(f, rs_ptr->index) && (rs_ptr->type & type))
 			return TRUE;
@@ -411,7 +441,7 @@ bool test_spells(bitflag *f, mon_spell_type type)
  * \param f is the set of spell flags we're pruning
  * \param type is the spell type(s) we're allowing
  */
-void set_spells(bitflag *f, mon_spell_type type)
+void set_spells(bitflag *f, enum mon_spell_type type)
 {
 	const struct mon_spell *rs_ptr;
 
@@ -420,4 +450,67 @@ void set_spells(bitflag *f, mon_spell_type type)
 			rsf_off(f, rs_ptr->index);
 
 	return;
+}
+
+/**
+ * Calculate a monster's maximum spell power.
+ *
+ * \param r_ptr is the monster we're studying
+ * \param resist is the degree of resistance we're assuming to any
+ *   attack type (-1 = vulnerable ... 3 = immune)
+ */
+int best_spell_power(const monster_race *r_ptr, int resist)
+{
+	const struct mon_spell *rs_ptr;
+	const struct spell_effect *re_ptr;
+	int dam = 0, best_dam = 0; 
+
+	/* Extract the monster level */
+	int rlev = ((r_ptr->level >= 1) ? r_ptr->level : 1);
+
+	for (rs_ptr = mon_spell_table; rs_ptr->index < RSF_MAX; rs_ptr++) {
+		if (rsf_has(r_ptr->spell_flags, rs_ptr->index)) {
+
+			/* Get the maximum basic damage output of the spell (could be 0) */
+			dam = mon_spell_dam(rs_ptr->index, mon_hp(r_ptr, MAXIMISE), rlev,
+				MAXIMISE);
+
+			/* For all attack forms the player can save against, damage
+			 * is halved */
+			if (rs_ptr->save)
+				dam /= 2;
+
+			/* Adjust the real damage by the assumed resistance (if it is a
+			 * resistable type) */
+			if (rs_ptr->gf)
+				dam = adjust_dam(rs_ptr->gf, dam, MAXIMISE, resist);
+
+			/* Add the power ratings assigned to the various possible spell
+			 * effects (which is crucial for non-damaging spells) */
+			for (re_ptr = spell_effect_table; re_ptr->index < RSE_MAX; re_ptr++) {
+				if ((re_ptr->method && (re_ptr->method == rs_ptr->index)) ||
+						(re_ptr->gf && (re_ptr->gf == rs_ptr->gf))) {
+
+					/* First we adjust the real damage if necessary */
+					if (re_ptr->power.dice)
+						dam = (dam * re_ptr->power.dice) / 100;
+
+					/* Then we add any flat rating for this effect */
+					dam += re_ptr->power.base;
+
+					/* Then we add any rlev-dependent rating */
+					if (re_ptr->power.m_bonus < 0)
+						dam += re_ptr->power.sides / (rlev + 1);
+					else if (re_ptr->power.m_bonus > 0)
+						dam += (re_ptr->power.sides * rlev) / 100;
+				}
+			}
+
+			/* Update the best_dam tracker */
+			if (dam > best_dam)
+				best_dam = dam;
+		}
+	}
+
+	return best_dam;
 }

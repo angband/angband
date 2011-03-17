@@ -19,7 +19,7 @@
 #ifndef MONSTER_POWER_H
 #define MONSTER_POWER_H
 
-#include "monster/types.h"
+#include "monster/monster.h"
 
 /** Variables **/
 extern s32b tot_mon_power;
