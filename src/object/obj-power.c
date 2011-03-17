@@ -111,7 +111,7 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file*
 	log_file, bool known)
 {
 	bitflag s_index[OF_SIZE], f[OF_SIZE];
-	s32b sv = 0;
+	u32b sv = 0;
 	int i, j;
 	int mult;
 	const struct slay *best_s_ptr = NULL;
@@ -160,7 +160,7 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file*
 			mult = best_s_ptr->mult;
 
 		/* Add the multiple to sv */
-		sv += mult * r_ptr->power;
+		sv += mult * r_ptr->scaled_power;
 	}
 
 	/*
