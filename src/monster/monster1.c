@@ -96,16 +96,17 @@ static int mon_resist_effect(int m_idx, int idx, u16b flag)
 	}
 
 	/* Monsters with specific breaths and undead resist stunning*/
-	if (idx == MON_TMD_STUN && (rf_has(r_ptr->flags, RSF_BR_SOUN) ||
-			rsf_has(r_ptr->spell_flags, RSF_BR_WALL)))
+	if (idx == MON_TMD_STUN && (rsf_has(r_ptr->spell_flags, RSF_BR_SOUN) ||
+			rsf_has(r_ptr->spell_flags, RSF_BR_WALL) || rf_has(r_ptr->flags,
+			RF_UNDEAD)))
 	{
 		/* Add the lore */
 		if (m_ptr->ml)
 		{
-			if (rf_has(r_ptr->flags, RSF_BR_SOUN))
-				rf_on(l_ptr->flags, RSF_BR_SOUN);
-			if (rf_has(r_ptr->flags, RSF_BR_WALL))
-				rf_on(l_ptr->flags, RSF_BR_WALL);
+			if (rsf_has(r_ptr->spell_flags, RSF_BR_SOUN))
+				rsf_on(l_ptr->spell_flags, RSF_BR_SOUN);
+			if (rsf_has(r_ptr->spell_flags, RSF_BR_WALL))
+				rsf_on(l_ptr->spell_flags, RSF_BR_WALL);
 		}
 
 		return (TRUE);
@@ -113,16 +114,16 @@ static int mon_resist_effect(int m_idx, int idx, u16b flag)
 
 	/* Monsters with specific breaths resist confusion */
 	if ((idx == MON_TMD_CONF) &&
-		((rf_has(r_ptr->flags, RSF_BR_CHAO)) ||
+		((rsf_has(r_ptr->spell_flags, RSF_BR_CHAO)) ||
 		 (rsf_has(r_ptr->spell_flags, RSF_BR_CONF))) )
 	{
 		/* Add the lore */
 		if (m_ptr->ml)
 		{
-			if (rf_has(r_ptr->flags, RSF_BR_CHAO))
-				rf_on(l_ptr->flags, RSF_BR_CHAO);
-			if (rf_has(r_ptr->flags, RSF_BR_CONF))
-				rf_on(l_ptr->flags, RSF_BR_CONF);
+			if (rsf_has(r_ptr->spell_flags, RSF_BR_CHAO))
+				rsf_on(l_ptr->spell_flags, RSF_BR_CHAO);
+			if (rsf_has(r_ptr->spell_flags, RSF_BR_CONF))
+				rsf_on(l_ptr->spell_flags, RSF_BR_CONF);
 		}
 
 		return (TRUE);
@@ -135,7 +136,7 @@ static int mon_resist_effect(int m_idx, int idx, u16b flag)
 	/* Inertia breathers resist slowing */
 	if (idx == MON_TMD_SLOW && rsf_has(r_ptr->spell_flags, RSF_BR_INER))
 	{
-		rf_on(l_ptr->flags, RSF_BR_INER);
+		rsf_on(l_ptr->spell_flags, RSF_BR_INER);
 		return (TRUE);
 	}
 
