@@ -590,20 +590,46 @@ bool file_put(ang_file *f, const char *buf)
 }
 
 /*
+ * The comp.lang.c FAQ recommends this pairing for varargs functions.
+ * See <http://c-faq.com/varargs/handoff.html>
+ */
+
+/**
  * Append a formatted line of text to the end of file 'f'.
+ *
+ * file_putf() is the ellipsis version. Most file output will call this 
+ * version. It calls file_vputf() to do the real work. It returns TRUE
+ * if the write was successful and FALSE otherwise.
  */
 bool file_putf(ang_file *f, const char *fmt, ...)
 {
-	char buf[1024];
 	va_list vp;
+	bool status;
+
+	if (!f) return FALSE;
 
 	va_start(vp, fmt);
-	(void)vstrnfmt(buf, sizeof(buf), fmt, vp);
+	status = file_vputf(f, fmt, vp);
 	va_end(vp);
 
-	return file_put(f, buf);
+	return status;
 }
 
+/**
+ * Append a formatted line of text to the end of file 'f'.
+ *
+ * file_vputf() is the va_list version. It returns TRUE if the write was 
+ * successful and FALSE otherwise.
+ */
+bool file_vputf(ang_file *f, const char *fmt, va_list vp)
+{
+	char buf[1024];
+
+	if (!f) return FALSE;
+
+	(void)vstrnfmt(buf, sizeof(buf), fmt, vp);
+	return file_put(f, buf);
+}
 
 /*
  * Format and translate a string, then print it out to file.

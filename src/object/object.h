@@ -302,15 +302,6 @@ char *artifact_gen_name(struct artifact *a, const char ***wordlist);
 
 #define sign(x) ((x) > 0 ? 1 : ((x) < 0 ? -1 : 0))
 
-/*
- * Append a formatted line of text to the end of file 'f'.
- */
-void log_file_putf(ang_file *f, const char *fmt, ...);
-
-#define LOG_PRINT(string) log_file_putf(log_file, (string))
-#define LOG_PRINT1(string, val) log_file_putf(log_file, (string), (val))
-#define LOG_PRINT2(string, val1, val2) log_file_putf(log_file, (string), (val1), (val2))
-
 extern struct object *object_byid(s16b oidx);
 extern void objects_init(void);
 extern void objects_destroy(void);

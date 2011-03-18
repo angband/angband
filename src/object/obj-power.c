@@ -136,7 +136,7 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file*
 	/* If it's cached (or there are no slays), return the value */
 	if (sv)
 	{
-		LOG_PRINT("Slay cache hit\n");
+		file_putf(log_file, "Slay cache hit\n");
 		return sv;
 	}
 
@@ -170,31 +170,31 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file*
 	 */
 	if (verbose) {
 		/* Write info about the slay combination and multiplier */
-		LOG_PRINT("Slay multiplier for: ");
+		file_putf(log_file, "Slay multiplier for: ");
 
 		j = list_slays(s_index, s_index, desc, brand, s_mult, FALSE);
 
 		for (i = 0; i < j; i++) {
 			if (brand[i]) {
-				LOG_PRINT(brand[i]);
+				file_putf(log_file, brand[i]);
 			}
 			else {
-				LOG_PRINT(desc[i]);
-				LOG_PRINT1("x%d", s_mult[i]); 
+				file_putf(log_file, desc[i]);
+				file_putf(log_file, "x%d", s_mult[i]); 
 			}
 
-			LOG_PRINT(" ");
+			file_putf(log_file, " ");
 		}
 
-		LOG_PRINT1("\nsv is: %d\n", sv);
-		LOG_PRINT1(" and t_m_p is: %d \n", tot_mon_power);
+		file_putf(log_file, "\nsv is: %d\n", sv);
+		file_putf(log_file, " and t_m_p is: %d \n", tot_mon_power);
 
-		LOG_PRINT1("times 1000 is: %d\n", (1000 * sv) / tot_mon_power);
+		file_putf(log_file, "times 1000 is: %d\n", (1000 * sv) / tot_mon_power);
 	}
 
 	/* Add to the cache */
 	if (fill_slay_cache(s_index, sv))
-		LOG_PRINT("Added to slay cache\n");
+		file_putf(log_file, "Added to slay cache\n");
 
 	return sv;
 }
@@ -231,25 +231,25 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 
 	/* Extract the flags */
 	if (known) {
-		LOG_PRINT("Object is known\n");
+		file_putf(log_file, "Object is known\n");
 		object_flags(o_ptr, flags);
 	} else {
-		LOG_PRINT("Object is not fully known\n");
+		file_putf(log_file, "Object is not fully known\n");
 		object_flags_known(o_ptr, flags);
 	}
 
 	if (verbose) {
-		LOG_PRINT("Object flags =");
+		file_putf(log_file, "Object flags =");
 		for (i = 0; i < (int)OF_SIZE; i++)
-			LOG_PRINT1(" %02x", flags[i]);
-		LOG_PRINT("\n");
+			file_putf(log_file, " %02x", flags[i]);
+		file_putf(log_file, "\n");
 		if (o_ptr->num_pvals) {
 			object_pval_flags(o_ptr, pval_flags);
 			for (j = 0; j < o_ptr->num_pvals; j++) {
-				LOG_PRINT1("PVAL %d flags =", j);
+				file_putf(log_file, "PVAL %d flags =", j);
 				for (i = 0; i < (int)OF_SIZE; i++)
-					LOG_PRINT1(" %02x", pval_flags[j][i]);
-				LOG_PRINT("\n");
+					file_putf(log_file, " %02x", pval_flags[j][i]);
+				file_putf(log_file, "\n");
 			}
 		}
 	}
@@ -271,7 +271,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			 */
 
 			p += (o_ptr->to_d * DAMAGE_POWER / 2);
-			LOG_PRINT1("Adding power from to_dam, total is %d\n", p);
+			file_putf(log_file, "Adding power from to_dam, total is %d\n", p);
 
 			/*
 			 * Add the average damage of fully enchanted (good) ammo for this
@@ -294,11 +294,11 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 				p += (AVG_XBOW_AMMO_DAMAGE * DAMAGE_POWER / 2);
 			}
 
-			LOG_PRINT1("Adding power from ammo, total is %d\n", p);
+			file_putf(log_file, "Adding power from ammo, total is %d\n", p);
 
 			mult = bow_multiplier(o_ptr->sval);
 
-			LOG_PRINT1("Base multiplier for this weapon is %d\n", mult);
+			file_putf(log_file, "Base multiplier for this weapon is %d\n", mult);
 
 			if (of_has(flags, OF_MIGHT) &&
 			    (known || object_pval_is_visible(o_ptr)))
@@ -307,43 +307,43 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 				{
 					p += INHIBIT_POWER;	/* inhibit */
 					mult = 1;	/* don't overflow */
-					LOG_PRINT("INHIBITING - too much extra might\n");
+					file_putf(log_file, "INHIBITING - too much extra might\n");
 				}
 				else
 				{
 					mult += o_ptr->pval[DEFAULT_PVAL];
 				}
-				LOG_PRINT1("Extra might multiple is %d\n", mult);
+				file_putf(log_file, "Extra might multiple is %d\n", mult);
 			}
 			p *= mult;
-			LOG_PRINT2("Multiplying power by %d, total is %d\n", mult, p);
+			file_putf(log_file, "Multiplying power by %d, total is %d\n", mult, p);
 
 			if (of_has(flags, OF_SHOTS) &&
 			    (known || object_pval_is_visible(o_ptr)))
 			{
-				LOG_PRINT1("Extra shots: %d\n", o_ptr->pval[DEFAULT_PVAL]);
+				file_putf(log_file, "Extra shots: %d\n", o_ptr->pval[DEFAULT_PVAL]);
 
 				if (o_ptr->pval[DEFAULT_PVAL] >= INHIBIT_SHOTS || o_ptr->pval[DEFAULT_PVAL] < 0)
 				{
 					p += INHIBIT_POWER;	/* inhibit */
-					LOG_PRINT("INHIBITING - too many extra shots\n");
+					file_putf(log_file, "INHIBITING - too many extra shots\n");
 				}
 				else if (o_ptr->pval[DEFAULT_PVAL] > 0)
 				{
 					p = (p * (1 + o_ptr->pval[DEFAULT_PVAL]));
-					LOG_PRINT2("Multiplying power by 1 + %d, total is %d\n",
+					file_putf(log_file, "Multiplying power by 1 + %d, total is %d\n",
 						o_ptr->pval[DEFAULT_PVAL], p);
 				}
 			}
 
 			/* Apply the correct slay multiplier */
 			p = (p * slay_power(o_ptr, verbose, log_file, known)) / tot_mon_power;
-			LOG_PRINT1("Adjusted for slay power, total is %d\n", p);
+			file_putf(log_file, "Adjusted for slay power, total is %d\n", p);
 
 			if (o_ptr->weight < o_ptr->kind->weight)
 			{
 				p++;
-				LOG_PRINT("Incrementing power by one for low weight\n");
+				file_putf(log_file, "Incrementing power by one for low weight\n");
 			}
 
 			/*
@@ -355,10 +355,10 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			 * also divide by MAX_BLOWS to get equal ratings.
 			 */
 			p = sign(p) * (ABS(p) * BOW_RESCALER / (10 * MAX_BLOWS));
-			LOG_PRINT1("Rescaling bow power, total is %d\n", p);
+			file_putf(log_file, "Rescaling bow power, total is %d\n", p);
 
 			p += sign(o_ptr->to_h) * (ABS(o_ptr->to_h) * TO_HIT_POWER / 2);
-			LOG_PRINT1("Adding power from to_hit, total is %d\n", p);
+			file_putf(log_file, "Adding power from to_hit, total is %d\n", p);
 
 			break;
 		}
@@ -371,23 +371,23 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		case TV_SWORD:
 		{
 			p += (o_ptr->dd * (o_ptr->ds + 1) * DAMAGE_POWER / 4);
-			LOG_PRINT1("Adding power for dam dice, total is %d\n", p);
+			file_putf(log_file, "Adding power for dam dice, total is %d\n", p);
 
 			/* Apply the correct slay multiplier */
 			p = (p * slay_power(o_ptr, verbose, log_file, known)) / tot_mon_power;
-			LOG_PRINT1("Adjusted for slay power, total is %d\n", p);
+			file_putf(log_file, "Adjusted for slay power, total is %d\n", p);
 
 			p += (o_ptr->to_d * DAMAGE_POWER / 2);
-			LOG_PRINT1("Adding power for to_dam, total is %d\n", p);
+			file_putf(log_file, "Adding power for to_dam, total is %d\n", p);
 
 			if (of_has(flags, OF_BLOWS) &&
 			    (known || object_pval_is_visible(o_ptr)))
 			{
-				LOG_PRINT1("Extra blows: %d\n", o_ptr->pval[DEFAULT_PVAL]);
+				file_putf(log_file, "Extra blows: %d\n", o_ptr->pval[DEFAULT_PVAL]);
 				if (o_ptr->pval[DEFAULT_PVAL] >= INHIBIT_BLOWS || o_ptr->pval[DEFAULT_PVAL] < 0)
 				{
 					p += INHIBIT_POWER;	/* inhibit */
-					LOG_PRINT("INHIBITING, too many extra blows or a negative number\n");
+					file_putf(log_file, "INHIBITING, too many extra blows or a negative number\n");
 				}
 				else if (o_ptr->pval[DEFAULT_PVAL] > 0)
 				{
@@ -395,7 +395,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 						/ MAX_BLOWS);
 					/* Add an extra amount per extra blow to account for damage/branding rings */
 					p += ((MELEE_DAMAGE_BOOST + RING_BRAND_DMG) * o_ptr->pval[DEFAULT_PVAL] * DAMAGE_POWER / (2 * MAX_BLOWS));
-					LOG_PRINT1("Adding power for blows, total is %d\n", p);
+					file_putf(log_file, "Adding power for blows, total is %d\n", p);
 				}
 			}
 
@@ -407,7 +407,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			i = list_slays(flags, mask, NULL, NULL, NULL, FALSE);
 			if (i > 1)
 				p += (i * 3);
-			LOG_PRINT1("Adding power for multiple slays/brands, total is %d\n", p);
+			file_putf(log_file, "Adding power for multiple slays/brands, total is %d\n", p);
 
 			/* add launcher bonus for ego ammo, and multiply */
 			if (o_ptr->tval == TV_SHOT)
@@ -425,16 +425,16 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 				if (o_ptr->ego) p += (AVG_LAUNCHER_DMG * DAMAGE_POWER / 2);
 				p = p * AVG_XBOW_MULT * BOW_RESCALER / (20 * MAX_BLOWS);
 			}
-			LOG_PRINT1("After multiplying ammo and rescaling, power is %d\n", p);
+			file_putf(log_file, "After multiplying ammo and rescaling, power is %d\n", p);
 
 			p += sign(o_ptr->to_h) * (ABS(o_ptr->to_h) * TO_HIT_POWER / 2);
-			LOG_PRINT1("Adding power for to hit, total is %d\n", p);
+			file_putf(log_file, "Adding power for to hit, total is %d\n", p);
 
 			/* Remember, weight is in 0.1 lb. units. */
 			if (o_ptr->weight < o_ptr->kind->weight)
 			{
 				p += (o_ptr->kind->weight - o_ptr->weight) / 20;
-				LOG_PRINT1("Adding power for low weight, total is %d\n", p);
+				file_putf(log_file, "Adding power for low weight, total is %d\n", p);
 			}
 
 			break;
@@ -450,10 +450,10 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		case TV_DRAG_ARMOR:
 		{
 			p += BASE_ARMOUR_POWER;
-			LOG_PRINT1("Armour item, base power is %d\n", p);
+			file_putf(log_file, "Armour item, base power is %d\n", p);
 
 			p += sign(o_ptr->ac) * ((ABS(o_ptr->ac) * BASE_AC_POWER) / 2);
-			LOG_PRINT1("Adding power for base AC value, total is %d\n", p);
+			file_putf(log_file, "Adding power for base AC value, total is %d\n", p);
 
 			/* Add power for AC per unit weight */
 			if (o_ptr->weight > 0)
@@ -473,31 +473,31 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 
 			/* Add power for +hit and +dam */
 			p += sign(o_ptr->to_h) * (ABS(o_ptr->to_h) * TO_HIT_POWER);
-			LOG_PRINT1("Adding power for to_hit, total is %d\n", p);
+			file_putf(log_file, "Adding power for to_hit, total is %d\n", p);
 
 			p += o_ptr->to_d * DAMAGE_POWER;
-			LOG_PRINT1("Adding power for to_dam, total is %d\n", p);
+			file_putf(log_file, "Adding power for to_dam, total is %d\n", p);
 
 			/* Apply the correct brand/slay multiplier */
 			p += (((2 * (o_ptr->to_d + RING_BRAND_DMG)
 				* slay_power(o_ptr, verbose, log_file, known))
 				/ tot_mon_power) - (2 * (o_ptr->to_d + RING_BRAND_DMG)));
-			LOG_PRINT1("Adjusted for brand/slay power, total is %d\n", p);
+			file_putf(log_file, "Adjusted for brand/slay power, total is %d\n", p);
 
 			/* Add power for extra blows */
 			if (of_has(flags, OF_BLOWS) &&
 			    (known || object_pval_is_visible(o_ptr)))
 			{
-				LOG_PRINT1("Extra blows: %d\n", o_ptr->pval[DEFAULT_PVAL]);
+				file_putf(log_file, "Extra blows: %d\n", o_ptr->pval[DEFAULT_PVAL]);
 				if (o_ptr->pval[DEFAULT_PVAL] >= INHIBIT_BLOWS || o_ptr->pval[DEFAULT_PVAL] < 0)
 				{
 					p += INHIBIT_POWER;	/* inhibit */
-					LOG_PRINT("INHIBITING, too many extra blows or a negative number\n");
+					file_putf(log_file, "INHIBITING, too many extra blows or a negative number\n");
 				}
 				else if (o_ptr->pval[DEFAULT_PVAL] > 0)
 				{
 					p += ((MELEE_DAMAGE_BOOST + RING_BRAND_DMG + o_ptr->to_d) * o_ptr->pval[DEFAULT_PVAL] * DAMAGE_POWER / MAX_BLOWS);
-					LOG_PRINT1("Adding power for extra blows, total is %d\n", p);
+					file_putf(log_file, "Adding power for extra blows, total is %d\n", p);
 				}
 			}
 
@@ -505,16 +505,16 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			if (of_has(flags, OF_SHOTS) &&
 			    (known || object_pval_is_visible(o_ptr)))
 			{
-				LOG_PRINT1("Extra shots: %d\n", o_ptr->pval[DEFAULT_PVAL]);
+				file_putf(log_file, "Extra shots: %d\n", o_ptr->pval[DEFAULT_PVAL]);
 				if (o_ptr->pval[DEFAULT_PVAL] >= INHIBIT_SHOTS || o_ptr->pval[DEFAULT_PVAL] < 0)
 				{
 					p += INHIBIT_POWER;	/* inhibit */
-					LOG_PRINT("INHIBITING - too many extra shots\n");
+					file_putf(log_file, "INHIBITING - too many extra shots\n");
 				}
 				else if (o_ptr->pval[DEFAULT_PVAL] > 0)
 				{
 					p += ((AVG_XBOW_AMMO_DAMAGE + AVG_LAUNCHER_DMG) * AVG_XBOW_MULT * o_ptr->pval[DEFAULT_PVAL] * DAMAGE_POWER * BOW_RESCALER / (20 * MAX_BLOWS));
-					LOG_PRINT1("Adding power for extra shots - total is %d\n", p);
+					file_putf(log_file, "Adding power for extra shots - total is %d\n", p);
 				}
 			}
 
@@ -523,34 +523,34 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		case TV_LIGHT:
 		{
 			p += BASE_LIGHT_POWER;
-			LOG_PRINT("Light source, adding base power\n");
+			file_putf(log_file, "Light source, adding base power\n");
 
 			p += sign(o_ptr->to_h) * (ABS(o_ptr->to_h) * TO_HIT_POWER);
-			LOG_PRINT1("Adding power for to_hit, total is %d\n", p);
+			file_putf(log_file, "Adding power for to_hit, total is %d\n", p);
 
 			p += o_ptr->to_d * DAMAGE_POWER;
-			LOG_PRINT1("Adding power for to_dam, total is %d\n", p);
+			file_putf(log_file, "Adding power for to_dam, total is %d\n", p);
 
 			/* Apply the correct brand/slay multiplier */
 			p += (((2 * (o_ptr->to_d + RING_BRAND_DMG)
 				* slay_power(o_ptr, verbose, log_file, known))
 				/ tot_mon_power) - (2 * (o_ptr->to_d + RING_BRAND_DMG)));
-			LOG_PRINT1("Adjusted for brand/slay power, total is %d\n", p);
+			file_putf(log_file, "Adjusted for brand/slay power, total is %d\n", p);
 
 			/* Add power for extra blows */
 			if (of_has(flags, OF_BLOWS) &&
 			    (known || object_pval_is_visible(o_ptr)))
 			{
-				LOG_PRINT1("Extra blows: %d\n", o_ptr->pval[DEFAULT_PVAL]);
+				file_putf(log_file, "Extra blows: %d\n", o_ptr->pval[DEFAULT_PVAL]);
 				if (o_ptr->pval[DEFAULT_PVAL] >= INHIBIT_BLOWS || o_ptr->pval[DEFAULT_PVAL] < 0)
 				{
 					p += INHIBIT_POWER;	/* inhibit */
-					LOG_PRINT("INHIBITING, too many extra blows or a negative number\n");
+					file_putf(log_file, "INHIBITING, too many extra blows or a negative number\n");
 				}
 				else if (o_ptr->pval[DEFAULT_PVAL] > 0)
 				{
 					p += ((MELEE_DAMAGE_BOOST + RING_BRAND_DMG + o_ptr->to_d) * o_ptr->pval[DEFAULT_PVAL] * DAMAGE_POWER / MAX_BLOWS);
-					LOG_PRINT1("Adding power for extra blows, total is %d\n", p);
+					file_putf(log_file, "Adding power for extra blows, total is %d\n", p);
 				}
 			}
 
@@ -558,16 +558,16 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			if (of_has(flags, OF_SHOTS) &&
 			    (known || object_pval_is_visible(o_ptr)))
 			{
-				LOG_PRINT1("Extra shots: %d\n", o_ptr->pval[DEFAULT_PVAL]);
+				file_putf(log_file, "Extra shots: %d\n", o_ptr->pval[DEFAULT_PVAL]);
 				if (o_ptr->pval[DEFAULT_PVAL] >= INHIBIT_SHOTS || o_ptr->pval[DEFAULT_PVAL] < 0)
 				{
 					p += INHIBIT_POWER;	/* inhibit */
-					LOG_PRINT("INHIBITING - too many extra shots\n");
+					file_putf(log_file, "INHIBITING - too many extra shots\n");
 				}
 				else if (o_ptr->pval[DEFAULT_PVAL] > 0)
 				{
 					p += ((AVG_XBOW_AMMO_DAMAGE + AVG_LAUNCHER_DMG) * AVG_XBOW_MULT * o_ptr->pval[DEFAULT_PVAL] * DAMAGE_POWER * BOW_RESCALER / (20 * MAX_BLOWS));
-					LOG_PRINT1("Adding power for extra shots - total is %d\n", p);
+					file_putf(log_file, "Adding power for extra shots - total is %d\n", p);
 				}
 			}
 
@@ -583,34 +583,34 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		case TV_AMULET:
 		{
 			p += BASE_JEWELRY_POWER;
-			LOG_PRINT("Jewellery - adding base power\n");
+			file_putf(log_file, "Jewellery - adding base power\n");
 
 			p += sign(o_ptr->to_h) * (ABS(o_ptr->to_h) * TO_HIT_POWER);
-			LOG_PRINT1("Adding power for to_hit, total is %d\n", p);
+			file_putf(log_file, "Adding power for to_hit, total is %d\n", p);
 
 			p += o_ptr->to_d * DAMAGE_POWER;
-			LOG_PRINT1("Adding power for to_dam, total is %d\n", p);
+			file_putf(log_file, "Adding power for to_dam, total is %d\n", p);
 
 			/* Apply the correct brand/slay multiplier */
 			p += (((2 * (o_ptr->to_d + RING_BRAND_DMG)
 				* slay_power(o_ptr, verbose, log_file, known))
 				/ tot_mon_power) - (2 * (o_ptr->to_d + RING_BRAND_DMG)));
-			LOG_PRINT1("Adjusted for brand/slay power, total is %d\n", p);
+			file_putf(log_file, "Adjusted for brand/slay power, total is %d\n", p);
 
 			/* Add power for extra blows */
 			if (of_has(flags, OF_BLOWS) &&
 			    (known || object_pval_is_visible(o_ptr)))
 			{
-				LOG_PRINT1("Extra blows: %d\n", o_ptr->pval[DEFAULT_PVAL]);
+				file_putf(log_file, "Extra blows: %d\n", o_ptr->pval[DEFAULT_PVAL]);
 				if (o_ptr->pval[DEFAULT_PVAL] >= INHIBIT_BLOWS || o_ptr->pval[DEFAULT_PVAL] < 0)
 				{
 					p += INHIBIT_POWER;	/* inhibit */
-					LOG_PRINT("INHIBITING, too many extra blows or a negative number\n");
+					file_putf(log_file, "INHIBITING, too many extra blows or a negative number\n");
 				}
 				else if (o_ptr->pval[DEFAULT_PVAL] > 0)
 				{
 					p += ((MELEE_DAMAGE_BOOST + RING_BRAND_DMG + o_ptr->to_d) * o_ptr->pval[DEFAULT_PVAL] * DAMAGE_POWER / MAX_BLOWS);
-					LOG_PRINT1("Adding power for extra blows, total is %d\n", p);
+					file_putf(log_file, "Adding power for extra blows, total is %d\n", p);
 				}
 			}
 
@@ -618,16 +618,16 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			if (of_has(flags, OF_SHOTS) &&
 			    (known || object_pval_is_visible(o_ptr)))
 			{
-				LOG_PRINT1("Extra shots: %d\n", o_ptr->pval[DEFAULT_PVAL]);
+				file_putf(log_file, "Extra shots: %d\n", o_ptr->pval[DEFAULT_PVAL]);
 				if (o_ptr->pval[DEFAULT_PVAL] >= INHIBIT_SHOTS || o_ptr->pval[DEFAULT_PVAL] < 0)
 				{
 					p += INHIBIT_POWER;	/* inhibit */
-					LOG_PRINT("INHIBITING - too many extra shots\n");
+					file_putf(log_file, "INHIBITING - too many extra shots\n");
 				}
 				else if (o_ptr->pval[DEFAULT_PVAL] > 0)
 				{
 					p += ((AVG_XBOW_AMMO_DAMAGE + AVG_LAUNCHER_DMG) * AVG_XBOW_MULT * o_ptr->pval[DEFAULT_PVAL] * DAMAGE_POWER * BOW_RESCALER / (20 * MAX_BLOWS));
-					LOG_PRINT1("Adding power for extra shots - total is %d\n", p);
+					file_putf(log_file, "Adding power for extra shots - total is %d\n", p);
 				}
 			}
 
@@ -637,22 +637,22 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 
 	/* Other abilities are evaluated independent of the object type. */
 	p += sign(o_ptr->to_a) * (ABS(o_ptr->to_a) * TO_AC_POWER / 2);
-	LOG_PRINT2("Adding power for to_ac of %d, total is %d\n", o_ptr->to_a, p);
+	file_putf(log_file, "Adding power for to_ac of %d, total is %d\n", o_ptr->to_a, p);
 
 	if (o_ptr->to_a > HIGH_TO_AC)
 	{
 		p += ((o_ptr->to_a - (HIGH_TO_AC - 1)) * TO_AC_POWER / 2);
-		LOG_PRINT1("Adding power for high to_ac value, total is %d\n", p);
+		file_putf(log_file, "Adding power for high to_ac value, total is %d\n", p);
 	}
 	if (o_ptr->to_a > VERYHIGH_TO_AC)
 	{
 		p += ((o_ptr->to_a - (VERYHIGH_TO_AC -1)) * TO_AC_POWER / 2);
-		LOG_PRINT1("Adding power for very high to_ac value, total is %d\n", p);
+		file_putf(log_file, "Adding power for very high to_ac value, total is %d\n", p);
 	}
 	if (o_ptr->to_a >= INHIBIT_AC)
 	{
 		p += INHIBIT_POWER;	/* inhibit */
-		LOG_PRINT("INHIBITING: AC bonus too high\n");
+		file_putf(log_file, "INHIBITING: AC bonus too high\n");
 	}
 
 	if ((o_ptr->pval[DEFAULT_PVAL] > 0) && (known || object_pval_is_visible(o_ptr)))
@@ -660,37 +660,37 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		if (of_has(flags, OF_STR))
 		{
 			p += STR_POWER * o_ptr->pval[DEFAULT_PVAL];
-			LOG_PRINT2("Adding power for STR bonus %d, total is %d\n", o_ptr->pval[DEFAULT_PVAL], p);
+			file_putf(log_file, "Adding power for STR bonus %d, total is %d\n", o_ptr->pval[DEFAULT_PVAL], p);
 		}
 		if (of_has(flags, OF_INT))
 		{
 			p += INT_POWER * o_ptr->pval[DEFAULT_PVAL];
-			LOG_PRINT2("Adding power for INT bonus %d, total is %d\n", o_ptr->pval[DEFAULT_PVAL], p);
+			file_putf(log_file, "Adding power for INT bonus %d, total is %d\n", o_ptr->pval[DEFAULT_PVAL], p);
 		}
 		if (of_has(flags, OF_WIS))
 		{
 			p += WIS_POWER * o_ptr->pval[DEFAULT_PVAL];
-			LOG_PRINT2("Adding power for WIS bonus %d, total is %d\n", o_ptr->pval[DEFAULT_PVAL], p);
+			file_putf(log_file, "Adding power for WIS bonus %d, total is %d\n", o_ptr->pval[DEFAULT_PVAL], p);
 		}
 		if (of_has(flags, OF_DEX))
 		{
 			p += DEX_POWER * o_ptr->pval[DEFAULT_PVAL];
-			LOG_PRINT2("Adding power for DEX bonus %d, total is %d\n", o_ptr->pval[DEFAULT_PVAL], p);
+			file_putf(log_file, "Adding power for DEX bonus %d, total is %d\n", o_ptr->pval[DEFAULT_PVAL], p);
 		}
 		if (of_has(flags, OF_CON))
 		{
 			p += CON_POWER * o_ptr->pval[DEFAULT_PVAL];
-			LOG_PRINT2("Adding power for CON bonus %d, total is %d\n", o_ptr->pval[DEFAULT_PVAL], p);
+			file_putf(log_file, "Adding power for CON bonus %d, total is %d\n", o_ptr->pval[DEFAULT_PVAL], p);
 		}
 		if (of_has(flags, OF_STEALTH))
 		{
 			p += STEALTH_POWER * o_ptr->pval[DEFAULT_PVAL];
-			LOG_PRINT2("Adding power for Stealth bonus %d, total is %d\n", o_ptr->pval[DEFAULT_PVAL], p);
+			file_putf(log_file, "Adding power for Stealth bonus %d, total is %d\n", o_ptr->pval[DEFAULT_PVAL], p);
 		}
 		if (of_has(flags, OF_SEARCH))
 		{
 			p += SEARCH_POWER * o_ptr->pval[DEFAULT_PVAL];
-			LOG_PRINT2("Adding power for searching bonus %d, total is %d\n", o_ptr->pval[DEFAULT_PVAL] , p);
+			file_putf(log_file, "Adding power for searching bonus %d, total is %d\n", o_ptr->pval[DEFAULT_PVAL] , p);
 		}
 		/* Add extra power term if there are a lot of ability bonuses */
 		if (o_ptr->pval[DEFAULT_PVAL] > 0)
@@ -721,13 +721,13 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			if (extra_stat_bonus > 24)
 			{
 				/* Inhibit */
-				LOG_PRINT1("Inhibiting!  (Total ability bonus of %d is too high)\n", extra_stat_bonus);
+				file_putf(log_file, "Inhibiting!  (Total ability bonus of %d is too high)\n", extra_stat_bonus);
 				p += INHIBIT_POWER;
 			}
 			else
 			{
 				p += ability_power[extra_stat_bonus];
-				LOG_PRINT2("Adding power for combination of %d, total is %d\n", ability_power[extra_stat_bonus], p);
+				file_putf(log_file, "Adding power for combination of %d, total is %d\n", ability_power[extra_stat_bonus], p);
 			}
 		}
 
@@ -740,7 +740,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		if (of_has(flags, OF_DEX)) p += 3 * o_ptr->pval[DEFAULT_PVAL];
 		if (of_has(flags, OF_CON)) p += 4 * o_ptr->pval[DEFAULT_PVAL];
 		if (of_has(flags, OF_STEALTH)) p += o_ptr->pval[DEFAULT_PVAL];
-		LOG_PRINT1("Subtracting power for negative ability values, total is %d\n", p);
+		file_putf(log_file, "Subtracting power for negative ability values, total is %d\n", p);
 	}
 
 	if (known || object_pval_is_visible(o_ptr))
@@ -748,36 +748,36 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		if (of_has(flags, OF_CHR))
 		{
 			p += CHR_POWER * o_ptr->pval[DEFAULT_PVAL];
-			LOG_PRINT2("Adding power for CHR bonus/penalty %d, total is %d\n", o_ptr->pval[DEFAULT_PVAL], p);
+			file_putf(log_file, "Adding power for CHR bonus/penalty %d, total is %d\n", o_ptr->pval[DEFAULT_PVAL], p);
 		}
 		if (of_has(flags, OF_INFRA))
 		{
 			p += INFRA_POWER * o_ptr->pval[DEFAULT_PVAL];
-			LOG_PRINT2("Adding power for infra bonus/penalty %d, total is %d\n", o_ptr->pval[DEFAULT_PVAL], p);
+			file_putf(log_file, "Adding power for infra bonus/penalty %d, total is %d\n", o_ptr->pval[DEFAULT_PVAL], p);
 		}
 		if (of_has(flags, OF_TUNNEL))
 		{
 			p += TUNN_POWER * o_ptr->pval[DEFAULT_PVAL];
-			LOG_PRINT2("Adding power for tunnelling bonus/penalty %d, total is %d\n", o_ptr->pval[DEFAULT_PVAL], p);
+			file_putf(log_file, "Adding power for tunnelling bonus/penalty %d, total is %d\n", o_ptr->pval[DEFAULT_PVAL], p);
 		}
 		if (of_has(flags, OF_SPEED))
 		{
 			p += sign(o_ptr->pval[DEFAULT_PVAL]) * speed_power[ABS(o_ptr->pval[DEFAULT_PVAL])];
-			LOG_PRINT2("Adding power for speed bonus/penalty %d, total is %d\n", o_ptr->pval[DEFAULT_PVAL], p);
+			file_putf(log_file, "Adding power for speed bonus/penalty %d, total is %d\n", o_ptr->pval[DEFAULT_PVAL], p);
 		}
 	}
 
 #define ADD_POWER1(string, val, flag) \
 	if (of_has(flags, flag)) { \
 		p += (val); \
-		LOG_PRINT1("Adding power for " string ", total is %d\n", p); \
+		file_putf(log_file, "Adding power for " string ", total is %d\n", p); \
 	}
 
 #define ADD_POWER2(string, val, flag, extra) \
 	if (of_has(flags, flag)) { \
 		p += (val); \
 		extra; \
-		LOG_PRINT1("Adding power for " string ", total is %d\n", p); \
+		file_putf(log_file, "Adding power for " string ", total is %d\n", p); \
 	}
 
 	ADD_POWER2("sustain STR",         9, OF_SUST_STR, sustains++);
@@ -790,11 +790,11 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	for (i = 2; i <= sustains; i++)
 	{
 		p += i;
-		LOG_PRINT1("Adding power for multiple sustains, total is %d\n", p);
+		file_putf(log_file, "Adding power for multiple sustains, total is %d\n", p);
 		if (i == 5)
 		{
 			p += SUST_POWER;
-			LOG_PRINT1("Adding power for full set of sustains, total is %d\n", p);
+			file_putf(log_file, "Adding power for full set of sustains, total is %d\n", p);
 		}
 	}
 
@@ -806,11 +806,11 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	for (i = 2; i <= immunities; i++)
 	{
 		p += IMMUNITY_POWER;
-		LOG_PRINT1("Adding power for multiple immunities, total is %d\n", p);
+		file_putf(log_file, "Adding power for multiple immunities, total is %d\n", p);
 		if (i >= INHIBIT_IMMUNITIES)
 		{
 			p += INHIBIT_POWER;             /* inhibit */
-			LOG_PRINT("INHIBITING: Too many immunities\n");
+			file_putf(log_file, "INHIBITING: Too many immunities\n");
 		}
 	}
 
@@ -844,51 +844,51 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	for (i = 2; i <= misc; i++)
 	{
 		p += i;
-		LOG_PRINT1("Adding power for multiple misc abilities, total is %d\n", p);
+		file_putf(log_file, "Adding power for multiple misc abilities, total is %d\n", p);
 	}
 
 	for (i = 2; i <= lowres; i++)
 	{
 		p += i;
-		LOG_PRINT1("Adding power for multiple low resists, total is %d\n", p);
+		file_putf(log_file, "Adding power for multiple low resists, total is %d\n", p);
 		if (i == 4)
 		{
 			p += RBASE_POWER;
-			LOG_PRINT1("Adding power for full rbase set, total is %d\n", p);
+			file_putf(log_file, "Adding power for full rbase set, total is %d\n", p);
 		}
 	}
 
 	for (i = 2; i <= highres; i++)
 	{
 		p += (i * 2);
-		LOG_PRINT1("Adding power for multiple high resists, total is %d\n", p);
+		file_putf(log_file, "Adding power for multiple high resists, total is %d\n", p);
 	}
 
 	/* Note: the following code is irrelevant until curses are reworked */
 	if (of_has(flags, OF_TELEPORT))
 	{
 		p -= 1;
-		LOG_PRINT1("Subtracting power for teleportation, total is %d\n", p);
+		file_putf(log_file, "Subtracting power for teleportation, total is %d\n", p);
 	}
 	if (of_has(flags, OF_DRAIN_EXP))
 	{
 		p -= 1;
-		LOG_PRINT1("Subtracting power for drain experience, total is %d\n", p);
+		file_putf(log_file, "Subtracting power for drain experience, total is %d\n", p);
 	}
 	if (of_has(flags, OF_AGGRAVATE))
 	{
 		p -= 1;
-		LOG_PRINT1("Subtracting power for aggravation, total is %d\n", p);
+		file_putf(log_file, "Subtracting power for aggravation, total is %d\n", p);
 	}
 	if (of_has(flags, OF_LIGHT_CURSE))
 	{
 		p -= 1;
-		LOG_PRINT1("Subtracting power for light curse, total is %d\n", p);
+		file_putf(log_file, "Subtracting power for light curse, total is %d\n", p);
 	}
 	if (of_has(flags, OF_HEAVY_CURSE))
 	{
 		p -= 1;
-		LOG_PRINT1("Subtracting power for heavy curse, total is %d\n", p);
+		file_putf(log_file, "Subtracting power for heavy curse, total is %d\n", p);
 	}
 
 	/*	if (of_has(flags, OF_PERMA_CURSE)) p -= 40; */
@@ -898,10 +898,10 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	{
 		if (o_ptr->artifact && o_ptr->artifact->effect) {
 			p += effect_power(o_ptr->artifact->effect);
-			LOG_PRINT1("Adding power for artifact activation, total is %d\n", p);
+			file_putf(log_file, "Adding power for artifact activation, total is %d\n", p);
 		} else {
 			p += effect_power(o_ptr->kind->effect);
-			LOG_PRINT1("Adding power for item activation, total is %d\n", p);
+			file_putf(log_file, "Adding power for item activation, total is %d\n", p);
 		}
 	}
 
@@ -911,7 +911,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	if (of_has(flags, OF_IGNORE_COLD)) p++;
 	if (of_has(flags, OF_IGNORE_ELEC)) p++;
 
-	LOG_PRINT1("After ignore flags, FINAL POWER IS %d\n", p);
+	file_putf(log_file, "After ignore flags, FINAL POWER IS %d\n", p);
 
 	return (p);
 }

@@ -1443,7 +1443,7 @@ static s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 			pricing_mode = MODE_APPEND;
 		}
 
-		LOG_PRINT1("object is %s", o_ptr->kind->name);
+		file_putf(log_file, "object is %s", o_ptr->kind->name);
 		power = object_power(o_ptr, verbose, log_file, known);
 		value = sign(power) * ((a * power * power) + (b * power));
 
@@ -1455,8 +1455,8 @@ static s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 			if (value < 1) value = 1;
 		}
 
-		LOG_PRINT2("a is %d and b is %d\n", a, b);
-		LOG_PRINT1("value is %d\n", value);
+		file_putf(log_file, "a is %d and b is %d\n", a, b);
+		file_putf(log_file, "value is %d\n", value);
 		total_value = value * qty;
 
 		if (verbose)
@@ -4357,13 +4357,4 @@ void objects_init(void)
 void objects_destroy(void)
 {
 	mem_free(o_list);
-}
-
-void log_file_putf(ang_file *f, const char *fmt, ...)
-{
-	va_list vp;
-	if (!f) return;
-	va_start(vp, fmt);
-	file_putf(f, fmt, vp);
-	va_end(vp);
 }
