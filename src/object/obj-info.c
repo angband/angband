@@ -758,7 +758,8 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 	/* Add breakage chance */
 	if (ammo)
 	{
-		textblock_append_c(tb, TERM_L_GREEN, "%d%%", breakage_chance(o_ptr));
+		int chance = breakage_chance(o_ptr, TRUE);
+		textblock_append_c(tb, TERM_L_GREEN, "%d%%", chance);
 		textblock_append(tb, " chance of breaking upon contact.\n");
 	}
 

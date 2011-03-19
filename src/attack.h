@@ -3,7 +3,7 @@
 #ifndef ATTACK_H
 #define ATTACK_H
 
-extern int breakage_chance(const object_type *o_ptr);
+extern int breakage_chance(const object_type *o_ptr, bool hit_target);
 extern bool test_hit(int chance, int ac, int vis);
 extern void py_attack(int y, int x);
 

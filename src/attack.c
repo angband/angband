@@ -27,13 +27,25 @@
 #include "target.h"
 
 /**
- *  Returns percent chance of an object breaking after throwing or shooting.
+ * Returns percent chance of an object breaking after throwing or shooting.
+ *
+ * Artifacts will never break.
+ *
+ * Beyond that, each item kind has a percent chance to break (0-100). When the
+ * object hits its target this chance is used.
+ *
+ * When an object misses it also has a chance to break. This is determined by
+ * squaring the normaly breakage probability. So an item that breaks 100% of
+ * the time on hit will also break 100% of the time on a miss, whereas a 50%
+ * hit-breakage chance gives a 25% miss-breakage chance, and a 10% hit breakage
+ * chance gives a 1% miss-breakage chance.
  */
-int breakage_chance(const object_type *o_ptr) {
-	/* Artifacts never break */
-	if (o_ptr->artifact) return 0;
+int breakage_chance(const object_type *o_ptr, bool hit_target) {
+	int perc = o_ptr->kind->base->break_perc;
 
-	return o_ptr->kind->base->break_perc;
+	if (o_ptr->artifact) return 0;
+	if (!hit_target) return (perc * perc) / 100;
+	return perc;
 }
 
 
@@ -58,7 +70,7 @@ bool test_hit(int chance, int ac, int vis) {
 
 
 /**
- * Critical hits (from objects thrown by player)
+ * Determine damage for critical hits from shooting.
  *
  * Factor in item weight, total plusses, and player level.
  */
@@ -86,12 +98,12 @@ static int critical_shot(int weight, int plus, int dam, u32b *msg_type) {
 
 
 /**
- * Critical hits (by player)
+ * Determine damage for critical hits from melee.
  *
  * Factor in weapon weight, total plusses, player level.
  */
 static int critical_norm(int weight, int plus, int dam, u32b *msg_type) {
-	int chance = (weight + ((p_ptr->state.to_h + plus) * 5) + (p_ptr->lev * 3));
+	int chance = weight + (p_ptr->state.to_h + plus) * 5 + p_ptr->lev * 3;
 	int power = weight + randint1(650);
 
 	if (randint1(5000) > chance) {
@@ -122,14 +134,7 @@ static int critical_norm(int weight, int plus, int dam, u32b *msg_type) {
 
 
 /**
- * Attack the monster at the given location
- *
- * If no "weapon" is available, then "punch" the monster one time.
- *
- * We get blows until energy drops below that required for another blow, or
- * until the target monster dies. We use a wrapper to work out the number of
- * blows. We don't allow @ to spend more than 100 energy in one go, to avoid
- * slower monsters getting double moves.
+ * Attack the monster at the given location with a single blow.
  */
 bool py_attack_real(int y, int x, bool *fear) {
 	/* Information about the target of the attack */
@@ -265,7 +270,12 @@ bool py_attack_real(int y, int x, bool *fear) {
 
 
 /**
- * TODO: write me!
+ * Attack the monster at the given location
+ *
+ * We get blows until energy drops below that required for another blow, or
+ * until the target monster dies. Each blow is handled by py_attack_real().
+ * We don't allow @ to spend more than 100 energy in one go, to avoid slower
+ * monsters getting double moves.
  */
 void py_attack(int y, int x) {
 	int blow_energy = 10000 / p_ptr->state.num_blows;
@@ -466,7 +476,7 @@ void ranged_helper(int item, int dir, int range, int shots, ranged_attack attack
 	i_ptr->number = 1;
 
 	/* See if the ammunition broke or not */
-	j = (hit_target ? breakage_chance(i_ptr) : 0);
+	j = breakage_chance(i_ptr, hit_target);
 
 	/* Drop (or break) near that location */
 	drop_near(cave, i_ptr, j, y, x, TRUE);
