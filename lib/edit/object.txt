@@ -3860,7 +3860,7 @@ F:INSTA_ART
 
 # The Palantir of Westernesse -- see artifact list
 
-N:562:& Palantir~
+N:562:& Palant['i]r~
 G:~:y
 I:39:7
 W:75:0:200:100000
