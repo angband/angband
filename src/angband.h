@@ -37,7 +37,6 @@
 #include "option.h"
 #include "types.h"
 #include "game-cmd.h"
-#include "object/types.h"
 #include "object/object.h"
 #include "monster/constants.h"
 #include "monster/monster.h"

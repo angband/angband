@@ -4,7 +4,7 @@
 
 #include "init.h"
 #include "object/tvalsval.h"
-#include "object/types.h"
+#include "object/object.h"
 #include "z-term.h"
 
 static int setup(void **state) {

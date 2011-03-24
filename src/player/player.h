@@ -4,6 +4,7 @@
 #define PLAYER_PLAYER_H
 
 #include "guid.h"
+#include "object/object.h"
 #include "player/types.h"
 
 /* calcs.c */

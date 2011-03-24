@@ -1,7 +1,7 @@
 #ifndef INCLUDED_STORE_H
 #define INCLUDED_STORE_H
 
-#include "object/types.h"
+#include "object/object.h"
 #include "parser.h"
 
 #define STORE_INVEN_MAX		24    /* Max number of discrete objs in inven */

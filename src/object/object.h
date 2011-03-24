@@ -1,17 +1,133 @@
 #ifndef INCLUDED_OBJECT_H
 #define INCLUDED_OBJECT_H
 
-#include "angband.h"
-#include "cave.h"
+#include "z-rand.h"
 #include "z-file.h"
 #include "z-textblock.h"
-
-/** Maximum number of scroll titles generated */
-#define MAX_TITLES     50
+#include "z-quark.h"
+#include "z-bitflag.h"
+#include "game-cmd.h"
+#include "cave.h"
 
 struct player;
 
 /*** Constants ***/
+
+enum
+{
+    #define OF(a,b) OF_##a,
+    #include "list-object-flags.h"
+    #undef OF
+};
+
+#define OF_SIZE                	FLAG_SIZE(OF_MAX)
+#define OF_BYTES           		32  /* savefile bytes, i.e. 256 flags */
+
+#define of_has(f, flag)        	flag_has_dbg(f, OF_SIZE, flag, #f, #flag)
+#define of_next(f, flag)       	flag_next(f, OF_SIZE, flag)
+#define of_is_empty(f)         	flag_is_empty(f, OF_SIZE)
+#define of_is_full(f)          	flag_is_full(f, OF_SIZE)
+#define of_is_inter(f1, f2)    	flag_is_inter(f1, f2, OF_SIZE)
+#define of_is_subset(f1, f2)   	flag_is_subset(f1, f2, OF_SIZE)
+#define of_is_equal(f1, f2)    	flag_is_equal(f1, f2, OF_SIZE)
+#define of_on(f, flag)         	flag_on_dbg(f, OF_SIZE, flag, #f, #flag)
+#define of_off(f, flag)        	flag_off(f, OF_SIZE, flag)
+#define of_wipe(f)             	flag_wipe(f, OF_SIZE)
+#define of_setall(f)           	flag_setall(f, OF_SIZE)
+#define of_negate(f)           	flag_negate(f, OF_SIZE)
+#define of_copy(f1, f2)        	flag_copy(f1, f2, OF_SIZE)
+#define of_union(f1, f2)       	flag_union(f1, f2, OF_SIZE)
+#define of_comp_union(f1, f2)  	flag_comp_union(f1, f2, OF_SIZE)
+#define of_inter(f1, f2)       	flag_inter(f1, f2, OF_SIZE)
+#define of_diff(f1, f2)        	flag_diff(f1, f2, OF_SIZE)
+
+/* Flag set for "pval-dependant" flags. */
+#define OF_PVAL_MASK \
+    OF_STR, OF_INT, OF_WIS, OF_DEX, OF_CON, OF_CHR, \
+    OF_STEALTH, OF_SEARCH, OF_INFRA, OF_TUNNEL, \
+    OF_SPEED, OF_BLOWS, OF_SHOTS, OF_MIGHT
+
+/* Flag set for high resists */
+#define OF_HIGH_RESIST_MASK \
+    OF_RES_POIS, OF_RES_LIGHT, OF_RES_DARK, \
+    OF_RES_SOUND, OF_RES_SHARD, \
+    OF_RES_NEXUS, OF_RES_NETHR, OF_RES_CHAOS, OF_RES_DISEN
+
+/* Flag set for curses. */
+#define OF_CURSE_MASK \
+    OF_LIGHT_CURSE, OF_HEAVY_CURSE, OF_PERMA_CURSE
+
+/* Flag set for flags that are obvious to the player on wield. */
+#define OF_OBVIOUS_MASK \
+    OF_STR, OF_INT, OF_WIS, OF_DEX, OF_CON, OF_CHR, \
+    OF_STEALTH, OF_SEARCH, OF_INFRA, OF_TUNNEL, \
+    OF_SPEED, OF_BLOWS, OF_SHOTS, OF_MIGHT, \
+    OF_BRAND_POIS, OF_BRAND_ELEC, OF_BRAND_FIRE, OF_BRAND_COLD, OF_BRAND_ACID, \
+    OF_LIGHT, OF_SEE_INVIS, OF_TELEPATHY, OF_NO_FUEL, \
+    OF_BLESSED, OF_AFRAID, OF_CURSE_MASK
+
+/* Flag set for flags that are noticed after some time has passed. */
+#define OF_NOTICE_TIMED_MASK \
+    OF_STEALTH, OF_SLOW_DIGEST, OF_REGEN, OF_AGGRAVATE, \
+    OF_IMPAIR_HP, OF_IMPAIR_MANA
+
+/* Flag set for "ignore element" flags. */
+#define OF_IGNORE_MASK \
+    OF_IGNORE_ACID, OF_IGNORE_ELEC, OF_IGNORE_FIRE, OF_IGNORE_COLD
+
+/* Flag set for "can be damaged by" flags */
+#define OF_HATE_MASK \
+    OF_HATES_ACID, OF_HATES_FIRE, OF_HATES_COLD, OF_HATES_ELEC
+
+/* Flag set for "show stuff before ID" flags */
+#define OF_SHOW_MASK \
+    OF_SHOW_MODS, OF_SHOW_DICE, OF_SHOW_MULT
+
+/* Flag set for flags on an object that do not affect the player */
+#define OF_OBJ_ONLY_MASK \
+    OF_INSTA_ART, OF_EASY_KNOW, OF_HIDE_TYPE, OF_SHOW_MASK, OF_IGNORE_MASK, \
+    OF_HATE_MASK
+
+/* Flag sets for slays and brands. */
+#define OF_SLAY_MASK \
+    OF_SLAY_ANIMAL, OF_SLAY_EVIL, \
+    OF_SLAY_ORC, OF_SLAY_TROLL, OF_SLAY_GIANT, \
+    OF_SLAY_UNDEAD, OF_SLAY_DEMON, OF_SLAY_DRAGON
+
+#define OF_BRAND_MASK \
+    OF_BRAND_ACID, OF_BRAND_ELEC, OF_BRAND_FIRE, OF_BRAND_COLD, OF_BRAND_POIS
+
+#define OF_KILL_MASK \
+    OF_KILL_UNDEAD, OF_KILL_DEMON, OF_KILL_DRAGON
+
+#define OF_ALL_SLAY_MASK \
+    OF_SLAY_MASK, OF_BRAND_MASK, OF_KILL_MASK
+
+/* Hack -- special "xtra" object flag info (type) */
+#define OBJECT_XTRA_TYPE_NONE     0
+#define OBJECT_XTRA_TYPE_SUSTAIN  1
+#define OBJECT_XTRA_TYPE_RESIST   2
+#define OBJECT_XTRA_TYPE_POWER    3
+
+/* ID flags */
+#define IDENT_SENSE     0x0001  /* Has been "sensed" */
+#define IDENT_WORN      0x0002  /* Has been tried on */
+#define IDENT_EMPTY     0x0004  /* Is known to be empty */
+#define IDENT_KNOWN     0x0008  /* Fully known */
+#define IDENT_STORE     0x0010  /* Item is in the inventory of a store */
+#define IDENT_ATTACK    0x0020  /* Know combat dice/ac/bonuses */
+#define IDENT_DEFENCE   0x0040  /* Know AC/etc bonuses */
+#define IDENT_EFFECT    0x0080  /* Know item activation/effect */
+/* xxx */
+#define IDENT_INDESTRUCT 0x0200 /* Tried to destroy it and failed */
+#define IDENT_NAME      0x0400  /* Know the name of ego or artifact if there is one */
+#define IDENT_FIRED     0x0800  /* Has been used as a missile */
+#define IDENT_NOTART    0x1000  /* Item is known not to be an artifact */
+#define IDENT_FAKE      0x2000  /* Item is a fake, for displaying knowledge */
+
+
+/** Maximum number of scroll titles generated */
+#define MAX_TITLES     50
 
 /**
  * Modes for object_desc().
@@ -94,6 +210,303 @@ typedef enum
 
 	INSCRIP_MAX                  /*!< Maximum number of pseudo-ID markers */
 } obj_pseudo_t;
+
+
+/*
+ * Some constants used in randart generation and power calculation
+ * - thresholds for limiting to_hit, to_dam and to_ac
+ * - fudge factor for rescaling ammo cost
+ * (a stack of this many equals a weapon of the same damage output)
+ */
+#define INHIBIT_POWER       20000
+#define HIGH_TO_AC             26
+#define VERYHIGH_TO_AC         36
+#define INHIBIT_AC             56
+#define HIGH_TO_HIT            16
+#define VERYHIGH_TO_HIT        26
+#define HIGH_TO_DAM            16
+#define VERYHIGH_TO_DAM        26
+#define AMMO_RESCALER          20 /* this value is also used for torches */
+
+#define sign(x) ((x) > 0 ? 1 : ((x) < 0 ? -1 : 0))
+
+
+/*** Structures ***/
+
+/**
+ * Information about object types, like rods, wands, etc.
+ */
+typedef struct object_base
+{
+	char *name;
+
+	int tval;
+	struct object_base *next;
+
+	bitflag flags[OF_SIZE];
+
+	int break_perc;
+} object_base;
+
+
+/**
+ * Information about object kinds, including player knowledge.
+ *
+ * TODO: split out the user-changeable bits into a separate struct so this
+ * one can be read-only.
+ */
+typedef struct object_kind
+{
+	char *name;
+	char *text;
+
+	object_base *base;
+
+	struct object_kind *next;
+	u32b kidx;
+
+	byte tval;         /**< General object type (see TV_ macros) */
+	byte sval;         /**< Object sub-type (see SV_ macros) */
+	random_value pval[MAX_PVALS]; /**< Power for any flags which need it */
+	byte num_pvals;	   /**< Number of pvals in use on this item */
+
+	random_value to_h; /**< Bonus to hit */
+	random_value to_d; /**< Bonus to damage */
+	random_value to_a; /**< Bonus to armor */
+	s16b ac;           /**< Base armor */
+
+	byte dd;           /**< Damage dice */
+	byte ds;           /**< Damage sides */
+	s16b weight;       /**< Weight, in 1/10lbs */
+
+	s32b cost;         /**< Object base cost */
+
+	bitflag flags[OF_SIZE];			/**< Flags */
+	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
+
+	byte d_attr;       /**< Default object attribute */
+	char d_char;       /**< Default object character */
+
+	byte alloc_prob;   /**< Allocation: commonness */
+	byte alloc_min;    /**< Highest normal dungeon level */
+	byte alloc_max;    /**< Lowest normal dungeon level */
+	byte level;        /**< Level (difficulty of activation) */
+
+	u16b effect;         /**< Effect this item produces (effects.c) */
+	random_value time;   /**< Recharge time (rods/activation) */
+	random_value charge; /**< Number of charges (staves/wands) */
+
+	byte gen_mult_prob;      /**< Probability of generating more than one */
+	random_value stack_size; /**< Number to generate */
+
+	struct flavor *flavor;         /**< Special object flavor (or zero) */
+
+
+	/** Game-dependent **/
+
+	byte x_attr;   /**< Desired object attribute (set by user/pref file) */
+	char x_char;   /**< Desired object character (set by user/pref file) */
+
+	/** Also saved in savefile **/
+
+	quark_t note; /**< Autoinscription quark number */
+
+	bool aware;    /**< Set if player is aware of the kind's effects */
+	bool tried;    /**< Set if kind has been tried */
+
+	byte squelch;  /**< Squelch settings */
+	bool everseen; /**< Set if kind has ever been seen (to despoilify squelch menus) */
+
+	struct spell *spells;
+} object_kind;
+
+
+
+/**
+ * Information about artifacts.
+ *
+ * Note that ::cur_num is written to the savefile.
+ *
+ * TODO: Fix this max_num/cur_num crap and just have a big boolean array of
+ * which artifacts have been created and haven't, so this can become read-only.
+ */
+typedef struct artifact
+{
+	char *name;
+	char *text;
+
+	u32b aidx;
+
+	struct artifact *next;
+
+	byte tval;    /**< General artifact type (see TV_ macros) */
+	byte sval;    /**< Artifact sub-type (see SV_ macros) */
+	s16b pval[MAX_PVALS];    /**< Power for any flags which need it */
+	byte num_pvals;/**< Number of pvals in use on this item */
+
+	s16b to_h;    /**< Bonus to hit */
+	s16b to_d;    /**< Bonus to damage */
+	s16b to_a;    /**< Bonus to armor */
+	s16b ac;      /**< Base armor */
+
+	byte dd;      /**< Base damage dice */
+	byte ds;      /**< Base damage sides */
+
+	s16b weight;  /**< Weight in 1/10lbs */
+
+	s32b cost;    /**< Artifact (pseudo-)worth */
+
+	bitflag flags[OF_SIZE];		/**< Flags */
+	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
+
+	byte level;   /** Difficulty level for activation */
+	byte rarity;  /** Unused */
+	byte alloc_prob; /** Chance of being generated (i.e. rarity) */
+	byte alloc_min;  /** Minimum depth (can appear earlier) */
+	byte alloc_max;  /** Maximum depth (will NEVER appear deeper) */
+
+	bool created;	/**< Whether this artifact has been created */
+	bool seen;	/**< Whether this artifact has been seen this game */
+	bool everseen;	/**< Whether this artifact has ever been seen  */
+
+	u16b effect;     /**< Artifact activation (see effects.c) */
+	char *effect_msg;
+
+	random_value time;  /**< Recharge time (if appropriate) */
+
+} artifact_type;
+
+
+/*
+ * Information about "ego-items".
+ */
+typedef struct ego_item
+{
+	struct ego_item *next;
+
+	char *name;
+	char *text;
+
+	u32b eidx;
+
+	s32b cost;			/* Ego-item "cost" */
+
+	bitflag flags[OF_SIZE];		/**< Flags */
+	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
+
+	byte level;			/* Minimum level */
+	byte rarity;			/* Object rarity */
+	byte rating;			/* Level rating boost */
+
+	byte tval[EGO_TVALS_MAX]; 	/* Legal tval */
+	byte min_sval[EGO_TVALS_MAX];	/* Minimum legal sval */
+	byte max_sval[EGO_TVALS_MAX];	/* Maximum legal sval */
+
+	random_value to_h;     		/* Extra to-hit bonus */
+	random_value to_d; 		/* Extra to-dam bonus */
+	random_value to_a; 		/* Extra to-ac bonus */
+	random_value pval[MAX_PVALS]; 	/* Extra pval bonus */
+	byte num_pvals;			/* Number of pvals used */
+
+	byte min_to_h;			/* Minimum to-hit value */
+	byte min_to_d;			/* Minimum to-dam value */
+	byte min_to_a;			/* Minimum to-ac value */
+	byte min_pval[MAX_PVALS];	/* Minimum pval */
+
+	byte xtra;			/* Extra sustain/resist/power */
+
+	bool everseen;			/* Do not spoil squelch menus */
+} ego_item_type;
+
+
+
+/*
+ * Object information, for a specific object.
+ *
+ * Note that a "discount" on an item is permanent and never goes away.
+ *
+ * Note that inscriptions are now handled via the "quark_str()" function
+ * applied to the "note" field, which will return NULL if "note" is zero.
+ *
+ * Note that "object" records are "copied" on a fairly regular basis,
+ * and care must be taken when handling such objects.
+ *
+ * Note that "object flags" must now be derived from the object kind,
+ * the artifact and ego-item indexes, and the two "xtra" fields.
+ *
+ * Each cave grid points to one (or zero) objects via the "o_idx"
+ * field (above).  Each object then points to one (or zero) objects
+ * via the "next_o_idx" field, forming a singly linked list, which
+ * in game terms, represents a "stack" of objects in the same grid.
+ *
+ * Each monster points to one (or zero) objects via the "hold_o_idx"
+ * field (below).  Each object then points to one (or zero) objects
+ * via the "next_o_idx" field, forming a singly linked list, which
+ * in game terms, represents a pile of objects held by the monster.
+ *
+ * The "held_m_idx" field is used to indicate which monster, if any,
+ * is holding the object.  Objects being held have "ix=0" and "iy=0".
+ */
+typedef struct object
+{
+	struct object_kind *kind;
+	struct ego_item *ego;
+	struct artifact *artifact;
+
+	byte iy;			/* Y-position on map, or zero */
+	byte ix;			/* X-position on map, or zero */
+
+	byte tval;			/* Item type (from kind) */
+	byte sval;			/* Item sub-type (from kind) */
+
+	s16b pval[MAX_PVALS];		/* Item extra-parameter */
+	byte num_pvals;			/* Number of pvals in use */
+
+	s16b weight;			/* Item weight */
+
+	bitflag flags[OF_SIZE];		/**< Flags */
+	bitflag known_flags[OF_SIZE];	/**< Player-known flags */
+	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
+	u16b ident;			/* Special flags */
+
+	s16b ac;			/* Normal AC */
+	s16b to_a;			/* Plusses to AC */
+	s16b to_h;			/* Plusses to hit */
+	s16b to_d;			/* Plusses to damage */
+
+	byte dd, ds;		/* Damage dice/sides */
+
+	s16b timeout;		/* Timeout Counter */
+
+	byte number;		/* Number of items */
+	byte marked;		/* Object is marked */
+	bool ignore;		/* Object is ignored */
+
+	s16b next_o_idx;	/* Next object in stack (if any) */
+	s16b held_m_idx;	/* Monster holding us (if any) */
+
+	byte origin;        /* How this item was found */
+	byte origin_depth;  /* What depth the item was found at */
+	u16b origin_xtra;   /* Extra information about origin */
+
+	quark_t note; /* Inscription index */
+} object_type;
+
+typedef struct flavor {
+	char *text;
+	struct flavor *next;
+	unsigned int fidx;
+
+	byte tval;      /* Associated object type */
+	byte sval;      /* Associated object sub-type */
+
+	byte d_attr;    /* Default flavor attribute */
+	char d_char;    /* Default flavor character */
+
+	byte x_attr;    /* Desired flavor attribute */
+	char x_char;    /* Desired flavor character */
+} flavor_type;
+
 
 /*** Functions ***/
 
@@ -281,29 +694,12 @@ bool pack_is_full(void);
 bool pack_is_overfull(void);
 void pack_overflow(void);
 
-/* obj-power.c and randart.c */
-s32b object_power(const object_type *o_ptr, int verbose, ang_file *log_file, bool known);
-char *artifact_gen_name(struct artifact *a, const char ***wordlist);
-/*
- * Some constants used in randart generation and power calculation
- * - thresholds for limiting to_hit, to_dam and to_ac
- * - fudge factor for rescaling ammo cost
- * (a stack of this many equals a weapon of the same damage output)
- */
-#define INHIBIT_POWER       20000
-#define HIGH_TO_AC             26
-#define VERYHIGH_TO_AC         36
-#define INHIBIT_AC             56
-#define HIGH_TO_HIT            16
-#define VERYHIGH_TO_HIT        26
-#define HIGH_TO_DAM            16
-#define VERYHIGH_TO_DAM        26
-#define AMMO_RESCALER          20 /* this value is also used for torches */
-
-#define sign(x) ((x) > 0 ? 1 : ((x) < 0 ? -1 : 0))
-
 extern struct object *object_byid(s16b oidx);
 extern void objects_init(void);
 extern void objects_destroy(void);
+
+/* obj-power.c and randart.c */
+s32b object_power(const object_type *o_ptr, int verbose, ang_file *log_file, bool known);
+char *artifact_gen_name(struct artifact *a, const char ***wordlist);
 
 #endif /* !INCLUDED_OBJECT_H */
