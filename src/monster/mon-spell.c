@@ -179,8 +179,8 @@ static void do_side_effects(int spell, int dam, int m_idx)
 
 	/* First we note all the effects we'll be doing. */
 	for (re_ptr = spell_effect_table; re_ptr->index < RSE_MAX; re_ptr++) {
-		if ((re_ptr->method == rs_ptr->index) ||
-				(re_ptr->gf == rs_ptr->gf)) {
+		if ((re_ptr->method && (re_ptr->method == rs_ptr->index)) ||
+				(re_ptr->gf && (re_ptr->gf == rs_ptr->gf))) {
 
 			/* If we have a choice of effects, we create a cum freq table */
 			if (re_ptr->chance) {
