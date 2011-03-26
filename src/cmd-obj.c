@@ -22,7 +22,6 @@
 #include "cmds.h"
 #include "effects.h"
 #include "game-cmd.h"
-#include "object/object.h"
 #include "object/inventory.h"
 #include "object/tvalsval.h"
 #include "spells.h"
@@ -346,7 +345,7 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	msgt(MSG_WIELD, fmt, o_name, index_to_label(slot));
 
 	/* Cursed! */
-	if (cursed_p(o_ptr))
+	if (cursed_p(o_ptr->flags))
 	{
 		/* Warn the player */
 		msgt(MSG_CURSED, "Oops! It feels deathly cold!");
@@ -411,7 +410,7 @@ void do_cmd_wield(cmd_code code, cmd_arg args[])
 	}
 
 	/* Prevent wielding into a cursed slot */
-	if (cursed_p(equip_o_ptr))
+	if (cursed_p(equip_o_ptr->flags))
 	{
 		object_desc(o_name, sizeof(o_name), equip_o_ptr, ODESC_BASE);
 		msg("The %s you are %s appears to be cursed.", o_name,
@@ -448,7 +447,7 @@ void do_cmd_drop(cmd_code code, cmd_arg args[])
 	}
 
 	/* Hack -- Cannot remove cursed items */
-	if ((item >= INVEN_WIELD) && cursed_p(o_ptr))
+	if ((item >= INVEN_WIELD) && cursed_p(o_ptr->flags))
 	{
 		msg("Hmmm, it seems to be cursed.");
 		return;
@@ -472,7 +471,7 @@ void do_cmd_destroy(cmd_code code, cmd_arg args[])
 
 	o_ptr = object_from_item_idx(item);
 
-	if ((item >= INVEN_WIELD) && cursed_p(o_ptr)) {
+	if ((item >= INVEN_WIELD) && cursed_p(o_ptr->flags)) {
 		msg("You cannot ignore cursed items.");
 	} else {	
 		char o_name[80];

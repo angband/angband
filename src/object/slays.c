@@ -300,7 +300,7 @@ errr create_slay_cache(struct ego_item *items)
     ego_item_type *e_ptr;
 
     /* Build the slay mask */
-    flags_init(slay_mask, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END);
+	create_mask(slay_mask, FALSE, OFT_SLAY, OFT_KILL, OFT_BRAND, OFT_MAX);
 
     /* Calculate necessary size of slay_cache */
     dupcheck = C_ZNEW(z_info->e_max, bitflag *);

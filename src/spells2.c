@@ -307,8 +307,11 @@ void identify_pack(void)
  */
 static void uncurse_object(object_type *o_ptr)
 {
-	/* Uncurse it */
-	flags_clear(o_ptr->flags, OF_SIZE, OF_CURSE_MASK, FLAG_END);
+	bitflag f[OF_SIZE];
+
+	create_mask(f, FALSE, OFT_CURSE, OFT_MAX);
+
+	of_diff(o_ptr->flags, f);
 }
 
 
@@ -329,7 +332,7 @@ static int remove_curse_aux(bool heavy)
 		object_type *o_ptr = &p_ptr->inventory[i];
 
 		if (!o_ptr->kind) continue;
-		if (!cursed_p(o_ptr)) continue;
+		if (!cursed_p(o_ptr->flags)) continue;
 
 		/* Heavily cursed items need a special spell */
 		if (of_has(o_ptr->flags, OF_HEAVY_CURSE) && !heavy) continue;
@@ -1298,7 +1301,7 @@ bool enchant_curse(object_type *o_ptr, bool is_artifact)
 	object_flags(o_ptr, f);
 
 	/* If the item isn't cursed (or is perma-cursed) this doesn't work */
-	if (!cursed_p(o_ptr) || of_has(f, OF_PERMA_CURSE)) return FALSE;
+	if (!cursed_p(o_ptr->flags) || of_has(f, OF_PERMA_CURSE)) return FALSE;
 
 	/* Artifacts resist enchanting curses away half the time */
 	if (is_artifact && randint0(100) < 50) return FALSE;
@@ -3131,7 +3134,7 @@ void brand_object(object_type *o_ptr, int brand_type)
 
 	/* you can never modify artifacts / ego-items */
 	/* you can never modify cursed / worthless items */
-	if (o_ptr->kind && !cursed_p(o_ptr) && o_ptr->kind->cost &&
+	if (o_ptr->kind && !cursed_p(o_ptr->flags) && o_ptr->kind->cost &&
 	    !o_ptr->artifact && !o_ptr->ego)
 	{
 		char o_name[80];

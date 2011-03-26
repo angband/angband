@@ -152,7 +152,7 @@ static struct ego_item *ego_find_random(object_type *o_ptr, int level)
 		ego = &e_info[table[i].index];
 
 		/* XXX Ignore cursed items for now */
-		if (cursed_p(ego)) continue;
+		if (cursed_p(ego->flags)) continue;
 
 		/* Test if this is a legal ego-item type for this object */
 		for (j = 0; j < EGO_TVALS_MAX; j++) {
@@ -290,12 +290,13 @@ static void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
 	o_ptr->weight = a_ptr->weight;
 
 	/* Hack -- extract the "cursed" flags */
-	if (cursed_p(a_ptr))
+	if (cursed_p((bitflag *)a_ptr->flags))
 	{
-		bitflag curse_flags[OF_SIZE];
+		bitflag curse_flags[OF_SIZE], f2[OF_SIZE];
 
 		of_copy(curse_flags, a_ptr->flags);
-		flags_mask(curse_flags, OF_SIZE, OF_CURSE_MASK, FLAG_END);
+		create_mask(f2, FALSE, OFT_CURSE, OFT_MAX);
+		of_inter(curse_flags, f2);
 		of_union(o_ptr->flags, curse_flags);
 	}
 
@@ -933,7 +934,7 @@ bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good, bool gr
 
 
 	/* Notice "okay" out-of-depth objects */
-	if (!cursed_p(j_ptr) && (kind->level > c->depth))
+	if (!cursed_p(j_ptr->flags) && (kind->level > c->depth))
 		c->rating += (kind->alloc_min - c->depth);
 
 	return TRUE;

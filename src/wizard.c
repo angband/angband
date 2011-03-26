@@ -959,10 +959,13 @@ static void wiz_quantity_item(object_type *o_ptr, bool carried)
  */
 static void wiz_tweak_curse(object_type *o_ptr)
 {
-	if (cursed_p(o_ptr))
+	if (cursed_p(o_ptr->flags))
 	{
+		bitflag f[OF_SIZE];
 		msg("Resetting existing curses.");
-		flags_clear(o_ptr->flags, OF_SIZE, OF_CURSE_MASK, FLAG_END);
+
+		create_mask(f, FALSE, OFT_CURSE, OFT_MAX);
+		of_diff(o_ptr->flags, f);
 	}
 
 	if (get_check("Set light curse? "))
@@ -1127,11 +1130,12 @@ static void wiz_create_artifact(int a_idx)
 	i_ptr->weight = a_ptr->weight;
 
 	/* Hack -- extract the "cursed" flags */
-	if (cursed_p(a_ptr))
+	if (cursed_p((bitflag *)a_ptr->flags))
 	{
-		bitflag curse_flags[OF_SIZE];
+		bitflag curse_flags[OF_SIZE], f2[OF_SIZE];
 		of_copy(curse_flags, a_ptr->flags);
-		flags_mask(curse_flags, OF_SIZE, OF_CURSE_MASK, FLAG_END);
+        create_mask(f2, FALSE, OFT_CURSE, OFT_MAX);
+        of_inter(curse_flags, f2);
 		of_union(i_ptr->flags, curse_flags);
 	}
 

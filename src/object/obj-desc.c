@@ -536,12 +536,13 @@ static size_t obj_desc_light(const object_type *o_ptr, char *buf, size_t max, si
 static size_t obj_desc_pval(const object_type *o_ptr, char *buf, size_t max,
 	size_t end, bool spoil)
 {
-	bitflag f[OF_SIZE];
+	bitflag f[OF_SIZE], f2[OF_SIZE];
 	int i;
 
 	object_flags(o_ptr, f);
+	create_mask(f2, FALSE, OFT_PVAL, OFT_STAT, OFT_MAX);
 
-	if (!flags_test(f, OF_SIZE, OF_PVAL_MASK, FLAG_END)) return end;
+	if (!of_is_inter(f, f2)) return end;
 
 	strnfcat(buf, max, &end, " <");
 	for (i = 0; i < o_ptr->num_pvals; i++) {
@@ -617,7 +618,7 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, 
 	const char *u[4] = { 0, 0, 0, 0 };
 	int n = 0;
 	int feel = object_pseudo(o_ptr);
-	bitflag flags_known[OF_SIZE];
+	bitflag flags_known[OF_SIZE], f2[OF_SIZE];
 
 	object_flags_known(o_ptr, flags_known);
 
@@ -648,7 +649,8 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, 
 		u[n++] = "tried";
 
 	/* Note curses */
-	if (flags_test(flags_known, OF_SIZE, OF_CURSE_MASK, FLAG_END))
+	create_mask(f2, FALSE, OFT_CURSE, OFT_MAX);
+	if (of_is_inter(flags_known, f2))
 		u[n++] = "cursed";
 
 	/* Note squelch */

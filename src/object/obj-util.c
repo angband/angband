@@ -304,6 +304,8 @@ void reset_visuals(bool load_prefs)
  */
 void object_flags(const object_type *o_ptr, bitflag flags[OF_SIZE])
 {
+	bitflag f2[OF_SIZE];
+
 	of_wipe(flags);
 
 	if (!o_ptr->kind)
@@ -322,7 +324,8 @@ void object_flags(const object_type *o_ptr, bitflag flags[OF_SIZE])
 		of_union(flags, o_ptr->ego->flags);
 
 	/* Remove curse flags (use only the object's curse flags) */
-	flags_clear(flags, OF_SIZE, OF_CURSE_MASK, FLAG_END);
+	create_mask(f2, FALSE, OFT_CURSE, OFT_MAX);
+	of_diff(flags, f2);
 
 	/* Obtain the object's flags */
 	of_union(flags, o_ptr->flags);
@@ -525,7 +528,7 @@ s16b wield_slot_ammo(const object_type *o_ptr)
 		}
 
 		/* If ammo is cursed we can't stack it */
-		if (cursed_p(&p_ptr->inventory[i])) continue;
+		if (cursed_p(&p_ptr->inventory[i].flags)) continue;
 
 		/* If they are stackable, we'll use this slot for sure */
 		if (object_similar(&p_ptr->inventory[i], o_ptr,
@@ -1534,7 +1537,7 @@ s32b object_value(const object_type *o_ptr, int qty, int verbose)
 
 	if (object_is_known(o_ptr))
 	{
-		if (cursed_p(o_ptr)) return (0L);
+		if (cursed_p((bitflag *)o_ptr->flags)) return (0L);
 
 		value = object_value_real(o_ptr, qty, verbose, TRUE);
 	}
@@ -1544,7 +1547,8 @@ s32b object_value(const object_type *o_ptr, int qty, int verbose)
 		object_type *j_ptr = &object_type_body;
 
 		/* Hack -- Felt cursed items */
-		if (object_was_sensed(o_ptr) && cursed_p(o_ptr)) return (0L);
+		if (object_was_sensed(o_ptr) && cursed_p((bitflag *)o_ptr->flags))
+			return (0L);
 
 		memcpy(j_ptr, o_ptr, sizeof(object_type));
 
@@ -4118,7 +4122,7 @@ bool obj_can_study(const object_type *o_ptr)
 /* Can only take off non-cursed items */
 bool obj_can_takeoff(const object_type *o_ptr)
 {
-	return !cursed_p(o_ptr);
+	return !cursed_p((bitflag *)o_ptr->flags);
 }
 
 /* Can only put on wieldable items */

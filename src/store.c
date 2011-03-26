@@ -2542,7 +2542,7 @@ void do_cmd_sell(cmd_code code, cmd_arg args[])
 	object_type *o_ptr = object_from_item_idx(item);
 
 	/* Cannot remove cursed objects */
-	if ((item >= INVEN_WIELD) && cursed_p(o_ptr))
+	if ((item >= INVEN_WIELD) && cursed_p(o_ptr->flags))
 	{
 		msg("Hmmm, it seems to be cursed.");
 		return;
@@ -2659,7 +2659,7 @@ void do_cmd_stash(cmd_code code, cmd_arg args[])
 	}
 
 	/* Cannot remove cursed objects */
-	if ((item >= INVEN_WIELD) && cursed_p(o_ptr))
+	if ((item >= INVEN_WIELD) && cursed_p(o_ptr->flags))
 	{
 		msg("Hmmm, it seems to be cursed.");
 		return;
@@ -2746,7 +2746,7 @@ static bool store_sell(void)
 	o_ptr = object_from_item_idx(item);
 
 	/* Hack -- Cannot remove cursed objects */
-	if ((item >= INVEN_WIELD) && cursed_p(o_ptr))
+	if ((item >= INVEN_WIELD) && cursed_p(o_ptr->flags))
 	{
 		/* Oops */
 		msg("Hmmm, it seems to be cursed.");

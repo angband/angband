@@ -110,7 +110,7 @@ static s16b ability_power[25] =
 static s32b slay_power(const object_type *o_ptr, int verbose, ang_file*
 	log_file, bool known)
 {
-	bitflag s_index[OF_SIZE], f[OF_SIZE];
+	bitflag s_index[OF_SIZE], f[OF_SIZE], f2[OF_SIZE];
 	u32b sv = 0;
 	int i, j;
 	int mult;
@@ -128,7 +128,8 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file*
 
 	/* Combine the slay bytes into an index value */
 	of_copy(s_index, f);
-	flags_mask(s_index, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END);
+	create_mask(f2, FALSE, OFT_SLAY, OFT_KILL, OFT_BRAND, OFT_MAX);
+	of_inter(s_index, f2);
 
 	/* Look in the cache to see if we know this one yet */
 	sv = check_slay_cache(s_index);
@@ -403,7 +404,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			 * add extra power for multiple slays/brands, as these
 			 * add diminishing amounts to average damage
 			 */
-			flags_init(mask, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END);
+			create_mask(mask, FALSE, OFT_SLAY, OFT_KILL, OFT_BRAND, OFT_MAX);
 			i = list_slays(flags, mask, NULL, NULL, NULL, FALSE);
 			if (i > 1)
 				p += (i * 3);

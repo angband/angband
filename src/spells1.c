@@ -1552,7 +1552,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvio
 			/* Holy Orb -- destroys cursed non-artifacts */
 			case GF_HOLY_ORB:
 			{
-				if (cursed_p(o_ptr))
+				if (cursed_p(o_ptr->flags))
 				{
 					do_kill = TRUE;
 					note_kill = (plural ? " are destroyed!" : " is destroyed!");

@@ -1,6 +1,7 @@
 #ifndef INCLUDED_PLAYER_TYPES_H
 #define INCLUDED_PLAYER_TYPES_H
 
+#include "object/obj-flag.h"
 #include "object/object.h"
 #include "option.h"
 #include "ui-event.h"

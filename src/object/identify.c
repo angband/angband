@@ -66,14 +66,14 @@ bool object_is_known_artifact(const object_type *o_ptr)
  */
 bool object_is_known_cursed(const object_type *o_ptr)
 {
-	bitflag f[OF_SIZE];
+	bitflag f[OF_SIZE], f2[OF_SIZE];
 
 	object_flags_known(o_ptr, f);
 
-	/* Know whatever curse flags there are to know */
-	flags_mask(f, OF_SIZE, OF_CURSE_MASK, FLAG_END);
+	/* Gather whatever curse flags there are to know */
+	create_mask(f2, FALSE, OFT_CURSE, OFT_MAX);
 
-	return !of_is_empty(f);
+	return of_is_inter(f, f2);
 }
 
 /**
@@ -157,7 +157,7 @@ bool object_effect_is_known(const object_type *o_ptr)
  */
 bool object_this_pval_is_visible(const object_type *o_ptr, int pval)
 {
-	bitflag f[MAX_PVALS][OF_SIZE];
+	bitflag f[MAX_PVALS][OF_SIZE], f2[OF_SIZE];
 
 	assert(o_ptr->kind);
 
@@ -175,7 +175,10 @@ bool object_this_pval_is_visible(const object_type *o_ptr, int pval)
 	{
 		object_pval_flags_known(o_ptr, f);
 
-		if (flags_test(f[pval], OF_SIZE, OF_PVAL_MASK, FLAG_END))
+		/* Create the mask for pval-related flags */
+		create_mask(f2, FALSE, OFT_STAT, OFT_PVAL, OFT_MAX);
+
+		if (of_is_inter(f[pval], f2))
 			return TRUE;
 	}
 
@@ -187,7 +190,7 @@ bool object_this_pval_is_visible(const object_type *o_ptr, int pval)
  */
 bool object_pval_is_visible(const object_type *o_ptr)
 {
-	bitflag f[MAX_PVALS][OF_SIZE];
+	bitflag f[MAX_PVALS][OF_SIZE], f2[OF_SIZE];
 	int i;
 
 	assert(o_ptr->kind);
@@ -207,8 +210,11 @@ bool object_pval_is_visible(const object_type *o_ptr)
 	{
 		object_pval_flags_known(o_ptr, f);
 
+		/* Create the mask for pval-related flags */
+		create_mask(f2, FALSE, OFT_STAT, OFT_PVAL, OFT_MAX);
+
 		for (i = 0; i < o_ptr->num_pvals; i++)
-			if (flags_test(f[i], OF_SIZE, OF_PVAL_MASK, FLAG_END))
+			if (of_is_inter(f[i], f2))
 				return TRUE;
 	}
 
@@ -299,7 +305,7 @@ bool object_flag_is_known(const object_type *o_ptr, int flag)
  */
 bool object_high_resist_is_possible(const object_type *o_ptr)
 {
-	bitflag flags[OF_SIZE];
+	bitflag flags[OF_SIZE], f2[OF_SIZE];
 
 	/* Actual object flags */
 	object_flags(o_ptr, flags);
@@ -308,7 +314,8 @@ bool object_high_resist_is_possible(const object_type *o_ptr)
 	of_comp_union(flags, o_ptr->known_flags);
 
 	/* Check for possible high resist */
-	if (flags_test(flags, OF_SIZE, OF_HIGH_RESIST_MASK, FLAG_END))
+	create_mask(f2, FALSE, OFT_HRES, OFT_MAX);
+	if (of_is_inter(flags, f2))
 		return TRUE;
 	else
 		return FALSE;
@@ -345,14 +352,16 @@ static bool object_add_ident_flags(object_type *o_ptr, u32b flags)
  */
 bool object_check_for_ident(object_type *o_ptr)
 {
-	bitflag flags[OF_SIZE], known_flags[OF_SIZE];
+	bitflag flags[OF_SIZE], known_flags[OF_SIZE], f2[OF_SIZE];
 	
 	object_flags(o_ptr, flags);
 	object_flags_known(o_ptr, known_flags);
 
 	/* Some flags are irrelevant or never learned or too hard to learn */
-	flags_clear(flags, OF_SIZE, OF_OBJ_ONLY_MASK, FLAG_END);
-	flags_clear(known_flags, OF_SIZE, OF_OBJ_ONLY_MASK, FLAG_END);
+	create_mask(f2, FALSE, OFT_INT, OFT_IGNORE, OFT_HATES, OFT_MAX);
+
+	of_diff(flags, f2);
+	of_diff(known_flags, f2);
 
 	if (!of_is_equal(flags, known_flags)) return FALSE;
 
@@ -656,14 +665,6 @@ void object_notice_attack_plusses(object_type *o_ptr)
 }
 
 
-static const char *msgs[] =
-{
-	#define OF(a,b) b,
-	#include "list-object-flags.h"
-	#undef OF
-};
-
-
 /*
  * Notice a single flag - returns TRUE if anything new was learned
  */
@@ -715,12 +716,15 @@ bool object_notice_flags(object_type *o_ptr, bitflag flags[OF_SIZE])
  */
 bool object_notice_curses(object_type *o_ptr)
 {
-	bitflag f[OF_SIZE];
+	bitflag f[OF_SIZE], f2[OF_SIZE];
 
 	object_flags(o_ptr, f);
 
-	/* Know whatever curse flags there are to know */
-	flags_mask(f, OF_SIZE, OF_CURSE_MASK, FLAG_END);
+	/* Gather whatever curse flags there are to know */
+	create_mask(f2, FALSE, OFT_CURSE, OFT_MAX);
+
+	/* Remove everything except the curse flags */
+	of_inter(f, f2);
 
 	/* give knowledge of which curses are present */
 	object_notice_flags(o_ptr, f);
@@ -772,10 +776,10 @@ void object_notice_on_firing(object_type *o_ptr)
  */
 void object_notice_on_wield(object_type *o_ptr)
 {
-	bitflag f[OF_SIZE], obvious_mask[OF_SIZE];
+	bitflag f[OF_SIZE], f2[OF_SIZE], obvious_mask[OF_SIZE];
 	bool obvious = FALSE;
 
-	flags_init(obvious_mask, OF_SIZE, OF_OBVIOUS_MASK, FLAG_END);
+	create_mask(obvious_mask, TRUE, OFID_WIELD, OFT_MAX);
 
 	/* Save time of wield for later */
 	object_last_wield = turn;
@@ -813,10 +817,11 @@ void object_notice_on_wield(object_type *o_ptr)
 	/* Extract the flags */
 	object_flags(o_ptr, f);
 
-	/* Find obvious things (disregarding curses) */
-	flags_clear(obvious_mask, OF_SIZE, OF_CURSE_MASK, FLAG_END);
+	/* Find obvious things (disregarding curses) - why do we remove the curses?? */
+	create_mask(f2, FALSE, OFT_CURSE, OFT_MAX);
+	of_diff(obvious_mask, f2);
 	if (of_is_inter(f, obvious_mask)) obvious = TRUE;
-	flags_init(obvious_mask, OF_SIZE, OF_OBVIOUS_MASK, FLAG_END);
+	create_mask(obvious_mask, TRUE, OFID_WIELD, OFT_MAX);
 
 	/* Notice any obvious brands or slays */
 	object_notice_slays(o_ptr, obvious_mask);
@@ -844,6 +849,7 @@ void object_notice_on_wield(object_type *o_ptr)
 	if (!obvious) return;
 
 	/* XXX Eddie need to add stealth here, also need to assert/double-check everything is covered */
+	/* CC: also need to add FA! */
 	if (of_has(f, OF_STR))
 		msg("You feel %s!", o_ptr->pval[which_pval(o_ptr,
 			OF_STR)] > 0 ? "stronger" : "weaker");
@@ -881,7 +887,8 @@ void object_notice_on_wield(object_type *o_ptr)
 		msg("Your mind feels strangely sharper!");
 
 	/* WARNING -- masking f by obvious mask -- this should be at the end of this function */
-	flags_mask(f, OF_SIZE, OF_OBVIOUS_MASK, FLAG_END);
+	/* CC: I think this can safely go, but just in case ... */
+/*	flags_mask(f, OF_SIZE, OF_OBVIOUS_MASK, FLAG_END); */
 
 	/* Remember the flags */
 	object_notice_sensing(o_ptr);
@@ -903,7 +910,7 @@ static void object_notice_after_time(void)
 
 	bitflag f[OF_SIZE], timed_mask[OF_SIZE];
 
-	flags_init(timed_mask, OF_SIZE, OF_NOTICE_TIMED_MASK, FLAG_END);
+	create_mask(timed_mask, TRUE, OFID_TIMED, OFT_MAX);
 
 	/* Check every item the player is wearing */
 	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
@@ -922,8 +929,7 @@ static void object_notice_after_time(void)
 			if (!of_has(o_ptr->known_flags, flag))
 			{
 				/* Message */
-				if (!streq(msgs[flag], ""))
-					msg(msgs[flag], o_name);
+				flag_message(flag, o_name);
 
 				/* Notice the flag */
 				object_notice_flag(o_ptr, flag);
@@ -986,8 +992,7 @@ void wieldeds_notice_flag(int flag)
 			}
 
 			/* Message */
-			if (!streq(msgs[flag], ""))
-				msg(msgs[flag], o_name);
+			flag_message(flag, o_name);
 		}
 		else
 		{
@@ -1042,21 +1047,25 @@ bool object_FA_would_be_obvious(const object_type *o_ptr)
  */
 obj_pseudo_t object_pseudo(const object_type *o_ptr)
 {
-	bitflag flags[OF_SIZE];
+	bitflag flags[OF_SIZE], f2[OF_SIZE];
 
 	/* Get the known and obvious flags on the object,
-	 * not including curses or properties of the kind
+	 * not including curses or properties of the kind.
 	 */
 	object_flags_known(o_ptr, flags);
+	create_mask(f2, TRUE, OFID_WIELD, OFT_MAX);
 
 	/* MEGA-hack : there needs to be a table of what is obvious in each slot perhaps for each class */
 	/* FA on gloves is obvious to mage casters */
 	if (object_FA_would_be_obvious(o_ptr))
-		flags_mask(flags, OF_SIZE, OF_OBVIOUS_MASK, OF_FREE_ACT, FLAG_END);
-	else
-		flags_mask(flags, OF_SIZE, OF_OBVIOUS_MASK, FLAG_END);
+		of_on(f2, OF_FREE_ACT);
 
-	flags_clear(flags, OF_SIZE, OF_CURSE_MASK, FLAG_END);
+	/* Now we remove the non-obvious known flags */
+	of_inter(flags, f2);
+
+	/* Now we remove the cursed flags and the kind flags */
+	create_mask(f2, FALSE, OFT_CURSE, OFT_MAX);
+	of_diff(flags, f2);
 	of_diff(flags, o_ptr->kind->flags);
 
 	if (o_ptr->ident & IDENT_INDESTRUCT)
@@ -1080,7 +1089,7 @@ obj_pseudo_t object_pseudo(const object_type *o_ptr)
 	if (o_ptr->ego)
 	{
 		/* uncursed bad egos are not excellent */
-		if (flags_test(o_ptr->ego->flags, OF_SIZE, OF_CURSE_MASK, FLAG_END))
+		if (of_is_inter(o_ptr->ego->flags, f2))
 			return INSCRIP_STRANGE; /* XXX Eddie need something worse */
 		else
 			return INSCRIP_EXCELLENT;

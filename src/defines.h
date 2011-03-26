@@ -753,65 +753,6 @@ enum
  */
 #define term_screen	(angband_term[0])
 
-
-/*
- * Determine if the attr and char should consider the item's flavor
- *
- * Identified scrolls should use their own tile.
- */
-#define use_flavor_glyph(kind) \
-	((kind)->flavor && \
-	 !((kind)->tval == TV_SCROLL && (kind)->aware))
-
-/*
- * Return the "attr" for a given item kind.
- * Use "flavor" if available.
- * Default to user definitions.
- */
-#define object_kind_attr(kind) \
-	(use_flavor_glyph((kind)) ? \
-	 ((kind)->flavor->x_attr) : \
-	 ((kind)->x_attr))
-
-/*
- * Return the "char" for a given item kind.
- * Use "flavor" if available.
- * Default to user definitions.
- */
-#define object_kind_char(kind) \
-	(use_flavor_glyph(kind) ? \
-	 ((kind)->flavor->x_char) : \
-	 ((kind)->x_char))
-
-/*
- * Return the "attr" for a given item.
- * Use "flavor" if available.
- * Default to user definitions.
- */
-#define object_attr(T) \
-	(object_kind_attr((T)->kind))
-
-/*
- * Return the "char" for a given item.
- * Use "flavor" if available.
- * Default to user definitions.
- */
-#define object_char(T) \
-	(object_kind_char((T)->kind))
-
-/*
- * Cursed items.
- */
-#define cursed_p(T) \
-	(flags_test((T)->flags, OF_SIZE, OF_CURSE_MASK, FLAG_END))
-
- /*
- * Rings and Amulets
- */
-#define object_is_jewelry(T) \
-	(((T)->tval == TV_RING) || ((T)->tval == TV_AMULET))
-
-
 /*
  * Convert a "location" (Y,X) into a "grid" (G)
  */
@@ -989,9 +930,6 @@ enum
 
 #define MAX_ITEMLIST 256
 
-/* Whether to learn egos and flavors with less than complete information */
-#define EASY_LEARN 1
-
 /* MSVC doesn't have va_copy (which is C99) or an alternative, so we'll just
  * copy the SRC pointer. In other cases we'll use va_copy() as we should. */
 #ifdef _MSC_VER
@@ -999,17 +937,6 @@ enum
 #else
 #define VA_COPY(DST, SRC) va_copy(DST, SRC)
 #endif
-
-/**
- * Maximum number of pvals on objects
- *
- * Note: all pvals other than DEFAULT_PVAL are assumed to be associated with
- * flags, and any non-flag uses of pval (e.g. chest quality, gold quantity)
- * are assumed to use DEFAULT_PVAL.
- */
-#define MAX_PVALS 3
-#define DEFAULT_PVAL 0
-
 
 /**
  * Maximum number of rvals (monster templates) that a pit can specify.

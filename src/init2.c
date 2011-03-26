@@ -87,7 +87,7 @@ errr run_parser(struct file_parser *fp) {
 }
 
 static const char *k_info_flags[] = {
-	#define OF(a, b) #a,
+	#define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q) #a,
 	#include "object/list-object-flags.h"
 	#undef OF
 	NULL
@@ -705,6 +705,7 @@ struct file_parser k_parser = {
 
 /* Parsing functions for artifact.txt */
 static enum parser_error parse_a_n(struct parser *p) {
+	bitflag f[OF_SIZE];
 	int idx = parser_getint(p, "index");
 	const char *name = parser_getstr(p, "name");
 	struct artifact *h = parser_priv(p);
@@ -716,7 +717,8 @@ static enum parser_error parse_a_n(struct parser *p) {
 	a->name = string_make(name);
 
 	/* Ignore all elements */
-	flags_set(a->flags, OF_SIZE, OF_IGNORE_MASK, FLAG_END);
+	create_mask(f, FALSE, OFT_IGNORE, OFT_MAX);
+	of_union(a->flags, f);
 
 	return PARSE_ERROR_NONE;
 }

@@ -1,8 +1,8 @@
 /*
  * File: slays.h
- * Purpose: List of slay types
+ * Purpose: Structures and functions for dealing with slays and brands
  *
- * Copyright (c) 2007 Andrew Sidwell
+ * Copyright (c) 2010 Chris Carr
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -31,7 +31,7 @@ typedef enum
 
 
 /*
- * Slay type.  Used for the global table of brands/slays and their effects.
+ * Slay type.  Used for the table of brands/slays and their effects.
  */
 struct slay {
 	u16b index;					/* Numerical index */

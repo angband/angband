@@ -295,7 +295,7 @@ static int verbose = 1;
  */
 static const char *flag_names[] =
 {
-	#define OF(a, b) #a,
+	#define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q) #a,
 	#include "list-object-flags.h"
 	#undef OF
 	""
@@ -452,11 +452,10 @@ static void store_base_power (void)
 static object_kind *choose_item(int a_idx)
 {
 	artifact_type *a_ptr = &a_info[a_idx];
-	int tval = 0;
-	int sval = 0;
+	int tval = 0, sval = 0, i = 0;
 	object_kind *k_ptr;
-	int i = 0;
 	s16b r;
+	bitflag f[OF_SIZE];
 
 	/*
 	 * Pick a base item from the cumulative frequency table.
@@ -507,7 +506,8 @@ static object_kind *choose_item(int a_idx)
 	a_ptr->effect = 0;
 
 	/* Artifacts ignore everything */
-	flags_set(a_ptr->flags, OF_SIZE, OF_IGNORE_MASK, FLAG_END);
+	create_mask(f, FALSE, OFT_IGNORE, OFT_MAX);
+	of_copy(a_ptr->flags, f);
 
 	/* Assign basic stats to the artifact based on its artifact level. */
 	/*
@@ -768,16 +768,15 @@ static void parse_frequencies(void)
 			}
 
 			/* Brands or slays - count all together */
-			if (flags_test(a_ptr->flags, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END))
+			create_mask(mask, FALSE, OFT_SLAY, OFT_BRAND, OFT_KILL, OFT_MAX);
+			if (of_is_inter(a_ptr->flags, mask))
 			{
 				/* We have some brands or slays - count them */
-				flags_init(mask, OF_SIZE, OF_BRAND_MASK, FLAG_END);
+				temp = list_slays(a_ptr->flags, mask, NULL, NULL, NULL,	FALSE);
+				create_mask(mask, FALSE, OFT_BRAND, OFT_MAX);
 				temp2 = list_slays(a_ptr->flags, mask, NULL, NULL, NULL, FALSE);
-				flags_init(mask, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END);
-				temp = list_slays(a_ptr->flags, mask, NULL, NULL, NULL,	FALSE)
-						- temp2;
 
-				file_putf(log_file, "Adding %d for slays\n", temp);
+				file_putf(log_file, "Adding %d for slays\n", temp - temp2);
 				file_putf(log_file, "Adding %d for brands\n", temp2);
 
 				/* Add these to the frequency count */
@@ -867,16 +866,15 @@ static void parse_frequencies(void)
 			}
 
 			/* Brands or slays - count all together */
-			if (flags_test(a_ptr->flags, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END))
+			create_mask(mask, FALSE, OFT_SLAY, OFT_BRAND, OFT_KILL, OFT_MAX);
+			if (of_is_inter(a_ptr->flags, mask))
 			{
 				/* We have some brands or slays - count them */
-                flags_init(mask, OF_SIZE, OF_BRAND_MASK, FLAG_END);
-                temp2 = list_slays(a_ptr->flags, mask, NULL, NULL, NULL, FALSE);
-                flags_init(mask, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END);
-                temp = list_slays(a_ptr->flags, mask, NULL, NULL, NULL, FALSE)
-						- temp2;
+				temp = list_slays(a_ptr->flags, mask, NULL, NULL, NULL,	FALSE);
+				create_mask(mask, FALSE, OFT_BRAND, OFT_MAX);
+				temp2 = list_slays(a_ptr->flags, mask, NULL, NULL, NULL, FALSE);
 
-				file_putf(log_file, "Adding %d for slays\n", temp);
+				file_putf(log_file, "Adding %d for slays\n", temp - temp2);
 				file_putf(log_file, "Adding %d for brands\n", temp2);
 
 				/* Add these to the frequency count */
@@ -978,16 +976,15 @@ static void parse_frequencies(void)
 			}
 
 			/* Brands or slays - count all together */
-			if (flags_test(a_ptr->flags, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END))
+			create_mask(mask, FALSE, OFT_SLAY, OFT_BRAND, OFT_KILL, OFT_MAX);
+			if (of_is_inter(a_ptr->flags, mask))
 			{
 				/* We have some brands or slays - count them */
-                flags_init(mask, OF_SIZE, OF_BRAND_MASK, FLAG_END);
-                temp2 = list_slays(a_ptr->flags, mask, NULL, NULL, NULL, FALSE);
-                flags_init(mask, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END);
-                temp = list_slays(a_ptr->flags, mask, NULL, NULL, NULL, FALSE)
-						- temp2;
+				temp = list_slays(a_ptr->flags, mask, NULL, NULL, NULL,	FALSE);
+				create_mask(mask, FALSE, OFT_BRAND, OFT_MAX);
+				temp2 = list_slays(a_ptr->flags, mask, NULL, NULL, NULL, FALSE);
 
-				file_putf(log_file, "Adding %d for slays\n", temp);
+				file_putf(log_file, "Adding %d for slays\n", temp - temp2);
 				file_putf(log_file, "Adding %d for brands\n", temp2);
 
 				/* Add these to the frequency count */
@@ -1928,9 +1925,9 @@ static void add_slay(artifact_type *a_ptr, bool brand)
 	bitflag mask[OF_SIZE];
 
 	if (brand)
-		flags_init(mask, OF_SIZE, OF_BRAND_MASK, FLAG_END);
+		create_mask(mask, FALSE, OFT_BRAND, OFT_MAX);
 	else
-		flags_init(mask, OF_SIZE, OF_SLAY_MASK, OF_KILL_MASK, FLAG_END);
+		create_mask(mask, FALSE, OFT_SLAY, OFT_KILL, OFT_MAX);
 
 	for(count = 0; count < MAX_TRIES; count++) {
 		s_ptr = random_slay(mask);
@@ -2696,6 +2693,7 @@ static void scramble_artifact(int a_idx)
 	bool curse_me = FALSE;
 	bool success = FALSE;
 	int i;
+	bitflag f[OF_SIZE];
 
 	/* Special cases -- don't randomize these! */
 	if ((a_idx == ART_POWER) ||
@@ -2811,7 +2809,8 @@ static void scramble_artifact(int a_idx)
 		if (a_ptr->tval != TV_LIGHT) a_ptr->effect = 0;
 
 		/* Artifacts ignore everything */
-		flags_set(a_ptr->flags, OF_SIZE, OF_IGNORE_MASK, FLAG_END);
+		create_mask(f, FALSE, OFT_IGNORE, OFT_MAX);
+		of_copy(a_ptr->flags, f);
 
 		file_putf(log_file, "Alloc prob is %d\n", a_ptr->alloc_prob);
 	}

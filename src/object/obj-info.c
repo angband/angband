@@ -375,9 +375,9 @@ static bool describe_slays(textblock *tb, const bitflag flags[OF_SIZE],
 	size_t count;
 	bool fulldesc;
 
-	flags_init(slay_mask, OF_SIZE, OF_SLAY_MASK, FLAG_END);
-	flags_init(kill_mask, OF_SIZE, OF_KILL_MASK, FLAG_END);
-	flags_init(brand_mask, OF_SIZE, OF_BRAND_MASK, FLAG_END);
+	create_mask(slay_mask, FALSE, OFT_SLAY, OFT_MAX);
+	create_mask(kill_mask, FALSE, OFT_KILL, OFT_MAX);
+	create_mask(brand_mask, FALSE, OFT_BRAND, OFT_MAX);
 
 	if (tval == TV_SWORD || tval == TV_HAFTED || tval == TV_POLEARM ||
 			tval == TV_DIGGING || tval == TV_BOW || tval == TV_SHOT ||
@@ -512,6 +512,9 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 	bool ammo   = (p_ptr->state.ammo_tval == o_ptr->tval) &&
 	              (bow->kind);
 	int multiplier = 1;
+
+	/* Create the "all slays" mask */
+	create_mask(mask, FALSE, OFT_SLAY, OFT_KILL, OFT_BRAND, OFT_MAX);
 
 	/* Abort if we've nothing to say */
 	if (mode & OINFO_DUMMY) return FALSE;
@@ -687,7 +690,7 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 				continue;
 			object_flags_known(&p_ptr->inventory[i], tmp_f);
 
-			flags_mask(tmp_f, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END);
+			of_inter(tmp_f, mask); /* strip out non-slays */
 
 			if (of_union(f, tmp_f))
 				nonweap = TRUE;
@@ -700,8 +703,6 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 	textblock_append(tb, "Average damage/round: ");
 
 	if (ammo) multiplier = p_ptr->state.ammo_mult;
-
-	flags_init(mask, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END);
 
 	cnt = list_slays(f, mask, desc, NULL, mult, TRUE);
 	for (i = 0; i < cnt; i++)

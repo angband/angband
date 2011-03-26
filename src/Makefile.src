@@ -89,6 +89,7 @@ ANGFILES = \
 	monster/mon-spell.o \
 	object/identify.o \
 	object/obj-desc.o \
+	object/obj-flag.o \
 	object/obj-info.o \
 	object/obj-make.o \
 	object/obj-power.o \

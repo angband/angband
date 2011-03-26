@@ -13,102 +13,6 @@ struct player;
 
 /*** Constants ***/
 
-enum
-{
-    #define OF(a,b) OF_##a,
-    #include "list-object-flags.h"
-    #undef OF
-};
-
-#define OF_SIZE                	FLAG_SIZE(OF_MAX)
-#define OF_BYTES           		32  /* savefile bytes, i.e. 256 flags */
-
-#define of_has(f, flag)        	flag_has_dbg(f, OF_SIZE, flag, #f, #flag)
-#define of_next(f, flag)       	flag_next(f, OF_SIZE, flag)
-#define of_is_empty(f)         	flag_is_empty(f, OF_SIZE)
-#define of_is_full(f)          	flag_is_full(f, OF_SIZE)
-#define of_is_inter(f1, f2)    	flag_is_inter(f1, f2, OF_SIZE)
-#define of_is_subset(f1, f2)   	flag_is_subset(f1, f2, OF_SIZE)
-#define of_is_equal(f1, f2)    	flag_is_equal(f1, f2, OF_SIZE)
-#define of_on(f, flag)         	flag_on_dbg(f, OF_SIZE, flag, #f, #flag)
-#define of_off(f, flag)        	flag_off(f, OF_SIZE, flag)
-#define of_wipe(f)             	flag_wipe(f, OF_SIZE)
-#define of_setall(f)           	flag_setall(f, OF_SIZE)
-#define of_negate(f)           	flag_negate(f, OF_SIZE)
-#define of_copy(f1, f2)        	flag_copy(f1, f2, OF_SIZE)
-#define of_union(f1, f2)       	flag_union(f1, f2, OF_SIZE)
-#define of_comp_union(f1, f2)  	flag_comp_union(f1, f2, OF_SIZE)
-#define of_inter(f1, f2)       	flag_inter(f1, f2, OF_SIZE)
-#define of_diff(f1, f2)        	flag_diff(f1, f2, OF_SIZE)
-
-/* Flag set for "pval-dependant" flags. */
-#define OF_PVAL_MASK \
-    OF_STR, OF_INT, OF_WIS, OF_DEX, OF_CON, OF_CHR, \
-    OF_STEALTH, OF_SEARCH, OF_INFRA, OF_TUNNEL, \
-    OF_SPEED, OF_BLOWS, OF_SHOTS, OF_MIGHT
-
-/* Flag set for high resists */
-#define OF_HIGH_RESIST_MASK \
-    OF_RES_POIS, OF_RES_LIGHT, OF_RES_DARK, \
-    OF_RES_SOUND, OF_RES_SHARD, \
-    OF_RES_NEXUS, OF_RES_NETHR, OF_RES_CHAOS, OF_RES_DISEN
-
-/* Flag set for curses. */
-#define OF_CURSE_MASK \
-    OF_LIGHT_CURSE, OF_HEAVY_CURSE, OF_PERMA_CURSE
-
-/* Flag set for flags that are obvious to the player on wield. */
-#define OF_OBVIOUS_MASK \
-    OF_STR, OF_INT, OF_WIS, OF_DEX, OF_CON, OF_CHR, \
-    OF_STEALTH, OF_SEARCH, OF_INFRA, OF_TUNNEL, \
-    OF_SPEED, OF_BLOWS, OF_SHOTS, OF_MIGHT, \
-    OF_BRAND_POIS, OF_BRAND_ELEC, OF_BRAND_FIRE, OF_BRAND_COLD, OF_BRAND_ACID, \
-    OF_LIGHT, OF_SEE_INVIS, OF_TELEPATHY, OF_NO_FUEL, \
-    OF_BLESSED, OF_AFRAID, OF_CURSE_MASK
-
-/* Flag set for flags that are noticed after some time has passed. */
-#define OF_NOTICE_TIMED_MASK \
-    OF_STEALTH, OF_SLOW_DIGEST, OF_REGEN, OF_AGGRAVATE, \
-    OF_IMPAIR_HP, OF_IMPAIR_MANA
-
-/* Flag set for "ignore element" flags. */
-#define OF_IGNORE_MASK \
-    OF_IGNORE_ACID, OF_IGNORE_ELEC, OF_IGNORE_FIRE, OF_IGNORE_COLD
-
-/* Flag set for "can be damaged by" flags */
-#define OF_HATE_MASK \
-    OF_HATES_ACID, OF_HATES_FIRE, OF_HATES_COLD, OF_HATES_ELEC
-
-/* Flag set for "show stuff before ID" flags */
-#define OF_SHOW_MASK \
-    OF_SHOW_MODS, OF_SHOW_DICE, OF_SHOW_MULT
-
-/* Flag set for flags on an object that do not affect the player */
-#define OF_OBJ_ONLY_MASK \
-    OF_INSTA_ART, OF_EASY_KNOW, OF_HIDE_TYPE, OF_SHOW_MASK, OF_IGNORE_MASK, \
-    OF_HATE_MASK
-
-/* Flag sets for slays and brands. */
-#define OF_SLAY_MASK \
-    OF_SLAY_ANIMAL, OF_SLAY_EVIL, \
-    OF_SLAY_ORC, OF_SLAY_TROLL, OF_SLAY_GIANT, \
-    OF_SLAY_UNDEAD, OF_SLAY_DEMON, OF_SLAY_DRAGON
-
-#define OF_BRAND_MASK \
-    OF_BRAND_ACID, OF_BRAND_ELEC, OF_BRAND_FIRE, OF_BRAND_COLD, OF_BRAND_POIS
-
-#define OF_KILL_MASK \
-    OF_KILL_UNDEAD, OF_KILL_DEMON, OF_KILL_DRAGON
-
-#define OF_ALL_SLAY_MASK \
-    OF_SLAY_MASK, OF_BRAND_MASK, OF_KILL_MASK
-
-/* Hack -- special "xtra" object flag info (type) */
-#define OBJECT_XTRA_TYPE_NONE     0
-#define OBJECT_XTRA_TYPE_SUSTAIN  1
-#define OBJECT_XTRA_TYPE_RESIST   2
-#define OBJECT_XTRA_TYPE_POWER    3
-
 /* ID flags */
 #define IDENT_SENSE     0x0001  /* Has been "sensed" */
 #define IDENT_WORN      0x0002  /* Has been tried on */
@@ -125,8 +29,10 @@ enum
 #define IDENT_NOTART    0x1000  /* Item is known not to be an artifact */
 #define IDENT_FAKE      0x2000  /* Item is a fake, for displaying knowledge */
 
+/* Whether to learn egos and flavors with less than complete information */
+#define EASY_LEARN 1
 
-/** Maximum number of scroll titles generated */
+/* Maximum number of scroll titles generated */
 #define MAX_TITLES     50
 
 /**
@@ -229,6 +135,60 @@ typedef enum
 #define AMMO_RESCALER          20 /* this value is also used for torches */
 
 #define sign(x) ((x) > 0 ? 1 : ((x) < 0 ? -1 : 0))
+
+
+/*** Macros ***/
+
+/*
+ * Determine if the attr and char should consider the item's flavor
+ *
+ * Identified scrolls should use their own tile.
+ */
+#define use_flavor_glyph(kind) \
+    ((kind)->flavor && \
+     !((kind)->tval == TV_SCROLL && (kind)->aware))
+
+/*
+ * Return the "attr" for a given item kind.
+ * Use "flavor" if available.
+ * Default to user definitions.
+ */
+#define object_kind_attr(kind) \
+    (use_flavor_glyph((kind)) ? \
+     ((kind)->flavor->x_attr) : \
+     ((kind)->x_attr))
+
+/*
+ * Return the "char" for a given item kind.
+ * Use "flavor" if available.
+ * Default to user definitions.
+ */
+#define object_kind_char(kind) \
+    (use_flavor_glyph(kind) ? \
+     ((kind)->flavor->x_char) : \
+     ((kind)->x_char))
+
+/*
+ * Return the "attr" for a given item.
+ * Use "flavor" if available.
+ * Default to user definitions.
+ */
+#define object_attr(T) \
+    (object_kind_attr((T)->kind))
+
+/*
+ * Return the "char" for a given item.
+ * Use "flavor" if available.
+ * Default to user definitions.
+ */
+#define object_char(T) \
+    (object_kind_char((T)->kind))
+
+/*
+ * Rings and Amulets
+ */
+#define object_is_jewelry(T) \
+    (((T)->tval == TV_RING) || ((T)->tval == TV_AMULET))
 
 
 /*** Structures ***/
