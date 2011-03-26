@@ -290,8 +290,8 @@ E:HEAL2:200+2d50
 M:{name} glows deep blue...
 L:3:STR | INT | WIS | DEX | CON | CHR
 L:4:SPEED
-D:The Ring of Sapphire, with clear blue gems that shine like stars, 
-D:glittering untouchable despite all that Morgoth ever wrought.
+D:The Ring of Sapphire, made of gold with a brilliant blue gem that shines 
+D:like stars. It glitters untouchable despite all that Morgoth ever wrought.
 D:Vilya is one of the three Rings of Power created by Celebrimbor and hidden by
 D:the Elves from Sauron.
 
@@ -318,9 +318,9 @@ M:{name} glows intensely black...
 L:5:STR | INT | WIS | DEX | CON | CHR | SPEED
 D:"One Ring to rule them all, One Ring to find them, One Ring to bring 
 D:them all and in the darkness bind them."  Made of massive gold, and 
-D:set with runes in the foul speech of Mordor, Isildur's Bane possesses 
-D:powers so great that it inevitably twists and masters any earthly being 
-D:who wears it.
+D:inscribed with hidden runes in the foul speech of Mordor, Isildur's Bane 
+D:possesses powers so great that it inevitably twists and masters any mortal 
+D:being who wears it.
 
 
 # New Artifact (14): The Elfstone 'Elessar'
@@ -335,8 +335,9 @@ F:INSTA_ART
 E:HEAL1:200
 M:You feel a warm tingling inside...
 L:2:STR | WIS | CHR | SPEED
-D:A green stone, imbued with the power of Elvendom and fit to be borne by 
-D:a true King of Men, one such as brings healing after victory in battle.
+D:A green stone, imbued with the power of Elvendom and the light of the Sun.
+D:Those who gaze through it see the aged and infirm as young again, and its
+D:wearer brings healing after victory in battle.
 
 
 # New Artifact (15): The Jewel 'Evenstar'
@@ -368,7 +369,7 @@ F:RES_ACID | RES_FIRE | RES_COLD |
 F:RES_POIS | RES_LIGHT | RES_DARK | 
 F:LIGHT | SEE_INVIS | AGGRAVATE | 
 E:STAR_BALL:50
-M:Your {kind} {is} surrounded by lightning!
+M:Lightning surrounds your {kind}!
 D:A massive suit of heavy dragon scales deeply saturated with many colors.  
 D:It throbs with angry energies, and you feel the raw elemental might of 
 D:untamed Lightning as you put it on.
@@ -385,9 +386,8 @@ F:RES_LIGHT | RES_DARK | RES_BLIND | RES_CONFU | RES_SOUND |
 F:RES_SHARD | RES_NETHR | RES_NEXUS | RES_CHAOS | RES_DISEN | 
 E:RAGE_BLESS_RESIST:50
 M:{name} glow{s} many colors...
-D:A suit of adamant, set with scales of every color, surrounded in a nimbus 
-D:of perfectly untramelled yet inextricably intermingled and utterly mastered 
-D:powers elemental and ethereal.
+D:An adamant suit with scales of every color. Untrammelled powers elemental 
+D:and ethereal swirl around it in an inextricably intermingled nimbus. 
 
 
 N:18:'Mediator'
@@ -399,7 +399,7 @@ F:RES_CHAOS | RES_DISEN | RES_SHARD | RES_SOUND |
 F:RES_NEXUS | 
 F:FREE_ACT | SLOW_DIGEST | REGEN | 
 E:STAR_BALL:50
-M:Your {kind} {is} surrounded by lightning!
+M:Lightning surrounds your {kind}!
 D:A great suit of dragon hide, set with scales of many hues. Even the 
 D:mightiest wyrms of Law and Chaos fear the judgement of its wearer.
 
@@ -417,8 +417,8 @@ F:RES_CHAOS | RES_FEAR |
 E:HEAL2:444
 M:{name} glows a bright white...
 L:2:CON
-D:A suit of imperishable adamant, with unconquerable strength to endure evil 
-D:and disruptive magics, that protects the life force of its wearer as 
+D:A suit of imperishable adamant with unconquerable strength to endure evil 
+D:and disruptive magics. It protects the life force of its wearer as 
 D:nothing else can.
 
 
@@ -442,9 +442,9 @@ P:50:1d4:0:0:15
 F:HIDE_TYPE | RES_FEAR | 
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_CONFU | RES_SOUND
 L:2:STR | DEX
-D:Small metal plates cover an inner layer of sturdy canvas, and both bear 
-D:scenes of hunting and war.  As you don the armour of Eorl the Young, 
-D:matchless in combat, you feel his spirit surround you.
+D:Small steel plates cover an inner layer of sturdy canvas, and both metal
+D:and cloth bear scenes of hunting and war.  As you don the armour of Eorl the
+D:Young, matchless in combat, you feel his spirit surround you.
 
 
 N:22:'Belegennon'
@@ -516,7 +516,7 @@ P:20:0d0:0:0:15
 F:RES_CHAOS | RES_NETHR | RES_POIS
 E:PROTEVIL:100+d100
 M:The {kind} let{s} out a shrill wail...
-D:Contained within this studded cuirass of pliable leather is the memory of 
+D:In this studded cuirass of pliable leather lives the memory of 
 D:unvanquished Himring, defiant fortress surrounded by the legions of Morgoth.
 
 
