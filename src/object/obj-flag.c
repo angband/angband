@@ -23,8 +23,8 @@
  */
 const struct object_flag object_flag_table[] =
 {
-    #define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q) \
-            { OF_##a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q },
+    #define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) \
+            { OF_##a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q,r },
     #include "list-object-flags.h"
     #undef OF
 };

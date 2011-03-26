@@ -295,7 +295,7 @@ static int verbose = 1;
  */
 static const char *flag_names[] =
 {
-	#define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q) #a,
+	#define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) #a,
 	#include "list-object-flags.h"
 	#undef OF
 	""

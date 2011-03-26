@@ -31,7 +31,7 @@
 
 /* The object flags */
 enum {
-    #define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q) OF_##a,
+    #define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) OF_##a,
     #include "list-object-flags.h"
     #undef OF
 };
@@ -116,6 +116,7 @@ enum object_flag_id {
 struct object_flag {
 	u16b index;				/* the OF_ index */
 	bool pval;				/* is it granular (TRUE) or binary (FALSE) */
+	u16b timed;				/* the corresponding TMD_ flag */
 	u16b id;				/* how is it identified */
 	u16b type;				/* OFT_ category */
 	s16b power;				/* base power rating */
