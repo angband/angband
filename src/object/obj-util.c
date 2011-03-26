@@ -528,7 +528,7 @@ s16b wield_slot_ammo(const object_type *o_ptr)
 		}
 
 		/* If ammo is cursed we can't stack it */
-		if (cursed_p(&p_ptr->inventory[i].flags)) continue;
+		if (cursed_p(p_ptr->inventory[i].flags)) continue;
 
 		/* If they are stackable, we'll use this slot for sure */
 		if (object_similar(&p_ptr->inventory[i], o_ptr,
