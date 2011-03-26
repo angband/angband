@@ -1,6 +1,7 @@
 #ifndef INCLUDED_STORE_H
 #define INCLUDED_STORE_H
 
+#include "object/obj-flag.h"
 #include "object/object.h"
 #include "parser.h"
 

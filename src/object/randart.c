@@ -507,7 +507,7 @@ static object_kind *choose_item(int a_idx)
 
 	/* Artifacts ignore everything */
 	create_mask(f, FALSE, OFT_IGNORE, OFT_MAX);
-	of_copy(a_ptr->flags, f);
+	of_union(a_ptr->flags, f);
 
 	/* Assign basic stats to the artifact based on its artifact level. */
 	/*
@@ -2810,7 +2810,7 @@ static void scramble_artifact(int a_idx)
 
 		/* Artifacts ignore everything */
 		create_mask(f, FALSE, OFT_IGNORE, OFT_MAX);
-		of_copy(a_ptr->flags, f);
+		of_union(a_ptr->flags, f);
 
 		file_putf(log_file, "Alloc prob is %d\n", a_ptr->alloc_prob);
 	}

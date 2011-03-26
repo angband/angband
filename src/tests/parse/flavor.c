@@ -4,6 +4,7 @@
 
 #include "init.h"
 #include "object/tvalsval.h"
+#include "object/obj-flag.h"
 #include "object/object.h"
 #include "z-term.h"
 

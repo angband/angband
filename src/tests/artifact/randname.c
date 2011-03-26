@@ -1,6 +1,7 @@
 /* artifact/randname */
 
 #include "unit-test.h"
+#include "object/obj-flag.h"
 #include "object/object.h"
 
 nosetup;
