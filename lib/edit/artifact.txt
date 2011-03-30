@@ -126,7 +126,7 @@ F:INSTA_ART
 E:DETECT_ALL:30+d30
 M:The {kind} form{s} an image in your mind...
 D:A great globe seemingly filled with moonlight, the famed Heart of the 
-D:Mountain. It splinters the light that falls upon it into ten thousand 
+D:Mountain.  It splinters the light that falls upon it into ten thousand 
 D:sparks of white radiance shot with glints of the rainbow.
 
 
@@ -291,7 +291,7 @@ M:{name} glows deep blue...
 L:3:STR | INT | WIS | DEX | CON | CHR
 L:4:SPEED
 D:The Ring of Sapphire, made of gold with a brilliant blue gem that shines 
-D:like stars. It glitters untouchable despite all that Morgoth ever wrought.
+D:like stars.  It glitters untouchable despite all that Morgoth ever wrought.
 D:Vilya is one of the three Rings of Power created by Celebrimbor and hidden by
 D:the Elves from Sauron.
 
@@ -418,7 +418,7 @@ E:HEAL2:444
 M:{name} glows a bright white...
 L:2:CON
 D:A suit of imperishable adamant with unconquerable strength to endure evil 
-D:and disruptive magics. It protects the life force of its wearer as 
+D:and disruptive magics.  It protects the life force of its wearer as 
 D:nothing else can.
 
 
@@ -541,7 +541,7 @@ F:HIDE_TYPE |
 F:RES_ACID | RES_SHARD | FREE_ACT
 L:3:DEX | SPEED
 D:An amazingly light tunic and skirt sewn with thick, overlapping scales of 
-D:hardened leather whose wearer moves with agility and assurance.
+D:hardened leather. Those who wear it move with agility and assurance.
 
 
 ### Shields ###
@@ -582,7 +582,7 @@ P:8:1d2:0:0:20
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_LIGHT | RES_DARK
 F:RES_BLIND
 D:This shield emblazoned with a multitude of creatures unseen for ages 
-D:once protected Celegorm, Lord of Himlad; around it a mystic balance lies, 
+D:once protected Celegorm, Lord of Himlad; around it, a mystic balance lies, 
 D:containing the conflicts of the elements.
 
 
@@ -593,8 +593,8 @@ A:11:40 to 100
 P:12:1d3:0:0:20
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | SUST_STR | SUST_INT | 
 F:SUST_WIS | SUST_DEX | SUST_CON | SUST_CHR
-D:The great metal-bound shield of An['a]rion, son of Elendil, whom Sauron 
-D:found himself powerless to wither or diminish.
+D:The great metal-bound shield of Elendil's younger son An['a]rion, whom
+D:even Sauron could not corrupt.
 
 
 ### Helmets and Crowns ###
@@ -607,7 +607,7 @@ P:3:1d1:0:0:18
 F:RES_FIRE | RES_ACID | RES_DISEN | RES_SHARD
 L:3:INT | DEX | CHR | SEARCH
 D:A metal cap forged by the greatest Noldorin smith of the Second Age, 
-D:this helm is of equal use in battle or at the forge, and its 
+D:this helm serves equally well in battle or at the forge, and its 
 D:enchantment will never be diminished.
 
 
@@ -636,7 +636,7 @@ P:0:1d1:0:0:20
 F:HIDE_TYPE | 
 F:FREE_ACT | SEE_INVIS | TELEPATHY | LIGHT_CURSE | HEAVY_CURSE
 L:-5:STR | DEX | CON
-D:The midnight-hued steel circlet of the sorceress-queen Ber['u]thiel, which 
+D:The midnight-hued steel circlet of the sorceress-queen Ber['u]thiel.  It
 D:grants extraordinary powers of sight and awareness at a terrible physical 
 D:cost.
 
@@ -660,7 +660,7 @@ A:50:10 to 60
 P:3:1d1:0:0:12
 F:RES_CONFU | HIDE_TYPE
 L:3:WIS | CHR
-D:A ridged helmet made of steel, and embossed with scenes of valor in fine-
+D:A ridged helmet made of steel and embossed with scenes of valor in fine-
 D:engraved silver.  It grants the wearer nobility and understanding.
 
 
@@ -675,7 +675,7 @@ F:RES_ACID | RES_NEXUS | RES_COLD | RES_DARK
 L:3:STR | DEX | CON
 D:A great helm, as steady and as distinctive as the hero of the Westdike.  
 D:Many long months was Helm Hammerhand besieged in the Hornburg, yet he 
-D:strode out time and again among his foes and slew many. Although they 
+D:strode out time and again among his foes and slew many.  Although they 
 D:knew of his coming, none could stand against him. 
 
 
@@ -1219,7 +1219,7 @@ F:HIDE_TYPE | SEE_INVIS | HOLD_LIFE | SHOW_MODS |
 F:AGGRAVATE | DRAIN_EXP | LIGHT_CURSE | HEAVY_CURSE
 L:-10:SPEED
 D:A foul, twisted sword with blackened spines and knobs, whose very name is 
-D:a curse upon the lips of Elves and Men. It is said that it will drink the 
+D:a curse upon the lips of Elves and Men.  It is said that it will drink the 
 D:very lifeblood of its wielder.
 
 
@@ -1409,7 +1409,7 @@ F:LIGHT_CURSE | HEAVY_CURSE | DRAIN_EXP | AGGRAVATE |
 F:BRAND_POIS | RES_DARK | RES_BLIND | RES_LIGHT | RES_NETHR
 L:-4:STEALTH | WIS
 D:A mighty, heavy black spear, once wielded by the Lord of Darkness 
-D:himself as he came to Valinor in wrath. Its envenomed bite pierced 
+D:himself as he came to Valinor in wrath.  Its envenomed bite pierced 
 D:the Two Trees with wounds that would not heal.
 
 
