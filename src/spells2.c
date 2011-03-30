@@ -2335,15 +2335,16 @@ void earthquake(int cy, int cx, int r)
 					/* Monster is certainly awake */
 					mon_clear_timed(cave->m_idx[yy][xx], MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
 
+					/* If the quake finished the monster off, show message */
+					if (m_ptr->hp < damage && m_ptr->hp >= 0)
+						msg("%^s is embedded in the rock!", m_name);
+					
 					/* Apply damage directly */
 					m_ptr->hp -= damage;
 
 					/* Delete (not kill) "dead" monsters */
-					if (m_ptr->hp < 0)
+					if (m_ptr->hp < damage)
 					{
-						/* Message */
-						msg("%^s is embedded in the rock!", m_name);
-
 						/* Delete the monster */
 						delete_monster(yy, xx);
 

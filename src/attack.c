@@ -141,7 +141,7 @@ bool py_attack_real(int y, int x, bool *fear) {
 	monster_type *m_ptr = &mon_list[cave->m_idx[y][x]];
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	char m_name[80];
-	bool dead = FALSE;
+	bool stop = FALSE;
 
 	/* The weapon used */
 	object_type *o_ptr = &p_ptr->inventory[INVEN_WIELD];
@@ -257,15 +257,18 @@ bool py_attack_real(int y, int x, bool *fear) {
 	}
 
 	/* Damage, check for fear and death */
-	dead = mon_take_hit(cave->m_idx[y][x], dmg, fear, NULL);
+	stop = mon_take_hit(cave->m_idx[y][x], dmg, fear, NULL);
 
-	if (dead)
+	if (stop)
 		(*fear) = FALSE;
 
 	/* Apply earthquake brand */
-	if (do_quake) earthquake(p_ptr->py, p_ptr->px, 10);
+	if (do_quake) {
+		earthquake(p_ptr->py, p_ptr->px, 10);
+		if (cave->m_idx[y][x] == 0) stop = TRUE;
+	}
 
-	return dead;
+	return stop;
 }
 
 
