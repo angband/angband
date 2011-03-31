@@ -104,26 +104,26 @@ typedef enum
 #define KC_F3         0x86
 #define KC_F4         0x87
 #define KC_F5         0x88
-#define KC_F6         0x88
-#define KC_F7         0x89
-#define KC_F8         0x8A
-#define KC_F9         0x8B
-#define KC_F10        0x8C
-#define KC_F11        0x8D
-#define KC_F12        0x8E
-#define KC_F13        0x8F
-#define KC_F14        0x90
-#define KC_F15        0x91
+#define KC_F6         0x89
+#define KC_F7         0x8A
+#define KC_F8         0x8B
+#define KC_F9         0x8C
+#define KC_F10        0x8D
+#define KC_F11        0x8E
+#define KC_F12        0x8F
+#define KC_F13        0x90
+#define KC_F14        0x91
+#define KC_F15        0x92
 
-#define KC_HELP       0x92
-#define KC_HOME       0x93
-#define KC_PGUP       0x94
-#define KC_END        0x95
-#define KC_PGDOWN     0x96
-#define KC_INSERT     0x97
-#define KC_PAUSE      0x98
-#define KC_BREAK      0x99
-#define KC_BEGIN      0x9a
+#define KC_HELP       0x93
+#define KC_HOME       0x94
+#define KC_PGUP       0x95
+#define KC_END        0x96
+#define KC_PGDOWN     0x97
+#define KC_INSERT     0x98
+#define KC_PAUSE      0x99
+#define KC_BREAK      0x9a
+#define KC_BEGIN      0x9b
 
 /* we have up until 0x9F before we start edging into displayable Unicode */
 /* then we could move into private use area 1, 0xE000 onwards */
