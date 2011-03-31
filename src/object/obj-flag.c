@@ -89,3 +89,23 @@ bool cursed_p(bitflag *f)
 	return of_is_inter(f, f2);
 }
 
+/**
+ * Determine whether a timed flag or its permanent equivalent are set.
+ *
+ * \param flag is the TMD_ flag for which we are checking.
+ */
+bool check_state(int flag)
+{
+	const struct object_flag *of_ptr;
+
+	/* If the TMD_ flag is set, we return immediately */
+	if (p_ptr->timed[flag])
+		return TRUE;
+
+	/* If not, we look for an OF_ equivalent and test for it */
+	for (of_ptr = object_flag_table; of_ptr->index < OF_MAX; of_ptr++)
+		if (of_ptr->timed == flag && p_ptr->state.flags[of_ptr->index])
+			return TRUE;
+
+	return FALSE;
+}
