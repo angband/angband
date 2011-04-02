@@ -93,7 +93,7 @@ if test "x$with_private_dirs" != "x"; then
 fi
 
 # Only change bindir if it's the configure-supplied default, which handily doesn't expand exec_prefix
-if test "x$bindir" == "x\${exec_prefix}/bin"; then
+if test "x$bindir" = "x\${exec_prefix}/bin"; then
   bindir=${exec_prefix}/games
 fi
 
