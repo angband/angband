@@ -688,8 +688,10 @@ F:HIDE_TYPE | RES_FEAR |
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | 
 F:LIGHT | SEE_INVIS | TELEPATHY
 L:4:STR | DEX | CON
-D:The legendary dragon helm of T['u]rin Turambar, an object of dread to the 
-D:servants of Morgoth.
+D:The legendary Dragon-helm, forged by one of the legendary Dwarven smiths
+D:of the First Age.  The visage of mighty Glaurung forms its crest, and the
+D:mere sight of the helm, borne by T['u]rin Turambar, struck dread into the
+D:hearts of the servants of Morgoth.
 
 
 N:40:'Holhenneth'
@@ -702,7 +704,7 @@ F:RES_BLIND | RES_CONFU | SEE_INVIS
 E:DETECT_ALL:55+d55
 M:{name} forms an image in your mind...
 L:2:INT | WIS | SEARCH
-D:A famous helm of forged iron granting extraordinary powers of mind and 
+D:A famous forged iron helm granting extraordinary powers of mind and 
 D:awareness.
 
 
@@ -731,7 +733,7 @@ F:LIGHT | SEE_INVIS | REGEN
 E:HEAL1:250
 M:You feel a warm tingling inside...
 L:3:STR | WIS | CON | SPEED
-D:The shining winged circlet brought by Elendil from dying N['u]menor, emblem 
+D:From dying N['u]menor, Elendil brought this shining winged circlet, emblem 
 D:of Gondor through an age of the world.
 
 
@@ -747,8 +749,8 @@ F:RES_SHARD | RES_SOUND | RES_COLD |
 F:RES_LIGHT | RES_DARK | RES_BLIND | LIGHT
 # A:ANALYZE:50
 L:3:INT | DEX | CHR | SEARCH | SPEED
-D:A crown of massive gold, set with wondrous jewels of thought and warding, 
-D:worn by the kings of ancient N['u]menor.
+D:A massive golden crown, set with wondrous jewels of thought and warding, 
+D:once worn by the kings of ancient N['u]menor.
 
 
 ### Cloaks and Shadow Cloaks ###
@@ -775,7 +777,7 @@ F:RES_ACID
 E:SLEEPII:55
 M:{name} glows deep blue...
 L:3:INT | WIS | SPEED | STEALTH
-D:This elven-grey mantle possesses great powers of tranquility and of 
+D:This elven-grey mantle possesses great powers of tranquility and
 D:concealment, and grants the wearer the knowledge and understanding of 
 D:the Sindar.
 
@@ -790,8 +792,8 @@ F:FREE_ACT | RES_ACID | RES_FIRE | RES_COLD
 E:RECHARGE:70
 M:Your {kind} glow{s} bright yellow...
 L:3:DEX | CHR
-D:A cloak of translucent, pearly grey, with glowing elven-runes to restore 
-D:magic showing calm and clear as moonlight on still water.
+D:A translucent cloak of pearly grey with glowing, energized Elven runes
+D:showing calm and clear as moonlight on still water.
 
 
 N:47:of Thorongil
@@ -801,7 +803,8 @@ A:10:5 to 75
 P:1:0d0:0:0:10
 F:FREE_ACT | RES_ACID | RES_FEAR | SEE_INVIS
 D:This shimmering cloak of greens and browns was once worn by the young 
-D:Aragorn, a keen-eyed captain of Gondor, valiant on both land and sea.
+D:Aragorn, a keen-eyed captain of Rohan and Gondor, valiant on both land 
+D:and sea.
 
 
 N:48:'Colannon'
@@ -815,7 +818,7 @@ E:TELE_LONG:45
 M:Your {kind} twist{s} space around you.
 L:3:STEALTH | SPEED
 D:A crystal-blue cape of fine silk worn by a silent messenger of the forces 
-D:of Law. Seldom will the wearer be diverted from his mission.
+D:of Law.  Seldom will its wearer be diverted from his mission.
 
 
 N:49:of L['u]thien
@@ -828,10 +831,10 @@ F:RES_ACID | RES_FIRE | RES_COLD
 E:RESTORE_LIFE:250
 M:Your {kind} glow{s} a deep red...
 L:4:INT | WIS | CHR | SPEED | STEALTH
-D:The opaque midnight folds of this cloak, inset with a multitude of tiny 
-D:diamonds, swirl around you and you feel a hint, a fragment of the 
-D:knowledge and power to restore that lay in L['u]thien, the most beautiful 
-D:being who ever knew death.
+D:The opaque midnight folds of this cloak, inlaid with a multitude of tiny 
+D:diamonds, swirl around you, and you feel a hint, a fragment of the 
+D:restorative magics of L['u]thien, the most beautiful being who ever knew
+D:death.
 
 
 N:50:of Tuor
@@ -842,8 +845,8 @@ P:6:0d0:0:0:12
 F:HIDE_TYPE | 
 F:FREE_ACT | IM_ACID | RES_ACID | SEE_INVIS
 L:4:STEALTH | DEX
-D:From the ruin of Gondolin did Tuor escape, through secret ways and 
-D:travail, mantled by sea-commanding Ulmo's kingly gift from a multitude 
+D:From the ruin of Gondolin, through secret ways and travail, did Tuor 
+D:escape, mantled by sea-commanding Ulmo's kingly gift from a multitude 
 D:of hostile eyes.
 
 
@@ -859,8 +862,8 @@ F:IM_FIRE
 E:MANA_BOLT:30+d30
 M:Your {kind} glow{s} white...
 L:3:INT
-D:The iron-shod gauntlets of the Dark Elven smith E["o]l, tingling with magics 
-D:that he could channel in battle.
+D:The iron-shod gauntlets of the Dark Elven smith E["o]l, who imbued them with
+D:magics he could channel in battle.
 
 
 N:52:'Cambeleg'
@@ -927,7 +930,7 @@ P:3:1d1:4:4:14
 F:RES_ACID | FEATHER
 E:ACID_BOLT:5+d5
 M:Your {kind} {is} covered in acid...
-D:A set of gauntlets that gives off a foul, acrid odour yet remains untarnished.
+D:A set of gauntlets that give off a foul, acrid odour yet remain untarnished.
 
 
 N:58:'Camlost'
@@ -939,8 +942,8 @@ F:HIDE_TYPE |
 F:RES_FIRE | RES_DISEN | FREE_ACT | DRAIN_EXP | 
 F:AGGRAVATE | LIGHT_CURSE | HEAVY_CURSE | SHOW_MODS
 L:-3:STR | DEX
-D:A pair of gauntlets that sap combat ability, named after the empty hand 
-D:of Beren that once clasped a Silmaril.
+D:A pair of weakening gauntlets, named after Beren, who returned to Thingol
+D:having lost to Carcharoth the hand that clasped a Silmaril.
 
 
 N:59:of Fingolfin
@@ -953,8 +956,8 @@ F:FREE_ACT | RES_ACID | SHOW_MODS
 E:ARROW:30+d30
 M:Your {kind} grow{s} magical spikes...
 L:4:DEX
-D:The hand-sheathing of Fingolfin, warrior-king of Elves and Men, who dealt 
-D:Morgoth seven mighty wounds and pain that will last forever.
+D:The hand-sheathing of Fingolfin, the Elven warrior-king, who dealt 
+D:Morgoth seven mighty wounds and pain that will last until the end of Arda.
 
 
 ### Boots ###
@@ -987,8 +990,8 @@ F:RES_NETHR | RES_CONFU | SUST_CON
 E:REM_FEAR_POIS:5
 M:Your {kind} glow{s} deep blue...
 L:5:DEX | SPEED
-D:A pair of high-laced shoes, strong against the powers of corruption and 
-D:withering, that grant the wearer extraordinary agility.
+D:A pair of high-laced shoes, bestowing of extraordinary agility and proof 
+D:against the powers of corruption and withering.
 
 
 N:62:of Thr['o]r
