@@ -1031,8 +1031,9 @@ P:0:2d5:12:15:0
 F:HIDE_TYPE | 
 F:SLAY_TROLL | SLAY_GIANT | FREE_ACT | SEE_INVIS | SHOW_MODS
 L:3:INT | DEX | SPEED
-D:A short thrusting blade with a large guard worn by Maedhros the Tall, 
-D:eldest son of F["e]anor, who lost his right hand in captivity in Angband.
+D:A short thrusting blade with a large guard worn by the eldest son of 
+D:F["e]anor, Maedhros the Tall, who lost his right hand while escaping 
+D:from Angband.
 
 
 N:65:'Angrist'
@@ -1044,10 +1045,9 @@ F:BRAND_ACID | RES_ACID | HIDE_TYPE |
 F:SLAY_EVIL | SLAY_TROLL | SLAY_ORC | FREE_ACT | RES_DARK | SUST_DEX | 
 F:SHOW_MODS
 L:4:DEX | SPEED
-D:Forged from meteoric iron by Telchar, greatest of Dwarven smiths, and 
-D:used by Beren to gouge a Silmaril out of Morgoth's crown, this long 
-D:chopping dagger slices through ordinary metal as easily as its name, 
-D:"Iron Cleaver", suggests.
+D:Forged by Telchar, greatest of Dwarven smiths, and used by Beren to gouge a
+D:Silmaril out of Morgoth's crown, this long chopping dagger slices through
+D:ordinary metal as easily as its name, "Iron Cleaver", suggests.
 
 
 N:66:'Narthanc'
@@ -1058,7 +1058,7 @@ P:0:2d4:9:12:10
 F:BRAND_FIRE | RES_FIRE | SHOW_MODS
 E:FIRE_BOLT:8+d8
 M:{name} is covered in fire...
-D:A flame, instead of a blade, seems to spring forth from this dagger's hilt.
+D:Instead of a blade, a flame seems to emerge from this dagger's hilt.
 
 
 N:67:'Nimthanc'
@@ -1080,7 +1080,7 @@ P:0:2d4:9:12:10
 F:BRAND_ELEC | RES_ELEC | SHOW_MODS
 E:ELEC_BOLT:6+d6
 M:{name} is covered in sparks...
-D:In this dagger is bound the very force of the lightning.
+D:In this dagger is bound the very force of lightning.
 
 
 N:69:of Rilia
@@ -1120,12 +1120,12 @@ F:HIDE_TYPE |
 F:KILL_DRAGON | SLAY_EVIL | SLAY_DEMON | SLAY_TROLL | RES_DISEN | 
 F:AGGRAVATE | LIGHT_CURSE | HEAVY_CURSE | SHOW_MODS
 L:5:CON
-D:This sword has runes of power incused on its ornate hint, and a single 
+D:This sword has runes of power incused on its ornate hilt, and a single 
 D:blood channel that gleams coldly blue as you grasp this mighty weapon of 
 D:peril.
 
 
-N:72:'Arunr['u]th'
+N:72:'Aranr['u]th'
 I:sword:Broad Sword~
 W:20:45:150:50000
 A:2:20 to 100
@@ -1164,7 +1164,7 @@ F:SLAY_ORC | SLAY_TROLL | SLAY_GIANT | BRAND_ELEC | RES_ELEC | RES_BLIND |
 F:SLOW_DIGEST | SHOW_MODS
 L:1:SEARCH
 D:Like unto Orcrist and Glamdring, and like them long lost, this sword is 
-D:continually coved in tiny arcs of captive lightning that flash and dance 
+D:continually covered in tiny arcs of captive lightning that flash and dance 
 D:eerily in the globes of light they create.
 
 
@@ -1221,7 +1221,7 @@ F:BRAND_POIS | KILL_DRAGON | SLAY_UNDEAD |
 F:HIDE_TYPE | SEE_INVIS | HOLD_LIFE | SHOW_MODS | 
 F:AGGRAVATE | DRAIN_EXP | LIGHT_CURSE | HEAVY_CURSE
 L:-10:SPEED
-D:A foul, twisted sword with blackened spines and knobs, whose very name is 
+D:A foul, twisted sword with blackened spines and knobs, its very name is 
 D:a curse upon the lips of Elves and Men.  It is said that it will drink the 
 D:very lifeblood of its wielder.
 
@@ -1261,7 +1261,7 @@ F:HIDE_TYPE |
 F:SUST_DEX | SHOW_MODS
 L:5:DEX | SPEED
 D:An utterly perfect, cleanly chiseled sword, with a edge that effortlessly 
-D:slices rock and bone and spells to render the wearer lithe and nimble.  It 
+D:slices rock and bone, and spells to render the wearer lithe and nimble.  It 
 D:is combat incarnate.
 
 
@@ -1308,7 +1308,7 @@ F:HIDE_TYPE | AGGRAVATE |
 F:SLAY_EVIL | BRAND_POIS | SLAY_DEMON | FREE_ACT | RES_ELEC | 
 F:RES_LIGHT | RES_DARK | LIGHT | SEE_INVIS | SHOW_MODS
 L:2:STR | CON | SPEED | BLOWS
-D:Forged of black galvorn by the Dark-Elven smith Eol, and as deadly as any
+D:Forged of meteoric iron by E["o]l the Dark Elf, and as deadly as any
 D:other blade he forged.
 
 
@@ -1464,7 +1464,7 @@ F:BRAND_COLD | BRAND_FIRE | SLAY_DEMON | SLAY_TROLL | SLAY_GIANT |
 F:RES_FIRE | RES_COLD | SUST_INT | SLOW_DIGEST | SHOW_MODS
 L:2:STR | INT | SPEED
 D:Within this long two-handed spear dwell the spirits of frost giants and 
-D:fire demons, who war forever, fettered in sorcerous binds.
+D:fire demons, who war forever, fettered by sorcerous binds.
 
 
 N:97:'Aiglos'
@@ -1478,8 +1478,8 @@ F:FREE_ACT | SLOW_DIGEST | BLESSED | SHOW_MODS
 E:COLD_BALL100:35
 M:{name} glows an intense blue...
 L:4:WIS | DEX
-D:The mighty spear of Gil-galad, famed as "Snow-point" in the songs of Elves, 
-D:against which all the foul corruptions of Sauron dashed in vain.
+D:The mighty spear of Gil-galad, famed as "Snow-point" in the songs of Elves. 
+D:Against it, all the foul corruptions of Sauron dashed in vain.
 
 
 N:98:of Orom["e]
@@ -1520,7 +1520,7 @@ P:0:3d8:13:21:0
 F:HIDE_TYPE | RES_FEAR | 
 F:SLAY_EVIL | SLAY_TROLL | SLAY_ORC | SEE_INVIS | SHOW_MODS
 L:2:STR | DEX | SPEED
-D:"Forth Eorlingas!"  To the field of Cormallen Eorl the Young came beyond 
+D:"Forth Eorlingas!"  To the field of Celebrant, Eorl the Young came beyond 
 D:hope to save beleaguered Gondor, and from his lance fled massive trolls 
 D:and dire wolves.
 
@@ -1536,8 +1536,8 @@ F:RES_FEAR |
 F:RES_ACID | RES_FIRE | RES_LIGHT | RES_DARK | RES_CHAOS | SHOW_MODS
 L:3:STR | CON | TUNNEL
 D:The twin massive axe heads of this ancient demon's dread gleam with 
-D:mithril inlay, which tell sagas of endurance, invoking the powers of 
-D:Khazad-d[^u]m to protect the wearer and slay all evils found underground.
+D:mithril inlay telling sagas of endurance.  The powers of 
+D:Khazad-d[^u]m protect its wielder and slay all evils found underground.
 
 
 N:102:of E["o]nw["e]
@@ -1553,8 +1553,8 @@ F:BLESSED | SHOW_MODS
 E:LOSKILL:1000
 M:Your {kind} let{s} out a long, shrill note...
 L:2:STR | INT | WIS | DEX | CON | CHR
-D:The axe of E["o]nw["e], leader of the Hosts of the West before the gates of 
-D:Thangorodrim, strikes with icy wrath at the undead, disperses hosts of 
+D:The axe of E["o]nw["e], leader of the Hosts of the West in the War of 
+D:Warth, strikes with icy wrath at the undead, disperses hosts of 
 D:evil at a word, and grants Maia-like powers of body and mind.
 
 
@@ -1655,7 +1655,7 @@ F:RES_LIGHT | LIGHT | SEE_INVIS | SHOW_MODS
 E:RECALL:200
 M:{name} pulses a soft white.
 L:3:DEX | CHR | SPEED
-D:Binding elemental powers whose struggles turn this weapon red and purest 
+D:Holding elemental powers whose struggles turn this weapon red and purest 
 D:white, this shining reaper bears within it a power of going forth and 
 D:returning.
 
@@ -1690,8 +1690,8 @@ P:0:9d9:5:25:10
 F:KILL_DRAGON | SLAY_ANIMAL | SLAY_EVIL | IMPACT | KILL_UNDEAD | 
 F:KILL_DEMON | SLAY_TROLL | SLAY_ORC | 
 F:SEE_INVIS | TELEPATHY | AGGRAVATE | SHOW_MODS | INSTA_ART
-D:The mighty Hammer of the Underworld, blackened by doomspells of shattering, 
-D:whose wielder holds the lives of all Morgoth's servants in his hand.
+D:The mighty Hammer of the Underworld, blackened by doomspells of shattering.
+D:Its wielder holds the lives of all Morgoth's servants in his hand.
 
 
 N:112:'Totila'
@@ -1704,7 +1704,7 @@ F:SHOW_MODS
 E:CONFUSE2:15
 M:{name} glows in scintillating colours...
 L:2:STEALTH | SPEED
-D:A flail whose head befuddles those who stare as you whirl it round, and 
+D:A flail whose head befuddles those who stare as you whirl it round and 
 D:becomes a fiery comet as you bring it down.
 
 
@@ -1717,8 +1717,8 @@ F:HIDE_TYPE | RES_FEAR |
 F:SLAY_ANIMAL | BRAND_FIRE | BRAND_ELEC | SLAY_TROLL | SLAY_ORC | 
 F:RES_ELEC | RES_FIRE | RES_DARK | SHOW_MODS
 L:4:STR | CON
-D:The long-lost weapon of Kzurin, Dwarven champion of ancient Belegost, 
-D:with runes of strength in its handle, and flames and sparks that roar and 
+D:The long-lost weapon of Kzurin, Dwarven champion of ancient Belegost
+D:Runes of strength adorn its handle, and flames and sparks roar and 
 D:crackle around its massive head.
 
 
@@ -1731,8 +1731,8 @@ F:HIDE_TYPE | BRAND_POIS |
 F:SLAY_ANIMAL | SLAY_TROLL | SLAY_ORC | RES_NEXUS | SEE_INVIS | 
 F:SHOW_MODS
 L:4:STR
-D:You feel strong and firm of foot as you whip the chain-suspended spiked orb 
-D:this weapon bears around and bathe it in the blood of your foes.
+D:You feel strong and firm of foot as you whip its spiked orb around and 
+D:bathe it in the blood of your foes.
 
 
 N:115:'Firestar'
@@ -1743,8 +1743,8 @@ P:0:2d6:15:17:2
 F:BRAND_FIRE | IM_FIRE | SHOW_MODS
 E:FIRE_BOLT72:20
 M:{name} rages in fire...
-D:A famed battle-lord of old with a ruddy head, coloured as embers are that
-D: can yet rise up in wrath.
+D:A famed battle-lord of old with a head as ruddy as embers that can yet rise
+D:up in wrath.
 
 
 N:116:'Taratol'
@@ -1756,7 +1756,7 @@ F:KILL_DRAGON | BRAND_ELEC | IM_ELEC
 F:SHOW_MODS
 E:HASTE1:100+d100
 M:{name} glows bright green...
-D:A great ridged mace that surrounds you in a nimbus of living lightning; 
+D:A great ridged mace that surrounds you with a nimbus of living lightning; 
 D:you remain utterly untouched, even as fat sparks crackle around your 
 D:fingers and eyebrows.
 
