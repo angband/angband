@@ -66,6 +66,7 @@ static void initialize_character(void)
 	Rand_quick = FALSE;
 	Rand_state_init(seed);
 
+        player_init(p_ptr);
 	generate_player_for_stats();
 
 	seed_flavor = randint0(0x10000000);
@@ -94,7 +95,7 @@ static void kill_all_monsters(int level)
 		const monster_type *m_ptr = &mon_list[i];
 		char *offscreen_ptr;
 
-		monster_desc(m_name, sizeof(m_name), m_ptr, 0x80);
+		monster_desc(m_name, sizeof(m_name), m_ptr, 0x88);
 
 		/* Remove " (offscreen)" from description */
 		offscreen_ptr = strstr(m_name, " (offscreen)");
