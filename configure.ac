@@ -175,6 +175,10 @@ AC_ARG_ENABLE(test,
 	[AS_HELP_STRING([--enable-test],      [Enables test frontend (default: disabled)])],
 	[enable_test=$enableval],
 	[enable_test=no])
+AC_ARG_ENABLE(stats,
+	[AS_HELP_STRING([--enable-stats],     [Enables stats frontend (default: disabled)])],
+	[enable_stats=$enableval],
+	[enable_stats=no])
 
 dnl Sound modules
 AC_ARG_ENABLE(sdl_mixer,
@@ -299,6 +303,11 @@ if test "$enable_test" = "yes"; then
 	AC_DEFINE(USE_TEST, 1, [Define to 1 to build the test frontend])
 fi
 
+dnl Stats checking
+if test "$enable_stats" = "yes"; then
+	AC_DEFINE(USE_STATS, 1, [Define to 1 to build the stats frontend])
+fi
+
 AC_CONFIG_FILES([mk/extra.mk mk/sinc@&t@lude.mk])
 AC_OUTPUT
 
@@ -372,6 +381,12 @@ if test "$enable_test" = "yes"; then
 	echo "- Test                                    Yes"
 else
     echo "- Test                                    No"
+fi
+
+if test "$enable_stats" = "yes"; then
+	echo "- Stats                                   Yes"
+else
+    echo "- Stats                                   No"
 fi
 
 echo
