@@ -4,7 +4,9 @@
  */
 
 #include "angband.h"
+#include "birth.h"
 #include "buildid.h"
+#include "init.h"
 
 static int randarts = 0;
 static int verbose = 0;
@@ -18,7 +20,6 @@ static void generate_player_for_stats()
 {
 	OPT(birth_randarts) = randarts;
 	OPT(birth_no_stacking) = FALSE;
-	OPT(quick_messages) = TRUE;
 	OPT(auto_more) = TRUE;
 
 	p_ptr->wizard = 1; /* Set wizard mode on */
@@ -53,8 +54,8 @@ static void generate_player_for_stats()
 	p_ptr->age = 14;
 
 	/* Set social class and (null) history */
-	p_ptr->history[0] = '\0';
-	p_ptr->sc = p_ptr->sc_birth = 50;
+	p_ptr->history = get_history(p_ptr->race->history, &p_ptr->sc);
+	p_ptr->sc_birth = p_ptr->sc;
 }
 
 static void initialize_character(void) 
@@ -80,7 +81,7 @@ static void initialize_character(void)
 	flavor_init();
 	p_ptr->playing = TRUE;
 	p_ptr->autosave = FALSE;
-	generate_cave();
+	cave_generate(cave, p_ptr);
 }
 
 static void kill_all_monsters(int level)
@@ -121,11 +122,11 @@ static void print_all_objects(void)
 	{
 		for (x = 1; x < DUNGEON_WID - 1; x++)
 		{
-			const object_type *o_ptr = get_first_object(y, x);
+			object_type *o_ptr = get_first_object(y, x);
 			u16b o_origin_xtra;
 			u32b o_power = 0;
 			char o_flags[OF_SIZE];
-			int j;
+			u16b j;
 
 			if (o_ptr) do
 			{
@@ -137,7 +138,7 @@ static void print_all_objects(void)
 				 * notably vaults (CAVE_ICKY) */
 				if (o_ptr->origin == ORIGIN_FLOOR)
 				{
-					o_origin_xtra = cave_info[y][x] &
+					o_origin_xtra = cave->info[y][x] &
 						(CAVE_ICKY | CAVE_ROOM);
 				} 
 				else 
@@ -278,7 +279,7 @@ static void descend_dungeon(void)
 	for (level = 1; level < 100; level++) 
 	{
 		dungeon_change_level(level);
-		generate_cave();
+		cave_generate(cave, p_ptr);
 		kill_all_monsters(level);
 		print_all_objects();
 	}
@@ -313,11 +314,6 @@ static void term_init_stats(term *t) {
 
 static void term_nuke_stats(term *t) {
 	if (verbose) printf("term-end\n");
-}
-
-static errr term_user_stats(int n) {
-	if (verbose) printf("term-user %d\n", n);
-	return 0;
 }
 
 static errr term_xtra_clear(int v) {
