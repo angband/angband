@@ -89,6 +89,7 @@ static void kill_all_monsters(int level)
 {
 	int i;
 	char m_name[80];
+	bool fear;
 
 	for (i = mon_max - 1; i >= 1; i--)
 	{
@@ -109,7 +110,7 @@ static void kill_all_monsters(int level)
 			m_ptr->r_idx,
 			m_name);	
 
-		monster_death(i);
+		mon_take_hit(i, m_ptr->hp + 1, &fear, NULL);
 	}
 
 }
