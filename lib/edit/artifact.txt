@@ -902,7 +902,7 @@ I:gloves:Set~ of Gauntlets
 W:20:20:25:13000
 A:5:50 to 127
 P:3:1d1:0:0:14
-F:RES_COLD | SLOW_DIGEST | BRAND_COLD
+F:RES_COLD | SLOW_DIGEST | BRAND_COOL
 E:COLD_BOLT:7+d7
 M:Your {kind} {is} covered in frost...
 D:A set of handgear, freezing with unnatural cold.
