@@ -262,6 +262,4 @@ typedef int errr;
 #define D2I(X)	((X) - '0')
 #define I2D(X)	((X) + '0')
 
-#define WITH_STATS
-
 #endif /* INCLUDED_H_BASIC_H */

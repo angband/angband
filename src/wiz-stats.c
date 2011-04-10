@@ -46,7 +46,7 @@
  * In addition to these sims there is a shorter sim that tests for dungeon connectivity.
 */
 
-#ifdef WITH_STATS
+#ifdef USE_STATS
 
 /*** Statsgen ***/
 
@@ -2692,7 +2692,7 @@ void disconnect_stats()
 }
 
 
-#else /* WITH_STATS */
+#else /* USE_STATS */
 
 void stats_collect(void)
 {
@@ -2703,4 +2703,4 @@ void disconnect_stats(void)
 {
 	msg("Statistics generation not turned on in this build.");
 }
-#endif /* WITH_STATS */
+#endif /* USE_STATS */
