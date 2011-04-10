@@ -2703,4 +2703,9 @@ void disconnect_stats(void)
 {
 	msg("Statistics generation not turned on in this build.");
 }
+
+void pit_stats(void)
+{
+	msg("Statistics generation not turned on in this build.");
+}
 #endif /* USE_STATS */
