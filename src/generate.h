@@ -3,6 +3,8 @@
 #ifndef GENERATE_H
 #define GENERATE_H
 
+void ensure_connectedness(struct cave *c);
+
 void place_object(struct cave *c, int y, int x, int level, bool good, bool great);
 void place_gold(struct cave *c, int y, int x, int level);
 void place_secret_door(struct cave *c, int y, int x);

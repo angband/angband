@@ -95,6 +95,9 @@ extern bool cave_isfloor(struct cave *c, int y, int x);
 
 extern bool cave_isdoor(struct cave *c, int y, int x);
 extern bool cave_istrap(struct cave *c, int y, int x);
+extern bool cave_issecret(struct cave *c, int y, int x);
+
+extern bool cave_isicky(struct cave *c, int y, int x);
 
 extern void cave_generate(struct cave *c, struct player *p);
 

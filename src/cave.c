@@ -3701,12 +3701,20 @@ bool cave_isfloor(struct cave *c, int y, int x) {
 	return !(c->info[y][x] & CAVE_WALL);
 }
 
-bool cave_isdoor(struct cave*c, int y, int x) {
+bool cave_isdoor(struct cave *c, int y, int x) {
 	int feat = c->feat[y][x];
 	return feat >= FEAT_DOOR_HEAD && feat <= FEAT_DOOR_TAIL;
 }
 
-bool cave_istrap(struct cave*c, int y, int x) {
+bool cave_issecret(struct cave *c, int y, int x) {
+	return (c->feat[y][x] == FEAT_SECRET);
+}
+
+bool cave_istrap(struct cave *c, int y, int x) {
 	int feat = c->feat[y][x];
 	return feat >= FEAT_TRAP_HEAD && feat <= FEAT_TRAP_TAIL;
+}
+
+bool cave_isicky(struct cave *c, int y, int x) {
+	return c->info[y][x] & CAVE_ICKY;
 }

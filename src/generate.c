@@ -2382,6 +2382,8 @@ static bool default_gen(struct cave *c, struct player *p) {
 		try_door(c, y + 1, x);
 	}
 
+	ensure_connectedness(c);
+
 	/* Add some magma streamers */
 	for (i = 0; i < dun->profile->str.mag; i++)
 		build_streamer(c, FEAT_MAGMA, dun->profile->str.mc);
@@ -2691,6 +2693,7 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 /*
  * ---------------- CAVERNS ----------------------
  */
+
 /**
  * Initialize the dungeon array, with a random percentage of squares open.
  */
@@ -2778,8 +2781,12 @@ int ignore_point(struct cave *c, int colors[], int y, int x) {
 	int n = lab_toi(y, x, w);
 
 	if (y < 0 || x < 0 || y >= h || x >= w) return TRUE;
-	if (c->feat[y][x] != FEAT_FLOOR || colors[n]) return TRUE;
-	return FALSE;
+	if (colors[n]) return TRUE;
+	if (cave_isicky(c, y, x)) return TRUE;
+	if (cave_isfloor(c, y, x)) return FALSE;
+	if (cave_isdoor(c, y, x)) return FALSE;
+	if (cave_issecret(c, y, x)) return FALSE;
+	return TRUE;
 }
 
 static int xds[] = {0, 0, 1, -1};
@@ -2999,6 +3006,21 @@ int open_count(struct cave *c) {
 			num++;
 	return num;
 }
+
+
+void ensure_connectedness(struct cave *c) {
+	int size = c->height * c->width;
+	int *colors = C_ZNEW(size, int);
+	int *counts = C_ZNEW(size, int);
+
+	build_colors(c, colors, counts);
+	/*clear_small_regions(c, colors, counts);*/
+	join_regions(c, colors, counts);
+
+	FREE(colors);
+	FREE(counts);
+}
+
 
 #define MAX_CAVERN_TRIES 10
 /**
