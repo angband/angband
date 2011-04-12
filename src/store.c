@@ -2870,7 +2870,7 @@ static void store_menu_set_selections(menu_type *menu, bool knowledge_menu)
 		if (OPT(rogue_like_commands))
 		{
 			/* These two can't intersect! */
-			menu->cmd_keys = "\x04\x10?={}~CEIPTdegilpswx"; /* \x10 = ^p , \x04 = ^D */
+			menu->cmd_keys = "\x04\x05\x10?={}~CEIPTdegilpswx"; /* \x10 = ^p , \x04 = ^D, \x05 = ^E */
 			menu->selections = "abcfmnoqrtuvyz13456790ABDFGH";
 		}
 
@@ -2878,7 +2878,7 @@ static void store_menu_set_selections(menu_type *menu, bool knowledge_menu)
 		else
 		{
 			/* These two can't intersect! */
-			menu->cmd_keys = "\x010?={}~CEIbdegiklpstwx"; /* \x10 = ^p */
+			menu->cmd_keys = "\x05\x010?={}~CEIbdegiklpstwx"; /* \x05 = ^E, \x10 = ^p */
 			menu->selections = "acfhjmnoqruvyz13456790ABDFGH";
 		}
 	}
