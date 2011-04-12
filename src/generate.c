@@ -2801,7 +2801,7 @@ void build_color_point(struct cave *c, int colors[], int counts[], int y, int x,
 	int size = h * w;
 	struct queue *queue = q_new(size);
 
-	int added[size];
+	int *added = C_ZNEW(size, int);
 	array_filler(added, 0, size);
 
 	q_push_int(queue, lab_toi(y, x, w));
@@ -2833,6 +2833,7 @@ void build_color_point(struct cave *c, int colors[], int counts[], int y, int x,
 		}
 	}
 
+	FREE(added);
 	q_free(queue);
 }
 
@@ -2863,7 +2864,7 @@ void clear_small_regions(struct cave *c, int colors[], int counts[]) {
 	int w = c->width;
 	int size = h * w;
 
-	int deleted[size];
+	int *deleted = C_ZNEW(size, int);
 	array_filler(deleted, 0, size);
 
 	for (i = 0; i < size; i++) {
@@ -2881,6 +2882,7 @@ void clear_small_regions(struct cave *c, int colors[], int counts[]) {
 			cave_set_feat(c, y, x, FEAT_WALL_SOLID);
 		}
 	}
+	FREE(deleted);
 }
 
 /**
@@ -2923,7 +2925,7 @@ void join_region(struct cave *c, int colors[], int counts[], int color) {
 
 	struct queue *queue = q_new(size);
 
-	int previous[size];
+	int *previous = C_ZNEW(size, int);
 	array_filler(previous, -1, size);
 
 	for (i = 0; i < size; i++) {
@@ -2967,6 +2969,7 @@ void join_region(struct cave *c, int colors[], int counts[], int color) {
 	}
 
 	q_free(queue);
+	FREE(previous);
 }
 
 /**
@@ -3011,8 +3014,8 @@ bool cavern_gen(struct cave *c, struct player *p) {
 	int density = rand_range(25, 40);
 	int times = rand_range(3, 6);
 
-	int colors[size];
-	int counts[size];
+	int *colors = C_ZNEW(size, int);
+	int *counts = C_ZNEW(size, int);
 
 	int tries = 0;
 
@@ -3067,6 +3070,9 @@ bool cavern_gen(struct cave *c, struct player *p) {
 	alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(6, 3), c->depth);
 	alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(6, 3), c->depth);
 	alloc_objects(c, SET_BOTH, TYP_GOOD, randint0(2), c->depth);
+
+	FREE(colors);
+	FREE(counts);
 
 	return TRUE;
 }
