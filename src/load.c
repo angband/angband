@@ -173,6 +173,47 @@ static int rd_item_2(object_type *o_ptr)
 	/* Get the standard weight */
 	o_ptr->weight = o_ptr->kind->weight;
 
+	/* Artifacts */
+	if (o_ptr->artifact)
+	{
+	        /* Get the new artifact "pvals" */
+	        for (i = 0; i < MAX_PVALS; i++)
+	                o_ptr->pval[i] = o_ptr->artifact->pval[i];
+	        o_ptr->num_pvals = o_ptr->artifact->num_pvals;
+
+	        /* Get the new artifact fields */
+	        o_ptr->ac = o_ptr->artifact->ac;
+	        o_ptr->dd = o_ptr->artifact->dd;
+	        o_ptr->ds = o_ptr->artifact->ds;
+
+	        /* Get the new artifact weight */
+	        o_ptr->weight = o_ptr->artifact->weight;
+	}
+
+	/* Ego items */
+	if (o_ptr->ego)
+	{
+		bitflag pval_mask[OF_SIZE];
+
+	        /* Hack -- keep some old fields */
+	        if ((o_ptr->dd < old_dd) && (o_ptr->ds == old_ds))
+	        {
+	                /* Keep old boosted damage dice */
+	                o_ptr->dd = old_dd;
+	        }
+
+		create_mask(pval_mask, FALSE, OFT_PVAL, OFT_STAT, OFT_MAX);
+
+	        /* Hack -- enforce legal pval */
+	        for (i = 0; i < MAX_PVALS; i++) {
+	                if (flags_test(o_ptr->ego->pval_flags[i], OF_SIZE,
+	                        pval_mask, FLAG_END))
+
+	                        /* Force a meaningful pval */
+	                        if (!o_ptr->pval[i])
+	                                o_ptr->pval[i] = o_ptr->ego->min_pval[i];
+	        }
+	}
 
 	/* Success */
 	return (0);
