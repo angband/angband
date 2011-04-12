@@ -206,8 +206,7 @@ static int rd_item_2(object_type *o_ptr)
 
 	        /* Hack -- enforce legal pval */
 	        for (i = 0; i < MAX_PVALS; i++) {
-	                if (flags_test(o_ptr->ego->pval_flags[i], OF_SIZE,
-	                        pval_mask, FLAG_END))
+	                if (of_is_inter(o_ptr->ego->pval_flags[i], pval_mask))
 
 	                        /* Force a meaningful pval */
 	                        if (!o_ptr->pval[i])
