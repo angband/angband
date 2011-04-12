@@ -339,7 +339,7 @@ bool prefs_save(const char *path, void (*dump)(ang_file *), const char *title)
 {
 	ang_file *fff;
 
-	/* Remove old macros */
+	/* Remove old keymaps */
 	remove_old_dump(path, title);
 
 	fff = file_open(path, MODE_APPEND, FTYPE_TEXT);
@@ -376,7 +376,7 @@ static struct parser *init_parse_prefs(void);
 struct prefs_data
 {
 	bool bypass;
-	struct keypress macro_buffer[KEYMAP_ACTION_MAX];
+	struct keypress keymap_buffer[KEYMAP_ACTION_MAX];
 };
 
 
@@ -859,7 +859,7 @@ static enum parser_error parse_prefs_a(struct parser *p)
 	if (d->bypass) return PARSE_ERROR_NONE;
 
 	act = parser_getstr(p, "act");
-	keypress_from_text(d->macro_buffer, N_ELEMENTS(d->macro_buffer), act);
+	keypress_from_text(d->keymap_buffer, N_ELEMENTS(d->keymap_buffer), act);
 
 	return PARSE_ERROR_NONE;
 }
@@ -881,7 +881,7 @@ static enum parser_error parse_prefs_c(struct parser *p)
 	if (tmp[0].type != EVT_KBRD || tmp[1].type != EVT_NONE)
 		return PARSE_ERROR_FIELD_TOO_LONG;
 
-	keymap_add(mode, tmp[0], d->macro_buffer);
+	keymap_add(mode, tmp[0], d->keymap_buffer);
 
 	return PARSE_ERROR_NONE;
 }

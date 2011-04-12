@@ -339,12 +339,12 @@ static void do_cmd_options_win(const char *name, int row)
 
 
 
-/*** Interact with macros and keymaps ***/
+/*** Interact with keymaps ***/
 
 /*
- * Current (or recent) macro action
+ * Current (or recent) keymap action
  */
-static struct keypress macro_buffer[KEYMAP_ACTION_MAX];
+static struct keypress keymap_buffer[KEYMAP_ACTION_MAX];
 
 
 /*
@@ -449,7 +449,7 @@ static void ui_keymap_create(const char *title, int row)
 	while (!done) {
 		struct keypress kp;
 
-		keypress_to_text(tmp, sizeof(tmp), macro_buffer);
+		keypress_to_text(tmp, sizeof(tmp), keymap_buffer);
 		c_prt(first ? TERM_YELLOW : TERM_WHITE,
 				format("Action: %s", tmp), 15, 0);
 
@@ -460,26 +460,26 @@ static void ui_keymap_create(const char *title, int row)
 			case KC_BACKSPACE:
 				if (n > 0) {
 					n -= 1;
-					macro_buffer[n].type = macro_buffer[n].code =
-							macro_buffer[n].mods = 0;
+					keymap_buffer[n].type = keymap_buffer[n].code =
+							keymap_buffer[n].mods = 0;
 				}
 				break;
 			case KTRL('U'):
-				memset(macro_buffer, 0, sizeof macro_buffer);
+				memset(keymap_buffer, 0, sizeof keymap_buffer);
 				n = 0;
 				break;
 			default:
 				if (first) {
-					memset(macro_buffer, 0, sizeof macro_buffer);
+					memset(keymap_buffer, 0, sizeof keymap_buffer);
 					first = FALSE;
 				}
-				macro_buffer[n++] = kp;
+				keymap_buffer[n++] = kp;
 				break;
 		}
 	}
 
 	if (c.code) {
-		keymap_add(mode, c, macro_buffer);
+		keymap_add(mode, c, keymap_buffer);
 		prt("Keymap added.  Press any key to continue.", 17, 0);
 		inkey();
 	}
@@ -505,7 +505,7 @@ static void ui_keymap_remove(const char *title, int row)
 	inkey();
 }
 
-static void macro_browse_hook(int oid, void *db, const region *loc)
+static void keymap_browse_hook(int oid, void *db, const region *loc)
 {
 	char tmp[1024];
 
@@ -515,12 +515,12 @@ static void macro_browse_hook(int oid, void *db, const region *loc)
 
 	/* Show current action */
 	prt("Current action (if any) shown below:", 13, 0);
-	keypress_to_text(tmp, sizeof(tmp), macro_buffer);
+	keypress_to_text(tmp, sizeof(tmp), keymap_buffer);
 	prt(tmp, 14, 0);
 }
 
-static menu_type *macro_menu;
-static menu_action macro_actions[] =
+static menu_type *keymap_menu;
+static menu_action keymap_actions[] =
 {
 	{ 0, 0, "Load a user pref file",    ui_keymap_pref_load },
 	{ 0, 0, "Append keymaps to a file", ui_keymap_pref_append },
@@ -529,25 +529,25 @@ static menu_action macro_actions[] =
 	{ 0, 0, "Remove a keymap",          ui_keymap_remove },
 };
 
-static void do_cmd_macros(const char *title, int row)
+static void do_cmd_keymaps(const char *title, int row)
 {
 	region loc = {0, 0, 0, 12};
 
 	screen_save();
 	clear_from(0);
 
-	if (!macro_menu)
+	if (!keymap_menu)
 	{
-		macro_menu = menu_new_action(macro_actions,
-				N_ELEMENTS(macro_actions));
+		keymap_menu = menu_new_action(keymap_actions,
+				N_ELEMENTS(keymap_actions));
 	
-		macro_menu->title = title;
-		macro_menu->selections = lower_case;
-		macro_menu->browse_hook = macro_browse_hook;
+		keymap_menu->title = title;
+		keymap_menu->selections = lower_case;
+		keymap_menu->browse_hook = keymap_browse_hook;
 	}
 
-	menu_layout(macro_menu, &loc);
-	menu_select(macro_menu, 0);
+	menu_layout(keymap_menu, &loc);
+	menu_select(keymap_menu, 0);
 
 	screen_load();
 }
@@ -1482,7 +1482,7 @@ static menu_action option_actions[] =
 	{ 0, 'l', "Load a user pref file", options_load_pref_file },
 	{ 0, 'o', "Save options", do_dump_options }, 
 	{0, 0, 0, 0}, /* Interact with */	
-	{ 0, 'm', "Interact with macros (advanced)", do_cmd_macros },
+	{ 0, 'm', "Interact with keymaps (advanced)", do_cmd_keymaps },
 	{ 0, 'v', "Interact with visuals (advanced)", do_cmd_visuals },
 
 #ifdef ALLOW_COLORS
