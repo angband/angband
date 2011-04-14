@@ -10,7 +10,7 @@ run() {
 
 	test="$1"
 	echo -n "Running: $test... "
-	../src/angband -mtest < "$test/input" > "$test/run.out"
+	../src/angband -mtest -snone < "$test/input" > "$test/run.out"
 	if [ -x "$test/matcher" ]; then
 		"$test/matcher" "$test"
 	else
