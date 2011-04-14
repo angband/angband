@@ -61,8 +61,9 @@ static const struct module modules[] =
 #endif /* USE_STATS */
 };
 
-
-#ifdef USE_SOUND
+static int init_sound_dummy(int argc, char *argv[]) {
+	return 0;
+}
 
 /*
  * List of sound modules in the order they should be tried.
@@ -73,11 +74,8 @@ static const struct module sound_modules[] =
 	{ "sdl", "SDL_mixer sound module", init_sound_sdl },
 #endif /* SOUND_SDL */
 
-	{ "dummy", "Dummy module", NULL },
+	{ "none", "No sound", init_sound_dummy },
 };
-
-#endif
-
 
 /*
  * A hook for "quit()".
@@ -258,6 +256,7 @@ int main(int argc, char *argv[])
 	bool done = FALSE;
 
 	const char *mstr = NULL;
+	const char *soundstr = NULL;
 
 	bool args = TRUE;
 
@@ -347,6 +346,11 @@ int main(int argc, char *argv[])
 				continue;
 			}
 
+			case 's':
+				if (!*arg) goto usage;
+				soundstr = arg;
+				continue;
+
 			case 'd':
 			case 'D':
 			{
@@ -379,6 +383,10 @@ int main(int argc, char *argv[])
 				puts("  -x<opt>        Debug options; see -xhelp");
 				puts("  -u<who>        Use your <who> savefile");
 				puts("  -d<path>       Store pref files and screendumps in <path>");
+				puts("  -s<mod>        Use sound module <sys>:");
+				for (i = 0; i < (int)N_ELEMENTS(sound_modules); i++)
+					printf("     %s   %s\n", sound_modules[i].name,
+					       sound_modules[i].help);
 				puts("  -m<sys>        Use module <sys>, where <sys> can be:");
 
 				/* Print the name and help for each available module */
@@ -446,17 +454,11 @@ int main(int argc, char *argv[])
 	/* Process the player name */
 	process_player_name(TRUE);
 
-#ifdef USE_SOUND
-
 	/* Try the modules in the order specified by sound_modules[] */
-	for (i = 0; i < (int)N_ELEMENTS(sound_modules) - 1; i++)
-	{
-		if (0 == sound_modules[i].init(argc, argv))
-			break;
-	}
-
-#endif
-
+	for (i = 0; i < (int)N_ELEMENTS(sound_modules); i++)
+		if (!soundstr || streq(soundstr, sound_modules[i].name))
+			if (0 == sound_modules[i].init(argc, argv))
+				break;
 
 	/* Catch nasty signals */
 	signals_init();
