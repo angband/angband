@@ -1,4 +1,5 @@
 /** Info file parser
+ * Copyright (c) 2011 elly+angband@leptoquark.net. See COPYING.
  *
  * A parser has a list of hooks (which are run across new lines given to
  * parser_parse()) and a list of the set of named values for the current line.

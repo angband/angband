@@ -1,3 +1,7 @@
+/* player/util.c
+ * Copyright (c) 2011 The Angband Developers. See COPYING.
+ */
+
 #include "angband.h"
 #include "cave.h"
 #include "object/tvalsval.h"

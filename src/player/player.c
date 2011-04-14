@@ -1,4 +1,6 @@
-/* player/player.c - player implementation */
+/* player/player.c - player implementation
+ * Copyright (c) 2011 elly+angband@leptoquark.net. See COPYING.
+ */
 
 #include "player/player.h"
 

@@ -1,6 +1,8 @@
 /** @file main-test.c
  *  @brief Pseudo-UI for end-to-end testing.
  *  @author Elly <elly+angband@leptoquark.net>
+ *
+ * Copyright (c) 2011 elly+angband@leptoquark.net. See COPYING.
  */
 
 #include "angband.h"

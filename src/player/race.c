@@ -1,4 +1,6 @@
-/* player/race.c */
+/* player/race.c
+ * Copyright (c) 2011 elly+angband@leptoquark.net. See COPYING.
+ */
 
 #include "externs.h"
 #include "player/player.h"
