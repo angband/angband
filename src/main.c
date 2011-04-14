@@ -299,52 +299,34 @@ int main(int argc, char *argv[])
 		/* Analyze option */
 		switch (*arg++)
 		{
-			case 'N':
 			case 'n':
-			{
 				new_game = TRUE;
 				break;
-			}
 
-			case 'W':
 			case 'w':
-			{
 				arg_wizard = TRUE;
 				break;
-			}
 
-			case 'R':
 			case 'r':
-			{
 				arg_rebalance = TRUE;
 				break;
-			}
 
-			case 'G':
 			case 'g':
-			{
 				/* Default graphics tile */
 				arg_graphics = GRAPHICS_ADAM_BOLT;
 				break;
-			}
 
 			case 'u':
-			case 'U':
-			{
 				if (!*arg) goto usage;
 
 				/* Get the savefile name */
 				my_strcpy(op_ptr->full_name, arg, sizeof(op_ptr->full_name));
 				continue;
-			}
 
 			case 'm':
-			case 'M':
-			{
 				if (!*arg) goto usage;
 				mstr = arg;
 				continue;
-			}
 
 			case 's':
 				if (!*arg) goto usage;
@@ -352,29 +334,22 @@ int main(int argc, char *argv[])
 				continue;
 
 			case 'd':
-			case 'D':
-			{
 				change_path(arg);
 				continue;
-			}
 
 			case 'x':
 				debug_opt(arg);
 				continue;
 
 			case '-':
-			{
 				argv[i] = argv[0];
 				argc = argc - i;
 				argv = argv + i;
 				args = FALSE;
 				break;
-			}
 
 			default:
 			usage:
-			{
-				/* Dump usage information */
 				puts("Usage: angband [options] [-- subopts]");
 				puts("  -n             Start a new character (WARNING: overwrites default savefile without -u)");
 				puts("  -w             Resurrect dead character (marks savefile)");
@@ -391,14 +366,11 @@ int main(int argc, char *argv[])
 
 				/* Print the name and help for each available module */
 				for (i = 0; i < (int)N_ELEMENTS(modules); i++)
-				{
 					printf("     %s   %s\n",
 					       modules[i].name, modules[i].help);
-				}
 
 				/* Actually abort the process */
 				quit(NULL);
-			}
 		}
 		if (*arg) goto usage;
 	}
