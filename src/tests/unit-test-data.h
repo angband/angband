@@ -152,6 +152,20 @@ static struct player_race test_race = {
 	.history = NULL,
 };
 
+static struct start_item start_torch = {
+	.kind = &test_torch,
+	.min = 3,
+	.max = 5,
+	.next = NULL,
+};
+
+static struct start_item start_longsword = {
+	.kind = &test_longsword,
+	.min = 1,
+	.max = 1,
+	.next = &start_torch,
+};
+
 static struct player_class test_class = {
 	.name = "TestClass",
 	.title = {
@@ -217,10 +231,7 @@ static struct player_class test_class = {
 	.sense_base = 7000,
 	.sense_div = 40,
 
-	.start_items = {
-		{ &test_longsword, 1, 1 },
-		{ &test_torch, 3, 5 },
-	},
+	.start_items = &start_longsword,
 };
 
 #endif /* !UNIT_TEST_DATA */
