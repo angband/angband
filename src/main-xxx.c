@@ -720,13 +720,8 @@ static void init_stuff(void)
 	/* Prepare the filepaths */
 	init_file_paths(path, path, path);
 
-
-#ifdef USE_SOUND
-
 	/* Set up sound hook */
 	sound_hook = xxx_sound;
-
-#endif /* USE_SOUND */
 }
 
 
