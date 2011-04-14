@@ -11,3 +11,4 @@ lib/save/1000.*
 *.orig
 *.rej
 .gitignore
+src/tests/bin/
