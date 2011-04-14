@@ -522,8 +522,12 @@ void process_command(cmd_context ctx, bool no_request)
 			case CMD_THROW:
 			{
 				bool get_target = FALSE;
+				object_type *o_ptr = object_from_item_idx(cmd->arg[0].choice);
 
-				if (obj_needs_aim(object_from_item_idx(cmd->arg[0].choice)))
+				/* If we couldn't resolve the item, then abort this */
+				if (!o_ptr->kind) break;
+
+				if (obj_needs_aim(o_ptr))
 				{
 					if (!cmd->arg_present[1])
 						get_target = TRUE;
