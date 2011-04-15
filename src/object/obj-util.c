@@ -1446,7 +1446,7 @@ static s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 			pricing_mode = MODE_APPEND;
 		}
 
-		file_putf(log_file, "object is %s", o_ptr->kind->name);
+		file_putf(log_file, "object is %s\n", o_ptr->kind->name);
 		power = object_power(o_ptr, verbose, log_file, known);
 		value = sign(power) * ((a * power * power) + (b * power));
 

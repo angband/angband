@@ -30,6 +30,17 @@ const struct object_flag object_flag_table[] =
 };
 
 /**
+ * Object flag names
+ */
+static const char *flag_names[] =
+{
+    #define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) #a,
+    #include "list-object-flags.h"
+    #undef OF
+    ""
+};
+
+/**
  * Create a "mask" of flags of a specific type or ID threshold.
  *
  * \param f is the flag array we're filling
@@ -108,4 +119,88 @@ bool check_state(int flag)
 			return TRUE;
 
 	return FALSE;
+}
+
+/**
+ * Log the names of a flagset to a file.
+ *
+ * \param f is the set of flags we are logging.
+ * \param log_file is the file to which we are logging the names.
+ */
+void log_flags(bitflag *f, ang_file *log_file)
+{
+	int i;
+
+	file_putf(log_file, "Object flags are:\n");
+	for (i = 0; i < OF_MAX; i++)
+		if (of_has(f, i))
+			file_putf(log_file, "%s\n", flag_names[i]);
+}
+
+/**
+ * Log the name of a flag to a file.
+ *
+ * \param flag is the flag to log.
+ * \param log_file is ... oh come on how obvious does it need to be?
+ */
+const char *flag_name(int flag)
+{
+	return flag_names[flag];
+}
+
+/**
+ * Get the slot multiplier for a flag's power rating
+ *
+ * \param flag is the flag in question.
+ * \param slot is the wield_slot it's in.
+ */
+s16b slot_mult(int flag, int slot)
+{
+	const struct object_flag *of_ptr = &object_flag_table[flag];
+
+	switch (slot) {
+		case INVEN_WIELD: 	return of_ptr->weapon;
+		case INVEN_BOW:		return of_ptr->bow;
+		case INVEN_LEFT:
+		case INVEN_RIGHT:	return of_ptr->ring;
+		case INVEN_NECK:	return of_ptr->amulet;
+		case INVEN_LIGHT:	return of_ptr->light;
+		case INVEN_BODY:	return of_ptr->body;
+		case INVEN_OUTER:	return of_ptr->cloak;
+		case INVEN_ARM:		return of_ptr->shield;
+		case INVEN_HEAD:	return of_ptr->hat;
+		case INVEN_HANDS:	return of_ptr->gloves;
+		case INVEN_FEET:	return of_ptr->boots;
+		default: 			return 1;
+	}
+}
+
+/**
+ * Return the base power rating for a flag.
+ */
+s32b flag_power(int flag)
+{
+	const struct object_flag *of_ptr = &object_flag_table[flag];
+
+	return of_ptr->power;
+}
+
+/**
+ * Ascertain whether a flag is granular (pval-based) or binary.
+ */
+bool flag_uses_pval(int flag)
+{
+	const struct object_flag *of_ptr = &object_flag_table[flag];
+
+	return of_ptr->pval;
+}
+
+/**
+ * Return the OFT_ type of a flag.
+ */
+int obj_flag_type(int flag)
+{
+	const struct object_flag *of_ptr = &object_flag_table[flag];
+
+	return of_ptr->type;
 }

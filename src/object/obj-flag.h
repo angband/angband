@@ -26,7 +26,6 @@
 #include "game-cmd.h"
 #include "cave.h"
 
-
 /*** Constants ***/
 
 /* The object flags */
@@ -139,5 +138,11 @@ struct object_flag {
 bool cursed_p(bitflag *f);
 void create_mask(bitflag *f, bool id, ...);
 void flag_message(int flag, char *name);
+s32b flag_power(int flag);
+void log_flags(bitflag *f, ang_file *log_file);
+const char *flag_name(int flag);
+s16b slot_mult(int flag, int slot);
+bool flag_uses_pval(int flag);
+int obj_flag_type(int flag);
 
 #endif /* !INCLUDED_OBJFLAG_H */
