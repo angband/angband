@@ -234,4 +234,15 @@ static struct player_class test_class = {
 	.start_items = &start_longsword,
 };
 
+static struct monster_base test_rb_info = {
+	.next = NULL,
+	.name = "townsfolk",
+	.text = "Townsfolk",
+	.flags = "\0\0\0\0\0\0\0\0\0\0\0\0",
+	.spell_flags = "\0\0\0\0\0\0\0\0\0\0\0\0",
+	.d_char = 116,
+	.pain = NULL,
+	
+};
+
 #endif /* !UNIT_TEST_DATA */

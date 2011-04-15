@@ -278,7 +278,7 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 		} else if (t == T_CHAR) {
 			tok = strtok(sp, "");
 			if (tok)
-				sp = tok + 1;
+				sp = tok + 2;
 		} else {
 			tok = strtok(sp, "");
 			sp = NULL;
