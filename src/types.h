@@ -198,12 +198,12 @@ struct history_info
 	char event[80];	/* The text of the item */
 };
 
-
 enum grid_light_level
 {
-	LIGHT_TORCH,
-	LIGHT_GLOW,
-	LIGHT_DARK
+	FEAT_LIGHTING_BRIGHT = 0,
+	FEAT_LIGHTING_LIT,
+	FEAT_LIGHTING_DARK,
+	FEAT_LIGHTING_MAX
 };
 
 typedef struct

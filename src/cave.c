@@ -716,9 +716,9 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
  *    be used to indicate field-of-view, such as through the OPT(view_bright_light)
  *    option.
  *  - g->lighting is set to indicate the lighting level for the grid:
- *    LIGHT_DARK for unlit grids, LIGHT_TORCH for those lit by the player's
- *    light source, and LIGHT_GLOW for inherently light grids (lit rooms, etc).
- *    Note that lighting is always LIGHT_GLOW for known "interesting" grids
+ *    FEAT_LIGHTING_DARK for unlit grids, FEAT_LIGHTING_LIT for those lit by the player's
+ *    light source, and FEAT_LIGHTING_BRIGHT for inherently light grids (lit rooms, etc).
+ *    Note that lighting is always FEAT_LIGHTING_BRIGHT for known "interesting" grids
  *    like walls.
  *  - g->is_player is TRUE if the player is on the given grid.
  *  - g->hallucinate is TRUE if the player is hallucinating something "strange"
@@ -1369,7 +1369,7 @@ void display_map(int *cy, int *cx)
 			if (mp[row][col] < tp)
 			{
 				/* Hack - make every grid on the map lit */
-				g.lighting = LIGHT_GLOW;
+				g.lighting = FEAT_LIGHTING_BRIGHT;
 				grid_data_as_text(&g, &ta, &tc, &ta, &tc);
 
 				/* Add the character */
