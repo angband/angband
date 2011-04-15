@@ -20,12 +20,13 @@ run : build
 %.o : %.c
 	@$(CC) $(CFLAGS) -c -o $@ $^
 
-bin/% : %.o
+bin/% : %.o ../angband.o
 	@mkdir -p $(shell echo "$$(dirname $@)")
-	@$(CC) $(CFLAGS) -o $@ $^ ../angband.o $(LDFLAGS)
+	@$(CC) $(CFLAGS) -o $@ $< ../angband.o $(LDFLAGS)
 	@echo "  CC $@"
 
 clean :
 	$(RM) $(TESTPROGS)
 
 .PHONY : all clean
+.PRECIOUS : %.o

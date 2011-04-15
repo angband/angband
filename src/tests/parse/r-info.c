@@ -1,10 +1,12 @@
 /* parse/r-info */
 
 #include "unit-test.h"
+#include "unit-test-data.h"
 #include "init.h"
 #include "monster/constants.h"
 #include "monster/monster.h"
 #include "types.h"
+#include "externs.h"
 
 static int setup(void **state) {
 	*state = init_parse_r();
@@ -29,9 +31,11 @@ static int test_n0(void *state) {
 }
 
 static int test_t0(void *state) {
-	enum parser_error r = parser_parse(state, "T:townsfolk");
+	enum parser_error r;
 	struct monster_race *mr;
 
+	rb_info = &test_rb_info;
+	r = parser_parse(state, "T:townsfolk");
 	eq(r, PARSE_ERROR_NONE);
 	mr = parser_priv(state);
 	require(mr);
