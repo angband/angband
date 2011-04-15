@@ -36,15 +36,13 @@
  * (these four are all halved in the algorithm)
  * - assumed max blows
  * - inhibiting values for +blows/might/shots/immunities (max is one less)
- * - additional power for full rbase set (on top of arithmetic progression)
- * - additional power for full sustain set (ditto, excludes susCHR)
  */
 #define NONWEAP_DAMAGE   		15 /* fudge to boost extra blows */
 #define WEAP_DAMAGE				12 /* and for off-weapon combat flags */
 #define BASE_JEWELRY_POWER		 4
 #define BASE_ARMOUR_POWER		 1
 #define BASE_LIGHT_POWER		 6 /* for rad-2; doubled for rad-3 */
-#define DAMAGE_POWER             5 /* i.e. 2.5 */
+#define DAMAGE_POWER             4 /* i.e. 2 */
 #define TO_HIT_POWER             3 /* i.e. 1.5 */
 #define BASE_AC_POWER            2 /* i.e. 1 */
 #define TO_AC_POWER              2 /* i.e. 1 */
@@ -302,7 +300,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			} else {
 				p = p * (MAX_BLOWS + o_ptr->pval[j]) / MAX_BLOWS;
 				/* Add boost for assumed off-weapon damage */
-				p += (NONWEAP_DAMAGE * o_ptr->pval[j] * DAMAGE_POWER);
+				p += (NONWEAP_DAMAGE * o_ptr->pval[j] * DAMAGE_POWER / 2);
 				file_putf(log_file, "Adding power for extra blows, total is %d\n", p);
 			}
 		}
