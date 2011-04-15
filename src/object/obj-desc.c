@@ -710,7 +710,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 	bool spoil = (mode & ODESC_SPOIL);
 	bool known; 
 
-	size_t end = 0;
+	size_t end = 0, i = 0;
 
 	/* Simple description for null item */
 	if (!o_ptr->tval)
@@ -747,8 +747,11 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 
 	if (mode & ODESC_EXTRA)
 	{
-		if (spoil || object_pval_is_visible(o_ptr))
-			end = obj_desc_pval(o_ptr, buf, max, end, spoil);
+		for (i = 0; i < MAX_PVALS; i++)
+			if (spoil || object_this_pval_is_visible(o_ptr, i)) {
+				end = obj_desc_pval(o_ptr, buf, max, end, spoil);
+				break;
+			}
 
 		end = obj_desc_charges(o_ptr, buf, max, end);
 

@@ -485,7 +485,6 @@ bool object_was_sensed(const object_type *o_ptr);
 bool object_flavor_is_aware(const object_type *o_ptr);
 bool object_flavor_was_tried(const object_type *o_ptr);
 bool object_effect_is_known(const object_type *o_ptr);
-bool object_pval_is_visible(const object_type *o_ptr);
 bool object_this_pval_is_visible(const object_type *o_ptr, int pval);
 bool object_ego_is_visible(const object_type *o_ptr);
 bool object_attack_plusses_are_visible(const object_type *o_ptr);

@@ -286,8 +286,7 @@ byte squelch_level_of(const object_type *o_ptr)
 	{
 		/* CC: average jewelry has at least one known positive pval */
 		for (i = 0; i < o_ptr->num_pvals; i++)
-			if ((object_pval_is_visible(o_ptr)) &&
-				(o_ptr->pval[i] > 0))
+			if ((object_this_pval_is_visible(o_ptr, i)) && (o_ptr->pval[i] > 0))
 				return SQUELCH_AVERAGE;
 
 		if ((o_ptr->to_h > 0) || (o_ptr->to_d > 0) || (o_ptr->to_a > 0))

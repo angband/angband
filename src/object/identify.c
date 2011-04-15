@@ -186,42 +186,6 @@ bool object_this_pval_is_visible(const object_type *o_ptr, int pval)
 }
 
 /**
- * \returns whether any of an object's pvals are known to the player
- */
-bool object_pval_is_visible(const object_type *o_ptr)
-{
-	bitflag f[MAX_PVALS][OF_SIZE], f2[OF_SIZE];
-	int i;
-
-	assert(o_ptr->kind);
-
-	if (o_ptr->ident & IDENT_STORE)
-		return TRUE;
-
-	/* Aware jewelry with any non-variable pvals */
-	if (object_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr))
-	{
-		for (i = 0; i < o_ptr->kind->num_pvals; i++)
-			if (!randcalc_varies(o_ptr->kind->pval[i]))
-				return TRUE;
-	}
-
-	if (object_was_worn(o_ptr))
-	{
-		object_pval_flags_known(o_ptr, f);
-
-		/* Create the mask for pval-related flags */
-		create_mask(f2, FALSE, OFT_STAT, OFT_PVAL, OFT_MAX);
-
-		for (i = 0; i < o_ptr->num_pvals; i++)
-			if (of_is_inter(f[i], f2))
-				return TRUE;
-	}
-
-	return FALSE;
-}
-
-/**
  * \returns whether any ego or artifact name is available to the player
  */
 bool object_name_is_visible(const object_type *o_ptr)
