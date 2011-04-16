@@ -3967,7 +3967,9 @@ static void handle_keydown(WPARAM wParam, LPARAM lParam)
 
 		case VK_INSERT: ch = KC_INSERT; break;
 		case VK_DELETE: ch = KC_DELETE; break;
-		case VK_BACK: ch = KC_BACKSPACE; break;
+		/* Backspace is calling both backspace and delete
+		   Removed the backspace call, so it only calls delete */
+		case VK_BACK: break;
 
 		case VK_TAB: ch = KC_TAB; break;
 		case VK_PRIOR: ch = KC_PGUP; break;
