@@ -338,7 +338,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 
 	/* Apply the correct slay multiplier */
 	if (slay_pwr) {
-		p = (p * slay_pwr) / tot_mon_power;
+		p = (p * (slay_pwr / 10)) / (tot_mon_power / 10);
 		file_putf(log_file, "Adjusted for slay power, total is %d\n", p);
 	}
 
