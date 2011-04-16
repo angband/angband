@@ -219,7 +219,7 @@ static int bow_multiplier(int sval)
 s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	bool known)
 {
-	s32b p = 0, slay_pwr = 0;
+	s32b p = 0, q = 0, slay_pwr = 0;
 	unsigned int i, j;
 	int extra_stat_bonus = 0, mult = 1, num_slays = 0, k = 1;
 	bitflag flags[OF_SIZE], mask[OF_SIZE];
@@ -347,11 +347,9 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 
 	/* Add power for base AC and adjust for weight */
 	if (o_ptr->ac) {
-		p += BASE_ARMOUR_POWER;
-		file_putf(log_file, "Adding base armour power, total is %d\n", p);
-
-		p += (o_ptr->ac * BASE_AC_POWER / 2);
-		file_putf(log_file, "Adding power for base AC value, total is %d\n", p);
+		q += BASE_ARMOUR_POWER;
+		q += (o_ptr->ac * BASE_AC_POWER / 2);
+		file_putf(log_file, "Adding %d power for base AC value\n", q);
 
 		/* Add power for AC per unit weight */
 		if (o_ptr->weight > 0) {
@@ -360,13 +358,14 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			/* Avoid overpricing Elven Cloaks */
 			if (i > 450) i = 450;
 
-			p *= i;
-			p /= 100;
+			q *= i;
+			q /= 100;
 
 		/* Weightless (ethereal) armour items get fixed boost */
 		} else
-			p *= 5;
-		file_putf(log_file, "Adding power for AC per unit weight, total is %d\n", p);
+			q *= 5;
+		p += q;
+		file_putf(log_file, "Adding power for AC per unit weight, now %d\n", p);
 	}
 	/* Add power for +to_ac */
 	p += (o_ptr->to_a * TO_AC_POWER / 2);
