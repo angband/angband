@@ -600,7 +600,7 @@ static void wiz_tweak_item(object_type *o_ptr)
 {
 	const char *p;
 	char tmp_val[80];
-	int i;
+	int i, val;
 
 	/* Hack -- leave artifacts alone */
 	if (o_ptr->artifact) return;
@@ -622,15 +622,27 @@ static void wiz_tweak_item(object_type *o_ptr)
 	WIZ_TWEAK(to_d);
 
 	p = "Enter new ego item index: ";
-	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->ego->eidx);
+	strnfmt(tmp_val, sizeof(tmp_val), "0");
+	if (o_ptr->ego)
+		strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->ego->eidx);
 	if (!get_string(p, tmp_val, 6)) return;
-	o_ptr->ego = &e_info[atoi(tmp_val)];
+	val = atoi(tmp_val);
+	if (val)
+		o_ptr->ego = &e_info[val];
+	else
+		o_ptr->ego = 0;
 	wiz_display_item(o_ptr, TRUE);
 
 	p = "Enter new artifact index: ";
-	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->artifact->aidx);
+	strnfmt(tmp_val, sizeof(tmp_val), "0");
+	if (o_ptr->artifact)
+		strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->artifact->aidx);
 	if (!get_string(p, tmp_val, 6)) return;
-	o_ptr->artifact = &a_info[atoi(tmp_val)];
+	val = atoi(tmp_val);
+	if (val)
+		o_ptr->artifact = &a_info[val];
+	else
+		o_ptr->artifact = 0;
 	wiz_display_item(o_ptr, TRUE);
 }
 
