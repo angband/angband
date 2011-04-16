@@ -1120,12 +1120,12 @@ bool make_attack_normal(int m_idx)
 						if (p_ptr->state.flags[OF_HOLD_LIFE])
 						{
 							msg("You feel your life slipping away!");
-							lose_exp(d/10);
+							player_exp_lose(p_ptr, d / 10, FALSE);
 						}
 						else
 						{
 							msg("You feel your life draining away!");
-							lose_exp(d);
+							player_exp_lose(p_ptr, d, FALSE);
 						}
 					}
 					break;
@@ -1152,12 +1152,12 @@ bool make_attack_normal(int m_idx)
 						if (p_ptr->state.flags[OF_HOLD_LIFE])
 						{
 							msg("You feel your life slipping away!");
-							lose_exp(d / 10);
+							player_exp_lose(p_ptr, d / 10, FALSE);
 						}
 						else
 						{
 							msg("You feel your life draining away!");
-							lose_exp(d);
+							player_exp_lose(p_ptr, d, FALSE);
 						}
 					}
 					break;
@@ -1184,12 +1184,12 @@ bool make_attack_normal(int m_idx)
 						if (p_ptr->state.flags[OF_HOLD_LIFE])
 						{
 							msg("You feel your life slipping away!");
-							lose_exp(d / 10);
+							player_exp_lose(p_ptr, d / 10, FALSE);
 						}
 						else
 						{
 							msg("You feel your life draining away!");
-							lose_exp(d);
+							player_exp_lose(p_ptr, d, FALSE);
 						}
 					}
 					break;
@@ -1216,12 +1216,12 @@ bool make_attack_normal(int m_idx)
 						if (p_ptr->state.flags[OF_HOLD_LIFE])
 						{
 							msg("You feel your life slipping away!");
-							lose_exp(d / 10);
+							player_exp_lose(p_ptr, d / 10, FALSE);
 						}
 						else
 						{
 							msg("You feel your life draining away!");
-							lose_exp(d);
+							player_exp_lose(p_ptr, d, FALSE);
 						}
 					}
 					break;

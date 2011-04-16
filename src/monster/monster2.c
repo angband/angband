@@ -3728,7 +3728,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note)
 		}
 
 		/* Gain experience */
-		gain_exp(new_exp);
+		player_exp_gain(p_ptr, new_exp);
 
 		/* Generate treasure */
 		monster_death(m_idx);

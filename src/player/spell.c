@@ -262,7 +262,7 @@ bool spell_cast(int spell, int dir)
 			p_ptr->spell_flags[spell] |= PY_SPELL_WORKED;
 
 			/* Gain experience */
-			gain_exp(e * s_ptr->slevel);
+			player_exp_gain(p_ptr, e * s_ptr->slevel);
 
 			/* Redraw object recall */
 			p_ptr->redraw |= (PR_OBJECT);

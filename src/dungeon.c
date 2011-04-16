@@ -760,11 +760,7 @@ static void process_world(struct cave *c)
 	if (p_ptr->state.flags[OF_DRAIN_EXP])
 	{
 		if ((p_ptr->exp > 0) && one_in_(10))
-		{
-			p_ptr->exp--;
-			p_ptr->max_exp--;
-			check_experience();
-		}
+			player_exp_lose(p_ptr, 1, FALSE);
 
 		wieldeds_notice_flag(OF_DRAIN_EXP);
 	}

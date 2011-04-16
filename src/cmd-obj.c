@@ -673,7 +673,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 
 		object_flavor_aware(o_ptr);
 		if (o_ptr->tval == TV_ROD) object_notice_everything(o_ptr);
-		gain_exp((lev + (p_ptr->lev / 2)) / p_ptr->lev);
+		player_exp_gain(p_ptr, (lev + (p_ptr->lev / 2)) / p_ptr->lev);
 		p_ptr->notice |= PN_SQUELCH;
 	}
 	else if (used)

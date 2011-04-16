@@ -270,7 +270,7 @@ static void do_side_effects(int spell, int dam, int m_idx)
 							re_ptr->base.sides / 100) * MON_DRAIN_LIFE;						
 
 						msg("You feel your life force draining away!");
-						lose_exp(d);
+						player_exp_lose(p_ptr, d, FALSE);
 						break;
 
 					case S_DRAIN_STAT: /* m_bonus is used as a flag */

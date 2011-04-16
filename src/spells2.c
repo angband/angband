@@ -383,12 +383,7 @@ bool restore_level(void)
 	{
 		/* Message */
 		msg("You feel your life energies returning.");
-
-		/* Restore the experience */
-		p_ptr->exp = p_ptr->max_exp;
-
-		/* Check the experience */
-		check_experience();
+		player_exp_gain(p_ptr, p_ptr->max_exp - p_ptr->exp);
 
 		/* Did something */
 		return (TRUE);
@@ -3300,9 +3295,7 @@ void ring_of_power(int dir)
 			player_stat_dec(p_ptr, A_CHR, TRUE);
 
 			/* Lose some experience (permanently) */
-			p_ptr->exp -= (p_ptr->exp / 4);
-			p_ptr->max_exp -= (p_ptr->max_exp / 4);
-			check_experience();
+			player_exp_lose(p_ptr, p_ptr->exp / 4, TRUE);
 
 			break;
 		}

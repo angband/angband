@@ -362,7 +362,7 @@ static bool do_cmd_open_chest(int y, int x, s16b o_idx)
 		if (randint0(100) < j)
 		{
 			msgt(MSG_LOCKPICK, "You have picked the lock.");
-			gain_exp(1);
+			player_exp_gain(p_ptr, 1);
 			flag = TRUE;
 		}
 
@@ -448,7 +448,7 @@ static bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 	else if (randint0(100) < j)
 	{
 		msgt(MSG_DISARM, "You have disarmed the chest.");
-		gain_exp(o_ptr->pval[DEFAULT_PVAL]);
+		player_exp_gain(p_ptr, o_ptr->pval[DEFAULT_PVAL]);
 		o_ptr->pval[DEFAULT_PVAL] = (0 - o_ptr->pval[DEFAULT_PVAL]);
 	}
 
@@ -662,7 +662,7 @@ static bool do_cmd_open_aux(int y, int x)
 			p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 			/* Experience */
-			gain_exp(1);
+			player_exp_gain(p_ptr, 1);
 		}
 
 		/* Failure */
@@ -1292,7 +1292,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 		msgt(MSG_DISARM, "You have disarmed the %s.", name);
 
 		/* Reward */
-		gain_exp(power);
+		player_exp_gain(p_ptr, power);
 
 		/* Forget the trap */
 		cave->info[y][x] &= ~(CAVE_MARK);
