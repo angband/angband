@@ -2841,17 +2841,20 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 	/* Get the damage type details */
 	const struct gf_type *gf_ptr = &gf_table[typ];
 
-	/* Player blind-ness */
-	bool blind = (p_ptr->timed[TMD_BLIND] ? TRUE : FALSE);
-
 	/* Source monster */
-	monster_type *m_ptr;
+	monster_type *m_ptr = &mon_list[who];
 
 	/* Monster name (for attacks) */
 	char m_name[80];
 
 	/* Monster name (for damage) */
 	char killer[80];
+
+	/* Player blind-ness */
+	bool blind = (p_ptr->timed[TMD_BLIND] ? TRUE : FALSE);
+
+	/* Extract the "see-able-ness" */
+	bool seen = (!blind && m_ptr->ml);
 
 	/* No player here */
 	if (!(cave->m_idx[y][x] < 0)) return (FALSE);
@@ -2862,17 +2865,14 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 	/* Reduce damage by distance */
 	dam = (dam + r) / (r + 1);
 
-	/* Get the source monster */
-	m_ptr = &mon_list[who];
-
 	/* Get the monster name */
 	monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 	/* Get the monster's real name */
 	monster_desc(killer, sizeof(killer), m_ptr, MDESC_SHOW | MDESC_IND2);
 
-	/* Let a blind player know what is going on */
-	if (blind)
+	/* Let player know what is going on */
+	if (!seen)
 		msg("You are hit by %s!", gf_ptr->desc);
 
 	if (typ == GF_GRAVITY)
