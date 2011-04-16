@@ -1109,100 +1109,37 @@ static void process_player(void)
 			/* Shimmer multi-hued monsters */
 			for (i = 1; i < mon_max; i++)
 			{
-				monster_type *m_ptr;
-				monster_race *r_ptr;
-				m_ptr = &mon_list[i];
-				if (!m_ptr->r_idx)
+				struct monster_race *race;
+				struct monster *mon = &mon_list[i];
+				if (!mon->r_idx)
 					continue;
-				r_ptr = &r_info[m_ptr->r_idx];
-				if (!rf_has(r_ptr->flags, RF_ATTR_MULTI))
+				race = &r_info[mon->r_idx];
+				if (!rf_has(race->flags, RF_ATTR_MULTI))
 					continue;
-				cave_light_spot(cave, m_ptr->fy, m_ptr->fx);
+				cave_light_spot(cave, mon->fy, mon->fx);
 			}
 
-			/* Repair "nice" flags */
-			if (repair_mflag_nice)
+			/* Clear NICE flag, and show marked monsters */
+			for (i = 1; i < mon_max; i++)
 			{
-				/* Clear flag */
-				repair_mflag_nice = FALSE;
-
-				/* Process monsters */
-				for (i = 1; i < mon_max; i++)
-				{
-					monster_type *m_ptr;
-
-					/* Get the monster */
-					m_ptr = &mon_list[i];
-
-					/* Skip dead monsters */
-					/* if (!m_ptr->r_idx) continue; */
-
-					/* Clear "nice" flag */
-					m_ptr->mflag &= ~(MFLAG_NICE);
-				}
-			}
-
-			/* Repair "mark" flags */
-			if (repair_mflag_mark)
-			{
-				/* Reset the flag */
-				repair_mflag_mark = FALSE;
-
-				/* Process the monsters */
-				for (i = 1; i < mon_max; i++)
-				{
-					monster_type *m_ptr;
-
-					/* Get the monster */
-					m_ptr = &mon_list[i];
-
-					/* Skip dead monsters */
-					/* if (!m_ptr->r_idx) continue; */
-
-					/* Repair "mark" flag */
-					if (m_ptr->mflag & (MFLAG_MARK))
-					{
-						/* Skip "show" monsters */
-						if (m_ptr->mflag & (MFLAG_SHOW))
-						{
-							/* Repair "mark" flag */
-							repair_mflag_mark = TRUE;
-
-							/* Skip */
-							continue;
-						}
-
-						/* Forget flag */
-						m_ptr->mflag &= ~(MFLAG_MARK);
-
-						/* Update the monster */
+				struct monster *mon = &mon_list[i];
+				mon->mflag &= ~MFLAG_NICE;
+				if (mon->mflag & MFLAG_MARK) {
+					if (!(mon->mflag & MFLAG_SHOW)) {
+						mon->mflag &= ~MFLAG_MARK;
 						update_mon(i, FALSE);
 					}
 				}
 			}
 		}
 
-		/* Repair "show" flags */
-		if (repair_mflag_show)
+		/* Clear SHOW flag */
+		for (i = 1; i < mon_max; i++)
 		{
-			/* Reset the flag */
-			repair_mflag_show = FALSE;
-
-			/* Process the monsters */
-			for (i = 1; i < mon_max; i++)
-			{
-				monster_type *m_ptr;
-
-				/* Get the monster */
-				m_ptr = &mon_list[i];
-
-				/* Skip dead monsters */
-				/* if (!m_ptr->r_idx) continue; */
-
-				/* Clear "show" flag */
-				m_ptr->mflag &= ~(MFLAG_SHOW);
-			}
+			struct monster *mon = &mon_list[i];
+			mon->mflag &= ~MFLAG_SHOW;
 		}
+
 		/* HACK: This will redraw the itemlist too frequently, but I'm don't
 		   know all the individual places it should go. */
 		p_ptr->redraw |= PR_ITEMLIST;
@@ -1336,12 +1273,6 @@ static void dungeon(struct cave *c)
 
 	/* Cancel the health bar */
 	health_track(p_ptr, 0);
-
-	/* Reset repair flags */
-	repair_mflag_nice = TRUE;
-	repair_mflag_show = TRUE;
-	repair_mflag_mark = TRUE;
-
 
 	/* Disturb */
 	disturb(1, 0);

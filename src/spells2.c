@@ -943,9 +943,6 @@ bool detect_monsters_normal(bool aware)
 		/* Detect all non-invisible monsters */
 		if (!rf_has(r_ptr->flags, RF_INVISIBLE))
 		{
-			/* Optimize -- Repair flags */
-			repair_mflag_mark = repair_mflag_show = TRUE;
-
 			/* Hack -- Detect the monster */
 			m_ptr->mflag |= (MFLAG_MARK | MFLAG_SHOW);
 
@@ -1017,12 +1014,6 @@ bool detect_monsters_invis(bool aware)
 				p_ptr->redraw |= (PR_MONSTER);
 			}
 
-			/* Optimize -- Repair flags */
-			repair_mflag_mark = repair_mflag_show = TRUE;
-
-			/* Hack -- Detect the monster */
-			m_ptr->mflag |= (MFLAG_MARK | MFLAG_SHOW);
-
 			/* Update the monster */
 			update_mon(i, FALSE);
 
@@ -1090,9 +1081,6 @@ bool detect_monsters_evil(bool aware)
 				/* Redraw stuff */
 				p_ptr->redraw |= (PR_MONSTER);
 			}
-
-			/* Optimize -- Repair flags */
-			repair_mflag_mark = repair_mflag_show = TRUE;
 
 			/* Detect the monster */
 			m_ptr->mflag |= (MFLAG_MARK | MFLAG_SHOW);

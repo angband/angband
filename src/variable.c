@@ -83,10 +83,6 @@ bool inkey_xtra;		/* See the "inkey()" function */
 u32b inkey_scan;		/* See the "inkey()" function */
 bool inkey_flag;		/* See the "inkey()" function */
 
-bool repair_mflag_nice;	/* Hack -- repair monster flags (nice) */
-bool repair_mflag_show;	/* Hack -- repair monster flags (show) */
-bool repair_mflag_mark;	/* Hack -- repair monster flags (mark) */
-
 s16b o_max = 1;			/* Number of allocated objects */
 s16b o_cnt = 0;			/* Number of live objects */
 

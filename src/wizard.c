@@ -1435,9 +1435,6 @@ static void do_cmd_wiz_unhide(int d)
 		/* Skip distant monsters */
 		if (m_ptr->cdis > d) continue;
 
-		/* Optimize -- Repair flags */
-		repair_mflag_mark = repair_mflag_show = TRUE;
-
 		/* Detect the monster */
 		m_ptr->mflag |= (MFLAG_MARK | MFLAG_SHOW);
 

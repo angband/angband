@@ -3017,8 +3017,7 @@ static bool monster_can_flow(struct cave *c, int m_idx)
  * especially when the player is running.
  *
  * Note the special "MFLAG_NICE" flag, which prevents "nasty" monsters from
- * using any of their spell attacks until the player gets a turn.  This flag
- * is optimized via the "repair_mflag_nice" flag.
+ * using any of their spell attacks until the player gets a turn.
  */
 void process_monsters(struct cave *c, byte minimum_energy)
 {

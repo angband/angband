@@ -2040,9 +2040,6 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 	{
 		/* Monster is still being nice */
 		n_ptr->mflag |= (MFLAG_NICE);
-
-		/* Optimize -- Repair flags */
-		repair_mflag_nice = TRUE;
 	}
 
 	/* Radiate light? */
