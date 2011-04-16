@@ -83,8 +83,6 @@ bool inkey_xtra;		/* See the "inkey()" function */
 u32b inkey_scan;		/* See the "inkey()" function */
 bool inkey_flag;		/* See the "inkey()" function */
 
-bool opening_chest;		/* Hack -- prevent chest generation */
-
 bool shimmer_monsters;	/* Hack -- optimize multi-hued monsters */
 bool shimmer_objects;	/* Hack -- optimize multi-hued objects */
 
@@ -566,8 +564,6 @@ struct player_race *races;
 struct player_class *classes;
 struct vault *vaults;
 struct object_kind *objkinds;
-
-owner_type *b_info;
 
 struct flavor *flavors;
 

@@ -202,9 +202,6 @@ static void chest_death(int y, int x, s16b o_idx)
 	/* Zero pval means empty chest */
 	if (!o_ptr->pval[DEFAULT_PVAL]) number = 0;
 
-	/* Opening a chest */
-	opening_chest = TRUE;
-
 	/* Determine the "value" of the items */
 	value = o_ptr->origin_depth - 10 + 2 * o_ptr->sval;
 	if (value < 1)
@@ -237,9 +234,6 @@ static void chest_death(int y, int x, s16b o_idx)
 		/* Drop it in the dungeon */
 		drop_near(cave, i_ptr, 0, y, x, TRUE);
 	}
-
-	/* No longer opening a chest */
-	opening_chest = FALSE;
 
 	/* Empty */
 	o_ptr->pval[DEFAULT_PVAL] = 0;
