@@ -1850,9 +1850,6 @@ s16b monster_place(int y, int x, monster_type *n_ptr)
 	/* Get the new race */
 	r_ptr = &r_info[m_ptr->r_idx];
 
-	/* Hack -- Notice new multi-hued monsters */
-	if (rf_has(r_ptr->flags, RF_ATTR_MULTI)) shimmer_monsters = TRUE;
-
 	/* Hack -- Count the number of "reproducers" */
 	if (rf_has(r_ptr->flags, RF_MULTIPLY)) num_repro++;
 

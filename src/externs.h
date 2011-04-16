@@ -90,8 +90,6 @@ extern bool msg_flag;
 extern bool inkey_xtra;
 extern u32b inkey_scan;
 extern bool inkey_flag;
-extern bool shimmer_monsters;
-extern bool shimmer_objects;
 extern bool repair_mflag_nice;
 extern bool repair_mflag_show;
 extern bool repair_mflag_mark;

@@ -1106,36 +1106,18 @@ static void process_player(void)
 				p_ptr->redraw |= (PR_MAP);
 			}
 
-			/* Shimmer monsters if needed */
-			if (shimmer_monsters)
+			/* Shimmer multi-hued monsters */
+			for (i = 1; i < mon_max; i++)
 			{
-				/* Clear the flag */
-				shimmer_monsters = FALSE;
-
-				/* Shimmer multi-hued monsters */
-				for (i = 1; i < mon_max; i++)
-				{
-					monster_type *m_ptr;
-					monster_race *r_ptr;
-
-					/* Get the monster */
-					m_ptr = &mon_list[i];
-
-					/* Skip dead monsters */
-					if (!m_ptr->r_idx) continue;
-
-					/* Get the monster race */
-					r_ptr = &r_info[m_ptr->r_idx];
-
-					/* Skip non-multi-hued monsters */
-					if (!rf_has(r_ptr->flags, RF_ATTR_MULTI)) continue;
-
-					/* Reset the flag */
-					shimmer_monsters = TRUE;
-
-					/* Redraw regardless */
-					cave_light_spot(cave, m_ptr->fy, m_ptr->fx);
-				}
+				monster_type *m_ptr;
+				monster_race *r_ptr;
+				m_ptr = &mon_list[i];
+				if (!m_ptr->r_idx)
+					continue;
+				r_ptr = &r_info[m_ptr->r_idx];
+				if (!rf_has(r_ptr->flags, RF_ATTR_MULTI))
+					continue;
+				cave_light_spot(cave, m_ptr->fy, m_ptr->fx);
 			}
 
 			/* Repair "nice" flags */
@@ -1354,11 +1336,6 @@ static void dungeon(struct cave *c)
 
 	/* Cancel the health bar */
 	health_track(p_ptr, 0);
-
-
-	/* Reset shimmer flags */
-	shimmer_monsters = TRUE;
-	shimmer_objects = TRUE;
 
 	/* Reset repair flags */
 	repair_mflag_nice = TRUE;
