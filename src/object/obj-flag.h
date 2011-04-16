@@ -30,7 +30,7 @@
 
 /* The object flags */
 enum {
-    #define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) OF_##a,
+    #define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s) OF_##a,
     #include "list-object-flags.h"
     #undef OF
 };
@@ -119,6 +119,7 @@ struct object_flag {
 	u16b id;				/* how is it identified */
 	u16b type;				/* OFT_ category */
 	s16b power;				/* base power rating */
+	s16b pval_mult;			/* pval weight rating */
 	s16b weapon;			/* power mult for melee weapon */
 	s16b bow;				/* power mult for launcher */
 	s16b ring;				/* etc. ... */
@@ -144,5 +145,6 @@ const char *flag_name(int flag);
 s16b slot_mult(int flag, int slot);
 bool flag_uses_pval(int flag);
 int obj_flag_type(int flag);
+int pval_mult(int flag);
 
 #endif /* !INCLUDED_OBJFLAG_H */

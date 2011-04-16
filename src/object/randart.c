@@ -290,17 +290,6 @@ static byte *base_art_alloc;
 /* Global just for convenience. */
 static int verbose = 1;
 
-/*
- * Object flag names
- */
-static const char *flag_names[] =
-{
-	#define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) #a,
-	#include "list-object-flags.h"
-	#undef OF
-	""
-};
-
 char *artifact_gen_name(struct artifact *a, const char ***words) {
 	char buf[BUFLEN];
 	char word[MAX_NAME_LEN + 1];
@@ -1738,7 +1727,7 @@ static bool add_flag(artifact_type *a_ptr, int flag)
 		return FALSE;
 
 	of_on(a_ptr->flags, flag);
-	file_putf(log_file, "Adding ability: %s\n", flag_names[flag]);
+	file_putf(log_file, "Adding ability: %s\n", flag_name(flag));
 
 	return TRUE;
 }
@@ -1752,7 +1741,7 @@ static void add_pval_flag(artifact_type *a_ptr, int flag)
 	of_on(a_ptr->flags, flag);
 	of_on(a_ptr->pval_flags[DEFAULT_PVAL], flag);
 	do_pval(a_ptr);
-	file_putf(log_file, "Adding ability: %s (now %+d)\n", flag_names[flag], a_ptr->pval[DEFAULT_PVAL]);
+	file_putf(log_file, "Adding ability: %s (now %+d)\n", flag_name(flag), a_ptr->pval[DEFAULT_PVAL]);
 }
 
 /*
@@ -1767,7 +1756,7 @@ static bool add_fixed_pval_flag(artifact_type *a_ptr, int flag)
 	of_on(a_ptr->flags, flag);
 	of_on(a_ptr->pval_flags[DEFAULT_PVAL], flag);
 	do_pval(a_ptr);
-	file_putf(log_file, "Adding ability: %s (now %+d)\n", flag_names[flag], a_ptr->pval[DEFAULT_PVAL]);
+	file_putf(log_file, "Adding ability: %s (now %+d)\n", flag_name(flag), a_ptr->pval[DEFAULT_PVAL]);
 
 	return TRUE;
 }
@@ -1784,13 +1773,13 @@ static bool add_first_pval_flag(artifact_type *a_ptr, int flag)
 	if (a_ptr->pval[DEFAULT_PVAL] == 0)
 	{
 		a_ptr->pval[DEFAULT_PVAL] = (s16b)randint1(4);
-		file_putf(log_file, "Adding ability: %s (first time) (now %+d)\n", flag_names[flag], a_ptr->pval[DEFAULT_PVAL]);
+		file_putf(log_file, "Adding ability: %s (first time) (now %+d)\n", flag_name(flag), a_ptr->pval[DEFAULT_PVAL]);
 
 		return TRUE;
 	}
 
 	do_pval(a_ptr);
-	file_putf(log_file, "Adding ability: %s (now %+d)\n", flag_names[flag], a_ptr->pval[DEFAULT_PVAL]);
+	file_putf(log_file, "Adding ability: %s (now %+d)\n", flag_name(flag), a_ptr->pval[DEFAULT_PVAL]);
 
 	return FALSE;
 }

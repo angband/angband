@@ -410,8 +410,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 				j = which_pval(o_ptr, i);
 				if (known || object_this_pval_is_visible(o_ptr, j)) {
 					k = o_ptr->pval[j];
-					if (i != OF_CHR) /* Do not consider CHR towards total */
-						extra_stat_bonus += k; /* TODO: x by pval_mult(i) ? */
+					extra_stat_bonus += (k * pval_mult(i));
 				}
 			} else
 				k = 1;
@@ -421,7 +420,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 				file_putf(log_file, "Adding power for %s, total is %d\n", flag_name(i), p);
 			}
 
-			/* Track combinations of flag types */
+			/* Track combinations of flag types - note we ignore SUST_CHR */
 			for (j = 0; j < N_ELEMENTS(sets); j++)
 				if ((sets[j].type == obj_flag_type(i)) && (i != OF_SUST_CHR))
 					sets[j].count++;
@@ -429,11 +428,11 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	}
 
 	/* Add extra power term if there are a lot of ability bonuses */
-	if (extra_stat_bonus > 24) {
+	if (extra_stat_bonus > 240) {
 		file_putf(log_file, "Inhibiting!  (Total ability bonus of %d is too high)\n", extra_stat_bonus);
 		p += INHIBIT_POWER;
 	} else {
-		p += ability_power[extra_stat_bonus];
+		p += ability_power[extra_stat_bonus / 10];
 		file_putf(log_file, "Adding power for pval total of %d, total is %d\n", extra_stat_bonus, p);
 	}
 

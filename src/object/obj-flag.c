@@ -23,8 +23,8 @@
  */
 const struct object_flag object_flag_table[] =
 {
-    #define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) \
-            { OF_##a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q,r },
+    #define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s) \
+            { OF_##a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s },
     #include "list-object-flags.h"
     #undef OF
 };
@@ -34,7 +34,7 @@ const struct object_flag object_flag_table[] =
  */
 static const char *flag_names[] =
 {
-    #define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) #a,
+    #define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s) #a,
     #include "list-object-flags.h"
     #undef OF
     ""
@@ -203,4 +203,15 @@ int obj_flag_type(int flag)
 	const struct object_flag *of_ptr = &object_flag_table[flag];
 
 	return of_ptr->type;
+}
+
+/**
+ * Return the pval weighting of a flag. (Some pvals are more important than
+ * others.)
+ */
+int pval_mult(int flag)
+{
+	const struct object_flag *of_ptr = &object_flag_table[flag];
+
+	return of_ptr->pval_mult;
 }

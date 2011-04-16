@@ -87,7 +87,7 @@ errr run_parser(struct file_parser *fp) {
 }
 
 static const char *k_info_flags[] = {
-	#define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r) #a,
+	#define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s) #a,
 	#include "object/list-object-flags.h"
 	#undef OF
 	NULL
