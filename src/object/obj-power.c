@@ -274,11 +274,6 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 
 		mult = bow_multiplier(o_ptr->sval);
 		file_putf(log_file, "Base mult for this weapon is %d\n", mult);
-
-		/* Melee weapons assume MAX_BLOWS per turn, so we must
-		 * divide by MAX_BLOWS to get equal ratings. */
-		p /= MAX_BLOWS;
-		file_putf(log_file, "Rescaling bow power, total is %d\n", p);
 	}
 
 	/* Add launcher bonus for ego ammo, multiply for launcher and rescale */
@@ -339,6 +334,13 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	if (slay_pwr) {
 		p = (p * (slay_pwr / 10)) / (tot_mon_power / 10);
 		file_putf(log_file, "Adjusted for slay power, total is %d\n", p);
+	}
+
+	/* Melee weapons assume MAX_BLOWS per turn, so we must divide by MAX_BLOWS
+     * to get equal ratings for launchers. */
+	if (wield_slot(o_ptr) == INVEN_BOW) {
+		p /= MAX_BLOWS;
+		file_putf(log_file, "Rescaling bow power, total is %d\n", p);
 	}
 
 	/* Add power for +to_hit */
