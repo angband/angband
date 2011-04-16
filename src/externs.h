@@ -308,8 +308,6 @@ bool get_rep_dir(int *dp);
 bool confuse_dir(int *dp);
 
 /* xtra3.c */
-byte player_hp_attr(void);
-byte player_sp_attr(void);
 byte monster_health_attr(void);
 void cnv_stat(int val, char *out_val, size_t out_len);
 void toggle_inven_equip(void);

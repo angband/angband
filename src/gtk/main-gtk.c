@@ -18,6 +18,7 @@
  
 #include "angband.h"
 #include "buildid.h"
+#include "player/player.h"
 
 #ifdef USE_GTK
 #include "main-gtk.h"
@@ -2634,13 +2635,13 @@ static void handle_sidebar(game_event_type type, game_event_data *data, void *us
 	
 		/* Char HP */
 		strnfmt(str, sizeof(str), "%4d/%4d", p_ptr->chp, p_ptr->mhp); 
-		cr_aligned_text_print(xd, 0, 16, sidebar_text[16], TERM_WHITE, str, player_hp_attr(), sidebar_length);
-		xtra_drawn_progress_bar(xd, 0, 17, p_ptr->chp, p_ptr->mhp, player_hp_attr(), 13);
+		cr_aligned_text_print(xd, 0, 16, sidebar_text[16], TERM_WHITE, str, player_hp_attr(p_ptr), sidebar_length);
+		xtra_drawn_progress_bar(xd, 0, 17, p_ptr->chp, p_ptr->mhp, player_hp_attr(p_ptr), 13);
 	
 		/* Char MP */
 		strnfmt(str, sizeof(str), "%4d/%4d", p_ptr->csp, p_ptr->msp); 
-		cr_aligned_text_print(xd, 0, 18,sidebar_text[18], TERM_WHITE, str, player_sp_attr(), sidebar_length);
-		xtra_drawn_progress_bar(xd, 0, 19, p_ptr->csp, p_ptr->msp, player_sp_attr(), 13);
+		cr_aligned_text_print(xd, 0, 18,sidebar_text[18], TERM_WHITE, str, player_sp_attr(p_ptr), sidebar_length);
+		xtra_drawn_progress_bar(xd, 0, 19, p_ptr->csp, p_ptr->msp, player_sp_attr(p_ptr), 13);
 	
 		/* 20 is blank */
 	

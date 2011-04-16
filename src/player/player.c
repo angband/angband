@@ -157,3 +157,31 @@ void player_exp_lose(struct player *p, s32b amount, bool permanent)
 		p->max_exp -= amount;
 	adjust_level(p, TRUE);
 }
+
+byte player_hp_attr(struct player *p)
+{
+	byte attr;
+	
+	if (p->chp >= p->mhp)
+		attr = TERM_L_GREEN;
+	else if (p->chp > (p->mhp * op_ptr->hitpoint_warn) / 10)
+		attr = TERM_YELLOW;
+	else
+		attr = TERM_RED;
+	
+	return attr;
+}
+
+byte player_sp_attr(struct player *p)
+{
+	byte attr;
+	
+	if (p->csp >= p->msp)
+		attr = TERM_L_GREEN;
+	else if (p->csp > (p->msp * op_ptr->hitpoint_warn) / 10)
+		attr = TERM_YELLOW;
+	else
+		attr = TERM_RED;
+	
+	return attr;
+}

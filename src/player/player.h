@@ -30,7 +30,10 @@ extern struct player_class *player_id2class(guid id);
 extern bool player_stat_inc(struct player *p, int stat);
 extern bool player_stat_dec(struct player *p, int stat, bool permanent);
 extern void player_exp_gain(struct player *p, s32b amount);
-extern void player_exp_lose(struct player *p, s32b amount, bool permanent); 
+extern void player_exp_lose(struct player *p, s32b amount, bool permanent);
+
+extern byte player_hp_attr(struct player *p);
+extern byte player_sp_attr(struct player *p);
 
 /* race.c */
 extern struct player_race *player_id2race(guid id);

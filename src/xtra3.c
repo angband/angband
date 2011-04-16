@@ -280,29 +280,12 @@ static void prt_ac(int row, int col)
 }
 
 /*
- * Calculate the hp color separately, for ports.
- */
-byte player_hp_attr(void)
-{
-	byte attr;
-	
-	if (p_ptr->chp >= p_ptr->mhp)
-		attr = TERM_L_GREEN;
-	else if (p_ptr->chp > (p_ptr->mhp * op_ptr->hitpoint_warn) / 10)
-		attr = TERM_YELLOW;
-	else
-		attr = TERM_RED;
-	
-	return attr;
-}
-
-/*
  * Prints Cur hit points
  */
 static void prt_hp(int row, int col)
 {
 	char cur_hp[32], max_hp[32];
-	byte color = player_hp_attr();
+	byte color = player_hp_attr(p_ptr);
 
 	put_str("HP ", row, col);
 
@@ -315,29 +298,12 @@ static void prt_hp(int row, int col)
 }
 
 /*
- * Calculate the sp color separately, for ports.
- */
-byte player_sp_attr(void)
-{
-	byte attr;
-	
-	if (p_ptr->csp >= p_ptr->msp)
-		attr = TERM_L_GREEN;
-	else if (p_ptr->csp > (p_ptr->msp * op_ptr->hitpoint_warn) / 10)
-		attr = TERM_YELLOW;
-	else
-		attr = TERM_RED;
-	
-	return attr;
-}
-
-/*
  * Prints players max/cur spell points
  */
 static void prt_sp(int row, int col)
 {
 	char cur_sp[32], max_sp[32];
-	byte color = player_sp_attr();
+	byte color = player_sp_attr(p_ptr);
 
 	/* Do not show mana unless we have some */
 	if (!p_ptr->msp) return;
