@@ -345,7 +345,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	p += (o_ptr->to_h * TO_HIT_POWER / 2);
 	file_putf(log_file, "Adding power for to hit, total is %d\n", p);
 
-	/* Add power for AC */
+	/* Add power for base AC and adjust for weight */
 	if (o_ptr->ac) {
 		p += BASE_ARMOUR_POWER;
 		file_putf(log_file, "Adding base armour power, total is %d\n", p);
@@ -367,23 +367,23 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		} else
 			p *= 5;
 		file_putf(log_file, "Adding power for AC per unit weight, total is %d\n", p);
-
-		/* Add power for +to_ac */
-		p += (o_ptr->to_a * TO_AC_POWER / 2);
-		file_putf(log_file, "Adding power for to_ac of %d, total is %d\n", o_ptr->to_a, p);
-		if (o_ptr->to_a > HIGH_TO_AC) {
-			p += ((o_ptr->to_a - (HIGH_TO_AC - 1)) * TO_AC_POWER);
-			file_putf(log_file, "Adding power for high to_ac value, total is %d\n", p);
-		}
-		if (o_ptr->to_a > VERYHIGH_TO_AC) {
-			p += ((o_ptr->to_a - (VERYHIGH_TO_AC -1)) * TO_AC_POWER * 2);
-			file_putf(log_file, "Adding power for very high to_ac value, total is %d\n", p);
-		}
-		if (o_ptr->to_a >= INHIBIT_AC) {
-			p += INHIBIT_POWER;
-			file_putf(log_file, "INHIBITING: AC bonus too high\n");
-		}
 	}
+	/* Add power for +to_ac */
+	p += (o_ptr->to_a * TO_AC_POWER / 2);
+	file_putf(log_file, "Adding power for to_ac of %d, total is %d\n", o_ptr->to_a, p);
+	if (o_ptr->to_a > HIGH_TO_AC) {
+		p += ((o_ptr->to_a - (HIGH_TO_AC - 1)) * TO_AC_POWER);
+		file_putf(log_file, "Adding power for high to_ac value, total is %d\n", p);
+	}
+	if (o_ptr->to_a > VERYHIGH_TO_AC) {
+		p += ((o_ptr->to_a - (VERYHIGH_TO_AC -1)) * TO_AC_POWER * 2);
+		file_putf(log_file, "Adding power for very high to_ac value, total is %d\n", p);
+	}
+	if (o_ptr->to_a >= INHIBIT_AC) {
+		p += INHIBIT_POWER;
+		file_putf(log_file, "INHIBITING: AC bonus too high\n");
+	}
+
 
 	/* Add power for light sources by radius XXX Hack - rewrite calc_torch! */
 	if (wield_slot(o_ptr) == INVEN_LIGHT) {
