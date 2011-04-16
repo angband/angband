@@ -185,9 +185,8 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file*
 				file_putf(log_file, brand[i]);
 			} else {
 				file_putf(log_file, desc[i]);
-				file_putf(log_file, "x%d", s_mult[i]); 
 			}
-			file_putf(log_file, " ");
+			file_putf(log_file, "x%d ", s_mult[i]); 
 		}
 		file_putf(log_file, "\nsv is: %d\n", sv);
 		file_putf(log_file, " and t_m_p is: %d \n", tot_mon_power);
@@ -428,7 +427,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	}
 
 	/* Add extra power term if there are a lot of ability bonuses */
-	if (extra_stat_bonus > 240) {
+	if (extra_stat_bonus > 249) {
 		file_putf(log_file, "Inhibiting!  (Total ability bonus of %d is too high)\n", extra_stat_bonus);
 		p += INHIBIT_POWER;
 	} else {
