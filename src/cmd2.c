@@ -472,36 +472,6 @@ static bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 	return (more);
 }
 
-
-/*
- * Return TRUE if the given feature is an open door
- */
-bool is_open(int feat)
-{
-	return (feat == FEAT_OPEN);
-}
-
-
-/*
- * Return TRUE if the given feature is a closed door
- */
-bool is_closed(int feat)
-{
-	return ((feat >= FEAT_DOOR_HEAD) &&
-	        (feat <= FEAT_DOOR_TAIL));
-}
-
-
-/*
- * Return TRUE if the given feature is a trap
- */
-bool is_trap(int feat)
-{
-	return ((feat >= FEAT_TRAP_HEAD) &&
-	        (feat <= FEAT_TRAP_TAIL));
-}
-
-
 /*
  * Return the number of doors/traps around (or under) the character.
  */

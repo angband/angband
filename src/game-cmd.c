@@ -374,6 +374,20 @@ errr cmd_insert(cmd_code c)
 	return cmd_insert_repeated(c, 0);
 }
 
+static bool is_open(int feat)
+{
+	return feat == FEAT_OPEN;
+}
+
+static bool is_closed(int feat)
+{
+	return ((feat >= FEAT_DOOR_HEAD) && (feat <= FEAT_DOOR_TAIL));
+}
+
+static bool is_trap(int feat)
+{
+	return ((feat >= FEAT_TRAP_HEAD) && (feat <= FEAT_TRAP_TAIL));
+}
 
 /* 
  * Request a game command from the uI and carry out whatever actions
