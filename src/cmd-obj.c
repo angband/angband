@@ -611,9 +611,10 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 		dir = args[1].direction;
 
 	/* Check for use if necessary, and execute the effect */
-	if ((use != USE_CHARGE && use != USE_TIMEOUT) ||
-	    check_devices(o_ptr))
+	if ((use != USE_CHARGE && use != USE_TIMEOUT) || check_devices(o_ptr))
 	{
+		int beam = beam_chance(o_ptr->tval);
+
 		/* Special message for artifacts */
 		if (o_ptr->artifact)
 		{
@@ -634,12 +635,10 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 		if (effect_obvious(effect)) object_flavor_aware(o_ptr);
 
 		/* Boost damage effects if skill > difficulty */
-		boost = p_ptr->state.skills[SKILL_DEVICE] - level;
-		if (boost < 0) boost = 0;
+		boost = MAX(p_ptr->state.skills[SKILL_DEVICE] - level, 0);
 
 		/* Do effect */
-		used = effect_do(effect, &ident, was_aware, dir,
-			beam_chance(o_ptr->tval), boost);
+		used = effect_do(effect, &ident, was_aware, dir, beam, boost);
 
 		/* Quit if the item wasn't used and no knowledge was gained */
 		if (!used && (was_aware || !ident)) return;
@@ -726,15 +725,8 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	/* Hack to make Glyph of Warding work properly */
 	if (cave->feat[py][px] == FEAT_GLYPH)
 	{
-		/* Shift any objects to further away */
-		for (o_ptr = get_first_object(py, px); o_ptr; o_ptr =
-			get_next_object(o_ptr))
-		{
-			drop_near(cave, o_ptr, 0, py, px, FALSE);
-		}
-
-		/* Delete the "moved" objects from their original position */
-		delete_object(py, px);
+		/* Push objects off the grid */
+		if (cave->o_idx[py][px]) push_object(py, px);
 	}
 
 

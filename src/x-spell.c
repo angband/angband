@@ -861,7 +861,7 @@ static bool cast_mage_spell(int spell, int dir)
 
 		case SPELL_RUNE_OF_PROTECTION: /* rune of protection */
 		{
-			(void)warding_glyph();
+			warding_glyph_spell();
 			break;
 		}
 
@@ -1095,7 +1095,7 @@ static bool cast_priest_spell(int spell, int dir)
 
 		case PRAYER_GLYPH_OF_WARDING:
 		{
-			warding_glyph();
+			warding_glyph_spell();
 			break;
 		}
 

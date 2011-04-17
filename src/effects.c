@@ -174,93 +174,61 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 	{
 		case EF_POISON:
 		{
-			if (!p_ptr->state.flags[OF_RES_POIS])
-			{
-				if (!p_ptr->timed[TMD_OPP_POIS] &&
-					inc_timed(TMD_POISONED, damroll(2, 7)
-					+ 10, TRUE))
-					*ident = TRUE;
-			}
+			if (!p_ptr->state.flags[OF_RES_POIS] && !p_ptr->timed[TMD_OPP_POIS])
+				inc_timed(TMD_POISONED, damroll(2, 7) + 10, TRUE);
 			*ident = TRUE;
 			wieldeds_notice_flag(OF_RES_POIS);
-
 			return TRUE;
 		}
 
 		case EF_BLIND:
 		{
 			if (!p_ptr->state.flags[OF_RES_BLIND])
-			{
-				if (inc_timed(TMD_BLIND, damroll(4, 25) + 75,
-					TRUE))
-					*ident = TRUE;
-			}
+				inc_timed(TMD_BLIND, damroll(4, 25) + 75, TRUE);
 			*ident = TRUE;
 			wieldeds_notice_flag(OF_RES_BLIND);
-
 			return TRUE;
 		}
 
 		case EF_SCARE:
 		{
 			if (!p_ptr->state.flags[OF_RES_FEAR])
-			{
-				if (inc_timed(TMD_AFRAID, randint0(10) + 10,
-					TRUE))
-					*ident = TRUE;
-			}
+				inc_timed(TMD_AFRAID, randint0(10) + 10, TRUE);
 			*ident = TRUE;
 			wieldeds_notice_flag(OF_RES_FEAR);
-
 			return TRUE;
 		}
 
 		case EF_CONFUSE:
 		{
 			if (!p_ptr->state.flags[OF_RES_CONFU])
-			{
-				if (inc_timed(TMD_CONFUSED, damroll(4, 5) + 10,
-					TRUE))
-					*ident = TRUE;
-			}
+				inc_timed(TMD_CONFUSED, damroll(4, 5) + 10, TRUE);
 			*ident = TRUE;
 			wieldeds_notice_flag(OF_RES_CONFU);
-
 			return TRUE;
 		}
 
 		case EF_HALLUC:
 		{
 			if (!p_ptr->state.flags[OF_RES_CHAOS])
-			{
-				if (inc_timed(TMD_IMAGE, randint0(250) + 250,
-					TRUE))
-					*ident = TRUE;
-			}
+				inc_timed(TMD_IMAGE, randint0(250) + 250, TRUE);
 			*ident = TRUE;
 			wieldeds_notice_flag(OF_RES_CHAOS);
-
 			return TRUE;
 		}
 
 		case EF_PARALYZE:
 		{
 			if (!p_ptr->state.flags[OF_FREE_ACT])
-			{
-				if (inc_timed(TMD_PARALYZED, randint0(5) + 5,
-					TRUE))
-					*ident = TRUE;
-			}
+				inc_timed(TMD_PARALYZED, randint0(5) + 5, TRUE);
 			*ident = TRUE;
 			wieldeds_notice_flag(OF_FREE_ACT);
-
 			return TRUE;
 		}
 
 		case EF_SLOW:
 		{
-			if (inc_timed(TMD_SLOW, randint1(25) + 15, TRUE))
-			*ident = TRUE;
+			if (inc_timed(TMD_SLOW, randint1(25) + 15, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -315,7 +283,6 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			if (clear_timed(TMD_BLIND, TRUE)) *ident = TRUE;
 			if (dec_timed(TMD_CUT, 20, TRUE)) *ident = TRUE;
 			if (dec_timed(TMD_CONFUSED, 20, TRUE)) *ident = TRUE;
-
 			return TRUE;
 		}
 
@@ -325,7 +292,6 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			if (clear_timed(TMD_CUT, TRUE)) *ident = TRUE;
 			if (clear_timed(TMD_BLIND, TRUE)) *ident = TRUE;
 			if (clear_timed(TMD_CONFUSED, TRUE)) *ident = TRUE;
-
 			return TRUE;
 		}
 
@@ -338,7 +304,6 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			if (clear_timed(TMD_STUN, TRUE)) *ident = TRUE;
 			if (clear_timed(TMD_CUT, TRUE)) *ident = TRUE;
 			if (clear_timed(TMD_AMNESIA, TRUE)) *ident = TRUE;
-
 			return TRUE;
 		}
 

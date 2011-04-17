@@ -102,7 +102,7 @@ bool heal_player(int perc, int min)
 /*
  * Leave a "glyph of warding" which prevents monster movement
  */
-void warding_glyph(void)
+bool warding_glyph(void)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
@@ -110,16 +110,32 @@ void warding_glyph(void)
 	if (cave->feat[py][px] != FEAT_FLOOR)
 	{
 		msg("There is no clear floor on which to cast the spell.");
-		return;
+		return FALSE;
 	}
+
+	/* Create a glyph */
+	cave_set_feat(cave, py, px, FEAT_GLYPH);
+	return TRUE;
+}
+
+/**
+ * Create a "glyph of warding" via a spell.
+ *
+ * We need to do this because the book-keeping is slightly different for
+ * spells vs. scrolls.
+ */
+void warding_glyph_spell(void)
+{
+	int py = p_ptr->py;
+	int px = p_ptr->px;
+
+	/* See if the effect works */
+	if (!warding_glyph()) return;
 
 	/* Push objects off the grid */
 	if (cave->o_idx[py][px]) push_object(py, px);
-	
-	/* Create a glyph */
-	cave_set_feat(cave, py, px, FEAT_GLYPH);
 }
-
+	
 
 
 
