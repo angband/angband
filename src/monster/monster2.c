@@ -247,7 +247,7 @@ void delete_monster_idx(int i)
 	(void)WIPE(m_ptr, monster_type);
 
 	/* Count monsters */
-	mon_cnt--;
+	cave->mon_cnt--;
 
 	/* Visual update */
 	cave_light_spot(cave, y, x);
@@ -445,7 +445,7 @@ void wipe_mon_list(struct cave *c, struct player *p)
 	cave->mon_max = 1;
 
 	/* Reset "mon_cnt" */
-	mon_cnt = 0;
+	cave->mon_cnt = 0;
 
 	/* Hack -- reset "reproducer" count */
 	num_repro = 0;
@@ -477,7 +477,7 @@ s16b mon_pop(void)
 		cave->mon_max++;
 
 		/* Count monsters */
-		mon_cnt++;
+		cave->mon_cnt++;
 
 		/* Return the index */
 		return (i);
@@ -496,7 +496,7 @@ s16b mon_pop(void)
 		if (m_ptr->r_idx) continue;
 
 		/* Count monsters */
-		mon_cnt++;
+		cave->mon_cnt++;
 
 		/* Use this monster */
 		return (i);

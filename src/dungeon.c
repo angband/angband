@@ -1391,10 +1391,10 @@ static void dungeon(struct cave *c)
 	while (TRUE)
 	{
 		/* Hack -- Compact the monster list occasionally */
-		if (mon_cnt + 32 > z_info->m_max) compact_monsters(64);
+		if (cave_monster_count(cave) + 32 > z_info->m_max) compact_monsters(64);
 
 		/* Hack -- Compress the monster list occasionally */
-		if (mon_cnt + 32 < cave_monster_max(cave)) compact_monsters(0);
+		if (cave_monster_count(cave) + 32 < cave_monster_max(cave)) compact_monsters(0);
 
 		/* Hack -- Compact the object list occasionally */
 		if (o_cnt + 32 > z_info->o_max) compact_objects(64);

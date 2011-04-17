@@ -86,8 +86,6 @@ bool inkey_flag;		/* See the "inkey()" function */
 s16b o_max = 1;			/* Number of allocated objects */
 s16b o_cnt = 0;			/* Number of live objects */
 
-s16b mon_cnt = 0;	/* Number of live monsters */
-
 /*
  * Buffer to hold the current savefile name
  */

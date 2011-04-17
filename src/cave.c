@@ -3731,3 +3731,8 @@ int cave_monster_max(struct cave *c)
 {
 	return c->mon_max;
 }
+
+int cave_monster_count(struct cave *c)
+{
+	return c->mon_cnt;
+}
