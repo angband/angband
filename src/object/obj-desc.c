@@ -747,7 +747,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 
 	if (mode & ODESC_EXTRA)
 	{
-		for (i = 0; i < MAX_PVALS; i++)
+		for (i = 0; i < o_ptr->num_pvals; i++)
 			if (spoil || object_this_pval_is_visible(o_ptr, i)) {
 				end = obj_desc_pval(o_ptr, buf, max, end, spoil);
 				break;
