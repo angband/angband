@@ -942,7 +942,6 @@ int rd_player(void)
 		note(format("Invalid player class (%d).", num));
 		return -1;
 	}
-	mp_ptr = &p_ptr->class->spells;
 
 	/* Player gender */
 	rd_byte(&p_ptr->psex);

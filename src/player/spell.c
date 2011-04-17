@@ -86,7 +86,7 @@ bool spell_okay_to_cast(int spell)
  */
 bool spell_okay_to_study(int spell)
 {
-	const magic_type *s_ptr = &mp_ptr->info[spell];
+	const magic_type *s_ptr = &p_ptr->class->spells.info[spell];
 	return (s_ptr->slevel <= p_ptr->lev) &&
 			!(p_ptr->spell_flags[spell] & PY_SPELL_LEARNED);
 }
@@ -96,7 +96,7 @@ bool spell_okay_to_study(int spell)
  */
 bool spell_okay_to_browse(int spell)
 {
-	const magic_type *s_ptr = &mp_ptr->info[spell];
+	const magic_type *s_ptr = &p_ptr->class->spells.info[spell];
 	return (s_ptr->slevel < 99);
 }
 
@@ -115,7 +115,7 @@ s16b spell_chance(int spell)
 	if (!p_ptr->class->spell_book) return (100);
 
 	/* Get the spell */
-	s_ptr = &mp_ptr->info[spell];
+	s_ptr = &p_ptr->class->spells.info[spell];
 
 	/* Extract the base spell failure rate */
 	chance = s_ptr->sfail;
@@ -233,7 +233,7 @@ bool spell_cast(int spell, int dir)
 	int chance;
 
 	/* Get the spell */
-	const magic_type *s_ptr = &mp_ptr->info[spell];	
+	const magic_type *s_ptr = &p_ptr->class->spells.info[spell];
 
 	/* Spell failure chance */
 	chance = spell_chance(spell);

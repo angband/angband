@@ -495,11 +495,6 @@ byte tval_to_attr[128];
 /*** Player information ***/
 
 /*
- * Pointer to the player tables (sex, race, class, magic)
- */
-const player_magic *mp_ptr;
-
-/*
  * The player other record (static)
  */
 static player_other player_other_body;

@@ -902,8 +902,6 @@ void player_generate(struct player *p, const player_sex *s,
 	p->class = c;
 	p->race = r;
 
-	mp_ptr = &p_ptr->class->spells;
-
 	/* Level 1 */
 	p->max_lev = p->lev = 1;
 

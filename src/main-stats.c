@@ -41,8 +41,6 @@ static void generate_player_for_stats()
 	p_ptr->race = races;  /* Human   */
 	p_ptr->class = classes; /* Warrior */
 
-	mp_ptr = &p_ptr->class->spells;
-
 	/* Level 1 */
 	p_ptr->max_lev = p_ptr->lev = 1;
 

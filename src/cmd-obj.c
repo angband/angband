@@ -1004,7 +1004,7 @@ void do_cmd_cast(cmd_code code, cmd_arg args[])
 			if (spell_okay_to_cast(spell))
 			{
 				/* Get the spell */
-				const magic_type *s_ptr = &mp_ptr->info[spell];	
+				const magic_type *s_ptr = &p_ptr->class->spells.info[spell];
 				
 				/* Verify "dangerous" spells */
 				if (s_ptr->smana > p_ptr->csp)

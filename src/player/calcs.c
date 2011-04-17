@@ -872,7 +872,7 @@ static void calc_spells(void)
 		if (j >= 99) continue;
 
 		/* Get the spell */
-		s_ptr = &mp_ptr->info[j];
+		s_ptr = &p_ptr->class->spells.info[j];
 
 		/* Skip spells we are allowed to know */
 		if (s_ptr->slevel <= p_ptr->lev) continue;
@@ -938,7 +938,7 @@ static void calc_spells(void)
 		if (j >= 99) break;
 
 		/* Get the spell */
-		s_ptr = &mp_ptr->info[j];
+		s_ptr = &p_ptr->class->spells.info[j];
 
 		/* Skip spells we cannot remember */
 		if (s_ptr->slevel > p_ptr->lev) continue;
@@ -968,7 +968,7 @@ static void calc_spells(void)
 	for (j = 0; j < PY_MAX_SPELLS; j++)
 	{
 		/* Get the spell */
-		s_ptr = &mp_ptr->info[j];
+		s_ptr = &p_ptr->class->spells.info[j];
 
 		/* Skip spells we cannot remember or don't exist */
 		if (s_ptr->slevel > p_ptr->lev || s_ptr->slevel == 0) continue;
