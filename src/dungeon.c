@@ -193,7 +193,7 @@ static void regen_monsters(void)
 	int i, frac;
 
 	/* Regenerate everyone */
-	for (i = 1; i < mon_max; i++)
+	for (i = 1; i < cave_monster_max(cave); i++)
 	{
 		/* Check the i'th monster */
 		monster_type *m_ptr = cave_monster(cave, i);
@@ -1103,7 +1103,7 @@ static void process_player(void)
 			}
 
 			/* Shimmer multi-hued monsters */
-			for (i = 1; i < mon_max; i++)
+			for (i = 1; i < cave_monster_max(cave); i++)
 			{
 				struct monster_race *race;
 				struct monster *mon = cave_monster(cave, i);
@@ -1116,7 +1116,7 @@ static void process_player(void)
 			}
 
 			/* Clear NICE flag, and show marked monsters */
-			for (i = 1; i < mon_max; i++)
+			for (i = 1; i < cave_monster_max(cave); i++)
 			{
 				struct monster *mon = cave_monster(cave, i);
 				mon->mflag &= ~MFLAG_NICE;
@@ -1130,7 +1130,7 @@ static void process_player(void)
 		}
 
 		/* Clear SHOW flag */
-		for (i = 1; i < mon_max; i++)
+		for (i = 1; i < cave_monster_max(cave); i++)
 		{
 			struct monster *mon = cave_monster(cave, i);
 			mon->mflag &= ~MFLAG_SHOW;
@@ -1197,7 +1197,7 @@ void do_animation(void)
 {
 	int i;
 
-	for (i = 1; i < mon_max; i++)
+	for (i = 1; i < cave_monster_max(cave); i++)
 	{
 		byte attr;
 		monster_type *m_ptr = cave_monster(cave, i);
@@ -1394,8 +1394,7 @@ static void dungeon(struct cave *c)
 		if (mon_cnt + 32 > z_info->m_max) compact_monsters(64);
 
 		/* Hack -- Compress the monster list occasionally */
-		if (mon_cnt + 32 < mon_max) compact_monsters(0);
-
+		if (mon_cnt + 32 < cave_monster_max(cave)) compact_monsters(0);
 
 		/* Hack -- Compact the object list occasionally */
 		if (o_cnt + 32 > z_info->o_max) compact_objects(64);
@@ -1483,7 +1482,7 @@ static void dungeon(struct cave *c)
 		p_ptr->energy += extract_energy[p_ptr->state.speed];
 
 		/* Give energy to all monsters */
-		for (i = mon_max - 1; i >= 1; i--)
+		for (i = cave_monster_max(cave) - 1; i >= 1; i--)
 		{
 			/* Access the monster */
 			m_ptr = cave_monster(cave, i);

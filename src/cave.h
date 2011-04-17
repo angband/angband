@@ -57,6 +57,7 @@ struct cave {
 	s16b (*o_idx)[DUNGEON_WID];
 
 	struct monster *monsters;
+	int mon_max;
 };
 
 /* XXX: temporary while I refactor */
@@ -107,5 +108,6 @@ extern bool cave_in_bounds(struct cave *c, int y, int x);
 extern bool cave_in_bounds_fully(struct cave *c, int y, int x);
 
 extern struct monster *cave_monster(struct cave *c, int idx);
+extern int cave_monster_max(struct cave *c);
 
 #endif /* !CAVE_H */

@@ -821,7 +821,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	}
 
 	assert(g->f_idx <= FEAT_PERM_SOLID);
-	assert(g->m_idx < (u32b) mon_max);
+	assert(g->m_idx < cave->mon_max);
 	/* All other g fields are 'flags', mostly booleans. */
 }
 
@@ -3652,6 +3652,7 @@ struct cave *cave_new(void) {
 	c->o_idx = C_ZNEW(DUNGEON_HGT, s16b_wid);
 
 	c->monsters = C_ZNEW(z_info->m_max, struct monster);
+	c->mon_max = 1;
 
 	c->created_at = 1;
 	return c;
@@ -3724,4 +3725,9 @@ bool cave_isicky(struct cave *c, int y, int x) {
 struct monster *cave_monster(struct cave *c, int idx)
 {
 	return &c->monsters[idx];
+}
+
+int cave_monster_max(struct cave *c)
+{
+	return c->mon_max;
 }

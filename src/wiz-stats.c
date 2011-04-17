@@ -2106,7 +2106,7 @@ static void scan_for_monsters(bool uniq)
 	int i;
 		
 	/* Go through the monster list */
-	for (i = 1; i < mon_max; i++)
+	for (i = 1; i < cave_monster_max(cave); i++)
 	{
 		monster_type *m_ptr = cave_monster(cave, i);
 		

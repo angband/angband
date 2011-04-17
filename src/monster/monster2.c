@@ -355,7 +355,7 @@ void compact_monsters(int size)
 		cur_dis = 5 * (20 - cnt);
 
 		/* Check all the monsters */
-		for (i = 1; i < mon_max; i++)
+		for (i = 1; i < cave_monster_max(cave); i++)
 		{
 			monster_type *m_ptr = cave_monster(cave, i);
 
@@ -392,7 +392,7 @@ void compact_monsters(int size)
 
 
 	/* Excise dead monsters (backwards!) */
-	for (i = mon_max - 1; i >= 1; i--)
+	for (i = cave_monster_max(cave) - 1; i >= 1; i--)
 	{
 		/* Get the i'th monster */
 		monster_type *m_ptr = cave_monster(cave, i);
@@ -401,10 +401,10 @@ void compact_monsters(int size)
 		if (m_ptr->r_idx) continue;
 
 		/* Move last monster into open hole */
-		compact_monsters_aux(mon_max - 1, i);
+		compact_monsters_aux(cave_monster_max(cave) - 1, i);
 
-		/* Compress "mon_max" */
-		mon_max--;
+		/* Compress "cave->mon_max" */
+		cave->mon_max--;
 	}
 }
 
@@ -420,7 +420,7 @@ void wipe_mon_list(struct cave *c, struct player *p)
 	int i;
 
 	/* Delete all the monsters */
-	for (i = mon_max - 1; i >= 1; i--)
+	for (i = cave_monster_max(cave) - 1; i >= 1; i--)
 	{
 		monster_type *m_ptr = cave_monster(cave, i);
 
@@ -441,8 +441,8 @@ void wipe_mon_list(struct cave *c, struct player *p)
 		(void)WIPE(m_ptr, monster_type);
 	}
 
-	/* Reset "mon_max" */
-	mon_max = 1;
+	/* Reset "cave->mon_max" */
+	cave->mon_max = 1;
 
 	/* Reset "mon_cnt" */
 	mon_cnt = 0;
@@ -468,13 +468,13 @@ s16b mon_pop(void)
 
 
 	/* Normal allocation */
-	if (mon_max < z_info->m_max)
+	if (cave_monster_max(cave) < z_info->m_max)
 	{
 		/* Get the next hole */
-		i = mon_max;
+		i = cave_monster_max(cave);
 
 		/* Expand the array */
-		mon_max++;
+		cave->mon_max++;
 
 		/* Count monsters */
 		mon_cnt++;
@@ -485,7 +485,7 @@ s16b mon_pop(void)
 
 
 	/* Recycle dead monsters */
-	for (i = 1; i < mon_max; i++)
+	for (i = 1; i < cave_monster_max(cave); i++)
 	{
 		monster_type *m_ptr;
 
@@ -787,7 +787,7 @@ void display_monlist(void)
 	list = C_ZNEW(z_info->r_max, monster_vis);
 
 	/* Scan the list of monsters on the level */
-	for (i = 1; i < (size_t)mon_max; i++)
+	for (i = 1; i < cave_monster_max(cave); i++)
 	{
 		monster_vis *v;
 
@@ -1602,7 +1602,7 @@ void update_monsters(bool full)
 	int i;
 
 	/* Update each (live) monster */
-	for (i = 1; i < mon_max; i++)
+	for (i = 1; i < cave_monster_max(cave); i++)
 	{
 		monster_type *m_ptr = cave_monster(cave, i);
 

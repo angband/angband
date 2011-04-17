@@ -820,10 +820,10 @@ void wr_monsters(void)
 		return;
 
 	/* Total monsters */
-	wr_u16b(mon_max);
+	wr_u16b(cave_monster_max(cave));
 
 	/* Dump the monsters */
-	for (i = 1; i < mon_max; i++) {
+	for (i = 1; i < cave_monster_max(cave); i++) {
 		byte unaware = 0;
 	
 		const monster_type *m_ptr = cave_monster(cave, i);

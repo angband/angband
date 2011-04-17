@@ -99,7 +99,7 @@ static void kill_all_monsters(int level)
 	char m_name[80];
 	bool fear;
 
-	for (i = mon_max - 1; i >= 1; i--)
+	for (i = cave_monster_max(cave) - 1; i >= 1; i--)
 	{
 		const monster_type *m_ptr = cave_monster(cave, i);
 		char *offscreen_ptr;

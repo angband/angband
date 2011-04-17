@@ -2406,7 +2406,7 @@ static void handle_mons_list(game_event_type type, game_event_data *data, void *
 	race_count = C_ZNEW(z_info->r_max, u16b);
 
 	/* Scan the monster list */
-	for (i = 1; i < mon_max; i++)
+	for (i = 1; i < cave_monster_max(cave); i++)
 	{
 		m_ptr = cave_monster(cave, i);
 

@@ -1379,7 +1379,7 @@ static void do_cmd_wiz_zap(int d)
 	int i;
 
 	/* Banish everyone nearby */
-	for (i = 1; i < mon_max; i++)
+	for (i = 1; i < cave_monster_max(cave); i++)
 	{
 		monster_type *m_ptr = cave_monster(cave, i);
 
@@ -1406,7 +1406,7 @@ static void do_cmd_wiz_unhide(int d)
 	int i;
 
 	/* Process monsters */
-	for (i = 1; i < mon_max; i++)
+	for (i = 1; i < cave_monster_max(cave); i++)
 	{
 		monster_type *m_ptr = cave_monster(cave, i);
 

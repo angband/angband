@@ -3027,7 +3027,7 @@ void process_monsters(struct cave *c, byte minimum_energy)
 	monster_race *r_ptr;
 
 	/* Process the monsters (backwards) */
-	for (i = mon_max - 1; i >= 1; i--)
+	for (i = cave_monster_max(c) - 1; i >= 1; i--)
 	{
 		/* Handle "leaving" */
 		if (p_ptr->leaving) break;
