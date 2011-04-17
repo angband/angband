@@ -196,7 +196,7 @@ static void regen_monsters(void)
 	for (i = 1; i < mon_max; i++)
 	{
 		/* Check the i'th monster */
-		monster_type *m_ptr = &mon_list[i];
+		monster_type *m_ptr = cave_monster(cave, i);
 		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 		/* Skip dead monsters */
@@ -1106,7 +1106,7 @@ static void process_player(void)
 			for (i = 1; i < mon_max; i++)
 			{
 				struct monster_race *race;
-				struct monster *mon = &mon_list[i];
+				struct monster *mon = cave_monster(cave, i);
 				if (!mon->r_idx)
 					continue;
 				race = &r_info[mon->r_idx];
@@ -1118,7 +1118,7 @@ static void process_player(void)
 			/* Clear NICE flag, and show marked monsters */
 			for (i = 1; i < mon_max; i++)
 			{
-				struct monster *mon = &mon_list[i];
+				struct monster *mon = cave_monster(cave, i);
 				mon->mflag &= ~MFLAG_NICE;
 				if (mon->mflag & MFLAG_MARK) {
 					if (!(mon->mflag & MFLAG_SHOW)) {
@@ -1132,7 +1132,7 @@ static void process_player(void)
 		/* Clear SHOW flag */
 		for (i = 1; i < mon_max; i++)
 		{
-			struct monster *mon = &mon_list[i];
+			struct monster *mon = cave_monster(cave, i);
 			mon->mflag &= ~MFLAG_SHOW;
 		}
 
@@ -1200,7 +1200,7 @@ void do_animation(void)
 	for (i = 1; i < mon_max; i++)
 	{
 		byte attr;
-		monster_type *m_ptr = &mon_list[i];
+		monster_type *m_ptr = cave_monster(cave, i);
 		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 		if (!m_ptr || !m_ptr->ml)
@@ -1486,7 +1486,7 @@ static void dungeon(struct cave *c)
 		for (i = mon_max - 1; i >= 1; i--)
 		{
 			/* Access the monster */
-			m_ptr = &mon_list[i];
+			m_ptr = cave_monster(cave, i);
 
 			/* Ignore "dead" monsters */
 			if (!m_ptr->r_idx) continue;

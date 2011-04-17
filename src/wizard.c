@@ -1381,7 +1381,7 @@ static void do_cmd_wiz_zap(int d)
 	/* Banish everyone nearby */
 	for (i = 1; i < mon_max; i++)
 	{
-		monster_type *m_ptr = &mon_list[i];
+		monster_type *m_ptr = cave_monster(cave, i);
 
 		/* Skip dead monsters */
 		if (!m_ptr->r_idx) continue;
@@ -1408,7 +1408,7 @@ static void do_cmd_wiz_unhide(int d)
 	/* Process monsters */
 	for (i = 1; i < mon_max; i++)
 	{
-		monster_type *m_ptr = &mon_list[i];
+		monster_type *m_ptr = cave_monster(cave, i);
 
 		/* Skip dead monsters */
 		if (!m_ptr->r_idx) continue;

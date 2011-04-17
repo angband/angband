@@ -826,7 +826,7 @@ void wr_monsters(void)
 	for (i = 1; i < mon_max; i++) {
 		byte unaware = 0;
 	
-		const monster_type *m_ptr = &mon_list[i];
+		const monster_type *m_ptr = cave_monster(cave, i);
 
 		wr_s16b(m_ptr->r_idx);
 		wr_byte(m_ptr->fy);

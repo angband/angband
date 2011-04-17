@@ -545,7 +545,7 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 		}
 		else
 		{
-			monster_type *m_ptr = &mon_list[g->m_idx];
+			monster_type *m_ptr = cave_monster(cave, g->m_idx);
 			monster_race *r_ptr = &r_info[m_ptr->r_idx];
 				
 			byte da;
@@ -803,7 +803,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	if (g->m_idx > 0)
 	{
 		/* If the monster isn't "visible", make sure we don't list it.*/
-		monster_type *m_ptr = &mon_list[g->m_idx];
+		monster_type *m_ptr = cave_monster(cave, g->m_idx);
 		if (!m_ptr->ml) g->m_idx = 0;
 
 	}
@@ -2485,7 +2485,7 @@ void update_view(void)
 	for (k = 1; k < z_info->m_max; k++)
 	{
 		/* Check the k'th monster */
-		monster_type *m_ptr = &mon_list[k];
+		monster_type *m_ptr = cave_monster(cave, k);
 		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 		/* Access the location */
@@ -3651,6 +3651,8 @@ struct cave *cave_new(void) {
 	c->m_idx = C_ZNEW(DUNGEON_HGT, s16b_wid);
 	c->o_idx = C_ZNEW(DUNGEON_HGT, s16b_wid);
 
+	c->monsters = C_ZNEW(z_info->m_max, struct monster);
+
 	c->created_at = 1;
 	return c;
 }
@@ -3717,4 +3719,9 @@ bool cave_istrap(struct cave *c, int y, int x) {
 
 bool cave_isicky(struct cave *c, int y, int x) {
 	return c->info[y][x] & CAVE_ICKY;
+}
+
+struct monster *cave_monster(struct cave *c, int idx)
+{
+	return &c->monsters[idx];
 }

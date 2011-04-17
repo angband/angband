@@ -101,7 +101,7 @@ static void kill_all_monsters(int level)
 
 	for (i = mon_max - 1; i >= 1; i--)
 	{
-		const monster_type *m_ptr = &mon_list[i];
+		const monster_type *m_ptr = cave_monster(cave, i);
 		char *offscreen_ptr;
 
 		monster_desc(m_name, sizeof(m_name), m_ptr, 0x88);

@@ -52,7 +52,7 @@ static int mon_resist_effect(int m_idx, int idx, u16b flag)
 {
 	mon_timed_effect *effect = &effects[idx];
 	int resist_chance;
-	monster_type *m_ptr = &mon_list[m_idx];
+	monster_type *m_ptr = cave_monster(cave, m_idx);
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
@@ -158,7 +158,7 @@ static int mon_resist_effect(int m_idx, int idx, u16b flag)
 static bool mon_set_timed(int m_idx, int idx, int v, u16b flag)
 {
 	mon_timed_effect *effect = &effects[idx];
-	monster_type *m_ptr = &mon_list[m_idx];
+	monster_type *m_ptr = cave_monster(cave, m_idx);
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	int m_note = 0;
@@ -235,7 +235,7 @@ static bool mon_set_timed(int m_idx, int idx, int v, u16b flag)
  */
 bool mon_inc_timed(int m_idx, int idx, int v, u16b flag)
 {
-	monster_type *m_ptr = &mon_list[m_idx];
+	monster_type *m_ptr = cave_monster(cave, m_idx);
 	assert(idx >= 0 && idx < MON_TMD_MAX);
 
 	/* Ignore dead monsters */
@@ -262,7 +262,7 @@ bool mon_inc_timed(int m_idx, int idx, int v, u16b flag)
  */
 bool mon_dec_timed(int m_idx, int idx, int v, u16b flag)
 {
-	monster_type *m_ptr = &mon_list[m_idx];
+	monster_type *m_ptr = cave_monster(cave, m_idx);
 	assert(idx >= 0 && idx < MON_TMD_MAX);
 
 	/* Ignore dead monsters */
@@ -286,7 +286,7 @@ bool mon_dec_timed(int m_idx, int idx, int v, u16b flag)
  */
 bool mon_clear_timed(int m_idx, int idx, u16b flag)
 {
-	monster_type *m_ptr = &mon_list[m_idx];
+	monster_type *m_ptr = cave_monster(cave, m_idx);
 	assert(idx >= 0 && idx < MON_TMD_MAX);
 
 	if (!m_ptr->r_idx) return FALSE;

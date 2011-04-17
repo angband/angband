@@ -194,7 +194,7 @@ void delete_monster_idx(int i)
 {
 	int x, y;
 
-	monster_type *m_ptr = &mon_list[i];
+	monster_type *m_ptr = cave_monster(cave, i);
 
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
@@ -284,7 +284,7 @@ static void compact_monsters_aux(int i1, int i2)
 
 
 	/* Old monster */
-	m_ptr = &mon_list[i1];
+	m_ptr = cave_monster(cave, i1);
 
 	/* Location */
 	y = m_ptr->fy;
@@ -315,10 +315,10 @@ static void compact_monsters_aux(int i1, int i2)
 	if (p_ptr->health_who == i1) p_ptr->health_who = i2;
 
 	/* Hack -- move monster */
-	COPY(&mon_list[i2], &mon_list[i1], monster_type);
+	COPY(cave_monster(cave, i2), cave_monster(cave, i1), struct monster);
 
 	/* Hack -- wipe hole */
-	(void)WIPE(&mon_list[i1], monster_type);
+	(void)WIPE(cave_monster(cave, i1), monster_type);
 }
 
 
@@ -357,7 +357,7 @@ void compact_monsters(int size)
 		/* Check all the monsters */
 		for (i = 1; i < mon_max; i++)
 		{
-			monster_type *m_ptr = &mon_list[i];
+			monster_type *m_ptr = cave_monster(cave, i);
 
 			monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
@@ -395,7 +395,7 @@ void compact_monsters(int size)
 	for (i = mon_max - 1; i >= 1; i--)
 	{
 		/* Get the i'th monster */
-		monster_type *m_ptr = &mon_list[i];
+		monster_type *m_ptr = cave_monster(cave, i);
 
 		/* Skip real monsters */
 		if (m_ptr->r_idx) continue;
@@ -422,7 +422,7 @@ void wipe_mon_list(struct cave *c, struct player *p)
 	/* Delete all the monsters */
 	for (i = mon_max - 1; i >= 1; i--)
 	{
-		monster_type *m_ptr = &mon_list[i];
+		monster_type *m_ptr = cave_monster(cave, i);
 
 		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
@@ -490,7 +490,7 @@ s16b mon_pop(void)
 		monster_type *m_ptr;
 
 		/* Get the monster */
-		m_ptr = &mon_list[i];
+		m_ptr = cave_monster(cave, i);
 
 		/* Skip live monsters */
 		if (m_ptr->r_idx) continue;
@@ -791,7 +791,7 @@ void display_monlist(void)
 	{
 		monster_vis *v;
 
-		m_ptr = &mon_list[i];
+		m_ptr = cave_monster(cave, i);
 		r_ptr = &r_info[m_ptr->r_idx];
 
 		/* Only consider visible, aware monsters */
@@ -1245,7 +1245,7 @@ void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode)
  */
 void lore_do_probe(int m_idx)
 {
-	monster_type *m_ptr = &mon_list[m_idx];
+	monster_type *m_ptr = cave_monster(cave, m_idx);
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
@@ -1278,7 +1278,7 @@ void lore_do_probe(int m_idx)
  */
 void lore_treasure(int m_idx, int num_item, int num_gold)
 {
-	monster_type *m_ptr = &mon_list[m_idx];
+	monster_type *m_ptr = cave_monster(cave, m_idx);
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
 
@@ -1361,7 +1361,7 @@ void lore_treasure(int m_idx, int num_item, int num_gold)
  */
 void update_mon(int m_idx, bool full)
 {
-	monster_type *m_ptr = &mon_list[m_idx];
+	monster_type *m_ptr = cave_monster(cave, m_idx);
 
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
@@ -1604,7 +1604,7 @@ void update_monsters(bool full)
 	/* Update each (live) monster */
 	for (i = 1; i < mon_max; i++)
 	{
-		monster_type *m_ptr = &mon_list[i];
+		monster_type *m_ptr = cave_monster(cave, i);
 
 		/* Skip dead monsters */
 		if (!m_ptr->r_idx) continue;
@@ -1626,7 +1626,7 @@ s16b monster_carry(int m_idx, object_type *j_ptr)
 
 	s16b this_o_idx, next_o_idx = 0;
 
-	monster_type *m_ptr = &mon_list[m_idx];
+	monster_type *m_ptr = cave_monster(cave, m_idx);
 
 
 	/* Scan objects already being held for combination */
@@ -1711,7 +1711,7 @@ void monster_swap(int y1, int x1, int y2, int x2)
 	/* Monster 1 */
 	if (m1 > 0)
 	{
-		m_ptr = &mon_list[m1];
+		m_ptr = cave_monster(cave, m1);
 
 		/* Move monster */
 		m_ptr->fy = y2;
@@ -1754,7 +1754,7 @@ void monster_swap(int y1, int x1, int y2, int x2)
 	/* Monster 2 */
 	if (m2 > 0)
 	{
-		m_ptr = &mon_list[m2];
+		m_ptr = cave_monster(cave, m2);
 
 		/* Move monster */
 		m_ptr->fy = y1;
@@ -1835,7 +1835,7 @@ s16b monster_place(int y, int x, monster_type *n_ptr)
 	cave->m_idx[y][x] = m_idx;
 
 	/* Get the new monster */
-	m_ptr = &mon_list[m_idx];
+	m_ptr = cave_monster(cave, m_idx);
 
 	/* Copy the monster XXX */
 	COPY(m_ptr, n_ptr, monster_type);
@@ -2610,7 +2610,7 @@ bool summon_specific(int y1, int x1, int lev, int type, int delay)
 	/* If delay, try to let the player act before the summoned monsters. */
 	/* NOTE: should really be -100, but energy is currently 0-255. */
 	if (delay)
-		mon_list[cave->m_idx[y][x]].energy = 0;
+		cave_monster(cave, cave->m_idx[y][x])->energy = 0;
 
 	/* Success */
 	return (TRUE);
@@ -2703,7 +2703,7 @@ static char *msg_repository[MAX_MON_MSG + 1] =
  */
 bool multiply_monster(int m_idx)
 {
-	monster_type *m_ptr = &mon_list[m_idx];
+	monster_type *m_ptr = cave_monster(cave, m_idx);
 
 	int i, y, x;
 
@@ -2740,7 +2740,7 @@ void message_pain(int m_idx, int dam)
 	long oldhp, newhp, tmp;
 	int percentage;
 
-	monster_type *m_ptr = &mon_list[m_idx];
+	monster_type *m_ptr = cave_monster(cave, m_idx);
 	
 	int msg_code = MON_MSG_UNHARMED;
 	char m_name[80];
@@ -2914,7 +2914,7 @@ bool add_monster_message(char *mon_name, int m_idx, int msg_code, bool delay)
    int i;
    byte mon_flags = 0;
 
-   monster_type *m_ptr = &mon_list[m_idx];
+   monster_type *m_ptr = cave_monster(cave, m_idx);
    int r_idx = m_ptr->r_idx;
 
    if (redundant_monster_message(m_idx, msg_code)) return (FALSE);
@@ -3174,7 +3174,7 @@ static learn_attack_struct attack_table[] = {
  */
 void update_smart_learn(int m_idx, int what)
 {
-	monster_type *m_ptr = &mon_list[m_idx];
+	monster_type *m_ptr = cave_monster(cave, m_idx);
 
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
@@ -3408,7 +3408,7 @@ void monster_death(int m_idx)
 
 	s16b this_o_idx, next_o_idx = 0;
 
-	monster_type *m_ptr = &mon_list[m_idx];
+	monster_type *m_ptr = cave_monster(cave, m_idx);
 
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
@@ -3614,7 +3614,7 @@ void monster_death(int m_idx)
  **/
 bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note)
 {
-	monster_type *m_ptr = &mon_list[m_idx];
+	monster_type *m_ptr = cave_monster(cave, m_idx);
 
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 

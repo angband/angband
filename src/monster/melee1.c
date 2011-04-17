@@ -126,7 +126,7 @@ static const char *desc_moan[MAX_DESC_MOAN] =
  */
 bool make_attack_normal(int m_idx)
 {
-	monster_type *m_ptr = &mon_list[m_idx];
+	monster_type *m_ptr = cave_monster(cave, m_idx);
 
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 

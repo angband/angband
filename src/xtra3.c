@@ -329,11 +329,11 @@ byte monster_health_attr(void)
 	/* Not tracking */
 	if (!p_ptr->health_who)
 		attr = TERM_DARK;
-	
+
 	/* Tracking an unseen, hallucinatory, or dead monster */
-	else if ((!mon_list[p_ptr->health_who].ml) ||
+	else if ((!cave_monster(cave, p_ptr->health_who)->ml) ||
 			(p_ptr->timed[TMD_IMAGE]) ||
-			(mon_list[p_ptr->health_who].hp < 0))
+			(cave_monster(cave, p_ptr->health_who)->hp < 0))
 	{
 		/* The monster health is "unknown" */
 		attr = TERM_WHITE;
@@ -341,15 +341,14 @@ byte monster_health_attr(void)
 	
 	else
 	{
+		struct monster *mon = cave_monster(cave, p_ptr->health_who);
 		int pct;
-
-		monster_type *m_ptr = &mon_list[p_ptr->health_who];
 
 		/* Default to almost dead */
 		attr = TERM_RED;
 
 		/* Extract the "percent" of health */
-		pct = 100L * m_ptr->hp / m_ptr->maxhp;
+		pct = 100L * mon->hp / mon->maxhp;
 
 		/* Badly wounded */
 		if (pct >= 10) attr = TERM_L_RED;
@@ -364,16 +363,16 @@ byte monster_health_attr(void)
 		if (pct >= 100) attr = TERM_L_GREEN;
 
 		/* Afraid */
-		if (m_ptr->m_timed[MON_TMD_FEAR]) attr = TERM_VIOLET;
+		if (mon->m_timed[MON_TMD_FEAR]) attr = TERM_VIOLET;
 
 		/* Confused */
-		if (m_ptr->m_timed[MON_TMD_CONF]) attr = TERM_UMBER;
+		if (mon->m_timed[MON_TMD_CONF]) attr = TERM_UMBER;
 
 		/* Stunned */
-		if (m_ptr->m_timed[MON_TMD_STUN]) attr = TERM_L_BLUE;
+		if (mon->m_timed[MON_TMD_STUN]) attr = TERM_L_BLUE;
 
 		/* Asleep */
-		if (m_ptr->m_timed[MON_TMD_SLEEP]) attr = TERM_BLUE;
+		if (mon->m_timed[MON_TMD_SLEEP]) attr = TERM_BLUE;
 	}
 	
 	return attr;
@@ -392,18 +391,22 @@ byte monster_health_attr(void)
 static void prt_health(int row, int col)
 {
 	byte attr = monster_health_attr();
+	struct monster *mon;
 	
 	/* Not tracking */
 	if (!p_ptr->health_who)
 	{
 		/* Erase the health bar */
 		Term_erase(col, row, 12);
+		return;
 	}
 
+	mon = cave_monster(cave, p_ptr->health_who);
+
 	/* Tracking an unseen, hallucinatory, or dead monster */
-	else if ((!mon_list[p_ptr->health_who].ml) || /* Unseen */
+	if ((!mon->ml) || /* Unseen */
 			(p_ptr->timed[TMD_IMAGE]) || /* Hallucination */
-			(mon_list[p_ptr->health_who].hp < 0)) /* Dead (?) */
+			(mon->hp < 0)) /* Dead (?) */
 	{
 		/* The monster health is "unknown" */
 		Term_putstr(col, row, 12, attr, "[----------]");
@@ -414,7 +417,7 @@ static void prt_health(int row, int col)
 	{
 		int pct, len;
 
-		monster_type *m_ptr = &mon_list[p_ptr->health_who];
+		monster_type *m_ptr = cave_monster(cave, p_ptr->health_who);
 
 		/* Extract the "percent" of health */
 		pct = 100L * m_ptr->hp / m_ptr->maxhp;

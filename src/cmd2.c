@@ -1832,7 +1832,7 @@ void do_cmd_spike(cmd_code code, cmd_arg args[])
 static bool do_cmd_walk_test(int y, int x)
 {
 	/* Allow attack on visible monsters if unafraid */
-	if ((cave->m_idx[y][x] > 0) && (mon_list[cave->m_idx[y][x]].ml))
+	if ((cave->m_idx[y][x] > 0) && (cave_monster(cave, cave->m_idx[y][x])->ml))
 	{
 		/* Handle player fear */
 		if(p_ptr->state.flags[OF_AFRAID])
@@ -1841,7 +1841,7 @@ static bool do_cmd_walk_test(int y, int x)
 			char m_name[80];
 			monster_type *m_ptr;
 
-			m_ptr = &mon_list[cave->m_idx[y][x]];
+			m_ptr = cave_monster(cave, cave->m_idx[y][x]);
 			monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 			/* Message */

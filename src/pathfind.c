@@ -82,7 +82,7 @@ bool findpath(int y, int x)
 
 	if ((x >= ox) && (x < ex) && (y >= oy) && (y < ey))
 	{
-		if ((cave->m_idx[y][x] > 0) && (mon_list[cave->m_idx[y][x]].ml))
+		if ((cave->m_idx[y][x] > 0) && (cave_monster(cave, cave->m_idx[y][x])->ml))
 		{
 			terrain[y - oy][x - ox] = MAX_PF_LENGTH;
 		}
@@ -740,7 +740,7 @@ static bool run_test(void)
 		/* Visible monsters abort running */
 		if (cave->m_idx[row][col] > 0)
 		{
-			monster_type *m_ptr = &mon_list[cave->m_idx[row][col]];
+			monster_type *m_ptr = cave_monster(cave, cave->m_idx[row][col]);
 
 			/* Visible monster */
 			if (m_ptr->ml) return (TRUE);
@@ -889,7 +889,7 @@ static bool run_test(void)
 		/* Visible monsters abort running */
 		if (cave->m_idx[row][col] > 0)
 		{
-			monster_type *m_ptr = &mon_list[cave->m_idx[row][col]];
+			monster_type *m_ptr = cave_monster(cave, cave->m_idx[row][col]);
 			
 			/* Visible monster */
 			if (m_ptr->ml) return (TRUE);			

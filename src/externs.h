@@ -107,7 +107,6 @@ extern u16b *temp_g;
 extern byte *temp_y;
 extern byte *temp_x;
 extern maxima *z_info;
-extern monster_type *mon_list;
 extern monster_lore *l_list;
 extern quest *q_list;
 extern store_type *store;

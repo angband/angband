@@ -423,11 +423,6 @@ byte *temp_y;
 byte *temp_x;
 
 /*
- * Array[z_info->m_max] of dungeon monsters
- */
-monster_type *mon_list;
-
-/*
  * Array[z_info->r_max] of monster lore
  */
 monster_lore *l_list;

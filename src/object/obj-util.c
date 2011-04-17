@@ -820,7 +820,7 @@ void excise_object_idx(int o_idx)
 		monster_type *m_ptr;
 
 		/* Monster */
-		m_ptr = &mon_list[j_ptr->held_m_idx];
+		m_ptr = cave_monster(cave, j_ptr->held_m_idx);
 
 		/* Scan all objects in the grid */
 		for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx)
@@ -1046,7 +1046,7 @@ static void compact_objects_aux(int i1, int i2)
 		monster_type *m_ptr;
 
 		/* Get the monster */
-		m_ptr = &mon_list[o_ptr->held_m_idx];
+		m_ptr = cave_monster(cave, o_ptr->held_m_idx);
 
 		/* Repair monster */
 		if (m_ptr->hold_o_idx == i1)
@@ -1171,7 +1171,7 @@ void compact_objects(int size)
 				monster_type *m_ptr;
 
 				/* Get the monster */
-				m_ptr = &mon_list[o_ptr->held_m_idx];
+				m_ptr = cave_monster(cave, o_ptr->held_m_idx);
 
 				/* Get the location */
 				y = m_ptr->fy;
@@ -1252,7 +1252,7 @@ void wipe_o_list(struct cave *c)
 			monster_type *m_ptr;
 
 			/* Monster */
-			m_ptr = &mon_list[o_ptr->held_m_idx];
+			m_ptr = cave_monster(cave, o_ptr->held_m_idx);
 
 			/* Hack -- see above */
 			m_ptr->hold_o_idx = 0;

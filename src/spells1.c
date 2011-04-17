@@ -181,7 +181,7 @@ void teleport_away(int m_idx, int dis)
 
 	bool look = TRUE;
 
-	monster_type *m_ptr = &mon_list[m_idx];
+	monster_type *m_ptr = cave_monster(cave, m_idx);
 
 
 	/* Paranoia */
@@ -1756,7 +1756,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 
 
 	/* Obtain monster info */
-	m_ptr = &mon_list[m_idx];
+	m_ptr = cave_monster(cave, m_idx);
 	r_ptr = &r_info[m_ptr->r_idx];
 	l_ptr = &l_list[m_ptr->r_idx];
 	name = r_ptr->name;
@@ -2655,7 +2655,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 					/* Hack -- Assume success XXX XXX XXX */
 
 					/* Hack -- Get new monster */
-					m_ptr = &mon_list[m_idx];
+					m_ptr = cave_monster(cave, m_idx);
 
 					/* Hack -- Get new race */
 					r_ptr = &r_info[m_ptr->r_idx];
@@ -2842,7 +2842,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 	const struct gf_type *gf_ptr = &gf_table[typ];
 
 	/* Source monster */
-	monster_type *m_ptr = &mon_list[who];
+	monster_type *m_ptr = cave_monster(cave, who);
 
 	/* Monster name (for attacks) */
 	char m_name[80];
@@ -3093,8 +3093,8 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 	/* Start at monster */
 	else if (who > 0)
 	{
-		x1 = mon_list[who].fx;
-		y1 = mon_list[who].fy;
+		x1 = cave_monster(cave, who)->fx;
+		y1 = cave_monster(cave, who)->fy;
 	}
 
 	/* Oops */
@@ -3425,7 +3425,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 			/* Track if possible */
 			if (cave->m_idx[y][x] > 0)
 			{
-				monster_type *m_ptr = &mon_list[cave->m_idx[y][x]];
+				monster_type *m_ptr = cave_monster(cave, cave->m_idx[y][x]);
 
 				/* Hack -- auto-recall */
 				if (m_ptr->ml) monster_race_track(m_ptr->r_idx);

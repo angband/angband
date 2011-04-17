@@ -2408,7 +2408,7 @@ static void handle_mons_list(game_event_type type, game_event_data *data, void *
 	/* Scan the monster list */
 	for (i = 1; i < mon_max; i++)
 	{
-		m_ptr = &mon_list[i];
+		m_ptr = cave_monster(cave, i);
 
 		/* Only visible monsters */
 		if (!m_ptr->ml) continue;
@@ -2572,7 +2572,7 @@ static void handle_sidebar(game_event_type type, game_event_data *data, void *us
 	
 	xtra_win_data *xd = &xdata[5];
 	long xp = (long)p_ptr->exp;
-	monster_type *m_ptr = &mon_list[p_ptr->health_who];
+	monster_type *m_ptr = cave_monster(cave, p_ptr->health_who);
 	int i = 0, sidebar_length = 12;
 
 	/* Calculate XP for next level */

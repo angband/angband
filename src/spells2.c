@@ -922,7 +922,7 @@ bool detect_monsters_normal(bool aware)
 	/* Scan monsters */
 	for (i = 1; i < mon_max; i++)
 	{
-		monster_type *m_ptr = &mon_list[i];
+		monster_type *m_ptr = cave_monster(cave, i);
 		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 		/* Skip dead monsters */
@@ -982,7 +982,7 @@ bool detect_monsters_invis(bool aware)
 	/* Scan monsters */
 	for (i = 1; i < mon_max; i++)
 	{
-		monster_type *m_ptr = &mon_list[i];
+		monster_type *m_ptr = cave_monster(cave, i);
 		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 		monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
@@ -1050,7 +1050,7 @@ bool detect_monsters_evil(bool aware)
 	/* Scan monsters */
 	for (i = 1; i < mon_max; i++)
 	{
-		monster_type *m_ptr = &mon_list[i];
+		monster_type *m_ptr = cave_monster(cave, i);
 		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 		monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
@@ -1647,7 +1647,7 @@ bool project_los(int typ, int dam, bool obvious)
 	/* Affect all (nearby) monsters */
 	for (i = 1; i < mon_max; i++)
 	{
-		monster_type *m_ptr = &mon_list[i];
+		monster_type *m_ptr = cave_monster(cave, i);
 
 		/* Paranoia -- Skip dead monsters */
 		if (!m_ptr->r_idx) continue;
@@ -1760,7 +1760,7 @@ void aggravate_monsters(int who)
 	/* Aggravate everyone nearby */
 	for (i = 1; i < mon_max; i++)
 	{
-		monster_type *m_ptr = &mon_list[i];
+		monster_type *m_ptr = cave_monster(cave, i);
 		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 		/* Paranoia -- Skip dead monsters */
@@ -1819,7 +1819,7 @@ bool banishment(void)
 	/* Delete the monsters of that "type" */
 	for (i = 1; i < mon_max; i++)
 	{
-		monster_type *m_ptr = &mon_list[i];
+		monster_type *m_ptr = cave_monster(cave, i);
 		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 		/* Paranoia -- Skip dead monsters */
@@ -1863,7 +1863,7 @@ bool mass_banishment(void)
 	/* Delete the (nearby) monsters */
 	for (i = 1; i < mon_max; i++)
 	{
-		monster_type *m_ptr = &mon_list[i];
+		monster_type *m_ptr = cave_monster(cave, i);
 		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 		/* Paranoia -- Skip dead monsters */
@@ -1909,7 +1909,7 @@ bool probing(void)
 	/* Probe all (nearby) monsters */
 	for (i = 1; i < mon_max; i++)
 	{
-		monster_type *m_ptr = &mon_list[i];
+		monster_type *m_ptr = cave_monster(cave, i);
 
 		/* Paranoia -- Skip dead monsters */
 		if (!m_ptr->r_idx) continue;
@@ -2267,7 +2267,7 @@ void earthquake(int cy, int cx, int r)
 			/* Process monsters */
 			if (cave->m_idx[yy][xx] > 0)
 			{
-				monster_type *m_ptr = &mon_list[cave->m_idx[yy][xx]];
+				monster_type *m_ptr = cave_monster(cave, cave->m_idx[yy][xx]);
 				monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 				/* Most monsters cannot co-exist with rock */
@@ -2483,7 +2483,7 @@ static void cave_temp_room_light(void)
 		{
 			int chance = 25;
 
-			monster_type *m_ptr = &mon_list[cave->m_idx[y][x]];
+			monster_type *m_ptr = cave_monster(cave, cave->m_idx[y][x]);
 			monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 			/* Stupid monsters rarely wake up */

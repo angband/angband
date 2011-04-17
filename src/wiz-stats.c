@@ -537,7 +537,7 @@ static void monster_death_stats(int m_idx)
 
 	//s16b this_o_idx, next_o_idx = 0;
 
-	monster_type *m_ptr = &mon_list[m_idx];
+	monster_type *m_ptr = cave_monster(cave, m_idx);
 
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
@@ -2108,7 +2108,7 @@ static void scan_for_monsters(bool uniq)
 	/* Go through the monster list */
 	for (i = 1; i < mon_max; i++)
 	{
-		monster_type *m_ptr = &mon_list[i];
+		monster_type *m_ptr = cave_monster(cave, i);
 		
 		/* Skip dead monsters */
 		if (!m_ptr->r_idx) continue;
