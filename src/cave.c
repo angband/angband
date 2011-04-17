@@ -821,7 +821,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	}
 
 	assert(g->f_idx <= FEAT_PERM_SOLID);
-	assert(g->m_idx < cave->mon_max);
+	assert((int)g->m_idx < cave->mon_max);
 	/* All other g fields are 'flags', mostly booleans. */
 }
 

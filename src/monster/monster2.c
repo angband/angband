@@ -737,6 +737,7 @@ static void get_mon_name(char *output_name, size_t max, int r_idx, int in_los)
  */
 void display_monlist(void)
 {
+	int ii;
 	size_t i, j, k;
 	int max;
 	int line = 1, x = 0;
@@ -787,11 +788,11 @@ void display_monlist(void)
 	list = C_ZNEW(z_info->r_max, monster_vis);
 
 	/* Scan the list of monsters on the level */
-	for (i = 1; i < cave_monster_max(cave); i++)
+	for (ii = 1; ii < cave_monster_max(cave); ii++)
 	{
 		monster_vis *v;
 
-		m_ptr = cave_monster(cave, i);
+		m_ptr = cave_monster(cave, ii);
 		r_ptr = &r_info[m_ptr->r_idx];
 
 		/* Only consider visible, aware monsters */
