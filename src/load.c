@@ -933,7 +933,6 @@ int rd_player(void)
 		note(format("Invalid player race (%d).", num));
 		return -1;
 	}
-	rp_ptr = p_ptr->race;
 
 	/* Player class */
 	rd_byte(&num);

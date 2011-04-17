@@ -1390,11 +1390,11 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	/*** Extract race/class info ***/
 
 	/* Base infravision (purely racial) */
-	state->see_infra = rp_ptr->infra;
+	state->see_infra = p_ptr->race->infra;
 
 	/* Base skills */
 	for (i = 0; i < SKILL_MAX; i++)
-		state->skills[i] = rp_ptr->r_skills[i] + cp_ptr->c_skills[i];
+		state->skills[i] = p_ptr->race->r_skills[i] + cp_ptr->c_skills[i];
 
 
 	/*** Analyze player ***/
@@ -1528,7 +1528,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		if (OPT(birth_maximize))
 		{
 			/* Modify the stats for race/class */
-			add += (rp_ptr->r_adj[i] + cp_ptr->c_adj[i]);
+			add += (p_ptr->race->r_adj[i] + cp_ptr->c_adj[i]);
 		}
 
 		/* Extract the new "stat_top" value for the stat */

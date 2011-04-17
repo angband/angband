@@ -107,7 +107,7 @@ static void c_player_class(char *rest) {
 }
 
 static void c_player_race(char *rest) {
-	printf("player-race: %s\n", rp_ptr->name);
+	printf("player-race: %s\n", p_ptr->race->name);
 }
 
 static void c_player_sex(char *rest) {

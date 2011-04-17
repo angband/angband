@@ -255,7 +255,7 @@ static void get_stats(int stat_use[A_MAX])
 		p_ptr->stat_max[i] = j;
 
 		/* Obtain a "bonus" for "race" and "class" */
-		bonus = rp_ptr->r_adj[i] + cp_ptr->c_adj[i];
+		bonus = p_ptr->race->r_adj[i] + cp_ptr->c_adj[i];
 
 		/* Variable stat maxes */
 		if (OPT(birth_maximize))
@@ -372,20 +372,20 @@ char *get_history(struct history_chart *chart, s16b *sc)
 static void get_ahw(void)
 {
 	/* Calculate the age */
-	p_ptr->age = rp_ptr->b_age + randint1(rp_ptr->m_age);
+	p_ptr->age = p_ptr->race->b_age + randint1(p_ptr->race->m_age);
 
 	/* Calculate the height/weight for males */
 	if (p_ptr->psex == SEX_MALE)
 	{
-		p_ptr->ht = p_ptr->ht_birth = Rand_normal(rp_ptr->m_b_ht, rp_ptr->m_m_ht);
-		p_ptr->wt = p_ptr->wt_birth = Rand_normal(rp_ptr->m_b_wt, rp_ptr->m_m_wt);
+		p_ptr->ht = p_ptr->ht_birth = Rand_normal(p_ptr->race->m_b_ht, p_ptr->race->m_m_ht);
+		p_ptr->wt = p_ptr->wt_birth = Rand_normal(p_ptr->race->m_b_wt, p_ptr->race->m_m_wt);
 	}
 
 	/* Calculate the height/weight for females */
 	else if (p_ptr->psex == SEX_FEMALE)
 	{
-		p_ptr->ht = p_ptr->ht_birth = Rand_normal(rp_ptr->f_b_ht, rp_ptr->f_m_ht);
-		p_ptr->wt = p_ptr->wt_birth = Rand_normal(rp_ptr->f_b_wt, rp_ptr->f_m_wt);
+		p_ptr->ht = p_ptr->ht_birth = Rand_normal(p_ptr->race->f_b_ht, p_ptr->race->f_m_ht);
+		p_ptr->wt = p_ptr->wt_birth = Rand_normal(p_ptr->race->f_b_wt, p_ptr->race->f_m_wt);
 	}
 }
 
@@ -610,7 +610,7 @@ static void recalculate_stats(int *stats, int points_left)
 		else
 		{
 			/* Obtain a "bonus" for "race" and "class" */
-			int bonus = rp_ptr->r_adj[i] + cp_ptr->c_adj[i];
+			int bonus = p_ptr->race->r_adj[i] + cp_ptr->c_adj[i];
 
 			/* Apply the racial/class bonuses */
 			p_ptr->stat_cur[i] = p_ptr->stat_max[i] = 
@@ -904,16 +904,15 @@ void player_generate(struct player *p, const player_sex *s,
 
 	cp_ptr = c;
 	mp_ptr = &cp_ptr->spells;
-	rp_ptr = r;
 
 	/* Level 1 */
 	p->max_lev = p->lev = 1;
 
 	/* Experience factor */
-	p->expfact = rp_ptr->r_exp + cp_ptr->c_exp;
+	p->expfact = p_ptr->race->r_exp + cp_ptr->c_exp;
 
 	/* Hitdice */
-	p->hitdie = rp_ptr->r_mhp + cp_ptr->c_mhp;
+	p->hitdie = p_ptr->race->r_mhp + cp_ptr->c_mhp;
 
 	/* Initial hitpoints */
 	p->mhp = p->hitdie;

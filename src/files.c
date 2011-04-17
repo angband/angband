@@ -114,7 +114,7 @@ static const char *likert(int x, int y, byte *attr)
 void player_flags(bitflag f[OF_SIZE])
 {
 	/* Add racial flags */
-	memcpy(f, rp_ptr->flags, sizeof(rp_ptr->flags));
+	memcpy(f, p_ptr->race->flags, sizeof(p_ptr->race->flags));
 
 	/* Some classes become immune to fear at a certain plevel */
 	if (player_has(PF_BRAVERY_30) && p_ptr->lev >= 30)
@@ -256,9 +256,9 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 				/* If the race has innate infravision/digging, force the corresponding flag
 				   here.  If we set it in player_flags(), then all callers of that
 				   function will think the infravision is caused by equipment. */
-				if (rp_ptr->infra > 0)
+				if (p_ptr->race->infra > 0)
 					of_on(f, OF_INFRA);
-				if (rp_ptr->r_skills[SKILL_DIGGING] > 0)
+				if (p_ptr->race->r_skills[SKILL_DIGGING] > 0)
 					of_on(f, OF_TUNNEL);
 			}
 
@@ -345,7 +345,7 @@ void display_player_stat_info(void)
 		c_put_str(TERM_L_GREEN, buf, row+i, col+5);
 
 		/* Race Bonus */
-		strnfmt(buf, sizeof(buf), "%+3d", rp_ptr->r_adj[i]);
+		strnfmt(buf, sizeof(buf), "%+3d", p_ptr->race->r_adj[i]);
 		c_put_str(TERM_L_BLUE, buf, row+i, col+12);
 
 		/* Class Bonus */
@@ -736,7 +736,7 @@ static int get_panel(int oid, data_panel *panel, size_t size)
 	ret = boundaries[1].page_rows;
 	P_I(TERM_L_BLUE, "Name",	"%y",	s2u(op_ptr->full_name), END  );
 	P_I(TERM_L_BLUE, "Sex",		"%y",	s2u(p_ptr->sex->title), END  );
-	P_I(TERM_L_BLUE, "Race",	"%y",	s2u(rp_ptr->name), END  );
+	P_I(TERM_L_BLUE, "Race",	"%y",	s2u(p_ptr->race->name), END  );
 	P_I(TERM_L_BLUE, "Class",	"%y",	s2u(cp_ptr->name), END  );
 	P_I(TERM_L_BLUE, "Title",	"%y",	s2u(show_title()), END  );
 	P_I(TERM_L_BLUE, "HP",	"%y/%y",	i2u(p_ptr->chp), i2u(p_ptr->mhp)  );

@@ -120,7 +120,6 @@ extern alloc_entry *alloc_race_table;
 extern byte gf_to_attr[GF_MAX][BOLT_MAX];
 extern char gf_to_char[GF_MAX][BOLT_MAX];
 extern byte tval_to_attr[128];
-extern const player_race *rp_ptr;
 extern const player_class *cp_ptr;
 extern const player_magic *mp_ptr;
 extern player_other *op_ptr;

@@ -560,7 +560,7 @@ static const char *process_pref_file_expr(char **sp, char *fp)
 			else if (streq(b+1, "GRAF"))
 				v = ANGBAND_GRAF;
 			else if (streq(b+1, "RACE"))
-				v = rp_ptr->name;
+				v = p_ptr->race->name;
 			else if (streq(b+1, "CLASS"))
 				v = cp_ptr->name;
 			else if (streq(b+1, "PLAYER"))
