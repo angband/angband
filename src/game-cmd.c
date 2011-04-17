@@ -566,7 +566,7 @@ void process_command(cmd_context ctx, bool no_request)
 			{
 				bool get_target = FALSE;
 
-				if (spell_needs_aim(cp_ptr->spell_book, cmd->arg[0].choice))
+				if (spell_needs_aim(p_ptr->class->spell_book, cmd->arg[0].choice))
 				{
 					if (!cmd->arg_present[1])
 						get_target = TRUE;

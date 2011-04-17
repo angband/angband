@@ -103,7 +103,7 @@ static void c_player_birth(char *rest) {
 }
 
 static void c_player_class(char *rest) {
-	printf("player-class: %s\n", cp_ptr->name);
+	printf("player-class: %s\n", p_ptr->class->name);
 }
 
 static void c_player_race(char *rest) {

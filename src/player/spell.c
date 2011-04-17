@@ -112,7 +112,7 @@ s16b spell_chance(int spell)
 
 
 	/* Paranoia -- must be literate */
-	if (!cp_ptr->spell_book) return (100);
+	if (!p_ptr->class->spell_book) return (100);
 
 	/* Get the spell */
 	s_ptr = &mp_ptr->info[spell];
@@ -124,7 +124,7 @@ s16b spell_chance(int spell)
 	chance -= 3 * (p_ptr->lev - s_ptr->slevel);
 
 	/* Reduce failure rate by INT/WIS adjustment */
-	chance -= adj_mag_stat[p_ptr->state.stat_ind[cp_ptr->spell_stat]];
+	chance -= adj_mag_stat[p_ptr->state.stat_ind[p_ptr->class->spell_stat]];
 
 	/* Not enough mana to cast */
 	if (s_ptr->smana > p_ptr->csp)
@@ -133,7 +133,7 @@ s16b spell_chance(int spell)
 	}
 
 	/* Extract the minimum failure rate */
-	minfail = adj_mag_fail[p_ptr->state.stat_ind[cp_ptr->spell_stat]];
+	minfail = adj_mag_fail[p_ptr->state.stat_ind[p_ptr->class->spell_stat]];
 
 	/* Non mage/priest characters never get better than 5 percent */
 	if (!player_has(PF_ZERO_FAIL) && minfail < 5)
@@ -192,7 +192,7 @@ bool spell_in_book(int spell, int book)
 void spell_learn(int spell)
 {
 	int i;
-	const char *p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+	const char *p = ((p_ptr->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
 	/* Learn the spell */
 	p_ptr->spell_flags[spell] |= PY_SPELL_LEARNED;
@@ -209,7 +209,7 @@ void spell_learn(int spell)
 
 	/* Mention the result */
 	msgt(MSG_STUDY, "You have learned the %s of %s.",
-	           p, get_spell_name(cp_ptr->spell_book, spell));
+	           p, get_spell_name(p_ptr->class->spell_book, spell));
 
 	/* One less spell available */
 	p_ptr->new_spells--;
@@ -249,7 +249,7 @@ bool spell_cast(int spell, int dir)
 	else
 	{
 		/* Cast the spell */
-		if (!cast_spell(cp_ptr->spell_book, spell, dir)) return FALSE;
+		if (!cast_spell(p_ptr->class->spell_book, spell, dir)) return FALSE;
 
 		/* A spell was cast */
 		sound(MSG_SPELL);

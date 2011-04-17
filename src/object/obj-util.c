@@ -2825,10 +2825,10 @@ extern s16b inven_carry(struct player *p, struct object *o)
 			if (!j_ptr->kind) break;
 
 			/* Hack -- readable books always come first */
-			if ((o->tval == cp_ptr->spell_book) &&
-			    (j_ptr->tval != cp_ptr->spell_book)) break;
-			if ((j_ptr->tval == cp_ptr->spell_book) &&
-			    (o->tval != cp_ptr->spell_book)) continue;
+			if ((o->tval == p_ptr->class->spell_book) &&
+			    (j_ptr->tval != p_ptr->class->spell_book)) break;
+			if ((j_ptr->tval == p_ptr->class->spell_book) &&
+			    (o->tval != p_ptr->class->spell_book)) continue;
 
 			/* Objects sort by decreasing type */
 			if (o->tval > j_ptr->tval) break;
@@ -3224,10 +3224,10 @@ void reorder_pack(void)
 			if (!j_ptr->kind) break;
 
 			/* Hack -- readable books always come first */
-			if ((o_ptr->tval == cp_ptr->spell_book) &&
-			    (j_ptr->tval != cp_ptr->spell_book)) break;
-			if ((j_ptr->tval == cp_ptr->spell_book) &&
-			    (o_ptr->tval != cp_ptr->spell_book)) continue;
+			if ((o_ptr->tval == p_ptr->class->spell_book) &&
+			    (j_ptr->tval != p_ptr->class->spell_book)) break;
+			if ((j_ptr->tval == p_ptr->class->spell_book) &&
+			    (o_ptr->tval != p_ptr->class->spell_book)) continue;
 
 			/* Objects sort by decreasing type */
 			if (o_ptr->tval > j_ptr->tval) break;
@@ -4103,7 +4103,7 @@ bool obj_can_refill(const object_type *o_ptr)
 
 bool obj_can_browse(const object_type *o_ptr)
 {
-	return o_ptr->tval == cp_ptr->spell_book;
+	return o_ptr->tval == p_ptr->class->spell_book;
 }
 
 bool obj_can_cast_from(const object_type *o_ptr)

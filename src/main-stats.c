@@ -41,18 +41,16 @@ static void generate_player_for_stats()
 	p_ptr->race = races;  /* Human   */
 	p_ptr->class = classes; /* Warrior */
 
-	p_ptr->race = p_ptr->race;
-	cp_ptr = p_ptr->class;
-	mp_ptr = &cp_ptr->spells;
+	mp_ptr = &p_ptr->class->spells;
 
 	/* Level 1 */
 	p_ptr->max_lev = p_ptr->lev = 1;
 
 	/* Experience factor */
-	p_ptr->expfact = p_ptr->race->r_exp + cp_ptr->c_exp;
+	p_ptr->expfact = p_ptr->race->r_exp + p_ptr->class->c_exp;
 
 	/* Hitdice */
-	p_ptr->hitdie = p_ptr->race->r_mhp + cp_ptr->c_mhp;
+	p_ptr->hitdie = p_ptr->race->r_mhp + p_ptr->class->c_mhp;
 
 	/* Initial hitpoints -- high just to be safe */
 	p_ptr->mhp = p_ptr->chp = 2000;

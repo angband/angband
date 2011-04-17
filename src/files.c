@@ -349,7 +349,7 @@ void display_player_stat_info(void)
 		c_put_str(TERM_L_BLUE, buf, row+i, col+12);
 
 		/* Class Bonus */
-		strnfmt(buf, sizeof(buf), "%+3d", cp_ptr->c_adj[i]);
+		strnfmt(buf, sizeof(buf), "%+3d", p_ptr->class->c_adj[i]);
 		c_put_str(TERM_L_BLUE, buf, row+i, col+16);
 
 		/* Equipment Bonus */
@@ -584,7 +584,7 @@ static const char *show_title(void)
 	else if (p_ptr->total_winner || p_ptr->lev > PY_MAX_LEVEL)
 		return "***WINNER***";
 	else
-		return cp_ptr->title[(p_ptr->lev - 1) / 5];
+		return p_ptr->class->title[(p_ptr->lev - 1) / 5];
 }
 
 static const char *show_adv_exp(void)
@@ -737,7 +737,7 @@ static int get_panel(int oid, data_panel *panel, size_t size)
 	P_I(TERM_L_BLUE, "Name",	"%y",	s2u(op_ptr->full_name), END  );
 	P_I(TERM_L_BLUE, "Sex",		"%y",	s2u(p_ptr->sex->title), END  );
 	P_I(TERM_L_BLUE, "Race",	"%y",	s2u(p_ptr->race->name), END  );
-	P_I(TERM_L_BLUE, "Class",	"%y",	s2u(cp_ptr->name), END  );
+	P_I(TERM_L_BLUE, "Class",	"%y",	s2u(p_ptr->class->name), END  );
 	P_I(TERM_L_BLUE, "Title",	"%y",	s2u(show_title()), END  );
 	P_I(TERM_L_BLUE, "HP",	"%y/%y",	i2u(p_ptr->chp), i2u(p_ptr->mhp)  );
 	P_I(TERM_L_BLUE, "SP",	"%y/%y",	i2u(p_ptr->csp), i2u(p_ptr->msp)  );

@@ -255,7 +255,7 @@ static void get_stats(int stat_use[A_MAX])
 		p_ptr->stat_max[i] = j;
 
 		/* Obtain a "bonus" for "race" and "class" */
-		bonus = p_ptr->race->r_adj[i] + cp_ptr->c_adj[i];
+		bonus = p_ptr->race->r_adj[i] + p_ptr->class->c_adj[i];
 
 		/* Variable stat maxes */
 		if (OPT(birth_maximize))
@@ -554,7 +554,7 @@ void player_outfit(struct player *p)
 	object_type object_type_body;
 
 	/* Give the player starting equipment */
-	for (si = cp_ptr->start_items; si; si = si->next)
+	for (si = p_ptr->class->start_items; si; si = si->next)
 	{
 		/* Get local object */
 		struct object *i_ptr = &object_type_body;
@@ -610,7 +610,7 @@ static void recalculate_stats(int *stats, int points_left)
 		else
 		{
 			/* Obtain a "bonus" for "race" and "class" */
-			int bonus = p_ptr->race->r_adj[i] + cp_ptr->c_adj[i];
+			int bonus = p_ptr->race->r_adj[i] + p_ptr->class->c_adj[i];
 
 			/* Apply the racial/class bonuses */
 			p_ptr->stat_cur[i] = p_ptr->stat_max[i] = 
@@ -733,7 +733,7 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
 	bool pure = FALSE;
 
 	/* Determine whether the class is "pure" */
-	if (cp_ptr->spell_stat == 0 || cp_ptr-> max_attacks < 5)
+	if (p_ptr->class->spell_stat == 0 || p_ptr->class-> max_attacks < 5)
 	{
 		pure = TRUE;
 	}
@@ -797,23 +797,23 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
 			{
 				int points_trigger = *points_left / 2;
 
-				if (cp_ptr->spell_stat)
+				if (p_ptr->class->spell_stat)
 				{
-					while (!maxed[cp_ptr->spell_stat] &&
-						   (pure || stats[cp_ptr->spell_stat] < 16) &&
-						   points_spent[cp_ptr->spell_stat] < points_trigger)
+					while (!maxed[p_ptr->class->spell_stat] &&
+						   (pure || stats[p_ptr->class->spell_stat] < 16) &&
+						   points_spent[p_ptr->class->spell_stat] < points_trigger)
 					{						
-						if (!buy_stat(cp_ptr->spell_stat, stats, points_spent,
+						if (!buy_stat(p_ptr->class->spell_stat, stats, points_spent,
 									  points_left))
 						{
-							maxed[cp_ptr->spell_stat] = TRUE;
+							maxed[p_ptr->class->spell_stat] = TRUE;
 						}
 
-						if (points_spent[cp_ptr->spell_stat] > points_trigger)
+						if (points_spent[p_ptr->class->spell_stat] > points_trigger)
 						{
-							sell_stat(cp_ptr->spell_stat, stats, points_spent, 
+							sell_stat(p_ptr->class->spell_stat, stats, points_spent, 
 									  points_left);
-							maxed[cp_ptr->spell_stat] = TRUE;
+							maxed[p_ptr->class->spell_stat] = TRUE;
 						}
 					}
 				}
@@ -850,11 +850,11 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
 				{
 					next_stat = A_DEX;
 				}
-				else if (!maxed[A_INT] && cp_ptr->spell_stat != A_INT)
+				else if (!maxed[A_INT] && p_ptr->class->spell_stat != A_INT)
 				{
 					next_stat = A_INT;
 				}
-				else if (!maxed[A_WIS] && cp_ptr->spell_stat != A_WIS)
+				else if (!maxed[A_WIS] && p_ptr->class->spell_stat != A_WIS)
 				{
 					next_stat = A_WIS;
 				}
@@ -902,17 +902,16 @@ void player_generate(struct player *p, const player_sex *s,
 	p->class = c;
 	p->race = r;
 
-	cp_ptr = c;
-	mp_ptr = &cp_ptr->spells;
+	mp_ptr = &p_ptr->class->spells;
 
 	/* Level 1 */
 	p->max_lev = p->lev = 1;
 
 	/* Experience factor */
-	p->expfact = p_ptr->race->r_exp + cp_ptr->c_exp;
+	p->expfact = p_ptr->race->r_exp + p_ptr->class->c_exp;
 
 	/* Hitdice */
-	p->hitdie = p_ptr->race->r_mhp + cp_ptr->c_mhp;
+	p->hitdie = p_ptr->race->r_mhp + p_ptr->class->c_mhp;
 
 	/* Initial hitpoints */
 	p->mhp = p->hitdie;

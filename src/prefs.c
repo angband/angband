@@ -562,7 +562,7 @@ static const char *process_pref_file_expr(char **sp, char *fp)
 			else if (streq(b+1, "RACE"))
 				v = p_ptr->race->name;
 			else if (streq(b+1, "CLASS"))
-				v = cp_ptr->name;
+				v = p_ptr->class->name;
 			else if (streq(b+1, "PLAYER"))
 				v = op_ptr->base_name;
 		}
