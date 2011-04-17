@@ -948,8 +948,7 @@ int rd_player(void)
 
 	/* Player gender */
 	rd_byte(&p_ptr->psex);
-	sp_ptr = &sex_info[p_ptr->psex];
-	p_ptr->sex = sp_ptr;
+	p_ptr->sex = &sex_info[p_ptr->psex];
 
 	/* Numeric name suffix */
 	rd_byte(&op_ptr->name_suffix);

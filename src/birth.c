@@ -902,7 +902,6 @@ void player_generate(struct player *p, const player_sex *s,
 	p->class = c;
 	p->race = r;
 
-	sp_ptr = s;
 	cp_ptr = c;
 	mp_ptr = &cp_ptr->spells;
 	rp_ptr = r;

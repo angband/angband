@@ -735,7 +735,7 @@ static int get_panel(int oid, data_panel *panel, size_t size)
 	assert( size >= (u32b) boundaries[1].page_rows);
 	ret = boundaries[1].page_rows;
 	P_I(TERM_L_BLUE, "Name",	"%y",	s2u(op_ptr->full_name), END  );
-	P_I(TERM_L_BLUE, "Sex",		"%y",	s2u(sp_ptr->title), END  );
+	P_I(TERM_L_BLUE, "Sex",		"%y",	s2u(p_ptr->sex->title), END  );
 	P_I(TERM_L_BLUE, "Race",	"%y",	s2u(rp_ptr->name), END  );
 	P_I(TERM_L_BLUE, "Class",	"%y",	s2u(cp_ptr->name), END  );
 	P_I(TERM_L_BLUE, "Title",	"%y",	s2u(show_title()), END  );

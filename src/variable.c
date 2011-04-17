@@ -497,7 +497,6 @@ byte tval_to_attr[128];
 /*
  * Pointer to the player tables (sex, race, class, magic)
  */
-const player_sex *sp_ptr;
 const player_race *rp_ptr;
 const player_class *cp_ptr;
 const player_magic *mp_ptr;

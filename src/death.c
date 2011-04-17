@@ -173,7 +173,7 @@ static void display_winner(void)
 		file_close(fp);
 	}
 
-	put_str_centred(i, 0, wid, "All Hail the Mighty %s!", sp_ptr->winner);
+	put_str_centred(i, 0, wid, "All Hail the Mighty %s!", p_ptr->sex->winner);
 
 	flush();
 	pause_line(Term->hgt - 1);

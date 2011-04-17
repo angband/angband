@@ -111,7 +111,7 @@ static void c_player_race(char *rest) {
 }
 
 static void c_player_sex(char *rest) {
-	printf("player-sex: %s\n", sp_ptr->title);
+	printf("player-sex: %s\n", p_ptr->sex->title);
 }
 
 typedef struct {

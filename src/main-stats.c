@@ -41,7 +41,6 @@ static void generate_player_for_stats()
 	p_ptr->race = races;  /* Human   */
 	p_ptr->class = classes; /* Warrior */
 
-	sp_ptr = &sex_info[p_ptr->psex];
 	rp_ptr = p_ptr->race;
 	cp_ptr = p_ptr->class;
 	mp_ptr = &cp_ptr->spells;
