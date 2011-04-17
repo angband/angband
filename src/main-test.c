@@ -103,15 +103,15 @@ static void c_player_birth(char *rest) {
 }
 
 static void c_player_class(char *rest) {
-	printf("player-class: %s\n", cp_ptr->name);
+	printf("player-class: %s\n", p_ptr->class->name);
 }
 
 static void c_player_race(char *rest) {
-	printf("player-race: %s\n", rp_ptr->name);
+	printf("player-race: %s\n", p_ptr->race->name);
 }
 
 static void c_player_sex(char *rest) {
-	printf("player-sex: %s\n", sp_ptr->title);
+	printf("player-sex: %s\n", p_ptr->sex->title);
 }
 
 typedef struct {

@@ -820,10 +820,10 @@ static void calc_spells(void)
 
 	s16b old_spells;
 
-	const char *p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+	const char *p = ((p_ptr->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
 	/* Hack -- must be literate */
-	if (!cp_ptr->spell_book) return;
+	if (!p_ptr->class->spell_book) return;
 
 	/* Hack -- wait for creation */
 	if (!character_generated) return;
@@ -835,13 +835,13 @@ static void calc_spells(void)
 	old_spells = p_ptr->new_spells;
 
 	/* Determine the number of spells allowed */
-	levels = p_ptr->lev - cp_ptr->spell_first + 1;
+	levels = p_ptr->lev - p_ptr->class->spell_first + 1;
 
 	/* Hack -- no negative spells */
 	if (levels < 0) levels = 0;
 
 	/* Number of 1/100 spells per level */
-	percent_spells = adj_mag_study[p_ptr->state.stat_ind[cp_ptr->spell_stat]];
+	percent_spells = adj_mag_study[p_ptr->state.stat_ind[p_ptr->class->spell_stat]];
 
 	/* Extract total allowed spells (rounded up) */
 	num_allowed = (((percent_spells * levels) + 50) / 100);
@@ -872,7 +872,7 @@ static void calc_spells(void)
 		if (j >= 99) continue;
 
 		/* Get the spell */
-		s_ptr = &mp_ptr->info[j];
+		s_ptr = &p_ptr->class->spells.info[j];
 
 		/* Skip spells we are allowed to know */
 		if (s_ptr->slevel <= p_ptr->lev) continue;
@@ -888,7 +888,7 @@ static void calc_spells(void)
 
 			/* Message */
 			msg("You have forgotten the %s of %s.", p,
-			           get_spell_name(cp_ptr->spell_book, j));
+			           get_spell_name(p_ptr->class->spell_book, j));
 
 			/* One more can be learned */
 			p_ptr->new_spells++;
@@ -918,7 +918,7 @@ static void calc_spells(void)
 
 			/* Message */
 			msg("You have forgotten the %s of %s.", p,
-			           get_spell_name(cp_ptr->spell_book, j));
+			           get_spell_name(p_ptr->class->spell_book, j));
 
 			/* One more can be learned */
 			p_ptr->new_spells++;
@@ -938,7 +938,7 @@ static void calc_spells(void)
 		if (j >= 99) break;
 
 		/* Get the spell */
-		s_ptr = &mp_ptr->info[j];
+		s_ptr = &p_ptr->class->spells.info[j];
 
 		/* Skip spells we cannot remember */
 		if (s_ptr->slevel > p_ptr->lev) continue;
@@ -954,7 +954,7 @@ static void calc_spells(void)
 
 			/* Message */
 			msg("You have remembered the %s of %s.",
-			           p, get_spell_name(cp_ptr->spell_book, j));
+			           p, get_spell_name(p_ptr->class->spell_book, j));
 
 			/* One less can be learned */
 			p_ptr->new_spells--;
@@ -968,7 +968,7 @@ static void calc_spells(void)
 	for (j = 0; j < PY_MAX_SPELLS; j++)
 	{
 		/* Get the spell */
-		s_ptr = &mp_ptr->info[j];
+		s_ptr = &p_ptr->class->spells.info[j];
 
 		/* Skip spells we cannot remember or don't exist */
 		if (s_ptr->slevel > p_ptr->lev || s_ptr->slevel == 0) continue;
@@ -1020,7 +1020,7 @@ static void calc_mana(void)
 	bool old_cumber_armor = p_ptr->cumber_armor;
 
 	/* Hack -- Must be literate */
-	if (!cp_ptr->spell_book)
+	if (!p_ptr->class->spell_book)
 	{
 		p_ptr->msp = 0;
 		p_ptr->csp = 0;
@@ -1029,11 +1029,11 @@ static void calc_mana(void)
 	}
 
 	/* Extract "effective" player level */
-	levels = (p_ptr->lev - cp_ptr->spell_first) + 1;
+	levels = (p_ptr->lev - p_ptr->class->spell_first) + 1;
 	if (levels > 0)
 	{
 		msp = 1;
-		msp += adj_mag_mana[p_ptr->state.stat_ind[cp_ptr->spell_stat]] * levels / 100;
+		msp += adj_mag_mana[p_ptr->state.stat_ind[p_ptr->class->spell_stat]] * levels / 100;
 	}
 	else
 	{
@@ -1081,7 +1081,7 @@ static void calc_mana(void)
 	cur_wgt += p_ptr->inventory[INVEN_FEET].weight;
 
 	/* Determine the weight allowance */
-	max_wgt = cp_ptr->spell_weight;
+	max_wgt = p_ptr->class->spell_weight;
 
 	/* Heavy armor penalizes mana */
 	if (((cur_wgt - max_wgt) / 10) > 0)
@@ -1290,12 +1290,12 @@ int calc_blows(const object_type *o_ptr, player_state *state, int extra_blows)
 	int blow_energy;
 
 	/* Enforce a minimum "weight" (tenth pounds) */
-	div = ((o_ptr->weight < cp_ptr->min_weight) ? cp_ptr->min_weight :
+	div = ((o_ptr->weight < p_ptr->class->min_weight) ? p_ptr->class->min_weight :
 		o_ptr->weight);
 
 	/* Get the strength vs weight */
 	str_index = adj_str_blow[state->stat_ind[A_STR]] *
-			cp_ptr->att_multiply / div;
+			p_ptr->class->att_multiply / div;
 
 	/* Maximal value */
 	if (str_index > 11) str_index = 11;
@@ -1306,7 +1306,7 @@ int calc_blows(const object_type *o_ptr, player_state *state, int extra_blows)
 	/* Use the blows table to get energy per blow */
 	blow_energy = blows_table[str_index][dex_index];
 
-	blows = MIN((10000 / blow_energy), (100 * cp_ptr->max_attacks));
+	blows = MIN((10000 / blow_energy), (100 * p_ptr->class->max_attacks));
 
 	/* Require at least one blow */
 	return MAX(blows + (100 * extra_blows), 100);
@@ -1390,11 +1390,11 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	/*** Extract race/class info ***/
 
 	/* Base infravision (purely racial) */
-	state->see_infra = rp_ptr->infra;
+	state->see_infra = p_ptr->race->infra;
 
 	/* Base skills */
 	for (i = 0; i < SKILL_MAX; i++)
-		state->skills[i] = rp_ptr->r_skills[i] + cp_ptr->c_skills[i];
+		state->skills[i] = p_ptr->race->r_skills[i] + p_ptr->class->c_skills[i];
 
 
 	/*** Analyze player ***/
@@ -1528,7 +1528,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		if (OPT(birth_maximize))
 		{
 			/* Modify the stats for race/class */
-			add += (rp_ptr->r_adj[i] + cp_ptr->c_adj[i]);
+			add += (p_ptr->race->r_adj[i] + p_ptr->class->c_adj[i]);
 		}
 
 		/* Extract the new "stat_top" value for the stat */
@@ -1757,7 +1757,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 
 	/* Affect Skills (Level, by Class) */
 	for (i = 0; i < SKILL_MAX; i++)
-		state->skills[i] += (cp_ptr->x_skills[i] * p_ptr->lev / 10);
+		state->skills[i] += (p_ptr->class->x_skills[i] * p_ptr->lev / 10);
 
 	/* Limit Skill -- digging from 1 up */
 	if (state->skills[SKILL_DIGGING] < 1) state->skills[SKILL_DIGGING] = 1;
@@ -1971,7 +1971,7 @@ static void update_bonuses(void)
 			/* Change in INT may affect Mana/Spells */
 			else if (i == A_INT)
 			{
-				if (cp_ptr->spell_stat == A_INT)
+				if (p_ptr->class->spell_stat == A_INT)
 				{
 					p_ptr->update |= (PU_MANA | PU_SPELLS);
 				}
@@ -1980,7 +1980,7 @@ static void update_bonuses(void)
 			/* Change in WIS may affect Mana/Spells */
 			else if (i == A_WIS)
 			{
-				if (cp_ptr->spell_stat == A_WIS)
+				if (p_ptr->class->spell_stat == A_WIS)
 				{
 					p_ptr->update |= (PU_MANA | PU_SPELLS);
 				}

@@ -41,19 +41,14 @@ static void generate_player_for_stats()
 	p_ptr->race = races;  /* Human   */
 	p_ptr->class = classes; /* Warrior */
 
-	sp_ptr = &sex_info[p_ptr->psex];
-	rp_ptr = p_ptr->race;
-	cp_ptr = p_ptr->class;
-	mp_ptr = &cp_ptr->spells;
-
 	/* Level 1 */
 	p_ptr->max_lev = p_ptr->lev = 1;
 
 	/* Experience factor */
-	p_ptr->expfact = rp_ptr->r_exp + cp_ptr->c_exp;
+	p_ptr->expfact = p_ptr->race->r_exp + p_ptr->class->c_exp;
 
 	/* Hitdice */
-	p_ptr->hitdie = rp_ptr->r_mhp + cp_ptr->c_mhp;
+	p_ptr->hitdie = p_ptr->race->r_mhp + p_ptr->class->c_mhp;
 
 	/* Initial hitpoints -- high just to be safe */
 	p_ptr->mhp = p_ptr->chp = 2000;
@@ -104,9 +99,9 @@ static void kill_all_monsters(int level)
 	char m_name[80];
 	bool fear;
 
-	for (i = mon_max - 1; i >= 1; i--)
+	for (i = cave_monster_max(cave) - 1; i >= 1; i--)
 	{
-		const monster_type *m_ptr = &mon_list[i];
+		const monster_type *m_ptr = cave_monster(cave, i);
 		char *offscreen_ptr;
 
 		monster_desc(m_name, sizeof(m_name), m_ptr, 0x88);

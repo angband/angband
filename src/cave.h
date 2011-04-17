@@ -55,6 +55,10 @@ struct cave {
 	byte (*when)[DUNGEON_WID];
 	s16b (*m_idx)[DUNGEON_WID];
 	s16b (*o_idx)[DUNGEON_WID];
+
+	struct monster *monsters;
+	int mon_max;
+	int mon_cnt;
 };
 
 /* XXX: temporary while I refactor */
@@ -103,5 +107,9 @@ extern void cave_generate(struct cave *c, struct player *p);
 
 extern bool cave_in_bounds(struct cave *c, int y, int x);
 extern bool cave_in_bounds_fully(struct cave *c, int y, int x);
+
+extern struct monster *cave_monster(struct cave *c, int idx);
+extern int cave_monster_max(struct cave *c);
+extern int cave_monster_count(struct cave *c);
 
 #endif /* !CAVE_H */

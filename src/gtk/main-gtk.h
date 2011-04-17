@@ -432,6 +432,4 @@ static void force_redraw();
 
 /* From xtra3.h */
 extern byte monster_health_attr();
-extern byte player_sp_attr();
-extern byte player_hp_attr();
 #endif /* INCLUDED_MAIN_GTK_H */ 

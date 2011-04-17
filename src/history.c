@@ -334,8 +334,8 @@ static void print_history_header(void)
 	/* Print the header (character name and title) */
 	strnfmt(buf, sizeof(buf), "%s the %s %s",
 	        op_ptr->full_name,
-	        rp_ptr->name,
-	        cp_ptr->name);
+	        p_ptr->race->name,
+	        p_ptr->class->name);
 
 	c_put_str(TERM_WHITE, buf, 0, 0);
 	c_put_str(TERM_WHITE, "============================================================", 1, 0);

@@ -193,10 +193,10 @@ static void regen_monsters(void)
 	int i, frac;
 
 	/* Regenerate everyone */
-	for (i = 1; i < mon_max; i++)
+	for (i = 1; i < cave_monster_max(cave); i++)
 	{
 		/* Check the i'th monster */
-		monster_type *m_ptr = &mon_list[i];
+		monster_type *m_ptr = cave_monster(cave, i);
 		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 		/* Skip dead monsters */
@@ -760,11 +760,7 @@ static void process_world(struct cave *c)
 	if (p_ptr->state.flags[OF_DRAIN_EXP])
 	{
 		if ((p_ptr->exp > 0) && one_in_(10))
-		{
-			p_ptr->exp--;
-			p_ptr->max_exp--;
-			check_experience();
-		}
+			player_exp_lose(p_ptr, 1, FALSE);
 
 		wieldeds_notice_flag(OF_DRAIN_EXP);
 	}
@@ -1106,121 +1102,40 @@ static void process_player(void)
 				p_ptr->redraw |= (PR_MAP);
 			}
 
-			/* Shimmer monsters if needed */
-			if (shimmer_monsters)
+			/* Shimmer multi-hued monsters */
+			for (i = 1; i < cave_monster_max(cave); i++)
 			{
-				/* Clear the flag */
-				shimmer_monsters = FALSE;
-
-				/* Shimmer multi-hued monsters */
-				for (i = 1; i < mon_max; i++)
-				{
-					monster_type *m_ptr;
-					monster_race *r_ptr;
-
-					/* Get the monster */
-					m_ptr = &mon_list[i];
-
-					/* Skip dead monsters */
-					if (!m_ptr->r_idx) continue;
-
-					/* Get the monster race */
-					r_ptr = &r_info[m_ptr->r_idx];
-
-					/* Skip non-multi-hued monsters */
-					if (!rf_has(r_ptr->flags, RF_ATTR_MULTI)) continue;
-
-					/* Reset the flag */
-					shimmer_monsters = TRUE;
-
-					/* Redraw regardless */
-					cave_light_spot(cave, m_ptr->fy, m_ptr->fx);
-				}
+				struct monster_race *race;
+				struct monster *mon = cave_monster(cave, i);
+				if (!mon->r_idx)
+					continue;
+				race = &r_info[mon->r_idx];
+				if (!rf_has(race->flags, RF_ATTR_MULTI))
+					continue;
+				cave_light_spot(cave, mon->fy, mon->fx);
 			}
 
-			/* Repair "nice" flags */
-			if (repair_mflag_nice)
+			/* Clear NICE flag, and show marked monsters */
+			for (i = 1; i < cave_monster_max(cave); i++)
 			{
-				/* Clear flag */
-				repair_mflag_nice = FALSE;
-
-				/* Process monsters */
-				for (i = 1; i < mon_max; i++)
-				{
-					monster_type *m_ptr;
-
-					/* Get the monster */
-					m_ptr = &mon_list[i];
-
-					/* Skip dead monsters */
-					/* if (!m_ptr->r_idx) continue; */
-
-					/* Clear "nice" flag */
-					m_ptr->mflag &= ~(MFLAG_NICE);
-				}
-			}
-
-			/* Repair "mark" flags */
-			if (repair_mflag_mark)
-			{
-				/* Reset the flag */
-				repair_mflag_mark = FALSE;
-
-				/* Process the monsters */
-				for (i = 1; i < mon_max; i++)
-				{
-					monster_type *m_ptr;
-
-					/* Get the monster */
-					m_ptr = &mon_list[i];
-
-					/* Skip dead monsters */
-					/* if (!m_ptr->r_idx) continue; */
-
-					/* Repair "mark" flag */
-					if (m_ptr->mflag & (MFLAG_MARK))
-					{
-						/* Skip "show" monsters */
-						if (m_ptr->mflag & (MFLAG_SHOW))
-						{
-							/* Repair "mark" flag */
-							repair_mflag_mark = TRUE;
-
-							/* Skip */
-							continue;
-						}
-
-						/* Forget flag */
-						m_ptr->mflag &= ~(MFLAG_MARK);
-
-						/* Update the monster */
+				struct monster *mon = cave_monster(cave, i);
+				mon->mflag &= ~MFLAG_NICE;
+				if (mon->mflag & MFLAG_MARK) {
+					if (!(mon->mflag & MFLAG_SHOW)) {
+						mon->mflag &= ~MFLAG_MARK;
 						update_mon(i, FALSE);
 					}
 				}
 			}
 		}
 
-		/* Repair "show" flags */
-		if (repair_mflag_show)
+		/* Clear SHOW flag */
+		for (i = 1; i < cave_monster_max(cave); i++)
 		{
-			/* Reset the flag */
-			repair_mflag_show = FALSE;
-
-			/* Process the monsters */
-			for (i = 1; i < mon_max; i++)
-			{
-				monster_type *m_ptr;
-
-				/* Get the monster */
-				m_ptr = &mon_list[i];
-
-				/* Skip dead monsters */
-				/* if (!m_ptr->r_idx) continue; */
-
-				/* Clear "show" flag */
-				m_ptr->mflag &= ~(MFLAG_SHOW);
-			}
+			struct monster *mon = cave_monster(cave, i);
+			mon->mflag &= ~MFLAG_SHOW;
 		}
+
 		/* HACK: This will redraw the itemlist too frequently, but I'm don't
 		   know all the individual places it should go. */
 		p_ptr->redraw |= PR_ITEMLIST;
@@ -1282,10 +1197,10 @@ void do_animation(void)
 {
 	int i;
 
-	for (i = 1; i < mon_max; i++)
+	for (i = 1; i < cave_monster_max(cave); i++)
 	{
 		byte attr;
-		monster_type *m_ptr = &mon_list[i];
+		monster_type *m_ptr = cave_monster(cave, i);
 		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 		if (!m_ptr || !m_ptr->ml)
@@ -1354,17 +1269,6 @@ static void dungeon(struct cave *c)
 
 	/* Cancel the health bar */
 	health_track(p_ptr, 0);
-
-
-	/* Reset shimmer flags */
-	shimmer_monsters = TRUE;
-	shimmer_objects = TRUE;
-
-	/* Reset repair flags */
-	repair_mflag_nice = TRUE;
-	repair_mflag_show = TRUE;
-	repair_mflag_mark = TRUE;
-
 
 	/* Disturb */
 	disturb(1, 0);
@@ -1487,11 +1391,10 @@ static void dungeon(struct cave *c)
 	while (TRUE)
 	{
 		/* Hack -- Compact the monster list occasionally */
-		if (mon_cnt + 32 > z_info->m_max) compact_monsters(64);
+		if (cave_monster_count(cave) + 32 > z_info->m_max) compact_monsters(64);
 
 		/* Hack -- Compress the monster list occasionally */
-		if (mon_cnt + 32 < mon_max) compact_monsters(0);
-
+		if (cave_monster_count(cave) + 32 < cave_monster_max(cave)) compact_monsters(0);
 
 		/* Hack -- Compact the object list occasionally */
 		if (o_cnt + 32 > z_info->o_max) compact_objects(64);
@@ -1579,10 +1482,10 @@ static void dungeon(struct cave *c)
 		p_ptr->energy += extract_energy[p_ptr->state.speed];
 
 		/* Give energy to all monsters */
-		for (i = mon_max - 1; i >= 1; i--)
+		for (i = cave_monster_max(cave) - 1; i >= 1; i--)
 		{
 			/* Access the monster */
-			m_ptr = &mon_list[i];
+			m_ptr = cave_monster(cave, i);
 
 			/* Ignore "dead" monsters */
 			if (!m_ptr->r_idx) continue;

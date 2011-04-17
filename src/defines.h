@@ -714,7 +714,7 @@ enum
 #define pf_inter(f1, f2)       flag_inter(f1, f2, PF_SIZE)
 #define pf_diff(f1, f2)        flag_diff(f1, f2, PF_SIZE)
 
-#define player_has(flag)       (pf_has(rp_ptr->pflags, (flag)) || pf_has(cp_ptr->pflags, (flag)))
+#define player_has(flag)       (pf_has(p_ptr->race->pflags, (flag)) || pf_has(p_ptr->class->pflags, (flag)))
 
 
 /*** Terrain flags ***/

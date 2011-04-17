@@ -159,7 +159,7 @@ static void prt_title(int row, int col)
 	/* Normal */
 	else
 	{
-		p = cp_ptr->title[(p_ptr->lev - 1) / 5];
+		p = p_ptr->class->title[(p_ptr->lev - 1) / 5];
 	}
 
 	prt_field(p, row, col);
@@ -280,29 +280,12 @@ static void prt_ac(int row, int col)
 }
 
 /*
- * Calculate the hp color separately, for ports.
- */
-byte player_hp_attr(void)
-{
-	byte attr;
-	
-	if (p_ptr->chp >= p_ptr->mhp)
-		attr = TERM_L_GREEN;
-	else if (p_ptr->chp > (p_ptr->mhp * op_ptr->hitpoint_warn) / 10)
-		attr = TERM_YELLOW;
-	else
-		attr = TERM_RED;
-	
-	return attr;
-}
-
-/*
  * Prints Cur hit points
  */
 static void prt_hp(int row, int col)
 {
 	char cur_hp[32], max_hp[32];
-	byte color = player_hp_attr();
+	byte color = player_hp_attr(p_ptr);
 
 	put_str("HP ", row, col);
 
@@ -315,29 +298,12 @@ static void prt_hp(int row, int col)
 }
 
 /*
- * Calculate the sp color separately, for ports.
- */
-byte player_sp_attr(void)
-{
-	byte attr;
-	
-	if (p_ptr->csp >= p_ptr->msp)
-		attr = TERM_L_GREEN;
-	else if (p_ptr->csp > (p_ptr->msp * op_ptr->hitpoint_warn) / 10)
-		attr = TERM_YELLOW;
-	else
-		attr = TERM_RED;
-	
-	return attr;
-}
-
-/*
  * Prints players max/cur spell points
  */
 static void prt_sp(int row, int col)
 {
 	char cur_sp[32], max_sp[32];
-	byte color = player_sp_attr();
+	byte color = player_sp_attr(p_ptr);
 
 	/* Do not show mana unless we have some */
 	if (!p_ptr->msp) return;
@@ -363,11 +329,11 @@ byte monster_health_attr(void)
 	/* Not tracking */
 	if (!p_ptr->health_who)
 		attr = TERM_DARK;
-	
+
 	/* Tracking an unseen, hallucinatory, or dead monster */
-	else if ((!mon_list[p_ptr->health_who].ml) ||
+	else if ((!cave_monster(cave, p_ptr->health_who)->ml) ||
 			(p_ptr->timed[TMD_IMAGE]) ||
-			(mon_list[p_ptr->health_who].hp < 0))
+			(cave_monster(cave, p_ptr->health_who)->hp < 0))
 	{
 		/* The monster health is "unknown" */
 		attr = TERM_WHITE;
@@ -375,15 +341,14 @@ byte monster_health_attr(void)
 	
 	else
 	{
+		struct monster *mon = cave_monster(cave, p_ptr->health_who);
 		int pct;
-
-		monster_type *m_ptr = &mon_list[p_ptr->health_who];
 
 		/* Default to almost dead */
 		attr = TERM_RED;
 
 		/* Extract the "percent" of health */
-		pct = 100L * m_ptr->hp / m_ptr->maxhp;
+		pct = 100L * mon->hp / mon->maxhp;
 
 		/* Badly wounded */
 		if (pct >= 10) attr = TERM_L_RED;
@@ -398,16 +363,16 @@ byte monster_health_attr(void)
 		if (pct >= 100) attr = TERM_L_GREEN;
 
 		/* Afraid */
-		if (m_ptr->m_timed[MON_TMD_FEAR]) attr = TERM_VIOLET;
+		if (mon->m_timed[MON_TMD_FEAR]) attr = TERM_VIOLET;
 
 		/* Confused */
-		if (m_ptr->m_timed[MON_TMD_CONF]) attr = TERM_UMBER;
+		if (mon->m_timed[MON_TMD_CONF]) attr = TERM_UMBER;
 
 		/* Stunned */
-		if (m_ptr->m_timed[MON_TMD_STUN]) attr = TERM_L_BLUE;
+		if (mon->m_timed[MON_TMD_STUN]) attr = TERM_L_BLUE;
 
 		/* Asleep */
-		if (m_ptr->m_timed[MON_TMD_SLEEP]) attr = TERM_BLUE;
+		if (mon->m_timed[MON_TMD_SLEEP]) attr = TERM_BLUE;
 	}
 	
 	return attr;
@@ -426,18 +391,22 @@ byte monster_health_attr(void)
 static void prt_health(int row, int col)
 {
 	byte attr = monster_health_attr();
+	struct monster *mon;
 	
 	/* Not tracking */
 	if (!p_ptr->health_who)
 	{
 		/* Erase the health bar */
 		Term_erase(col, row, 12);
+		return;
 	}
 
+	mon = cave_monster(cave, p_ptr->health_who);
+
 	/* Tracking an unseen, hallucinatory, or dead monster */
-	else if ((!mon_list[p_ptr->health_who].ml) || /* Unseen */
+	if ((!mon->ml) || /* Unseen */
 			(p_ptr->timed[TMD_IMAGE]) || /* Hallucination */
-			(mon_list[p_ptr->health_who].hp < 0)) /* Dead (?) */
+			(mon->hp < 0)) /* Dead (?) */
 	{
 		/* The monster health is "unknown" */
 		Term_putstr(col, row, 12, attr, "[----------]");
@@ -448,7 +417,7 @@ static void prt_health(int row, int col)
 	{
 		int pct, len;
 
-		monster_type *m_ptr = &mon_list[p_ptr->health_who];
+		monster_type *m_ptr = cave_monster(cave, p_ptr->health_who);
 
 		/* Extract the "percent" of health */
 		pct = 100L * m_ptr->hp / m_ptr->maxhp;
@@ -532,8 +501,8 @@ static void prt_wis(int row, int col) { prt_stat(A_WIS, row, col); }
 static void prt_int(int row, int col) { prt_stat(A_INT, row, col); }
 static void prt_con(int row, int col) { prt_stat(A_CON, row, col); }
 static void prt_chr(int row, int col) { prt_stat(A_CHR, row, col); }
-static void prt_race(int row, int col) { prt_field(rp_ptr->name, row, col); }
-static void prt_class(int row, int col) { prt_field(cp_ptr->name, row, col); }
+static void prt_race(int row, int col) { prt_field(p_ptr->race->name, row, col); }
+static void prt_class(int row, int col) { prt_field(p_ptr->class->name, row, col); }
 
 
 /*
@@ -1392,8 +1361,8 @@ static void update_player_compact_subwindow(game_event_type type, game_event_dat
 	Term_activate(inv_term);
 
 	/* Race and Class */
-	prt_field(rp_ptr->name, row++, col);
-	prt_field(cp_ptr->name, row++, col);
+	prt_field(p_ptr->race->name, row++, col);
+	prt_field(p_ptr->class->name, row++, col);
 
 	/* Title */
 	prt_title(row++, col);

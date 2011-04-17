@@ -258,29 +258,10 @@ static void do_cmd_wiz_change_aux(void)
 	/* Verify */
 	if (tmp_long < 0) tmp_long = 0L;
 
-	/* Save */
-	p_ptr->exp = tmp_long;
-
-	/* Update */
-	check_experience();
-
-	/* Default */
-	strnfmt(tmp_val, sizeof(tmp_val), "%ld", (long)(p_ptr->max_exp));
-
-	/* Query */
-	if (!get_string("Max Exp: ", tmp_val, 10)) return;
-
-	/* Extract */
-	tmp_long = atol(tmp_val);
-
-	/* Verify */
-	if (tmp_long < 0) tmp_long = 0L;
-
-	/* Save */
-	p_ptr->max_exp = tmp_long;
-
-	/* Update */
-	check_experience();
+	if (tmp_long > p_ptr->exp)
+		player_exp_gain(p_ptr, tmp_long - p_ptr->exp);
+	else
+		player_exp_lose(p_ptr, p_ptr->exp - tmp_long, FALSE);
 }
 
 
@@ -1398,9 +1379,9 @@ static void do_cmd_wiz_zap(int d)
 	int i;
 
 	/* Banish everyone nearby */
-	for (i = 1; i < mon_max; i++)
+	for (i = 1; i < cave_monster_max(cave); i++)
 	{
-		monster_type *m_ptr = &mon_list[i];
+		monster_type *m_ptr = cave_monster(cave, i);
 
 		/* Skip dead monsters */
 		if (!m_ptr->r_idx) continue;
@@ -1425,18 +1406,15 @@ static void do_cmd_wiz_unhide(int d)
 	int i;
 
 	/* Process monsters */
-	for (i = 1; i < mon_max; i++)
+	for (i = 1; i < cave_monster_max(cave); i++)
 	{
-		monster_type *m_ptr = &mon_list[i];
+		monster_type *m_ptr = cave_monster(cave, i);
 
 		/* Skip dead monsters */
 		if (!m_ptr->r_idx) continue;
 
 		/* Skip distant monsters */
 		if (m_ptr->cdis > d) continue;
-
-		/* Optimize -- Repair flags */
-		repair_mflag_mark = repair_mflag_show = TRUE;
 
 		/* Detect the monster */
 		m_ptr->mflag |= (MFLAG_MARK | MFLAG_SHOW);
@@ -1587,8 +1565,7 @@ static void do_cmd_wiz_advance(void)
 	p_ptr->au = 1000000L;
 
 	/* Level 50 */
-	p_ptr->exp = p_ptr->max_exp = player_exp[49] * p_ptr->expfact / 100L;
-	check_experience_aux(FALSE);
+	player_exp_gain(p_ptr, PY_MAX_EXP);
 
 	/* Heal the player */
 	p_ptr->chp = p_ptr->mhp;
@@ -2075,11 +2052,11 @@ void do_cmd_debug(void)
 		{
 			if (p_ptr->command_arg)
 			{
-				gain_exp(p_ptr->command_arg);
+				player_exp_gain(p_ptr, p_ptr->command_arg);
 			}
 			else
 			{
-				gain_exp(p_ptr->exp + 1);
+				player_exp_gain(p_ptr, p_ptr->exp + 1);
 			}
 			break;
 		}

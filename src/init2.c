@@ -2832,10 +2832,6 @@ static errr init_other(void)
 	/* Objects */
 	objects_init();
 
-	/* Monsters */
-	mon_list = C_ZNEW(z_info->m_max, monster_type);
-
-
 	/*** Prepare lore array ***/
 
 	/* Lore */
@@ -3293,7 +3289,6 @@ void cleanup_angband(void)
 
 	/* Free the lore, monster, and object lists */
 	FREE(l_list);
-	FREE(mon_list);
 	objects_destroy();
 
 	/* Free the "update_view()" array */

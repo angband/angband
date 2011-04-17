@@ -172,7 +172,7 @@ static void do_side_effects(int spell, int dam, int m_idx)
 {
 	const struct spell_effect *re_ptr;
 	const struct mon_spell *rs_ptr = &mon_spell_table[spell];
-	monster_type *m_ptr = &mon_list[m_idx];
+	monster_type *m_ptr = cave_monster(cave, m_idx);
 	int i, choice[99], dur = 0, j = 0;
 	bool sustain = FALSE, perma = FALSE, chosen[RSE_MAX] = { 0 };
 	s32b d = 0;
@@ -270,7 +270,7 @@ static void do_side_effects(int spell, int dam, int m_idx)
 							re_ptr->base.sides / 100) * MON_DRAIN_LIFE;						
 
 						msg("You feel your life force draining away!");
-						lose_exp(d);
+						player_exp_lose(p_ptr, d, FALSE);
 						break;
 
 					case S_DRAIN_STAT: /* m_bonus is used as a flag */
@@ -348,7 +348,7 @@ void do_mon_spell(int spell, int m_idx, bool seen)
 {
 	const struct mon_spell *rs_ptr = &mon_spell_table[spell];
 
-	monster_type *m_ptr = &mon_list[m_idx];
+	monster_type *m_ptr = cave_monster(cave, m_idx);
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	char m_name[80], ddesc[80];

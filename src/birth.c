@@ -255,7 +255,7 @@ static void get_stats(int stat_use[A_MAX])
 		p_ptr->stat_max[i] = j;
 
 		/* Obtain a "bonus" for "race" and "class" */
-		bonus = rp_ptr->r_adj[i] + cp_ptr->c_adj[i];
+		bonus = p_ptr->race->r_adj[i] + p_ptr->class->c_adj[i];
 
 		/* Variable stat maxes */
 		if (OPT(birth_maximize))
@@ -369,23 +369,23 @@ char *get_history(struct history_chart *chart, s16b *sc)
 /*
  * Computes character's age, height, and weight
  */
-static void get_ahw(void)
+static void get_ahw(struct player *p)
 {
 	/* Calculate the age */
-	p_ptr->age = rp_ptr->b_age + randint1(rp_ptr->m_age);
+	p->age = p->race->b_age + randint1(p->race->m_age);
 
 	/* Calculate the height/weight for males */
-	if (p_ptr->psex == SEX_MALE)
+	if (p->psex == SEX_MALE)
 	{
-		p_ptr->ht = p_ptr->ht_birth = Rand_normal(rp_ptr->m_b_ht, rp_ptr->m_m_ht);
-		p_ptr->wt = p_ptr->wt_birth = Rand_normal(rp_ptr->m_b_wt, rp_ptr->m_m_wt);
+		p->ht = p->ht_birth = Rand_normal(p->race->m_b_ht, p->race->m_m_ht);
+		p->wt = p->wt_birth = Rand_normal(p->race->m_b_wt, p->race->m_m_wt);
 	}
 
 	/* Calculate the height/weight for females */
-	else if (p_ptr->psex == SEX_FEMALE)
+	else if (p->psex == SEX_FEMALE)
 	{
-		p_ptr->ht = p_ptr->ht_birth = Rand_normal(rp_ptr->f_b_ht, rp_ptr->f_m_ht);
-		p_ptr->wt = p_ptr->wt_birth = Rand_normal(rp_ptr->f_b_wt, rp_ptr->f_m_wt);
+		p->ht = p->ht_birth = Rand_normal(p->race->f_b_ht, p->race->f_m_ht);
+		p->wt = p->wt_birth = Rand_normal(p->race->f_b_wt, p->race->f_m_wt);
 	}
 }
 
@@ -554,7 +554,7 @@ void player_outfit(struct player *p)
 	object_type object_type_body;
 
 	/* Give the player starting equipment */
-	for (si = cp_ptr->start_items; si; si = si->next)
+	for (si = p_ptr->class->start_items; si; si = si->next)
 	{
 		/* Get local object */
 		struct object *i_ptr = &object_type_body;
@@ -610,7 +610,7 @@ static void recalculate_stats(int *stats, int points_left)
 		else
 		{
 			/* Obtain a "bonus" for "race" and "class" */
-			int bonus = rp_ptr->r_adj[i] + cp_ptr->c_adj[i];
+			int bonus = p_ptr->race->r_adj[i] + p_ptr->class->c_adj[i];
 
 			/* Apply the racial/class bonuses */
 			p_ptr->stat_cur[i] = p_ptr->stat_max[i] = 
@@ -733,7 +733,7 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
 	bool pure = FALSE;
 
 	/* Determine whether the class is "pure" */
-	if (cp_ptr->spell_stat == 0 || cp_ptr-> max_attacks < 5)
+	if (p_ptr->class->spell_stat == 0 || p_ptr->class-> max_attacks < 5)
 	{
 		pure = TRUE;
 	}
@@ -797,23 +797,23 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
 			{
 				int points_trigger = *points_left / 2;
 
-				if (cp_ptr->spell_stat)
+				if (p_ptr->class->spell_stat)
 				{
-					while (!maxed[cp_ptr->spell_stat] &&
-						   (pure || stats[cp_ptr->spell_stat] < 16) &&
-						   points_spent[cp_ptr->spell_stat] < points_trigger)
+					while (!maxed[p_ptr->class->spell_stat] &&
+						   (pure || stats[p_ptr->class->spell_stat] < 16) &&
+						   points_spent[p_ptr->class->spell_stat] < points_trigger)
 					{						
-						if (!buy_stat(cp_ptr->spell_stat, stats, points_spent,
+						if (!buy_stat(p_ptr->class->spell_stat, stats, points_spent,
 									  points_left))
 						{
-							maxed[cp_ptr->spell_stat] = TRUE;
+							maxed[p_ptr->class->spell_stat] = TRUE;
 						}
 
-						if (points_spent[cp_ptr->spell_stat] > points_trigger)
+						if (points_spent[p_ptr->class->spell_stat] > points_trigger)
 						{
-							sell_stat(cp_ptr->spell_stat, stats, points_spent, 
+							sell_stat(p_ptr->class->spell_stat, stats, points_spent, 
 									  points_left);
-							maxed[cp_ptr->spell_stat] = TRUE;
+							maxed[p_ptr->class->spell_stat] = TRUE;
 						}
 					}
 				}
@@ -850,11 +850,11 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
 				{
 					next_stat = A_DEX;
 				}
-				else if (!maxed[A_INT] && cp_ptr->spell_stat != A_INT)
+				else if (!maxed[A_INT] && p_ptr->class->spell_stat != A_INT)
 				{
 					next_stat = A_INT;
 				}
-				else if (!maxed[A_WIS] && cp_ptr->spell_stat != A_WIS)
+				else if (!maxed[A_WIS] && p_ptr->class->spell_stat != A_WIS)
 				{
 					next_stat = A_WIS;
 				}
@@ -902,19 +902,14 @@ void player_generate(struct player *p, const player_sex *s,
 	p->class = c;
 	p->race = r;
 
-	sp_ptr = s;
-	cp_ptr = c;
-	mp_ptr = &cp_ptr->spells;
-	rp_ptr = r;
-
 	/* Level 1 */
 	p->max_lev = p->lev = 1;
 
 	/* Experience factor */
-	p->expfact = rp_ptr->r_exp + cp_ptr->c_exp;
+	p->expfact = p->race->r_exp + p->class->c_exp;
 
 	/* Hitdice */
-	p->hitdie = rp_ptr->r_mhp + cp_ptr->c_mhp;
+	p->hitdie = p->race->r_mhp + p->class->c_mhp;
 
 	/* Initial hitpoints */
 	p->mhp = p->hitdie;
@@ -923,7 +918,7 @@ void player_generate(struct player *p, const player_sex *s,
 	p->player_hp[0] = p->hitdie;
 
 	/* Roll for age/height/weight */
-	get_ahw();
+	get_ahw(p);
 
 	p->history = get_history(p->race->history, &p->sc);
 	p->sc_birth = p->sc;
@@ -1093,7 +1088,7 @@ void player_birth(bool quickstart_allowed)
 			get_bonuses();
 
 			/* There's no real need to do this here, but it's tradition. */
-			get_ahw();
+			get_ahw(p_ptr);
 			p_ptr->history = get_history(p_ptr->race->history, &p_ptr->sc);
 			p_ptr->sc_birth = p_ptr->sc;
 

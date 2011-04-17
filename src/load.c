@@ -933,7 +933,6 @@ int rd_player(void)
 		note(format("Invalid player race (%d).", num));
 		return -1;
 	}
-	rp_ptr = p_ptr->race;
 
 	/* Player class */
 	rd_byte(&num);
@@ -943,13 +942,10 @@ int rd_player(void)
 		note(format("Invalid player class (%d).", num));
 		return -1;
 	}
-	cp_ptr = p_ptr->class;
-	mp_ptr = &p_ptr->class->spells;
 
 	/* Player gender */
 	rd_byte(&p_ptr->psex);
-	sp_ptr = &sex_info[p_ptr->psex];
-	p_ptr->sex = sp_ptr;
+	p_ptr->sex = &sex_info[p_ptr->psex];
 
 	/* Numeric name suffix */
 	rd_byte(&op_ptr->name_suffix);
@@ -2181,7 +2177,7 @@ int rd_monsters_1(void)
 		}
 
 		/* Get the monster */
-		m_ptr = &mon_list[o_ptr->held_m_idx];
+		m_ptr = cave_monster(cave, o_ptr->held_m_idx);
 
 		/* Link the object to the pile */
 		o_ptr->next_o_idx = m_ptr->hold_o_idx;
@@ -2267,7 +2263,7 @@ int rd_monsters_2(void)
 		}
 
 		/* Get the monster */
-		m_ptr = &mon_list[o_ptr->held_m_idx];
+		m_ptr = cave_monster(cave, o_ptr->held_m_idx);
 
 		/* Link the object to the pile */
 		o_ptr->next_o_idx = m_ptr->hold_o_idx;
@@ -2360,7 +2356,7 @@ int rd_monsters_3(void)
 		}
 
 		/* Get the monster */
-		m_ptr = &mon_list[o_ptr->held_m_idx];
+		m_ptr = cave_monster(cave, o_ptr->held_m_idx);
 
 		/* Link the object to the pile */
 		o_ptr->next_o_idx = m_ptr->hold_o_idx;
@@ -2455,7 +2451,7 @@ int rd_monsters_4(void)
 		}
 
 		/* Get the monster */
-		m_ptr = &mon_list[o_ptr->held_m_idx];
+		m_ptr = cave_monster(cave, o_ptr->held_m_idx);
 
 		/* Link the object to the pile */
 		o_ptr->next_o_idx = m_ptr->hold_o_idx;

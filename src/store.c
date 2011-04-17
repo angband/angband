@@ -344,7 +344,7 @@ static void prt_welcome(const owner_type *ot_ptr)
 		i = MIN(i, N_ELEMENTS(comment_welcome) - 1);
 
 		/* Get a title for the character */
-		if ((i % 2) && randint0(2)) player_name = cp_ptr->title[(p_ptr->lev - 1) / 5];
+		if ((i % 2) && randint0(2)) player_name = p_ptr->class->title[(p_ptr->lev - 1) / 5];
 		else if (randint0(2))       player_name = op_ptr->full_name;
 		else                        player_name = (p_ptr->psex == SEX_MALE ? "sir" : "lady");
 
@@ -904,10 +904,10 @@ static int home_carry(object_type *o_ptr)
 		j_ptr = &st_ptr->stock[slot];
 
 		/* Hack -- readable books always come first */
-		if ((o_ptr->tval == cp_ptr->spell_book) &&
-		    (j_ptr->tval != cp_ptr->spell_book)) break;
-		if ((j_ptr->tval == cp_ptr->spell_book) &&
-		    (o_ptr->tval != cp_ptr->spell_book)) continue;
+		if ((o_ptr->tval == p_ptr->class->spell_book) &&
+		    (j_ptr->tval != p_ptr->class->spell_book)) break;
+		if ((j_ptr->tval == p_ptr->class->spell_book) &&
+		    (o_ptr->tval != p_ptr->class->spell_book)) continue;
 
 		/* Objects sort by decreasing type */
 		if (o_ptr->tval > j_ptr->tval) break;
@@ -2841,7 +2841,7 @@ static void store_examine(int item)
 	textblock_free(tb);
 
 	/* Hack -- Browse book, then prompt for a command */
-	if (o_ptr->tval == cp_ptr->spell_book)
+	if (o_ptr->tval == p_ptr->class->spell_book)
 		textui_book_browse(o_ptr);
 }
 

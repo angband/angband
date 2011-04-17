@@ -18,6 +18,7 @@
  
 #include "angband.h"
 #include "buildid.h"
+#include "player/player.h"
 
 #ifdef USE_GTK
 #include "main-gtk.h"
@@ -2405,9 +2406,9 @@ static void handle_mons_list(game_event_type type, game_event_data *data, void *
 	race_count = C_ZNEW(z_info->r_max, u16b);
 
 	/* Scan the monster list */
-	for (i = 1; i < mon_max; i++)
+	for (i = 1; i < cave_monster_max(cave); i++)
 	{
-		m_ptr = &mon_list[i];
+		m_ptr = cave_monster(cave, i);
 
 		/* Only visible monsters */
 		if (!m_ptr->ml) continue;
@@ -2571,7 +2572,7 @@ static void handle_sidebar(game_event_type type, game_event_data *data, void *us
 	
 	xtra_win_data *xd = &xdata[5];
 	long xp = (long)p_ptr->exp;
-	monster_type *m_ptr = &mon_list[p_ptr->health_who];
+	monster_type *m_ptr = cave_monster(cave, p_ptr->health_who);
 	int i = 0, sidebar_length = 12;
 
 	/* Calculate XP for next level */
@@ -2589,15 +2590,15 @@ static void handle_sidebar(game_event_type type, game_event_data *data, void *us
 		draw_xtra_cr_text(xd, 0, 0, TERM_L_BLUE, str);
 		
 		/* Char Race */
-		strnfmt(str, sizeof(str), "%s", rp_ptr->name);
+		strnfmt(str, sizeof(str), "%s", p_ptr->race->name);
 		draw_xtra_cr_text(xd, 0, 1, TERM_L_BLUE, str);
 		
 		/* Char Title*/
-		strnfmt(str, sizeof(str), "%s", cp_ptr->title[(p_ptr->lev - 1) / 5], TERM_L_BLUE); 
+		strnfmt(str, sizeof(str), "%s", p_ptr->class->title[(p_ptr->lev - 1) / 5], TERM_L_BLUE); 
 		draw_xtra_cr_text(xd, 0, 2, TERM_L_BLUE, str);
 		
 		/* Char Class */
-		strnfmt(str, sizeof(str), "%s", cp_ptr->name); 
+		strnfmt(str, sizeof(str), "%s", p_ptr->class->name); 
 		draw_xtra_cr_text(xd, 0, 3, TERM_L_BLUE, str);
 
 		/* Char Level */
@@ -2634,13 +2635,13 @@ static void handle_sidebar(game_event_type type, game_event_data *data, void *us
 	
 		/* Char HP */
 		strnfmt(str, sizeof(str), "%4d/%4d", p_ptr->chp, p_ptr->mhp); 
-		cr_aligned_text_print(xd, 0, 16, sidebar_text[16], TERM_WHITE, str, player_hp_attr(), sidebar_length);
-		xtra_drawn_progress_bar(xd, 0, 17, p_ptr->chp, p_ptr->mhp, player_hp_attr(), 13);
+		cr_aligned_text_print(xd, 0, 16, sidebar_text[16], TERM_WHITE, str, player_hp_attr(p_ptr), sidebar_length);
+		xtra_drawn_progress_bar(xd, 0, 17, p_ptr->chp, p_ptr->mhp, player_hp_attr(p_ptr), 13);
 	
 		/* Char MP */
 		strnfmt(str, sizeof(str), "%4d/%4d", p_ptr->csp, p_ptr->msp); 
-		cr_aligned_text_print(xd, 0, 18,sidebar_text[18], TERM_WHITE, str, player_sp_attr(), sidebar_length);
-		xtra_drawn_progress_bar(xd, 0, 19, p_ptr->csp, p_ptr->msp, player_sp_attr(), 13);
+		cr_aligned_text_print(xd, 0, 18,sidebar_text[18], TERM_WHITE, str, player_sp_attr(p_ptr), sidebar_length);
+		xtra_drawn_progress_bar(xd, 0, 19, p_ptr->csp, p_ptr->msp, player_sp_attr(p_ptr), 13);
 	
 		/* 20 is blank */
 	

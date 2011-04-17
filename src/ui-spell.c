@@ -62,7 +62,7 @@ static void spell_menu_display(menu_type *m, int oid, bool cursor,
 {
 	struct spell_menu_data *d = menu_priv(m);
 	int spell = d->spells[oid];
-	const magic_type *s_ptr = &mp_ptr->info[spell];
+	const magic_type *s_ptr = &p_ptr->class->spells.info[spell];
 
 	char help[30];
 	char out[80];
@@ -80,7 +80,7 @@ static void spell_menu_display(menu_type *m, int oid, bool cursor,
 	} else if (p_ptr->spell_flags[spell] & PY_SPELL_LEARNED) {
 		if (p_ptr->spell_flags[spell] & PY_SPELL_WORKED) {
 			/* Get extra info */
-			get_spell_info(cp_ptr->spell_book, spell, help, sizeof(help));
+			get_spell_info(p_ptr->class->spell_book, spell, help, sizeof(help));
 			comment = help;
 			attr = TERM_WHITE;
 		} else {
@@ -97,7 +97,7 @@ static void spell_menu_display(menu_type *m, int oid, bool cursor,
 
 	/* Dump the spell --(-- */
 	strnfmt(out, sizeof(out), "%-30s%2d %4d %3d%%%s",
-			get_spell_name(cp_ptr->spell_book, spell),
+			get_spell_name(p_ptr->class->spell_book, spell),
 			s_ptr->slevel, s_ptr->smana, spell_chance(spell), comment);
 	c_prt(attr, illegible ? illegible : out, row, col);
 }
@@ -135,7 +135,7 @@ static void spell_menu_browser(int oid, void *data, const region *loc)
 	screen_save();
 
 	Term_gotoxy(loc->col, loc->row + loc->page_rows);
-	text_out("\n%s\n", s_info[(cp_ptr->spell_book == TV_MAGIC_BOOK) ? spell : spell + PY_MAX_SPELLS].text);
+	text_out("\n%s\n", s_info[(p_ptr->class->spell_book == TV_MAGIC_BOOK) ? spell : spell + PY_MAX_SPELLS].text);
 
 	/* XXX */
 	text_out_pad = 0;
@@ -247,7 +247,7 @@ static int get_spell(const object_type *o_ptr, const char *verb,
 		bool (*spell_test)(int spell))
 {
 	menu_type *m;
-	const char *noun = (cp_ptr->spell_book == TV_MAGIC_BOOK ?
+	const char *noun = (p_ptr->class->spell_book == TV_MAGIC_BOOK ?
 			"spell" : "prayer");
 
 	m = spell_menu_new(o_ptr, spell_test);
@@ -266,7 +266,7 @@ static int get_spell(const object_type *o_ptr, const char *verb,
 void textui_book_browse(const object_type *o_ptr)
 {
 	menu_type *m;
-	const char *noun = (cp_ptr->spell_book == TV_MAGIC_BOOK ?
+	const char *noun = (p_ptr->class->spell_book == TV_MAGIC_BOOK ?
 			"spell" : "prayer");
 
 	m = spell_menu_new(o_ptr, spell_okay_to_browse);
@@ -335,7 +335,7 @@ void textui_obj_cast(void)
 	int item;
 	int spell;
 
-	const char *verb = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
+	const char *verb = ((p_ptr->class->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
 
 	item_tester_hook = obj_can_cast_from;
 	if (!get_item(&item, "Cast from which book? ",

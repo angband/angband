@@ -83,20 +83,8 @@ bool inkey_xtra;		/* See the "inkey()" function */
 u32b inkey_scan;		/* See the "inkey()" function */
 bool inkey_flag;		/* See the "inkey()" function */
 
-bool opening_chest;		/* Hack -- prevent chest generation */
-
-bool shimmer_monsters;	/* Hack -- optimize multi-hued monsters */
-bool shimmer_objects;	/* Hack -- optimize multi-hued objects */
-
-bool repair_mflag_nice;	/* Hack -- repair monster flags (nice) */
-bool repair_mflag_show;	/* Hack -- repair monster flags (show) */
-bool repair_mflag_mark;	/* Hack -- repair monster flags (mark) */
-
 s16b o_max = 1;			/* Number of allocated objects */
 s16b o_cnt = 0;			/* Number of live objects */
-
-s16b mon_max = 1;	/* Number of allocated monsters */
-s16b mon_cnt = 0;	/* Number of live monsters */
 
 /*
  * Buffer to hold the current savefile name
@@ -432,11 +420,6 @@ byte *temp_y;
 byte *temp_x;
 
 /*
- * Array[z_info->m_max] of dungeon monsters
- */
-monster_type *mon_list;
-
-/*
  * Array[z_info->r_max] of monster lore
  */
 monster_lore *l_list;
@@ -504,14 +487,6 @@ byte tval_to_attr[128];
 /*** Player information ***/
 
 /*
- * Pointer to the player tables (sex, race, class, magic)
- */
-const player_sex *sp_ptr;
-const player_race *rp_ptr;
-const player_class *cp_ptr;
-const player_magic *mp_ptr;
-
-/*
  * The player other record (static)
  */
 static player_other player_other_body;
@@ -566,8 +541,6 @@ struct player_race *races;
 struct player_class *classes;
 struct vault *vaults;
 struct object_kind *objkinds;
-
-owner_type *b_info;
 
 struct flavor *flavors;
 

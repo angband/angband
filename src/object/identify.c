@@ -1104,9 +1104,9 @@ void sense_inventory(void)
 
 	/* Get improvement rate */
 	if (player_has(PF_PSEUDO_ID_IMPROV))
-		rate = cp_ptr->sense_base / (p_ptr->lev * p_ptr->lev + cp_ptr->sense_div);
+		rate = p_ptr->class->sense_base / (p_ptr->lev * p_ptr->lev + p_ptr->class->sense_div);
 	else
-		rate = cp_ptr->sense_base / (p_ptr->lev + cp_ptr->sense_div);
+		rate = p_ptr->class->sense_base / (p_ptr->lev + p_ptr->class->sense_div);
 
 	if (!one_in_(rate)) return;
 

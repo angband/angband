@@ -202,9 +202,6 @@ static void chest_death(int y, int x, s16b o_idx)
 	/* Zero pval means empty chest */
 	if (!o_ptr->pval[DEFAULT_PVAL]) number = 0;
 
-	/* Opening a chest */
-	opening_chest = TRUE;
-
 	/* Determine the "value" of the items */
 	value = o_ptr->origin_depth - 10 + 2 * o_ptr->sval;
 	if (value < 1)
@@ -237,9 +234,6 @@ static void chest_death(int y, int x, s16b o_idx)
 		/* Drop it in the dungeon */
 		drop_near(cave, i_ptr, 0, y, x, TRUE);
 	}
-
-	/* No longer opening a chest */
-	opening_chest = FALSE;
 
 	/* Empty */
 	o_ptr->pval[DEFAULT_PVAL] = 0;
@@ -368,7 +362,7 @@ static bool do_cmd_open_chest(int y, int x, s16b o_idx)
 		if (randint0(100) < j)
 		{
 			msgt(MSG_LOCKPICK, "You have picked the lock.");
-			gain_exp(1);
+			player_exp_gain(p_ptr, 1);
 			flag = TRUE;
 		}
 
@@ -454,7 +448,7 @@ static bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 	else if (randint0(100) < j)
 	{
 		msgt(MSG_DISARM, "You have disarmed the chest.");
-		gain_exp(o_ptr->pval[DEFAULT_PVAL]);
+		player_exp_gain(p_ptr, o_ptr->pval[DEFAULT_PVAL]);
 		o_ptr->pval[DEFAULT_PVAL] = (0 - o_ptr->pval[DEFAULT_PVAL]);
 	}
 
@@ -477,36 +471,6 @@ static bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 	/* Result */
 	return (more);
 }
-
-
-/*
- * Return TRUE if the given feature is an open door
- */
-bool is_open(int feat)
-{
-	return (feat == FEAT_OPEN);
-}
-
-
-/*
- * Return TRUE if the given feature is a closed door
- */
-bool is_closed(int feat)
-{
-	return ((feat >= FEAT_DOOR_HEAD) &&
-	        (feat <= FEAT_DOOR_TAIL));
-}
-
-
-/*
- * Return TRUE if the given feature is a trap
- */
-bool is_trap(int feat)
-{
-	return ((feat >= FEAT_TRAP_HEAD) &&
-	        (feat <= FEAT_TRAP_TAIL));
-}
-
 
 /*
  * Return the number of doors/traps around (or under) the character.
@@ -698,7 +662,7 @@ static bool do_cmd_open_aux(int y, int x)
 			p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 			/* Experience */
-			gain_exp(1);
+			player_exp_gain(p_ptr, 1);
 		}
 
 		/* Failure */
@@ -1328,7 +1292,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 		msgt(MSG_DISARM, "You have disarmed the %s.", name);
 
 		/* Reward */
-		gain_exp(power);
+		player_exp_gain(p_ptr, power);
 
 		/* Forget the trap */
 		cave->info[y][x] &= ~(CAVE_MARK);
@@ -1868,7 +1832,7 @@ void do_cmd_spike(cmd_code code, cmd_arg args[])
 static bool do_cmd_walk_test(int y, int x)
 {
 	/* Allow attack on visible monsters if unafraid */
-	if ((cave->m_idx[y][x] > 0) && (mon_list[cave->m_idx[y][x]].ml))
+	if ((cave->m_idx[y][x] > 0) && (cave_monster(cave, cave->m_idx[y][x])->ml))
 	{
 		/* Handle player fear */
 		if(p_ptr->state.flags[OF_AFRAID])
@@ -1877,7 +1841,7 @@ static bool do_cmd_walk_test(int y, int x)
 			char m_name[80];
 			monster_type *m_ptr;
 
-			m_ptr = &mon_list[cave->m_idx[y][x]];
+			m_ptr = cave_monster(cave, cave->m_idx[y][x]);
 			monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 			/* Message */

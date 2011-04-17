@@ -85,11 +85,11 @@ static void print_tomb(void)
 	if (p_ptr->total_winner)
 		put_str_centred(line++, 8, 8+31, "Magnificent");
 	else
-		put_str_centred(line++, 8, 8+31, "%s", cp_ptr->title[(p_ptr->lev - 1) / 5]);
+		put_str_centred(line++, 8, 8+31, "%s", p_ptr->class->title[(p_ptr->lev - 1) / 5]);
 
 	line++;
 
-	put_str_centred(line++, 8, 8+31, "%s", cp_ptr->name);
+	put_str_centred(line++, 8, 8+31, "%s", p_ptr->class->name);
 	put_str_centred(line++, 8, 8+31, "Level: %d", (int)p_ptr->lev);
 	put_str_centred(line++, 8, 8+31, "Exp: %d", (int)p_ptr->exp);
 	put_str_centred(line++, 8, 8+31, "AU: %d", (int)p_ptr->au);
@@ -173,7 +173,7 @@ static void display_winner(void)
 		file_close(fp);
 	}
 
-	put_str_centred(i, 0, wid, "All Hail the Mighty %s!", sp_ptr->winner);
+	put_str_centred(i, 0, wid, "All Hail the Mighty %s!", p_ptr->sex->winner);
 
 	flush();
 	pause_line(Term->hgt - 1);

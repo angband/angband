@@ -406,7 +406,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			if (p_ptr->exp < PY_MAX_EXP)
 			{
 				msg("You feel more experienced.");
-				gain_exp(100000L);
+				player_exp_gain(p_ptr, 100000L);
 				*ident = TRUE;
 			}
 			return TRUE;
@@ -417,7 +417,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			if (!p_ptr->state.flags[OF_HOLD_LIFE] && (p_ptr->exp > 0))
 			{
 				msg("You feel your memories fade.");
-				lose_exp(p_ptr->exp / 4);
+				player_exp_lose(p_ptr, p_ptr->exp / 4, FALSE);
 				*ident = TRUE;
 			}
 			*ident = TRUE;

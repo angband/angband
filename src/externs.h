@@ -90,16 +90,8 @@ extern bool msg_flag;
 extern bool inkey_xtra;
 extern u32b inkey_scan;
 extern bool inkey_flag;
-extern bool opening_chest;
-extern bool shimmer_monsters;
-extern bool shimmer_objects;
-extern bool repair_mflag_nice;
-extern bool repair_mflag_show;
-extern bool repair_mflag_mark;
 extern s16b o_max;
 extern s16b o_cnt;
-extern s16b mon_max;
-extern s16b mon_cnt;
 extern char savefile[1024];
 extern term *angband_term[ANGBAND_TERM_MAX];
 extern char angband_term_name[ANGBAND_TERM_MAX][16];
@@ -113,7 +105,6 @@ extern u16b *temp_g;
 extern byte *temp_y;
 extern byte *temp_x;
 extern maxima *z_info;
-extern monster_type *mon_list;
 extern monster_lore *l_list;
 extern quest *q_list;
 extern store_type *store;
@@ -126,10 +117,6 @@ extern alloc_entry *alloc_race_table;
 extern byte gf_to_attr[GF_MAX][BOLT_MAX];
 extern char gf_to_char[GF_MAX][BOLT_MAX];
 extern byte tval_to_attr[128];
-extern const player_sex *sp_ptr;
-extern const player_race *rp_ptr;
-extern const player_class *cp_ptr;
-extern const player_magic *mp_ptr;
 extern player_other *op_ptr;
 extern player_type *p_ptr;
 extern feature_type *f_info;
@@ -140,8 +127,6 @@ extern ego_item_type *e_info;
 extern monster_base *rb_info;
 extern monster_race *r_info;
 extern monster_pain *pain_messages;
-extern owner_type *b_info;
-extern byte *g_info;
 extern struct player_race *races;
 extern struct player_class *classes;
 extern struct flavor *flavors;
@@ -205,10 +190,6 @@ extern byte py_pickup(int pickup);
 extern void move_player(int dir, bool disarm);
 
 /* cmd2.c */
-/* XXX should probably be moved to cave.c? */
-bool is_open(int feat);
-bool is_closed(int feat);
-bool is_trap(int feat);
 int count_feats(int *y, int *x, bool (*test)(int feat), bool under);
 int count_chests(int *y, int *x, bool trapped);
 int coords_to_dir(int y, int x);
@@ -309,10 +290,6 @@ extern const char seven_bit_translation[128];
 extern char xchar_trans(byte c);
 
 /* xtra2.c */
-void check_experience_aux(bool verbose);
-void check_experience(void);
-void gain_exp(s32b amount);
-void lose_exp(s32b amount);
 bool modify_panel(term *t, int wy, int wx);
 bool adjust_panel(int y, int x);
 bool change_panel(int dir);
@@ -324,8 +301,6 @@ bool get_rep_dir(int *dp);
 bool confuse_dir(int *dp);
 
 /* xtra3.c */
-byte player_hp_attr(void);
-byte player_sp_attr(void);
 byte monster_health_attr(void);
 void cnv_stat(int val, char *out_val, size_t out_len);
 void toggle_inven_equip(void);

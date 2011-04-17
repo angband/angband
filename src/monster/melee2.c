@@ -80,7 +80,7 @@ static bool int_outof(const monster_race *r_ptr, int prob)
  */
 static void remove_bad_spells(int m_idx, bitflag f[RSF_SIZE])
 {
-	monster_type *m_ptr = &mon_list[m_idx];
+	monster_type *m_ptr = cave_monster(cave, m_idx);
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	bitflag f2[RSF_SIZE];
@@ -411,7 +411,7 @@ static bool summon_possible(int y1, int x1)
  */
 static int choose_attack_spell(int m_idx, bitflag f[RSF_SIZE])
 {
-	monster_type *m_ptr = &mon_list[m_idx];
+	monster_type *m_ptr = cave_monster(cave, m_idx);
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	int num = 0;
@@ -572,7 +572,7 @@ bool make_attack_spell(int m_idx)
 
 	bitflag f[RSF_SIZE];
 
-	monster_type *m_ptr = &mon_list[m_idx];
+	monster_type *m_ptr = cave_monster(cave, m_idx);
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
@@ -1329,7 +1329,7 @@ bool make_attack_spell(int m_idx)
  */
 static int mon_will_run(int m_idx)
 {
-	monster_type *m_ptr = &mon_list[m_idx];
+	monster_type *m_ptr = cave_monster(cave, m_idx);
 
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
@@ -1411,7 +1411,7 @@ static bool get_moves_aux(struct cave *c, int m_idx, int *yp, int *xp)
 	int when = 0;
 	int cost = 999;
 
-	monster_type *m_ptr = &mon_list[m_idx];
+	monster_type *m_ptr = cave_monster(cave, m_idx);
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	/* Monster flowing disabled */
@@ -1486,7 +1486,7 @@ static bool get_fear_moves_aux(struct cave *c, int m_idx, int *yp, int *xp)
 	int when = 0, score = -1;
 	int i;
 
-	monster_type *m_ptr = &mon_list[m_idx];
+	monster_type *m_ptr = cave_monster(cave, m_idx);
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	/* Monster flowing disabled */
@@ -1714,7 +1714,7 @@ static const int *dist_offsets_x[10] =
  */
 static bool find_safety(struct cave *c, int m_idx, int *yp, int *xp)
 {
-	monster_type *m_ptr = &mon_list[m_idx];
+	monster_type *m_ptr = cave_monster(cave, m_idx);
 
 	int fy = m_ptr->fy;
 	int fx = m_ptr->fx;
@@ -1804,7 +1804,7 @@ static bool find_safety(struct cave *c, int m_idx, int *yp, int *xp)
  */
 static bool find_hiding(int m_idx, int *yp, int *xp)
 {
-	monster_type *m_ptr = &mon_list[m_idx];
+	monster_type *m_ptr = cave_monster(cave, m_idx);
 
 	int fy = m_ptr->fy;
 	int fx = m_ptr->fx;
@@ -1884,7 +1884,7 @@ static bool get_moves(struct cave *c, int m_idx, int mm[5])
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	monster_type *m_ptr = &mon_list[m_idx];
+	monster_type *m_ptr = cave_monster(cave, m_idx);
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	int y, ay, x, ax;
@@ -2242,7 +2242,7 @@ static int compare_monsters(const monster_type *m_ptr, const monster_type *n_ptr
  */
 static void process_monster(struct cave *c, int m_idx)
 {
-	monster_type *m_ptr = &mon_list[m_idx];
+	monster_type *m_ptr = cave_monster(cave, m_idx);
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
@@ -2743,7 +2743,7 @@ static void process_monster(struct cave *c, int m_idx)
 		/* A monster is in the way */
 		if (do_move && (cave->m_idx[ny][nx] > 0))
 		{
-			monster_type *n_ptr = &mon_list[cave->m_idx[ny][nx]];
+			monster_type *n_ptr = cave_monster(cave, cave->m_idx[ny][nx]);
 
 			/* Kill weaker monsters */
 			int kill_ok = rf_has(r_ptr->flags, RF_KILL_BODY);
@@ -2983,7 +2983,7 @@ static bool monster_can_flow(struct cave *c, int m_idx)
 
 	assert(c);
 
-	m_ptr = &mon_list[m_idx];
+	m_ptr = cave_monster(cave, m_idx);
 	r_ptr = &r_info[m_ptr->r_idx];
 	fy = m_ptr->fy;
 	fx = m_ptr->fx;
@@ -3017,8 +3017,7 @@ static bool monster_can_flow(struct cave *c, int m_idx)
  * especially when the player is running.
  *
  * Note the special "MFLAG_NICE" flag, which prevents "nasty" monsters from
- * using any of their spell attacks until the player gets a turn.  This flag
- * is optimized via the "repair_mflag_nice" flag.
+ * using any of their spell attacks until the player gets a turn.
  */
 void process_monsters(struct cave *c, byte minimum_energy)
 {
@@ -3028,14 +3027,14 @@ void process_monsters(struct cave *c, byte minimum_energy)
 	monster_race *r_ptr;
 
 	/* Process the monsters (backwards) */
-	for (i = mon_max - 1; i >= 1; i--)
+	for (i = cave_monster_max(c) - 1; i >= 1; i--)
 	{
 		/* Handle "leaving" */
 		if (p_ptr->leaving) break;
 
 
 		/* Get the monster */
-		m_ptr = &mon_list[i];
+		m_ptr = cave_monster(cave, i);
 
 
 		/* Ignore "dead" monsters */

@@ -57,7 +57,7 @@ s16b modify_stat_value(int value, int amount)
 /* Is the player capable of casting a spell? */
 bool player_can_cast(void)
 {
-	if (!cp_ptr->spell_book)
+	if (!p_ptr->class->spell_book)
 	{
 		msg("You cannot pray or produce magics.");
 		return FALSE;
@@ -86,7 +86,7 @@ bool player_can_study(void)
 
 	if (!p_ptr->new_spells)
 	{
-		const char *p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+		const char *p = ((p_ptr->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 		msg("You cannot learn any new %ss!", p);
 		return FALSE;
 	}

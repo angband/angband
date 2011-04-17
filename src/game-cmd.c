@@ -374,6 +374,20 @@ errr cmd_insert(cmd_code c)
 	return cmd_insert_repeated(c, 0);
 }
 
+static bool is_open(int feat)
+{
+	return feat == FEAT_OPEN;
+}
+
+static bool is_closed(int feat)
+{
+	return ((feat >= FEAT_DOOR_HEAD) && (feat <= FEAT_DOOR_TAIL));
+}
+
+static bool is_trap(int feat)
+{
+	return ((feat >= FEAT_TRAP_HEAD) && (feat <= FEAT_TRAP_TAIL));
+}
 
 /* 
  * Request a game command from the uI and carry out whatever actions
@@ -552,7 +566,7 @@ void process_command(cmd_context ctx, bool no_request)
 			{
 				bool get_target = FALSE;
 
-				if (spell_needs_aim(cp_ptr->spell_book, cmd->arg[0].choice))
+				if (spell_needs_aim(p_ptr->class->spell_book, cmd->arg[0].choice))
 				{
 					if (!cmd->arg_present[1])
 						get_target = TRUE;
