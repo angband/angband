@@ -411,6 +411,7 @@ void do_cmd_messages(void)
 void do_cmd_note(void)
 {
 	char tmp[80];
+	char note[120];
 
 	/* Default */
 	my_strcpy(tmp, "", sizeof(tmp));
@@ -421,11 +422,14 @@ void do_cmd_note(void)
 	/* Ignore empty notes */
 	if (!tmp[0] || (tmp[0] == ' ')) return;
 
+	/* Include a Note: prompt to the note */
+	strnfmt(note, sizeof note, "--%s", tmp); 
+	
 	/* Add the note to the message recall */
 	msg("Note: %s", tmp);
 
 	/* Add a history entry */
-	history_add(tmp, HISTORY_USER_INPUT, 0);
+	history_add(note, HISTORY_USER_INPUT, 0);
 }
 
 
