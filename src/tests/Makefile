@@ -10,6 +10,7 @@ SUITES := $(shell find . -maxdepth 1 -mindepth 1 -type d)
 SUITES := $(filter-out ./bin,$(SUITES))
 include $(patsubst %,%/suite.mk,$(SUITES))
 
+TESTOBJS  := $(patsubst %,%.o,$(TESTPROGS))
 TESTPROGS := $(patsubst %,bin/%,$(TESTPROGS))
 
 build : $(TESTPROGS)
@@ -26,7 +27,7 @@ bin/% : %.o ../angband.o
 	@echo "  CC $@"
 
 clean :
-	$(RM) $(TESTPROGS)
+	$(RM) $(TESTPROGS) $(TESTOBJS)
 
 .PHONY : all clean
 .PRECIOUS : %.o
