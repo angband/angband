@@ -474,9 +474,7 @@ void ranged_helper(int item, int dir, int range, int shots, ranged_attack attack
 
 	/* Obtain a local object */
 	object_copy(i_ptr, o_ptr);
-
-	/* Single object */
-	i_ptr->number = 1;
+	object_split(i_ptr, o_ptr, 1);
 
 	/* See if the ammunition broke or not */
 	j = breakage_chance(i_ptr, hit_target);
