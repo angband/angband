@@ -868,7 +868,7 @@ static void fill_circle(struct cave *c, int y0, int x0, int radius, int border, 
 	int r2 = radius * radius;
 	for(i = 0; i <= radius; i++) {
 		double j = sqrt(r2 - (i * i));
-		int k = round(j);
+		int k = (int)(j + 0.5);
 
 		int b = border;
 		if (border && last > k) b++;
