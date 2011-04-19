@@ -2,6 +2,7 @@
 
 #include "unit-test.h"
 #include "unit-test-data.h"
+#include "birth.h"
 
 static int setup(void **state) {
 	struct player *p = mem_alloc(sizeof *p);

@@ -5,25 +5,67 @@
 #ifndef UNIT_TEST_DATA
 #define UNIT_TEST_DATA
 
+#ifndef TEST_DATA
+  #ifdef __GNUC__
+    #define TEST_DATA __attribute__ ((unused))
+  #else
+    #define TEST_DATA 
+  #endif
+#endif /* TEST_DATA */
+
 #include "angband.h"
 #include "object/tvalsval.h"
 
-static struct player_sex test_sex = {
+static struct player_sex TEST_DATA test_sex = {
 	.title = "Test Sex",
 	.winner = "Test Winner",
 };
 
-static struct object_kind test_longsword = {
+static struct object_kind TEST_DATA test_longsword = {
 	.name = "Test Longsword",
 	.text = "A test longsword [0].",
 	.kidx = 0,
 	.tval = TV_SWORD,
 	.sval = SV_LONG_SWORD,
-	.pval = 0,
+	.pval = {
+			{
+				.base = 0,
+				.dice = 0,
+				.sides = 0,
+				.m_bonus = 0,
+			},
+			{
+				.base = 0,
+				.dice = 0,
+				.sides = 0,
+				.m_bonus = 0,
+			},
+			{
+				.base = 0,
+				.dice = 0,
+				.sides = 0,
+				.m_bonus = 0,
+			},
+	},
 
-	.to_h = 1,
-	.to_d = 1,
-	.to_a = 2,
+	.to_h = {
+			.base = 1,
+			.dice = 0,
+			.sides = 0,
+			.m_bonus = 0,
+	},
+	.to_d = {
+			.base = 1,
+			.dice = 0,
+			.sides = 0,
+			.m_bonus = 0,
+	},
+	.to_a = {
+			.base = 2,
+			.dice = 0,
+			.sides = 0,
+			.m_bonus = 0,
+	},
 
 	.dd = 4,
 	.ds = 6,
@@ -44,17 +86,51 @@ static struct object_kind test_longsword = {
 	.flavor = NULL,
 };
 
-static struct object_kind test_torch = {
+static struct object_kind TEST_DATA test_torch = {
 	.name = "Test Torch",
 	.text = "A test torch [1].",
 	.kidx = 1,
 	.tval = TV_LIGHT,
 	.sval = SV_LIGHT_TORCH,
-	.pval = 5000,
+	.pval = {
+			{
+				.base = 5000,
+				.dice = 0,
+				.sides = 0,
+				.m_bonus = 0,
+			},
+			{
+				.base = 0,
+				.dice = 0,
+				.sides = 0,
+				.m_bonus = 0,
+			},
+			{
+				.base = 0,
+				.dice = 0,
+				.sides = 0,
+				.m_bonus = 0,
+			},
+	},
 
-	.to_h = 0,
-	.to_d = 0,
-	.to_a = 0,
+	.to_h = {
+			.base = 0,
+			.dice = 0,
+			.sides = 0,
+			.m_bonus = 0,
+	},
+	.to_d = {
+			.base = 0,
+			.dice = 0,
+			.sides = 0,
+			.m_bonus = 0,
+	},
+	.to_a = {
+			.base = 0,
+			.dice = 0,
+			.sides = 0,
+			.m_bonus = 0,
+	},
 
 	.dd = 1,
 	.ds = 1,
@@ -75,17 +151,51 @@ static struct object_kind test_torch = {
 	.flavor = NULL,
 };
 
-static struct object_kind test_gold = {
+static struct object_kind TEST_DATA test_gold = {
 	.name = "Test Gold",
 	.text = "Test gold [2].",
 	.kidx = 2,
 	.tval = TV_GOLD,
 	.sval = 0,
-	.pval = 0,
+	.pval = {
+			{
+				.base = 0,
+				.dice = 0,
+				.sides = 0,
+				.m_bonus = 0,
+			},
+			{
+				.base = 0,
+				.dice = 0,
+				.sides = 0,
+				.m_bonus = 0,
+			},
+			{
+				.base = 0,
+				.dice = 0,
+				.sides = 0,
+				.m_bonus = 0,
+			},
+	},
 
-	.to_h = 0,
-	.to_d = 0,
-	.to_a = 0,
+	.to_h = {
+			.base = 0,
+			.dice = 0,
+			.sides = 0,
+			.m_bonus = 0,
+	},
+	.to_d = {
+			.base = 0,
+			.dice = 0,
+			.sides = 0,
+			.m_bonus = 0,
+	},
+	.to_a = {
+			.base = 0,
+			.dice = 0,
+			.sides = 0,
+			.m_bonus = 0,
+	},
 
 	.dd = 1,
 	.ds = 1,
@@ -106,7 +216,7 @@ static struct object_kind test_gold = {
 	.flavor = NULL,
 };
 
-static struct player_race test_race = {
+static struct player_race TEST_DATA test_race = {
 	.name = "TestRace",
 	.r_adj = {
 		[A_STR] = +2,
@@ -152,21 +262,21 @@ static struct player_race test_race = {
 	.history = NULL,
 };
 
-static struct start_item start_torch = {
+static struct start_item TEST_DATA start_torch = {
 	.kind = &test_torch,
 	.min = 3,
 	.max = 5,
 	.next = NULL,
 };
 
-static struct start_item start_longsword = {
+static struct start_item TEST_DATA start_longsword = {
 	.kind = &test_longsword,
 	.min = 1,
 	.max = 1,
 	.next = &start_torch,
 };
 
-static struct player_class test_class = {
+static struct player_class TEST_DATA test_class = {
 	.name = "TestClass",
 	.title = {
 		"TestTitle0",
@@ -234,7 +344,7 @@ static struct player_class test_class = {
 	.start_items = &start_longsword,
 };
 
-static struct monster_base test_rb_info = {
+static struct monster_base TEST_DATA test_rb_info = {
 	.next = NULL,
 	.name = "townsfolk",
 	.text = "Townsfolk",
@@ -245,4 +355,16 @@ static struct monster_base test_rb_info = {
 	
 };
 
+static struct maxima TEST_DATA test_z_info = {
+	.f_max   = 2,
+	.k_max   = 2,
+	.a_max   = 2,
+	.e_max   = 2,
+	.r_max   = 2,
+	.mp_max  = 2,
+	.s_max   = 2,
+	.pit_max = 2,
+	.o_max   = 2,
+	.m_max   = 2,
+};
 #endif /* !UNIT_TEST_DATA */

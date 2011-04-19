@@ -5,6 +5,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include "z-util.h"
 
 #define TEST
 
@@ -29,7 +31,6 @@ int main(int argc, char *argv[]) {
 	int i;
 	int passed = 0;
 	int total = 0;
-	int res;
 
 	char *s = getenv("VERBOSE");
 	if (s && s[0]) {

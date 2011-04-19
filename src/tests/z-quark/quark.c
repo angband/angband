@@ -5,10 +5,12 @@
 
 static int setup(void **state) {
 	quarks_init();
+	return 0;
 }
 
 static int teardown(void *state) {
 	quarks_free();
+	return 0;
 }
 
 static int test_alloc(void *state) {

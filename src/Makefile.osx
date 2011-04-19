@@ -208,7 +208,7 @@ dist: install
 	rm -rf disttemp*
 
 tests:
-	$(MAKE) -C tests all CFLAGS="$(CFLAGS)" LDFLAGS="$(LIBS)"
+	$(MAKE) -C tests all CFLAGS="-I.. $(CFLAGS)" LDFLAGS="$(LIBS)"
 
 test-clean:
 	$(MAKE) -C tests clean

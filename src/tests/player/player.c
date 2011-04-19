@@ -3,6 +3,7 @@
 #include "unit-test.h"
 #include "unit-test-data.h"
 
+#include "birth.h"
 #include "player/player.h"
 
 static int setup(void **state) {
