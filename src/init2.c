@@ -28,6 +28,7 @@
 #include "init.h"
 #include "monster/mon-power.h"
 #include "monster/mon-spell.h"
+#include "object/object.h"
 #include "object/slays.h"
 #include "object/tvalsval.h"
 #include "option.h"
