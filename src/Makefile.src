@@ -136,7 +136,5 @@ ANGFILES = \
 	x-char.o \
 	x-spell.o \
 	xtra2.o \
-	xtra3.o
-
-buildid.o: $(ANGFILES)
-ANGFILES += buildid.o
+	xtra3.o \
+	buildid.o
