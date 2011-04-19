@@ -463,12 +463,14 @@ static errr run_parse_kb(struct parser *p) {
 }
 
 static errr finish_parse_kb(struct parser *p) {
+	struct object_base *kb;
 	struct kb_parsedata *d = parser_priv(p);
+
 	assert(d);
 
 	kb_info = mem_zalloc(TV_MAX * sizeof(*kb_info));
 
-	for (object_base *kb = d->kb; kb; kb = kb->next) {
+	for (kb = d->kb; kb; kb = kb->next) {
 		if (kb->tval >= TV_MAX)
 			continue;
 		memcpy(&kb_info[kb->tval], kb, sizeof(*kb));
