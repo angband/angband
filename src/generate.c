@@ -2751,25 +2751,28 @@ void mutate_cavern(struct cave *c) {
 	int y, x;
 	int h = c->height;
 	int w = c->width;
-	int temp[h][w];
+
+	int *temp = C_ZNEW(h * w, int);
 
 	for (y = 1; y < h - 1; y++) {
 		for (x = 1; x < w - 1; x++) {
 			int count = count_adj_walls(c, y, x);
 			if (count > 5)
-				temp[y][x] = FEAT_WALL_SOLID;
+				temp[y * w + x] = FEAT_WALL_SOLID;
 			else if (count < 4)
-				temp[y][x] = FEAT_FLOOR;
+				temp[y * w + x] = FEAT_FLOOR;
 			else
-				temp[y][x] = cave->feat[y][x];
+				temp[y * w + x] = cave->feat[y][x];
 		}
 	}
 
 	for (y = 1; y < h - 1; y++) {
 		for (x = 1; x < w - 1; x++) {
-			cave_set_feat(c, y, x, temp[y][x]);
+			cave_set_feat(c, y, x, temp[y * w + x]);
 		}
 	}
+
+	FREE(temp);
 }
 
 /**
