@@ -2526,10 +2526,10 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 
 	/* 'sets' tracks connectedness; if sets[i] == sets[j] then cells i and j
 	 * are connected to each other in the maze. */
-	int sets[n];
+	int *sets;
 
 	/* 'walls' is a list of wall coordinates which we will randomize */
-	int walls[n];
+	int *walls;
 
 	/* Most labyrinths are lit */
 	bool lit = randint0(c->depth) < 25 || randint0(2) < 1;
@@ -2560,6 +2560,10 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 	/* NOTE: This test gets performed after we pass the test to use the
 	 * labyrinth cave profile (which is a 50% chance currently). */
 	if (randint0(100) >= chance) return FALSE;
+
+	/* allocate our arrays */
+	sets = C_ZNEW(n, int);
+	walls = C_ZNEW(n, int);
 
 	/* This is the dungeon size, which does include the enclosing walls */
 	c->height = h + 2;
@@ -2685,6 +2689,10 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 
 	/* If we want the players to see the maze layout, do that now */
 	if (known) wiz_light();
+
+	/* Deallocate our lists */
+	FREE(sets);
+	FREE(walls);
 
 	return TRUE;
 }
