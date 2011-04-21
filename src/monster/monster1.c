@@ -2418,12 +2418,12 @@ monster_base *lookup_monster_base(const char *name)
  */
 bool match_monster_bases(monster_base *base, ...)
 {
-	bool ok = TRUE;
+	bool ok = FALSE;
 	va_list vp;
 	char *name;
 
 	va_start(vp, base);
-	while (ok && (name = va_arg(vp, char *)) != NULL)
+	while (!ok && ((name = va_arg(vp, char *)) != NULL))
 		ok = base == lookup_monster_base(name);
 	va_end(vp);
 
