@@ -2548,7 +2548,7 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 	int chance = 1;
 
 	/* If we're too shallow then don't do it */
-	if (c->depth < 10) return FALSE;
+	if (c->depth < 13) return FALSE;
 
 	/* Don't try this on quest levels, kids... */
 	if (is_quest(c->depth)) return FALSE;
@@ -3059,7 +3059,7 @@ bool cavern_gen(struct cave *c, struct player *p) {
 	int tries = 0;
 
 	/* If we're too shallow then don't do it */
-	if (c->depth < 8) return FALSE;
+	if (c->depth < 15) return FALSE;
 
 	array_filler(colors, 0, size);
 	array_filler(counts, 0, size);
