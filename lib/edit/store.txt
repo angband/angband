@@ -82,7 +82,7 @@ I:2:prayer book:[Chants and Blessings]
 I:1:prayer book:[Exorcism and Dispelling]
 
 # Alchemist
-S:5:36
+S:5:35
 I:4:scroll:Word of Recall
 I:4:scroll:Identify
 I:3:scroll:Phase Door
@@ -94,7 +94,6 @@ I:1:scroll:Door/Stair Location
 I:1:scroll:Detect Invisible
 I:1:scroll:Recharging
 I:1:scroll:Satisfy Hunger
-I:1:scroll:Restore Item
 I:1:potion:Resist Heat
 I:1:potion:Resist Cold
 I:3:potion:Restore Life Levels
