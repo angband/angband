@@ -1,5 +1,5 @@
 /*
- * reset.c
+ * store/store.c
  *
  *  Created on: 22 Apr 2011
  *      Author: noz
@@ -9,6 +9,7 @@
 #include "unit-test.h"
 #include "unit-test-data.h"
 
+#include "init.h"
 #include "store.h"
 
 static int setup(void **state) {
@@ -25,7 +26,7 @@ static int teardown(void *state) {
 static int number_distinct_items(int which)
 {
 	struct store *s = &store[which];
-	int i;
+	unsigned int i;
 	u32b *kinds = mem_zalloc(sizeof(u32b) * s->table_num);
 	u32b kind;
 	int number_kinds = 0;
@@ -33,7 +34,7 @@ static int number_distinct_items(int which)
 	/* Loop over available stock entries, counting unique kinds */
 	for (i = 0; i < s->table_num; i++)
 	{
-		int j;
+		unsigned int j;
 
 		kind = s->table[i]->kidx;
 		/* Loop over existing found kinds, and skip out early if it's
