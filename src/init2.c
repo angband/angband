@@ -3067,62 +3067,15 @@ static errr init_alloc(void)
 	return (0);
 }
 
-
-
 /*
- * Hack -- main Angband initialization entry point
+ * Initialise just the internal arrays.
+ * This should be callable by the test suite, without relying on input, or
+ * anything to do with a user or savefiles.
  *
- * Verify some files, display the "news.txt" file, create
- * the high score file, initialize all internal arrays, and
- * load the basic "user pref files".
- *
- * Be very careful to keep track of the order in which things
- * are initialized, in particular, the only thing *known* to
- * be available when this function is called is the "z-term.c"
- * package, and that may not be fully initialized until the
- * end of this function, when the default "user pref files"
- * are loaded and "Term_xtra(TERM_XTRA_REACT,0)" is called.
- *
- * Note that this function attempts to verify the "news" file,
- * and the game aborts (cleanly) on failure, since without the
- * "news" file, it is likely that the "lib" folder has not been
- * correctly located.  Otherwise, the news file is displayed for
- * the user.
- *
- * Note that this function attempts to verify (or create) the
- * "high score" file, and the game aborts (cleanly) on failure,
- * since one of the most common "extraction" failures involves
- * failing to extract all sub-directories (even empty ones), such
- * as by failing to use the "-d" option of "pkunzip", or failing
- * to use the "save empty directories" option with "Compact Pro".
- * This error will often be caught by the "high score" creation
- * code below, since the "lib/apex" directory, being empty in the
- * standard distributions, is most likely to be "lost", making it
- * impossible to create the high score file.
- *
- * Note that various things are initialized by this function,
- * including everything that was once done by "init_some_arrays".
- *
- * This initialization involves the parsing of special files
- * in the "lib/data" and sometimes the "lib/edit" directories.
- *
- * Note that the "template" files are initialized first, since they
- * often contain errors.  This means that macros and message recall
- * and things like that are not available until after they are done.
- *
- * We load the default "user pref files" here in case any "color"
- * changes are needed before character creation.
- *
- * Note that the "graf-xxx.prf" file must be loaded separately,
- * if needed, in the first (?) pass through "TERM_XTRA_REACT".
+ * Assumption: Paths are set up correctly before calling this function.
  */
-bool init_angband(void)
+void init_arrays(void)
 {
-	event_signal(EVENT_ENTER_INIT);
-
-
-	/*** Initialize some arrays ***/
-
 	/* Initialize size info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing array sizes...");
 	if (run_parser(&z_parser)) quit("Cannot initialize sizes");
@@ -3206,6 +3159,62 @@ bool init_angband(void)
 	/* Initialize some other arrays */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (alloc)");
 	if (init_alloc()) quit("Cannot initialize alloc stuff");
+}
+
+/*
+ * Hack -- main Angband initialization entry point
+ *
+ * Verify some files, display the "news.txt" file, create
+ * the high score file, initialize all internal arrays, and
+ * load the basic "user pref files".
+ *
+ * Be very careful to keep track of the order in which things
+ * are initialized, in particular, the only thing *known* to
+ * be available when this function is called is the "z-term.c"
+ * package, and that may not be fully initialized until the
+ * end of this function, when the default "user pref files"
+ * are loaded and "Term_xtra(TERM_XTRA_REACT,0)" is called.
+ *
+ * Note that this function attempts to verify the "news" file,
+ * and the game aborts (cleanly) on failure, since without the
+ * "news" file, it is likely that the "lib" folder has not been
+ * correctly located.  Otherwise, the news file is displayed for
+ * the user.
+ *
+ * Note that this function attempts to verify (or create) the
+ * "high score" file, and the game aborts (cleanly) on failure,
+ * since one of the most common "extraction" failures involves
+ * failing to extract all sub-directories (even empty ones), such
+ * as by failing to use the "-d" option of "pkunzip", or failing
+ * to use the "save empty directories" option with "Compact Pro".
+ * This error will often be caught by the "high score" creation
+ * code below, since the "lib/apex" directory, being empty in the
+ * standard distributions, is most likely to be "lost", making it
+ * impossible to create the high score file.
+ *
+ * Note that various things are initialized by this function,
+ * including everything that was once done by "init_some_arrays".
+ *
+ * This initialization involves the parsing of special files
+ * in the "lib/edit" directories.
+ *
+ * Note that the "template" files are initialized first, since they
+ * often contain errors.  This means that macros and message recall
+ * and things like that are not available until after they are done.
+ *
+ * We load the default "user pref files" here in case any "color"
+ * changes are needed before character creation.
+ *
+ * Note that the "graf-xxx.prf" file must be loaded separately,
+ * if needed, in the first (?) pass through "TERM_XTRA_REACT".
+ */
+bool init_angband(void)
+{
+	event_signal(EVENT_ENTER_INIT);
+
+
+	/*** Initialize some arrays ***/
+	init_arrays();
 
 	/*** Load default user pref files ***/
 
