@@ -173,7 +173,8 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80], object
 			prt("", row + i, MAX(col - 2, 0));
 
 			/* Print the (disabled) label */
-			strnfmt(tmp_val, sizeof(tmp_val), "%c) ", index_to_label(i));
+			strnfmt(tmp_val, sizeof(tmp_val), "%c) ",
+				index_to_label(in_term ? i - 1 : i));
 			c_put_str(TERM_SLATE, tmp_val, row + i, col);
 
 			/* Print the count */
