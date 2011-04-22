@@ -97,8 +97,8 @@ bool check_side_immune(int type)
 	if (gf_ptr->immunity) {
 		if (gf_ptr->side_immune && p_ptr->state.flags[gf_ptr->immunity])
 			return TRUE;
-	} else if (gf_ptr->resist && (p_ptr->state.flags[gf_ptr->resist] ||
-				p_ptr->timed[gf_ptr->opp]))
+	} else if ((gf_ptr->resist && p_ptr->state.flags[gf_ptr->resist]) ||
+				(gf_ptr->opp && p_ptr->timed[gf_ptr->opp]))
 		return TRUE;
 
 	return FALSE;
