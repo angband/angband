@@ -1046,7 +1046,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 				*ident = TRUE;
 				return TRUE;
 			} else {
-				msgt(MSG_TPLEVEL, "You have nowhere to go.");
+				msgt(MSG_TPLEVEL, "You sense a malevolent presence blocking passage to the levels below.");
 				*ident = TRUE;
 				return FALSE;
 			}
