@@ -73,8 +73,6 @@ static unsigned int scr_places_y[LOC_MAX];
 /* Some local constants */
 #define STORE_TURNOVER  9       /* Normal shop turnover, per day */
 #define STORE_OBJ_LEVEL 5       /* Magic Level for normal stores */
-#define STORE_MIN_KEEP  6       /* Min slots to "always" keep full (>0) */
-#define STORE_MAX_KEEP  18      /* Max slots to "always" keep full (<STORE_INVEN_MAX) */
 
 
 
