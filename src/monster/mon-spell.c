@@ -267,7 +267,7 @@ static void do_side_effects(int spell, int dam, int m_idx)
 
 					case S_DRAIN_LIFE:
 						d = re_ptr->base.base + (p_ptr->exp *
-							re_ptr->base.sides / 100) * MON_DRAIN_LIFE;						
+							re_ptr->base.sides / 100) * MON_DRAIN_LIFE;
 
 						msg("You feel your life force draining away!");
 						player_exp_lose(p_ptr, d, FALSE);
