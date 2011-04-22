@@ -1546,6 +1546,7 @@ void store_maint(int which)
 	struct cave c;
 	struct cave *oldcave;
 	store_type *st_ptr;
+	int restock_attempts = 100000;
 
 	/* Some of the functions we call gratuitously adjust the rating, and
 	 * we'd like that not to happen for the town. Create a temporary cave
@@ -1620,9 +1621,13 @@ void store_maint(int which)
 	if (stock < STORE_MIN_KEEP) stock = STORE_MIN_KEEP;
 
 	/* For the rest, we just choose items randomlyish */
-	/* XXX this means that we can get stuck in infinite loops if stores
-	 * don't have enough items they can stock! */
-	while (st_ptr->stock_num < stock) store_create_random(which);
+	/* The (huge) restock_attempts will only go to zero (otherwise
+	 * infinite loop) if stores don't have enough items they can stock! */
+	while (st_ptr->stock_num < stock && --restock_attempts)
+		store_create_random(which);
+
+	if(!restock_attempts)
+		quit_fmt("Unable to (re-)stock store %d. Please report this bug", which);
 
 	cave = oldcave;
 }
