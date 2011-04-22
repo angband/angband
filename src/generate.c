@@ -2230,7 +2230,7 @@ static bool room_build(struct cave *c, int by0, int bx0, struct room_profile pro
 /**
  * Generate a new dungeon level.
  */
-#define DUN_AMT_ROOM 7	/* Number of objects for rooms */
+#define DUN_AMT_ROOM 7 /* Number of objects for rooms */
 #define DUN_AMT_ITEM 2 /* Number of objects for rooms/corridors */
 #define DUN_AMT_GOLD 3 /* Amount of treasure for rooms/corridors */
 static bool default_gen(struct cave *c, struct player *p) {
@@ -2503,7 +2503,12 @@ static bool lab_is_tunnel(struct cave *c, int y, int x) {
 
 
 /**
+ * Build a labyrinth level.
  *
+ * Note that if the function returns FALSE, a level wasn't generated.
+ * Labyrinths use the dungeon level's number to determine whether to generate
+ * themselves (which means certain level numbers are more likely to generate
+ * labyrinths than others).
  */
 static bool labyrinth_gen(struct cave *c, struct player *p) {
 	int i, j, k, y, x;
@@ -2512,7 +2517,6 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 	/* NOTE: these are not the actual dungeon size, but rather the size of the
 	 * area we're genearting a labyrinth in (which doesn't count theh enclosing
 	 * outer walls. */
-	/*int h = 17;*/
 	int h = 15 + randint0(c->depth / 10) * 2;
 	int w = 51 + randint0(c->depth / 10) * 2;
 
@@ -2800,8 +2804,8 @@ int ignore_point(struct cave *c, int colors[], int y, int x) {
 	return TRUE;
 }
 
-static int xds[] = {0, 0, 1, -1};
-static int yds[] = {1, -1, 0, 0};
+static int xds[] = {0, 0, 1, -1, -1, -1, 1, 1};
+static int yds[] = {1, -1, 0, 0, -1, 1, -1, 1};
 
 void glow_point(struct cave *c, int y, int x) {
 	int i, j;
@@ -2813,11 +2817,13 @@ void glow_point(struct cave *c, int y, int x) {
 /**
  * Color a particular point, and all adjacent points.
  */
-void build_color_point(struct cave *c, int colors[], int counts[], int y, int x, int color, bool lit) {
+void build_color_point(struct cave *c, int colors[], int counts[], int y, int x, int color, bool diagonal) {
 	int h = c->height;
 	int w = c->width;
 	int size = h * w;
 	struct queue *queue = q_new(size);
+
+	int dslimit = diagonal ? 8 : 4;
 
 	int *added = C_ZNEW(size, int);
 	array_filler(added, 0, size);
@@ -2839,7 +2845,7 @@ void build_color_point(struct cave *c, int colors[], int counts[], int y, int x,
 
 		/*if (lit) glow_point(c, y2, x2);*/
 
-		for (i = 0; i < 4; i++) {
+		for (i = 0; i < dslimit; i++) {
 			int y3 = y2 + yds[i];
 			int x3 = x2 + xds[i];
 			int n3 = lab_toi(y3, x3, w);
@@ -2858,7 +2864,7 @@ void build_color_point(struct cave *c, int colors[], int counts[], int y, int x,
 /**
  * Create a color for each "NESW contiguous" region of the dungeon.
  */
-void build_colors(struct cave *c, int colors[], int counts[]) {
+void build_colors(struct cave *c, int colors[], int counts[], bool diagonal) {
 	int y, x;
 	int h = c->height;
 	int w = c->width;
@@ -2867,7 +2873,7 @@ void build_colors(struct cave *c, int colors[], int counts[]) {
 	for (y = 0; y < h; y++) {
 		for (x = 0; x < w; x++) {
 			if (ignore_point(cave, colors, y, x)) continue;
-			build_color_point(cave, colors, counts, y, x, color, TRUE);
+			build_color_point(cave, colors, counts, y, x, color, diagonal);
 			color++;
 		}
 	}
@@ -3014,7 +3020,7 @@ int open_count(struct cave *c) {
 	int num = 0;
 	for (y = 0; y < h; y++)
 		for (x = 0; x < w; x++)
-			num++;
+			if (cave_isfloor(c, y, x)) num++;
 	return num;
 }
 
@@ -3024,7 +3030,7 @@ void ensure_connectedness(struct cave *c) {
 	int *colors = C_ZNEW(size, int);
 	int *counts = C_ZNEW(size, int);
 
-	build_colors(c, colors, counts);
+	build_colors(c, colors, counts, TRUE);
 	/*clear_small_regions(c, colors, counts);*/
 	join_regions(c, colors, counts);
 
@@ -3064,13 +3070,13 @@ bool cavern_gen(struct cave *c, struct player *p) {
 		for (i = 0; i < times; i++) mutate_cavern(c);
 
 		/* If there are enough open squares then we're done */
-		if (open_count(c) >= size / 20) break;
+		if (open_count(c) >= size / 50) break;
 	}
 
 	/* If we couldn't make a big enough cavern then fail */
 	if (tries == MAX_CAVERN_TRIES) return FALSE;
 
-	build_colors(c, colors, counts);
+	build_colors(c, colors, counts, FALSE);
 	clear_small_regions(c, colors, counts);
 	join_regions(c, colors, counts);
 
