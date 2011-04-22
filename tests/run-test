@@ -1,5 +1,6 @@
 #!/bin/sh
 # Test runner
+# Assumption is that this is run in the top-level directory
 
 usage() {
 	echo "Usage: $0 <test>"
@@ -10,7 +11,7 @@ run() {
 
 	test="$1"
 	printf "Running: $test... "
-	../src/angband -mtest -snone < "$test/input" > "$test/run.out"
+	src/angband -mtest -snone < "$test/input" > "$test/run.out"
 	if [ -x "$test/matcher" ]; then
 		"$test/matcher" "$test"
 	else
