@@ -290,7 +290,8 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		if (known || object_this_pval_is_visible(o_ptr, j)) {
 			if (o_ptr->pval[j] >= INHIBIT_BLOWS) {
 				p += INHIBIT_POWER;
-				file_putf(log_file, "INHIBITING - too many extra blows\n");
+				file_putf(log_file, "INHIBITING - too many extra blows - quitting\n");
+				return p;
 			} else {
 				p = p * (MAX_BLOWS + o_ptr->pval[j]) / MAX_BLOWS;
 				/* Add boost for assumed off-weapon damage */
@@ -306,7 +307,8 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		if (known || object_this_pval_is_visible(o_ptr, j)) {
 			if (o_ptr->pval[j] >= INHIBIT_SHOTS) {
 				p += INHIBIT_POWER;
-				file_putf(log_file, "INHIBITING - too many extra shots\n");
+				file_putf(log_file, "INHIBITING - too many extra shots - quitting\n");
+				return p;
 			} else if (o_ptr->pval[j] > 0) {
 				p = (p * (1 + o_ptr->pval[j]));
 				file_putf(log_file, "Extra shots: multiplying power by 1 + %d, total is %d\n", o_ptr->pval[j], p);
@@ -321,7 +323,8 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			if (o_ptr->pval[j] >= INHIBIT_MIGHT) {
 				p += INHIBIT_POWER;
 				mult = 1;	/* don't overflow */
-				file_putf(log_file, "INHIBITING - too much extra might\n");
+				file_putf(log_file, "INHIBITING - too much extra might - quitting\n");
+				return p;
 			} else
 				mult += o_ptr->pval[j];
 			file_putf(log_file, "Mult after extra might is %d\n", mult);
@@ -332,7 +335,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 
 	/* Apply the correct slay multiplier */
 	if (slay_pwr) {
-		p = (p * (slay_pwr / 10)) / (tot_mon_power / 10);
+		p = (p * (slay_pwr / 100)) / (tot_mon_power / 100);
 		file_putf(log_file, "Adjusted for slay power, total is %d\n", p);
 	}
 
