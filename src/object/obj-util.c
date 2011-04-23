@@ -300,40 +300,21 @@ void reset_visuals(bool load_prefs)
 
 
 /*
- * Obtain the "flags" for an item
+ * Obtain the flags for an item
  */
 void object_flags(const object_type *o_ptr, bitflag flags[OF_SIZE])
 {
-	bitflag f2[OF_SIZE];
-
 	of_wipe(flags);
 
 	if (!o_ptr->kind)
 		return;
 
-	/* Obtain kind flags */
-	of_union(flags, o_ptr->kind->base->flags);
-	of_union(flags, o_ptr->kind->flags);
-
-	/* Obtain artifact flags */
-	if (o_ptr->artifact)
-		of_union(flags, o_ptr->artifact->flags);
-
-	/* Obtain ego flags */
-	if (o_ptr->ego)
-		of_union(flags, o_ptr->ego->flags);
-
-	/* Remove curse flags (use only the object's curse flags) */
-	create_mask(f2, FALSE, OFT_CURSE, OFT_MAX);
-	of_diff(flags, f2);
-
-	/* Obtain the object's flags */
-	of_union(flags, o_ptr->flags);
+	of_copy(flags, o_ptr->flags);
 }
 
 
 /*
- * Obtain the "flags" for an item which are known to the player
+ * Obtain the flags for an item which are known to the player
  */
 void object_flags_known(const object_type *o_ptr, bitflag flags[OF_SIZE])
 {
@@ -349,7 +330,7 @@ void object_flags_known(const object_type *o_ptr, bitflag flags[OF_SIZE])
 }
 
 /*
- * Obtain the "pval_flags" for an item
+ * Obtain the pval_flags for an item
  */
 void object_pval_flags(const object_type *o_ptr, bitflag flags[MAX_PVALS][OF_SIZE])
 {
@@ -360,26 +341,13 @@ void object_pval_flags(const object_type *o_ptr, bitflag flags[MAX_PVALS][OF_SIZ
 
 	for (i = 0; i < MAX_PVALS; i++) {
 		of_wipe(flags[i]);
-
-		/* Obtain kind flags */
-		of_union(flags[i], o_ptr->kind->pval_flags[i]);
-
-		/* Obtain artifact flags */
-		if (o_ptr->artifact)
-			of_union(flags[i], o_ptr->artifact->pval_flags[i]);
-
-		/* Obtain ego flags */
-		if (o_ptr->ego)
-			of_union(flags[i], o_ptr->ego->pval_flags[i]);
-
-		/* Obtain the object's flags */
-		of_union(flags[i], o_ptr->pval_flags[i]);
+		of_copy(flags[i], o_ptr->pval_flags[i]);
 	}
 }
 
 
 /*
- * Obtain the "pval_flags" for an item which are known to the player
+ * Obtain the pval_flags for an item which are known to the player
  */
 void object_pval_flags_known(const object_type *o_ptr, bitflag flags[MAX_PVALS][OF_SIZE])
 {
@@ -393,6 +361,8 @@ void object_pval_flags_known(const object_type *o_ptr, bitflag flags[MAX_PVALS][
 		if (object_flavor_is_aware(o_ptr))
 			of_union(flags[i], o_ptr->kind->pval_flags[i]);
 
+/* XXX Need to rewrite this after fixing #1404, because pval flags may have
+ * shifted from their position in the ego template */
 		if (o_ptr->ego && easy_know(o_ptr))
 			of_union(flags[i], o_ptr->ego->pval_flags[i]);
 	}

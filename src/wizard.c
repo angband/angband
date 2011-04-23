@@ -608,9 +608,10 @@ static void wiz_tweak_item(object_type *o_ptr)
 		strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->ego->eidx);
 	if (!get_string(p, tmp_val, 6)) return;
 	val = atoi(tmp_val);
-	if (val)
+	if (val) {
 		o_ptr->ego = &e_info[val];
-	else
+		ego_apply_magic(o_ptr, p_ptr->depth);
+	} else
 		o_ptr->ego = 0;
 	wiz_display_item(o_ptr, TRUE);
 
@@ -620,9 +621,10 @@ static void wiz_tweak_item(object_type *o_ptr)
 		strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->artifact->aidx);
 	if (!get_string(p, tmp_val, 6)) return;
 	val = atoi(tmp_val);
-	if (val)
+	if (val) {
 		o_ptr->artifact = &a_info[val];
-	else
+		copy_artifact_data(o_ptr, o_ptr->artifact);
+	} else
 		o_ptr->artifact = 0;
 	wiz_display_item(o_ptr, TRUE);
 }
@@ -902,7 +904,7 @@ static void wiz_statistics(object_type *o_ptr, int level)
 
 
 /*
- * Change the quantity of a the item
+ * Change the quantity of an item
  */
 static void wiz_quantity_item(object_type *o_ptr, bool carried)
 {
@@ -1084,7 +1086,6 @@ static void wiz_create_artifact(int a_idx)
 {
 	object_type *i_ptr;
 	object_type object_type_body;
-	int i;
 	object_kind *kind;
 
 	artifact_type *a_ptr = &a_info[a_idx];
@@ -1110,27 +1111,7 @@ static void wiz_create_artifact(int a_idx)
 	i_ptr->artifact = a_ptr;
 
 	/* Extract the fields */
-	for (i = 0; i < a_ptr->num_pvals; i++) {
-		i_ptr->pval[i] = a_ptr->pval[i];
-		i_ptr->num_pvals++;
-	}
-	i_ptr->ac = a_ptr->ac;
-	i_ptr->dd = a_ptr->dd;
-	i_ptr->ds = a_ptr->ds;
-	i_ptr->to_a = a_ptr->to_a;
-	i_ptr->to_h = a_ptr->to_h;
-	i_ptr->to_d = a_ptr->to_d;
-	i_ptr->weight = a_ptr->weight;
-
-	/* Hack -- extract the "cursed" flags */
-	if (cursed_p((bitflag *)a_ptr->flags))
-	{
-		bitflag curse_flags[OF_SIZE], f2[OF_SIZE];
-		of_copy(curse_flags, a_ptr->flags);
-        create_mask(f2, FALSE, OFT_CURSE, OFT_MAX);
-        of_inter(curse_flags, f2);
-		of_union(i_ptr->flags, curse_flags);
-	}
+	copy_artifact_data(i_ptr, a_ptr);
 
 	/* Mark that the artifact has been created. */
 	a_ptr->created = TRUE;

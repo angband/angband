@@ -541,7 +541,8 @@ void make_gold(object_type *j_ptr, int lev, int coin_type);
 void set_ego_xtra_sustain(bitflag flags[OF_SIZE]);
 void set_ego_xtra_resist(bitflag flags[OF_SIZE]);
 void set_ego_xtra_power(bitflag flags[OF_SIZE]);
-
+void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr);
+void ego_apply_magic(object_type *o_ptr, int level);
 
 /* obj-ui.c */
 void show_inven(olist_detail_t mode);

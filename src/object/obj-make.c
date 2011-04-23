@@ -189,7 +189,7 @@ static struct ego_item *ego_find_random(object_type *o_ptr, int level)
 /**
  * Apply generation magic to an ego-item.
  */
-static void ego_apply_magic(object_type *o_ptr, int level)
+void ego_apply_magic(object_type *o_ptr, int level)
 {
 	int i;
 
@@ -214,9 +214,14 @@ static void ego_apply_magic(object_type *o_ptr, int level)
 
 	/* Apply pvals */
 	for (i = 0; i < o_ptr->ego->num_pvals; i++) {
-		if (!o_ptr->pval[i]) o_ptr->num_pvals++;
+		if (!o_ptr->pval[i])
+			o_ptr->num_pvals++;
 		o_ptr->pval[i] += randcalc(o_ptr->ego->pval[i], level, RANDOMISE);
+		of_union(o_ptr->pval_flags[i], o_ptr->ego->pval_flags[i]);
 	}
+
+	/* Apply flags */
+	of_union(o_ptr->flags, o_ptr->ego->flags);
 
 	/* XXX ick ick ick */
 	cave->rating += o_ptr->ego->rating;
@@ -272,14 +277,16 @@ static bool make_ego_item(object_type *o_ptr, int level)
  * Copy artifact data to a normal object, and set various slightly hacky
  * globals.
  */
-static void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
+void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
 {
 	int i;
 
-	/* Extract the other fields */
+	/* Extract the data */
 	for (i = 0; i < a_ptr->num_pvals; i++)
-		if (a_ptr->pval[i])
+		if (a_ptr->pval[i]) {
 			o_ptr->pval[i] = a_ptr->pval[i];
+			of_copy(o_ptr->pval_flags[i], a_ptr->pval_flags[i]);
+		}
 	o_ptr->num_pvals = a_ptr->num_pvals;
 	o_ptr->ac = a_ptr->ac;
 	o_ptr->dd = a_ptr->dd;
@@ -288,17 +295,7 @@ static void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
 	o_ptr->to_h = a_ptr->to_h;
 	o_ptr->to_d = a_ptr->to_d;
 	o_ptr->weight = a_ptr->weight;
-
-	/* Hack -- extract the "cursed" flags */
-	if (cursed_p((bitflag *)a_ptr->flags))
-	{
-		bitflag curse_flags[OF_SIZE], f2[OF_SIZE];
-
-		of_copy(curse_flags, a_ptr->flags);
-		create_mask(f2, FALSE, OFT_CURSE, OFT_MAX);
-		of_inter(curse_flags, f2);
-		of_union(o_ptr->flags, curse_flags);
-	}
+	of_copy(o_ptr->flags, a_ptr->flags);
 
 	/* Mega-Hack -- increase the level rating
 	 * - a sizeable increase for any artifact (c.f. up to 30 for ego items)
@@ -544,13 +541,17 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
 	o_ptr->dd = k->dd;
 	o_ptr->ds = k->ds;
 	o_ptr->weight = k->weight;
+	of_copy(o_ptr->flags, k->base->flags);
+	of_union(o_ptr->flags, k->flags);
 
 	/* Default number */
 	o_ptr->number = 1;
 
-	/* Default "pvals" */
-	for (i = 0; i < k->num_pvals; i++)
+	/* Default pvals */
+	for (i = 0; i < k->num_pvals; i++) {
 		o_ptr->pval[i] = randcalc(k->pval[i], lev, rand_aspect);
+		of_copy(o_ptr->pval_flags[i], k->pval_flags[i]);
+	}
 	o_ptr->num_pvals = k->num_pvals;
 	
 	/* Assign charges (wands/staves only) */
