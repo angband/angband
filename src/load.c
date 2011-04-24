@@ -1,6 +1,6 @@
 /*
  * File: load.c
- * Purpose: Old-style savefile loading
+ * Purpose: Savefile loading functions
  *
  * Copyright (c) 1997 Ben Harrison, and others
  *
@@ -38,12 +38,12 @@ static struct ego_item *lookup_ego(int idx)
 
 
 /*
- * Read an object, version 2
+ * Read an object, version 3
  *
  * This function attempts to "repair" old savefiles, and to extract
  * the most up to date values for various object fields.
  */
-static int rd_item_2(object_type *o_ptr)
+static int rd_item_3(object_type *o_ptr)
 {
 	byte old_dd;
 	byte old_ds;
@@ -191,27 +191,195 @@ static int rd_item_2(object_type *o_ptr)
 	}
 
 	/* Ego items */
-	if (o_ptr->ego)
-	{
+	if (o_ptr->ego)	{
 		bitflag pval_mask[OF_SIZE];
 
-	        /* Hack -- keep some old fields */
-	        if ((o_ptr->dd < old_dd) && (o_ptr->ds == old_ds))
-	        {
-	                /* Keep old boosted damage dice */
-	                o_ptr->dd = old_dd;
-	        }
+        /* Hack -- keep some old fields */
+        if ((o_ptr->dd < old_dd) && (o_ptr->ds == old_ds))
+			/* Keep old boosted damage dice */
+			o_ptr->dd = old_dd;
 
 		create_mask(pval_mask, FALSE, OFT_PVAL, OFT_STAT, OFT_MAX);
 
-	        /* Hack -- enforce legal pval */
-	        for (i = 0; i < MAX_PVALS; i++) {
-	                if (of_is_inter(o_ptr->ego->pval_flags[i], pval_mask))
+        /* Hack -- enforce legal pval */
+        for (i = 0; i < MAX_PVALS; i++) {
+			if (of_is_inter(o_ptr->ego->pval_flags[i], pval_mask))
 
-	                        /* Force a meaningful pval */
-	                        if (!o_ptr->pval[i])
-	                                o_ptr->pval[i] = o_ptr->ego->min_pval[i];
-	        }
+				/* Force a meaningful pval */
+				if (!o_ptr->pval[i])
+					o_ptr->pval[i] = o_ptr->ego->min_pval[i];
+		}
+	}
+
+	/* Success */
+	return (0);
+}
+
+/*
+ * Read an object, version 2 - remove after 3.3
+ *
+ * This function attempts to "repair" old savefiles, and to extract
+ * the most up to date values for various object fields. It also copies flags
+ * and pval_flags properly, now that they are canonical.
+ */
+static int rd_item_2(object_type *o_ptr)
+{
+	byte old_dd;
+	byte old_ds;
+	byte tmp8u;
+	u16b tmp16u;
+
+	byte ego_idx;
+	byte art_idx;
+
+	size_t i, j;
+
+	char buf[128];
+
+	byte ver = 1;
+
+	rd_u16b(&tmp16u);
+	rd_byte(&ver);
+	assert(tmp16u == 0xffff);
+
+	strip_bytes(2);
+
+	/* Location */
+	rd_byte(&o_ptr->iy);
+	rd_byte(&o_ptr->ix);
+
+	/* Type/Subtype */
+	rd_byte(&o_ptr->tval);
+	rd_byte(&o_ptr->sval);
+	for (i = 0; i < MAX_PVALS; i++) {
+		rd_s16b(&o_ptr->pval[i]);
+	}
+	rd_byte(&o_ptr->num_pvals);
+
+	/* Pseudo-ID bit */
+	rd_byte(&tmp8u);
+
+	rd_byte(&o_ptr->number);
+	rd_s16b(&o_ptr->weight);
+
+	rd_byte(&art_idx);
+	rd_byte(&ego_idx);
+
+	rd_s16b(&o_ptr->timeout);
+
+	rd_s16b(&o_ptr->to_h);
+	rd_s16b(&o_ptr->to_d);
+	rd_s16b(&o_ptr->to_a);
+
+	rd_s16b(&o_ptr->ac);
+
+	rd_byte(&old_dd);
+	rd_byte(&old_ds);
+
+	rd_u16b(&o_ptr->ident);
+
+	rd_byte(&o_ptr->marked);
+
+	rd_byte(&o_ptr->origin);
+	rd_byte(&o_ptr->origin_depth);
+	rd_u16b(&o_ptr->origin_xtra);
+
+	for (i = 0; i < OF_BYTES && i < OF_SIZE; i++)
+		rd_byte(&o_ptr->flags[i]);
+	if (i < OF_BYTES) strip_bytes(OF_BYTES - i);
+
+	of_wipe(o_ptr->known_flags);
+
+	for (i = 0; i < OF_BYTES && i < OF_SIZE; i++)
+		rd_byte(&o_ptr->known_flags[i]);
+	if (i < OF_BYTES) strip_bytes(OF_BYTES - i);
+
+	for (j = 0; j < MAX_PVALS; j++) {
+		for (i = 0; i < OF_BYTES && i < OF_SIZE; i++)
+			rd_byte(&o_ptr->pval_flags[j][i]);
+		if (i < OF_BYTES) strip_bytes(OF_BYTES - i);
+	}
+
+	/* Monster holding object */
+	rd_s16b(&o_ptr->held_m_idx);
+
+	/* Save the inscription */
+	rd_string(buf, sizeof(buf));
+	if (buf[0]) o_ptr->note = quark_add(buf);
+
+
+	/* Lookup item kind */
+	o_ptr->kind = lookup_kind(o_ptr->tval, o_ptr->sval);
+	if (!o_ptr->kind)
+		return 0;
+
+	o_ptr->ego = lookup_ego(ego_idx);
+
+	if (art_idx >= z_info->a_max)
+		return -1;
+	if (art_idx > 0)
+		o_ptr->artifact = &a_info[art_idx];
+
+	/* Repair non "wearable" items */
+	if (!wearable_p(o_ptr))
+	{
+		/* Get the correct fields */
+		if (!randcalc_valid(o_ptr->kind->to_h, o_ptr->to_h))
+			o_ptr->to_h = randcalc(o_ptr->kind->to_h, o_ptr->origin_depth, RANDOMISE);
+		if (!randcalc_valid(o_ptr->kind->to_d, o_ptr->to_d))
+			o_ptr->to_d = randcalc(o_ptr->kind->to_d, o_ptr->origin_depth, RANDOMISE);
+		if (!randcalc_valid(o_ptr->kind->to_a, o_ptr->to_a))
+			o_ptr->to_a = randcalc(o_ptr->kind->to_a, o_ptr->origin_depth, RANDOMISE);
+
+		/* Get the correct fields */
+		o_ptr->ac = o_ptr->kind->ac;
+		o_ptr->dd = o_ptr->kind->dd;
+		o_ptr->ds = o_ptr->kind->ds;
+
+		/* Get the correct weight */
+		o_ptr->weight = o_ptr->kind->weight;
+
+		/* All done */
+		return (0);
+	}
+
+	/* Get the standard fields and flags*/
+	o_ptr->ac = o_ptr->kind->ac;
+	o_ptr->dd = o_ptr->kind->dd;
+	o_ptr->ds = o_ptr->kind->ds;
+	o_ptr->weight = o_ptr->kind->weight;
+	of_union(o_ptr->flags, o_ptr->kind->base->flags);
+	of_union(o_ptr->flags, o_ptr->kind->flags);
+    for (i = 0; i < o_ptr->kind->num_pvals; i++)
+        of_union(o_ptr->pval_flags[i], o_ptr->kind->pval_flags[i]);
+
+	/* Artifacts */
+	if (o_ptr->artifact)
+		copy_artifact_data(o_ptr, o_ptr->artifact);
+
+	/* Ego items */
+	if (o_ptr->ego)	{
+		bitflag pval_mask[OF_SIZE];
+
+		of_union(o_ptr->flags, o_ptr->ego->flags);
+
+        /* Hack -- keep some old fields */
+        if ((o_ptr->dd < old_dd) && (o_ptr->ds == old_ds))
+			/* Keep old boosted damage dice */
+			o_ptr->dd = old_dd;
+
+		create_mask(pval_mask, FALSE, OFT_PVAL, OFT_STAT, OFT_MAX);
+
+        /* Hack -- enforce legal pval, and apply pval flags */
+        for (i = 0; i < MAX_PVALS; i++) {
+			if (of_is_inter(o_ptr->ego->pval_flags[i], pval_mask)) {
+
+				of_union(o_ptr->pval_flags[i], o_ptr->ego->pval_flags[i]);
+
+				if (!o_ptr->pval[i])
+					o_ptr->pval[i] = o_ptr->ego->min_pval[i];
+			}
+		}
 	}
 
 	/* Success */
@@ -1468,7 +1636,95 @@ int rd_randarts_1(void)
 
 
 /*
- * Read the player inventory, version 2
+ * Read the player inventory, version 3
+ *
+ * Note that the inventory is "re-sorted" later by "dungeon()".
+ */
+int rd_inventory_3(void)
+{
+	int slot = 0;
+
+	object_type *i_ptr;
+	object_type object_type_body;
+
+	/* Read until done */
+	while (1)
+	{
+		u16b n;
+
+		/* Get the next item index */
+		rd_u16b(&n);
+
+		/* Nope, we reached the end */
+		if (n == 0xFFFF) break;
+
+		/* Get local object */
+		i_ptr = &object_type_body;
+
+		/* Wipe the object */
+		object_wipe(i_ptr);
+
+		/* Read the item */
+		if (rd_item_3(i_ptr))
+		{
+			note("Error reading item");
+			return (-1);
+		}
+
+		/* Hack -- verify item */
+		if (!i_ptr->kind) continue;
+
+		/* Verify slot */
+		if (n >= ALL_INVEN_TOTAL) return (-1);
+
+		/* Wield equipment */
+		if (n >= INVEN_WIELD)
+		{
+			/* Copy object */
+			object_copy(&p_ptr->inventory[n], i_ptr);
+
+			/* Add the weight */
+			p_ptr->total_weight += (i_ptr->number * i_ptr->weight);
+
+			/* One more item */
+			p_ptr->equip_cnt++;
+		}
+
+		/* Warning -- backpack is full */
+		else if (p_ptr->inven_cnt == INVEN_PACK)
+		{
+			/* Oops */
+			note("Too many items in the inventory!");
+
+			/* Fail */
+			return (-1);
+		}
+
+		/* Carry inventory */
+		else
+		{
+			/* Get a slot */
+			n = slot++;
+
+			/* Copy object */
+			object_copy(&p_ptr->inventory[n], i_ptr);
+
+			/* Add the weight */
+			p_ptr->total_weight += (i_ptr->number * i_ptr->weight);
+
+			/* One more item */
+			p_ptr->inven_cnt++;
+		}
+	}
+
+	save_quiver_size(p_ptr);
+
+	/* Success */
+	return (0);
+}
+
+/*
+ * Read the player inventory, version 2 - remove after 3.3
  *
  * Note that the inventory is "re-sorted" later by "dungeon()".
  */
@@ -1643,7 +1899,71 @@ int rd_inventory_1(void)
 	return (0);
 }
 
-/* Read store contents, version 2 */
+/* Read store contents, version 3 */
+int rd_stores_3(void)
+{
+	int i;
+	u16b tmp16u;
+	
+	/* Read the stores */
+	rd_u16b(&tmp16u);
+	for (i = 0; i < tmp16u; i++)
+	{
+		store_type *st_ptr = &store[i];
+
+		int j;		
+		byte own, num;
+		
+		/* XXX */
+		strip_bytes(6);
+		
+		/* Read the basic info */
+		rd_byte(&own);
+		rd_byte(&num);
+		
+		/* XXX */
+		strip_bytes(4);
+	
+		/* XXX: refactor into store.c */
+		st_ptr->owner = store_ownerbyidx(st_ptr, own);
+		
+		/* Read the items */
+		for (j = 0; j < num; j++)
+		{
+			object_type *i_ptr;
+			object_type object_type_body;
+			
+			/* Get local object */
+			i_ptr = &object_type_body;
+			
+			/* Wipe the object */
+			object_wipe(i_ptr);
+			
+			/* Read the item */
+			if (rd_item_3(i_ptr))
+			{
+				note("Error reading item");
+				return (-1);
+			}
+
+			if (i != STORE_HOME)
+				i_ptr->ident |= IDENT_STORE;
+			
+			/* Accept any valid items */
+			if (st_ptr->stock_num < STORE_INVEN_MAX && i_ptr->kind)
+			{
+				int k = st_ptr->stock_num++;
+
+				/* Accept the item */
+				object_copy(&st_ptr->stock[k], i_ptr);
+			}
+		}
+	}
+
+	return 0;
+}
+
+/* Read store contents, version 2 - remove after 3.3*/
 int rd_stores_2(void)
 {
 	int i;
@@ -1941,7 +2261,85 @@ int rd_dungeon(void)
 	return 0;
 }
 
-/* Read the floor object list, version 2 */
+/* Read the floor object list, version 3 */
+int rd_objects_3(void)
+{
+	int i;
+	u16b limit;
+
+	/* Only if the player's alive */
+	if (p_ptr->is_dead)
+		return 0;
+
+	/* Read the item count */
+	rd_u16b(&limit);
+
+	/* Verify maximum */
+	if (limit > z_info->o_max)
+	{
+		note(format("Too many (%d) object entries!", limit));
+		return (-1);
+	}
+
+	/* Read the dungeon items */
+	for (i = 1; i < limit; i++)
+	{
+		object_type *i_ptr;
+		object_type object_type_body;
+
+		s16b o_idx;
+		object_type *o_ptr;
+
+
+		/* Get the object */
+		i_ptr = &object_type_body;
+
+		/* Wipe the object */
+		object_wipe(i_ptr);
+
+		/* Read the item */
+		if (rd_item_3(i_ptr))
+		{
+			note("Error reading item");
+			return (-1);
+		}
+
+		/* Make an object */
+		o_idx = o_pop();
+
+		/* Paranoia */
+		if (o_idx != i)
+		{
+			note(format("Cannot place object %d!", i));
+			return (-1);
+		}
+
+		/* Get the object */
+		o_ptr = object_byid(o_idx);
+
+		/* Structure Copy */
+		object_copy(o_ptr, i_ptr);
+
+		/* Dungeon floor */
+		if (!i_ptr->held_m_idx)
+		{
+			int x = i_ptr->ix;
+			int y = i_ptr->iy;
+
+			/* ToDo: Verify coordinates */
+
+			/* Link the object to the pile */
+			o_ptr->next_o_idx = cave->o_idx[y][x];
+
+			/* Link the floor to the object */
+			cave->o_idx[y][x] = o_idx;
+		}
+	}
+
+	return 0;
+}
+
+/* Read the floor object list, version 2 - remove after 3.3 */
 int rd_objects_2(void)
 {
 	int i;
