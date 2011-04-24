@@ -24,6 +24,8 @@
 #include "savefile.h"
 #include "squelch.h"
 
+/* Shorthand function pointer for rd_item version */
+typedef int (*rd_item_t)(object_type *o_ptr);
 
 /**
  * Find an ego item from its index
@@ -1635,12 +1637,12 @@ int rd_randarts_1(void)
 }
 
 
-/*
- * Read the player inventory, version 3
+/**
+ * Read the player inventory
  *
- * Note that the inventory is "re-sorted" later by "dungeon()".
+ * Note that the inventory is re-sorted later by dungeon().
  */
-int rd_inventory_3(void)
+int rd_inventory(rd_item_t rd_item_version)
 {
 	int slot = 0;
 
@@ -1665,7 +1667,7 @@ int rd_inventory_3(void)
 		object_wipe(i_ptr);
 
 		/* Read the item */
-		if (rd_item_3(i_ptr))
+		if ((*rd_item_version)(i_ptr))
 		{
 			note("Error reading item");
 			return (-1);
@@ -1724,180 +1726,12 @@ int rd_inventory_3(void)
 }
 
 /*
- * Read the player inventory, version 2 - remove after 3.3
- *
- * Note that the inventory is "re-sorted" later by "dungeon()".
+ * Read the player inventory - wrapper functions
  */
-int rd_inventory_2(void)
-{
-	int slot = 0;
+int rd_inventory_3(void) { return rd_inventory(rd_item_3); }
+int rd_inventory_2(void) { return rd_inventory(rd_item_2); } /* remove post-3.3 */
+int rd_inventory_1(void) { return rd_inventory(rd_item_1); } /* remove post-3.3 */
 
-	object_type *i_ptr;
-	object_type object_type_body;
-
-	/* Read until done */
-	while (1)
-	{
-		u16b n;
-
-		/* Get the next item index */
-		rd_u16b(&n);
-
-		/* Nope, we reached the end */
-		if (n == 0xFFFF) break;
-
-		/* Get local object */
-		i_ptr = &object_type_body;
-
-		/* Wipe the object */
-		object_wipe(i_ptr);
-
-		/* Read the item */
-		if (rd_item_2(i_ptr))
-		{
-			note("Error reading item");
-			return (-1);
-		}
-
-		/* Hack -- verify item */
-		if (!i_ptr->kind) continue;
-
-		/* Verify slot */
-		if (n >= ALL_INVEN_TOTAL) return (-1);
-
-		/* Wield equipment */
-		if (n >= INVEN_WIELD)
-		{
-			/* Copy object */
-			object_copy(&p_ptr->inventory[n], i_ptr);
-
-			/* Add the weight */
-			p_ptr->total_weight += (i_ptr->number * i_ptr->weight);
-
-			/* One more item */
-			p_ptr->equip_cnt++;
-		}
-
-		/* Warning -- backpack is full */
-		else if (p_ptr->inven_cnt == INVEN_PACK)
-		{
-			/* Oops */
-			note("Too many items in the inventory!");
-
-			/* Fail */
-			return (-1);
-		}
-
-		/* Carry inventory */
-		else
-		{
-			/* Get a slot */
-			n = slot++;
-
-			/* Copy object */
-			object_copy(&p_ptr->inventory[n], i_ptr);
-
-			/* Add the weight */
-			p_ptr->total_weight += (i_ptr->number * i_ptr->weight);
-
-			/* One more item */
-			p_ptr->inven_cnt++;
-		}
-	}
-
-	save_quiver_size(p_ptr);
-
-	/* Success */
-	return (0);
-}
-
-/*
- * Read the player inventory - remove after 3.3
- *
- * Note that the inventory is "re-sorted" later by "dungeon()".
- */
-int rd_inventory_1(void)
-{
-	int slot = 0;
-
-	object_type *i_ptr;
-	object_type object_type_body;
-
-	/* Read until done */
-	while (1)
-	{
-		u16b n;
-
-		/* Get the next item index */
-		rd_u16b(&n);
-
-		/* Nope, we reached the end */
-		if (n == 0xFFFF) break;
-
-		/* Get local object */
-		i_ptr = &object_type_body;
-
-		/* Wipe the object */
-		object_wipe(i_ptr);
-
-		/* Read the item */
-		if (rd_item_1(i_ptr))
-		{
-			note("Error reading item");
-			return (-1);
-		}
-
-		/* Hack -- verify item */
-		if (!i_ptr->kind) continue;
-
-		/* Verify slot */
-		if (n >= ALL_INVEN_TOTAL) return (-1);
-
-		/* Wield equipment */
-		if (n >= INVEN_WIELD)
-		{
-			/* Copy object */
-			object_copy(&p_ptr->inventory[n], i_ptr);
-
-			/* Add the weight */
-			p_ptr->total_weight += (i_ptr->number * i_ptr->weight);
-
-			/* One more item */
-			p_ptr->equip_cnt++;
-		}
-
-		/* Warning -- backpack is full */
-		else if (p_ptr->inven_cnt == INVEN_PACK)
-		{
-			/* Oops */
-			note("Too many items in the inventory!");
-
-			/* Fail */
-			return (-1);
-		}
-
-		/* Carry inventory */
-		else
-		{
-			/* Get a slot */
-			n = slot++;
-
-			/* Copy object */
-			object_copy(&p_ptr->inventory[n], i_ptr);
-
-			/* Add the weight */
-			p_ptr->total_weight += (i_ptr->number * i_ptr->weight);
-
-			/* One more item */
-			p_ptr->inven_cnt++;
-		}
-	}
-
-	save_quiver_size(p_ptr);
-
-	/* Success */
-	return (0);
-}
 
 /* Read store contents, version 3 */
 int rd_stores_3(void)
