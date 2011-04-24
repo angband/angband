@@ -1024,6 +1024,9 @@ bool detect_monsters_invis(bool aware)
 				/* Redraw stuff */
 				p_ptr->redraw |= (PR_MONSTER);
 			}
+			
+			/* Detect the monster */
+			m_ptr->mflag |= (MFLAG_MARK | MFLAG_SHOW);
 
 			/* Update the monster */
 			update_mon(i, FALSE);
