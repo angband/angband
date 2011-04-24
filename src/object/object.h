@@ -13,6 +13,16 @@ struct player;
 
 /*** Constants ***/
 
+/**
+ * Maximum number of pvals on objects
+ *
+ * Note: all pvals other than DEFAULT_PVAL are assumed to be associated with
+ * flags, and any non-flag uses of pval (e.g. chest quality, gold quantity)
+ * are assumed to use DEFAULT_PVAL.
+ */
+#define MAX_PVALS 3
+#define DEFAULT_PVAL 0
+
 /* ID flags */
 #define IDENT_SENSE     0x0001  /* Has been "sensed" */
 #define IDENT_WORN      0x0002  /* Has been tried on */
@@ -485,7 +495,6 @@ bool object_was_sensed(const object_type *o_ptr);
 bool object_flavor_is_aware(const object_type *o_ptr);
 bool object_flavor_was_tried(const object_type *o_ptr);
 bool object_effect_is_known(const object_type *o_ptr);
-bool object_this_pval_is_visible(const object_type *o_ptr, int pval);
 bool object_ego_is_visible(const object_type *o_ptr);
 bool object_attack_plusses_are_visible(const object_type *o_ptr);
 bool object_defence_plusses_are_visible(const object_type *o_ptr);
@@ -521,7 +530,6 @@ void object_know_all_flags(object_type *o_ptr);
 void object_base_name(char *buf, size_t max, int tval, bool plural);
 void object_kind_name(char *buf, size_t max, const object_kind *kind, bool easy_know);
 size_t object_desc(char *buf, size_t max, const object_type *o_ptr, odesc_detail_t mode);
-int which_pval(const object_type *o_ptr, const int flag);
 
 /* obj-info.c */
 textblock *object_info(const object_type *o_ptr, oinfo_detail_t mode);
@@ -558,8 +566,6 @@ void flavor_init(void);
 void reset_visuals(bool load_prefs);
 void object_flags(const object_type *o_ptr, bitflag flags[OF_SIZE]);
 void object_flags_known(const object_type *o_ptr, bitflag flags[OF_SIZE]);
-void object_pval_flags(const object_type *o_ptr, bitflag flags[MAX_PVALS][OF_SIZE]);
-void object_pval_flags_known(const object_type *o_ptr, bitflag flags[MAX_PVALS][OF_SIZE]);
 char index_to_label(int i);
 s16b label_to_inven(int c);
 s16b label_to_equip(int c);

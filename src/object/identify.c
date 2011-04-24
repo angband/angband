@@ -23,6 +23,7 @@
 #include "history.h"
 #include "object/slays.h"
 #include "object/tvalsval.h"
+#include "object/pval.h"
 #include "spells.h"
 #include "squelch.h"
 
@@ -150,39 +151,6 @@ bool object_effect_is_known(const object_type *o_ptr)
 	return (easy_know(o_ptr) || (o_ptr->ident & IDENT_EFFECT)
 		|| (object_flavor_is_aware(o_ptr) && o_ptr->kind->effect)
 		|| (o_ptr->ident & IDENT_STORE)) ? TRUE : FALSE;
-}
-
-/**
- * \returns whether a specific pval is known to the player
- */
-bool object_this_pval_is_visible(const object_type *o_ptr, int pval)
-{
-	bitflag f[MAX_PVALS][OF_SIZE], f2[OF_SIZE];
-
-	assert(o_ptr->kind);
-
-	if (o_ptr->ident & IDENT_STORE)
-		return TRUE;
-
-	/* Aware jewelry with non-variable pval */
-	if (object_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr))
-	{
-		if (!randcalc_varies(o_ptr->kind->pval[pval]))
-			return TRUE;
-	}
-
-	if (object_was_worn(o_ptr))
-	{
-		object_pval_flags_known(o_ptr, f);
-
-		/* Create the mask for pval-related flags */
-		create_mask(f2, FALSE, OFT_STAT, OFT_PVAL, OFT_MAX);
-
-		if (of_is_inter(f[pval], f2))
-			return TRUE;
-	}
-
-	return FALSE;
 }
 
 /**

@@ -96,6 +96,7 @@ ANGFILES = \
 	object/obj-power.o \
 	object/obj-ui.o \
 	object/obj-util.o \
+	object/pval.o \
 	object/randart.o \
 	object/slays.o \
 	option.o \

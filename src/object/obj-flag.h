@@ -96,16 +96,6 @@ enum object_flag_id {
 #define OBJECT_XTRA_TYPE_RESIST   2
 #define OBJECT_XTRA_TYPE_POWER    3
 
-/**
- * Maximum number of pvals on objects
- *
- * Note: all pvals other than DEFAULT_PVAL are assumed to be associated with
- * flags, and any non-flag uses of pval (e.g. chest quality, gold quantity)
- * are assumed to use DEFAULT_PVAL.
- */
-#define MAX_PVALS 3
-#define DEFAULT_PVAL 0
-
 
 /*** Structures ***/
 

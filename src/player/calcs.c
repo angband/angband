@@ -21,9 +21,8 @@
 #include "cave.h"
 #include "files.h"
 #include "game-event.h"
-#include "monster/monster.h"
 #include "object/tvalsval.h"
-#include "object/object.h"
+#include "object/pval.h"
 #include "spells.h"
 #include "squelch.h"
 

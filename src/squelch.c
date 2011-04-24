@@ -20,6 +20,7 @@
 #include "cmds.h"
 #include "ui-menu.h"
 #include "object/tvalsval.h"
+#include "object/pval.h"
 #include "squelch.h"
 
 

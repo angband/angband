@@ -18,29 +18,11 @@
 
 #include "angband.h"
 #include "squelch.h"
-#include "tvalsval.h"
-
-/* Work out which pval governs a particular flag.
- * We assume that we are only called if this pval and flag exist and are
- * known */
-int which_pval(const object_type *o_ptr, const int flag)
-{
-	int i;
-	bitflag f[MAX_PVALS][OF_SIZE];
-
-	object_pval_flags(o_ptr, f);
-
-	for (i = 0; i < MAX_PVALS; i++) {
-		if (of_has(f[i], flag))
-			return i;
-	}
-
-	assert(0);
-}
+#include "object/tvalsval.h"
+#include "object/pval.h"
 
 static size_t obj_desc_name_format(char *buf, size_t max, size_t end,
 		const char *fmt, const char *modstr, bool pluralise);
-
 
 /**
  * Puts the object base kind's name into buf.

@@ -23,7 +23,7 @@
 #include "game-cmd.h"
 #include "history.h"
 #include "object/tvalsval.h"
-#include "object/object.h"
+#include "object/pval.h"
 #include "option.h"
 #include "savefile.h"
 #include "ui-menu.h"

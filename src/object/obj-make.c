@@ -18,8 +18,8 @@
 
 #include "angband.h"
 #include "cave.h"
-#include "tvalsval.h"
-
+#include "object/tvalsval.h"
+#include "object/pval.h"
 
 /*
  * The chance of inflating the requested object level (1/x).

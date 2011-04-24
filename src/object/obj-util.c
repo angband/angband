@@ -18,17 +18,16 @@
 
 #include "angband.h"
 #include "cave.h"
-#include "defines.h"
 #include "effects.h"
 #include "game-cmd.h"
 #include "generate.h"
 #include "history.h"
-#include "inventory.h"
+#include "object/inventory.h"
 #include "prefs.h"
 #include "spells.h"
 #include "squelch.h"
 #include "randname.h"
-#include "tvalsval.h"
+#include "object/tvalsval.h"
 #include "z-queue.h"
 
 struct object *o_list;
@@ -328,46 +327,6 @@ void object_flags_known(const object_type *o_ptr, bitflag flags[OF_SIZE])
 	if (o_ptr->ego && easy_know(o_ptr))
 		of_union(flags, o_ptr->ego->flags);
 }
-
-/*
- * Obtain the pval_flags for an item
- */
-void object_pval_flags(const object_type *o_ptr, bitflag flags[MAX_PVALS][OF_SIZE])
-{
-	int i;
-
-	if (!o_ptr->kind)
-		return;
-
-	for (i = 0; i < MAX_PVALS; i++) {
-		of_wipe(flags[i]);
-		of_copy(flags[i], o_ptr->pval_flags[i]);
-	}
-}
-
-
-/*
- * Obtain the pval_flags for an item which are known to the player
- */
-void object_pval_flags_known(const object_type *o_ptr, bitflag flags[MAX_PVALS][OF_SIZE])
-{
-	int i;
-
-	object_pval_flags(o_ptr, flags);
-
-	for (i = 0; i < MAX_PVALS; i++) {
-		of_inter(flags[i], o_ptr->known_flags);
-
-		if (object_flavor_is_aware(o_ptr))
-			of_union(flags[i], o_ptr->kind->pval_flags[i]);
-
-/* XXX Need to rewrite this after fixing #1404, because pval flags may have
- * shifted from their position in the ego template */
-		if (o_ptr->ego && easy_know(o_ptr))
-			of_union(flags[i], o_ptr->ego->pval_flags[i]);
-	}
-}
-
 
 /*
  * Convert an inventory index into a one character label.

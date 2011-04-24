@@ -20,6 +20,7 @@
 #include "angband.h"
 #include "object/slays.h"
 #include "object/tvalsval.h"
+#include "object/pval.h"
 #include "init.h"
 #include "effects.h"
 #include "randname.h"
