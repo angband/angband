@@ -296,16 +296,6 @@ void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
 	o_ptr->to_d = a_ptr->to_d;
 	o_ptr->weight = a_ptr->weight;
 	of_union(o_ptr->flags, a_ptr->flags);
-
-	/* Mega-Hack -- increase the level rating
-	 * - a sizeable increase for any artifact (c.f. up to 30 for ego items)
-	 * - a bigger increase for more powerful artifacts
-	 */
-	cave->rating += 30;
-	cave->rating += object_power(o_ptr, FALSE, NULL, TRUE) / 25;
-
-	/* Set the good item flag */
-	cave->good_item = TRUE;
 }
 
 
@@ -384,6 +374,16 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 
 		/* Mark the artifact as "created" */
 		a_ptr->created = 1;
+
+		/* Mega-Hack -- increase the level rating
+		 * - a sizeable increase for any artifact (c.f. up to 30 for ego items)
+		 * - a bigger increase for more powerful artifacts
+		 */
+		cave->rating += 30;
+		cave->rating += object_power(o_ptr, FALSE, NULL, TRUE) / 25;
+
+		/* Set the good item flag */
+		cave->good_item = TRUE;
 
 		/* Success */
 		return TRUE;
@@ -470,6 +470,16 @@ static bool make_artifact(object_type *o_ptr)
 	{
 		copy_artifact_data(o_ptr, o_ptr->artifact);
 		o_ptr->artifact->created = 1;
+
+		/* Mega-Hack -- increase the level rating
+		 * - a sizeable increase for any artifact (c.f. up to 30 for ego items)
+		 * - a bigger increase for more powerful artifacts
+		 */
+		cave->rating += 30;
+		cave->rating += object_power(o_ptr, FALSE, NULL, TRUE) / 25;
+
+		/* Set the good item flag */
+		cave->good_item = TRUE;
 
 		return TRUE;
 	}
