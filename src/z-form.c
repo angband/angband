@@ -62,11 +62,6 @@
  *   Append the pointer "v" (implementation varies).
  *   No legal modifiers.
  *
- * format("%b", int b)
- *   Append the integer formatted as binary.
- *   If a modifier of 1, 2, 3 or 4 is provided, then only append 2**n bits, not
- *   all 32.
- *
  * Format("%E", double r)
  * Format("%F", double r)
  * Format("%G", double r)
@@ -213,13 +208,8 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 	/* Resulting string */
 	char tmp[1024];
 
-
-	/* Fatal error - no buffer length */
-	if (!max) quit("Called vstrnfmt() with empty buffer!");
-
-
-	/* Mega-Hack -- treat "no format" as "empty string" */
-	if (!fmt) fmt = "";
+	assert(max);
+	assert(fmt);
 
 	/* Begin the buffer */
 	n = 0;
@@ -329,16 +319,6 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 
 					/* Note the "long" flag */
 					do_long = TRUE;
-				}
-
-				/* Mega-Hack -- handle "extra-long" request */
-				else if (*s == 'L')
-				{
-					/* Error -- illegal format char */
-					buf[0] = '\0';
-
-					/* Return "error" */
-					return (0);
 				}
 
 				/* Handle normal end of format sequence */
