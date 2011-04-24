@@ -395,7 +395,6 @@ static const grouper group_artifact[] =
  */
 bool make_fake_artifact(object_type *o_ptr, struct artifact *artifact)
 {
-	int j;
 	object_kind *kind;
 
 	/* Don't bother with empty artifacts */
@@ -412,26 +411,7 @@ bool make_fake_artifact(object_type *o_ptr, struct artifact *artifact)
 	o_ptr->artifact = artifact;
 
 	/* Extract the fields */
-	for (j = 0; j < o_ptr->artifact->num_pvals; j++)
-		o_ptr->pval[j] = o_ptr->artifact->pval[j];
-	o_ptr->num_pvals = o_ptr->artifact->num_pvals;
-	o_ptr->ac = o_ptr->artifact->ac;
-	o_ptr->dd = o_ptr->artifact->dd;
-	o_ptr->ds = o_ptr->artifact->ds;
-	o_ptr->to_a = o_ptr->artifact->to_a;
-	o_ptr->to_h = o_ptr->artifact->to_h;
-	o_ptr->to_d = o_ptr->artifact->to_d;
-	o_ptr->weight = o_ptr->artifact->weight;
-
-	/* Hack -- extract the "cursed" flags */
-	if (of_has(o_ptr->artifact->flags, OF_LIGHT_CURSE))
-		of_on(o_ptr->flags, OF_LIGHT_CURSE);
-
-	if (of_has(o_ptr->artifact->flags, OF_HEAVY_CURSE))
-		of_on(o_ptr->flags, OF_HEAVY_CURSE);
-
-	if (of_has(o_ptr->artifact->flags, OF_PERMA_CURSE))
-		of_on(o_ptr->flags, OF_PERMA_CURSE);
+	copy_artifact_data(o_ptr, artifact);
 
 	/* Success */
 	o_ptr->ident |= IDENT_FAKE;
