@@ -34,7 +34,11 @@
  */
 #define GREAT_EGO   20
 
-
+/*
+ * The creation of an artifact on a level gives a significant boost to the
+ * level's "feeling", stored in cave->rating.
+ */
+#define ARTIFACT_LEVEL_RATING_MIN 30
 
 /*** Make an ego item ***/
 
@@ -188,8 +192,10 @@ static struct ego_item *ego_find_random(object_type *o_ptr, int level)
 
 /**
  * Apply generation magic to an ego-item.
+ *
+ * Returns the amount to increase the level rating by
  */
-void ego_apply_magic(object_type *o_ptr, int level)
+s16b ego_apply_magic(object_type *o_ptr, int level)
 {
 	int i;
 
@@ -223,8 +229,7 @@ void ego_apply_magic(object_type *o_ptr, int level)
 	/* Apply flags */
 	of_union(o_ptr->flags, o_ptr->ego->flags);
 
-	/* XXX ick ick ick */
-	cave->rating += o_ptr->ego->rating;
+	return o_ptr->ego->rating;
 }
 
 
@@ -251,9 +256,9 @@ static void ego_apply_minima(object_type *o_ptr)
  * Try to find an ego-item for an object, setting name2 if successful and
  * applying various bonuses.
  *
- * Returns TRUE if an ego item is created, FALSE otherwise.
+ * Returns the increase to level feeling if an ego item is created, 0 otherwise.
  */
-static bool make_ego_item(object_type *o_ptr, int level)
+static s16b make_ego_item(object_type *o_ptr, int level)
 {
 	if (o_ptr->artifact || o_ptr->ego) return FALSE;
 
@@ -263,11 +268,10 @@ static bool make_ego_item(object_type *o_ptr, int level)
 
 	o_ptr->ego = ego_find_random(o_ptr, level);
 	if (o_ptr->ego) {
-		ego_apply_magic(o_ptr, level);
-		return TRUE;
+		return ego_apply_magic(o_ptr, level);
 	}
 
-	return FALSE;
+	return 0;
 }
 
 
@@ -302,8 +306,7 @@ void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
 /*
  * Mega-Hack -- Attempt to create one of the "Special Objects".
  *
- * We are only called from "make_object()", and we assume that
- * "apply_magic()" is called immediately after we return.
+ * We are only called from "make_object()"
  *
  * Note -- see "make_artifact()" and "apply_magic()".
  *
@@ -374,16 +377,6 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 
 		/* Mark the artifact as "created" */
 		a_ptr->created = 1;
-
-		/* Mega-Hack -- increase the level rating
-		 * - a sizeable increase for any artifact (c.f. up to 30 for ego items)
-		 * - a bigger increase for more powerful artifacts
-		 */
-		cave->rating += 30;
-		cave->rating += object_power(o_ptr, FALSE, NULL, TRUE) / 25;
-
-		/* Set the good item flag */
-		cave->good_item = TRUE;
 
 		/* Success */
 		return TRUE;
@@ -470,17 +463,6 @@ static bool make_artifact(object_type *o_ptr)
 	{
 		copy_artifact_data(o_ptr, o_ptr->artifact);
 		o_ptr->artifact->created = 1;
-
-		/* Mega-Hack -- increase the level rating
-		 * - a sizeable increase for any artifact (c.f. up to 30 for ego items)
-		 * - a bigger increase for more powerful artifacts
-		 */
-		cave->rating += 30;
-		cave->rating += object_power(o_ptr, FALSE, NULL, TRUE) / 25;
-
-		/* Set the good item flag */
-		cave->good_item = TRUE;
-
 		return TRUE;
 	}
 
@@ -593,12 +575,15 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
  *
  * If `good` or `great` are not set, then the `lev` argument controls the
  * quality of item.
+ *
+ * Returns the amount to increase the level rating by as a result of this object.
  */
-void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
+s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 		bool good, bool great)
 {
 	int i;
 	int power = 0;
+	s16b rating_extra = 0;
 
 	/* Chance of being `good` and `great` */
 	int good_chance = (lev+2) * 3;
@@ -632,13 +617,17 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 		for (i = 0; i < rolls; i++)
 		{
 			if (make_artifact(o_ptr))
-				return;
+			{
+				/* - a sizeable increase for any artifact (c.f. up to 30 for ego items)
+				 * - a bigger increase for more powerful artifacts */
+				return ARTIFACT_LEVEL_RATING_MIN + (object_power(o_ptr, FALSE, NULL, TRUE) / 25);
+			}
 		}
 	}
 
 	/* Try to make an ego item */
 	if (power == 2)
-		make_ego_item(o_ptr, lev);
+		rating_extra += make_ego_item(o_ptr, lev);
 
 	/* Apply magic */
 	switch (o_ptr->tval)
@@ -691,8 +680,9 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 	/* Apply minima from ego items if necessary */
 	ego_apply_minima(o_ptr);
 
-	/* Add a certain amount to the rating of the level */
-	cave->rating += object_power(o_ptr, FALSE, NULL, TRUE) / 15;
+	/* Return amount to add to the rating of the level */
+	rating_extra += object_power(o_ptr, FALSE, NULL, TRUE) / 15;
+	return rating_extra;
 }
 
 
@@ -915,11 +905,17 @@ bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
 {
 	int base;
 	object_kind *kind;
+	s16b extra_rating;
 
 	/* Try to make a special artifact */
 	if (one_in_(good ? 10 : 1000))
 	{
-		if (make_artifact_special(j_ptr, lev)) return TRUE;
+		if (make_artifact_special(j_ptr, lev))
+		{
+			c->good_item = TRUE;
+			c->rating += ARTIFACT_LEVEL_RATING_MIN + (object_power(j_ptr, FALSE, NULL, TRUE) / 25);
+			return TRUE;
+		}
 		/* If we failed to make an artifact, the player gets a great item */
 		good = great = TRUE;
 	}
@@ -935,7 +931,12 @@ bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
 	object_prep(j_ptr, kind, lev, RANDOMISE);
 
 	/* Apply magic (allow artifacts) */
-	apply_magic(j_ptr, lev, TRUE, good, great);
+	extra_rating = apply_magic(j_ptr, lev, TRUE, good, great);
+	/* Hack - artifacts (which have rating over 30) set the good item flag */
+	if (extra_rating >= ARTIFACT_LEVEL_RATING_MIN)
+		c->good_item = TRUE;
+	c->rating += extra_rating;
+
 
 	/* Generate multiple items */
 	if (kind->gen_mult_prob >= 100 ||
@@ -943,7 +944,6 @@ bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
 	{
 		j_ptr->number = randcalc(kind->stack_size, lev, RANDOMISE);
 	}
-
 
 	/* Notice "okay" out-of-depth objects */
 	if (!cursed_p(j_ptr->flags) && (kind->level > c->depth))
