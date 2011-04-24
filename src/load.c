@@ -1733,8 +1733,8 @@ int rd_inventory_2(void) { return rd_inventory(rd_item_2); } /* remove post-3.3 
 int rd_inventory_1(void) { return rd_inventory(rd_item_1); } /* remove post-3.3 */
 
 
-/* Read store contents, version 3 */
-int rd_stores_3(void)
+/* Read store contents */
+int rd_stores(rd_item_t rd_item_version)
 {
 	int i;
 	u16b tmp16u;
@@ -1757,7 +1757,7 @@ int rd_stores_3(void)
 		
 		/* XXX */
 		strip_bytes(4);
-	
+		
 		/* XXX: refactor into store.c */
 		st_ptr->owner = store_ownerbyidx(st_ptr, own);
 		
@@ -1774,7 +1774,7 @@ int rd_stores_3(void)
 			object_wipe(i_ptr);
 			
 			/* Read the item */
-			if (rd_item_3(i_ptr))
+			if ((*rd_item_version)(i_ptr))
 			{
 				note("Error reading item");
 				return (-1);
@@ -1797,133 +1797,13 @@ int rd_stores_3(void)
 	return 0;
 }
 
-/* Read store contents, version 2 - remove after 3.3*/
-int rd_stores_2(void)
-{
-	int i;
-	u16b tmp16u;
-	
-	/* Read the stores */
-	rd_u16b(&tmp16u);
-	for (i = 0; i < tmp16u; i++)
-	{
-		store_type *st_ptr = &store[i];
+/*
+ * Read the stores - wrapper functions
+ */
+int rd_stores_3(void) { return rd_stores(rd_item_3); }
+int rd_stores_2(void) { return rd_stores(rd_item_2); } /* remove post-3.3 */
+int rd_stores_1(void) { return rd_stores(rd_item_1); } /* remove post-3.3 */
 
-		int j;		
-		byte own, num;
-		
-		/* XXX */
-		strip_bytes(6);
-		
-		/* Read the basic info */
-		rd_byte(&own);
-		rd_byte(&num);
-		
-		/* XXX */
-		strip_bytes(4);
-	
-		/* XXX: refactor into store.c */
-		st_ptr->owner = store_ownerbyidx(st_ptr, own);
-		
-		/* Read the items */
-		for (j = 0; j < num; j++)
-		{
-			object_type *i_ptr;
-			object_type object_type_body;
-			
-			/* Get local object */
-			i_ptr = &object_type_body;
-			
-			/* Wipe the object */
-			object_wipe(i_ptr);
-			
-			/* Read the item */
-			if (rd_item_2(i_ptr))
-			{
-				note("Error reading item");
-				return (-1);
-			}
-
-			if (i != STORE_HOME)
-				i_ptr->ident |= IDENT_STORE;
-			
-			/* Accept any valid items */
-			if (st_ptr->stock_num < STORE_INVEN_MAX && i_ptr->kind)
-			{
-				int k = st_ptr->stock_num++;
-
-				/* Accept the item */
-				object_copy(&st_ptr->stock[k], i_ptr);
-			}
-		}
-	}
-
-	return 0;
-}
-
-/* Read store contents - remove after 3.3 */
-int rd_stores_1(void)
-{
-	int i;
-	u16b tmp16u;
-	
-	/* Read the stores */
-	rd_u16b(&tmp16u);
-	for (i = 0; i < tmp16u; i++)
-	{
-		store_type *st_ptr = &store[i];
-
-		int j;		
-		byte own, num;
-		
-		/* XXX */
-		strip_bytes(6);
-		
-		/* Read the basic info */
-		rd_byte(&own);
-		rd_byte(&num);
-		
-		/* XXs */
-		strip_bytes(4);
-		
-		/* XXX: refactor into store.c */
-		st_ptr->owner = store_ownerbyidx(st_ptr, own);
-		
-		/* Read the items */
-		for (j = 0; j < num; j++)
-		{
-			object_type *i_ptr;
-			object_type object_type_body;
-			
-			/* Get local object */
-			i_ptr = &object_type_body;
-			
-			/* Wipe the object */
-			object_wipe(i_ptr);
-			
-			/* Read the item */
-			if (rd_item_1(i_ptr))
-			{
-				note("Error reading item");
-				return (-1);
-			}
-
-			if (i != STORE_HOME)
-				i_ptr->ident |= IDENT_STORE;
-			
-			/* Accept any valid items */
-			if (st_ptr->stock_num < STORE_INVEN_MAX && i_ptr->kind)
-			{
-				int k = st_ptr->stock_num++;
-
-				/* Accept the item */
-				object_copy(&st_ptr->stock[k], i_ptr);
-			}
-		}
-	}
-
-	return 0;
-}
 
 /*
  * Read the dungeon
@@ -2095,8 +1975,8 @@ int rd_dungeon(void)
 	return 0;
 }
 
-/* Read the floor object list, version 3 */
-int rd_objects_3(void)
+/* Read the floor object list */
+int rd_objects(rd_item_t rd_item_version)
 {
 	int i;
 	u16b limit;
@@ -2132,7 +2012,7 @@ int rd_objects_3(void)
 		object_wipe(i_ptr);
 
 		/* Read the item */
-		if (rd_item_3(i_ptr))
+		if ((*rd_item_version)(i_ptr))
 		{
 			note("Error reading item");
 			return (-1);
@@ -2173,161 +2053,13 @@ int rd_objects_3(void)
 	return 0;
 }
 
-/* Read the floor object list, version 2 - remove after 3.3 */
-int rd_objects_2(void)
-{
-	int i;
-	u16b limit;
+/*
+ * Read the object list - wrapper functions
+ */
+int rd_objects_3(void) { return rd_objects(rd_item_3); }
+int rd_objects_2(void) { return rd_objects(rd_item_2); } /* remove post-3.3 */
+int rd_objects_1(void) { return rd_objects(rd_item_1); } /* remove post-3.3 */
 
-	/* Only if the player's alive */
-	if (p_ptr->is_dead)
-		return 0;
-
-	/* Read the item count */
-	rd_u16b(&limit);
-
-	/* Verify maximum */
-	if (limit > z_info->o_max)
-	{
-		note(format("Too many (%d) object entries!", limit));
-		return (-1);
-	}
-
-	/* Read the dungeon items */
-	for (i = 1; i < limit; i++)
-	{
-		object_type *i_ptr;
-		object_type object_type_body;
-
-		s16b o_idx;
-		object_type *o_ptr;
-
-
-		/* Get the object */
-		i_ptr = &object_type_body;
-
-		/* Wipe the object */
-		object_wipe(i_ptr);
-
-		/* Read the item */
-		if (rd_item_2(i_ptr))
-		{
-			note("Error reading item");
-			return (-1);
-		}
-
-		/* Make an object */
-		o_idx = o_pop();
-
-		/* Paranoia */
-		if (o_idx != i)
-		{
-			note(format("Cannot place object %d!", i));
-			return (-1);
-		}
-
-		/* Get the object */
-		o_ptr = object_byid(o_idx);
-
-		/* Structure Copy */
-		object_copy(o_ptr, i_ptr);
-
-		/* Dungeon floor */
-		if (!i_ptr->held_m_idx)
-		{
-			int x = i_ptr->ix;
-			int y = i_ptr->iy;
-
-			/* ToDo: Verify coordinates */
-
-			/* Link the object to the pile */
-			o_ptr->next_o_idx = cave->o_idx[y][x];
-
-			/* Link the floor to the object */
-			cave->o_idx[y][x] = o_idx;
-		}
-	}
-
-	return 0;
-}
-
-/* Read the floor object list - remove after 3.3 */
-int rd_objects_1(void)
-{
-	int i;
-	u16b limit;
-
-	/* Only if the player's alive */
-	if (p_ptr->is_dead)
-		return 0;
-
-	/* Read the item count */
-	rd_u16b(&limit);
-
-	/* Verify maximum */
-	if (limit > z_info->o_max)
-	{
-		note(format("Too many (%d) object entries!", limit));
-		return (-1);
-	}
-
-	/* Read the dungeon items */
-	for (i = 1; i < limit; i++)
-	{
-		object_type *i_ptr;
-		object_type object_type_body;
-
-		s16b o_idx;
-		object_type *o_ptr;
-
-
-		/* Get the object */
-		i_ptr = &object_type_body;
-
-		/* Wipe the object */
-		object_wipe(i_ptr);
-
-		/* Read the item */
-		if (rd_item_1(i_ptr))
-		{
-			note("Error reading item");
-			return (-1);
-		}
-
-		/* Make an object */
-		o_idx = o_pop();
-
-		/* Paranoia */
-		if (o_idx != i)
-		{
-			note(format("Cannot place object %d!", i));
-			return (-1);
-		}
-
-		/* Get the object */
-		o_ptr = object_byid(o_idx);
-
-		/* Structure Copy */
-		object_copy(o_ptr, i_ptr);
-
-		/* Dungeon floor */
-		if (!i_ptr->held_m_idx)
-		{
-			int x = i_ptr->ix;
-			int y = i_ptr->iy;
-
-			/* ToDo: Verify coordinates */
-
-			/* Link the object to the pile */
-			o_ptr->next_o_idx = cave->o_idx[y][x];
-
-			/* Link the floor to the object */
-			cave->o_idx[y][x] = o_idx;
-		}
-	}
-
-	return 0;
-}
 
 /**
  * Read monsters (old version - before MON_TMD_FOO) 
