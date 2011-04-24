@@ -295,7 +295,7 @@ void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
 	o_ptr->to_h = a_ptr->to_h;
 	o_ptr->to_d = a_ptr->to_d;
 	o_ptr->weight = a_ptr->weight;
-	of_copy(o_ptr->flags, a_ptr->flags);
+	of_union(o_ptr->flags, a_ptr->flags);
 
 	/* Mega-Hack -- increase the level rating
 	 * - a sizeable increase for any artifact (c.f. up to 30 for ego items)
@@ -900,7 +900,8 @@ object_kind *get_obj_num(int level, bool good)
  *
  * We assume that the given object has been "wiped".
  */
-bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good, bool great)
+bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
+	bool great)
 {
 	int base;
 	object_kind *kind;
