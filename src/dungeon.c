@@ -1774,11 +1774,10 @@ void play_game(void)
 		message_flush();
 
 		/* Accidental Death */
-		if (p_ptr->playing && p_ptr->is_dead)
-		{
-			/* Mega-Hack -- Allow player to cheat death */
-			if ((p_ptr->wizard || OPT(cheat_live)) && !get_check("Die? "))
-			{
+		if (p_ptr->playing && p_ptr->is_dead) {
+			/* XXX-elly: this does not belong here. Refactor or
+			 * remove. Very similar to do_cmd_wiz_cure_all(). */
+			if ((p_ptr->wizard || OPT(cheat_live)) && !get_check("Die? ")) {
 				/* Mark social class, reset age, if needed */
 				if (p_ptr->sc) p_ptr->sc = p_ptr->age = 0;
 
