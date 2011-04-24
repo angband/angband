@@ -1820,54 +1820,6 @@ void close_game(void)
 	signals_handle_tstp();
 }
 
-
-/*
- * Handle abrupt death of the visual system
- *
- * This routine is called only in very rare situations, and only
- * by certain visual systems, when they experience fatal errors.
- *
- * XXX XXX Hack -- clear the death flag when creating a HANGUP
- * save file so that player can see tombstone when restart.
- */
-void exit_game_panic(void)
-{
-	/* If nothing important has happened, just quit */
-	if (!character_generated || character_saved) quit("panic");
-
-	/* Mega-Hack -- see "msg("%s", )" */
-	msg_flag = FALSE;
-
-	/* Clear the top line */
-	prt("", 0, 0);
-
-	/* Hack -- turn off some things */
-	disturb(1, 0);
-
-	/* Hack -- Delay death XXX XXX XXX */
-	if (p_ptr->chp < 0) p_ptr->is_dead = FALSE;
-
-	/* Hardcode panic save */
-	p_ptr->panic_save = 1;
-
-	/* Forbid suspend */
-	signals_ignore_tstp();
-
-	/* Indicate panic save */
-	my_strcpy(p_ptr->died_from, "(panic save)", sizeof(p_ptr->died_from));
-
-	/* Panic save, or get worried */
-	if (!savefile_save(savefile))
-		quit("panic save failed!");
-
-
-	/* Successful panic save */
-	quit("panic save succeeded!");
-}
-
-
-
-
 static void write_html_escape_char(ang_file *fp, char c)
 {
 	switch (c)

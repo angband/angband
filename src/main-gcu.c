@@ -444,14 +444,6 @@ static errr Term_xtra_gcu_event(int v) {
 			idle_update();
 		}
 		cbreak();
-
-		/* Mega-Hack -- allow graceful "suspend" */
-		for (k = 0; (k < 10) && (i == ERR); k++) i = getch();
-
-		/* Broken input is special */
-		if (i == ERR) exit_game_panic();
-		if (i == EOF) exit_game_panic();
-
 	} else {
 		/* Do not wait for it */
 		nodelay(stdscr, TRUE);
