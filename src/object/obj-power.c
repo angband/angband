@@ -43,7 +43,7 @@
 #define BASE_JEWELRY_POWER		 4
 #define BASE_ARMOUR_POWER		 1
 #define BASE_LIGHT_POWER		 6 /* for rad-2; doubled for rad-3 */
-#define DAMAGE_POWER             4 /* i.e. 2 */
+#define DAMAGE_POWER             5 /* i.e. 2.5 */
 #define TO_HIT_POWER             3 /* i.e. 1.5 */
 #define BASE_AC_POWER            2 /* i.e. 1 */
 #define TO_AC_POWER              2 /* i.e. 1 */
@@ -223,7 +223,7 @@ static int bow_multiplier(int sval)
 s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	bool known)
 {
-	s32b p = 0, q = 0, slay_pwr = 0, dam_pwr = 0;
+	s32b p = 0, q = 0, slay_pwr = 0, dice_pwr = 0;
 	unsigned int i, j;
 	int extra_stat_bonus = 0, mult = 1, num_slays = 0, k = 1;
 	bitflag flags[OF_SIZE], mask[OF_SIZE];
@@ -257,8 +257,8 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 
 	/* Add damage from dice for any wieldable weapon or ammo */
 	if (wield_slot(o_ptr) == INVEN_WIELD || obj_is_ammo(o_ptr)) {
-		p += (o_ptr->dd * (o_ptr->ds + 1) * DAMAGE_POWER / 4);
-		file_putf(log_file, "Adding power for dam dice, total is %d\n", p);
+		dice_pwr = (o_ptr->dd * (o_ptr->ds + 1) * DAMAGE_POWER / 4);
+		file_putf(log_file, "Adding %d power for dam dice\n", dice_pwr);
 	/* Add 2nd lot of damage power for nonweapons */
 	} else if (wield_slot(o_ptr) != INVEN_BOW) {
 		p += (o_ptr->to_d * DAMAGE_POWER);
@@ -266,10 +266,11 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		/* Add power boost for nonweapons with combat flags */
 		if (num_slays || of_has(flags, OF_BLOWS) || of_has(flags, OF_SHOTS) ||
 				of_has(flags, OF_MIGHT)) {
-			p += (WEAP_DAMAGE * DAMAGE_POWER);
-			file_putf(log_file, "Adding power for nonweap combat flags, total is %d\n", p);
+			dice_pwr = (WEAP_DAMAGE * DAMAGE_POWER);
+			file_putf(log_file, "Adding %d power for nonweap combat flags\n", dice_pwr);
 		}
 	}
+	p += dice_pwr;
 
 	/* Add ammo damage for launchers, get multiplier and rescale */
 	if (wield_slot(o_ptr) == INVEN_BOW) {
@@ -339,7 +340,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 
 	/* Apply the correct slay multiplier */
 	if (slay_pwr) {
-		p = (p * (slay_pwr / 100)) / (tot_mon_power / 100);
+		p += (dice_pwr * (slay_pwr / 100)) / (tot_mon_power / 100);
 		file_putf(log_file, "Adjusted for slay power, total is %d\n", p);
 	}
 
@@ -349,9 +350,6 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		p /= MAX_BLOWS;
 		file_putf(log_file, "Rescaling bow power, total is %d\n", p);
 	}
-
-	dam_pwr = p;
-	file_putf(log_file, "Damage power is %d\n", dam_pwr);
 
 	/* Add power for +to_hit */
 	p += (o_ptr->to_h * TO_HIT_POWER / 2);
@@ -447,9 +445,9 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	for (i = 0; i < N_ELEMENTS(sets); i++) {
 		if (sets[i].count > 1) {
 			q = (sets[i].factor * sets[i].count * sets[i].count);
-			/* Scale damage-dependent set bonuses by damage power */
+			/* Scale damage-dependent set bonuses by damage dice power */
 			if (sets[i].dam_dep)
-				q = q * dam_pwr / 60;
+				q = q * dice_pwr / (DAMAGE_POWER * 5);
 			p += q;
 			file_putf(log_file, "Adding power for multiple %s, total is %d\n", sets[i].desc, p);
 		}
