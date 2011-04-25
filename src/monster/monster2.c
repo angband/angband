@@ -3513,7 +3513,7 @@ void monster_death(int m_idx)
 	level = MAX((r_ptr->level + p_ptr->depth) / 2, r_ptr->level);
 
 	for (drop = r_ptr->drops; drop; drop = drop->next) {
-		if (randint0(100) >= drop->percent_chance)
+		if ((unsigned int)randint0(100) >= drop->percent_chance)
 			continue;
 
 		i_ptr = &object_type_body;
