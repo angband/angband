@@ -3462,42 +3462,6 @@ void monster_death(int m_idx)
 	/* Forget objects */
 	m_ptr->hold_o_idx = 0;
 
-	/* Mega-Hack -- drop "winner" treasures */
-	if (rf_has(r_ptr->flags, RF_DROP_CHOSEN))
-	{
-		/* Get local object */
-		i_ptr = &object_type_body;
-
-		/* Mega-Hack -- Make "Grond" */
-		object_prep(i_ptr, objkind_get(TV_HAFTED, SV_GROND), 0, MAXIMISE);
-		i_ptr->artifact = &a_info[ART_GROND];
-		apply_magic(i_ptr, 0, TRUE, TRUE, TRUE);
-
-		i_ptr->origin = ORIGIN_DROP;
-		i_ptr->origin_depth = p_ptr->depth;
-		i_ptr->origin_xtra = m_ptr->r_idx;
-
-		/* Drop it in the dungeon */
-		drop_near(cave, i_ptr, 0, y, x, TRUE);
-
-
-		/* Get local object */
-		i_ptr = &object_type_body;
-
-		/* Mega-Hack -- Make "Morgoth" */
-		object_prep(i_ptr, objkind_get(TV_CROWN, SV_MORGOTH), 0, MAXIMISE);
-		i_ptr->artifact = &a_info[ART_MORGOTH];
-		apply_magic(i_ptr, 0, TRUE, TRUE, TRUE);
-
-		i_ptr->origin = ORIGIN_DROP;
-		i_ptr->origin_depth = p_ptr->depth;
-		i_ptr->origin_xtra = m_ptr->r_idx;
-
-		/* Drop it in the dungeon */
-		drop_near(cave, i_ptr, 0, y, x, TRUE);
-	}
-
-
 	/* Determine how much we can drop */
 	if (rf_has(r_ptr->flags, RF_DROP_20) && randint0(100) < 20) number++;
 	if (rf_has(r_ptr->flags, RF_DROP_40) && randint0(100) < 40) number++;
@@ -3512,6 +3476,7 @@ void monster_death(int m_idx)
 	   and monster level - to reward fighting OOD monsters */
 	level = MAX((r_ptr->level + p_ptr->depth) / 2, r_ptr->level);
 
+	/* Specified drops */
 	for (drop = r_ptr->drops; drop; drop = drop->next) {
 		if ((unsigned int)randint0(100) >= drop->percent_chance)
 			continue;
@@ -3674,8 +3639,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note)
 		/* Play a special sound if the monster was unique */
 		if (rf_has(r_ptr->flags, RF_UNIQUE))
 		{
-			/* Mega-Hack -- Morgoth -- see monster_death() */
-			if (rf_has(r_ptr->flags, RF_DROP_CHOSEN))
+			if (r_ptr->base == lookup_monster_base("Morgoth"))
 				soundfx = MSG_KILL_KING;
 			else
 				soundfx = MSG_KILL_UNIQUE;

@@ -9532,7 +9532,7 @@ B:HIT:SHATTER:20d10
 B:HIT:LOSE_ALL:10d12
 B:TOUCH:UN_POWER
 F:UNIQUE | QUESTOR | MALE | EVIL | SMART | REGENERATE
-F:DROP_4 | DROP_GOOD | DROP_GREAT | DROP_CHOSEN | ONLY_ITEM
+F:DROP_4 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
 F:KILL_WALL | MOVE_BODY | ATTR_FLICKER
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_FEAR
 F:NO_CONF | NO_SLEEP
@@ -9552,6 +9552,8 @@ D: causing much pain and suffering in the world to please him.  His disgusting
 D: visage, twisted with evil, is crowned with iron, the two remaining Silmarils
 D: forever burning him.  Grond, the mighty Hammer of the Underworld, cries
 D: defiance as he strides towards you to crush you to a pulp!
+drop-artifact:'Grond'
+drop-artifact:of Morgoth
 
 
 # Max is currently N:616
