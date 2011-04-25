@@ -197,7 +197,7 @@ static struct ego_item *ego_find_random(object_type *o_ptr, int level)
  */
 s16b ego_apply_magic(object_type *o_ptr, int level)
 {
-	int i;
+	int i, flag, x;
 
 	bitflag flags[OF_SIZE];
 	object_flags(o_ptr, flags);
@@ -220,10 +220,11 @@ s16b ego_apply_magic(object_type *o_ptr, int level)
 
 	/* Apply pvals */
 	for (i = 0; i < o_ptr->ego->num_pvals; i++) {
-		if (!o_ptr->pval[i])
-			o_ptr->num_pvals++;
-		o_ptr->pval[i] += randcalc(o_ptr->ego->pval[i], level, RANDOMISE);
-		of_union(o_ptr->pval_flags[i], o_ptr->ego->pval_flags[i]);
+		of_copy(flags, o_ptr->ego->pval_flags[i]);
+		x = randcalc(o_ptr->ego->pval[i], level, RANDOMISE);
+		for (flag = of_next(flags, FLAG_START); flag != FLAG_END;
+				flag = of_next(flags, flag + 1))
+			object_add_pval(o_ptr, x, flag);
 	}
 
 	/* Apply flags */
@@ -234,21 +235,33 @@ s16b ego_apply_magic(object_type *o_ptr, int level)
 
 
 /**
- * Apply minimum standards for ego-items.
+ * Apply minimum standards for ego-items. Note that ego pval flags may have
+ * shifted to another pval, so we look for them.
  */
 static void ego_apply_minima(object_type *o_ptr)
 {
-	int i;
+	int i, j, flag;
+	bitflag f[OF_SIZE];
 
 	if (!o_ptr->ego) return;
 
-	if (o_ptr->to_h < o_ptr->ego->min_to_h) o_ptr->to_h = o_ptr->ego->min_to_h;
-	if (o_ptr->to_d < o_ptr->ego->min_to_d) o_ptr->to_d = o_ptr->ego->min_to_d;
-	if (o_ptr->to_a < o_ptr->ego->min_to_a) o_ptr->to_a = o_ptr->ego->min_to_a;
+	if (o_ptr->to_h < o_ptr->ego->min_to_h)
+		o_ptr->to_h = o_ptr->ego->min_to_h;
+	if (o_ptr->to_d < o_ptr->ego->min_to_d)
+		o_ptr->to_d = o_ptr->ego->min_to_d;
+	if (o_ptr->to_a < o_ptr->ego->min_to_a)
+		o_ptr->to_a = o_ptr->ego->min_to_a;
 
-	for (i = 0; i < o_ptr->ego->num_pvals; i++)
-		if (o_ptr->pval[i] < o_ptr->ego->min_pval[i])
-				o_ptr->pval[i] = o_ptr->ego->min_pval[i];
+	for (i = 0; i < o_ptr->num_pvals; i++)
+		for (j = 0; j < o_ptr->ego->num_pvals; j++) {
+			of_copy(f, o_ptr->ego->pval_flags[j]);
+			for (flag = of_next(f, FLAG_START); flag != FLAG_END;
+					flag = of_next(f, flag + 1))
+				if (of_has(o_ptr->pval_flags[i], flag) &&
+						o_ptr->pval[i] < o_ptr->ego->min_pval[j])
+					object_add_pval(o_ptr, o_ptr->ego->min_pval[j] -
+						o_ptr->pval[i], flag);
+		}
 }
 
 

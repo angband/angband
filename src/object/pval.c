@@ -133,9 +133,9 @@ static bool object_dedup_pvals(object_type *o_ptr)
 				/* Move any remaining pvals down one to fill the void */
 				for (k = j + 1; k < o_ptr->num_pvals; k++) {
 					of_copy(o_ptr->pval_flags[k - 1], o_ptr->pval_flags[k]);
-					of_wipe(o_ptr->pval_flags[k - 1]);
+					of_wipe(o_ptr->pval_flags[k]);
 					o_ptr->pval[k - 1] = o_ptr->pval[k];
-					o_ptr->pval[k - 1] = 0;
+					o_ptr->pval[k] = 0;
 				}
 				/* We now have one fewer pval */
 				o_ptr->num_pvals--;
@@ -201,12 +201,13 @@ bool object_add_pval(object_type *o_ptr, int pval, int flag)
 
 	/* Create a new pval if we can */
 	if (o_ptr->num_pvals < MAX_PVALS) {
-		o_ptr->pval[o_ptr->num_pvals++] = pval;
+		o_ptr->pval[o_ptr->num_pvals] = pval;
 		of_on(o_ptr->pval_flags[o_ptr->num_pvals], flag);
 		if (a != -1) { /* then we need to move the flag to the new pval */
 			o_ptr->pval[o_ptr->num_pvals] += o_ptr->pval[a];
 			of_off(o_ptr->pval_flags[a], flag);
 		}
+		o_ptr->num_pvals++; /* We do this last because pvals start from zero */
 		/* We invert the logic because we've already added a pval */
 		return (!object_dedup_pvals(o_ptr));
 	} else { /* we use the closest existing pval */
