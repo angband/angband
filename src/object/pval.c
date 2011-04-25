@@ -37,26 +37,51 @@ void object_pval_flags(const object_type *o_ptr,
 }
 
 /**
+ * Return the pval which governs a particular flag.
+ * We assume that we are only called if this pval and flag exist.
+ **/
+int which_pval(const object_type *o_ptr, const int flag)
+{
+    int i;
+    bitflag f[MAX_PVALS][OF_SIZE];
+
+    object_pval_flags(o_ptr, f);
+
+    for (i = 0; i < MAX_PVALS; i++) {
+        if (of_has(f[i], flag))
+            return i;
+    }
+
+    assert(0);
+}
+
+/**
  * Obtain the pval_flags for an item which are known to the player
  */
 void object_pval_flags_known(const object_type *o_ptr,
 	bitflag flags[MAX_PVALS][OF_SIZE])
 {
-    int i;
+    int i, flag;
 
     object_pval_flags(o_ptr, flags);
 
-    for (i = 0; i < MAX_PVALS; i++) {
+    for (i = 0; i < MAX_PVALS; i++)
         of_inter(flags[i], o_ptr->known_flags);
 
-        if (object_flavor_is_aware(o_ptr))
-            of_union(flags[i], o_ptr->kind->pval_flags[i]);
+	/* Kind and ego pval_flags may have shifted pvals so we iterate */
+	if (object_flavor_is_aware(o_ptr))
+	    for (i = 0; i < MAX_PVALS; i++)
+			for (flag = of_next(o_ptr->kind->pval_flags[i], FLAG_START);
+					flag != FLAG_END; flag = of_next(o_ptr->kind->pval_flags[i],
+					flag + 1))
+				of_on(flags[which_pval(o_ptr, flag)], flag);
 
-/* XXX Need to rewrite this after fixing #1404, because pval flags may have
- * shifted from their position in the ego template */
-        if (o_ptr->ego && easy_know(o_ptr))
-            of_union(flags[i], o_ptr->ego->pval_flags[i]);
-    }
+	if (o_ptr->ego && easy_know(o_ptr))
+	    for (i = 0; i < MAX_PVALS; i++)
+			for (flag = of_next(o_ptr->ego->pval_flags[i], FLAG_START);
+					flag != FLAG_END; flag = of_next(o_ptr->ego->pval_flags[i],
+					flag + 1))
+				of_on(flags[which_pval(o_ptr, flag)], flag);
 }
 
 /**
@@ -88,26 +113,6 @@ bool object_this_pval_is_visible(const object_type *o_ptr, int pval)
     }
 
     return FALSE;
-}
-
-/**
- * Return the pval which governs a particular flag.
- * We assume that we are only called if this pval and flag exist and are
- * known
- **/
-int which_pval(const object_type *o_ptr, const int flag)
-{
-    int i;
-    bitflag f[MAX_PVALS][OF_SIZE];
-
-    object_pval_flags(o_ptr, f);
-
-    for (i = 0; i < MAX_PVALS; i++) {
-        if (of_has(f[i], flag))
-            return i;
-    }
-
-    assert(0);
 }
 
 /**
