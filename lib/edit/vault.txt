@@ -832,9 +832,9 @@ D:%#^^^^^^^^^^XXXXXXXXXXXXXXXXXX#^^^^^X9..#8X%
 D:%XXXXXXXXXX^^^X&*&*&*&,&,&,&,&XX^^^^X9..XXX%
 D:%X^^^^^^^^XX^^X..XXXXXXXXXX....X^^^^X&..&&X%
 D:%X..XXXXX..X^^X.XX9@,,,,,,XX...XX&,&XX,,,,X%
-D:%X.XX*@@@..X^^X.X89@,,^^X..X^^^^X...*X,,,,X%
+D:%X.XX9@@@..X^^X.X89@,,^^X..X^^^^X...*X,,,,X%
 D:%X.X89^,...X^^X.XX^^^^^XX..X^^^^X...*X,...X%
-D:%X.XX9^,.XX^^X..XXXXXXX...X^^^^X...*XX...X%
+D:%X.XX*^,..XX^^X..XXXXXXX...X^^^^X...*XX...X%
 D:%X..XXXXXXX^^^XX..........XX^^^^X...**XX&@X%
 D:%X.............XXXXXXXXXXXX^^^^XXX...**XX+X%
 D:%X^^^^^^^^^^^^^^^^^^^^^^^^^^^^^#8X^^^^^^^^X%
