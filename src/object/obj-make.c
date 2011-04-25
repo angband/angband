@@ -602,7 +602,8 @@ s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 	int good_chance = (lev+2) * 3;
 	int great_chance = MIN(lev/4 + lev, 50);
 
-	assert(lev < MAX_DEPTH);
+	/* Force level to max_depth if too deep */
+	if (lev < MAX_DEPTH) lev = MAX_DEPTH;
 
 	/* Roll for "good" */
 	if (good || (randint0(100) < good_chance))
