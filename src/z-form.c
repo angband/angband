@@ -62,11 +62,6 @@
  *   Append the pointer "v" (implementation varies).
  *   No legal modifiers.
  *
- * format("%b", int b)
- *   Append the integer formatted as binary.
- *   If a modifier of 1, 2, 3 or 4 is provided, then only append 2**n bits, not
- *   all 32.
- *
  * Format("%E", double r)
  * Format("%F", double r)
  * Format("%G", double r)
@@ -198,8 +193,8 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 	/* The argument is "long" */
 	bool do_long;
 
-	/* The argument needs "processing" */
-	bool do_xtra;
+	/* The argument needs to be uppercased */
+	bool titlecase;
 
 	/* Bytes used in buffer */
 	size_t n;
@@ -213,14 +208,8 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 	/* Resulting string */
 	char tmp[1024];
 
-
-	/* Fatal error - no buffer length */
-	if (!max) quit("Called vstrnfmt() with empty buffer!");
-
-
-	/* Mega-Hack -- treat "no format" as "empty string" */
-	if (!fmt) fmt = "";
-
+	assert(max);
+	assert(fmt);
 
 	/* Begin the buffer */
 	n = 0;
@@ -293,11 +282,8 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 		/* Save the "percent" */
 		aux[q++] = '%';
 
-		/* Assume no "long" argument */
 		do_long = FALSE;
-
-		/* Assume no "xtra" processing */
-		do_xtra = FALSE;
+		titlecase = FALSE;
 
 		/* Build the "aux" string */
 		while (TRUE)
@@ -335,16 +321,6 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 					do_long = TRUE;
 				}
 
-				/* Mega-Hack -- handle "extra-long" request */
-				else if (*s == 'L')
-				{
-					/* Error -- illegal format char */
-					buf[0] = '\0';
-
-					/* Return "error" */
-					return (0);
-				}
-
 				/* Handle normal end of format sequence */
 				else
 				{
@@ -375,15 +351,8 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 
 					/* Skip the "*" */
 					s++;
-				}
-
-				/* Mega-Hack -- Handle 'caret' (for "uppercase" request) */
-				else if (*s == '^')
-				{
-					/* Note the "xtra" flag */
-					do_xtra = TRUE;
-
-					/* Skip the "^" */
+				} else if (*s == '^') {
+					titlecase = TRUE;
 					s++;
 				}
 
@@ -566,46 +535,6 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 				break;
 			}
 
-#if 0 /* Later */
-			/* Binary */
-			case 'b':
-			{
-				int arg;
-				size_t i, max = 32;
-				u32b bitmask;
-				char out[32 + 1];
-
-				/* Get the next argument */
-				arg = va_arg(vp, int);
-
-				/* Check our aux string */
-				switch (aux[0])
-				{
-					case '1': max = 2;  break;
-					case '2': max = 4;  break;
-					case '3': max = 8;  break;
-					case '4': max = 16; break;
-					default: 
-					case '5': max = 32; break;
-				}
-				/* Format specially */
-				for (i = 1; i <= max; i++, bitmask *= 2)
-				{
-					if (arg & bitmask) out[max - i] = '1';
-					else out[max - i] = '0';
-				}
-
-				/* Terminate */
-				out[max] = '\0';
-
-				/* Append the argument */
-				my_strcpy(tmp, out, sizeof tmp);
-
-				/* Done */
-				break;
-			}
-#endif
-
 			/* Oops */
 			default:
 			{
@@ -617,9 +546,7 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 			}
 		}
 
-
-		/* Mega-Hack -- handle "capitalization" */
-		if (do_xtra)
+		if (titlecase)
 		{
 			for (q = 0; tmp[q]; q++)
 			{

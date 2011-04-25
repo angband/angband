@@ -19,6 +19,8 @@
 # S: spell type | spell type | etc
 # F: flag | flag | etc
 # D: Description
+# drop: tval : sval : percent drop chance : min : max
+# drop-artifact: name
 
 # 'N' indicates the beginning of an entry. The serial number must increase for
 # each new item. Entry 0 is used for the player.
@@ -93,6 +95,13 @@
 # 'D' is for description. As many D: lines may be used as are needed to
 # describe the monster. Leading whitespace will be removed, and a single space
 # will be added between D: lines.
+
+# 'drop' lines create possible drops for specific monsters. If any L lines are
+# present, the monster will drop *only* items from its L lines. Each item has
+# its percent chance rolled for individually.
+
+# 'drop-artifact' lines force a specific artifact to drop on death. Setting this
+# on a non-UNIQUE monster is dangerous.
 
 # === Understanding monster.txt flags ===
 

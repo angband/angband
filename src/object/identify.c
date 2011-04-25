@@ -987,7 +987,6 @@ obj_pseudo_t object_pseudo(const object_type *o_ptr)
 	object_flags_known(o_ptr, flags);
 	create_mask(f2, TRUE, OFID_WIELD, OFT_MAX);
 
-	/* MEGA-hack : there needs to be a table of what is obvious in each slot perhaps for each class */
 	/* FA on gloves is obvious to mage casters */
 	if (object_FA_would_be_obvious(o_ptr))
 		of_on(f2, OF_FREE_ACT);

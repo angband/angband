@@ -978,10 +978,7 @@ static void print_rel_map(char c, byte a, int y, int x)
 		Term_queue_char(t, kx, ky, a, c, 0, 0);
 
 		if ((tile_width > 1) || (tile_height > 1))
-		{
-		        /* Mega-Hack : Queue dummy chars */
 		        Term_big_queue_char(Term, kx, ky, a, c, 0, 0);
-		}
 	}
 }
 
@@ -1024,10 +1021,7 @@ void print_rel(char c, byte a, int y, int x)
 	Term_queue_char(Term, vx, vy, a, c, 0, 0);
 
 	if ((tile_width > 1) || (tile_height > 1))
-	{
-	        /* Mega-Hack : Queue dummy chars */
 	        Term_big_queue_char(Term, vx, vy, a, c, 0, 0);
-	}
   
 }
 
@@ -1140,10 +1134,7 @@ static void prt_map_aux(void)
 				Term_queue_char(t, vx, vy, a, c, ta, tc);
 
 				if ((tile_width > 1) || (tile_height > 1))
-				{
-					/* Mega-Hack : Queue dummy chars */
 					Term_big_queue_char(t, vx, vy, 255, -1, 0, 0);
-				}
 			}
 		}
 	}

@@ -609,8 +609,9 @@ s32b price_item(const object_type *o_ptr, bool store_buying, int qty)
 		/* Shops now pay 1/3 of true value */
 		price = price / 3;
 
-		/* Mega-Hack -- Black market sucks */
-		if (this_store == STORE_B_MARKET) price = price / 2;
+		/* Black market sucks */
+		if (this_store == STORE_B_MARKET)
+			price = price / 2;
 
 		/* Check for no_selling option */
 		if (OPT(birth_no_selling)) return (0L);
@@ -622,8 +623,9 @@ s32b price_item(const object_type *o_ptr, bool store_buying, int qty)
 		/* Fix the factor */
 		if (adjust < 100) adjust = 100;
 
-		/* Mega-Hack -- Black market sucks */
-		if (this_store == STORE_B_MARKET) price = price * 2;
+		/* Black market sucks */
+		if (this_store == STORE_B_MARKET)
+			price = price * 2;
 	}
 
 	/* Compute the final price (with rounding) */
