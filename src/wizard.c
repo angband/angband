@@ -1238,6 +1238,8 @@ static void do_cmd_wiz_learn(void)
 	{
 		object_kind *k_ptr = &k_info[i];
 
+		if (!k_ptr || !k_ptr->name) continue;
+
 		/* Induce awareness */
 		if (k_ptr->level <= p_ptr->command_arg)
 		{
