@@ -159,6 +159,15 @@ typedef struct monster_base
 	monster_pain *pain;		/* Pain messages */
 } monster_base;
  
+struct monster_drop {
+	struct monster_drop *next;
+	struct object_kind *kind;
+	struct artifact *artifact;
+	unsigned int percent_chance;
+	unsigned int min;
+	unsigned int max;
+};
+
 /*
  * Monster "race" information, including racial memories
  *
@@ -228,6 +237,8 @@ typedef struct monster_race
 
 	byte max_num;			/* Maximum population allowed per level */
 	byte cur_num;			/* Monster population on current level */
+
+	struct monster_drop *drops;
 } monster_race;
 
 

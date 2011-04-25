@@ -3426,11 +3426,11 @@ void monster_death(int m_idx)
 	object_type *i_ptr;
 	object_type object_type_body;
 
+	struct monster_drop *drop;
 
 	/* Get the location */
 	y = m_ptr->fy;
 	x = m_ptr->fx;
-
 
 	/* Drop objects being carried */
 	for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx)
@@ -3461,7 +3461,6 @@ void monster_death(int m_idx)
 
 	/* Forget objects */
 	m_ptr->hold_o_idx = 0;
-
 
 	/* Mega-Hack -- drop "winner" treasures */
 	if (rf_has(r_ptr->flags, RF_DROP_CHOSEN))
@@ -3512,6 +3511,28 @@ void monster_death(int m_idx)
 	/* Take the best of average of monster level and current depth,
 	   and monster level - to reward fighting OOD monsters */
 	level = MAX((r_ptr->level + p_ptr->depth) / 2, r_ptr->level);
+
+	for (drop = r_ptr->drops; drop; drop = drop->next) {
+		if (randint0(100) >= drop->percent_chance)
+			continue;
+
+		i_ptr = &object_type_body;
+		if (drop->artifact) {
+			object_prep(i_ptr, objkind_get(drop->artifact->tval, drop->artifact->sval),
+			            0, MAXIMISE);
+			i_ptr->artifact = drop->artifact;
+			apply_magic(i_ptr, 0, TRUE, TRUE, TRUE);
+		} else {
+			object_prep(i_ptr, drop->kind, 0, RANDOMISE);
+			apply_magic(i_ptr, level, TRUE, FALSE, FALSE);
+		}
+
+		i_ptr->origin = ORIGIN_DROP;
+		i_ptr->origin_depth = p_ptr->depth;
+		i_ptr->origin_xtra = m_ptr->r_idx;
+		i_ptr->number = randint0(drop->max - drop->min) + drop->min;
+		drop_near(cave, i_ptr, 0, y, x, TRUE);
+	}
 
 	/* Drop some objects */
 	for (j = 0; j < number; j++)

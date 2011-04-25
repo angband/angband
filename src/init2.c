@@ -1741,6 +1741,56 @@ static enum parser_error parse_r_s(struct parser *p) {
 	return ret;
 }
 
+static enum parser_error parse_r_drop(struct parser *p) {
+	struct monster_race *r = parser_priv(p);
+	struct monster_drop *d;
+	int tval, sval;
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	tval = tval_find_idx(parser_getsym(p, "tval"));
+	if (tval < 0)
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+	sval = lookup_sval(tval, parser_getsym(p, "sval"));
+	if (sval < 0)
+		return PARSE_ERROR_UNRECOGNISED_SVAL;
+
+	if (parser_getuint(p, "min") > 99 || parser_getuint(p, "max") > 99)
+		return PARSE_ERROR_INVALID_ITEM_NUMBER;
+
+	d = mem_zalloc(sizeof *d);
+	d->kind = objkind_get(tval, sval);
+	d->percent_chance = parser_getuint(p, "chance");
+	d->min = parser_getuint(p, "min");
+	d->max = parser_getuint(p, "max");
+	d->next = r->drops;
+	r->drops = d;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_r_drop_artifact(struct parser *p) {
+	struct monster_race *r = parser_priv(p);
+	struct monster_drop *d;
+	int art;
+	struct artifact *a;
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	art = lookup_artifact_name(parser_getstr(p, "name"));
+	if (art < 0)
+		return PARSE_ERROR_GENERIC;
+	a = &a_info[art];
+
+	d = mem_zalloc(sizeof *d);
+	d->artifact = a;
+	d->min = 1;
+	d->max = 1;
+	d->percent_chance = 100;
+	d->next = r->drops;
+	r->drops = d;
+	return PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_r(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -1756,6 +1806,8 @@ struct parser *init_parse_r(void) {
 	parser_reg(p, "F ?str flags", parse_r_f);
 	parser_reg(p, "D str desc", parse_r_d);
 	parser_reg(p, "S str spells", parse_r_s);
+	parser_reg(p, "drop sym tval sym sval uint chance uint min uint max", parse_r_drop);
+	parser_reg(p, "drop-artifact str name", parse_r_drop_artifact);
 	return p;
 }
 
@@ -3096,6 +3148,10 @@ void init_arrays(void)
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (ego-items)");
 	if (run_parser(&e_parser)) quit("Cannot initialize ego-items");
 
+	/* Initialize artifact info */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (artifacts)");
+	if (run_parser(&a_parser)) quit("Cannot initialize artifacts");
+
 	/* Initialize monster pain messages */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (pain messages)");
 	if (run_parser(&mp_parser)) quit("Cannot initialize monster pain messages");
@@ -3111,10 +3167,6 @@ void init_arrays(void)
 	/* Initialize monster pits */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (monster pits)");
 	if (run_parser(&pit_parser)) quit("Cannot initialize monster pits");
-
-	/* Initialize artifact info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (artifacts)");
-	if (run_parser(&a_parser)) quit("Cannot initialize artifacts");
 
 	/* Initialize feature info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (vaults)");
