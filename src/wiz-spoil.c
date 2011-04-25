@@ -500,6 +500,8 @@ static void spoil_artifact(const char *fname)
 				NULL, TRUE), (a_ptr->weight / 10),
 				(a_ptr->weight % 10));
 
+			if (OPT(birth_randarts)) text_out("%s.\n", a_ptr->text);
+
 			/* Terminate the entry */
 			spoiler_blanklines(2);
 		}

@@ -319,7 +319,28 @@ static errr init_names(void)
 
 	for (i = 0; i < z_info->a_max; i++)
 	{
+		char desc[128] = "Based on ";
+
 		a = &a_info[i];
+		if (!a->tval || !a->sval || !a->name) continue;
+
+		if (prefix(a->name, "of Power"))
+		{
+			my_strcat(desc, a->name + 10, 
+				strlen(a->name) - 1);
+		}
+		else if (prefix(a->name, "of "))
+		{
+			my_strcat(desc, a->name + 3, 
+				strlen(a->name) + 7);
+		}
+		else
+		{
+			my_strcat(desc, a->name + 1, 
+				strlen(a->name) + 8);
+		}
+
+		a->text = string_make(desc);
 		a->name = artifact_gen_name(a, name_sections);
 	}
 

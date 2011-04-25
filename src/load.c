@@ -1404,15 +1404,6 @@ int rd_randarts_2(void)
 			return (-1);
 		}
 
-		/* Mark the old artifacts as "empty" */
-		for (i = 0; i < z_info->a_max; i++)
-		{
-			artifact_type *a_ptr = &a_info[i];
-			a_ptr->name = 0;
-			a_ptr->tval = 0;
-			a_ptr->sval = 0;
-		}
-
 		/* Read the artifacts */
 		for (i = 0; i < artifact_count; i++)
 		{
@@ -1463,6 +1454,18 @@ int rd_randarts_2(void)
 
 		/* Initialize only the randart names */
 		do_randart(seed_randart, FALSE);
+
+		/* Mark any stray old artifacts as "empty" */
+		if (artifact_count < z_info->a_max)
+		{
+			for (i = artifact_count; i < z_info->a_max; i++)
+			{
+				artifact_type *a_ptr = &a_info[i];
+				a_ptr->name = 0;
+				a_ptr->tval = 0;
+				a_ptr->sval = 0;
+			}
+		}
 	}
 	else
 	{
@@ -1541,15 +1544,6 @@ int rd_randarts_1(void)
 			return (-1);
 		}
 
-		/* Mark the old artifacts as "empty" */
-		for (i = 0; i < z_info->a_max; i++)
-		{
-			artifact_type *a_ptr = &a_info[i];
-			a_ptr->name = 0;
-			a_ptr->tval = 0;
-			a_ptr->sval = 0;
-		}
-
 		/* Read the artifacts */
 		for (i = 0; i < artifact_count; i++)
 		{
@@ -1594,6 +1588,18 @@ int rd_randarts_1(void)
 
 		/* Initialize only the randart names */
 		do_randart(seed_randart, FALSE);
+
+		/* Mark any stray old artifacts as "empty" */
+		if (artifact_count < z_info->a_max)
+		{
+			for (i = artifact_count; i < z_info->a_max; i++)
+			{
+				artifact_type *a_ptr = &a_info[i];
+				a_ptr->name = 0;
+				a_ptr->tval = 0;
+				a_ptr->sval = 0;
+			}
+		}
 	}
 	else
 	{
