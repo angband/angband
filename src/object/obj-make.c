@@ -959,7 +959,7 @@ bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
 	}
 
 	/* Notice "okay" out-of-depth objects */
-	if (!cursed_p(j_ptr->flags) && (kind->level > c->depth))
+	if (!cursed_p(j_ptr->flags) && (kind->alloc_min > c->depth))
 		c->rating += (kind->alloc_min - c->depth);
 
 	return TRUE;
