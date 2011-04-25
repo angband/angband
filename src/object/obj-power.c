@@ -79,23 +79,26 @@ static struct archery {
  * - factor for power increment for multiple flags
  * - additional power bonus for a "full set" of these flags
  * - number of these flags which constitute a "full set"
+ * - whether value is damage-dependent
  */
 static struct set {
 	int type;
 	int factor;
 	int bonus;
 	int size;
+	bool dam_dep;
 	int count;
+	char* desc;
 } sets[] = {
-	 {OFT_SUST, 1, 10, 5, 0},
-	 {OFT_SLAY, 2, 10, 8, 0},
-	{OFT_BRAND, 3, 20, 5, 0},
-	 {OFT_KILL, 5, 20, 3, 0},
-	 {OFT_IMM,  6, INHIBIT_POWER, 4, 0},
-	 {OFT_LRES, 1, 10, 4, 0},
-	 {OFT_HRES, 2, 10, 9, 0},
-	 {OFT_PROT, 3, 15, 4, 0},
-	 {OFT_MISC, 1, 25, 8, 0}
+	 {OFT_SUST, 1, 10, 5, FALSE, 0, "sustains"},
+	 {OFT_SLAY, 1, 10, 8, TRUE,  0, "normal slays"},
+	{OFT_BRAND, 2, 20, 5, TRUE,  0, "brands"},
+	 {OFT_KILL, 3, 20, 3, TRUE,  0, "x5 slays"},
+	 {OFT_IMM,  6, INHIBIT_POWER, 4, FALSE, 0, "immunities"},
+	 {OFT_LRES, 1, 10, 4, FALSE, 0, "low resists"},
+	 {OFT_HRES, 2, 10, 9, FALSE, 0, "high resists"},
+	 {OFT_PROT, 3, 15, 4, FALSE, 0, "protections"},
+	 {OFT_MISC, 1, 25, 8, FALSE, 0, "misc abilities"}
 };
 
 /**
@@ -220,7 +223,7 @@ static int bow_multiplier(int sval)
 s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	bool known)
 {
-	s32b p = 0, q = 0, slay_pwr = 0;
+	s32b p = 0, q = 0, slay_pwr = 0, dam_pwr = 0;
 	unsigned int i, j;
 	int extra_stat_bonus = 0, mult = 1, num_slays = 0, k = 1;
 	bitflag flags[OF_SIZE], mask[OF_SIZE];
@@ -347,19 +350,22 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		file_putf(log_file, "Rescaling bow power, total is %d\n", p);
 	}
 
+	dam_pwr = p;
+	file_putf(log_file, "Damage power is %d\n", dam_pwr);
+
 	/* Add power for +to_hit */
 	p += (o_ptr->to_h * TO_HIT_POWER / 2);
 	file_putf(log_file, "Adding power for to hit, total is %d\n", p);
 
 	/* Add power for base AC and adjust for weight */
 	if (o_ptr->ac) {
-		q += BASE_ARMOUR_POWER;
+		p += BASE_ARMOUR_POWER;
 		q += (o_ptr->ac * BASE_AC_POWER / 2);
 		file_putf(log_file, "Adding %d power for base AC value\n", q);
 
 		/* Add power for AC per unit weight */
 		if (o_ptr->weight > 0) {
-			i = 800 * (o_ptr->ac + o_ptr->to_a) / o_ptr->weight;
+			i = 750 * (o_ptr->ac + o_ptr->to_a) / o_ptr->weight;
 
 			/* Avoid overpricing Elven Cloaks */
 			if (i > 450) i = 450;
@@ -389,7 +395,6 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		file_putf(log_file, "INHIBITING: AC bonus too high\n");
 	}
 
-
 	/* Add power for light sources by radius XXX Hack - rewrite calc_torch! */
 	if (wield_slot(o_ptr) == INVEN_LIGHT) {
 		p += BASE_LIGHT_POWER;
@@ -408,27 +413,25 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	}
 
 	/* Add power for non-derived flags (derived flags have flag_power 0) */
-	for (i = 0; i < OF_MAX; i++) {
-		if (of_has(flags, i)) {
-			if (flag_uses_pval(i)) {
-				j = which_pval(o_ptr, i);
-				if (known || object_this_pval_is_visible(o_ptr, j)) {
-					k = o_ptr->pval[j];
-					extra_stat_bonus += (k * pval_mult(i));
-				}
-			} else
-				k = 1;
-
-			if (flag_power(i)) {
-				p += (k * flag_power(i) * slot_mult(i, wield_slot(o_ptr)));
-				file_putf(log_file, "Adding power for %s, total is %d\n", flag_name(i), p);
+	for (i = of_next(flags, FLAG_START); i != FLAG_END; i = of_next(flags, i + 1)) {
+		if (flag_uses_pval(i)) {
+			j = which_pval(o_ptr, i);
+			if (known || object_this_pval_is_visible(o_ptr, j)) {
+				k = o_ptr->pval[j];
+				extra_stat_bonus += (k * pval_mult(i));
 			}
+		} else
+			k = 1;
 
-			/* Track combinations of flag types - note we ignore SUST_CHR */
-			for (j = 0; j < N_ELEMENTS(sets); j++)
-				if ((sets[j].type == obj_flag_type(i)) && (i != OF_SUST_CHR))
-					sets[j].count++;
+		if (flag_power(i)) {
+			p += (k * flag_power(i) * slot_mult(i, wield_slot(o_ptr)));
+			file_putf(log_file, "Adding power for %s, total is %d\n", flag_name(i), p);
 		}
+
+		/* Track combinations of flag types - note we ignore SUST_CHR */
+		for (j = 0; j < N_ELEMENTS(sets); j++)
+			if ((sets[j].type == obj_flag_type(i)) && (i != OF_SUST_CHR))
+				sets[j].count++;
 	}
 
 	/* Add extra power term if there are a lot of ability bonuses */
@@ -443,14 +446,18 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	/* Add extra power for multiple flags of the same type */
 	for (i = 0; i < N_ELEMENTS(sets); i++) {
 		if (sets[i].count > 1) {
-			p += (sets[i].factor * sets[i].count * sets[i].count);
-			file_putf(log_file, "Adding power for multiple flags of type %d, total is %d\n", i, p);
+			q = (sets[i].factor * sets[i].count * sets[i].count);
+			/* Scale damage-dependent set bonuses by damage power */
+			if (sets[i].dam_dep)
+				q = q * dam_pwr / 60;
+			p += q;
+			file_putf(log_file, "Adding power for multiple %s, total is %d\n", sets[i].desc, p);
 		}
 
 		/* Add bonus if item has a full set of these flags */
 		if (sets[i].count == sets[i].size) {
 			p += sets[i].bonus;
-			file_putf(log_file, "Adding power for full set of type %d, total is %d\n", i, p);
+			file_putf(log_file, "Adding power for full set of %s, total is %d\n", sets[i].desc, p);
 		}
 	}
 
