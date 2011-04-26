@@ -132,10 +132,13 @@ static void flag2hex(const bitflag flags[], char *out_str)
 {
 	unsigned int i;
 
-	out_str[OF_SIZE] = 0;
+	out_str[2*OF_SIZE] = 0;
 
 	for (i = 0; i < OF_SIZE; i++)
-		out_str[i] = hexsym[flags[i] % 16];
+	{
+		out_str[2*i]   = hexsym[flags[i] & 0xf];
+		out_str[2*i+1] = hexsym[flags[i] >> 4];
+	}
 }
 
 /* 
@@ -150,7 +153,7 @@ static void dump_pvals(char *pval_string, char *pval_flag_string,
 	unsigned int i;
 	size_t pval_end = 0;
 	size_t pval_flag_end = 0;
-	char buf[32];
+	char buf[64];
 
 	if (num_pvals <= 0) return;
 
@@ -181,7 +184,7 @@ static void print_all_objects(void)
 			{
 				u16b o_origin_xtra;
 				u32b o_power = 0;
-				char o_flags[OF_SIZE] = "";
+				char o_flags[128] = "";
 				char o_pvals[20] = "";
 				char o_pval_flags[128] = "";
 
@@ -281,7 +284,7 @@ static void dump_ainfo(void)
 	for (i = 0; i < z_info->a_max; i++)
 	{
 		artifact_type *a_ptr = &a_info[i];	
-		char a_flags[OF_SIZE] = "";
+		char a_flags[128] = "";
 		char a_pvals[20] = "";
 		char a_pval_flags[128] = "";
 
