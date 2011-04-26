@@ -154,7 +154,7 @@ static void dump_pvals(char *pval_string, char *pval_flag_string,
 
 	if (num_pvals <= 0) return;
 
-	for (i = 0; i < (num_pvals - 1); i++)
+	for (i = 0; (i + 1) < num_pvals; i++)
 	{
 		strnfcat(pval_string, 20, &pval_end, "%d,", pval[i]);
 		flag2hex(pval_flags[i], buf);
@@ -375,11 +375,35 @@ static void prep_output_dir(void)
 static errr run_stats(void)
 {
 	u32b run;
+	artifact_type *a_info_save;
+	unsigned int i;
 
 	prep_output_dir();
 
+	if (randarts)
+	{
+		a_info_save = mem_zalloc(z_info->a_max * sizeof(artifact_type));
+		for (i = 0; i < z_info->a_max; i++)
+		{
+			if (!a_info[i].name) continue;
+
+			memcpy(&a_info_save[i], &a_info[i], 
+				sizeof(artifact_type));
+		}
+	}
+	
+
 	for (run = 0; run < num_runs; run++)
 	{
+		if (randarts)
+		{
+			for (i = 0; i < z_info->a_max; i++)
+			{
+				memcpy(&a_info[i], &a_info_save[i], 
+					sizeof(artifact_type));
+			}
+		}
+
 		initialize_character();
 		open_output_files(run);
 		dump_ainfo();
