@@ -233,16 +233,32 @@ s16b ego_apply_magic(object_type *o_ptr, int level)
 	return o_ptr->ego->rating;
 }
 
+/**
+ * Apply minimum pvals to an ego item.
+ */
+void ego_min_pvals(object_type *o_ptr)
+{
+	int i, j, flag;
+
+	if (!o_ptr->ego) return;
+
+	for (i = 0; i < o_ptr->num_pvals; i++)
+		for (j = 0; j < o_ptr->ego->num_pvals; j++)
+			for (flag = of_next(o_ptr->ego->pval_flags[j], FLAG_START);
+					flag != FLAG_END;
+					flag = of_next(o_ptr->ego->pval_flags[j], flag + 1))
+				if (!of_has(o_ptr->flags, flag) ||
+						(of_has(o_ptr->pval_flags[i], flag) &&
+						o_ptr->pval[i] < o_ptr->ego->min_pval[j]))
+					object_add_pval(o_ptr, o_ptr->ego->min_pval[j] -
+						o_ptr->pval[i], flag);
+}
 
 /**
- * Apply minimum standards for ego-items. Note that ego pval flags may have
- * shifted to another pval, so we look for them.
+ * Apply minimum standards for ego-items.
  */
 static void ego_apply_minima(object_type *o_ptr)
 {
-	int i, j, flag;
-	bitflag f[OF_SIZE];
-
 	if (!o_ptr->ego) return;
 
 	if (o_ptr->to_h < o_ptr->ego->min_to_h)
@@ -252,16 +268,7 @@ static void ego_apply_minima(object_type *o_ptr)
 	if (o_ptr->to_a < o_ptr->ego->min_to_a)
 		o_ptr->to_a = o_ptr->ego->min_to_a;
 
-	for (i = 0; i < o_ptr->num_pvals; i++)
-		for (j = 0; j < o_ptr->ego->num_pvals; j++) {
-			of_copy(f, o_ptr->ego->pval_flags[j]);
-			for (flag = of_next(f, FLAG_START); flag != FLAG_END;
-					flag = of_next(f, flag + 1))
-				if (of_has(o_ptr->pval_flags[i], flag) &&
-						o_ptr->pval[i] < o_ptr->ego->min_pval[j])
-					object_add_pval(o_ptr, o_ptr->ego->min_pval[j] -
-						o_ptr->pval[i], flag);
-		}
+	ego_min_pvals(o_ptr);
 }
 
 

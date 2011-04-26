@@ -20,7 +20,7 @@
 #include "object/tvalsval.h"
 
 /**
- * Obtain the pval_flags for an item
+ * Return the pval_flags for an item
  */
 void object_pval_flags(const object_type *o_ptr,
 	bitflag flags[MAX_PVALS][OF_SIZE])
@@ -211,7 +211,8 @@ bool object_add_pval(object_type *o_ptr, int pval, int flag)
 		if (a != -1) { /* then we need to move the flag to the new pval */
 			o_ptr->pval[o_ptr->num_pvals] += o_ptr->pval[a];
 			of_off(o_ptr->pval_flags[a], flag);
-		}
+		} else /* We need to add it to object_flags */
+			of_on(o_ptr->flags, flag);
 		o_ptr->num_pvals++; /* We do this last because pvals start from zero */
 		/* We invert the logic because we've already added a pval */
 		return (!object_dedup_pvals(o_ptr));

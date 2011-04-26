@@ -551,6 +551,7 @@ void set_ego_xtra_resist(bitflag flags[OF_SIZE]);
 void set_ego_xtra_power(bitflag flags[OF_SIZE]);
 void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr);
 s16b ego_apply_magic(object_type *o_ptr, int level);
+void ego_min_pvals(object_type *o_ptr);
 
 /* obj-ui.c */
 void show_inven(olist_detail_t mode);

@@ -194,23 +194,12 @@ static int rd_item_3(object_type *o_ptr)
 
 	/* Ego items */
 	if (o_ptr->ego)	{
-		bitflag pval_mask[OF_SIZE];
-
         /* Hack -- keep some old fields */
         if ((o_ptr->dd < old_dd) && (o_ptr->ds == old_ds))
 			/* Keep old boosted damage dice */
 			o_ptr->dd = old_dd;
 
-		create_mask(pval_mask, FALSE, OFT_PVAL, OFT_STAT, OFT_MAX);
-
-        /* Hack -- enforce legal pval */
-        for (i = 0; i < MAX_PVALS; i++) {
-			if (of_is_inter(o_ptr->ego->pval_flags[i], pval_mask))
-
-				/* Force a meaningful pval */
-				if (!o_ptr->pval[i])
-					o_ptr->pval[i] = o_ptr->ego->min_pval[i];
-		}
+		ego_min_pvals(o_ptr);
 	}
 
 	/* Success */
