@@ -22,9 +22,11 @@
 #include "init.h"
 
 static int randarts = 0;
+static u32b num_runs = 1;
 static int verbose = 0;
 static int nextkey = 0;
 static int running_stats = 0;
+static char *ANGBAND_DIR_STATS;
 
 static ang_file *obj_fp, *mon_fp, *ainfo_fp, *rinfo_fp;
 
@@ -190,16 +192,25 @@ static void print_all_objects(void)
 	}
 }
 
-static void open_output_files(void)
+static void open_output_files(u32b run)
 {
 	char buf[1024];
-	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "objects.txt");
+	char run_dir[1024];
+
+	strnfmt(run_dir, 1024, "%s%s%010d", ANGBAND_DIR_STATS, PATH_SEP, run);
+
+	if (!dir_create(run_dir))
+	{
+		quit("Couldn't create stats run directory!");	
+	}
+	
+	path_build(buf, sizeof(buf), run_dir, "objects.txt");
 	obj_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
-	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "monsters.txt");
+	path_build(buf, sizeof(buf), run_dir, "monsters.txt");
 	mon_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
-	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "ainfo.txt");
+	path_build(buf, sizeof(buf), run_dir, "ainfo.txt");
 	ainfo_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
-	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "rinfo.txt");
+	path_build(buf, sizeof(buf), run_dir, "rinfo.txt");
 	rinfo_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
 
 	/* Print headers */
@@ -295,13 +306,39 @@ static void descend_dungeon(void)
 	}
 }
 
-static errr run_stats(void) {
-	initialize_character();
-	open_output_files();
-	dump_ainfo();
-	dump_rinfo();
-	descend_dungeon();
-	close_output_files();
+static void prep_output_dir(void) 
+{
+	size_t size = strlen(ANGBAND_DIR_USER) + strlen(PATH_SEP) + 6;
+	ANGBAND_DIR_STATS = mem_alloc(size);
+	strnfmt(ANGBAND_DIR_STATS, size,
+		"%s%sstats", ANGBAND_DIR_USER,PATH_SEP);
+
+	if (dir_create(ANGBAND_DIR_STATS))
+	{
+		return;
+	}
+	else	
+	{
+		quit("Couldn't create stats directory!");	
+	}
+	
+}
+
+static errr run_stats(void)
+{
+	u32b run;
+
+	prep_output_dir();
+
+	for (run = 0; run < num_runs; run++)
+	{
+		initialize_character();
+		open_output_files(run);
+		dump_ainfo();
+		dump_rinfo();
+		descend_dungeon();
+		close_output_files();
+	}
 	cleanup_angband();
 	quit(NULL);
 	exit(0);
@@ -444,13 +481,26 @@ static void term_data_link(int i) {
 
 const char help_stats[] = "Stats mode, subopts -r(andarts)";
 
+/* 
+ * Usage:
+ *
+ * angband -mstats -- [-r] [-nNNNN]
+ *
+ *   -r      Turn on randarts
+ *   -nNNNN  Make NNNN runs through the dungeon (default: 1)
+ */ 
+
 errr init_stats(int argc, char *argv[]) {
 	int i;
 
 	/* Skip over argv[0] */
 	for (i = 1; i < argc; i++) {
-		if (!strcmp(argv[i], "-r")) {
+		if (streq(argv[i], "-r")) {
 			randarts = 1;
+			continue;
+		}
+		if (prefix(argv[i], "-n")) {
+			num_runs = atoi(&argv[i][2]);
 			continue;
 		}
 		printf("init-stats: bad argument '%s'\n", argv[i]);
