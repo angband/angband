@@ -12,3 +12,4 @@ lib/save/1000.*
 *.rej
 .gitignore
 src/tests/bin/
+src/angband-master

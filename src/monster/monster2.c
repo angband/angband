@@ -3382,91 +3382,34 @@ static void build_quest_stairs(int y, int x)
 }
 
 
-
-/*
- * Handle the "death" of a monster.
+/**
+ * Create a specific monster's drop, including any specified drops.
  *
- * Disperse treasures centered at the monster location based on the
- * various flags contained in the monster flags fields.
- *
- * Check for "Quest" completion when a quest monster is killed.
- *
- * Note that only the player can induce "monster_death()" on Uniques.
- * Thus (for now) all Quest monsters should be Uniques.
- *
- * Note that monsters can now carry objects, and when a monster dies,
- * it drops all of its objects, which may disappear in crowded rooms.
+ * Returns TRUE if anything is created, FALSE if nothing is.
  */
-void monster_death(int m_idx)
+bool mon_create_drop(int m_idx, byte origin)
 {
-	int i, j, y, x, level;
-
-	int dump_item = 0;
-	int dump_gold = 0;
-
-	int number = 0;
-	int total = 0;
-
-	s16b this_o_idx, next_o_idx = 0;
+	struct monster_drop *drop;
 
 	monster_type *m_ptr = cave_monster(cave, m_idx);
-
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
-
-	bool visible = (m_ptr->ml || rf_has(r_ptr->flags, RF_UNIQUE));
 
 	bool great = (rf_has(r_ptr->flags, RF_DROP_GREAT)) ? TRUE : FALSE;
 	bool good = (rf_has(r_ptr->flags, RF_DROP_GOOD) ? TRUE : FALSE) || great;
-
+	bool any = FALSE;
 	bool gold_ok = (!rf_has(r_ptr->flags, RF_ONLY_ITEM));
 	bool item_ok = (!rf_has(r_ptr->flags, RF_ONLY_GOLD));
 
+	int number = 0, level, j;
 	int force_coin = get_coin_type(r_ptr);
 
 	object_type *i_ptr;
 	object_type object_type_body;
 
-	struct monster_drop *drop;
-
-	/* Get the location */
-	y = m_ptr->fy;
-	x = m_ptr->fx;
-
-	/* Drop objects being carried */
-	for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx)
-	{
-		object_type *o_ptr;
-
-		/* Get the object */
-		o_ptr = object_byid(this_o_idx);
-
-		/* Get the next object */
-		next_o_idx = o_ptr->next_o_idx;
-
-		/* Paranoia */
-		o_ptr->held_m_idx = 0;
-
-		/* Get local object */
-		i_ptr = &object_type_body;
-
-		/* Copy the object */
-		object_copy(i_ptr, o_ptr);
-
-		/* Delete the object */
-		delete_object_idx(this_o_idx);
-
-		/* Drop it */
-		drop_near(cave, i_ptr, 0, y, x, TRUE);
-	}
-
-	/* Forget objects */
-	m_ptr->hold_o_idx = 0;
-
 	/* Determine how much we can drop */
 	if (rf_has(r_ptr->flags, RF_DROP_20) && randint0(100) < 20) number++;
 	if (rf_has(r_ptr->flags, RF_DROP_40) && randint0(100) < 40) number++;
 	if (rf_has(r_ptr->flags, RF_DROP_60) && randint0(100) < 60) number++;
-
 	if (rf_has(r_ptr->flags, RF_DROP_4)) number += rand_range(2, 6);
 	if (rf_has(r_ptr->flags, RF_DROP_3)) number += rand_range(2, 4);
 	if (rf_has(r_ptr->flags, RF_DROP_2)) number += rand_range(1, 3);
@@ -3483,62 +3426,116 @@ void monster_death(int m_idx)
 
 		i_ptr = &object_type_body;
 		if (drop->artifact) {
-			object_prep(i_ptr, objkind_get(drop->artifact->tval, drop->artifact->sval),
-			            0, MAXIMISE);
+			object_prep(i_ptr, objkind_get(drop->artifact->tval,
+				drop->artifact->sval), level, RANDOMISE);
 			i_ptr->artifact = drop->artifact;
-			apply_magic(i_ptr, 0, TRUE, TRUE, TRUE);
+			copy_artifact_data(i_ptr, i_ptr->artifact);
+			i_ptr->artifact->created = 1;
 		} else {
-			object_prep(i_ptr, drop->kind, 0, RANDOMISE);
-			apply_magic(i_ptr, level, TRUE, FALSE, FALSE);
+			object_prep(i_ptr, drop->kind, level, RANDOMISE);
+			apply_magic(i_ptr, level, TRUE, good, great);
 		}
 
-		i_ptr->origin = ORIGIN_DROP;
+		i_ptr->origin = origin;
 		i_ptr->origin_depth = p_ptr->depth;
 		i_ptr->origin_xtra = m_ptr->r_idx;
 		i_ptr->number = randint0(drop->max - drop->min) + drop->min;
-		drop_near(cave, i_ptr, 0, y, x, TRUE);
+		if (monster_carry(m_idx, i_ptr))
+			any = TRUE;
 	}
 
-	/* Drop some objects */
-	for (j = 0; j < number; j++)
-	{
-		/* Get local object */
+	/* Make some objects */
+	for (j = 0; j < number; j++) {
 		i_ptr = &object_type_body;
-
-		/* Wipe the object */
 		object_wipe(i_ptr);
 
-		/* Make Gold */
 		if (gold_ok && (!item_ok || (randint0(100) < 50)))
-		{
-			/* Make some gold */
 			make_gold(i_ptr, level, force_coin);
-			dump_gold++;
-		}
 
-		/* Make Object */
-		else
-		{
-			/* Make an object */
-			if (!make_object(cave, i_ptr, level, good, great)) continue;
-			dump_item++;
-		}
+		else if (!make_object(cave, i_ptr, level, good, great)) continue;
 
-		/* Set origin */
-		i_ptr->origin = visible ? ORIGIN_DROP : ORIGIN_DROP_UNKNOWN;
+		i_ptr->origin = origin;
 		i_ptr->origin_depth = p_ptr->depth;
 		i_ptr->origin_xtra = m_ptr->r_idx;
+		if (monster_carry(m_idx, i_ptr))
+			any = TRUE;
+	}
 
-		/* Drop it in the dungeon */
+	return any;
+}
+
+
+/**
+ * Handle the "death" of a monster.
+ *
+ * Disperse treasures carried by the monster centered at the monster location.
+ * Note that objects dropped may disappear in crowded rooms.
+ *
+ * Check for "Quest" completion when a quest monster is killed.
+ *
+ * Note that only the player can induce "monster_death()" on Uniques.
+ * Thus (for now) all Quest monsters should be Uniques.
+ */
+void monster_death(int m_idx)
+{
+	int i, y, x;
+	int dump_item = 0;
+	int dump_gold = 0;
+	int total = 0;
+	s16b this_o_idx, next_o_idx = 0;
+
+	monster_type *m_ptr = cave_monster(cave, m_idx);
+	monster_race *r_ptr = &r_info[m_ptr->r_idx];
+
+	bool visible = (m_ptr->ml || rf_has(r_ptr->flags, RF_UNIQUE));
+
+	object_type *i_ptr;
+	object_type object_type_body;
+
+	/* Get the location */
+	y = m_ptr->fy;
+	x = m_ptr->fx;
+
+	/* Drop objects being carried */
+	for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx) {
+		object_type *o_ptr;
+
+		/* Get the object */
+		o_ptr = object_byid(this_o_idx);
+
+		/* Line up the next object */
+		next_o_idx = o_ptr->next_o_idx;
+
+		/* Paranoia */
+		o_ptr->held_m_idx = 0;
+
+		/* Get local object, copy it and delete the original */
+		i_ptr = &object_type_body;
+		object_copy(i_ptr, o_ptr);
+		delete_object_idx(this_o_idx);
+
+		/* Count it and drop it - refactor once origin is a bitflag */
+		if ((i_ptr->tval == TV_GOLD) && (i_ptr->origin != ORIGIN_STOLEN))
+			dump_gold++;
+		else if ((i_ptr->tval != TV_GOLD) && ((i_ptr->origin == ORIGIN_DROP)
+				|| (i_ptr->origin == ORIGIN_DROP_PIT)
+				|| (i_ptr->origin == ORIGIN_DROP_VAULT)
+				|| (i_ptr->origin == ORIGIN_DROP_SUMMON)))
+			dump_item++;
+
+		/* Change origin if monster is invisible */
+		if (!visible)
+			i_ptr->origin = ORIGIN_DROP_UNKNOWN;
+
 		drop_near(cave, i_ptr, 0, y, x, TRUE);
 	}
+
+	/* Forget objects */
+	m_ptr->hold_o_idx = 0;
 
 	/* Take note of any dropped treasure */
 	if (visible && (dump_item || dump_gold))
-	{
-		/* Take notes on treasure */
 		lore_treasure(m_idx, dump_item, dump_gold);
-	}
 
 	/* Update monster list window */
 	p_ptr->redraw |= PR_MONLIST;
@@ -3546,10 +3543,9 @@ void monster_death(int m_idx)
 	/* Only process "Quest Monsters" */
 	if (!rf_has(r_ptr->flags, RF_QUESTOR)) return;
 
-	/* Hack -- Mark quests as complete */
-	for (i = 0; i < MAX_Q_IDX; i++)
-	{
-		/* Hack -- note completed quests */
+	/* Mark quests as complete */
+	for (i = 0; i < MAX_Q_IDX; i++)	{
+		/* Note completed quests */
 		if (q_list[i].level == r_ptr->level) q_list[i].level = 0;
 
 		/* Count incomplete quests */
@@ -3560,15 +3556,9 @@ void monster_death(int m_idx)
 	build_quest_stairs(y, x);
 
 	/* Nothing left, game over... */
-	if (total == 0)
-	{
-		/* Total winner */
+	if (total == 0) {
 		p_ptr->total_winner = TRUE;
-
-		/* Redraw the "title" */
 		p_ptr->redraw |= (PR_TITLE);
-
-		/* Congratulations */
 		msg("*** CONGRATULATIONS ***");
 		msg("You have won the game!");
 		msg("You may retire (commit suicide) when you are ready.");

@@ -374,7 +374,6 @@ extern s16b get_mon_num(int level);
 extern void display_monlist(void);
 extern void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode);
 extern void lore_do_probe(int m_idx);
-extern void lore_treasure(int m_idx, int num_item, int num_gold);
 extern void update_mon(int m_idx, bool full);
 extern void update_monsters(bool full);
 extern s16b monster_carry(int m_idx, object_type *j_ptr);
@@ -396,5 +395,6 @@ extern void monster_flags_known(const monster_race *r_ptr, const monster_lore *l
 
 extern void process_monsters(struct cave *c, byte min_energy);
 int mon_hp(const struct monster_race *r_ptr, aspect hp_aspect);
+bool mon_create_drop(int m_idx, byte origin);
 
 #endif /* !MONSTER_MONSTER_H */

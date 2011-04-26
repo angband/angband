@@ -13,6 +13,33 @@ struct player;
 
 /*** Constants ***/
 
+/* Object origin kinds */
+
+enum {
+    ORIGIN_NONE = 0,
+    ORIGIN_MIXED,
+    ORIGIN_BIRTH,
+    ORIGIN_STORE,
+    ORIGIN_FLOOR,
+    ORIGIN_DROP,
+    ORIGIN_DROP_UNKNOWN,
+    ORIGIN_ACQUIRE,
+    ORIGIN_CHEAT,
+    ORIGIN_CHEST,
+	ORIGIN_DROP_PIT,
+	ORIGIN_DROP_VAULT,
+	ORIGIN_DROP_SUMMON,
+	ORIGIN_PIT,
+	ORIGIN_VAULT,
+	ORIGIN_STOLEN,
+
+	ORIGIN_MAX
+};
+
+#define ORIGIN_SIZE FLAG_SIZE(ORIGIN_MAX)
+#define ORIGIN_BYTES 4 /* savefile bytes - room for 32 origin types */
+
+
 /**
  * Maximum number of pvals on objects
  *
