@@ -125,6 +125,47 @@ static void kill_all_monsters(int level)
 
 }
 
+/* 
+ * Insert into out_str a hex representation of the bitflag flags[].
+ */
+static void flag2hex(const bitflag flags[], char *out_str)
+{
+	unsigned int i;
+
+	out_str[OF_SIZE] = 0;
+
+	for (i = 0; i < OF_SIZE; i++)
+		out_str[i] = hexsym[flags[i] % 16];
+}
+
+/* 
+ * Insert into pvals a comma-separated list of pvals in pval[],
+ * and insert into pval_flags a comma-separated list of hex 
+ * representations of the bitflags in pval_flags[].
+ */
+
+static void dump_pvals(char *pval_string, char *pval_flag_string,
+	s16b pval[], bitflag pval_flags[][OF_SIZE], byte num_pvals)
+{
+	unsigned int i;
+	size_t pval_end = 0;
+	size_t pval_flag_end = 0;
+	char buf[32];
+
+	if (num_pvals <= 0) return;
+
+	for (i = 0; i < (num_pvals - 1); i++)
+	{
+		strnfcat(pval_string, 20, &pval_end, "%d,", pval[i]);
+		flag2hex(pval_flags[i], buf);
+		strnfcat(pval_flag_string, 128, &pval_flag_end, "%s,", buf);
+	}
+
+	strnfcat(pval_string, 20, &pval_end, "%d", pval[num_pvals - 1]);
+	flag2hex(pval_flags[num_pvals - 1], buf);
+	strnfcat(pval_flag_string, 128, &pval_flag_end, "%s", buf);
+}
+
 static void print_all_objects(void)
 {
 	int x, y;
@@ -135,13 +176,15 @@ static void print_all_objects(void)
 		for (x = 1; x < DUNGEON_WID - 1; x++)
 		{
 			object_type *o_ptr = get_first_object(y, x);
-			u16b o_origin_xtra;
-			u32b o_power = 0;
-			char o_flags[OF_SIZE];
-			u16b j;
 
 			if (o_ptr) do
 			{
+				u16b o_origin_xtra;
+				u32b o_power = 0;
+				char o_flags[OF_SIZE] = "";
+				char o_pvals[20] = "";
+				char o_pval_flags[128] = "";
+
 				/* Mark object as fully known */
 				object_notice_everything(o_ptr);
 				object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL | ODESC_SPOIL);
@@ -158,20 +201,22 @@ static void print_all_objects(void)
 					o_origin_xtra = o_ptr->origin_xtra;
 				}
 
-				o_flags[OF_SIZE] = 0;
-				for (j = 0; j < OF_SIZE; j++)
-				{
-					o_flags[j] = hexsym[o_ptr->flags[j] % 16];
-				}
+				flag2hex(o_ptr->flags, o_flags);
+
+				if (o_ptr->num_pvals > 0)
+					dump_pvals(o_pvals, o_pval_flags,
+						o_ptr->pval,
+						o_ptr->pval_flags,
+						o_ptr->num_pvals);
 
 				o_power = object_power(o_ptr, 0, NULL, 1);
 
 
 				file_putf(obj_fp, 
-					"%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%s|%d|%s\n",
+					"%d|%d|%s|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%s|%s|%d|%s\n",
 					o_ptr->tval,
 					o_ptr->sval,
-					o_ptr->pval[DEFAULT_PVAL],
+					o_pvals,
 					o_ptr->number,
 					o_ptr->origin,
 					o_ptr->origin_depth,
@@ -184,6 +229,7 @@ static void print_all_objects(void)
 					o_ptr->ds,
 					o_ptr->weight,
 					o_flags,
+					o_pval_flags,
 					o_power,
 					o_name);
 			}
@@ -214,9 +260,9 @@ static void open_output_files(u32b run)
 	rinfo_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
 
 	/* Print headers */
-	file_putf(obj_fp, "tval|sval|pval|name1|name2|number|origin|origin_depth|origin_xtra|to_h|to_d|to_a|ac|dd|ds|weight|flags|power|name\n");
+	file_putf(obj_fp, "tval|sval|pvals|name1|name2|number|origin|origin_depth|origin_xtra|to_h|to_d|to_a|ac|dd|ds|weight|flags|pval_flags|power|name\n");
 	file_putf(mon_fp, "level|r_idx|name\n");
-	file_putf(ainfo_fp, "aidx|tval|sval|pval|to_h|to_d|to_a|ac|dd|ds|weight|flags|level|alloc_prob|alloc_min|alloc_max|effect|name\n");
+	file_putf(ainfo_fp, "aidx|tval|sval|pvals|to_h|to_d|to_a|ac|dd|ds|weight|flags|pval_flags|level|alloc_prob|alloc_min|alloc_max|effect|name\n");
 	file_putf(rinfo_fp, "ridx|level|rarity|d_char|name\n");
 }
 
@@ -230,29 +276,30 @@ static void close_output_files(void)
 
 static void dump_ainfo(void) 
 {
-	unsigned int i, j;
-	char flags[OF_SIZE];
-
-	flags[OF_SIZE] = 0;
+	unsigned int i;
 
 	for (i = 0; i < z_info->a_max; i++)
 	{
 		artifact_type *a_ptr = &a_info[i];	
+		char a_flags[OF_SIZE] = "";
+		char a_pvals[20] = "";
+		char a_pval_flags[128] = "";
 
 		/* Don't print anything for "empty" artifacts */
 		if (!a_ptr->name) continue;
 
-		for (j = 0; j < OF_SIZE; j++)
-		{
-			flags[j] = hexsym[a_ptr->flags[j] % 16];
-		}
+		flag2hex(a_ptr->flags, a_flags);
+
+		if (a_ptr->num_pvals > 0)
+			dump_pvals(a_pvals, a_pval_flags, a_ptr->pval,
+				a_ptr->pval_flags, a_ptr->num_pvals);
 
 		file_putf(ainfo_fp,
-			"%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%s|%d|%d|%d|%d|%d|%s\n",
+			"%d|%d|%d|%s|%d|%d|%d|%d|%d|%d|%d|%d|%s|%s|%d|%d|%d|%d|%d|%s\n",
 			a_ptr->aidx,
 			a_ptr->tval,
 			a_ptr->sval,
-			a_ptr->pval,
+			a_pvals,
 			a_ptr->to_h,
 			a_ptr->to_d,
 			a_ptr->to_a,
@@ -261,7 +308,8 @@ static void dump_ainfo(void)
 			a_ptr->ds,
 			a_ptr->weight,
 			a_ptr->cost,
-			flags,
+			a_flags,
+			a_pval_flags,
 			a_ptr->level,
 			a_ptr->alloc_prob,
 			a_ptr->alloc_min,
