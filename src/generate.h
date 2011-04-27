@@ -5,7 +5,8 @@
 
 void ensure_connectedness(struct cave *c);
 
-void place_object(struct cave *c, int y, int x, int level, bool good, bool great);
+void place_object(struct cave *c, int y, int x, int level, bool good,
+	bool great, byte origin);
 void place_gold(struct cave *c, int y, int x, int level);
 void place_secret_door(struct cave *c, int y, int x);
 void place_closed_door(struct cave *c, int y, int x);

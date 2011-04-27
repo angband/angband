@@ -1097,6 +1097,26 @@ bool describe_origin(textblock *tb, const object_type *o_ptr)
 			         origin_text);
  			break;
 
+		case ORIGIN_SPECIAL:
+			textblock_append(tb, "Found lying on the floor of a special room at %s.\n",
+			         origin_text);
+ 			break;
+
+		case ORIGIN_LABYRINTH:
+			textblock_append(tb, "Found lying on the floor of a labyrinth at %s.\n",
+			         origin_text);
+ 			break;
+
+		case ORIGIN_CAVERN:
+			textblock_append(tb, "Found lying on the floor of a cavern at %s.\n",
+			         origin_text);
+ 			break;
+
+		case ORIGIN_RUBBLE:
+			textblock_append(tb, "Found under some rubble at %s.\n",
+			         origin_text);
+ 			break;
+
 		case ORIGIN_DROP:
 		case ORIGIN_DROP_SPECIAL:
 		case ORIGIN_DROP_PIT:

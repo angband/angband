@@ -17,13 +17,13 @@ struct player;
 
 enum {
     ORIGIN_NONE = 0,
-    ORIGIN_MIXED,
+    ORIGIN_MIXED,			/* stack with mixed origins */
     ORIGIN_BIRTH,			/* objects created at character birth */
     ORIGIN_STORE,			/* something you bought */
     ORIGIN_FLOOR,			/* found on the dungeon floor */
     ORIGIN_DROP,			/* normal monster drops */
     ORIGIN_DROP_UNKNOWN,	/* drops from unseen foes */
-    ORIGIN_ACQUIRE,			/* created by scroll */
+    ORIGIN_ACQUIRE,			/* called forth by scroll */
     ORIGIN_CHEAT,			/* created by wizard mode */
     ORIGIN_CHEST,
 	ORIGIN_DROP_SPECIAL,	/* from monsters in special rooms */
@@ -33,8 +33,12 @@ enum {
 	ORIGIN_DROP_BREED,		/* from breeders */
 	ORIGIN_DROP_POLY,		/* from polymorphees */
 	ORIGIN_DROP_WIZARD,		/* from wizard mode summons */
+	ORIGIN_SPECIAL,			/* on the floor of a special room */
 	ORIGIN_PIT,				/* on the floor of a pit/nest */
 	ORIGIN_VAULT,			/* on the floor of a vault */
+	ORIGIN_LABYRINTH,		/* on the floor of a labyrinth */
+	ORIGIN_CAVERN,			/* on the floor of a cavern */
+	ORIGIN_RUBBLE,			/* found under rubble */
 	ORIGIN_STOLEN,			/* stolen by monster (used only for gold) */
 
 	ORIGIN_MAX

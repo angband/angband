@@ -1242,17 +1242,13 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 				cave_set_feat(cave, y, x, FEAT_FLOOR);
 
 				/* Hack -- place an object */
-				if (randint0(100) < 10)
-				{
-					/* Found something */
-					if (player_can_see_bold(y, x))
-					{
+				if (randint0(100) < 10){
+					if (player_can_see_bold(y, x)) {
 						msg("There was something buried in the rubble!");
 						obvious = TRUE;
 					}
-
-					/* Place gold */
-					place_object(cave, y, x, p_ptr->depth, FALSE, FALSE);
+					place_object(cave, y, x, p_ptr->depth, FALSE, FALSE,
+						ORIGIN_RUBBLE);
 				}
 			}
 
@@ -1392,7 +1388,8 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
  *
  * We return "TRUE" if the effect of the projection is "obvious".
  */
-static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvious)
+static bool project_o(int who, int r, int y, int x, int dam, int typ,
+	bool obvious)
 {
 	s16b this_o_idx, next_o_idx = 0;
 
@@ -1689,7 +1686,8 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvio
  *
  * We attempt to return "TRUE" if the player saw anything "obvious" happen.
  */
-static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvious)
+static bool project_m(int who, int r, int y, int x, int dam, int typ,
+	bool obvious)
 {
 	int tmp;
 

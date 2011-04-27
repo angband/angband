@@ -1088,17 +1088,15 @@ static bool do_cmd_tunnel_aux(int y, int x)
 			msg("You have removed the rubble.");
 
 			/* Hack -- place an object */
-			if (randint0(100) < 10)
-			{
+			if (randint0(100) < 10)	{
 				/* Create a simple object */
-				place_object(cave, y, x, p_ptr->depth, FALSE, FALSE);
+				place_object(cave, y, x, p_ptr->depth, FALSE, FALSE,
+					ORIGIN_RUBBLE);
 
 				/* Observe the new object */
 				if (!squelch_item_ok(object_byid(cave->o_idx[y][x])) &&
-				    player_can_see_bold(y, x))
-				{
+					    player_can_see_bold(y, x))
 					msg("You have found something!");
-				}
 			}
 		}
 

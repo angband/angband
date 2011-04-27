@@ -46,8 +46,10 @@ static bool build_lesser_vault(struct cave *c, int y0, int x0);
 static bool build_medium_vault(struct cave *c, int y0, int x0);
 static bool build_greater_vault(struct cave *c, int y0, int x0);
 
-static void alloc_objects(struct cave *c, int set, int typ, int num, int depth);
-static bool alloc_object(struct cave *c, int set, int typ, int depth);
+static void alloc_objects(struct cave *c, int set, int typ, int num, int depth,
+	byte origin);
+static bool alloc_object(struct cave *c, int set, int typ, int depth,
+	byte origin);
 
 #define ROOM_DEBUG(...) if (0) msg(__VA_ARGS__);
 
@@ -464,7 +466,9 @@ static void place_random_stairs(struct cave *c, int y, int x) {
 /**
  * Place a random object at (x, y).
  */
-void place_object(struct cave *c, int y, int x, int level, bool good, bool great) {
+void place_object(struct cave *c, int y, int x, int level, bool good,
+	bool great, byte origin)
+{
 	object_type otype;
 
 	assert(cave_in_bounds(c, y, x));
@@ -473,7 +477,7 @@ void place_object(struct cave *c, int y, int x, int level, bool good, bool great
 
 	object_wipe(&otype);
 	if (make_object(c, &otype, level, good, great)) {
-		otype.origin = ORIGIN_FLOOR;
+		otype.origin = origin;
 		otype.origin_depth = c->depth;
 
 		/* Give it to the floor */
@@ -600,11 +604,13 @@ static void alloc_stairs(struct cave *c, int feat, int num, int walls) {
  *
  * See alloc_object() for more information.
  */
-static void alloc_objects(struct cave *c, int set, int typ, int num, int depth) {
+static void alloc_objects(struct cave *c, int set, int typ, int num, int depth,
+	byte origin)
+{
 	int k;
 	int l = 0;
 	for (k = 0; k < num; k++) {
-		bool ok = alloc_object(c, set, typ, depth);
+		bool ok = alloc_object(c, set, typ, depth, origin);
 		if (!ok) l++;
 	}
 }
@@ -616,7 +622,9 @@ static void alloc_objects(struct cave *c, int set, int typ, int num, int depth) 
  * 'set' controls where the object is placed (corridor, room, either).
  * 'typ' conrols the kind of object (rubble, trap, gold, item).
  */
-static bool alloc_object(struct cave *c, int set, int typ, int depth) {
+static bool alloc_object(struct cave *c, int set, int typ, int depth,
+	byte origin)
+{
 	int x, y;
 	int tries = 0;
 	bool room;
@@ -644,9 +652,9 @@ static bool alloc_object(struct cave *c, int set, int typ, int depth) {
 		case TYP_RUBBLE: place_rubble(c, y, x); break;
 		case TYP_TRAP: place_trap(c, y, x); break;
 		case TYP_GOLD: place_gold(c, y, x, depth); break;
-		case TYP_OBJECT: place_object(c, y, x, depth, FALSE, FALSE); break;
-		case TYP_GOOD: place_object(c, y, x, depth, TRUE, FALSE); break;
-		case TYP_GREAT: place_object(c, y, x, depth, TRUE, TRUE); break;
+		case TYP_OBJECT: place_object(c, y, x, depth, FALSE, FALSE, origin); break;
+		case TYP_GOOD: place_object(c, y, x, depth, TRUE, FALSE, origin); break;
+		case TYP_GREAT: place_object(c, y, x, depth, TRUE, TRUE, origin); break;
 	}
 	return TRUE;
 }
@@ -734,7 +742,7 @@ static void vault_objects(struct cave *c, int y, int x, int depth, int num) {
 
 			/* Place an item or gold */
 			if (randint0(100) < 75)
-				place_object(c, j, k, depth, FALSE, FALSE);
+				place_object(c, j, k, depth, FALSE, FALSE, ORIGIN_SPECIAL);
 			else
 				place_gold(c, j, k, depth);
 
@@ -1151,7 +1159,7 @@ static bool build_crossed(struct cave *c, int y0, int x0) {
 			generate_hole(c, y1b, x1a, y2b, x2a, FEAT_SECRET);
 
 			/* Place a treasure in the vault */
-			place_object(c, y0, x0, c->depth, FALSE, FALSE);
+			place_object(c, y0, x0, c->depth, FALSE, FALSE, ORIGIN_SPECIAL);
 
 			/* Let's guard the treasure well */
 			vault_monsters(c, y0, x0, c->depth + 2, randint0(2) + 3);
@@ -1271,7 +1279,7 @@ static bool build_large(struct cave *c, int y0, int x0) {
 
 			/* Object (80%) or Stairs (20%) */
 			if (randint0(100) < 80)
-				place_object(c, y0, x0, c->depth, FALSE, FALSE);
+				place_object(c, y0, x0, c->depth, FALSE, FALSE, ORIGIN_SPECIAL);
 			else
 				place_random_stairs(c, y0, x0);
 
@@ -1315,8 +1323,12 @@ static bool build_large(struct cave *c, int y0, int x0) {
 				vault_monsters(c, y0, x0 + 2, c->depth + 2, randint1(2));
 
 				/* Objects */
-				if (one_in_(3)) place_object(c, y0, x0 - 2, c->depth, FALSE, FALSE);
-				if (one_in_(3)) place_object(c, y0, x0 + 2, c->depth, FALSE, FALSE);
+				if (one_in_(3))
+					place_object(c, y0, x0 - 2, c->depth, FALSE, FALSE,
+						ORIGIN_SPECIAL);
+				if (one_in_(3))
+					place_object(c, y0, x0 + 2, c->depth, FALSE, FALSE,
+						ORIGIN_SPECIAL);
 			}
 
 			break;
@@ -1566,7 +1578,8 @@ static bool build_nest(struct cave *c, int y0, int x0) {
 
 			/* Occasionally place an item, making it good 1/3 of the time */
 			if (one_in_(alloc_obj)) 
-				place_object(c, y, x, c->depth + 10, one_in_(3), FALSE);
+				place_object(c, y, x, c->depth + 10, one_in_(3), FALSE,
+					ORIGIN_PIT);
 		}
 	}
 
@@ -1771,7 +1784,8 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cons
 				case '*': {
 					/* Treasure or a trap */
 					if (randint0(100) < 75)
-						place_object(c, y, x, c->depth, FALSE, FALSE);
+						place_object(c, y, x, c->depth, FALSE, FALSE,
+							ORIGIN_VAULT);
 					else
 						place_trap(c, y, x);
 					break;
@@ -1802,7 +1816,8 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cons
 					/* Meaner monster, plus treasure */
 					place_monster(c, y, x, c->depth + 9, TRUE, TRUE,
 						ORIGIN_DROP_VAULT);
-					place_object(c, y, x, c->depth + 7, TRUE, FALSE);
+					place_object(c, y, x, c->depth + 7, TRUE, FALSE,
+						ORIGIN_VAULT);
 					break;
 				}
 
@@ -1810,7 +1825,8 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cons
 					/* Nasty monster and treasure */
 					place_monster(c, y, x, c->depth + 40, TRUE, TRUE,
 						ORIGIN_DROP_VAULT);
-					place_object(c, y, x, c->depth + 20, TRUE, TRUE);
+					place_object(c, y, x, c->depth + 20, TRUE, TRUE,
+						ORIGIN_VAULT);
 					break;
 				}
 
@@ -1820,7 +1836,8 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cons
 						place_monster(c, y, x, c->depth + 3, TRUE, TRUE,
 							ORIGIN_DROP_VAULT);
 					if (randint0(100) < 50)
-						place_object(c, y, x, c->depth + 7, FALSE, FALSE);
+						place_object(c, y, x, c->depth + 7, FALSE, FALSE,
+							ORIGIN_VAULT);
 					break;
 				}
 			}
@@ -2407,10 +2424,10 @@ static bool default_gen(struct cave *c, struct player *p) {
 	k = MAX(MIN(c->depth / 3, 10), 2);
 
 	/* Put some rubble in corridors */
-	alloc_objects(c, SET_CORR, TYP_RUBBLE, randint1(k), c->depth);
+	alloc_objects(c, SET_CORR, TYP_RUBBLE, randint1(k), c->depth, 0);
 
 	/* Place some traps in the dungeon */
-	alloc_objects(c, SET_BOTH, TYP_TRAP, randint1(k), c->depth);
+	alloc_objects(c, SET_BOTH, TYP_TRAP, randint1(k), c->depth, 0);
 
 	/* Determine the character location */
 	new_player_spot(c, p);
@@ -2440,11 +2457,14 @@ static bool default_gen(struct cave *c, struct player *p) {
 	}
 
 	/* Put some objects in rooms */
-	alloc_objects(c, SET_ROOM, TYP_OBJECT, Rand_normal(DUN_AMT_ROOM, 3), c->depth);
+	alloc_objects(c, SET_ROOM, TYP_OBJECT, Rand_normal(DUN_AMT_ROOM, 3),
+		c->depth, ORIGIN_FLOOR);
 
 	/* Put some objects/gold in the dungeon */
-	alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(DUN_AMT_ITEM, 3), c->depth);
-	alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(DUN_AMT_GOLD, 3), c->depth);
+	alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(DUN_AMT_ITEM, 3),
+		c->depth, ORIGIN_FLOOR);
+	alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(DUN_AMT_GOLD, 3),
+		c->depth, ORIGIN_FLOOR);
 
 	return TRUE;
 }
@@ -2674,27 +2694,32 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 	k = (3 * k * (h * w)) / (DUNGEON_HGT * DUNGEON_WID);
 
 	/* Put some rubble in corridors */
-	alloc_objects(c, SET_BOTH, TYP_RUBBLE, randint1(k), c->depth);
+	alloc_objects(c, SET_BOTH, TYP_RUBBLE, randint1(k), c->depth, 0);
 
 	/* Place some traps in the dungeon */
-	alloc_objects(c, SET_BOTH, TYP_TRAP, randint1(k), c->depth);
+	alloc_objects(c, SET_BOTH, TYP_TRAP, randint1(k), c->depth, 0);
 
 	/* Put some monsters in the dungeon */
 	for (i = MIN_M_ALLOC_LEVEL + randint1(8) + k; i > 0; i--)
 		alloc_monster(c, loc(p->px, p->py), 0, TRUE, c->depth);
 
 	/* Put some objects/gold in the dungeon */
-	alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(6, 3), c->depth);
-	alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(6, 3), c->depth);
-	alloc_objects(c, SET_BOTH, TYP_GOOD, randint0(2), c->depth);
+	alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(6, 3), c->depth,
+		ORIGIN_LABYRINTH);
+	alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(6, 3), c->depth,
+		ORIGIN_LABYRINTH);
+	alloc_objects(c, SET_BOTH, TYP_GOOD, randint0(2), c->depth,
+		ORIGIN_LABYRINTH);
 
 	/* Unlit labyrinths will have some good items */
 	if (!lit)
-		alloc_objects(c, SET_BOTH, TYP_GOOD, Rand_normal(3, 2), c->depth);
+		alloc_objects(c, SET_BOTH, TYP_GOOD, Rand_normal(3, 2), c->depth,
+			ORIGIN_LABYRINTH);
 
 	/* Hard (non-diggable) labyrinths will have some great items */
 	if (!soft)
-		alloc_objects(c, SET_BOTH, TYP_GREAT, Rand_normal(2, 1), c->depth);
+		alloc_objects(c, SET_BOTH, TYP_GREAT, Rand_normal(2, 1), c->depth,
+			ORIGIN_LABYRINTH);
 
 	/* If we want the players to see the maze layout, do that now */
 	if (known) wiz_light();
@@ -3098,10 +3123,10 @@ bool cavern_gen(struct cave *c, struct player *p) {
 	k = (2 * k * (h *  w)) / (DUNGEON_HGT * DUNGEON_WID);
 
 	/* Put some rubble in corridors */
-	alloc_objects(c, SET_BOTH, TYP_RUBBLE, randint1(k), c->depth);
+	alloc_objects(c, SET_BOTH, TYP_RUBBLE, randint1(k), c->depth, 0);
 
 	/* Place some traps in the dungeon */
-	alloc_objects(c, SET_BOTH, TYP_TRAP, randint1(k), c->depth);
+	alloc_objects(c, SET_BOTH, TYP_TRAP, randint1(k), c->depth, 0);
 
 	/* Determine the character location */
 	new_player_spot(c, p);
@@ -3111,9 +3136,12 @@ bool cavern_gen(struct cave *c, struct player *p) {
 		alloc_monster(c, loc(p->px, p->py), 0, TRUE, c->depth);
 
 	/* Put some objects/gold in the dungeon */
-	alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(6, 3), c->depth);
-	alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(6, 3), c->depth);
-	alloc_objects(c, SET_BOTH, TYP_GOOD, randint0(2), c->depth);
+	alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(6, 3), c->depth,
+		ORIGIN_CAVERN);
+	alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(6, 3), c->depth,
+		ORIGIN_CAVERN);
+	alloc_objects(c, SET_BOTH, TYP_GOOD, randint0(2), c->depth,
+		ORIGIN_CAVERN);
 
 	FREE(colors);
 	FREE(counts);
