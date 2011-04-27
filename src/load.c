@@ -2109,7 +2109,7 @@ int rd_monsters_1(void)
 		strip_bytes(1);
 
 		/* Place monster in dungeon */
-		if (monster_place(m_ptr->fy, m_ptr->fx, m_ptr) != i)
+		if (monster_place(m_ptr->fy, m_ptr->fx, m_ptr, 0) != i)
 		{
 			note(format("Cannot place monster %d", i));
 			return (-1);
@@ -2195,7 +2195,7 @@ int rd_monsters_2(void)
 		strip_bytes(1);
 
 		/* Place monster in dungeon */
-		if (monster_place(m_ptr->fy, m_ptr->fx, m_ptr) != i)
+		if (monster_place(m_ptr->fy, m_ptr->fx, m_ptr, 0) != i)
 		{
 			note(format("Cannot place monster %d", i));
 			return (-1);
@@ -2288,7 +2288,7 @@ int rd_monsters_3(void)
 		strip_bytes(1);
 
 		/* Place monster in dungeon */
-		if (monster_place(m_ptr->fy, m_ptr->fx, m_ptr) != i)
+		if (monster_place(m_ptr->fy, m_ptr->fx, m_ptr, 0) != i)
 		{
 			note(format("Cannot place monster %d", i));
 			return (-1);
@@ -2383,7 +2383,7 @@ int rd_monsters_4(void)
 		strip_bytes(1);
 
 		/* Place monster in dungeon */
-		if (monster_place(m_ptr->fy, m_ptr->fx, m_ptr) != i)
+		if (monster_place(m_ptr->fy, m_ptr->fx, m_ptr, 0) != i)
 		{
 			note(format("Cannot place monster %d", i));
 			return (-1);

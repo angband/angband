@@ -379,9 +379,11 @@ extern void update_monsters(bool full);
 extern s16b monster_carry(int m_idx, object_type *j_ptr);
 extern void monster_swap(int y1, int x1, int y2, int x2);
 extern void player_place(struct cave *c, struct player *p, int y, int x);
-extern s16b monster_place(int y, int x, monster_type *n_ptr);
-extern bool place_monster_aux(struct cave *, int y, int x, int r_idx, bool slp, bool grp);
-extern bool place_monster(struct cave *c, int y, int x, int depth, bool slp, bool grp);
+extern s16b monster_place(int y, int x, monster_type *n_ptr, byte origin);
+extern bool place_monster_aux(struct cave *, int y, int x, int r_idx, bool slp,
+	bool grp, byte origin);
+extern bool place_monster(struct cave *c, int y, int x, int depth, bool slp,
+	bool grp, byte origin);
 extern bool alloc_monster(struct cave *c, struct loc loc, int dis, bool slp, int depth);
 extern bool summon_specific(int y1, int x1, int lev, int type, int delay);
 extern bool multiply_monster(int m_idx);
@@ -395,6 +397,5 @@ extern void monster_flags_known(const monster_race *r_ptr, const monster_lore *l
 
 extern void process_monsters(struct cave *c, byte min_energy);
 int mon_hp(const struct monster_race *r_ptr, aspect hp_aspect);
-bool mon_create_drop(int m_idx, byte origin);
 
 #endif /* !MONSTER_MONSTER_H */

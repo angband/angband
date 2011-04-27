@@ -595,19 +595,16 @@ bool make_attack_normal(int m_idx)
 					}
 
 					/* Eat gold */
-					else
-					{
+					else {
 						gold = (p_ptr->au / 10) + randint1(25);
 						if (gold < 2) gold = 2;
 						if (gold > 5000) gold = (p_ptr->au / 20) + randint1(3000);
 						if (gold > p_ptr->au) gold = p_ptr->au;
 						p_ptr->au -= gold;
-						if (gold <= 0)
-						{
+						if (gold <= 0) {
 							msg("Nothing was stolen.");
 							break;
 						}
-
 						/* Let the player know they were robbed */
 						msg("Your purse feels lighter.");
 						if (p_ptr->au)
@@ -616,8 +613,7 @@ bool make_attack_normal(int m_idx)
 							msg("All of your coins were stolen!");
 
 						/* While we have gold, put it in objects */
-						while (gold > 0)
-						{
+						while (gold > 0) {
 							int amt;
 
 							/* Create a new temporary object */
@@ -629,6 +625,10 @@ bool make_attack_normal(int m_idx)
 							amt = gold > MAX_PVAL ? MAX_PVAL : gold;
 							o.pval[DEFAULT_PVAL] = amt;
 							gold -= amt;
+
+							/* Set origin to stolen, so it is not confused with
+							 * dropped treasure in monster_death */
+							o.origin = ORIGIN_STOLEN;
 
 							/* Give the gold to the monster */
 							monster_carry(m_idx, &o);

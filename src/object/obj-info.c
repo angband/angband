@@ -1070,6 +1070,7 @@ bool describe_origin(textblock *tb, const object_type *o_ptr)
 	{
 		case ORIGIN_NONE:
 		case ORIGIN_MIXED:
+		case ORIGIN_STOLEN:
 			return FALSE;
 
 		case ORIGIN_BIRTH:
@@ -1086,7 +1087,24 @@ bool describe_origin(textblock *tb, const object_type *o_ptr)
 			         origin_text);
  			break;
 
+		case ORIGIN_PIT:
+			textblock_append(tb, "Found lying on the floor in a pit at %s.\n",
+			         origin_text);
+ 			break;
+
+		case ORIGIN_VAULT:
+			textblock_append(tb, "Found lying on the floor in a vault at %s.\n",
+			         origin_text);
+ 			break;
+
 		case ORIGIN_DROP:
+		case ORIGIN_DROP_SPECIAL:
+		case ORIGIN_DROP_PIT:
+		case ORIGIN_DROP_VAULT:
+		case ORIGIN_DROP_SUMMON:
+		case ORIGIN_DROP_BREED:
+		case ORIGIN_DROP_POLY:
+		case ORIGIN_DROP_WIZARD:
 		{
 			const char *name = r_info[o_ptr->origin_xtra].name;
 
