@@ -6,23 +6,23 @@
 #include "init.h"
 #include "types.h"
 
-static int setup(void **state) {
+int setup_tests(void **state) {
 	*state = init_parse_e();
 	return !*state;
 }
 
-static int teardown(void *state) {
+int teardown_tests(void *state) {
 	parser_destroy(state);
 	return 0;
 }
 
-static int test_order(void *state) {
+int test_order(void *state) {
 	enum parser_error r = parser_parse(state, "X:3:4");
 	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
 	ok;
 }
 
-static int test_n0(void *state) {
+int test_n0(void *state) {
 	enum parser_error r = parser_parse(state, "N:5:of Resist Lightning");
 	struct ego_item *e;
 
@@ -34,7 +34,7 @@ static int test_n0(void *state) {
 	ok;
 }
 
-static int test_w0(void *state) {
+int test_w0(void *state) {
 	enum parser_error r = parser_parse(state, "W:2:4:6:8");
 	struct ego_item *e;
 
@@ -47,7 +47,7 @@ static int test_w0(void *state) {
 	return PARSE_ERROR_NONE;
 }
 
-static int test_x0(void *state) {
+int test_x0(void *state) {
 	enum parser_error r = parser_parse(state, "X:5:1");
 	struct ego_item *e;
 
@@ -59,7 +59,7 @@ static int test_x0(void *state) {
 	ok;
 }
 
-static int test_t0(void *state) {
+int test_t0(void *state) {
 	enum parser_error r = parser_parse(state, "T:22:2:13");
 	struct ego_item *e;
 
@@ -73,7 +73,7 @@ static int test_t0(void *state) {
 }
 
 /* Broken: lookup_sval() requires k_info, z_info */
-static int test_t1(void *state) {
+int test_t1(void *state) {
 	enum parser_error r = parser_parse(state, "T:sword:dagger:scimitar");
 	struct ego_item *e;
 
@@ -86,7 +86,7 @@ static int test_t1(void *state) {
 	ok;
 }
 
-static int test_c0(void *state) {
+int test_c0(void *state) {
 	enum parser_error r = parser_parse(state, "C:1d2:3d4:5d6");
 	struct ego_item *e;
 
@@ -102,7 +102,7 @@ static int test_c0(void *state) {
 	ok;
 }
 
-static int test_l0(void *state) {
+int test_l0(void *state) {
 	enum parser_error r = parser_parse(state, "L:1+2d3M4:5:STR | INT");
 	struct ego_item *e;
 
@@ -118,7 +118,7 @@ static int test_l0(void *state) {
 	ok;
 }
 
-static int test_m0(void *state) {
+int test_m0(void *state) {
 	enum parser_error r = parser_parse(state, "M:10:13:4");
 	struct ego_item *e;
 
@@ -131,7 +131,7 @@ static int test_m0(void *state) {
 	ok;
 }
 
-static int test_f0(void *state) {
+int test_f0(void *state) {
 	enum parser_error r = parser_parse(state, "F:SEE_INVIS");
 	struct ego_item *e;
 
@@ -142,7 +142,7 @@ static int test_f0(void *state) {
 	ok;
 }
 
-static int test_d0(void *state) {
+int test_d0(void *state) {
 	enum parser_error r = parser_parse(state, "D:foo");
 	struct ego_item *e;
 	eq(r, PARSE_ERROR_NONE);
@@ -155,8 +155,8 @@ static int test_d0(void *state) {
 	ok;
 }
 
-static const char *suite_name = "parse/e-info";
-static struct test tests[] = {
+const char *suite_name = "parse/e-info";
+struct test tests[] = {
 	{ "order", test_order },
 	{ "n0", test_n0 },
 	{ "w0", test_w0 },

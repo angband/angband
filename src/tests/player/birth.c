@@ -4,19 +4,19 @@
 #include "unit-test-data.h"
 #include "birth.h"
 
-static int setup(void **state) {
+int setup_tests(void **state) {
 	struct player *p = mem_alloc(sizeof *p);
 	player_init(p);
 	*state = p;
 	return 0;
 }
 
-static int teardown(void *state) {
+int teardown_tests(void *state) {
 	mem_free(state);
 	return 0;
 }
 
-static int test_generate0(void *state) {
+int test_generate0(void *state) {
 	struct player *p = state;
 	player_generate(p, &test_sex, &test_race, &test_class);
 	eq(p->lev, 1);
@@ -26,8 +26,8 @@ static int test_generate0(void *state) {
 	ok;
 }
 
-static const char *suite_name = "player/birth";
-static struct test tests[] = {
+const char *suite_name = "player/birth";
+struct test tests[] = {
 	{ "generate0", test_generate0 },
 	{ NULL, NULL }
 };

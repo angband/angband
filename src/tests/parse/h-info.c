@@ -5,17 +5,17 @@
 #include "init.h"
 #include "player/types.h"
 
-static int setup(void **state) {
+int setup_tests(void **state) {
 	*state = init_parse_h();
 	return !*state;
 }
 
-static int teardown(void *state) {
+int teardown_tests(void *state) {
 	parser_destroy(state);
 	return 0;
 }
 
-static int test_n0(void *state) {
+int test_n0(void *state) {
 	enum parser_error r = parser_parse(state, "N:1:3:5:2");
 	struct history_chart *c;
 	struct history_entry *e;
@@ -33,7 +33,7 @@ static int test_n0(void *state) {
 	ok;
 }
 
-static int test_d0(void *state) {
+int test_d0(void *state) {
 	enum parser_error r = parser_parse(state, "D:hello there");
 	struct history_chart *h;
 
@@ -44,8 +44,8 @@ static int test_d0(void *state) {
 	ok;
 }
 
-static const char *suite_name = "parse/h-info";
-static struct test tests[] = {
+const char *suite_name = "parse/h-info";
+struct test tests[] = {
 	{ "n0", test_n0 },
 	{ "d0", test_d0 },
 	{ NULL, NULL }

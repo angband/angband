@@ -4,7 +4,7 @@
 #include "player/types.h"
 #include "unit-test.h"
 
-noteardown;
+NOTEARDOWN
 
 static struct history_chart ca;
 static struct history_chart cb;
@@ -17,7 +17,7 @@ static struct history_entry eb1;
 static struct history_entry ec0;
 static struct history_entry ec1;
 
-static int setup(void **state) {
+int setup_tests(void **state) {
 	ca.entries = &ea0;
 	cb.entries = &eb0;
 	cc.entries = &ec0;
@@ -61,7 +61,7 @@ static int setup(void **state) {
 	return 0;
 }
 
-static int test_0(void *state) {
+int test_0(void *state) {
 	int i;
 	for (i = 0; i < 100; i++) {
 		char *h = get_history(&ca, NULL);
@@ -80,7 +80,7 @@ static int test_0(void *state) {
 	ok;
 }
 
-static const char *suite_name = "player/history";
-static struct test tests[] = {
+const char *suite_name = "player/history";
+struct test tests[] = {
 	{ "0", test_0 },
 };

@@ -6,17 +6,17 @@
 #include "init.h"
 #include "types.h"
 
-static int setup(void **state) {
+int setup_tests(void **state) {
 	*state = init_parse_k();
 	return !*state;
 }
 
-static int teardown(void *state) {
+int teardown_tests(void *state) {
 	parser_destroy(state);
 	return 0;
 }
 
-static int test_n0(void *state) {
+int test_n0(void *state) {
 	errr r = parser_parse(state, "N:3:Test Object Kind");
 	struct object_kind *k;
 
@@ -28,7 +28,7 @@ static int test_n0(void *state) {
 	ok;
 }
 
-static int test_g0(void *state) {
+int test_g0(void *state) {
 	errr r = parser_parse(state, "G:~:red");
 	struct object_kind *k;
 
@@ -40,7 +40,7 @@ static int test_g0(void *state) {
 	ok;
 }
 
-static int test_g1(void *state) {
+int test_g1(void *state) {
 	errr r = parser_parse(state, "G:!:W");
 	struct object_kind *k;
 
@@ -52,7 +52,7 @@ static int test_g1(void *state) {
 	ok;
 }
 
-static int test_i0(void *state) {
+int test_i0(void *state) {
 	errr r = parser_parse(state, "I:4:2");
 	struct object_kind *k;
 
@@ -64,7 +64,7 @@ static int test_i0(void *state) {
 	ok;
 }
 
-static int test_i1(void *state) {
+int test_i1(void *state) {
 	errr r = parser_parse(state, "I:food:2");
 	struct object_kind *k;
 
@@ -76,7 +76,7 @@ static int test_i1(void *state) {
 	ok;
 }
 
-static int test_w0(void *state) {
+int test_w0(void *state) {
 	errr r = parser_parse(state, "W:10:0:5:120");
 	struct object_kind *k;
 
@@ -89,7 +89,7 @@ static int test_w0(void *state) {
 	ok;
 }
 
-static int test_a0(void *state) {
+int test_a0(void *state) {
 	errr r = parser_parse(state, "A:3:4 to 6");
 	struct object_kind *k;
 
@@ -102,7 +102,7 @@ static int test_a0(void *state) {
 	ok;
 }
 
-static int test_p0(void *state) {
+int test_p0(void *state) {
 	errr r = parser_parse(state, "P:3:4d8:1d4:2d5:7d6");
 	struct object_kind *k;
 
@@ -121,7 +121,7 @@ static int test_p0(void *state) {
 	ok;
 }
 
-static int test_c0(void *state) {
+int test_c0(void *state) {
 	errr r = parser_parse(state, "C:2d8");
 	struct object_kind *k;
 
@@ -133,7 +133,7 @@ static int test_c0(void *state) {
 	ok;
 }
 
-static int test_m0(void *state) {
+int test_m0(void *state) {
 	errr r = parser_parse(state, "M:4:3d6");
 	struct object_kind *k;
 
@@ -146,7 +146,7 @@ static int test_m0(void *state) {
 	ok;
 }
 
-static int test_f0(void *state) {
+int test_f0(void *state) {
 	errr r = parser_parse(state, "F:STR");
 	struct object_kind *k;
 
@@ -157,7 +157,7 @@ static int test_f0(void *state) {
 	ok;
 }
 
-static int test_l0(void *state) {
+int test_l0(void *state) {
 	errr r = parser_parse(state, "L:1+2d3M4:STR | INT");
 	struct object_kind *k;
 
@@ -172,7 +172,7 @@ static int test_l0(void *state) {
 	ok;
 }
 
-static int test_e0(void *state) {
+int test_e0(void *state) {
 	errr r = parser_parse(state, "E:POISON:4d5");
 	struct object_kind *k;
 
@@ -185,7 +185,7 @@ static int test_e0(void *state) {
 	ok;
 }
 
-static int test_d0(void *state) {
+int test_d0(void *state) {
 	errr r = parser_parse(state, "D:foo bar");
 	struct object_kind *k;
 
@@ -201,8 +201,8 @@ static int test_d0(void *state) {
 	ok;
 }
 
-static const char *suite_name = "parse/k-info";
-static struct test tests[] = {
+const char *suite_name = "parse/k-info";
+struct test tests[] = {
 	{ "n0", test_n0 },
 	{ "g0", test_g0 },
 	{ "g1", test_g1 },

@@ -3,17 +3,17 @@
 #include "unit-test.h"
 #include "z-quark.h"
 
-static int setup(void **state) {
+int setup_tests(void **state) {
 	quarks_init();
 	return 0;
 }
 
-static int teardown(void *state) {
+int teardown_tests(void *state) {
 	quarks_free();
 	return 0;
 }
 
-static int test_alloc(void *state) {
+int test_alloc(void *state) {
 	quark_t q1 = quark_add("0-foo");
 	quark_t q2 = quark_add("0-bar");
 	quark_t q3 = quark_add("0-baz");
@@ -29,7 +29,7 @@ static int test_alloc(void *state) {
 	ok;
 }
 
-static int test_dedup(void *state) {
+int test_dedup(void *state) {
 	quark_t q1 = quark_add("1-foo");
 	quark_t q2 = quark_add("1-foo");
 	quark_t q3 = quark_add("1-bar");
@@ -46,8 +46,8 @@ static int test_dedup(void *state) {
 	ok;
 }
 
-static const char *suite_name = "z-quark/quark";
-static struct test tests[] = {
+const char *suite_name = "z-quark/quark";
+struct test tests[] = {
 	{ "alloc", test_alloc },
 	{ "dedup", test_dedup },
 	{ NULL, NULL }

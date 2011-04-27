@@ -10,18 +10,18 @@
 #include "unit-test-data.h"
 #include "test-utils.h"
 
-static int setup(void **state) {
+int setup_tests(void **state) {
 	read_edit_files();
 	*state = 0;
 	return 0;
 }
 
-static int teardown(void *state) {
+int teardown_tests(void *state) {
 	mem_free(state);
 	return 0;
 }
 
-static int test_match_monster_bases(void *state) {
+int test_match_monster_bases(void *state) {
 	struct monster_base *base;
 
 	/* Scruffy little dog */
@@ -41,8 +41,8 @@ static int test_match_monster_bases(void *state) {
 	ok;
 }
 
-static const char *suite_name = "monster/monster";
-static struct test tests[] = {
+const char *suite_name = "monster/monster";
+struct test tests[] = {
 	{ "match_monster_bases", test_match_monster_bases },
 	{ NULL, NULL }
 };

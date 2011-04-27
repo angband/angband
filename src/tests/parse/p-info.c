@@ -5,17 +5,17 @@
 #include "player/types.h"
 #include "types.h"
 
-static int setup(void **state) {
+int setup_tests(void **state) {
 	*state = init_parse_p();
 	return !*state;
 }
 
-static int teardown(void *state) {
+int teardown_tests(void *state) {
 	parser_destroy(state);
 	return 0;
 }
 
-static int test_n0(void *state) {
+int test_n0(void *state) {
 	enum parser_error r = parser_parse(state, "N:1:Half-Elf");
 	struct player_race *pr;
 
@@ -27,7 +27,7 @@ static int test_n0(void *state) {
 	ok;
 }
 
-static int test_s0(void *state) {
+int test_s0(void *state) {
 	enum parser_error r = parser_parse(state, "S:1:-1:2:-2:3:-3");
 	struct player_race *pr;
 
@@ -43,7 +43,7 @@ static int test_s0(void *state) {
 	ok;
 }
 
-static int test_r0(void *state) {
+int test_r0(void *state) {
 	enum parser_error r = parser_parse(state, "R:1:3:5:7:9:2:4:6:8:10");
 	struct player_race *pr;
 
@@ -63,7 +63,7 @@ static int test_r0(void *state) {
 	ok;
 }
 
-static int test_x0(void *state) {
+int test_x0(void *state) {
 	enum parser_error r = parser_parse(state, "X:10:20:80");
 	struct player_race *pr;
 
@@ -76,7 +76,7 @@ static int test_x0(void *state) {
 	ok;
 }
 
-static int test_i0(void *state) {
+int test_i0(void *state) {
 	enum parser_error r = parser_parse(state, "I:0:10:3");
 	struct player_race *pr;
 
@@ -89,7 +89,7 @@ static int test_i0(void *state) {
 	ok;
 }
 
-static int test_h0(void *state) {
+int test_h0(void *state) {
 	enum parser_error r = parser_parse(state, "H:10:2:11:3");
 	struct player_race *pr;
 
@@ -103,7 +103,7 @@ static int test_h0(void *state) {
 	ok;
 }
 
-static int test_w0(void *state) {
+int test_w0(void *state) {
 	enum parser_error r = parser_parse(state, "W:80:10:75:7");
 	struct player_race *pr;
 
@@ -117,7 +117,7 @@ static int test_w0(void *state) {
 	ok;
 }
 
-static int test_f0(void *state) {
+int test_f0(void *state) {
 	enum parser_error r = parser_parse(state, "F:SUST_DEX");
 	struct player_race *pr;
 
@@ -128,7 +128,7 @@ static int test_f0(void *state) {
 	ok;
 }
 
-static int test_y0(void *state) {
+int test_y0(void *state) {
 	enum parser_error r = parser_parse(state, "Y:KNOW_ZAPPER");
 	struct player_race *pr;
 
@@ -139,7 +139,7 @@ static int test_y0(void *state) {
 	ok;
 }
 
-static int test_c0(void *state) {
+int test_c0(void *state) {
 	enum parser_error r = parser_parse(state, "C:1|3|5");
 	struct player_race *pr;
 
@@ -150,8 +150,8 @@ static int test_c0(void *state) {
 	ok;
 }
 
-static const char *suite_name = "parse/p-info";
-static struct test tests[] = {
+const char *suite_name = "parse/p-info";
+struct test tests[] = {
 	{ "n0", test_n0 },
 	{ "s0", test_s0 },
 	{ "r0", test_r0 },

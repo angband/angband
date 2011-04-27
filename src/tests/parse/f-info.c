@@ -5,17 +5,17 @@
 #include "init.h"
 #include "types.h"
 
-static int setup(void **state) {
+int setup_tests(void **state) {
 	*state = init_parse_f();
 	return !*state;
 }
 
-static int teardown(void *state) {
+int teardown_tests(void *state) {
 	parser_destroy(state);
 	return 0;
 }
 
-static int test_n0(void *state) {
+int test_n0(void *state) {
 	enum parser_error r = parser_parse(state, "N:3:Test Feature");
 	struct feature *f;
 
@@ -28,7 +28,7 @@ static int test_n0(void *state) {
 	ok;
 }
 
-static int test_g0(void *state) {
+int test_g0(void *state) {
 	enum parser_error r = parser_parse(state, "G:::red");
 	struct feature *f;
 
@@ -40,7 +40,7 @@ static int test_g0(void *state) {
 	ok;
 }
 
-static int test_m0(void *state) {
+int test_m0(void *state) {
 	enum parser_error r = parser_parse(state, "M:11");
 	struct feature *f;
 
@@ -51,7 +51,7 @@ static int test_m0(void *state) {
 	ok;
 }
 
-static int test_p0(void *state) {
+int test_p0(void *state) {
 	enum parser_error r = parser_parse(state, "P:2");
 	struct feature *f;
 
@@ -62,7 +62,7 @@ static int test_p0(void *state) {
 	ok;
 }
 
-static int test_f0(void *state) {
+int test_f0(void *state) {
 	enum parser_error r = parser_parse(state, "F:MWALK | LOOK");
 	struct feature *f;
 
@@ -73,7 +73,7 @@ static int test_f0(void *state) {
 	ok;
 }
 
-static int test_x0(void *state) {
+int test_x0(void *state) {
 	enum parser_error r = parser_parse(state, "X:3:5:9:2");
 	struct feature *f;
 
@@ -87,7 +87,7 @@ static int test_x0(void *state) {
 	ok;
 }
 
-static int test_e0(void *state) {
+int test_e0(void *state) {
 	enum parser_error r = parser_parse(state, "E:TRAP_PIT");
 	struct feature *f;
 
@@ -98,8 +98,8 @@ static int test_e0(void *state) {
 	ok;
 }
 
-static const char *suite_name = "parse/f-info";
-static struct test tests[] = {
+const char *suite_name = "parse/f-info";
+struct test tests[] = {
 	{ "n0", test_n0 },
 	{ "g0", test_g0 },
 	{ "m0", test_m0 },

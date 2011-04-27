@@ -8,17 +8,17 @@
 #include "object/object.h"
 #include "z-term.h"
 
-static int setup(void **state) {
+int setup_tests(void **state) {
 	*state = init_parse_flavor();
 	return !*state;
 }
 
-static int teardown(void *state) {
+int teardown_tests(void *state) {
 	parser_destroy(state);
 	return 0;
 }
 
-static int test_n0(void *state) {
+int test_n0(void *state) {
 	enum parser_error r = parser_parse(state, "N:1:3:5");
 	struct flavor *f;
 
@@ -31,7 +31,7 @@ static int test_n0(void *state) {
 	ok;
 }
 
-static int test_n1(void *state) {
+int test_n1(void *state) {
 	enum parser_error r = parser_parse(state, "N:2:light");
 	struct flavor *f;
 
@@ -44,7 +44,7 @@ static int test_n1(void *state) {
 	ok;
 }
 
-static int test_g0(void *state) {
+int test_g0(void *state) {
 	enum parser_error r = parser_parse(state, "G:!:y");
 	struct flavor *f;
 
@@ -57,7 +57,7 @@ static int test_g0(void *state) {
 	ok;
 }
 
-static int test_d0(void *state) {
+int test_d0(void *state) {
 	enum parser_error r = parser_parse(state, "D:foo");
 	struct flavor *f;
 
@@ -71,8 +71,8 @@ static int test_d0(void *state) {
 	ok;
 }
 
-static const char *suite_name = "parse/flavor";
-static struct test tests[] = {
+const char *suite_name = "parse/flavor";
+struct test tests[] = {
 	{ "n0", test_n0 },
 	{ "n1", test_n1 },
 	{ "g0", test_g0 },

@@ -7,7 +7,7 @@
 struct store s0;
 struct store s1;
 
-static int setup(void **state) {
+int setup_tests(void **state) {
 	s0.next = &s1;
 	s1.next = NULL;
 	s0.sidx = 0;
@@ -16,12 +16,12 @@ static int setup(void **state) {
 	return !*state;
 }
 
-static int teardown(void *state) {
+int teardown_tests(void *state) {
 	parser_destroy(state);
 	return 0;
 }
 
-static int test_n0(void *state) {
+int test_n0(void *state) {
 	enum parser_error r = parser_parse(state, "N:0");
 
 	eq(r, PARSE_ERROR_NONE);
@@ -29,7 +29,7 @@ static int test_n0(void *state) {
 	ok;
 }
 
-static int test_s0(void *state) {
+int test_s0(void *state) {
 	enum parser_error r = parser_parse(state, "S:5000:Foo");
 
 	eq(r, PARSE_ERROR_NONE);
@@ -38,7 +38,7 @@ static int test_s0(void *state) {
 	ok;
 }
 
-static int test_s1(void *state) {
+int test_s1(void *state) {
 	enum parser_error r = parser_parse(state, "S:10000:Bar");
 
 	eq(r, PARSE_ERROR_NONE);
@@ -47,7 +47,7 @@ static int test_s1(void *state) {
 	ok;
 }
 
-static int test_n1(void *state) {
+int test_n1(void *state) {
 	enum parser_error r = parser_parse(state, "N:1");
 
 	eq(r, PARSE_ERROR_NONE);
@@ -55,7 +55,7 @@ static int test_n1(void *state) {
 	ok;
 }
 
-static int test_s2(void *state) {
+int test_s2(void *state) {
 	enum parser_error r = parser_parse(state, "S:15000:Baz");
 
 	eq(r, PARSE_ERROR_NONE);
@@ -64,8 +64,8 @@ static int test_s2(void *state) {
 	ok;
 }
 
-static const char *suite_name = "parse/owner";
-static struct test tests[] = {
+const char *suite_name = "parse/owner";
+struct test tests[] = {
 	{ "n0", test_n0 },
 	{ "s0", test_s0 },
 	{ "s1", test_s1 },

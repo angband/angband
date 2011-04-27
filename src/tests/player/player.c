@@ -6,19 +6,19 @@
 #include "birth.h"
 #include "player/player.h"
 
-static int setup(void **state) {
+int setup_tests(void **state) {
 	struct player *p = mem_zalloc(sizeof *p);
 	player_init(p);
 	*state = p;
 	return 0;
 }
 
-static int teardown(void *state) {
+int teardown_tests(void *state) {
 	mem_free(state);
 	return 0;
 }
 
-static int test_stat_inc(void *state) {
+int test_stat_inc(void *state) {
 	struct player *p = state;
 	int v;
 
@@ -37,7 +37,7 @@ static int test_stat_inc(void *state) {
 	ok;
 }
 
-static int test_stat_dec(void *state) {
+int test_stat_dec(void *state) {
 	struct player *p = state;
 	int v;
 
@@ -65,8 +65,8 @@ static int test_stat_dec(void *state) {
 	ok;
 }
 
-static const char *suite_name = "player/player";
-static struct test tests[] = {
+const char *suite_name = "player/player";
+struct test tests[] = {
 	{ "stat-inc", test_stat_inc },
 	{ "stat-dec", test_stat_dec },
 	{ NULL, NULL }

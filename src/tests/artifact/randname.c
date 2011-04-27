@@ -4,8 +4,8 @@
 #include "object/obj-flag.h"
 #include "object/object.h"
 
-nosetup;
-noteardown;
+NOSETUP
+NOTEARDOWN
 
 #define NAMES_TRIES	100
 
@@ -25,7 +25,7 @@ const char *names[] = {
 
 const char **p[] = { names, names };
 
-static int test_names(void *state) {
+int test_names(void *state) {
 	struct artifact a;
 	char *n;
 	int i;
@@ -43,8 +43,8 @@ static int test_names(void *state) {
 	ok;
 }
 
-static const char *suite_name = "artifact/randname";
-static struct test tests[] = {
+const char *suite_name = "artifact/randname";
+struct test tests[] = {
 	{ "names", test_names },
 	{ NULL, NULL }
 };

@@ -4,15 +4,15 @@
 #include "z-textblock.h"
 #include "z-term.h"
 
-static int setup(void **state) {
+int setup_tests(void **state) {
 	ok;
 }
 
-static int teardown(void *state) {
+int teardown_tests(void *state) {
 	ok;
 }
 
-static int test_alloc(void *state) {
+int test_alloc(void *state) {
 	textblock *tb = textblock_new();
 
 	require(tb);
@@ -22,7 +22,7 @@ static int test_alloc(void *state) {
 	ok;
 }
 
-static int test_append(void *state) {
+int test_append(void *state) {
 	textblock *tb = textblock_new();
 
 	require(!strcmp(textblock_text(tb), ""));
@@ -36,7 +36,7 @@ static int test_append(void *state) {
 	ok;
 }
 
-static int test_colour(void *state) {
+int test_colour(void *state) {
 	textblock *tb = textblock_new();
 
 	const char text[] = "two";
@@ -49,7 +49,7 @@ static int test_colour(void *state) {
 	ok;
 }
 
-static int test_length(void *state) {
+int test_length(void *state) {
 	textblock *tb = textblock_new();
 
 	const char text[] = "1234567";
@@ -74,8 +74,8 @@ static int test_length(void *state) {
 	ok;
 }
 
-static const char *suite_name = "z-textblock/textblock";
-static struct test tests[] = {
+const char *suite_name = "z-textblock/textblock";
+struct test tests[] = {
 	{ "alloc", test_alloc },
 	{ "append", test_append },
 	{ "colour", test_colour },

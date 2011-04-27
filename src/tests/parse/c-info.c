@@ -8,17 +8,17 @@
 #include "object/tvalsval.h"
 #include "player/types.h"
 
-static int setup(void **state) {
+int setup_tests(void **state) {
 	*state = init_parse_c();
 	return !*state;
 }
 
-static int teardown(void *state) {
+int teardown_tests(void *state) {
 	parser_destroy(state);
 	return 0;
 }
 
-static int test_n0(void *state) {
+int test_n0(void *state) {
 	enum parser_error r = parser_parse(state, "N:4:Ranger");
 	struct player_class *c;
 
@@ -30,7 +30,7 @@ static int test_n0(void *state) {
 	ok;
 }
 
-static int test_s0(void *state) {
+int test_s0(void *state) {
 	enum parser_error r = parser_parse(state, "S:3:-3:2:-2:1:-1");
 	struct player_class *c;
 
@@ -46,7 +46,7 @@ static int test_s0(void *state) {
 	ok;
 }
 
-static int test_c0(void *state) {
+int test_c0(void *state) {
 	enum parser_error r = parser_parse(state, "C:30:32:28:3:24:16:56:72:72:0");
 	struct player_class *c;
 
@@ -66,7 +66,7 @@ static int test_c0(void *state) {
 	ok;
 }
 
-static int test_x0(void *state) {
+int test_x0(void *state) {
 	enum parser_error r = parser_parse(state, "X:8:10:10:0:0:0:30:45:45:0");
 	struct player_class *c;
 
@@ -86,7 +86,7 @@ static int test_x0(void *state) {
 	ok;
 }
 
-static int test_i0(void *state) {
+int test_i0(void *state) {
 	enum parser_error r = parser_parse(state, "I:4:30:20000:40");
 	struct player_class *c;
 
@@ -100,7 +100,7 @@ static int test_i0(void *state) {
 	ok;
 }
 
-static int test_a0(void *state) {
+int test_a0(void *state) {
 	enum parser_error r = parser_parse(state, "A:5:35:4");
 	struct player_class *c;
 
@@ -113,7 +113,7 @@ static int test_a0(void *state) {
 	ok;
 }
 
-static int test_m0(void *state) {
+int test_m0(void *state) {
 	enum parser_error r = parser_parse(state, "M:90:1:3:400");
 	struct player_class *c;
 
@@ -127,7 +127,7 @@ static int test_m0(void *state) {
 	ok;
 }
 
-static int test_b0(void *state) {
+int test_b0(void *state) {
 	enum parser_error r = parser_parse(state, "B:8:23:25:90:3");
 	struct player_class *c;
 
@@ -141,7 +141,7 @@ static int test_b0(void *state) {
 	ok;
 }
 
-static int test_t0(void *state) {
+int test_t0(void *state) {
 	enum parser_error r0 = parser_parse(state, "T:Runner");
 	enum parser_error r1 = parser_parse(state, "T:Strider");
 	struct player_class *c;
@@ -156,7 +156,7 @@ static int test_t0(void *state) {
 }
 
 /* Causes segfault: lookup_sval() requires z_info/k_info */
-static int test_e0(void *state) {
+int test_e0(void *state) {
 	enum parser_error r = parser_parse(state, "E:magic book:2:2:5");
 	struct player_class *c;
 
@@ -169,7 +169,7 @@ static int test_e0(void *state) {
 	ok;
 }
 
-static int test_f0(void *state) {
+int test_f0(void *state) {
 	enum parser_error r = parser_parse(state, "F:CUMBER_GLOVE | CHOOSE_SPELLS");
 	struct player_class *c;
 
@@ -180,8 +180,8 @@ static int test_f0(void *state) {
 	ok;
 }
 
-static const char *suite_name = "parse/c-info";
-static struct test tests[] = {
+const char *suite_name = "parse/c-info";
+struct test tests[] = {
 	{ "n0", test_n0 },
 	{ "s0", test_s0 },
 	{ "c0", test_c0 },
