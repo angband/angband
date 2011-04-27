@@ -102,7 +102,7 @@ AC_ARG_WITH(configpath, [  --with-configpath=PATH  use PATH as the path to the A
 if test "x$with_configpath" != "x"; then
 	configpath="${with_configpath}"
 elif test "x$with_no_install" != "x"; then
-	configpath="./lib/"
+	configpath="${PWD}/lib/"
 else
 	configpath="${prefix}/etc/${PACKAGE}/"
 fi
@@ -117,7 +117,7 @@ AC_ARG_WITH(libpath, [  --with-libpath=PATH     use PATH as the path to the Angb
 if test "x$with_libpath" != "x"; then
 	libpath="${with_libpath}"
 elif test "x$with_no_install" != "x"; then
-	libpath="./lib/"
+	libpath="${PWD}/lib/"
 	bindir=".."
 else
 	libpath="${prefix}/share/${PACKAGE}/"
@@ -133,7 +133,7 @@ AC_ARG_WITH(varpath, [  --with-varpath=PATH     use PATH as the path to the Angb
 if test "x$with_varpath" != "x"; then
 	varpath="${with_varpath}"
 elif test "x$with_no_install" != "x"; then
-	varpath="./lib/"
+	varpath="${PWD}/lib/"
 else
 	varpath="${prefix}/var/games/${PACKAGE}/"
 fi

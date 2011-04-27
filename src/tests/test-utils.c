@@ -6,6 +6,8 @@
  *             26 Apr 2011
  */
 
+#include "h-basic.h"
+#include "config.h"
 #include "init.h"
 #include "z-util.h"
 
