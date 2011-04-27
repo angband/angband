@@ -8,13 +8,13 @@
 
 #include "unit-test.h"
 #include "unit-test-data.h"
+#include "test-utils.h"
 
 #include "init.h"
 #include "store.h"
 
 static int setup(void **state) {
-	init_file_paths("../../lib/", "../../lib/", "../../lib/");
-	init_arrays();
+	read_edit_files();
 	*state = 0;
 	return 0;
 }
