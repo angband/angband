@@ -429,8 +429,6 @@ void wipe_mon_list(struct cave *c, struct player *p)
 		/* Skip dead monsters */
 		if (!m_ptr->r_idx) continue;
 
-		/* Mega-Hack -- preserve Unique's XXX XXX XXX */
-
 		/* Hack -- Reduce the racial counter */
 		r_ptr->cur_num--;
 
