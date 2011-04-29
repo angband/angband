@@ -67,7 +67,7 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 	{
 		OPT_birth_maximize,
 		OPT_birth_randarts,
-		OPT_birth_ai_sound,
+		OPT_birth_keep_randarts,
 		OPT_birth_ai_smell,
 		OPT_birth_ai_packs,
 		OPT_birth_ai_learn,
@@ -174,7 +174,7 @@ static const struct option options[OPT_MAX] =
 { "birth_no_stairs",     "Don't generate connected stairs",             FALSE }, /* 57 */
 { "birth_no_feelings",   "Don't show level feelings",                   FALSE }, /* 58 */
 { "birth_no_selling",    "Items always sell for 0 gold",                FALSE }, /* 59 */
-{ "birth_ai_sound",      "Monsters chase current location",             TRUE },  /* 60 */
+{ "birth_keep_randarts", "Use previous set of randarts",                TRUE },  /* 60 */
 { "birth_ai_smell",      "Monsters chase recent locations",             TRUE },  /* 61 */
 { "birth_ai_packs",      "Monsters act smarter in groups",              TRUE },  /* 62 */
 { "birth_ai_learn",      "Monsters learn from their mistakes",          FALSE }, /* 63 */

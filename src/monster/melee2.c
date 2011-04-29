@@ -1414,9 +1414,6 @@ static bool get_moves_aux(struct cave *c, int m_idx, int *yp, int *xp)
 	monster_type *m_ptr = cave_monster(cave, m_idx);
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
-	/* Monster flowing disabled */
-	if (!OPT(birth_ai_sound)) return (FALSE);
-
 	/* Monster can go through rocks */
 	if (flags_test(r_ptr->flags, RF_SIZE, RF_PASS_WALL, RF_KILL_WALL, FLAG_END)) return (FALSE);
 
@@ -1488,9 +1485,6 @@ static bool get_fear_moves_aux(struct cave *c, int m_idx, int *yp, int *xp)
 
 	monster_type *m_ptr = cave_monster(cave, m_idx);
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
-
-	/* Monster flowing disabled */
-	if (!OPT(birth_ai_sound)) return (FALSE);
 
 	/* Player location */
 	py = p_ptr->py;
@@ -1749,15 +1743,11 @@ static bool find_safety(struct cave *c, int m_idx, int *yp, int *xp)
 			/* Skip locations in a wall */
 			if (!cave_floor_bold(y, x)) continue;
 
-			/* Check for "availability" (if monsters can flow) */
-			if (OPT(birth_ai_sound))
-			{
-				/* Ignore grids very far from the player */
-				if (c->when[y][x] < c->when[py][px]) continue;
+			/* Ignore grids very far from the player */
+			if (c->when[y][x] < c->when[py][px]) continue;
 
-				/* Ignore too-distant grids */
-				if (c->cost[y][x] > c->cost[fy][fx] + 2 * d) continue;
-			}
+			/* Ignore too-distant grids */
+			if (c->cost[y][x] > c->cost[fy][fx] + 2 * d) continue;
 
 			/* Check for absence of shot (more or less) */
 			if (!player_has_los_bold(y,x))
@@ -1897,11 +1887,7 @@ static bool get_moves(struct cave *c, int m_idx, int mm[5])
 	bool done = FALSE;
 
 	/* Flow towards the player */
-	if (OPT(birth_ai_sound))
-	{
-		/* Flow towards the player */
-		get_moves_aux(c, m_idx, &y2, &x2);
-	}
+	get_moves_aux(c, m_idx, &y2, &x2);
 
 	/* Extract the "pseudo-direction" */
 	y = m_ptr->fy - y2;
@@ -1951,12 +1937,8 @@ static bool get_moves(struct cave *c, int m_idx, int mm[5])
 
 		else
 		{
-			/* Attempt to avoid the player */
-			if (OPT(birth_ai_sound))
-			{
-				/* Adjust movement */
-				get_fear_moves_aux(c, m_idx, &y, &x);
-			}
+			/* Adjust movement */
+			get_fear_moves_aux(c, m_idx, &y, &x);
 		}
 
 		done = TRUE;
@@ -2977,9 +2959,6 @@ static bool monster_can_flow(struct cave *c, int m_idx)
 	monster_type *m_ptr;
 	monster_race *r_ptr;
 	int fy, fx;
-	/* Hack -- Monsters can "smell" the player from far away */
-	if (!OPT(birth_ai_sound))
-		return FALSE;
 
 	assert(c);
 

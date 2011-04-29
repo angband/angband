@@ -1372,8 +1372,8 @@ int rd_randarts_2(void)
 	/* Read the number of artifacts */
 	rd_u16b(&artifact_count);
 
-	/* Alive or cheating death */
-	if (!p_ptr->is_dead || arg_wizard)
+	/* Alive or cheating death or re-using randarts */
+	if (!p_ptr->is_dead || arg_wizard || OPT(birth_keep_randarts))
 	{
 		/* Incompatible save files */
 		if (artifact_count > z_info->a_max)

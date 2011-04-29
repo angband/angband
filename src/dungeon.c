@@ -1645,8 +1645,8 @@ void play_game(void)
 		/* Roll up a new character. Quickstart is allowed if ht_birth is set */
 		player_birth(p_ptr->ht_birth ? TRUE : FALSE);
 
-		/* Randomize the artifacts */
-		if (OPT(birth_randarts))
+		/* Randomize the artifacts if required */
+		if (OPT(birth_randarts) && !OPT(birth_keep_randarts))
 			do_randart(seed_randart, TRUE);
 	}
 

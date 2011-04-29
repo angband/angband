@@ -2866,10 +2866,6 @@ void cave_update_flow(struct cave *c)
 	byte flow_x[FLOW_MAX];
 
 
-	/* Hack -- disabled */
-	if (!OPT(birth_ai_sound)) return;
-
-
 	/*** Cycle the flow ***/
 
 	/* Cycle the flow */
