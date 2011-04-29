@@ -1830,8 +1830,6 @@ bool banishment(void)
 
 	struct keypress typ;
 
-
-	/* Mega-Hack -- Get a monster symbol */
 	if (!get_com("Choose a monster race (by symbol) to banish: ", &typ))
 		return FALSE;
 
