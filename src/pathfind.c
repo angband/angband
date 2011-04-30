@@ -206,7 +206,7 @@ bool findpath(int y, int x)
  *
  * Note that grids diagonal to the origin have unique angles.
  */
-byte get_angle_to_grid[41][41] =
+static byte get_angle_to_grid[41][41] =
 {
   {  68,  67,  66,  65,  64,  63,  62,  62,  60,  59,  58,  57,  56,  55,  53,  52,  51,  49,  48,  46,  45,  44,  42,  41,  39,  38,  37,  35,  34,  33,  32,  31,  30,  28,  28,  27,  26,  25,  24,  24,  23 },
   {  69,  68,  67,  66,  65,  64,  63,  62,  61,  60,  59,  58,  56,  55,  54,  52,  51,  49,  48,  47,  45,  43,  42,  41,  39,  38,  36,  35,  34,  32,  31,  30,  29,  28,  27,  26,  25,  24,  24,  23,  22 },
@@ -320,78 +320,6 @@ int get_angle_to_target(int y0, int x0, int y1, int x1, int dir)
 	/* Get angle to target. */
 	return (get_angle_to_grid[ny][nx]);
 }
-
-/*
- * Using the angle given, find a grid that is in that direction from the
- * origin.
- *
- * Note:  This function does not yield very good results when the
- * character is adjacent to the outer wall of the dungeon and the projection
- * heads towards it.
- */
-void get_grid_using_angle(int angle, int y0, int x0, int *ty, int *tx)
-{
-	int y, x;
-	int best_y = 0, best_x = 0;
-
-	int diff;
-	int this_angle;
-	int fudge = 180;
-
-
-	/* Angle must be legal */
-	if ((angle < 0) || (angle >= 180)) return;
-
-	/* Scan the table, get as good a match as possible */
-	for (y = 0; y < 41; y++)
-	{
-		for (x = 0; x < 41; x++)
-		{
-			/* Corresponding grid in dungeon must be fully in bounds  XXX */
-			if (!in_bounds_fully(y0 - 20 + y, x0 - 20 + x)) continue;
-
-			/* Check this table grid */
-			this_angle = get_angle_to_grid[y][x];
-
-			/* Get inaccuracy of this angle */
-			diff = ABS(angle - this_angle);
-
-			/* Inaccuracy is lower than previous best */
-			if (diff < fudge)
-			{
-				/* Note coordinates */
-				best_y = y;
-				best_x = x;
-
-				/* Save inaccuracy as a new best */
-				fudge = diff;
-
-				/* Note perfection */
-				if (fudge == 0) break;
-			}
-		}
-
-		/* Note perfection */
-		if (fudge == 0) break;
-	}
-
-	/* We have an unacceptably large fudge factor */
-	if (fudge >= 30)
-	{
-		/* Set target to original grid */
-		*ty = y0;
-		*tx = x0;
-	}
-
-	/* Usual case */
-	else
-	{
-		/* Set target */
-		*ty = y0 - 20 + best_y;
-		*tx = x0 - 20 + best_x;
-	}
-}
-
 
 /****** Running code ******/
 
