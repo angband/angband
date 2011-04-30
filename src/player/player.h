@@ -63,5 +63,6 @@ bool player_can_cast(void);
 bool player_can_study(void);
 bool player_can_read(void);
 bool player_can_fire(void);
+bool player_confuse_dir(struct player *p, int *dir);
 
 #endif /* !PLAYER_PLAYER_H */

@@ -174,8 +174,6 @@ struct item_selector item_selector[] =
 	  obj_can_refill, (USE_INVEN | USE_FLOOR) },
 };
 
-
-
 game_command *cmd_get_top(void)
 {
 	return &cmd_queue[prev_cmd_idx(cmd_head)];

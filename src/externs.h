@@ -266,8 +266,7 @@ void verify_panel(void);
 void center_panel(void);
 int motion_dir(int y1, int x1, int y2, int x2);
 int target_dir(struct keypress ch);
-bool get_rep_dir(int *dp);
-bool confuse_dir(int *dp);
+bool get_rep_dir(int *aim);
 
 /* xtra3.c */
 byte monster_health_attr(void);
