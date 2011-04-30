@@ -21,6 +21,7 @@
 #include "keymap.h"
 #include "history.h"
 #include "object/tvalsval.h"
+#include "pathfind.h"
 #include "spells.h"
 #include "target.h"
 
@@ -378,20 +379,10 @@ bool get_rep_dir(int *dp)
 			{
 				int y = KEY_GRID_Y(ke);
 				int x = KEY_GRID_X(ke);
+				struct loc from = loc(p_ptr->px, p_ptr->py);
+				struct loc to = loc(x, y);
 
-				/* Calculate approximate angle */
-				int angle = get_angle_to_target(p_ptr->py, p_ptr->px, y, x, 0);
-
-				/* Convert angle to direction */
-				if (angle < 15) dir = 6;
-				else if (angle < 33) dir = 9;
-				else if (angle < 59) dir = 8;
-				else if (angle < 78) dir = 7;
-				else if (angle < 104) dir = 4;
-				else if (angle < 123) dir = 1;
-				else if (angle < 149) dir = 2;
-				else if (angle < 168) dir = 3;
-				else dir = 6;
+				dir = pathfind_direction_to(from, to);
 			}
 		}
 
