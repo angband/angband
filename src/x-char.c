@@ -60,9 +60,36 @@ static const xchar_type latin1_encode[] =
 };
 
 /*
+ * Translate from ISO Latin-1 characters 128+ to 7-bit ASCII.
+ *
+ * We use this table to maintain compatibility with systems that cannot
+ * display 8-bit characters.  We also use it whenever we wish to suppress
+ * accents or ensure that a character is 7-bit.
+ */
+static const char seven_bit_translation[128] =
+{
+ 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+ 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+ 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+ 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+ 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+ 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+ 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+ 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+ 	'A', 'A', 'A', 'A', 'A', 'A', ' ', 'C',
+ 	'E', 'E', 'E', 'E', 'I', 'I', 'I', 'I',
+ 	'D', 'N', 'O', 'O', 'O', 'O', 'O', ' ',
+ 	'O', 'U', 'U', 'U', 'U', 'Y', ' ', ' ',
+ 	'a', 'a', 'a', 'a', 'a', 'a', ' ', 'c',
+ 	'e', 'e', 'e', 'e', 'i', 'i', 'i', 'i',
+ 	'o', 'n', 'o', 'o', 'o', 'o', 'o', ' ',
+	'o', 'u', 'u', 'u', 'u', 'y', ' ', 'y'
+};
+
+/*
  * Link to the xchar_trans function.
  */
-void xchar_trans_hook(char *s, int encoding)
+static void xchar_trans_hook(char *s, int encoding)
 {
  	/* Option to translate into ASCII */
  	if (encoding == ASCII)
@@ -242,99 +269,6 @@ void xstr_trans(char *str, int encoding)
 		for (s = str; *s; s++) xchar_trans_hook(s, encoding);
 	}
 }
-
-/*
- *  Translate a Latin-1 string into escaped ASCII
- *  We assume that the contents of the source string use the Latin-1 encoding
- */
-void escape_latin1(char *dest, size_t max, const char *src)
-{
-	size_t i = 0;
-
-	/* Make space for the trailing null character */
-	if (max > 0) --max;
-
-	/* Copy the source string into the ouput string escaping the non-ascii characters */
-	while (*src && (i < max))
-	{
-		/* Make a copy of the character */
-		byte chr = (byte)*src++;
-
-		/* Non-ascii characters get special treatment */
-		if (chr > 127)
-		{
-			int j;
-			const char *tag = NULL;
-
-			/* Find the escape secuence of the character */
-			for (j = 0; latin1_encode[j].c > 0; j++)
-			{
-				if (latin1_encode[j].c == chr)
-				{
-					tag = latin1_encode[j].tag;
-
-					break;
-				}
-			}
-
-			/* Found? */
-			if (tag)
-			{
-				/* Append the opening delimiter */
-				if (i < max) dest[i++] = '[';
-
-				/* Append the escape secuence */
-				for (j = 0; tag[j] && (i < max); j++)
-				{
-					dest[i++] = tag[j];
-				}
-
-				/* Append the closing delimiter */
-				if (i < max) dest[i++] = ']';
-
-				/* Done */
-				continue;
-			}
-		}
-
-		/* Common case. We just append the character */
-		dest[i++] = (char)chr;
-	}
-
-	/* Trailing null character */
-	dest[i] = '\0';
-}
-
-
-
-
-
-/*
- * Translate from ISO Latin-1 characters 128+ to 7-bit ASCII.
- *
- * We use this table to maintain compatibility with systems that cannot
- * display 8-bit characters.  We also use it whenever we wish to suppress
- * accents or ensure that a character is 7-bit.
- */
-const char seven_bit_translation[128] =
-{
- 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
- 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
- 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
- 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
- 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
- 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
- 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
- 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
- 	'A', 'A', 'A', 'A', 'A', 'A', ' ', 'C',
- 	'E', 'E', 'E', 'E', 'I', 'I', 'I', 'I',
- 	'D', 'N', 'O', 'O', 'O', 'O', 'O', ' ',
- 	'O', 'U', 'U', 'U', 'U', 'Y', ' ', ' ',
- 	'a', 'a', 'a', 'a', 'a', 'a', ' ', 'c',
- 	'e', 'e', 'e', 'e', 'i', 'i', 'i', 'i',
- 	'o', 'n', 'o', 'o', 'o', 'o', 'o', ' ',
-	'o', 'u', 'u', 'u', 'u', 'y', ' ', 'y'
-};
 
 /*
  * Given a position in the ISO Latin-1 character set (which Angband uses

@@ -255,10 +255,7 @@ extern byte gamma_table[256];
 #endif /* SUPPORT_GAMMA */
 
 /* x-char.c */
-extern void xchar_trans_hook(char *s, int encoding);
 extern void xstr_trans(char *str, int encoding);
-extern void escape_latin1(char *dest, size_t max, const char *src);
-extern const char seven_bit_translation[128];
 extern char xchar_trans(byte c);
 
 /* xtra2.c */
