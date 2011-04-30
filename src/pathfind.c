@@ -31,8 +31,8 @@
 
 
 static int terrain[MAX_PF_RADIUS][MAX_PF_RADIUS];
-char pf_result[MAX_PF_LENGTH];
-int pf_result_index;
+static char pf_result[MAX_PF_LENGTH];
+static int pf_result_index;
 
 static int ox, oy, ex, ey;
 

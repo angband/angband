@@ -23,10 +23,6 @@
 extern bool screensaver;
 #endif /* ALLOW_BORG */
 
-/* pathfind.c */
-extern char pf_result[];
-extern int pf_result_index;
-
 /* tables.c */
 extern const s16b ddd[9];
 extern const s16b ddx[10];
