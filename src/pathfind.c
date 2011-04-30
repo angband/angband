@@ -251,7 +251,51 @@ static byte get_angle_to_grid[41][41] =
   { 113, 114, 114, 115, 116, 117, 118, 118, 120, 121, 122, 123, 124, 125, 127, 128, 129, 131, 132, 134, 135, 136, 138, 139, 141, 142, 143, 145, 146, 147, 148, 149, 150, 152, 152, 153, 154, 155, 156, 157, 158 }
 };
 
+/* Compute the direction (in the angband 123456789) sense from a point to a
+ * point. We decide to use diagonals if dx and dy are within a factor of two of
+ * each other; otherwise we choose a cardinal direction. */
+int pathfind_direction_to(struct loc from, struct loc to)
+{
+	int adx = ABS(to.x - from.x);
+	int ady = ABS(to.y - from.y);
+	int dx = to.x - from.x;
+	int dy = to.y - from.y;
 
+	if (dx == 0 && dy == 0)
+		return DIR_NONE;
+
+	if (dx >= 0 && dy >= 0)
+		if (adx < ady * 2 && ady < adx * 2)
+			return DIR_NE;
+		else if (adx > ady)
+			return DIR_E;
+		else
+			return DIR_N;
+	else if (dx > 0 && dy < 0)
+		if (adx < ady * 2 && ady < adx * 2)
+			return DIR_SE;
+		else if (adx > ady)
+			return DIR_E;
+		else
+			return DIR_S;
+	else if (dx < 0 && dy > 0)
+		if (adx < ady * 2 && ady < adx * 2)
+			return DIR_NW;
+		else if (adx > ady)
+			return DIR_W;
+		else
+			return DIR_N;
+	else if (dx <= 0 && dy <= 0)
+		if (adx < ady * 2 && ady < adx * 2)
+			return DIR_SW;
+		else if (adx > ady)
+			return DIR_W;
+		else
+			return DIR_S;
+
+	assert(0);
+	return DIR_UNKNOWN;
+}
 
 /*
  * Calculates and returns the angle to the target or in the given
