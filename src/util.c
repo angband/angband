@@ -1862,16 +1862,13 @@ bool get_com_ex(const char *prompt, ui_event *command)
  *
  * This function is stupid.  XXX XXX XXX
  */
-void pause_line(int row)
+void pause_line(struct term *term)
 {
-	prt("", row, 0);
-	put_str("[Press any key to continue]", row, 23);
+	prt("", term->hgt - 1, 0);
+	put_str("[Press any key to continue]", term->hgt - 1, 23);
 	(void)anykey();
-	prt("", row, 0);
+	prt("", term->hgt - 1, 0);
 }
-
-
-
 
 /*
  * Check a char for "vowel-hood"

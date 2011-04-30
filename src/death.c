@@ -176,7 +176,7 @@ static void display_winner(void)
 	put_str_centred(i, 0, wid, "All Hail the Mighty %s!", p_ptr->sex->winner);
 
 	flush();
-	pause_line(Term->hgt - 1);
+	pause_line(Term);
 }
 
 

@@ -271,7 +271,7 @@ extern bool (*get_file)(const char *suggested_name, char *path, size_t len);
 extern bool get_com(const char *prompt, struct keypress *command);
 extern bool get_com_ex(const char *prompt, ui_event *command);
 extern void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp);
-extern void pause_line(int row);
+extern void pause_line(struct term *term);
 extern bool is_a_vowel(int ch);
 extern int color_char_to_attr(char c);
 extern int color_text_to_attr(const char *name);

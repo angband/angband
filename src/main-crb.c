@@ -2841,7 +2841,7 @@ static OSStatus openGame(int op)
 		DisableMenuItem(MyGetMenuHandle(kFileMenu), i);
 
 	/* Wait for a keypress */
-	pause_line(Term->hgt - 1);
+	pause_line(Term);
 
 	/* Set the game status */
 	if (op == kNew)

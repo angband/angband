@@ -1880,7 +1880,7 @@ int main(int argc, char *argv[])
       for (i = 0; i < 50; i++)
 	draw_tile(i % 10, i/10, i+600);      
       /* Wait for response */
-      pause_line(23);
+      pause_line(Term);
       
       /* Play the game */
       play_game(new_game);

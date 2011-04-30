@@ -208,7 +208,7 @@ static bool new_game;
 static errr get_init_cmd()
 {
 	/* Wait for response */
-	pause_line(Term->hgt - 1);
+	pause_line(Term);
 
 	if (new_game)
 		cmd_insert(CMD_NEWGAME);

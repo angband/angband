@@ -166,7 +166,7 @@ void note(const char *message)
 
 	/* Draw the message */
 	prt(message, y, 0);
-	pause_line(Term->hgt - 1);
+	pause_line(Term);
 
 	/* Advance one line (wrap if needed) */
 	if (++y >= 24) y = 2;
