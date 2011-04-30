@@ -23,6 +23,9 @@
 #include "object/tvalsval.h"
 #include "squelch.h"
 
+static int view_n;
+static u16b view_g[VIEW_MAX];
+
 /*
  * Approximate distance between two points.
  *
