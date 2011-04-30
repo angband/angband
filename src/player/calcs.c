@@ -890,6 +890,78 @@ static const int adj_mag_mana[STAT_RANGE] =
 	800	/* 18/220+ */
 };
 
+/*
+ * This table is used to help calculate the number of blows the player can
+ * make in a single round of attacks (one player turn) with a normal weapon.
+ *
+ * This number ranges from a single blow/round for weak players to up to six
+ * blows/round for powerful warriors.
+ *
+ * Note that certain artifacts and ego-items give "bonus" blows/round.
+ *
+ * First, from the player class, we extract some values:
+ *
+ *    Warrior --> num = 6; mul = 5; div = MAX(30, weapon_weight);
+ *    Mage    --> num = 4; mul = 2; div = MAX(40, weapon_weight);
+ *    Priest  --> num = 4; mul = 3; div = MAX(35, weapon_weight);
+ *    Rogue   --> num = 5; mul = 4; div = MAX(30, weapon_weight);
+ *    Ranger  --> num = 5; mul = 4; div = MAX(35, weapon_weight);
+ *    Paladin --> num = 5; mul = 5; div = MAX(30, weapon_weight);
+ * (all specified in p_class.txt now)
+ *
+ * To get "P", we look up the relevant "adj_str_blow[]" (see above),
+ * multiply it by "mul", and then divide it by "div", rounding down.
+ *
+ * To get "D", we look up the relevant "adj_dex_blow[]" (see above).
+ *
+ * Then we look up the energy cost of each blow using "blows_table[P][D]".
+ * The player gets blows/round equal to 100/this number, up to a maximum of
+ * "num" blows/round, plus any "bonus" blows/round.
+ */
+static const byte blows_table[12][12] =
+{
+	/* P */
+   /* D:   0,   1,   2,   3,   4,   5,   6,   7,   8,   9,   10,  11+ */
+   /* DEX: 3,   10,  17,  /20, /40, /60, /80, /100,/120,/150,/180,/200 */
+
+	/* 0  */
+	{  100, 100, 95,  85,  75,  60,  50,  42,  35,  30,  25,  23 },
+
+	/* 1  */
+	{  100, 95,  85,  75,  60,  50,  42,  35,  30,  25,  23,  21 },
+
+	/* 2  */
+	{  95,  85,  75,  60,  50,  42,  35,  30,  26,  23,  21,  20 },
+
+	/* 3  */
+	{  85,  75,  60,  50,  42,  36,  32,  28,  25,  22,  20,  19 },
+
+	/* 4  */
+	{  75,  60,  50,  42,  36,  33,  28,  25,  23,  21,  19,  18 },
+
+	/* 5  */
+	{  60,  50,  42,  36,  33,  30,  27,  24,  22,  21,  19,  17 },
+
+	/* 6  */
+	{  50,  42,  36,  33,  30,  27,  25,  23,  21,  20,  18,  17 },
+
+	/* 7  */
+	{  42,  36,  33,  30,  28,  26,  24,  22,  20,  19,  18,  17 },
+
+	/* 8  */
+	{  36,  33,  30,  28,  26,  24,  22,  21,  20,  19,  17,  16 },
+
+	/* 9  */
+	{  35,  32,  29,  26,  24,  22,  21,  20,  19,  18,  17,  16 },
+
+	/* 10 */
+	{  34,  30,  27,  25,  23,  22,  21,  20,  19,  18,  17,  16 },
+
+	/* 11+ */
+	{  33,  29,  26,  24,  22,  21,  20,  19,  18,  17,  16,  15 },
+   /* DEX: 3,   10,  17,  /20, /40, /60, /80, /100,/120,/150,/180,/200 */
+};
+
 
 /*
  * Calculate number of spells player should have, and forget,

@@ -29,20 +29,15 @@ extern const s16b ddx[10];
 extern const s16b ddy[10];
 extern const s16b ddx_ddd[9];
 extern const s16b ddy_ddd[9];
-extern const byte blows_table[12][12];
 extern const byte extract_energy[200];
 extern const s32b player_exp[PY_MAX_LEVEL];
 extern const player_sex sex_info[MAX_SEXES];
 extern const byte chest_traps[64];
-/*XYZ extern const char *color_names[BASIC_COLORS];*/
 extern const char *stat_names[A_MAX];
 extern const char *stat_names_reduced[A_MAX];
-extern const char *stat_names_full[A_MAX];
 extern const char *window_flag_desc[32];
 extern const char *inscrip_text[];
-extern const grouper object_text_order[];
 extern const byte char_tables[256][CHAR_TABLE_SLOTS];
-extern const xchar_type latin1_encode[];
 
 /* variable.c */
 extern const char *copyright;

@@ -44,79 +44,6 @@ const s16b ddy_ddd[9] =
 { 1, -1, 0, 0, 1, 1, -1, -1, 0 };
 
 /*
- * This table is used to help calculate the number of blows the player can
- * make in a single round of attacks (one player turn) with a normal weapon.
- *
- * This number ranges from a single blow/round for weak players to up to six
- * blows/round for powerful warriors.
- *
- * Note that certain artifacts and ego-items give "bonus" blows/round.
- *
- * First, from the player class, we extract some values:
- *
- *    Warrior --> num = 6; mul = 5; div = MAX(30, weapon_weight);
- *    Mage    --> num = 4; mul = 2; div = MAX(40, weapon_weight);
- *    Priest  --> num = 4; mul = 3; div = MAX(35, weapon_weight);
- *    Rogue   --> num = 5; mul = 4; div = MAX(30, weapon_weight);
- *    Ranger  --> num = 5; mul = 4; div = MAX(35, weapon_weight);
- *    Paladin --> num = 5; mul = 5; div = MAX(30, weapon_weight);
- * (all specified in p_class.txt now)
- *
- * To get "P", we look up the relevant "adj_str_blow[]" (see above),
- * multiply it by "mul", and then divide it by "div", rounding down.
- *
- * To get "D", we look up the relevant "adj_dex_blow[]" (see above).
- *
- * Then we look up the energy cost of each blow using "blows_table[P][D]".
- * The player gets blows/round equal to 100/this number, up to a maximum of
- * "num" blows/round, plus any "bonus" blows/round.
- */
-const byte blows_table[12][12] =
-{
-	/* P */
-   /* D:   0,   1,   2,   3,   4,   5,   6,   7,   8,   9,   10,  11+ */
-   /* DEX: 3,   10,  17,  /20, /40, /60, /80, /100,/120,/150,/180,/200 */
-
-	/* 0  */
-	{  100, 100, 95,  85,  75,  60,  50,  42,  35,  30,  25,  23 },
-
-	/* 1  */
-	{  100, 95,  85,  75,  60,  50,  42,  35,  30,  25,  23,  21 },
-
-	/* 2  */
-	{  95,  85,  75,  60,  50,  42,  35,  30,  26,  23,  21,  20 },
-
-	/* 3  */
-	{  85,  75,  60,  50,  42,  36,  32,  28,  25,  22,  20,  19 },
-
-	/* 4  */
-	{  75,  60,  50,  42,  36,  33,  28,  25,  23,  21,  19,  18 },
-
-	/* 5  */
-	{  60,  50,  42,  36,  33,  30,  27,  24,  22,  21,  19,  17 },
-
-	/* 6  */
-	{  50,  42,  36,  33,  30,  27,  25,  23,  21,  20,  18,  17 },
-
-	/* 7  */
-	{  42,  36,  33,  30,  28,  26,  24,  22,  20,  19,  18,  17 },
-
-	/* 8  */
-	{  36,  33,  30,  28,  26,  24,  22,  21,  20,  19,  17,  16 },
-
-	/* 9  */
-	{  35,  32,  29,  26,  24,  22,  21,  20,  19,  18,  17,  16 },
-
-	/* 10 */
-	{  34,  30,  27,  25,  23,  22,  21,  20,  19,  18,  17,  16 },
-
-	/* 11+ */
-	{  33,  29,  26,  24,  22,  21,  20,  19,  18,  17,  16,  15 },
-   /* DEX: 3,   10,  17,  /20, /40, /60, /80, /100,/120,/150,/180,/200 */
-};
-
-
-/*
  * This table allows quick conversion from "speed" to "energy"
  * The basic function WAS ((S>=110) ? (S-110) : (100 / (120-S)))
  * Note that table access is *much* quicker than computation.
@@ -346,20 +273,6 @@ const char *stat_names_reduced[A_MAX] =
 };
 
 /*
- * Full stat names
- */
-const char *stat_names_full[A_MAX] =
-{
-	"strength",
-	"intelligence",
-	"wisdom",
-	"dexterity",
-	"constitution",
-	"charisma"
-};
-
-
-/*
  * Certain "screens" always use the main screen, including News, Birth,
  * Dungeon, Tomb-stone, High-scores, Macros, Colors, Visuals, Options.
  *
@@ -415,43 +328,6 @@ const char *inscrip_text[] =
 	"special",
 	"unknown"
 };
-
-const grouper object_text_order[] =
-{
-	{TV_RING,			"Ring"			},
-	{TV_AMULET,			"Amulet"		},
-	{TV_POTION,			"Potion"		},
-	{TV_SCROLL,			"Scroll"		},
-	{TV_WAND,			"Wand"			},
-	{TV_STAFF,			"Staff"			},
-	{TV_ROD,			"Rod"			},
-	{TV_FOOD,			"Food"			},
-	{TV_PRAYER_BOOK,	"Priest Book"	},
-	{TV_MAGIC_BOOK,		"Magic Book"	},
-	{TV_LIGHT,			"Light"			},
-	{TV_FLASK,			"Flask"			},
-	{TV_SWORD,			"Sword"			},
-	{TV_POLEARM,		"Polearm"		},
-	{TV_HAFTED,			"Hafted Weapon" },
-	{TV_BOW,			"Bow"			},
-	{TV_ARROW,			"Ammunition"	},
-	{TV_BOLT,			NULL			},
-	{TV_SHOT,			NULL			},
-	{TV_SHIELD,			"Shield"		},
-	{TV_CROWN,			"Crown"			},
-	{TV_HELM,			"Helm"			},
-	{TV_GLOVES,			"Gloves"		},
-	{TV_BOOTS,			"Boots"			},
-	{TV_CLOAK,			"Cloak"			},
-	{TV_DRAG_ARMOR,		"Dragon Scale Mail" },
-	{TV_HARD_ARMOR,		"Hard Armor"	},
-	{TV_SOFT_ARMOR,		"Soft Armor"	},
-	{TV_SPIKE,			"Spike"			},
-	{TV_DIGGING,		"Digger"		},
-	{TV_JUNK,			"Junk"			},
-	{0,					NULL			}
-};
-
 
 /*
  * Character translations and definitions.  -JG-
@@ -740,42 +616,3 @@ const byte char_tables[256][CHAR_TABLE_SLOTS] =
 
 
 
-/*
- * Translate from encodes to extended 8-bit characters and back again.
- */
-const xchar_type latin1_encode[] =
-{
-    { "`A", 192 },  { "'A", 193 },  { "^A", 194 },  { "~A", 195 },
-    { "\"A", 196 },  { "*A", 197 },  { ",C", 199 },  { "`E", 200 },
-    { "'E", 201 },  { "^E", 202 }, { "\"E", 203 },  { "`I", 204 },
-    { "'I", 205 },  { "^I", 206 }, { "\"I", 207 },  { "~N", 209 },
-    { "`O", 210 },  { "'O", 211 },  { "^O", 212 },  { "~O", 213 },
-	{ "\"O", 214 },  { "/O", 216 },  { "`U", 217 },  { "'U", 218 },
-    { "^U", 219 }, { "\"U", 220 },  { "'Y", 221 },  { "`a", 224 },
-    { "'a", 225 },  { "^a", 226 },  { "~a", 227 }, { "\"a", 228 },
-    { "*a", 229 },  { ",c", 231 },  { "`e", 232 },  { "'e", 233 },
-    { "^e", 234 }, { "\"e", 235 },  { "`i", 236 },  { "'i", 237 },
-    { "^i", 238 }, { "\"i", 239 },  { "~n", 241 },  { "`o", 242 },
-    { "'o", 243 },  { "^o", 244 },  { "~o", 245 }, { "\"o", 246 },
-    { "/o", 248 },  { "`u", 249 },  { "'u", 250 },  { "^u", 251 },
-    { "\"u", 252 },  { "'y", 253 }, { "\"y", 255 },
-
-    { "iexcl", 161 }, { "euro", 162 }, { "pound", 163 }, { "curren", 164 },
-    { "yen", 165 },   { "brvbar", 166 }, { "sect", 167 }, { "Agrave", 192 },
-    { "Aacute", 193 }, { "Acirc", 194 }, { "Atilde", 195 }, { "Auml", 196 },
-    { "Aring", 197 }, { "Aelig", 198 }, { "Ccedil", 199 }, { "Egrave", 200 },
-    { "Eacute", 201 }, { "Ecirc", 202 }, { "Euml", 203 }, { "Igrave", 204 },
-    { "Iacute", 205 }, { "Icirc", 206 }, { "Iuml", 207 }, { "ETH", 208 },
-    { "Ntilde", 209 }, { "Ograve", 210 }, { "Oacute", 211 }, { "Ocirc", 212 },
-    { "Otilde", 213 }, { "Ouml", 214 }, { "Oslash", 216 }, { "Ugrave", 217 },
-    { "Uacute", 218 }, { "Ucirc", 219 }, { "Uuml", 220 }, { "Yacute", 221 },
-    { "THORN", 222 }, { "szlig", 223 }, { "agrave", 224 }, { "aacute", 225 },
-    { "acirc", 226 }, { "atilde", 227 }, { "auml", 228 }, { "aring", 229 },
-    { "aelig", 230 }, { "ccedil", 231 }, { "egrave", 232 }, { "eacute", 233 },
-    { "ecirc", 234 }, { "euml", 235 }, { "igrave", 236 }, { "iacute", 237 },
-    { "icirc", 238 }, { "iuml", 239 }, { "eth", 240 },   { "ntilde", 241 },
-    { "ograve", 242 }, { "oacute", 243 }, { "ocirc", 244 }, { "otilde", 245 },
-    { "ouml", 246 }, { "oslash", 248 }, { "ugrave", 249 }, { "uacute", 250 },
-    { "ucirc", 251 }, { "uuml", 252 }, { "yacute", 253 }, { "thorn", 254 },
-    { "yuml", 255 },   { "\0", 0 }
-};

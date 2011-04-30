@@ -19,7 +19,45 @@
 #include "z-util.h"
 #include "z-term.h"
 
+/*
+ * Translate from encodes to extended 8-bit characters and back again.
+ */
+static const xchar_type latin1_encode[] =
+{
+    { "`A", 192 },  { "'A", 193 },  { "^A", 194 },  { "~A", 195 },
+    { "\"A", 196 },  { "*A", 197 },  { ",C", 199 },  { "`E", 200 },
+    { "'E", 201 },  { "^E", 202 }, { "\"E", 203 },  { "`I", 204 },
+    { "'I", 205 },  { "^I", 206 }, { "\"I", 207 },  { "~N", 209 },
+    { "`O", 210 },  { "'O", 211 },  { "^O", 212 },  { "~O", 213 },
+	{ "\"O", 214 },  { "/O", 216 },  { "`U", 217 },  { "'U", 218 },
+    { "^U", 219 }, { "\"U", 220 },  { "'Y", 221 },  { "`a", 224 },
+    { "'a", 225 },  { "^a", 226 },  { "~a", 227 }, { "\"a", 228 },
+    { "*a", 229 },  { ",c", 231 },  { "`e", 232 },  { "'e", 233 },
+    { "^e", 234 }, { "\"e", 235 },  { "`i", 236 },  { "'i", 237 },
+    { "^i", 238 }, { "\"i", 239 },  { "~n", 241 },  { "`o", 242 },
+    { "'o", 243 },  { "^o", 244 },  { "~o", 245 }, { "\"o", 246 },
+    { "/o", 248 },  { "`u", 249 },  { "'u", 250 },  { "^u", 251 },
+    { "\"u", 252 },  { "'y", 253 }, { "\"y", 255 },
 
+    { "iexcl", 161 }, { "euro", 162 }, { "pound", 163 }, { "curren", 164 },
+    { "yen", 165 },   { "brvbar", 166 }, { "sect", 167 }, { "Agrave", 192 },
+    { "Aacute", 193 }, { "Acirc", 194 }, { "Atilde", 195 }, { "Auml", 196 },
+    { "Aring", 197 }, { "Aelig", 198 }, { "Ccedil", 199 }, { "Egrave", 200 },
+    { "Eacute", 201 }, { "Ecirc", 202 }, { "Euml", 203 }, { "Igrave", 204 },
+    { "Iacute", 205 }, { "Icirc", 206 }, { "Iuml", 207 }, { "ETH", 208 },
+    { "Ntilde", 209 }, { "Ograve", 210 }, { "Oacute", 211 }, { "Ocirc", 212 },
+    { "Otilde", 213 }, { "Ouml", 214 }, { "Oslash", 216 }, { "Ugrave", 217 },
+    { "Uacute", 218 }, { "Ucirc", 219 }, { "Uuml", 220 }, { "Yacute", 221 },
+    { "THORN", 222 }, { "szlig", 223 }, { "agrave", 224 }, { "aacute", 225 },
+    { "acirc", 226 }, { "atilde", 227 }, { "auml", 228 }, { "aring", 229 },
+    { "aelig", 230 }, { "ccedil", 231 }, { "egrave", 232 }, { "eacute", 233 },
+    { "ecirc", 234 }, { "euml", 235 }, { "igrave", 236 }, { "iacute", 237 },
+    { "icirc", 238 }, { "iuml", 239 }, { "eth", 240 },   { "ntilde", 241 },
+    { "ograve", 242 }, { "oacute", 243 }, { "ocirc", 244 }, { "otilde", 245 },
+    { "ouml", 246 }, { "oslash", 248 }, { "ugrave", 249 }, { "uacute", 250 },
+    { "ucirc", 251 }, { "uuml", 252 }, { "yacute", 253 }, { "thorn", 254 },
+    { "yuml", 255 },   { "\0", 0 }
+};
 
 /*
  * Link to the xchar_trans function.
