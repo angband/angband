@@ -1,0 +1,52 @@
+#!/usr/bin/env perl
+
+use warnings qw(all);
+use strict;
+use autodie;
+
+my @cfiles = @ARGV;
+my $fns = {};
+
+sub funname($$) {
+	my ($cf, $fn) = @_;
+
+	return undef if ($fn =~ /^#/);
+	return undef if ($fn =~ /^\//);
+	return $cf . '/' . $1 if ($fn =~ /^static \S.*?([A-Za-z0-9_]+)\(.*\)(\s*{)?$/);
+	return $1 if ($fn =~ /^\S.*?([A-Za-z0-9_]+)\(.*\)(\s*{)?$/);
+	return undef;
+}
+
+for my $cfile (@cfiles) {
+	open(my $fh, '<', $cfile);
+	my @lines = <$fh>;
+	close($fh);
+	my $curfn = undef;
+	my $lineno = 0;
+	foreach my $line (@lines) {
+		$lineno++;
+		my $fn = funname($cfile, $line);
+		if (not defined $curfn and defined $fn) {
+			if (exists $fns->{$fn}) {
+				printf("redef %s %s:%d %s:%d\n", $fn,
+				       $fns->{$fn}->{file},
+				       $fns->{$fn}->{start},
+					$cfile, $lineno);
+				next;
+			}
+			$curfn = $fn;
+			$fns->{$curfn} = {
+				file => $cfile,
+				start => $lineno,
+			};
+		} elsif (defined $curfn and $line =~ /^}/) {
+			$fns->{$curfn}->{end} = $lineno;
+			$curfn = undef;
+		}
+	}
+}
+
+for my $fn (keys %$fns) {
+	$fns->{$fn}->{len} = $fns->{$fn}->{end} - $fns->{$fn}->{start};
+	printf("%d %d %s\n", $fns->{$fn}->{len}, $fns->{$fn}->{start}, $fn);
+}
