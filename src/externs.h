@@ -184,7 +184,6 @@ extern bool make_attack_spell(int m_idx);
 
 /* pathfind.c */
 extern bool findpath(int y, int x);
-extern int get_angle_to_target(int y0, int x0, int y1, int x1, int dir);
 extern void run_step(int dir);
 
 /* randart.c */
