@@ -19,12 +19,77 @@
 #include "z-util.h"
 #include "z-term.h"
 
+/*
+ * Translate from encodes to extended 8-bit characters and back again.
+ */
+static const xchar_type latin1_encode[] =
+{
+    { "`A", 192 },  { "'A", 193 },  { "^A", 194 },  { "~A", 195 },
+    { "\"A", 196 },  { "*A", 197 },  { ",C", 199 },  { "`E", 200 },
+    { "'E", 201 },  { "^E", 202 }, { "\"E", 203 },  { "`I", 204 },
+    { "'I", 205 },  { "^I", 206 }, { "\"I", 207 },  { "~N", 209 },
+    { "`O", 210 },  { "'O", 211 },  { "^O", 212 },  { "~O", 213 },
+	{ "\"O", 214 },  { "/O", 216 },  { "`U", 217 },  { "'U", 218 },
+    { "^U", 219 }, { "\"U", 220 },  { "'Y", 221 },  { "`a", 224 },
+    { "'a", 225 },  { "^a", 226 },  { "~a", 227 }, { "\"a", 228 },
+    { "*a", 229 },  { ",c", 231 },  { "`e", 232 },  { "'e", 233 },
+    { "^e", 234 }, { "\"e", 235 },  { "`i", 236 },  { "'i", 237 },
+    { "^i", 238 }, { "\"i", 239 },  { "~n", 241 },  { "`o", 242 },
+    { "'o", 243 },  { "^o", 244 },  { "~o", 245 }, { "\"o", 246 },
+    { "/o", 248 },  { "`u", 249 },  { "'u", 250 },  { "^u", 251 },
+    { "\"u", 252 },  { "'y", 253 }, { "\"y", 255 },
 
+    { "iexcl", 161 }, { "euro", 162 }, { "pound", 163 }, { "curren", 164 },
+    { "yen", 165 },   { "brvbar", 166 }, { "sect", 167 }, { "Agrave", 192 },
+    { "Aacute", 193 }, { "Acirc", 194 }, { "Atilde", 195 }, { "Auml", 196 },
+    { "Aring", 197 }, { "Aelig", 198 }, { "Ccedil", 199 }, { "Egrave", 200 },
+    { "Eacute", 201 }, { "Ecirc", 202 }, { "Euml", 203 }, { "Igrave", 204 },
+    { "Iacute", 205 }, { "Icirc", 206 }, { "Iuml", 207 }, { "ETH", 208 },
+    { "Ntilde", 209 }, { "Ograve", 210 }, { "Oacute", 211 }, { "Ocirc", 212 },
+    { "Otilde", 213 }, { "Ouml", 214 }, { "Oslash", 216 }, { "Ugrave", 217 },
+    { "Uacute", 218 }, { "Ucirc", 219 }, { "Uuml", 220 }, { "Yacute", 221 },
+    { "THORN", 222 }, { "szlig", 223 }, { "agrave", 224 }, { "aacute", 225 },
+    { "acirc", 226 }, { "atilde", 227 }, { "auml", 228 }, { "aring", 229 },
+    { "aelig", 230 }, { "ccedil", 231 }, { "egrave", 232 }, { "eacute", 233 },
+    { "ecirc", 234 }, { "euml", 235 }, { "igrave", 236 }, { "iacute", 237 },
+    { "icirc", 238 }, { "iuml", 239 }, { "eth", 240 },   { "ntilde", 241 },
+    { "ograve", 242 }, { "oacute", 243 }, { "ocirc", 244 }, { "otilde", 245 },
+    { "ouml", 246 }, { "oslash", 248 }, { "ugrave", 249 }, { "uacute", 250 },
+    { "ucirc", 251 }, { "uuml", 252 }, { "yacute", 253 }, { "thorn", 254 },
+    { "yuml", 255 },   { "\0", 0 }
+};
+
+/*
+ * Translate from ISO Latin-1 characters 128+ to 7-bit ASCII.
+ *
+ * We use this table to maintain compatibility with systems that cannot
+ * display 8-bit characters.  We also use it whenever we wish to suppress
+ * accents or ensure that a character is 7-bit.
+ */
+static const char seven_bit_translation[128] =
+{
+ 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+ 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+ 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+ 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+ 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+ 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+ 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+ 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+ 	'A', 'A', 'A', 'A', 'A', 'A', ' ', 'C',
+ 	'E', 'E', 'E', 'E', 'I', 'I', 'I', 'I',
+ 	'D', 'N', 'O', 'O', 'O', 'O', 'O', ' ',
+ 	'O', 'U', 'U', 'U', 'U', 'Y', ' ', ' ',
+ 	'a', 'a', 'a', 'a', 'a', 'a', ' ', 'c',
+ 	'e', 'e', 'e', 'e', 'i', 'i', 'i', 'i',
+ 	'o', 'n', 'o', 'o', 'o', 'o', 'o', ' ',
+	'o', 'u', 'u', 'u', 'u', 'y', ' ', 'y'
+};
 
 /*
  * Link to the xchar_trans function.
  */
-void xchar_trans_hook(char *s, int encoding)
+static void xchar_trans_hook(char *s, int encoding)
 {
  	/* Option to translate into ASCII */
  	if (encoding == ASCII)
@@ -204,99 +269,6 @@ void xstr_trans(char *str, int encoding)
 		for (s = str; *s; s++) xchar_trans_hook(s, encoding);
 	}
 }
-
-/*
- *  Translate a Latin-1 string into escaped ASCII
- *  We assume that the contents of the source string use the Latin-1 encoding
- */
-void escape_latin1(char *dest, size_t max, const char *src)
-{
-	size_t i = 0;
-
-	/* Make space for the trailing null character */
-	if (max > 0) --max;
-
-	/* Copy the source string into the ouput string escaping the non-ascii characters */
-	while (*src && (i < max))
-	{
-		/* Make a copy of the character */
-		byte chr = (byte)*src++;
-
-		/* Non-ascii characters get special treatment */
-		if (chr > 127)
-		{
-			int j;
-			const char *tag = NULL;
-
-			/* Find the escape secuence of the character */
-			for (j = 0; latin1_encode[j].c > 0; j++)
-			{
-				if (latin1_encode[j].c == chr)
-				{
-					tag = latin1_encode[j].tag;
-
-					break;
-				}
-			}
-
-			/* Found? */
-			if (tag)
-			{
-				/* Append the opening delimiter */
-				if (i < max) dest[i++] = '[';
-
-				/* Append the escape secuence */
-				for (j = 0; tag[j] && (i < max); j++)
-				{
-					dest[i++] = tag[j];
-				}
-
-				/* Append the closing delimiter */
-				if (i < max) dest[i++] = ']';
-
-				/* Done */
-				continue;
-			}
-		}
-
-		/* Common case. We just append the character */
-		dest[i++] = (char)chr;
-	}
-
-	/* Trailing null character */
-	dest[i] = '\0';
-}
-
-
-
-
-
-/*
- * Translate from ISO Latin-1 characters 128+ to 7-bit ASCII.
- *
- * We use this table to maintain compatibility with systems that cannot
- * display 8-bit characters.  We also use it whenever we wish to suppress
- * accents or ensure that a character is 7-bit.
- */
-const char seven_bit_translation[128] =
-{
- 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
- 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
- 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
- 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
- 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
- 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
- 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
- 	' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
- 	'A', 'A', 'A', 'A', 'A', 'A', ' ', 'C',
- 	'E', 'E', 'E', 'E', 'I', 'I', 'I', 'I',
- 	'D', 'N', 'O', 'O', 'O', 'O', 'O', ' ',
- 	'O', 'U', 'U', 'U', 'U', 'Y', ' ', ' ',
- 	'a', 'a', 'a', 'a', 'a', 'a', ' ', 'c',
- 	'e', 'e', 'e', 'e', 'i', 'i', 'i', 'i',
- 	'o', 'n', 'o', 'o', 'o', 'o', 'o', ' ',
-	'o', 'u', 'u', 'u', 'u', 'y', ' ', 'y'
-};
 
 /*
  * Given a position in the ISO Latin-1 character set (which Angband uses

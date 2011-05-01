@@ -138,3 +138,26 @@ bool player_can_fire(void)
 
 	return TRUE;
 }
+
+/*
+ * Apply confusion, if needed, to a direction
+ *
+ * Display a message and return TRUE if direction changes.
+ */
+bool player_confuse_dir(struct player *p, int *dp)
+{
+	int dir = *dp;
+
+	if (p->timed[TMD_CONFUSED])
+		if ((dir == 5) || (randint0(100) < 75))
+			/* Random direction */
+			dir = ddd[randint0(8)];
+
+	if (*dp != dir) {
+		msg("You are confused.");
+		*dp = dir;
+		return TRUE;
+	}
+
+	return FALSE;
+}

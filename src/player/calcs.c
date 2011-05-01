@@ -802,6 +802,167 @@ static const int adj_con_mhp[STAT_RANGE] =
 	1250	/* 18/210-18/219 */,
 	1250	/* 18/220+ */
 };
+
+static const int adj_mag_study[STAT_RANGE] =
+{
+	  0	/* 3 */,
+	  0	/* 4 */,
+	 10	/* 5 */,
+	 20	/* 6 */,
+	 30	/* 7 */,
+	 40	/* 8 */,
+	 50	/* 9 */,
+	 60	/* 10 */,
+	 70	/* 11 */,
+	 80	/* 12 */,
+	 85	/* 13 */,
+	 90	/* 14 */,
+	 95	/* 15 */,
+	100	/* 16 */,
+	105	/* 17 */,
+	110	/* 18/00-18/09 */,
+	115	/* 18/10-18/19 */,
+	120	/* 18/20-18/29 */,
+	130	/* 18/30-18/39 */,
+	140	/* 18/40-18/49 */,
+	150	/* 18/50-18/59 */,
+	160	/* 18/60-18/69 */,
+	170	/* 18/70-18/79 */,
+	180	/* 18/80-18/89 */,
+	190	/* 18/90-18/99 */,
+	200	/* 18/100-18/109 */,
+	210	/* 18/110-18/119 */,
+	220	/* 18/120-18/129 */,
+	230	/* 18/130-18/139 */,
+	240	/* 18/140-18/149 */,
+	250	/* 18/150-18/159 */,
+	250	/* 18/160-18/169 */,
+	250	/* 18/170-18/179 */,
+	250	/* 18/180-18/189 */,
+	250	/* 18/190-18/199 */,
+	250	/* 18/200-18/209 */,
+	250	/* 18/210-18/219 */,
+	250	/* 18/220+ */
+};
+
+/*
+ * Stat Table (INT/WIS) -- extra 1/100 mana-points per level
+ */
+static const int adj_mag_mana[STAT_RANGE] =
+{
+	  0	/* 3 */,
+	 10	/* 4 */,
+	 20	/* 5 */,
+	 30	/* 6 */,
+	 40	/* 7 */,
+	 50	/* 8 */,
+	 60	/* 9 */,
+	 70	/* 10 */,
+	 80	/* 11 */,
+	 90	/* 12 */,
+	100	/* 13 */,
+	110	/* 14 */,
+	120	/* 15 */,
+	130	/* 16 */,
+	140	/* 17 */,
+	150	/* 18/00-18/09 */,
+	160	/* 18/10-18/19 */,
+	170	/* 18/20-18/29 */,
+	180	/* 18/30-18/39 */,
+	190	/* 18/40-18/49 */,
+	200	/* 18/50-18/59 */,
+	225	/* 18/60-18/69 */,
+	250	/* 18/70-18/79 */,
+	300	/* 18/80-18/89 */,
+	350	/* 18/90-18/99 */,
+	400	/* 18/100-18/109 */,
+	450	/* 18/110-18/119 */,
+	500	/* 18/120-18/129 */,
+	550	/* 18/130-18/139 */,
+	600	/* 18/140-18/149 */,
+	650	/* 18/150-18/159 */,
+	700	/* 18/160-18/169 */,
+	750	/* 18/170-18/179 */,
+	800	/* 18/180-18/189 */,
+	800	/* 18/190-18/199 */,
+	800	/* 18/200-18/209 */,
+	800	/* 18/210-18/219 */,
+	800	/* 18/220+ */
+};
+
+/*
+ * This table is used to help calculate the number of blows the player can
+ * make in a single round of attacks (one player turn) with a normal weapon.
+ *
+ * This number ranges from a single blow/round for weak players to up to six
+ * blows/round for powerful warriors.
+ *
+ * Note that certain artifacts and ego-items give "bonus" blows/round.
+ *
+ * First, from the player class, we extract some values:
+ *
+ *    Warrior --> num = 6; mul = 5; div = MAX(30, weapon_weight);
+ *    Mage    --> num = 4; mul = 2; div = MAX(40, weapon_weight);
+ *    Priest  --> num = 4; mul = 3; div = MAX(35, weapon_weight);
+ *    Rogue   --> num = 5; mul = 4; div = MAX(30, weapon_weight);
+ *    Ranger  --> num = 5; mul = 4; div = MAX(35, weapon_weight);
+ *    Paladin --> num = 5; mul = 5; div = MAX(30, weapon_weight);
+ * (all specified in p_class.txt now)
+ *
+ * To get "P", we look up the relevant "adj_str_blow[]" (see above),
+ * multiply it by "mul", and then divide it by "div", rounding down.
+ *
+ * To get "D", we look up the relevant "adj_dex_blow[]" (see above).
+ *
+ * Then we look up the energy cost of each blow using "blows_table[P][D]".
+ * The player gets blows/round equal to 100/this number, up to a maximum of
+ * "num" blows/round, plus any "bonus" blows/round.
+ */
+static const byte blows_table[12][12] =
+{
+	/* P */
+   /* D:   0,   1,   2,   3,   4,   5,   6,   7,   8,   9,   10,  11+ */
+   /* DEX: 3,   10,  17,  /20, /40, /60, /80, /100,/120,/150,/180,/200 */
+
+	/* 0  */
+	{  100, 100, 95,  85,  75,  60,  50,  42,  35,  30,  25,  23 },
+
+	/* 1  */
+	{  100, 95,  85,  75,  60,  50,  42,  35,  30,  25,  23,  21 },
+
+	/* 2  */
+	{  95,  85,  75,  60,  50,  42,  35,  30,  26,  23,  21,  20 },
+
+	/* 3  */
+	{  85,  75,  60,  50,  42,  36,  32,  28,  25,  22,  20,  19 },
+
+	/* 4  */
+	{  75,  60,  50,  42,  36,  33,  28,  25,  23,  21,  19,  18 },
+
+	/* 5  */
+	{  60,  50,  42,  36,  33,  30,  27,  24,  22,  21,  19,  17 },
+
+	/* 6  */
+	{  50,  42,  36,  33,  30,  27,  25,  23,  21,  20,  18,  17 },
+
+	/* 7  */
+	{  42,  36,  33,  30,  28,  26,  24,  22,  20,  19,  18,  17 },
+
+	/* 8  */
+	{  36,  33,  30,  28,  26,  24,  22,  21,  20,  19,  17,  16 },
+
+	/* 9  */
+	{  35,  32,  29,  26,  24,  22,  21,  20,  19,  18,  17,  16 },
+
+	/* 10 */
+	{  34,  30,  27,  25,  23,  22,  21,  20,  19,  18,  17,  16 },
+
+	/* 11+ */
+	{  33,  29,  26,  24,  22,  21,  20,  19,  18,  17,  16,  15 },
+   /* DEX: 3,   10,  17,  /20, /40, /60, /80, /100,/120,/150,/180,/200 */
+};
+
+
 /*
  * Calculate number of spells player should have, and forget,
  * or remember, spells until that number is properly reflected.

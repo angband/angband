@@ -21,23 +21,7 @@
 #ifdef ALLOW_BORG
 /* Screensaver variables for the borg.  apw */
 extern bool screensaver;
-extern const byte adj_dex_ta[];
-extern const byte adj_str_td[];
-extern const byte adj_dex_th[];
-extern const byte adj_str_th[];
-extern const byte adj_dex_blow[];
-extern const byte adj_dex_dis[];
-extern const byte adj_int_dis[];
-extern const byte adj_int_dev[];
-extern const byte adj_wis_sav[];
-extern const byte adj_str_dig[];
-extern const byte adj_str_wgt[];
-extern const int adj_con_mhp[];
 #endif /* ALLOW_BORG */
-
-/* pathfind.c */
-extern char pf_result[];
-extern int pf_result_index;
 
 /* tables.c */
 extern const s16b ddd[9];
@@ -45,25 +29,15 @@ extern const s16b ddx[10];
 extern const s16b ddy[10];
 extern const s16b ddx_ddd[9];
 extern const s16b ddy_ddd[9];
-extern const char hexsym[16];
-extern const int adj_mag_study[];
-extern const int adj_mag_mana[];
-extern const byte adj_mag_fail[];
-extern const int adj_mag_stat[];
-extern const byte blows_table[12][12];
 extern const byte extract_energy[200];
 extern const s32b player_exp[PY_MAX_LEVEL];
 extern const player_sex sex_info[MAX_SEXES];
 extern const byte chest_traps[64];
-/*XYZ extern const char *color_names[BASIC_COLORS];*/
 extern const char *stat_names[A_MAX];
 extern const char *stat_names_reduced[A_MAX];
-extern const char *stat_names_full[A_MAX];
 extern const char *window_flag_desc[32];
 extern const char *inscrip_text[];
-extern const grouper object_text_order[];
 extern const byte char_tables[256][CHAR_TABLE_SLOTS];
-extern const xchar_type latin1_encode[];
 
 /* variable.c */
 extern const char *copyright;
@@ -98,8 +72,6 @@ extern char angband_term_name[ANGBAND_TERM_MAX][16];
 extern byte angband_color_table[MAX_COLORS][4];
 extern color_type color_table[MAX_COLORS];
 extern const const char *angband_sound_name[MSG_MAX];
-extern int view_n;
-extern u16b *view_g;
 extern int temp_n;
 extern u16b *temp_g;
 extern byte *temp_y;
@@ -212,10 +184,6 @@ extern bool make_attack_spell(int m_idx);
 
 /* pathfind.c */
 extern bool findpath(int y, int x);
-extern byte get_angle_to_grid[41][41];
-extern int get_angle_to_target(int y0, int x0, int y1, int x1, int dir);
-extern void get_grid_using_angle(int angle, int y0, int x0,
-	int *ty, int *tx);
 extern void run_step(int dir);
 
 /* randart.c */
@@ -283,10 +251,7 @@ extern byte gamma_table[256];
 #endif /* SUPPORT_GAMMA */
 
 /* x-char.c */
-extern void xchar_trans_hook(char *s, int encoding);
 extern void xstr_trans(char *str, int encoding);
-extern void escape_latin1(char *dest, size_t max, const char *src);
-extern const char seven_bit_translation[128];
 extern char xchar_trans(byte c);
 
 /* xtra2.c */
@@ -297,8 +262,7 @@ void verify_panel(void);
 void center_panel(void);
 int motion_dir(int y1, int x1, int y2, int x2);
 int target_dir(struct keypress ch);
-bool get_rep_dir(int *dp);
-bool confuse_dir(int *dp);
+bool get_rep_dir(int *aim);
 
 /* xtra3.c */
 byte monster_health_attr(void);

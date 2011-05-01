@@ -21,6 +21,7 @@
 #include "keymap.h"
 #include "history.h"
 #include "object/tvalsval.h"
+#include "pathfind.h"
 #include "spells.h"
 #include "target.h"
 
@@ -326,6 +327,119 @@ int dir_transitions[10][10] =
 	/* 9-> */ { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+/*
+ * Request a "movement" direction (1,2,3,4,6,7,8,9) from the user.
+ *
+ * Return TRUE if a direction was chosen, otherwise return FALSE.
+ *
+ * This function should be used for all "repeatable" commands, such as
+ * run, walk, open, close, bash, disarm, spike, tunnel, etc, as well
+ * as all commands which must reference a grid adjacent to the player,
+ * and which may not reference the grid under the player.
+ *
+ * Directions "5" and "0" are illegal and will not be accepted.
+ *
+ * This function tracks and uses the "global direction", and uses
+ * that as the "desired direction", if it is set.
+ */
+bool get_rep_dir(int *dp)
+{
+	int dir = 0;
+
+	ui_event ke;
+
+	/* Initialize */
+	(*dp) = 0;
+
+	/* Get a direction */
+	while (!dir)
+	{
+		/* Paranoia XXX XXX XXX */
+		message_flush();
+
+		/* Get first keypress - the first test is to avoid displaying the
+		   prompt for direction if there's already a keypress queued up
+		   and waiting - this just avoids a flickering prompt if there is
+		   a "lazy" movement delay. */
+		inkey_scan = SCAN_INSTANT;
+		ke = inkey_ex();
+		inkey_scan = SCAN_OFF;
+
+		if (ke.type == EVT_NONE ||
+				(ke.type == EVT_KBRD && target_dir(ke.key) == 0))
+		{
+			prt("Direction or <click> (Escape to cancel)? ", 0, 0);
+			ke = inkey_ex();
+		}
+
+		/* Check mouse coordinates */
+		if (ke.type == EVT_MOUSE)
+		{
+			/*if (ke.button) */
+			{
+				int y = KEY_GRID_Y(ke);
+				int x = KEY_GRID_X(ke);
+				struct loc from = loc(p_ptr->px, p_ptr->py);
+				struct loc to = loc(x, y);
+
+				dir = pathfind_direction_to(from, to);
+			}
+		}
+
+		/* Get other keypresses until a direction is chosen. */
+		else if (ke.type == EVT_KBRD)
+		{
+			int keypresses_handled = 0;
+
+			while (ke.type == EVT_KBRD && ke.key.code != 0)
+			{
+				int this_dir;
+
+				if (ke.key.code == ESCAPE) 
+				{
+					/* Clear the prompt */
+					prt("", 0, 0);
+
+					return (FALSE);
+				}
+
+				/* XXX Ideally show and move the cursor here to indicate 
+				   the currently "Pending" direction. XXX */
+				this_dir = target_dir(ke.key);
+
+				if (this_dir)
+					dir = dir_transitions[dir][this_dir];
+
+				if (lazymove_delay == 0 || ++keypresses_handled > 1)
+					break;
+
+				inkey_scan = lazymove_delay; 
+				ke = inkey_ex();
+			}
+
+			/* 5 is equivalent to "escape" */
+			if (dir == 5)
+			{
+				/* Clear the prompt */
+				prt("", 0, 0);
+
+				return (FALSE);
+			}
+		}
+
+		/* Oops */
+		if (!dir) bell("Illegal repeatable direction!");
+	}
+
+	/* Clear the prompt */
+	prt("", 0, 0);
+
+	/* Save direction */
+	(*dp) = dir;
+
+	/* Success */
+	return (TRUE);
+}
 
 /*
  * Get an "aiming direction" (1,2,3,4,6,7,8,9 or 5) from the user.
@@ -455,170 +569,8 @@ bool get_aim_dir(int *dp)
 }
 
 
-/*
- * Request a "movement" direction (1,2,3,4,6,7,8,9) from the user.
- *
- * Return TRUE if a direction was chosen, otherwise return FALSE.
- *
- * This function should be used for all "repeatable" commands, such as
- * run, walk, open, close, bash, disarm, spike, tunnel, etc, as well
- * as all commands which must reference a grid adjacent to the player,
- * and which may not reference the grid under the player.
- *
- * Directions "5" and "0" are illegal and will not be accepted.
- *
- * This function tracks and uses the "global direction", and uses
- * that as the "desired direction", if it is set.
- */
-bool get_rep_dir(int *dp)
-{
-	int dir = 0;
-
-	ui_event ke;
-
-	/* Initialize */
-	(*dp) = 0;
-
-	/* Get a direction */
-	while (!dir)
-	{
-		/* Paranoia XXX XXX XXX */
-		message_flush();
-
-		/* Get first keypress - the first test is to avoid displaying the
-		   prompt for direction if there's already a keypress queued up
-		   and waiting - this just avoids a flickering prompt if there is
-		   a "lazy" movement delay. */
-		inkey_scan = SCAN_INSTANT;
-		ke = inkey_ex();
-		inkey_scan = SCAN_OFF;
-
-		if (ke.type == EVT_NONE ||
-				(ke.type == EVT_KBRD && target_dir(ke.key) == 0))
-		{
-			prt("Direction or <click> (Escape to cancel)? ", 0, 0);
-			ke = inkey_ex();
-		}
-
-		/* Check mouse coordinates */
-		if (ke.type == EVT_MOUSE)
-		{
-			/*if (ke.button) */
-			{
-				int y = KEY_GRID_Y(ke);
-				int x = KEY_GRID_X(ke);
-
-				/* Calculate approximate angle */
-				int angle = get_angle_to_target(p_ptr->py, p_ptr->px, y, x, 0);
-
-				/* Convert angle to direction */
-				if (angle < 15) dir = 6;
-				else if (angle < 33) dir = 9;
-				else if (angle < 59) dir = 8;
-				else if (angle < 78) dir = 7;
-				else if (angle < 104) dir = 4;
-				else if (angle < 123) dir = 1;
-				else if (angle < 149) dir = 2;
-				else if (angle < 168) dir = 3;
-				else dir = 6;
-			}
-		}
-
-		/* Get other keypresses until a direction is chosen. */
-		else if (ke.type == EVT_KBRD)
-		{
-			int keypresses_handled = 0;
-
-			while (ke.type == EVT_KBRD && ke.key.code != 0)
-			{
-				int this_dir;
-
-				if (ke.key.code == ESCAPE) 
-				{
-					/* Clear the prompt */
-					prt("", 0, 0);
-
-					return (FALSE);
-				}
-
-				/* XXX Ideally show and move the cursor here to indicate 
-				   the currently "Pending" direction. XXX */
-				this_dir = target_dir(ke.key);
-
-				if (this_dir)
-					dir = dir_transitions[dir][this_dir];
-
-				if (lazymove_delay == 0 || ++keypresses_handled > 1)
-					break;
-
-				inkey_scan = lazymove_delay; 
-				ke = inkey_ex();
-			}
-
-			/* 5 is equivalent to "escape" */
-			if (dir == 5)
-			{
-				/* Clear the prompt */
-				prt("", 0, 0);
-
-				return (FALSE);
-			}
-		}
-
-		/* Oops */
-		if (!dir) bell("Illegal repeatable direction!");
-	}
-
-	/* Clear the prompt */
-	prt("", 0, 0);
-
-	/* Save direction */
-	(*dp) = dir;
-
-	/* Success */
-	return (TRUE);
-}
 
 
-/*
- * Apply confusion, if needed, to a direction
- *
- * Display a message and return TRUE if direction changes.
- */
-bool confuse_dir(int *dp)
-{
-	int dir;
-
-	/* Default */
-	dir = (*dp);
-
-	/* Apply "confusion" */
-	if (p_ptr->timed[TMD_CONFUSED])
-	{
-		/* Apply confusion XXX XXX XXX */
-		if ((dir == 5) || (randint0(100) < 75))
-		{
-			/* Random direction */
-			dir = ddd[randint0(8)];
-		}
-	}
-
-	/* Notice confusion */
-	if ((*dp) != dir)
-	{
-		/* Warn the user */
-		msg("You are confused.");
-
-		/* Save direction */
-		(*dp) = dir;
-
-		/* Confused */
-		return (TRUE);
-	}
-
-	/* Not confused */
-	return (FALSE);
-}
 
 
 

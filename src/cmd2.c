@@ -732,7 +732,7 @@ void do_cmd_open(cmd_code code, cmd_arg args[])
 	p_ptr->energy_use = 100;
 
 	/* Apply confusion */
-	if (confuse_dir(&dir))
+	if (player_confuse_dir(p_ptr, &dir))
 	{
 		/* Get location */
 		y = p_ptr->py + ddy[dir];
@@ -869,7 +869,7 @@ void do_cmd_close(cmd_code code, cmd_arg args[])
 	p_ptr->energy_use = 100;
 
 	/* Apply confusion */
-	if (confuse_dir(&dir))
+	if (player_confuse_dir(p_ptr, &dir))
 	{
 		/* Get location */
 		y = p_ptr->py + ddy[dir];
@@ -1182,7 +1182,7 @@ void do_cmd_tunnel(cmd_code code, cmd_arg args[])
 	p_ptr->energy_use = 100;
 
 	/* Apply confusion */
-	if (confuse_dir(&dir))
+	if (player_confuse_dir(p_ptr, &dir))
 	{
 		/* Get location */
 		y = p_ptr->py + ddy[dir];
@@ -1359,7 +1359,7 @@ void do_cmd_disarm(cmd_code code, cmd_arg args[])
 	p_ptr->energy_use = 100;
 
 	/* Apply confusion */
-	if (confuse_dir(&dir))
+	if (player_confuse_dir(p_ptr, &dir))
 	{
 		/* Get location */
 		y = p_ptr->py + ddy[dir];
@@ -1550,7 +1550,7 @@ void do_cmd_bash(cmd_code code, cmd_arg args[])
 	p_ptr->energy_use = 100;
 
 	/* Apply confusion */
-	if (confuse_dir(&dir))
+	if (player_confuse_dir(p_ptr, &dir))
 	{
 		/* Get location */
 		y = p_ptr->py + ddy[dir];
@@ -1615,7 +1615,7 @@ void do_cmd_alter_aux(int dir)
 	p_ptr->energy_use = 100;
 
 	/* Apply confusion */
-	if (confuse_dir(&dir))
+	if (player_confuse_dir(p_ptr, &dir))
 	{
 		/* Get location */
 		y = p_ptr->py + ddy[dir];
@@ -1777,7 +1777,7 @@ void do_cmd_spike(cmd_code code, cmd_arg args[])
 	p_ptr->energy_use = 100;
 
 	/* Confuse direction */
-	if (confuse_dir(&dir))
+	if (player_confuse_dir(p_ptr, &dir))
 	{
 		/* Get location */
 		y = p_ptr->py + ddy[dir];
@@ -1893,7 +1893,7 @@ void do_cmd_walk(cmd_code code, cmd_arg args[])
 	int dir = args[0].direction;
 
 	/* Apply confusion if necessary */
-	confuse_dir(&dir);
+	player_confuse_dir(p_ptr, &dir);
 
 	/* Confused movements use energy no matter what */
 	if (dir != args[0].direction)	
@@ -1920,7 +1920,7 @@ void do_cmd_jump(cmd_code code, cmd_arg args[])
 	int dir = args[0].direction;
 
 	/* Apply confusion if necessary */
-	confuse_dir(&dir);
+	player_confuse_dir(p_ptr, &dir);
 
 	/* Verify walkability */
 	y = p_ptr->py + ddy[dir];

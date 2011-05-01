@@ -103,9 +103,19 @@ typedef enum cmd_context
 	CMD_DEATH
 } cmd_context;
 
-#define DIR_UNKNOWN 0
-#define DIR_TARGET 5
-
+enum {
+	DIR_UNKNOWN = 0,
+	DIR_NW = 1,
+	DIR_N = 2,
+	DIR_NE = 3,
+	DIR_W = 4,
+	DIR_TARGET = 5,
+	DIR_NONE = 5,
+	DIR_E = 6,
+	DIR_SW = 7,
+	DIR_S = 8,
+	DIR_SE = 9,
+};
 
 typedef union 
 {

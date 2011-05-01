@@ -402,13 +402,6 @@ const const char *angband_sound_name[MSG_MAX] =
 	"multiply"
 };
 
-
-/*
- * Array[VIEW_MAX] used by "update_view()"
- */
-int view_n = 0;
-u16b *view_g;
-
 /*
  * Arrays[TEMP_MAX] used for various things
  *

@@ -30,6 +30,41 @@
 /* Flag value for missing array entry */
 #define MISSING -17
 
+static const grouper object_text_order[] =
+{
+	{TV_RING,			"Ring"			},
+	{TV_AMULET,			"Amulet"		},
+	{TV_POTION,			"Potion"		},
+	{TV_SCROLL,			"Scroll"		},
+	{TV_WAND,			"Wand"			},
+	{TV_STAFF,			"Staff"			},
+	{TV_ROD,			"Rod"			},
+	{TV_FOOD,			"Food"			},
+	{TV_PRAYER_BOOK,	"Priest Book"	},
+	{TV_MAGIC_BOOK,		"Magic Book"	},
+	{TV_LIGHT,			"Light"			},
+	{TV_FLASK,			"Flask"			},
+	{TV_SWORD,			"Sword"			},
+	{TV_POLEARM,		"Polearm"		},
+	{TV_HAFTED,			"Hafted Weapon" },
+	{TV_BOW,			"Bow"			},
+	{TV_ARROW,			"Ammunition"	},
+	{TV_BOLT,			NULL			},
+	{TV_SHOT,			NULL			},
+	{TV_SHIELD,			"Shield"		},
+	{TV_CROWN,			"Crown"			},
+	{TV_HELM,			"Helm"			},
+	{TV_GLOVES,			"Gloves"		},
+	{TV_BOOTS,			"Boots"			},
+	{TV_CLOAK,			"Cloak"			},
+	{TV_DRAG_ARMOR,		"Dragon Scale Mail" },
+	{TV_HARD_ARMOR,		"Hard Armor"	},
+	{TV_SOFT_ARMOR,		"Soft Armor"	},
+	{TV_SPIKE,			"Spike"			},
+	{TV_DIGGING,		"Digger"		},
+	{TV_JUNK,			"Junk"			},
+	{0,					NULL			}
+};
 
 typedef struct
 {
