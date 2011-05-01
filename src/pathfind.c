@@ -195,33 +195,41 @@ int pathfind_direction_to(struct loc from, struct loc to)
 		return DIR_NONE;
 
 	if (dx >= 0 && dy >= 0)
+	{
 		if (adx < ady * 2 && ady < adx * 2)
 			return DIR_NE;
 		else if (adx > ady)
 			return DIR_E;
 		else
 			return DIR_N;
+	}
 	else if (dx > 0 && dy < 0)
+	{
 		if (adx < ady * 2 && ady < adx * 2)
 			return DIR_SE;
 		else if (adx > ady)
 			return DIR_E;
 		else
 			return DIR_S;
+	}
 	else if (dx < 0 && dy > 0)
+	{
 		if (adx < ady * 2 && ady < adx * 2)
 			return DIR_NW;
 		else if (adx > ady)
 			return DIR_W;
 		else
 			return DIR_N;
+	}
 	else if (dx <= 0 && dy <= 0)
+	{
 		if (adx < ady * 2 && ady < adx * 2)
 			return DIR_SW;
 		else if (adx > ady)
 			return DIR_W;
 		else
 			return DIR_S;
+	}
 
 	assert(0);
 	return DIR_UNKNOWN;
