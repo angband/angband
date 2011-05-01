@@ -32,7 +32,7 @@
  *
  * Note: It should handle all regular Angband monsters.
  */
-void plural_aux(char *name, size_t max)
+static void plural_aux(char *name, size_t max)
 {
 	int name_len = strlen(name);
 

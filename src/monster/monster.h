@@ -363,7 +363,6 @@ monster_base *lookup_monster_base(const char *name);
 bool match_monster_bases(monster_base *base, ...);
 
 /* monster2.c */
-extern void plural_aux(char *name, size_t max);
 extern void delete_monster_idx(int i);
 extern void delete_monster(int y, int x);
 extern void compact_monsters(int size);
