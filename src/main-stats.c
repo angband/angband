@@ -135,7 +135,7 @@ static void flag2hex(const bitflag flags[], char *out_str)
 	out_str[2*OF_SIZE] = 0;
 
 	for (i = 0; i < OF_SIZE; i++)
-		strnfmt(out_str + 2 * i, 2, "%02x", flags[i]);
+		strnfmt(out_str + 2 * i, 2 * OF_SIZE - 2 * i + 1, "%02x", flags[i]);
 }
 
 /* 
