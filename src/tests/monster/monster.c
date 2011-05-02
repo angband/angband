@@ -21,6 +21,7 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
+/* Regression test for #1409 */
 int test_match_monster_bases(void *state) {
 	struct monster_base *base;
 
