@@ -175,10 +175,11 @@ F:SEE_INVIS | FREE_ACT | REGEN | LIGHT | RES_FEAR |
 F:INSTA_ART
 L:3:STR | CON
 L:5:INFRA 
-D:The Nauglam['i]r, a carcanet of gold set with a multitude of shining gems of 
-D:Valinor. The radiant Silmaril of F["e]anor hangs in its midst as its crowning
-D:glory. The sturdy spirits of Dwarvish craftsmen who labored long in mountain 
-D:smithies lie within it still, and as gossamer it rests upon the bearer.
+D:The Nauglam['i]r, a carcanet of gold set with a multitude of shining
+D:gems of Valinor.  The radiant Silmaril of F["e]anor hangs in its midst 
+D:as its crowning glory.  The sturdy spirits of Dwarvish craftsmen who 
+D:labored long in mountain smithies lie within it still, and as gossamer 
+D:it rests upon the bearer.
 
 
 # New Artifact (7): The Palantir of Westernesse
@@ -386,7 +387,7 @@ F:RES_LIGHT | RES_DARK | RES_BLIND | RES_CONFU | RES_SOUND |
 F:RES_SHARD | RES_NETHR | RES_NEXUS | RES_CHAOS | RES_DISEN | 
 E:RAGE_BLESS_RESIST:50
 M:{name} glow{s} many colors...
-D:An adamant suit with scales of every color. Untrammelled powers elemental 
+D:An adamant suit with scales of every color.  Untrammelled powers elemental 
 D:and ethereal swirl around it in an inextricably intermingled nimbus. 
 
 
@@ -400,7 +401,7 @@ F:RES_NEXUS |
 F:FREE_ACT | SLOW_DIGEST | REGEN | 
 E:STAR_BALL:50
 M:Lightning surrounds your {kind}!
-D:A great suit of dragon hide, set with scales of many hues. Even the 
+D:A great suit of dragon hide, set with scales of many hues.  Even the 
 D:mightiest wyrms of Law and Chaos fear the judgement of its wearer.
 
 
@@ -541,7 +542,7 @@ F:HIDE_TYPE |
 F:RES_ACID | RES_SHARD | FREE_ACT
 L:3:DEX | SPEED
 D:An amazingly light tunic and skirt sewn with thick, overlapping scales of 
-D:hardened leather. Those who wear it move with agility and assurance.
+D:hardened leather.  Those who wear it move with agility and assurance.
 
 
 ### Shields ###
