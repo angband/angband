@@ -1756,8 +1756,8 @@ F:KILL_DRAGON | BRAND_ELEC | IM_ELEC
 F:SHOW_MODS
 E:HASTE1:100+d100
 M:{name} glows bright green...
-D:A great ridged mace that surrounds you with a nimbus of living lightning; 
-D:you remain utterly untouched, even as fat sparks crackle around your 
+D:A great ridged mace that surrounds you with a nimbus of living lightning. 
+D:You remain utterly untouched, even as fat sparks crackle around your 
 D:fingers and eyebrows.
 
 
@@ -1773,7 +1773,7 @@ F:FREE_ACT | RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_NEXUS |
 F:SEE_INVIS | SHOW_MODS
 L:4:WIS | TUNNEL
 D:The wondrous hammer of Aul["e], creator of the wise Dwarven lords of old.  
-D:It bears magics of demolishing that no serpent or demon can withstand, and 
+D:It bears demolishing magics that no serpent or demon can withstand, and 
 D:invokes the strength of mountains to ward off the tumult of the elements.
 
 
@@ -1785,8 +1785,8 @@ P:0:1d9:10:20:0
 F:HIDE_TYPE | 
 F:SLAY_ANIMAL | BRAND_FIRE | RES_FIRE | RES_POIS | SHOW_MODS
 L:4:INT
-D:Named for a fiery star and set with gems of great worth binding mystic 
-D:virtues of protection and thought.
+D:Named for a fiery star and set with priceless gems bearing mystic 
+D:auras of protection and thought.
 
 
 N:119:'Eriril'
@@ -1833,8 +1833,8 @@ F:SHOW_MODS
 L:6:STR | TUNNEL
 D:A weapon so massive it seems beyond the strength of mortals, yet you feel 
 D:the might of giants within you as you heft it.  As you grip the handle 
-D:of ebony and steel, coronas of fire blaze and mighty spells to preserve 
-D:magic activate around you.  You wield the Fear of Dragons and the Despair 
+D:of ebony and steel, coronas of fire blaze, and mighty spells to preserve 
+D:magic surge around you.  You wield the Fear of Dragons and the Despair 
 D:of the Undead!
 
 
@@ -1849,9 +1849,9 @@ F:SHOW_MODS
 E:DRAIN_LIFE1:40
 M:{name} glows white...
 L:4:WIS | INFRA
-D:Wielded by the High Priest of Meneltarma, this great mace gleams coldly as 
-D:though moonlit, and it can strike as mighty a blow spiritually as 
-D:physically.
+D:Once wielded by the High Priest of Meneltarma, this great mace gleams coldly
+D:as though moonlit, and can strike equally mighty spiritual and physical
+D:blows.
 
 
 N:123:of Gothmog
@@ -1882,8 +1882,9 @@ P:0:0d0:20:22:0
 F:HIDE_TYPE | 
 F:RES_DISEN | SHOW_MODS
 L:1:DEX | SPEED | STEALTH | SHOTS
-D:The great bow of Beleg C['u]thalion, made of black yew and strung with elven 
-D:hair that faintly shimmers a pale clear gold.
+D:The great bow of Beleg C['u]thalion, the most famous archer of the Elves.
+D:Its backbone of black yew holds strings of bear sinew, and of old, only
+D:Beleg himself could draw them.
 
 
 N:125:of Bard
@@ -1921,8 +1922,8 @@ F:HIDE_TYPE | SHOW_MODS
 E:ARROW:20+d20
 M:Your {kind} form{s} a magical arrow...
 L:3:STR | CON | MIGHT
-D:A great brazen arbalest with arms of gleaming steel shooting quarrels with 
-D:mighty power for those brave enough to risk betrayal.
+D:A great brazen arbalest with arms of gleaming steel.  It shoots quarrels 
+D:with mighty power for those brave enough to risk betrayal.
 
 
 N:128:of Amrod
@@ -1932,9 +1933,8 @@ A:10:25 to 100
 P:0:0d0:12:15:0
 F:RES_FIRE | RES_ELEC | RES_COLD | REGEN
 L:2:STR | CON | MIGHT
-D:A hunting bow, once wielded by one of F["e]anor's last two twin 
-D:sons, like and yet unlike as they were, in their abode among 
-D:the Green-elves of Ossiriand.
+D:One of a pair of hunting bows once belonging to F["e]anor's two youngest
+D:sons.  The bows are like and yet unlike, much as the twin brothers were.
 
 
 N:129:of Amras
@@ -1944,9 +1944,8 @@ A:10:25 to 80
 P:0:0d0:12:15:0
 F:RES_FIRE | RES_ELEC | RES_COLD | SLOW_DIGEST
 L:1:INT | WIS | DEX | SHOTS | MIGHT | SPEED
-D:A hunting bow, once wielded by one of F["e]anor's last two twin 
-D:sons, like and yet unlike as they were, in their abode among 
-D:the Green-elves of Ossiriand.
+D:One of a pair of hunting bows once belonging to F["e]anor's two youngest
+D:sons.  The bows are like and yet unlike, much as the twin brothers were.
 
 
 ### Digging Tools ###
@@ -1994,7 +1993,7 @@ E:DISPEL_EVIL:100+d100
 M:The {kind} flood{s} the area with goodness...
 L:4:STR | WIS | SPEED
 D:The weapon of a mighty dwarven priest, whose shade is rumoured to 
-D:still haunt the halls of Angband itself.
+D:haunt the halls of Angband still.
 
 
 N:133:of Azagh[^a]l
@@ -2004,9 +2003,9 @@ A:3:18 to 100
 P:0:2d5:12:14:0
 F:KILL_DRAGON | IM_FIRE | RES_ACID | RES_FEAR | 
 D:Azagh[^a]l, Dwarf-king of Belegost, fell before Glaurung in the Battle 
-D:of Unnumbered Tears, but with his final stroke he dealt Glaurung 
-D:such a blow that the Father of Dragons fled the field with all his 
-D:kin, and was at first believed to be mortally wounded.
+D:of Unnumbered Tears.  With his final breath, Azagh[^a]l plunged this 
+D:blade into Glaurung's belly with such a blow that the Father of Dragons fled
+D:the field with all his kin, and was at first believed to be mortally wounded.
 
 
 N:134:of the Haradrim
@@ -2032,6 +2031,6 @@ P:0:4d4:12:16:0
 F:SLAY_EVIL | KILL_UNDEAD | SLAY_GIANT | SLAY_ANIMAL | 
 F:RES_NETHR | RES_FEAR | RES_DARK | RES_COLD
 L:4:STR | CHR | STEALTH | SPEED
-D:The blade of the legendary Shieldmaiden of Rohan, who struck a 
-D:mighty blow against the Morgul-lord whom no mortal Man could hinder, 
-D:and also slew his foul steed.
+D:The blade of the legendary Shieldmaiden of Rohan, who slew the foul
+D:steed of the Morgul-lord before striking down the mighty Witch-king 
+D:himself, whom no mortal man could hinder.
