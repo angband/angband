@@ -1555,7 +1555,7 @@ E:LOSKILL:1000
 M:Your {kind} let{s} out a long, shrill note...
 L:2:STR | INT | WIS | DEX | CON | CHR
 D:The axe of E["o]nw["e], leader of the Hosts of the West in the War of 
-D:Warth, strikes with icy wrath at the undead, disperses hosts of 
+D:Wrath, strikes with icy wrath at the undead, disperses hosts of 
 D:evil at a word, and grants Maia-like powers of body and mind.
 
 
