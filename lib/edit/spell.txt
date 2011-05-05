@@ -204,7 +204,7 @@ D:  Uniques are not affected.
 
 N:32:Teleport Other
 I:90:3:1
-D:Produces a beam that teleports each monster in its path
+D:Produces a bolt that teleports the first monster in its path
 D: up to 100 squares away.
 
 N:33:Teleport Level
@@ -657,7 +657,7 @@ D:Teleports you randomly within the current level.
 
 N:118:Teleport Other
 I:91:4:2
-D:Produces a beam that teleports each monster in its path
+D:Produces a bolt that teleports the first monster in its path
 D: up to 100 squares away.
 
 N:119:Teleport Level
