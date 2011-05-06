@@ -2439,23 +2439,6 @@ static bool default_gen(struct cave *c, struct player *p) {
 	for (; i > 0; i--)
 		alloc_monster(c, loc(p->px, p->py), 0, TRUE, c->depth);
 
-	/* Ensure quest monsters */
-	if (is_quest(c->depth)) {
-		for (i = 1; i < z_info->r_max; i++) {
-			monster_race *r_ptr = &r_info[i];
-			int y, x;
-			
-			/* The monster must be an unseen quest monster of this depth. */
-			if (r_ptr->cur_num > 0) continue;
-			if (!rf_has(r_ptr->flags, RF_QUESTOR)) continue;
-			if (r_ptr->level != c->depth) continue;
-
-			/* Pick a location and place the monster */
-			find_empty(c, &y, c->height, &x, c->width);
-			place_monster_aux(c, y, x, i, TRUE, TRUE, ORIGIN_DROP);
-		}
-	}
-
 	/* Put some objects in rooms */
 	alloc_objects(c, SET_ROOM, TYP_OBJECT, Rand_normal(DUN_AMT_ROOM, 3),
 		c->depth, ORIGIN_FLOOR);
@@ -3383,6 +3366,24 @@ void cave_generate(struct cave *c, struct player *p) {
 
 				ok = dun->profile->builder(c, p);
 				if (ok) break;
+			}
+		}
+
+		/* Ensure quest monsters */
+		if (is_quest(c->depth)) {
+			int i;
+			for (i = 1; i < z_info->r_max; i++) {
+				monster_race *r_ptr = &r_info[i];
+				int y, x;
+				
+				/* The monster must be an unseen quest monster of this depth. */
+				if (r_ptr->cur_num > 0) continue;
+				if (!rf_has(r_ptr->flags, RF_QUESTOR)) continue;
+				if (r_ptr->level != c->depth) continue;
+	
+				/* Pick a location and place the monster */
+				find_empty(c, &y, c->height, &x, c->width);
+				place_monster_aux(c, y, x, i, TRUE, TRUE, ORIGIN_DROP);
 			}
 		}
 
