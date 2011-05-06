@@ -321,17 +321,6 @@ static int rd_item_2(object_type *o_ptr)
 			o_ptr->to_d = randcalc(o_ptr->kind->to_d, o_ptr->origin_depth, RANDOMISE);
 		if (!randcalc_valid(o_ptr->kind->to_a, o_ptr->to_a))
 			o_ptr->to_a = randcalc(o_ptr->kind->to_a, o_ptr->origin_depth, RANDOMISE);
-
-		/* Get the correct fields */
-		o_ptr->ac = o_ptr->kind->ac;
-		o_ptr->dd = o_ptr->kind->dd;
-		o_ptr->ds = o_ptr->kind->ds;
-
-		/* Get the correct weight */
-		o_ptr->weight = o_ptr->kind->weight;
-
-		/* All done */
-		return (0);
 	}
 
 	/* Get the standard fields and flags*/
@@ -341,8 +330,8 @@ static int rd_item_2(object_type *o_ptr)
 	o_ptr->weight = o_ptr->kind->weight;
 	of_union(o_ptr->flags, o_ptr->kind->base->flags);
 	of_union(o_ptr->flags, o_ptr->kind->flags);
-    for (i = 0; i < o_ptr->kind->num_pvals; i++)
-        of_union(o_ptr->pval_flags[i], o_ptr->kind->pval_flags[i]);
+	for (i = 0; i < o_ptr->kind->num_pvals; i++)
+		of_union(o_ptr->pval_flags[i], o_ptr->kind->pval_flags[i]);
 
 	/* Artifacts */
 	if (o_ptr->artifact)
