@@ -2787,7 +2787,7 @@ bool fire_swarm(int num, int typ, int dir, int dam, int rad)
 
 	s16b ty, tx;
 
-	int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+	int flg = PROJECT_THRU | PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
 	/* Use the given direction */
 	ty = py + 99 * ddy[dir];

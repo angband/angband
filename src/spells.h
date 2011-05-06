@@ -52,6 +52,7 @@ enum
 };
 
 
+/* TODO: these descriptions are somewhat wrong/misleading */
 /*
  * Bit flags for the "project()" function
  *
