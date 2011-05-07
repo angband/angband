@@ -10,7 +10,6 @@
 PF(NONE,             "")
 PF(EXTRA_SHOT,       "receive extra shots with tension bows at levels 20 and 40")
 PF(BRAVERY_30,       "become immune to fear at level 30")
-PF(BLESS_WEAPON,     "may only wield blessed or hafted weapons")
 PF(CUMBER_GLOVE,     "have difficulty using magic with covered hands")
 PF(ZERO_FAIL,        "may obtain a perfect success rate with magic")
 PF(BEAM,             "frequently turn bolt spells into beams")

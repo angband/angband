@@ -2051,26 +2051,6 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		state->skills[SKILL_DIGGING] += (o_ptr->weight / 10);
 	}
 
-
-	/* Assume okay */
-	state->icky_wield = FALSE;
-
-	/* Priest weapon penalty for non-blessed edged weapons */
-	if (player_has(PF_BLESS_WEAPON) && !check_state(OF_BLESSED, p_ptr->state.flags) &&
-	    ((o_ptr->tval == TV_SWORD) || (o_ptr->tval == TV_POLEARM)))
-	{
-		/* Reduce the real bonuses */
-		state->to_h -= 2;
-		state->to_d -= 2;
-
-		/* Reduce the mental bonuses */
-		state->dis_to_h -= 2;
-		state->dis_to_d -= 2;
-
-		/* Icky weapon */
-		state->icky_wield = TRUE;
-	}
-
 	return;
 }
 
@@ -2192,18 +2172,6 @@ static void update_bonuses(void)
 			msg("You have no trouble wielding your weapon.");
 		else
 			msg("You feel relieved to put down your heavy weapon.");	
-	}
-
-	/* Take note when "illegal weapon" changes */
-	if (old.icky_wield != state->icky_wield)
-	{
-		/* Message */
-		if (state->icky_wield)
-			msg("You do not feel comfortable with your weapon.");
-		else if (p_ptr->inventory[INVEN_WIELD].kind)
-			msg("You feel comfortable with your weapon.");
-		else
-			msg("You feel more comfortable after removing your weapon.");
 	}
 }
 

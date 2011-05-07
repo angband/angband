@@ -244,7 +244,6 @@ static const char *get_pflag_desc(bitflag flag)
 	{
 		case PF_EXTRA_SHOT: return "Gains extra shots with bow";
 		case PF_BRAVERY_30: return "Gains immunity to fear";
-		case PF_BLESS_WEAPON: return "Prefers blunt/blessed weapons";
 		case PF_CUMBER_GLOVE: return NULL;
 		case PF_ZERO_FAIL: return "Advanced spellcasting";
 		case PF_BEAM: return NULL;
