@@ -226,7 +226,6 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 	struct parser_spec *s;
 	struct parser_value *v;
 	char *sp = NULL;
-	char *iline;
 
 	assert(p);
 	assert(line);
@@ -245,7 +244,6 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 		return PARSE_ERROR_NONE;
 
 	cline = string_make(line);
-	iline = cline;
 
 	tok = strtok(cline, ":");
 	if (!tok) {

@@ -1549,8 +1549,6 @@ static void process_some_user_pref_files(void)
  */
 void play_game(void)
 {
-	bool existing_dead_save = FALSE;
-
 	/* Initialize */
 	bool new_game = init_angband();
 
@@ -1582,17 +1580,11 @@ void play_game(void)
 		if (!savefile_load(savefile))
 			quit("broken savefile");
 
-		if (p_ptr->is_dead) {
-			if (arg_wizard) {
+		if (p_ptr->is_dead && arg_wizard) {
 				p_ptr->is_dead = FALSE;
 				p_ptr->chp = p_ptr->mhp;
 				p_ptr->noscore |= NOSCORE_WIZARD;
-			} else {
-				existing_dead_save = TRUE;
-			}
 		}
-	} else {
-		existing_dead_save = TRUE;
 	}
 
 	/* No living character loaded */
@@ -1658,7 +1650,6 @@ void play_game(void)
 			do_randart(seed_randart, TRUE);
 	}
 
-
 	/* Normal machine (process player name) */
 	if (savefile[0])
 		process_player_name(FALSE);
@@ -1667,21 +1658,8 @@ void play_game(void)
 	else
 		process_player_name(TRUE);
 
-#if 0        
-	/* Check if we're overwriting a savefile */
-	while (new_game && !existing_dead_save)
-	{
-		bool overwrite = get_check("Continuing will overwrite an existing savefile.  Overwrite? ");
-
-		if (overwrite) break;
-		get_name(TRUE);
-	}
-#endif
-
 	/* Stop the player being quite so dead */
 	p_ptr->is_dead = FALSE;
-
-
 
 	/* Flash a message */
 	prt("Please wait...", 0, 0);

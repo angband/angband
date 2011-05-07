@@ -1761,7 +1761,7 @@ static errr CheckEvent(bool wait)
 	term_data *td = NULL;
 	infowin *iwin = NULL;
 
-	int i, x, y;
+	int i;
 	int window = 0;
 
 	/* Do not wait unless requested */
@@ -1839,27 +1839,8 @@ static errr CheckEvent(bool wait)
 			break;
 		}
 
-#if 0
-		case MotionNotify:
-		{
-			/* Where is the mouse */
-			int x = xev->xmotion.x;
-			int y = xev->xmotion.y;
-			unsigned int z = xev->xmotion.state;
-
-			/* Convert to co-ordinates Angband understands. */
-			pixel_to_square(&x, &y, x, y);
-			
-			break;
-		}
-#endif
-
 		case KeyPress:
 		{
-			/* Save the mouse location */
-			x = xev->xkey.x;
-			y = xev->xkey.y;
-
 			/* Hack -- use "old" term */
 			Term_activate(&old_td->t);
 

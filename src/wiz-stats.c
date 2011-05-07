@@ -471,7 +471,6 @@ void drop_on_square(object_type *j_ptr, int y, int x, bool verbose)
 {
 	//int i, k, n, d, s;
 
-	int bs, bn;
 	int by, bx;
 	//int dy, dx;
 	//int ty, tx;
@@ -484,12 +483,6 @@ void drop_on_square(object_type *j_ptr, int y, int x, bool verbose)
 
 	bool plural = FALSE;
 	
-	/* Score */
-	bs = -1;
-
-	/* Picker */
-	bn = 0;
-
 	/* Default */
 	by = y;
 	bx = x;

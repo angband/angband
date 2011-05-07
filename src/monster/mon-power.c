@@ -111,12 +111,9 @@ static long eval_blow_effect(int effect, int atk_dam, int rlev)
 
 static long eval_max_dam(monster_race *r_ptr)
 {
-	int hp, rlev, i;
+	int rlev, i;
 	int melee_dam = 0, atk_dam = 0, spell_dam = 0;
 	int dam = 1;
-
-	/* Evaluate average HP for this monster */
-	hp = r_ptr->avg_hp;
 
 	/* Extract the monster level, force 1 for town monsters */
 	rlev = ((r_ptr->level >= 1) ? r_ptr->level : 1);

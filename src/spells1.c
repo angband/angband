@@ -1695,8 +1695,6 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 	monster_race *r_ptr;
 	monster_lore *l_ptr;
 
-	const char *name;
-
 	/* Is the monster "seen"? */
 	bool seen = FALSE;
 
@@ -1758,7 +1756,6 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 	m_ptr = cave_monster(cave, m_idx);
 	r_ptr = &r_info[m_ptr->r_idx];
 	l_ptr = &l_list[m_ptr->r_idx];
-	name = r_ptr->name;
 	if (m_ptr->ml) seen = TRUE;
 
 

@@ -433,7 +433,7 @@ bool savefile_save(const char *path)
 static bool try_load(ang_file *f)
 {
 	byte savefile_head[SAVEFILE_HEAD_SIZE];
-	u32b block_version, block_size, block_checksum;
+	u32b block_version, block_size;
 	char *block_name;
 
 	while (TRUE)
@@ -460,7 +460,6 @@ static bool try_load(ang_file *f)
 		block_name = (char *) savefile_head;
 		block_version = RECONSTRUCT_U32B(16);
 		block_size = RECONSTRUCT_U32B(20);
-		block_checksum = RECONSTRUCT_U32B(24);
 
 		/* pad to 4 bytes */
 		if (block_size % 4)

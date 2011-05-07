@@ -627,7 +627,6 @@ ui_event menu_select(menu_type *menu, int notify)
 	/* Stop on first unhandled event */
 	while (!(in.type & notify))
 	{
-		bool ignore;
 		ui_event out = EVENT_EMPTY;
 
 		menu_refresh(menu);
@@ -635,14 +634,14 @@ ui_event menu_select(menu_type *menu, int notify)
 
 		/* Handle mouse & keyboard commands */
 		if (in.type == EVT_MOUSE) {
-			ignore = menu_handle_mouse(menu, &in, &out);
+			menu_handle_mouse(menu, &in, &out);
 		} else if (in.type == EVT_KBRD) {
 			if (!no_act && menu->cmd_keys &&
 					strchr(menu->cmd_keys, (char)in.key.code) &&
 					menu_handle_action(menu, &in))
 				continue;
 
-			ignore = menu_handle_keypress(menu, &in, &out);
+			menu_handle_keypress(menu, &in, &out);
 		} else if (in.type == EVT_RESIZE) {
 			menu_calc_size(menu);
 			if (menu->row_funcs->resize)

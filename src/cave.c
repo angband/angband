@@ -745,13 +745,12 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 void map_info(unsigned y, unsigned x, grid_data *g)
 {
 	object_type *o_ptr;
-	byte info, info2;
+	byte info;
 
 	assert(x < DUNGEON_WID);
 	assert(y < DUNGEON_HGT);
 
 	info = cave->info[y][x];
-	info2 = cave->info2[y][x];
 	
 	/* Default "clear" values, others will be set later where appropriate. */
 	g->first_kind = NULL;

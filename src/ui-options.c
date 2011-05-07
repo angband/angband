@@ -1084,12 +1084,10 @@ static bool quality_action(menu_type *m, const ui_event *event, int oid)
 	menu_iter menu_f = { NULL, NULL, quality_subdisplay, NULL, NULL };
 	region area = { 27, 2, 29, SQUELCH_MAX };
 	ui_event evt;
-	int cursor;
 	int count;
 
 	/* Display at the right point */
 	area.row += oid;
-	cursor = squelch_level[oid];
 
 	/* Save */
 	screen_save();

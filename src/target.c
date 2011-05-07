@@ -610,8 +610,6 @@ static struct keypress target_set_interactive_aux(int y, int x, int mode)
 
 	bool boring;
 
-	bool floored;
-
 	int feat;
 
 	int floor_list[MAX_FLOOR_STACK];
@@ -827,10 +825,7 @@ static struct keypress target_set_interactive_aux(int y, int x, int mode)
 			}
 		}
 
-
 		/* Assume not floored */
-		floored = FALSE;
-
 		floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), y, x, 0x02);
 
 		/* Scan all marked objects in the grid */
@@ -846,8 +841,6 @@ static struct keypress target_set_interactive_aux(int y, int x, int mode)
 			/* If there is more than one item... */
 			if (floor_num > 1) while (1)
 			{
-				floored = TRUE;
-
 				/* Describe the pile */
 				if (p_ptr->wizard)
 				{

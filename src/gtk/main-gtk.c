@@ -1583,14 +1583,11 @@ gboolean toggle_term_window(GtkWidget *widget, GdkEvent *event, gpointer user_da
 	term_data *td;
 
 	int t;
-	bool window_is_visible;
 	const char *s;
 
 	s = gtk_widget_get_name(widget);
 	sscanf(s, "term_menu_item_%d", &t);
 	td = &data[t];
-
-	window_is_visible = (GTK_WIDGET_VISIBLE(GTK_WIDGET(td->win)));
 
 	if (widget != NULL)
 		td->visible = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget));
@@ -1840,7 +1837,6 @@ static void init_gtk_windows(void)
 
 	char buf[1024], logo[1024], temp[20];
 	int i = 0;
-	bool err;
 	
 	/* Build the paths */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA, GTK_XML); 
@@ -1855,7 +1851,7 @@ static void init_gtk_windows(void)
 	}
 			
 	path_build(logo, sizeof(logo), ANGBAND_DIR_XTRA_ICON, "att-256.png");
-	err = gtk_window_set_default_icon_from_file(logo, NULL);
+	gtk_window_set_default_icon_from_file(logo, NULL);
 	
 	for (i = 0; i < num_term; i++)
 	{
@@ -1935,7 +1931,7 @@ static void init_gtk_windows(void)
 		strnfmt(temp, sizeof(temp), "term_font_%d", i);
 		temp_widget = get_widget(gtk_xml, temp);
 		gtk_widget_realize(temp_widget);
-		err = gtk_font_button_set_font_name(GTK_FONT_BUTTON(temp_widget), td->font.name);
+		gtk_font_button_set_font_name(GTK_FONT_BUTTON(temp_widget), td->font.name);
 		
 		strnfmt(temp, sizeof(temp), "row_%d", i);
 		temp_widget = get_widget(gtk_xml, temp);
@@ -2275,7 +2271,6 @@ static int last_inv_slot(void)
 static void inv_slot(char *str, size_t len, int i, bool equip)
 {
 	object_type *o_ptr;
-	register int n;
 	char o_name[80], label[5];
 	int name_size = 80;
 	
@@ -2289,8 +2284,6 @@ static void inv_slot(char *str, size_t len, int i, bool equip)
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 			
 		/* Obtain the length of the description */
-		n = strlen(o_name);
-
 		strnfmt(label, sizeof(label), "%c) ", index_to_label(i));
 		
 		if (equip)
@@ -2383,8 +2376,7 @@ static void handle_mons_list(game_event_type type, game_event_data *data, void *
 {
 	xtra_win_data *xd = &xdata[3];
 	int i;
-	int line = 1, x = 0;
-	int cur_x;
+	int line = 1;
 	unsigned total_count = 0, disp_count = 0;
 
 	byte attr;
@@ -2442,9 +2434,6 @@ static void handle_mons_list(game_event_type type, game_event_data *data, void *
 
 		/* No monsters of this race are visible */
 		if (!race_count[i]) continue;
-
-		/* Reset position */
-		cur_x = x;
 
 		/* Note that these have been displayed */
 		disp_count += race_count[i];
