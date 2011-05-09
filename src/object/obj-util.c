@@ -897,14 +897,11 @@ void delete_object(int y, int x)
 {
 	s16b this_o_idx, next_o_idx = 0;
 
-
 	/* Paranoia */
 	if (!in_bounds(y, x)) return;
 
-
 	/* Scan all objects in the grid */
-	for (this_o_idx = cave->o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
-	{
+	for (this_o_idx = cave->o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx) {
 		object_type *o_ptr;
 
 		/* Get the object */
@@ -1168,8 +1165,10 @@ void wipe_o_list(struct cave *c)
 
 		/* Preserve artifacts or mark them as lost in the history */
 		if (o_ptr->artifact) {
-			/* Preserve if dungeon creation failed, or preserve mode, and only artifacts not seen */
-			if ((!character_dungeon || !OPT(birth_no_preserve)) && !object_was_sensed(o_ptr))
+			/* Preserve if dungeon creation failed, or preserve mode, or items
+			 * carried by monsters, and only artifacts not seen */
+			if ((!character_dungeon || !OPT(birth_no_preserve) ||
+					o_ptr->held_m_idx) && !object_was_sensed(o_ptr))
 				o_ptr->artifact->created = FALSE;
 			else
 				history_lose_artifact(o_ptr->artifact);

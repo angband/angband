@@ -195,16 +195,13 @@ void delete_monster_idx(int i)
 	int x, y;
 
 	monster_type *m_ptr = cave_monster(cave, i);
-
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	s16b this_o_idx, next_o_idx = 0;
 
-
 	/* Get location */
 	y = m_ptr->fy;
 	x = m_ptr->fx;
-
 
 	/* Hack -- Reduce the racial counter */
 	r_ptr->cur_num--;
@@ -212,17 +209,14 @@ void delete_monster_idx(int i)
 	/* Hack -- count the number of "reproducers" */
 	if (rf_has(r_ptr->flags, RF_MULTIPLY)) num_repro--;
 
-
 	/* Hack -- remove target monster */
 	if (target_get_monster() == i) target_set_monster(0);
 
 	/* Hack -- remove tracked monster */
 	if (p_ptr->health_who == i) health_track(p_ptr, 0);
 
-
 	/* Monster is gone */
 	cave->m_idx[y][x] = 0;
-
 
 	/* Delete objects */
 	for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx)
@@ -235,7 +229,13 @@ void delete_monster_idx(int i)
 		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
 
-		/* Hack -- efficiency */
+		/* Preserve unseen artifacts (we assume they were created as this
+		 * monster's drop) - this will cause unintended behaviour in preserve
+		 * off mode if monsters can pick up artifacts */
+		if (o_ptr->artifact && !object_was_sensed(o_ptr))
+			o_ptr->artifact->created = FALSE;
+
+		/* Clear held_m_idx now to avoid wasting time in delete_object_idx */
 		o_ptr->held_m_idx = 0;
 
 		/* Delete the object */
@@ -3482,7 +3482,11 @@ void monster_death(int m_idx)
 		else if ((i_ptr->tval != TV_GOLD) && ((i_ptr->origin == ORIGIN_DROP)
 				|| (i_ptr->origin == ORIGIN_DROP_PIT)
 				|| (i_ptr->origin == ORIGIN_DROP_VAULT)
-				|| (i_ptr->origin == ORIGIN_DROP_SUMMON)))
+				|| (i_ptr->origin == ORIGIN_DROP_SUMMON)
+				|| (i_ptr->origin == ORIGIN_DROP_SPECIAL)
+				|| (i_ptr->origin == ORIGIN_DROP_BREED)
+				|| (i_ptr->origin == ORIGIN_DROP_POLY)
+				|| (i_ptr->origin == ORIGIN_DROP_WIZARD)))
 			dump_item++;
 
 		/* Change origin if monster is invisible */
