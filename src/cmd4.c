@@ -405,28 +405,37 @@ void do_cmd_messages(void)
 
 /*** Non-knowledge/option stuff ***/
 
-/*
- * Note something in the message recall
+/**
+ * Record the player's thoughts as a note.
+ *
+ * This both displays the note back to the player and adds it to the game log.
+ * Two fancy note types are supported: notes beginning with "/say" will be
+ * written as 'Frodo says: "____"', and notes beginning with "/me" will
+ * be written as 'Frodo ____'.
  */
-void do_cmd_note(void)
-{
-	char tmp[80];
-	char note[120];
-
-	/* Default */
+void do_cmd_note(void) {
+	/* Allocate/Initialize strings to get and format user input. */
+	char tmp[200];
+	char note[220];
 	my_strcpy(tmp, "", sizeof(tmp));
+	my_strcpy(note, "", sizeof(note));
 
-	/* Input */
-	if (!get_string("Note: ", tmp, 80)) return;
+	/* Read a line of input from the user */
+	if (!get_string("Note: ", tmp, sizeof(tmp))) return;
 
 	/* Ignore empty notes */
 	if (!tmp[0] || (tmp[0] == ' ')) return;
 
-	/* Include a Note: prompt to the note */
-	strnfmt(note, sizeof note, "--%s", tmp); 
-	
-	/* Add the note to the message recall */
-	msg("Note: %s", tmp);
+	/* Format the note correctly, supporting some cute /me commands */
+	if (strncmp(tmp, "/say ", 5) == 0)
+		snprintf(note, sizeof(note), "-- %s says: \"%s\"", op_ptr->full_name, &tmp[5]);
+	else if (strncmp(tmp, "/me", 3) == 0)
+		snprintf(note, sizeof(note), "-- %s%s", op_ptr->full_name, &tmp[3]);
+	else
+		snprintf(note, sizeof(note), "-- Note: %s", tmp);
+
+	/* Display the note (omitting the "-- " prefix) */
+	msg(&note[3]);
 
 	/* Add a history entry */
 	history_add(note, HISTORY_USER_INPUT, 0);
