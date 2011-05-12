@@ -2,7 +2,7 @@
  * File: mon-spell.c
  * Purpose: functions to deal with spell attacks and effects
  *
- * Copyright (c) 2010 Chris Carr
+ * Copyright (c) 2010-11 Chris Carr
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -168,12 +168,12 @@ static void swap_stats(void)
  * \param dam is the amount of damage caused by the attack
  * \param m_idx is the attacking monster
  */
-static void do_side_effects(int spell, int dam, int m_idx)
+static void do_side_effects(int spell, int dam, int m_idx, int rlev)
 {
 	const struct spell_effect *re_ptr;
 	const struct mon_spell *rs_ptr = &mon_spell_table[spell];
 	monster_type *m_ptr = cave_monster(cave, m_idx);
-	int i, choice[99], dur = 0, j = 0;
+	int i, choice[99], dur = 0, j = 0, count = 0;
 	bool sustain = FALSE, perma = FALSE, chosen[RSE_MAX] = { 0 };
 	s32b d = 0;
 
@@ -215,6 +215,11 @@ static void do_side_effects(int spell, int dam, int m_idx)
 				msg("You resist the effect!");
 				if (re_ptr->res_flag)
 					wieldeds_notice_flag(re_ptr->res_flag);
+/*
+Need an accessor function in ?obj-flag.c? to convert p->state[flag] to DRS_FLAG,
+and need update_smart_learn(m_idx, flag) in here, for re_ptr->res_flag AND for 
+check_side_immune
+*/
 				continue;
 			}
 
@@ -265,6 +270,11 @@ static void do_side_effects(int spell, int dam, int m_idx)
 						teleport_player_level();
 						break;
 
+					case S_TELE_SELF:
+						teleport_away(m_idx, randcalc(re_ptr->base, 0,
+							RANDOMISE));
+						break;
+
 					case S_DRAIN_LIFE:
 						d = re_ptr->base.base + (p_ptr->exp *
 							re_ptr->base.sides / 100) * MON_DRAIN_LIFE;
@@ -301,14 +311,38 @@ static void do_side_effects(int spell, int dam, int m_idx)
 
 					case S_DRAIN_MANA:
 					case S_HEAL:
-					case S_BLINK:
 					case S_DARKEN:
+						(void)unlight_area(0, 3);
+						break;
+
 					case S_TRAPS:
+						(void)trap_creation();
+						break;
+
 					case S_AGGRAVATE:
+						aggravate_monsters(m_idx);
+						break;
+
 					case S_KIN:
-					case S_MONSTER:
-					case S_MONSTERS:
-						/* XXX Fixme */
+					case S_MONSTER:	case S_MONSTERS:
+					case S_SPIDER: case S_HOUND: case S_HYDRA: case S_ANGEL:
+					case S_ANIMAL:
+					case S_DEMON: case S_HI_DEMON:
+					case S_UNDEAD: case S_HI_UNDEAD: case S_WRAITH:
+					case S_DRAGON: case S_HI_DRAGON:
+					case S_UNIQUE:
+						for (i = 0; i < re_ptr->base.base; i++)
+							count += summon_specific(m_ptr->fy, m_ptr->fx,
+								rlev, re_ptr->flag, 0);
+
+						for (i = 0; i < re_ptr->dam.base; i++)
+							count += summon_specific(m_ptr->fy, m_ptr->fx,
+								rlev, S_HI_UNDEAD, 0);
+
+						if (count && p_ptr->timed[TMD_BLIND])
+							msgt(rs_ptr->msgt, "You hear %s appear nearby.",
+								(count > 1 ? "many things" : "something"));
+
 					default:
 						break;
 				}		
@@ -379,8 +413,8 @@ void do_mon_spell(int spell, int m_idx, bool seen)
 	else if (!hits) {
 		msg("%^s %s %s, but misses.", m_name, rs_ptr->verb,	rs_ptr->desc);
 		return;
-	} else if (rs_ptr->type & RST_BREATH)
-		msgt(rs_ptr->msgt, "%^s breathes %s.", m_name, rs_ptr->desc);
+	} else if (rs_ptr->msgt)
+		msgt(rs_ptr->msgt, "%^s %s %s.", m_name, rs_ptr->verb, rs_ptr->desc);
 	else 
 		msg("%^s %s %s.", m_name, rs_ptr->verb, rs_ptr->desc);
 
@@ -412,7 +446,7 @@ void do_mon_spell(int spell, int m_idx, bool seen)
 	else /* Note that non-projectable attacks are unresistable */
 		take_hit(dam, ddesc);
 
-	do_side_effects(spell, dam, m_idx);
+	do_side_effects(spell, dam, m_idx, rlev);
 
 	return;
 }

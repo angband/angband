@@ -43,6 +43,7 @@ enum spell_effect_flag {
     S_TELEPORT,
     S_TELE_TO,
     S_TELE_LEV,
+	S_TELE_SELF,
     S_DRAIN_LIFE,
     S_DRAIN_STAT,
     S_SWAP_STAT,
