@@ -368,6 +368,13 @@ static void death_spoilers(const char *title, int row)
 	do_cmd_spoilers();
 }
 
+/* Menu command: toggle birth_keep_randarts option. */
+static void death_randarts(const char *title, int row)
+{
+	OPT(birth_keep_randarts) = get_check("Keep randarts for next game? ");
+}
+
+
 /*
  * Menu structures for the death menu. Note that Quit must always be the
  * last option, due to a hard-coded check in death_screen
@@ -382,6 +389,7 @@ static menu_action death_actions[] =
 	{ 0, 'x', "Examine items", death_examine   },
 	{ 0, 'h', "History",       death_history   },
 	{ 0, 's', "Spoilers",      death_spoilers  },
+	{ 0, 'r', "Keep randarts", death_randarts  },
 	{ 0, 'q', "Quit",          NULL            },
 };
 
@@ -407,13 +415,6 @@ void death_screen(void)
 		display_winner();
 	}
 
-	/* Save dead player */
-	if (!savefile_save(savefile))
-	{
-		msg("death save failed!");
-		message_flush();
-	}
-
 	/* Get time of death */
 	(void)time(&death_time);
 	print_tomb();
@@ -424,8 +425,7 @@ void death_screen(void)
 	flush();
 	message_flush();
 
-
-
+	/* Display and use the death menu */
 	if (!death_menu)
 	{
 		death_menu = menu_new_action(death_actions,
@@ -447,5 +447,12 @@ void death_screen(void)
 		{
 			done = get_check("Do you want to quit? ");
 		}
+	}
+
+	/* Save dead player */
+	if (!savefile_save(savefile))
+	{
+		msg("death save failed!");
+		message_flush();
 	}
 }
