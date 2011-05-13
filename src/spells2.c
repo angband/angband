@@ -3169,6 +3169,7 @@ void brand_object(object_type *o_ptr, int brand_type)
 		}
 
 		o_ptr->ego = &e_info[i];
+		ego_apply_magic(o_ptr, 0);
 		object_notice_ego(o_ptr);
 
 		/* Combine / Reorder the pack (later) */
