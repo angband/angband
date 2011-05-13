@@ -1,11 +1,18 @@
 #ifndef INCLUDED_OPTIONS_H
 #define INCLUDED_OPTIONS_H
 
+/*** Functions ***/
 
+/** Given an option index, return its name */
 const char *option_name(int opt);
+
+/** Given an option index, return its description */
 const char *option_desc(int opt);
 
+/** Set an an option, return TRUE if successful */
 bool option_set(const char *opt, bool on);
+
+/** Reset options to defaults */
 void option_set_defaults(void);
 
 
