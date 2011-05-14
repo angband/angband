@@ -814,7 +814,8 @@ void wr_objects(void)
 
 void wr_monsters(void)
 {
-	int i, j;
+	int i;
+	size_t j;
 
 	if (p_ptr->is_dead)
 		return;
@@ -842,6 +843,10 @@ void wr_monsters(void)
 
 		if (m_ptr->unaware) unaware |= 0x01;
 		wr_byte(unaware);
+
+		for (j = 0; j < OF_BYTES && j < OF_SIZE; j++)
+			wr_byte(m_ptr->known_pflags[j]);
+		if (j < OF_BYTES) pad_bytes(OF_BYTES - j);
 
 		wr_byte(0);
 	}

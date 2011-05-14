@@ -94,7 +94,7 @@ static const struct {
 	{ "stores", wr_stores, 3 },
 	{ "dungeon", wr_dungeon, 1 },
 	{ "objects", wr_objects, 3 },
-	{ "monsters", wr_monsters, 4 },
+	{ "monsters", wr_monsters, 5 },
 	{ "ghost", wr_ghost, 1 },
 	{ "history", wr_history, 1 },
 };
@@ -135,6 +135,7 @@ static const struct {
 	{ "monsters", rd_monsters_2, 2 },
 	{ "monsters", rd_monsters_3, 3 },
 	{ "monsters", rd_monsters_4, 4 },
+	{ "monsters", rd_monsters_5, 5 },
 	{ "ghost", rd_ghost, 1 },
 	{ "history", rd_history, 1 },
 };

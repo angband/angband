@@ -158,7 +158,8 @@ typedef struct monster_base
 
 	monster_pain *pain;		/* Pain messages */
 } monster_base;
- 
+
+/* Information about specified monster drops */ 
 struct monster_drop {
 	struct monster_drop *next;
 	struct object_kind *kind;
@@ -294,7 +295,7 @@ typedef struct monster
 	s16b hp;			/* Current Hit points */
 	s16b maxhp;			/* Max Hit points */
 
-	s16b m_timed[MON_TMD_MAX];
+	s16b m_timed[MON_TMD_MAX]; /* Timed monster status effects */
 
 	byte mspeed;		/* Monster "speed" */
 	byte energy;		/* Monster "energy" */
@@ -308,9 +309,11 @@ typedef struct monster
 
 	s16b hold_o_idx;	/* Object being held (if any) */
 
-	byte attr;  /* attr last used for drawing monster */
+	byte attr;  		/* attr last used for drawing monster */
 
 	u32b smart;			/* Field for "adult_ai_learn" */
+
+	bitflag known_pflags[OF_SIZE]; /* Known player flags */
 } monster_type;
 
 /* 
