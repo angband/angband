@@ -462,15 +462,15 @@ void object_notice_ego(object_type *o_ptr)
 		case OBJECT_XTRA_TYPE_NONE:
 			break;
 		case OBJECT_XTRA_TYPE_SUSTAIN:
-			set_ego_xtra_sustain(xtra_flags);
+			create_mask(xtra_flags, FALSE, OFT_SUST, OFT_MAX);
 			of_diff(learned_flags, xtra_flags);
 			break;
 		case OBJECT_XTRA_TYPE_RESIST:
-			set_ego_xtra_resist(xtra_flags);
+			create_mask(xtra_flags, FALSE, OFT_HRES, OFT_MAX);
 			of_diff(learned_flags, xtra_flags);
 			break;
 		case OBJECT_XTRA_TYPE_POWER:
-			set_ego_xtra_power(xtra_flags);
+			create_mask(xtra_flags, FALSE, OFT_MISC, OFT_PROT, OFT_MAX);
 			of_diff(learned_flags, xtra_flags);
 			break;
 		default:

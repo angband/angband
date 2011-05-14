@@ -42,90 +42,25 @@
 
 /*** Make an ego item ***/
 
-static const int ego_sustains[] =
-{
-	OF_SUST_STR,
-	OF_SUST_INT,
-	OF_SUST_WIS,
-	OF_SUST_DEX,
-	OF_SUST_CON,
-	OF_SUST_CHR,
-};
-
-void set_ego_xtra_sustain(bitflag flags[OF_SIZE])
-{
-	size_t i;
-
-	of_wipe(flags);
-
-	for (i = 0; i < N_ELEMENTS(ego_sustains); i++)
-		of_on(flags, ego_sustains[i]);
-}
-
-static const int ego_resists[] =
-{
-	OF_RES_POIS,
-	OF_RES_LIGHT,
-	OF_RES_DARK,
-	OF_RES_SOUND,
-	OF_RES_SHARD,
-	OF_RES_NEXUS,
-	OF_RES_NETHR,
-	OF_RES_CHAOS,
-	OF_RES_DISEN,
-};
-
-void set_ego_xtra_resist(bitflag flags[OF_SIZE])
-{
-	size_t i;
-
-	for (i = 0; i < N_ELEMENTS(ego_resists); i++)
-		of_on(flags, ego_resists[i]);
-}
-
-static const int ego_powers[] =
-{
-	OF_SLOW_DIGEST,
-	OF_FEATHER,
-	OF_LIGHT,
-	OF_REGEN,
-	OF_TELEPATHY,
-	OF_SEE_INVIS,
-	OF_FREE_ACT,
-	OF_HOLD_LIFE,
-	OF_RES_BLIND,
-	OF_RES_CONFU,
-	OF_RES_FEAR,
-};
-
-void set_ego_xtra_power(bitflag flags[OF_SIZE])
-{
-	size_t i;
-
-	for (i = 0; i < N_ELEMENTS(ego_powers); i++)
-		of_on(flags, ego_powers[i]);
-}
-
 /**
  * This is a safe way to choose a random new flag to add to an object.
- * It takes the existing flags, an array of new attrs, and the size of
- * the array, and returns an entry from attrs, or 0 if there are no
- * new attrs.
+ * It takes the existing flags and an array of new flags, 
+ * and returns an entry from newf, or 0 if there are no
+ * new flags available.
  */
-static int get_new_attr(bitflag flags[OF_SIZE], const int attrs[], size_t size)
+static int get_new_attr(bitflag flags[OF_SIZE], bitflag newf[OF_SIZE])
 {
 	size_t i;
-	int options = 0;
-	int flag = 0;
+	int options = 0, flag = 0;
 
-	for (i = 0; i < size; i++)
+	for (i = of_next(newf, FLAG_START); i != FLAG_END; i = of_next(newf, i + 1))
 	{
 		/* skip this one if the flag is already present */
-		if (of_has(flags, attrs[i])) continue;
+		if (of_has(flags, i)) continue;
 
 		/* each time we find a new possible option, we have a 1-in-N chance of
 		 * choosing it and an (N-1)-in-N chance of keeping a previous one */
-		if (one_in_(++options)) flag = attrs[i];
+		if (one_in_(++options)) flag = i;
 	}
 
 	return flag;
@@ -199,19 +134,19 @@ s16b ego_apply_magic(object_type *o_ptr, int level)
 {
 	int i, flag, x;
 
-	bitflag flags[OF_SIZE];
+	bitflag flags[OF_SIZE], newf[OF_SIZE];
 	object_flags(o_ptr, flags);
 
 	/* Extra powers */
 	if (o_ptr->ego->xtra == OBJECT_XTRA_TYPE_SUSTAIN)
-		of_on(o_ptr->flags,
-				get_new_attr(flags, ego_sustains, N_ELEMENTS(ego_sustains)));
+		create_mask(newf, FALSE, OFT_SUST, OFT_MAX);
 	else if (o_ptr->ego->xtra == OBJECT_XTRA_TYPE_RESIST)
-		of_on(o_ptr->flags,
-				get_new_attr(flags, ego_resists, N_ELEMENTS(ego_resists)));
+		create_mask(newf, FALSE, OFT_HRES, OFT_MAX);
 	else if (o_ptr->ego->xtra == OBJECT_XTRA_TYPE_POWER)
-		of_on(o_ptr->flags,
-				get_new_attr(flags, ego_powers, N_ELEMENTS(ego_powers)));
+		create_mask(newf, FALSE, OFT_PROT, OFT_MISC, OFT_MAX);
+
+	if (o_ptr->ego->xtra)
+		of_on(o_ptr->flags,	get_new_attr(flags, newf));
 
 	/* Apply extra o_ptr->ego bonuses */
 	o_ptr->to_h += randcalc(o_ptr->ego->to_h, level, RANDOMISE);

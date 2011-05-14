@@ -580,10 +580,6 @@ void object_prep(object_type *o_ptr, struct object_kind *kind, int lev, aspect r
 s16b apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great);
 bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good, bool great);
 void make_gold(object_type *j_ptr, int lev, int coin_type);
-
-void set_ego_xtra_sustain(bitflag flags[OF_SIZE]);
-void set_ego_xtra_resist(bitflag flags[OF_SIZE]);
-void set_ego_xtra_power(bitflag flags[OF_SIZE]);
 void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr);
 s16b ego_apply_magic(object_type *o_ptr, int level);
 void ego_min_pvals(object_type *o_ptr);
