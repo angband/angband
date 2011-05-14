@@ -496,7 +496,7 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 	}
 	else if (obj_desc_show_armor(o_ptr))
 	{
-		strnfcat(buf, max, &end, " [%d]", o_ptr->ac);
+		strnfcat(buf, max, &end, " [%d]", object_was_sensed(o_ptr) ? o_ptr->ac : o_ptr->kind->ac);
 	}
 
 	return end;
