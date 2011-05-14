@@ -1684,14 +1684,13 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 		o_ptr->pval[DEFAULT_PVAL] = total >= MAX_PVAL ? MAX_PVAL : total;
 	}
 
+	/* Combine origin data as best we can */
 	if (o_ptr->origin != j_ptr->origin ||
 			o_ptr->origin_depth != j_ptr->origin_depth ||
-			o_ptr->origin_xtra != j_ptr->origin_xtra)
-	{
+			o_ptr->origin_xtra != j_ptr->origin_xtra) {
 		int act = 2;
 
-		if (o_ptr->origin == ORIGIN_DROP && o_ptr->origin == j_ptr->origin)
-		{
+		if (o_ptr->origin_xtra && j_ptr->origin_xtra) {
 			monster_race *r_ptr = &r_info[o_ptr->origin_xtra];
 			monster_race *s_ptr = &r_info[j_ptr->origin_xtra];
 
