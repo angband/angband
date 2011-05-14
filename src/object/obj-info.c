@@ -1126,7 +1126,12 @@ bool describe_origin(textblock *tb, const object_type *o_ptr)
 		case ORIGIN_DROP_POLY:
 		case ORIGIN_DROP_WIZARD:
 		{
-			const char *name = r_info[o_ptr->origin_xtra].name;
+			const char *name;
+
+			if (r_info[o_ptr->origin_xtra].ridx)
+				name = r_info[o_ptr->origin_xtra].name;
+			else
+				name = "monster lost to history";
 
 			textblock_append(tb, "Dropped by ");
 
