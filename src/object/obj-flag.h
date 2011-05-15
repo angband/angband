@@ -93,7 +93,8 @@ enum object_flag_id {
 /* Can get rid of these now we have OFT_ flags */
 /* No - because "POWER" uses two types of OFTs, so cannot get rid of these
  * until ego_item.txt has an X: line with a variable number of OFTs - that's
- * basically waiting for a rewrite of ego generation */
+ * basically waiting for a rewrite of ego generation 
+ * -- or we could change OFTs to a bitflag */
 #define OBJECT_XTRA_TYPE_NONE     0
 #define OBJECT_XTRA_TYPE_SUSTAIN  1
 #define OBJECT_XTRA_TYPE_RESIST   2
@@ -139,5 +140,6 @@ s16b slot_mult(int flag, int slot);
 bool flag_uses_pval(int flag);
 int obj_flag_type(int flag);
 int pval_mult(int flag);
+bool check_state(int flag);
 
 #endif /* !INCLUDED_OBJFLAG_H */

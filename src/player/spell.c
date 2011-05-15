@@ -239,7 +239,7 @@ s16b spell_chance(int spell)
 	/* Fear makes spells harder (before minfail) */
 	/* Note that spells that remove fear have a much lower fail rate than
 	 * surrounding spells, to make sure this doesn't cause mega fail */
-	if (p_ptr->state.flags[OF_AFRAID]) chance += 20;
+	if (check_state(OF_AFRAID)) chance += 20;
 
 	/* Minimal and maximal failure rate */
 	if (chance < minfail) chance = minfail;

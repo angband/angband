@@ -167,7 +167,7 @@ bool py_attack_real(int y, int x, bool *fear) {
 	if (m_ptr->ml) health_track(p_ptr, cave->m_idx[y][x]);
 
 	/* Handle player fear (only for invisible monsters) */
-	if (p_ptr->state.flags[OF_AFRAID]) {
+	if (check_state(OF_AFRAID)) {
 		msgt(MSG_AFRAID, "You are too afraid to attack %s!", m_name);
 		return FALSE;
 	}
@@ -212,7 +212,7 @@ bool py_attack_real(int y, int x, bool *fear) {
 		/* Learn by use for the weapon */
 		object_notice_attack_plusses(o_ptr);
 
-		if (p_ptr->state.flags[OF_IMPACT] && dmg > 50) {
+		if (check_state(OF_IMPACT) && dmg > 50) {
 			do_quake = TRUE;
 			wieldeds_notice_flag(OF_IMPACT);
 		}

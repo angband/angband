@@ -72,7 +72,7 @@ OF(RES_ELEC,    FALSE,	TMD_OPP_ELEC,	OFID_NORMAL,OFT_LRES,	6,		0,	1,	1,	1,		1,	1
 OF(RES_FIRE,    FALSE,	TMD_OPP_FIRE,	OFID_NORMAL,OFT_LRES,	6,		0,	1,	1,	1,		1,	1,		1,		1,		1,		1,	1,		1,		"Your %s glows.")
 OF(RES_COLD,    FALSE,	TMD_OPP_COLD,	OFID_NORMAL,OFT_LRES,	6,		0,	1,	1,	1,		1,	1,		1,		1,		1,		1,	1,		1,		"Your %s glows.")
 OF(RES_POIS,    FALSE,	TMD_OPP_POIS,	OFID_NORMAL,OFT_HRES,	28,		0,	1,  1,  1,      1,  1,      1,      1,      1,      1,  1,      1,		"Your %s glows.")
-OF(RES_FEAR,    FALSE,	0,				OFID_NORMAL,OFT_PROT,	6,		0,	1,  1,  1,      1,  1,      1,      1,      1,      1,  1,      1,		"Your %s glows.")
+OF(RES_FEAR,    FALSE,	TMD_BOLD,		OFID_NORMAL,OFT_PROT,	6,		0,	1,  1,  1,      1,  1,      1,      1,      1,      1,  1,      1,		"Your %s glows.")
 OF(RES_LIGHT,   FALSE,	0,				OFID_NORMAL,OFT_HRES,	6,		0,	1,  1,  1,      1,  1,      1,      1,      1,      1,  1,      1,		"Your %s glows.")
 OF(RES_DARK,    FALSE,	0,				OFID_NORMAL,OFT_HRES,	16,		0,	1,  1,  1,      1,  1,      1,      1,      1,      1,  1,      1,		"Your %s glows.")
 OF(RES_BLIND,   FALSE,	0,				OFID_NORMAL,OFT_PROT,	16,		0,	1,  1,  1,      1,  1,      1,      1,      1,      1,  1,      1,		"Your %s glows.")

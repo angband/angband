@@ -101,22 +101,21 @@ bool cursed_p(bitflag *f)
 }
 
 /**
- * Determine whether a timed flag or its permanent equivalent are set.
+ * Determine whether an object flag or its timed equivalent are set in the
+ * player's state structure.
  *
- * \param flag is the TMD_ flag for which we are checking.
+ * \param flag is the object flag for which we are checking.
+ *
+ * TODO: make this function take a state struct (needs a forward definition
+ * of player_state in obj-flag.h)
  */
 bool check_state(int flag)
 {
-	const struct object_flag *of_ptr;
+	const struct object_flag *of_ptr = &object_flag_table[flag];
 
-	/* If the TMD_ flag is set, we return immediately */
-	if (p_ptr->timed[flag])
+	if (of_has(p_ptr->state.flags, flag) ||
+			(of_ptr->timed && p_ptr->timed[of_ptr->timed]))
 		return TRUE;
-
-	/* If not, we look for an OF_ equivalent and test for it */
-	for (of_ptr = object_flag_table; of_ptr->index < OF_MAX; of_ptr++)
-		if (of_ptr->timed == flag && p_ptr->state.flags[of_ptr->index])
-			return TRUE;
 
 	return FALSE;
 }

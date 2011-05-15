@@ -46,9 +46,7 @@
  * And non-INTELLIGENT monsters only use it partially effectively.
  *
  * Actually learn what the player resists, and use that information
- * to remove attacks or spells before using them.  This will require
- * much less space, if I am not mistaken.  Thus, each monster gets a
- * set of 32 bit flags, "smart", build from the various "SM_*" flags.
+ * to remove attacks or spells before using them. 
  *
  * This has the added advantage that attacks and spells are related.
  * The "smart_learn" option means that the monster "learns" the flags
@@ -58,23 +56,6 @@
  * Both of them have the same effect on the "choose spell" routine.
  */
 
-
-
-
-/*
- * Internal probability routine
- */
-static bool int_outof(const monster_race *r_ptr, int prob)
-{
-	/* Non-Smart monsters are half as "smart" */
-	if (!rf_has(r_ptr->flags, RF_SMART)) prob = prob / 2;
-
-	/* Roll the dice */
-	return (randint0(100) < prob);
-}
-
-
-
 /*
  * Remove the "bad" spells from a spell list
  */
@@ -83,252 +64,54 @@ static void remove_bad_spells(int m_idx, bitflag f[RSF_SIZE])
 	monster_type *m_ptr = cave_monster(cave, m_idx);
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
-	bitflag f2[RSF_SIZE];
-	
-	u32b smart = 0L;
+	bitflag f2[RSF_SIZE], ai_flags[OF_SIZE];
 
+	size_t i;	
+	u32b smart = 0L;
 
 	/* Stupid monsters act randomly */
 	if (rf_has(r_ptr->flags, RF_STUPID)) return;
 
-
 	/* Take working copy of spell flags */
 	rsf_copy(f2, f);
-
 
 	/* Don't heal if full */
 	if (m_ptr->hp >= m_ptr->maxhp) rsf_off(f2, RSF_HEAL);
 	
-	/* Don't haste if hasted */
-	/* if (m_ptr->mspeed > r_ptr->speed + 10) rsf_off(f2, RSF_HASTE); */
+	/* Don't haste if hasted with time remaining */
+	if (m_ptr->m_timed[MON_TMD_FAST] > 10) rsf_off(f2, RSF_HASTE);
 
 	/* Don't teleport to if the player is already next to us */
 	if (m_ptr->cdis == 1) rsf_off(f2, RSF_TELE_TO);
 
-
-
 	/* Update acquired knowledge */
+	of_wipe(ai_flags);
 	if (OPT(birth_ai_learn))
 	{
-		/* Hack -- Occasionally forget player status */
-		if (m_ptr->smart && one_in_(100))
-			m_ptr->smart = 0L;
+		/* Occasionally forget player status */
+		if (one_in_(100))
+			of_wipe(m_ptr->known_pflags);
 
 		/* Use the memorized flags */
 		smart = m_ptr->smart;
+		of_copy(ai_flags, m_ptr->known_pflags);
 	}
-
 
 	/* Cheat if requested */
-	if (OPT(birth_ai_cheat))
-	{
-		/* Know weirdness */
-		if (p_ptr->state.flags[OF_FREE_ACT]) smart |= (SM_IMM_FREE);
-		if (!p_ptr->msp) smart |= (SM_IMM_MANA);
-
-		/* Know immunities */
-		if (p_ptr->state.flags[OF_IM_ACID]) smart |= (SM_IMM_ACID);
-		if (p_ptr->state.flags[OF_IM_ELEC]) smart |= (SM_IMM_ELEC);
-		if (p_ptr->state.flags[OF_IM_FIRE]) smart |= (SM_IMM_FIRE);
-		if (p_ptr->state.flags[OF_IM_COLD]) smart |= (SM_IMM_COLD);
-
-		/* Know oppositions */
-		if (p_ptr->timed[TMD_OPP_ACID]) smart |= (SM_OPP_ACID);
-		if (p_ptr->timed[TMD_OPP_ELEC]) smart |= (SM_OPP_ELEC);
-		if (p_ptr->timed[TMD_OPP_FIRE]) smart |= (SM_OPP_FIRE);
-		if (p_ptr->timed[TMD_OPP_COLD]) smart |= (SM_OPP_COLD);
-		if (p_ptr->timed[TMD_OPP_POIS]) smart |= (SM_OPP_POIS);
-
-		/* Know resistances */
-		if (p_ptr->state.flags[OF_RES_ACID]) smart |= (SM_RES_ACID);
-		if (p_ptr->state.flags[OF_RES_ELEC]) smart |= (SM_RES_ELEC);
-		if (p_ptr->state.flags[OF_RES_FIRE]) smart |= (SM_RES_FIRE);
-		if (p_ptr->state.flags[OF_RES_COLD]) smart |= (SM_RES_COLD);
-		if (p_ptr->state.flags[OF_RES_POIS]) smart |= (SM_RES_POIS);
-		if (p_ptr->state.flags[OF_RES_FEAR]) smart |= (SM_RES_FEAR);
-		if (p_ptr->state.flags[OF_RES_LIGHT]) smart |= (SM_RES_LIGHT);
-		if (p_ptr->state.flags[OF_RES_DARK]) smart |= (SM_RES_DARK);
-		if (p_ptr->state.flags[OF_RES_BLIND]) smart |= (SM_RES_BLIND);
-		if (p_ptr->state.flags[OF_RES_CONFU]) smart |= (SM_RES_CONFU);
-		if (p_ptr->state.flags[OF_RES_SOUND]) smart |= (SM_RES_SOUND);
-		if (p_ptr->state.flags[OF_RES_SHARD]) smart |= (SM_RES_SHARD);
-		if (p_ptr->state.flags[OF_RES_NEXUS]) smart |= (SM_RES_NEXUS);
-		if (p_ptr->state.flags[OF_RES_NETHR]) smart |= (SM_RES_NETHR);
-		if (p_ptr->state.flags[OF_RES_CHAOS]) smart |= (SM_RES_CHAOS);
-		if (p_ptr->state.flags[OF_RES_DISEN]) smart |= (SM_RES_DISEN);
+	if (OPT(birth_ai_cheat)) {
+		for (i = 0; i < OF_MAX; i++)
+			if (check_state(i))
+				of_on(ai_flags, i);
+		if (!p_ptr->msp) smart |= SM_IMM_MANA;
 	}
-
 
 	/* Cancel out certain flags based on knowledge */
-	if (smart)
-	{
-		if (smart & SM_IMM_ACID)
-		{
-			if (int_outof(r_ptr, 100)) rsf_off(f2, RSF_BR_ACID);
-			if (int_outof(r_ptr, 100)) rsf_off(f2, RSF_BA_ACID);
-			if (int_outof(r_ptr, 100)) rsf_off(f2, RSF_BO_ACID);
-		}
-		else if ((smart & SM_OPP_ACID) && (smart & SM_RES_ACID))
-		{
-			if (int_outof(r_ptr, 80)) rsf_off(f2, RSF_BR_ACID);
-			if (int_outof(r_ptr, 80)) rsf_off(f2, RSF_BA_ACID);
-			if (int_outof(r_ptr, 80)) rsf_off(f2, RSF_BO_ACID);
-		}
-		else if ((smart & SM_OPP_ACID) || (smart & SM_RES_ACID))
-		{
-			if (int_outof(r_ptr, 30)) rsf_off(f2, RSF_BR_ACID);
-			if (int_outof(r_ptr, 30)) rsf_off(f2, RSF_BA_ACID);
-			if (int_outof(r_ptr, 30)) rsf_off(f2, RSF_BO_ACID);
-		}
+	if (!of_is_empty(ai_flags))
+		unset_spells(f2, ai_flags, r_ptr);
 
-
-		if (smart & SM_IMM_ELEC)
-		{
-			if (int_outof(r_ptr, 100)) rsf_off(f2, RSF_BR_ELEC);
-			if (int_outof(r_ptr, 100)) rsf_off(f2, RSF_BA_ELEC);
-			if (int_outof(r_ptr, 100)) rsf_off(f2, RSF_BO_ELEC);
-		}
-		else if ((smart & SM_OPP_ELEC) && (smart & SM_RES_ELEC))
-		{
-			if (int_outof(r_ptr, 80)) rsf_off(f2, RSF_BR_ELEC);
-			if (int_outof(r_ptr, 80)) rsf_off(f2, RSF_BA_ELEC);
-			if (int_outof(r_ptr, 80)) rsf_off(f2, RSF_BO_ELEC);
-		}
-		else if ((smart & SM_OPP_ELEC) || (smart & SM_RES_ELEC))
-		{
-			if (int_outof(r_ptr, 30)) rsf_off(f2, RSF_BR_ELEC);
-			if (int_outof(r_ptr, 30)) rsf_off(f2, RSF_BA_ELEC);
-			if (int_outof(r_ptr, 30)) rsf_off(f2, RSF_BO_ELEC);
-		}
-
-
-		if (smart & SM_IMM_FIRE)
-		{
-			if (int_outof(r_ptr, 100)) rsf_off(f2, RSF_BR_FIRE);
-			if (int_outof(r_ptr, 100)) rsf_off(f2, RSF_BA_FIRE);
-			if (int_outof(r_ptr, 100)) rsf_off(f2, RSF_BO_FIRE);
-		}
-		else if ((smart & SM_OPP_FIRE) && (smart & SM_RES_FIRE))
-		{
-			if (int_outof(r_ptr, 80)) rsf_off(f2, RSF_BR_FIRE);
-			if (int_outof(r_ptr, 80)) rsf_off(f2, RSF_BA_FIRE);
-			if (int_outof(r_ptr, 80)) rsf_off(f2, RSF_BO_FIRE);
-		}
-		else if ((smart & SM_OPP_FIRE) || (smart & SM_RES_FIRE))
-		{
-			if (int_outof(r_ptr, 30)) rsf_off(f2, RSF_BR_FIRE);
-			if (int_outof(r_ptr, 30)) rsf_off(f2, RSF_BA_FIRE);
-			if (int_outof(r_ptr, 30)) rsf_off(f2, RSF_BO_FIRE);
-		}
-
-
-		if (smart & SM_IMM_COLD)
-		{
-			if (int_outof(r_ptr, 100)) rsf_off(f2, RSF_BR_COLD);
-			if (int_outof(r_ptr, 100)) rsf_off(f2, RSF_BA_COLD);
-			if (int_outof(r_ptr, 100)) rsf_off(f2, RSF_BO_COLD);
-			if (int_outof(r_ptr, 100)) rsf_off(f2, RSF_BO_ICEE);
-		}
-		else if ((smart & SM_OPP_COLD) && (smart & SM_RES_COLD))
-		{
-			if (int_outof(r_ptr, 80)) rsf_off(f2, RSF_BR_COLD);
-			if (int_outof(r_ptr, 80)) rsf_off(f2, RSF_BA_COLD);
-			if (int_outof(r_ptr, 80)) rsf_off(f2, RSF_BO_COLD);
-			if (int_outof(r_ptr, 80)) rsf_off(f2, RSF_BO_ICEE);
-		}
-		else if ((smart & SM_OPP_COLD) || (smart & SM_RES_COLD))
-		{
-			if (int_outof(r_ptr, 30)) rsf_off(f2, RSF_BR_COLD);
-			if (int_outof(r_ptr, 30)) rsf_off(f2, RSF_BA_COLD);
-			if (int_outof(r_ptr, 30)) rsf_off(f2, RSF_BO_COLD);
-			if (int_outof(r_ptr, 30)) rsf_off(f2, RSF_BO_ICEE);
-		}
-
-
-		if ((smart & SM_OPP_POIS) && (smart & SM_RES_POIS))
-		{
-			if (int_outof(r_ptr, 80)) rsf_off(f2, RSF_BR_POIS);
-			if (int_outof(r_ptr, 80)) rsf_off(f2, RSF_BA_POIS);
-		}
-		else if ((smart & SM_OPP_POIS) || (smart & SM_RES_POIS))
-		{
-			if (int_outof(r_ptr, 30)) rsf_off(f2, RSF_BR_POIS);
-			if (int_outof(r_ptr, 30)) rsf_off(f2, RSF_BA_POIS);
-		}
-
-
-		if (smart & SM_RES_FEAR)
-		{
-			if (int_outof(r_ptr, 100)) rsf_off(f2, RSF_SCARE);
-		}
-
-		if (smart & SM_RES_LIGHT)
-		{
-			if (int_outof(r_ptr, 50)) rsf_off(f2, RSF_BR_LIGHT);
-		}
-
-		if (smart & SM_RES_DARK)
-		{
-			if (int_outof(r_ptr, 50)) rsf_off(f2, RSF_BR_DARK);
-			if (int_outof(r_ptr, 50)) rsf_off(f2, RSF_BA_DARK);
-		}
-
-		if (smart & SM_RES_BLIND)
-		{
-			if (int_outof(r_ptr, 100)) rsf_off(f2, RSF_BLIND);
-		}
-
-		if (smart & SM_RES_CONFU)
-		{
-			if (int_outof(r_ptr, 100)) rsf_off(f2, RSF_CONF);
-			if (int_outof(r_ptr, 50)) rsf_off(f2, RSF_BR_CONF);
-		}
-
-		if (smart & SM_RES_SOUND)
-		{
-			if (int_outof(r_ptr, 50)) rsf_off(f2, RSF_BR_SOUN);
-		}
-
-		if (smart & SM_RES_SHARD)
-		{
-			if (int_outof(r_ptr, 50)) rsf_off(f2, RSF_BR_SHAR);
-		}
-
-		if (smart & SM_RES_NEXUS)
-		{
-			if (int_outof(r_ptr, 50)) rsf_off(f2, RSF_BR_NEXU);
-			if (int_outof(r_ptr, 50)) rsf_off(f2, RSF_TELE_LEVEL);
-		}
-
-		if (smart & SM_RES_NETHR)
-		{
-			if (int_outof(r_ptr, 50)) rsf_off(f2, RSF_BR_NETH);
-			if (int_outof(r_ptr, 50)) rsf_off(f2, RSF_BA_NETH);
-			if (int_outof(r_ptr, 50)) rsf_off(f2, RSF_BO_NETH);
-		}
-
-		if (smart & SM_RES_CHAOS)
-		{
-			if (int_outof(r_ptr, 50)) rsf_off(f2, RSF_BR_CHAO);
-		}
-
-		if (smart & SM_RES_DISEN)
-		{
-			if (int_outof(r_ptr, 100)) rsf_off(f2, RSF_BR_DISE);
-		}
-
-
-		if (smart & SM_IMM_FREE)
-		{
-			if (int_outof(r_ptr, 100)) rsf_off(f2, RSF_HOLD);
-			if (int_outof(r_ptr, 100)) rsf_off(f2, RSF_SLOW);
-		}
-
-		if (smart & SM_IMM_MANA)
-		{
-			if (int_outof(r_ptr, 100)) rsf_off(f2, RSF_DRAIN_MANA);
-		}
-	}
+	if (smart & SM_IMM_MANA && randint0(100) <
+			50 * (rf_has(r_ptr->flags, RF_SMART) ? 2 : 1))
+		rsf_off(f2, RSF_DRAIN_MANA);
 
 	/* use working copy of spell flags */
 	rsf_copy(f, f2);
@@ -751,7 +534,8 @@ bool make_attack_spell(int m_idx)
 						msg("%^s appears healthier.", m_name);
 				}
 			}
-			update_smart_learn(m_idx, DRS_MANA);
+			if (!p_ptr->csp)
+				m_ptr->smart |= SM_IMM_MANA;
 			break;
 		}
 
@@ -1797,7 +1581,7 @@ static void process_monster(struct cave *c, int m_idx)
 		u32b notice;
 
 		/* Aggravation */
-		if (p_ptr->state.flags[OF_AGGRAVATE])
+		if (check_state(OF_AGGRAVATE))
 		{
 			/* Wake the monster */
 			mon_clear_timed(m_idx, MON_TMD_SLEEP, MON_TMD_FLG_NOTIFY);

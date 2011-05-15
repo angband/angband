@@ -471,9 +471,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Take "poison" effect */
-					if (!(p_ptr->state.flags[OF_RES_POIS] ||
-							p_ptr->timed[TMD_OPP_POIS]))
-					{
+					if (!check_state(OF_RES_POIS)) {
 						if (inc_timed(TMD_POISONED, randint1(rlev) + 5, TRUE))
 						{
 							obvious = TRUE;
@@ -481,7 +479,7 @@ bool make_attack_normal(int m_idx)
 					}
 
 					/* Learn about the player */
-					update_smart_learn(m_idx, DRS_RES_POIS);
+					monster_learn_resists(m_idx, GF_POIS);
 
 					break;
 				}
@@ -492,14 +490,14 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Allow complete resist */
-					if (!p_ptr->state.flags[OF_RES_DISEN])
+					if (!check_state(OF_RES_DISEN))
 					{
 						/* Apply disenchantment */
 						if (apply_disenchant(0)) obvious = TRUE;
 					}
 
 					/* Learn about the player */
-					update_smart_learn(m_idx, DRS_RES_DISEN);
+					monster_learn_resists(m_idx, GF_DISEN);
 
 					break;
 				}
@@ -813,14 +811,14 @@ bool make_attack_normal(int m_idx)
 
 					/* Special damage */
 					damage = adjust_dam(GF_ACID, damage, RANDOMISE, 
-						check_for_resist(GF_ACID));
+						check_for_resist(GF_ACID, p_ptr->state.flags, TRUE));
 					if (damage) {
 						take_hit(damage, ddesc);
 						inven_damage(GF_ACID, MIN(damage * 5, 300));
 					}
 
 					/* Learn about the player */
-					update_smart_learn(m_idx, DRS_RES_ACID);
+					monster_learn_resists(m_idx, GF_ACID);
 
 					break;
 				}
@@ -835,14 +833,14 @@ bool make_attack_normal(int m_idx)
 
 					/* Take damage (special) */
 					damage = adjust_dam(GF_ELEC, damage, RANDOMISE,
-						check_for_resist(GF_ELEC));
+						check_for_resist(GF_ELEC, p_ptr->state.flags, TRUE));
 					if (damage) {
 						take_hit(damage, ddesc);
 						inven_damage(GF_ELEC, MIN(damage * 5, 300));
 					}
 
 					/* Learn about the player */
-					update_smart_learn(m_idx, DRS_RES_ELEC);
+					monster_learn_resists(m_idx, GF_ELEC);
 
 					break;
 				}
@@ -857,14 +855,14 @@ bool make_attack_normal(int m_idx)
 
 					/* Take damage (special) */
 					damage = adjust_dam(GF_FIRE, damage, RANDOMISE,
-						check_for_resist(GF_FIRE));
+						check_for_resist(GF_FIRE, p_ptr->state.flags, TRUE));
 					if (damage) {
 						take_hit(damage, ddesc);
 						inven_damage(GF_FIRE, MIN(damage * 5, 300));
 					}
 
 					/* Learn about the player */
-					update_smart_learn(m_idx, DRS_RES_FIRE);
+					monster_learn_resists(m_idx, GF_FIRE);
 
 					break;
 				}
@@ -879,14 +877,14 @@ bool make_attack_normal(int m_idx)
 
 					/* Take damage (special) */
 					damage = adjust_dam(GF_COLD, damage, RANDOMISE,
-						check_for_resist(GF_COLD));
+						check_for_resist(GF_COLD, p_ptr->state.flags, TRUE));
 					if (damage) {
 						take_hit(damage, ddesc);
 						inven_damage(GF_COLD, MIN(damage * 5, 300));
 					}
 
 					/* Learn about the player */
-					update_smart_learn(m_idx, DRS_RES_COLD);
+					monster_learn_resists(m_idx, GF_COLD);
 
 					break;
 				}
@@ -897,8 +895,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Increase "blind" */
-					if (!p_ptr->state.flags[OF_RES_BLIND])
-					{
+					if (!check_state(OF_RES_BLIND))	{
 						if (inc_timed(TMD_BLIND, 10 + randint1(rlev), TRUE))
 						{
 							obvious = TRUE;
@@ -906,7 +903,7 @@ bool make_attack_normal(int m_idx)
 					}
 
 					/* Learn about the player */
-					update_smart_learn(m_idx, DRS_RES_BLIND);
+					update_smart_learn(m_idx, OF_RES_BLIND);
 
 					break;
 				}
@@ -917,7 +914,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Increase "confused" */
-					if (!p_ptr->state.flags[OF_RES_CONFU])
+					if (!check_state(OF_RES_CONFU))
 					{
 						if (inc_timed(TMD_CONFUSED, 3 + randint1(rlev), TRUE))
 						{
@@ -926,7 +923,7 @@ bool make_attack_normal(int m_idx)
 					}
 
 					/* Learn about the player */
-					update_smart_learn(m_idx, DRS_RES_CONFU);
+					update_smart_learn(m_idx, OF_RES_CONFU);
 
 					break;
 				}
@@ -937,7 +934,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Increase "afraid" */
-					if (p_ptr->state.flags[OF_RES_FEAR])
+					if (check_state(OF_RES_FEAR))
 					{
 						msg("You stand your ground!");
 						obvious = TRUE;
@@ -954,7 +951,7 @@ bool make_attack_normal(int m_idx)
 					}
 
 					/* Learn about the player */
-					update_smart_learn(m_idx, DRS_RES_FEAR);
+					update_smart_learn(m_idx, OF_RES_FEAR);
 
 					break;
 				}
@@ -968,7 +965,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Increase "paralyzed" */
-					if (p_ptr->state.flags[OF_FREE_ACT])
+					if (check_state(OF_FREE_ACT))
 					{
 						msg("You are unaffected!");
 						obvious = TRUE;
@@ -985,7 +982,7 @@ bool make_attack_normal(int m_idx)
 					}
 
 					/* Learn about the player */
-					update_smart_learn(m_idx, DRS_FREE);
+					update_smart_learn(m_idx, OF_FREE_ACT);
 
 					break;
 				}
@@ -1106,18 +1103,16 @@ bool make_attack_normal(int m_idx)
 
 					/* Take damage */
 					take_hit(damage, ddesc);
+					update_smart_learn(m_idx, OF_HOLD_LIFE);
 
-					/* XXX Eddie need a DRS for HOLD_LIFE */
-					wieldeds_notice_flag(OF_HOLD_LIFE);
-
-					if (p_ptr->state.flags[OF_HOLD_LIFE] && (randint0(100) < 95))
+					if (check_state(OF_HOLD_LIFE) && (randint0(100) < 95))
 					{
 						msg("You keep hold of your life force!");
 					}
 					else
 					{
 						s32b d = damroll(10, 6) + (p_ptr->exp/100) * MON_DRAIN_LIFE;
-						if (p_ptr->state.flags[OF_HOLD_LIFE])
+						if (check_state(OF_HOLD_LIFE))
 						{
 							msg("You feel your life slipping away!");
 							player_exp_lose(p_ptr, d / 10, FALSE);
@@ -1128,6 +1123,7 @@ bool make_attack_normal(int m_idx)
 							player_exp_lose(p_ptr, d, FALSE);
 						}
 					}
+
 					break;
 				}
 
@@ -1138,10 +1134,9 @@ bool make_attack_normal(int m_idx)
 
 					/* Take damage */
 					take_hit(damage, ddesc);
+					update_smart_learn(m_idx, OF_HOLD_LIFE);
 
-					wieldeds_notice_flag(OF_HOLD_LIFE);
-
-					if (p_ptr->state.flags[OF_HOLD_LIFE] && (randint0(100) < 90))
+					if (check_state(OF_HOLD_LIFE) && (randint0(100) < 90))
 					{
 						msg("You keep hold of your life force!");
 					}
@@ -1149,7 +1144,7 @@ bool make_attack_normal(int m_idx)
 					{
 						s32b d = damroll(20, 6) + (p_ptr->exp / 100) * MON_DRAIN_LIFE;
 
-						if (p_ptr->state.flags[OF_HOLD_LIFE])
+						if (check_state(OF_HOLD_LIFE))
 						{
 							msg("You feel your life slipping away!");
 							player_exp_lose(p_ptr, d / 10, FALSE);
@@ -1170,10 +1165,9 @@ bool make_attack_normal(int m_idx)
 
 					/* Take damage */
 					take_hit(damage, ddesc);
+					update_smart_learn(m_idx, OF_HOLD_LIFE);
 
-					wieldeds_notice_flag(OF_HOLD_LIFE);
-
-					if (p_ptr->state.flags[OF_HOLD_LIFE] && (randint0(100) < 75))
+					if (check_state(OF_HOLD_LIFE) && (randint0(100) < 75))
 					{
 						msg("You keep hold of your life force!");
 					}
@@ -1181,7 +1175,7 @@ bool make_attack_normal(int m_idx)
 					{
 						s32b d = damroll(40, 6) + (p_ptr->exp / 100) * MON_DRAIN_LIFE;
 
-						if (p_ptr->state.flags[OF_HOLD_LIFE])
+						if (check_state(OF_HOLD_LIFE))
 						{
 							msg("You feel your life slipping away!");
 							player_exp_lose(p_ptr, d / 10, FALSE);
@@ -1202,10 +1196,9 @@ bool make_attack_normal(int m_idx)
 
 					/* Take damage */
 					take_hit(damage, ddesc);
+					update_smart_learn(m_idx, OF_HOLD_LIFE);
 
-					wieldeds_notice_flag(OF_HOLD_LIFE);
-
-					if (p_ptr->state.flags[OF_HOLD_LIFE] && (randint0(100) < 50))
+					if (check_state(OF_HOLD_LIFE) && (randint0(100) < 50))
 					{
 						msg("You keep hold of your life force!");
 					}
@@ -1213,7 +1206,7 @@ bool make_attack_normal(int m_idx)
 					{
 						s32b d = damroll(80, 6) + (p_ptr->exp / 100) * MON_DRAIN_LIFE;
 
-						if (p_ptr->state.flags[OF_HOLD_LIFE])
+						if (check_state(OF_HOLD_LIFE))
 						{
 							msg("You feel your life slipping away!");
 							player_exp_lose(p_ptr, d / 10, FALSE);
@@ -1233,7 +1226,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Increase "image" */
-					if (!p_ptr->state.flags[OF_RES_CHAOS])
+					if (!check_state(OF_RES_CHAOS))
 					{
 						if (inc_timed(TMD_IMAGE, 3 + randint1(rlev / 2), TRUE))
 						{
@@ -1242,7 +1235,7 @@ bool make_attack_normal(int m_idx)
 					}
 
 					/* Learn about the player */
-					update_smart_learn(m_idx, DRS_RES_CHAOS);
+					monster_learn_resists(m_idx, GF_CHAOS);
 
 					break;
 				}
@@ -1252,8 +1245,7 @@ bool make_attack_normal(int m_idx)
 			/* Hack -- only one of cut or stun */
 			if (do_cut && do_stun)
 			{
-				/* Cancel cut */
-				if (randint0(100) < 50)
+				/* Cancel cut */				if (randint0(100) < 50)
 				{
 					do_cut = 0;
 				}

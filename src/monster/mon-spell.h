@@ -152,5 +152,6 @@ void do_mon_spell(int spell, int m_idx, bool seen);
 bool test_spells(bitflag *f, enum mon_spell_type type);
 void set_spells(bitflag *f, enum mon_spell_type type);
 int best_spell_power(const monster_race *r_ptr, int resist);
+void unset_spells(bitflag *spells, bitflag *flags, const monster_race *r_ptr);
 
 #endif /* MONSTER_SPELL_H */

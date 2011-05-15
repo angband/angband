@@ -32,8 +32,8 @@
  */
 const struct gf_type gf_table[] =
 {
-        #define GF(a, b, c, d, e, f, g, h, i, j, k, l, m, n) \
-			{ GF_##a, b, c, d, e, f, g, h, i, j, k, l, m, n },
+        #define GF(a, b, c, d, e, f, g, h, i, j, k, l, m) \
+			{ GF_##a, b, c, d, e, f, g, h, i, j, k, l, m },
                 #define RV(b, x, y, m) {b, x, y, m}
         #include "list-gf-types.h"
         #undef GF
@@ -50,35 +50,33 @@ const struct gf_type gf_table[] =
  * 3 = total immunity
  *
  * \param type is the attack type we are trying to resist
- *
- * N.B. As of March 2011, two TMD_ statuses are read across to 
- * p_ptr->state.flags in calc_bonuses (TMD_FEAR and TMD_CONF). If this is
- * done with any GF_ resistances, it will result in double-counting of
- * temporary resistance.
+ * \param flags is the set of flags we're checking
+ * \param real is whether this is a real attack
  */
-int check_for_resist(int type)
+int check_for_resist(int type, bitflag *flags, bool real)
 {
 	const struct gf_type *gf_ptr = &gf_table[type];
 	int result = 0;
 
-	if (gf_ptr->vuln && p_ptr->state.flags[gf_ptr->vuln])
+	if (gf_ptr->vuln && of_has(flags, gf_ptr->vuln))
 		result--;
 
-	if (gf_ptr->opp && p_ptr->timed[gf_ptr->opp])
+	/* If it's not a real attack, we don't check timed status explicitly */
+	if (real && gf_ptr->opp && p_ptr->timed[gf_ptr->opp])
 		result++;
 
-	if (gf_ptr->resist && p_ptr->state.flags[gf_ptr->resist])
+	if (gf_ptr->resist && of_has(flags, gf_ptr->resist))
 		result++;
 
-	if (gf_ptr->immunity && p_ptr->state.flags[gf_ptr->immunity])
+	if (gf_ptr->immunity && of_has(flags, gf_ptr->immunity))
 		result = 3;
 
-	/* Notice flags */
-	if (gf_ptr->immunity)
+	/* Notice flags, if it's a real attack */
+	if (real && gf_ptr->immunity)
 		wieldeds_notice_flag(gf_ptr->immunity);
-	if (gf_ptr->resist)
+	if (real && gf_ptr->resist)
 		wieldeds_notice_flag(gf_ptr->resist);
-	if (gf_ptr->vuln)
+	if (real && gf_ptr->vuln)
 		wieldeds_notice_flag(gf_ptr->vuln);
 
 	return result;
@@ -95,9 +93,9 @@ bool check_side_immune(int type)
 	const struct gf_type *gf_ptr = &gf_table[type];
 
 	if (gf_ptr->immunity) {
-		if (gf_ptr->side_immune && p_ptr->state.flags[gf_ptr->immunity])
+		if (gf_ptr->side_immune && check_state(gf_ptr->immunity))
 			return TRUE;
-	} else if ((gf_ptr->resist && p_ptr->state.flags[gf_ptr->resist]) ||
+	} else if ((gf_ptr->resist && of_has(p_ptr->state.flags, gf_ptr->resist)) ||
 				(gf_ptr->opp && p_ptr->timed[gf_ptr->opp]))
 		return TRUE;
 
@@ -115,8 +113,9 @@ void monster_learn_resists(int m_idx, int type)
 {
 	const struct gf_type *gf_ptr = &gf_table[type];
 
-	if (gf_ptr->learn)
-		update_smart_learn(m_idx, gf_ptr->learn);
+	update_smart_learn(m_idx, gf_ptr->resist);
+	update_smart_learn(m_idx, gf_ptr->immunity);
+	update_smart_learn(m_idx, gf_ptr->vuln);
 
 	return;
 }
@@ -436,7 +435,7 @@ void teleport_player_level(void)
 
 static const char *gf_name_list[] =
 {
-    #define GF(a, b, c, d, e, f, g, h, i, j, k, l, m, n) #a,
+    #define GF(a, b, c, d, e, f, g, h, i, j, k, l, m) #a,
     #include "list-gf-types.h"
     #undef GF
     NULL
@@ -2876,7 +2875,8 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		msg("Gravity warps around you.");
 
 	/* Adjust damage for resistance, immunity or vulnerability, and apply it */
-	dam = adjust_dam(typ, dam, RANDOMISE, check_for_resist(typ));
+	dam = adjust_dam(typ, dam, RANDOMISE, check_for_resist(typ,
+		p_ptr->state.flags, TRUE));
 	if (dam)
 		take_hit(dam, killer);
 

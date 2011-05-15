@@ -1415,7 +1415,7 @@ void update_mon(int m_idx, bool full)
 	if (d <= MAX_SIGHT)
 	{
 		/* Basic telepathy */
-		if (p_ptr->state.flags[OF_TELEPATHY])
+		if (check_state(OF_TELEPATHY))
 		{
 			/* Empty mind, no telepathy */
 			if (rf_has(r_ptr->flags, RF_EMPTY_MIND))
@@ -1481,7 +1481,7 @@ void update_mon(int m_idx, bool full)
 				if (rf_has(r_ptr->flags, RF_INVISIBLE))
 				{
 					/* See invisible */
-					if (p_ptr->state.flags[OF_SEE_INVIS])
+					if (check_state(OF_SEE_INVIS))
 					{
 						/* Easy to see */
 						easy = flag = TRUE;
@@ -1503,7 +1503,7 @@ void update_mon(int m_idx, bool full)
 	if (flag)
 	{
 		/* Learn about the monster's mind */
-		if (p_ptr->state.flags[OF_TELEPATHY])
+		if (check_state(OF_TELEPATHY))
 		{
 			flags_set(l_ptr->flags, RF_SIZE, RF_EMPTY_MIND, RF_WEIRD_MIND, RF_SMART, RF_STUPID, FLAG_END);
 		}
@@ -3195,65 +3195,18 @@ void flush_all_monster_messages(void)
    size_mon_hist = 0;
 }
 
-/* XXX Eddie This is ghastly.  The monster should have known_flags similar to in the object_type structure. */
-typedef struct {
-	int idx;
-	int flag;
-} learn_attack_struct;
-
-static learn_attack_struct attack_table[] = {
-	/* first 14 unused */
-	{ 0, FLAG_END },
-	{ 1, FLAG_END },
-	{ 2, FLAG_END },
-	{ 3, FLAG_END },
-	{ 4, FLAG_END },
-	{ 5, FLAG_END },
-	{ 6, FLAG_END },
-	{ 7, FLAG_END },
-	{ 8, FLAG_END },
-	{ 9, FLAG_END },
-	{ 10, FLAG_END },
-	{ 11, FLAG_END },
-	{ 12, FLAG_END },
-	{ 13, FLAG_END },
-	{ DRS_FREE, OF_FREE_ACT },
-	{ DRS_MANA, FLAG_END },
-	{ DRS_RES_ACID, OF_RES_ACID },
-	{ DRS_RES_ELEC, OF_RES_ELEC },
-	{ DRS_RES_FIRE, OF_RES_FIRE },
-	{ DRS_RES_COLD, OF_RES_COLD },
-	{ DRS_RES_POIS, OF_RES_POIS },
-	{ DRS_RES_FEAR, OF_RES_FEAR },
-	{ DRS_RES_LIGHT, OF_RES_LIGHT },
-	{ DRS_RES_DARK, OF_RES_DARK },
-	{ DRS_RES_BLIND, OF_RES_BLIND },
-	{ DRS_RES_CONFU, OF_RES_CONFU },
-	{ DRS_RES_SOUND, OF_RES_SOUND },
-	{ DRS_RES_SHARD, OF_RES_SHARD },
-	{ DRS_RES_NEXUS, OF_RES_NEXUS },
-	{ DRS_RES_NETHR, OF_RES_NETHR },
-	{ DRS_RES_CHAOS, OF_RES_CHAOS },
-	{ DRS_RES_DISEN, OF_RES_DISEN },
-};
-
-/* XXX Eddie this ought to be as simple as testing visibility and/or intelligence, then or-ing a flag into m_ptr->known_flags */
 /*
- * Learn about an "observed" resistance.
+ * Learn about an "observed" resistance or other player state property, or
+ * lack of it.
  */
 void update_smart_learn(int m_idx, int what)
 {
 	monster_type *m_ptr = cave_monster(cave, m_idx);
-
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
-
 
 	/* anything a monster might learn, the player should learn */
 	assert(what >= 0);
-	assert(what < (int)N_ELEMENTS(attack_table));
-	assert (attack_table[what].idx == what);
-	if (attack_table[what].flag >= FLAG_START)
-		wieldeds_notice_flag(attack_table[what].flag);
+	wieldeds_notice_flag(what);
 
 	/* Not allowed to learn */
 	if (!OPT(birth_ai_learn)) return;
@@ -3262,131 +3215,13 @@ void update_smart_learn(int m_idx, int what)
 	if (rf_has(r_ptr->flags, RF_STUPID)) return;
 
 	/* Not intelligent, only learn sometimes */
-	if (!rf_has(r_ptr->flags, RF_SMART) && (randint0(100) < 50)) return;
+	if (!rf_has(r_ptr->flags, RF_SMART) && one_in_(2)) return;
 
-
-	/* XXX XXX XXX */
-
-	/* Analyze the knowledge */
-	switch (what)
-	{
-		case DRS_FREE:
-		{
-			if (p_ptr->state.flags[OF_FREE_ACT]) m_ptr->smart |= (SM_IMM_FREE);
-			break;
-		}
-
-		case DRS_MANA:
-		{
-			if (!p_ptr->msp) m_ptr->smart |= (SM_IMM_MANA);
-			break;
-		}
-
-		case DRS_RES_ACID:
-		{
-			if (p_ptr->state.flags[OF_RES_ACID]) m_ptr->smart |= (SM_RES_ACID);
-			if (p_ptr->timed[TMD_OPP_ACID]) m_ptr->smart |= (SM_OPP_ACID);
-			if (p_ptr->state.flags[OF_IM_ACID]) m_ptr->smart |= (SM_IMM_ACID);
-			break;
-		}
-
-		case DRS_RES_ELEC:
-		{
-			if (p_ptr->state.flags[OF_RES_ELEC]) m_ptr->smart |= (SM_RES_ELEC);
-			if (p_ptr->timed[TMD_OPP_ELEC]) m_ptr->smart |= (SM_OPP_ELEC);
-			if (p_ptr->state.flags[OF_IM_ELEC]) m_ptr->smart |= (SM_IMM_ELEC);
-			break;
-		}
-
-		case DRS_RES_FIRE:
-		{
-			if (p_ptr->state.flags[OF_RES_FIRE]) m_ptr->smart |= (SM_RES_FIRE);
-			if (p_ptr->timed[TMD_OPP_FIRE]) m_ptr->smart |= (SM_OPP_FIRE);
-			if (p_ptr->state.flags[OF_IM_FIRE]) m_ptr->smart |= (SM_IMM_FIRE);
-			break;
-		}
-
-		case DRS_RES_COLD:
-		{
-			if (p_ptr->state.flags[OF_RES_COLD]) m_ptr->smart |= (SM_RES_COLD);
-			if (p_ptr->timed[TMD_OPP_COLD]) m_ptr->smart |= (SM_OPP_COLD);
-			if (p_ptr->state.flags[OF_IM_COLD]) m_ptr->smart |= (SM_IMM_COLD);
-			break;
-		}
-
-		case DRS_RES_POIS:
-		{
-			if (p_ptr->state.flags[OF_RES_POIS]) m_ptr->smart |= (SM_RES_POIS);
-			if (p_ptr->timed[TMD_OPP_POIS]) m_ptr->smart |= (SM_OPP_POIS);
-			break;
-		}
-
-		case DRS_RES_FEAR:
-		{
-			if (p_ptr->state.flags[OF_RES_FEAR]) m_ptr->smart |= (SM_RES_FEAR);
-			break;
-		}
-
-		case DRS_RES_LIGHT:
-		{
-			if (p_ptr->state.flags[OF_RES_LIGHT]) m_ptr->smart |= (SM_RES_LIGHT);
-			break;
-		}
-
-		case DRS_RES_DARK:
-		{
-			if (p_ptr->state.flags[OF_RES_DARK]) m_ptr->smart |= (SM_RES_DARK);
-			break;
-		}
-
-		case DRS_RES_BLIND:
-		{
-			if (p_ptr->state.flags[OF_RES_BLIND]) m_ptr->smart |= (SM_RES_BLIND);
-			break;
-		}
-
-		case DRS_RES_CONFU:
-		{
-			if (p_ptr->state.flags[OF_RES_CONFU]) m_ptr->smart |= (SM_RES_CONFU);
-			break;
-		}
-
-		case DRS_RES_SOUND:
-		{
-			if (p_ptr->state.flags[OF_RES_SOUND]) m_ptr->smart |= (SM_RES_SOUND);
-			break;
-		}
-
-		case DRS_RES_SHARD:
-		{
-			if (p_ptr->state.flags[OF_RES_SHARD]) m_ptr->smart |= (SM_RES_SHARD);
-			break;
-		}
-
-		case DRS_RES_NEXUS:
-		{
-			if (p_ptr->state.flags[OF_RES_NEXUS]) m_ptr->smart |= (SM_RES_NEXUS);
-			break;
-		}
-
-		case DRS_RES_NETHR:
-		{
-			if (p_ptr->state.flags[OF_RES_NETHR]) m_ptr->smart |= (SM_RES_NETHR);
-			break;
-		}
-
-		case DRS_RES_CHAOS:
-		{
-			if (p_ptr->state.flags[OF_RES_CHAOS]) m_ptr->smart |= (SM_RES_CHAOS);
-			break;
-		}
-
-		case DRS_RES_DISEN:
-		{
-			if (p_ptr->state.flags[OF_RES_DISEN]) m_ptr->smart |= (SM_RES_DISEN);
-			break;
-		}
-	}
+	/* Analyze the knowledge; fail very rarely */
+	if (check_state(what) && !one_in_(100))
+		of_on(m_ptr->known_pflags, what);
+	else
+		of_off(m_ptr->known_pflags, what);
 }
 
 

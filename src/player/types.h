@@ -43,7 +43,7 @@ typedef struct
 	bool heavy_shoot;	/* Heavy shooter */
 	bool icky_wield;	/* Icky weapon */
 
-	bool flags[OF_MAX];	/* Status flags from race and items */
+	bitflag flags[OF_SIZE];	/* Status flags from race and items */
 } player_state;
 
 

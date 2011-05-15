@@ -120,7 +120,7 @@ void hit_trap(int y, int x)
 		case FEAT_TRAP_HEAD + 0x00:
 		{
 			msg("You fall through a trap door!");
-			if (p_ptr->state.flags[OF_FEATHER])
+			if (check_state(OF_FEATHER))
 			{
 				msg("You float gently down to the next level.");
 			}
@@ -140,7 +140,7 @@ void hit_trap(int y, int x)
 		case FEAT_TRAP_HEAD + 0x01:
 		{
 			msg("You fall into a pit!");
-			if (p_ptr->state.flags[OF_FEATHER])
+			if (check_state(OF_FEATHER))
 			{
 				msg("You float gently to the bottom of the pit.");
 			}
@@ -157,7 +157,7 @@ void hit_trap(int y, int x)
 		{
 			msg("You fall into a spiked pit!");
 
-			if (p_ptr->state.flags[OF_FEATHER])
+			if (check_state(OF_FEATHER))
 			{
 				msg("You float gently to the floor of the pit.");
 				msg("You carefully avoid touching the spikes.");
@@ -187,7 +187,7 @@ void hit_trap(int y, int x)
 		{
 			msg("You fall into a spiked pit!");
 
-			if (p_ptr->state.flags[OF_FEATHER])
+			if (check_state(OF_FEATHER))
 			{
 				msg("You float gently to the floor of the pit.");
 				msg("You carefully avoid touching the spikes.");
@@ -205,7 +205,7 @@ void hit_trap(int y, int x)
 					dam = dam * 2;
 					(void)inc_timed(TMD_CUT, randint1(dam), TRUE);
 
-					if (p_ptr->state.flags[OF_RES_POIS] || p_ptr->timed[TMD_OPP_POIS])
+					if (check_state(OF_RES_POIS))
 					{
 						msg("The poison does not affect you!");
 					}
@@ -251,7 +251,8 @@ void hit_trap(int y, int x)
 		{
 			msg("You are enveloped in flames!");
 			dam = damroll(4, 6);
-			dam = adjust_dam(GF_FIRE, dam, RANDOMISE, check_for_resist(GF_FIRE));
+			dam = adjust_dam(GF_FIRE, dam, RANDOMISE, check_for_resist(GF_FIRE,
+				p_ptr->state.flags, TRUE));
 			if (dam) {
 				take_hit(dam, "a fire trap");
 				inven_damage(GF_FIRE, MIN(dam * 5, 300));
@@ -263,7 +264,8 @@ void hit_trap(int y, int x)
 		{
 			msg("You are splashed with acid!");
 			dam = damroll(4, 6);
-			dam = adjust_dam(GF_ACID, dam, RANDOMISE, check_for_resist(GF_ACID));
+			dam = adjust_dam(GF_ACID, dam, RANDOMISE, check_for_resist(GF_ACID,
+				p_ptr->state.flags, TRUE));
 			if (dam) {
 				take_hit(dam, "an acid trap");
 				inven_damage(GF_ACID, MIN(dam * 5, 300));
@@ -338,7 +340,7 @@ void hit_trap(int y, int x)
 		case FEAT_TRAP_HEAD + 0x0C:
 		{
 			msg("You are surrounded by a black gas!");
-			if (!p_ptr->state.flags[OF_RES_BLIND])
+			if (!check_state(OF_RES_BLIND))
 				(void)inc_timed(TMD_BLIND, randint0(50) + 25, TRUE);
 			wieldeds_notice_flag(OF_RES_BLIND);
 
@@ -348,7 +350,7 @@ void hit_trap(int y, int x)
 		case FEAT_TRAP_HEAD + 0x0D:
 		{
 			msg("You are surrounded by a gas of scintillating colors!");
-			if (!p_ptr->state.flags[OF_RES_CONFU])
+			if (!check_state(OF_RES_CONFU))
 				(void)inc_timed(TMD_CONFUSED, randint0(20) + 10, TRUE);
 			wieldeds_notice_flag(OF_RES_CONFU);
 
@@ -358,7 +360,7 @@ void hit_trap(int y, int x)
 		case FEAT_TRAP_HEAD + 0x0E:
 		{
 			msg("You are surrounded by a pungent green gas!");
-			if (!p_ptr->state.flags[OF_RES_POIS] && !p_ptr->timed[TMD_OPP_POIS])
+			if (!check_state(OF_RES_POIS))
 				(void)inc_timed(TMD_POISONED, randint0(20) + 10, TRUE);
 			wieldeds_notice_flag(OF_RES_POIS);
 
@@ -368,7 +370,7 @@ void hit_trap(int y, int x)
 		case FEAT_TRAP_HEAD + 0x0F:
 		{
 			msg("You are surrounded by a strange white mist!");
-			if (!p_ptr->state.flags[OF_FREE_ACT])
+			if (!check_state(OF_FREE_ACT))
 				(void)inc_timed(TMD_PARALYZED, randint0(10) + 5, TRUE);
 			wieldeds_notice_flag(OF_FREE_ACT);
 

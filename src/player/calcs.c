@@ -1780,9 +1780,9 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	/* Temporary "Hero" */
 	if (p_ptr->timed[TMD_HERO])
 	{
+		p_ptr->timed[TMD_BOLD] = p_ptr->timed[TMD_HERO];
 		state->to_h += 12;
 		state->dis_to_h += 12;
-		state->flags[OF_RES_FEAR] = TRUE;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
 			* 105 / 100;
 	}
@@ -1794,9 +1794,10 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		state->dis_to_h += 24;
 		state->to_a -= 10;
 		state->dis_to_a -= 10;
-		state->flags[OF_RES_FEAR] = TRUE;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
 			* 9 / 10;
+		if (p_ptr->timed[TMD_SHERO] > p_ptr->timed[TMD_HERO])
+			p_ptr->timed[TMD_BOLD] = p_ptr->timed[TMD_SHERO];
 	}
 
 	/* Temporary "fast" */
@@ -1807,31 +1808,20 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	if (p_ptr->timed[TMD_SLOW])
 		state->speed -= 10;
 
-	/* Temporary see invisible */
-	if (p_ptr->timed[TMD_SINVIS])
-		state->flags[OF_SEE_INVIS] = TRUE;
-
 	/* Temporary infravision boost */
 	if (p_ptr->timed[TMD_SINFRA])
 		state->see_infra += 5;
 
-	/* Temporary telepathy */
-	if (p_ptr->timed[TMD_TELEPATHY])
-		state->flags[OF_TELEPATHY] = TRUE;
-
-	/* Temporary resist confusion */
-	if (p_ptr->timed[TMD_OPP_CONF])
-		state->flags[OF_RES_CONFU] = TRUE;
-
-	/* Fear */
-	if (p_ptr->timed[TMD_AFRAID] || p_ptr->timed[TMD_TERROR])
-		state->flags[OF_AFRAID] = TRUE;
+	/* Terror - this is necessary because TMD_AFRAID already occupies the 
+	 * of_ptr->timed slot for OF_AFRAID */
+	if (p_ptr->timed[TMD_TERROR] > p_ptr->timed[TMD_AFRAID])
+		p_ptr->timed[TMD_AFRAID] = p_ptr->timed[TMD_TERROR];
 
 	if (p_ptr->timed[TMD_TERROR])
 		state->speed += 5;
 
 	/* Fear can come from item flags too */
-	if (state->flags[OF_AFRAID])
+	if (check_state(OF_AFRAID))
 	{
 		state->to_h -= 20;
 		state->dis_to_h -= 20;
@@ -2066,7 +2056,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	state->icky_wield = FALSE;
 
 	/* Priest weapon penalty for non-blessed edged weapons */
-	if (player_has(PF_BLESS_WEAPON) && (!state->flags[OF_BLESSED]) &&
+	if (player_has(PF_BLESS_WEAPON) && !check_state(OF_BLESSED) &&
 	    ((o_ptr->tval == TV_SWORD) || (o_ptr->tval == TV_POLEARM)))
 	{
 		/* Reduce the real bonuses */
@@ -2150,14 +2140,14 @@ static void update_bonuses(void)
 
 
 	/* Hack -- Telepathy Change */
-	if (state->flags[OF_TELEPATHY] != old.flags[OF_TELEPATHY])
+	if (of_has(state->flags, OF_TELEPATHY) != of_has(old.flags, OF_TELEPATHY))
 	{
 		/* Update monster visibility */
 		p_ptr->update |= (PU_MONSTERS);
 	}
 
 	/* Hack -- See Invis Change */
-	if (state->flags[OF_SEE_INVIS] != old.flags[OF_SEE_INVIS])
+	if (of_has(state->flags, OF_SEE_INVIS) != of_has(old.flags, OF_SEE_INVIS))
 	{
 		/* Update monster visibility */
 		p_ptr->update |= (PU_MONSTERS);

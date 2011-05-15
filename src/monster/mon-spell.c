@@ -208,18 +208,14 @@ static void do_side_effects(int spell, int dam, int m_idx, int rlev)
 			 * 3. Resistance to the specific side-effect
 			 *
 			 * TODO - add interesting messages to the RSE_ and GF_ tables
-			 * to replace the generic ones below.
+			 * to replace the generic ones below. (See #1376)
 			 */
+			if (re_ptr->res_flag)
+				update_smart_learn(m_idx, re_ptr->res_flag);
+
 			if ((rs_ptr->gf && check_side_immune(rs_ptr->gf)) ||
-					p_ptr->state.flags[re_ptr->res_flag]) {
+					check_state(re_ptr->res_flag)) {
 				msg("You resist the effect!");
-				if (re_ptr->res_flag)
-					wieldeds_notice_flag(re_ptr->res_flag);
-/*
-Need an accessor function in ?obj-flag.c? to convert p->state[flag] to DRS_FLAG,
-and need update_smart_learn(m_idx, flag) in here, for re_ptr->res_flag AND for 
-check_side_immune
-*/
 				continue;
 			}
 
@@ -470,7 +466,7 @@ bool test_spells(bitflag *f, enum mon_spell_type type)
 }
 
 /**
- * Set a spell bitflag for a type of spell.
+ * Set a spell bitflag to allow only a specific set of spell types.
  *
  * \param f is the set of spell flags we're pruning
  * \param type is the spell type(s) we're allowing
@@ -484,6 +480,32 @@ void set_spells(bitflag *f, enum mon_spell_type type)
 			rsf_off(f, rs_ptr->index);
 
 	return;
+}
+
+/**
+ * Turn off spells with a side effect or a gf_type that is resisted by
+ * something in flags, subject to intelligence and chance.
+ *
+ * \param spells is the set of spells we're pruning
+ * \param flags is the set of flags we're testing
+ * \param r_ptr is the monster type we're operating on
+ */
+void unset_spells(bitflag *spells, bitflag *flags, const monster_race *r_ptr)
+{
+	const struct mon_spell *rs_ptr;
+	const struct spell_effect *re_ptr;
+
+	/* First we test the gf (projectable) spells */
+	for (rs_ptr = mon_spell_table; rs_ptr->index < RSF_MAX; rs_ptr++)
+		if (rs_ptr->gf && randint0(100) < check_for_resist(rs_ptr->gf, flags,
+				FALSE) * (rf_has(r_ptr->flags, RF_SMART) ? 2 : 1) * 25)
+			rsf_off(spells, rs_ptr->index);
+
+	/* ... then we test the non-gf side effects */
+	for (re_ptr = spell_effect_table; re_ptr->index < RSE_MAX; re_ptr++)
+		if (re_ptr->method && re_ptr->res_flag && (rf_has(r_ptr->flags,
+				RF_SMART) || !one_in_(3)) && of_has(flags, re_ptr->res_flag))
+			rsf_off(spells, re_ptr->method);
 }
 
 /**
