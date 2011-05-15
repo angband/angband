@@ -21,6 +21,8 @@ C:0:{K}1
 C:1:{K}1
 C:0:{MK}1
 C:1:{MK}1
+C:0:[End]
+C:1:[End]
 C:0:{K}[End]
 C:1:{K}[End]
 C:0:{MK}[End]
@@ -45,6 +47,8 @@ C:0:{K}3
 C:1:{K}3
 C:0:{MK}3
 C:1:{MK}3
+C:0:[PageDown]
+C:1:[PageDown]
 C:0:{K}[PageDown]
 C:1:{K}[PageDown]
 C:0:{MK}[PageDown]
@@ -82,6 +86,8 @@ C:0:{K}7
 C:1:{K}7
 C:0:{MK}7
 C:1:{MK}7
+C:0:[Home]
+C:1:[Home]
 C:0:{K}[Home]
 C:1:{K}[Home]
 C:0:{MK}[Home]
@@ -106,6 +112,8 @@ C:0:{K}9
 C:1:{K}9
 C:0:{MK}9
 C:1:{MK}9
+C:0:[PageUp]
+C:1:[PageUp]
 C:0:{K}[PageUp]
 C:1:{K}[PageUp]
 C:0:{MK}[PageUp]
