@@ -471,7 +471,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Take "poison" effect */
-					if (!check_state(OF_RES_POIS)) {
+					if (!check_state(OF_RES_POIS, p_ptr->state.flags)) {
 						if (inc_timed(TMD_POISONED, randint1(rlev) + 5, TRUE))
 						{
 							obvious = TRUE;
@@ -490,7 +490,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Allow complete resist */
-					if (!check_state(OF_RES_DISEN))
+					if (!check_state(OF_RES_DISEN, p_ptr->state.flags))
 					{
 						/* Apply disenchantment */
 						if (apply_disenchant(0)) obvious = TRUE;
@@ -895,7 +895,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Increase "blind" */
-					if (!check_state(OF_RES_BLIND))	{
+					if (!check_state(OF_RES_BLIND, p_ptr->state.flags))	{
 						if (inc_timed(TMD_BLIND, 10 + randint1(rlev), TRUE))
 						{
 							obvious = TRUE;
@@ -914,7 +914,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Increase "confused" */
-					if (!check_state(OF_RES_CONFU))
+					if (!check_state(OF_RES_CONFU, p_ptr->state.flags))
 					{
 						if (inc_timed(TMD_CONFUSED, 3 + randint1(rlev), TRUE))
 						{
@@ -934,7 +934,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Increase "afraid" */
-					if (check_state(OF_RES_FEAR))
+					if (check_state(OF_RES_FEAR, p_ptr->state.flags))
 					{
 						msg("You stand your ground!");
 						obvious = TRUE;
@@ -965,7 +965,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Increase "paralyzed" */
-					if (check_state(OF_FREE_ACT))
+					if (check_state(OF_FREE_ACT, p_ptr->state.flags))
 					{
 						msg("You are unaffected!");
 						obvious = TRUE;
@@ -1105,14 +1105,14 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 					update_smart_learn(m_idx, OF_HOLD_LIFE);
 
-					if (check_state(OF_HOLD_LIFE) && (randint0(100) < 95))
+					if (check_state(OF_HOLD_LIFE, p_ptr->state.flags) && (randint0(100) < 95))
 					{
 						msg("You keep hold of your life force!");
 					}
 					else
 					{
 						s32b d = damroll(10, 6) + (p_ptr->exp/100) * MON_DRAIN_LIFE;
-						if (check_state(OF_HOLD_LIFE))
+						if (check_state(OF_HOLD_LIFE, p_ptr->state.flags))
 						{
 							msg("You feel your life slipping away!");
 							player_exp_lose(p_ptr, d / 10, FALSE);
@@ -1136,7 +1136,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 					update_smart_learn(m_idx, OF_HOLD_LIFE);
 
-					if (check_state(OF_HOLD_LIFE) && (randint0(100) < 90))
+					if (check_state(OF_HOLD_LIFE, p_ptr->state.flags) && (randint0(100) < 90))
 					{
 						msg("You keep hold of your life force!");
 					}
@@ -1144,7 +1144,7 @@ bool make_attack_normal(int m_idx)
 					{
 						s32b d = damroll(20, 6) + (p_ptr->exp / 100) * MON_DRAIN_LIFE;
 
-						if (check_state(OF_HOLD_LIFE))
+						if (check_state(OF_HOLD_LIFE, p_ptr->state.flags))
 						{
 							msg("You feel your life slipping away!");
 							player_exp_lose(p_ptr, d / 10, FALSE);
@@ -1167,7 +1167,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 					update_smart_learn(m_idx, OF_HOLD_LIFE);
 
-					if (check_state(OF_HOLD_LIFE) && (randint0(100) < 75))
+					if (check_state(OF_HOLD_LIFE, p_ptr->state.flags) && (randint0(100) < 75))
 					{
 						msg("You keep hold of your life force!");
 					}
@@ -1175,7 +1175,7 @@ bool make_attack_normal(int m_idx)
 					{
 						s32b d = damroll(40, 6) + (p_ptr->exp / 100) * MON_DRAIN_LIFE;
 
-						if (check_state(OF_HOLD_LIFE))
+						if (check_state(OF_HOLD_LIFE, p_ptr->state.flags))
 						{
 							msg("You feel your life slipping away!");
 							player_exp_lose(p_ptr, d / 10, FALSE);
@@ -1198,7 +1198,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 					update_smart_learn(m_idx, OF_HOLD_LIFE);
 
-					if (check_state(OF_HOLD_LIFE) && (randint0(100) < 50))
+					if (check_state(OF_HOLD_LIFE, p_ptr->state.flags) && (randint0(100) < 50))
 					{
 						msg("You keep hold of your life force!");
 					}
@@ -1206,7 +1206,7 @@ bool make_attack_normal(int m_idx)
 					{
 						s32b d = damroll(80, 6) + (p_ptr->exp / 100) * MON_DRAIN_LIFE;
 
-						if (check_state(OF_HOLD_LIFE))
+						if (check_state(OF_HOLD_LIFE, p_ptr->state.flags))
 						{
 							msg("You feel your life slipping away!");
 							player_exp_lose(p_ptr, d / 10, FALSE);
@@ -1226,7 +1226,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Increase "image" */
-					if (!check_state(OF_RES_CHAOS))
+					if (!check_state(OF_RES_CHAOS, p_ptr->state.flags))
 					{
 						if (inc_timed(TMD_IMAGE, 3 + randint1(rlev / 2), TRUE))
 						{

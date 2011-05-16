@@ -93,7 +93,7 @@ bool check_side_immune(int type)
 	const struct gf_type *gf_ptr = &gf_table[type];
 
 	if (gf_ptr->immunity) {
-		if (gf_ptr->side_immune && check_state(gf_ptr->immunity))
+		if (gf_ptr->side_immune && check_state(gf_ptr->immunity, p_ptr->state.flags))
 			return TRUE;
 	} else if ((gf_ptr->resist && of_has(p_ptr->state.flags, gf_ptr->resist)) ||
 				(gf_ptr->opp && p_ptr->timed[gf_ptr->opp]))

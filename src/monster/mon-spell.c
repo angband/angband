@@ -214,7 +214,7 @@ static void do_side_effects(int spell, int dam, int m_idx, int rlev)
 				update_smart_learn(m_idx, re_ptr->res_flag);
 
 			if ((rs_ptr->gf && check_side_immune(rs_ptr->gf)) ||
-					check_state(re_ptr->res_flag)) {
+					check_state(re_ptr->res_flag, p_ptr->state.flags)) {
 				msg("You resist the effect!");
 				continue;
 			}

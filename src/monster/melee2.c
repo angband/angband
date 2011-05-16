@@ -100,7 +100,7 @@ static void remove_bad_spells(int m_idx, bitflag f[RSF_SIZE])
 	/* Cheat if requested */
 	if (OPT(birth_ai_cheat)) {
 		for (i = 0; i < OF_MAX; i++)
-			if (check_state(i))
+			if (check_state(i, p_ptr->state.flags))
 				of_on(ai_flags, i);
 		if (!p_ptr->msp) smart |= SM_IMM_MANA;
 	}
@@ -1581,7 +1581,7 @@ static void process_monster(struct cave *c, int m_idx)
 		u32b notice;
 
 		/* Aggravation */
-		if (check_state(OF_AGGRAVATE))
+		if (check_state(OF_AGGRAVATE, p_ptr->state.flags))
 		{
 			/* Wake the monster */
 			mon_clear_timed(m_idx, MON_TMD_SLEEP, MON_TMD_FLG_NOTIFY);

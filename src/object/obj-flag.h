@@ -140,6 +140,6 @@ s16b slot_mult(int flag, int slot);
 bool flag_uses_pval(int flag);
 int obj_flag_type(int flag);
 int pval_mult(int flag);
-bool check_state(int flag);
+bool check_state(int flag, bitflag *f);
 
 #endif /* !INCLUDED_OBJFLAG_H */

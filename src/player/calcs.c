@@ -1821,7 +1821,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		state->speed += 5;
 
 	/* Fear can come from item flags too */
-	if (check_state(OF_AFRAID))
+	if (check_state(OF_AFRAID, p_ptr->state.flags))
 	{
 		state->to_h -= 20;
 		state->dis_to_h -= 20;
@@ -2056,7 +2056,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	state->icky_wield = FALSE;
 
 	/* Priest weapon penalty for non-blessed edged weapons */
-	if (player_has(PF_BLESS_WEAPON) && !check_state(OF_BLESSED) &&
+	if (player_has(PF_BLESS_WEAPON) && !check_state(OF_BLESSED, p_ptr->state.flags) &&
 	    ((o_ptr->tval == TV_SWORD) || (o_ptr->tval == TV_POLEARM)))
 	{
 		/* Reduce the real bonuses */

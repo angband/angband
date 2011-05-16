@@ -102,19 +102,18 @@ bool cursed_p(bitflag *f)
 
 /**
  * Determine whether an object flag or its timed equivalent are set in the
- * player's state structure.
+ * passed-in flags (which probably come from a state structure). This assumes
+ * that there are no p_ptr->timed effects which can be active yet unknown to
+ * the player.
  *
  * \param flag is the object flag for which we are checking.
- *
- * TODO: make this function take a state struct (needs a forward definition
- * of player_state in obj-flag.h)
+ * \param f is the set of flags we're checking
  */
-bool check_state(int flag)
+bool check_state(int flag, bitflag *f)
 {
 	const struct object_flag *of_ptr = &object_flag_table[flag];
 
-	if (of_has(p_ptr->state.flags, flag) ||
-			(of_ptr->timed && p_ptr->timed[of_ptr->timed]))
+	if (of_has(f, flag) || (of_ptr->timed && p_ptr->timed[of_ptr->timed]))
 		return TRUE;
 
 	return FALSE;

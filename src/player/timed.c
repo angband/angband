@@ -146,13 +146,13 @@ bool set_timed(int idx, int v, bool notify)
 	else if (idx == TMD_CUT) return set_cut(v);
 
 	/* Don't mention effects which already match the player state. */
-	if (idx == TMD_OPP_ACID && check_state(OF_IM_ACID))
+	if (idx == TMD_OPP_ACID && check_state(OF_IM_ACID, p_ptr->state.flags))
 		notify = FALSE;
-	else if (idx == TMD_OPP_ELEC && check_state(OF_IM_ELEC))
+	else if (idx == TMD_OPP_ELEC && check_state(OF_IM_ELEC, p_ptr->state.flags))
 		notify = FALSE;
-	else if (idx == TMD_OPP_FIRE && check_state(OF_IM_FIRE))
+	else if (idx == TMD_OPP_FIRE && check_state(OF_IM_FIRE, p_ptr->state.flags))
 		notify = FALSE;
-	else if (idx == TMD_OPP_COLD && check_state(OF_IM_COLD))
+	else if (idx == TMD_OPP_COLD && check_state(OF_IM_COLD, p_ptr->state.flags))
 		notify = FALSE;
 	else if (idx == TMD_OPP_CONF && of_has(p_ptr->state.flags, OF_RES_CONFU))
 		notify = FALSE;

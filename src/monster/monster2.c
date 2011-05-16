@@ -1415,7 +1415,7 @@ void update_mon(int m_idx, bool full)
 	if (d <= MAX_SIGHT)
 	{
 		/* Basic telepathy */
-		if (check_state(OF_TELEPATHY))
+		if (check_state(OF_TELEPATHY, p_ptr->state.flags))
 		{
 			/* Empty mind, no telepathy */
 			if (rf_has(r_ptr->flags, RF_EMPTY_MIND))
@@ -1481,7 +1481,7 @@ void update_mon(int m_idx, bool full)
 				if (rf_has(r_ptr->flags, RF_INVISIBLE))
 				{
 					/* See invisible */
-					if (check_state(OF_SEE_INVIS))
+					if (check_state(OF_SEE_INVIS, p_ptr->state.flags))
 					{
 						/* Easy to see */
 						easy = flag = TRUE;
@@ -1503,7 +1503,7 @@ void update_mon(int m_idx, bool full)
 	if (flag)
 	{
 		/* Learn about the monster's mind */
-		if (check_state(OF_TELEPATHY))
+		if (check_state(OF_TELEPATHY, p_ptr->state.flags))
 		{
 			flags_set(l_ptr->flags, RF_SIZE, RF_EMPTY_MIND, RF_WEIRD_MIND, RF_SMART, RF_STUPID, FLAG_END);
 		}
@@ -3218,7 +3218,7 @@ void update_smart_learn(int m_idx, int what)
 	if (!rf_has(r_ptr->flags, RF_SMART) && one_in_(2)) return;
 
 	/* Analyze the knowledge; fail very rarely */
-	if (check_state(what) && !one_in_(100))
+	if (check_state(what, p_ptr->state.flags) && !one_in_(100))
 		of_on(m_ptr->known_pflags, what);
 	else
 		of_off(m_ptr->known_pflags, what);
