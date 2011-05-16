@@ -340,7 +340,7 @@ static void py_pickup_aux(int o_idx, bool domsg)
 	}
 
 	/* Update object_idx if necessary */
-	if (p_ptr->object_idx == (0 - o_idx))
+	if (tracked_object_is(0 - o_idx))
 	{
 		track_object(slot);
 	}

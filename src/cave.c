@@ -3546,15 +3546,20 @@ void monster_race_track(int r_idx)
 void track_object(int item)
 {
 	p_ptr->object_idx = item;
-	p_ptr->object_kind_idx = 0;
+	p_ptr->object_kind_idx = NO_OBJECT;
 	p_ptr->redraw |= (PR_OBJECT);
 }
 
 void track_object_kind(int k_idx)
 {
-	p_ptr->object_idx = 0;
+	p_ptr->object_idx = NO_OBJECT;
 	p_ptr->object_kind_idx = k_idx;
 	p_ptr->redraw |= (PR_OBJECT);
+}
+
+bool tracked_object_is(int item)
+{
+	return (p_ptr->object_idx == item);
 }
 
 /*

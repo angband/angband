@@ -312,6 +312,9 @@
 #define QUIVER_END   	47
 
 #define ALL_INVEN_TOTAL 47
+/* Since no item index can have this value, use it to mean
+ * "no object", so that 0 can be a valid index. */
+#define NO_OBJECT		(ALL_INVEN_TOTAL+1)
 
 
 /*

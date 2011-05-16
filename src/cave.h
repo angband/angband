@@ -33,6 +33,7 @@ extern void health_track(struct player *p, int m_idx);
 extern void monster_race_track(int r_idx);
 extern void track_object(int item);
 extern void track_object_kind(int k_idx);
+extern bool tracked_object_is(int item);
 extern void disturb(int stop_search, int unused_flag);
 extern bool is_quest(int level);
 extern bool dtrap_edge(int y, int x);

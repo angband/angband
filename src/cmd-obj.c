@@ -266,7 +266,7 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	i_ptr->number = num;
 
 	/* Update object_idx if necessary, once object is in slot */
-	if (p_ptr->object_idx == item)
+	if (tracked_object_is(item))
 	{
 		track_wielded_item = TRUE;
 	}

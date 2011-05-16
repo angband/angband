@@ -1222,9 +1222,9 @@ static void update_object_subwindow(game_event_type type, game_event_data *data,
 	/* Activate */
 	Term_activate(inv_term);
 	
-	if (p_ptr->object_idx)
+	if (p_ptr->object_idx != NO_OBJECT)
 		display_object_idx_recall(p_ptr->object_idx);
-	else if(p_ptr->object_kind_idx)
+	else if(p_ptr->object_kind_idx != NO_OBJECT)
 		display_object_kind_recall(p_ptr->object_kind_idx);
 	Term_fresh();
 	
