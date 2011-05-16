@@ -347,9 +347,14 @@ void ranged_helper(int item, int dir, int range, int shots, ranged_attack attack
 
 	/* Check for target validity */
 	if ((dir == 5) && target_okay()) {
+		int taim;
+		char msg[80];
 		target_get(&tx, &ty);
-		if (distance(y, x, ty, tx) > range) {
-			if (!get_check("Target out of range.  Fire anyway?")) return;
+		taim = distance(y, x, ty, tx);
+		if (taim > range) {
+			sprintf (msg, "Target out of range by %d squares. Fire anyway? ",
+				taim - range);
+			if (!get_check(msg)) return;
 		}
 	}
 
