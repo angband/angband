@@ -359,10 +359,7 @@ bool make_attack_spell(int m_idx)
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
-	char m_name[80];
-	char m_poss[80];
-
-	char ddesc[80];
+	char m_name[80], m_poss[80], ddesc[80];
 
 	/* Player position */
 	int px = p_ptr->px;
@@ -406,14 +403,13 @@ bool make_attack_spell(int m_idx)
 			return FALSE;
 	}
 
-
 	/* Extract the monster level */
 	rlev = ((r_ptr->level >= 1) ? r_ptr->level : 1);
 
 	/* Extract the racial spell flags */
 	rsf_copy(f, r_ptr->spell_flags);
 
-	/* Hack -- allow "desperate" spells */
+	/* Allow "desperate" spells */
 	if (rf_has(r_ptr->flags, RF_SMART) &&
 	    m_ptr->hp < m_ptr->maxhp / 10 &&
 	    randint0(100) < 50)
@@ -444,14 +440,13 @@ bool make_attack_spell(int m_idx)
 	/* No spells left */
 	if (rsf_is_empty(f)) return FALSE;
 
-
 	/* Get the monster name (or "it") */
 	monster_desc(m_name, sizeof(m_name), m_ptr, 0x00);
 
 	/* Get the monster possessive ("his"/"her"/"its") */
 	monster_desc(m_poss, sizeof(m_poss), m_ptr, MDESC_PRO2 | MDESC_POSS);
 
-	/* Hack -- Get the "died from" name */
+	/* Get the "died from" name */
 	monster_desc(ddesc, sizeof(ddesc), m_ptr, MDESC_SHOW | MDESC_IND2);
 
 	/* Choose a spell to cast */
@@ -469,7 +464,6 @@ bool make_attack_spell(int m_idx)
 		if (rf_has(r_ptr->flags, RF_UNAWARE))
 			rf_on(l_ptr->flags, RF_UNAWARE);
 	}
-
 
 	/* Calculate spell failure rate */
 	failrate = 25 - (rlev + 3) / 4;
@@ -489,159 +483,45 @@ bool make_attack_spell(int m_idx)
 	/* Cast the spell. */
 	disturb(1, 0);
 
-	switch (thrown_spell)
-	{
-		case RSF_DRAIN_MANA:
-		{
-			if (p_ptr->csp)
-			{
-				int r1;
+	/* Special case RSF_HASTE until TMD_* and MON_TMD_* are rationalised */
+	if (thrown_spell == RSF_HASTE) {
+		if (blind)
+			msg("%^s mumbles.", m_name);
+		else
+			msg("%^s concentrates on %s body.", m_name, m_poss);
 
-				/* Basic message */
-				msg("%^s draws psychic energy from you!", m_name);
-
-				/* Attack power */
-				r1 = (randint1(rlev) / 2) + 1;
-
-				/* Full drain */
-				if (r1 >= p_ptr->csp) {
-					r1 = p_ptr->csp;
-					p_ptr->csp = 0;
-					p_ptr->csp_frac = 0;
-				}
-
-				/* Partial drain */
-				else
-					p_ptr->csp -= r1;
-
-				/* Redraw mana */
-				p_ptr->redraw |= (PR_MANA);
-
-				/* Heal the monster */
-				if (m_ptr->hp < m_ptr->maxhp) {
-
-					/* Heal */
-					m_ptr->hp += (6 * r1);
-					if (m_ptr->hp > m_ptr->maxhp)
-						m_ptr->hp = m_ptr->maxhp;
-
-					/* Redraw (later) if needed */
-					if (p_ptr->health_who == m_idx)
-						p_ptr->redraw |= (PR_HEALTH);
-
-					/* Special message */
-					if (seen)
-						msg("%^s appears healthier.", m_name);
-				}
-			}
-			if (!p_ptr->csp)
-				m_ptr->smart |= SM_IMM_MANA;
-			break;
+		/* XXX Allow slow speed increases past +10 */
+		if (m_ptr->m_timed[MON_TMD_FAST] &&
+				m_ptr->mspeed > r_ptr->speed + 10 &&
+				m_ptr->mspeed < r_ptr->speed + 20) {
+			msg("%^s starts moving faster.", m_name);
+			m_ptr->mspeed += 2;
 		}
-
-		case RSF_HASTE:
-		{
-			if (blind)
-				msg("%^s mumbles.", m_name);
-			else
-				msg("%^s concentrates on %s body.", m_name, m_poss);
-
-			/* XXX Allow slow speed increases past +10 */
-			if (m_ptr->m_timed[MON_TMD_FAST] &&
-					m_ptr->mspeed > r_ptr->speed + 10 &&
-					m_ptr->mspeed < r_ptr->speed + 20) {
-				msg("%^s starts moving faster.", m_name);
-				m_ptr->mspeed += 2;
-			}
-
-			(void)mon_inc_timed(m_idx, MON_TMD_FAST, 50, 0);
-
-			break;
-		}
-
-		case RSF_HEAL:
-		{
-			/* Message */
-			if (blind)
-				msg("%^s mumbles.", m_name);
-			else
-				msg("%^s concentrates on %s wounds.", m_name, m_poss);
-
-			/* Heal some */
-			m_ptr->hp += (rlev * 6);
-
-			/* Fully healed */
-			if (m_ptr->hp >= m_ptr->maxhp)
-			{
-				/* Fully healed */
-				m_ptr->hp = m_ptr->maxhp;
-
-				/* Message */
-				if (seen)
-					msg("%^s looks REALLY healthy!", m_name);
-				else
-					msg("%^s sounds REALLY healthy!", m_name);
-			}
-
-			/* Partially healed */
-			else
-			{
-				/* Message */
-				if (seen)
-					msg("%^s looks healthier.", m_name);
-				else
-					msg("%^s sounds healthier.", m_name);
-			}
-
-			/* Redraw (later) if needed */
-			if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
-
-			/* Cancel fear */
-			if (m_ptr->m_timed[MON_TMD_FEAR])
-			{
-				/* Cancel fear */
-				mon_clear_timed(m_idx, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE);
-
-				/* Message */
-				msg("%^s recovers %s courage.", m_name, m_poss);
-			}
-
-			break;
-		}
-
-		default:
-			do_mon_spell(thrown_spell, m_idx, seen);
-	}
-
+		(void)mon_inc_timed(m_idx, MON_TMD_FAST, 50, 0);
+	} else 
+		do_mon_spell(thrown_spell, m_idx, seen);
 
 	/* Remember what the monster did to us */
-	if (seen)
-	{
+	if (seen) {
 		rsf_on(l_ptr->spell_flags, thrown_spell);
 
 		/* Innate spell */
-		if (thrown_spell < MIN_NONINNATE_SPELL)
-		{
-			if (l_ptr->cast_innate < MAX_UCHAR) l_ptr->cast_innate++;
-		}
-
+		if (thrown_spell < MIN_NONINNATE_SPELL) {
+			if (l_ptr->cast_innate < MAX_UCHAR)
+				l_ptr->cast_innate++;
+		} else {
 		/* Bolt or Ball, or Special spell */
-		else
-		{
-			if (l_ptr->cast_spell < MAX_UCHAR) l_ptr->cast_spell++;
+			if (l_ptr->cast_spell < MAX_UCHAR)
+				l_ptr->cast_spell++;
 		}
 	}
-
-
 	/* Always take note of monsters that kill you */
-	if (p_ptr->is_dead && (l_ptr->deaths < MAX_SHORT))
-	{
+	if (p_ptr->is_dead && (l_ptr->deaths < MAX_SHORT)) {
 		l_ptr->deaths++;
 	}
 
-
 	/* A spell was cast */
-	return (TRUE);
+	return TRUE;
 }
 
 

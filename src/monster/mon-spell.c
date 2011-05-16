@@ -162,13 +162,112 @@ static void swap_stats(void)
 }
 
 /**
+ * Drain mana from the player, healing the caster.
+ *
+ * \param m_idx is the monster casting
+ * \param rlev is its level
+ * \param seen is whether @ can see it
+ */
+static void drain_mana(int m_idx, int rlev, bool seen)
+{
+	monster_type *m_ptr = cave_monster(cave, m_idx);
+	int r1;
+	char m_name[80];
+
+	if (!p_ptr->csp) {
+		m_ptr->smart |= SM_IMM_MANA;
+		return;
+	}
+
+	/* Get the monster name (or "it") */
+	monster_desc(m_name, sizeof(m_name), m_ptr, 0x00);
+
+	/* Attack power */
+	r1 = (randint1(rlev) / 2) + 1;
+
+	/* Full drain */
+	if (r1 >= p_ptr->csp) {
+		r1 = p_ptr->csp;
+		p_ptr->csp = 0;
+		p_ptr->csp_frac = 0;
+	}
+	/* Partial drain */
+	else
+		p_ptr->csp -= r1;
+
+	/* Redraw mana */
+	p_ptr->redraw |= PR_MANA;
+
+	/* Heal the monster */
+	if (m_ptr->hp < m_ptr->maxhp) {
+		m_ptr->hp += (6 * r1);
+		if (m_ptr->hp > m_ptr->maxhp)
+			m_ptr->hp = m_ptr->maxhp;
+
+		/* Redraw (later) if needed */
+		if (p_ptr->health_who == m_idx)
+			p_ptr->redraw |= (PR_HEALTH);
+
+		/* Special message */
+		if (seen)
+			msg("%^s appears healthier.", m_name);
+	}
+}
+
+/**
+ * Monster self-healing.
+ *
+ * \param m_idx is the monster casting
+ * \param rlev is its level
+ * \param seen is whether @ can see it
+ */
+static void heal_self(int m_idx, int rlev, bool seen)
+{
+	monster_type *m_ptr = cave_monster(cave, m_idx);
+	char m_name[80], m_poss[80];
+
+	/* Get the monster name (or "it") */
+	monster_desc(m_name, sizeof(m_name), m_ptr, 0x00);
+
+	/* Get the monster possessive ("his"/"her"/"its") */
+	monster_desc(m_poss, sizeof(m_poss), m_ptr, MDESC_PRO2 | MDESC_POSS);
+
+	/* Heal some */
+	m_ptr->hp += (rlev * 6);
+
+	/* Fully healed */
+	if (m_ptr->hp >= m_ptr->maxhp) {
+		m_ptr->hp = m_ptr->maxhp;
+
+		if (seen)
+			msg("%^s looks REALLY healthy!", m_name);
+		else
+			msg("%^s sounds REALLY healthy!", m_name);
+	} else if (seen) /* Partially healed */
+		msg("%^s looks healthier.", m_name);
+	else
+		msg("%^s sounds healthier.", m_name);
+
+	/* Redraw (later) if needed */
+	if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
+
+	/* Cancel fear */
+	if (m_ptr->m_timed[MON_TMD_FEAR]) {
+		mon_clear_timed(m_idx, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE);
+		msg("%^s recovers %s courage.", m_name, m_poss);
+	}
+}
+
+/**
  * Apply side effects from a spell attack to the player
  *
  * \param spell is the attack type
  * \param dam is the amount of damage caused by the attack
  * \param m_idx is the attacking monster
+ * \param rlev is its level
+ * \param seen is whether @ can see it
  */
-static void do_side_effects(int spell, int dam, int m_idx, int rlev)
+static void do_side_effects(int spell, int dam, int m_idx, int rlev, bool seen)
 {
 	const struct spell_effect *re_ptr;
 	const struct mon_spell *rs_ptr = &mon_spell_table[spell];
@@ -306,7 +405,13 @@ static void do_side_effects(int spell, int dam, int m_idx, int rlev)
 						break;
 
 					case S_DRAIN_MANA:
+						drain_mana(m_idx, rlev, seen);
+						break;
+
 					case S_HEAL:
+						heal_self(m_idx, rlev, seen);
+						break;
+
 					case S_DARKEN:
 						(void)unlight_area(0, 3);
 						break;
@@ -442,7 +547,7 @@ void do_mon_spell(int spell, int m_idx, bool seen)
 	else /* Note that non-projectable attacks are unresistable */
 		take_hit(dam, ddesc);
 
-	do_side_effects(spell, dam, m_idx, rlev);
+	do_side_effects(spell, dam, m_idx, rlev, seen);
 
 	return;
 }
@@ -570,3 +675,4 @@ int best_spell_power(const monster_race *r_ptr, int resist)
 
 	return best_dam;
 }
+
