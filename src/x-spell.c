@@ -774,13 +774,13 @@ static bool cast_mage_spell(int spell, int dir)
 
 		case SPELL_RESIST_FIRE:
 		{
-			(void)inc_timed(TMD_OPP_FIRE, randint1(20) + 20, TRUE);
+			(void)inc_timed(TMD_OPP_FIRE, randint1(20) + 20, TRUE, TRUE);
 			break;
 		}
 
 		case SPELL_RESIST_COLD:
 		{
-			(void)inc_timed(TMD_OPP_COLD, randint1(20) + 20, TRUE);
+			(void)inc_timed(TMD_OPP_COLD, randint1(20) + 20, TRUE, TRUE);
 			break;
 		}
 
@@ -791,39 +791,39 @@ static bool cast_mage_spell(int spell, int dir)
 
 		case SPELL_RESIST_POISON:
 		{
-			(void)inc_timed(TMD_OPP_POIS, randint1(20) + 20, TRUE);
+			(void)inc_timed(TMD_OPP_POIS, randint1(20) + 20, TRUE, TRUE);
 			break;
 		}
 
 		case SPELL_RESISTANCE:
 		{
 			int time = randint1(20) + 20;
-			(void)inc_timed(TMD_OPP_ACID, time, TRUE);
-			(void)inc_timed(TMD_OPP_ELEC, time, TRUE);
-			(void)inc_timed(TMD_OPP_FIRE, time, TRUE);
-			(void)inc_timed(TMD_OPP_COLD, time, TRUE);
-			(void)inc_timed(TMD_OPP_POIS, time, TRUE);
+			(void)inc_timed(TMD_OPP_ACID, time, TRUE, TRUE);
+			(void)inc_timed(TMD_OPP_ELEC, time, TRUE, TRUE);
+			(void)inc_timed(TMD_OPP_FIRE, time, TRUE, TRUE);
+			(void)inc_timed(TMD_OPP_COLD, time, TRUE, TRUE);
+			(void)inc_timed(TMD_OPP_POIS, time, TRUE, TRUE);
 			break;
 		}
 
 		case SPELL_HEROISM:
 		{
 			(void)hp_player(10);
-			(void)inc_timed(TMD_HERO, randint1(25) + 25, TRUE);
+			(void)inc_timed(TMD_HERO, randint1(25) + 25, TRUE, TRUE);
 			(void)clear_timed(TMD_AFRAID, TRUE);
 			break;
 		}
 
 		case SPELL_SHIELD:
 		{
-			(void)inc_timed(TMD_SHIELD, randint1(20) + 30, TRUE);
+			(void)inc_timed(TMD_SHIELD, randint1(20) + 30, TRUE, TRUE);
 			break;
 		}
 
 		case SPELL_BERSERKER:
 		{
 			(void)hp_player(30);
-			(void)inc_timed(TMD_SHERO, randint1(25) + 25, TRUE);
+			(void)inc_timed(TMD_SHERO, randint1(25) + 25, TRUE, TRUE);
 			(void)clear_timed(TMD_AFRAID, TRUE);
 			break;
 		}
@@ -836,7 +836,7 @@ static bool cast_mage_spell(int spell, int dir)
 			}
 			else
 			{
-				(void)inc_timed(TMD_FAST, randint1(5), TRUE);
+				(void)inc_timed(TMD_FAST, randint1(5), TRUE, TRUE);
 			}
 			break;
 		}
@@ -910,7 +910,7 @@ static bool cast_priest_spell(int spell, int dir)
 
 		case PRAYER_BLESS:
 		{
-			(void)inc_timed(TMD_BLESSED, randint1(12) + 12, TRUE);
+			(void)inc_timed(TMD_BLESSED, randint1(12) + 12, TRUE, TRUE);
 			break;
 		}
 
@@ -962,7 +962,7 @@ static bool cast_priest_spell(int spell, int dir)
 
 		case PRAYER_CHANT:
 		{
-			(void)inc_timed(TMD_BLESSED, randint1(24) + 24, TRUE);
+			(void)inc_timed(TMD_BLESSED, randint1(24) + 24, TRUE, TRUE);
 			break;
 		}
 
@@ -986,8 +986,8 @@ static bool cast_priest_spell(int spell, int dir)
 
 		case PRAYER_RESIST_HEAT_COLD:
 		{
-			(void)inc_timed(TMD_OPP_FIRE, randint1(10) + 10, TRUE);
-			(void)inc_timed(TMD_OPP_COLD, randint1(10) + 10, TRUE);
+			(void)inc_timed(TMD_OPP_FIRE, randint1(10) + 10, TRUE, TRUE);
+			(void)inc_timed(TMD_OPP_COLD, randint1(10) + 10, TRUE, TRUE);
 			break;
 		}
 
@@ -1020,13 +1020,14 @@ static bool cast_priest_spell(int spell, int dir)
 
 		case PRAYER_SENSE_INVISIBLE:
 		{
-			(void)inc_timed(TMD_SINVIS, randint1(24) + 24, TRUE);
+			(void)inc_timed(TMD_SINVIS, randint1(24) + 24, TRUE, TRUE);
 			break;
 		}
 
 		case PRAYER_PROTECTION_FROM_EVIL:
 		{
-			(void)inc_timed(TMD_PROTEVIL, randint1(25) + 3 * p_ptr->lev, TRUE);
+			(void)inc_timed(TMD_PROTEVIL, randint1(25) + 3 * p_ptr->lev, TRUE,
+				TRUE);
 			break;
 		}
 
@@ -1062,7 +1063,7 @@ static bool cast_priest_spell(int spell, int dir)
 
 		case PRAYER_PRAYER:
 		{
-			(void)inc_timed(TMD_BLESSED, randint1(48) + 48, TRUE);
+			(void)inc_timed(TMD_BLESSED, randint1(48) + 48, TRUE, TRUE);
 			break;
 		}
 

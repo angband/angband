@@ -174,61 +174,50 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 	{
 		case EF_POISON:
 		{
-			if (!check_state(OF_RES_POIS, p_ptr->state.flags))
-				inc_timed(TMD_POISONED, damroll(2, 7) + 10, TRUE);
+			inc_timed(TMD_POISONED, damroll(2, 7) + 10, TRUE, TRUE);
 			*ident = TRUE;
-			wieldeds_notice_flag(OF_RES_POIS);
 			return TRUE;
 		}
 
 		case EF_BLIND:
 		{
-			if (!check_state(OF_RES_BLIND, p_ptr->state.flags))
-				inc_timed(TMD_BLIND, damroll(4, 25) + 75, TRUE);
+			inc_timed(TMD_BLIND, damroll(4, 25) + 75, TRUE, TRUE);
 			*ident = TRUE;
-			wieldeds_notice_flag(OF_RES_BLIND);
 			return TRUE;
 		}
 
 		case EF_SCARE:
 		{
-			if (!check_state(OF_RES_FEAR, p_ptr->state.flags))
-				inc_timed(TMD_AFRAID, randint0(10) + 10, TRUE);
+			inc_timed(TMD_AFRAID, randint0(10) + 10, TRUE, TRUE);
 			*ident = TRUE;
-			wieldeds_notice_flag(OF_RES_FEAR);
 			return TRUE;
 		}
 
 		case EF_CONFUSE:
 		{
-			if (!check_state(OF_RES_CONFU, p_ptr->state.flags))
-				inc_timed(TMD_CONFUSED, damroll(4, 5) + 10, TRUE);
+			inc_timed(TMD_CONFUSED, damroll(4, 5) + 10, TRUE, TRUE);
 			*ident = TRUE;
-			wieldeds_notice_flag(OF_RES_CONFU);
 			return TRUE;
 		}
 
 		case EF_HALLUC:
 		{
-			if (!check_state(OF_RES_CHAOS, p_ptr->state.flags))
-				inc_timed(TMD_IMAGE, randint0(250) + 250, TRUE);
+			inc_timed(TMD_IMAGE, randint0(250) + 250, TRUE, TRUE);
 			*ident = TRUE;
-			wieldeds_notice_flag(OF_RES_CHAOS);
 			return TRUE;
 		}
 
 		case EF_PARALYZE:
 		{
-			if (!check_state(OF_FREE_ACT, p_ptr->state.flags))
-				inc_timed(TMD_PARALYZED, randint0(5) + 5, TRUE);
+			inc_timed(TMD_PARALYZED, randint0(5) + 5, TRUE, TRUE);
 			*ident = TRUE;
-			wieldeds_notice_flag(OF_FREE_ACT);
 			return TRUE;
 		}
 
 		case EF_SLOW:
 		{
-			if (inc_timed(TMD_SLOW, randint1(25) + 15, TRUE)) *ident = TRUE;
+			if (inc_timed(TMD_SLOW, randint1(25) + 15, TRUE, TRUE))
+				*ident = TRUE;
 			return TRUE;
 		}
 
@@ -262,7 +251,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			if (clear_timed(TMD_AFRAID, TRUE)) *ident = TRUE;
 			if (clear_timed(TMD_IMAGE, TRUE)) *ident = TRUE;
 			if (!of_has(p_ptr->state.flags, OF_RES_CONFU) &&
-				inc_timed(TMD_OPP_CONF, damroll(4, 10), TRUE))
+				inc_timed(TMD_OPP_CONF, damroll(4, 10), TRUE, TRUE))
 			    	*ident = TRUE;
 			return TRUE;
 		}
@@ -611,7 +600,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_TMD_INFRA:
 		{
-			if (inc_timed(TMD_SINFRA, 100 + damroll(4, 25), TRUE))
+			if (inc_timed(TMD_SINFRA, 100 + damroll(4, 25), TRUE, TRUE))
 				*ident = TRUE;
 			return TRUE;
 		}
@@ -619,7 +608,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_TMD_SINVIS:
 		{
 			if (clear_timed(TMD_BLIND, TRUE)) *ident = TRUE;
-			if (inc_timed(TMD_SINVIS, 12 + damroll(2, 6), TRUE))
+			if (inc_timed(TMD_SINVIS, 12 + damroll(2, 6), TRUE, TRUE))
 				*ident = TRUE;
 			return TRUE;
 		}
@@ -627,7 +616,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_TMD_ESP:
 		{
 			if (clear_timed(TMD_BLIND, TRUE)) *ident = TRUE;
-			if (inc_timed(TMD_TELEPATHY, 12 + damroll(6, 6), TRUE))
+			if (inc_timed(TMD_TELEPATHY, 12 + damroll(6, 6), TRUE, TRUE))
 				*ident = TRUE;
 			return TRUE;
 		}
@@ -661,7 +650,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			if (hp_player(10)) *ident = TRUE;
 			if (clear_timed(TMD_AFRAID, TRUE)) *ident = TRUE;
-			if (inc_timed(TMD_HERO, randint1(25) + 25, TRUE))
+			if (inc_timed(TMD_HERO, randint1(25) + 25, TRUE, TRUE))
 				*ident = TRUE;
 			return TRUE;
 		}
@@ -670,7 +659,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			if (hp_player(30)) *ident = TRUE;
 			if (clear_timed(TMD_AFRAID, TRUE)) *ident = TRUE;
-			if (inc_timed(TMD_SHERO, randint1(25) + 25, TRUE))
+			if (inc_timed(TMD_SHERO, randint1(25) + 25, TRUE, TRUE))
 				*ident = TRUE;
 			return TRUE;
 		}
@@ -678,50 +667,50 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_RESIST_ACID:
 		{
-			if (inc_timed(TMD_OPP_ACID, randint1(10) + 10, TRUE))
+			if (inc_timed(TMD_OPP_ACID, randint1(10) + 10, TRUE, TRUE))
 				*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_RESIST_ELEC:
 		{
-			if (inc_timed(TMD_OPP_ELEC, randint1(10) + 10, TRUE))
+			if (inc_timed(TMD_OPP_ELEC, randint1(10) + 10, TRUE, TRUE))
 				*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_RESIST_FIRE:
 		{
-			if (inc_timed(TMD_OPP_FIRE, randint1(10) + 10, TRUE))
+			if (inc_timed(TMD_OPP_FIRE, randint1(10) + 10, TRUE, TRUE))
 				*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_RESIST_COLD:
 		{
-			if (inc_timed(TMD_OPP_COLD, randint1(10) + 10, TRUE))
+			if (inc_timed(TMD_OPP_COLD, randint1(10) + 10, TRUE, TRUE))
 				*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_RESIST_POIS:
 		{
-			if (inc_timed(TMD_OPP_POIS, randint1(10) + 10, TRUE))
+			if (inc_timed(TMD_OPP_POIS, randint1(10) + 10, TRUE, TRUE))
 				*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_RESIST_ALL:
 		{
-			if (inc_timed(TMD_OPP_ACID, randint1(20) + 20, TRUE))
+			if (inc_timed(TMD_OPP_ACID, randint1(20) + 20, TRUE, TRUE))
 				*ident = TRUE;
-			if (inc_timed(TMD_OPP_ELEC, randint1(20) + 20, TRUE))
+			if (inc_timed(TMD_OPP_ELEC, randint1(20) + 20, TRUE, TRUE))
 				*ident = TRUE;
-			if (inc_timed(TMD_OPP_FIRE, randint1(20) + 20, TRUE))
+			if (inc_timed(TMD_OPP_FIRE, randint1(20) + 20, TRUE, TRUE))
 				*ident = TRUE;
-			if (inc_timed(TMD_OPP_COLD, randint1(20) + 20, TRUE))
+			if (inc_timed(TMD_OPP_COLD, randint1(20) + 20, TRUE, TRUE))
 				*ident = TRUE;
-			if (inc_timed(TMD_OPP_POIS, randint1(20) + 20, TRUE))
+			if (inc_timed(TMD_OPP_POIS, randint1(20) + 20, TRUE, TRUE))
 				*ident = TRUE;
 			return TRUE;
 		}
@@ -962,14 +951,10 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_DARKNESS:
 		{
-			if (!check_state(OF_RES_BLIND, p_ptr->state.flags) && !check_state(OF_RES_DARK, p_ptr->state.flags))
-				(void)inc_timed(TMD_BLIND, 3 + randint1(5), TRUE);
-
+			if (!check_state(OF_RES_DARK, p_ptr->state.flags))
+				(void)inc_timed(TMD_BLIND, 3 + randint1(5), TRUE, TRUE);
 			unlight_area(10, 3);
-
-			wieldeds_notice_flag(OF_RES_BLIND);
 			wieldeds_notice_flag(OF_RES_DARK);
-
 			*ident = TRUE;
 			return TRUE;
 		}
@@ -977,7 +962,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_PROTEVIL:
 		{
 			if (inc_timed(TMD_PROTEVIL, randint1(25) + 3 *
-				p_ptr->lev, TRUE)) *ident = TRUE;
+				p_ptr->lev, TRUE, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -1001,21 +986,21 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_BLESSING:
 		{
-			if (inc_timed(TMD_BLESSED, randint1(12) + 6, TRUE))
+			if (inc_timed(TMD_BLESSED, randint1(12) + 6, TRUE, TRUE))
 				*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_BLESSING2:
 		{
-			if (inc_timed(TMD_BLESSED, randint1(24) + 12, TRUE))
+			if (inc_timed(TMD_BLESSED, randint1(24) + 12, TRUE, TRUE))
 				*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_BLESSING3:
 		{
-			if (inc_timed(TMD_BLESSED, randint1(48) + 24, TRUE))
+			if (inc_timed(TMD_BLESSED, randint1(48) + 24, TRUE, TRUE))
 				*ident = TRUE;
 			return TRUE;
 		}
@@ -1151,13 +1136,13 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			*ident = TRUE;
 			(void)hp_player(30);
 			(void)clear_timed(TMD_AFRAID, TRUE);
-			(void)inc_timed(TMD_SHERO, randint1(50) + 50, TRUE);
-			(void)inc_timed(TMD_BLESSED, randint1(50) + 50, TRUE);
-			(void)inc_timed(TMD_OPP_ACID, randint1(50) + 50, TRUE);
-			(void)inc_timed(TMD_OPP_ELEC, randint1(50) + 50, TRUE);
-			(void)inc_timed(TMD_OPP_FIRE, randint1(50) + 50, TRUE);
-			(void)inc_timed(TMD_OPP_COLD, randint1(50) + 50, TRUE);
-			(void)inc_timed(TMD_OPP_POIS, randint1(50) + 50, TRUE);
+			(void)inc_timed(TMD_SHERO, randint1(50) + 50, TRUE, TRUE);
+			(void)inc_timed(TMD_BLESSED, randint1(50) + 50, TRUE, TRUE);
+			(void)inc_timed(TMD_OPP_ACID, randint1(50) + 50, TRUE, TRUE);
+			(void)inc_timed(TMD_OPP_ELEC, randint1(50) + 50, TRUE, TRUE);
+			(void)inc_timed(TMD_OPP_FIRE, randint1(50) + 50, TRUE, TRUE);
+			(void)inc_timed(TMD_OPP_COLD, randint1(50) + 50, TRUE, TRUE);
+			(void)inc_timed(TMD_OPP_POIS, randint1(50) + 50, TRUE, TRUE);
 			return TRUE;
 		}
 
@@ -1220,7 +1205,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			}
 			else
 			{
-				(void)inc_timed(TMD_FAST, 5, TRUE);
+				(void)inc_timed(TMD_FAST, 5, TRUE, TRUE);
 			}
 
 			return TRUE;
@@ -1234,7 +1219,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			}
 			else
 			{
-				(void)inc_timed(TMD_FAST, 5, TRUE);
+				(void)inc_timed(TMD_FAST, 5, TRUE, TRUE);
 			}
 
 			return TRUE;
@@ -1248,7 +1233,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			}
 			else
 			{
-				(void)inc_timed(TMD_FAST, 5, TRUE);
+				(void)inc_timed(TMD_FAST, 5, TRUE, TRUE);
 			}
 
 			return TRUE;
@@ -1578,7 +1563,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_BERSERKER:
 		{
-			if (inc_timed(TMD_SHERO, randint1(50) + 50, TRUE))
+			if (inc_timed(TMD_SHERO, randint1(50) + 50, TRUE, TRUE))
 				*ident = TRUE;
 			return TRUE;
 		}
@@ -1626,7 +1611,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			dam = 120 * (100 + boost) / 100;
 			if (dispel_evil(dam)) *ident = TRUE;
 			if (inc_timed(TMD_PROTEVIL, randint1(25) + 3 *
-				p_ptr->lev, TRUE)) *ident = TRUE;
+				p_ptr->lev, TRUE, TRUE)) *ident = TRUE;
 			if (clear_timed(TMD_POISONED, TRUE)) *ident = TRUE;
 			if (clear_timed(TMD_AFRAID, TRUE)) *ident = TRUE;
 			if (hp_player(50)) *ident = TRUE;
@@ -1682,8 +1667,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			msg("Massive explosions rupture your body!");
 			take_hit(damroll(50, 20), "a potion of Detonation");
-			(void)inc_timed(TMD_STUN, 75, TRUE);
-			(void)inc_timed(TMD_CUT, 5000, TRUE);
+			(void)inc_timed(TMD_STUN, 75, TRUE, TRUE);
+			(void)inc_timed(TMD_CUT, 5000, TRUE, TRUE);
 			*ident = TRUE;
 			return TRUE;
 		}
@@ -1693,7 +1678,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			msg("The potion makes you vomit!");
 			(void)set_food(PY_FOOD_STARVE - 1);
 			(void)clear_timed(TMD_POISONED, TRUE);
-			(void)inc_timed(TMD_PARALYZED, 4, TRUE);
+			(void)inc_timed(TMD_PARALYZED, 4, TRUE, FALSE);
 			*ident = TRUE;
 			return TRUE;
 		}
@@ -1759,7 +1744,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_SHROOM_SPRINTING:
 		{
-			if (inc_timed(TMD_SPRINT, 100, TRUE)) *ident = TRUE;
+			if (inc_timed(TMD_SPRINT, 100, TRUE, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -1777,7 +1762,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			dam = 70 * (100 + boost) / 100;
 			*ident = TRUE;
 			fire_ball(GF_ACID, dir, dam, 2);
-			inc_timed(TMD_OPP_ACID, randint1(20) + 20, TRUE);
+			inc_timed(TMD_OPP_ACID, randint1(20) + 20, TRUE, TRUE);
 			return TRUE;
 		}
 
@@ -1786,7 +1771,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			dam = 80 * (100 + boost) / 100;
 			*ident = TRUE;
 			fire_ball(GF_FIRE, dir, dam, 2);
-			inc_timed(TMD_OPP_FIRE, randint1(20) + 20, TRUE);
+			inc_timed(TMD_OPP_FIRE, randint1(20) + 20, TRUE, TRUE);
 			return TRUE;
 		}
 
@@ -1795,7 +1780,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			dam = 75 * (100 + boost) / 100;
 			*ident = TRUE;
 			fire_ball(GF_COLD, dir, dam, 2);
-			inc_timed(TMD_OPP_COLD, randint1(20) + 20, TRUE);
+			inc_timed(TMD_OPP_COLD, randint1(20) + 20, TRUE, TRUE);
 			return TRUE;
 		}
 
@@ -1804,7 +1789,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			dam = 85 * (100 + boost) / 100;
 			*ident = TRUE;
 			fire_ball(GF_ELEC, dir, dam, 2);
-			inc_timed(TMD_OPP_ELEC, randint1(20) + 20, TRUE);
+			inc_timed(TMD_OPP_ELEC, randint1(20) + 20, TRUE, TRUE);
 			return TRUE;
 		}
 

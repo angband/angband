@@ -897,6 +897,9 @@ void wieldeds_notice_flag(int flag)
 {
 	int i;
 
+	/* Sanity check */
+	if (!flag) return;
+
 	/* XXX Eddie need different naming conventions for starting wieldeds at INVEN_WIELD vs INVEN_WIELD+2 */
 	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
 	{

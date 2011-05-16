@@ -377,8 +377,8 @@ bool spell_cast(int spell, int dir)
 		/* Message */
 		msg("You faint from the effort!");
 
-		/* Hack -- Bypass free action */
-		(void)inc_timed(TMD_PARALYZED, randint1(5 * oops + 1), TRUE);
+		/* Bypass free action */
+		(void)inc_timed(TMD_PARALYZED, randint1(5 * oops + 1), TRUE, FALSE);
 
 		/* Damage CON (possibly permanently) */
 		if (randint0(100) < 50)

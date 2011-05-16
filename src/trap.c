@@ -173,7 +173,7 @@ void hit_trap(int y, int x)
 					msg("You are impaled!");
 
 					dam = dam * 2;
-					(void)inc_timed(TMD_CUT, randint1(dam), TRUE);
+					(void)inc_timed(TMD_CUT, randint1(dam), TRUE, TRUE);
 				}
 
 				/* Take the damage */
@@ -201,21 +201,8 @@ void hit_trap(int y, int x)
 				if (one_in_(2))
 				{
 					msg("You are impaled on poisonous spikes!");
-
-					dam = dam * 2;
-					(void)inc_timed(TMD_CUT, randint1(dam), TRUE);
-
-					if (check_state(OF_RES_POIS, p_ptr->state.flags))
-					{
-						msg("The poison does not affect you!");
-					}
-					else
-					{
-						dam = dam * 2;
-						(void)inc_timed(TMD_POISONED, randint1(dam), TRUE);
-					}
-
-					wieldeds_notice_flag(OF_RES_POIS);
+					(void)inc_timed(TMD_CUT, randint1(dam * 2), TRUE, TRUE);
+					(void)inc_timed(TMD_POISONED, randint1(dam * 4), TRUE, TRUE);
 				}
 
 				/* Take the damage */
@@ -280,7 +267,7 @@ void hit_trap(int y, int x)
 				msg("A small dart hits you!");
 				dam = damroll(1, 4);
 				take_hit(dam, name);
-				(void)inc_timed(TMD_SLOW, randint0(20) + 20, TRUE);
+				(void)inc_timed(TMD_SLOW, randint0(20) + 20, TRUE, FALSE);
 			}
 			else
 			{
@@ -340,40 +327,28 @@ void hit_trap(int y, int x)
 		case FEAT_TRAP_HEAD + 0x0C:
 		{
 			msg("You are surrounded by a black gas!");
-			if (!check_state(OF_RES_BLIND, p_ptr->state.flags))
-				(void)inc_timed(TMD_BLIND, randint0(50) + 25, TRUE);
-			wieldeds_notice_flag(OF_RES_BLIND);
-
+			(void)inc_timed(TMD_BLIND, randint0(50) + 25, TRUE, TRUE);
 			break;
 		}
 
 		case FEAT_TRAP_HEAD + 0x0D:
 		{
 			msg("You are surrounded by a gas of scintillating colors!");
-			if (!check_state(OF_RES_CONFU, p_ptr->state.flags))
-				(void)inc_timed(TMD_CONFUSED, randint0(20) + 10, TRUE);
-			wieldeds_notice_flag(OF_RES_CONFU);
-
+			(void)inc_timed(TMD_CONFUSED, randint0(20) + 10, TRUE, TRUE);
 			break;
 		}
 
 		case FEAT_TRAP_HEAD + 0x0E:
 		{
 			msg("You are surrounded by a pungent green gas!");
-			if (!check_state(OF_RES_POIS, p_ptr->state.flags))
-				(void)inc_timed(TMD_POISONED, randint0(20) + 10, TRUE);
-			wieldeds_notice_flag(OF_RES_POIS);
-
+			(void)inc_timed(TMD_POISONED, randint0(20) + 10, TRUE, TRUE);
 			break;
 		}
 
 		case FEAT_TRAP_HEAD + 0x0F:
 		{
 			msg("You are surrounded by a strange white mist!");
-			if (!check_state(OF_FREE_ACT, p_ptr->state.flags))
-				(void)inc_timed(TMD_PARALYZED, randint0(10) + 5, TRUE);
-			wieldeds_notice_flag(OF_FREE_ACT);
-
+			(void)inc_timed(TMD_PARALYZED, randint0(10) + 5, TRUE, TRUE);
 			break;
 		}
 	}

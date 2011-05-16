@@ -471,12 +471,8 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Take "poison" effect */
-					if (!check_state(OF_RES_POIS, p_ptr->state.flags)) {
-						if (inc_timed(TMD_POISONED, randint1(rlev) + 5, TRUE))
-						{
-							obvious = TRUE;
-						}
-					}
+					if (inc_timed(TMD_POISONED, randint1(rlev) + 5, TRUE, TRUE))
+						obvious = TRUE;
 
 					/* Learn about the player */
 					monster_learn_resists(m_idx, GF_POIS);
@@ -895,12 +891,8 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Increase "blind" */
-					if (!check_state(OF_RES_BLIND, p_ptr->state.flags))	{
-						if (inc_timed(TMD_BLIND, 10 + randint1(rlev), TRUE))
-						{
-							obvious = TRUE;
-						}
-					}
+					if (inc_timed(TMD_BLIND, 10 + randint1(rlev), TRUE, TRUE))
+						obvious = TRUE;
 
 					/* Learn about the player */
 					update_smart_learn(m_idx, OF_RES_BLIND);
@@ -914,13 +906,8 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Increase "confused" */
-					if (!check_state(OF_RES_CONFU, p_ptr->state.flags))
-					{
-						if (inc_timed(TMD_CONFUSED, 3 + randint1(rlev), TRUE))
-						{
-							obvious = TRUE;
-						}
-					}
+					if (inc_timed(TMD_CONFUSED, 3 + randint1(rlev), TRUE, TRUE))
+						obvious = TRUE;
 
 					/* Learn about the player */
 					update_smart_learn(m_idx, OF_RES_CONFU);
@@ -934,19 +921,15 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Increase "afraid" */
-					if (check_state(OF_RES_FEAR, p_ptr->state.flags))
-					{
-						msg("You stand your ground!");
-						obvious = TRUE;
-					}
-					else if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
+					if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 					{
 						msg("You stand your ground!");
 						obvious = TRUE;
 					}
 					else
 					{
-						if (inc_timed(TMD_AFRAID, 3 + randint1(rlev), TRUE))
+						if (inc_timed(TMD_AFRAID, 3 + randint1(rlev), TRUE,
+								TRUE))
 							obvious = TRUE;
 					}
 
@@ -965,19 +948,15 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Increase "paralyzed" */
-					if (check_state(OF_FREE_ACT, p_ptr->state.flags))
-					{
-						msg("You are unaffected!");
-						obvious = TRUE;
-					}
-					else if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
+					if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 					{
 						msg("You resist the effects!");
 						obvious = TRUE;
 					}
 					else
 					{
-						if (inc_timed(TMD_PARALYZED, 3 + randint1(rlev), TRUE))
+						if (inc_timed(TMD_PARALYZED, 3 + randint1(rlev), TRUE,
+								TRUE))
 							obvious = TRUE;
 					}
 
@@ -1226,13 +1205,8 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Increase "image" */
-					if (!check_state(OF_RES_CHAOS, p_ptr->state.flags))
-					{
-						if (inc_timed(TMD_IMAGE, 3 + randint1(rlev / 2), TRUE))
-						{
-							obvious = TRUE;
-						}
-					}
+					if (inc_timed(TMD_IMAGE, 3 + randint1(rlev / 2), TRUE, TRUE))
+						obvious = TRUE;
 
 					/* Learn about the player */
 					monster_learn_resists(m_idx, GF_CHAOS);
@@ -1279,7 +1253,7 @@ bool make_attack_normal(int m_idx)
 				}
 
 				/* Apply the cut */
-				if (k) (void)inc_timed(TMD_CUT, k, TRUE);
+				if (k) (void)inc_timed(TMD_CUT, k, TRUE, TRUE);
 			}
 
 			/* Handle stun */
@@ -1304,7 +1278,7 @@ bool make_attack_normal(int m_idx)
 				}
 
 				/* Apply the stun */
-				if (k) (void)inc_timed(TMD_STUN, k, TRUE);
+				if (k) (void)inc_timed(TMD_STUN, k, TRUE, TRUE);
 			}
 		}
 

@@ -52,7 +52,7 @@ bool spell_cast(int spell, int dir);
 
 /* timed.c */
 bool set_timed(int idx, int v, bool notify);
-bool inc_timed(int idx, int v, bool notify);
+bool inc_timed(int idx, int v, bool notify, bool check);
 bool dec_timed(int idx, int v, bool notify);
 bool clear_timed(int idx, bool notify);
 bool set_food(int v);

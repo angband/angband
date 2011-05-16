@@ -113,6 +113,9 @@ bool check_state(int flag, bitflag *f)
 {
 	const struct object_flag *of_ptr = &object_flag_table[flag];
 
+	/* Sanity check */
+	if (!flag) return FALSE;
+
 	if (of_has(f, flag) || (of_ptr->timed && p_ptr->timed[of_ptr->timed]))
 		return TRUE;
 

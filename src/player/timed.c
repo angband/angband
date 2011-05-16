@@ -38,93 +38,95 @@ typedef struct
   const char *on_decrease;
   u32b flag_redraw, flag_update;
   int msg;
+  int resist;
 } timed_effect;
 
 static timed_effect effects[] =
 {
 	{ "You feel yourself moving faster!", "You feel yourself slow down.",
 			NULL, NULL,
-			0, PU_BONUS, MSG_SPEED },
+			0, PU_BONUS, MSG_SPEED, 0 },
 	{ "You feel yourself moving slower!", "You feel yourself speed up.",
 			NULL, NULL,
-			0, PU_BONUS, MSG_SLOW },
+			0, PU_BONUS, MSG_SLOW, OF_FREE_ACT },
 	{ "You are blind.", "You blink and your eyes clear.",
 			NULL, NULL,
-			PR_MAP, PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS, MSG_BLIND },
+			PR_MAP, PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS, MSG_BLIND,
+			OF_RES_BLIND },
 	{ "You are paralysed!", "You can move again.",
 			NULL, NULL,
-			0, 0, MSG_PARALYZED },
+			0, 0, MSG_PARALYZED, OF_FREE_ACT },
 	{ "You are confused!", "You are no longer confused.",
 			"You are more confused!", "You feel a little less confused.",
-			0, 0, MSG_CONFUSED },
+			0, 0, MSG_CONFUSED, OF_RES_CONFU },
 	{ "You are terrified!", "You feel bolder now.",
 			"You are more scared!", "You feel a little less scared.",
-			0, PU_BONUS, MSG_AFRAID },
+			0, PU_BONUS, MSG_AFRAID, OF_RES_FEAR },
 	{ "You feel drugged!", "You can see clearly again.",
 			"You feel more drugged!", "You feel less drugged.",
-			PR_MAP | PR_MONLIST | PR_ITEMLIST, 0, MSG_DRUGGED },
+			PR_MAP | PR_MONLIST | PR_ITEMLIST, 0, MSG_DRUGGED, OF_RES_CHAOS },
 	{ "You are poisoned!", "You are no longer poisoned.",
 			"You are more poisoned!", "You are less poisoned.",
-			0, 0, MSG_POISONED },
-	{ NULL, NULL, NULL, NULL, 0, 0, 0 },  /* TMD_CUT -- handled seperately */
-	{ NULL, NULL, NULL, NULL, 0, 0, 0 },  /* TMD_STUN -- handled seperately */
+			0, 0, MSG_POISONED, OF_RES_POIS },
+	{ NULL, NULL, NULL, NULL, 0, 0, 0, 0 },  /* TMD_CUT -- handled seperately */
+	{ NULL, NULL, NULL, NULL, 0, 0, 0, OF_RES_STUN },  /* TMD_STUN -- handled seperately */
 	{ "You feel safe from evil!", "You no longer feel safe from evil.",
 			"You feel even safer from evil!", "You feel less safe from evil.",
-			0, 0, MSG_PROT_EVIL },
+			0, 0, MSG_PROT_EVIL, 0 },
 	{ "You feel invulnerable!", "You feel vulnerable once more.",
 			NULL, NULL,
-			0, PU_BONUS, MSG_INVULN },
+			0, PU_BONUS, MSG_INVULN, 0 },
 	{ "You feel like a hero!", "You no longer feel heroic.",
 			"You feel more like a hero!", "You feel less heroic.",
-			0, PU_BONUS, MSG_HERO },
+			0, PU_BONUS, MSG_HERO, 0 },
 	{ "You feel like a killing machine!", "You no longer feel berserk.",
 			"You feel even more berserk!", "You feel less berserk.",
-			0, PU_BONUS, MSG_BERSERK },
+			0, PU_BONUS, MSG_BERSERK, 0 },
 	{ "A mystic shield forms around your body!", "Your mystic shield crumbles away.",
 			"The mystic shield strengthens.", "The mystic shield weakens.",
-			0, PU_BONUS, MSG_SHIELD },
+			0, PU_BONUS, MSG_SHIELD, 0 },
 	{ "You feel righteous!", "The prayer has expired.",
 			"You feel more righteous!", "You feel less righteous.",
-			0, PU_BONUS, MSG_BLESSED },
+			0, PU_BONUS, MSG_BLESSED, 0 },
 	{ "Your eyes feel very sensitive!", "Your eyes no longer feel so sensitive.",
 			"Your eyes feel more sensitive!", "Your eyes feel less sensitive.",
-			0, (PU_BONUS | PU_MONSTERS), MSG_SEE_INVIS },
+			0, (PU_BONUS | PU_MONSTERS), MSG_SEE_INVIS, 0 },
 	{ "Your eyes begin to tingle!", "Your eyes stop tingling.",
 			"Your eyes' tingling intensifies.", "Your eyes tingle less.",
-			0, (PU_BONUS | PU_MONSTERS), MSG_INFRARED },
+			0, (PU_BONUS | PU_MONSTERS), MSG_INFRARED, 0 },
 	{ "You feel resistant to acid!", "You are no longer resistant to acid.",
 			"You feel more resistant to acid!", "You feel less resistant to acid.",
-			PR_STATUS, 0, MSG_RES_ACID },
+			PR_STATUS, 0, MSG_RES_ACID, OF_VULN_ACID },
 	{ "You feel resistant to electricity!", "You are no longer resistant to electricity.",
 			"You feel more resistant to electricity!", "You feel less resistant to electricity.",
-			PR_STATUS, 0, MSG_RES_ELEC },
+			PR_STATUS, 0, MSG_RES_ELEC, OF_VULN_ELEC },
 	{ "You feel resistant to fire!", "You are no longer resistant to fire.",
 			"You feel more resistant to fire!", "You feel less resistant to fire.",
-			PR_STATUS, 0, MSG_RES_FIRE },
+			PR_STATUS, 0, MSG_RES_FIRE, OF_VULN_FIRE },
 	{ "You feel resistant to cold!", "You are no longer resistant to cold.",
 			"You feel more resistant to cold!", "You feel less resistant to cold.",
-			PR_STATUS, 0, MSG_RES_COLD },
+			PR_STATUS, 0, MSG_RES_COLD, OF_VULN_COLD },
 	{ "You feel resistant to poison!", "You are no longer resistant to poison.",
 			"You feel more resistant to poison!", "You feel less resistant to poison.",
-			0, 0, MSG_RES_POIS },
+			0, 0, MSG_RES_POIS, 0 },
 	{ "You feel resistant to confusion!", "You are no longer resistant to confusion.",
 			"You feel more resistant to confusion!", "You feel less resistant to confusion.",
-			PR_STATUS, PU_BONUS, 0 },
+			PR_STATUS, PU_BONUS, 0, 0 },
 	{ "You feel your memories fade.", "Your memories come flooding back.",
 			NULL, NULL,
-			0, 0, MSG_GENERIC },
+			0, 0, MSG_GENERIC, 0 },
 	{ "Your mind expands.", "Your horizons are once more limited.",
 			"Your mind expands further.", NULL,
-			0, PU_BONUS, MSG_GENERIC },
+			0, PU_BONUS, MSG_GENERIC, 0 },
 	{ "Your skin turns to stone.", "A fleshy shade returns to your skin.",
 			NULL, NULL,
-			0, PU_BONUS, MSG_GENERIC },
+			0, PU_BONUS, MSG_GENERIC, 0 },
 	{ "You feel the need to run away, and fast!", "The urge to run dissipates.",
 			NULL, NULL,
-			0, PU_BONUS, MSG_AFRAID },
+			0, PU_BONUS, MSG_AFRAID, 0 },
 	{ "You start sprinting.", "You suddenly stop sprinting.",
 			NULL, NULL,
-			0, PU_BONUS, MSG_SPEED },
+			0, PU_BONUS, MSG_SPEED, 0 },
 };
 
 /*
@@ -190,8 +192,7 @@ bool set_timed(int idx, int v, bool notify)
 
 	/* Sort out the sprint effect */
 	if (idx == TMD_SPRINT && v == 0)
-		inc_timed(TMD_SLOW, 100, TRUE);
-
+		inc_timed(TMD_SLOW, 100, TRUE, FALSE);
 
 	/* Nothing to notice */
 	if (!notify) return FALSE;
@@ -212,11 +213,23 @@ bool set_timed(int idx, int v, bool notify)
 
 /**
  * Increase the timed effect `idx` by `v`.  Mention this if `notify` is TRUE.
+ * Check for resistance to the effect if `check` is TRUE.
  */
-bool inc_timed(int idx, int v, bool notify)
+bool inc_timed(int idx, int v, bool notify, bool check)
 {
+	timed_effect *effect;
+
+	/* Find the effect */
+	effect = &effects[idx];
+
 	/* Check we have a valid effect */
 	if ((idx < 0) || (idx > TMD_MAX)) return FALSE;
+
+	/* Check that @ can be affected by this effect */
+	if (check) {
+		wieldeds_notice_flag(effect->resist);
+		if (check_state(effect->resist, p_ptr->state.flags)) return FALSE;
+	}
 
 	/* Paralysis should be non-cumulative */
 	if (idx == TMD_PARALYZED && p_ptr->timed[TMD_PARALYZED] > 0)

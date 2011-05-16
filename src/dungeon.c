@@ -616,8 +616,8 @@ static void process_world(struct cave *c)
 			msg("You faint from the lack of food.");
 			disturb(1, 0);
 
-			/* Hack -- faint (bypass free action) */
-			(void)inc_timed(TMD_PARALYZED, 1 + randint0(5), TRUE);
+			/* Faint (bypass free action) */
+			(void)inc_timed(TMD_PARALYZED, 1 + randint0(5), TRUE, FALSE);
 		}
 	}
 

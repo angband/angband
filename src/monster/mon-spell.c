@@ -240,8 +240,8 @@ static void do_side_effects(int spell, int dam, int m_idx, int rlev)
 				if (re_ptr->dam.m_bonus && (dur > re_ptr->dam.m_bonus))
 					dur = re_ptr->dam.m_bonus;
 
-				/* Apply the effect */
-				(void)inc_timed(re_ptr->flag, dur, TRUE);
+				/* Apply the effect - we have already checked for resistance */
+				(void)inc_timed(re_ptr->flag, dur, TRUE, FALSE);
 
 			} else {
 				switch (re_ptr->flag) {
