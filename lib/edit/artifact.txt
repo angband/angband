@@ -97,7 +97,7 @@ F:NO_FUEL |
 F:INSTA_ART
 E:ILLUMINATION:10+d10
 M:The {kind} well{s} with clear light...
-D:A small crystal phial containing the light of E["a]rendil's Star.
+D:A small crystal phial containing the light of E["a]rendil's Star.  
 D:Its light is imperishable, and near it darkness cannot endure.
 
 
@@ -175,7 +175,7 @@ F:SEE_INVIS | FREE_ACT | REGEN | LIGHT | RES_FEAR |
 F:INSTA_ART
 L:3:STR | CON
 L:5:INFRA 
-D:The Nauglam['i]r, a carcanet of gold set with a multitude of shining
+D:The Nauglam['i]r, a carcanet of gold set with a multitude of shining 
 D:gems of Valinor.  The radiant Silmaril of F["e]anor hangs in its midst 
 D:as its crowning glory.  The sturdy spirits of Dwarvish craftsmen who 
 D:labored long in mountain smithies lie within it still, and as gossamer 
@@ -198,7 +198,7 @@ E:CLAIRVOYANCE:50+d50
 M:The {kind} glow{s} a deep green...
 L:2:INT | WIS
 L:3:SEARCH | INFRA
-D:A great globe with a heart of fire, the Palant['i]r provides the wearer with
+D:A great globe with a heart of fire, the Palant['i]r provides the wearer with 
 D:sight of far places - at a cost, for those espied upon are aware of it.
 
 
@@ -247,8 +247,8 @@ E:PROTEVIL:200+4d50
 M:{name} glows deep red...
 L:1:STR | INT | WIS | DEX | CON | CHR
 D:The Ring of Fire, made of gold and set with a ruby that glows like flame.  
-D:Narya is one of the three Rings of Power created by Celebrimbor and hidden by
-D:the Elves from Sauron.
+D:Narya is one of the three Rings of Power created by Celebrimbor and hidden 
+D:by the Elves from Sauron.
 
 
 # The Ring of Power 'Nenya'
@@ -267,9 +267,9 @@ F:INSTA_ART
 E:RESTORE_LIFE:200+2d50
 M:{name} glows bright white...
 L:2:STR | INT | WIS | DEX | CON | CHR
-D:The Ring of Adamant, made of mithril with a pure white stone as centerpiece.
-D:Nenya is one of the three Rings of Power created by Celebrimbor and hidden by
-D:the Elves from Sauron.
+D:The Ring of Adamant, made of mithril with a pure white stone as 
+D:centerpiece.  Nenya is one of the three Rings of Power created by 
+D:Celebrimbor and hidden by the Elves from Sauron.
 
 
 # The Ring of Power 'Vilya'
@@ -290,8 +290,8 @@ M:{name} glows deep blue...
 L:3:STR | INT | WIS | DEX | CON | CHR
 D:The Ring of Sapphire, made of gold with a brilliant blue gem that shines 
 D:like stars.  It glitters untouchable despite all that Morgoth ever wrought.
-D:Vilya is one of the three Rings of Power created by Celebrimbor and hidden by
-D:the Elves from Sauron.
+D:  Vilya is one of the three Rings of Power created by Celebrimbor and 
+D:hidden by the Elves from Sauron.
 
 
 # The Ring of Power 'The One Ring'
@@ -334,7 +334,7 @@ E:HEAL1:200
 M:You feel a warm tingling inside...
 L:2:STR | WIS | CHR
 D:A green stone, imbued with the power of Elvendom and the light of the Sun.
-D:Those who gaze through it see the aged and infirm as young again, and its
+D:  Those who gaze through it see the aged and infirm as young again, and its 
 D:wearer brings healing after victory in battle.
 
 
@@ -368,7 +368,7 @@ F:RES_POIS | RES_LIGHT | RES_DARK |
 F:LIGHT | SEE_INVIS | AGGRAVATE | 
 E:STAR_BALL:50
 M:Lightning surrounds your {kind}!
-D:A massive suit of heavy dragon scales deeply saturated with many colors.  
+D:A massive suit of heavy dragon scales deeply saturated with many colors.   
 D:It throbs with angry energies, and you feel the raw elemental might of 
 D:untamed Lightning as you put it on.
 
@@ -385,7 +385,7 @@ F:RES_SHARD | RES_NETHR | RES_NEXUS | RES_CHAOS | RES_DISEN |
 E:RAGE_BLESS_RESIST:50
 M:{name} glow{s} many colors...
 D:An adamant suit with scales of every color.  Untrammelled powers elemental 
-D:and ethereal swirl around it in an inextricably intermingled nimbus. 
+D:and ethereal swirl around it in an inextricably intermingled nimbus.
 
 
 N:18:'Mediator'
@@ -440,9 +440,9 @@ P:50:1d4:0:0:15
 F:HIDE_TYPE | RES_FEAR | 
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_CONFU | RES_SOUND
 L:2:STR | DEX
-D:Small steel plates cover an inner layer of sturdy canvas, and both metal
-D:and cloth bear scenes of hunting and war.  As you don the armour of Eorl the
-D:Young, matchless in combat, you feel his spirit surround you.
+D:Small steel plates cover an inner layer of sturdy canvas, and both metal 
+D:and cloth bear scenes of hunting and war.  As you don the armour of Eorl 
+D:the Young, matchless in combat, you feel his spirit surround you.
 
 
 N:22:'Belegennon'
@@ -591,7 +591,7 @@ A:11:40 to 100
 P:12:1d3:0:0:20
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | SUST_STR | SUST_INT | 
 F:SUST_WIS | SUST_DEX | SUST_CON | SUST_CHR
-D:The great metal-bound shield of Elendil's younger son An['a]rion, whom
+D:The great metal-bound shield of Elendil's younger son An['a]rion, whom 
 D:even Sauron could not corrupt.
 
 
@@ -634,7 +634,7 @@ P:0:1d1:0:0:20
 F:HIDE_TYPE | 
 F:FREE_ACT | SEE_INVIS | TELEPATHY | LIGHT_CURSE | HEAVY_CURSE
 L:-5:STR | DEX | CON
-D:The midnight-hued steel circlet of the sorceress-queen Ber['u]thiel.  It
+D:The midnight-hued steel circlet of the sorceress-queen Ber['u]thiel.  It 
 D:grants extraordinary powers of sight and awareness at a terrible physical 
 D:cost.
 
@@ -686,9 +686,9 @@ F:HIDE_TYPE | RES_FEAR |
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | 
 F:LIGHT | SEE_INVIS | TELEPATHY
 L:4:STR | DEX | CON
-D:The legendary Dragon-helm, forged by one of the legendary Dwarven smiths
-D:of the First Age.  The visage of mighty Glaurung forms its crest, and the
-D:mere sight of the helm, borne by T['u]rin Turambar, struck dread into the
+D:The legendary Dragon-helm, forged by one of the legendary Dwarven smiths 
+D:of the First Age.  The visage of mighty Glaurung forms its crest, and the 
+D:mere sight of the helm, borne by T['u]rin Turambar, struck dread into the 
 D:hearts of the servants of Morgoth.
 
 
@@ -775,7 +775,7 @@ F:RES_ACID
 E:SLEEPII:55
 M:{name} glows deep blue...
 L:3:INT | WIS | STEALTH
-D:This elven-grey mantle possesses great powers of tranquility and
+D:This elven-grey mantle possesses great powers of tranquility and 
 D:concealment, and grants the wearer the knowledge and understanding of 
 D:the Sindar.
 
@@ -790,7 +790,7 @@ F:FREE_ACT | RES_ACID | RES_FIRE | RES_COLD
 E:RECHARGE:70
 M:Your {kind} glow{s} bright yellow...
 L:3:DEX | CHR
-D:A translucent cloak of pearly grey with glowing, energized Elven runes
+D:A translucent cloak of pearly grey with glowing, energized Elven runes 
 D:showing calm and clear as moonlight on still water.
 
 
@@ -832,7 +832,7 @@ L:4:INT | WIS | CHR | STEALTH
 L:2:SPEED
 D:The opaque midnight folds of this cloak, inlaid with a multitude of tiny 
 D:diamonds, swirl around you, and you feel a hint, a fragment of the 
-D:restorative magics of L['u]thien, the most beautiful being who ever knew
+D:restorative magics of L['u]thien, the most beautiful being who ever knew 
 D:death.
 
 
@@ -861,8 +861,8 @@ F:IM_FIRE
 E:MANA_BOLT:30+d30
 M:Your {kind} glow{s} white...
 L:3:INT
-D:The iron-shod gauntlets of the Dark Elven smith E["o]l, who imbued them with
-D:magics he could channel in battle.
+D:The iron-shod gauntlets of the Dark Elven smith E["o]l, who imbued them 
+D:with magics he could channel in battle.
 
 
 N:52:'Cambeleg'
@@ -941,7 +941,7 @@ F:HIDE_TYPE |
 F:RES_FIRE | RES_DISEN | FREE_ACT | DRAIN_EXP | 
 F:AGGRAVATE | LIGHT_CURSE | HEAVY_CURSE | SHOW_MODS
 L:-3:STR | DEX
-D:A pair of weakening gauntlets, named after Beren, who returned to Thingol
+D:A pair of weakening gauntlets, named after Beren, who returned to Thingol 
 D:having lost to Carcharoth the hand that clasped a Silmaril.
 
 
@@ -1044,8 +1044,8 @@ F:BRAND_ACID | RES_ACID | HIDE_TYPE |
 F:SLAY_EVIL | SLAY_TROLL | SLAY_ORC | FREE_ACT | RES_DARK | SUST_DEX | 
 F:SHOW_MODS
 L:4:DEX | SPEED
-D:Forged by Telchar, greatest of Dwarven smiths, and used by Beren to gouge a
-D:Silmaril out of Morgoth's crown, this long chopping dagger slices through
+D:Forged by Telchar, greatest of Dwarven smiths, and used by Beren to gouge a 
+D:Silmaril out of Morgoth's crown, this long chopping dagger slices through 
 D:ordinary metal as easily as its name, "Iron Cleaver", suggests.
 
 
@@ -1307,7 +1307,7 @@ F:HIDE_TYPE | AGGRAVATE |
 F:SLAY_EVIL | BRAND_POIS | SLAY_DEMON | FREE_ACT | RES_ELEC | 
 F:RES_LIGHT | RES_DARK | LIGHT | SEE_INVIS | SHOW_MODS
 L:2:STR | CON | SPEED | BLOWS
-D:Forged of meteoric iron by E["o]l the Dark Elf, and as deadly as any
+D:Forged of meteoric iron by E["o]l the Dark Elf, and as deadly as any 
 D:other blade he forged.
 
 
@@ -1477,7 +1477,7 @@ F:FREE_ACT | SLOW_DIGEST | BLESSED | SHOW_MODS
 E:COLD_BALL100:35
 M:{name} glows an intense blue...
 L:4:WIS | DEX
-D:The mighty spear of Gil-galad, famed as "Snow-point" in the songs of Elves. 
+D:The mighty spear of Gil-galad, famed as "Snow-point" in the songs of Elves.  
 D:Against it, all the foul corruptions of Sauron dashed in vain.
 
 
@@ -1689,7 +1689,7 @@ P:0:9d9:5:25:10
 F:KILL_DRAGON | SLAY_ANIMAL | SLAY_EVIL | IMPACT | KILL_UNDEAD | 
 F:KILL_DEMON | SLAY_TROLL | SLAY_ORC | 
 F:SEE_INVIS | TELEPATHY | AGGRAVATE | SHOW_MODS | INSTA_ART
-D:The mighty Hammer of the Underworld, blackened by doomspells of shattering.
+D:The mighty Hammer of the Underworld, blackened by doomspells of shattering.  
 D:Its wielder holds the lives of all Morgoth's servants in his hand.
 
 
@@ -1716,7 +1716,7 @@ F:HIDE_TYPE | RES_FEAR |
 F:SLAY_ANIMAL | BRAND_FIRE | BRAND_ELEC | SLAY_TROLL | SLAY_ORC | 
 F:RES_ELEC | RES_FIRE | RES_DARK | SHOW_MODS
 L:4:STR | CON
-D:The long-lost weapon of Kzurin, Dwarven champion of ancient Belegost
+D:The long-lost weapon of Kzurin, Dwarven champion of ancient Belegost 
 D:Runes of strength adorn its handle, and flames and sparks roar and 
 D:crackle around its massive head.
 
@@ -1742,7 +1742,7 @@ P:0:2d6:15:17:2
 F:BRAND_FIRE | IM_FIRE | SHOW_MODS
 E:FIRE_BOLT72:20
 M:{name} rages in fire...
-D:A famed battle-lord of old with a head as ruddy as embers that can yet rise
+D:A famed battle-lord of old with a head as ruddy as embers that can yet rise 
 D:up in wrath.
 
 
@@ -1755,7 +1755,7 @@ F:KILL_DRAGON | BRAND_ELEC | IM_ELEC
 F:SHOW_MODS
 E:HASTE1:100+d100
 M:{name} glows bright green...
-D:A great ridged mace that surrounds you with a nimbus of living lightning. 
+D:A great ridged mace that surrounds you with a nimbus of living lightning.  
 D:You remain utterly untouched, even as fat sparks crackle around your 
 D:fingers and eyebrows.
 
@@ -1771,7 +1771,7 @@ F:KILL_DRAGON | SLAY_EVIL | BRAND_ACID | SLAY_UNDEAD | SLAY_DEMON |
 F:FREE_ACT | RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_NEXUS | 
 F:SEE_INVIS | SHOW_MODS
 L:4:WIS | TUNNEL
-D:The wondrous hammer of Aul["e], creator of the wise Dwarven lords of old.  
+D:The wondrous hammer of Aul["e], creator of the wise Dwarven lords of old.   
 D:It bears demolishing magics that no serpent or demon can withstand, and 
 D:invokes the strength of mountains to ward off the tumult of the elements.
 
@@ -1848,8 +1848,8 @@ F:SHOW_MODS
 E:DRAIN_LIFE1:40
 M:{name} glows white...
 L:4:WIS | INFRA
-D:Once wielded by the High Priest of Meneltarma, this great mace gleams coldly
-D:as though moonlit, and can strike equally mighty spiritual and physical
+D:Once wielded by the High Priest of Meneltarma, this great mace gleams coldly 
+D:as though moonlit, and can strike equally mighty spiritual and physical 
 D:blows.
 
 
@@ -1881,8 +1881,8 @@ P:0:0d0:20:22:0
 F:HIDE_TYPE | 
 F:RES_DISEN | SHOW_MODS
 L:1:DEX | SPEED | STEALTH | SHOTS
-D:The great bow of Beleg C['u]thalion, the most famous archer of the Elves.
-D:Its backbone of black yew holds strings of bear sinew, and of old, only
+D:The great bow of Beleg C['u]thalion, the most famous archer of the Elves.  
+D:Its backbone of black yew holds strings of bear sinew, and of old, only 
 D:Beleg himself could draw them.
 
 
@@ -1932,7 +1932,7 @@ A:10:25 to 100
 P:0:0d0:12:15:0
 F:RES_FIRE | RES_ELEC | RES_COLD | REGEN
 L:2:STR | CON | MIGHT
-D:One of a pair of hunting bows once belonging to F["e]anor's two youngest
+D:One of a pair of hunting bows once belonging to F["e]anor's two youngest 
 D:sons.  The bows are like and yet unlike, much as the twin brothers were.
 
 
@@ -1943,7 +1943,7 @@ A:10:25 to 80
 P:0:0d0:12:15:0
 F:RES_FIRE | RES_ELEC | RES_COLD | SLOW_DIGEST
 L:1:INT | WIS | DEX | SHOTS | MIGHT | SPEED
-D:One of a pair of hunting bows once belonging to F["e]anor's two youngest
+D:One of a pair of hunting bows once belonging to F["e]anor's two youngest 
 D:sons.  The bows are like and yet unlike, much as the twin brothers were.
 
 
@@ -2003,7 +2003,7 @@ P:0:2d5:12:14:0
 F:KILL_DRAGON | IM_FIRE | RES_ACID | RES_FEAR | 
 D:Azagh[^a]l, Dwarf-king of Belegost, fell before Glaurung in the Battle 
 D:of Unnumbered Tears.  With his final breath, Azagh[^a]l plunged this 
-D:blade into Glaurung's belly with such a blow that the Father of Dragons fled
+D:blade into Glaurung's belly with such a blow that the Father of Dragons fled 
 D:the field with all his kin, and was at first believed to be mortally wounded.
 
 
@@ -2030,6 +2030,6 @@ P:0:4d4:12:16:0
 F:SLAY_EVIL | KILL_UNDEAD | SLAY_GIANT | SLAY_ANIMAL | 
 F:RES_NETHR | RES_FEAR | RES_DARK | RES_COLD
 L:4:STR | CHR | STEALTH | SPEED
-D:The blade of the legendary Shieldmaiden of Rohan, who slew the foul
+D:The blade of the legendary Shieldmaiden of Rohan, who slew the foul 
 D:steed of the Morgul-lord before striking down the mighty Witch-king 
 D:himself, whom no mortal man could hinder.
