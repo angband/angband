@@ -1671,7 +1671,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 
 	for (i = 0; i < OF_MAX; i++)
 		if (of_has(collect_f, i))
-			state->flags[i] = TRUE;
+			of_on(state->flags, i);
 
 
 	/*** Handle stats ***/
