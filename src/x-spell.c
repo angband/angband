@@ -330,7 +330,9 @@ void get_spell_info(int tval, int spell, char *p, size_t len)
 				break;
 			case PRAYER_ORB_OF_DRAINING:
 				strnfmt(p, len, " %d+3d6", plev +
-				        (plev / 2));
+				        (player_has(PF_ZERO_FAIL) 
+						? (plev / 2)
+						: (plev / 4)));
 				break;
 			case PRAYER_CURE_CRITICAL_WOUNDS:
 				my_strcpy(p, " heal 25%", len);
@@ -1000,9 +1002,11 @@ static bool cast_priest_spell(int spell, int dir)
 		case PRAYER_ORB_OF_DRAINING:
 		{
 			fire_ball(GF_HOLY_ORB, dir,
-			          (damroll(3, 6) + plev +
-			           (plev / 2)),
-			          ((plev < 30) ? 2 : 3));
+				(damroll(3, 6) + plev +
+				 (player_has(PF_ZERO_FAIL)
+					? (plev / 2)
+					: (plev / 4))),	
+				((plev < 30) ? 2 : 3));
 			break;
 		}
 
