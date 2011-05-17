@@ -673,6 +673,7 @@ static const struct state_info effects[] =
 	{ TMD_INVULN,    S("Invuln"),     TERM_L_GREEN },
 	{ TMD_HERO,      S("Hero"),       TERM_L_GREEN },
 	{ TMD_SHERO,     S("Berserk"),    TERM_L_GREEN },
+	{ TMD_BOLD,      S("Bold"),       TERM_L_GREEN },
 	{ TMD_STONESKIN, S("Stone"),      TERM_L_GREEN },
 	{ TMD_SHIELD,    S("Shield"),     TERM_L_GREEN },
 	{ TMD_BLESSED,   S("Blssd"),      TERM_L_GREEN },

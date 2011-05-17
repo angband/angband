@@ -127,6 +127,9 @@ static timed_effect effects[] =
 	{ "You start sprinting.", "You suddenly stop sprinting.",
 			NULL, NULL,
 			0, PU_BONUS, MSG_SPEED, 0 },
+	{ "You feel bold.", "You no longer feel bold.",
+			"You feel even bolder!", "You feel less bold.",
+			0, PU_BONUS, MSG_BOLD, 0 },
 };
 
 /*

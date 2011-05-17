@@ -315,6 +315,7 @@ const const char *angband_sound_name[MSG_MAX] =
 	"blessed", 
 	"hero", 
 	"berserk", 
+	"bold", 
 	"prot_evil", 
 	"invuln", 
 	"see_invis", 
