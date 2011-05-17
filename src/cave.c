@@ -442,9 +442,10 @@ bool dtrap_edge(int y, int x)
  */
 static void grid_get_text(grid_data *g, byte *a, char *c)
 {
-	/* Trap detect edge, but don't colour traps themselves */
+	/* Trap detect edge, but don't colour traps themselves, or treasure */
 	if (g->trapborder &&
-		((g->f_idx < FEAT_TRAP_HEAD) || (g->f_idx > FEAT_TRAP_TAIL)))
+		((g->f_idx < FEAT_TRAP_HEAD) || (g->f_idx > FEAT_TRAP_TAIL)) &&
+		(g->f_idx != FEAT_MAGMA_K) && (g->f_idx != FEAT_QUARTZ_K))
 	{
 		if (g->in_view)
 			*a = TERM_L_GREEN;
