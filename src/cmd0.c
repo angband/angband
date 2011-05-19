@@ -562,9 +562,15 @@ static ui_event textui_get_command(void)
 		/* Apply keymap if not inside a keymap already */
 		if (ke.key.code && act && !inkey_next)
 		{
+			size_t n = 0;
+			while (act[n].type)
+				n++;
+
+			/* Make room for the terminator */
+			n += 1;
+
 			/* Install the keymap */
-			memcpy(request_command_buffer, act,
-			          sizeof(request_command_buffer));
+			memcpy(request_command_buffer, act, n * sizeof(struct keypress));
 
 			/* Start using the buffer */
 			inkey_next = request_command_buffer;
