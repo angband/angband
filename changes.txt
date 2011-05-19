@@ -1,5 +1,5 @@
 Angband 3.3.0-wip
-=============
+=================
 
 We, the Angband development team, are proud to present the latest 
 iteration of the game, in the form of Angband 3.3.0-wip. Although this 
@@ -11,13 +11,14 @@ few weeks time fixing the bugs found herein, but in the meantime, play.
 
 This release was brought to you by (in alphabetical order of IRC 
 nickname): Aerdan, Antony Sidwell, Erik Osheim, Elly, Aaron Bader, 
-Lebannen, Chris Carr, William Moore, Peter Denison and Andi Sidwell. 
-With special thanks to Eddie Grove for challenging us to do better and 
-helping us get there. Please see the file thanks.txt for a full list of 
-contributors.
+Lebannen, Chris Carr, William Moore, Robert Au, Peter Denison and 
+Andi Sidwell. With special thanks to Eddie Grove for challenging us to 
+do better and helping us get there. Please see the file thanks.txt for 
+a full list of contributors.
 
-This changelog is complete as of 10 Apr 2011. For later changes, see the
-bug tracker at trac.rephial.org or the git logs.
+This changelog is complete as of 19 May 2011 (git commit 6d8c346). 
+For later changes, see the bug tracker at trac.rephial.org or the 
+git logs.
 
 Gameplay changes
 ================
@@ -37,26 +38,41 @@ Gameplay changes
 496053b  Remove brands from elemental rings
 8cd902c  Remove percentage healing, switch to CLW/CSW/CCW healing 20/40/60
              HP respectively.
+c18fbd8, f679a53   Remove priest point-weapon penalty
    #318  Consolidate duplicate monster entries
    #598  Make time attacks less evil
    #855  Allow running from detection edge
   #1061  Add command to hide/unhide squelchables
-  #1095  Add scrolls of restore item
+#1095,#1319  Remove scrolls of restore item
   #1096  Drain charged (RBE_UN_POWER) should only drain as many changes as
              a recharge gives
+  #1155  Add birth_keep_randarts option
+  #1310  Prevent unusually high AC armour from being detected from afar
   #1311  Being confused and walking into a wall now costs a turn
   #1335  Walkover of unIDd artifacts no longer given away by definite article
   #1338  Characters no longer start out with bad equipment
   #1340  Fix to-hit bonus for randarts
+  #1341  Tone down +dam and +speed on nonweapon standarts
   #1345  Make Wrath, Ulmo, and Erebor match base item dice sides and weight
   #1346  Make item effects that change monster status ID properly again.
   #1348  Fix, refactor broken specific summons
   #1350  STUPID living monsters no longer immune to life drain
+  #1353  Remove EASY_KNOW from =Dog
   #1357  Labyrinths can no longer have double doors
   #1365  Normal DSMs contribute to level rating
   #1366  Wand of dragon breath now learned with use
+  #1382  Prevent OOD objects from decreasing level feeling
   #1383  Earthquake weapons with multiple blows stop attacking if the
              target gets moved by a quake
+  #1384  Correct Curlicues One vault layout
+  #1387  Properly split items with charges when thrown
+  #1390  Meteors from meteor swarm now travel like bolts
+  #1393  Remove apply_magic() MAX_DEPTH check
+  #1404  Check for existing pval flags during ego item creation
+  #1409  Fix summoning when match_monster_bases() has more than one choice
+  #1411  Check for temporary resists in check_side_immune()
+  #1413  Make detect invisible detect monsters correctly
+  #1422  Allow QUESTOR monsters to appear on cavern levels
 2ef38bc  Move the 'jump' command to '(W)alk into a trap'
 4656bb7  Add a neutral gender
 ce06a19  Scale no_selling gold multiplier in early levels, and reduce money
@@ -76,6 +92,16 @@ dfcb3c7  Added FRIEND flag and put it on some monsters.
 582adf5  Make artifacts not be actually created in birth_no_artifacts
 520beb7  Nullfame's improvements to monster power evaluation
 7dda40c  Change Paurnimmen's cold brand to x2 rather than x3.
+1c3376d  Fix ?rune behavior on squares containing objects
+5450d25  Move caverns to >= 15, and labyrinths to >= 13
+d6fa671  Add !Neutralize Poison to Alchemist, to allow full stock to be
+             achieved
+007b4b7  Tidy up the boost to level feelings resulting from artifact/ego 
+             generation
+         Adjust ratings of slays and brands to reflect dice damage
+82a3cef  Fix stacking of items from old savefiles with newly created items
+a06e056  Preserve artifacts carried by deleted (not killed) monsters
+c6be93b  Fix object branding spells by calling ego_apply_magic()
 
 User interface
 ==============
@@ -83,6 +109,8 @@ User interface
              provide facility for recognizing modifier keys
          Add buzzkill's updated tiles
          Add skill, race, class info to birth UI
+    #21  Add NPP's visible targetting (thanks, Jeff)
+         Artifact description revisions
    #820  Adam Bolt tileset element mappings wrong
   #1012  Show build version in dumps
   #1060  Replacing "destroy"ing with "squelch this item"
@@ -102,7 +130,12 @@ User interface
   #1360  Fixed title display for second and subsequent pages of high score list
   #1362  Fix FOV update for HAS_LITE (thanks Zaxx)
   #1363  Make Ar-Pharazon flicker, and change up some of the canine coloring
+  #1373  Don't display artifact base kinds in the squelch menus
   #1385  Correct keycode for F6 key
+  #1388  Leave alone the colour of traps and veins on the trap-detection border
+  #1396  Fix keymaps interaction menu title
+  #1397  Make ^E inven/equip subwindow toggling work in stores
+  #1402  Backspace no longer gets doubled on Windows
 eb8c440  Make message printing use fewer lines when possible
 73da897  Make hints from the store more common and less verbose
 72cd70a  Re-enable solid walls for windows
@@ -129,9 +162,25 @@ e177bf1  Allow overriding of keymaps
 cde42c9  Make C-x immediately exit death screen
 3534656  Added support for new keycode KC_BEGIN (keypad 5). Added keypad
              support for running and tunneling to pref.prf.
+9a0d219  Sync font-x11.prf with angband_color_table
+ce0d34d  Add -s option for sound selection
+ca50f3a  Make command-line options case-sensitive
+642eff5  Make projected attacks from unseen foes give messages to non-blind 
+             players
+2738f1f  New grid_light_level enum based on FEAT_LIGHTING_*
+fb7a532  Add "--" in front of player notes in history
+         Print a message when Deep Descent cannot be completed
+03d8f79  Add "Unignoring" status indicator
+ea6368c  Remove weird colour-setting lines from the pref files
+f99301b  Fix quiver slot in inven subwindow (thanks PowerWyrm)
+da67524  Randart artifact spoilers now include the standard artifact on which 
+             the randart is based.
+49911e7  Add /me and /say support for the note command
+b62590d  Show distance in target-out-of-range message (thanks ChodTheWacko)
 
 Other bugs fixed
 ==================
+   #679  Remove obsolete priest spell 6 from player class definitions
   #1116  Changing squelch options triggers item drops
   #1304  Crash from broken randart flags
   #1305  Fix divide by zero error in monster recall
@@ -139,6 +188,8 @@ Other bugs fixed
   #1322  Make sure that p_ptr->object_idx changes appropriately when the
              inventory changes via pickup, drop, wield, sell, etc. 
   #1326  Savefile does not record town level properly
+  #1327  Ensure track_object() mechanism uses a non-zero value to mean 
+             'no object'
   #1329  extra ! in flag_is_subset
   #1330  Crash using @Z1 inscription
   #1333  Fix parse error in font-x11.prf
@@ -149,6 +200,10 @@ Other bugs fixed
   #1356  Force cap of gold drops to MAX_SHORT.
   #1359  Fix undersized char buffer in textui_cmd_destroy()
   #1361  Using non-existent item by number causes crash
+  #1392  Fix origin crash for no-longer-valid monster entries
+  #1398  Load boosted damage dice weapons correctly
+  #1401  Fix parser_parse behavior on "char str" specifications
+  #1434  Fix memory over-read bug in cmd0.c, thanks to david3x3x3
 d17cd80  Fix bug marking certain players as cheaters erroneously
 4a37e73  Fix birth UI crash
 28ec660  Fix broken compiling recipes and unnecessary warnings in Makefile.osx
@@ -175,6 +230,12 @@ cb6178b  Add some assert()s in the history code, and fix history_add_full()
 bce53a8  Fix bug/warning with hex string parsing
 52328bb  Fix crashing bug with monster recall
 68ce8b0  Fix off-by-one error in FLAG_SIZE (spotted by nick)
+0401c9a  Fix memory leak in pref parsing
+41c9c68  Fix wiz_tweak
+e63174a  Fix descriptions of objects with multiple pvals
+c591348  Prevent store-restocking faults from hanging the game in an infinite 
+             loop
+fb5f7ed  Add do_cmd_wiz_learn() check to stop crashes on empty items
 
 Coding changes
 ==============
@@ -187,13 +248,20 @@ Coding changes
          Refactoring of timed statuses
    #803  Refactoring of monster spell code
          Refactoring of object flag code
+#1005,#1188,#1370  Refactoring of object power code
+         Reduction of externs.h
+         Refactoring of savefile loading, including support for new item format
+         Clean-up of code commented as mega-hack
    #786  Add stats collection functionality to wizard mode; create
              pseudo-UI module for running stats collection
    #269  Clean up various functions related to messages
+   #749  Make monster recall only use known state
   #1101  Clean up and document savefiles
   #1302  Reconcile test and sdl initialization strategies
   #1306  Fix clean target in Makefile
   #1349  Replace some uses of memset() with of_wipe() and of_setall()
+#1399,#1419  Create drops at monster creation, and add ORIGIN_* values
+  #1431  Implement m_ptr->known_pflags
 e7f1e57  Remove Term_user hook
 f2581f1  Make cmd-obj.c entirely game code, and cmd3.c all UI code
 0c4786c  Changes to text files to separate pvals onto their own line,
@@ -253,8 +321,29 @@ cc1cdc7  Remove LOG_PRINT*() macros and beef up file_putf()/file_vputf()
              TMD_ flags (e.g. OF_AFRAID)
 f9d00a5  Remove bashism from configure.ac (closes Debian bug #619695)
 84bde09  Add flags for x2 brands for later use.
+070e893  Create src/test/bin for test binaries
+         Fix compiler warnings for tests
+         Improvements to unit test framework
+         Fixes for extra_stat_bonus()
+fac36a2  Fix compiler signed/unsigned comparison warnings
+41e55f7  OS X build improvements: use scripts/version.sh, provide test targets
+         Remove variably-sized arrays
+         Add support for forced monster drops in edit files, 
+             remove RF_DROP_CHOSEN
+f4951b9  Add support for multiple stats runs per invocation (-mstats -- -nNNNN)
+3578e64  Remove hexchars[]
+06e290b  pause_line() now takes a term argument
+dc5427c  Add codestats tool to calculate function length
+e26b968  Move most remaining monster spells out of melee2.c into the 
+             mon-spell code
+53c4e15  Add documentation to option.h
+49de32e  Refactor ego generation and id to use OFTs for extra ego powers
+efc672b  Refactor to make check_state() take a flagset, to allow passing in 
+             different states than the player's current state
+a87844f  Check for resistance to timed effects inside inc_timed (using a bool)
 
 Documentation changes
 =====================
 57d8bde  Include copying.txt and faq.txt in OSX documentation
 6e4b389  Added (T) command to help file.
+a42bd68  Update to changes.txt
