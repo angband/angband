@@ -278,7 +278,7 @@ byte squelch_level_of(const object_type *o_ptr)
 			(o_ptr->pval[i] > 0))
 			break;
 
-		if (i == o_ptr->num_pvals)
+		if (i == (o_ptr->num_pvals - 1))
 			return SQUELCH_BAD;
 	}
 
