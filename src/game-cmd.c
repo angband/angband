@@ -539,7 +539,9 @@ void process_command(cmd_context ctx, bool no_request)
 				/* If we couldn't resolve the item, then abort this */
 				if (!o_ptr->kind) break;
 
-				if (obj_needs_aim(o_ptr))
+				/* Thrown objects always need an aim, others might, depending
+				 * on the object */
+				if (obj_needs_aim(o_ptr) || cmd->command == CMD_THROW)
 				{
 					if (!cmd->arg_present[1])
 						get_target = TRUE;
