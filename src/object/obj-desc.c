@@ -331,7 +331,8 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 				basename, modstr);
 
 	end = obj_desc_name_format(buf, max, end, basename, modstr,
-			!(o_ptr->number == 1 || mode & ODESC_SINGULAR));
+			!(mode & ODESC_SINGULAR) &&
+			(o_ptr->number > 1 || (mode & ODESC_PLURAL)));
 
 
 	/** Append extra names of various kinds **/
