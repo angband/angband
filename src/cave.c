@@ -587,7 +587,7 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 					 rf_has(r_ptr->flags, RF_ATTR_RAND))
 			{
 				/* Multi-hued attr */
-				a = m_ptr->attr ? m_ptr->attr : 1;
+				a = m_ptr->attr ? m_ptr->attr : da;
 				
 				/* Normal char */
 				c = dc;

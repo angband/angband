@@ -113,10 +113,11 @@
 # object underneath them.
 
 # ATTR_MULTI monsters are multi-hued--they change color, every player turn.
-# Their base color is ignored.
+# Their base color is only used to set the initial color when they spawn.
 
 # ATTR_FLICKER monsters are also multi-hued--but they only change between a
-# small range of colors related to their defined color.
+# small range of colors related to their defined color, and they start out
+# as their defined color.
 
 # CHAR_CLEAR monsters are totally invisible: the symbol shown on the screen is
 # the same as the floor (or other terrain feature) below it, or the item that
