@@ -2813,7 +2813,6 @@ int ignore_point(struct cave *c, int colors[], int y, int x) {
 	if (cave_isicky(c, y, x)) return TRUE;
 	if (cave_isfloor(c, y, x)) return FALSE;
 	if (cave_isdoor(c, y, x)) return FALSE;
-	if (cave_issecret(c, y, x)) return FALSE;
 	return TRUE;
 }
 

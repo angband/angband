@@ -563,8 +563,7 @@ bool detect_traps(bool aware)
 			}
 
 			/* Detect traps */
-			if ((cave->feat[y][x] >= FEAT_TRAP_HEAD) &&
-			    (cave->feat[y][x] <= FEAT_TRAP_TAIL))
+			if (cave_isknowntrap(cave, y, x))
 			{
 				/* Hack -- Memorize */
 				cave->info[y][x] |= (CAVE_MARK);

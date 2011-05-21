@@ -98,9 +98,16 @@ extern bool cave_canputitem(struct cave *c, int y, int x);
 /* Old cave_floor_bold() */
 extern bool cave_isfloor(struct cave *c, int y, int x);
 
-extern bool cave_isdoor(struct cave *c, int y, int x);
-extern bool cave_istrap(struct cave *c, int y, int x);
-extern bool cave_issecret(struct cave *c, int y, int x);
+bool cave_isopendoor(struct cave *c, int y, int x);
+bool cave_issecretdoor(struct cave *c, int y, int x);
+bool cave_iscloseddoor(struct cave *c, int y, int x);
+bool cave_islockeddoor(struct cave *c, int y, int x);
+bool cave_isjammeddoor(struct cave *c, int y, int x);
+bool cave_isdoor(struct cave *c, int y, int x);
+
+bool cave_issecrettrap(struct cave *c, int y, int x);
+bool cave_isknowntrap(struct cave *c, int y, int x);
+bool cave_istrap(struct cave *c, int y, int x);
 
 extern bool cave_isicky(struct cave *c, int y, int x);
 

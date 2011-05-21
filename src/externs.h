@@ -162,7 +162,7 @@ extern byte py_pickup(int pickup);
 extern void move_player(int dir, bool disarm);
 
 /* cmd2.c */
-int count_feats(int *y, int *x, bool (*test)(int feat), bool under);
+int count_feats(int *y, int *x, bool (*test)(struct cave *cave, int y, int x), bool under);
 int count_chests(int *y, int *x, bool trapped);
 int coords_to_dir(int y, int x);
 

@@ -372,12 +372,10 @@ static bool target_set_interactive_accept(int y, int x)
 		    (cave->feat[y][x] <= FEAT_SHOP_TAIL)) return (TRUE);
 
 		/* Notice traps */
-		if ((cave->feat[y][x] >= FEAT_TRAP_HEAD) &&
-		    (cave->feat[y][x] <= FEAT_TRAP_TAIL)) return (TRUE);
+		if (cave_isknowntrap(cave, y, x)) return TRUE;
 
 		/* Notice doors */
-		if ((cave->feat[y][x] >= FEAT_DOOR_HEAD) &&
-		    (cave->feat[y][x] <= FEAT_DOOR_TAIL)) return (TRUE);
+		if (cave_iscloseddoor(cave, y, x)) return TRUE;
 
 		/* Notice rubble */
 		if (cave->feat[y][x] == FEAT_RUBBLE) return (TRUE);

@@ -469,7 +469,7 @@ static bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 /*
  * Return the number of doors/traps around (or under) the character.
  */
-int count_feats(int *y, int *x, bool (*test)(int feat), bool under)
+int count_feats(int *y, int *x, bool (*test)(struct cave *cave, int y, int x), bool under)
 {
 	int d;
 	int xx, yy;
@@ -492,7 +492,7 @@ int count_feats(int *y, int *x, bool (*test)(int feat), bool under)
 		if (!(cave->info[yy][xx] & (CAVE_MARK))) continue;
 
 		/* Not looking for this feature */
-		if (!((*test)(cave->feat[yy][xx]))) continue;
+		if (!((*test)(cave, yy, xx))) continue;
 
 		/* Count it */
 		++count;
@@ -574,24 +574,14 @@ int coords_to_dir(int y, int x)
 static bool do_cmd_open_test(int y, int x)
 {
 	/* Must have knowledge */
-	if (!(cave->info[y][x] & (CAVE_MARK)))
-	{
-		/* Message */
+	if (!(cave->info[y][x] & (CAVE_MARK))) {
 		msg("You see nothing there.");
-
-		/* Nope */
-		return (FALSE);
+		return FALSE;
 	}
 
-	/* Must be a closed door */
-	if (!((cave->feat[y][x] >= FEAT_DOOR_HEAD) &&
-	      (cave->feat[y][x] <= FEAT_DOOR_TAIL)))
-	{
-		/* Message */
+	if (!cave_iscloseddoor(cave, y, x)) {
 		msgt(MSG_NOTHING_TO_OPEN, "You see nothing there to open.");
-
-		/* Nope */
-		return (FALSE);
+		return FALSE;
 	}
 
 	/* Okay */
@@ -618,14 +608,13 @@ static bool do_cmd_open_aux(int y, int x)
 
 
 	/* Jammed door */
-	if (cave->feat[y][x] >= FEAT_DOOR_HEAD + 0x08)
+	if (cave_isjammeddoor(cave, y, x))
 	{
-		/* Stuck */
 		msg("The door appears to be stuck.");
 	}
 
 	/* Locked door */
-	else if (cave->feat[y][x] >= FEAT_DOOR_HEAD + 0x01)
+	else if (cave_islockeddoor(cave, y, x))
 	{
 		/* Disarm factor */
 		i = p_ptr->state.skills[SKILL_DISARM];
@@ -822,7 +811,7 @@ static bool do_cmd_close_aux(int y, int x)
 	else
 	{
 		/* Close the door */
-		cave_set_feat(cave, y, x, FEAT_DOOR_HEAD + 0x00);
+		cave_set_feat(cave, y, x, FEAT_DOOR_HEAD);
 
 		/* Update the visuals */
 		p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
@@ -1211,23 +1200,13 @@ void do_cmd_tunnel(cmd_code code, cmd_arg args[])
 static bool do_cmd_disarm_test(int y, int x)
 {
 	/* Must have knowledge */
-	if (!(cave->info[y][x] & (CAVE_MARK)))
-	{
-		/* Message */
+	if (!(cave->info[y][x] & (CAVE_MARK))) {
 		msg("You see nothing there.");
-
-		/* Nope */
-		return (FALSE);
+		return FALSE;
 	}
 
-	/* Require an actual trap */
-	if (!((cave->feat[y][x] >= FEAT_TRAP_HEAD) &&
-	      (cave->feat[y][x] <= FEAT_TRAP_TAIL)))
-	{
-		/* Message */
+	if (!cave_isknowntrap(cave, y, x)) {
 		msg("You see nothing there to disarm.");
-
-		/* Nope */
 		return (FALSE);
 	}
 
@@ -1399,24 +1378,14 @@ void do_cmd_disarm(cmd_code code, cmd_arg args[])
 static bool do_cmd_bash_test(int y, int x)
 {
 	/* Must have knowledge */
-	if (!(cave->info[y][x] & (CAVE_MARK)))
-	{
-		/* Message */
+	if (!(cave->info[y][x] & (CAVE_MARK))) {
 		msg("You see nothing there.");
-
-		/* Nope */
 		return (FALSE);
 	}
 
-	/* Require a door */
-	if (!((cave->feat[y][x] >= FEAT_DOOR_HEAD) &&
-	      (cave->feat[y][x] <= FEAT_DOOR_TAIL)))
-	{
-		/* Message */
+	if (!cave_iscloseddoor(cave, y, x)) {
 		msg("You see nothing there to bash.");
-
-		/* Nope */
-		return (FALSE);
+		return FALSE;
 	}
 
 	/* Okay */
@@ -1609,8 +1578,7 @@ void do_cmd_alter_aux(int dir)
 	p_ptr->energy_use = 100;
 
 	/* Apply confusion */
-	if (player_confuse_dir(p_ptr, &dir))
-	{
+	if (player_confuse_dir(p_ptr, &dir)) {
 		/* Get location */
 		y = p_ptr->py + ddy[dir];
 		x = p_ptr->px + ddx[dir];
@@ -1619,49 +1587,23 @@ void do_cmd_alter_aux(int dir)
 
 	/* Attack monsters */
 	if (cave->m_idx[y][x] > 0)
-	{
 		py_attack(y, x);
-	}
 
 	/* Tunnel through walls */
-	else if (feat >= FEAT_SECRET)
-	{
+	else if (cave_iswall(cave, y, x))
 		more = do_cmd_tunnel_aux(y, x);
-	}
-
-#if 0
-	/* Bash jammed doors */
-	else if (feat >= FEAT_DOOR_HEAD + 0x08)
-	{
-		more = do_cmd_bash_aux(y, x);
-	}
-#endif
 
 	/* Open closed doors */
-	else if (feat >= FEAT_DOOR_HEAD)
-	{
+	else if (cave_iscloseddoor(cave, y, x))
 		more = do_cmd_open_aux(y, x);
-	}
 
 	/* Disarm traps */
-	else if (feat >= FEAT_TRAP_HEAD)
-	{
+	else if (cave_isknowntrap(cave, y, x))
 		more = do_cmd_disarm_aux(y, x);
-	}
-
-#if 0
-	/* Close open doors */
-	else if (feat == FEAT_OPEN)
-	{
-		more = do_cmd_close_aux(y, x);
-	}
-#endif
 
 	/* Oops */
 	else
-	{
 		msg("You spin around.");
-	}
 
 	/* Cancel repetition unless we can continue */
 	if (!more) disturb(0, 0);
@@ -1712,24 +1654,14 @@ static bool get_spike(int *ip)
 static bool do_cmd_spike_test(int y, int x)
 {
 	/* Must have knowledge */
-	if (!(cave->info[y][x] & (CAVE_MARK)))
-	{
-		/* Message */
+	if (!(cave->info[y][x] & (CAVE_MARK))) {
 		msg("You see nothing there.");
-
-		/* Nope */
-		return (FALSE);
+		return FALSE;
 	}
 
-	/* Require a door */
-	if (!((cave->feat[y][x] >= FEAT_DOOR_HEAD) &&
-	      (cave->feat[y][x] <= FEAT_DOOR_TAIL)))
-	{
-		/* Message */
+	if (!cave_iscloseddoor(cave, y, x)) {
 		msg("You see nothing there to spike.");
-
-		/* Nope */
-		return (FALSE);
+		return FALSE;
 	}
 
 	/* Okay */
@@ -1800,15 +1732,11 @@ void do_cmd_spike(cmd_code code, cmd_arg args[])
 
 		/* Convert "locked" to "stuck" XXX XXX XXX */
 		if (cave->feat[y][x] < FEAT_DOOR_HEAD + 0x08)
-		{
 			cave->feat[y][x] += 0x08;
-		}
 
 		/* Add one spike to the door */
 		if (cave->feat[y][x] < FEAT_DOOR_TAIL)
-		{
 			cave->feat[y][x] += 0x01;
-		}
 
 		/* Use up, and describe, a single spike, from the bottom */
 		inven_item_increase(item, -1);

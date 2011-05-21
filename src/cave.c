@@ -437,15 +437,23 @@ bool dtrap_edge(int y, int x)
 }
 
 
+static bool feat_is_known_trap(int feat) {
+	return feat >= FEAT_TRAP_HEAD && feat <= FEAT_TRAP_TAIL;
+}
+
+static bool feat_is_treasure(int feat) {
+	return feat == FEAT_MAGMA_K || feat == FEAT_QUARTZ_K;
+}
+
+
 /**
  * Apply text lighting effects
  */
 static void grid_get_text(grid_data *g, byte *a, char *c)
 {
 	/* Trap detect edge, but don't colour traps themselves, or treasure */
-	if (g->trapborder &&
-		((g->f_idx < FEAT_TRAP_HEAD) || (g->f_idx > FEAT_TRAP_TAIL)) &&
-		(g->f_idx != FEAT_MAGMA_K) && (g->f_idx != FEAT_QUARTZ_K))
+	if (g->trapborder && !feat_is_known_trap(g->f_idx) &&
+			!feat_is_treasure(g->f_idx))
 	{
 		if (g->in_view)
 			*a = TERM_L_GREEN;
@@ -3635,18 +3643,44 @@ bool cave_isfloor(struct cave *c, int y, int x) {
 	return !(c->info[y][x] & CAVE_WALL);
 }
 
-bool cave_isdoor(struct cave *c, int y, int x) {
+bool cave_isopendoor(struct cave *c, int y, int x) {
+    return c->feat[y][x] == FEAT_OPEN;
+}
+
+bool cave_issecretdoor(struct cave *c, int y, int x) {
+    return c->feat[y][x] == FEAT_SECRET;
+}
+
+bool cave_iscloseddoor(struct cave *c, int y, int x) {
 	int feat = c->feat[y][x];
 	return feat >= FEAT_DOOR_HEAD && feat <= FEAT_DOOR_TAIL;
 }
 
-bool cave_issecret(struct cave *c, int y, int x) {
-	return (c->feat[y][x] == FEAT_SECRET);
+bool cave_islockeddoor(struct cave *c, int y, int x) {
+	int feat = c->feat[y][x];
+	return feat >= FEAT_DOOR_HEAD + 0x01 && feat <= FEAT_DOOR_TAIL;
+}
+
+bool cave_isjammeddoor(struct cave *c, int y, int x) {
+	int feat = c->feat[y][x];
+	return feat >= FEAT_DOOR_HEAD + 0x08 && feat <= FEAT_DOOR_TAIL;
+}
+
+bool cave_isdoor(struct cave *c, int y, int x) {
+	return cave_issecretdoor(c, y, x) || cave_iscloseddoor(cave, y, x);
+}
+
+bool cave_issecrettrap(struct cave *c, int y, int x) {
+    return c->feat[y][x] == FEAT_INVIS;
+}
+
+bool cave_isknowntrap(struct cave *c, int y, int x) {
+	int feat = c->feat[y][x];
+	return feat >= FEAT_TRAP_HEAD && feat <= FEAT_TRAP_TAIL;
 }
 
 bool cave_istrap(struct cave *c, int y, int x) {
-	int feat = c->feat[y][x];
-	return feat >= FEAT_TRAP_HEAD && feat <= FEAT_TRAP_TAIL;
+	return cave_issecrettrap(cave, y, x) || cave_isknowntrap(cave, y, x);
 }
 
 bool cave_isicky(struct cave *c, int y, int x) {

@@ -561,10 +561,10 @@ void move_player(int dir, bool disarm)
 	if (cave->m_idx[y][x] > 0)
 		py_attack(y, x);
 
-	/* Optionally alter known traps/doors on movement */
+	/* Optionally alter traps/doors on movement */
 	else if (disarm && (cave->info[y][x] & CAVE_MARK) &&
-			(cave->feat[y][x] >= FEAT_TRAP_HEAD) &&
-			(cave->feat[y][x] <= FEAT_DOOR_TAIL))
+			cave_isknowntrap(cave, y, x) ||
+			cave_iscloseddoor(cave, y, x))
 	{
 		/* Auto-repeat if not already repeating */
 		if (cmd_get_nrepeats() == 0)
@@ -685,8 +685,7 @@ void move_player(int dir, bool disarm)
 		}
 
 		/* Set off an visible trap */
-		else if ((cave->feat[y][x] >= FEAT_TRAP_HEAD) &&
-		         (cave->feat[y][x] <= FEAT_TRAP_TAIL))
+		else if (cave_isknowntrap(cave, y, x))
 		{
 			/* Disturb */
 			disturb(0, 0);

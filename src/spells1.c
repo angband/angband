@@ -1075,7 +1075,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_KILL_TRAP:
 		{
 			/* Reveal secret doors */
-			if (cave->feat[y][x] == FEAT_SECRET)
+			if (cave_issecretdoor(cave, y, x))
 			{
 				place_closed_door(cave, y, x);
 
@@ -1087,9 +1087,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 			}
 
 			/* Destroy traps */
-			if ((cave->feat[y][x] == FEAT_INVIS) ||
-			    ((cave->feat[y][x] >= FEAT_TRAP_HEAD) &&
-			     (cave->feat[y][x] <= FEAT_TRAP_TAIL)))
+			if (cave_istrap(cave, y, x))
 			{
 				/* Check line of sight */
 				if (player_has_los_bold(y, x))
@@ -1127,13 +1125,10 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_KILL_DOOR:
 		{
 			/* Destroy all doors and traps */
-			if ((cave->feat[y][x] == FEAT_OPEN) ||
-			    (cave->feat[y][x] == FEAT_BROKEN) ||
-			    (cave->feat[y][x] == FEAT_INVIS) ||
-			    ((cave->feat[y][x] >= FEAT_TRAP_HEAD) &&
-			     (cave->feat[y][x] <= FEAT_TRAP_TAIL)) ||
-			    ((cave->feat[y][x] >= FEAT_DOOR_HEAD) &&
-			     (cave->feat[y][x] <= FEAT_DOOR_TAIL)))
+			if (cave_istrap(cave, y, x) ||
+					cave_isopendoor(cave, y, x) ||
+					cave->feat[y][x] == FEAT_BROKEN ||
+					cave_isdoor(cave, y, x))
 			{
 				/* Check line of sight */
 				if (player_has_los_bold(y, x))
