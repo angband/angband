@@ -1206,72 +1206,6 @@ void prt_map(void)
 }
 
 
-
-
-
-/*
- * Hack -- priority array (see below)
- *
- * Note that all "walls" always look like "secret doors" (see "map_info()").
- */
-static const int priority_table[14][2] =
-{
-	/* Dark */
-	{ FEAT_NONE, 2 },
-
-	/* Floors */
-	{ FEAT_FLOOR, 5 },
-
-	/* Walls */
-	{ FEAT_SECRET, 10 },
-
-	/* Quartz */
-	{ FEAT_QUARTZ, 11 },
-
-	/* Magma */
-	{ FEAT_MAGMA, 12 },
-
-	/* Rubble */
-	{ FEAT_RUBBLE, 13 },
-
-	/* Open doors */
-	{ FEAT_OPEN, 15 },
-	{ FEAT_BROKEN, 15 },
-
-	/* Closed doors */
-	{ FEAT_DOOR_HEAD + 0x00, 17 },
-
-	/* Hidden gold */
-	{ FEAT_QUARTZ_K, 19 },
-	{ FEAT_MAGMA_K, 19 },
-
-	/* Stairs */
-	{ FEAT_LESS, 25 },
-	{ FEAT_MORE, 25 },
-
-	/* End */
-	{ 0, 0 }
-};
-
-
-/*
- * Determine the priority of a terrain feature when mapping
- */
-static byte priority(int feature)
-{
-	size_t i;
-
-	for (i = 0; i < N_ELEMENTS(priority_table); i++)
-	{
-		if (feature == priority_table[i][0])
-			return priority_table[i][1];
-	}
-
-	/* Default */
-	return 20;
-}
-
-
 /*
  * Display a "small-scale" map of the dungeon in the active Term.
  *
@@ -1359,7 +1293,7 @@ void display_map(int *cy, int *cx)
 			map_info(y, x, &g);
 
 			/* Get the priority of that attr/char */
-			tp = priority(g.f_idx);
+			tp = f_info[g.f_idx].priority;
 
 			/* Save "best" */
 			if (mp[row][col] < tp)
