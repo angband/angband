@@ -474,8 +474,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Take "poison" effect */
-					if (check_for_resist(GF_POIS, p_ptr->state.flags, TRUE) > 0 &&
-						inc_timed(TMD_POISONED, randint1(rlev) + 5, TRUE, TRUE))
+					if (inc_timed(TMD_POISONED, randint1(rlev) + 5, TRUE, TRUE))
 						obvious = TRUE;
 
 					/* Learn about the player */
