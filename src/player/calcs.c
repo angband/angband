@@ -1784,8 +1784,6 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		state->dis_to_h += 12;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
 			* 105 / 100;
-		if (p_ptr->timed[TMD_HERO] > p_ptr->timed[TMD_BOLD])
-			set_timed(TMD_BOLD, p_ptr->timed[TMD_HERO], TRUE);
 	}
 
 	/* Temporary "Berserk" */
@@ -1797,8 +1795,6 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		state->dis_to_a -= 10;
 		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
 			* 9 / 10;
-		if (p_ptr->timed[TMD_SHERO] > p_ptr->timed[TMD_BOLD])
-			set_timed(TMD_BOLD, p_ptr->timed[TMD_SHERO], TRUE);
 	}
 
 	/* Temporary "fast" */

@@ -162,7 +162,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
-	int dam, chance;
+	int dam, chance, dur;
 
 	if (effect < 1 || effect > EF_MAX)
 	{
@@ -648,19 +648,21 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_HERO:
 		{
+			dur = randint1(25) + 25;
 			if (hp_player(10)) *ident = TRUE;
 			if (clear_timed(TMD_AFRAID, TRUE)) *ident = TRUE;
-			if (inc_timed(TMD_HERO, randint1(25) + 25, TRUE, TRUE))
-				*ident = TRUE;
+			if (inc_timed(TMD_BOLD, dur, TRUE, TRUE)) *ident = TRUE;
+			if (inc_timed(TMD_HERO, dur, TRUE, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_SHERO:
 		{
+			dur = randint1(25) + 25;
 			if (hp_player(30)) *ident = TRUE;
 			if (clear_timed(TMD_AFRAID, TRUE)) *ident = TRUE;
-			if (inc_timed(TMD_SHERO, randint1(25) + 25, TRUE, TRUE))
-				*ident = TRUE;
+			if (inc_timed(TMD_BOLD, dur, TRUE, TRUE)) *ident = TRUE;
+			if (inc_timed(TMD_SHERO, dur, TRUE, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -1133,10 +1135,12 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_RAGE_BLESS_RESIST:
 		{
+			dur = randint1(50) + 50;
 			*ident = TRUE;
 			(void)hp_player(30);
 			(void)clear_timed(TMD_AFRAID, TRUE);
-			(void)inc_timed(TMD_SHERO, randint1(50) + 50, TRUE, TRUE);
+			(void)inc_timed(TMD_BOLD, dur, TRUE, TRUE);
+			(void)inc_timed(TMD_SHERO, dur, TRUE, TRUE);
 			(void)inc_timed(TMD_BLESSED, randint1(50) + 50, TRUE, TRUE);
 			(void)inc_timed(TMD_OPP_ACID, randint1(50) + 50, TRUE, TRUE);
 			(void)inc_timed(TMD_OPP_ELEC, randint1(50) + 50, TRUE, TRUE);
@@ -1563,8 +1567,9 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_BERSERKER:
 		{
-			if (inc_timed(TMD_SHERO, randint1(50) + 50, TRUE, TRUE))
-				*ident = TRUE;
+			dur = randint1(50) + 50;
+			if (inc_timed(TMD_BOLD, dur, TRUE, TRUE)) *ident = TRUE;
+			if (inc_timed(TMD_SHERO, dur, TRUE, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
