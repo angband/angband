@@ -582,7 +582,7 @@ void Term_queue_chars(int x, int y, int n, byte a, const char *s)
 
 		/* Save the "literal" information */
 		scr_aa[x] = a;
-		scr_cc[x] = xchar_trans(*s);
+		scr_cc[x] = *s; /* TODO UTF-8: replace with get single UTF char */
 
 		scr_taa[x] = 0;
 		scr_tcc[x] = 0;

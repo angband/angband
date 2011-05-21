@@ -139,7 +139,6 @@ ANGFILES = \
 	wiz-spoil.o \
 	wiz-stats.o \
 	wizard.o \
-	x-char.o \
 	x-spell.o \
 	xtra2.o \
 	xtra3.o
