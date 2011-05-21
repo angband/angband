@@ -186,7 +186,7 @@ E:prayer book:[Beginners Handbook]:1:1
 E:hafted:Mace~:1:1
 E:potion:Cure Serious Wounds:2:2
 E:scroll:Word of Recall:1:1
-F:ZERO_FAIL | PSEUDO_ID_IMPROV
+F:BLESS_WEAPON | ZERO_FAIL | PSEUDO_ID_IMPROV
 T:Believer
 T:Acolyte
 T:Adept

@@ -230,6 +230,12 @@ s16b spell_chance(int spell)
 		minfail = 5;
 	}
 
+	/* Priest prayer penalty for "edged" weapons (before minfail) */
+	if (p_ptr->state.icky_wield)
+	{
+		chance += 25;
+	}
+
 	/* Fear makes spells harder (before minfail) */
 	/* Note that spells that remove fear have a much lower fail rate than
 	 * surrounding spells, to make sure this doesn't cause mega fail */
