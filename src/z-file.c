@@ -537,8 +537,6 @@ bool file_getl(ang_file *f, char *buf, size_t len)
 	byte b;
 	size_t i = 0;
 
-	bool check_encodes = FALSE;
-
 	/* Leave a byte for the terminating 0 */
 	size_t max_len = len - 1;
 
@@ -591,10 +589,6 @@ bool file_getl(ang_file *f, char *buf, size_t len)
 		else if (my_isprint((unsigned char)c))
   		{
 			buf[i++] = c;
-
-			/* Notice possible encode */
- 			if (c == '[') check_encodes = TRUE;
-
 			continue;
 		}
 		else
@@ -603,9 +597,6 @@ bool file_getl(ang_file *f, char *buf, size_t len)
 			continue;
 		}
 	}
-
-	/* Translate encodes if necessary */
- 	if (check_encodes) xstr_trans(buf, LATIN1);
 
 	buf[i] = '\0';
 	return TRUE;
@@ -679,9 +670,6 @@ bool x_file_putf(ang_file *f, int encoding, const char *fmt, ...)
 
  	/* End the Varargs Stuff */
  	va_end(vp);
-
- 	/* Translate*/
- 	xstr_trans(buf, encoding);
 
  	return file_put(f, buf);
 }

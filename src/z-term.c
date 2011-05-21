@@ -1575,9 +1575,6 @@ errr Term_addstr(int n, byte a, const char *buf)
 	/* Copy to a rewriteable string */
  	my_strcpy(s, buf, 1024);
 
- 	/* Translate it to 7-bit ASCII or system-specific format */
- 	xstr_trans(s, LATIN1);
-
 	/* Handle "unusable" cursor */
 	if (Term->scr->cu) return (-1);
 

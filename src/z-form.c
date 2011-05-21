@@ -527,9 +527,6 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 				/* Prevent buffer overflows */
 				(void)my_strcpy(arg2, arg, sizeof(arg2));
 
-				/* Translate it to 8-bit (Latin-1) */
- 				xstr_trans(arg2, LATIN1);
-
 				/* Format the argument */
 				sprintf(tmp, aux, arg2);
 

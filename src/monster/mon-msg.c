@@ -368,9 +368,6 @@ static void flush_monster_messages(bool delay)
 	char *action;
 	bool action_only;
 
-	/* We use either ascii or system-specific encoding */
-	int encoding = (OPT(xchars_to_file)) ? SYSTEM_SPECIFIC : ASCII;
-
 	/* Show every message */
 	for (i = 0; i < size_mon_msg; i++) {
 		if (mon_msg[i].delay != delay) continue;
@@ -462,10 +459,6 @@ static void flush_monster_messages(bool delay)
 
 		/* Append the action to the message */
 		my_strcat(buf, action, sizeof(buf));
-
-		/* Translate to accented characters */
-		/* Translate the note to the desired encoding */
-		xstr_trans(buf, encoding);
 
 		/* Capitalize the message */
 		*buf = my_toupper((unsigned char)*buf);
