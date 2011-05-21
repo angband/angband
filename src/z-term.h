@@ -226,8 +226,6 @@ struct term
 	errr (*text_hook)(int x, int y, int n, byte a, const char *s);
 
 	errr (*pict_hook)(int x, int y, int n, const byte *ap, const char *cp, const byte *tap, const char *tcp);
-
-	byte (*xchar_hook)(byte c);
 };
 
 

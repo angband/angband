@@ -525,12 +525,6 @@ static errr Term_wipe_gtk(int x, int y, int n)
 	return (0);
 }
 
-static byte Term_xchar_gtk(byte c)
-{
-	/* Can't translate Latin-1 to UTF-8 here since we have to return a byte. */
-	return c;
-}
-
 char *process_control_chars(int n, const char *s)
 {
 	char *s2 = (char *)malloc(sizeof(char) * n);
@@ -2066,8 +2060,6 @@ static errr term_data_init(term_data *td, int i)
 	t->wipe_hook = Term_wipe_gtk;
 	t->curs_hook = Term_curs_gtk;
 	t->pict_hook = Term_pict_gtk;
-	if (conv != NULL)
-		t->xchar_hook = Term_xchar_gtk;
 	
 	/* Save the data */
 	t->data = td;

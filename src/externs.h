@@ -236,10 +236,6 @@ extern void build_gamma_table(int gamma);
 extern byte gamma_table[256];
 #endif /* SUPPORT_GAMMA */
 
-/* x-char.c */
-extern void xstr_trans(char *str, int encoding);
-extern char xchar_trans(byte c);
-
 /* xtra2.c */
 bool modify_panel(term *t, int wy, int wx);
 bool adjust_panel(int y, int x);

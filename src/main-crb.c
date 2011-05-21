@@ -1770,17 +1770,6 @@ static errr Term_wipe_mac(int x, int y, int n)
 
 
 /*
- * Given a position in the ISO Latin-1 character set, return
- * the correct character on this system.
- */
- static byte Term_xchar_mac(byte c)
-{
- 	/* The Mac port uses the Latin-1 standard */
- 	return (c);
-}
-
-
-/*
  * Low level graphics.  Assumes valid input.
  *
  * Draw several ("n") chars, with an attr, at a given location.
@@ -1881,7 +1870,6 @@ static void term_data_link(int i)
 	td->t->bigcurs_hook = Term_curs_mac;
 	td->t->text_hook = Term_text_mac;
 	td->t->pict_hook = Term_pict_mac;
-	td->t->xchar_hook = Term_xchar_mac; 
 
 
 	td->t->never_bored = TRUE;

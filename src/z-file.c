@@ -656,7 +656,7 @@ bool file_vputf(ang_file *f, const char *fmt, va_list vp)
 /*
  * Format and translate a string, then print it out to file.
  */
-bool x_file_putf(ang_file *f, int encoding, const char *fmt, ...)
+bool x_file_putf(ang_file *f, const char *fmt, ...)
 {
 	va_list vp;
 

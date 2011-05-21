@@ -447,9 +447,6 @@ void dump_history(ang_file *file)
 	size_t i;
 	char buf[90];
 
-	/* We use either ascii or system-specific encoding */
- 	int encoding = OPT(xchars_to_file) ? SYSTEM_SPECIFIC : ASCII;
-
         file_putf(file, "============================================================\n");
         file_putf(file, "                   CHAR.\n");
         file_putf(file, "|   TURN  | DEPTH |LEVEL| EVENT\n");
@@ -469,7 +466,7 @@ void dump_history(ang_file *file)
                 if (history_list[i].type & HISTORY_ARTIFACT_LOST)
                                 my_strcat(buf, " (LOST)", sizeof(buf));
 
-		x_file_putf(file, encoding, "%s", buf);
+		x_file_putf(file, "%s", buf);
 		file_put(file, "\n");
 	}
 

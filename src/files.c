@@ -973,12 +973,7 @@ errr file_character(const char *path, bool full)
 
 	char o_name[80];
 
-	byte (*old_xchar_hook)(byte c) = Term->xchar_hook;
-
 	char buf[1024];
-
-	/* We use either ascii or system-specific encoding */
- 	int encoding = OPT(xchars_to_file) ? SYSTEM_SPECIFIC : ASCII;
 
 	/* Unused parameter */
 	(void)full;
@@ -987,9 +982,6 @@ errr file_character(const char *path, bool full)
 	/* Open the file for writing */
 	fp = file_open(path, MODE_WRITE, FTYPE_TEXT);
 	if (!fp) return (-1);
-
-	/* Display the requested encoding -- ASCII or system-specific */
- 	if (!OPT(xchars_to_file)) Term->xchar_hook = NULL;
 
 	/* Begin dump */
 	file_putf(fp, "  [%s Character Dump]\n\n", buildid);
@@ -1018,7 +1010,7 @@ errr file_character(const char *path, bool full)
 		buf[x] = '\0';
 
 		/* End the row */
-		x_file_putf(fp, encoding, "%s\n", buf);
+		x_file_putf(fp, "%s\n", buf);
 	}
 
 	/* Skip a line */
@@ -1047,7 +1039,7 @@ errr file_character(const char *path, bool full)
 		buf[x] = '\0';
 
 		/* End the row */
-		x_file_putf(fp, encoding, "%s\n", buf);
+		x_file_putf(fp, "%s\n", buf);
 	}
 
 	/* Skip a line */
@@ -1073,7 +1065,7 @@ errr file_character(const char *path, bool full)
 		buf[x] = '\0';
 
 		/* End the row */
-		x_file_putf(fp, encoding, "%s\n", buf);
+		x_file_putf(fp, "%s\n", buf);
 	}
 
 	/* Skip some lines */
@@ -1088,9 +1080,9 @@ errr file_character(const char *path, bool full)
 		file_putf(fp, "  [Last Messages]\n\n");
 		while (i-- > 0)
 		{
-			x_file_putf(fp, encoding, "> %s\n", message_str((s16b)i));
+			x_file_putf(fp, "> %s\n", message_str((s16b)i));
 		}
-		x_file_putf(fp, encoding, "\nKilled by %s.\n\n", p_ptr->died_from);
+		x_file_putf(fp, "\nKilled by %s.\n\n", p_ptr->died_from);
 	}
 
 
@@ -1106,7 +1098,7 @@ errr file_character(const char *path, bool full)
 		object_desc(o_name, sizeof(o_name), &p_ptr->inventory[i],
 				ODESC_PREFIX | ODESC_FULL);
 
-		x_file_putf(fp, encoding, "%c) %s\n", index_to_label(i), o_name);
+		x_file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
 		if (p_ptr->inventory[i].kind)
 			object_info_chardump(fp, &p_ptr->inventory[i], 5, 72);
 	}
@@ -1120,7 +1112,7 @@ errr file_character(const char *path, bool full)
 		object_desc(o_name, sizeof(o_name), &p_ptr->inventory[i],
 					ODESC_PREFIX | ODESC_FULL);
 
-		x_file_putf(fp, encoding, "%c) %s\n", index_to_label(i), o_name);
+		x_file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
 		object_info_chardump(fp, &p_ptr->inventory[i], 5, 72);
 	}
 	file_putf(fp, "\n\n");
@@ -1137,7 +1129,7 @@ errr file_character(const char *path, bool full)
 		{
 			object_desc(o_name, sizeof(o_name), &st_ptr->stock[i],
 						ODESC_PREFIX | ODESC_FULL);
-			x_file_putf(fp, encoding, "%c) %s\n", I2A(i), o_name);
+			x_file_putf(fp, "%c) %s\n", I2A(i), o_name);
 
 			object_info_chardump(fp, &st_ptr->stock[i], 5, 72);
 		}
@@ -1167,9 +1159,6 @@ errr file_character(const char *path, bool full)
 
 	/* Skip some lines */
 	file_putf(fp, "\n\n");
-
-	/* Return to standard display */
- 	Term->xchar_hook = old_xchar_hook;
 
 	file_close(fp);
 

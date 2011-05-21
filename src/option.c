@@ -39,7 +39,7 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_mouse_movement,
 		OPT_mouse_buttons,
 		OPT_use_sound,
-		OPT_xchars_to_file,
+		OPT_NONE,
 		OPT_NONE,
 	},
 
@@ -132,7 +132,7 @@ static const struct option options[OPT_MAX] =
 { "animate_flicker",     "Color: Shimmer multi-colored things",         FALSE }, /* 15 */
 { "center_player",       "Center map continuously",                     FALSE }, /* 16 */
 { "purple_uniques",      "Color: Show unique monsters in purple",       FALSE }, /* 17 */
-{ "xchars_to_file",      "Allow accents in output files",               FALSE }, /* 18 */
+{ NULL,                  NULL,                                          FALSE }, /* 18 */
 { "auto_more",           "Automatically clear '-more-' prompts",        FALSE }, /* 19 */
 { "hp_changes_color",    "Color: Player color indicates % hit points",  FALSE }, /* 20 */
 { "mouse_movement",      "Allow mouse clicks to move the player",       FALSE }, /* 21 */

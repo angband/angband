@@ -829,7 +829,6 @@ static const struct {
 	{ 66, "animate_flicker" },
 	{ 68, "center_player" },
 	{ 69, "purple_uniques" },
-	{ 70, "xchars_to_file" },
 	{ 71, "auto_more" },
 	{ 74, "hp_changes_color" },
 	{ 77, "mouse_movement" },

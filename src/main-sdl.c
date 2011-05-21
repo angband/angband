@@ -2953,16 +2953,6 @@ static errr Term_wipe_sdl(int col, int row, int n)
 }
 
 /*
- * Given a position in the ISO Latin-1 character set, return
- * the correct character on this system.
- */
- static byte Term_xchar_sdl(byte c)
-{
- 	/* The Sdl port uses the Latin-1 standard */
- 	return (c);
-}
-
-/*
  * Draw some text to a window
  */
 static errr Term_text_sdl(int col, int row, int n, byte a, const char *s)
@@ -3223,7 +3213,6 @@ static void term_data_link_sdl(term_window *win)
 	t->wipe_hook = Term_wipe_sdl;
 	t->text_hook = Term_text_sdl;
 	t->pict_hook = Term_pict_sdl;
-	t->xchar_hook = Term_xchar_sdl;
 	
 	/* Remember where we came from */
 	t->data = win;

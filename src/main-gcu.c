@@ -698,16 +698,6 @@ static errr Term_wipe_gcu(int x, int y, int n) {
 	return 0;
 }
 
-/*
- * Since GCU currently only supports Latin-1 extended chracters, we only
- * install this hook if we're not using UTF-8.
- * Given a position in the ISO Latin-1 character set, return the correct
- * character on this system. Currently
- */
- static byte Term_xchar_gcu(byte c) {
-	return c;
-}
-
 
 /* Hack - replace non-ASCII characters to
  * avoid display glitches in selectors.
@@ -796,11 +786,10 @@ static errr term_data_init_gcu(term_data *td, int rows, int cols, int y, int x) 
 	t->curs_hook = Term_curs_gcu;
 	t->xtra_hook = Term_xtra_gcu;
 
-	/* only if the locale supports Latin-1 will we enable xchar_hook */
 	if (setlocale(LC_CTYPE, "")) {
-		/* the Latin-1 codeset is ISO-8859-1 */
-		if (strcmp(nl_langinfo(CODESET), "ISO-8859-1") == 0)
-			t->xchar_hook = Term_xchar_gcu;
+		/* Require UTF-8 */
+		if (strcmp(nl_langinfo(CODESET), "UTF-8") != 0)
+			quit("Angband requires UTF-8 support");
 	}
 
 	/* Save the data */
