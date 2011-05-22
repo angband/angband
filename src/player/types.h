@@ -135,10 +135,9 @@ typedef struct player
 	/*** Temporary fields ***/
 
 	bool playing;			/* True if player is playing */
-
 	bool leaving;			/* True if player is leaving */
-
 	bool autosave;          /* True if autosave is pending */
+	bool randarts;			/* True if randarts have been loaded/generated */
 
 	bool create_up_stair;	/* Create up stair on next level */
 	bool create_down_stair;	/* Create down stair on next level */

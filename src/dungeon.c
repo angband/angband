@@ -1646,8 +1646,11 @@ void play_game(void)
 		player_birth(p_ptr->ht_birth ? TRUE : FALSE);
 
 		/* Randomize the artifacts if required */
-		if (OPT(birth_randarts) && !OPT(birth_keep_randarts))
+		if (OPT(birth_randarts) &&
+				(!OPT(birth_keep_randarts) || !p_ptr->randarts)) {
 			do_randart(seed_randart, TRUE);
+			p_ptr->randarts = TRUE;
+		}
 	}
 
 	/* Normal machine (process player name) */

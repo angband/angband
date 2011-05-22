@@ -1366,14 +1366,17 @@ int rd_randarts_2(void)
 	u16b artifact_count;
 	s32b tmp32s;
 
-	if (!OPT(birth_randarts))
+	if (!OPT(birth_randarts)) {
+		p_ptr->randarts = FALSE;
 		return 0;
+	}
 
 	/* Read the number of artifacts */
 	rd_u16b(&artifact_count);
 
 	/* Alive or cheating death or re-using randarts */
-	if (!p_ptr->is_dead || arg_wizard || OPT(birth_keep_randarts))
+	if (!p_ptr->is_dead || arg_wizard ||
+			(OPT(birth_randarts) && OPT(birth_keep_randarts)))
 	{
 		/* Incompatible save files */
 		if (artifact_count > z_info->a_max)
@@ -1432,6 +1435,7 @@ int rd_randarts_2(void)
 
 		/* Initialize only the randart names */
 		do_randart(seed_randart, FALSE);
+		p_ptr->randarts = TRUE;
 
 		/* Mark any stray old artifacts as "empty" */
 		if (artifact_count < z_info->a_max)
@@ -1487,6 +1491,8 @@ int rd_randarts_2(void)
 			rd_u16b(&tmp16u); /* a_ptr->time_dice */
 			rd_u16b(&tmp16u); /* a_ptr->time_sides */
 		}
+
+		p_ptr->randarts = FALSE;
 	}
 
 	return (0);
