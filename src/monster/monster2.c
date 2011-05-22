@@ -2057,13 +2057,13 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp, byte origin)
 				msg("Deep Unique (%s).", name);
 
 			/* Boost rating by twice delta-depth */
-			cave->rating += (r_ptr->level - p_ptr->depth) * 2;
+			cave->mon_rating += (r_ptr->level - p_ptr->depth) * 2;
 		} else { /* Normal monsters but OOD */
 			if (OPT(cheat_hear))
 				msg("Deep Monster (%s).", name);
 
 			/* Boost rating by delta-depth */
-			cave->rating += (r_ptr->level - p_ptr->depth);
+			cave->mon_rating += (r_ptr->level - p_ptr->depth);
 		}
 	}
 	/* Note uniques for cheaters */
@@ -2216,15 +2216,12 @@ static int group_size_2(int r_idx)
 static bool place_monster_group(struct cave *c, int y, int x, int r_idx,
 	bool slp, int total, byte origin)
 {
-	int old, n, i;
+	int n, i;
 
 	int hack_n;
 
 	byte hack_y[GROUP_MAX];
 	byte hack_x[GROUP_MAX];
-
-	/* Save the rating */
-	old = c->rating;
 
 	/* Start on the monster */
 	hack_n = 1;
@@ -2254,9 +2251,6 @@ static bool place_monster_group(struct cave *c, int y, int x, int r_idx,
 			}
 		}
 	}
-
-	/* Hack -- restore the rating */
-	c->rating = old;
 
 	/* Success */
 	return (TRUE);

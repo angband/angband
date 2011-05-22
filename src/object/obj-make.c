@@ -36,7 +36,7 @@
 
 /*
  * The creation of an artifact on a level gives a significant boost to the
- * level's "feeling", stored in cave->rating.
+ * level's "feeling", stored in cave->obj_rating.
  */
 #define ARTIFACT_LEVEL_RATING_MIN 30
 
@@ -573,7 +573,8 @@ s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 			{
 				/* - a sizeable increase for any artifact (c.f. up to 30 for ego items)
 				 * - a bigger increase for more powerful artifacts */
-				return ARTIFACT_LEVEL_RATING_MIN + (object_power(o_ptr, FALSE, NULL, TRUE) / 25);
+				return ARTIFACT_LEVEL_RATING_MIN
+					+ (object_power(o_ptr, FALSE, NULL, TRUE) / 25);
 			}
 		}
 	}
@@ -634,7 +635,7 @@ s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 	ego_apply_minima(o_ptr);
 
 	/* Return amount to add to the rating of the level */
-	rating_extra += object_power(o_ptr, FALSE, NULL, TRUE) / 15;
+	rating_extra += object_power(o_ptr, FALSE, NULL, TRUE) / 25;
 	return rating_extra;
 }
 
@@ -866,7 +867,8 @@ bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
 		if (make_artifact_special(j_ptr, lev))
 		{
 			c->good_item = TRUE;
-			c->rating += ARTIFACT_LEVEL_RATING_MIN + (object_power(j_ptr, FALSE, NULL, TRUE) / 25);
+			c->obj_rating += ARTIFACT_LEVEL_RATING_MIN
+				+ (object_power(j_ptr, FALSE, NULL, TRUE) / 25);
 			return TRUE;
 		}
 		/* If we failed to make an artifact, the player gets a great item */
@@ -888,7 +890,7 @@ bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
 	/* Hack - artifacts (which have rating over 30) set the good item flag */
 	if (extra_rating >= ARTIFACT_LEVEL_RATING_MIN)
 		c->good_item = TRUE;
-	c->rating += extra_rating;
+	c->obj_rating += extra_rating;
 
 
 	/* Generate multiple items */
@@ -900,7 +902,7 @@ bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
 
 	/* Notice "okay" out-of-depth objects */
 	if (!cursed_p(j_ptr->flags) && (kind->alloc_min > c->depth))
-		c->rating += (kind->alloc_min - c->depth);
+		c->obj_rating += (kind->alloc_min - c->depth);
 
 	return TRUE;
 }

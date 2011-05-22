@@ -470,23 +470,39 @@ void do_cmd_pref(void)
 }
 
 
+/*
+ * Array of feeling strings for object feelings
+ */
+static const char *obj_feeling_text[] =
+{
+	"it looks like any other level.",
+	"you sense an object of wondrous power ...",
+	"you have a superb feeling....",
+	"you have an excellent feeling...",
+	"you have a very good feeling...",
+	"you have a good feeling...",
+	"you feel a little lucky.",
+	"you are unsure if it will be worthwhile.",
+	"you think it might not be up to much.",
+	"you feel it may be rather dull.",
+	"you feel terribly bored.",
+};
 
 /*
- * Array of feeling strings
+ * Array of feeling strings for monster feelings
  */
-static const char *feeling_text[] =
+static const char *mon_feeling_text[] =
 {
-	"Looks like any other level.",
-	"You feel there is something special here...",
-	"You have a superb feeling about this level.",
-	"You have an excellent feeling...",
-	"You have a very good feeling...",
-	"You have a good feeling...",
-	"You feel a little lucky.",
-	"You are unsure about this place.",
-	"This place seems reasonably safe.",
-	"This seems a quiet, peaceful place.",
-	"This place looks uninteresting.",
+    "You are still uncertain about this place,",
+    "Premonitions of death appall you! This place is murderous,",
+    "This place seems terribly dangerous,",
+    "You sense something really nasty about this place,",
+    "You sense something bad about this place,",
+    "You feel nervous about this place,",
+    "You feel uneasy about this place,",
+    "You feel faintly uneasy about this place,",
+    "This place seems reasonably safe,",
+    "This seems a quiet, peaceful place,"
 };
 
 
@@ -496,22 +512,36 @@ static const char *feeling_text[] =
  */
 void do_cmd_feeling(void)
 {
+	u16b obj_feeling = cave->feeling / 10;
+	u16b mon_feeling = cave->feeling - (10 * obj_feeling);
+	char *join;
+
 	/* Don't show feelings for cold-hearted characters */
 	if (OPT(birth_no_feelings)) return;
 
-	/* Verify the feeling */
-	if (cave->feeling >= N_ELEMENTS(feeling_text))
-		cave->feeling = N_ELEMENTS(feeling_text) - 1;
+	/* Verify the feelings */
+	if (obj_feeling >= N_ELEMENTS(obj_feeling_text))
+		obj_feeling = N_ELEMENTS(obj_feeling_text) - 1;
+
+	if (mon_feeling >= N_ELEMENTS(mon_feeling_text))
+		mon_feeling = N_ELEMENTS(mon_feeling_text) - 1;
+
+	/* Decide the conjunction */
+	if ((mon_feeling <= 5 && obj_feeling > 6) ||
+			(mon_feeling > 5 && obj_feeling <= 6))
+		join = "but";
+	else
+		join = "and";
 
 	/* No useful feeling in town */
-	if (!p_ptr->depth)
-	{
+	if (!p_ptr->depth) {
 		msg("Looks like a typical town.");
 		return;
 	}
 
 	/* Display the feeling */
-	msg("%s", feeling_text[cave->feeling]);
+	msg("%s %s %s", mon_feeling_text[mon_feeling], join,
+		obj_feeling_text[obj_feeling]);
 }
 
 

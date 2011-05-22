@@ -1567,7 +1567,7 @@ static bool build_nest(struct cave *c, int y0, int x0) {
 	ROOM_LOG("Monster nest (%s)", pit_info[pit_idx].name);
 
 	/* Increase the level rating */
-	c->rating += (5 + pit_info[pit_idx].ave / 10);
+	c->mon_rating += (5 + pit_info[pit_idx].ave / 10);
 
 	/* Place some monsters */
 	for (y = y0 - 2; y <= y0 + 2; y++) {
@@ -1697,7 +1697,7 @@ static bool build_pit(struct cave *c, int y0, int x0) {
 		what[i] = what[i * 2];
 
 	/* Increase the level rating */
-	c->rating += (5 + pit_info[pit_idx].ave / 10);
+	c->mon_rating += (5 + pit_info[pit_idx].ave / 10);
 
 	/* Top and bottom rows */
 	for (x = x0 - 9; x <= x0 + 9; x++) {
@@ -1858,9 +1858,8 @@ static bool build_vault_type(struct cave*c, int y0, int x0, int typ, const char 
 
 	ROOM_LOG("%s (%s)", label, v_ptr->name);
 
-	/* Boost the rating and sometimes cause a special feeling */
-	c->rating += v_ptr->rat;
-	if (c->depth <= 50 || randint0(45) + 60 > c->depth) c->good_item = TRUE;
+	/* Boost the rating */
+	c->mon_rating += v_ptr->rat;
 
 	/* Build the vault */
 	build_vault(c, y0, x0, v_ptr->hgt, v_ptr->wid, v_ptr->text);
@@ -3299,28 +3298,49 @@ static void cave_clear(struct cave *c, struct player *p) {
 	c->good_item = FALSE;
 
 	/* Nothing good here yet */
-	c->rating = 0;
+	c->mon_rating = 0;
+	c->obj_rating = 0;
 }
 
 /**
- * Calculate the level feeling.
+ * Calculate the level feeling for objects. This is purely about object
+ * quality.
  */
-static int calculate_feeling(struct cave *c) {
+static int calc_obj_feeling(struct cave *c) {
 	/* Town gets no feeling */
 	if (c->depth == 0) return 0;
 
 	/* Artifacts trigger a special feeling when preserve=no */
-	if (c->good_item && OPT(birth_no_preserve)) return 1;
+	if (c->good_item && OPT(birth_no_preserve)) return 10;
 
-	if (c->rating > 50 + c->depth) return 2;
-	if (c->rating > 40 + 4 * c->depth / 5) return 3;
-	if (c->rating > 30 + 3 * c->depth / 5) return 4;
-	if (c->rating > 20 + 2 * c->depth / 5) return 5;
-	if (c->rating > 15 + c->depth / 3) return 6;
-	if (c->rating > 10 + c->depth / 5) return 7;
-	if (c->rating > 5 + c->depth / 10) return 8;
-	if (c->rating > 0) return 9;
-	return 10;
+	if (c->obj_rating > 120 + 7 * c->depth / 5) return 20;
+	if (c->obj_rating > 100 + 6 * c->depth / 5) return 30;
+	if (c->obj_rating > 80 + 5 * c->depth / 5) return 40;
+	if (c->obj_rating > 60 + 4 * c->depth / 5) return 50;
+	if (c->obj_rating > 45 + 3 * c->depth / 5) return 60;
+	if (c->obj_rating > 30 + 2 * c->depth / 5) return 70;
+	if (c->obj_rating > 15 + c->depth / 5) return 80;
+	if (c->obj_rating > 0) return 90;
+	return 100;
+}
+
+/**
+ * Calculate the level feeling for monsters. This includes boosts from pits
+ * and vaults.
+ */
+static int calc_mon_feeling(struct cave *c) {
+	/* Town gets no feeling */
+	if (c->depth == 0) return 0;
+
+	if (c->mon_rating > 40 + c->depth / 2) return 1;
+	if (c->mon_rating > 30 + c->depth / 3) return 2;
+	if (c->mon_rating > 25 + c->depth / 4) return 3;
+	if (c->mon_rating > 20 + c->depth / 5) return 4;
+	if (c->mon_rating > 15 + c->depth / 6) return 5;
+	if (c->mon_rating > 10 + c->depth / 8) return 6;
+	if (c->mon_rating > 5 + c->depth / 10) return 7;
+	if (c->mon_rating > 0) return 8;
+	return 9;
 }
 
 /**
@@ -3386,7 +3406,7 @@ void cave_generate(struct cave *c, struct player *p) {
 			}
 		}
 
-		c->feeling = calculate_feeling(c);
+		c->feeling = calc_obj_feeling(c) + calc_mon_feeling(c);
 
 		/* Regenerate levels that overflow their maxima */
 		if (o_max >= z_info->o_max) 
