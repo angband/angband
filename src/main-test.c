@@ -282,8 +282,12 @@ static errr term_wipe_test(int x, int y, int n) {
 	return 0;
 }
 
-static errr term_text_test(int x, int y, int n, byte a, const char *s) {
-	if (verbose) printf("term-text %d %d %d %02x %s\n", x, y, n, a, s);
+static errr term_text_test(int x, int y, int n, byte a, const wchar_t *s) {
+	if (verbose) {
+		char str[256];
+		wcstombs(str, s, 256);
+		printf("term-text %d %d %d %02x %s\n", x, y, n, a, str);
+	}
 	return 0;
 }
 
