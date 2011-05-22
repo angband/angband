@@ -40,7 +40,7 @@
 #  define NCURSES_ENABLE_STDBOOL_H 0
 # endif
 
-# include <ncurses.h>
+# include <ncursesw/ncurses.h>
 #else
 # include <curses.h>
 #endif
@@ -123,18 +123,6 @@ static int active = 0;
 #define CTRL_ORE 1
 #define CTRL_WALL 2
 #define CTRL_ROCK 3
-
-static char ctrl_char[32] = {
-	'\0', '*', '#', '%', '?', '?', '?', '\'', '+', '?', '?', '+',
-	'+', '+', '+', '+', '~', '-', '-', '-', '_', '+', '+', '+',
-	'+', '|', '?', '?', '?', '?', '?', '.'
-};
-
-static int ctrl_attr[32] = {
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0
-};
 
 #ifdef A_COLOR
 
@@ -699,25 +687,10 @@ static errr Term_wipe_gcu(int x, int y, int n) {
 }
 
 
-/* Hack - replace non-ASCII characters to
- * avoid display glitches in selectors.
- *
- * Note that we do this after the ACS mapping,
- * because the display glitches we are avoiding
- * are in curses itself.
- */
-char filter_char(char c) {
-	if (c < ' ' || c >= 127)
-		return '?';
-	else
-		return c;
-}
-
-
 /*
  * Place some text on the screen using an attribute
  */
-static errr Term_text_gcu(int x, int y, int n, byte a, const char *s) {
+static errr Term_text_gcu(int x, int y, int n, byte a, const wchar_t *s) {
 	term_data *td = (term_data *)(Term->data);
 
 #ifdef A_COLOR
@@ -725,21 +698,8 @@ static errr Term_text_gcu(int x, int y, int n, byte a, const char *s) {
 	if (can_use_color) (void)wattrset(td->win, colortable[a & 255]);
 #endif
 
-	/* Move the cursor */
-	wmove(td->win, y, x);
-
-	/* Write to screen */
-	while (n--) {
-		unsigned char c = *(s++);
-
-		if (c < 32) {
-			wattron(td->win, ctrl_attr[c]);
-			waddch(td->win, filter_char(ctrl_char[c]));
-			wattroff(td->win, ctrl_attr[c]);
-		} else {
-			waddch(td->win, filter_char(c));
-		}
-	}
+	/* Move cursor and write to screen */
+	mvwaddnwstr(td->win, y, x, s, n);
 
 #if defined(A_COLOR)
 	/* Unset the color */
@@ -786,12 +746,6 @@ static errr term_data_init_gcu(term_data *td, int rows, int cols, int y, int x) 
 	t->curs_hook = Term_curs_gcu;
 	t->xtra_hook = Term_xtra_gcu;
 
-	if (setlocale(LC_CTYPE, "")) {
-		/* Require UTF-8 */
-		if (strcmp(nl_langinfo(CODESET), "UTF-8") != 0)
-			quit("Angband requires UTF-8 support");
-	}
-
 	/* Save the data */
 	t->data = td;
 
@@ -824,6 +778,12 @@ errr init_gcu(int argc, char **argv) {
 	termtype = getenv("TERM");
 	loaded_terminfo = termtype && tgetent(0, termtype) == 1;
 
+	if (setlocale(LC_CTYPE, "")) {
+		/* Require UTF-8 */
+		if (strcmp(nl_langinfo(CODESET), "UTF-8") != 0)
+			quit("Angband requires UTF-8 support");
+	}
+
 	/* Parse args */
 	for (i = 1; i < argc; i++) {
 		if (prefix(argv[i], "-b"))
@@ -836,12 +796,12 @@ errr init_gcu(int argc, char **argv) {
 			plog_fmt("Ignoring option: %s", argv[i]);
 	}
 
-	if (graphics) {
+/*	if (graphics) {
 		ctrl_char[CTRL_WALL] = ' ';
 		ctrl_attr[CTRL_ORE] = A_REVERSE;
 		ctrl_attr[CTRL_WALL] = A_REVERSE;
 		ctrl_attr[CTRL_ROCK] = A_REVERSE;
-	}
+	}*/
 
 	/* Extract the normal keymap */
 	keymap_norm_prepare();
