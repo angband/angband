@@ -2217,7 +2217,8 @@ void inven_item_describe(int item)
 
 	char o_name[80];
 
-	if (o_ptr->artifact && object_is_known(o_ptr))
+	if (o_ptr->artifact && 
+		(object_is_known(o_ptr) || object_name_is_visible(o_ptr)))
 	{
 		/* Get a description */
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);

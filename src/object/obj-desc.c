@@ -330,9 +330,14 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 		end = obj_desc_name_prefix(buf, max, end, o_ptr, known,
 				basename, modstr);
 
+	/* Pluralize if (not forced singular) and 
+	 * (not a known/visible artifact) and 
+	 * (not one in stack or forced plural) */
 	end = obj_desc_name_format(buf, max, end, basename, modstr,
 			!(mode & ODESC_SINGULAR) &&
-			(o_ptr->number > 1 || (mode & ODESC_PLURAL)));
+			!(o_ptr->artifact &&
+			  (object_name_is_visible(o_ptr) || known)) &&
+			(o_ptr->number != 1 || (mode & ODESC_PLURAL)));
 
 
 	/** Append extra names of various kinds **/
