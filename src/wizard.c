@@ -132,11 +132,11 @@ static void do_cmd_wiz_hack_ben(void)
 
 				/* Display player/floors/walls */
 				if ((y == py) && (x == px))
-					print_rel('@', a, y, x);
+					print_rel(L'@', a, y, x);
 				else if (cave_floor_bold(y, x))
-					print_rel('*', a, y, x);
+					print_rel(L'*', a, y, x);
 				else
-					print_rel('#', a, y, x);
+					print_rel(L'#', a, y, x);
 			}
 		}
 
@@ -1513,11 +1513,11 @@ static void do_cmd_wiz_query(void)
 
 			/* Display player/floors/walls */
 			if ((y == py) && (x == px))
-				print_rel('@', a, y, x);
+				print_rel(L'@', a, y, x);
 			else if (cave_floor_bold(y, x))
-				print_rel('*', a, y, x);
+				print_rel(L'*', a, y, x);
 			else
-				print_rel('#', a, y, x);
+				print_rel(L'#', a, y, x);
 		}
 	}
 

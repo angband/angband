@@ -654,13 +654,15 @@ for (iteration = 0; iteration < 3; iteration ++) {
 		file_putf(mon_fp, "ridx|level|rarity|d_char|name|pwr|scaled|melee|spell|hp\n");
 
 		for (i = 0; i < z_info->r_max; i++) {
+			char mbstr[MB_LEN_MAX+1] = {0};
 			r_ptr = &r_info[i];	
 
 			/* Don't print anything for nonexistent monsters */
 			if (!r_ptr->name) continue;
 
-			file_putf(mon_fp, "%d|%d|%d|%c|%s|%d|%d|%d|%d|%d\n", r_ptr->ridx,
-				r_ptr->level, r_ptr->rarity, r_ptr->d_char, r_ptr->name,
+			wctomb(mbstr, r_ptr->d_char);
+			file_putf(mon_fp, "%d|%d|%d|%s|%s|%d|%d|%d|%d|%d\n", r_ptr->ridx,
+				r_ptr->level, r_ptr->rarity, mbstr, r_ptr->name,
 				r_ptr->power, r_ptr->scaled_power, r_ptr->melee_dam,
 				r_ptr->spell_dam, r_ptr->hp);
 		}

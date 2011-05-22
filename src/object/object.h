@@ -291,7 +291,7 @@ typedef struct object_kind
 	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
 
 	byte d_attr;       /**< Default object attribute */
-	char d_char;       /**< Default object character */
+	wchar_t d_char;       /**< Default object character */
 
 	byte alloc_prob;   /**< Allocation: commonness */
 	byte alloc_min;    /**< Highest normal dungeon level */
@@ -311,7 +311,7 @@ typedef struct object_kind
 	/** Game-dependent **/
 
 	byte x_attr;   /**< Desired object attribute (set by user/pref file) */
-	char x_char;   /**< Desired object character (set by user/pref file) */
+	wchar_t x_char;   /**< Desired object character (set by user/pref file) */
 
 	/** Also saved in savefile **/
 
@@ -511,10 +511,10 @@ typedef struct flavor {
 	byte sval;      /* Associated object sub-type */
 
 	byte d_attr;    /* Default flavor attribute */
-	char d_char;    /* Default flavor character */
+	wchar_t d_char;    /* Default flavor character */
 
 	byte x_attr;    /* Desired flavor attribute */
-	char x_char;    /* Desired flavor character */
+	wchar_t x_char;    /* Desired flavor character */
 } flavor_type;
 
 

@@ -1838,7 +1838,7 @@ bool banishment(void)
 		if (rf_has(r_ptr->flags, RF_UNIQUE)) continue;
 
 		/* Skip "wrong" monsters */
-		if (r_ptr->d_char != (char)typ.code) continue;
+		if (!char_matches_key(r_ptr->d_char, typ.code)) continue;
 
 		/* Delete the monster */
 		delete_monster_idx(i);

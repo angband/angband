@@ -2064,7 +2064,7 @@ void roff_top(int r_idx)
 	const monster_race *r_ptr;
 
 	byte a1, a2;
-	char c1, c2;
+	wchar_t c1, c2;
 
 	assert(r_idx > 0);
 	r_ptr = &r_info[r_idx];

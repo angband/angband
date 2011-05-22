@@ -35,7 +35,7 @@ int test_g0(void *state) {
 	eq(r, PARSE_ERROR_NONE);
 	f = parser_priv(state);
 	require(f);
-	eq(f->d_char, ':');
+	eq(f->d_char, L':');
 	eq(f->d_attr, TERM_RED);
 	ok;
 }

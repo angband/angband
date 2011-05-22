@@ -94,7 +94,7 @@ typedef struct
 
 	/* Required only for objects with modifiable display attributes */
 	/* Unknown 'flavors' return flavor attributes */
-	char *(*xchar)(int oid);     /* Get character attr for OID (by address) */
+	wchar_t *(*xchar)(int oid);     /* Get character attr for OID (by address) */
 	byte *(*xattr)(int oid);     /* Get color attr for OID (by address) */
 
 	const char *(*xtra_prompt)(int oid);  /* Returns optional extra prompt */
@@ -134,56 +134,56 @@ static int *obj_group_order = NULL;
  */
 static struct
 {
-	const char *chars;
+	const wchar_t *chars;
 	const char *name;
 } monster_group[] =
 {
-	{ (const char *)-1,   "Uniques" },
-	{ "A",        "Ainur" },
-	{ "a",        "Ants" },
-	{ "b",        "Bats" },
-	{ "B",        "Birds" },
-	{ "C",        "Canines" },
-	{ "c",        "Centipedes" },
-	{ "uU",       "Demons" },
-	{ "dD",       "Dragons" },
-	{ "vE",       "Elementals/Vortices" },
-	{ "e",        "Eyes/Beholders" },
-	{ "f",        "Felines" },
-	{ "G",        "Ghosts" },
-	{ "OP",       "Giants/Ogres" },
-	{ "g",        "Golems" },
-	{ "H",        "Harpies/Hybrids" },
-	{ "h",        "Hominids (Elves, Dwarves)" },
-	{ "M",        "Hydras" },
-	{ "i",        "Icky Things" },
-	{ "lFI",      "Insects" },
-	{ "j",        "Jellies" },
-	{ "K",        "Killer Beetles" },
-	{ "k",        "Kobolds" },
-	{ "L",        "Lichs" },
-	{ "tp",		  "Men" },
-	{ ".$!?=~_",  "Mimics" },
-	{ "m",        "Molds" },
-	{ ",",        "Mushroom Patches" },
-	{ "n",        "Nagas" },
-	{ "o",        "Orcs" },
-	{ "q",        "Quadrupeds" },
-	{ "Q",        "Quylthulgs" },
-	{ "R",        "Reptiles/Amphibians" },
-	{ "r",        "Rodents" },
-	{ "S",        "Scorpions/Spiders" },
-	{ "s",        "Skeletons/Drujs" },
-	{ "J",        "Snakes" },
-	{ "T",        "Trolls" },
-	{ "V",        "Vampires" },
-	{ "W",        "Wights/Wraiths" },
-	{ "w",        "Worms/Worm Masses" },
-	{ "X",        "Xorns/Xarens" },
-	{ "y",        "Yeeks" },
-	{ "Y",        "Yeti" },
-	{ "Z",        "Zephyr Hounds" },
-	{ "z",        "Zombies" },
+	{ (const wchar_t *)-1,   "Uniques" },
+	{ L"A",        "Ainur" },
+	{ L"a",        "Ants" },
+	{ L"b",        "Bats" },
+	{ L"B",        "Birds" },
+	{ L"C",        "Canines" },
+	{ L"c",        "Centipedes" },
+	{ L"uU",       "Demons" },
+	{ L"dD",       "Dragons" },
+	{ L"vE",       "Elementals/Vortices" },
+	{ L"e",        "Eyes/Beholders" },
+	{ L"f",        "Felines" },
+	{ L"G",        "Ghosts" },
+	{ L"OP",       "Giants/Ogres" },
+	{ L"g",        "Golems" },
+	{ L"H",        "Harpies/Hybrids" },
+	{ L"h",        "Hominids (Elves, Dwarves)" },
+	{ L"M",        "Hydras" },
+	{ L"i",        "Icky Things" },
+	{ L"lFI",      "Insects" },
+	{ L"j",        "Jellies" },
+	{ L"K",        "Killer Beetles" },
+	{ L"k",        "Kobolds" },
+	{ L"L",        "Lichs" },
+	{ L"tp",       "Men" },
+	{ L".$!?=~_",  "Mimics" },
+	{ L"m",        "Molds" },
+	{ L",",        "Mushroom Patches" },
+	{ L"n",        "Nagas" },
+	{ L"o",        "Orcs" },
+	{ L"q",        "Quadrupeds" },
+	{ L"Q",        "Quylthulgs" },
+	{ L"R",        "Reptiles/Amphibians" },
+	{ L"r",        "Rodents" },
+	{ L"S",        "Scorpions/Spiders" },
+	{ L"s",        "Skeletons/Drujs" },
+	{ L"J",        "Snakes" },
+	{ L"T",        "Trolls" },
+	{ L"V",        "Vampires" },
+	{ L"W",        "Wights/Wraiths" },
+	{ L"w",        "Worms/Worm Masses" },
+	{ L"X",        "Xorns/Xarens" },
+	{ L"y",        "Yeeks" },
+	{ L"Y",        "Yeti" },
+	{ L"Z",        "Zephyr Hounds" },
+	{ L"z",        "Zombies" },
 	{ NULL,       NULL }
 };
 
@@ -234,13 +234,13 @@ static int feat_order(int feat)
 
 	switch (f_ptr->d_char)
 	{
-		case '.': 				return 0;
-		case '^': 				return 1;
-		case '\'': case '+': 	return 2;
-		case '<': case '>':		return 3;
-		case '#':				return 4;
-		case '*': case '%' :	return 5;
-		case ';': case ':' :	return 6;
+		case L'.': 				return 0;
+		case L'^': 				return 1;
+		case L'\'': case L'+': 	return 2;
+		case L'<': case L'>':		return 3;
+		case L'#':				return 4;
+		case L'*': case L'%' :	return 5;
+		case L';': case L':' :	return 6;
 
 		default:
 		{
@@ -251,7 +251,7 @@ static int feat_order(int feat)
 
 
 /* Emit a 'graphical' symbol and a padding character if appropriate */
-extern int big_pad(int col, int row, byte a, byte c)
+extern int big_pad(int col, int row, byte a, wchar_t c)
 {
 	Term_putch(col, row, a, c);
 
@@ -978,7 +978,7 @@ static void display_monster(int col, int row, bool cursor, int oid)
 	/* Choose colors */
 	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
 	byte a = r_ptr->x_attr;
-	byte c = r_ptr->x_char;
+	wchar_t c = r_ptr->x_char;
 
 	if ((tile_height != 1) && (a & 0x80)) {
 		a = r_ptr->d_attr;
@@ -1021,8 +1021,8 @@ static int m_cmp_race(const void *a, const void *b)
 	{
 		/* UNIQUE group is ordered by level & name only */
 		/* Others by order they appear in the group symbols */
-		return strchr(monster_group[gid].chars, r_a->d_char)
-			- strchr(monster_group[gid].chars, r_b->d_char);
+		return wcschr(monster_group[gid].chars, r_a->d_char)
+			- wcschr(monster_group[gid].chars, r_b->d_char);
 	}
 	c = r_a->level - r_b->level;
 	if (c) return c;
@@ -1030,7 +1030,7 @@ static int m_cmp_race(const void *a, const void *b)
 	return strcmp(r_a->name, r_b->name);
 }
 
-static char *m_xchar(int oid) { return &r_info[default_join[oid].oid].x_char; }
+static wchar_t *m_xchar(int oid) { return &r_info[default_join[oid].oid].x_char; }
 static byte *m_xattr(int oid) { return &r_info[default_join[oid].oid].x_attr; }
 static const char *race_name(int gid) { return monster_group[gid].name; }
 
@@ -1103,8 +1103,8 @@ static int count_known_monsters(void)
 
 		for (j = 1; j < N_ELEMENTS(monster_group) - 1; j++)
 		{
-			const char *pat = monster_group[j].chars;
-			if (strchr(pat, r_ptr->d_char)) m_count++;
+			const wchar_t *pat = monster_group[j].chars;
+			if (wcschr(pat, r_ptr->d_char)) m_count++;
 		}
 	}
 
@@ -1136,8 +1136,8 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 
 		for (j = 1; j < N_ELEMENTS(monster_group) - 1; j++)
 		{
-			const char *pat = monster_group[j].chars;
-			if (strchr(pat, r_ptr->d_char)) m_count++;
+			const wchar_t *pat = monster_group[j].chars;
+			if (wcschr(pat, r_ptr->d_char)) m_count++;
 		}
 	}
 
@@ -1153,10 +1153,10 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 
 		for (j = 0; j < N_ELEMENTS(monster_group)-1; j++)
 		{
-			const char *pat = monster_group[j].chars;
+			const wchar_t *pat = monster_group[j].chars;
 			if (j == 0 && !rf_has(r_ptr->flags, RF_UNIQUE))
 				continue;
-			else if (j > 0 && !strchr(pat, r_ptr->d_char))
+			else if (j > 0 && !wcschr(pat, r_ptr->d_char))
 				continue;
 
 			monsters[m_count] = m_count;
@@ -1499,7 +1499,7 @@ static void display_object(int col, int row, bool cursor, int oid)
 	bool use_flavour = (kind->flavor) && !(aware && kind->tval == TV_SCROLL);
 
 	byte a = use_flavour ? kind->flavor->x_attr : kind->x_attr;
-	byte c = use_flavour ? kind->flavor->x_char : kind->x_char;
+	wchar_t c = use_flavour ? kind->flavor->x_char : kind->x_char;
 
 	/* Display known artifacts differently */
 	if (of_has(kind->flags, OF_INSTA_ART) && artifact_is_known(get_artifact_from_kind(kind)))
@@ -1616,7 +1616,7 @@ static int o_cmp_tval(const void *a, const void *b)
 
 static int obj2gid(int oid) { return obj_group_order[k_info[oid].tval]; }
 
-static char *o_xchar(int oid)
+static wchar_t *o_xchar(int oid)
 {
 	object_kind *kind = objkind_byid(oid);
 
@@ -1806,7 +1806,7 @@ static const char *fkind_name(int gid) { return feature_group_text[gid]; }
 static enum grid_light_level f_uik_lighting = FEAT_LIGHTING_LIT;
 /* XXX needs *better* retooling for multi-light terrain */
 static byte *f_xattr(int oid) { return &f_info[oid].x_attr[f_uik_lighting]; }
-static char *f_xchar(int oid) { return &f_info[oid].x_char[f_uik_lighting]; }
+static wchar_t *f_xchar(int oid) { return &f_info[oid].x_char[f_uik_lighting]; }
 static void feat_lore(int oid) { (void)oid; /* noop */ }
 static const char *feat_prompt(int oid)
 {

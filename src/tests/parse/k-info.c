@@ -35,7 +35,7 @@ int test_g0(void *state) {
 	eq(r, 0);
 	k = parser_priv(state);
 	require(k);
-	eq(k->d_char, '~');
+	eq(k->d_char, L'~');
 	eq(k->d_attr, TERM_RED);
 	ok;
 }
@@ -47,7 +47,7 @@ int test_g1(void *state) {
 	eq(r, 0);
 	k = parser_priv(state);
 	require(k);
-	eq(k->d_char, '!');
+	eq(k->d_char, L'!');
 	eq(k->d_attr, TERM_L_WHITE);
 	ok;
 }

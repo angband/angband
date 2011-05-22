@@ -81,7 +81,7 @@ typedef struct monster_base
 	bitflag flags[RF_SIZE];         /* Flags */
 	bitflag spell_flags[RSF_SIZE];  /* Spell flags */
 	
-	char d_char;			/* Default monster character */
+	wchar_t d_char;			/* Default monster character */
 
 	monster_pain *pain;		/* Pain messages */
 } monster_base;
@@ -163,10 +163,10 @@ typedef struct monster_race
 	byte rarity;			/* Rarity of creature */
 
 	byte d_attr;			/* Default monster attribute */
-	char d_char;			/* Default monster character */
+	wchar_t d_char;			/* Default monster character */
 
 	byte x_attr;			/* Desired monster attribute */
-	char x_char;			/* Desired monster character */
+	wchar_t x_char;			/* Desired monster character */
 
 	byte max_num;			/* Maximum population allowed per level */
 	byte cur_num;			/* Monster population on current level */

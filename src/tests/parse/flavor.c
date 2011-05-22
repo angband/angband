@@ -52,7 +52,7 @@ int test_g0(void *state) {
 	f = parser_priv(state);
 	require(f);
 	eq(f->fidx, 2);
-	eq(f->d_char, '!');
+	eq(f->d_char, L'!');
 	eq(f->d_attr, TERM_YELLOW);
 	ok;
 }

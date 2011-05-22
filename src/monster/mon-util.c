@@ -488,7 +488,7 @@ void display_monlist(void)
 		/* Display the pict */
 		if ((tile_width == 1) && (tile_height == 1)) {
 	        Term_putch(cur_x++, line, list[order[i]].attr, r_ptr->x_char);
-			Term_putch(cur_x++, line, TERM_WHITE, ' ');
+			Term_putch(cur_x++, line, TERM_WHITE, L' ');
 		}
 
 		/* Print and bump line counter */
@@ -560,7 +560,7 @@ void display_monlist(void)
 		/* Display the pict */
 		if ((tile_width == 1) && (tile_height == 1)) {
 	        Term_putch(cur_x++, line, list[order[i]].attr, r_ptr->x_char);
-			Term_putch(cur_x++, line, TERM_WHITE, ' ');
+			Term_putch(cur_x++, line, TERM_WHITE, L' ');
 		}
 
 		/* Print and bump line counter */

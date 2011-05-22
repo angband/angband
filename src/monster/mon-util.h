@@ -28,7 +28,7 @@
 /** Structures **/
 
 /** Variables **/
-char summon_kin_type;		/* Hack -- See summon_specific() */
+wchar_t summon_kin_type;		/* Hack -- See summon_specific() */
 
 
 /** Functions **/

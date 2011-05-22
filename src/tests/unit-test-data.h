@@ -100,7 +100,7 @@ static struct object_kind TEST_DATA test_longsword = {
 	.cost = 20,
 
 	.d_attr = 0,
-	.d_char = '|',
+	.d_char = L'|',
 
 	.alloc_prob = 20,
 	.alloc_min = 1,
@@ -165,7 +165,7 @@ static struct object_kind TEST_DATA test_torch = {
 	.cost = 1,
 
 	.d_attr = 0,
-	.d_char = '~',
+	.d_char = L'~',
 
 	.alloc_prob = 10,
 	.alloc_min = 1,
@@ -230,7 +230,7 @@ static struct object_kind TEST_DATA test_gold = {
 	.cost = 0,
 
 	.d_attr = 0,
-	.d_char = '$',
+	.d_char = L'$',
 
 	.alloc_prob = 0,
 	.alloc_min = 0,

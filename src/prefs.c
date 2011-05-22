@@ -218,7 +218,7 @@ void dump_monsters(ang_file *fff)
 	{
 		monster_race *r_ptr = &r_info[i];
 		byte attr = r_ptr->x_attr;
-		byte chr = r_ptr->x_char;
+		wint_t chr = r_ptr->x_char;
 
 		/* Skip non-entries */
 		if (!r_ptr->name) continue;
@@ -269,7 +269,7 @@ void dump_features(ang_file *fff)
 		for (j = 0; j < FEAT_LIGHTING_MAX; j++)
 		{
 			byte attr = f_ptr->x_attr[j];
-			byte chr = f_ptr->x_char[j];
+			wint_t chr = f_ptr->x_char[j];
 
 			const char *light = NULL;
 			if (j == FEAT_LIGHTING_BRIGHT)
@@ -293,7 +293,7 @@ void dump_flavors(ang_file *fff)
 
 	for (f = flavors; f; f = f->next) {
 		byte attr = f->x_attr;
-		byte chr = f->x_char;
+		wint_t chr = f->x_char;
 
 		file_putf(fff, "# Item flavor: %s\n", f->text);
 		file_putf(fff, "L:%d:%d:%d\n\n", f->fidx, attr, chr);
@@ -640,7 +640,7 @@ static enum parser_error parse_prefs_k(struct parser *p)
 		return PARSE_ERROR_UNRECOGNISED_SVAL;
 
 	kind->x_attr = (byte)parser_getint(p, "attr");
-	kind->x_char = (char)parser_getint(p, "char");
+	kind->x_char = (wchar_t)parser_getint(p, "char");
 
 	return PARSE_ERROR_NONE;
 }
@@ -660,7 +660,7 @@ static enum parser_error parse_prefs_r(struct parser *p)
 
 	monster = &r_info[idx];
 	monster->x_attr = (byte)parser_getint(p, "attr");
-	monster->x_char = (char)parser_getint(p, "char");
+	monster->x_char = (wchar_t)parser_getint(p, "char");
 
 	return PARSE_ERROR_NONE;
 }
@@ -697,7 +697,7 @@ static enum parser_error parse_prefs_f(struct parser *p)
 	{
 		feature = &f_info[idx];
 		feature->x_attr[light_idx] = (byte)parser_getint(p, "attr");
-		feature->x_char[light_idx] = (char)parser_getint(p, "char");
+		feature->x_char[light_idx] = (wchar_t)parser_getint(p, "char");
 	}
 	else
 	{
@@ -705,7 +705,7 @@ static enum parser_error parse_prefs_f(struct parser *p)
 		{
 			feature = &f_info[idx];
 			feature->x_attr[light_idx] = (byte)parser_getint(p, "attr");
-			feature->x_char[light_idx] = (char)parser_getint(p, "char");
+			feature->x_char[light_idx] = (wchar_t)parser_getint(p, "char");
 		}
 	}
 
@@ -785,7 +785,7 @@ static enum parser_error parse_prefs_l(struct parser *p)
 
 	if (flavor) {
 		flavor->x_attr = (byte)parser_getint(p, "attr");
-		flavor->x_char = (char)parser_getint(p, "char");
+		flavor->x_char = (wchar_t)parser_getint(p, "char");
 	}
 
 	return PARSE_ERROR_NONE;

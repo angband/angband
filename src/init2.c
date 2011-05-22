@@ -452,7 +452,7 @@ static enum parser_error parse_k_g(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	assert(k);
 
-	k->d_char = sym[0];
+	mbstowcs(&k->d_char, sym, 1);
 	if (strlen(color) > 1)
 		k->d_attr = color_text_to_attr(color);
 	else
@@ -1011,14 +1011,14 @@ static enum parser_error parse_f_n(struct parser *p) {
 }
 
 static enum parser_error parse_f_g(struct parser *p) {
-	char glyph = parser_getchar(p, "glyph");
+	const char *glyph = parser_getsym(p, "glyph");
 	const char *color = parser_getsym(p, "color");
 	int attr = 0;
 	struct feature *f = parser_priv(p);
 
 	if (!f)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	f->d_char = glyph;
+	mbstowcs(&f->d_char, glyph, 1);
 	if (strlen(color) > 1)
 		attr = color_text_to_attr(color);
 	else
@@ -1138,7 +1138,7 @@ struct parser *init_parse_f(void) {
 	parser_setpriv(p, NULL);
 	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "N uint index str name", parse_f_n);
-	parser_reg(p, "G char glyph sym color", parse_f_g);
+	parser_reg(p, "G sym glyph sym color", parse_f_g);
 	parser_reg(p, "M uint index", parse_f_m);
 	parser_reg(p, "P uint priority", parse_f_p);
 	parser_reg(p, "F ?str flags", parse_f_f);
@@ -2102,7 +2102,7 @@ static enum parser_error parse_flavor_g(struct parser *p) {
 	if (!f)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
-	f->d_char = parser_getchar(p, "glyph");
+	mbstowcs(&f->d_char, parser_getsym(p, "glyph"), 1);
 	attr = parser_getsym(p, "attr");
 	if (strlen(attr) == 1) {
 		d_attr = color_char_to_attr(attr[0]);
@@ -2129,7 +2129,7 @@ struct parser *init_parse_flavor(void) {
 	parser_setpriv(p, NULL);
 	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "N uint index sym tval ?sym sval", parse_flavor_n);
-	parser_reg(p, "G char glyph sym attr", parse_flavor_g);
+	parser_reg(p, "G sym glyph sym attr", parse_flavor_g);
 	parser_reg(p, "D str desc", parse_flavor_d);
 	return p;
 }

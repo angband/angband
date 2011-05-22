@@ -965,7 +965,7 @@ errr file_character(const char *path, bool full)
 	int i, x, y;
 
 	byte a;
-	char c;
+	wchar_t c;
 
 	ang_file *fp;
 
@@ -974,6 +974,7 @@ errr file_character(const char *path, bool full)
 	char o_name[80];
 
 	char buf[1024];
+	char *p;
 
 	/* Unused parameter */
 	(void)full;
@@ -993,6 +994,7 @@ errr file_character(const char *path, bool full)
 	/* Dump part of the screen */
 	for (y = 1; y < 23; y++)
 	{
+		p = buf;
 		/* Dump each row */
 		for (x = 0; x < 79; x++)
 		{
@@ -1000,14 +1002,14 @@ errr file_character(const char *path, bool full)
 			(void)(Term_what(x, y, &a, &c));
 
 			/* Dump it */
-			buf[x] = c;
+			p += wctomb(p, c);
 		}
 
 		/* Back up over spaces */
-		while ((x > 0) && (buf[x-1] == ' ')) --x;
+		while ((p > buf) && (p[-1] == ' ')) --p;
 
 		/* Terminate */
-		buf[x] = '\0';
+		*p = '\0';
 
 		/* End the row */
 		x_file_putf(fp, "%s\n", buf);
@@ -1022,6 +1024,7 @@ errr file_character(const char *path, bool full)
 	/* Dump part of the screen */
 	for (y = 11; y < 20; y++)
 	{
+		p = buf;
 		/* Dump each row */
 		for (x = 0; x < 39; x++)
 		{
@@ -1029,14 +1032,14 @@ errr file_character(const char *path, bool full)
 			(void)(Term_what(x, y, &a, &c));
 
 			/* Dump it */
-			buf[x] = c;
+			p += wctomb(p, c);
 		}
 
 		/* Back up over spaces */
-		while ((x > 0) && (buf[x-1] == ' ')) --x;
+		while ((p > buf) && (p[-1] == ' ')) --p;
 
 		/* Terminate */
-		buf[x] = '\0';
+		*p = '\0';
 
 		/* End the row */
 		x_file_putf(fp, "%s\n", buf);
@@ -1048,6 +1051,7 @@ errr file_character(const char *path, bool full)
 	/* Dump part of the screen */
 	for (y = 11; y < 20; y++)
 	{
+		p = buf;
 		/* Dump each row */
 		for (x = 0; x < 39; x++)
 		{
@@ -1055,14 +1059,14 @@ errr file_character(const char *path, bool full)
 			(void)(Term_what(x + 40, y, &a, &c));
 
 			/* Dump it */
-			buf[x] = c;
+			p += wctomb(p, c);
 		}
 
 		/* Back up over spaces */
-		while ((x > 0) && (buf[x-1] == ' ')) --x;
+		while ((p > buf) && (p[-1] == ' ')) --p;
 
 		/* Terminate */
-		buf[x] = '\0';
+		*p = '\0';
 
 		/* End the row */
 		x_file_putf(fp, "%s\n", buf);
@@ -1843,21 +1847,24 @@ void close_game(void)
 	signals_handle_tstp();
 }
 
-static void write_html_escape_char(ang_file *fp, char c)
+static void write_html_escape_char(ang_file *fp, wchar_t c)
 {
+	char mbseq[MB_CUR_MAX];
+
 	switch (c)
 	{
-		case '<':
+		case L'<':
 			file_putf(fp, "&lt;");
 			break;
-		case '>':
+		case L'>':
 			file_putf(fp, "&gt;");
 			break;
-		case '&':
+		case L'&':
 			file_putf(fp, "&amp;");
 			break;
 		default:
-			file_putf(fp, "%c", c);
+			wctomb(mbseq, c);
+			file_putf(fp, "%s", mbseq);
 			break;
 	}
 }
@@ -1871,7 +1878,7 @@ void html_screenshot(const char *name, int mode)
 
 	byte a = TERM_WHITE;
 	byte oa = TERM_WHITE;
-	char c = ' ';
+	wchar_t c = L' ';
 
 	const char *new_color_fmt = (mode == 0) ?
 					"<font color=\"#%02X%02X%02X\">"
@@ -1921,7 +1928,7 @@ void html_screenshot(const char *name, int mode)
 			(void)(Term_what(x, y, &a, &c));
 
 			/* Color change */
-			if (oa != a && c != ' ')
+			if (oa != a && c != L' ')
 			{
 				/* From the default white to another color */
 				if (oa == TERM_WHITE)
@@ -1953,7 +1960,12 @@ void html_screenshot(const char *name, int mode)
 
 			/* Write the character and escape special HTML characters */
 			if (mode == 0) write_html_escape_char(fp, c);
-			else file_putf(fp, "%c", c);
+			else
+			{
+				char mbseq[MB_LEN_MAX+1] = {0};
+				wctomb(mbseq, c);
+				file_putf(fp, "%s", mbseq);
+			}
 		}
 
 		/* End the row */

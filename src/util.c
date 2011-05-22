@@ -838,8 +838,8 @@ void text_out_to_screen(byte a, const char *str)
 
 	int wrap;
 
-	const char *s;
-	char buf[1024];
+	const wchar_t *s;
+	wchar_t buf[1024];
 
 	/* Obtain the size */
 	(void)Term_get_size(&wid, &h);
@@ -848,7 +848,7 @@ void text_out_to_screen(byte a, const char *str)
 	(void)Term_locate(&x, &y);
 
 	/* Copy to a rewriteable string */
-	my_strcpy(buf, str, 1024);
+	mbstowcs(buf, str, 1024);
 	
 	/* Use special wrapping boundary? */
 	if ((text_out_wrap > 0) && (text_out_wrap < wid))
@@ -859,10 +859,10 @@ void text_out_to_screen(byte a, const char *str)
 	/* Process the string */
 	for (s = buf; *s; s++)
 	{
-		char ch;
+		wchar_t ch;
 
 		/* Force wrap */
-		if (*s == '\n')
+		if (*s == L'\n')
 		{
 			/* Wrap */
 			x = text_out_indent;
@@ -878,15 +878,15 @@ void text_out_to_screen(byte a, const char *str)
 		}
 
 		/* Clean up the char */
-		ch = (my_isprint((unsigned char)*s) ? *s : ' ');
+		ch = (iswprint(*s) ? *s : L' ');
 
 		/* Wrap words as needed */
-		if ((x >= wrap - 1) && (ch != ' '))
+		if ((x >= wrap - 1) && (ch != L' '))
 		{
 			int i, n = 0;
 
 			byte av[256];
-			char cv[256];
+			wchar_t cv[256];
 
 			/* Wrap word */
 			if (x < wrap)
@@ -898,7 +898,7 @@ void text_out_to_screen(byte a, const char *str)
 					Term_what(i, y, &av[i], &cv[i]);
 
 					/* Break on space */
-					if (cv[i] == ' ') break;
+					if (cv[i] == L' ') break;
 
 					/* Track current word */
 					n = i;
@@ -1939,6 +1939,19 @@ const char *attr_to_text(byte a)
 		return ("Icky");
 }
 
+/**
+ * Return whether the given display char matches an entered symbol
+ *
+ * Horrible hack. TODO UTF-8 find some way of entering mb chars
+ */
+bool char_matches_key(wchar_t c, keycode_t key)
+{
+	wchar_t keychar;
+	char k = (char)key;
+
+	mbstowcs(&keychar, &k, 1);
+	return (c == keychar);
+}
 
 #ifdef SUPPORT_GAMMA
 

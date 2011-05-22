@@ -16,7 +16,7 @@ extern bool cave_valid_bold(int y, int x);
 extern byte get_color(byte a, int attr, int n);
 extern void map_info(unsigned x, unsigned y, grid_data *g);
 extern void move_cursor_relative(int y, int x);
-extern void print_rel(char c, byte a, int y, int x);
+extern void print_rel(wchar_t c, byte a, int y, int x);
 extern void prt_map(void);
 extern void display_map(int *cy, int *cx);
 extern void do_cmd_view_map(void);

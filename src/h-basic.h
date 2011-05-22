@@ -121,6 +121,9 @@
 #include <string.h>
 #include <time.h>
 
+#include <wchar.h>
+#include <wctype.h>
+
 /** POSIX headers **/
 #if defined(SET_UID) || defined(MACH_O_CARBON)
 # include <pwd.h>

@@ -331,7 +331,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 
 	int i, j;
 	byte missile_attr = object_attr(o_ptr);
-	char missile_char = object_char(o_ptr);
+	wchar_t missile_char;
 
 	object_type object_type_body;
 	object_type *i_ptr = &object_type_body;
@@ -352,6 +352,9 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 	s16b tx = x + 99 * ddx[dir];
 
 	bool hit_target = FALSE;
+
+	char c = object_char(o_ptr);
+	mbstowcs(&missile_char, &c, 1);
 
 	/* Check for target validity */
 	if ((dir == 5) && target_okay()) {

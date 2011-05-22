@@ -43,7 +43,7 @@ static enum parser_error parse_rb_g(struct parser *p) {
 	if (!rb)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
-	rb->d_char = parser_getchar(p, "glyph");
+	mbstowcs(&rb->d_char, parser_getsym(p, "glyph"), 1);
 	return PARSE_ERROR_NONE;
 }
 
@@ -145,7 +145,7 @@ struct parser *init_parse_rb(void) {
 
 	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "N str name", parse_rb_n);
-	parser_reg(p, "G char glyph", parse_rb_g);
+	parser_reg(p, "G sym glyph", parse_rb_g);
 	parser_reg(p, "M uint pain", parse_rb_m);
 	parser_reg(p, "F ?str flags", parse_rb_f);
 	parser_reg(p, "S ?str spells", parse_rb_s);
@@ -218,7 +218,7 @@ static enum parser_error parse_r_g(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
 
 	/* If the display character is specified, it overrides any template */
-	r->d_char = parser_getchar(p, "glyph");
+	mbstowcs(&r->d_char, parser_getsym(p, "glyph"), 1);
 
 	return PARSE_ERROR_NONE;
 }
@@ -509,7 +509,7 @@ struct parser *init_parse_r(void) {
 	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "N uint index str name", parse_r_n);
 	parser_reg(p, "T sym base", parse_r_t);
-	parser_reg(p, "G char glyph", parse_r_g);
+	parser_reg(p, "G sym glyph", parse_r_g);
 	parser_reg(p, "C sym color", parse_r_c);
 	parser_reg(p, "I int speed int hp int aaf int ac int sleep", parse_r_i);
 	parser_reg(p, "W int level int rarity int power int mexp", parse_r_w);

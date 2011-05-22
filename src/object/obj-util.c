@@ -3767,7 +3767,7 @@ void display_itemlist(void)
 	unsigned i;
 	unsigned disp_count = 0;
 	byte a;
-	char c;
+	wchar_t c;
 
 	object_type *types[MAX_ITEMLIST];
 	int counts[MAX_ITEMLIST];
@@ -3951,7 +3951,7 @@ void display_itemlist(void)
 		/* Display the pict */
 		if ((tile_width == 1) && (tile_height == 1))
 		{
-		        Term_putch(cur_x++, line, a, c);
+			Term_putch(cur_x++, line, a, c);
 			Term_putch(cur_x++, line, TERM_WHITE, ' ');
 		}
 

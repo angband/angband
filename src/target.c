@@ -1077,7 +1077,7 @@ bool target_set_closest(int mode)
  * The first two result from information being lost from the dungeon arrays,
  * which requires changes elsewhere
  */
-static int draw_path(u16b path_n, u16b *path_g, char *c, byte *a, int y1, int x1)
+static int draw_path(u16b path_n, u16b *path_g, wchar_t *c, byte *a, int y1, int x1)
 {
 	int i;
 	bool on_screen;
@@ -1148,7 +1148,7 @@ static int draw_path(u16b path_n, u16b *path_g, char *c, byte *a, int y1, int x1
 			colour = TERM_WHITE;
 
 		/* Draw the path segment */
-		(void)Term_addch(colour, '*');
+		(void)Term_addch(colour, L'*');
 	}
 	return i;
 }
@@ -1158,7 +1158,7 @@ static int draw_path(u16b path_n, u16b *path_g, char *c, byte *a, int y1, int x1
  * Load the attr/char at each point along "path" which is on screen from
  * "a" and "c". This was saved in draw_path().
  */
-static void load_path(u16b path_n, u16b *path_g, char *c, byte *a) {
+static void load_path(u16b path_n, u16b *path_g, wchar_t *c, byte *a) {
 	int i;
 	for (i = 0; i < path_n; i++) {
 		int y = GRID_Y(path_g[i]);
@@ -1238,7 +1238,7 @@ bool target_set_interactive(int mode, int x, int y)
 	struct keypress query;
 
 	/* These are used for displaying the path to the target */
-	char path_char[MAX_RANGE];
+	wchar_t path_char[MAX_RANGE];
 	byte path_attr[MAX_RANGE];
 	struct point_set *targets;
 

@@ -343,7 +343,7 @@ bool cave_valid_bold(int y, int x)
 /*
  * Hack -- Hallucinatory monster
  */
-static void hallucinatory_monster(byte *a, char *c)
+static void hallucinatory_monster(byte *a, wchar_t *c)
 {
 	while (1)
 	{
@@ -364,7 +364,7 @@ static void hallucinatory_monster(byte *a, char *c)
 /*
  * Hack -- Hallucinatory object
  */
-static void hallucinatory_object(byte *a, char *c)
+static void hallucinatory_object(byte *a, wchar_t *c)
 {
 	
 	while (1)
@@ -451,7 +451,7 @@ static bool feat_is_treasure(int feat) {
 /**
  * Apply text lighting effects
  */
-static void grid_get_text(grid_data *g, byte *a, char *c)
+static void grid_get_attr(grid_data *g, byte *a)
 {
 	/* Trap detect edge, but don't colour traps themselves, or treasure */
 	if (g->trapborder && !feat_is_known_trap(g->f_idx) &&
@@ -517,22 +517,22 @@ static void grid_get_text(grid_data *g, byte *a, char *c)
  * This will probably be done outside of the current text->graphics mappings
  * though.
  */
-void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
+void grid_data_as_text(grid_data *g, byte *ap, wchar_t *cp, byte *tap, wchar_t *tcp)
 {
 	feature_type *f_ptr = &f_info[g->f_idx];
 
 	byte a = f_ptr->x_attr[g->lighting];
-	char c = f_ptr->x_char[g->lighting];
+	wchar_t c = f_ptr->x_char[g->lighting];
 
 	/* Check for trap detection boundaries */
 	if (use_graphics == GRAPHICS_NONE)
-		grid_get_text(g, &a, &c);
+		grid_get_attr(g, &a);
 	else if (g->trapborder && (g->f_idx == FEAT_FLOOR)
 		 && (g->m_idx || g->first_kind)) {
 		/* if there is an object or monster here, and this is a plain floor
 		 * display the border here rather than an overlay below */
 		a = f_info[64].x_attr[g->lighting]; /* 64 is the index of the feat that */
-		c = f_info[64].x_char[g->lighting]; /* holds the tap detect border floor tile */
+		c = f_info[64].x_char[g->lighting]; /* holds the trap detect border floor tile */
 	}
 
 	/* Save the terrain info for the transparency effects */
@@ -571,7 +571,7 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 			monster_race *r_ptr = &r_info[m_ptr->r_idx];
 				
 			byte da;
-			char dc;
+			wchar_t dc;
 			
 			/* Desired attr & char */
 			da = r_ptr->x_attr;
@@ -715,7 +715,7 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 
 	/* Result */
 	(*ap) = a;
-	(*cp) = c;	
+	(*cp) = c;
 }
 
 
@@ -961,7 +961,7 @@ void move_cursor_relative(int y, int x)
  *
  * Note the use of "Term_queue_char()" for efficiency.
  */
-static void print_rel_map(char c, byte a, int y, int x)
+static void print_rel_map(wchar_t c, byte a, int y, int x)
 {
 	int ky, kx;
 
@@ -1021,7 +1021,7 @@ static void print_rel_map(char c, byte a, int y, int x)
  *
  * The main screen will always be at least 24x80 in size.
  */
-void print_rel(char c, byte a, int y, int x)
+void print_rel(wchar_t c, byte a, int y, int x)
 {
 	int ky, kx;
 	int vy, vx;
@@ -1119,9 +1119,9 @@ void cave_light_spot(struct cave *c, int y, int x)
 static void prt_map_aux(void)
 {
 	byte a;
-	char c;
+	wchar_t c;
 	byte ta;
-	char tc;
+	wchar_t tc;
 	grid_data g;
 
 	int y, x;
@@ -1180,9 +1180,9 @@ static void prt_map_aux(void)
 void prt_map(void)
 {
 	byte a;
-	char c;
+	wchar_t c;
 	byte ta;
-	char tc;
+	wchar_t tc;
 	grid_data g;
 
 	int y, x;
@@ -1213,7 +1213,7 @@ void prt_map(void)
 
 			if ((tile_width > 1) || (tile_height > 1))
 			{
-			        Term_big_queue_char(Term, vx, vy, a, c, TERM_WHITE, ' ');
+			        Term_big_queue_char(Term, vx, vy, a, c, TERM_WHITE, L' ');
 	      
 				if (tile_width > 1)
 				{
@@ -1257,7 +1257,7 @@ void display_map(int *cy, int *cx)
 	grid_data g;
 
 	byte ta;
-	char tc;
+	wchar_t tc;
 
 	byte tp;
 
@@ -1283,7 +1283,7 @@ void display_map(int *cy, int *cx)
 
 	/* Nothing here */
 	ta = TERM_WHITE;
-	tc = ' ';
+	tc = L' ';
 
 	/* Clear the priorities */
 	for (y = 0; y < map_hgt; ++y)

@@ -435,7 +435,7 @@ static void lookup_symbol(struct keypress sym, char *buf, size_t max)
 	It would make more sense to loop through tvals, but then we need to associate
 	a display character with each tval. */
 	for (i = 1; i < z_info->k_max; i++) {
-		if (k_info[i].d_char == (char)sym.code) {
+		if (char_matches_key(k_info[i].d_char, sym.code)) {
 			strnfmt(buf, max, "%c - %s.", (char)sym.code, tval_find_name(k_info[i].tval));
 			return;
 		}
@@ -445,7 +445,7 @@ static void lookup_symbol(struct keypress sym, char *buf, size_t max)
 	/* Note: We need a better way of doing this. Currently '#' matches secret door,
 	and '^' matches trap door (instead of the more generic "trap"). */
 	for (i = 1; i < z_info->f_max; i++) {
-		if (f_info[i].d_char == (char)sym.code) {
+		if (char_matches_key(f_info[i].d_char, sym.code)) {
 			strnfmt(buf, max, "%c - %s.", (char)sym.code, f_info[i].name);
 			return;
 		}
@@ -453,7 +453,7 @@ static void lookup_symbol(struct keypress sym, char *buf, size_t max)
 	
 	/* Look through monster templates */
 	for (race = rb_info; race; race = race->next){
-		if ((char)sym.code == race->d_char) {
+		if (char_matches_key(race->d_char, sym.code)) {
 			strnfmt(buf, max, "%c - %s.", (char)sym.code, race->text);
 			return;
 		}
@@ -540,7 +540,7 @@ void do_cmd_query_symbol(void)
 		if (uniq && !rf_has(r_ptr->flags, RF_UNIQUE)) continue;
 
 		/* Collect "appropriate" monsters */
-		if (all || (r_ptr->d_char == (char)sym.code)) who[n++] = i;
+		if (all || char_matches_key(r_ptr->d_char, sym.code)) who[n++] = i;
 	}
 
 	/* Nothing to recall */

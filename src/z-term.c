@@ -313,19 +313,19 @@ static errr term_win_init(term_win *s, int w, int h)
 
 	/* Make the window access arrays */
 	s->a = C_ZNEW(h, byte *);
-	s->c = C_ZNEW(h, char *);
+	s->c = C_ZNEW(h, wchar_t *);
 
 	/* Make the window content arrays */
 	s->va = C_ZNEW(h * w, byte);
-	s->vc = C_ZNEW(h * w, char);
+	s->vc = C_ZNEW(h * w, wchar_t);
 
 	/* Make the terrain access arrays */
 	s->ta = C_ZNEW(h, byte *);
-	s->tc = C_ZNEW(h, char *);
+	s->tc = C_ZNEW(h, wchar_t *);
 
 	/* Make the terrain content arrays */
 	s->vta = C_ZNEW(h * w, byte);
-	s->vtc = C_ZNEW(h * w, char);
+	s->vtc = C_ZNEW(h * w, wchar_t);
 
 	/* Prepare the window access arrays */
 	for (y = 0; y < h; y++)
@@ -353,16 +353,16 @@ static errr term_win_copy(term_win *s, term_win *f, int w, int h)
 	for (y = 0; y < h; y++)
 	{
 		byte *f_aa = f->a[y];
-		char *f_cc = f->c[y];
+		wchar_t *f_cc = f->c[y];
 
 		byte *s_aa = s->a[y];
-		char *s_cc = s->c[y];
+		wchar_t *s_cc = s->c[y];
 
 		byte *f_taa = f->ta[y];
-		char *f_tcc = f->tc[y];
+		wchar_t *f_tcc = f->tc[y];
 
 		byte *s_taa = s->ta[y];
-		char *s_tcc = s->tc[y];
+		wchar_t *s_tcc = s->tc[y];
 
 		for (x = 0; x < w; x++)
 		{
@@ -433,7 +433,7 @@ static errr Term_wipe_hack(int x, int y, int n)
 /*
  * Hack -- fake hook for "Term_text()" (see above)
  */
-static errr Term_text_hack(int x, int y, int n, byte a, const char *cp)
+static errr Term_text_hack(int x, int y, int n, byte a, const wchar_t *cp)
 {
 	/* Compiler silliness */
 	if (x || y || n || a || cp) return (-2);
@@ -446,7 +446,7 @@ static errr Term_text_hack(int x, int y, int n, byte a, const char *cp)
 /*
  * Hack -- fake hook for "Term_pict()" (see above)
  */
-static errr Term_pict_hack(int x, int y, int n, const byte *ap, const char *cp, const byte *tap, const char *tcp)
+static errr Term_pict_hack(int x, int y, int n, const byte *ap, const wchar_t *cp, const byte *tap, const wchar_t *tcp)
 {
 	/* Compiler silliness */
 	if (x || y || n || ap || cp || tap || tcp) return (-2);
@@ -464,19 +464,19 @@ static errr Term_pict_hack(int x, int y, int n, const byte *ap, const char *cp, 
  *
  * Assumes given location and values are valid.
  */
-void Term_queue_char(term *t, int x, int y, byte a, char c, byte ta, char tc)
+void Term_queue_char(term *t, int x, int y, byte a, wchar_t c, byte ta, wchar_t tc)
 {
 	byte *scr_aa = t->scr->a[y];
-	char *scr_cc = t->scr->c[y];
+	wchar_t *scr_cc = t->scr->c[y];
 
 	byte oa = scr_aa[x];
-	char oc = scr_cc[x];
+	wchar_t oc = scr_cc[x];
 
 	byte *scr_taa = t->scr->ta[y];
-	char *scr_tcc = t->scr->tc[y];
+	wchar_t *scr_tcc = t->scr->tc[y];
 
 	byte ota = scr_taa[x];
-	char otc = scr_tcc[x];
+	wchar_t otc = scr_tcc[x];
 
 	/* Don't change is the terrain value is 0 */
 	if (!ta) ta = ota;
@@ -558,31 +558,31 @@ void Term_big_queue_char(term *t, int x, int y, byte a, char c, byte a1, char c1
  * a valid location, so the first "n" characters of "s" can all be added
  * starting at (x,y) without causing any illegal operations.
  */
-void Term_queue_chars(int x, int y, int n, byte a, const char *s)
+void Term_queue_chars(int x, int y, int n, byte a, const wchar_t *s)
 {
 	int x1 = -1, x2 = -1;
 
 	byte *scr_aa = Term->scr->a[y];
-	char *scr_cc = Term->scr->c[y];
+	wchar_t *scr_cc = Term->scr->c[y];
 
 	byte *scr_taa = Term->scr->ta[y];
-	char *scr_tcc = Term->scr->tc[y];
+	wchar_t *scr_tcc = Term->scr->tc[y];
 
 	/* Queue the attr/chars */
 	for ( ; n; x++, s++, n--)
 	{
 		byte oa = scr_aa[x];
-		char oc = scr_cc[x];
+		wchar_t oc = scr_cc[x];
 
 		byte ota = scr_taa[x];
-		char otc = scr_tcc[x];
+		wchar_t otc = scr_tcc[x];
 
 		/* Hack -- Ignore non-changes */
 		if ((oa == a) && (oc == *s) && (ota == 0) && (otc == 0)) continue;
 
 		/* Save the "literal" information */
 		scr_aa[x] = a;
-		scr_cc[x] = *s; /* TODO UTF-8: replace with get single UTF char */
+		scr_cc[x] = *s;
 
 		scr_taa[x] = 0;
 		scr_tcc[x] = 0;
@@ -620,22 +620,22 @@ static void Term_fresh_row_pict(int y, int x1, int x2)
 	int x;
 
 	byte *old_aa = Term->old->a[y];
-	char *old_cc = Term->old->c[y];
+	wchar_t *old_cc = Term->old->c[y];
 
 	byte *scr_aa = Term->scr->a[y];
-	char *scr_cc = Term->scr->c[y];
+	wchar_t *scr_cc = Term->scr->c[y];
 
 	byte *old_taa = Term->old->ta[y];
-	char *old_tcc = Term->old->tc[y];
+	wchar_t *old_tcc = Term->old->tc[y];
 
 	byte *scr_taa = Term->scr->ta[y];
-	char *scr_tcc = Term->scr->tc[y];
+	wchar_t *scr_tcc = Term->scr->tc[y];
 
 	byte ota;
-	char otc;
+	wchar_t otc;
 
 	byte nta;
-	char ntc;
+	wchar_t ntc;
 
 	/* Pending length */
 	int fn = 0;
@@ -644,10 +644,10 @@ static void Term_fresh_row_pict(int y, int x1, int x2)
 	int fx = 0;
 
 	byte oa;
-	char oc;
+	wchar_t oc;
 
 	byte na;
-	char nc;
+	wchar_t nc;
 
 	/* Scan "modified" columns */
 	for (x = x1; x <= x2; x++)
@@ -717,19 +717,19 @@ static void Term_fresh_row_both(int y, int x1, int x2)
 	int x;
 
 	byte *old_aa = Term->old->a[y];
-	char *old_cc = Term->old->c[y];
+	wchar_t *old_cc = Term->old->c[y];
 	byte *scr_aa = Term->scr->a[y];
-	char *scr_cc = Term->scr->c[y];
+	wchar_t *scr_cc = Term->scr->c[y];
 
 	byte *old_taa = Term->old->ta[y];
-	char *old_tcc = Term->old->tc[y];
+	wchar_t *old_tcc = Term->old->tc[y];
 	byte *scr_taa = Term->scr->ta[y];
-	char *scr_tcc = Term->scr->tc[y];
+	wchar_t *scr_tcc = Term->scr->tc[y];
 
 	byte ota;
-	char otc;
+	wchar_t otc;
 	byte nta;
-	char ntc;
+	wchar_t ntc;
 
 	/* The "always_text" flag */
 	int always_text = Term->always_text;
@@ -744,10 +744,10 @@ static void Term_fresh_row_both(int y, int x1, int x2)
 	byte fa = Term->attr_blank;
 
 	byte oa;
-	char oc;
+	wchar_t oc;
 
 	byte na;
-	char nc;
+	wchar_t nc;
 
 	/* Scan "modified" columns */
 	for (x = x1; x <= x2; x++)
@@ -888,10 +888,10 @@ static void Term_fresh_row_text(int y, int x1, int x2)
 	int x;
 
 	byte *old_aa = Term->old->a[y];
-	char *old_cc = Term->old->c[y];
+	wchar_t *old_cc = Term->old->c[y];
 
 	byte *scr_aa = Term->scr->a[y];
-	char *scr_cc = Term->scr->c[y];
+	wchar_t *scr_cc = Term->scr->c[y];
 
 	/* The "always_text" flag */
 	int always_text = Term->always_text;
@@ -906,10 +906,10 @@ static void Term_fresh_row_text(int y, int x1, int x2)
 	byte fa = Term->attr_blank;
 
 	byte oa;
-	char oc;
+	wchar_t oc;
 
 	byte na;
-	char nc;
+	wchar_t nc;
 
 
 	/* Scan "modified" columns */
@@ -1189,7 +1189,7 @@ errr Term_fresh(void)
 	if (Term->total_erase)
 	{
 		byte na = Term->attr_blank;
-		char nc = Term->char_blank;
+		wchar_t nc = Term->char_blank;
 
 		/* Physically erase the entire window */
 		Term_xtra(TERM_XTRA_CLEAR, 0);
@@ -1202,9 +1202,9 @@ errr Term_fresh(void)
 		for (y = 0; y < h; y++)
 		{
 			byte *aa = old->a[y];
-			char *cc = old->c[y];
+			wchar_t *cc = old->c[y];
 			byte *taa = old->ta[y];
-			char *tcc = old->tc[y];
+			wchar_t *tcc = old->tc[y];
 
 			/* Wipe each column */
 			for (x = 0; x < w; x++)
@@ -1244,16 +1244,16 @@ errr Term_fresh(void)
 			int ty = old->cy;
 
 			byte *old_aa = old->a[ty];
-			char *old_cc = old->c[ty];
+			wchar_t *old_cc = old->c[ty];
 
 			byte oa = old_aa[tx];
-			char oc = old_cc[tx];
+			wchar_t oc = old_cc[tx];
 
 			byte *old_taa = old->ta[ty];
-			char *old_tcc = old->tc[ty];
+			wchar_t *old_tcc = old->tc[ty];
 
 			byte ota = old_taa[tx];
-			char otc = old_tcc[tx];
+			wchar_t otc = old_tcc[tx];
 
 			/* Hack -- use "Term_pict()" always */
 			if (Term->always_pict)
@@ -1480,7 +1480,7 @@ errr Term_gotoxy(int x, int y)
  * Do not change the cursor position
  * No visual changes until "Term_fresh()".
  */
-errr Term_draw(int x, int y, byte a, char c)
+errr Term_draw(int x, int y, byte a, wchar_t c)
 {
 	int w = Term->wid;
 	int h = Term->hgt;
@@ -1509,14 +1509,14 @@ errr Term_draw(int x, int y, byte a, char c)
  *
  * We queue the given attr/char for display at the current
  * cursor location, and advance the cursor to the right,
- * marking it as unuable and returning "1" if it leaves
+ * marking it as unusable and returning "1" if it leaves
  * the screen, and otherwise returning "0".
  *
  * So when this function, or the following one, return a
  * positive value, future calls to either function will
  * return negative ones.
  */
-errr Term_addch(byte a, char c)
+errr Term_addch(byte a, wchar_t c)
 {
 	int w = Term->wid;
 
@@ -1570,10 +1570,10 @@ errr Term_addstr(int n, byte a, const char *buf)
 
 	errr res = 0;
 
-	char s[1024];
+	wchar_t s[1024];
 
 	/* Copy to a rewriteable string */
- 	my_strcpy(s, buf, 1024);
+ 	mbstowcs(s, buf, 1024);
 
 	/* Handle "unusable" cursor */
 	if (Term->scr->cu) return (-1);
@@ -1604,7 +1604,7 @@ errr Term_addstr(int n, byte a, const char *buf)
 /*
  * Move to a location and, using an attr, add a char
  */
-errr Term_putch(int x, int y, byte a, char c)
+errr Term_putch(int x, int y, byte a, wchar_t c)
 {
 	errr res;
 
@@ -1706,13 +1706,13 @@ errr Term_erase(int x, int y, int n)
 	int x2 = -1;
 
 	byte na = Term->attr_blank;
-	char nc = Term->char_blank;
+	wchar_t nc = Term->char_blank;
 
 	byte *scr_aa;
-	char *scr_cc;
+	wchar_t *scr_cc;
 
 	byte *scr_taa;
-	char *scr_tcc;
+	wchar_t *scr_tcc;
 
 	/* Place cursor */
 	if (Term_gotoxy(x, y)) return (-1);
@@ -1727,7 +1727,7 @@ errr Term_erase(int x, int y, int n)
 	scr_taa = Term->scr->ta[y];
 	scr_tcc = Term->scr->tc[y];
 
-	if ((n > 0) && (scr_cc[x] == (char) -1) && (scr_aa[x] == 255))
+	if ((n > 0) && (scr_aa[x] == 255))
 	{
 		x--;
 		n++;
@@ -1737,7 +1737,7 @@ errr Term_erase(int x, int y, int n)
 	for (i = 0; i < n; i++, x++)
 	{
 		byte oa = scr_aa[x];
-		char oc = scr_cc[x];
+		wchar_t oc = scr_cc[x];
 
 		/* Hack -- Ignore "non-changes" */
 		if ((oa == na) && (oc == nc)) continue;
@@ -1786,7 +1786,7 @@ errr Term_clear(void)
 	int h = Term->hgt;
 
 	byte na = Term->attr_blank;
-	char nc = Term->char_blank;
+	wchar_t nc = Term->char_blank;
 
 	/* Cursor usable */
 	Term->scr->cu = 0;
@@ -1798,9 +1798,9 @@ errr Term_clear(void)
 	for (y = 0; y < h; y++)
 	{
 		byte *scr_aa = Term->scr->a[y];
-		char *scr_cc = Term->scr->c[y];
+		wchar_t *scr_cc = Term->scr->c[y];
 		byte *scr_taa = Term->scr->ta[y];
-		char *scr_tcc = Term->scr->tc[y];
+		wchar_t *scr_tcc = Term->scr->tc[y];
 
 		/* Wipe each column */
 		for (x = 0; x < w; x++)
@@ -1855,7 +1855,7 @@ errr Term_redraw_section(int x1, int y1, int x2, int y2)
 {
 	int i, j;
 
-	char *c_ptr;
+	wchar_t *c_ptr;
 
 	/* Bounds checking */
 	if (y2 >= Term->hgt) y2 = Term->hgt - 1;
@@ -1947,7 +1947,7 @@ errr Term_locate(int *x, int *y)
  * Note that this refers to what will be on the window after the
  * next call to "Term_fresh()".  It may or may not already be there.
  */
-errr Term_what(int x, int y, byte *a, char *c)
+errr Term_what(int x, int y, byte *a, wchar_t *c)
 {
 	int w = Term->wid;
 	int h = Term->hgt;
@@ -2599,7 +2599,7 @@ errr term_init(term *t, int w, int h, int k)
 
 	/* Default "blank" */
 	t->attr_blank = 0;
-	t->char_blank = ' ';
+	t->char_blank = L' ';
 
 	/* No saves yet */
 	t->saved = 0;

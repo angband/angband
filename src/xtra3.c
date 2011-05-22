@@ -1011,7 +1011,7 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 	{
 		grid_data g;
 		byte a, ta;
-		char c, tc;
+		wchar_t c, tc;
 		
 		int ky, kx;
 		int vy, vx;

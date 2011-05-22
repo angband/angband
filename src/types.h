@@ -93,10 +93,10 @@ typedef struct feature
 	u32b flags;    /**< Terrain flags */
 
 	byte d_attr;   /**< Default feature attribute */
-	char d_char;   /**< Default feature character */
+	wchar_t d_char;   /**< Default feature character */
 
 	byte x_attr[3];   /**< Desired feature attribute (set by user/pref file) */
-	char x_char[3];   /**< Desired feature character (set by user/pref file) */
+	wchar_t x_char[3];   /**< Desired feature character (set by user/pref file) */
 } feature_type;
 
 

@@ -515,7 +515,7 @@ static byte spell_color(int type)
  *
  * If the distance is not "one", we (may) return "*".
  */
-static void bolt_pict(int y, int x, int ny, int nx, int typ, byte *a, char *c)
+static void bolt_pict(int y, int x, int ny, int nx, int typ, byte *a, wchar_t *c)
 {
 	int motion;
 
@@ -538,11 +538,11 @@ static void bolt_pict(int y, int x, int ny, int nx, int typ, byte *a, char *c)
 		/* ASCII is simple */
 		char chars[] = "*|/-\\";
 
-		*c = chars[motion];
+		mbstowcs(c, &chars[motion], 1);
 		*a = spell_color(typ);
 	} else {
 		*a = gf_to_attr[typ][motion];
-		*c = gf_to_char[typ][motion];
+		mbstowcs(c, &gf_to_char[typ][motion], 1);
 	}
 }
 
@@ -3171,7 +3171,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 			if (player_has_los_bold(y, x))
 			{
 				byte a;
-				char c;
+				wchar_t c;
 
 				/* Obtain the bolt pict */
 				bolt_pict(oy, ox, y, x, typ, &a, &c);
@@ -3281,7 +3281,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 				if (player_has_los_bold(y, x))
 				{
 					byte a;
-					char c;
+					wchar_t c;
 
 					drawn = TRUE;
 
