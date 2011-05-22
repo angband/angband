@@ -563,8 +563,8 @@ void move_player(int dir, bool disarm)
 
 	/* Optionally alter traps/doors on movement */
 	else if (disarm && (cave->info[y][x] & CAVE_MARK) &&
-			cave_isknowntrap(cave, y, x) ||
-			cave_iscloseddoor(cave, y, x))
+			(cave_isknowntrap(cave, y, x) ||
+			cave_iscloseddoor(cave, y, x)))
 	{
 		/* Auto-repeat if not already repeating */
 		if (cmd_get_nrepeats() == 0)
