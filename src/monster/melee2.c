@@ -467,9 +467,12 @@ bool make_attack_spell(int m_idx)
 
 	/* Calculate spell failure rate */
 	failrate = 25 - (rlev + 3) / 4;
+	if (m_ptr->m_timed[MON_TMD_FEAR])
+		failrate += 20;
 
-	/* Hack -- Stupid monsters will never fail (for jellies and such) */
-	if (!OPT(birth_ai_smart) || rf_has(r_ptr->flags, RF_STUPID)) failrate = 0;
+	/* Stupid monsters will never fail (for jellies and such) */
+	if (OPT(birth_ai_smart) || rf_has(r_ptr->flags, RF_STUPID))
+		failrate = 0;
 
 	/* Check for spell failure (innate attacks never fail) */
 	if ((thrown_spell >= MIN_NONINNATE_SPELL) && (randint0(100) < failrate))
