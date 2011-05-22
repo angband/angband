@@ -585,17 +585,7 @@ bool file_getl(ang_file *f, char *buf, size_t len)
 			continue;
 		}
 
-		/* Ignore non-printables */
-		else if (my_isprint((unsigned char)c))
-  		{
-			buf[i++] = c;
-			continue;
-		}
-		else
-		{
-			buf[i++] = '?';
-			continue;
-		}
+		buf[i++] = c;
 	}
 
 	buf[i] = '\0';
