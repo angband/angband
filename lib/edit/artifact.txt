@@ -97,7 +97,7 @@ F:NO_FUEL |
 F:INSTA_ART
 E:ILLUMINATION:10+d10
 M:The {kind} well{s} with clear light...
-D:A small crystal phial containing the light of E["a]rendil's Star.  
+D:A small crystal phial containing the light of Eärendil's Star.  
 D:Its light is imperishable, and near it darkness cannot endure.
 
 
@@ -116,7 +116,7 @@ D:The shining Star of the North, a treasured heirloom of Elendil's house.
 
 # The Arkenstone of Thrain
 
-N:3:of Thr['a]in
+N:3:of Thráin
 I:light:6:0
 W:50:50:5:50000
 A:2:50 to 127
@@ -149,7 +149,7 @@ D:A fiery circle of bronze, with mighty spells to ward off and banish evil.
 
 # The Amulet of Ingwe
 
-N:5:of Ingw["e]
+N:5:of Ingwë
 I:amulet:51
 W:65:30:3:90000
 A:3:65 to 127
@@ -161,7 +161,7 @@ E:DISPEL_EVIL:50+d50
 M:The {kind} flood{s} the area with goodness...
 L:3:INT | WIS
 L:4:CHR | INFRA
-D:The ancient heirloom of Ingw["e], high lord of the Vanyar, against whom 
+D:The ancient heirloom of Ingwë, high lord of the Vanyar, against whom 
 D:nothing of evil could stand.
 
 
@@ -176,8 +176,8 @@ F:SEE_INVIS | FREE_ACT | REGEN | LIGHT | RES_FEAR |
 F:INSTA_ART
 L:3:STR | CON
 L:5:INFRA 
-D:The Nauglam['i]r, a carcanet of gold set with a multitude of shining 
-D:gems of Valinor.  The radiant Silmaril of F["e]anor hangs in its midst 
+D:The Nauglamír, a carcanet of gold set with a multitude of shining 
+D:gems of Valinor.  The radiant Silmaril of Fëanor hangs in its midst 
 D:as its crowning glory.  The sturdy spirits of Dwarvish craftsmen who 
 D:labored long in mountain smithies lie within it still, and as gossamer 
 D:it rests upon the bearer.
@@ -199,7 +199,7 @@ E:CLAIRVOYANCE:50+d50
 M:The {kind} glow{s} a deep green...
 L:2:INT | WIS
 L:3:SEARCH | INFRA
-D:A great globe with a heart of fire, the Palant['i]r provides the wearer with 
+D:A great globe with a heart of fire, the Palantír provides the wearer with 
 D:sight of far places - at a cost, for those espied upon are aware of it.
 
 
@@ -594,14 +594,14 @@ D:once protected Celegorm, Lord of Himlad; around it, a mystic balance lies,
 D:containing the conflicts of the elements.
 
 
-N:32:of An['a]rion
+N:32:of Anárion
 I:shield:Large Metal Shield
 W:40:9:120:160000
 A:11:40 to 100
 P:12:1d3:0:0:20
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | SUST_STR | SUST_INT | 
 F:SUST_WIS | SUST_DEX | SUST_CON | SUST_CHR
-D:The great metal-bound shield of Elendil's younger son An['a]rion, whom 
+D:The great metal-bound shield of Elendil's younger son Anárion, whom 
 D:even Sauron could not corrupt.
 
 
@@ -637,7 +637,7 @@ D:this plain iron crown has mounted upon it the two remaining Silmarils,
 D:greatest treasures of Middle-Earth.
 
 
-N:35:of Ber['u]thiel
+N:35:of Berúthiel
 I:crown:Iron Crown
 W:40:12:20:1
 A:8:45 to 100
@@ -646,7 +646,7 @@ F:HIDE_TYPE |
 F:FREE_ACT | SEE_INVIS | TELEPATHY | LIGHT_CURSE | HEAVY_CURSE
 L:-5:CON
 L:-3:STR | DEX
-D:The midnight-hued steel circlet of the sorceress-queen Ber['u]thiel.  It 
+D:The midnight-hued steel circlet of the sorceress-queen Berúthiel.  It 
 D:grants extraordinary powers of sight and awareness at a terrible physical 
 D:cost.
 
@@ -689,7 +689,7 @@ D:strode out time and again among his foes and slew many.  Although they
 D:knew of his coming, none could stand against him. 
 
 
-N:39:of Dor-L['o]min
+N:39:of Dor-Lómin
 I:helm:Iron Helm
 W:40:20:50:300000
 A:5:40 to 127
@@ -702,7 +702,7 @@ L:2:DEX
 L:-1:STEALTH
 D:The legendary Dragon-helm, forged by one of the legendary Dwarven smiths 
 D:of the First Age.  The visage of mighty Glaurung forms its crest, and the 
-D:mere sight of the helm, borne by T['u]rin Turambar, struck dread into the 
+D:mere sight of the helm, borne by Túrin Turambar, struck dread into the 
 D:hearts of the servants of Morgoth.
 
 
@@ -748,11 +748,11 @@ E:HEAL1:250
 M:You feel a warm tingling inside...
 L:3:STR | CON
 L:2:WIS
-D:From dying N['u]menor, Elendil brought this shining winged circlet, emblem 
+D:From dying Númenor, Elendil brought this shining winged circlet, emblem 
 D:of Gondor through an age of the world.
 
 
-N:43:of N['u]menor
+N:43:of Númenor
 I:crown:Jewel Encrusted Crown
 W:60:30:40:50000
 A:5:60 to 127
@@ -766,7 +766,7 @@ F:RES_LIGHT | RES_DARK | RES_BLIND | LIGHT
 L:3:INT | CHR | SEARCH
 L:2:DEX
 D:A massive golden crown, set with wondrous jewels of thought and warding, 
-D:once worn by the kings of ancient N['u]menor.
+D:once worn by the kings of ancient Númenor.
 
 
 ### Cloaks and Shadow Cloaks ###
@@ -838,7 +838,7 @@ D:A crystal-blue cape of fine silk worn by a silent messenger of the forces
 D:of Law.  Seldom will its wearer be diverted from his mission.
 
 
-N:49:of L['u]thien
+N:49:of Lúthien
 I:cloak:Elven Cloak
 W:40:40:5:45000
 A:2:40 to 127
@@ -852,7 +852,7 @@ L:3:STEALTH
 L:2:SPEED
 D:The opaque midnight folds of this cloak, inlaid with a multitude of tiny 
 D:diamonds, swirl around you, and you feel a hint, a fragment of the 
-D:restorative magics of L['u]thien, the most beautiful being who ever knew 
+D:restorative magics of Lúthien, the most beautiful being who ever knew 
 D:death.
 
 
@@ -871,7 +871,7 @@ D:of hostile eyes.
 
 ### Gloves and Gauntlets ###
 
-N:51:of E["o]l
+N:51:of Eöl
 I:gloves:Set of Gauntlets
 W:55:35:25:40000
 A:3:55 to 127
@@ -881,7 +881,7 @@ F:IM_FIRE
 E:MANA_BOLT:30+d30
 M:Your {kind} glow{s} white...
 L:3:INT
-D:The iron-shod gauntlets of the Dark Elven smith E["o]l, who imbued them 
+D:The iron-shod gauntlets of the Dark Elven smith Eöl, who imbued them 
 D:with magics he could channel in battle.
 
 
@@ -981,7 +981,7 @@ D:Morgoth seven mighty wounds and pain that will last until the end of Arda.
 
 ### Boots ###
 
-N:60:of F["e]anor
+N:60:of Fëanor
 I:boots:Pair of Leather Boots
 W:40:120:20:300000
 A:1:40 to 127
@@ -991,7 +991,7 @@ F:RES_NEXUS
 E:HASTE1:200
 M:Your {kind} glow{s} bright green...
 L:15:SPEED
-D:This wondrous pair of leather boots once sped F["e]anor, creator of the 
+D:This wondrous pair of leather boots once sped Fëanor, creator of the 
 D:Silmarils and the mightiest of the Eldar, to fulfill his hero's challenge 
 D:and do battle for a Middle-Earth held in thrall.  "Dear-bought those songs 
 D:shall be accounted, and yet shall be well-bought.  For the price could be 
@@ -1013,7 +1013,7 @@ D:A pair of high-laced shoes, bestowing of extraordinary agility and proof
 D:against the powers of corruption and withering.
 
 
-N:62:of Thr['o]r
+N:62:of Thrór
 I:boots:Pair of Steel Shod Boots
 W:30:25:60:12000
 A:5:30 to 100
@@ -1035,8 +1035,8 @@ E:TELE_PHASE:20
 M:Your {kind} twist{s} space around you.
 L:3:SPEED
 L:2:INT | DEX | STEALTH
-D:A pair of running shoes once used by the treacherous Gr['i]ma son of 
-D:G['a]lm['o]d, the Wormtongue of Edoras.  They are aptly suited for a 
+D:A pair of running shoes once used by the treacherous Gríma son of 
+D:Gálmód, the Wormtongue of Edoras.  They are aptly suited for a 
 D:messenger, a servant, a spy... or a coward.
 
 
@@ -1053,7 +1053,7 @@ F:HIDE_TYPE |
 F:SLAY_TROLL | SLAY_GIANT | FREE_ACT | SEE_INVIS | SHOW_MODS
 L:3:INT | DEX
 D:A short thrusting blade with a large guard worn by the eldest son of 
-D:F["e]anor, Maedhros the Tall, who lost his right hand while escaping 
+D:Fëanor, Maedhros the Tall, who lost his right hand while escaping 
 D:from Angband.
 
 
@@ -1146,7 +1146,7 @@ D:blood channel that gleams coldly blue as you grasp this mighty weapon of
 D:peril.
 
 
-N:72:'Aranr['u]th'
+N:72:'Aranrúth'
 I:sword:Broad Sword
 W:20:45:150:50000
 A:2:20 to 100
@@ -1211,7 +1211,7 @@ F:HIDE_TYPE | RES_FIRE | RES_POIS |
 F:BRAND_FIRE | BRAND_POIS | 
 F:KILL_DRAGON | FREE_ACT | SLOW_DIGEST | REGEN | SHOW_MODS
 L:2:STR
-D:A giant sword once wielded by mighty T['u]rin, and an even greater 
+D:A giant sword once wielded by mighty Túrin, and an even greater 
 D:dragonbane; for what wyrm could stand against the blade that bathed in 
 D:Glaurung's blood?
 
@@ -1306,7 +1306,7 @@ D:of ice lit by light unquenchable.  Morgoth came but unwillingly to meet it
 D:of old; his lame foot will remind him of its might should he face it again.
 
 
-N:83:'And['u]ril'
+N:83:'Andúril'
 I:sword:Long Sword
 W:20:40:130:80000
 A:3:20 to 127
@@ -1333,7 +1333,7 @@ F:SLAY_EVIL | BRAND_POIS | SLAY_DEMON | FREE_ACT | RES_ELEC |
 F:RES_LIGHT | RES_DARK | LIGHT | SEE_INVIS | SHOW_MODS
 L:3:SPEED
 L:2:STR | CON | BLOWS
-D:Forged of meteoric iron by E["o]l the Dark Elf, and as deadly as any 
+D:Forged of meteoric iron by Eöl the Dark Elf, and as deadly as any 
 D:other blade he forged.
 
 
@@ -1368,7 +1368,7 @@ F:SLAY_DRAGON | SLAY_ANIMAL | SLAY_TROLL | SLAY_GIANT |
 F:SLAY_ORC | SHOW_MODS
 L:1:BLOWS
 L:2:STR | DEX | CON
-D:An heirloom of the dauntless Lords of Rh[^u]n far to the east, and a name 
+D:An heirloom of the dauntless Lords of Rhûn far to the east, and a name 
 D:of dismay to creatures natural and unnatural.
 
 
@@ -1444,7 +1444,7 @@ D:himself as he came to Valinor in wrath.  Its envenomed bite pierced
 D:the Two Trees with wounds that would not heal.
 
 
-N:93:of Th['e]oden
+N:93:of Théoden
 I:polearm:Beaked Axe
 W:20:15:180:40000
 A:7:20 to 100
@@ -1513,7 +1513,7 @@ D:The mighty spear of Gil-galad, famed as "Snow-point" in the songs of Elves.
 D:Against it, all the foul corruptions of Sauron dashed in vain.
 
 
-N:98:of Orom["e]
+N:98:of Oromë
 I:polearm:Spear
 W:15:45:50:60000
 A:2:15 to 127
@@ -1525,7 +1525,7 @@ F:FEATHER | LIGHT | SEE_INVIS | BLESSED | SHOW_MODS
 E:STONE_TO_MUD:5
 M:Your {kind} pulsate{s}...
 L:4:INT | SPEED | INFRA
-D:The thrusting spear of wise Orom["e] the Vala, strong against giants of 
+D:The thrusting spear of wise Oromë the Vala, strong against giants of 
 D:frost, and able to pierce rock or flesh with ease.
 
 
@@ -1570,10 +1570,10 @@ L:3:STR | CON
 L:-1:STEALTH
 D:The twin massive axe heads of this ancient demon's dread gleam with 
 D:mithril inlay telling sagas of endurance.  The powers of 
-D:Khazad-d[^u]m protect its wielder and slay all evils found underground.
+D:Khazad-dûm protect its wielder and slay all evils found underground.
 
 
-N:102:of E["o]nw["e]
+N:102:of Eönwë
 I:polearm:Great Axe
 W:30:120:230:200000
 A:1:40 to 127
@@ -1586,7 +1586,7 @@ F:BLESSED | SHOW_MODS
 E:LOSKILL:1000
 M:Your {kind} let{s} out a long, shrill note...
 L:2:STR | INT | WIS | DEX | CON | CHR
-D:The axe of E["o]nw["e], leader of the Hosts of the West in the War of 
+D:The axe of Eönwë, leader of the Hosts of the West in the War of 
 D:Wrath, strikes with icy wrath at the undead, disperses hosts of 
 D:evil at a word, and grants Maia-like powers of body and mind.
 
@@ -1675,7 +1675,7 @@ E:TELE_OTHER:50
 M:Your {kind} glow{s} deep red...
 L:4:DEX
 D:The awesome weapon of the Vala Ulmo, Lord of Waters.  Mightiest of all the 
-D:powers of good save Manw["e] himself, Ulmo laughs to scorn the dread powers 
+D:powers of good save Manwë himself, Ulmo laughs to scorn the dread powers 
 D:of the undead, and is utterly in command of the Element of water.
 
 
@@ -1695,7 +1695,7 @@ D:white, this shining reaper bears within it a power of going forth and
 D:returning.
 
 
-N:110:of H['u]rin
+N:110:of Húrin
 I:polearm:Beaked Axe
 W:20:15:180:90000
 A:7:20 to 100
@@ -1707,11 +1707,11 @@ F:SLAY_DRAGON | SLAY_TROLL | SHOW_MODS
 E:BERSERKER:80+d80
 M:{name} glows in anger!
 L:2:STR | CON
-D:Wielded by H['u]rin Thalion, last lord of Dor-L['o]min at the Battle 
+D:Wielded by Húrin Thalion, last lord of Dor-Lómin at the Battle 
 D:of Tears Unnumbered.  He stood alone, his friends and kinsmen 
 D:dead about him, his axe smoking in the black blood of Gothmog's 
 D:troll-guard.  No less than seventy times, as he slew his foes, 
-D:did he utter his mighty war-cry: "Aur["e] entuluva!" - "Day shall 
+D:did he utter his mighty war-cry: "Aurë entuluva!" - "Day shall 
 D:come again!"
 
 
@@ -1797,7 +1797,7 @@ D:You remain utterly untouched, even as fat sparks crackle around your
 D:fingers and eyebrows.
 
 
-N:117:of Aul["e]
+N:117:of Aulë
 I:hafted:Great Hammer
 W:40:75:120:250000
 A:1:40 to 127
@@ -1809,7 +1809,7 @@ F:FREE_ACT | RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_NEXUS |
 F:SEE_INVIS | SHOW_MODS
 L:8:TUNNEL
 L:4:WIS
-D:The wondrous hammer of Aul["e], creator of the wise Dwarven lords of old.   
+D:The wondrous hammer of Aulë, creator of the wise Dwarven lords of old.   
 D:It bears demolishing magics that no serpent or demon can withstand, and 
 D:invokes the strength of mountains to ward off the tumult of the elements.
 
@@ -1840,7 +1840,7 @@ D:The radiant golden staff of an Istar of legend; this wizard's companion
 D:grants keen sight and clear knowledge of many hidden things.
 
 
-N:120:of Ol['o]rin
+N:120:of Olórin
 I:hafted:Quarterstaff
 W:30:105:150:130000
 A:1:30 to 100
@@ -1923,7 +1923,7 @@ F:HIDE_TYPE |
 F:RES_DISEN | SHOW_MODS
 L:3:DEX
 L:1:SPEED | STEALTH | SHOTS
-D:The great bow of Beleg C['u]thalion, the most famous archer of the Elves.  
+D:The great bow of Beleg Cúthalion, the most famous archer of the Elves.  
 D:Its backbone of black yew holds strings of bear sinew, and of old, only 
 D:Beleg himself could draw them.
 
@@ -1976,7 +1976,7 @@ A:10:30 to 100
 P:0:0d0:12:15:0
 F:RES_FIRE | RES_ELEC | RES_COLD | REGEN
 L:2:STR | CON | MIGHT
-D:One of a pair of hunting bows once belonging to F["e]anor's two youngest 
+D:One of a pair of hunting bows once belonging to Fëanor's two youngest 
 D:sons.  The bows are like and yet unlike, much as the twin brothers were.
 
 
@@ -1988,13 +1988,13 @@ P:0:0d0:12:15:0
 F:RES_FIRE | RES_ELEC | RES_COLD | SLOW_DIGEST
 L:2:INT | WIS | DEX
 L:1:SHOTS | MIGHT | SPEED
-D:One of a pair of hunting bows once belonging to F["e]anor's two youngest 
+D:One of a pair of hunting bows once belonging to Fëanor's two youngest 
 D:sons.  The bows are like and yet unlike, much as the twin brothers were.
 
 
 ### Digging Tools ###
 
-N:130:of N['a]in
+N:130:of Náin
 I:digger:Mattock
 W:60:8:240:30000
 A:12:60 to 100
@@ -2006,9 +2006,9 @@ M:Your {kind} pulsate{s}...
 L:6:TUNNEL
 L:4:INFRA | SEARCH | STR
 D:A mighty Dwarven mattock, as good for hewing orc-necks as for hewing 
-D:stone.  N['a]in, King of the Iron Hills, brought his mattock-wielding 
+D:stone.  Náin, King of the Iron Hills, brought his mattock-wielding 
 D:warriors to the Battle of Azanulbizar, and no Orc could withstand them, 
-D:although N['a]in himself fell before their lord Azog.
+D:although Náin himself fell before their lord Azog.
 
 
 N:131:of Erebor
@@ -2042,14 +2042,14 @@ D:The weapon of a mighty dwarven priest, whose shade is rumoured to
 D:haunt the halls of Angband still.
 
 
-N:133:of Azagh[^a]l
+N:133:of Azaghâl
 I:sword:Main Gauche
 W:18:30:30:50000
 A:3:18 to 100
 P:0:2d5:12:14:0
 F:KILL_DRAGON | IM_FIRE | RES_ACID | RES_FEAR | 
-D:Azagh[^a]l, Dwarf-king of Belegost, fell before Glaurung in the Battle 
-D:of Unnumbered Tears.  With his final breath, Azagh[^a]l plunged this 
+D:Azaghâl, Dwarf-king of Belegost, fell before Glaurung in the Battle 
+D:of Unnumbered Tears.  With his final breath, Azaghâl plunged this 
 D:blade into Glaurung's belly with such a blow that the Father of Dragons fled 
 D:the field with all his kin, and was at first believed to be mortally wounded.
 
@@ -2077,11 +2077,11 @@ P:2:1d1:0:0:20
 F:RES_ELEC | RES_SHARD | RES_CONFU | HOLD_LIFE
 L:4:CON
 L:1:WIS | INT
-D:The shield of Elros Tar-Minyatur, founder of N['u]menor. Granted long
+D:The shield of Elros Tar-Minyatur, founder of Númenor. Granted long
 D: life by the Valar, even his shield became imbued with power.
 
 
-N:136:of ['E]owyn
+N:136:of Éowyn
 I:sword:Bastard Sword
 W:30:100:140:120000
 A:3:30 to 127
