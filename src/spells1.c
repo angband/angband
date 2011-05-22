@@ -659,8 +659,7 @@ int inven_damage(int type, int cperc)
 		if (o_ptr->artifact) continue;
 
 		/* Give this item slot a shot at death if it is vulnerable */
-		if (of_has(f, gf_ptr->obj_hates) &&
-				!of_has(f, gf_ptr->obj_imm))
+		if (of_has(f, gf_ptr->obj_hates) &&	!of_has(f, gf_ptr->obj_imm))
 		{
 			/* Chance to destroy this item */
 			int chance = cperc;

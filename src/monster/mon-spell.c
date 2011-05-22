@@ -267,14 +267,21 @@ static void heal_self(int m_idx, int rlev, bool seen)
  * \param rlev is its level
  * \param seen is whether @ can see it
  */
-static void do_side_effects(int spell, int dam, int m_idx, int rlev, bool seen)
+static void do_side_effects(int spell, int dam, int m_idx, bool seen)
 {
+	monster_type *m_ptr = cave_monster(cave, m_idx);
+	monster_race *r_ptr = &r_info[m_ptr->r_idx];
+
 	const struct spell_effect *re_ptr;
 	const struct mon_spell *rs_ptr = &mon_spell_table[spell];
-	monster_type *m_ptr = cave_monster(cave, m_idx);
+
 	int i, choice[99], dur = 0, j = 0, count = 0;
-	bool sustain = FALSE, perma = FALSE, chosen[RSE_MAX] = { 0 };
 	s32b d = 0;
+
+	bool sustain = FALSE, perma = FALSE, chosen[RSE_MAX] = { 0 };
+
+	/* Extract the monster level */
+	int rlev = ((r_ptr->level >= 1) ? r_ptr->level : 1);
 
 	/* First we note all the effects we'll be doing. */
 	for (re_ptr = spell_effect_table; re_ptr->index < RSE_MAX; re_ptr++) {
@@ -425,6 +432,7 @@ static void do_side_effects(int spell, int dam, int m_idx, int rlev, bool seen)
 						break;
 
 					case S_KIN:
+						summon_kin_type = r_ptr->d_char;
 					case S_MONSTER:	case S_MONSTERS:
 					case S_SPIDER: case S_HOUND: case S_HYDRA: case S_ANGEL:
 					case S_ANIMAL:
@@ -547,7 +555,7 @@ void do_mon_spell(int spell, int m_idx, bool seen)
 	else /* Note that non-projectable attacks are unresistable */
 		take_hit(dam, ddesc);
 
-	do_side_effects(spell, dam, m_idx, rlev, seen);
+	do_side_effects(spell, dam, m_idx, seen);
 
 	return;
 }
