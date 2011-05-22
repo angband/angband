@@ -81,7 +81,7 @@ struct parser_spec {
 struct parser_value {
 	struct parser_spec spec;
 	union {
-		char cval;
+		wchar_t cval;
 		int ival;
 		unsigned int uval;
 		char *sval;
@@ -345,7 +345,7 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 		}
 		else if (t == PARSE_T_CHAR)
 		{
-			v->u.cval = *tok;
+			mbstowcs(&v->u.cval, tok, 1);
 		}
 		else if (t == PARSE_T_SYM || t == PARSE_T_STR)
 		{
