@@ -194,7 +194,7 @@ static size_t obj_desc_name_prefix(char *buf, size_t max, size_t end,
 	else if (o_ptr->number > 1)
 		strnfcat(buf, max, &end, "%d ", o_ptr->number);
 	else if ((object_name_is_visible(o_ptr) || known) && o_ptr->artifact)
-		strnfcat(buf, max, &end, "The ");
+		strnfcat(buf, max, &end, "the ");
 
 	else if (*basename == '&')
 	{

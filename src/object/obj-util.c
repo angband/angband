@@ -2209,7 +2209,8 @@ void inven_item_charges(int item)
 
 
 /*
- * Describe an item in the inventory.
+ * Describe an item in the inventory. Note: only called when an item is 
+ * dropped, used, or otherwise deleted from the inventory
  */
 void inven_item_describe(int item)
 {
@@ -2221,7 +2222,7 @@ void inven_item_describe(int item)
 		(object_is_known(o_ptr) || object_name_is_visible(o_ptr)))
 	{
 		/* Get a description */
-		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);
+		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL | ODESC_SINGULAR);
 
 		/* Print a message */
 		msg("You no longer have the %s (%c).", o_name, index_to_label(item));
