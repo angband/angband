@@ -3610,7 +3610,18 @@ bool cave_isempty(struct cave *c, int y, int x) {
 }
 
 bool cave_isdiggable(struct cave *c, int y, int x) {
-	return cave_iswall(c, y, x) || c->feat[y][x] == FEAT_RUBBLE;
+	switch (c->feat[y][x]) {
+		case FEAT_SECRET:
+		case FEAT_RUBBLE:
+		case FEAT_MAGMA:
+		case FEAT_QUARTZ:
+		case FEAT_MAGMA_H:
+		case FEAT_QUARTZ_H:
+		case FEAT_MAGMA_K:
+		case FEAT_QUARTZ_K: return TRUE;
+
+		default: return cave_iswall(c, y, x);
+	}
 }
 
 bool cave_iswall(struct cave *c, int y, int x) {
