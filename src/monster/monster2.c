@@ -3198,8 +3198,10 @@ void update_smart_learn(int m_idx, int what)
 	monster_type *m_ptr = cave_monster(cave, m_idx);
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
+	/* Sanity check */
+	if (!what) return;
+
 	/* anything a monster might learn, the player should learn */
-	assert(what >= 0);
 	wieldeds_notice_flag(what);
 
 	/* Not allowed to learn */
