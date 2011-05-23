@@ -1589,8 +1589,8 @@ void do_cmd_alter_aux(int dir)
 	if (cave->m_idx[y][x] > 0)
 		py_attack(y, x);
 
-	/* Tunnel through walls */
-	else if (cave_iswall(cave, y, x))
+	/* Tunnel through walls and rubble */
+	else if (cave_isdiggable(cave, y, x))
 		more = do_cmd_tunnel_aux(y, x);
 
 	/* Open closed doors */

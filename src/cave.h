@@ -82,6 +82,7 @@ extern void cave_illuminate(struct cave *c, bool daytime);
  */
 extern bool cave_isempty(struct cave *c, int y, int x);
 
+extern bool cave_isdiggable(struct cave *c, int y, int x);
 /**
  * Returns whether the specified square is a wall or not.
  */

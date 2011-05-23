@@ -3609,6 +3609,10 @@ bool cave_isempty(struct cave *c, int y, int x) {
 	return cave_isopen(c, y, x) && !c->o_idx[y][x];
 }
 
+bool cave_isdiggable(struct cave *c, int y, int x) {
+	return cave_iswall(c, y, x) || c->feat[y][x] == FEAT_RUBBLE;
+}
+
 bool cave_iswall(struct cave *c, int y, int x) {
 	return cave_isrock(c, y, x) || cave_isperm(c, y, x);
 }
