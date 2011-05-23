@@ -530,9 +530,10 @@ static errr sdl_FontDraw(sdl_Font *font, SDL_Surface *surface, SDL_Color colour,
 
 	RECT(x, y, n * font->width, n * font->height, &rc);
 	text = TTF_RenderUTF8_Solid(font->sdl_font, s, colour);
-	if (text)
+	if (text) {
 		SDL_BlitSurface(text, NULL, surface, &rc);
 		SDL_FreeSurface(text);
+	}
 	
 	/* Unlock the surface */
 	if (SDL_MUSTLOCK(surface)) SDL_UnlockSurface(surface);
