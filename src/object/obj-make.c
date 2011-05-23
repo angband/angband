@@ -576,8 +576,7 @@ s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 			{
 				/* - a sizeable increase for any artifact (c.f. up to 30 for ego items)
 				 * - a bigger increase for more powerful artifacts */
-				return ARTIFACT_LEVEL_RATING_MIN
-					+ (object_power(o_ptr, FALSE, NULL, TRUE) / 25);
+				return ARTIFACT_LEVEL_RATING_MIN + 1;
 			}
 		}
 	}
@@ -637,8 +636,7 @@ s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 	/* Apply minima from ego items if necessary */
 	ego_apply_minima(o_ptr);
 
-	/* Return amount to add to the rating of the level */
-	rating_extra += object_power(o_ptr, FALSE, NULL, TRUE) / 25;
+	/* Return a rating for an ego item (or 0 if not ego) */
 	return rating_extra;
 }
 
@@ -890,7 +888,7 @@ bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
 	/* Apply magic (allow artifacts) */
 	extra_rating = apply_magic(j_ptr, lev, TRUE, good, great);
 	/* Hack - artifacts (which have rating over 30) set the good item flag */
-	if (extra_rating >= ARTIFACT_LEVEL_RATING_MIN)
+	if (extra_rating > ARTIFACT_LEVEL_RATING_MIN)
 		c->good_item = TRUE;
 	c->obj_rating += object_value_real(j_ptr, j_ptr->number, FALSE, TRUE);
 
