@@ -528,7 +528,7 @@ static errr sdl_FontDraw(sdl_Font *font, SDL_Surface *surface, SDL_Color colour,
 		if (SDL_LockSurface(surface) < 0) return (-1);
 	}
 
-	RECT(x, y, n * font->width, n * font->height, &rc);
+	RECT(x, y, n * font->width, font->height, &rc);
 	text = TTF_RenderUTF8_Solid(font->sdl_font, s, colour);
 	if (text) {
 		SDL_BlitSurface(text, NULL, surface, &rc);
@@ -2848,6 +2848,7 @@ static errr Term_text_sdl(int col, int row, int n, byte a, const wchar_t *s)
 	SDL_Color colour = text_colours[a];
 	int x = col * win->tile_wid;
 	int y = row * win->tile_hgt;
+	wchar_t src[255];
 	char mbstr[MB_LEN_MAX * 255];
 	size_t len;
 	
@@ -2860,8 +2861,12 @@ static errr Term_text_sdl(int col, int row, int n, byte a, const wchar_t *s)
 	
 	/* Clear the way */
 	Term_wipe_sdl(col, row, n);
-	
-	len = wcstombs(mbstr, s, n * MB_LEN_MAX);
+
+	/* Take a copy of the incoming string, but truncate it at n chars */
+	wcsncpy(src, s, n);
+	src[n] = L'\0';
+	/* Convert to UTF-8 for display */
+	len = wcstombs(mbstr, src, n * MB_LEN_MAX);
 	mbstr[len] = '\0';
 	/* Draw it */
 	return (sdl_FontDraw(&win->font, win->surface, colour, x, y, n, mbstr));
