@@ -25,10 +25,6 @@
 #include "main.h"
 #include "files.h"
 
-/* locale junk */
-#include "locale.h"
-#include "langinfo.h"
-
 /* Avoid 'struct term' name conflict with <curses.h> (via <term.h>) on AIX */
 #define term System_term
 
@@ -777,12 +773,6 @@ errr init_gcu(int argc, char **argv) {
 	/* Initialize info about terminal capabilities */
 	termtype = getenv("TERM");
 	loaded_terminfo = termtype && tgetent(0, termtype) == 1;
-
-	if (setlocale(LC_CTYPE, "")) {
-		/* Require UTF-8 */
-		if (strcmp(nl_langinfo(CODESET), "UTF-8") != 0)
-			quit("Angband requires UTF-8 support");
-	}
 
 	/* Parse args */
 	for (i = 1; i < argc; i++) {

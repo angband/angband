@@ -20,6 +20,10 @@
 #include "files.h"
 #include "init.h"
 
+/* locale junk */
+#include "locale.h"
+#include "langinfo.h"
+
 /*
  * Some machines have a "main()" function in their "main-xxx.c" file,
  * all the others use this file for their "main()" function.
@@ -390,6 +394,12 @@ int main(int argc, char *argv[])
 	/* If we were told which mode to use, then use it */
 	if (mstr)
 		ANGBAND_SYS = mstr;
+
+	if (setlocale(LC_CTYPE, "")) {
+		/* Require UTF-8 */
+		if (strcmp(nl_langinfo(CODESET), "UTF-8") != 0)
+			quit("Angband requires UTF-8 support");
+	}
 
 	/* Get the file paths */
 	init_stuff();
