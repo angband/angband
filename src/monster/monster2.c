@@ -2051,24 +2051,19 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp, byte origin)
 		return (FALSE);
 
 	/* Add to level feeling */
-	cave->mon_rating += r_ptr->scaled_power;
+	cave->mon_rating += r_ptr->power / 20;
 
+	/* Check out-of-depth-ness */
 	if (r_ptr->level > p_ptr->depth) {
 		if (rf_has(r_ptr->flags, RF_UNIQUE)) { /* OOD unique */
 			if (OPT(cheat_hear))
 				msg("Deep Unique (%s).", name);
-
-			/* Boost rating by power per 5 levels OOD */
-			cave->mon_rating += (r_ptr->level - p_ptr->depth)
-				* r_ptr->scaled_power / 5;
 		} else { /* Normal monsters but OOD */
 			if (OPT(cheat_hear))
 				msg("Deep Monster (%s).", name);
-
-			/* Boost rating by power per 10 levels OOD */
-			cave->mon_rating += (r_ptr->level - p_ptr->depth)
-				* r_ptr->scaled_power / 10;
 		}
+		/* Boost rating by power per 10 levels OOD */
+		cave->mon_rating += (r_ptr->level - p_ptr->depth) * r_ptr->power / 200;
 	}
 	/* Note uniques for cheaters */
 	else if (rf_has(r_ptr->flags, RF_UNIQUE) && OPT(cheat_hear))
