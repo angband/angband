@@ -26,7 +26,7 @@
  * Lower values yield better objects more often.
  */
 #define GREAT_OBJ   20
-  
+
 /*
  * There is a 1/20 (5%) chance that ego-items with an inflated base-level are
  * generated when an object is turned into an ego-item (see make_ego_item()
@@ -356,10 +356,10 @@ static bool make_artifact(object_type *o_ptr)
 	artifact_type *a_ptr;
 	int i;
 	bool art_ok = TRUE;
-	
+
 	/* Make sure birth no artifacts isn't set */
 	if (OPT(birth_no_artifacts)) art_ok = FALSE;
-	
+
 	/* Special handling of Grond/Morgoth */
 	if (o_ptr->artifact)
 	{
@@ -475,7 +475,8 @@ static void apply_magic_armour(object_type *o_ptr, int level, int power)
 void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
 		aspect rand_aspect)
 {
-	int i;
+	int i, flag, x;
+	bitflag flags[OF_SIZE];
 
 	/* Clean slate */
 	WIPE(o_ptr, object_type);
@@ -488,19 +489,21 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
 	o_ptr->dd = k->dd;
 	o_ptr->ds = k->ds;
 	o_ptr->weight = k->weight;
-	of_copy(o_ptr->flags, k->base->flags);
-	of_union(o_ptr->flags, k->flags);
 
 	/* Default number */
 	o_ptr->number = 1;
 
-	/* Default pvals */
-	for (i = 0; i < k->num_pvals; i++) {
-		o_ptr->pval[i] = randcalc(k->pval[i], lev, rand_aspect);
-		of_copy(o_ptr->pval_flags[i], k->pval_flags[i]);
-	}
-	o_ptr->num_pvals = k->num_pvals;
-	
+	/* Apply pvals and then copy flags */
+    for (i = 0; i < k->num_pvals; i++) {
+        of_copy(flags, k->pval_flags[i]);
+        x = randcalc(k->pval[i], lev, rand_aspect);
+        for (flag = of_next(flags, FLAG_START); flag != FLAG_END;
+                flag = of_next(flags, flag + 1))
+            object_add_pval(o_ptr, x, flag);
+    }
+	of_copy(o_ptr->flags, k->base->flags);
+	of_union(o_ptr->flags, k->flags);
+
 	/* Assign charges (wands/staves only) */
 	if (o_ptr->tval == TV_WAND || o_ptr->tval == TV_STAFF)
 		o_ptr->pval[DEFAULT_PVAL] = randcalc(k->charge, lev, rand_aspect);

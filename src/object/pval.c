@@ -133,7 +133,7 @@ static bool object_dedup_pvals(object_type *o_ptr)
 			if (o_ptr->pval[i] == o_ptr->pval[j]) {
 				/* Nuke the j pval and its flags, combining them with i's */
 				of_union(o_ptr->pval_flags[i], o_ptr->pval_flags[j]);
-				of_wipe(o_ptr->pval_flags[j]);	
+				of_wipe(o_ptr->pval_flags[j]);
 				o_ptr->pval[j] = 0;
 				/* Move any remaining pvals down one to fill the void */
 				for (k = j + 1; k < o_ptr->num_pvals; k++) {
@@ -223,6 +223,8 @@ bool object_add_pval(object_type *o_ptr, int pval, int flag)
 			of_on(o_ptr->pval_flags[best_pval], flag);
 			if (a != -1) /* turn it off on its old pval */
 				of_off(o_ptr->pval_flags[a], flag);
+			else /* add it to object_flags */
+				of_on(o_ptr->flags, flag);
 		}
 		return FALSE; /* We haven't changed any pvals, so no need to de-dup */
 	}
