@@ -2028,7 +2028,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp, byte origin)
 	/* Require empty space */
 	if (!cave_empty_bold(y, x)) return (FALSE);
 
-	/* Hack - no creation on glyph of warding */
+	/* No creation on glyph of warding */
 	if (cave->feat[y][x] == FEAT_GLYPH) return (FALSE);
 
 	/* Paranoia */
@@ -2050,20 +2050,24 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp, byte origin)
 	if (rf_has(r_ptr->flags, RF_FORCE_DEPTH) && p_ptr->depth < r_ptr->level)
 		return (FALSE);
 
-	/* Powerful monster */
+	/* Add to level feeling */
+	cave->mon_rating += r_ptr->scaled_power;
+
 	if (r_ptr->level > p_ptr->depth) {
 		if (rf_has(r_ptr->flags, RF_UNIQUE)) { /* OOD unique */
 			if (OPT(cheat_hear))
 				msg("Deep Unique (%s).", name);
 
-			/* Boost rating by twice delta-depth */
-			cave->mon_rating += (r_ptr->level - p_ptr->depth) * 2;
+			/* Boost rating by power per 5 levels OOD */
+			cave->mon_rating += (r_ptr->level - p_ptr->depth)
+				* r_ptr->scaled_power / 5;
 		} else { /* Normal monsters but OOD */
 			if (OPT(cheat_hear))
 				msg("Deep Monster (%s).", name);
 
-			/* Boost rating by delta-depth */
-			cave->mon_rating += (r_ptr->level - p_ptr->depth);
+			/* Boost rating by power per 10 levels OOD */
+			cave->mon_rating += (r_ptr->level - p_ptr->depth)
+				* r_ptr->scaled_power / 10;
 		}
 	}
 	/* Note uniques for cheaters */

@@ -3306,21 +3306,24 @@ static void cave_clear(struct cave *c, struct player *p) {
  * Calculate the level feeling for objects. This is purely about object
  * quality.
  */
-static int calc_obj_feeling(struct cave *c) {
+static int calc_obj_feeling(struct cave *c)
+{
+	u32b x = c->obj_rating / c->depth;
+
 	/* Town gets no feeling */
 	if (c->depth == 0) return 0;
 
 	/* Artifacts trigger a special feeling when preserve=no */
 	if (c->good_item && OPT(birth_no_preserve)) return 10;
 
-	if (c->obj_rating > 120 + 7 * c->depth / 5) return 20;
-	if (c->obj_rating > 100 + 6 * c->depth / 5) return 30;
-	if (c->obj_rating > 80 + 5 * c->depth / 5) return 40;
-	if (c->obj_rating > 60 + 4 * c->depth / 5) return 50;
-	if (c->obj_rating > 45 + 3 * c->depth / 5) return 60;
-	if (c->obj_rating > 30 + 2 * c->depth / 5) return 70;
-	if (c->obj_rating > 15 + c->depth / 5) return 80;
-	if (c->obj_rating > 0) return 90;
+	if (x > 25000) return 20;
+	if (x > 20000) return 30;
+	if (x > 15000) return 40;
+	if (x > 10000) return 50;
+	if (x > 5000) return 60;
+	if (x > 2500) return 70;
+	if (x > 1000) return 80;
+	if (x > 500) return 90;
 	return 100;
 }
 
@@ -3328,18 +3331,21 @@ static int calc_obj_feeling(struct cave *c) {
  * Calculate the level feeling for monsters. This includes boosts from pits
  * and vaults.
  */
-static int calc_mon_feeling(struct cave *c) {
+static int calc_mon_feeling(struct cave *c)
+{
+	u32b x = c->mon_rating / c->depth;
+
 	/* Town gets no feeling */
 	if (c->depth == 0) return 0;
 
-	if (c->mon_rating > 40 + c->depth / 2) return 1;
-	if (c->mon_rating > 30 + c->depth / 3) return 2;
-	if (c->mon_rating > 25 + c->depth / 4) return 3;
-	if (c->mon_rating > 20 + c->depth / 5) return 4;
-	if (c->mon_rating > 15 + c->depth / 6) return 5;
-	if (c->mon_rating > 10 + c->depth / 8) return 6;
-	if (c->mon_rating > 5 + c->depth / 10) return 7;
-	if (c->mon_rating > 0) return 8;
+	if (x > 1000) return 1;
+	if (x > 700) return 2;
+	if (x > 400) return 3;
+	if (x > 200) return 4;
+	if (x > 100) return 5;
+	if (x > 50) return 6;
+	if (x > 25) return 7;
+	if (x > 10) return 8;
 	return 9;
 }
 

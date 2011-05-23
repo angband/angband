@@ -870,8 +870,7 @@ bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
 		if (make_artifact_special(j_ptr, lev))
 		{
 			c->good_item = TRUE;
-			c->obj_rating += ARTIFACT_LEVEL_RATING_MIN
-				+ (object_power(j_ptr, FALSE, NULL, TRUE) / 25);
+			c->obj_rating += object_value_real(j_ptr, 1, FALSE, TRUE);
 			return TRUE;
 		}
 		/* If we failed to make an artifact, the player gets a great item */
@@ -893,8 +892,7 @@ bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
 	/* Hack - artifacts (which have rating over 30) set the good item flag */
 	if (extra_rating >= ARTIFACT_LEVEL_RATING_MIN)
 		c->good_item = TRUE;
-	c->obj_rating += extra_rating;
-
+	c->obj_rating += object_value_real(j_ptr, j_ptr->number, FALSE, TRUE);
 
 	/* Generate multiple items */
 	if (kind->gen_mult_prob >= 100 ||
@@ -903,9 +901,10 @@ bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
 		j_ptr->number = randcalc(kind->stack_size, lev, RANDOMISE);
 	}
 
-	/* Notice "okay" out-of-depth objects */
+	/* Notice uncursed out-of-depth objects */
 	if (!cursed_p(j_ptr->flags) && (kind->alloc_min > c->depth))
-		c->obj_rating += (kind->alloc_min - c->depth);
+		c->obj_rating += (kind->alloc_min - c->depth)
+			* object_value_real(j_ptr, j_ptr->number, FALSE, TRUE) / 5;
 
 	return TRUE;
 }

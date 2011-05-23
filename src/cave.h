@@ -43,8 +43,8 @@ struct cave {
 	int depth;
 
 	byte feeling;
-	s16b obj_rating;
-	s16b mon_rating;
+	u32b obj_rating;
+	u32b mon_rating;
 	bool good_item;
 
 	int height;

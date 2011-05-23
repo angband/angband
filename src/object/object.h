@@ -29,7 +29,7 @@ enum {
 	ORIGIN_DROP_SPECIAL,	/* from monsters in special rooms */
 	ORIGIN_DROP_PIT,		/* from monsters in pits/nests */
 	ORIGIN_DROP_VAULT,		/* from monsters in vaults */
-	ORIGIN_DROP_SUMMON,		/* from combat summons */	
+	ORIGIN_DROP_SUMMON,		/* from combat summons */
 	ORIGIN_DROP_BREED,		/* from breeders */
 	ORIGIN_DROP_POLY,		/* from polymorphees */
 	ORIGIN_DROP_WIZARD,		/* from wizard mode summons */
@@ -618,14 +618,18 @@ object_type *get_first_object(int y, int x);
 object_type *get_next_object(const object_type *o_ptr);
 bool is_blessed(const object_type *o_ptr);
 s32b object_value(const object_type *o_ptr, int qty, int verbose);
-bool object_similar(const object_type *o_ptr, const object_type *j_ptr, object_stack_t mode);
+s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
+    bool known);
+bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
+	object_stack_t mode);
 void object_absorb(object_type *o_ptr, const object_type *j_ptr);
 void object_wipe(object_type *o_ptr);
 void object_copy(object_type *o_ptr, const object_type *j_ptr);
 void object_copy_amt(object_type *dst, object_type *src, int amt);
 void object_split(struct object *dest, struct object *src, int amt);
 s16b floor_carry(struct cave *c, int y, int x, object_type *j_ptr);
-void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x, bool verbose);
+void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x,
+	bool verbose);
 void push_object(int y, int x);
 void acquirement(int y1, int x1, int level, int num, bool great);
 void inven_item_charges(int item);

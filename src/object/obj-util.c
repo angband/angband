@@ -1347,7 +1347,7 @@ static s32b object_value_base(const object_type *o_ptr)
  * are priced according to their power rating. All ammo, and normal (non-ego)
  * torches are scaled down by AMMO_RESCALER to reflect their impermanence.
  */
-static s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
+s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 	bool known)
 {
 	s32b value, total_value;
