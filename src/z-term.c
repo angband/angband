@@ -799,7 +799,7 @@ static void Term_fresh_row_both(int y, int x1, int x2)
 		old_tcc[x] = ntc;
 
 		/* Handle high-bit attr/chars */
-		if ((na & 0x80) && (nc & 0x80))
+		if ((na & 0x80))
 		{
 			/* Flush */
 			if (fn)
@@ -1262,7 +1262,7 @@ errr Term_fresh(void)
 			}
 
 			/* Hack -- use "Term_pict()" sometimes */
-			else if (Term->higher_pict && (oa & 0x80) && (oc & 0x80))
+			else if (Term->higher_pict && (oa & 0x80))
 			{
 				(void)((*Term->pict_hook)(tx, ty, 1, &oa, &oc, &ota, &otc));
 			}

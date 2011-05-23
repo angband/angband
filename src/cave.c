@@ -578,7 +578,7 @@ void grid_data_as_text(grid_data *g, byte *ap, wchar_t *cp, byte *tap, wchar_t *
 			dc = r_ptr->x_char;
 
 			/* Special attr/char codes */
-			if ((da & 0x80) && (dc & 0x80))
+			if (da & 0x80)
 			{
 				/* Use attr */
 				a = da;
@@ -625,7 +625,7 @@ void grid_data_as_text(grid_data *g, byte *ap, wchar_t *cp, byte *tap, wchar_t *
 			}
 			
 			/* Hack -- Bizarre grid under monster */
-			else if ((a & 0x80) || (c & 0x80))
+			else if (a & 0x80)
 			{
 				/* Use attr */
 				a = da;
