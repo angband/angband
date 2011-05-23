@@ -3303,18 +3303,20 @@ static void cave_clear(struct cave *c, struct player *p) {
 }
 
 /**
- * Calculate the level feeling for objects. This is purely about object
- * quality.
+ * Calculate the level feeling for objects.
  */
 static int calc_obj_feeling(struct cave *c)
 {
-	u32b x = c->obj_rating / c->depth;
+	u32b x;
 
 	/* Town gets no feeling */
 	if (c->depth == 0) return 0;
 
 	/* Artifacts trigger a special feeling when preserve=no */
 	if (c->good_item && OPT(birth_no_preserve)) return 10;
+
+	/* Check the loot adjusted for depth */
+	x = c->obj_rating / c->depth;
 
 	if (x > 25000) return 20;
 	if (x > 20000) return 30;
@@ -3328,15 +3330,17 @@ static int calc_obj_feeling(struct cave *c)
 }
 
 /**
- * Calculate the level feeling for monsters. This includes boosts from pits
- * and vaults.
+ * Calculate the level feeling for monsters.
  */
 static int calc_mon_feeling(struct cave *c)
 {
-	u32b x = c->mon_rating / c->depth;
+	u32b x;
 
 	/* Town gets no feeling */
 	if (c->depth == 0) return 0;
+
+	/* Check the monster power adjusted for depth */
+	x = c->mon_rating / c->depth;
 
 	if (x > 1000) return 1;
 	if (x > 700) return 2;
