@@ -963,7 +963,7 @@ static bool build_circular(struct cave *c, int y0, int x0) {
 	int info = CAVE_ROOM | (light ? CAVE_GLOW : 0);
 
 	/* Generate outer walls and inner floors */
-	fill_circle(c, y0, x0, radius + 1, 1, FEAT_WALL_OUTER, 0);
+	fill_circle(c, y0, x0, radius + 1, 1, FEAT_WALL_OUTER, info);
 	fill_circle(c, y0, x0, radius, 0, FEAT_FLOOR, info);
 
 	/* Especially large circular rooms will have a middle chamber */
