@@ -508,6 +508,12 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
 	if (o_ptr->tval == TV_WAND || o_ptr->tval == TV_STAFF)
 		o_ptr->pval[DEFAULT_PVAL] = randcalc(k->charge, lev, rand_aspect);
 
+	/* Assign flagless pval for food or oil */
+	if (o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION ||
+			o_ptr->tval == TV_FLASK)
+		o_ptr->pval[DEFAULT_PVAL]
+			= randcalc(k->pval[DEFAULT_PVAL], lev, rand_aspect);
+
 	/* Default fuel for lamps */
 	if (o_ptr->tval == TV_LIGHT) {
 		if (o_ptr->sval == SV_LIGHT_TORCH)
