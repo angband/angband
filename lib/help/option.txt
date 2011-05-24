@@ -166,10 +166,13 @@ Randomize the artifacts (except a very few)    [birth_randarts]
      number, findability and power of random artifacts will all match the 
      standard set - approximately.
 
-***** <birth_ai_sound>
-Monsters chase current location    [birth_ai_sound]
-     Allow monsters to make paths to the player when they are nearby.  This
-     option is extremely slow, but can produce viciously smart monsters.
+***** <birth_keep_randarts>
+Use previous set of randarts    [birth_keep_randarts]
+     Does what it says on the tin. Note that this option must be set at the
+     END of the game, from the death menu. Once you have restarted the game,
+     it is too late to set it (but you can still un-set it if you change your
+     mind). Note that switching to non-random artifacts will wipe randarts,
+     regardless of this option.
 
 ***** <birth_ai_smell>
 Monsters chase recent locations    [birth_ai_smell]
@@ -254,7 +257,7 @@ Items always sell for 0 gold       [birth_no_selling]
      Shopkeepers will never pay you for items you sell, though they will 
      still identify unknown items for you, and will still sell you their 
      wares. To balance out income in the game, gold found in the dungeon 
-     will be tripled if this option is on.
+     will be increased if this option is on.
 
 === Cheating options ===
 
