@@ -1638,7 +1638,7 @@ F:BLESSED | SHOW_MODS
 E:TELE_OTHER:50
 M:Your {kind} glow{s} deep red...
 L:4:DEX
-D:The awesome weapon of the Vala Ulmo, Lord of Waters.  Mightest of all the 
+D:The awesome weapon of the Vala Ulmo, Lord of Waters.  Mightiest of all the 
 D:powers of good save Manw["e] himself, Ulmo laughs to scorn the dread powers 
 D:of the undead, and is utterly in command of the Element of water.
 
