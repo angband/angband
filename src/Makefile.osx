@@ -20,7 +20,7 @@ EXE = angband
 ARCH = -arch i386 -arch ppc
 WARNINGS = -W -Wall -Wno-unused-parameter -Wno-missing-field-initializers
 JUST_C = -std=c99 -Wdeclaration-after-statement
-OBJ_CFLAGS = -std=c99 -x objective-c -mmacosx-version-min=10.0
+OBJ_CFLAGS = -std=c99 -x objective-c -mmacosx-version-min=10.4
 CFLAGS = -I. $(WARNINGS) $(OPT) -DMACH_O_CARBON -DHAVE_MKSTEMP \
 	-DPRIVATE_USER_PATH=\"~/Library/Preferences\" -DUSE_PRIVATE_PATHS \
 	-fno-stack-protector $(ARCH)
@@ -40,6 +40,7 @@ LIBS = -framework CoreFoundation -framework QuickTime -framework Carbon \
 ppc: CFLAGS = \
 	-Wall -std=gnu99 $(OPT) -DMACH_O_CARBON -DHAVE_MKSTEMP \
 	-DPRIVATE_USER_PATH=\"~/Library/Preferences\" -DUSE_PRIVATE_PATHS
+ppc: OBJ_CFLAGS = -std=c99 -x objective-c -mmacosx-version-min=10.0
 
 # -DALLOW_BORG is required for all .o files in a borg build 
 ifneq (,$(findstring borg, $(MAKECMDGOALS)))

@@ -97,11 +97,11 @@ static const struct {
 
 /* Event handler specification */
 struct CommandDef {
-	int				evtClass; // Eventspec class - char-style constant eg 'quit'
-	int				evtType;  // Eventspec type - enumeration
+	int	evtClass; // Eventspec class - char-style constant eg 'quit'
+	int	evtType;  // Eventspec type - enumeration
 	EventHandlerUPP	handler;
-	UInt32			targetID; // Menu target (0 if no target)
-	void		  * userData; // Event user data (Not used currently)
+	int	targetID; // Menu target (0 if no target)
+	void	*userData; // Event user data (Not used currently)
 }; 
 typedef struct CommandDef CommandDef;
 
@@ -236,7 +236,7 @@ CMDHANDLER(set_nice_graphics_fit);
 CMDHANDLER(set_nice_graphics_square);
 
 static struct {
-	int id;				// command id
+	UInt32 id;				// command id
 	void (*handler)(HICommand *command, void *data);	// handler
 	void *data;				// data
 	bool refresh; 			// Change requires graphics refresh of main window.

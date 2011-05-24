@@ -24,6 +24,8 @@
  */
 #include "angband.h"
 #include "buildid.h"
+#include "files.h"
+#include "init.h"
 
 /*
  * Notes:
@@ -185,7 +187,7 @@ static const int use_overwrite_hack = (OVERWRITE_HACK && !CLIP_HACK);
 
 
 /* graphics_modes index of current graphics mode */
-static int graf_mode = 0;
+static UInt32 graf_mode = 0;
 
 /* Tile dimensions of the current graphics mode */
 static int graf_height = 0;
@@ -227,11 +229,11 @@ struct term_data
 	ATSUFontID font_id;
 	float font_size;    /* Scaled ATSU font size. */
 
-	s16b font_wid;
-	s16b font_hgt;
+	u16b font_wid;
+	u16b font_hgt;
 
-	s16b tile_wid;
-	s16b tile_hgt;
+	u16b tile_wid;
+	u16b tile_hgt;
 
 	s16b size_wid;    /* Window size in x. */
 	s16b size_hgt;    /* Window size in y. */
@@ -263,7 +265,7 @@ static WindowRef aboutDialog;
 static bool CheckEvents(int wait);
 static OSStatus RevalidateGraphics(term_data *td, bool reset_tilesize);
 static char *locate_lib(char *buf, size_t size);
-static void graphics_aux(int op);
+static void graphics_aux(UInt32 op);
 static void Term_wipe_mac_aux(int x, int y, int n);
 inline static void term_data_color(int a);
 static void install_handlers(WindowRef w);
@@ -2042,6 +2044,19 @@ static bool load_pref_short(const char *key, short *vptr)
 	if( ret == TRUE ) *vptr = u.u.i;
 	return ret;
 }
+static void save_pref_ushort(const char *key, unsigned short value)
+{
+	type_union u = i2u((int)value);
+	save_preference(key, u);
+}
+static bool load_pref_ushort(const char *key, unsigned short *vptr)
+{
+	bool ret;
+	type_union u = { T_INT };
+	ret = load_preference(key, &u, 0);
+	if( ret == TRUE ) *vptr = (unsigned short)u.u.i;
+	return ret;
+}
 
 /* XXX Version number for pref file */
 #define VERSION_MAJOR   3
@@ -2063,14 +2078,14 @@ static void cf_save_prefs()
 
 	/* Gfx settings */
 	/* tile width/height */
-	save_pref_short("arg.tile_wid", tile_width);
-	save_pref_short("arg.tile_hgt", tile_height);
+	save_pref_ushort("arg.tile_wid", tile_width);
+	save_pref_ushort("arg.tile_hgt", tile_height);
 
 	/* graphics mode */
-	save_pref_short("graf_mode", graf_mode);
+	save_pref_ushort("graf_mode", graf_mode);
 
 	/* text antialiasing */
-	save_pref_short("arg.use_antialiasing", antialias);
+	save_pref_ushort("arg.use_antialiasing", antialias);
 
 
 	/* Windows */
@@ -2080,8 +2095,8 @@ static void cf_save_prefs()
 
 		save_pref_short(format("term%d.mapped", i), td->mapped);
 
-		save_pref_short(format("term%d.tile_wid", i), td->tile_wid);
-		save_pref_short(format("term%d.tile_hgt", i), td->tile_hgt);
+		save_pref_ushort(format("term%d.tile_wid", i), td->tile_wid);
+		save_pref_ushort(format("term%d.tile_hgt", i), td->tile_hgt);
 
 		save_pref_short(format("term%d.cols", i), td->cols);
 		save_pref_short(format("term%d.rows", i), td->rows);
@@ -2188,19 +2203,19 @@ static void cf_load_prefs()
 	}
 
 	/* Gfx settings */
-	short pref_tmp;
+	unsigned short pref_tmp;
 
-	if (load_pref_short("arg.tile_wid", &pref_tmp))
+	if (load_pref_ushort("arg.tile_wid", &pref_tmp))
 		tile_width = pref_tmp;
 
-	if (load_pref_short("arg.tile_hgt", &pref_tmp))
+	if (load_pref_ushort("arg.tile_hgt", &pref_tmp))
 		tile_height = pref_tmp;
 
 	/* anti-aliasing */
-	if(load_pref_short("arg.use_antialiasing", &pref_tmp))
+	if(load_pref_ushort("arg.use_antialiasing", &pref_tmp))
 		antialias = pref_tmp;
 
-	if(load_pref_short("graf_mode", &pref_tmp))
+	if(load_pref_ushort("graf_mode", &pref_tmp))
 		graf_mode = pref_tmp;
 
 
@@ -2212,8 +2227,8 @@ static void cf_load_prefs()
 		load_pref_short(format("term%d.mapped", i), &td->mapped);
 		CheckMenuItem(MyGetMenuHandle(kWindowMenu), kAngbandTerm+i, td->mapped);
 
-		load_pref_short(format("term%d.tile_wid", i), &td->tile_wid);
-		load_pref_short(format("term%d.tile_hgt", i), &td->tile_hgt);
+		load_pref_ushort(format("term%d.tile_wid", i), &td->tile_wid);
+		load_pref_ushort(format("term%d.tile_hgt", i), &td->tile_hgt);
 
 		load_pref_short(format("term%d.cols", i), &td->cols);
 		load_pref_short(format("term%d.rows", i), &td->rows);
@@ -2560,7 +2575,7 @@ static void init_menubar(void)
 
 	for(int j = kTileWidMenu; j <= kTileHgtMenu; j++) {
 		m = MyGetMenuHandle(j);
-		for(int i = MIN_FONT; i <= 32; i++) {
+		for(UInt32 i = MIN_FONT; i <= 32; i++) {
 			char buf[15];
 			/* Tile size */
 			strnfmt((char*)buf, 15, "%d", i);
@@ -2620,9 +2635,9 @@ static void validate_menus(void)
 
 	struct {
 		int menu;                /* Radio-style Menu ID to validate */
-		int cur;                /* Value in use (Compare to RefCon) */
-		int limit;                /* Constraint value */
-		int (*cmp) (int, int);    /* Filter function */
+		URefCon cur;             /* Value in use (Compare to RefCon) */
+		int limit;               /* Constraint value */
+		int (*cmp) (int, int);   /* Filter function */
 	} funcs [] = {
 		{ kTileWidMenu, td->tile_wid, td->font_wid, funcGTE },
 		{ kTileHgtMenu, td->tile_hgt, td->font_hgt, funcGTE },
@@ -2641,7 +2656,7 @@ static void validate_menus(void)
 		m = MyGetMenuHandle(funcs[i].menu);
 		int n = CountMenuItems(m);
 		for (int j = 1; j <= n; j++) {
-			UInt32 value;
+			URefCon value;
 			GetMenuItemRefCon(m, j, &value);
 			CheckMenuItem(m, j, funcs[i].cur == value);
 			if (funcs[i].cmp(value, funcs[i].limit))
@@ -2709,8 +2724,8 @@ static void redrawRecentItemsMenu()
 
 			CFRelease(cfstr);
 		}
-		AppendMenuItemTextWithCFString(MyGetMenuHandle(kOpenRecentMenu), CFSTR("-"), kMenuItemAttrSeparator, -1, NULL);
-		AppendMenuItemTextWithCFString(MyGetMenuHandle(kOpenRecentMenu), CFSTR("Clear menu"), 0, -1, NULL);
+		AppendMenuItemTextWithCFString(MyGetMenuHandle(kOpenRecentMenu), CFSTR("-"), kMenuItemAttrSeparator, FOUR_CHAR_CODE('Rsep'), NULL);
+		AppendMenuItemTextWithCFString(MyGetMenuHandle(kOpenRecentMenu), CFSTR("Clear menu"), 0, FOUR_CHAR_CODE('Rclr'), NULL);
 	}
 }
 
@@ -2785,12 +2800,12 @@ static OSStatus OpenRecentCommand(EventHandlerCallRef inCallRef,
 							NULL, sizeof(command), NULL, &command);
 	
 	/* If the 'Clear menu' command was selected, flush the recent items array */
-	if (command.commandID == -1) {
+	if (command.commandID == FOUR_CHAR_CODE('Rclr')) {
 		CFArrayRemoveAllValues(recentItemsArrayRef);
 	
 	/* Otherwise locate the correct filepath and open it. */
 	} else {
-		if (cmd.command != CMD_NULL || command.commandID < 0 || command.commandID >= CFArrayGetCount(recentItemsArrayRef))
+		if (cmd.command != CMD_NULL || command.commandID >= (UInt32)CFArrayGetCount(recentItemsArrayRef))
 			return eventNotHandledErr;
 
 		OSErr err;
@@ -2820,17 +2835,19 @@ static OSStatus OpenRecentCommand(EventHandlerCallRef inCallRef,
 static OSStatus AngbandGame(EventHandlerCallRef inCallRef,
 							EventRef inEvent, void *inUserData )
 {
+	UInt32 i;
+
 	/* Only enabled options are Fonts, Open/New/Import and Quit. */
 	DisableAllMenuItems(MyGetMenuHandle(kTileWidMenu));
 	DisableAllMenuItems(MyGetMenuHandle(kTileHgtMenu));
 
 	SetFontInfoForSelection(kFontSelectionATSUIType, 0, 0, 0);
 
-	for(int i = kNew; i <= kImport; i++)
+	for(i = kNew; i <= kImport; i++)
 		EnableMenuItem(MyGetMenuHandle(kFileMenu), i);
 
 	/* Validate graphics, after bootstrapped opening of terminals */
-	for(int i = 0; i < N_ELEMENTS(data); i++) {
+	for(i = 0; i < N_ELEMENTS(data); i++) {
 		if(data[i].mapped)
 			RevalidateGraphics(&data[i], FALSE);
 	}
@@ -3081,7 +3098,7 @@ static OSStatus ResizeCommand(EventHandlerCallRef inCallRef,
 	return eventNotHandledErr;
 }
 
-static void graphics_aux(int op)
+static void graphics_aux(UInt32 op)
 {
 	graf_mode = op;
 	use_transparency = graphics_modes[op].trans;

@@ -23,7 +23,7 @@
  * Hack -- Link a copyright message into the executable
  */
 const char *copyright =
-	"Copyright (c) 1987-2007 Angband contributors.\n"
+	"Copyright (c) 1987-2011 Angband contributors.\n"
 	"\n"
 	"This work is free software; you can redistribute it and/or modify it\n"
 	"under the terms of either:\n"
