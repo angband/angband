@@ -48,7 +48,7 @@ static mon_timed_effect effects[] =
  * Successfully resisted the effect.  Also marks the lore for any
  * appropriate resists.
  */
-static int mon_resist_effect(int m_idx, int idx, u16b flag)
+static int mon_resist_effect(int m_idx, int idx, int v, u16b flag)
 {
 	mon_timed_effect *effect = &effects[idx];
 	int resist_chance;
@@ -61,7 +61,7 @@ static int mon_resist_effect(int m_idx, int idx, u16b flag)
 
 	/* Some effects are marked to never fail */
 	if (flag & MON_TMD_FLG_NOFAIL) return (FALSE);
-	
+
 	/* A sleeping monster resists further sleeping */
 	if (idx == MON_TMD_SLEEP && m_ptr->m_timed[idx]) return (TRUE);
 
@@ -74,25 +74,13 @@ static int mon_resist_effect(int m_idx, int idx, u16b flag)
 		if (idx == MON_TMD_SLEEP) return (TRUE);
 	}
 
-	/* Calculate the chance of the monster resisting. */
-	if (flag & MON_TMD_MON_SOURCE)
-		resist_chance = r_ptr->level;
-	else
-		resist_chance = r_ptr->level + 25 - p_ptr->lev / 5;
-
-	/* Monsters who resist get half the duration, at most */
+	/* If the monster resists innately, learn about it */
 	if (rf_has(r_ptr->flags, effect->flag_resist))
 	{
 		/* Mark the lore */
 		if (m_ptr->ml) rf_on(l_ptr->flags, effect->flag_resist);
 
 		return (TRUE);
-	}
-
-	/* Uniques are doubly hard to affect */
-	if (rf_has(r_ptr->flags, RF_UNIQUE))
-	{
-		if (randint0(100) < resist_chance) return (TRUE);
 	}
 
 	/* Monsters with specific breaths and undead resist stunning*/
@@ -140,6 +128,15 @@ static int mon_resist_effect(int m_idx, int idx, u16b flag)
 		return (TRUE);
 	}
 
+	/* Calculate the chance of the monster making its saving throw. */
+	if (idx == MON_TMD_SLEEP)
+		v /= 25; /* Hack - sleep uses much bigger numbers */
+
+	if (flag & MON_TMD_MON_SOURCE)
+		resist_chance = r_ptr->level;
+	else
+		resist_chance = r_ptr->level + 25 - (v / 2);
+
 	if (randint0(100) < resist_chance) return (TRUE);
 
 	/* Uniques are doubly hard to affect */
@@ -183,7 +180,7 @@ static bool mon_set_timed(int m_idx, int idx, int v, u16b flag)
 	}
 
 	/* Determine if the monster resisted or not */
-	resisted = mon_resist_effect(m_idx, idx, flag);
+	resisted = mon_resist_effect(m_idx, idx, v, flag);
 
 	if (resisted)
 		m_note = MON_MSG_UNAFFECTED;

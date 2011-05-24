@@ -1684,10 +1684,10 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 	bool obvious)
 {
 	int tmp;
-
 	monster_type *m_ptr;
 	monster_race *r_ptr;
 	monster_lore *l_ptr;
+	u16b flag = 0;
 
 	/* Is the monster "seen"? */
 	bool seen = FALSE;
@@ -1836,18 +1836,21 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 		/* Ice -- Cold + Stun */
 		case GF_ICE:
 		{
-			if (seen) obvious = TRUE;
 			if (seen)
 			{
+				obvious = TRUE;
 				rf_on(l_ptr->flags, RF_IM_COLD);
 				rf_on(l_ptr->flags, RF_HURT_COLD);
 			}
-			
-			if(typ == GF_ICE)
-			{
-				do_stun = (randint1(15) + 1) / (r + 1);
+
+			if (typ == GF_ICE) {
+				if (who > 0) {
+					do_stun = (randint1(15) + r) / (r + 1);
+					flag |= MON_TMD_MON_SOURCE;
+				} else
+					do_stun = (randint1(15) + r + p_ptr->lev / 5) / (r + 1);
 			}
-			
+
 			if (rf_has(r_ptr->flags, RF_IM_COLD))
 			{
 				m_note = MON_MSG_RESIST_A_LOT;
@@ -1919,7 +1922,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 				/* Acquire knowledge of undead type and nether resistance */
 				rf_on(l_ptr->flags, RF_UNDEAD);
 				rf_on(l_ptr->flags, RF_RES_NETH);
-				
+
 				/* If it isn't undead, acquire extra knowledge */
 				if (!rf_has(r_ptr->flags, RF_UNDEAD))
 				{
@@ -1975,7 +1978,13 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			if (seen) obvious = TRUE;
 
 			do_poly = TRUE;
-			do_conf = (5 + randint1(11) + r) / (r + 1);
+
+			if (who > 0) {
+				do_conf = (5 + randint1(11) + r) / (r + 1);
+				flag |= MON_TMD_MON_SOURCE;
+			} else
+				do_conf = (5 + randint1(11) + r + p_ptr->lev / 5) / (r + 1);
+
 			if (rsf_has(r_ptr->spell_flags, RSF_BR_CHAO))
 			{
 				/* Learn about breathers through resistance */
@@ -2006,8 +2015,13 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 		case GF_SOUND:
 		{
 			if (seen) obvious = TRUE;
-			
-			do_stun = (10 + randint1(15) + r) / (r + 1);
+
+			if (who > 0) {
+				do_stun = (10 + randint1(15) + r) / (r + 1);
+				flag |= MON_TMD_MON_SOURCE;
+			} else
+				do_stun = (10 + randint1(15) + r + p_ptr->lev / 5) / (r + 1);
+
 			if (rsf_has(r_ptr->spell_flags, RSF_BR_SOUN))
 			{
 				/* Learn about breathers through resistance */
@@ -2019,26 +2033,6 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			break;
 		}
 
-/* Confusion - no longer used for breaths post-3.2 
-		case GF_CONFU:
-		{
-			if (seen) obvious = TRUE;
-			if (seen) rf_on(l_ptr->flags, RF_NO_CONF);
-
-			do_conf = (10 + randint1(15) + r) / (r + 1);
-			if (rsf_has(r_ptr->spell_flags, RSF_BR_CONF))
-			{
-				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_CONF);
-
-				dam *= 2; dam /= (randint1(6)+6);
-			}
-			else if (rf_has(r_ptr->flags, RF_NO_CONF))
-			{
-				dam /= 2;
-			}
-			break;
-		}
-*/
 		/* Disenchantment */
 		case GF_DISEN:
 		{
@@ -2069,8 +2063,13 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 		case GF_FORCE:
 		{
 			if (seen) obvious = TRUE;
-			
-			do_stun = (randint1(15) + r) / (r + 1);
+
+			if (who > 0) {
+				do_stun = (randint1(15) + r) / (r + 1);
+				flag |= MON_TMD_MON_SOURCE;
+			} else
+				do_stun = (randint1(15) + r + p_ptr->lev / 5) / (r + 1);
+
 			if (rsf_has(r_ptr->spell_flags, RSF_BR_WALL))
 			{
 				/* Learn about breathers through resistance */
@@ -2609,7 +2608,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 		if (!rf_has(r_ptr->flags, RF_UNIQUE))
 		{
 			if (seen) obvious = TRUE;
-			
+
 			/* Saving throws are allowed */
 			if (r_ptr->level > randint1(90) ||
 			    (typ == GF_OLD_POLY && r_ptr->level > randint1(MAX(1, do_poly - 10)) + 10))
@@ -2672,36 +2671,29 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 		x = m_ptr->fx;
 	}
 
-	/* Handle stunning */
+	/* Handle stunning, confusion, slowing, hasting and fear */
 	else if (do_stun)
 	{
-		int tmp = do_stun;
+		if (m_ptr->m_timed[MON_TMD_STUN])
+			do_stun /= 2;
 
-		bool was_stunned = (m_ptr->m_timed[MON_TMD_STUN] ? TRUE : FALSE);
-
-		if (was_stunned) tmp /= 2;
-
-		obvious = mon_inc_timed(m_idx, MON_TMD_STUN, tmp, MON_TMD_FLG_NOTIFY);
+		obvious = mon_inc_timed(m_idx, MON_TMD_STUN, do_stun, flag | MON_TMD_FLG_NOTIFY);
 	}
 
 	else if (do_conf)
 	{
 		int tmp = damroll(3, (do_conf / 2)) + 1;
 
-		/* Saving throw */
-		if (typ == GF_OLD_CONF && r_ptr->level > randint1(MAX(1, do_conf - 10)) + 10)
-			add_monster_message(m_name, m_idx, MON_MSG_UNAFFECTED, TRUE);
-		else
-			obvious = mon_inc_timed(m_idx, MON_TMD_CONF, tmp, MON_TMD_FLG_NOTIFY);
+		obvious = mon_inc_timed(m_idx, MON_TMD_CONF, tmp, flag | MON_TMD_FLG_NOTIFY);
 	}
 
 	else if (do_slow)
-		obvious = mon_inc_timed(m_idx, MON_TMD_SLOW, do_slow, MON_TMD_FLG_NOTIFY);
+		obvious = mon_inc_timed(m_idx, MON_TMD_SLOW, do_slow, flag | MON_TMD_FLG_NOTIFY);
 	else if (do_haste)
-		obvious = mon_inc_timed(m_idx, MON_TMD_FAST, do_haste, MON_TMD_FLG_NOTIFY);
+		obvious = mon_inc_timed(m_idx, MON_TMD_FAST, do_haste, flag | MON_TMD_FLG_NOTIFY);
 
 	if (do_fear)
-		obvious = mon_inc_timed(m_idx, MON_TMD_FEAR, do_fear, MON_TMD_FLG_NOTIFY);
+		obvious = mon_inc_timed(m_idx, MON_TMD_FEAR, do_fear, flag | MON_TMD_FLG_NOTIFY);
 
 	/* If another monster did the damage, hurt the monster by hand */
 	if (who > 0)
@@ -2763,7 +2755,8 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 		}
 
 		if (do_sleep)
-			obvious = mon_inc_timed(m_idx, MON_TMD_SLEEP, 500, MON_TMD_FLG_NOTIFY);
+			obvious = mon_inc_timed(m_idx, MON_TMD_SLEEP, 500 + p_ptr->lev * 10,
+				flag | MON_TMD_FLG_NOTIFY);
 		else if (mon_take_hit(m_idx, dam, &fear, ""))
 			mon_died = TRUE;
 		else
@@ -2782,7 +2775,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 				add_monster_message(m_name, m_idx, MON_MSG_FLEE_IN_TERROR, TRUE);
 		}
 	}
-	
+
 	/* Verify this code XXX XXX XXX */
 
 	/* Update the monster */
