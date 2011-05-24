@@ -20,7 +20,7 @@ output to the screen), and "sub-windows" (see below).
 
 === Interface options ===
 
-**** <use_sound>
+***** <use_sound>
 Use sound    [use_sound]
     Turns on sound effects, if your system supports them.
 
@@ -42,47 +42,11 @@ Always pickup items matching inventory        [pickup_inven]
     safe to do so.  If pickup_inven is on, then items matching those in your
     inventory are always picked up.
 
-***** <pickup_detail>
-Be verbose when picking things up             [pickup_detail]
-    If this is off, you get a one-line description of the objects or piles on
-    the floor after the other pickup options have acted.  If this option is
-    on, you get a full list for more than one item, including weights.
-
-    In either case, you can start picking things up by typing "g".
-    When standing still, you are never charged extra time for picking
-    up objects.  When walking, you always take a second partial turn to
-    pick up objects; each object picked up takes 1/10th of a turn.
-
-***** <hide_squelchable>
-Hide items set as squelchable           [hide_squelchable]
-    Items marked to be squelched will not be shown on the map. They are
-    still actually there, so toggling this option (or unsquelching them)
-    will reveal them.
-
-***** <squelch_worthless>
-Squelch worthless item kinds            [squelch_worthless]
-    Items of no monetary value will be automatically squelched. This 
-    option will ignore the squelch settings for these items.
-
-***** <easy_alter>
-Open/Disarm doors/traps on movement.    [easy_alter]
-    Moving into a closed door will attempt once to open it, and moving 
-    into a trap will attempt once to disarm it. If the player ever wishes
-    to leave a known teleport trap as a guaranteed escape route, this 
-    option must therefore be off.
-
 ***** <easy_open>
 Open/Disarm/Close without direction    [easy_open]
     If there is only one closed door next to the character, the game will 
     not bother asking for a direction when the player asks to "o"pen 
     something. The same applies for "c"losing doors and "D"isarming traps.
-
-***** <show_lists>
-Always show lists                      [show_lists]
-    If there is more than one possible target for a command, the full list
-    of possible targets will be shown. If this option is off, only the first
-    possible target will be shown and you will have to press * to see the 
-    full list.
 
 ***** <mouse_movement>
 Allow mouse clicks to move the player  [mouse_movement]
@@ -91,7 +55,8 @@ Allow mouse clicks to move the player  [mouse_movement]
 
 ***** <mouse_buttons>
 Show mouse status line buttons         [mouse_buttons]
-    Nope, got me there.
+    Creates clickable "buttons" on the bottom line of the main window, to
+    enhance mouse-led play.
 
 ***** <xchars_to_file>
 Allow accents in output files          [xchars_to_file]
@@ -105,13 +70,6 @@ Player color indicates low hit points    [hp_changes_color]
     This option makes the player @ turn various shades of colour from white
     to red, depending on percentage of HP remaining.
 
-***** <highlight_player>
-Highlight the player with the cursor    [highlight_player]
-    Place the visible cursor on the player.  This looks fine on some Unix
-    machines, but horrible on most graphics machines.  Note that only some
-    machines are able to *not* show the cursor, but on those machines, hiding
-    the cursor often speeds up the game and looks better.
-
 ***** <center_player>
 Center map continuously                  [center_player]
     The map always centres on the player with this option on. With it off, it
@@ -119,86 +77,16 @@ Center map continuously                  [center_player]
     show one section at a time - the display will "flip" to the next section
     when the player nears the edge.
 
-***** <show_piles>
-Show stacks using special attr/character     [show_piles]
-    Stacks of items on the floor are shown using the "&" symbol.
-
 ***** <show_flavors>
 Show flavors in object descriptions    [show_flavors]
     Display "flavors" (color or variety) in object descriptions, even for
     objects whose type is known.  This does not affect objects in stores.
-
-***** <show_labels>
-Show labels in equipment listings    [show_labels]
-    Display "labels" (what an object is being used for) for objects in all
-    "equipment" listings.
 
 ***** <view_yellow_light>
 Use special colors for torch-lit grids    [view_yellow_light]
     This option causes special colors to be used for "torch-lit" grids in
     certain situations (see "view_granite_light" and "view_special_light").
     Turning this option off will slightly improve game speed.
-
-***** <view_bright_light>
-Use special colors for 'viewable' grids    [view_bright_light]
-    This option causes special colors to be used for non "viewable" grids
-    in certain situations (see "view_granite_light" and "view_special_light").
-    When this option is set, floor grids which are normally drawn in "white"
-    but which are not currently "viewable" by the player are instead drawn
-    in "dark gray".  This makes the "viewable" grids to appear "brighter"
-    than the others, allowing the player to easily determine which floor
-    grids are in "line of sight".  Turning this option off will probably
-    increase the speed of the game.
-
-***** <view_granite_light>
-Use special colors for wall grids (slow)    [view_granite_light]
-    This option activates a special color scheme for all "wall" grids which
-    are normally drawn in "white" (as walls and rubble normally are).  When
-    the player is blind, we use "dark gray", else if the grid is torch-lit,
-    we use "yellow" (or "white") depending on the "view_yellow_light" option,
-    else if the "view_bright_light" option is set, and the grid is not in line
-    of sight, or the grid is dark, or the grid is only "partially" lit, then
-    we use "gray", otherwise we use the normal "white".  Turning this option
-    off will probably increase the speed of the game.  This option may not
-    work well if the attr/char codes for walls/veins have been changed, or
-    if "graphics" are being used.
-
-***** <view_special_light>
-Use special colors for floor grids (slow)    [view_special_light]
-    This option activates a special color scheme for all "floor" grids which
-    are normally drawn in "white" (as they normally are).  When the player is
-    blind, we use "dark gray", else if the grid is torch-lit, we use "yellow"
-    (or "white") depending on the "view_yellow_light" option, else if the grid
-    is "dark", we use "dark gray", else if the "view_bright_light" option is
-    set, and the grid is not in line of sight, we use "gray", otherwise we
-    use the normal "white".  Turning this option off will probably increase
-    the speed of the game.  This option may not work well if the attr/char
-    codes for walls/veins have been changed, or if "graphics" are being used.
-
-***** <view_perma_grids>
-Map remembers all perma-lit grids    [view_perma_grids]
-    Memorize all perma-lit floor grids which are seen by the player.
-    This option allows you to keep track of which explored floor grids
-    were perma-lit, but does not distinguish between dark floor grids,
-    unexplored floor grids, and unknown grids.  Turning off this option
-    allows the player to always know which lit floor grids are in line
-    of sight, but this is better accomplished by the "view_bright_light"
-    option.  Note that any non-floor grids which is seen by the player
-    are always memorized, and "object" which is seen by the player is
-    memorized independantly from the memorization of the grid itself.
-
-***** <view_torch_grids>
-Map remembers all torch-lit grids    [view_torch_grids]
-    Memorize all (torch-lit) floor grids which are seen by the player.
-    This option not only allows you to keep track of which floor grids
-    have been explored, but also which ones are "dark", because the use
-    of this option activates a special "color scheme" for the display of
-    floor grids, in which "dark" grids are drawn in "dark gray", "lit"
-    grids are drawn in "white", and (if the "view_bright_light" option is
-    set) "lit" grids which are also in line of sight are drawn in "orange".
-    Note that grids which are currently "torch-lit" are considered to be
-    "lit", and are thus drawn in "white", unless the "view_yellow_light"
-    option is set, in which case they are drawn in "yellow".
 
 ***** <animate_flicker>
 Animate multi-coloured monsters and items   [animate_flicker]
@@ -239,35 +127,10 @@ Disturb whenever player state changes    [disturb_state]
     This option causes you to be disturbed whenever the player state
     changes, including changes in hunger, resistance, confusion, etc.
 
-***** <quick_messages>
-Activate quick messages    [quick_messages]
-    Allows the use of any keypress as a response to the "-more-" prompt
-    (useful for monster farming).  Allows most keys to mean "no" to any
-    "[y/n]" prompt.
-
 ***** <auto_more>
 Automatically clear -more- prompts    [auto_more]
     The game does not wait for a keypress when it comes to a -more-
     prompt, but carries on going.
-
-***** <ring_bell>
-Audible bell (on errors, etc)    [ring_bell]
-    Attempt to make a "bell" noise when various "errors" occur.
-
-***** <flush_failure>
-Flush input on various failures    [flush_failure]
-    This option forces the game to flush all pending input whenever various
-    "failures" occur, such as failure to cast a spell, failure to use a wand,
-    etc.  This is very useful if you use macros which include "directional"
-    components with commands that can fail, since it will prevent you from
-    walking towards monsters when your spells fail.
-
-***** <flush_disturb>
-Flush input whenever disturbed    [flush_disturb]
-    This option forces the game to flush all pending input whenever the
-    character is "disturbed".  This is useful if you use macros which take
-    time, since it will prevent you from continuing your macro while being
-    attacked by a monster.
 
 ***** <notify_recharge>
 Notify on object recharge        [notify_recharge]
@@ -394,10 +257,6 @@ Items always sell for 0 gold       [birth_no_selling]
      will be tripled if this option is on.
 
 === Cheating options ===
-
-***** <cheat_peek>
-Peek into object creation    [cheat_peek]
-    Cheaters never win.  But they can peek at object creation.
 
 ***** <cheat_hear>
 Peek into monster creation    [cheat_hear]
