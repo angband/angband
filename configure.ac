@@ -197,34 +197,16 @@ fi
 
 dnl curses checking
 if test "$enable_curses" = "yes"; then
-	AC_CHECK_LIB(cursesw  , initscr, found_curses=yes,found_curses=no)
-	AC_CHECK_LIB(ncursesw , initscr, found_ncurses=yes,found_ncurses=no)
-	AC_CHECK_LIB(pdcursesw, initscr, found_pdcurses=yes,found_pdcurses=no)
-	if test "x$found_ncurses" = "xno"; then
-		if test "x$found_pdcurses" = "xno"; then
-			if test "x$found_curses" = "xno"; then
-				with_curses=no
-			else
-				AC_DEFINE(USE_CURSES, 1, [Define to 1 if Curses or PDCurses is found, but NCurses is not.])
-				AC_DEFINE(USE_GCU, 1, [Define to 1 if using the Curses frontend.])
-				LDFLAGS="${LDFLAGS} -lcursesw"
-				with_curses=yes
-			fi
-		else
-			AC_DEFINE(USE_CURSES, 1, [Define to 1 if Curses or PDCurses is found, but NCurses is not.])
-			AC_DEFINE(USE_GCU, 1, [Define to 1 if using the Curses frontend.])
-			LDFLAGS="${LDFLAGS} -lpdcursesw"
-			with_curses=yes
-		fi
-	else
+	AM_PATH_NCURSESW(with_curses=yes, with_curses=no)
+	if test "$with_curses" = "yes"; then
 		AC_DEFINE(USE_NCURSES, 1, [Define to 1 if NCurses is found.])
 		AC_DEFINE(USE_GCU, 1, [Define to 1 if using the Curses frontend.])
-		LDFLAGS="${LDFLAGS} -lncursesw"
-		with_curses=yes
-	fi
+		CFLAGS="${CFLAGS} ${NCURSES_CFLAGS}"
+		LDFLAGS="${LDFLAGS} ${NCURSES_LIBS}"
+	fi 
 fi
 
-AC_CHECK_FUNCS([use_default_colors can_change_color])
+AC_CHECK_FUNCS([mvwaddnwstr use_default_colors can_change_color])
 
 dnl X11 checking
 if test "$enable_x11" = "yes"; then

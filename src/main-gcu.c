@@ -36,7 +36,7 @@
 #  define NCURSES_ENABLE_STDBOOL_H 0
 # endif
 
-# include <ncursesw/ncurses.h>
+# include <ncurses.h>
 #else
 # include <curses.h>
 #endif

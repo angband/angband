@@ -312,3 +312,70 @@ int main (int argc, char *argv[])
   rm -f conf.sdltest
 ])
 
+# Configure paths for ncursesw
+# stolen from Sam Lantinga 9/21/99 from directly above (SDL)
+# stolen from Manish Singh
+# stolen back from Frank Belew
+# stolen from Manish Singh
+# Shamelessly stolen from Owen Taylor
+
+dnl AM_PATH_NCURSESW([ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]])
+dnl Test for ncursesw, and define NCURSES_CFLAGS and NCURSES_LIBS
+dnl
+AC_DEFUN([AM_PATH_NCURSESW],
+[dnl 
+dnl Get the cflags and libraries from the ncursesw5-config script
+dnl
+AC_ARG_WITH(ncurses-prefix,[  --with-ncurses-prefix=PFX   Prefix where ncurses is installed (optional)],
+            ncurses_prefix="$withval", ncurses_prefix="")
+AC_ARG_WITH(ncurses-exec-prefix,[  --with-ncurses-exec-prefix=PFX Exec prefix where ncurses is installed (optional)],
+            ncurses_exec_prefix="$withval", ncurses_exec_prefix="")
+AC_ARG_ENABLE(ncursestest, [  --disable-ncursestest       Do not try to compile and run a test ncurses program],
+		    , enable_ncursestest=yes)
+
+  if test x$ncurses_exec_prefix != x ; then
+     ncurses_args="$ncurses_args --exec-prefix=$ncurses_exec_prefix"
+     if test x${NCURSES_CONFIG+set} != xset ; then
+        NCURSES_CONFIG=$ncurses_exec_prefix/bin/ncursesw5-config
+     fi
+  fi
+  if test x$ncurses_prefix != x ; then
+     ncurses_args="$ncurses_args --prefix=$ncurses_prefix"
+     if test x${NCURSES_CONFIG+set} != xset ; then
+        NCURSES_CONFIG=$ncurses_prefix/bin/ncursesw5-config
+     fi
+  fi
+
+  AC_PATH_PROG(NCURSES_CONFIG, ncursesw5-config, no)
+  AC_MSG_CHECKING(for ncurses - wide char support)
+  no_ncurses=""
+  if test "$NCURSES_CONFIG" = "no" ; then
+    no_ncurses=yes
+  else
+    NCURSES_CFLAGS=`$NCURSES_CONFIG $ncurses_args --cflags`
+    NCURSES_LIBS=`$NCURSES_CONFIG $ncurses_args --libs`
+
+    ac_save_CFLAGS="$CFLAGS"
+    CFLAGS="$CFLAGS $NCURSES_CFLAGS"
+  	AC_CHECK_HEADERS(ncurses.h, , no_ncurses=yes, [#include <stdio.h>])
+  	CFLAGS="$ac_save_CFLAGS"
+  fi
+
+  if test "x$no_ncurses" = x ; then
+     AC_MSG_RESULT(yes)
+     ifelse([$1], , :, [$1])     
+  else
+     AC_MSG_RESULT(no)
+     if test "$NCURSES_CONFIG" = "no" ; then
+       echo "*** The ncursesw5-config script installed by ncursesw could not be found"
+       echo "*** If ncursesw was installed in PREFIX, make sure PREFIX/bin is in"
+       echo "*** your path, or set the NCURSES_CONFIG environment variable to the"
+       echo "*** full path to ncursesw5-config."
+     fi
+     NCURSES_CFLAGS=""
+     NCURSES_LIBS=""
+     ifelse([$2], , :, [$2])
+  fi
+  AC_SUBST(NCURSES_CFLAGS)
+  AC_SUBST(NCURSES_LIBS)
+])
