@@ -2005,14 +2005,14 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			for (i = 0; i < num; i++)
 				(void)summon_specific(py, px, p_ptr->depth, 0, 1);
 
-			break;
+			return TRUE;
 		}
 
 		case EF_TRAP_RUNE_TELEPORT:
 		{
 			msg("You hit a teleport trap!");
 			teleport_player(100);
-			return TRUE;		
+			return TRUE;
 		}
 
 		case EF_TRAP_SPOT_FIRE:
