@@ -3268,7 +3268,7 @@ static void build_quest_stairs(int y, int x)
  * Note that only the player can induce "monster_death()" on Uniques.
  * Thus (for now) all Quest monsters should be Uniques.
  */
-void monster_death(int m_idx)
+void monster_death(int m_idx, bool stats)
 {
 	int i, y, x;
 	int dump_item = 0;
@@ -3307,20 +3307,22 @@ void monster_death(int m_idx)
 		delete_object_idx(this_o_idx);
 
 		/* Count it and drop it - refactor once origin is a bitflag */
-		if ((i_ptr->tval == TV_GOLD) && (i_ptr->origin != ORIGIN_STOLEN))
-			dump_gold++;
-		else if ((i_ptr->tval != TV_GOLD) && ((i_ptr->origin == ORIGIN_DROP)
-				|| (i_ptr->origin == ORIGIN_DROP_PIT)
-				|| (i_ptr->origin == ORIGIN_DROP_VAULT)
-				|| (i_ptr->origin == ORIGIN_DROP_SUMMON)
-				|| (i_ptr->origin == ORIGIN_DROP_SPECIAL)
-				|| (i_ptr->origin == ORIGIN_DROP_BREED)
-				|| (i_ptr->origin == ORIGIN_DROP_POLY)
-				|| (i_ptr->origin == ORIGIN_DROP_WIZARD)))
-			dump_item++;
+		if (!stats) {
+			if ((i_ptr->tval == TV_GOLD) && (i_ptr->origin != ORIGIN_STOLEN))
+				dump_gold++;
+			else if ((i_ptr->tval != TV_GOLD) && ((i_ptr->origin == ORIGIN_DROP)
+					|| (i_ptr->origin == ORIGIN_DROP_PIT)
+					|| (i_ptr->origin == ORIGIN_DROP_VAULT)
+					|| (i_ptr->origin == ORIGIN_DROP_SUMMON)
+					|| (i_ptr->origin == ORIGIN_DROP_SPECIAL)
+					|| (i_ptr->origin == ORIGIN_DROP_BREED)
+					|| (i_ptr->origin == ORIGIN_DROP_POLY)
+					|| (i_ptr->origin == ORIGIN_DROP_WIZARD)))
+				dump_item++;
+		}
 
-		/* Change origin if monster is invisible */
-		if (!visible)
+		/* Change origin if monster is invisible, unless we're in stats mode */
+		if (!visible && !stats)
 			i_ptr->origin = ORIGIN_DROP_UNKNOWN;
 
 		drop_near(cave, i_ptr, 0, y, x, TRUE);
@@ -3503,7 +3505,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note)
 		player_exp_gain(p_ptr, new_exp);
 
 		/* Generate treasure */
-		monster_death(m_idx);
+		monster_death(m_idx, FALSE);
 
 		/* Recall even invisible uniques or winners */
 		if (m_ptr->ml || rf_has(r_ptr->flags, RF_UNIQUE))

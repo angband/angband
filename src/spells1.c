@@ -2717,7 +2717,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			add_monster_message(m_name, m_idx, note_dies, FALSE);
 
 			/* Generate treasure, etc */
-			monster_death(m_idx);
+			monster_death(m_idx, FALSE);
 
 			/* Delete the monster */
 			delete_monster_idx(m_idx);
