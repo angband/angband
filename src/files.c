@@ -131,7 +131,7 @@ static void display_player_equippy(int y, int x)
 	int i;
 
 	byte a;
-	char c;
+	wchar_t c;
 
 	object_type *o_ptr;
 

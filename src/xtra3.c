@@ -243,7 +243,7 @@ static void prt_equippy(int row, int col)
 	int i;
 
 	byte a;
-	char c;
+	wchar_t c;
 
 	object_type *o_ptr;
 

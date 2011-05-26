@@ -353,8 +353,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 
 	bool hit_target = FALSE;
 
-	char c = object_char(o_ptr);
-	mbstowcs(&missile_char, &c, 1);
+	missile_char = object_char(o_ptr);
 
 	/* Check for target validity */
 	if ((dir == 5) && target_okay()) {
