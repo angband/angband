@@ -91,6 +91,8 @@
 #define WINVER 0x0500
 #endif
 
+#include <locale.h>
+
 #define uint unsigned int
 
 #if (defined(WINDOWS) && !defined(USE_SDL))
@@ -2206,12 +2208,11 @@ static errr Term_wipe_win(int x, int y, int n)
  * what color it should be using to draw with, but perhaps simply changing
  * it every time is not too inefficient.  XXX XXX XXX
  */
-static errr Term_text_win(int x, int y, int n, byte a, const char *s)
+static errr Term_text_win(int x, int y, int n, byte a, const wchar_t *s)
 {
 	term_data *td = (term_data*)(Term->data);
 	RECT rc;
 	HDC hdc;
-
 
 	/* Total rectangle */
 	rc.left = x * td->tile_wid + td->size_ow1;
@@ -2262,8 +2263,8 @@ static errr Term_text_win(int x, int y, int n, byte a, const char *s)
 		for (i = 0; i < n; i++)
 		{
 			/* Dump the text */
-			ExtTextOut(hdc, rc.left, rc.top, 0, &rc,
-			           s+i, 1, NULL);
+			ExtTextOutW(hdc, rc.left, rc.top, 0, &rc,
+			            s+i, 1, NULL);
 
 			/* Advance */
 			rc.left += td->tile_wid;
@@ -2275,7 +2276,7 @@ static errr Term_text_win(int x, int y, int n, byte a, const char *s)
 	else
 	{
 		/* Dump the text */
-		ExtTextOut(hdc, rc.left, rc.top, ETO_OPAQUE | ETO_CLIPPED, &rc,
+		ExtTextOutW(hdc, rc.left, rc.top, ETO_OPAQUE | ETO_CLIPPED, &rc,
 		           s, n, NULL);
 	}
 
@@ -2300,7 +2301,7 @@ static errr Term_text_win(int x, int y, int n, byte a, const char *s)
  *
  * If "graphics" is not available, we simply "wipe" the given grids.
  */
-static errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, const byte *tap, const char *tcp)
+static errr Term_pict_win(int x, int y, int n, const byte *ap, const wchar_t *cp, const byte *tap, const wchar_t *tcp)
 {
 	term_data *td = (term_data*)(Term->data);
 
@@ -2359,7 +2360,7 @@ static errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, c
 	/* Draw attr/char pairs */
 	for (i = n-1; i >= 0; i--, x2 -= w2) {
 		byte a = ap[i];
-		char c = cp[i];
+		wchar_t c = cp[i];
 
 		/* Extract picture */
 		int row = (a & 0x7F);
@@ -2444,6 +2445,47 @@ static errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, c
 
 	/* Success */
 	return 0;
+}
+
+/*
+ * Windows cannot naturally handle UTF-8 using the standard locale and
+ * C library routines, such as mbstowcs().
+ *
+ * We assume external files are in UTF-8, and explicitly convert.
+ *
+ * MultiByteToWideChar returns number of wchars, including terminating L'\0'
+ *     mbstowcs requires the count without the terminating L'\0'
+ * dest == NULL corresponds to querying for the size needed, achieved in the
+ *     Windows fn by setting the dstlen (last) param to 0.
+ * If n is too small for all the chars in src, the Windows fn fails, but we
+ *     require success and a partial conversion. So allocate space for it to
+ *     succeed, and do the partial copy into dest.
+ */
+size_t Term_mbstowcs_win(wchar_t *dest, const char *src, int n)
+{
+	int res;
+	int required;
+	wchar_t *tmp;
+
+	if (dest) {
+		res = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, src, -1, dest, n);
+		if (res)
+			return (size_t)(res - 1);
+		else {
+			if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
+				required = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, src, -1, NULL, 0);
+				tmp = malloc(required * sizeof(wchar_t));
+				MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, src, -1, tmp, required);
+				memcpy(dest, tmp, n * sizeof(wchar_t));
+				free(tmp);
+				return n;
+			} else {
+				return (size_t)-1;
+			}
+		}
+	} else {
+		return (size_t)(MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, src, -1, NULL, 0) - 1);
+	}
 }
 
 
@@ -2580,11 +2622,11 @@ static void windows_map_aux(void)
 {
 	term_data *td = &data[0];
 	byte a;
-	char c;
+	wchar_t c;
 	int x, min_x, max_x;
 	int y, min_y, max_y;
 	byte ta;
-	char tc;
+	wchar_t tc;
 
 	td->map_tile_wid = (td->tile_wid * td->cols) / DUNGEON_WID;
 	td->map_tile_hgt = (td->tile_hgt * td->rows) / DUNGEON_HGT;
@@ -2605,7 +2647,7 @@ static void windows_map_aux(void)
 			grid_data_as_text(&g, &a, &c, &ta, &tc);
 
 			/* Ignore non-graphics */
-			if ((a & 0x80) && (c & 0x80))
+			if (a & 0x80)
 			{
 				Term_pict_win(x - min_x, y - min_y, 1, &a, &c, &ta, &tc);
 			}
@@ -2691,6 +2733,7 @@ static void term_data_link(term_data *td)
 	t->wipe_hook = Term_wipe_win;
 	t->text_hook = Term_text_win;
 	t->pict_hook = Term_pict_win;
+	t->mbcs_hook = Term_mbstowcs_win;
 
 	/* Remember where we came from */
 	t->data = td;
@@ -5241,6 +5284,8 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 #endif /* USE_SAVER */
 
 	}
+
+	setlocale(LC_CTYPE, "");
 
 	/* Save globally */
 	hInstance = hInst;
