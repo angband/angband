@@ -848,7 +848,7 @@ void text_out_to_screen(byte a, const char *str)
 	(void)Term_locate(&x, &y);
 
 	/* Copy to a rewriteable string */
-	mbstowcs(buf, str, 1024);
+	Term_mbstowcs(buf, str, 1024);
 	
 	/* Use special wrapping boundary? */
 	if ((text_out_wrap > 0) && (text_out_wrap < wid))
@@ -1949,7 +1949,7 @@ bool char_matches_key(wchar_t c, keycode_t key)
 	wchar_t keychar;
 	char k = (char)key;
 
-	mbstowcs(&keychar, &k, 1);
+	Term_mbstowcs(&keychar, &k, 1);
 	return (c == keychar);
 }
 

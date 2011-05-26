@@ -30,6 +30,7 @@
 #include "z-form.h"
 #include "z-util.h"
 #include "z-virt.h"
+#include "z-term.h"
 
 
 const char *parser_error_str[PARSE_ERROR_MAX] = {
@@ -345,7 +346,7 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 		}
 		else if (t == PARSE_T_CHAR)
 		{
-			mbstowcs(&v->u.cval, tok, 1);
+			Term_mbstowcs(&v->u.cval, tok, 1);
 		}
 		else if (t == PARSE_T_SYM || t == PARSE_T_STR)
 		{

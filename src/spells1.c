@@ -536,13 +536,13 @@ static void bolt_pict(int y, int x, int ny, int nx, int typ, byte *a, wchar_t *c
 	/* Decide on output char */
 	if (use_graphics == GRAPHICS_NONE) {
 		/* ASCII is simple */
-		char chars[] = "*|/-\\";
+		wchar_t chars[] = L"*|/-\\";
 
-		mbstowcs(c, &chars[motion], 1);
+		*c = chars[motion];
 		*a = spell_color(typ);
 	} else {
 		*a = gf_to_attr[typ][motion];
-		mbstowcs(c, &gf_to_char[typ][motion], 1);
+		Term_mbstowcs(c, &gf_to_char[typ][motion], 1);
 	}
 }
 

@@ -401,7 +401,16 @@ errr Term_xtra(int n, int v)
 	return ((*Term->xtra_hook)(n, v));
 }
 
-
+/*
+ * Allow override of the multi-byte to wide char conversion
+ */
+size_t Term_mbstowcs(wchar_t *dest, const char *src, int n)
+{
+	if (Term->mbcs_hook)
+		return (*Term->mbcs_hook)(dest, src, n);
+	else
+		return mbstowcs(dest, src, n);
+}
 
 /*** Fake hooks ***/
 
@@ -821,7 +830,7 @@ static void Term_fresh_row_both(int y, int x1, int x2)
 			}
 
 			/* 2nd byte of bigtile */
-			if ((na == 255) && (nc == (char) -1)) continue;
+			if (na == 255) continue;
 
 			/* Hack -- Draw the special attr/char pair */
 			(void)((*Term->pict_hook)(x, y, 1, &na, &nc, &nta, &ntc));
@@ -1573,7 +1582,7 @@ errr Term_addstr(int n, byte a, const char *buf)
 	wchar_t s[1024];
 
 	/* Copy to a rewriteable string */
- 	mbstowcs(s, buf, 1024);
+ 	Term_mbstowcs(s, buf, 1024);
 
 	/* Handle "unusable" cursor */
 	if (Term->scr->cu) return (-1);
