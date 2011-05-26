@@ -20,6 +20,12 @@
 #include "birth.h"
 #include "buildid.h"
 #include "init.h"
+#include "object/pval.h"
+#include "object/tvalsval.h"
+
+#define OBJ_FEEL_MAX	 10
+#define MON_FEEL_MAX 	  9
+#define LEVEL_MAX 		100
 
 static int randarts = 0;
 static u32b num_runs = 1;
@@ -29,6 +35,34 @@ static int running_stats = 0;
 static char *ANGBAND_DIR_STATS;
 
 static ang_file *obj_fp, *mon_fp, *ainfo_fp, *rinfo_fp;
+
+static struct level_data {
+	u32b **kinds;
+	u32b ***egos;
+	u32b **arts;
+	u32b ***flags;
+	u32b *monsters;
+/*  u32b *vaults;  Add these later - requires passing into generate.c
+	u32b *pits; */
+	u32b obj_feeling[OBJ_FEEL_MAX];
+	u32b mon_feeling[MON_FEEL_MAX];
+} level_data[100];
+
+static void alloc_memory()
+{
+	int i;
+
+	for (i = 0; i < LEVEL_MAX; i++) {
+		level_data[i].kinds[ORIGIN_MAX] = C_ZNEW(z_info->k_max, u32b);
+		level_data[i].egos[ORIGIN_MAX][z_info->k_max]
+			= C_ZNEW(z_info->e_max, u32b);
+		level_data[i].arts[ORIGIN_MAX] = C_ZNEW(z_info->a_max, u32b);
+		level_data[i].flags[OF_MAX][MAX_PVAL] = C_ZNEW(z_info->k_max, u32b);
+		level_data[i].monsters = C_ZNEW(z_info->r_max, u32b);
+/*		level_data[i].vaults = C_ZNEW(z_info->v_max, u32b);
+		level_data[i].pits = C_ZNEW(z_info->pit_max, u32b); */
+	}
+}
 
 /* Copied from birth.c:generate_player() */
 static void generate_player_for_stats()
@@ -68,7 +102,7 @@ static void generate_player_for_stats()
 	p_ptr->sc_birth = p_ptr->sc;
 }
 
-static void initialize_character(void) 
+static void initialize_character(void)
 {
 	u32b seed;
 
@@ -98,34 +132,17 @@ static void initialize_character(void)
 static void kill_all_monsters(int level)
 {
 	int i;
-	char m_name[80];
-	bool fear;
 
-	for (i = cave_monster_max(cave) - 1; i >= 1; i--)
-	{
+	for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
 		const monster_type *m_ptr = cave_monster(cave, i);
-		char *offscreen_ptr;
 
-		monster_desc(m_name, sizeof(m_name), m_ptr, 0x88);
+		level_data[level].monsters[m_ptr->r_idx]++;
 
-		/* Remove " (offscreen)" from description */
-		offscreen_ptr = strstr(m_name, " (offscreen)");
-		if (offscreen_ptr)
-		{
-			*offscreen_ptr = '\0';
-		}
-
-		file_putf(mon_fp, "%d|%d|%s\n",
-			level,
-			m_ptr->r_idx,
-			m_name);	
-
-		mon_take_hit(i, m_ptr->hp + 1, &fear, NULL);
+		monster_death(i, TRUE);
 	}
-
 }
 
-/* 
+/*
  * Insert into out_str a hex representation of the bitflag flags[].
  */
 static void flag2hex(const bitflag flags[], char *out_str)
@@ -138,9 +155,9 @@ static void flag2hex(const bitflag flags[], char *out_str)
 		strnfmt(out_str + 2 * i, 2 * OF_SIZE - 2 * i + 1, "%02x", flags[i]);
 }
 
-/* 
+/*
  * Insert into pvals a comma-separated list of pvals in pval[],
- * and insert into pval_flags a comma-separated list of hex 
+ * and insert into pval_flags a comma-separated list of hex
  * representations of the bitflags in pval_flags[].
  */
 
@@ -166,72 +183,37 @@ static void dump_pvals(char *pval_string, char *pval_flag_string,
 	strnfcat(pval_flag_string, 128, &pval_flag_end, "%s", buf);
 }
 
-static void print_all_objects(void)
+static void log_all_objects(int level)
 {
-	int x, y;
-	char o_name[256];
+	int x, y, i;
 
-	for (y = 1; y < DUNGEON_HGT - 1; y++)
-	{
-		for (x = 1; x < DUNGEON_WID - 1; x++)
-		{
+	for (y = 1; y < DUNGEON_HGT - 1; y++) {
+		for (x = 1; x < DUNGEON_WID - 1; x++) {
 			object_type *o_ptr = get_first_object(y, x);
 
-			if (o_ptr) do
-			{
-				u16b o_origin_xtra;
+			if (o_ptr) do {
 				u32b o_power = 0;
-				char o_flags[128] = "";
-				char o_pvals[20] = "";
-				char o_pval_flags[128] = "";
 
 				/* Mark object as fully known */
 				object_notice_everything(o_ptr);
-				object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL | ODESC_SPOIL);
 
-				/* Report where floor items were found, 
-				 * notably vaults (CAVE_ICKY) */
-				if (o_ptr->origin == ORIGIN_FLOOR)
-				{
-					o_origin_xtra = cave->info[y][x] &
-						(CAVE_ICKY | CAVE_ROOM);
-				} 
-				else 
-				{
-					o_origin_xtra = o_ptr->origin_xtra;
-				}
+				o_power = object_power(o_ptr, FALSE, NULL, TRUE);
 
-				flag2hex(o_ptr->flags, o_flags);
+				/* Capture kind / ego / artifact origins */
+				level_data[level].kinds[o_ptr->origin][o_ptr->kind->kidx]++;
+				if (o_ptr->artifact)
+					level_data[level].arts[o_ptr->origin][o_ptr->artifact->aidx]++;
+				else if (o_ptr->ego)
+					level_data[level].egos[o_ptr->origin][o_ptr->kind->kidx][o_ptr->ego->eidx]++;
 
-				if (o_ptr->num_pvals > 0)
-					dump_pvals(o_pvals, o_pval_flags,
-						o_ptr->pval,
-						o_ptr->pval_flags,
-						o_ptr->num_pvals);
-
-				o_power = object_power(o_ptr, 0, NULL, 1);
-
-
-				file_putf(obj_fp, 
-					"%d|%d|%s|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%s|%s|%d|%s\n",
-					o_ptr->tval,
-					o_ptr->sval,
-					o_pvals,
-					o_ptr->number,
-					o_ptr->origin,
-					o_ptr->origin_depth,
-					o_origin_xtra,
-					o_ptr->to_h,
-					o_ptr->to_d,
-					o_ptr->to_a,
-					o_ptr->ac,
-					o_ptr->dd,
-					o_ptr->ds,
-					o_ptr->weight,
-					o_flags,
-					o_pval_flags,
-					o_power,
-					o_name);
+				/* Capture gold amounts */
+				if (o_ptr->tval == TV_GOLD)
+					level_data[level].flags[0][o_ptr->pval[0]][o_ptr->kind->kidx]++;
+				/* Capture object flags */
+				else
+					for (i = of_next(o_ptr->flags, FLAG_START); i != FLAG_END;
+							i = of_next(o_ptr->flags, i + 1))
+						level_data[level].flags[i][flag_uses_pval(i) ? o_ptr->pval[which_pval(o_ptr, i)] : 0][o_ptr->kind->kidx]++;
 			}
 			while ((o_ptr = get_next_object(o_ptr)));
 		}
@@ -247,9 +229,9 @@ static void open_output_files(u32b run)
 
 	if (!dir_create(run_dir))
 	{
-		quit("Couldn't create stats run directory!");	
+		quit("Couldn't create stats run directory!");
 	}
-	
+
 	path_build(buf, sizeof(buf), run_dir, "objects.txt");
 	obj_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
 	path_build(buf, sizeof(buf), run_dir, "monsters.txt");
@@ -274,13 +256,13 @@ static void close_output_files(void)
 	file_close(rinfo_fp);
 }
 
-static void dump_ainfo(void) 
+static void dump_ainfo(void)
 {
 	unsigned int i;
 
 	for (i = 0; i < z_info->a_max; i++)
 	{
-		artifact_type *a_ptr = &a_info[i];	
+		artifact_type *a_ptr = &a_info[i];
 		char a_flags[128] = "";
 		char a_pvals[20] = "";
 		char a_pval_flags[128] = "";
@@ -319,13 +301,13 @@ static void dump_ainfo(void)
 	}
 }
 
-static void dump_rinfo(void) 
+static void dump_rinfo(void)
 {
 	unsigned int i;
 
 	for (i = 0; i < z_info->r_max; i++)
 	{
-		monster_race *r_ptr = &r_info[i];	
+		monster_race *r_ptr = &r_info[i];
 
 		/* Don't print anything for "empty" artifacts */
 		if (!r_ptr->name) continue;
@@ -341,20 +323,27 @@ static void dump_rinfo(void)
 	}
 }
 
-static void descend_dungeon(void) 
+static void descend_dungeon(void)
 {
 	int level;
+	u16b obj_f = cave->feeling / 10;
+	u16b mon_f = cave->feeling - (10 * obj_f);
 
-	for (level = 1; level < 100; level++) 
+	for (level = 1; level < 100; level++)
 	{
 		dungeon_change_level(level);
 		cave_generate(cave, p_ptr);
+
+		/* Store level feelings */
+		level_data[level].obj_feeling[MIN(obj_f, OBJ_FEEL_MAX)]++;
+		level_data[level].mon_feeling[MIN(mon_f, MON_FEEL_MAX)]++;
+
 		kill_all_monsters(level);
-		print_all_objects();
+		log_all_objects(level);
 	}
 }
 
-static void prep_output_dir(void) 
+static void prep_output_dir(void)
 {
 	size_t size = strlen(ANGBAND_DIR_USER) + strlen(PATH_SEP) + 6;
 	ANGBAND_DIR_STATS = mem_alloc(size);
@@ -365,11 +354,10 @@ static void prep_output_dir(void)
 	{
 		return;
 	}
-	else	
+	else
 	{
-		quit("Couldn't create stats directory!");	
+		quit("Couldn't create stats directory!");
 	}
-	
 }
 
 static errr run_stats(void)
@@ -379,6 +367,7 @@ static errr run_stats(void)
 	unsigned int i;
 
 	prep_output_dir();
+	alloc_memory();
 
 	if (randarts)
 	{
@@ -387,11 +376,9 @@ static errr run_stats(void)
 		{
 			if (!a_info[i].name) continue;
 
-			memcpy(&a_info_save[i], &a_info[i], 
-				sizeof(artifact_type));
+			memcpy(&a_info_save[i], &a_info[i], sizeof(artifact_type));
 		}
 	}
-	
 
 	for (run = 0; run < num_runs; run++)
 	{
@@ -399,8 +386,7 @@ static errr run_stats(void)
 		{
 			for (i = 0; i < z_info->a_max; i++)
 			{
-				memcpy(&a_info[i], &a_info_save[i], 
-					sizeof(artifact_type));
+				memcpy(&a_info[i], &a_info_save[i], sizeof(artifact_type));
 			}
 		}
 
