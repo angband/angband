@@ -9,3 +9,5 @@ tests:
 
 clean-posthook:
 	-rm config.status config.log
+	-rm *.dll
+	-rm angband.exe

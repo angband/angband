@@ -40,16 +40,27 @@ ifdef CONSOLE
   #PDCURSES_INC = ../../pdcurses/include
   #PDCURSES_LIB = ../../pdcurses/lib/pdcurses.a
 else
-  CFLAGS = -DWINDOWS
-  IOBJS = $(BASEOBJS) win/angband.res main-win.o win/readdib.o
-  LIBS = -s -mwindows -lwinmm
+  CFLAGS = -DWINDOWS -static
+
+  CFLAGS += -Iwin/include -Lwin/lib
+  LDFLAGS += -Lwin/lib
+
+  #CFLAGS += -I/home/erik/angband/non/libpng-1.2.37-lib/include
+  #CFLAGS += -L/home/erik/angband/non/libpng-1.2.37-lib/lib
+  #
+  #CFLAGS += -I/home/erik/angband/non/zlib-1.2.3-lib/include
+  #CFLAGS += -L/home/erik/angband/non/zlib-1.2.3-lib/lib
+  #
+  #LDFLAGS += -L/home/erik/angband/non/zlib-1.2.3-lib -L/home/erik/angband/non/libpng-1.2.37-lib
+
+  IOBJS = $(BASEOBJS) win/angband.res main-win.o win/readdib.o win/readpng.o
+  LIBS = -s -mwindows -lwinmm -lz -lpng
 endif
 
 CC = $(CROSS)gcc
 WRES = $(CROSS)windres
 WARNINGS = -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers
 CFLAGS += $(WARNINGS) -std=c99 -Wdeclaration-after-statement -O2 -I.
-LIBS += -s
 
 ifdef BUILD_ID
   CFLAGS += -DBUILD_ID="$(BUILD_ID)"
@@ -63,6 +74,9 @@ ifdef CYGWIN
   # Note the additional -DNEAR= flag to cope with the 'NEAR'
   # keyword used in readdib.c
   win/readdib.o: win/readdib.c win/readdib.h
+	$(CC) $(CFLAGS) -DNEAR= $(INCDIRS) -c -o $@ $<
+
+  win/readpng.o: win/readpng.c win/readdib.h
 	$(CC) $(CFLAGS) -DNEAR= $(INCDIRS) -c -o $@ $<
 
 endif
@@ -95,9 +109,11 @@ endif
 
 ../$(EXE): $(EXE)
 	$(CP) $(EXE) ..
+	$(CP) win/libpng12.dll ..
+	$(CP) win/zlib1.dll ..
 
 $(EXE): $(OBJS)
-	$(CC) -o $(EXE) $(OBJS) $(LIBS)
+	$(CC) $(CFLAGS) -o $(EXE) $(OBJS) $(LIBS)
 
 clean:
 	$(RM) -f $(EXE) $(OBJS)

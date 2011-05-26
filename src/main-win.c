@@ -276,6 +276,7 @@
  * Include the support for loading bitmaps
  */
 #ifdef USE_GRAPHICS
+//# include "win/readdib.h"
 # include "win/readdib.h"
 #endif /* USE_GRAPHICS */
 
@@ -1286,48 +1287,28 @@ static bool init_graphics(void)
 		const char *name;
 		const char *mask = NULL;
 
-		if (arg_graphics == GRAPHICS_DAVID_GERVAIS)
-		{
+		if (arg_graphics == GRAPHICS_DAVID_GERVAIS) {
 			wid = 32;
 			hgt = 32;
-
-			name = "32x32.bmp";
-			mask = "mask32.bmp";
-
+			name = "32x32.png";
 			ANGBAND_GRAF = "david";
-
 			use_transparency = FALSE;
-		}
-		else if (arg_graphics == GRAPHICS_ADAM_BOLT)
-		{
+		} else if (arg_graphics == GRAPHICS_ADAM_BOLT){
 			wid = 16;
 			hgt = 16;
-
-			name = "16X16.BMP";
-			mask = "mask.bmp";
-
+			name = "16x16.png";
 			ANGBAND_GRAF = "new";
-
 			use_transparency = TRUE;
-		}
-		else if (arg_graphics == GRAPHICS_NOMAD)
-		{
+		} else if (arg_graphics == GRAPHICS_NOMAD) {
 			wid = 16;
 			hgt = 16;
-
-			name = "8X16.BMP";
-			mask = "mask8x16.bmp";
-
+			name = "8x16.png";
 			ANGBAND_GRAF = "nomad";
-
 			use_transparency = TRUE;
-		}
-		else
-		{
+		} else {
 			wid = 8;
 			hgt = 8;
-
-			name = "8X8.BMP";
+			name = "8x8.png";
 			ANGBAND_GRAF = "old";
 		}
 
@@ -1335,10 +1316,30 @@ static bool init_graphics(void)
 		path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_GRAF, name);
 
 		/* Load the bitmap or quit */
-		if (!ReadDIB(data[0].w, buf, &infGraph))
-		{
-			plog_fmt("Cannot read bitmap file '%s'", name);
-			return (FALSE);
+		//if (!ReadDIB(data[0].w, buf, &infGraph))
+		//{
+		//	plog_fmt("Cannot read bitmap file '%s'", name);
+		//	return (FALSE);
+		//}
+		if (mask) {
+			if (!ReadDIB_PNG(data[0].w, buf, &infGraph)) {
+				plog_fmt("Cannot read bitmap file '%s'", name);
+				return FALSE;
+			}
+
+			/* Access the mask file */
+			path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_GRAF, mask);
+
+			/* Load the bitmap or quit */
+			if (!ReadDIB_PNG(data[0].w, buf, &infMask)) {
+				plog_fmt("Cannot read bitmap file '%s'", buf);
+				return FALSE;
+			}
+		} else {
+			if (!ReadDIB2_PNG(data[0].w, buf, &infGraph, &infMask)) {
+				plog_fmt("Cannot read bitmap file '%s'", name);
+				return FALSE;
+			}
 		}
 
 		/* Save the new sizes */
