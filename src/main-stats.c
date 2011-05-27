@@ -26,6 +26,17 @@
 #define OBJ_FEEL_MAX	 10
 #define MON_FEEL_MAX 	  9
 #define LEVEL_MAX 		100
+#define TOP_DICE		 20 /* highest catalogued values for wearables */
+#define TOP_SIDES		 11
+#define TOP_AC			146
+#define TOP_PLUS		 56
+#define TOP_POWER		999
+#define TOP_PVAL		 24
+
+/* For ref, e_max is 128, a_max is 136, r_max is ~650,
+	ORIGIN_STATS is 13, OF_MAX is ~120 */
+
+/* There are 416 kinds, of which about 150-200 are wearable */
 
 static int randarts = 0;
 static u32b num_runs = 1;
@@ -36,33 +47,88 @@ static char *ANGBAND_DIR_STATS;
 
 static ang_file *obj_fp, *mon_fp, *ainfo_fp, *rinfo_fp;
 
+static int *consumables_index;
+static int *wearables_index;
+static int *pval_flags_index;
+static int wearable_count = 0;
+static int consumable_count = 0;
+static int pval_flags_count = 0;
+
+struct wearables_data {
+	u32b dice[TOP_DICE][TOP_SIDES];
+	u32b ac[TOP_AC];
+	u32b hit[TOP_PLUS];
+	u32b dam[TOP_PLUS];
+/*	u32b power[TOP_POWER]; not enough memory - add it later in bands */
+	u32b *egos;
+	u32b flags[OF_MAX];
+	u32b *pval_flags[TOP_PVAL];
+};
+
 static struct level_data {
-	u32b **kinds;
-	u32b ***egos;
-	u32b **arts;
-	u32b ***flags;
 	u32b *monsters;
 /*  u32b *vaults;  Add these later - requires passing into generate.c
 	u32b *pits; */
 	u32b obj_feeling[OBJ_FEEL_MAX];
 	u32b mon_feeling[MON_FEEL_MAX];
+	long long gold[ORIGIN_STATS];
+	u32b *artifacts[ORIGIN_STATS];
+	u32b *consumables[ORIGIN_STATS];
+	struct wearables_data *wearables[ORIGIN_STATS];
 } level_data[100];
 
-static void alloc_memory()
+static void create_indeces()
 {
 	int i;
 
+	consumables_index = C_ZNEW(z_info->k_max, int);
+	wearables_index = C_ZNEW(z_info->k_max, int);
+	pval_flags_index = C_ZNEW(OF_MAX, int);
+
+	for (i = 0; i < z_info->k_max; i++) {
+
+		object_type object_type_body;
+		object_type *o_ptr = &object_type_body;
+		object_kind *kind = &k_info[i];
+		o_ptr->tval = kind->tval;
+
+		if (wearable_p(o_ptr))
+			wearables_index[i] = ++wearable_count;
+		else
+			consumables_index[i] = ++consumable_count;
+	}
+
+	for (i = 0; i < OF_MAX; i++)
+		if (flag_uses_pval(i))
+			pval_flags_index[i] = ++pval_flags_count;
+}
+
+static void alloc_memory()
+{
+	int i, j, k, l;
+
 	for (i = 0; i < LEVEL_MAX; i++) {
-		level_data[i].kinds[ORIGIN_MAX] = C_ZNEW(z_info->k_max, u32b);
-		level_data[i].egos[ORIGIN_MAX][z_info->k_max]
-			= C_ZNEW(z_info->e_max, u32b);
-		level_data[i].arts[ORIGIN_MAX] = C_ZNEW(z_info->a_max, u32b);
-		level_data[i].flags[OF_MAX][MAX_PVAL] = C_ZNEW(z_info->k_max, u32b);
 		level_data[i].monsters = C_ZNEW(z_info->r_max, u32b);
 /*		level_data[i].vaults = C_ZNEW(z_info->v_max, u32b);
 		level_data[i].pits = C_ZNEW(z_info->pit_max, u32b); */
+
+		for (j = 0; j < ORIGIN_STATS; j++) {
+			level_data[i].artifacts[j] = C_ZNEW(z_info->a_max, u32b);
+			level_data[i].consumables[j] = C_ZNEW(consumable_count + 1, u32b);
+			level_data[i].wearables[j]
+				= C_ZNEW(wearable_count + 1, struct wearables_data);
+
+			for (k = 0; k < wearable_count + 1; k++) {
+				level_data[i].wearables[j][k].egos
+					= C_ZNEW(z_info->e_max, u32b);
+				for (l = 0; l < TOP_PVAL; l++)
+					level_data[i].wearables[j][k].pval_flags[l]
+						= C_ZNEW(pval_flags_count + 1, u32b);
+			}
+		}
 	}
 }
+
 
 /* Copied from birth.c:generate_player() */
 static void generate_player_for_stats()
@@ -135,10 +201,26 @@ static void kill_all_monsters(int level)
 
 	for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
 		const monster_type *m_ptr = cave_monster(cave, i);
+		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 		level_data[level].monsters[m_ptr->r_idx]++;
 
 		monster_death(i, TRUE);
+
+		if (rf_has(r_ptr->flags, RF_UNIQUE))
+			r_ptr->max_num = 0;
+	}
+}
+
+static void unkill_uniques(void)
+{
+	int i;
+
+	for (i = 0; i < z_info->r_max; i++) {
+		monster_race *r_ptr = &r_info[i];
+
+		if (rf_has(r_ptr->flags, RF_UNIQUE))
+			r_ptr->max_num = 1;
 	}
 }
 
@@ -192,28 +274,43 @@ static void log_all_objects(int level)
 			object_type *o_ptr = get_first_object(y, x);
 
 			if (o_ptr) do {
-				u32b o_power = 0;
+			/*	u32b o_power = 0; */
 
 				/* Mark object as fully known */
 				object_notice_everything(o_ptr);
 
-				o_power = object_power(o_ptr, FALSE, NULL, TRUE);
-
-				/* Capture kind / ego / artifact origins */
-				level_data[level].kinds[o_ptr->origin][o_ptr->kind->kidx]++;
-				if (o_ptr->artifact)
-					level_data[level].arts[o_ptr->origin][o_ptr->artifact->aidx]++;
-				else if (o_ptr->ego)
-					level_data[level].egos[o_ptr->origin][o_ptr->kind->kidx][o_ptr->ego->eidx]++;
+/*				o_power = object_power(o_ptr, FALSE, NULL, TRUE); */
 
 				/* Capture gold amounts */
 				if (o_ptr->tval == TV_GOLD)
-					level_data[level].flags[0][o_ptr->pval[0]][o_ptr->kind->kidx]++;
-				/* Capture object flags */
-				else
+					level_data[level].gold[o_ptr->origin] += o_ptr->pval[0];
+
+				/* Capture artifact drops */
+				if (o_ptr->artifact)
+					level_data[level].artifacts[o_ptr->origin][o_ptr->artifact->aidx]++;
+
+				/* Capture kind details */
+				if (wearable_p(o_ptr)) {
+					struct wearables_data *w
+						= &level_data[level].wearables[o_ptr->origin][wearables_index[o_ptr->kind->kidx]];
+
+					w->dice[MIN(o_ptr->dd, TOP_DICE)][MIN(o_ptr->ds, TOP_SIDES)]++;
+					w->ac[MIN(o_ptr->ac + o_ptr->to_a, TOP_AC)]++;
+					w->hit[MIN(o_ptr->to_h, TOP_PLUS)]++;
+					w->dam[MIN(o_ptr->to_d, TOP_PLUS)]++;
+
+					/* Capture egos */
+					if (o_ptr->ego)
+						w->egos[o_ptr->ego->eidx]++;
+					/* Capture object flags */
 					for (i = of_next(o_ptr->flags, FLAG_START); i != FLAG_END;
-							i = of_next(o_ptr->flags, i + 1))
-						level_data[level].flags[i][flag_uses_pval(i) ? o_ptr->pval[which_pval(o_ptr, i)] : 0][o_ptr->kind->kidx]++;
+							i = of_next(o_ptr->flags, i + 1)) {
+						w->flags[i]++;
+						if (flag_uses_pval(i))
+							w->pval_flags[o_ptr->pval[which_pval(o_ptr, i)]][pval_flags_index[i]]++;
+					}
+				} else
+					level_data[level].consumables[o_ptr->origin][consumables_index[o_ptr->kind->kidx]]++;
 			}
 			while ((o_ptr = get_next_object(o_ptr)));
 		}
@@ -367,6 +464,7 @@ static errr run_stats(void)
 	unsigned int i;
 
 	prep_output_dir();
+	create_indeces();
 	alloc_memory();
 
 	if (randarts)
@@ -394,6 +492,7 @@ static errr run_stats(void)
 		open_output_files(run);
 		dump_ainfo();
 		dump_rinfo();
+		unkill_uniques();
 		descend_dungeon();
 		close_output_files();
 	}
