@@ -45,14 +45,6 @@ else
   CFLAGS += -Iwin/include -Lwin/lib
   LDFLAGS += -Lwin/lib
 
-  #CFLAGS += -I/home/erik/angband/non/libpng-1.2.37-lib/include
-  #CFLAGS += -L/home/erik/angband/non/libpng-1.2.37-lib/lib
-  #
-  #CFLAGS += -I/home/erik/angband/non/zlib-1.2.3-lib/include
-  #CFLAGS += -L/home/erik/angband/non/zlib-1.2.3-lib/lib
-  #
-  #LDFLAGS += -L/home/erik/angband/non/zlib-1.2.3-lib -L/home/erik/angband/non/libpng-1.2.37-lib
-
   IOBJS = $(BASEOBJS) win/angband.res main-win.o win/readdib.o win/readpng.o
   LIBS = -s -mwindows -lwinmm -lz -lpng
 endif
@@ -117,6 +109,8 @@ $(EXE): $(OBJS)
 
 clean:
 	$(RM) -f $(EXE) $(OBJS)
+	$(RM) -f libpng12.dll
+	$(RM) -f zlib1.dll
 
 
 #
