@@ -49,6 +49,7 @@ touch lib/apex/delete.me lib/bone/delete.me lib/data/delete.me \
       lib/info/delete.me lib/user/delete.me lib/save/delete.me
 
 cp ../*.exe .
+cp ../*.dll .
 
 # Copy the readmes and suchlike, converting to DOS line endings on the way
 cp_unix2dos ../changes.txt ./changes.txt
