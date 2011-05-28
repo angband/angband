@@ -1646,7 +1646,7 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 		text_out_c(TERM_ORANGE, "%^s breeds explosively.  ", wd_he[msex]);
 	if (rf_has(f, RF_REGENERATE))
 		text_out("%^s regenerates quickly.  ", wd_he[msex]);
-	if (rf_has(f, RF_HAS_LITE))
+	if (rf_has(f, RF_HAS_LIGHT))
 		text_out("%^s illuminates %s surroundings.  ", wd_he[msex], wd_his[msex]);
 
 	/* Collect susceptibilities */

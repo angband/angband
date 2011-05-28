@@ -2137,7 +2137,7 @@ static void process_monster(struct cave *c, int m_idx)
 		if (make_attack_spell(m_idx)) return;
 	}
 
-	if (rf_has(r_ptr->flags, RF_HAS_LITE)) do_view = TRUE;
+	if (rf_has(r_ptr->flags, RF_HAS_LIGHT)) do_view = TRUE;
 
 	/* Notice changes in view */
 	if (do_view)
@@ -2155,7 +2155,7 @@ static void process_monster(struct cave *c, int m_idx)
 	{
 		mon_clear_timed(m_idx, MON_TMD_FEAR, MON_TMD_FLG_NOTIFY);
 	}
-	
+
 	/* If we see an unaware monster do something, become aware of it */
 	if (do_turn && m_ptr->unaware)
 	{

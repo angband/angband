@@ -2419,7 +2419,7 @@ void update_view(void)
 	/* Handle real light */
 	if (radius > 0) ++radius;
 
-	/* Scan monster list and add monster lites */
+	/* Scan monster list and add monster lights */
 	for (k = 1; k < z_info->m_max; k++)
 	{
 		/* Check the k'th monster */
@@ -2429,15 +2429,15 @@ void update_view(void)
 		/* Access the location */
 		int fx = m_ptr->fx;
 		int fy = m_ptr->fy;
-		
+
 		bool in_los = los(p_ptr->py, p_ptr->px, fy, fx);
 
 		/* Skip dead monsters */
 		if (!m_ptr->r_idx) continue;
 
-		/* Skip monsters not carrying lite */
-		if (!rf_has(r_ptr->flags, RF_HAS_LITE)) continue;
-		
+		/* Skip monsters not carrying light */
+		if (!rf_has(r_ptr->flags, RF_HAS_LIGHT)) continue;
+
 		/* Light a 3x3 box centered on the monster */
 		for (i = -1; i <= 1; i++)
 		{

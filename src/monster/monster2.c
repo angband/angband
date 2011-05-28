@@ -1456,7 +1456,7 @@ void update_mon(int m_idx, bool full)
 			{
 				/* Learn about warm/cold blood */
 				rf_on(l_ptr->flags, RF_COLD_BLOOD);
-				
+
 				/* Handle "warm blooded" monsters */
 				if (!rf_has(r_ptr->flags, RF_COLD_BLOOD))
 				{
@@ -1465,18 +1465,18 @@ void update_mon(int m_idx, bool full)
 				}
 			}
 
-			/* See if the monster is emitting lite */
-			/*if (rf_has(r_ptr->flags, RF_HAS_LITE)) easy = flag = TRUE;*/
+			/* See if the monster is emitting light */
+			/*if (rf_has(r_ptr->flags, RF_HAS_LIGHT)) easy = flag = TRUE;*/
 
 			/* Use "illumination" */
 			if (player_can_see_bold(fy, fx))
 			{
 				/* Learn it emits light */
-				rf_on(l_ptr->flags, RF_HAS_LITE);
+				rf_on(l_ptr->flags, RF_HAS_LIGHT);
 
 				/* Learn about invisibility */
 				rf_on(l_ptr->flags, RF_INVISIBLE);
-				
+
 				/* Handle "invisible" monsters */
 				if (rf_has(r_ptr->flags, RF_INVISIBLE))
 				{
@@ -1721,7 +1721,7 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 		/* Radiate light? */
 		r_ptr = &r_info[m_ptr->r_idx];
-		if (rf_has(r_ptr->flags, RF_HAS_LITE)) p_ptr->update |= PU_UPDATE_VIEW;
+		if (rf_has(r_ptr->flags, RF_HAS_LIGHT)) p_ptr->update |= PU_UPDATE_VIEW;
 
 		/* Redraw monster list */
 		p_ptr->redraw |= (PR_MONLIST);
@@ -1764,7 +1764,7 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 		/* Radiate light? */
 		r_ptr = &r_info[m_ptr->r_idx];
-		if (rf_has(r_ptr->flags, RF_HAS_LITE)) p_ptr->update |= PU_UPDATE_VIEW;
+		if (rf_has(r_ptr->flags, RF_HAS_LIGHT)) p_ptr->update |= PU_UPDATE_VIEW;
 
 		/* Redraw monster list */
 		p_ptr->redraw |= (PR_MONLIST);
@@ -2113,7 +2113,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp, byte origin)
 		n_ptr->mflag |= (MFLAG_NICE);
 
 	/* Radiate light? */
-	if (rf_has(r_ptr->flags, RF_HAS_LITE))
+	if (rf_has(r_ptr->flags, RF_HAS_LIGHT))
 		p_ptr->update |= PU_UPDATE_VIEW;
 	
 	/* Is this obviously a monster? (Mimics etc. aren't) */

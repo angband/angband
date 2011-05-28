@@ -206,8 +206,8 @@ bool make_attack_normal(int m_idx)
 		/* Extract visibility (before blink) */
 		if (m_ptr->ml) visible = TRUE;
 
-		/* Extract visibility from carrying lite */
-		if (rf_has(r_ptr->flags, RF_HAS_LITE)) visible = TRUE;
+		/* Extract visibility from carrying light */
+		if (rf_has(r_ptr->flags, RF_HAS_LIGHT)) visible = TRUE;
 
 		/* Extract the attack "power" */
 		switch (effect)
