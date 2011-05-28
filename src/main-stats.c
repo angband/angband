@@ -25,16 +25,16 @@
 
 #define OBJ_FEEL_MAX	 11
 #define MON_FEEL_MAX 	 10
-#define LEVEL_MAX 		100
-#define TOP_DICE		 20 /* highest catalogued values for wearables */
+#define LEVEL_MAX 		101
+#define TOP_DICE		 21 /* highest catalogued values for wearables */
 #define TOP_SIDES		 11
 #define TOP_AC			146
 #define TOP_PLUS		 56
 #define TOP_POWER		999
-#define TOP_PVAL		 24
+#define TOP_PVAL		 25
 
 /* For ref, e_max is 128, a_max is 136, r_max is ~650,
-	ORIGIN_STATS is 13, OF_MAX is ~120 */
+	ORIGIN_STATS is 14, OF_MAX is ~120 */
 
 /* There are 416 kinds, of which about 150-200 are wearable */
 
@@ -45,7 +45,7 @@ static int nextkey = 0;
 static int running_stats = 0;
 static char *ANGBAND_DIR_STATS;
 
-static ang_file *obj_fp, *mon_fp, *ainfo_fp, *rinfo_fp, *finfo_fp;
+static ang_file *obj_fp, *mon_fp, *ainfo_fp, *rinfo_fp, *finfo_fp, *dinfo_fp;
 
 static int *consumables_index;
 static int *wearables_index;
@@ -55,6 +55,7 @@ static int consumable_count = 0;
 static int pval_flags_count = 0;
 
 struct wearables_data {
+	u32b count;
 	u32b dice[TOP_DICE][TOP_SIDES];
 	u32b ac[TOP_AC];
 	u32b hit[TOP_PLUS];
@@ -303,10 +304,11 @@ static void log_all_objects(int level)
 					struct wearables_data *w
 						= &level_data[level].wearables[o_ptr->origin][wearables_index[o_ptr->kind->kidx]];
 
+					w->count++;
 					w->dice[MIN(o_ptr->dd, TOP_DICE - 1)][MIN(o_ptr->ds, TOP_SIDES - 1)]++;
-					w->ac[MIN(o_ptr->ac + o_ptr->to_a, TOP_AC - 1)]++;
-					w->hit[MIN(o_ptr->to_h, TOP_PLUS - 1)]++;
-					w->dam[MIN(o_ptr->to_d, TOP_PLUS - 1)]++;
+					w->ac[MIN(MAX(o_ptr->ac + o_ptr->to_a, 0), TOP_AC - 1)]++;
+					w->hit[MIN(MAX(o_ptr->to_h, 0), TOP_PLUS - 1)]++;
+					w->dam[MIN(MAX(o_ptr->to_d, 0), TOP_PLUS - 1)]++;
 
 					/* Capture egos */
 					if (o_ptr->ego)
@@ -317,7 +319,7 @@ static void log_all_objects(int level)
 						w->flags[i]++;
 						if (flag_uses_pval(i)) {
 							int p = o_ptr->pval[which_pval(o_ptr, i)];
-							w->pval_flags[p > 0 ? p : 0][pval_flags_index[i]]++;
+							w->pval_flags[MIN(MAX(p, 0), TOP_PVAL - 1)][pval_flags_index[i]]++;
 						}
 					}
 				} else
@@ -350,6 +352,8 @@ static void open_output_files(u32b run)
 	rinfo_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
 	path_build(buf, sizeof(buf), run_dir, "feelings.txt");
 	finfo_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
+	path_build(buf, sizeof(buf), run_dir, "datatest.txt");
+	dinfo_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
 
 	/* Print headers */
 /*	file_putf(obj_fp, "tval|sval|pvals|name1|name2|number|origin|origin_depth|origin_xtra|to_h|to_d|to_a|ac|dd|ds|weight|flags|pval_flags|power|name\n");
@@ -357,6 +361,7 @@ static void open_output_files(u32b run)
 	file_putf(ainfo_fp, "aidx|tval|sval|pvals|to_h|to_d|to_a|ac|dd|ds|weight|flags|pval_flags|level|alloc_prob|alloc_min|alloc_max|effect|name\n");
 	file_putf(rinfo_fp, "ridx|level|rarity|d_char|name\n");
 	file_putf(finfo_fp, "Level feelings (%d runs):\n", num_runs);
+	file_putf(dinfo_fp, "Sample results from the level_data structure:\n");
 }
 
 static void close_output_files(void)
@@ -366,6 +371,7 @@ static void close_output_files(void)
 	file_close(ainfo_fp);
 	file_close(rinfo_fp);
 	file_close(finfo_fp);
+	file_close(dinfo_fp);
 }
 
 static void dump_ainfo(void)
@@ -449,6 +455,26 @@ static void dump_feelings(void)
 	}
 }
 
+static void dump_results(void)
+{
+	int i;
+	int lev = randint1(LEVEL_MAX - 1);
+
+	file_putf(dinfo_fp, "Sample floor data from level %d:\n", lev);
+
+	for (i = 0; i < ORIGIN_STATS; i++)
+		file_putf(dinfo_fp, "Gold from origin %d: %d\n", i, level_data[lev].gold[i]);
+
+	for (i = 0; i < consumable_count + 1; i++)
+		file_putf(dinfo_fp, "Consumable %d: %d\n", i,
+			level_data[lev].consumables[ORIGIN_FLOOR][i]);
+
+	for (i = 0; i < wearable_count + 1; i++)
+		file_putf(dinfo_fp, "Wearable %d: %d\n", i,
+			level_data[lev].wearables[ORIGIN_FLOOR][i].count);
+
+}
+
 static void descend_dungeon(void)
 {
 	int level;
@@ -529,6 +555,7 @@ static errr run_stats(void)
 	dump_ainfo();
 	dump_rinfo();
 	dump_feelings();
+	dump_results();
 	close_output_files();
 	cleanup_angband();
 	quit(NULL);
