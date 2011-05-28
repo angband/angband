@@ -406,7 +406,7 @@ errr Term_xtra(int n, int v)
  */
 size_t Term_mbstowcs(wchar_t *dest, const char *src, int n)
 {
-	if (Term->mbcs_hook)
+	if (Term && Term->mbcs_hook)
 		return (*Term->mbcs_hook)(dest, src, n);
 	else
 		return mbstowcs(dest, src, n);
