@@ -45,7 +45,7 @@ static int nextkey = 0;
 static int running_stats = 0;
 static char *ANGBAND_DIR_STATS;
 
-static ang_file *obj_fp, *mon_fp, *ainfo_fp, *rinfo_fp;
+static ang_file *obj_fp, *mon_fp, *ainfo_fp, *rinfo_fp, *finfo_fp;
 
 static int *consumables_index;
 static int *wearables_index;
@@ -75,7 +75,7 @@ static struct level_data {
 	u32b *artifacts[ORIGIN_STATS];
 	u32b *consumables[ORIGIN_STATS];
 	struct wearables_data *wearables[ORIGIN_STATS];
-} level_data[100];
+} level_data[LEVEL_MAX];
 
 static void create_indeces()
 {
@@ -176,7 +176,7 @@ static void initialize_character(void)
 	Rand_quick = FALSE;
 	Rand_state_init(seed);
 
-        player_init(p_ptr);
+	player_init(p_ptr);
 	generate_player_for_stats();
 
 	seed_flavor = randint0(0x10000000);
@@ -222,6 +222,15 @@ static void unkill_uniques(void)
 		if (rf_has(r_ptr->flags, RF_UNIQUE))
 			r_ptr->max_num = 1;
 	}
+}
+
+static void reset_artifacts(void)
+{
+	int i;
+
+	for (i = 0; i < z_info->a_max; i++)
+		a_info[i].created = FALSE;
+
 }
 
 /*
@@ -283,7 +292,7 @@ static void log_all_objects(int level)
 
 				/* Capture gold amounts */
 				if (o_ptr->tval == TV_GOLD)
-					level_data[level].gold[o_ptr->origin] += o_ptr->pval[0];
+					level_data[level].gold[o_ptr->origin] += o_ptr->pval[DEFAULT_PVAL];
 
 				/* Capture artifact drops */
 				if (o_ptr->artifact)
@@ -306,8 +315,10 @@ static void log_all_objects(int level)
 					for (i = of_next(o_ptr->flags, FLAG_START); i != FLAG_END;
 							i = of_next(o_ptr->flags, i + 1)) {
 						w->flags[i]++;
-						if (flag_uses_pval(i))
-							w->pval_flags[o_ptr->pval[which_pval(o_ptr, i)]][pval_flags_index[i]]++;
+						if (flag_uses_pval(i)) {
+							int p = o_ptr->pval[which_pval(o_ptr, i)];
+							w->pval_flags[p > 0 ? p : 0][pval_flags_index[i]]++;
+						}
 					}
 				} else
 					level_data[level].consumables[o_ptr->origin][consumables_index[o_ptr->kind->kidx]]++;
@@ -329,20 +340,23 @@ static void open_output_files(u32b run)
 		quit("Couldn't create stats run directory!");
 	}
 
-	path_build(buf, sizeof(buf), run_dir, "objects.txt");
+/*	path_build(buf, sizeof(buf), run_dir, "objects.txt");
 	obj_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
 	path_build(buf, sizeof(buf), run_dir, "monsters.txt");
 	mon_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
 	path_build(buf, sizeof(buf), run_dir, "ainfo.txt");
 	ainfo_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
 	path_build(buf, sizeof(buf), run_dir, "rinfo.txt");
-	rinfo_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
+	rinfo_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT); */
+	path_build(buf, sizeof(buf), run_dir, "feelings.txt");
+	finfo_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
 
 	/* Print headers */
-	file_putf(obj_fp, "tval|sval|pvals|name1|name2|number|origin|origin_depth|origin_xtra|to_h|to_d|to_a|ac|dd|ds|weight|flags|pval_flags|power|name\n");
+/*	file_putf(obj_fp, "tval|sval|pvals|name1|name2|number|origin|origin_depth|origin_xtra|to_h|to_d|to_a|ac|dd|ds|weight|flags|pval_flags|power|name\n");
 	file_putf(mon_fp, "level|r_idx|name\n");
 	file_putf(ainfo_fp, "aidx|tval|sval|pvals|to_h|to_d|to_a|ac|dd|ds|weight|flags|pval_flags|level|alloc_prob|alloc_min|alloc_max|effect|name\n");
-	file_putf(rinfo_fp, "ridx|level|rarity|d_char|name\n");
+	file_putf(rinfo_fp, "ridx|level|rarity|d_char|name\n"); */
+	file_putf(finfo_fp, "Level feelings (%d runs):\n", num_runs);
 }
 
 static void close_output_files(void)
@@ -351,6 +365,7 @@ static void close_output_files(void)
 	file_close(mon_fp);
 	file_close(ainfo_fp);
 	file_close(rinfo_fp);
+	file_close(finfo_fp);
 }
 
 static void dump_ainfo(void)
@@ -420,13 +435,29 @@ static void dump_rinfo(void)
 	}
 }
 
+static void dump_feelings(void)
+{
+	int i, j;
+
+	file_putf(finfo_fp, "Started dump_feelings\n");
+
+	for (j = 0; j < LEVEL_MAX; j++) {
+		for (i = 0; i < OBJ_FEEL_MAX; i++)
+			file_putf(finfo_fp, "Level %d obj_feeling %d: %d\n", j, i,
+				level_data[j].obj_feeling[i]);
+		for (i = 0; i < MON_FEEL_MAX; i++)
+			file_putf(finfo_fp, "Level %d mon_feeling %d: %d\n", j, i,
+				level_data[j].mon_feeling[i]);
+	}
+}
+
 static void descend_dungeon(void)
 {
 	int level;
 	u16b obj_f = cave->feeling / 10;
 	u16b mon_f = cave->feeling - (10 * obj_f);
 
-	for (level = 1; level < 100; level++)
+	for (level = 1; level < LEVEL_MAX; level++)
 	{
 		dungeon_change_level(level);
 		cave_generate(cave, p_ptr);
@@ -478,6 +509,8 @@ static errr run_stats(void)
 		}
 	}
 
+	open_output_files(0);
+
 	for (run = 0; run < num_runs; run++)
 	{
 		if (randarts)
@@ -489,13 +522,13 @@ static errr run_stats(void)
 		}
 
 		initialize_character();
-		open_output_files(run);
-		dump_ainfo();
-		dump_rinfo();
 		unkill_uniques();
+		reset_artifacts();
 		descend_dungeon();
-		close_output_files();
 	}
+
+	dump_feelings();
+	close_output_files();
 	cleanup_angband();
 	quit(NULL);
 	exit(0);
@@ -638,14 +671,14 @@ static void term_data_link(int i) {
 
 const char help_stats[] = "Stats mode, subopts -r(andarts)";
 
-/* 
+/*
  * Usage:
  *
  * angband -mstats -- [-r] [-nNNNN]
  *
  *   -r      Turn on randarts
  *   -nNNNN  Make NNNN runs through the dungeon (default: 1)
- */ 
+ */
 
 errr init_stats(int argc, char *argv[]) {
 	int i;
