@@ -23,8 +23,8 @@
 #include "object/pval.h"
 #include "object/tvalsval.h"
 
-#define OBJ_FEEL_MAX	 10
-#define MON_FEEL_MAX 	  9
+#define OBJ_FEEL_MAX	 11
+#define MON_FEEL_MAX 	 10
 #define LEVEL_MAX 		100
 #define TOP_DICE		 20 /* highest catalogued values for wearables */
 #define TOP_SIDES		 11
@@ -303,10 +303,10 @@ static void log_all_objects(int level)
 					struct wearables_data *w
 						= &level_data[level].wearables[o_ptr->origin][wearables_index[o_ptr->kind->kidx]];
 
-					w->dice[MIN(o_ptr->dd, TOP_DICE)][MIN(o_ptr->ds, TOP_SIDES)]++;
-					w->ac[MIN(o_ptr->ac + o_ptr->to_a, TOP_AC)]++;
-					w->hit[MIN(o_ptr->to_h, TOP_PLUS)]++;
-					w->dam[MIN(o_ptr->to_d, TOP_PLUS)]++;
+					w->dice[MIN(o_ptr->dd, TOP_DICE - 1)][MIN(o_ptr->ds, TOP_SIDES - 1)]++;
+					w->ac[MIN(o_ptr->ac + o_ptr->to_a, TOP_AC - 1)]++;
+					w->hit[MIN(o_ptr->to_h, TOP_PLUS - 1)]++;
+					w->dam[MIN(o_ptr->to_d, TOP_PLUS - 1)]++;
 
 					/* Capture egos */
 					if (o_ptr->ego)
@@ -439,9 +439,7 @@ static void dump_feelings(void)
 {
 	int i, j;
 
-	file_putf(finfo_fp, "Started dump_feelings\n");
-
-	for (j = 0; j < LEVEL_MAX; j++) {
+	for (j = 1; j < LEVEL_MAX; j++) {
 		for (i = 0; i < OBJ_FEEL_MAX; i++)
 			file_putf(finfo_fp, "Level %d obj_feeling %d: %d\n", j, i,
 				level_data[j].obj_feeling[i]);
@@ -454,8 +452,7 @@ static void dump_feelings(void)
 static void descend_dungeon(void)
 {
 	int level;
-	u16b obj_f = cave->feeling / 10;
-	u16b mon_f = cave->feeling - (10 * obj_f);
+	u16b obj_f, mon_f;
 
 	for (level = 1; level < LEVEL_MAX; level++)
 	{
@@ -463,8 +460,10 @@ static void descend_dungeon(void)
 		cave_generate(cave, p_ptr);
 
 		/* Store level feelings */
-		level_data[level].obj_feeling[MIN(obj_f, OBJ_FEEL_MAX)]++;
-		level_data[level].mon_feeling[MIN(mon_f, MON_FEEL_MAX)]++;
+		obj_f = cave->feeling / 10;
+		mon_f = cave->feeling - (10 * obj_f);
+		level_data[level].obj_feeling[MIN(obj_f, OBJ_FEEL_MAX - 1)]++;
+		level_data[level].mon_feeling[MIN(mon_f, MON_FEEL_MAX - 1)]++;
 
 		kill_all_monsters(level);
 		log_all_objects(level);

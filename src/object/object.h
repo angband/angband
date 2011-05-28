@@ -29,13 +29,13 @@ enum {
 	ORIGIN_LABYRINTH,		/* on the floor of a labyrinth */
 	ORIGIN_CAVERN,			/* on the floor of a cavern */
 	ORIGIN_RUBBLE,			/* found under rubble */
+    ORIGIN_MIXED,			/* stack with mixed origins */
 	ORIGIN_STATS,			/* ^ only the above are considered by main-stats */
     ORIGIN_ACQUIRE,			/* called forth by scroll */
 	ORIGIN_DROP_BREED,		/* from breeders */
 	ORIGIN_DROP_SUMMON,		/* from combat summons */
     ORIGIN_STORE,			/* something you bought */
 	ORIGIN_STOLEN,			/* stolen by monster (used only for gold) */
-    ORIGIN_MIXED,			/* stack with mixed origins */
     ORIGIN_BIRTH,			/* objects created at character birth */
     ORIGIN_DROP_UNKNOWN,	/* drops from unseen foes */
     ORIGIN_CHEAT,			/* created by wizard mode */
