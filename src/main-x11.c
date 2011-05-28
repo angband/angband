@@ -347,9 +347,7 @@ struct infoclr
  */
 struct infofnt
 {
-	XFontStruct *info;
 	XFontSet	fs;
-	char **missing;
 
 	const char *name;
 
@@ -1349,9 +1347,7 @@ static errr Infofnt_nuke(void)
 	if (ifnt->nuke)
 	{
 		/* Free the font */
-		XFreeFont(Metadpy->dpy, ifnt->info);
 		XFreeFontSet(Metadpy->dpy, ifnt->fs);
-		XFreeStringList(ifnt->missing);
 	}
 
 	/* Success */
@@ -1362,47 +1358,31 @@ static errr Infofnt_nuke(void)
 /*
  * Prepare a new 'infofnt'
  */
-static errr Infofnt_prepare(XFontStruct *info)
+static errr Infofnt_prepare(XFontSet fs)
 {
 	infofnt *ifnt = Infofnt;
-
-	XCharStruct *cs;
+	int font_count, i;
+	XFontSetExtents *extents;
+	XFontStruct **fonts;
+	char **names;
 
 	/* Assign the struct */
-	ifnt->info = info;
+	ifnt->fs = fs;
+	extents = XExtentsOfFontSet(fs);
 
-	/* Jump into the max bounds thing */
-	cs = &(info->max_bounds);
+	font_count = XFontsOfFontSet(fs, &fonts, &names);
+	ifnt->asc = 0;
+	for (i = 0; i < font_count; i++, fonts++)
+	   if (ifnt->asc < (*fonts)->ascent) ifnt->asc = (*fonts)->ascent;
 
 	/* Extract default sizing info */
-	ifnt->asc = info->ascent;
-	ifnt->hgt = info->ascent + info->descent;
-	ifnt->wid = cs->width;
-	ifnt->twid = cs->width;
+	ifnt->hgt = extents->max_logical_extent.height;
+	ifnt->wid = extents->max_logical_extent.width;
+	ifnt->twid = extents->max_logical_extent.width;
 
 	/* Success */
 	return (0);
 }
-
-
-#ifndef IGNORE_UNUSED_FUNCTIONS
-
-/*
- * Initialize a new 'infofnt'.
- */
-static errr Infofnt_init_real(XFontStruct *info)
-{
-	/* Wipe the thing */
-	(void)WIPE(Infofnt, infofnt);
-
-	/* No nuking */
-	Infofnt->nuke = 0;
-
-	/* Attempt to prepare it */
-	return (Infofnt_prepare(info));
-}
-
-#endif /* IGNORE_UNUSED_FUNCTIONS */
 
 
 /*
@@ -1413,7 +1393,6 @@ static errr Infofnt_init_real(XFontStruct *info)
  */
 static errr Infofnt_init_data(const char *name)
 {
-	XFontStruct *info;
 	XFontSet fs;
 	char **missing;
 	int missing_count;
@@ -1423,13 +1402,13 @@ static errr Infofnt_init_data(const char *name)
 	/* If the name is not given, report an error */
 	if (!name) return (-1);
 
-	/* Attempt to load the font */
-	info = XLoadQueryFont(Metadpy->dpy, name);
-
-	/* The load failed, try to recover */
-	if (!info) return (-1);
 
 	fs = XCreateFontSet(Metadpy->dpy, name, &missing, &missing_count, NULL);
+
+	/* The load failed, try to recover */
+	if (!fs) return (-1);
+	if (missing_count)
+		XFreeStringList(missing);
 
 	/*** Init the font ***/
 
@@ -1437,17 +1416,14 @@ static errr Infofnt_init_data(const char *name)
 	(void)WIPE(Infofnt, infofnt);
 
 	/* Attempt to prepare it */
-	if (!fs || Infofnt_prepare(info))
+	if (Infofnt_prepare(fs))
 	{
 		/* Free the font */
-		XFreeFont(Metadpy->dpy, info);
+		XFreeFontSet(Metadpy->dpy, fs);
 
 		/* Fail */
 		return (-1);
 	}
-
-	Infofnt->fs = fs;
-	Infofnt->missing = missing;
 
 	/* Save a copy of the font name */
 	Infofnt->name = string_make(name);
@@ -1506,11 +1482,6 @@ static errr Infofnt_text_std(int x, int y, const wchar_t *str, int len)
 
 
 	/*** Actually draw 'str' onto the infowin ***/
-
-	/* Be sure the correct font is ready */
-	XSetFont(Metadpy->dpy, Infoclr->gc, Infofnt->info->fid);
-
-
 	y += Infofnt->asc;
 
 
