@@ -343,19 +343,19 @@ static void open_output_files(u32b run)
 /*	path_build(buf, sizeof(buf), run_dir, "objects.txt");
 	obj_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
 	path_build(buf, sizeof(buf), run_dir, "monsters.txt");
-	mon_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
+	mon_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT); */
 	path_build(buf, sizeof(buf), run_dir, "ainfo.txt");
 	ainfo_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
 	path_build(buf, sizeof(buf), run_dir, "rinfo.txt");
-	rinfo_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT); */
+	rinfo_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
 	path_build(buf, sizeof(buf), run_dir, "feelings.txt");
 	finfo_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
 
 	/* Print headers */
 /*	file_putf(obj_fp, "tval|sval|pvals|name1|name2|number|origin|origin_depth|origin_xtra|to_h|to_d|to_a|ac|dd|ds|weight|flags|pval_flags|power|name\n");
-	file_putf(mon_fp, "level|r_idx|name\n");
+	file_putf(mon_fp, "level|r_idx|name\n"); */
 	file_putf(ainfo_fp, "aidx|tval|sval|pvals|to_h|to_d|to_a|ac|dd|ds|weight|flags|pval_flags|level|alloc_prob|alloc_min|alloc_max|effect|name\n");
-	file_putf(rinfo_fp, "ridx|level|rarity|d_char|name\n"); */
+	file_putf(rinfo_fp, "ridx|level|rarity|d_char|name\n");
 	file_putf(finfo_fp, "Level feelings (%d runs):\n", num_runs);
 }
 
@@ -526,6 +526,8 @@ static errr run_stats(void)
 		descend_dungeon();
 	}
 
+	dump_ainfo();
+	dump_rinfo();
 	dump_feelings();
 	close_output_files();
 	cleanup_angband();
