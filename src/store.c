@@ -209,6 +209,33 @@ static struct store *store_new(int idx) {
 	return s;
 }
 
+/*
+ * Get rid of stores at cleanup. Gets rid of everything.
+ */
+void free_stores(void)
+{
+	struct owner *o;
+	struct owner *next;
+	int i;
+
+	/* Free the store inventories */
+	for (i = 0; i < MAX_STORES; i++)
+	{
+		/* Get the store */
+		store_type *st_ptr = &store[i];
+		/* Free the store inventory */
+		mem_free(st_ptr->stock);
+		mem_free(st_ptr->table);
+
+		for (o = st_ptr->owners; o; o = next) {
+			next = o->next;
+			string_free(o->name);
+			mem_free(o);
+		}
+	}
+	mem_free(store);
+}
+
 static enum parser_error ignored(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
@@ -1696,6 +1723,8 @@ static void flatten_stores(struct store *stores) {
 
 	while (stores) {
 		s = stores->next;
+		/* No need to free the sub-allocated memory, as this is passed on
+		 * to the array of stores */
 		mem_free(stores);
 		stores = s;
 	}

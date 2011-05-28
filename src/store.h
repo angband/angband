@@ -49,6 +49,7 @@ typedef struct store {
 } store_type;
 
 void store_init(void);
+void free_stores(void);
 void store_reset(void);
 void store_shuffle(int which);
 void store_maint(int which);

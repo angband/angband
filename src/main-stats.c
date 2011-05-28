@@ -130,6 +130,29 @@ static void alloc_memory()
 	}
 }
 
+static void free_stats_memory(void)
+{
+	int i, j, k, l;
+	for (i = 0; i < LEVEL_MAX; i++) {
+		mem_free(level_data[i].monsters);
+/*		mem_free(level_data[i].vaults);
+ 		mem_free(level_data[i].pits); */
+		for (j = 0; j < ORIGIN_STATS; j++) {
+			mem_free(level_data[i].artifacts[j]);
+			mem_free(level_data[i].consumables[j]);
+			for (k = 0; k < wearable_count + 1; k++) {
+				for (l = 0; l < TOP_PVAL; l++) {
+					mem_free(level_data[i].wearables[j][k].pval_flags[l]);
+				}
+				mem_free(level_data[i].wearables[j][k].egos);
+			}
+			mem_free(level_data[i].wearables[j]);
+		}
+	}
+	mem_free(consumables_index);
+	mem_free(wearables_index);
+	mem_free(pval_flags_index);
+}
 
 /* Copied from birth.c:generate_player() */
 static void generate_player_for_stats()
@@ -366,8 +389,8 @@ static void open_output_files(u32b run)
 
 static void close_output_files(void)
 {
-	file_close(obj_fp);
-	file_close(mon_fp);
+/*	file_close(obj_fp);
+	file_close(mon_fp);*/
 	file_close(ainfo_fp);
 	file_close(rinfo_fp);
 	file_close(finfo_fp);
@@ -557,6 +580,7 @@ static errr run_stats(void)
 	dump_feelings();
 	dump_results();
 	close_output_files();
+	free_stats_memory();
 	cleanup_angband();
 	quit(NULL);
 	exit(0);

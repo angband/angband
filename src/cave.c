@@ -3598,6 +3598,14 @@ struct cave *cave_new(void) {
 }
 
 void cave_free(struct cave *c) {
+	mem_free(c->info);
+	mem_free(c->info2);
+	mem_free(c->feat);
+	mem_free(c->cost);
+	mem_free(c->when);
+	mem_free(c->m_idx);
+	mem_free(c->o_idx);
+	mem_free(c->monsters);
 	mem_free(c);
 }
 

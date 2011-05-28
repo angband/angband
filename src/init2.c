@@ -464,20 +464,23 @@ static errr run_parse_kb(struct parser *p) {
 
 static errr finish_parse_kb(struct parser *p) {
 	struct object_base *kb;
+	struct object_base *next;
 	struct kb_parsedata *d = parser_priv(p);
 
 	assert(d);
 
 	kb_info = mem_zalloc(TV_MAX * sizeof(*kb_info));
 
-	for (kb = d->kb; kb; kb = kb->next) {
+	for (kb = d->kb; kb; kb = next) {
 		if (kb->tval >= TV_MAX)
 			continue;
 		memcpy(&kb_info[kb->tval], kb, sizeof(*kb));
+		next = kb->next;
+		mem_free(kb);
 	}
 
 	mem_free(d);
-
+	parser_destroy(p);
 	return 0;
 }
 
@@ -3314,9 +3317,6 @@ bool init_angband(void)
 
 void cleanup_angband(void)
 {
-	int i;
-
-
 	/* Free the macros */
 	keymap_free();
 
@@ -3325,23 +3325,8 @@ void cleanup_angband(void)
 	FREE(alloc_ego_table);
 	FREE(alloc_race_table);
 
-	if (store)
-	{
-		/* Free the store inventories */
-		for (i = 0; i < MAX_STORES; i++)
-		{
-			/* Get the store */
-			store_type *st_ptr = &store[i];
-
-			/* Free the store inventory */
-			FREE(st_ptr->stock);
-			FREE(st_ptr->table);
-		}
-	}
-
-
 	/* Free the stores */
-	FREE(store);
+	if (store) free_stores();
 
 	/* Free the quest list */
 	FREE(q_list);
@@ -3354,6 +3339,8 @@ void cleanup_angband(void)
 
 	/* Free the temp array */
 	FREE(temp_g);
+
+	cave_free(cave);
 
 	/* Free the stacked monster messages */
 	FREE(mon_msg);
@@ -3369,6 +3356,7 @@ void cleanup_angband(void)
 	mem_free(a_info);
 	mem_free(e_info);
 	mem_free(r_info);
+	mem_free(pit_info);
 
 	/* Free the format() buffer */
 	vformat_kill();
