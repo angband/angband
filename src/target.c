@@ -22,7 +22,7 @@
 #include "monster/monster.h"
 #include "squelch.h"
 
-/* 
+/*
  * Height of the help screen; any higher than 4 will overlap the health
  * bar which we want to keep in targeting mode.
  */
@@ -618,7 +618,7 @@ static struct keypress target_set_interactive_aux(int y, int x, int mode)
 	char out_val[256];
 
 	char coords[20];
-	
+
 	/* Describe the square location */
 	coords_desc(coords, sizeof(coords), y, x);
 
@@ -647,7 +647,7 @@ static struct keypress target_set_interactive_aux(int y, int x, int mode)
 			s2 = "on ";
 		}
 
-		/* Hack -- hallucination */
+		/* Hallucination messes things up */
 		if (p_ptr->timed[TMD_IMAGE])
 		{
 			const char *name = "something strange";
@@ -768,7 +768,7 @@ static struct keypress target_set_interactive_aux(int y, int x, int mode)
 				else if (rf_has(r_ptr->flags, RF_MALE)) s1 = "He is ";
 				else s1 = "It is ";
 
-				/* Use a preposition */
+				/* Use a verb */
 				s2 = "carrying ";
 
 				/* Scan all objects being carried */
@@ -795,11 +795,12 @@ static struct keypress target_set_interactive_aux(int y, int x, int mode)
 								"%s%s%s%s, %s (%d:%d).",
 								s1, s2, s3, o_name, coords, y, x);
 					}
+					/* Disabled since monsters now carry their drops
 					else
 					{
 						strnfmt(out_val, sizeof(out_val),
 								"%s%s%s%s, %s.", s1, s2, s3, o_name, coords);
-					}
+					} */
 
 					prt(out_val, 0, 0);
 					move_cursor_relative(y, x);
