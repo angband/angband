@@ -2983,7 +2983,7 @@ void join_region(struct cave *c, int colors[], int counts[], int color) {
 				n = previous[n];
 			}
 			fix_colors(colors, counts, color2, color, size);
-			return;
+			break;
 		}
 
 		for (i = 0; i < 4; i++) {
@@ -3069,60 +3069,68 @@ bool cavern_gen(struct cave *c, struct player *p) {
 
 	int tries = 0;
 
-	/* If we're too shallow then don't do it */
-	if (c->depth < 15) return FALSE;
+	bool ok = TRUE;
 
-	array_filler(colors, 0, size);
-	array_filler(counts, 0, size);
+	if (c->depth < 15) {
+		/* If we're too shallow then don't do it */
+		ok = FALSE;
 
-	for (tries = 0; tries < MAX_CAVERN_TRIES; tries++) {
-		/* Build a random cavern and mutate it a number of times */
-		init_cavern(c, p, density);
-		for (i = 0; i < times; i++) mutate_cavern(c);
+	} else {
+		/* Start trying to build caverns */
+		array_filler(colors, 0, size);
+		array_filler(counts, 0, size);
+	
+		for (tries = 0; tries < MAX_CAVERN_TRIES; tries++) {
+			/* Build a random cavern and mutate it a number of times */
+			init_cavern(c, p, density);
+			for (i = 0; i < times; i++) mutate_cavern(c);
+	
+			/* If there are enough open squares then we're done */
+			if (open_count(c) >= size / 50) break;
+		}
 
-		/* If there are enough open squares then we're done */
-		if (open_count(c) >= size / 50) break;
+		/* If we couldn't make a big enough cavern then fail */
+		if (tries == MAX_CAVERN_TRIES) ok = FALSE;
 	}
 
-	/* If we couldn't make a big enough cavern then fail */
-	if (tries == MAX_CAVERN_TRIES) return FALSE;
-
-	build_colors(c, colors, counts, FALSE);
-	clear_small_regions(c, colors, counts);
-	join_regions(c, colors, counts);
-
-	/* Place 2-3 down stairs near some walls */
-	alloc_stairs(c, FEAT_MORE, rand_range(1, 3), 3);
-
-	/* Place 1-2 up stairs near some walls */
-	alloc_stairs(c, FEAT_LESS, rand_range(1, 2), 3);
-
-	/* General some rubble, traps and monsters */
-	k = MAX(MIN(c->depth / 3, 10), 2);
-
-	/* Scale number of monsters items by cavern size */
-	k = (2 * k * (h *  w)) / (DUNGEON_HGT * DUNGEON_WID);
-
-	/* Put some rubble in corridors */
-	alloc_objects(c, SET_BOTH, TYP_RUBBLE, randint1(k), c->depth, 0);
-
-	/* Place some traps in the dungeon */
-	alloc_objects(c, SET_BOTH, TYP_TRAP, randint1(k), c->depth, 0);
-
-	/* Determine the character location */
-	new_player_spot(c, p);
-
-	/* Put some monsters in the dungeon */
-	for (i = MIN_M_ALLOC_LEVEL + randint1(8) + k; i > 0; i--)
-		alloc_monster(c, loc(p->px, p->py), 0, TRUE, c->depth);
-
-	/* Put some objects/gold in the dungeon */
-	alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(6, 3), c->depth,
-		ORIGIN_CAVERN);
-	alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(6, 3), c->depth,
-		ORIGIN_CAVERN);
-	alloc_objects(c, SET_BOTH, TYP_GOOD, randint0(2), c->depth,
-		ORIGIN_CAVERN);
+	if (ok) {
+		build_colors(c, colors, counts, FALSE);
+		clear_small_regions(c, colors, counts);
+		join_regions(c, colors, counts);
+	
+		/* Place 2-3 down stairs near some walls */
+		alloc_stairs(c, FEAT_MORE, rand_range(1, 3), 3);
+	
+		/* Place 1-2 up stairs near some walls */
+		alloc_stairs(c, FEAT_LESS, rand_range(1, 2), 3);
+	
+		/* General some rubble, traps and monsters */
+		k = MAX(MIN(c->depth / 3, 10), 2);
+	
+		/* Scale number of monsters items by cavern size */
+		k = (2 * k * (h *  w)) / (DUNGEON_HGT * DUNGEON_WID);
+	
+		/* Put some rubble in corridors */
+		alloc_objects(c, SET_BOTH, TYP_RUBBLE, randint1(k), c->depth, 0);
+	
+		/* Place some traps in the dungeon */
+		alloc_objects(c, SET_BOTH, TYP_TRAP, randint1(k), c->depth, 0);
+	
+		/* Determine the character location */
+		new_player_spot(c, p);
+	
+		/* Put some monsters in the dungeon */
+		for (i = MIN_M_ALLOC_LEVEL + randint1(8) + k; i > 0; i--)
+			alloc_monster(c, loc(p->px, p->py), 0, TRUE, c->depth);
+	
+		/* Put some objects/gold in the dungeon */
+		alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(6, 3), c->depth,
+			ORIGIN_CAVERN);
+		alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(6, 3), c->depth,
+			ORIGIN_CAVERN);
+		alloc_objects(c, SET_BOTH, TYP_GOOD, randint0(2), c->depth,
+			ORIGIN_CAVERN);
+	}
 
 	FREE(colors);
 	FREE(counts);
