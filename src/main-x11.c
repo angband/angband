@@ -348,6 +348,8 @@ struct infoclr
 struct infofnt
 {
 	XFontStruct *info;
+	XFontSet	fs;
+	char **missing;
 
 	const char *name;
 
@@ -1348,6 +1350,8 @@ static errr Infofnt_nuke(void)
 	{
 		/* Free the font */
 		XFreeFont(Metadpy->dpy, ifnt->info);
+		XFreeFontSet(Metadpy->dpy, ifnt->fs);
+		XFreeStringList(ifnt->missing);
 	}
 
 	/* Success */
@@ -1367,7 +1371,7 @@ static errr Infofnt_prepare(XFontStruct *info)
 	/* Assign the struct */
 	ifnt->info = info;
 
-	/* Jump into the max bouonds thing */
+	/* Jump into the max bounds thing */
 	cs = &(info->max_bounds);
 
 	/* Extract default sizing info */
@@ -1410,7 +1414,9 @@ static errr Infofnt_init_real(XFontStruct *info)
 static errr Infofnt_init_data(const char *name)
 {
 	XFontStruct *info;
-
+	XFontSet fs;
+	char **missing;
+	int missing_count;
 
 	/*** Load the info Fresh, using the name ***/
 
@@ -1423,6 +1429,7 @@ static errr Infofnt_init_data(const char *name)
 	/* The load failed, try to recover */
 	if (!info) return (-1);
 
+	fs = XCreateFontSet(Metadpy->dpy, name, &missing, &missing_count, NULL);
 
 	/*** Init the font ***/
 
@@ -1430,7 +1437,7 @@ static errr Infofnt_init_data(const char *name)
 	(void)WIPE(Infofnt, infofnt);
 
 	/* Attempt to prepare it */
-	if (Infofnt_prepare(info))
+	if (!fs || Infofnt_prepare(info))
 	{
 		/* Free the font */
 		XFreeFont(Metadpy->dpy, info);
@@ -1438,6 +1445,9 @@ static errr Infofnt_init_data(const char *name)
 		/* Fail */
 		return (-1);
 	}
+
+	Infofnt->fs = fs;
+	Infofnt->missing = missing;
 
 	/* Save a copy of the font name */
 	Infofnt->name = string_make(name);
@@ -1456,7 +1466,7 @@ static errr Infofnt_init_data(const char *name)
 /*
  * Standard Text
  */
-static errr Infofnt_text_std(int x, int y, const char *str, int len)
+static errr Infofnt_text_std(int x, int y, const wchar_t *str, int len)
 {
 	int i;
 	int w, h;
@@ -1469,7 +1479,7 @@ static errr Infofnt_text_std(int x, int y, const char *str, int len)
 	if (!str || !*str) return (-1);
 
 	/* Get the length of the string */
-	if (len < 0) len = strlen(str);
+	if (len < 0) len = wcslen(str);
 
 	/*** Decide where to place the string, vertically ***/
 
@@ -1513,7 +1523,7 @@ static errr Infofnt_text_std(int x, int y, const char *str, int len)
 		for (i = 0; i < len; ++i)
 		{
 			/* Note that the Infoclr is set up to contain the Infofnt */
-			XDrawImageString(Metadpy->dpy, Infowin->win, Infoclr->gc,
+			XwcDrawImageString(Metadpy->dpy, Infowin->win, Infofnt->fs, Infoclr->gc,
 			                 x + i * td->tile_wid + Infofnt->off, y, str + i, 1);
 		}
 	}
@@ -1522,7 +1532,7 @@ static errr Infofnt_text_std(int x, int y, const char *str, int len)
 	else
 	{
 		/* Note that the Infoclr is set up to contain the Infofnt */
-		XDrawImageString(Metadpy->dpy, Infowin->win, Infoclr->gc,
+		XwcDrawImageString(Metadpy->dpy, Infowin->win, Infofnt->fs, Infoclr->gc,
 		                 x, y, str, len);
 	}
 
@@ -1534,7 +1544,7 @@ static errr Infofnt_text_std(int x, int y, const char *str, int len)
 /*
  * Painting where text would be
  */
-static errr Infofnt_text_non(int x, int y, const char *str, int len)
+static errr Infofnt_text_non(int x, int y, const wchar_t *str, int len)
 {
 	int w, h;
 
@@ -1543,7 +1553,7 @@ static errr Infofnt_text_non(int x, int y, const char *str, int len)
 	/*** Find the width ***/
 
 	/* Negative length is a flag to count the characters in str */
-	if (len < 0) len = strlen(str);
+	if (len < 0) len = wcslen(str);
 
 	/* The total width will be 'len' chars * standard width */
 	w = len * td->tile_wid;
@@ -2092,7 +2102,7 @@ static errr Term_wipe_x11(int x, int y, int n)
 	Infoclr_set(clr[TERM_DARK]);
 
 	/* Mega-Hack -- Erase some space */
-	Infofnt_text_non(x, y, "", n);
+	Infofnt_text_non(x, y, L"", n);
 
 	/* Success */
 	return (0);
@@ -2102,7 +2112,7 @@ static errr Term_wipe_x11(int x, int y, int n)
 /*
  * Draw some textual characters.
  */
-static errr Term_text_x11(int x, int y, int n, byte a, const char *s)
+static errr Term_text_x11(int x, int y, int n, byte a, const wchar_t *s)
 {
 	/* Draw the text */
 	Infoclr_set(clr[a]);
