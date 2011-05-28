@@ -356,9 +356,28 @@ AC_ARG_ENABLE(ncursestest, [  --disable-ncursestest       Do not try to compile 
     NCURSES_LIBS=`$NCURSES_CONFIG $ncurses_args --libs`
 
     ac_save_CFLAGS="$CFLAGS"
+    ac_save_LIBS="$LIBS"
     CFLAGS="$CFLAGS $NCURSES_CFLAGS"
-  	AC_CHECK_HEADERS(ncurses.h, , no_ncurses=yes, [#include <stdio.h>])
+    LIBS="$LIBS $NCURSES_LIBS"
+dnl
+dnl Now check if the installed ncurses is installed OK. (Also sanity
+dnl checks the results of ncursesw5-config to some extent)
+dnl
+    rm -f conf.ncursestest
+    AC_TRY_RUN([
+#include <stdio.h>
+#include "ncurses.h"
+
+int main (int argc, char *argv[])
+{
+  { FILE *fp = fopen("conf.ncursestest", "a"); if ( fp ) fclose(fp); }
+
+  return 0;
+}
+
+],, no_ncurses=yes,[echo $ac_n "cross compiling; assumed OK... $ac_c"])
   	CFLAGS="$ac_save_CFLAGS"
+  	LIBS="$ac_save_LIBS"
   fi
 
   if test "x$no_ncurses" = x ; then
@@ -371,6 +390,34 @@ AC_ARG_ENABLE(ncursestest, [  --disable-ncursestest       Do not try to compile 
        echo "*** If ncursesw was installed in PREFIX, make sure PREFIX/bin is in"
        echo "*** your path, or set the NCURSES_CONFIG environment variable to the"
        echo "*** full path to ncursesw5-config."
+	 else
+	   if test -f conf.ncursestest ; then
+        :
+       else
+          echo "*** Could not run ncurses test program, checking why..."
+          CFLAGS="$CFLAGS $NCURSES_CFLAGS"
+          LIBS="$LIBS $NCURSES_LIBS"
+          AC_TRY_LINK([
+#include <stdio.h>
+#include "ncurses.h"
+],      [ return 0; ],
+        [ echo "*** The test program compiled, but did not run. This usually means"
+          echo "*** that the run-time linker is not finding ncursesw. If it is not finding"
+          echo "*** ncursesw, you'll need to set your LD_LIBRARY_PATH environment variable,"
+          echo "*** or edit /etc/ld.so.conf to point to the installed location.  Also, make"
+          echo "*** sure you have run ldconfig if that is required on your system"
+          echo "***"
+          echo "*** If you have an old version installed, it is best to remove it, although"
+          echo "*** you may also be able to get things to work by modifying LD_LIBRARY_PATH"],
+        [ echo "*** The test program failed to compile or link. See the file config.log for the"
+          echo "*** exact error that occured. This usually means ncursesw was incorrectly"
+          echo "*** installed or that you have moved ncursesw since it was installed. In the"
+          echo "*** latter case, you may want to edit the ncursesw5-config script:"
+          echo "*** $NCURSES_CONFIG" ])
+          CFLAGS="$ac_save_CFLAGS"
+          LIBS="$ac_save_LIBS"
+       fi
+	 
      fi
      NCURSES_CFLAGS=""
      NCURSES_LIBS=""
@@ -378,4 +425,5 @@ AC_ARG_ENABLE(ncursestest, [  --disable-ncursestest       Do not try to compile 
   fi
   AC_SUBST(NCURSES_CFLAGS)
   AC_SUBST(NCURSES_LIBS)
+  rm -f conf.ncursestest
 ])
