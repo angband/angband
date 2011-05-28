@@ -303,12 +303,19 @@ bool object_check_for_ident(object_type *o_ptr)
 	    (object_defence_plusses_are_visible(o_ptr) || (object_was_sensed(o_ptr) && o_ptr->to_a == 0)) &&
 	    (object_effect_is_known(o_ptr) || !object_effect(o_ptr)))
 	{
-		object_notice_everything(o_ptr);
-		return TRUE;
+		/* In addition to knowing the pval flags, it is necessary to know the pvals to know everything */
+		int i;
+		for (i = 0; i < o_ptr->num_pvals; i++)
+			if (!object_this_pval_is_visible(o_ptr, i))
+				break;
+		if (i == o_ptr->num_pvals) {
+			object_notice_everything(o_ptr);
+			return TRUE;
+		}
 	}
 
 	/* We still know all the flags, so we still know if it's an ego */
-	else if (o_ptr->ego)
+	if (o_ptr->ego)
 	{
 		/* require worn status so you don't learn launcher of accuracy or gloves of slaying before wield */
 		if (object_was_worn(o_ptr))
