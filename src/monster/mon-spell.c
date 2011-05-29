@@ -515,7 +515,7 @@ void do_mon_spell(int spell, int m_idx, bool seen)
 		hits = check_hit(p_ptr, rs_ptr->hit, rlev);
 
 	/* Tell the player what's going on */
-	disturb(1,0);
+	disturb(p_ptr, 1,0);
 
 	if (!seen)
 		msg("Something %s.", rs_ptr->blind_verb);
@@ -553,7 +553,7 @@ void do_mon_spell(int spell, int m_idx, bool seen)
 		monster_learn_resists(m_ptr, rs_ptr->gf);
 	}
 	else /* Note that non-projectable attacks are unresistable */
-		take_hit(dam, ddesc);
+		take_hit(p_ptr, dam, ddesc);
 
 	do_side_effects(spell, dam, m_idx, seen);
 

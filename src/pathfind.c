@@ -877,7 +877,7 @@ void run_step(int dir)
 			if (run_test())
 			{
 				/* Disturb */
-				disturb(0, 0);
+				disturb(p_ptr, 0, 0);
 	
 				/* Done */
 				return;
@@ -888,7 +888,7 @@ void run_step(int dir)
 			/* Abort if we have finished */
 			if (pf_result_index < 0)
 			{
-				disturb(0, 0);
+				disturb(p_ptr, 0, 0);
 				p_ptr->running_withpathfind = FALSE;
 				return;
 			}
@@ -903,7 +903,7 @@ void run_step(int dir)
 				/* Known wall */
 				if ((cave->info[y][x] & (CAVE_MARK)) && !cave_floor_bold(y, x))
 				{
-					disturb(0,0);
+					disturb(p_ptr, 0,0);
 					p_ptr->running_withpathfind = FALSE;
 					return;
 				}
@@ -928,7 +928,7 @@ void run_step(int dir)
 				/* Known wall */
 				if ((cave->info[y][x] & (CAVE_MARK)) && !cave_floor_bold(y, x))
 				{
-					disturb(0,0);
+					disturb(p_ptr, 0,0);
 					p_ptr->running_withpathfind = FALSE;
 					return;
 				}

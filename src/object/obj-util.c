@@ -4246,7 +4246,7 @@ void pack_overflow(void)
 	o_ptr = &p_ptr->inventory[item];
 
 	/* Disturbing */
-	disturb(0, 0);
+	disturb(p_ptr, 0, 0);
 
 	/* Warning */
 	msg("Your pack overflows!");

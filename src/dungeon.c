@@ -272,7 +272,7 @@ static void recharged_notice(const object_type *o_ptr, bool all)
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
 
 	/* Disturb the player */
-	disturb(0, 0);
+	disturb(p_ptr, 0, 0);
 
 	/* Notify the player */
 	if (o_ptr->number > 1)
@@ -551,7 +551,7 @@ static void process_world(struct cave *c)
 	if (p_ptr->timed[TMD_POISONED])
 	{
 		/* Take damage */
-		take_hit(1, "poison");
+		take_hit(p_ptr, 1, "poison");
 	}
 
 	/* Take damage from cuts */
@@ -570,7 +570,7 @@ static void process_world(struct cave *c)
 			i = 1;
 
 		/* Take damage */
-		take_hit(i, "a fatal wound");
+		take_hit(p_ptr, i, "a fatal wound");
 	}
 
 
@@ -614,7 +614,7 @@ static void process_world(struct cave *c)
 		{
 			/* Message */
 			msg("You faint from the lack of food.");
-			disturb(1, 0);
+			disturb(p_ptr, 1, 0);
 
 			/* Faint (bypass free action) */
 			(void)player_inc_timed(p_ptr, TMD_PARALYZED, 1 + randint0(5), TRUE, FALSE);
@@ -629,7 +629,7 @@ static void process_world(struct cave *c)
 		i = (PY_FOOD_STARVE - p_ptr->food) / 10;
 
 		/* Take damage */
-		take_hit(i, "starvation");
+		take_hit(p_ptr, i, "starvation");
 	}
 
 	/** Regenerate HP **/
@@ -737,14 +737,14 @@ static void process_world(struct cave *c)
 			/* The light is now out */
 			else if (o_ptr->timeout == 0)
 			{
-				disturb(0, 0);
+				disturb(p_ptr, 0, 0);
 				msg("Your light has gone out!");
 			}
 
 			/* The light is getting dim */
 			else if ((o_ptr->timeout < 100) && (!(o_ptr->timeout % 10)))
 			{
-				disturb(0, 0);
+				disturb(p_ptr, 0, 0);
 				msg("Your light is growing faint.");
 			}
 		}
@@ -779,7 +779,7 @@ static void process_world(struct cave *c)
 	{
 		wieldeds_notice_flag(p_ptr, OF_TELEPORT);
 		teleport_player(40);
-		disturb(0, 0);
+		disturb(p_ptr, 0, 0);
 	}
 
 	/* Delayed Word-of-Recall */
@@ -792,7 +792,7 @@ static void process_world(struct cave *c)
 		if (!p_ptr->word_recall)
 		{
 			/* Disturbing! */
-			disturb(0, 0);
+			disturb(p_ptr, 0, 0);
 
 			/* Determine the level */
 			if (p_ptr->depth)
@@ -913,7 +913,7 @@ static void process_player(void)
 			if ((p_ptr->chp == p_ptr->mhp) &&
 			    (p_ptr->csp == p_ptr->msp))
 			{
-				disturb(0, 0);
+				disturb(p_ptr, 0, 0);
 			}
 		}
 
@@ -930,7 +930,7 @@ static void process_player(void)
 			    !p_ptr->timed[TMD_SLOW] && !p_ptr->timed[TMD_PARALYZED] &&
 			    !p_ptr->timed[TMD_IMAGE] && !p_ptr->word_recall)
 			{
-				disturb(0, 0);
+				disturb(p_ptr, 0, 0);
 			}
 		}
 		
@@ -941,7 +941,7 @@ static void process_player(void)
 			if ((p_ptr->chp == p_ptr->mhp) ||
 			    (p_ptr->csp == p_ptr->msp))
 			{
-				disturb(0, 0);
+				disturb(p_ptr, 0, 0);
 			}
 		}
 	}
@@ -961,7 +961,7 @@ static void process_player(void)
 		if (e.type != EVT_NONE) {
 			/* Flush and disturb */
 			flush();
-			disturb(0, 0);
+			disturb(p_ptr, 0, 0);
 			msg("Cancelled.");
 		}
 	}
@@ -1271,7 +1271,7 @@ static void dungeon(struct cave *c)
 	health_track(p_ptr, 0);
 
 	/* Disturb */
-	disturb(1, 0);
+	disturb(p_ptr, 1, 0);
 
 
 	/* Track maximum player level */

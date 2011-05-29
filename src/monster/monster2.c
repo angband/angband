@@ -1524,7 +1524,7 @@ void update_mon(int m_idx, bool full)
 			if (l_ptr->sights < MAX_SHORT) l_ptr->sights++;
 
 			/* Disturb on appearance */
-			if (OPT(disturb_move)) disturb(1, 0);
+			if (OPT(disturb_move)) disturb(p_ptr, 1, 0);
 
 			/* Window stuff */
 			p_ptr->redraw |= PR_MONLIST;
@@ -1547,7 +1547,7 @@ void update_mon(int m_idx, bool full)
 			if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
 
 			/* Disturb on disappearance */
-			if (OPT(disturb_move)) disturb(1, 0);
+			if (OPT(disturb_move)) disturb(p_ptr, 1, 0);
 
 			/* Window stuff */
 			p_ptr->redraw |= PR_MONLIST;
@@ -1565,7 +1565,7 @@ void update_mon(int m_idx, bool full)
 			m_ptr->mflag |= (MFLAG_VIEW);
 
 			/* Disturb on appearance */
-			if (OPT(disturb_near)) disturb(1, 0);
+			if (OPT(disturb_near)) disturb(p_ptr, 1, 0);
 
 			/* Re-draw monster window */
 			p_ptr->redraw |= PR_MONLIST;
@@ -1582,7 +1582,7 @@ void update_mon(int m_idx, bool full)
 			m_ptr->mflag &= ~(MFLAG_VIEW);
 
 			/* Disturb on disappearance */
-			if (OPT(disturb_near)) disturb(1, 0);
+			if (OPT(disturb_near)) disturb(p_ptr, 1, 0);
 
 			/* Re-draw monster list window */
 			p_ptr->redraw |= PR_MONLIST;

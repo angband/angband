@@ -519,7 +519,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			int stat = effect - EF_LOSE_STR;
 
-			take_hit(damroll(5, 5), "stat drain");
+			take_hit(p_ptr, damroll(5, 5), "stat drain");
 			(void)do_dec_stat(stat, FALSE);
 			*ident = TRUE;
 
@@ -528,7 +528,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_LOSE_CON2:
 		{
-			take_hit(damroll(10, 10), "poisonous food");
+			take_hit(p_ptr, damroll(10, 10), "poisonous food");
 			(void)do_dec_stat(A_CON, FALSE);
 			*ident = TRUE;
 
@@ -1650,7 +1650,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_DRINK_DEATH:
 		{
 			msg("A feeling of Death flows through your body.");
-			take_hit(5000, "a potion of Death");
+			take_hit(p_ptr, 5000, "a potion of Death");
 			*ident = TRUE;
 			return TRUE;
 		}
@@ -1658,7 +1658,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_DRINK_RUIN:
 		{
 			msg("Your nerves and muscles feel weak and lifeless!");
-			take_hit(damroll(10, 10), "a potion of Ruination");
+			take_hit(p_ptr, damroll(10, 10), "a potion of Ruination");
 			player_stat_dec(p_ptr, A_DEX, TRUE);
 			player_stat_dec(p_ptr, A_WIS, TRUE);
 			player_stat_dec(p_ptr, A_CON, TRUE);
@@ -1672,7 +1672,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_DRINK_DETONATE:
 		{
 			msg("Massive explosions rupture your body!");
-			take_hit(damroll(50, 20), "a potion of Detonation");
+			take_hit(p_ptr, damroll(50, 20), "a potion of Detonation");
 			(void)player_inc_timed(p_ptr, TMD_STUN, 75, TRUE, TRUE);
 			(void)player_inc_timed(p_ptr, TMD_CUT, 5000, TRUE, TRUE);
 			*ident = TRUE;
@@ -1925,7 +1925,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			if (check_state(OF_FEATHER, p_ptr->state.flags)) {
 				msg("You float gently down to the next level.");
 			} else {
-				take_hit(damroll(2, 8), "a trap");
+				take_hit(p_ptr, damroll(2, 8), "a trap");
 			}
 			wieldeds_notice_flag(p_ptr, OF_FEATHER);
 
@@ -1939,7 +1939,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			if (check_state(OF_FEATHER, p_ptr->state.flags)) {
 				msg("You float gently to the bottom of the pit.");
 			} else {
-				take_hit(damroll(2, 6), "a trap");
+				take_hit(p_ptr, damroll(2, 6), "a trap");
 			}
 			wieldeds_notice_flag(p_ptr, OF_FEATHER);
 			return TRUE;
@@ -1962,7 +1962,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 					(void)player_inc_timed(p_ptr, TMD_CUT, randint1(dam), TRUE, TRUE);
 				}
 
-				take_hit(dam, "a trap");
+				take_hit(p_ptr, dam, "a trap");
 			}
 			wieldeds_notice_flag(p_ptr, OF_FEATHER);
 			return TRUE;
@@ -1985,7 +1985,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 					(void)player_inc_timed(p_ptr, TMD_POISONED, randint1(dam * 4), TRUE, TRUE);
 				}
 
-				take_hit(dam, "a trap");
+				take_hit(p_ptr, dam, "a trap");
 			}
 			wieldeds_notice_flag(p_ptr, OF_FEATHER);
 			return TRUE;
@@ -2024,7 +2024,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			dam = adjust_dam(GF_FIRE, dam, RANDOMISE,
 					check_for_resist(GF_FIRE, p_ptr->state.flags, TRUE));
 			if (dam) {
-				take_hit(dam, "a fire trap");
+				take_hit(p_ptr, dam, "a fire trap");
 				inven_damage(GF_FIRE, MIN(dam * 5, 300));
 			}
 			return TRUE;
@@ -2039,7 +2039,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			dam = adjust_dam(GF_ACID, dam, RANDOMISE,
 					check_for_resist(GF_ACID, p_ptr->state.flags, TRUE));
 			if (dam) {
-				take_hit(dam, "an acid trap");
+				take_hit(p_ptr, dam, "an acid trap");
 				inven_damage(GF_ACID, MIN(dam * 5, 300));
 			}
 			return TRUE;
@@ -2049,7 +2049,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			if (trap_check_hit(125)) {
 				msg("A small dart hits you!");
-				take_hit(damroll(1, 4), "a trap");
+				take_hit(p_ptr, damroll(1, 4), "a trap");
 				(void)player_inc_timed(p_ptr, TMD_SLOW, randint0(20) + 20, TRUE, FALSE);
 			} else {
 				msg("A small dart barely misses you.");
@@ -2061,7 +2061,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			if (trap_check_hit(125)) {
 				msg("A small dart hits you!");
-				take_hit(damroll(1, 4), "a trap");
+				take_hit(p_ptr, damroll(1, 4), "a trap");
 				(void)do_dec_stat(A_STR, FALSE);
 			} else {
 				msg("A small dart barely misses you.");
@@ -2073,7 +2073,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			if (trap_check_hit(125)) {
 				msg("A small dart hits you!");
-				take_hit(damroll(1, 4), "a trap");
+				take_hit(p_ptr, damroll(1, 4), "a trap");
 				(void)do_dec_stat(A_DEX, FALSE);
 			} else {
 				msg("A small dart barely misses you.");
@@ -2085,7 +2085,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			if (trap_check_hit(125)) {
 				msg("A small dart hits you!");
-				take_hit(damroll(1, 4), "a trap");
+				take_hit(p_ptr, damroll(1, 4), "a trap");
 				(void)do_dec_stat(A_CON, FALSE);
 			} else {
 				msg("A small dart barely misses you.");

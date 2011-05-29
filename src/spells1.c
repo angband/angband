@@ -554,54 +554,54 @@ static void bolt_pict(int y, int x, int ny, int nx, int typ, byte *a, char *c)
  * when he dies, since the "You die." message is shown before setting
  * the player to "dead".
  */
-void take_hit(int dam, const char *kb_str)
+void take_hit(struct player *p, int dam, const char *kb_str)
 {
-	int old_chp = p_ptr->chp;
+	int old_chp = p->chp;
 
-	int warning = (p_ptr->mhp * op_ptr->hitpoint_warn / 10);
+	int warning = (p->mhp * op_ptr->hitpoint_warn / 10);
 
 
 	/* Paranoia */
-	if (p_ptr->is_dead) return;
+	if (p->is_dead) return;
 
 
 	/* Disturb */
-	disturb(1, 0);
+	disturb(p, 1, 0);
 
 	/* Mega-Hack -- Apply "invulnerability" */
-	if (p_ptr->timed[TMD_INVULN] && (dam < 9000)) return;
+	if (p->timed[TMD_INVULN] && (dam < 9000)) return;
 
 	/* Hurt the player */
-	p_ptr->chp -= dam;
+	p->chp -= dam;
 
 	/* Display the hitpoints */
-	p_ptr->redraw |= (PR_HP);
+	p->redraw |= (PR_HP);
 
 	/* Dead player */
-	if (p_ptr->chp < 0)
+	if (p->chp < 0)
 	{
 		/* Hack -- Note death */
 		msgt(MSG_DEATH, "You die.");
 		message_flush();
 
 		/* Note cause of death */
-		my_strcpy(p_ptr->died_from, kb_str, sizeof(p_ptr->died_from));
+		my_strcpy(p->died_from, kb_str, sizeof(p->died_from));
 
 		/* No longer a winner */
-		p_ptr->total_winner = FALSE;
+		p->total_winner = FALSE;
 
 		/* Note death */
-		p_ptr->is_dead = TRUE;
+		p->is_dead = TRUE;
 
 		/* Leaving */
-		p_ptr->leaving = TRUE;
+		p->leaving = TRUE;
 
 		/* Dead */
 		return;
 	}
 
 	/* Hitpoint warning */
-	if (p_ptr->chp < warning)
+	if (p->chp < warning)
 	{
 		/* Hack -- bell on first notice */
 		if (old_chp > warning)
@@ -2864,10 +2864,10 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 	dam = adjust_dam(typ, dam, RANDOMISE, check_for_resist(typ,
 		p_ptr->state.flags, TRUE));
 	if (dam)
-		take_hit(dam, killer);
+		take_hit(p_ptr, dam, killer);
 
 	/* Disturb */
-	disturb(1, 0);
+	disturb(p_ptr, 1, 0);
 
 	/* Return "Anything seen?" */
 	return (obvious);

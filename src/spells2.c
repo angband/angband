@@ -1855,7 +1855,7 @@ bool banishment(void)
 	}
 
 	/* Hurt the player */
-	take_hit(dam, "the strain of casting Banishment");
+	take_hit(p_ptr, dam, "the strain of casting Banishment");
 
 	/* Update monster list window */
 	p_ptr->redraw |= PR_MONLIST;
@@ -1899,7 +1899,7 @@ bool mass_banishment(void)
 	}
 
 	/* Hurt the player */
-	take_hit(dam, "the strain of casting Mass Banishment");
+	take_hit(p_ptr, dam, "the strain of casting Mass Banishment");
 
 	/* Calculate result */
 	result = (dam > 0) ? TRUE : FALSE;
@@ -2265,7 +2265,7 @@ void earthquake(int cy, int cx, int r)
 		}
 
 		/* Take some damage */
-		if (damage) take_hit(damage, "an earthquake");
+		if (damage) take_hit(p_ptr, damage, "an earthquake");
 	}
 
 

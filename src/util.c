@@ -572,6 +572,9 @@ static void msg_print_aux(u16b type, const char *msg)
 	byte color;
 	int w, h;
 
+	if (!Term)
+		return;
+
 	/* Obtain the size */
 	(void)Term_get_size(&w, &h);
 

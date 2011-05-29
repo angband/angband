@@ -64,7 +64,7 @@ bool search(bool verbose)
 			msg("You can't make out your surroundings well enough to search.");
 
 			/* Cancel repeat */
-			disturb(0, 0);
+			disturb(p_ptr, 0, 0);
 		}
 
 		return FALSE;
@@ -90,7 +90,7 @@ bool search(bool verbose)
 					msg("You have found a trap.");
 
 					/* Disturb */
-					disturb(0, 0);
+					disturb(p_ptr, 0, 0);
 				}
 
 				/* Secret door */
@@ -105,7 +105,7 @@ bool search(bool verbose)
 					place_closed_door(cave, y, x);
 
 					/* Disturb */
-					disturb(0, 0);
+					disturb(p_ptr, 0, 0);
 				}
 
 				/* Scan all objects in the grid */
@@ -132,7 +132,7 @@ bool search(bool verbose)
 						object_notice_everything(o_ptr);
 
 						/* Notice it */
-						disturb(0, 0);
+						disturb(p_ptr, 0, 0);
 					}
 				}
 			}
@@ -389,7 +389,7 @@ int do_autopickup(void)
 
 
 		/* Hack -- disturb */
-		disturb(0, 0);
+		disturb(p_ptr, 0, 0);
 
 
 		/* Automatically pick up items into the backpack */
@@ -577,7 +577,7 @@ void move_player(int dir, bool disarm)
 	else if (!cave_floor_bold(y, x))
 	{
 		/* Disturb the player */
-		disturb(0, 0);
+		disturb(p_ptr, 0, 0);
 
 		/* Notice unknown obstacles */
 		if (!(cave->info[y][x] & CAVE_MARK))
@@ -634,7 +634,7 @@ void move_player(int dir, bool disarm)
 		if (OPT(disturb_detect) && p_ptr->running && 
 			!p_ptr->running_firststep && old_dtrap && !new_dtrap)
 		{
-			disturb(0, 0);
+			disturb(p_ptr, 0, 0);
 			return;
 		}
 
@@ -656,7 +656,7 @@ void move_player(int dir, bool disarm)
 			(cave->feat[p_ptr->py][p_ptr->px] <= FEAT_SHOP_TAIL))
 		{
 			/* Disturb */
-			disturb(0, 0);
+			disturb(p_ptr, 0, 0);
 			cmd_insert(CMD_ENTER_STORE);
 		}
 
@@ -672,7 +672,7 @@ void move_player(int dir, bool disarm)
 		if (cave->feat[y][x] == FEAT_INVIS)
 		{
 			/* Disturb */
-			disturb(0, 0);
+			disturb(p_ptr, 0, 0);
 
 			/* Message */
 			msg("You found a trap!");
@@ -688,7 +688,7 @@ void move_player(int dir, bool disarm)
 		else if (cave_isknowntrap(cave, y, x))
 		{
 			/* Disturb */
-			disturb(0, 0);
+			disturb(p_ptr, 0, 0);
 
 			/* Hit the trap */
 			hit_trap(y, x);

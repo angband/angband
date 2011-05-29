@@ -1722,7 +1722,7 @@ void process_player_name(bool sf)
 void save_game(void)
 {
 	/* Disturb the player */
-	disturb(1, 0);
+	disturb(p_ptr, 1, 0);
 
 	/* Clear messages */
 	message_flush();

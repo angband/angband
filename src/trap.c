@@ -111,7 +111,7 @@ void hit_trap(int y, int x)
 	struct feature *trap = &f_info[cave->feat[y][x]];
 
 	/* Disturb the player */
-	disturb(0, 0);
+	disturb(p_ptr, 0, 0);
 
 	/* Run the effect */
 	effect_do(trap->effect, &ident, FALSE, 0, 0, 0);

@@ -266,7 +266,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 	if (trap & (CHEST_LOSE_STR))
 	{
 		msg("A small needle has pricked you!");
-		take_hit(damroll(1, 4), "a poison needle");
+		take_hit(p_ptr, damroll(1, 4), "a poison needle");
 		(void)do_dec_stat(A_STR, FALSE);
 	}
 
@@ -274,7 +274,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 	if (trap & (CHEST_LOSE_CON))
 	{
 		msg("A small needle has pricked you!");
-		take_hit(damroll(1, 4), "a poison needle");
+		take_hit(p_ptr, damroll(1, 4), "a poison needle");
 		(void)do_dec_stat(A_CON, FALSE);
 	}
 
@@ -310,7 +310,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 		msg("There is a sudden explosion!");
 		msg("Everything inside the chest is destroyed!");
 		o_ptr->pval[DEFAULT_PVAL] = 0;
-		take_hit(damroll(5, 8), "an exploding chest");
+		take_hit(p_ptr, damroll(5, 8), "an exploding chest");
 	}
 }
 
@@ -707,7 +707,7 @@ void do_cmd_open(cmd_code code, cmd_arg args[])
 	if (!o_idx && !do_cmd_open_test(y, x))
 	{
 		/* Cancel repeat */
-		disturb(0, 0);
+		disturb(p_ptr, 0, 0);
 		return;
 	}
 
@@ -751,7 +751,7 @@ void do_cmd_open(cmd_code code, cmd_arg args[])
 	}
 
 	/* Cancel repeat unless we may continue */
-	if (!more) disturb(0, 0);
+	if (!more) disturb(p_ptr, 0, 0);
 }
 
 
@@ -844,7 +844,7 @@ void do_cmd_close(cmd_code code, cmd_arg args[])
 	if (!do_cmd_close_test(y, x))
 	{
 		/* Cancel repeat */
-		disturb(0, 0);
+		disturb(p_ptr, 0, 0);
 		return;
 	}
 
@@ -878,7 +878,7 @@ void do_cmd_close(cmd_code code, cmd_arg args[])
 	}
 
 	/* Cancel repeat unless told not to */
-	if (!more) disturb(0, 0);
+	if (!more) disturb(p_ptr, 0, 0);
 }
 
 
@@ -1157,7 +1157,7 @@ void do_cmd_tunnel(cmd_code code, cmd_arg args[])
 	if (!do_cmd_tunnel_test(y, x))
 	{
 		/* Cancel repeat */
-		disturb(0, 0);
+		disturb(p_ptr, 0, 0);
 		return;
 	}
 
@@ -1191,7 +1191,7 @@ void do_cmd_tunnel(cmd_code code, cmd_arg args[])
 	}
 
 	/* Cancel repetition unless we can continue */
-	if (!more) disturb(0, 0);
+	if (!more) disturb(p_ptr, 0, 0);
 }
 
 /*
@@ -1324,7 +1324,7 @@ void do_cmd_disarm(cmd_code code, cmd_arg args[])
 	if (!o_idx && !do_cmd_disarm_test(y, x))
 	{
 		/* Cancel repeat */
-		disturb(0, 0);
+		disturb(p_ptr, 0, 0);
 		return;
 	}
 
@@ -1368,7 +1368,7 @@ void do_cmd_disarm(cmd_code code, cmd_arg args[])
 	}
 
 	/* Cancel repeat unless told not to */
-	if (!more) disturb(0, 0);
+	if (!more) disturb(p_ptr, 0, 0);
 }
 
 
@@ -1505,7 +1505,7 @@ void do_cmd_bash(cmd_code code, cmd_arg args[])
 	if (!do_cmd_bash_test(y, x))
 	{
 		/* Cancel repeat */
-		disturb(0, 0);
+		disturb(p_ptr, 0, 0);
 		return;
 	}
 
@@ -1539,7 +1539,7 @@ void do_cmd_bash(cmd_code code, cmd_arg args[])
 	}
 
 	/* Cancel repeat unless we may continue */
-	if (!more) disturb(0, 0);
+	if (!more) disturb(p_ptr, 0, 0);
 }
 
 
@@ -1606,7 +1606,7 @@ void do_cmd_alter_aux(int dir)
 		msg("You spin around.");
 
 	/* Cancel repetition unless we can continue */
-	if (!more) disturb(0, 0);
+	if (!more) disturb(p_ptr, 0, 0);
 }
 
 void do_cmd_alter(cmd_code code, cmd_arg args[])
@@ -1795,7 +1795,7 @@ static bool do_cmd_walk_test(int y, int x)
 			msgt(MSG_HITWALL, "There is a wall in the way!");
 
 		/* Cancel repeat */
-		disturb(0, 0);
+		disturb(p_ptr, 0, 0);
 
 		/* Nope */
 		return (FALSE);
@@ -1939,7 +1939,7 @@ void do_cmd_hold(cmd_code code, cmd_arg args[])
 	    (cave->feat[p_ptr->py][p_ptr->px] <= FEAT_SHOP_TAIL))
 	{
 		/* Disturb */
-		disturb(0, 0);
+		disturb(p_ptr, 0, 0);
 
 		cmd_insert(CMD_ENTER_STORE);
 

@@ -1157,7 +1157,7 @@ void sense_inventory(void)
 		feel = object_pseudo(o_ptr);
 
 		/* Stop everything */
-		disturb(0, 0);
+		disturb(p_ptr, 0, 0);
 
 		if (cursed)
 			text = "cursed";

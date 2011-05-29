@@ -97,7 +97,7 @@ void teleport_player_to(int ny, int nx);
 void teleport_player_level(void);
 int gf_name_to_idx(const char *name);
 const char *gf_idx_to_name(int type);
-void take_hit(int dam, const char *kb_str);
+void take_hit(struct player *p, int dam, const char *kb_str);
 void acid_dam(int dam, const char *kb_str);
 void elec_dam(int dam, const char *kb_str);
 void fire_dam(int dam, const char *kb_str);

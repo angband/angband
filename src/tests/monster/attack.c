@@ -12,6 +12,8 @@ int setup_tests(void **state) {
 	m->r_idx = r->ridx;
 	r_info = r;
 	*state = m;
+
+	p_ptr = NULL;
 	return 0;
 }
 

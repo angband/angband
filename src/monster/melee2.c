@@ -485,7 +485,7 @@ bool make_attack_spell(int m_idx)
 	}
 
 	/* Cast the spell. */
-	disturb(1, 0);
+	disturb(p_ptr, 1, 0);
 
 	/* Special case RSF_HASTE until TMD_* and MON_TMD_* are rationalised */
 	if (thrown_spell == RSF_HASTE) {
@@ -1633,8 +1633,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 		if (!effect || check_hit(p, power, rlev))
 		{
 			/* Always disturbing */
-			disturb(1, 0);
-
+			disturb(p, 1, 0);
 
 			/* Hack -- Apply "protection from evil" */
 			if (p->timed[TMD_PROTEVIL] > 0)
@@ -1845,7 +1844,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					damage -= (damage * ((ac < 240) ? ac : 240) / 400);
 
 					/* Take damage */
-					take_hit(damage, ddesc);
+					take_hit(p, damage, ddesc);
 
 					break;
 				}
@@ -1856,7 +1855,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 						check_for_resist(GF_POIS, p->state.flags, TRUE));
 
 					/* Take damage */
-					take_hit(damage, ddesc);
+					take_hit(p, damage, ddesc);
 
 					/* Take "poison" effect */
 					if (player_inc_timed(p, TMD_POISONED, randint1(rlev) + 5, TRUE, TRUE))
@@ -1871,7 +1870,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 				case RBE_UN_BONUS:
 				{
 					/* Take damage */
-					take_hit(damage, ddesc);
+					take_hit(p, damage, ddesc);
 
 					/* Allow complete resist */
 					if (!check_state(OF_RES_DISEN, p->state.flags))
@@ -1891,7 +1890,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					int unpower = 0, newcharge;
 
 					/* Take damage */
-					take_hit(damage, ddesc);
+					take_hit(p, damage, ddesc);
 
 					/* Find an item */
 					for (k = 0; k < 10; k++)
@@ -1959,7 +1958,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 				case RBE_EAT_GOLD:
 				{
 					/* Take damage */
-					take_hit(damage, ddesc);
+					take_hit(p, damage, ddesc);
 
 					/* Obvious */
 					obvious = TRUE;
@@ -2029,7 +2028,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 				case RBE_EAT_ITEM:
 				{
 					/* Take damage */
-					take_hit(damage, ddesc);
+					take_hit(p, damage, ddesc);
 
 					/* Saving throw (unless paralyzed) based on dex and level */
 					if (!p->timed[TMD_PARALYZED] &&
@@ -2113,7 +2112,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 				case RBE_EAT_FOOD:
 				{
 					/* Take damage */
-					take_hit(damage, ddesc);
+					take_hit(p, damage, ddesc);
 
 					/* Steal some food */
 					for (k = 0; k < 10; k++)
@@ -2158,7 +2157,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					bitflag f[OF_SIZE];
 
 					/* Take damage */
-					take_hit(damage, ddesc);
+					take_hit(p, damage, ddesc);
 
 					/* Get the light, and its flags */
 					o_ptr = &p->inventory[INVEN_LIGHT];
@@ -2197,7 +2196,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					damage = adjust_dam(GF_ACID, damage, RANDOMISE, 
 						check_for_resist(GF_ACID, p->state.flags, TRUE));
 					if (damage) {
-						take_hit(damage, ddesc);
+						take_hit(p, damage, ddesc);
 						inven_damage(GF_ACID, MIN(damage * 5, 300));
 					}
 
@@ -2219,7 +2218,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					damage = adjust_dam(GF_ELEC, damage, RANDOMISE,
 						check_for_resist(GF_ELEC, p->state.flags, TRUE));
 					if (damage) {
-						take_hit(damage, ddesc);
+						take_hit(p, damage, ddesc);
 						inven_damage(GF_ELEC, MIN(damage * 5, 300));
 					}
 
@@ -2241,7 +2240,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					damage = adjust_dam(GF_FIRE, damage, RANDOMISE,
 						check_for_resist(GF_FIRE, p->state.flags, TRUE));
 					if (damage) {
-						take_hit(damage, ddesc);
+						take_hit(p, damage, ddesc);
 						inven_damage(GF_FIRE, MIN(damage * 5, 300));
 					}
 
@@ -2263,7 +2262,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					damage = adjust_dam(GF_COLD, damage, RANDOMISE,
 						check_for_resist(GF_COLD, p->state.flags, TRUE));
 					if (damage) {
-						take_hit(damage, ddesc);
+						take_hit(p, damage, ddesc);
 						inven_damage(GF_COLD, MIN(damage * 5, 300));
 					}
 
@@ -2276,7 +2275,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 				case RBE_BLIND:
 				{
 					/* Take damage */
-					take_hit(damage, ddesc);
+					take_hit(p, damage, ddesc);
 
 					/* Increase "blind" */
 					if (player_inc_timed(p, TMD_BLIND, 10 + randint1(rlev), TRUE, TRUE))
@@ -2291,7 +2290,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 				case RBE_CONFUSE:
 				{
 					/* Take damage */
-					take_hit(damage, ddesc);
+					take_hit(p, damage, ddesc);
 
 					/* Increase "confused" */
 					if (player_inc_timed(p, TMD_CONFUSED, 3 + randint1(rlev), TRUE, TRUE))
@@ -2306,7 +2305,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 				case RBE_TERRIFY:
 				{
 					/* Take damage */
-					take_hit(damage, ddesc);
+					take_hit(p, damage, ddesc);
 
 					/* Increase "afraid" */
 					if (randint0(100) < p->state.skills[SKILL_SAVE])
@@ -2333,7 +2332,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					if (p->timed[TMD_PARALYZED] && (damage < 1)) damage = 1;
 
 					/* Take damage */
-					take_hit(damage, ddesc);
+					take_hit(p, damage, ddesc);
 
 					/* Increase "paralyzed" */
 					if (randint0(100) < p->state.skills[SKILL_SAVE])
@@ -2357,7 +2356,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 				case RBE_LOSE_STR:
 				{
 					/* Take damage */
-					take_hit(damage, ddesc);
+					take_hit(p, damage, ddesc);
 
 					/* Damage (stat) */
 					if (do_dec_stat(A_STR, FALSE)) obvious = TRUE;
@@ -2368,7 +2367,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 				case RBE_LOSE_INT:
 				{
 					/* Take damage */
-					take_hit(damage, ddesc);
+					take_hit(p, damage, ddesc);
 
 					/* Damage (stat) */
 					if (do_dec_stat(A_INT, FALSE)) obvious = TRUE;
@@ -2379,7 +2378,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 				case RBE_LOSE_WIS:
 				{
 					/* Take damage */
-					take_hit(damage, ddesc);
+					take_hit(p, damage, ddesc);
 
 					/* Damage (stat) */
 					if (do_dec_stat(A_WIS, FALSE)) obvious = TRUE;
@@ -2390,7 +2389,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 				case RBE_LOSE_DEX:
 				{
 					/* Take damage */
-					take_hit(damage, ddesc);
+					take_hit(p, damage, ddesc);
 
 					/* Damage (stat) */
 					if (do_dec_stat(A_DEX, FALSE)) obvious = TRUE;
@@ -2401,7 +2400,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 				case RBE_LOSE_CON:
 				{
 					/* Take damage */
-					take_hit(damage, ddesc);
+					take_hit(p, damage, ddesc);
 
 					/* Damage (stat) */
 					if (do_dec_stat(A_CON, FALSE)) obvious = TRUE;
@@ -2412,7 +2411,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 				case RBE_LOSE_CHR:
 				{
 					/* Take damage */
-					take_hit(damage, ddesc);
+					take_hit(p, damage, ddesc);
 
 					/* Damage (stat) */
 					if (do_dec_stat(A_CHR, FALSE)) obvious = TRUE;
@@ -2423,7 +2422,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 				case RBE_LOSE_ALL:
 				{
 					/* Take damage */
-					take_hit(damage, ddesc);
+					take_hit(p, damage, ddesc);
 
 					/* Damage (stats) */
 					if (do_dec_stat(A_STR, FALSE)) obvious = TRUE;
@@ -2445,7 +2444,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					damage -= (damage * ((ac < 240) ? ac : 240) / 400);
 
 					/* Take damage */
-					take_hit(damage, ddesc);
+					take_hit(p, damage, ddesc);
 
 					/* Radius 8 earthquake centered at the monster */
 					if (damage > 23)
@@ -2469,7 +2468,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					obvious = TRUE;
 
 					/* Take damage */
-					take_hit(damage, ddesc);
+					take_hit(p, damage, ddesc);
 					update_smart_learn(m_ptr, OF_HOLD_LIFE);
 
 					if (check_state(OF_HOLD_LIFE, p->state.flags) && (randint0(100) < 95))
@@ -2500,7 +2499,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					obvious = TRUE;
 
 					/* Take damage */
-					take_hit(damage, ddesc);
+					take_hit(p, damage, ddesc);
 					update_smart_learn(m_ptr, OF_HOLD_LIFE);
 
 					if (check_state(OF_HOLD_LIFE, p->state.flags) && (randint0(100) < 90))
@@ -2531,7 +2530,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					obvious = TRUE;
 
 					/* Take damage */
-					take_hit(damage, ddesc);
+					take_hit(p, damage, ddesc);
 					update_smart_learn(m_ptr, OF_HOLD_LIFE);
 
 					if (check_state(OF_HOLD_LIFE, p->state.flags) && (randint0(100) < 75))
@@ -2562,7 +2561,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					obvious = TRUE;
 
 					/* Take damage */
-					take_hit(damage, ddesc);
+					take_hit(p, damage, ddesc);
 					update_smart_learn(m_ptr, OF_HOLD_LIFE);
 
 					if (check_state(OF_HOLD_LIFE, p->state.flags) && (randint0(100) < 50))
@@ -2590,7 +2589,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 				case RBE_HALLU:
 				{
 					/* Take damage */
-					take_hit(damage, ddesc);
+					take_hit(p, damage, ddesc);
 
 					/* Increase "image" */
 					if (player_inc_timed(p, TMD_IMAGE, 3 + randint1(rlev / 2), TRUE, TRUE))
@@ -2691,7 +2690,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 				if (m_ptr->ml)
 				{
 					/* Disturbing */
-					disturb(1, 0);
+					disturb(p, 1, 0);
 
 					/* Message */
 					msg("%^s misses you.", m_name);
@@ -3164,7 +3163,7 @@ static void process_monster(struct cave *c, int m_idx)
 						msg("You hear a door burst open!");
 
 						/* Disturb (sometimes) */
-						disturb(0, 0);
+						disturb(p_ptr, 0, 0);
 
 						/* The door was bashed open */
 						did_bash_door = TRUE;
@@ -3342,7 +3341,7 @@ static void process_monster(struct cave *c, int m_idx)
 			      OPT(disturb_near))))
 			{
 				/* Disturb */
-				disturb(0, 0);
+				disturb(p_ptr, 0, 0);
 			}
 
 

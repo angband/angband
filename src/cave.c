@@ -3516,7 +3516,7 @@ bool tracked_object_is(int item)
  *
  * All disturbance cancels repeated commands, resting, and running.
  */
-void disturb(int stop_search, int unused_flag)
+void disturb(struct player *p, int stop_search, int unused_flag)
 {
 	/* Unused parameter */
 	(void)unused_flag;
@@ -3525,39 +3525,26 @@ void disturb(int stop_search, int unused_flag)
 	cmd_cancel_repeat();
 
 	/* Cancel Resting */
-	if (p_ptr->resting)
-	{
-		/* Cancel */
-		p_ptr->resting = 0;
-
-		/* Redraw the state (later) */
-		p_ptr->redraw |= (PR_STATE);
+	if (p->resting) {
+		p->resting = 0;
+		p->redraw |= PR_STATE;
 	}
 
 	/* Cancel running */
-	if (p_ptr->running)
-	{
-		/* Cancel */
+	if (p->running) {
 		p_ptr->running = 0;
 
  		/* Check for new panel if appropriate */
  		if (OPT(center_player)) verify_panel();
-
-		/* Calculate torch radius */
-		p_ptr->update |= (PU_TORCH);
+		p->update |= PU_TORCH;
 	}
 
 	/* Cancel searching if requested */
-	if (stop_search && p_ptr->searching)
+	if (stop_search && p->searching)
 	{
-		/* Cancel */
-		p_ptr->searching = FALSE;
-
-		/* Recalculate bonuses */
-		p_ptr->update |= (PU_BONUS);
-
-		/* Redraw the state */
-		p_ptr->redraw |= (PR_STATE);
+		p->searching = FALSE;
+		p->update |= PU_BONUS;
+		p->redraw |= PR_STATE;
 	}
 
 	/* Flush input */
