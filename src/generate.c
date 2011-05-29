@@ -3135,7 +3135,7 @@ bool cavern_gen(struct cave *c, struct player *p) {
 	FREE(colors);
 	FREE(counts);
 
-	return TRUE;
+	return ok;
 }
 
 /*
