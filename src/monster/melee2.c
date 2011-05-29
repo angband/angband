@@ -1452,7 +1452,7 @@ static int monster_critical(int dice, int sides, int dam)
 /*
  * Determine if a monster attack against the player succeeds.
  */
-bool check_hit(int power, int level)
+bool check_hit(struct player *p, int power, int level)
 {
 	int chance, ac;
 
@@ -1460,11 +1460,11 @@ bool check_hit(int power, int level)
 	chance = (power + (level * 3));
 
 	/* Total armor */
-	ac = p_ptr->state.ac + p_ptr->state.to_a;
+	ac = p->state.ac + p->state.to_a;
 
 	/* if the monster checks vs ac, the player learns ac bonuses */
 	/* XXX Eddie should you only learn +ac on miss, -ac on hit?  who knows */
-	object_notice_on_defend();
+	object_notice_on_defend(p);
 
 	/* Check if the player was hit */
 	return test_hit(chance, ac, TRUE);
@@ -1511,7 +1511,7 @@ static const char *desc_moan[MAX_DESC_MOAN] =
 /*
  * Attack the player via physical attacks.
  */
-bool make_attack_normal(struct monster *m_ptr)
+static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 {
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
@@ -1548,7 +1548,7 @@ bool make_attack_normal(struct monster *m_ptr)
 	} */
 
 	/* Total armor */
-	ac = p_ptr->state.ac + p_ptr->state.to_a;
+	ac = p->state.ac + p->state.to_a;
 
 	/* Extract the effective monster level */
 	rlev = ((r_ptr->level >= 1) ? r_ptr->level : 1);
@@ -1586,7 +1586,7 @@ bool make_attack_normal(struct monster *m_ptr)
 		if (!method) break;
 
 		/* Handle "leaving" */
-		if (p_ptr->leaving) break;
+		if (p->leaving) break;
 
 		/* Extract visibility (before blink) */
 		if (m_ptr->ml) visible = TRUE;
@@ -1630,14 +1630,14 @@ bool make_attack_normal(struct monster *m_ptr)
 
 
 		/* Monster hits player */
-		if (!effect || check_hit(power, rlev))
+		if (!effect || check_hit(p, power, rlev))
 		{
 			/* Always disturbing */
 			disturb(1, 0);
 
 
 			/* Hack -- Apply "protection from evil" */
-			if (p_ptr->timed[TMD_PROTEVIL] > 0)
+			if (p->timed[TMD_PROTEVIL] > 0)
 			{
 				/* Learn about the evil flag */
 				if (m_ptr->ml)
@@ -1646,8 +1646,8 @@ bool make_attack_normal(struct monster *m_ptr)
 				}
 
 				if (rf_has(r_ptr->flags, RF_EVIL) &&
-				    p_ptr->lev >= rlev &&
-				    randint0(100) + p_ptr->lev > 50)
+				    p->lev >= rlev &&
+				    randint0(100) + p->lev > 50)
 				{
 					/* Message */
 					msg("%^s is repelled.", m_name);
@@ -1853,7 +1853,7 @@ bool make_attack_normal(struct monster *m_ptr)
 				case RBE_POISON:
 				{
 					damage = adjust_dam(GF_POIS, damage, RANDOMISE,
-						check_for_resist(GF_POIS, p_ptr->state.flags, TRUE));
+						check_for_resist(GF_POIS, p->state.flags, TRUE));
 
 					/* Take damage */
 					take_hit(damage, ddesc);
@@ -1874,7 +1874,7 @@ bool make_attack_normal(struct monster *m_ptr)
 					take_hit(damage, ddesc);
 
 					/* Allow complete resist */
-					if (!check_state(OF_RES_DISEN, p_ptr->state.flags))
+					if (!check_state(OF_RES_DISEN, p->state.flags))
 					{
 						/* Apply disenchantment */
 						if (apply_disenchant(0)) obvious = TRUE;
@@ -1900,7 +1900,7 @@ bool make_attack_normal(struct monster *m_ptr)
 						i = randint0(INVEN_PACK);
 
 						/* Obtain the item */
-						o_ptr = &p_ptr->inventory[i];
+						o_ptr = &p->inventory[i];
 
 						/* Skip non-objects */
 						if (!o_ptr->kind) continue;
@@ -1939,14 +1939,14 @@ bool make_attack_normal(struct monster *m_ptr)
 							m_ptr->hp += heal;
 
 							/* Redraw (later) if needed */
-							if (cave_monster(cave, p_ptr->health_who) == m_ptr)
-								p_ptr->redraw |= (PR_HEALTH);
+							if (cave_monster(cave, p->health_who) == m_ptr)
+								p->redraw |= (PR_HEALTH);
 
 							/* Combine / Reorder the pack */
-							p_ptr->notice |= (PN_COMBINE | PN_REORDER);
+							p->notice |= (PN_COMBINE | PN_REORDER);
 
 							/* Redraw stuff */
-							p_ptr->redraw |= (PR_INVEN);
+							p->redraw |= (PR_INVEN);
 
 							/* Affect only a single inventory slot */
 							break;
@@ -1965,9 +1965,9 @@ bool make_attack_normal(struct monster *m_ptr)
 					obvious = TRUE;
 
 					/* Saving throw (unless paralyzed) based on dex and level */
-					if (!p_ptr->timed[TMD_PARALYZED] &&
-					    (randint0(100) < (adj_dex_safe[p_ptr->state.stat_ind[A_DEX]] +
-					                      p_ptr->lev)))
+					if (!p->timed[TMD_PARALYZED] &&
+					    (randint0(100) < (adj_dex_safe[p->state.stat_ind[A_DEX]] +
+					                      p->lev)))
 					{
 						/* Saving throw message */
 						msg("You quickly protect your money pouch!");
@@ -1978,18 +1978,18 @@ bool make_attack_normal(struct monster *m_ptr)
 
 					/* Eat gold */
 					else {
-						gold = (p_ptr->au / 10) + randint1(25);
+						gold = (p->au / 10) + randint1(25);
 						if (gold < 2) gold = 2;
-						if (gold > 5000) gold = (p_ptr->au / 20) + randint1(3000);
-						if (gold > p_ptr->au) gold = p_ptr->au;
-						p_ptr->au -= gold;
+						if (gold > 5000) gold = (p->au / 20) + randint1(3000);
+						if (gold > p->au) gold = p->au;
+						p->au -= gold;
 						if (gold <= 0) {
 							msg("Nothing was stolen.");
 							break;
 						}
 						/* Let the player know they were robbed */
 						msg("Your purse feels lighter.");
-						if (p_ptr->au)
+						if (p->au)
 							msg("%ld coins were stolen!", (long)gold);
 						else
 							msg("All of your coins were stolen!");
@@ -2017,7 +2017,7 @@ bool make_attack_normal(struct monster *m_ptr)
 						}
 
 						/* Redraw gold */
-						p_ptr->redraw |= (PR_GOLD);
+						p->redraw |= (PR_GOLD);
 
 						/* Blink away */
 						blinked = TRUE;
@@ -2032,9 +2032,9 @@ bool make_attack_normal(struct monster *m_ptr)
 					take_hit(damage, ddesc);
 
 					/* Saving throw (unless paralyzed) based on dex and level */
-					if (!p_ptr->timed[TMD_PARALYZED] &&
-					    (randint0(100) < (adj_dex_safe[p_ptr->state.stat_ind[A_DEX]] +
-					                      p_ptr->lev)))
+					if (!p->timed[TMD_PARALYZED] &&
+					    (randint0(100) < (adj_dex_safe[p->state.stat_ind[A_DEX]] +
+					                      p->lev)))
 					{
 						/* Saving throw message */
 						msg("You grab hold of your backpack!");
@@ -2059,7 +2059,7 @@ bool make_attack_normal(struct monster *m_ptr)
 						i = randint0(INVEN_PACK);
 
 						/* Obtain the item */
-						o_ptr = &p_ptr->inventory[i];
+						o_ptr = &p->inventory[i];
 
 						/* Skip non-objects */
 						if (!o_ptr->kind) continue;
@@ -2122,7 +2122,7 @@ bool make_attack_normal(struct monster *m_ptr)
 						i = randint0(INVEN_PACK);
 
 						/* Get the item */
-						o_ptr = &p_ptr->inventory[i];
+						o_ptr = &p->inventory[i];
 
 						/* Skip non-objects */
 						if (!o_ptr->kind) continue;
@@ -2161,7 +2161,7 @@ bool make_attack_normal(struct monster *m_ptr)
 					take_hit(damage, ddesc);
 
 					/* Get the light, and its flags */
-					o_ptr = &p_ptr->inventory[INVEN_LIGHT];
+					o_ptr = &p->inventory[INVEN_LIGHT];
 					object_flags(o_ptr, f);
 
 					/* Drain fuel where applicable */
@@ -2172,14 +2172,14 @@ bool make_attack_normal(struct monster *m_ptr)
 						if (o_ptr->timeout < 1) o_ptr->timeout = 1;
 
 						/* Notice */
-						if (!p_ptr->timed[TMD_BLIND])
+						if (!p->timed[TMD_BLIND])
 						{
 							msg("Your light dims.");
 							obvious = TRUE;
 						}
 
 						/* Redraw stuff */
-						p_ptr->redraw |= (PR_EQUIP);
+						p->redraw |= (PR_EQUIP);
 					}
 
 					break;
@@ -2195,7 +2195,7 @@ bool make_attack_normal(struct monster *m_ptr)
 
 					/* Special damage */
 					damage = adjust_dam(GF_ACID, damage, RANDOMISE, 
-						check_for_resist(GF_ACID, p_ptr->state.flags, TRUE));
+						check_for_resist(GF_ACID, p->state.flags, TRUE));
 					if (damage) {
 						take_hit(damage, ddesc);
 						inven_damage(GF_ACID, MIN(damage * 5, 300));
@@ -2217,7 +2217,7 @@ bool make_attack_normal(struct monster *m_ptr)
 
 					/* Take damage (special) */
 					damage = adjust_dam(GF_ELEC, damage, RANDOMISE,
-						check_for_resist(GF_ELEC, p_ptr->state.flags, TRUE));
+						check_for_resist(GF_ELEC, p->state.flags, TRUE));
 					if (damage) {
 						take_hit(damage, ddesc);
 						inven_damage(GF_ELEC, MIN(damage * 5, 300));
@@ -2239,7 +2239,7 @@ bool make_attack_normal(struct monster *m_ptr)
 
 					/* Take damage (special) */
 					damage = adjust_dam(GF_FIRE, damage, RANDOMISE,
-						check_for_resist(GF_FIRE, p_ptr->state.flags, TRUE));
+						check_for_resist(GF_FIRE, p->state.flags, TRUE));
 					if (damage) {
 						take_hit(damage, ddesc);
 						inven_damage(GF_FIRE, MIN(damage * 5, 300));
@@ -2261,7 +2261,7 @@ bool make_attack_normal(struct monster *m_ptr)
 
 					/* Take damage (special) */
 					damage = adjust_dam(GF_COLD, damage, RANDOMISE,
-						check_for_resist(GF_COLD, p_ptr->state.flags, TRUE));
+						check_for_resist(GF_COLD, p->state.flags, TRUE));
 					if (damage) {
 						take_hit(damage, ddesc);
 						inven_damage(GF_COLD, MIN(damage * 5, 300));
@@ -2309,7 +2309,7 @@ bool make_attack_normal(struct monster *m_ptr)
 					take_hit(damage, ddesc);
 
 					/* Increase "afraid" */
-					if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
+					if (randint0(100) < p->state.skills[SKILL_SAVE])
 					{
 						msg("You stand your ground!");
 						obvious = TRUE;
@@ -2330,13 +2330,13 @@ bool make_attack_normal(struct monster *m_ptr)
 				case RBE_PARALYZE:
 				{
 					/* Hack -- Prevent perma-paralysis via damage */
-					if (p_ptr->timed[TMD_PARALYZED] && (damage < 1)) damage = 1;
+					if (p->timed[TMD_PARALYZED] && (damage < 1)) damage = 1;
 
 					/* Take damage */
 					take_hit(damage, ddesc);
 
 					/* Increase "paralyzed" */
-					if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
+					if (randint0(100) < p->state.skills[SKILL_SAVE])
 					{
 						msg("You resist the effects!");
 						obvious = TRUE;
@@ -2450,14 +2450,14 @@ bool make_attack_normal(struct monster *m_ptr)
 					/* Radius 8 earthquake centered at the monster */
 					if (damage > 23)
 					{
-						int px_old = p_ptr->px;
-						int py_old = p_ptr->py;
+						int px_old = p->px;
+						int py_old = p->py;
 
 						earthquake(m_ptr->fy, m_ptr->fx, 8);
 
 						/* Stop the blows if the player is pushed away */
-						if ((px_old != p_ptr->px) ||
-						    (py_old != p_ptr->py))
+						if ((px_old != p->px) ||
+						    (py_old != p->py))
 						    do_break = TRUE;
 					}
 					break;
@@ -2472,22 +2472,22 @@ bool make_attack_normal(struct monster *m_ptr)
 					take_hit(damage, ddesc);
 					update_smart_learn(m_ptr, OF_HOLD_LIFE);
 
-					if (check_state(OF_HOLD_LIFE, p_ptr->state.flags) && (randint0(100) < 95))
+					if (check_state(OF_HOLD_LIFE, p->state.flags) && (randint0(100) < 95))
 					{
 						msg("You keep hold of your life force!");
 					}
 					else
 					{
-						s32b d = damroll(10, 6) + (p_ptr->exp/100) * MON_DRAIN_LIFE;
-						if (check_state(OF_HOLD_LIFE, p_ptr->state.flags))
+						s32b d = damroll(10, 6) + (p->exp/100) * MON_DRAIN_LIFE;
+						if (check_state(OF_HOLD_LIFE, p->state.flags))
 						{
 							msg("You feel your life slipping away!");
-							player_exp_lose(p_ptr, d / 10, FALSE);
+							player_exp_lose(p, d / 10, FALSE);
 						}
 						else
 						{
 							msg("You feel your life draining away!");
-							player_exp_lose(p_ptr, d, FALSE);
+							player_exp_lose(p, d, FALSE);
 						}
 					}
 
@@ -2503,23 +2503,23 @@ bool make_attack_normal(struct monster *m_ptr)
 					take_hit(damage, ddesc);
 					update_smart_learn(m_ptr, OF_HOLD_LIFE);
 
-					if (check_state(OF_HOLD_LIFE, p_ptr->state.flags) && (randint0(100) < 90))
+					if (check_state(OF_HOLD_LIFE, p->state.flags) && (randint0(100) < 90))
 					{
 						msg("You keep hold of your life force!");
 					}
 					else
 					{
-						s32b d = damroll(20, 6) + (p_ptr->exp / 100) * MON_DRAIN_LIFE;
+						s32b d = damroll(20, 6) + (p->exp / 100) * MON_DRAIN_LIFE;
 
-						if (check_state(OF_HOLD_LIFE, p_ptr->state.flags))
+						if (check_state(OF_HOLD_LIFE, p->state.flags))
 						{
 							msg("You feel your life slipping away!");
-							player_exp_lose(p_ptr, d / 10, FALSE);
+							player_exp_lose(p, d / 10, FALSE);
 						}
 						else
 						{
 							msg("You feel your life draining away!");
-							player_exp_lose(p_ptr, d, FALSE);
+							player_exp_lose(p, d, FALSE);
 						}
 					}
 					break;
@@ -2534,23 +2534,23 @@ bool make_attack_normal(struct monster *m_ptr)
 					take_hit(damage, ddesc);
 					update_smart_learn(m_ptr, OF_HOLD_LIFE);
 
-					if (check_state(OF_HOLD_LIFE, p_ptr->state.flags) && (randint0(100) < 75))
+					if (check_state(OF_HOLD_LIFE, p->state.flags) && (randint0(100) < 75))
 					{
 						msg("You keep hold of your life force!");
 					}
 					else
 					{
-						s32b d = damroll(40, 6) + (p_ptr->exp / 100) * MON_DRAIN_LIFE;
+						s32b d = damroll(40, 6) + (p->exp / 100) * MON_DRAIN_LIFE;
 
-						if (check_state(OF_HOLD_LIFE, p_ptr->state.flags))
+						if (check_state(OF_HOLD_LIFE, p->state.flags))
 						{
 							msg("You feel your life slipping away!");
-							player_exp_lose(p_ptr, d / 10, FALSE);
+							player_exp_lose(p, d / 10, FALSE);
 						}
 						else
 						{
 							msg("You feel your life draining away!");
-							player_exp_lose(p_ptr, d, FALSE);
+							player_exp_lose(p, d, FALSE);
 						}
 					}
 					break;
@@ -2565,23 +2565,23 @@ bool make_attack_normal(struct monster *m_ptr)
 					take_hit(damage, ddesc);
 					update_smart_learn(m_ptr, OF_HOLD_LIFE);
 
-					if (check_state(OF_HOLD_LIFE, p_ptr->state.flags) && (randint0(100) < 50))
+					if (check_state(OF_HOLD_LIFE, p->state.flags) && (randint0(100) < 50))
 					{
 						msg("You keep hold of your life force!");
 					}
 					else
 					{
-						s32b d = damroll(80, 6) + (p_ptr->exp / 100) * MON_DRAIN_LIFE;
+						s32b d = damroll(80, 6) + (p->exp / 100) * MON_DRAIN_LIFE;
 
-						if (check_state(OF_HOLD_LIFE, p_ptr->state.flags))
+						if (check_state(OF_HOLD_LIFE, p->state.flags))
 						{
 							msg("You feel your life slipping away!");
-							player_exp_lose(p_ptr, d / 10, FALSE);
+							player_exp_lose(p, d / 10, FALSE);
 						}
 						else
 						{
 							msg("You feel your life draining away!");
-							player_exp_lose(p_ptr, d, FALSE);
+							player_exp_lose(p, d, FALSE);
 						}
 					}
 					break;
@@ -2730,7 +2730,7 @@ bool make_attack_normal(struct monster *m_ptr)
 
 
 	/* Always notice cause of death */
-	if (p_ptr->is_dead && (l_ptr->deaths < MAX_SHORT))
+	if (p->is_dead && (l_ptr->deaths < MAX_SHORT))
 	{
 		l_ptr->deaths++;
 	}
@@ -3240,7 +3240,7 @@ static void process_monster(struct cave *c, int m_idx)
 			else
 			{
 				/* Do the attack */
-				make_attack_normal(m_ptr);
+				make_attack_normal(m_ptr, p_ptr);
 
 				/* Do not move */
 				do_move = FALSE;
@@ -3592,4 +3592,4 @@ void process_monsters(struct cave *c, byte minimum_energy)
 }
 
 /* Test functions */
-bool (*testfn_make_attack_normal)(struct monster *m) = make_attack_normal;
+bool (*testfn_make_attack_normal)(struct monster *m, struct player *p) = make_attack_normal;

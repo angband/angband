@@ -777,18 +777,6 @@ enum
 	(((Y) > 0) && ((Y) < DUNGEON_HGT-1) && \
 	 ((X) > 0) && ((X) < DUNGEON_WID-1))
 
-
-/*
- * Determines if a map location is currently "on screen"
- * Note that "panel_contains(Y,X)" always implies "in_bounds(Y,X)".
- * Pre-storing this into a cave->info flag would be nice.  XXX XXX
- */
-#define panel_contains(Y,X) \
-	(((unsigned)((Y) - Term->offset_y) < (unsigned)(SCREEN_HGT)) && \
-	 ((unsigned)((X) - Term->offset_x) < (unsigned)(SCREEN_WID)))
-
-
-
 /*
  * Determine if a "legal" grid is a "floor" grid
  *

@@ -512,7 +512,7 @@ void do_mon_spell(int spell, int m_idx, bool seen)
 	else if (rs_ptr->hit == 0)
 		hits = FALSE;
 	else
-		hits = check_hit(rs_ptr->hit, rlev);
+		hits = check_hit(p_ptr, rs_ptr->hit, rlev);
 
 	/* Tell the player what's going on */
 	disturb(1,0);

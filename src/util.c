@@ -712,7 +712,8 @@ void message_flush(void)
 	if (message_column)
 	{
 		/* Print pending messages */
-		msg_flush(message_column);
+		if (Term)
+			msg_flush(message_column);
 
 		/* Forget it */
 		msg_flag = FALSE;

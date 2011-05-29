@@ -1648,6 +1648,9 @@ errr Term_putstr(int x, int y, int n, byte a, const char *s)
 {
 	errr res;
 
+	if (!Term)
+		return 0;
+
 	/* Move first */
 	if ((res = Term_gotoxy(x, y)) != 0) return (res);
 
@@ -1887,12 +1890,9 @@ errr Term_get_cursor(bool *v)
  */
 errr Term_get_size(int *w, int *h)
 {
-	/* Access the cursor */
-	(*w) = Term->wid;
-	(*h) = Term->hgt;
-
-	/* Success */
-	return (0);
+	*w = Term ? Term->wid : 80;
+	*h = Term ? Term->hgt : 24;
+	return 0;
 }
 
 
@@ -1945,6 +1945,9 @@ errr Term_what(int x, int y, byte *a, char *c)
  */
 errr Term_flush(void)
 {
+	if (!Term)
+		return 0;
+
 	/* Hack -- Flush all events */
 	Term_xtra(TERM_XTRA_FLUSH, 0);
 
@@ -2556,4 +2559,15 @@ errr term_init(term *t, int w, int h, int k)
 
 	/* Success */
 	return (0);
+}
+
+bool panel_contains(unsigned int y, unsigned int x)
+{
+	unsigned int hgt;
+	unsigned int wid;
+	if (!Term)
+		return TRUE;
+	hgt = SCREEN_HGT;
+	wid = SCREEN_WID;
+	return (y - Term->offset_y) < hgt && (x - Term->offset_x) < wid;
 }

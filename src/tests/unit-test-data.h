@@ -15,6 +15,7 @@
 
 #include "angband.h"
 #include "object/tvalsval.h"
+#include "player/types.h"
 
 static struct player_sex TEST_DATA test_sex = {
 	.title = "Test Sex",
@@ -443,4 +444,63 @@ static struct maxima TEST_DATA test_z_info = {
 	.o_max   = 2,
 	.m_max   = 2,
 };
+
+static struct object TEST_DATA test_inven[ALL_INVEN_TOTAL];
+
+static struct player TEST_DATA test_player = {
+	.py = 1,
+	.px = 1,
+	.psex = 0,
+	.sex = &test_sex,
+	.race = &test_race,
+	.class = &test_class,
+	.hitdie = 10,
+	.expfact = 100,
+	.age = 12,
+	.ht = 40,
+	.wt = 80,
+	.sc = 100,
+	.au = 500,
+	.max_depth = 10,
+	.depth = 6,
+	.max_lev = 3,
+	.lev = 3,
+	.max_exp = 100,
+	.exp = 80,
+	.mhp = 20,
+	.chp = 14,
+	.msp = 12,
+	.csp = 11,
+	.stat_max = {
+		[A_STR] = 14,
+		[A_DEX] = 12,
+		[A_CON] = 14,
+		[A_WIS] = 10,
+		[A_INT] = 8,
+		[A_CHR] = 12,
+	},
+	.stat_cur = {
+		[A_STR] = 14,
+		[A_DEX] = 11,
+		[A_CON] = 14,
+		[A_WIS] = 10,
+		[A_INT] = 8,
+		[A_CHR] = 8,
+	},
+	.word_recall = 0,
+	.energy = 100,
+	.food = 5000,
+	.player_hp = {
+		  5,  10,  15,  20,  25,  30,  35,  40,  45,  50,
+		 55,  60,  65,  70,  75,  80,  85,  90,  95, 100,
+		105, 110, 115, 120, 125, 130, 135, 140, 145, 150,
+		155, 160, 165, 170, 175, 180, 185, 190, 195, 200,
+		205, 210, 215, 220, 225, 230, 235, 240, 245, 250
+	},
+	.history = "no history",
+	.is_dead = 0,
+	.wizard = 0,
+	.inventory = &test_inven[0],
+};
+
 #endif /* !UNIT_TEST_DATA */

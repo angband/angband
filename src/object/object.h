@@ -548,7 +548,7 @@ void object_notice_attack_plusses(object_type *o_ptr);
 bool object_notice_flag(object_type *o_ptr, int flag);
 bool object_notice_flags(object_type *o_ptr, bitflag flags[OF_SIZE]);
 bool object_notice_curses(object_type *o_ptr);
-void object_notice_on_defend(void);
+void object_notice_on_defend(struct player *p);
 void object_notice_on_wield(object_type *o_ptr);
 void object_notice_on_firing(object_type *o_ptr);
 void wieldeds_notice_flag(int flag);

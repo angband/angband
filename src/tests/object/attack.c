@@ -26,11 +26,6 @@ int test_breakage_chance(void *state) {
 	ok;
 }
 
-static int test_(void *state) {
-	struct object obj;
-	object_prep(&obj, &test_longsword, 1, AVERAGE);
-}
-
 const char *suite_name = "object/attack";
 struct test tests[] = {
 	{ "breakage-chance", test_breakage_chance },

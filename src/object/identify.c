@@ -543,7 +543,7 @@ void object_notice_effect(object_type *o_ptr)
 }
 
 
-static void object_notice_defence_plusses(object_type *o_ptr)
+static void object_notice_defence_plusses(struct player *p, object_type *o_ptr)
 {
 	assert(o_ptr && o_ptr->kind);
 
@@ -563,7 +563,7 @@ static void object_notice_defence_plusses(object_type *o_ptr)
 				o_name);
 	}
 
-	p_ptr->update |= (PU_BONUS);
+	p->update |= (PU_BONUS);
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
 }
@@ -679,13 +679,13 @@ bool object_notice_curses(object_type *o_ptr)
 /**
  * Notice things which happen on defending.
  */
-void object_notice_on_defend(void)
+void object_notice_on_defend(struct player *p)
 {
 	int i;
 
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
-		if (p_ptr->inventory[i].kind)
-			object_notice_defence_plusses(&p_ptr->inventory[i]);
+		if (p->inventory[i].kind)
+			object_notice_defence_plusses(p, &p->inventory[i]);
 
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);

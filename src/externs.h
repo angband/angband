@@ -175,9 +175,6 @@ extern void play_game(void);
 extern int value_check_aux1(const object_type *o_ptr);
 extern void idle_update(void);
 
-/* melee1.c */
-bool check_hit(int power, int level);
-
 /* melee2.c */
 extern bool make_attack_spell(int m_idx);
 

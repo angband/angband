@@ -381,5 +381,6 @@ extern errr Term_activate(term *t);
 extern errr term_nuke(term *t);
 extern errr term_init(term *t, int w, int h, int k);
 
+extern bool panel_contains(unsigned int y, unsigned int x);
 
 #endif

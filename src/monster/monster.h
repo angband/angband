@@ -351,6 +351,9 @@ typedef struct monster_message_history
 
 /*** Functions ***/
 
+/* melee2.c */
+extern bool check_hit(struct player *p, int power, int level);
+
 /* monster1.c */
 extern bool mon_inc_timed(int m_idx, int idx, int v, u16b flag);
 extern bool mon_dec_timed(int m_idx, int idx, int v, u16b flag);
@@ -403,7 +406,7 @@ extern void process_monsters(struct cave *c, byte min_energy);
 int mon_hp(const struct monster_race *r_ptr, aspect hp_aspect);
 
 #ifdef TEST
-extern bool (*testfn_make_attack_normal)(struct monster *m);
+extern bool (*testfn_make_attack_normal)(struct monster *m, struct player *p);
 #endif /* !TEST */
 
 #endif /* !MONSTER_MONSTER_H */

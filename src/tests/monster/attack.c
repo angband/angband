@@ -19,8 +19,9 @@ NOTEARDOWN
 
 static int test_attack(void *state) {
 	struct monster *m = state;
+	struct player *p = &test_player;
 	/* testfn_make_attack_normal */
-	testfn_make_attack_normal(m);
+	testfn_make_attack_normal(m, p);
 	ok;
 }
 
