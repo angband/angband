@@ -407,14 +407,24 @@ static void get_money(void)
 		p_ptr->au = p_ptr->au_birth = STARTING_GOLD;
 }
 
-void player_init(struct player *p) {
+void player_init(struct player *p)
+{
 	int i;
+	bool keep_randarts = FALSE;
 
 	if (p->inventory)
 		mem_free(p->inventory);
 
+	/* Preserve p_ptr->randarts so that players can use loaded randarts even
+	 * if they create a completely different character */
+	if (p->randarts)
+		keep_randarts = TRUE;
+
 	/* Wipe the player */
 	(void)WIPE(p, struct player);
+
+	if (keep_randarts)
+		p->randarts = TRUE;
 
 	/* Start with no artifacts made yet */
 	for (i = 0; z_info && i < z_info->a_max; i++)
@@ -459,7 +469,7 @@ void player_init(struct player *p) {
 		r_info[z_info->r_max-1].max_num = 0;
 
 
-	/* Hack -- Well fed player */
+	/* Always start with a well fed player (this is surely in the wrong fn) */
 	p->food = PY_FOOD_FULL - 1;
 
 
