@@ -1653,6 +1653,10 @@ void play_game(void)
 		}
 	}
 
+	/* Initialize temporary fields sensibly */
+	p_ptr->object_idx = p_ptr->object_kind_idx = NO_OBJECT;
+	p_ptr->monster_race_idx = 0;
+
 	/* Normal machine (process player name) */
 	if (savefile[0])
 		process_player_name(FALSE);
