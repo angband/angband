@@ -128,8 +128,8 @@ static void regenhp(int percent)
 	{
 		/* Redraw */
 		p_ptr->redraw |= (PR_HP);
-		wieldeds_notice_flag(OF_REGEN);
-		wieldeds_notice_flag(OF_IMPAIR_HP);
+		wieldeds_notice_flag(p_ptr, OF_REGEN);
+		wieldeds_notice_flag(p_ptr, OF_IMPAIR_HP);
 	}
 }
 
@@ -173,8 +173,8 @@ static void regenmana(int percent)
 	{
 		/* Redraw */
 		p_ptr->redraw |= (PR_MANA);
-		wieldeds_notice_flag(OF_REGEN);
-		wieldeds_notice_flag(OF_IMPAIR_MANA);
+		wieldeds_notice_flag(p_ptr, OF_REGEN);
+		wieldeds_notice_flag(p_ptr, OF_IMPAIR_MANA);
 	}
 }
 
@@ -465,7 +465,7 @@ static void decrease_timeouts(void)
 			}
 		}
 		/* Decrement the effect */
-		dec_timed(i, decr, FALSE);
+		player_dec_timed(p_ptr, i, decr, FALSE);
 	}
 
 	return;
@@ -595,7 +595,7 @@ static void process_world(struct cave *c)
 			if (i < 1) i = 1;
 
 			/* Digest some food */
-			(void)set_food(p_ptr->food - i);
+			player_set_food(p_ptr, p_ptr->food - i);
 		}
 	}
 
@@ -603,7 +603,7 @@ static void process_world(struct cave *c)
 	else
 	{
 		/* Digest a lot of food */
-		(void)set_food(p_ptr->food - 100);
+		player_set_food(p_ptr, p_ptr->food - 100);
 	}
 
 	/* Getting Faint */
@@ -617,7 +617,7 @@ static void process_world(struct cave *c)
 			disturb(1, 0);
 
 			/* Faint (bypass free action) */
-			(void)inc_timed(p_ptr, TMD_PARALYZED, 1 + randint0(5), TRUE, FALSE);
+			(void)player_inc_timed(p_ptr, TMD_PARALYZED, 1 + randint0(5), TRUE, FALSE);
 		}
 	}
 
@@ -762,7 +762,7 @@ static void process_world(struct cave *c)
 		if ((p_ptr->exp > 0) && one_in_(10))
 			player_exp_lose(p_ptr, 1, FALSE);
 
-		wieldeds_notice_flag(OF_DRAIN_EXP);
+		wieldeds_notice_flag(p_ptr, OF_DRAIN_EXP);
 	}
 
 	/* Recharge activatable objects and rods */
@@ -777,7 +777,7 @@ static void process_world(struct cave *c)
 	/* Random teleportation */
 	if (check_state(OF_TELEPORT, p_ptr->state.flags) && one_in_(100))
 	{
-		wieldeds_notice_flag(OF_TELEPORT);
+		wieldeds_notice_flag(p_ptr, OF_TELEPORT);
 		teleport_player(40);
 		disturb(0, 0);
 	}
@@ -1788,17 +1788,17 @@ void play_game(void)
 				p_ptr->csp_frac = 0;
 
 				/* Hack -- Healing */
-				(void)clear_timed(TMD_BLIND, TRUE);
-				(void)clear_timed(TMD_CONFUSED, TRUE);
-				(void)clear_timed(TMD_POISONED, TRUE);
-				(void)clear_timed(TMD_AFRAID, TRUE);
-				(void)clear_timed(TMD_PARALYZED, TRUE);
-				(void)clear_timed(TMD_IMAGE, TRUE);
-				(void)clear_timed(TMD_STUN, TRUE);
-				(void)clear_timed(TMD_CUT, TRUE);
+				(void)player_clear_timed(p_ptr, TMD_BLIND, TRUE);
+				(void)player_clear_timed(p_ptr, TMD_CONFUSED, TRUE);
+				(void)player_clear_timed(p_ptr, TMD_POISONED, TRUE);
+				(void)player_clear_timed(p_ptr, TMD_AFRAID, TRUE);
+				(void)player_clear_timed(p_ptr, TMD_PARALYZED, TRUE);
+				(void)player_clear_timed(p_ptr, TMD_IMAGE, TRUE);
+				(void)player_clear_timed(p_ptr, TMD_STUN, TRUE);
+				(void)player_clear_timed(p_ptr, TMD_CUT, TRUE);
 
 				/* Hack -- Prevent starvation */
-				(void)set_food(PY_FOOD_MAX - 1);
+				player_set_food(p_ptr, PY_FOOD_MAX - 1);
 
 				/* Hack -- cancel recall */
 				if (p_ptr->word_recall)

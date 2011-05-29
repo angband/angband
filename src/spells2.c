@@ -179,27 +179,27 @@ bool do_dec_stat(int stat, bool perma)
 	{
 		case A_STR:
 			if (check_state(OF_SUST_STR, p_ptr->state.flags)) sust = TRUE;
-			wieldeds_notice_flag(OF_SUST_STR);
+			wieldeds_notice_flag(p_ptr, OF_SUST_STR);
 			break;
 		case A_INT:
 			if (check_state(OF_SUST_INT, p_ptr->state.flags)) sust = TRUE;
-			wieldeds_notice_flag(OF_SUST_INT);
+			wieldeds_notice_flag(p_ptr, OF_SUST_INT);
 			break;
 		case A_WIS:
 			if (check_state(OF_SUST_WIS, p_ptr->state.flags)) sust = TRUE;
-			wieldeds_notice_flag(OF_SUST_WIS);
+			wieldeds_notice_flag(p_ptr, OF_SUST_WIS);
 			break;
 		case A_DEX:
 			if (check_state(OF_SUST_DEX, p_ptr->state.flags)) sust = TRUE;
-			wieldeds_notice_flag(OF_SUST_DEX);
+			wieldeds_notice_flag(p_ptr, OF_SUST_DEX);
 			break;
 		case A_CON:
 			if (check_state(OF_SUST_CON, p_ptr->state.flags)) sust = TRUE;
-			wieldeds_notice_flag(OF_SUST_CON);
+			wieldeds_notice_flag(p_ptr, OF_SUST_CON);
 			break;
 		case A_CHR:
 			if (check_state(OF_SUST_CHR, p_ptr->state.flags)) sust = TRUE;
-			wieldeds_notice_flag(OF_SUST_CHR);
+			wieldeds_notice_flag(p_ptr, OF_SUST_CHR);
 			break;
 	}
 
@@ -2076,11 +2076,11 @@ void destroy_area(int y1, int x1, int r, bool full)
 		msg("There is a searing blast of light!");
 
 		/* Blind the player */
-		wieldeds_notice_flag(OF_RES_LIGHT);
+		wieldeds_notice_flag(p_ptr, OF_RES_LIGHT);
 		if (!check_state(OF_RES_LIGHT, p_ptr->state.flags))
 		{
 			/* Become blind */
-			(void)inc_timed(p_ptr, TMD_BLIND, 10 + randint1(10), TRUE, TRUE);
+			(void)player_inc_timed(p_ptr, TMD_BLIND, 10 + randint1(10), TRUE, TRUE);
 		}
 	}
 
@@ -2248,14 +2248,14 @@ void earthquake(int cy, int cx, int r)
 				{
 					msg("You are bashed by rubble!");
 					damage = damroll(10, 4);
-					(void)inc_timed(p_ptr, TMD_STUN, randint1(50), TRUE, TRUE);
+					(void)player_inc_timed(p_ptr, TMD_STUN, randint1(50), TRUE, TRUE);
 					break;
 				}
 				case 3:
 				{
 					msg("You are crushed between the floor and ceiling!");
 					damage = damroll(10, 4);
-					(void)inc_timed(p_ptr, TMD_STUN, randint1(50), TRUE, TRUE);
+					(void)player_inc_timed(p_ptr, TMD_STUN, randint1(50), TRUE, TRUE);
 					break;
 				}
 			}

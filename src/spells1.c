@@ -73,11 +73,11 @@ int check_for_resist(int type, bitflag *flags, bool real)
 
 	/* Notice flags, if it's a real attack */
 	if (real && gf_ptr->immunity)
-		wieldeds_notice_flag(gf_ptr->immunity);
+		wieldeds_notice_flag(p_ptr, gf_ptr->immunity);
 	if (real && gf_ptr->resist)
-		wieldeds_notice_flag(gf_ptr->resist);
+		wieldeds_notice_flag(p_ptr, gf_ptr->resist);
 	if (real && gf_ptr->vuln)
-		wieldeds_notice_flag(gf_ptr->vuln);
+		wieldeds_notice_flag(p_ptr, gf_ptr->vuln);
 
 	return result;
 }

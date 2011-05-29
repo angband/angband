@@ -282,14 +282,14 @@ static void chest_trap(int y, int x, s16b o_idx)
 	if (trap & (CHEST_POISON))
 	{
 		msg("A puff of green gas surrounds you!");
-		(void)inc_timed(p_ptr, TMD_POISONED, 10 + randint1(20), TRUE, TRUE);
+		(void)player_inc_timed(p_ptr, TMD_POISONED, 10 + randint1(20), TRUE, TRUE);
 	}
 
 	/* Paralyze */
 	if (trap & (CHEST_PARALYZE))
 	{
 		msg("A puff of yellow gas surrounds you!");
-		(void)inc_timed(p_ptr, TMD_PARALYZED, 10 + randint1(20), TRUE, TRUE);
+		(void)player_inc_timed(p_ptr, TMD_PARALYZED, 10 + randint1(20), TRUE, TRUE);
 	}
 
 	/* Summon monsters */
@@ -1467,7 +1467,7 @@ static bool do_cmd_bash_aux(int y, int x)
 		msg("You are off-balance.");
 
 		/* Hack -- Lose balance ala paralysis */
-		(void)inc_timed(p_ptr, TMD_PARALYZED, 2 + randint0(2), TRUE, FALSE);
+		(void)player_inc_timed(p_ptr, TMD_PARALYZED, 2 + randint0(2), TRUE, FALSE);
 	}
 
 	/* Result */

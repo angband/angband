@@ -651,7 +651,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 
 	/* Food feeds the player */
 	if (o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION)
-		(void)set_food(p_ptr->food + o_ptr->pval[DEFAULT_PVAL]);
+		player_set_food(p_ptr, p_ptr->food + o_ptr->pval[DEFAULT_PVAL]);
 
 	/* Use the turn */
 	p_ptr->energy_use = 100;

@@ -214,7 +214,7 @@ bool py_attack_real(int y, int x, bool *fear) {
 
 		if (check_state(OF_IMPACT, p_ptr->state.flags) && dmg > 50) {
 			do_quake = TRUE;
-			wieldeds_notice_flag(OF_IMPACT);
+			wieldeds_notice_flag(p_ptr, OF_IMPACT);
 		}
 	}
 

@@ -1159,19 +1159,19 @@ static void do_cmd_wiz_cure_all(void)
 	p_ptr->csp_frac = 0;
 
 	/* Cure stuff */
-	(void)clear_timed(TMD_BLIND, TRUE);
-	(void)clear_timed(TMD_CONFUSED, TRUE);
-	(void)clear_timed(TMD_POISONED, TRUE);
-	(void)clear_timed(TMD_AFRAID, TRUE);
-	(void)clear_timed(TMD_PARALYZED, TRUE);
-	(void)clear_timed(TMD_IMAGE, TRUE);
-	(void)clear_timed(TMD_STUN, TRUE);
-	(void)clear_timed(TMD_CUT, TRUE);
-	(void)clear_timed(TMD_SLOW, TRUE);
-	(void)clear_timed(TMD_AMNESIA, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_BLIND, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_CONFUSED, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_POISONED, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_AFRAID, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_PARALYZED, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_IMAGE, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_STUN, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_CUT, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_SLOW, TRUE);
+	(void)player_clear_timed(p_ptr, TMD_AMNESIA, TRUE);
 
 	/* No longer hungry */
-	(void)set_food(PY_FOOD_MAX - 1);
+	player_set_food(p_ptr, PY_FOOD_MAX - 1);
 
 	/* Redraw everything */
 	do_cmd_redraw();

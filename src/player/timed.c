@@ -26,8 +26,8 @@
  * their own, as they are more complex than the ones handled by the generic
  * code.
  */
-static bool set_stun(int v);
-static bool set_cut(int v);
+static bool set_stun(struct player *p, int v);
+static bool set_cut(struct player *p, int v);
 
 
 typedef struct
@@ -135,7 +135,7 @@ static timed_effect effects[] =
 /*
  * Set a timed event (except timed resists, cutting and stunning).
  */
-bool set_timed(struct player *p, int idx, int v, bool notify)
+bool player_set_timed(struct player *p, int idx, int v, bool notify)
 {
 	timed_effect *effect;
 
@@ -147,8 +147,8 @@ bool set_timed(struct player *p, int idx, int v, bool notify)
 	if (p->timed[idx] == v) return FALSE;
 
 	/* Hack -- call other functions */
-	if (idx == TMD_STUN) return set_stun(v);
-	else if (idx == TMD_CUT) return set_cut(v);
+	if (idx == TMD_STUN) return set_stun(p, v);
+	else if (idx == TMD_CUT) return set_cut(p, v);
 
 	/* Don't mention effects which already match the player state. */
 	if (idx == TMD_OPP_ACID && check_state(OF_IM_ACID, p->state.flags))
@@ -195,7 +195,7 @@ bool set_timed(struct player *p, int idx, int v, bool notify)
 
 	/* Sort out the sprint effect */
 	if (idx == TMD_SPRINT && v == 0)
-		inc_timed(p, TMD_SLOW, 100, TRUE, FALSE);
+		player_inc_timed(p, TMD_SLOW, 100, TRUE, FALSE);
 
 	/* Nothing to notice */
 	if (!notify) return FALSE;
@@ -218,7 +218,7 @@ bool set_timed(struct player *p, int idx, int v, bool notify)
  * Increase the timed effect `idx` by `v`.  Mention this if `notify` is TRUE.
  * Check for resistance to the effect if `check` is TRUE.
  */
-bool inc_timed(struct player *p, int idx, int v, bool notify, bool check)
+bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check)
 {
 	timed_effect *effect;
 
@@ -241,13 +241,13 @@ bool inc_timed(struct player *p, int idx, int v, bool notify, bool check)
 	/* Set v */
 	v = v + p->timed[idx];
 
-	return set_timed(p, idx, v, notify);
+	return player_set_timed(p, idx, v, notify);
 }
 
 /**
  * Decrease the timed effect `idx` by `v`.  Mention this if `notify` is TRUE.
  */
-bool dec_timed(struct player *p, int idx, int v, bool notify)
+bool player_dec_timed(struct player *p, int idx, int v, bool notify)
 {
 	/* Check we have a valid effect */
 	if ((idx < 0) || (idx > TMD_MAX)) return FALSE;
@@ -255,15 +255,15 @@ bool dec_timed(struct player *p, int idx, int v, bool notify)
 	/* Set v */
 	v = p->timed[idx] - v;
 
-	return set_timed(p, idx, v, notify);
+	return player_set_timed(p, idx, v, notify);
 }
 
 /**
  * Clear the timed effect `idx`.  Mention this if `notify` is TRUE.
  */
-bool clear_timed(struct player *p, int idx, bool notify)
+bool player_clear_timed(struct player *p, int idx, bool notify)
 {
-	return set_timed(p, idx, 0, notify);
+	return player_set_timed(p, idx, 0, notify);
 }
 
 
@@ -638,7 +638,7 @@ static bool set_cut(struct player *p, int v)
  * game turns, or 500/(100/5) = 25 player turns (if nothing else is
  * affecting the player speed).
  */
-bool set_food(struct player *p, int v)
+bool player_set_food(struct player *p, int v)
 {
 	int old_aux, new_aux;
 

@@ -551,7 +551,7 @@ bool object_notice_curses(object_type *o_ptr);
 void object_notice_on_defend(struct player *p);
 void object_notice_on_wield(object_type *o_ptr);
 void object_notice_on_firing(object_type *o_ptr);
-void wieldeds_notice_flag(int flag);
+void wieldeds_notice_flag(struct player *p, int flag);
 void wieldeds_notice_on_attack(void);
 void object_repair_knowledge(object_type *o_ptr);
 bool object_FA_would_be_obvious(const object_type *o_ptr);
