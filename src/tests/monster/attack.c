@@ -19,31 +19,79 @@ int setup_tests(void **state) {
 
 NOTEARDOWN
 
-static int test_attack(void *state) {
-	struct monster *m = state;
-	struct player *p = &test_player;
+static int mdam(struct monster *m)
+{
+	return m->race->blow[0].d_dice;
+}
+
+static int take1(struct player *p, struct monster *m, int blow, int eff)
+{
 	int old, new;
-	int i;
-
-	rand_fix(100);
-	flags_set(m->race->flags, RF_SIZE, RF_NEVER_BLOW, FLAG_END);
-	old = p->chp;
-	for (i = 0; i < 100; i++)
-		testfn_make_attack_normal(m, p);
-	new = p->chp;
-	eq(old, new);
-	flags_clear(m->race->flags, RF_SIZE, RF_NEVER_BLOW, FLAG_END);
-
+	m->race->blow[0].effect = eff;
+	m->race->blow[0].method = blow;
+	p->chp = p->mhp;
 	old = p->chp;
 	testfn_make_attack_normal(m, p);
 	new = p->chp;
-	eq(old - m->race->blow[0].d_dice, new);
+	p->chp = p->mhp;
+	return old - new;
+}
+
+static int test_blows(void *state) {
+	struct monster *m = state;
+	struct player *p = &test_player;
+	int delta;
+
+	rand_fix(100);
+	flags_set(m->race->flags, RF_SIZE, RF_NEVER_BLOW, FLAG_END);
+	delta = take1(p, m, RBM_HIT, RBE_HURT);
+	flags_clear(m->race->flags, RF_SIZE, RF_NEVER_BLOW, FLAG_END);
+	eq(delta, 0);
+
+	delta = take1(p, m, RBM_HIT, RBE_HURT);
+	eq(delta, mdam(m));
+	delta = take1(p, m, RBM_TOUCH, RBE_HURT);
+	eq(delta, mdam(m));
+	delta = take1(p, m, RBM_PUNCH, RBE_HURT);
+	eq(delta, mdam(m));
+	delta = take1(p, m, RBM_KICK, RBE_HURT);
+	eq(delta, mdam(m));
+	delta = take1(p, m, RBM_CLAW, RBE_HURT);
+	eq(delta, mdam(m));
+	delta = take1(p, m, RBM_BITE, RBE_HURT);
+	eq(delta, mdam(m));
+	delta = take1(p, m, RBM_STING, RBE_HURT);
+	eq(delta, mdam(m));
+	delta = take1(p, m, RBM_BUTT, RBE_HURT);
+	eq(delta, mdam(m));
+	delta = take1(p, m, RBM_CRUSH, RBE_HURT);
+	eq(delta, mdam(m));
+	delta = take1(p, m, RBM_ENGULF, RBE_HURT);
+	eq(delta, mdam(m));
+	delta = take1(p, m, RBM_CRAWL, RBE_HURT);
+	eq(delta, mdam(m));
+	delta = take1(p, m, RBM_DROOL, RBE_HURT);
+	eq(delta, mdam(m));
+	delta = take1(p, m, RBM_SPIT, RBE_HURT);
+	eq(delta, mdam(m));
+	delta = take1(p, m, RBM_GAZE, RBE_HURT);
+	eq(delta, mdam(m));
+	delta = take1(p, m, RBM_WAIL, RBE_HURT);
+	eq(delta, mdam(m));
+	delta = take1(p, m, RBM_SPORE, RBE_HURT);
+	eq(delta, mdam(m));
+	delta = take1(p, m, RBM_BEG, RBE_HURT);
+	eq(delta, mdam(m));
+	delta = take1(p, m, RBM_INSULT, RBE_HURT);
+	eq(delta, mdam(m));
+	delta = take1(p, m, RBM_MOAN, RBE_HURT);
+	eq(delta, mdam(m));
 
 	ok;
 }
 
 const char *suite_name = "monster/attack";
 const struct test tests[] = {
-	{ "attack", test_attack },
+	{ "blows", test_blows },
 	{ NULL, NULL },
 };
