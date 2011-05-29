@@ -1,0 +1,33 @@
+#!/usr/bin/perl
+
+use warnings qw(all);
+use strict;
+
+my $tot = 0;
+my $cov = 0;
+my @fs = ();
+foreach my $fn (@ARGV) {
+	my $fh;
+	$fn =~ s!/!#!g;
+	open($fh, '<', $fn) or (warn "cannot open $fn: $!" and next);
+	my $fcov = 0;
+	my $ftot = 0;
+#	print "$fn: ";
+	while (my $line = <$fh>) {
+		my @lp = split(/:/, $line, 3);
+		my $n = $lp[0];
+		my $ln = $lp[1];
+		$n =~ s/^ *//;
+		$ftot++ if $n ne '-';
+		$fcov++ if $n ne '#####' and $n ne '-';
+	}
+	$tot += $ftot;
+	$cov += $fcov;
+#	printf("$fcov/$ftot (%.2f%%)\n", ($fcov / $ftot) * 100);
+	push @fs, [ $fn, $fcov, $ftot ];
+}
+@fs = sort { ($a->[1] / $a->[2]) <=> ($b->[1] / $b->[2]) } @fs;
+foreach my $f (@fs) {
+	printf("%s: %d/%d (%.2f%%)\n", $f->[0], $f->[1], $f->[2], 100 * $f->[1] / $f->[2]);
+}
+printf("$cov/$tot (%.2f%%)\n", ($cov / $tot) * 100);
