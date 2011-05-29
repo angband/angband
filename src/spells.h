@@ -6,6 +6,7 @@
 #ifndef SPELLS_H
 #define SPELLS_H
 
+#include "monster/monster.h"
 
 /*
  * Spell types used by project(), and related functions.
@@ -90,7 +91,7 @@ enum
 
 /* spells1.c */
 s16b poly_r_idx(int r_idx);
-void teleport_away(int m_idx, int dis);
+void teleport_away(struct monster *m, int dis);
 void teleport_player(int dis);
 void teleport_player_to(int ny, int nx);
 void teleport_player_level(void);
@@ -108,7 +109,7 @@ int check_for_resist(int type, bitflag *flags, bool real);
 bool check_side_immune(int type);
 int inven_damage(int type, int cperc);
 int adjust_dam(int type, int dam, aspect dam_aspect, int resist);
-void monster_learn_resists(int m_idx, int type);
+void monster_learn_resists(struct monster *m, int type);
 
 /* spells2.c */
 extern bool hp_player(int num);

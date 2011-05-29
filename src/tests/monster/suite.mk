@@ -1,1 +1,1 @@
-TESTPROGS += monster/monster
+TESTPROGS += monster/attack monster/monster

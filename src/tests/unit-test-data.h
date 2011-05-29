@@ -21,9 +21,34 @@ static struct player_sex TEST_DATA test_sex = {
 	.winner = "Test Winner",
 };
 
+static struct object_base TEST_DATA sword_base = {
+	.name = "Test Sword",
+	.tval = TV_SWORD,
+	.next = NULL,
+	.break_perc = 50,
+};
+
+static struct artifact TEST_DATA test_artifact_sword = {
+	.name = "Test Artifact",
+	.text = "A test artifact.",
+	.aidx = 0,
+	.next = NULL,
+	.tval = TV_SWORD,
+	.sval = SV_LONG_SWORD,
+	.to_a = 1,
+	.to_h = 2,
+	.to_d = 3,
+	.ac = 5,
+	.dd = 2,
+	.ds = 5,
+	.weight = 16,
+	.cost = 40,
+};
+
 static struct object_kind TEST_DATA test_longsword = {
 	.name = "Test Longsword",
 	.text = "A test longsword [0].",
+	.base = &sword_base,
 	.kidx = 0,
 	.tval = TV_SWORD,
 	.sval = SV_LONG_SWORD,
@@ -354,6 +379,57 @@ static struct monster_base TEST_DATA test_rb_info = {
 	.pain = NULL,
 	
 };
+
+#define _NOBLOW { .method = RBM_NONE, .effect = RBE_NONE, .d_dice = 0, .d_side = 0 }
+
+static struct monster_race TEST_DATA test_r_human = {
+	.next = NULL,
+	.ridx = 0,
+	.name = "Human",
+	.text = "A random test human",
+
+	.base = &test_rb_info,
+
+	.avg_hp = 10,
+	.ac = 12,
+	.sleep = 0,
+	.aaf = 20,
+	.speed = 110,
+	.mexp = 50,
+	.power = 1,
+	.scaled_power = 1,
+	.highest_threat = 5,
+	.freq_innate = 0,
+	.freq_spell = 0,
+
+	.blow = {
+		{
+			.method = RBM_HIT,
+			.effect = RBE_HURT,
+			.d_dice = 1,
+			.d_side = 4,
+		},
+		_NOBLOW,
+		_NOBLOW,
+		_NOBLOW,
+	},
+
+	.level = 1,
+	.rarity = 1,
+
+	.d_attr = 0,
+	.d_char = 't',
+
+	.x_attr = 0,
+	.x_char = 't',
+
+	.max_num = 100,
+	.cur_num = 0,
+
+	.drops = NULL,
+};
+
+#undef _NOBLOW
 
 static struct maxima TEST_DATA test_z_info = {
 	.f_max   = 2,

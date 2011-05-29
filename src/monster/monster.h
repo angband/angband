@@ -287,7 +287,9 @@ typedef struct
  */
 typedef struct monster
 {
+	struct monster_race *race;
 	s16b r_idx;			/* Monster race index */
+	int midx;
 
 	byte fy;			/* Y location on map */
 	byte fx;			/* X location on map */
@@ -378,7 +380,7 @@ extern void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int 
 extern void lore_do_probe(int m_idx);
 extern void update_mon(int m_idx, bool full);
 extern void update_monsters(bool full);
-extern s16b monster_carry(int m_idx, object_type *j_ptr);
+extern s16b monster_carry(struct monster *m, object_type *j_ptr);
 extern void monster_swap(int y1, int x1, int y2, int x2);
 extern void player_place(struct cave *c, struct player *p, int y, int x);
 extern s16b monster_place(int y, int x, monster_type *n_ptr, byte origin);
@@ -392,12 +394,16 @@ extern bool multiply_monster(int m_idx);
 extern void message_pain(int m_idx, int dam);
 extern bool add_monster_message(char *mon_name, int m_idx, int msg_code, bool delay);
 extern void flush_all_monster_messages(void);
-extern void update_smart_learn(int m_idx, int what);
+extern void update_smart_learn(struct monster *m, int what);
 void monster_death(int m_idx, bool stats);
 bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note);
 extern void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr, bitflag flags[RF_SIZE]);
 
 extern void process_monsters(struct cave *c, byte min_energy);
 int mon_hp(const struct monster_race *r_ptr, aspect hp_aspect);
+
+#ifdef TEST
+extern bool (*testfn_make_attack_normal)(struct monster *m);
+#endif /* !TEST */
 
 #endif /* !MONSTER_MONSTER_H */

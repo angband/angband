@@ -317,7 +317,7 @@ static void do_side_effects(int spell, int dam, int m_idx, bool seen)
 			 * to replace the generic ones below. (See #1376)
 			 */
 			if (re_ptr->res_flag)
-				update_smart_learn(m_idx, re_ptr->res_flag);
+				update_smart_learn(m_ptr, re_ptr->res_flag);
 
 			if ((rs_ptr->gf && check_side_immune(rs_ptr->gf)) ||
 					check_state(re_ptr->res_flag, p_ptr->state.flags)) {
@@ -373,7 +373,7 @@ static void do_side_effects(int spell, int dam, int m_idx, bool seen)
 						break;
 
 					case S_TELE_SELF:
-						teleport_away(m_idx, randcalc(re_ptr->base, 0,
+						teleport_away(m_ptr, randcalc(re_ptr->base, 0,
 							RANDOMISE));
 						break;
 
@@ -550,7 +550,7 @@ void do_mon_spell(int spell, int m_idx, bool seen)
 
 	if (rs_ptr->gf) {
 		(void)project(m_idx, rad, p_ptr->py, p_ptr->px, dam, rs_ptr->gf, flag);
-		monster_learn_resists(m_idx, rs_ptr->gf);
+		monster_learn_resists(m_ptr, rs_ptr->gf);
 	}
 	else /* Note that non-projectable attacks are unresistable */
 		take_hit(dam, ddesc);

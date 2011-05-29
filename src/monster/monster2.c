@@ -1619,14 +1619,11 @@ void update_monsters(bool full)
 /*
  * Make a monster carry an object
  */
-s16b monster_carry(int m_idx, object_type *j_ptr)
+s16b monster_carry(struct monster *m_ptr, object_type *j_ptr)
 {
 	s16b o_idx;
 
 	s16b this_o_idx, next_o_idx = 0;
-
-	monster_type *m_ptr = cave_monster(cave, m_idx);
-
 
 	/* Scan objects already being held for combination */
 	for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx)
@@ -1672,7 +1669,7 @@ s16b monster_carry(int m_idx, object_type *j_ptr)
 		o_ptr->iy = o_ptr->ix = 0;
 
 		/* Link the object to the monster */
-		o_ptr->held_m_idx = m_idx;
+		o_ptr->held_m_idx = m_ptr->midx;
 
 		/* Link the object to the pile */
 		o_ptr->next_o_idx = m_ptr->hold_o_idx;
@@ -1890,7 +1887,7 @@ static bool mon_create_drop(int m_idx, byte origin)
 		i_ptr->origin_depth = p_ptr->depth;
 		i_ptr->origin_xtra = m_ptr->r_idx;
 		i_ptr->number = randint0(drop->max - drop->min) + drop->min;
-		if (monster_carry(m_idx, i_ptr))
+		if (monster_carry(m_ptr, i_ptr))
 			any = TRUE;
 	}
 
@@ -1907,7 +1904,7 @@ static bool mon_create_drop(int m_idx, byte origin)
 		i_ptr->origin = origin;
 		i_ptr->origin_depth = p_ptr->depth;
 		i_ptr->origin_xtra = m_ptr->r_idx;
-		if (monster_carry(m_idx, i_ptr))
+		if (monster_carry(m_ptr, i_ptr))
 			any = TRUE;
 	}
 
@@ -1931,6 +1928,7 @@ s16b monster_place(int y, int x, monster_type *n_ptr, byte origin)
 	m_idx = mon_pop();
 
 	if (!m_idx) return 0;
+	n_ptr->midx = m_idx;
 
 	/* Make a new monster */
 	cave->m_idx[y][x] = m_idx;
@@ -3192,10 +3190,9 @@ void flush_all_monster_messages(void)
  * Learn about an "observed" resistance or other player state property, or
  * lack of it.
  */
-void update_smart_learn(int m_idx, int what)
+void update_smart_learn(struct monster *m, int what)
 {
-	monster_type *m_ptr = cave_monster(cave, m_idx);
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
+	monster_race *r_ptr = &r_info[m->r_idx];
 
 	/* Sanity check */
 	if (!what) return;
@@ -3214,9 +3211,9 @@ void update_smart_learn(int m_idx, int what)
 
 	/* Analyze the knowledge; fail very rarely */
 	if (check_state(what, p_ptr->state.flags) && !one_in_(100))
-		of_on(m_ptr->known_pflags, what);
+		of_on(m->known_pflags, what);
 	else
-		of_off(m_ptr->known_pflags, what);
+		of_off(m->known_pflags, what);
 }
 
 

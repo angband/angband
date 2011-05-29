@@ -110,13 +110,13 @@ bool check_side_immune(int type)
  * \param type is the GF_ type to which it's learning about the player's
  *    resistance (or lack of)
  */
-void monster_learn_resists(int m_idx, int type)
+void monster_learn_resists(struct monster *m, int type)
 {
 	const struct gf_type *gf_ptr = &gf_table[type];
 
-	update_smart_learn(m_idx, gf_ptr->resist);
-	update_smart_learn(m_idx, gf_ptr->immunity);
-	update_smart_learn(m_idx, gf_ptr->vuln);
+	update_smart_learn(m, gf_ptr->resist);
+	update_smart_learn(m, gf_ptr->immunity);
+	update_smart_learn(m, gf_ptr->vuln);
 
 	return;
 }
@@ -176,13 +176,11 @@ s16b poly_r_idx(int r_idx)
  *
  * But allow variation to prevent infinite loops.
  */
-void teleport_away(int m_idx, int dis)
+void teleport_away(struct monster *m_ptr, int dis)
 {
 	int ny = 0, nx = 0, oy, ox, d, i, min;
 
 	bool look = TRUE;
-
-	monster_type *m_ptr = cave_monster(cave, m_idx);
 
 
 	/* Paranoia */
@@ -2664,7 +2662,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 		m_note = MON_MSG_DISAPPEAR;
 
 		/* Teleport */
-		teleport_away(m_idx, do_dist);
+		teleport_away(m_ptr, do_dist);
 
 		/* Hack -- get new location */
 		y = m_ptr->fy;
