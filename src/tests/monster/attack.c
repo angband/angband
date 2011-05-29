@@ -21,11 +21,22 @@ static int test_attack(void *state) {
 	struct monster *m = state;
 	struct player *p = &test_player;
 	int old, new;
+	int i;
 
-	old = p->chp;	
+	rand_fix(100);
+	flags_set(m->race->flags, RF_SIZE, RF_NEVER_BLOW, FLAG_END);
+	old = p->chp;
+	for (i = 0; i < 100; i++)
+		testfn_make_attack_normal(m, p);
+	new = p->chp;
+	eq(old, new);
+	flags_clear(m->race->flags, RF_SIZE, RF_NEVER_BLOW, FLAG_END);
+
+	old = p->chp;
 	testfn_make_attack_normal(m, p);
 	new = p->chp;
-	require(new == old || (new == old - m->race->blow[0].d_dice));
+	eq(old - m->race->blow[0].d_dice, new);
+
 	ok;
 }
 

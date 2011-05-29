@@ -135,7 +135,7 @@ static timed_effect effects[] =
 /*
  * Set a timed event (except timed resists, cutting and stunning).
  */
-bool set_timed(int idx, int v, bool notify)
+bool set_timed(struct player *p, int idx, int v, bool notify)
 {
 	timed_effect *effect;
 
@@ -144,22 +144,22 @@ bool set_timed(int idx, int v, bool notify)
 	if ((idx < 0) || (idx > TMD_MAX)) return FALSE;
 
 	/* No change */
-	if (p_ptr->timed[idx] == v) return FALSE;
+	if (p->timed[idx] == v) return FALSE;
 
 	/* Hack -- call other functions */
 	if (idx == TMD_STUN) return set_stun(v);
 	else if (idx == TMD_CUT) return set_cut(v);
 
 	/* Don't mention effects which already match the player state. */
-	if (idx == TMD_OPP_ACID && check_state(OF_IM_ACID, p_ptr->state.flags))
+	if (idx == TMD_OPP_ACID && check_state(OF_IM_ACID, p->state.flags))
 		notify = FALSE;
-	else if (idx == TMD_OPP_ELEC && check_state(OF_IM_ELEC, p_ptr->state.flags))
+	else if (idx == TMD_OPP_ELEC && check_state(OF_IM_ELEC, p->state.flags))
 		notify = FALSE;
-	else if (idx == TMD_OPP_FIRE && check_state(OF_IM_FIRE, p_ptr->state.flags))
+	else if (idx == TMD_OPP_FIRE && check_state(OF_IM_FIRE, p->state.flags))
 		notify = FALSE;
-	else if (idx == TMD_OPP_COLD && check_state(OF_IM_COLD, p_ptr->state.flags))
+	else if (idx == TMD_OPP_COLD && check_state(OF_IM_COLD, p->state.flags))
 		notify = FALSE;
-	else if (idx == TMD_OPP_CONF && of_has(p_ptr->state.flags, OF_RES_CONFU))
+	else if (idx == TMD_OPP_CONF && of_has(p->state.flags, OF_RES_CONFU))
 		notify = FALSE;
 
 	/* Find the effect */
@@ -173,7 +173,7 @@ bool set_timed(int idx, int v, bool notify)
 	}
 
 	/* Turning on, always mention */
-	else if (p_ptr->timed[idx] == 0)
+	else if (p->timed[idx] == 0)
 	{
 		msgt(effect->msg, "%s", effect->on_begin);
 		notify = TRUE;
@@ -182,20 +182,20 @@ bool set_timed(int idx, int v, bool notify)
 	else if (notify)
 	{
 		/* Decrementing */
-		if (p_ptr->timed[idx] > v && effect->on_decrease)
+		if (p->timed[idx] > v && effect->on_decrease)
 			msgt(effect->msg, "%s", effect->on_decrease);
 
 		/* Incrementing */
-		else if (v > p_ptr->timed[idx] && effect->on_increase)
+		else if (v > p->timed[idx] && effect->on_increase)
 			msgt(effect->msg, "%s", effect->on_increase);
 	}
 
 	/* Use the value */
-	p_ptr->timed[idx] = v;
+	p->timed[idx] = v;
 
 	/* Sort out the sprint effect */
 	if (idx == TMD_SPRINT && v == 0)
-		inc_timed(TMD_SLOW, 100, TRUE, FALSE);
+		inc_timed(p, TMD_SLOW, 100, TRUE, FALSE);
 
 	/* Nothing to notice */
 	if (!notify) return FALSE;
@@ -204,8 +204,8 @@ bool set_timed(int idx, int v, bool notify)
 	if (OPT(disturb_state)) disturb(0, 0);
 
 	/* Update the visuals, as appropriate. */
-	p_ptr->update |= effect->flag_update;
-	p_ptr->redraw |= (PR_STATUS | effect->flag_redraw);
+	p->update |= effect->flag_update;
+	p->redraw |= (PR_STATUS | effect->flag_redraw);
 
 	/* Handle stuff */
 	handle_stuff();
@@ -218,7 +218,7 @@ bool set_timed(int idx, int v, bool notify)
  * Increase the timed effect `idx` by `v`.  Mention this if `notify` is TRUE.
  * Check for resistance to the effect if `check` is TRUE.
  */
-bool inc_timed(int idx, int v, bool notify, bool check)
+bool inc_timed(struct player *p, int idx, int v, bool notify, bool check)
 {
 	timed_effect *effect;
 
@@ -230,40 +230,40 @@ bool inc_timed(int idx, int v, bool notify, bool check)
 
 	/* Check that @ can be affected by this effect */
 	if (check) {
-		wieldeds_notice_flag(effect->resist);
-		if (check_state(effect->resist, p_ptr->state.flags)) return FALSE;
+		wieldeds_notice_flag(p, effect->resist);
+		if (check_state(effect->resist, p->state.flags)) return FALSE;
 	}
 
 	/* Paralysis should be non-cumulative */
-	if (idx == TMD_PARALYZED && p_ptr->timed[TMD_PARALYZED] > 0)
+	if (idx == TMD_PARALYZED && p->timed[TMD_PARALYZED] > 0)
 		return FALSE;
 
 	/* Set v */
-	v = v + p_ptr->timed[idx];
+	v = v + p->timed[idx];
 
-	return set_timed(idx, v, notify);
+	return set_timed(p, idx, v, notify);
 }
 
 /**
  * Decrease the timed effect `idx` by `v`.  Mention this if `notify` is TRUE.
  */
-bool dec_timed(int idx, int v, bool notify)
+bool dec_timed(struct player *p, int idx, int v, bool notify)
 {
 	/* Check we have a valid effect */
 	if ((idx < 0) || (idx > TMD_MAX)) return FALSE;
 
 	/* Set v */
-	v = p_ptr->timed[idx] - v;
+	v = p->timed[idx] - v;
 
-	return set_timed(idx, v, notify);
+	return set_timed(p, idx, v, notify);
 }
 
 /**
  * Clear the timed effect `idx`.  Mention this if `notify` is TRUE.
  */
-bool clear_timed(int idx, bool notify)
+bool clear_timed(struct player *p, int idx, bool notify)
 {
-	return set_timed(idx, 0, notify);
+	return set_timed(p, idx, 0, notify);
 }
 
 
@@ -273,7 +273,7 @@ bool clear_timed(int idx, bool notify)
  *
  * Note the special code to only notice "range" changes.
  */
-static bool set_stun(int v)
+static bool set_stun(struct player *p, int v)
 {
 	int old_aux, new_aux;
 
@@ -283,19 +283,19 @@ static bool set_stun(int v)
 	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
 
 	/* Knocked out */
-	if (p_ptr->timed[TMD_STUN] > 100)
+	if (p->timed[TMD_STUN] > 100)
 	{
 		old_aux = 3;
 	}
 
 	/* Heavy stun */
-	else if (p_ptr->timed[TMD_STUN] > 50)
+	else if (p->timed[TMD_STUN] > 50)
 	{
 		old_aux = 2;
 	}
 
 	/* Stun */
-	else if (p_ptr->timed[TMD_STUN] > 0)
+	else if (p->timed[TMD_STUN] > 0)
 	{
 		old_aux = 1;
 	}
@@ -382,7 +382,7 @@ static bool set_stun(int v)
 	}
 
 	/* Use the value */
-	p_ptr->timed[TMD_STUN] = v;
+	p->timed[TMD_STUN] = v;
 
 	/* No change */
 	if (!notice) return (FALSE);
@@ -391,10 +391,10 @@ static bool set_stun(int v)
 	if (OPT(disturb_state)) disturb(0, 0);
 
 	/* Recalculate bonuses */
-	p_ptr->update |= (PU_BONUS);
+	p->update |= (PU_BONUS);
 
 	/* Redraw the "stun" */
-	p_ptr->redraw |= (PR_STATUS);
+	p->redraw |= (PR_STATUS);
 
 	/* Handle stuff */
 	handle_stuff();
@@ -409,7 +409,7 @@ static bool set_stun(int v)
  *
  * Note the special code to only notice "range" changes.
  */
-static bool set_cut(int v)
+static bool set_cut(struct player *p, int v)
 {
 	int old_aux, new_aux;
 
@@ -419,43 +419,43 @@ static bool set_cut(int v)
 	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
 
 	/* Mortal wound */
-	if (p_ptr->timed[TMD_CUT] > 1000)
+	if (p->timed[TMD_CUT] > 1000)
 	{
 		old_aux = 7;
 	}
 
 	/* Deep gash */
-	else if (p_ptr->timed[TMD_CUT] > 200)
+	else if (p->timed[TMD_CUT] > 200)
 	{
 		old_aux = 6;
 	}
 
 	/* Severe cut */
-	else if (p_ptr->timed[TMD_CUT] > 100)
+	else if (p->timed[TMD_CUT] > 100)
 	{
 		old_aux = 5;
 	}
 
 	/* Nasty cut */
-	else if (p_ptr->timed[TMD_CUT] > 50)
+	else if (p->timed[TMD_CUT] > 50)
 	{
 		old_aux = 4;
 	}
 
 	/* Bad cut */
-	else if (p_ptr->timed[TMD_CUT] > 25)
+	else if (p->timed[TMD_CUT] > 25)
 	{
 		old_aux = 3;
 	}
 
 	/* Light cut */
-	else if (p_ptr->timed[TMD_CUT] > 10)
+	else if (p->timed[TMD_CUT] > 10)
 	{
 		old_aux = 2;
 	}
 
 	/* Graze */
-	else if (p_ptr->timed[TMD_CUT] > 0)
+	else if (p->timed[TMD_CUT] > 0)
 	{
 		old_aux = 1;
 	}
@@ -594,7 +594,7 @@ static bool set_cut(int v)
 	}
 
 	/* Use the value */
-	p_ptr->timed[TMD_CUT] = v;
+	p->timed[TMD_CUT] = v;
 
 	/* No change */
 	if (!notice) return (FALSE);
@@ -603,10 +603,10 @@ static bool set_cut(int v)
 	if (OPT(disturb_state)) disturb(0, 0);
 
 	/* Recalculate bonuses */
-	p_ptr->update |= (PU_BONUS);
+	p->update |= (PU_BONUS);
 
 	/* Redraw the "cut" */
-	p_ptr->redraw |= (PR_STATUS);
+	p->redraw |= (PR_STATUS);
 
 	/* Handle stuff */
 	handle_stuff();
@@ -638,7 +638,7 @@ static bool set_cut(int v)
  * game turns, or 500/(100/5) = 25 player turns (if nothing else is
  * affecting the player speed).
  */
-bool set_food(int v)
+bool set_food(struct player *p, int v)
 {
 	int old_aux, new_aux;
 
@@ -649,31 +649,31 @@ bool set_food(int v)
 	v = MAX(v, 0);
 
 	/* Fainting / Starving */
-	if (p_ptr->food < PY_FOOD_FAINT)
+	if (p->food < PY_FOOD_FAINT)
 	{
 		old_aux = 0;
 	}
 
 	/* Weak */
-	else if (p_ptr->food < PY_FOOD_WEAK)
+	else if (p->food < PY_FOOD_WEAK)
 	{
 		old_aux = 1;
 	}
 
 	/* Hungry */
-	else if (p_ptr->food < PY_FOOD_ALERT)
+	else if (p->food < PY_FOOD_ALERT)
 	{
 		old_aux = 2;
 	}
 
 	/* Normal */
-	else if (p_ptr->food < PY_FOOD_FULL)
+	else if (p->food < PY_FOOD_FULL)
 	{
 		old_aux = 3;
 	}
 
 	/* Full */
-	else if (p_ptr->food < PY_FOOD_MAX)
+	else if (p->food < PY_FOOD_MAX)
 	{
 		old_aux = 4;
 	}
@@ -813,7 +813,7 @@ bool set_food(int v)
 	}
 
 	/* Use the value */
-	p_ptr->food = v;
+	p->food = v;
 
 	/* Nothing to notice */
 	if (!notice) return (FALSE);
@@ -822,10 +822,10 @@ bool set_food(int v)
 	if (OPT(disturb_state)) disturb(0, 0);
 
 	/* Recalculate bonuses */
-	p_ptr->update |= (PU_BONUS);
+	p->update |= (PU_BONUS);
 
 	/* Redraw hunger */
-	p_ptr->redraw |= (PR_STATUS);
+	p->redraw |= (PR_STATUS);
 
 	/* Handle stuff */
 	handle_stuff();

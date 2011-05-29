@@ -51,11 +51,11 @@ void spell_learn(int spell);
 bool spell_cast(int spell, int dir);
 
 /* timed.c */
-bool set_timed(int idx, int v, bool notify);
-bool inc_timed(int idx, int v, bool notify, bool check);
-bool dec_timed(int idx, int v, bool notify);
-bool clear_timed(int idx, bool notify);
-bool set_food(int v);
+bool set_timed(struct player *p, int idx, int v, bool notify);
+bool inc_timed(struct player *p, int idx, int v, bool notify, bool check);
+bool dec_timed(struct player *p, int idx, int v, bool notify);
+bool clear_timed(struct player *p, int idx, bool notify);
+bool set_food(struct player *p, int v);
 
 /* util.c */
 s16b modify_stat_value(int value, int amount);

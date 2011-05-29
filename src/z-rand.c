@@ -90,6 +90,8 @@ bool Rand_quick = TRUE;
  */
 u32b Rand_value;
 
+static bool rand_fixed = FALSE;
+static u32b rand_fixval = 0;
 
 /**
  * Initialize the complex RNG using a new seed.
@@ -137,6 +139,9 @@ u32b Rand_div(u32b m) {
 
 	/* Hack -- simple case */
 	if (m <= 1) return (0);
+
+	if (rand_fixed)
+		return (rand_fixval * 1000) / (100 * m * 1000);
 
 	/* Partition size */
 	n = (0x10000000 / m);
@@ -458,4 +463,9 @@ bool randcalc_valid(random_value v, int test) {
  */
 bool randcalc_varies(random_value v) {
 	return randcalc(v, 0, MINIMISE) != randcalc(v, 0, MAXIMISE);
+}
+
+void rand_fix(u32b val) {
+	rand_fixed = TRUE;
+	rand_fixval = val;
 }

@@ -900,7 +900,7 @@ static void object_notice_after_time(void)
  *
  * \param flag is the flag to notice
  */
-void wieldeds_notice_flag(int flag)
+void wieldeds_notice_flag(struct player *p, int flag)
 {
 	int i;
 
@@ -910,7 +910,7 @@ void wieldeds_notice_flag(int flag)
 	/* XXX Eddie need different naming conventions for starting wieldeds at INVEN_WIELD vs INVEN_WIELD+2 */
 	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
 	{
-		object_type *o_ptr = &p_ptr->inventory[i];
+		object_type *o_ptr = &p->inventory[i];
 		bitflag f[OF_SIZE];
 
 		if (!o_ptr->kind) continue;

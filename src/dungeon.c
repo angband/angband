@@ -617,7 +617,7 @@ static void process_world(struct cave *c)
 			disturb(1, 0);
 
 			/* Faint (bypass free action) */
-			(void)inc_timed(TMD_PARALYZED, 1 + randint0(5), TRUE, FALSE);
+			(void)inc_timed(p_ptr, TMD_PARALYZED, 1 + randint0(5), TRUE, FALSE);
 		}
 	}
 

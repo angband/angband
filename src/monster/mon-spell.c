@@ -347,7 +347,7 @@ static void do_side_effects(int spell, int dam, int m_idx, bool seen)
 					dur = re_ptr->dam.m_bonus;
 
 				/* Apply the effect - we have already checked for resistance */
-				(void)inc_timed(re_ptr->flag, dur, TRUE, FALSE);
+				(void)inc_timed(p_ptr, re_ptr->flag, dur, TRUE, FALSE);
 
 			} else {
 				switch (re_ptr->flag) {

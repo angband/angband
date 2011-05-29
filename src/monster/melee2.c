@@ -1859,7 +1859,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					take_hit(damage, ddesc);
 
 					/* Take "poison" effect */
-					if (inc_timed(TMD_POISONED, randint1(rlev) + 5, TRUE, TRUE))
+					if (inc_timed(p, TMD_POISONED, randint1(rlev) + 5, TRUE, TRUE))
 						obvious = TRUE;
 
 					/* Learn about the player */
@@ -2279,7 +2279,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					take_hit(damage, ddesc);
 
 					/* Increase "blind" */
-					if (inc_timed(TMD_BLIND, 10 + randint1(rlev), TRUE, TRUE))
+					if (inc_timed(p, TMD_BLIND, 10 + randint1(rlev), TRUE, TRUE))
 						obvious = TRUE;
 
 					/* Learn about the player */
@@ -2294,7 +2294,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					take_hit(damage, ddesc);
 
 					/* Increase "confused" */
-					if (inc_timed(TMD_CONFUSED, 3 + randint1(rlev), TRUE, TRUE))
+					if (inc_timed(p, TMD_CONFUSED, 3 + randint1(rlev), TRUE, TRUE))
 						obvious = TRUE;
 
 					/* Learn about the player */
@@ -2316,7 +2316,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					}
 					else
 					{
-						if (inc_timed(TMD_AFRAID, 3 + randint1(rlev), TRUE,
+						if (inc_timed(p, TMD_AFRAID, 3 + randint1(rlev), TRUE,
 								TRUE))
 							obvious = TRUE;
 					}
@@ -2343,7 +2343,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					}
 					else
 					{
-						if (inc_timed(TMD_PARALYZED, 3 + randint1(rlev), TRUE,
+						if (inc_timed(p, TMD_PARALYZED, 3 + randint1(rlev), TRUE,
 								TRUE))
 							obvious = TRUE;
 					}
@@ -2593,7 +2593,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					take_hit(damage, ddesc);
 
 					/* Increase "image" */
-					if (inc_timed(TMD_IMAGE, 3 + randint1(rlev / 2), TRUE, TRUE))
+					if (inc_timed(p, TMD_IMAGE, 3 + randint1(rlev / 2), TRUE, TRUE))
 						obvious = TRUE;
 
 					/* Learn about the player */
@@ -2641,7 +2641,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 				}
 
 				/* Apply the cut */
-				if (k) (void)inc_timed(TMD_CUT, k, TRUE, TRUE);
+				if (k) (void)inc_timed(p, TMD_CUT, k, TRUE, TRUE);
 			}
 
 			/* Handle stun */
@@ -2666,7 +2666,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 				}
 
 				/* Apply the stun */
-				if (k) (void)inc_timed(TMD_STUN, k, TRUE, TRUE);
+				if (k) (void)inc_timed(p, TMD_STUN, k, TRUE, TRUE);
 			}
 		}
 

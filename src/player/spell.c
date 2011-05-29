@@ -378,7 +378,7 @@ bool spell_cast(int spell, int dir)
 		msg("You faint from the effort!");
 
 		/* Bypass free action */
-		(void)inc_timed(TMD_PARALYZED, randint1(5 * oops + 1), TRUE, FALSE);
+		(void)inc_timed(p_ptr, TMD_PARALYZED, randint1(5 * oops + 1), TRUE, FALSE);
 
 		/* Damage CON (possibly permanently) */
 		if (randint0(100) < 50)
