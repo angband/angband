@@ -20,8 +20,12 @@ NOTEARDOWN
 static int test_attack(void *state) {
 	struct monster *m = state;
 	struct player *p = &test_player;
-	/* testfn_make_attack_normal */
+	int old, new;
+
+	old = p->chp;	
 	testfn_make_attack_normal(m, p);
+	new = p->chp;
+	require(new == old || (new == old - m->race->blow[0].d_dice));
 	ok;
 }
 

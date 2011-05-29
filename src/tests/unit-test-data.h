@@ -407,8 +407,8 @@ static struct monster_race TEST_DATA test_r_human = {
 		{
 			.method = RBM_HIT,
 			.effect = RBE_HURT,
-			.d_dice = 1,
-			.d_side = 4,
+			.d_dice = 3,
+			.d_side = 1,
 		},
 		_NOBLOW,
 		_NOBLOW,
