@@ -13,3 +13,7 @@ lib/save/1000.*
 .gitignore
 src/tests/bin/
 src/angband-master
+*.gcov
+*.gcda
+*.gcno
+src/tests/ran-already
