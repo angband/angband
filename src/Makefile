@@ -11,6 +11,10 @@ PROG    = angband
 VERSION := $(shell ../scripts/version.sh)
 CFLAGS += -DBUILD_ID=${VERSION} -I. -std=c99 -Wdeclaration-after-statement -O0
 
+# gcov intermediate data
+GCOBJS = $(OBJECTS:.o=.gcno) $(OBJECTS:.o=.gcda)
+GCOVS = $(OBJECTS:.o=.c.gcov)
+
 export CFLAGS LDFLAGS
 
 angband: angband.o $(MAINFILES)
@@ -29,7 +33,7 @@ clean:: test-clean
 clean-extra:
 	-rm -f autoconf.h
 
-tests:
+tests: angband.o
 	$(MAKE) -C tests all
 
 test-clean:
@@ -38,4 +42,21 @@ test-clean:
 splint:
 	splint -f .splintrc ${OBJECTS:.o=.c} main.c main-gcu.c
 
-.PHONY : tests
+clean-coverage:
+	rm -f tests/ran-already
+	rm -f $(GCOVS) $(GCOBJS)
+
+coverage: CFLAGS+=-fprofile-arcs -ftest-coverage
+coverage: LDFLAGS+=-lgcov
+coverage: clean-coverage clean gen-covs
+
+tests/ran-already : tests
+	touch $@
+
+gen-covs: tests/ran-already $(GCOVS)
+	./gen-coverage $(GCOVS)
+
+%.gcov: %
+	(gcov -o $(dir $^) -p $^ >/dev/null)
+
+.PHONY : tests coverage clean-coverage tests/ran-already
