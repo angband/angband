@@ -1759,8 +1759,8 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cons
 	assert(c);
 
 	/* Place dungeon features and objects */
-	for (t = data, dy = 0; dy < ymax; dy++) {
-		for (dx = 0; dx < xmax; dx++, t++) {
+	for (t = data, dy = 0; dy < ymax && *t; dy++) {
+		for (dx = 0; dx < xmax && *t; dx++, t++) {
 			/* Extract the location */
 			x = x0 - (xmax / 2) + dx;
 			y = y0 - (ymax / 2) + dy;
@@ -1796,8 +1796,8 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cons
 
 
 	/* Place dungeon monsters and objects */
-	for (t = data, dy = 0; dy < ymax; dy++) {
-		for (dx = 0; dx < xmax; dx++, t++) {
+	for (t = data, dy = 0; dy < ymax && *t; dy++) {
+		for (dx = 0; dx < xmax && *t; dx++, t++) {
 			/* Extract the grid */
 			x = x0 - (xmax / 2) + dx;
 			y = y0 - (ymax / 2) + dy;
