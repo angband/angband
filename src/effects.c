@@ -2021,11 +2021,11 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 			msg("You are enveloped in flames!");
 			dam = damroll(4, 6);
-			dam = adjust_dam(GF_FIRE, dam, RANDOMISE,
+			dam = adjust_dam(p_ptr, GF_FIRE, dam, RANDOMISE,
 					check_for_resist(p_ptr, GF_FIRE, p_ptr->state.flags, TRUE));
 			if (dam) {
 				take_hit(p_ptr, dam, "a fire trap");
-				inven_damage(GF_FIRE, MIN(dam * 5, 300));
+				inven_damage(p_ptr, GF_FIRE, MIN(dam * 5, 300));
 			}
 			return TRUE;
 		}
@@ -2036,11 +2036,11 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 			msg("You are splashed with acid!");
 			dam = damroll(4, 6);
-			dam = adjust_dam(GF_ACID, dam, RANDOMISE,
+			dam = adjust_dam(p_ptr, GF_ACID, dam, RANDOMISE,
 					check_for_resist(p_ptr, GF_ACID, p_ptr->state.flags, TRUE));
 			if (dam) {
 				take_hit(p_ptr, dam, "an acid trap");
-				inven_damage(GF_ACID, MIN(dam * 5, 300));
+				inven_damage(p_ptr, GF_ACID, MIN(dam * 5, 300));
 			}
 			return TRUE;
 		}

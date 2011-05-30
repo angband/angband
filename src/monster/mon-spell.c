@@ -652,7 +652,7 @@ int best_spell_power(const monster_race *r_ptr, int resist)
 			/* Adjust the real damage by the assumed resistance (if it is a
 			 * resistable type) */
 			if (rs_ptr->gf)
-				dam = adjust_dam(rs_ptr->gf, dam, MAXIMISE, resist);
+				dam = adjust_dam(p_ptr, rs_ptr->gf, dam, MAXIMISE, resist);
 
 			/* Add the power ratings assigned to the various possible spell
 			 * effects (which is crucial for non-damaging spells) */

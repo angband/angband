@@ -623,7 +623,7 @@ void take_hit(struct player *p, int dam, const char *kb_str)
  *
  * Returns number of items destroyed.
  */
-int inven_damage(int type, int cperc)
+int inven_damage(struct player *p, int type, int cperc)
 {
 	const struct gf_type *gf_ptr = &gf_table[type];
 
@@ -645,7 +645,7 @@ int inven_damage(int type, int cperc)
 	{
 		if (i >= INVEN_PACK && i < QUIVER_START) continue;
 
-		o_ptr = &p_ptr->inventory[i];
+		o_ptr = &p->inventory[i];
 
 		of_wipe(f);
 		object_flags(o_ptr, f);
@@ -730,11 +730,8 @@ int inven_damage(int type, int cperc)
 			/* Damage instead of destroy */
 			if (damage)
 			{
-				/* Calculate bonuses */
-				p_ptr->update |= (PU_BONUS);
-
-				/* Window stuff */
-				p_ptr->redraw |= (PR_EQUIP);
+				p->update |= (PU_BONUS);
+				p->redraw |= (PR_EQUIP);
 
 				/* Casualty count */
 				amt = o_ptr->number;
@@ -792,7 +789,7 @@ int inven_damage(int type, int cperc)
  *
  * If any armor is damaged (or resists), the player takes less damage.
  */
-static int minus_ac(void)
+static int minus_ac(struct player *p)
 {
 	object_type *o_ptr = NULL;
 
@@ -801,17 +798,18 @@ static int minus_ac(void)
 	char o_name[80];
 
 	/* Avoid crash during monster power calculations */
-	if (!p_ptr->inventory) return FALSE;
+	if (!p->inventory) return FALSE;
 
 	/* Pick a (possibly empty) inventory slot */
 	switch (randint1(6))
 	{
-		case 1: o_ptr = &p_ptr->inventory[INVEN_BODY]; break;
-		case 2: o_ptr = &p_ptr->inventory[INVEN_ARM]; break;
-		case 3: o_ptr = &p_ptr->inventory[INVEN_OUTER]; break;
-		case 4: o_ptr = &p_ptr->inventory[INVEN_HANDS]; break;
-		case 5: o_ptr = &p_ptr->inventory[INVEN_HEAD]; break;
-		case 6: o_ptr = &p_ptr->inventory[INVEN_FEET]; break;
+		case 1: o_ptr = &p->inventory[INVEN_BODY]; break;
+		case 2: o_ptr = &p->inventory[INVEN_ARM]; break;
+		case 3: o_ptr = &p->inventory[INVEN_OUTER]; break;
+		case 4: o_ptr = &p->inventory[INVEN_HANDS]; break;
+		case 5: o_ptr = &p->inventory[INVEN_HEAD]; break;
+		case 6: o_ptr = &p->inventory[INVEN_FEET]; break;
+		default: assert(0);
 	}
 
 	/* Nothing to damage */
@@ -840,11 +838,8 @@ static int minus_ac(void)
 	/* Damage the item */
 	o_ptr->to_a--;
 
-	/* Calculate bonuses */
-	p_ptr->update |= (PU_BONUS);
-
-	/* Window stuff */
-	p_ptr->redraw |= (PR_EQUIP);
+	p->update |= PU_BONUS;
+	p->redraw |= (PR_EQUIP);
 
 	/* Item was damaged */
 	return (TRUE);
@@ -858,7 +853,7 @@ static int minus_ac(void)
  * \param dam_aspect is the calc we want (min, avg, max, random).
  * \param resist is the degree of resistance (-1 = vuln, 3 = immune).
  */
-int adjust_dam(int type, int dam, aspect dam_aspect, int resist)
+int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resist)
 {
 	const struct gf_type *gf_ptr = &gf_table[type];
 	int i, denom;
@@ -867,7 +862,7 @@ int adjust_dam(int type, int dam, aspect dam_aspect, int resist)
 		return 0;
 
 	/* Hack - acid damage is halved by armour, holy orb is halved */
-	if ((type == GF_ACID && minus_ac()) || type == GF_HOLY_ORB)
+	if ((type == GF_ACID && minus_ac(p)) || type == GF_HOLY_ORB)
 		dam = (dam + 1) / 2;
 
 	if (resist == -1) /* vulnerable */
@@ -2861,7 +2856,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		msg("Gravity warps around you.");
 
 	/* Adjust damage for resistance, immunity or vulnerability, and apply it */
-	dam = adjust_dam(typ, dam, RANDOMISE, check_for_resist(p_ptr, typ,
+	dam = adjust_dam(p_ptr, typ, dam, RANDOMISE, check_for_resist(p_ptr, typ,
 		p_ptr->state.flags, TRUE));
 	if (dam)
 		take_hit(p_ptr, dam, killer);

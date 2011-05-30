@@ -1851,7 +1851,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 
 				case RBE_POISON:
 				{
-					damage = adjust_dam(GF_POIS, damage, RANDOMISE,
+					damage = adjust_dam(p, GF_POIS, damage, RANDOMISE,
 						check_for_resist(p, GF_POIS, p->state.flags, TRUE));
 
 					/* Take damage */
@@ -2193,11 +2193,11 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					msg("You are covered in acid!");
 
 					/* Special damage */
-					damage = adjust_dam(GF_ACID, damage, RANDOMISE, 
+					damage = adjust_dam(p, GF_ACID, damage, RANDOMISE, 
 						check_for_resist(p, GF_ACID, p->state.flags, TRUE));
 					if (damage) {
 						take_hit(p, damage, ddesc);
-						inven_damage(GF_ACID, MIN(damage * 5, 300));
+						inven_damage(p, GF_ACID, MIN(damage * 5, 300));
 					}
 
 					/* Learn about the player */
@@ -2215,11 +2215,11 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					msg("You are struck by electricity!");
 
 					/* Take damage (special) */
-					damage = adjust_dam(GF_ELEC, damage, RANDOMISE,
+					damage = adjust_dam(p, GF_ELEC, damage, RANDOMISE,
 						check_for_resist(p, GF_ELEC, p->state.flags, TRUE));
 					if (damage) {
 						take_hit(p, damage, ddesc);
-						inven_damage(GF_ELEC, MIN(damage * 5, 300));
+						inven_damage(p, GF_ELEC, MIN(damage * 5, 300));
 					}
 
 					/* Learn about the player */
@@ -2237,11 +2237,11 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					msg("You are enveloped in flames!");
 
 					/* Take damage (special) */
-					damage = adjust_dam(GF_FIRE, damage, RANDOMISE,
+					damage = adjust_dam(p, GF_FIRE, damage, RANDOMISE,
 						check_for_resist(p, GF_FIRE, p->state.flags, TRUE));
 					if (damage) {
 						take_hit(p, damage, ddesc);
-						inven_damage(GF_FIRE, MIN(damage * 5, 300));
+						inven_damage(p, GF_FIRE, MIN(damage * 5, 300));
 					}
 
 					/* Learn about the player */
@@ -2259,11 +2259,11 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					msg("You are covered with frost!");
 
 					/* Take damage (special) */
-					damage = adjust_dam(GF_COLD, damage, RANDOMISE,
+					damage = adjust_dam(p, GF_COLD, damage, RANDOMISE,
 						check_for_resist(p, GF_COLD, p->state.flags, TRUE));
 					if (damage) {
 						take_hit(p, damage, ddesc);
-						inven_damage(GF_COLD, MIN(damage * 5, 300));
+						inven_damage(p, GF_COLD, MIN(damage * 5, 300));
 					}
 
 					/* Learn about the player */
