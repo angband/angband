@@ -662,7 +662,7 @@ G:{:U
 I:17:1
 W:3:0:2:1
 M:100:6d7
-A:20:3 to 100
+A:30:3 to 100
 P:0:1d4:0:0:0
 D:It can be shot with a bow.
 
@@ -691,7 +691,7 @@ G:{:s
 I:18:1
 W:3:0:3:2
 M:100:6d7
-A:20:3 to 100
+A:30:3 to 100
 P:0:1d5:0:0:0
 D:It can be shot with a crossbow.
 
@@ -720,7 +720,7 @@ G:{:s
 I:16:0
 W:0:0:4:1
 M:100:6d7
-A:20:0 to 100
+A:30:0 to 100
 P:0:1d2:0:0:0
 D:It can be shot with a sling.
 
@@ -2819,7 +2819,7 @@ E:DETECT_EVIL
 N:410:Mapping
 G:_:d
 I:55:11
-W:20:0:50:750
+W:20:0:50:600
 A:30:20 to 100
 P:0:1d2:0:0:0
 C:5+d5
