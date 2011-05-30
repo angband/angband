@@ -14,6 +14,7 @@ int setup_tests(void **state) {
 	*state = m;
 
 	p_ptr = NULL;
+	rand_fix(100);
 	return 0;
 }
 
@@ -42,7 +43,6 @@ static int test_blows(void *state) {
 	struct player *p = &test_player;
 	int delta;
 
-	rand_fix(100);
 	flags_set(m->race->flags, RF_SIZE, RF_NEVER_BLOW, FLAG_END);
 	delta = take1(p, m, RBM_HIT, RBE_HURT);
 	flags_clear(m->race->flags, RF_SIZE, RF_NEVER_BLOW, FLAG_END);
@@ -102,6 +102,16 @@ static int test_effects(void *state) {
 
 	delta = take1(p, m, RBM_HIT, RBE_ACID);
 	require(delta > 0);
+	delta = take1(p, m, RBM_HIT, RBE_ELEC);
+	require(delta > 0);
+	delta = take1(p, m, RBM_HIT, RBE_FIRE);
+	require(delta > 0);
+	delta = take1(p, m, RBM_HIT, RBE_COLD);
+	require(delta > 0);
+
+	require(!p->timed[TMD_BLIND]);
+	delta = take1(p, m, RBM_HIT, RBE_BLIND);
+	require(p->timed[TMD_BLIND]);
 
 	ok;
 }

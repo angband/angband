@@ -2282,7 +2282,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 						obvious = TRUE;
 
 					/* Learn about the player */
-					update_smart_learn(m_ptr, p_ptr, OF_RES_BLIND);
+					update_smart_learn(m_ptr, p, OF_RES_BLIND);
 
 					break;
 				}
@@ -2297,7 +2297,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 						obvious = TRUE;
 
 					/* Learn about the player */
-					update_smart_learn(m_ptr, p_ptr, OF_RES_CONFU);
+					update_smart_learn(m_ptr, p, OF_RES_CONFU);
 
 					break;
 				}
@@ -2321,7 +2321,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					}
 
 					/* Learn about the player */
-					update_smart_learn(m_ptr, p_ptr, OF_RES_FEAR);
+					update_smart_learn(m_ptr, p, OF_RES_FEAR);
 
 					break;
 				}
@@ -2348,7 +2348,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					}
 
 					/* Learn about the player */
-					update_smart_learn(m_ptr, p_ptr, OF_FREE_ACT);
+					update_smart_learn(m_ptr, p, OF_FREE_ACT);
 
 					break;
 				}
