@@ -3348,16 +3348,16 @@ static int calc_mon_feeling(struct cave *c)
 	if (c->depth == 0) return 0;
 
 	/* Check the monster power adjusted for depth */
-	x = c->mon_rating / c->depth;
+	x = c->mon_rating / (c->depth * c->depth);
 
-	if (x > 750000) return 1;
-	if (x > 400000) return 2;
-	if (x > 200000) return 3;
-	if (x > 50000) return 4;
-	if (x > 10000) return 5;
-	if (x > 2500) return 6;
-	if (x > 750) return 7;
-	if (x > 250) return 8;
+	if (x > 7500) return 1;
+	if (x > 5000) return 2;
+	if (x > 2000) return 3;
+	if (x > 1600) return 4;
+	if (x > 800) return 5;
+	if (x > 400) return 6;
+	if (x > 200) return 7;
+	if (x > 100) return 8;
 	return 9;
 }
 
