@@ -169,7 +169,8 @@ s16b ego_apply_magic(object_type *o_ptr, int level)
 }
 
 /**
- * Apply minimum pvals to an ego item.
+ * Apply minimum pvals to an ego item. Note that 0 is treated as meaning
+ * "do not apply a minimum to this pval", so it leaves negative pvals alone.
  */
 void ego_min_pvals(object_type *o_ptr)
 {
@@ -182,8 +183,8 @@ void ego_min_pvals(object_type *o_ptr)
 			for (flag = of_next(o_ptr->ego->pval_flags[j], FLAG_START);
 					flag != FLAG_END;
 					flag = of_next(o_ptr->ego->pval_flags[j], flag + 1))
-				if (!of_has(o_ptr->flags, flag) ||
-						(of_has(o_ptr->pval_flags[i], flag) &&
+				if (!of_has(o_ptr->flags, flag) || (o_ptr->ego->min_pval[j]
+						&& of_has(o_ptr->pval_flags[i], flag) &&
 						o_ptr->pval[i] < o_ptr->ego->min_pval[j]))
 					object_add_pval(o_ptr, o_ptr->ego->min_pval[j] -
 						o_ptr->pval[i], flag);

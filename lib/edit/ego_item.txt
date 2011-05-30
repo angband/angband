@@ -66,7 +66,8 @@
 # and its flags need a line to themselves. MAX_PVALS is defined in 
 # src/defines.h - you will need to recompile if you wish to change this 
 # value. A pval can take a random value. The min_pval must be present,
-# but can be 0.
+# but can be 0. 0 means "do not apply a minimum", so if you want to allow
+# a negative pval, the min must be set to 0.
 
 # Version stamp (required)
 
