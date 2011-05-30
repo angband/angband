@@ -167,7 +167,7 @@ bool py_attack_real(int y, int x, bool *fear) {
 	if (m_ptr->ml) health_track(p_ptr, cave->m_idx[y][x]);
 
 	/* Handle player fear (only for invisible monsters) */
-	if (check_state(OF_AFRAID, p_ptr->state.flags)) {
+	if (check_state(p_ptr, OF_AFRAID, p_ptr->state.flags)) {
 		msgt(MSG_AFRAID, "You are too afraid to attack %s!", m_name);
 		return FALSE;
 	}
@@ -212,7 +212,7 @@ bool py_attack_real(int y, int x, bool *fear) {
 		/* Learn by use for the weapon */
 		object_notice_attack_plusses(o_ptr);
 
-		if (check_state(OF_IMPACT, p_ptr->state.flags) && dmg > 50) {
+		if (check_state(p_ptr, OF_IMPACT, p_ptr->state.flags) && dmg > 50) {
 			do_quake = TRUE;
 			wieldeds_notice_flag(p_ptr, OF_IMPACT);
 		}
@@ -373,7 +373,7 @@ void ranged_helper(int item, int dir, int range, int shots, ranged_attack attack
 	path_n = project_path(path_g, range, y, x, ty, tx, 0);
 
 	/* Hack -- Handle stuff */
-	handle_stuff();
+	handle_stuff(p_ptr);
 
 	/* Start at the player */
 	x = p_ptr->px;
@@ -397,13 +397,13 @@ void ranged_helper(int item, int dir, int range, int shots, ranged_attack attack
 			move_cursor_relative(y, x);
 
 			Term_fresh();
-			if (p_ptr->redraw) redraw_stuff();
+			if (p_ptr->redraw) redraw_stuff(p_ptr);
 
 			Term_xtra(TERM_XTRA_DELAY, msec);
 			cave_light_spot(cave, y, x);
 
 			Term_fresh();
-			if (p_ptr->redraw) redraw_stuff();
+			if (p_ptr->redraw) redraw_stuff(p_ptr);
 		} else {
 			/* Delay anyway for consistency */
 			Term_xtra(TERM_XTRA_DELAY, msec);

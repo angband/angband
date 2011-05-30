@@ -293,7 +293,7 @@ void textui_spell_browse(void)
 
 	/* Track the object kind */
 	track_object(item);
-	handle_stuff();
+	handle_stuff(p_ptr);
 
 	textui_book_browse(object_from_item_idx(item));
 }
@@ -312,7 +312,7 @@ void textui_obj_study(void)
 		return;
 
 	track_object(item);
-	handle_stuff();
+	handle_stuff(p_ptr);
 
 	if (player_has(PF_CHOOSE_SPELLS)) {
 		int spell = get_spell(object_from_item_idx(item),

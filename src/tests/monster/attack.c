@@ -90,8 +90,21 @@ static int test_blows(void *state) {
 	ok;
 }
 
+static int test_effects(void *state) {
+	struct monster *m = state;
+	struct player *p = &test_player;
+	int delta;
+
+	require(!p->timed[TMD_POISONED]);
+	delta = take1(p, m, RBM_HIT, RBE_POISON);
+	require(p->timed[TMD_POISONED]);
+
+	ok;
+}
+
 const char *suite_name = "monster/attack";
 const struct test tests[] = {
 	{ "blows", test_blows },
+	{ "effects", test_effects },
 	{ NULL, NULL },
 };

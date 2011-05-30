@@ -106,17 +106,18 @@ bool cursed_p(bitflag *f)
  * that there are no p_ptr->timed effects which can be active yet unknown to
  * the player.
  *
+ * \param p player to act upon
  * \param flag is the object flag for which we are checking.
  * \param f is the set of flags we're checking
  */
-bool check_state(int flag, bitflag *f)
+bool check_state(struct player *p, int flag, bitflag *f)
 {
 	const struct object_flag *of_ptr = &object_flag_table[flag];
 
 	/* Sanity check */
 	if (!flag) return FALSE;
 
-	if (of_has(f, flag) || (of_ptr->timed && p_ptr->timed[of_ptr->timed]))
+	if (of_has(f, flag) || (of_ptr->timed && p->timed[of_ptr->timed]))
 		return TRUE;
 
 	return FALSE;

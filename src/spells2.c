@@ -178,27 +178,27 @@ bool do_dec_stat(int stat, bool perma)
 	switch (stat)
 	{
 		case A_STR:
-			if (check_state(OF_SUST_STR, p_ptr->state.flags)) sust = TRUE;
+			if (check_state(p_ptr, OF_SUST_STR, p_ptr->state.flags)) sust = TRUE;
 			wieldeds_notice_flag(p_ptr, OF_SUST_STR);
 			break;
 		case A_INT:
-			if (check_state(OF_SUST_INT, p_ptr->state.flags)) sust = TRUE;
+			if (check_state(p_ptr, OF_SUST_INT, p_ptr->state.flags)) sust = TRUE;
 			wieldeds_notice_flag(p_ptr, OF_SUST_INT);
 			break;
 		case A_WIS:
-			if (check_state(OF_SUST_WIS, p_ptr->state.flags)) sust = TRUE;
+			if (check_state(p_ptr, OF_SUST_WIS, p_ptr->state.flags)) sust = TRUE;
 			wieldeds_notice_flag(p_ptr, OF_SUST_WIS);
 			break;
 		case A_DEX:
-			if (check_state(OF_SUST_DEX, p_ptr->state.flags)) sust = TRUE;
+			if (check_state(p_ptr, OF_SUST_DEX, p_ptr->state.flags)) sust = TRUE;
 			wieldeds_notice_flag(p_ptr, OF_SUST_DEX);
 			break;
 		case A_CON:
-			if (check_state(OF_SUST_CON, p_ptr->state.flags)) sust = TRUE;
+			if (check_state(p_ptr, OF_SUST_CON, p_ptr->state.flags)) sust = TRUE;
 			wieldeds_notice_flag(p_ptr, OF_SUST_CON);
 			break;
 		case A_CHR:
-			if (check_state(OF_SUST_CHR, p_ptr->state.flags)) sust = TRUE;
+			if (check_state(p_ptr, OF_SUST_CHR, p_ptr->state.flags)) sust = TRUE;
 			wieldeds_notice_flag(p_ptr, OF_SUST_CHR);
 			break;
 	}
@@ -449,7 +449,7 @@ void set_recall(void)
 
 	/* Redraw status line */
 	p_ptr->redraw = PR_STATUS;
-	handle_stuff();
+	handle_stuff(p_ptr);
 }
 
 
@@ -2077,7 +2077,7 @@ void destroy_area(int y1, int x1, int r, bool full)
 
 		/* Blind the player */
 		wieldeds_notice_flag(p_ptr, OF_RES_LIGHT);
-		if (!check_state(OF_RES_LIGHT, p_ptr->state.flags))
+		if (!check_state(p_ptr, OF_RES_LIGHT, p_ptr->state.flags))
 		{
 			/* Become blind */
 			(void)player_inc_timed(p_ptr, TMD_BLIND, 10 + randint1(10), TRUE, TRUE);
@@ -2484,7 +2484,7 @@ static void cave_temp_room_light(void)
 	p_ptr->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Update stuff */
-	update_stuff();
+	update_stuff(p_ptr);
 
 	/* Process the grids */
 	for (i = 0; i < temp_n; i++)
@@ -2562,7 +2562,7 @@ static void cave_temp_room_unlight(void)
 	p_ptr->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Update stuff */
-	update_stuff();
+	update_stuff(p_ptr);
 
 	/* Process the grids */
 	for (i = 0; i < temp_n; i++)

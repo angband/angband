@@ -397,7 +397,7 @@ extern bool multiply_monster(int m_idx);
 extern void message_pain(int m_idx, int dam);
 extern bool add_monster_message(char *mon_name, int m_idx, int msg_code, bool delay);
 extern void flush_all_monster_messages(void);
-extern void update_smart_learn(struct monster *m, int what);
+extern void update_smart_learn(struct monster *m, struct player *p, int what);
 void monster_death(int m_idx, bool stats);
 bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note);
 extern void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr, bitflag flags[RF_SIZE]);

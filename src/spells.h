@@ -105,11 +105,11 @@ void cold_dam(int dam, const char *kb_str);
 bool res_stat(int stat);
 bool apply_disenchant(int mode);
 bool project(int who, int rad, int y, int x, int dam, int typ, int flg);
-int check_for_resist(int type, bitflag *flags, bool real);
+int check_for_resist(struct player *p, int type, bitflag *flags, bool real);
 bool check_side_immune(int type);
 int inven_damage(int type, int cperc);
 int adjust_dam(int type, int dam, aspect dam_aspect, int resist);
-void monster_learn_resists(struct monster *m, int type);
+void monster_learn_resists(struct monster *m, struct player *p, int type);
 
 /* spells2.c */
 extern bool hp_player(int num);

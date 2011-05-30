@@ -134,7 +134,7 @@ static void death_knowledge(void)
 
 	/* Hack -- Recalculate bonuses */
 	p_ptr->update |= (PU_BONUS);
-	handle_stuff();
+	handle_stuff(p_ptr);
 }
 
 

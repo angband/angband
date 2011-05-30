@@ -63,7 +63,7 @@ bool modify_panel(term *t, int wy, int wx)
 		p_ptr->redraw |= (PR_MAP);
 
 		/* Redraw for big graphics */
-		if ((tile_width > 1) || (tile_height > 1)) redraw_stuff();
+		if ((tile_width > 1) || (tile_height > 1)) redraw_stuff(p_ptr);
       
 		/* Changed */
 		return (TRUE);

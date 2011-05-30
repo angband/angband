@@ -151,13 +151,13 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 	else if (idx == TMD_CUT) return set_cut(p, v);
 
 	/* Don't mention effects which already match the player state. */
-	if (idx == TMD_OPP_ACID && check_state(OF_IM_ACID, p->state.flags))
+	if (idx == TMD_OPP_ACID && check_state(p_ptr, OF_IM_ACID, p->state.flags))
 		notify = FALSE;
-	else if (idx == TMD_OPP_ELEC && check_state(OF_IM_ELEC, p->state.flags))
+	else if (idx == TMD_OPP_ELEC && check_state(p_ptr, OF_IM_ELEC, p->state.flags))
 		notify = FALSE;
-	else if (idx == TMD_OPP_FIRE && check_state(OF_IM_FIRE, p->state.flags))
+	else if (idx == TMD_OPP_FIRE && check_state(p_ptr, OF_IM_FIRE, p->state.flags))
 		notify = FALSE;
-	else if (idx == TMD_OPP_COLD && check_state(OF_IM_COLD, p->state.flags))
+	else if (idx == TMD_OPP_COLD && check_state(p_ptr, OF_IM_COLD, p->state.flags))
 		notify = FALSE;
 	else if (idx == TMD_OPP_CONF && of_has(p->state.flags, OF_RES_CONFU))
 		notify = FALSE;
@@ -208,7 +208,7 @@ bool player_set_timed(struct player *p, int idx, int v, bool notify)
 	p->redraw |= (PR_STATUS | effect->flag_redraw);
 
 	/* Handle stuff */
-	handle_stuff();
+	handle_stuff(p);
 
 	/* Result */
 	return TRUE;
@@ -231,7 +231,7 @@ bool player_inc_timed(struct player *p, int idx, int v, bool notify, bool check)
 	/* Check that @ can be affected by this effect */
 	if (check) {
 		wieldeds_notice_flag(p, effect->resist);
-		if (check_state(effect->resist, p->state.flags)) return FALSE;
+		if (check_state(p, effect->resist, p->state.flags)) return FALSE;
 	}
 
 	/* Paralysis should be non-cumulative */
@@ -397,7 +397,7 @@ static bool set_stun(struct player *p, int v)
 	p->redraw |= (PR_STATUS);
 
 	/* Handle stuff */
-	handle_stuff();
+	handle_stuff(p_ptr);
 
 	/* Result */
 	return (TRUE);
@@ -609,7 +609,7 @@ static bool set_cut(struct player *p, int v)
 	p->redraw |= (PR_STATUS);
 
 	/* Handle stuff */
-	handle_stuff();
+	handle_stuff(p_ptr);
 
 	/* Result */
 	return (TRUE);
@@ -828,7 +828,7 @@ bool player_set_food(struct player *p, int v)
 	p->redraw |= (PR_STATUS);
 
 	/* Handle stuff */
-	handle_stuff();
+	handle_stuff(p_ptr);
 
 	/* Result */
 	return (TRUE);

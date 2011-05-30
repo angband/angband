@@ -1755,7 +1755,7 @@ static bool do_cmd_walk_test(int y, int x)
 	if ((cave->m_idx[y][x] > 0) && (cave_monster(cave, cave->m_idx[y][x])->ml))
 	{
 		/* Handle player fear */
-		if(check_state(OF_AFRAID, p_ptr->state.flags))
+		if(check_state(p_ptr, OF_AFRAID, p_ptr->state.flags))
 		{
 			/* Extract monster name (or "it") */
 			char m_name[80];
@@ -2013,7 +2013,7 @@ void do_cmd_rest(cmd_code code, cmd_arg args[])
 	p_ptr->redraw |= (PR_STATE);
 
 	/* Handle stuff */
-	handle_stuff();
+	handle_stuff(p_ptr);
 
 	/* Refresh XXX XXX XXX */
 	Term_fresh();

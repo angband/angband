@@ -697,7 +697,7 @@ static struct keypress target_set_interactive_aux(int y, int x, int mode)
 				health_track(p_ptr, cave->m_idx[y][x]);
 
 				/* Hack -- handle stuff */
-				handle_stuff();
+				handle_stuff(p_ptr);
 
 				/* Interact */
 				while (1)
@@ -835,7 +835,7 @@ static struct keypress target_set_interactive_aux(int y, int x, int mode)
 			boring = FALSE;
 
 			track_object(-floor_list[0]);
-			handle_stuff();
+			handle_stuff(p_ptr);
 
 			/* If there is more than one item... */
 			if (floor_num > 1) while (1)
@@ -882,7 +882,7 @@ static struct keypress target_set_interactive_aux(int y, int x, int mode)
 						if (0 <= pos && pos < floor_num)
 						{
 							track_object(-floor_list[pos]);
-							handle_stuff();
+							handle_stuff(p_ptr);
 							continue;
 						}
 						rdone = 1;
@@ -1291,7 +1291,7 @@ bool target_set_interactive(int mode, int x, int y)
 			x = temp_x[m];
 
 			/* Adjust panel if needed */
-			if (adjust_panel_help(y, x, help)) handle_stuff();
+			if (adjust_panel_help(y, x, help)) handle_stuff(p_ptr);
 		
 			/* Update help */
 			if (help) {
@@ -1354,7 +1354,7 @@ bool target_set_interactive(int mode, int x, int y)
 					verify_panel();
 
 					/* Handle stuff */
-					handle_stuff();
+					handle_stuff(p_ptr);
 
 					y = p_ptr->py;
 					x = p_ptr->px;
@@ -1406,7 +1406,7 @@ bool target_set_interactive(int mode, int x, int y)
 					/* Redraw main window */
 					p_ptr->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_EQUIP);
 					Term_clear();
-					handle_stuff();
+					handle_stuff(p_ptr);
 					if (!help)
 						prt("Press '?' for help.", help_prompt_loc, 0);
 					
@@ -1457,7 +1457,7 @@ bool target_set_interactive(int mode, int x, int y)
 						}
 
 						/* Handle stuff */
-						handle_stuff();
+						handle_stuff(p_ptr);
 					}
 				}
 
@@ -1519,7 +1519,7 @@ bool target_set_interactive(int mode, int x, int y)
 					verify_panel();
 
 					/* Handle stuff */
-					handle_stuff();
+					handle_stuff(p_ptr);
 
 					y = p_ptr->py;
 					x = p_ptr->px;
@@ -1581,7 +1581,7 @@ bool target_set_interactive(int mode, int x, int y)
 					/* Redraw main window */
 					p_ptr->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_EQUIP);
 					Term_clear();
-					handle_stuff();
+					handle_stuff(p_ptr);
 					if (!help)
 						prt("Press '?' for help.", help_prompt_loc, 0);
 					
@@ -1622,7 +1622,7 @@ bool target_set_interactive(int mode, int x, int y)
 				if (adjust_panel_help(y, x, help))
 				{
 					/* Handle stuff */
-					handle_stuff();
+					handle_stuff(p_ptr);
 
 					/* Recalculate interesting grids */
 					target_set_interactive_prepare(mode);
@@ -1651,7 +1651,7 @@ bool target_set_interactive(int mode, int x, int y)
 	verify_panel();
 
 	/* Handle stuff */
-	handle_stuff();
+	handle_stuff(p_ptr);
 
 	/* Failure to set target */
 	if (!target_set) return (FALSE);

@@ -101,7 +101,7 @@ static void remove_bad_spells(int m_idx, bitflag f[RSF_SIZE])
 	/* Cheat if requested */
 	if (OPT(birth_ai_cheat)) {
 		for (i = 0; i < OF_MAX; i++)
-			if (check_state(i, p_ptr->state.flags))
+			if (check_state(p_ptr, i, p_ptr->state.flags))
 				of_on(ai_flags, i);
 		if (!p_ptr->msp) smart |= SM_IMM_MANA;
 	}
@@ -1852,7 +1852,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 				case RBE_POISON:
 				{
 					damage = adjust_dam(GF_POIS, damage, RANDOMISE,
-						check_for_resist(GF_POIS, p->state.flags, TRUE));
+						check_for_resist(p, GF_POIS, p->state.flags, TRUE));
 
 					/* Take damage */
 					take_hit(p, damage, ddesc);
@@ -1862,7 +1862,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 						obvious = TRUE;
 
 					/* Learn about the player */
-					monster_learn_resists(m_ptr, GF_POIS);
+					monster_learn_resists(m_ptr, p, GF_POIS);
 
 					break;
 				}
@@ -1873,14 +1873,14 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					take_hit(p, damage, ddesc);
 
 					/* Allow complete resist */
-					if (!check_state(OF_RES_DISEN, p->state.flags))
+					if (!check_state(p, OF_RES_DISEN, p->state.flags))
 					{
 						/* Apply disenchantment */
 						if (apply_disenchant(0)) obvious = TRUE;
 					}
 
 					/* Learn about the player */
-					monster_learn_resists(m_ptr, GF_DISEN);
+					monster_learn_resists(m_ptr, p, GF_DISEN);
 
 					break;
 				}
@@ -2194,14 +2194,14 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 
 					/* Special damage */
 					damage = adjust_dam(GF_ACID, damage, RANDOMISE, 
-						check_for_resist(GF_ACID, p->state.flags, TRUE));
+						check_for_resist(p, GF_ACID, p->state.flags, TRUE));
 					if (damage) {
 						take_hit(p, damage, ddesc);
 						inven_damage(GF_ACID, MIN(damage * 5, 300));
 					}
 
 					/* Learn about the player */
-					monster_learn_resists(m_ptr, GF_ACID);
+					monster_learn_resists(m_ptr, p, GF_ACID);
 
 					break;
 				}
@@ -2216,14 +2216,14 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 
 					/* Take damage (special) */
 					damage = adjust_dam(GF_ELEC, damage, RANDOMISE,
-						check_for_resist(GF_ELEC, p->state.flags, TRUE));
+						check_for_resist(p, GF_ELEC, p->state.flags, TRUE));
 					if (damage) {
 						take_hit(p, damage, ddesc);
 						inven_damage(GF_ELEC, MIN(damage * 5, 300));
 					}
 
 					/* Learn about the player */
-					monster_learn_resists(m_ptr, GF_ELEC);
+					monster_learn_resists(m_ptr, p, GF_ELEC);
 
 					break;
 				}
@@ -2238,14 +2238,14 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 
 					/* Take damage (special) */
 					damage = adjust_dam(GF_FIRE, damage, RANDOMISE,
-						check_for_resist(GF_FIRE, p->state.flags, TRUE));
+						check_for_resist(p, GF_FIRE, p->state.flags, TRUE));
 					if (damage) {
 						take_hit(p, damage, ddesc);
 						inven_damage(GF_FIRE, MIN(damage * 5, 300));
 					}
 
 					/* Learn about the player */
-					monster_learn_resists(m_ptr, GF_FIRE);
+					monster_learn_resists(m_ptr, p, GF_FIRE);
 
 					break;
 				}
@@ -2260,14 +2260,14 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 
 					/* Take damage (special) */
 					damage = adjust_dam(GF_COLD, damage, RANDOMISE,
-						check_for_resist(GF_COLD, p->state.flags, TRUE));
+						check_for_resist(p, GF_COLD, p->state.flags, TRUE));
 					if (damage) {
 						take_hit(p, damage, ddesc);
 						inven_damage(GF_COLD, MIN(damage * 5, 300));
 					}
 
 					/* Learn about the player */
-					monster_learn_resists(m_ptr, GF_COLD);
+					monster_learn_resists(m_ptr, p, GF_COLD);
 
 					break;
 				}
@@ -2282,7 +2282,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 						obvious = TRUE;
 
 					/* Learn about the player */
-					update_smart_learn(m_ptr, OF_RES_BLIND);
+					update_smart_learn(m_ptr, p_ptr, OF_RES_BLIND);
 
 					break;
 				}
@@ -2297,7 +2297,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 						obvious = TRUE;
 
 					/* Learn about the player */
-					update_smart_learn(m_ptr, OF_RES_CONFU);
+					update_smart_learn(m_ptr, p_ptr, OF_RES_CONFU);
 
 					break;
 				}
@@ -2321,7 +2321,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					}
 
 					/* Learn about the player */
-					update_smart_learn(m_ptr, OF_RES_FEAR);
+					update_smart_learn(m_ptr, p_ptr, OF_RES_FEAR);
 
 					break;
 				}
@@ -2348,7 +2348,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					}
 
 					/* Learn about the player */
-					update_smart_learn(m_ptr, OF_FREE_ACT);
+					update_smart_learn(m_ptr, p_ptr, OF_FREE_ACT);
 
 					break;
 				}
@@ -2469,16 +2469,16 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 
 					/* Take damage */
 					take_hit(p, damage, ddesc);
-					update_smart_learn(m_ptr, OF_HOLD_LIFE);
+					update_smart_learn(m_ptr, p_ptr, OF_HOLD_LIFE);
 
-					if (check_state(OF_HOLD_LIFE, p->state.flags) && (randint0(100) < 95))
+					if (check_state(p, OF_HOLD_LIFE, p->state.flags) && (randint0(100) < 95))
 					{
 						msg("You keep hold of your life force!");
 					}
 					else
 					{
 						s32b d = damroll(10, 6) + (p->exp/100) * MON_DRAIN_LIFE;
-						if (check_state(OF_HOLD_LIFE, p->state.flags))
+						if (check_state(p, OF_HOLD_LIFE, p->state.flags))
 						{
 							msg("You feel your life slipping away!");
 							player_exp_lose(p, d / 10, FALSE);
@@ -2500,9 +2500,9 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 
 					/* Take damage */
 					take_hit(p, damage, ddesc);
-					update_smart_learn(m_ptr, OF_HOLD_LIFE);
+					update_smart_learn(m_ptr, p_ptr, OF_HOLD_LIFE);
 
-					if (check_state(OF_HOLD_LIFE, p->state.flags) && (randint0(100) < 90))
+					if (check_state(p, OF_HOLD_LIFE, p->state.flags) && (randint0(100) < 90))
 					{
 						msg("You keep hold of your life force!");
 					}
@@ -2510,7 +2510,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					{
 						s32b d = damroll(20, 6) + (p->exp / 100) * MON_DRAIN_LIFE;
 
-						if (check_state(OF_HOLD_LIFE, p->state.flags))
+						if (check_state(p, OF_HOLD_LIFE, p->state.flags))
 						{
 							msg("You feel your life slipping away!");
 							player_exp_lose(p, d / 10, FALSE);
@@ -2531,9 +2531,9 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 
 					/* Take damage */
 					take_hit(p, damage, ddesc);
-					update_smart_learn(m_ptr, OF_HOLD_LIFE);
+					update_smart_learn(m_ptr, p_ptr, OF_HOLD_LIFE);
 
-					if (check_state(OF_HOLD_LIFE, p->state.flags) && (randint0(100) < 75))
+					if (check_state(p, OF_HOLD_LIFE, p->state.flags) && (randint0(100) < 75))
 					{
 						msg("You keep hold of your life force!");
 					}
@@ -2541,7 +2541,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					{
 						s32b d = damroll(40, 6) + (p->exp / 100) * MON_DRAIN_LIFE;
 
-						if (check_state(OF_HOLD_LIFE, p->state.flags))
+						if (check_state(p, OF_HOLD_LIFE, p->state.flags))
 						{
 							msg("You feel your life slipping away!");
 							player_exp_lose(p, d / 10, FALSE);
@@ -2562,9 +2562,9 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 
 					/* Take damage */
 					take_hit(p, damage, ddesc);
-					update_smart_learn(m_ptr, OF_HOLD_LIFE);
+					update_smart_learn(m_ptr, p_ptr, OF_HOLD_LIFE);
 
-					if (check_state(OF_HOLD_LIFE, p->state.flags) && (randint0(100) < 50))
+					if (check_state(p, OF_HOLD_LIFE, p->state.flags) && (randint0(100) < 50))
 					{
 						msg("You keep hold of your life force!");
 					}
@@ -2572,7 +2572,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					{
 						s32b d = damroll(80, 6) + (p->exp / 100) * MON_DRAIN_LIFE;
 
-						if (check_state(OF_HOLD_LIFE, p->state.flags))
+						if (check_state(p, OF_HOLD_LIFE, p->state.flags))
 						{
 							msg("You feel your life slipping away!");
 							player_exp_lose(p, d / 10, FALSE);
@@ -2596,7 +2596,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 						obvious = TRUE;
 
 					/* Learn about the player */
-					monster_learn_resists(m_ptr, GF_CHAOS);
+					monster_learn_resists(m_ptr, p, GF_CHAOS);
 
 					break;
 				}
@@ -2788,7 +2788,7 @@ static void process_monster(struct cave *c, int m_idx)
 		u32b notice;
 
 		/* Aggravation */
-		if (check_state(OF_AGGRAVATE, p_ptr->state.flags))
+		if (check_state(p_ptr, OF_AGGRAVATE, p_ptr->state.flags))
 		{
 			/* Wake the monster */
 			mon_clear_timed(m_idx, MON_TMD_SLEEP, MON_TMD_FLG_NOTIFY);

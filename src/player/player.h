@@ -17,10 +17,10 @@ extern const byte adj_str_hold[STAT_RANGE];
 
 void calc_bonuses(object_type inventory[], player_state *state, bool id_only);
 int calc_blows(const object_type *o_ptr, player_state *state, int extra_blows);
-void notice_stuff(void);
-void update_stuff(void);
-void redraw_stuff(void);
-void handle_stuff(void);
+void notice_stuff(struct player *p);
+void update_stuff(struct player *p);
+void redraw_stuff(struct player *p);
+void handle_stuff(struct player *p);
 int weight_remaining(void);
 
 /* class.c */

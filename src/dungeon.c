@@ -586,10 +586,10 @@ static void process_world(struct cave *c)
 			i = extract_energy[p_ptr->state.speed] * 2;
 
 			/* Regeneration takes more food */
-			if (check_state(OF_REGEN, p_ptr->state.flags)) i += 30;
+			if (check_state(p_ptr, OF_REGEN, p_ptr->state.flags)) i += 30;
 
 			/* Slow digestion takes less food */
-			if (check_state(OF_SLOW_DIGEST, p_ptr->state.flags)) i -= 10;
+			if (check_state(p_ptr, OF_SLOW_DIGEST, p_ptr->state.flags)) i -= 10;
 
 			/* Minimal digestion */
 			if (i < 1) i = 1;
@@ -645,13 +645,13 @@ static void process_world(struct cave *c)
 		regen_amount = PY_REGEN_WEAK;
 
 	/* Various things speed up regeneration */
-	if (check_state(OF_REGEN, p_ptr->state.flags))
+	if (check_state(p_ptr, OF_REGEN, p_ptr->state.flags))
 		regen_amount *= 2;
 	if (p_ptr->searching || p_ptr->resting)
 		regen_amount *= 2;
 
 	/* Some things slow it down */
-	if (check_state(OF_IMPAIR_HP, p_ptr->state.flags))
+	if (check_state(p_ptr, OF_IMPAIR_HP, p_ptr->state.flags))
 		regen_amount /= 2;
 
 	/* Various things interfere with physical healing */
@@ -671,13 +671,13 @@ static void process_world(struct cave *c)
 	regen_amount = PY_REGEN_NORMAL;
 
 	/* Various things speed up regeneration */
-	if (check_state(OF_REGEN, p_ptr->state.flags))
+	if (check_state(p_ptr, OF_REGEN, p_ptr->state.flags))
 		regen_amount *= 2;
 	if (p_ptr->searching || p_ptr->resting)
 		regen_amount *= 2;
 
 	/* Some things slow it down */
-	if (check_state(OF_IMPAIR_MANA, p_ptr->state.flags))
+	if (check_state(p_ptr, OF_IMPAIR_MANA, p_ptr->state.flags))
 		regen_amount /= 2;
 
 	/* Regenerate mana */
@@ -757,7 +757,7 @@ static void process_world(struct cave *c)
 	/*** Process Inventory ***/
 
 	/* Handle experience draining */
-	if (check_state(OF_DRAIN_EXP, p_ptr->state.flags))
+	if (check_state(p_ptr, OF_DRAIN_EXP, p_ptr->state.flags))
 	{
 		if ((p_ptr->exp > 0) && one_in_(10))
 			player_exp_lose(p_ptr, 1, FALSE);
@@ -775,7 +775,7 @@ static void process_world(struct cave *c)
 	/*** Involuntary Movement ***/
 
 	/* Random teleportation */
-	if (check_state(OF_TELEPORT, p_ptr->state.flags) && one_in_(100))
+	if (check_state(p_ptr, OF_TELEPORT, p_ptr->state.flags) && one_in_(100))
 	{
 		wieldeds_notice_flag(p_ptr, OF_TELEPORT);
 		teleport_player(40);
@@ -873,7 +873,7 @@ static void process_player_aux(void)
 
 			/* Redraw stuff */
 			p_ptr->redraw |= (PR_MONSTER);
-			redraw_stuff();
+			redraw_stuff(p_ptr);
 		}
 	}
 }
@@ -973,13 +973,13 @@ static void process_player(void)
 	do
 	{
 		/* Notice stuff (if needed) */
-		if (p_ptr->notice) notice_stuff();
+		if (p_ptr->notice) notice_stuff(p_ptr);
 
 		/* Update stuff (if needed) */
-		if (p_ptr->update) update_stuff();
+		if (p_ptr->update) update_stuff(p_ptr);
 
 		/* Redraw stuff (if needed) */
-		if (p_ptr->redraw) redraw_stuff();
+		if (p_ptr->redraw) redraw_stuff(p_ptr);
 
 
 		/* Place the cursor on the player */
@@ -1144,7 +1144,7 @@ static void process_player(void)
 	while (!p_ptr->energy_use && !p_ptr->leaving);
 
 	/* Notice stuff (if needed) */
-	if (p_ptr->notice) notice_stuff();
+	if (p_ptr->notice) notice_stuff(p_ptr);
 }
 
 byte flicker = 0;
@@ -1231,7 +1231,7 @@ void idle_update(void)
 
 	/* Animate and redraw if necessary */
 	do_animation();
-	redraw_stuff();
+	redraw_stuff(p_ptr);
 
 	/* Refresh the main screen */
 	Term_fresh();
@@ -1320,7 +1320,7 @@ static void dungeon(struct cave *c)
 	p_ptr->update |= (PU_TORCH);
 
 	/* Update stuff */
-	update_stuff();
+	update_stuff(p_ptr);
 
 
 	/* Fully update the visuals (and monster distances) */
@@ -1336,10 +1336,10 @@ static void dungeon(struct cave *c)
 	p_ptr->redraw |= (PR_INVEN | PR_EQUIP | PR_MONSTER | PR_MONLIST | PR_ITEMLIST);
 
 	/* Update stuff */
-	update_stuff();
+	update_stuff(p_ptr);
 
 	/* Redraw stuff */
-	redraw_stuff();
+	redraw_stuff(p_ptr);
 
 
 	/* Hack -- Decrease "xtra" depth */
@@ -1363,13 +1363,13 @@ static void dungeon(struct cave *c)
 	p_ptr->redraw |= (PR_BUTTONS);
 
 	/* Notice stuff */
-	notice_stuff();
+	notice_stuff(p_ptr);
 
 	/* Update stuff */
-	update_stuff();
+	update_stuff(p_ptr);
 
 	/* Redraw stuff */
-	redraw_stuff();
+	redraw_stuff(p_ptr);
 
 	/* Refresh */
 	Term_fresh();
@@ -1424,13 +1424,13 @@ static void dungeon(struct cave *c)
 		}
 
 		/* Notice stuff */
-		if (p_ptr->notice) notice_stuff();
+		if (p_ptr->notice) notice_stuff(p_ptr);
 
 		/* Update stuff */
-		if (p_ptr->update) update_stuff();
+		if (p_ptr->update) update_stuff(p_ptr);
 
 		/* Redraw stuff */
-		if (p_ptr->redraw) redraw_stuff();
+		if (p_ptr->redraw) redraw_stuff(p_ptr);
 
 		/* Hack -- Highlight the player */
 		move_cursor_relative(p_ptr->py, p_ptr->px);
@@ -1443,13 +1443,13 @@ static void dungeon(struct cave *c)
 		process_monsters(c, 100);
 
 		/* Notice stuff */
-		if (p_ptr->notice) notice_stuff();
+		if (p_ptr->notice) notice_stuff(p_ptr);
 
 		/* Update stuff */
-		if (p_ptr->update) update_stuff();
+		if (p_ptr->update) update_stuff(p_ptr);
 
 		/* Redraw stuff */
-		if (p_ptr->redraw) redraw_stuff();
+		if (p_ptr->redraw) redraw_stuff(p_ptr);
 
 		/* Hack -- Highlight the player */
 		move_cursor_relative(p_ptr->py, p_ptr->px);
@@ -1462,13 +1462,13 @@ static void dungeon(struct cave *c)
 		process_world(c);
 
 		/* Notice stuff */
-		if (p_ptr->notice) notice_stuff();
+		if (p_ptr->notice) notice_stuff(p_ptr);
 
 		/* Update stuff */
-		if (p_ptr->update) update_stuff();
+		if (p_ptr->update) update_stuff(p_ptr);
 
 		/* Redraw stuff */
-		if (p_ptr->redraw) redraw_stuff();
+		if (p_ptr->redraw) redraw_stuff(p_ptr);
 
 		/* Hack -- Highlight the player */
 		move_cursor_relative(p_ptr->py, p_ptr->px);
@@ -1688,7 +1688,7 @@ void play_game(void)
 
 	/* Redraw stuff */
 	p_ptr->redraw |= (PR_INVEN | PR_EQUIP | PR_MONSTER | PR_MESSAGE);
-	redraw_stuff();
+	redraw_stuff(p_ptr);
 
 
 	/* Process some user pref files */
@@ -1731,13 +1731,13 @@ void play_game(void)
 		dungeon(cave);
 
 		/* Notice stuff */
-		if (p_ptr->notice) notice_stuff();
+		if (p_ptr->notice) notice_stuff(p_ptr);
 
 		/* Update stuff */
-		if (p_ptr->update) update_stuff();
+		if (p_ptr->update) update_stuff(p_ptr);
 
 		/* Redraw stuff */
-		if (p_ptr->redraw) redraw_stuff();
+		if (p_ptr->redraw) redraw_stuff(p_ptr);
 
 
 		/* Cancel the target */

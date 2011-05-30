@@ -776,7 +776,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 		p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
 
 		/* Redraw windows */
-		redraw_stuff();
+		redraw_stuff(p_ptr);
 
 		/* Viewing inventory */
 		if (p_ptr->command_wrk == USE_INVEN)
@@ -903,7 +903,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 			}
 		}
 
-		redraw_stuff();
+		redraw_stuff(p_ptr);
 
 		/* Finish the prompt */
 		my_strcat(out_val, " ESC", sizeof(out_val));
@@ -1233,7 +1233,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 	button_kill('/');
 	button_kill('-');
 	button_kill('!');
-	redraw_stuff();
+	redraw_stuff(p_ptr);
  
 	/* Forget the item_tester_tval restriction */
 	item_tester_tval = 0;
@@ -1247,7 +1247,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 
 	/* Update */
 	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
-	redraw_stuff();
+	redraw_stuff(p_ptr);
 
 
 	/* Clear the prompt line */

@@ -568,7 +568,7 @@ static void wiz_create_item(void)
 	
 	/* Redraw map */
 	p_ptr->redraw |= (PR_MAP | PR_ITEMLIST);
-	handle_stuff();
+	handle_stuff(p_ptr);
 
 }
 
@@ -1127,7 +1127,7 @@ static void wiz_create_artifact(int a_idx)
 	
 	/* Redraw map */
 	p_ptr->redraw |= (PR_MAP | PR_ITEMLIST);
-	handle_stuff();
+	handle_stuff(p_ptr);
 }
 
 
@@ -1296,7 +1296,7 @@ static void do_cmd_rerate(void)
 	p_ptr->redraw |= (PR_HP);
 
 	/* Handle stuff */
-	handle_stuff();
+	handle_stuff(p_ptr);
 
 	/* Message */
 	msg("Current Life Rating is %d/100.", percent);
@@ -1569,7 +1569,7 @@ static void do_cmd_wiz_advance(void)
 					  PR_MONLIST | PR_ITEMLIST);
 
 	/* Hack -- update */
-	handle_stuff();
+	handle_stuff(p_ptr);
 
 }
 

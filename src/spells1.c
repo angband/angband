@@ -53,7 +53,7 @@ const struct gf_type gf_table[] =
  * \param flags is the set of flags we're checking
  * \param real is whether this is a real attack
  */
-int check_for_resist(int type, bitflag *flags, bool real)
+int check_for_resist(struct player *p, int type, bitflag *flags, bool real)
 {
 	const struct gf_type *gf_ptr = &gf_table[type];
 	int result = 0;
@@ -62,7 +62,7 @@ int check_for_resist(int type, bitflag *flags, bool real)
 		result--;
 
 	/* If it's not a real attack, we don't check timed status explicitly */
-	if (real && gf_ptr->opp && p_ptr->timed[gf_ptr->opp])
+	if (real && gf_ptr->opp && p->timed[gf_ptr->opp])
 		result++;
 
 	if (gf_ptr->resist && of_has(flags, gf_ptr->resist))
@@ -73,11 +73,11 @@ int check_for_resist(int type, bitflag *flags, bool real)
 
 	/* Notice flags, if it's a real attack */
 	if (real && gf_ptr->immunity)
-		wieldeds_notice_flag(p_ptr, gf_ptr->immunity);
+		wieldeds_notice_flag(p, gf_ptr->immunity);
 	if (real && gf_ptr->resist)
-		wieldeds_notice_flag(p_ptr, gf_ptr->resist);
+		wieldeds_notice_flag(p, gf_ptr->resist);
 	if (real && gf_ptr->vuln)
-		wieldeds_notice_flag(p_ptr, gf_ptr->vuln);
+		wieldeds_notice_flag(p, gf_ptr->vuln);
 
 	return result;
 }
@@ -93,7 +93,7 @@ bool check_side_immune(int type)
 	const struct gf_type *gf_ptr = &gf_table[type];
 
 	if (gf_ptr->immunity) {
-		if (gf_ptr->side_immune && check_state(gf_ptr->immunity,
+		if (gf_ptr->side_immune && check_state(p_ptr, gf_ptr->immunity,
 				p_ptr->state.flags))
 			return TRUE;
 	} else if ((gf_ptr->resist && of_has(p_ptr->state.flags, gf_ptr->resist)) ||
@@ -110,13 +110,13 @@ bool check_side_immune(int type)
  * \param type is the GF_ type to which it's learning about the player's
  *    resistance (or lack of)
  */
-void monster_learn_resists(struct monster *m, int type)
+void monster_learn_resists(struct monster *m, struct player *p, int type)
 {
 	const struct gf_type *gf_ptr = &gf_table[type];
 
-	update_smart_learn(m, gf_ptr->resist);
-	update_smart_learn(m, gf_ptr->immunity);
-	update_smart_learn(m, gf_ptr->vuln);
+	update_smart_learn(m, p, gf_ptr->resist);
+	update_smart_learn(m, p, gf_ptr->immunity);
+	update_smart_learn(m, p, gf_ptr->vuln);
 
 	return;
 }
@@ -316,7 +316,7 @@ void teleport_player(int dis)
 	monster_swap(py, px, y, x);
 
 	/* Handle stuff XXX XXX XXX */
-	handle_stuff();
+	handle_stuff(p_ptr);
 }
 
 
@@ -369,7 +369,7 @@ void teleport_player_to(int ny, int nx)
 	monster_swap(py, px, y, x);
 
 	/* Handle stuff XXX XXX XXX */
-	handle_stuff();
+	handle_stuff(p_ptr);
 }
 
 
@@ -2861,7 +2861,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		msg("Gravity warps around you.");
 
 	/* Adjust damage for resistance, immunity or vulnerability, and apply it */
-	dam = adjust_dam(typ, dam, RANDOMISE, check_for_resist(typ,
+	dam = adjust_dam(typ, dam, RANDOMISE, check_for_resist(p_ptr, typ,
 		p_ptr->state.flags, TRUE));
 	if (dam)
 		take_hit(p_ptr, dam, killer);
@@ -3012,7 +3012,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
  * if they were being projected at a more distant destination.  This means
  * that "ball" spells will *always* explode.
  *
- * Note that we must call "handle_stuff()" after affecting terrain features
+ * Note that we must call "handle_stuff(p_ptr)" after affecting terrain features
  * in the blast radius, in case the "illumination" of the grid was changed,
  * and "update_view()" and "update_monsters()" need to be called.
  */
@@ -3125,7 +3125,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 
 
 	/* Hack -- Handle stuff */
-	handle_stuff();
+	handle_stuff(p_ptr);
 
 	/* Project along the path */
 	for (i = 0; i < path_n; ++i)
@@ -3168,14 +3168,14 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 				move_cursor_relative(y, x);
 
 				Term_fresh();
-				if (p_ptr->redraw) redraw_stuff();
+				if (p_ptr->redraw) redraw_stuff(p_ptr);
 
 				Term_xtra(TERM_XTRA_DELAY, msec);
 
 				cave_light_spot(cave, y, x);
 
 				Term_fresh();
-				if (p_ptr->redraw) redraw_stuff();
+				if (p_ptr->redraw) redraw_stuff(p_ptr);
 
 				/* Display "beam" grids */
 				if (flg & (PROJECT_BEAM))
@@ -3287,7 +3287,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 			Term_fresh();
 
 			/* Flush */
-			if (p_ptr->redraw) redraw_stuff();
+			if (p_ptr->redraw) redraw_stuff(p_ptr);
 
 			/* Delay (efficiently) */
 			if (visual || drawn)
@@ -3320,7 +3320,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 			Term_fresh();
 
 			/* Flush */
-			if (p_ptr->redraw) redraw_stuff();
+			if (p_ptr->redraw) redraw_stuff(p_ptr);
 		}
 	}
 
@@ -3348,7 +3348,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 
 
 	/* Update stuff if needed */
-	if (p_ptr->update) update_stuff();
+	if (p_ptr->update) update_stuff(p_ptr);
 
 
 	/* Check objects */

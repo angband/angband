@@ -1818,7 +1818,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		state->speed += 5;
 
 	/* Fear can come from item flags too */
-	if (check_state(OF_AFRAID, p_ptr->state.flags))
+	if (check_state(p_ptr, OF_AFRAID, p_ptr->state.flags))
 	{
 		state->to_h -= 20;
 		state->dis_to_h -= 20;
@@ -2052,7 +2052,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	state->icky_wield = FALSE;
 
 	/* Priest weapon penalty for non-blessed edged weapons */
-	if (player_has(PF_BLESS_WEAPON) && !check_state(OF_BLESSED, p_ptr->state.flags) &&
+	if (player_has(PF_BLESS_WEAPON) && !check_state(p_ptr, OF_BLESSED, p_ptr->state.flags) &&
 		((o_ptr->tval == TV_SWORD) || (o_ptr->tval == TV_POLEARM)))
 	{
 		/* Reduce the real bonuses */
@@ -2211,52 +2211,52 @@ static void update_bonuses(void)
 /*
  * Handle "p_ptr->notice"
  */
-void notice_stuff(void)
+void notice_stuff(struct player *p)
 {
 	/* Notice stuff */
-	if (!p_ptr->notice) return;
+	if (!p->notice) return;
 
 
 	/* Deal with autoinscribe stuff */
-	if (p_ptr->notice & PN_AUTOINSCRIBE)
+	if (p->notice & PN_AUTOINSCRIBE)
 	{
-		p_ptr->notice &= ~(PN_AUTOINSCRIBE);
+		p->notice &= ~(PN_AUTOINSCRIBE);
 		autoinscribe_pack();
 		autoinscribe_ground();
 	}
 
 	/* Deal with squelch stuff */
-	if (p_ptr->notice & PN_SQUELCH)
+	if (p->notice & PN_SQUELCH)
 	{
-		p_ptr->notice &= ~(PN_SQUELCH);
+		p->notice &= ~(PN_SQUELCH);
 		squelch_drop();
 	}
 
 	/* Combine the pack */
-	if (p_ptr->notice & PN_COMBINE)
+	if (p->notice & PN_COMBINE)
 	{
-		p_ptr->notice &= ~(PN_COMBINE);
+		p->notice &= ~(PN_COMBINE);
 		combine_pack();
 	}
 
 	/* Reorder the pack */
-	if (p_ptr->notice & PN_REORDER)
+	if (p->notice & PN_REORDER)
 	{
-		p_ptr->notice &= ~(PN_REORDER);
+		p->notice &= ~(PN_REORDER);
 		reorder_pack();
 	}
 
 	/* Sort the quiver */
-	if (p_ptr->notice & PN_SORT_QUIVER)
+	if (p->notice & PN_SORT_QUIVER)
 	{
-		p_ptr->notice &= ~(PN_SORT_QUIVER);
+		p->notice &= ~(PN_SORT_QUIVER);
 		sort_quiver();
 	}
 
 	/* Dump the monster messages */
-	if (p_ptr->notice & PN_MON_MESSAGE)
+	if (p->notice & PN_MON_MESSAGE)
 	{
-		p_ptr->notice &= ~(PN_MON_MESSAGE);
+		p->notice &= ~(PN_MON_MESSAGE);
 
 		/* Make sure this comes after all of the monster messages */
 		if (size_mon_msg > 0) flush_all_monster_messages();
@@ -2266,39 +2266,39 @@ void notice_stuff(void)
 /*
  * Handle "p_ptr->update"
  */
-void update_stuff(void)
+void update_stuff(struct player *p)
 {
 	/* Update stuff */
-	if (!p_ptr->update) return;
+	if (!p->update) return;
 
 
-	if (p_ptr->update & (PU_BONUS))
+	if (p->update & (PU_BONUS))
 	{
-		p_ptr->update &= ~(PU_BONUS);
+		p->update &= ~(PU_BONUS);
 		update_bonuses();
 	}
 
-	if (p_ptr->update & (PU_TORCH))
+	if (p->update & (PU_TORCH))
 	{
-		p_ptr->update &= ~(PU_TORCH);
+		p->update &= ~(PU_TORCH);
 		calc_torch();
 	}
 
-	if (p_ptr->update & (PU_HP))
+	if (p->update & (PU_HP))
 	{
-		p_ptr->update &= ~(PU_HP);
+		p->update &= ~(PU_HP);
 		calc_hitpoints();
 	}
 
-	if (p_ptr->update & (PU_MANA))
+	if (p->update & (PU_MANA))
 	{
-		p_ptr->update &= ~(PU_MANA);
+		p->update &= ~(PU_MANA);
 		calc_mana();
 	}
 
-	if (p_ptr->update & (PU_SPELLS))
+	if (p->update & (PU_SPELLS))
 	{
-		p_ptr->update &= ~(PU_SPELLS);
+		p->update &= ~(PU_SPELLS);
 		calc_spells();
 	}
 
@@ -2311,49 +2311,49 @@ void update_stuff(void)
 	if (character_icky) return;
 
 
-	if (p_ptr->update & (PU_FORGET_VIEW))
+	if (p->update & (PU_FORGET_VIEW))
 	{
-		p_ptr->update &= ~(PU_FORGET_VIEW);
+		p->update &= ~(PU_FORGET_VIEW);
 		forget_view();
 	}
 
-	if (p_ptr->update & (PU_UPDATE_VIEW))
+	if (p->update & (PU_UPDATE_VIEW))
 	{
-		p_ptr->update &= ~(PU_UPDATE_VIEW);
+		p->update &= ~(PU_UPDATE_VIEW);
 		update_view();
 	}
 
 
-	if (p_ptr->update & (PU_FORGET_FLOW))
+	if (p->update & (PU_FORGET_FLOW))
 	{
-		p_ptr->update &= ~(PU_FORGET_FLOW);
+		p->update &= ~(PU_FORGET_FLOW);
 		cave_forget_flow(cave);
 	}
 
-	if (p_ptr->update & (PU_UPDATE_FLOW))
+	if (p->update & (PU_UPDATE_FLOW))
 	{
-		p_ptr->update &= ~(PU_UPDATE_FLOW);
+		p->update &= ~(PU_UPDATE_FLOW);
 		cave_update_flow(cave);
 	}
 
 
-	if (p_ptr->update & (PU_DISTANCE))
+	if (p->update & (PU_DISTANCE))
 	{
-		p_ptr->update &= ~(PU_DISTANCE);
-		p_ptr->update &= ~(PU_MONSTERS);
+		p->update &= ~(PU_DISTANCE);
+		p->update &= ~(PU_MONSTERS);
 		update_monsters(TRUE);
 	}
 
-	if (p_ptr->update & (PU_MONSTERS))
+	if (p->update & (PU_MONSTERS))
 	{
-		p_ptr->update &= ~(PU_MONSTERS);
+		p->update &= ~(PU_MONSTERS);
 		update_monsters(FALSE);
 	}
 
 
-	if (p_ptr->update & (PU_PANEL))
+	if (p->update & (PU_PANEL))
 	{
-		p_ptr->update &= ~(PU_PANEL);
+		p->update &= ~(PU_PANEL);
 		event_signal(EVENT_PLAYERMOVED);
 	}
 }
@@ -2403,12 +2403,12 @@ static const struct flag_event_trigger redraw_events[] =
 /*
  * Handle "p_ptr->redraw"
  */
-void redraw_stuff(void)
+void redraw_stuff(struct player *p)
 {
 	size_t i;
 
 	/* Redraw stuff */
-	if (!p_ptr->redraw) return;
+	if (!p->redraw) return;
 
 	/* Character is not ready yet, no screen updates */
 	if (!character_generated) return;
@@ -2421,18 +2421,18 @@ void redraw_stuff(void)
 	{
 		const struct flag_event_trigger *hnd = &redraw_events[i];
 
-		if (p_ptr->redraw & hnd->flag)
+		if (p->redraw & hnd->flag)
 			event_signal(hnd->event);
 	}
 
 	/* Then the ones that require parameters to be supplied. */
-	if (p_ptr->redraw & PR_MAP)
+	if (p->redraw & PR_MAP)
 	{
 		/* Mark the whole map to be redrawn */
 		event_signal_point(EVENT_MAP, -1, -1);
 	}
 
-	p_ptr->redraw = 0;
+	p->redraw = 0;
 
 	/*
 	 * Do any plotting, etc. delayed from earlier - this set of updates
@@ -2445,12 +2445,9 @@ void redraw_stuff(void)
 /*
  * Handle "p_ptr->update" and "p_ptr->redraw"
  */
-void handle_stuff(void)
+void handle_stuff(struct player *p)
 {
-	/* Update stuff */
-	if (p_ptr->update) update_stuff();
-
-	/* Redraw stuff */
-	if (p_ptr->redraw) redraw_stuff();
+	if (p->update) update_stuff(p);
+	if (p->redraw) redraw_stuff(p);
 }
 

@@ -369,7 +369,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_LOSE_EXP:
 		{
-			if (!check_state(OF_HOLD_LIFE, p_ptr->state.flags) && (p_ptr->exp > 0))
+			if (!check_state(p_ptr, OF_HOLD_LIFE, p_ptr->state.flags) && (p_ptr->exp > 0))
 			{
 				msg("You feel your memories fade.");
 				player_exp_lose(p_ptr, p_ptr->exp / 4, FALSE);
@@ -567,7 +567,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			if (do_res_stat(A_CHR)) *ident = TRUE;
 
 			/* Recalculate max. hitpoints */
-			update_stuff();
+			update_stuff(p_ptr);
 
 			hp_player(5000);
 
@@ -954,7 +954,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_DARKNESS:
 		{
-			if (!check_state(OF_RES_DARK, p_ptr->state.flags))
+			if (!check_state(p_ptr, OF_RES_DARK, p_ptr->state.flags))
 				(void)player_inc_timed(p_ptr, TMD_BLIND, 3 + randint1(5), TRUE, TRUE);
 			unlight_area(10, 3);
 			wieldeds_notice_flag(p_ptr, OF_RES_DARK);
@@ -1922,7 +1922,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_TRAP_DOOR:
 		{
 			msg("You fall through a trap door!");
-			if (check_state(OF_FEATHER, p_ptr->state.flags)) {
+			if (check_state(p_ptr, OF_FEATHER, p_ptr->state.flags)) {
 				msg("You float gently down to the next level.");
 			} else {
 				take_hit(p_ptr, damroll(2, 8), "a trap");
@@ -1936,7 +1936,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_TRAP_PIT:
 		{
 			msg("You fall into a pit!");
-			if (check_state(OF_FEATHER, p_ptr->state.flags)) {
+			if (check_state(p_ptr, OF_FEATHER, p_ptr->state.flags)) {
 				msg("You float gently to the bottom of the pit.");
 			} else {
 				take_hit(p_ptr, damroll(2, 6), "a trap");
@@ -1949,7 +1949,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			msg("You fall into a spiked pit!");
 
-			if (check_state(OF_FEATHER, p_ptr->state.flags)) {
+			if (check_state(p_ptr, OF_FEATHER, p_ptr->state.flags)) {
 				msg("You float gently to the floor of the pit.");
 				msg("You carefully avoid touching the spikes.");
 			} else {
@@ -1972,7 +1972,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			msg("You fall into a spiked pit!");
 
-			if (check_state(OF_FEATHER, p_ptr->state.flags)) {
+			if (check_state(p_ptr, OF_FEATHER, p_ptr->state.flags)) {
 				msg("You float gently to the floor of the pit.");
 				msg("You carefully avoid touching the spikes.");
 			} else {
@@ -2022,7 +2022,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			msg("You are enveloped in flames!");
 			dam = damroll(4, 6);
 			dam = adjust_dam(GF_FIRE, dam, RANDOMISE,
-					check_for_resist(GF_FIRE, p_ptr->state.flags, TRUE));
+					check_for_resist(p_ptr, GF_FIRE, p_ptr->state.flags, TRUE));
 			if (dam) {
 				take_hit(p_ptr, dam, "a fire trap");
 				inven_damage(GF_FIRE, MIN(dam * 5, 300));
@@ -2037,7 +2037,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			msg("You are splashed with acid!");
 			dam = damroll(4, 6);
 			dam = adjust_dam(GF_ACID, dam, RANDOMISE,
-					check_for_resist(GF_ACID, p_ptr->state.flags, TRUE));
+					check_for_resist(p_ptr, GF_ACID, p_ptr->state.flags, TRUE));
 			if (dam) {
 				take_hit(p_ptr, dam, "an acid trap");
 				inven_damage(GF_ACID, MIN(dam * 5, 300));

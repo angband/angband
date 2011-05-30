@@ -104,7 +104,7 @@ static enum birth_stage get_quickstart_command(void)
 	button_add("[Y]", 'y');
 	button_add("[N]", 'n');
 	button_add("[C]", 'c');
-	redraw_stuff();
+	redraw_stuff(p_ptr);
 	
 	do
 	{
@@ -134,7 +134,7 @@ static enum birth_stage get_quickstart_command(void)
 	
 	/* Buttons */
 	button_kill_all();
-	redraw_stuff();
+	redraw_stuff(p_ptr);
 
 	/* Clear prompt */
 	clear_from(23);
@@ -659,7 +659,7 @@ static enum birth_stage roller_command(bool first_call)
 	button_add("[r]", 'r');
 	if (prev_roll) button_add("[p]", 'p');
 	clear_from(Term->hgt - 2);
-	redraw_stuff();
+	redraw_stuff(p_ptr);
 
 	/* Prepare a prompt (must squeeze everything in) */
 	strnfcat(prompt, sizeof (prompt), &promptlen, "['r' to reroll");
@@ -724,7 +724,7 @@ static enum birth_stage roller_command(bool first_call)
 	button_kill('\r');
 	button_kill('r');
 	button_kill('p');
-	redraw_stuff();
+	redraw_stuff(p_ptr);
 
 	return next;
 }
@@ -911,7 +911,7 @@ static enum birth_stage get_confirm_command(void)
 	button_add("[Continue]", 'q');
 	button_add("[ESC]", ESCAPE);
 	button_add("[S]", 'S');
-	redraw_stuff();
+	redraw_stuff(p_ptr);
 	
 	/* Get a key */
 	ke = inkey();
@@ -938,7 +938,7 @@ static enum birth_stage get_confirm_command(void)
 	
 	/* Buttons */
 	button_kill_all();
-	redraw_stuff();
+	redraw_stuff(p_ptr);
 
 	/* Clear prompt */
 	clear_from(23);

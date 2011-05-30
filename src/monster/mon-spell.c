@@ -317,10 +317,10 @@ static void do_side_effects(int spell, int dam, int m_idx, bool seen)
 			 * to replace the generic ones below. (See #1376)
 			 */
 			if (re_ptr->res_flag)
-				update_smart_learn(m_ptr, re_ptr->res_flag);
+				update_smart_learn(m_ptr, p_ptr, re_ptr->res_flag);
 
 			if ((rs_ptr->gf && check_side_immune(rs_ptr->gf)) ||
-					check_state(re_ptr->res_flag, p_ptr->state.flags)) {
+					check_state(p_ptr, re_ptr->res_flag, p_ptr->state.flags)) {
 				msg("You resist the effect!");
 				continue;
 			}
@@ -550,7 +550,7 @@ void do_mon_spell(int spell, int m_idx, bool seen)
 
 	if (rs_ptr->gf) {
 		(void)project(m_idx, rad, p_ptr->py, p_ptr->px, dam, rs_ptr->gf, flag);
-		monster_learn_resists(m_ptr, rs_ptr->gf);
+		monster_learn_resists(m_ptr, p_ptr, rs_ptr->gf);
 	}
 	else /* Note that non-projectable attacks are unresistable */
 		take_hit(p_ptr, dam, ddesc);
@@ -610,7 +610,7 @@ void unset_spells(bitflag *spells, bitflag *flags, const monster_race *r_ptr)
 
 	/* First we test the gf (projectable) spells */
 	for (rs_ptr = mon_spell_table; rs_ptr->index < RSF_MAX; rs_ptr++)
-		if (rs_ptr->gf && randint0(100) < check_for_resist(rs_ptr->gf, flags,
+		if (rs_ptr->gf && randint0(100) < check_for_resist(p_ptr, rs_ptr->gf, flags,
 				FALSE) * (rf_has(r_ptr->flags, RF_SMART) ? 2 : 1) * 25)
 			rsf_off(spells, rs_ptr->index);
 

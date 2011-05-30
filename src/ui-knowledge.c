@@ -535,7 +535,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 		menu_refresh(inactive_menu);
 		menu_refresh(active_menu);
 
-		handle_stuff();
+		handle_stuff(p_ptr);
 
 		if (visual_list)
 		{
@@ -1031,7 +1031,7 @@ static void mon_lore(int oid)
 {
 	/* Update the monster recall window */
 	monster_race_track(default_join[oid].oid);
-	handle_stuff();
+	handle_stuff(p_ptr);
 
 	/* Save the screen */
 	screen_save();
@@ -1249,7 +1249,7 @@ static void desc_art_fake(int a_idx)
 	}
 
 	/* Hack -- Handle stuff */
-	handle_stuff();
+	handle_stuff(p_ptr);
 
 	tb = object_info(o_ptr, OINFO_NONE);
 	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
@@ -1545,7 +1545,7 @@ static void desc_obj_fake(int k_idx)
 
 	/* Update the object recall window */
 	track_object_kind(k_idx);
-	handle_stuff();
+	handle_stuff(p_ptr);
 
 	/* Wipe the object */
 	object_wipe(o_ptr);
@@ -1560,7 +1560,7 @@ static void desc_obj_fake(int k_idx)
 	if (!kind->flavor) object_notice_everything(o_ptr);
 
 	/* Hack -- Handle stuff */
-	handle_stuff();
+	handle_stuff(p_ptr);
 
 	tb = object_info(o_ptr, OINFO_NONE);
 	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);

@@ -87,7 +87,7 @@ static void adjust_level(struct player *p, bool verbose)
 
 	p->redraw |= PR_EXP;
 
-	handle_stuff();
+	handle_stuff(p);
 
 	while ((p->lev > 1) &&
 	       (p->exp < (player_exp[p->lev-2] *
@@ -137,7 +137,7 @@ static void adjust_level(struct player *p, bool verbose)
 
 	p->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
 	p->redraw |= (PR_LEV | PR_TITLE | PR_EXP);
-	handle_stuff();
+	handle_stuff(p);
 }
 
 void player_exp_gain(struct player *p, s32b amount)

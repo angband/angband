@@ -397,7 +397,7 @@ void do_cmd_locate(void)
 		change_panel(dir);
 
 		/* Handle stuff */
-		handle_stuff();
+		handle_stuff(p_ptr);
 	}
 
 	/* Verify panel */
@@ -600,7 +600,7 @@ void do_cmd_query_symbol(void)
 	button_add("[k]", 'k');
 	/* Don't collide with the repeat button */
 	button_add("[n]", 'q'); 
-	redraw_stuff();
+	redraw_stuff(p_ptr);
 
 	/* Prompt */
 	put_str("Recall details? (y/k/n): ", 0, 40);
@@ -615,7 +615,7 @@ void do_cmd_query_symbol(void)
 	button_kill('y');
 	button_kill('k');
 	button_kill('q');
-	redraw_stuff();
+	redraw_stuff(p_ptr);
 
 	/* Interpret the response */
 	if (query.code == 'k')
@@ -645,7 +645,7 @@ void do_cmd_query_symbol(void)
 	button_add("[r]", 'r');
 	button_add("[-]", '-');
 	button_add("[+]", '+');
-	redraw_stuff();
+	redraw_stuff(p_ptr);
 
 	/* Scan the monster memory */
 	while (1)
@@ -657,7 +657,7 @@ void do_cmd_query_symbol(void)
 		monster_race_track(r_idx);
 
 		/* Hack -- Handle stuff */
-		handle_stuff();
+		handle_stuff(p_ptr);
 
 		/* Hack -- Begin the prompt */
 		roff_top(r_idx);
@@ -720,7 +720,7 @@ void do_cmd_query_symbol(void)
 	button_kill('r');
 	button_kill('-');
 	button_kill('+');
-	redraw_stuff();
+	redraw_stuff(p_ptr);
 
 	/* Re-display the identity */
 	prt(buf, 0, 0);

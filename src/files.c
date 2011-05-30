@@ -1728,7 +1728,7 @@ void save_game(void)
 	message_flush();
 
 	/* Handle stuff */
-	handle_stuff();
+	handle_stuff(p_ptr);
 
 	/* Message */
 	prt("Saving game...", 0, 0);
@@ -1771,7 +1771,7 @@ void save_game(void)
 void close_game(void)
 {
 	/* Handle stuff */
-	handle_stuff();
+	handle_stuff(p_ptr);
 
 	/* Flush the messages */
 	message_flush();

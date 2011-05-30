@@ -2314,7 +2314,7 @@ void do_cmd_buy(cmd_code code, cmd_arg args[])
 	}
 
 	/* Handle stuff */
-	handle_stuff();
+	handle_stuff(p_ptr);
 
 	/* Remove the bought objects from the store */
 	store_item_increase(this_store, item, -amt);
@@ -2405,7 +2405,7 @@ void do_cmd_retrieve(cmd_code code, cmd_arg args[])
 	msg("You have %s (%c).", o_name, index_to_label(item_new));
 	
 	/* Handle stuff */
-	handle_stuff();
+	handle_stuff(p_ptr);
 	
 	/* Remove the items from the home */
 	store_item_increase(STORE_HOME, item, -amt);
@@ -2665,7 +2665,7 @@ void do_cmd_sell(cmd_code code, cmd_arg args[])
 	inven_item_optimize(item);
 
 	/* Handle stuff */
-	handle_stuff();
+	handle_stuff(p_ptr);
 
 	/* The store gets that (known) object */
 	store_carry(current_store(), &sold_item);
@@ -2722,7 +2722,7 @@ void do_cmd_stash(cmd_code code, cmd_arg args[])
 	inven_item_optimize(item);
 	
 	/* Handle stuff */
-	handle_stuff();
+	handle_stuff(p_ptr);
 	
 	/* Let the home carry it */
 	home_carry(&dropped_item);
@@ -3088,8 +3088,8 @@ bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
 		}
 
 		/* Notice and handle stuff */
-		notice_stuff();
-		handle_stuff();
+		notice_stuff(p_ptr);
+		handle_stuff(p_ptr);
 
 		/* Display the store */
 		store_display_recalc(m);

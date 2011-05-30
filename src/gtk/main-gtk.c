@@ -489,7 +489,7 @@ int button_kill_gui(unsigned char keypress)
 
 	/* Redraw */
 	p_ptr->redraw |= (PR_BUTTONS);
-	redraw_stuff();
+	redraw_stuff(p_ptr);
 
 	/* Return the size of the button */
 	return 0 /*(length)*/;

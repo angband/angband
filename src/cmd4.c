@@ -93,7 +93,7 @@ void do_cmd_redraw(void)
 	Term_clear();
 
 	/* Hack -- update */
-	handle_stuff();
+	handle_stuff(p_ptr);
 
 	/* Place the cursor on the player */
 	if (0 != character_dungeon)

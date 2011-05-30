@@ -1415,7 +1415,7 @@ void update_mon(int m_idx, bool full)
 	if (d <= MAX_SIGHT)
 	{
 		/* Basic telepathy */
-		if (check_state(OF_TELEPATHY, p_ptr->state.flags))
+		if (check_state(p_ptr, OF_TELEPATHY, p_ptr->state.flags))
 		{
 			/* Empty mind, no telepathy */
 			if (rf_has(r_ptr->flags, RF_EMPTY_MIND))
@@ -1481,7 +1481,7 @@ void update_mon(int m_idx, bool full)
 				if (rf_has(r_ptr->flags, RF_INVISIBLE))
 				{
 					/* See invisible */
-					if (check_state(OF_SEE_INVIS, p_ptr->state.flags))
+					if (check_state(p_ptr, OF_SEE_INVIS, p_ptr->state.flags))
 					{
 						/* Easy to see */
 						easy = flag = TRUE;
@@ -1503,7 +1503,7 @@ void update_mon(int m_idx, bool full)
 	if (flag)
 	{
 		/* Learn about the monster's mind */
-		if (check_state(OF_TELEPATHY, p_ptr->state.flags))
+		if (check_state(p_ptr, OF_TELEPATHY, p_ptr->state.flags))
 		{
 			flags_set(l_ptr->flags, RF_SIZE, RF_EMPTY_MIND, RF_WEIRD_MIND, RF_SMART, RF_STUPID, FLAG_END);
 		}
@@ -3190,7 +3190,7 @@ void flush_all_monster_messages(void)
  * Learn about an "observed" resistance or other player state property, or
  * lack of it.
  */
-void update_smart_learn(struct monster *m, int what)
+void update_smart_learn(struct monster *m, struct player *p, int what)
 {
 	monster_race *r_ptr = &r_info[m->r_idx];
 
@@ -3198,7 +3198,7 @@ void update_smart_learn(struct monster *m, int what)
 	if (!what) return;
 
 	/* anything a monster might learn, the player should learn */
-	wieldeds_notice_flag(p_ptr, what);
+	wieldeds_notice_flag(p, what);
 
 	/* Not allowed to learn */
 	if (!OPT(birth_ai_learn)) return;
@@ -3210,7 +3210,7 @@ void update_smart_learn(struct monster *m, int what)
 	if (!rf_has(r_ptr->flags, RF_SMART) && one_in_(2)) return;
 
 	/* Analyze the knowledge; fail very rarely */
-	if (check_state(what, p_ptr->state.flags) && !one_in_(100))
+	if (check_state(p, what, p->state.flags) && !one_in_(100))
 		of_on(m->known_pflags, what);
 	else
 		of_off(m->known_pflags, what);
