@@ -45,7 +45,8 @@ static int nextkey = 0;
 static int running_stats = 0;
 static char *ANGBAND_DIR_STATS;
 
-static ang_file *obj_fp, *mon_fp, *ainfo_fp, *rinfo_fp, *finfo_fp, *dinfo_fp;
+static ang_file  *ainfo_fp, *rinfo_fp, *finfo_fp, *dinfo_fp;
+/* *obj_fp, *mon_fp, */
 
 static int *consumables_index;
 static int *wearables_index;
