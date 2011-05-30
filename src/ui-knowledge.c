@@ -1795,10 +1795,40 @@ static int f_cmp_fkind(const void *a, const void *b)
 }
 
 static const char *fkind_name(int gid) { return feature_group_text[gid]; }
-/* XXX needs retooling for multi-light terrain */
-static byte *f_xattr(int oid) { return &f_info[oid].x_attr[FEAT_LIGHTING_LIT]; }
-static char *f_xchar(int oid) { return &f_info[oid].x_char[FEAT_LIGHTING_LIT]; }
+/* Disgusting hack to allow 3 in 1 editting of terrain visuals */
+static enum grid_light_level f_uik_lighting = FEAT_LIGHTING_LIT;
+/* XXX needs *better* retooling for multi-light terrain */
+static byte *f_xattr(int oid) { return &f_info[oid].x_attr[f_uik_lighting]; }
+static char *f_xchar(int oid) { return &f_info[oid].x_char[f_uik_lighting]; }
 static void feat_lore(int oid) { (void)oid; /* noop */ }
+static const char *feat_prompt(int oid)
+{
+	(void)oid;
+	return ", 'l' to cycle lighting";
+}
+
+/*
+ * Special key actions for cycling lighting
+ */
+static void f_xtra_act(struct keypress ch, int oid)
+{
+	/* XXX must be a better way to cycle this */
+	if (ch.code == 'l') {
+		switch (f_uik_lighting) {
+				case FEAT_LIGHTING_LIT:  f_uik_lighting = FEAT_LIGHTING_BRIGHT; break;
+				case FEAT_LIGHTING_BRIGHT:  f_uik_lighting = FEAT_LIGHTING_DARK; break;
+				default:	f_uik_lighting = FEAT_LIGHTING_LIT; break;
+		}		
+	} else if (ch.code == 'L') {
+		switch (f_uik_lighting) {
+				case FEAT_LIGHTING_DARK:  f_uik_lighting = FEAT_LIGHTING_BRIGHT; break;
+				case FEAT_LIGHTING_LIT:  f_uik_lighting = FEAT_LIGHTING_DARK; break;
+				default:	f_uik_lighting = FEAT_LIGHTING_LIT; break;
+		}
+	}
+	
+}
+
 
 /*
  * Interact with feature visuals.
@@ -1808,7 +1838,7 @@ static void do_cmd_knowledge_features(const char *name, int row)
 	group_funcs fkind_f = {N_ELEMENTS(feature_group_text), FALSE,
 							fkind_name, f_cmp_fkind, feat_order, 0};
 
-	member_funcs feat_f = {display_feature, feat_lore, f_xchar, f_xattr, 0, 0, 0};
+	member_funcs feat_f = {display_feature, feat_lore, f_xchar, f_xattr, feat_prompt, f_xtra_act, 0};
 
 	int *features;
 	int f_count = 0;
