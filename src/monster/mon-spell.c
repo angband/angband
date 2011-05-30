@@ -174,13 +174,17 @@ static void drain_mana(int m_idx, int rlev, bool seen)
 	int r1;
 	char m_name[80];
 
-	if (!p_ptr->csp) {
-		m_ptr->smart |= SM_IMM_MANA;
-		return;
-	}
-
 	/* Get the monster name (or "it") */
 	monster_desc(m_name, sizeof(m_name), m_ptr, 0x00);
+
+	if (!p_ptr->csp) {
+		msg("The draining fails.");
+		if (OPT(birth_ai_learn)) {
+			msg("%^s notes that you have no mana!", m_name);
+			m_ptr->smart |= SM_IMM_MANA;
+		}
+		return;
+	}
 
 	/* Attack power */
 	r1 = (randint1(rlev) / 2) + 1;
