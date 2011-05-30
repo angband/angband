@@ -22,7 +22,7 @@ M:K:570
 M:A:137
 
 # Maximum number of ego-item types
-M:E:128
+M:E:134
 
 # Maximum number of monster races
 M:R:618
