@@ -353,7 +353,7 @@ static void do_side_effects(int spell, int dam, int m_idx, bool seen)
 				switch (re_ptr->flag) {
 					case S_INV_DAM:
 						if (dam > 0)
-							inven_damage(re_ptr->gf, MIN(dam *
+							inven_damage(p_ptr, re_ptr->gf, MIN(dam *
 								randcalc(re_ptr->dam, 0, RANDOMISE), 300));
 						break;
 
