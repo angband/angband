@@ -74,7 +74,7 @@ bool region_inside(const region *loc, const ui_event *key)
 
 /*** Text display ***/
 
-static void display_area(const char *text, const byte *attrs,
+static void display_area(const wchar_t *text, const byte *attrs,
 		size_t *line_starts, size_t *line_lengths,
 		size_t n_lines,
 		region area, size_t line_from)
@@ -95,9 +95,6 @@ static void display_area(const char *text, const byte *attrs,
 
 void textui_textblock_place(textblock *tb, region orig_area, const char *header)
 {
-	const char *text = textblock_text(tb);
-	const byte *attrs = textblock_attrs(tb);
-
 	/* xxx on resize this should be recalculated */
 	region area = region_calculate(orig_area);
 
@@ -115,7 +112,8 @@ void textui_textblock_place(textblock *tb, region orig_area, const char *header)
 	c_prt(TERM_L_BLUE, header, area.row, area.col);
 	area.row++;
 
-	display_area(text, attrs, line_starts, line_lengths, n_lines, area, 0);
+	display_area(textblock_text(tb), textblock_attrs(tb), line_starts,
+	             line_lengths, n_lines, area, 0);
 
 	mem_free(line_starts);
 	mem_free(line_lengths);
@@ -123,9 +121,6 @@ void textui_textblock_place(textblock *tb, region orig_area, const char *header)
 
 void textui_textblock_show(textblock *tb, region orig_area, const char *header)
 {
-	const char *text = textblock_text(tb);
-	const byte *attrs = textblock_attrs(tb);
-
 	/* xxx on resize this should be recalculated */
 	region area = region_calculate(orig_area);
 
@@ -154,8 +149,8 @@ void textui_textblock_show(textblock *tb, region orig_area, const char *header)
 		while (1) {
 			struct keypress ch;
 
-			display_area(text, attrs, line_starts, line_lengths, n_lines,
-					area, start_line);
+			display_area(textblock_text(tb), textblock_attrs(tb), line_starts,
+					line_lengths, n_lines, area, start_line);
 
 			ch = inkey();
 			if (ch.code == ARROW_UP)
@@ -173,7 +168,8 @@ void textui_textblock_show(textblock *tb, region orig_area, const char *header)
 				start_line = n_lines - area.page_rows;
 		}
 	} else {
-		display_area(text, attrs, line_starts, line_lengths, n_lines, area, 0);
+		display_area(textblock_text(tb), textblock_attrs(tb), line_starts,
+				line_lengths, n_lines, area, 0);
 
 		c_prt(TERM_WHITE, "", area.row + n_lines, area.col);
 		c_prt(TERM_L_BLUE, "(Press any key to continue.)",

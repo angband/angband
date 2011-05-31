@@ -14,7 +14,7 @@ void textblock_free(textblock *tb);
 void textblock_append(textblock *tb, const char *fmt, ...);
 void textblock_append_c(textblock *tb, byte attr, const char *fmt, ...);
 
-const char *textblock_text(textblock *tb);
+const wchar_t *textblock_text(textblock *tb);
 const byte *textblock_attrs(textblock *tb);
 
 size_t textblock_calculate_lines(textblock *tb, size_t **line_starts, size_t **line_lengths, size_t width);

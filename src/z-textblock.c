@@ -3,6 +3,7 @@
  * Purpose: Text output bugger code
  *
  * Copyright (c) 2010 Andi Sidwell
+ * Copyright (c) 2011 Peter Denison
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -14,16 +15,22 @@
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  */
+
+/*
+ * Text blocks now use the internal representation of display characters, i.e.
+ * wchar_t, since they are expected to display straight to screen. Conversion
+ * from the incoming locale-encoded format is done in textblock_vappend_c().
+ */
 #include "z-term.h"
 #include "z-textblock.h"
 #include "z-virt.h"
 #include "z-form.h"
 
 #define TEXTBLOCK_LEN_INITIAL		128
-#define TEXTBLOCK_LEN_INCR(x)		(x + 128)
+#define TEXTBLOCK_LEN_INCR(x)		((x) + 128)
 
 struct textblock {
-	char *text;
+	wchar_t *text;
 	byte *attrs;
 
 	size_t strlen;
@@ -39,8 +46,8 @@ textblock *textblock_new(void)
 	textblock *tb = mem_zalloc(sizeof *tb);
 
 	tb->size = TEXTBLOCK_LEN_INITIAL;
-	tb->text = mem_zalloc(tb->size);
-	tb->attrs = mem_zalloc(tb->size * sizeof *tb->attrs);
+	tb->text = mem_zalloc(tb->size * sizeof *tb->text);
+	tb->attrs = mem_zalloc(tb->size);
 
 	return tb;
 }
@@ -58,30 +65,47 @@ void textblock_free(textblock *tb)
 static void textblock_vappend_c(textblock *tb, byte attr, const char *fmt,
 		va_list vp)
 {
+	size_t temp_len = TEXTBLOCK_LEN_INITIAL;
+	char *temp_space = mem_zalloc(temp_len);
+	size_t remaining = tb->size - tb->strlen;
+	size_t new_length;
+
+	/* We have to format the incoming string in native (external) format
+	 * re-allocating the temporary space as necessary. Once it's been
+	 * successfully formatted, we can then do the conversion to wide chars
+	 */
 	while (1)
 	{
 		va_list args;
 		size_t len;
 
-		size_t remaining = tb->size - tb->strlen;
-		char *fmt_start = tb->text + tb->strlen;
-
 		VA_COPY(args, vp);
-		len = vstrnfmt(fmt_start, remaining, fmt, args);
+		len = vstrnfmt(temp_space, temp_len, fmt, args);
 		va_end(args);
-		if (len < remaining - 1)
+		if (len < temp_len - 1)
 		{
-			byte *attr_start = tb->attrs + (tb->strlen * sizeof *tb->attrs);
-			memset(attr_start, attr, len * sizeof *tb->attrs);
-
-			tb->strlen += len;
+			/* Not using all space, therefore it completed */
 			break;
 		}
 
-		tb->size = TEXTBLOCK_LEN_INCR(tb->size);
-		tb->text = mem_realloc(tb->text, tb->size);
-		tb->attrs = mem_realloc(tb->attrs, tb->size * sizeof *tb->attrs);
+		temp_len = TEXTBLOCK_LEN_INCR(temp_len);
+		temp_space = mem_realloc(temp_space, temp_len * sizeof *temp_space);
 	}
+
+	/* Get extent of addition in wide chars */
+	new_length = Term_mbstowcs(NULL, temp_space, 0);
+
+	/* If we need more room, reallocate it */
+	if (remaining < new_length) {
+		tb->size = TEXTBLOCK_LEN_INCR(tb->strlen + new_length);
+		tb->text = mem_realloc(tb->text, tb->size * sizeof *tb->text);
+		tb->attrs = mem_realloc(tb->attrs, tb->size);
+	}
+	/* Convert to wide chars, into the text block buffer */
+	Term_mbstowcs(tb->text + tb->strlen, temp_space, tb->size - tb->strlen);
+	memset(tb->attrs + tb->strlen, attr, new_length);
+	tb->strlen += new_length;
+	mem_free(temp_space);
 }
 
 /**
@@ -114,7 +138,7 @@ void textblock_append_c(textblock *tb, byte attr, const char *fmt, ...)
 /**
  * Return a pointer to the text inputted thus far.
  */
-const char *textblock_text(textblock *tb)
+const wchar_t *textblock_text(textblock *tb)
 {
 	return tb->text;
 }
@@ -155,11 +179,11 @@ static void new_line(size_t **line_starts, size_t **line_lengths,
 size_t textblock_calculate_lines(textblock *tb,
 		size_t **line_starts, size_t **line_lengths, size_t width)
 {
-	const char *text = tb->text;
+	const wchar_t *text = tb->text;
 
 	size_t cur_line = 0, n_lines = 0;
 
-	size_t len = strlen(text);
+	size_t len = wcslen(text);
 	size_t text_offset;
 
 	size_t line_start = 0, line_length = 0;
@@ -168,13 +192,13 @@ size_t textblock_calculate_lines(textblock *tb,
 	assert(width > 0);
 
 	for (text_offset = 0; text_offset < len; text_offset++) {
-		if (text[text_offset] == '\n') {
+		if (text[text_offset] == L'\n') {
 			new_line(line_starts, line_lengths, &n_lines, &cur_line,
 					line_start, line_length);
 
 			line_start = text_offset + 1;
 			line_length = 0;
-		} else if (text[text_offset] == ' ') {
+		} else if (text[text_offset] == L' ') {
 			line_length++;
 
 			word_start = line_length;
@@ -196,7 +220,7 @@ size_t textblock_calculate_lines(textblock *tb,
 		/* normal wrapping: wrap text at last word */
 		if (line_length == width) {
 			size_t last_word_offset = word_start;
-			while (text[line_start + last_word_offset] != ' ')
+			while (text[line_start + last_word_offset] != L' ')
 				last_word_offset--;
 
 			new_line(line_starts, line_lengths, &n_lines, &cur_line,
@@ -226,7 +250,7 @@ void textblock_to_file(textblock *tb, ang_file *f, int indent, int wrap_at)
 	n_lines = textblock_calculate_lines(tb, &line_starts, &line_lengths, width);
 
 	for (i = 0; i < n_lines; i++) {
-		file_putf(f, "%*c%.*s\n",
+		file_putf(f, "%*c%.*ls\n",
 				indent, ' ',
 				line_lengths[i], tb->text + line_starts[i]);
 	}
