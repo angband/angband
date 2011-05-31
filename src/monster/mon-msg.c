@@ -461,7 +461,7 @@ static void flush_monster_messages(bool delay)
 		my_strcat(buf, action, sizeof(buf));
 
 		/* Capitalize the message */
-		*buf = my_toupper((unsigned char)*buf);
+		*buf = toupper((unsigned char)*buf);
 
 		/* Hack - play sound for fear message */
 		if (mon_msg[i].msg_code == MON_MSG_FLEE_IN_TERROR)

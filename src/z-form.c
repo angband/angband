@@ -550,11 +550,11 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 			for (q = 0; tmp[q]; q++)
 			{
 				/* Notice first non-space */
-				if (!my_isspace((unsigned char)tmp[q]))
+				if (!isspace(tmp[q]))
 				{
 					/* Capitalize if possible */
-					if (my_islower((unsigned char)tmp[q]))
-						tmp[q] = my_toupper((unsigned char)tmp[q]);
+					if (islower(tmp[q]))
+						tmp[q] = toupper(tmp[q]);
 
 					/* Done */
 					break;

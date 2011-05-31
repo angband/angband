@@ -977,7 +977,6 @@ void text_out_to_file(byte a, const char *str)
 	/* Process the string */
 	while (*s)
 	{
-		char ch;
 		int n = 0;
 		int len = wrap - pos;
 		int l_space = -1;
@@ -1039,17 +1038,8 @@ void text_out_to_file(byte a, const char *str)
 		}
 
 		/* Write that line to file */
-		for (n = 0; n < len; n++)
-		{
-			/* Ensure the character is printable */
-			ch = (my_isprint((unsigned char) s[n]) ? s[n] : ' ');
-
-			/* Write out the character */
-			file_writec(text_out_file, ch);
-
-			/* Increment */
-			pos++;
-		}
+		file_write(text_out_file, s, len);
+		pos += len;
 
 		/* Move 's' past the stuff we've written */
 		s += len;
@@ -1357,7 +1347,7 @@ bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, st
 		{
 			bool atnull = (buf[*curs] == 0);
 
-			if (!my_isprint((unsigned char)keypress.code))
+			if (!isprint(keypress.code))
 			{
 				bell("Illegal edit key!");
 				break;

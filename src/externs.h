@@ -7,7 +7,6 @@
 #include "player/types.h"
 #include "store.h"
 #include "types.h"
-#include "x-char.h"
 #include "z-file.h"
 #include "z-msg.h"
 #include "spells.h"
@@ -37,7 +36,6 @@ extern const char *stat_names[A_MAX];
 extern const char *stat_names_reduced[A_MAX];
 extern const char *window_flag_desc[32];
 extern const char *inscrip_text[];
-extern const byte char_tables[256][CHAR_TABLE_SLOTS];
 
 /* variable.c */
 extern const char *copyright;
