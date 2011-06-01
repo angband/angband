@@ -46,7 +46,7 @@ else
   LDFLAGS += -Lwin/lib
 
   IOBJS = $(BASEOBJS) win/angband.res main-win.o win/readdib.o win/readpng.o
-  LIBS = -s -mwindows -lwinmm -lz -lpng
+  LIBS = -s -mwindows -lwinmm -lzlib -llibpng
 endif
 
 CC = $(CROSS)gcc
@@ -101,8 +101,8 @@ endif
 
 ../$(EXE): $(EXE)
 	$(CP) $(EXE) ..
-	$(CP) win/libpng12.dll ..
-	$(CP) win/zlib1.dll ..
+	$(CP) win/dll/libpng12.dll ..
+	$(CP) win/dll/zlib1.dll ..
 
 $(EXE): $(OBJS)
 	$(CC) $(CFLAGS) -o $(EXE) $(OBJS) $(LIBS)
