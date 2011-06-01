@@ -8,7 +8,10 @@
  * assigned a value.
  */
 
+#include "externs.h"
 #include "parser.h"
+#include "z-file.h"
+#include "z-form.h"
 #include "z-util.h"
 #include "z-virt.h"
 
@@ -43,14 +46,14 @@ const char *parser_error_str[PARSE_ERROR_MAX] = {
 };
 
 enum {
-	T_NONE = 0,
-	T_INT = 2,
-	T_SYM = 4,
-	T_STR = 6,
-	T_RAND = 8,
-	T_UINT = 10,
-	T_CHAR = 12,
-	T_OPT = 0x00000001
+	PARSE_T_NONE = 0,
+	PARSE_T_INT = 2,
+	PARSE_T_SYM = 4,
+	PARSE_T_STR = 6,
+	PARSE_T_RAND = 8,
+	PARSE_T_UINT = 10,
+	PARSE_T_CHAR = 12,
+	PARSE_T_OPT = 0x00000001
 };
 
 struct parser_spec {
@@ -109,9 +112,9 @@ static void parser_freeold(struct parser *p) {
 	struct parser_value *v;
 	while (p->fhead)
 	{
-		int t = p->fhead->spec.type & ~T_OPT;
+		int t = p->fhead->spec.type & ~PARSE_T_OPT;
 		v = (struct parser_value *)p->fhead->spec.next;
-		if (t == T_SYM || t == T_STR)
+		if (t == PARSE_T_SYM || t == PARSE_T_STR)
 			mem_free(p->fhead->u.sval);
 		mem_free(p->fhead);
 		p->fhead = v;
@@ -266,14 +269,14 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 	 * and use that instead. */
 	for (s = h->fhead; s; s = s->next)
 	{
-		int t = s->type & ~T_OPT;
+		int t = s->type & ~PARSE_T_OPT;
 		p->colno++;
 		/* These types are tokenized on ':'; strings are not tokenized
 		 * at all (i.e., they consume the remainder of the line) */
-		if (t == T_INT || t == T_SYM || t == T_RAND || t == T_UINT) {
+		if (t == PARSE_T_INT || t == PARSE_T_SYM || t == PARSE_T_RAND || t == PARSE_T_UINT) {
 			tok = strtok(sp, ":");
 			sp = NULL;
-		} else if (t == T_CHAR) {
+		} else if (t == PARSE_T_CHAR) {
 			tok = strtok(sp, "");
 			if (tok)
 				sp = tok + 2;
@@ -283,7 +286,7 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 		}
 		if (!tok)
 		{
-			if (!(s->type & T_OPT)) {
+			if (!(s->type & PARSE_T_OPT)) {
 				my_strcpy(p->errmsg, s->name, sizeof(p->errmsg));
 				p->error = PARSE_ERROR_MISSING_FIELD;
 				mem_free(cline);
@@ -298,7 +301,7 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 		v->spec.next = NULL;
 		v->spec.type = s->type;
 		v->spec.name = s->name;
-		if (t == T_INT)
+		if (t == PARSE_T_INT)
 		{
 			char *z = NULL;
 			v->u.ival = strtol(tok, &z, 0);
@@ -311,7 +314,7 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 				return PARSE_ERROR_NOT_NUMBER;
 			}
 		}
-		else if (t == T_UINT)
+		else if (t == PARSE_T_UINT)
 		{
 			char *z = NULL;
 			v->u.uval = strtoul(tok, &z, 0);
@@ -324,15 +327,15 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 				return PARSE_ERROR_NOT_NUMBER;
 			}
 		}
-		else if (t == T_CHAR)
+		else if (t == PARSE_T_CHAR)
 		{
 			v->u.cval = *tok;
 		}
-		else if (t == T_SYM || t == T_STR)
+		else if (t == PARSE_T_SYM || t == PARSE_T_STR)
 		{
 			v->u.sval = string_make(tok);
 		}
-		else if (t == T_RAND)
+		else if (t == PARSE_T_RAND)
 		{
 			if (!parse_random(tok, &v->u.rval))
 			{
@@ -368,22 +371,22 @@ static int parse_type(const char *s) {
 	int rv = 0;
 	if (s[0] == '?')
 	{
-		rv |= T_OPT;
+		rv |= PARSE_T_OPT;
 		s++;
 	}
 	if (!strcmp(s, "int"))
-		return T_INT | rv;
+		return PARSE_T_INT | rv;
 	if (!strcmp(s, "sym"))
-		return T_SYM | rv;
+		return PARSE_T_SYM | rv;
 	if (!strcmp(s, "str"))
-		return T_STR | rv;
+		return PARSE_T_STR | rv;
 	if (!strcmp(s, "rand"))
-		return T_RAND | rv;
+		return PARSE_T_RAND | rv;
 	if (!strcmp(s, "uint"))
-		return T_UINT | rv;
+		return PARSE_T_UINT | rv;
 	if (!strcmp(s, "char"))
-		return T_CHAR | rv;
-	return T_NONE;
+		return PARSE_T_CHAR | rv;
+	return PARSE_T_NONE;
 }
 
 static void clean_specs(struct parser_hook *h) {
@@ -445,17 +448,17 @@ static errr parse_specs(struct parser_hook *h, char *fmt) {
 		/* Grab a type, check to see if we have a mandatory type
 		 * following an optional type. */
 		type = parse_type(stype);
-		if (type == T_NONE)
+		if (type == PARSE_T_NONE)
 		{
 			clean_specs(h);
 			return -EINVAL;
 		}
-		if (!(type & T_OPT) && h->ftail && (h->ftail->type & T_OPT))
+		if (!(type & PARSE_T_OPT) && h->ftail && (h->ftail->type & PARSE_T_OPT))
 		{
 			clean_specs(h);
 			return -EINVAL;
 		}
-		if (h->ftail && ((h->ftail->type & ~T_OPT) == T_STR))
+		if (h->ftail && ((h->ftail->type & ~PARSE_T_OPT) == PARSE_T_STR))
 		{
 			clean_specs(h);
 			return -EINVAL;
@@ -503,6 +506,10 @@ errr parser_reg(struct parser *p, const char *fmt,
 	return 0;
 }
 
+enum parser_error ignored(struct parser *p) {
+	return PARSE_ERROR_NONE;
+}
+
 bool parser_hasval(struct parser *p, const char *name) {
 	struct parser_value *v;
 	for (v = p->fhead; v; v = (struct parser_value *)v->spec.next)
@@ -527,37 +534,37 @@ struct parser_value *parser_getval(struct parser *p, const char *name) {
 
 const char *parser_getsym(struct parser *p, const char *name) {
 	struct parser_value *v = parser_getval(p, name);
-	assert((v->spec.type & ~T_OPT) == T_SYM);
+	assert((v->spec.type & ~PARSE_T_OPT) == PARSE_T_SYM);
 	return v->u.sval;
 }
 
 int parser_getint(struct parser *p, const char *name) {
 	struct parser_value *v = parser_getval(p, name);
-	assert((v->spec.type & ~T_OPT) == T_INT);
+	assert((v->spec.type & ~PARSE_T_OPT) == PARSE_T_INT);
 	return v->u.ival;
 }
 
 unsigned int parser_getuint(struct parser *p, const char *name) {
 	struct parser_value *v = parser_getval(p, name);
-	assert((v->spec.type & ~T_OPT) == T_UINT);
+	assert((v->spec.type & ~PARSE_T_OPT) == PARSE_T_UINT);
 	return v->u.uval;
 }
 
 const char *parser_getstr(struct parser *p, const char *name) {
 	struct parser_value *v = parser_getval(p, name);
-	assert((v->spec.type & ~T_OPT) == T_STR);
+	assert((v->spec.type & ~PARSE_T_OPT) == PARSE_T_STR);
 	return v->u.sval;
 }
 
 struct random parser_getrand(struct parser *p, const char *name) {
 	struct parser_value *v = parser_getval(p, name);
-	assert((v->spec.type & ~T_OPT) == T_RAND);
+	assert((v->spec.type & ~PARSE_T_OPT) == PARSE_T_RAND);
 	return v->u.rval;
 }
 
 char parser_getchar(struct parser *p, const char *name) {
 	struct parser_value *v = parser_getval(p, name);
-	assert((v->spec.type & ~T_OPT) == T_CHAR);
+	assert((v->spec.type & ~PARSE_T_OPT) == PARSE_T_CHAR);
 	return v->u.cval;
 }
 
@@ -572,4 +579,76 @@ int parser_getstate(struct parser *p, struct parser_state *s) {
 void parser_setstate(struct parser *p, unsigned int col, const char *msg) {
 	p->colno = col;
 	my_strcpy(p->errmsg, msg, sizeof(p->errmsg));
+}
+
+/* More angband-specific bits of the parser
+ * These require hooks into other parts of the code, and are a candidate for
+ * moving elsewhere.
+ */
+static void print_error(struct file_parser *fp, struct parser *p) {
+	struct parser_state s;
+	parser_getstate(p, &s);
+	msg("Parse error in %s line %d column %d: %s: %s", fp->name,
+	           s.line, s.col, s.msg, parser_error_str[s.error]);
+	message_flush();
+	quit_fmt("Parse error in %s line %d column %d.", fp->name, s.line, s.col);
+}
+
+errr run_parser(struct file_parser *fp) {
+	struct parser *p = fp->init();
+	errr r;
+	if (!p) {
+		return PARSE_ERROR_GENERIC;
+	}
+	r = fp->run(p);
+	if (r) {
+		print_error(fp, p);
+		return r;
+	}
+	r = fp->finish(p);
+	if (r)
+		print_error(fp, p);
+	return r;
+}
+
+/* The basic file parsing function */
+errr parse_file(struct parser *p, const char *filename) {
+	char path[1024];
+	char buf[1024];
+	ang_file *fh;
+	errr r = 0;
+
+	path_build(path, sizeof(path), ANGBAND_DIR_EDIT, format("%s.txt", filename));
+	fh = file_open(path, MODE_READ, -1);
+	if (!fh)
+		quit(format("Cannot open '%s.txt'", filename));
+	while (file_getl(fh, buf, sizeof(buf))) {
+		r = parser_parse(p, buf);
+		if (r)
+			break;
+	}
+	file_close(fh);
+	return r;
+}
+
+int lookup_flag(const char **flag_table, const char *flag_name) {
+	int i = FLAG_START;
+
+	while (flag_table[i] && !streq(flag_table[i], flag_name))
+		i++;
+
+	/* End of table reached without match */
+	if (!flag_table[i]) i = FLAG_END;
+
+	return i;
+}
+
+errr grab_flag(bitflag *flags, const size_t size, const char **flag_table, const char *flag_name) {
+	int flag = lookup_flag(flag_table, flag_name);
+
+	if (flag == FLAG_END) return PARSE_ERROR_INVALID_FLAG;
+
+	flag_on(flags, size, flag);
+
+	return 0;
 }

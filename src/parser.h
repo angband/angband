@@ -9,6 +9,7 @@
 #define PARSER_H
 
 #include "h-basic.h"
+#include "z-bitflag.h"
 #include "z-rand.h"
 
 struct parser;
@@ -51,6 +52,13 @@ struct parser_state {
 	char *msg;
 };
 
+struct file_parser {
+	const char *name;
+	struct parser *(*init)(void);
+	errr (*run)(struct parser *p);
+	errr (*finish)(struct parser *p);
+};
+
 extern const char *parser_error_str[PARSE_ERROR_MAX];
 
 /** Allocates a new parser. */
@@ -88,6 +96,8 @@ extern void parser_setpriv(struct parser *p, void *v);
 extern errr parser_reg(struct parser *p, const char *fmt,
                        enum parser_error (*func)(struct parser *p));
 
+/** A placeholder parse hook indicating a value is ignored */
+extern enum parser_error ignored(struct parser *p);
 
 /** Returns whether the parser has a value named `name`.
  *
@@ -120,5 +130,12 @@ extern int parser_getstate(struct parser *p, struct parser_state *s);
 
 /** Sets the parser's detailed error description and field number. */
 extern void parser_setstate(struct parser *p, unsigned int col, const char *msg);
+
+errr run_parser(struct file_parser *fp);
+errr parse_file(struct parser *p, const char *filename);
+int lookup_flag(const char **flag_table, const char *flag_name);
+errr grab_flag(bitflag *flags, const size_t size, const char **flag_table, const char *flag_name);
+
+
 
 #endif /* !PARSER_H */
