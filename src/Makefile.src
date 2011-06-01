@@ -139,5 +139,11 @@ ANGFILES = \
 	xtra2.o \
 	xtra3.o
 
+STATSFILES = stats/db.o
+
+ifeq ($(USE_STATS),1)
+	ANGFILES += $(STATSFILES)
+endif
+
 buildid.o: $(ANGFILES)
 ANGFILES += buildid.o

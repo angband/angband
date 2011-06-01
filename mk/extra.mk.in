@@ -160,3 +160,4 @@ INSTALL_PROGRAM ?= @INSTALL_PROGRAM@
 exec_prefix ?= @exec_prefix@
 EGREP ?= @EGREP@
 VERSION ?= @VERSION@
+USE_STATS = @USE_STATS@
