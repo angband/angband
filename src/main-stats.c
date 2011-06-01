@@ -79,7 +79,7 @@ static struct level_data {
 	struct wearables_data *wearables[ORIGIN_STATS];
 } level_data[LEVEL_MAX];
 
-static void create_indeces()
+static void create_indices()
 {
 	int i;
 
@@ -544,7 +544,7 @@ static errr run_stats(void)
 	unsigned int i;
 
 	prep_output_dir();
-	create_indeces();
+	create_indices();
 	alloc_memory();
 
 	if (randarts)
