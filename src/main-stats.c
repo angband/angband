@@ -22,6 +22,7 @@
 #include "init.h"
 #include "object/pval.h"
 #include "object/tvalsval.h"
+#include "stats/db.h"
 
 #define OBJ_FEEL_MAX	 11
 #define MON_FEEL_MAX 	 10
@@ -537,12 +538,207 @@ static void prep_output_dir(void)
 	}
 }
 
+/**
+ * Open the database connection and create the database tables.
+ * All count tables will contain a level column (INTEGER) and a
+ * count column (INTEGER). Some tables will include other INTEGER columns
+ * for object origin, feeling, attributes, indices, or object flags.
+ * Tables:
+ *     metadata -- key-value pairs describing the stats run
+ *     artifact_info -- dump of artifact.txt
+ *     artifact_flags_map -- map between artifacts and object flags
+ *     artifact_pval_flags_map -- map between artifacts and pval flags, with pvals
+ *     ego_info -- dump of ego_item.txt
+ *     ego_flags_map -- map between egos and object flags
+ *     ego_pval_flags_map -- map between egos and pval flags, with pvals and minima
+ *     ego_type_map -- map between egos and tvals/svals
+ *     monster_base_info -- dump of monster_base.txt
+ *     monster_base_flags_map -- map between monsters and monster flags
+ *     monster_base_spell_flags_map -- map between monsters and monster spell flags
+ *     monster_info -- dump of monsters.txt
+ *     monster_flags_map -- map between monsters and monster flags
+ *     monster_spell_flags_map -- map between monsters and monster spell flags
+ *     object_base_info -- dump of object_base.txt
+ *     object_base_flags_map -- map between object templates and object flags
+ *     object_info -- dump of objects.txt
+ *     object_flags_map -- map between artifacts and object flags
+ *     object_pval_flags_map -- map between artifacts and pval flags, with pvals
+ *     effects_list -- dump of list-effects.h
+ *     monster_flags_list -- dump of list-mon-flags.h
+ *     monster_spell_flags_list -- dump of list-mon-spells.h
+ *     object_flags_list -- dump of list-object-flags.h
+ *     object_flag_type_list -- dump of object_flag_type enum
+ *     object_slays_list -- dump of list-object-slays.h
+ *     origin_flags_list -- dump of origin enum
+ *     wearables_index -- contains list of wearable object indices
+ *     consumables_index -- contains list of consumable object indices
+ *     pval_flags_index -- contains list of object flag indices with pvals
+ * Count tables:
+ *     monsters
+ *     obj_feelings
+ *     mon_feelings
+ *     gold
+ *     artifacts
+ *     consumables
+ *     wearables_count
+ *     wearables_dice
+ *     wearables_ac
+ *     wearables_hit
+ *     wearables_dam
+ *     wearables_egos
+ *     wearables_flags
+ *     wearables_pval_flags
+ */
+static bool stats_prep_db(void)
+{
+	bool status;
+	int err;
+
+	/* Open the database connection */
+	status = stats_db_open();
+	if (!status) return status;
+
+	/* Create some tables */
+	err = stats_db_exec("CREATE TABLE metadata(field TEXT, value TEXT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE artifact_info(idx INT PRIMARY KEY, name TEXT, tval INT, sval INT, weight INT, cost INT, alloc_prob INT, alloc_min INT, alloc_max INT, ac INT, dd INT, ds INT, to_h INT, to_d INT, to_a INT, effect INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE artifact_flags_map(a_idx INT, o_flag INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE artifact_pval_flags_map(a_idx INT, pval_flag INT, pval INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE ego_info(idx INT PRIMARY KEY, name TEXT, cost INT, level INT, rarity INT, rating INT, to_h TEXT, to_d TEXT, to_a TEXT, num_pvals INT, min_to_h INT, min_to_d INT, min_to_a INT, xtra INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE ego_flags_map(e_idx INT, o_flag INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE ego_pval_flags_map(e_idx INT, pval_flag INT, pval TEXT, min_pval INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE ego_type_map(e_idx INT, tval INT, min_sval INT, max_sval INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE monster_base_info(idx INT PRIMARY KEY, name TEXT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE monster_base_flags_map(rb_idx INT, r_flag INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE monster_base_spell_flags_map(rb_idx INT, rs_flag INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE monster_info(idx INT PRIMARY KEY, name TEXT, base TEXT, ac INT, sleep INT, speed INT, mexp INT, hp INT, freq_innate INT, freq_spell INT, level INT, rarity INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE monster_flags_map(r_idx INT, r_flag INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE monster_spell_flags_map(r_idx INT, rs_flag INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE object_base_info(idx INT PRIMARY KEY, name TEXT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE object_base_flags_map(kb_idx INT, o_flag INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE object_info(idx INT PRIMARY KEY, name TEXT, tval INT, sval INT, level INT, weight INT, cost INT, ac INT, dd INT, ds INT, to_h INT, to_d INT, to_a INT, alloc_prob INT, alloc_min INT, alloc_max INT, charge TEXT, effect INT, recharge_time INT, gen_mult_prob INT, stack_size INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE object_flags_map(k_idx INT, o_flag INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE object_pval_flags_map(k_idx INT, pval_flag INT, pval INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE effects_list(idx INT PRIMARY KEY, name TEXT, rating INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE monster_flags_list(idx INT PRIMARY KEY, name TEXT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE monster_spell_flags_list(idx INT PRIMARY KEY, name TEXT, cap INT, div INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE object_flags_list(idx INT PRIMARY KEY, name TEXT, pval INT, type INT, power INT, pval_mult INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE object_flag_type_list(idx INT PRIMARY KEY, name TEXT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE object_slays_list(idx INT PRIMARY KEY, name TEXT, object_flag INT, monster_flag INT, resist_flag INT, mult INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE origin_flags_list(idx INT PRIMARY KEY, name TEXT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE wearables_index(idx INT PRIMARY KEY, k_idx INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE consumables_index(idx INT PRIMARY KEY, k_idx INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE pval_flags_index(idx INT PRIMARY KEY, of_idx INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE monsters(level INT, count INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE obj_feelings(level INT, count INT, feeling INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE mon_feelings(level INT, count INT, feeling INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE gold(level INT, count INT, origin INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE artifacts(level INT, count INT, a_idx INT, origin INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE consumables(level INT, count INT, c_idx INT, origin INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE wearables_count(level INT, count INT, origin INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE wearables_dice(level INT, count INT, origin INT, dd INT, ds INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE wearables_ac(level INT, count INT, origin INT, ac INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE wearables_hit(level INT, count INT, origin INT, to_h INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE wearables_dam(level INT, count INT, origin INT, to_d INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE wearables_egos(level INT, count INT, origin INT, e_idx INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE wearables_flags(level INT, count INT, origin INT, of_idx INT);");
+	if (err) return false;
+
+	err = stats_db_exec("CREATE TABLE wearables_pval_flags(level INT, count INT, origin INT, pval INT, pv_idx INT);");
+	if (err) return false;
+
+	return true;
+}
+
 static errr run_stats(void)
 {
 	u32b run;
 	artifact_type *a_info_save;
 	unsigned int i;
 
+	bool status = stats_prep_db();
+	if (!status) quit("Couldn't prepare database!");
 	prep_output_dir();
 	create_indices();
 	alloc_memory();
@@ -574,6 +770,8 @@ static errr run_stats(void)
 		unkill_uniques();
 		reset_artifacts();
 		descend_dungeon();
+
+		/* Checkpoint every so many runs */
 	}
 
 	dump_ainfo();

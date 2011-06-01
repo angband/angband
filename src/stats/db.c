@@ -19,6 +19,7 @@
  */
 
 #include <sqlite3.h>
+#include <time.h>
 #include <sys/stat.h>
 
 #include "angband.h"
@@ -49,16 +50,20 @@ static bool stats_make_output_dir(void) {
  */
 bool stats_db_open(void) {
 	size_t size;
-	char filename_buf[16];
+	char filename_buf[20];
 	int result;
+	time_t now_time = time(NULL);
+	struct tm *now = localtime(&now_time);
 
 	if (!stats_make_output_dir()) {
 		return false;
 	}
 
-	size = strlen(ANGBAND_DIR_STATS) + strlen(PATH_SEP) + 16;
+	size = strlen(ANGBAND_DIR_STATS) + strlen(PATH_SEP) + 20;
 	db_filename = mem_alloc(size * sizeof(char));
-	strnfmt(filename_buf, 16, "%010d.db", time(NULL));
+	strnfmt(filename_buf, 20, "%4d-%02d-%02dT%02d:%02d.db",
+		now->tm_year + 1900, now->tm_mon, now->tm_mday,
+		now->tm_hour, now->tm_min);
 	path_build(db_filename, size, ANGBAND_DIR_STATS, filename_buf);
 
 	if (file_exists(db_filename)) {
