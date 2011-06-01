@@ -1067,17 +1067,15 @@ C:d5:d5:0
 T:16:0:99
 T:17:0:99
 T:18:0:99
-D:Ammunition of Wounding often has unusually high to-hit and to-dam
-D: values.
+D:Ammunition of Wounding often has unusually high to-hit and to-dam values.
 
-N:125:of Backbiting
+N:125:(Lumbering)
 X:0:0
 W:0:1:0:0
-C:d50:d50:0
+C:-d25:d25:0
 T:16:0:99
 T:17:0:99
 T:18:0:99
-F:LIGHT_CURSE
 
 ### Special Broken Items ###
 
@@ -1106,7 +1104,6 @@ W:0:2:0:500
 C:0:0:1d6M4:0
 M:0:0:4:0
 T:38:0:99
-F:IGNORE_ACID | IGNORE_FIRE
 
 N:129:of Stealth
 X:16:0
@@ -1121,8 +1118,7 @@ X:10:0
 W:0:10:0:12500
 C:0:0:d10
 T:38:7:99
-F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD |
-F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD
 
 N:131:of Elvenkind
 X:25:2
@@ -1130,8 +1126,7 @@ W:0:33:0:15000
 C:0:0:d10:0
 T:38:7:99
 L:d2:0:STEALTH
-F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD |
-F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD
 
 N:132:(Dwarven)
 X:18:0
@@ -1139,7 +1134,6 @@ W:0:20:0:5000
 C:0:0:d15:0
 M:0:0:5:0
 T:38:0:99
-F:IGNORE_ACID | IGNORE_FIRE |
 F:FREE_ACT | HIDE_TYPE
 L:d2:1:STR
 L:d2:1:CON
