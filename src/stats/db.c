@@ -121,6 +121,28 @@ int stats_db_stmt_prep(sqlite3_stmt **sql_stmt, char *sql_str) {
 }
 
 /**
+ * Utility function for binding many ints at once. Arguments after num_cols
+ * should be a series of ints to be bound to parameters in sql_stmt, in
+ * order.
+ */
+
+int stats_db_bind_ints(sqlite3_stmt *sql_stmt, int num_cols, ...) {
+	va_list vp;
+	int err = SQLITE_OK;
+	int col;
+
+	va_start(vp, num_cols);
+	for (col = 1; col <= num_cols; col++) {
+		u32b value = va_arg(vp, u32b);
+		err = sqlite3_bind_int(sql_stmt, col, value);
+		if (err) return err;
+	}
+	va_end(vp);
+
+	return err;
+}
+
+/**
  * I have chosen not to wrap the other sqlite3 core interfaces, since
  * they do not require access to the database connection object db.
  * The key functions are

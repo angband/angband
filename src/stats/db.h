@@ -27,5 +27,6 @@ extern bool stats_db_open(void);
 extern bool stats_db_close(void);
 extern int stats_db_exec(char *sql_str);
 extern int stats_db_stmt_prep(sqlite3_stmt **sql_stmt, char *sql_str);
+extern int stats_db_bind_ints(sqlite3_stmt *sql_stmt, int num_cols, ...);
 
 #endif /* STATS_DB_H */
