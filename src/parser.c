@@ -631,6 +631,11 @@ errr parse_file(struct parser *p, const char *filename) {
 	return r;
 }
 
+void cleanup_parser(struct file_parser *fp)
+{
+	fp->cleanup();
+}
+
 int lookup_flag(const char **flag_table, const char *flag_name) {
 	int i = FLAG_START;
 

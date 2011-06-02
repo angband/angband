@@ -141,11 +141,26 @@ static errr finish_parse_rb(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_rb(void)
+{
+	struct monster_base *rb, *next;
+
+	rb = rb_info;
+	while (rb) {
+		next = rb->next;
+		string_free(rb->text);
+		string_free(rb->name);
+		mem_free(rb);
+		rb = next;
+	}
+}
+
 struct file_parser rb_parser = {
 	"monster_base",
 	init_parse_rb,
 	run_parse_rb,
-	finish_parse_rb
+	finish_parse_rb,
+	cleanup_rb
 };
 
 
@@ -455,17 +470,9 @@ static errr finish_parse_r(struct parser *p) {
 	return 0;
 }
 
-struct file_parser r_parser = {
-	"monster",
-	init_parse_r,
-	run_parse_r,
-	finish_parse_r
-};
-
-void monsters_free(void)
+void cleanup_r(void)
 {
 	int ridx;
-	struct monster_base *rb, *rbn;
 
 	for (ridx = 0; ridx < z_info->r_max; ridx++) {
 		struct monster_race *r = &r_info[ridx];
@@ -482,13 +489,13 @@ void monsters_free(void)
 	}
 
 	mem_free(r_info);
-
-	rb = rb_info;
-	while (rb) {
-		rbn = rb->next;
-		string_free(rb->text);
-		string_free(rb->name);
-		mem_free(rb);
-		rb = rbn;
-	}
 }
+
+struct file_parser r_parser = {
+	"monster",
+	init_parse_r,
+	run_parse_r,
+	finish_parse_r,
+	cleanup_r
+};
+

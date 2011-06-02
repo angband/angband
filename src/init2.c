@@ -404,11 +404,22 @@ static errr finish_parse_kb(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_kb(void)
+{
+	int idx;
+	for (idx = 0; idx < TV_MAX; idx++)
+	{
+		string_free(kb_info[idx].name);
+	}
+	mem_free(kb_info);
+}
+
 struct file_parser kb_parser = {
 	"object_base",
 	init_parse_kb,
 	run_parse_kb,
-	finish_parse_kb
+	finish_parse_kb,
+	cleanup_kb
 };
 
 
@@ -608,13 +619,15 @@ static errr run_parse_k(struct parser *p) {
 }
 
 static errr finish_parse_k(struct parser *p) {
-	struct object_kind *k;
+	struct object_kind *k, *next;
 
 	k_info = mem_zalloc(z_info->k_max * sizeof(*k));
-	for (k = parser_priv(p); k; k = k->next) {
+	for (k = parser_priv(p); k; k = next) {
 		if (k->kidx >= z_info->k_max)
 			continue;
 		memcpy(&k_info[k->kidx], k, sizeof(*k));
+		next = k->next;
+		mem_free(k);
 	}
 
 	objkinds = parser_priv(p);
@@ -622,11 +635,22 @@ static errr finish_parse_k(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_k(void)
+{
+	int idx;
+	for (idx = 0; idx < z_info->k_max; idx++) {
+		string_free(k_info[idx].name);
+		mem_free(k_info[idx].text);
+	}
+	mem_free(k_info);
+}
+
 struct file_parser k_parser = {
 	"object",
 	init_parse_k,
 	run_parse_k,
-	finish_parse_k
+	finish_parse_k,
+	cleanup_k
 };
 
 /* Parsing functions for artifact.txt */
@@ -830,11 +854,23 @@ static errr finish_parse_a(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_a(void)
+{
+	int idx;
+	for (idx = 0; idx < z_info->a_max; idx++) {
+		string_free(a_info[idx].name);
+		mem_free(a_info[idx].effect_msg);
+		mem_free(a_info[idx].text);
+	}
+	mem_free(a_info);
+}
+
 struct file_parser a_parser = {
 	"artifact",
 	init_parse_a,
 	run_parse_a,
-	finish_parse_a
+	finish_parse_a,
+	cleanup_a
 };
 
 /* Parsing functions for names.txt (random name fragments) */
@@ -907,11 +943,24 @@ static errr finish_parse_names(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_names(void)
+{
+	int i, j;
+	for (i = 0; i < RANDNAME_NUM_TYPES; i++) {
+		for (j = 0; name_sections[i][j]; j++) {
+			string_free((char *)name_sections[i][j]);
+		}
+		mem_free(name_sections[i]);
+	}
+	mem_free(name_sections);
+}
+
 struct file_parser names_parser = {
 	"names",
 	init_parse_names,
 	run_parse_names,
-	finish_parse_names
+	finish_parse_names,
+	cleanup_names
 };
 
 /* Parsing functions for terrain.txt */
@@ -1091,11 +1140,20 @@ static errr finish_parse_f(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_f(void) {
+	int idx;
+	for (idx = 0; idx < z_info->f_max; idx++) {
+		string_free(f_info[idx].name);
+	}
+	mem_free(f_info);
+}
+
 struct file_parser f_parser = {
 	"terrain",
 	init_parse_f,
 	run_parse_f,
-	finish_parse_f
+	finish_parse_f,
+	cleanup_f
 };
 
 /* Parsing functions for ego-item.txt */
@@ -1304,11 +1362,23 @@ static errr finish_parse_e(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_e(void)
+{
+	int idx;
+	for (idx = 0; idx < z_info->e_max; idx++) {
+		string_free(e_info[idx].name);
+		mem_free(e_info[idx].text);
+	}
+	mem_free(e_info);
+	free_slay_cache();
+}
+
 struct file_parser e_parser = {
 	"ego_item",
 	init_parse_e,
 	run_parse_e,
-	finish_parse_e
+	finish_parse_e,
+	cleanup_e
 };
 
 /* Parsing functions for prace.txt */
@@ -1489,11 +1559,25 @@ static errr finish_parse_p(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_p(void)
+{
+	struct player_race *p = races;
+	struct player_race *next;
+
+	while (p) {
+		next = p->next;
+		string_free((char *)p->name);
+		mem_free(p);
+		p = next;
+	}
+}
+
 struct file_parser p_parser = {
 	"p_race",
 	init_parse_p,
 	run_parse_p,
-	finish_parse_p
+	finish_parse_p,
+	cleanup_p
 };
 
 /* Parsing functions for pclass.txt */
@@ -1708,11 +1792,36 @@ static errr finish_parse_c(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_c(void)
+{
+	struct player_class *c = classes;
+	struct player_class *next;
+	struct start_item *item, *item_next;
+	int i;
+
+	while (c) {
+		next = c->next;
+		item = c->start_items;
+		while(item) {
+			item_next = item->next;
+			mem_free(item);
+			item = item_next;
+		}
+		for (i = 0; i < PY_MAX_LEVEL / 5; i++) {
+			string_free((char *)c->title[i]);
+		}
+		mem_free((char *)c->name);
+		mem_free(c);
+		c = next;
+	}
+}
+
 struct file_parser c_parser = {
 	"p_class",
 	init_parse_c,
 	run_parse_c,
-	finish_parse_c
+	finish_parse_c,
+	cleanup_c
 };
 
 /* Parsing functions for vault.txt */
@@ -1775,11 +1884,23 @@ static errr finish_parse_v(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_v(void)
+{
+	struct vault *v, *next;
+	for (v = vaults; v; v = next) {
+		next = v->next;
+		mem_free(v->name);
+		mem_free(v->text);
+		mem_free(v);
+	}
+}
+
 struct file_parser v_parser = {
 	"vault",
 	init_parse_v,
 	run_parse_v,
-	finish_parse_v
+	finish_parse_v,
+	cleanup_v
 };
 
 /* Parsing functions for p_hist.txt */
@@ -1862,11 +1983,32 @@ static errr finish_parse_h(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_h(void)
+{
+	struct history_chart *c, *next_c;
+	struct history_entry *e, *next_e;
+
+	c = histories;
+	while (c) {
+		next_c = c->next;
+		e = c->entries;
+		while (e) {
+			next_e = e->next;
+			mem_free(e->text);
+			mem_free(e);
+			e = next_e;
+		}
+		mem_free(c);
+		c = next_c;
+	}
+}
+
 struct file_parser h_parser = {
 	"p_hist",
 	init_parse_h,
 	run_parse_h,
-	finish_parse_h
+	finish_parse_h,
+	cleanup_h
 };
 
 /* Parsing functions for flavor.txt */
@@ -1936,11 +2078,25 @@ static errr finish_parse_flavor(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_flavor(void)
+{
+	struct flavor *f, *next;
+
+	f = flavors;
+	while(f) {
+		next = f->next;
+		mem_free(f->text);
+		mem_free(f);
+		f = next;
+	}
+}
+
 struct file_parser flavor_parser = {
 	"flavor",
 	init_parse_flavor,
 	run_parse_flavor,
-	finish_parse_flavor
+	finish_parse_flavor,
+	cleanup_flavor
 };
 
 /* Parsing functions for spell.txt */
@@ -1994,36 +2150,44 @@ static errr run_parse_s(struct parser *p) {
 }
 
 static errr finish_parse_s(struct parser *p) {
-	struct spell *s, *n;
+	struct spell *s, *n, *ss;
 	struct object_kind *k;
 
 	s_info = mem_zalloc(z_info->s_max * sizeof(*s_info));
-	for (s = parser_priv(p); s; s = s->next) {
+	for (s = parser_priv(p); s; s = n) {
+		n = s->next;
 		if (s->sidx >= z_info->s_max)
 			continue;
-		memcpy(&s_info[s->sidx], s, sizeof(*s));
-	}
-
-	s = parser_priv(p);
-	while (s) {
-		n = s->next;
+		ss = &s_info[s->sidx];
+		memcpy(ss, s, sizeof(*s));
 		k = objkind_get(s->tval, s->sval);
 		if (k) {
-			s->next = k->spells;
-			k->spells = s;
+			ss->next = k->spells;
+			k->spells = ss;
 		}
-		s = n;
+		mem_free(s);
 	}
 
 	parser_destroy(p);
 	return 0;
 }
 
+static void cleanup_s(void)
+{
+	int idx;
+	for (idx = 0; idx < z_info->s_max; idx++) {
+		string_free(s_info[idx].name);
+		mem_free(s_info[idx].text);
+	}
+	mem_free(s_info);
+}
+
 static struct file_parser s_parser = {
 	"spell",
 	init_parse_s,
 	run_parse_s,
-	finish_parse_s
+	finish_parse_s,
+	cleanup_s
 };
 
 /* Initialise hints */
@@ -2054,11 +2218,25 @@ static errr finish_parse_hints(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_hints(void)
+{
+	struct hint *h, *next;
+
+	h = hints;
+	while(h) {
+		next = h->next;
+		string_free(h->hint);
+		mem_free(h);
+		h = next;
+	}
+}
+
 static struct file_parser hints_parser = {
 	"hints",
 	init_parse_hints,
 	run_parse_hints,
 	finish_parse_hints,
+	cleanup_hints
 };
 
 /* Initialise monster pain messages */
@@ -2120,11 +2298,23 @@ static errr finish_parse_mp(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_mp(void)
+{
+	int idx, i;
+	for (idx = 0; idx < z_info->mp_max; idx++) {
+		for (i = 0; i < 7; i++) {
+			string_free((char *)pain_messages[idx].messages[i]);
+		}
+	}
+	mem_free(pain_messages);
+}
+
 struct file_parser mp_parser = {
 	"pain messages",
 	init_parse_mp,
 	run_parse_mp,
-	finish_parse_mp
+	finish_parse_mp,
+	cleanup_mp
 };
 
 
@@ -2296,11 +2486,21 @@ static errr finish_parse_pit(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_pits(void)
+{
+	int idx;
+	for (idx = 0; idx < z_info->pit_max; idx++) {
+		string_free((char *)pit_info[idx].name);
+	}
+	mem_free(pit_info);
+}
+
 struct file_parser pit_parser = {
 	"pits",
 	init_parse_pit,
 	run_parse_pit,
-	finish_parse_pit
+	finish_parse_pit,
+	cleanup_pits
 };
 
 
@@ -2815,11 +3015,23 @@ void cleanup_angband(void)
 	/* Free the "quarks" */
 	quarks_free();
 
-	mem_free(k_info);
-	mem_free(a_info);
-	mem_free(e_info);
-	monsters_free();
-	mem_free(pit_info);
+	cleanup_parser(&k_parser);
+	cleanup_parser(&kb_parser);
+	cleanup_parser(&a_parser);
+	cleanup_parser(&names_parser);
+	cleanup_parser(&r_parser);
+	cleanup_parser(&rb_parser);
+	cleanup_parser(&f_parser);
+	cleanup_parser(&e_parser);
+	cleanup_parser(&p_parser);
+	cleanup_parser(&c_parser);
+	cleanup_parser(&v_parser);
+	cleanup_parser(&h_parser);
+	cleanup_parser(&flavor_parser);
+	cleanup_parser(&s_parser);
+	cleanup_parser(&hints_parser);
+	cleanup_parser(&mp_parser);
+	cleanup_parser(&pit_parser);
 
 	/* Free the format() buffer */
 	vformat_kill();
@@ -2834,4 +3046,10 @@ void cleanup_angband(void)
 	string_free(ANGBAND_DIR_PREF);
 	string_free(ANGBAND_DIR_USER);
 	string_free(ANGBAND_DIR_XTRA);
+
+	string_free(ANGBAND_DIR_XTRA_FONT);
+	string_free(ANGBAND_DIR_XTRA_GRAF);
+	string_free(ANGBAND_DIR_XTRA_SOUND);
+	string_free(ANGBAND_DIR_XTRA_HELP);
+	string_free(ANGBAND_DIR_XTRA_ICON);
 }

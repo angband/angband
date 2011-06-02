@@ -57,6 +57,7 @@ struct file_parser {
 	struct parser *(*init)(void);
 	errr (*run)(struct parser *p);
 	errr (*finish)(struct parser *p);
+	void (*cleanup)(void);
 };
 
 extern const char *parser_error_str[PARSE_ERROR_MAX];
@@ -133,9 +134,9 @@ extern void parser_setstate(struct parser *p, unsigned int col, const char *msg)
 
 errr run_parser(struct file_parser *fp);
 errr parse_file(struct parser *p, const char *filename);
+void cleanup_parser(struct file_parser *fp);
 int lookup_flag(const char **flag_table, const char *flag_name);
 errr grab_flag(bitflag *flags, const size_t size, const char **flag_table, const char *flag_name);
-
 
 
 #endif /* !PARSER_H */
