@@ -464,7 +464,7 @@ static errr run_parse_kb(struct parser *p) {
 
 static errr finish_parse_kb(struct parser *p) {
 	struct object_base *kb;
-	struct object_base *next;
+	struct object_base *next = NULL;
 	struct kb_parsedata *d = parser_priv(p);
 
 	assert(d);
