@@ -1784,8 +1784,7 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cons
 				case '*': {
 					/* Treasure or a trap */
 					if (randint0(100) < 75)
-						place_object(c, y, x, c->depth, FALSE, FALSE,
-							ORIGIN_VAULT);
+						place_object(c, y, x, c->depth, FALSE, FALSE, ORIGIN_VAULT);
 					else
 						place_trap(c, y, x);
 					break;
@@ -2992,8 +2991,14 @@ void join_region(struct cave *c, int colors[], int counts[], int color) {
 
 			y2 = y + yds[i];
 			x2 = x + xds[i];
+
+			/* make sure we stay inside the boundaries */
 			if (y2 < 0 || y2 >= h) continue;
 			if (x2 < 0 || x2 >= w) continue;
+
+			/* permanent walls and icky walls should not be handled */
+			if (cave_isperm(c, y2, x2)) continue;
+			if (cave_isicky(c, y2, x2)) continue;
 
 			n2 = lab_toi(y2, x2, w);
 			if (previous[n2] >= 0) continue;
