@@ -1285,7 +1285,6 @@ static bool init_graphics(void)
 		char buf[1024];
 		int wid, hgt;
 		const char *name;
-		const char *mask = NULL;
 
 		if (arg_graphics == GRAPHICS_DAVID_GERVAIS) {
 			wid = 32;
@@ -1315,49 +1314,15 @@ static bool init_graphics(void)
 		/* Access the bitmap file */
 		path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_GRAF, name);
 
-		/* Load the bitmap or quit */
-		//if (!ReadDIB(data[0].w, buf, &infGraph))
-		//{
-		//	plog_fmt("Cannot read bitmap file '%s'", name);
-		//	return (FALSE);
-		//}
-		if (mask) {
-			if (!ReadDIB_PNG(data[0].w, buf, &infGraph)) {
-				plog_fmt("Cannot read bitmap file '%s'", name);
-				return FALSE;
-			}
-
-			/* Access the mask file */
-			path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_GRAF, mask);
-
-			/* Load the bitmap or quit */
-			if (!ReadDIB_PNG(data[0].w, buf, &infMask)) {
-				plog_fmt("Cannot read bitmap file '%s'", buf);
-				return FALSE;
-			}
-		} else {
-			if (!ReadDIB2_PNG(data[0].w, buf, &infGraph, &infMask)) {
-				plog_fmt("Cannot read bitmap file '%s'", name);
-				return FALSE;
-			}
+		/* Load the image or quit */
+		if (!ReadDIB2_PNG(data[0].w, buf, &infGraph, &infMask)) {
+			plog_fmt("Cannot read file '%s'", name);
+			return FALSE;
 		}
 
 		/* Save the new sizes */
 		infGraph.CellWidth = wid;
 		infGraph.CellHeight = hgt;
-
-		if (mask)
-		{
-			/* Access the mask file */
-			path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_GRAF, mask);
-
-			/* Load the bitmap or quit */
-			if (!ReadDIB(data[0].w, buf, &infMask))
-			{
-				plog_fmt("Cannot read bitmap file '%s'", buf);
-				return (FALSE);
-			}
-		}
 
 		/* Activate a palette */
 		if (!new_palette())
