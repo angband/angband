@@ -437,6 +437,7 @@ static void target_set_interactive_prepare(int mode)
 		temp_x[n] = pts[n].x;
 		temp_y[n] = pts[n].y;
 	}
+	mem_free(pts);
 }
 
 
