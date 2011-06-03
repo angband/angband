@@ -49,9 +49,6 @@ static int nextkey = 0;
 static int running_stats = 0;
 static char *ANGBAND_DIR_STATS;
 
-static ang_file  *ainfo_fp, *rinfo_fp, *finfo_fp, *dinfo_fp;
-/* *obj_fp, *mon_fp, */
-
 static int *consumables_index;
 static int *wearables_index;
 static int *pval_flags_index;
@@ -262,47 +259,6 @@ static void reset_artifacts(void)
 
 }
 
-/*
- * Insert into out_str a hex representation of the bitflag flags[].
- */
-static void flag2hex(const bitflag flags[], char *out_str)
-{
-	unsigned int i;
-
-	out_str[2*OF_SIZE] = 0;
-
-	for (i = 0; i < OF_SIZE; i++)
-		strnfmt(out_str + 2 * i, 2 * OF_SIZE - 2 * i + 1, "%02x", flags[i]);
-}
-
-/*
- * Insert into pvals a comma-separated list of pvals in pval[],
- * and insert into pval_flags a comma-separated list of hex
- * representations of the bitflags in pval_flags[].
- */
-
-static void dump_pvals(char *pval_string, char *pval_flag_string,
-	s16b pval[], bitflag pval_flags[][OF_SIZE], byte num_pvals)
-{
-	unsigned int i;
-	size_t pval_end = 0;
-	size_t pval_flag_end = 0;
-	char buf[64];
-
-	if (num_pvals <= 0) return;
-
-	for (i = 0; (i + 1) < num_pvals; i++)
-	{
-		strnfcat(pval_string, 20, &pval_end, "%d,", pval[i]);
-		flag2hex(pval_flags[i], buf);
-		strnfcat(pval_flag_string, 128, &pval_flag_end, "%s,", buf);
-	}
-
-	strnfcat(pval_string, 20, &pval_end, "%d", pval[num_pvals - 1]);
-	flag2hex(pval_flags[num_pvals - 1], buf);
-	strnfcat(pval_flag_string, 128, &pval_flag_end, "%s", buf);
-}
-
 static void log_all_objects(int level)
 {
 	int x, y, i;
@@ -356,151 +312,6 @@ static void log_all_objects(int level)
 			while ((o_ptr = get_next_object(o_ptr)));
 		}
 	}
-}
-
-static void open_output_files(u32b run)
-{
-	char buf[1024];
-	char run_dir[1024];
-
-	strnfmt(run_dir, 1024, "%s%s%010d", ANGBAND_DIR_STATS, PATH_SEP, run);
-
-	if (!dir_create(run_dir))
-	{
-		quit("Couldn't create stats run directory!");
-	}
-
-/*	path_build(buf, sizeof(buf), run_dir, "objects.txt");
-	obj_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
-	path_build(buf, sizeof(buf), run_dir, "monsters.txt");
-	mon_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT); */
-	path_build(buf, sizeof(buf), run_dir, "ainfo.txt");
-	ainfo_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
-	path_build(buf, sizeof(buf), run_dir, "rinfo.txt");
-	rinfo_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
-	path_build(buf, sizeof(buf), run_dir, "feelings.txt");
-	finfo_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
-	path_build(buf, sizeof(buf), run_dir, "datatest.txt");
-	dinfo_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
-
-	/* Print headers */
-/*	file_putf(obj_fp, "tval|sval|pvals|name1|name2|number|origin|origin_depth|origin_xtra|to_h|to_d|to_a|ac|dd|ds|weight|flags|pval_flags|power|name\n");
-	file_putf(mon_fp, "level|r_idx|name\n"); */
-	file_putf(ainfo_fp, "aidx|tval|sval|pvals|to_h|to_d|to_a|ac|dd|ds|weight|flags|pval_flags|level|alloc_prob|alloc_min|alloc_max|effect|name\n");
-	file_putf(rinfo_fp, "ridx|level|rarity|d_char|name\n");
-	file_putf(finfo_fp, "Level feelings (%d runs):\n", num_runs);
-	file_putf(dinfo_fp, "Sample results from the level_data structure:\n");
-}
-
-static void close_output_files(void)
-{
-/*	file_close(obj_fp);
-	file_close(mon_fp);*/
-	file_close(ainfo_fp);
-	file_close(rinfo_fp);
-	file_close(finfo_fp);
-	file_close(dinfo_fp);
-}
-
-static void dump_ainfo(void)
-{
-	unsigned int i;
-
-	for (i = 0; i < z_info->a_max; i++)
-	{
-		artifact_type *a_ptr = &a_info[i];
-		char a_flags[128] = "";
-		char a_pvals[20] = "";
-		char a_pval_flags[128] = "";
-
-		/* Don't print anything for "empty" artifacts */
-		if (!a_ptr->name) continue;
-
-		flag2hex(a_ptr->flags, a_flags);
-
-		if (a_ptr->num_pvals > 0)
-			dump_pvals(a_pvals, a_pval_flags, a_ptr->pval,
-				a_ptr->pval_flags, a_ptr->num_pvals);
-
-		file_putf(ainfo_fp,
-			"%d|%d|%d|%s|%d|%d|%d|%d|%d|%d|%d|%d|%s|%s|%d|%d|%d|%d|%d|%s\n",
-			a_ptr->aidx,
-			a_ptr->tval,
-			a_ptr->sval,
-			a_pvals,
-			a_ptr->to_h,
-			a_ptr->to_d,
-			a_ptr->to_a,
-			a_ptr->ac,
-			a_ptr->dd,
-			a_ptr->ds,
-			a_ptr->weight,
-			a_ptr->cost,
-			a_flags,
-			a_pval_flags,
-			a_ptr->level,
-			a_ptr->alloc_prob,
-			a_ptr->alloc_min,
-			a_ptr->alloc_max,
-			a_ptr->effect,
-			a_ptr->name);
-	}
-}
-
-static void dump_rinfo(void)
-{
-	unsigned int i;
-
-	for (i = 0; i < z_info->r_max; i++)
-	{
-		monster_race *r_ptr = &r_info[i];
-
-		/* Don't print anything for "empty" artifacts */
-		if (!r_ptr->name) continue;
-
-	        /* ridx|level|rarity|d_char|name */
-		file_putf(rinfo_fp,
-			"%d|%d|%d|%c|%s\n",
-			r_ptr->ridx,
-			r_ptr->level,
-			r_ptr->rarity,
-			r_ptr->d_char,
-			r_ptr->name);
-	}
-}
-
-static void dump_feelings(void)
-{
-	int i, j;
-
-	for (j = 1; j < LEVEL_MAX; j++) {
-		for (i = 0; i < OBJ_FEEL_MAX; i++)
-			file_putf(finfo_fp, "Level %d obj_feeling %d: %d\n", j, i,
-				level_data[j].obj_feelings[i]);
-		for (i = 0; i < MON_FEEL_MAX; i++)
-			file_putf(finfo_fp, "Level %d mon_feeling %d: %d\n", j, i,
-				level_data[j].mon_feelings[i]);
-	}
-}
-
-static void dump_results(void)
-{
-	int i;
-	int lev = randint1(LEVEL_MAX - 1);
-
-	file_putf(dinfo_fp, "Sample floor data from level %d:\n", lev);
-
-	for (i = 0; i < ORIGIN_STATS; i++)
-		file_putf(dinfo_fp, "Gold from origin %d: %d\n", i, level_data[lev].gold[i]);
-
-	for (i = 0; i < consumable_count + 1; i++)
-		file_putf(dinfo_fp, "Consumable %d: %d\n", i,
-			level_data[lev].consumables[ORIGIN_FLOOR][i]);
-
-	for (i = 0; i < wearable_count + 1; i++)
-		file_putf(dinfo_fp, "Wearable %d: %d\n", i,
-			level_data[lev].wearables[ORIGIN_FLOOR][i].count);
-
 }
 
 static void descend_dungeon(void)
@@ -1715,7 +1526,6 @@ static errr run_stats(void)
 		}
 	}
 
-	open_output_files(0);
 	status = stats_prep_db();
 	if (!status) quit("Couldn't prepare database!");
 
@@ -1749,11 +1559,6 @@ static errr run_stats(void)
 	err = stats_write_db(run);
 	stats_db_close();
 	if (err) quit_fmt("Problems writing to database!  sqlite3 errno %d.", err);
-	dump_ainfo();
-	dump_rinfo();
-	dump_feelings();
-	dump_results();
-	close_output_files();
 	free_stats_memory();
 	cleanup_angband();
 	quit(NULL);
