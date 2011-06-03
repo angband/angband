@@ -24,6 +24,7 @@
 #include "game-event.h"
 #include "game-cmd.h"
 #include "generate.h"
+#include "history.h"
 #include "keymap.h"
 #include "init.h"
 #include "monster/init.h"
@@ -2085,7 +2086,9 @@ static void cleanup_flavor(void)
 	f = flavors;
 	while(f) {
 		next = f->next;
-		mem_free(f->text);
+		/* Hack - scrolls get randomly-generated names */
+		if (f->tval != TV_SCROLL)
+			mem_free(f->text);
 		mem_free(f);
 		f = next;
 	}
@@ -3011,6 +3014,9 @@ void cleanup_angband(void)
 
 	/* Free the messages */
 	messages_free();
+
+	/* Free the history */
+	history_clear();
 
 	/* Free the "quarks" */
 	quarks_free();
