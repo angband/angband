@@ -491,7 +491,7 @@ void place_object(struct cave *c, int y, int x, int level, bool good,
 /**
  * Place a random amount of gold at (x, y).
  */
-void place_gold(struct cave *c, int y, int x, int level) {
+void place_gold(struct cave *c, int y, int x, int level, byte origin) {
 	object_type *i_ptr;
 	object_type object_type_body;
 
@@ -502,6 +502,10 @@ void place_gold(struct cave *c, int y, int x, int level) {
 	i_ptr = &object_type_body;
 	object_wipe(i_ptr);
 	make_gold(i_ptr, level, SV_GOLD_ANY);
+
+	i_ptr->origin = origin;
+	i_ptr->origin_depth = level;
+
 	floor_carry(c, y, x, i_ptr);
 }
 
@@ -651,7 +655,7 @@ static bool alloc_object(struct cave *c, int set, int typ, int depth,
 	switch (typ) {
 		case TYP_RUBBLE: place_rubble(c, y, x); break;
 		case TYP_TRAP: place_trap(c, y, x); break;
-		case TYP_GOLD: place_gold(c, y, x, depth); break;
+		case TYP_GOLD: place_gold(c, y, x, depth, origin); break;
 		case TYP_OBJECT: place_object(c, y, x, depth, FALSE, FALSE, origin); break;
 		case TYP_GOOD: place_object(c, y, x, depth, TRUE, FALSE, origin); break;
 		case TYP_GREAT: place_object(c, y, x, depth, TRUE, TRUE, origin); break;
@@ -744,7 +748,7 @@ static void vault_objects(struct cave *c, int y, int x, int depth, int num) {
 			if (randint0(100) < 75)
 				place_object(c, j, k, depth, FALSE, FALSE, ORIGIN_SPECIAL);
 			else
-				place_gold(c, j, k, depth);
+				place_gold(c, j, k, depth, ORIGIN_VAULT);
 
 			/* Placement accomplished */
 			break;

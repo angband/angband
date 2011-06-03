@@ -96,6 +96,8 @@ static void create_indices()
 		object_kind *kind = &k_info[i];
 		o_ptr->tval = kind->tval;
 
+		if (! kind->name) continue;
+
 		if (wearable_p(o_ptr))
 			wearables_index[i] = ++wearable_count;
 		else
@@ -849,7 +851,7 @@ static int stats_dump_lists(void)
 		"INSERT INTO object_flags_list VALUES(?,?,?,?,?,?);");
 	if (err) return err;
 
-	for (idx = 1; idx < RSF_MAX; idx++)
+	for (idx = 1; idx < OF_MAX; idx++)
 	{
 		struct object_flag *of_ptr = &object_flag_table[idx];
 		if (! of_ptr->message) continue;
@@ -913,10 +915,12 @@ static int stats_dump_lists(void)
 		"INSERT INTO wearables_index VALUES(?,?);");
 	if (err) return err;
 
-	for (idx = 0; idx < wearable_count + 1; idx++)
+	for (idx = 0; idx < z_info->k_max; idx++)
 	{
-		err = stats_db_bind_ints(sql_stmt, 2, 0, idx, 
-			wearables_index[idx]);
+		if (! wearables_index[idx]) continue;
+
+		err = stats_db_bind_ints(sql_stmt, 2, 0,
+			wearables_index[idx], idx);
 		if (err) return err;
 		STATS_DB_STEP_RESET(sql_stmt)
 	}
@@ -927,12 +931,12 @@ static int stats_dump_lists(void)
 		"INSERT INTO consumables_index VALUES(?,?);");
 	if (err) return err;
 
-	for (idx = 0; idx < consumable_count + 1; idx++)
+	for (idx = 0; idx < z_info->k_max; idx++)
 	{
 		if (! consumables_index[idx]) continue;
 
-		err = stats_db_bind_ints(sql_stmt, 2, 0, idx, 
-			consumables_index[idx]);
+		err = stats_db_bind_ints(sql_stmt, 2, 0, 
+			consumables_index[idx], idx);
 		if (err) return err;
 		STATS_DB_STEP_RESET(sql_stmt)
 	}
@@ -943,12 +947,12 @@ static int stats_dump_lists(void)
 		"INSERT INTO pval_flags_index VALUES(?,?);");
 	if (err) return err;
 
-	for (idx = 0; idx < pval_flags_count + 1; idx++)
+	for (idx = 0; idx < OF_MAX; idx++)
 	{
-		if (! wearables_index[idx]) continue;
+		if (! pval_flags_index[idx]) continue;
 
-		err = stats_db_bind_ints(sql_stmt, 2, 0, idx, 
-			pval_flags_index[idx]);
+		err = stats_db_bind_ints(sql_stmt, 2, 0, 
+			pval_flags_index[idx], idx);
 		if (err) return err;
 		STATS_DB_STEP_RESET(sql_stmt)
 	}

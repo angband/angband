@@ -227,9 +227,11 @@ static void chest_death(int y, int x, s16b o_idx)
 				continue;
 			if (i_ptr->tval == TV_CHEST)
 				continue;
-			i_ptr->origin = ORIGIN_CHEST;
-			i_ptr->origin_depth = o_ptr->origin_depth;
 		}
+
+		/* Record origin */
+		i_ptr->origin = ORIGIN_CHEST;
+		i_ptr->origin_depth = o_ptr->origin_depth;
 
 		/* Drop it in the dungeon */
 		drop_near(cave, i_ptr, 0, y, x, TRUE);
@@ -1030,7 +1032,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 			if (gold)
 			{
 				/* Place some gold */
-				place_gold(cave, y, x, p_ptr->depth);
+				place_gold(cave, y, x, p_ptr->depth, ORIGIN_FLOOR);
 
 				/* Message */
 				msg("You have found something!");
