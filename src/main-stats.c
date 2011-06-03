@@ -43,6 +43,7 @@
 /* There are 416 kinds, of which about 150-200 are wearable */
 
 static int randarts = 0;
+static int no_selling = 0;
 static u32b num_runs = 1;
 static int verbose = 0;
 static int nextkey = 0;
@@ -160,6 +161,7 @@ static void free_stats_memory(void)
 static void generate_player_for_stats()
 {
 	OPT(birth_randarts) = randarts;
+	OPT(birth_no_selling) = no_selling;
 	OPT(birth_no_stacking) = FALSE;
 	OPT(auto_more) = TRUE;
 
@@ -976,6 +978,11 @@ static int stats_dump_info(void)
 	err = stats_db_exec(sql_buf);
 	if (err) return err;
 
+	strnfmt(sql_buf, 256, "INSERT INTO metadata VALUES('no_selling',%d);",
+		no_selling);
+	err = stats_db_exec(sql_buf);
+	if (err) return err;
+
 	err = stats_dump_artifacts();
 	if (err) return err;
 
@@ -1253,7 +1260,15 @@ static int stats_write_db_level_data(const char *table, int max_idx)
 		{
 			/* This arcane expression finds the value of 
 			 * level_data[level].<table>[i] */
-			u32b count = ((byte *)&level_data[level] + offset)[i];
+			u32b count;
+			if (streq(table, "gold"))
+			{
+				count = *((long long *)((byte *)&level_data[level] + offset) + i);
+			}
+			else
+			{
+				count = *((u32b *)((byte *)&level_data[level] + offset) + i);
+			}
 			if (!count) continue;
 
 			err = stats_db_bind_ints(sql_stmt, 3, 0,
@@ -1700,15 +1715,16 @@ static void term_data_link(int i) {
 	angband_term[i] = t;
 }
 
-const char help_stats[] = "Stats mode, subopts -r(andarts)";
+const char help_stats[] = "Stats mode, subopts -r(andarts) -n(# of runs) -s(no selling)";
 
 /*
  * Usage:
  *
- * angband -mstats -- [-r] [-nNNNN]
+ * angband -mstats -- [-r] [-nNNNN] [-s]
  *
  *   -r      Turn on randarts
  *   -nNNNN  Make NNNN runs through the dungeon (default: 1)
+ *   -s      Turn on no-selling
  */
 
 errr init_stats(int argc, char *argv[]) {
@@ -1722,6 +1738,10 @@ errr init_stats(int argc, char *argv[]) {
 		}
 		if (prefix(argv[i], "-n")) {
 			num_runs = atoi(&argv[i][2]);
+			continue;
+		}
+		if (prefix(argv[i], "-s")) {
+			no_selling = 1;
 			continue;
 		}
 		printf("init-stats: bad argument '%s'\n", argv[i]);
