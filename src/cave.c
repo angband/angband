@@ -3596,118 +3596,289 @@ void cave_free(struct cave *c) {
 	mem_free(c);
 }
 
-bool cave_isopen(struct cave *c, int y, int x) {
-	return c->feat[y][x] == FEAT_FLOOR && !c->m_idx[y][x];
+/**
+ * FEATURE PREDICATES
+ *
+ * These functions are used to figure out what kind of square something is,
+ * via c->feat[y][x]. All direct testing of c->feat[y][x] should be rewritten
+ * in terms of these functions.
+ *
+ * It's often better to use feature behavior predicates (written in terms of
+ * these functions) instead of these functions directly. For instance,
+ * cave_isrock() will return false for a secret door, even though it will
+ * behave like a rock wall until the player determines it's a door.
+ *
+ * Use functions like cave_isdiggable, cave_iswall, etc. in these cases.
+ */
+
+/**
+ * True if the square is normal open floor.
+ */
+bool cave_isfloor(struct cave *c, int y, int x) {
+	return c->feat[y][x] == FEAT_FLOOR;
 }
 
-bool cave_isempty(struct cave *c, int y, int x) {
-	return cave_isopen(c, y, x) && !c->o_idx[y][x];
-}
-
-bool cave_isdiggable(struct cave *c, int y, int x) {
-	switch (c->feat[y][x]) {
-		case FEAT_SECRET:
-		case FEAT_RUBBLE:
-		case FEAT_MAGMA:
-		case FEAT_QUARTZ:
-		case FEAT_MAGMA_H:
-		case FEAT_QUARTZ_H:
-		case FEAT_MAGMA_K:
-		case FEAT_QUARTZ_K: return TRUE;
-
-		default: return cave_iswall(c, y, x);
-	}
-}
-
-bool cave_iswall(struct cave *c, int y, int x) {
-	return cave_isrock(c, y, x) || cave_isperm(c, y, x);
-}
-
-bool cave_isrock(struct cave*c, int y, int x) {
+/**
+ * True if the square is a normal granite rock wall.
+ *
+ * FEAT_WALL_SOLID is the normal feature type. The others are weird byproducts
+ * of cave generation (and should be avoided).
+ */
+bool cave_isrock(struct cave *c, int y, int x) {
 	switch (c->feat[y][x]) {
 		case FEAT_WALL_EXTRA:
 		case FEAT_WALL_INNER:
 		case FEAT_WALL_OUTER:
 		case FEAT_WALL_SOLID: return TRUE;
-	
 		default: return FALSE;
 	}
 }
 
+/**
+ * True if the square is a permanent wall.
+ *
+ * FEAT_PERM_SOLID is the normal feature type. The others are weird byproducts
+ * of cave generation (and should be avoided).
+ */
 bool cave_isperm(struct cave *c, int y, int x) {
 	switch (c->feat[y][x]) {
 		case FEAT_PERM_EXTRA:
 		case FEAT_PERM_INNER:
 		case FEAT_PERM_OUTER:
 		case FEAT_PERM_SOLID: return TRUE;
-
 		default: return FALSE;
 	}
 }
 
-bool cave_canputitem(struct cave *c, int y, int x) {
-	return c->feat[y][x] == FEAT_FLOOR && !c->o_idx[y][x];
+/**
+ * True if the square is a magma wall.
+ */
+bool cave_ismagma(struct cave *c, int y, int x) {
+	switch (c->feat[y][x]) {
+		case FEAT_MAGMA:
+		case FEAT_MAGMA_H:
+		case FEAT_MAGMA_K: return TRUE;
+		default: return FALSE;
+	}
 }
 
-bool cave_isfloor(struct cave *c, int y, int x) {
-	return !(c->info[y][x] & CAVE_WALL);
+/**
+ * True if the square is a quartz wall.
+ */
+bool cave_isquartz(struct cave *c, int y, int x) {
+	switch (c->feat[y][x]) {
+		case FEAT_QUARTZ:
+		case FEAT_QUARTZ_H:
+		case FEAT_QUARTZ_K: return TRUE;
+		default: return FALSE;
+	}
 }
 
-bool cave_isopendoor(struct cave *c, int y, int x) {
-    return c->feat[y][x] == FEAT_OPEN;
+/**
+ * True if the square is a mineral wall (magma/quartz).
+ */
+bool cave_ismineral(struct cave *c, int y, int x) {
+	return cave_isrock(c, y, x) || cave_ismagma(c, y, x) || cave_isquartz(c, y, x);
 }
 
+/**
+ * True if the square is rubble.
+ */
+bool cave_isrubble(struct cave *c, int y, int x) {
+	return c->feat[y][x] == FEAT_SECRET;
+}
+
+/**
+ * True if the square is a hidden secret door.
+ *
+ * These squares appear as if they were granite--when detected a secret door
+ * is replaced by a closed door.
+ */
 bool cave_issecretdoor(struct cave *c, int y, int x) {
     return c->feat[y][x] == FEAT_SECRET;
 }
 
+/**
+ * True if the square is an open door.
+ */
+bool cave_isopendoor(struct cave *c, int y, int x) {
+    return c->feat[y][x] == FEAT_OPEN;
+}
+
+/**
+ * True if the square is a closed door (possibly locked or jammed).
+ */
 bool cave_iscloseddoor(struct cave *c, int y, int x) {
 	int feat = c->feat[y][x];
 	return feat >= FEAT_DOOR_HEAD && feat <= FEAT_DOOR_TAIL;
 }
 
+/**
+ * True if the square is a closed, locked door.
+ */
 bool cave_islockeddoor(struct cave *c, int y, int x) {
 	int feat = c->feat[y][x];
 	return feat >= FEAT_DOOR_HEAD + 0x01 && feat <= FEAT_DOOR_TAIL;
 }
 
+/**
+ * True if the square is a closed, jammed door.
+ */
 bool cave_isjammeddoor(struct cave *c, int y, int x) {
 	int feat = c->feat[y][x];
 	return feat >= FEAT_DOOR_HEAD + 0x08 && feat <= FEAT_DOOR_TAIL;
 }
 
+/**
+ * True if the square is a door.
+ *
+ * This includes open, closed, and hidden doors.
+ */
 bool cave_isdoor(struct cave *c, int y, int x) {
-	return cave_issecretdoor(c, y, x) || cave_iscloseddoor(cave, y, x);
+	return (cave_isopendoor(c, y, x) ||
+			cave_issecretdoor(c, y, x) ||
+			cave_iscloseddoor(cave, y, x));
 }
 
+/**
+ * True if the square is an unknown trap (it will appear as a floor tile).
+ */
 bool cave_issecrettrap(struct cave *c, int y, int x) {
     return c->feat[y][x] == FEAT_INVIS;
 }
 
+/**
+ * True if the square is a known trap.
+ */
 bool cave_isknowntrap(struct cave *c, int y, int x) {
 	int feat = c->feat[y][x];
 	return feat >= FEAT_TRAP_HEAD && feat <= FEAT_TRAP_TAIL;
 }
 
+/**
+ * True if the square contains a trap, known or unknown.
+ */
 bool cave_istrap(struct cave *c, int y, int x) {
 	return cave_issecrettrap(cave, y, x) || cave_isknowntrap(cave, y, x);
 }
 
-bool cave_isicky(struct cave *c, int y, int x) {
+
+
+/**
+ * SQUARE BEHAVIOR PREDICATES
+ *
+ * These functions define how a given square behaves, e.g. whether it is
+ * passable by the player, whether it is diggable, contains items, etc.
+ *
+ * These functions use the FEATURE PREDICATES (as well as c->info) to make
+ * the determination.
+ */
+
+/**
+ * True if the square is open (a floor square not occupied by a monster).
+ */
+bool cave_isopen(struct cave *c, int y, int x) {
+	return cave_isfloor(c, y, x) && !c->m_idx[y][x];
+}
+
+/**
+ * True if the square is empty (an open square without any items).
+ */
+bool cave_isempty(struct cave *c, int y, int x) {
+	return cave_isopen(c, y, x) && !c->o_idx[y][x];
+}
+
+/**
+ * True if the square is a floor square without items.
+ */
+bool cave_canputitem(struct cave *c, int y, int x) {
+	return cave_isfloor(c, y, x) && !c->o_idx[y][x];
+}
+
+/**
+ * True if the square can be dug: this includes rubble and non-permanent walls.
+ */
+bool cave_isdiggable(struct cave *c, int y, int x) {
+	return (cave_ismineral(c, y, x) ||
+			cave_issecretdoor(c, y, x) || 
+			cave_isrubble(c, y, x));
+}
+
+/**
+ * True if the square is passable by the player.
+ *
+ * This function is the logical negation of cave_iswall().
+ */
+bool cave_ispassable(struct cave *c, int y, int x) {
+	return !(c->info[y][x] & CAVE_WALL);
+}
+
+/**
+ * True if the square is a wall square (impedes the player).
+ *
+ * This function is the logical negation of cave_ispassable().
+ */
+bool cave_iswall(struct cave *c, int y, int x) {
+	return c->info[y][x] & CAVE_WALL;
+}
+
+/**
+ * True if the square is a permanent wall or one of the "stronger" walls.
+ *
+ * The stronger walls are granite, magma and quartz. This excludes things like
+ * secret doors and rubble.
+ */
+bool cave_isstrongwall(struct cave *c, int y, int x) {
+	return cave_ismineral(c, y, x) || cave_isperm(c, y, x);
+}
+
+/**
+ * True if the square is part of a vault.
+ *
+ * This doesn't say what kind of square it is, just that it is part of a vault.
+ */
+bool cave_isvault(struct cave *c, int y, int x) {
 	return c->info[y][x] & CAVE_ICKY;
 }
 
-struct monster *cave_monster(struct cave *c, int idx)
-{
+/**
+ * True if the square is part of a room.
+ */
+bool cave_isroom(struct cave *c, int y, int x) {
+	return c->info[y][x] & CAVE_ROOM;
+
+}
+
+
+
+/**
+ * Get a monster on the current level by its index.
+ */
+struct monster *cave_monster(struct cave *c, int idx) {
 	return &c->monsters[idx];
 }
 
-int cave_monster_max(struct cave *c)
-{
+/**
+ * The maximum number of monsters allowed in the level.
+ */
+int cave_monster_max(struct cave *c) {
 	return c->mon_max;
 }
 
-int cave_monster_count(struct cave *c)
-{
+/**
+ * The current number of monsters present on the level.
+ */
+int cave_monster_count(struct cave *c) {
 	return c->mon_cnt;
 }
+
+/**
+ * Add visible treasure to a mineral square.
+ */
+void upgrade_mineral(struct cave *c, int y, int x) {
+	switch (c->feat[y][x]) {
+		case FEAT_MAGMA: cave_set_feat(c, y, x, FEAT_MAGMA_K); break;
+		case FEAT_QUARTZ: cave_set_feat(c, y, x, FEAT_QUARTZ_K); break;
+	}
+}
+

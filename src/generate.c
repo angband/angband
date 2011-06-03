@@ -46,10 +46,8 @@ static bool build_lesser_vault(struct cave *c, int y0, int x0);
 static bool build_medium_vault(struct cave *c, int y0, int x0);
 static bool build_greater_vault(struct cave *c, int y0, int x0);
 
-static void alloc_objects(struct cave *c, int set, int typ, int num, int depth,
-	byte origin);
-static bool alloc_object(struct cave *c, int set, int typ, int depth,
-	byte origin);
+static void alloc_objects(struct cave *c, int set, int typ, int num, int depth, byte origin);
+static bool alloc_object(struct cave *c, int set, int typ, int depth, byte origin);
 
 #define ROOM_DEBUG(...) if (0) msg(__VA_ARGS__);
 
@@ -103,25 +101,10 @@ static bool alloc_object(struct cave *c, int set, int typ, int depth,
  * that the player must set a special option to enable "non-aligned" room
  * generation.
  *
- * Note that the dungeon generation routines are much different (2.7.5)
- * and perhaps "DUN_ROOMS" should be less than 50.
- *
- * BUG: Note that it is possible to create a room which is only
- * connected to itself, because the "tunnel generation" code allows a
- * tunnel to leave a room, wander around, and then re-enter the room.
- *
- * BUG: Note that it is possible to create a set of rooms which
- * are only connected to other rooms in that set, since there is nothing
- * explicit in the code to prevent this from happening.  But this is less
- * likely than the "isolated room" problem, because each room attempts to
- * connect to another room, in a giant cycle, thus requiring at least two
- * bizarre occurances to create an isolated section of the dungeon.
- *
  * The 64 new "dungeon features" will also be used for "visual display"
  * but we must be careful not to allow, for example, the user to display
  * hidden traps in a different way from floors, or secret doors in a way
- * different from granite walls, or even permanent granite in a different
- * way from granite.  XXX XXX XXX
+ * different from granite walls.
  */
 
 
@@ -251,7 +234,7 @@ static struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
 		/* room_profiles -- not applicable */
 		NULL,
 
-		/* cutoff -- unused becauase of internal checks in labyrinth_gen  */
+		/* cutoff -- unused because of internal checks in labyrinth_gen  */
 		100
 	},
 	{
@@ -289,7 +272,10 @@ static struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
 
 
 /* FAILSAFE defines the maximum number of iterations that the find_* functions
- * will run before dying.
+ * will run before dying. Previously, the code could just loop forever.
+ * While it's possible that a non-broken dungeon could fail to find empty
+ * squares when they are available, it is very unlikely, and the check makes
+ * it easier to catch legitimate bugs.
  *
  * TODO: Fix the find_* functions so they are guaranteed to test all legal open
  * squares in a reasonable amount of time.
@@ -322,7 +308,9 @@ static void find_empty(struct cave *c, int *y, int ymax, int *x, int xmax) {
 /**
  * Locate an empty square for y1 <= y <= y2, x1 <= x <= x2.
  *
- * This function has similar behavior as find_empty() and the same caveats.
+ * This function has similar behavior as find_empty() and the same caveats
+ * (e.g. if there might be no open squares in the given range then don't use
+ * this function).
  */
 static void find_empty_range(struct cave *c, int *y, int y1, int y2, int *x, int x1, int x2) {
 	int tries = 0;
@@ -417,14 +405,12 @@ static void new_player_spot(struct cave *c, struct player *p) {
  */
 static int next_to_walls(struct cave *c, int y, int x) {
 	int k = 0;
-
 	assert(in_bounds_fully(y, x));
 
-	/* XXX this should include secret doors too */
-	if (c->feat[y+1][x] >= FEAT_WALL_EXTRA) k++;
-	if (c->feat[y-1][x] >= FEAT_WALL_EXTRA) k++;
-	if (c->feat[y][x+1] >= FEAT_WALL_EXTRA) k++;
-	if (c->feat[y][x-1] >= FEAT_WALL_EXTRA) k++;
+	if (cave_iswall(c, y + 1, x)) k++;
+	if (cave_iswall(c, y - 1, x)) k++;
+	if (cave_iswall(c, y, x + 1)) k++;
+	if (cave_iswall(c, y, x - 1)) k++;
 
 	return k;
 }
@@ -660,16 +646,6 @@ static bool alloc_object(struct cave *c, int set, int typ, int depth,
 }
 
 
-/**
- * Add visible treasure to a mineral square.
- */
-static void upgrade_mineral(struct cave *c, int y, int x) {
-	switch (c->feat[y][x]) {
-		case FEAT_MAGMA: cave_set_feat(c, y, x, FEAT_MAGMA_K); break;
-		case FEAT_QUARTZ: cave_set_feat(c, y, x, FEAT_QUARTZ_K); break;
-	}
-}
-
 
 /**
  * Places a streamer of rock through dungeon.
@@ -700,17 +676,12 @@ static void build_streamer(struct cave *c, int feat, int chance) {
 			find_nearby_grid(c, &ty, y, d, &tx, x, d);
 
 			/* Only convert walls */
-			switch (c->feat[ty][tx]) {
-				case FEAT_WALL_EXTRA:
-				case FEAT_WALL_INNER:
-				case FEAT_WALL_OUTER:
-				case FEAT_WALL_SOLID: {
-					/* Clear previous contents, add proper vein type */
-					cave_set_feat(c, ty, tx, feat);
+			if (cave_isrock(c, ty, tx)) {
+				/* Turn the rock into the vein type */
+				cave_set_feat(c, ty, tx, feat);
 
-					/* Hack -- Add some (known) treasure */
-					if (one_in_(chance)) upgrade_mineral(c, ty, tx);
-				}
+				/* Sometimes add known treasure */
+				if (one_in_(chance)) upgrade_mineral(c, ty, tx);
 			}
 		}
 
@@ -1998,10 +1969,7 @@ static void build_tunnel(struct cave *c, int row1, int col1, int row2, int col2)
 
 
 		/* Avoid the edge of the dungeon */
-		if (c->feat[tmp_row][tmp_col] == FEAT_PERM_SOLID) continue;
-
-		/* Avoid the edge of vaults */
-		if (c->feat[tmp_row][tmp_col] == FEAT_PERM_OUTER) continue;
+		if (cave_isperm(c, tmp_row, tmp_col)) continue;
 
 		/* Avoid "solid" granite walls */
 		if (c->feat[tmp_row][tmp_col] == FEAT_WALL_SOLID) continue;
@@ -2130,23 +2098,17 @@ static void build_tunnel(struct cave *c, int row1, int col1, int row2, int col2)
  * TODO: count stairs, open doors, closed doors?
  */
 static int next_to_corr(struct cave *c, int y1, int x1) {
-	int i, y, x, k = 0;
-
+	int i, k = 0;
 	assert(cave_in_bounds_fully(c, y1, x1));
 
 	/* Scan adjacent grids */
 	for (i = 0; i < 4; i++) {
 		/* Extract the location */
-		y = y1 + ddy_ddd[i];
-		x = x1 + ddx_ddd[i];
+		int y = y1 + ddy_ddd[i];
+		int x = x1 + ddx_ddd[i];
 
-		/* Skip non-floors, non-empty floors, and rooms */
-		if (!cave_isfloor(c, y, x)) continue;
-		if (c->feat[y][x] != FEAT_FLOOR) continue;
-		if (c->info[y][x] & CAVE_ROOM) continue;
-
-		/* Count these grids */
-		k++;
+		/* Count only floors which aren't part of rooms */
+		if (cave_isfloor(c, y, x) && !cave_isroom(c, y, x)) k++;
 	}
 
 	/* Return the number of corridors */
@@ -2164,12 +2126,14 @@ static bool possible_doorway(struct cave *c, int y, int x) {
 
 	if (next_to_corr(c, y, x) < 2)
 		return FALSE;
-	else if (c->feat[y-1][x] >= FEAT_MAGMA && c->feat[y+1][x] >= FEAT_MAGMA)
+
+	if (cave_isstrongwall(c, y - 1, x) && cave_isstrongwall(c, y + 1, x))
 		return TRUE;
-	else if (c->feat[y][x-1] >= FEAT_MAGMA && c->feat[y][x+1] >= FEAT_MAGMA)
+
+	if (cave_isstrongwall(c, y, x - 1) && cave_isstrongwall(c, y, x + 1))
 		return TRUE;
-	else
-		return FALSE;
+
+	return FALSE;
 }
 
 
@@ -2179,8 +2143,8 @@ static bool possible_doorway(struct cave *c, int y, int x) {
 static void try_door(struct cave *c, int y, int x) {
 	assert(cave_in_bounds(c, y, x));
 
-	if (c->feat[y][x] >= FEAT_MAGMA) return;
-	if (c->info[y][x] & CAVE_ROOM) return;
+	if (cave_isstrongwall(c, y, x)) return;
+	if (cave_isroom(c, y, x)) return;
 
 	if (randint0(100) < dun->profile->tun.jct && possible_doorway(c, y, x))
 		place_random_door(c, y, x);
@@ -2488,7 +2452,7 @@ static void lab_get_adjoin(int i, int w, int *a, int *b) {
 }
 
 /**
- * Return whether (x, y) is a tunnel.
+ * Return whether (x, y) is in a tunnel.
  *
  * For our purposes a tunnel is a horizontal or vertical path, not an
  * intersection. Thus, we want the squares on either side to walls in one
@@ -2560,15 +2524,15 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 	if (is_quest(c->depth)) return FALSE;
 
 	/* Certain numbers increase the chance of having a labyrinth */
-	if (c->depth % 3 == 0) chance += 2;
-	if (c->depth % 5 == 0) chance += 3;
-	if (c->depth % 7 == 0) chance += 5;
-	if (c->depth % 11 == 0) chance += 7;
-	if (c->depth % 13 == 0) chance += 11;
+	if (c->depth % 3 == 0) chance += 1;
+	if (c->depth % 5 == 0) chance += 1;
+	if (c->depth % 7 == 0) chance += 1;
+	if (c->depth % 11 == 0) chance += 1;
+	if (c->depth % 13 == 0) chance += 1;
 
 	/* Only generate the level if we pass a check */
 	/* NOTE: This test gets performed after we pass the test to use the
-	 * labyrinth cave profile (which is a 50% chance currently). */
+	 * labyrinth cave profile. */
 	if (randint0(100) >= chance) return FALSE;
 
 	/* allocate our arrays */
@@ -2612,8 +2576,7 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 	/* For each adjoining wall, look at the cells it divides. If they aren't
 	 * in the same set, remove the wall and join their sets.
 	 *
-	 * This is a randomized version of Kruskal's algorithm.
-	 */
+	 * This is a randomized version of Kruskal's algorithm. */
 	for (i = 0; i < n; i++) {
 		int a, b, x, y;
 
@@ -2734,7 +2697,7 @@ void init_cavern(struct cave *c, struct player *p, int density) {
 	while (count > 0) {
 		int y = randint1(h - 2);
 		int x = randint1(w - 2);
-		if (c->feat[y][x] == FEAT_WALL_SOLID) {
+		if (cave_isrock(c, y, x)) {
 			cave_set_feat(c, y, x, FEAT_FLOOR);
 			count--;
 		}
@@ -2751,7 +2714,7 @@ int count_adj_walls(struct cave *c, int y, int x) {
 	for (yd = -1; yd <= 1; yd++) {
 		for (xd = -1; xd <= 1; xd++) {
 			if (yd == 0 && xd == 0) continue;
-			if (cave->feat[y + yd][x + xd] == FEAT_FLOOR) continue;
+			if (cave_isfloor(c, y + yd, x + xd)) continue;
 			count++;
 		}
 	}
@@ -2808,8 +2771,8 @@ int ignore_point(struct cave *c, int colors[], int y, int x) {
 
 	if (y < 0 || x < 0 || y >= h || x >= w) return TRUE;
 	if (colors[n]) return TRUE;
-	if (cave_isicky(c, y, x)) return TRUE;
-	if (cave_isfloor(c, y, x)) return FALSE;
+	if (cave_isvault(c, y, x)) return TRUE;
+	if (cave_ispassable(c, y, x)) return FALSE;
 	if (cave_isdoor(c, y, x)) return FALSE;
 	return TRUE;
 }
@@ -2998,7 +2961,7 @@ void join_region(struct cave *c, int colors[], int counts[], int color) {
 
 			/* permanent walls and icky walls should not be handled */
 			if (cave_isperm(c, y2, x2)) continue;
-			if (cave_isicky(c, y2, x2)) continue;
+			if (cave_isvault(c, y2, x2)) continue;
 
 			n2 = lab_toi(y2, x2, w);
 			if (previous[n2] >= 0) continue;
@@ -3036,7 +2999,7 @@ int open_count(struct cave *c) {
 	int num = 0;
 	for (y = 0; y < h; y++)
 		for (x = 0; x < w; x++)
-			if (cave_isfloor(c, y, x)) num++;
+			if (cave_ispassable(c, y, x)) num++;
 	return num;
 }
 
@@ -3392,7 +3355,7 @@ void cave_generate(struct cave *c, struct player *p) {
 		/* Allocate global data (will be freed when we leave the loop) */
 		dun = &dun_body;
 		
-		if (!p->depth) {
+		if (p->depth == 0) {
 			dun->profile = &town_profile;
 			dun->profile->builder(c, p);
 		} else {

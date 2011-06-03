@@ -76,42 +76,33 @@ extern void cave_update_flow(struct cave *c);
 extern void cave_forget_flow(struct cave *c);
 extern void cave_illuminate(struct cave *c, bool daytime);
 
-/** @brief Returns whether the specified square is empty or not.
- *  Empty squares are floor squares that contain no items or monsters.
- *  Old cave_naked_bold().
- */
-extern bool cave_isempty(struct cave *c, int y, int x);
-
-extern bool cave_isdiggable(struct cave *c, int y, int x);
-/**
- * Returns whether the specified square is a wall or not.
- */
-extern bool cave_iswall(struct cave *c, int y, int x);
-
-/* open squares are floors with no monsters */
-extern bool cave_isopen(struct cave *c, int y, int x);
-
+/* FEATURE PREDICATES */
+extern bool cave_isfloor(struct cave *c, int y, int x);
 extern bool cave_isrock(struct cave *c, int y, int x);
 extern bool cave_isperm(struct cave *c, int y, int x);
+extern bool cave_ismagma(struct cave *c, int y, int x);
+extern bool cave_isquartz(struct cave *c, int y, int x);
+extern bool cave_ismineral(struct cave *c, int y, int x);
+extern bool cave_issecretdoor(struct cave *c, int y, int x);
+extern bool cave_isopendoor(struct cave *c, int y, int x);
+extern bool cave_iscloseddoor(struct cave *c, int y, int x);
+extern bool cave_islockeddoor(struct cave *c, int y, int x);
+extern bool cave_isjammeddoor(struct cave *c, int y, int x);
+extern bool cave_isdoor(struct cave *c, int y, int x);
+extern bool cave_issecrettrap(struct cave *c, int y, int x);
+extern bool cave_isknowntrap(struct cave *c, int y, int x);
+extern bool cave_istrap(struct cave *c, int y, int x);
 
-/* Old cave_clean_bold() */
+/* BEHAVIOR PREDICATES */
+extern bool cave_isopen(struct cave *c, int y, int x);
+extern bool cave_isempty(struct cave *c, int y, int x);
 extern bool cave_canputitem(struct cave *c, int y, int x);
-
-/* Old cave_floor_bold() */
-extern bool cave_isfloor(struct cave *c, int y, int x);
-
-bool cave_isopendoor(struct cave *c, int y, int x);
-bool cave_issecretdoor(struct cave *c, int y, int x);
-bool cave_iscloseddoor(struct cave *c, int y, int x);
-bool cave_islockeddoor(struct cave *c, int y, int x);
-bool cave_isjammeddoor(struct cave *c, int y, int x);
-bool cave_isdoor(struct cave *c, int y, int x);
-
-bool cave_issecrettrap(struct cave *c, int y, int x);
-bool cave_isknowntrap(struct cave *c, int y, int x);
-bool cave_istrap(struct cave *c, int y, int x);
-
-extern bool cave_isicky(struct cave *c, int y, int x);
+extern bool cave_isdiggable(struct cave *c, int y, int x);
+extern bool cave_ispassable(struct cave *c, int y, int x);
+extern bool cave_iswall(struct cave *c, int y, int x);
+extern bool cave_isstrongwall(struct cave *c, int y, int x);
+extern bool cave_isvault(struct cave *c, int y, int x);
+extern bool cave_isroom(struct cave *c, int y, int x);
 
 extern void cave_generate(struct cave *c, struct player *p);
 
@@ -121,5 +112,7 @@ extern bool cave_in_bounds_fully(struct cave *c, int y, int x);
 extern struct monster *cave_monster(struct cave *c, int idx);
 extern int cave_monster_max(struct cave *c);
 extern int cave_monster_count(struct cave *c);
+
+void upgrade_mineral(struct cave *c, int y, int x);
 
 #endif /* !CAVE_H */
