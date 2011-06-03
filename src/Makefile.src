@@ -51,7 +51,7 @@ ZFILES = z-bitflag.o z-file.o z-form.o z-msg.o z-quark.o z-queue.o z-rand.o \
 	z-term.o z-type.o z-util.o z-virt.o z-textblock.o
 
 MAINFILES = main.o main-crb.o main-gcu.o $(GTKMAINFILES) \
-	main-sdl.o main-win.o main-x11.o snd-sdl.o main-test.o main-stats.o
+	main-sdl.o main-win.o main-x11.o snd-sdl.o main-test.o
 
 GTKMAINFILES = \
 	gtk/main-gtk.o \
@@ -143,6 +143,7 @@ STATSFILES = stats/db.o
 
 ifeq ($(USE_STATS),1)
 	ANGFILES += $(STATSFILES)
+	MAINFILES += main-stats.o
 endif
 
 buildid.o: $(ANGFILES)
