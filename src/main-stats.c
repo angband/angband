@@ -23,6 +23,7 @@
 #include "object/pval.h"
 #include "object/tvalsval.h"
 #include "stats/db.h"
+#include "stats/structs.h"
 #include <stddef.h>
 
 #define OBJ_FEEL_MAX	 11
@@ -540,9 +541,647 @@ static void prep_output_dir(void)
 	}
 }
 
-static int stats_dump_tables(void)
+/**
+ * Caller is responsible for prepping and finalizing flags_stmt, which
+ * should have two parameters. 
+ */
+static int stats_dump_oflags(sqlite3_stmt *flags_stmt, int idx, 
+	bitflag flags[OF_SIZE]) 
 {
+	int err, flag;
+
+	err = sqlite3_bind_int(flags_stmt, 1, idx);
+	if (err) return err;
+	for (flag = of_next(flags, FLAG_START); flag != FLAG_END;
+		flag = of_next(flags, flag + 1))
+	{
+		err = sqlite3_bind_int(flags_stmt, 2, flag);
+		if (err) return err;
+		STATS_DB_STEP_RESET(flags_stmt)
+	}
+
+
 	return SQLITE_OK;
+}
+
+static int stats_dump_artifacts(void)
+{
+	int err, idx, i, flag;
+	char sql_buf[256];
+	sqlite3_stmt *info_stmt, *flags_stmt, *pval_flags_stmt;
+
+	strnfmt(sql_buf, 256, "INSERT INTO artifact_info VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+	err = stats_db_stmt_prep(&info_stmt, sql_buf);
+	if (err) return err;
+
+	strnfmt(sql_buf, 256, "INSERT INTO artifact_flags_map VALUES (?,?);");
+	err = stats_db_stmt_prep(&flags_stmt, sql_buf);
+	if (err) return err;
+
+	strnfmt(sql_buf, 256, "INSERT INTO artifact_pval_flags_map VALUES (?,?,?);");
+	err = stats_db_stmt_prep(&pval_flags_stmt, sql_buf);
+	if (err) return err;
+
+	for (idx = 0; idx < z_info->a_max; idx++)
+	{
+		artifact_type *a_ptr = &a_info[idx];
+
+		if (!a_ptr->name) continue;
+
+		err = sqlite3_bind_int(info_stmt, 1, idx);
+		if (err) return err;
+		err = sqlite3_bind_text(info_stmt, 2, a_ptr->name, 
+			strlen(a_ptr->name), SQLITE_STATIC);
+		if (err) return err;
+		err = stats_db_bind_ints(info_stmt, 14, 2, 
+			a_ptr->tval, a_ptr->sval, a_ptr->weight,
+			a_ptr->cost, a_ptr->alloc_prob, a_ptr->alloc_min,
+			a_ptr->alloc_max, a_ptr->ac, a_ptr->dd,
+			a_ptr->ds, a_ptr->to_h, a_ptr->to_d,
+			a_ptr->to_a, a_ptr->effect);
+		STATS_DB_STEP_RESET(info_stmt)
+
+		err = stats_dump_oflags(flags_stmt, idx, a_ptr->flags);
+		if (err) return err;
+
+		for (i = 0; i < a_ptr->num_pvals; i++)
+		{
+			for (flag = of_next(a_ptr->pval_flags[i], FLAG_START);
+				flag != FLAG_END;
+				flag = of_next(a_ptr->pval_flags[i], flag + 1))
+			{
+				err = stats_db_bind_ints(pval_flags_stmt, 3, 0, 
+					idx, flag, a_ptr->pval[i]);
+				if (err) return err;
+				STATS_DB_STEP_RESET(pval_flags_stmt)
+			}
+		}
+	}
+
+	STATS_DB_FINALIZE(info_stmt)
+	STATS_DB_FINALIZE(flags_stmt)
+	STATS_DB_FINALIZE(pval_flags_stmt)
+
+	return SQLITE_OK;
+}
+
+static int stats_dump_egos(void)
+{
+	int err, idx, flag, i;
+	char sql_buf[256];
+	sqlite3_stmt *info_stmt, *flags_stmt, *pval_flags_stmt, *type_stmt;
+
+	strnfmt(sql_buf, 256, "INSERT INTO ego_info VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+	err = stats_db_stmt_prep(&info_stmt, sql_buf);
+	if (err) return err;
+
+	strnfmt(sql_buf, 256, "INSERT INTO ego_flags_map VALUES (?,?);");
+	err = stats_db_stmt_prep(&flags_stmt, sql_buf);
+	if (err) return err;
+
+	strnfmt(sql_buf, 256, "INSERT INTO ego_pval_flags_map VALUES (?,?,?,?);");
+	err = stats_db_stmt_prep(&pval_flags_stmt, sql_buf);
+	if (err) return err;
+
+	strnfmt(sql_buf, 256, "INSERT INTO ego_type_map VALUES (?,?,?,?);");
+	err = stats_db_stmt_prep(&type_stmt, sql_buf);
+	if (err) return err;
+
+	for (idx = 0; idx < z_info->e_max; idx++)
+	{
+		ego_item_type *e_ptr = &e_info[idx];
+
+		if (!e_ptr->name) continue;
+
+		err = sqlite3_bind_int(info_stmt, 1, idx);
+		if (err) return err;
+		err = sqlite3_bind_text(info_stmt, 2, e_ptr->name, 
+			strlen(e_ptr->name), SQLITE_STATIC);
+		if (err) return err;
+		err = stats_db_bind_rv(info_stmt, 3, e_ptr->to_h); 
+		if (err) return err;
+		err = stats_db_bind_rv(info_stmt, 4, e_ptr->to_d); 
+		if (err) return err;
+		err = stats_db_bind_rv(info_stmt, 5, e_ptr->to_a); 
+		if (err) return err;
+		err = stats_db_bind_ints(info_stmt, 9, 5, 
+			e_ptr->cost, e_ptr->level, e_ptr->rarity,
+			e_ptr->rating, e_ptr->num_pvals, e_ptr->min_to_h, 
+			e_ptr->min_to_d, e_ptr->min_to_a, e_ptr->xtra);
+		if (err) return err;
+		STATS_DB_STEP_RESET(info_stmt)
+
+		err = stats_dump_oflags(flags_stmt, idx, e_ptr->flags);
+		if (err) return err;
+
+		for (i = 0; i < e_ptr->num_pvals; i++)
+		{
+			for (flag = of_next(e_ptr->pval_flags[i], FLAG_START);
+				flag != FLAG_END;
+				flag = of_next(e_ptr->pval_flags[i], flag + 1))
+			{
+				err = stats_db_bind_ints(pval_flags_stmt, 3, 0, 
+					idx, flag, e_ptr->min_pval[i]);
+				if (err) return err;
+				err = stats_db_bind_rv(pval_flags_stmt, 4,
+					e_ptr->pval[i]);
+				if (err) return err;
+				STATS_DB_STEP_RESET(pval_flags_stmt)
+			}
+		}
+
+		for (i = 0; i < EGO_TVALS_MAX; i++)
+		{
+			err = stats_db_bind_ints(type_stmt, 4, 0,
+				idx, e_ptr->tval[i], e_ptr->min_sval[i], 
+				e_ptr->max_sval[i]);
+			if (err) return err;
+			STATS_DB_STEP_RESET(type_stmt)
+		}
+
+	}
+
+	STATS_DB_FINALIZE(info_stmt)
+	STATS_DB_FINALIZE(flags_stmt)
+	STATS_DB_FINALIZE(pval_flags_stmt)
+	STATS_DB_FINALIZE(type_stmt)
+
+	return SQLITE_OK;
+}
+
+static int stats_dump_objects(void)
+{
+	int err, idx, i, flag;
+	char sql_buf[256];
+	sqlite3_stmt *info_stmt, *flags_stmt, *pval_flags_stmt;
+
+	strnfmt(sql_buf, 256, "INSERT INTO object_info VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+	err = stats_db_stmt_prep(&info_stmt, sql_buf);
+	if (err) return err;
+
+	strnfmt(sql_buf, 256, "INSERT INTO object_flags_map VALUES (?,?);");
+	err = stats_db_stmt_prep(&flags_stmt, sql_buf);
+	if (err) return err;
+
+	strnfmt(sql_buf, 256, "INSERT INTO object_pval_flags_map VALUES (?,?,?);");
+	err = stats_db_stmt_prep(&pval_flags_stmt, sql_buf);
+	if (err) return err;
+
+	for (idx = 0; idx < z_info->k_max; idx++)
+	{
+		object_kind *k_ptr = &k_info[idx];
+
+		if (!k_ptr->name) continue;
+
+		err = sqlite3_bind_int(info_stmt, 1, idx);
+		if (err) return err;
+		err = sqlite3_bind_text(info_stmt, 2, k_ptr->name, 
+			strlen(k_ptr->name), SQLITE_STATIC);
+		if (err) return err;
+		err = stats_db_bind_ints(info_stmt, 14, 2, 
+			k_ptr->tval, k_ptr->sval, k_ptr->level, k_ptr->weight,
+			k_ptr->cost, k_ptr->ac, k_ptr->dd, k_ptr->ds,
+			k_ptr->alloc_prob, k_ptr->alloc_min,
+			k_ptr->alloc_max, k_ptr->effect,
+			k_ptr->gen_mult_prob, k_ptr->stack_size);
+		if (err) return err;
+		err = stats_db_bind_rv(info_stmt, 17, k_ptr->to_h);
+		if (err) return err;
+		err = stats_db_bind_rv(info_stmt, 18, k_ptr->to_d);
+		if (err) return err;
+		err = stats_db_bind_rv(info_stmt, 19, k_ptr->to_a);
+		if (err) return err;
+		err = stats_db_bind_rv(info_stmt, 20, k_ptr->charge);
+		if (err) return err;
+		err = stats_db_bind_rv(info_stmt, 21, k_ptr->time);
+		if (err) return err;
+		STATS_DB_STEP_RESET(info_stmt)
+
+		err = stats_dump_oflags(flags_stmt, idx, k_ptr->flags);
+		if (err) return err;
+
+		for (i = 0; i < k_ptr->num_pvals; i++)
+		{
+			for (flag = of_next(k_ptr->pval_flags[i], FLAG_START);
+				flag != FLAG_END;
+				flag = of_next(k_ptr->pval_flags[i], flag + 1))
+			{
+				err = stats_db_bind_ints(pval_flags_stmt, 2, 0, 
+					idx, flag);
+				if (err) return err;
+				err = stats_db_bind_rv(pval_flags_stmt, 3,
+					k_ptr->pval[i]);
+				if (err) return err;
+				STATS_DB_STEP_RESET(pval_flags_stmt)
+			}
+		}
+	}
+
+	STATS_DB_FINALIZE(info_stmt)
+	STATS_DB_FINALIZE(flags_stmt)
+	STATS_DB_FINALIZE(pval_flags_stmt)
+
+	/* Handle object_base */
+	strnfmt(sql_buf, 256, "INSERT INTO object_base_info VALUES (?,?);");
+	err = stats_db_stmt_prep(&info_stmt, sql_buf);
+	if (err) return err;
+
+	strnfmt(sql_buf, 256, "INSERT INTO object_base_flags_map VALUES (?,?);");
+	err = stats_db_stmt_prep(&flags_stmt, sql_buf);
+	if (err) return err;
+
+	idx = 0;
+	for (idx = 0; idx < TV_MAX; idx++)
+	{
+		object_base *kb_ptr = &kb_info[idx];
+
+		if (!kb_ptr->name) continue;
+
+		err = sqlite3_bind_int(info_stmt, 1, idx);
+		if (err) return err;
+		err = sqlite3_bind_text(info_stmt, 2, kb_ptr->name,
+			strlen(kb_ptr->name), SQLITE_STATIC);
+		if (err) return err;
+		STATS_DB_STEP_RESET(info_stmt)
+
+		for (flag = of_next(kb_ptr->flags, FLAG_START);
+			flag != FLAG_END;
+			flag = of_next(kb_ptr->flags, flag + 1))
+		{
+			err = stats_db_bind_ints(flags_stmt, 2, 0,
+				idx, flag);
+			if (err) return err;
+			STATS_DB_STEP_RESET(flags_stmt)
+		}
+	}
+	
+	STATS_DB_FINALIZE(info_stmt)
+	STATS_DB_FINALIZE(flags_stmt)
+
+	return SQLITE_OK;
+}
+
+static int stats_dump_monsters(void)
+{
+	int err, idx, flag;
+	char sql_buf[256];
+	sqlite3_stmt *info_stmt, *flags_stmt, *spell_flags_stmt;
+	monster_base *rb_ptr;
+
+	strnfmt(sql_buf, 256, "INSERT INTO monster_info VALUES (?,?,?,?,?,?,?,?,?,?,?,?);");
+	err = stats_db_stmt_prep(&info_stmt, sql_buf);
+	if (err) return err;
+
+	strnfmt(sql_buf, 256, "INSERT INTO monster_flags_map VALUES (?,?);");
+	err = stats_db_stmt_prep(&flags_stmt, sql_buf);
+	if (err) return err;
+
+	strnfmt(sql_buf, 256, "INSERT INTO monster_spell_flags_map VALUES (?,?);");
+	err = stats_db_stmt_prep(&spell_flags_stmt, sql_buf);
+	if (err) return err;
+
+	for (idx = 0; idx < z_info->r_max; idx++)
+	{
+		monster_race *r_ptr = &r_info[idx];
+
+		/* Skip empty entries */
+		if (!r_ptr->name) continue;
+
+		err = stats_db_bind_ints(info_stmt, 10, 0, idx,
+			r_ptr->ac, r_ptr->sleep, r_ptr->speed, r_ptr->mexp,
+			r_ptr->avg_hp, r_ptr->freq_innate, r_ptr->freq_spell,
+			r_ptr->level, r_ptr->rarity);
+		if (err) return err;
+		err = sqlite3_bind_text(info_stmt, 11, r_ptr->name,
+			strlen(r_ptr->name), SQLITE_STATIC);
+		if (err) return err;
+		err = sqlite3_bind_text(info_stmt, 12, r_ptr->base->name,
+			strlen(r_ptr->base->name), SQLITE_STATIC);
+		if (err) return err;
+		STATS_DB_STEP_RESET(info_stmt)
+
+		for (flag = rf_next(r_ptr->flags, FLAG_START);
+			flag != FLAG_END;
+			flag = rf_next(r_ptr->flags, flag + 1))
+		{
+			err = stats_db_bind_ints(flags_stmt, 2, 0, idx, flag);
+			if (err) return err;
+			STATS_DB_STEP_RESET(flags_stmt)
+		}
+
+		for (flag = rsf_next(r_ptr->spell_flags, FLAG_START);
+			flag != FLAG_END;
+			flag = rsf_next(r_ptr->spell_flags, flag + 1))
+		{
+			err = stats_db_bind_ints(spell_flags_stmt, 2, 0, 
+				idx, flag);
+			if (err) return err;
+			STATS_DB_STEP_RESET(spell_flags_stmt)
+		}
+	}
+
+	STATS_DB_FINALIZE(info_stmt)
+	STATS_DB_FINALIZE(flags_stmt)
+	STATS_DB_FINALIZE(spell_flags_stmt)
+
+	/* Handle monster bases */
+	strnfmt(sql_buf, 256, "INSERT INTO monster_base_flags_map VALUES (?,?);");
+	err = stats_db_stmt_prep(&flags_stmt, sql_buf);
+	if (err) return err;
+
+	strnfmt(sql_buf, 256, "INSERT INTO monster_base_spell_flags_map VALUES (?,?);");
+	err = stats_db_stmt_prep(&spell_flags_stmt, sql_buf);
+	if (err) return err;
+
+	for (rb_ptr = rb_info, idx = 0; rb_ptr; rb_ptr = rb_ptr->next, idx++)
+	{
+		for (flag = rf_next(rb_ptr->flags, FLAG_START);
+			flag != FLAG_END;
+			flag = rf_next(rb_ptr->flags, flag + 1))
+		{
+			err = sqlite3_bind_text(flags_stmt, 1, rb_ptr->name,
+				strlen(rb_ptr->name), SQLITE_STATIC);
+			if (err) return err;
+			err = sqlite3_bind_int(flags_stmt, 2, flag);
+			if (err) return err;
+			STATS_DB_STEP_RESET(flags_stmt)
+		}
+
+		for (flag = rsf_next(rb_ptr->spell_flags, FLAG_START);
+			flag != FLAG_END;
+			flag = rsf_next(rb_ptr->spell_flags, flag + 1))
+		{
+			err = sqlite3_bind_text(spell_flags_stmt, 1, 
+				rb_ptr->name, strlen(rb_ptr->name), 
+				SQLITE_STATIC);
+			if (err) return err;
+			err = sqlite3_bind_int(spell_flags_stmt, 2, flag);
+			if (err) return err;
+			STATS_DB_STEP_RESET(spell_flags_stmt)
+		}
+		
+	}
+
+	STATS_DB_FINALIZE(flags_stmt)
+	STATS_DB_FINALIZE(spell_flags_stmt)
+
+	return SQLITE_OK;
+}
+
+static int stats_dump_lists(void)
+{
+	int err, idx;
+	char sql_buf[256];
+	sqlite3_stmt *sql_stmt;
+
+	/* Note: these lists are sometimes different from the ones the core
+	 * game uses, insofar as we put the name of the flag in a
+	 * description field. */
+	info_entry effects[] =
+	{
+		#define EFFECT(x, y, r, z)    { EF_##x, y, r, #x },
+		#include "list-effects.h"
+		#undef EFFECT
+	};
+
+	char *r_info_flags[] =
+	{
+		#define RF(a, b) #a,
+		#include "monster/list-mon-flags.h"
+		#undef RF
+		NULL
+	};
+
+	struct mon_spell mon_spell_table[] =
+	{
+		#define RSF(a, b, c, d, e, f, g, h, i, j, k, l, m) \
+			{ RSF_##a, b, #a, d, e, f, g, h, i, j, k, l, m },
+		#define RV(b, x, y, m) {b, x, y, m}
+		#include "monster/list-mon-spells.h"
+		#undef RV
+		#undef RSF
+	};
+
+	struct object_flag object_flag_table[] =
+	{
+		#define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s) \
+			{ OF_##a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, #a },
+		#include "object/list-object-flags.h"
+		#undef OF
+	};
+
+	struct slay slay_table[] =
+	{
+		#define SLAY(a, b, c, d, e, f, g, h, i, j) \
+			{ SL_##a, b, c, d, e, f, g, h, #a, j},
+		#include "object/list-slays.h"
+		#undef SLAY
+	};
+
+	err = stats_db_stmt_prep(&sql_stmt, 
+		"INSERT INTO effects_list VALUES(?,?,?,?);");
+	if (err) return err;
+
+	for (idx = 1; idx < EF_MAX; idx++)
+	{
+		if (! effects[idx].desc) continue;
+
+		err = stats_db_bind_ints(sql_stmt, 3, 0, idx, 
+			effects[idx].aim, effects[idx].power);
+		if (err) return err;
+		err = sqlite3_bind_text(sql_stmt, 4, effects[idx].desc,
+			strlen(effects[idx].desc), SQLITE_STATIC);
+		if (err) return err;
+		STATS_DB_STEP_RESET(sql_stmt)
+	}
+
+	STATS_DB_FINALIZE(sql_stmt)
+
+	err = stats_db_stmt_prep(&sql_stmt, 
+		"INSERT INTO monster_flags_list VALUES(?,?);");
+	if (err) return err;
+
+	for (idx = 0; r_info_flags[idx] != NULL; idx++)
+	{
+		err = sqlite3_bind_int(sql_stmt, 1, idx);
+		if (err) return err;
+		err = sqlite3_bind_text(sql_stmt, 2, r_info_flags[idx],
+			strlen(r_info_flags[idx]), SQLITE_STATIC);
+		if (err) return err;
+		STATS_DB_STEP_RESET(sql_stmt)
+	}
+
+	STATS_DB_FINALIZE(sql_stmt)
+
+	err = stats_db_stmt_prep(&sql_stmt, 
+		"INSERT INTO monster_spell_flags_list VALUES(?,?,?,?);");
+	if (err) return err;
+
+	for (idx = 1; idx < RSF_MAX; idx++)
+	{
+		if (! mon_spell_table[idx].desc) continue;
+
+		err = stats_db_bind_ints(sql_stmt, 3, 0, idx, 
+			mon_spell_table[idx].cap, mon_spell_table[idx].div);
+		if (err) return err;
+		err = sqlite3_bind_text(sql_stmt, 4, mon_spell_table[idx].desc,
+			strlen(mon_spell_table[idx].desc), SQLITE_STATIC);
+		if (err) return err;
+		STATS_DB_STEP_RESET(sql_stmt)
+	}
+
+	STATS_DB_FINALIZE(sql_stmt)
+
+	err = stats_db_stmt_prep(&sql_stmt, 
+		"INSERT INTO object_flags_list VALUES(?,?,?,?,?,?);");
+	if (err) return err;
+
+	for (idx = 1; idx < RSF_MAX; idx++)
+	{
+		struct object_flag *of_ptr = &object_flag_table[idx];
+		if (! of_ptr->message) continue;
+
+		err = stats_db_bind_ints(sql_stmt, 5, 0, idx, 
+			of_ptr->pval, of_ptr->type, of_ptr->power,
+			of_ptr->pval_mult);
+		if (err) return err;
+		err = sqlite3_bind_text(sql_stmt, 6, of_ptr->message,
+			strlen(of_ptr->message), SQLITE_STATIC);
+		if (err) return err;
+		STATS_DB_STEP_RESET(sql_stmt)
+	}
+
+	STATS_DB_FINALIZE(sql_stmt)
+
+	err = stats_db_stmt_prep(&sql_stmt, 
+		"INSERT INTO object_slays_list VALUES(?,?,?,?,?,?);");
+	if (err) return err;
+
+	for (idx = 1; idx < SL_MAX; idx++)
+	{
+		struct slay *s_ptr = &slay_table[idx];
+		if (! s_ptr->desc) continue;
+
+		err = stats_db_bind_ints(sql_stmt, 5, 0, idx, 
+			s_ptr->object_flag, s_ptr->monster_flag, 
+			s_ptr->resist_flag, s_ptr->mult);
+		if (err) return err;
+		err = sqlite3_bind_text(sql_stmt, 6, s_ptr->desc,
+			strlen(s_ptr->desc), SQLITE_STATIC);
+		if (err) return err;
+		STATS_DB_STEP_RESET(sql_stmt)
+	}
+
+	STATS_DB_FINALIZE(sql_stmt)
+
+	/* Hack, until we refactor origin kinds into a header */
+	#define STATS_ORIGIN(idx,name) \
+		strnfmt(sql_buf, 256, "INSERT INTO origin_flags_list VALUES(%d,'%s');", idx, #name); \
+		err = stats_db_exec(sql_buf);\
+		if (err) return err;
+
+	STATS_ORIGIN(0,NONE)
+	STATS_ORIGIN(1,FLOOR)
+	STATS_ORIGIN(2,DROP)
+	STATS_ORIGIN(3,CHEST)
+	STATS_ORIGIN(4,DROP_SPECIAL)
+	STATS_ORIGIN(5,DROP_PIT)
+	STATS_ORIGIN(6,DROP_VAULT)
+	STATS_ORIGIN(7,SPECIAL)
+	STATS_ORIGIN(8,PIT)
+	STATS_ORIGIN(9,VAULT)
+	STATS_ORIGIN(10,LABYRINTH)
+	STATS_ORIGIN(11,CAVERN)
+	STATS_ORIGIN(12,RUBBLE)
+	STATS_ORIGIN(13,MIXED)
+	#undef STATS_ORIGIN
+
+	err = stats_db_stmt_prep(&sql_stmt, 
+		"INSERT INTO wearables_index VALUES(?,?);");
+	if (err) return err;
+
+	for (idx = 0; idx < wearable_count + 1; idx++)
+	{
+		err = stats_db_bind_ints(sql_stmt, 2, 0, idx, 
+			wearables_index[idx]);
+		if (err) return err;
+		STATS_DB_STEP_RESET(sql_stmt)
+	}
+
+	STATS_DB_FINALIZE(sql_stmt)
+	
+	err = stats_db_stmt_prep(&sql_stmt, 
+		"INSERT INTO consumables_index VALUES(?,?);");
+	if (err) return err;
+
+	for (idx = 0; idx < consumable_count + 1; idx++)
+	{
+		if (! consumables_index[idx]) continue;
+
+		err = stats_db_bind_ints(sql_stmt, 2, 0, idx, 
+			consumables_index[idx]);
+		if (err) return err;
+		STATS_DB_STEP_RESET(sql_stmt)
+	}
+
+	STATS_DB_FINALIZE(sql_stmt)
+	
+	err = stats_db_stmt_prep(&sql_stmt, 
+		"INSERT INTO pval_flags_index VALUES(?,?);");
+	if (err) return err;
+
+	for (idx = 0; idx < pval_flags_count + 1; idx++)
+	{
+		if (! wearables_index[idx]) continue;
+
+		err = stats_db_bind_ints(sql_stmt, 2, 0, idx, 
+			pval_flags_index[idx]);
+		if (err) return err;
+		STATS_DB_STEP_RESET(sql_stmt)
+	}
+
+	STATS_DB_FINALIZE(sql_stmt)
+	
+	return SQLITE_OK;
+}
+
+static int stats_dump_info(void)
+{
+	int err;
+	char sql_buf[256];
+
+	/* Wrap entire write into a transaction */
+	err = stats_db_exec("BEGIN TRANSACTION;");
+	if (err) return err;
+
+	/* Metadata */
+	strnfmt(sql_buf, 256, "INSERT INTO metadata VALUES('version','%s');",
+		buildver);
+	err = stats_db_exec(sql_buf);
+	if (err) return err;
+
+	strnfmt(sql_buf, 256, "INSERT INTO metadata VALUES('randarts',%d);",
+		randarts);
+	err = stats_db_exec(sql_buf);
+	if (err) return err;
+
+	err = stats_dump_artifacts();
+	if (err) return err;
+
+	err = stats_dump_egos();
+	if (err) return err;
+
+	err = stats_dump_monsters();
+	if (err) return err;
+
+	err = stats_dump_objects();
+	if (err) return err;
+
+	err = stats_dump_lists();
+	if (err) return err;
+
+	/* Commit transaction */
+	return stats_db_exec("COMMIT;");
 }
 
 /**
@@ -550,6 +1189,7 @@ static int stats_dump_tables(void)
  * All count tables will contain a level column (INTEGER) and a
  * count column (INTEGER). Some tables will include other INTEGER columns
  * for object origin, feeling, attributes, indices, or object flags.
+ * Note that random_value types are stored as either A+BdC+Md or A.
  * Tables:
  *     metadata -- key-value pairs describing the stats run
  *     artifact_info -- dump of artifact.txt
@@ -559,9 +1199,8 @@ static int stats_dump_tables(void)
  *     ego_flags_map -- map between egos and object flags
  *     ego_pval_flags_map -- map between egos and pval flags, with pvals and minima
  *     ego_type_map -- map between egos and tvals/svals
- *     monster_base_info -- dump of monster_base.txt
- *     monster_base_flags_map -- map between monsters and monster flags
- *     monster_base_spell_flags_map -- map between monsters and monster spell flags
+ *     monster_base_flags_map -- map between monster bases and monster flags
+ *     monster_base_spell_flags_map -- map between monster bases and monster spell flags
  *     monster_info -- dump of monsters.txt
  *     monster_flags_map -- map between monsters and monster flags
  *     monster_spell_flags_map -- map between monsters and monster spell flags
@@ -574,7 +1213,6 @@ static int stats_dump_tables(void)
  *     monster_flags_list -- dump of list-mon-flags.h
  *     monster_spell_flags_list -- dump of list-mon-spells.h
  *     object_flags_list -- dump of list-object-flags.h
- *     object_flag_type_list -- dump of object_flag_type enum
  *     object_slays_list -- dump of list-object-slays.h
  *     origin_flags_list -- dump of origin enum
  *     wearables_index -- contains list of wearable object indices
@@ -618,19 +1256,16 @@ static bool stats_prep_db(void)
 	err = stats_db_exec("CREATE TABLE artifact_pval_flags_map(a_idx INT, pval_flag INT, pval INT);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE ego_info(idx INT PRIMARY KEY, name TEXT, cost INT, level INT, rarity INT, rating INT, to_h TEXT, to_d TEXT, to_a TEXT, num_pvals INT, min_to_h INT, min_to_d INT, min_to_a INT, xtra INT);");
+	err = stats_db_exec("CREATE TABLE ego_info(idx INT PRIMARY KEY, name TEXT, to_h TEXT, to_d TEXT, to_a TEXT, cost INT, level INT, rarity INT, rating INT, num_pvals INT, min_to_h INT, min_to_d INT, min_to_a INT, xtra INT);");
 	if (err) return false;
 
 	err = stats_db_exec("CREATE TABLE ego_flags_map(e_idx INT, o_flag INT);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE ego_pval_flags_map(e_idx INT, pval_flag INT, pval TEXT, min_pval INT);");
+	err = stats_db_exec("CREATE TABLE ego_pval_flags_map(e_idx INT, pval_flag INT, min_pval INT, pval TEXT);");
 	if (err) return false;
 
 	err = stats_db_exec("CREATE TABLE ego_type_map(e_idx INT, tval INT, min_sval INT, max_sval INT);");
-	if (err) return false;
-
-	err = stats_db_exec("CREATE TABLE monster_base_info(idx INT PRIMARY KEY, name TEXT);");
 	if (err) return false;
 
 	err = stats_db_exec("CREATE TABLE monster_base_flags_map(rb_idx INT, r_flag INT);");
@@ -639,7 +1274,7 @@ static bool stats_prep_db(void)
 	err = stats_db_exec("CREATE TABLE monster_base_spell_flags_map(rb_idx INT, rs_flag INT);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE monster_info(idx INT PRIMARY KEY, name TEXT, base TEXT, ac INT, sleep INT, speed INT, mexp INT, hp INT, freq_innate INT, freq_spell INT, level INT, rarity INT);");
+	err = stats_db_exec("CREATE TABLE monster_info(idx INT PRIMARY KEY, ac INT, sleep INT, speed INT, mexp INT, hp INT, freq_innate INT, freq_spell INT, level INT, rarity INT, name TEXT, base TEXT);");
 	if (err) return false;
 
 	err = stats_db_exec("CREATE TABLE monster_flags_map(r_idx INT, r_flag INT);");
@@ -654,31 +1289,28 @@ static bool stats_prep_db(void)
 	err = stats_db_exec("CREATE TABLE object_base_flags_map(kb_idx INT, o_flag INT);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE object_info(idx INT PRIMARY KEY, name TEXT, tval INT, sval INT, level INT, weight INT, cost INT, ac INT, dd INT, ds INT, to_h INT, to_d INT, to_a INT, alloc_prob INT, alloc_min INT, alloc_max INT, charge TEXT, effect INT, recharge_time INT, gen_mult_prob INT, stack_size INT);");
+	err = stats_db_exec("CREATE TABLE object_info(idx INT PRIMARY KEY, name TEXT, tval INT, sval INT, level INT, weight INT, cost INT, ac INT, dd INT, ds INT, alloc_prob INT, alloc_min INT, alloc_max INT, effect INT, gen_mult_prob INT, stack_size INT, to_h TEXT, to_d TEXT, to_a TEXT, charge TEXT, recharge_time TEXT);");
 	if (err) return false;
 
 	err = stats_db_exec("CREATE TABLE object_flags_map(k_idx INT, o_flag INT);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE object_pval_flags_map(k_idx INT, pval_flag INT, pval INT);");
+	err = stats_db_exec("CREATE TABLE object_pval_flags_map(k_idx INT, pval_flag INT, pval TEXT);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE effects_list(idx INT PRIMARY KEY, name TEXT, rating INT);");
+	err = stats_db_exec("CREATE TABLE effects_list(idx INT PRIMARY KEY, aim INT, rating INT, name TEXT);");
 	if (err) return false;
 
 	err = stats_db_exec("CREATE TABLE monster_flags_list(idx INT PRIMARY KEY, name TEXT);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE monster_spell_flags_list(idx INT PRIMARY KEY, name TEXT, cap INT, div INT);");
+	err = stats_db_exec("CREATE TABLE monster_spell_flags_list(idx INT PRIMARY KEY, cap INT, div INT, name TEXT);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE object_flags_list(idx INT PRIMARY KEY, name TEXT, pval INT, type INT, power INT, pval_mult INT);");
+	err = stats_db_exec("CREATE TABLE object_flags_list(idx INT PRIMARY KEY, pval INT, type INT, power INT, pval_mult INT, name TEXT);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE object_flag_type_list(idx INT PRIMARY KEY, name TEXT);");
-	if (err) return false;
-
-	err = stats_db_exec("CREATE TABLE object_slays_list(idx INT PRIMARY KEY, name TEXT, object_flag INT, monster_flag INT, resist_flag INT, mult INT);");
+	err = stats_db_exec("CREATE TABLE object_slays_list(idx INT PRIMARY KEY, object_flag INT, monster_flag INT, resist_flag INT, mult INT, name TEXT);");
 	if (err) return false;
 
 	err = stats_db_exec("CREATE TABLE origin_flags_list(idx INT PRIMARY KEY, name TEXT);");
@@ -735,7 +1367,7 @@ static bool stats_prep_db(void)
 	err = stats_db_exec("CREATE TABLE wearables_pval_flags(level INT, count INT, w_idx INT, origin INT, pval INT, pv_idx INT, UNIQUE (level, w_idx, origin, pv_idx) ON CONFLICT REPLACE);");
 	if (err) return false;
 
-	err = stats_dump_tables();
+	err = stats_dump_info();
 	if (err) return false;
 
 	return true;
@@ -813,15 +1445,11 @@ static int stats_write_db_level_data(const char *table, int max_idx)
 			u32b count = ((byte *)&level_data[level] + offset)[i];
 			if (!count) continue;
 
-			err = stats_db_bind_ints(sql_stmt, 3, 
+			err = stats_db_bind_ints(sql_stmt, 3, 0,
 				level, count, i);
 			if (err) return err;
 
-			err = sqlite3_step(sql_stmt);
-			if (err && err != SQLITE_DONE) return err;
-
-			err = sqlite3_reset(sql_stmt);
-			if (err) return err;
+			STATS_DB_STEP_RESET(sql_stmt)
 		}
 	}
 
@@ -851,15 +1479,11 @@ static int stats_write_db_level_data_items(const char *table, int max_idx)
 				u32b count = ((u32b **)((byte *)&level_data[level] + offset))[origin][i];
 				if (!count) continue;
 
-				err = stats_db_bind_ints(sql_stmt, 4, 
+				err = stats_db_bind_ints(sql_stmt, 4, 0,
 					level, count, i, origin);
 				if (err) return err;
 
-				err = sqlite3_step(sql_stmt);
-				if (err && err != SQLITE_DONE) return err;
-
-				err = sqlite3_reset(sql_stmt);
-				if (err) return err;
+				STATS_DB_STEP_RESET(sql_stmt)
 			}
 		}
 	}
@@ -885,15 +1509,11 @@ static int stats_write_db_wearables_count(void)
 				u32b count = level_data[level].wearables[origin][i].count;
 				if (!count) continue;
 
-				err = stats_db_bind_ints(sql_stmt, 4, 
+				err = stats_db_bind_ints(sql_stmt, 4, 0,
 					level, count, i, origin);
 				if (err) return err;
 
-				err = sqlite3_step(sql_stmt);
-				if (err && err != SQLITE_DONE) return err;
-
-				err = sqlite3_reset(sql_stmt);
-				if (err) return err;
+				STATS_DB_STEP_RESET(sql_stmt)
 			}
 		}
 	}
@@ -940,15 +1560,11 @@ static int stats_write_db_wearables_array(const char *field, int max_val, bool a
 					}
 					if (!count) continue;
 
-					err = stats_db_bind_ints(sql_stmt, 5, 
+					err = stats_db_bind_ints(sql_stmt, 5, 0,
 						level, count, idx, origin, i);
 					if (err) return err;
 
-					err = sqlite3_step(sql_stmt);
-					if (err && err != SQLITE_DONE) return err;
-
-					err = sqlite3_reset(sql_stmt);
-					if (err) return err;
+					STATS_DB_STEP_RESET(sql_stmt)
 				}
 			}
 		}
@@ -1000,15 +1616,11 @@ static int stats_write_db_wearables_2d_array(const char *field,
 						}
 						if (!count) continue;
 
-						err = stats_db_bind_ints(sql_stmt, 6, 
+						err = stats_db_bind_ints(sql_stmt, 6, 0,
 							level, count, idx, origin, i, j);
 						if (err) return err;
 
-						err = sqlite3_step(sql_stmt);
-						if (err && err != SQLITE_DONE) return err;
-
-						err = sqlite3_reset(sql_stmt);
-						if (err) return err;
+						STATS_DB_STEP_RESET(sql_stmt)
 					}
 				}
 			}
@@ -1087,13 +1699,11 @@ static errr run_stats(void)
 	artifact_type *a_info_save;
 	unsigned int i;
 	int err;
+	bool status; 
 
-	bool status = stats_prep_db();
-	if (!status) quit("Couldn't prepare database!");
 	prep_output_dir();
 	create_indices();
 	alloc_memory();
-
 	if (randarts)
 	{
 		a_info_save = mem_zalloc(z_info->a_max * sizeof(artifact_type));
@@ -1106,6 +1716,8 @@ static errr run_stats(void)
 	}
 
 	open_output_files(0);
+	status = stats_prep_db();
+	if (!status) quit("Couldn't prepare database!");
 
 	for (run = 0; run < num_runs; run++)
 	{

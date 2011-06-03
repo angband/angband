@@ -121,18 +121,19 @@ int stats_db_stmt_prep(sqlite3_stmt **sql_stmt, char *sql_str) {
 }
 
 /**
- * Utility function for binding many ints at once. Arguments after num_cols
- * should be a series of ints to be bound to parameters in sql_stmt, in
- * order.
+ * Utility function for binding many ints at once. The offset argument 
+ * should be the number of columns to skip before starting to bind. 
+ * Arguments after num_cols should be a series of ints to be bound to
+ * parameters in sql_stmt, in order.
  */
 
-int stats_db_bind_ints(sqlite3_stmt *sql_stmt, int num_cols, ...) {
+int stats_db_bind_ints(sqlite3_stmt *sql_stmt, int num_cols, int offset, ...) {
 	va_list vp;
 	int err = SQLITE_OK;
 	int col;
 
-	va_start(vp, num_cols);
-	for (col = 1; col <= num_cols; col++) {
+	va_start(vp, offset);
+	for (col = offset + 1; col <= offset + num_cols; col++) {
 		u32b value = va_arg(vp, u32b);
 		err = sqlite3_bind_int(sql_stmt, col, value);
 		if (err) return err;
@@ -140,6 +141,23 @@ int stats_db_bind_ints(sqlite3_stmt *sql_stmt, int num_cols, ...) {
 	va_end(vp);
 
 	return err;
+}
+
+/**
+ * Utility function for binding a random_value to a parameter as TEXT.
+ * Note optimization for storing values without randomness.
+ */
+int stats_db_bind_rv(sqlite3_stmt *sql_stmt, int col, random_value rv) {
+	char sql_buf[256];
+
+	if (rv.dice || rv.sides || rv.m_bonus) {
+		strnfmt(sql_buf, 256, "%d+%dd%dM%d", rv.base, rv.dice, 
+			rv.sides, rv.m_bonus);
+	} else {
+		strnfmt(sql_buf, 256, "%d", rv.base);
+	}
+	return sqlite3_bind_text(sql_stmt, col, sql_buf, strlen(sql_buf),
+		SQLITE_STATIC);
 }
 
 /**
