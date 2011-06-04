@@ -164,10 +164,17 @@ L:d2M3:1:INFRA
 
 # 14 (unused)
 
-# 15 (unused)
-
-
 ### Shields ###
+
+N:15:(Dwarven)
+X:20:0
+W:0:4:0:5000
+C:1+M3:1+M3:d5
+T:34:3:3
+F:IGNORE_ACID | IGNORE_FIRE |
+F:FREE_ACT | HIDE_TYPE
+L:d2:1:STR
+L:d2:1:CON
 
 N:16:of Resist Acid
 X:16:0
@@ -331,7 +338,7 @@ N:36:of Serenity
 X:20:0
 W:0:6:0:4000
 T:33:0:99
-F:RES_SOUND | RES_CONFU | RES_FEAR
+F:RES_SOUND | RES_CONFU | RES_FEAR | RES_STUN
 
 N:37:of Night and Day
 X:18:0
@@ -611,17 +618,17 @@ T:23:0:99
 F:HIDE_TYPE
 L:d2:0:BLOWS
 
-N:70:of Fury
-X:30:0
-W:40:20:0:20000
-T:21:12:99
-T:22:10:99
-T:23:16:99
-C:d10:d10:0
-F:AGGRAVATE | RES_FEAR | HIDE_TYPE |
-F:IGNORE_ACID | IGNORE_FIRE
-L:1+d2M2:2:STR
-L:d2:1:BLOWS
+#N:70:of Fury
+#X:30:0
+#W:40:20:0:20000
+#T:21:12:99
+#T:22:10:99
+#T:23:16:99
+#C:d10:d10:0
+#F:AGGRAVATE | RES_FEAR | HIDE_TYPE |
+#F:IGNORE_ACID | IGNORE_FIRE
+#L:1+d2M2:2:STR
+#L:d2:1:BLOWS
 
 # 71 (unused)
 
@@ -629,7 +636,7 @@ L:d2:1:BLOWS
 
 N:72:of Acid
 X:20:0
-W:0:10:0:5000
+W:0:20:0:5000
 T:21:0:99
 T:22:0:99
 T:23:0:99
@@ -637,7 +644,7 @@ F:BRAND_ACID | RES_ACID | IGNORE_ACID
 
 N:73:of Lightning
 X:20:0
-W:0:10:0:4500
+W:0:15:0:4500
 T:21:0:99
 T:22:0:99
 T:23:0:99
@@ -846,13 +853,13 @@ C:0:0:0
 T:39:1:1 (lanterns only)
 F:NO_FUEL
 
-#N:99:of True Sight
-#X:10:0
+N:99:of True Sight
+X:10:0
 #W:depth:rarity:extra weight:cost
-#W:20:8:0:6000 (imported from S)
-#C:0:0:0
-#T:39:0:1
-#F:RES_BLIND | SEE_INVIS
+W:20:8:0:6000 (imported from S)
+C:0:0:0
+T:39:1:1
+F:RES_BLIND | SEE_INVIS
 
 
 ### Digging Tools
@@ -996,7 +1003,7 @@ F:SLAY_DEMON
 
 N:116:of Acid
 X:10:0
-W:0:9:0:50
+W:0:10:0:50
 T:16:0:99
 T:17:0:99
 T:18:0:99
@@ -1004,7 +1011,7 @@ F:BRAND_ACID | IGNORE_ACID
 
 N:117:of Lightning
 X:10:0
-W:0:9:0:45
+W:0:10:0:45
 T:16:0:99
 T:17:0:99
 T:18:0:99
