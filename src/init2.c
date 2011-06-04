@@ -24,10 +24,10 @@
 #include "game-event.h"
 #include "game-cmd.h"
 #include "generate.h"
+#include "history.h"
 #include "keymap.h"
 #include "init.h"
-#include "monster/mon-power.h"
-#include "monster/mon-spell.h"
+#include "monster/init.h"
 #include "object/object.h"
 #include "object/slays.h"
 #include "object/tvalsval.h"
@@ -54,39 +54,6 @@ static struct history_chart *histories;
  * of text, even though technically, up to 64K should be legal.
  */
 
-struct file_parser {
-	const char *name;
-	struct parser *(*init)(void);
-	errr (*run)(struct parser *p);
-	errr (*finish)(struct parser *p);
-};
-
-static void print_error(struct file_parser *fp, struct parser *p) {
-	struct parser_state s;
-	parser_getstate(p, &s);
-	msg("Parse error in %s line %d column %d: %s: %s", fp->name,
-	           s.line, s.col, s.msg, parser_error_str[s.error]);
-	message_flush();
-	quit_fmt("Parse error in %s line %d column %d.", fp->name, s.line, s.col);
-}
-
-errr run_parser(struct file_parser *fp) {
-	struct parser *p = fp->init();
-	errr r;
-	if (!p) {
-		return PARSE_ERROR_GENERIC;
-	}
-	r = fp->run(p);
-	if (r) {
-		print_error(fp, p);
-		return r;
-	}
-	r = fp->finish(p);
-	if (r)
-		print_error(fp, p);
-	return r;
-}
-
 static const char *k_info_flags[] = {
 	#define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s) #a,
 	#include "object/list-object-flags.h"
@@ -99,28 +66,6 @@ static const char *effect_list[] = {
 	#include "list-effects.h"
 	#undef EFFECT
 };
-
-static int lookup_flag(const char **flag_table, const char *flag_name) {
-	int i = FLAG_START;
-
-	while (flag_table[i] && !streq(flag_table[i], flag_name))
-		i++;
-
-	/* End of table reached without match */
-	if (!flag_table[i]) i = FLAG_END;
-
-	return i;
-}
-
-static errr grab_flag(bitflag *flags, const size_t size, const char **flag_table, const char *flag_name) {
-	int flag = lookup_flag(flag_table, flag_name);
-
-	if (flag == FLAG_END) return PARSE_ERROR_INVALID_FLAG;
-
-	flag_on(flags, size, flag);
-
-	return 0;
-}
 
 static u32b grab_one_effect(const char *what) {
 	size_t i;
@@ -271,30 +216,6 @@ void create_needed_dirs(void)
 
 	path_build(dirpath, sizeof(dirpath), ANGBAND_DIR_HELP, "");
 	if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
-}
-
-/* The basic file parsing function */
-errr parse_file(struct parser *p, const char *filename) {
-	char path[1024];
-	char buf[1024];
-	ang_file *fh;
-	errr r = 0;
-
-	path_build(path, sizeof(path), ANGBAND_DIR_EDIT, format("%s.txt", filename));
-	fh = file_open(path, MODE_READ, -1);
-	if (!fh)
-		quit(format("Cannot open '%s.txt'", filename));
-	while (file_getl(fh, buf, sizeof(buf))) {
-		r = parser_parse(p, buf);
-		if (r)
-			break;
-	}
-	file_close(fh);
-	return r;
-}
-
-static enum parser_error ignored(struct parser *p) {
-	return PARSE_ERROR_NONE;
 }
 
 /* Parsing functions for limits.txt */
@@ -484,11 +405,22 @@ static errr finish_parse_kb(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_kb(void)
+{
+	int idx;
+	for (idx = 0; idx < TV_MAX; idx++)
+	{
+		string_free(kb_info[idx].name);
+	}
+	mem_free(kb_info);
+}
+
 struct file_parser kb_parser = {
 	"object_base",
 	init_parse_kb,
 	run_parse_kb,
-	finish_parse_kb
+	finish_parse_kb,
+	cleanup_kb
 };
 
 
@@ -688,13 +620,15 @@ static errr run_parse_k(struct parser *p) {
 }
 
 static errr finish_parse_k(struct parser *p) {
-	struct object_kind *k;
+	struct object_kind *k, *next;
 
 	k_info = mem_zalloc(z_info->k_max * sizeof(*k));
-	for (k = parser_priv(p); k; k = k->next) {
+	for (k = parser_priv(p); k; k = next) {
 		if (k->kidx >= z_info->k_max)
 			continue;
 		memcpy(&k_info[k->kidx], k, sizeof(*k));
+		next = k->next;
+		mem_free(k);
 	}
 
 	objkinds = parser_priv(p);
@@ -702,11 +636,22 @@ static errr finish_parse_k(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_k(void)
+{
+	int idx;
+	for (idx = 0; idx < z_info->k_max; idx++) {
+		string_free(k_info[idx].name);
+		mem_free(k_info[idx].text);
+	}
+	mem_free(k_info);
+}
+
 struct file_parser k_parser = {
 	"object",
 	init_parse_k,
 	run_parse_k,
-	finish_parse_k
+	finish_parse_k,
+	cleanup_k
 };
 
 /* Parsing functions for artifact.txt */
@@ -910,11 +855,23 @@ static errr finish_parse_a(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_a(void)
+{
+	int idx;
+	for (idx = 0; idx < z_info->a_max; idx++) {
+		string_free(a_info[idx].name);
+		mem_free(a_info[idx].effect_msg);
+		mem_free(a_info[idx].text);
+	}
+	mem_free(a_info);
+}
+
 struct file_parser a_parser = {
 	"artifact",
 	init_parse_a,
 	run_parse_a,
-	finish_parse_a
+	finish_parse_a,
+	cleanup_a
 };
 
 /* Parsing functions for names.txt (random name fragments) */
@@ -987,11 +944,24 @@ static errr finish_parse_names(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_names(void)
+{
+	int i, j;
+	for (i = 0; i < RANDNAME_NUM_TYPES; i++) {
+		for (j = 0; name_sections[i][j]; j++) {
+			string_free((char *)name_sections[i][j]);
+		}
+		mem_free(name_sections[i]);
+	}
+	mem_free(name_sections);
+}
+
 struct file_parser names_parser = {
 	"names",
 	init_parse_names,
 	run_parse_names,
-	finish_parse_names
+	finish_parse_names,
+	cleanup_names
 };
 
 /* Parsing functions for terrain.txt */
@@ -1171,11 +1141,20 @@ static errr finish_parse_f(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_f(void) {
+	int idx;
+	for (idx = 0; idx < z_info->f_max; idx++) {
+		string_free(f_info[idx].name);
+	}
+	mem_free(f_info);
+}
+
 struct file_parser f_parser = {
 	"terrain",
 	init_parse_f,
 	run_parse_f,
-	finish_parse_f
+	finish_parse_f,
+	cleanup_f
 };
 
 /* Parsing functions for ego-item.txt */
@@ -1384,467 +1363,23 @@ static errr finish_parse_e(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_e(void)
+{
+	int idx;
+	for (idx = 0; idx < z_info->e_max; idx++) {
+		string_free(e_info[idx].name);
+		mem_free(e_info[idx].text);
+	}
+	mem_free(e_info);
+	free_slay_cache();
+}
+
 struct file_parser e_parser = {
 	"ego_item",
 	init_parse_e,
 	run_parse_e,
-	finish_parse_e
-};
-
-/* Parsing functions for monster_base.txt */
-
-static enum parser_error parse_rb_n(struct parser *p) {
-	struct monster_base *h = parser_priv(p);
-	struct monster_base *rb = mem_zalloc(sizeof *rb);
-	rb->next = h;
-	rb->name = string_make(parser_getstr(p, "name"));
-	parser_setpriv(p, rb);
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_rb_g(struct parser *p) {
-	struct monster_base *rb = parser_priv(p);
-
-	if (!rb)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	rb->d_char = parser_getchar(p, "glyph");
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_rb_m(struct parser *p) {
-	struct monster_base *rb = parser_priv(p);
-	int pain_idx;
-
-	if (!rb)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	pain_idx = parser_getuint(p, "pain");
-	if (pain_idx >= z_info->mp_max)
-		/* XXX need a real error code for this */
-		return PARSE_ERROR_GENERIC;
-
-	rb->pain = &pain_messages[pain_idx];
-
-	return PARSE_ERROR_NONE;
-}
-
-static const char *r_info_flags[] =
-{
-	#define RF(a, b) #a,
-	#include "monster/list-mon-flags.h"
-	#undef RF
-	NULL
-};
-
-static enum parser_error parse_rb_f(struct parser *p) {
-	struct monster_base *rb = parser_priv(p);
-	char *flags;
-	char *s;
-
-	if (!rb)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	if (!parser_hasval(p, "flags"))
-		return PARSE_ERROR_NONE;
-	flags = string_make(parser_getstr(p, "flags"));
-	s = strtok(flags, " |");
-	while (s) {
-		if (grab_flag(rb->flags, RF_SIZE, r_info_flags, s)) {
-			mem_free(flags);
-			return PARSE_ERROR_INVALID_FLAG;
-		}
-		s = strtok(NULL, " |");
-	}
-
-	mem_free(flags);
-	return PARSE_ERROR_NONE;
-}
-
-static const char *r_info_spell_flags[] =
-{
-	#define RSF(a, b, c, d, e, f, g, h, i, j, k, l, m) #a,
-	#include "monster/list-mon-spells.h"
-	#undef RSF
-	NULL
-};
-
-static enum parser_error parse_rb_s(struct parser *p) {
-	struct monster_base *rb = parser_priv(p);
-	char *flags;
-	char *s;
-
-	if (!rb)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	if (!parser_hasval(p, "spells"))
-		return PARSE_ERROR_NONE;
-	flags = string_make(parser_getstr(p, "spells"));
-	s = strtok(flags, " |");
-	while (s) {
-		if (grab_flag(rb->spell_flags, RSF_SIZE, r_info_spell_flags, s)) {
-			mem_free(flags);
-			return PARSE_ERROR_INVALID_FLAG;
-		}
-		s = strtok(NULL, " |");
-	}
-
-	mem_free(flags);
-	return PARSE_ERROR_NONE;
-}
-
-
-static enum parser_error parse_rb_d(struct parser *p) {
-	struct monster_base *rb = parser_priv(p);
-
-	if (!rb)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	rb->text = string_append(rb->text, parser_getstr(p, "desc"));
-	return PARSE_ERROR_NONE;
-}
-
-
-struct parser *init_parse_rb(void) {
-	struct parser *p = parser_new();
-	parser_setpriv(p, NULL);
-
-	parser_reg(p, "V sym version", ignored);
-	parser_reg(p, "N str name", parse_rb_n);
-	parser_reg(p, "G char glyph", parse_rb_g);
-	parser_reg(p, "M uint pain", parse_rb_m);
-	parser_reg(p, "F ?str flags", parse_rb_f);
-	parser_reg(p, "S ?str spells", parse_rb_s);
-	parser_reg(p, "D str desc", parse_rb_d);
-	return p;
-}
-
-static errr run_parse_rb(struct parser *p) {
-	return parse_file(p, "monster_base");
-}
-
-static errr finish_parse_rb(struct parser *p) {
-	rb_info = parser_priv(p);
-	parser_destroy(p);
-	return 0;
-}
-
-struct file_parser rb_parser = {
-	"monster_base",
-	init_parse_rb,
-	run_parse_rb,
-	finish_parse_rb
-};
-
-
-/* Parsing functions for monster.txt */
-static enum parser_error parse_r_n(struct parser *p) {
-	struct monster_race *h = parser_priv(p);
-	struct monster_race *r = mem_zalloc(sizeof *r);
-	r->next = h;
-	r->ridx = parser_getuint(p, "index");
-	r->name = string_make(parser_getstr(p, "name"));
-	parser_setpriv(p, r);
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_r_t(struct parser *p) {
-	struct monster_race *r = parser_priv(p);
-	
-	r->base = lookup_monster_base(parser_getsym(p, "base"));
-	if (r->base == NULL)
-		/* Todo: make new error for this */
-		return PARSE_ERROR_UNRECOGNISED_TVAL;
-	
-	/* The template sets the default display character */
-	r->d_char = r->base->d_char;
-	
-	/* Give the monster its default flags */
-	rf_union(r->flags, r->base->flags);
-	
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_r_g(struct parser *p) {
-	struct monster_race *r = parser_priv(p);
-	
-	/* If the display character is specified, it overrides any template */
-	r->d_char = parser_getchar(p, "glyph");
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_r_c(struct parser *p) {
-	struct monster_race *r = parser_priv(p);
-	const char *color;
-	int attr;
-
-	if (!r)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-		color = parser_getsym(p, "color");
-	if (strlen(color) > 1)
-		attr = color_text_to_attr(color);
-	else
-		attr = color_char_to_attr(color[0]);
-	if (attr < 0)
-		return PARSE_ERROR_INVALID_COLOR;
-	r->d_attr = attr;
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_r_i(struct parser *p) {
-	struct monster_race *r = parser_priv(p);
-
-	if (!r)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	r->speed = parser_getint(p, "speed");
-	r->avg_hp = parser_getint(p, "hp");
-	r->aaf = parser_getint(p, "aaf");
-	r->ac = parser_getint(p, "ac");
-	r->sleep = parser_getint(p, "sleep");
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_r_w(struct parser *p) {
-	struct monster_race *r = parser_priv(p);
-
-	if (!r)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	r->level = parser_getint(p, "level");
-	r->rarity = parser_getint(p, "rarity");
-	r->power = parser_getint(p, "power");
-	r->mexp = parser_getint(p, "mexp");
-	return PARSE_ERROR_NONE;
-}
-
-static const char *r_info_blow_method[] =
-{
-	#define RBM(a, b) #a,
-	#include "monster/list-blow-methods.h"
-	#undef RBM
-	NULL
-};
-
-static int find_blow_method(const char *name) {
-	int i;
-	for (i = 0; r_info_blow_method[i]; i++)
-		if (streq(name, r_info_blow_method[i]))
-			break;
-	return i;
-}
-
-static const char *r_info_blow_effect[] =
-{
-	#define RBE(a, b) #a,
-	#include "monster/list-blow-effects.h"
-	#undef RBE
-	NULL
-};
-
-static int find_blow_effect(const char *name) {
-	int i;
-	for (i = 0; r_info_blow_effect[i]; i++)
-		if (streq(name, r_info_blow_effect[i]))
-			break;
-	return i;
-}
-
-static enum parser_error parse_r_b(struct parser *p) {
-	struct monster_race *r = parser_priv(p);
-	int i;
-	struct random dam;
-
-	if (!r)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	for (i = 0; i < MONSTER_BLOW_MAX; i++)
-		if (!r->blow[i].method)
-			break;
-	if (i == MONSTER_BLOW_MAX)
-		return PARSE_ERROR_TOO_MANY_ENTRIES;
-	r->blow[i].method = find_blow_method(parser_getsym(p, "method"));
-	if (!r_info_blow_method[r->blow[i].method])
-		return PARSE_ERROR_UNRECOGNISED_BLOW;
-	if (parser_hasval(p, "effect")) {
-		r->blow[i].effect = find_blow_effect(parser_getsym(p, "effect"));
-		if (!r_info_blow_effect[r->blow[i].effect])
-			return PARSE_ERROR_INVALID_EFFECT;
-	}
-	if (parser_hasval(p, "damage")) {
-		dam = parser_getrand(p, "damage");
-		r->blow[i].d_dice = dam.dice;
-		r->blow[i].d_side = dam.sides;
-	}
-
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_r_f(struct parser *p) {
-	struct monster_race *r = parser_priv(p);
-	char *flags;
-	char *s;
-
-	if (!r)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	if (!parser_hasval(p, "flags"))
-		return PARSE_ERROR_NONE;
-	flags = string_make(parser_getstr(p, "flags"));
-	s = strtok(flags, " |");
-	while (s) {
-		if (grab_flag(r->flags, RF_SIZE, r_info_flags, s)) {
-			mem_free(flags);
-			return PARSE_ERROR_INVALID_FLAG;
-		}
-		s = strtok(NULL, " |");
-	}
-	
-	mem_free(flags);
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_r_d(struct parser *p) {
-	struct monster_race *r = parser_priv(p);
-
-	if (!r)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	r->text = string_append(r->text, parser_getstr(p, "desc"));
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_r_s(struct parser *p) {
-	struct monster_race *r = parser_priv(p);
-	char *flags;
-	char *s;
-	int pct;
-	int ret = PARSE_ERROR_NONE;
-
-	if (!r)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	flags = string_make(parser_getstr(p, "spells"));
-	s = strtok(flags, " |");
-	while (s) {
-		if (1 == sscanf(s, "1_IN_%d", &pct)) {
-			if (pct < 1 || pct > 100) {
-				ret = PARSE_ERROR_INVALID_SPELL_FREQ;
-				break;
-			}
-			r->freq_spell = 100 / pct;
-			r->freq_innate = r->freq_spell;
-		} else {
-			if (grab_flag(r->spell_flags, RSF_SIZE, r_info_spell_flags, s)) {
-				ret = PARSE_ERROR_INVALID_FLAG;
-				break;
-			}
-		}
-		s = strtok(NULL, " |");
-	}
-
-	/* Add the "base monster" flags to the monster */
-	if (r->base)
-		rsf_union(r->spell_flags, r->base->spell_flags);
-
-	mem_free(flags);
-	return ret;
-}
-
-static enum parser_error parse_r_drop(struct parser *p) {
-	struct monster_race *r = parser_priv(p);
-	struct monster_drop *d;
-	int tval, sval;
-
-	if (!r)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	tval = tval_find_idx(parser_getsym(p, "tval"));
-	if (tval < 0)
-		return PARSE_ERROR_UNRECOGNISED_TVAL;
-	sval = lookup_sval(tval, parser_getsym(p, "sval"));
-	if (sval < 0)
-		return PARSE_ERROR_UNRECOGNISED_SVAL;
-
-	if (parser_getuint(p, "min") > 99 || parser_getuint(p, "max") > 99)
-		return PARSE_ERROR_INVALID_ITEM_NUMBER;
-
-	d = mem_zalloc(sizeof *d);
-	d->kind = objkind_get(tval, sval);
-	d->percent_chance = parser_getuint(p, "chance");
-	d->min = parser_getuint(p, "min");
-	d->max = parser_getuint(p, "max");
-	d->next = r->drops;
-	r->drops = d;
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_r_drop_artifact(struct parser *p) {
-	struct monster_race *r = parser_priv(p);
-	struct monster_drop *d;
-	int art;
-	struct artifact *a;
-
-	if (!r)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	art = lookup_artifact_name(parser_getstr(p, "name"));
-	if (art < 0)
-		return PARSE_ERROR_GENERIC;
-	a = &a_info[art];
-
-	d = mem_zalloc(sizeof *d);
-	d->artifact = a;
-	d->min = 1;
-	d->max = 1;
-	d->percent_chance = 100;
-	d->next = r->drops;
-	r->drops = d;
-	return PARSE_ERROR_NONE;
-}
-
-struct parser *init_parse_r(void) {
-	struct parser *p = parser_new();
-	parser_setpriv(p, NULL);
-
-	parser_reg(p, "V sym version", ignored);
-	parser_reg(p, "N uint index str name", parse_r_n);
-	parser_reg(p, "T sym base", parse_r_t);
-	parser_reg(p, "G char glyph", parse_r_g);
-	parser_reg(p, "C sym color", parse_r_c);
-	parser_reg(p, "I int speed int hp int aaf int ac int sleep", parse_r_i);
-	parser_reg(p, "W int level int rarity int power int mexp", parse_r_w);
-	parser_reg(p, "B sym method ?sym effect ?rand damage", parse_r_b);
-	parser_reg(p, "F ?str flags", parse_r_f);
-	parser_reg(p, "D str desc", parse_r_d);
-	parser_reg(p, "S str spells", parse_r_s);
-	parser_reg(p, "drop sym tval sym sval uint chance uint min uint max", parse_r_drop);
-	parser_reg(p, "drop-artifact str name", parse_r_drop_artifact);
-	return p;
-}
-
-static errr run_parse_r(struct parser *p) {
-	return parse_file(p, "monster");
-}
-
-static errr finish_parse_r(struct parser *p) {
-	struct monster_race *r, *n;
-
-	r_info = mem_zalloc(sizeof(*r) * z_info->r_max);
-	for (r = parser_priv(p); r; r = r->next) {
-		if (r->ridx >= z_info->r_max)
-			continue;
-		memcpy(&r_info[r->ridx], r, sizeof(*r));
-	}
-	eval_r_power(r_info);
-
-	r = parser_priv(p);
-	while (r) {
-		n = r->next;
-		mem_free(r);
-		r = n;
-	}
-
-	parser_destroy(p);
-	return 0;
-}
-
-struct file_parser r_parser = {
-	"monster",
-	init_parse_r,
-	run_parse_r,
-	finish_parse_r
+	finish_parse_e,
+	cleanup_e
 };
 
 /* Parsing functions for prace.txt */
@@ -2025,11 +1560,25 @@ static errr finish_parse_p(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_p(void)
+{
+	struct player_race *p = races;
+	struct player_race *next;
+
+	while (p) {
+		next = p->next;
+		string_free((char *)p->name);
+		mem_free(p);
+		p = next;
+	}
+}
+
 struct file_parser p_parser = {
 	"p_race",
 	init_parse_p,
 	run_parse_p,
-	finish_parse_p
+	finish_parse_p,
+	cleanup_p
 };
 
 /* Parsing functions for pclass.txt */
@@ -2244,11 +1793,36 @@ static errr finish_parse_c(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_c(void)
+{
+	struct player_class *c = classes;
+	struct player_class *next;
+	struct start_item *item, *item_next;
+	int i;
+
+	while (c) {
+		next = c->next;
+		item = c->start_items;
+		while(item) {
+			item_next = item->next;
+			mem_free(item);
+			item = item_next;
+		}
+		for (i = 0; i < PY_MAX_LEVEL / 5; i++) {
+			string_free((char *)c->title[i]);
+		}
+		mem_free((char *)c->name);
+		mem_free(c);
+		c = next;
+	}
+}
+
 struct file_parser c_parser = {
 	"p_class",
 	init_parse_c,
 	run_parse_c,
-	finish_parse_c
+	finish_parse_c,
+	cleanup_c
 };
 
 /* Parsing functions for vault.txt */
@@ -2311,11 +1885,23 @@ static errr finish_parse_v(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_v(void)
+{
+	struct vault *v, *next;
+	for (v = vaults; v; v = next) {
+		next = v->next;
+		mem_free(v->name);
+		mem_free(v->text);
+		mem_free(v);
+	}
+}
+
 struct file_parser v_parser = {
 	"vault",
 	init_parse_v,
 	run_parse_v,
-	finish_parse_v
+	finish_parse_v,
+	cleanup_v
 };
 
 /* Parsing functions for p_hist.txt */
@@ -2398,11 +1984,32 @@ static errr finish_parse_h(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_h(void)
+{
+	struct history_chart *c, *next_c;
+	struct history_entry *e, *next_e;
+
+	c = histories;
+	while (c) {
+		next_c = c->next;
+		e = c->entries;
+		while (e) {
+			next_e = e->next;
+			mem_free(e->text);
+			mem_free(e);
+			e = next_e;
+		}
+		mem_free(c);
+		c = next_c;
+	}
+}
+
 struct file_parser h_parser = {
 	"p_hist",
 	init_parse_h,
 	run_parse_h,
-	finish_parse_h
+	finish_parse_h,
+	cleanup_h
 };
 
 /* Parsing functions for flavor.txt */
@@ -2472,11 +2079,27 @@ static errr finish_parse_flavor(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_flavor(void)
+{
+	struct flavor *f, *next;
+
+	f = flavors;
+	while(f) {
+		next = f->next;
+		/* Hack - scrolls get randomly-generated names */
+		if (f->tval != TV_SCROLL)
+			mem_free(f->text);
+		mem_free(f);
+		f = next;
+	}
+}
+
 struct file_parser flavor_parser = {
 	"flavor",
 	init_parse_flavor,
 	run_parse_flavor,
-	finish_parse_flavor
+	finish_parse_flavor,
+	cleanup_flavor
 };
 
 /* Parsing functions for spell.txt */
@@ -2530,36 +2153,44 @@ static errr run_parse_s(struct parser *p) {
 }
 
 static errr finish_parse_s(struct parser *p) {
-	struct spell *s, *n;
+	struct spell *s, *n, *ss;
 	struct object_kind *k;
 
 	s_info = mem_zalloc(z_info->s_max * sizeof(*s_info));
-	for (s = parser_priv(p); s; s = s->next) {
+	for (s = parser_priv(p); s; s = n) {
+		n = s->next;
 		if (s->sidx >= z_info->s_max)
 			continue;
-		memcpy(&s_info[s->sidx], s, sizeof(*s));
-	}
-
-	s = parser_priv(p);
-	while (s) {
-		n = s->next;
+		ss = &s_info[s->sidx];
+		memcpy(ss, s, sizeof(*s));
 		k = objkind_get(s->tval, s->sval);
 		if (k) {
-			s->next = k->spells;
-			k->spells = s;
+			ss->next = k->spells;
+			k->spells = ss;
 		}
-		s = n;
+		mem_free(s);
 	}
 
 	parser_destroy(p);
 	return 0;
 }
 
+static void cleanup_s(void)
+{
+	int idx;
+	for (idx = 0; idx < z_info->s_max; idx++) {
+		string_free(s_info[idx].name);
+		mem_free(s_info[idx].text);
+	}
+	mem_free(s_info);
+}
+
 static struct file_parser s_parser = {
 	"spell",
 	init_parse_s,
 	run_parse_s,
-	finish_parse_s
+	finish_parse_s,
+	cleanup_s
 };
 
 /* Initialise hints */
@@ -2590,11 +2221,25 @@ static errr finish_parse_hints(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_hints(void)
+{
+	struct hint *h, *next;
+
+	h = hints;
+	while(h) {
+		next = h->next;
+		string_free(h->hint);
+		mem_free(h);
+		h = next;
+	}
+}
+
 static struct file_parser hints_parser = {
 	"hints",
 	init_parse_hints,
 	run_parse_hints,
 	finish_parse_hints,
+	cleanup_hints
 };
 
 /* Initialise monster pain messages */
@@ -2656,11 +2301,23 @@ static errr finish_parse_mp(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_mp(void)
+{
+	int idx, i;
+	for (idx = 0; idx < z_info->mp_max; idx++) {
+		for (i = 0; i < 7; i++) {
+			string_free((char *)pain_messages[idx].messages[i]);
+		}
+	}
+	mem_free(pain_messages);
+}
+
 struct file_parser mp_parser = {
 	"pain messages",
 	init_parse_mp,
 	run_parse_mp,
-	finish_parse_mp
+	finish_parse_mp,
+	cleanup_mp
 };
 
 
@@ -2832,11 +2489,21 @@ static errr finish_parse_pit(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_pits(void)
+{
+	int idx;
+	for (idx = 0; idx < z_info->pit_max; idx++) {
+		string_free((char *)pit_info[idx].name);
+	}
+	mem_free(pit_info);
+}
+
 struct file_parser pit_parser = {
 	"pits",
 	init_parse_pit,
 	run_parse_pit,
-	finish_parse_pit
+	finish_parse_pit,
+	cleanup_pits
 };
 
 
@@ -3314,7 +2981,6 @@ bool init_angband(void)
 	}
 }
 
-
 void cleanup_angband(void)
 {
 	/* Free the macros */
@@ -3349,14 +3015,29 @@ void cleanup_angband(void)
 	/* Free the messages */
 	messages_free();
 
+	/* Free the history */
+	history_clear();
+
 	/* Free the "quarks" */
 	quarks_free();
 
-	mem_free(k_info);
-	mem_free(a_info);
-	mem_free(e_info);
-	mem_free(r_info);
-	mem_free(pit_info);
+	cleanup_parser(&k_parser);
+	cleanup_parser(&kb_parser);
+	cleanup_parser(&a_parser);
+	cleanup_parser(&names_parser);
+	cleanup_parser(&r_parser);
+	cleanup_parser(&rb_parser);
+	cleanup_parser(&f_parser);
+	cleanup_parser(&e_parser);
+	cleanup_parser(&p_parser);
+	cleanup_parser(&c_parser);
+	cleanup_parser(&v_parser);
+	cleanup_parser(&h_parser);
+	cleanup_parser(&flavor_parser);
+	cleanup_parser(&s_parser);
+	cleanup_parser(&hints_parser);
+	cleanup_parser(&mp_parser);
+	cleanup_parser(&pit_parser);
 
 	/* Free the format() buffer */
 	vformat_kill();
@@ -3371,4 +3052,10 @@ void cleanup_angband(void)
 	string_free(ANGBAND_DIR_PREF);
 	string_free(ANGBAND_DIR_USER);
 	string_free(ANGBAND_DIR_XTRA);
+
+	string_free(ANGBAND_DIR_XTRA_FONT);
+	string_free(ANGBAND_DIR_XTRA_GRAF);
+	string_free(ANGBAND_DIR_XTRA_SOUND);
+	string_free(ANGBAND_DIR_XTRA_HELP);
+	string_free(ANGBAND_DIR_XTRA_ICON);
 }

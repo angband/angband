@@ -236,10 +236,6 @@ void free_stores(void)
 	mem_free(store);
 }
 
-static enum parser_error ignored(struct parser *p) {
-	return PARSE_ERROR_NONE;
-}
-
 static enum parser_error parse_s(struct parser *p) {
 	struct store *h = parser_priv(p);
 	struct store *s;

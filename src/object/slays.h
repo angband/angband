@@ -68,5 +68,6 @@ void react_to_slay(bitflag *obj_flags, bitflag *mon_flags);
 errr create_slay_cache(struct ego_item *items);
 s32b check_slay_cache(bitflag *index);
 bool fill_slay_cache(bitflag *index, s32b value);
+void free_slay_cache(void);
 
 #endif /* INCLUDED_SLAYS_H */
