@@ -405,13 +405,8 @@ const const char *angband_sound_name[MSG_MAX] =
 
 /*
  * Arrays[TEMP_MAX] used for various things
- *
- * Note that temp_g shares memory with temp_x and temp_y.
  */
-int temp_n = 0;
 u16b *temp_g;
-byte *temp_y;
-byte *temp_x;
 
 /*
  * Array[z_info->r_max] of monster lore
