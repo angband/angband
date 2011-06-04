@@ -188,6 +188,9 @@ bool object_add_pval(object_type *o_ptr, int pval, int flag)
 	bitflag f[OF_SIZE];
 	int a = -1, best_pval;
 
+	/* Sanity check (we may be called with 0 - see ticket #1451) */
+	if (!pval) return FALSE;
+
 	create_mask(f, FALSE, OFT_PVAL, OFT_STAT, OFT_MAX);
 
 	if (of_has(o_ptr->flags, flag)) {
