@@ -94,7 +94,6 @@ static int test_effects(void *state) {
 	struct monster *m = state;
 	struct player *p = &test_player;
 	int delta;
-	int old, new;
 
 	require(!p->timed[TMD_POISONED]);
 	delta = take1(p, m, RBM_HIT, RBE_POISON);

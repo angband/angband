@@ -18,11 +18,6 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
-static enum parser_error ignored(struct parser *p) {
-	(void)p;
-	return PARSE_ERROR_NONE;
-}
-
 int test_blank(void *state) {
 	eq(parser_parse(state, ""), PARSE_ERROR_NONE);
 	ok;
