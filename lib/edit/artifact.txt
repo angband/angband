@@ -185,22 +185,22 @@ D:it rests upon the bearer.
 
 # New Artifact (7): The Palantir of Westernesse
 
-#N:7:of Westernesse
-#I:light:7
-#W:75:60:200:100000
+N:7:of Westernesse
+I:light:7
+W:75:60:200:100000
 #A:2:75 to 127
-#P:0:10d10:0:0:0
+P:0:10d10:0:0:0
 # F:DRAIN_MANA | 
-#F:NO_FUEL |
-#F:SEE_INVIS | TELEPATHY | 
-#F:RES_CHAOS | RES_BLIND | AGGRAVATE | DRAIN_EXP | 
-#F:INSTA_ART | HIDE_TYPE
-#E:CLAIRVOYANCE:50+d50
-#M:The {kind} glow{s} a deep green...
-#L:2:INT | WIS
-#L:3:SEARCH | INFRA
-#D:A great globe with a heart of fire, the Palant['i]r provides the wearer with 
-#D:sight of far places - at a cost, for those espied upon are aware of it.
+F:NO_FUEL |
+F:SEE_INVIS | TELEPATHY | 
+F:RES_CHAOS | RES_BLIND | AGGRAVATE | DRAIN_EXP | 
+F:INSTA_ART | HIDE_TYPE
+E:CLAIRVOYANCE:50+d50
+M:The {kind} glow{s} a deep green...
+L:2:INT | WIS
+L:3:SEARCH | INFRA
+D:A great globe with a heart of fire, the Palant['i]r provides the wearer with 
+D:sight of far places - at a cost, for those espied upon are aware of it.
 
 
 # The Ring of Barahir
@@ -344,17 +344,17 @@ D:wearer brings healing after victory in battle.
 
 # New Artifact (15): The Jewel 'Evenstar'
 
-#N:15:'Evenstar'
-#I:amulet:54
-#W:40:40:3:25000
+N:15:'Evenstar'
+I:amulet:54
+W:40:40:3:25000
 #A:2:40 to 100
-#F:HOLD_LIFE | SUST_CON | SUST_WIS | SUST_INT | 
-#F:RES_DARK | RES_COLD | RES_NETHR
-#F:INSTA_ART
-#E:RESTORE_LIFE:150
-#M:Your {kind} glow{s} a deep red...
-#D:A plain white jewel, given by Queen Arwen to Frodo Baggins before his 
-#D:return to the Shire.
+F:HOLD_LIFE | SUST_CON | SUST_WIS | SUST_INT | 
+F:RES_DARK | RES_COLD | RES_NETHR
+F:INSTA_ART
+E:RESTORE_LIFE:150
+M:Your {kind} glow{s} a deep red...
+D:A plain white jewel, given by Queen Arwen to Frodo Baggins before his 
+D:return to the Shire.
 
 
 ### Here follow the Armor artifacts ###
