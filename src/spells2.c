@@ -2447,48 +2447,6 @@ void earthquake(int cy, int cx, int r)
 }
 
 /*
- * A set of points that can be constructed to apply a set of changes to
- */
-struct point_set {
-	int n;
-	int allocated;
-	struct loc *pts;
-};
-
-/* Common case of the inside of a pit, is 95 grids */
-#define PS_INITIAL_SIZE 100
-#define PS_INCR 100
-
-struct point_set *point_set_new(void)
-{
-	struct point_set *ps = mem_alloc(sizeof(struct point_set));
-	ps->n = 0;
-	ps->allocated = PS_INITIAL_SIZE;
-	ps->pts = mem_zalloc(sizeof(struct loc) * ps->allocated);
-	return ps;
-}
-
-void point_set_dispose(struct point_set *ps)
-{
-	mem_free(ps->pts);
-	mem_free(ps);
-}
-
-/* Add the point to the given point set, making more space if there is
- * no more space left.
- */
-void add_to_point_set(struct point_set *ps, int y, int x)
-{
-	ps->pts[ps->n].x = x;
-	ps->pts[ps->n].y = y;
-	ps->n++;
-	if (ps->n >= ps->allocated) {
-		ps->allocated += PS_INCR;
-		ps->pts = mem_realloc(ps->pts, sizeof(struct loc) * ps->allocated);
-	}
-}
-
-/*
  * This routine will Perma-Light all grids in the set passed in.
  *
  * This routine is used (only) by "light_room(..., LIGHT)"
@@ -2636,7 +2594,7 @@ static void light_room(int y1, int x1, bool light)
 	int i, x, y;
 	struct point_set *ps;
 
-	ps = point_set_new();
+	ps = point_set_new(200);
 	/* Add the initial grid */
 	cave_room_aux(ps, y1, x1);
 

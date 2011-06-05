@@ -39,12 +39,6 @@ u16b target_who;
 /* Target location */
 s16b target_x, target_y;
 
-struct target_set {
-	int used;
-	int available;
-	struct loc *pts;
-};
-
 #define TS_INITIAL_SIZE	20
 
 /*** Functions ***/
@@ -278,7 +272,7 @@ static int cmp_distance(const void *a, const void *b)
 /*
  * Hack -- help "select" a location (see below)
  */
-static s16b target_pick(int y1, int x1, int dy, int dx, struct target_set *ts)
+static s16b target_pick(int y1, int x1, int dy, int dx, struct point_set *targets)
 {
 	int i, v;
 
@@ -288,11 +282,11 @@ static s16b target_pick(int y1, int x1, int dy, int dx, struct target_set *ts)
 
 
 	/* Scan the locations */
-	for (i = 0; i < ts->used; i++)
+	for (i = 0; i < point_set_size(targets); i++)
 	{
 		/* Point 2 */
-		x2 = ts->pts[i].x;
-		y2 = ts->pts[i].y;
+		x2 = targets->pts[i].x;
+		y2 = targets->pts[i].y;
 
 		/* Directed distance */
 		x3 = (x2 - x1);
@@ -398,14 +392,10 @@ static bool target_set_interactive_accept(int y, int x)
 /*
  * Return a target set of target_able monsters.
  */
-static struct target_set *target_set_interactive_prepare(int mode)
+static struct point_set *target_set_interactive_prepare(int mode)
 {
 	int y, x;
-	struct target_set *ts = mem_alloc(sizeof(struct target_set));
-
-	ts->available = TS_INITIAL_SIZE;
-	ts->pts = mem_zalloc(sizeof(*(ts->pts)) * TS_INITIAL_SIZE);
-	ts->used = 0;
+	struct point_set *targets = point_set_new(TS_INITIAL_SIZE);
 
 	/* Scan the current panel */
 	for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
@@ -429,24 +419,12 @@ static struct target_set *target_set_interactive_prepare(int mode)
 			}
 
 			/* Save the location */
-			ts->pts[ts->used].x = x;
-			ts->pts[ts->used].y = y;
-			ts->used++;
-			if (ts->used >= ts->available) {
-				ts->available += TS_INITIAL_SIZE;
-				ts->pts = mem_realloc(ts->pts, ts->available);
-			}
+			add_to_point_set(targets, y, x);
 		}
 	}
 
-	sort(ts->pts, ts->used, sizeof(*(ts->pts)), cmp_distance);
-	return ts;
-}
-
-void target_set_dispose(struct target_set *ts)
-{
-	mem_free(ts->pts);
-	mem_free(ts);
+	sort(targets->pts, point_set_size(targets), sizeof(*(targets->pts)), cmp_distance);
+	return targets;
 }
 
 /*
@@ -1025,32 +1003,32 @@ bool target_set_closest(int mode)
 	monster_type *m_ptr;
 	char m_name[80];
 	bool visibility;
-	struct target_set *ts;
+	struct point_set *targets;
 
 	/* Cancel old target */
 	target_set_monster(0);
 
 	/* Get ready to do targetting */
-	ts = target_set_interactive_prepare(mode);
+	targets = target_set_interactive_prepare(mode);
 
 	/* If nothing was prepared, then return */
-	if (ts->used < 1)
+	if (point_set_size(targets) < 1)
 	{
 		msg("No Available Target.");
-		target_set_dispose(ts);
+		point_set_dispose(targets);
 		return FALSE;
 	}
 
 	/* Find the first monster in the queue */
-	y = ts->pts[0].y;
-	x = ts->pts[0].x;
+	y = targets->pts[0].y;
+	x = targets->pts[0].x;
 	m_idx = cave->m_idx[y][x];
 	
 	/* Target the monster, if possible */
 	if ((m_idx <= 0) || !target_able(m_idx))
 	{
 		msg("No Available Target.");
-		target_set_dispose(ts);
+		point_set_dispose(targets);
 		return FALSE;
 	}
 
@@ -1076,7 +1054,7 @@ bool target_set_closest(int mode)
 	Term_xtra(TERM_XTRA_DELAY, 150);
 	(void)Term_set_cursor(visibility);
 
-	target_set_dispose(ts);
+	point_set_dispose(targets);
 	return TRUE;
 }
 
@@ -1259,7 +1237,7 @@ bool target_set_interactive(int mode, int x, int y)
 	/* These are used for displaying the path to the target */
 	char path_char[MAX_RANGE];
 	byte path_attr[MAX_RANGE];
-	struct target_set *ts;
+	struct point_set *targets;
 
 	/* If we haven't been given an initial location, start on the
 	   player. */
@@ -1289,7 +1267,7 @@ bool target_set_interactive(int mode, int x, int y)
 	prt("Press '?' for help.", help_prompt_loc, 0);
 
 	/* Prepare the target set */
-	ts = target_set_interactive_prepare(mode);
+	targets = target_set_interactive_prepare(mode);
 
 	/* Start near the player */
 	m = 0;
@@ -1299,10 +1277,10 @@ bool target_set_interactive(int mode, int x, int y)
 		bool path_drawn = FALSE;
 		
 		/* Interesting grids */
-		if (flag && ts->used)
+		if (flag && point_set_size(targets))
 		{
-			y = ts->pts[m].y;
-			x = ts->pts[m].x;
+			y = targets->pts[m].y;
+			x = targets->pts[m].x;
 
 			/* Adjust panel if needed */
 			if (adjust_panel_help(y, x, help)) handle_stuff(p_ptr);
@@ -1311,7 +1289,7 @@ bool target_set_interactive(int mode, int x, int y)
 			if (help) {
 				bool good_target = (cave->m_idx[y][x] > 0) &&
 					target_able(cave->m_idx[y][x]);
-				target_display_help(good_target, !(flag && ts->used));
+				target_display_help(good_target, !(flag && point_set_size(targets)));
 			}
 
 			/* Find the path. */
@@ -1348,7 +1326,7 @@ bool target_set_interactive(int mode, int x, int y)
 				case '*':
 				case '+':
 				{
-					if (++m == ts->used)
+					if (++m == point_set_size(targets))
 						m = 0;
 
 					break;
@@ -1357,7 +1335,7 @@ bool target_set_interactive(int mode, int x, int y)
 				case '-':
 				{
 					if (m-- == 0)
-						m = ts->used - 1;
+						m = point_set_size(targets) - 1;
 
 					break;
 				}
@@ -1442,11 +1420,11 @@ bool target_set_interactive(int mode, int x, int y)
 			/* Hack -- move around */
 			if (d)
 			{
-				int old_y = ts->pts[m].y;
-				int old_x = ts->pts[m].x;
+				int old_y = targets->pts[m].y;
+				int old_x = targets->pts[m].x;
 
 				/* Find a new monster */
-				i = target_pick(old_y, old_x, ddy[d], ddx[d], ts);
+				i = target_pick(old_y, old_x, ddy[d], ddx[d], targets);
 
 				/* Scroll to find interesting grid */
 				if (i < 0)
@@ -1458,18 +1436,18 @@ bool target_set_interactive(int mode, int x, int y)
 					if (change_panel(d))
 					{
 						/* Recalculate interesting grids */
-						target_set_dispose(ts);
-						ts = target_set_interactive_prepare(mode);
+						point_set_dispose(targets);
+						targets = target_set_interactive_prepare(mode);
 
 						/* Find a new monster */
-						i = target_pick(old_y, old_x, ddy[d], ddx[d], ts);
+						i = target_pick(old_y, old_x, ddy[d], ddx[d], targets);
 
 						/* Restore panel if needed */
 						if ((i < 0) && modify_panel(Term, old_wy, old_wx))
 						{
 							/* Recalculate interesting grids */
-							target_set_dispose(ts);
-							ts = target_set_interactive_prepare(mode);
+							point_set_dispose(targets);
+							targets = target_set_interactive_prepare(mode);
 						}
 
 						/* Handle stuff */
@@ -1489,7 +1467,7 @@ bool target_set_interactive(int mode, int x, int y)
 			if (help) 
 			{
 				bool good_target = ((cave->m_idx[y][x] > 0) && target_able(cave->m_idx[y][x]));
-				target_display_help(good_target, !(flag && ts->used));
+				target_display_help(good_target, !(flag && point_set_size(targets)));
 			}
 
 			/* Find the path. */
@@ -1554,9 +1532,9 @@ bool target_set_interactive(int mode, int x, int y)
 					bd = 999;
 
 					/* Pick a nearby monster */
-					for (i = 0; i < ts->used; i++)
+					for (i = 0; i < point_set_size(targets); i++)
 					{
-						t = distance(y, x, ts->pts[i].y, ts->pts[i].x);
+						t = distance(y, x, targets->pts[i].y, targets->pts[i].x);
 
 						/* Pick closest */
 						if (t < bd)
@@ -1641,15 +1619,15 @@ bool target_set_interactive(int mode, int x, int y)
 					handle_stuff(p_ptr);
 
 					/* Recalculate interesting grids */
-					target_set_dispose(ts);
-					ts = target_set_interactive_prepare(mode);
+					point_set_dispose(targets);
+					targets = target_set_interactive_prepare(mode);
 				}
 			}
 		}
 	}
 
 	/* Forget */
-	target_set_dispose(ts);
+	point_set_dispose(targets);
 
 	/* Redraw as necessary */
 	if (help)
