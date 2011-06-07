@@ -179,7 +179,8 @@ keycode_t keycode_find_code(const char *str, size_t len);
 const char *keycode_find_desc(keycode_t kc);
 
 /** Convert a string of keypresses into their textual representation */
-void keypress_to_text(char *buf, size_t len, const struct keypress *src);
+void keypress_to_text(char *buf, size_t len, const struct keypress *src,
+	bool expand_backslash);
 
 /** Covert a textual representation of keypresses into actual keypresses */
 void keypress_from_text(struct keypress *buf, size_t len, const char *str);

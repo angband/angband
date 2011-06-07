@@ -367,7 +367,7 @@ static struct keypress keymap_get_trigger(void)
 	buf[0] = inkey();
 
 	/* Convert to ascii */
-	keypress_to_text(tmp, sizeof(tmp), buf);
+	keypress_to_text(tmp, sizeof(tmp), buf, FALSE);
 
 	/* Hack -- display the trigger */
 	Term_addstr(-1, TERM_WHITE, tmp);
@@ -420,7 +420,7 @@ static void ui_keymap_query(const char *title, int row)
 	else
 	{
 		/* Analyze the current action */
-		keypress_to_text(tmp, sizeof(tmp), act);
+		keypress_to_text(tmp, sizeof(tmp), act, FALSE);
 	
 		/* Display the current action */
 		prt("Found: ", 15, 0);
@@ -449,7 +449,7 @@ static void ui_keymap_create(const char *title, int row)
 	while (!done) {
 		struct keypress kp;
 
-		keypress_to_text(tmp, sizeof(tmp), keymap_buffer);
+		keypress_to_text(tmp, sizeof(tmp), keymap_buffer, FALSE);
 		c_prt(first ? TERM_YELLOW : TERM_WHITE,
 				format("Action: %s", tmp), 15, 0);
 
@@ -515,7 +515,7 @@ static void keymap_browse_hook(int oid, void *db, const region *loc)
 
 	/* Show current action */
 	prt("Current action (if any) shown below:", 13, 0);
-	keypress_to_text(tmp, sizeof(tmp), keymap_buffer);
+	keypress_to_text(tmp, sizeof(tmp), keymap_buffer, FALSE);
 	prt(tmp, 14, 0);
 }
 
