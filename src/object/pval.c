@@ -52,6 +52,9 @@ int which_pval(const object_type *o_ptr, const int flag)
             return i;
     }
 
+	msg("flag is %d.", flag);
+	msg("kidx is %d.", o_ptr->kind->kidx);
+	pause_line(Term);
     assert(0);
 }
 

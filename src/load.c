@@ -401,6 +401,11 @@ static int rd_item_1(object_type *o_ptr)
 	rd_byte(&o_ptr->sval);
 	rd_s16b(&o_ptr->pval[DEFAULT_PVAL]);
 
+	if (o_ptr->pval[DEFAULT_PVAL])
+		o_ptr->num_pvals = 1;
+	else
+		o_ptr->num_pvals = 0;
+
 	/* Pseudo-ID bit */
 	rd_byte(&tmp8u);
 
@@ -433,7 +438,7 @@ static int rd_item_1(object_type *o_ptr)
 	for (i = 0; i < 12 && i < OF_SIZE; i++)
 		rd_byte(&o_ptr->flags[i]);
 	if (i < 12) strip_bytes(12 - i);
-	
+
 	of_wipe(o_ptr->known_flags);
 
 	/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
@@ -462,12 +467,6 @@ static int rd_item_1(object_type *o_ptr)
 	if (art_idx > 0)
 		o_ptr->artifact = &a_info[art_idx];
 
-	/* Copy flags into pval_flags to ensure pvals function */
-	if (o_ptr->pval) {
-		of_copy(o_ptr->pval_flags[DEFAULT_PVAL], o_ptr->flags);
-		o_ptr->num_pvals = 1;
-	}
-
 	/* Repair non "wearable" items */
 	if (!wearable_p(o_ptr))
 	{
@@ -478,26 +477,46 @@ static int rd_item_1(object_type *o_ptr)
 			o_ptr->to_d = randcalc(o_ptr->kind->to_d, o_ptr->origin_depth, RANDOMISE);
 		if (!randcalc_valid(o_ptr->kind->to_a, o_ptr->to_a))
 			o_ptr->to_a = randcalc(o_ptr->kind->to_a, o_ptr->origin_depth, RANDOMISE);
-
-		/* Get the correct fields */
-		o_ptr->ac = o_ptr->kind->ac;
-		o_ptr->dd = o_ptr->kind->dd;
-		o_ptr->ds = o_ptr->kind->ds;
-
-		/* Get the correct weight */
-		o_ptr->weight = o_ptr->kind->weight;
-
-		/* All done */
-		return (0);
 	}
 
-	/* Get the standard fields */
+	/* Get the standard fields and flags*/
 	o_ptr->ac = o_ptr->kind->ac;
 	o_ptr->dd = o_ptr->kind->dd;
 	o_ptr->ds = o_ptr->kind->ds;
-
-	/* Get the standard weight */
 	o_ptr->weight = o_ptr->kind->weight;
+	of_union(o_ptr->flags, o_ptr->kind->base->flags);
+	of_union(o_ptr->flags, o_ptr->kind->flags);
+	for (i = 0; i < o_ptr->kind->num_pvals; i++)
+		of_union(o_ptr->pval_flags[DEFAULT_PVAL], o_ptr->kind->pval_flags[i]);
+
+	/* Artifacts */
+	if (o_ptr->artifact)
+		copy_artifact_data(o_ptr, o_ptr->artifact);
+
+	/* Ego items */
+	if (o_ptr->ego)	{
+		bitflag pval_mask[OF_SIZE];
+
+		of_union(o_ptr->flags, o_ptr->ego->flags);
+
+        /* Hack -- keep some old fields */
+        if ((o_ptr->dd < old_dd) && (o_ptr->ds == old_ds))
+			/* Keep old boosted damage dice */
+			o_ptr->dd = old_dd;
+
+		create_mask(pval_mask, FALSE, OFT_PVAL, OFT_STAT, OFT_MAX);
+
+        /* Hack -- enforce legal pval, and apply pval flags */
+        for (i = 0; i < MAX_PVALS; i++) {
+			if (of_is_inter(o_ptr->ego->pval_flags[i], pval_mask)) {
+
+				of_union(o_ptr->pval_flags[DEFAULT_PVAL], o_ptr->ego->pval_flags[i]);
+
+				if (o_ptr->pval[DEFAULT_PVAL] < o_ptr->ego->min_pval[i])
+					o_ptr->pval[DEFAULT_PVAL] = o_ptr->ego->min_pval[i];
+			}
+		}
+	}
 
 	/* Success */
 	return (0);
