@@ -406,7 +406,7 @@ static void new_player_spot(struct cave *c, struct player *p) {
  */
 static int next_to_walls(struct cave *c, int y, int x) {
 	int k = 0;
-	assert(in_bounds_fully(y, x));
+	assert(cave_in_bounds_fully(c, y, x));
 
 	if (cave_iswall(c, y + 1, x)) k++;
 	if (cave_iswall(c, y - 1, x)) k++;
@@ -1968,7 +1968,7 @@ static void build_tunnel(struct cave *c, int row1, int col1, int row2, int col2)
 		tmp_row = row1 + row_dir;
 		tmp_col = col1 + col_dir;
 
-		while (!in_bounds_fully(tmp_row, tmp_col)) {
+		while (!cave_in_bounds_fully(c, tmp_row, tmp_col)) {
 			/* Get the correct direction */
 			correct_dir(&row_dir, &col_dir, row1, col1, row2, col2);
 
