@@ -250,7 +250,8 @@ static struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
 		NULL,
 
 		/* cutoff -- debug  */
-		10
+		//10
+		100
 	},
 	{
 		/* name builder dun_rooms dun_unusual max_rarity n_room_profiles */
@@ -1726,6 +1727,7 @@ static bool build_pit(struct cave *c, int y0, int x0) {
 static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, const char *data) {
 	int dx, dy, x, y;
 	const char *t;
+	bool icky;
 
 	assert(c);
 
@@ -1742,12 +1744,20 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cons
 			/* Lay down a floor */
 			cave_set_feat(c, y, x, FEAT_FLOOR);
 
-			/* Part of a vault */
-			c->info[y][x] |= (CAVE_ROOM | CAVE_ICKY);
+			/* By default vault squares are marked icky */
+			icky = TRUE;
 
 			/* Analyze the grid */
 			switch (*t) {
-				case '%': cave_set_feat(c, y, x, FEAT_WALL_OUTER); break;
+				case '%': {
+					/* In this case, the square isn't really part of the
+					 * vault, but rather is part of the "door step" to the
+					 * vault. We don't mark it icky so that the tunneling
+					 * code knows its allowed to remove this wall. */
+					cave_set_feat(c, y, x, FEAT_WALL_OUTER);
+					icky = FALSE;
+					break;
+				}
 				case '#': cave_set_feat(c, y, x, FEAT_WALL_INNER); break;
 				case 'X': cave_set_feat(c, y, x, FEAT_PERM_INNER); break;
 				case '+': place_secret_door(c, y, x); break;
@@ -1761,6 +1771,10 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cons
 					break;
 				}
 			}
+
+			/* Part of a vault */
+			c->info[y][x] |= CAVE_ROOM;
+			if (icky) c->info[y][x] |= CAVE_ICKY;
 		}
 	}
 
@@ -2151,8 +2165,6 @@ static void try_door(struct cave *c, int y, int x) {
 }
 
 
-
-
 /**
  * Attempt to build a room of the given type at the given block
  *
@@ -2166,6 +2178,7 @@ static bool room_build(struct cave *c, int by0, int bx0, struct room_profile pro
 	int by2 = by0 + profile.height;
 	int bx2 = bx0 + profile.width;
 
+	int allocated;
 	int y, x;
 	int by, bx;
 
@@ -2180,10 +2193,16 @@ static bool room_build(struct cave *c, int by0, int bx0, struct room_profile pro
 	if (bx1 < 0 || bx2 >= dun->col_rooms) return FALSE;
 
 	/* Verify open space */
-	for (by = by1; by <= by2; by++)
-		for (bx = bx1; bx <= bx2; bx++)
-			if (dun->room_map[by][bx])
-				return FALSE;
+	for (by = by1; by <= by2; by++) {
+		for (bx = bx1; bx <= bx2; bx++) {
+			if (1) {
+				/* previous rooms prevent new ones */
+				if (dun->room_map[by][bx]) return FALSE;
+			} else {
+				return FALSE; /* XYZ */
+			}
+		}
+	}
 
 	/* Get the location of the room */
 	y = ((by1 + by2 + 1) * BLOCK_HGT) / 2;
@@ -2200,9 +2219,13 @@ static bool room_build(struct cave *c, int by0, int bx0, struct room_profile pro
 	}
 
 	/* Reserve some blocks */
-	for (by = by1; by <= by2; by++)
-		for (bx = bx1; bx <= bx2; bx++)
+	allocated = 0;
+	for (by = by1; by < by2; by++) {
+		for (bx = bx1; bx < bx2; bx++) {
 			dun->room_map[by][bx] = TRUE;
+			allocated++;
+		}
+	}
 
 	/* Count "crowded" rooms */
 	if (profile.crowded) dun->crowded = TRUE;
@@ -2218,12 +2241,17 @@ static bool room_build(struct cave *c, int by0, int bx0, struct room_profile pro
 #define DUN_AMT_ITEM 2 /* Number of objects for rooms/corridors */
 #define DUN_AMT_GOLD 3 /* Amount of treasure for rooms/corridors */
 static bool default_gen(struct cave *c, struct player *p) {
-	int i, j, k, l, y, x, y1, x1;
-	int by, bx, key, rarity, tries;
+	int i, j, k, y, x, y1, x1;
+	int by, bx, tby, tbx, key, rarity, built;
 	int num_rooms, size_percent;
 	int dun_unusual = dun->profile->dun_unusual;
 
 	bool blocks_tried[MAX_ROOMS_ROW][MAX_ROOMS_COL];
+	for (by = 0; by < MAX_ROOMS_ROW; by++) {
+		for (bx = 0; bx < MAX_ROOMS_COL; bx++) {
+			blocks_tried[by][bx] = FALSE;
+		}
+	}
 
 	/* Possibly generate fewer rooms in a smaller area via a scaling factor.
 	 * Since we scale row_rooms and col_rooms by the same amount, DUN_ROOMS
@@ -2231,7 +2259,7 @@ static bool default_gen(struct cave *c, struct player *p) {
 	 * to be. TODO: vary room density slightly? */
 
 	/* XXX: Until vault generation is improved, scaling variance is removed */
-	i = randint1(10);
+	i = randint1(10) + c->depth / 24;
 	if (is_quest(c->depth)) size_percent = 100;
 	else if (i < 2) size_percent = 75;
 	else if (i < 3) size_percent = 80;
@@ -2239,12 +2267,12 @@ static bool default_gen(struct cave *c, struct player *p) {
 	else if (i < 5) size_percent = 90;
 	else if (i < 6) size_percent = 95;
 	else size_percent = 100;
-	size_percent = 100;
 
 	/* scale the various generation variables */
-	num_rooms = dun->profile->dun_rooms * size_percent / 100;
-	c->height = DUNGEON_HGT * size_percent / 100;
-	c->width  = DUNGEON_WID * size_percent / 100;
+	num_rooms = (dun->profile->dun_rooms * size_percent) / 100;
+	c->height = DUNGEON_HGT;
+	c->width  = DUNGEON_WID;
+	//ROOM_LOG("height=%d  width=%d  nrooms=%d", c->height, c->width, num_rooms);
 
 	/* Initially fill with basic granite */
 	fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, FEAT_WALL_EXTRA);
@@ -2263,30 +2291,30 @@ static bool default_gen(struct cave *c, struct player *p) {
 	dun->cent_n = 0;
 
 	/* Build some rooms */
-	tries = 0;
-	while(tries < num_rooms) {
-		tries++;
+	built = 0;
+	while(built < num_rooms) {
 
 		/* Count the room blocks we haven't tried yet. */
 		j = 0;
-		for(by=0; by < dun->row_rooms; by++)
-			for(bx=0; bx < dun->col_rooms; bx++)
-				if (!blocks_tried[by][bx]) j++;
+		tby = 0;
+		tbx = 0;
+		for(by = 0; by < dun->row_rooms; by++) {
+			for(bx = 0; bx < dun->col_rooms; bx++) {
+				if (blocks_tried[by][bx]) continue;
+				j++;
+				if (one_in_(j)) {
+					tby = by;
+					tbx = bx;
+				}
+			} 
+		}
+		bx = tbx;
+		by = tby;
 
 		/* If we've tried all blocks we're done. */
 		if (j == 0) break;
 
-		/* Choose one of the j untried blocks, saving its coordinates. */
-		k = randint0(j);
-		l = 0;
-		for(by = 0; by < dun->row_rooms; by++) {
-			for(bx = 0; bx < dun->col_rooms; bx++) {
-				if (blocks_tried[by][bx]) continue;
-				if (l == k) break;
-				l++;
-			}
-			if (l == k) break;
-		}
+		if (blocks_tried[by][bx]) quit_fmt("generation: inconsistent blocks");
 
 		/* Mark that we are trying this block. */
 		blocks_tried[by][bx] = TRUE;
@@ -2296,8 +2324,7 @@ static bool default_gen(struct cave *c, struct player *p) {
 
 		/* We generate a rarity number to figure out how exotic to make the
 		 * room. This number has a depth/DUN_UNUSUAL chance of being > 0,
-		 * a depth^2/DUN_UNUSUAL^2 chance of being > 1, up to MAX_RARITY.
-		 */
+		 * a depth^2/DUN_UNUSUAL^2 chance of being > 1, up to MAX_RARITY. */
 		i = 0;
 		rarity = 0;
 		while (i == rarity && i < dun->profile->max_rarity) {
@@ -2309,15 +2336,17 @@ static bool default_gen(struct cave *c, struct player *p) {
 		 * room profiles looking for a match (whose cutoff > key and whose
 		 * rarity > this rarity). We try building the room, and if it works
 		 * then we are done with this iteration. We keep going until we find
-		 * a room that we can build successfully or we exhaust the profiles.
-		 */
+		 * a room that we can build successfully or we exhaust the profiles. */
 		i = 0;
 		for (i = 0; i < dun->profile->n_room_profiles; i++) {
 			struct room_profile profile = dun->profile->room_profiles[i];
 			if (profile.rarity > rarity) continue;
 			if (profile.cutoff <= key) continue;
 			
-			if (room_build(c, by, bx, profile)) break;
+			if (room_build(c, by, bx, profile)) {
+				built++;
+				break;
+			}
 		}
 	}
 
@@ -2771,7 +2800,8 @@ int ignore_point(struct cave *c, int colors[], int y, int x) {
 
 	if (y < 0 || x < 0 || y >= h || x >= w) return TRUE;
 	if (colors[n]) return TRUE;
-	if (cave_isvault(c, y, x)) return TRUE;
+	//if (cave_isvault(c, y, x)) return TRUE;
+	if (cave_isvault(c, y, x)) return FALSE;
 	if (cave_ispassable(c, y, x)) return FALSE;
 	if (cave_isdoor(c, y, x)) return FALSE;
 	return TRUE;
@@ -2941,7 +2971,9 @@ void join_region(struct cave *c, int colors[], int counts[], int color) {
 				int x, y;
 				lab_toyx(n, w, &y, &x);
 				colors[n] = color;
-				cave_set_feat(c, y, x, FEAT_FLOOR);
+				if (!cave_isperm(c, y, x) && !cave_isvault(c, y, x)) {
+					cave_set_feat(c, y, x, FEAT_FLOOR);
+				}
 				n = previous[n];
 			}
 			fix_colors(colors, counts, color2, color, size);
@@ -2959,9 +2991,9 @@ void join_region(struct cave *c, int colors[], int counts[], int color) {
 			if (y2 < 0 || y2 >= h) continue;
 			if (x2 < 0 || x2 >= w) continue;
 
-			/* permanent walls and icky walls should not be handled */
-			if (cave_isperm(c, y2, x2)) continue;
-			if (cave_isvault(c, y2, x2)) continue;
+			/* permanent walls and vault squares should not be handled */
+			//if (cave_isperm(c, y2, x2)) continue;
+			//if (cave_isvault(c, y2, x2)) continue;
 
 			n2 = lab_toi(y2, x2, w);
 			if (previous[n2] >= 0) continue;
@@ -3010,7 +3042,6 @@ void ensure_connectedness(struct cave *c) {
 	int *counts = C_ZNEW(size, int);
 
 	build_colors(c, colors, counts, TRUE);
-	/*clear_small_regions(c, colors, counts);*/
 	join_regions(c, colors, counts);
 
 	FREE(colors);
@@ -3023,13 +3054,15 @@ void ensure_connectedness(struct cave *c) {
  * The program's main function.
  */
 bool cavern_gen(struct cave *c, struct player *p) {
-	int i, k;
+	int i, k, openc;
 
-	int h = c->height = rand_range(DUNGEON_HGT / 2, DUNGEON_HGT);
-	int w = c->width = rand_range(DUNGEON_WID / 3, DUNGEON_WID);
+	int h = c->height = rand_range(DUNGEON_HGT / 2, (DUNGEON_HGT * 3) / 4);
+	int w = c->width = rand_range(DUNGEON_WID / 2, (DUNGEON_WID * 3) / 4);
 	int size = h * w;
+	int limit = size / 13;
 
-	int density = rand_range(25, 40);
+	//int density = rand_range(25, 40);
+	int density = rand_range(25, 30);
 	int times = rand_range(3, 6);
 
 	int *colors = C_ZNEW(size, int);
@@ -3038,6 +3071,8 @@ bool cavern_gen(struct cave *c, struct player *p) {
 	int tries = 0;
 
 	bool ok = TRUE;
+
+	ROOM_LOG("cavern h=%d w=%d size=%d density=%d times=%d", h, w, size, density, times);
 
 	if (c->depth < 15) {
 		/* If we're too shallow then don't do it */
@@ -3054,7 +3089,12 @@ bool cavern_gen(struct cave *c, struct player *p) {
 			for (i = 0; i < times; i++) mutate_cavern(c);
 	
 			/* If there are enough open squares then we're done */
-			if (open_count(c) >= size / 50) break;
+			openc = open_count(c);
+			if (openc >= limit) {
+				ROOM_LOG("cavern ok (%d vs %d)", openc, limit);
+				break;
+			}
+			ROOM_LOG("cavern failed--try again (%d vs %d)", openc, limit);
 		}
 
 		/* If we couldn't make a big enough cavern then fail */
@@ -3330,6 +3370,18 @@ static int calc_mon_feeling(struct cave *c)
 }
 
 /**
+ *
+ */
+void clear_dun_data(struct dun_data *d) {
+	int bx, by;
+	for (by = 0; by < MAX_ROOMS_ROW; by++) {
+		for (bx = 0; bx < MAX_ROOMS_COL; bx++) {
+			d->room_map[by][bx] = FALSE;
+		}
+	}
+}
+
+/**
  * Generate a random level.
  *
  * Confusingly, this function also generate the town level (level 0).
@@ -3354,6 +3406,7 @@ void cave_generate(struct cave *c, struct player *p) {
 
 		/* Allocate global data (will be freed when we leave the loop) */
 		dun = &dun_body;
+		clear_dun_data(dun);
 		
 		if (p->depth == 0) {
 			dun->profile = &town_profile;
