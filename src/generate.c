@@ -250,8 +250,7 @@ static struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
 		NULL,
 
 		/* cutoff -- debug  */
-		//10
-		100
+		10
 	},
 	{
 		/* name builder dun_rooms dun_unusual max_rarity n_room_profiles */
