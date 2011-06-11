@@ -45,8 +45,7 @@
 static int randarts = 0;
 static int no_selling = 0;
 static u32b num_runs = 1;
-static int verbose = 0;
-static bool progress = TRUE;
+static bool quiet = FALSE;
 static int nextkey = 0;
 static int running_stats = 0;
 static char *ANGBAND_DIR_STATS;
@@ -203,7 +202,7 @@ static void initialize_character(void)
 {
 	u32b seed;
 
-	if (progress) {
+	if (!quiet) {
 		printf("I\b");
 		fflush(stdout);
 	}
@@ -252,7 +251,7 @@ static void unkill_uniques(void)
 {
 	int i;
 
-	if (progress) {
+	if (!quiet) {
 		printf("U\b");
 		fflush(stdout);
 	}
@@ -269,7 +268,7 @@ static void reset_artifacts(void)
 {
 	int i;
 
-	if (progress) {
+	if (!quiet) {
 		printf("R\b");
 		fflush(stdout);
 	}
@@ -341,7 +340,7 @@ static void descend_dungeon(void)
 
 	for (level = 1; level < LEVEL_MAX; level++)
 	{
-		if (progress) {
+		if (!quiet) {
 			printf("%3d\b\b\b", level);
 			fflush(stdout);
 		}
@@ -1582,14 +1581,14 @@ static errr run_stats(void)
 	status = stats_prep_db();
 	if (!status) quit("Couldn't prepare database!");
 
-	if (progress) {
+	if (!quiet) {
 		printf("beginning runs\n");
 		fflush(stdout);
 	}
 
 	for (run = 0; run < num_runs; run++)
 	{
-		if (progress) progress_bar(run);
+		if (!quiet) progress_bar(run);
 
 		if (randarts)
 		{
@@ -1616,7 +1615,7 @@ static errr run_stats(void)
 		}
 	}
 
-	if (progress) {
+	if (!quiet) {
 		progress_bar(num_runs);
 		printf("\nruns are finished\n");
 		fflush(stdout);
@@ -1643,40 +1642,34 @@ typedef struct {
 } term_xtra_func;
 
 static void term_init_stats(term *t) {
-	if (verbose) printf("term-init %s %s\n", VERSION_NAME, VERSION_STRING);
+	return;
 }
 
 static void term_nuke_stats(term *t) {
-	if (verbose) printf("term-end\n");
+	return;
 }
 
 static errr term_xtra_clear(int v) {
-	if (verbose) printf("term-xtra-clear %d\n", v);
 	return 0;
 }
 
 static errr term_xtra_noise(int v) {
-	if (verbose) printf("term-xtra-noise %d\n", v);
 	return 0;
 }
 
 static errr term_xtra_fresh(int v) {
-	if (verbose) printf("term-xtra-fresh %d\n", v);
 	return 0;
 }
 
 static errr term_xtra_shape(int v) {
-	if (verbose) printf("term-xtra-shape %d\n", v);
 	return 0;
 }
 
 static errr term_xtra_alive(int v) {
-	if (verbose) printf("term-xtra-alive %d\n", v);
 	return 0;
 }
 
 static errr term_xtra_event(int v) {
-	if (verbose) printf("term-xtra-event %d\n", v);
 	if (nextkey) {
 		Term_keypress(nextkey, 0);
 		nextkey = 0;
@@ -1689,17 +1682,14 @@ static errr term_xtra_event(int v) {
 }
 
 static errr term_xtra_flush(int v) {
-	if (verbose) printf("term-xtra-flush %d\n", v);
 	return 0;
 }
 
 static errr term_xtra_delay(int v) {
-	if (verbose) printf("term-xtra-delay %d\n", v);
 	return 0;
 }
 
 static errr term_xtra_react(int v) {
-	if (verbose) printf("term-xtra-react\n");
 	return 0;
 }
 
@@ -1723,22 +1713,18 @@ static errr term_xtra_stats(int n, int v) {
 			return xtras[i].func(v);
 		}
 	}
-	if (verbose) printf("term-xtra-unknown %d %d\n", n, v);
 	return 0;
 }
 
 static errr term_curs_stats(int x, int y) {
-	if (verbose) printf("term-curs %d %d\n", x, y);
 	return 0;
 }
 
 static errr term_wipe_stats(int x, int y, int n) {
-	if (verbose) printf("term-wipe %d %d %d\n", x, y, n);
 	return 0;
 }
 
 static errr term_text_stats(int x, int y, int n, byte a, const char *s) {
-	if (verbose) printf("term-text %d %d %d %02x %s\n", x, y, n, a, s);
 	return 0;
 }
 
@@ -1766,13 +1752,14 @@ static void term_data_link(int i) {
 	angband_term[i] = t;
 }
 
-const char help_stats[] = "Stats mode, subopts -r(andarts) -n(# of runs) -s(no selling)";
+const char help_stats[] = "Stats mode, subopts -q(uiet) -r(andarts) -n(# of runs) -s(no selling)";
 
 /*
  * Usage:
  *
- * angband -mstats -- [-r] [-nNNNN] [-s]
+ * angband -mstats -- [-q] [-r] [-nNNNN] [-s]
  *
+ *   -q      Quiet mode (turn off progress messages)
  *   -r      Turn on randarts
  *   -nNNNN  Make NNNN runs through the dungeon (default: 1)
  *   -s      Turn on no-selling
@@ -1787,8 +1774,8 @@ errr init_stats(int argc, char *argv[]) {
 			randarts = 1;
 			continue;
 		}
-		if (streq(argv[i], "-p")) {
-			progress = TRUE;
+		if (streq(argv[i], "-q")) {
+			quiet = TRUE;
 			continue;
 		}
 		if (prefix(argv[i], "-n")) {
