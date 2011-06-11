@@ -284,6 +284,19 @@ static struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
 
 
 /**
+ * Shuffle an array using Knuth's shuffle.
+ */
+void shuffle(int *arr, int n) {
+	int i, j, k;
+	for (i = 0; i < n; i++) {
+		j = randint0(n - i);
+		k = arr[i];
+		arr[i] = arr[j];
+		arr[j] = k;
+	}
+}
+
+/**
  * Locate an empty square for 0 <= y < ymax, 0 <= x < xmax.
  *
  * This function will crash if it can't find an empty square after 100M
@@ -294,14 +307,38 @@ static struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
  * once in a random order and only crashes if there are no empty squares.
  */
 static void find_empty(struct cave *c, int *y, int ymax, int *x, int xmax) {
-	int tries = 0;
-	while (tries < FAILSAFE) {
-		*y = randint0(ymax);
-		*x = randint0(xmax);
-		if (cave_isempty(c, *y, *x)) return;
-		tries++;
+	int i, n = xmax * ymax;
+	int *squares;
+	bool done = FALSE;
+
+	/* Allocate the squares, and randomize their order */
+	squares = C_ZNEW(n, int);
+	for (i = 0; i < n; i++) {
+		squares[i] = i;
 	}
-	quit_fmt("find_empty <%d, %d> failed", ymax, xmax);
+	shuffle(squares, n);
+
+	/* Test each square in (random) order for openness */
+	for (i = 0; i < n; i++) {
+		*y = i / xmax;
+		*x = i % xmax;
+		if (cave_isempty(c, *y, *x)) {
+			done = TRUE;
+		}
+	}
+
+	FREE(squares);
+
+	if (!done) quit_fmt("find_empty <%d, %d> failed", ymax, xmax);
+
+	//int tries = 0;
+	//while (tries < FAILSAFE) {
+	//	*y = randint0(ymax);
+	//	*x = randint0(xmax);
+	//	if (cave_isempty(c, *y, *x)) return;
+	//	tries++;
+	//}
+	//quit_fmt("find_empty <%d, %d> failed", ymax, xmax);
 }
 
 
@@ -1743,6 +1780,9 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cons
 			/* Lay down a floor */
 			cave_set_feat(c, y, x, FEAT_FLOOR);
 
+			/* Debugging assertion */
+			assert(cave_isempty(c, y, x));
+
 			/* By default vault squares are marked icky */
 			icky = TRUE;
 
@@ -2594,12 +2634,7 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 	}
 
 	/* Shuffle the walls, using Knuth's shuffle. */
-	for (i = 0; i < n; i++) {
-		j = randint0(n - i);
-		k = walls[i];
-		walls[i] = walls[j];
-		walls[j] = k;
-	}
+	shuffle(walls, n);
 
 	/* For each adjoining wall, look at the cells it divides. If they aren't
 	 * in the same set, remove the wall and join their sets.
@@ -3303,6 +3338,9 @@ static void cave_clear(struct cave *c, struct player *p) {
 
 			/* Erase monsters/player */
 			c->m_idx[y][x] = 0;
+
+			/* Erase items */
+			c->o_idx[y][x] = 0;
 		}
 	}
 
