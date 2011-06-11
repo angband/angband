@@ -280,7 +280,7 @@ static struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
  * TODO: Fix the find_* functions so they are guaranteed to test all legal open
  * squares in a reasonable amount of time.
  */
-#define FAILSAFE 10000000
+#define FAILSAFE 1000000000
 
 
 /**
