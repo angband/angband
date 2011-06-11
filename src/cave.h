@@ -76,6 +76,12 @@ extern void cave_update_flow(struct cave *c);
 extern void cave_forget_flow(struct cave *c);
 extern void cave_illuminate(struct cave *c, bool daytime);
 
+/**
+ * cave_predicate is a function pointer which tests a given square to
+ * see if the predicate in question is true.
+ */
+typedef bool (*cave_predicate)(struct cave *c, int y, int x);
+
 /* FEATURE PREDICATES */
 extern bool cave_isfloor(struct cave *c, int y, int x);
 extern bool cave_isrock(struct cave *c, int y, int x);

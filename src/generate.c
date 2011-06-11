@@ -271,18 +271,6 @@ static struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
 };
 
 
-/* FAILSAFE defines the maximum number of iterations that the find_* functions
- * will run before dying. Previously, the code could just loop forever.
- * While it's possible that a non-broken dungeon could fail to find empty
- * squares when they are available, it is very unlikely, and the check makes
- * it easier to catch legitimate bugs.
- *
- * TODO: Fix the find_* functions so they are guaranteed to test all legal open
- * squares in a reasonable amount of time.
- */
-#define FAILSAFE 1000000000
-
-
 /**
  * Shuffle an array using Knuth's shuffle.
  */
@@ -297,67 +285,48 @@ void shuffle(int *arr, int n) {
 }
 
 /**
- * Locate an empty square for 0 <= y < ymax, 0 <= x < xmax.
- *
- * This function will crash if it can't find an empty square after 100M
- * attempts. If there is a chance that there isn't an empty square available
- * you should do something else.
- *
- * TODO: Rewrite this function so that it tries every cave location exactly
- * once in a random order and only crashes if there are no empty squares.
+ * Locate an square in y1 <= y < y2, x1 <= x < x2 which satisfies the given
+ * predicate.
  */
-static void find_empty(struct cave *c, int *y, int ymax, int *x, int xmax) {
-	int i, n = xmax * ymax;
+static void cave_find_in_range(struct cave *c, int *y, int y1, int y2,
+							   int *x, int x1, int x2, cave_predicate pred) {
+	int yd = y2 - y1;
+	int xd = x2 - x1;
+	int i, n = yd * xd;
 	int *squares;
 	bool done = FALSE;
 
 	/* Allocate the squares, and randomize their order */
 	squares = C_ZNEW(n, int);
-	for (i = 0; i < n; i++) {
-		squares[i] = i;
-	}
+	for (i = 0; i < n; i++) squares[i] = i;
 	shuffle(squares, n);
 
 	/* Test each square in (random) order for openness */
-	for (i = 0; i < n; i++) {
-		*y = i / xmax;
-		*x = i % xmax;
-		if (cave_isempty(c, *y, *x)) {
-			done = TRUE;
-		}
+	for (i = 0; i < n && !done; i++) {
+		*y = (i / xd) + y1;
+		*x = (i % xd) + x1;
+		if (pred(c, *y, *x)) done = TRUE;
 	}
 
+	/* Deallocate memory, make sure we found an empty square, and return */
 	FREE(squares);
+	if (!done) quit_fmt("cave_find_in_range() failed");
+}
 
-	if (!done) quit_fmt("find_empty <%d, %d> failed", ymax, xmax);
 
-	//int tries = 0;
-	//while (tries < FAILSAFE) {
-	//	*y = randint0(ymax);
-	//	*x = randint0(xmax);
-	//	if (cave_isempty(c, *y, *x)) return;
-	//	tries++;
-	//}
-	//quit_fmt("find_empty <%d, %d> failed", ymax, xmax);
+/**
+ * Locate an empty square for 0 <= y < ymax, 0 <= x < xmax.
+ */
+static void find_empty(struct cave *c, int *y, int ymax, int *x, int xmax) {
+	cave_find_in_range(c, y, 0, ymax, x, 0, xmax, cave_isempty);
 }
 
 
 /**
  * Locate an empty square for y1 <= y <= y2, x1 <= x <= x2.
- *
- * This function has similar behavior as find_empty() and the same caveats
- * (e.g. if there might be no open squares in the given range then don't use
- * this function).
  */
 static void find_empty_range(struct cave *c, int *y, int y1, int y2, int *x, int x1, int x2) {
-	int tries = 0;
-	while (tries < FAILSAFE) {
-		*y = rand_range(y1, y2);
-		*x = rand_range(x1, x2);
-		if (cave_isempty(c, *y, *x)) return;
-		tries++;
-	}
-	quit_fmt("find_empty_range <%d, %d, %d, %d> failed", y1, y2, x1, x2);
+	cave_find_in_range(c, y, y1, y2 + 1, x, x1, x2 + 1, cave_isempty);
 }
 
 
@@ -365,14 +334,11 @@ static void find_empty_range(struct cave *c, int *y, int y1, int y2, int *x, int
  * Locate a grid nearby (y0, x0) within +/- yd, xd.
  */
 static void find_nearby_grid(struct cave *c, int *y, int y0, int yd, int *x, int x0, int xd) {
-	int tries = 0;
-	while (tries < FAILSAFE) {
-		*y = rand_spread(y0, yd);
-		*x = rand_spread(x0, xd);
-		if (cave_in_bounds(c, *y, *x)) return;
-		tries++;
-	}
-	quit_fmt("find_nearby_grid <%d, %d, %d, %d> failed", y0, yd, x0, xd);
+	int y1 = y0 - yd;
+	int x1 = x0 - xd;
+	int y2 = y0 + yd + 1;
+	int x2 = x0 + xd + 1;
+	cave_find_in_range(c, y, y1, y2, x, x1, x2, cave_in_bounds);
 }
 
 
@@ -442,7 +408,7 @@ static void new_player_spot(struct cave *c, struct player *p) {
  */
 static int next_to_walls(struct cave *c, int y, int x) {
 	int k = 0;
-	assert(cave_in_bounds_fully(c, y, x));
+	assert(cave_in_bounds(c, y, x));
 
 	if (cave_iswall(c, y + 1, x)) k++;
 	if (cave_iswall(c, y - 1, x)) k++;
@@ -2007,7 +1973,7 @@ static void build_tunnel(struct cave *c, int row1, int col1, int row2, int col2)
 		tmp_row = row1 + row_dir;
 		tmp_col = col1 + col_dir;
 
-		while (!cave_in_bounds_fully(c, tmp_row, tmp_col)) {
+		while (!cave_in_bounds(c, tmp_row, tmp_col)) {
 			/* Get the correct direction */
 			correct_dir(&row_dir, &col_dir, row1, col1, row2, col2);
 
@@ -2152,7 +2118,7 @@ static void build_tunnel(struct cave *c, int row1, int col1, int row2, int col2)
  */
 static int next_to_corr(struct cave *c, int y1, int x1) {
 	int i, k = 0;
-	assert(cave_in_bounds_fully(c, y1, x1));
+	assert(cave_in_bounds(c, y1, x1));
 
 	/* Scan adjacent grids */
 	for (i = 0; i < 4; i++) {
@@ -2175,7 +2141,7 @@ static int next_to_corr(struct cave *c, int y1, int x1) {
  * between two walls.
  */
 static bool possible_doorway(struct cave *c, int y, int x) {
-	assert(cave_in_bounds_fully(c, y, x));
+	assert(cave_in_bounds(c, y, x));
 
 	if (next_to_corr(c, y, x) < 2)
 		return FALSE;

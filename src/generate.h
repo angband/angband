@@ -53,10 +53,10 @@ struct cave_profile {
 };
 
 
-/*
-* room_builder is a function pointer which builds rooms in the cave given
-* anchor coordinates.
-*/
+/**
+ * room_builder is a function pointer which builds rooms in the cave given
+ * anchor coordinates.
+ */
 typedef bool (*room_builder) (struct cave *c, int y0, int x0);
 
 
@@ -89,5 +89,6 @@ typedef struct pit_profile {
 	int n_bases; 
 	struct monster_base *base[MAX_RVALS];
 } pit_profile;
+
 
 #endif /* !GENERATE_H */
