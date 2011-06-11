@@ -27,7 +27,16 @@
 #include "z-queue.h"
 #include "z-type.h"
 
+/**
+ * This is the global structure representing dungeon generation info.
+ */
 static struct dun_data *dun;
+
+/**
+ * This is a global array of positions in the cave we're currently
+ * generaating. It's used to quickly randomize all the current cave positions.
+ */
+static int *cave_squares = NULL;
 
 static bool town_gen(struct cave *c, struct player *p);
 
@@ -277,15 +286,72 @@ static struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
 void shuffle(int *arr, int n) {
 	int i, j, k;
 	for (i = 0; i < n; i++) {
-		j = randint0(n - i);
-		k = arr[i];
-		arr[i] = arr[j];
-		arr[j] = k;
+		j = randint0(n - i) + i;
+		k = arr[j];
+		arr[j] = arr[i];
+		arr[i] = k;
 	}
 }
 
+
 /**
- * Locate an square in y1 <= y < y2, x1 <= x < x2 which satisfies the given
+ * Locate a square in y1 <= y < y2, x1 <= x < x2 which satisfies the given
+ * predicate.
+ */
+static void _find_in_range(struct cave *c, int *y, int y1, int y2,
+						   int *x, int x1, int x2, int *squares,
+						   cave_predicate pred) {
+	int yd = y2 - y1;
+	int xd = x2 - x1;
+	int i, n = yd * xd;
+	bool done = FALSE;
+	int j, k;
+
+	/* Test each square in (random) order for openness */
+	for (i = 0; i < n && !done; i++) {
+		j = randint0(n - i) + i;
+		k = squares[j];
+		squares[j] = squares[i];
+
+		*y = (k / xd) + y1;
+		*x = (k % xd) + x1;
+		if (pred(c, *y, *x)) done = TRUE;
+	}
+
+	/* Deallocate memory, make sure we found an empty square, and return */
+	assert(done);
+}
+
+
+/**
+ * Locate a square in the dungeon which satisfies the given predicate.
+ */
+static void cave_find(struct cave *c, int *y, int *x, cave_predicate pred) {
+	_find_in_range(c, y, 0, c->height, x, 0, c->width, cave_squares, pred);
+	//int h = cave->height;
+	//int w = cave->width;
+	//int i, j, k, n = h * w;
+	//bool done = FALSE;
+    //
+	///* Test each square in (random) order for openness */
+	//for (i = 0; i < n && !done; i++) {
+	//	j = randint0(n - i) + i;
+	//	k = cave_squares[j];
+	//	cave_squares[j] = cave_squares[i];
+    //
+	//	*y = (k / w);
+	//	*x = (k % w);
+	//	if (pred(c, *y, *x)) done = TRUE;
+	//}
+    //
+	///* Deallocate memory, make sure we found an empty square, and return */
+	//FREE(squares);
+	//if (!done) quit_fmt("cave_find_in_range() failed");
+}
+
+
+/**
+ * Locate a square in y1 <= y < y2, x1 <= x < x2 which satisfies the given
  * predicate.
  */
 static void cave_find_in_range(struct cave *c, int *y, int y1, int y2,
@@ -294,39 +360,45 @@ static void cave_find_in_range(struct cave *c, int *y, int y1, int y2,
 	int xd = x2 - x1;
 	int i, n = yd * xd;
 	int *squares;
-	bool done = FALSE;
+	//bool done = FALSE;
+	//int j, k;
 
 	/* Allocate the squares, and randomize their order */
 	squares = C_ZNEW(n, int);
 	for (i = 0; i < n; i++) squares[i] = i;
-	shuffle(squares, n);
 
-	/* Test each square in (random) order for openness */
-	for (i = 0; i < n && !done; i++) {
-		*y = (i / xd) + y1;
-		*x = (i % xd) + x1;
-		if (pred(c, *y, *x)) done = TRUE;
-	}
+	_find_in_range(c, y, y1, y2, x, x1, x2, squares, pred);
+	///* Test each square in (random) order for openness */
+	//for (i = 0; i < n && !done; i++) {
+	//	j = randint0(n - i) + i;
+	//	k = squares[j];
+	//	squares[j] = squares[i];
+    //
+	//	*y = (k / xd) + y1;
+	//	*x = (k % xd) + x1;
+	//	if (pred(c, *y, *x)) done = TRUE;
+	//}
 
 	/* Deallocate memory, make sure we found an empty square, and return */
 	FREE(squares);
-	if (!done) quit_fmt("cave_find_in_range() failed");
+	//if (!done) quit_fmt("cave_find_in_range() failed");
 }
 
 
 /**
  * Locate an empty square for 0 <= y < ymax, 0 <= x < xmax.
  */
-static void find_empty(struct cave *c, int *y, int ymax, int *x, int xmax) {
-	cave_find_in_range(c, y, 0, ymax, x, 0, xmax, cave_isempty);
+static void find_empty(struct cave *c, int *y, int *x) {
+	//cave_find_in_range(c, y, 0, c->height, x, 0, c->width, cave_isempty);
+	cave_find(c, y, x, cave_isempty);
 }
 
 
 /**
- * Locate an empty square for y1 <= y <= y2, x1 <= x <= x2.
+ * Locate an empty square for y1 <= y < y2, x1 <= x < x2.
  */
 static void find_empty_range(struct cave *c, int *y, int y1, int y2, int *x, int x1, int x2) {
-	cave_find_in_range(c, y, y1, y2 + 1, x, x1, x2 + 1, cave_isempty);
+	cave_find_in_range(c, y, y1, y2, x, x1, x2, cave_isempty);
 }
 
 
@@ -372,24 +444,22 @@ static void rand_dir(int *rdir, int *cdir) {
 }
 
 
+bool cave_isstart(struct cave *c, int y, int x) {
+	if (!cave_isempty(c, y, x)) return FALSE;
+	if (cave_isvault(c, y, x)) return FALSE;
+	return TRUE;
+}
+
 /**
  * Place the player at a random starting location.
  */
 static void new_player_spot(struct cave *c, struct player *p) {
 	int y, x;
-	int tries = 0;
 
-	assert(c);
+	/* Try to find a good place to put the player */
+	cave_find_in_range(c, &y, 0, c->height, &x, 0, c->width, cave_isstart);
 
-	/* Find empty squares that aren't in a vault to start on */
-	do {
-		find_empty_range(c, &y, 1, c->height - 2, &x, 1, c->width - 2);
-		tries++;
-	} while (c->info[y][x] & CAVE_ICKY && tries < 100);
-
-	if (tries == 100) quit_fmt("couldn't place the player");
-
-	/* Create stairs if allowed and necessary */
+	/* Create stairs the player came down if allowed and necessary */
 	if (OPT(birth_no_stairs)) {
 	} else if (p->create_down_stair) {
 		cave_set_feat(c, y, x, FEAT_MORE);
@@ -573,7 +643,7 @@ static void alloc_stairs(struct cave *c, int feat, int num, int walls) {
 		for (done = FALSE; !done; ) {
 			/* Try several times, then decrease "walls" */
 			for (j = 0; !done && j <= 1000; j++) {
-				find_empty(c, &y, c->height, &x, c->width);
+				find_empty(c, &y, &x);
 
 				if (next_to_walls(c, y, x) < walls) continue;
 
@@ -622,7 +692,7 @@ static bool alloc_object(struct cave *c, int set, int typ, int depth,
 	while (tries < 2000) {
 		tries++;
 
-		find_empty(c, &y, c->height, &x, c->width);
+		find_empty(c, &y, &x);
 
 		/* See if our spot is in a room or not */
 		room = (c->info[y][x] & CAVE_ROOM) ? TRUE : FALSE;
@@ -2239,6 +2309,16 @@ static bool room_build(struct cave *c, int by0, int bx0, struct room_profile pro
 	return TRUE;
 }
 
+void set_cave_dimensions(struct cave *c, int h, int w) {
+	int i, n = h * w;
+	c->height = h;
+	c->width  = w;
+	if (cave_squares != NULL) FREE(cave_squares);
+	cave_squares = C_ZNEW(n, int);
+	for (i = 0; i < n; i++) cave_squares[i] = i;
+}
+
+
 /**
  * Generate a new dungeon level.
  */
@@ -2275,8 +2355,7 @@ static bool default_gen(struct cave *c, struct player *p) {
 
 	/* scale the various generation variables */
 	num_rooms = (dun->profile->dun_rooms * size_percent) / 100;
-	c->height = DUNGEON_HGT;
-	c->width  = DUNGEON_WID;
+	set_cave_dimensions(c, DUNGEON_HGT, DUNGEON_WID);
 	//ROOM_LOG("height=%d  width=%d  nrooms=%d", c->height, c->width, num_rooms);
 
 	/* Initially fill with basic granite */
@@ -2574,8 +2653,7 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 	walls = C_ZNEW(n, int);
 
 	/* This is the dungeon size, which does include the enclosing walls */
-	c->height = h + 2;
-	c->width = w + 2;
+	set_cave_dimensions(c, h + 2, w + 2);
 
 	/* Fill whole level with perma-rock */
 	fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, FEAT_PERM_SOLID);
@@ -2652,7 +2730,7 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 	for (i = n / 100; i > 0; i--) {
 		/* Try 10 times to find a useful place for a door, then place it */
 		for (j = 0; j < 10; j++) {
-			find_empty_range(c, &y, 1, h, &x, 1, w);
+			find_empty(c, &y, &x);
 			if (lab_is_tunnel(c, y, x)) break;
 
 		}
@@ -3056,12 +3134,11 @@ void ensure_connectedness(struct cave *c) {
 bool cavern_gen(struct cave *c, struct player *p) {
 	int i, k, openc;
 
-	int h = c->height = rand_range(DUNGEON_HGT / 2, (DUNGEON_HGT * 3) / 4);
-	int w = c->width = rand_range(DUNGEON_WID / 2, (DUNGEON_WID * 3) / 4);
+	int h = rand_range(DUNGEON_HGT / 2, (DUNGEON_HGT * 3) / 4);
+	int w = rand_range(DUNGEON_WID / 2, (DUNGEON_WID * 3) / 4);
 	int size = h * w;
 	int limit = size / 13;
 
-	//int density = rand_range(25, 40);
 	int density = rand_range(25, 30);
 	int times = rand_range(3, 6);
 
@@ -3072,6 +3149,7 @@ bool cavern_gen(struct cave *c, struct player *p) {
 
 	bool ok = TRUE;
 
+	set_cave_dimensions(c, h, w);
 	ROOM_LOG("cavern h=%d w=%d size=%d density=%d times=%d", h, w, size, density, times);
 
 	if (c->depth < 15) {
@@ -3223,7 +3301,7 @@ static void town_gen_hack(struct cave *c, struct player *p) {
 	}
 
 	/* Place the stairs */
-	find_empty_range(c, &y, 3, TOWN_HGT - 4, &x, 3, TOWN_WID - 4);
+	find_empty_range(c, &y, 3, TOWN_HGT - 3, &x, 3, TOWN_WID - 3);
 
 	/* Clear previous contents, add down stairs */
 	cave_set_feat(c, y, x, FEAT_MORE);
@@ -3250,8 +3328,7 @@ static bool town_gen(struct cave *c, struct player *p) {
 
 	assert(c);
 
-	c->height = TOWN_HGT;
-	c->width = TOWN_WID;
+	set_cave_dimensions(c, TOWN_HGT, TOWN_WID);
 
 	/* NOTE: We can't use c->height and c->width here because then there'll be
 	 * a bunch of empty space in the level that monsters might spawn in (or
@@ -3443,7 +3520,7 @@ void cave_generate(struct cave *c, struct player *p) {
 				if (r_ptr->level != c->depth) continue;
 	
 				/* Pick a location and place the monster */
-				find_empty(c, &y, c->height, &x, c->width);
+				find_empty(c, &y, &x);
 				place_monster_aux(c, y, x, i, TRUE, TRUE, ORIGIN_DROP);
 			}
 		}
@@ -3458,6 +3535,9 @@ void cave_generate(struct cave *c, struct player *p) {
 
 		if (error) ROOM_LOG("Generation restarted: %s.", error);
 	}
+
+	FREE(cave_squares);
+	cave_squares = NULL;
 
 	if (error) quit_fmt("cave_generate() failed 100 times!");
 
