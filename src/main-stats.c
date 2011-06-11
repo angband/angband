@@ -46,6 +46,7 @@ static int randarts = 0;
 static int no_selling = 0;
 static u32b num_runs = 1;
 static int verbose = 0;
+static bool progress = TRUE;
 static int nextkey = 0;
 static int running_stats = 0;
 static char *ANGBAND_DIR_STATS;
@@ -202,6 +203,11 @@ static void initialize_character(void)
 {
 	u32b seed;
 
+	if (progress) {
+		printf("I\b");
+		fflush(stdout);
+	}
+
 	seed = (time(NULL));
 	Rand_quick = FALSE;
 	Rand_state_init(seed);
@@ -246,6 +252,11 @@ static void unkill_uniques(void)
 {
 	int i;
 
+	if (progress) {
+		printf("U\b");
+		fflush(stdout);
+	}
+
 	for (i = 0; i < z_info->r_max; i++) {
 		monster_race *r_ptr = &r_info[i];
 
@@ -257,6 +268,11 @@ static void unkill_uniques(void)
 static void reset_artifacts(void)
 {
 	int i;
+
+	if (progress) {
+		printf("R\b");
+		fflush(stdout);
+	}
 
 	for (i = 0; i < z_info->a_max; i++)
 		a_info[i].created = FALSE;
@@ -325,6 +341,11 @@ static void descend_dungeon(void)
 
 	for (level = 1; level < LEVEL_MAX; level++)
 	{
+		if (progress) {
+			printf("%3d\b\b\b", level);
+			fflush(stdout);
+		}
+
 		dungeon_change_level(level);
 		cave_generate(cave, p_ptr);
 
@@ -1523,6 +1544,19 @@ static int stats_write_db(u32b run)
 	return SQLITE_OK;
 }
 
+void progress_bar(int run) {
+	int i;
+	int n = (run * 40) / num_runs;
+	float p = (run * 100) / num_runs;
+	
+	printf("\r|");
+	for (i = 0; i < n; i++) printf("*");
+	for (i = 0; i < 40 - n; i++) printf(" ");
+	printf("| %d/%d (%.1f%%) ", run, num_runs, p);
+	fflush(stdout);
+}
+
+
 static errr run_stats(void)
 {
 	u32b run;
@@ -1548,8 +1582,15 @@ static errr run_stats(void)
 	status = stats_prep_db();
 	if (!status) quit("Couldn't prepare database!");
 
+	if (progress) {
+		printf("beginning runs\n");
+		fflush(stdout);
+	}
+
 	for (run = 0; run < num_runs; run++)
 	{
+		if (progress) progress_bar(run);
+
 		if (randarts)
 		{
 			for (i = 0; i < z_info->a_max; i++)
@@ -1573,6 +1614,12 @@ static errr run_stats(void)
 				quit_fmt("Problems writing to database!  sqlite3 errno %d.", err);
 			}
 		}
+	}
+
+	if (progress) {
+		progress_bar(num_runs);
+		printf("\nruns are finished\n");
+		fflush(stdout);
 	}
 
 	err = stats_write_db(run);
@@ -1738,6 +1785,10 @@ errr init_stats(int argc, char *argv[]) {
 	for (i = 1; i < argc; i++) {
 		if (streq(argv[i], "-r")) {
 			randarts = 1;
+			continue;
+		}
+		if (streq(argv[i], "-p")) {
+			progress = TRUE;
 			continue;
 		}
 		if (prefix(argv[i], "-n")) {
