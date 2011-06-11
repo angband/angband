@@ -305,13 +305,13 @@ static void _find_in_range(struct cave *c, int *y, int y1, int y2,
 	int xd = x2 - x1;
 	int i, n = yd * xd;
 	bool done = FALSE;
-	int j, k;
 
 	/* Test each square in (random) order for openness */
 	for (i = 0; i < n && !done; i++) {
-		j = randint0(n - i) + i;
-		k = squares[j];
+		int j = randint0(n - i) + i;
+		int k = squares[j];
 		squares[j] = squares[i];
+		squares[i] = k;
 
 		*y = (k / xd) + y1;
 		*x = (k % xd) + x1;
@@ -328,25 +328,6 @@ static void _find_in_range(struct cave *c, int *y, int y1, int y2,
  */
 static void cave_find(struct cave *c, int *y, int *x, cave_predicate pred) {
 	_find_in_range(c, y, 0, c->height, x, 0, c->width, cave_squares, pred);
-	//int h = cave->height;
-	//int w = cave->width;
-	//int i, j, k, n = h * w;
-	//bool done = FALSE;
-    //
-	///* Test each square in (random) order for openness */
-	//for (i = 0; i < n && !done; i++) {
-	//	j = randint0(n - i) + i;
-	//	k = cave_squares[j];
-	//	cave_squares[j] = cave_squares[i];
-    //
-	//	*y = (k / w);
-	//	*x = (k % w);
-	//	if (pred(c, *y, *x)) done = TRUE;
-	//}
-    //
-	///* Deallocate memory, make sure we found an empty square, and return */
-	//FREE(squares);
-	//if (!done) quit_fmt("cave_find_in_range() failed");
 }
 
 
@@ -360,28 +341,16 @@ static void cave_find_in_range(struct cave *c, int *y, int y1, int y2,
 	int xd = x2 - x1;
 	int i, n = yd * xd;
 	int *squares;
-	//bool done = FALSE;
-	//int j, k;
 
 	/* Allocate the squares, and randomize their order */
 	squares = C_ZNEW(n, int);
 	for (i = 0; i < n; i++) squares[i] = i;
 
+	/* Do the actual search */
 	_find_in_range(c, y, y1, y2, x, x1, x2, squares, pred);
-	///* Test each square in (random) order for openness */
-	//for (i = 0; i < n && !done; i++) {
-	//	j = randint0(n - i) + i;
-	//	k = squares[j];
-	//	squares[j] = squares[i];
-    //
-	//	*y = (k / xd) + y1;
-	//	*x = (k % xd) + x1;
-	//	if (pred(c, *y, *x)) done = TRUE;
-	//}
 
 	/* Deallocate memory, make sure we found an empty square, and return */
 	FREE(squares);
-	//if (!done) quit_fmt("cave_find_in_range() failed");
 }
 
 
@@ -389,7 +358,6 @@ static void cave_find_in_range(struct cave *c, int *y, int y1, int y2,
  * Locate an empty square for 0 <= y < ymax, 0 <= x < xmax.
  */
 static void find_empty(struct cave *c, int *y, int *x) {
-	//cave_find_in_range(c, y, 0, c->height, x, 0, c->width, cave_isempty);
 	cave_find(c, y, x, cave_isempty);
 }
 
