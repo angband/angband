@@ -332,6 +332,9 @@ static int VisibleSelect;	/* Hide/unhide window button*/
 static int MoreSelect;		/* Other options button */
 static int QuitSelect;		/* Quit button */
 
+static int AboutOK;			/* OK button on the about box */
+static SDL_Surface *mratt = NULL;
+
 /* Buttons on the 'More' panel */
 static int MoreOK;			/* Accept changes */
 static int MoreFullscreen;	/* Fullscreen toggle button */
@@ -1321,6 +1324,7 @@ static void TermFocus(int idx)
 static void AboutDraw(sdl_Window *win)
 {
 	SDL_Rect rc;
+	SDL_Rect icon;
 	
 	/* Wow - a different colour! */
 	Uint32 colour = SDL_MapRGB(win->surface->format, 160, 60, 60);
@@ -1328,14 +1332,21 @@ static void AboutDraw(sdl_Window *win)
 	RECT(0, 0, win->width, win->height, &rc);
 	
 	/* Draw a nice box */
-	sdl_DrawBox(win->surface, &rc, colour, 5);
+	SDL_FillRect(win->surface, &win->surface->clip_rect, SDL_MapRGB(win->surface->format, 255,255,255));
+	sdl_DrawBox(win->surface, &win->surface->clip_rect, colour, 5);
+	if (mratt) {
+		RECT((win->width - mratt->w) / 2, 5, mratt->w, mratt->h, &icon);
+		SDL_BlitSurface(mratt, NULL, win->surface, &icon);
+	}
+	sdl_WindowText(win, colour, 20, 150, format("You are playing %s", buildid));
+	sdl_WindowText(win, colour, 20, 160, "See http://www.rephial.org");
 }
-
 
 static void AboutActivate(sdl_Button *sender)
 {
-	int width = 300;
-	int height = 300;
+	int width = 350;
+	int height = 200;
+	sdl_Button *button;
 	
 	sdl_WindowInit(&PopUp, width, height, AppWin, StatusBar.font.name);
 	PopUp.left = (AppWin->w / 2) - width / 2;
@@ -3451,6 +3462,7 @@ static void init_sdl_local(void)
 	
 	int i;
 	int h, w;
+	char path[1024];
 	
 	/* Get information about the video hardware */
 	VideoInfo = SDL_GetVideoInfo();
@@ -3506,7 +3518,12 @@ static void init_sdl_local(void)
 	StatusHeight = h + 3;
 	
 	/* Font used for window titles */
-	sdl_FontCreate(&SystemFont, DEFAULT_FONT_FILE, AppWin); 
+	sdl_FontCreate(&SystemFont, DEFAULT_FONT_FILE, AppWin);
+
+	/* Get the icon for display in the About box */
+	path_build(path, sizeof(path), ANGBAND_DIR_XTRA_ICON, "att-128.png");
+	if (file_exists(path))
+		mratt = IMG_Load(path);
 }
 
 /**
