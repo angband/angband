@@ -49,21 +49,16 @@ depend: pre-depend ${SRCS}
 	for i in ${SRCS}; do test $$i -nt .deps && regen=1; done; \
 	if test x"$$regen" = x"1"; then \
 		list=""; \
+		echo > .deps; \
 		${DEPEND_STATUS}; \
 		for i in ${SRCS}; do \
 			case $${i##*.} in \
 			c|cc|cxx|m) \
-				list="$$list $$i"; \
+				${CPP} ${CPPFLAGS} -M $$i -o .deptemp; \
+				cat .deptemp >> .deps; \
 				;; \
 			esac; \
 		done; \
-		if test x"$$list" != "x"; then \
-			if ${CPP} ${CPPFLAGS} $$list -M >.deps; then \
-				${DEPEND_OK}; \
-			else \
-				${DEPEND_FAILED}; \
-			fi; \
-		fi; \
 	fi
 
 pre-depend:
