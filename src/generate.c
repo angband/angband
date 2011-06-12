@@ -210,7 +210,7 @@ static struct room_profile default_rooms[] = {
 	{"greater vault", build_greater_vault, 4, 6, 10, FALSE, 1, 100},
 
 	/* very rare rooms (rarity=2) */
-	{"medium vault", build_medium_vault, 2, 2, 5, FALSE, 2, 10},
+	{"medium vault", build_medium_vault, 2, 3, 5, FALSE, 2, 10},
 	{"lesser vault", build_lesser_vault, 2, 3, 5, FALSE, 2, 25},
 	{"monster pit", build_pit, 1, 3, 5, TRUE, 2, 40},
 	{"monster nest", build_nest, 1, 3, 5, TRUE, 2, 50},
