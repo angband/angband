@@ -56,6 +56,7 @@ depend: pre-depend ${SRCS}
 			c|cc|cxx|m) \
 				${CPP} ${CPPFLAGS} -M $$i -o .deptemp; \
 				cat .deptemp >> .deps; \
+				$(RM) .deptemp; \
 				;; \
 			esac; \
 		done; \
