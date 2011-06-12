@@ -156,8 +156,6 @@ extern bool mass_banishment(void);
 extern bool probing(void);
 extern void destroy_area(int y1, int x1, int r, bool full);
 extern void earthquake(int cy, int cx, int r);
-extern void light_room(int y1, int x1);
-extern void unlight_room(int y1, int x1);
 extern bool light_area(int dam, int rad);
 extern bool unlight_area(int dam, int rad);
 extern bool fire_ball(int typ, int dir, int dam, int rad);

@@ -221,7 +221,8 @@ void keypress_from_text(struct keypress *buf, size_t len, const char *str)
 /*
  * Convert a string of keypresses into their textual equivalent.
  */
-void keypress_to_text(char *buf, size_t len, const struct keypress *src)
+void keypress_to_text(char *buf, size_t len, const struct keypress *src,
+	bool expand_backslash)
 {
 	size_t cur = 0;
 	size_t end = 0;
@@ -258,7 +259,13 @@ void keypress_to_text(char *buf, size_t len, const struct keypress *src)
 		} else {
 			switch (i) {
 				case '\a': strnfcat(buf, len, &end, "\a"); break;
-				case '\\': strnfcat(buf, len, &end, "\\"); break;
+				case '\\': {
+					if (expand_backslash)
+						strnfcat(buf, len, &end, "\\\\");
+					else
+						strnfcat(buf, len, &end, "\\");
+					break;
+				}
 				case '^': strnfcat(buf, len, &end, "\\^"); break;
 				case '[': strnfcat(buf, len, &end, "\\["); break;
 				default: {

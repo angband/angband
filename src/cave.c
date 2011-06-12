@@ -1547,8 +1547,8 @@ void do_cmd_view_map(void)
  * during the "update_view()" function.  This flag is used to "spread" light
  * or darkness through a room.  This flag is used by the "monster flow code".
  * This flag must always be cleared by any code which sets it, often, this
- * can be optimized by the use of the special "temp_g", "temp_y", "temp_x"
- * arrays (and the special "temp_n" global).  This flag must be very fast.
+ * can be optimized by the use of the special "temp_g" array.  This flag must
+ * be very fast.
  *
  * Note that the "CAVE_MARK" flag is used for many reasons, some of which
  * are strictly for optimization purposes.  The "CAVE_MARK" flag means that

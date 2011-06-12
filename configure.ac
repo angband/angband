@@ -304,9 +304,56 @@ if test "$enable_test" = "yes"; then
 fi
 
 dnl Stats checking
+
+LDFLAGS_SAVE="$LDFLAGS"
 if test "$enable_stats" = "yes"; then
-	AC_DEFINE(USE_STATS, 1, [Define to 1 to build the stats frontend])
+	# SQLite3 detection
+	SQLITE3_OK=yes
+	AC_CHECK_HEADER(sqlite3.h, [], [
+		SQLITE3_OK=missing
+		for sqlite3_path in $SEARCH_DIR_HEADERS; do
+			if test "x$ac_cv_header_sqlite3_h" != xyes; then
+				unset ac_cv_header_sqlite3_h
+				AC_CHECK_HEADER($sqlite3_path/sqlite3.h,
+					[
+						SQLITE3_CFLAGS="-I$sqlite3_path"
+						SQLITE3_OK=yes
+					]
+				)
+			fi
+		done
+	])
+	if test "x$SQLITE3_OK" = xyes; then
+		AC_CHECK_LIB(sqlite3, sqlite3_open, [
+			SQLITE3_LDFLAGS="-lsqlite3"
+		], [
+			SQLITE3_OK=missing
+			for sqlite3_path in $SEARCH_DIR_LIBS; do
+				if test "x$ac_cv_lib_sqlite3_sqlite3_open" != xyes; then
+					unset ac_cv_lib_sqlite3_sqlite3_open
+					LDFLAGS="$LDFLAGS_SAVE -L$sqlite3_path"
+					AC_CHECK_LIB(sqlite3, sqlite3_open, [
+						SQLITE3_LDFLAGS="-L$sqlite3_path -lsqlite3"
+						SQLITE3_OK=yes
+					])
+				fi
+			done	
+		])
+	fi
+	if test "x$SQLITE3_OK" = xyes; then
+		AC_DEFINE(USE_STATS, 1, [Define to 1 to build the stats frontend])
+		CFLAGS="${CFLAGS} ${SQLITE3_CFLAGS}"
+		LDFLAGS="${LDFLAGS_SAVE} ${SQLITE3_LDFLAGS}"
+		AC_SUBST(USE_STATS, 1)
+	else
+		AC_MSG_ERROR(Could not find sqlite3 library; disabling stats)
+		enable_stats=no
+		AC_DEFINE(USE_STATS, 0, [Define to 0 to omit the stats frontend])
+		LDFLAGS="$LDFLAGS_SAVE"
+		AC_SUBST(USE_STATS, 0)
+	fi
 fi
+
 
 AC_CONFIG_FILES([mk/extra.mk mk/sinc@&t@lude.mk])
 AC_OUTPUT

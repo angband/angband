@@ -34,7 +34,7 @@ const struct slay slay_table[] =
 /**
  * Cache of slay values (for object_power)
  */
-struct flag_cache *slay_cache;
+static struct flag_cache *slay_cache;
 
 
 /**
@@ -347,3 +347,7 @@ errr create_slay_cache(struct ego_item *items)
     return 0;
 }
 
+void free_slay_cache(void)
+{
+	mem_free(slay_cache);
+}

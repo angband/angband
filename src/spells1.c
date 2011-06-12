@@ -1192,7 +1192,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 				cave_set_feat(cave, y, x, FEAT_FLOOR);
 
 				/* Place some gold */
-				place_gold(cave, y, x, p_ptr->depth);
+				place_gold(cave, y, x, p_ptr->depth, ORIGIN_FLOOR);
 			}
 
 			/* Quartz / Magma */

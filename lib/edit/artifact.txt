@@ -123,7 +123,8 @@ A:2:50 to 127
 P:0:1d1:0:0:0
 F:SEE_INVIS | HOLD_LIFE | RES_LIGHT | RES_DARK | NO_FUEL |
 F:INSTA_ART
-E:DETECT_ALL:30+d30
+#E:DETECT_ALL:30+d30
+E:CLAIRVOYANCE:50+d50
 M:The {kind} form{s} an image in your mind...
 D:A great globe seemingly filled with moonlight, the famed Heart of the 
 D:Mountain.  It splinters the light that falls upon it into ten thousand 
@@ -187,7 +188,7 @@ D:it rests upon the bearer.
 N:7:of Westernesse
 I:light:7
 W:75:60:200:100000
-A:2:75 to 127
+#A:2:75 to 127
 P:0:10d10:0:0:0
 # F:DRAIN_MANA | 
 F:NO_FUEL |
@@ -236,7 +237,7 @@ N:10:of Power 'Narya'
 I:ring:52
 W:70:50:2:100000
 A:2:70 to 127
-P:0:0d0:1:1:0
+P:0:0d0:2:2:0
 F:HIDE_TYPE | 
 F:FREE_ACT | SEE_INVIS | 
 F:SLOW_DIGEST | REGEN | TELEPATHY |
@@ -246,6 +247,7 @@ F:INSTA_ART
 E:PROTEVIL:200+4d50
 M:{name} glows deep red...
 L:1:STR | INT | WIS | DEX | CON | CHR
+L:5:SPEED
 D:The Ring of Fire, made of gold and set with a ruby that glows like flame.  
 D:Narya is one of the three Rings of Power created by Celebrimbor and hidden 
 D:by the Elves from Sauron.
@@ -267,6 +269,7 @@ F:INSTA_ART
 E:RESTORE_LIFE:200+2d50
 M:{name} glows bright white...
 L:2:STR | INT | WIS | DEX | CON | CHR
+L:5:SPEED
 D:The Ring of Adamant, made of mithril with a pure white stone as 
 D:centerpiece.  Nenya is one of the three Rings of Power created by 
 D:Celebrimbor and hidden by the Elves from Sauron.
@@ -288,6 +291,7 @@ F:INSTA_ART
 E:HEAL2:200+2d50
 M:{name} glows deep blue...
 L:3:STR | INT | WIS | DEX | CON | CHR
+L:5:SPEED
 D:The Ring of Sapphire, made of gold with a brilliant blue gem that shines 
 D:like stars.  It glitters untouchable despite all that Morgoth ever wrought.
 D:  Vilya is one of the three Rings of Power created by Celebrimbor and 
@@ -327,12 +331,12 @@ N:14:'Elessar'
 I:amulet:53
 W:60:60:3:40000
 A:2:60 to 127
-P:0:0d0:7:0:10
+P:0:0d0:0:0:10
 F:RES_FEAR | RES_FIRE | RES_POIS | HIDE_TYPE | 
 F:INSTA_ART
 E:HEAL1:200
 M:You feel a warm tingling inside...
-L:2:STR | WIS | CHR
+L:2:STR | WIS | CHR | SPEED
 D:A green stone, imbued with the power of Elvendom and the light of the Sun.
 D:  Those who gaze through it see the aged and infirm as young again, and its 
 D:wearer brings healing after victory in battle.
@@ -343,7 +347,7 @@ D:wearer brings healing after victory in battle.
 N:15:'Evenstar'
 I:amulet:54
 W:40:40:3:25000
-A:2:40 to 100
+#A:2:40 to 100
 F:HOLD_LIFE | SUST_CON | SUST_WIS | SUST_INT | 
 F:RES_DARK | RES_COLD | RES_NETHR
 F:INSTA_ART
@@ -509,7 +513,7 @@ D:enhance body and mind lie within, and no door can bar the wearer's path.
 N:26:of Himring
 I:soft armour:Hard Leather Armour~
 W:50:20:100:35000
-A:5:50 to 100
+A:25:25 to 90
 P:20:0d0:0:0:15
 F:RES_CHAOS | RES_NETHR | RES_POIS
 E:PROTEVIL:100+d100
@@ -521,7 +525,7 @@ D:unvanquished Himring, defiant fortress surrounded by the legions of Morgoth.
 N:27:'Hithlomir'
 I:soft armour:Soft Leather Armour~
 W:20:3:80:45000
-A:33:20 to 70
+A:33:20 to 80
 P:10:0d0:0:0:20
 F:HIDE_TYPE | 
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_DARK | RES_NETHR
@@ -533,7 +537,7 @@ D:truly more than it appears.
 N:28:'Thalkettoth'
 I:soft armour:Leather Scale Mail~
 W:20:3:60:25000
-A:33:20 to 60
+A:20:30 to 100
 P:20:1d1:-1:0:25
 F:HIDE_TYPE | 
 F:RES_ACID | RES_SHARD | FREE_ACT
@@ -642,7 +646,7 @@ D:cost.
 N:36:of Thranduil
 I:helm:Hard Leather Cap~
 W:50:2:15:50000
-A:25:40 to 90
+A:15:40 to 100
 P:2:0d0:0:0:10
 F:HIDE_TYPE | 
 F:RES_BLIND | TELEPATHY
@@ -654,7 +658,7 @@ D:his forest domain.
 N:37:of Thengel
 I:helm:Metal Cap~
 W:10:2:20:22000
-A:50:10 to 60
+A:20:10 to 100
 P:3:1d1:0:0:12
 F:RES_CONFU | HIDE_TYPE
 L:3:WIS | CHR
@@ -666,9 +670,9 @@ N:38:of Hammerhand
 I:helm:Steel Helm~
 W:20:8:60:45000
 A:12:20 to 100
-P:9:1d3:3:3:20
+P:9:1d3:0:0:20
 F:HIDE_TYPE | 
-F:SUST_STR | SUST_DEX | SUST_CON | AGGRAVATE | 
+F:FREE_ACT |
 F:RES_ACID | RES_NEXUS | RES_COLD | RES_DARK
 L:3:STR | DEX | CON
 D:A great helm, as steady and as distinctive as the hero of the Westdike.  
@@ -722,11 +726,11 @@ D:needed succor.
 N:42:of Gondor
 I:crown:Golden Crown~
 W:40:40:30:100000
-A:2:40 to 127
+A:5:40 to 127
 P:0:1d1:0:0:15
 F:HIDE_TYPE | 
 F:RES_COLD | RES_FIRE | RES_LIGHT | RES_BLIND | 
-F:RES_CONFU | RES_SOUND |
+F:RES_CONFU | RES_STUN |
 F:LIGHT | SEE_INVIS | REGEN
 E:HEAL1:250
 M:You feel a warm tingling inside...
@@ -738,12 +742,12 @@ D:of Gondor through an age of the world.
 N:43:of N['u]menor
 I:crown:Jewel Encrusted Crown~
 W:60:30:40:50000
-A:3:60 to 127
+A:5:60 to 127
 P:0:1d1:0:0:18
 # F: DRAIN_MANA
 F:HIDE_TYPE |
 F:SEE_INVIS | FREE_ACT |  
-F:RES_SHARD | RES_SOUND | RES_COLD | 
+F:RES_SHARD | RES_STUN | RES_COLD | 
 F:RES_LIGHT | RES_DARK | RES_BLIND | LIGHT
 # A:ANALYZE:50
 L:3:INT | DEX | CHR | SEARCH
@@ -768,7 +772,7 @@ D:of Elements.
 N:45:'Holcolleth'
 I:cloak:Cloak~
 W:5:35:10:18000
-A:3:5 to 100
+A:5:5 to 100
 P:1:0d0:0:0:4
 F:HIDE_TYPE | 
 F:RES_ACID
@@ -868,8 +872,8 @@ D:with magics he could channel in battle.
 N:52:'Cambeleg'
 I:gloves:Set~ of Leather Gloves
 W:10:6:5:36000
-A:16:10 to 100
-P:1:0d0:6:6:15
+A:3:10 to 100
+P:1:0d0:8:8:15
 F:HIDE_TYPE | 
 F:FREE_ACT | SHOW_MODS
 L:2:STR | CON
@@ -879,8 +883,8 @@ D:A hero's handgear that lends great prowess in battle.
 N:53:'Cammithrim'
 I:gloves:Set~ of Leather Gloves
 W:10:3:5:30000
-A:33:10 to 80
-P:1:0d0:2:2:10
+A:20:10 to 80
+P:1:0d0:5:5:10
 F:FREE_ACT | RES_LIGHT | SUST_CON | LIGHT
 E:MISSILE:2
 M:{name} glows very brightly...
@@ -948,8 +952,8 @@ D:having lost to Carcharoth the hand that clasped a Silmaril.
 N:59:of Fingolfin
 I:gloves:Set~ of Caestus
 W:40:15:40:110000
-A:7:40 to 127
-P:5:1d1:8:8:20
+A:3:40 to 127
+P:5:1d1:10:10:20
 F:HIDE_TYPE |
 F:FREE_ACT | RES_ACID | SHOW_MODS
 E:ARROW:30+d30
@@ -981,7 +985,7 @@ D:no other."
 N:61:'Dal-i-thalion'
 I:boots:Pair~ of Leather Boots
 W:10:25:20:40000
-A:4:10 to 100
+A:4:50 to 100
 P:2:1d1:0:0:15
 F:HIDE_TYPE | 
 F:FREE_ACT | 
@@ -1029,7 +1033,7 @@ A:3:15 to 65
 P:0:2d5:12:15:0
 F:HIDE_TYPE | 
 F:SLAY_TROLL | SLAY_GIANT | FREE_ACT | SEE_INVIS | SHOW_MODS
-L:3:INT | DEX | SPEED
+L:3:INT | DEX
 D:A short thrusting blade with a large guard worn by the eldest son of 
 D:F["e]anor, Maedhros the Tall, who lost his right hand while escaping 
 D:from Angband.
@@ -1043,7 +1047,7 @@ P:0:2d4:10:15:5
 F:BRAND_ACID | RES_ACID | HIDE_TYPE | 
 F:SLAY_EVIL | SLAY_TROLL | SLAY_ORC | FREE_ACT | RES_DARK | SUST_DEX | 
 F:SHOW_MODS
-L:4:DEX | SPEED
+L:4:DEX
 D:Forged by Telchar, greatest of Dwarven smiths, and used by Beren to gouge a 
 D:Silmaril out of Morgoth's crown, this long chopping dagger slices through 
 D:ordinary metal as easily as its name, "Iron Cleaver", suggests.
@@ -1434,7 +1438,7 @@ I:polearm:Glaive~
 W:30:25:300:50000
 A:4:30 to 127
 P:0:9d6:0:30:0
-F:SHOW_MODS | RES_FEAR
+F:SHOW_MODS
 D:The massive cleaver that crowns this glaive glows blood-red and black; 
 D:fell spells of annihilation swirl and dance as you swing death's myrmidon 
 D:down.
@@ -1892,7 +1896,7 @@ W:30:20:40:20000
 A:5:30 to 127
 P:0:0d0:17:19:0
 F:HIDE_TYPE | 
-F:FREE_ACT | SHOW_MODS | SLAY_DRAGON
+F:FREE_ACT | SHOW_MODS
 L:2:DEX | SPEED | MIGHT
 D:The great yew bow of grim-faced Bard, who shot the mightiest arrow that 
 D:songs record.
@@ -1920,7 +1924,7 @@ F:RES_LIGHT | RES_DARK | RES_BLIND | RES_ELEC |
 F:HIDE_TYPE | SHOW_MODS
 E:ARROW:20+d20
 M:Your {kind} form{s} a magical arrow...
-L:3:STR | CON | MIGHT
+L:2:STR | CON | MIGHT
 D:A great brazen arbalest with arms of gleaming steel.  It shoots quarrels 
 D:with mighty power for those brave enough to risk betrayal.
 
@@ -1990,7 +1994,7 @@ F:SLAY_EVIL | SLAY_UNDEAD |
 F:RES_FIRE | RES_ELEC | RES_NETHR | HOLD_LIFE | 
 E:DISPEL_EVIL:100+d100
 M:The {kind} flood{s} the area with goodness...
-L:4:STR | WIS | SPEED
+L:4:STR | WIS
 D:The weapon of a mighty dwarven priest, whose shade is rumoured to 
 D:haunt the halls of Angband still.
 
@@ -2013,10 +2017,10 @@ W:35:12:90:25000
 A:5:35 to 127
 P:9:1d2:0:0:15
 F:SUST_STR | SUST_CON | HIDE_TYPE | 
-F:RES_FEAR | RES_BLIND | RES_POIS | AGGRAVATE
+F:RES_FEAR | RES_BLIND | RES_POIS
 E:BERSERKER:50
 M:{name} glows in anger!
-L:1:STR | CON | BLOWS
+L:2:STR | CON
 D:The painted shield of a chieftain of Far Harad, gaudy and barbaric.  
 D:Its wielder will fear nothing and fight with unnatural strength, but 
 D:also draw attention to himself.
@@ -2029,7 +2033,7 @@ A:1:30 to 127
 P:0:4d4:12:16:0
 F:SLAY_EVIL | KILL_UNDEAD | SLAY_GIANT | SLAY_ANIMAL | 
 F:RES_NETHR | RES_FEAR | RES_DARK | RES_COLD
-L:4:STR | CHR | STEALTH | SPEED
+L:4:STR | CHR | STEALTH
 D:The blade of the legendary Shieldmaiden of Rohan, who slew the foul 
 D:steed of the Morgul-lord before striking down the mighty Witch-king 
 D:himself, whom no mortal man could hinder.
