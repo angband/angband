@@ -931,54 +931,6 @@ static int stats_dump_lists(void)
 	STATS_ORIGIN(13,MIXED)
 	#undef STATS_ORIGIN
 
-	err = stats_db_stmt_prep(&sql_stmt, 
-		"INSERT INTO wearables_index VALUES(?,?);");
-	if (err) return err;
-
-	for (idx = 0; idx < z_info->k_max; idx++)
-	{
-		if (! wearables_index[idx]) continue;
-
-		err = stats_db_bind_ints(sql_stmt, 2, 0,
-			wearables_index[idx], idx);
-		if (err) return err;
-		STATS_DB_STEP_RESET(sql_stmt)
-	}
-
-	STATS_DB_FINALIZE(sql_stmt)
-	
-	err = stats_db_stmt_prep(&sql_stmt, 
-		"INSERT INTO consumables_index VALUES(?,?);");
-	if (err) return err;
-
-	for (idx = 0; idx < z_info->k_max; idx++)
-	{
-		if (! consumables_index[idx]) continue;
-
-		err = stats_db_bind_ints(sql_stmt, 2, 0, 
-			consumables_index[idx], idx);
-		if (err) return err;
-		STATS_DB_STEP_RESET(sql_stmt)
-	}
-
-	STATS_DB_FINALIZE(sql_stmt)
-	
-	err = stats_db_stmt_prep(&sql_stmt, 
-		"INSERT INTO pval_flags_index VALUES(?,?);");
-	if (err) return err;
-
-	for (idx = 0; idx < OF_MAX; idx++)
-	{
-		if (! pval_flags_index[idx]) continue;
-
-		err = stats_db_bind_ints(sql_stmt, 2, 0, 
-			pval_flags_index[idx], idx);
-		if (err) return err;
-		STATS_DB_STEP_RESET(sql_stmt)
-	}
-
-	STATS_DB_FINALIZE(sql_stmt)
-	
 	return SQLITE_OK;
 }
 
@@ -1057,9 +1009,6 @@ static int stats_dump_info(void)
  *     object_flags_list -- dump of list-object-flags.h
  *     object_slays_list -- dump of list-object-slays.h
  *     origin_flags_list -- dump of origin enum
- *     wearables_index -- contains list of wearable object indices
- *     consumables_index -- contains list of consumable object indices
- *     pval_flags_index -- contains list of object flag indices with pvals
  * Count tables:
  *     monsters
  *     obj_feelings
@@ -1158,15 +1107,6 @@ static bool stats_prep_db(void)
 	err = stats_db_exec("CREATE TABLE origin_flags_list(idx INT PRIMARY KEY, name TEXT);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE wearables_index(idx INT PRIMARY KEY, k_idx INT);");
-	if (err) return false;
-
-	err = stats_db_exec("CREATE TABLE consumables_index(idx INT PRIMARY KEY, k_idx INT);");
-	if (err) return false;
-
-	err = stats_db_exec("CREATE TABLE pval_flags_index(idx INT PRIMARY KEY, of_idx INT);");
-	if (err) return false;
-
 	err = stats_db_exec("CREATE TABLE monsters(level INT, count INT, k_idx INT, UNIQUE (level, k_idx) ON CONFLICT REPLACE);");
 	if (err) return false;
 
@@ -1182,31 +1122,31 @@ static bool stats_prep_db(void)
 	err = stats_db_exec("CREATE TABLE artifacts(level INT, count INT, a_idx INT, origin INT, UNIQUE (level, a_idx, origin) ON CONFLICT REPLACE);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE consumables(level INT, count INT, c_idx INT, origin INT, UNIQUE (level, c_idx, origin) ON CONFLICT REPLACE);");
+	err = stats_db_exec("CREATE TABLE consumables(level INT, count INT, k_idx INT, origin INT, UNIQUE (level, k_idx, origin) ON CONFLICT REPLACE);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE wearables_count(level INT, count INT, w_idx INT, origin INT, UNIQUE (level, w_idx, origin) ON CONFLICT REPLACE);");
+	err = stats_db_exec("CREATE TABLE wearables_count(level INT, count INT, k_idx INT, origin INT, UNIQUE (level, k_idx, origin) ON CONFLICT REPLACE);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE wearables_dice(level INT, count INT, w_idx INT, origin INT, dd INT, ds INT, UNIQUE (level, w_idx, origin, dd, ds) ON CONFLICT REPLACE);");
+	err = stats_db_exec("CREATE TABLE wearables_dice(level INT, count INT, k_idx INT, origin INT, dd INT, ds INT, UNIQUE (level, k_idx, origin, dd, ds) ON CONFLICT REPLACE);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE wearables_ac(level INT, count INT, w_idx INT, origin INT, ac INT, UNIQUE (level, w_idx, origin, ac) ON CONFLICT REPLACE);");
+	err = stats_db_exec("CREATE TABLE wearables_ac(level INT, count INT, k_idx INT, origin INT, ac INT, UNIQUE (level, k_idx, origin, ac) ON CONFLICT REPLACE);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE wearables_hit(level INT, count INT, w_idx INT, origin INT, to_h INT, UNIQUE (level, w_idx, origin, to_h) ON CONFLICT REPLACE);");
+	err = stats_db_exec("CREATE TABLE wearables_hit(level INT, count INT, k_idx INT, origin INT, to_h INT, UNIQUE (level, k_idx, origin, to_h) ON CONFLICT REPLACE);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE wearables_dam(level INT, count INT, w_idx INT, origin INT, to_d INT, UNIQUE (level, w_idx, origin, to_d) ON CONFLICT REPLACE);");
+	err = stats_db_exec("CREATE TABLE wearables_dam(level INT, count INT, k_idx INT, origin INT, to_d INT, UNIQUE (level, k_idx, origin, to_d) ON CONFLICT REPLACE);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE wearables_egos(level INT, count INT, w_idx INT, origin INT, e_idx INT, UNIQUE (level, w_idx, origin, e_idx) ON CONFLICT REPLACE);");
+	err = stats_db_exec("CREATE TABLE wearables_egos(level INT, count INT, k_idx INT, origin INT, e_idx INT, UNIQUE (level, k_idx, origin, e_idx) ON CONFLICT REPLACE);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE wearables_flags(level INT, count INT, w_idx INT, origin INT, of_idx INT, UNIQUE (level, w_idx, origin, of_idx) ON CONFLICT REPLACE);");
+	err = stats_db_exec("CREATE TABLE wearables_flags(level INT, count INT, k_idx INT, origin INT, of_idx INT, UNIQUE (level, k_idx, origin, of_idx) ON CONFLICT REPLACE);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE wearables_pval_flags(level INT, count INT, w_idx INT, origin INT, pval INT, pv_idx INT, UNIQUE (level, w_idx, origin, pv_idx) ON CONFLICT REPLACE);");
+	err = stats_db_exec("CREATE TABLE wearables_pval_flags(level INT, count INT, k_idx INT, origin INT, pval INT, of_idx INT, UNIQUE (level, k_idx, origin, of_idx) ON CONFLICT REPLACE);");
 	if (err) return false;
 
 	err = stats_dump_info();
@@ -1266,6 +1206,23 @@ static int stats_wearables_data_offsetof(const char *member)
 	assert(0);
 }
 
+/**
+ * Given a pointer to a dynamically allocated array and a value, look up
+ * the index with that value; e.g. given wearables_index[k_idx], return k_idx.
+ * If not found, return -1 * value.
+ */
+
+static int stats_lookup_index(const int *index, int max_idx, int value)
+{
+	int idx;
+
+	for (idx = 0; idx < max_idx; idx ++) {
+		if (index[idx] == value) return idx;
+	}
+
+	return -1 * value;
+}
+
 static int stats_write_db_level_data(const char *table, int max_idx)
 {
 	char sql_buf[256];
@@ -1306,7 +1263,8 @@ static int stats_write_db_level_data(const char *table, int max_idx)
 	return sqlite3_finalize(sql_stmt);
 }
 
-static int stats_write_db_level_data_items(const char *table, int max_idx)
+static int stats_write_db_level_data_items(const char *table, int max_idx, 
+	bool translate_consumables)
 {
 	char sql_buf[256];
 	sqlite3_stmt *sql_stmt;
@@ -1330,7 +1288,8 @@ static int stats_write_db_level_data_items(const char *table, int max_idx)
 				if (!count) continue;
 
 				err = stats_db_bind_ints(sql_stmt, 4, 0,
-					level, count, i, origin);
+					level, count, 
+					translate_consumables ? stats_lookup_index(consumables_index, z_info->k_max, i) : i, origin);
 				if (err) return err;
 
 				STATS_DB_STEP_RESET(sql_stmt)
@@ -1344,7 +1303,7 @@ static int stats_write_db_level_data_items(const char *table, int max_idx)
 static int stats_write_db_wearables_count(void)
 {
 	sqlite3_stmt *sql_stmt;
-	int err, level, origin, i;
+	int err, level, origin, k_idx, idx;
 
 	err = stats_db_stmt_prep(&sql_stmt, 
 		"INSERT INTO wearables_count VALUES(?,?,?,?);");
@@ -1354,13 +1313,20 @@ static int stats_write_db_wearables_count(void)
 	{
 		for (origin = 0; origin < ORIGIN_STATS; origin++)
 		{
-			for (i = 0; i < wearable_count + 1; i++)
+			for (idx = 0; idx < wearable_count + 1; idx++)
 			{
-				u32b count = level_data[level].wearables[origin][i].count;
+				u32b count = level_data[level].wearables[origin][idx].count;
+				/* Skip if object did not appear */
 				if (!count) continue;
 
+				k_idx = stats_lookup_index(wearables_index, 
+					z_info->k_max, idx);
+
+				/* Skip if pile */
+				if (! k_idx) continue;
+
 				err = stats_db_bind_ints(sql_stmt, 4, 0,
-					level, count, i, origin);
+					level, count, k_idx, origin);
 				if (err) return err;
 
 				STATS_DB_STEP_RESET(sql_stmt)
@@ -1381,7 +1347,7 @@ static int stats_write_db_wearables_array(const char *field, int max_val, bool a
 {
 	char sql_buf[256];
 	sqlite3_stmt *sql_stmt;
-	int err, level, origin, idx, i, offset;
+	int err, level, origin, idx, k_idx, i, offset;
 
 	strnfmt(sql_buf, 256, "INSERT INTO wearables_%s VALUES(?,?,?,?,?);", field);
 	err = stats_db_stmt_prep(&sql_stmt, sql_buf);
@@ -1395,6 +1361,12 @@ static int stats_write_db_wearables_array(const char *field, int max_val, bool a
 		{
 			for (idx = 0; idx < wearable_count + 1; idx++)
 			{
+				k_idx = stats_lookup_index(wearables_index, 
+					z_info->k_max, idx);
+
+				/* Skip if pile */
+				if (! k_idx) continue;
+
 				for (i = 0; i < max_val; i++)
 				{
 					/* This arcane expression finds the value of
@@ -1411,7 +1383,7 @@ static int stats_write_db_wearables_array(const char *field, int max_val, bool a
 					if (!count) continue;
 
 					err = stats_db_bind_ints(sql_stmt, 5, 0,
-						level, count, idx, origin, i);
+						level, count, k_idx, origin, i);
 					if (err) return err;
 
 					STATS_DB_STEP_RESET(sql_stmt)
@@ -1430,11 +1402,11 @@ static int stats_write_db_wearables_array(const char *field, int max_val, bool a
  * false if the member is a pointer.
  */
 static int stats_write_db_wearables_2d_array(const char *field, 
-	int max_val1, int max_val2, bool array_p)
+	int max_val1, int max_val2, bool array_p, bool translate_pval_flags)
 {
 	char sql_buf[256];
 	sqlite3_stmt *sql_stmt;
-	int err, level, origin, idx, i, j, offset;
+	int err, level, origin, idx, k_idx, i, j, offset;
 
 	strnfmt(sql_buf, 256, "INSERT INTO wearables_%s VALUES(?,?,?,?,?,?);", field);
 	err = stats_db_stmt_prep(&sql_stmt, sql_buf);
@@ -1448,6 +1420,12 @@ static int stats_write_db_wearables_2d_array(const char *field,
 		{
 			for (idx = 0; idx < wearable_count + 1; idx++)
 			{
+				k_idx = stats_lookup_index(wearables_index, 
+					z_info->k_max, idx);
+
+				/* Skip if pile */
+				if (! k_idx) continue;
+
 				for (i = 0; i < max_val1; i++)
 				{
 					for (j = 0; j < max_val2; j++)
@@ -1455,6 +1433,9 @@ static int stats_write_db_wearables_2d_array(const char *field,
 						/* This arcane expression finds the value of
 				 		* level_data[level].wearables[origin][idx].<field>[i][j] */
 						u32b count;
+						int real_j = translate_pval_flags ? stats_lookup_index(pval_flags_index, OF_MAX, j) : j; 
+
+						if (i == 0 && real_j == 0) continue;
 
 						if (array_p)
 						{
@@ -1467,7 +1448,8 @@ static int stats_write_db_wearables_2d_array(const char *field,
 						if (!count) continue;
 
 						err = stats_db_bind_ints(sql_stmt, 6, 0,
-							level, count, idx, origin, i, j);
+							level, count, k_idx, origin, 
+							i, real_j);
 						if (err) return err;
 
 						STATS_DB_STEP_RESET(sql_stmt)
@@ -1506,16 +1488,18 @@ static int stats_write_db(u32b run)
 	err = stats_write_db_level_data("gold", ORIGIN_STATS);
 	if (err) return err;
 
-	err = stats_write_db_level_data_items("artifacts", z_info->a_max);
+	err = stats_write_db_level_data_items("artifacts", z_info->a_max, 
+		false);
 	if (err) return err;
 
-	err = stats_write_db_level_data_items("consumables", consumable_count + 1);
+	err = stats_write_db_level_data_items("consumables", 
+		consumable_count + 1, true);
 	if (err) return err;
 
 	err = stats_write_db_wearables_count();
 	if (err) return err;
 
-	err = stats_write_db_wearables_2d_array("dice", TOP_DICE, TOP_SIDES, true);
+	err = stats_write_db_wearables_2d_array("dice", TOP_DICE, TOP_SIDES, true, false);
 	if (err) return err;
 
 	err = stats_write_db_wearables_array("ac", TOP_AC, true);
@@ -1533,7 +1517,7 @@ static int stats_write_db(u32b run)
 	err = stats_write_db_wearables_array("flags", OF_MAX, true);
 	if (err) return err;
 
-	err = stats_write_db_wearables_2d_array("pval_flags", TOP_PVAL, pval_flags_count + 1, false);
+	err = stats_write_db_wearables_2d_array("pval_flags", TOP_PVAL, pval_flags_count + 1, false, true);
 	if (err) return err;
 
 	/* Commit transaction */

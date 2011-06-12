@@ -62,7 +62,7 @@ bool stats_db_open(void) {
 	size = strlen(ANGBAND_DIR_STATS) + strlen(PATH_SEP) + 20;
 	db_filename = mem_alloc(size * sizeof(char));
 	strnfmt(filename_buf, 20, "%4d-%02d-%02dT%02d:%02d.db",
-		now->tm_year + 1900, now->tm_mon, now->tm_mday,
+		now->tm_year + 1900, now->tm_mon + 1, now->tm_mday,
 		now->tm_hour, now->tm_min);
 	path_build(db_filename, size, ANGBAND_DIR_STATS, filename_buf);
 
