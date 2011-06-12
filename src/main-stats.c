@@ -339,11 +339,18 @@ static void descend_dungeon(void)
 	int level;
 	u16b obj_f, mon_f;
 
+	clock_t last = 0;
+
+	unsigned int wait = CLOCKS_PER_SEC / 5;
+
 	for (level = 1; level < LEVEL_MAX; level++)
 	{
 		if (!quiet) {
-			printf("[%3d]\b\b\b\b\b", level);
-			fflush(stdout);
+			clock_t now = clock();
+			if (now - last > wait) {
+				printf("[%3d]\b\b\b\b\b", level);
+				last = now;
+			}
 		}
 
 		dungeon_change_level(level);
