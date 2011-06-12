@@ -113,6 +113,23 @@ static const int adj_mag_stat[STAT_RANGE] =
 };
 
 /**
+ * Compare function for sorting spells into book order
+ */
+int cmp_spell(const void *s1, const void *s2)
+{
+	int spell1 = *(int*)s1 + (p_ptr->class->spell_book == TV_MAGIC_BOOK ? 0 : PY_MAX_SPELLS);
+	int spell2 = *(int*)s2 + (p_ptr->class->spell_book == TV_MAGIC_BOOK ? 0 : PY_MAX_SPELLS);
+	int pos1 = s_info[spell1].snum;
+	int pos2 = s_info[spell2].snum;
+
+	if (pos1 < pos2)
+		return -1;
+	if (pos1 > pos2)
+		return 1;
+	return 0;
+}
+
+/**
  * Collect spells from a book into the spells[] array.
  */
 int spell_collect_from_book(const object_type *o_ptr, int *spells)
@@ -120,8 +137,11 @@ int spell_collect_from_book(const object_type *o_ptr, int *spells)
 	struct spell *sp;
 	int n_spells = 0;
 
-	for (sp = o_ptr->kind->spells; sp; sp = sp->next)
+	for (sp = o_ptr->kind->spells; sp; sp = sp->next) {
 		spells[n_spells++] = sp->spell_index;
+	}
+
+	sort(spells, n_spells, sizeof(int), cmp_spell);
 
 	return n_spells;
 }
