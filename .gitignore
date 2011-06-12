@@ -17,3 +17,4 @@ src/angband-master
 *.gcda
 *.gcno
 src/tests/ran-already
+.deps
