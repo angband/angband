@@ -1331,7 +1331,7 @@ static void AboutDraw(sdl_Window *win)
 	sdl_DrawBox(win->surface, &rc, colour, 5);
 }
 
-	
+
 static void AboutActivate(sdl_Button *sender)
 {
 	int width = 300;
@@ -1341,7 +1341,7 @@ static void AboutActivate(sdl_Button *sender)
 	PopUp.left = (AppWin->w / 2) - width / 2;
 	PopUp.top = (AppWin->h / 2) - height / 2;
 	PopUp.draw_extra = AboutDraw;
-	
+
 	popped = TRUE;
 }
 
@@ -3509,6 +3509,36 @@ static void init_sdl_local(void)
 	sdl_FontCreate(&SystemFont, DEFAULT_FONT_FILE, AppWin); 
 }
 
+/**
+ * Font sorting function
+ *
+ * Orders by width, then height, then face
+ */
+static int cmp_font(const void *f1, const void *f2)
+{
+	const char *font1 = *(const char **)f1;
+	const char *font2 = *(const char **)f2;
+	int height1, height2;
+	int width1, width2;
+	char face1[5], face2[5];
+
+	sscanf(font1, "%dx%d%4s.", &width1, &height1, face1);
+	sscanf(font2, "%dx%d%4s.", &width2, &height2, face2);
+
+	if (width1 < width2)
+		return -1;
+	else if (width1 > width2)
+		return 1;
+	else {
+		if (height1 < height2)
+			return -1;
+		else if (height1 > height2)
+			return 1;
+		else
+			return strcmp(face1, face2);
+	}
+}
+
 /** 
  * This function is now mis-named as paths are set correctly by init_stuff()
  * in main.c before init_sdl calls this. But it still does some other stuff.
@@ -3547,6 +3577,7 @@ static void init_paths(void)
 		if (num_fonts == MAX_FONTS) break;
 	}
 
+	sort(FontList, num_fonts, sizeof(FontList[0]), cmp_font);
 	/* Done */
 	my_dclose(dir);
 }
