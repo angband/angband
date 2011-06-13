@@ -705,12 +705,6 @@ void textui_cmd_fire_at_nearest(void) {
 	/* Require foe */
 	if (!target_set_closest(TARGET_KILL | TARGET_QUIET)) return;
 
-	/* Check for confusion */
-	if (p_ptr->timed[TMD_CONFUSED]) {
-		msg("You are confused.");
-		dir = ddd[randint0(8)];
-	}
-
 	/* Fire! */
 	cmd_insert(CMD_FIRE);
 	cmd_set_arg_item(cmd_get_top(), 0, item);

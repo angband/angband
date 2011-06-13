@@ -453,8 +453,6 @@ bool get_rep_dir(int *dp)
  *
  * Note that "Force Target", if set, will pre-empt user interaction,
  * if there is a usable target already set.
- *
- * Currently this function applies confusion directly.
  */
 bool get_aim_dir(int *dp)
 {
@@ -543,23 +541,6 @@ bool get_aim_dir(int *dp)
 
 	/* No direction */
 	if (!dir) return (FALSE);
-
-	/* Save direction */
-	(*dp) = dir;
-
-	/* Check for confusion */
-	if (p_ptr->timed[TMD_CONFUSED])
-	{
-		/* Random direction */
-		dir = ddd[randint0(8)];
-	}
-
-	/* Notice confusion */
-	if ((*dp) != dir)
-	{
-		/* Warn the user */
-		msg("You are confused.");
-	}
 
 	/* Save direction */
 	(*dp) = dir;

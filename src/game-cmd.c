@@ -573,6 +573,7 @@ void process_command(cmd_context ctx, bool no_request)
 				if (get_target && !get_aim_dir(&cmd->arg[1].direction))
 						return;
 
+				player_confuse_dir(p_ptr, &cmd->arg[1].direction, FALSE);
 				cmd->arg_present[1] = TRUE;
 
 				break;
@@ -598,6 +599,7 @@ void process_command(cmd_context ctx, bool no_request)
 				if (get_target && !get_aim_dir(&cmd->arg[1].direction))
 						return;
 
+				player_confuse_dir(p_ptr, &cmd->arg[1].direction, FALSE);
 				cmd->arg_present[1] = TRUE;
 				
 				break;

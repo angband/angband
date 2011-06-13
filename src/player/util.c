@@ -144,7 +144,7 @@ bool player_can_fire(void)
  *
  * Display a message and return TRUE if direction changes.
  */
-bool player_confuse_dir(struct player *p, int *dp)
+bool player_confuse_dir(struct player *p, int *dp, bool too)
 {
 	int dir = *dp;
 
@@ -154,7 +154,11 @@ bool player_confuse_dir(struct player *p, int *dp)
 			dir = ddd[randint0(8)];
 
 	if (*dp != dir) {
-		msg("You are confused.");
+		if (too)
+			msg("You are too confused.");
+		else
+			msg("You are confused.");
+
 		*dp = dir;
 		return TRUE;
 	}

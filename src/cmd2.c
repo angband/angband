@@ -717,7 +717,7 @@ void do_cmd_open(cmd_code code, cmd_arg args[])
 	p_ptr->energy_use = 100;
 
 	/* Apply confusion */
-	if (player_confuse_dir(p_ptr, &dir))
+	if (player_confuse_dir(p_ptr, &dir, FALSE))
 	{
 		/* Get location */
 		y = p_ptr->py + ddy[dir];
@@ -854,7 +854,7 @@ void do_cmd_close(cmd_code code, cmd_arg args[])
 	p_ptr->energy_use = 100;
 
 	/* Apply confusion */
-	if (player_confuse_dir(p_ptr, &dir))
+	if (player_confuse_dir(p_ptr, &dir, FALSE))
 	{
 		/* Get location */
 		y = p_ptr->py + ddy[dir];
@@ -1167,7 +1167,7 @@ void do_cmd_tunnel(cmd_code code, cmd_arg args[])
 	p_ptr->energy_use = 100;
 
 	/* Apply confusion */
-	if (player_confuse_dir(p_ptr, &dir))
+	if (player_confuse_dir(p_ptr, &dir, FALSE))
 	{
 		/* Get location */
 		y = p_ptr->py + ddy[dir];
@@ -1334,7 +1334,7 @@ void do_cmd_disarm(cmd_code code, cmd_arg args[])
 	p_ptr->energy_use = 100;
 
 	/* Apply confusion */
-	if (player_confuse_dir(p_ptr, &dir))
+	if (player_confuse_dir(p_ptr, &dir, FALSE))
 	{
 		/* Get location */
 		y = p_ptr->py + ddy[dir];
@@ -1515,7 +1515,7 @@ void do_cmd_bash(cmd_code code, cmd_arg args[])
 	p_ptr->energy_use = 100;
 
 	/* Apply confusion */
-	if (player_confuse_dir(p_ptr, &dir))
+	if (player_confuse_dir(p_ptr, &dir, FALSE))
 	{
 		/* Get location */
 		y = p_ptr->py + ddy[dir];
@@ -1580,7 +1580,7 @@ void do_cmd_alter_aux(int dir)
 	p_ptr->energy_use = 100;
 
 	/* Apply confusion */
-	if (player_confuse_dir(p_ptr, &dir)) {
+	if (player_confuse_dir(p_ptr, &dir, FALSE)) {
 		/* Get location */
 		y = p_ptr->py + ddy[dir];
 		x = p_ptr->px + ddx[dir];
@@ -1704,8 +1704,8 @@ void do_cmd_spike(cmd_code code, cmd_arg args[])
 	/* Take a turn */
 	p_ptr->energy_use = 100;
 
-	/* Confuse direction */
-	if (player_confuse_dir(p_ptr, &dir))
+	/* Apply confusion */
+	if (player_confuse_dir(p_ptr, &dir, FALSE))
 	{
 		/* Get location */
 		y = p_ptr->py + ddy[dir];
@@ -1817,7 +1817,7 @@ void do_cmd_walk(cmd_code code, cmd_arg args[])
 	int dir = args[0].direction;
 
 	/* Apply confusion if necessary */
-	player_confuse_dir(p_ptr, &dir);
+	player_confuse_dir(p_ptr, &dir, FALSE);
 
 	/* Confused movements use energy no matter what */
 	if (dir != args[0].direction)	
@@ -1844,7 +1844,7 @@ void do_cmd_jump(cmd_code code, cmd_arg args[])
 	int dir = args[0].direction;
 
 	/* Apply confusion if necessary */
-	player_confuse_dir(p_ptr, &dir);
+	player_confuse_dir(p_ptr, &dir, FALSE);
 
 	/* Verify walkability */
 	y = p_ptr->py + ddy[dir];
@@ -1868,9 +1868,8 @@ void do_cmd_run(cmd_code code, cmd_arg args[])
 	int x, y;
 	int dir = args[0].direction;
 
-	if (p_ptr->timed[TMD_CONFUSED])
+	if (player_confuse_dir(p_ptr, &dir, TRUE))
 	{
-		msg("You are too confused!");
 		return;
 	}
 
@@ -1893,9 +1892,9 @@ void do_cmd_run(cmd_code code, cmd_arg args[])
 void do_cmd_pathfind(cmd_code code, cmd_arg args[])
 {
 	/* Hack XXX XXX XXX */
-	if (p_ptr->timed[TMD_CONFUSED])
+	int dir = 5;
+	if (player_confuse_dir(p_ptr, &dir, TRUE))
 	{
-		msg("You are too confused!");
 		return;
 	}
 
