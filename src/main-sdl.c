@@ -332,7 +332,7 @@ static int VisibleSelect;	/* Hide/unhide window button*/
 static int MoreSelect;		/* Other options button */
 static int QuitSelect;		/* Quit button */
 
-static int AboutOK;			/* OK button on the about box */
+/* For saving the icon for the About Box */
 static SDL_Surface *mratt = NULL;
 
 /* Buttons on the 'More' panel */
@@ -1346,7 +1346,6 @@ static void AboutActivate(sdl_Button *sender)
 {
 	int width = 350;
 	int height = 200;
-	sdl_Button *button;
 	
 	sdl_WindowInit(&PopUp, width, height, AppWin, StatusBar.font.name);
 	PopUp.left = (AppWin->w / 2) - width / 2;
@@ -1502,23 +1501,22 @@ static void AcceptChanges(sdl_Button *sender)
 	if (use_graphics != SelectedGfx)
 	{
 		do_update = TRUE;
-		
 		use_graphics = SelectedGfx;
-		
-		if (use_graphics)
-		{
-			arg_graphics = TRUE;
-			load_gfx();
-		}
-		else
-		{
-			arg_graphics = FALSE;
-			tile_width = 1;
-			tile_height = 1;
-			reset_visuals(TRUE);
-		}
 	}
 	
+	if (use_graphics)
+	{
+		arg_graphics = TRUE;
+		load_gfx();
+	}
+	else
+	{
+		arg_graphics = FALSE;
+		tile_width = 1;
+		tile_height = 1;
+		reset_visuals(TRUE);
+	}
+
 	/* Invalidate all the gfx surfaces */
 	if (do_update)
 	{
@@ -1628,35 +1626,48 @@ static void MoreDraw(sdl_Window *win)
 	
 #ifdef USE_GRAPHICS
 	
-	if (SelectedGfx)
-	{
-	        sdl_WindowText(win, colour, 20, y, format("Tile width is %d.", tile_width));
-		button = sdl_ButtonBankGet(&win->buttons, MoreWidthMinus);
+	button = sdl_ButtonBankGet(&win->buttons, MoreWidthMinus);
+	if (SelectedGfx) {
+		sdl_WindowText(win, colour, 20, y, format("Tile width is %d.", tile_width));
 		sdl_ButtonMove(button, 200, y);
-		
-		button = sdl_ButtonBankGet(&win->buttons, MoreWidthPlus);
-		sdl_ButtonMove(button, 230, y);
-
-		y += 20;
-
-	        sdl_WindowText(win, colour, 20, y, format("Tile height is %d.", tile_height));
-		button = sdl_ButtonBankGet(&win->buttons, MoreHeightMinus);
-		sdl_ButtonMove(button, 200, y);
-		
-		button = sdl_ButtonBankGet(&win->buttons, MoreHeightPlus);
-		sdl_ButtonMove(button, 230, y);
-                
-                y += 20;
+		sdl_ButtonVisible(button, TRUE);
+	} else {
+		sdl_ButtonVisible(button, FALSE);
 	}
-	
-	
-	
+
+	button = sdl_ButtonBankGet(&win->buttons, MoreWidthPlus);
+	if (SelectedGfx) {
+		sdl_ButtonMove(button, 230, y);
+		sdl_ButtonVisible(button, TRUE);
+		y += 20;
+	} else {
+		sdl_ButtonVisible(button, FALSE);
+	}
+
+	button = sdl_ButtonBankGet(&win->buttons, MoreHeightMinus);
+	if (SelectedGfx) {
+		sdl_WindowText(win, colour, 20, y, format("Tile height is %d.", tile_height));
+		sdl_ButtonMove(button, 200, y);
+		sdl_ButtonVisible(button, TRUE);
+	} else {
+		sdl_ButtonVisible(button, FALSE);
+	}
+
+	button = sdl_ButtonBankGet(&win->buttons, MoreHeightPlus);
+	if (SelectedGfx) {
+		sdl_ButtonMove(button, 230, y);
+		sdl_ButtonVisible(button, TRUE);
+		y += 20;
+	} else {
+		sdl_ButtonVisible(button, FALSE);
+	}
+
 	sdl_WindowText(win, colour, 20, y, "Selected Graphics:");
 	sdl_WindowText(win, SDL_MapRGB(win->surface->format, 210, 110, 110),
 				   200, y, GfxDesc[SelectedGfx].name);
-	
+
 	y += 20;
-	
+
 	sdl_WindowText(win, colour, 20, y, "Available Graphics:");
 	
 	for (i = 0; i < GfxModes; i++)
@@ -1667,17 +1678,17 @@ static void MoreDraw(sdl_Window *win)
 		y += 20;
 	}
 #endif	
-	
+
 	button = sdl_ButtonBankGet(&win->buttons, MoreFullscreen);
 	sdl_WindowText(win, colour, 20, y, "Fullscreen is:");
-	
+
 	sdl_ButtonMove(button, 200, y);
 	y+= 20;
-	
+
 	sdl_WindowText(win, colour, 20, y, format("Snap range is %d.", SnapRange));
 	button = sdl_ButtonBankGet(&win->buttons, MoreSnapMinus);
 	sdl_ButtonMove(button, 200, y);
-	
+
 	button = sdl_ButtonBankGet(&win->buttons, MoreSnapPlus);
 	sdl_ButtonMove(button, 230, y);
 }
