@@ -341,7 +341,7 @@ static void descend_dungeon(void)
 
 	clock_t last = 0;
 
-	unsigned int wait = CLOCKS_PER_SEC / 5;
+	clock_t wait = CLOCKS_PER_SEC / 5;
 
 	for (level = 1; level < LEVEL_MAX; level++)
 	{
@@ -1552,7 +1552,7 @@ void progress_bar(int run, time_t start) {
 	printf("\r|");
 	for (i = 0; i < n; i++) printf("*");
 	for (i = 0; i < 40 - n; i++) printf(" ");
-	printf("| %d/%d (%.1f%%) %3d:%02d:%02d ", run, num_runs, p, h, m, s);
+	printf("| %d/%d (%5.1f%%) %3d:%02d:%02d ", run, num_runs, p, h, m, s);
 	fflush(stdout);
 }
 
@@ -1581,11 +1581,12 @@ static errr run_stats(void)
 		}
 	}
 
+	if (!quiet) printf("Creating the database and dumping info...\n");
 	status = stats_prep_db();
 	if (!status) quit("Couldn't prepare database!");
 
 	if (!quiet) {
-		printf("beginning runs %d\n", num_runs);
+		printf("Beginning %d runs...\n", num_runs);
 		fflush(stdout);
 	}
 
@@ -1621,7 +1622,7 @@ static errr run_stats(void)
 
 	if (!quiet) {
 		progress_bar(num_runs, start);
-		printf("\nsaving the data\n");
+		printf("\nSaving the data...\n");
 		fflush(stdout);
 	}
 
@@ -1630,8 +1631,8 @@ static errr run_stats(void)
 	if (err) quit_fmt("Problems writing to database!  sqlite3 errno %d.", err);
 	free_stats_memory();
 	cleanup_angband();
+	if (!quiet) printf("Done!\n");
 	quit(NULL);
-	if (!quiet) printf("done\n");
 	exit(0);
 }
 
