@@ -349,6 +349,7 @@ static void descend_dungeon(void)
 			clock_t now = clock();
 			if (now - last > wait) {
 				printf("[%3d]\b\b\b\b\b", level);
+				fflush(stdout);
 				last = now;
 			}
 		}
@@ -1620,7 +1621,7 @@ static errr run_stats(void)
 
 	if (!quiet) {
 		progress_bar(num_runs, start);
-		printf("\rsaving the data\n");
+		printf("\nsaving the data\n");
 		fflush(stdout);
 	}
 
