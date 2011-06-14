@@ -2259,7 +2259,7 @@ static bool room_build(struct cave *c, int by0, int bx0, struct room_profile pro
 #define DUN_AMT_GOLD 3 /* Amount of treasure for rooms/corridors */
 static bool default_gen(struct cave *c, struct player *p) {
 	int i, j, k, l, y, x, y1, x1;
-	int by, bx, key, rarity, tries;
+	int by, bx = 0, key, rarity, tries;
 	int num_rooms, size_percent;
 	int dun_unusual = dun->profile->dun_unusual;
 

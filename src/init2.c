@@ -620,7 +620,7 @@ static errr run_parse_k(struct parser *p) {
 }
 
 static errr finish_parse_k(struct parser *p) {
-	struct object_kind *k, *next;
+	struct object_kind *k, *next = NULL;
 
 	k_info = mem_zalloc(z_info->k_max * sizeof(*k));
 	for (k = parser_priv(p); k; k = next) {
