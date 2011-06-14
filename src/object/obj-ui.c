@@ -26,7 +26,8 @@
  * Used by show_inven(), show_equip(), and show_floor().  Mode flags are
  * documented in object.h
  */
-static void show_obj_list(int num_obj, int num_head, char labels[50][80], object_type *objects[50], olist_detail_t mode)
+static void show_obj_list(int num_obj, int num_head, char labels[50][80],
+	object_type *objects[50], olist_detail_t mode)
 {
 	int i, row = 0, col = 0;
 	int attr;
@@ -62,6 +63,10 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80], object
 		/* Max length of label + object name */
 		max_len = MAX(max_len, strlen(labels[i]) + strlen(o_name[i]));
 	}
+
+	/* Take the quiver message into consideration */
+	if (mode & OLIST_QUIVER && p_ptr->quiver_slots > 0)
+		max_len = MAX(max_len, 24);
 
 	/* Width of extra fields */
 	if (mode & OLIST_WEIGHT) ex_width += 9;
@@ -163,6 +168,9 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80], object
 		/* Quiver may take multiple lines */
 		for(j = 0; j < p_ptr->quiver_slots; j++, i++)
 		{
+			const char *fmt = "in Quiver: %d missile%s";
+			char letter = index_to_label(in_term ? i - 1 : i);
+
 			/* Number of missiles in this "slot" */
 			if (j == p_ptr->quiver_slots - 1 && p_ptr->quiver_remainder > 0)
 				count = p_ptr->quiver_remainder;
@@ -173,13 +181,11 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80], object
 			prt("", row + i, MAX(col - 2, 0));
 
 			/* Print the (disabled) label */
-			strnfmt(tmp_val, sizeof(tmp_val), "%c) ",
-				index_to_label(in_term ? i - 1 : i));
+			strnfmt(tmp_val, sizeof(tmp_val), "%c) ", letter);
 			c_put_str(TERM_SLATE, tmp_val, row + i, col);
 
 			/* Print the count */
-			strnfmt(tmp_val, sizeof(tmp_val), "in Quiver: %d missile%s", count,
-					count == 1 ? "" : "s");
+			strnfmt(tmp_val, sizeof(tmp_val), fmt, count, count == 1 ? "" : "s");
 			c_put_str(TERM_L_UMBER, tmp_val, row + i, col + 3);
 		}
 	}
@@ -208,16 +214,16 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80], object
  */
 void show_inven(olist_detail_t mode)
 {
-	int i, last_slot = 0;
+	int i, last_slot = -1;
 	int diff = weight_remaining();
 
 	object_type *o_ptr;
 
-   int num_obj = 0;
-   char labels[50][80];
-   object_type *objects[50];
+	int num_obj = 0;
+	char labels[50][80];
+	object_type *objects[50];
 
-   bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
+	bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
 
 	/* Include burden for term windows */
 	if (in_term)
