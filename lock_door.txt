@@ -1,0 +1,77 @@
+Ticket #1194 Changes to doors and spikes
+Changes made to improve iron spikes, and to give the player a possibility to lock doors:
+
+1.
+Weight of Iron Spike reduced to 0.2 lb
+A spike should not weigh more than an arrow,
+otherwise they will not be used by those who have use for them, weak characters
+like mages that have low strength and would not be able to carry heavy spikes.
+Strong warriors doesn't need to use spikes anyway, 
+because they can kill everything on first sight.
+Change in:
+object.txt
+
+2.
+Fixed iron spike bug
+Fixed a bug that made it possible to use an infinite amount of spikes on a door.
+Changes in cmd2.c, in the function:
+do_cmd_spike_test
+
+3. Fixed another iron spike bug
+The first spike now gives the door a power of one
+Changes in cmd2.c, in the function:
+do_cmd_spike
+
+4.
+Lock door
+A closed, unlocked door can be locked by the player by using the disarm skill.
+A skill test is made to create a chance of failure.
+The new lock power is a random number 1-7.
+Changes in cmd2.c, in the functions:
+do_cmd_disarm_test
+do_cmd_disarm
+New function:
+do_cmd_lock_door
+
+5.
+Remove experience from lockpicking doors
+Reason: Since the player gains 1 exp from picking a door lock, 
+repeatedly locking a door and then
+unlocking it again can be exploited to gain experience and gain several levels.
+The player still gets experience from disarming traps and lockpicking chests.
+Changes in cmd2.c, in the function:
+do_cmd_open_aux
+
+6.
+Damage from failed bash
+A failed bash does 1-10 damge to the player instead of paralysis.
+No message is given, though a message can be added if you think the player needs
+to be informed of the lost hp.
+Changes in cmd2.c, in the function:
+do_cmd_bash_aux
+
+7.
+Monster unlocks door
+When a monster picks the lock of a locked door, the lock power is reduced by one.
+One can hear the monster fiddling with the lock. This is really fun.
+The message is mostly for testing and should probably be removed
+to reduce message spam.
+Changes in melee2.c, in the function:
+process_monster
+
+8.
+Monster bashes door
+When a monster bashes a jammed door, the door power is reduced by one
+One can hear something bump at the door.
+The message is mostly for testing and should probably be removed
+to reduce message spam. 
+By putting in new spikes, the player can keep the door shut til he runs out of spikes.
+This is really fun.
+Changes in melee2.c, in the function:
+process_monster
+
+Note: A door cannot be both locked and jammed at the same time
+Note: If a monster fails to pick a lock, it will try to bash the door instead
+Note: There are 16 slots for closed doors, but only 15 are used:
+1 for closed door, 7 for locked doors and 7 for jammed doors. This is confusing.
+
