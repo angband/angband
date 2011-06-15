@@ -1236,8 +1236,8 @@ static bool item_tester_unknown(const object_type *o_ptr)
 	/* A hack for a hack - Disable this for the 3.1.2 release */
 	if (FALSE && object_is_not_known_consistently(o_ptr))
 	{
-		/* 
-		 * This next hack is pretty terrible, but people playing 
+		/*
+		 * This next hack is pretty terrible, but people playing
 		 * the nightlies will really appreciate not having to reidentify
 		 * every time a new IDENT_ flag is added.  It should be
 		 * removed when the codebase is stable.
@@ -1268,7 +1268,7 @@ static const int enchant_table[16] =
  *
  * \returns true if the bonus was increased
  */
-bool enchant_score(s16b *score, bool is_artifact)
+static bool enchant_score(s16b *score, bool is_artifact)
 {
 	int chance;
 
@@ -1294,7 +1294,7 @@ bool enchant_score(s16b *score, bool is_artifact)
  *
  * \returns true if a curse was broken
  */
-bool enchant_curse(object_type *o_ptr, bool is_artifact)
+static bool enchant_curse(object_type *o_ptr, bool is_artifact)
 {
 	bitflag f[OF_SIZE];
 
@@ -1322,10 +1322,10 @@ bool enchant_curse(object_type *o_ptr, bool is_artifact)
  *
  * \returns true if a bonus was increased or a curse was broken
  */
-bool enchant2(object_type *o_ptr, s16b *score)
+static bool enchant2(object_type *o_ptr, s16b *score)
 {
 	bool result = FALSE;
-	bool is_artifact = o_ptr->artifact;
+	bool is_artifact = o_ptr->artifact ? TRUE : FALSE;
 	if (enchant_score(score, is_artifact)) result = TRUE;
 	if (enchant_curse(o_ptr, is_artifact)) result = TRUE;
 	return result;

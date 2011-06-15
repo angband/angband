@@ -388,7 +388,7 @@ static void output_desc_list(int msex, const char *intro, const char *list[], in
 }
 
 
-void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MAX])
+static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MAX])
 {
 	int i;
 	bool known;

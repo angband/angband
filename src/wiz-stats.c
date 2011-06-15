@@ -1103,8 +1103,9 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 				/* Aug */
 				case EF_GAIN_ALL:
 				{
+					int k;
 					/*Augmentation counts as 5 stat gain pots */
-					for (int k=1;k<=5;k++)
+					for (k=1;k<=5;k++)
 						add_stats( gain_total,  gain_mon,  gain_vault,vault,mon,number);
 					break;	
 				}
@@ -1112,7 +1113,8 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 				case EF_ENLIGHTENMENT2:
 				{
 					/* *Enlight* counts as 2 stat pots */
-					for (int k=1;k<=2;k++) 
+					int k;
+					for (k=1;k<=2;k++) 
 						add_stats( gain_total,  gain_mon,  gain_vault,vault,mon,number);
 					break;
 				}
@@ -1983,6 +1985,7 @@ static double total(double stat[MAX_LVL])
 static void post_process_stats(void)
 {
 	double arttot;
+	int k;
 
 	/* output a title */
 	file_putf(stats_log,"\n");
@@ -2046,7 +2049,7 @@ static void post_process_stats(void)
 	/* print artifact total */
 	arttot=0;
 	
-	for (int k=0; k < MAX_LVL; k++)
+	for (k=0; k < MAX_LVL; k++)
 		arttot += art_total[k];
 		
 	file_putf(stats_log,"\n");
@@ -2403,7 +2406,7 @@ void stats_collect(void)
 int cave_dist[DUNGEON_HGT][DUNGEON_WID];
 
 
-void clear_cave_dist()
+void clear_cave_dist(void)
 {
 	int x,y;
 	for (y = 1; y < DUNGEON_HGT - 1; y++)
@@ -2415,7 +2418,7 @@ void clear_cave_dist()
 		}
 }		
 
-void calc_cave_distances()
+void calc_cave_distances(void)
 {
 	int dist, i;
 	int oy, ox, ty, tx, d;
@@ -2500,7 +2503,7 @@ void calc_cave_distances()
 	} while ((d_old_max > 0) || dist == DIST_MAX);
 }
 
-void pit_stats()
+void pit_stats(void)
 {
 	int tries = 1000;
 	int depth = p_ptr->command_arg;
@@ -2590,7 +2593,7 @@ void pit_stats()
 /* Gather whether the dungeon has disconnects in it
  * and whether the player is disconnected from the stairs
  */
-void disconnect_stats()
+void disconnect_stats(void)
 {
 	int i,y,x;
 	

@@ -415,7 +415,7 @@ static void init_birth_menu(menu_type *menu, int n_choices, int initial_choice, 
 
 
 
-static void setup_menus()
+static void setup_menus(void)
 {
 	int i, n;
 	struct player_class *c;
@@ -483,7 +483,7 @@ static void free_birth_menu(menu_type *menu)
 	}
 }
 
-static void free_birth_menus()
+static void free_birth_menus(void)
 {
 	/* We don't need these any more. */
 	free_birth_menu(&sex_menu);

@@ -17,6 +17,9 @@
  */
 
 #include "angband.h"
+
+#ifdef USE_STATS
+
 #include "birth.h"
 #include "buildid.h"
 #include "init.h"
@@ -1798,3 +1801,5 @@ errr init_stats(int argc, char *argv[]) {
 	term_data_link(0);
 	return 0;
 }
+
+#endif /* USE_STATS */

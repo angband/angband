@@ -136,7 +136,7 @@ static int critical_norm(int weight, int plus, int dam, u32b *msg_type) {
 /**
  * Attack the monster at the given location with a single blow.
  */
-bool py_attack_real(int y, int x, bool *fear) {
+static bool py_attack_real(int y, int x, bool *fear) {
 	/* Information about the target of the attack */
 	monster_type *m_ptr = cave_monster(cave, cave->m_idx[y][x]);
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
@@ -317,7 +317,7 @@ void py_attack(int y, int x) {
  * logic, while using the 'attack' parameter to do work particular to each
  * kind of attack.
  */
-void ranged_helper(int item, int dir, int range, int shots, ranged_attack attack) {
+static void ranged_helper(int item, int dir, int range, int shots, ranged_attack attack) {
 	/* Get the ammo */
 	object_type *o_ptr = object_from_item_idx(item);
 
@@ -503,7 +503,7 @@ void ranged_helper(int item, int dir, int range, int shots, ranged_attack attack
 /**
  * Helper function used with ranged_helper by do_cmd_fire.
  */
-struct attack_result make_ranged_shot(object_type *o_ptr, int y, int x) {
+static struct attack_result make_ranged_shot(object_type *o_ptr, int y, int x) {
 	struct attack_result result = {FALSE, 0, 0, "hit"};
 
 	object_type *j_ptr = &p_ptr->inventory[INVEN_BOW];
@@ -547,7 +547,7 @@ struct attack_result make_ranged_shot(object_type *o_ptr, int y, int x) {
 /**
  * Helper function used with ranged_helper by do_cmd_throw.
  */
-struct attack_result make_ranged_throw(object_type *o_ptr, int y, int x) {
+static struct attack_result make_ranged_throw(object_type *o_ptr, int y, int x) {
 	struct attack_result result = {FALSE, 0, 0, "hit"};
 
 	monster_type *m_ptr = cave_monster(cave, cave->m_idx[y][x]);

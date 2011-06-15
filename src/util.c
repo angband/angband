@@ -136,7 +136,7 @@ int roman_to_int(const char *roman)
 	char *p;
 
 	char roman_token_chr1[] = "MDCLXVI";
-	char* roman_token_chr2[] = {0, 0, "DM", 0, "LC", 0, "VX"};
+	const char *roman_token_chr2[] = {0, 0, "DM", 0, "LC", 0, "VX"};
 
 	int roman_token_vals[7][3] = {{1000},
 	                              {500},

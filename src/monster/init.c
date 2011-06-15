@@ -117,7 +117,7 @@ static enum parser_error parse_rb_d(struct parser *p) {
 }
 
 
-struct parser *init_parse_rb(void) {
+static struct parser *init_parse_rb(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 
@@ -424,7 +424,7 @@ static enum parser_error parse_r_drop_artifact(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-struct parser *init_parse_r(void) {
+static struct parser *init_parse_r(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 
@@ -470,7 +470,7 @@ static errr finish_parse_r(struct parser *p) {
 	return 0;
 }
 
-void cleanup_r(void)
+static void cleanup_r(void)
 {
 	int ridx;
 

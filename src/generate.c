@@ -283,7 +283,7 @@ static struct cave_profile cave_profiles[NUM_CAVE_PROFILES] = {
 /**
  * Shuffle an array using Knuth's shuffle.
  */
-void shuffle(int *arr, int n) {
+static void shuffle(int *arr, int n) {
 	int i, j, k;
 	for (i = 0; i < n; i++) {
 		j = randint0(n - i) + i;
@@ -412,7 +412,7 @@ static void rand_dir(int *rdir, int *cdir) {
 }
 
 
-bool cave_isstart(struct cave *c, int y, int x) {
+static bool cave_isstart(struct cave *c, int y, int x) {
 	if (!cave_isempty(c, y, x)) return FALSE;
 	if (cave_isvault(c, y, x)) return FALSE;
 	return TRUE;
@@ -1422,7 +1422,7 @@ pit_profile *pit_type = NULL;
  *
  * Requires pit_type to be set.
  */
-bool mon_pit_hook(int r_idx)
+static bool mon_pit_hook(int r_idx)
 {
 	monster_race *r_ptr = &r_info[r_idx];
 
@@ -2281,7 +2281,7 @@ static bool room_build(struct cave *c, int by0, int bx0, struct room_profile pro
 	return TRUE;
 }
 
-void set_cave_dimensions(struct cave *c, int h, int w) {
+static void set_cave_dimensions(struct cave *c, int h, int w) {
 	int i, n = h * w;
 	c->height = h;
 	c->width  = w;
@@ -2762,7 +2762,7 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 /**
  * Initialize the dungeon array, with a random percentage of squares open.
  */
-void init_cavern(struct cave *c, struct player *p, int density) {
+static void init_cavern(struct cave *c, struct player *p, int density) {
 	int h = c->height;
 	int w = c->width;
 	int size = h * w;
@@ -2786,7 +2786,7 @@ void init_cavern(struct cave *c, struct player *p, int density) {
 /**
  * Return the number of walls (0-8) adjacent to this square.
  */
-int count_adj_walls(struct cave *c, int y, int x) {
+static int count_adj_walls(struct cave *c, int y, int x) {
 	int yd, xd;
 	int count = 0;
 
@@ -2804,7 +2804,7 @@ int count_adj_walls(struct cave *c, int y, int x) {
 /**
  * Run a single pass of the cellular automata rules (4,5) on the dungeon.
  */
-void mutate_cavern(struct cave *c) {
+static void mutate_cavern(struct cave *c) {
 	int y, x;
 	int h = c->height;
 	int w = c->width;
@@ -2835,7 +2835,7 @@ void mutate_cavern(struct cave *c) {
 /**
  * Fill an int[] with a single value.
  */
-void array_filler(int data[], int value, int size) {
+static void array_filler(int data[], int value, int size) {
 	int i;
 	for (i = 0; i < size; i++) data[i] = value;
 }
@@ -2843,7 +2843,7 @@ void array_filler(int data[], int value, int size) {
 /**
  * Determine if we need to worry about coloring a point, or can ignore it.
  */
-int ignore_point(struct cave *c, int colors[], int y, int x) {
+static int ignore_point(struct cave *c, int colors[], int y, int x) {
 	int h = c->height;
 	int w = c->width;
 	int n = lab_toi(y, x, w);
@@ -2860,7 +2860,7 @@ int ignore_point(struct cave *c, int colors[], int y, int x) {
 static int xds[] = {0, 0, 1, -1, -1, -1, 1, 1};
 static int yds[] = {1, -1, 0, 0, -1, 1, -1, 1};
 
-void glow_point(struct cave *c, int y, int x) {
+static void glow_point(struct cave *c, int y, int x) {
 	int i, j;
 	for (i = -1; i <= -1; i++)
 		for (j = -1; j <= -1; j++)
@@ -2870,7 +2870,7 @@ void glow_point(struct cave *c, int y, int x) {
 /**
  * Color a particular point, and all adjacent points.
  */
-void build_color_point(struct cave *c, int colors[], int counts[], int y, int x, int color, bool diagonal) {
+static void build_color_point(struct cave *c, int colors[], int counts[], int y, int x, int color, bool diagonal) {
 	int h = c->height;
 	int w = c->width;
 	int size = h * w;
@@ -2917,7 +2917,7 @@ void build_color_point(struct cave *c, int colors[], int counts[], int y, int x,
 /**
  * Create a color for each "NESW contiguous" region of the dungeon.
  */
-void build_colors(struct cave *c, int colors[], int counts[], bool diagonal) {
+static void build_colors(struct cave *c, int colors[], int counts[], bool diagonal) {
 	int y, x;
 	int h = c->height;
 	int w = c->width;
@@ -2935,7 +2935,7 @@ void build_colors(struct cave *c, int colors[], int counts[], bool diagonal) {
 /**
  * Find and delete all small (<9 square) open regions.
  */
-void clear_small_regions(struct cave *c, int colors[], int counts[]) {
+static void clear_small_regions(struct cave *c, int colors[], int counts[]) {
 	int i;
 	int h = c->height;
 	int w = c->width;
@@ -2965,7 +2965,7 @@ void clear_small_regions(struct cave *c, int colors[], int counts[]) {
 /**
  * Return the number of colors which have active cells.
  */
-int count_colors(int counts[], int size) {
+static int count_colors(int counts[], int size) {
 	int i;
 	int num = 0;
 	for (i = 0; i < size; i++) if (counts[i] > 0) num++;
@@ -2975,7 +2975,7 @@ int count_colors(int counts[], int size) {
 /**
  * Return the first color which has one or more active cells.
  */
-int first_color(int counts[], int size) {
+static int first_color(int counts[], int size) {
 	int i;
 	for (i = 0; i < size; i++) if (counts[i] > 0) return i;
 	return -1;
@@ -2984,7 +2984,7 @@ int first_color(int counts[], int size) {
 /**
  * Find all cells of 'fromcolor' and repaint them to 'tocolor'.
  */
-void fix_colors(int colors[], int counts[], int from, int to, int size) {
+static void fix_colors(int colors[], int counts[], int from, int to, int size) {
 	int i;
 	for (i = 0; i < size; i++) if (colors[i] == from) colors[i] = to;
 	counts[to] += counts[from];
@@ -2994,7 +2994,7 @@ void fix_colors(int colors[], int counts[], int from, int to, int size) {
 /**
  * Create a tunnel connecting a region to one of its nearest neighbors.
  */
-void join_region(struct cave *c, int colors[], int counts[], int color) {
+static void join_region(struct cave *c, int colors[], int counts[], int color) {
 	int i;
 	int h = c->height;
 	int w = c->width;
@@ -3060,7 +3060,7 @@ void join_region(struct cave *c, int colors[], int counts[], int color) {
 /**
  * Start connecting regions, stopping when the cave is entirely connected.
  */
-void join_regions(struct cave *c, int colors[], int counts[]) {
+static void join_regions(struct cave *c, int colors[], int counts[]) {
 	int h = c->height;
 	int w = c->width;
 	int size = h * w;
@@ -3074,7 +3074,7 @@ void join_regions(struct cave *c, int colors[], int counts[]) {
 }
 
 
-int open_count(struct cave *c) {
+static int open_count(struct cave *c) {
 	int x, y;
 	int h = c->height;
 	int w = c->width;
@@ -3421,10 +3421,7 @@ static int calc_mon_feeling(struct cave *c)
 	return 9;
 }
 
-/**
- *
- */
-void clear_dun_data(struct dun_data *d) {
+static void clear_dun_data(struct dun_data *d) {
 	int bx, by;
 	for (by = 0; by < MAX_ROOMS_ROW; by++) {
 		for (bx = 0; bx < MAX_ROOMS_COL; bx++) {

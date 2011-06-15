@@ -1491,7 +1491,7 @@ static int weight_limit(player_state *state)
 /*
  * Computes weight remaining before burdened.
  */
-int weight_remaining()
+int weight_remaining(void)
 {
 	int i;
 

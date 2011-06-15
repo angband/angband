@@ -514,7 +514,7 @@ void do_cmd_feeling(void)
 {
 	u16b obj_feeling = cave->feeling / 10;
 	u16b mon_feeling = cave->feeling - (10 * obj_feeling);
-	char *join;
+	const char *join;
 
 	/* Don't show feelings for cold-hearted characters */
 	if (OPT(birth_no_feelings)) return;

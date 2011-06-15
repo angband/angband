@@ -18,6 +18,7 @@
 #include "angband.h"
 #include "z-util.h"
 #include "z-term.h"
+#include "x-char.h"
 
 /*
  * Translate from encodes to extended 8-bit characters and back again.

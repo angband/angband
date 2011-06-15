@@ -153,7 +153,6 @@ extern void player_birth(bool quickstart_allowed);
 
 /* cmd1.c */
 extern bool search(bool verbose);
-extern int do_autopickup(void);
 extern byte py_pickup(int pickup);
 extern void move_player(int dir, bool disarm);
 

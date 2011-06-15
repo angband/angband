@@ -63,7 +63,7 @@ u32b z0, z1, z2;
 #define newV0 STATE[(state_i + 31) & 0x0000001fU]
 #define newV1 STATE[state_i]
 
-u32b WELLRNG1024a (void){
+static u32b WELLRNG1024a (void){
 	z0      = VRm1;
 	z1      = Identity(V0) ^ MAT0POS (8, VM1);
 	z2      = MAT0NEG (-19, VM2) ^ MAT0NEG(-14,VM3);
@@ -338,7 +338,7 @@ int rand_range(int A, int B) {
  * Perform division, possibly rounding up or down depending on the size of the
  * remainder and chance.
  */
-int simulate_division(int dividend, int divisor) {
+static int simulate_division(int dividend, int divisor) {
 	int quotient  = dividend / divisor;
 	int remainder = dividend % divisor;
 	if (randint0(divisor) < remainder) quotient++;

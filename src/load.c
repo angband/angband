@@ -1651,7 +1651,7 @@ int rd_randarts_1(void)
  *
  * Note that the inventory is re-sorted later by dungeon().
  */
-int rd_inventory(rd_item_t rd_item_version)
+static int rd_inventory(rd_item_t rd_item_version)
 {
 	int slot = 0;
 
@@ -1743,7 +1743,7 @@ int rd_inventory_1(void) { return rd_inventory(rd_item_1); } /* remove post-3.3 
 
 
 /* Read store contents */
-int rd_stores(rd_item_t rd_item_version)
+static int rd_stores(rd_item_t rd_item_version)
 {
 	int i;
 	u16b tmp16u;
@@ -1985,7 +1985,7 @@ int rd_dungeon(void)
 }
 
 /* Read the floor object list */
-int rd_objects(rd_item_t rd_item_version)
+static int rd_objects(rd_item_t rd_item_version)
 {
 	int i;
 	u16b limit;

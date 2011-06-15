@@ -204,8 +204,8 @@ static bool new_game;
 /*
  * Pass the appropriate "Initialisation screen" command to the game,
  * getting user input if needed.
- */ 
-static errr get_init_cmd()
+ */
+static errr get_init_cmd(void)
 {
 	/* Wait for response */
 	pause_line(Term);

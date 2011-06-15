@@ -97,7 +97,7 @@ struct parser *parser_new(void) {
 	return p;
 }
 
-struct parser_hook *findhook(struct parser *p, const char *dir) {
+static struct parser_hook *findhook(struct parser *p, const char *dir) {
 	struct parser_hook *h = p->hooks;
 	while (h)
 	{
@@ -520,7 +520,7 @@ bool parser_hasval(struct parser *p, const char *name) {
 	return FALSE;
 }
 
-struct parser_value *parser_getval(struct parser *p, const char *name) {
+static struct parser_value *parser_getval(struct parser *p, const char *name) {
 	struct parser_value *v;
 	for (v = p->fhead; v; v = (struct parser_value *)v->spec.next)
 	{

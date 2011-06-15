@@ -509,7 +509,7 @@ bool menu_handle_mouse(menu_type *menu, const ui_event *in,
  * Returns TRUE if the key was handled at all (including if it's not handled
  * and just ignored).
  */
-bool menu_handle_action(menu_type *m, const ui_event *in)
+static bool menu_handle_action(menu_type *m, const ui_event *in)
 {
 	if (m->row_funcs->row_handler)
 	{

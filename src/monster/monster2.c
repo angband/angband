@@ -1275,7 +1275,7 @@ void lore_do_probe(int m_idx)
  * gold and items are dropped, and remembers that information to be
  * described later by the monster recall code.
  */
-void lore_treasure(int m_idx, int num_item, int num_gold)
+static void lore_treasure(int m_idx, int num_item, int num_gold)
 {
 	monster_type *m_ptr = cave_monster(cave, m_idx);
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
@@ -2687,7 +2687,7 @@ bool summon_specific(int y1, int x1, int lev, int type, int delay)
  * string as a whole message, not as a part of a larger message. This
  * is useful to display Moria-like death messages.
  */
-static char *msg_repository[MAX_MON_MSG + 1] =
+static const char *msg_repository[MAX_MON_MSG + 1] =
 {
 	/* Dummy action */
 	"[is|are] hurt.",    		/* MON_MSG_NONE */
@@ -2969,7 +2969,7 @@ static bool redundant_monster_message(int m_idx, int msg_code)
  * different monster descriptions for the same race.
  * Return TRUE on success.
  */
-bool add_monster_message(char *mon_name, int m_idx, int msg_code, bool delay)
+bool add_monster_message(const char *mon_name, int m_idx, int msg_code, bool delay)
 {
    int i;
    byte mon_flags = 0;
@@ -3041,7 +3041,7 @@ bool add_monster_message(char *mon_name, int m_idx, int msg_code, bool delay)
 /*
  * Show and delete the stacked monster messages.
  */
-void flush_monster_messages(bool delay)
+static void flush_monster_messages(bool delay)
 {
    int i;
    int r_idx;

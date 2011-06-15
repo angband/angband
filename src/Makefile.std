@@ -39,7 +39,7 @@ SYS_gcu = -DUSE_GCU -DUSE_NCURSES -lncurses
 SYS_sdl = -DUSE_SDL $(shell sdl-config --cflags) $(shell sdl-config --libs) -lSDL_ttf -lSDL_image
 
 # Stats pseudo-frontend
-SYS_stats = -DUSE_STATS
+# SYS_stats = -DUSE_STATS
 
 ## Support SDL_mixer for sound
 #SOUND_sdl = -DSOUND_SDL $(shell sdl-config --cflags) $(shell sdl-config --libs) -lSDL_mixer
@@ -48,14 +48,14 @@ SYS_stats = -DUSE_STATS
 
 # Basic compiler stuff
 CC = gcc
-WARNINGS = -W -Wall -Wextra -Wno-unused-parameter -Wold-style-definition -Wdeclaration-after-statement -Wmissing-declarations -Wredundant-decls -Wpointer-arith -Wcast-align -Wwrite-strings -Winline -Wformat-security -Winit-self -Wmissing-include-dirs -Wundef -Wmissing-format-attribute -Wnested-externs -Wunreachable-code
+WARNINGS = -W -Wall -Wextra -Wold-style-definition -Wdeclaration-after-statement -Wmissing-declarations -Wredundant-decls -Wpointer-arith -Wcast-align -Wwrite-strings -Winline -Wformat-security -Winit-self -Wmissing-include-dirs -Wundef -Wmissing-format-attribute -Wnested-externs -Wunreachable-code -Wno-unused-parameter -Wno-missing-field-initializers
 CFLAGS = -O0 -g $(WARNINGS)
 
 # Add additional search directives here
 # Example: -I/usr/X11R6/include -I/usr/include/ncurses
 INCLUDES = -I.
 # Example: -L/usr/X11R6/lib 
-LIBS =
+LIBS = -lm
 
 
 # Version info
@@ -72,16 +72,14 @@ EXE = angband
 
 
 # Extract CFLAGS and LIBS from the system definitions
-#MODULES = $(SYS_x11) $(SYS_gcu) $(SYS_gtk) $(SYS_sdl) $(SOUND_sdl) $(SYS_stats)
-MODULES = $(SYS_stats)
+MODULES = $(SYS_x11) $(SYS_gcu) $(SYS_gtk) $(SYS_sdl) $(SOUND_sdl) $(SYS_stats)
 CFLAGS += $(patsubst -l%,,$(MODULES)) $(INCLUDES)
 LIBS += $(patsubst -D%,,$(patsubst -I%,, $(MODULES)))
 
 
 # Object definitions
 GTKOBJS = gtk/main-gtk.o gtk/cairo-utils.o
-MAINOBJS = main.o main-stats.o $(GTKOBJS)
-OBJS = $(BASEOBJS) $(MAINOBJS)
+OBJS = $(BASEOBJS) main.o main-stats.o main-gcu.o main-x11.o main-sdl.o snd-sdl.o $(GTKOBJS)
 
 
 

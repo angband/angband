@@ -22,6 +22,7 @@
 #include "effects.h"
 #include "monster/monster.h"
 #include "spells.h"
+#include "trap.h"
 
 /*
  * Determine if a trap affects the player.

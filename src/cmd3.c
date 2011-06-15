@@ -424,7 +424,7 @@ int cmp_monsters(const void *a, const void *b)
  *
  * Todo: Should this take the user's pref files into account?
  */
-void lookup_symbol(struct keypress sym, char *buf, size_t max)
+static void lookup_symbol(struct keypress sym, char *buf, size_t max)
 {
 	int i;
 	monster_base *race;

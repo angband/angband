@@ -88,17 +88,17 @@ static struct set {
 	int size;
 	bool dam_dep;
 	int count;
-	char* desc;
+	const char *desc;
 } sets[] = {
-	 {OFT_SUST, 1, 10, 5, FALSE, 0, "sustains"},
-	 {OFT_SLAY, 1, 10, 8, TRUE,  0, "normal slays"},
-	{OFT_BRAND, 2, 20, 5, TRUE,  0, "brands"},
-	 {OFT_KILL, 3, 20, 3, TRUE,  0, "x5 slays"},
-	 {OFT_IMM,  6, INHIBIT_POWER, 4, FALSE, 0, "immunities"},
-	 {OFT_LRES, 1, 10, 4, FALSE, 0, "low resists"},
-	 {OFT_HRES, 2, 10, 9, FALSE, 0, "high resists"},
-	 {OFT_PROT, 3, 15, 4, FALSE, 0, "protections"},
-	 {OFT_MISC, 1, 25, 8, FALSE, 0, "misc abilities"}
+	{ OFT_SUST, 1, 10, 5, FALSE, 0, "sustains" },
+	{ OFT_SLAY, 1, 10, 8, TRUE,  0, "normal slays" },
+	{ OFT_BRAND, 2, 20, 5, TRUE,  0, "brands" },
+	{ OFT_KILL, 3, 20, 3, TRUE,  0, "x5 slays" },
+	{ OFT_IMM,  6, INHIBIT_POWER, 4, FALSE, 0, "immunities" },
+	{ OFT_LRES, 1, 10, 4, FALSE, 0, "low resists" },
+	{ OFT_HRES, 2, 10, 9, FALSE, 0, "high resists" },
+	{ OFT_PROT, 3, 15, 4, FALSE, 0, "protections" },
+	{ OFT_MISC, 1, 25, 8, FALSE, 0, "misc abilities" }
 };
 
 /**

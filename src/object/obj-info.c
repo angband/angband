@@ -892,7 +892,7 @@ static bool describe_light(textblock *tb, const object_type *o_ptr,
 {
 	int rad = 0;
 
-	bool artifact = o_ptr->artifact;
+	bool artifact = o_ptr->artifact ? TRUE : FALSE;
 	bool no_fuel = of_has(flags, OF_NO_FUEL) ? TRUE : FALSE;
 	bool is_light = (o_ptr->tval == TV_LIGHT) ? TRUE : FALSE;
 
@@ -1056,7 +1056,7 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr, bool full,
 }
 
 
-bool describe_origin(textblock *tb, const object_type *o_ptr)
+static bool describe_origin(textblock *tb, const object_type *o_ptr)
 {
 	char origin_text[80];
 

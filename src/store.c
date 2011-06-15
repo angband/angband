@@ -560,7 +560,7 @@ static bool store_will_buy(int store_num, const object_type *o_ptr)
 
 
 /* Get the current store number, or STORE_NONE if not in a store */
-static int current_store()
+static int current_store(void)
 {
 	/* If we're displaying store knowledge whilst not in a store,
 	 * override the value returned
@@ -2914,7 +2914,7 @@ static void store_menu_set_selections(menu_type *menu, bool knowledge_menu)
 	}
 }
 
-void store_menu_recalc(menu_type *m)
+static void store_menu_recalc(menu_type *m)
 {
 	store_type *st_ptr = &store[current_store()];
 
@@ -2969,7 +2969,7 @@ static bool store_process_command_key(struct keypress kp)
 /*
  *
  */
-bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
+static bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
 {
 	bool processed = TRUE;
 

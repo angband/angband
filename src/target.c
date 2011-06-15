@@ -21,6 +21,7 @@
 #include "game-cmd.h"
 #include "monster/monster.h"
 #include "squelch.h"
+#include "target.h"
 
 /*
  * Height of the help screen; any higher than 4 will overlap the health
@@ -433,7 +434,7 @@ static struct point_set *target_set_interactive_prepare(int mode)
  * such adjustment was performed. Optionally accounts for the targeting
  * help window.
  */
-bool adjust_panel_help(int y, int x, bool help)
+static bool adjust_panel_help(int y, int x, bool help)
 {
 	bool changed = FALSE;
 
@@ -486,24 +487,24 @@ bool adjust_panel_help(int y, int x, bool help)
  * Describe a location relative to the player position.
  * e.g. "12 S 35 W" or "0 N, 33 E" or "0 N, 0 E"
  */
-void coords_desc(char *buf, int size, int y, int x) {
-	
-	char *east_or_west;
-	char *north_or_south;
+static void coords_desc(char *buf, int size, int y, int x)
+{
+	const char *east_or_west;
+	const char *north_or_south;
 
 	int py = p_ptr->py;
 	int px = p_ptr->px;
-	
+
 	if (y > py)
 		north_or_south = "S";
 	else
 		north_or_south = "N";
-	
+
 	if (x < px)
 		east_or_west = "W";
 	else
 		east_or_west = "E";
-	
+
 	strnfmt(buf, size, "%d %s, %d %s",
 		ABS(y-py), north_or_south, ABS(x-px), east_or_west);
 }

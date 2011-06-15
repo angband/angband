@@ -22,8 +22,8 @@ enum
  * Structure for GF types and their resistances/immunities/vulnerabilities
  */
 struct gf_type {
-    u16b name;      	/* numerical index (GF_#) */
-	char *desc;			/* text description (if blind) */
+	u16b name;      	/* numerical index (GF_#) */
+	const char *desc;			/* text description (if blind) */
 	int resist;			/* object flag for resistance */
 	int num;			/* numerator for resistance */
 	random_value denom;	/* denominator for resistance */

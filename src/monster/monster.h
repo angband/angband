@@ -395,7 +395,7 @@ extern bool alloc_monster(struct cave *c, struct loc loc, int dis, bool slp, int
 extern bool summon_specific(int y1, int x1, int lev, int type, int delay);
 extern bool multiply_monster(int m_idx);
 extern void message_pain(int m_idx, int dam);
-extern bool add_monster_message(char *mon_name, int m_idx, int msg_code, bool delay);
+extern bool add_monster_message(const char *mon_name, int m_idx, int msg_code, bool delay);
 extern void flush_all_monster_messages(void);
 extern void update_smart_learn(struct monster *m, struct player *p, int what);
 void monster_death(int m_idx, bool stats);

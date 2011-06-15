@@ -335,7 +335,7 @@ static void get_bonuses(void)
 /*
  * Get the racial history, and social class, using the "history charts".
  */
-char *get_history(struct history_chart *chart, s16b *sc)
+static char *get_history(struct history_chart *chart, s16b *sc)
 {
 	int roll, social_class;
 	struct history_entry *entry;
@@ -407,7 +407,7 @@ static void get_money(void)
 		p_ptr->au = p_ptr->au_birth = STARTING_GOLD;
 }
 
-void player_init(struct player *p)
+static void player_init(struct player *p)
 {
 	int i;
 	bool keep_randarts = FALSE;
@@ -491,7 +491,7 @@ void player_init(struct player *p)
 /**
  * Try to wield everything wieldable in the inventory.
  */
-void wield_all(struct player *p)
+static void wield_all(struct player *p)
 {
 	object_type *o_ptr;
 	object_type *i_ptr;
@@ -558,7 +558,7 @@ void wield_all(struct player *p)
  *
  * Having an item identifies it and makes the player "aware" of its purpose.
  */
-void player_outfit(struct player *p)
+static void player_outfit(struct player *p)
 {
 	const struct start_item *si;
 	object_type object_type_body;
@@ -898,7 +898,7 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
  * This fleshes out a full player based on the choices currently made,
  * and so is called whenever things like race or class are chosen.
  */
-void player_generate(struct player *p, const player_sex *s,
+static void player_generate(struct player *p, const player_sex *s,
                      const struct player_race *r,
                      const struct player_class *c)
 {
@@ -976,14 +976,14 @@ void player_birth(bool quickstart_allowed)
 	 * We rely on prev.age being zero to determine whether there is a stored
 	 * character or not, so initialise it here.
 	 */
-	birther prev = { 0, 0, 0, 0, 0, 0, 0, 0, {0}, "" };
+	birther prev = { 0 };
 
 	/*
 	 * If quickstart is allowed, we store the old character in this,
 	 * to allow for it to be reloaded if we step back that far in the
 	 * birth process.
 	 */
-	birther quickstart_prev = {0, 0, 0, 0, 0, 0, 0, 0, {0}, "" };
+	birther quickstart_prev = { 0 };
 
 	/*
 	 * If there's a quickstart character, store it for later use.

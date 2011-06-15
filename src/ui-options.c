@@ -769,7 +769,7 @@ static menu_action color_events [] =
 /*
  * Interact with "colors"
  */
-void do_cmd_colors(const char *title, int row)
+static void do_cmd_colors(const char *title, int row)
 {
 	screen_save();
 	clear_from(0);
@@ -1169,7 +1169,7 @@ static void squelch_sval_menu_display(menu_type *menu, int oid, bool cursor,
 	object_kind *kind = choice[oid].kind;
 	bool aware = choice[oid].aware;
 
-	byte attr = curs_attrs[aware][0 != cursor];
+	byte attr = curs_attrs[(int)aware][0 != cursor];
 
 	/* Acquire the "name" of object "i" */
 	object_kind_name(buf, sizeof(buf), kind, aware);
@@ -1343,9 +1343,8 @@ struct
 {
 	char tag;
 	const char *name;
-	void (*action)(void *unused, const char *also_unused);
-} extra_item_options[] =
-{
+	void (*action)(); /* this is a nasty hack */
+} extra_item_options[] = {
 	{ 'Q', "Quality squelching options", quality_menu },
 	{ '{', "Autoinscription setup", textui_browse_object_knowledge },
 };
@@ -1412,7 +1411,7 @@ static void display_options_item(menu_type *menu, int oid, bool cursor, int row,
 	}
 }
 
-bool handle_options_item(menu_type *menu, const ui_event *event, int oid)
+static bool handle_options_item(menu_type *menu, const ui_event *event, int oid)
 {
 	if (event->type == EVT_SELECT)
 	{
@@ -1424,7 +1423,7 @@ bool handle_options_item(menu_type *menu, const ui_event *event, int oid)
 		{
 			oid = oid - (int)N_ELEMENTS(sval_dependent) - 1;
 			assert((size_t) oid < N_ELEMENTS(extra_item_options));
-			extra_item_options[oid].action(NULL, NULL);
+			extra_item_options[oid].action();
 		}
 
 		return TRUE;

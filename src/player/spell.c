@@ -115,7 +115,7 @@ static const int adj_mag_stat[STAT_RANGE] =
 /**
  * Compare function for sorting spells into book order
  */
-int cmp_spell(const void *s1, const void *s2)
+static int cmp_spell(const void *s1, const void *s2)
 {
 	int spell1 = *(int*)s1 + (p_ptr->class->spell_book == TV_MAGIC_BOOK ? 0 : PY_MAX_SPELLS);
 	int spell2 = *(int*)s2 + (p_ptr->class->spell_book == TV_MAGIC_BOOK ? 0 : PY_MAX_SPELLS);

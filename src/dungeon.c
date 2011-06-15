@@ -1180,7 +1180,7 @@ byte color_flicker[MAX_COLORS][3] =
 	{TERM_DEEP_L_BLUE, TERM_L_BLUE, TERM_BLUE},
 };
 
-byte get_flicker(byte a)
+static byte get_flicker(byte a)
 {
 	switch(flicker % 3)
 	{
@@ -1193,7 +1193,7 @@ byte get_flicker(byte a)
 /*
  * This animates monsters and/or items as necessary.
  */
-void do_animation(void)
+static void do_animation(void)
 {
 	int i;
 

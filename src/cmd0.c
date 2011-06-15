@@ -23,6 +23,7 @@
 #include "game-cmd.h"
 #include "keymap.h"
 #include "monster/monster.h"
+#include "textui.h"
 #include "ui-menu.h"
 #include "wizard.h"
 
