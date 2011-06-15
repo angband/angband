@@ -2860,12 +2860,14 @@ static int ignore_point(struct cave *c, int colors[], int y, int x) {
 static int xds[] = {0, 0, 1, -1, -1, -1, 1, 1};
 static int yds[] = {1, -1, 0, 0, -1, 1, -1, 1};
 
+#if 0 /* XXX d_m - is this meant to be in use? */
 static void glow_point(struct cave *c, int y, int x) {
 	int i, j;
 	for (i = -1; i <= -1; i++)
 		for (j = -1; j <= -1; j++)
 			c->info[y + i][x + j] |= CAVE_GLOW;
 }
+#endif
 
 /**
  * Color a particular point, and all adjacent points.

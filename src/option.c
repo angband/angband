@@ -200,9 +200,12 @@ const char *option_desc(int opt)
 	return options[opt].description;
 }
 
+#if 0 /* unused so far but may be useful in future */
 static bool option_is_birth(int opt) { return opt >= OPT_BIRTH && opt < (OPT_BIRTH + N_OPTS_BIRTH); }
-static bool option_is_cheat(int opt) { return opt >= OPT_CHEAT && opt < (OPT_CHEAT + N_OPTS_CHEAT); }
 static bool option_is_score(int opt) { return opt >= OPT_SCORE && opt < (OPT_SCORE + N_OPTS_CHEAT); }
+#endif
+
+static bool option_is_cheat(int opt) { return opt >= OPT_CHEAT && opt < (OPT_CHEAT + N_OPTS_CHEAT); }
 
 /* Setup functions */
 bool option_set(const char *name, bool on)
