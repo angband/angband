@@ -250,29 +250,6 @@ void textui_obj_wield(object_type *o_ptr, int item)
 	cmd_set_arg_number(cmd_get_top(), 1, slot);
 }
 
-/* Inscribe an object */
-void textui_obj_inscribe(object_type *o_ptr, int item)
-{
-	char o_name[80];
-	char tmp[80] = "";
-
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
-	msg("Inscribing %s.", o_name);
-	message_flush();
-
-	/* Use old inscription */
-	if (o_ptr->note)
-		strnfmt(tmp, sizeof(tmp), "%s", quark_str(o_ptr->note));
-
-	/* Get a new inscription (possibly empty) */
-	if (get_string("Inscription: ", tmp, sizeof(tmp)))
-	{
-		cmd_insert(CMD_INSCRIBE);
-		cmd_set_arg_item(cmd_get_top(), 0, item);
-		cmd_set_arg_string(cmd_get_top(), 1, tmp);
-	}
-}
-
 /* Examine an object */
 void textui_obj_examine(object_type *o_ptr, int item)
 {

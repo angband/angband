@@ -125,6 +125,10 @@ struct item_selector
 /** List of requirements for various commands' objects */
 struct item_selector item_selector[] =
 {
+	{ CMD_INSCRIBE, "Inscribe which item? ",
+	  "You have nothing to inscribe.",
+	  NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS) },
+
 	{ CMD_UNINSCRIBE, "Un-inscribe which item? ",
 	  "You have nothing to un-inscribe.",
 	  obj_has_inscrip, (USE_EQUIP | USE_INVEN | USE_FLOOR) },
@@ -416,6 +420,29 @@ void process_command(cmd_context ctx, bool no_request)
 		   been declared as "unknown", such as directions and targets. */
 		switch (cmd->command)
 		{
+			case CMD_INSCRIBE:
+			{
+				char o_name[80];
+				char tmp[80] = "";
+
+				object_type *o_ptr = object_from_item_idx(cmd->arg[0].item);
+			
+				object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+				msg("Inscribing %s.", o_name);
+				message_flush();
+			
+				/* Use old inscription */
+				if (o_ptr->note)
+					strnfmt(tmp, sizeof(tmp), "%s", quark_str(o_ptr->note));
+			
+				/* Get a new inscription (possibly empty) */
+				if (!get_string("Inscription: ", tmp, sizeof(tmp)))
+					return;
+
+				cmd_set_arg_string(cmd, 1, tmp);
+				break;
+			}
+
 			case CMD_OPEN:
 			{
 				if (OPT(easy_open) && (!cmd->arg_present[0] ||

@@ -77,11 +77,6 @@ struct item_command
 /* All possible item actions */
 static struct item_command item_actions[] =
 {
-	{ { "Inscribe an object", '{', CMD_INSCRIBE, NULL, NULL },
-	  { "Inscribe which item? ", "You have nothing to inscribe.",
-	    NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS) },
-	  textui_obj_inscribe, "inscribe", FALSE },
-
 	{ { "Examine an item", 'I', CMD_NULL, NULL, NULL },
 	  { "Examine which item? ", "You have nothing to examine.",
 	    NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS) },
@@ -98,6 +93,7 @@ static struct item_command item_actions[] =
 
 static struct generic_command cmd_item[] =
 {
+	{ "Inscribe an object", '{', CMD_INSCRIBE, NULL, NULL },
 	{ "Uninscribe an object", '}', CMD_UNINSCRIBE, NULL, NULL },
 	{ "Take/unwield off an item", 't', CMD_TAKEOFF, NULL, NULL },
 	{ "Drop an item", 'd', CMD_DROP, NULL, NULL },
