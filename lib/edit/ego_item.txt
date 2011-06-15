@@ -1076,10 +1076,10 @@ T:17:0:99
 T:18:0:99
 D:Ammunition of Wounding often has unusually high to-hit and to-dam values.
 
-N:125:(Lumbering)
+N:125:of Backbiting
 X:0:0
-W:0:1:0:0
-C:-d25:d25:0
+W:0:0:0:0
+C:-d25:-d25:0
 T:16:0:99
 T:17:0:99
 T:18:0:99
