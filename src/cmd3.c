@@ -219,15 +219,26 @@ void textui_cmd_toggle_ignore(void)
 }
 
 /* Examine an object */
-void textui_obj_examine(object_type *o_ptr, int item)
+void textui_obj_examine(void)
 {
 	char header[120];
 
 	textblock *tb;
 	region area = { 0, 0, 0, 0 };
 
+	object_type *o_ptr;
+	int item;
+
+	/* Select item */
+	if (!get_item(&item, "Examine which item?", "You have nothing to examine.",
+			CMD_NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS)))
+		return;
+
+	/* Track object for object recall */
 	track_object(item);
 
+	/* Display info */
+	o_ptr = object_from_item_idx(item);
 	tb = object_info(o_ptr, OINFO_NONE);
 	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
