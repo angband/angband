@@ -20,6 +20,7 @@
 #include "cmds.h"
 #include "game-cmd.h"
 #include "object/object.h"
+#include "object/tvalsval.h"
 #include "spells.h"
 #include "target.h"
 
@@ -602,6 +603,40 @@ void process_command(cmd_context ctx, bool no_request)
 				player_confuse_dir(p_ptr, &cmd->arg[1].direction, FALSE);
 				cmd->arg_present[1] = TRUE;
 				
+				break;
+			}
+
+			case CMD_WIELD:
+			{
+				object_type *o_ptr = object_from_item_idx(cmd->arg[0].choice);
+				int slot = wield_slot(o_ptr);
+			
+				/* Usually if the slot is taken we'll just replace the item in the slot,
+				 * but in some cases we need to ask the user which slot they actually
+				 * want to replace */
+				if (p_ptr->inventory[slot].kind)
+				{
+					if (o_ptr->tval == TV_RING)
+					{
+						const char *q = "Replace which ring? ";
+						const char *s = "Error in obj_wield, please report";
+						item_tester_hook = obj_is_ring;
+						if (!get_item(&slot, q, s, CMD_WIELD, USE_EQUIP)) return;
+					}
+			
+					if (obj_is_ammo(o_ptr) && !object_similar(&p_ptr->inventory[slot],
+						o_ptr, OSTACK_QUIVER))
+					{
+						const char *q = "Replace which ammunition? ";
+						const char *s = "Error in obj_wield, please report";
+						item_tester_hook = obj_is_ammo;
+						if (!get_item(&slot, q, s, CMD_WIELD, USE_EQUIP)) return;
+					}
+				}
+
+				/* Set relevant slot */
+				cmd_set_arg_number(cmd, 1, slot);
+
 				break;
 			}
 
