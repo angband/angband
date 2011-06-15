@@ -43,7 +43,7 @@
  * it simply pushes that command to the game, otherwise the hook 
  * function will be called.
  */
-struct generic_command
+struct cmd_info
 {
 	const char *desc;
 	unsigned char key;
@@ -52,7 +52,7 @@ struct generic_command
 	bool (*prereq)(void);
 };
 
-static struct generic_command cmd_item[] =
+static struct cmd_info cmd_item[] =
 {
 	{ "Inscribe an object", '{', CMD_INSCRIBE, NULL, NULL },
 	{ "Uninscribe an object", '}', CMD_UNINSCRIBE, NULL, NULL },
@@ -72,7 +72,7 @@ static struct generic_command cmd_item[] =
 };
 
 /* General actions */
-static struct generic_command cmd_action[] =
+static struct cmd_info cmd_action[] =
 {
 	{ "Search for traps/doors",     's', CMD_SEARCH, NULL },
 	{ "Disarm a trap or chest",     'D', CMD_DISARM, NULL },
@@ -94,7 +94,7 @@ static struct generic_command cmd_action[] =
 };
 
 /* Item management commands */
-static struct generic_command cmd_item_manage[] =
+static struct cmd_info cmd_item_manage[] =
 {
 	{ "Display equipment listing", 'e', CMD_NULL, do_cmd_equip },
 	{ "Display inventory listing", 'i', CMD_NULL, do_cmd_inven },
@@ -103,7 +103,7 @@ static struct generic_command cmd_item_manage[] =
 };
 
 /* Information access commands */
-static struct generic_command cmd_info[] =
+static struct cmd_info cmd_info[] =
 {
 	{ "Browse a book", 'b', CMD_BROWSE_SPELL, textui_spell_browse, NULL },
 	{ "Gain new spells", 'G', CMD_STUDY_BOOK, textui_obj_study, player_can_study },
@@ -124,7 +124,7 @@ static struct generic_command cmd_info[] =
 };
 
 /* Utility/assorted commands */
-static struct generic_command cmd_util[] =
+static struct cmd_info cmd_util[] =
 {
 	{ "Interact with options",        '=', CMD_NULL, do_cmd_xxx_options },
 
@@ -138,7 +138,7 @@ static struct generic_command cmd_util[] =
 };
 
 /* Commands that shouldn't be shown to the user */ 
-static struct generic_command cmd_hidden[] =
+static struct cmd_info cmd_hidden[] =
 {
 	{ "Take notes",               ':', CMD_NULL, do_cmd_note },
 	{ "Version info",             'V', CMD_NULL, do_cmd_version },
@@ -171,7 +171,7 @@ static struct generic_command cmd_hidden[] =
 typedef struct
 {
 	const char *name;
-	struct generic_command *list;
+	struct cmd_info *list;
 	size_t len;
 } command_list;
 
@@ -194,7 +194,7 @@ static command_list cmds_all[] =
 static void cmd_sub_entry(menu_type *menu, int oid, bool cursor, int row, int col, int width)
 {
 	byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
-	const struct generic_command *commands = menu_priv(menu);
+	const struct cmd_info *commands = menu_priv(menu);
 
 	(void)width;
 
@@ -229,7 +229,7 @@ static bool cmd_menu(command_list *list, void *selection_p)
 	region area = { 23, 4, 37, 13 };
 
 	ui_event evt;
-	struct generic_command *selection = selection_p;
+	struct cmd_info *selection = selection_p;
 
 	/* Set up th emenu */
 	menu_init(&menu, MN_SKIN_SCROLL, &commands_menu);
@@ -285,7 +285,7 @@ static char textui_action_menu_choose(void)
 {
 	region area = { 21, 5, 37, 6 };
 
-	struct generic_command chosen_command = { 0 };
+	struct cmd_info chosen_command = { 0 };
 
 	if (!command_menu)
 		command_menu = menu_new(MN_SKIN_SCROLL, &command_menu_iter);
@@ -308,12 +308,7 @@ static char textui_action_menu_choose(void)
 /*** Exported functions ***/
 
 /* List indexed by char */
-struct command
-{
-	struct generic_command *command;
-};
-
-static struct command converted_list[UCHAR_MAX+1];
+static struct cmd_info *converted_list[UCHAR_MAX+1];
 
 
 /*
@@ -328,36 +323,34 @@ void cmd_init(void)
 	/* Go through all generic commands */
 	for (j = 0; j < N_ELEMENTS(cmds_all); j++)
 	{
-		struct generic_command *commands = cmds_all[j].list;
+		struct cmd_info *commands = cmds_all[j].list;
 
 		/* Fill everything in */
 		for (i = 0; i < cmds_all[j].len; i++)
-			converted_list[commands[i].key].command = &commands[i];
+			converted_list[commands[i].key] = &commands[i];
 	}
 }
 
-unsigned char cmd_lookup_key(cmd_code cmd)
+unsigned char cmd_lookup_key(cmd_code lookup_cmd)
 {
 	unsigned int i;
-	struct generic_command *command;
 
-	for (i = 0; i < N_ELEMENTS(converted_list); i++)
-	{
-		command = converted_list[i].command;
-		if (command && command->cmd == cmd)
-		{
-			return command->key;
-		}
+	for (i = 0; i < N_ELEMENTS(converted_list); i++) {
+		struct cmd_info *cmd = converted_list[i];
+
+		if (cmd && cmd->cmd == lookup_cmd)
+			return cmd->key;
 	}
+
 	return 0;
 }
 
 cmd_code cmd_lookup(unsigned char key)
 {
-	/* Sanity checking for keys without corresponding commands */
-	if (converted_list[key].command == NULL) return CMD_NULL;
+	if (!converted_list[key])
+		return CMD_NULL;
 
-	return converted_list[key].command->cmd;
+	return converted_list[key]->cmd;
 }
 
 
@@ -605,8 +598,7 @@ static bool key_confirm_command(unsigned char c)
  */
 static bool textui_process_key(struct keypress kp)
 {
-	struct command *cmd;
-	struct generic_command *command;
+	struct cmd_info *cmd;
 
 	/* XXXmacro this needs rewriting */
 	unsigned char c = (unsigned char)kp.code;
@@ -617,18 +609,14 @@ static bool textui_process_key(struct keypress kp)
 	if (c == '\0' || c == ESCAPE || c == ' ' || c == '\a')
 		return TRUE;
 
-	cmd = &converted_list[c];
-	command = cmd->command;
-	if (!command)
-		return FALSE;
+	cmd = converted_list[c];
 
 	if (key_confirm_command(c) &&
-			(!command->prereq || command->prereq()))
-	{
-		if (command->hook)
-				command->hook();
-		else
-			cmd_insert_repeated(command->cmd, p_ptr->command_arg);
+			(!cmd->prereq || cmd->prereq())) {
+		if (cmd->hook)
+			cmd->hook();
+		else if (cmd->cmd)
+			cmd_insert_repeated(cmd->cmd, p_ptr->command_arg);
 	}
 
 	return TRUE;
