@@ -81,13 +81,6 @@ static struct item_command item_actions[] =
 	  { "Examine which item? ", "You have nothing to examine.",
 	    NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS) },
 	  textui_obj_examine, "examine", FALSE },
-
-	/*** Takeoff/drop/wear ***/
-
-	{ { "Wear/wield an item", 'w', CMD_WIELD, NULL, NULL },
-	  { "Wear/Wield which item? ", "You have nothing you can wear or wield.",
-	    obj_can_wear, (USE_INVEN | USE_FLOOR) },
-	  textui_obj_wield, "wield", FALSE },
 };
 
 
@@ -95,7 +88,8 @@ static struct generic_command cmd_item[] =
 {
 	{ "Inscribe an object", '{', CMD_INSCRIBE, NULL, NULL },
 	{ "Uninscribe an object", '}', CMD_UNINSCRIBE, NULL, NULL },
-	{ "Take/unwield off an item", 't', CMD_TAKEOFF, NULL, NULL },
+	{ "Wear/wield an item", 'w', CMD_WIELD, NULL, NULL },
+	{ "Take off/unwield an item", 't', CMD_TAKEOFF, NULL, NULL },
 	{ "Drop an item", 'd', CMD_DROP, NULL, NULL },
 	{ "Fire your missile weapon", 'f', CMD_FIRE, NULL, player_can_fire },
 	{ "Use a staff", 'u', CMD_USE_STAFF, NULL, NULL },

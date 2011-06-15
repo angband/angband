@@ -218,38 +218,6 @@ void textui_cmd_toggle_ignore(void)
 	do_cmd_redraw();
 }
 
-void textui_obj_wield(object_type *o_ptr, int item)
-{
-	int slot = wield_slot(o_ptr);
-
-	/* Usually if the slot is taken we'll just replace the item in the slot,
-	 * but in some cases we need to ask the user which slot they actually
-	 * want to replace */
-	if (p_ptr->inventory[slot].kind)
-	{
-		if (o_ptr->tval == TV_RING)
-		{
-			const char *q = "Replace which ring? ";
-			const char *s = "Error in obj_wield, please report";
-			item_tester_hook = obj_is_ring;
-			if (!get_item(&slot, q, s, CMD_WIELD, USE_EQUIP)) return;
-		}
-
-		if (obj_is_ammo(o_ptr) && !object_similar(&p_ptr->inventory[slot],
-			o_ptr, OSTACK_QUIVER))
-		{
-			const char *q = "Replace which ammunition? ";
-			const char *s = "Error in obj_wield, please report";
-			item_tester_hook = obj_is_ammo;
-			if (!get_item(&slot, q, s, CMD_WIELD, USE_EQUIP)) return;
-		}
-	}
-
-	cmd_insert(CMD_WIELD);
-	cmd_set_arg_item(cmd_get_top(), 0, item);
-	cmd_set_arg_number(cmd_get_top(), 1, slot);
-}
-
 /* Examine an object */
 void textui_obj_examine(object_type *o_ptr, int item)
 {
