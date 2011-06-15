@@ -479,7 +479,7 @@ static void ui_keymap_create(const char *title, int row)
 	}
 
 	if (c.code) {
-		keymap_add(mode, c, keymap_buffer);
+		keymap_add(mode, c, keymap_buffer, TRUE);
 		prt("Keymap added.  Press any key to continue.", 17, 0);
 		inkey();
 	}
@@ -945,7 +945,7 @@ static void do_cmd_pref_file_hack(long row)
 	if (askfor_aux(ftmp, sizeof ftmp, NULL))
 	{
 		/* Process the given filename */
-		if (process_pref_file(ftmp, FALSE) == FALSE)
+		if (process_pref_file(ftmp, FALSE, TRUE) == FALSE)
 		{
 			/* Mention failure */
 			prt("", 0, 0);

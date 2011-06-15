@@ -1508,15 +1508,14 @@ static void process_some_user_pref_files(void)
 {
 	char buf[1024];
 
-
 	/* Process the "user.prf" file */
-	(void)process_pref_file("user.prf", TRUE);
+	(void)process_pref_file("user.prf", TRUE, TRUE);
 
 	/* Get the "PLAYER.prf" filename */
-	(void)strnfmt(buf, sizeof(buf), "%s.prf", op_ptr->base_name);
+	(void)strnfmt(buf, sizeof(buf), "%s.prf", op_ptr->base_name, TRUE);
 
 	/* Process the "PLAYER.prf" file */
-	(void)process_pref_file(buf, TRUE);
+	(void)process_pref_file(buf, TRUE, TRUE);
 }
 
 

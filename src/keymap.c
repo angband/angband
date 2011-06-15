@@ -41,6 +41,8 @@ struct keymap {
 	struct keypress key;
 	struct keypress *actions;
 
+	bool user;		/* User-defined keymap */
+
 	struct keymap *next;
 };
 
@@ -93,7 +95,7 @@ static struct keypress *keymap_make(const struct keypress *actions)
 /**
  * Add a keymap to the mappings table.
  */
-void keymap_add(int keymap, struct keypress trigger, struct keypress *actions)
+void keymap_add(int keymap, struct keypress trigger, struct keypress *actions, bool user)
 {
 	struct keymap *k = mem_zalloc(sizeof *k);
 	assert(keymap >= 0 && keymap < KEYMAP_MODE_MAX);
@@ -102,6 +104,7 @@ void keymap_add(int keymap, struct keypress trigger, struct keypress *actions)
 
 	k->key = trigger;
 	k->actions = keymap_make(actions);
+	k->user = user;
 
 	k->next = keymaps[keymap];
 	keymaps[keymap] = k;
@@ -172,6 +175,8 @@ void keymap_dump(ang_file *fff)
 	for (k = keymaps[mode]; k; k = k->next) {
 		char buf[1024];
 		struct keypress key[2] = { { 0 }, { 0 } };
+
+		if (!k->user) continue;
 
 		/* Encode the action */
 		keypress_to_text(buf, sizeof(buf), k->actions, FALSE);

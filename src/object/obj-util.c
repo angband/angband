@@ -279,17 +279,11 @@ void reset_visuals(bool load_prefs)
 
 	/* Graphic symbols */
 	if (use_graphics)
-	{
-		/* Process "graf.prf" */
-		process_pref_file("graf.prf", FALSE);
-	}
+		process_pref_file("graf.prf", FALSE, FALSE);
 
 	/* Normal symbols */
 	else
-	{
-		/* Process "font.prf" */
-		process_pref_file("font.prf", FALSE);
-	}
+		process_pref_file("font.prf", FALSE, FALSE);
 
 #ifdef ALLOW_BORG_GRAPHICS
 	/* Initialize the translation table for the borg */

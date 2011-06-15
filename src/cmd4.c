@@ -782,7 +782,7 @@ static void do_cmd_save_screen_html(int mode)
 
 	/* Recover current graphics settings */
 	reset_visuals(TRUE);
-	process_pref_file(file_name, TRUE);
+	process_pref_file(file_name, TRUE, FALSE);
 	file_delete(file_name);
 	do_cmd_redraw();
 
