@@ -144,7 +144,6 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 	string_free(ANGBAND_DIR_XTRA_FONT);
 	string_free(ANGBAND_DIR_XTRA_GRAF);
 	string_free(ANGBAND_DIR_XTRA_SOUND);
-	string_free(ANGBAND_DIR_XTRA_HELP);
 	string_free(ANGBAND_DIR_XTRA_ICON);
 
 	/*** Prepare the paths ***/
@@ -161,7 +160,6 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 	ANGBAND_DIR_XTRA_FONT = string_make(format("%s" PATH_SEP "font", ANGBAND_DIR_XTRA));
 	ANGBAND_DIR_XTRA_GRAF = string_make(format("%s" PATH_SEP "graf", ANGBAND_DIR_XTRA));
 	ANGBAND_DIR_XTRA_SOUND = string_make(format("%s" PATH_SEP "sound", ANGBAND_DIR_XTRA));
-	ANGBAND_DIR_XTRA_HELP = string_make(format("%s" PATH_SEP "help", ANGBAND_DIR_XTRA));
 	ANGBAND_DIR_XTRA_ICON = string_make(format("%s" PATH_SEP "icon", ANGBAND_DIR_XTRA));
 
 #ifdef PRIVATE_USER_PATH
@@ -3052,6 +3050,5 @@ void cleanup_angband(void)
 	string_free(ANGBAND_DIR_XTRA_FONT);
 	string_free(ANGBAND_DIR_XTRA_GRAF);
 	string_free(ANGBAND_DIR_XTRA_SOUND);
-	string_free(ANGBAND_DIR_XTRA_HELP);
 	string_free(ANGBAND_DIR_XTRA_ICON);
 }

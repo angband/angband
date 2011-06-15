@@ -428,11 +428,11 @@ void do_cmd_note(void) {
 
 	/* Format the note correctly, supporting some cute /me commands */
 	if (strncmp(tmp, "/say ", 5) == 0)
-		snprintf(note, sizeof(note), "-- %s says: \"%s\"", op_ptr->full_name, &tmp[5]);
+		strnfmt(note, sizeof(note), "-- %s says: \"%s\"", op_ptr->full_name, &tmp[5]);
 	else if (strncmp(tmp, "/me", 3) == 0)
-		snprintf(note, sizeof(note), "-- %s%s", op_ptr->full_name, &tmp[3]);
+		strnfmt(note, sizeof(note), "-- %s%s", op_ptr->full_name, &tmp[3]);
 	else
-		snprintf(note, sizeof(note), "-- Note: %s", tmp);
+		strnfmt(note, sizeof(note), "-- Note: %s", tmp);
 
 	/* Display the note (omitting the "-- " prefix) */
 	msg(&note[3]);

@@ -3161,19 +3161,7 @@ static void start_screensaver(void)
  */
 static void display_help(const char *filename)
 {
-	char tmp[1024];
-
-	path_build(tmp, sizeof(tmp), ANGBAND_DIR_XTRA_HELP, filename);
-
-	if (file_exists(tmp))
-	{
-		ShellExecute(data[0].w, "open", tmp, NULL, NULL, SW_SHOWNORMAL);
-	}
-	else
-	{
-		plog_fmt("Cannot find help file: %s", tmp);
-		plog("Use the online help files instead.");
-	}
+	plog("Use the online help files instead.");
 }
 
 
@@ -4753,10 +4741,6 @@ static void hook_quit(const char *str)
 	/* Free strings */
 	string_free(ini_file);
 	string_free(argv0);
-	string_free(ANGBAND_DIR_XTRA_FONT);
-	string_free(ANGBAND_DIR_XTRA_GRAF);
-	string_free(ANGBAND_DIR_XTRA_SOUND);
-	string_free(ANGBAND_DIR_XTRA_HELP);
 
 #ifdef HAS_CLEANUP
 	cleanup_angband();
@@ -4904,12 +4888,6 @@ static void init_stuff(void)
 
 #ifdef USE_GRAPHICS
 
-	/* Build the "graf" path */
-	path_build(path, sizeof(path), ANGBAND_DIR_XTRA, "graf");
-
-	/* Allocate the path */
-	ANGBAND_DIR_XTRA_GRAF = string_make(path);
-
 	/* Validate the "graf" directory */
 	validate_dir(ANGBAND_DIR_XTRA_GRAF);
 
@@ -4918,27 +4896,10 @@ static void init_stuff(void)
 
 #ifdef USE_SOUND
 
-	/* Build the "sound" path */
-	path_build(path, sizeof(path), ANGBAND_DIR_XTRA, "sound");
-
-	/* Allocate the path */
-	ANGBAND_DIR_XTRA_SOUND = string_make(path);
-
 	/* Validate the "sound" directory */
 	validate_dir(ANGBAND_DIR_XTRA_SOUND);
 
 #endif /* USE_SOUND */
-
-	/* Build the "help" path */
-	path_build(path, sizeof(path), ANGBAND_DIR_XTRA, "help");
-
-	/* Allocate the path */
-	ANGBAND_DIR_XTRA_HELP = string_make(path);
-
-#if 0
-	/* Validate the "help" directory */
-	validate_dir(ANGBAND_DIR_XTRA_HELP);
-#endif /* 0 */
 }
 
 
