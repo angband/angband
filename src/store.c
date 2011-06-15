@@ -2928,91 +2928,39 @@ void store_menu_recalc(menu_type *m)
  * which are not allowed in the dungeon, and we must disable some commands
  * which are allowed in the dungeon but not in the stores, to prevent chaos.
  */
-static bool store_process_command_key(struct keypress cmd)
+static bool store_process_command_key(struct keypress kp)
 {
-	/* Parse the command */
-	switch (cmd.code)
-	{
-		/*** Inventory Commands ***/
+	int cmd = 0;
 
-		case 'w':
-		case 'T':
-		case 't':
-		case KTRL('D'):
-		case 'k':
-		case 'P':
-		case 'b':
-		case 'I':
-		case '{':
-		case '}':
-		case '~':
-		{
-			/* XXXmacro this is less than ideal */
-			Term_key_push(cmd.code);
-			textui_process_command(TRUE);
-			break;
-		}
+	/* Process the keycode */
+	switch (kp.code) {
+		case 'T': /* roguelike */
+		case 't': cmd = CMD_TAKEOFF; break;
 
-		/* Equipment list */
-		case 'e':
-		{
-			do_cmd_equip();
-			break;
-		}
+		case KTRL('D'): /* roguelike */
+		case 'k': textui_cmd_destroy(); break;
 
-		/* Inventory list */
-		case 'i':
-		{
-			do_cmd_inven();
-			break;
-		}
+		case 'P': /* roguelike */
+		case 'b': textui_spell_browse(); break;
 
+		case '~': textui_browse_knowledge(); break;
+		case 'I': textui_obj_examine(); break;
+		case 'w': cmd = CMD_WIELD; break;
+		case '{': cmd = CMD_INSCRIBE; break;
+		case '}': cmd = CMD_UNINSCRIBE; break;
 
-		/*** Various commands ***/
+		case 'e': do_cmd_equip(); break;
+		case 'i': do_cmd_inven(); break;
+		case KTRL('E'): toggle_inven_equip(); break;
+		case 'C': do_cmd_change_name(); break;
+		case KTRL('P'): do_cmd_messages(); break;
+		case ')': do_cmd_save_screen(); break;
 
-		/* Hack -- toggle windows */
-		case KTRL('E'):
-		{
-			toggle_inven_equip();
-			break;
-		}
-
-
-
-		/*** Help and Such ***/
-
-		/* Character description */
-		case 'C':
-		{
-			do_cmd_change_name();
-			break;
-		}
-
-
-		/*** System Commands ***/
-
-
-		/*** Misc Commands ***/
-
-		/* Show previous messages */
-		case KTRL('P'):
-		{
-			do_cmd_messages();
-			break;
-		}
-
-		/* Save "screen dump" */
-		case ')':
-		{
-			do_cmd_save_screen();
-			break;
-		}
-
-		default:
-		{
-			return FALSE;
-		}
+		default: return FALSE;
 	}
+
+	if (cmd)
+		cmd_insert_repeated(cmd, 0);
 
 	return TRUE;
 }
