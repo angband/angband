@@ -335,7 +335,7 @@ static void get_bonuses(void)
 /*
  * Get the racial history, and social class, using the "history charts".
  */
-static char *get_history(struct history_chart *chart, s16b *sc)
+char *get_history(struct history_chart *chart, s16b *sc)
 {
 	int roll, social_class;
 	struct history_entry *entry;
@@ -407,7 +407,7 @@ static void get_money(void)
 		p_ptr->au = p_ptr->au_birth = STARTING_GOLD;
 }
 
-static void player_init(struct player *p)
+void player_init(struct player *p)
 {
 	int i;
 	bool keep_randarts = FALSE;
@@ -898,9 +898,8 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
  * This fleshes out a full player based on the choices currently made,
  * and so is called whenever things like race or class are chosen.
  */
-static void player_generate(struct player *p, const player_sex *s,
-                     const struct player_race *r,
-                     const struct player_class *c)
+void player_generate(struct player *p, const player_sex *s,
+		const struct player_race *r, const struct player_class *c)
 {
 	if (!s) s = &sex_info[p->psex];
 	if (!c)
