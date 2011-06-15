@@ -453,10 +453,10 @@ static void ui_keymap_create(const char *title, int row)
 		c_prt(first ? TERM_YELLOW : TERM_WHITE,
 				format("Action: %s", tmp), 15, 0);
 
+		c_prt(TERM_L_BLUE, "Press Control-Return to stop inputting characters.", 17, 0);
+
 		kp = inkey();
 		switch (kp.code) {
-			case ESCAPE: c.code = 0; done = TRUE; continue;
-			case KC_ENTER: case KC_RETURN: done = TRUE; continue;
 			case KC_BACKSPACE:
 				if (n > 0) {
 					n -= 1;
@@ -468,6 +468,12 @@ static void ui_keymap_create(const char *title, int row)
 				memset(keymap_buffer, 0, sizeof keymap_buffer);
 				n = 0;
 				break;
+			case KC_RETURN:
+			case KC_ENTER:
+				if (kp.mods == KC_MOD_CONTROL) {
+					done = TRUE;
+					continue;
+				}
 			default:
 				if (first) {
 					memset(keymap_buffer, 0, sizeof keymap_buffer);
@@ -478,7 +484,7 @@ static void ui_keymap_create(const char *title, int row)
 		}
 	}
 
-	if (c.code) {
+	if (c.code && get_check("Save this keymap? ")) {
 		keymap_add(mode, c, keymap_buffer, TRUE);
 		prt("Keymap added.  Press any key to continue.", 17, 0);
 		inkey();
