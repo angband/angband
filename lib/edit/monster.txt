@@ -1966,7 +1966,7 @@ C:r
 I:110:32:18:20:10
 W:11:2:0:38
 B:HIT:HURT:1d5
-F:MALE | EVIL
+F:MALE | EVIL | FRIEND
 F:DROP_60
 F:FORCE_SLEEP
 S:1_IN_4
@@ -2560,20 +2560,8 @@ F:OPEN_DOOR | BASH_DOOR
 F:NO_FEAR
 D:It is a small demonic spirit full of malevolence.
 
-N:202:Gnome mage
-T:humanoid
-C:r
-I:110:32:20:20:20
-W:15:2:0:40
-B:HIT:HURT:1d5
-F:MALE | EVIL | FRIENDS
-F:DROP_40
-F:FORCE_SLEEP
-S:1_IN_4
-S:BLINK | DARKNESS
-S:BO_COLD
-S:S_MONSTER
-D:A mage of short stature.
+#N:202:Gnome mage
+#Consolidated (see #154)
 
 N:203:Clear hound
 T:zephyr hound
@@ -5451,7 +5439,7 @@ B:HIT:LOSE_STR:3d4
 F:DROP_2 | ONLY_ITEM
 F:RAND_25 | TAKE_ITEM
 F:IM_COLD | IM_POIS
-F:FORCE_SLEEP
+F:FORCE_SLEEP | FRIEND
 S:1_IN_15
 S:BLIND | CONF | DRAIN_MANA | HOLD
 S:BO_NETH
@@ -6812,25 +6800,8 @@ S:BLIND | BRAIN_SMASH | CAUSE_3 | CAUSE_4 | DARKNESS | DRAIN_MANA
 S:BO_NETH
 D:A foul wind chills your bones as this ghastly figure approaches.
 
-N:460:Dread
-T:ghost
-C:o
-I:120:263:20:30:10
-W:42:1:0:600
-B:HIT:HURT:6d6
-B:HIT:HURT:6d6
-B:HIT:LOSE_STR:3d4
-F:FRIENDS
-F:DROP_40 | ONLY_ITEM
-F:RAND_25 | TAKE_ITEM
-F:IM_COLD | IM_POIS
-F:FORCE_SLEEP
-S:1_IN_15
-S:BLIND | CONF | DRAIN_MANA | HOLD
-S:BO_NETH
-D:It is a form that screams its presence against the eye.  Death incarnate, its
-D: hideous black body seems to struggle against reality as the universe itself
-D: struggles to banish it.
+#N:460:Dread
+#Consolidated (see #369)
 
 ### Dungeon level 43 ###
 
