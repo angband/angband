@@ -255,7 +255,7 @@ static enum parser_error parse_z(struct parser *p) {
 	return 0;
 }
 
-static struct parser *init_parse_z(void) {
+struct parser *init_parse_z(void) {
 	struct maxima *z = mem_zalloc(sizeof *z);
 	struct parser *p = parser_new();
 
@@ -363,7 +363,7 @@ static enum parser_error parse_kb_f(struct parser *p) {
 	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
-static struct parser *init_parse_kb(void) {
+struct parser *init_parse_kb(void) {
 	struct parser *p = parser_new();
 
 	struct kb_parsedata *d = mem_zalloc(sizeof(*d));
@@ -594,7 +594,7 @@ static enum parser_error parse_k_l(struct parser *p) {
 	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
-static struct parser *init_parse_k(void) {
+struct parser *init_parse_k(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "V sym version", ignored);
@@ -811,7 +811,7 @@ static enum parser_error parse_a_d(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static struct parser *init_parse_a(void) {
+struct parser *init_parse_a(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "V sym version", ignored);
@@ -905,7 +905,7 @@ static enum parser_error parse_names_d(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static struct parser *init_parse_names(void) {
+struct parser *init_parse_names(void) {
 	struct parser *p = parser_new();
 	struct names_parse *n = mem_zalloc(sizeof *n);
 	n->section = 0;
@@ -1100,7 +1100,7 @@ static enum parser_error parse_f_e(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static struct parser *init_parse_f(void) {
+struct parser *init_parse_f(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "V sym version", ignored);
@@ -1318,7 +1318,7 @@ static enum parser_error parse_e_d(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static struct parser *init_parse_e(void) {
+struct parser *init_parse_e(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "V sym version", ignored);
@@ -1531,7 +1531,7 @@ static enum parser_error parse_p_c(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static struct parser *init_parse_p(void) {
+struct parser *init_parse_p(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "V sym version", ignored);
@@ -1763,7 +1763,7 @@ static enum parser_error parse_c_f(struct parser *p) {
 	return s ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
-static struct parser *init_parse_c(void) {
+struct parser *init_parse_c(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "V sym version", ignored);
@@ -1863,7 +1863,7 @@ static enum parser_error parse_v_d(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static struct parser *init_parse_v(void) {
+struct parser *init_parse_v(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "V sym version", ignored);
@@ -1935,7 +1935,7 @@ static enum parser_error parse_h_d(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static struct parser *init_parse_h(void) {
+struct parser *init_parse_h(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "V sym version", ignored);
@@ -2057,7 +2057,7 @@ static enum parser_error parse_flavor_d(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static struct parser *init_parse_flavor(void) {
+struct parser *init_parse_flavor(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "V sym version", ignored);
@@ -2136,7 +2136,7 @@ static enum parser_error parse_s_d(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static struct parser *init_parse_s(void) {
+struct parser *init_parse_s(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "V sym version", ignored);
@@ -2203,7 +2203,7 @@ static enum parser_error parse_hint(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static struct parser *init_parse_hints(void) {
+struct parser *init_parse_hints(void) {
 	struct parser *p = parser_new();
 	parser_reg(p, "H str text", parse_hint);
 	return p;
@@ -2265,7 +2265,7 @@ static enum parser_error parse_mp_m(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static struct parser *init_parse_mp(void) {
+struct parser *init_parse_mp(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 
@@ -2447,7 +2447,7 @@ static enum parser_error parse_pit_s2(struct parser *p) {
 	mem_free(flags);
 	return PARSE_ERROR_NONE;
 }
-static struct parser *init_parse_pit(void) {
+struct parser *init_parse_pit(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 
