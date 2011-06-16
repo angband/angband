@@ -514,13 +514,14 @@ static bool wiz_create_item_action(menu_type *m, const ui_event *e, int oid)
 	menu->selections = all_letters;
 
 	object_base_name(buf, sizeof buf, oid, TRUE);
-	menu->title = format("What kind of %s?", buf);
+	menu->title = string_make(format("What kind of %s?", buf));
 
 	menu_setpriv(menu, n_choices, choice);
 	menu_layout(menu, &wiz_create_item_area);
 	ret = menu_select(menu, 0);
 
 	screen_load();
+	string_free((char *)menu->title);
 
 	return (ret.type == EVT_ESCAPE);
 }
