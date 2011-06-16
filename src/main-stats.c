@@ -1539,14 +1539,19 @@ static int stats_write_db(u32b run)
 	return SQLITE_OK;
 }
 
-void progress_bar(int run, time_t start) {
-	int i;
-	int n = (run * 40) / num_runs;
-	float p = (run * 100) / num_runs;
+/**
+ * Call with the number of runs that have been completed.
+ */
+
+void progress_bar(u32b run, time_t start) {
+	u32b i;
+	u32b n = (run * 40) / num_runs;
+	u32b p10 = ((long long)run * 1000) / num_runs;
 
 	time_t delta = time(NULL) - start;
-	int togo = num_runs - run;
-	int expect = delta ? (run * togo) / delta : 0;
+	u32b togo = num_runs - run;
+	u32b expect = delta ? ((long long)run * (long long)togo) / delta 
+		: 0;
 
 	int h = expect / 3600;
 	int m = (expect % 3600) / 60;
@@ -1555,7 +1560,7 @@ void progress_bar(int run, time_t start) {
 	printf("\r|");
 	for (i = 0; i < n; i++) printf("*");
 	for (i = 0; i < 40 - n; i++) printf(" ");
-	printf("| %d/%d (%5.1f%%) %3d:%02d:%02d ", run, num_runs, p, h, m, s);
+	printf("| %d/%d (%5.1f%%) %3d:%02d:%02d ", run, num_runs, p10/10.0, h, m, s);
 	fflush(stdout);
 }
 
@@ -1594,9 +1599,9 @@ static errr run_stats(void)
 	}
 
 	start = time(NULL);
-	for (run = 0; run < num_runs; run++)
+	for (run = 1; run <= num_runs; run++)
 	{
-		if (!quiet) progress_bar(run, start);
+		if (!quiet) progress_bar(run - 1, start);
 
 		if (randarts)
 		{
@@ -1612,7 +1617,7 @@ static errr run_stats(void)
 		descend_dungeon();
 
 		/* Checkpoint every so many runs */
-		if (run > 0 && run % RUNS_PER_CHECKPOINT == 0)
+		if (run % RUNS_PER_CHECKPOINT == 0)
 		{
 			err = stats_write_db(run);
 			if (err)
