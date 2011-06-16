@@ -25,7 +25,7 @@ int teardown_tests(void *state) {
 
 static int number_distinct_items(int which)
 {
-	struct store *s = &store[which];
+	struct store *s = &stores[which];
 	unsigned int i;
 	u32b *kinds = mem_zalloc(sizeof(u32b) * s->table_num);
 	u32b kind;
