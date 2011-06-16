@@ -611,6 +611,7 @@ static bool textui_process_key(struct keypress kp)
 		return TRUE;
 
 	cmd = converted_list[c];
+	if (!cmd) return FALSE;
 
 	if (key_confirm_command(c) &&
 			(!cmd->prereq || cmd->prereq())) {
