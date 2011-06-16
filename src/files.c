@@ -969,7 +969,7 @@ errr file_character(const char *path, bool full)
 
 	ang_file *fp;
 
-	store_type *st_ptr = &store[STORE_HOME];
+	struct store *st_ptr = &stores[STORE_HOME];
 
 	char o_name[80];
 

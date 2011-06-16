@@ -423,7 +423,7 @@ quest *q_list;
 /*
  * Array[MAX_STORES] of stores
  */
-store_type *store;
+struct store *stores;
 
 /*
  * Flag to override which store is selected if in a knowledge menu

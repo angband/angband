@@ -605,7 +605,7 @@ void wr_stores(void)
 	wr_u16b(MAX_STORES);
 	for (i = 0; i < MAX_STORES; i++)
 	{
-		const store_type *st_ptr = &store[i];
+		const struct store *st_ptr = &stores[i];
 		int j;
 
 		/* XXX Old values */

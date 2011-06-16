@@ -56,7 +56,7 @@ void dungeon_change_level(int dlev)
 				if (n == STORE_HOME) continue;
 
 				/* Maintain */
-				store_maint(n);
+				store_maint(&stores[n]);
 			}
 
 			/* Sometimes, shuffle the shop-keepers */
@@ -73,7 +73,7 @@ void dungeon_change_level(int dlev)
 				}
 
 				/* Shuffle it */
-				store_shuffle(n);
+				store_shuffle(&stores[n]);
 			}
 		}
 		daycount = 0;

@@ -1752,7 +1752,7 @@ static int rd_stores(rd_item_t rd_item_version)
 	rd_u16b(&tmp16u);
 	for (i = 0; i < tmp16u; i++)
 	{
-		store_type *st_ptr = &store[i];
+		struct store *st_ptr = &stores[i];
 
 		int j;		
 		byte own, num;

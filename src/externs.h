@@ -76,7 +76,7 @@ extern u16b *temp_g;
 extern maxima *z_info;
 extern monster_lore *l_list;
 extern quest *q_list;
-extern store_type *store;
+extern struct store *stores;
 extern int store_knowledge;
 extern const char *** name_sections;
 extern s16b alloc_ego_size;

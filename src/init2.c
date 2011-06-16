@@ -2986,7 +2986,7 @@ void cleanup_angband(void)
 	FREE(alloc_race_table);
 
 	/* Free the stores */
-	if (store) free_stores();
+	if (stores) free_stores();
 
 	/* Free the quest list */
 	FREE(q_list);

@@ -1210,10 +1210,10 @@ static object_type *find_artifact(struct artifact *artifact)
 
 	for (j = 1; j < (FEAT_SHOP_TAIL - FEAT_SHOP_HEAD + 1); j++)
 	{
-		for (i = 0; i < store[j].stock_size; i++)
+		for (i = 0; i < stores[j].stock_size; i++)
 		{
-			if (store[j].stock[i].artifact == artifact)
-				return &store[j].stock[i];
+			if (stores[j].stock[i].artifact == artifact)
+				return &stores[j].stock[i];
 		}
 	}
 
