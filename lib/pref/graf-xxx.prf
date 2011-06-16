@@ -291,7 +291,7 @@ F:60:bright:0x81:0xC3
 ##### Non-kind (contains the "pile" picture) #####
 
 # <pile>
-# K:0:0x82:0x96
+K:0:0:131:159
 
 
 

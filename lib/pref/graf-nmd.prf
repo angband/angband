@@ -177,7 +177,7 @@ F:60:dark:0x80:0x91
 ##### Non-kind (contains the "pile" picture) #####
 
 # Pile
-# K:0:0x01:0x20
+K:0:0:129:151
 
 
 ##### Various Stuff #####

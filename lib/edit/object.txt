@@ -96,6 +96,7 @@ V:3.3.0
 ##### Non-kind (contains the "pile" picture) #####
 
 N:0:<pile>
+I:0:0
 G:&:w
 
 

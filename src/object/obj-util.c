@@ -3423,12 +3423,8 @@ object_kind *lookup_kind(int tval, int sval)
 {
 	int k;
 
-	/* This function should not get called with tval == 0,
-	 * since gaps in the object list have entries in k_info[]. */
-	assert(tval);
-
 	/* Look for it */
-	for (k = 1; k < z_info->k_max; k++)
+	for (k = 0; k < z_info->k_max; k++)
 	{
 		object_kind *kind = &k_info[k];
 		if (kind->tval == tval && kind->sval == sval)
