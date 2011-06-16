@@ -131,9 +131,6 @@ static void spell_menu_browser(int oid, void *data, const region *loc)
 	text_out_indent = loc->col - 1;
 	text_out_pad = 1;
 
-	screen_load();
-	screen_save();
-
 	Term_gotoxy(loc->col, loc->row + loc->page_rows);
 	text_out("\n%s\n", s_info[(p_ptr->class->spell_book == TV_MAGIC_BOOK) ? spell : spell + PY_MAX_SPELLS].text);
 
@@ -208,9 +205,7 @@ static int spell_menu_select(menu_type *m, const char *noun, const char *verb)
 	region_erase_bordered(&m->active);
 	prt(format("%^s which %s? ", verb, noun), 0, 0);
 
-	screen_save();
 	menu_select(m, 0);
-	screen_load();
 
 	screen_load();
 
@@ -229,10 +224,8 @@ static void spell_menu_browse(menu_type *m, const char *noun)
 	region_erase_bordered(&m->active);
 	prt(format("Browsing %ss.  Press Escape to exit.", noun), 0, 0);
 
-	screen_save();
 	d->browse = TRUE;
 	menu_select(m, 0);
-	screen_load();
 
 	screen_load();
 }

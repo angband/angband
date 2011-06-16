@@ -533,8 +533,8 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			                object_region.col);
 		}
 
-		menu_refresh(inactive_menu);
-		menu_refresh(active_menu);
+		menu_refresh(inactive_menu, FALSE);
+		menu_refresh(active_menu, FALSE);
 
 		handle_stuff(p_ptr);
 

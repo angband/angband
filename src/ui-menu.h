@@ -268,8 +268,10 @@ bool menu_layout(menu_type *menu, const region *loc);
 
 /**
  * Display a menu.
+ * If reset_screen is true, it will reset the screen to the previously saved
+ * state before displaying.
  */
-void menu_refresh(menu_type *menu);
+void menu_refresh(menu_type *menu, bool reset_screen);
 
 
 /**

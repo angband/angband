@@ -607,7 +607,7 @@ static enum birth_stage menu_question(enum birth_stage current, menu_type *curre
 				cmd_insert(choice_command);
 				cmd_set_arg_choice(cmd_get_top(), 0, current_menu->cursor);
 
-				menu_refresh(current_menu);
+				menu_refresh(current_menu, FALSE);
 				next = current + 1;
 			}
 			else if (cx.key.code == '=') 
@@ -1007,21 +1007,21 @@ errr get_birth_command(bool wait)
 
 			if (current_stage > BIRTH_SEX_CHOICE)
 			{
-				menu_refresh(&sex_menu);
+				menu_refresh(&sex_menu, FALSE);
 				menu = &race_menu;
 				command = CMD_CHOOSE_RACE;
 			}
 			
 			if (current_stage > BIRTH_RACE_CHOICE)
 			{
-				menu_refresh(&race_menu);
+				menu_refresh(&race_menu, FALSE);
 				menu = &class_menu;
 				command = CMD_CHOOSE_CLASS;
 			}
 
 			if (current_stage > BIRTH_CLASS_CHOICE)
 			{
-				menu_refresh(&class_menu);
+				menu_refresh(&class_menu, FALSE);
 				menu = &roller_menu;
 				command = CMD_NULL;
 			}
