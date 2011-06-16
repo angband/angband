@@ -263,9 +263,7 @@ static int cmd_idx(cmd_code code)
 	for (i = 0; i < N_ELEMENTS(game_cmds); i++)
 	{
 		if (game_cmds[i].cmd == code)
-		{
 			return i;
-		}
 	}
 
 	return -1;
@@ -419,6 +417,15 @@ void process_command(cmd_context ctx, bool no_request)
 
 				cmd_set_arg_item(cmd, 0, item);
 			}
+		}
+
+		/* XXX avoid dead objects from being re-used on repeat.
+		 * this needs to be expanded into a general safety-check
+		 * on args */
+		if (game_cmds[idx].arg_type[0] == arg_ITEM) {
+			object_type *o_ptr = object_from_item_idx(cmd->arg[0].item);
+			if (!o_ptr->kind)
+				return;
 		}
 
 		/* Do some sanity checking on those arguments that might have 
