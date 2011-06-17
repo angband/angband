@@ -422,7 +422,7 @@ void process_command(cmd_context ctx, bool no_request)
 		/* XXX avoid dead objects from being re-used on repeat.
 		 * this needs to be expanded into a general safety-check
 		 * on args */
-		if (game_cmds[idx].arg_type[0] == arg_ITEM) {
+		if ((game_cmds[idx].arg_type[0] == arg_ITEM) && cmd->arg_present[0]) {
 			object_type *o_ptr = object_from_item_idx(cmd->arg[0].item);
 			if (!o_ptr->kind)
 				return;
