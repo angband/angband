@@ -3685,7 +3685,7 @@ bool cave_ismineral(struct cave *c, int y, int x) {
  * True if the square is rubble.
  */
 bool cave_isrubble(struct cave *c, int y, int x) {
-	return c->feat[y][x] == FEAT_SECRET;
+	return c->feat[y][x] == FEAT_RUBBLE;
 }
 
 /**
