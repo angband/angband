@@ -1899,7 +1899,10 @@ static bool mon_create_drop(int m_idx, byte origin)
 		if (gold_ok && (!item_ok || (randint0(100) < 50)))
 			make_gold(i_ptr, level, force_coin);
 
-		else if (!make_object(cave, i_ptr, level, good, great)) continue;
+		else {
+			make_object(cave, i_ptr, level, good, great);
+			if (!i_ptr->kind) continue;
+		}
 
 		i_ptr->origin = origin;
 		i_ptr->origin_depth = p_ptr->depth;

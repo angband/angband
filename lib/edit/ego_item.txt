@@ -47,7 +47,8 @@
 # fields accept randomized values.
 
 # 'M' is for minimum values - minimum allowed to-hit, to-dam, to-ac.
-# Cursed ego-items will have minimum penalties.
+# The value of 255 is special, meaning "there is no minimum". This
+# allows zero to be a valid minimum (e.g. for mixed-blessing items).
 
 # 'W' is for extra information. Depth is the depth the object is
 # normally found at, rarity determines how common the object is,
@@ -66,8 +67,7 @@
 # and its flags need a line to themselves. MAX_PVALS is defined in 
 # src/defines.h - you will need to recompile if you wish to change this 
 # value. A pval can take a random value. The min_pval must be present,
-# but can be 0. 0 means "do not apply a minimum", so if you want to allow
-# a negative pval, the min must be set to 0.
+# but can be 0. As with 'M' above, 255 means "do not apply a minimum".
 
 # Version stamp (required)
 
@@ -84,6 +84,7 @@ V:3.3.0
 N:4:of Resist Acid
 X:16:0
 W:0:1:0:1000
+M:255:0:0
 T:36:0:99
 T:37:0:6
 F:RES_ACID | IGNORE_ACID
@@ -91,6 +92,7 @@ F:RES_ACID | IGNORE_ACID
 N:5:of Resist Lightning
 X:10:0
 W:0:1:0:400
+M:255:0:0
 T:36:0:99
 T:37:0:6
 F:RES_ELEC | IGNORE_ELEC
@@ -98,6 +100,7 @@ F:RES_ELEC | IGNORE_ELEC
 N:6:of Resist Fire
 X:14:0
 W:0:1:0:800
+M:255:0:0
 T:36:0:99
 T:37:0:6
 F:RES_FIRE | IGNORE_FIRE
@@ -105,6 +108,7 @@ F:RES_FIRE | IGNORE_FIRE
 N:7:of Resist Cold
 X:12:0
 W:0:1:0:600
+M:255:0:0
 T:36:0:99
 T:37:0:6
 F:RES_COLD | IGNORE_COLD
@@ -112,6 +116,7 @@ F:RES_COLD | IGNORE_COLD
 N:8:of Resistance
 X:20:0
 W:0:2:0:12500
+M:255:0:0
 C:0:0:d10
 T:36:0:99
 T:37:0:99
@@ -121,6 +126,7 @@ F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 N:9:of Elvenkind
 X:25:2
 W:0:4:0:15000
+M:255:0:0
 C:0:0:d10
 T:36:0:99
 T:37:0:99
@@ -131,6 +137,7 @@ F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 N:10:of Vulnerability
 X:0:0
 W:0:2:0:0
+M:255:0:0
 C:0:0:d50
 T:36:0:99
 T:37:0:99
@@ -152,6 +159,7 @@ F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 N:12:(Dwarven)
 X:18:0
 W:0:4:0:5000
+M:255:0:0
 C:0:0:d15
 T:37:0:99
 F:IGNORE_ACID | IGNORE_FIRE |
@@ -902,7 +910,7 @@ N:104:of Accuracy
 X:10:0
 W:0:1:0:1000
 C:d15:d5:0
-M:15:0:0
+M:15:255:0
 T:19:0:99
 D:It has no special abilities, but its to-hit value may be unusually
 D: high.
@@ -911,7 +919,7 @@ N:105:of Power
 X:10:0
 W:0:1:0:1000
 C:d5:d15:0
-M:0:15:0
+M:255:15:0
 T:19:0:99
 D:It has no special abilities, but its to-dam value may be unusually
 D: high.
@@ -1109,12 +1117,13 @@ N:128:of Craftmanship
 X:4:0
 W:0:2:0:500
 C:0:0:1d6M4:0
-M:0:0:4:0
+M:0:0:4
 T:38:0:99
 
 N:129:of Stealth
 X:16:0
 W:0:10:0:500
+M:255:0:0
 C:0:0:0
 T:38:0:99
 F:HIDE_TYPE
@@ -1123,6 +1132,7 @@ L:d2:0:STEALTH
 N:130:of Resistance
 X:10:0
 W:0:10:0:12500
+M:255:0:0
 C:0:0:d10
 T:38:7:99
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD
@@ -1139,7 +1149,7 @@ N:132:(Dwarven)
 X:18:0
 W:0:20:0:5000
 C:0:0:d15:0
-M:0:0:5:0
+M:255:0:5
 T:38:0:99
 F:FREE_ACT | HIDE_TYPE
 L:d2:1:STR
@@ -1149,6 +1159,7 @@ L:d2M3:1:INFRA
 N:133:of Speed
 X:25:0
 W:0:100:0:100000
+M:255:0:0
 C:0:0:0
 T:38:0:99
 F:HIDE_TYPE

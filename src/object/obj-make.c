@@ -34,17 +34,14 @@
  */
 #define GREAT_EGO   20
 
-/*
- * The creation of an artifact on a level gives a significant boost to the
- * level's "feeling", stored in cave->obj_rating.
- */
-#define ARTIFACT_LEVEL_RATING_MIN 30
+/* Define a value for minima which will be ignored. */
+#define NO_MINIMUM 	255
 
 /*** Make an ego item ***/
 
 /**
  * This is a safe way to choose a random new flag to add to an object.
- * It takes the existing flags and an array of new flags, 
+ * It takes the existing flags and an array of new flags,
  * and returns an entry from newf, or 0 if there are no
  * new flags available.
  */
@@ -113,7 +110,7 @@ static struct ego_item *ego_find_random(object_type *o_ptr, int level)
 		for (i = 0; i < alloc_ego_size; i++) {
 			/* Found the entry */
 			if (value < table[i].prob3) break;
-	
+
 			/* Decrement */
 			value = value - table[i].prob3;
 		}
@@ -127,10 +124,8 @@ static struct ego_item *ego_find_random(object_type *o_ptr, int level)
 
 /**
  * Apply generation magic to an ego-item.
- *
- * Returns the amount to increase the level rating by
  */
-s16b ego_apply_magic(object_type *o_ptr, int level)
+void ego_apply_magic(object_type *o_ptr, int level)
 {
 	int i, flag, x;
 
@@ -165,7 +160,7 @@ s16b ego_apply_magic(object_type *o_ptr, int level)
 	/* Apply flags */
 	of_union(o_ptr->flags, o_ptr->ego->flags);
 
-	return o_ptr->ego->rating;
+	return;
 }
 
 /**
@@ -183,7 +178,8 @@ void ego_min_pvals(object_type *o_ptr)
 			for (flag = of_next(o_ptr->ego->pval_flags[j], FLAG_START);
 					flag != FLAG_END;
 					flag = of_next(o_ptr->ego->pval_flags[j], flag + 1))
-				if (!of_has(o_ptr->flags, flag) || (o_ptr->ego->min_pval[j]
+				if (!of_has(o_ptr->flags, flag) ||
+						(o_ptr->ego->min_pval[j] != NO_MINIMUM
 						&& of_has(o_ptr->pval_flags[i], flag) &&
 						o_ptr->pval[i] < o_ptr->ego->min_pval[j]))
 					object_add_pval(o_ptr, o_ptr->ego->min_pval[j] -
@@ -197,11 +193,14 @@ static void ego_apply_minima(object_type *o_ptr)
 {
 	if (!o_ptr->ego) return;
 
-	if (o_ptr->to_h < o_ptr->ego->min_to_h)
+	if (o_ptr->ego->min_to_h != NO_MINIMUM &&
+			o_ptr->to_h < o_ptr->ego->min_to_h)
 		o_ptr->to_h = o_ptr->ego->min_to_h;
-	if (o_ptr->to_d < o_ptr->ego->min_to_d)
+	if (o_ptr->ego->min_to_d != NO_MINIMUM &&
+			o_ptr->to_d < o_ptr->ego->min_to_d)
 		o_ptr->to_d = o_ptr->ego->min_to_d;
-	if (o_ptr->to_a < o_ptr->ego->min_to_a)
+	if (o_ptr->ego->min_to_a != NO_MINIMUM &&
+			o_ptr->to_a < o_ptr->ego->min_to_a)
 		o_ptr->to_a = o_ptr->ego->min_to_a;
 
 	ego_min_pvals(o_ptr);
@@ -209,25 +208,26 @@ static void ego_apply_minima(object_type *o_ptr)
 
 
 /**
- * Try to find an ego-item for an object, setting name2 if successful and
+ * Try to find an ego-item for an object, setting o_ptr->ego if successful and
  * applying various bonuses.
- *
- * Returns the increase to level feeling if an ego item is created, 0 otherwise.
  */
-static s16b make_ego_item(object_type *o_ptr, int level)
+static void make_ego_item(object_type *o_ptr, int level)
 {
-	if (o_ptr->artifact || o_ptr->ego) return FALSE;
+	/* Cannot further improve artifacts or ego items */
+	if (o_ptr->artifact || o_ptr->ego) return;
 
 	/* Occasionally boost the generation level of an item */
 	if (level > 0 && one_in_(GREAT_EGO))
 		level = 1 + (level * MAX_DEPTH / randint1(MAX_DEPTH));
 
+	/* Try to get a legal ego type for this item */
 	o_ptr->ego = ego_find_random(o_ptr, level);
-	if (o_ptr->ego) {
-		return ego_apply_magic(o_ptr, level);
-	}
 
-	return 0;
+	/* Actually apply the ego template to the item */
+	if (o_ptr->ego)
+		ego_apply_magic(o_ptr, level);
+
+	return;
 }
 
 
@@ -272,19 +272,16 @@ void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
 static bool make_artifact_special(object_type *o_ptr, int level)
 {
 	int i;
-
 	object_kind *kind;
 
-
 	/* No artifacts, do nothing */
-	if (OPT(birth_no_artifacts)) return (FALSE);
+	if (OPT(birth_no_artifacts)) return FALSE;
 
 	/* No artifacts in the town */
-	if (!p_ptr->depth) return (FALSE);
+	if (!p_ptr->depth) return FALSE;
 
 	/* Check the special artifacts */
-	for (i = 0; i < ART_MIN_NORMAL; ++i)
-	{
+	for (i = 0; i < ART_MIN_NORMAL; ++i) {
 		artifact_type *a_ptr = &a_info[i];
 
 		/* Skip "empty" artifacts */
@@ -294,8 +291,7 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 		if (a_ptr->created) continue;
 
 		/* Enforce minimum "depth" (loosely) */
-		if (a_ptr->alloc_min > p_ptr->depth)
-		{
+		if (a_ptr->alloc_min > p_ptr->depth) {
 			/* Get the "out-of-depth factor" */
 			int d = (a_ptr->alloc_min - p_ptr->depth) * 2;
 
@@ -313,8 +309,7 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 		kind = lookup_kind(a_ptr->tval, a_ptr->sval);
 
 		/* Enforce minimum "object" level (loosely) */
-		if (kind->level > level)
-		{
+		if (kind->level > level) {
 			/* Get the "out-of-depth factor" */
 			int d = (kind->level - level) * 5;
 
@@ -373,7 +368,7 @@ static bool make_artifact(object_type *o_ptr)
 	}
 
 	if (!art_ok) return (FALSE);
-			
+
 	/* No artifacts in the town */
 	if (!p_ptr->depth) return (FALSE);
 
@@ -381,8 +376,7 @@ static bool make_artifact(object_type *o_ptr)
 	if (o_ptr->number != 1) return (FALSE);
 
 	/* Check the artifact list (skip the "specials") */
-	for (i = ART_MIN_NORMAL; !o_ptr->artifact && i < z_info->a_max; i++)
-	{
+	for (i = ART_MIN_NORMAL; !o_ptr->artifact && i < z_info->a_max; i++) {
 		a_ptr = &a_info[i];
 
 		/* Skip "empty" items */
@@ -415,8 +409,7 @@ static bool make_artifact(object_type *o_ptr)
 		o_ptr->artifact = a_ptr;
 	}
 
-	if (o_ptr->artifact)
-	{
+	if (o_ptr->artifact) {
 		copy_artifact_data(o_ptr, o_ptr->artifact);
 		o_ptr->artifact->created = 1;
 		return TRUE;
@@ -541,33 +534,30 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
  * If `good` or `great` are not set, then the `lev` argument controls the
  * quality of item.
  *
- * Returns the amount to increase the level rating by as a result of this object.
+ * Returns 0 if a normal object, 1 if a good object, 2 if an ego item, 3 if an
+ * artifact.
  */
 s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 		bool good, bool great)
 {
 	int i;
-	int power = 0;
-	s16b rating_extra = 0;
+	s16b power = 0;
 
 	/* Chance of being `good` and `great` */
-	int good_chance = (lev+2) * 3;
-	int great_chance = MIN(lev/4 + lev, 50);
+	int good_chance = (lev + 2) * 3;
+	int great_chance = MIN(lev / 4 + lev, 50);
 
 	/* Roll for "good" */
-	if (good || (randint0(100) < good_chance))
-	{
-		/* Assume "good" */
+	if (good || (randint0(100) < good_chance)) {
 		power = 1;
 
 		/* Roll for "great" */
-		if (great || (randint0(100) < great_chance)) power = 2;
+		if (great || (randint0(100) < great_chance))
+			power = 2;
 	}
 
-
 	/* Roll for artifact creation */
-	if (allow_artifacts)
-	{
+	if (allow_artifacts) {
 		int rolls = 0;
 
 		/* Get one roll if excellent */
@@ -578,19 +568,12 @@ s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 
 		/* Roll for artifacts if allowed */
 		for (i = 0; i < rolls; i++)
-		{
-			if (make_artifact(o_ptr))
-			{
-				/* - a sizeable increase for any artifact (c.f. up to 30 for ego items)
-				 * - a bigger increase for more powerful artifacts */
-				return ARTIFACT_LEVEL_RATING_MIN + 1;
-			}
-		}
+			if (make_artifact(o_ptr)) return 3;
 	}
 
 	/* Try to make an ego item */
 	if (power == 2)
-		rating_extra += make_ego_item(o_ptr, lev);
+		make_ego_item(o_ptr, lev);
 
 	/* Apply magic */
 	switch (o_ptr->tval)
@@ -643,8 +626,7 @@ s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 	/* Apply minima from ego items if necessary */
 	ego_apply_minima(o_ptr);
 
-	/* Return a rating for an ego item (or 0 if not ego) */
-	return rating_extra;
+	return power;
 }
 
 
@@ -861,23 +843,20 @@ object_kind *get_obj_num(int level, bool good)
  * This routine plays nasty games to generate the "special artifacts".
  *
  * We assume that the given object has been "wiped".
+ *
+ * Returns the value of the object created.
  */
-bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
+s32b make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
 	bool great)
 {
 	int base;
 	object_kind *kind;
-	s16b extra_rating;
 
 	/* Try to make a special artifact */
-	if (one_in_(good ? 10 : 1000))
-	{
+	if (one_in_(good ? 10 : 1000)) {
 		if (make_artifact_special(j_ptr, lev))
-		{
-			c->good_item = TRUE;
-			c->obj_rating += object_value_real(j_ptr, 1, FALSE, TRUE);
-			return TRUE;
-		}
+			return object_value_real(j_ptr, 1, FALSE, TRUE);
+
 		/* If we failed to make an artifact, the player gets a great item */
 		good = great = TRUE;
 	}
@@ -885,40 +864,29 @@ bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
 	/* Base level for the object */
 	base = (good ? (lev + 10) : lev);
 
-	/* Get the object */
+	/* Get the object, prep it and apply magic */
 	kind = get_obj_num(base, good || great);
 	if (!kind) return FALSE;
-
-	/* Prepare the object */
 	object_prep(j_ptr, kind, lev, RANDOMISE);
-
-	/* Apply magic (allow artifacts) */
-	extra_rating = apply_magic(j_ptr, lev, TRUE, good, great);
-	/* Hack - artifacts (which have rating over 30) set the good item flag */
-	if (extra_rating > ARTIFACT_LEVEL_RATING_MIN)
-		c->good_item = TRUE;
-	c->obj_rating += object_value_real(j_ptr, j_ptr->number, FALSE, TRUE);
+	apply_magic(j_ptr, lev, TRUE, good, great);
 
 	/* Generate multiple items */
-	if (kind->gen_mult_prob >= 100 ||
-	    kind->gen_mult_prob >= randint1(100))
-	{
+	if (kind->gen_mult_prob >= randint1(100))
 		j_ptr->number = randcalc(kind->stack_size, lev, RANDOMISE);
-	}
 
-	/* Notice uncursed out-of-depth objects */
+	/* Return value, increased for uncursed out-of-depth objects */
 	if (!cursed_p(j_ptr->flags) && (kind->alloc_min > c->depth))
-		c->obj_rating += (kind->alloc_min - c->depth)
-			* object_value_real(j_ptr, j_ptr->number, FALSE, TRUE) / 5;
-
-	return TRUE;
+		return ((kind->alloc_min - c->depth)
+			* object_value_real(j_ptr, j_ptr->number, FALSE, TRUE) / 5);
+	else
+		return object_value_real(j_ptr, j_ptr->number, FALSE, TRUE);
 }
 
 
 /*** Make a gold item ***/
 
 /* The largest possible average gold drop at max depth with biggest spread */
-#define MAX_GOLD_DROP     (3*MAX_DEPTH + 30)
+#define MAX_GOLD_DROP     (3 * MAX_DEPTH + 30)
 
 /*
  * Make a money object
@@ -952,7 +920,7 @@ void make_gold(object_type *j_ptr, int lev, int coin_type)
 	/* If we're playing with no_selling, increase the value */
 	if (OPT(birth_no_selling) && p_ptr->depth)
 		value = value * MIN(5, p_ptr->depth);
-		
+
 	/* Cap gold at max short (or alternatively make pvals s32b) */
 	if (value > MAX_SHORT)
 		value = MAX_SHORT;

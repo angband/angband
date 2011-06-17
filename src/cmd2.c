@@ -221,11 +221,9 @@ static void chest_death(int y, int x, s16b o_idx)
 			make_gold(i_ptr, value, SV_GOLD_ANY);
 
 		/* Otherwise drop an item, as long as it isn't a chest */
-		else
-		{
-			if (!make_object(cave, i_ptr, value, FALSE, FALSE))
-				continue;
-			if (i_ptr->tval == TV_CHEST)
+		else {
+			make_object(cave, i_ptr, value, FALSE, FALSE);
+			if (i_ptr->tval == TV_CHEST || !i_ptr->kind)
 				continue;
 		}
 

@@ -201,9 +201,12 @@ bool object_add_pval(object_type *o_ptr, int pval, int flag)
 		a = which_pval(o_ptr, flag);
 		of_off(f, flag);
 		of_inter(f, o_ptr->pval_flags[a]);
-		if (of_is_empty(f)) {
-			/* Safe to increment and finish */
+		if (of_is_empty(f)) { /* Safe to increment and finish */
 			o_ptr->pval[a] += pval;
+			if (o_ptr->pval[a] == 0) { /* Remove the flag */
+				of_off(o_ptr->flags, flag);
+				of_off(o_ptr->pval_flags[a], flag);
+			}
 			return (object_dedup_pvals(o_ptr));
 		}
 	}
