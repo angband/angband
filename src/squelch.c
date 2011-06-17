@@ -64,24 +64,24 @@ static quality_squelch_struct quality_mapping[] =
 
 quality_name_struct quality_choices[TYPE_MAX] =
 {
-	{ TYPE_WEAPON_POINTY,	"Pointy Melee Weapons" },
-	{ TYPE_WEAPON_BLUNT,	"Blunt Melee Weapons" },
-	{ TYPE_SHOOTER,		"Missile weapons" },
-	{ TYPE_MISSILE_SLING,	"Shots and Pebbles" },
-	{ TYPE_MISSILE_BOW,	"Arrows" },
-	{ TYPE_MISSILE_XBOW,	"Bolts" },
-	{ TYPE_ARMOR_ROBE,	"Robes" },
-	{ TYPE_ARMOR_BODY,	"Body Armor" },
-	{ TYPE_ARMOR_CLOAK,	"Cloaks" },
+	{ TYPE_WEAPON_POINTY,		"Pointy Melee Weapons" },
+	{ TYPE_WEAPON_BLUNT,		"Blunt Melee Weapons" },
+	{ TYPE_SHOOTER,				"Missile weapons" },
+	{ TYPE_MISSILE_SLING,		"Shots and Pebbles" },
+	{ TYPE_MISSILE_BOW,			"Arrows" },
+	{ TYPE_MISSILE_XBOW,		"Bolts" },
+	{ TYPE_ARMOR_ROBE,			"Robes" },
+	{ TYPE_ARMOR_BODY,			"Body Armor" },
+	{ TYPE_ARMOR_CLOAK,			"Cloaks" },
 	{ TYPE_ARMOR_ELVEN_CLOAK,	"Elven Cloaks" },
-	{ TYPE_ARMOR_SHIELD,	"Shields" },
-	{ TYPE_ARMOR_HEAD,	"Headgear" },
-	{ TYPE_ARMOR_HANDS,	"Handgear" },
-	{ TYPE_ARMOR_FEET,	"Footgear" },
-	{ TYPE_DIGGER,		"Diggers" },
-	{ TYPE_RING,		"Rings" },
-	{ TYPE_AMULET,		"Amulets" },
-	{ TYPE_LIGHT, 		"Lights" },
+	{ TYPE_ARMOR_SHIELD,		"Shields" },
+	{ TYPE_ARMOR_HEAD,			"Headgear" },
+	{ TYPE_ARMOR_HANDS,			"Handgear" },
+	{ TYPE_ARMOR_FEET,			"Footgear" },
+	{ TYPE_DIGGER,				"Diggers" },
+	{ TYPE_RING,				"Rings" },
+	{ TYPE_AMULET,				"Amulets" },
+	{ TYPE_LIGHT, 				"Lights" },
 };
 
 /*
@@ -89,13 +89,13 @@ quality_name_struct quality_choices[TYPE_MAX] =
  */
 quality_name_struct quality_values[SQUELCH_MAX] =
 {
-	{ SQUELCH_NONE,		"no squelch" },
-	{ SQUELCH_BAD,		"bad" },
-	{ SQUELCH_AVERAGE,	"average" },
-	{ SQUELCH_GOOD,		"good" },
+	{ SQUELCH_NONE,				"no squelch" },
+	{ SQUELCH_BAD,				"bad" },
+	{ SQUELCH_AVERAGE,			"average" },
+	{ SQUELCH_GOOD,				"good" },
 	{ SQUELCH_EXCELLENT_NO_HI,	"excellent with no high resists" },
 	{ SQUELCH_EXCELLENT_NO_SPL,	"excellent but not splendid" },
-	{ SQUELCH_ALL,		"non-artifact" },
+	{ SQUELCH_ALL,				"non-artifact" },
 };
 
 byte squelch_level[TYPE_MAX];
@@ -271,17 +271,6 @@ byte squelch_level_of(const object_type *o_ptr)
 
 	object_flags_known(o_ptr, f);
 
-	/* CC: we need to redefine "bad" with multiple pvals
-	 * At the moment we use "all pvals known and negative" */
-	for (i = 0; i < o_ptr->num_pvals; i++) {
-		if (!object_this_pval_is_visible(o_ptr, i) ||
-			(o_ptr->pval[i] > 0))
-			break;
-
-		if (i == (o_ptr->num_pvals - 1))
-			return SQUELCH_BAD;
-	}
-
 	/* Deal with jewelry specially. */
 	if (object_is_jewelry(o_ptr))
 	{
@@ -292,8 +281,9 @@ byte squelch_level_of(const object_type *o_ptr)
 
 		if ((o_ptr->to_h > 0) || (o_ptr->to_d > 0) || (o_ptr->to_a > 0))
 			return SQUELCH_AVERAGE;
-		if ((object_attack_plusses_are_visible(o_ptr) && ((o_ptr->to_h < 0) || (o_ptr->to_d < 0))) ||
-		    (object_defence_plusses_are_visible(o_ptr) && (o_ptr->to_a < 0)))
+		if ((object_attack_plusses_are_visible(o_ptr) &&
+				((o_ptr->to_h < 0) || (o_ptr->to_d < 0))) ||
+		    	(object_defence_plusses_are_visible(o_ptr) && o_ptr->to_a < 0))
 			return SQUELCH_BAD;
 
 		return SQUELCH_AVERAGE;
@@ -311,6 +301,17 @@ byte squelch_level_of(const object_type *o_ptr)
 			return SQUELCH_BAD;
 
 		return SQUELCH_AVERAGE;
+	}
+
+	/* CC: we need to redefine "bad" with multiple pvals
+	 * At the moment we use "all pvals known and negative" */
+	for (i = 0; i < o_ptr->num_pvals; i++) {
+		if (!object_this_pval_is_visible(o_ptr, i) ||
+			(o_ptr->pval[i] > 0))
+			break;
+
+		if (i == (o_ptr->num_pvals - 1))
+			return SQUELCH_BAD;
 	}
 
 	if (object_was_sensed(o_ptr))
@@ -338,7 +339,6 @@ byte squelch_level_of(const object_type *o_ptr)
 				}
 				break;
 
-			case INSCRIP_STRANGE: /* XXX Eddie perhaps some strange count as something else */
 			case INSCRIP_SPLENDID:
 				value = SQUELCH_ALL;
 				break;
@@ -348,16 +348,19 @@ byte squelch_level_of(const object_type *o_ptr)
 				break;
 
 			/* This is the interesting case */
+			case INSCRIP_STRANGE:
 			case INSCRIP_MAGICAL:
 				value = SQUELCH_GOOD;
-				if ((object_attack_plusses_are_visible(o_ptr) || (randcalc_valid(o_ptr->kind->to_h, o_ptr->to_h) && randcalc_valid(o_ptr->kind->to_d, o_ptr->to_d))) &&
-				    (object_defence_plusses_are_visible(o_ptr) || (randcalc_valid(o_ptr->kind->to_a, o_ptr->to_a))) &&
-				    (o_ptr->to_h <= randcalc(o_ptr->kind->to_h, 0, MINIMISE)) &&
-				    (o_ptr->to_d <= randcalc(o_ptr->kind->to_d, 0, MINIMISE)) &&
-				    (o_ptr->to_a <= randcalc(o_ptr->kind->to_a, 0, MINIMISE)))
+				if ((object_attack_plusses_are_visible(o_ptr) ||
+						randcalc_valid(o_ptr->kind->to_h, o_ptr->to_h) ||
+						randcalc_valid(o_ptr->kind->to_d, o_ptr->to_d)) &&
+				    	(object_defence_plusses_are_visible(o_ptr) ||
+						randcalc_valid(o_ptr->kind->to_a, o_ptr->to_a)) &&
+				    	(o_ptr->to_h <= randcalc(o_ptr->kind->to_h, 0, MINIMISE)) &&
+				    	(o_ptr->to_d <= randcalc(o_ptr->kind->to_d, 0, MINIMISE)) &&
+				    	(o_ptr->to_a <= randcalc(o_ptr->kind->to_a, 0, MINIMISE)))
 					value = SQUELCH_BAD;
 				break;
-
 
 			default:
 				/* do not handle any other possible pseudo values */
