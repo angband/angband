@@ -3398,14 +3398,14 @@ static int calc_obj_feeling(struct cave *c)
 	/* Check the loot adjusted for depth */
 	x = c->obj_rating / c->depth;
 
-	if (x > 25000) return 20;
-	if (x > 20000) return 30;
-	if (x > 15000) return 40;
-	if (x > 10000) return 50;
-	if (x > 5000) return 60;
-	if (x > 2500) return 70;
-	if (x > 1000) return 80;
-	if (x > 500) return 90;
+	if (x > 6000) return 20;
+	if (x > 3500) return 30;
+	if (x > 2000) return 40;
+	if (x > 1000) return 50;
+	if (x > 500) return 60;
+	if (x > 300) return 70;
+	if (x > 200) return 80;
+	if (x > 100) return 90;
 	return 100;
 }
 
@@ -3422,14 +3422,14 @@ static int calc_mon_feeling(struct cave *c)
 	/* Check the monster power adjusted for depth */
 	x = c->mon_rating / (c->depth * c->depth);
 
-	if (x > 7500) return 1;
-	if (x > 5000) return 2;
-	if (x > 2000) return 3;
-	if (x > 1600) return 4;
+	if (x > 7000) return 1;
+	if (x > 4500) return 2;
+	if (x > 2500) return 3;
+	if (x > 1500) return 4;
 	if (x > 800) return 5;
 	if (x > 400) return 6;
-	if (x > 200) return 7;
-	if (x > 100) return 8;
+	if (x > 150) return 7;
+	if (x > 50) return 8;
 	return 9;
 }
 
@@ -3468,7 +3468,7 @@ void cave_generate(struct cave *c, struct player *p) {
 		/* Allocate global data (will be freed when we leave the loop) */
 		dun = &dun_body;
 		clear_dun_data(dun);
-		
+
 		if (p->depth == 0) {
 			dun->profile = &town_profile;
 			dun->profile->builder(c, p);

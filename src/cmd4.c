@@ -483,9 +483,9 @@ static const char *obj_feeling_text[] =
 	"you have a good feeling...",
 	"you feel a little lucky.",
 	"you are unsure if it will be worthwhile.",
-	"you think it might not be up to much.",
-	"you feel it may be rather dull.",
-	"you feel terribly bored.",
+	"there does not seem to be much of interest here.",
+	"there are only a few scraps of junk lying about.",
+	"it seems to contain nothing but cobwebs.",
 };
 
 /*
