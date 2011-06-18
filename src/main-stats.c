@@ -48,6 +48,7 @@
 
 static int randarts = 0;
 static int no_selling = 0;
+static int save = 1;
 static u32b num_runs = 1;
 static bool quiet = FALSE;
 static int nextkey = 0;
@@ -227,11 +228,16 @@ static void initialize_character(void)
 		do_randart(seed_randart, TRUE);
 	}
 
-	store_init();
+	store_reset();
 	flavor_init();
 	p_ptr->playing = TRUE;
 	p_ptr->autosave = FALSE;
 	cave_generate(cave, p_ptr);
+}
+
+static void dispose_character(void)
+{
+	mem_free(p_ptr->history);
 }
 
 static void kill_all_monsters(int level)
@@ -1589,9 +1595,11 @@ static errr run_stats(void)
 		}
 	}
 
-	if (!quiet) printf("Creating the database and dumping info...\n");
-	status = stats_prep_db();
-	if (!status) quit("Couldn't prepare database!");
+	if (save) {
+		if (!quiet) printf("Creating the database and dumping info...\n");
+		status = stats_prep_db();
+		if (!status) quit("Couldn't prepare database!");
+	}
 
 	if (!quiet) {
 		printf("Beginning %d runs...\n", num_runs);
@@ -1617,7 +1625,7 @@ static errr run_stats(void)
 		descend_dungeon();
 
 		/* Checkpoint every so many runs */
-		if (run % RUNS_PER_CHECKPOINT == 0)
+		if (save && run % RUNS_PER_CHECKPOINT == 0)
 		{
 			err = stats_write_db(run);
 			if (err)
@@ -1626,6 +1634,7 @@ static errr run_stats(void)
 				quit_fmt("Problems writing to database!  sqlite3 errno %d.", err);
 			}
 		}
+		dispose_character();
 	}
 
 	if (!quiet) {
@@ -1634,10 +1643,13 @@ static errr run_stats(void)
 		fflush(stdout);
 	}
 
-	err = stats_write_db(run);
-	stats_db_close();
-	if (err) quit_fmt("Problems writing to database!  sqlite3 errno %d.", err);
+	if (save) {
+		err = stats_write_db(run);
+		stats_db_close();
+		if (err) quit_fmt("Problems writing to database!  sqlite3 errno %d.", err);
+	}
 	free_stats_memory();
+	mem_free(ANGBAND_DIR_STATS);
 	cleanup_angband();
 	if (!quiet) printf("Done!\n");
 	quit(NULL);
@@ -1766,17 +1778,19 @@ static void term_data_link(int i) {
 	angband_term[i] = t;
 }
 
-const char help_stats[] = "Stats mode, subopts -q(uiet) -r(andarts) -n(# of runs) -s(no selling)";
+const char help_stats[] = "Stats mode, subopts -q(uiet) -r(andarts) -n(# of runs) -s(no selling) -x(dont save data)";
 
 /*
  * Usage:
  *
- * angband -mstats -- [-q] [-r] [-nNNNN] [-s]
+ * angband -mstats -- [-q] [-r] [-nNNNN] [-s] [-x]
+ *
  *
  *   -q      Quiet mode (turn off progress messages)
  *   -r      Turn on randarts
  *   -nNNNN  Make NNNN runs through the dungeon (default: 1)
  *   -s      Turn on no-selling
+ *   -x      Dont save (testing only!)
  */
 
 errr init_stats(int argc, char *argv[]) {
@@ -1798,6 +1812,10 @@ errr init_stats(int argc, char *argv[]) {
 		}
 		if (prefix(argv[i], "-s")) {
 			no_selling = 1;
+			continue;
+		}
+		if (prefix(argv[i], "-x")) {
+			save = 0;
 			continue;
 		}
 		printf("init-stats: bad argument '%s'\n", argv[i]);
