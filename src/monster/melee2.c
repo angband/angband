@@ -3140,7 +3140,13 @@ static void process_monster(struct cave *c, int m_idx)
 						if (randint0(m_ptr->hp / 10) > k)
 						{
 							/* Unlock the door */
-							cave_set_feat(c, ny, nx, FEAT_DOOR_HEAD + 0x00);
+							/* cave_set_feat(c, ny, nx, FEAT_DOOR_HEAD + 0x00); */
+
+							/* Message */
+							msg("Someone fiddles with a lock.");
+
+							/* Reduce the power of the door by one */
+							cave_set_feat(c, ny, nx, cave->feat[ny][nx] - 1);
 
 							/* Do not bash the door */
 							may_bash = FALSE;
@@ -3160,16 +3166,26 @@ static void process_monster(struct cave *c, int m_idx)
 					if (randint0(m_ptr->hp / 10) > k)
 					{
 						/* Message */
-						msg("You hear a door burst open!");
+						msg("Something bumps against a door.");
 
-						/* Disturb (sometimes) */
-						disturb(p_ptr, 0, 0);
+						/* Reduce the power of the door by one */
+						cave_set_feat(c, ny, nx, cave->feat[ny][nx] - 1);
 
-						/* The door was bashed open */
-						did_bash_door = TRUE;
+						/* If the door is no longer jammed */
+						if (cave->feat[ny][nx] < FEAT_DOOR_HEAD + 0x09)
+						{
+							/* Message */
+							msg("You hear a door burst open!");
 
-						/* Hack -- fall into doorway */
-						do_move = TRUE;
+							/* Disturb (sometimes) */
+							disturb(p_ptr, 0, 0);
+
+							/* The door was bashed open */
+							did_bash_door = TRUE;
+
+							/* Hack -- fall into doorway */
+							do_move = TRUE;
+						}
 					}
 				}
 			}
