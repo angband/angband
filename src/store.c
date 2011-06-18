@@ -2455,7 +2455,7 @@ static bool store_purchase(int item)
 		if (!response) return FALSE;
 
 		cmd_insert(CMD_BUY);
-		cmd_set_arg_item(cmd_get_top(), 0, item);
+		cmd_set_arg_choice(cmd_get_top(), 0, item);
 		cmd_set_arg_number(cmd_get_top(), 1, amt);
 	}
 
@@ -2463,7 +2463,7 @@ static bool store_purchase(int item)
 	else
 	{
 		cmd_insert(CMD_RETRIEVE);
-		cmd_set_arg_item(cmd_get_top(), 0, item);
+		cmd_set_arg_choice(cmd_get_top(), 0, item);
 		cmd_set_arg_number(cmd_get_top(), 1, amt);
 	}
 
