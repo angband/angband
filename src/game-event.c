@@ -90,6 +90,22 @@ void event_remove_handler(game_event_type type, game_event_handler *fn, void *us
 	}
 }
 
+void event_remove_all_handlers(void)
+{
+	int type;
+	struct event_handler_entry *handler, *next;
+
+	for (type = 0; type < N_GAME_EVENTS; type++) {
+		handler = event_handlers[type];
+		while (handler) {
+			next = handler->next;
+			mem_free(handler);
+			handler = next;
+		}
+		event_handlers[type] = NULL;
+	}
+}
+
 void event_add_handler_set(game_event_type *type, size_t n_types, game_event_handler *fn, void *user)
 {
 	size_t i;

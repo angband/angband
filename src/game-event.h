@@ -99,6 +99,7 @@ typedef void game_event_handler(game_event_type type, game_event_data *data, voi
 
 void event_add_handler(game_event_type type, game_event_handler *fn, void *user);
 void event_remove_handler(game_event_type type, game_event_handler *fn, void *user);
+void event_remove_all_handlers(void);
 void event_add_handler_set(game_event_type *type, size_t n_types, game_event_handler *fn, void *user);
 void event_remove_handler_set(game_event_type *type, size_t n_types, game_event_handler *fn, void *user);
 

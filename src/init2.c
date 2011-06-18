@@ -2991,6 +2991,8 @@ void cleanup_angband(void)
 	FREE(alloc_ego_table);
 	FREE(alloc_race_table);
 
+	event_remove_all_handlers();
+
 	/* Free the stores */
 	if (stores) free_stores();
 
