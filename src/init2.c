@@ -275,11 +275,17 @@ static errr finish_parse_z(struct parser *p) {
 	return 0;
 }
 
+static void cleanup_z(void)
+{
+	mem_free(z_info);
+}
+
 static struct file_parser z_parser = {
 	"limits",
 	init_parse_z,
 	run_parse_z,
-	finish_parse_z
+	finish_parse_z,
+	cleanup_z
 };
 
 /* Parsing functions for object_base.txt */
@@ -2991,6 +2997,7 @@ void cleanup_angband(void)
 	/* Free the quest list */
 	FREE(q_list);
 
+	button_free();
 	FREE(p_ptr->inventory);
 
 	/* Free the lore, monster, and object lists */
@@ -3032,6 +3039,7 @@ void cleanup_angband(void)
 	cleanup_parser(&hints_parser);
 	cleanup_parser(&mp_parser);
 	cleanup_parser(&pit_parser);
+	cleanup_parser(&z_parser);
 
 	/* Free the format() buffer */
 	vformat_kill();

@@ -11,6 +11,7 @@ int button_kill_text(unsigned char keypress);
 int button_kill(unsigned char keypress);
 void button_kill_all(void);
 void button_init(button_add_f add, button_kill_f kill);
+void button_free(void);
 char button_get_key(int x, int y);
 size_t button_print(int row, int col);
 
