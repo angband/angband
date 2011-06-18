@@ -131,6 +131,9 @@ Bugfixes, patches and radical ideas too numerous to count
 Nomad
 8x16 tiles
 
+BluBaron
+Windows PNG support and other improvements
+
 The UPX team (Markus Oberhumer and Laszlo Molnar)
 The UPX packer for executables <http://upx.tsx.org/> is used to reduce
 the size of the Windows and DOS binaries.
