@@ -177,6 +177,15 @@ size_t my_strcat(char *buf, const char *src, size_t bufsize)
 	}
 }
 
+/**
+ * Capitalise the first letter of string 'str'.
+ */
+void my_strcap(char *buf)
+{
+	if (buf && buf[0])
+		buf[0] = toupper((unsigned char) buf[0]);
+}
+
 
 /*
  * Determine if string "a" is equal to string "b"

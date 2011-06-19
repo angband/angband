@@ -646,6 +646,7 @@ void display_monlist(void)
  *   0x20 --> Pronominalize visible monsters
  *   0x40 --> Assume the monster is hidden
  *   0x80 --> Assume the monster is visible
+ *  0x100 --> Capitalise monster name
  *
  * Useful Modes:
  *   0x00 --> Full nominative name ("the kobold") or "it"
@@ -783,6 +784,9 @@ void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode)
 			my_strcat(desc, " (offscreen)", max);
 		}
 	}
+
+	if (mode & MDESC_CAPITAL)
+		my_strcap(desc);
 }
 
 

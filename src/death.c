@@ -344,9 +344,10 @@ static void death_examine(const char *title, int row)
 		object_type *o_ptr = &p_ptr->inventory[item];
 
 		tb = object_info(o_ptr, OINFO_FULL);
-		object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
+		object_desc(header, sizeof(header), o_ptr,
+				ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL);
 
-		textui_textblock_show(tb, area, format("%^s", header));
+		textui_textblock_show(tb, area, header);
 		textblock_free(tb);
 	}
 }

@@ -295,7 +295,8 @@ char *artifact_gen_name(struct artifact *a, const char ***words) {
 	char buf[BUFLEN];
 	char word[MAX_NAME_LEN + 1];
 	randname_make(RANDNAME_TOLKIEN, MIN_NAME_LEN, MAX_NAME_LEN, word, sizeof(word), words);
-	word[0] = toupper((unsigned char)word[0]);
+	my_strcap(word);
+
 	if (one_in_(3))
 		strnfmt(buf, sizeof(buf), "'%s'", word);
 	else

@@ -445,7 +445,7 @@ bool make_attack_spell(int m_idx)
 	if (rsf_is_empty(f)) return FALSE;
 
 	/* Get the monster name (or "it") */
-	monster_desc(m_name, sizeof(m_name), m_ptr, 0x00);
+	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_CAPITAL);
 
 	/* Get the monster possessive ("his"/"her"/"its") */
 	monster_desc(m_poss, sizeof(m_poss), m_ptr, MDESC_PRO2 | MDESC_POSS);
@@ -476,7 +476,7 @@ bool make_attack_spell(int m_idx)
 	if ((thrown_spell >= MIN_NONINNATE_SPELL) && (randint0(100) < failrate))
 	{
 		/* Message */
-		msg("%^s tries to cast a spell, but fails.", m_name);
+		msg("%s tries to cast a spell, but fails.", m_name);
 
 		return TRUE;
 	}
@@ -487,13 +487,14 @@ bool make_attack_spell(int m_idx)
 	/* Special case RSF_HASTE until TMD_* and MON_TMD_* are rationalised */
 	if (thrown_spell == RSF_HASTE) {
 		if (blind)
-			msg("%^s mumbles.", m_name);
+			msg("%s mumbles.", m_name);
 		else
-			msg("%^s concentrates on %s body.", m_name, m_poss);
+			msg("%s concentrates on %s body.", m_name, m_poss);
 
 		(void)mon_inc_timed(m_idx, MON_TMD_FAST, 50, 0, FALSE);
-	} else
+	} else {
 		do_mon_spell(thrown_spell, m_idx, seen);
+	}
 
 	/* Remember what the monster did to us */
 	if (seen) {
@@ -1632,7 +1633,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 				    randint0(100) + p->lev > 50)
 				{
 					/* Message */
-					msg("%^s is repelled.", m_name);
+					msg("%s is repelled.", m_name);
 
 					/* Hack -- Next attack */
 					continue;
@@ -1792,7 +1793,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 
 			/* Message */
 			if (act)
-				msgt(sound_msg, "%^s %s", m_name, act);
+				msgt(sound_msg, "%s %s", m_name, act);
 
 
 			/* Hack -- assume all attacks are obvious */
@@ -2676,7 +2677,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					disturb(p, 1, 0);
 
 					/* Message */
-					msg("%^s misses you.", m_name);
+					msg("%s misses you.", m_name);
 				}
 
 				break;
@@ -2785,7 +2786,7 @@ static void process_monster(struct cave *c, int m_idx)
 				monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 				/* Dump a message */
-				msg("%^s wakes up.", m_name);
+				msg("%s wakes up.", m_name);
 
 				/* Hack -- Update the health bar */
 				if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
@@ -2840,7 +2841,7 @@ static void process_monster(struct cave *c, int m_idx)
 					monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 					/* Dump a message */
-					msg("%^s wakes up.", m_name);
+					msg("%s wakes up.", m_name);
 
 					/* Hack -- Update the health bar */
 					if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
@@ -3295,9 +3296,7 @@ static void process_monster(struct cave *c, int m_idx)
 					{
 						/* Note if visible */
 						if (m_ptr->ml && (m_ptr->mflag & (MFLAG_VIEW)))
-						{
-							msg("%^s tramples over %s.", m_name, n_name);
-						}
+							msg("%s tramples over %s.", m_name, n_name);
 
 						delete_monster(ny, nx);
 					}
@@ -3305,9 +3304,7 @@ static void process_monster(struct cave *c, int m_idx)
 					{
 						/* Note if visible */
 						if (m_ptr->ml && (m_ptr->mflag & (MFLAG_VIEW)))
-						{
-							msg("%^s pushes past %s.", m_name, n_name);
-						}
+							msg("%s pushes past %s.", m_name, n_name);
 					}
 				}
 			}
@@ -3393,7 +3390,7 @@ static void process_monster(struct cave *c, int m_idx)
 							if (m_ptr->ml && player_has_los_bold(ny, nx) && !squelch_item_ok(o_ptr))
 							{
 								/* Dump a message */
-								msg("%^s tries to pick up %s, but fails.",
+								msg("%s tries to pick up %s, but fails.",
 								           m_name, o_name);
 							}
 						}
@@ -3409,7 +3406,7 @@ static void process_monster(struct cave *c, int m_idx)
 						if (player_has_los_bold(ny, nx) && !squelch_item_ok(o_ptr))
 						{
 							/* Dump a message */
-							msg("%^s picks up %s.", m_name, o_name);
+							msg("%s picks up %s.", m_name, o_name);
 						}
 
 						/* Get local object */
@@ -3432,7 +3429,7 @@ static void process_monster(struct cave *c, int m_idx)
 						if (player_has_los_bold(ny, nx) && !squelch_item_ok(o_ptr))
 						{
 							/* Dump a message */
-							msgt(MSG_DESTROY, "%^s crushes %s.", m_name, o_name);
+							msgt(MSG_DESTROY, "%s crushes %s.", m_name, o_name);
 						}
 
 						/* Delete the object */
