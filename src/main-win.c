@@ -4869,16 +4869,6 @@ static void init_stuff(void)
 	/* Hack -- Validate the "news.txt" file */
 	validate_file(path);
 
-
-	/* Build the "font" path */
-	path_build(path, sizeof(path), ANGBAND_DIR_XTRA, "font");
-
-	/* Allocate the path */
-	ANGBAND_DIR_XTRA_FONT = string_make(path);
-
-	/* Validate the "font" directory */
-	validate_dir(ANGBAND_DIR_XTRA_FONT);
-
 	/* Build the filename */
 	path_build(path, sizeof(path), ANGBAND_DIR_XTRA_FONT, DEFAULT_FONT);
 
