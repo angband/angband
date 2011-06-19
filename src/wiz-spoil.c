@@ -825,7 +825,7 @@ void do_cmd_spoilers(void)
 	screen_save();
 	clear_from(0);
 	menu_layout(spoil_menu, &SCREEN_REGION);
-	menu_select(spoil_menu, 0);
+	menu_select(spoil_menu, 0, FALSE);
 	screen_load();
 }
 

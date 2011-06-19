@@ -442,7 +442,7 @@ void death_screen(void)
 
 	while (!done)
 	{
-		ui_event e = menu_select(death_menu, EVT_KBRD);
+		ui_event e = menu_select(death_menu, EVT_KBRD, FALSE);
 		if (e.type == EVT_KBRD)
 		{
 			if (e.key.code == KTRL('X')) break;

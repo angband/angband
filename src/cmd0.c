@@ -232,7 +232,7 @@ static bool cmd_menu(command_list *list, void *selection_p)
 	ui_event evt;
 	struct cmd_info *selection = selection_p;
 
-	/* Set up th emenu */
+	/* Set up the menu */
 	menu_init(&menu, MN_SKIN_SCROLL, &commands_menu);
 	menu_setpriv(&menu, list->len, list->list);
 	menu_layout(&menu, &area);
@@ -242,7 +242,7 @@ static bool cmd_menu(command_list *list, void *selection_p)
 	window_make(21, 3, 62, 17);
 
 	/* Select an entry */
-	evt = menu_select(&menu, 0);
+	evt = menu_select(&menu, 0, TRUE);
 
 	/* Load de screen */
 	screen_load();
@@ -298,7 +298,7 @@ static char textui_action_menu_choose(void)
 	screen_save();
 	window_make(19, 4, 58, 11);
 
-	menu_select(command_menu, 0);
+	menu_select(command_menu, 0, TRUE);
 
 	screen_load();
 

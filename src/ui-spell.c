@@ -205,7 +205,7 @@ static int spell_menu_select(menu_type *m, const char *noun, const char *verb)
 	region_erase_bordered(&m->active);
 	prt(format("%^s which %s? ", verb, noun), 0, 0);
 
-	menu_select(m, 0);
+	menu_select(m, 0, TRUE);
 
 	screen_load();
 
@@ -225,7 +225,7 @@ static void spell_menu_browse(menu_type *m, const char *noun)
 	prt(format("Browsing %ss.  Press Escape to exit.", noun), 0, 0);
 
 	d->browse = TRUE;
-	menu_select(m, 0);
+	menu_select(m, 0, TRUE);
 
 	screen_load();
 }

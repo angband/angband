@@ -3013,7 +3013,7 @@ void do_cmd_store_knowledge(void)
 	store_menu_recalc(&menu);
 	store_redraw();
 
-	menu_select(&menu, 0);
+	menu_select(&menu, 0, FALSE);
 
 	/* Flush messages XXX XXX XXX */
 	message_flush();
@@ -3081,7 +3081,7 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 		prt_welcome(store->owner);
 
 	msg_flag = FALSE;
-	menu_select(&menu, 0);
+	menu_select(&menu, 0, FALSE);
 	msg_flag = FALSE;
 
 	/* Switch back to the normal game view. */

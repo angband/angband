@@ -294,8 +294,12 @@ void menu_refresh(menu_type *menu, bool reset_screen);
  *   EVT_RESIZE: resize events
  * 
  * XXX remove 'notify'
+ *
+ * If popup is TRUE, the screen background is saved before starting the menu,
+ * and restored before each redraw. This allows variably-sized information
+ * at the bottom of the menu.
  */
-ui_event menu_select(menu_type *menu, int notify);
+ui_event menu_select(menu_type *menu, int notify, bool popup);
 
 /**
  * Set the menu cursor to the next valid row.
