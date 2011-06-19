@@ -235,7 +235,7 @@ typedef int errr;
 #define MAX(a,b)	(((a) < (b)) ? (b)  : (a))
 #define ABS(a)		(((a) < 0)   ? (-(a)) : (a))
 #define SGN(a)		(((a) < 0)   ? (-1) : ((a) != 0))
-#define CMP(a,b) (a < b ? -1 : (b < a ? 1: 0))
+#define CMP(a,b) ((a) < (b) ? -1 : ((b) < (a) ? 1: 0))
 
 
 /*** Useful fairly generic macros ***/
