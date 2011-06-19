@@ -33,7 +33,7 @@ enum monster_sex {
 /*
  * Pronoun arrays, by gender.
  */
-static const char *wd_he[3] = { "it", "he", "she" };
+static const char *wd_he[3] = { "It", "He", "She" };
 static const char *wd_his[3] = { "its", "his", "her" };
 
 
@@ -108,7 +108,7 @@ static void output_desc_list(enum monster_sex msex, const char *intro,
 	assert(num >= 0);
 
 	if (num != 0) {
-		text_out(format("%^s %s ", wd_he[msex], intro));
+		text_out(format("%s %s ", wd_he[msex], intro));
 		output_list(list, num, attr, "and ");
 		text_out(".  ");
 	}
@@ -605,7 +605,7 @@ static void describe_monster_spells(const monster_race *r_ptr,
 	/* Describe innate attacks */
 	if(vn)
 	{
-		text_out("%^s may ", wd_he[msex]);
+		text_out("%s may ", wd_he[msex]);
 		output_list_dam(names, vn, cols, dams, "or ");
 		text_out(".  ");
 	}
@@ -738,7 +738,7 @@ static void describe_monster_spells(const monster_race *r_ptr,
 		breath = TRUE;
 
 		/* Display */
-		text_out("%^s may ", wd_he[msex]);
+		text_out("%s may ", wd_he[msex]);
 		text_out_c(TERM_L_RED, "breathe ");
 		output_list_dam(names, vn, cols, dams, "or ");
 	}
@@ -1088,7 +1088,7 @@ static void describe_monster_spells(const monster_race *r_ptr,
 		if (breath)
 			text_out(", and may ");
 		else
-			text_out("%^s may ", wd_he[msex]);
+			text_out("%s may ", wd_he[msex]);
 
 		/* Verb Phrase */
 		text_out_c(TERM_L_RED, "cast spells");
@@ -1162,7 +1162,7 @@ static void describe_monster_drop(const monster_race *r_ptr,
 	/* Drops gold and/or items */
 	if (l_ptr->drop_gold || l_ptr->drop_item) {
 		/* Intro */
-		text_out("%^s may carry", wd_he[msex]);
+		text_out("%s may carry", wd_he[msex]);
 
 		/* Count maximum drop */
 		n = MAX(l_ptr->drop_gold, l_ptr->drop_item);
@@ -1316,7 +1316,7 @@ static void describe_monster_attack(const monster_race *r_ptr,
 
 		/* Introduce the attack description */
 		if (!r)
-			text_out("%^s can ", wd_he[msex]);
+			text_out("%s can ", wd_he[msex]);
 		else if (r < n - 1)
 			text_out(", ");
 		else
@@ -1348,7 +1348,7 @@ static void describe_monster_attack(const monster_race *r_ptr,
 
 	/* Notice lack of attacks */
 	else if (rf_has(f, RF_NEVER_BLOW))
-		text_out("%^s has no physical attacks.  ", wd_he[msex]);
+		text_out("%s has no physical attacks.  ", wd_he[msex]);
 
 	/* Or describe the lack of knowledge */
 	else
@@ -1413,13 +1413,13 @@ static void describe_monster_abilities(const monster_race *r_ptr,
 
 	/* Describe special things */
 	if (rf_has(f, RF_UNAWARE))
-		text_out("%^s disguises itself to look like something else.  ", wd_he[msex]);
+		text_out("%s disguises itself to look like something else.  ", wd_he[msex]);
 	if (rf_has(f, RF_MULTIPLY))
-		text_out_c(TERM_ORANGE, "%^s breeds explosively.  ", wd_he[msex]);
+		text_out_c(TERM_ORANGE, "%s breeds explosively.  ", wd_he[msex]);
 	if (rf_has(f, RF_REGENERATE))
-		text_out("%^s regenerates quickly.  ", wd_he[msex]);
+		text_out("%s regenerates quickly.  ", wd_he[msex]);
 	if (rf_has(f, RF_HAS_LIGHT))
-		text_out("%^s illuminates %s surroundings.  ", wd_he[msex], wd_his[msex]);
+		text_out("%s illuminates %s surroundings.  ", wd_he[msex], wd_his[msex]);
 
 	/* Collect susceptibilities */
 	vn = 0;
@@ -1431,7 +1431,7 @@ static void describe_monster_abilities(const monster_race *r_ptr,
 	if (vn)
 	{
 		/* Output connecting text */
-		text_out("%^s is hurt by ", wd_he[msex]);
+		text_out("%s is hurt by ", wd_he[msex]);
 		output_list(descs, vn, TERM_VIOLET, "and ");
 		prev = TRUE;
 	}
@@ -1461,7 +1461,7 @@ static void describe_monster_abilities(const monster_race *r_ptr,
 		if (prev)
 			text_out(", but resists ");
 		else
-			text_out("%^s resists ", wd_he[msex]);
+			text_out("%s resists ", wd_he[msex]);
 
 		/* Write the text */
 		output_list(descs, vn, TERM_L_UMBER, "and ");
@@ -1481,7 +1481,7 @@ static void describe_monster_abilities(const monster_race *r_ptr,
 		if (prev)
 			text_out(", and cannot be ");
 		else
-			text_out("%^s cannot be ", wd_he[msex]);
+			text_out("%s cannot be ", wd_he[msex]);
 
 		output_list(descs, vn, TERM_L_UMBER, "or ");
 		prev = TRUE;
@@ -1510,7 +1510,7 @@ static void describe_monster_abilities(const monster_race *r_ptr,
 		else if (r_ptr->sleep > 0)  act = "is vigilant for";
 		else                        act = "is ever vigilant for";
 
-		text_out("%^s %s intruders, which %s may notice from ", wd_he[msex], 
+		text_out("%s %s intruders, which %s may notice from ", wd_he[msex], 
 				act, wd_he[msex]);
 		text_out_c(TERM_L_BLUE, "%d", 10 * r_ptr->aaf);
 		text_out(" feet.  ");
@@ -1518,11 +1518,11 @@ static void describe_monster_abilities(const monster_race *r_ptr,
 
 	/* Describe escorts */
 	if (flags_test(f, RF_SIZE, RF_ESCORT, RF_ESCORTS, FLAG_END))
-		text_out("%^s usually appears with escorts.  ", wd_he[msex]);
+		text_out("%s usually appears with escorts.  ", wd_he[msex]);
 
 	/* Describe friends */
 	else if (flags_test(f, RF_SIZE, RF_FRIEND, RF_FRIENDS, FLAG_END))
-		text_out("%^s usually appears in groups.  ", wd_he[msex]);
+		text_out("%s usually appears in groups.  ", wd_he[msex]);
 }
 
 
@@ -1555,7 +1555,7 @@ static void describe_monster_kills(const monster_race *r_ptr,
 		/* We've been killed... */
 		if (l_ptr->deaths) {
 			/* Killed ancestors */
-			text_out("%^s has slain %d of your ancestors", wd_he[msex], 
+			text_out("%s has slain %d of your ancestors", wd_he[msex], 
 					l_ptr->deaths);
 
 			/* But we've also killed it */
@@ -1652,7 +1652,7 @@ static void describe_monster_toughness(const monster_race *r_ptr,
 	if (know_armour(r_ptr, l_ptr))
 	{
 		/* Armor */
-		text_out("%^s has an armor rating of ", wd_he[msex]);
+		text_out("%s has an armor rating of ", wd_he[msex]);
 		text_out_c(TERM_L_BLUE, "%d", r_ptr->ac);
 
 		/* Hitpoints */
