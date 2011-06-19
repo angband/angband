@@ -41,8 +41,5 @@ extern void plog_fmt(const char *fmt, ...);
 /* Vararg interface to "quit()", using "format()" */
 extern void quit_fmt(const char *fmt, ...);
 
-/* Vararg interface to "core()", using "format()" */
-extern void core_fmt(const char *fmt, ...);
-
 
 #endif /* INCLUDED_Z_FORM_H */
