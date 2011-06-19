@@ -645,7 +645,8 @@ static bool do_cmd_open_aux(int y, int x)
 			p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
 			/* Experience */
-			player_exp_gain(p_ptr, 1);
+			/* Removed to avoid exploit by repeatedly locking and unlocking door */
+			/* player_exp_gain(p_ptr, 1); */
 		}
 
 		/* Failure */
@@ -1205,13 +1206,73 @@ static bool do_cmd_disarm_test(int y, int x)
 		return FALSE;
 	}
 
+	/* Look for a closed, unlocked door to lock */
+	if (cave->feat[y][x] == FEAT_DOOR_HEAD)	return TRUE;
+
+	/* Look for a trap */
 	if (!cave_isknowntrap(cave, y, x)) {
 		msg("You see nothing there to disarm.");
-		return (FALSE);
+		return FALSE;
 	}
 
 	/* Okay */
-	return (TRUE);
+	return TRUE;
+}
+
+
+/*
+ * Perform the command "lock door"
+ *
+ * Assume there is no monster blocking the destination
+ *
+ * Returns TRUE if repeated commands may continue
+ */
+static bool do_cmd_lock_door(int y, int x)
+{
+	int i, j, power;
+	bool more = FALSE;
+
+	/* Verify legality */
+	if (!do_cmd_disarm_test(y, x)) return FALSE;
+
+	/* Get the "disarm" factor */
+	i = p_ptr->state.skills[SKILL_DISARM];
+
+	/* Penalize some conditions */
+	if (p_ptr->timed[TMD_BLIND] || no_light())
+		i = i / 10;
+	if (p_ptr->timed[TMD_CONFUSED] || p_ptr->timed[TMD_IMAGE])
+		i = i / 10;
+
+	/* Calculate lock "power" */
+	power = m_bonus(7, p_ptr->depth);
+
+	/* Extract the difficulty */
+	j = i - power;
+
+	/* Always have a small chance of success */
+	if (j < 2) j = 2;
+
+	/* Success */
+	if (randint0(100) < j) {
+		msg("You lock the door.");
+		cave_set_feat(cave, y, x, FEAT_DOOR_HEAD + power);
+	}
+
+	/* Failure -- Keep trying */
+	else if ((i > 5) && (randint1(i) > 5)) {
+		flush();
+		msg("You failed to lock the door.");
+
+		/* We may keep trying */
+		more = TRUE;
+	}
+	/* Failure */
+	else
+		msg("You failed to lock the door.");
+
+	/* Result */
+	return more;
 }
 
 
@@ -1344,28 +1405,22 @@ void do_cmd_disarm(cmd_code code, cmd_arg args[])
 
 
 	/* Monster */
-	if (cave->m_idx[y][x] > 0)
-	{
-		/* Message */
+	if (cave->m_idx[y][x] > 0) {
 		msg("There is a monster in the way!");
-
-		/* Attack */
 		py_attack(y, x);
 	}
 
 	/* Chest */
 	else if (o_idx)
-	{
-		/* Disarm the chest */
 		more = do_cmd_disarm_chest(y, x, o_idx);
-	}
+
+	/* Door to lock */
+	else if (cave->feat[y][x] == FEAT_DOOR_HEAD)
+		more = do_cmd_lock_door(y, x);
 
 	/* Disarm trap */
 	else
-	{
-		/* Disarm the trap */
 		more = do_cmd_disarm_aux(y, x);
-	}
 
 	/* Cancel repeat unless told not to */
 	if (!more) disturb(p_ptr, 0, 0);
@@ -1421,7 +1476,7 @@ static bool do_cmd_bash_aux(int y, int x)
 	/* Extract door power */
 	temp = ((cave->feat[y][x] - FEAT_DOOR_HEAD) & 0x07);
 
-	/* Compare bash power to door power XXX XXX XXX */
+	/* Compare bash power to door power */
 	temp = (bash - (temp * 10));
 
 	/* Hack -- always have a chance */
@@ -1442,7 +1497,6 @@ static bool do_cmd_bash_aux(int y, int x)
 			cave_set_feat(cave, y, x, FEAT_OPEN);
 		}
 
-		/* Message */
 		msgt(MSG_OPENDOOR, "The door crashes open!");
 
 		/* Update the visuals */
@@ -1451,27 +1505,23 @@ static bool do_cmd_bash_aux(int y, int x)
 
 	/* Saving throw against stun */
 	else if (randint0(100) < adj_dex_safe[p_ptr->state.stat_ind[A_DEX]] +
-	         p_ptr->lev)
-	{
-		/* Message */
+	         p_ptr->lev) {
 		msg("The door holds firm.");
 
 		/* Allow repeated bashing */
 		more = TRUE;
 	}
 
-	/* High dexterity yields coolness */
-	else
-	{
-		/* Message */
+	/* Low dexterity has bad consequences */
+	else {
 		msg("You are off-balance.");
 
-		/* Hack -- Lose balance ala paralysis */
-		(void)player_inc_timed(p_ptr, TMD_PARALYZED, 2 + randint0(2), TRUE, FALSE);
+		/* Lose balance ala stun */
+		(void)player_inc_timed(p_ptr, TMD_STUN, 2 + randint0(2), TRUE, FALSE);
 	}
 
 	/* Result */
-	return (more);
+	return more;
 }
 
 
@@ -1659,13 +1709,20 @@ static bool do_cmd_spike_test(int y, int x)
 		return FALSE;
 	}
 
+	/* Check if door is closed */
 	if (!cave_iscloseddoor(cave, y, x)) {
 		msg("You see nothing there to spike.");
 		return FALSE;
 	}
 
+	/* Check that the door is not fully spiked */
+	if (!(cave->feat[y][x] < FEAT_DOOR_TAIL)) {
+		msg("You can't use more spikes on this door.");
+		return FALSE;
+	}
+
 	/* Okay */
-	return (TRUE);
+	return TRUE;
 }
 
 

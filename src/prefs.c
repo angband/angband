@@ -375,6 +375,8 @@ struct prefs_data
 	bool bypass;
 	struct keypress keymap_buffer[KEYMAP_ACTION_MAX];
 	bool user;
+	bool loaded_window_flag[ANGBAND_TERM_MAX];
+	u32b window_flags[ANGBAND_TERM_MAX];
 };
 
 
@@ -950,10 +952,12 @@ static enum parser_error parse_prefs_w(struct parser *p)
 	{
 		int value = parser_getuint(p, "value");
 		if (value)
-			op_ptr->window_flag[window] |= (1L << flag);
+			d->window_flags[window] |= (1L << flag);
 		else
-			op_ptr->window_flag[window] &= ~(1L << flag);
+			d->window_flags[window] &= ~(1L << flag);
 	}
+
+	d->loaded_window_flag[window] = TRUE;
 
 	return PARSE_ERROR_NONE;
 }
@@ -986,9 +990,13 @@ static struct parser *init_parse_prefs(bool user)
 {
 	struct parser *p = parser_new();
 	struct prefs_data *pd = mem_zalloc(sizeof *pd);
+	int i;
 
 	parser_setpriv(p, pd);
 	pd->user = user;
+	for (i = 0; i < ANGBAND_TERM_MAX; i++) {
+		pd->loaded_window_flag[i] = FALSE;
+	}
 
 	parser_reg(p, "% str file", parse_prefs_load);
 	parser_reg(p, "? str expr", parse_prefs_expr);
@@ -1013,6 +1021,28 @@ static struct parser *init_parse_prefs(bool user)
 	return p;
 }
 
+errr finish_parse_prefs(struct parser *p)
+{
+	struct prefs_data *d = parser_priv(p);
+	int i;
+
+	/* Update sub-windows based on the newly read-in prefs.
+	 *
+	 * The op_ptr->window_flag[] array cannot be updated directly during
+	 * parsing since the changes between the existing flags and the new
+	 * are used to set/unset the event handlers that update the windows.
+	 *
+	 * Build a complete set to pass to subwindows_set_flags() by loading
+	 * any that weren't read in by the parser from the existing set.
+	 */
+	for (i = 0; i < ANGBAND_TERM_MAX; i++) {
+		if (!d->loaded_window_flag[i])
+			d->window_flags[i] = op_ptr->window_flag[i];
+	}
+	subwindows_set_flags(d->window_flags, ANGBAND_TERM_MAX);
+
+	return PARSE_ERROR_NONE;
+}
 
 errr process_pref_file_command(const char *s)
 {
@@ -1079,6 +1109,7 @@ bool process_pref_file(const char *name, bool quiet, bool user)
 				break;
 			}
 		}
+		finish_parse_prefs(p);
 
 		file_close(f);
 		mem_free(parser_priv(p));

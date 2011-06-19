@@ -128,12 +128,13 @@ Kusunose Toru
 Various bugfixes
 
 Eddie Grove
-Bugfixes, patches and radical ideas too numerous to count
+Bugfixes, patches and radical ideas too numerous to count (but in particular
+for ID-by-use and no-selling).
 
 Nomad
 8x16 tiles
 
-BluBaron
+Blue Baron
 Windows PNG support and other improvements
 
 The UPX team (Markus Oberhumer and Laszlo Molnar)

@@ -618,10 +618,13 @@ bool menu_handle_keypress(menu_type *menu, const ui_event *in,
 
 
 /* 
- * Run a menu. The screen is saved before the menu is drawn, and restored afterwards
- * Each time the menu is redrawn, it resets the screen before redrawing.
+ * Run a menu.
+ *
+ * If popup is true, the screen is saved before the menu is drawn, and
+ * restored afterwards. Each time a popup menu is redrawn, it resets the
+ * screen before redrawing.
  */
-ui_event menu_select(menu_type *menu, int notify)
+ui_event menu_select(menu_type *menu, int notify, bool popup)
 {
 	ui_event in = EVENT_EMPTY;
 	bool no_act = (menu->flags & MN_NO_ACTION) ? TRUE : FALSE;
@@ -629,14 +632,15 @@ ui_event menu_select(menu_type *menu, int notify)
 	assert(menu->active.width != 0 && menu->active.page_rows != 0);
 
 	notify |= (EVT_SELECT | EVT_ESCAPE);
-	screen_save();
+	if (popup)
+		screen_save();
 
 	/* Stop on first unhandled event */
 	while (!(in.type & notify))
 	{
 		ui_event out = EVENT_EMPTY;
 
-		menu_refresh(menu, TRUE);
+		menu_refresh(menu, popup);
 		in = inkey_ex();
 
 		/* Handle mouse & keyboard commands */
@@ -663,12 +667,14 @@ ui_event menu_select(menu_type *menu, int notify)
 
 		/* Notify about the outgoing type */
 		if (notify & out.type) {
-			screen_load();
+			if (popup)
+				screen_load();
 			return out;
 		}
 	}
 
-	screen_load();
+	if (popup)
+		screen_load();
 	return in;
 }
 
@@ -911,7 +917,7 @@ size_t menu_dynamic_longest_entry(menu_type *m)
 
 int menu_dynamic_select(menu_type *m)
 {
-	ui_event e = menu_select(m, 0);
+	ui_event e = menu_select(m, 0, TRUE);
 	struct menu_entry *entry;
 	int cursor = m->cursor;
 

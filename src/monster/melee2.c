@@ -3119,8 +3119,7 @@ static void process_monster(struct cave *c, int m_idx)
 				{
 					/* Closed doors and secret doors */
 					if ((cave->feat[ny][nx] == FEAT_DOOR_HEAD) ||
-						 (cave->feat[ny][nx] == FEAT_SECRET))
-					{
+							 (cave->feat[ny][nx] == FEAT_SECRET)) {
 						/* The door is open */
 						did_open_door = TRUE;
 
@@ -3129,18 +3128,18 @@ static void process_monster(struct cave *c, int m_idx)
 					}
 
 					/* Locked doors (not jammed) */
-					else if (cave->feat[ny][nx] < FEAT_DOOR_HEAD + 0x08)
-					{
+					else if (cave->feat[ny][nx] < FEAT_DOOR_HEAD + 0x08) {
 						int k;
 
 						/* Door power */
 						k = ((cave->feat[ny][nx] - FEAT_DOOR_HEAD) & 0x07);
 
-						/* Try to unlock it XXX XXX XXX */
-						if (randint0(m_ptr->hp / 10) > k)
-						{
-							/* Unlock the door */
-							cave_set_feat(c, ny, nx, FEAT_DOOR_HEAD + 0x00);
+						/* Try to unlock it */
+						if (randint0(m_ptr->hp / 10) > k) {
+							msg("Something fiddles with a lock.");
+
+							/* Reduce the power of the door by one */
+							cave_set_feat(c, ny, nx, cave->feat[ny][nx] - 1);
 
 							/* Do not bash the door */
 							may_bash = FALSE;
@@ -3156,20 +3155,26 @@ static void process_monster(struct cave *c, int m_idx)
 					/* Door power */
 					k = ((cave->feat[ny][nx] - FEAT_DOOR_HEAD) & 0x07);
 
-					/* Attempt to Bash XXX XXX XXX */
-					if (randint0(m_ptr->hp / 10) > k)
-					{
-						/* Message */
-						msg("You hear a door burst open!");
+					/* Attempt to bash */
+					if (randint0(m_ptr->hp / 10) > k) {
+						msg("Something slams against a door.");
 
-						/* Disturb (sometimes) */
-						disturb(p_ptr, 0, 0);
+						/* Reduce the power of the door by one */
+						cave_set_feat(c, ny, nx, cave->feat[ny][nx] - 1);
 
-						/* The door was bashed open */
-						did_bash_door = TRUE;
+						/* If the door is no longer jammed */
+						if (cave->feat[ny][nx] < FEAT_DOOR_HEAD + 0x09)	{
+							msg("You hear a door burst open!");
 
-						/* Hack -- fall into doorway */
-						do_move = TRUE;
+							/* Disturb (sometimes) */
+							disturb(p_ptr, 0, 0);
+
+							/* The door was bashed open */
+							did_bash_door = TRUE;
+
+							/* Hack -- fall into doorway */
+							do_move = TRUE;
+						}
 					}
 				}
 			}

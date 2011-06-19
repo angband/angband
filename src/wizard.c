@@ -73,7 +73,7 @@ static void wiz_gf_demo(void)
 
 	screen_save();
 	clear_from(0);
-	menu_select(m, 0);
+	menu_select(m, 0, FALSE);
 	screen_load();
 }
 
@@ -518,7 +518,7 @@ static bool wiz_create_item_action(menu_type *m, const ui_event *e, int oid)
 
 	menu_setpriv(menu, n_choices, choice);
 	menu_layout(menu, &wiz_create_item_area);
-	ret = menu_select(menu, 0);
+	ret = menu_select(menu, 0, FALSE);
 
 	screen_load();
 	string_free((char *)menu->title);
@@ -563,7 +563,7 @@ static void wiz_create_item(void)
 	menu_setpriv(menu, TV_MAX, kb_info);
 	menu_set_filter(menu, tvals, n);
 	menu_layout(menu, &wiz_create_item_area);
-	menu_select(menu, 0);
+	menu_select(menu, 0, FALSE);
 
 	screen_load();
 	
