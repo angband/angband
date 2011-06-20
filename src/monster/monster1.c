@@ -135,7 +135,7 @@ static int mon_resist_effect(int m_idx, int idx, int v, u16b flag)
 	if (flag & MON_TMD_MON_SOURCE)
 		resist_chance = r_ptr->level;
 	else
-		resist_chance = r_ptr->level + 25 - (v / 2);
+		resist_chance = r_ptr->level + 40 - (v / 2);
 
 	if (randint0(100) < resist_chance) return (TRUE);
 
@@ -204,7 +204,7 @@ static bool mon_set_timed(int m_idx, int idx, int v, u16b flag)
 				m_note = MON_MSG_UNAFFECTED;
 				resisted = TRUE;
 			} else {
-				m_ptr->mspeed -= 10;
+				m_ptr->mspeed -= 5;
 			}
 		} else {
 			m_ptr->mspeed = r_ptr->speed;
