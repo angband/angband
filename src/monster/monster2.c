@@ -1682,6 +1682,40 @@ s16b monster_carry(struct monster *m_ptr, object_type *j_ptr)
 	return (o_idx);
 }
 
+/*
+ * Make a monster mimic an object
+ */
+s16b monster_mimic(struct monster *m_ptr, object_type *j_ptr)
+{
+	s16b o_idx;
+
+	/* Make an object */
+	o_idx = o_pop();
+
+	/* Success */
+	if (o_idx)
+	{
+		object_type *o_ptr;
+
+		/* Get new object */
+		o_ptr = object_byid(o_idx);
+
+		/* Copy object */
+		object_copy(o_ptr, j_ptr);
+
+		/* Forget mark */
+		o_ptr->marked = FALSE;
+
+		/* Forget location */
+		o_ptr->iy = o_ptr->ix = 0;
+
+		/* Link the monster to the object */
+		m_ptr->mimicked_o_idx = o_idx;
+	}
+
+	/* Result */
+	return (o_idx);
+}
 
 /*
  * Swap the players/monsters (if any) at two locations XXX XXX XXX
@@ -2127,6 +2161,20 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp, byte origin)
 	if (rf_has(r_ptr->flags, RF_ATTR_RAND))
 		n_ptr->attr = randint1(BASIC_COLORS - 1);
 
+	/* Temporary debugging hack -- make ring mimics look like rings of speed */
+	if (r_idx == 313) {
+		object_type *i_ptr;
+		object_type object_type_body;
+		object_kind *kind = lookup_kind(45, 5);
+
+		i_ptr = &object_type_body;
+		object_prep(i_ptr, kind, r_ptr->level, RANDOMISE);
+		apply_magic(i_ptr, r_ptr->level, TRUE, FALSE, FALSE);
+		i_ptr->number = 1;
+		if (!monster_mimic(n_ptr, i_ptr))
+			return (FALSE);
+	}
+		
 	/* Place the monster in the dungeon */
 	if (!monster_place(y, x, n_ptr, origin))
 		return (FALSE);

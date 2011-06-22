@@ -308,6 +308,8 @@ typedef struct monster
 
 	bool ml;			/* Monster is "visible" */
 	bool unaware;		/* Player doesn't know this is a monster */
+	
+	s16b mimicked_o_idx; /* Object this monster is mimicking */
 
 	s16b hold_o_idx;	/* Object being held (if any) */
 

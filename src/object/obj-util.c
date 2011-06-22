@@ -683,6 +683,8 @@ int scan_floor(int *items, int max_size, int y, int x, int mode)
 	int this_o_idx, next_o_idx;
 
 	int num = 0;
+	
+	monster_type *m_ptr;
 
 	/* Sanity */
 	if (!in_bounds(y, x)) return 0;
@@ -716,6 +718,22 @@ int scan_floor(int *items, int max_size, int y, int x, int mode)
 		if (mode & 0x04) break;
 	}
 
+	/* Hack -- if a mimic is hiding as an object, add that object */
+	m_ptr = cave_monster(cave, cave->m_idx[y][x]);
+	if (m_ptr && m_ptr->unaware && (m_ptr->mimicked_o_idx > 0)) {
+		object_type *o_ptr;
+		int this_o_idx = m_ptr->mimicked_o_idx;
+		
+		/* Get the object */
+		o_ptr = object_byid(this_o_idx);
+		
+		/* Item tester */
+		if (!(mode & 0x01) || item_tester_okay(o_ptr)) {
+			/* Accept this item */
+			items[num++] = this_o_idx;
+		}
+	}
+	
 	return num;
 }
 
