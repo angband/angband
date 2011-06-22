@@ -2161,14 +2161,13 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp, byte origin)
 	if (rf_has(r_ptr->flags, RF_ATTR_RAND))
 		n_ptr->attr = randint1(BASIC_COLORS - 1);
 
-	/* Temporary debugging hack -- make ring mimics look like rings of speed */
-	if (r_idx == 313) {
+	/* Make mimics start mimicking */
+	if (r_ptr->mimic_kind) {
 		object_type *i_ptr;
 		object_type object_type_body;
-		object_kind *kind = lookup_kind(45, 5);
 
 		i_ptr = &object_type_body;
-		object_prep(i_ptr, kind, r_ptr->level, RANDOMISE);
+		object_prep(i_ptr, r_ptr->mimic_kind, r_ptr->level, RANDOMISE);
 		apply_magic(i_ptr, r_ptr->level, TRUE, FALSE, FALSE);
 		i_ptr->number = 1;
 		if (!monster_mimic(n_ptr, i_ptr))

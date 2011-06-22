@@ -424,6 +424,27 @@ static enum parser_error parse_r_drop_artifact(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_r_mimic(struct parser *p) {
+	struct monster_race *r = parser_priv(p);
+	int tval, sval;
+	object_kind *kind;
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	tval = tval_find_idx(parser_getsym(p, "tval"));
+	if (tval < 0)
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+	sval = lookup_sval(tval, parser_getsym(p, "sval"));
+	if (sval < 0)
+		return PARSE_ERROR_UNRECOGNISED_SVAL;
+
+	kind = objkind_get(tval, sval);
+	if (!kind)
+		return PARSE_ERROR_GENERIC;
+	r->mimic_kind = kind;
+	return PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_r(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -441,6 +462,7 @@ struct parser *init_parse_r(void) {
 	parser_reg(p, "S str spells", parse_r_s);
 	parser_reg(p, "drop sym tval sym sval uint chance uint min uint max", parse_r_drop);
 	parser_reg(p, "drop-artifact str name", parse_r_drop_artifact);
+	parser_reg(p, "mimic sym tval sym sval", parse_r_mimic);
 	return p;
 }
 

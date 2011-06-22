@@ -240,6 +240,8 @@ typedef struct monster_race
 	byte cur_num;			/* Monster population on current level */
 
 	struct monster_drop *drops;
+	
+	struct object_kind *mimic_kind;
 } monster_race;
 
 
