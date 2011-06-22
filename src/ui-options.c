@@ -455,12 +455,16 @@ static void ui_keymap_create(const char *title, int row)
 	while (!done) {
 		struct keypress kp;
 
-		keypress_to_text(tmp, sizeof(tmp), keymap_buffer, FALSE);
-		c_prt(n == 0 ? TERM_YELLOW : TERM_WHITE,
-				format("Action: %s", tmp), 15, 0);
+		int color = TERM_WHITE;
+		if (n == 0) color = TERM_YELLOW;
+		if (n == KEYMAP_ACTION_MAX) color = TERM_L_RED;
 
-		c_prt(TERM_L_BLUE, "Press '$' to stop inputting characters.", 17, 2);
-		c_prt(TERM_L_BLUE, "(Maximum keymap length is %d keys.)", 19, 0);
+		keypress_to_text(tmp, sizeof(tmp), keymap_buffer, FALSE);
+		c_prt(color, format("Action: %s", tmp), 15, 0);
+
+		c_prt(TERM_L_BLUE, "  Press '$' when finished.", 17, 0);
+		c_prt(TERM_L_BLUE, "  Use 'CTRL-U' to reset.", 18, 0);
+		c_prt(TERM_L_BLUE, format("(Maximum keymap length is %d keys.)", KEYMAP_ACTION_MAX), 19, 0);
 
 		if (kp.code == '$') {
 			done = TRUE;
