@@ -4042,7 +4042,12 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 
 		case WM_CHAR:
 		{
-			Term_keypress(wParam, 0);
+			// really vicious hack; [Control]Return -> 10 (Return -> 13)
+			if (wParam == 10) {
+				Term_keypress(13, KC_MOD_CONTROL);
+			} else {
+				Term_keypress(wParam, 0);
+			}
 			return 0;
 		}
 
