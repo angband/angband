@@ -329,6 +329,13 @@ struct term
 
 
 
+/* sketchy key logging pt. 1 */
+#define KEYLOG_SIZE 8
+extern int log_i;
+extern int log_size;
+struct keypress keylog[KEYLOG_SIZE];
+
+
 /**** Available Variables ****/
 
 extern term *Term;

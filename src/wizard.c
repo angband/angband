@@ -27,6 +27,7 @@
 #include "spells.h"
 #include "target.h"
 #include "wizard.h"
+#include "z-term.h"
 
 
 #ifdef ALLOW_DEBUG
@@ -172,6 +173,46 @@ static void prt_binary(const bitflag *flags, int offset, int row, int col, char 
 			Term_putch(col++, row, TERM_WHITE, '-');
 	}
 }
+
+/**
+ * This ugly piece of code exists to figure out what keycodes the user has
+ * been generating.
+ */
+static void do_cmd_keylog(void) {
+	int i;
+	char buf[50];
+	char buf2[12];
+
+	screen_save();
+
+	prt("Previous keypresses (top most recent):", 0, 0);
+
+	for (i = 0; i < KEYLOG_SIZE; i++) {
+		if (i < log_size) {
+			/* find the keypress from our log */
+			int j = (log_i + i) % KEYLOG_SIZE;
+			struct keypress k = keylog[j];
+
+			/* ugh. it would be nice if there was a verion of keypress_to_text
+			 * which took only one keypress. */
+			struct keypress keys[2] = {k, {EVT_NONE, 0}};
+			keypress_to_text(buf2, sizeof(buf2), keys, TRUE);
+
+			/* format this line of output */
+			strnfmt(buf, sizeof(buf), "    %-12s (code=%u mods=%u)", buf2, k.code, k.mods);
+		} else {
+			/* create a blank line of output */
+			strnfmt(buf, sizeof(buf), "%40s", "");
+		}
+
+		prt(buf, i + 1, 0);
+	}
+
+	prt("Press any key to continue.", KEYLOG_SIZE + 1, 0);
+	inkey();
+	screen_load();
+}
+
 
 /*
  * Hack -- Teleport to the target
@@ -1759,6 +1800,8 @@ void do_cmd_debug(void)
 			do_cmd_wiz_learn();
 			break;
 		}
+
+		case 'L': do_cmd_keylog(); break;
 
 		/* Magic Mapping */
 		case 'm':
