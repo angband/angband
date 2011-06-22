@@ -460,6 +460,8 @@ bool make_attack_spell(int m_idx)
 	if (m_ptr->unaware)
 	{
 		m_ptr->unaware = FALSE;
+		
+		p_ptr->redraw |= PR_MONLIST;
 
 		/* Learn about mimicry */
 		if (rf_has(r_ptr->flags, RF_UNAWARE))
@@ -1539,13 +1541,6 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 
 	/* Not allowed to attack */
 	if (rf_has(r_ptr->flags, RF_NEVER_BLOW)) return (FALSE);
-
-	/* Become aware of monster
-	if (m_ptr->unaware)
-	{
-		m_ptr->unaware = FALSE;
-		update_mon(m_idx, FALSE);
-	} */
 
 	/* Total armor */
 	ac = p->state.ac + p->state.to_a;
