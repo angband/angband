@@ -433,7 +433,7 @@ static void ui_keymap_query(const char *title, int row)
 
 static void ui_keymap_create(const char *title, int row)
 {
-	bool done = FALSE, first = TRUE;
+	bool done = FALSE;
 	size_t n = 0;
 
 	struct keypress c;
@@ -444,43 +444,57 @@ static void ui_keymap_create(const char *title, int row)
 	prt("Key: ", 14, 0);
 
 	c = keymap_get_trigger();
+	if (c.code == '$') {
+		c_prt(TERM_L_RED, "The '$' key is reserved.", 16, 2);
+		prt("Press any key to continue.", 18, 0);
+		inkey();
+		return;
+	}
 
 	/* Get an encoded action, with a default response */
 	while (!done) {
 		struct keypress kp;
 
 		keypress_to_text(tmp, sizeof(tmp), keymap_buffer, FALSE);
-		c_prt(first ? TERM_YELLOW : TERM_WHITE,
+		c_prt(n == 0 ? TERM_YELLOW : TERM_WHITE,
 				format("Action: %s", tmp), 15, 0);
 
-		c_prt(TERM_L_BLUE, "Press Control-Return to stop inputting characters.", 17, 0);
+		c_prt(TERM_L_BLUE, "Press '$' to stop inputting characters.", 17, 2);
+		c_prt(TERM_L_BLUE, "(Maximum keymap length is %d keys.)", 19, 0);
+
+		if (kp.code == '$') {
+			done = TRUE;
+			continue;
+		}
 
 		kp = inkey();
 		switch (kp.code) {
-			case KC_BACKSPACE:
+			case KC_DELETE:
+			case KC_BACKSPACE: {
 				if (n > 0) {
 					n -= 1;
-					keymap_buffer[n].type = keymap_buffer[n].code =
-							keymap_buffer[n].mods = 0;
+				    keymap_buffer[n].type = 0;
+					keymap_buffer[n].code = 0;
+					keymap_buffer[n].mods = 0;
 				}
 				break;
-			case KTRL('U'):
+			}
+
+			case KTRL('U'): {
 				memset(keymap_buffer, 0, sizeof keymap_buffer);
 				n = 0;
 				break;
-			case KC_RETURN:
-			case KC_ENTER:
-				if (kp.mods == KC_MOD_CONTROL) {
-					done = TRUE;
-					continue;
-				}
-			default:
-				if (first) {
+			}
+
+			default: {
+				if (n == KEYMAP_ACTION_MAX) continue;
+
+				if (n == 0) {
 					memset(keymap_buffer, 0, sizeof keymap_buffer);
-					first = FALSE;
 				}
 				keymap_buffer[n++] = kp;
 				break;
+			}
 		}
 	}
 
