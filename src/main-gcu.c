@@ -543,6 +543,9 @@ static errr Term_xtra_gcu_event(int v) {
 		case 0xC1: i = '7'; break;
 		case 0xF4: i = '9'; break;
 
+		/* try to compensate for inadequate terminfo */
+		case 263: i = '\b'; break;
+
 		default: {
 			if (i < KEY_MIN) break;
 
