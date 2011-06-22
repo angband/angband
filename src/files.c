@@ -185,11 +185,11 @@ static const struct player_flag_record player_flag_table[RES_ROWS*4] =
 	{ "Nethr",	OF_RES_NETHR,   FLAG_END,   FLAG_END },
 	{ "Chaos",	OF_RES_CHAOS,   FLAG_END,   FLAG_END },
 	{ "Disen",	OF_RES_DISEN,   FLAG_END,   FLAG_END },
-	{ "S.Dig",	OF_SLOW_DIGEST, FLAG_END,   FLAG_END },
 	{ "Feath",	OF_FEATHER,     FLAG_END,   FLAG_END },
 	{ "pFear",	OF_RES_FEAR,    FLAG_END,   FLAG_END },
 	{ "pBlnd",	OF_RES_BLIND,   FLAG_END,   FLAG_END },
 	{ "pConf",	OF_RES_CONFU,   FLAG_END,   FLAG_END },
+	{ "pStun",	OF_RES_STUN,	FLAG_END,   FLAG_END },
 
 	{ "Light",	OF_LIGHT,       FLAG_END,   FLAG_END },
 	{ "Regen",	OF_REGEN,       FLAG_END,   FLAG_END },
@@ -206,8 +206,8 @@ static const struct player_flag_record player_flag_table[RES_ROWS*4] =
 	{ "Blows",	OF_BLOWS,       FLAG_END,   FLAG_END },
 	{ "Shots",	OF_SHOTS,       FLAG_END,   FLAG_END },
 	{ "Might",	OF_MIGHT,       FLAG_END,   FLAG_END },
+	{ "S.Dig",	OF_SLOW_DIGEST, FLAG_END,   FLAG_END },
 	{ "ImpHP",	OF_IMPAIR_HP,   FLAG_END,   FLAG_END },
-	{ "ImpSP",	OF_IMPAIR_MANA, FLAG_END,   FLAG_END },
 	{ " Fear",	OF_AFRAID,      FLAG_END,   FLAG_END },
 	{ "Aggrv",	OF_AGGRAVATE,   FLAG_END,   FLAG_END },
 };

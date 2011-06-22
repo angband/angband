@@ -16,6 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "z-term.h"
 
 
 /*
@@ -269,7 +270,9 @@
  */
 term *Term = NULL;
 
-
+/* grumbles */
+int log_i = 0;
+int log_size = 0;
 
 
 /*** Local routines ***/
@@ -1962,6 +1965,18 @@ errr Term_flush(void)
 }
 
 
+/* sketchy keylogging pt. 2 */
+static void log_keypress(ui_event e)
+{
+	if (e.type != EVT_KBRD) return;
+	if (!e.key.code) return;
+
+	keylog[log_i] = e.key;
+	if (log_size < KEYLOG_SIZE) log_size++;
+	log_i = (log_i + 1) % KEYLOG_SIZE;
+}
+
+
 /*
  * Add a keypress to the "queue"
  */
@@ -2107,6 +2122,9 @@ errr Term_inkey(ui_event *ch, bool wait, bool take)
 
 	/* Extract the next keypress */
 	(*ch) = Term->key_queue[Term->key_tail];
+
+	/* sketchy key loggin */
+	log_keypress(*ch);
 
 	/* If requested, advance the queue, wrap around if necessary */
 	if (take && (++Term->key_tail == Term->key_size)) Term->key_tail = 0;

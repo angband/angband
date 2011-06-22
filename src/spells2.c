@@ -1699,7 +1699,7 @@ bool speed_monsters(void)
  */
 bool slow_monsters(void)
 {
-	return (project_los(GF_OLD_SLOW, 50, FALSE));
+	return (project_los(GF_OLD_SLOW, 20, FALSE));
 }
 
 /*
@@ -2870,7 +2870,7 @@ bool speed_monster(int dir)
 bool slow_monster(int dir)
 {
 	int flg = PROJECT_STOP | PROJECT_KILL;
-	return (project_hook(GF_OLD_SLOW, dir, 100, flg));
+	return (project_hook(GF_OLD_SLOW, dir, 20, flg));
 }
 
 bool sleep_monster(int dir, bool aware)
