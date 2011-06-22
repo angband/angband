@@ -453,7 +453,7 @@ static void ui_keymap_create(const char *title, int row)
 
 	/* Get an encoded action, with a default response */
 	while (!done) {
-		struct keypress kp;
+		struct keypress kp = {EVT_NONE, 0, 0};
 
 		int color = TERM_WHITE;
 		if (n == 0) color = TERM_YELLOW;
