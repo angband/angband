@@ -1967,11 +1967,18 @@ s16b monster_place(int y, int x, monster_type *n_ptr, byte origin)
 	if (r_ptr->mimic_kind) {
 		object_type *i_ptr;
 		object_type object_type_body;
+		object_kind *kind = r_ptr->mimic_kind;
 
 		i_ptr = &object_type_body;
-		object_prep(i_ptr, r_ptr->mimic_kind, r_ptr->level, RANDOMISE);
-		apply_magic(i_ptr, r_ptr->level, TRUE, FALSE, FALSE);
-		i_ptr->number = 1;
+
+		if (kind->tval == TV_GOLD) {
+			make_gold(i_ptr, p_ptr->depth, kind->sval);
+		} else {
+			object_prep(i_ptr, r_ptr->mimic_kind, r_ptr->level, RANDOMISE);
+			apply_magic(i_ptr, r_ptr->level, TRUE, FALSE, FALSE);
+			i_ptr->number = 1;
+		}
+
 		m_ptr->mimicked_o_idx = floor_carry(cave, y, x, i_ptr);
 	}
 
