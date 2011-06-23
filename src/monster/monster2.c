@@ -310,6 +310,18 @@ static void compact_monsters_aux(int i1, int i2)
 		/* Reset monster pointer */
 		o_ptr->held_m_idx = i2;
 	}
+	
+	/* Move mimicked objects */
+	if (m_ptr->mimicked_o_idx > 0) {
+
+		object_type *o_ptr;
+
+		/* Get the object */
+		o_ptr = object_byid(m_ptr->mimicked_o_idx);
+
+		/* Reset monster pointer */
+		o_ptr->mimicking_m_idx = i2;
+	}
 
 	/* Hack -- Update the target */
 	if (target_get_monster() == i1) target_set_monster(i2);
@@ -3631,6 +3643,10 @@ void become_aware(int m_idx)
 
 	/* Delete any false items */
 	if (m_ptr->mimicked_o_idx > 0) {
+		object_type *o_ptr = object_byid(m_ptr->mimicked_o_idx);
+		
+		/* Clear the mimicry */
+		o_ptr->mimicking_m_idx = 0;
 		delete_object_idx(m_ptr->mimicked_o_idx);
 		m_ptr->mimicked_o_idx = 0;
 	}
