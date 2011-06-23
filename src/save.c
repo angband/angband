@@ -92,6 +92,8 @@ static void wr_item(const object_type *o_ptr)
 
 	/* Held by monster index */
 	wr_s16b(o_ptr->held_m_idx);
+	
+	wr_s16b(o_ptr->mimicking_m_idx);
 
 	/* Save the inscription (if any) */
 	if (o_ptr->note)
@@ -848,8 +850,6 @@ void wr_monsters(void)
 			wr_byte(m_ptr->known_pflags[j]);
 		if (j < OF_BYTES) pad_bytes(OF_BYTES - j);
 		
-		wr_s16b(m_ptr->mimicked_o_idx);
-
 		wr_byte(0);
 	}
 }

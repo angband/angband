@@ -243,7 +243,8 @@ void delete_monster_idx(int i)
 	}
 
 	/* Delete mimicked objects */
-	delete_object_idx(m_ptr->mimicked_o_idx);
+	if (m_ptr->mimicked_o_idx > 0)
+		delete_object_idx(m_ptr->mimicked_o_idx);
 
 	/* Wipe the Monster */
 	(void)WIPE(m_ptr, monster_type);
@@ -1964,7 +1965,7 @@ s16b monster_place(int y, int x, monster_type *n_ptr, byte origin)
 		(void)mon_create_drop(m_idx, origin);
 
 	/* Make mimics start mimicking */
-	if (r_ptr->mimic_kind && !m_ptr->mimicked_o_idx) {
+	if (origin && r_ptr->mimic_kind) {
 		object_type *i_ptr;
 		object_type object_type_body;
 		object_kind *kind = r_ptr->mimic_kind;
@@ -1979,6 +1980,7 @@ s16b monster_place(int y, int x, monster_type *n_ptr, byte origin)
 			i_ptr->number = 1;
 		}
 
+		i_ptr->mimicking_m_idx = m_idx;
 		m_ptr->mimicked_o_idx = floor_carry(cave, y, x, i_ptr);
 	}
 
@@ -3309,7 +3311,8 @@ void monster_death(int m_idx, bool stats)
 	x = m_ptr->fx;
 	
 	/* Delete any mimicked objects */
-	delete_object_idx(m_ptr->mimicked_o_idx);
+	if (m_ptr->mimicked_o_idx > 0)
+		delete_object_idx(m_ptr->mimicked_o_idx);
 
 	/* Drop objects being carried */
 	for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx) {
