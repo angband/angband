@@ -466,12 +466,13 @@ static void ui_keymap_create(const char *title, int row)
 		c_prt(TERM_L_BLUE, "  Use 'CTRL-U' to reset.", 18, 0);
 		c_prt(TERM_L_BLUE, format("(Maximum keymap length is %d keys.)", KEYMAP_ACTION_MAX), 19, 0);
 
+		kp = inkey();
+
 		if (kp.code == '$') {
 			done = TRUE;
 			continue;
 		}
 
-		kp = inkey();
 		switch (kp.code) {
 			case KC_DELETE:
 			case KC_BACKSPACE: {
