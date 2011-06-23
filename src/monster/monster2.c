@@ -1964,7 +1964,7 @@ s16b monster_place(int y, int x, monster_type *n_ptr, byte origin)
 		(void)mon_create_drop(m_idx, origin);
 
 	/* Make mimics start mimicking */
-	if (r_ptr->mimic_kind) {
+	if (r_ptr->mimic_kind && !m_ptr->mimicked_o_idx) {
 		object_type *i_ptr;
 		object_type object_type_body;
 		object_kind *kind = r_ptr->mimic_kind;

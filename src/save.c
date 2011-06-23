@@ -847,6 +847,8 @@ void wr_monsters(void)
 		for (j = 0; j < OF_BYTES && j < OF_SIZE; j++)
 			wr_byte(m_ptr->known_pflags[j]);
 		if (j < OF_BYTES) pad_bytes(OF_BYTES - j);
+		
+		wr_s16b(m_ptr->mimicked_o_idx);
 
 		wr_byte(0);
 	}

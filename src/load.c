@@ -2534,6 +2534,106 @@ int rd_monsters_5(void)
 	return 0;
 }
 
+/**
+ * Read monsters (added m_ptr->mimicked_o_idx)
+ */
+int rd_monsters_6(void)
+{
+	int i;
+	size_t j;
+	u16b limit;
+
+	/* Only if the player's alive */
+	if (p_ptr->is_dead)
+		return 0;
+	
+	/* Read the monster count */
+	rd_u16b(&limit);
+
+	/* Hack -- verify */
+	if (limit > z_info->m_max)
+	{
+		note(format("Too many (%d) monster entries!", limit));
+		return (-1);
+	}
+
+	/* Read the monsters */
+	for (i = 1; i < limit; i++)
+	{
+		monster_type *m_ptr;
+		monster_type monster_type_body;
+		
+		byte flags;
+		byte tmp8u;
+
+		/* Get local monster */
+		m_ptr = &monster_type_body;
+		WIPE(m_ptr, monster_type);
+
+		/* Read in record */
+		rd_s16b(&m_ptr->r_idx);
+		rd_byte(&m_ptr->fy);
+		rd_byte(&m_ptr->fx);
+		rd_s16b(&m_ptr->hp);
+		rd_s16b(&m_ptr->maxhp);
+		rd_byte(&m_ptr->mspeed);
+		rd_byte(&m_ptr->energy);
+		rd_byte(&tmp8u);
+
+		for (j = 0; j < tmp8u; j++)
+			rd_s16b(&m_ptr->m_timed[j]);
+
+		/* Read and extract the flag */
+		rd_byte(&flags);
+		m_ptr->unaware = (flags & 0x01) ? TRUE : FALSE;
+	
+		for (j = 0; j < OF_BYTES && j < OF_SIZE; j++)
+			rd_byte(&m_ptr->known_pflags[j]);
+		if (j < OF_BYTES) strip_bytes(OF_BYTES - j);
+		
+		rd_s16b(&m_ptr->mimicked_o_idx);
+
+		strip_bytes(1);
+
+		/* Place monster in dungeon */
+		if (monster_place(m_ptr->fy, m_ptr->fx, m_ptr, 0) != i)
+		{
+			note(format("Cannot place monster %d", i));
+			return (-1);
+		}
+	}
+
+	/* Reacquire objects */
+	for (i = 1; i < o_max; ++i)
+	{
+		object_type *o_ptr;
+		monster_type *m_ptr;
+
+		/* Get the object */
+		o_ptr = object_byid(i);
+
+		/* Ignore dungeon objects */
+		if (!o_ptr->held_m_idx) continue;
+
+		/* Verify monster index */
+		if (o_ptr->held_m_idx > z_info->m_max)
+		{
+			note("Invalid monster index");
+			return (-1);
+		}
+
+		/* Get the monster */
+		m_ptr = cave_monster(cave, o_ptr->held_m_idx);
+
+		/* Link the object to the pile */
+		o_ptr->next_o_idx = m_ptr->hold_o_idx;
+
+		/* Link the monster to the object */
+		m_ptr->hold_o_idx = i;
+	}
+
+	return 0;
+}
 
 int rd_ghost(void)
 {
