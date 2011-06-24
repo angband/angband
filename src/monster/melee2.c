@@ -458,13 +458,7 @@ bool make_attack_spell(int m_idx)
 
 	/* If we see an unaware monster try to cast a spell, become aware of it */
 	if (m_ptr->unaware)
-	{
-		m_ptr->unaware = FALSE;
-
-		/* Learn about mimicry */
-		if (rf_has(r_ptr->flags, RF_UNAWARE))
-			rf_on(l_ptr->flags, RF_UNAWARE);
-	}
+		become_aware(m_idx);
 
 	/* Calculate spell failure rate */
 	failrate = 25 - (rlev + 3) / 4;
@@ -1539,13 +1533,6 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 
 	/* Not allowed to attack */
 	if (rf_has(r_ptr->flags, RF_NEVER_BLOW)) return (FALSE);
-
-	/* Become aware of monster
-	if (m_ptr->unaware)
-	{
-		m_ptr->unaware = FALSE;
-		update_mon(m_idx, FALSE);
-	} */
 
 	/* Total armor */
 	ac = p->state.ac + p->state.to_a;
@@ -3487,13 +3474,7 @@ static void process_monster(struct cave *c, int m_idx)
 
 	/* If we see an unaware monster do something, become aware of it */
 	if (do_turn && m_ptr->unaware)
-	{
-		m_ptr->unaware = FALSE;
-
-		/* Learn about mimicry */
-		if (rf_has(r_ptr->flags, RF_UNAWARE))
-			rf_on(l_ptr->flags, RF_UNAWARE);
-	}
+		become_aware(m_idx);
 
 }
 

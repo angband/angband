@@ -490,6 +490,7 @@ typedef struct object
 
 	s16b next_o_idx;	/* Next object in stack (if any) */
 	s16b held_m_idx;	/* Monster holding us (if any) */
+	s16b mimicking_m_idx; /* Monster mimicking us (if any) */
 
 	byte origin;        /* How this item was found */
 	byte origin_depth;  /* What depth the item was found at */
