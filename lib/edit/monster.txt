@@ -944,6 +944,7 @@ B:HIT:HURT:1d4
 B:TOUCH:POISON:2d4
 F:DROP_2
 D:It appears to be a pile of copper coins.
+mimic:gold:copper
 
 N:73:Giant white rat
 T:rodent
@@ -1191,6 +1192,7 @@ B:HIT:HURT:1d6
 B:TOUCH:POISON:2d6
 F:DROP_2
 D:It appears to be a pile of silver coins.
+mimic:gold:silver
 
 N:96:Snaga
 T:orc
@@ -1877,6 +1879,7 @@ F:DROP_3
 F:IM_ACID
 D:It appears to be a pile of gold coins, until it starts crawling towards you on
 D: tiny legs.
+mimic:gold:gold
 
 N:147:Wolf
 T:canine
@@ -2244,6 +2247,7 @@ F:DROP_4
 F:IM_ACID
 D:It appears to be a pile of sentient mithril coins that doesn't like being
 D: picked up.
+mimic:gold:mithril
 
 N:176:Illusionist
 T:person
@@ -2911,11 +2915,11 @@ W:18:3:0:60
 B:HIT:POISON:3d4
 B:HIT:HURT:2d3
 B:HIT:HURT:2d3
-F:ATTR_RAND
 S:1_IN_6
 S:BO_COLD
 D:A strange creature that disguises itself as a discarded potion bottle to lure
 D: unsuspecting adventurers within reach of its venomous claws.
+mimic:potion:Healing
 
 N:225:Blink dog
 T:canine
@@ -3306,6 +3310,7 @@ S:BO_FIRE
 S:S_MONSTER
 D:A strange creature that disguises itself as a discarded scroll to lure
 D: unsuspecting adventurers within reach of its venomous claws.
+mimic:scroll:Banishment
 
 N:252:Fire vortex
 T:vortex
@@ -4007,6 +4012,7 @@ F:DROP_4
 F:IM_ACID
 D:It appears to be a pile of coins made of precious adamant, slithering toward
 D: you on lots of tiny legs.
+mimic:gold:adamantite
 
 N:293:Algroth
 T:troll
@@ -4405,12 +4411,12 @@ B:HIT:POISON:3d4
 B:HIT:POISON:3d4
 B:HIT:POISON:3d4
 B:HIT:POISON:3d4
-F:ATTR_RAND
 S:1_IN_4
 S:BO_ACID | BO_COLD | BO_ELEC | BO_FIRE
 S:S_MONSTER
 D:A strange creature that disguises itself as a discarded ring to lure
 D: unsuspecting adventurers within reach of its venomous claws.
+mimic:ring:Speed
 
 N:314:Young blue dragon
 T:dragon
@@ -5489,6 +5495,7 @@ D: adventurers within reach of its venomous claws.  The first that most
 D: adventurers realise of the deception is when the seemingly invitingly open
 D: lid of the chest suddenly grows teeth and then slams shut on the adventurer's
 D: hand...
+mimic:chest:7
 
 N:597:Silent watcher
 T:golem
