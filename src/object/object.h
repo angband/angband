@@ -400,9 +400,12 @@ typedef struct ego_item
 	bitflag flags[OF_SIZE];		/**< Flags */
 	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
 
-	byte level;			/* Minimum level */
-	byte rarity;			/* Object rarity */
-	byte rating;			/* Level rating boost */
+	byte level;		/* Minimum level */
+	byte rarity;		/* Object rarity */
+	byte rating;		/* Level rating boost */
+	byte alloc_prob; 	/** Chance of being generated (i.e. rarity) */
+	byte alloc_min;  	/** Minimum depth (can appear earlier) */
+	byte alloc_max;  	/** Maximum depth (will NEVER appear deeper) */
 
 	byte tval[EGO_TVALS_MAX]; 	/* Legal tval */
 	byte min_sval[EGO_TVALS_MAX];	/* Minimum legal sval */
