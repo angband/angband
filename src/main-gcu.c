@@ -787,18 +787,14 @@ static errr Term_text_gcu(int x, int y, int n, byte a, const char *s)
 	wmove(td->win, y, x);
 
 	/* Write to screen */
-	while (n--)
-	{
+	while (n--) {
 		unsigned char c = *(s++);
 
-		if (c < 32)
-		{
+		if (c < 32) {
 			wattron(td->win, ctrl_attr[c]);
 			waddch(td->win, filter_char(ctrl_char[c]));
 			wattroff(td->win, ctrl_attr[c]);
-		}
-		else
-		{
+		} else {
 			waddch(td->win, filter_char(c));
 		}
 	}
@@ -850,8 +846,7 @@ static errr term_data_init_gcu(term_data *td, int rows, int cols, int y, int x)
 	t->xtra_hook = Term_xtra_gcu;
 
 	/* only if the locale supports Latin-1 will we enable xchar_hook */
-	if (setlocale(LC_CTYPE, ""))
-	{
+	if (setlocale(LC_CTYPE, "")) {
 		/* the Latin-1 codeset is ISO-8859-1 */
 		if (strcmp(nl_langinfo(CODESET), "ISO-8859-1") == 0)
 			t->xchar_hook = Term_xchar_gcu;
@@ -892,8 +887,7 @@ errr init_gcu(int argc, char **argv)
 	loaded_terminfo = termtype && tgetent(0, termtype) == 1;
 
 	/* Parse args */
-	for (i = 1; i < argc; i++)
-	{
+	for (i = 1; i < argc; i++) {
 		if (prefix(argv[i], "-b"))
 			use_big_screen = TRUE;
 		else if (prefix(argv[i], "-B"))
@@ -904,8 +898,7 @@ errr init_gcu(int argc, char **argv)
 			plog_fmt("Ignoring option: %s", argv[i]);
 	}
 
-	if (graphics)
-	{
+	if (graphics) {
 		ctrl_char[CTRL_WALL] = ' ';
 		ctrl_attr[CTRL_ORE] = A_REVERSE;
 		ctrl_attr[CTRL_WALL] = A_REVERSE;
@@ -942,8 +935,7 @@ errr init_gcu(int argc, char **argv)
 #endif
 
 	/* Attempt to use colors */
-	if (can_use_color)
-	{
+	if (can_use_color) {
 		/* Prepare the color pairs */
 		/* PAIR_WHITE (pair 0) is *always* WHITE on BLACK */
 		init_pair(PAIR_RED, COLOR_RED, bg_color);
@@ -1002,8 +994,7 @@ errr init_gcu(int argc, char **argv)
 	keymap_game_prepare();
 
 	/*** Now prepare the term(s) ***/
-	for (i = 0; i < MAX_TERM_DATA; i++)
-	{
+	for (i = 0; i < MAX_TERM_DATA; i++) {
 		if (use_big_screen && i > 0) break;
 
 		/* Get the terminal dimensions; if the user asked for a big screen
