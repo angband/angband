@@ -683,7 +683,7 @@ int scan_floor(int *items, int max_size, int y, int x, int mode)
 	int this_o_idx, next_o_idx;
 
 	int num = 0;
-
+	
 	/* Sanity */
 	if (!in_bounds(y, x)) return 0;
 
@@ -869,6 +869,18 @@ void delete_object_idx(int o_idx)
 
 		cave_light_spot(cave, y, x);
 	}
+	
+	/* Delete the mimicking monster if necessary */
+	if (j_ptr->mimicking_m_idx) {
+		monster_type *m_ptr;
+		
+		m_ptr = cave_monster(cave, j_ptr->mimicking_m_idx);
+		
+		/* Clear the mimicry */
+		m_ptr->mimicked_o_idx = 0;
+		
+		delete_monster_idx(j_ptr->mimicking_m_idx);
+	}
 
 	/* Wipe the object */
 	object_wipe(j_ptr);
@@ -907,6 +919,18 @@ void delete_object(int y, int x)
 		/* Preserve unseen artifacts */
 		if (o_ptr->artifact && !object_was_sensed(o_ptr))
 			o_ptr->artifact->created = FALSE;
+
+		/* Delete the mimicking monster if necessary */
+		if (o_ptr->mimicking_m_idx) {
+			monster_type *m_ptr;
+			
+			m_ptr = cave_monster(cave, o_ptr->mimicking_m_idx);
+			
+			/* Clear the mimicry */
+			m_ptr->mimicked_o_idx = 0;
+			
+			delete_monster_idx(o_ptr->mimicking_m_idx);
+		}
 
 		/* Wipe the object */
 		object_wipe(o_ptr);
@@ -1102,6 +1126,18 @@ void compact_objects(int size)
 					continue;
 			}
 
+			/* Mimicked items */
+			else if (o_ptr->mimicking_m_idx)
+			{
+				/* Get the location */
+				y = o_ptr->iy;
+				x = o_ptr->ix;
+
+				/* Mimicked items try hard not to be compacted */
+				if (randint0(100) < 90)
+					continue;
+			}
+			
 			/* Dungeon */
 			else
 			{
