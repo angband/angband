@@ -674,7 +674,7 @@ static void Term_fresh_row_pict(int y, int x1, int x2)
 			{
 				/* Draw pending attr/char pairs */
 				(void)((*Term->pict_hook)(fx, y, fn, &scr_aa[fx], &scr_cc[fx],
-				                          &scr_taa[fx], &scr_tcc[fx]));
+							  &scr_taa[fx], &scr_tcc[fx]));
 
 				/* Forget */
 				fn = 0;
@@ -683,7 +683,7 @@ static void Term_fresh_row_pict(int y, int x1, int x2)
 			/* Skip */
 			continue;
 		}
-		
+
 		/* Save new contents */
 		old_aa[x] = na;
 		old_cc[x] = nc;
@@ -700,7 +700,7 @@ static void Term_fresh_row_pict(int y, int x1, int x2)
 	{
 		/* Draw pending attr/char pairs */
 		(void)((*Term->pict_hook)(fx, y, fn, &scr_aa[fx], &scr_cc[fx],
-		                          &scr_taa[fx], &scr_tcc[fx]));
+					  &scr_taa[fx], &scr_tcc[fx]));
 	}
 }
 
@@ -999,6 +999,9 @@ static void Term_fresh_row_text(int y, int x1, int x2)
 		}
 	}
 }
+
+byte tile_width = 1;            /* Tile width in units of font width */
+byte tile_height = 1;           /* Tile height in units of font height */
 
 /* Helper variables for large cursor */
 bool bigcurs = FALSE;
@@ -1334,7 +1337,7 @@ errr Term_fresh(void)
 		/* Draw the cursor */
 		if (!scr->cu && scr->cv)
 		{
-		        if ((((tile_width > 1)||(tile_height > 1)) && 
+			if ((((tile_width > 1)||(tile_height > 1)) &&
 			     (!smlcurs) && (Term->saved == 0) && (scr->cy > 0))
 			    || bigcurs)
 			{
@@ -1598,7 +1601,7 @@ errr Term_putch(int x, int y, byte a, char c)
  */
 void Term_big_putch(int x, int y, byte a, char c)
 {
-        int hor, vert;
+	int hor, vert;
 
 	/* Avoid warning */
 	(void)c;
@@ -1606,39 +1609,39 @@ void Term_big_putch(int x, int y, byte a, char c)
 	/* No tall skinny tiles */
 	if (tile_width > 1)
 	{
-	        /* Horizontal first */
-	        for (hor = 0; hor <= tile_width; hor++)
+		/* Horizontal first */
+		for (hor = 0; hor <= tile_width; hor++)
 		{
-		        /* Queue dummy character */
-		        if (hor != 0)
-			{	
-			        if (a & 0x80)
-				        Term_putch(x + hor, y, 255, -1);
+			/* Queue dummy character */
+			if (hor != 0)
+			{
+				if (a & 0x80)
+					Term_putch(x + hor, y, 255, -1);
 				else
-				        Term_putch(x + hor, y, TERM_WHITE, ' ');
+					Term_putch(x + hor, y, TERM_WHITE, ' ');
 			}
 
 			/* Now vertical */
 			for (vert = 1; vert <= tile_height; vert++)
 			{
-			        /* Queue dummy character */
-			        if (a & 0x80)
-				        Term_putch(x + hor, y + vert, 255, -1);
+				/* Queue dummy character */
+				if (a & 0x80)
+					Term_putch(x + hor, y + vert, 255, -1);
 				else
-				        Term_putch(x + hor, y + vert, TERM_WHITE, ' ');
+					Term_putch(x + hor, y + vert, TERM_WHITE, ' ');
 			}
 		}
 	}
 	else
 	{
-	        /* Only vertical */
-	        for (vert = 1; vert <= tile_height; vert++)
+		/* Only vertical */
+		for (vert = 1; vert <= tile_height; vert++)
 		{
-		        /* Queue dummy character */
-		        if (a & 0x80)
-			        Term_putch(x, y + vert, 255, -1);
+			/* Queue dummy character */
+			if (a & 0x80)
+				Term_putch(x, y + vert, 255, -1);
 			else
-			        Term_putch(x, y + vert, TERM_WHITE, ' ');
+				Term_putch(x, y + vert, TERM_WHITE, ' ');
 		}
 	}
 }
@@ -1719,11 +1722,11 @@ errr Term_erase(int x, int y, int n)
 		/* Save the "literal" information */
 		scr_aa[x] = na;
 		scr_cc[x] = nc;
-		
+
 		scr_taa[x] = 0;
 		scr_tcc[x] = 0;
 
-		/* Track minumum changed column */
+		/* Track minimum changed column */
 		if (x1 < 0) x1 = x;
 
 		/* Track maximum changed column */
@@ -1823,7 +1826,7 @@ errr Term_redraw(void)
 
 
 /*
- * Redraw part of a widow.
+ * Redraw part of a window.
  */
 errr Term_redraw_section(int x1, int y1, int x2, int y2)
 {
@@ -2195,6 +2198,9 @@ errr Term_load(void)
 
 		/* Free the old window */
 		(void)term_win_nuke(tmp);
+
+		/* Kill it */
+		FREE(tmp);
 	}
 
 	/* Assume change */
