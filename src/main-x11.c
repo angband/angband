@@ -543,7 +543,7 @@ static u32b create_pixel(Display *dpy, byte red, byte green, byte blue)
 	if (!(XAllocColor(dpy, cmap, &xcolour)))
 	{
 		quit_fmt("Couldn't allocate bitmap color #%04x%04x%04x\n",
-		         xcolour.red, xcolour.green, xcolour.blue);
+			 xcolour.red, xcolour.green, xcolour.blue);
 	}
 
 	return (xcolour.pixel);
@@ -1976,9 +1976,9 @@ static errr Term_xtra_x11_react(void)
 		for (i = 0; i < MAX_COLORS; i++)
 		{
 			if ((color_table_x11[i][0] != angband_color_table[i][0]) ||
-				(color_table_x11[i][1] != angband_color_table[i][1]) ||
-				(color_table_x11[i][2] != angband_color_table[i][2]) ||
-				(color_table_x11[i][3] != angband_color_table[i][3]))
+			    (color_table_x11[i][1] != angband_color_table[i][1]) ||
+			    (color_table_x11[i][2] != angband_color_table[i][2]) ||
+			    (color_table_x11[i][3] != angband_color_table[i][3]))
 			{
 				Pixell pixel;
 
@@ -1990,9 +1990,9 @@ static errr Term_xtra_x11_react(void)
 
 				/* Create pixel */
 				pixel = create_pixel(Metadpy->dpy,
-									 color_table_x11[i][1],
-									 color_table_x11[i][2],
-									 color_table_x11[i][3]);
+						     color_table_x11[i][1],
+						     color_table_x11[i][2],
+						     color_table_x11[i][3]);
 
 				/* Change the foreground */
 				Infoclr_set(clr[i]);
@@ -2057,9 +2057,9 @@ static errr Term_curs_x11(int x, int y)
 	term_data *td = (term_data*)(Term->data);
 
 	XDrawRectangle(Metadpy->dpy, Infowin->win, xor->gc,
-			 x * td->tile_wid + Infowin->ox,
-			 y * td->tile_hgt + Infowin->oy,
-			 td->tile_wid - 1, td->tile_hgt - 1);
+		       x * td->tile_wid + Infowin->ox,
+		       y * td->tile_hgt + Infowin->oy,
+		       td->tile_wid - 1, td->tile_hgt - 1);
 
 	/* Success */
 	return (0);
@@ -2074,9 +2074,9 @@ static errr Term_bigcurs_x11(int x, int y)
 	term_data *td = (term_data*)(Term->data);
 
 	XDrawRectangle(Metadpy->dpy, Infowin->win, xor->gc,
-			 x * td->tile_wid + Infowin->ox,
-			 y * td->tile_hgt + Infowin->oy,
-			 td->tile_wid2 - 1, td->tile_hgt - 1);
+		       x * td->tile_wid + Infowin->ox,
+		       y * td->tile_hgt + Infowin->oy,
+		       td->tile_wid2 - 1, td->tile_hgt - 1);
 
 	/* Success */
 	return (0);
@@ -2723,9 +2723,9 @@ errr init_x11(int argc, char **argv)
 		{
 			/* Create pixel */
 			pixel = create_pixel(Metadpy->dpy,
-								 color_table_x11[i][1],
-								 color_table_x11[i][2],
-								 color_table_x11[i][3]);
+					     color_table_x11[i][1],
+					     color_table_x11[i][2],
+					     color_table_x11[i][3]);
 		}
 
 		/* Initialize the color */

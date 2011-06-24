@@ -73,7 +73,7 @@ _stdcall void Sleep(int);
 
 /*
  * If you have errors relating to curs_set(), comment out the following line
- */ 
+ */
 #define USE_CURS_SET
 
 /*
@@ -178,7 +178,8 @@ static int bg_color = COLOR_BLACK;
 /*
  * Place the "keymap" into its "normal" state
  */
-static void keymap_norm(void) {
+static void keymap_norm(void)
+{
 #ifdef USE_TPOSIX
 	(void)tcsetattr(0, TCSAFLUSH, &norm_termios);
 #endif
@@ -188,7 +189,8 @@ static void keymap_norm(void) {
 /*
  * Place the "keymap" into the "game" state
  */
-static void keymap_game(void) {
+static void keymap_game(void)
+{
 #ifdef USE_TPOSIX
 	/* Set the game's termios settings */
 	(void)tcsetattr(0, TCSAFLUSH, &game_termios);
@@ -199,7 +201,8 @@ static void keymap_game(void) {
 /*
  * Save the normal keymap
  */
-static void keymap_norm_prepare(void) {
+static void keymap_norm_prepare(void)
+{
 #ifdef USE_TPOSIX
 	/* Restore the normal termios settings */
 	tcgetattr(0, &norm_termios);
@@ -210,7 +213,8 @@ static void keymap_norm_prepare(void) {
 /*
  * Save the keymaps (normal and game)
  */
-static void keymap_game_prepare(void) {
+static void keymap_game_prepare(void)
+{
 #ifdef USE_TPOSIX
 	/* Save the current termios settings */
 	tcgetattr(0, &game_termios);
@@ -246,8 +250,10 @@ static void keymap_game_prepare(void) {
 /*
  * Suspend/Resume
  */
-static errr Term_xtra_gcu_alive(int v) {
-	if (!v) {
+static errr Term_xtra_gcu_alive(int v)
+{
+	if (!v)
+	{
 		/* Suspend */
 		int x, y;
 
@@ -277,7 +283,9 @@ static errr Term_xtra_gcu_alive(int v) {
 		/* Flush the output */
 		fflush(stdout);
 
-	} else {
+	} 
+	else
+	{
 		/* Resume */
 
 		/* Restore the settings */
@@ -298,7 +306,8 @@ const char help_gcu[] = "Text mode, subopts -b(ig screen) -a(scii) -B(old)";
 /*
  * Init the "curses" system
  */
-static void Term_init_gcu(term *t) {
+static void Term_init_gcu(term *t)
+{
 	term_data *td = (term_data *)(t->data);
 
 	/*
@@ -327,7 +336,8 @@ static void Term_init_gcu(term *t) {
 /*
  * Nuke the "curses" system
  */
-static void Term_nuke_gcu(term *t) {
+static void Term_nuke_gcu(term *t)
+{
 	int x, y;
 	term_data *td = (term_data *)(t->data);
 
@@ -370,33 +380,47 @@ static void Term_nuke_gcu(term *t) {
  * correct dimensions. Terminal layout: 0|2
  *                                      1|3
  */
-void get_gcu_term_size(int i, int *rows, int *cols, int *y, int *x) {
-	if (use_big_screen && i == 0) {
+void get_gcu_term_size(int i, int *rows, int *cols, int *y, int *x)
+{
+	if (use_big_screen && i == 0)
+	{
 		*rows = LINES;
 		*cols = COLS;
 		*y = *x = 0;
-	} else if (use_big_screen) {
+	}
+	else if (use_big_screen)
+	{
 		*rows = *cols = *y = *x = 0;
-	} else if (i == 0) {
+	}
+	else if (i == 0)
+	{
 		*rows = 24;
 		*cols = 80;
 		*y = *x = 0;
-	} else if (i == 1) {
+	}
+	else if (i == 1)
+	{
 		*rows = LINES - 25;
 		*cols = 80;
 		*y = 25;
 		*x = 0;
-	} else if (i == 2) {
+	}
+	else if (i == 2)
+	{
 		*rows = 24;
 		*cols = COLS - 81;
 		*y = 0;
 		*x = 81;
-	} else if (i == 3) {
+	}
+	else if (i == 3)
+	{
 		*rows = LINES - 25;
 		*cols = COLS - 81;
 		*y = 25;
 		*x = 81;
-	} else {
+	}
+	else
+	{
 		*rows = *cols = *y = *x = 0;
 	}
 }
@@ -405,11 +429,13 @@ void get_gcu_term_size(int i, int *rows, int *cols, int *y, int *x) {
 /*
  * Query ncurses for new screen size and try to resize the GCU terms.
  */
-void do_gcu_resize(void) {
+void do_gcu_resize(void)
+{
 	int i, rows, cols, y, x;
 	term *old_t = Term;
 	
-	for (i = 0; i < MAX_TERM_DATA; i++) {
+	for (i = 0; i < MAX_TERM_DATA; i++)
+	{
 		/* If we're using a big screen, we only care about Term-0 */
 		if (use_big_screen && i > 0) break;
 		
@@ -431,20 +457,25 @@ void do_gcu_resize(void) {
 /*
  * Process events, with optional wait
  */
-static errr Term_xtra_gcu_event(int v) {
+static errr Term_xtra_gcu_event(int v)
+{
 	int i, j, k;
 
-	if (v) {
+	if (v)
+	{
 		/* Wait for a keypress; use halfdelay(1) so if the user takes more */
 		/* than 0.2 seconds we get a chance to do updates. */
 		halfdelay(2);
 		i = getch();
-		while (i == ERR) {
+		while (i == ERR)
+		{
 			i = getch();
 			idle_update();
 		}
 		cbreak();
-	} else {
+	}
+	else
+	{
 		/* Do not wait for it */
 		nodelay(stdscr, TRUE);
 
@@ -461,12 +492,14 @@ static errr Term_xtra_gcu_event(int v) {
 
 	/* Not sure if this is portable to non-ncurses platforms */
 	#ifdef USE_NCURSES
-	if (i == KEY_RESIZE) {
+	if (i == KEY_RESIZE)
+	{
 		/* wait until we go one second (10 deci-seconds) before actually
 		 * doing the resizing. users often end up triggering multiple
 		 * KEY_RESIZE events while changing window size. */
 		halfdelay(10);
-		do {
+		do
+		{
 			i = getch();
 		} while (i == KEY_RESIZE);
 		cbreak();
@@ -493,13 +526,16 @@ static errr Term_xtra_gcu_event(int v) {
 	 * available; this seems like an acceptable risk to fix problems associated
 	 * with various terminal emulators (I'm looking at you PuTTY).
 	 */
-	if (i == 27) { /* ESC */
+	if (i == 27)
+	{ /* ESC */
 		nodelay(stdscr, TRUE);
 		j = getch();
-		switch (j) {
+		switch (j)
+		{
 			case 'O': {
 				k = getch();
-				switch (k) {
+				switch (k)
+				{
 					/* PuTTY number pad */
 					case 'q': i = '1'; break;
 					case 'r': i = '2'; break;
@@ -527,7 +563,8 @@ static errr Term_xtra_gcu_event(int v) {
 
 #ifdef KEY_DOWN
 	/* Handle arrow keys */
-	switch (i) {
+	switch (i)
+	{
 		case KEY_DOWN:  i = ARROW_DOWN;  break;
 		case KEY_UP:    i = ARROW_UP;    break;
 		case KEY_LEFT:  i = ARROW_LEFT;  break;
@@ -569,18 +606,21 @@ static errr Term_xtra_gcu_event(int v) {
 	return (0);
 }
 
-int scale_color(int i, int j, int scale) {
+int scale_color(int i, int j, int scale)
+{
 	return (angband_color_table[i][j] * (scale - 1) + 127) / 255;
 }
 
-int create_color(int i, int scale) {
+int create_color(int i, int scale)
+{
 	int r = scale_color(i, 1, scale);
 	int g = scale_color(i, 2, scale);
 	int b = scale_color(i, 3, scale);
 	int rgb = 16 + scale * scale * r + scale * g + b;
 
 	/* In the case of white and black we need to use the ANSI colors */
-	if (r == g && g == b) {
+	if (r == g && g == b)
+	{
 		if (b == 0) rgb = 0;
 		if (b == scale) rgb = 15;
 	}
@@ -592,10 +632,12 @@ int create_color(int i, int scale) {
 /*
  * React to changes
  */
-static errr Term_xtra_gcu_react(void) {
+static errr Term_xtra_gcu_react(void)
+{
 
 #ifdef A_COLOR
-	if (COLORS == 256 || COLORS == 88) {
+	if (COLORS == 256 || COLORS == 88)
+	{
 		/* If we have more than 16 colors, find the best matches. These numbers
 		 * correspond to xterm/rxvt's builtin color numbers--they do not
 		 * correspond to curses' constants OR with curses' color pairs.
@@ -609,7 +651,8 @@ static errr Term_xtra_gcu_react(void) {
 		int i;
 		int scale = COLORS == 256 ? 6 : 4;
 
-		for (i = 0; i < BASIC_COLORS; i++) {
+		for (i = 0; i < BASIC_COLORS; i++)
+		{
 			int fg = create_color(i, scale);
 			init_pair(i + 1, fg, bg_color);
 			if (bold_extended)
@@ -627,11 +670,13 @@ static errr Term_xtra_gcu_react(void) {
 /*
  * Handle a "special request"
  */
-static errr Term_xtra_gcu(int n, int v) {
+static errr Term_xtra_gcu(int n, int v)
+{
 	term_data *td = (term_data *)(Term->data);
 
 	/* Analyze the request */
-	switch (n) {
+	switch (n)
+	{
 		/* Clear screen */
 		case TERM_XTRA_CLEAR: touchwin(td->win); wclear(td->win); return 0;
 
@@ -670,7 +715,8 @@ static errr Term_xtra_gcu(int n, int v) {
 /*
  * Actually MOVE the hardware cursor
  */
-static errr Term_curs_gcu(int x, int y) {
+static errr Term_curs_gcu(int x, int y)
+{
 	term_data *td = (term_data *)(Term->data);
 	wmove(td->win, y, x);
 	return 0;
@@ -681,7 +727,8 @@ static errr Term_curs_gcu(int x, int y) {
  * Erase a grid of space
  * Hack -- try to be "semi-efficient".
  */
-static errr Term_wipe_gcu(int x, int y, int n) {
+static errr Term_wipe_gcu(int x, int y, int n)
+{
 	term_data *td = (term_data *)(Term->data);
 
 	wmove(td->win, y, x);
@@ -702,7 +749,8 @@ static errr Term_wipe_gcu(int x, int y, int n) {
  * Given a position in the ISO Latin-1 character set, return the correct
  * character on this system. Currently
  */
- static byte Term_xchar_gcu(byte c) {
+ static byte Term_xchar_gcu(byte c)
+ {
 	return c;
 }
 
@@ -714,7 +762,8 @@ static errr Term_wipe_gcu(int x, int y, int n) {
  * because the display glitches we are avoiding
  * are in curses itself.
  */
-char filter_char(char c) {
+char filter_char(char c)
+{
 	if (c < ' ' || c >= 127)
 		return '?';
 	else
@@ -725,7 +774,8 @@ char filter_char(char c) {
 /*
  * Place some text on the screen using an attribute
  */
-static errr Term_text_gcu(int x, int y, int n, byte a, const char *s) {
+static errr Term_text_gcu(int x, int y, int n, byte a, const char *s)
+{
 	term_data *td = (term_data *)(Term->data);
 
 #ifdef A_COLOR
@@ -737,14 +787,18 @@ static errr Term_text_gcu(int x, int y, int n, byte a, const char *s) {
 	wmove(td->win, y, x);
 
 	/* Write to screen */
-	while (n--) {
+	while (n--)
+	{
 		unsigned char c = *(s++);
 
-		if (c < 32) {
+		if (c < 32)
+		{
 			wattron(td->win, ctrl_attr[c]);
 			waddch(td->win, filter_char(ctrl_char[c]));
 			wattroff(td->win, ctrl_attr[c]);
-		} else {
+		}
+		else
+		{
 			waddch(td->win, filter_char(c));
 		}
 	}
@@ -764,7 +818,8 @@ static errr Term_text_gcu(int x, int y, int n, byte a, const char *s) {
  *
  * Assumes legal arguments.
  */
-static errr term_data_init_gcu(term_data *td, int rows, int cols, int y, int x) {
+static errr term_data_init_gcu(term_data *td, int rows, int cols, int y, int x)
+{
 	term *t = &td->t;
 
 	/* Create new window */
@@ -795,7 +850,8 @@ static errr term_data_init_gcu(term_data *td, int rows, int cols, int y, int x) 
 	t->xtra_hook = Term_xtra_gcu;
 
 	/* only if the locale supports Latin-1 will we enable xchar_hook */
-	if (setlocale(LC_CTYPE, "")) {
+	if (setlocale(LC_CTYPE, ""))
+	{
 		/* the Latin-1 codeset is ISO-8859-1 */
 		if (strcmp(nl_langinfo(CODESET), "ISO-8859-1") == 0)
 			t->xchar_hook = Term_xchar_gcu;
@@ -811,7 +867,8 @@ static errr term_data_init_gcu(term_data *td, int rows, int cols, int y, int x) 
 	return (0);
 }
 
-static void hook_quit(const char *str) {
+static void hook_quit(const char *str)
+{
 	endwin();
 }
 
@@ -823,7 +880,8 @@ static void hook_quit(const char *str) {
  *
  * Someone should really check the semantics of "initscr()"
  */
-errr init_gcu(int argc, char **argv) {
+errr init_gcu(int argc, char **argv)
+{
 	int i;
 	int rows, cols, y, x;
 	int next_win = 0;
@@ -834,7 +892,8 @@ errr init_gcu(int argc, char **argv) {
 	loaded_terminfo = termtype && tgetent(0, termtype) == 1;
 
 	/* Parse args */
-	for (i = 1; i < argc; i++) {
+	for (i = 1; i < argc; i++)
+	{
 		if (prefix(argv[i], "-b"))
 			use_big_screen = TRUE;
 		else if (prefix(argv[i], "-B"))
@@ -845,7 +904,8 @@ errr init_gcu(int argc, char **argv) {
 			plog_fmt("Ignoring option: %s", argv[i]);
 	}
 
-	if (graphics) {
+	if (graphics)
+	{
 		ctrl_char[CTRL_WALL] = ' ';
 		ctrl_attr[CTRL_ORE] = A_REVERSE;
 		ctrl_attr[CTRL_WALL] = A_REVERSE;
@@ -882,7 +942,8 @@ errr init_gcu(int argc, char **argv) {
 #endif
 
 	/* Attempt to use colors */
-	if (can_use_color) {
+	if (can_use_color)
+	{
 		/* Prepare the color pairs */
 		/* PAIR_WHITE (pair 0) is *always* WHITE on BLACK */
 		init_pair(PAIR_RED, COLOR_RED, bg_color);
@@ -941,7 +1002,8 @@ errr init_gcu(int argc, char **argv) {
 	keymap_game_prepare();
 
 	/*** Now prepare the term(s) ***/
-	for (i = 0; i < MAX_TERM_DATA; i++) {
+	for (i = 0; i < MAX_TERM_DATA; i++)
+	{
 		if (use_big_screen && i > 0) break;
 
 		/* Get the terminal dimensions; if the user asked for a big screen

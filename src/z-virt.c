@@ -108,7 +108,8 @@ void string_free(char *str)
 	mem_free(str);
 }
 
-char *string_append(char *s1, const char *s2) {
+char *string_append(char *s1, const char *s2)
+{
 	u32b len;
 	if (!s1 && !s2) {
 		return NULL;

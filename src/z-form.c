@@ -351,7 +351,9 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 
 					/* Skip the "*" */
 					s++;
-				} else if (*s == '^') {
+				}
+				else if (*s == '^')
+				{
 					titlecase = TRUE;
 					s++;
 				}

@@ -77,7 +77,7 @@ extern void quit(const char *str);
 
 /* Sorting functions */
 extern void sort(void *array, size_t nmemb, size_t smemb,
-                 int (*comp)(const void *a, const void *b));
+		 int (*comp)(const void *a, const void *b));
 
 /* Mathematical functions */
 int mean(int *nums, int size);
