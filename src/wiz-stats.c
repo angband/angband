@@ -604,7 +604,7 @@ static void monster_death_stats(int m_idx)
 		else
 		{
 			/* Make an object */
-			if (!make_object(cave, i_ptr, level, good, great)) continue;
+			if (!make_object(cave, i_ptr, level, good, great, NULL)) continue;
 			dump_item++;
 		}
 

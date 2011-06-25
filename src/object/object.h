@@ -583,7 +583,7 @@ bool init_obj_alloc(void);
 object_kind *get_obj_num(int level, bool good);
 void object_prep(object_type *o_ptr, struct object_kind *kind, int lev, aspect rand_aspect);
 s16b apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great);
-s32b make_object(struct cave *c, object_type *j_ptr, int lev, bool good, bool great);
+bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good, bool great, s32b *value);
 void make_gold(object_type *j_ptr, int lev, int coin_type);
 void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr);
 void ego_apply_magic(object_type *o_ptr, int level);

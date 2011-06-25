@@ -1910,12 +1910,10 @@ static bool mon_create_drop(int m_idx, byte origin)
 		i_ptr = &object_type_body;
 		object_wipe(i_ptr);
 
-		if (gold_ok && (!item_ok || (randint0(100) < 50)))
+		if (gold_ok && (!item_ok || (randint0(100) < 50))) {
 			make_gold(i_ptr, level, force_coin);
-
-		else {
-			make_object(cave, i_ptr, level, good, great);
-			if (!i_ptr->kind) continue;
+		} else {
+			if (!make_object(cave, i_ptr, level, good, great, NULL)) continue;
 		}
 
 		i_ptr->origin = origin;

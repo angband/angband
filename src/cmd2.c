@@ -222,9 +222,8 @@ static void chest_death(int y, int x, s16b o_idx)
 
 		/* Otherwise drop an item, as long as it isn't a chest */
 		else {
-			make_object(cave, i_ptr, value, FALSE, FALSE);
-			if (i_ptr->tval == TV_CHEST || !i_ptr->kind)
-				continue;
+			if (!make_object(cave, i_ptr, value, FALSE, FALSE, NULL)) continue;
+			if (i_ptr->tval == TV_CHEST) continue;
 		}
 
 		/* Record origin */
