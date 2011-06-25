@@ -308,6 +308,9 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 		/* Find the base object */
 		kind = lookup_kind(a_ptr->tval, a_ptr->sval);
 
+		/* Make sure the kind was found */
+		if (!kind) continue;
+
 		/* Enforce minimum "object" level (loosely) */
 		if (kind->level > level) {
 			/* Get the "out-of-depth factor" */
