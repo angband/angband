@@ -256,6 +256,37 @@ squelch_type_t squelch_type_of(const object_type *o_ptr)
 	return TYPE_MAX;
 }
 
+/**
+ * Small helper function to see how an object trait compares to the one
+ * in its base type.
+ *
+ * If the base type provides a positive bonus, we'll use that. Otherwise, we'll
+ * use zero (players don't consider an item with a positive bonus to be bad
+ * even if the base kind has a higher positive bonus).
+ */
+static int cmp_object_trait(int bonus, random_value base)
+{
+	int amt = randcalc(base, 0, MINIMISE);
+	if (amt > 0) amt = 0;
+	return CMP(bonus, amt);
+}
+
+/**
+ * Small helper function to see if an item seems good, bad or average based on
+ * to_h, to_d and to_a.
+ *
+ * The sign of the return value announces if the object is bad (negative),
+ * good (positive) or average (zero).
+ */
+static int is_object_good(const object_type *o_ptr)
+{
+	int good = 0;
+	good += 4 * cmp_object_trait(o_ptr->to_d, o_ptr->kind->to_d);
+	good += 2 * cmp_object_trait(o_ptr->to_h, o_ptr->kind->to_h);
+	good += 1 * cmp_object_trait(o_ptr->to_a, o_ptr->kind->to_a);
+	return good;
+}
+
 
 /*
  * Determine the squelch level of an object, which is similar to its pseudo.
@@ -314,30 +345,27 @@ byte squelch_level_of(const object_type *o_ptr)
 			return SQUELCH_BAD;
 	}
 
-	if (object_was_sensed(o_ptr))
-	{
+	if (object_was_sensed(o_ptr)) {
 		obj_pseudo_t pseudo = object_pseudo(o_ptr);
 
-		switch (pseudo)
-		{
-			case INSCRIP_AVERAGE:
+		switch (pseudo) {
+			case INSCRIP_AVERAGE: {
 				value = SQUELCH_AVERAGE;
 				break;
+			}
 
-			case INSCRIP_EXCELLENT:
+			case INSCRIP_EXCELLENT: {
 				/* have to assume splendid until you have tested it */
-				if (object_was_worn(o_ptr))
-				{
+				if (object_was_worn(o_ptr)) {
 					if (object_high_resist_is_possible(o_ptr))
 						value = SQUELCH_EXCELLENT_NO_SPL;
 					else
 						value = SQUELCH_EXCELLENT_NO_HI;
-				}
-				else
-				{
+				} else {
 					value = SQUELCH_ALL;
 				}
 				break;
+			}
 
 			case INSCRIP_SPLENDID:
 				value = SQUELCH_ALL;
@@ -349,18 +377,25 @@ byte squelch_level_of(const object_type *o_ptr)
 
 			/* This is the interesting case */
 			case INSCRIP_STRANGE:
-			case INSCRIP_MAGICAL:
+			case INSCRIP_MAGICAL: {
 				value = SQUELCH_GOOD;
+
 				if ((object_attack_plusses_are_visible(o_ptr) ||
 						randcalc_valid(o_ptr->kind->to_h, o_ptr->to_h) ||
 						randcalc_valid(o_ptr->kind->to_d, o_ptr->to_d)) &&
 				    	(object_defence_plusses_are_visible(o_ptr) ||
-						randcalc_valid(o_ptr->kind->to_a, o_ptr->to_a)) &&
-				    	(o_ptr->to_h <= randcalc(o_ptr->kind->to_h, 0, MINIMISE)) &&
-				    	(o_ptr->to_d <= randcalc(o_ptr->kind->to_d, 0, MINIMISE)) &&
-				    	(o_ptr->to_a <= randcalc(o_ptr->kind->to_a, 0, MINIMISE)))
-					value = SQUELCH_BAD;
+						randcalc_valid(o_ptr->kind->to_a, o_ptr->to_a))) {
+					int isgood = is_object_good(o_ptr);
+					if (isgood > 0) {
+						value = SQUELCH_GOOD;
+					} else if (isgood < 0) {
+						value = SQUELCH_BAD;
+					} else {
+						value = SQUELCH_AVERAGE;
+					}
+				}
 				break;
+			}
 
 			default:
 				/* do not handle any other possible pseudo values */
