@@ -1201,6 +1201,23 @@ static enum parser_error parse_e_x(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_e_a(struct parser *p) {
+	struct ego_item *e = parser_priv(p);
+	const char *tmp = parser_getstr(p, "minmax");
+	int amin, amax;
+
+	e->alloc_prob = parser_getint(p, "common");
+	if (sscanf(tmp, "%d to %d", &amin, &amax) != 2)
+		return PARSE_ERROR_GENERIC;
+
+	if (amin > 255 || amax > 255 || amin < 0 || amax < 0)
+		return PARSE_ERROR_OUT_OF_BOUNDS;
+
+	e->alloc_min = amin;
+	e->alloc_max = amax;
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_e_t(struct parser *p) {
 	int i;
 	int tval;
@@ -1331,6 +1348,7 @@ struct parser *init_parse_e(void) {
 	parser_reg(p, "N int index str name", parse_e_n);
 	parser_reg(p, "W int level int rarity int pad int cost", parse_e_w);
 	parser_reg(p, "X int rating int xtra", parse_e_x);
+	parser_reg(p, "A int common str minmax", parse_e_a);
 	parser_reg(p, "T sym tval int min-sval int max-sval", parse_e_t);
 	parser_reg(p, "C rand th rand td rand ta", parse_e_c);
 	parser_reg(p, "M int th int td int ta", parse_e_m);
