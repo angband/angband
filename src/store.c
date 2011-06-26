@@ -632,8 +632,8 @@ s32b price_item(const object_type *o_ptr, bool store_buying, int qty)
 		adjust = 100 + (100 - adjust);
 		if (adjust > 100) adjust = 100;
 
-		/* Shops now pay 1/3 of true value */
-		price = price / 3;
+		/* Shops now pay 2/3 of true value */
+		price = price * 2 / 3;
 
 		/* Black market sucks */
 		if (store->sidx == STORE_B_MARKET)
