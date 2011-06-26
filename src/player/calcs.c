@@ -1891,9 +1891,6 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 
 	/*** Modify skills ***/
 
-	/* Affect Skill -- stealth (bonus one) */
-	state->skills[SKILL_STEALTH] += 1;
-
 	/* Affect Skill -- disarming (DEX and INT) */
 	state->skills[SKILL_DISARM] += adj_dex_dis[state->stat_ind[A_DEX]];
 	state->skills[SKILL_DISARM] += adj_int_dis[state->stat_ind[A_INT]];

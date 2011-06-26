@@ -416,7 +416,7 @@ D:It is a squat and ugly humanoid figure with a canine face.
 N:26:White worm mass
 T:worm
 C:w
-I:100:10:7:1:10
+I:100:10:7:1:14
 W:1:1:0:2
 B:CRAWL:POISON:1d2
 F:WEIRD_MIND | MULTIPLY | STUPID
@@ -860,7 +860,7 @@ D:It is a large slimy mass of worms.
 N:66:Clear worm mass
 T:worm
 C:w
-I:100:10:7:1:10
+I:100:10:7:1:13
 W:3:2:0:4
 B:CRAWL:POISON:1d2
 F:WEIRD_MIND | INVISIBLE | MULTIPLY | STUPID
@@ -3205,7 +3205,7 @@ D: three beasts.
 N:243:Quylthulg
 T:quylthulg
 C:y
-I:110:27:10:1:0
+I:110:27:10:1:2
 W:20:1:0:250
 S:1_IN_4
 S:BLINK
@@ -4754,7 +4754,7 @@ D: leader of a large band of violent ogres.
 N:329:Nexus quylthulg
 T:quylthulg
 C:P
-I:110:65:10:1:0
+I:110:65:10:1:1
 W:32:1:0:300
 F:RES_NEXUS
 S:1_IN_1
