@@ -1285,18 +1285,12 @@ static struct minimap_flags
 	bool needs_redraw;
 } minimap_data[ANGBAND_TERM_MAX];
 
-static void update_minimap_subwindow(game_event_type type, game_event_data *data, void *user)
+static void update_minimap_subwindow(game_event_type type,
+	game_event_data *data, void *user)
 {
 	struct minimap_flags *flags = user;
 
-	if (type == EVENT_MAP)
-	{
-		/* Set flag if whole-map redraw. */
-		if (data->point.x == -1 && data->point.y == -1)
-			flags->needs_redraw = TRUE;
-	}
-	else if (type == EVENT_END)
-	{
+	if (type == EVENT_END) {
 		term *old = Term;
 		term *t = angband_term[flags->win_idx];
 		
