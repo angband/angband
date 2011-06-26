@@ -1028,8 +1028,7 @@ I:35:3
 W:60:0:5:2000
 A:8:40 to 100
 P:6:0d0:0:0:0
-L:2:STEALTH
-L:1:SPEED
+L:1:STEALTH | SPEED
 D:A mantle made of curious silken material by the Galadrim that wondrously 
 D:takes on the hues and shapes of its surroundings.
 
@@ -1538,10 +1537,9 @@ G:":d
 I:40:11
 W:70:0:3:30000
 A:10:70 to 100
-F:SUST_DEX |
-F:RES_NEXUS | RES_POIS | HIDE_TYPE
-L:1+M4:DEX | STEALTH
-L:1+M2:SPEED
+F:SUST_DEX | RES_NEXUS | RES_POIS | HIDE_TYPE
+L:1+M4:DEX
+L:1+M2:SPEED | STEALTH
 L:1+d3M3:SEARCH | INFRA
 
 # 241
