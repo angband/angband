@@ -483,6 +483,8 @@ void drop_on_square(object_type *j_ptr, int y, int x, bool verbose)
 
 	bool plural = FALSE;
 	
+	assert(j_ptr->kind);
+
 	/* Default */
 	by = y;
 	bx = x;
@@ -589,6 +591,8 @@ static void monster_death_stats(int m_idx)
 		/* Get local object */
 		i_ptr = &object_type_body;
 
+		assert(i_ptr->kind);
+
 		/* Wipe the object */
 		object_wipe(i_ptr);
 
@@ -604,7 +608,7 @@ static void monster_death_stats(int m_idx)
 		else
 		{
 			/* Make an object */
-			if (!make_object(cave, i_ptr, level, good, great)) continue;
+			if (!make_object(cave, i_ptr, level, good, great, NULL)) continue;
 			dump_item++;
 		}
 
@@ -777,6 +781,8 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 	
 	double gold_temp=0;
 	
+	assert(o_ptr->kind);
+
 	/* get player depth */
 	lvl=p_ptr->depth;	
 	
@@ -2074,23 +2080,24 @@ static void post_process_stats(void)
 */
 static void scan_for_objects(bool mon, bool uniq)
 { 
+	int y, x;
 
-	int y,x;
-  /* Get stats on objects */
-		for (y = 1; y < DUNGEON_HGT - 1; y++)
-		{
-			for (x = 1; x < DUNGEON_WID - 1; x++)
-			{
-				const object_type *o_ptr = get_first_object(y, x);
+	for (y = 1; y < DUNGEON_HGT - 1; y++) {
+		for (x = 1; x < DUNGEON_WID - 1; x++) {
+			const object_type *o_ptr;
 
-				if (cave->o_idx[y][x] > 0) do
-				{
-					get_obj_data(o_ptr,y,x,mon,uniq);
-				}
-				while ((o_ptr = get_first_object(y,x)));
+			/* Do not be fooled!
+			 *
+			 * Despite its harmless-seeming name, get_obj_data() does a host
+			 * of crazy things, including deleting the object from the square.
+			 *
+			 * This is why we repeatedly get the first object.
+			 */
+			while ((o_ptr = get_first_object(y, x))) {
+				get_obj_data(o_ptr,y,x,mon,uniq);
 			}
 		}
-	
+	}
 }
 
 /*

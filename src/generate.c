@@ -504,23 +504,21 @@ void place_object(struct cave *c, int y, int x, int level, bool good,
 	if (!cave_canputitem(c, y, x)) return;
 
 	object_wipe(&otype);
-	rating = make_object(c, &otype, level, good, great);
+	if (!make_object(c, &otype, level, good, great, &rating)) return;
 
-	if (otype.kind) {
-		otype.origin = origin;
-		otype.origin_depth = c->depth;
+	otype.origin = origin;
+	otype.origin_depth = c->depth;
 
-		/* Give it to the floor */
-		/* XXX Should this be done in floor_carry? */
-		if (!floor_carry(c, y, x, &otype)) {
-			if (otype.artifact)
-				otype.artifact->created = FALSE;
-			return;
-		} else {
+	/* Give it to the floor */
+	/* XXX Should this be done in floor_carry? */
+	if (!floor_carry(c, y, x, &otype)) {
+		if (otype.artifact)
+			otype.artifact->created = FALSE;
+		return;
+	} else {
  			if (otype.artifact)
-				c->good_item = TRUE;
-			c->obj_rating += rating;
-		}
+			c->good_item = TRUE;
+		c->obj_rating += rating;
 	}
 }
 

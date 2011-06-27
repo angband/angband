@@ -102,7 +102,7 @@ bool file_newer(const char *first, const char *second);
 /** File handle creation **/
 
 /**
- * Open file `buf`, returning a a file handling representing that file.
+ * Open file `buf`, returning a file handler representing that file.
  *
  * The file mode specifies what kind of access is required to the file:
  *  - MODE_WRITE will overwrite the current contents of the file
@@ -169,7 +169,7 @@ bool file_put(ang_file *f, const char *buf);
  * Format (using strnfmt) the given args, and then call file_put().
  */
 bool file_putf(ang_file *f, const char *fmt, ...);
-bool file_vputf(ang_file *f, const char *fmt, va_list vp); 
+bool file_vputf(ang_file *f, const char *fmt, va_list vp);
 
 /**
  * Format and translate a string, then print it out to file.
@@ -182,12 +182,12 @@ bool x_file_putf(ang_file *f, int encoding, const char *fmt, ...);
 /**
  * Seek to position `pos` in the file represented by `f`.
  *
- * Returns TRUE if successful, FALSE otherwise. 
+ * Returns TRUE if successful, FALSE otherwise.
  */
 bool file_seek(ang_file *f, u32b pos);
 
 /**
- * Reads n bytes from file 'f' info buffer 'buf'.
+ * Reads n bytes from file 'f' into buffer 'buf'.
  * \returns Number of bytes read; -1 on error
  */
 int file_read(ang_file *f, char *buf, size_t n);
@@ -263,4 +263,4 @@ bool my_dread(ang_dir *dir, char *fname, size_t len);
  */
 void my_dclose(ang_dir *dir);
 
-#endif
+#endif /* INCLUDED_Z_FILE_H */

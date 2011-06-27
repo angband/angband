@@ -950,8 +950,8 @@ bool detect_monsters_normal(bool aware)
 		/* Only detect nearby monsters */
 		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
 
-		/* Detect all non-invisible monsters */
-		if (!rf_has(r_ptr->flags, RF_INVISIBLE))
+		/* Detect all non-invisible, obvious monsters */
+		if (!rf_has(r_ptr->flags, RF_INVISIBLE) && !m_ptr->unaware)
 		{
 			/* Hack -- Detect the monster */
 			m_ptr->mflag |= (MFLAG_MARK | MFLAG_SHOW);

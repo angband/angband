@@ -308,6 +308,9 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 		/* Find the base object */
 		kind = lookup_kind(a_ptr->tval, a_ptr->sval);
 
+		/* Make sure the kind was found */
+		if (!kind) continue;
+
 		/* Enforce minimum "object" level (loosely) */
 		if (kind->level > level) {
 			/* Get the "out-of-depth factor" */
@@ -841,21 +844,22 @@ object_kind *get_obj_num(int level, bool good)
  * Attempt to make an object (normal or good/great)
  *
  * This routine plays nasty games to generate the "special artifacts".
+ * We assume that the given object has been "wiped". You can optionally
+ * receive the object's value in value if you pass a non-null pointer.
  *
- * We assume that the given object has been "wiped".
- *
- * Returns the value of the object created.
+ * Returns the whether or not creation worked.
  */
-s32b make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
-	bool great)
+bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good, bool great, s32b *value)
 {
 	int base;
 	object_kind *kind;
 
 	/* Try to make a special artifact */
 	if (one_in_(good ? 10 : 1000)) {
-		if (make_artifact_special(j_ptr, lev))
-			return object_value_real(j_ptr, 1, FALSE, TRUE);
+		if (make_artifact_special(j_ptr, lev)) {
+			if (value) *value = object_value_real(j_ptr, 1, FALSE, TRUE);
+			return TRUE;
+		}
 
 		/* If we failed to make an artifact, the player gets a great item */
 		good = great = TRUE;
@@ -874,12 +878,14 @@ s32b make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
 	if (kind->gen_mult_prob >= randint1(100))
 		j_ptr->number = randcalc(kind->stack_size, lev, RANDOMISE);
 
+	if(value) *value = object_value_real(j_ptr, j_ptr->number, FALSE, TRUE);
+
 	/* Return value, increased for uncursed out-of-depth objects */
-	if (!cursed_p(j_ptr->flags) && (kind->alloc_min > c->depth))
-		return ((kind->alloc_min - c->depth)
-			* object_value_real(j_ptr, j_ptr->number, FALSE, TRUE) / 5);
-	else
-		return object_value_real(j_ptr, j_ptr->number, FALSE, TRUE);
+	if (!cursed_p(j_ptr->flags) && (kind->alloc_min > c->depth)) {
+		if (value) *value = (kind->alloc_min - c->depth) * (*value / 5);
+	}
+
+	return TRUE;
 }
 
 

@@ -471,38 +471,45 @@ void do_cmd_pref(void)
 
 
 /*
- * Array of feeling strings for object feelings
+ * Array of feeling strings for object feelings.
+ * Keep strings at 36 or less characters to keep the
+ * combined feeling on one row.
  */
 static const char *obj_feeling_text[] =
 {
-	"it looks like any other level.",
-	"you sense an object of wondrous power ...",
-	"you have a superb feeling....",
-	"you have an excellent feeling...",
-	"you have a very good feeling...",
-	"you have a good feeling...",
+	"Looks like any other level.",
+	"you sense an item of wondrous power!",
+	"you have a superb feeling.",
+	"you have an excellent feeling.",
+	"you have a very good feeling.",
+	"you have a good feeling.",
 	"you feel a little lucky.",
-	"you are unsure if it will be worthwhile.",
-	"there does not seem to be much of interest here.",
-	"there are only a few scraps of junk lying about.",
-	"it seems to contain nothing but cobwebs.",
+	"you are unsure of what you'd find.",
+	"you don't sense much of interest.",
+	"it contains only scraps of junk.",
+	"it contains nothing but cobwebs."
 };
 
 /*
- * Array of feeling strings for monster feelings
+ * Array of feeling strings for monster feelings.
+ * Keep strings at 36 or less characters to keep the
+ * combined feeling on one row.
  */
 static const char *mon_feeling_text[] =
 {
-    "You are still uncertain about this place,",
-    "Premonitions of death appall you! This place is murderous,",
-    "This place seems terribly dangerous,",
-    "You sense something really nasty about this place,",
-    "You sense something bad about this place,",
-    "You feel nervous about this place,",
-    "You feel uneasy about this place,",
-    "You feel faintly uneasy about this place,",
-    "This place seems reasonably safe,",
-    "This seems a quiet, peaceful place,"
+	/* first string is just a place holder to 
+	 * maintain symmetry with obj_feeling.
+	 */
+	"You are still uncertain about this place,",
+	"Omens of death haunt this place,",
+	"This place seems murderous,",
+	"This place seems terribly dangerous,",
+	"You feel anxious about this place,",
+	"You feel nervous about this place,",
+	"This place does not seem too risky,",
+	"This place seems reasonably safe,",
+	"This seems a tame, sheltered place,",
+	"This seems a quiet, peaceful place,"
 };
 
 
@@ -519,6 +526,18 @@ void do_cmd_feeling(void)
 	/* Don't show feelings for cold-hearted characters */
 	if (OPT(birth_no_feelings)) return;
 
+	/* Stair scummers only get one message */
+	if (cave->feeling == 0){
+		msg(obj_feeling_text[0]);
+		return;
+	}
+
+	/* No useful feeling in town */
+	if (!p_ptr->depth) {
+		msg("Looks like a typical town.");
+		return;
+	}
+
 	/* Verify the feelings */
 	if (obj_feeling >= N_ELEMENTS(obj_feeling_text))
 		obj_feeling = N_ELEMENTS(obj_feeling_text) - 1;
@@ -529,15 +548,9 @@ void do_cmd_feeling(void)
 	/* Decide the conjunction */
 	if ((mon_feeling <= 5 && obj_feeling > 6) ||
 			(mon_feeling > 5 && obj_feeling <= 6))
-		join = "but";
+		join = "yet";
 	else
 		join = "and";
-
-	/* No useful feeling in town */
-	if (!p_ptr->depth) {
-		msg("Looks like a typical town.");
-		return;
-	}
 
 	/* Display the feeling */
 	msg("%s %s %s", mon_feeling_text[mon_feeling], join,

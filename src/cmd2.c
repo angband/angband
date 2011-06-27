@@ -222,9 +222,8 @@ static void chest_death(int y, int x, s16b o_idx)
 
 		/* Otherwise drop an item, as long as it isn't a chest */
 		else {
-			make_object(cave, i_ptr, value, FALSE, FALSE);
-			if (i_ptr->tval == TV_CHEST || !i_ptr->kind)
-				continue;
+			if (!make_object(cave, i_ptr, value, FALSE, FALSE, NULL)) continue;
+			if (i_ptr->tval == TV_CHEST) continue;
 		}
 
 		/* Record origin */
@@ -1607,22 +1606,11 @@ void do_cmd_bash(cmd_code code, cmd_arg args[])
 void do_cmd_alter_aux(int dir)
 {
 	int y, x;
-
-	int feat;
-
 	bool more = FALSE;
 
 	/* Get location */
 	y = p_ptr->py + ddy[dir];
 	x = p_ptr->px + ddx[dir];
-
-
-	/* Original feature */
-	feat = cave->feat[y][x];
-
-	/* Must have knowledge to know feature XXX XXX */
-	if (!(cave->info[y][x] & (CAVE_MARK))) feat = FEAT_NONE;
-
 
 	/* Take a turn */
 	p_ptr->energy_use = 100;
@@ -1633,7 +1621,6 @@ void do_cmd_alter_aux(int dir)
 		y = p_ptr->py + ddy[dir];
 		x = p_ptr->px + ddx[dir];
 	}
-
 
 	/* Attack monsters */
 	if (cave->m_idx[y][x] > 0)

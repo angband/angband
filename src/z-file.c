@@ -150,16 +150,16 @@ static void path_process(char *buf, size_t len, size_t *cur_len, const char *pat
 #else /* MACH_O_CARBON */
 
 		{
-		/* On Macs getlogin() can incorrectly return root, so get the username via system frameworks */
-		CFStringRef cfusername = CSCopyUserName(TRUE);
-		CFIndex cfbufferlength = CFStringGetMaximumSizeForEncoding(CFStringGetLength(cfusername), kCFStringEncodingUTF8) + 1;
-		char *macusername = mem_alloc(cfbufferlength);
-		CFStringGetCString(cfusername, macusername, cfbufferlength, kCFStringEncodingUTF8);
-		CFRelease(cfusername);
+			/* On Macs getlogin() can incorrectly return root, so get the username via system frameworks */
+			CFStringRef cfusername = CSCopyUserName(TRUE);
+			CFIndex cfbufferlength = CFStringGetMaximumSizeForEncoding(CFStringGetLength(cfusername), kCFStringEncodingUTF8) + 1;
+			char *macusername = mem_alloc(cfbufferlength);
+			CFStringGetCString(cfusername, macusername, cfbufferlength, kCFStringEncodingUTF8);
+			CFRelease(cfusername);
 
-		/* Look up the user */
-		pw = getpwnam(macusername);
-		mem_free(macusername);
+			/* Look up the user */
+			pw = getpwnam(macusername);
+			mem_free(macusername);
 		}
 #endif /* !MACH_O_CARBON */
 
@@ -253,7 +253,7 @@ struct ang_file
 /*
  * Delete file 'fname'.
  */
-bool file_delete(const char *fname) 
+bool file_delete(const char *fname)
 {
 	char buf[1024];
 
@@ -264,7 +264,7 @@ bool file_delete(const char *fname)
 }
 
 /*
- * Delete file 'fname' to 'newname'.
+ * Move file 'fname' to 'newname'.
  */
 bool file_move(const char *fname, const char *newname)
 {
@@ -597,7 +597,7 @@ bool file_put(ang_file *f, const char *buf)
 /**
  * Append a formatted line of text to the end of file 'f'.
  *
- * file_putf() is the ellipsis version. Most file output will call this 
+ * file_putf() is the ellipsis version. Most file output will call this
  * version. It calls file_vputf() to do the real work. It returns TRUE
  * if the write was successful and FALSE otherwise.
  */
@@ -618,7 +618,7 @@ bool file_putf(ang_file *f, const char *fmt, ...)
 /**
  * Append a formatted line of text to the end of file 'f'.
  *
- * file_vputf() is the va_list version. It returns TRUE if the write was 
+ * file_vputf() is the va_list version. It returns TRUE if the write was
  * successful and FALSE otherwise.
  */
 bool file_vputf(ang_file *f, const char *fmt, va_list vp)
