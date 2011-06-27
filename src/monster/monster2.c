@@ -22,6 +22,7 @@
 #include "history.h"
 #include "monster/mon-spell.h"
 #include "object/tvalsval.h"
+#include "squelch.h"
 #include "target.h"
 #include "z-term.h"
 
@@ -1513,7 +1514,13 @@ void update_mon(int m_idx, bool full)
 		}
 	}
 
-
+	/* If a mimic looks like a squelched item, it's not seen */
+	if (m_ptr->unaware && m_ptr->mimicked_o_idx) {
+		object_type *o_ptr = object_byid(m_ptr->mimicked_o_idx);
+		if (squelch_item_ok(o_ptr))
+			easy = flag = FALSE;
+	}
+	
 	/* The monster is now visible */
 	if (flag)
 	{
@@ -1549,23 +1556,27 @@ void update_mon(int m_idx, bool full)
 	/* The monster is not visible */
 	else
 	{
-		/* It was previously seen and is not mimicking an item */
-		if (m_ptr->ml && m_ptr->mimicked_o_idx <= 0)
+		/* It was previously seen */
+		if (m_ptr->ml)
 		{
-			/* Mark as not visible */
-			m_ptr->ml = FALSE;
+			/* Treat mimics differently */
+			if (!m_ptr->mimicked_o_idx || squelch_item_ok(object_byid(m_ptr->mimicked_o_idx)))
+			{
+				/* Mark as not visible */
+				m_ptr->ml = FALSE;
 
-			/* Erase the monster */
-			cave_light_spot(cave, fy, fx);
+				/* Erase the monster */
+				cave_light_spot(cave, fy, fx);
 
-			/* Update health bar as needed */
-			if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
+				/* Update health bar as needed */
+				if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
 
-			/* Disturb on disappearance */
-			if (OPT(disturb_move)) disturb(p_ptr, 1, 0);
+				/* Disturb on disappearance */
+				if (OPT(disturb_move)) disturb(p_ptr, 1, 0);
 
-			/* Window stuff */
-			p_ptr->redraw |= PR_MONLIST;
+				/* Window stuff */
+				p_ptr->redraw |= PR_MONLIST;
+			}
 		}
 	}
 
@@ -3650,5 +3661,6 @@ void become_aware(int m_idx)
 	}
 
 	/* Update monster and item lists */
+	p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 	p_ptr->redraw |= (PR_MONLIST | PR_ITEMLIST);
 }
