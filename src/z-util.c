@@ -89,33 +89,33 @@ int my_strnicmp(const char *a, const char *b, int n)
  */
 char *my_stristr(const char *string, const char *pattern)
 {
-      const char *pptr, *sptr;
-      char *start;
+	const char *pptr, *sptr;
+	char *start;
 
-      for (start = (char *)string; *start != 0; start++)
-      {
-            /* find start of pattern in string */
-            for ( ; ((*start != 0) &&
-			        (toupper((unsigned char)*start) != toupper((unsigned char)*pattern))); start++)
-                  ;
-            if (*start == 0)
-                  return NULL;
+	for (start = (char *)string; *start != 0; start++)
+	{
+		/* find start of pattern in string */
+		for ( ; ((*start != 0) &&
+			 (toupper((unsigned char)*start) != toupper((unsigned char)*pattern))); start++)
+			;
+		if (*start == 0)
+			return NULL;
 
-            pptr = (const char *)pattern;
-            sptr = (const char *)start;
+		pptr = (const char *)pattern;
+		sptr = (const char *)start;
 
-            while (toupper((unsigned char)*sptr) == toupper((unsigned char)*pptr))
-            {
-                  sptr++;
-                  pptr++;
+		while (toupper((unsigned char)*sptr) == toupper((unsigned char)*pptr))
+		{
+			sptr++;
+			pptr++;
 
-                  /* if end of pattern then pattern was found */
-                  if (*pptr == 0)
-                        return (start);
-            }
-      }
+			/* if end of pattern then pattern was found */
+			if (*pptr == 0)
+				return (start);
+		}
+	}
 
-      return NULL;
+	return NULL;
 }
 
 
@@ -291,31 +291,31 @@ void quit(const char *str)
 /* Arithmetic mean of the first 'size' entries of the array 'nums' */
 int mean(int *nums, int size)
 {
-    	int i, total = 0;
+	int i, total = 0;
 
-    	for(i = 0; i < size; i++) total += nums[i];
+	for(i = 0; i < size; i++) total += nums[i];
 
-    	return total / size;
+	return total / size;
 }
 
 /* Variance of the first 'size' entries of the array 'nums'  */
 int variance(int *nums, int size)
 {
-    	int i, avg, total = 0;
+	int i, avg, total = 0;
 
-    	avg = mean(nums, size);
+	avg = mean(nums, size);
 
-    	for(i = 0; i < size; i++)
+	for(i = 0; i < size; i++)
 	{
-        	int delta = nums[i] - avg;
-        	total += delta * delta;
-    	}
+		int delta = nums[i] - avg;
+		total += delta * delta;
+	}
 
-    	return total / size;
+	return total / size;
 }
 
 void sort(void *base, size_t nmemb, size_t smemb,
-          int (*comp)(const void *, const void *))
+	  int (*comp)(const void *, const void *))
 {
 	qsort(base, nmemb, smemb, comp);
 }

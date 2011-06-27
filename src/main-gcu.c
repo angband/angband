@@ -73,7 +73,7 @@ _stdcall void Sleep(int);
 
 /*
  * If you have errors relating to curs_set(), comment out the following line
- */ 
+ */
 #define USE_CURS_SET
 
 /*

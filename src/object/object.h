@@ -400,9 +400,12 @@ typedef struct ego_item
 	bitflag flags[OF_SIZE];		/**< Flags */
 	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
 
-	byte level;			/* Minimum level */
-	byte rarity;			/* Object rarity */
-	byte rating;			/* Level rating boost */
+	byte level;		/* Minimum level */
+	byte rarity;		/* Object rarity */
+	byte rating;		/* Level rating boost */
+	byte alloc_prob; 	/** Chance of being generated (i.e. rarity) */
+	byte alloc_min;  	/** Minimum depth (can appear earlier) */
+	byte alloc_max;  	/** Maximum depth (will NEVER appear deeper) */
 
 	byte tval[EGO_TVALS_MAX]; 	/* Legal tval */
 	byte min_sval[EGO_TVALS_MAX];	/* Minimum legal sval */
@@ -490,6 +493,7 @@ typedef struct object
 
 	s16b next_o_idx;	/* Next object in stack (if any) */
 	s16b held_m_idx;	/* Monster holding us (if any) */
+	s16b mimicking_m_idx; /* Monster mimicking us (if any) */
 
 	byte origin;        /* How this item was found */
 	byte origin_depth;  /* What depth the item was found at */
@@ -579,7 +583,7 @@ bool init_obj_alloc(void);
 object_kind *get_obj_num(int level, bool good);
 void object_prep(object_type *o_ptr, struct object_kind *kind, int lev, aspect rand_aspect);
 s16b apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great);
-s32b make_object(struct cave *c, object_type *j_ptr, int lev, bool good, bool great);
+bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good, bool great, s32b *value);
 void make_gold(object_type *j_ptr, int lev, int coin_type);
 void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr);
 void ego_apply_magic(object_type *o_ptr, int level);

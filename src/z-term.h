@@ -209,8 +209,8 @@ struct term
 	term_win *tmp;
 	term_win *mem;
 
-        /* Number of times saved */
-        byte saved;
+	/* Number of times saved */
+	byte saved;
 
 	void (*init_hook)(term *t);
 	void (*nuke_hook)(term *t);
@@ -390,4 +390,4 @@ extern errr term_init(term *t, int w, int h, int k);
 
 extern bool panel_contains(unsigned int y, unsigned int x);
 
-#endif
+#endif /* INCLUDED_Z_TERM_H */

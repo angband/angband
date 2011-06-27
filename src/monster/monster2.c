@@ -242,6 +242,9 @@ void delete_monster_idx(int i)
 		delete_object_idx(this_o_idx);
 	}
 
+	/* Delete mimicked objects */
+	if (m_ptr->mimicked_o_idx > 0)
+		delete_object_idx(m_ptr->mimicked_o_idx);
 
 	/* Wipe the Monster */
 	(void)WIPE(m_ptr, monster_type);
@@ -306,6 +309,18 @@ static void compact_monsters_aux(int i1, int i2)
 
 		/* Reset monster pointer */
 		o_ptr->held_m_idx = i2;
+	}
+	
+	/* Move mimicked objects */
+	if (m_ptr->mimicked_o_idx > 0) {
+
+		object_type *o_ptr;
+
+		/* Get the object */
+		o_ptr = object_byid(m_ptr->mimicked_o_idx);
+
+		/* Reset monster pointer */
+		o_ptr->mimicking_m_idx = i2;
 	}
 
 	/* Hack -- Update the target */
@@ -1534,8 +1549,8 @@ void update_mon(int m_idx, bool full)
 	/* The monster is not visible */
 	else
 	{
-		/* It was previously seen */
-		if (m_ptr->ml)
+		/* It was previously seen and is not mimicking an item */
+		if (m_ptr->ml && m_ptr->mimicked_o_idx <= 0)
 		{
 			/* Mark as not visible */
 			m_ptr->ml = FALSE;
@@ -1681,7 +1696,6 @@ s16b monster_carry(struct monster *m_ptr, object_type *j_ptr)
 	/* Result */
 	return (o_idx);
 }
-
 
 /*
  * Swap the players/monsters (if any) at two locations XXX XXX XXX
@@ -1896,12 +1910,10 @@ static bool mon_create_drop(int m_idx, byte origin)
 		i_ptr = &object_type_body;
 		object_wipe(i_ptr);
 
-		if (gold_ok && (!item_ok || (randint0(100) < 50)))
+		if (gold_ok && (!item_ok || (randint0(100) < 50))) {
 			make_gold(i_ptr, level, force_coin);
-
-		else {
-			make_object(cave, i_ptr, level, good, great);
-			if (!i_ptr->kind) continue;
+		} else {
+			if (!make_object(cave, i_ptr, level, good, great, NULL)) continue;
 		}
 
 		i_ptr->origin = origin;
@@ -1961,6 +1973,26 @@ s16b monster_place(int y, int x, monster_type *n_ptr, byte origin)
 	/* Create the monster's drop, if any */
 	if (origin)
 		(void)mon_create_drop(m_idx, origin);
+
+	/* Make mimics start mimicking */
+	if (origin && r_ptr->mimic_kind) {
+		object_type *i_ptr;
+		object_type object_type_body;
+		object_kind *kind = r_ptr->mimic_kind;
+
+		i_ptr = &object_type_body;
+
+		if (kind->tval == TV_GOLD) {
+			make_gold(i_ptr, p_ptr->depth, kind->sval);
+		} else {
+			object_prep(i_ptr, r_ptr->mimic_kind, r_ptr->level, RANDOMISE);
+			apply_magic(i_ptr, r_ptr->level, TRUE, FALSE, FALSE);
+			i_ptr->number = 1;
+		}
+
+		i_ptr->mimicking_m_idx = m_idx;
+		m_ptr->mimicked_o_idx = floor_carry(cave, y, x, i_ptr);
+	}
 
 	/* Result */
 	return m_idx;
@@ -3287,6 +3319,10 @@ void monster_death(int m_idx, bool stats)
 	/* Get the location */
 	y = m_ptr->fy;
 	x = m_ptr->fx;
+	
+	/* Delete any mimicked objects */
+	if (m_ptr->mimicked_o_idx > 0)
+		delete_object_idx(m_ptr->mimicked_o_idx);
 
 	/* Drop objects being carried */
 	for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx) {
@@ -3406,11 +3442,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note)
 
 	/* Become aware of its presence */
 	if (m_ptr->unaware)
-	{
-		m_ptr->unaware = FALSE;
-		if (rf_has(r_ptr->flags, RF_UNAWARE))
-			rf_on(l_ptr->flags, RF_UNAWARE);
-	}
+		become_aware(m_idx);
 
 	/* Hurt it */
 	m_ptr->hp -= dam;
@@ -3593,4 +3625,30 @@ void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr, b
 {
 	rf_copy(flags, r_ptr->flags);
 	rf_inter(flags, l_ptr->flags);
+}
+
+void become_aware(int m_idx)
+{
+	monster_type *m_ptr = cave_monster(cave, m_idx);
+	monster_race *r_ptr = &r_info[m_ptr->r_idx];
+	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
+
+	m_ptr->unaware = FALSE;
+
+	/* Learn about mimicry */
+	if (rf_has(r_ptr->flags, RF_UNAWARE))
+		rf_on(l_ptr->flags, RF_UNAWARE);
+
+	/* Delete any false items */
+	if (m_ptr->mimicked_o_idx > 0) {
+		object_type *o_ptr = object_byid(m_ptr->mimicked_o_idx);
+		
+		/* Clear the mimicry */
+		o_ptr->mimicking_m_idx = 0;
+		delete_object_idx(m_ptr->mimicked_o_idx);
+		m_ptr->mimicked_o_idx = 0;
+	}
+
+	/* Update monster and item lists */
+	p_ptr->redraw |= (PR_MONLIST | PR_ITEMLIST);
 }

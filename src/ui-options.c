@@ -98,7 +98,11 @@ static bool option_toggle_handle(menu_type *m, const ui_event *event,
 	bool next = FALSE;
 
 	if (event->type == EVT_SELECT) {
-		option_set(option_name(oid), !op_ptr->opt[oid]);
+		/* Hack -- birth options can not be toggled after birth */
+		/* At birth, m->flags == MN_DBL_TAP. After birth, m->flags == MN_NO_TAGS */
+		if (!(OPT_BIRTH <= oid && oid <= OPT_BIRTH + N_OPTS_BIRTH - 1 && m->flags == MN_NO_TAGS)) {
+			option_set(option_name(oid), !op_ptr->opt[oid]);
+		}
 	} else if (event->type == EVT_KBRD) {
 		if (event->key.code == 'y' || event->key.code == 'Y') {
 			option_set(option_name(oid), TRUE);
@@ -152,8 +156,9 @@ static void option_toggle_menu(const char *name, int page)
 
 	/* We add 10 onto the page amount to indicate we're at birth */
 	if (page == OPT_PAGE_BIRTH) {
-		m->prompt = "You can only modify these options at character birth.";
-		m->flags |= MN_NO_ACTION;
+		m->prompt = "You can only modify these options at character birth. '?' for information";
+		m->cmd_keys = "?";
+		m->flags = MN_NO_TAGS;
 	} else if (page == OPT_PAGE_BIRTH + 10) {
 		page -= 10;
 	}
@@ -466,12 +471,13 @@ static void ui_keymap_create(const char *title, int row)
 		c_prt(TERM_L_BLUE, "  Use 'CTRL-U' to reset.", 18, 0);
 		c_prt(TERM_L_BLUE, format("(Maximum keymap length is %d keys.)", KEYMAP_ACTION_MAX), 19, 0);
 
+		kp = inkey();
+
 		if (kp.code == '$') {
 			done = TRUE;
 			continue;
 		}
 
-		kp = inkey();
 		switch (kp.code) {
 			case KC_DELETE:
 			case KC_BACKSPACE: {

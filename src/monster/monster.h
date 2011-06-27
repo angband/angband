@@ -240,6 +240,8 @@ typedef struct monster_race
 	byte cur_num;			/* Monster population on current level */
 
 	struct monster_drop *drops;
+	
+	struct object_kind *mimic_kind;
 } monster_race;
 
 
@@ -308,6 +310,8 @@ typedef struct monster
 
 	bool ml;			/* Monster is "visible" */
 	bool unaware;		/* Player doesn't know this is a monster */
+	
+	s16b mimicked_o_idx; /* Object this monster is mimicking */
 
 	s16b hold_o_idx;	/* Object being held (if any) */
 
@@ -401,6 +405,7 @@ extern void update_smart_learn(struct monster *m, struct player *p, int what);
 void monster_death(int m_idx, bool stats);
 bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note);
 extern void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr, bitflag flags[RF_SIZE]);
+extern void become_aware(int m_idx);
 
 extern void process_monsters(struct cave *c, byte min_energy);
 int mon_hp(const struct monster_race *r_ptr, aspect hp_aspect);
