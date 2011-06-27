@@ -1515,7 +1515,7 @@ void update_mon(int m_idx, bool full)
 	}
 
 	/* If a mimic looks like a squelched item, it's not seen */
-	if (m_ptr->unaware && m_ptr->mimicked_o_idx) {
+	if (is_mimicking(m_idx)) {
 		object_type *o_ptr = object_byid(m_ptr->mimicked_o_idx);
 		if (squelch_item_ok(o_ptr))
 			easy = flag = FALSE;
@@ -3638,29 +3638,49 @@ void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr, b
 	rf_inter(flags, l_ptr->flags);
 }
 
+/*
+ * Make player fully aware of the given mimic.
+ */
 void become_aware(int m_idx)
 {
 	monster_type *m_ptr = cave_monster(cave, m_idx);
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
-	m_ptr->unaware = FALSE;
+	if(m_ptr->unaware) {
+		m_ptr->unaware = FALSE;
 
-	/* Learn about mimicry */
-	if (rf_has(r_ptr->flags, RF_UNAWARE))
-		rf_on(l_ptr->flags, RF_UNAWARE);
+		/* Learn about mimicry */
+		if (rf_has(r_ptr->flags, RF_UNAWARE))
+			rf_on(l_ptr->flags, RF_UNAWARE);
 
-	/* Delete any false items */
-	if (m_ptr->mimicked_o_idx > 0) {
-		object_type *o_ptr = object_byid(m_ptr->mimicked_o_idx);
+		/* Delete any false items */
+		if (m_ptr->mimicked_o_idx > 0) {
+			object_type *o_ptr = object_byid(m_ptr->mimicked_o_idx);
+			char o_name[80];
+			object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);
+
+			/* Print a message */
+			msg("The %s was really a monster!", o_name);
+
+			/* Clear the mimicry */
+			o_ptr->mimicking_m_idx = 0;
+			delete_object_idx(m_ptr->mimicked_o_idx);
+			m_ptr->mimicked_o_idx = 0;
+		}
 		
-		/* Clear the mimicry */
-		o_ptr->mimicking_m_idx = 0;
-		delete_object_idx(m_ptr->mimicked_o_idx);
-		m_ptr->mimicked_o_idx = 0;
+		/* Update monster and item lists */
+		p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+		p_ptr->redraw |= (PR_MONLIST | PR_ITEMLIST);
 	}
+}
 
-	/* Update monster and item lists */
-	p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
-	p_ptr->redraw |= (PR_MONLIST | PR_ITEMLIST);
+/*
+ * Returns TRUE if the given monster is currently mimicking an item.
+ */
+bool is_mimicking(int m_idx)
+{
+	monster_type *m_ptr = cave_monster(cave, m_idx);
+
+	return (m_ptr->unaware && m_ptr->mimicked_o_idx);
 }
