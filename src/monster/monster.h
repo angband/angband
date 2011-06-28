@@ -169,6 +169,11 @@ struct monster_drop {
 	unsigned int max;
 };
 
+struct monster_mimic {
+	struct monster_mimic *next;
+	struct object_kind *kind;
+};
+
 /*
  * Monster "race" information, including racial memories
  *
@@ -241,7 +246,7 @@ typedef struct monster_race
 
 	struct monster_drop *drops;
 	
-	struct object_kind *mimic_kind;
+	struct monster_mimic *mimic_kinds;
 } monster_race;
 
 

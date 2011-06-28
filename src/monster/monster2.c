@@ -1986,17 +1986,24 @@ s16b monster_place(int y, int x, monster_type *n_ptr, byte origin)
 		(void)mon_create_drop(m_idx, origin);
 
 	/* Make mimics start mimicking */
-	if (origin && r_ptr->mimic_kind) {
+	if (origin && r_ptr->mimic_kinds) {
 		object_type *i_ptr;
 		object_type object_type_body;
-		object_kind *kind = r_ptr->mimic_kind;
+		object_kind *kind;
+		struct monster_mimic *mimic_kind;
+		int i = 1;
+		
+		/* Pick a random object kind to mimic */
+		for (mimic_kind = r_ptr->mimic_kinds; mimic_kind; mimic_kind = mimic_kind->next, i++) {
+			if (one_in_(i)) kind = mimic_kind->kind;
+		}
 
 		i_ptr = &object_type_body;
 
 		if (kind->tval == TV_GOLD) {
 			make_gold(i_ptr, p_ptr->depth, kind->sval);
 		} else {
-			object_prep(i_ptr, r_ptr->mimic_kind, r_ptr->level, RANDOMISE);
+			object_prep(i_ptr, kind, r_ptr->level, RANDOMISE);
 			apply_magic(i_ptr, r_ptr->level, TRUE, FALSE, FALSE);
 			i_ptr->number = 1;
 		}
