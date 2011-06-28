@@ -729,11 +729,21 @@ void do_cmd_open(cmd_code code, cmd_arg args[])
 	/* Monster */
 	if (cave->m_idx[y][x] > 0)
 	{
-		/* Message */
-		msg("There is a monster in the way!");
+		int m_idx = cave->m_idx[y][x];
 
-		/* Attack */
-		py_attack(y, x);
+		/* Mimics surprise the player */
+		if (is_mimicking(m_idx)) {
+			become_aware(m_idx);
+
+			/* Mimic wakes up */
+			mon_clear_timed(m_idx, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
+		} else {
+			/* Message */
+			msg("There is a monster in the way!");
+
+			/* Attack */
+			py_attack(y, x);
+		}
 	}
 
 	/* Chest */

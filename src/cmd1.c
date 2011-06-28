@@ -556,10 +556,22 @@ void move_player(int dir, bool disarm)
 
 	int y = py + ddy[dir];
 	int x = px + ddx[dir];
+	
+	int m_idx = cave->m_idx[y][x];
 
 	/* Attack monsters */
-	if (cave->m_idx[y][x] > 0)
-		py_attack(y, x);
+	if (m_idx > 0) {
+		/* Mimics surprise the player */
+		if (is_mimicking(m_idx)) {
+			become_aware(m_idx);
+
+			/* Mimic wakes up */
+			mon_clear_timed(m_idx, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
+
+		} else {
+			py_attack(y, x);
+		}
+	}
 
 	/* Optionally alter traps/doors on movement */
 	else if (disarm && (cave->info[y][x] & CAVE_MARK) &&

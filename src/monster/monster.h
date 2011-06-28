@@ -169,6 +169,11 @@ struct monster_drop {
 	unsigned int max;
 };
 
+struct monster_mimic {
+	struct monster_mimic *next;
+	struct object_kind *kind;
+};
+
 /*
  * Monster "race" information, including racial memories
  *
@@ -241,7 +246,7 @@ typedef struct monster_race
 
 	struct monster_drop *drops;
 	
-	struct object_kind *mimic_kind;
+	struct monster_mimic *mimic_kinds;
 } monster_race;
 
 
@@ -406,6 +411,7 @@ void monster_death(int m_idx, bool stats);
 bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note);
 extern void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr, bitflag flags[RF_SIZE]);
 extern void become_aware(int m_idx);
+extern bool is_mimicking(int m_idx);
 
 extern void process_monsters(struct cave *c, byte min_energy);
 int mon_hp(const struct monster_race *r_ptr, aspect hp_aspect);

@@ -22,6 +22,7 @@
 #include "history.h"
 #include "monster/mon-spell.h"
 #include "object/tvalsval.h"
+#include "squelch.h"
 #include "target.h"
 #include "z-term.h"
 
@@ -1513,7 +1514,13 @@ void update_mon(int m_idx, bool full)
 		}
 	}
 
-
+	/* If a mimic looks like a squelched item, it's not seen */
+	if (is_mimicking(m_idx)) {
+		object_type *o_ptr = object_byid(m_ptr->mimicked_o_idx);
+		if (squelch_item_ok(o_ptr))
+			easy = flag = FALSE;
+	}
+	
 	/* The monster is now visible */
 	if (flag)
 	{
@@ -1549,23 +1556,27 @@ void update_mon(int m_idx, bool full)
 	/* The monster is not visible */
 	else
 	{
-		/* It was previously seen and is not mimicking an item */
-		if (m_ptr->ml && m_ptr->mimicked_o_idx <= 0)
+		/* It was previously seen */
+		if (m_ptr->ml)
 		{
-			/* Mark as not visible */
-			m_ptr->ml = FALSE;
+			/* Treat mimics differently */
+			if (!m_ptr->mimicked_o_idx || squelch_item_ok(object_byid(m_ptr->mimicked_o_idx)))
+			{
+				/* Mark as not visible */
+				m_ptr->ml = FALSE;
 
-			/* Erase the monster */
-			cave_light_spot(cave, fy, fx);
+				/* Erase the monster */
+				cave_light_spot(cave, fy, fx);
 
-			/* Update health bar as needed */
-			if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
+				/* Update health bar as needed */
+				if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
 
-			/* Disturb on disappearance */
-			if (OPT(disturb_move)) disturb(p_ptr, 1, 0);
+				/* Disturb on disappearance */
+				if (OPT(disturb_move)) disturb(p_ptr, 1, 0);
 
-			/* Window stuff */
-			p_ptr->redraw |= PR_MONLIST;
+				/* Window stuff */
+				p_ptr->redraw |= PR_MONLIST;
+			}
 		}
 	}
 
@@ -1975,17 +1986,24 @@ s16b monster_place(int y, int x, monster_type *n_ptr, byte origin)
 		(void)mon_create_drop(m_idx, origin);
 
 	/* Make mimics start mimicking */
-	if (origin && r_ptr->mimic_kind) {
+	if (origin && r_ptr->mimic_kinds) {
 		object_type *i_ptr;
 		object_type object_type_body;
-		object_kind *kind = r_ptr->mimic_kind;
+		object_kind *kind;
+		struct monster_mimic *mimic_kind;
+		int i = 1;
+		
+		/* Pick a random object kind to mimic */
+		for (mimic_kind = r_ptr->mimic_kinds; mimic_kind; mimic_kind = mimic_kind->next, i++) {
+			if (one_in_(i)) kind = mimic_kind->kind;
+		}
 
 		i_ptr = &object_type_body;
 
 		if (kind->tval == TV_GOLD) {
 			make_gold(i_ptr, p_ptr->depth, kind->sval);
 		} else {
-			object_prep(i_ptr, r_ptr->mimic_kind, r_ptr->level, RANDOMISE);
+			object_prep(i_ptr, kind, r_ptr->level, RANDOMISE);
 			apply_magic(i_ptr, r_ptr->level, TRUE, FALSE, FALSE);
 			i_ptr->number = 1;
 		}
@@ -3627,28 +3645,49 @@ void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr, b
 	rf_inter(flags, l_ptr->flags);
 }
 
+/*
+ * Make player fully aware of the given mimic.
+ */
 void become_aware(int m_idx)
 {
 	monster_type *m_ptr = cave_monster(cave, m_idx);
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
-	m_ptr->unaware = FALSE;
+	if(m_ptr->unaware) {
+		m_ptr->unaware = FALSE;
 
-	/* Learn about mimicry */
-	if (rf_has(r_ptr->flags, RF_UNAWARE))
-		rf_on(l_ptr->flags, RF_UNAWARE);
+		/* Learn about mimicry */
+		if (rf_has(r_ptr->flags, RF_UNAWARE))
+			rf_on(l_ptr->flags, RF_UNAWARE);
 
-	/* Delete any false items */
-	if (m_ptr->mimicked_o_idx > 0) {
-		object_type *o_ptr = object_byid(m_ptr->mimicked_o_idx);
+		/* Delete any false items */
+		if (m_ptr->mimicked_o_idx > 0) {
+			object_type *o_ptr = object_byid(m_ptr->mimicked_o_idx);
+			char o_name[80];
+			object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);
+
+			/* Print a message */
+			msg("The %s was really a monster!", o_name);
+
+			/* Clear the mimicry */
+			o_ptr->mimicking_m_idx = 0;
+			delete_object_idx(m_ptr->mimicked_o_idx);
+			m_ptr->mimicked_o_idx = 0;
+		}
 		
-		/* Clear the mimicry */
-		o_ptr->mimicking_m_idx = 0;
-		delete_object_idx(m_ptr->mimicked_o_idx);
-		m_ptr->mimicked_o_idx = 0;
+		/* Update monster and item lists */
+		p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+		p_ptr->redraw |= (PR_MONLIST | PR_ITEMLIST);
 	}
+}
 
-	/* Update monster and item lists */
-	p_ptr->redraw |= (PR_MONLIST | PR_ITEMLIST);
+/*
+ * Returns TRUE if the given monster is currently mimicking an item.
+ */
+bool is_mimicking(int m_idx)
+{
+	monster_type *m_ptr = cave_monster(cave, m_idx);
+
+	return (m_ptr->unaware && m_ptr->mimicked_o_idx);
 }
