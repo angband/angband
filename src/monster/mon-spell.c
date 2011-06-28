@@ -179,7 +179,7 @@ static void drain_mana(int m_idx, int rlev, bool seen)
 
 	if (!p_ptr->csp) {
 		msg("The draining fails.");
-		if (OPT(birth_ai_learn)) {
+		if (OPT(birth_ai_learn) && !(m_ptr->smart & SM_IMM_MANA)) {
 			msg("%^s notes that you have no mana!", m_name);
 			m_ptr->smart |= SM_IMM_MANA;
 		}
