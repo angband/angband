@@ -2920,6 +2920,11 @@ S:BO_COLD
 D:A strange creature that disguises itself as a discarded potion bottle to lure
 D: unsuspecting adventurers within reach of its venomous claws.
 mimic:potion:Healing
+mimic:potion:*Healing*
+mimic:potion:Life
+mimic:potion:Experience
+mimic:potion:Augmentation
+mimic:potion:Speed
 
 N:225:Blink dog
 T:canine
@@ -3311,6 +3316,11 @@ S:S_MONSTER
 D:A strange creature that disguises itself as a discarded scroll to lure
 D: unsuspecting adventurers within reach of its venomous claws.
 mimic:scroll:Banishment
+mimic:scroll:Mass Banishment
+mimic:scroll:Teleport Level
+mimic:scroll:Acquirement
+mimic:scroll:*Acquirement*
+mimic:scroll:*Destruction*
 
 N:252:Fire vortex
 T:vortex
@@ -4417,6 +4427,11 @@ S:S_MONSTER
 D:A strange creature that disguises itself as a discarded ring to lure
 D: unsuspecting adventurers within reach of its venomous claws.
 mimic:ring:Speed
+mimic:ring:Slaying
+mimic:ring:Constitution
+mimic:ring:Resist Poison
+mimic:ring:Free Action
+mimic:ring:See Invisible
 
 N:314:Young blue dragon
 T:dragon
@@ -5495,6 +5510,11 @@ D: adventurers within reach of its venomous claws.  The first that most
 D: adventurers realise of the deception is when the seemingly invitingly open
 D: lid of the chest suddenly grows teeth and then slams shut on the adventurer's
 D: hand...
+mimic:chest:1
+mimic:chest:2
+mimic:chest:3
+mimic:chest:5
+mimic:chest:6
 mimic:chest:7
 
 N:597:Silent watcher

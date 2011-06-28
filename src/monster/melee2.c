@@ -2956,7 +2956,9 @@ static void process_monster(struct cave *c, int m_idx)
 		}
 	}
 
-
+	/* Mimics lie in wait */
+	if (is_mimicking(m_idx)) return;
+	
 	/* Attempt to cast a spell */
 	if (make_attack_spell(m_idx)) return;
 
