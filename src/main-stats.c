@@ -48,7 +48,6 @@
 
 static int randarts = 0;
 static int no_selling = 0;
-static int save = 1;
 static u32b num_runs = 1;
 static bool quiet = FALSE;
 static int nextkey = 0;
@@ -162,6 +161,7 @@ static void free_stats_memory(void)
 	mem_free(consumables_index);
 	mem_free(wearables_index);
 	mem_free(pval_flags_index);
+	string_free(ANGBAND_DIR_STATS);
 }
 
 /* Copied from birth.c:generate_player() */
@@ -208,7 +208,7 @@ static void initialize_character(void)
 	u32b seed;
 
 	if (!quiet) {
-		printf("[I  ]\b\b\b\b\b");
+		printf(" [I  ]\b\b\b\b\b\b");
 		fflush(stdout);
 	}
 
@@ -235,11 +235,6 @@ static void initialize_character(void)
 	cave_generate(cave, p_ptr);
 }
 
-static void dispose_character(void)
-{
-	mem_free(p_ptr->history);
-}
-
 static void kill_all_monsters(int level)
 {
 	int i;
@@ -262,7 +257,7 @@ static void unkill_uniques(void)
 	int i;
 
 	if (!quiet) {
-		printf("[U  ]\b\b\b\b\b");
+		printf(" [U  ]\b\b\b\b\b\b");
 		fflush(stdout);
 	}
 
@@ -279,7 +274,7 @@ static void reset_artifacts(void)
 	int i;
 
 	if (!quiet) {
-		printf("[R  ]\b\b\b\b\b");
+		printf(" [R  ]\b\b\b\b\b\b");
 		fflush(stdout);
 	}
 
@@ -357,7 +352,7 @@ static void descend_dungeon(void)
 		if (!quiet) {
 			clock_t now = clock();
 			if (now - last > wait) {
-				printf("[%3d]\b\b\b\b\b", level);
+				printf(" [%3d]\b\b\b\b\b\b", level);
 				fflush(stdout);
 				last = now;
 			}
@@ -382,7 +377,7 @@ static void prep_output_dir(void)
 	size_t size = strlen(ANGBAND_DIR_USER) + strlen(PATH_SEP) + 6;
 	ANGBAND_DIR_STATS = mem_alloc(size);
 	strnfmt(ANGBAND_DIR_STATS, size,
-		"%s%sstats", ANGBAND_DIR_USER,PATH_SEP);
+		"%s%sstats", ANGBAND_DIR_USER, PATH_SEP);
 
 	if (dir_create(ANGBAND_DIR_STATS))
 	{
@@ -1549,14 +1544,16 @@ static int stats_write_db(u32b run)
  * Call with the number of runs that have been completed.
  */
 
+#define STATS_PROGRESS_BAR_LEN 30
+
 void progress_bar(u32b run, time_t start) {
 	u32b i;
-	u32b n = (run * 40) / num_runs;
+	u32b n = (run * STATS_PROGRESS_BAR_LEN) / num_runs;
 	u32b p10 = ((long long)run * 1000) / num_runs;
 
 	time_t delta = time(NULL) - start;
 	u32b togo = num_runs - run;
-	u32b expect = delta ? ((long long)run * (long long)togo) / delta 
+	u32b expect = delta ? ((long long)delta * (long long)togo) / run 
 		: 0;
 
 	int h = expect / 3600;
@@ -1565,11 +1562,21 @@ void progress_bar(u32b run, time_t start) {
 
 	printf("\r|");
 	for (i = 0; i < n; i++) printf("*");
-	for (i = 0; i < 40 - n; i++) printf(" ");
+	for (i = 0; i < STATS_PROGRESS_BAR_LEN - n; i++) printf(" ");
 	printf("| %d/%d (%5.1f%%) %3d:%02d:%02d ", run, num_runs, p10/10.0, h, m, s);
 	fflush(stdout);
 }
 
+/**
+ * Clean up memory after each run. Should only affect character and
+ * dungeon structs allocated during normal initialization, not persistent 
+ * data like *_info.
+ */
+
+static void stats_cleanup_angband_run(void)
+{
+	if (p_ptr->history) FREE(p_ptr->history);
+}
 
 static errr run_stats(void)
 {
@@ -1595,11 +1602,9 @@ static errr run_stats(void)
 		}
 	}
 
-	if (save) {
-		if (!quiet) printf("Creating the database and dumping info...\n");
-		status = stats_prep_db();
-		if (!status) quit("Couldn't prepare database!");
-	}
+	if (!quiet) printf("Creating the database and dumping info...\n");
+	status = stats_prep_db();
+	if (!status) quit("Couldn't prepare database!");
 
 	if (!quiet) {
 		printf("Beginning %d runs...\n", num_runs);
@@ -1623,9 +1628,10 @@ static errr run_stats(void)
 		unkill_uniques();
 		reset_artifacts();
 		descend_dungeon();
+		stats_cleanup_angband_run();
 
 		/* Checkpoint every so many runs */
-		if (save && run % RUNS_PER_CHECKPOINT == 0)
+		if (run % RUNS_PER_CHECKPOINT == 0)
 		{
 			err = stats_write_db(run);
 			if (err)
@@ -1634,7 +1640,11 @@ static errr run_stats(void)
 				quit_fmt("Problems writing to database!  sqlite3 errno %d.", err);
 			}
 		}
-		dispose_character();
+
+		if (quiet && run % 1000 == 0) {
+			printf("Finished %d runs.\n", run);
+			fflush(stdout);
+		}
 	}
 
 	if (!quiet) {
@@ -1643,13 +1653,10 @@ static errr run_stats(void)
 		fflush(stdout);
 	}
 
-	if (save) {
-		err = stats_write_db(run);
-		stats_db_close();
-		if (err) quit_fmt("Problems writing to database!  sqlite3 errno %d.", err);
-	}
+	err = stats_write_db(run);
+	stats_db_close();
+	if (err) quit_fmt("Problems writing to database!  sqlite3 errno %d.", err);
 	free_stats_memory();
-	mem_free(ANGBAND_DIR_STATS);
 	cleanup_angband();
 	if (!quiet) printf("Done!\n");
 	quit(NULL);
@@ -1778,19 +1785,17 @@ static void term_data_link(int i) {
 	angband_term[i] = t;
 }
 
-const char help_stats[] = "Stats mode, subopts -q(uiet) -r(andarts) -n(# of runs) -s(no selling) -x(dont save data)";
+const char help_stats[] = "Stats mode, subopts -q(uiet) -r(andarts) -n(# of runs) -s(no selling)";
 
 /*
  * Usage:
  *
- * angband -mstats -- [-q] [-r] [-nNNNN] [-s] [-x]
- *
+ * angband -mstats -- [-q] [-r] [-nNNNN] [-s]
  *
  *   -q      Quiet mode (turn off progress messages)
  *   -r      Turn on randarts
  *   -nNNNN  Make NNNN runs through the dungeon (default: 1)
  *   -s      Turn on no-selling
- *   -x      Dont save (testing only!)
  */
 
 errr init_stats(int argc, char *argv[]) {
@@ -1812,10 +1817,6 @@ errr init_stats(int argc, char *argv[]) {
 		}
 		if (prefix(argv[i], "-s")) {
 			no_selling = 1;
-			continue;
-		}
-		if (prefix(argv[i], "-x")) {
-			save = 0;
 			continue;
 		}
 		printf("init-stats: bad argument '%s'\n", argv[i]);
