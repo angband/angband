@@ -18,6 +18,7 @@
 # S: spell frequency |
 # S: spell type | spell type | etc
 # F: flag | flag | etc
+# -F: flag | flag | etc
 # D: Description
 # drop: tval : sval : percent drop chance : min : max
 # drop-artifact: name
@@ -91,6 +92,10 @@
 # 'F' is for flags. These are fairly self-explanatory. As many F: lines may be
 # used as are needed to specify all the flags and flags are separated by the
 # '|' symbol.
+
+# '-F' is for flags to remove from the template. For example, in monster_base.txt,
+# molds are given HURT_FIRE. We don't want the red mold to have that, so we
+# add a '-F:HURT_FIRE' line to subtract that flag.
 
 # 'D' is for description. As many D: lines may be used as are needed to
 # describe the monster. Leading whitespace will be removed, and a single space
@@ -571,7 +576,7 @@ I:120:36:2:1:99
 W:2:1:0:10
 B:TOUCH:POISON:1d2
 F:NEVER_MOVE
-F:HURT_LIGHT | IM_POIS | NO_CONF | NO_SLEEP
+F:HURT_LIGHT | IM_POIS | HURT_COLD | NO_CONF | NO_SLEEP
 D:It's a large pile of white flesh.
 
 N:41:Giant green frog
@@ -719,7 +724,7 @@ W:3:2:0:4
 B:CRAWL:ACID:1d3
 F:DROP_60
 F:RAND_25 | RAND_50
-F:IM_ACID | IM_POIS | NO_CONF | NO_SLEEP
+F:IM_ACID | IM_POIS | HURT_COLD | NO_CONF | NO_SLEEP
 D:It's green and it's oozing.
 
 N:54:Poltergeist
@@ -781,7 +786,7 @@ W:3:2:0:12
 B:TOUCH:EAT_LIGHT:1d3
 B:TOUCH:EAT_LIGHT:1d3
 F:NEVER_MOVE
-F:HURT_LIGHT | IM_POIS | NO_CONF | NO_SLEEP
+F:HURT_LIGHT | IM_POIS | HURT_COLD | NO_CONF | NO_SLEEP
 S:1_IN_15
 S:DRAIN_MANA
 D:It is a large pile of silver flesh that sucks all light from its surroundings.
@@ -793,7 +798,7 @@ I:120:45:2:1:99
 W:3:1:0:12
 B:TOUCH:POISON:1d3
 F:NEVER_MOVE
-F:HURT_LIGHT | IM_POIS | NO_CONF | NO_SLEEP
+F:HURT_LIGHT | IM_POIS | HURT_COLD | NO_CONF | NO_SLEEP
 S:1_IN_15
 S:DRAIN_MANA
 D:It's a large pile of yellow flesh.
@@ -1062,7 +1067,7 @@ I:120:99:2:1:99
 W:5:1:0:18
 B:TOUCH:ACID:1d2
 F:NEVER_MOVE
-F:HURT_LIGHT | IM_ACID | NO_CONF | NO_SLEEP
+F:HURT_LIGHT | IM_ACID | HURT_COLD | NO_CONF | NO_SLEEP
 D:It is a large pile of pulsing green flesh.
 
 N:82:Large kobold
@@ -1135,7 +1140,7 @@ W:5:1:0:15
 B:TOUCH:EAT_FOOD:2d3
 B:TOUCH:LOSE_CHR:2d3
 F:NEVER_MOVE
-F:HURT_LIGHT | IM_POIS | NO_CONF | NO_SLEEP
+F:HURT_LIGHT | IM_POIS | HURT_COLD | NO_CONF | NO_SLEEP
 D:It is a large pile of rotting flesh, whose touch spoils your food.  The
 D: terrible smell it exudes is also very hard to get rid of...
 
@@ -1280,7 +1285,7 @@ I:110:117:2:1:99
 W:7:1:0:26
 B:TOUCH:LOSE_STR:1d5
 F:NEVER_MOVE
-F:HURT_LIGHT | NO_CONF | NO_SLEEP
+F:HURT_LIGHT | HURT_COLD | NO_CONF | NO_SLEEP
 D:It is a large pulsating mound of red flesh.
 
 N:104:Giant red frog
@@ -2010,7 +2015,7 @@ W:12:3:0:60
 B:TOUCH:EXP_10
 F:HAS_LIGHT
 F:NEVER_MOVE
-F:HURT_LIGHT | IM_POIS | NO_CONF | NO_SLEEP
+F:HURT_LIGHT | HURT_COLD | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_11
 S:DRAIN_MANA
 D:Yum!  It looks quite tasty.  It is a pulsing mound of glowing flesh.
@@ -2180,7 +2185,7 @@ B:TOUCH:ACID:2d6
 B:TOUCH:ACID:2d6
 F:COLD_BLOOD
 F:NEVER_MOVE
-F:HURT_LIGHT | IM_ACID | IM_POIS | NO_CONF | NO_SLEEP
+F:HURT_LIGHT | IM_ACID | IM_POIS | HURT_COLD | NO_CONF | NO_SLEEP
 D:A strange jelly thing, covered in discoloured blotches.
 
 ### Dungeon level 13 ###
@@ -2304,7 +2309,7 @@ B:TOUCH:ACID:2d6
 B:TOUCH:ACID:2d6
 F:COLD_BLOOD
 F:OPEN_DOOR | BASH_DOOR | TAKE_ITEM
-F:IM_ACID | IM_POIS | NO_CONF | NO_SLEEP
+F:IM_ACID | IM_POIS | HURT_COLD | NO_CONF | NO_SLEEP
 D:A fast moving highly acidic jelly thing, that is eating away the floor it
 D: rests on.
 
@@ -2632,6 +2637,7 @@ F:DROP_4
 F:OPEN_DOOR | BASH_DOOR | TAKE_ITEM
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS
 F:NO_CONF | NO_SLEEP
+-F:HURT_COLD
 D:It is a strange, vast gelatinous structure that assumes cubic proportions as
 D: it lines all four walls of the corridors it patrols.  Through its transparent
 D: jelly structure you can see treasures it has engulfed, and a few corpses as
@@ -2852,7 +2858,7 @@ B:HIT:FIRE:2d6
 B:HIT:FIRE:2d6
 F:HAS_LIGHT
 F:RAND_25 | BASH_DOOR
-F:IM_FIRE
+F:IM_FIRE | HURT_COLD
 D:A whirlwind of sentient flame.
 
 N:221:Fire hound
@@ -2865,7 +2871,7 @@ B:CLAW:HURT:3d3
 B:BITE:FIRE:2d6
 F:HAS_LIGHT
 F:BASH_DOOR
-F:IM_FIRE
+F:IM_FIRE | HURT_COLD
 F:FORCE_SLEEP
 S:1_IN_10
 S:BR_FIRE
@@ -2881,7 +2887,7 @@ B:CLAW:HURT:3d3
 B:CLAW:HURT:3d3
 B:BITE:COLD:2d6
 F:BASH_DOOR
-F:IM_COLD
+F:IM_COLD | HURT_FIRE
 F:FORCE_SLEEP
 S:1_IN_10
 S:BR_COLD
@@ -2914,6 +2920,7 @@ W:18:3:0:60
 B:HIT:POISON:3d4
 B:HIT:HURT:2d3
 B:HIT:HURT:2d3
+F:HURT_COLD
 S:1_IN_6
 S:BO_COLD
 D:A strange creature that disguises itself as a discarded potion bottle to lure
@@ -3032,6 +3039,7 @@ W:19:1:0:64
 B:SPORE:FIRE:4d4
 F:EMPTY_MIND | STUPID | HAS_LIGHT
 F:IM_FIRE
+-F:HURT_FIRE
 D:It is a strange red growth on the dungeon floor; it seems to burn with flame.
 
 N:234:Giant gold dragon fly
@@ -3309,6 +3317,7 @@ B:HIT:POISON:3d4
 B:HIT:POISON:3d4
 B:HIT:HURT:2d3
 B:HIT:HURT:2d3
+F:HURT_FIRE
 S:1_IN_5
 S:BO_FIRE
 S:S_MONSTER
@@ -3328,7 +3337,7 @@ I:110:45:100:45:0
 W:21:1:0:100
 B:ENGULF:FIRE:3d3
 F:HAS_LIGHT
-F:IM_FIRE
+F:IM_FIRE | HURT_COLD
 S:1_IN_6
 S:BR_FIRE
 D:A whirling maelstrom of fire.
@@ -3350,7 +3359,7 @@ C:w
 I:110:45:100:45:0
 W:21:1:0:100
 B:ENGULF:COLD:3d3
-F:IM_COLD
+F:IM_COLD | HURT_FIRE
 S:1_IN_6
 S:BR_COLD
 D:A twisting whirlpool of frost.
@@ -3454,7 +3463,7 @@ B:TOUCH:ACID:2d6
 F:MULTIPLY
 F:DROP_40
 F:RAND_50 | OPEN_DOOR | BASH_DOOR | KILL_BODY | TAKE_ITEM
-F:IM_POIS
+F:IM_POIS | HURT_COLD
 S:1_IN_11
 S:DRAIN_MANA
 D:It is a strangely moving puddle.
@@ -5000,7 +5009,7 @@ B:HIT:FIRE:4d6
 B:HIT:FIRE:4d6
 F:HAS_LIGHT
 F:RAND_25 | BASH_DOOR | KILL_BODY | KILL_ITEM
-F:IM_ACID | IM_ELEC | IM_FIRE
+F:IM_ACID | IM_ELEC | IM_FIRE | HURT_COLD
 F:FORCE_SLEEP
 S:1_IN_6
 S:BO_FIRE
@@ -5883,7 +5892,7 @@ B:HIT:HURT:4d6
 B:TOUCH:COLD:4d3
 F:COLD_BLOOD | POWERFUL
 F:BASH_DOOR | KILL_BODY | KILL_ITEM
-F:IM_ACID | IM_COLD | IM_ELEC
+F:IM_ACID | IM_COLD | IM_ELEC | HURT_FIRE
 F:FORCE_SLEEP
 S:1_IN_5
 S:BA_COLD
@@ -5931,7 +5940,7 @@ B:HIT:HURT:4d6
 B:HIT:FIRE:3d7
 F:POWERFUL | HAS_LIGHT
 F:PASS_WALL | KILL_BODY | KILL_ITEM
-F:IM_ACID | IM_ELEC | IM_FIRE
+F:IM_ACID | IM_ELEC | IM_FIRE | HURT_COLD
 F:FORCE_SLEEP
 S:1_IN_7
 S:BA_FIRE
@@ -6835,7 +6844,7 @@ B:HIT:FIRE:4d6
 B:HIT:FIRE:4d6
 F:UNIQUE | POWERFUL | HAS_LIGHT
 F:RAND_25 | BASH_DOOR | KILL_BODY | KILL_ITEM
-F:IM_ACID | IM_ELEC | IM_FIRE
+F:IM_ACID | IM_ELEC | IM_FIRE | HURT_COLD
 F:FORCE_SLEEP
 S:1_IN_4
 S:BA_FIRE
@@ -9285,6 +9294,7 @@ F:DROP_4 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR
 F:IM_FIRE
 F:FORCE_SLEEP
+-F:HURT_FIRE
 S:1_IN_2
 S:BRAIN_SMASH | CAUSE_4 | SCARE | SLOW | TELE_TO
 S:BA_NETH | BA_WATE
