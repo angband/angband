@@ -1015,6 +1015,22 @@ static void compact_objects_aux(int i1, int i2)
 			/* Repair */
 			cave->o_idx[y][x] = i2;
 		}
+
+		/* Mimic */
+		if (o_ptr->mimicking_m_idx)
+		{
+			monster_type *m_ptr;
+
+			/* Get the monster */
+			m_ptr = cave_monster(cave, o_ptr->mimicking_m_idx);
+
+			/* Repair monster */
+			if (m_ptr->mimicked_o_idx == i1)
+			{
+				/* Repair */
+				m_ptr->mimicked_o_idx = i2;
+			}
+		}
 	}
 
 
