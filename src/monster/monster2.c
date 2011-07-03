@@ -296,6 +296,9 @@ static void compact_monsters_aux(int i1, int i2)
 
 	/* Update the cave */
 	cave->m_idx[y][x] = i2;
+	
+	/* Update midx */
+	m_ptr->midx = i2;
 
 	/* Repair objects being carried by monster */
 	for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx)
