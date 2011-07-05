@@ -83,7 +83,7 @@ can always, for example, use "\" + "." + "6", to specify "run east".
  a  Aim a wand                           A  Activate an artifact
  b  Browse a book                        B  Bash a door
  c  Close a door                         C  Character description
- d  Drop an item                         D  Disarm a trap
+ d  Drop an item                         D  Disarm a trap or lock a door
  e  Equipment list                       E  Eat some food
  f  Fire an item                         F  Fuel your lantern/torch
  g  Get objects on floor                 G  Gain new spells/prayers
@@ -143,7 +143,7 @@ can always, for example, use "\" + "." + "6", to specify "run east".
  a  Zap a rod (Activate)                 A  Activate an artifact
  b  (walk - south west)                  B  (run - south west)
  c  Close a door                         C  Character description
- d  Drop an item                         D  Disarm a trap or chest
+ d  Drop an item                         D  Disarm a trap or lock a door
  e  Equipment list                       E  Eat some food
  f  Bash a door (force)                  F  Fuel your lantern/torch
  g  Get objects on floor                 G  Gain new spells/prayers
