@@ -572,7 +572,7 @@ W:2:1:0:10
 B:TOUCH:POISON:1d2
 F:NEVER_MOVE
 F:HURT_LIGHT | IM_POIS | NO_CONF | NO_SLEEP
-D:Its a large pile of white flesh.
+D:It's a large pile of white flesh.
 
 N:41:Giant green frog
 T:reptile
@@ -669,7 +669,6 @@ F:RAND_25
 D:It is about ten feet long.
 
 N:50:Cave spider
-T:spider
 T:spider
 C:p
 I:120:7:8:24:80
@@ -1073,7 +1072,7 @@ I:110:65:20:48:30
 W:5:1:0:25
 B:HIT:HURT:1d10
 F:DROP_60
-D:It a man-sized figure with the all too recognizable face of a kobold.
+D:It is a man-sized figure with the all too recognizable face of a kobold.
 
 N:83:Skeleton kobold
 T:skeleton
@@ -2776,9 +2775,9 @@ F:FORCE_SLEEP
 S:1_IN_6
 S:BLIND | CAUSE_2 | CONF | HEAL | MIND_BLAST
 D:The friend and companion of the dwarven king Thr['o]r, he went mad with grief
-D: after Thr['o]r's death at the hands of Azog the Orc.  With torn beard and 
-D:ragged clothes, he seems to have fixed on you as a convenient target to vent 
-D:his anger.
+D: after Thr['o]r's death at the hands of Azog the Orc.  With torn beard and
+D: ragged clothes, he seems to have fixed on you as a convenient target to vent
+D: his anger.
 
 N:216:2-headed hydra
 T:hydra
@@ -3483,8 +3482,8 @@ B:HIT:HURT:5d5
 F:UNIQUE | ESCORT | ESCORTS
 F:DROP_2 | DROP_GOOD | ONLY_ITEM
 F:IM_POIS
-D:He is also known as the King of Khazad-d[^u]m.  His ego is renowned to be 
-D:bigger than his head.
+D:He is also known as the King of Khazad-d[^u]m.  His ego is renowned to be
+D: bigger than his head.
 
 N:263:Master rogue
 T:person
@@ -3711,7 +3710,7 @@ F:EVIL | ANIMAL
 F:DROP_1
 F:OPEN_DOOR
 D:In the eyes of this bear, there glimmers the faintest light of intelligence.
-D: And then its form begins to change...  The combination of animal cunning,
+D:  And then its form begins to change...  The combination of animal cunning,
 D: human intelligence and the great physical strength of the bear makes for a
 D: dangerous enemy.
 
@@ -4051,7 +4050,7 @@ F:FORCE_SLEEP
 S:1_IN_5
 S:BR_SOUN
 D:A blurry canine form which seems to be moving as fast as the eye can follow.
-D: You can feel the earth resonating beneath your feet.
+D:  You can feel the earth resonating beneath your feet.
 
 N:295:Nexus hound
 T:zephyr hound
@@ -4116,7 +4115,7 @@ F:FORCE_SLEEP
 S:1_IN_8
 S:BR_FIRE
 D:The result of evil experiments, this travesty of nature should never be alive.
-D: It has three heads - goat, dragon and gorgon - all attached to a lion's body.
+D:  It has three heads - goat, dragon and gorgon - all attached to a lion's body.
 
 N:300:Colbran
 T:golem
@@ -4244,8 +4243,8 @@ F:OPEN_DOOR | TAKE_ITEM
 S:1_IN_10
 S:S_KIN
 D:An evil and cunning man from the East.  Having once sworn allegiance to the
-D: sons of F["e]anor, it was Uldor's treachery that turned the tide of the 
-D:Battle of Unnumbered Tears in Morgoth's favour.
+D: sons of F["e]anor, it was Uldor's treachery that turned the tide of the
+D: Battle of Unnumbered Tears in Morgoth's favour.
 
 N:305:Mage
 T:person
@@ -4278,7 +4277,7 @@ F:FORCE_SLEEP
 S:1_IN_8
 S:BLIND | BRAIN_SMASH | FORGET | HOLD | MIND_BLAST | SCARE
 D:A humanoid form with a gruesome head, tentacular mouth, and piercing eyes.
-D: Claws reach out for you and you feel a presence invade your mind.
+D:  Claws reach out for you and you feel a presence invade your mind.
 
 N:307:Draebor, the Imp
 T:minor demon
@@ -4408,7 +4407,7 @@ B:BITE:HURT:2d12
 F:ANIMAL
 F:DROP_2 | ONLY_GOLD
 F:IM_POIS
-D:A strange ox-like form with a huge head but a thin, weak neck, it looks likes
+D:A strange ox-like form with a huge head but a thin, weak neck, it looks like
 D: the creation of some deranged alchemist.
 
 N:313:Ring mimic
@@ -4642,7 +4641,7 @@ F:HURT_LIGHT
 S:1_IN_7
 S:HOLD | SCARE
 D:This vile abomination is a relative of ghouls, and often leads packs of them.
-D: It smells foul, and its bite carries a rotting disease.
+D:  It smells foul, and its bite carries a rotting disease.
 
 ### Dungeon level 31 ###
 
@@ -4890,7 +4889,7 @@ F:OPEN_DOOR | BASH_DOOR
 F:FORCE_SLEEP
 S:1_IN_8
 S:CAUSE_2 | DARKNESS | HOLD | SCARE
-D:It is a ghostly nightmare of a entity.
+D:It is a ghostly nightmare of an entity.
 
 N:338:Skeleton ettin
 T:skeleton
@@ -4999,7 +4998,7 @@ I:110:135:12:75:50
 W:33:2:0:350
 B:HIT:FIRE:4d6
 B:HIT:FIRE:4d6
-F:POWERFUL | HAS_LIGHT
+F:HAS_LIGHT
 F:RAND_25 | BASH_DOOR | KILL_BODY | KILL_ITEM
 F:IM_ACID | IM_ELEC | IM_FIRE
 F:FORCE_SLEEP
@@ -5015,7 +5014,7 @@ W:33:2:0:325
 B:HIT:HURT:1d10
 B:HIT:HURT:1d10
 B:HIT:HURT:1d10
-F:COLD_BLOOD | POWERFUL
+F:COLD_BLOOD
 F:RAND_25 | BASH_DOOR | KILL_BODY | KILL_ITEM
 F:IM_ACID | IM_COLD | IM_FIRE | IM_WATER
 F:FORCE_SLEEP
@@ -5215,7 +5214,7 @@ W:34:2:0:375
 B:HIT:HURT:4d6
 B:HIT:HURT:4d6
 B:HIT:HURT:4d6
-F:COLD_BLOOD | POWERFUL
+F:COLD_BLOOD
 F:PASS_WALL | KILL_BODY | KILL_ITEM
 F:HURT_ROCK | IM_COLD | IM_ELEC | IM_FIRE
 F:FORCE_SLEEP
@@ -5231,7 +5230,7 @@ W:34:2:0:390
 B:HIT:HURT:1d10
 B:HIT:CONFUSE:1d4
 B:HIT:HURT:1d10
-F:COLD_BLOOD | POWERFUL
+F:COLD_BLOOD
 F:RAND_25 | BASH_DOOR | KILL_BODY | KILL_ITEM
 F:IM_ACID | IM_COLD | IM_ELEC
 F:FORCE_SLEEP
@@ -5344,7 +5343,7 @@ W:35:3:0:300
 B:HIT:HURT:1d6
 B:HIT:HURT:1d6
 B:HIT:HURT:1d6
-F:EVIL | COLD_BLOOD | INVISIBLE | POWERFUL
+F:EVIL | COLD_BLOOD | INVISIBLE
 F:RAND_50 | OPEN_DOOR | BASH_DOOR
 F:IM_ELEC
 D:It is impossible to define its form but its violence is legendary.
@@ -5605,7 +5604,6 @@ I:120:83:10:120:90
 W:36:3:0:375
 B:ENGULF:HURT:2d6
 B:ENGULF:HURT:2d6
-F:POWERFUL
 F:BASH_DOOR | KILL_BODY | KILL_ITEM
 F:IM_COLD | IM_ELEC | IM_FIRE
 F:FORCE_SLEEP
@@ -6028,7 +6026,7 @@ W:38:4:0:500
 B:HIT:HURT:1d9
 B:HIT:HURT:1d9
 B:HIT:HALLU:1d9
-F:INVISIBLE | SMART | POWERFUL | HAS_LIGHT
+F:INVISIBLE | SMART | HAS_LIGHT
 F:RAND_50 | PASS_WALL
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE
 F:FORCE_SLEEP
@@ -6166,7 +6164,7 @@ I:110:210:20:75:80
 W:38:2:0:1000
 B:HIT:HURT:3d4
 B:TOUCH:LOSE_STR:1d5
-F:FEMALE | POWERFUL
+F:FEMALE
 F:DROP_40
 F:IM_FIRE | IM_POIS
 S:1_IN_7
@@ -6186,7 +6184,7 @@ B:HIT:HURT:3d6
 F:DROP_1 | ONLY_ITEM
 F:IM_POIS | NO_CONF | NO_SLEEP
 D:A massive two-headed troll of huge strength, ettins are stupid but violent.
-D: They are also living proof that two heads are not more intelligent than
+D:  They are also living proof that two heads are not more intelligent than
 D: one...
 
 N:602:Aranea
@@ -6336,7 +6334,6 @@ W:40:1:0:2000
 B:CLAW:HURT:4d8
 B:CLAW:HURT:4d8
 B:BITE:ELEC:7d8
-F:SMART
 F:BASH_DOOR
 F:IM_ELEC
 S:1_IN_6
@@ -6352,7 +6349,6 @@ W:40:0:0:2000
 B:CLAW:HURT:4d8
 B:CLAW:HURT:4d8
 B:BITE:HURT:7d8
-F:SMART
 F:BASH_DOOR
 S:1_IN_6
 S:BLIND | CONF | SCARE
@@ -6387,7 +6383,6 @@ W:40:1:0:2000
 B:CLAW:HURT:4d8
 B:CLAW:HURT:4d8
 B:BITE:COLD:7d8
-F:SMART
 F:BASH_DOOR
 F:IM_COLD
 S:1_IN_6
@@ -6403,7 +6398,6 @@ W:40:1:0:2000
 B:CLAW:HURT:4d8
 B:CLAW:HURT:4d8
 B:BITE:POISON:7d8
-F:SMART
 F:BASH_DOOR
 F:IM_POIS
 S:1_IN_6
@@ -6571,7 +6565,7 @@ S:BA_ACID
 S:BO_FIRE | BO_PLAS
 S:S_HYDRA | S_KIN
 D:One of the original three ugly sisters.  Her face could sink a thousand ships.
-D: Her scales rattle as she slithers towards you, venom dripping from her
+D:  Her scales rattle as she slithers towards you, venom dripping from her
 D: ghastly mouth.
 
 N:447:Vrock
@@ -6582,7 +6576,7 @@ W:40:2:0:2000
 B:HIT:HURT:3d4
 B:CRUSH:HURT:8d12
 B:CRUSH:HURT:8d12
-F:POWERFUL | FRIENDS
+F:FRIENDS
 F:DROP_40
 F:IM_FIRE
 S:1_IN_8
@@ -6654,7 +6648,6 @@ W:41:1:0:2500
 B:CLAW:HURT:4d9
 B:CLAW:HURT:4d9
 B:BITE:ACID:7d9
-F:SMART
 F:BASH_DOOR
 F:IM_ACID
 S:1_IN_6
@@ -6670,7 +6663,7 @@ W:41:1:0:2500
 B:CLAW:HURT:4d9
 B:CLAW:HURT:4d9
 B:BITE:FIRE:7d9
-F:SMART | HAS_LIGHT
+F:HAS_LIGHT
 F:BASH_DOOR
 F:IM_FIRE
 S:1_IN_6
@@ -6687,7 +6680,6 @@ W:41:1:0:2500
 B:CLAW:HURT:4d9
 B:CLAW:HURT:4d9
 B:BITE:HURT:7d9
-F:SMART
 F:BASH_DOOR
 S:1_IN_6
 S:BLIND | CONF | SCARE
@@ -6740,7 +6732,7 @@ I:110:457:20:60:80
 W:41:3:0:2500
 B:HIT:HURT:3d4
 B:HIT:HURT:3d4
-F:POWERFUL | FRIENDS
+F:FRIENDS
 F:DROP_1
 F:IM_FIRE
 S:1_IN_9
@@ -6767,7 +6759,7 @@ S:CAUSE_3
 S:BO_MANA | BO_WATE
 D:This sad creature - once a mighty warrior - betrayed his former friends to
 D: Morgoth's army in return for, he thought, safety for himself and his wife. 
-D: And so he fell under Morgoth's power and became little more than a mindless
+D:  And so he fell under Morgoth's power and became little more than a mindless
 D: servant of evil, even though the other side of his "bargain" was not kept.
 
 N:582:Ranger Chieftain
@@ -6896,7 +6888,6 @@ I:110:616:20:60:80
 W:43:2:0:3000
 B:HIT:HURT:3d4
 B:HIT:HURT:3d4
-F:POWERFUL
 F:DROP_60
 F:IM_FIRE
 S:1_IN_9
@@ -6914,7 +6905,6 @@ W:43:1:0:13000
 B:CLAW:HURT:4d10
 B:CLAW:HURT:4d10
 B:BITE:HURT:7d10
-F:SMART
 F:ONLY_ITEM
 F:BASH_DOOR
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS
@@ -7105,7 +7095,7 @@ W:45:2:0:10000
 B:CLAW:HURT:4d10
 B:CLAW:HURT:4d10
 B:BITE:EXP_80:7d10
-F:INVISIBLE | SMART
+F:INVISIBLE
 F:ONLY_ITEM
 F:PASS_WALL | TAKE_ITEM
 F:IM_COLD
@@ -7123,7 +7113,7 @@ W:45:2:0:10000
 B:CLAW:HURT:4d10
 B:CLAW:HURT:4d10
 B:BITE:HURT:7d10
-F:SMART | HAS_LIGHT | ATTR_FLICKER
+F:HAS_LIGHT | ATTR_FLICKER
 F:ONLY_ITEM
 F:BASH_DOOR
 F:IM_COLD
@@ -7205,7 +7195,7 @@ W:45:2:0:10000
 B:CLAW:HURT:4d10
 B:CLAW:HURT:4d10
 B:BITE:CONFUSE:7d10
-F:INVISIBLE | SMART
+F:INVISIBLE
 F:ONLY_ITEM
 F:PASS_WALL
 S:1_IN_5
@@ -7299,7 +7289,7 @@ B:CLAW:HURT:4d10
 B:CLAW:HURT:4d10
 B:CLAW:COLD:4d14
 B:BITE:COLD:4d14
-F:UNIQUE | MALE | SMART
+F:UNIQUE | MALE
 F:DROP_GOOD | ONLY_ITEM
 F:BASH_DOOR
 F:IM_COLD
@@ -7321,7 +7311,7 @@ B:HIT:HURT:4d6
 B:HIT:HURT:4d6
 B:HIT:HURT:4d6
 B:HIT:HURT:4d6
-F:FEMALE | POWERFUL
+F:FEMALE
 F:DROP_1
 F:IM_FIRE
 S:1_IN_9
@@ -7354,7 +7344,7 @@ B:CLAW:HURT:4d10
 B:CLAW:HURT:4d10
 B:BITE:FIRE:4d14
 B:BITE:FIRE:4d14
-F:UNIQUE | MALE | SMART | HAS_LIGHT
+F:UNIQUE | MALE | HAS_LIGHT
 F:DROP_GOOD | ONLY_ITEM
 F:BASH_DOOR
 F:IM_FIRE
@@ -7398,7 +7388,7 @@ B:CLAW:HURT:4d12
 B:CLAW:HURT:4d12
 B:BITE:FIRE:5d14
 B:BITE:FIRE:5d14
-F:UNIQUE | MALE | SMART | HAS_LIGHT
+F:UNIQUE | MALE | HAS_LIGHT
 F:DROP_GOOD | ONLY_ITEM
 F:BASH_DOOR
 F:IM_FIRE
@@ -7793,7 +7783,7 @@ W:55:2:0:18000
 B:CLAW:HURT:4d12
 B:CLAW:HURT:4d12
 B:BITE:EXP_80:7d14
-F:UNDEAD | COLD_BLOOD | SMART
+F:UNDEAD | COLD_BLOOD
 F:DROP_GOOD | ONLY_ITEM
 F:BASH_DOOR | TAKE_ITEM
 F:IM_COLD | IM_POIS
@@ -7801,7 +7791,7 @@ S:1_IN_6
 S:CONF | SCARE
 S:BR_COLD | BR_NETH
 D:The skeletal form of a once-great dragon, enchanted by magic most perilous. 
-D: Its animated form strikes with speed and drains life from its prey to satisfy
+D:  Its animated form strikes with speed and drains life from its prey to satisfy
 D: its hunger.
 
 N:478:Dracolisk
@@ -7813,7 +7803,7 @@ B:BITE:HURT:4d12
 B:BITE:HURT:4d12
 B:BITE:FIRE:7d14
 B:GAZE:PARALYZE
-F:ANIMAL | SMART
+F:ANIMAL
 F:DROP_GOOD | ONLY_ITEM
 F:BASH_DOOR
 F:IM_ACID | IM_FIRE | RES_NEXUS
@@ -7853,7 +7843,7 @@ B:HIT:HURT:4d10
 B:HIT:HURT:4d10
 B:HIT:LOSE_CON:10d2
 B:STING:POISON:5d5
-F:POWERFUL | FRIENDS
+F:FRIENDS
 F:DROP_1
 F:IM_POIS
 S:1_IN_10
@@ -7964,7 +7954,7 @@ S:BR_FIRE | BR_POIS
 S:S_HYDRA | S_KIN
 D:A massive legendary hydra.  It has twelve powerful heads.  Its many eyes stare
 D: at you as clouds of smoke and poisonous vapour rise from its seething form.
-D: And it grows new heads as fast as you chop them off.
+D:  And it grows new heads as fast as you chop them off.
 
 ### Dungeon level 58 ###
 
@@ -8137,7 +8127,7 @@ S:BLIND | BRAIN_SMASH | CAUSE_4 | SCARE
 S:BA_NETH
 S:BO_MANA | BO_NETH
 S:S_UNDEAD
-D:Everywhere colours seem paler and the air chiller.  At the centre of the cold
+D:Everywhere colours seem paler and the air chillier.  At the centre of the cold
 D: stands a mighty figure.  Its wings envelop you in the chill of death as the
 D: nightwing reaches out to draw you into oblivion.  Your muscles sag and your
 D: mind loses all will to fight as you stand in awe of this mighty being.
@@ -8162,7 +8152,7 @@ S:BO_FIRE | BO_MANA | BO_PLAS
 S:BR_FIRE | BR_PLAS
 S:S_ANGEL
 D:A creature of godly appearance, you dare not challenge Uriel's supremacy. 
-D: Those who stood against him before are but a memory, cremated by his mastery
+D:  Those who stood against him before are but a memory, cremated by his mastery
 D: of elemental fire.
 
 N:568:Bile Demon
@@ -8207,8 +8197,8 @@ S:BO_MANA | BO_NETH
 S:BR_NETH
 S:S_ANGEL
 D:Azriel commands awesome power, his visage holy enough to shrivel your soul. 
-D: You shriek with disbelief as his mastery of death draws you to your grave. 
-D: It is truly beyond all but the mightiest of warriors to stand against him and
+D:  You shriek with disbelief as his mastery of death draws you to your grave. 
+D:  It is truly beyond all but the mightiest of warriors to stand against him and
 D: live.
 
 N:515:Dreadlord
@@ -8246,7 +8236,7 @@ B:CLAW:HURT:4d12
 B:CLAW:HURT:4d12
 B:BITE:ELEC:6d14
 B:BITE:ELEC:6d14
-F:SMART | HAS_LIGHT | ATTR_FLICKER
+F:HAS_LIGHT | ATTR_FLICKER
 F:DROP_GOOD | ONLY_ITEM
 F:BASH_DOOR
 F:IM_ELEC
@@ -8254,7 +8244,7 @@ S:1_IN_4
 S:BLIND | CONF | SCARE
 S:BR_ELEC
 D:A vast dragon of power.  Storms and lightning crash around its titanic form.
-D: Deep blue scales reflect the flashes and highlight the creature's great
+D:  Deep blue scales reflect the flashes and highlight the creature's great
 D: muscles.  It regards you with contempt.
 
 N:496:Great Ice Wyrm
@@ -8266,7 +8256,7 @@ B:CLAW:HURT:4d12
 B:CLAW:HURT:4d12
 B:BITE:COLD:6d14
 B:BITE:COLD:6d14
-F:SMART | ATTR_FLICKER
+F:ATTR_FLICKER
 F:DROP_GOOD | ONLY_ITEM
 F:BASH_DOOR
 F:IM_COLD
@@ -8286,7 +8276,7 @@ B:CLAW:HURT:4d12
 B:CLAW:HURT:4d12
 B:BITE:POISON:6d14
 B:BITE:POISON:6d14
-F:SMART | ATTR_FLICKER
+F:ATTR_FLICKER
 F:DROP_GOOD | ONLY_ITEM
 F:BASH_DOOR
 F:IM_POIS
@@ -8306,7 +8296,7 @@ B:CLAW:HURT:4d12
 B:CLAW:HURT:4d12
 B:BITE:CONFUSE:6d14
 B:BITE:CONFUSE:6d14
-F:SMART | ATTR_FLICKER
+F:ATTR_FLICKER
 F:DROP_GOOD | ONLY_ITEM
 F:BASH_DOOR
 S:1_IN_4
@@ -8516,7 +8506,7 @@ B:CLAW:HURT:4d12
 B:CLAW:HURT:4d12
 B:BITE:FIRE:6d14
 B:BITE:FIRE:6d14
-F:SMART | HAS_LIGHT | ATTR_FLICKER
+F:HAS_LIGHT | ATTR_FLICKER
 F:DROP_GOOD | ONLY_ITEM
 F:BASH_DOOR
 F:IM_FIRE
@@ -8713,7 +8703,6 @@ B:BITE:COLD:9d9
 B:HIT:PARALYZE:5d5
 F:POWERFUL | REGENERATE
 F:DROP_4 | DROP_GOOD
-F:OPEN_DOOR | BASH_DOOR
 F:IM_COLD
 S:1_IN_6
 S:HOLD | SCARE | SLOW
@@ -8741,7 +8730,7 @@ B:CLAW:HURT:5d12
 B:CLAW:HURT:5d12
 B:BITE:POISON:8d14
 B:BITE:FIRE:8d14
-F:UNIQUE | MALE | SMART | HAS_LIGHT
+F:UNIQUE | MALE | HAS_LIGHT
 F:DROP_GOOD | DROP_GREAT | ONLY_ITEM
 F:BASH_DOOR
 F:IM_FIRE | IM_POIS
@@ -8824,7 +8813,7 @@ B:HIT:HURT:11d11
 B:HIT:HURT:11d11
 B:HIT:HURT:11d11
 B:HIT:HURT:11d11
-F:POWERFUL | REGENERATE
+F:REGENERATE
 F:DROP_4 | DROP_GOOD
 F:KILL_BODY
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS
@@ -8940,7 +8929,6 @@ B:CLAW:HURT:5d12
 B:CLAW:HURT:5d12
 B:BITE:HURT:7d14
 B:BITE:HURT:7d14
-F:SMART
 F:DROP_GOOD | ONLY_ITEM
 F:BASH_DOOR
 F:IM_FIRE | RES_DISE
@@ -8951,7 +8939,7 @@ S:BR_CHAO | BR_DISE
 S:S_DRAGON | S_HI_DRAGON
 D:A massive dragon of changing form.  As you watch, it appears first fair and
 D: then foul.  Its body is twisted by chaotic forces as it strives to stay real.
-D: Its very existence distorts the universe around it.
+D:  Its very existence distorts the universe around it.
 
 N:520:Great Wyrm of Law
 T:ancient dragon
@@ -8962,7 +8950,7 @@ B:CLAW:HURT:5d12
 B:CLAW:HURT:5d12
 B:BITE:HURT:7d14
 B:BITE:HURT:7d14
-F:SMART | ATTR_FLICKER
+F:ATTR_FLICKER
 F:DROP_GOOD | ONLY_ITEM
 F:BASH_DOOR
 F:IM_COLD
@@ -9113,7 +9101,7 @@ B:CLAW:HURT:5d12
 B:CLAW:HURT:5d12
 B:BITE:HURT:7d14
 B:BITE:HURT:7d14
-F:SMART | ATTR_FLICKER
+F:ATTR_FLICKER
 F:DROP_GOOD | ONLY_ITEM
 F:BASH_DOOR
 F:IM_COLD | IM_FIRE | RES_DISE
@@ -9135,7 +9123,6 @@ B:CLAW:HURT:5d12
 B:CLAW:HURT:5d12
 B:BITE:HURT:7d14
 B:BITE:HURT:7d14
-F:SMART
 F:DROP_GOOD | ONLY_ITEM
 F:BASH_DOOR
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS
@@ -9152,7 +9139,7 @@ C:v
 I:130:5000:30:1:0
 W:79:3:0:20000
 F:UNIQUE
-F:DROP_4 | ONLY_ITEM
+F:DROP_4 | DROP_GOOD | ONLY_ITEM
 F:ATTR_MULTI
 S:1_IN_1
 S:S_ANGEL | S_ANIMAL | S_HI_DEMON | S_HI_DRAGON | S_HI_UNDEAD | S_HOUND
@@ -9304,7 +9291,7 @@ S:BA_NETH | BA_WATE
 S:BO_ICEE | BO_MANA
 S:S_HI_UNDEAD
 D:A legion of evil undead druj animating the skeleton of a once mighty sorcerer.
-D: His power is devastating and his speed unmatched in the underworld.  Flee his
+D:  His power is devastating and his speed unmatched in the underworld.  Flee his
 D: wrath!
 
 ### Dungeon level 85 ###
@@ -9318,7 +9305,7 @@ B:CLAW:HURT:6d12
 B:CLAW:HURT:6d12
 B:BITE:HURT:10d14
 B:BITE:HURT:10d14
-F:UNIQUE | MALE | SMART
+F:UNIQUE | MALE
 F:ESCORT
 F:DROP_GOOD | DROP_GREAT | ONLY_ITEM
 F:BASH_DOOR
@@ -9420,7 +9407,7 @@ F:FORCE_SLEEP
 S:1_IN_5
 S:BR_COLD | BR_LIGHT | BR_SHAR | BR_SOUN
 D:The wolfhound of the Valar, Huan has served many masters in his time, from
-D: Celegorm son of Feanor to Beren son of Barahir: but now he runs wild and
+D: Celegorm son of F["e]anor to Beren son of Barahir: but now he runs wild and
 D: acknowledges no master save himself, as he hunts alone for his nemesis -
 D: Carcharoth, the terrible wolf of Angband.
 
