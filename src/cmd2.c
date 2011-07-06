@@ -1950,7 +1950,7 @@ void do_cmd_pathfind(cmd_code code, cmd_arg args[])
 		return;
 	}
 
-	if (findpath(args[0].point.y, args[0].point.x))
+	if (findpath(args[0].point.x, args[0].point.y))
 	{
 		p_ptr->running = 1000;
 		/* Calculate torch radius */

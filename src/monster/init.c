@@ -503,12 +503,19 @@ static void cleanup_r(void)
 	for (ridx = 0; ridx < z_info->r_max; ridx++) {
 		struct monster_race *r = &r_info[ridx];
 		struct monster_drop *d, *dn;
+		struct monster_mimic *m, *mn;
 
 		d = r->drops;
 		while (d) {
 			dn = d->next;
 			mem_free(d);
 			d = dn;
+		}
+		m = r->mimic_kinds;
+		while (m) {
+			mn = m->next;
+			mem_free(m);
+			m = mn;
 		}
 		string_free(r->text);
 		string_free(r->name);

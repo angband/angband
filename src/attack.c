@@ -65,7 +65,7 @@ bool test_hit(int chance, int ac, int vis) {
 	if (chance <= 0) return FALSE;
 
 	/* Power competes against armor */
-	return randint0(chance) >= (ac * 3) / 4;
+	return randint0(chance) >= ac / 2;
 }
 
 

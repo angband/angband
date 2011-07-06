@@ -341,8 +341,8 @@ static void class_help(int i, void *db, const region *l)
 		const char *name1 = stat_names_reduced[j];
 		const char *name2 = stat_names_reduced[j + len];
 
-		int adj1 = c->c_adj[j];
-		int adj2 = c->c_adj[j + len];
+		int adj1 = c->c_adj[j] + p_ptr->race->r_adj[j];
+		int adj2 = c->c_adj[j + len] + p_ptr->race->r_adj[j + len];
 
 		text_out_e("%s%+3d  %s%+3d\n", name1, adj1, name2, adj2);
 	}
@@ -432,14 +432,11 @@ static void setup_menus(void)
 	init_birth_menu(&sex_menu, MAX_SEXES, p_ptr->psex, &gender_region, TRUE, NULL);
 	mdata = sex_menu.menu_data;
 	for (i = 0; i < MAX_SEXES; i++)
-	{	
 		mdata->items[i] = sex_info[i].title;
-	}
 	mdata->hint = "Your 'sex' does not have any significant gameplay effects.";
 
 	n = 0;
-	for (r = races; r; r = r->next)
-		n++;
+	for (r = races; r; r = r->next) n++;
 	/* Race menu more complicated. */
 	init_birth_menu(&race_menu, n, p_ptr->race ? p_ptr->race->ridx : 0,
 	                &race_region, TRUE, race_help);
@@ -450,8 +447,7 @@ static void setup_menus(void)
 	mdata->hint = "Your 'race' determines various intrinsic factors and bonuses.";
 
 	n = 0;
-	for (c = classes; c; c = c->next)
-		n++;
+	for (c = classes; c; c = c->next) n++;
 	/* Class menu similar to race. */
 	init_birth_menu(&class_menu, n, p_ptr->class ? p_ptr->class->cidx : 0,
 	                &class_region, TRUE, class_help);
@@ -465,9 +461,7 @@ static void setup_menus(void)
 	init_birth_menu(&roller_menu, MAX_BIRTH_ROLLERS, 0, &roller_region, FALSE, NULL);
 	mdata = roller_menu.menu_data;
 	for (i = 0; i < MAX_BIRTH_ROLLERS; i++)
-	{	
 		mdata->items[i] = roller_choices[i];
-	}
 	mdata->hint = "Your choice of character generation.  Point-based is recommended.";
 }
 
@@ -647,7 +641,7 @@ static enum birth_stage roller_command(bool first_call)
 	/* Used to keep track of whether we've rolled a character before or not. */
 	static bool prev_roll = FALSE;
 
-   	/* Display the player - a bit cheaty, but never mind. */
+	/* Display the player - a bit cheaty, but never mind. */
 	display_player(0);
 
 	if (first_call)
