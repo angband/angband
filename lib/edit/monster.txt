@@ -22,6 +22,7 @@
 # D: Description
 # drop: tval : sval : percent drop chance : min : max
 # drop-artifact: name
+# mimic: tval : sval
 
 # 'N' indicates the beginning of an entry. The serial number must increase for
 # each new item. Entry 0 is used for the player.
@@ -107,6 +108,9 @@
 
 # 'drop-artifact' lines force a specific artifact to drop on death. Setting this
 # on a non-UNIQUE monster is dangerous.
+
+# 'mimic' lines give item types that this monster may mimic. Each of the objects
+# has an equal chance of being mimicked.
 
 # === Understanding monster.txt flags ===
 
@@ -6568,6 +6572,7 @@ F:DROP_2 | DROP_GOOD | ONLY_ITEM
 F:OPEN_DOOR
 F:IM_ACID | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
+-F:HURT_COLD
 S:1_IN_2
 S:CAUSE_3 | HOLD | SCARE
 S:BA_ACID
@@ -7728,7 +7733,6 @@ B:BITE:EXP_80:5d6
 F:INVISIBLE
 F:DROP_4 | DROP_GOOD
 F:PASS_WALL
-F:IM_FIRE
 S:1_IN_5
 S:BRAIN_SMASH | CAUSE_3 | CAUSE_4 | DARKNESS | DRAIN_MANA
 S:BO_NETH
@@ -7955,6 +7959,7 @@ F:UNIQUE | SMART | POWERFUL | REGENERATE | HAS_LIGHT
 F:DROP_4
 F:OPEN_DOOR | KILL_BODY
 F:IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
+-F:HURT_COLD
 S:1_IN_3
 S:SCARE
 S:BA_FIRE | BA_POIS
@@ -8498,6 +8503,7 @@ B:HIT:CONFUSE:6d6
 B:HIT:CONFUSE:6d6
 F:UNIQUE | FEMALE | SMART
 F:DROP_4 | DROP_GOOD | ONLY_ITEM
+-F:HURT_FIRE
 S:1_IN_3
 S:BLIND | BRAIN_SMASH | CAUSE_3 | CAUSE_4 | DRAIN_MANA
 S:BA_NETH
@@ -9294,7 +9300,6 @@ F:DROP_4 | DROP_GOOD | DROP_GREAT | ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR
 F:IM_FIRE
 F:FORCE_SLEEP
--F:HURT_FIRE
 S:1_IN_2
 S:BRAIN_SMASH | CAUSE_4 | SCARE | SLOW | TELE_TO
 S:BA_NETH | BA_WATE
@@ -9342,6 +9347,7 @@ F:DROP_4 | DROP_GOOD | ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR | MOVE_BODY
 F:IM_COLD | IM_FIRE | RES_DISE | NO_CONF | NO_SLEEP
 F:ATTR_MULTI | FORCE_SLEEP
+-F:HURT_COLD
 S:1_IN_2
 S:BR_COLD | BR_DISE | BR_FIRE
 D:The Tarrasque is a massive reptile of legend, rumoured to be unkillable and
