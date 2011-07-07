@@ -2665,7 +2665,7 @@ static bool summon_specific_okay(int r_idx)
  *
  * Note that this function may not succeed, though this is very rare.
  */
-bool summon_specific(int y1, int x1, int lev, int type, int delay)
+int summon_specific(int y1, int x1, int lev, int type, int delay)
 {
 	int i, x = 0, y = 0, r_idx;
 
@@ -2690,7 +2690,7 @@ bool summon_specific(int y1, int x1, int lev, int type, int delay)
 	}
 
 	/* Failure */
-	if (i == 20) return (FALSE);
+	if (i == 20) return (0);
 
 
 	/* Save the "summon" type */
@@ -2716,19 +2716,22 @@ bool summon_specific(int y1, int x1, int lev, int type, int delay)
 
 
 	/* Handle failure */
-	if (!r_idx) return (FALSE);
+	if (!r_idx) return (0);
 
-	/* Attempt to place the monster (awake, allow groups) */
-	if (!place_monster_aux(cave, y, x, r_idx, FALSE, TRUE, ORIGIN_DROP_SUMMON))
-		return (FALSE);
+	/* Attempt to place the monster (awake, don't allow groups) */
+	if (!place_monster_aux(cave, y, x, r_idx, FALSE, FALSE, ORIGIN_DROP_SUMMON))
+		return (0);
 
 	/* If delay, try to let the player act before the summoned monsters. */
 	/* NOTE: should really be -100, but energy is currently 0-255. */
 	if (delay)
 		cave_monster(cave, cave->m_idx[y][x])->energy = 0;
 
-	/* Success */
-	return (TRUE);
+	/* Success, return the level of the monster */
+	monster_type *m_ptr = cave_monster(cave, cave->m_idx[y][x]);
+	monster_race *r_ptr = &r_info[m_ptr->r_idx];
+
+	return (r_ptr->level);
 }
 
 
