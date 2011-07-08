@@ -34,12 +34,14 @@ bool player_stat_inc(struct player *p, int stat)
 
 bool player_stat_dec(struct player *p, int stat, bool permanent)
 {
-	int cur, max, res = FALSE;
+	int cur, max, use, res = FALSE;
 
 	cur = p->stat_cur[stat];
 	max = p->stat_max[stat];
+	use = p->state.stat_use[stat];
 
-	if (cur > 18+10)
+	if ( use <= 3 );
+	else if (cur > 18+10)
 		cur -= 10;
 	else if (cur > 18)
 		cur = 18;
