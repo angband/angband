@@ -2670,8 +2670,8 @@ int summon_specific(int y1, int x1, int lev, int type, int delay)
 	int i, x = 0, y = 0, r_idx;
 	int temp=1;
 
-	/* Look for a location */
-	for (i = 0; i < 20; ++i)
+	/* Look for a location, allow up to 4 squares away */
+	for (i = 0; i < 60; ++i)
 	{
 		/* Pick a distance */
 		int d = (i / 15) + 1;
