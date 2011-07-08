@@ -2668,7 +2668,7 @@ static bool summon_specific_okay(int r_idx)
 int summon_specific(int y1, int x1, int lev, int type, int delay)
 {
 	int i, x = 0, y = 0, r_idx;
-
+	int temp=1;
 
 	/* Look for a location */
 	for (i = 0; i < 20; ++i)
@@ -2730,8 +2730,13 @@ int summon_specific(int y1, int x1, int lev, int type, int delay)
 	/* Success, return the level of the monster */
 	monster_type *m_ptr = cave_monster(cave, cave->m_idx[y][x]);
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
+	
+	/* Monsters that normally come with FRIENDS are weaker */
+	if (rf_has(r_ptr->flags, RF_FRIENDS))
+		temp = 5;
+    
 
-	return (r_ptr->level);
+	return (r_ptr->level/temp);
 }
 
 
