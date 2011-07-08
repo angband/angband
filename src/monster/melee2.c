@@ -1584,35 +1584,35 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 		/* Extract the attack "power" */
 		switch (effect)
 		{
-			case RBE_HURT:      power = 60; break;
-			case RBE_POISON:    power =  5; break;
-			case RBE_UN_BONUS:  power = 20; break;
-			case RBE_UN_POWER:  power = 15; break;
-			case RBE_EAT_GOLD:  power =  5; break;
-			case RBE_EAT_ITEM:  power =  5; break;
-			case RBE_EAT_FOOD:  power =  5; break;
-			case RBE_EAT_LIGHT: power =  5; break;
-			case RBE_ACID:      power =  0; break;
-			case RBE_ELEC:      power = 10; break;
-			case RBE_FIRE:      power = 10; break;
-			case RBE_COLD:      power = 10; break;
-			case RBE_BLIND:     power =  2; break;
-			case RBE_CONFUSE:   power = 10; break;
-			case RBE_TERRIFY:   power = 10; break;
-			case RBE_PARALYZE:  power =  2; break;
+			case RBE_HURT:      power = 40; break;
+			case RBE_POISON:    power = 20; break;
+			case RBE_ACID:      power = 20; break;
+			case RBE_ELEC:      power = 40; break;
+			case RBE_FIRE:      power = 40; break;
+			case RBE_COLD:      power = 40; break;
+			case RBE_BLIND:     power =  0; break;
+			case RBE_CONFUSE:   power = 20; break;
+			case RBE_TERRIFY:   power =  0; break;
+			case RBE_PARALYZE:  power =  0; break;
+			case RBE_HALLU:     power =  0; break;
+			case RBE_EXP_10:    power = 20; break;
+			case RBE_EXP_20:    power = 20; break;
+			case RBE_EXP_40:    power = 20; break;
+			case RBE_EXP_80:    power = 20; break;
+			case RBE_UN_BONUS:  power = 10; break;
+			case RBE_UN_POWER:  power = 10; break;
+			case RBE_EAT_GOLD:  power =  0; break;
+			case RBE_EAT_ITEM:  power =  0; break;
+			case RBE_EAT_FOOD:  power =  0; break;
+			case RBE_EAT_LIGHT: power =  0; break;
 			case RBE_LOSE_STR:  power =  0; break;
 			case RBE_LOSE_DEX:  power =  0; break;
 			case RBE_LOSE_CON:  power =  0; break;
 			case RBE_LOSE_INT:  power =  0; break;
 			case RBE_LOSE_WIS:  power =  0; break;
 			case RBE_LOSE_CHR:  power =  0; break;
-			case RBE_LOSE_ALL:  power =  2; break;
+			case RBE_LOSE_ALL:  power =  0; break;
 			case RBE_SHATTER:   power = 60; break;
-			case RBE_EXP_10:    power =  5; break;
-			case RBE_EXP_20:    power =  5; break;
-			case RBE_EXP_40:    power =  5; break;
-			case RBE_EXP_80:    power =  5; break;
-			case RBE_HALLU:     power = 10; break;
 		}
 
 
