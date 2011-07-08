@@ -17,15 +17,14 @@ I:1:helm:Iron Helm~
 I:2:soft armour:Robe~
 I:4:soft armour:Soft Leather Armour~
 I:2:soft armour:Studded Leather Armour~
+I:2:soft armour:Hard Leather Armour~
 I:2:soft armour:Leather Scale Mail~
 I:1:hard armour:Metal Scale Mail~
-I:2:hard armour:Chain Mail~
-I:2:hard armour:Augmented Chain Mail~
-I:1:hard armour:Bar Chain Mail~
-I:1:hard armour:Metal Brigandine Armour~
+I:1:hard armour:Chain Mail~
+I:2:cloak:Cloak~
 I:2:gloves:Set~ of Leather Gloves
 I:1:gloves:Set~ of Gauntlets
-I:1:shield:Wicker Shield~
+I:2:shield:Wicker Shield~
 I:1:shield:Small Metal Shield~
 I:2:shield:Leather Shield~
 
