@@ -60,17 +60,19 @@ int breakage_chance(const object_type *o_ptr, bool hit_target) {
 bool test_hit(int chance, int ac, int vis) {
 	int k = randint0(100);
 
+	/* There is an automatic 12% chance to hit,
+	 * and 5% chance to miss.
+	 */
+	if (k < 17) return k < 12;
+
 	/* Penalize invisible targets */
 	if (!vis) chance /= 2;
 
-	/* There is an automatic 5% chance to hit and to miss */
-	if (k < 10) return k < 5;
-
-	/* If there is no chance, then miss */
-	if (chance <= 0) return FALSE;
+	/* Starting a bit higher up on the scale */
+	if (chance < 9) chance = 9;
 
 	/* Power competes against armor */
-	return randint0(chance) >= ac / 2;
+	return randint0(chance) >= (ac * 2 / 3);
 }
 
 
