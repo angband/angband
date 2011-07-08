@@ -1,0 +1,104 @@
+To build Angband using Microsoft's Visual Studio.
+
+ 1. Donload the Angband source code from http://angband.oook.cz.
+
+ 2. Make an empty win32 project in visual studio.
+ 3. Extract/copy the source code into the project directory. Make sure that 
+    the src directory is in the project directory, rather than in another
+    subdirectory.
+ 4. Rename src\player\util.c to src\player\p-util.c or something like that.
+ 5. Copy angband.ico to the src\win directory.
+ 6. Copy libpng.dll and zlib1.dll from src\win\dll\ to the project directory.
+ 7. In the project settings, in the C/C++ tab, in the additional include
+    directories ilne, add: src, src/win, src/win/include.
+ 8. In the project settings, in the Link tab, in the Object/library modules
+    line, add: "src\win\zlib1.lib src\win\libpng.lib winmm.lib " to the front
+    of the line.
+ 9. In the project settings, also in the Link tab, remove any directory names
+    (usually Debug\ or Release\) from in front of the executable name. Doing
+    this will put the executeable in the project directory so you do not have
+    to move it every time the project is compiled.
+10. Add all of the files that end in ".c" or ".h" in the src directory EXCEPT
+    those that have "main" in their name and snd-sdl.c to the project files.
+    This can be done by right-clicking on the project in visual studio and 
+    choosing "Add Files to Project" from the context menu or by going to
+    "Project" -> "Add to Project" -> "Files" from the menu bar.
+11. Add all of the files that end in ".c" or ".h" in the src\player directory
+    to the project.
+12. Add all of the files that end in ".c" or ".h" in the src\object directory
+    to the project.
+12. Add all of the files that end in ".c" or ".h" in the src\monster directory
+    to the project.
+13. Add all of the files that end in ".c" or ".h" in the src\win directory
+    to the project.
+14. Add main-win.c from the src directory to the project.
+
+Now we need to make a couple code changes because the compiler of Visual Studio
+is not a standard one.
+15. Goto the File view in Visual studio. Under "Header Files", and double-click
+    "z-queue.h". This will allow you edit this file. Replace the line
+    "#include <stdint.h>" with:
+#if defined(HAVE_STDINT_H)
+#include <stdint.h>
+#else /* HAVE_STDINT_H */
+/* MSVC doesn't have stdint.h (which is C99), so we'll just
+ * create the right pointer manually */
+#ifdef_WIN64
+typedef unsigned _int64 * uintptr_t;
+#else /* _WIN64 */
+typedef unsigned int * uintptr_t;
+#endif /* _WIN64 */
+#endif /* HAVE_STDINT_H */
+
+16. Save and close z-queue.h.
+17. Goto the File view in Visual studio. Under "Header Files", and double-click
+    "generate.c".This will allow you edit this file. Around line 63 are two
+    lines that start with "#define ROOM_". Replace these lines with the
+    following block:
+#if __STDC_VERSION__ >= 199901L
+#define ROOM_DEBUG(...) if(0) msg(__VA_ARGS__);
+#define ROOM_LOG(...) if(OPT(cheat_room)) msg(__VA_ARGS__);
+#else /* __STDC_VERSION__ >= 199901L */
+#define ROOM_DEBUG if(0) msg
+#define ROOM_LOG if(OPT(cheat_room)) msg
+#endif /* __STDC_VERSION__ >= 199901L */
+
+18. Save and close generate.c.
+19. Save the project, then compile the project. There will be a lot of
+    warnings, but there should not be any errors. The warnings can be ignored.
+20. If there are no errors, enjoy playing angband.
+
+21. If there is an error saying that GetWindowLongPtr, SetWindowLongPtr, and/or
+    GWLP_USERDATA is/are not defined, you are probably using an old Windows
+    Platform Software Development Kit (SDK). Edit main-win.c and add the following
+    section around line 89:
+#ifndef GetWindowLongPtr
+#define GetWindowLongPtr GetWindowLong
+#endif
+#ifndef SetWindowLongPtr
+#define SetWindowLongPtr SetWindowLong
+#endif
+#ifndef GWLP_USERDATA
+#define GWLP_USERDATA GWL_USERDATA
+#endif
+
+22. Save and close main-win.c.
+
+23. Compile the project again.
+24. Save the project, then compile the project. There should not be any errors
+    and the executable should be built. If there are any errors, and you do not
+    know how to fix them, you can ask on the forums at http://angband.oook.cz.
+25. Enjoy playing Angband.
+
+
+22. If there is an error saying that AC_SRC_ALPHA is not defined, you are
+    probably using an old Windows Platform SDK. Edit main-win.c and add the
+    following section below the additions of step 21:
+#ifndef AC_SRC_ALPHA
+#define AC_SRC_ALPHA 0x01
+#endif
+25. If there is an error saying that AlphaBlend is an unresolved external
+    symbol, you need to add a library to the project. In the project settings,
+    in the Link tab, in the Object/library modules line, add: "msimg32.lib "
+    somewhere on the  line.
+
