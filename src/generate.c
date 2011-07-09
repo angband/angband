@@ -60,9 +60,13 @@ static bool build_greater_vault(struct cave *c, int y0, int x0);
 static void alloc_objects(struct cave *c, int set, int typ, int num, int depth, byte origin);
 static bool alloc_object(struct cave *c, int set, int typ, int depth, byte origin);
 
+#if  __STDC_VERSION__ < 199901L
+#define ROOM_DEBUG if (0) msg;
+#define ROOM_LOG  if (OPT(cheat_room)) msg
+#else
 #define ROOM_DEBUG(...) if (0) msg(__VA_ARGS__);
-
 #define ROOM_LOG(...) if (OPT(cheat_room)) msg(__VA_ARGS__);
+#endif
 
 /*
  * Note that Level generation is *not* an important bottleneck, though it can
