@@ -1909,14 +1909,14 @@ static void describe_monster_toughness(int r_idx, const monster_lore *l_ptr)
 			((p_ptr->state.to_h +
 			p_ptr->inventory[INVEN_WIELD].to_h) * BTH_PLUS_ADJ));
 
-		/* Avoid division by zero errors */
-		if (chance < 1)
-			chance = 1;
+		/* Avoid division by zero errors, and starting higher on the scale */
+		if (chance < 9)
+			chance = 9;
 
-		chance2 = 90 * (chance - (3 * r_ptr->ac / 4)) / chance + 5;
+		chance2 = 83 * (chance - (2 * r_ptr->ac / 3)) / chance + 12;
 		
-		/* There is always a 5 percent chance to hit */
-		if (chance2 < 5) chance2 = 5;
+		/* There is always a 12 percent chance to hit */
+		if (chance2 < 12) chance2 = 12;
 
 		text_out("You have a");
 		if ((chance2 == 8) || ((chance2 / 10) == 8))
