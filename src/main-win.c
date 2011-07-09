@@ -536,9 +536,10 @@ static DIBINIT infGraph;
 static DIBINIT infMask;
 
 static int overdraw = 0;
-static int overdrawmax = 8;
+static int overdrawmax = -1;
 
 static int alphablend = 0;
+static BLENDFUNCTION blendfn;
 
 #endif /* USE_GRAPHICS */
 
@@ -1676,6 +1677,8 @@ static void Term_nuke_win(term *t)
 #endif /* 0 */
 
 
+errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, const byte *tap, const char *tcp);
+errr Term_pict_win_alpha(int x, int y, int n, const byte *ap, const char *cp, const byte *tap, const char *tcp);
 /*
  * React to global changes
  */
@@ -1796,6 +1799,12 @@ static errr Term_xtra_win_react(void)
 
 			/* Cannot enable */
 			arg_graphics = GRAPHICS_NONE;
+		} else {
+			if (overdraw) {
+				td->t.pict_hook = Term_pict_win_alpha;
+			} else {
+				td->t.pict_hook = Term_pict_win;
+			}
 		}
 
 		/* Change setting */
@@ -2459,6 +2468,138 @@ static errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, c
 }
 
 
+#ifndef AC_SRC_ALPHA
+#define AC_SRC_ALPHA     0x01
+#endif
+static errr Term_pict_win_alpha(int x, int y, int n, const byte *ap, const char *cp, const byte *tap, const char *tcp)
+{
+	term_data *td = (term_data*)(Term->data);
+
+#ifdef USE_GRAPHICS
+
+	int i;
+	int x1, y1, w1, h1;
+	int x2, y2, w2, h2, tw2, th2;
+	int x3, y3;
+
+	HDC hdc;
+	HDC hdcSrc;
+	HBITMAP hbmSrcOld;
+
+	/* Erase the grids */
+	Term_wipe_win(x, y, n);
+
+	/* Size of bitmap cell */
+	w1 = infGraph.CellWidth;
+	h1 = infGraph.CellHeight;
+
+	/* Size of window cell */
+	if (td->map_active)
+	{
+		w2 = td->map_tile_wid;
+		h2 = td->map_tile_hgt;
+		tw2 = w2;
+		th2 = h2;
+	}
+	else
+	{
+		w2 = td->tile_wid;
+		h2 = td->tile_hgt;
+
+		/* Large tile mode */
+		th2 = tile_height * h2;
+		tw2 = tile_width * w2;
+	}
+
+	/* Location of window cell */
+	x2 = x * w2 + td->size_ow1;
+	y2 = y * h2 + td->size_oh1;
+
+	/* Info */
+	hdc = GetDC(td->w);
+
+	/* More info */
+	hdcSrc = CreateCompatibleDC(hdc);
+	hbmSrcOld = SelectObject(hdcSrc, infGraph.hBitmap);
+
+	/* Draw attr/char pairs */
+	for (i = n-1; i >= 0; i--, x2 -= w2)
+	{
+		byte a = ap[i];
+		char c = cp[i];
+
+		/* Extract picture */
+		int row = (a & 0x7F);
+		int col = (c & 0x7F);
+		int trow = (tap[i] & 0x7F);
+
+		/* Location of bitmap cell */
+		x1 = col * w1;
+		y1 = row * h1;
+
+		x3 = (tcp[i] & 0x7F) * w1;
+		y3 = trow * h1;
+ 
+		/* Set the correct mode for stretching the tiles */
+		SetStretchBltMode(hdc, COLORONCOLOR);
+
+		/* Perfect size */
+		if ((w1 == tw2) && (h1 == th2))
+		{
+			/* Copy the terrain picture from the bitmap to the window */
+			if (overdraw && (trow >= overdraw) && (y > 2) && (trow <= overdrawmax)) {
+  				BitBlt(hdc, x2, y2-th2, tw2, th2*2, hdcSrc, x3, y3-h1, SRCCOPY);
+			/* tell the core that the top tile is different than what it thinks */
+			} else {
+  				BitBlt(hdc, x2, y2, tw2, th2, hdcSrc, x3, y3, SRCCOPY);
+			}
+		}
+		else
+		{
+			/* Copy the terrain picture from the bitmap to the window */
+			if (overdraw && (trow >= overdraw) && (y > 2) && (trow >= overdrawmax)) {
+				StretchBlt(hdc, x2, y2-th2, tw2, th2*2, hdcSrc, x3, y3-h1, w1, h1*2, SRCCOPY);
+			/* tell the core that the top tile is different than what it thinks */
+			} else {
+				StretchBlt(hdc, x2, y2, tw2, th2, hdcSrc, x3, y3, w1, h1, SRCCOPY);
+			}
+		}
+		/* Only draw if terrain and overlay are different */
+		if ((x1 != x3) || (y1 != y3))
+		{
+			/* Copy the picture from the bitmap to the window */
+			//AlphaBlend(hdc, x2, y2, tw2, th2, hdcSrc, x1, y1, w1, h1, blendfn);
+			if (overdraw && (row >= overdraw) && (y > 2) && (row >= overdrawmax)) {
+  				AlphaBlend(hdc, x2, y2-th2, tw2, th2*2, hdcSrc, x1, y1-h1, w1, h1*2, blendfn);
+			/* tell the core that the top tile is different than what it thinks */
+			} else {
+				AlphaBlend(hdc, x2, y2, tw2, th2, hdcSrc, x1, y1, w1, h1, blendfn);
+			}
+		}
+		//if (overdraw && (col > overdraw) && (y > 2) && (row > overdrawRow)) {
+		//	AlphaBlend(hdc, x2, y2-th2, tw2, th2, hdcSrc, x1, y1-h1, w1, h1, blendfn);
+		//}
+	}
+
+	/* Release */
+	SelectObject(hdcSrc, hbmSrcOld);
+	DeleteDC(hdcSrc);
+
+	/* Release */
+	ReleaseDC(td->w, hdc);
+
+#else /* USE_GRAPHICS */
+
+	/* Just erase this grid */
+	return (Term_wipe_win(x, y, n));
+
+#endif /* USE_GRAPHICS */
+
+	/* Success */
+	return 0;
+}
+
+
 static void windows_map_aux(void)
 {
 	term_data *td = &data[0];
@@ -2774,6 +2915,12 @@ static void init_windows(void)
 		InsertMenuItem(hm,IDM_OPTIONS_GRAPHICS_NONE, FALSE, &mii);
 		++i;
 	}
+
+	/* setup the alpha blending function */
+	blendfn.BlendOp = AC_SRC_OVER;
+	blendfn.BlendFlags = 0;
+	blendfn.AlphaFormat = AC_SRC_NO_PREMULT_ALPHA;//AC_SRC_ALPHA;
+	blendfn.SourceConstantAlpha = 255;
 
 
 	/* Process pending messages */
