@@ -1378,7 +1378,7 @@ static void dungeon(struct cave *c)
 	if (p_ptr->is_dead) return;
 
 	/* Announce (or repeat) the feeling */
-	if (p_ptr->depth) do_cmd_feeling();
+	if (p_ptr->depth) display_feeling(FALSE);
 
 	/* Give player minimum energy to start a new level, but do not reduce higher value from savefile for level in progress */
 	if (p_ptr->energy < INITIAL_DUNGEON_ENERGY)
