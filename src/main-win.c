@@ -110,6 +110,15 @@
 
 #endif /* ALLOW_BORG */
 
+#ifndef GetWindowLongPtr
+#define GetWindowLongPtr GetWindowLong
+#endif
+#ifndef SetWindowLongPtr
+#define SetWindowLongPtr SetWindowLong
+#endif
+#ifndef GWLP_USERDATA
+#define GWLP_USERDATA GWL_USERDATA
+#endif
 
 /*
  * Menu constants -- see "ANGBAND.RC"
