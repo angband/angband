@@ -77,6 +77,7 @@
 #include "cave.h"
 #include "init.h"
 #include "files.h"
+#include "grafmode.h"
 
 #define uint unsigned int
 
@@ -193,11 +194,7 @@
 #define IDM_WINDOW_D_HGT_7		277
 
 #define IDM_OPTIONS_GRAPHICS_NONE   400
-#define IDM_OPTIONS_GRAPHICS_OLD    401
-#define IDM_OPTIONS_GRAPHICS_ADAM   402
-#define IDM_OPTIONS_GRAPHICS_DAVID  403
-#define IDM_OPTIONS_GRAPHICS_NOMAD  404
-#define IDM_OPTIONS_GRAPHICS_NICE   405
+#define IDM_OPTIONS_GRAPHICS_NICE   445
 #define IDM_OPTIONS_TRPTILE         407
 #define IDM_OPTIONS_DBLTILE         408
 #define IDM_OPTIONS_BIGTILE         409
@@ -285,7 +282,6 @@
  * Include the support for loading bitmaps
  */
 #ifdef USE_GRAPHICS
-//# include "win/readdib.h"
 # include "win/readdib.h"
 #endif /* USE_GRAPHICS */
 
@@ -514,6 +510,11 @@ static DIBINIT infGraph;
  * The global bitmap mask
  */
 static DIBINIT infMask;
+
+static int overdraw = 0;
+static int overdrawmax = 8;
+
+static int alphablend = 0;
 
 #endif /* USE_GRAPHICS */
 
@@ -749,49 +750,30 @@ static void term_getsize(term_data *td)
 
         if (use_graphics_nice)
           {
-            switch (use_graphics)
-              {
-              case GRAPHICS_DAVID_GERVAIS:
-                {
-                  /* Reset the tile info */
-                  td->tile_wid = 32;
-                  td->tile_hgt = 32;
-                  break;
-                }
-                
-              case GRAPHICS_ADAM_BOLT:
-                {
-                  /* Reset the tile info */
-                  td->tile_wid = 16;
-                  td->tile_hgt = 16;
-                  break;
-                }
-
-              case GRAPHICS_NOMAD:
-                {
-                  /* Reset the tile info */
-                  td->tile_wid = 8;
-                  td->tile_hgt = 16;
-                  break;
-                }
-                
-              case GRAPHICS_ORIGINAL:
-                {
-                  /* Reset the tile info */
-                  td->tile_wid = 8;
-                  td->tile_hgt = 8;
-                  break;
-                }
-                
-              case GRAPHICS_NONE:
-                {
-                  /* Reset the tile info */
-                  td->tile_wid = td->font_wid;
-                  td->tile_hgt = td->font_hgt;
-                  break;
-                }
-                
+            if (current_graphics_mode && current_graphics_mode->grafID) {
+              if (current_graphics_mode->file[0]) {
+                char *end;
+                td->tile_wid = strtol(current_graphics_mode->file,&end,10);
+                td->tile_hgt = strtol(end+1,NULL,10);
+              } else {
+                td->tile_wid = current_graphics_mode->cell_width;
+                td->tile_hgt = current_graphics_mode->cell_height;
               }
+              if ((td->tile_wid == 0) || (td->tile_hgt == 0)) {
+                td->tile_wid = current_graphics_mode->cell_width;
+                td->tile_hgt = current_graphics_mode->cell_height;
+              }
+              if ((td->tile_wid == 0) || (td->tile_hgt == 0)) {
+                td->tile_wid = td->font_wid;
+                td->tile_hgt = td->font_hgt;
+              }
+            }
+            else
+            {
+              /* Reset the tile info */
+              td->tile_wid = td->font_wid;
+              td->tile_hgt = td->font_hgt;
+            }
             
 	    tile_width = 1;
 	    tile_height = 1;
@@ -1294,25 +1276,39 @@ static bool init_graphics(void)
 		char buf[1024];
 		int wid, hgt;
 		const char *name;
+		graphics_mode *mode = NULL;
 
-		if (arg_graphics == GRAPHICS_DAVID_GERVAIS) {
-			wid = 32;
-			hgt = 32;
-			name = "32x32.png";
-			ANGBAND_GRAF = "david";
+		if (arg_graphics) {
+			int i=0;
+			while (graphics_modes[i].grafID != 0)  {
+				if (graphics_modes[i].grafID == arg_graphics) {
+					mode = &(graphics_modes[i]);
+					break;
+				}
+				i++;
+			}
+		}
+		if (mode) {
+			if (!mode->name[0]) {
+				plog_fmt("invalid tile name '%s'", mode->menuname);
+				return FALSE;
+			}
+			wid = mode->cell_width;
+			hgt = mode->cell_height;
+			if ((wid < 2) || (hgt < 2)) {
+				plog_fmt("invalid tile dimensions in tileset name: '%s'", mode->name);
+				return FALSE;
+			}
+
+			name = mode->file;
+			ANGBAND_GRAF = mode->name;
 			use_transparency = FALSE;
-		} else if (arg_graphics == GRAPHICS_ADAM_BOLT){
-			wid = 16;
-			hgt = 16;
-			name = "16x16.png";
-			ANGBAND_GRAF = "new";
-			use_transparency = TRUE;
-		} else if (arg_graphics == GRAPHICS_NOMAD) {
-			wid = 16;
-			hgt = 16;
-			name = "8x16.png";
-			ANGBAND_GRAF = "nomad";
-			use_transparency = TRUE;
+
+			overdraw = mode->overdrawRow;
+			overdrawmax = mode->overdrawMax;
+			alphablend = mode->alphablend;
+
+			current_graphics_mode = mode;
 		} else {
 			wid = 8;
 			hgt = 8;
@@ -1324,9 +1320,16 @@ static bool init_graphics(void)
 		path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_GRAF, name);
 
 		/* Load the image or quit */
-		if (!ReadDIB2_PNG(data[0].w, buf, &infGraph, &infMask)) {
-			plog_fmt("Cannot read file '%s'", name);
-			return FALSE;
+		if (alphablend) {
+			if (!ReadDIB2_PNG(data[0].w, buf, &infGraph, NULL)) {
+				plog_fmt("Cannot read file '%s'", name);
+				return FALSE;
+			}
+		} else {
+			if (!ReadDIB2_PNG(data[0].w, buf, &infGraph, &infMask)) {
+				plog_fmt("Cannot read file '%s'", name);
+				return FALSE;
+			}
 		}
 
 		/* Save the new sizes */
@@ -2319,9 +2322,7 @@ static errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, c
 	hdcSrc = CreateCompatibleDC(hdc);
 	hbmSrcOld = SelectObject(hdcSrc, infGraph.hBitmap);
 
-	if ((arg_graphics == GRAPHICS_ADAM_BOLT) ||
-		(arg_graphics == GRAPHICS_NOMAD) ||
-	    (arg_graphics == GRAPHICS_DAVID_GERVAIS))
+	if (infMask.hBitmap)
 	{
 		hdcMask = CreateCompatibleDC(hdc);
 		SelectObject(hdcMask, infMask.hBitmap);
@@ -2345,9 +2346,7 @@ static errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, c
 		x1 = col * w1;
 		y1 = row * h1;
 
-		if ((arg_graphics == GRAPHICS_ADAM_BOLT) ||
-			(arg_graphics == GRAPHICS_NOMAD) ||
-		    (arg_graphics == GRAPHICS_DAVID_GERVAIS))
+		if (hdcMask))
 		{
 			x3 = (tcp[i] & 0x7F) * w1;
 			y3 = (tap[i] & 0x7F) * h1;
@@ -2414,9 +2413,7 @@ static errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, c
 	SelectObject(hdcSrc, hbmSrcOld);
 	DeleteDC(hdcSrc);
 
-	if ((arg_graphics == GRAPHICS_ADAM_BOLT) ||
-		(arg_graphics == GRAPHICS_NOMAD) ||
-	    (arg_graphics == GRAPHICS_DAVID_GERVAIS))
+	if (hdcMask)
 	{
 		/* Release */
 		SelectObject(hdcMask, hbmSrcOld);
@@ -2577,6 +2574,8 @@ static void init_windows(void)
 
 	char buf[1024];
 
+	MENUITEMINFO mii;
+	HMENU hm;
 
 	/* Main window */
 	td = &data[0];
@@ -2737,6 +2736,20 @@ static void init_windows(void)
 
 	/* Create a "brush" for drawing the "cursor" */
 	hbrYellow = CreateSolidBrush(win_clr[TERM_YELLOW]);
+
+	/* Populate the graphic options sub menu with the graphics modes */
+	hm = GetMenu(data[0].w);
+	i=0;
+	mii.cbSize = sizeof(MENUITEMINFO);
+	mii.fMask = MIIM_ID | MIIM_TYPE;
+	mii.fType = MFT_STRING;
+	while (graphics_modes[i].grafID != 0) {
+		mii.wID = graphics_modes[i].grafID + IDM_OPTIONS_GRAPHICS_NONE;
+		mii.dwTypeData = graphics_modes[i].menuname;
+		mii.cch = strlen(graphics_modes[i].menuname);
+		InsertMenuItem(hm,IDM_OPTIONS_GRAPHICS_NONE, FALSE, &mii);
+		++i;
+	}
 
 
 	/* Process pending messages */
@@ -2903,16 +2916,12 @@ static void setup_menus(void)
 	}
 
 	/* Menu "Options", disable all */
-	EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_NONE,
-	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
-	EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_OLD,
-	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
-	EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_ADAM,
-	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
-	EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_NOMAD,
-	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
-	EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_DAVID,
-	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+	i=0;
+	do {
+		EnableMenuItem(hm, graphics_modes[i].grafID + IDM_OPTIONS_GRAPHICS_NONE,
+		        MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+	} while (graphics_modes[i++].grafID != 0); 
+
         EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_NICE,
                        MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
         EnableMenuItem(hm, IDM_OPTIONS_TRPTILE,
@@ -2934,16 +2943,11 @@ static void setup_menus(void)
 		               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 
 	/* Menu "Options", update all */
-	CheckMenuItem(hm, IDM_OPTIONS_GRAPHICS_NONE,
-	              (arg_graphics == GRAPHICS_NONE ? MF_CHECKED : MF_UNCHECKED));
-	CheckMenuItem(hm, IDM_OPTIONS_GRAPHICS_OLD,
-	              (arg_graphics == GRAPHICS_ORIGINAL ? MF_CHECKED : MF_UNCHECKED));
-	CheckMenuItem(hm, IDM_OPTIONS_GRAPHICS_ADAM,
-	              (arg_graphics == GRAPHICS_ADAM_BOLT ? MF_CHECKED : MF_UNCHECKED));
-	CheckMenuItem(hm, IDM_OPTIONS_GRAPHICS_NOMAD,
-	              (arg_graphics == GRAPHICS_NOMAD ? MF_CHECKED : MF_UNCHECKED));
-	CheckMenuItem(hm, IDM_OPTIONS_GRAPHICS_DAVID,
-	              (arg_graphics == GRAPHICS_DAVID_GERVAIS ? MF_CHECKED : MF_UNCHECKED));
+	i=0;
+	do {
+		CheckMenuItem(hm, graphics_modes[i].grafID + IDM_OPTIONS_GRAPHICS_NONE,
+		        (arg_graphics == graphics_modes[i].grafID ? MF_CHECKED : MF_UNCHECKED));
+	} while (graphics_modes[i++].grafID != 0); 
 
         CheckMenuItem(hm, IDM_OPTIONS_GRAPHICS_NICE,
                       (arg_graphics_nice ? MF_CHECKED : MF_UNCHECKED));
@@ -2966,11 +2970,11 @@ static void setup_menus(void)
 	if (inkey_flag && initialized)
 	{
 		/* Menu "Options", Item "Graphics" */
-		EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_NONE, MF_ENABLED);
-		EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_OLD, MF_ENABLED);
-		EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_ADAM, MF_ENABLED);
-		EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_NOMAD, MF_ENABLED);
-		EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_DAVID, MF_ENABLED);
+		i=0;
+		do {
+			EnableMenuItem(hm, graphics_modes[i].grafID + IDM_OPTIONS_GRAPHICS_NONE,MF_ENABLED );
+		} while (graphics_modes[i++].grafID != 0); 
+
 		EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_NICE, MF_ENABLED);
 		EnableMenuItem(hm, IDM_OPTIONS_TRPTILE, MF_ENABLED);
 		EnableMenuItem(hm, IDM_OPTIONS_DBLTILE, MF_ENABLED);
@@ -3474,126 +3478,6 @@ static void process_menus(WORD wCmd)
 			term_getsize(td);
 
 			term_window_resize(td);
-
-			break;
-		}
-
-		case IDM_OPTIONS_GRAPHICS_NONE:
-		{
-			/* Paranoia */
-			if (!inkey_flag || !initialized)
-			{
-				plog("You may not do that right now.");
-				break;
-			}
-
-			/* Toggle "arg_graphics" */
-			if (arg_graphics != GRAPHICS_NONE)
-			{
-				arg_graphics = GRAPHICS_NONE;
-
-				/* React to changes */
-				Term_xtra_win_react();
-
-				/* Hack -- Force redraw */
-				Term_key_push(KTRL('R'));
-			}
-
-			break;
-		}
-
-		case IDM_OPTIONS_GRAPHICS_OLD:
-		{
-			/* Paranoia */
-			if (!inkey_flag || !initialized)
-			{
-				plog("You may not do that right now.");
-				break;
-			}
-
-			/* Toggle "arg_graphics" */
-			if (arg_graphics != GRAPHICS_ORIGINAL)
-			{
-				arg_graphics = GRAPHICS_ORIGINAL;
-
-				/* React to changes */
-				Term_xtra_win_react();
-
-				/* Hack -- Force redraw */
-				Term_key_push(KTRL('R'));
-			}
-
-			break;
-		}
-
-		case IDM_OPTIONS_GRAPHICS_ADAM:
-		{
-			/* Paranoia */
-			if (!inkey_flag || !initialized)
-			{
-				plog("You may not do that right now.");
-				break;
-			}
-
-			/* Toggle "arg_graphics" */
-			if (arg_graphics != GRAPHICS_ADAM_BOLT)
-			{
-				arg_graphics = GRAPHICS_ADAM_BOLT;
-
-				/* React to changes */
-				Term_xtra_win_react();
-
-				/* Hack -- Force redraw */
-				Term_key_push(KTRL('R'));
-			}
-
-			break;
-		}
-
-		case IDM_OPTIONS_GRAPHICS_NOMAD:
-		{
-			/* Paranoia */
-			if (!inkey_flag || !initialized)
-			{
-				plog("You may not do that right now.");
-				break;
-			}
-
-			/* Toggle "arg_graphics" */
-			if (arg_graphics != GRAPHICS_NOMAD)
-			{
-				arg_graphics = GRAPHICS_NOMAD;
-
-				/* React to changes */
-				Term_xtra_win_react();
-
-				/* Hack -- Force redraw */
-				Term_key_push(KTRL('R'));
-			}
-
-			break;
-		}
-
-		case IDM_OPTIONS_GRAPHICS_DAVID:
-		{
-			/* Paranoia */
-			if (!inkey_flag || !initialized)
-			{
-				plog("You may not do that right now.");
-				break;
-			}
-
-			/* Toggle "arg_graphics" */
-			if (arg_graphics != GRAPHICS_DAVID_GERVAIS)
-			{
-				arg_graphics = GRAPHICS_DAVID_GERVAIS;
-
-				/* React to changes */
-				Term_xtra_win_react();
-
-				/* Hack -- Force redraw */
-				Term_key_push(KTRL('R'));
-			}
 
 			break;
 		}
@@ -4720,6 +4604,8 @@ static void hook_quit(const char *str)
 	FreeDIB(&infMask);
 #endif /* USE_GRAPHICS */
 
+	close_graphics_modes();
+
 #ifdef USE_SOUND
 	/* Free the sound names */
 	for (i = 0; i < MSG_MAX; i++)
@@ -5020,6 +4906,11 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 
 		/* Save the "simple" code */
 		angband_color_table[i][0] = win_pal[i];
+	}
+
+	/* load the possible graphics modes */
+	if (!init_graphics_modes("graphics.txt")) {
+		plog_fmt("Graphics list load failed");
 	}
 
 	/* Prepare the windows */
