@@ -202,12 +202,36 @@
 
 #define IDM_OPTIONS_GRAPHICS_NONE   400
 #define IDM_OPTIONS_GRAPHICS_NICE   445
-#define IDM_OPTIONS_TRPTILE         407
-#define IDM_OPTIONS_DBLTILE         408
-#define IDM_OPTIONS_BIGTILE         409
 #define IDM_OPTIONS_LOW_PRIORITY    420
 #define IDM_OPTIONS_SAVER           430
 #define IDM_OPTIONS_MAP             440
+
+#define IDM_OPTIONS_TILE_1x1        447
+#define IDM_OPTIONS_TILE_2x1        448
+#define IDM_OPTIONS_TILE_4x2        449
+#define IDM_OPTIONS_TILE_2x2        450
+#define IDM_OPTIONS_TILE_3x1        451
+#define IDM_OPTIONS_TILE_3x3        452
+#define IDM_OPTIONS_TILE_4x4        453
+#define IDM_OPTIONS_TILE_6x3        454
+#define IDM_OPTIONS_TILE_6x6        455
+#define IDM_OPTIONS_TILE_8x4        456
+#define IDM_OPTIONS_TILE_8x8        457
+#define IDM_OPTIONS_TILE_16x8       458
+#define IDM_OPTIONS_TILE_16x16      459
+
+#define IDM_TILE_FONT 		190
+#define IDM_TILE_08X08		191
+#define IDM_TILE_16X16		192
+#define IDM_TILE_32X32		193
+#define IDM_TILE_08X16		194
+#define IDM_TILE_10X20		195
+#define IDM_TILE_16X32		196
+#define IDM_TILE_08X13		197
+#define IDM_TILE_10X17		198
+#define IDM_TILE_12X13		199
+#define IDM_TILE_12X20		188
+#define IDM_TILE_16X25		189
 
 #define IDM_HELP_GENERAL		901
 #define IDM_HELP_SPOILERS		902
@@ -2931,12 +2955,18 @@ static void setup_menus(void)
 
         EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_NICE,
                        MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
-        EnableMenuItem(hm, IDM_OPTIONS_TRPTILE,
+
+	for (i = IDM_OPTIONS_TILE_1x1; i < IDM_OPTIONS_TILE_16x16; i++) {
+	        EnableMenuItem(hm, i, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+	}
+	for (i = IDM_TILE_FONT; i < IDM_TILE_12x13; i++) {
+	        EnableMenuItem(hm, i, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+	}
+        EnableMenuItem(hm, IDM_TILE_12x20,
                        MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
-        EnableMenuItem(hm, IDM_OPTIONS_DBLTILE,
+        EnableMenuItem(hm, IDM_TILE_16x25,
                        MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
-	EnableMenuItem(hm, IDM_OPTIONS_BIGTILE,
-	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+
 	EnableMenuItem(hm, IDM_OPTIONS_SAVER,
 	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 	EnableMenuItem(hm, IDM_OPTIONS_LOW_PRIORITY,
@@ -2958,12 +2988,82 @@ static void setup_menus(void)
 
         CheckMenuItem(hm, IDM_OPTIONS_GRAPHICS_NICE,
                       (arg_graphics_nice ? MF_CHECKED : MF_UNCHECKED));
-        CheckMenuItem(hm, IDM_OPTIONS_TRPTILE,
-                      (tile_height == 3 ? MF_CHECKED : MF_UNCHECKED));
-        CheckMenuItem(hm, IDM_OPTIONS_DBLTILE,
-                      (tile_height == 2 ? MF_CHECKED : MF_UNCHECKED));
-	CheckMenuItem(hm, IDM_OPTIONS_BIGTILE,
-	              (tile_width == (2 * tile_height) ? MF_CHECKED : MF_UNCHECKED));
+
+	if ((tile_width == 1) && (tile_height == 1))
+		CheckMenuItem(hm, IDM_OPTIONS_TILE_1x1, MF_CHECKED);
+	else
+		CheckMenuItem(hm, IDM_OPTIONS_TILE_1x1, MF_UNCHECKED);
+
+	if ((tile_width == 2) && (tile_height == 1))
+		CheckMenuItem(hm, IDM_OPTIONS_TILE_2x1, MF_CHECKED);
+	else
+		CheckMenuItem(hm, IDM_OPTIONS_TILE_2x1, MF_UNCHECKED);
+
+	if ((tile_width == 2) && (tile_height == 2))
+		CheckMenuItem(hm, IDM_OPTIONS_TILE_2x2, MF_CHECKED);
+	else
+		CheckMenuItem(hm, IDM_OPTIONS_TILE_2x2, MF_UNCHECKED);
+
+	if ((tile_width == 3) && (tile_height == 1))
+		CheckMenuItem(hm, IDM_OPTIONS_TILE_3x1, MF_CHECKED);
+	else
+		CheckMenuItem(hm, IDM_OPTIONS_TILE_3x1, MF_UNCHECKED);
+
+	if ((tile_width == 3) && (tile_height == 3))
+		CheckMenuItem(hm, IDM_OPTIONS_TILE_3x3, MF_CHECKED);
+	else
+		CheckMenuItem(hm, IDM_OPTIONS_TILE_3x3, MF_UNCHECKED);
+
+	if ((tile_width == 4) && (tile_height == 2))
+		CheckMenuItem(hm, IDM_OPTIONS_TILE_4x2, MF_CHECKED);
+	else
+		CheckMenuItem(hm, IDM_OPTIONS_TILE_4x2, MF_UNCHECKED);
+
+	if ((tile_width == 4) && (tile_height == 4))
+		CheckMenuItem(hm, IDM_OPTIONS_TILE_4x4, MF_CHECKED);
+	else
+		CheckMenuItem(hm, IDM_OPTIONS_TILE_4x4, MF_UNCHECKED);
+
+	if ((tile_width == 6) && (tile_height == 3))
+		CheckMenuItem(hm, IDM_OPTIONS_TILE_6x3, MF_CHECKED);
+	else
+		CheckMenuItem(hm, IDM_OPTIONS_TILE_6x3, MF_UNCHECKED);
+
+	if ((tile_width == 6) && (tile_height == 6))
+		CheckMenuItem(hm, IDM_OPTIONS_TILE_6x6, MF_CHECKED);
+	else
+		CheckMenuItem(hm, IDM_OPTIONS_TILE_6x6, MF_UNCHECKED);
+
+	if ((tile_width == 8) && (tile_height == 4))
+		CheckMenuItem(hm, IDM_OPTIONS_TILE_8x4, MF_CHECKED);
+	else
+		CheckMenuItem(hm, IDM_OPTIONS_TILE_8x4, MF_UNCHECKED);
+
+	if ((tile_width == 8) && (tile_height == 8))
+		CheckMenuItem(hm, IDM_OPTIONS_TILE_8x8, MF_CHECKED);
+	else
+		CheckMenuItem(hm, IDM_OPTIONS_TILE_8x8, MF_UNCHECKED);
+
+	if ((tile_width == 16) && (tile_height == 8))
+		CheckMenuItem(hm, IDM_OPTIONS_TILE_16x8, MF_CHECKED);
+	else
+		CheckMenuItem(hm, IDM_OPTIONS_TILE_16x8, MF_UNCHECKED);
+
+	if ((tile_width == 16) && (tile_height == 16))
+		CheckMenuItem(hm, IDM_OPTIONS_TILE_16x16, MF_CHECKED);
+	else
+		CheckMenuItem(hm, IDM_OPTIONS_TILE_16x16, MF_UNCHECKED);
+
+	i = data[0].tile_hgt;
+	if ((data[0].tile_wid == data[0].font_wid) && (i == data[0].font_hgt))
+		CheckMenuItem(hm, IDM_TILE_FONT, MF_CHECKED);
+	else
+		CheckMenuItem(hm, IDM_TILE_FONT, MF_UNCHECKED);
+
+	if ((data[0].tile_wid == 8) && (i == 16))
+		CheckMenuItem(hm, IDM_TILE_08X16, MF_CHECKED);
+	else
+		CheckMenuItem(hm, IDM_TILE_08X16, MF_UNCHECKED);
 
 #ifdef USE_SAVER
 	CheckMenuItem(hm, IDM_OPTIONS_SAVER,
@@ -2983,9 +3083,16 @@ static void setup_menus(void)
 		} while (graphics_modes[i++].grafID != 0); 
 
 		EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_NICE, MF_ENABLED);
-		EnableMenuItem(hm, IDM_OPTIONS_TRPTILE, MF_ENABLED);
-		EnableMenuItem(hm, IDM_OPTIONS_DBLTILE, MF_ENABLED);
-		EnableMenuItem(hm, IDM_OPTIONS_BIGTILE, MF_ENABLED);
+
+		for (i = IDM_OPTIONS_TILE_1x1; i < IDM_OPTIONS_TILE_16x16; i++) {
+			EnableMenuItem(hm, i, MF_ENABLED);
+		}
+		for (i = IDM_TILE_FONT; i < IDM_TILE_12x13; i++) {
+			EnableMenuItem(hm, i, MF_ENABLED);
+		}
+
+		EnableMenuItem(hm, IDM_TILE_12x20, MF_ENABLED);
+		EnableMenuItem(hm, IDM_TILE_16x25, MF_ENABLED);
 	}
 #endif /* USE_GRAPHICS */
 
@@ -3510,80 +3617,19 @@ static void process_menus(WORD wCmd)
                         break;
                 }
 
-                case IDM_OPTIONS_TRPTILE:
-                {
-                        /* Paranoia */
-                        if (!inkey_flag || !initialized)
-                        {
-                                plog("You may not do that right now.");
-                                break;
-                        }
-
-                        /* Reduce... */
-			if (tile_height == 3)
-			{
-			        tile_width /= 3;
-			        tile_height /= 3;
-			}
-
-                        /* ...or increase */
-			else
-			{
-			        tile_width /= tile_height;
-			        tile_width *= 3;
-			        tile_height = 3;
-			}
-
-
-                        /* Set flag */
-                        change_tilesize = TRUE;
-
-                        /* React to changes */
-                        Term_xtra_win_react();
-
-                        /* Hack -- Force redraw */
-                        Term_key_push(KTRL('R'));
-
-                        break;
-                        }
-
-                case IDM_OPTIONS_DBLTILE:
-                                {
-                        /* Paranoia */
-                        if (!inkey_flag || !initialized)
-                                        {
-                                plog("You may not do that right now.");
-                                break;
-                                }
-
-                        /* Reduce... */
-			if (tile_height == 2)
-			{
-			        tile_width /= 2;
-			        tile_height /= 2;
-			}
-
-                        /* ...or increase */
-			else
-			{
-			        tile_width /= tile_height;
-			        tile_height = 2;
-			        tile_width *= tile_height;
-			}
-
-                        /* Set flag */
-                        change_tilesize = TRUE;
-
-                        /* React to changes */
-                        Term_xtra_win_react();
-
-                        /* Hack -- Force redraw */
-                        Term_key_push(KTRL('R'));
-
-                        break;
-                                                }
-
-		case IDM_OPTIONS_BIGTILE:
+		case IDM_OPTIONS_TILE_1x1:
+		case IDM_OPTIONS_TILE_2x1:
+		case IDM_OPTIONS_TILE_2x2:
+		case IDM_OPTIONS_TILE_3x1:
+		case IDM_OPTIONS_TILE_3x3:
+		case IDM_OPTIONS_TILE_4x2:
+		case IDM_OPTIONS_TILE_4x4:
+		case IDM_OPTIONS_TILE_6x3:
+		case IDM_OPTIONS_TILE_6x6:
+		case IDM_OPTIONS_TILE_8x4:
+		case IDM_OPTIONS_TILE_8x8:
+		case IDM_OPTIONS_TILE_16x8:
+		case IDM_OPTIONS_TILE_16x16:
 		{
 			/* Paranoia */
 			if (!inkey_flag || !initialized)
@@ -3591,27 +3637,181 @@ static void process_menus(WORD wCmd)
 				plog("You may not do that right now.");
 				break;
 			}
-
-                        /* Reduce... */
-			if (tile_height != tile_width)
+			switch (wCmd)
 			{
-			        tile_width = tile_height;
+			case IDM_OPTIONS_TILE_1x1:
+			{
+				tile_width = 1;
+				tile_height = 1;
+				break;
+			}
+			case IDM_OPTIONS_TILE_2x1:
+			{
+				tile_width = 2;
+				tile_height = 1;
+				break;
+			}
+			case IDM_OPTIONS_TILE_2x2:
+			{
+				tile_width = 2;
+				tile_height = 2;
+				break;
+			}
+			case IDM_OPTIONS_TILE_3x1:
+			{
+				tile_width = 3;
+				tile_height = 1;
+				break;
+			}
+			case IDM_OPTIONS_TILE_3x3:
+			{
+				tile_width = 3;
+				tile_height = 3;
+				break;
+			}
+			case IDM_OPTIONS_TILE_4x2:
+			{
+				tile_width = 4;
+				tile_height = 2;
+				break;
+			}
+			case IDM_OPTIONS_TILE_4x4:
+			{
+				tile_width = 4;
+				tile_height = 4;
+				break;
+			}
+			case IDM_OPTIONS_TILE_6x3:
+			{
+				tile_width = 6;
+				tile_height = 3;
+				break;
+			}
+			case IDM_OPTIONS_TILE_6x6:
+			{
+				tile_width = 6;
+				tile_height = 6;
+				break;
+			}
+			case IDM_OPTIONS_TILE_8x4:
+			{
+				tile_width = 8;
+				tile_height = 4;
+				break;
+			}
+			case IDM_OPTIONS_TILE_8x8:
+			{
+				tile_width = 8;
+				tile_height = 8;
+				break;
+			}
+			case IDM_OPTIONS_TILE_16x8:
+			{
+				tile_width = 16;
+				tile_height = 8;
+				break;
+			}
+			case IDM_OPTIONS_TILE_16x16:
+			{
+				tile_width = 16;
+				tile_height = 16;
+				break;
+			}
 			}
 
-                        /* ...or increase */
-			else
-			{
-			        tile_width *= 2;
-			}
+			/* Set flag */
+			change_tilesize = TRUE;
 
-                       /* Set flag */
-                        change_tilesize = TRUE;
+			/* React to changes */
+			Term_xtra_win_react();
 
-                        /* React to changes */
-                        Term_xtra_win_react();
-
- 			/* Mega-Hack : Redraw screen */
+			/* Hack -- Force redraw */
 			Term_key_push(KTRL('R'));
+
+			break;
+		}
+
+		case IDM_TILE_FONT:
+		case IDM_TILE_08X08:
+		case IDM_TILE_16X16:
+		case IDM_TILE_32X32:
+		case IDM_TILE_08X16:
+		case IDM_TILE_10X20:
+		case IDM_TILE_16X32:
+		case IDM_TILE_08X13:
+		case IDM_TILE_10X17:
+		case IDM_TILE_16X25:
+		case IDM_TILE_12X20:
+		{
+			/* Paranoia */
+			if (!inkey_flag || !initialized)
+			{
+				plog("You may not do that right now.");
+				break;
+			}
+			td = &data[0];
+			switch (wCmd)
+			{
+			case IDM_TILE_FONT:
+			{
+				td->tile_wid = td->font_wid;
+				td->tile_hgt = td->font_hgt;
+				break;
+			}
+			case IDM_TILE_08X16:
+			{
+				td->tile_wid = 8;
+				td->tile_hgt = 16;
+				break;
+			}
+			case IDM_TILE_08X08:
+			{
+				td->tile_wid = 8;
+				td->tile_hgt = 8;
+				break;
+			}
+			case IDM_TILE_16X16:
+			{
+				td->tile_wid = 16;
+				td->tile_hgt = 16;
+				break;
+			}
+			case IDM_TILE_32X32:
+			{
+				td->tile_wid = 32;
+				td->tile_hgt = 32;
+				break;
+			}
+			case IDM_TILE_10X20:
+			{
+				td->tile_wid = 10;
+				td->tile_hgt = 20;
+				break;
+			}
+			case IDM_TILE_16X32:
+			{
+				td->tile_wid = 16;
+				td->tile_hgt = 32;
+				break;
+			}
+			case IDM_TILE_12X20:
+			{
+				td->tile_wid = 12;
+				td->tile_hgt = 20;
+				break;
+			}
+			case IDM_TILE_16X25:
+			{
+				td->tile_wid = 16;
+				td->tile_hgt = 25;
+				break;
+			}
+			}
+
+			/* React to changes */
+			term_getsize(td);
+
+			term_window_resize(td);
 
 			break;
 		}
