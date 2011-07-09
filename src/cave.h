@@ -49,6 +49,8 @@ struct cave {
 
 	int height;
 	int width;
+	
+	u16b feeling_squares; /* Keep track of how many feeling squares the player has visited */
 
 	byte (*info)[256];
 	byte (*info2)[256];
@@ -110,6 +112,7 @@ extern bool cave_isstrongwall(struct cave *c, int y, int x);
 extern bool cave_isvault(struct cave *c, int y, int x);
 extern bool cave_isroom(struct cave *c, int y, int x);
 extern bool cave_isrubble(struct cave *c, int y, int x);
+extern bool cave_isfeel(struct cave *c, int y, int x);
 
 extern void cave_generate(struct cave *c, struct player *p);
 

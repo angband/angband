@@ -82,6 +82,7 @@ extern void do_cmd_options_birth(void);
 extern void do_cmd_pref(void);
 extern void do_cmd_note(void);
 extern void do_cmd_version(void);
+extern void display_feeling(bool obj_only);
 extern void do_cmd_feeling(void);
 extern void do_cmd_load_screen(void);
 extern void do_cmd_save_screen(void);
