@@ -4224,6 +4224,21 @@ static void handle_keydown(WPARAM wParam, LPARAM lParam)
 		case VK_MULTIPLY: ch = '*'; kp = TRUE; break;
 		case VK_DIVIDE: ch = '/'; kp = TRUE; break;
 		case VK_DECIMAL: ch = '.'; kp = TRUE; break;
+
+		case VK_NUMPAD0: if (mc||ma||ms) {ch = KC_INSERT; kp = TRUE;} break;
+		case VK_NUMPAD1: if (mc||ma||ms) {ch = KC_END; kp = TRUE;} break;
+		case VK_NUMPAD2: if (mc||ma||ms) {ch = ARROW_DOWN; kp = TRUE;} break;
+		case VK_NUMPAD3: if (mc||ma||ms) {ch = KC_PGDOWN; kp = TRUE;} break;
+		case VK_NUMPAD4: if (mc||ma||ms) {ch = ARROW_LEFT; kp = TRUE;} break;
+		case VK_NUMPAD5: if (mc||ma||ms) {ch = '5'; kp = TRUE;} break;
+		case VK_NUMPAD6: if (mc||ma||ms) {ch = ARROW_RIGHT; kp = TRUE;} break;
+		case VK_NUMPAD7: if (mc||ma||ms) {ch = KC_HOME; kp = TRUE;} break;
+		case VK_NUMPAD8: if (mc||ma||ms) {ch = ARROW_UP; kp = TRUE;} break;
+		case VK_NUMPAD9: if (mc||ma||ms) {ch = KC_PGUP; kp = TRUE;} break;
+		// the "||ms" above probably are not used, since for me, when
+		// num lock is on, and shift-numpad is pressed, the key where numlock
+		// is not on is sent here, without the shift
+
 	}
 
 	/* we could fall back on using the scancode */
