@@ -3722,6 +3722,40 @@ static void process_menus(WORD wCmd)
 			display_help(HELP_SPOILERS);
 			break;
 		}
+		default:
+		{
+			if ((wCmd >= IDM_OPTIONS_GRAPHICS_NONE) && (wCmd <= IDM_OPTIONS_GRAPHICS_NONE+graphics_mode_high_id))
+			{
+				int selected_mode = 0;
+				int desired_mode = wCmd - IDM_OPTIONS_GRAPHICS_NONE;
+				/* Paranoia */
+				if (!inkey_flag || !initialized)
+				{
+					plog("You may not do that right now.");
+					break;
+				}
+				i=0;
+				do {
+					if (graphics_modes[i].grafID == desired_mode) {
+						selected_mode = desired_mode;
+						break;
+					}
+				} while (graphics_modes[i++].grafID != 0); 
+
+				/* Toggle "arg_graphics" */
+				if (arg_graphics != selected_mode)
+				{
+					arg_graphics = selected_mode;
+
+					/* React to changes */
+					Term_xtra_win_react();
+
+					/* Hack -- Force redraw */
+					Term_key_push(KTRL('R'));
+				}
+			}
+			break;
+		}
 	}
 }
 
