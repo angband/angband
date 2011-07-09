@@ -2386,7 +2386,7 @@ static errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, c
 		x1 = col * w1;
 		y1 = row * h1;
 
-		if (hdcMask))
+		if (hdcMask)
 		{
 			x3 = (tcp[i] & 0x7F) * w1;
 			y3 = (tap[i] & 0x7F) * h1;
@@ -3106,12 +3106,12 @@ static void setup_menus(void)
 	for (i = IDM_OPTIONS_TILE_1x1; i < IDM_OPTIONS_TILE_16x16; i++) {
 	        EnableMenuItem(hm, i, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 	}
-	for (i = IDM_TILE_FONT; i < IDM_TILE_12x13; i++) {
+	for (i = IDM_TILE_FONT; i < IDM_TILE_12X13; i++) {
 	        EnableMenuItem(hm, i, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 	}
-        EnableMenuItem(hm, IDM_TILE_12x20,
+        EnableMenuItem(hm, IDM_TILE_12X20,
                        MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
-        EnableMenuItem(hm, IDM_TILE_16x25,
+        EnableMenuItem(hm, IDM_TILE_16X25,
                        MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 
 	EnableMenuItem(hm, IDM_OPTIONS_SAVER,
@@ -3234,12 +3234,12 @@ static void setup_menus(void)
 		for (i = IDM_OPTIONS_TILE_1x1; i < IDM_OPTIONS_TILE_16x16; i++) {
 			EnableMenuItem(hm, i, MF_ENABLED);
 		}
-		for (i = IDM_TILE_FONT; i < IDM_TILE_12x13; i++) {
+		for (i = IDM_TILE_FONT; i < IDM_TILE_12X13; i++) {
 			EnableMenuItem(hm, i, MF_ENABLED);
 		}
 
-		EnableMenuItem(hm, IDM_TILE_12x20, MF_ENABLED);
-		EnableMenuItem(hm, IDM_TILE_16x25, MF_ENABLED);
+		EnableMenuItem(hm, IDM_TILE_12X20, MF_ENABLED);
+		EnableMenuItem(hm, IDM_TILE_16X25, MF_ENABLED);
 	}
 #endif /* USE_GRAPHICS */
 
