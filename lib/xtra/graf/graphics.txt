@@ -4,7 +4,7 @@ M:Original Tiles
 X:0:0:0
 
 N:2:new
-I:16:16:16x16b.png
+I:16:16:16x16.png
 M:Adam Bolt's tiles
 X:0:0:0
 
