@@ -25,6 +25,8 @@
 #include "files.h"
 #include "game-event.h"
 #include "game-cmd.h"
+#include "monster/mon-lore.h"
+#include "monster/mon-util.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
 #include "textui.h"

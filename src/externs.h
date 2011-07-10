@@ -55,7 +55,6 @@ extern u32b seed_randart;
 extern u32b seed_flavor;
 extern u32b seed_town;
 extern s16b num_repro;
-extern char summon_kin_type;
 extern s32b turn;
 extern int use_graphics;
 extern bool use_graphics_nice;

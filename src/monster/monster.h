@@ -280,58 +280,6 @@ extern bool check_hit(struct player *p, int power, int level);
 extern void process_monsters(struct cave *c, byte min_energy);
 int mon_hp(const struct monster_race *r_ptr, aspect hp_aspect);
 
-/* mon-lore.c */
-extern void cheat_monster_lore(int r_idx, monster_lore *l_ptr);
-extern void wipe_monster_lore(int r_idx, monster_lore *l_ptr);
-extern void describe_monster(int r_idx, bool spoilers);
-extern void roff_top(int r_idx);
-extern void screen_roff(int r_idx);
-extern void display_roff(int r_idx);
-extern void lore_do_probe(int m_idx);
-extern void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr, bitflag flags[RF_SIZE]);
-extern void lore_treasure(int m_idx, int num_item, int num_gold);
-
-/* mon-util.c */
-extern bool mon_inc_timed(int m_idx, int idx, int v, u16b flag);
-extern bool mon_dec_timed(int m_idx, int idx, int v, u16b flag);
-extern bool mon_clear_timed(int m_idx, int idx, u16b flag);
-extern int lookup_monster(const char *name);
-extern int rval_find_idx(const char *name);
-extern const char *rval_find_name(int rval);
-monster_base *lookup_monster_base(const char *name);
-bool match_monster_bases(monster_base *base, ...);
-extern void display_monlist(void);
-extern void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode);
-extern void update_mon(int m_idx, bool full);
-extern void update_monsters(bool full);
-extern s16b monster_carry(struct monster *m, object_type *j_ptr);
-extern void monster_swap(int y1, int x1, int y2, int x2);
-extern bool summon_specific(int y1, int x1, int lev, int type, int delay);
-extern bool multiply_monster(int m_idx);
-extern void update_smart_learn(struct monster *m, struct player *p, int what);
-extern void become_aware(int m_idx);
-extern bool is_mimicking(int m_idx);
-extern void plural_aux(char *name, size_t max);
-
-/* mon-make.c */
-extern void delete_monster_idx(int i);
-extern void delete_monster(int y, int x);
-extern void compact_monsters(int size);
-extern void wipe_mon_list(struct cave *c, struct player *p);
-extern s16b mon_pop(void);
-extern void get_mon_num_prep(void);
-extern s16b get_mon_num(int level);
-extern void player_place(struct cave *c, struct player *p, int y, int x);
-extern s16b monster_place(int y, int x, monster_type *n_ptr, byte origin);
-extern bool place_monster_aux(struct cave *, int y, int x, int r_idx, bool slp,
-	bool grp, byte origin);
-extern bool place_monster(struct cave *c, int y, int x, int depth, bool slp,
-	bool grp, byte origin);
-extern bool alloc_monster(struct cave *c, struct loc loc, int dis, bool slp, int depth);
-void monster_death(int m_idx, bool stats);
-bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note);
-
-
 #ifdef TEST
 extern bool (*testfn_make_attack_normal)(struct monster *m, struct player *p);
 #endif /* !TEST */

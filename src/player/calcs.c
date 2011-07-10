@@ -22,6 +22,7 @@
 #include "files.h"
 #include "game-event.h"
 #include "monster/mon-msg.h"
+#include "monster/mon-util.h"
 #include "object/tvalsval.h"
 #include "object/pval.h"
 #include "spells.h"
