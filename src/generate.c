@@ -21,6 +21,7 @@
 #include "math.h"
 #include "files.h"
 #include "generate.h"
+#include "monster/mon-make.h"
 #include "monster/mon-spell.h"
 #include "object/tvalsval.h"
 #include "trap.h"

@@ -29,6 +29,7 @@
 #include "init.h"
 #include "monster/init.h"
 #include "monster/mon-msg.h"
+#include "monster/mon-util.h"
 #include "object/object.h"
 #include "object/slays.h"
 #include "object/tvalsval.h"

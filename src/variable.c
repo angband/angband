@@ -66,8 +66,6 @@ u32b seed_town;			/* Hack -- consistent town layout */
 
 s16b num_repro;			/* Current reproducer count */
 
-char summon_kin_type;		/* Hack -- See summon_specific() */
-
 s32b turn;				/* Current game turn */
 
 int use_graphics;		/* The "graphics" mode is enabled */
