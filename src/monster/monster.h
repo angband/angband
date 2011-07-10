@@ -260,19 +260,6 @@ typedef struct monster
 	bitflag known_pflags[OF_SIZE]; /* Known player flags */
 } monster_type;
 
-/* 
- * Monster data for the visible monster list 
- */
-typedef struct
-{
-	u16b count;		/* total number of this type visible */
-	u16b asleep;		/* number asleep (not in LOS) */
-	u16b los;		/* number in LOS */
-	u16b los_asleep;	/* number asleep and in LOS */
-	byte attr; /* attr to use for drawing */
-} monster_vis; 
-
-
 /*** Functions ***/
 
 /* melee2.c */
