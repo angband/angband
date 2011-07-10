@@ -1392,7 +1392,7 @@ static void do_cmd_wiz_named(int r_idx, bool slp)
 		if (!cave_empty_bold(y, x)) continue;
 
 		/* Place it (allow groups) */
-		if (place_monster_aux(cave, y, x, r_idx, slp, TRUE, ORIGIN_DROP_WIZARD)) break;
+		if (place_new_monster(cave, y, x, r_idx, slp, TRUE, ORIGIN_DROP_WIZARD)) break;
 	}
 }
 
