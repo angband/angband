@@ -18,6 +18,8 @@ typedef struct {
 	HPALETTE hPalette;
 	BYTE     CellWidth;
 	BYTE     CellHeight;
+  int      ImageWidth;
+  int      ImageHeight;
 } DIBINIT;
 
 /* Read a DIB from a file */
