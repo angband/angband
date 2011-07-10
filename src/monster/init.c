@@ -1,6 +1,7 @@
 /* Parsing functions for monster_base.txt */
 
 #include "externs.h"
+#include "monster/mon-msg.h"
 #include "monster/mon-power.h"
 #include "monster/mon-spell.h"
 #include "monster/monster.h"
