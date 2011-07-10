@@ -83,11 +83,28 @@ typedef unsigned int * uintptr_t;
 
 22. Save and close main-win.c.
 
-23. Compile the project again.
-24. Save the project, then compile the project. There should not be any errors
+23. If there is an error in wizard.c, Edit wizard.c and add the following
+    line (in the middle) around line 185:
+static void do_cmd_keylog(void) {
+	int i;
+	char buf[50];
+	char buf2[12];
+	struct keypress keys[2] = {{EVT_NONE, 0, 0}, {EVT_NONE, 0, 0}};
+
+	screen_save();
+24. A little bit below this, change to the following section (around line 199)
+			/* ugh. it would be nice if there was a verion of keypress_to_text
+			 * which took only one keypress. */
+			/* struct keypress keys[2] = {k, {EVT_NONE, 0}}; */
+			keys[0] = k;
+			keypress_to_text(buf2, sizeof(buf2), keys, TRUE);
+25. Save and close wizard.c.
+
+26. Compile the project again.
+27. Save the project, then compile the project. There should not be any errors
     and the executable should be built. If there are any errors, and you do not
     know how to fix them, you can ask on the forums at http://angband.oook.cz.
-25. Enjoy playing Angband.
+28. Enjoy playing Angband.
 
 
 22. If there is an error saying that AC_SRC_ALPHA is not defined, you are
