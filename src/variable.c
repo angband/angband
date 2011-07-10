@@ -659,16 +659,3 @@ u16b lazymove_delay = 0;
   - used for determining store updates on return to town */
 u16b daycount = 0;
 
-/*
- * The array used to store stacked monster messages
- */
-monster_race_message *mon_msg;
-
-monster_message_history *mon_message_hist;
-
-/*
- * The current size of that array
- */
-u16b size_mon_msg;
-u16b size_mon_hist;
-

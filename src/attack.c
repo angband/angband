@@ -20,6 +20,7 @@
 #include "attack.h"
 #include "cave.h"
 #include "cmds.h"
+#include "monster/mon-msg.h"
 #include "monster/monster.h"
 #include "object/slays.h"
 #include "object/tvalsval.h"

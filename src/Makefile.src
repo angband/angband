@@ -85,10 +85,12 @@ ANGFILES = \
 	monster/init.o \
 	monster/melee1.o \
 	monster/melee2.o \
-	monster/monster1.o \
-	monster/monster2.o \
+	monster/mon-lore.o \
+	monster/mon-make.o \
+	monster/mon-msg.o \
 	monster/mon-power.o \
 	monster/mon-spell.o \
+	monster/mon-util.o \
 	object/identify.o \
 	object/obj-desc.o \
 	object/obj-flag.o \

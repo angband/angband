@@ -21,6 +21,7 @@
 #include "generate.h"
 #include "object/tvalsval.h"
 #include "object/object.h"
+#include "monster/mon-msg.h"
 #include "monster/mon-spell.h"
 #include "squelch.h"
 #include "trap.h"
