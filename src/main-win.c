@@ -543,7 +543,7 @@ static DIBINIT infGraph;
 static DIBINIT infMask;
 
 static int overdraw = 0;
-static int overdrawmax = -1;
+static int overdrawmax = 0;
 
 static int alphablend = 0;
 static BLENDFUNCTION blendfn;
