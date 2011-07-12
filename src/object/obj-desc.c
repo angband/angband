@@ -541,20 +541,6 @@ static size_t obj_desc_pval(const object_type *o_ptr, char *buf, size_t max,
 		}
 	}
 
-	if ((o_ptr->num_pvals == 1) && !of_has(f, OF_HIDE_TYPE))
-	{
-		if (of_has(f, OF_STEALTH))
-			strnfcat(buf, max, &end, " stealth");
-		else if (of_has(f, OF_SEARCH))
-			strnfcat(buf, max, &end, " searching");
-		else if (of_has(f, OF_INFRA))
-			strnfcat(buf, max, &end, " infravision");
-		else if (of_has(f, OF_SPEED))
-			strnfcat(buf, max, &end, " speed");
-		else if (of_has(f, OF_BLOWS))
-			strnfcat(buf, max, &end, " attack%s", PLURAL(o_ptr->pval[which_pval(o_ptr, OF_BLOWS)]));
-	}
-
 	strnfcat(buf, max, &end, ">");
 
 	return end;
