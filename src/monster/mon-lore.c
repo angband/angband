@@ -1,6 +1,6 @@
 /*
- * File: monster1.c
- * Purpose: Monster description code.
+ * File: mon-lore.c
+ * Purpose: Monster recall code.
  *
  * Copyright (c) 1997-2007 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -17,284 +17,9 @@
  */
 
 #include "angband.h"
+#include "monster/mon-lore.h"
 #include "monster/mon-spell.h"
 #include "object/tvalsval.h"
-
-
-typedef struct {
-  int message_begin;
-  int message_end;
-  int message_increase;
-  u32b flag_resist;
-} mon_timed_effect;
-
-/*
- * Monster timed effects.
- * '0' means no message.
- */
-static mon_timed_effect effects[] =
-{
-	{ MON_MSG_FALL_ASLEEP, MON_MSG_WAKES_UP, FALSE, RF_NO_SLEEP },
-	{ MON_MSG_DAZED, MON_MSG_NOT_DAZED, MON_MSG_MORE_DAZED, RF_NO_STUN },
-	{ MON_MSG_CONFUSED, MON_MSG_NOT_CONFUSED, MON_MSG_MORE_CONFUSED, RF_NO_CONF },
-	{ MON_MSG_FLEE_IN_TERROR, MON_MSG_NOT_AFRAID, MON_MSG_MORE_AFRAID, RF_NO_FEAR },
-	{ MON_MSG_SLOWED, MON_MSG_NOT_SLOWED, MON_MSG_MORE_SLOWED, 0L },
-	{ MON_MSG_HASTED, MON_MSG_NOT_HASTED, MON_MSG_MORE_HASTED, 0L },
-};
-
-
-/*
- * Helper function for mon_set_timed.  This determined if the monster
- * Successfully resisted the effect.  Also marks the lore for any
- * appropriate resists.
- */
-static int mon_resist_effect(int m_idx, int idx, int v, u16b flag)
-{
-	mon_timed_effect *effect = &effects[idx];
-	int resist_chance;
-	monster_type *m_ptr = cave_monster(cave, m_idx);
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
-	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
-
-	/* Hasting never fails */
-	if (idx == MON_TMD_FAST) return (FALSE);
-
-	/* Some effects are marked to never fail */
-	if (flag & MON_TMD_FLG_NOFAIL) return (FALSE);
-
-	/* A sleeping monster resists further sleeping */
-	if (idx == MON_TMD_SLEEP && m_ptr->m_timed[idx]) return (TRUE);
-
-	/* Stupid, weird, or empty monsters aren't affected by some effects */
-	if (rf_has(r_ptr->flags, RF_STUPID) ||
-			rf_has(r_ptr->flags, RF_EMPTY_MIND) ||
-			rf_has(r_ptr->flags, RF_WEIRD_MIND))
-	{
-		if (idx == MON_TMD_CONF) return (TRUE);
-		if (idx == MON_TMD_SLEEP) return (TRUE);
-	}
-
-	/* If the monster resists innately, learn about it */
-	if (rf_has(r_ptr->flags, effect->flag_resist))
-	{
-		/* Mark the lore */
-		if (m_ptr->ml) rf_on(l_ptr->flags, effect->flag_resist);
-
-		return (TRUE);
-	}
-
-	/* Monsters with specific breaths and undead resist stunning*/
-	if (idx == MON_TMD_STUN && (rsf_has(r_ptr->spell_flags, RSF_BR_SOUN) ||
-			rsf_has(r_ptr->spell_flags, RSF_BR_WALL) || rf_has(r_ptr->flags,
-			RF_UNDEAD)))
-	{
-		/* Add the lore */
-		if (m_ptr->ml)
-		{
-			if (rsf_has(r_ptr->spell_flags, RSF_BR_SOUN))
-				rsf_on(l_ptr->spell_flags, RSF_BR_SOUN);
-			if (rsf_has(r_ptr->spell_flags, RSF_BR_WALL))
-				rsf_on(l_ptr->spell_flags, RSF_BR_WALL);
-		}
-
-		return (TRUE);
-	}
-
-	/* Monsters with specific breaths resist confusion */
-	if ((idx == MON_TMD_CONF) &&
-		((rsf_has(r_ptr->spell_flags, RSF_BR_CHAO)) ||
-		 (rsf_has(r_ptr->spell_flags, RSF_BR_CONF))) )
-	{
-		/* Add the lore */
-		if (m_ptr->ml)
-		{
-			if (rsf_has(r_ptr->spell_flags, RSF_BR_CHAO))
-				rsf_on(l_ptr->spell_flags, RSF_BR_CHAO);
-			if (rsf_has(r_ptr->spell_flags, RSF_BR_CONF))
-				rsf_on(l_ptr->spell_flags, RSF_BR_CONF);
-		}
-
-		return (TRUE);
-	}
-
-	/* Can't make non-living creatures sleep */
-	if ((idx == MON_TMD_SLEEP) &&  (rf_has(r_ptr->flags, RF_UNDEAD)))
-		return (TRUE);
-
-	/* Inertia breathers resist slowing */
-	if (idx == MON_TMD_SLOW && rsf_has(r_ptr->spell_flags, RSF_BR_INER))
-	{
-		rsf_on(l_ptr->spell_flags, RSF_BR_INER);
-		return (TRUE);
-	}
-
-	/* Calculate the chance of the monster making its saving throw. */
-	if (idx == MON_TMD_SLEEP)
-		v /= 25; /* Hack - sleep uses much bigger numbers */
-
-	if (flag & MON_TMD_MON_SOURCE)
-		resist_chance = r_ptr->level;
-	else
-		resist_chance = r_ptr->level + 40 - (v / 2);
-
-	if (randint0(100) < resist_chance) return (TRUE);
-
-	/* Uniques are doubly hard to affect */
-	if (rf_has(r_ptr->flags, RF_UNIQUE))
-		if (randint0(100) < resist_chance) return (TRUE);
-
-	return (FALSE);
-}
-
-/*
- * Set a timed monster event to 'v'.  Give messages if the right flags are set.
- * Check if the monster is able to resist the spell.  Mark the lore
- * Returns TRUE if the monster was affected
- * Return FALSE if the monster was unaffected.
- */
-static bool mon_set_timed(int m_idx, int idx, int v, u16b flag)
-{
-	mon_timed_effect *effect = &effects[idx];
-	monster_type *m_ptr = cave_monster(cave, m_idx);
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
-
-	int m_note = 0;
-	int resisted;
-
-	assert(idx >= 0 && idx < MON_TMD_MAX);
-
-	/* No change */
-	if (m_ptr->m_timed[idx] == v) return FALSE;
-
-	if (v == 0) {
-		/* Turning off, usually mention */
-		m_note = effect->message_end;
-		flag |= MON_TMD_FLG_NOTIFY;
-	} else if (m_ptr->m_timed[idx] == 0) {
-		/* Turning on, usually mention */
-		flag |= MON_TMD_FLG_NOTIFY;
-		m_note = effect->message_begin;
-	} else if (v > m_ptr->m_timed[idx]) {
-		/* Different message for increases, but don't automatically mention. */
-		m_note = effect->message_increase;
-	}
-
-	/* Determine if the monster resisted or not */
-	resisted = mon_resist_effect(m_idx, idx, v, flag);
-
-	if (resisted)
-		m_note = MON_MSG_UNAFFECTED;
-	else
-		m_ptr->m_timed[idx] = v;
-
-	if (idx == MON_TMD_FAST) {
-		if (v) {
-			if (m_ptr->mspeed > r_ptr->speed + 10) {
-				m_note = MON_MSG_UNAFFECTED;
-				resisted =  TRUE;
- 			} else {
-				m_ptr->mspeed += 10;
-			}
-		} else {
-			m_ptr->mspeed = r_ptr->speed;
-		}
-	} else if (idx == MON_TMD_SLOW) {
-		if (v) {
-			if (m_ptr->mspeed < r_ptr->speed - 10) {
-				m_note = MON_MSG_UNAFFECTED;
-				resisted = TRUE;
-			} else {
-				m_ptr->mspeed -= 5;
-			}
-		} else {
-			m_ptr->mspeed = r_ptr->speed;
-		}
-	}
-
-	if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
-
-	/* Update the visuals, as appropriate. */
-	p_ptr->redraw |= (PR_MONLIST);
-
-	if (m_note && m_ptr->ml && !(flag & MON_TMD_FLG_NOMESSAGE) &&
-			(flag & MON_TMD_FLG_NOTIFY)) {
-		char m_name[80];
-		monster_desc(m_name, sizeof(m_name), m_ptr, 0);
-		add_monster_message(m_name, m_idx, m_note, TRUE);
-	}
-
-	return !resisted;
-}
-
-
-/*
- * Increase the timed effect `idx` by `v`.
- */
-bool mon_inc_timed(int m_idx, int idx, int v, u16b flag)
-{
-	monster_type *m_ptr = cave_monster(cave, m_idx);
-	assert(idx >= 0 && idx < MON_TMD_MAX);
-
-	/* Ignore dead monsters */
-	if (!m_ptr->r_idx) return FALSE;
-	if (v < 0) return (FALSE);
-
-	/* Make it last for a mimimum # of turns if it is a new effect */
-	if ((!m_ptr->m_timed[idx]) && (v < 2)) v = 2;
-
-	/* New counter amount */
-	v += m_ptr->m_timed[idx];
-
-	if (idx == MON_TMD_STUN || idx == MON_TMD_CONF) {
-		if (v > 200) v = 200;
-	} else if (v > 10000) {
-		v = 10000;
-	}
-
-	return mon_set_timed(m_idx, idx, v, flag);
-}
-
-/*
- * Decrease the timed effect `idx` by `v`.
- */
-bool mon_dec_timed(int m_idx, int idx, int v, u16b flag)
-{
-	monster_type *m_ptr = cave_monster(cave, m_idx);
-	assert(idx >= 0 && idx < MON_TMD_MAX);
-
-	/* Ignore dead monsters */
-	if (!m_ptr->r_idx) return FALSE;
-	if (v < 0) return FALSE;
-
-	/* Decreasing is never resisted */
-	flag |= MON_TMD_FLG_NOFAIL;
-
-	/* New counter amount */
-	v = m_ptr->m_timed[idx] - v;
-
-	/* Use clear function if appropriate */
-	if (v < 0) return (mon_clear_timed(m_idx, idx, flag));
-
-	return mon_set_timed(m_idx, idx, v, flag);
-}
-
-/**
- * Clear the timed effect `idx`.
- */
-bool mon_clear_timed(int m_idx, int idx, u16b flag)
-{
-	monster_type *m_ptr = cave_monster(cave, m_idx);
-	assert(idx >= 0 && idx < MON_TMD_MAX);
-
-	if (!m_ptr->r_idx) return FALSE;
-	if (!m_ptr->m_timed[idx]) return FALSE;
-
-	/* Clearing never fails */
-	flag |= MON_TMD_FLG_NOFAIL;
-
-	return mon_set_timed(m_idx, idx, 0, flag);
-}
-
 
 
 /*
@@ -310,16 +35,13 @@ static const char *wd_his[3] = { "its", "his", "her" };
 #define plural(c, s, p)    (((c) == 1) ? (s) : (p))
 
 
-static void output_list(const char *list[], int num, byte attr)
+/*
+ * Prints the elements of list using color attribute attr, and
+ * joining them with the given conjunction ("and" or "or").
+ */
+static void output_list(const char *list[], int num, byte attr, const char *conjunction)
 {
 	int i;
-	const char *conjunction = "and ";
-
-	if (num < 0)
-	{
-		num = -num;
-		conjunction = "or ";
-	}
 
 	for (i = 0; i < num; i++)
 	{
@@ -338,16 +60,14 @@ static void output_list(const char *list[], int num, byte attr)
 	}
 }
 
-static void output_list_dam(const char *list[], int num, int col[], int dam[])
+/*
+ * Prints the elements of list using the given colors and given damage amounts,
+ * and joins them with the given conjunction ("and" or "or").
+ */
+static void output_list_dam(const char *list[], int num, int col[], 
+	int dam[], const char *conjunction)
 {
    int i;
-   const char *conjunction = "and ";
-
-   if (num < 0)
-   {
-      num = -num;
-      conjunction = "or ";
-   }
 
    for (i = 0; i < num; i++)
    {
@@ -371,7 +91,10 @@ static void output_list_dam(const char *list[], int num, int col[], int dam[])
 	}
 }
 
-
+/*
+ * Prints "[pronoun] [verb] [list]", where the verb is given by intro.
+ * The elements of the list are printed using the given color attribute.
+ */
 static void output_desc_list(int msex, const char *intro, const char *list[], int n, byte attr)
 {
 	if (n != 0)
@@ -380,7 +103,7 @@ static void output_desc_list(int msex, const char *intro, const char *list[], in
 		text_out(format("%^s %s ", wd_he[msex], intro));
 
 		/* Output list */
-		output_list(list, n, attr);
+		output_list(list, n, attr, "and ");
 
 		/* Output end */
 		text_out(".  ");
@@ -852,7 +575,7 @@ static void describe_monster_spells(int r_idx, const monster_lore *l_ptr, const 
 	if(vn)
 	{
 		text_out("%^s may ", wd_he[msex]);
-		output_list_dam(vp, -vn, vc, vd);
+		output_list_dam(vp, vn, vc, vd, "or ");
 		text_out(".  ");
 	}
 
@@ -986,7 +709,7 @@ static void describe_monster_spells(int r_idx, const monster_lore *l_ptr, const 
 		/* Display */
 		text_out("%^s may ", wd_he[msex]);
 		text_out_c(TERM_L_RED, "breathe ");
-		output_list_dam(vp, -vn, vc, vd);
+		output_list_dam(vp, vn, vc, vd, "or ");
 	}
 
 
@@ -1344,7 +1067,7 @@ static void describe_monster_spells(int r_idx, const monster_lore *l_ptr, const 
 
 		/* List */
 		text_out(" which ");
-		output_list_dam(vp, -vn, vc, vd);
+		output_list_dam(vp, vn, vc, vd, "or ");
 	}
 
 
@@ -1660,7 +1383,7 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 	{
 		/* Output connecting text */
 		text_out("%^s is hurt by ", wd_he[msex]);
-		output_list(vp, vn, TERM_VIOLET);
+		output_list(vp, vn, TERM_VIOLET, "and ");
 		prev = TRUE;
 	}
 
@@ -1690,7 +1413,7 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 			text_out("%^s resists ", wd_he[msex]);
 
 		/* Write the text */
-		output_list(vp, vn, TERM_L_UMBER);
+		output_list(vp, vn, TERM_L_UMBER, "and ");
 		prev = TRUE;
 	}
 
@@ -1709,7 +1432,7 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 		else
 			text_out("%^s cannot be ", wd_he[msex]);
 
-		output_list(vp, -vn, TERM_L_UMBER);
+		output_list(vp, vn, TERM_L_UMBER, "or ");
 		prev = TRUE;
 	}
 
@@ -2372,65 +2095,73 @@ void display_roff(int r_idx)
 }
 
 
+
 /*
- * Return the r_idx of the monster with the given name.
- * If no monster has the exact name given, returns the r_idx
- * of the first monster having the given name as a prefix.
+ * Learn about a monster (by "probing" it)
  */
-int lookup_monster(const char *name)
+void lore_do_probe(int m_idx)
 {
-	int i;
-	int r_idx = -1;
-	
-	/* Look for it */
-	for (i = 1; i < z_info->r_max; i++)
-	{
-		monster_race *r_ptr = &r_info[i];
+	monster_type *m_ptr = cave_monster(cave, m_idx);
+	monster_race *r_ptr = &r_info[m_ptr->r_idx];
+	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
-		/* Test for equality */
-		if (r_ptr->name && streq(name, r_ptr->name))
-			return i;
-		
-		/* Test for close matches */
-		if (r_ptr->name && my_stristr(r_ptr->name, name) && r_idx == -1)
-			r_idx = i;
-	} 
+	unsigned i;
 
-	/* Return our best match */
-	return r_idx;
+	/* Know various things */
+	rsf_setall(l_ptr->flags);
+	rsf_copy(l_ptr->spell_flags, r_ptr->spell_flags);
+	for (i = 0; i < MONSTER_BLOW_MAX; i++)
+		l_ptr->blows[i] = MAX_UCHAR;
+
+	/* Update monster recall window */
+	if (p_ptr->monster_race_idx == m_ptr->r_idx)
+		p_ptr->redraw |= (PR_MONSTER);
 }
 
-/**
- * Return the monster base matching the given name.
- */
-monster_base *lookup_monster_base(const char *name)
-{
-	monster_base *base;
 
-	/* Look for it */
-	for (base = rb_info; base; base = base->next) {
-		if (streq(name, base->name))
-			return base;
-	}
-
-	return NULL;
-}
-
-/**
- * Return whether the given base matches any of the names given.
+/*
+ * Take note that the given monster just dropped some treasure
  *
- * Accepts a variable-length list of name strings. The list must end with NULL.
+ * Note that learning the "GOOD"/"GREAT" flags gives information
+ * about the treasure (even when the monster is killed for the first
+ * time, such as uniques, and the treasure has not been examined yet).
+ *
+ * This "indirect" method is used to prevent the player from learning
+ * exactly how much treasure a monster can drop from observing only
+ * a single example of a drop.  This method actually observes how much
+ * gold and items are dropped, and remembers that information to be
+ * described later by the monster recall code.
  */
-bool match_monster_bases(monster_base *base, ...)
+void lore_treasure(int m_idx, int num_item, int num_gold)
 {
-	bool ok = FALSE;
-	va_list vp;
-	char *name;
+	monster_type *m_ptr = cave_monster(cave, m_idx);
+	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
-	va_start(vp, base);
-	while (!ok && ((name = va_arg(vp, char *)) != NULL))
-		ok = base == lookup_monster_base(name);
-	va_end(vp);
 
-	return ok;
+	/* Note the number of things dropped */
+	if (num_item > l_ptr->drop_item) l_ptr->drop_item = num_item;
+	if (num_gold > l_ptr->drop_gold) l_ptr->drop_gold = num_gold;
+
+	/* Learn about drop quality */
+	rf_on(l_ptr->flags, RF_DROP_GOOD);
+	rf_on(l_ptr->flags, RF_DROP_GREAT);
+
+	/* Update monster recall window */
+	if (p_ptr->monster_race_idx == m_ptr->r_idx)
+	{
+		/* Window stuff */
+		p_ptr->redraw |= (PR_MONSTER);
+	}
 }
+
+/*
+ * Obtain the "flags" for a monster race which are known to the monster
+ * lore struct.  Known flags will be 1 for present, or 0 for not present.
+ * Unknown flags will always be 0.
+ */
+void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr, bitflag flags[RF_SIZE])
+{
+	rf_copy(flags, r_ptr->flags);
+	rf_inter(flags, l_ptr->flags);
+}
+

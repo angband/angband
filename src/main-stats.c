@@ -23,6 +23,7 @@
 #include "birth.h"
 #include "buildid.h"
 #include "init.h"
+#include "monster/mon-make.h"
 #include "object/pval.h"
 #include "object/tvalsval.h"
 #include "stats/db.h"

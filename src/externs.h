@@ -55,7 +55,6 @@ extern u32b seed_randart;
 extern u32b seed_flavor;
 extern u32b seed_town;
 extern s16b num_repro;
-extern char summon_kin_type;
 extern s32b turn;
 extern int use_graphics;
 extern bool use_graphics_nice;
@@ -105,10 +104,6 @@ extern spell_type *s_info;
 extern struct hint *hints;
 extern struct pit_profile *pit_info;
 
-extern monster_race_message *mon_msg;
-extern monster_message_history *mon_message_hist;
-extern u16b size_mon_msg;
-extern u16b size_mon_hist;
 
 
 extern const char *ANGBAND_SYS;

@@ -21,6 +21,8 @@
 #include "cave.h"
 #include "files.h"
 #include "game-event.h"
+#include "monster/mon-msg.h"
+#include "monster/mon-util.h"
 #include "object/tvalsval.h"
 #include "object/pval.h"
 #include "spells.h"
@@ -2259,7 +2261,7 @@ void notice_stuff(struct player *p)
 		p->notice &= ~(PN_MON_MESSAGE);
 
 		/* Make sure this comes after all of the monster messages */
-		if (size_mon_msg > 0) flush_all_monster_messages();
+		flush_all_monster_messages();
 	}
 }
 
