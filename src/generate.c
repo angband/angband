@@ -1435,6 +1435,8 @@ pit_profile *pit_type = NULL;
 static bool mon_pit_hook(int r_idx)
 {
 	monster_race *r_ptr = &r_info[r_idx];
+	bool match_base = TRUE;
+	bool match_color = TRUE;
 
 	/* pit_type needs to be set */
 	assert(pit_type);
@@ -1443,21 +1445,41 @@ static bool mon_pit_hook(int r_idx)
 		return FALSE;
 	else if (!rf_is_subset(r_ptr->flags, pit_type->flags))
 		return FALSE;
+	else if (rf_is_inter(r_ptr->flags, pit_type->forbidden_flags))
+		return FALSE;
 	else if (!rsf_is_subset(r_ptr->spell_flags, pit_type->spell_flags))
 		return FALSE;
 	else if (rsf_is_inter(r_ptr->spell_flags, pit_type->forbidden_spell_flags))
 		return FALSE;
-	else if (pit_type->n_bases > 0) {
-		int i;
-		for (i = 0; i < pit_type->n_bases; i++) {
-			if (r_ptr->base == pit_type->base[i])
-				return TRUE;
+	else if (pit_type->forbidden_monsters) {
+		struct pit_forbidden_monster *monster;
+		for (monster = pit_type->forbidden_monsters; monster; monster = monster->next) {
+			if (r_idx == monster->r_idx)
+				return FALSE;
 		}
-		
-		return FALSE;
 	}
 
-	return TRUE;
+	if (pit_type->n_bases > 0) {
+		int i;
+		match_base = FALSE;
+
+		for (i = 0; i < pit_type->n_bases; i++) {
+			if (r_ptr->base == pit_type->base[i])
+				match_base = TRUE;
+		}
+	}
+	
+	if (pit_type->colors) {
+		struct pit_color_profile *colors;
+		match_color = FALSE;
+
+		for (colors = pit_type->colors; colors; colors = colors->next) {
+			if (r_ptr->d_attr == colors->color)
+				match_color = TRUE;
+		}
+	}
+
+	return (match_base && match_color);
 }
 
 /**
