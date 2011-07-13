@@ -1670,6 +1670,7 @@ static bool build_pit(struct cave *c, int y0, int x0) {
 	bool empty = FALSE;
 	int light = FALSE;
 	int pit_idx;
+	int alloc_obj;
 
 	/* Large room */
 	y1 = y0 - 4;
@@ -1695,6 +1696,9 @@ static bool build_pit(struct cave *c, int y0, int x0) {
 	/* Set get_mon_num_hook */
 	pit_idx = set_pit_type(c->depth, 1);
 
+	/* Chance of objects on the floor */
+	alloc_obj = pit_info[pit_idx].obj_rarity;
+	
 	/* Prepare allocation table */
 	get_mon_num_prep();
 
@@ -1790,6 +1794,16 @@ static bool build_pit(struct cave *c, int y0, int x0) {
 
 	/* Center monster */
 	place_monster_aux(c, y0, x0, what[7], FALSE, FALSE, ORIGIN_DROP_PIT);
+
+	/* Place some objects */
+	for (y = y0 - 2; y <= y0 + 2; y++) {
+		for (x = x0 - 9; x <= x0 + 9; x++) {
+			/* Occasionally place an item, making it good 1/3 of the time */
+			if (one_in_(alloc_obj)) 
+				place_object(c, y, x, c->depth + 10, one_in_(3), FALSE,
+					ORIGIN_PIT);
+		}
+	}
 
 	return TRUE;
 }

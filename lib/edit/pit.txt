@@ -34,7 +34,8 @@
 # at which this pit is most common.
 #
 # 'O' is for object rarity. A rarity of N means that every square of the pit has a
-# 1 in N chance of having an item.
+# 1 in N chance of having an item. (But a rarity of 0 means that no objects will
+# be generated.)
 #
 # 'C' is for monster color. If any 'C' lines are present, then all monsters in this
 # pit will be one of the specified colors. You may use any number of 'C' lines.
