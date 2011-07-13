@@ -25,7 +25,9 @@
 #include "generate.h"
 #include "init.h"
 #include "monster/monster.h"
+#include "monster/mon-make.h"
 #include "monster/mon-spell.h"
+#include "monster/mon-util.h"
 #include "object/tvalsval.h"
 #include "prefs.h"
 #include "savefile.h"
@@ -538,7 +540,7 @@ static void process_world(struct cave *c)
 	if (one_in_(MAX_M_ALLOC_CHANCE))
 	{
 		/* Make a new monster */
-		(void)alloc_monster(cave, loc(p_ptr->px, p_ptr->py), MAX_SIGHT + 5, FALSE, p_ptr->depth);
+		(void)pick_and_place_distant_monster(cave, loc(p_ptr->px, p_ptr->py), MAX_SIGHT + 5, FALSE, p_ptr->depth);
 	}
 
 	/* Hack -- Check for creature regeneration */
@@ -1378,7 +1380,7 @@ static void dungeon(struct cave *c)
 	if (p_ptr->is_dead) return;
 
 	/* Announce (or repeat) the feeling */
-	if (p_ptr->depth) do_cmd_feeling();
+	if (p_ptr->depth) display_feeling(FALSE);
 
 	/* Give player minimum energy to start a new level, but do not reduce higher value from savefile for level in progress */
 	if (p_ptr->energy < INITIAL_DUNGEON_ENERGY)

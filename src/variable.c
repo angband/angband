@@ -66,8 +66,6 @@ u32b seed_town;			/* Hack -- consistent town layout */
 
 s16b num_repro;			/* Current reproducer count */
 
-char summon_kin_type;		/* Hack -- See summon_specific() */
-
 s32b turn;				/* Current game turn */
 
 int use_graphics;		/* The "graphics" mode is enabled */
@@ -658,17 +656,4 @@ u16b lazymove_delay = 0;
 /* Number of days passed on the current dungeon trip -
   - used for determining store updates on return to town */
 u16b daycount = 0;
-
-/*
- * The array used to store stacked monster messages
- */
-monster_race_message *mon_msg;
-
-monster_message_history *mon_message_hist;
-
-/*
- * The current size of that array
- */
-u16b size_mon_msg;
-u16b size_mon_hist;
 

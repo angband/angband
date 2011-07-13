@@ -21,6 +21,7 @@
 #include "math.h"
 #include "files.h"
 #include "generate.h"
+#include "monster/mon-make.h"
 #include "monster/mon-spell.h"
 #include "object/tvalsval.h"
 #include "trap.h"
@@ -822,7 +823,7 @@ static void vault_monsters(struct cave *c, int y1, int x1, int depth, int num) {
 			if (!cave_empty_bold(y, x)) continue;
 
 			/* Place the monster (allow groups) */
-			place_monster(c, y, x, depth, TRUE, TRUE, ORIGIN_DROP_SPECIAL);
+			pick_and_place_monster(c, y, x, depth, TRUE, TRUE, ORIGIN_DROP_SPECIAL);
 
 			break;
 		}
@@ -1598,7 +1599,7 @@ static bool build_nest(struct cave *c, int y0, int x0) {
 		for (x = x0 - 9; x <= x0 + 9; x++) {
 			/* Figure out what monster is being used, and place that monster */
 			int r_idx = what[randint0(64)];
-			place_monster_aux(c, y, x, r_idx, FALSE, FALSE, ORIGIN_DROP_PIT);
+			place_new_monster(c, y, x, r_idx, FALSE, FALSE, ORIGIN_DROP_PIT);
 
 			/* Occasionally place an item, making it good 1/3 of the time */
 			if (one_in_(alloc_obj)) 
@@ -1725,49 +1726,49 @@ static bool build_pit(struct cave *c, int y0, int x0) {
 
 	/* Top and bottom rows */
 	for (x = x0 - 9; x <= x0 + 9; x++) {
-		place_monster_aux(c, y0 - 2, x, what[0], FALSE, FALSE, ORIGIN_DROP_PIT);
-		place_monster_aux(c, y0 + 2, x, what[0], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y0 - 2, x, what[0], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y0 + 2, x, what[0], FALSE, FALSE, ORIGIN_DROP_PIT);
 	}
 
 	/* Middle columns */
 	for (y = y0 - 1; y <= y0 + 1; y++) {
-		place_monster_aux(c, y, x0 - 9, what[0], FALSE, FALSE, ORIGIN_DROP_PIT);
-		place_monster_aux(c, y, x0 + 9, what[0], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 - 9, what[0], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 + 9, what[0], FALSE, FALSE, ORIGIN_DROP_PIT);
 
-		place_monster_aux(c, y, x0 - 8, what[1], FALSE, FALSE, ORIGIN_DROP_PIT);
-		place_monster_aux(c, y, x0 + 8, what[1], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 - 8, what[1], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 + 8, what[1], FALSE, FALSE, ORIGIN_DROP_PIT);
 
-		place_monster_aux(c, y, x0 - 7, what[1], FALSE, FALSE, ORIGIN_DROP_PIT);
-		place_monster_aux(c, y, x0 + 7, what[1], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 - 7, what[1], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 + 7, what[1], FALSE, FALSE, ORIGIN_DROP_PIT);
 
-		place_monster_aux(c, y, x0 - 6, what[2], FALSE, FALSE, ORIGIN_DROP_PIT);
-		place_monster_aux(c, y, x0 + 6, what[2], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 - 6, what[2], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 + 6, what[2], FALSE, FALSE, ORIGIN_DROP_PIT);
 
-		place_monster_aux(c, y, x0 - 5, what[2], FALSE, FALSE, ORIGIN_DROP_PIT);
-		place_monster_aux(c, y, x0 + 5, what[2], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 - 5, what[2], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 + 5, what[2], FALSE, FALSE, ORIGIN_DROP_PIT);
 
-		place_monster_aux(c, y, x0 - 4, what[3], FALSE, FALSE, ORIGIN_DROP_PIT);
-		place_monster_aux(c, y, x0 + 4, what[3], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 - 4, what[3], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 + 4, what[3], FALSE, FALSE, ORIGIN_DROP_PIT);
 
-		place_monster_aux(c, y, x0 - 3, what[3], FALSE, FALSE, ORIGIN_DROP_PIT);
-		place_monster_aux(c, y, x0 + 3, what[3], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 - 3, what[3], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 + 3, what[3], FALSE, FALSE, ORIGIN_DROP_PIT);
 
-		place_monster_aux(c, y, x0 - 2, what[4], FALSE, FALSE, ORIGIN_DROP_PIT);
-		place_monster_aux(c, y, x0 + 2, what[4], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 - 2, what[4], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y, x0 + 2, what[4], FALSE, FALSE, ORIGIN_DROP_PIT);
 	}
 
 	/* Above/Below the center monster */
 	for (x = x0 - 1; x <= x0 + 1; x++) {
-		place_monster_aux(c, y0 + 1, x, what[5], FALSE, FALSE, ORIGIN_DROP_PIT);
-		place_monster_aux(c, y0 - 1, x, what[5], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y0 + 1, x, what[5], FALSE, FALSE, ORIGIN_DROP_PIT);
+		place_new_monster(c, y0 - 1, x, what[5], FALSE, FALSE, ORIGIN_DROP_PIT);
 	}
 
 	/* Next to the center monster */
-	place_monster_aux(c, y0, x0 + 1, what[6], FALSE, FALSE, ORIGIN_DROP_PIT);
-	place_monster_aux(c, y0, x0 - 1, what[6], FALSE, FALSE, ORIGIN_DROP_PIT);
+	place_new_monster(c, y0, x0 + 1, what[6], FALSE, FALSE, ORIGIN_DROP_PIT);
+	place_new_monster(c, y0, x0 - 1, what[6], FALSE, FALSE, ORIGIN_DROP_PIT);
 
 	/* Center monster */
-	place_monster_aux(c, y0, x0, what[7], FALSE, FALSE, ORIGIN_DROP_PIT);
+	place_new_monster(c, y0, x0, what[7], FALSE, FALSE, ORIGIN_DROP_PIT);
 
 	return TRUE;
 }
@@ -1846,14 +1847,14 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cons
 
 			/* Analyze the symbol */
 			switch (*t) {
-				case '&': place_monster(c, y, x, c->depth + 5, TRUE, TRUE,
+				case '&': pick_and_place_monster(c, y, x, c->depth + 5, TRUE, TRUE,
 					ORIGIN_DROP_VAULT); break;
-				case '@': place_monster(c, y, x, c->depth + 11, TRUE, TRUE,
+				case '@': pick_and_place_monster(c, y, x, c->depth + 11, TRUE, TRUE,
 					ORIGIN_DROP_VAULT); break;
 
 				case '9': {
 					/* Meaner monster, plus treasure */
-					place_monster(c, y, x, c->depth + 9, TRUE, TRUE,
+					pick_and_place_monster(c, y, x, c->depth + 9, TRUE, TRUE,
 						ORIGIN_DROP_VAULT);
 					place_object(c, y, x, c->depth + 7, TRUE, FALSE,
 						ORIGIN_VAULT);
@@ -1862,7 +1863,7 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cons
 
 				case '8': {
 					/* Nasty monster and treasure */
-					place_monster(c, y, x, c->depth + 40, TRUE, TRUE,
+					pick_and_place_monster(c, y, x, c->depth + 40, TRUE, TRUE,
 						ORIGIN_DROP_VAULT);
 					place_object(c, y, x, c->depth + 20, TRUE, TRUE,
 						ORIGIN_VAULT);
@@ -1872,7 +1873,7 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cons
 				case ',': {
 					/* Monster and/or object */
 					if (randint0(100) < 50)
-						place_monster(c, y, x, c->depth + 3, TRUE, TRUE,
+						pick_and_place_monster(c, y, x, c->depth + 3, TRUE, TRUE,
 							ORIGIN_DROP_VAULT);
 					if (randint0(100) < 50)
 						place_object(c, y, x, c->depth + 7, FALSE, FALSE,
@@ -2492,7 +2493,7 @@ static bool default_gen(struct cave *c, struct player *p) {
 
 	/* Put some monsters in the dungeon */
 	for (; i > 0; i--)
-		alloc_monster(c, loc(p->px, p->py), 0, TRUE, c->depth);
+		pick_and_place_distant_monster(c, loc(p->px, p->py), 0, TRUE, c->depth);
 
 	/* Put some objects in rooms */
 	alloc_objects(c, SET_ROOM, TYP_OBJECT, Rand_normal(DUN_AMT_ROOM, 3),
@@ -2732,7 +2733,7 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 
 	/* Put some monsters in the dungeon */
 	for (i = MIN_M_ALLOC_LEVEL + randint1(8) + k; i > 0; i--)
-		alloc_monster(c, loc(p->px, p->py), 0, TRUE, c->depth);
+		pick_and_place_distant_monster(c, loc(p->px, p->py), 0, TRUE, c->depth);
 
 	/* Put some objects/gold in the dungeon */
 	alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(6, 3), c->depth,
@@ -3189,7 +3190,7 @@ bool cavern_gen(struct cave *c, struct player *p) {
 	
 		/* Put some monsters in the dungeon */
 		for (i = MIN_M_ALLOC_LEVEL + randint1(8) + k; i > 0; i--)
-			alloc_monster(c, loc(p->px, p->py), 0, TRUE, c->depth);
+			pick_and_place_distant_monster(c, loc(p->px, p->py), 0, TRUE, c->depth);
 	
 		/* Put some objects/gold in the dungeon */
 		alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(6, 3), c->depth,
@@ -3332,7 +3333,7 @@ static bool town_gen(struct cave *c, struct player *p) {
 
 	/* Make some residents */
 	for (i = 0; i < residents; i++)
-		alloc_monster(c, loc(p->px, p->py), 3, TRUE, c->depth);
+		pick_and_place_distant_monster(c, loc(p->px, p->py), 3, TRUE, c->depth);
 
 	return TRUE;
 }
@@ -3379,6 +3380,43 @@ static void cave_clear(struct cave *c, struct player *p) {
 	c->mon_rating = 0;
 	c->obj_rating = 0;
 }
+
+/**
+ * Place hidden squares that will be used to generate feeling
+ */
+static void place_feeling(struct cave *c)
+{
+	int y,x,i,j;
+	int tries = 500;
+	
+	for (i = 0; i < FEELING_TOTAL; i++){
+		for(j = 0; j < tries; j++){
+			
+			/* Pick a random dungeon coordinate */
+			y = randint0(DUNGEON_HGT);
+			x = randint0(DUNGEON_WID);
+			
+			/* Check to see if it is not a wall */
+			if (cave_iswall(c,y,x))
+				continue;
+				
+			/* Check to see if it is already marked */
+			if (cave_isfeel(c,y,x))
+				continue;
+				
+			/* Set the cave square appropriately */
+			c->info2[y][x] |= CAVE2_FEEL;
+			
+			break;
+		
+		}
+	}
+
+	/* Reset number of feeling squares */
+	c->feeling_squares = 0;
+	
+}
+
 
 /**
  * Calculate the level feeling for objects.
@@ -3500,10 +3538,13 @@ void cave_generate(struct cave *c, struct player *p) {
 	
 				/* Pick a location and place the monster */
 				find_empty(c, &y, &x);
-				place_monster_aux(c, y, x, i, TRUE, TRUE, ORIGIN_DROP);
+				place_new_monster(c, y, x, i, TRUE, TRUE, ORIGIN_DROP);
 			}
 		}
 
+		/* Place dungeon squares to trigger feeling */
+		place_feeling(c);
+		
 		c->feeling = calc_obj_feeling(c) + calc_mon_feeling(c);
 
 		/* Regenerate levels that overflow their maxima */

@@ -21,6 +21,7 @@
 #include "cave.h"
 #include "cmds.h"
 #include "history.h"
+#include "monster/mon-lore.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
 #include "squelch.h"

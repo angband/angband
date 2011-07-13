@@ -651,8 +651,13 @@ enum
 #define CAVE_WALL		0x80 	/* wall flag */
 
 #define CAVE2_DTRAP		0x01	/* trap detected grid */
+#define CAVE2_FEEL		0x02	/* hidden points to trigger feelings*/
 
-
+/* 
+ * Information for Feelings 
+ */
+#define FEELING_TOTAL		100		/* total number of feeling squares per level */ 
+#define FEELING1		10		/* Squares needed to see in order to trigger first feeling */
 
 
 /*

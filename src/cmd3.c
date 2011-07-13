@@ -20,6 +20,7 @@
 #include "button.h"
 #include "cave.h"
 #include "cmds.h"
+#include "monster/mon-lore.h"
 #include "monster/monster.h"
 #include "object/inventory.h"
 #include "object/tvalsval.h"

@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "buildid.h"
 #include "cmds.h"
+#include "monster/mon-lore.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
 #include "ui-menu.h"

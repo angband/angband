@@ -9,6 +9,7 @@
 #include "unit-test.h"
 #include "unit-test-data.h"
 #include "test-utils.h"
+#include "monster/mon-util.h"
 
 int setup_tests(void **state) {
 	read_edit_files();
