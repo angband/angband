@@ -1174,7 +1174,16 @@ static bool describe_origin(textblock *tb, const object_type *o_ptr)
 	return TRUE;
 }
 
-static void describe_flavor_text(textblock *tb, const object_type *o_ptr)
+/*
+ * Print an item's flavour text.
+ *
+ * \param tb is the textblock to which we are adding.
+ * \param o_ptr is the object we are describing.
+ * \param ego is whether we're describing an ego template (as opposed to a
+ * real object)
+ */
+static void describe_flavor_text(textblock *tb, const object_type *o_ptr,
+	bool ego)
 {
 	/* Display the known artifact description */
 	if (!OPT(birth_randarts) && o_ptr->artifact &&
@@ -1182,18 +1191,18 @@ static void describe_flavor_text(textblock *tb, const object_type *o_ptr)
 		textblock_append(tb, "%s\n\n", o_ptr->artifact->text);
 
 	/* Display the known object description */
-	else if (object_flavor_is_aware(o_ptr) || object_is_known(o_ptr))
+	else if (object_flavor_is_aware(o_ptr) || object_is_known(o_ptr) || ego)
 	{
 		bool did_desc = FALSE;
 
-		if (o_ptr->kind->text)
+		if (!ego && o_ptr->kind->text)
 		{
 			textblock_append(tb, "%s", o_ptr->kind->text);
 			did_desc = TRUE;
 		}
 
 		/* Display an additional ego-item description */
-		if (object_ego_is_visible(o_ptr) && o_ptr->ego->text)
+		if ((ego || object_ego_is_visible(o_ptr)) && o_ptr->ego->text)
 		{
 			if (did_desc) textblock_append(tb, "  ");
 			textblock_append(tb, "%s\n\n", o_ptr->ego->text);
@@ -1248,7 +1257,7 @@ static textblock *object_info_out(const object_type *o_ptr, oinfo_detail_t mode)
 	}
 
 	if (subjective) describe_origin(tb, o_ptr);
-	if (!terse) describe_flavor_text(tb, o_ptr);
+	if (!terse) describe_flavor_text(tb, o_ptr, ego);
 
 	if (!full && !known)
 	{
