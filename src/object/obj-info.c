@@ -1266,7 +1266,7 @@ static textblock *object_info_out(const object_type *o_ptr, oinfo_detail_t mode)
 	if (ego && describe_ego(tb, o_ptr->ego)) something = TRUE;
 	if (something) textblock_append(tb, "\n");
 
-	if (describe_effect(tb, o_ptr, full, terse, subjective))
+	if (!ego && describe_effect(tb, o_ptr, full, terse, subjective))
 	{
 		something = TRUE;
 		textblock_append(tb, "\n");
@@ -1325,7 +1325,7 @@ textblock *object_info_ego(struct ego_item *ego)
 	obj.tval = kind->tval;
 	obj.sval = kind->sval;
 	obj.ego = ego;
-	of_union(obj.flags, ego->flags);
+	ego_apply_magic(&obj, 0);
 
 	return object_info_out(&obj, OINFO_FULL | OINFO_EGO | OINFO_DUMMY);
 }
