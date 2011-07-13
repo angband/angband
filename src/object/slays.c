@@ -39,8 +39,8 @@ static struct flag_cache *slay_cache;
 
 /**
  * Remove slays which are duplicates, i.e. they have exactly the same "monster
- * flag" and the same "resist flag". The one with highest multiplier is kept. 
- * 
+ * flag" and the same "resist flag". The one with highest multiplier is kept.
+ *
  * \param flags is the flagset from which to remove duplicates.
  * count is the number of dups removed.
  */
@@ -136,7 +136,7 @@ int list_slays(const bitflag flags[OF_SIZE], const bitflag mask[OF_SIZE],
  * Notice any slays on a particular object which are in mask.
  *
  * \param o_ptr is the object on which we are noticing slays
- * \param mask is the flagset within which we are noticing them 
+ * \param mask is the flagset within which we are noticing them
  */
 void object_notice_slays(object_type *o_ptr, const bitflag mask[OF_SIZE])
 {
@@ -173,7 +173,7 @@ void object_notice_slays(object_type *o_ptr, const bitflag mask[OF_SIZE])
  * \param m_ptr is the monster being attacked
  * \param best_s_ptr is the best applicable slay_table entry, or NULL if no
  *  slay already known
- * \param lore is whether this is a real attack (where we update lore) or a
+ * \param real is whether this is a real attack (where we update lore) or a
  *  simulation (where we don't)
  * \param known_only is whether we are using all the object flags, or only
  * the ones we *already* know about

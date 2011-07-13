@@ -1438,9 +1438,12 @@ static void calc_torch(void)
 }
 
 /*
- * Calculate the blows a player would get, in current condition, wielding
- * "o_ptr". NOTE - this function does not take any extra blows from items
- * into account.
+ * Calculate the blows a player would get.
+ *
+ * \param o_ptr is the object for which we are calculating blows
+ * \param state is the player state for which we are calculating blows
+ * \param extra_blows is the number of +blows available from this object and
+ * this state
  *
  * N.B. state->num_blows is now 100x the number of blows.
  */
