@@ -1694,7 +1694,7 @@ int summon_specific(int y1, int x1, int lev, int type, int delay)
 	if (!r_idx) return (0);
 
 	/* Attempt to place the monster (awake, don't allow groups) */
-	if (!place_monster_aux(cave, y, x, r_idx, FALSE, FALSE, ORIGIN_DROP_SUMMON))
+	if (!place_new_monster(cave, y, x, r_idx, FALSE, FALSE, ORIGIN_DROP_SUMMON))
 		return (0);
 
 	/* If delay, try to let the player act before the summoned monsters. */
