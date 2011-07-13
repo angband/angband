@@ -1645,6 +1645,9 @@ int summon_specific(int y1, int x1, int lev, int type, int delay)
 	int i, x = 0, y = 0, r_idx;
 	int temp=1;
 
+	monster_type *m_ptr;
+	monster_race *r_ptr;
+	
 	/* Look for a location, allow up to 4 squares away */
 	for (i = 0; i < 60; ++i)
 	{
@@ -1703,8 +1706,8 @@ int summon_specific(int y1, int x1, int lev, int type, int delay)
 		cave_monster(cave, cave->m_idx[y][x])->energy = 0;
 
 	/* Success, return the level of the monster */
-	monster_type *m_ptr = cave_monster(cave, cave->m_idx[y][x]);
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
+	m_ptr = cave_monster(cave, cave->m_idx[y][x]);
+	r_ptr = &r_info[m_ptr->r_idx];
 	
 	/* Monsters that normally come with FRIENDS are weaker */
 	if (rf_has(r_ptr->flags, RF_FRIENDS))
