@@ -406,7 +406,7 @@ static void flush_monster_messages(bool delay)
            char race_name[80];
  
            /* Get the race name */
-           my_strcpy(race_name, r_ptr->name, sizeof(buf));
+           my_strcpy(race_name, r_ptr->name, sizeof(race_name));
 
            /* Uniques */
            if (rf_has(r_ptr->flags, RF_UNIQUE))

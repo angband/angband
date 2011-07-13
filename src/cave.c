@@ -828,14 +828,15 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 		if (one_in_(128) && g->f_idx < FEAT_PERM_SOLID)
 			g->m_idx = 1;
 		else if (one_in_(128) && g->f_idx < FEAT_PERM_SOLID)
-			/* XXX if hallucinating, we just need first_kind to not be NULL */
+			/* if hallucinating, we just need first_kind to not be NULL */
 			g->first_kind = k_info;
 		else
 			g->hallucinate = FALSE;
 	}
 
 	assert(g->f_idx <= FEAT_PERM_SOLID);
-	assert((int)g->m_idx < cave->mon_max);
+	if (!g->hallucinate)
+		assert((int)g->m_idx < cave->mon_max);
 	/* All other g fields are 'flags', mostly booleans. */
 }
 
