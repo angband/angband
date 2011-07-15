@@ -63,6 +63,7 @@ bool player_stat_dec(struct player *p, int stat, bool permanent)
 		p->stat_cur[stat] = cur;
 		p->stat_max[stat] = max;
 		p->update |= (PU_BONUS);
+		p->redraw |= (PR_STATS);
 	}
 
 	return res;
@@ -136,7 +137,7 @@ static void adjust_level(struct player *p, bool verbose)
 		p->max_lev++;
 
 	p->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
-	p->redraw |= (PR_LEV | PR_TITLE | PR_EXP);
+	p->redraw |= (PR_LEV | PR_TITLE | PR_EXP | PR_STATS);
 	handle_stuff(p);
 }
 

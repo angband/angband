@@ -174,6 +174,7 @@ void do_cmd_change_name(void)
 						else
 							msg("Character dump successful.");
 					}
+					break;
 				}
 				
 				case 'h':
