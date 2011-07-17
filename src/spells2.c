@@ -218,6 +218,17 @@ bool do_dec_stat(int stat, bool perma)
 		return (TRUE);
 	}
 
+	/* If the stat is at minimum it can't be reduced */
+	if (p_ptr->state.stat_use[stat] <= 3)
+	{
+		/* Message */
+		msg("You feel very %s for a moment, but the feeling passes.",
+		           desc_stat_neg[stat]);
+
+		/* Notice effect */
+		return (TRUE);
+	}
+
 	/* Attempt to reduce the stat */
 	if (player_stat_dec(p_ptr, stat, perma))
 	{
