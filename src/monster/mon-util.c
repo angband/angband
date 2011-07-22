@@ -163,21 +163,22 @@ static bool mon_set_timed(int m_idx, int idx, int v, u16b flag)
 
 	int m_note = 0;
 	int resisted;
+	int old_timer = m_ptr->m_timed[idx];
 
 	assert(idx >= 0 && idx < MON_TMD_MAX);
 
 	/* No change */
-	if (m_ptr->m_timed[idx] == v) return FALSE;
+	if (old_timer == v) return FALSE;
 
 	if (v == 0) {
 		/* Turning off, usually mention */
 		m_note = effect->message_end;
 		flag |= MON_TMD_FLG_NOTIFY;
-	} else if (m_ptr->m_timed[idx] == 0) {
+	} else if (old_timer == 0) {
 		/* Turning on, usually mention */
 		flag |= MON_TMD_FLG_NOTIFY;
 		m_note = effect->message_begin;
-	} else if (v > m_ptr->m_timed[idx]) {
+	} else if (v > old_timer) {
 		/* Different message for increases, but don't automatically mention. */
 		m_note = effect->message_increase;
 	}
@@ -190,26 +191,26 @@ static bool mon_set_timed(int m_idx, int idx, int v, u16b flag)
 	else
 		m_ptr->m_timed[idx] = v;
 
-	if (idx == MON_TMD_FAST) {
-		if (v) {
-			if (m_ptr->mspeed > r_ptr->speed + 10) {
+	if (idx == MON_TMD_FAST && !resisted) {
+		if (v > old_timer) {
+			if (m_ptr->mspeed >= r_ptr->speed + 10) {
 				m_note = MON_MSG_UNAFFECTED;
 				resisted =  TRUE;
  			} else {
 				m_ptr->mspeed += 10;
 			}
-		} else {
+		} else if (v == 0) {
 			m_ptr->mspeed = r_ptr->speed;
 		}
-	} else if (idx == MON_TMD_SLOW) {
-		if (v) {
-			if (m_ptr->mspeed < r_ptr->speed - 10) {
+	} else if (idx == MON_TMD_SLOW && !resisted) {
+		if (v > old_timer) {
+			if (m_ptr->mspeed <= r_ptr->speed - 10) {
 				m_note = MON_MSG_UNAFFECTED;
 				resisted = TRUE;
 			} else {
-				m_ptr->mspeed -= 5;
+				m_ptr->mspeed -= 10;
 			}
-		} else {
+		} else if (v == 0) {
 			m_ptr->mspeed = r_ptr->speed;
 		}
 	}
