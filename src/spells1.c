@@ -2182,7 +2182,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			m_ptr->hp = m_ptr->maxhp;
 
 			/* Speed up */
-			if (m_ptr->mspeed < 150) m_ptr->mspeed += 10;
+			mon_inc_timed(m_idx, MON_TMD_FAST, 50, MON_TMD_FLG_NOTIFY);
 
 			/* Attempt to clone. */
 			if (multiply_monster(m_idx))

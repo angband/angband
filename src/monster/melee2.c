@@ -275,7 +275,7 @@ static int choose_attack_spell(int m_idx, bitflag f[RSF_SIZE])
 		}
 
 		/* Haste self if we aren't already somewhat hasted (rarely) */
-		else if (has_haste && (randint0(100) < (20 + r_ptr->speed - m_ptr->mspeed)))
+		else if (has_haste && (randint0(100) < (20 - m_ptr->m_timed[MON_TMD_FAST])))
 		{
 			/* Choose haste spell */
 			set_spells(f, RST_HASTE);
@@ -490,13 +490,6 @@ bool make_attack_spell(int m_idx)
 		else
 			msg("%^s concentrates on %s body.", m_name, m_poss);
 
-		/* XXX Allow slow speed increases past +10 */
-		if (m_ptr->m_timed[MON_TMD_FAST] &&
-				m_ptr->mspeed > r_ptr->speed + 10 &&
-				m_ptr->mspeed < r_ptr->speed + 20) {
-			msg("%^s starts moving faster.", m_name);
-			m_ptr->mspeed += 2;
-		}
 		(void)mon_inc_timed(m_idx, MON_TMD_FAST, 50, 0);
 	} else 
 		do_mon_spell(thrown_spell, m_idx, seen);

@@ -1486,14 +1486,23 @@ static void dungeon(struct cave *c)
 		/* Give energy to all monsters */
 		for (i = cave_monster_max(cave) - 1; i >= 1; i--)
 		{
+			int mspeed;
+			
 			/* Access the monster */
 			m_ptr = cave_monster(cave, i);
 
 			/* Ignore "dead" monsters */
 			if (!m_ptr->r_idx) continue;
 
+			/* Calculate the net speed */
+			mspeed = m_ptr->mspeed;
+			if (m_ptr->m_timed[MON_TMD_FAST])
+				mspeed += 10;
+			if (m_ptr->m_timed[MON_TMD_SLOW])
+				mspeed -= 10;
+
 			/* Give this monster some energy */
-			m_ptr->energy += extract_energy[m_ptr->mspeed];
+			m_ptr->energy += extract_energy[mspeed];
 		}
 
 		/* Count game turns */

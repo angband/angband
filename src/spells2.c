@@ -1776,13 +1776,11 @@ void aggravate_monsters(int who)
 	int i;
 
 	bool sleep = FALSE;
-	bool speed = FALSE;
 
 	/* Aggravate everyone nearby */
 	for (i = 1; i < cave_monster_max(cave); i++)
 	{
 		monster_type *m_ptr = cave_monster(cave, i);
-		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 		/* Paranoia -- Skip dead monsters */
 		if (!m_ptr->r_idx) continue;
@@ -1804,20 +1802,11 @@ void aggravate_monsters(int who)
 
 		/* Speed up monsters in line of sight */
 		if (player_has_los_bold(m_ptr->fy, m_ptr->fx))
-		{
-			/* Speed up (instantly) to racial base + 10 */
-			if (m_ptr->mspeed < r_ptr->speed + 10)
-			{
-				/* Speed up */
-				m_ptr->mspeed = r_ptr->speed + 10;
-				speed = TRUE;
-			}
-		}
+			mon_inc_timed(i, MON_TMD_FAST, 25, MON_TMD_FLG_NOTIFY);
 	}
 
 	/* Messages */
-	if (speed) msg("You feel a sudden stirring nearby!");
-	else if (sleep) msg("You hear a sudden stirring in the distance!");
+	if (sleep) msg("You hear a sudden stirring in the distance!");
 }
 
 

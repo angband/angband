@@ -46,50 +46,57 @@ static mon_timed_effect effects[] =
 };
 
 
-/*
- * Helper function for mon_set_timed.  This determined if the monster
- * Successfully resisted the effect.  Also marks the lore for any
- * appropriate resists.
+/**
+ * Determines whether the given monster successfully resists the given effect.
+ *
+ * If MON_TMD_FLG_NOFAIL is set in `flag`, this returns FALSE.
+ * Then we determine if the monster resists the effect for some racial
+ * reason. For example, the monster might have the NO_SLEEP flag, in which
+ * case it always resists sleep. Or if it breathes chaos, it always resists
+ * confusion. If the given monster doesn't resist for any of these reasons,
+ * then it makes a saving throw. If MON_TMD_MON_SOURCE is set in `flag`,
+ * indicating that another monster caused this effect, then the chance of
+ * success on the saving throw just depends on the monster's native depth.
+ * Otherwise, the chance of success decreases as `timer` increases.
+ * 
+ * Also marks the lore for any appropriate resists.
  */
-static int mon_resist_effect(int m_idx, int idx, int v, u16b flag)
+static bool mon_resist_effect(int m_idx, int ef_idx, int timer, u16b flag)
 {
-	mon_timed_effect *effect = &effects[idx];
+	mon_timed_effect *effect;
 	int resist_chance;
-	monster_type *m_ptr = cave_monster(cave, m_idx);
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
-	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
+	const monster_type *m_ptr;
+	const monster_race *r_ptr;
+	monster_lore *l_ptr;
 
+	assert(ef_idx >= 0 && ef_idx < MON_TMD_MAX);
+	effect = &effects[ef_idx];
+
+	assert(m_idx >= 0);
+	m_ptr = cave_monster(cave, m_idx);
+	r_ptr = &r_info[m_ptr->r_idx];
+	l_ptr = &l_list[m_ptr->r_idx];
+	
 	/* Hasting never fails */
-	if (idx == MON_TMD_FAST) return (FALSE);
-
+	if (ef_idx == MON_TMD_FAST) return (FALSE);
+	
 	/* Some effects are marked to never fail */
 	if (flag & MON_TMD_FLG_NOFAIL) return (FALSE);
 
 	/* A sleeping monster resists further sleeping */
-	if (idx == MON_TMD_SLEEP && m_ptr->m_timed[idx]) return (TRUE);
-
-	/* Stupid, weird, or empty monsters aren't affected by some effects */
-	if (rf_has(r_ptr->flags, RF_STUPID) ||
-			rf_has(r_ptr->flags, RF_EMPTY_MIND) ||
-			rf_has(r_ptr->flags, RF_WEIRD_MIND))
-	{
-		if (idx == MON_TMD_CONF) return (TRUE);
-		if (idx == MON_TMD_SLEEP) return (TRUE);
-	}
+	if (ef_idx == MON_TMD_SLEEP && m_ptr->m_timed[ef_idx]) return (TRUE);
 
 	/* If the monster resists innately, learn about it */
-	if (rf_has(r_ptr->flags, effect->flag_resist))
-	{
-		/* Mark the lore */
-		if (m_ptr->ml) rf_on(l_ptr->flags, effect->flag_resist);
+	if (rf_has(r_ptr->flags, effect->flag_resist)) {
+		if (m_ptr->ml)
+			rf_on(l_ptr->flags, effect->flag_resist);
 
 		return (TRUE);
 	}
 
-	/* Monsters with specific breaths and undead resist stunning*/
-	if (idx == MON_TMD_STUN && (rsf_has(r_ptr->spell_flags, RSF_BR_SOUN) ||
-			rsf_has(r_ptr->spell_flags, RSF_BR_WALL) || rf_has(r_ptr->flags,
-			RF_UNDEAD)))
+	/* Monsters with specific breaths resist stunning*/
+	if (ef_idx == MON_TMD_STUN && (rsf_has(r_ptr->spell_flags, RSF_BR_SOUN) ||
+			rsf_has(r_ptr->spell_flags, RSF_BR_WALL)))
 	{
 		/* Add the lore */
 		if (m_ptr->ml)
@@ -104,7 +111,7 @@ static int mon_resist_effect(int m_idx, int idx, int v, u16b flag)
 	}
 
 	/* Monsters with specific breaths resist confusion */
-	if ((idx == MON_TMD_CONF) &&
+	if ((ef_idx == MON_TMD_CONF) &&
 		((rsf_has(r_ptr->spell_flags, RSF_BR_CHAO)) ||
 		 (rsf_has(r_ptr->spell_flags, RSF_BR_CONF))) )
 	{
@@ -120,25 +127,21 @@ static int mon_resist_effect(int m_idx, int idx, int v, u16b flag)
 		return (TRUE);
 	}
 
-	/* Can't make non-living creatures sleep */
-	if ((idx == MON_TMD_SLEEP) &&  (rf_has(r_ptr->flags, RF_UNDEAD)))
-		return (TRUE);
-
 	/* Inertia breathers resist slowing */
-	if (idx == MON_TMD_SLOW && rsf_has(r_ptr->spell_flags, RSF_BR_INER))
+	if (ef_idx == MON_TMD_SLOW && rsf_has(r_ptr->spell_flags, RSF_BR_INER))
 	{
 		rsf_on(l_ptr->spell_flags, RSF_BR_INER);
 		return (TRUE);
 	}
 
 	/* Calculate the chance of the monster making its saving throw. */
-	if (idx == MON_TMD_SLEEP)
-		v /= 25; /* Hack - sleep uses much bigger numbers */
+	if (ef_idx == MON_TMD_SLEEP)
+		timer /= 25; /* Hack - sleep uses much bigger numbers */
 
 	if (flag & MON_TMD_MON_SOURCE)
 		resist_chance = r_ptr->level;
 	else
-		resist_chance = r_ptr->level + 40 - (v / 2);
+		resist_chance = r_ptr->level + 40 - (timer / 2);
 
 	if (randint0(100) < resist_chance) return (TRUE);
 
@@ -149,28 +152,44 @@ static int mon_resist_effect(int m_idx, int idx, int v, u16b flag)
 	return (FALSE);
 }
 
-/*
+/**
+ * Sets the timer of the given monster effect to `timer`.
+ *
  * Set a timed monster event to 'v'.  Give messages if the right flags are set.
- * Check if the monster is able to resist the spell.  Mark the lore
- * Returns TRUE if the monster was affected
+ * Check if the monster is able to resist the spell.  Mark the lore.
+ * Returns TRUE if the monster was affected.
  * Return FALSE if the monster was unaffected.
+ *
+ * MON_TMD_FLG_NOTIFY		0x01 Give notification 
+ * MON_TMD_MON_SOURCE		0x02 Monster is causing the damage
+ * MON_TMD_FLG_NOMESSAGE	0x04 Never show a message
+ * MON_TMD_FLG_NOFAIL		0x08 Never fail
  */
-static bool mon_set_timed(int m_idx, int idx, int v, u16b flag)
+static bool mon_set_timed(int m_idx, int ef_idx, int timer, u16b flag)
 {
-	mon_timed_effect *effect = &effects[idx];
-	monster_type *m_ptr = cave_monster(cave, m_idx);
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
+	mon_timed_effect *effect;
+	monster_type *m_ptr;
+	const monster_race *r_ptr;
 
 	int m_note = 0;
 	int resisted;
-	int old_timer = m_ptr->m_timed[idx];
+	int old_timer;
 
-	assert(idx >= 0 && idx < MON_TMD_MAX);
+	assert(ef_idx >= 0 && ef_idx < MON_TMD_MAX);
+	effect = &effects[ef_idx];
+
+	assert(m_idx >= 0);
+	m_ptr = cave_monster(cave, m_idx);
+	r_ptr = &r_info[m_ptr->r_idx];
+	old_timer = m_ptr->m_timed[ef_idx];
+
+	/* Ignore dead monsters */
+	if (!m_ptr->r_idx) return FALSE;
 
 	/* No change */
-	if (old_timer == v) return FALSE;
+	if (old_timer == timer) return FALSE;
 
-	if (v == 0) {
+	if (timer == 0) {
 		/* Turning off, usually mention */
 		m_note = effect->message_end;
 		flag |= MON_TMD_FLG_NOTIFY;
@@ -178,42 +197,18 @@ static bool mon_set_timed(int m_idx, int idx, int v, u16b flag)
 		/* Turning on, usually mention */
 		flag |= MON_TMD_FLG_NOTIFY;
 		m_note = effect->message_begin;
-	} else if (v > old_timer) {
+	} else if (timer > old_timer) {
 		/* Different message for increases, but don't automatically mention. */
 		m_note = effect->message_increase;
 	}
 
 	/* Determine if the monster resisted or not */
-	resisted = mon_resist_effect(m_idx, idx, v, flag);
+	resisted = mon_resist_effect(m_idx, ef_idx, timer, flag);
 
 	if (resisted)
 		m_note = MON_MSG_UNAFFECTED;
 	else
-		m_ptr->m_timed[idx] = v;
-
-	if (idx == MON_TMD_FAST && !resisted) {
-		if (v > old_timer) {
-			if (m_ptr->mspeed >= r_ptr->speed + 10) {
-				m_note = MON_MSG_UNAFFECTED;
-				resisted =  TRUE;
- 			} else {
-				m_ptr->mspeed += 10;
-			}
-		} else if (v == 0) {
-			m_ptr->mspeed = r_ptr->speed;
-		}
-	} else if (idx == MON_TMD_SLOW && !resisted) {
-		if (v > old_timer) {
-			if (m_ptr->mspeed <= r_ptr->speed - 10) {
-				m_note = MON_MSG_UNAFFECTED;
-				resisted = TRUE;
-			} else {
-				m_ptr->mspeed -= 10;
-			}
-		} else if (v == 0) {
-			m_ptr->mspeed = r_ptr->speed;
-		}
-	}
+		m_ptr->m_timed[ef_idx] = timer;
 
 	if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
 
@@ -231,31 +226,31 @@ static bool mon_set_timed(int m_idx, int idx, int v, u16b flag)
 }
 
 
-/*
+/**
  * Increase the timed effect `idx` by `v`.
  */
-bool mon_inc_timed(int m_idx, int idx, int v, u16b flag)
+bool mon_inc_timed(int m_idx, int ef_idx, int timer, u16b flag)
 {
 	monster_type *m_ptr = cave_monster(cave, m_idx);
-	assert(idx >= 0 && idx < MON_TMD_MAX);
+	assert(ef_idx >= 0 && ef_idx < MON_TMD_MAX);
 
-	/* Ignore dead monsters */
-	if (!m_ptr->r_idx) return FALSE;
-	if (v < 0) return (FALSE);
+	if (timer < 0) return (FALSE);
 
 	/* Make it last for a mimimum # of turns if it is a new effect */
-	if ((!m_ptr->m_timed[idx]) && (v < 2)) v = 2;
+	if ((!m_ptr->m_timed[ef_idx]) && (timer < 2)) timer = 2;
 
 	/* New counter amount */
-	v += m_ptr->m_timed[idx];
+	timer += m_ptr->m_timed[ef_idx];
 
-	if (idx == MON_TMD_STUN || idx == MON_TMD_CONF) {
-		if (v > 200) v = 200;
-	} else if (v > 10000) {
-		v = 10000;
+	if (ef_idx == MON_TMD_STUN || ef_idx == MON_TMD_CONF) {
+		if (timer > 200) timer = 200;
+	} else if (ef_idx == MON_TMD_FAST || ef_idx == MON_TMD_SLOW) {
+		if (timer > 50) timer = 50;
+	} else if (timer > 10000) {
+		timer = 10000;
 	}
 
-	return mon_set_timed(m_idx, idx, v, flag);
+	return mon_set_timed(m_idx, ef_idx, timer, flag);
 }
 
 /*
@@ -266,8 +261,6 @@ bool mon_dec_timed(int m_idx, int idx, int v, u16b flag)
 	monster_type *m_ptr = cave_monster(cave, m_idx);
 	assert(idx >= 0 && idx < MON_TMD_MAX);
 
-	/* Ignore dead monsters */
-	if (!m_ptr->r_idx) return FALSE;
 	if (v < 0) return FALSE;
 
 	/* Decreasing is never resisted */
@@ -283,20 +276,19 @@ bool mon_dec_timed(int m_idx, int idx, int v, u16b flag)
 }
 
 /**
- * Clear the timed effect `idx`.
+ * Clear the timed effect `ef_idx`.
  */
-bool mon_clear_timed(int m_idx, int idx, u16b flag)
+bool mon_clear_timed(int m_idx, int ef_idx, u16b flag)
 {
 	monster_type *m_ptr = cave_monster(cave, m_idx);
-	assert(idx >= 0 && idx < MON_TMD_MAX);
+	assert(ef_idx >= 0 && ef_idx < MON_TMD_MAX);
 
-	if (!m_ptr->r_idx) return FALSE;
-	if (!m_ptr->m_timed[idx]) return FALSE;
+	if (!m_ptr->m_timed[ef_idx]) return FALSE;
 
 	/* Clearing never fails */
 	flag |= MON_TMD_FLG_NOFAIL;
 
-	return mon_set_timed(m_idx, idx, 0, flag);
+	return mon_set_timed(m_idx, ef_idx, 0, flag);
 }
 
 /*
@@ -539,9 +531,7 @@ static void get_mon_name(char *output_name, size_t max, int r_idx, int in_los)
 
 	/* Unique names don't have a number */
 	if (rf_has(r_ptr->flags, RF_UNIQUE))
-	{
 		my_strcpy(output_name, "[U] ", max);
-	}
 
 	/* Normal races*/
 	else
@@ -550,9 +540,7 @@ static void get_mon_name(char *output_name, size_t max, int r_idx, int in_los)
 
 		/* Make it plural, if needed. */
 		if (in_los > 1)
-		{
 			plural_aux(race_name, sizeof(race_name));
-		}
 	}
 
 	/* Mix the quantity and the header. */
@@ -1147,10 +1135,8 @@ void update_mon(int m_idx, bool full)
 	/* Seen by vision */
 	bool easy = FALSE;
 
-
 	/* Compute distance */
-	if (full)
-	{
+	if (full) {
 		int py = p_ptr->py;
 		int px = p_ptr->px;
 
@@ -1169,16 +1155,13 @@ void update_mon(int m_idx, bool full)
 	}
 
 	/* Extract distance */
-	else
-	{
+	else {
 		/* Extract the distance */
 		d = m_ptr->cdis;
 	}
 
-
 	/* Detected */
 	if (m_ptr->mflag & (MFLAG_MARK)) flag = TRUE;
-
 
 	/* Nearby */
 	if (d <= MAX_SIGHT)
@@ -1393,10 +1376,8 @@ void update_monsters(bool full)
 }
 
 
-
-
-/*
- * Make a monster carry an object
+/**
+ * Add the given object to the given monster's inventory.
  */
 s16b monster_carry(struct monster *m_ptr, object_type *j_ptr)
 {
@@ -1405,8 +1386,7 @@ s16b monster_carry(struct monster *m_ptr, object_type *j_ptr)
 	s16b this_o_idx, next_o_idx = 0;
 
 	/* Scan objects already being held for combination */
-	for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx)
-	{
+	for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx) {
 		object_type *o_ptr;
 
 		/* Get the object */
@@ -1416,8 +1396,7 @@ s16b monster_carry(struct monster *m_ptr, object_type *j_ptr)
 		next_o_idx = o_ptr->next_o_idx;
 
 		/* Check for combination */
-		if (object_similar(o_ptr, j_ptr, OSTACK_MONSTER))
-		{
+		if (object_similar(o_ptr, j_ptr, OSTACK_MONSTER)) {
 			/* Combine the items */
 			object_absorb(o_ptr, j_ptr);
 
@@ -1431,8 +1410,7 @@ s16b monster_carry(struct monster *m_ptr, object_type *j_ptr)
 	o_idx = o_pop();
 
 	/* Success */
-	if (o_idx)
-	{
+	if (o_idx) {
 		object_type *o_ptr;
 
 		/* Get new object */
@@ -1461,8 +1439,8 @@ s16b monster_carry(struct monster *m_ptr, object_type *j_ptr)
 	return (o_idx);
 }
 
-/*
- * Swap the players/monsters (if any) at two locations XXX XXX XXX
+/**
+ * Swap the players/monsters (if any) at two locations.
  */
 void monster_swap(int y1, int x1, int y2, int x2)
 {
@@ -1476,15 +1454,12 @@ void monster_swap(int y1, int x1, int y2, int x2)
 	m1 = cave->m_idx[y1][x1];
 	m2 = cave->m_idx[y2][x2];
 
-
 	/* Update grids */
 	cave->m_idx[y1][x1] = m2;
 	cave->m_idx[y2][x2] = m1;
 
-
 	/* Monster 1 */
-	if (m1 > 0)
-	{
+	if (m1 > 0) {
 		m_ptr = cave_monster(cave, m1);
 
 		/* Move monster */
@@ -1503,8 +1478,7 @@ void monster_swap(int y1, int x1, int y2, int x2)
 	}
 
 	/* Player 1 */
-	else if (m1 < 0)
-	{
+	else if (m1 < 0) {
 		/* Move player */
 		p_ptr->py = y2;
 		p_ptr->px = x2;
@@ -1526,8 +1500,7 @@ void monster_swap(int y1, int x1, int y2, int x2)
 	}
 
 	/* Monster 2 */
-	if (m2 > 0)
-	{
+	if (m2 > 0) {
 		m_ptr = cave_monster(cave, m2);
 
 		/* Move monster */
@@ -1546,8 +1519,7 @@ void monster_swap(int y1, int x1, int y2, int x2)
 	}
 
 	/* Player 2 */
-	else if (m2 < 0)
-	{
+	else if (m2 < 0) {
 		/* Move player */
 		p_ptr->py = y1;
 		p_ptr->px = x1;
@@ -1567,7 +1539,6 @@ void monster_swap(int y1, int x1, int y2, int x2)
 		/* Redraw monster list */
 		p_ptr->redraw |= (PR_MONLIST);
 	}
-
 
 	/* Redraw */
 	cave_light_spot(cave, y1, x1);
@@ -1744,8 +1715,11 @@ bool multiply_monster(int m_idx)
 }
 
 
-/*
+/**
  * Make player fully aware of the given mimic.
+ *
+ * When a player becomes aware of a mimic, we update the monster memory
+ * and delete the "fake item" that the monster was mimicking.
  */
 void become_aware(int m_idx)
 {
@@ -1753,7 +1727,7 @@ void become_aware(int m_idx)
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
-	if(m_ptr->unaware) {
+	if (m_ptr->unaware) {
 		m_ptr->unaware = FALSE;
 
 		/* Learn about mimicry */
@@ -1781,7 +1755,7 @@ void become_aware(int m_idx)
 	}
 }
 
-/*
+/**
  * Returns TRUE if the given monster is currently mimicking an item.
  */
 bool is_mimicking(int m_idx)
@@ -1821,5 +1795,4 @@ void update_smart_learn(struct monster *m, struct player *p, int what)
 	else
 		of_off(m->known_pflags, what);
 }
-
 

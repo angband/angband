@@ -25,6 +25,12 @@
 
 /** Macros **/
 
+/* Flags for the monster timed functions */
+#define MON_TMD_FLG_NOTIFY		0x01 /* Give notification */
+#define MON_TMD_MON_SOURCE		0x02 /* Monster is causing the damage */
+#define MON_TMD_FLG_NOMESSAGE	0x04 /* Never show a message */
+#define MON_TMD_FLG_NOFAIL		0x08 /* Never fail */
+
 /** Structures **/
 
 /* 
