@@ -24,6 +24,7 @@
 #include "monster/mon-make.h"
 #include "monster/mon-msg.h"
 #include "monster/mon-spell.h"
+#include "monster/mon-timed.h"
 #include "monster/mon-util.h"
 #include "squelch.h"
 #include "trap.h"

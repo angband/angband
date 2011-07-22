@@ -21,6 +21,7 @@
 #include "cave.h"
 #include "monster/mon-make.h"
 #include "monster/mon-spell.h"
+#include "monster/mon-timed.h"
 #include "monster/mon-util.h"
 #include "object/slays.h"
 #include "object/tvalsval.h"

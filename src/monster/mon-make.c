@@ -21,6 +21,7 @@
 #include "target.h"
 #include "monster/mon-lore.h"
 #include "monster/mon-make.h"
+#include "monster/mon-timed.h"
 #include "monster/mon-util.h"
 #include "object/tvalsval.h"
 

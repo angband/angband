@@ -25,12 +25,6 @@
 
 /** Macros **/
 
-/* Flags for the monster timed functions */
-#define MON_TMD_FLG_NOTIFY		0x01 /* Give notification */
-#define MON_TMD_MON_SOURCE		0x02 /* Monster is causing the damage */
-#define MON_TMD_FLG_NOMESSAGE	0x04 /* Never show a message */
-#define MON_TMD_FLG_NOFAIL		0x08 /* Never fail */
-
 /** Structures **/
 
 /* 
@@ -51,9 +45,6 @@ char summon_kin_type;		/* Hack -- See summon_specific() */
 
 
 /** Functions **/
-bool mon_inc_timed(int m_idx, int idx, int v, u16b flag);
-bool mon_dec_timed(int m_idx, int idx, int v, u16b flag);
-bool mon_clear_timed(int m_idx, int idx, u16b flag);
 int lookup_monster(const char *name);
 monster_base *lookup_monster_base(const char *name);
 bool match_monster_bases(monster_base *base, ...);
