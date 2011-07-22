@@ -1196,7 +1196,7 @@ C:0:0:d10
 ### Dragon Scale Mail egos ###
 
 # This is the 'default' DSM ego - roughly half of them
-N:128:of Craftmanship
+N:128:of Craftsmanship
 X:4:0
 W:0:2:0:500
 A:20:30 to 95
