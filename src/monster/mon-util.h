@@ -47,7 +47,8 @@ char summon_kin_type;		/* Hack -- See summon_specific() */
 /** Functions **/
 int lookup_monster(const char *name);
 monster_base *lookup_monster_base(const char *name);
-bool match_monster_bases(monster_base *base, ...);
+bool match_monster_bases(const monster_base *base, ...);
+void plural_aux(char *name, size_t max);
 void display_monlist(void);
 void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode);
 void update_mon(int m_idx, bool full);
@@ -56,11 +57,8 @@ s16b monster_carry(struct monster *m, object_type *j_ptr);
 void monster_swap(int y1, int x1, int y2, int x2);
 bool summon_specific(int y1, int x1, int lev, int type, int delay);
 bool multiply_monster(int m_idx);
-void update_smart_learn(struct monster *m, struct player *p, int what);
 void become_aware(int m_idx);
 bool is_mimicking(int m_idx);
-void plural_aux(char *name, size_t max);
-
-
+void update_smart_learn(struct monster *m, struct player *p, int flag);
 
 #endif /* MONSTER_UTILITIES_H */
