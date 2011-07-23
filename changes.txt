@@ -33,6 +33,7 @@ Gameplay changes
   #1096 Drain charges only drains as many charges as a recharge gives
   #1145 Afraid monsters now have increased spell failure chance
   #1155 Added birth_keep_randarts option to re-use randarts
+  #1181 General store now only buys lights, food, oil and spikes
   #1250 Stat drain now repairs on level up: restore stat potions removed
   #1310 Prevent unusually high AC armour from being detected from afar
   #1311 Being confused and walking into a wall now costs a turn
@@ -105,6 +106,7 @@ User interface
   #1439 More consistent capitalisation of definite article
   #1465 Fix display of quiver slot when inventory is empty
   #1467 Some band-aids for quality squelchling (also #1472)
+  #1485 Pval descriptions no longer displayed in object name
         Add updated tiles from buzzkill and juggle5
         Add skill, race, class info to birth UI
         Artifact description revisions
