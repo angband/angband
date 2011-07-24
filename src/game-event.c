@@ -1,7 +1,6 @@
 /*
- * File: ui-event.c
- * Purpose: Allows the registering of handlers to be told about ui "events",
- *          and the game to signal these events to the UI.
+ * File: game-event.c
+ * Purpose: Allows the registering of handlers to be told about game events.
  *
  * Copyright (c) 2007 Antony Sidwell
  *

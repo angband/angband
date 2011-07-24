@@ -1,7 +1,6 @@
 /*
  * File: x-char.c
- * Purpose: Enable extended character sets for the Operating Systems that
- * can handle it without affecting the ASCII-only OSs.
+ * Purpose: Enable Latin-1 encodings for supported platforms.
  *
  * Copyright (c) 2007 Leon Marrick, Hugo Cornelius, Diego Gonzalez, Jeff Greene
  * This work is free software; you can redistribute it and/or modify it

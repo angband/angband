@@ -1,13 +1,22 @@
-/* File: main-nds.c */
-
-/* Purpose: Main file for playing on the Nintendo DS */
-
 /*
- * This file written by Nick McConnell, based on the template by Ben Harrison 
- * (benh@phial.com).  Many of the routines are based on, or lifted directly
- * from, brettk's excellent NethackDS:
- *         http://frodo.dyn.gno.org/~brettk/NetHackDS
+ * File: main-nds.c
+ * Purpose: Main file for playing on the Nintendo DS
  *
+ * Copyright (c) 2010 Nick McConnell
+ *
+ * Many of the routines are based on (or lifted directly from) brettk's
+ * excellent NethackDS: http://frodo.dyn.gno.org/~brettk/NetHackDS
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
  */
 
 #include <nds.h>
