@@ -161,3 +161,4 @@ exec_prefix ?= @exec_prefix@
 EGREP ?= @EGREP@
 VERSION ?= @VERSION@
 USE_STATS = @USE_STATS@
+DISTCLEAN = doc/manual/manual.pdf

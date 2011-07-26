@@ -1,11 +1,14 @@
 MKPATH=mk/
 include $(MKPATH)buildsys.mk
 
-SUBDIRS = src lib
+SUBDIRS = src lib doc
 
-.PHONY: tests
+.PHONY: tests manual
 tests:
 	$(MAKE) -C src tests
+
+manual:
+	$(MAKE) -C doc/manual manual
 
 clean-posthook:
 	-rm config.status config.log
