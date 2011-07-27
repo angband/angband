@@ -2948,7 +2948,7 @@ static void build_colors(struct cave *c, int colors[], int counts[], bool diagon
  * Find and delete all small (<9 square) open regions.
  */
 static void clear_small_regions(struct cave *c, int colors[], int counts[]) {
-	int i;
+	int i, y, x;
 	int h = c->height;
 	int w = c->width;
 	int size = h * w;
@@ -2963,10 +2963,12 @@ static void clear_small_regions(struct cave *c, int colors[], int counts[]) {
 		}
 	}
 
-	for (i = 0; i < size; i++) {
-		if (deleted[colors[i]]) {
-			int x, y;
-			lab_toyx(i, w, &y, &x);
+	for (y = 1; y < c->height - 1; y++) {
+		for (x = 1; x < c->width - 1; x++) {
+			i = lab_toi(y, x, w);
+
+			if (!deleted[colors[i]]) continue;
+
 			colors[i] = 0;
 			cave_set_feat(c, y, x, FEAT_WALL_SOLID);
 		}
