@@ -1636,7 +1636,7 @@ static void describe_monster_toughness(int r_idx, const monster_lore *l_ptr)
 		if (chance < 1)
 			chance = 1;
 
-		chance2 = 90 * (chance - (3 * r_ptr->ac / 4)) / chance + 5;
+		chance2 = 90 * (chance - (r_ptr->ac / 2)) / chance + 5;
 		
 		/* There is always a 5 percent chance to hit */
 		if (chance2 < 5) chance2 = 5;
