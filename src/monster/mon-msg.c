@@ -113,7 +113,7 @@ void message_pain(int m_idx, int dam)
 	int msg_code = MON_MSG_UNHARMED;
 	char m_name[80];
 
-	assert(m_idx >= 0);
+	assert(m_idx > 0);
 	m_ptr = cave_monster(cave, m_idx);
 
 	/* Get the monster name */
@@ -251,7 +251,7 @@ static bool redundant_monster_message(int m_idx, int msg_code)
 {
 	int i;
 
-	assert(m_idx >= 0);
+	assert(m_idx > 0);
 	assert(msg_code >= 0 && msg_code < MAX_MON_MSG);
 
 	/* No messages yet */
@@ -286,7 +286,7 @@ bool add_monster_message(const char *mon_name, int m_idx, int msg_code, bool del
 	monster_type *m_ptr;
 	int r_idx;
 
-	assert(m_idx >= 0);
+	assert(m_idx > 0);
 	m_ptr = cave_monster(cave, m_idx);
 	r_idx = m_ptr->r_idx;
 	

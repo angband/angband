@@ -72,7 +72,7 @@ static bool mon_resist_effect(int m_idx, int ef_idx, int timer, u16b flag)
 	assert(ef_idx >= 0 && ef_idx < MON_TMD_MAX);
 	effect = &effects[ef_idx];
 
-	assert(m_idx >= 0);
+	assert(m_idx > 0);
 	m_ptr = cave_monster(cave, m_idx);
 	r_ptr = &r_info[m_ptr->r_idx];
 	l_ptr = &l_list[m_ptr->r_idx];
@@ -178,7 +178,7 @@ static bool mon_set_timed(int m_idx, int ef_idx, int timer, u16b flag)
 	assert(ef_idx >= 0 && ef_idx < MON_TMD_MAX);
 	effect = &effects[ef_idx];
 
-	assert(m_idx >= 0);
+	assert(m_idx > 0);
 	m_ptr = cave_monster(cave, m_idx);
 	r_ptr = &r_info[m_ptr->r_idx];
 	old_timer = m_ptr->m_timed[ef_idx];
@@ -244,7 +244,7 @@ bool mon_inc_timed(int m_idx, int ef_idx, int timer, u16b flag)
 	assert(ef_idx >= 0 && ef_idx < MON_TMD_MAX);
 	effect = &effects[ef_idx];
 
-	assert(m_idx >= 0);
+	assert(m_idx > 0);
 	m_ptr = cave_monster(cave, m_idx);
 
 	/* For negative amounts, we use mon_dec_timed instead */
@@ -281,7 +281,7 @@ bool mon_dec_timed(int m_idx, int ef_idx, int timer, u16b flag)
 
 	assert(ef_idx >= 0 && ef_idx < MON_TMD_MAX);
 
-	assert(m_idx >= 0);
+	assert(m_idx > 0);
 	m_ptr = cave_monster(cave, m_idx);
 	
 	assert(timer > 0);
@@ -308,7 +308,7 @@ bool mon_clear_timed(int m_idx, int ef_idx, u16b flag)
 
 	assert(ef_idx >= 0 && ef_idx < MON_TMD_MAX);
 
-	assert(m_idx >= 0);
+	assert(m_idx > 0);
 	m_ptr = cave_monster(cave, m_idx);
 
 	if (!m_ptr->m_timed[ef_idx]) return FALSE;

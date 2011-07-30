@@ -854,7 +854,7 @@ void update_mon(int m_idx, bool full)
 	/* Seen by vision */
 	bool easy = FALSE;
 
-	assert(m_idx >= 0);
+	assert(m_idx > 0);
 	m_ptr = cave_monster(cave, m_idx);
 	r_ptr = &r_info[m_ptr->r_idx];
 	l_ptr = &l_list[m_ptr->r_idx];
@@ -1409,7 +1409,7 @@ bool multiply_monster(int m_idx)
 
 	bool result = FALSE;
 
-	assert(m_idx >= 0);
+	assert(m_idx > 0);
 	m_ptr = cave_monster(cave, m_idx);
 
 	/* Try up to 18 times */
@@ -1447,7 +1447,7 @@ void become_aware(int m_idx)
 	const monster_race *r_ptr;
 	monster_lore *l_ptr;
 
-	assert(m_idx >= 0);
+	assert(m_idx > 0);
 	m_ptr = cave_monster(cave, m_idx);
 	r_ptr = &r_info[m_ptr->r_idx];
 	l_ptr = &l_list[m_ptr->r_idx];
@@ -1487,7 +1487,7 @@ bool is_mimicking(int m_idx)
 {
 	const monster_type *m_ptr;
 	
-	assert(m_idx >= 0);
+	assert(m_idx > 0);
 	m_ptr = cave_monster(cave, m_idx);	
 
 	return (m_ptr->unaware && m_ptr->mimicked_o_idx);
