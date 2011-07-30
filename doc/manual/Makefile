@@ -2,7 +2,7 @@ MKPATH=../../mk/
 include $(MKPATH)buildsys.mk
 
 SECTIONS := general birth playing attack dungeon customize option command \
-	debug version
+	debug thanks version
 TEXFILES := $(SECTIONS:=.tex)
 
 PDFLATEX  := pdflatex

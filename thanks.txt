@@ -18,10 +18,10 @@ Previous maintainers:
 =====================
 
 Angband 2.9.0 - 3.0.6:
-Robert Ruehlmann <rr9@thangorodrim.net>
+Robert Ruehlmann < rr9 at thangorodrim.net >
 
 Angband 2.7.0 - 2.8.5:
-Ben Harrison <benh@phial.com>
+Ben Harrison < benh at phial.com >
 
 Angband 2.0 - 2.4 - 2.6.1 by:
 Alex Cutler, Andy Astrand, Sean Marsh,
