@@ -23,10 +23,8 @@ includes many more ``capital'' and ``control'' keys, as shown below.
 underlying command set may be used by the user to extend the ``keyset''
 which is being used, by defining new ``keymaps''. To avoid the use of
 any ``keymaps'', press backslash (``\textbackslash '') plus the
-``underlying command''
-key. This is normally only used in ``macro'' definitions. You may enter
-``control-keys'' as a caret (``\^{}'') plus the key (so ``\^{}'' + ``p''
-yields ``\^{}P'').
+``underlying command'' key. You may enter ``control-keys'' as a caret
+(``\^{}'') plus the key (so ``\^{}'' + ``p'' yields ``\^{}P'').
 
 \paragraph{}Some commands allow an optional ``repeat count'', which
 allows you to tell the game that you wish to do the command multiple
@@ -85,14 +83,6 @@ instead of using the ``run'' or ``alter'' command plus a direction. Both keysets
 allow the use of the ``5'' key to ``stand still'', which is most convenient when
 using the original keyset.
 
-\paragraph{}Note that on many systems, it is possible to define ``macros'' to various
-keys, or key combinations, so that it is often possible to make macros which,
-for example, allow the use of the shift and/or control modifier keys, plus a
-numeric keypad key, to specify the ``run'' or ``alter'' command, with the given
-direction, regardless of any keymap definitions, by using the fact that you
-can always, for example, use ``\textbackslash '' + ``.'' + ``6'', to specify ``run
-east''.
-
 \subsection{Original Keyset Command Summary}
 \begin{tabular}{cc|cc}
 a & Aim a wand & A & Activate an artifact\\
@@ -124,19 +114,19 @@ w & Wear/wield equipment & W & (unused)\\
 x & (unused) & X & (unused)\\
 y & (unused) & Y & (unused)\\
 z & Zap a rod & Z & (unused)\\
-! & Interact with system & \^{}A & (special - debug command)\\
+! & Interact with system & \^{}A & (special --- debug command)\\
 @ & (unused) & \^{}B & (unused)\\
-\# & (unused) & \^{}C & (special - break)\\
+\# & (unused) & \^{}C & (special --- break)\\
 \$ & (unused) & \^{}D & (unused)\\
 \% & (unused) & \^{}E & Toggle choice window\\
 \^{} & (special - control key) & \^{}F & Repeat level feeling\\
 \& & (unused) & \^{}G & (unused)\\
 $\ast$ & Target monster or location & \^{}H & (unused)\\
-( & Load screen dump & \^{}I & (special - tab)\\
-) & Dump screen dump & \^{}J & (special - linefeed)\\
+( & Load screen dump & \^{}I & (special --- tab)\\
+) & Dump screen dump & \^{}J & (special --- linefeed)\\
 \{ & Inscribe an object & \^{}K & (unused)\\
 \} & Uninscribe an object & \^{}L & (unused)\\
-$[$ & Display visible monster list & \^{}M & (special - return)\\
+$[$ & Display visible monster list & \^{}M & (special --- return)\\
 $]$ & Display visible object list & \^{}N & (unused)\\
 - & Walk (flip pickup) & \^{}O & (unused)\\
 \_ & Enter store & \^{}P & Show previous messages\\
@@ -146,10 +136,10 @@ $]$ & Display visible object list & \^{}N & (unused)\\
 : & Take notes & \^{}T & (unused)\\
 ' & (unused) & \^{}U & (unused)\\
 " & Enter a user pref command & \^{}V & Repeat last command\\
-, & Stay still (with pickup) & \^{}W & (special - wizard mode)\\
+, & Stay still (with pickup) & \^{}W & (special --- wizard mode)\\
 $<$ & Go up staircase & \^{}X & Save and quit\\
 . & Run & \^{}Y & (unused)\\
-$>$ & Go down staircase & \^{}Z & (special - borg command)\\
+$>$ & Go down staircase & \^{}Z & (special --- borg command)\\
 \textbackslash & (special - bypass keymap) & $|$ & (unused)\\
 ` & (special - escape) & $\sim$ & Check knowledge\\
 / & Identify symbol & ? & Help\\
@@ -158,63 +148,63 @@ $>$ & Go down staircase & \^{}Z & (special - borg command)\\
 \subsection{Roguelike Keyset Command Summary}
 \begin{tabular}{cc|cc}
 a & Zap a rod (Activate) & A & Activate an artifact\\
-b & (walk - south west) & B & (run - south west)\\
+b & (walk --- south west) & B & (run --- south west)\\
 c & Close a door & C & Character description\\
 d & Drop an item & D & Disarm a trap or chest\\
 e & Equipment list & E & Eat some food\\
 f & Bash a door (force) & F & Fuel your lantern/torch\\
 g & Get objects on floor & G & Gain new spells/prayers\\
-h & (walk - west) & H & (run - west)\\
+h & (walk --- west) & H & (run --- west)\\
 i & Inventory list & I & Observe an item\\
-j & (walk - south) & J & (run - south)\\
+j & (walk --- south) & J & (run --- south)\\
 \end{tabular}
 
 \paragraph{}
 \begin{tabular}{cc|cc}
-k & (walk - north) & K & (run - north)\\
-l & (walk - east) & L & (run - east)\\
+k & (walk --- north) & K & (run --- north)\\
+l & (walk --- east) & L & (run --- east)\\
 m & Cast a spell & M & Full dungeon map\\
-n & (walk - south east) & N & (run - south east)\\
+n & (walk --- south east) & N & (run --- south east)\\
 o & Open a door or chest & O & (unused)\\
 p & Pray a prayer & P & Browse a book\\
 q & Quaff a potion & Q & Quit (commit suicide)\\
 r & Read a scroll & R & Rest for a period\\
 s & Search for traps/doors & S & Jam a door (Spike)\\
 t & Fire an item & T & Take off equipment\\
-u & (walk - north east) & U & (run - north east)\\
+u & (walk --- north east) & U & (run --- north east)\\
 v & Throw an item & V & Version info\\
 w & Wear/wield equipment & W & Locate player on map (Where)\\
 x & Look around & X & (unused)\\
-y & (walk - north west) & Y & (run - north west)\\
+y & (walk --- north west) & Y & (run --- north west)\\
 z & Aim a wand (Zap) & Z & Use a staff (Zap)\\
-! & Interact with system & \^{}A & (special - debug command)\\
-@ & (unused) & \^{}B & (alter - south west)\\
-\# & Toggle search mode & \^{}C & (special - break)\\
+! & Interact with system & \^{}A & (special --- debug command)\\
+@ & (unused) & \^{}B & (alter --- south west)\\
+\# & Toggle search mode & \^{}C & (special --- break)\\
 \$ & (unused) & \^{}D & Destroy item\\
 \% & (unused) & \^{}E & Toggle choice window\\
 \^{} & (special - control key) & \^{}F & Repeat level feeling\\
 \& & (unused) & \^{}G & (unused)\\
-$\ast$ & Target monster or location & \^{}H & (alter - west)\\
-( & Load screen dump & \^{}I & (special - tab)\\
-) & Dump screen dump & \^{}J & (alter - south)\\
-\{ & Inscribe an object & \^{}K & (alter - north)\\
-\} & Uninscribe an object & \^{}L & (alter - east)\\
-$[$ & Display visible monster list & \^{}M & (special - return)\\
-$]$ & Display visible object list & \^{}N & (alter - south east)\\
+$\ast$ & Target monster or location & \^{}H & (alter --- west)\\
+( & Load screen dump & \^{}I & (special --- tab)\\
+) & Dump screen dump & \^{}J & (alter --- south)\\
+\{ & Inscribe an object & \^{}K & (alter --- north)\\
+\} & Uninscribe an object & \^{}L & (alter --- east)\\
+$[$ & Display visible monster list & \^{}M & (special --- return)\\
+$]$ & Display visible object list & \^{}N & (alter --- south east)\\
 - & Walk (flip pickup) & \^{}O & (unused)\\
 \_ & Enter store & \^{}P & Show previous messages\\
 + & Alter grid & \^{}Q & (unused)\\
 = & Set options & \^{}R & Redraw the screen\\
 ; & Walk (with pickup) & \^{}S & Save and don't quit\\
 : & Take notes & \^{}T & Dig a Tunnel\\
-' & (unused) & \^{}U & (alter - north east)\\
+' & (unused) & \^{}U & (alter --- north east)\\
 ` &  Enter a user pref command & \^{}V & Repeat last command\\
-, & Run & \^{}W & (special - wizard mode)\\
+, & Run & \^{}W & (special --- wizard mode)\\
 $<$ & Go up staircase & \^{}X & Save and quit\\
-. & Stay still (with pickup) & \^{}Y & (alter - north west)\\
-$>$ & Go down staircase & \^{}Z & (special - borg command)\\
-\textbackslash & (special - bypass keymap) & $|$ & (unused)\\
-` & (special - escape) & $\sim$ & Check knowledge\\
+. & Stay still (with pickup) & \^{}Y & (alter --- north west)\\
+$>$ & Go down staircase & \^{}Z & (special --- borg command)\\
+\textbackslash & (special --- bypass keymap) & $|$ & (unused)\\
+` & (special --- escape) & $\sim$ & Check knowledge\\
 / & Identify symbol & ? & Help\\
 \end{tabular}
 
@@ -242,7 +232,7 @@ by the operating system as explained above.
 and the next keypress will be interpreted as an ``underlying command'' key,
 unless it is a caret (``\^{}''), in which case the keypress after that will be
 turned into a control-key and interpreted as a command in the underlying
-angband keyset. The backslash key is useful for creating macro actions
+angband keyset. The backslash key is useful for creating actions
 which are not affected by any keymap definitions that may be in force, for
 example, the sequence ``\textbackslash '' + ``.'' + ``6'' will always mean ``run east'', even if
 the ``.'' key has been mapped to a different underlying command.
@@ -311,9 +301,9 @@ potions, for example, off the dungeon floor without picking them up.
 \paragraph{}If you enter a number between 0 and 9, the first item engraved
 with ``@\#'' where ``\#'' is the number you entered will be selected. For example,
 if you have a shovel engraved with ``@0'' and you type ``w'' (for wield) and
-then 0, you will wield the shovel. This is very useful for macros (see
+then 0, you will wield the shovel. This is very useful for keymaps (see
 below), since you can use this to select an object regardless of its
-location in your pack. For example, Angband automatically defines a macro
+location in your pack. For example, Angband automatically defines a keymap
 for the key ``X'' to do ``w0''. If you then engrave both your digging
 instrument and your primary weapon with @0, pressing X will wield
 whichever one is not being currently wielded (letting you quickly switch
@@ -336,11 +326,10 @@ about the object. Note that ``selling'' and ``dropping'' both use the
 \subsection{User Pref Files}
 \paragraph{}Angband allows you to change various aspects of the game to suit
 your tastes. You may define keymaps (changing the way Angband maps your
-keypresses to underlying commands), create macros (allowing you to map a
-single keypress to a series of keypresses), modify the visuals (allowing
-you to change the appearance of monsters, objects, or terrain features),
-change the colors (allowing you to make a given color brighter, darker,
-or even completely different), or set options (turning them off or on).
+keypresses to underlying commands), modify the visuals (allowing you to
+change the appearance of monsters, objects, or terrain features), change
+the colors (allowing you to make a given color brighter, darker, or even
+completely different), or set options (turning them off or on).
 
 \paragraph{}Angband stores your preferences in files called ``user pref
 files'', which contain comments and ``user pref commands'', which are
@@ -364,7 +353,7 @@ files contain attr/char changes to allow the monsters, objects, and/or
 terrain features to look ``better'' on your system. Then the
 ``pref-xxx.prf''
 file is loaded. This file contains pre-defined system specific stuff
-(macros, color definitions, etc). Then, the ``user-xxx.prf'' file is loaded.
+(keymaps, color definitions, etc). Then, the ``user-xxx.prf'' file is loaded.
 This file contains user-defined system specific stuff. The
 ``user-xxx.prf''
 file is used as the ``default'' user pref file in many places. The
@@ -376,76 +365,38 @@ and ``Name.prf'' files are loaded, where ``Race'', ``Class'', and
 ``Name'' are
 replaced by the actual race, class, and name of the current character.
 
-\paragraph{}Several commands allow you to both load existing user pref
-files, create new user pref files, append information to existing user
-pref files, and/or interact with various of the user preferences in a
-more intuitive way than the user pref commands allow. The commands
-include ``Interact with macros'' (@), ``Interact with visuals'' (\%),
-and ``Interact with colors'' (\&), described below.
-
-\subsubsection{User Pref Files (Macros)}
-\paragraph{}The ``Interact with macros'' command allows you to define or remove
-``macros'', which are mappings from a single logical keypress to a sequence
-of keypresses, allowing you to use special keys on the keyboard, such as
-function keys or keypad keys, possibly in conjunction with modifier keys,
-to ``automate'' repetitive multi-keypress commands that you use a lot.
-
-\paragraph{}Since macros represent keypress sequences, and not all
-keypresses have a printable representation, macro triggers and actions
-must often be ``encoded'' into a human readible form. This is done using
-several types of encoding, including ``\textbackslash xHH'' for
-character number HH in hexidecimal, ``\textbackslash e'' for the
-``escape'' code, ``\textbackslash n'' for the ``newline'' code,
-``\textbackslash r'' for the ``return'' code, ``\textbackslash s'' for
-the ``space'' code, ``\textbackslash\textbackslash '' for backslash,
-``\textbackslash \^{}'' for caret, and ``\^{}X'' for the code for any
-``control'' key ``ctrl-X''.  Note that the ``action'' of a macro will
-not be checked against other macro triggers (unless the macro action
-contains a ``control-backslash''), so you cannot make infinite loops.
-You may specify extremely long macros, but you are limited in length by
-the underlying input mechanisms, which in general limit you to about
-1024 keys in both triggers and actions.
-
-\paragraph{}The special ``\textbackslash'' command (which must be
-encoded in macros as ``\textbackslash\textbackslash'') is very useful in
-macros, since it bypasses all keymaps and allows the next keystroke to
-be considered a command in the underlying Angband command set.  For a
-list of the Angband command set, see the ``command.txt'' help file.  For
-example, a macro which maps Shift-KP6 to ``\textbackslash '' + ``.'' +
-``6'' will induce the ``run east'' behavior, regardless of what keyset
-the user has chosen, and regardless of what keymaps have been defined.
-
-\paragraph{}Macros can be specified in user pref files as a pair of
-lines, one of the form ``A:$<$str$>$'', which defines the encoded macro
-action, and one of the form ``P:$<$str$>$'', which defines the encoded macro
-trigger.
+\paragraph{}Several options menu items allow you to load existing user
+pref files, create new user pref files, append information to 
+existing user pref files, and/or interact with various of the user
+preferences. The menus include ``Interact with keymaps'', ``Interact
+with visuals'', and ``Interact with colors'', described below.
 
 \subsubsection{User Pref Files (Keymaps)} 
-\paragraph{}The ``Interact with macros'' command also allows you to
-define ``keymaps'', which are vaguely related to macros. A keymap maps a
-single keypress to a series of keypresses, which bypass both other
-keymaps and any macros. Angband uses keymaps to map the original and the
-roguelike keysets to the underlying command set, and allows the user to
-modify or add keymaps of their own. Note that all keymap actions must be
-specified using underlying commands, not keypresses from the original or
-roguelike keysets. The original keyset is almost identical to the
-underlying keyset, except that ``numbers'' are mapped to ``;'' plus a
-direction, ``5'' is mapped to ``,'', and a few control-keys are mapped
-to various things. See ``command.txt'' for the full set of underlying
-commands.  Some uses for keymaps include the ability to ``disable'' a
-command by mapping it to ``\textbackslash x00'',
+\paragraph{}
+The ``Interact with keymaps'' menu allows you to define ``keymaps'', which
+map a single keypress to a series of keypresses, which bypass other
+keymaps.  Angband uses keymaps to map the original and the roguelike
+keysets to the underlying command set, and allows the user to modify or
+add keymaps of their own.  Note that all keymap actions must be specified
+using underlying commands, not keypresses from the original or roguelike
+keysets.  The original keyset is almost identical to the underlying
+keyset, except that ``numbers'' are mapped to ``;'' plus a direction,
+``5'' is mapped to ``,'', and a few control-keys are mapped to various
+things.  See ``command.txt'' for the full set of underlying commands.
+Some uses for keymaps include the ability to ``disable'' a command by
+mapping it to ``\textbackslash x00'',
 
-\paragraph{}Keymaps can be specified in user pref files as line of the
-form ``M:$<$T$>$ $<$key$>$ $<$str$>$'', where $<$T$>$ is the keyset (0/1
-for original/roguelike), $<$key$>$ is the encoded trigger key, and
-$<$str$>$ is the encoded keymap action.
+Keymaps can be specified in user pref files as a pair of lines, one of the
+form ``\verb+A:<str>+'', which defines the encoded keymap action, and one
+of the form ``\verb+C:<T>:<str>+'', which defines the encoded keymap
+trigger (T is 0 for the original keyset and 1 for the roguelike keyset).
 
 \subsubsection{User Pref Files (Visuals)}
-\paragraph{}You can use the ``Interact with visuals'' command to change
+\paragraph{}You can use the ``Interact with visuals'' menu to change
 various visual information, currently including the choice of what
 attr/char values are used to represent various monsters, objects, or
-terrain features. Note that in combination appropriate support in
-``main-xxx.c'', and with the use of the ``use\_graphics'' flag, you may
+terrain features. Note that with both appropriate support in
+``main-xxx.c'' and the use of the ``use\_graphics'' flag, you may
 be able to specify that ``graphic bitmaps'' should be used instead of
 normal ``colored characters'' for various things.
 
@@ -461,25 +412,25 @@ the ``use\_graphics'' flag is set, and your system supports the
 \paragraph{}Note that this command can be abused in various ways, and if
 you must do so, remember that you are only cheating yourself.
 
-\paragraph{}Keymaps can be specified in user pref files as line of the
+\paragraph{}Keymaps can be specified in user pref files as lines of the
 form\\
-``R:$<$N$>$:$<$A$>$/$<$C$>$'' or ``K:$<$N$>$:$<$A$>$/$<$C$>$'' or\\
-``F:$<$N$>$:$<$A$>$/$<$C$>$'' or ``U:$<$N$>$:$<$A$>$/$<$C$>$''.
+``\verb+R:<N>:<A>/<C>+'' or ``\verb+K:<N>:<A>/<C>+'' or
+``\verb+F:<N>:<A>/<C>+'' or ``\verb+U:<N>:<A>/<C>+''.
 
 \subsubsection{User Pref Files (Colors)}
-\paragraph{}The ``Interact with colors'' command allows you to change the actual
+\paragraph{}The ``Interact with colors'' menu allows you to change the actual
 internal values used to display various colors. This command may or may
 not have any effect on your machine. Advanced machines may allow you to
 change the actual RGB values used to represent each of the 16 colors used
 by Angband, and perhaps even allow you to define new colors which are not
 currently used by Angband.
 
-\paragraph{}Colors can be specified in user pref files as line of the
+\paragraph{}Colors can be specified in user pref files as lines of the
 form\\
-``V:$<$N$>$:$<$V$>$:$<$R$>$:$<$G$>$:$<$B$>$''.
+``\verb+V:<N>:<V>:<R>:<G>:<B>+''.
 
 \subsubsection{User Pref Files (Options)}
-\paragraph{}The ``Interact with options'' command allows you to turn options
-on or off. You may turn options off or on using the user pref commands
-of the form ``X:$<$option$>$'' or ``Y:$<$option$>$'' respectively.
+\paragraph{}The ``Interact with options'' menu allows you to turn options
+on or off. You may also turn options off or on using user pref file lines
+of the form ``\verb+X:<option>+'' or ``\verb+Y:<option>+'' respectively.
 

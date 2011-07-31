@@ -1,7 +1,7 @@
 MKPATH=mk/
 include $(MKPATH)buildsys.mk
 
-SUBDIRS = src lib doc
+SUBDIRS = src lib
 
 .PHONY: tests manual
 tests:

@@ -13,42 +13,42 @@ info.
 \paragraph{}Various concepts are mentioned in the descriptions below, including
 ``disturb'', (cancel any running, resting, or repeated commands, which are
 in progress), ``flush'' (forget any keypresses waiting in the keypress
-queue, including any macros in progress), ``fresh'' (dump any pending
-output to the screen), and ``sub-windows'' (see below).
+queue), ``fresh'' (dump any pending output to the screen), and
+``sub-windows'' (see below).
 
 \subsection{Interface options}
 \begin{description}
-\item[Use sound] \verb+[use\_sound]+\\
+\item[Use sound] \verb+[use_sound]+\\
     Turns on sound effects, if your system supports them.
 
-\item[Rogue-like commands] \verb+[rogue\_like\_commands]+\\
+\item[Rogue-like commands] \verb+[rogue_like_commands]+\\
     Selects the ``roguelike'' command set (see ``command.txt'' for info).
 
-\item[Use old target by default] \verb+[use\_old\_target]+\\
+\item[Use old target by default] \verb+[use_old_target]+\\
     Forces all commands which normally ask for a ``direction'' to use the
     current ``target'' if there is one. Use of this option can be dangerous
     if you target locations on the ground, unless you clear them when done.
 
-\item[Always pickup items] \verb+[pickup\_always]+\\
-\item[Always pickup items matching inventory] \verb+[pickup\_inven]+\\
+\item[Always pickup items] \verb+[pickup_always]+\\
+\item[Always pickup items matching inventory] \verb+[pickup_inven]+\\
 If pickup\_always is on, all items are always picked up, providing it is
 safe to do so. If pickup\_inven is on, then items matching those in your
 inventory are always picked up.
 
-\item[Open/Disarm/Close without direction] \verb+[easy\_open]+\\
+\item[Open/Disarm/Close without direction] \verb+[easy_open]+\\
     If there is only one closed door next to the character, the game will
     not bother asking for a direction when the player asks to ``o''pen
     something. The same applies for ``c''losing doors and ``D''isarming traps.
 
-\item[Allow mouse clicks to move the player] \verb+[mouse\_movement]+\\
+\item[Allow mouse clicks to move the player] \verb+[mouse_movement]+\\
     Clicking on the main window will be interpreted as a move command to
     that spot.
 
-\item[Show mouse status line buttons] \verb+[mouse\_buttons]+\\
+\item[Show mouse status line buttons] \verb+[mouse_buttons]+\\
     Creates clickable ``buttons'' on the bottom line of the main window, to
     enhance mouse-led play.
 
-\item[Allow accents in output files] \verb+[xchars\_to\_file]+\\
+\item[Allow accents in output files] \verb+[xchars_to_file]+\\
     Extended characters (accents, umlauts and so on) will be printed in
     files created by the game (character dumps, screenshots etc.).
 \end{description}
@@ -56,49 +56,49 @@ inventory are always picked up.
 \subsection{Display options}
 \begin{description}
 \item[Player color indicates low hit points]
-\verb+[hp\_changes\_color]+\\
+\verb+[hp_changes_color]+\\
     This option makes the player @ turn various shades of colour from white
     to red, depending on percentage of HP remaining.
 
-\item[Center map continuously] \verb+[center\_player]+\\
+\item[Center map continuously] \verb+[center_player]+\\
     The map always centres on the player with this option on. With it off, it
     is divided into 25 sections, with coordinates (0,0) to (4,4), and will
     show one section at a time - the display will ``flip'' to the next section
     when the player nears the edge.
 
-\item[Show flavors in object descriptions] \verb+[show\_flavors]+\\
+\item[Show flavors in object descriptions] \verb+[show_flavors]+\\
     Display ``flavors'' (color or variety) in object descriptions, even for
     objects whose type is known. This does not affect objects in stores.
 
 \item[Use special colors for torch-lit grids]
-\verb+[view\_yellow\_light]+\\
+\verb+[view_yellow_light]+\\
     This option causes special colors to be used for ``torch-lit'' grids in
     certain situations (see ``view\_granite\_light'' and
     ``view\_special\_light'').
     Turning this option off will slightly improve game speed.
 
 \item[Animate multi-coloured monsters and items]
-\verb+[animate\_flicker]+\\
+\verb+[animate_flicker]+\\
     Certain powerful monsters and items will shimmer in real time, i.e.
     between keypresses.
 
 \item[Show unique monsters in a special colour]
-\verb+[purple\_uniques]+\\
+\verb+[purple_uniques]+\\
     All ``unique'' monsters will be shown in a light purple colour, which
-    is not used for any ``normal'' monsters - so you can tell at a glance
+    is not used for any ``normal'' monsters --- so you can tell at a glance
     that they are unique. If you like the idea but don't like the colour,
     you can edit it via the ``interact with colors'' option.
 \end{description}
 
 \subsection{Disturbance options}
 \begin{description}
-\item[Disturb whenever any monster moves] \verb+[disturb\_move]+\\
+\item[Disturb whenever any monster moves] \verb+[disturb_move]+\\
     Disturb the player when any monster moves, appears, or disappears.
     This includes monsters which are only visible due to telepathy, so
     you should probably turn this option off if you want to ``rest'' near
     such monsters.
 
-\item[Disturb whenever viewable monster moves] \verb+[disturb\_near]+\\
+\item[Disturb whenever viewable monster moves] \verb+[disturb_near]+\\
     Disturb the player when any viewable monster moves, whenever any
     monster becomes viewable for the first time, and also whenever any
     viewable monster becomes no longer viewable. This option ignores
@@ -106,19 +106,19 @@ inventory are always picked up.
     a monster is ``viewable''. See also the ``view\_reduce\_view'' option.
 
 \item[Disturb whenever leaving trap detected area]
-\verb+[disturb\_detect]+\\
+\verb+[disturb_detect]+\\
     This option causes you to be disturbed when you reach the edge of your
     last invocation of detect traps.
 
-\item[Disturb whenever player state changes] \verb+[disturb\_state]+\\
+\item[Disturb whenever player state changes] \verb+[disturb_state]+\\
     This option causes you to be disturbed whenever the player state
     changes, including changes in hunger, resistance, confusion, etc.
 
-\item[Automatically clear -more- prompts] \verb+[auto\_more]+\\
-    The game does not wait for a keypress when it comes to a -more-
+\item[Automatically clear --more-- prompts] \verb+[auto_more]+\\
+    The game does not wait for a keypress when it comes to a --more--
     prompt, but carries on going.
 
-\item[Notify on object recharge] \verb+[notify\_recharge]+\\
+\item[Notify on object recharge] \verb+[notify_recharge]+\\
     This causes the game to print a message when any rechargeable object
     (i.e. a rod or activatable weapon or armour item) finishes recharging.
     It is the equivalent of inscribing {!!} on all such items.
@@ -126,7 +126,7 @@ inventory are always picked up.
 
 \subsection{Birth options}
 \begin{description}
-\item[Maximize effect of race/class bonuses] \verb+[birth\_maximize]+\\
+\item[Maximize effect of race/class bonuses] \verb+[birth_maximize]+\\
      Normally, if a character should find potions that permanently increase
      his stats, the maximum that can be achieved without equipment bonuses
      is 18/100. If maximize mode is on (which is the default), then the race
@@ -145,56 +145,56 @@ inventory are always picked up.
      stages of the game.
 
 \item[Randomize the artifacts (except a very few)]
-    \verb+[birth\_randarts]+\\
+    \verb+[birth_randarts]+\\
      A different set of artifacts will be created, in place of the standard
      ones. This is intended primarily for people who have played enough to
      know what most of the standard artifacts do and want some variety. The
      number, findability and power of random artifacts will all match the
-     standard set - approximately.
+     standard set --- approximately.
 
-\item[Use previous set of randarts] \verb+[birth\_keep\_randarts]+\\
+\item[Use previous set of randarts] \verb+[birth_keep_randarts]+\\
      Does what it says on the tin. Note that this option must be set at the
      END of the game, from the death menu. Once you have restarted the game,
      it is too late to set it (but you can still un-set it if you change your
      mind). Note that switching to non-random artifacts will wipe randarts,
      regardless of this option.
 
-\item[Monsters chase recent locations] \verb+[birth\_ai\_smell]+\\
+\item[Monsters chase recent locations] \verb+[birth_ai_smell]+\\
      Allow monsters to take advantage of ``old'' trails that you may have left
      in the dungeon. This has no effect unless ``flow\_by\_sound'' is also set.
 
-\item[Monsters act smarter in groups] \verb+[birth\_ai\_packs]+\\
+\item[Monsters act smarter in groups] \verb+[birth_ai_packs]+\\
      ``Group'' monsters will use tactics that groups of monsters might
-     reasonably employ - such as hiding out of sight around a corner,
+     reasonably employ --- such as hiding out of sight around a corner,
      trying to draw the character out into the middle of a room so they
      can surround him and all attack at once, rather than chasing one
      by one down a corridor.
 
-\item[Monsters learn from their mistakes] \verb+[birth\_ai\_learn]+\\
+\item[Monsters learn from their mistakes] \verb+[birth_ai_learn]+\\
      Allow monsters to learn what spell attacks you are resistant to,
      and to use this information to choose the best attacks.
 
-\item[Monsters exploit players weaknesses] \verb+[birth\_ai\_cheat]+\\
+\item[Monsters exploit players weaknesses] \verb+[birth_ai_cheat]+\\
      Allow monsters to know what spell attacks you are resistant to,
      and to use this information to choose the best attacks.
 
  \item[Monsters behave more intelligently (broken)]
- \verb+[birth\_ai\_smart]+\\
-     Monsters have a certain amount of intelligence and will use it -
+ \verb+[birth_ai_smart]+\\
+     Monsters have a certain amount of intelligence and will use it ---
      teleporting away when low on hit points, using their more powerful
      spells in preference to the less powerful spells, etc. Not all
-     monsters are, of course, intelligent - but those who are are almost
+     monsters are, of course, intelligent --- but those who are are almost
      unkillable with this option on (especially if they can heal
      themselves).
 
-\item[Restrict the use of stairs/recall] \verb+[birth\_ironman]+\\
+\item[Restrict the use of stairs/recall] \verb+[birth_ironman]+\\
      This option, not recommended for non-advanced players, prevents the
      generation of up staircases, and makes the scroll and effect of Word
      of Recall not function: and teleport-level always goes down, as does
      the spell of stair-creation, except on the quest levels of Sauron and
      Morgoth.
 
-\item[Restrict the use of stores/home] \verb+[birth\_no\_stores]+\\
+\item[Restrict the use of stores/home] \verb+[birth_no_stores]+\\
      The stores are all closed. The home is someone else's, and locked. You
      can keep nothing but what you carry with you, and get nothing but what
      you find in the dungeon. No selling items, or buying potions of
@@ -202,32 +202,32 @@ inventory are always picked up.
      sane players.
 
  \item[Restrict the creation of artifacts]
- \verb+[birth\_no\_artifacts]+\\
+ \verb+[birth_no_artifacts]+\\
      No artifacts will be created. Ever. Just *how* masochistic are you?
 
-\item[Don't stack objects on the floor] \verb+[birth\_no\_stacking]+\\
+\item[Don't stack objects on the floor] \verb+[birth_no_stacking]+\\
      Items dropped on the floor will spread out instead of stacking.
      Normal items will disappear if there is no empty grid within a radius
      of three squares.
 
-\item[Lose artifacts when leaving level] \verb+[birth\_no\_preserve]+\\
+\item[Lose artifacts when leaving level] \verb+[birth_no_preserve]+\\
      Normally if you leave a level with an unidentified artifact on it
      you may still find it later. With this option on, if you leave a level
      with an artifact on it's gone for the rest of the game whether you
      knew it was there or not. Note that this option has no effect on
-     artifacts which you have already identified (i.e. picked up) - these
+     artifacts which you have already identified (i.e. picked up) --- these
      will always be permanently lost if you leave a level without taking
      them with you.
 
-\item[Don't generate connected stairs] \verb+[birth\_no\_stairs]+\\
+\item[Don't generate connected stairs] \verb+[birth_no_stairs]+\\
      Never generate a staircase back to the level you came from, if you used
      a staircase to get to the level.
 
-\item[Don't show level feelings] \verb+[birth\_no\_feelings]+\\
+\item[Don't show level feelings] \verb+[birth_no_feelings]+\\
      The ``quality'' of a level is never revealed, no matter how long you
      spend on the level.
 
-\item[Items always sell for 0 gold] \verb+[birth\_no\_selling]+\\
+\item[Items always sell for 0 gold] \verb+[birth_no_selling]+\\
      Shopkeepers will never pay you for items you sell, though they will
      still identify unknown items for you, and will still sell you their
      wares. To balance out income in the game, gold found in the dungeon
@@ -236,19 +236,19 @@ inventory are always picked up.
 
 \subsection{Cheating options}
 \begin{description}
-\item[Peek into monster creation] \verb+[cheat\_hear]+\\
+\item[Peek into monster creation] \verb+[cheat_hear]+\\
     Cheaters never win. But they can peek at monster creation.
 
-\item[Peek into dungeon creation] \verb+[cheat\_room]+\\
+\item[Peek into dungeon creation] \verb+[cheat_room]+\\
     Cheaters never win. But they can peek at room creation.
 
-\item[Peek into something else] \verb+[cheat\_xtra]+\\
+\item[Peek into something else] \verb+[cheat_xtra]+\\
     Cheaters never win. But they can see debugging messages.
 
-\item[Know complete monster info] \verb+[cheat\_know]+\\
+\item[Know complete monster info] \verb+[cheat_know]+\\
     Cheaters never win. But they can know all about monsters.
 
-\item[Allow player to avoid death] \verb+[cheat\_live]+\\
+\item[Allow player to avoid death] \verb+[cheat_live]+\\
     Cheaters never win. But they can cheat death.
 \end{description}
 

@@ -21,9 +21,8 @@ includes many more "capital" and "control" keys, as shown below.
     Note that any keys that are not required for access to the underlying
 command set may be used by the user to extend the "keyset" which is being
 used, by defining new "keymaps".  To avoid the use of any "keymaps", press
-backslash ("\") plus the "underlying command" key.  This is normally only
-used in "macro" definitions.  You may enter "control-keys" as a caret ("^")
-plus the key (so "^" + "p" yields "^P").
+backslash ("\") plus the "underlying command" key.  You may enter
+"control-keys" as a caret ("^") plus the key (so "^" + "p" yields "^P").
 
     Some commands allow an optional "repeat count", which allows you to tell
 the game that you wish to do the command multiple times, unless you press a
@@ -68,13 +67,6 @@ shift or control modifier key down while pressing a "roguelike" direction key,
 instead of using the "run" or "alter" command plus a direction.  Both keysets
 allow the use of the "5" key to "stand still", which is most convenient when
 using the original keyset.
-
-    Note that on many systems, it is possible to define "macros" to various
-keys, or key combinations, so that it is often possible to make macros which,
-for example, allow the use of the shift and/or control modifier keys, plus a
-numeric keypad key, to specify the "run" or "alter" command, with the given
-direction, regardless of any keymap definitions, by using the fact that you
-can always, for example, use "\" + "." + "6", to specify "run east".
 
 
 
@@ -222,7 +214,7 @@ by the operating system as explained above.
 and the next keypress will be interpreted as an "underlying command" key,
 unless it is a caret ("^"), in which case the keypress after that will be
 turned into a control-key and interpreted as a command in the underlying
-angband keyset.  The backslash key is useful for creating macro actions
+angband keyset.  The backslash key is useful for creating actions
 which are not affected by any keymap definitions that may be in force, for
 example, the sequence "\" + "." + "6" will always mean "run east", even if
 the "." key has been mapped to a different underlying command.
@@ -292,9 +284,9 @@ potions, for example, off the dungeon floor without picking them up.
         If you enter a number between 0 and 9, the first item engraved
 with "@#" where "#" is the number you entered will be selected.  For example,
 if you have a shovel engraved with "@0" and you type "w" (for wield) and
-then 0, you will wield the shovel.  This is very useful for macros (see
+then 0, you will wield the shovel.  This is very useful for keymaps (see
 below), since you can use this to select an object regardless of its
-location in your pack.  For example, Angband automatically defines a macro
+location in your pack.  For example, Angband automatically defines a keymap
 for the key "X" to do "w0".  If you then engrave both your digging
 instrument and your primary weapon with @0, pressing X will wield
 whichever one is not being currently wielded (letting you quickly switch
@@ -318,11 +310,10 @@ about the object.  Note that "selling" and "dropping" both use the "d" command.
 
         Angband allows you to change various aspects of the game to suit
 your tastes.  You may define keymaps (changing the way Angband maps your
-keypresses to underlying commands), create macros (allowing you to map a
-single keypress to a series of keypresses), modify the visuals (allowing
-you to change the appearance of monsters, objects, or terrain features),
-change the colors (allowing you to make a given color brighter, darker,
-or even completely different), or set options (turning them off or on).
+keypresses to underlying commands), modify the visuals (allowing you to
+change the appearance of monsters, objects, or terrain features), change
+the colors (allowing you to make a given color brighter, darker, or even
+completely different), or set options (turning them off or on).
 
         Angband stores your preferences in files called "user pref files",
 which contain comments and "user pref commands", which are simple strings
@@ -344,7 +335,7 @@ commands which will work on all platforms.  Then one of "font-xxx.prf"
 files contain attr/char changes to allow the monsters, objects, and/or
 terrain features to look "better" on your system.  Then the "pref-xxx.prf"
 file is loaded.  This file contains pre-defined system specific stuff
-(macros, color definitions, etc).  Then, the "user-xxx.prf" file is loaded.
+(keymaps, color definitions, etc).  Then, the "user-xxx.prf" file is loaded.
 This file contains user-defined system specific stuff.  The "user-xxx.prf"
 file is used as the "default" user pref file in many places.  The "xxx" is
 the "system suffix" for your system, taken from the "main-xxx.c" file which
@@ -352,72 +343,42 @@ was used to generate your executable.  Finally, the "Race.prf", "Class.prf",
 and "Name.prf" files are loaded, where "Race", "Class", and "Name" are
 replaced by the actual race, class, and name of the current character.
 
-        Several commands allow you to both load existing user pref files,
-create new user pref files, append information to existing user pref files,
-and/or interact with various of the user preferences in a more intuitive
-way than the user pref commands allow.  The commands include "Interact with
-macros" (@), "Interact with visuals" (%), and "Interact with colors" (&),
-described below.
+	Several options menu items allow you to load existing user pref
+files, create new user pref files, append information to existing user pref
+files, and/or interact with various of the user preferences.  The menus
+include "Interact with keymaps", "Interact with visuals", and "Interact
+with colors", described below.
 
---- User Pref Files (Macros) ---
-
-        The "Interact with macros" command allows you to define or remove
-"macros", which are mappings from a single logical keypress to a sequence
-of keypresses, allowing you to use special keys on the keyboard, such as
-function keys or keypad keys, possibly in conjunction with modifier keys,
-to "automate" repetitive multi-keypress commands that you use a lot.
-
-        Since macros represent keypress sequences, and not all keypresses
-have a printable representation, macro triggers and actions must often be
-"encoded" into a human readible form.  This is done using several types
-of encoding, including "\xHH" for character number HH in hexidecimal, "\e"
-for the "escape" code, "\n" for the "newline" code, "\r" for the "return"
-code, "\s" for the "space" code, "\\" for backslash, "\^" for caret, and
-"^X" for the code for any "control" key "ctrl-X".  Note that the "action"
-of a macro will not be checked against other macro triggers (unless the
-macro action contains a "control-backslash"), so you cannot make infinite
-loops.  You may specify extremely long macros, but you are limited in
-length by the underlying input mechanisms, which in general limit you
-to about 1024 keys in both triggers and actions.
-
-        The special "\" command (which must be encoded in macros as "\\")
-is very useful in macros, since it bypasses all keymaps and allows the next
-keystroke to be considered a command in the underlying Angband command set.
-For a list of the Angband command set, see the "command.txt" help file.
-For example, a macro which maps Shift-KP6 to "\" + "." + "6" will induce
-the "run east" behavior, regardless of what keyset the user has chosen, and
 regardless of what keymaps have been defined.
 
-	Macros can be specified in user pref files as a pair of lines, one
-of the form "A:<str>", which defines the encoded macro action, and one of
-the form "P:<str>", which defines the encoded macro trigger.
 
 --- User Pref Files (Keymaps) ---
 
-        The "Interact with macros" command also allows you to define
-"keymaps", which are vaguely related to macros.  A keymap maps a single
-keypress to a series of keypresses, which bypass both other keymaps and
-any macros.  Angband uses keymaps to map the original and the roguelike
-keysets to the underlying command set, and allows the user to modify or
-add keymaps of their own.  Note that all keymap actions must be specified
-using underlying commands, not keypresses from the original or roguelike
-keysets.  The original keyset is almost identical to the underlying keyset,
-except that "numbers" are mapped to ";" plus a direction, "5" is mapped to
-",", and a few control-keys are mapped to various things.  See "command.txt"
-for the full set of underlying commands.  Some uses for keymaps include the
-ability to "disable" a command by mapping it to "\x00", 
+        The "Interact with keymaps" menu allows you to define
+"keymaps", which map a single keypress to a series of keypresses, which
+bypass other keymaps.  Angband uses keymaps to map the original and the
+roguelike keysets to the underlying command set, and allows the user to
+modify or add keymaps of their own.  Note that all keymap actions must be
+specified using underlying commands, not keypresses from the original or
+roguelike keysets.  The original keyset is almost identical to the
+underlying keyset, except that "numbers" are mapped to ";" plus a
+direction, "5" is mapped to ",", and a few control-keys are mapped to
+various things.  See "command.txt" for the full set of underlying commands.
+Some uses for keymaps include the ability to "disable" a command by mapping
+it to "\x00", 
 
-	Keymaps can be specified in user pref files as line of the form
-"M:<T> <key> <str>", where <T> is the keyset (0/1 for original/roguelike),
-<key> is the encoded trigger key, and <str> is the encoded keymap action.
+	Keymaps can be specified in user pref files as a pair of lines, one
+of the form "A:<str>", which defines the encoded keymap action, and one of
+the form "C:<T>:<str>", which defines the encoded keymap trigger (T is 0
+for the original keyset and 1 for the roguelike keyset).
 
 --- User Pref Files (Visuals) ---
 
-        You can use the "Interact with visuals" command to change various
+        You can use the "Interact with visuals" menu to change various
 visual information, currently including the choice of what attr/char values
 are used to represent various monsters, objects, or terrain features.  Note
-that in combination appropriate support in "main-xxx.c", and with the use of
-the "use_graphics" flag, you may be able to specify that "graphic bitmaps"
+that with both appropriate support in "main-xxx.c" and the use of the
+"use_graphics" flag, you may be able to specify that "graphic bitmaps"
 should be used instead of normal "colored characters" for various things.
 
         When interactively modifying the attr/char values for monsters,
@@ -431,24 +392,24 @@ and your system supports the "use_graphics" flag.
         Note that this command can be abused in various ways, and if you
 must do so, remember that you are only cheating yourself.
 
-	Keymaps can be specified in user pref files as line of the form
+	Keymaps can be specified in user pref files as lines of the form
 "R:<N>:<A>/<C>" or "K:<N>:<A>/<C>" or "F:<N>:<A>/<C>" or "U:<N>:<A>/<C>".
 
 --- User Pref Files (Colors) ---
 
-        The "Interact with colors" command allows you to change the actual
+        The "Interact with colors" menu allows you to change the actual
 internal values used to display various colors.  This command may or may
 not have any effect on your machine.  Advanced machines may allow you to
 change the actual RGB values used to represent each of the 16 colors used
 by Angband, and perhaps even allow you to define new colors which are not
 currently used by Angband.
 
-	Colors can be specified in user pref files as line of the form
+	Colors can be specified in user pref files as lines of the form
 "V:<N>:<V>:<R>:<G>:<B>".
 
 --- User Pref Files (Options) ---
 
-        The "Interact with options" command allows you to turn options
-on or off.  You may turn options off or on using the user pref commands
-of the form "X:<option>" or "Y:<option>" respectively.
+        The "Interact with options" menu allows you to turn options
+on or off.  You may also turn options off or on using user pref 
+file lines of the form "X:<option>" or "Y:<option>" respectively.
 

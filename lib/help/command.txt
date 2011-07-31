@@ -10,8 +10,7 @@ keyset, when needed.
 Some commands use the "repeat count" to automatically repeat the command 
 several times, while others use the "repeat count" to specify a 
 "quantity" for the command, and still others use it as an "argument" of 
-some kind.  There is an option to "always_repeat" certain commands - 
-please see the options help file.
+some kind.
 
 Most commands take no "energy" to perform, while other commands only 
 take energy when they cause the world to change in some way.  For 
@@ -197,9 +196,8 @@ Tunnel (T) or Tunnel (^T)
         will be displayed in a different way.  Rubble sometimes covers an
         object.  It is hard to tunnel unless you are wielding a heavy weapon
         or a shovel or a pick.  Tunnelling ability increases with strength
-        and weapon weight.  This command may take a count, is affected by
-        the "always_repeat" option, requires a direction, and takes some
-        energy.
+        and weapon weight.  This command may take a count, requires a 
+        direction, and takes some energy.
 
 Open a door or chest (o)
         To open an object such as a door or chest, you must use this
@@ -209,8 +207,7 @@ Open a door or chest (o)
         doors will be jammed shut and may have to be forced open.  Opening 
         will automatically attempt to pick any lock doors.  You may
         need several tries to open a door or chest.  This command may take
-        a count, is affected by the "always_repeat" option, requires a
-        direction, and takes some energy.
+        a count, requires a direction, and takes some energy.
 
 Close a door (c)
         Non-intelligent and some other creatures cannot open doors, so
@@ -218,8 +215,7 @@ Close a door (c)
         see you behind closed doors, so closing doors may allow you to buy
         some time without being attacked.  Broken doors cannot be closed.
         Bashing a door open may break it.  This command may take a count,
-        is affected by the "always_repeat" option, requires a direction, and 
-        takes some energy.
+        requires a direction, and takes some energy.
 
 Jam a door (j) or Spike a door (S)
         Many monsters can simply open closed doors, and can eventually
@@ -239,8 +235,7 @@ Bash a door (B) or Force a door (f)
         jammed closed with spikes can only be opened by bashing, and all
         closed doors can be bashed open if desired.  Bashing a door open
         may permanently break it so that it can never be closed.  This
-        command may take a count, is affected by the "always_repeat" option,
-        requires a direction, and takes some energy.
+        command may take a count, requires a direction, and takes some energy.
 
 Disarm a trap or chest, or lock a door (D)
         You can attempt to disarm traps on the floor or on chests.  If you
@@ -249,20 +244,18 @@ Disarm a trap or chest, or lock a door (D)
         Search command).  The command can also be used to lock a closed
         door.  This will create a hindrance for monsters.  Even if many
         monsters will be able to pick the lock or bash the door down, it will
-        often take them some time.  This command may take a count, is
-        affected by the "always_repeat" option, requires a direction, and
-        takes some energy.
+	often take them some time.  This command may take a count, requires
+        a direction, and takes some energy.
 
 Alter (+)
         This special command allows the use of a single keypress to select
         any of the "obvious" commands above (attack, tunnel, bash, open,
-        disarm, close), and, by using macros or keymaps, to combine this
-        keypress with directions.  In general, this allows the use of the
-        "control" key plus the appropriate "direction" key (including the
-        roguelike direction keys in roguelike mode) as a kind of generic
-        "alter the terrain feature of an adjacent grid" command.  This
-        command may take a count, is affected by the "always_repeat" option,
-        requires a direction, and takes some energy.
+	disarm, close), and, by using keymaps, to combine this keypress with
+	directions.  In general, this allows the use of the "control" key
+	plus the appropriate "direction" key (including the roguelike
+	direction keys in roguelike mode) as a kind of generic "alter the
+	terrain feature of an adjacent grid" command.  This command may
+        take a count, requires a direction, and takes some energy.
 
 --- Spell and Prayer Commands ---
 
@@ -425,9 +418,9 @@ Zap a rod (z) or Activate a rod (a)
 Fire an item (f) or Fire an item (t)
         This command will fire a will allow you to fire a missile from either
         your quiver or your inventory provided it is the appropriate 
-        ammunition for the current BOW you have equipped.  You may not fire 
-        an item without a BOW equipped.  Fired ammunition has a chance of 
-        breaking.  This command takes some energy.
+	ammunition for the current missile weapon you have equipped.  You
+	may not fire an item without a missile weapon equipped.  Fired
+        ammunition has a chance of breaking.  This command takes some energy.
 
 Fire default ammo at nearest (h) or (TAB)
         If you have a missile weapon equipped and the appropriate ammunition
@@ -443,24 +436,22 @@ Throw an item (v)
         Only one object from a pile will be thrown at a time.  Note that
         throwing an object will often cause it to break, so be careful!
         If you throw something at a creature, your chances of hitting it
-        are determined by your pluses to hit, your ability at throwing,
-        and the object's pluses to hit.  Once the creature is hit, the
+        are determined by your plusses to hit, your ability at throwing,
+        and the object's plusses to hit.  Once the creature is hit, the
         object may or may not do any damage to it.  You've heard rumors
         that some objects found in the dungeon can do huge amounts of
         damage when thrown, but you're not sure which objects those
         are....  Note that flasks of oil will do a fairly large chunk
-        of damage to a monster on impact, supposedly representing fire
-        damage, but it works against fire elementals too - not that it's 
-        exactly worth it by that stage of dungeon exploration.  If you are
-        wielding a missile launcher compatible with the object you are
-        throwing, then you automatically use the launcher to fire the
-        missile with much higher range, accuracy, and damage, than you
-        would get by just throwing the missile.  Throw, like fire, requires
-        a direction.  Targeting mode (see the next command) can be invoked
-        with "*" at the "Direction?" prompt.  This command takes some energy.
+	of fire damage to a monster on impact.  If you are wielding a
+	missile launcher compatible with the object you are throwing, then
+	you automatically use the launcher to fire the missile with much
+	higher range, accuracy, and damage, than you would get by just
+	throwing the missile.  Throw, like fire, requires a direction.
+	Targeting mode (see the next command) can be invoked with "*" at
+        the "Direction?" prompt.  This command takes some energy.
 
 Targeting Mode (*)
-        This will allow you to aim your spells and such at a specific
+        This will allow you to aim your ranged attacks at a specific
         monster or grid, so that you can point directly towards that
         monster or grid (even if this is not a "compass" direction) when
         you are asked for a direction.  You can set a target using this
@@ -537,7 +528,8 @@ List visible monsters ([)
 
 List visible items (])
         This command lists all items that are visible to you, telling you
-        how of each there are and where they are on the level relative to your current location.
+        how of each there are and where they are on the level relative to 
+        your current location.
 
 --- Message Commands ---
 
@@ -607,21 +599,20 @@ Quit (commit suicide) (Q)
 Interact with options (=)
         Allow you to interact with options.  Note that using the "cheat"
         options may mark your savefile as unsuitable for the high score
-        list.  You may change normal options using the "X" and "Y" user
-        pref commands.  The "window" options allow you to specify what
-        should be drawn in any of the special sub-windows (not available
-        on all platforms). See the help file "options.txt" for more info.
-        You can also interact with macros and keymaps under this menu.
+	list.  The "window" options allow you to specify what should be drawn
+	in any of the special sub-windows (not available on all platforms). See
+	the help files "customize.txt" and "options.txt" for more info.  You
+        can also interact with keymaps under this menu.
 
-Interact with macros - option submenu
-        Allow you to interact with macros.  You may load or save macros
-        from user pref files, create macros of various types, or define
-        keymaps.  You must define a "current action", shown at the bottom
-        of the screen, before you attempt to use any of the "create macro"
-        commands, which use that "current action" as their action.  This
-        is a horrible interface, and will be fixed eventually.
+Interact with keymaps - option submenu
+        Allow you to interact with keymaps.  You may load or save keymaps
+	from user pref files, or define keymaps.  You must define a
+	"current action", shown at the bottom of the screen, before you
+	attempt to use any of the "create macro" commands, which use that
+	"current action" as their action.  This is a horrible interface,
+        and will be fixed eventually.
 
-Interact with visuals - option submenu.
+Interact with visuals - option submenu
         Allow you to interact with visuals.  You may load or save visuals
         from user pref files, or modify the attr/char mappings for the
         monsters, objects, and terrain features.  You must use the "redraw"
@@ -629,7 +620,7 @@ Interact with visuals - option submenu.
         NOTE: It is generally easier to modify visuals via the "knowledge"
         menus.
 
-Interact with colors - option submenu.
+Interact with colors - option submenu
         Allow the user to interact with colors.  This command only
         works on some systems.
         NOTE: It is commonly used to brighten the 'Light Dark' color
