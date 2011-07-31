@@ -180,6 +180,7 @@ G:,:B
 I:80:3
 W:5:0:3:10
 A:40:30 to 100
+M:10:1d3
 F:EASY_KNOW
 E:FOOD_WAYBREAD
 L:7500
@@ -197,9 +198,10 @@ G:,:d
 I:80:6
 W:0:0:1:200
 A:10:1 to 100
+M:70:1d4
 F:EASY_KNOW
 E:TMD_ESP
-L:200
+L:500
 
 N:17:Fast Recovery
 G:,:d
@@ -216,6 +218,7 @@ G:,:d
 I:80:8
 W:0:0:1:200
 A:10:1 to 100
+M:10:1d3
 F:EASY_KNOW
 E:RESTORE_ALL
 L:500
@@ -225,7 +228,7 @@ G:,:d
 I:80:9
 W:0:0:1:200
 A:10:1 to 40
-M:100:1d4
+M:70:1d4
 F:EASY_KNOW
 E:CURE_MIND
 L:500
@@ -235,7 +238,7 @@ G:,:d
 I:80:10
 W:0:0:1:60
 A:10:1 to 100
-M:100:1d4
+M:70:1d4
 F:EASY_KNOW
 E:SHROOM_EMERGENCY
 L:500
@@ -245,7 +248,7 @@ G:,:d
 I:80:11
 W:0:0:1:60
 A:10:1 to 40
-M:100:1d4
+M:70:1d4
 F:EASY_KNOW
 E:SHROOM_TERROR
 L:500
@@ -662,7 +665,7 @@ N:100:& Arrow~
 G:{:U
 I:17:1
 W:3:0:2:1
-M:100:6d7
+M:100:7d7
 A:30:3 to 100
 P:0:1d4:0:0:0
 D:It can be shot with a bow.
@@ -672,7 +675,7 @@ G:{:G
 I:17:2
 W:55:0:2:20
 A:25:55 to 100
-M:100:6d7
+M:100:7d7
 P:0:4d4:0:0:0
 D:It can be shot with a bow.
 
@@ -680,7 +683,7 @@ N:102:& Mithril Arrow~
 G:{:B
 I:17:3
 W:55:0:2:25
-M:100:6d7
+M:100:7d7
 A:20:50 to 100
 P:0:3d4:0:0:0
 F:IGNORE_ACID | IGNORE_FIRE
@@ -691,7 +694,7 @@ N:105:& Bolt~
 G:{:s
 I:18:1
 W:3:0:3:2
-M:100:6d7
+M:100:5d7
 A:30:3 to 100
 P:0:1d5:0:0:0
 D:It can be shot with a crossbow.
@@ -700,7 +703,7 @@ N:106:& Seeker Bolt~
 G:{:g
 I:18:2
 W:65:0:3:25
-M:100:6d7
+M:100:5d7
 A:25:65 to 100
 P:0:4d5:0:0:0
 D:It can be shot with a crossbow.
@@ -709,7 +712,7 @@ N:107:& Mithril Bolt~
 G:{:B
 I:18:3
 W:50:0:2:30
-M:100:6d7
+M:100:5d7
 A:20:60 to 100
 P:0:3d5:0:0:0
 F:IGNORE_ACID
@@ -720,7 +723,7 @@ N:110:& Rounded Pebble~
 G:{:s
 I:16:0
 W:0:0:4:1
-M:100:6d7
+M:100:5d7
 A:30:0 to 100
 P:0:1d2:0:0:0
 D:It can be shot with a sling.
@@ -729,7 +732,7 @@ N:111:& Iron Shot~
 G:{:s
 I:16:1
 W:3:0:5:2
-M:100:6d7
+M:100:5d7
 A:25:3 to 100
 P:0:1d4:0:0:0
 D:It can be shot with a sling.
@@ -738,7 +741,7 @@ N:112:& Mithril Shot~
 G:{:B
 I:16:2
 W:40:0:4:20
-M:100:6d7
+M:100:5d7
 A:20:40 to 100
 P:0:2d4:5:5:0
 F:IGNORE_ACID
@@ -1627,7 +1630,8 @@ N:261:Teleportation
 G:?:w
 I:70:2
 W:10:0:5:40
-A:50:10 to 100
+A:40:10 to 100
+M:25:2
 F:EASY_KNOW
 E:TELE_LONG
 
@@ -1635,7 +1639,8 @@ N:262:Teleport Level
 G:?:w
 I:70:3
 W:20:0:5:50
-A:50:20 to 100
+A:40:20 to 100
+M:25:2
 F:EASY_KNOW
 E:TELE_LEVEL
 
@@ -1696,7 +1701,8 @@ N:270:Enchant Weapon To-Hit
 G:?:w
 I:70:11
 W:15:0:5:125
-A:50:15 to 70
+A:40:15 to 70
+M:25:2
 F:EASY_KNOW
 E:ENCHANT_TOHIT
 
@@ -1704,7 +1710,8 @@ N:271:Enchant Weapon To-Dam
 G:?:w
 I:70:12
 W:15:0:5:125
-A:50:15 to 70
+A:40:15 to 70
+M:25:2
 F:EASY_KNOW
 E:ENCHANT_TODAM
 
@@ -1712,7 +1719,8 @@ N:272:Enchant Armour
 G:?:w
 I:70:13
 W:15:0:5:125
-A:50:15 to 70
+A:40:15 to 70
+M:25:2
 F:EASY_KNOW
 E:ENCHANT_ARMOR
 
@@ -1720,7 +1728,8 @@ N:273:*Enchant Weapon*
 G:?:w
 I:70:14
 W:50:0:5:500
-A:50:50 to 100
+A:40:50 to 100
+M:25:2
 F:EASY_KNOW
 E:ENCHANT_WEAPON
 
@@ -1728,7 +1737,8 @@ N:274:*Enchant Armour*
 G:?:w
 I:70:15
 W:50:0:5:500
-A:50:50 to 100
+A:40:50 to 100
+M:25:2
 F:EASY_KNOW
 E:ENCHANT_ARMOR2
 
@@ -1736,7 +1746,8 @@ N:275:Remove Curse
 G:?:w
 I:70:16
 W:10:0:5:100
-A:20:10 to 100
+A:16:10 to 100
+M:25:2
 F:EASY_KNOW
 E:REMOVE_CURSE
 
@@ -1744,7 +1755,8 @@ N:276:*Remove Curse*
 G:?:w
 I:70:17
 W:50:0:5:8000
-A:20:50 to 100
+A:16:50 to 100
+M:25:2
 F:EASY_KNOW
 E:REMOVE_CURSE2
 
@@ -1799,7 +1811,8 @@ N:282:Dispel Undead
 G:?:w
 I:70:23
 W:40:0:5:200
-A:50:40 to 100
+A:40:40 to 100
+M:25:2
 F:EASY_KNOW
 E:DISPEL_UNDEAD
 
@@ -1826,8 +1839,8 @@ N:285:Satisfy Hunger
 G:?:w
 I:70:26
 W:5:0:5:10
-A:50:5 to 100
-M:100:1d10
+A:60:5 to 100
+M:100:2d3
 F:EASY_KNOW
 E:SATISFY
 
@@ -1835,8 +1848,8 @@ N:286:Identify
 G:?:w
 I:70:27
 W:1:0:5:100
-A:50:5 to 100
-M:100:1d8
+A:60:5 to 100
+M:100:2d3
 F:EASY_KNOW
 E:IDENTIFY
 
@@ -1844,8 +1857,8 @@ N:289:Light
 G:?:w
 I:70:28
 W:0:0:5:15
-M:70:1d3
 A:50:0 to 60
+M:35:2d3
 F:EASY_KNOW
 E:LIGHT
 
@@ -1853,8 +1866,8 @@ N:290:Word of Recall
 G:?:w
 I:70:29
 W:5:0:5:125
-M:70:1d3
 A:50:5 to 100
+M:35:2d3
 F:EASY_KNOW
 E:RECALL
 
@@ -1862,7 +1875,8 @@ N:291:Recharging
 G:?:w
 I:70:30
 W:40:0:5:200
-A:50:40 to 100
+A:40:40 to 100
+M:12:2d3
 F:EASY_KNOW
 E:RECHARGE
 
@@ -1870,7 +1884,8 @@ N:292:Trap/Door Destruction
 G:?:w
 I:70:31
 W:10:0:5:50
-A:50:10 to 60
+A:40:10 to 60
+M:25:2d3
 F:EASY_KNOW
 E:DESTROY_TDOORS
 
@@ -1878,7 +1893,8 @@ N:293:Deep Descent
 G:?:w
 I:70:32
 W:10:0:5:50
-A:20:1 to 100
+A:16:1 to 100
+M:25:2
 F:EASY_KNOW
 E:DEEP_DESCENT
 
@@ -1898,7 +1914,8 @@ N:295:Holy Chant
 G:?:w
 I:70:34
 W:10:0:5:40
-A:50:10 to 70
+A:40:10 to 70
+M:25:2
 F:EASY_KNOW
 E:BLESSING2
 
@@ -1906,7 +1923,8 @@ N:296:Holy Prayer
 G:?:w
 I:70:35
 W:25:0:5:80
-A:50:50 to 100
+A:40:50 to 100
+M:25:2
 F:EASY_KNOW
 E:BLESSING3
 
@@ -1914,7 +1932,8 @@ N:297:Protection from Evil
 G:?:w
 I:70:36
 W:30:0:5:50
-A:50:30 to 100
+A:40:30 to 100
+M:25:2
 F:EASY_KNOW
 E:PROTEVIL
 
@@ -1925,7 +1944,8 @@ N:298:Monster Confusion
 G:?:w
 I:70:37
 W:5:0:5:30
-A:20:5 to 60
+A:16:5 to 60
+M:25:2
 F:EASY_KNOW
 E:CONFUSING
 
@@ -2005,6 +2025,7 @@ G:!:d
 I:75:1
 W:30:0:4:8000
 A:50:30 to 100
+M:10:2
 F:EASY_KNOW
 E:GAIN_STR
 
@@ -2013,6 +2034,7 @@ G:!:d
 I:75:2
 W:30:0:4:8000
 A:50:30 to 100
+M:10:2
 F:EASY_KNOW
 E:GAIN_INT
 
@@ -2021,6 +2043,7 @@ G:!:d
 I:75:3
 W:30:0:4:8000
 A:50:30 to 100
+M:10:2
 F:EASY_KNOW
 E:GAIN_WIS
 
@@ -2029,6 +2052,7 @@ G:!:d
 I:75:4
 W:30:0:4:8000
 A:50:30 to 100
+M:10:2
 F:EASY_KNOW
 E:GAIN_DEX
 
@@ -2037,6 +2061,7 @@ G:!:d
 I:75:5
 W:30:0:4:8000
 A:50:30 to 100
+M:10:2
 F:EASY_KNOW
 E:GAIN_CON
 
@@ -2045,6 +2070,7 @@ G:!:d
 I:75:6
 W:20:0:4:1000
 A:50:15 to 100
+M:10:2
 F:EASY_KNOW
 E:GAIN_CHR
 
@@ -2072,8 +2098,8 @@ N:318:Cure Light Wounds
 G:!:d
 I:75:9
 W:0:0:4:20
-A:100:1 to 15
-M:100:2d3
+A:80:1 to 15
+M:90:2d3
 F:EASY_KNOW
 E:CURE_LIGHT
 L:150
@@ -2082,8 +2108,8 @@ N:319:Cure Serious Wounds
 G:!:d
 I:75:10
 W:3:0:4:70
-A:100:4 to 40
-M:85:2d3
+A:80:5 to 40
+M:80:2d3
 F:EASY_KNOW
 E:CURE_SERIOUS
 L:150
@@ -2092,8 +2118,8 @@ N:320:Cure Critical Wounds
 G:!:d
 I:75:11
 W:5:0:4:200
-A:100:12 to 100
-M:75:2d3
+A:80:12 to 100
+M:70:2d3
 F:EASY_KNOW
 E:CURE_CRITICAL
 L:150
@@ -2102,7 +2128,8 @@ N:321:Healing
 G:!:d
 I:75:12
 W:15:0:4:300
-A:80:30 to 100
+A:64:30 to 100
+M:25:2
 F:EASY_KNOW
 E:CURE_FULL
 L:200
@@ -2130,7 +2157,8 @@ N:324:Neutralize Poison
 G:!:d
 I:75:15
 W:5:0:4:75
-A:50:1 to 35
+A:40:1 to 35
+M:25:2
 F:EASY_KNOW
 E:CURE_POISON
 
@@ -2138,7 +2166,8 @@ N:325:Restore Mana
 G:!:d
 I:75:16
 W:25:0:4:350
-A:80:15 to 100
+A:64:15 to 100
+M:25:2
 F:EASY_KNOW
 E:RESTORE_MANA
 
@@ -2151,7 +2180,8 @@ N:332:Restore Life Levels
 G:!:d
 I:75:23
 W:40:0:4:400
-A:50:30 to 100
+A:40:30 to 100
+M:25:2
 F:EASY_KNOW
 E:RESTORE_EXP
 
@@ -2162,7 +2192,8 @@ N:333:Brawn
 G:!:d
 I:75:24
 W:3:0:4:1000
-A:50:10 to 30
+A:40:10 to 30
+M:10:2
 F:EASY_KNOW
 E:BRAWN
 
@@ -2170,7 +2201,8 @@ N:334:Intellect
 G:!:d
 I:75:25
 W:20:0:4:1000
-A:50:10 to 30
+A:40:10 to 30
+M:10:2
 F:EASY_KNOW
 E:INTELLECT
 
@@ -2178,7 +2210,8 @@ N:335:Contemplation
 G:!:d
 I:75:26
 W:20:0:4:1000
-A:50:10 to 30
+A:40:10 to 30
+M:10:2
 F:EASY_KNOW
 E:CONTEMPLATION
 
@@ -2186,7 +2219,8 @@ N:336:Nimbleness
 G:!:d
 I:75:27
 W:5:0:4:1000
-A:50:10 to 30
+A:40:10 to 30
+M:10:2
 F:EASY_KNOW
 E:NIMBLENESS
 
@@ -2194,7 +2228,8 @@ N:337:Toughness
 G:!:d
 I:75:28
 W:10:0:4:1000
-A:50:10 to 30
+A:40:10 to 30
+M:10:2
 F:EASY_KNOW
 E:TOUGHNESS
 
@@ -2205,7 +2240,8 @@ N:341:Enlightenment
 G:!:d
 I:75:30
 W:25:0:4:800
-A:50:25 to 100
+A:40:25 to 100
+M:25:2
 F:EASY_KNOW
 E:ENLIGHTENMENT
 
@@ -2225,7 +2261,8 @@ N:343:Speed
 G:!:d
 I:75:32
 W:1:0:4:75
-A:50:1 to 100
+A:40:1 to 100
+M:25:2
 F:EASY_KNOW
 E:HASTE
 
@@ -2233,7 +2270,8 @@ N:344:Heroism
 G:!:d
 I:75:33
 W:1:0:4:25
-A:50:1 to 100
+A:40:1 to 100
+M:25:2
 F:EASY_KNOW
 E:HERO
 
@@ -2241,7 +2279,8 @@ N:345:Berserk Strength
 G:!:d
 I:75:34
 W:3:0:4:100
-A:50:3 to 100
+A:40:3 to 100
+M:25:2
 F:EASY_KNOW
 E:SHERO
 
@@ -2249,7 +2288,8 @@ N:346:Boldness
 G:!:d
 I:75:35
 W:1:0:4:8
-A:50:1 to 90
+A:40:1 to 90
+M:25:2
 F:EASY_KNOW
 E:CURE_PARANOIA
 
@@ -2257,7 +2297,8 @@ N:347:Resist Heat
 G:!:d
 I:75:36
 W:1:0:4:30
-A:50:1 to 100
+A:40:1 to 100
+M:25:2
 F:EASY_KNOW
 E:RESIST_FIRE
 
@@ -2265,7 +2306,8 @@ N:348:Resist Cold
 G:!:d
 I:75:37
 W:1:0:4:30
-A:50:1 to 100
+A:40:1 to 100
+M:25:2
 F:EASY_KNOW
 E:RESIST_COLD
 
@@ -2273,7 +2315,8 @@ N:349:Resist Poison
 G:!:d
 I:75:38
 W:1:0:4:30
-A:50:8 to 100
+A:40:8 to 100
+M:25:2
 F:EASY_KNOW
 E:RESIST_POIS
 
@@ -2281,7 +2324,8 @@ N:350:True Seeing
 G:!:d
 I:75:39
 W:3:0:4:50
-A:50:3 to 40
+A:40:3 to 40
+M:25:2
 F:EASY_KNOW
 E:TMD_SINVIS
 
@@ -2289,7 +2333,8 @@ N:351:Infravision
 G:!:d
 I:75:49
 W:3:0:4:20
-A:50:3 to 40
+A:40:3 to 40
+M:25:2
 F:EASY_KNOW
 E:TMD_INFRA
 
@@ -2301,7 +2346,7 @@ G:!:d
 I:75:50
 W:0:0:4:2
 A:10:1 to 10
-M:55:2d3
+M:70:2d3
 F:EASY_KNOW
 E:DRINK_GOOD
 L:1000
@@ -2321,8 +2366,8 @@ N:357:Blindness
 G:!:d
 I:75:52
 W:0:0:4:0
-M:70:2d3
 A:10:0 to 10
+M:70:2d3
 P:0:3d4:0:0:0
 F:EASY_KNOW
 E:BLIND
@@ -2331,8 +2376,8 @@ N:358:Confusion
 G:!:d
 I:75:53
 W:0:0:4:0
-M:70:2d3
 A:10:0 to 10
+M:70:2d3
 P:0:3d4:0:0:0
 F:EASY_KNOW
 E:CONFUSE
@@ -2342,8 +2387,8 @@ N:359:Poison
 G:!:d
 I:75:54
 W:3:0:4:0
-M:70:2d3
 A:10:0 to 10
+M:70:2d3
 P:0:3d4:0:0:0
 F:EASY_KNOW
 E:POISON
@@ -2352,8 +2397,8 @@ N:360:Slowness
 G:!:d
 I:75:55
 W:1:0:4:0
-M:70:2d3
 A:10:0 to 10
+M:70:2d3
 P:0:3d4:0:0:0
 F:EASY_KNOW
 E:SLOW
@@ -2364,6 +2409,7 @@ G:!:d
 I:75:56
 W:10:0:4:0
 A:10:10 to 15
+M:25:2
 F:EASY_KNOW
 E:LOSE_EXP
 
@@ -2371,8 +2417,8 @@ N:362:Salt Water
 G:!:d
 I:75:57
 W:0:0:4:0
-M:100:1d2
 A:10:3 to 15
+M:100:1d2
 F:EASY_KNOW
 E:DRINK_SALT
 
@@ -2385,6 +2431,7 @@ I:75:58
 W:0:0:4:100
 M:100:1d2
 A:20:40 to 100
+M:70:1d3
 F:EASY_KNOW
 E:DRINK_BREATH
 
