@@ -13,11 +13,14 @@
 # R: room type
 # A: rarity : average level
 # O: object rarity
+# C: color
 # T: template name
 # T: template name
 # F: flag | flag | ...
+# f: forbidden flag | ...
 # S: spell | spell | ...
 # s: forbidden spell | ...
+# E: forbidden monster name
 #
 # Each entry must start with an 'N' line, with a new serial number,
 # and a name.
@@ -31,7 +34,11 @@
 # at which this pit is most common.
 #
 # 'O' is for object rarity. A rarity of N means that every square of the pit has a
-# 1 in N chance of having an item.
+# 1 in N chance of having an item. (But a rarity of 0 means that no objects will
+# be generated.)
+#
+# 'C' is for monster color. If any 'C' lines are present, then all monsters in this
+# pit will be one of the specified colors. You may use any number of 'C' lines.
 #
 # 'T' is for monster template (see monster_base.txt). Up to 4 'T' lines may be present.
 # If there are no 'T' lines, then monsters may have any monster template. Otherwise,
@@ -43,8 +50,14 @@
 # 'S' is for spell flags. Every monster in this nest/pit will have every listed spell flag.
 # As many 'S' lines as are necessary may be used.
 #
+# 'f' is for forbidden flags. No monster in this nest/pit will have any of the listed flags.
+# As many 'f' lines as are necessary may be used.
+#
 # 's' is for forbidden spell flags. No monster in this nest/pit will have any of the listed
 # spell flags. As many 's' lines as are necessary may be used.
+#
+# 'E' is for forbidden ('E'xcluded) monsters. The named monster will not appear in this pit.
+# You may use any number of 'E' lines.
 
 N:1:Orc
 R:1
@@ -123,6 +136,7 @@ R:1
 A:1:105
 O:0
 T:major demon
+E:Horned Reaper
 
 N:11:Jelly
 R:2

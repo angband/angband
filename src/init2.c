@@ -2354,7 +2354,9 @@ static enum parser_error parse_pit_n(struct parser *p) {
 	struct pit_profile *pit = mem_zalloc(sizeof *pit);
 	pit->next = h;
 	pit->pit_idx = parser_getuint(p, "index");
-	pit->name = string_make(parser_getstr(p, "name"));	
+	pit->name = string_make(parser_getstr(p, "name"));
+	pit->colors = NULL;
+	pit->forbidden_monsters = NULL;
 	parser_setpriv(p, pit);
 	return PARSE_ERROR_NONE;
 }
@@ -2405,6 +2407,29 @@ static enum parser_error parse_pit_t(struct parser *p) {
 	}
 }
 
+static enum parser_error parse_pit_c(struct parser *p) {
+	struct pit_profile *pit = parser_priv(p);
+	struct pit_color_profile *colors;
+	const char *color;
+	int attr;
+
+	if (!pit)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	color = parser_getsym(p, "color");
+	if (strlen(color) > 1)
+		attr = color_text_to_attr(color);
+	else
+		attr = color_char_to_attr(color[0]);
+	if (attr < 0)
+		return PARSE_ERROR_INVALID_COLOR;
+
+	colors = mem_zalloc(sizeof *colors);
+	colors->color = attr;
+	colors->next = pit->colors;
+	pit->colors = colors;
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_pit_f(struct parser *p) {
 	struct pit_profile *pit = parser_priv(p);
 	char *flags;
@@ -2418,6 +2443,29 @@ static enum parser_error parse_pit_f(struct parser *p) {
 	s = strtok(flags, " |");
 	while (s) {
 		if (grab_flag(pit->flags, RF_SIZE, r_info_flags, s)) {
+			mem_free(flags);
+			return PARSE_ERROR_INVALID_FLAG;
+		}
+		s = strtok(NULL, " |");
+	}
+	
+	mem_free(flags);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_pit_f2(struct parser *p) {
+	struct pit_profile *pit = parser_priv(p);
+	char *flags;
+	char *s;
+
+	if (!pit)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!parser_hasval(p, "flags"))
+		return PARSE_ERROR_NONE;
+	flags = string_make(parser_getstr(p, "flags"));
+	s = strtok(flags, " |");
+	while (s) {
+		if (grab_flag(pit->forbidden_flags, RF_SIZE, r_info_flags, s)) {
 			mem_free(flags);
 			return PARSE_ERROR_INVALID_FLAG;
 		}
@@ -2473,6 +2521,22 @@ static enum parser_error parse_pit_s2(struct parser *p) {
 	mem_free(flags);
 	return PARSE_ERROR_NONE;
 }
+
+static enum parser_error parse_pit_e(struct parser *p) {
+	struct pit_profile *pit = parser_priv(p);
+	struct pit_forbidden_monster *monsters;
+	int r_idx = lookup_monster(parser_getsym(p, "race"));
+
+	if (!pit)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	monsters = mem_zalloc(sizeof *monsters);
+	monsters->r_idx = r_idx;
+	monsters->next = pit->forbidden_monsters;
+	pit->forbidden_monsters = monsters;
+	return PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_pit(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -2482,9 +2546,12 @@ struct parser *init_parse_pit(void) {
 	parser_reg(p, "A uint rarity uint level", parse_pit_a);
 	parser_reg(p, "O uint obj_rarity", parse_pit_o);
 	parser_reg(p, "T sym base", parse_pit_t);
+	parser_reg(p, "C sym color", parse_pit_c);
 	parser_reg(p, "F ?str flags", parse_pit_f);
+	parser_reg(p, "f ?str flags", parse_pit_f2);
 	parser_reg(p, "S ?str spells", parse_pit_s);
 	parser_reg(p, "s ?str spells", parse_pit_s2);
+	parser_reg(p, "E sym race", parse_pit_e);
 	return p;
 }
 
@@ -2516,8 +2583,26 @@ static errr finish_parse_pit(struct parser *p) {
 static void cleanup_pits(void)
 {
 	int idx;
+	
 	for (idx = 0; idx < z_info->pit_max; idx++) {
+		struct pit_profile *pit = &pit_info[idx];
+		struct pit_color_profile *c, *cn;
+		struct pit_forbidden_monster *m, *mn;
+		
+		c = pit->colors;
+		while (c) {
+			cn = c->next;
+			mem_free(c);
+			c = cn;
+		}
+		m = pit->forbidden_monsters;
+		while (m) {
+			mn = m->next;
+			mem_free(m);
+			m = mn;
+		}
 		string_free((char *)pit_info[idx].name);
+		
 	}
 	mem_free(pit_info);
 }
