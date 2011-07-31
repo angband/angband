@@ -25,6 +25,7 @@
 #include "z-rand.h"
 #include "cave.h"
 #include "player/types.h"
+#include "monster/mon-timed.h"
 
 /** Constants **/
 

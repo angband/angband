@@ -904,19 +904,4 @@ enum
  */
 #define MAX_RVALS 4
 
-/*
- * Monster Timed Effects
- */
-enum
-{
-	MON_TMD_SLEEP = 0,
-	MON_TMD_STUN,
-	MON_TMD_CONF,
-	MON_TMD_FEAR,
-	MON_TMD_SLOW,
-	MON_TMD_FAST,
-
-	MON_TMD_MAX
-};
-
 #endif /* !INCLUDED_DEFINES_H */

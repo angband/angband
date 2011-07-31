@@ -23,14 +23,6 @@
 #include "monster/mon-util.h"
 
 
-typedef struct {
-  int message_begin;
-  int message_end;
-  int message_increase;
-  u32b flag_resist;
-  int max_timer;
-} mon_timed_effect;
-
 /*
  * Monster timed effects.
  * '0' means no message.

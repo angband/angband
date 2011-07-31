@@ -23,6 +23,18 @@
 
 /** Constants **/
 
+/* Monster Timed Effects */
+enum {
+	MON_TMD_SLEEP = 0,
+	MON_TMD_STUN,
+	MON_TMD_CONF,
+	MON_TMD_FEAR,
+	MON_TMD_SLOW,
+	MON_TMD_FAST,
+
+	MON_TMD_MAX
+};
+
 /** Macros **/
 
 /* Flags for the monster timed functions */
@@ -32,6 +44,15 @@
 #define MON_TMD_FLG_NOFAIL		0x08 /* Never fail */
 
 /** Structures **/
+
+typedef struct {
+  int message_begin;
+  int message_end;
+  int message_increase;
+  u32b flag_resist;
+  int max_timer;
+} mon_timed_effect;
+
 
 /** Variables **/
 
