@@ -278,7 +278,8 @@ static bool redundant_monster_message(int m_idx, int msg_code)
  * different monster descriptions for the same race.
  * Return TRUE on success.
  */
-bool add_monster_message(const char *mon_name, int m_idx, int msg_code, bool delay)
+bool add_monster_message(const char *mon_name, int m_idx, int msg_code,
+		bool delay)
 {
 	int i;
 	byte mon_flags = 0;
@@ -452,7 +453,8 @@ static void flush_monster_messages(bool delay)
 		/* Regular message */
 		else {
 			/* Add special mark. Monster is offscreen */
-			if (mon_msg[i].mon_flags & 0x02) my_strcat(buf, " (offscreen)", sizeof(buf));
+			if (mon_msg[i].mon_flags & 0x02) my_strcat(buf, " (offscreen)",
+					sizeof(buf));
         
 			/* Add the separator */
 			my_strcat(buf, " ", sizeof(buf));

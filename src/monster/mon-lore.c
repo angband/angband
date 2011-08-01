@@ -48,7 +48,7 @@ static const char *wd_his[3] = { "its", "his", "her" };
  * them with the given conjunction ("and" or "or"). 
  */
 static void output_list(const char *list[], int num, byte attr,
-	const char *conjunction)
+		const char *conjunction)
 {
 	int i;
 
@@ -74,7 +74,7 @@ static void output_list(const char *list[], int num, byte attr,
  * and joins them with the given conjunction ("and" or "or"). 
  */
 static void output_list_dam(const char *list[], int num, int col[], 
-	int dam[], const char *conjunction)
+		int dam[], const char *conjunction)
 {
 	int i;
 
@@ -102,8 +102,8 @@ static void output_list_dam(const char *list[], int num, int col[],
  * Prints "[pronoun] [verb] [list]", where the verb is given by `intro`.
  * The elements of the list are printed using the given color attribute.
  */
-static void output_desc_list(enum monster_sex msex, const char *intro, const char *list[], 
-	int num, byte attr)
+static void output_desc_list(enum monster_sex msex, const char *intro, 
+		const char *list[], int num, byte attr)
 {
 	assert(num >= 0);
 
@@ -174,7 +174,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 
 		/* Eat light - requires a fuelled light */
 		if (i == INVEN_LIGHT && !of_has(f, OF_NO_FUEL) &&
-		    o_ptr->timeout > 0)
+				o_ptr->timeout > 0)
 			melee_colors[RBE_EAT_LIGHT] = TERM_YELLOW;
 
 		/* Disenchantment - requires an enchanted item */
@@ -366,7 +366,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 
 		/* Mind blast */
 		spell_colors[RSF_MIND_BLAST] = (check_state(p_ptr, OF_RES_CONFU, st.flags) ?
-			TERM_YELLOW : TERM_ORANGE);
+				TERM_YELLOW : TERM_ORANGE);
 
 		/* Brain smash slows even when conf/blind resisted */
 		spell_colors[RSF_BRAIN_SMASH] = (check_state(p_ptr, OF_RES_BLIND, st.flags) &&
@@ -405,9 +405,9 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 		melee_colors[RBE_LOSE_ALL] = TERM_L_RED;
 
 	/* Hold life isn't 100% effective */
-	melee_colors[RBE_EXP_10] = melee_colors[RBE_EXP_20] =
-		melee_colors[RBE_EXP_40] = melee_colors[RBE_EXP_80] =
-		check_state(p_ptr, OF_HOLD_LIFE, st.flags) ? TERM_YELLOW : TERM_ORANGE;
+	melee_colors[RBE_EXP_10] = melee_colors[RBE_EXP_20] = 
+			melee_colors[RBE_EXP_40] = melee_colors[RBE_EXP_80] =
+			check_state(p_ptr, OF_HOLD_LIFE, st.flags) ? TERM_YELLOW : TERM_ORANGE;
 
 	/* Shatter is always noteworthy */
 	melee_colors[RBE_SHATTER] = TERM_YELLOW;
@@ -466,20 +466,20 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
  * kills (this life + all past lives) must be high enough. For high-level 
  * monsters, fewer kills are needed. Uniques also require far fewer kills.
  */
-static bool know_armour(int r_idx, const monster_lore *l_ptr)
+static bool know_armour(const monster_race *r_ptr, const monster_lore *l_ptr)
 {
-	const monster_race *r_ptr;
 	s32b level;
-	s32b kills = l_ptr->tkills;
+	s32b kills;
 
-	assert(r_idx > 0);
-	r_ptr = &r_info[r_idx];
+	assert(r_ptr && l_ptr);
 
 	level = r_ptr->level;
+	kills = l_ptr->tkills;
 
 	if (kills > 304 / (4 + level)) 
 		return (TRUE);
-	else if (rf_has(r_ptr->flags, RF_UNIQUE) && kills > 304 / (38 + (5 * level) / 4))
+	else if (rf_has(r_ptr->flags, RF_UNIQUE) && 
+			kills > 304 / (38 + (5 * level) / 4))
 		return (TRUE);
 	else
 		return (FALSE);
@@ -495,13 +495,12 @@ static bool know_armour(int r_idx, const monster_lore *l_ptr)
  * necessary for higher-level monsters and fewer still for unique monsters.
  * More attacks are necessary for blows that deal a lot of damage.
  */
-static bool know_damage(int r_idx, const monster_lore *l_ptr, int blow_num)
+static bool know_damage(const monster_race *r_ptr, const monster_lore *l_ptr, 
+		int blow_num)
 {
-	const monster_race *r_ptr;
 	s32b level, attacks, d1, d2, max_damage;
 	
-	assert(r_idx > 0);
-	r_ptr = &r_info[r_idx];
+	assert(r_ptr && l_ptr);
 
 	level = r_ptr->level;
 
@@ -513,7 +512,8 @@ static bool know_damage(int r_idx, const monster_lore *l_ptr, int blow_num)
 
 	if ((4 + level) * attacks >= 80 * max_damage)
 		return (TRUE);
-	else if (rf_has(r_ptr->flags, RF_UNIQUE) && (4 + level) * (2 * attacks) > 80 * max_damage)
+	else if (rf_has(r_ptr->flags, RF_UNIQUE) && 
+			(4 + level) * (2 * attacks) > 80 * max_damage)
 		return (TRUE);
 	else
 		return (FALSE);
@@ -523,12 +523,9 @@ static bool know_damage(int r_idx, const monster_lore *l_ptr, int blow_num)
 /**
  * Prints the flavour text of a monster.
  */
-static void describe_monster_desc(int r_idx)
+static void describe_monster_desc(const monster_race *r_ptr)
 {
-	const monster_race *r_ptr;
-
-	assert(r_idx > 0);
-	r_ptr = &r_info[r_idx];
+	assert(r_ptr);
 
 	text_out("%s\n", r_ptr->text);
 }
@@ -542,9 +539,9 @@ static void describe_monster_desc(int r_idx)
  *
  * TODO: Clean this up using the new monster spell refactor.
  */
-static void describe_monster_spells(int r_idx, const monster_lore *l_ptr, const int colors[RSF_MAX])
+static void describe_monster_spells(const monster_race *r_ptr, 
+		const monster_lore *l_ptr, const int colors[RSF_MAX])
 {
-	const monster_race *r_ptr;
 	bitflag f[RF_SIZE];
 	int m, n;
 	enum monster_sex msex = MON_SEX_NEUTER;
@@ -556,8 +553,7 @@ static void describe_monster_spells(int r_idx, const monster_lore *l_ptr, const 
 	int dams[64]; /* list avg damage values */
 	int known_hp;
 	
-	assert(r_idx > 0);
-	r_ptr = &r_info[r_idx];
+	assert(r_ptr && l_ptr);
 
 	/* Get the known monster flags */
 	monster_flags_known(r_ptr, l_ptr, f);
@@ -618,7 +614,7 @@ static void describe_monster_spells(int r_idx, const monster_lore *l_ptr, const 
 	vn = 0;
 	for(m = 0; m < 64; m++) { dams[m] = 0; cols[m] = TERM_WHITE; }
 
-	known_hp = know_armour(r_idx, l_ptr) ? r_ptr->avg_hp : 0;
+	known_hp = know_armour(r_ptr, l_ptr) ? r_ptr->avg_hp : 0;
 
 	if (rsf_has(l_ptr->spell_flags, RSF_BR_ACID))
 	{
@@ -1146,16 +1142,15 @@ static void describe_monster_spells(int r_idx, const monster_lore *l_ptr, const 
  * the player has observed, including number of drops, quality of drops, and
  * whether the monster drops items and/or gold.
  */
-static void describe_monster_drop(int r_idx, const monster_lore *l_ptr)
+static void describe_monster_drop(const monster_race *r_ptr, 
+		const monster_lore *l_ptr)
 {
-	const monster_race *r_ptr;
 	bitflag f[RF_SIZE];
 
 	int n;
 	enum monster_sex msex = MON_SEX_NEUTER;
 
-	assert(r_idx > 0);
-	r_ptr = &r_info[r_idx];
+	assert(r_ptr && l_ptr);
 
 	/* Get the known monster flags */
 	monster_flags_known(r_ptr, l_ptr, f);
@@ -1219,15 +1214,14 @@ static void describe_monster_drop(int r_idx, const monster_lore *l_ptr)
  * TODO: Pull the attack method and effect strings out to a list-*.h file or
  * an edit file.
  */
-static void describe_monster_attack(int r_idx, const monster_lore *l_ptr, const int colors[RBE_MAX])
+static void describe_monster_attack(const monster_race *r_ptr, 
+		const monster_lore *l_ptr, const int colors[RBE_MAX])
 {
-	const monster_race *r_ptr;
 	bitflag f[RF_SIZE];
 	int m, n, r;
 	enum monster_sex msex = MON_SEX_NEUTER;
 	
-	assert(r_idx > 0);
-	r_ptr = &r_info[r_idx];
+	assert(r_ptr && l_ptr);
 
 	/* Get the known monster flags */
 	monster_flags_known(r_ptr, l_ptr, f);
@@ -1338,7 +1332,7 @@ static void describe_monster_attack(int r_idx, const monster_lore *l_ptr, const 
 			text_out_c(colors[effect], "%s", effect_str);
 
 			/* Describe damage (if known) */
-			if (d1 && d2 && know_damage(r_idx, l_ptr, m)) {
+			if (d1 && d2 && know_damage(r_ptr, l_ptr, m)) {
 				text_out(" with damage ");
 				text_out_c(TERM_L_GREEN, "%dd%d", d1, d2);
 			}
@@ -1372,9 +1366,9 @@ static void describe_monster_attack(int r_idx, const monster_lore *l_ptr, const 
  * TODO: Again, there's a lot of text here -- could it be included in
  * list-mon-flags.h? 
  */
-static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
+static void describe_monster_abilities(const monster_race *r_ptr, 
+		const monster_lore *l_ptr)
 {
-	const monster_race *r_ptr;
 	bitflag f[RF_SIZE];
 
 	int vn;
@@ -1383,8 +1377,7 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 
 	enum monster_sex msex = MON_SEX_NEUTER;
 	
-	assert(r_idx > 0);
-	r_ptr = &r_info[r_idx];
+	assert(r_ptr && l_ptr);
 
 	/* Get the known monster flags */
 	monster_flags_known(r_ptr, l_ptr, f);
@@ -1457,8 +1450,10 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 	if (rf_has(f, RF_RES_DISE))  descs[vn++] = "disenchantment";
 
 	/* Note lack of vulnerability as a resistance */
-	if (rf_has(l_ptr->flags, RF_HURT_LIGHT) && !rf_has(f, RF_HURT_LIGHT)) descs[vn++] = "bright light";
-	if (rf_has(l_ptr->flags, RF_HURT_ROCK) && !rf_has(f, RF_HURT_ROCK)) descs[vn++] = "rock remover";
+	if (rf_has(l_ptr->flags, RF_HURT_LIGHT) && !rf_has(f, RF_HURT_LIGHT))
+		descs[vn++] = "bright light";
+	if (rf_has(l_ptr->flags, RF_HURT_ROCK) && !rf_has(f, RF_HURT_ROCK))
+		descs[vn++] = "rock remover";
 
 	if (vn)
 	{
@@ -1515,7 +1510,8 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 		else if (r_ptr->sleep > 0)  act = "is vigilant for";
 		else                        act = "is ever vigilant for";
 
-		text_out("%^s %s intruders, which %s may notice from ", wd_he[msex], act, wd_he[msex]);
+		text_out("%^s %s intruders, which %s may notice from ", wd_he[msex], 
+				act, wd_he[msex]);
 		text_out_c(TERM_L_BLUE, "%d", 10 * r_ptr->aaf);
 		text_out(" feet.  ");
 	}
@@ -1533,17 +1529,16 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 /**
  * Describes how often the monster has killed/been killed.
  */
-static void describe_monster_kills(int r_idx, const monster_lore *l_ptr)
+static void describe_monster_kills(const monster_race *r_ptr, 
+		const monster_lore *l_ptr)
 {
-	const monster_race *r_ptr;
 	bitflag f[RF_SIZE];
 
 	enum monster_sex msex = MON_SEX_NEUTER;
 
 	bool out = TRUE;
 	
-	assert(r_idx > 0);
-	r_ptr = &r_info[r_idx];
+	assert(r_ptr && l_ptr);
 
 	/* Get the known monster flags */
 	monster_flags_known(r_ptr, l_ptr, f);
@@ -1560,7 +1555,8 @@ static void describe_monster_kills(int r_idx, const monster_lore *l_ptr)
 		/* We've been killed... */
 		if (l_ptr->deaths) {
 			/* Killed ancestors */
-			text_out("%^s has slain %d of your ancestors", wd_he[msex], l_ptr->deaths);
+			text_out("%^s has slain %d of your ancestors", wd_he[msex], 
+					l_ptr->deaths);
 
 			/* But we've also killed it */
 			if (dead)
@@ -1635,16 +1631,15 @@ static void describe_monster_kills(int r_idx, const monster_lore *l_ptr)
  * Once a player knows the AC of a monster (see know_armour()), he or she
  * also knows the HP and the chance to-hit.
  */
-static void describe_monster_toughness(int r_idx, const monster_lore *l_ptr)
+static void describe_monster_toughness(const monster_race *r_ptr, 
+		const monster_lore *l_ptr)
 {
-	const monster_race *r_ptr;
 	bitflag f[RF_SIZE];
 
 	enum monster_sex msex = MON_SEX_NEUTER;
 	long chance = 0, chance2 = 0;
 
-	assert(r_idx > 0);
-	r_ptr = &r_info[r_idx];
+	assert(r_ptr && l_ptr);
 
 	/* Get the known monster flags */
 	monster_flags_known(r_ptr, l_ptr, f);
@@ -1654,7 +1649,7 @@ static void describe_monster_toughness(int r_idx, const monster_lore *l_ptr)
 	else if (rf_has(r_ptr->flags, RF_MALE)) msex = MON_SEX_MALE;
 
 	/* Describe monster "toughness" */
-	if (know_armour(r_idx, l_ptr))
+	if (know_armour(r_ptr, l_ptr))
 	{
 		/* Armor */
 		text_out("%^s has an armor rating of ", wd_he[msex]);
@@ -1673,8 +1668,8 @@ static void describe_monster_toughness(int r_idx, const monster_lore *l_ptr)
 		/* Player's chance to hit it - this code is duplicated in
 		   py_attack_real() and test_hit() and must be kept in sync */
 		chance = (p_ptr->state.skills[SKILL_TO_HIT_MELEE] +
-			((p_ptr->state.to_h +
-			p_ptr->inventory[INVEN_WIELD].to_h) * BTH_PLUS_ADJ));
+				((p_ptr->state.to_h +
+				p_ptr->inventory[INVEN_WIELD].to_h) * BTH_PLUS_ADJ));
 
 		/* Avoid division by zero errors */
 		if (chance < 1)
@@ -1697,9 +1692,9 @@ static void describe_monster_toughness(int r_idx, const monster_lore *l_ptr)
  * Describes how much experience the player gets for killing this monster,
  * taking the player's level into account.
  */
-static void describe_monster_exp(int r_idx, const monster_lore *l_ptr)
+static void describe_monster_exp(const monster_race *r_ptr, 
+		const monster_lore *l_ptr)
 {
-	const monster_race *r_ptr;
 	bitflag f[RF_SIZE];
 
 	const char *p, *q;
@@ -1708,8 +1703,7 @@ static void describe_monster_exp(int r_idx, const monster_lore *l_ptr)
 
 	char buf[20] = "";
 
-	assert(r_idx > 0);
-	r_ptr = &r_info[r_idx];
+	assert(r_ptr && l_ptr);
 
 	/* Get the known monster flags */
 	monster_flags_known(r_ptr, l_ptr, f);
@@ -1728,7 +1722,7 @@ static void describe_monster_exp(int r_idx, const monster_lore *l_ptr)
 	/* calculate the fractional exp part scaled by 100, */
 	/* must use long arithmetic to avoid overflow */
 	j = ((((long)r_ptr->mexp * r_ptr->level % p_ptr->lev) *
-		  (long)1000 / p_ptr->lev + 5) / 10);
+			(long)1000 / p_ptr->lev + 5) / 10);
 
 	/* Calculate textual representation */
 	strnfmt(buf, sizeof(buf), "%ld", (long)i);
@@ -1759,15 +1753,14 @@ static void describe_monster_exp(int r_idx, const monster_lore *l_ptr)
  * Describes the type of monster (undead, dragon, etc.) and how quickly
  * and erratically it moves.
  */
-static void describe_monster_movement(int r_idx, const monster_lore *l_ptr)
+static void describe_monster_movement(const monster_race *r_ptr, 
+		const monster_lore *l_ptr)
 {
-	const monster_race *r_ptr;
 	bitflag f[RF_SIZE];
 
 	bool old = FALSE;
 
-	assert(r_idx > 0);
-	r_ptr = &r_info[r_idx];
+	assert(r_ptr && l_ptr);
 
 	/* Get the known monster flags */
 	monster_flags_known(r_ptr, l_ptr, f);
@@ -1883,6 +1876,8 @@ void cheat_monster_lore(int r_idx, monster_lore *l_ptr)
 	assert(r_idx > 0);
 	r_ptr = &r_info[r_idx];
 
+	assert(l_ptr);
+	
 	/* Hack -- Maximal kills */
 	l_ptr->tkills = MAX_SHORT;
 
@@ -1946,6 +1941,8 @@ void wipe_monster_lore(int r_idx, monster_lore *l_ptr)
 	assert(r_idx > 0);
 	r_ptr = &r_info[r_idx];
 
+	assert(l_ptr);
+	
 	/* Hack -- No kills */
 	l_ptr->tkills = 0;
 
@@ -2028,26 +2025,26 @@ void describe_monster(int r_idx, bool spoilers)
 
 	/* Show kills of monster vs. player(s) */
 	if (!spoilers)
-		describe_monster_kills(r_idx, &lore);
+		describe_monster_kills(r_ptr, &lore);
 
 	/* Monster description */
-	describe_monster_desc(r_idx);
+	describe_monster_desc(r_ptr);
 
 	/* Describe the monster type, speed, life, and armor */
-	describe_monster_movement(r_idx, &lore);
+	describe_monster_movement(r_ptr, &lore);
 	if (!spoilers)
-		describe_monster_toughness(r_idx, &lore);
+		describe_monster_toughness(r_ptr, &lore);
 
    /* Describe the experience and item reward when killed */
-	if (!spoilers) describe_monster_exp(r_idx, &lore);
-	describe_monster_drop(r_idx, &lore);
+	if (!spoilers) describe_monster_exp(r_ptr, &lore);
+	describe_monster_drop(r_ptr, &lore);
 
 	/* Describe the special properties of the monster */
-	describe_monster_abilities(r_idx, &lore);
+	describe_monster_abilities(r_ptr, &lore);
 
    /* Describe the spells, spell-like abilities and melee attacks */
-	describe_monster_spells(r_idx, &lore, spell_colors);
-	describe_monster_attack(r_idx, &lore, melee_colors);
+	describe_monster_spells(r_ptr, &lore, spell_colors);
+	describe_monster_attack(r_ptr, &lore, melee_colors);
 
 	/* Notice "Quest" monsters */
 	if (rf_has(r_ptr->flags, RF_QUESTOR))
@@ -2241,7 +2238,8 @@ void lore_treasure(int m_idx, int num_item, int num_gold)
  * Known flags will be 1 for present, or 0 for not present. Unknown flags
  * will always be 0.
  */
-void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr, bitflag flags[RF_SIZE])
+void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr,
+		bitflag flags[RF_SIZE])
 {
 	rf_copy(flags, r_ptr->flags);
 	rf_inter(flags, l_ptr->flags);

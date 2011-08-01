@@ -476,11 +476,13 @@ s16b get_mon_num(int level)
 		r_ptr = &r_info[r_idx];
 
 		/* Hack -- "unique" monsters must be "unique" */
-		if (rf_has(r_ptr->flags, RF_UNIQUE) && r_ptr->cur_num >= r_ptr->max_num)
+		if (rf_has(r_ptr->flags, RF_UNIQUE) && 
+				r_ptr->cur_num >= r_ptr->max_num)
 			continue;
 
 		/* Depth Monsters never appear out of depth */
-		if (rf_has(r_ptr->flags, RF_FORCE_DEPTH) && r_ptr->level > p_ptr->depth)
+		if (rf_has(r_ptr->flags, RF_FORCE_DEPTH) && 
+				r_ptr->level > p_ptr->depth)
 			continue;
 
 		/* Accept */
@@ -551,13 +553,13 @@ static int get_coin_type(const monster_race *r_ptr)
 {
 	const char *name = r_ptr->name;
 
-	if (!rf_has(r_ptr->flags, RF_METAL)) return SV_GOLD_ANY;
+	if (!rf_has(r_ptr->flags, RF_METAL)) 	return SV_GOLD_ANY;
 
 	/* Look for textual clues */
-	if (my_stristr(name, "copper "))	return SV_COPPER;
-	if (my_stristr(name, "silver "))	return SV_SILVER;
-	if (my_stristr(name, "gold "))		return SV_GOLD;
-	if (my_stristr(name, "mithril "))	return SV_MITHRIL;
+	if (my_stristr(name, "copper "))		return SV_COPPER;
+	if (my_stristr(name, "silver "))		return SV_SILVER;
+	if (my_stristr(name, "gold "))			return SV_GOLD;
+	if (my_stristr(name, "mithril "))		return SV_MITHRIL;
 	if (my_stristr(name, "adamantite "))	return SV_ADAMANTITE;
 
 	/* Assume nothing */
@@ -722,7 +724,8 @@ s16b place_monster(int y, int x, monster_type *n_ptr, byte origin)
 		int i = 1;
 		
 		/* Pick a random object kind to mimic */
-		for (mimic_kind = r_ptr->mimic_kinds; mimic_kind; mimic_kind = mimic_kind->next, i++) {
+		for (mimic_kind = r_ptr->mimic_kinds; mimic_kind; 
+				mimic_kind = mimic_kind->next, i++) {
 			if (one_in_(i)) kind = mimic_kind->kind;
 		}
 
@@ -794,11 +797,11 @@ int mon_hp(const struct monster_race *r_ptr, aspect hp_aspect)
  * except for the savefile loading code, which calls place_monster()
  * directly.
  */
-static bool place_new_monster_one(int y, int x, int r_idx, bool sleep, byte origin)
+static bool place_new_monster_one(int y, int x, monster_race *r_ptr, 
+		bool sleep, byte origin)
 {
 	int i;
 
-	monster_race *r_ptr;
 	monster_type *n_ptr;
 	monster_type monster_type_body;
 
@@ -812,10 +815,7 @@ static bool place_new_monster_one(int y, int x, int r_idx, bool sleep, byte orig
 	/* No creation on glyph of warding */
 	if (cave->feat[y][x] == FEAT_GLYPH) return (FALSE);
 
-	assert(r_idx > 0);
-	r_ptr = &r_info[r_idx];
-
-	assert(r_ptr->name);
+	assert(r_ptr && r_ptr->name);
 	name = r_ptr->name;
 
 	/* "unique" monsters must be "unique" */
@@ -852,7 +852,7 @@ static bool place_new_monster_one(int y, int x, int r_idx, bool sleep, byte orig
 	(void)WIPE(n_ptr, monster_type);
 
 	/* Save the race */
-	n_ptr->r_idx = r_idx;
+	n_ptr->r_idx = r_ptr->ridx;
 
 	/* Enforce sleeping if needed */
 	if (sleep && r_ptr->sleep) {
@@ -922,14 +922,11 @@ static bool place_new_monster_one(int y, int x, int r_idx, bool sleep, byte orig
  * Picks a monster group size. Used for monsters with the FRIENDS
  * flag and monsters with the ESCORT/ESCORTS flags.
  */
-static int group_size_1(int r_idx)
+static int group_size_1(const monster_race *r_ptr)
 {
-	monster_race *r_ptr;
-
 	int total, extra = 0;
 
-	assert(r_idx > 0);
-	r_ptr = &r_info[r_idx];
+	assert(r_ptr);
 	
 	/* Pick a group size */
 	total = randint1(13);
@@ -955,17 +952,14 @@ static int group_size_1(int r_idx)
  * Picks a monster group size. Used for monsters with the FRIEND
  * flag.
  */
-static int group_size_2(int r_idx)
+static int group_size_2(const monster_race *r_ptr)
 {
-	monster_race *r_ptr;
-
 	int total, extra = 0;
 
 	/* Start small */
 	total = 1;
 
-	assert(r_idx > 0);
-	r_ptr = &r_info[r_idx];
+	assert(r_ptr);
 
 	/* Easy monsters, large groups */
 	if (r_ptr->level < p_ptr->depth)
@@ -989,8 +983,8 @@ static int group_size_2(int r_idx)
  * `origin` is the item origin to use for any monster drops (e.g. ORIGIN_DROP,
  * ORIGIN_DROP_PIT, etc.) 
  */
-static bool place_new_monster_group(struct cave *c, int y, int x, int r_idx,
-	bool sleep, int total, byte origin)
+static bool place_new_monster_group(struct cave *c, int y, int x, 
+		monster_race *r_ptr, bool sleep, int total, byte origin)
 {
 	int n, i;
 
@@ -1000,7 +994,7 @@ static bool place_new_monster_group(struct cave *c, int y, int x, int r_idx,
 	byte hack_y[GROUP_MAX];
 	byte hack_x[GROUP_MAX];
 
-	assert(r_idx > 0);
+	assert(r_ptr);
 	
 	/* Start on the monster */
 	hack_n = 1;
@@ -1022,7 +1016,7 @@ static bool place_new_monster_group(struct cave *c, int y, int x, int r_idx,
 			if (!cave_empty_bold(my, mx)) continue;
 
 			/* Attempt to place another monster */
-			if (place_new_monster_one(my, mx, r_idx, sleep, origin)) {
+			if (place_new_monster_one(my, mx, r_ptr, sleep, origin)) {
 				/* Add it to the "hack" set */
 				hack_y[hack_n] = my;
 				hack_x[hack_n] = mx;
@@ -1106,21 +1100,21 @@ bool place_new_monster(struct cave *c, int y, int x, int r_idx, bool sleep,
 	r_ptr = &r_info[r_idx];
 	
 	/* Place one monster, or fail */
-	if (!place_new_monster_one(y, x, r_idx, sleep, origin)) return (FALSE);
+	if (!place_new_monster_one(y, x, r_ptr, sleep, origin)) return (FALSE);
 
 	/* We're done unless the group flag is set */
 	if (!group_okay) return (TRUE);
 
 	/* Friends for certain monsters */
 	if (rf_has(r_ptr->flags, RF_FRIEND)) {
-		int total = group_size_2(r_idx);
-		(void)place_new_monster_group(c, y, x, r_idx, sleep, total, origin);
+		int total = group_size_2(r_ptr);
+		(void)place_new_monster_group(c, y, x, r_ptr, sleep, total, origin);
 	}
 
 	/* Friends for certain monsters */
 	if (rf_has(r_ptr->flags, RF_FRIENDS)) {
-		int total = group_size_1(r_idx);
-		(void)place_new_monster_group(c, y, x, r_idx, sleep, total, origin);
+		int total = group_size_1(r_ptr);
+		(void)place_new_monster_group(c, y, x, r_ptr, sleep, total, origin);
 	}
 
 	/* Escorts for certain monsters */
@@ -1128,6 +1122,7 @@ bool place_new_monster(struct cave *c, int y, int x, int r_idx, bool sleep,
 		/* Try to place several "escorts" */
 		for (i = 0; i < 50; i++) {
 			int nx, ny, z, d = 3;
+			monster_race *z_ptr;
 
 			/* Pick a location */
 			scatter(&ny, &nx, y, x, d, 0);
@@ -1157,17 +1152,18 @@ bool place_new_monster(struct cave *c, int y, int x, int r_idx, bool sleep,
 			if (!z) break;
 
 			/* Place a single escort */
-			(void)place_new_monster_one(ny, nx, z, sleep, origin);
+			z_ptr = &r_info[z];
+			(void)place_new_monster_one(ny, nx, z_ptr, sleep, origin);
 
 			/* Place a "group" of escorts if needed */
-			if (rf_has(r_info[z].flags, RF_FRIEND)) {
-				int total = group_size_2(r_idx);
-				(void)place_new_monster_group(c, ny, nx, z, sleep, total, origin);
+			if (rf_has(z_ptr->flags, RF_FRIEND)) {
+				int total = group_size_2(z_ptr);
+				(void)place_new_monster_group(c, ny, nx, z_ptr, sleep, total, origin);
 			}
 			
-			if (rf_has(r_info[z].flags, RF_FRIENDS) || rf_has(r_ptr->flags, RF_ESCORTS)) {
-				int total = group_size_1(r_idx);
-				(void)place_new_monster_group(c, ny, nx, z, sleep, total, origin);
+			if (rf_has(z_ptr->flags, RF_FRIENDS) || rf_has(r_ptr->flags, RF_ESCORTS)) {
+				int total = group_size_1(z_ptr);
+				(void)place_new_monster_group(c, ny, nx, z_ptr, sleep, total, origin);
 			}
 		}
 	}
@@ -1218,7 +1214,8 @@ bool pick_and_place_monster(struct cave *c, int y, int x, int depth, bool sleep,
  *
  * Returns TRUE if we successfully place a monster.
  */
-bool pick_and_place_distant_monster(struct cave *c, struct loc loc, int dis, bool sleep, int depth)
+bool pick_and_place_distant_monster(struct cave *c, struct loc loc, int dis,
+		bool sleep, int depth)
 {
 	int py = loc.y;
 	int px = loc.x;
@@ -1249,7 +1246,8 @@ bool pick_and_place_distant_monster(struct cave *c, struct loc loc, int dis, boo
 	}
 
 	/* Attempt to place the monster, allow groups */
-	if (pick_and_place_monster(c, y, x, depth, sleep, TRUE, ORIGIN_DROP)) return (TRUE);
+	if (pick_and_place_monster(c, y, x, depth, sleep, TRUE, ORIGIN_DROP))
+		return (TRUE);
 
 	/* Nope */
 	return (FALSE);
@@ -1517,8 +1515,12 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note)
 			char unique_name[80];
 			r_ptr->max_num = 0;
 
-			/* This gets the correct name if we slay an invisible unique and don't have See Invisible. */
-			monster_desc(unique_name, sizeof(unique_name), m_ptr, MDESC_SHOW | MDESC_IND2);
+			/* 
+			 * This gets the correct name if we slay an invisible 
+			 * unique and don't have See Invisible.
+			 */
+			monster_desc(unique_name, sizeof(unique_name), m_ptr, 
+					MDESC_SHOW | MDESC_IND2);
 
 			/* Log the slaying of a unique */
 			strnfmt(buf, sizeof(buf), "Killed %s", unique_name);
@@ -1595,7 +1597,8 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note)
 			/* Hack -- note fear */
 			(*fear) = TRUE;
 
-			mon_inc_timed(m_idx, MON_TMD_FEAR, timer, MON_TMD_FLG_NOMESSAGE | MON_TMD_FLG_NOFAIL);
+			mon_inc_timed(m_idx, MON_TMD_FEAR, timer, 
+					MON_TMD_FLG_NOMESSAGE | MON_TMD_FLG_NOFAIL);
 		}
 	}
 

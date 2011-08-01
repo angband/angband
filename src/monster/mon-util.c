@@ -256,13 +256,12 @@ void plural_aux(char *name, size_t max)
  * Helper function for display monlist.  Prints the number of creatures, followed
  * by either a singular or plural version of the race name as appropriate.
  */
-static void get_mon_name(char *output_name, size_t max, int r_idx, int num)
+static void get_mon_name(char *output_name, size_t max, 
+		const monster_race *r_ptr, int num)
 {
-	monster_race *r_ptr;
 	char race_name[80];
 
-	assert(r_idx > 0);
-	r_ptr = &r_info[r_idx];
+	assert(r_ptr);
 
 	my_strcpy(race_name, r_ptr->name, sizeof(race_name));
 
@@ -283,6 +282,18 @@ static void get_mon_name(char *output_name, size_t max, int r_idx, int num)
 	my_strcat(output_name, race_name, max);
 }
 
+
+/* 
+ * Monster data for the visible monster list 
+ */
+typedef struct
+{
+	u16b count;		/* total number of this type visible */
+	u16b asleep;		/* number asleep (not in LOS) */
+	u16b los;		/* number in LOS */
+	u16b los_asleep;	/* number asleep and in LOS */
+	byte attr; /* attr to use for drawing */
+} monster_vis; 
 
 /*
  * Display visible monsters in a window
@@ -457,9 +468,7 @@ void display_monlist(void)
 
 		/* Get monster race and name */
 		r_ptr = &r_info[order[i]];
-
-		/* Get monster race and name */
-		get_mon_name(m_name, sizeof(m_name), order[i], list[order[i]].los);
+		get_mon_name(m_name, sizeof(m_name), r_ptr, list[order[i]].los);
 
 		/* Display uniques in a special colour */
 		if (rf_has(r_ptr->flags, RF_UNIQUE))
@@ -530,7 +539,7 @@ void display_monlist(void)
 
 		/* Get monster race and name */
 		r_ptr = &r_info[order[i]];
-		get_mon_name(m_name, sizeof(m_name), order[i], out_of_los);
+		get_mon_name(m_name, sizeof(m_name), r_ptr, out_of_los);
 
 		/* Display uniques in a special colour */
 		if (rf_has(r_ptr->flags, RF_UNIQUE))
@@ -977,7 +986,8 @@ void update_mon(int m_idx, bool full)
 	if (flag) {
 		/* Learn about the monster's mind */
 		if (check_state(p_ptr, OF_TELEPATHY, p_ptr->state.flags))
-			flags_set(l_ptr->flags, RF_SIZE, RF_EMPTY_MIND, RF_WEIRD_MIND, RF_SMART, RF_STUPID, FLAG_END);
+			flags_set(l_ptr->flags, RF_SIZE, RF_EMPTY_MIND, RF_WEIRD_MIND,
+					RF_SMART, RF_STUPID, FLAG_END);
 
 		/* It was previously unseen */
 		if (!m_ptr->ml) {
@@ -1009,7 +1019,8 @@ void update_mon(int m_idx, bool full)
 		/* It was previously seen */
 		if (m_ptr->ml) {
 			/* Treat mimics differently */
-			if (!m_ptr->mimicked_o_idx || squelch_item_ok(object_byid(m_ptr->mimicked_o_idx)))
+			if (!m_ptr->mimicked_o_idx || 
+					squelch_item_ok(object_byid(m_ptr->mimicked_o_idx)))
 			{
 				/* Mark as not visible */
 				m_ptr->ml = FALSE;
@@ -1284,7 +1295,8 @@ static bool summon_specific_okay(int r_idx)
 	base = r_ptr->base;
 	
 	unique = rf_has(flags, RF_UNIQUE);
-	scary = flags_test(flags, RF_SIZE, RF_UNIQUE, RF_FRIEND, RF_FRIENDS, RF_ESCORT, RF_ESCORTS, FLAG_END);
+	scary = flags_test(flags, RF_SIZE, RF_UNIQUE, RF_FRIEND, RF_FRIENDS,
+			RF_ESCORT, RF_ESCORTS, FLAG_END);
 
 	/* Check our requirements */
 	switch (summon_specific_type)

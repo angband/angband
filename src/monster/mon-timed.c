@@ -22,6 +22,13 @@
 #include "monster/mon-timed.h"
 #include "monster/mon-util.h"
 
+typedef struct {
+  int message_begin;
+  int message_end;
+  int message_increase;
+  u32b flag_resist;
+  int max_timer;
+} mon_timed_effect;
 
 /*
  * Monster timed effects.
@@ -53,19 +60,17 @@ static mon_timed_effect effects[] =
  * 
  * Also marks the lore for any appropriate resists.
  */
-static bool mon_resist_effect(int m_idx, int ef_idx, int timer, u16b flag)
+static bool mon_resist_effect(const monster_type *m_ptr, int ef_idx, int timer, u16b flag)
 {
 	mon_timed_effect *effect;
 	int resist_chance;
-	const monster_type *m_ptr;
 	const monster_race *r_ptr;
 	monster_lore *l_ptr;
 
 	assert(ef_idx >= 0 && ef_idx < MON_TMD_MAX);
 	effect = &effects[ef_idx];
 
-	assert(m_idx > 0);
-	m_ptr = cave_monster(cave, m_idx);
+	assert(m_ptr);
 	r_ptr = &r_info[m_ptr->r_idx];
 	l_ptr = &l_list[m_ptr->r_idx];
 	
@@ -157,10 +162,9 @@ static bool mon_resist_effect(int m_idx, int ef_idx, int timer, u16b flag)
  * Returns TRUE if the monster was affected.
  * Return FALSE if the monster was unaffected.
  */
-static bool mon_set_timed(int m_idx, int ef_idx, int timer, u16b flag)
+static bool mon_set_timed(monster_type *m_ptr, int ef_idx, int timer, u16b flag)
 {
 	mon_timed_effect *effect;
-	monster_type *m_ptr;
 	const monster_race *r_ptr;
 
 	int m_note = 0;
@@ -170,8 +174,7 @@ static bool mon_set_timed(int m_idx, int ef_idx, int timer, u16b flag)
 	assert(ef_idx >= 0 && ef_idx < MON_TMD_MAX);
 	effect = &effects[ef_idx];
 
-	assert(m_idx > 0);
-	m_ptr = cave_monster(cave, m_idx);
+	assert(m_ptr);
 	r_ptr = &r_info[m_ptr->r_idx];
 	old_timer = m_ptr->m_timed[ef_idx];
 
@@ -195,14 +198,14 @@ static bool mon_set_timed(int m_idx, int ef_idx, int timer, u16b flag)
 	}
 
 	/* Determine if the monster resisted or not */
-	resisted = mon_resist_effect(m_idx, ef_idx, timer, flag);
+	resisted = mon_resist_effect(m_ptr, ef_idx, timer, flag);
 
 	if (resisted)
 		m_note = MON_MSG_UNAFFECTED;
 	else
 		m_ptr->m_timed[ef_idx] = timer;
 
-	if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
+	if (p_ptr->health_who == m_ptr->midx) p_ptr->redraw |= (PR_HEALTH);
 
 	/* Update the visuals, as appropriate. */
 	p_ptr->redraw |= (PR_MONLIST);
@@ -211,7 +214,7 @@ static bool mon_set_timed(int m_idx, int ef_idx, int timer, u16b flag)
 			(flag & MON_TMD_FLG_NOTIFY)) {
 		char m_name[80];
 		monster_desc(m_name, sizeof(m_name), m_ptr, 0);
-		add_monster_message(m_name, m_idx, m_note, TRUE);
+		add_monster_message(m_name, m_ptr->midx, m_note, TRUE);
 	}
 
 	return !resisted;
@@ -255,7 +258,7 @@ bool mon_inc_timed(int m_idx, int ef_idx, int timer, u16b flag)
 	if (timer > effect->max_timer)
 		timer = effect->max_timer;
 
-	return mon_set_timed(m_idx, ef_idx, timer, flag);
+	return mon_set_timed(m_ptr, ef_idx, timer, flag);
 }
 
 /**
@@ -286,7 +289,7 @@ bool mon_dec_timed(int m_idx, int ef_idx, int timer, u16b flag)
 	if (timer < 0)
 		timer = 0;
 
-	return mon_set_timed(m_idx, ef_idx, timer, flag);
+	return mon_set_timed(m_ptr, ef_idx, timer, flag);
 }
 
 /**
@@ -308,6 +311,6 @@ bool mon_clear_timed(int m_idx, int ef_idx, u16b flag)
 	/* Clearing never fails */
 	flag |= MON_TMD_FLG_NOFAIL;
 
-	return mon_set_timed(m_idx, ef_idx, 0, flag);
+	return mon_set_timed(m_ptr, ef_idx, 0, flag);
 }
 
