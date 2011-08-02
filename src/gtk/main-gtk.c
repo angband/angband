@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "buildid.h"
 #include "player/player.h"
+#include "grafmode.h"
 
 #ifdef USE_GTK
 #include "main-gtk.h"
@@ -744,6 +745,7 @@ static void hook_quit(const char *str)
 {
 	gtk_log_fmt(TERM_RED,"%s", str);
 	save_prefs();
+  close_graphics_modes();
 	release_memory();
 	exit(0);
 }
@@ -753,6 +755,7 @@ gboolean quit_event_handler(GtkWidget *widget, GdkEventButton *event, gpointer u
 	if (save_game_gtk())
 	{
 		save_prefs();
+    close_graphics_modes();
 		quit(NULL);
 		exit(0);
 		return(FALSE);
@@ -763,6 +766,7 @@ gboolean quit_event_handler(GtkWidget *widget, GdkEventButton *event, gpointer u
 
 gboolean destroy_event_handler(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
+  close_graphics_modes();
 	quit(NULL);
 	exit(0);
 	return(FALSE);
@@ -1636,56 +1640,17 @@ static void init_graf(int g)
 	term_data *td= &data[0];
 	int i = 0;
 	
-	arg_graphics = g;
-	
-	switch(arg_graphics)
-	{
-		case GRAPHICS_NONE:
-		{
-			ANGBAND_GRAF = "none";
-			
+  do {
+    if (g == graphics_modes[i].grafID) {
+      arg_graphics = g;
+			ANGBAND_GRAF = graphics_modes[i].pref;
+			path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_GRAF, graphics_modes[i].file);
 			use_transparency = FALSE;
-			td->tile.w = td->font.w;
-			td->tile.h = td-> font.h;
+			td->tile.w = graphics_modes[i].cell_width;
+      td->tile.h = graphics_modes[i].cell_height;
 			break;
-		}
-
-		case GRAPHICS_ORIGINAL:
-		{
-			ANGBAND_GRAF = "old";
-			path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_GRAF, "8x8.png");
-			use_transparency = FALSE;
-			td->tile.w = td->tile.h = 8;
-			break;
-		}
-
-		case GRAPHICS_ADAM_BOLT:
-		{
-			ANGBAND_GRAF = "new";
-			path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_GRAF, "16x16.png");
-			use_transparency = TRUE;
-			td->tile.w = td->tile.h =16;
-			break;
-		}
-
-		case GRAPHICS_NOMAD:
-		{
-			ANGBAND_GRAF = "nomad";
-			path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_GRAF, "8x16.png");
-			use_transparency = TRUE;
-			td->tile.w = td->tile.h =16;
-			break;
-		}
-
-		case GRAPHICS_DAVID_GERVAIS:
-		{
-			ANGBAND_GRAF = "david";
-			path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_GRAF, "32x32.png");
-			use_transparency = FALSE;
-			td->tile.w = td->tile.h =32;
-			break;
-		}
-	}
+    }
+  } while (graphics_modes[i++].grafID != 0);
 
 	/* Free up old graphics */
 	if (graphical_tiles != NULL) cairo_surface_destroy(graphical_tiles);
@@ -2766,6 +2731,9 @@ errr init_gtk(int argc, char **argv)
 
 	/* Init dirs */
 	create_needed_dirs();	
+
+  /* load possible graphics modes */
+  init_graphics_modes("graphics.txt");
 	
 	/* Load Preferences */
 	load_prefs();
