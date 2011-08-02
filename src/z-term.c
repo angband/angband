@@ -1000,6 +1000,39 @@ static void Term_fresh_row_text(int y, int x1, int x2)
 	}
 }
 
+/*
+ * Mark a spot as needing refresh (see "Term_fresh")
+ */
+errr Term_mark(int x, int y)
+{
+	//byte oa;
+	//char oc;
+	//byte ota;
+	//char otc;
+	byte *old_aa = Term->old->a[y];
+	char *old_cc = Term->old->c[y];
+	byte *old_taa = Term->old->ta[y];
+	char *old_tcc = Term->old->tc[y];
+
+	old_aa[x] = Term->attr_blank;
+	old_cc[x] = Term->char_blank;
+	old_taa[x] = Term->attr_blank;
+	old_tcc[x] = Term->char_blank;
+
+	/* Expand the "change area" as needed */
+	//if (x1 >= 0)
+	//{
+		/* Check for new min/max row info */
+		if (y < Term->y1) Term->y1 = y;
+		if (y > Term->y2) Term->y2 = y;
+
+		/* Check for new min/max col info in this row */
+		if (x < Term->x1[y]) Term->x1[y] = x;
+		if (x > Term->x2[y]) Term->x2[y] = x;
+	//}
+	return (0);
+}
+
 byte tile_width = 1;            /* Tile width in units of font width */
 byte tile_height = 1;           /* Tile height in units of font height */
 

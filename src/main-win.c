@@ -543,7 +543,7 @@ static DIBINIT infGraph;
 static DIBINIT infMask;
 
 static int overdraw = 0;
-static int overdrawmax = 0;
+static int overdrawmax = -1;
 
 static int alphablend = 0;
 static BLENDFUNCTION blendfn;
@@ -1321,19 +1321,19 @@ static bool init_graphics(void)
 			}
 		}
 		if (mode) {
-			if (!mode->name[0]) {
-				plog_fmt("invalid tile name '%s'", mode->menuname);
+			if (!mode->pref[0]) {
+				plog_fmt("invalid tile prefname '%s'", mode->menuname);
 				return FALSE;
 			}
 			wid = mode->cell_width;
 			hgt = mode->cell_height;
 			if ((wid < 2) || (hgt < 2)) {
-				plog_fmt("invalid tile dimensions in tileset name: '%s'", mode->name);
+				plog_fmt("invalid tile dimensions in tileset name: '%s'", mode->menuname);
 				return FALSE;
 			}
 
 			name = mode->file;
-			ANGBAND_GRAF = mode->name;
+			ANGBAND_GRAF = mode->pref;
 			use_transparency = FALSE;
 
 			overdraw = mode->overdrawRow;
@@ -1807,7 +1807,7 @@ static errr Term_xtra_win_react(void)
 			/* Cannot enable */
 			arg_graphics = GRAPHICS_NONE;
 		} else {
-			if (overdraw) {
+			if (alphablend || overdraw) {
 				td->t.pict_hook = Term_pict_win_alpha;
 			} else {
 				td->t.pict_hook = Term_pict_win;
@@ -2554,38 +2554,35 @@ static errr Term_pict_win_alpha(int x, int y, int n, const byte *ap, const char 
 		if ((w1 == tw2) && (h1 == th2))
 		{
 			/* Copy the terrain picture from the bitmap to the window */
-			if (overdraw && (trow >= overdraw) && (y > 2) && (trow <= overdrawmax)) {
-  				BitBlt(hdc, x2, y2-th2, tw2, th2*2, hdcSrc, x3, y3-h1, SRCCOPY);
-			/* tell the core that the top tile is different than what it thinks */
-			} else {
-  				BitBlt(hdc, x2, y2, tw2, th2, hdcSrc, x3, y3, SRCCOPY);
-			}
+			BitBlt(hdc, x2, y2, tw2, th2, hdcSrc, x3, y3, SRCCOPY);
 		}
 		else
 		{
 			/* Copy the terrain picture from the bitmap to the window */
-			if (overdraw && (trow >= overdraw) && (y > 2) && (trow >= overdrawmax)) {
-				StretchBlt(hdc, x2, y2-th2, tw2, th2*2, hdcSrc, x3, y3-h1, w1, h1*2, SRCCOPY);
-			/* tell the core that the top tile is different than what it thinks */
-			} else {
-				StretchBlt(hdc, x2, y2, tw2, th2, hdcSrc, x3, y3, w1, h1, SRCCOPY);
-			}
+			StretchBlt(hdc, x2, y2, tw2, th2, hdcSrc, x3, y3, w1, h1, SRCCOPY);
 		}
+		if (overdraw && (trow >= overdraw) && (y > 2) && (trow <= overdrawmax)) {
+			AlphaBlend(hdc, x2, y2-th2, tw2, th2, hdcSrc, x1, y1-h1, w1, h1, blendfn);
+			/* tell the core that the top tile is different than what it thinks */
+			Term_mark(x, y-tile_height);
+			Term_mark(x, y); /* ugg this means that this tile is drawn every frame */
+		}
+
 		/* Only draw if terrain and overlay are different */
 		if ((x1 != x3) || (y1 != y3))
 		{
 			/* Copy the picture from the bitmap to the window */
-			//AlphaBlend(hdc, x2, y2, tw2, th2, hdcSrc, x1, y1, w1, h1, blendfn);
-			if (overdraw && (row >= overdraw) && (y > 2) && (row >= overdrawmax)) {
+			if (overdraw && (row >= overdraw) && (y > 2) && (row <= overdrawmax)) {
   				AlphaBlend(hdc, x2, y2-th2, tw2, th2*2, hdcSrc, x1, y1-h1, w1, h1*2, blendfn);
-			/* tell the core that the top tile is different than what it thinks */
+  				/* tell the core that the top tile is different than what it thinks */
+				Term_mark(x, y-tile_height);
+				Term_mark(x, y); /* ugg this means that this tile is drawn every frame */
+				/* but it is needed, otherwise the top does not get drawn again when */
+				/* the user of this tile does not move, but something else does */
 			} else {
 				AlphaBlend(hdc, x2, y2, tw2, th2, hdcSrc, x1, y1, w1, h1, blendfn);
 			}
 		}
-		//if (overdraw && (col > overdraw) && (y > 2) && (row > overdrawRow)) {
-		//	AlphaBlend(hdc, x2, y2-th2, tw2, th2, hdcSrc, x1, y1-h1, w1, h1, blendfn);
-		//}
 	}
 
 	/* Release */
