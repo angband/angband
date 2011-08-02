@@ -14,8 +14,8 @@ info.
 Various concepts are mentioned in the descriptions below, including 
 "disturb", (cancel any running, resting, or repeated commands, which are 
 in progress), "flush" (forget any keypresses waiting in the keypress 
-queue, including any macros in progress), "fresh" (dump any pending 
-output to the screen), and "sub-windows" (see below).
+queue), "fresh" (dump any pending output to the screen), and "sub-windows" 
+(see below).
 
 
 === Interface options ===

@@ -413,24 +413,10 @@ static bool store_will_buy(struct store *store, const object_type *o_ptr)
 		/* General Store */
 		case STORE_GENERAL:
 		{
-			size_t i;
-			bool accept = FALSE;
-
-			/* Accept lights and food */
-			if (o_ptr->tval == TV_LIGHT || o_ptr->tval == TV_FOOD)
-			    accept = TRUE;
-
-			/* Accept staples */
-			for (i = 0; !accept && i < N_ELEMENTS(staples); i++)
-			{
-				if (staples[i].tval == o_ptr->tval &&
-				    staples[i].sval == o_ptr->sval &&
-				    object_is_known(o_ptr))
-					accept = TRUE;
-			}
-
-			if (!accept) return FALSE;
-			break;
+			/* Accept lights (inc. oil), spikes and food */
+			if (o_ptr->tval == TV_LIGHT || o_ptr->tval == TV_FOOD ||
+					o_ptr->tval == TV_FLASK || o_ptr->tval == TV_SPIKE) break;
+			else return FALSE;
 		}
 
 		/* Armoury */
@@ -549,7 +535,7 @@ static bool store_will_buy(struct store *store, const object_type *o_ptr)
 		}
 	}
 
-	/* Ignore "worthless" items XXX XXX XXX */
+	/* Ignore "worthless" items */
 	if (object_value(o_ptr, 1, FALSE) <= 0) return (FALSE);
 
 	/* Assume okay */

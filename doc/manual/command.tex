@@ -1,0 +1,697 @@
+\section{Commands --- command.txt}
+\subsection{Command Descriptions} 
+\paragraph{}
+The following command descriptions are listed as the command name plus the
+default key to use it. For those who prefer the original "roguelike"
+keyset, the name and key of the roguelike command is also shown if it is
+different. Then comes a brief description of the command, including
+information about alternative methods of specifying the command in each
+keyset, when needed.
+
+\paragraph{}
+Some commands use the "repeat count" to automatically repeat the command
+several times, while others use the "repeat count" to specify a "quantity"
+for the command, and still others use it as an "argument" of some
+kind.
+
+\paragraph{}
+Most commands take no "energy" to perform, while other commands only take
+energy when they cause the world to change in some way. For example,
+attempting to read a scroll while blind does not use any energy.
+
+\subsubsection{Inventory Commands}
+\begin{description}
+
+\item[Inventory list (i)] Displays a list of objects being carried but not
+  equipped. You can carry up to 23 different items, not counting
+  those in your equipment. Often, many identical objects can be
+  "stacked" into a "pile" which will count as a single item. This
+  is always true of things like potions, scrolls, and food, but
+  you may have to set options to allow wands, staves, and other
+  such objects to stack. Each object has a weight, and if you
+  carry more objects than your strength permits, you will begin to
+  slow down. The amount of weight you can still carry without
+  being overencumbered, or the amount of extra weight you are
+  currently carrying is displayed at the top of the screen.
+ 
+\item[Equipment list (e)] Use this command to display a list of the
+  objects currently being used by your character. Your character has
+  12 slots for equipment and 10 slots for ammunition (the quiver).
+  Each equipment slot corresponds to a different location on the body,
+  and each of which may contain only a single object at a time, and
+  each of which may only contain objects of the proper "type", and
+  which include WIELD (weapon), BOW (missile launcher), LEFT (ring),
+  RIGHT (ring), NECK (amulet), LIGHT (light source), BODY (armor),
+  OUTER (cloak), ARM (shield), HEAD (helmet), HANDS (gloves), FEET
+  (boots). You must be wielding/wearing certain objects to take
+  advantage of their special powers.
+
+\item[Drop an item (d)] This drops an item from your inventory or
+  equipment onto the dungeon floor. If the floor spot you are standing
+  on already has an object in it, Angband will attempt to drop the
+  item onto an adjacent space. Be warned that if the floor is full and
+  you attempt to drop something, it may disappear and be destroyed.
+  Doors and traps are considered objects for the purpose of
+  determining if the space is occupied. This command may take a
+  quantity, and takes some energy.
+
+\item[Destroy an item (k) or Destroy an item (\^{}D)] This destroys an item
+  in your inventory or on the dungeon floor.  If the selected pile
+  contains multiple objects, you may specify a quantity. You must
+  always (currently) verify this command. This command may take a
+  quantity, and takes some energy.
+
+\item[Wear/Wield equipment (w)] To wear or wield an object in your
+  inventory, use this command. Since only one object can be in each
+  slot at a time, if you wear or wield an item into a slot which is
+  already occupied, the old item will be first be taken off, and may
+  in fact be dropped if there is no room for it in your inventory.
+  Wielding ammunition will add it to an empty slot in your quiver and
+  prompt you to replace a type of ammunition if your quiver is already
+  full.  This command takes some energy.
+
+\item[Take off equipment (t) or Take off equipment (T)] Use this command
+  to take off a piece of equipment and return it to your inventory.
+  Occasionally, you will run into a cursed item which cannot be
+  removed.  These items normally penalize you in some way and cannot
+  be taken off until the curse is removed. If there is no room in your
+  inventory for the item, your pack will overflow and you will drop
+  the item after taking it off. You may also remove ammunition from
+  your quiver with this command. This command takes some energy.
+\end{description}
+
+\subsubsection{Movement Commands}
+\begin{description}
+\item[Moving (arrow keys, number keys) or (arrow keys, number keys and
+  'yuhjklbn')]
+  This causes you to move one step in a given direction. If the square you
+  wish to move into is occupied by a monster, you will attack it. If the
+  square is occupied by a door or a trap you may attempt to open or disarm
+  it if the appropriate option is set.  Preceeding this command with CTRL
+  will cause you to attack in the appropriate direction, but will not move
+  your character if no monster is there. These commands take some energy.
+
+\item[Walk (with pickup) (;)] Moves one step in the
+  given direction. The square you are moving into must not be
+  blocked by walls or doors. You will pick up any items in the
+  destination grid if the "always\_pickup" option is set.  You may
+  also use the "original" direction keys (both keysets) or the
+  "roguelike" direction keys (roguelike keyset) to walk in a
+  direction. This command may take a count, requires a direction,
+  and takes some energy.
+
+\item[Walk (W)] The walk command lets you willingly walk into a trap
+  or a closed door, without trying to open or disarm it. This
+  command may take a count, requires a direction, and takes some
+  energy.
+  
+\item[Run (.) or Run (,)] This command will move in the given
+  direction, following any bends in the corridor, until you either
+  have to make a "choice" between two directions or you are
+  disturbed. You can configure what will disturb you by setting
+  the disturbance options. You may also use shift plus the
+  "roguelike" direction keys (roguelike keyset), or shift plus the
+  "original" direction keys on the keypad (both keysets, some
+  machines) to run in a direction. This command may take an
+  argument, requires a direction, and takes some energy.
+  
+\item[Go up staircase ($<$)] Climbs up an up staircase you are
+  standing on. There is always at least one staircase going up on
+  every level except for the town level (this doesn't mean it's
+  easy to find). Going up a staircase will take you to a new
+  dungeon level unless you are at 50 feet (dungeon level 1), in
+  which case you will return to the town level. Note that whenever
+  you leave a level (not the town), you will never find it again.
+  This means that for all intents and purposes, any objects on
+  that level are destroyed. This includes artifacts unless the
+  "Create characters in preserve mode" option was set when your
+  character was created, in which case the artifacts may show up
+  again later. This command takes some energy.
+  
+\item[Go down staircase ($>$)] Descends a down staircase you are
+  standing on. There are always at least two staircases going down
+  on each level, except for the town which has only one, and
+  "quest" levels, which have none until the quest monster is
+  killed. Going down a staircase will take you to a new dungeon
+  level. See "Go Up Staircase" for more info.  This command takes
+  some energy.
+\end{description}
+
+\subsubsection{Resting Commands}
+\begin{description}
+\item[Stay still (with pickup) (,) or Stay still (with pickup) (.)]
+  Stays in the
+  same square for one move. If you normally pick up objects you
+  encounter, you will pick up whatever you are standing on. You
+  may also use the "5" key (both keysets). This command may take a
+  count, and takes some energy.
+  
+\item[Get objects (g)] Pick up objects and gold on the floor beneath
+  you. Picking up gold takes no time, and objects take 1/10th of a
+  normal turn each (maximum time cost is a full turn). You may
+  pick up objects until the floor is empty or your backpack is
+  full.
+  
+\item[Rest (R)] Resting is better for you than repeatedly staying
+  still, and can be told to automatically stop after a certain
+  amount of time, or when various conditions are met. In any case,
+  you always wake up when anything disturbing happens, or when you
+  press any key. To rest, enter the Rest command, followed by the
+  number of turns you want to rest, or "*" to rest until your
+  hitpoints and mana are restored, or "\&" to rest until you are
+  fully "healed". This command may take an argument (used for the
+  number of turns to rest), and takes some energy.
+\end{description}
+
+\subsubsection{Searching Commands}
+\begin{description}
+\item[Search (s)]
+  This command can be used to locate hidden traps and secret doors
+  in the spaces adjacent to the player. More than a single turn of
+  searching will be required in most cases, so it is affected by
+  the 'always repeat' option. You should always search a chest
+  before trying to open it, since they are generally trapped. This
+  command can take a count, which is useful if you are fairly sure
+  of finding something eventually, since the command stops as soon
+  as anything is found. This command takes some energy.
+  
+\item[Toggle search mode (S) or Toggle search mode (\#)] This command
+  will take you into and out of search mode. When first pressed,
+  the message "Searching" will appear at the bottom of the screen.
+  You are now taking two turns for each command, one for the
+  command and one turn to search. This means that you are taking
+  twice the time to move around the dungeon, and therefore twice
+  the food. Search mode will automatically turn off if you are
+  disturbed. You may also turn off search mode by entering the
+  Search Mode command again.
+\end{description}
+
+\subsubsection{Alter Commands}
+\begin{description}
+\item[Tunnel (T) or Tunnel (\^{}T)]
+  Tunnelling or mining is a very useful art. There are many kinds of rock,
+  with varying hardness, including permanent rock (permanent), granite
+  (very hard), quartz veins (hard), magma veins (soft), and rubble (very
+  soft). Quartz and Magma veins may be displayed in a special way, and may
+  sometimes contain treasure, in which case they will be displayed in a
+  different way. Rubble sometimes covers an object. It is hard to tunnel
+  unless you are wielding a heavy weapon or a shovel or a pick. Tunnelling
+  ability increases with strength and weapon weight. This command may take
+  a count, requires a direction, and takes some energy.
+
+\item[Open a door or chest (o)] To open an object such as a door or chest,
+  you must use this command. If the object is locked, you will attempt to
+  pick the lock based on your disarming ability.  If you open a trapped
+  chest without disarming the traps first, the trap will be set off. Some
+  doors will be jammed shut and may have to be forced open. Opening will
+  automatically attempt to pick any lock doors. You may need several tries
+  to open a door or chest. This command may take a count, requires a
+  direction, and takes some energy.
+
+\item[Close a door (c)] Non-intelligent and some other creatures cannot
+  open doors, so shutting doors can be quite valuable.  Furthermore,
+  monsters cannot see you behind closed doors, so closing doors may allow
+  you to buy some time without being attacked. Broken doors cannot be
+  closed.  Bashing a door open may break it. This command may take a
+  count, requires a direction, and takes some energy.
+
+\item[Jam a door (j) or Spike a door (S)]
+  Many monsters can simply open closed doors, and can eventually get
+  through a locked door.  You may therefore occasionally want to jam a
+  door shut with iron spikes.  Each spike used on the door will make it
+  harder for a monster to bash down the door, and will make it take longer
+  time, up to a certain limit.  A door that was locked before it was
+  jammed or spiked will be harder to bash down.  Smaller monsters are less
+  able to bash down doors.  In order to use this command, you must be
+  carrying iron spikes.  This command requires a direction, and takes some
+  energy.
+
+\item[Bash a door (B) or Force a door (f)]
+  This command allows you to bash down jammed doors. Your bashing ability
+  increases with strength. Bashing open a door can (briefly) throw you off
+  balance. Doors that are stuck, or which have been jammed closed with
+  spikes can only be opened by bashing, and all closed doors can be bashed
+  open if desired. Bashing a door open may permanently break it so that it
+  can never be closed. This command may take a count, requires a
+  direction, and takes some energy.
+
+\item[Disarm a trap or chest, or lock a door (D)]
+  You can attempt to disarm traps on the floor or on chests.  If you fail,
+  there is a chance that you will blunder and set it off.  You can only
+  disarm a trap after you have found it (usually with the Search command).
+  The command can also be used to lock a closed door.  This will create a
+  hindrance for monsters.  Even if many monsters will be able to pick the
+  lock or bash the door down, it will often take them some time.  This
+  command may take a count, requires a direction, and takes some energy.
+  
+\item[Alter (+)]
+  This special command allows the use of a single keypress to select any
+  of the "obvious" commands above (attack, tunnel, bash, open, disarm,
+  close), and, by using keymaps, to combine this keypress with
+  directions. In general, this allows the use of the "control" key plus
+  the appropriate "direction" key (including the roguelike direction keys
+  in roguelike mode) as a kind of generic "alter the terrain feature of an
+  adjacent grid" command. This command may take a count, requires a
+  direction, and takes some energy.
+\end{description}
+
+\subsubsection{Spell and Prayer Commands}
+\begin{description}
+\item[Browse a book (b) or Peruse a book (P)]
+  Only mages, rogues, and rangers can read magic books, and only priests
+  and paladins can read prayer books. Warriors cannot read any books. When
+  this command is used, all of the spells or prayers contained in the
+  selected book are displayed, along with information such as their level,
+  the amount of mana required to cast them, and whether or not you know
+  the spell or prayer.
+
+\item[Gain new spells or prayers (G)]
+  Use this command to actually learn new spells or prayers. When you are
+  able to learn new spells or prayers, the word "Study" will appear on the
+  status line at the bottom of the screen.  If you have a book in your
+  possession, containing spells or prayers which you may learn, then you
+  may choose to study that book.  If you are a mage, rogue, or ranger, you
+  may actually choose which spell to study.  If you are a priest or
+  paladin, your gods will choose a prayer for you.  There are nine books
+  of each type, five of which are normally found only in the dungeon. This
+  command takes some energy.
+
+\item[Cast a spell (m)]
+  To cast a spell, you must have previously learned the spell and must
+  have in your inventory a book from which the spell can be read. Each
+  spell has a chance of failure which starts out fairly large but
+  decreases as you gain levels. If you don't have enough mana to cast a
+  spell, you will be prompted for confirmation. If you decide to go ahead,
+  the chance of failure is greatly increased, and you may wind up
+  paralyzed for several turns. Since you must read the spell from a book,
+  you cannot be blind or confused while casting, and there must be some
+  light present. This command takes some energy: the higher your level,
+  the less it takes, but the higher the spell level, the more it takes.
+
+\item[Pray a prayer (p)]
+  To pray effectively, you must have previously learned the prayer and
+  must have in your inventory a book from which the prayer can be
+  read. Each prayer has a chance of being ignored which starts out fairly
+  large but decreases as you gain levels.  If you don't have enough mana
+  to cast a spell, you will be prompted for confirmation. If you decide to
+  go ahead, the chance of failure is greatly increased, and you may lose a
+  point of constitution.  Since you must read the prayer from a book, you
+  cannot be blind or confused while praying, and there must be some light
+  present.  This command takes some energy --- as with spells, higher caster
+  level means less energy used, but higher spell level means more.
+\end{description}
+
+\subsubsection{Object Manipulation Commands} 
+\begin{description}
+\item[Eat some food (E)]
+  You must eat regularly to prevent starvation. As you grow hungry, a
+  message will appear at the bottom of the screen saying "Hungry".  If you
+  go hungry long enough, you will become weak, then start fainting, and
+  eventually, you may will die of starvation. You may use this command to
+  eat food in your inventory. Note that you can sometimes find food in the
+  dungeon, but it is not always wise to eat strange food. This command
+  takes some energy.
+
+\item[Fuel your lantern/torch (F)]
+  If you are using a torch and have more torches in your pack, or you are
+  using a lantern and have flasks of oil in your pack, then your can
+  "refuel" them with this command. Torches and Lanterns are limited in
+  their maximal fuel. In general, two flasks will fully fuel a lantern and
+  two torches will fully fuel a torch. This command takes some energy.
+
+\item[Quaff a potion (q)]
+  Use this command to drink a potion.  Potions affect the player in
+  various ways, but the effects are not always immediately obvious.  This
+  command takes some energy.
+
+\item[Read a scroll (r)]
+  Use this command to read a scroll. Scroll spells usually have an area
+  effect, except for a few cases where they act on other objects.  Reading
+  a scroll causes the parchment to disintegrate as the scroll takes
+  effect. Most scrolls which prompt for more information can be aborted
+  (by pressing escape), which will stop reading the scroll before it
+  disintegrates. This command takes some energy.
+ 
+\item[Inscribe an object (\{)]
+  This command inscribes a string on an object. The inscription is
+  displayed inside curly braces after the object description. The
+  inscription is limited to the particular object (or pile) and is not
+  automatically transferred to all similar objects.  Under certain
+  circumstances, Angband will display "fake" inscriptions on certain
+  objects ("cursed", "broken", "tried", "empty", "NN\% off") when
+  appropriate. These "fake" inscriptions remain all the time, even if the
+  player chooses to add a "real" inscription on top of it later.
+
+\paragraph{}
+In addition, Angband will occasionally place a "real" inscription on an
+object for you, normally as the result of your character getting a
+"feeling" about the item. All characters will get "feelings" about weapons
+and armor after carrying them for a while.  Warriors (who understand
+weapons and armor best) get the most detailed feelings, and get them
+faster than other classes. Rogues (used to handling all sorts of stolen
+goods) are also very good, as are paladins (basically warriors who are
+religious.) Rangers are not so well-versed in melee weapons, being
+normally people of the outdoors and the wilderness who prefer archery and
+camouflage to heavy metal armor and weaponry, while priests and mages
+simply are not experienced enough in matters concerning melee to be able
+to tell much about an item --- though a priest will realise the extent of
+his knowledge fairly quickly, as they are often called upon to fight for
+their faith and have learned a little from these experiences and divine
+insight.  Mages, frankly, haven't a clue. But then, they don't need it
+when they can learn the spell of Identify very early on in the game.
+
+\paragraph{}
+An item labeled as "{empty}" was found to be out of charges,
+and an item labeled as "{tried}" is a "flavored" item which the
+character has used, but whose effects are unknown. Certain inscriptions
+have a meaning to the game, see "@\#", "@x\#", "!*", and "!x", in the
+section on inventory object selection.
+
+\item[Uninscribe an object (\})]
+  This command removes the inscription on an object. This command will
+  have no effect on "fake" inscriptions added by the game itself.
+\end{description}
+
+\subsubsection{Magical Object Commands} 
+\begin{description}
+\item[Activate an artifact (A)]
+  You have heard rumors of special weapons and armor deep in the Pits,
+  items that can let you breathe fire like a dragon or light rooms with
+  just a thought. Should you ever be lucky enough to find such an item,
+  this command will let you activate its special ability. Special
+  abilities can only be used if you are wearing or wielding the item. This
+  command takes some energy.
+
+\item[Aim a wand (a) or Zap a wand (z)] Wands must be aimed in a direction
+  to be used. Wands are magical devices, and therefore there is a chance
+  you will not be able to figure out how to use them if you aren't good
+  with magical devices. They will fire a shot that affects the first
+  object or creature encountered or fire a beam that affects anything in a
+  given direction, depending on the wand. An obstruction such as a door or
+  wall will generally stop the effects from traveling any farther. This
+  command requires a direction and can use a target.  This command takes
+  some energy.
+
+\item[Use a staff (u) or Zap a staff (Z)]
+  This command will use a staff. A staff is normally very similar to a
+  scroll, in that they normally either have an area effect or affect a
+  specific object. Staves are magical devices, and there is a chance you
+  will not be able to figure out how to use them.  This command takes some
+  energy.
+ 
+\item[Zap a rod (z) or Activate a rod (a)]
+  Rods are extremely powerful magical items, which cannot be burnt or
+  shattered, and which can have either staff-like or wand-like effects,
+  but unlike staves and wands, they don't have charges.  Instead, they
+  draw on the ambient magical energy to recharge themselves, and therefore
+  can only be activated once every few turns. The recharging time varies
+  depending on the type of rod.  This command may require a direction
+  (depending on the type of rod, and whether you are aware of its type)
+  and can use a target.  This command takes some energy.
+\end{description}
+
+\subsubsection{Throwing and Missile Weapons} 
+\begin{description}
+\item[Fire an item (f) or Fire an item (t)]
+  This command will fire a will allow you to fire a missile from either
+  your quiver or your inventory provided it is the appropriate ammunition
+  for the current missile weapon you have equipped.  You may not fire an
+  item without a missile weapon equipped. Fired ammunition has a chance of
+  breaking. This command takes some energy.
+
+\item[Fire default ammo at nearest (h) or (TAB)]
+  If you have a missile weapon equipped and the appropriate ammunition in
+  your quiver, you can use this command to fire at the nearest visible
+  enemy. This command will cancel itself if you lack a launcher,
+  ammunition or a visible target that is in range. The first ammunition of
+  the correct type found in the quiver is used.  This command takes some
+  energy.
+
+\item[Throw an item (v)]
+  You may throw any object carried by your character.  Depending on the
+  weight, it may travel across the room or drop down beside you.  Only one
+  object from a pile will be thrown at a time. Note that throwing an
+  object will often cause it to break, so be careful!  If you throw
+  something at a creature, your chances of hitting it are determined by
+  your plusses to hit, your ability at throwing, and the object's plusses to
+  hit. Once the creature is hit, the object may or may not do any damage
+  to it. You've heard rumors that some objects found in the dungeon can do
+  huge amounts of damage when thrown, but you're not sure which objects
+  those are.... Note that flasks of oil will do a fairly large chunk of
+  fire damage to a monster on impact. If you are wielding a missile
+  launcher compatible with the object you are throwing, then you
+  automatically use the launcher to fire the missile with much higher
+  range, accuracy, and damage, than you would get by just throwing the
+  missile. Throw, like fire, requires a direction. Targeting mode (see the
+  next command) can be invoked with "*" at the "Direction?"  prompt. This
+  command takes some energy.
+
+\item[Targeting Mode (*)]
+  This will allow you to aim your ranged attacks at a specific monster or
+  grid, so that you can point directly towards that monster or grid (even
+  if this is not a "compass" direction) when you are asked for a
+  direction. You can set a target using this command, or you can set a new
+  target at the "Direction?" prompt when appropriate. At the targeting
+  prompt, you have many options. First of all, targetting mode starts
+  targetting nearby monsters which can be reached by "projectable" spells
+  and thrown objects. In this mode, you can press "t" (or "5" or ".") to
+  select the current monster, space to advance to the next monster, "-" to
+  back up to the previous monster, direction keys to advance to a monster
+  more or less in that direction, "r" to "recall" the current monster, "q"
+  to exit targetting mode, and "p" (or "o") to stop targetting monsters
+  and enter the mode for targetting a location on the floor or in a
+  wall. Note that if there are no nearby monsters, you will automatically
+  enter this mode.  Note that hitting "o" is just like "p", except that
+  the location cursor starts on the last examined monster instead of on
+  the player.  In this mode, you use the "direction" keys to move around,
+  and the "q" key to quit, and the "t" (or "5" or ".") key to target the
+  cursor location. Note that targetting a location is slightly
+  "dangerous", as the target is maintained even if you are far away. To
+  cancel an old target, simply hit "*" and then ESCAPE (or "q"). Note that
+  when you cast a spell or throw an object at the target location, the
+  path chosen is the "optimal" path towards that location, which may or
+  may not be the path you want.  Sometimes, by clever choice of a location
+  on the floor for your target, you may be able to convince a thrown
+  object or cast spell to squeeze through a hole or corridor that is
+  blocking direct access to a different grid. Launching a ball spell or
+  breath weapon at a location in the middle of a group of monsters can
+  often improve the effects of that attack, since ball attacks are not
+  stopped by interposed monsters if the ball is launched at a target.
+\end{description}
+
+\subsubsection{Looking Commands} 
+\begin{description}
+\item[Full screen map (M)]
+  This command will show a map of the entire dungeon, reduced by a factor
+  of nine, on the screen. Only the major dungeon features will be visible
+  because of the scale, so even some important objects may not show up on
+  the map. This is particularly useful in locating where the stairs are
+  relative to your current position, or for identifying unexplored areas
+  of the dungeon.
+
+\item[Locate player on map (L) or Where is the player (W)]
+  This command lets you scroll your map around, looking at all sectors of
+  the current dungeon level, until you press escape, at which point the
+  map will be re-centered on the player if necessary. To scroll the map
+  around, simply press any of the "direction" keys. The top line will
+  display the sector location, and the offset from your current sector.
+
+\item[Look around (l) or Examine things (x)]
+  This command is used to look around at nearby monsters (to determine
+  their type and health) and objects (to determine their type). It is also
+  used to find out what objects (if any) are under monsters, and if a
+  monster is currently inside a wall, and what is under the player.  When
+  you are looking at something, you may hit space for more details, or to
+  advance to the next interesting monster or object, or minus ("-") to go
+  back to the previous monster or object, or a direction key to advance to
+  the nearest interesting monster or object (if any) in that general
+  direction, or "r" to recall information about the current monster race,
+  or "q" or escape to stop looking around. You always start out looking at
+  "yourself".
+
+\item[Inspect an item (I)]
+  This command lets you inspect an item.  This will tell you things about
+  the special powers of the object, as well as attack information for
+  weapons. It will also tell you what resistances or abilities you have
+  noticed for the item and if you have not yet completely identified all
+  properties.
+        
+\item[List visible monsters ([)]
+  This command lists all monsters that are visible to you, telling you how
+  many there are of each kind. It also tells you whether they are asleep,
+  and where they are (relative to you).
+
+\item[List visible items ({]})]
+  This command lists all items that are visible to you, telling you how of
+  each there are and where they are on the level relative to your current
+  location.
+\end{description}
+
+\subsubsection{Message Commands} 
+\begin{description}
+\item[Repeat level feeling (\^{}F)]
+  Repeats the feeling about the dungeon level that you got when you first
+  entered the level.
+
+\item[View previous messages (\^{}P)]
+  This command shows you all the recent messages. You can scroll through
+  them, or exit with ESCAPE.
+
+\item[Take notes (:)]
+  This command allows you to take notes, which will then appear in your
+  message list and your character history (prefixed with "Note:").
+\end{description}
+
+\subsubsection{Game Status Commands} 
+\begin{description}
+\item[Character Description (C)]
+  Brings up a full description of your character, including your skill
+  levels, your current and potential stats, and various other information.
+  From this screen, you can change your name or use the file character
+  description command to save your character status to a file. That
+  command saves additional information, including your background, your
+  inventory, and the contents of your house.
+
+\item[Check knowledge ($\sim$)]
+  This command allows you to ask about the knowledge possessed by your
+  character. Currently, this includes being able to list all known
+  "artifacts", "uniques", and "objects". Normally, once an artifact is
+  "generated", and "lost", it can never again be found, and will become
+  "known" to the player. With "preserve" mode, an artifact can never be
+  "lost" until it is "known" to the player.  In either case, any "known"
+  artifacts not in the possession of the player will never again be
+  "generated". The "uniques" are special "unique" monsters which can only
+  be killed once per game.  Certain "objects" come in "flavors", and you
+  must determine the effect of each "flavor" once for each such type of
+  object, and this command will allow you to display all "known" flavors.
+  Inscribing items in this list will cause you to similarly inscribe all
+  similar items you find from this point on.
+
+\item[Interact with the system (!)]
+  Allow the user to interact with the underlying visual system.  This
+  command is currently unused.
+\end{description}
+
+\subsubsection{Saving and Exiting Commands} 
+\begin{description}
+\item[Save and Quit (Ctrl-X)]
+  To save your game so that you can return to it later, use this
+  command. Save files will also be generated (hopefully) if the game
+  crashes due to a system error. After you die, you can use your savefile
+  to play again with the same options and such.
+
+\item[Save (Ctrl-S)]
+  This command saves the game but doesn't exit Angband. Use this
+  frequently if you are paranoid about having your computer crash (or your
+  power go out) while you are playing.
+
+\item[Quit (commit suicide) (Q)]
+  Kills your character and exits Angband. You will be prompted to make
+  sure you really want to do this, and then asked to verify that
+  choice. Note that dead characters are dead forever.
+\end{description}
+
+\subsubsection{User pref file commands}
+\begin{description}
+\item[Interact with options (=)]
+  Allow you to interact with options. Note that using the "cheat" options
+  may mark your savefile as unsuitable for the high score list. The
+  "window" options allow you to specify what should be drawn in any of the
+  special sub-windows (not available on all platforms). See the help files
+  ``customize.txt'' and ``options.txt'' for more info.  You can also
+  interact with keymaps under this menu.
+\begin{description}
+\item[Interact with keymaps - option submenu]
+  Allow you to interact with keymaps.  You may load or save keymaps from
+  user pref files, or define keymaps. You must define a "current action",
+  shown at the bottom of the screen, before you attempt to use any of the
+  "create keymaps" commands, which use that "current action" as their
+  action. This is a horrible interface, and will be fixed eventually.
+
+\item[Interact with visuals - option submenu]
+  Allow you to interact with visuals. You may load or save visuals from
+  user pref files, or modify the attr/char mappings for the monsters,
+  objects, and terrain features.  You must use the "redraw" command
+  (\^{}R) to redraw the map after changing attr/char mappings.  NOTE: It
+  is generally easier to modify visuals via the "knowledge" menus.
+
+\item[Interact with colors - option submenu]
+  Allow the user to interact with colors. This command only works on some
+  systems.  NOTE: It is commonly used to brighten the 'Light Dark' color
+  (eg. Cave Spiders) on displays with bad alpha settings.
+\end{description}
+\end{description}
+
+\subsubsection{Help}
+\begin{description}
+\item[Help (?)]
+  Brings up the Angband on-line help system. Note that the help files are
+  just text files in a particular format, and that other help files may be
+  available on the Net. In particular, there are a variety of spoiler
+  files which do not come with the standard distribution. Check the place
+  you got Angband from or ask on the newsgroup rec.games.roguelike.angband
+  about them.
+
+\item[Identify Symbol (/)]
+  Use this command to find out what a character stands for. For instance,
+  by pressing "/.", you can find out that the "." symbol stands for a
+  floor spot. When used with a symbol that represents creatures, the this
+  command will tell you only what class of creature the symbol stands for,
+  not give you specific information about a creature you can see. To get
+  that, use the Look command.
+
+\paragraph{}
+There are three special symbols you can use with the Identify Symbol
+command to access specific parts of your monster memory.  Typing Ctrl-A
+when asked for a symbol will recall details about all monsters, typing
+Ctrl-U will recall details about all unique monsters, and typing Ctrl-N
+will recall details about all non-unique monsters.
+
+\paragraph{}
+If the character stands for a creature, you are asked if you want to
+recall details. If you answer yes, information about the creatures you
+have encountered with that symbol is shown in the Recall window if
+available, or on the screen if not. You can also answer "k" to see the
+list sorted by number of kills, or "p" to see the list sorted by dungeon
+level the monster is normally found on. Pressing ESCAPE at any point will
+exit this command.
+
+\item[Game Version (V)]
+  This command will tell you what version of Angband you are using.  For
+  more information, see the "version.txt" help file.
+
+\item[Command lists (Enter)]
+  This brings up a little window in the middle of the screen, in which you
+  can select what command you would like to use by browsing.  Useful for
+  beginners.
+\end{description}
+
+\subsubsection{Extra Commands} 
+\begin{description}
+\item[Toggle Choice Window (\^{}E)]
+  Toggles the display in any sub-windows (if available) which are
+  displaying your inventory or equipment.
+
+\item[Redraw Screen (\^{}R)]
+  This command adapts to various changes in global options, and redraws
+  all of the windows. It is normally only necessary in abnormal
+  situations, such as after changing the visual attr/char mappings, or
+  enabling "graphics" mode.
+
+\item[Load screen dump (left-paren)]
+  This command loads a "snap-shot" of the current screen from the file
+  "dump.txt", and displays it on the screen.
+  
+\item[Save screen dump (right-paren)]
+  This command dumps a "snap-shot" of the current screen to the file
+  "dump.txt", including encoded color information. The command has three
+  variants:
+  \begin{description}
+  \item[text] a simple ascii dump of the screen concatenated with a
+    dump of the color attributes. It may be viewed in color with the '('
+    command.
+  \item[html] suitable for viewing in a web browser.
+  \item[forum] embedded html for vBulletin, suitable for pasting in web
+    forums like \url{http://angband.oook.cz/forums}.
+  \end{description}
+\end{description}

@@ -23,6 +23,7 @@
 #include "birth.h"
 #include "buildid.h"
 #include "init.h"
+#include "monster/mon-make.h"
 #include "object/pval.h"
 #include "object/tvalsval.h"
 #include "stats/db.h"
@@ -1159,7 +1160,7 @@ static bool stats_prep_db(void)
 	err = stats_db_exec("CREATE TABLE wearables_flags(level INT, count INT, k_idx INT, origin INT, of_idx INT, UNIQUE (level, k_idx, origin, of_idx) ON CONFLICT REPLACE);");
 	if (err) return false;
 
-	err = stats_db_exec("CREATE TABLE wearables_pval_flags(level INT, count INT, k_idx INT, origin INT, pval INT, of_idx INT, UNIQUE (level, k_idx, origin, of_idx) ON CONFLICT REPLACE);");
+	err = stats_db_exec("CREATE TABLE wearables_pval_flags(level INT, count INT, k_idx INT, origin INT, pval INT, of_idx INT, UNIQUE (level, k_idx, origin, pval, of_idx) ON CONFLICT REPLACE);");
 	if (err) return false;
 
 	err = stats_dump_info();

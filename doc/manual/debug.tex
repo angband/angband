@@ -1,0 +1,132 @@
+\section{Debug Command Descriptions --- debug.txt}
+\subsection{Item Creation}\index{creation!item}
+\begin{description}
+\item[Create an object (c)]
+    Provides a menu to let you create any object, and drops it on the
+    floor.
+
+\item[Create an artifact (C)]
+    Prompts you for the name of an artifact, then drops that artifact
+    nearby. You must give the name exactly as in artifact.txt. You may
+    optionally give a command-count, in which case this command drops the
+    artifact with that number nearby instead of prompting you for a name.
+
+\item[Create a good object (g)]
+    Creates a good object and places it nearby. If you provide a command-
+    count, creates that many good items.
+
+\item[Create a very good object (v)]
+    Creates a very good (``excellent'') object and places it nearby. If you
+    provide a command-count, creates that many very good items.
+
+\item[Play with an object (o)]
+    Lets you modify an object by randomly rerolling it as a normal, good,
+    or excellent object, or lets you modify it directly, tweaking the pval
+    and combat values.
+
+\item[Test kind (V)]
+    Requires a command-count. For the tval given by command-count, creates
+    one object of each sval and drops it nearby.
+\end{description}
+
+\subsection{Detection / Information}
+\begin{description}
+\item[Detect all (d)]
+    Detects all traps, doors, stairs, treasure, and monsters nearby.
+
+\item[Identify (i)]
+    Fully identifies an object.
+
+\item[Magic Mapping (m)]
+    Maps the nearby dungeon.
+
+\item[Self-knowledge (k)]
+    Grants you self-knowledge, as the potion of the same name.
+
+\item[Learn about objects (l)]
+    Requires a command-count. Makes you ``aware'' of all items with level
+    less than or equal to the command-count.
+
+\item[Monster recall (r)]
+    Gives you full monster recall on all monsters or on a chosen monster.
+
+\item[Unhide monsters (u)]
+    Reveals all monsters whose distance to the character is at most 255.
+    If given a command-count, uses that distance instead of 255.
+
+\item[Wizard-light the level (w)]
+    Lights the entire level, as the Potion of Enlightenment.
+
+\item[Create spoilers (")]
+    Lets you create a spoiler file for objects or monsters.
+\end{description}
+
+\subsection{Teleportation}
+\begin{description}
+\item[Teleport level (j)]
+    Allows you to teleport to any dungeon level instantly.
+
+\item[Phase Door (p)]
+    Teleports you up to 10 spaces away.
+
+\item[Teleport (t)]
+    Teleports you up to 100 spaces away.
+
+\item[Teleport to target (b)]
+    Teleports you to the last space you targeted (or close to it, if the
+    space is occupied).
+\end{description}
+
+\subsection{Character Improvement}
+\begin{description}
+\item[Cure all maladies (a)]
+    Removes all curses, restores all stats, xp, hp, and sp, cures
+    all bad effects, and satisfies your hunger.
+\item[Advance the character (A)]
+    Advances your character to level 50, maxes all stats, and gives you
+a million gold.
+\item[Edit character (e)]
+    Lets you specify your base stats, xp, and gold.
+\item[Increase experience (x)]
+    Doubles your current experience and adds 1. If given a command-count,
+increases your experience by that much instead.
+
+\item[Rerate hitpoints (h)]
+    Rerates your hitpoints.
+\end{description}
+
+\subsection{Monsters}
+\begin{description}
+\item[Summon monster (n)]
+    Prompts you for the name of a monster, then summons that monster
+    nearby. You must give the name exactly as in monster.txt. You may
+    optionally give a command-count, in which case this command summons the
+    monster with that number nearby instead of prompting you for a name.
+
+\item[Summon random monster (s)]
+    Summons a random monster next to you. If given a command-count,
+    summons that many monsters instead.
+
+\item[Zap monsters (z)]
+    Deletes all monsters in sight. If given a command-count, deletes all
+monsters whose distance to the character is at most the command-count
+instead.
+\end{description}
+
+\subsubsection{Miscellaneous}
+\begin{description}
+\item[Create a trap (T)]
+Creates a random trap on your square.
+\end{description}
+
+\subsubsection{Undocumented}
+\begin{description}
+\item[Query the dungeon (q)]
+???
+
+\item[Collect stats (f)]
+???
+
+\item[Ben hack (\_)]
+    ???
+\end{description}

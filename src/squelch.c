@@ -124,7 +124,7 @@ void squelch_birth_init(void)
 
 	/* Clear the squelch bytes */
 	for (i = 0; i < TYPE_MAX; i++)
-		squelch_level[i] = SQUELCH_BAD;
+		squelch_level[i] = SQUELCH_NONE;
 }
 
 

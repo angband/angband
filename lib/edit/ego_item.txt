@@ -1196,13 +1196,14 @@ C:0:0:d10
 ### Dragon Scale Mail egos ###
 
 # This is the 'default' DSM ego - roughly half of them
-N:128:of Craftmanship
+N:128:of Craftsmanship
 X:4:0
 W:0:2:0:500
 A:20:30 to 95
 C:0:0:1d6M4
 M:0:0:4
 T:38:0:99
+D:This armour is finely wrought, tough yet unencumbering.
 
 N:129:of Stealth
 X:16:0

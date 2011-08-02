@@ -24,6 +24,7 @@
 #include "game-cmd.h"
 #include "game-event.h"
 #include "generate.h"
+#include "monster/mon-util.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
 #include "spells.h"

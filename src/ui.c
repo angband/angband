@@ -28,7 +28,7 @@ region region_calculate(region loc)
 	if (loc.col < 0)
 		loc.col += w;
 	if (loc.row < 0)
-		loc.row += w;
+		loc.row += h;
 	if (loc.width <= 0)
 		loc.width += w - loc.col;
 	if (loc.page_rows <= 0)

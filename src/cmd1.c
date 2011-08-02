@@ -24,7 +24,7 @@
 #include "game-event.h"
 #include "generate.h"
 #include "history.h"
-#include "monster/monster.h"
+#include "monster/mon-util.h"
 #include "object/inventory.h"
 #include "object/tvalsval.h"
 #include "object/object.h"

@@ -18,3 +18,4 @@ src/angband-master
 *.gcno
 src/tests/ran-already
 .deps
+doc/manual/*.aux

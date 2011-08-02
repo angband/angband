@@ -21,6 +21,8 @@
 #include "cave.h"
 #include "files.h"
 #include "game-event.h"
+#include "monster/mon-msg.h"
+#include "monster/mon-util.h"
 #include "object/tvalsval.h"
 #include "object/pval.h"
 #include "spells.h"
@@ -1436,9 +1438,12 @@ static void calc_torch(void)
 }
 
 /*
- * Calculate the blows a player would get, in current condition, wielding
- * "o_ptr". NOTE - this function does not take any extra blows from items
- * into account.
+ * Calculate the blows a player would get.
+ *
+ * \param o_ptr is the object for which we are calculating blows
+ * \param state is the player state for which we are calculating blows
+ * \param extra_blows is the number of +blows available from this object and
+ * this state
  *
  * N.B. state->num_blows is now 100x the number of blows.
  */
@@ -2259,7 +2264,7 @@ void notice_stuff(struct player *p)
 		p->notice &= ~(PN_MON_MESSAGE);
 
 		/* Make sure this comes after all of the monster messages */
-		if (size_mon_msg > 0) flush_all_monster_messages();
+		flush_all_monster_messages();
 	}
 }
 

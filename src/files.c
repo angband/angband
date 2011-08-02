@@ -322,7 +322,7 @@ void display_player_stat_info(void)
 	for (i = 0; i < A_MAX; i++)
 	{
 		/* Reduced */
-		if (p_ptr->state.stat_use[i] < p_ptr->state.stat_top[i])
+		if (p_ptr->stat_cur[i] < p_ptr->stat_max[i])
 		{
 			/* Use lowercase stat name */
 			put_str(stat_names_reduced[i], row+i, col);
@@ -361,8 +361,8 @@ void display_player_stat_info(void)
 		cnv_stat(p_ptr->state.stat_top[i], buf, sizeof(buf));
 		c_put_str(TERM_L_GREEN, buf, row+i, col+24);
 
-		/* Only display stat_use if not maximal */
-		if (p_ptr->state.stat_use[i] < p_ptr->state.stat_top[i])
+		/* Only display stat_use if there has been draining */
+		if (p_ptr->stat_cur[i] < p_ptr->stat_max[i])
 		{
 			cnv_stat(p_ptr->state.stat_use[i], buf, sizeof(buf));
 			c_put_str(TERM_YELLOW, buf, row+i, col+31);

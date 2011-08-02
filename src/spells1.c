@@ -21,7 +21,10 @@
 #include "generate.h"
 #include "object/tvalsval.h"
 #include "object/object.h"
+#include "monster/mon-make.h"
+#include "monster/mon-msg.h"
 #include "monster/mon-spell.h"
+#include "monster/mon-util.h"
 #include "squelch.h"
 #include "trap.h"
 #include "spells.h"
@@ -2632,7 +2635,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 					delete_monster_idx(m_idx);
 
 					/* Create a new monster (no groups) */
-					(void)place_monster_aux(cave, y, x, tmp, FALSE, FALSE,
+					(void)place_new_monster(cave, y, x, tmp, FALSE, FALSE,
 						ORIGIN_DROP_POLY);
 
 					/* Hack -- Assume success XXX XXX XXX */

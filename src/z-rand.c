@@ -3,6 +3,8 @@
  * Purpose: A Random Number Generator for Angband
  *
  * Copyright (c) 1997 Ben Harrison, Randy Hutson
+ * 
+ * See below for copyright on the WELL random number generator.
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:

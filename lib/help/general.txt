@@ -49,9 +49,9 @@ Angband has been maintained by a succession of volunteers since it was
 written in the early 1990s. The current maintainer is Andi Sidwell.
 
 Angband will run on a wide variety of systems (including Unix, 
-Macintosh, Amiga, Windows, RISC OS, etc).  It is written in C, and the 
-source code is freely available.  Creating a version for a new platform 
-involves writing as few as 100 lines of code and recompiling.
+Macintosh, Windows).  It is written in C, and the source code is freely 
+available.  Creating a version for a new platform involves writing as 
+few as 100 lines of code and recompiling.
 
 See the Official Angband Home Page at http://rephial.org/ for up to date 
 information about the latest version of Angband, including a complete 

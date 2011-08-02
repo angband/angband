@@ -22,6 +22,7 @@
 #include "game-cmd.h"
 #include "object/tvalsval.h"
 #include "squelch.h"
+#include "cmds.h"
 
 static int view_n;
 static u16b view_g[VIEW_MAX];
@@ -827,14 +828,15 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 		if (one_in_(128) && g->f_idx < FEAT_PERM_SOLID)
 			g->m_idx = 1;
 		else if (one_in_(128) && g->f_idx < FEAT_PERM_SOLID)
-			/* XXX if hallucinating, we just need first_kind to not be NULL */
+			/* if hallucinating, we just need first_kind to not be NULL */
 			g->first_kind = k_info;
 		else
 			g->hallucinate = FALSE;
 	}
 
 	assert(g->f_idx <= FEAT_PERM_SOLID);
-	assert((int)g->m_idx < cave->mon_max);
+	if (!g->hallucinate)
+		assert((int)g->m_idx < cave->mon_max);
 	/* All other g fields are 'flags', mostly booleans. */
 }
 
@@ -2685,7 +2687,21 @@ void update_view(void)
 			/* Location */
 			y = GRID_Y(g);
 			x = GRID_X(g);
-
+			
+			/* Handle feeling squares */
+			if (cave->info2[y][x] & CAVE2_FEEL)
+			{
+				cave->feeling_squares++;
+				
+				/* Erase the square so you can't 'resee' it */
+				cave->info2[y][x] &= ~(CAVE2_FEEL);
+			
+				/* Display feeling if necessary */
+				if (cave->feeling_squares == FEELING1)
+					display_feeling(TRUE);
+		
+			}
+			
 			cave_note_spot(cave, y, x);
 			cave_light_spot(cave, y, x);
 		}
@@ -3849,7 +3865,12 @@ bool cave_isroom(struct cave *c, int y, int x) {
 
 }
 
-
+/**
+ * True if cave square is a feeling trigger square 
+ */
+bool cave_isfeel(struct cave *c, int y, int x){
+	return c->info2[y][x] & CAVE2_FEEL;
+}
 
 /**
  * Get a monster on the current level by its index.

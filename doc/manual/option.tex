@@ -1,0 +1,330 @@
+\section{Option Descriptions --- option.txt}
+\paragraph{}Options are accessible through the '=' command, which provides an
+interface to the various sets of options available to the player.
+
+\paragraph{}In the decriptions below, each option is listed as the textual summary
+which is shown on the ``options'' screen, plus the internal name of the
+option in brackets, followed by a textual description of the option.
+
+\paragraph{}Note that the internal name of the option can be used in user pref files
+to force the option to a given setting, see ``customize.txt'' for more
+info.
+
+\paragraph{}Various concepts are mentioned in the descriptions below, including
+``disturb'', (cancel any running, resting, or repeated commands, which are
+in progress), ``flush'' (forget any keypresses waiting in the keypress
+queue), ``fresh'' (dump any pending output to the screen), and
+``sub-windows'' (see below).
+
+\subsection{Interface options}
+\begin{description}
+\item[Use sound] \verb+[use_sound]+\\
+    Turns on sound effects, if your system supports them.
+
+\item[Rogue-like commands] \verb+[rogue_like_commands]+\\
+    Selects the ``roguelike'' command set (see ``command.txt'' for info).
+
+\item[Use old target by default] \verb+[use_old_target]+\\
+    Forces all commands which normally ask for a ``direction'' to use the
+    current ``target'' if there is one. Use of this option can be dangerous
+    if you target locations on the ground, unless you clear them when done.
+
+\item[Always pickup items] \verb+[pickup_always]+\\
+\item[Always pickup items matching inventory] \verb+[pickup_inven]+\\
+If pickup\_always is on, all items are always picked up, providing it is
+safe to do so. If pickup\_inven is on, then items matching those in your
+inventory are always picked up.
+
+\item[Open/Disarm/Close without direction] \verb+[easy_open]+\\
+    If there is only one closed door next to the character, the game will
+    not bother asking for a direction when the player asks to ``o''pen
+    something. The same applies for ``c''losing doors and ``D''isarming traps.
+
+\item[Allow mouse clicks to move the player] \verb+[mouse_movement]+\\
+    Clicking on the main window will be interpreted as a move command to
+    that spot.
+
+\item[Show mouse status line buttons] \verb+[mouse_buttons]+\\
+    Creates clickable ``buttons'' on the bottom line of the main window, to
+    enhance mouse-led play.
+
+\item[Allow accents in output files] \verb+[xchars_to_file]+\\
+    Extended characters (accents, umlauts and so on) will be printed in
+    files created by the game (character dumps, screenshots etc.).
+\end{description}
+
+\subsection{Display options}
+\begin{description}
+\item[Player color indicates low hit points]
+\verb+[hp_changes_color]+\\
+    This option makes the player @ turn various shades of colour from white
+    to red, depending on percentage of HP remaining.
+
+\item[Center map continuously] \verb+[center_player]+\\
+    The map always centres on the player with this option on. With it off, it
+    is divided into 25 sections, with coordinates (0,0) to (4,4), and will
+    show one section at a time - the display will ``flip'' to the next section
+    when the player nears the edge.
+
+\item[Show flavors in object descriptions] \verb+[show_flavors]+\\
+    Display ``flavors'' (color or variety) in object descriptions, even for
+    objects whose type is known. This does not affect objects in stores.
+
+\item[Use special colors for torch-lit grids]
+\verb+[view_yellow_light]+\\
+    This option causes special colors to be used for ``torch-lit'' grids in
+    certain situations (see ``view\_granite\_light'' and
+    ``view\_special\_light'').
+    Turning this option off will slightly improve game speed.
+
+\item[Animate multi-coloured monsters and items]
+\verb+[animate_flicker]+\\
+    Certain powerful monsters and items will shimmer in real time, i.e.
+    between keypresses.
+
+\item[Show unique monsters in a special colour]
+\verb+[purple_uniques]+\\
+    All ``unique'' monsters will be shown in a light purple colour, which
+    is not used for any ``normal'' monsters --- so you can tell at a glance
+    that they are unique. If you like the idea but don't like the colour,
+    you can edit it via the ``interact with colors'' option.
+\end{description}
+
+\subsection{Disturbance options}
+\begin{description}
+\item[Disturb whenever any monster moves] \verb+[disturb_move]+\\
+    Disturb the player when any monster moves, appears, or disappears.
+    This includes monsters which are only visible due to telepathy, so
+    you should probably turn this option off if you want to ``rest'' near
+    such monsters.
+
+\item[Disturb whenever viewable monster moves] \verb+[disturb_near]+\\
+    Disturb the player when any viewable monster moves, whenever any
+    monster becomes viewable for the first time, and also whenever any
+    viewable monster becomes no longer viewable. This option ignores
+    the existance of ``telepathy'' for the purpose of determining whether
+    a monster is ``viewable''. See also the ``view\_reduce\_view'' option.
+
+\item[Disturb whenever leaving trap detected area]
+\verb+[disturb_detect]+\\
+    This option causes you to be disturbed when you reach the edge of your
+    last invocation of detect traps.
+
+\item[Disturb whenever player state changes] \verb+[disturb_state]+\\
+    This option causes you to be disturbed whenever the player state
+    changes, including changes in hunger, resistance, confusion, etc.
+
+\item[Automatically clear --more-- prompts] \verb+[auto_more]+\\
+    The game does not wait for a keypress when it comes to a --more--
+    prompt, but carries on going.
+
+\item[Notify on object recharge] \verb+[notify_recharge]+\\
+    This causes the game to print a message when any rechargeable object
+    (i.e. a rod or activatable weapon or armour item) finishes recharging.
+    It is the equivalent of inscribing {!!} on all such items.
+\end{description}
+
+\subsection{Birth options}
+\begin{description}
+\item[Maximize effect of race/class bonuses] \verb+[birth_maximize]+\\
+     Normally, if a character should find potions that permanently increase
+     his stats, the maximum that can be achieved without equipment bonuses
+     is 18/100. If maximize mode is on (which is the default), then the race
+     and class bonuses and penalties apply to this limit, so your half-troll
+     will have a greater maximum possible strength (unassisted by his
+     equipment) than a hobbit. With maximize mode off, all characters max
+     out at 18/100 for all stats. This also affects the start of the game,
+     because race and class bonuses are applied as if they were
+     ``rings'' in
+     maximize mode (at an exact rate of 0/10 percentile points equals 1 point
+     for stats over 18), and as ``potions'' in non-maximize mode (drinking six
+     potions of [stat] will probably increase your stat by more than 0/60 if
+     it was at 18 to start with.) To cut a long story short and a confusing
+     explanation simple, you get better starting stats in non-maximize mode,
+     but can't get as good at what you're supposed to be best at in the later
+     stages of the game.
+
+\item[Randomize the artifacts (except a very few)]
+    \verb+[birth_randarts]+\\
+     A different set of artifacts will be created, in place of the standard
+     ones. This is intended primarily for people who have played enough to
+     know what most of the standard artifacts do and want some variety. The
+     number, findability and power of random artifacts will all match the
+     standard set --- approximately.
+
+\item[Use previous set of randarts] \verb+[birth_keep_randarts]+\\
+     Does what it says on the tin. Note that this option must be set at the
+     END of the game, from the death menu. Once you have restarted the game,
+     it is too late to set it (but you can still un-set it if you change your
+     mind). Note that switching to non-random artifacts will wipe randarts,
+     regardless of this option.
+
+\item[Monsters chase recent locations] \verb+[birth_ai_smell]+\\
+     Allow monsters to take advantage of ``old'' trails that you may have left
+     in the dungeon. This has no effect unless ``flow\_by\_sound'' is also set.
+
+\item[Monsters act smarter in groups] \verb+[birth_ai_packs]+\\
+     ``Group'' monsters will use tactics that groups of monsters might
+     reasonably employ --- such as hiding out of sight around a corner,
+     trying to draw the character out into the middle of a room so they
+     can surround him and all attack at once, rather than chasing one
+     by one down a corridor.
+
+\item[Monsters learn from their mistakes] \verb+[birth_ai_learn]+\\
+     Allow monsters to learn what spell attacks you are resistant to,
+     and to use this information to choose the best attacks.
+
+\item[Monsters exploit players weaknesses] \verb+[birth_ai_cheat]+\\
+     Allow monsters to know what spell attacks you are resistant to,
+     and to use this information to choose the best attacks.
+
+ \item[Monsters behave more intelligently (broken)]
+ \verb+[birth_ai_smart]+\\
+     Monsters have a certain amount of intelligence and will use it ---
+     teleporting away when low on hit points, using their more powerful
+     spells in preference to the less powerful spells, etc. Not all
+     monsters are, of course, intelligent --- but those who are are almost
+     unkillable with this option on (especially if they can heal
+     themselves).
+
+\item[Restrict the use of stairs/recall] \verb+[birth_ironman]+\\
+     This option, not recommended for non-advanced players, prevents the
+     generation of up staircases, and makes the scroll and effect of Word
+     of Recall not function: and teleport-level always goes down, as does
+     the spell of stair-creation, except on the quest levels of Sauron and
+     Morgoth.
+
+\item[Restrict the use of stores/home] \verb+[birth_no_stores]+\\
+     The stores are all closed. The home is someone else's, and locked. You
+     can keep nothing but what you carry with you, and get nothing but what
+     you find in the dungeon. No selling items, or buying potions of
+     restore stat\ldots Not recommended for new players, or indeed for
+     sane players.
+
+ \item[Restrict the creation of artifacts]
+ \verb+[birth_no_artifacts]+\\
+     No artifacts will be created. Ever. Just *how* masochistic are you?
+
+\item[Don't stack objects on the floor] \verb+[birth_no_stacking]+\\
+     Items dropped on the floor will spread out instead of stacking.
+     Normal items will disappear if there is no empty grid within a radius
+     of three squares.
+
+\item[Lose artifacts when leaving level] \verb+[birth_no_preserve]+\\
+     Normally if you leave a level with an unidentified artifact on it
+     you may still find it later. With this option on, if you leave a level
+     with an artifact on it's gone for the rest of the game whether you
+     knew it was there or not. Note that this option has no effect on
+     artifacts which you have already identified (i.e. picked up) --- these
+     will always be permanently lost if you leave a level without taking
+     them with you.
+
+\item[Don't generate connected stairs] \verb+[birth_no_stairs]+\\
+     Never generate a staircase back to the level you came from, if you used
+     a staircase to get to the level.
+
+\item[Don't show level feelings] \verb+[birth_no_feelings]+\\
+     The ``quality'' of a level is never revealed, no matter how long you
+     spend on the level.
+
+\item[Items always sell for 0 gold] \verb+[birth_no_selling]+\\
+     Shopkeepers will never pay you for items you sell, though they will
+     still identify unknown items for you, and will still sell you their
+     wares. To balance out income in the game, gold found in the dungeon
+     will be increased if this option is on.
+\end{description}
+
+\subsection{Cheating options}
+\begin{description}
+\item[Peek into monster creation] \verb+[cheat_hear]+\\
+    Cheaters never win. But they can peek at monster creation.
+
+\item[Peek into dungeon creation] \verb+[cheat_room]+\\
+    Cheaters never win. But they can peek at room creation.
+
+\item[Peek into something else] \verb+[cheat_xtra]+\\
+    Cheaters never win. But they can see debugging messages.
+
+\item[Know complete monster info] \verb+[cheat_know]+\\
+    Cheaters never win. But they can know all about monsters.
+
+\item[Allow player to avoid death] \verb+[cheat_live]+\\
+    Cheaters never win. But they can cheat death.
+\end{description}
+
+\subsection{Window flags}
+\paragraph{}Some platforms support ``sub-windows'', which are windows
+which can be used to display useful information generally available
+through other means. The best thing about these windows is that they are
+updated automatically (usually) to reflect the current state of the
+world. The ``window options'' can be used to specify what should be
+displayed in each window. The possible choices should be pretty
+obvious.
+
+\begin{description}
+\item[Display inven/equip]
+    Display the player inventory (and sometimes the equipment).
+
+\item[Display equip/inven]
+    Display the player equipment (and sometimes the inventory).
+
+\item[Display player (basic)]
+    Display a brief description of the character, including a breakdown
+    of the current player ``skills'' (including attacks/shots per round).
+
+\item[Display player (extra)]
+    Display a special description of the character, including some of the
+    ``flags'' which pertain to a character, broken down by equipment item.
+
+\item[Display player (compact)]
+    Display a brief description of the character, including a breakdown
+    of the contributions of each equipment item to various resistances
+    and stats.
+
+\item[Display map view]
+    Display the area around the player or around the target while
+    targetting. This allows using graphical tiles in their original
+    size.
+
+\item[Display messages]
+    Display the most recently generated ``messages''.
+
+\item[Display overhead view]
+    Display an overhead view of the entire dungeon level.
+
+\item[Display monster recall]
+    Display a description of the most monster which has been most recently
+    attacked, targetted, or examined in some way.
+
+\item[Display object recall]
+    Display a description of the most recently selected object. Currently
+    this only affects spellbooks and prayerbooks. This window flag may be
+    usefully combined with others, such as ``monster recall''.
+
+\item[Display monster list]
+    Display a list of monsters you know about and their distance from you.
+
+\item[Display status]
+    ???
+
+\item[Display item list]
+    Display a list of items you know about and their distance from you.
+ 
+\item[Display borg messages]
+    This window flag is currently used only by the Borg.
+
+\item[Display borg status]
+    This window flag is currently used only by the Borg.
+\end{description}
+
+\subsection{Left Over Information}
+\paragraph{}The ``hitpoint\_warn'' value, if non-zero, is the percentage
+of maximal hitpoints at which the player is warned that he may die. It
+is also used as the cut-off for using the color red to display both
+hitpoints and mana.
+
+\paragraph{}The ``delay\_factor'' value, if non-zero, will slow down the
+visual effects used for missile, bolt, beam, and ball attacks. The
+actual time delay is equal to ``delay\_factor'' squared, in
+milliseconds.
+

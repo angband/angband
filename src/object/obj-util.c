@@ -22,12 +22,13 @@
 #include "game-cmd.h"
 #include "generate.h"
 #include "history.h"
+#include "monster/mon-make.h"
 #include "object/inventory.h"
+#include "object/tvalsval.h"
 #include "prefs.h"
+#include "randname.h"
 #include "spells.h"
 #include "squelch.h"
-#include "randname.h"
-#include "object/tvalsval.h"
 #include "z-queue.h"
 
 struct object *o_list;

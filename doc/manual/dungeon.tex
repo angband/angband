@@ -1,0 +1,491 @@
+\section{The Dungeon}
+\paragraph{}After you have created your character, you will begin your
+Angband adventure.  Symbols appearing on your screen will represent the
+dungeon's walls, floor, objects, features, and creatures lurking about.
+In order to direct your character through his adventure, you will enter
+single character commands (see ``commands.txt'').
+
+\subsection{Symbols On Your Map}
+\paragraph{}Symbols on your map can be broken down into three categories: Features of
+the dungeon such as walls, floor, doors, and traps; Objects which can be
+picked up such as treasure, weapons, magical devices, etc; and creatures
+which may or may not move about the dungeon, but are mostly harmful to your
+character's well being.
+
+\paragraph{}Some symbols are used to represent more than one type of entity, and some
+symbols are used to represent entities in more than one category. The "\@"
+symbol (by default) is used to represent the character.
+
+\paragraph{}It will not be necessary to remember all of the symbols and their meanings.
+The "slash" command ("/") will identify any character appearing on your map
+(see "commands.txt").
+
+\paragraph{}Note that you can use a ``user pref file'' to change any of these symbols to
+something you are more comfortable with.
+   
+\paragraph{}
+\begin{tabular}{|ll|ll|}
+\hline
+\multicolumn{4}{|c|}{Features that do not block line of sight}\\
+\hline
+.&A floor space&1&Entrance to General Store\\
+.&A trap (hidden)&2&Entrance to Armoury\\
+\^{}&A trap (known)&3&Entrance to Weapon Smith\\
+;&A glyph of warding&4&Entrance to Temple\\
+'&An open door&5&Entrance to Alchemy Shop\\
+'&A broken door&6&Entrance to Magic Shop\\
+$<$&A staircase up&7&Entrance to the Black Market\\
+$>$&A staircase down&8&Entrance to your Home\\
+\hline
+\multicolumn{4}{|c|}{Features that block line of sight}\\
+\hline
+\#&A secret door&\#&A wall\\
++&A closed door&\%&A mineral vein\\
++&A locked door&*&A mineral vein with treasure\\
++&A jammed door&:&A pile of rubble\\
+\hline
+\end{tabular}
+
+\paragraph{}
+\begin{tabular}{|ll|ll|}
+\multicolumn{4}{|c|}{Objects}\\
+\hline
+!&A potion (or flask)&/&A pole-arm\\
+?&A scroll (or book)&$|$&An edged weapon\\
+,&A mushroom (or food)&\textbackslash &A hafted weapon\\
+-&A wand or rod&\}&A sling, bow, or x-bow\\
+\_&A staff&\{&A shot, arrow, or bolt\\
+=&A ring&(&Soft armour\\
+"&An amulet&[&Hard armour\\
+\$&Gold or gems&]&Misc. armour\\
+$\sim$&Lights, Tools, Chests, etc&)&A shield\\
+$\sim$&Junk, Sticks, Skeletons, etc&\&&(unused)\\
+\hline
+\end{tabular}
+
+\paragraph{}
+\begin{tabular}{|ll|ll|}
+\hline
+\multicolumn{4}{|c|}{Monsters}\\
+\hline
+\$&Creeping Coins&,&Mushroom Patch\\
+a&Giant Ant&A&Angelic being\\
+b&Giant Bat&B&Bird\\
+c&Giant Centipede&C&Canine (Dog)\\
+d&Dragon&D&Ancient Dragon\\
+e&Floating Eye&E&Elemental\\
+f&Feline (Cat)&F&Dragon Fly\\
+g&Golem&G&Ghost\\
+h&Humanoids&H&Hybrid\\
+i&Icky-Thing&I&Insect\\
+j&Jelly&J&Snake\\
+k&Kobold&K&Killer Beetle\\
+l&Giant Louse&L&Lich\\
+m&Mold&M&Multi-Headed Hydra\\
+n&Naga&N&(unused)\\
+o&Orc&O&Ogre\\
+p&Human ``person''&P&Giant ``person''\\
+q&Quadruped&Q&Quylthulg (Pulsing Flesh Mound)\\
+r&Rodent&R&Reptile/Amphibian\\
+s&Skeleton&S&Spider/Scorpion/Tick\\
+t&Townsperson&T&Troll\\
+u&Minor Demon&U&Major Demon\\
+v&Vortex&V&Vampire\\
+w&Worm or Worm Mass&W&Wight/Wraith\\
+x&(unused)&X&Xorn/Xaren\\
+y&Yeek&Y&Yeti\\
+z&Zombie/Mummy&Z&Zephyr Hound\\
+\hline
+\end{tabular}
+
+\subsection{The Town Level}
+\paragraph{}The town level is where you will begin your adventure. The
+town consists of eight buildings (each with an entrance), some
+townspeople, and a wall which surrounds the town. The first time you are
+in town it will be daytime, but note that the sun rises and falls
+(rather instantly) as time passes.
+
+
+\subsubsection{Townspeople}
+\paragraph{}The town contains many different
+kinds of people. There are the street urchins, young children who will
+mob an adventurer for money, and seem to come out of the woodwork when
+excited. Blubbering idiots are a constant annoyance, but not harmful.
+Public drunks wander about the town singing, and are of no threat to
+anyone. Sneaky rogues hang about watching for a likely victim to mug.
+And finally, no town would be complete without a swarm of half drunk
+warriors, who take offense or become annoyed just for the fun of it.
+(There are assumed to be other people in the town, but they are not
+represented on the screen as they do not interact with the player in any
+way.)
+
+\paragraph{}Most of the townspeople should be avoided by the largest
+possible distance when you wander from store to store. Fights will break
+out, though, so be prepared. Since your character grew up in this world
+of intrigue, no experience is awarded for killing the town inhabitants,
+though you may acquire treasure.
+
+\subsubsection{Town Buildings}
+\paragraph{}Your character will begin his adventure with some basic supplies, and some
+extra gold with which to purchase more supplies at the town stores.
+
+\paragraph{}You may enter any open store to buy or sell items of the appropriate type.
+The price that the shopkeeper requests is dependent on the price of the
+item and the player's charisma. Stores also have a maximum value, they will
+not pay more than that for any item, regardless of how much it is actually
+worth.
+
+\paragraph{}Once inside a store, you will see the name and race of the store owner, the
+name of the store, the maximum amount of cash that the store owner will pay
+for any one item, and the store inventory, listed along with the prices.
+
+\paragraph{}You will also see an (incomplete) list of available commands. Note that
+many of the commands which work in the dungeon work in the stores as well,
+but some do not, especially those which involve "using" objects.
+
+\paragraph{}Stores do not always have everything in stock. As the game progresses,
+they may get new items so check from time to time. Stores restock after
+10000 game turns have passed, but the inventory will never change while
+you are in town, even if you save the game and return. You must be in the
+dungeon for the store to restock. Also, if you sell them an item, it may
+get sold to a customer while you are adventuring, so don't always expect
+to be able to get back everything you have sold. If you have
+a lot of spare gold, you can purchase every item in a store, which will
+induce the store owner to bring out new stock, and perhaps even retire.
+
+\paragraph{}Store owners will not buy known harmful or useless items. If
+an object is unidentified, they will pay you some base price for it.
+Once they have bought it they will immediately identify the object. If
+it is a good object, they will add it to their inventory. If it was a
+bad bargain, they simply throw the item away. You can use this feature
+to learn item flavors.
+\paragraph{}
+\begin{description}
+\item[The General Store ("1")]
+     The General Store sells foods, some clothing, torches, scrolls
+     of phase door, scrolls of word of recall, oil, shovels, picks,
+     and spikes. All of these items and some others can be sold
+     back to the General store for money. The general store restocks
+     like every store, but the inventory types never change.
+
+\item[The Armoury ("2")]
+     The Armoury is where the town's armour is fashioned. All sorts of
+     protective gear may be bought and sold here. The deeper into the
+     dungeon you progress the more exotic the equipment you will find stocked
+     in the armoury. However, some armour types will never appear here
+     unless you sell them.
+
+\item[The Weaponsmith's Shop ("3")]
+     The Weaponsmith's Shop is where the town's weapons are fashioned. Hand
+     and missile weapons may be purchased and sold here, along with arrows,
+     bolts, and shots. As with the armoury, not all weapon types will be
+     stocked here, unless they are sold to the shop by the player first.
+
+\item[The Temple ("4")]
+     The Temple deals in healing potions, as well as bless scrolls, remove
+     curse scrolls, and some approved priestly weapons, as well as prayer
+     books.
+
+\item[The Alchemy shop ("5")]
+     The Alchemy Shop deals in all types of potions and scrolls, including
+     stat restoring potions.
+
+\item[The Magic User's Shop ("6")]
+     The Magic User's Shop deals in all sorts of rings, wands, amulets, and
+     staves, as well as magic user books.
+
+\item[The Black Market ("7")]
+     The Black Market will sell and buy anything at extortionate prices.
+     However it occasionally has VERY good items in it. With the exception
+     of artifacts, every item found in the dungeon may appear in the black
+     market.
+
+\item[Your Home ("8")]
+     This is your house where you can store objects that you
+     cannot carry on your travels, or will need at a later date.
+\end{description}
+
+\subsection{Within The Dungeon}
+\paragraph{}Once your character is adequately supplied with food, light, armor, and
+weapons, he is ready to enter the dungeon. Move on top of the `$>$' symbol
+and use the "Down" command (``$>$'').
+
+\paragraph{}Your character will enter a maze of interconnecting staircases and finally
+arrive somewhere on the first level of the dungeon. Each level of the
+dungeon is fifty feet high (thus dungeon level "Lev 1" is often called
+"50 ft"), and is divided into (large) rectangular regions (several times
+larger than the screen) by permanent rock. Once you leave a level by a
+staircase, you will never again find your way back to that region of that
+level, but there are an infinite number of other regions at that same "depth"
+that you can explore later. Monsters, of course, can use the stairs,
+and you may eventually encounter them again, but they will not chase you up
+or down stairs.
+
+\paragraph{}In the dungeon, there are many things to find, but your
+character must survive many horrible and challenging encounters to find
+the treasure lying about and take it safely back to the town to sell.
+
+\paragraph{}There are two sources for light once inside the dungeon.
+Permanent light which has been magically placed within rooms, and a
+light source carried by the player. If neither is present, the character
+will be unable to see.  This will affect searching, picking locks,
+disarming traps, reading scrolls, casting spells, browsing books, etc.
+So be very careful not to run out of light!
+
+\paragraph{}A character must wield a torch or lamp in order to supply
+his own light. A torch or lamp burns fuel as it is used, and once it is
+out of fuel, it stops supplying light. You will be warned as the light
+approaches this point.  You may use the "Fuel" command ("F") to refuel
+your lantern (with flasks of oil) or your torch (with other torches), so
+it is a good idea to carry extra torches or flasks of oil, as
+appropriate. There are rumours of objects of exceptional power which
+glow with their own never-ending light.
+
+\subsection{Objects Found In The Dungeon}
+\paragraph{}The mines are full of objects just waiting to be picked up and used. How
+did they get there? Well, the main source for useful items are all the
+foolish adventurers that proceeded into the dungeon before you. They get
+killed, and the helpful creatures scatter the various treasure throughout
+the dungeon. There are a few cursed items present in the dungeon ---
+either left behind as the result of a failed attempt to create a magic items,
+or deliberately placed by evil sorcerers. Some will inconvenience you but
+a very few are deadly.
+
+\paragraph{}Only one object may occupy a given floor location, which may or may not also
+contain one creature. Doors, rubble, traps, and staircases are considered
+"objects" for this purpose. As below, any item may actually be a "pile" of
+up to 99 identical items. With the right choice of "options", you may be
+able to "stack" several items in the same grid.
+
+\paragraph{}You pick up objects by moving on top of them. You can carry up to 23
+different items in your backpack while wearing and wielding up to 12 others.
+Although you are limited to 23 different items, each item may actually be a
+"pile" of up to 99 similar items. If you "t"ake off an item, it will go
+into your backpack if there is room: if there is no room in your backpack,
+it will drop onto the floor, so be careful when swapping one wielded weapon
+or worn piece of armor for another when your pack is full.
+
+\paragraph{}You are, however, limited in the total amount of weight that you can carry.
+If you exceed this value, you become slower, making it easier for monsters
+to chase you. Note that there is no upper bound on how much you can carry,
+if you do not mind being slow. Your weight "limit" is determined by your
+strength.
+
+\paragraph{}Many objects found within the dungeon have special commands for their use.
+Wands must be Aimed, staves must be Used, scrolls must be Read, and potions
+must be Quaffed. You may, in general, not only use items in your pack, but
+also items on the ground, if you are standing on top of them. At the
+beginning of the game all items are assigned a random 'flavor'. For example
+potions of 'cure light wounds' could be 'red potions'. If you have never
+used, sold, or bought one of these potions, you will only see the flavor.
+You can learn what type of item it is by selling it to a store, using it and
+noticing an effect (for example, quaffing a healing potion when injured), or
+casting the spell identify. Lastly, items in stores that you have not
+yet identified the flavor of will be labeled {unknown}
+
+\paragraph{}Chests are complex objects, containing traps, locks, and possibly treasure
+or other objects inside them once they are opened. Many of the commands
+that apply to traps or doors also apply to chests and, like traps and doors,
+these commands do not work if you are carrying the chest.
+
+\paragraph{}One item in particular will be discussed here. The scroll of "Word of
+Recall" can be found within the dungeon, or bought at the temple in town.
+All classes start with one of these scrolls in their inventory.
+It acts in two manners, depending upon your current location. If read
+within the dungeon, it will teleport you back to town. If read in town, it
+will teleport you back down to the deepest level of the dungeon which your
+character has previously been on. This makes the scroll very useful for
+getting back to the deeper levels of Angband. Once the scroll has been
+read it takes a while for the spell to act, so don't expect it to save you
+in a crisis. During this time the word 'recall' will appear on the bottom
+of the screen below the dungeon. Reading a second scroll before the first
+takes effect will cancel the action.
+
+\paragraph{}You may "inscribe" any object with a textual inscription of your choice.
+These inscriptions are not limited in length, though you may not be able to
+see the whole inscription on the item. The game applies special meaning to
+inscriptions containing any text of the form "\@\#" or "\@x\#" or "!x" or "!*",
+see "command.txt".
+
+\paragraph{}The game provides some "fake" inscriptions to help you keep track of your
+possessions. Wands and staves which are known to be empty will be inscribed
+with {empty}. Objects which have been tried at least once but haven't been
+identified yet will be inscribed with "tried". Cursed objects are inscribed
+with {cursed}. In addition while carrying or wielding weapons or armor you
+may learn qualities of these items. {average} means that the item has no
+magical bonuses. {magical} means that it has magical bonuses although these
+bonuses may be negative. An item with negative bonuses is not necessarily
+cursed. An {ego} item has special abilities. If the abilities are not
+obvious to the wielder the item will get an {excellent} tag. If the item has
+obvious abilities, such as an increase to a statistic it will be labeled
+{splendid}. Lastly, if at any point you pick up an Artifact you will learn
+its name immediately and it will be labeled {special}. However, you may not
+be aware of all its powers. Note that these inscriptions are fake, and cannot
+be removed.
+
+\paragraph{}Only weapons and armor will receive these pseudo-identifications. Wands,
+staves, rods, scrolls, potions and mushrooms can only get the {tried} label.
+However, if using or consuming the item creates an obvious effect, you will
+learn the flavor. For example, if you are injured and drink an unknown
+
+\paragraph{}It is rumored that rings of power and extra rare spell books
+may be found deeper in the dungeon\ldots
+
+And lastly, a final warning: not all objects are what they seem. The line
+between tasty food and a poisonous mushroom is a fine one, and sometimes a
+chest full of treasure will grow teeth in its lid and bite your hand
+off\ldots
+
+
+\subsection{Cursed Objects}
+\paragraph{}Some objects, mainly armor and weapons, have had curses laid upon them.
+These horrible objects will look like any other normal item, but will
+detract from your character's stats or abilities if worn. They will also
+be impossible to remove until a remove curse is performed. In fact some
+are so badly cursed that even this will not work, and more potent methods
+are needed.
+
+\paragraph{}If you wear or wield a cursed item, you will immediately
+feel deathly cold, and the item will be marked with the fake inscription
+"cursed".
+
+\paragraph{}Shopkeepers will refuse to buy any item which is known to be
+cursed, either by having been identified or by being marked with the
+fake inscription.
+
+\paragraph{}Weapons and armor can be uncursed either by casting spells of
+remove curse or by attempting to enchant them with spells or scrolls.
+
+\subsection{Mining}
+\paragraph{}Some treasure within the dungeon can be found only by mining
+it out of the walls. Many rich strikes exist within each level, but must
+be found and mined. Quartz veins are the richest, yielding the most
+metals and gems, but magma veins will have some hoards hidden within.
+
+\paragraph{}Mining is rather difficult without a pick or shovel. Picks
+and shovels have an additional magical ability expressed as `(+\#)'. The
+higher the number, the better the magical digging ability of the tool. A
+pick or shovel also has plusses to hit and damage, and can be used as a
+weapon, because, in fact, it is one.
+
+\paragraph{}When a vein of quartz or magma is located, the character may
+wield his pick or shovel and begin digging out a section. When that
+section is removed, he can locate another section of the vein and begin
+the process again. Since granite rock is much harder to dig through, it
+is much faster to follow the vein exactly and dig around the granite.
+Eventually, it becomes easier to simply kill monsters and discover items
+in the dungeon to sell, than to walk around digging for treasure. But,
+early on, mineral veins can be a wonderful source of easy treasure.
+
+\paragraph{}If the character has a scroll, staff, or spell of treasure
+location, he can immediately locate all strikes of treasure within a
+vein shown on the screen. This makes mining much easier and more
+profitable.
+
+\paragraph{}Note that a character with high strength and/or a heavy
+weapon does not need a shovel/pick to dig, but even the strongest
+character will benefit from a pick if trying to dig through a granite
+wall.
+
+\paragraph{}It is sometimes possible to get a character trapped within
+the dungeon by using various magical spells and items. So it can be a
+good idea to always carry some kind of digging tool, even when you are
+not planning on tunneling for treasure.
+
+\paragraph{}There are rumors of certain incredibly profitable rooms
+buried deep in the dungeon and completely surrounded by permanent rock and
+granite walls, requiring a digging implement or magical means to enter.
+The same rumors imply that these rooms are guarded by incredibly
+powerful monsters, so beware!
+
+\subsection{Traps}
+\paragraph{}There are many traps located in the dungeon of varying
+danger. These traps are hidden from sight and are triggered only when
+your character walks over them. If you have found a trap you can attempt
+to "D"isarm it, but failure may mean activating it.
+
+\paragraph{}There are some magical means to detecting all traps within a
+certain radius.  If you cast one of these spells, there will be a
+'Dtrap' green label on the bottom of the screen, below the dungeon map.
+At some point in the dungeon you may see a line of green squares on the
+floor. This line represents the extent of your detection. Beyond the
+green line you are no longer in the safe region.
+
+\paragraph{}Some monsters have the ability to create new traps on the
+level that may be hidden, even if the player is in a detected zone. The
+detection only finds the traps that exist at the time of detection, it
+does not inform you of new ones that have since been created.
+
+\subsection{Staircases, Secret Doors, Passages, and Rooms}
+\paragraph{}Staircases are the manner in which you get deeper or climb
+out of the dungeon. The symbols for the up and down staircases are the
+same as the commands to use them. A ``$<$'' represents an up staircase
+and a ``$>$'' represents a down staircase. You must move your character
+over the staircase before you can use it.
+
+\paragraph{}Each level has at least one up staircase and at least two
+down staircases.  There are no exceptions to this rule. You may have
+trouble finding some well hidden secret doors, or you may have to dig
+through obstructions to get to them, but you can always find the stairs
+if you look hard enough. Stairs, like permanent rock, and shop
+entrances, cannot be destroyed by any means.
+
+\paragraph{}Many secret doors are used within the dungeon to confuse and
+demoralize adventurers foolish enough to enter. But with some luck, and
+lots of concentration, you can find these secret doors. Secret doors
+will sometimes hide rooms or corridors, or even entire sections of that
+level of the dungeon. Sometimes they simply hide small empty closets or
+even dead ends.  Secret doors always look like granite walls, just like
+traps always look like normal floors.
+
+\paragraph{}Creatures in the dungeon will generally know and use these
+secret doors, and can often be counted on to leave them open behind them
+when they pass through.
+
+\paragraph{}For historical reasons, secret doors are never locked.
+
+\subsection{Winning The Game}
+\paragraph{}If your character has killed Sauron (a difficult task), who
+lives on level 99 (4950') in the dungeon, a magical staircase will
+appear that will allow you to finally reach level 100. Morgoth lurks on
+this level of his dungeon, and you will not be able to go below his
+level until you have killed him.  Try to avoid wandering around on level
+100 unless you are ready for him, since he has a habit of coming at you
+across the dungeon, the Mighty Hammer `Grond' in hand, to slay you for
+your impudence.
+
+\paragraph{}If you should actually survive the attempt of killing
+Morgoth, you will receive the status of WINNER. You may continue to
+explore, and may even save the game and play more later, but since you
+have defeated the toughest creature alive, there is really not much
+point. Unless you wish to listen to the rumors of a powerful ring buried
+somewhere in the dungeon, or a suit of dragon scale mail that resists
+everything\ldots
+
+\paragraph{}When you are ready to retire, simply "commit suicide" (using
+the "Q" key) to have your character entered into the high score list as
+a winner. Note that until you retire, you can still be killed, so you
+may want to retire before wandering into yet another horde of greater
+demons.
+
+\subsection{Upon Death and Dying}
+\paragraph{}If your character falls below 0 hit points, he has died and
+cannot be restored. A tombstone showing information about your character
+will be displayed. You are also permitted to get a record of your
+character, and all your equipment (identified) either on the screen or
+in a file.
+
+\paragraph{}Your character will leave behind a reduced save file, which
+contains only the monster memory and your option choices. It may be
+restored, in which case a new character is generated exactly as if the
+file was not there, but the new player will find his monster memory
+containing all the experience of past incarnations.
+
+\paragraph{}There are a variety of ways to "cheat" death (including
+using a special "cheating option") when it would otherwise occur. This
+will fully heal your character, returning him to the town, and marking
+him in various ways as a character which has cheated death. Cheating
+death, like using any of the "cheating options", will prevent your
+character from appearing on the high score list.
+
+

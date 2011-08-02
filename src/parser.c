@@ -1,6 +1,22 @@
-/** Info file parser
- * Copyright (c) 2011 elly+angband@leptoquark.net. See COPYING.
+/*
+ * File: parser.c
+ * Purpose: Info file parser.
  *
+ * Copyright (c) 2011 Elly <elly+angband@leptoquark.net>
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
+ */
+
+/**
  * A parser has a list of hooks (which are run across new lines given to
  * parser_parse()) and a list of the set of named values for the current line.
  * Each hook has a list of specs, which are essentially named formal parameters;
@@ -654,6 +670,16 @@ errr grab_flag(bitflag *flags, const size_t size, const char **flag_table, const
 	if (flag == FLAG_END) return PARSE_ERROR_INVALID_FLAG;
 
 	flag_on(flags, size, flag);
+
+	return 0;
+}
+
+errr remove_flag(bitflag *flags, const size_t size, const char **flag_table, const char *flag_name) {
+	int flag = lookup_flag(flag_table, flag_name);
+
+	if (flag == FLAG_END) return PARSE_ERROR_INVALID_FLAG;
+
+	flag_off(flags, size, flag);
 
 	return 0;
 }

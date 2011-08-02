@@ -1,7 +1,66 @@
-New features in Angband 3.2.0
+New features in Angband 3.3.0
 =============================
 
-PLEASE READ THIS, EVEN IF YOU DON'T READ ANY OF THE REST:
+There were a lot of significant changes in 3.2.0, so if you haven't played
+Angband for a long time, they are summarised below. If you are completely
+new to the game, please read the other help files for an introduction to the
+game, as this file contains spoiler-ish info.
+
+This new version has a few significant changes too:
+
+Dungeon generation has had its first major overhaul for two decades. As well
+as rooms and vaults, pits and nests you will now find special "cavern" and
+"labyrinth" levels occasionally. Both of these new level types, for different
+reasons, can be quite dangerous.
+
+Level feelings have finally been completely redesigned. You will now get two
+separate feelings: the moment you descend the stairs, your first impression
+of the new level will give you a sense of how dangerous it is (judging by
+corpses, bloodstains, etc.). Some time later, you will get a sense of how
+lucrative it might be in terms of treasure/loot. Many thanks to Jeff Greene
+for the foolproof mechanism for the random time delay.
+
+Objects may now have up to three pvals, which are displayed in <angle
+brackets>. So an object may provide +1 to STR and +2 to stealth at the same
+time.
+
+Macros no longer exist. Everything you could do with macros you can now do
+with keymaps - and more.
+
+You can no longer destroy items - they are squelched instead. You can toggle
+the visibility of squelched items by using the 'K' command.
+
+Certain things, like enchantment scrolls and restore stat potions, are no
+longer available in town. Restore stat potions don't exist any more - but
+drained stats are restored on level up (and by stat gain potions).
+
+Resistances have been made more consistent, and a new class of "protections"
+from non-damaging status effects has been created. Confusion is no longer a
+breath attack, and has a protection rather than a resistance. Protection from
+stunning is now separate from sound resistance. A resistance will protect you
+from status effects from that element only - so sound resistance will no
+longer protect you from mystics.
+
+If you play with randarts and really like the ones in a particular game, you
+can keep them for subsequent games by choosing "keep randarts" from the death
+menu. Note that switching back to non-random artifacts will lose them though.
+
+Some items have been rebalanced: Dragon Scale armours are no longer quite so
+frequently powerful, and magical effects which hinder monsters (slow, sleep,
+confuse, scare) are now more useful. Elemental rings no longer boost your
+melee damage. Teleport Other is now a bolt, affecting only one monster at a
+time, and *Destruction* now removes artifacts as well as monsters. Potions
+that cure wounds are no longer quite so powerful.
+
+Spiking doors is now a lot more useful, and you can lock doors too (by using
+the Disarm command). Monsters may take several turns to open/bash a locked
+and spiked door.
+
+Finally, mimics are a lot harder to spot ...
+
+
+New features in Angband 3.2.0
+=============================
 
 There are some changes in this version to things that have remained 
 unchanged for many years -

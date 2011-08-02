@@ -211,7 +211,7 @@ Your character will enter a maze of interconnecting staircases and finally
 arrive somewhere on the first level of the dungeon.  Each level of the
 dungeon is fifty feet high (thus dungeon level "Lev 1" is often called
 "50 ft"), and is divided into (large) rectangular regions (several times
-larger than the screen) by titanium walls.  Once you leave a level by a
+larger than the screen) by permanent rock.  Once you leave a level by a
 staircase, you will never again find your way back to that region of that
 level, but there are an infinite number of other regions at that same "depth"
 that you can explore later.  Monsters, of course, can use the stairs, 
@@ -349,7 +349,7 @@ and the item will be marked with the fake inscription "cursed".
 Shopkeepers will refuse to buy any item which is known to be cursed, either 
 by having been identified or by being marked with the fake inscription.
 
-Weapons and armor can be uncursed by either spells of remove curse or by
+Weapons and armor can be uncursed either by spells of remove curse or by
 attempting to enchant them with spells or scrolls.
 
 
@@ -389,9 +389,10 @@ carry some kind of digging tool, even when you are not planning on tunneling
 for treasure.
 
 There are rumors of certain incredibly profitable rooms buried deep in the
-dungeon and completely surrounded by titanium and granite walls, requiring
-a digging implement or magical means to enter.  The same rumors imply that
-these rooms are guarded by incredibly powerful monsters, so beware!
+dungeon and completely surrounded by permanent rock and granite walls,
+requiring a digging implement or magical means to enter.  The same rumors
+imply that these rooms are guarded by incredibly powerful monsters, so
+beware!
 
 
 === Traps ===
@@ -425,7 +426,7 @@ Each level has at least one up staircase and at least two down staircases.
 There are no exceptions to this rule.  You may have trouble finding some well
 hidden secret doors, or you may have to dig through obstructions to get to
 them, but you can always find the stairs if you look hard enough.  Stairs,
-like titanium walls, and shop entrances, cannot be destroyed by any means.
+like permanent rock, and shop entrances, cannot be destroyed by any means.
 
 Many secret doors are used within the dungeon to confuse and demoralize
 adventurers foolish enough to enter.  But with some luck, and lots of

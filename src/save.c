@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "history.h"
+#include "monster/mon-make.h"
 #include "monster/monster.h"
 #include "option.h"
 #include "savefile.h"

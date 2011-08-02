@@ -1,8 +1,10 @@
 /* Parsing functions for monster_base.txt */
 
 #include "externs.h"
+#include "monster/mon-msg.h"
 #include "monster/mon-power.h"
 #include "monster/mon-spell.h"
+#include "monster/mon-util.h"
 #include "monster/monster.h"
 #include "parser.h"
 #include "z-util.h"
@@ -329,6 +331,29 @@ static enum parser_error parse_r_f(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_r_mf(struct parser *p) {
+	struct monster_race *r = parser_priv(p);
+	char *flags;
+	char *s;
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!parser_hasval(p, "flags"))
+		return PARSE_ERROR_NONE;
+	flags = string_make(parser_getstr(p, "flags"));
+	s = strtok(flags, " |");
+	while (s) {
+		if (remove_flag(r->flags, RF_SIZE, r_info_flags, s)) {
+			mem_free(flags);
+			return PARSE_ERROR_INVALID_FLAG;
+		}
+		s = strtok(NULL, " |");
+	}
+
+	mem_free(flags);
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_r_d(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
 
@@ -462,6 +487,7 @@ struct parser *init_parse_r(void) {
 	parser_reg(p, "W int level int rarity int power int mexp", parse_r_w);
 	parser_reg(p, "B sym method ?sym effect ?rand damage", parse_r_b);
 	parser_reg(p, "F ?str flags", parse_r_f);
+	parser_reg(p, "-F ?str flags", parse_r_mf);
 	parser_reg(p, "D str desc", parse_r_d);
 	parser_reg(p, "S str spells", parse_r_s);
 	parser_reg(p, "drop sym tval sym sval uint chance uint min uint max", parse_r_drop);

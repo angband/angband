@@ -15,11 +15,15 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
 
 #include "attack.h"
 #include "cave.h"
 #include "cmds.h"
+#include "monster/mon-make.h"
+#include "monster/mon-msg.h"
+#include "monster/mon-util.h"
 #include "monster/monster.h"
 #include "object/slays.h"
 #include "object/tvalsval.h"

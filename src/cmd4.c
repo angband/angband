@@ -174,6 +174,7 @@ void do_cmd_change_name(void)
 						else
 							msg("Character dump successful.");
 					}
+					break;
 				}
 				
 				case 'h':
@@ -479,15 +480,15 @@ static const char *obj_feeling_text[] =
 {
 	"Looks like any other level.",
 	"you sense an item of wondrous power!",
-	"you have a superb feeling.",
-	"you have an excellent feeling.",
-	"you have a very good feeling.",
-	"you have a good feeling.",
-	"you feel a little lucky.",
-	"you are unsure of what you'd find.",
-	"you don't sense much of interest.",
-	"it contains only scraps of junk.",
-	"it contains nothing but cobwebs."
+	"there are superb treasures here.",
+	"there are excellent treasures here.",
+	"there are very good treasures here.",
+	"there are good treasures here.",
+	"there may be something worthwhile here.",
+	"there may not be much interesting here.",
+	"there aren't many treasures here.",
+	"there are only scraps of junk here.",
+	"there are naught but cobwebs here."
 };
 
 /*
@@ -500,24 +501,25 @@ static const char *mon_feeling_text[] =
 	/* first string is just a place holder to 
 	 * maintain symmetry with obj_feeling.
 	 */
-	"You are still uncertain about this place,",
-	"Omens of death haunt this place,",
-	"This place seems murderous,",
-	"This place seems terribly dangerous,",
-	"You feel anxious about this place,",
-	"You feel nervous about this place,",
-	"This place does not seem too risky,",
-	"This place seems reasonably safe,",
-	"This seems a tame, sheltered place,",
-	"This seems a quiet, peaceful place,"
+	"You are still uncertain about this place",
+	"Omens of death haunt this place",
+	"This place seems murderous",
+	"This place seems terribly dangerous",
+	"You feel anxious about this place",
+	"You feel nervous about this place",
+	"This place does not seem too risky",
+	"This place seems reasonably safe",
+	"This seems a tame, sheltered place",
+	"This seems a quiet, peaceful place"
 };
 
-
 /*
- * Note that "feeling" is set to zero unless some time has passed.
- * Note that this is done when the level is GENERATED, not entered.
+ * Display the feeling.  Players always get a monster feeling.
+ * Object feelings are delayed until the player has explored some
+ * of the level.
  */
-void do_cmd_feeling(void)
+
+void display_feeling(bool obj_only)
 {
 	u16b obj_feeling = cave->feeling / 10;
 	u16b mon_feeling = cave->feeling - (10 * obj_feeling);
@@ -526,18 +528,24 @@ void do_cmd_feeling(void)
 	/* Don't show feelings for cold-hearted characters */
 	if (OPT(birth_no_feelings)) return;
 
-	/* Stair scummers only get one message */
-	if (cave->feeling == 0){
-		msg(obj_feeling_text[0]);
-		return;
-	}
-
 	/* No useful feeling in town */
 	if (!p_ptr->depth) {
 		msg("Looks like a typical town.");
 		return;
 	}
-
+	
+	/* Display only the object feeling when it's first discovered. */
+	if (obj_only){
+		msg("You feel that %s", obj_feeling_text[obj_feeling]);
+		return;
+	}
+	
+	/* Players automatically get a monster feeling. */
+	if (cave->feeling_squares < FEELING1){
+		msg("%s.", mon_feeling_text[mon_feeling]);
+		return;
+	}
+	
 	/* Verify the feelings */
 	if (obj_feeling >= N_ELEMENTS(obj_feeling_text))
 		obj_feeling = N_ELEMENTS(obj_feeling_text) - 1;
@@ -548,13 +556,19 @@ void do_cmd_feeling(void)
 	/* Decide the conjunction */
 	if ((mon_feeling <= 5 && obj_feeling > 6) ||
 			(mon_feeling > 5 && obj_feeling <= 6))
-		join = "yet";
+		join = ", yet";
 	else
-		join = "and";
+		join = ", and";
 
 	/* Display the feeling */
-	msg("%s %s %s", mon_feeling_text[mon_feeling], join,
+	msg("%s%s %s", mon_feeling_text[mon_feeling], join,
 		obj_feeling_text[obj_feeling]);
+}
+
+
+void do_cmd_feeling(void)
+{
+	display_feeling(FALSE);
 }
 
 
