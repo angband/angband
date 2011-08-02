@@ -194,10 +194,13 @@ PACKAGE_NAME = $(NAME)-$(VERSION)
 
 # In the unlikely event that tar+zip isn't enough...
 
-dist: install
+../doc/manual/manual.pdf:
+	$(MAKE) -C ../doc/manual manual
+
+dist: install ../doc/manual/manual.pdf
 	@rm -rf disttemp*
 	mkdir -p disttemp/Docs
-	cp ../changes.txt ../copying.txt ../faq.txt ../readme.txt disttemp/Docs
+	cp ../changes.txt ../copying.txt ../faq.txt ../readme.txt ../doc/manual/manual.pdf disttemp/Docs
 	cp -R -p "$(APPBNDL)" disttemp
 	SetFile -a B disttemp/$(APPNAME)
 
