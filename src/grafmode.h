@@ -28,7 +28,7 @@ typedef struct _graphics_mode {
 	byte overdrawMax;	  // row in the file where tiles in that row or above draw the tile above as well
   u16b cell_width;    // width of an individual tile in pixels
   u16b cell_height;   // height of an individual tile in pixels
-	char name[8];			  // Value of ANGBAND_GRAF variable
+	char pref[8];			  // Value of ANGBAND_GRAF variable
  	char file[32];			// name of png file (if any)
 	char menuname[32];	// Name of the tileset in menu
 } graphics_mode;
@@ -39,5 +39,6 @@ extern int graphics_mode_high_id;
 
 bool init_graphics_modes(const char *filename);
 void close_graphics_modes(void);
+graphics_mode* get_graphics_mode(byte id);
 
 #endif /* INCLUDED_GRAFMODE_H */

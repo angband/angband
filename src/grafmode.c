@@ -31,7 +31,7 @@ static enum parser_error parse_graf_n(struct parser *p)
 	graphics_mode *mode = mem_zalloc(sizeof(graphics_mode));
 	mode->pNext = list;
 	mode->grafID = parser_getuint(p, "index");
-	strncpy(mode->name, parser_getstr(p, "name"), 8);
+	strncpy(mode->pref, parser_getstr(p, "prefname"), 8);
 
   mode->alphablend = 0;
 	mode->overdrawRow = 0;
@@ -71,7 +71,7 @@ static struct parser *init_parse_grafmode(void)
 	parser_setpriv(p, NULL);
 
 	parser_reg(p, "V sym version", ignored);
-	parser_reg(p, "N uint index str name", parse_graf_n);
+	parser_reg(p, "N uint index str prefname", parse_graf_n);
 	parser_reg(p, "I uint wid uint hgt str filename", parse_graf_i);
 	parser_reg(p, "M str menuname", parse_graf_m);
 	parser_reg(p, "X uint alpha uint row uint max", parse_graf_x);
@@ -112,7 +112,7 @@ errr finish_parse_grafmode(struct parser *p)
 	graphics_modes[count].alphablend = 0;
 	graphics_modes[count].overdrawRow = 0;
 	graphics_modes[count].overdrawMax = 0;
-  strncpy(graphics_modes[count].name, "none", 8);
+  strncpy(graphics_modes[count].pref, "none", 8);
   strncpy(graphics_modes[count].file, "", 32);
   strncpy(graphics_modes[count].menuname, "None", 32);
 
@@ -182,17 +182,30 @@ bool init_graphics_modes(const char *filename)
 	/* Result */
 	return e == PARSE_ERROR_NONE;
 }
+
 void close_graphics_modes(void)
 {
-  if (graphics_modes) {
-    mem_free(graphics_modes);
-    graphics_modes = NULL;
-    /*graphics_mode *test,*next;
-    test = graphics_modes;
-    while (test) {
-      next = test->pNext;
-      delete(test);
-      test = next;
-    }*/
-  }
+	if (graphics_modes) {
+		mem_free(graphics_modes);
+		graphics_modes = NULL;
+		/*graphics_mode *test,*next;
+		test = graphics_modes;
+		while (test) {
+			next = test->pNext;
+			delete(test);
+			test = next;
+		}*/
+	}
+}
+
+graphics_mode* get_graphics_mode(byte id)
+{
+	graphics_mode *test = graphics_modes;
+	while (test) {
+		if (test->grafID == id) {
+			return test;
+		}
+		test = test->pNext;
+	}
+	return NULL;
 }
