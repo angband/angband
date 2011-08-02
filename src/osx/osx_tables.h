@@ -78,23 +78,6 @@ static const HIViewID aboutDialogName = { 'DLOG', 2 };
 static const HIViewID aboutDialogCopyright = { 'DLOG', 4 };
 
 
-/* Specifications for graphics modes.  */
-/* graf_mode variable is index of current mode */
-static const struct {
-	int menuItem;		// Index in Graphics Menu
- 	  const char *file;			// Base name of png file (if any)
-	const char *name;			// Value of ANGBAND_GRAF variable
-	int size;			// Tile size (in pixels)
-	bool trans;			// Use transparent foreground tiles
-} graphics_modes[] = {
-	{ kGrafNone, NULL, NULL, 0, false },
-	{ kGraf8x8, "8x8", "old",	8,	true },
-	{ kGraf16x16, "16x16",	"new",	16,	true },
-	{ kGraf32x32, "32x32",	"david", 32,	true },
-	{ kGraf8x16, "8x16",	"nomad", 16,	true },
-};
-
-
 /* Event handler specification */
 struct CommandDef {
 	int	evtClass; // Eventspec class - char-style constant eg 'quit'

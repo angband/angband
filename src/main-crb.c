@@ -26,6 +26,7 @@
 #include "buildid.h"
 #include "files.h"
 #include "init.h"
+#include "grafmode.h"
 
 /*
  * Notes:
@@ -1197,7 +1198,7 @@ static errr graphics_init(void)
 	locate_lib(path, sizeof(path));
 	char *tail = path + strlen(path);
 	FSSpec pict_spec;
-	snprintf(tail, path+1024-tail, "xtra/graf/%s.png", pict_id);
+	snprintf(tail, path+1024-tail, "xtra/graf/%s", pict_id);
 	if(noErr != path_to_spec(path, &pict_spec))
 		return -1;
 
@@ -2559,7 +2560,7 @@ static void init_menubar(void)
 		SetMenuItemRefCon(m, i, -1);
 	}
 	for (size_t i = 0; i < N_ELEMENTS(graphics_modes); i++) {
-		SetMenuItemRefCon(m, graphics_modes[i].menuItem, i);
+		SetMenuItemRefCon(m, graphics_modes[i].grafID, i);
 	}
 
 	/* Set up bigtile menus */
@@ -3101,12 +3102,13 @@ static OSStatus ResizeCommand(EventHandlerCallRef inCallRef,
 static void graphics_aux(UInt32 op)
 {
 	graf_mode = op;
-	use_transparency = graphics_modes[op].trans;
+	use_transparency = (op != 0);//graphics_modes[op].trans;
 	pict_id = graphics_modes[op].file;
-	graf_width = graf_height = graphics_modes[op].size;
+	graf_width = graphics_modes[op].cell_width;
+  graf_height = graphics_modes[op].cell_height;
 	use_graphics = (op != 0);
 	graf_mode = op;
-	ANGBAND_GRAF = graphics_modes[op].name;
+	ANGBAND_GRAF = graphics_modes[op].pref;
 	arg_graphics = op;
 
 	graphics_nuke();
@@ -3937,6 +3939,8 @@ static void hook_quit(const char *str)
 	/* Write a preference file */
 	if (initialized) save_pref_file();
 
+  close_graphics_modes();
+
 	/* All done */
 	ExitToShell();
 }
@@ -4017,6 +4021,9 @@ int main(void)
 
 	/* Initialize */
 	init_paths();
+
+  /* load possible graphics modes */
+  init_graphics_modes("graphics.txt");
 
 	/* Prepare the windows */
 	init_windows();
