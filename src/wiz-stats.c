@@ -545,21 +545,7 @@ static void monster_death_stats(int m_idx)
 	bool gold_ok = (!rf_has(r_ptr->flags, RF_ONLY_ITEM));
 	bool item_ok = (!rf_has(r_ptr->flags, RF_ONLY_GOLD));
 
-	/* This is the get_coin_type function moved inline */
-	const char *name = r_ptr->name;
-
-	int force_coin=SV_GOLD_ANY;
-
-	/* Look for textual clues */
-	if (my_stristr(name, "copper "))	force_coin=SV_COPPER;
-	if (my_stristr(name, "silver "))	force_coin=SV_SILVER;
-	if (my_stristr(name, "gold "))		force_coin=SV_GOLD;
-	if (my_stristr(name, "mithril "))	force_coin=SV_MITHRIL;
-	if (my_stristr(name, "adamantite "))	force_coin=SV_ADAMANTITE;
-
-
 	
-
 
 	/* Get the location */
 	y = m_ptr->fy;
@@ -601,7 +587,7 @@ static void monster_death_stats(int m_idx)
 		if (gold_ok && (!item_ok || (randint0(100) < 50)))
 		{
 			/* Make some gold */
-			make_gold(i_ptr, level, force_coin);
+			make_gold(i_ptr, level, SV_GOLD_ANY);
 			dump_gold++;
 		}
 
