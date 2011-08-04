@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "game-event.h"
 #include "game-cmd.h"
+#include "monster/mon-util.h"
 #include "object/tvalsval.h"
 #include "squelch.h"
 #include "cmds.h"
@@ -551,7 +552,7 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 	}
 
 	/* If there's a monster */
-	if (g->m_idx > 0)
+	if (g->m_idx > 0 && !is_mimicking(g->m_idx))
 	{
 		if (g->hallucinate)
 		{
