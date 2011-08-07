@@ -15,6 +15,9 @@ CFLAGS += -DBUILD_ID=${VERSION} -I. -std=c99 -Wdeclaration-after-statement -O0
 GCOBJS = $(OBJECTS:.o=.gcno) $(OBJECTS:.o=.gcda)
 GCOVS = $(OBJECTS:.o=.c.gcov)
 
+CLEAN = angband.o angband.exe win/angband.res
+DISTCLEAN = autoconf.h
+
 export CFLAGS LDFLAGS
 
 angband: angband.o $(MAINFILES)
@@ -24,14 +27,6 @@ angband: angband.o $(MAINFILES)
 angband.o: $(OBJECTS)
 	$(LD) -r -o $@ $(OBJECTS)
 	@printf "%10s %-20s\n" LINK $@
-
-clean:: test-clean
-	-rm -f angband.o
-	-rm -f angband.exe
-	-rm -f win/angband.res
-
-clean-extra:
-	-rm -f autoconf.h
 
 tests: angband.o
 	$(MAKE) -C tests all

@@ -1,12 +1,13 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT([Angband], [3.3.0], [bugs@rephial.org], [angband])
-AC_PREREQ([2.59])
+AC_INIT(Angband, 3.3.0, bugs@rephial.org)
+AC_CONFIG_SRCDIR(src)
 
-AC_CONFIG_HEADER(src/autoconf.h)
-AC_CONFIG_SRCDIR([configure.ac])
+BUILDSYS_INIT
+BUILDSYS_TOUCH_DEPS
 
-AC_SUBST([PACKAGE], [AC_PACKAGE_TARNAME])
-AC_SUBST([VERSION], [AC_PACKAGE_VERSION])
+AC_SUBST(PACKAGE, angband)
+
+AC_CONFIG_HEADERS(src/autoconf.h)
 
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of package])
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version number of package])
@@ -355,7 +356,7 @@ if test "$enable_stats" = "yes"; then
 fi
 
 
-AC_CONFIG_FILES([mk/extra.mk mk/sinc@&t@lude.mk])
+AC_CONFIG_FILES([mk/buildsys.mk mk/extra.mk mk/sinc@&t@lude.mk])
 AC_OUTPUT
 
 if test "x$with_private_dirs" = "xyes"; then
