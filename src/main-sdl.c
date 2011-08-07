@@ -350,6 +350,7 @@ static SDL_Rect SizingRect;		/* Rect to describe the current resize window */
 #ifdef USE_GRAPHICS
 #include "grafmode.h"
 
+static SDL_Surface *GfxSurface = NULL;	/* A surface for the graphics */
 
 static int MoreWidthPlus;	/* Increase tile width */
 static int MoreWidthMinus;	/* Decrease tile width */
@@ -1645,9 +1646,13 @@ static void MoreDraw(sdl_Window *win)
 	}
 
 	sdl_WindowText(win, colour, 20, y, "Selected Graphics:");
-	sdl_WindowText(win, SDL_MapRGB(win->surface->format, 210, 110, 110),
-				   200, y, GfxDesc[SelectedGfx].name);
-
+  if (current_graphics_mode) {
+	  sdl_WindowText(win, SDL_MapRGB(win->surface->format, 210, 110, 110),
+				     200, y, current_graphics_mode->menuname);
+  } else {
+	  sdl_WindowText(win, SDL_MapRGB(win->surface->format, 210, 110, 110),
+				     200, y, get_graphics_mode(SelectedGfx)->menuname);
+  }
 	y += 20;
 
 	sdl_WindowText(win, colour, 20, y, "Available Graphics:");
@@ -3071,9 +3076,11 @@ static errr sdl_BuildTileset(term_window *win)
 	int x, y;
 	int ta, td;
 	int xx, yy;
-	GfxInfo *info = &GfxDesc[use_graphics];
+  graphics_mode *info;
+
   if (!GfxSurface) return (1);
-	
+	info = get_graphics_mode(use_graphics);
+
 	/* Calculate the number of tiles across & down*/
 	ta = GfxSurface->w / info->cell_width;
 	td = GfxSurface->h / info->cell_height;
