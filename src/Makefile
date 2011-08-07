@@ -25,7 +25,7 @@ angband.o: $(OBJECTS)
 	$(LD) -r -o $@ $(OBJECTS)
 	@printf "%10s %-20s\n" LINK $@
 
-clean:: test-clean
+clean-posthook: test-clean
 	-rm -f angband.o
 	-rm -f angband.exe
 	-rm -f win/angband.res
