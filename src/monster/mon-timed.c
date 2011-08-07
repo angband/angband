@@ -165,7 +165,6 @@ static bool mon_resist_effect(const monster_type *m_ptr, int ef_idx, int timer, 
 static bool mon_set_timed(monster_type *m_ptr, int ef_idx, int timer, u16b flag)
 {
 	mon_timed_effect *effect;
-	const monster_race *r_ptr;
 
 	int m_note = 0;
 	int resisted;
@@ -175,7 +174,6 @@ static bool mon_set_timed(monster_type *m_ptr, int ef_idx, int timer, u16b flag)
 	effect = &effects[ef_idx];
 
 	assert(m_ptr);
-	r_ptr = &r_info[m_ptr->r_idx];
 	old_timer = m_ptr->m_timed[ef_idx];
 
 	/* Ignore dead monsters */

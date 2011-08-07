@@ -82,7 +82,7 @@ ANGFILES = \
 	init2.o \
 	keymap.o \
 	load.o \
-	monster/init.o \
+	monster/mon-init.o \
 	monster/melee1.o \
 	monster/melee2.o \
 	monster/mon-lore.o \
