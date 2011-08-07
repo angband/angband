@@ -1350,7 +1350,7 @@ static bool summon_specific_okay(int r_idx)
 int summon_specific(int y1, int x1, int lev, int type, int delay)
 {
 	int i, x = 0, y = 0, r_idx;
-	int temp=1;
+	int temp = 1;
 
 	monster_type *m_ptr;
 	monster_race *r_ptr;
@@ -1415,7 +1415,7 @@ int summon_specific(int y1, int x1, int lev, int type, int delay)
 	if (rf_has(r_ptr->flags, RF_FRIENDS))
 		temp = 5;
 
-	return (r_ptr->level/temp);
+	return (r_ptr->level / temp);
 }
 
 /**
