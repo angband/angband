@@ -1,4 +1,20 @@
-/* Parsing functions for monster_base.txt */
+/*
+ * File: mon-init.c
+ * Purpose: Monster initialization routines.
+ *
+ * Copyright (c) 1997 Ben Harrison
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
+ */
 
 #include "externs.h"
 #include "monster/mon-msg.h"
@@ -9,6 +25,8 @@
 #include "parser.h"
 #include "z-util.h"
 #include "z-virt.h"
+
+/* Parsing functions for monster_base.txt */
 
 static enum parser_error parse_rb_n(struct parser *p) {
 	struct monster_base *h = parser_priv(p);
@@ -402,6 +420,7 @@ static enum parser_error parse_r_s(struct parser *p) {
 static enum parser_error parse_r_drop(struct parser *p) {
 	struct monster_race *r = parser_priv(p);
 	struct monster_drop *d;
+	struct object_kind *k;
 	int tval, sval;
 
 	if (!r)
@@ -416,8 +435,12 @@ static enum parser_error parse_r_drop(struct parser *p) {
 	if (parser_getuint(p, "min") > 99 || parser_getuint(p, "max") > 99)
 		return PARSE_ERROR_INVALID_ITEM_NUMBER;
 
+	k = objkind_get(tval, sval);
+	if (!k)
+		return PARSE_ERROR_UNRECOGNISED_SVAL;
+		
 	d = mem_zalloc(sizeof *d);
-	d->kind = objkind_get(tval, sval);
+	d->kind = k;
 	d->percent_chance = parser_getuint(p, "chance");
 	d->min = parser_getuint(p, "min");
 	d->max = parser_getuint(p, "max");

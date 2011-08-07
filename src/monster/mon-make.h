@@ -30,19 +30,19 @@
 /** Variables **/
 
 /** Functions **/
-void delete_monster_idx(int i);
+void delete_monster_idx(int m_idx);
 void delete_monster(int y, int x);
-void compact_monsters(int size);
+void compact_monsters(int num_to_compact);
 void wipe_mon_list(struct cave *c, struct player *p);
 void get_mon_num_prep(void);
 s16b get_mon_num(int level);
 void player_place(struct cave *c, struct player *p, int y, int x);
 s16b place_monster(int y, int x, monster_type *n_ptr, byte origin);
-bool place_new_monster(struct cave *, int y, int x, int r_idx, bool slp,
-	bool grp, byte origin);
-bool pick_and_place_monster(struct cave *c, int y, int x, int depth, bool slp,
-	bool grp, byte origin);
-bool pick_and_place_distant_monster(struct cave *c, struct loc loc, int dis, bool slp, int depth);
+bool place_new_monster(struct cave *, int y, int x, int r_idx, bool sleep,
+	bool group_okay, byte origin);
+bool pick_and_place_monster(struct cave *c, int y, int x, int depth, bool sleep,
+	bool group_okay, byte origin);
+bool pick_and_place_distant_monster(struct cave *c, struct loc loc, int dis, bool sleep, int depth);
 void monster_death(int m_idx, bool stats);
 bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note);
 
