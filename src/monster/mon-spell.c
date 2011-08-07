@@ -19,6 +19,7 @@
 #include "spells.h"
 #include "effects.h"
 #include "monster/mon-spell.h"
+#include "monster/mon-timed.h"
 #include "monster/mon-util.h"
 
 /**

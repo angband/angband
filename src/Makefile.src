@@ -90,6 +90,7 @@ ANGFILES = \
 	monster/mon-msg.o \
 	monster/mon-power.o \
 	monster/mon-spell.o \
+	monster/mon-timed.o \
 	monster/mon-util.o \
 	object/identify.o \
 	object/obj-desc.o \
