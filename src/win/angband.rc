@@ -145,6 +145,7 @@ ANGBAND MENU
 		MENUITEM "Low Priority", 420
 		MENUITEM "Activate Screensaver", 430
 		MENUITEM "&Map", 440
+		MENUITEM "&Screenshot", 441
 	}
 
 	POPUP "&Help"

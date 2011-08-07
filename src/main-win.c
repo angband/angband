@@ -205,6 +205,7 @@
 #define IDM_OPTIONS_LOW_PRIORITY    420
 #define IDM_OPTIONS_SAVER           430
 #define IDM_OPTIONS_MAP             440
+#define IDM_OPTIONS_SCREENSHOT      441
 
 #define IDM_OPTIONS_TILE_1x1        447
 #define IDM_OPTIONS_TILE_2x1        448
@@ -2559,13 +2560,13 @@ static errr Term_pict_win_alpha(int x, int y, int n, const byte *ap, const char 
 		else
 		{
 			/* Copy the terrain picture from the bitmap to the window */
-			StretchBlt(hdc, x2, y2, tw2, th2, hdcSrc, x3, y3, w1, h1, SRCCOPY);
+  		StretchBlt(hdc, x2, y2, tw2, th2, hdcSrc, x3, y3, w1, h1, SRCCOPY);
 		}
 		if (overdraw && (trow >= overdraw) && (y > 2) && (trow <= overdrawmax)) {
 			AlphaBlend(hdc, x2, y2-th2, tw2, th2, hdcSrc, x1, y1-h1, w1, h1, blendfn);
-			/* tell the core that the top tile is different than what it thinks */
-			Term_mark(x, y-tile_height);
-			Term_mark(x, y); /* ugg this means that this tile is drawn every frame */
+  		/* tell the core that the top tile is different than what it thinks */
+      Term_mark(x, y-tile_height);
+      Term_mark(x, y); /* ugg this means that this tile is drawn every frame */
 		}
 
 		/* Only draw if terrain and overlay are different */
@@ -2574,11 +2575,11 @@ static errr Term_pict_win_alpha(int x, int y, int n, const byte *ap, const char 
 			/* Copy the picture from the bitmap to the window */
 			if (overdraw && (row >= overdraw) && (y > 2) && (row <= overdrawmax)) {
   				AlphaBlend(hdc, x2, y2-th2, tw2, th2*2, hdcSrc, x1, y1-h1, w1, h1*2, blendfn);
-  				/* tell the core that the top tile is different than what it thinks */
-				Term_mark(x, y-tile_height);
-				Term_mark(x, y); /* ugg this means that this tile is drawn every frame */
-				/* but it is needed, otherwise the top does not get drawn again when */
-				/* the user of this tile does not move, but something else does */
+  			/* tell the core that the top tile is different than what it thinks */
+        Term_mark(x, y-tile_height);
+        Term_mark(x, y); /* ugg this means that this tile is drawn every frame */
+        /* but it is needed, otherwise the top does not get drawn again when */
+        /* the user of this tile does not move, but something else does */
 			} else {
 				AlphaBlend(hdc, x2, y2, tw2, th2, hdcSrc, x1, y1, w1, h1, blendfn);
 			}
@@ -4073,6 +4074,28 @@ static void process_menus(WORD wCmd)
 			display_help(HELP_SPOILERS);
 			break;
 		}
+		case IDM_OPTIONS_SCREENSHOT:
+		{
+    	char filename[1024];
+    	char path[1024];
+      time_t ltime;
+      struct tm *today;
+      int len;
+      BOOL SaveWindow_PNG(HWND hWnd, LPSTR lpFileName);
+    
+      time( &ltime );
+      today = localtime( &ltime );
+      strnfmt(filename, sizeof(filename), "%s", op_ptr->full_name);
+      len = strlen(filename);
+      strftime(filename+len, sizeof(filename)-len, "_%Y%b%d_%H%M%S.png", today);
+	    /* Get the system-specific path */
+    	path_build(path, sizeof(path), ANGBAND_DIR_USER, filename);
+			td = &data[0];
+      if (!SaveWindow_PNG(td->w, path)) {
+  			plog("Screenshot Save Failed.");
+      }
+			break;
+		}
 		default:
 		{
 			if ((wCmd >= IDM_OPTIONS_GRAPHICS_NONE) && (wCmd <= IDM_OPTIONS_GRAPHICS_NONE+graphics_mode_high_id))
@@ -4216,11 +4239,11 @@ static void handle_keydown(WPARAM wParam, LPARAM lParam)
 		case VK_CLEAR: ch = '5'; kp=TRUE; break;
 		case VK_PAUSE: ch = KC_PAUSE; break;
 
-		case VK_ADD: ch = '+'; kp = TRUE; break;
+		/*case VK_ADD: ch = '+'; kp = TRUE; break;
 		case VK_SUBTRACT: ch = '-'; kp = TRUE; break;
 		case VK_MULTIPLY: ch = '*'; kp = TRUE; break;
 		case VK_DIVIDE: ch = '/'; kp = TRUE; break;
-		case VK_DECIMAL: ch = '.'; kp = TRUE; break;
+		case VK_DECIMAL: ch = '.'; kp = TRUE; break;*/
 
 		case VK_NUMPAD0: if (mc||ma||ms) {ch = KC_INSERT; kp = TRUE;} break;
 		case VK_NUMPAD1: if (mc||ma||ms) {ch = KC_END; kp = TRUE;} break;
