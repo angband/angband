@@ -264,6 +264,38 @@ static void heal_self(int m_idx, int rlev, bool seen)
 	}
 }
 
+/*
+ *	This function is used when a group of monsters is summoned.
+ *  When it is called, N 
+ */
+
+int summon_monster_aux(int flag, int m_idx, int rlev, int summon_max)
+{
+	monster_type *m_ptr = cave_monster(cave, m_idx);
+	int count = 0, val = 0, attempts = 0;
+	int temp;
+	
+	/* Continue adding summoned monsters until we reach the current dungeon level */
+	while((val < p_ptr->depth * rlev) && (attempts < summon_max))
+	{
+		/* Get a monster */
+		temp = summon_specific(m_ptr->fy, m_ptr->fx,
+			rlev, flag, 0);
+			
+		val += temp * temp;
+			
+		/* Increase the attempt, needed in case no monsters were available. */	
+		attempts++;
+		
+		/* Increase count of summoned monsters */
+		if (val > 0)
+			count++;
+	
+	}
+	
+	return(count);
+}
+
 /**
  * Apply side effects from a spell attack to the player
  *
@@ -446,13 +478,12 @@ static void do_side_effects(int spell, int dam, int m_idx, bool seen)
 					case S_UNDEAD: case S_HI_UNDEAD: case S_WRAITH:
 					case S_DRAGON: case S_HI_DRAGON:
 					case S_UNIQUE:
-						for (i = 0; i < re_ptr->base.base; i++)
-							count += summon_specific(m_ptr->fy, m_ptr->fx,
-								rlev, re_ptr->flag, 0);
+						count = summon_monster_aux(re_ptr->flag, m_idx, rlev, re_ptr->base.base);
 
-						for (i = 0; i < re_ptr->dam.base; i++)
-							count += summon_specific(m_ptr->fy, m_ptr->fx,
-								rlev, S_HI_UNDEAD, 0);
+						/* In the special case that uniques or wraiths were summoned but all were dead
+							S_HI_UNDEAD is used instead */
+						if ((!count) && ((re_ptr->flag == S_WRAITH) || (re_ptr->flag == S_UNIQUE)))
+							count = summon_monster_aux(S_HI_UNDEAD, m_idx, rlev, re_ptr->base.base);
 
 						if (count && p_ptr->timed[TMD_BLIND])
 							msgt(rs_ptr->msgt, "You hear %s appear nearby.",
