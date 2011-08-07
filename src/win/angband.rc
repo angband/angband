@@ -99,6 +99,20 @@ ANGBAND MENU
 			MENUITEM "Term-6 window", 276
 			MENUITEM "Term-7 window", 277
 		}
+
+    MENUITEM SEPARATOR
+
+		POPUP "Term 0 Font Tile Size"
+		{
+			MENUITEM "Font",    190
+			MENUITEM "8 x 16",  194
+			MENUITEM "8 x 8",   191
+			MENUITEM "16 x 16", 192
+			MENUITEM "32 x 32", 193
+			MENUITEM "16 x 32", 196
+			MENUITEM "12 x 20", 188
+			MENUITEM "16 x 25", 189
+		}
 	}
 
 	POPUP "&Options"
@@ -106,23 +120,32 @@ ANGBAND MENU
 		POPUP "&Graphics"
 		{
 			MENUITEM "&None", 400
-			MENUITEM "&Old tiles", 401
-			MENUITEM "&Adam Bolt's tiles", 402
-			MENUITEM "&David Gervais' tiles", 403
-			MENUITEM "&Nomad's tiles", 404
 			MENUITEM SEPARATOR
-			MENUITEM "Enable nice &graphics", 405
+			MENUITEM "Enable nice &graphics", 445
 			MENUITEM SEPARATOR
-			MENUITEM "&Triple tile mode", 407
-			MENUITEM "Do&uble tile mode", 408
-			MENUITEM SEPARATOR
-			MENUITEM "&Bigtile mode", 409
+		  POPUP "&Tile Multiplier"
+		  {
+			  MENUITEM "&1x1", 447
+			  MENUITEM "&2x1", 448
+			  MENUITEM "2x2", 450
+			  MENUITEM "3x1", 451
+			  MENUITEM "&3x3", 452
+			  MENUITEM "&4x2", 449
+			  MENUITEM "4x4", 453
+			  MENUITEM "&6x3", 454
+			  MENUITEM "6x6", 455
+			  MENUITEM "&8x4", 456
+			  MENUITEM "8x8", 457
+			  MENUITEM "16x8", 458
+			  MENUITEM "16x16", 459
+		  }
 		}
 
 		MENUITEM SEPARATOR
 		MENUITEM "Low Priority", 420
 		MENUITEM "Activate Screensaver", 430
 		MENUITEM "&Map", 440
+		MENUITEM "&Screenshot", 441
 	}
 
 	POPUP "&Help"
@@ -131,5 +154,5 @@ ANGBAND MENU
 	}
 }
 
-ANGBAND ICON "win/angband.ico"
+ANGBAND ICON "angband.ico"
 

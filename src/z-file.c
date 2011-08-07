@@ -364,7 +364,35 @@ ang_file *file_open(const char *fname, file_mode mode, file_type ftype)
 
 	switch (mode)
 	{
-		case MODE_WRITE:  f->fh = fopen(buf, "wb"); break;
+		/*case MODE_WRITE_TEMP:
+		{ 
+			int fd = mkstemp(buf);
+			if (fd < 0) {
+				/* there was some error *//*
+				f->fh = NULL;
+			} else {
+				f->fh = fdopen(fd, "wb");
+			}
+			break;
+		}*/
+		case MODE_WRITE:
+		{ 
+			if (ftype == FTYPE_SAVE) {
+				/* open only if the file does not exist */
+				int fd;
+				fd = open(buf,
+					O_CREAT | O_EXCL | O_WRONLY | O_BINARY,
+					S_IREAD|S_IWRITE);
+				if (fd < 0) {
+					/* there was some error */
+					f->fh = NULL;
+				} else {
+					f->fh = fdopen(fd, "wb");
+				}
+			} else
+				f->fh = fopen(buf, "wb");
+			 break;
+		 }
 		case MODE_READ:   f->fh = fopen(buf, "rb"); break;
 		case MODE_APPEND: f->fh = fopen(buf, "a+"); break;
 		default:          f->fh = fopen(buf, "__");

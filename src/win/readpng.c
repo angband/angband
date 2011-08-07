@@ -182,6 +182,10 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask) {
 	if (color_type == PNG_COLOR_TYPE_RGB_ALPHA) {
 		biSrc.bmiHeader.biBitCount = 32;
 		biSrc.bmiHeader.biSizeImage = width*height*4;
+    if (!pMask) {
+	    bi.bmiHeader.biBitCount = 32;
+	    bi.bmiHeader.biSizeImage = width*height*4;
+    }
 	} else {
 		biSrc.bmiHeader.biBitCount = 24;
 		biSrc.bmiHeader.biSizeImage = width*height*3;
@@ -224,6 +228,8 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask) {
 		pInfo->hBitmap = hBitmap;
 		pInfo->hPalette = hPalette;
 		pInfo->hDIB = 0;
+    pInfo->ImageWidth = width;
+    pInfo->ImageHeight = height;
 	}
 	
 	if (pMask && (color_type == PNG_COLOR_TYPE_RGB_ALPHA))
