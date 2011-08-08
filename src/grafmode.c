@@ -104,6 +104,7 @@ errr finish_parse_grafmode(struct parser *p)
   mode = parser_priv(p);
 	for (i = count-1; i >= 0; i--,mode = mode->pNext) {
 		memcpy(&(graphics_modes[i]), mode, sizeof(graphics_mode));
+		graphics_modes[i].pNext = &(graphics_modes[i+1]);
 	}
   
   /* hardcode the no graphics option */

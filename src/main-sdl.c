@@ -1494,6 +1494,7 @@ static void AcceptChanges(sdl_Button *sender)
 	}
 	else
 	{
+		current_graphics_mode = NULL;
 		arg_graphics = FALSE;
 		tile_width = 1;
 		tile_height = 1;
@@ -1646,20 +1647,20 @@ static void MoreDraw(sdl_Window *win)
 	}
 
 	sdl_WindowText(win, colour, 20, y, "Selected Graphics:");
-  if (current_graphics_mode) {
-	  sdl_WindowText(win, SDL_MapRGB(win->surface->format, 210, 110, 110),
+	if (current_graphics_mode) {
+		sdl_WindowText(win, SDL_MapRGB(win->surface->format, 210, 110, 110),
 				     200, y, current_graphics_mode->menuname);
-  } else {
-	  sdl_WindowText(win, SDL_MapRGB(win->surface->format, 210, 110, 110),
-				     200, y, get_graphics_mode(SelectedGfx)->menuname);
-  }
+	} else {
+		sdl_WindowText(win, SDL_MapRGB(win->surface->format, 210, 110, 110),
+				     200, y, "None");
+	}
 	y += 20;
 
 	sdl_WindowText(win, colour, 20, y, "Available Graphics:");
 	
 	i=0;
 	do {
-		if (!graphics_modes[i].file[0]) continue;
+		if (!graphics_modes[i].menuname[0]) continue;
 		button = sdl_ButtonBankGet(&win->buttons, GfxButtons[graphics_modes[i].grafID]);
 		sdl_ButtonMove(button, 200, y);
 		y += 20;
@@ -1747,8 +1748,8 @@ static void MoreActivate(sdl_Button *sender)
 	
 	i=0;
 	do {
-		if (!graphics_modes[i].file[0]) continue;
-		GfxButtons[i] = sdl_ButtonBankNew(&PopUp.buttons);
+		if (!graphics_modes[i].menuname[0]) continue;
+		GfxButtons[graphics_modes[i].grafID] = sdl_ButtonBankNew(&PopUp.buttons);
 		button = sdl_ButtonBankGet(&PopUp.buttons, GfxButtons[graphics_modes[i].grafID]);
 		
 		button->unsel_colour = ucolour;
@@ -1756,7 +1757,7 @@ static void MoreActivate(sdl_Button *sender)
 		sdl_ButtonSize(button, 50 , PopUp.font.height + 2);
 		sdl_ButtonVisible(button, TRUE);
 		sdl_ButtonCaption(button, graphics_modes[i].menuname);
-		button->tag = i;
+		button->tag = graphics_modes[i].grafID;
 		button->activate = SelectGfx;
 	} while (graphics_modes[i++].grafID != 0); 
 #endif
@@ -3335,14 +3336,18 @@ static errr load_gfx(void)
 	const char *filename;
 	SDL_Surface *temp;
 
-  current_graphics_mode = get_graphics_mode(use_graphics);
-  filename = current_graphics_mode->file;
-
-	/* This may be called when GRAPHICS_NONE is set */
-	if (!filename) return (0);
+	current_graphics_mode = get_graphics_mode(use_graphics);
+	if (current_graphics_mode) {
+		filename = current_graphics_mode->file;
+	} else {
+		filename = NULL;
+	}
 
 	/* Free the old surface */
 	if (GfxSurface) SDL_FreeSurface(GfxSurface);
+
+	/* This may be called when GRAPHICS_NONE is set */
+	if (!filename) return (0);
 
 	/* Find and load the file into a temporary surface */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_GRAF, filename);
@@ -3633,7 +3638,7 @@ int init_sdl(int argc, char *argv[])
 	
   /* load possible graphics modes */
   init_graphics_modes("graphics.txt");
-  GfxButtons = zmem_alloc(sizeof(int) * graphics_mode_high_id);
+  GfxButtons = mem_zalloc(sizeof(int) * graphics_mode_high_id);
 	
 	/* Load prefs */
 	load_prefs();
