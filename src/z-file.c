@@ -362,8 +362,6 @@ ang_file *file_open(const char *fname, file_mode mode, file_type ftype)
 	ang_file *f = ZNEW(ang_file);
 	char buf[1024];
 
-	int wmode = O_CREAT | O_EXCL | O_WRONLY | O_BINARY, S_IREAD | S_IWRITE;
-
 	(void)ftype;
 
 	/* Get the system-specific path */
@@ -374,7 +372,7 @@ ang_file *file_open(const char *fname, file_mode mode, file_type ftype)
 			if (ftype == FTYPE_SAVE) {
 				/* open only if the file does not exist */
 				int fd;
-				fd = open(buf, wmode);
+				fd = open(buf, O_CREAT | O_EXCL | O_WRONLY | O_BINARY, S_IREAD | S_IWRITE);
 				if (fd < 0) {
 					/* there was some error */
 					f->fh = NULL;
