@@ -4043,7 +4043,7 @@ static void process_menus(WORD wCmd)
 			break;
 		}
 
-		case IDM_OPTIONS_SCREENSHOT:{
+		case IDM_OPTIONS_SCREENSHOT:{
 			char filename[1024];
 			char path[1024];
 			time_t ltime;
