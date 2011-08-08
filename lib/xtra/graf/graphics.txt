@@ -18,10 +18,10 @@ I:16:16:8x16.png
 M:Nomad's tiles
 X:0:0:0
 
-N:5:david
-I:64:64:64x64.png
-M:64x64 Test tiles
-X:0:0:0
+#N:5:david
+#I:64:64:64x64.png
+#M:64x64 Test tiles
+#X:0:0:0
 
 #N:6:shock
 #I:64:64:64x64.png
