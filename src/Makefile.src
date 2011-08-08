@@ -77,6 +77,7 @@ ANGFILES = \
 	game-cmd.o \
 	game-event.o \
 	generate.o \
+	grafmode.o \
 	guid.o \
 	history.o \
 	init2.o \

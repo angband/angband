@@ -2559,9 +2559,12 @@ static void init_menubar(void)
 		/* Invalid entry */
 		SetMenuItemRefCon(m, i, -1);
 	}
-	for (size_t i = 0; i < N_ELEMENTS(graphics_modes); i++) {
-		SetMenuItemRefCon(m, graphics_modes[i].grafID, i);
-	}
+	/* Note that menu indices start at 1, while grafIDs start at 0.
+	 * Hence the + 1. */
+	size_t i = 0;
+	do {
+		SetMenuItemRefCon(m, graphics_modes[i].grafID + 1, i);
+	} while (graphics_modes[i++].pNext);
 
 	/* Set up bigtile menus */
 	m = MyGetMenuHandle(kBigtileWidthMenu);
@@ -3102,11 +3105,11 @@ static OSStatus ResizeCommand(EventHandlerCallRef inCallRef,
 static void graphics_aux(UInt32 op)
 {
 	graf_mode = op;
-	use_transparency = (op != 0);//graphics_modes[op].trans;
+	use_transparency = (graphics_modes[op].grafID != 0);//graphics_modes[op].trans;
 	pict_id = graphics_modes[op].file;
 	graf_width = graphics_modes[op].cell_width;
 	graf_height = graphics_modes[op].cell_height;
-	use_graphics = (op != 0);
+	use_graphics = (graphics_modes[op].grafID != 0);
 	graf_mode = op;
 	ANGBAND_GRAF = graphics_modes[op].pref;
 	arg_graphics = op;
@@ -4012,18 +4015,18 @@ int main(void)
 	/* Show the "watch" cursor */
 	SetCursor(*(GetCursor(watchCursor)));
 
+	/* Initialize */
+	init_paths();
+
+	/* Load possible graphics modes -- must happen before menubar init */
+	init_graphics_modes("graphics.txt");
+
 	/* Prepare the menubar */
 	init_menubar();
 
 	/* Ensure that the recent items array is always an array and start with an empty menu */
 	recentItemsArrayRef = CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
 	redrawRecentItemsMenu();
-
-	/* Initialize */
-	init_paths();
-
-  /* load possible graphics modes */
-  init_graphics_modes("graphics.txt");
 
 	/* Prepare the windows */
 	init_windows();
@@ -4064,7 +4067,7 @@ int main(void)
 	/* Set up the display handlers and things. */
 	init_display();
 
-	if(graf_mode) graphics_aux(graf_mode);
+	if(graphics_modes[graf_mode].grafID) graphics_aux(graf_mode);
 
 	/* We are now initialized */
 	initialized = TRUE;

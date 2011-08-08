@@ -167,6 +167,7 @@ install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
 	@cp ../lib/help/*.txt $(APPRES)/lib/help
 	@cp ../lib/help/*.hlp $(APPRES)/lib/help
 	@cp ../lib/pref/*.prf $(APPRES)/lib/pref
+	@cp ../lib/xtra/graf/*.txt $(APPRES)/lib/xtra/graf
 
 	# 'optionally' install sound and graphics tiles, if present
 	-cp $(TILES) $(APPRES)/lib/xtra/graf
