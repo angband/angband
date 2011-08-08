@@ -237,6 +237,11 @@ size_t path_build(char *buf, size_t len, const char *base, const char *leaf)
 # define HAVE_READ
 #endif
 
+/* if the flag O_BINARY is not defined, it is not needed , but we still
+ * need it defined so it will compile */
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
 
 /* Private structure to hold file pointers and useful info. */
 struct ang_file
