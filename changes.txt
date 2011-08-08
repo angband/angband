@@ -1,261 +1,30 @@
-Angband 3.3.0
-=============
+Angband 3.4.0-dev
+=================
 
-We, the Angband development team, are proud to present the latest 
-iteration of the game, in the form of Angband 3.3.0. This time there 
-will definitely be a 3.3.1 bugfix release for any serious bugs, but we 
-hope this version is enjoyable. All major fixes and changes are 
-described below. This version sees more significant refactoring, 
-especially of the input layer, and the first major changes to dungeon 
-generation for many years. It also adds a comprehensive stats collection 
-module, which will be used to improve balance in future versions.
+Welcome to the changelog for Angband 3.4. This paragraph will be rewritten
+nearer to release. In the meantime, this file tracks at a high level the
+changes made since 3.3.0
 
-This release was brought to you by (in alphabetical order of IRC 
-nickname): Aerdan, Erik Osheim, Elly Jones, Aaron Bader, Chris Carr, 
-Robert Au, Peter Denison and Andi Sidwell. Please see the file 
-thanks.txt for a full list of contributors.
-
-
-Gameplay changes
-================
-	#50 New level feelings (also #1365, #1382)
-    #77	Refactoring of and enhancements to cave generation code, including
-   #838		circular rooms, labyrinths, and cavern levels
-   #101 Improved monster pain messages
-   #261 Moved fear, blindness, and confusion from resists to protections,
-  #1163     and separated damage resistance from effect resistance (add pStun)
-0ce7858 Remove confusion as a breath attack, along with bronze monsters/DSM
-   #571 Multiple pval support
-   #598 Made time attacks less evil
-   #718 Made enchantment scrolls not appear in the shops
-  #1005 Rewrite of object_power for slot-dependent price balancing,
-  #1188     and pricing of light radius
-  #1096 Drain charges only drains as many charges as a recharge gives
-  #1145 Afraid monsters now have increased spell failure chance
-  #1155 Added birth_keep_randarts option to re-use randarts
-  #1181 General store now only buys lights, food, oil and spikes
-  #1250 Stat drain now repairs on level up: restore stat potions removed
-  #1310 Prevent unusually high AC armour from being detected from afar
-  #1311 Being confused and walking into a wall now costs a turn
-  #1341 Toned down +dam and +speed on nonweapon standarts and removed 
-			brands from rings (Paurnimmen's brand changed to x2)
-  #1345 Make Wrath, Ulmo, and Erebor match base item dice sides and weight
-  #1350 STUPID living monsters no longer immune to life drain
-  #1366 Wand of dragon breath now learned with use
-  #1369 Rebalanced ego DSM
-  #1383 Earthquake weapons with multiple blows stop attacking if the
-			target gets moved by a quake
-  #1384 Correct Curlicues One vault layout
-  #1390 Meteors from meteor swarm now travel like bolts
-        Make lurkers, mimics, and creeping coins more convincing
-		Create doors, create stairs, and glyph of warding push items in
-            adjacent squares away
-		Rebalancing of some artifacts and ego items (and a few new ones)
-		Allow locking of doors with the Disarm command, improve spikes
-		Monster hindrance (sleep/slow/confuse/scare) now more useful
-4bafa79 Make Teleport Other a bolt and make Destruction remove artifacts
-8cd902c Remove percentage healing for potions, switch CLW/CSW/CCW to healing
-			20/40/60hp respectively
-4656bb7 Add a neutral gender
-ce06a19 Scale no_selling gold multiplier in early levels, and reduce money
-9367950     from selling by 1/3rd
-759ab76 Tone down flask of oil damage
-7c679b1 Remove random (pointless) curses on jewelry
-35bc80d Make rings of strength appear lower
-582adf5 Make artifacts not be actually created in birth_no_artifacts
-60a8214 Poison melee damage now reduced by rpois
-02de916 High AC no longer quite such overpowered protection in melee
+Bugs fixed
+==========
+  #1461 Fix saving and loading so that savefile.{old|new} are ignored
+  #1462 Fix loading of graphics pref files in non-graphics mode (Blubaron)
 
 User interface
 ==============
-    #21 Added NPP's visible path-to-target (thanks, Jeff)
-   #139	Major input layer refactor: remove macros, create internal keyset,
- et al.	    provide facility for recognizing modifier keys, improve and
-			document the keymap editor
-   #146 Added a "pile of items" tile for all tilesets (thanks thapper)
-   #617 Added content to the SDL port's About box
-   #777 Added 'K' command to toggle show or hide squelched items (also #1061)
-   #820 Adam Bolt tileset element mappings fixed
-   #855 Allow running from detection edge
-   #856 Shops now ignore keymaps
-  #1012 Show build version in dumps
-  #1060 Replacing "destroy"ing with "squelch this item"
-  #1063 Worthless items squelched by default
-  #1074 More use of colour in monster recall
-  #1116 Changing squelch options triggers item drops
-  #1128 Subwindows set properly when loaded from a pref file
-  #1149 Allow gtk-settings.prf to accept nonpositive window positions
-  #1157 SDL/OS X: Handle transparency properly for 8x8 tiles
-  #1218 Removed some options related to squelch, highlighting, display
-  #1247 Knowledge browser: prevent going off the edge of the screen in
-			double/triple tile mode
-  #1261 Extended characters work on OSX
-  #1265 Fix slowdown caused by map redrawing (thanks Jens)
-  #1266 Fix the SDL port's options box
-  #1267 Fonts now listed in logical order in the SDL interface
-  #1291 Fix monster knowledge and recall to respect purple_uniques option
-  #1320 Weak characters now display next "extra blow" correctly
-  #1330 Fixed crash using @Z1 inscription
-  #1363 Make Ar-Pharazon flicker, and change up some of the canine coloring
-  #1373 Don't display artifact base kinds in the squelch menus
-  #1380 Fix the 5x8x font
-  #1397 Make ^e inven/equip subwindow toggling work in stores
-  #1402 Backspace no longer gets doubled on Windows
-  #1414 Show origin standart in randart descriptions
-  #1438 Start multihued and flickering monsters as their base colour
-  #1439 More consistent capitalisation of definite article
-  #1465 Fix display of quiver slot when inventory is empty
-  #1467 Some band-aids for quality squelchling (also #1472)
-  #1485 Pval descriptions no longer displayed in object name
-        Add updated tiles from buzzkill and juggle5
-        Add skill, race, class info to birth UI
-        Artifact description revisions
-        Various code cleanup and improvements for main-gcu
-		Use fuzzy matching for creating monsters and artifacts by name
-		Improvements to handling of plurals
-2ef38bc Move the 'jump into a trap(-)' command to '(W)alk into a trap'
-889d204 Change recalled monster spell damage to max values instead of averages
-eb8c440 Make message printing use fewer lines when possible
-73da897 Make hints from the stores more common and less verbose
-72cd70a Re-enable solid walls for windows
-57c2709 Give death molds ATTR_FLICKER
-09d70f8 Fix the ordering of races in the birth menu
-33987fa Use <angle brackets> for pvals so that two pvals are not confused
-            with (+hit,+dam)
-84d37e8 Fix UI issue with aborting ENTER menu
-a24e54c Display tile selections in decimal
-90eb258 Renamed novice monsters to apprentices, gallants, acolytes etc.
-00291f1 Remove the cheat_peek option
-e177bf1 Allow overriding of keymaps
-cde42c9 Make C-x immediately exit death screen
-3534656 Added support for new keycode KC_BEGIN (keypad 5). Added keypad
-            support for running and tunneling to pref.prf
-9a0d219 Sync font-x11.prf with angband_color_table
-ce0d34d Add -s option for sound selection
-ca50f3a Make command-line options case-sensitive
-fb7a532 Add "--" in front of player notes in history
-6a273aa Print a message when Deep Descent cannot be completed
-ea6368c Remove weird colour-setting lines from the pref files
-f99301b Fix quiver slot in inven subwindow (thanks PowerWyrm)
-49911e7 Add /me and /say support for the note command
-b62590d Show distance in target-out-of-range message (thanks ChodTheWacko)
-480b5ba Prevent messages about damaged items referring to post-damage values
-cd77313 Azerath's fix for mouse movement
-
-Other bugs fixed
+  #1498 Nomad's updated tiles.
+ec47e94 et seq. Blubaron's improved tile support (graphics.txt)
+  
+Gameplay changes
 ================
-   #679 Remove obsolete priest spell 6 from player class definitions
-  #1305 Fix divide by zero error in monster recall
-  #1307 Fix the 'n' command (also #1313, #1430)
-  #1309 Allow -w switch to resurrect with +ve hp
-  #1327 Allow object recall term window to display first inven item properly
-  #1329 Fixed extra negation in flag_is_subset
-  #1336 Fixed ID of "bad" pvals 
-  #1337 Fixed crash from unintended self-targeting
-  #1340 Fix to-hit bonus for randarts
-  #1348 Fix and refactor broken summons
-  #1356 Force cap of gold drops to MAX_SHORT (not fixed??)
-  #1360 Fixed title display for second and subsequent pages of high score list
-  #1364 Fix leather boots' rarity (and other object.txt fixes)
-  #1392 Fix origin crash for no-longer-valid monster entries
-  #1393 Remove apply_magic()'s MAX_DEPTH check
-  #1394 Make ego_apply_minima work properly for 0 and allow a NO_MINIMUM value
-  #1401 Fix parser_parse behavior on "char str" specifications
-  #1434 Fix memory over-read bug in cmd0.c, thanks to david3x3x3
-        Fix behavior of '8' squares in vaults
-d17cd80 Fix bug marking certain players as cheaters erroneously
-0a3519f Patch by agoodman to support 64-bit windows
-7843139 Fix ammo breakage and make breakage message more timely
-62814eb Fix off-by-one error in RNG
-8dda678 Make cheat options correctly set score options
-5c994a8 Fix chargen bug with player basic subwindow
-cb6178b Add some assert()s in the history code, and fix history_add_full()
-            to work for history entries that don't involve artifacts
-c591348 Prevent store-restocking faults from entering an infinite loop
-fb5f7ed Add do_cmd_wiz_learn() check to stop crashes on empty items
+  #1113 Rebalance stealth and monster detection (thanks Jens & Fizzix)
+  #1156 Revisit stacks of consumables (thanks Jens)
+  #1507 Rebalance to-hit vs. AC (take two, thanks Jens)
+bf5d943 Fizzix's summoning changes
+e8b48d5 et seq. CunningGabe's improvements to pits
 
 Coding changes
 ==============
-    #84 Removed cptr
-   #120 Object flags now held by the object
-   #136 Windows port now uses libpng
-   #269 Unified message code
-   #318 Consolidated monster entries (and added new FRIEND flag)
-   #749 Uniform way to query player knowledge of player state
-   #786 Added comprehensive stats collection and output to sqlite db
-   #803 Refactored monster spells and GF_ types into tables
-   #942 angband.ico moved to src/win
-  #1101 Cleaned up and documented savefiles
-  #1302 Reconcile test and sdl initialization strategies
-  #1306 Fix clean target in Makefile
-  #1339 Fix documentation of flag_next()
-  #1347 Make monster haste/slow temporary status effects (MON_TMD_*)
-  #1349 Replace some uses of memset() with of_wipe() and of_setall()
-  #1419 Create drops at monster creation,
-  #1399		and add more ORIGIN_* values
-  #1431 Implemented m_ptr->known_pflags; removed SM_* and DRS_*
-        Major parser refactoring and cleanup
-        Major object edit file and description refactoring
-        Introduction of object/slays.[ch] to encapsulate slay_table[]
-		Refactoring of object flags and introduction of obj-flag.[ch]
-		Improved handling of player state (timed effects, resists etc.)
-        Support for monster and object templates (monster_base and object_base)
-        Refactoring of shooting/throwing code in attack.c
-        Refactoring of savefile loading, including support for new item format
-        Clean-up of code commented as "hack" or "mega-hack" etc.
-        Include more headers in the windows module to remove warnings
-        Port of SVN pkg_src to use git
-        Refactoring of pickup and autopickup code
-        Changes needed by APW for the borg
-        Refactor obj-make.c
-	 	Wiz-mode improvements: add commands for full monster recall,
-            wiping monster memory, buffing character
-		Move from o_ptr->name/name2 to o_ptr->artifact and o_ptr->ego
-		Improved handling of null objects
-		Numerous improvements to testing
-        Fixes for extra_stat_bonus()
-		Improvements to OSX build system
-        Remove some variably-sized arrays
-		Add support for specific monster drops
-		Add more accessor functions to reduce dependence on #defines
-		Numerous memory leaks fixed
-520beb7 Nullfame's improvements to monster power evaluation
-2738f1f New grid_light_level enum based on FEAT_LIGHTING_*
-68ce8b0 Fix off-by-one error in FLAG_SIZE (spotted by nick)
-0401c9a Fix memory leak in pref parsing
-e7f1e57 Remove Term_user hook
-f2581f1 Make cmd-obj.c entirely game code, and cmd3.c all UI code
-6be460d New menu API that allows dynamic building of menus easily
-fac5a00 Remove the distinction between birth and adult options
-e772ff5 Fix some mingw build warnings
-b1eae2d Tidy up defines.h and remove EGO_ indices
-1b2f8cf Remove use of read/write in favor of fread/fwrite
-6ab4caa Remove reference to removed file for Windows packaging
-bd405d9 Add 'make splint' target and make changes to allow splint to run
-aff4a87 Move autoinscriptions into object_kind struct
-212fdfe Remove many of the hardcoded spell limits
-443d455 Make make clean remove angband.o
-9d666ff Refactor bolt/ball spell graphics
-68703fc Added "ICKY" monster flag, and changed monster nests/pits to use
-            monster flags only
-4aebe45 Fix confusing case of variable overloading in dump_features()
-ee8a236 Make recharge() function more readable
-17faa5b Use Makefile.src in nds port
-2479457 Added circular queue implementation
-630fb5a Move monster pits/nests to an edit file.
-7e0256c Removed autoinsc_dump() and squelch_dump()
-a44e44d Make init_gtk correctly report failure
-9aacfdc Remove old monster power hack from .raw file days
-cc1cdc7 Remove LOG_PRINT*() macros and beef up file_putf()/file_vputf()
-f9d00a5 Remove bashism from configure.ac (closes Debian bug #619695)
-fac36a2 Fix compiler signed/unsigned comparison warnings
-3578e64 Remove hexchars[]
-06e290b pause_line() now takes a term argument
-dc5427c Add codestats tool to calculate function length
-53c4e15 Add documentation to option.h
-b887a43 Add code coverage support (gcov)
+91be218 Aerdan's updates to buildsys
+fbe0ef4 CunningGabe's cleanup of monster code
 
-Documentation changes
-=====================
-57d8bde Include copying.txt and faq.txt in OSX documentation
-6e4b389 Added (T) command to help file.
