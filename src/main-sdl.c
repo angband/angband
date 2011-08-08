@@ -1053,10 +1053,10 @@ static void hook_quit(const char *str)
 	if (GfxSurface) SDL_FreeSurface(GfxSurface);
 #endif
 
-  close_graphics_modes();
-  if (GfxButtons) FREE(GfxButtons);
+	close_graphics_modes();
+	if (GfxButtons) FREE(GfxButtons);
 
-  /* Free the 'System font' */
+	/* Free the 'System font' */
 	sdl_FontFree(&SystemFont);
 	
 	/* Free the statusbar window */
@@ -1649,10 +1649,10 @@ static void MoreDraw(sdl_Window *win)
 	sdl_WindowText(win, colour, 20, y, "Selected Graphics:");
 	if (current_graphics_mode) {
 		sdl_WindowText(win, SDL_MapRGB(win->surface->format, 210, 110, 110),
-				     200, y, current_graphics_mode->menuname);
+					   200, y, current_graphics_mode->menuname);
 	} else {
 		sdl_WindowText(win, SDL_MapRGB(win->surface->format, 210, 110, 110),
-				     200, y, "None");
+					   200, y, "None");
 	}
 	y += 20;
 
@@ -1746,7 +1746,7 @@ static void MoreActivate(sdl_Button *sender)
 	
 	SelectedGfx = use_graphics;
 	
-	i=0;
+	i = 0;
 	do {
 		if (!graphics_modes[i].menuname[0]) continue;
 		GfxButtons[graphics_modes[i].grafID] = sdl_ButtonBankNew(&PopUp.buttons);
@@ -3077,9 +3077,9 @@ static errr sdl_BuildTileset(term_window *win)
 	int x, y;
 	int ta, td;
 	int xx, yy;
-  graphics_mode *info;
+	graphics_mode *info;
 
-  if (!GfxSurface) return (1);
+	if (!GfxSurface) return (1);
 	info = get_graphics_mode(use_graphics);
 
 	/* Calculate the number of tiles across & down*/
@@ -3100,17 +3100,15 @@ static errr sdl_BuildTileset(term_window *win)
 	if (!win->tiles) return (1);
 	
 	/* For every tile... */
-	for (xx = 0; xx < ta; xx++)
-	{
-		for (yy = 0; yy < td; yy++)
-		{
+	for (xx = 0; xx < ta; xx++) {
+		for (yy = 0; yy < td; yy++) {
 			SDL_Rect src, dest;
-                        int dwid = win->tile_wid * tile_width;
-                        int dhgt = win->tile_hgt * tile_height;
+			int dwid = win->tile_wid * tile_width;
+			int dhgt = win->tile_hgt * tile_height;
 
 			/* Source rectangle (on GfxSurface) */
 			RECT(xx * info->cell_width, yy * info->cell_height,
-        info->cell_width, info->cell_height, &src);
+				 info->cell_width, info->cell_height, &src);
 
 			/* Destination rectangle (win->tiles) */
 			RECT(xx * dwid, yy * dhgt, dwid, dhgt, &dest);
@@ -3383,28 +3381,26 @@ static void init_gfx(void)
 	/* Make sure */
 	use_graphics = GRAPHICS_NONE;
 	tile_width = 1;
-        tile_height = 1;
+	tile_height = 1;
 #else
 	int i;
 	
 	/* Check for existence of required files */
-	i=0;
+	i = 0;
 	do {
 		char path[1024];
 		
 		/* Check the graphic file */
-		if (graphics_modes[i].file[0])
-		{
+		if (graphics_modes[i].file[0]) {
 			path_build(path, sizeof(path), ANGBAND_DIR_XTRA_GRAF, graphics_modes[i].file);
 
-			if (!file_exists(path))
-			{
+			if (!file_exists(path)) {
 				plog_fmt("Can't find file %s - graphics mode '%s' will be disabled.", path, graphics_modes[i].menuname);
 				graphics_modes[i].file[0] = 0;
 			}
-      if (i == use_graphics) {
-        current_graphics_mode = &(graphics_modes[i]);
-      }
+			if (i == use_graphics) {
+				current_graphics_mode = &(graphics_modes[i]);
+			}
 		}
 	} while (graphics_modes[i++].grafID != 0); 
 	
@@ -3596,8 +3592,7 @@ static void init_paths(void)
 	if (!dir) return;
 
 	/* Read every font to the limit */
-	while (my_dread(dir, buf, sizeof buf))
-	{
+	while (my_dread(dir, buf, sizeof buf)) {
 		/* Check for file extension */
 		if (suffix(buf, ".fon"))
 			FontList[num_fonts++] = string_make(buf);

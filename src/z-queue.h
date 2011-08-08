@@ -2,6 +2,7 @@
 #define INCLUDED_Z_QUEUE_H
 
 #include <h-basic.h>
+
 #if (!defined(HAVE_STDINT_H))
 /* MSVC doesn't have stdint.h (which is C99), so we'll just
  * create the right pointer manually. */

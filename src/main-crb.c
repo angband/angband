@@ -3105,7 +3105,7 @@ static void graphics_aux(UInt32 op)
 	use_transparency = (op != 0);//graphics_modes[op].trans;
 	pict_id = graphics_modes[op].file;
 	graf_width = graphics_modes[op].cell_width;
-  graf_height = graphics_modes[op].cell_height;
+	graf_height = graphics_modes[op].cell_height;
 	use_graphics = (op != 0);
 	graf_mode = op;
 	ANGBAND_GRAF = graphics_modes[op].pref;
@@ -3939,7 +3939,7 @@ static void hook_quit(const char *str)
 	/* Write a preference file */
 	if (initialized) save_pref_file();
 
-  close_graphics_modes();
+	close_graphics_modes();
 
 	/* All done */
 	ExitToShell();

@@ -199,7 +199,6 @@ static void do_cmd_keylog(void) {
 
 			/* ugh. it would be nice if there was a verion of keypress_to_text
 			 * which took only one keypress. */
-			/* struct keypress keys[2] = {k, {EVT_NONE, 0}}; */
 			keys[0] = k;
 			keypress_to_text(buf2, sizeof(buf2), keys, TRUE);
 

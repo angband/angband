@@ -745,7 +745,7 @@ static void hook_quit(const char *str)
 {
 	gtk_log_fmt(TERM_RED,"%s", str);
 	save_prefs();
-  close_graphics_modes();
+	close_graphics_modes();
 	release_memory();
 	exit(0);
 }
@@ -755,7 +755,7 @@ gboolean quit_event_handler(GtkWidget *widget, GdkEventButton *event, gpointer u
 	if (save_game_gtk())
 	{
 		save_prefs();
-    close_graphics_modes();
+		close_graphics_modes();
 		quit(NULL);
 		exit(0);
 		return(FALSE);
@@ -766,7 +766,7 @@ gboolean quit_event_handler(GtkWidget *widget, GdkEventButton *event, gpointer u
 
 gboolean destroy_event_handler(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-  close_graphics_modes();
+	close_graphics_modes();
 	quit(NULL);
 	exit(0);
 	return(FALSE);
@@ -1640,17 +1640,17 @@ static void init_graf(int g)
 	term_data *td= &data[0];
 	int i = 0;
 	
-  do {
-    if (g == graphics_modes[i].grafID) {
-      arg_graphics = g;
+	do {
+		if (g == graphics_modes[i].grafID) {
+			arg_graphics = g;
 			ANGBAND_GRAF = graphics_modes[i].pref;
 			path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_GRAF, graphics_modes[i].file);
 			use_transparency = FALSE;
 			td->tile.w = graphics_modes[i].cell_width;
-      td->tile.h = graphics_modes[i].cell_height;
+			td->tile.h = graphics_modes[i].cell_height;
 			break;
-    }
-  } while (graphics_modes[i++].grafID != 0);
+		}
+	} while (graphics_modes[i++].grafID != 0);
 
 	/* Free up old graphics */
 	if (graphical_tiles != NULL) cairo_surface_destroy(graphical_tiles);

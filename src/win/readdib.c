@@ -286,8 +286,8 @@ BOOL ReadDIB(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo)
 		}
 	}
 
-  pInfo->ImageWidth = lpbi->biWidth;
-  pInfo->ImageHeight = lpbi->biHeight;
+	pInfo->ImageWidth = lpbi->biWidth;
+	pInfo->ImageHeight = lpbi->biHeight;
 
 	/* offset to the bits from start of DIB header */
 	offBits = lpbi->biSize + nNumColors * sizeof(RGBQUAD);
@@ -339,8 +339,8 @@ void FreeDIB(DIBINIT *dib)
 	dib->hPalette = NULL;
 	dib->hBitmap = NULL;
 	dib->hDIB = NULL;
-  dib->ImageWidth = 0;
-  dib->ImageHeight = 0;
+	dib->ImageWidth = 0;
+	dib->ImageHeight = 0;
 }
 
 #endif /* USE_WIN || WINDOWS || WIN32 */
