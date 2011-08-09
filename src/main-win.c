@@ -2932,7 +2932,7 @@ static void stop_screensaver(void)
  */
 static void setup_menus(void)
 {
-	int i;
+	size_t i;
 
 	HMENU hm = GetMenu(data[0].w);
 
