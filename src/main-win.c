@@ -86,6 +86,8 @@
 #include "files.h"
 #include "grafmode.h"
 
+#define WINVER 0x0410
+
 #define uint unsigned int
 
 #if (defined(WINDOWS) && !defined(USE_SDL))
@@ -316,6 +318,8 @@
 #ifdef USE_GRAPHICS
 # include "win/readdib.h"
 #endif /* USE_GRAPHICS */
+
+#include <wingdi.h>
 
 /*
  * Hack -- Fake declarations from "dos.h" XXX XXX XXX
@@ -1676,8 +1680,9 @@ static void Term_nuke_win(term *t)
 #endif /* 0 */
 
 
-errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, const byte *tap, const char *tcp);
-errr Term_pict_win_alpha(int x, int y, int n, const byte *ap, const char *cp, const byte *tap, const char *tcp);
+static errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, const byte *tap, const char *tcp);
+static errr Term_pict_win_alpha(int x, int y, int n, const byte *ap, const char *cp, const byte *tap, const char *tcp);
+
 /*
  * React to global changes
  */
@@ -2533,13 +2538,13 @@ static errr Term_pict_win_alpha(int x, int y, int n, const byte *ap, const char 
 		else
 		{
 			/* Copy the terrain picture from the bitmap to the window */
-  		StretchBlt(hdc, x2, y2, tw2, th2, hdcSrc, x3, y3, w1, h1, SRCCOPY);
+			StretchBlt(hdc, x2, y2, tw2, th2, hdcSrc, x3, y3, w1, h1, SRCCOPY);
 		}
 		if (overdraw && (trow >= overdraw) && (y > 2) && (trow <= overdrawmax)) {
 			AlphaBlend(hdc, x2, y2-th2, tw2, th2, hdcSrc, x1, y1-h1, w1, h1, blendfn);
-  		/* tell the core that the top tile is different than what it thinks */
-      Term_mark(x, y-tile_height);
-      Term_mark(x, y); /* ugg this means that this tile is drawn every frame */
+			/* tell the core that the top tile is different than what it thinks */
+			Term_mark(x, y-tile_height);
+			Term_mark(x, y); /* ugg this means that this tile is drawn every frame */
 		}
 
 		/* Only draw if terrain and overlay are different */
@@ -2547,12 +2552,12 @@ static errr Term_pict_win_alpha(int x, int y, int n, const byte *ap, const char 
 		{
 			/* Copy the picture from the bitmap to the window */
 			if (overdraw && (row >= overdraw) && (y > 2) && (row <= overdrawmax)) {
-  				AlphaBlend(hdc, x2, y2-th2, tw2, th2*2, hdcSrc, x1, y1-h1, w1, h1*2, blendfn);
-  			/* tell the core that the top tile is different than what it thinks */
-        Term_mark(x, y-tile_height);
-        Term_mark(x, y); /* ugg this means that this tile is drawn every frame */
-        /* but it is needed, otherwise the top does not get drawn again when */
-        /* the user of this tile does not move, but something else does */
+				AlphaBlend(hdc, x2, y2-th2, tw2, th2*2, hdcSrc, x1, y1-h1, w1, h1*2, blendfn);
+				/* tell the core that the top tile is different than what it thinks */
+				Term_mark(x, y-tile_height);
+				Term_mark(x, y); /* ugg this means that this tile is drawn every frame */
+				/* but it is needed, otherwise the top does not get drawn again when */
+				/* the user of this tile does not move, but something else does */
 			} else {
 				AlphaBlend(hdc, x2, y2, tw2, th2, hdcSrc, x1, y1, w1, h1, blendfn);
 			}
@@ -4217,7 +4222,7 @@ static void handle_keydown(WPARAM wParam, LPARAM lParam)
 				(mc && (kp || MODS_INCLUDE_CONTROL(ch)) ? KC_MOD_CONTROL : 0) |
 				(ms && (kp || MODS_INCLUDE_SHIFT(ch)) ? KC_MOD_SHIFT : 0) |
 				(ma ? KC_MOD_ALT : 0) | (kp ? KC_MOD_KEYPAD : 0);
-		printf("ch=%d mods=%d\n", ch, mods);
+		/*printf("ch=%d mods=%d\n", ch, mods);*/
 		Term_keypress(ch, mods);
 	}
 }
