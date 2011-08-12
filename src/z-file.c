@@ -367,27 +367,13 @@ ang_file *file_open(const char *fname, file_mode mode, file_type ftype)
 	/* Get the system-specific path */
 	path_parse(buf, sizeof(buf), fname);
 
-	switch (mode)
-	{
-		/*case MODE_WRITE_TEMP:
-		{ 
-			int fd = mkstemp(buf);
-			if (fd < 0) {
-				/* there was some error *//*
-				f->fh = NULL;
-			} else {
-				f->fh = fdopen(fd, "wb");
-			}
-			break;
-		}*/
-		case MODE_WRITE:
-		{ 
+	switch (mode) {
+		case MODE_WRITE: {
 			if (ftype == FTYPE_SAVE) {
 				/* open only if the file does not exist */
 				int fd;
 				fd = open(buf,
-					O_CREAT | O_EXCL | O_WRONLY | O_BINARY,
-					S_IREAD|S_IWRITE);
+					O_CREAT | O_EXCL | O_WRONLY | O_BINARY, S_IRUSR | S_IWUSR);
 				if (fd < 0) {
 					/* there was some error */
 					f->fh = NULL;
