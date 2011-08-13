@@ -372,7 +372,7 @@ ang_file *file_open(const char *fname, file_mode mode, file_type ftype)
 			if (ftype == FTYPE_SAVE) {
 				/* open only if the file does not exist */
 				int fd;
-				fd = open(buf, O_CREAT | O_EXCL | O_WRONLY | O_BINARY, S_IREAD | S_IWRITE);
+				fd = open(buf, O_CREAT | O_EXCL | O_WRONLY | O_BINARY, S_IRUSR | S_IWUSR);
 				if (fd < 0) {
 					/* there was some error */
 					f->fh = NULL;
