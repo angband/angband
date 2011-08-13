@@ -31,90 +31,10 @@ To build Angband using Microsoft's Visual Studio.
 13. Add all of the files that end in ".c" or ".h" in the src\win directory
     to the project, as well as angband.rc.
 14. Add main-win.c from the src directory to the project.
-
-Now we need to make a couple code changes because the compiler of Visual Studio
-is not a standard one.
-15. Goto the File view in Visual studio. Under "Header Files", and double-click
-    "z-queue.h". This will allow you edit this file. Replace the line
-    "#include <stdint.h>" with:
-#if defined(HAVE_STDINT_H)
-#include <stdint.h>
-#else /* HAVE_STDINT_H */
-/* MSVC doesn't have stdint.h (which is C99), so we'll just
- * create the right pointer manually */
-#ifdef_WIN64
-typedef unsigned _int64 * uintptr_t;
-#else /* _WIN64 */
-typedef unsigned int * uintptr_t;
-#endif /* _WIN64 */
-#endif /* HAVE_STDINT_H */
-
-16. Save and close z-queue.h.
-17. Goto the File view in Visual studio. Under "Header Files", and double-click
-    "generate.c".This will allow you edit this file. Around line 63 are two
-    lines that start with "#define ROOM_". Replace these lines with the
-    following block:
-#if __STDC_VERSION__ >= 199901L
-#define ROOM_DEBUG(...) if(0) msg(__VA_ARGS__);
-#define ROOM_LOG(...) if(OPT(cheat_room)) msg(__VA_ARGS__);
-#else /* __STDC_VERSION__ >= 199901L */
-#define ROOM_DEBUG if(0) msg
-#define ROOM_LOG if(OPT(cheat_room)) msg
-#endif /* __STDC_VERSION__ >= 199901L */
-
-18. Save and close generate.c.
-19. Save the project, then compile the project. There will be a lot of
+15. Save the project, then compile the project. There will be a lot of
     warnings, but there should not be any errors. The warnings can be ignored.
-20. If there are no errors, enjoy playing angband.
-
-21. If there is an error saying that GetWindowLongPtr, SetWindowLongPtr, and/or
-    GWLP_USERDATA is/are not defined, you are probably using an old Windows
-    Platform Software Development Kit (SDK). Edit main-win.c and add the following
-    section around line 89:
-#ifndef GetWindowLongPtr
-#define GetWindowLongPtr GetWindowLong
-#endif
-#ifndef SetWindowLongPtr
-#define SetWindowLongPtr SetWindowLong
-#endif
-#ifndef GWLP_USERDATA
-#define GWLP_USERDATA GWL_USERDATA
-#endif
-
-22. Save and close main-win.c.
-
-23. If there is an error in wizard.c, Edit wizard.c and add the following
-    line (in the middle) around line 185:
-static void do_cmd_keylog(void) {
-	int i;
-	char buf[50];
-	char buf2[12];
-	struct keypress keys[2] = {{EVT_NONE, 0, 0}, {EVT_NONE, 0, 0}};
-
-	screen_save();
-24. A little bit below this, change to the following section (around line 199)
-			/* ugh. it would be nice if there was a verion of keypress_to_text
-			 * which took only one keypress. */
-			/* struct keypress keys[2] = {k, {EVT_NONE, 0}}; */
-			keys[0] = k;
-			keypress_to_text(buf2, sizeof(buf2), keys, TRUE);
-25. Save and close wizard.c.
-
-26. Compile the project again.
-27. Save the project, then compile the project. There should not be any errors
+16. If there are no errors, enjoy playing angband. There should not be any errors
     and the executable should be built. If there are any errors, and you do not
     know how to fix them, you can ask on the forums at http://angband.oook.cz.
-28. Enjoy playing Angband.
 
-
-22. If there is an error saying that AC_SRC_ALPHA is not defined, you are
-    probably using an old Windows Platform SDK. Edit main-win.c and add the
-    following section below the additions of step 21:
-#ifndef AC_SRC_ALPHA
-#define AC_SRC_ALPHA 0x01
-#endif
-25. If there is an error saying that AlphaBlend is an unresolved external
-    symbol, you need to add a library to the project. In the project settings,
-    in the Link tab, in the Object/library modules line, add: "msimg32.lib "
-    somewhere on the  line.
 
