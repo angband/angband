@@ -1,4 +1,3 @@
-
 # File: graphics.txt
 
 # This file is used to initialize a list of graphics modes
@@ -28,7 +27,8 @@
 # must be greater than 0, if double high tiles are used, and refer to the
 # bottom half of the double row.
 
-N:1:Original
+
+N:1:old
 I:8:8:8x8.png
 M:Original Tiles
 X:0:0:0
@@ -48,7 +48,7 @@ I:16:16:8x16.png
 M:Nomad's tiles
 X:0:0:0
 
-#N:5:david64
+#N:5:david
 #I:64:64:64x64.png
 #M:64x64 Test tiles
 #X:0:0:0
@@ -56,5 +56,4 @@ X:0:0:0
 #N:6:shock
 #I:64:64:64x64.png
 #M:Shockbolt's tiles
-
 #X:1:29:29

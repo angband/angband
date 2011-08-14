@@ -27,6 +27,9 @@ int graphics_mode_high_id;
 static enum parser_error parse_graf_n(struct parser *p) {
 	graphics_mode *list = parser_priv(p);
 	graphics_mode *mode = mem_zalloc(sizeof(graphics_mode));
+	if (!mode) {
+		return PARSE_ERROR_OUT_OF_MEMORY;
+	}
 	mode->pNext = list;
 	mode->grafID = parser_getuint(p, "index");
 	strncpy(mode->pref, parser_getstr(p, "prefname"), 8);
@@ -43,6 +46,9 @@ static enum parser_error parse_graf_n(struct parser *p) {
 
 static enum parser_error parse_graf_i(struct parser *p) {
 	graphics_mode *mode = parser_priv(p);
+	if (!mode) {
+		return PARSE_ERROR_INVALID_VALUE;
+	}
 	mode->cell_width = parser_getuint(p, "wid");
 	mode->cell_height = parser_getuint(p, "hgt");
 	strncpy(mode->file, parser_getstr(p, "filename"), 32);
@@ -51,12 +57,18 @@ static enum parser_error parse_graf_i(struct parser *p) {
 
 static enum parser_error parse_graf_m(struct parser *p) {
 	graphics_mode *mode = parser_priv(p);
+	if (!mode) {
+		return PARSE_ERROR_INVALID_VALUE;
+	}
 	strncpy(mode->menuname, parser_getstr(p, "menuname"), 32);
 	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_graf_x(struct parser *p) {
 	graphics_mode *mode = parser_priv(p);
+	if (!mode) {
+		return PARSE_ERROR_INVALID_VALUE;
+	}
 	mode->alphablend = parser_getuint(p, "alpha");
 	mode->overdrawRow = parser_getuint(p, "row");
 	mode->overdrawMax = parser_getuint(p, "max");
