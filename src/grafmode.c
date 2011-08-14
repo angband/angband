@@ -83,25 +83,29 @@ errr finish_parse_grafmode(struct parser *p) {
 	int i;
 	
 	/* see how many graphics modes we have and what the highest index is */
-	mode = parser_priv(p);
-	while (mode) {
-		if (mode->grafID > max) {
-			max = mode->grafID;
+	if (p) {
+		mode = parser_priv(p);
+		while (mode) {
+			if (mode->grafID > max) {
+				max = mode->grafID;
+			}
+			count++;
+			mode = mode->pNext;
 		}
-		count++;
-		mode = mode->pNext;
 	}
-	
+
 	/* copy the loaded modes to the global variable */
 	if (graphics_modes) {
 		close_graphics_modes();
 	}
 
 	graphics_modes = mem_zalloc(sizeof(graphics_mode) * (count+1));
-	mode = parser_priv(p);
-	for (i = count-1; i >= 0; i--, mode = mode->pNext) {
-		memcpy(&(graphics_modes[i]), mode, sizeof(graphics_mode));
-		graphics_modes[i].pNext = &(graphics_modes[i+1]);
+	if (p) {
+		mode = parser_priv(p);
+		for (i = count-1; i >= 0; i--, mode = mode->pNext) {
+			memcpy(&(graphics_modes[i]), mode, sizeof(graphics_mode));
+			graphics_modes[i].pNext = &(graphics_modes[i+1]);
+		}
 	}
 	
 	/* hardcode the no graphics option */
@@ -119,15 +123,17 @@ errr finish_parse_grafmode(struct parser *p) {
 	/* set the default graphics mode to be no graphics */
 	current_graphics_mode = &(graphics_modes[count]);
 	
-	mode = parser_priv(p);
-	while (mode) {
-		n = mode->pNext;
-		mem_free(mode);
-		mode = n;
-	}
+	if (p) {
+		mode = parser_priv(p);
+		while (mode) {
+			n = mode->pNext;
+			mem_free(mode);
+			mode = n;
+		}
 	
-	parser_setpriv(p, NULL);
-	parser_destroy(p);
+		parser_setpriv(p, NULL);
+		parser_destroy(p);
+	}
 	return PARSE_ERROR_NONE;
 }
 
@@ -154,6 +160,7 @@ bool init_graphics_modes(const char *filename) {
 	f = file_open(buf, MODE_READ, -1);
 	if (!f) {
 		msg("Cannot open '%s'.", buf);
+		finish_parse_grafmode(NULL);
 	} else {
 		char line[1024];
 

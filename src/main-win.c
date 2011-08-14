@@ -86,7 +86,10 @@
 #include "files.h"
 #include "grafmode.h"
 
+/* Make sure the winver allows the AlphaBlend function */
+#if (WINVER < 0x0410)
 #define WINVER 0x0410
+#endif
 
 #define uint unsigned int
 

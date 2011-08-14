@@ -237,6 +237,15 @@ size_t path_build(char *buf, size_t len, const char *base, const char *leaf)
 # define HAVE_READ
 #endif
 
+/* Some defines for compatibility between various build platforms */
+#ifndef S_IRSUR
+#define S_IRSUR S_IREAD
+#endif
+
+#ifndef S_IWSUR
+#define S_IWSUR S_IWRITE
+#endif
+
 /* if the flag O_BINARY is not defined, it is not needed , but we still
  * need it defined so it will compile */
 #ifndef O_BINARY

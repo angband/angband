@@ -3105,14 +3105,22 @@ static OSStatus ResizeCommand(EventHandlerCallRef inCallRef,
 static void graphics_aux(UInt32 op)
 {
 	graf_mode = op;
-	use_transparency = (graphics_modes[op].grafID != 0);//graphics_modes[op].trans;
-	pict_id = graphics_modes[op].file;
-	graf_width = graphics_modes[op].cell_width;
-	graf_height = graphics_modes[op].cell_height;
-	use_graphics = (graphics_modes[op].grafID != 0);
-	graf_mode = op;
-	ANGBAND_GRAF = graphics_modes[op].pref;
-	arg_graphics = op;
+	current_graphics_mode = get_graphics_mode(op);
+	if (current_graphics_mode) {
+		use_transparency = (op != 0);
+		pict_id = current_graphics_mode->file;
+		graf_width = current_graphics_mode->cell_width;
+		graf_height = current_graphics_mode->cell_height;
+		use_graphics = (op != 0);
+		graf_mode = op;
+		ANGBAND_GRAF = current_graphics_mode->pref;
+		arg_graphics = op;
+	} else {
+		use_graphics = 0;
+		graf_mode = 0;
+		ANGBAND_GRAF = 0;
+		use_transparency = false;
+	}
 
 	graphics_nuke();
 
@@ -3126,6 +3134,7 @@ static void graphics_aux(UInt32 op)
 		use_graphics = 0;
 		graf_mode = 0;
 		ANGBAND_GRAF = 0;
+		current_graphics_mode = NULL;
 
 		/* reset transparency mode */
 		use_transparency = false;

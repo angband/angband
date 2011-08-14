@@ -21,17 +21,17 @@
 #include "h-basic.h"
 /* Specifications for graphics modes.
  * 
- * grafID:		 ID of tile set should be >0 and unique for anything new.
-	* alphablend:	 Bool whether or not the tileset needs alpha blending.
-	* overdrawRow:	Row in the file where tiles in that row or lower draw the tile
+ * grafID:      ID of tile set should be >0 and unique for anything new.
+ * alphablend:  Bool whether or not the tileset needs alpha blending.
+ * overdrawRow: Row in the file where tiles in that row or lower draw the tile
  *              above as well.
-	* overdrawMax:	Row in the file where tiles in that row or above draw the tile
+ * overdrawMax: Row in the file where tiles in that row or above draw the tile
  *              above as well.
  * cell_width:  Width of an individual tile in pixels.
  * cell_height: Height of an individual tile in pixels.
- * pref:		   Value of ANGBAND_GRAF variable.
-	* file:	    Name of PNG file (if any).
-	* menuname:    Name of the tileset in menu.
+ * pref:        Value of ANGBAND_GRAF variable.
+ * file:        Name of PNG file (if any).
+ * menuname:    Name of the tileset in menu.
  */
 typedef struct _graphics_mode {
 	struct _graphics_mode *pNext;

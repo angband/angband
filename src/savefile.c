@@ -381,6 +381,12 @@ bool savefile_save(const char *path)
 	}
 	count = 0;
 
+	/* Make sure that the savefile doesn't already exist */
+	/*safe_setuid_grab();
+	file_delete(new_savefile);
+	file_delete(old_savefile);
+	safe_setuid_drop();*/
+
 	/* Open the savefile */
 	safe_setuid_grab();
 	strnfmt(new_savefile, sizeof(new_savefile), "%s%u.new", path,Rand_simple(1000000));
@@ -417,7 +423,7 @@ bool savefile_save(const char *path)
 				file_move(old_savefile, savefile);
 			else
 				file_delete(old_savefile);
-		}
+		} 
 
 		safe_setuid_drop();
 
