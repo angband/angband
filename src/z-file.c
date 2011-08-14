@@ -237,6 +237,15 @@ size_t path_build(char *buf, size_t len, const char *base, const char *leaf)
 # define HAVE_READ
 #endif
 
+/* Some defines for compatibility between various build platforms */
+#ifndef S_IRSUR
+#define S_IRSUR S_IREAD
+#endif
+
+#ifndef S_IWSUR
+#define S_IWSUR S_IWRITE
+#endif
+
 /* if the flag O_BINARY is not defined, it is not needed , but we still
  * need it defined so it will compile */
 #ifndef O_BINARY
@@ -367,40 +376,29 @@ ang_file *file_open(const char *fname, file_mode mode, file_type ftype)
 	/* Get the system-specific path */
 	path_parse(buf, sizeof(buf), fname);
 
-	switch (mode)
-	{
-		/*case MODE_WRITE_TEMP:
-		{ 
-			int fd = mkstemp(buf);
-			if (fd < 0) {
-				/* there was some error *//*
-				f->fh = NULL;
-			} else {
-				f->fh = fdopen(fd, "wb");
-			}
-			break;
-		}*/
-		case MODE_WRITE:
-		{ 
+	switch (mode) {
+		case MODE_WRITE: { 
 			if (ftype == FTYPE_SAVE) {
 				/* open only if the file does not exist */
 				int fd;
-				fd = open(buf,
-					O_CREAT | O_EXCL | O_WRONLY | O_BINARY,
-					S_IREAD|S_IWRITE);
+				fd = open(buf, O_CREAT | O_EXCL | O_WRONLY | O_BINARY, S_IRUSR | S_IWUSR);
 				if (fd < 0) {
 					/* there was some error */
 					f->fh = NULL;
 				} else {
 					f->fh = fdopen(fd, "wb");
 				}
-			} else
+			} else {
 				f->fh = fopen(buf, "wb");
-			 break;
-		 }
-		case MODE_READ:   f->fh = fopen(buf, "rb"); break;
+			}
+			break;
+		}
+
+		case MODE_READ: f->fh = fopen(buf, "rb"); break;
+
 		case MODE_APPEND: f->fh = fopen(buf, "a+"); break;
-		default:          f->fh = fopen(buf, "__");
+
+		default: f->fh = fopen(buf, "__");
 	}
 
 	if (f->fh == NULL)
