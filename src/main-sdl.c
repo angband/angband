@@ -1054,7 +1054,7 @@ static void hook_quit(const char *str)
 #endif
 
 	close_graphics_modes();
-	if (GfxButtons) FREE(GfxButtons);
+	/*if (GfxButtons) FREE(GfxButtons);*/
 
 	/* Free the 'System font' */
 	sdl_FontFree(&SystemFont);
