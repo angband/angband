@@ -38,175 +38,182 @@ BOOL SaveWindow_PNG(HWND hWnd, LPSTR lpFileName)
 	png_structp png_ptr;
 	png_infop info_ptr;
 	png_bytep *row_pointers;
-	
-  //HRESULT result;
-  BOOL noerror = TRUE;
 
-	HDC hDC;
+	BOOL noerror = TRUE;
 
-  png_byte color_type;
-  png_byte bit_depth;
-  png_byte channels;
+	png_byte color_type;
+	png_byte bit_depth;
+	png_byte channels;
 
-  int x,y;
+	int x, y;
 
-  int width, height;
-  char *c;
-  FILE *fp;
-  RECT rect;
+	int width, height;
+	char *c;
+	FILE *fp;
+	RECT rect;
 
-  // make sure that we have a window pointer
-  if (hWnd == NULL) {
-    return (FALSE);//E_ABORT;
-  }
-  c = strrchr(lpFileName, '.');
-  if (!c) {
-    return (FALSE);//E_INVALIDARG;
-  }
-  c+=1;
-  if ((strncmp(c, "png", 3) != 0) && (strncmp(c, "PNG", 3) != 0)) {
-    return (FALSE);//E_INVALIDARG;
-  }
+	/* make sure that we have a window pointer */
+	if (hWnd == NULL) {
+		return (FALSE);
+	}
+	c = strrchr(lpFileName, '.');
+	if (!c) {
+		return (FALSE);
+	}
+	c+=1;
+	if ((strncmp(c, "png", 3) != 0) && (strncmp(c, "PNG", 3) != 0)) {
+		return (FALSE);
+	}
 
-  if (!GetClientRect(hWnd, &rect)) {
-  }
-  width = rect.right;
-  height = rect.bottom;
+	if (!GetClientRect(hWnd, &rect)) {
+	}
+	width = rect.right;
+	height = rect.bottom;
 
-  color_type = PNG_COLOR_TYPE_RGB;
-  bit_depth = 8;
-  channels = 3;
+	color_type = PNG_COLOR_TYPE_RGB;
+	bit_depth = 8;
+	channels = 3;
 
-  // open the file and test it for being a png
-  fp = fopen(lpFileName, "wb");
-  if (!fp)
-  {
-    //plog_fmt("Unable to open PNG file.");
-    return (FALSE);//E_FAIL;
-  }
+	/* open the file and test it for being a png */
+	fp = fopen(lpFileName, "wb");
+	if (!fp)
+	{
+		//plog_fmt("Unable to open PNG file.");
+		return (FALSE);
+	}
 
-  // Create the png structure
-  png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-  if(!png_ptr) {
-    //plog_fmt("Unable to initialize PNG library");
-    fclose(fp);
-    return (FALSE);//E_FAIL;
-  }
+	/* Create the png structure */
+	png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+	if(!png_ptr) {
+		//plog_fmt("Unable to initialize PNG library");
+		fclose(fp);
+		return (FALSE);
+	}
 
-  // create the info structure
-  if (noerror) {
-    info_ptr = png_create_info_struct(png_ptr);
-    if (!info_ptr)
-    {
-      png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
+	/* create the info structure */
+	if (noerror) {
+		info_ptr = png_create_info_struct(png_ptr);
+		if (!info_ptr)
+		{
+			png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
 			//plog_fmt("Failed to create PNG info structure.");
-      noerror = FALSE;
-      //result = E_FAIL;
-    }
-  }
+			noerror = FALSE;
+		}
+	}
 
-  if (noerror) {
-    // setup error handling for init
-    png_init_io(png_ptr, fp);
+	if (noerror) {
+		/* setup error handling for init */
+		png_init_io(png_ptr, fp);
 
-    png_set_IHDR(png_ptr, info_ptr, width, height,
-      bit_depth, color_type, PNG_INTERLACE_NONE,
-      PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+		png_set_IHDR(png_ptr, info_ptr, width, height,
+					 bit_depth, color_type, PNG_INTERLACE_NONE,
+					 PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 
-    if (bit_depth < 8) {
-      png_set_packing(png_ptr);
-    }
-    png_write_info(png_ptr, info_ptr);
-  }
+		if (bit_depth < 8) {
+			png_set_packing(png_ptr);
+		}
+		png_write_info(png_ptr, info_ptr);
+	}
 
-  // copy the allocate the memory libpng can access
-  if (noerror) {
-    // setup error handling for read
-    row_pointers = (png_bytep*) malloc(sizeof(png_bytep)*height);
-    if (!row_pointers)
-    {
+	/* copy the allocate the memory libpng can access */
+	if (noerror) {
+		/* setup error handling for read */
+		row_pointers = (png_bytep*) malloc(sizeof(png_bytep)*height);
+		if (!row_pointers)
+		{
 			//plog_fmt("Failed to alloc temporary memory for PNG data.");
-      noerror = FALSE;
-      //result = E_OUTOFMEMORY;
-    }
-    if (noerror) {
-      for (y = 0; y < height; ++y)
-      {
-        row_pointers[y] = (png_bytep) malloc(sizeof(png_bytep)*width*channels);
-        if (!row_pointers[y])
-        {
-			    //plog_fmt("Failed to alloc temporary memory for PNG data.");
-          noerror = FALSE;
-          //result = E_OUTOFMEMORY;
-          break;
-        }
-      }
-    }
-  }
+			noerror = FALSE;
+		}
+		if (noerror) {
+			for (y = 0; y < height; ++y)
+			{
+				row_pointers[y] = (png_bytep) malloc(sizeof(png_bytep)*width*channels);
+				if (!row_pointers[y])
+				{
+					//plog_fmt("Failed to alloc temporary memory for PNG data.");
+					noerror = FALSE;
+					break;
+				}
+			}
+		}
+	}
 
-  // copy the data to it
-  if (noerror) {
-    COLORREF bgr;
-    byte b[3], *data;
+	/* copy the data to it */
+	if (noerror) {
+		COLORREF bgr;
+		byte b[3], *data;
+		HDC hDC, hdcWnd;
+    		HBITMAP hbmScreen, hbmOld;
 
-    hDC = GetDC(hWnd);
-    if (!hDC) {
-    }
 
-    // copy just the color data
-    for (y = 0; y < height; ++y) {
-      data = row_pointers[y];
-      for (x = 0; x < width; ++x) {
-        bgr = GetPixel(hDC, x,y);
-        b[2] = ((bgr&0x000000FF));
-        b[1] = ((bgr&0x0000FF00)>>8);
-        b[0] = ((bgr&0x00FF0000)>>16);
-        *(data++) = b[2];
-        *(data++) = b[1];
-        *(data++) = b[0];
-      }
-    }
+		hdcWnd = GetDC(hWnd);
+		if (!hdcWnd) {
+		}
+		hbmScreen = CreateCompatibleBitmap(hdcWnd, width, height);
+		if (!hbmScreen) {
+		}
+		hDC = CreateCompatibleDC(hdcWnd);
+		if (!hDC) {
+		}
+		hbmOld = SelectObject(hDC, hbmScreen);
+		BitBlt(hDC, 0, 0, width, height, hdcWnd, 0, 0, SRCCOPY);
+		ReleaseDC(hWnd,hdcWnd);
 
-	  ReleaseDC(hWnd,hDC);
-  }  
-	
-  // write the file
-  if (noerror)
-  {
-    //png_set_bgr(png_ptr);
-    png_write_image(png_ptr, row_pointers);
-    png_write_end(png_ptr, NULL);
-  }
+		/* copy just the color data */
+		for (y = 0; y < height; ++y) {
+			data = row_pointers[y];
+			for (x = 0; x < width; ++x) {
+				bgr = GetPixel(hDC, x,y);
+				b[2] = ((bgr&0x000000FF));
+				b[1] = ((bgr&0x0000FF00)>>8);
+				b[0] = ((bgr&0x00FF0000)>>16);
+				*(data++) = b[2];
+				*(data++) = b[1];
+				*(data++) = b[0];
+			}
+		}
 
-	// release the image memory
+		SelectObject(hDC, hbmOld);
+		DeleteObject(hbmScreen);
+		DeleteDC(hDC);
+	}  
+
+	/* write the file */
+	if (noerror)
+	{
+		//png_set_bgr(png_ptr);
+		png_write_image(png_ptr, row_pointers);
+		png_write_end(png_ptr, NULL);
+	}
+
+	/* release the image memory */
 	for (y = 0; y < height; ++y)
 	{
 		free(row_pointers[y]);
 	}
 	free(row_pointers);
 
-  // we are done with the file pointer, so
-  // release all the the PNG Structures
-  if (info_ptr) {
-    png_destroy_write_struct(&png_ptr, &info_ptr);//, (png_infopp)NULL);
-    info_ptr = NULL;
-    png_ptr = NULL;
-  }
-  else if (png_ptr) {
-    png_destroy_write_struct(&png_ptr, (png_infopp)NULL);//, (png_infopp)NULL);
-    png_ptr = NULL;
-  }
-  
-  // we are done with the file pointer, so close it
-  if (fp) {
-    fclose(fp);
-    fp = NULL;
-  }
+	/* we are done with the file pointer, so
+	 * release all the the PNG Structures */
+	if (info_ptr) {
+		png_destroy_write_struct(&png_ptr, &info_ptr);
+		info_ptr = NULL;
+		png_ptr = NULL;
+	}
+	else if (png_ptr) {
+		png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
+		png_ptr = NULL;
+	}
 
-  if (!noerror)
+	/* we are done with the file pointer, so close it */
+	if (fp) {
+		fclose(fp);
+		fp = NULL;
+	}
+
+	if (!noerror)
 	{
 		return (FALSE);
 	}
 	return (TRUE);
 }
-
