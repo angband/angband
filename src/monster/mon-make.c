@@ -546,27 +546,6 @@ void player_place(struct cave *c, struct player *p, int y, int x)
 
 
 /**
- * Returns the coin type of a monster race, based on the monster being
- * killed.
- */
-static int get_coin_type(const monster_race *r_ptr)
-{
-	const char *name = r_ptr->name;
-
-	if (!rf_has(r_ptr->flags, RF_METAL)) 	return SV_GOLD_ANY;
-
-	/* Look for textual clues */
-	if (my_stristr(name, "copper "))		return SV_COPPER;
-	if (my_stristr(name, "silver "))		return SV_SILVER;
-	if (my_stristr(name, "gold "))			return SV_GOLD;
-	if (my_stristr(name, "mithril "))		return SV_MITHRIL;
-	if (my_stristr(name, "adamantite "))	return SV_ADAMANTITE;
-
-	/* Assume nothing */
-	return SV_GOLD_ANY;
-}
-
-/**
  * Creates a specific monster's drop, including any drops specified
  * in the monster.txt file.
  *
@@ -582,7 +561,7 @@ static bool mon_create_drop(int m_idx, byte origin)
 	bool great, good, gold_ok, item_ok;
 	bool any = FALSE;
 
-	int number = 0, level, j, force_coin;
+	int number = 0, level, j;
 
 	object_type *i_ptr;
 	object_type object_type_body;
@@ -595,8 +574,6 @@ static bool mon_create_drop(int m_idx, byte origin)
 	good = great || (rf_has(r_ptr->flags, RF_DROP_GOOD));
 	gold_ok = (!rf_has(r_ptr->flags, RF_ONLY_ITEM));
 	item_ok = (!rf_has(r_ptr->flags, RF_ONLY_GOLD));
-
-	force_coin = get_coin_type(r_ptr);
 
 	/* Determine how much we can drop */
 	if (rf_has(r_ptr->flags, RF_DROP_20) && randint0(100) < 20) number++;
@@ -642,7 +619,7 @@ static bool mon_create_drop(int m_idx, byte origin)
 		object_wipe(i_ptr);
 
 		if (gold_ok && (!item_ok || (randint0(100) < 50))) {
-			make_gold(i_ptr, level, force_coin);
+			make_gold(i_ptr, level, SV_GOLD_ANY);
 		} else {
 			if (!make_object(cave, i_ptr, level, good, great, NULL)) continue;
 		}
@@ -739,6 +716,7 @@ s16b place_monster(int y, int x, monster_type *n_ptr, byte origin)
 			i_ptr->number = 1;
 		}
 
+		i_ptr->origin = origin;
 		i_ptr->mimicking_m_idx = m_idx;
 		m_ptr->mimicked_o_idx = floor_carry(cave, y, x, i_ptr);
 	}

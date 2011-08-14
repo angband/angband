@@ -950,7 +950,6 @@ I:100:32:3:28:10
 W:4:3:0:9
 B:HIT:HURT:1d4
 B:TOUCH:POISON:2d4
-F:DROP_2
 D:It appears to be a pile of copper coins.
 mimic:gold:copper
 
@@ -1198,7 +1197,6 @@ I:100:54:4:36:10
 W:6:3:0:18
 B:HIT:HURT:1d6
 B:TOUCH:POISON:2d6
-F:DROP_2
 D:It appears to be a pile of silver coins.
 mimic:gold:silver
 
@@ -1883,7 +1881,6 @@ I:100:81:5:43:10
 W:10:3:0:32
 B:HIT:HURT:2d5
 B:TOUCH:POISON:3d5
-F:DROP_3
 F:IM_ACID
 D:It appears to be a pile of gold coins, until it starts crawling towards you on
 D: tiny legs.
@@ -2251,7 +2248,6 @@ I:110:90:5:60:10
 W:13:3:0:45
 B:HIT:HURT:2d5
 B:TOUCH:POISON:3d5
-F:DROP_4
 F:IM_ACID
 D:It appears to be a pile of sentient mithril coins that doesn't like being
 D: picked up.
@@ -4030,7 +4026,6 @@ B:BITE:POISON:3d4
 B:TOUCH:POISON:3d5
 B:HIT:HURT:1d12
 B:HIT:HURT:1d12
-F:DROP_4
 F:IM_ACID
 D:It appears to be a pile of coins made of precious adamant, slithering toward
 D: you on lots of tiny legs.
