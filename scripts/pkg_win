@@ -72,6 +72,7 @@ cp ../lib/xtra/graf/8x8.png lib/xtra/graf
 cp ../lib/xtra/graf/8x16.png lib/xtra/graf
 cp ../lib/xtra/graf/16x16.png lib/xtra/graf
 cp ../lib/xtra/graf/32x32.png lib/xtra/graf
+cp ../lib/xtra/graf/graphics.txt lib/xtra/graf
 
 cp ../lib/xtra/sound/sound.cfg lib/xtra/sound
 cp ../lib/xtra/sound/*.wav lib/xtra/sound
