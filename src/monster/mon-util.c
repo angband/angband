@@ -1494,6 +1494,23 @@ void become_aware(int m_idx)
 
 			/* Clear the mimicry */
 			o_ptr->mimicking_m_idx = 0;
+
+			/* Give the object to the monster if appropriate */
+			if (rf_has(r_ptr->flags, RF_MIMIC_INV)) {
+				object_type *i_ptr;
+				object_type object_type_body;
+				
+				/* Get local object */
+				i_ptr = &object_type_body;
+
+				/* Obtain local object */
+				object_copy(i_ptr, o_ptr);
+
+				/* Carry the object */
+				monster_carry(m_ptr, i_ptr);
+			}
+				
+			/* Delete the mimicked object */
 			delete_object_idx(m_ptr->mimicked_o_idx);
 			m_ptr->mimicked_o_idx = 0;
 		}
