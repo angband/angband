@@ -160,6 +160,7 @@ bool init_graphics_modes(const char *filename) {
 	f = file_open(buf, MODE_READ, -1);
 	if (!f) {
 		msg("Cannot open '%s'.", buf);
+		finish_parse_grafmode(NULL);
 	} else {
 		char line[1024];
 
