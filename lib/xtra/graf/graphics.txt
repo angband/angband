@@ -28,7 +28,7 @@
 # must be greater than 0, if double high tiles are used, and refer to the
 # bottom half of the double row.
 
-
+N:1:Original
 I:8:8:8x8.png
 M:Original Tiles
 X:0:0:0
