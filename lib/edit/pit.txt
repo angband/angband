@@ -33,9 +33,8 @@
 # more rare than a pit with a rarity of 1. The average level is the dungeon level
 # at which this pit is most common.
 #
-# 'O' is for object rarity. A rarity of N means that every square of the pit has a
-# 1 in N chance of having an item. (But a rarity of 0 means that no objects will
-# be generated.)
+# 'O' is for object rarity. A rarity of N means that every square of the pit has an
+# N % chance of having an item.
 #
 # 'C' is for monster color. If any 'C' lines are present, then all monsters in this
 # pit will be one of the specified colors. You may use any number of 'C' lines.
@@ -141,7 +140,7 @@ E:Horned Reaper
 N:11:Jelly
 R:2
 A:1:20
-O:30
+O:5
 T:icky thing
 T:jelly
 T:mold
@@ -156,5 +155,5 @@ F:ANIMAL
 N:13:Undead
 R:2
 A:1:80
-O:5
+O:20
 F:UNDEAD
