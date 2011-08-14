@@ -1649,17 +1649,10 @@ static void MoreDraw(sdl_Window *win)
 	sdl_WindowText(win, colour, 20, y, "Selected Graphics:");
 	if (current_graphics_mode) {
 		sdl_WindowText(win, SDL_MapRGB(win->surface->format, 210, 110, 110),
-<<<<<<< HEAD
 					   200, y, current_graphics_mode->menuname);
 	} else {
 		sdl_WindowText(win, SDL_MapRGB(win->surface->format, 210, 110, 110),
 					   200, y, "None");
-=======
-				     200, y, current_graphics_mode->menuname);
-	} else {
-		sdl_WindowText(win, SDL_MapRGB(win->surface->format, 210, 110, 110),
-				     200, y, "None");
->>>>>>> blubaron/master
 	}
 	y += 20;
 
@@ -1753,11 +1746,7 @@ static void MoreActivate(sdl_Button *sender)
 	
 	SelectedGfx = use_graphics;
 	
-<<<<<<< HEAD
 	i = 0;
-=======
-	i=0;
->>>>>>> blubaron/master
 	do {
 		if (!graphics_modes[i].menuname[0]) continue;
 		GfxButtons[graphics_modes[i].grafID] = sdl_ButtonBankNew(&PopUp.buttons);
@@ -3088,15 +3077,10 @@ static errr sdl_BuildTileset(term_window *win)
 	int x, y;
 	int ta, td;
 	int xx, yy;
-<<<<<<< HEAD
 	graphics_mode *info;
 
 	if (!GfxSurface) return (1);
-=======
-  graphics_mode *info;
 
-  if (!GfxSurface) return (1);
->>>>>>> blubaron/master
 	info = get_graphics_mode(use_graphics);
 
 	/* Calculate the number of tiles across & down*/
@@ -3125,11 +3109,7 @@ static errr sdl_BuildTileset(term_window *win)
 
 			/* Source rectangle (on GfxSurface) */
 			RECT(xx * info->cell_width, yy * info->cell_height,
-<<<<<<< HEAD
 				 info->cell_width, info->cell_height, &src);
-=======
-        info->cell_width, info->cell_height, &src);
->>>>>>> blubaron/master
 
 			/* Destination rectangle (win->tiles) */
 			RECT(xx * dwid, yy * dhgt, dwid, dhgt, &dest);
@@ -3407,16 +3387,11 @@ static void init_gfx(void)
 	int i;
 	
 	/* Check for existence of required files */
-<<<<<<< HEAD
 	i = 0;
-=======
-	i=0;
->>>>>>> blubaron/master
 	do {
 		char path[1024];
 		
 		/* Check the graphic file */
-<<<<<<< HEAD
 		if (graphics_modes[i].file[0]) {
 			path_build(path, sizeof(path), ANGBAND_DIR_XTRA_GRAF, graphics_modes[i].file);
 
@@ -3426,20 +3401,7 @@ static void init_gfx(void)
 			}
 			if (i == use_graphics) {
 				current_graphics_mode = &(graphics_modes[i]);
-=======
-		if (graphics_modes[i].file[0])
-		{
-			path_build(path, sizeof(path), ANGBAND_DIR_XTRA_GRAF, graphics_modes[i].file);
-
-			if (!file_exists(path))
-			{
-				plog_fmt("Can't find file %s - graphics mode '%s' will be disabled.", path, graphics_modes[i].menuname);
-				graphics_modes[i].file[0] = 0;
->>>>>>> blubaron/master
 			}
-      if (i == use_graphics) {
-        current_graphics_mode = &(graphics_modes[i]);
-      }
 		}
 	} while (graphics_modes[i++].grafID != 0); 
 	
@@ -3670,15 +3632,9 @@ int init_sdl(int argc, char *argv[])
 	/* Init some extra paths */
 	init_paths();
 	
-<<<<<<< HEAD
 	/* load possible graphics modes */
 	init_graphics_modes("graphics.txt");
 	GfxButtons = mem_zalloc(sizeof(int) * graphics_mode_high_id);
-=======
-  /* load possible graphics modes */
-  init_graphics_modes("graphics.txt");
-  GfxButtons = mem_zalloc(sizeof(int) * graphics_mode_high_id);
->>>>>>> blubaron/master
 	
 	/* Load prefs */
 	load_prefs();
