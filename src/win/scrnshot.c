@@ -37,7 +37,7 @@ BOOL SaveWindow_PNG(HWND hWnd, LPSTR lpFileName)
 {
 	png_structp png_ptr;
 	png_infop info_ptr;
-	png_bytep *row_pointers;
+	png_bytep *row_pointers = NULL;
 
 	BOOL noerror = TRUE;
 
