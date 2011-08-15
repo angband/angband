@@ -122,7 +122,7 @@ errr finish_parse_grafmode(struct parser *p) {
 	
 	/* hardcode the no graphics option */
 	graphics_modes[count].pNext = NULL;
-	graphics_modes[count].grafID = 0;
+	graphics_modes[count].grafID = GRAPHICS_NONE;
 	graphics_modes[count].alphablend = 0;
 	graphics_modes[count].overdrawRow = 0;
 	graphics_modes[count].overdrawMax = 0;

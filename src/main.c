@@ -313,7 +313,8 @@ int main(int argc, char *argv[])
 
 			case 'g':
 				/* Default graphics tile */
-				arg_graphics = GRAPHICS_ADAM_BOLT;
+				arg_graphics = 2; /*2 is the id of adam bolt tiles in the default graphics.txt */
+				if (*arg) arg_graphics = atoi(*arg);
 				break;
 
 			case 'u':
