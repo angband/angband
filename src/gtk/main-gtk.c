@@ -2081,12 +2081,8 @@ static errr term_data_init(term_data *td, int i)
 
 static errr get_init_cmd(bool wait)
 {
-	Term_fresh();
-
-	/* Prompt the user */
 	prt("[Choose 'New' or 'Open' from the 'File' menu]", 23, 17);
 	CheckEvent(wait);
-
 	return 0;
 }
 
@@ -2712,6 +2708,9 @@ errr init_gtk(int argc, char **argv)
 	game_saved = FALSE;
 	toolbar_size = 0;
 	
+	/* Initialize to ASCII tileset (to be overriden by prefs) */
+	arg_graphics = 0;
+
 	/* Initialize the environment */
 	ok = gtk_init_check(&argc, &argv);
 	if (ok == FALSE) return -1;
