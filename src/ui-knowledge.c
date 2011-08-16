@@ -980,23 +980,28 @@ static void display_monster(int col, int row, bool cursor, int oid)
 	byte a = r_ptr->x_attr;
 	byte c = r_ptr->x_char;
 
+	if ((tile_height != 1) && (a & 0x80)) {
+		a = r_ptr->d_attr;
+		c = r_ptr->d_char;
+		/* If uniques are purple, make it so */
+		if (OPT(purple_uniques) && rf_has(r_ptr->flags, RF_UNIQUE))
+			a = TERM_L_VIOLET;
+	}
 	/* If uniques are purple, make it so */
-	if (OPT(purple_uniques) && rf_has(r_ptr->flags, RF_UNIQUE))
+	else if (OPT(purple_uniques) && !(a & 0x80) && rf_has(r_ptr->flags, RF_UNIQUE))
 		a = TERM_L_VIOLET;
 
 	/* Display the name */
 	c_prt(attr, r_ptr->name, row, col);
 
-	if (tile_height == 1) {
-		/* Display symbol */
-		big_pad(66, row, a, c);
+	/* Display symbol */
+	big_pad(66, row, a, c);
 
-		/* Display kills */
-		if (rf_has(r_ptr->flags, RF_UNIQUE))
-			put_str(format("%s", (r_ptr->max_num == 0)?  " dead" : "alive"), row, 70);
-		else
-			put_str(format("%5d", l_ptr->pkills), row, 70);
-	}
+	/* Display kills */
+	if (rf_has(r_ptr->flags, RF_UNIQUE))
+		put_str(format("%s", (r_ptr->max_num == 0)?  " dead" : "alive"), row, 70);
+	else
+		put_str(format("%5d", l_ptr->pkills), row, 70);
 }
 
 

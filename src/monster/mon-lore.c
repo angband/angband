@@ -2021,19 +2021,19 @@ void roff_top(int r_idx)
 	else if (OPT(purple_uniques))
 	{
 		a1 = TERM_L_VIOLET;
-		a2 = TERM_L_VIOLET;
+		if (!(a2 & 0x80))
+			a2 = TERM_L_VIOLET;
 	}
 
 	/* Dump the name */
 	Term_addstr(-1, TERM_WHITE, r_ptr->name);
 
-	if ((tile_width == 1) && (tile_height == 1))
-	{
-		/* Append the "standard" attr/char info */
-		Term_addstr(-1, TERM_WHITE, " ('");
-		Term_addch(a1, c1);
-		Term_addstr(-1, TERM_WHITE, "')");
-		
+	/* Append the "standard" attr/char info */
+	Term_addstr(-1, TERM_WHITE, " ('");
+	Term_addch(a1, c1);
+	Term_addstr(-1, TERM_WHITE, "')");
+
+	if (((a2 != a1) || (c2 != c1)) && (tile_width == 1) && (tile_height == 1)) {
 		/* Append the "optional" attr/char info */
 		Term_addstr(-1, TERM_WHITE, "/('");
 		Term_addch(a2, c2);
