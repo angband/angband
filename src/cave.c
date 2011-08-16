@@ -570,18 +570,8 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 			da = r_ptr->x_attr;
 			dc = r_ptr->x_char;
 
-			/* Turn uniques purple if desired (violet, actually) */
-			if (OPT(purple_uniques) && rf_has(r_ptr->flags, RF_UNIQUE))
-			{
-				/* Use (light) violet attr */
-				a = TERM_L_VIOLET;
-
-				/* Use char */
-				c = dc;
-			}
-
 			/* Special attr/char codes */
-			else if ((da & 0x80) && (dc & 0x80))
+			if ((da & 0x80) && (dc & 0x80))
 			{
 				/* Use attr */
 				a = da;
@@ -590,6 +580,16 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 				c = dc;
 			}
 			
+			/* Turn uniques purple if desired (violet, actually) */
+			else if (OPT(purple_uniques) && rf_has(r_ptr->flags, RF_UNIQUE))
+			{
+				/* Use (light) violet attr */
+				a = TERM_L_VIOLET;
+
+				/* Use char */
+				c = dc;
+			}
+
 			/* Multi-hued monster */
 			else if (rf_has(r_ptr->flags, RF_ATTR_MULTI) ||
 					 rf_has(r_ptr->flags, RF_ATTR_FLICKER) ||
@@ -653,7 +653,7 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 
 		/* Get the "player" attr */
 		a = r_ptr->x_attr;
-		if ((OPT(hp_changes_color)) && (use_graphics == GRAPHICS_NONE))
+		if ((OPT(hp_changes_color)) && !(a & 0x80))
 		{
 			switch(p_ptr->chp * 10 / p_ptr->mhp)
 			{
