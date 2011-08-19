@@ -62,40 +62,40 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask) {
 
 	BOOL update = FALSE;
 	
-	// open the file and test it for being a png
+	/* open the file and test it for being a png */
 	FILE *fp = fopen(lpFileName, "rb");
 	if (!fp)
 	{
-		//plog_fmt("Unable to open PNG file.");
+		/*plog_fmt("Unable to open PNG file."); */
 		return (FALSE);
 	}
 
 	fread(header, 1, 8, fp);
 	if (png_sig_cmp(header, 0, 8)) {
-		//plog_fmt("Unable to open PNG file - not a PNG file.");
+		/*plog_fmt("Unable to open PNG file - not a PNG file."); */
 		fclose(fp);
 		return (FALSE);
 	}
 	
-	// Create the png structure
+	/* Create the png structure */
 	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	if(!png_ptr)
 	{
-		//plog_fmt("Unable to initialize PNG library");
+		/*plog_fmt("Unable to initialize PNG library"); */
 		fclose(fp);
 		return (FALSE);
 	}
 	
-	// create the info structure
+	/* create the info structure */
 	info_ptr = png_create_info_struct(png_ptr);
 	if (!info_ptr)
 	{
 		png_destroy_read_struct(&png_ptr, (png_infopp)NULL, (png_infopp)NULL);
-		//plog_fmt("Failed to create PNG info structure.");
+		/*plog_fmt("Failed to create PNG info structure."); */
 		return FALSE;
 	}
 	
-	// setup error handling for init
+	/* setup error handling for init */
 	png_init_io(png_ptr, fp);
 	png_set_sig_bytes(png_ptr, 8);
 	
@@ -138,7 +138,7 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask) {
 	}
 
 	png_set_bgr(png_ptr);
-	// after these requests, the data should always be RGB or ARGB
+	/* after these requests, the data should always be RGB or ARGB */
 
 	/* initialize row_pointers */
 	row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * height);
@@ -163,9 +163,9 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask) {
 	bi.bmiHeader.biBitCount = 24;
 	bi.bmiHeader.biCompression = BI_RGB;
 	bi.bmiHeader.biPlanes = 1;
-	bi.bmiHeader.biSize = 40; // the size of the structure
-	bi.bmiHeader.biXPelsPerMeter = 3424; // just a number I saw when testing this with a sample
-	bi.bmiHeader.biYPelsPerMeter = 3424; // just a number I saw when testing this with a sample
+	bi.bmiHeader.biSize = 40; /* the size of the structure */
+	bi.bmiHeader.biXPelsPerMeter = 3424; /* just a number I saw when testing this with a sample */
+	bi.bmiHeader.biYPelsPerMeter = 3424; /* just a number I saw when testing this with a sample */
 	bi.bmiHeader.biSizeImage = width*height*3;
 	
 	biSrc.bmiHeader.biWidth = (LONG)width;
@@ -175,9 +175,9 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask) {
 	biSrc.bmiHeader.biClrImportant = 0;
 	biSrc.bmiHeader.biCompression = BI_RGB;
 	biSrc.bmiHeader.biPlanes = 1;
-	biSrc.bmiHeader.biSize = 40; // the size of the structure
-	biSrc.bmiHeader.biXPelsPerMeter = 3424; // just a number I saw when testing this with a sample
-	biSrc.bmiHeader.biYPelsPerMeter = 3424; // just a number I saw when testing this with a sample
+	biSrc.bmiHeader.biSize = 40; /* the size of the structure */
+	biSrc.bmiHeader.biXPelsPerMeter = 3424; /* just a number I saw when testing this with a sample */
+	biSrc.bmiHeader.biYPelsPerMeter = 3424; /* just a number I saw when testing this with a sample */
 	
 	if (color_type == PNG_COLOR_TYPE_RGB_ALPHA) {
 		biSrc.bmiHeader.biBitCount = 32;
@@ -195,11 +195,11 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask) {
 	hDC = GetDC(hWnd);
 	
 	hPalette = GetStockObject(DEFAULT_PALETTE);
-	// Need to realize palette for converting DIB to bitmap. 
+	/* Need to realize palette for converting DIB to bitmap. */
 	hOldPal = SelectPalette(hDC, hPalette, TRUE);
 	RealizePalette(hDC);
 
-	// copy the data to the DIB
+	/* copy the data to the DIB */
 	hBitmap = CreateDIBitmap(hDC, &(bi.bmiHeader), 0, NULL,
 							 &biSrc, DIB_RGB_COLORS);
 		
@@ -209,7 +209,7 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask) {
 		{
 			if (SetDIBits(hDC, hBitmap, height-y-1, 1, row_pointers[y], &biSrc, DIB_RGB_COLORS) != 1)
 			{
-				//plog_fmt("Failed to alloc temporary memory for PNG data.");
+				/*plog_fmt("Failed to alloc temporary memory for PNG data."); */
 				DeleteObject(hBitmap);
 				hBitmap = NULL;
 				noerror = FALSE;
@@ -229,8 +229,8 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask) {
 		pInfo->hBitmap = hBitmap;
 		pInfo->hPalette = hPalette;
 		pInfo->hDIB = 0;
-    pInfo->ImageWidth = width;
-    pInfo->ImageHeight = height;
+		pInfo->ImageWidth = width;
+		pInfo->ImageHeight = height;
 	}
 	
 	if (pMask && (color_type == PNG_COLOR_TYPE_RGB_ALPHA))
@@ -294,14 +294,14 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask) {
 		}
 	}
 	
-	// release the image memory
+	/* release the image memory */
 	for (y = 0; y < height; ++y)
 	{
 		free(row_pointers[y]);
 	}
 	free(row_pointers);
 	
-	// release all the the PNG Structures
+	/* release all the the PNG Structures */
 	if (info_ptr) {
 		png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)NULL);
 		info_ptr = NULL;

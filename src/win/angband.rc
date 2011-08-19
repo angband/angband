@@ -100,7 +100,7 @@ ANGBAND MENU
 			MENUITEM "Term-7 window", 277
 		}
 
-    MENUITEM SEPARATOR
+		MENUITEM SEPARATOR
 
 		POPUP "Term 0 Font Tile Size"
 		{
@@ -123,22 +123,22 @@ ANGBAND MENU
 			MENUITEM SEPARATOR
 			MENUITEM "Enable nice &graphics", 445
 			MENUITEM SEPARATOR
-		  POPUP "&Tile Multiplier"
-		  {
-			  MENUITEM "&1x1", 447
-			  MENUITEM "&2x1", 448
-			  MENUITEM "2x2", 450
-			  MENUITEM "3x1", 451
-			  MENUITEM "&3x3", 452
-			  MENUITEM "&4x2", 449
-			  MENUITEM "4x4", 453
-			  MENUITEM "&6x3", 454
-			  MENUITEM "6x6", 455
-			  MENUITEM "&8x4", 456
-			  MENUITEM "8x8", 457
-			  MENUITEM "16x8", 458
-			  MENUITEM "16x16", 459
-		  }
+			POPUP "&Tile Multiplier"
+			{
+				MENUITEM "&1x1", 447
+				MENUITEM "&2x1", 448
+				MENUITEM "2x2", 450
+				MENUITEM "3x1", 451
+				MENUITEM "&3x3", 452
+				MENUITEM "&4x2", 449
+				MENUITEM "4x4", 453
+				MENUITEM "&6x3", 454
+				MENUITEM "6x6", 455
+				MENUITEM "&8x4", 456
+				MENUITEM "8x8", 457
+				MENUITEM "16x8", 458
+				MENUITEM "16x16", 459
+			}
 		}
 
 		MENUITEM SEPARATOR
