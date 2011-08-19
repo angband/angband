@@ -40,4 +40,4 @@ M:O:1024
 M:M:1024
 
 # Maximum number of pit types
-M:I:14
+M:I:35
