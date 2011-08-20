@@ -985,11 +985,11 @@ static void display_monster(int col, int row, bool cursor, int oid)
 		c = r_ptr->d_char;
 		/* If uniques are purple, make it so */
 		if (OPT(purple_uniques) && rf_has(r_ptr->flags, RF_UNIQUE))
-			a = TERM_L_VIOLET;
+			a = TERM_VIOLET;
 	}
 	/* If uniques are purple, make it so */
 	else if (OPT(purple_uniques) && !(a & 0x80) && rf_has(r_ptr->flags, RF_UNIQUE))
-		a = TERM_L_VIOLET;
+		a = TERM_VIOLET;
 
 	/* Display the name */
 	c_prt(attr, r_ptr->name, row, col);
