@@ -2087,9 +2087,9 @@ void roff_top(int r_idx)
 	if (!rf_has(r_ptr->flags, RF_UNIQUE))
 		Term_addstr(-1, TERM_WHITE, "The ");
 	else if (OPT(purple_uniques)) {
-		a1 = TERM_L_VIOLET;
+		a1 = TERM_VIOLET;
 		if (!(a2 & 0x80))
-			a2 = TERM_L_VIOLET;
+			a2 = TERM_VIOLET;
 	}
 
 	/* Dump the name */
