@@ -12,26 +12,11 @@
 V:3.0.11
 
 
-# Maximum number of feature types
-M:F:64
-
 # Maximum number of object kinds
 M:K:570
 
-# Maximum number of artifacts
-M:A:139
-
-# Maximum number of ego-item types
-M:E:134
-
 # Maximum number of monster races
 M:R:618
-
-# Maximum number of monster pain message sets
-M:P:13
-
-# Maximum number of spells
-M:S:122
 
 # Maximum number of objects on the level
 M:O:1024
@@ -39,5 +24,4 @@ M:O:1024
 # Maximum number of monsters on the level
 M:M:1024
 
-# Maximum number of pit types
-M:I:35
+

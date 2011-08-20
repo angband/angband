@@ -526,20 +526,32 @@ static errr run_parse_r(struct parser *p) {
 static errr finish_parse_r(struct parser *p) {
 	struct monster_race *r, *n;
 
-	r_info = mem_zalloc(sizeof(*r) * z_info->r_max);
-	for (r = parser_priv(p); r; r = r->next) {
-		if (r->ridx >= z_info->r_max)
-			continue;
-		memcpy(&r_info[r->ridx], r, sizeof(*r));
-	}
-	eval_r_power(r_info);
-
+	/* scan the list for the max id */
+	z_info->r_max -= 1;
+	/*z_info->r_max = 0; fails to load existing save file because of
+	 * too high value in old limits.txt.  Change to this line when save file 
+	 * compatibility changes and remove line from limits.txt */ 
 	r = parser_priv(p);
 	while (r) {
-		n = r->next;
-		mem_free(r);
-		r = n;
+		if (r->ridx > z_info->r_max)
+			z_info->r_max = r->ridx;
+		r = r->next;
 	}
+
+	/* allocate the direct access list and copy the data to it */
+	r_info = mem_zalloc((z_info->r_max+1) * sizeof(*r));
+	for (r = parser_priv(p); r; r = n) {
+		memcpy(&r_info[r->ridx], r, sizeof(*r));
+		n = r->next;
+		if (n)
+			r_info[r->ridx].next = &r_info[n->ridx];
+		else
+			r_info[r->ridx].next = NULL;
+
+		mem_free(r);
+	}
+	z_info->r_max += 1;
+	eval_r_power(r_info);
 
 	parser_destroy(p);
 	return 0;
