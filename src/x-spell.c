@@ -810,9 +810,11 @@ static bool cast_mage_spell(int spell, int dir)
 
 		case SPELL_HEROISM:
 		{
+			int dur = randint1(25) + 25;
 			(void)hp_player(10);
-			(void)player_inc_timed(p_ptr, TMD_HERO, randint1(25) + 25, TRUE, TRUE);
 			(void)player_clear_timed(p_ptr, TMD_AFRAID, TRUE);
+			(void)player_inc_timed(p_ptr, TMD_BOLD, dur, TRUE, TRUE);
+			(void)player_inc_timed(p_ptr, TMD_HERO, dur, TRUE, TRUE);
 			break;
 		}
 
@@ -824,9 +826,11 @@ static bool cast_mage_spell(int spell, int dir)
 
 		case SPELL_BERSERKER:
 		{
+			int dur = randint1(25) + 25;
 			(void)hp_player(30);
-			(void)player_inc_timed(p_ptr, TMD_SHERO, randint1(25) + 25, TRUE, TRUE);
 			(void)player_clear_timed(p_ptr, TMD_AFRAID, TRUE);
+			(void)player_inc_timed(p_ptr, TMD_BOLD, dur, TRUE, TRUE);
+			(void)player_inc_timed(p_ptr, TMD_SHERO, dur, TRUE, TRUE);
 			break;
 		}
 
