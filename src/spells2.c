@@ -2341,12 +2341,12 @@ void earthquake(int cy, int cx, int r)
 					/* If the quake finished the monster off, show message */
 					if (m_ptr->hp < damage && m_ptr->hp >= 0)
 						msg("%^s is embedded in the rock!", m_name);
-					
+
 					/* Apply damage directly */
 					m_ptr->hp -= damage;
 
 					/* Delete (not kill) "dead" monsters */
-					if (m_ptr->hp < damage)
+					if (m_ptr->hp < 0)
 					{
 						/* Delete the monster */
 						delete_monster(yy, xx);
