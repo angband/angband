@@ -791,7 +791,7 @@ static void parse_frequencies(void)
 				file_putf(log_file, "Adding %d for brands\n", temp2);
 
 				/* Add these to the frequency count */
-				artprobs[ART_IDX_BOW_SLAY] += temp;
+				artprobs[ART_IDX_BOW_SLAY] += (temp - temp2);
 				artprobs[ART_IDX_BOW_BRAND] += temp2;
 			}
 		}
@@ -889,7 +889,7 @@ static void parse_frequencies(void)
 				file_putf(log_file, "Adding %d for brands\n", temp2);
 
 				/* Add these to the frequency count */
-				artprobs[ART_IDX_NONWEAPON_SLAY] += temp;
+				artprobs[ART_IDX_NONWEAPON_SLAY] += (temp - temp2);
 				artprobs[ART_IDX_NONWEAPON_BRAND] += temp2;
 			}
 
@@ -999,7 +999,7 @@ static void parse_frequencies(void)
 				file_putf(log_file, "Adding %d for brands\n", temp2);
 
 				/* Add these to the frequency count */
-				artprobs[ART_IDX_MELEE_SLAY] += temp;
+				artprobs[ART_IDX_MELEE_SLAY] += (temp - temp2);
 				artprobs[ART_IDX_MELEE_BRAND] += temp2;
 			}
 
