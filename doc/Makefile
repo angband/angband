@@ -3,21 +3,45 @@ include $(MKPATH)buildsys.mk
 
 HELPSRCPATH := ../lib/help/
 
+RST2HTML := rst2html
+RST2LATEX := rst2latex
+PDFLATEX := pdflatex
+MAKEINDEX := makeindex
+
 SECTIONS := general birth playing attack dungeon customize option command \
             debug thanks version 330
 
+INDEX := index
+
 RSTFILESWITHOUTPATH := $(addsuffix .txt, $(SECTIONS))
+RSTINDEXWITHOUTPATH := $(addsuffix .txt, $(INDEX))
 
 RSTFILES := $(addprefix $(HELPSRCPATH), $(RSTFILESWITHOUTPATH))
+RSTINDEX := $(addprefix $(HELPSRCPATH), $(RSTINDEXWITHOUTPATH))
 
-manual.html: $(RSTFILES)
-	rst2html $(HELPSRCPATH)/index.txt > manual.html
+manual.html: $(RSTINDEX) $(RSTFILES)
+	${COMPILE_STATUS}
+	@if $(RST2HTML) $(HELPSRCPATH)/index.txt > manual.html; then \
+		${COMPILE_OK}; \
+	else \
+		${COMPILE_FAILED}; \
+	fi
 
-manual.tex: $(RSTFILES)
-	rst2latex $(HELPSRCPATH)/index.txt > manual.tex
+manual.tex: $(RSTINDEX) $(RSTFILES)
+	${COMPILE_STATUS}
+	@if $(RST2LATEX) $(HELPSRCPATH)/index.txt > manual.tex; then \
+		${COMPILE_OK}; \
+	else \
+		${COMPILE_FAILED}; \
+	fi
 
 manual.pdf: manual.tex
-	pdflatex manual.tex
-	makeindex manual.tex
-	pdflatex manual.tex
+	${COMPILE_STATUS}
+	@$(PDFLATEX) manual.tex > /dev/null
+	@$(MAKEINDEX) manual.tex > /dev/null 2>&1
+	@if $(PDFLATEX) manual.tex > /dev/null; then \
+		${COMPILE_OK}; \
+	else \
+		${COMPILE_FAILED}; \
+	fi
 
