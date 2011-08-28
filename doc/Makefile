@@ -45,3 +45,15 @@ manual.pdf: manual.tex
 		${COMPILE_FAILED}; \
 	fi
 
+clean::
+	for i in manual.ind manual.ilg manual.toc manual.tex manual.log \
+	manual.aux; do \
+		if test -f $$i -o -d $$i; then \
+			if rm -fr $$i; then \
+				${DELETE_OK}; \
+			else \
+				${DELETE_FAILED}; \
+			fi \
+		fi \
+	done
+
