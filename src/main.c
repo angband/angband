@@ -313,8 +313,9 @@ int main(int argc, char *argv[])
 
 			case 'g':
 				/* Default graphics tile */
-				arg_graphics = 2; /*2 is the id of adam bolt tiles in the default graphics.txt */
-				if (*arg) arg_graphics = atoi(*arg);
+				/* in graphics.txt, 2 corresponds to adam bolt's tiles */
+				arg_graphics = 2; 
+				if (*arg) arg_graphics = atoi(arg);
 				break;
 
 			case 'u':
