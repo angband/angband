@@ -534,7 +534,7 @@ static void bolt_pict(int y, int x, int ny, int nx, int typ, byte *a, char *c)
 		motion = BOLT_NO_MOTION;
 
 	/* Decide on output char */
-	if (use_graphics == GRAPHICS_NONE || use_graphics == GRAPHICS_PSEUDO) {
+	if (use_graphics == GRAPHICS_NONE) {
 		/* ASCII is simple */
 		char chars[] = "*|/-\\";
 

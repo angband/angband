@@ -238,12 +238,12 @@ size_t path_build(char *buf, size_t len, const char *base, const char *leaf)
 #endif
 
 /* Some defines for compatibility between various build platforms */
-#ifndef S_IRSUR
-#define S_IRSUR S_IREAD
+#ifndef S_IRUSR
+#define S_IRUSR S_IREAD
 #endif
 
-#ifndef S_IWSUR
-#define S_IWSUR S_IWRITE
+#ifndef S_IWUSR
+#define S_IWUSR S_IWRITE
 #endif
 
 /* if the flag O_BINARY is not defined, it is not needed , but we still
