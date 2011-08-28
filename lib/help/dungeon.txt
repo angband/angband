@@ -1,5 +1,6 @@
-The Dungeon
-===========
+=====================
+Exploring the Dungeon
+=====================
 
 After you have created your character, you will begin your Angband
 adventure. Symbols appearing on your screen will represent the dungeon's

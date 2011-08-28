@@ -1,8 +1,9 @@
+==========================
 Debug Command Descriptions
 ==========================
 
 Item Creation
--------------
+=============
 
 Create an object (``c``)
   Provides a menu to let you create any object, and drops it on the floor.
@@ -31,7 +32,7 @@ Test kind (``V``)
   one object of each sval and drops it nearby.
 		
 Detection / Information
------------------------
+=======================
 
 Detect all (``d``)
   Detects all traps, doors, stairs, treasure, and monsters nearby.
@@ -63,7 +64,7 @@ Create spoilers (``"``)
   Lets you create a spoiler file for objects or monsters.
 		
 Teleportation
--------------
+=============
 
 Teleport level (``j``)
   Allows you to teleport to any dungeon level instantly.
@@ -79,7 +80,7 @@ Teleport to target (``b``)
   is occupied).
 		
 Character Improvement
----------------------
+=====================
 		
 Cure all maladies (``a``)
   Removes all curses, restores all stats, xp, hp, and sp, cures all bad
@@ -99,8 +100,8 @@ Increase experience (``x``)
 Rerate hitpoints (``h``)
   Rerates your hitpoints.
 
-Monsters 
---------
+Monsters
+========
 		
 Summon monster (``n``)
   Prompts you for the name of a monster, then summons that monster nearby.
@@ -118,13 +119,13 @@ Zap monsters (``z``)
   instead.
 
 Miscellaneous
--------------
+=============
 
 Create a trap (``T``)		
   Creates a random trap on your square.
 		
 Undocumented
-------------
+============
 		
 Query the dungeon (``q``)
   ???

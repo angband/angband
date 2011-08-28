@@ -1,3 +1,4 @@
+====================
 Command Descriptions
 ====================
 
@@ -17,7 +18,7 @@ energy when they cause the world to change in some way. For example,
 attempting to read a scroll while blind does not use any energy.
 
 Inventory Commands
-------------------
+==================
 
 Inventory list (``i``)
   Displays a list of objects being carried but not equipped. You can carry
@@ -77,7 +78,7 @@ Take off equipment (``t``) or Take off equipment (``T``)
   with this command. This command takes ome energy.
 
 Movement Commands
------------------
+=================
 
 Moving (arrow keys, number keys) or (arrow keys, number keys, ``yuhjklbn``)
   This causes you to move one step in a given direction. If the quare you
@@ -130,7 +131,7 @@ Go down staircase (``>``)
   "Go Up Staircase" for more info. This command takes some energy.
 
 Resting Commands
-----------------
+================
 
 Stay still (with pickup) (``,``) or Stay still (with pickup) (``.``)
   Stays in the same square for one move. If you normally pick up objects
@@ -155,7 +156,7 @@ Rest (``R``)
   number of turns to rest), and takes some energy.
 
 Searching Commands
-------------------
+==================
 
 Search (``s``)
   This command can be used to locate hidden traps and secret doors in the
@@ -177,7 +178,7 @@ Toggle search mode (``S``) or Toggle search mode (``#``)
   mode by entering the Search Mode command again.
 
 Alter Commands
---------------
+==============
 
 Tunnel (``T``) or Tunnel (``^T``)
   Tunnelling or mining is a very useful art. There are many kinds of rock,
@@ -246,7 +247,7 @@ Alter (``+``)
   takes some energy.
 
 Spell and Prayer Commands
--------------------------
+=========================
 
 Browse a book (``b``) or Peruse a book (``P``)
   Only mages, rogues, and rangers can read magic books, and only priests
@@ -292,7 +293,7 @@ Pray a prayer (``p``)
   means less energy used, but higher spell level means more.
 
 Object Manipulation Commands
-----------------------------
+============================
 
 Eat some food (``E``)
   You must eat regularly to prevent starvation. As you grow hungry, a
@@ -361,7 +362,7 @@ Uninscribe an object (``}``)
   no effect on "fake" inscriptions added by the game itself.
 
 Magical Object Commands
------------------------
+=======================
 
 Activate an artifact (``A``)
   You have heard rumors of special weapons and armor deep in the Pits,
@@ -399,7 +400,7 @@ Zap a rod (``z``) or Activate a rod (``a``)
   target. This command takes some energy.
 
 Throwing and Missile Weapons
-----------------------------
+============================
 
 Fire an item (``f``) or Fire an item (``t``)
   This command will fire a will allow you to fire a missile from either
@@ -466,7 +467,7 @@ Targeting Mode (``*``)
   stopped by interposed monsters if the ball is launched at a target.
 
 Looking Commands
-----------------
+================
 
 Full screen map (``M``)
   This command will show a map of the entire dungeon, reduced by a factor
@@ -514,7 +515,7 @@ List visible items (``]``)
   location.
 
 Message Commands
-----------------
+================
 
 Repeat level feeling (``^F``)
   Repeats the feeling about the dungeon level that you got when you first
@@ -529,7 +530,7 @@ Take notes (``:``)
   message list and your character history (prefixed with "Note:").
 
 Game Status Commands
---------------------
+====================
 
 Character Description (``C``)
   Brings up a full description of your character, including your kill
@@ -559,7 +560,7 @@ Interact with the system (``!``)
   command is currently unused.
 
 Saving and Exiting Commands
----------------------------
+===========================
 
 Save and Quit (``Ctrl-X``)
   To save your game so that you can return to it later, use this command.
@@ -577,8 +578,8 @@ Quit (commit suicide) (``Q``)
   you really want to do this, and then asked to verify that choice. Note
   that dead characters are dead forever.
 
-User pref file commands
------------------------
+User Pref File Commands
+=======================
 
 Interact with options (``=``)
   Allow you to interact with options. Note that using the "cheat" options
@@ -607,8 +608,8 @@ Interact with colors - option submenu
   systems. NOTE: It is commonly used to brighten the 'Light Dark' color
   (eg. Cave Spiders) on displays with bad alpha settings.
 
-Help
-----
+Help Commands
+=============
 
 Help (``?``)
   Brings up the Angband on-line help system. Note that the help files are
@@ -651,7 +652,7 @@ Command lists (``Enter``)
   beginners.
 
 Extra Commands
---------------
+==============
 
 Toggle Choice Window (``^E``)
   Toggles the display in any sub-windows (if available) which are

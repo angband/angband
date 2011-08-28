@@ -18,15 +18,28 @@ Browser/help commands:
   SPACE advance 1 page     -  back up 1 page     /  search for text
   RET   advance 1 line     =  back up 1 line     &  show (highlight) some text
   +     advance 1/2 page   _  back up 1/2 page   !  toggle case sentitivity
-***** [a] general.txt
-***** [b] birth.txt
-***** [c] dungeon.txt
-***** [d] attack.txt
-***** [e] playing.txt
-***** [f] command.txt
-***** [g] option.txt
-***** [h] customize.txt
-***** [i] version.txt
-***** [j] spoiler.hlp
-***** [k] user.hlp
-***** [l] 330.txt
+
+.. menu:: [a] general.txt
+
+.. menu:: [b] birth.txt
+
+.. menu:: [c] dungeon.txt
+
+.. menu:: [d] attack.txt
+
+.. menu:: [e] playing.txt
+
+.. menu:: [f] command.txt
+
+.. menu:: [g] option.txt
+
+.. menu:: [h] customize.txt
+
+.. menu:: [i] version.txt
+
+.. menu:: [j] spoiler.hlp
+
+.. menu:: [k] user.hlp
+
+.. menu:: [l] 330.txt
+

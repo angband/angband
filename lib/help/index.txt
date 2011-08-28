@@ -1,0 +1,33 @@
+~~~~~~~~~~~~~~
+Angband Manual
+~~~~~~~~~~~~~~
+
+.. sectnum::
+
+.. contents:: Table of Contents
+   :depth: 1
+
+.. include:: general.txt
+
+.. include:: birth.txt
+
+.. include:: dungeon.txt
+
+.. include:: attack.txt
+
+.. include:: playing.txt
+
+.. include:: command.txt
+
+.. include:: option.txt
+
+.. include:: customize.txt
+
+.. include:: debug.txt
+
+.. include:: version.txt
+
+.. include:: 330.txt
+
+
+

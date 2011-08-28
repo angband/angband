@@ -1,5 +1,6 @@
-Customization
-=============
+====================
+Customising the game
+====================
 
 Angband supports multiple customizations. These can vary from alternative
 methods for selecting objects, keymaps for different commands, changing the

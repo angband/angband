@@ -1,3 +1,7 @@
+==================
+Attacking monsters
+================== 
+
 Attacking and Being Attacked
 ============================
 
@@ -412,6 +416,7 @@ Elemental Branded Weapons
   should be noted that the magical damage bonus is not affected by this: a
   weapon of Flame ``(2d6) (+5,+6)`` does 6d6+6 damage per hit, not 6d6+18,
   against creatures which are not fire-resistant.) There are weapons of
+
   Flame, Frost, Lightning, Acid and Poison brands.
 
 Weapons of Slaying enemies
