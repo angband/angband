@@ -427,13 +427,13 @@ byte get_color(byte a, int attr, int n)
 bool dtrap_edge(int y, int x) 
 { 
 	/* Check if the square is a dtrap in the first place */ 
- 	if (!cave->info2[y][x] & CAVE2_DTRAP) return FALSE; 
+ 	if (!(cave->info2[y][x] & CAVE2_DTRAP)) return FALSE; 
 
  	/* Check for non-dtrap adjacent grids */ 
- 	if (in_bounds_fully(y + 1, x    ) && (!cave->info2[y + 1][x    ] & CAVE2_DTRAP)) return TRUE; 
- 	if (in_bounds_fully(y    , x + 1) && (!cave->info2[y    ][x + 1] & CAVE2_DTRAP)) return TRUE; 
- 	if (in_bounds_fully(y - 1, x    ) && (!cave->info2[y - 1][x    ] & CAVE2_DTRAP)) return TRUE; 
- 	if (in_bounds_fully(y    , x - 1) && (!cave->info2[y    ][x - 1] & CAVE2_DTRAP)) return TRUE; 
+ 	if (in_bounds_fully(y + 1, x    ) && (!(cave->info2[y + 1][x    ] & CAVE2_DTRAP))) return TRUE; 
+ 	if (in_bounds_fully(y    , x + 1) && (!(cave->info2[y    ][x + 1] & CAVE2_DTRAP))) return TRUE; 
+ 	if (in_bounds_fully(y - 1, x    ) && (!(cave->info2[y - 1][x    ] & CAVE2_DTRAP))) return TRUE; 
+ 	if (in_bounds_fully(y    , x - 1) && (!(cave->info2[y    ][x - 1] & CAVE2_DTRAP))) return TRUE; 
 
 	return FALSE; 
 }
@@ -525,8 +525,7 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 	char c = f_ptr->x_char[g->lighting];
 
 	/* Check for trap detection boundaries */
-	if (use_graphics == GRAPHICS_NONE ||
-				use_graphics == GRAPHICS_PSEUDO)
+	if (use_graphics == GRAPHICS_NONE)
 		grid_get_text(g, &a, &c);
 
 	/* Save the terrain info for the transparency effects */
@@ -571,18 +570,8 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 			da = r_ptr->x_attr;
 			dc = r_ptr->x_char;
 
-			/* Turn uniques purple if desired (violet, actually) */
-			if (OPT(purple_uniques) && rf_has(r_ptr->flags, RF_UNIQUE))
-			{
-				/* Use (light) violet attr */
-				a = TERM_L_VIOLET;
-
-				/* Use char */
-				c = dc;
-			}
-
 			/* Special attr/char codes */
-			else if ((da & 0x80) && (dc & 0x80))
+			if ((da & 0x80) && (dc & 0x80))
 			{
 				/* Use attr */
 				a = da;
@@ -591,6 +580,16 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 				c = dc;
 			}
 			
+			/* Turn uniques purple if desired (violet, actually) */
+			else if (OPT(purple_uniques) && rf_has(r_ptr->flags, RF_UNIQUE))
+			{
+				/* Use (light) violet attr */
+				a = TERM_VIOLET;
+
+				/* Use char */
+				c = dc;
+			}
+
 			/* Multi-hued monster */
 			else if (rf_has(r_ptr->flags, RF_ATTR_MULTI) ||
 					 rf_has(r_ptr->flags, RF_ATTR_FLICKER) ||
@@ -654,7 +653,7 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 
 		/* Get the "player" attr */
 		a = r_ptr->x_attr;
-		if ((OPT(hp_changes_color)) && (arg_graphics == GRAPHICS_NONE))
+		if ((OPT(hp_changes_color)) && !(a & 0x80))
 		{
 			switch(p_ptr->chp * 10 / p_ptr->mhp)
 			{

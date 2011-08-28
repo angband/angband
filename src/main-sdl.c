@@ -1054,7 +1054,7 @@ static void hook_quit(const char *str)
 #endif
 
 	close_graphics_modes();
-	/*if (GfxButtons) FREE(GfxButtons);*/
+	if (GfxButtons) FREE(GfxButtons);
 
 	/* Free the 'System font' */
 	sdl_FontFree(&SystemFont);
@@ -3634,7 +3634,7 @@ int init_sdl(int argc, char *argv[])
 	
 	/* load possible graphics modes */
 	init_graphics_modes("graphics.txt");
-	GfxButtons = mem_zalloc(sizeof(int) * graphics_mode_high_id);
+	GfxButtons = mem_zalloc(sizeof(int) * (graphics_mode_high_id+1));
 	
 	/* Load prefs */
 	load_prefs();
