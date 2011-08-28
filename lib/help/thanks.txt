@@ -142,7 +142,7 @@ Brett Reid
   Windows PNG support and other improvements
 
 The UPX team (Markus Oberhumer and Laszlo Molnar) 
-  The UPX packer for executables \url{http://upx.tsx.org/} is used to
+  The UPX packer for executables http://upx.tsx.org/ is used to
   reduce the size of the Windows and DOS binaries.
 
 david3x3x3 and retrobits 
