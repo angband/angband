@@ -45,7 +45,7 @@ manual.pdf: manual.tex
 		${COMPILE_FAILED}; \
 	fi
 
-clean::
+clean:
 	for i in manual.ind manual.ilg manual.toc manual.tex manual.log \
 	manual.aux; do \
 		if test -f $$i -o -d $$i; then \
