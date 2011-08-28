@@ -426,10 +426,10 @@ Weapons of Slaying enemies
   base damage. As with elemental branded weapons, the magical damage bonus
   is not affected.
 
-Weapons of *Slaying* enemies
+Weapons of |*Slay*|\ing enemies
   These weapons, in addition to doing extra damage to your enemies, have
   extra powers as well. In each case, one stat is increased. Weapons of
-  *Slay* Dragon, Demon or Undead are also more powerful against their
+  |*Slay*| Dragon, Demon or Undead are also more powerful against their
   opponents, doing five times their base damage rather than the normal
   three.
 
@@ -677,3 +677,4 @@ armor of all types. Many of these are more powerful than even the greatest
 ego-items: some are weak and have little more than a name to recommend
 them.
 
+.. |*Slay*| unicode:: *Slay* 
