@@ -29,5 +29,5 @@ Angband Manual
 
 .. include:: 330.txt
 
-
+.. include:: thanks.txt
 
