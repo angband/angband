@@ -1329,27 +1329,26 @@ bool show_file(const char *name, const char *what, int line, int mode)
 		/* Read a line or stop */
 		if (!file_getl(fff, buf, sizeof(buf))) break;
 
-		/* XXX Parse "menu" items */
-		if (prefix(buf, "***** "))
+		/* Parse a very small subset of RST */
+		/* TODO: should be more flexible */
+		if (prefix(buf, ".. "))
 		{
-			char b1 = '[', b2 = ']';
-
-			/* Notice "menu" requests */
-			if ((buf[6] == b1) && isalpha((unsigned char)buf[7]) &&
-			    (buf[8] == b2) && (buf[9] == ' '))
+			/* parse ".. menu:: [x] filename.txt" (with exact spacing)*/
+			if(prefix(buf+strlen(".. "), "menu:: [") && 
+                           buf[strlen(".. menu:: [x")]==']')
 			{
 				/* This is a menu file */
 				menu = TRUE;
 
 				/* Extract the menu item */
-				k = A2I(buf[7]);
+				k = A2I(buf[strlen(".. menu:: [")]);
 
 				/* Store the menu item (if valid) */
 				if ((k >= 0) && (k < 26))
-					my_strcpy(hook[k], buf + 10, sizeof(hook[0]));
+					my_strcpy(hook[k], buf + strlen(".. menu:: [x] "), sizeof(hook[0]));
 			}
-			/* Notice "tag" requests */
-			else if (buf[6] == '<')
+			/* parse ".. _some_hyperlink_target:" */
+			else if (buf[strlen(".. ")] == '_')
 			{
 				if (tag)
 				{
@@ -1357,7 +1356,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 					buf[strlen(buf) - 1] = '\0';
 
 					/* Compare with the requested tag */
-					if (streq(buf + 7, tag))
+					if (streq(buf + strlen(".. _"), tag))
 					{
 						/* Remember the tagged line */
 						line = next;
@@ -1411,8 +1410,9 @@ bool show_file(const char *name, const char *what, int line, int mode)
 			/* Get a line */
 			if (!file_getl(fff, buf, sizeof(buf))) break;
 
-			/* Skip tags/links */
-			if (prefix(buf, "***** ")) continue;
+			/* Skip RST directives */
+			/* TODO: should ignore the full paragraph */
+			if (prefix(buf, ".. ")) continue;
 
 			/* Count the lines */
 			next++;
@@ -1428,8 +1428,10 @@ bool show_file(const char *name, const char *what, int line, int mode)
 			/* Get a line of the file or stop */
 			if (!file_getl(fff, buf, sizeof(buf))) break;
 
-			/* Hack -- skip "special" lines */
-			if (prefix(buf, "***** ")) continue;
+			/* Hack -- skip RST directives */
+			/* TODO: should ignore the full paragraph */
+			/* TODO: do something with the |...| strings */
+			if (prefix(buf, ".. ")) continue;
 
 			/* Count the "real" lines */
 			next++;
