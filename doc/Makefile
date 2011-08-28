@@ -16,4 +16,8 @@ manual.html: $(RSTFILES)
 manual.tex: $(RSTFILES)
 	rst2latex $(HELPSRCPATH)/index.txt > manual.tex
 
+manual.pdf: manual.tex
+	pdflatex manual.tex
+	makeindex manual.tex
+	pdflatex manual.tex
 
