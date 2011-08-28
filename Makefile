@@ -9,5 +9,5 @@ tests:
 	$(MAKE) -C src tests
 
 manual:
-	$(MAKE) -C doc/manual manual
+	$(MAKE) -C doc manual.html
 
