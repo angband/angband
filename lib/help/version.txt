@@ -95,7 +95,7 @@ of minor tweaks and some new features.
 
 After Angband 2.7.8 was released, Ben created a web site to keep track of
 all the changes made in each version (though a few may have been missed),
-and acquired the use of a new develoepement ftp server to supplement the
+and acquired the use of a new developement ftp server to supplement the
 official "mirror" server. This web site is now permanently located at the
 Official Angband Home Page (http://www.thangorodrim.net/). Unfortunately,
 the next six versions were numbered Angband 2.7.9v1 to Angband 2.7.9v6, but
@@ -404,10 +404,10 @@ and many others...
 
 ======================  ==================================================
 
-Copyright (c) 1989 James E. Wilson, Robert A. Keoneke
-  This software may be copied and distributed for educational, research, and
-  not for profit purposes provided that this copyright and statement are
-  included in all such copies.
+Copyright (c) 1989 James E. Wilson, Robert A. Koeneke
+  This software may be copied and distributed for educational, research, 
+  and not for profit purposes provided that this copyright and statement 
+  are included in all such copies.
 
 Umoria Version 5.2, patch level 1
 ---------------------------------

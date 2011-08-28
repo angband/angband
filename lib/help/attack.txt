@@ -66,12 +66,12 @@ bother.
 
 If you have killed enough of a particular creature, or suffered enough
 attacks, recalling the monster memory may also provide you with information
-not otherwise available, such as a armor class, hit dice, pell types,
+not otherwise available, such as a armor class, hit dice, spell types,
 frequency of spell casting, or the amount of damage for breaths or spells.
 These attacks will be color coded to inform you of whether or not you
 currently resist a specific attack. Red or orange means you do not resist
 it, yellow means you partially resist it, and green means you resist it or
-are immune. If you attack a monster with pecific elemental attacks you will
+are immune. If you attack a monster with specific elemental attacks you will
 learn if the monster resists that element or if they are immune. There are
 other magical means to learn about monster's abilities that don't require
 you to actually experience the attacks.
@@ -190,7 +190,7 @@ deeper dungeon depths) and characters with a high saving throw - saving
 throws being dependent on class, level and wisdom. There are also available
 resistances to fear, blindness and confusion, and the power of "free
 action" prevents magical paralysis and most slowing attacks (the player may
-till be paralyzed by being "knocked out" in melee or by a stunning attack,
+still be paralyzed by being "knocked out" in melee or by a stunning attack,
 but this is very rare.) It should also be noticed that unique monsters
 automatically pass their saving throws, and some monsters are naturally
 resistant to confusion, fear and sleep-monster attacks. Some monsters may
@@ -237,14 +237,14 @@ source of resistance (whether from potion, spell or item activation), this
 will also reduce the damage to 1/3 of its normal level, allowing the
 character to take only 1/9 damage if he has both permanent and temporary
 resistance. Having more than one source of permanent resistance confers no
-extra bonus, and using more than one ource of temporary resistance
+extra bonus, and using more than one source of temporary resistance
 increases only the duration of the resistance: in both cases, either the
 resistance is present or it is not. But one permanent resistance and one
 temporary resistance are both effective simultaneously.
 
 Elemental attacks also have a chance to damage wielded equipment or destroy
-items in the character's inventory. Fire attacks destroy crolls, staves,
-magic books and arrows. Acid attacks destroy scrolls, taves, arrows, bolts
+items in the character's inventory. Fire attacks destroy scrolls, staves,
+magic books and arrows. Acid attacks destroy scrolls, staves, arrows, bolts
 and can damage armor. Electricity attacks can destroy wands, rods, rings
 and amulets. Cold attacks can destroy potions. Items in your inventory get
 a saving throw, and they are unharmed if they pass it. Having resistance to
@@ -283,8 +283,8 @@ melee or by a monster breath), chaos (breath or melee, which if unresisted
 will cause the player to hallucinate and be confused, and may drain life
 experience), nexus (which may teleport the player to the monster, away from
 the monster, up or down a level, or swap over two of the player's
-"internal" tats), light and darkness (which will blind a non-resistant
-character), ound (which will stun a non-resistant character and may destroy
+"internal" stats), light and darkness (which will blind a non-resistant
+character), sound (which will stun a non-resistant character and may destroy
 his potions), crystal shards (which will cut a non-resistant character and
 may destroy his potions), inertia (which will slow a character even if he
 has free action), gravity (which will blink a character, also stunning and
@@ -302,11 +302,11 @@ breath attacks (sound, water balls) or from melee. A stunned character
 receives a penalty to hit and is much more likely to fail a spell or
 activation. If a character gets very stunned, they may be knocked out and
 at the mercy of the enemies. A cut character will slowly lose life until
-healed either by potions, spells or natural regeneration. Both tunning and
+healed either by potions, spells or natural regeneration. Both stunning and
 cut status are displayed at the bottom of the screen.
 
 There are resistances available to chaos, disenchantment, confusion, nexus,
-ound, shards, light and darkness: all of these will reduce the damage and
+sound, shards, light and darkness: all of these will reduce the damage and
 prevent side-effects other than physical damage. With these resistances, as
 with nether resistance, damage is a random fraction: for light and dark, it
 is between 4/7 and 4/12, for sound and confusion it is between 5/7 and
@@ -332,7 +332,7 @@ A note on speed
 
 Monsters which do not move at normal speed generally move "slowly" (-10 to
 peed), "fast" (+10), "very fast" (+20) or "incredibly fast" (+30). (It will
-urprise nobody that Morgoth is one of the few monsters in the last
+surprise nobody that Morgoth is one of the few monsters in the last
 category.) This is further adjusted by the fact that any non-unique monster
 may have a random adjustment from (-2) to (+2) to its own speed.
 
@@ -380,7 +380,7 @@ Ego Melee Weapons:
   paralyzation and some slowing attacks, and help you regenerate hit points
   and mana faster. As a result of the regeneration ability, you will use up
   food somewhat faster than normal while wielding such a weapon. These
-  powerful weapons also will sustain one stat, though this tat will vary
+  powerful weapons also will sustain one stat, though this stat will vary
   from weapon to weapon.
 
 (Holy Avenger)
@@ -402,7 +402,7 @@ Ego Melee Weapons:
 Weapon of Westernesse
   A Weapon of Westernesse is one of the more powerful weapons. It does
   extra damage against orcs, trolls, and giants, while increasing your
-  trength, dexterity, and constitution. It also lets you see invisible
+  strength, dexterity, and constitution. It also lets you see invisible
   creatures and protects from paralyzation and some slowing attacks. These
   blades were made by the Dunedain.
 
@@ -415,6 +415,7 @@ Elemental Branded Weapons
   do treble its base damage to creatures not resistant to that element. (It
   should be noted that the magical damage bonus is not affected by this: a
   weapon of Flame ``(2d6) (+5,+6)`` does 6d6+6 damage per hit, not 6d6+18,
+
   against creatures which are not fire-resistant.) There are weapons of
 
   Flame, Frost, Lightning, Acid and Poison brands.
@@ -512,7 +513,7 @@ Armor of Elvenkind
   This is the same as Resistance armor, only generally better enchanted. It
   will make you more stealthy. This armor also possesses an extra
   resistance, at random from the following list: poison, light, dark,
-  blindness, confusion, nexus, fear, nether, chaos, disenchantment, ound
+  blindness, confusion, nexus, fear, nether, chaos, disenchantment, sound
   and shards.
 
 Robes of Permanence
@@ -554,13 +555,13 @@ Crown of Lordliness
 Helm/Crown of Seeing
   This is the great helmet or crown of the rogues. The wearer will be able
   to see invisible creatures, and will have an increased ability to locate
-  traps and secret doors. It is also rumored that the wearer of uch a helm
+  traps and secret doors. It is also rumored that the wearer of such a helm
   will not be able to be blinded.
 
 Helm of Infravision
   This helmet allows the character to see monsters even in total darkness,
-  with the ability to see heat. Note that spellbooks are the ame
-  temperature as the surroundings, and so cannot be read unless ome real
+  with the ability to see heat. Note that spellbooks are the same
+  temperature as the surroundings, and so cannot be read unless some real
   light is present. (Some monsters which are invisible to normal vision can
   be seen under infravision.)
 
@@ -627,7 +628,7 @@ Gloves of Slaying
   wearer's to-hit and to-dam values.
 
 Gloves of Agility
-  These gloves will increase the wearer's dexterity. Because of the pecial
+  These gloves will increase the wearer's dexterity. Because of the special
   nature of these gloves, magic users may wear these gloves without
   incurring a mana penalty.
 

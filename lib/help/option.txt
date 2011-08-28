@@ -127,14 +127,14 @@ Disturbance options
 Disturb whenever any monster moves ``[disturb_move]``
   Disturb the player when any monster moves, appears, or disappears. This
   includes monsters which are only visible due to telepathy, so you should
-  probably turn this option off if you want to "rest" near uch monsters.
+  probably turn this option off if you want to "rest" near such monsters.
 
 .. _disturb_near:
 
 Disturb whenever viewable monster moves ``[disturb_near]``
   Disturb the player when any viewable monster moves, whenever any monster
   becomes viewable for the first time, and also whenever any viewable
-  monster becomes no longer viewable. This option ignores the existance of
+  monster becomes no longer viewable. This option ignores the existence of
   "telepathy" for the purpose of determining whether a monster is
   "viewable". See also the `view_reduce_view`_ option.
 
@@ -182,7 +182,7 @@ Maximize effect of race/class bonuses ``[birth_maximize]``
   will probably increase your stat by more than 0/60 if it was at 18 to
   start with.) To cut a long story short and a confusing explanation
   simple, you get better starting stats in non-maximize mode, but can't get
-  as good at what you're supposed to be best at in the later tages of the
+  as good at what you're supposed to be best at in the later stages of the
   game.
 
 .. _birth_randarts:
@@ -234,7 +234,7 @@ Monsters exploit players weaknesses ``[birth_ai_cheat]``
 
 Monsters behave more intelligently (broken) ``[birth_ai_smart]``
   Monsters have a certain amount of intelligence and will use it -
-  teleporting away when low on hit points, using their more powerful pells
+  teleporting away when low on hit points, using their more powerful spells
   in preference to the less powerful spells, etc. Not all monsters are, of
   course, intelligent - but those who are are almost unkillable with this
   option on (especially if they can heal themselves).
@@ -287,13 +287,13 @@ Don't generate connected stairs ``[birth_no_stairs]``
 .. _birth_no_feelings:
 
 Don't show level feelings ``[birth_no_feelings]``
-  The "quality" of a level is never revealed, no matter how long you pend
+  The "quality" of a level is never revealed, no matter how long you spend
   on the level.
 
 .. _birth_no_selling:
 
 Items always sell for 0 gold ``[birth_no_selling]``
-  Shopkeepers will never pay you for items you sell, though they will till
+  Shopkeepers will never pay you for items you sell, though they will still
   identify unknown items for you, and will still sell you their wares. To
   balance out income in the game, gold found in the dungeon will be
   increased if this option is on.
@@ -333,8 +333,8 @@ Some platforms support "sub-windows", which are windows which can be used
 to display useful information generally available through other means. The
 best thing about these windows is that they are updated automatically
 (usually) to reflect the current state of the world. The "window options"
-can be used to pecify what should be displayed in each window. The possible
-choices should be pretty obvious.
+can be used to specify what should be displayed in each window. The 
+possible choices should be pretty obvious.
 
 Display inven/equip
   Display the player inventory (and sometimes the equipment).

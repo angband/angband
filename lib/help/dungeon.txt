@@ -18,15 +18,15 @@ which may or may not move about the dungeon, but are mostly harmful to your
 character's well being.
 
 Some symbols are used to represent more than one type of entity, and some
-ymbols are used to represent entities in more than one category. The "@"
-ymbol (by default) is used to represent the character.
+symbols are used to represent entities in more than one category. The "@"
+symbol (by default) is used to represent the character.
 
 It will not be necessary to remember all of the symbols and their meanings.
 The "slash" command (``/``) will identify any character appearing on your
 map (see ``commands.txt``).
 
 Note that you can use a "user pref file" to change any of these symbols to
-omething you are more comfortable with.
+something you are more comfortable with.
    
 
 
@@ -108,7 +108,7 @@ The Town Level
 
 The town level is where you will begin your adventure. The town consists of
 eight buildings (each with an entrance), some townspeople, and a wall which
-urrounds the town. The first time you are in town it will be daytime, but
+surrounds the town. The first time you are in town it will be daytime, but
 note that the sun rises and falls (rather instantly) as time passes.
 
 Townspeople
@@ -193,12 +193,12 @@ The Temple (``4``)
   books.
 
 The Alchemy shop (``5``)
-  The Alchemy Shop deals in all types of potions and scrolls, including tat
-  restoring potions.
+  The Alchemy Shop deals in all types of potions and scrolls, including 
+  stat restoring potions.
 
 The Magic User's Shop (``6``)
   The Magic User's Shop deals in all sorts of rings, wands, amulets, and
-  taves, as well as magic user books.
+  staves, as well as magic user books.
 
 The Black Market (``7``)
   The Black Market will sell and buy anything at extortionate prices.
@@ -221,7 +221,7 @@ Your character will enter a maze of interconnecting staircases and finally
 arrive somewhere on the first level of the dungeon. Each level of the
 dungeon is fifty feet high (thus dungeon level "Lev 1" is often called "50
 ft"), and is divided into (large) rectangular regions (several times larger
-than the screen) by permanent rock. Once you leave a level by a taircase,
+than the screen) by permanent rock. Once you leave a level by a staircase,
 you will never again find your way back to that region of that level, but
 there are an infinite number of other regions at that same "depth" that you
 can explore later. Monsters, of course, can use the stairs, and you may
@@ -229,7 +229,7 @@ eventually encounter them again, but they will not chase you up or down
 stairs.
 
 In the dungeon, there are many things to find, but your character must
-urvive many horrible and challenging encounters to find the treasure lying
+survive many horrible and challenging encounters to find the treasure lying
 about and take it safely back to the town to sell.
 
 There are two sources for light once inside the dungeon. Permanent light
@@ -241,7 +241,7 @@ out of light!
 
 A character must wield a torch or lamp in order to supply his own light. A
 torch or lamp burns fuel as it is used, and once it is out of fuel, it
-stops upplying light. You will be warned as the light approaches this
+stops supplying light. You will be warned as the light approaches this
 point. You may use the "Fuel" command (``F``) to refuel your lantern (with
 flasks of oil) or your torch (with other torches), so it is a good idea to
 carry extra torches or flasks of oil, as appropriate. There are rumours of
@@ -278,7 +278,7 @@ You are, however, limited in the total amount of weight that you can carry.
 If you exceed this value, you become slower, making it easier for monsters
 to chase you. Note that there is no upper bound on how much you can carry,
 if you do not mind being slow. Your weight "limit" is determined by your
-trength.
+strength.
 
 Many objects found within the dungeon have special commands for their use.
 Wands must be Aimed, staves must be Used, scrolls must be Read, and potions
@@ -307,12 +307,12 @@ character has previously been on. This makes the scroll very useful for
 getting back to the deeper levels of Angband. Once the scroll has been read
 it takes a while for the spell to act, so don't expect it to save you in a
 crisis. During this time the word 'recall' will appear on the bottom of the
-creen below the dungeon. Reading a second scroll before the first takes
+screen below the dungeon. Reading a second scroll before the first takes
 effect will cancel the action.
 
 You may "inscribe" any object with a textual inscription of your choice.
 These inscriptions are not limited in length, though you may not be able to
-ee the whole inscription on the item. The game applies special meaning to
+see the whole inscription on the item. The game applies special meaning to
 inscriptions containing any text of the form ``@#`` or ``@x#`` or ``!x`` or
 ``!*``, see ``command.txt``.
 
@@ -385,11 +385,11 @@ granite rock is much harder to dig through, it is much faster to follow the
 vein exactly and dig around the granite. Eventually, it becomes easier to
 imply kill monsters and discover items in the dungeon to sell, than to walk
 around digging for treasure. But, early on, mineral veins can be a
-wonderful ource of easy treasure.
+wonderful source of easy treasure.
 
 If the character has a scroll, staff, or spell of treasure location, he can
 immediately locate all strikes of treasure within a vein shown on the
-creen. This makes mining much easier and more profitable.
+screen. This makes mining much easier and more profitable.
 
 Note that a character with high strength and/or a heavy weapon does not
 need a shovel/pick to dig, but even the strongest character will benefit

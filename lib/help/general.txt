@@ -20,7 +20,7 @@ You can press Hash (``#``) [or Percent (``%``)] to go to a specific line
 You can press Slash (``/``) [or Ampersand (``&``)] to search for [or
 highlight] a string. This is case-insensitive by default, but Pling (``!``)
 toggles it to case-sensitive. Use ``#``, ``0``, ``Return``, ``/``, Return
-to restart a earch from the top of the file.
+to restart a search from the top of the file.
 
 Please press Space to view the rest of this file...
 
@@ -36,7 +36,7 @@ supplies, weapons, armor, and magical devices by buying from various shop
 owners. Then the player can descend into the Pits of Angband, where he will
 explore the many levels of the dungeon, gaining experience by killing
 fierce creatures, collecting powerful objects and valuable treasure, and
-returning to town occasionally to buy and sell upplies. Eventually, as the
+returning to town occasionally to buy and sell supplies. Eventually, as the
 player grows more experienced, he may attempt to win the game by defeating
 Morgoth, the Lord of Darkness, who resides far below the surface.
 
@@ -162,7 +162,7 @@ equipment slots but they are all currently empty.
 Press ``t`` to take something off. Note that the equipment listing is
 reduced to those objects which can actually be taken off. Press ``g`` to
 take off the armour, and then press ``e`` again. Note that the armour is no
-longer shown in the equipment. Press escape. Press ``w`` to wield omething
+longer shown in the equipment. Press escape. Press ``w`` to wield something
 and observe that the inventory listing is reduced to those objects which
 can actually be wielded or worn, press ``e`` to put the armour back on.
 
@@ -203,7 +203,7 @@ and the character then performs the actions. These actions may induce some
 changes in the virtual world. Some of these changes may be apparent to the
 character, and information about the changes is then made available to the
 player by a variety of methods, including messages, character state
-changes, or visual changes to the creen. Some changes may only be apparent
+changes, or visual changes to the screen. Some changes may only be apparent
 to the player.
 
 There are also a whole set of things that the player can do that can not
@@ -211,7 +211,7 @@ even be described in the virtual world inhabited by the character, such as
 resize windows, read online help files, modify colormaps, or change
 options. Some of these things may even affect the character in abstract
 ways, for example, the player can request that from now on all monsters
-know exactly where the character is at all times. Likewise, there are ome
+know exactly where the character is at all times. Likewise, there are some
 things that the character does on a regular basis that the player may not
 even consider, such as digesting food, or searching for traps while walking
 down a hallway.
@@ -224,7 +224,8 @@ friend's house, and I stayed up late playing Angband, and I was attacked by
 some wild dogs, and I got killed by a demon, but I made it to the high
 score list", in which the pronoun changes back and forth from the real
 world to the virtual one several times in the same sentence. So, from this
-point on you may have to eparate the player and the character for yourself.
+point on you may have to separate the player and the character for 
+yourself.
 
 So anyway, keep walking towards the entrance to the general store until you
 actually walk into it. At this point, the screen should change to the store
@@ -234,14 +235,14 @@ than twelve different objects, you can use the space or arrow keys to
 scroll the list of objects. The general store is the only tore with a fixed
 inventory, although the amount of various items may vary. One of the items
 sold here are flasks of oil. Press ``down`` to highlight the line with
-flasks of oil and press the ``p`` key to purchase ome. If you are asked how
-many you want, just hit enter. Any time you are asked a question and there
-is already something under the cursor, pressing return will accept that
-choice. Hit enter to accept the price. Many commands work inside the store,
-for example, use the ``i`` command to ee your inventory, with the new flask
-of oil. Note that your inventory is always kept sorted in a semi-logical
-order, so the indexes of some of the objects may change as your inventory
-changes.
+flasks of oil and press the ``p`` key to purchase some. If you are asked
+how many you want, just hit enter. Any time you are asked a question and 
+there is already something under the cursor, pressing return will accept 
+that choice. Hit enter to accept the price. Many commands work inside the 
+store, for example, use the ``i`` command to ee your inventory, with the 
+new flask of oil. Note that your inventory is always kept sorted in a 
+semi-logical order, so the indexes of some of the objects may change as 
+your inventory changes.
 
 Purchase a few more flasks of oil, if possible: this time, when asked how
 many you want, press ``3`` then return to buy three flasks at once. Flasks
@@ -249,10 +250,10 @@ of oil are very important for low level characters, because not only can
 they be used to fuel a lantern (when you find one), but also they can be
 ignited and thrown at monsters from a distance. So it is often a good idea
 to have a few extra flasks of oil. Press escape to leave the store. If you
-want, take time to visit the rest of the tores. One of the buildings,
+want, take time to visit the rest of the stores. One of the buildings,
 marked with an ``8``, is your "home", and is not a real store. You can drop
 things off at home and they will stay there until you return to pick them
-up. The interface is exactly the ame as a store, but there is no payment.
+up. The interface is exactly the same as a store, but there is no payment.
 
 Now move to the staircase, represented by the ``>`` symbol, and press
 ``>``, to go down the stairs. At this point, you are in the dungeon. Use
@@ -267,23 +268,23 @@ you leave one part of the dungeon, you will never find it again.
 Now look the screen. Your character may be in a lit room, represented as a
 large rectangle of illuminated floor grids (``.``), surrounded by walls. If
 you are not in a lit room, keep going back up to the town and back down
-into the dungeon until you are. Now look around. You may see ome closed
+into the dungeon until you are. Now look around. You may see some closed
 doors (``+``) or some open doors (``'``) or some open exits (``.``) in the
 walls which surround the room. If you do not, keep playing the stairway
-game until you are in such a room. This will keep the demo imple.
+game until you are in such a room. This will keep the demo simple.
 
 Now look around using the ``l`` command. You may see some monsters and/or
-ome objects in the room with you. You may see some stairs up (``<``) or ome
-stairs down (``>``). If you see any monsters, move up next to the monster,
-using the movement keys, and then try and move into the monster. This will
-cause you to attack the monster. Keep moving into the monster until you
-kill the monster, or it runs away, or you die. If you die, start a new
-game. If the monster runs away, ignore it, or chase it, but do not leave
-the room. Once all the monsters in the room are dead or gone, walk on top
-of any objects in the room. Press ``g`` to get the object, and it will be
-added to your inventory. If there are any closed doors (``+``) in the room
-walk up next to them and press ``o`` and then the direction key which would
-move you into the door, which hould attempt to "open" the door.
+some objects in the room with you. You may see some stairs up (``<``) or 
+some stairs down (``>``). If you see any monsters, move up next to the 
+monster, using the movement keys, and then try and move into the monster.
+This will cause you to attack the monster. Keep moving into the monster
+until you kill the monster, or it runs away, or you die. If you die, start
+a new game. If the monster runs away, ignore it, or chase it, but do not
+leave the room. Once all the monsters in the room are dead or gone, walk on
+top of any objects in the room. Press ``g`` to get the object, and it will
+be added to your inventory. If there are any closed doors (``+``) in the
+room walk up next to them and press ``o`` and then the direction key which
+would move you into the door, which should attempt to "open" the door.
 
 Now use the movement keys to explore the dungeon. As you leave the room,
 you will probably notice that your character cannot see nearly as far as

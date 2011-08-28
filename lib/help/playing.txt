@@ -6,7 +6,7 @@ Most of your interaction with Angband will take the form of "commands".
 Every Angband command consists of an "underlying command" plus a variety of
 optional or required arguments, such as a repeat count, a direction, or the
 index of an inventory object. Commands are normally specified by typing a
-eries of keypresses, from which the underlying command is extracted, along
+series of keypresses, from which the underlying command is extracted, along
 with any encoded arguments. You may choose how the standard "keyboard keys"
 are mapped to the "underlying commands" by choosing one of the two standard
 "keysets", the "original" keyset or the "roguelike" keyset.
@@ -48,13 +48,13 @@ the item on the floor. Pressing a lowercase letter selects the given item.
 Pressing a capital letter selects the given item after verification.
 Pressing a numeric digit ``#`` selects the first item (if any) whose
 inscription contains ``@#`` or ``@x#``, where ``x`` is the current
-"underlying command". You may only pecify items which are "legal" for the
+"underlying command". You may only specify items which are "legal" for the
 command. Whenever an item inscription contains ``!*`` or ``!x`` (with ``x``
 as above) you must verify its selection.
 
 Some commands will prompt for a direction. You may enter a "compass"
 direction using any of the "direction keys" shown below. Sometimes, you may
-pecify that you wish to use the current "target", by pressing ``t`` or
+specify that you wish to use the current "target", by pressing ``t`` or
 ``5``, or that you wish to select a new target, by pressing ``*`` (see
 "Target" below).
 
@@ -77,7 +77,7 @@ commands". For example, both keysets allow you to "walk" by simply pressing
 an "original" direction key (or a "roguelike" direction key if you are
 using the roguelike keyset), instead of using the "walk" command plus a
 direction. The roguelike keyset allows you to "run" or "alter" by simply
-holding the hift or control modifier key down while pressing a "roguelike"
+holding the shift or control modifier key down while pressing a "roguelike"
 direction key, instead of using the "run" or "alter" command plus a
 direction. Both keysets allow the use of the ``5`` key to "stand still",
 which is most convenient when using the original keyset.

@@ -95,11 +95,11 @@ X is the hit die number, when the character goes up in level.) This is
 further modified by constitution - a character with high constitution will
 get a flat bonus of a certain number of hit points per level (recalculated
 right back to level 1: if you gain an extra hit point per level, and you
-are 42nd level, you will uddenly be 42 hit points better off.)
+are 42nd level, you will suddenly be 42 hit points better off.)
 
 Each character has spell points, or mana, which limits how many spells (or
-prayers) a character can cast (or pray). The maximum number of pell points
-is derived from your class, level, and intelligence (for pells) or wisdom
+prayers) a character can cast (or pray). The maximum number of spell points
+is derived from your class, level, and intelligence (for spells) or wisdom
 (for prayers), and you can never have more spell points than the maximum.
 Spell points may be regained by resting, or by magical means. Warriors
 never have any spell points. If a character gains enough wisdom or
@@ -147,7 +147,7 @@ Elf
 
 Hobbit
   Hobbits, or Halflings, are very good at shooting, throwing, and have good
-  saving throws. They also are very good at search- ing, disarming,
+  saving throws. They also are very good at searching, disarming,
   perception, and stealth; so they make excel- lent rogues, but prefer to
   be called burglars. They will be much weaker than humans, and not good at
   melee fighting. Halflings have fair infravision. They have a strong hold
@@ -169,7 +169,7 @@ Dwarf
   Dwarves are the headstrong miners and fighters of legend. Since dungeons
   are the natural home of a dwarf, they are excellent choices for a warrior
   or priest - or indeed, that combination of the two, the paladin. Dwarves
-  tend to be tronger and tougher but slower and less intelligent than
+  tend to be stronger and tougher but slower and less intelligent than
   humans. Because they are so headstrong and are somewhat wise, they resist
   spells which are cast on them. Dwarves also have excellent infravision.
   They can never be blinded. Dwarves are excellent at digging, and can
@@ -252,7 +252,7 @@ Mage
   However, he is incredibly weak, getting few hit dice and suffering strong
   penalties to strength and constitution. Intelligence is his primary stat
   and at high levels he can cast many spells without a chance of failure.
-  There is no rule that says a mage cannot become a good fighter, but pells
+  There is no rule that says a mage cannot become a good fighter, but spells
   are his true realm and he will get fewer blows with melee weapons than
   other classes.
 
@@ -261,14 +261,14 @@ Priest
   to destroy the evil that lurks within, and if treasure just happens to
   fall into their packs, well, so much more to the glory of their church!
   Priests receive their spells from a deity, and therefore do not choose
-  which pells they will learn. They are familiar with magical devices,
+  which spells they will learn. They are familiar with magical devices,
   preferring to call them "instruments of God", but are not as good as a
-  mage in their use. Priests have great aving throws, and make decent
+  mage in their use. Priests have great saving throws, and make decent
   fighters, but they are not as good at using sharp weapons (swords and
   polearms) owing to the Church's strictures about shedding blood, so they
   are better off using blunt weapons such as maces. Wisdom is the priest's
   primary stat and at high enough levels they can cast many prayers without
-  a chance of failure. Priests have poor tealth.
+  a chance of failure. Priests have poor stealth.
 
 Rogue
   A Rogue is a character that prefers to live by his cunning, but is
@@ -278,7 +278,7 @@ Rogue
   having to fight, or sneak up and get the first blow. A rogue's perception
   is higher than any other class, and many times he will notice a trap or
   secret door before having to search. A rogue is better than warriors or
-  paladins with magical devices, but till cannot rely on their performance.
+  paladins with magical devices, but still cannot rely on their performance.
   Rogues can also learn a few spells, but not the powerful offensive spells
   mages can use, and there will always be a chance of failure even with the
   simplest spells. A rogue's primary stats are dexterity and intelligence.
@@ -289,19 +289,19 @@ Ranger
   bows. The ranger learns spells much more lowly than a mage, but is
   capable of learning all but the most powerful spells. Because a ranger is
   really a dual class character, more experience is required for him to
-  advance. A ranger has good stealth, good perception, good earching, a
+  advance. A ranger has good stealth, good perception, good searching, a
   good saving throw, and is good with magical devices. His primary stats
   are strength, intelligence and dexterity.
 
 Paladin
-  A Paladin is a warrior/priest. He is a very good fighter, econd only to
-  the warrior class, but not very good at mis- ile weapons. He receives
+  A Paladin is a warrior/priest. He is a very good fighter, second only to
+  the warrior class, but not very good at missile weapons. He receives
   prayers at a slower pace then the priest, but can use all but the most
   powerful prayers. Because a paladin is really a dual class character, it
   requires more experience to advance him. A paladin lacks much in the way
-  of abilities. He is poor at stealth, per- ception, searching, and magical
-  devices. He has a decent aving throw due to his divine alliance. His
-  primary stats are strength and wisdom. 
+  of abilities. He is poor at stealth, perception, searching, and magical
+  devices. He has a decent saving throw due to his divine alliance. His
+  primary stats are strength and wisdom.
 
 Stats
 =====
@@ -318,13 +318,13 @@ temporarily drained by some monster attacks.
 Strength
   Strength is important in fighting with weapons and in melee combat. A
   high strength can improve your chances of hitting as well as the amount
-  of damage done with each hit. Char- acters with low strengths may receive
+  of damage done with each hit. Characters with low strengths may receive
   penalties. Strength raises the amount of weight you can carry before
   being slowed. It also allows you to get extra blows with heavier weapons.
   Strength is one of the most important stats in the beginning of the game.
  
 Intelligence
-  Intelligence affects the spellcasting abilities of mage-like pellcasters:
+  Intelligence affects the spellcasting abilities of mage-like spellcasters:
   mages, rangers, and rogues. Intelligence will affect the number of spells
   you may learn each level as well as the number of spell points you
   receive. Intelligence is the most important stat for mages. A high
@@ -375,13 +375,13 @@ Infravision
   Infravision is the ability to see heat sources. Since most of the dungeon
   is cool or cold, infravision will not allow the player to see walls and
   objects. Infravision will allow a character to see any warm-blooded
-  creatures up to a cer- tain distance. This ability works equally well
-  with or with- out a light source. However, some of Angband's creatures
-  are cold-blooded, and will not be detected unless lit up by a light
-  source. All non-human races have innate infravision. Humans (including
-  Dunedain) cannot gain infravision unless it is magically enhanced.
-  Infravision does not increase with character level, and is purely
-  dependent on race and on magical equipment.
+  creatures up to a certain distance. This ability works equally well with
+  or without a light source. However, some of Angband's creatures are
+  cold-blooded, and will not be detected unless lit up by a light source.
+  All non-human races have innate infravision. Humans (including Dunedain)
+  cannot gain infravision unless it is magically enhanced. Infravision does
+  not increase with character level, and is purely dependent on race and on
+  magical equipment.
  
 Fighting
   Fighting is the ability to hit and do damage with weapons or fists.
@@ -401,14 +401,14 @@ Shooting Ability
 Saving Throws
   A Saving Throw is the ability of a character to resist the effects of a
   spell cast on him by another person/creature. This does not include
-  spells cast on the player by his own tupidity, such as quaffing a nasty
+  spells cast on the player by his own stupidity, such as quaffing a nasty
   potion. This ability increases with the level of the character, but then
   most high level creatures are better at casting spells, so it tends to
-  even out. A high wisdom also increases this abil- ity. It is possible to
+  even out. A high wisdom also increases this ability. It is possible to
   get 100% saving throw, making you immune to many attacks.
  
 Stealth
-  The ability to move silently about is very useful. Charac- ters with good
+  The ability to move silently about is very useful. Characters with good
   stealth can usually surprise their opponents, gaining the first blow.
   Also, creatures may fail to notice a stealthy character entirely,
   allowing a player to avoid certain fights. This skill is based entirely
@@ -539,7 +539,7 @@ Point-based
   This is the recommended birth method.
 
 Standard roller
-  The standard roller simply rolls three six-sided dice for each tat,
+  The standard roller simply rolls three six-sided dice for each stat,
   leaving everything to chance. You can press 'r' to re-roll the dice, or
   simply accept what luck has offered.
 
@@ -553,7 +553,7 @@ on some machines, the character name determines the filename that will be
 used to save the character to disk. The character name is used on the high
 score list.
 
-You can play a dynasty of characters. If you use a roman numeral at the end
+You can play a dynasty of characters. If you use a Roman numeral at the end
 of your character name (like "Fred I" or "Pimplesnarg XVI"), the game will
 automatically increment the numeral each time you die.
 

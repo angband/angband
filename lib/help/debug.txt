@@ -110,7 +110,7 @@ Summon monster (``n``)
   that number nearby instead of prompting you for a name.
 		
 Summon random monster (``s``)
-  Summons a random monster next to you. If given a command-count, ummons
+  Summons a random monster next to you. If given a command-count, summons
   that many monsters instead.
 		
 Zap monsters (``z``)

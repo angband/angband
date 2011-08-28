@@ -4,7 +4,7 @@ Customising the game
 
 Angband supports multiple customizations. These can vary from alternative
 methods for selecting objects, keymaps for different commands, changing the
-visuals (using graphical tiles), creating subwindows, and aving
+visuals (using graphical tiles), creating subwindows, and saving
 customizations for use on future characters.
 
 Special Keys
@@ -53,7 +53,7 @@ Command Counts
 
 Some commands can be executed a fixed number of times by preceding them
 with a count. Counted commands will execute until the count expires, until
-you type any character, or until something ignificant happens, such as
+you type any character, or until something significant happens, such as
 being attacked. Thus, a counted command doesn't work to attack another
 creature. While the command is being repeated, the number of times left to
 be repeated will flash by on the line at the bottom of the screen.
@@ -66,8 +66,8 @@ after the count and you will be prompted for the command.
 Counted commands are very useful for time consuming commands, as they
 automatically terminate on success, or if you are attacked. You may also
 terminate any counted command (or resting or running), by typing any
-character. This character is ignored, but it is afest to use a ``SPACE`` or
-``ESCAPE`` which are always ignored as commands in case you type the
+character. This character is ignored, but it is safest to use a ``SPACE`` 
+or ``ESCAPE`` which are always ignored as commands in case you type the
 command just after the count expires.
 
 Squelch settings
@@ -140,7 +140,7 @@ can also make an inscription ``@x#`` will act like ``@#`` but only when the
 current "Angband command" is ``x``. Thus you can put ``@z4`` on a rod and
 ``@u4`` on a taff, and then use both ``z4`` and ``u4`` as desired.
 
-Perhaps the most commonly inscribed items are spellbooks. Casting pells
+Perhaps the most commonly inscribed items are spellbooks. Casting spells
 often takes at least 3 commands. The cast commmand (``m`` or ``p``) the
 book selection and the spell selection. Then you may need to select a
 target. For example, if you are a make and the beginner's spellbook is the
@@ -151,7 +151,7 @@ the best case scenario and exceedingly dangerous in the worst. To avoid
 this, it's very useful to inscribe your spellbooks with ``@m1``, ``@m2``,
 ``@m3`` etc. Then if you lose your first spellbook and attempt to cast
 magic missile by using ``m1a``, you will not accidentally select the wrong
-spellbook, if the first pellbook is not in your inventory.
+spellbook, if the first spellbook is not in your inventory.
 
 You can also use inscriptions to force the game to prompt you on whether or
 not you want to use that object. Any object containing ``!x`` in its
@@ -179,8 +179,8 @@ There are many ways to load a user pref file, and in fact, some of these
 files are automatically loaded for you by the game. All of the files are
 kept in the "lib/user/" directory, though you may have to use one of the
 command line arguments to redirect this directory, especially on multiuser
-ystems. You may also enter single user pref commands directly, using the
-pecial "Enter a user pref command" command, activated by "double quote".
+systems. You may also enter single user pref commands directly, using the
+special "Enter a user pref command" command, activated by "double quote".
 You may have to use the "redraw" command (``^R``) after changing certain of
 the aspects of the game, to allow Angband to adapt to your changes.
 
@@ -209,7 +209,7 @@ Subwindows
 ==========
 
 In addition to the main window, you can create additional window displays
-that have other secondary information on them. You can access the ubwindow
+that have other secondary information on them. You can access the subwindow
 menu by using ``=`` then ``w``. You can select what windows to display. You
 may then need to make the window visible using the "window" pull down menu
 from the menu bar. There are a variety of subwindow choices and you should

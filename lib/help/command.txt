@@ -10,8 +10,8 @@ information about alternative methods of specifying the command in each
 keyset, when needed.
 
 Some commands use the "repeat count" to automatically repeat the command
-everal times, while others use the "repeat count" to specify a "quantity"
-for the command, and still others use it as an "argument" of ome kind.
+several times, while others use the "repeat count" to specify a "quantity"
+for the command, and still others use it as an "argument" of some kind.
 
 Most commands take no "energy" to perform, while other commands only take
 energy when they cause the world to change in some way. For example,
@@ -75,7 +75,7 @@ Take off equipment (``t``) or Take off equipment (``T``)
   taken off until the curse is removed. If there is no room in your
   inventory for the item, your pack will overflow and you will drop the
   item after taking it off. You may also remove ammunition from your quiver
-  with this command. This command takes ome energy.
+  with this command. This command takes some energy.
 
 Movement Commands
 =================
@@ -105,9 +105,9 @@ Run (``.``) or Run (``,``)
   This command will move in the given direction, following any bends in the
   corridor, until you either have to make a "choice" between two directions
   or you are disturbed. You can configure what will disturb you by setting
-  the disturbance options. You may also use hift plus the "roguelike"
-  direction keys (roguelike keyset), or hift plus the "original" direction
-  keys on the keypad (both keysets, ome machines) to run in a direction.
+  the disturbance options. You may also use shift plus the "roguelike"
+  direction keys (roguelike keyset), or shift plus the "original" direction
+  keys on the keypad (both keysets, some machines) to run in a direction.
   This command may take an argument, requires a direction, and takes some
   energy.
 
@@ -160,11 +160,11 @@ Searching Commands
 
 Search (``s``)
   This command can be used to locate hidden traps and secret doors in the
-  spaces adjacent to the player. More than a single turn of earching will
+  spaces adjacent to the player. More than a single turn of searching will
   be required in most cases, so it is affected by the 'always repeat'
   option. You should always search a chest before trying to open it, since
   they are generally trapped. This command can take a count, which is
-  useful if you are fairly sure of finding omething eventually, since the
+  useful if you are fairly sure of finding something eventually, since the
   command stops as soon as anything is found. This command takes some
   energy.
 
@@ -184,7 +184,7 @@ Tunnel (``T``) or Tunnel (``^T``)
   Tunnelling or mining is a very useful art. There are many kinds of rock,
   with varying hardness, including permanent rock (permanent), granite
   (very hard), quartz veins (hard), magma veins (soft), and rubble (very
-  soft). Quartz and Magma veins may be displayed in a pecial way, and may
+  soft). Quartz and Magma veins may be displayed in a special way, and may
   sometimes contain treasure, in which case they will be displayed in a
   different way. Rubble sometimes covers an object. It is hard to tunnel
   unless you are wielding a heavy weapon or a shovel or a pick. Tunnelling
@@ -202,8 +202,8 @@ Open a door or chest (``o``)
 
 Close a door (``c``)
   Non-intelligent and some other creatures cannot open doors, so hutting
-  doors can be quite valuable. Furthermore, monsters cannot ee you behind
-  closed doors, so closing doors may allow you to buy ome time without
+  doors can be quite valuable. Furthermore, monsters cannot see you behind
+  closed doors, so closing doors may allow you to buy some time without
   being attacked. Broken doors cannot be closed. Bashing a door open may
   break it. This command may take a count, requires a direction, and takes
   some energy.
@@ -253,7 +253,7 @@ Browse a book (``b``) or Peruse a book (``P``)
   Only mages, rogues, and rangers can read magic books, and only priests
   and paladins can read prayer books. Warriors cannot read any books. When
   this command is used, all of the spells or prayers contained in the
-  selected book are displayed, along with information uch as their level,
+  selected book are displayed, along with information such as their level,
   the amount of mana required to cast them, and whether or not you know the
   spell or prayer.
 
@@ -536,7 +536,7 @@ Character Description (``C``)
   Brings up a full description of your character, including your kill
   levels, your current and potential stats, and various other information.
   From this screen, you can change your name or use the file character
-  description command to save your character tatus to a file. That command
+  description command to save your character status to a file. That command
   saves additional information, including your background, your inventory,
   and the contents of your house.
 
@@ -548,10 +548,10 @@ Check knowledge (``~``)
   "known" to the player. With "preserve" mode, an artifact can never be
   "lost" until it is "known" to the player. In either case, any "known"
   artifacts not in the possession of the player will never again be
-  "generated". The "uniques" are pecial "unique" monsters which can only be
-  killed once per game. Certain "objects" come in "flavors", and you must
-  determine the effect of each "flavor" once for each such type of object,
-  and this command will allow you to display all "known" flavors.
+  "generated". The "uniques" are special "unique" monsters which can only
+  be killed once per game. Certain "objects" come in "flavors", and you 
+  must determine the effect of each "flavor" once for each such type of 
+  object, and this command will allow you to display all "known" flavors.
   Inscribing items in this list will cause you to similarly inscribe all
   similar items you find from this point on.
 
@@ -621,7 +621,7 @@ Help (``?``)
 
 Identify Symbol (``/``)
   Use this command to find out what a character stands for. For instance,
-  by pressing ``/.``, you can find out that the ``.`` ymbol tands for a
+  by pressing ``/.``, you can find out that the ``.`` symbol stands for a
   floor spot. When used with a symbol that represents creatures, the this
   command will tell you only what class of creature the symbol stands for,
   not give you specific information about a creature you can see. To get
@@ -638,9 +638,9 @@ Identify Symbol (``/``)
   recall details. If you answer yes, information about the creatures you
   have encountered with that symbol is shown in the Recall window if
   available, or on the screen if not. You can also answer ``k`` to see the
-  list sorted by number of kills, or ``p`` to ee the list sorted by dungeon
-  level the monster is normally found on. Pressing ``ESCAPE`` at any point
-  will exit this command.
+  list sorted by number of kills, or ``p`` to see the list sorted by 
+  dungeon level the monster is normally found on. Pressing ``ESCAPE`` at 
+  any point will exit this command.
 
 Game Version (``V``)
   This command will tell you what version of Angband you are using. For
