@@ -22,7 +22,7 @@
 
 /* Default creator signature */
 #ifndef ANGBAND_CREATOR
-# define ANGBAND_CREATOR 'A330'
+# define ANGBAND_CREATOR 'ANGB'
 #endif
 
 /* Mac headers */
@@ -92,7 +92,6 @@ static NSFont *default_font;
     
     /* Our array of views */
     NSMutableArray *angbandViews;
-    IBOutlet AngbandView *initialAngbandView;
     
     /* The buffered image  (either CGLayerRef or NSImage) */
 #if BUFFER_WITH_CGLAYER
@@ -114,9 +113,6 @@ static NSFont *default_font;
     /* The size of one tile */
     NSSize tileSize;
     
-    /* If our font is not mono, this contains our idea of what the preferred advance should be. */
-    CGFloat preferredGlyphAdvance;
-    
     /* Font's descender */
     CGFloat fontDescender;
     
@@ -135,70 +131,82 @@ static NSFont *default_font;
 /* Called at initialization to set the term */
 - (void)setTerm:(term *)t;
 
+/* Called when the context is going down. */
 - (void)dispose;
 
+/* Returns the scale factor, that is, the scaling between our base logical coordinates and the image size. */
 - (NSSize)scaleFactor;
 
-- (NSSize)unscaledSize;
+/* Returns the size of the image. */
+- (NSSize)imageSize;
 
-- (CGSize)preferredGlyphAdvance;
-
-- (const CGGlyph *)glyphArray;
-- (const CGFloat *)glyphWidthArray;
-
-- (void)drawGlyphAtIndex:(unsigned int)idx inRect:(NSRect)tile;
-
-- (CGContextRef)lockFocus;
-- (CGContextRef)lockFocusUnscaled;
-- (void)unlockFocus;
-
+/* Return the rect for a tile at given coordinates. */
 - (NSRect)rectInImageForTileAtX:(int)x Y:(int)y;
 
-- (int)termIndex;
+/* Draw the glyph at the given index in the array into the given tile rect. */
+- (void)drawGlyphAtIndex:(unsigned int)idx inRect:(NSRect)tile;
 
-//private
-- (void)updateImage;
+/* Locks focus on the Angband image, and scales the CTM appropriately. */
+- (CGContextRef)lockFocus;
 
-- (void)requestRedraw;
-- (void)requestActivate;
+/* Locks focus on the Angband image but does NOT scale the CTM. Appropriate for drawing hairlines. */
+- (CGContextRef)lockFocusUnscaled;
 
-- (NSArray *)angbandViews;
-- (void)addAngbandView:(AngbandView *)view;
+/* Unlocks focus. */
+- (void)unlockFocus;
 
-- (void)angbandViewDidScale:(AngbandView *)view;
-
-- (NSWindow *)primaryWindow;
+/* Returns the primary window for this angband context, creating it if necessary */
 - (NSWindow *)makePrimaryWindow;
 
+/* Called to add a new Angband view */
+- (void)addAngbandView:(AngbandView *)view;
+
+/* Make the context aware that one of its views changed size */
+- (void)angbandViewDidScale:(AngbandView *)view;
+
+/* Order the context's primary window frontmost */
 - (void)orderFront;
+
+/* Order the context's primary window out */
 - (void)orderOut;
+
+/* Return whether the context's primary window is ordered in or not */
 - (BOOL)isOrderedIn;
 
+/* Invalidate the whole image */
 - (void)setNeedsDisplay:(BOOL)val;
+
+/* Invalidate part of the image, with the rect expressed in base coordinates */
 - (void)setNeedsDisplayInBaseRect:(NSRect)rect;
+
+/* Display (flush) our Angband views */
 - (void)displayIfNeeded;
 
+/* Called from the view to indicate that it is starting or ending live resize */
 - (void)viewWillStartLiveResize:(AngbandView *)view;
 - (void)viewDidEndLiveResize:(AngbandView *)view;
 
-// Some class methods
+/* Class methods */
+
+/* Begins an Angband game. This is the entry point for starting off. */
 + (void)beginGame;
+
+/* Ends an Angband game. */
 + (void)endGame;
 
-
-//private
+/* Internal method */
 - (AngbandView *)activeView;
 
 @end
 
-/* To indicate that a grid element contains a picture, we store 0xFF. */
+/* To indicate that a grid element contains a picture, we store 0xFFFF. */
 #define NO_OVERDRAW ((uint16_t)(0xFFFF))
 
 /* Here is some support for rounding to pixels in a scaled context */
 static double push_pixel(double pixel, double scale, BOOL increase)
 {
     double scaledPixel = pixel * scale;
-    /* Have some tolerance */
+    /* Have some tolerance! */
     double roundedPixel = round(scaledPixel);
     if (fabs(roundedPixel - scaledPixel) <= .0001)
     {
@@ -328,6 +336,7 @@ static bool initialized = FALSE;
 + (NSImage *)angbandImage:(NSString *)name;
 @end
 
+/* The NSView subclass that draws our Angband image */
 @interface AngbandView : NSView
 {
     IBOutlet AngbandContext *angbandContext;
@@ -343,6 +352,7 @@ static bool initialized = FALSE;
 
 @implementation NSImage (AngbandImages)
 
+/* Returns an image in the resource directoy of the bundle containing the Angband view class. */
 + (NSImage *)angbandImage:(NSString *)name
 {
     NSBundle *bundle = [NSBundle bundleForClass:[AngbandView class]];
@@ -355,6 +365,7 @@ static bool initialized = FALSE;
 
 @end
 
+
 @implementation AngbandContext
 
 - (NSFont *)selectionFont
@@ -365,16 +376,6 @@ static bool initialized = FALSE;
 - (BOOL)useLiveResizeOptimization
 {
     return inLiveResize && graf_mode != GRAF_MODE_NONE;
-}
-
-- (int)termIndex
-{
-    int i;
-    for (i=0; i < ANGBAND_TERM_MAX; i++)
-    {
-        if (angband_term[i] == self->terminal) return i;
-    }
-    return -1;
 }
 
 - (NSSize)baseSize
@@ -402,7 +403,7 @@ static bool initialized = FALSE;
 }
 
 // qsort-compatible compare function for CGSizes
-static int compareAdvances(const void *ap, const void *bp)
+static int compare_advances(const void *ap, const void *bp)
 {
     const CGSize *a = ap, *b = bp;
     return (a->width > b->width) - (a->width < b->width);
@@ -437,7 +438,7 @@ static int compareAdvances(const void *ap, const void *bp)
     }
     
     // For good non-mono-font support, use the median advance. Start by sorting all advances.
-    qsort(advances, GLYPH_COUNT, sizeof *advances, compareAdvances);
+    qsort(advances, GLYPH_COUNT, sizeof *advances, compare_advances);
     
     // Skip over any initially empty run
     size_t startIdx;
@@ -453,14 +454,11 @@ static int compareAdvances(const void *ap, const void *bp)
         medianAdvance = advances[(startIdx + GLYPH_COUNT)/2].width;
     }
     
-    // This is our preferred advance
-    preferredGlyphAdvance = medianAdvance;
-    
     // Record the descender
     fontDescender = [screenFont descender];
     
     // Record the tile size. Note that these are typically fractional values - which seems sketchy, but we end up scaling the heck out of our view anyways, so it seems to not matter.
-    tileSize.width = preferredGlyphAdvance;
+    tileSize.width = medianAdvance;
     tileSize.height = [screenFont ascender] - [screenFont descender];
 }
 
@@ -471,6 +469,7 @@ static int compareAdvances(const void *ap, const void *bp)
     AngbandView *activeView = [self activeView];
     if (activeView)
     {
+        /* If we are in live resize, draw as big as the screen, so we can scale nicely to any size. If we are not in live resize, then use the bounds of the active view. */
         NSScreen *screen;
         if ([self useLiveResizeOptimization] && (screen = [[activeView window] screen]) != NULL)
         {
@@ -505,12 +504,6 @@ static int compareAdvances(const void *ap, const void *bp)
     [[NSColor blackColor] set];
     NSRectFill((NSRect){NSZeroPoint, [self baseSize]});
     [self unlockFocus];
-}
-
-- (void)requestActivate
-{
-    if (! self->terminal) return;
-    Term_activate(terminal);
 }
 
 - (void)requestRedraw
@@ -569,21 +562,7 @@ static int compareAdvances(const void *ap, const void *bp)
 #endif
 }
 
-- (CGSize)preferredGlyphAdvance
-{
-    return CGSizeMake(preferredGlyphAdvance, 0);
-}
-
-- (const CGGlyph *)glyphArray
-{
-    return glyphArray;
-}
-
-- (const CGFloat *)glyphWidthArray
-{
-    return glyphWidths;
-}
-
+/* If we're trying to limit ourselves to a certain number of frames per second, then compute how long it's been since we last drew, and then wait until the next frame has passed. */
 - (void)throttle
 {
     if (frames_per_second > 0)
@@ -603,18 +582,20 @@ static int compareAdvances(const void *ap, const void *bp)
 /* This is what our views call to get us to draw to the window */
 - (void)drawRect:(NSRect)rect inView:(NSView *)view
 {
-    
+    /* Take this opportunity to throttle so we don't flush faster than desird. */
     BOOL viewInLiveResize = [view inLiveResize];
     if (! viewInLiveResize) [self throttle];
     
 #if BUFFER_WITH_CGLAYER
+    /* With a GLayer, use CGContextDrawLayerInRect */
     CGContextRef context = [[NSGraphicsContext currentContext] graphicsPort];
     NSRect bounds = [view bounds];
     if (viewInLiveResize) CGContextSetInterpolationQuality(context, kCGInterpolationLow);
     CGContextSetBlendMode(context, kCGBlendModeCopy);
-    CGContextDrawLayerInRect(context, *(CGRect *)&bounds, angbandLayer);
+    CGContextDrawLayerInRect(context, *(CGRect *)&bounds, angbandLayer); 
     if (viewInLiveResize) CGContextSetInterpolationQuality(context, kCGInterpolationDefault);
 #else
+    /* NSImage just draws it. */
     [angbandImage drawInRect:[view bounds] fromRect:NSZeroRect operation:NSCompositeCopy fraction:1.];
 #endif
 }
@@ -627,8 +608,9 @@ static int compareAdvances(const void *ap, const void *bp)
     
     CGSize advance = CGSizeMake(glyphWidths[idx], 0);
     CGGlyph glyph = glyphArray[idx];
-    double compressionRatio = 1.0;
     
+    /* If our font is not monospaced, our tile width is deliberately not big enough for every character. In that event, if our glyph is too wide, we need to compress it horizontally. Compute the compression ratio. 1.0 means no compression. */
+    double compressionRatio;
     if (advance.width <= NSWidth(tile))
     {
         /* Our glyph fits, so we can just draw it, possibly with an offset */
@@ -669,6 +651,7 @@ static int compareAdvances(const void *ap, const void *bp)
     }
 }
 
+/* Indication that we're redrawing everything, so get rid of the overdraw cache. */
 - (void)clearOverdrawCache
 {
     bzero(charOverdrawCache, self->cols * self->rows * sizeof *charOverdrawCache);
@@ -696,11 +679,11 @@ static int compareAdvances(const void *ap, const void *bp)
     [NSGraphicsContext restoreGraphicsState];
 }
 
-- (NSSize)unscaledSize
+- (NSSize)imageSize
 {
     /* Return the size of our layer */
     CGSize result = CGLayerGetSize(angbandLayer);
-    return *(NSSize *)&result;
+    return NSMakeSize(result.width, result.height);
 }
 
 #else
@@ -722,7 +705,7 @@ static int compareAdvances(const void *ap, const void *bp)
     [angbandImage unlockFocus];
 }
 
-- (NSSize)unscaledSize
+- (NSSize)imageSize
 {
     /* Return the image size */
     return [angbandImage size];
@@ -742,7 +725,7 @@ static int compareAdvances(const void *ap, const void *bp)
 
 - (NSRect)rectInImageForTileAtX:(int)x Y:(int)y
 {
-    // Angband treats 0, 0 as upper left; we treat it as lower right
+    /* Angband treats 0, 0 as upper left; we treat it as lower right */
     int flippedY = rows - y - 1;
     return NSMakeRect(x * tileSize.width + borderSize.width, flippedY * tileSize.height + borderSize.height, tileSize.width, tileSize.height);
 }
@@ -750,21 +733,21 @@ static int compareAdvances(const void *ap, const void *bp)
 - (void)setSelectionFont:(NSFont*)font
 {
     
-    // Record the new font
+    /* Record the new font */
     [font retain];
     [angbandViewFont release];
     angbandViewFont = font;
     
-    // Update our glyph info 
+    /* Update our glyph info */
     [self updateGlyphInfo];
     
-    // Update our image
+    /* Update our image */
     [self updateImage];
     
-    // Clear our overdraw cache
+    /* Clear our overdraw cache */
     [self clearOverdrawCache];
     
-    // Get redrawn
+    /* Get redrawn */
     [self requestRedraw];
 }
 
@@ -785,6 +768,7 @@ static int compareAdvances(const void *ap, const void *bp)
         /* Allocate our array of views */
         angbandViews = [[NSMutableArray alloc] init];
         
+        /* Make the image. Since we have no views, it'll just be a puny 1x1 image. */
         [self updateImage];        
     }
     return self;
@@ -918,11 +902,6 @@ static int compareAdvances(const void *ap, const void *bp)
     }
 }
 
-- (NSArray *)angbandViews
-{
-    return angbandViews;
-}
-
 - (void)addAngbandView:(AngbandView *)view
 {
     if (! [angbandViews containsObject:view])
@@ -934,13 +913,7 @@ static int compareAdvances(const void *ap, const void *bp)
     }
 }
 
-- (void)awakeFromNib
-{
-    if (initialAngbandView) [self addAngbandView:initialAngbandView];
-}
-
-/* we have this notion of an "active" AngbandView, which is the largest - the idea being that when the user hits Test in System Preferences, we don't want to keep driving the AngbandView in the background.  Our active AngbandView is the widest - that's a hack all right */
-
+/* We have this notion of an "active" AngbandView, which is the largest - the idea being that in the screen saver, when the user hits Test in System Preferences, we don't want to keep driving the AngbandView in the background.  Our active AngbandView is the widest - that's a hack all right. Mercifully when we're just playing the game there's only one view. */
 - (AngbandView *)activeView
 {
     if ([angbandViews count] == 1)
@@ -1007,17 +980,15 @@ static NSMenuItem *superitem(NSMenuItem *self)
     }
 }
 
-- (NSWindow *)primaryWindow
-{
-    return primaryWindow;
-}
-
 - (NSWindow *)makePrimaryWindow
 {
     if (! primaryWindow)
     {
-        /* Assume 16 pixels per tile, 24x80 tiles. This may get changed later but is a reasonable default. */
-        NSRect contentRect = NSMakeRect(0, 0, 80*16, 24*16);
+        /* The base size is quite small, so double its width and height as an initial guess */
+        NSRect contentRect = {NSZeroPoint, [self baseSize]};
+        contentRect.size.width *= 2;
+        contentRect.size.height *= 2;
+        
         primaryWindow = [[NSWindow alloc] initWithContentRect:contentRect styleMask:NSTitledWindowMask | NSResizableWindowMask | NSMiniaturizableWindowMask backing:NSBackingStoreBuffered defer:YES];
         
         /* Not to be released when closed */
@@ -1032,6 +1003,9 @@ static NSMenuItem *superitem(NSMenuItem *self)
         
         /* We are its delegate */
         [primaryWindow setDelegate:self];
+        
+        /* Update our image, since this is probably the first angband view we've gotten. */
+        [self updateImage];
     }
     return primaryWindow;
 }
@@ -1051,15 +1025,6 @@ static NSMenuItem *superitem(NSMenuItem *self)
     [[[angbandViews lastObject] window] orderOut:self];
 }
 
-- (NSSize)imageSize
-{
-#if BUFFER_WITH_CGLAYER
-    CGSize size = CGLayerGetSize(angbandLayer);
-    return NSMakeSize(size.width, size.height);
-#else
-    return [angbandImage size];
-#endif
-}
 
 - (NSRect)convertBaseRect:(NSRect)rect toView:(NSView *)angbandView
 {
@@ -1171,7 +1136,7 @@ Boolean open_when_ready = FALSE;
 /*** Some generic functions ***/
 
 /* Sets an Angband color at a given index */
-static void setColorForIndex(int idx)
+static void set_color_for_index(int idx)
 {
     u16b rv, gv, bv;
     
@@ -1522,7 +1487,7 @@ static errr Term_xtra_cocoa(int n, int v)
         {        
             [angbandContext lockFocusUnscaled];
             [[NSColor blackColor] set];
-            NSRect imageRect = {NSZeroPoint, [angbandContext unscaledSize]};            
+            NSRect imageRect = {NSZeroPoint, [angbandContext imageSize]};            
             NSRectFillUsingOperation(imageRect, NSCompositeCopy);
             [angbandContext unlockFocus];
             [angbandContext clearOverdrawCache];
@@ -1729,10 +1694,7 @@ static errr Term_pict_cocoa(int x, int y, int n, const byte *ap, const char *cp,
             {
                 draw_image_tile(pict_image, sourceRect, destinationRect, NSCompositeCopy);
             }
-        }
-        
-        //CGContextSetRGBStrokeColor(context, 1., .2, .2, 1.);
-        //CGContextStrokeRectWithWidth(context, *(CGRect*)&destinationRect, .3);
+        }        
     }
     
     [angbandContext unlockFocus];
@@ -1822,9 +1784,7 @@ static errr term_text_cocoa(int x, int y, int n, byte a, const char *cp)
                     byte color = previouslyDrawnVal >> 8;
                     unsigned char index = previouslyDrawnVal & 0xFF;
                     
-                    setColorForIndex(color);
-                    //CGContextSetTextPosition(ctx, overdrawRect.origin.x + tileOffsetX, overdrawRect.origin.y + tileOffsetY);
-                    //CGContextShowGlyphsWithAdvances(ctx, glyphLookupTable + index, &advance, 1);
+                    set_color_for_index(color);
                     [angbandContext drawGlyphAtIndex:index inRect:overdrawRect];
                 }
             }
@@ -1832,7 +1792,7 @@ static errr term_text_cocoa(int x, int y, int n, byte a, const char *cp)
     }
     
     /* Set the color */
-    setColorForIndex(a);
+    set_color_for_index(a);
     
     /* Draw each */
     NSRect rectToDraw = charRect;
@@ -2197,7 +2157,7 @@ static errr cocoa_get_cmd(cmd_context context, bool wait)
 }
 
 /* Return the directory into which we put data (save and config) */
-static NSString *getDataDirectory(void)
+static NSString *get_data_directory(void)
 {
     return [@"~/Documents/Angband/" stringByExpandingTildeInPath];
 }
@@ -2532,7 +2492,7 @@ static void initialize_file_paths(void)
     strlcat(libpath, "/", sizeof libpath);
     
     /* Get the path to the Angband directory in ~/Documents */
-    NSString *angbandBase = getDataDirectory();
+    NSString *angbandBase = get_data_directory();
     [angbandBase getFileSystemRepresentation:basepath maxLength:sizeof basepath];
     strlcat(basepath, "/", sizeof basepath);
     
@@ -2623,7 +2583,7 @@ static void initialize_file_paths(void)
     NSString* startingDirectory;
     
     /* Get where we think the save files are */
-    startingDirectory = [getDataDirectory() stringByAppendingPathComponent:@"/save/"];
+    startingDirectory = [get_data_directory() stringByAppendingPathComponent:@"/save/"];
     
     /* Get what we think the default save file name is. Deafult to the empty string. */
     NSString *savefileName = [[NSUserDefaults angbandDefaults] stringForKey:@"SaveFile"];
@@ -2660,11 +2620,6 @@ static void initialize_file_paths(void)
     }
     
     [pool drain];
-}
-
-- (IBAction)closeGame:sender
-{
-    
 }
 
 - (IBAction)saveGame:sender
@@ -2733,6 +2688,7 @@ static void initialize_file_paths(void)
     }
 }
 
+/* Delegate method that gets called if we're asked to open a file. */
 - (BOOL)application:(NSApplication *)sender openFiles:(NSArray *)filenames
 {
     /* Can't open a file once we've started */
@@ -2747,6 +2703,10 @@ static void initialize_file_paths(void)
     
     /* Success, remember to load it */
     cmd.command = CMD_LOADFILE;
+    
+    /* Wake us up in case this arrives while we're sitting at the Welcome screen! */
+    wakeup_event_loop();
+    
     return YES;
 }
 
