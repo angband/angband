@@ -2129,7 +2129,7 @@ static errr get_cmd_init(void)
     if (cmd.command == CMD_NULL)
     {
         /* Prompt the user */ 
-        prt("[Choose 'New', 'Open' or 'Import' from the 'File' menu]", 23, 11);
+        prt("[Choose 'New' or 'Open' from the 'File' menu]", 23, 17);
         Term_fresh();
         
         while (cmd.command == CMD_NULL) {
@@ -2710,10 +2710,7 @@ static void initialize_file_paths(void)
     return YES;
 }
 
-
 @end
-
-
 
 int main(int argc, char* argv[])
 {
