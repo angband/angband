@@ -1225,8 +1225,8 @@ static void Term_init_cocoa(term *t)
     /* Tell it about its term. Do this after we've sized it so that the sizing doesn't trigger redrawing and such. */
     [context setTerm:t];
     
-    /* Order front */
-    [context orderFront];
+    /* Only order front if it's the first term. Other terms will be ordered front from update_term_visibility(). This is to work around a problem where Angband aggressively tells us to initialize terms that don't do anything! */
+    if (t == angband_term[0]) [context orderFront];
     
     NSEnableScreenUpdates();
     
@@ -1325,7 +1325,7 @@ static CGImageRef create_angband_image(NSString *name)
 /*
  * React to changes
  */
-static errr Term_xtra_mac_react(void)
+static errr Term_xtra_cocoa_react(void)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     AngbandContext *angbandContext = Term->data;
@@ -1500,7 +1500,7 @@ static errr Term_xtra_cocoa(int n, int v)
         case TERM_XTRA_REACT:
         {
             /* React to changes */
-            return (Term_xtra_mac_react());
+            return (Term_xtra_cocoa_react());
         }
             
             /* Delay (milliseconds) */
