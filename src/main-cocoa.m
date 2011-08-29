@@ -55,6 +55,14 @@ enum
     AngbandEventWakeup = 1
 };
 
+/* Redeclare some 10.7 constants so we can build on 10.6 */
+enum
+{
+    Angband_NSWindowCollectionBehaviorFullScreenPrimary = 1 << 7,
+    Angband_NSWindowCollectionBehaviorFullScreenAuxiliary = 1 << 8
+};
+
+
 /* Delay handling of pre-emptive "quit" event */
 static BOOL quit_when_ready = FALSE;
 
@@ -1210,6 +1218,21 @@ static void Term_init_cocoa(term *t)
     else
     {
         [window setTitle:[NSString stringWithFormat:@"Term %d", termIdx]];
+    }
+    
+    
+    /* If this is the first term, and we support full screen (Mac OS X Lion or later), then allow it to go full screen (sweet). Allow other terms to be FullScreenAuxilliary, so they can at least show up. Unfortunately in Lion they don't get brought to the full screen space; but they would only make sense on multiple displays anyways so it's not a big loss. */
+    if ([window respondsToSelector:@selector(toggleFullScreen:)])
+    {
+        NSWindowCollectionBehavior behavior = [window collectionBehavior];
+        behavior |= (termIdx == 0 ? Angband_NSWindowCollectionBehaviorFullScreenPrimary : Angband_NSWindowCollectionBehaviorFullScreenAuxiliary);
+        [window setCollectionBehavior:behavior];
+    }
+    
+    /* No Resume support yet, though it would not be hard to add */
+    if ([window respondsToSelector:@selector(setRestorable:)])
+    {
+        [window setRestorable:NO];
     }
     
     /* Position the window, either through autosave or cascading it */
