@@ -124,11 +124,15 @@ Most races also have intrinsic abilities.  The bonuses to statistics and
 the experience penalty will be displayed next to the races as you move 
 to select one.
 
+.. _Human:
+
 Human
   The human is the base character.  All other races are compared to them.
   Humans are average at everything and tend to go up levels faster than any
   other race due to their shorter life spans.  No racial adjustments or 
   intrinsics occur to human characters.  Humans do not have any infravision.
+
+.. _Half-Elf:
 
 Half-Elf
   Half-elves tend to be smarter and faster than a human, but not as wise or
@@ -136,6 +140,8 @@ Half-Elf
   throws, stealth, archery and searching, but they are not as good at
   hand-to-hand combat. Half-elves are immune to dexterity draining, and
   have weak infravision.
+
+.. _Elf:
 
 Elf
   Elves are better magicians than humans, but not as good at fighting. They
@@ -145,6 +151,8 @@ Elf
   resistant to attacks involving bright light, are immune to dexterity
   draining, and have fair infravision.
 
+.. _Hobbit:
+
 Hobbit
   Hobbits, or Halflings, are very good at shooting, throwing, and have good
   saving throws. They also are very good at searching, disarming,
@@ -153,6 +161,8 @@ Hobbit
   melee fighting. Halflings have fair infravision. They have a strong hold
   on their life force, and are thus resistant to life draining. Hobbits are
   very partial to mushrooms and can identify them when found.
+
+.. _Gnome:
 
 Gnome
   Gnomes are smaller than dwarves but larger than halflings. They, like the
@@ -164,6 +174,8 @@ Gnome
   away. Gnomes are intrinsically protected against paralysis and some
   slowing effects. Gnomes are excellent at using wands and staves and can
   identify them when found.
+
+.. _Dwarf:
 
 Dwarf
   Dwarves are the headstrong miners and fighters of legend. Since dungeons
@@ -178,6 +190,8 @@ Dwarf
   themselves for no good reason, screaming out challenges at imagined foes.
   In other words, dwarves have a miserable stealth.
 
+.. _Half-Orc:
+
 Half-Orc
   Half-Orcs make excellent warriors and decent priests, but are terrible at
   magic. They are as bad as dwarves at stealth, and horrible at searching,
@@ -187,6 +201,8 @@ Half-Orc
   constitution and lots of hit points. Because of their preference to
   living underground to on the surface, half-orcs resist darkness attacks.
   They have fair infravision.
+
+.. _Half-Troll:
 
 Half-Troll
   Half-Trolls are incredibly strong, and have more hit points than any
@@ -198,12 +214,16 @@ Half-Troll
   regeneration also requires them to eat more food than other races. They
   have fair infravision.
 
+.. _Dunadan:
+
 Dunadan
   Dunedain are a race of hardy men from the West. This elder race surpasses
   human abilities in every field, especially constitution. However, being
   men of the world, very little is new to them, and levels are very hard to
   gain... their hardiness ensures that their constitution cannot be
   reduced. They have no infravision.
+
+.. _High-Elf:
 
 High-Elf
   High-Elves are descended from those among the Elves who heard and
@@ -216,6 +236,8 @@ High-Elf
   Dunedain. Like normal Elves, they resist attacks involving bright light.
   They have good infravision and can even see cold-blooded invisible
   creatures.
+
+.. _Kobold:
 
 Kobold
   Kobolds are a race of small dog-headed humanoids that dwell underground.
@@ -233,6 +255,8 @@ Once a race has been chosen, you will need to pick a class.  The class
 is the character's occupation and determines stat bonuses, abilities, 
 hit dice, and what spells (if any) the character can learn.
 
+.. _Warrior:
+
 Warrior
   A Warrior is a hack-and-slash character, who solves most of his problems
   by cutting them to pieces, but will occasionally fall back on the help of
@@ -241,6 +265,8 @@ Warrior
   other class. A Warrior will be excellent at fighting, shooting and
   throwing, but bad at most other skills. A warrior has bad stealth and
   cannot learn any spells.
+
+.. _Mage:
 
 Mage
   A Mage must live by his wits. He cannot hope to simply hack his way
@@ -256,6 +282,8 @@ Mage
   are his true realm and he will get fewer blows with melee weapons than
   other classes.
 
+.. _Priest:
+
 Priest
   A Priest is a character of holy devotion. They explore the dungeon only
   to destroy the evil that lurks within, and if treasure just happens to
@@ -270,6 +298,8 @@ Priest
   primary stat and at high enough levels they can cast many prayers without
   a chance of failure. Priests have poor stealth.
 
+.. _Rogue:
+
 Rogue
   A Rogue is a character that prefers to live by his cunning, but is
   capable of fighting his way out of a tight spot. He is the master of
@@ -283,6 +313,8 @@ Rogue
   mages can use, and there will always be a chance of failure even with the
   simplest spells. A rogue's primary stats are dexterity and intelligence.
 
+.. _Ranger:
+
 Ranger
   A Ranger is a warrior/mage and a very powerful class. He is a good
   fighter, and the best of all the classes with missile weapons, especially
@@ -292,6 +324,8 @@ Ranger
   advance. A ranger has good stealth, good perception, good searching, a
   good saving throw, and is good with magical devices. His primary stats
   are strength, intelligence and dexterity.
+
+.. _Paladin:
 
 Paladin
   A Paladin is a warrior/priest. He is a very good fighter, second only to
