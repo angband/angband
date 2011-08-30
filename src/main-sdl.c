@@ -3335,6 +3335,11 @@ static errr load_gfx(void)
 	const char *filename;
 	SDL_Surface *temp;
 
+	if (current_graphics_mode && GfxSurface
+		&& (use_graphics == current_graphics_mode->grafID)) {
+		return (0);
+	}
+
 	current_graphics_mode = get_graphics_mode(use_graphics);
 	if (current_graphics_mode) {
 		filename = current_graphics_mode->file;
