@@ -118,9 +118,6 @@ PLIST = cocoa/Angband-Cocoa.xml
 
 ICONFILES = cocoa/Angband_Icons.icns cocoa/Save.icns cocoa/Edit.icns cocoa/Data.icns
 
-GRAPHSRC=../lib/xtra/graf/
-TILES = $(GRAPHSRC)8x8.png $(GRAPHSRC)8x16.png $(GRAPHSRC)16x16.png $(GRAPHSRC)32x32.png
-
 LIBFILES = \
   ../lib/edit/*.txt \
   ../lib/file/*.txt \
@@ -151,7 +148,10 @@ install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
 	@cp ../lib/pref/*.prf $(APPRES)/lib/pref
 
 	# 'optionally' install sound and graphics tiles, if present
-	-cp $(TILES) $(APPRES)/
+	# TODO: read the tile pngs from $(APPRES)/lib/xtra/graf/
+	# so we can just recursively copy that directory.
+	-cp ../lib/xtra/graf/graphics.txt $(APPRES)/lib/xtra/graf
+	-cp ../lib/xtra/graf/*.png $(APPRES)/
 	-cp ../lib/xtra/sound/*.wav $(APPRES)/lib/xtra/sound
 	-cp ../lib/xtra/sound/sound.cfg $(APPRES)/lib/xtra/sound
 
