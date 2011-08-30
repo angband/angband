@@ -12,6 +12,7 @@
 #include "cmds.h"
 #include "files.h"
 #include "init.h"
+#include "grafmode.h"
 
 #if BORG
 #include "borg1.h"
@@ -278,22 +279,17 @@ static int pict_cols = 0;
 static int pict_rows = 0;
 
 /*
- * Available graphics modes
- */
-#define GRAF_MODE_NONE	0	/* plain ASCII */
-#define GRAF_MODE_8X8	1	/* 8x8 tiles */
-#define GRAF_MODE_16X16	2	/* 16x16 tiles */
-#define GRAF_MODE_32X32	3	/* 32x32 tiles */
+ * Value used to signal that we using ASCII, not graphical tiles.
+ */ 
+#define GRAF_MODE_NONE 0
 
 /*
  * Current and requested graphics modes
+ *
+ * 0 means there is no graphics mode selected.
  */
-static int graf_mode = GRAF_MODE_NONE;
-static int graf_mode_req = GRAF_MODE_NONE;
-
-/* Whether or not image drawing supports transparency */
-static BOOL graf_use_transparency;
-
+static int graf_mode = 0;
+static int graf_mode_req = 0;
 
 /*
  * Hack -- game in progress
@@ -845,9 +841,12 @@ static int compare_advances(const void *ap, const void *bp)
     
     // initialize file paths
     initialize_file_paths();
-    
+
     // load preferences
     load_prefs();
+    
+	/* Load possible graphics modes */
+	init_graphics_modes("graphics.txt");
     
     // load sounds
     load_sounds();
@@ -1362,59 +1361,34 @@ static errr Term_xtra_cocoa_react(void)
     /* Handle graphics */
     if (graf_mode_req != graf_mode)
     {
-        
-        /*
-         * Setup parameters according to request
-         */
-        switch (graf_mode_req)
-        {
-            case GRAF_MODE_NONE:
-            {
-                CGImageRelease(pict_image);
-                pict_image = NULL;
-                use_graphics = arg_graphics = GRAPHICS_NONE;
-                graf_use_transparency = NO;
-                graf_width = graf_height = 0;
-                break;
-            }
-                
-            case GRAF_MODE_8X8:
-            {
-                use_graphics = arg_graphics = GRAPHICS_ORIGINAL;
-                ANGBAND_GRAF = "old";
-                graf_use_transparency = NO;
-                CGImageRelease(pict_image);
-                pict_image = create_angband_image(@"8x8");
-                graf_width = graf_height = 8;
-                break;
-            }
-                
-            case GRAF_MODE_16X16:
-            {
-                use_graphics = arg_graphics = GRAPHICS_ADAM_BOLT;
-                ANGBAND_GRAF = "new";
-                graf_use_transparency = YES;
-                CGImageRelease(pict_image);
-                pict_image = create_angband_image(@"16x16");
-                graf_width = graf_height = 16;
-                break;
-            }
-                
-            case GRAF_MODE_32X32:
-            {
-                use_graphics = arg_graphics = GRAPHICS_DAVID_GERVAIS;
-                ANGBAND_GRAF = "david";
-                graf_use_transparency = YES;
-                CGImageRelease(pict_image);
-                pict_image = create_angband_image(@"32x32");
-                graf_width = graf_height = 32;
-                break;
-            }        
-        }
-        
+		if (graf_mode_req != GRAF_MODE_NONE) {
+			current_graphics_mode = get_graphics_mode(graf_mode_req);
+		} else {
+			current_graphics_mode = NULL;
+		}
+
+		if (current_graphics_mode) {
+			NSString *path = [NSString stringWithCString:current_graphics_mode->file 
+							  encoding:NSMacOSRomanStringEncoding];
+			CGImageRelease(pict_image);
+			pict_image = create_angband_image(path);
+			use_graphics = YES;
+			use_transparency = YES;
+			graf_width = current_graphics_mode->cell_width;
+			graf_height = current_graphics_mode->cell_height;
+			ANGBAND_GRAF = current_graphics_mode->pref;
+		} else {
+			CGImageRelease(pict_image);
+			pict_image = NULL;
+			use_graphics = NO;
+			use_transparency = NO;
+			graf_width = 0;
+			graf_height = 0;
+			ANGBAND_GRAF = 0;
+		}
         
         /* update current graphics mode */
-        graf_mode = graf_mode_req;
+		graf_mode = arg_graphics = graf_mode_req;
         
         /* Enable or disable higher picts */
         angbandContext->terminal->higher_pict = !! use_graphics;
@@ -1711,7 +1685,7 @@ static errr Term_pict_cocoa(int x, int y, int n, const byte *ap, const char *cp,
             terrainRect.size.height = graf_height;
             
             /* Transparency effect */
-            if (graf_use_transparency)
+            if (use_transparency)
             {
                 draw_image_tile(pict_image, terrainRect, destinationRect, NSCompositeCopy);
                 draw_image_tile(pict_image, sourceRect, destinationRect, NSCompositeSourceOver); 
