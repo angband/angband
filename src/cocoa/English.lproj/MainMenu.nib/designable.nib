@@ -255,47 +255,7 @@
 									<string key="NSAction">submenuAction:</string>
 									<object class="NSMenu" key="NSSubmenu" id="322993771">
 										<string key="NSTitle">Graphics</string>
-										<array class="NSMutableArray" key="NSMenuItems">
-											<object class="NSMenuItem" id="117235542">
-												<reference key="NSMenu" ref="322993771"/>
-												<string key="NSTitle">None</string>
-												<string key="NSKeyEquiv"/>
-												<int key="NSKeyEquivModMask">1048576</int>
-												<int key="NSMnemonicLoc">2147483647</int>
-												<reference key="NSOnImage" ref="433757408"/>
-												<reference key="NSMixedImage" ref="336434334"/>
-											</object>
-											<object class="NSMenuItem" id="856512269">
-												<reference key="NSMenu" ref="322993771"/>
-												<string key="NSTitle">8x8</string>
-												<string key="NSKeyEquiv"/>
-												<int key="NSKeyEquivModMask">1048576</int>
-												<int key="NSMnemonicLoc">2147483647</int>
-												<reference key="NSOnImage" ref="433757408"/>
-												<reference key="NSMixedImage" ref="336434334"/>
-												<int key="NSTag">1</int>
-											</object>
-											<object class="NSMenuItem" id="996369664">
-												<reference key="NSMenu" ref="322993771"/>
-												<string key="NSTitle">16x16</string>
-												<string key="NSKeyEquiv"/>
-												<int key="NSKeyEquivModMask">1048576</int>
-												<int key="NSMnemonicLoc">2147483647</int>
-												<reference key="NSOnImage" ref="433757408"/>
-												<reference key="NSMixedImage" ref="336434334"/>
-												<int key="NSTag">2</int>
-											</object>
-											<object class="NSMenuItem" id="393370004">
-												<reference key="NSMenu" ref="322993771"/>
-												<string key="NSTitle">32x32</string>
-												<string key="NSKeyEquiv"/>
-												<int key="NSKeyEquivModMask">1048576</int>
-												<int key="NSMnemonicLoc">2147483647</int>
-												<reference key="NSOnImage" ref="433757408"/>
-												<reference key="NSMixedImage" ref="336434334"/>
-												<int key="NSTag">3</int>
-											</object>
-										</array>
+										<array class="NSMutableArray" key="NSMenuItems"/>
 									</object>
 								</object>
 							</array>
@@ -588,38 +548,6 @@
 						<reference key="destination" ref="27347545"/>
 					</object>
 					<int key="connectionID">279</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">setGraphicsMode:</string>
-						<reference key="source" ref="515537150"/>
-						<reference key="destination" ref="117235542"/>
-					</object>
-					<int key="connectionID">280</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">setGraphicsMode:</string>
-						<reference key="source" ref="515537150"/>
-						<reference key="destination" ref="856512269"/>
-					</object>
-					<int key="connectionID">281</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">setGraphicsMode:</string>
-						<reference key="source" ref="515537150"/>
-						<reference key="destination" ref="996369664"/>
-					</object>
-					<int key="connectionID">282</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">setGraphicsMode:</string>
-						<reference key="source" ref="515537150"/>
-						<reference key="destination" ref="393370004"/>
-					</object>
-					<int key="connectionID">283</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
@@ -931,33 +859,8 @@
 					<object class="IBObjectRecord">
 						<int key="objectID">257</int>
 						<reference key="object" ref="322993771"/>
-						<array class="NSMutableArray" key="children">
-							<reference ref="117235542"/>
-							<reference ref="856512269"/>
-							<reference ref="996369664"/>
-							<reference ref="393370004"/>
-						</array>
+						<array class="NSMutableArray" key="children"/>
 						<reference key="parent" ref="351341973"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">258</int>
-						<reference key="object" ref="117235542"/>
-						<reference key="parent" ref="322993771"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">259</int>
-						<reference key="object" ref="856512269"/>
-						<reference key="parent" ref="322993771"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">260</int>
-						<reference key="object" ref="996369664"/>
-						<reference key="parent" ref="322993771"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">261</int>
-						<reference key="object" ref="393370004"/>
-						<reference key="parent" ref="322993771"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">275</int>
@@ -1088,14 +991,6 @@
 				<boolean value="YES" key="256.ImportedFromIB2"/>
 				<string key="257.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<boolean value="YES" key="257.ImportedFromIB2"/>
-				<string key="258.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<boolean value="YES" key="258.ImportedFromIB2"/>
-				<string key="259.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<boolean value="YES" key="259.ImportedFromIB2"/>
-				<string key="260.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<boolean value="YES" key="260.ImportedFromIB2"/>
-				<string key="261.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<boolean value="YES" key="261.ImportedFromIB2"/>
 				<string key="265.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<boolean value="YES" key="265.ImportedFromIB2"/>
 				<string key="275.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>

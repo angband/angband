@@ -3,9 +3,16 @@
 /*
  * Copyright (c) 2011 Peter Ammon
  *
- * This software may be copied and distributed for educational, research,
- * and not for profit purposes provided that this copyright and statement
- * are included in all such copies.
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
  */
 
 #include "angband.h"
@@ -266,12 +273,6 @@ static unsigned push_options(unsigned x, unsigned y)
 static CGImageRef pict_image;
 
 /*
- * Width and height of a tile in pixels
- */
-static int graf_width = 0;
-static int graf_height = 0;
-
-/*
  * Numbers of rows and columns in a tileset,
  * calculated by the PICT/PNG loading code
  */
@@ -284,12 +285,18 @@ static int pict_rows = 0;
 #define GRAF_MODE_NONE 0
 
 /*
- * Current and requested graphics modes
- *
- * 0 means there is no graphics mode selected.
+ * Requested graphics mode (as a grafID).
+ * The current mode is stored in current_graphics_mode.
  */
-static int graf_mode = 0;
 static int graf_mode_req = 0;
+
+/*
+ * Helper function to check the various ways that graphics can be enabled, guarding against NULL
+ */
+static BOOL graphics_are_enabled(void)
+{
+    return current_graphics_mode && current_graphics_mode->grafID != GRAPHICS_NONE;
+}
 
 /*
  * Hack -- game in progress
@@ -382,7 +389,8 @@ static bool initialized = FALSE;
 
 - (BOOL)useLiveResizeOptimization
 {
-    return inLiveResize && graf_mode != GRAF_MODE_NONE;
+    /* If we have graphics turned off, text rendering is fast enough that we don't need to use a live resize optimization. Note here we are depending on current_graphics_mode being NULL when in text mode. */
+    return inLiveResize && graphics_are_enabled();
 }
 
 - (NSSize)baseSize
@@ -543,7 +551,7 @@ static int compare_advances(const void *ap, const void *bp)
     if (inLiveResize < INT_MAX) inLiveResize++;
     else [NSException raise:NSInternalInconsistencyException format:@"inLiveResize overflow"];
     
-    if (inLiveResize == 1 && graf_mode != GRAF_MODE_NONE)
+    if (inLiveResize == 1 && graphics_are_enabled())
     {
         [self updateImage];
         
@@ -559,7 +567,7 @@ static int compare_advances(const void *ap, const void *bp)
     if (inLiveResize > 0) inLiveResize--;
     else [NSException raise:NSInternalInconsistencyException format:@"inLiveResize underflow"];
     
-    if (inLiveResize == 0 && graf_mode != GRAF_MODE_NONE)
+    if (inLiveResize == 0 && graphics_are_enabled())
     {
         [self updateImage];
         
@@ -898,8 +906,11 @@ static int compare_advances(const void *ap, const void *bp)
 
 - (IBAction)setGraphicsMode:(NSMenuItem *)sender
 {
+    /* We stashed the graphics mode ID in the menu item's tag */
     graf_mode_req = [sender tag];
-    [[NSUserDefaults angbandDefaults] setInteger:graf_mode_req forKey:@"GraphicsMode"];
+
+    /* Stash it in UserDefaults */
+    [[NSUserDefaults angbandDefaults] setInteger:graf_mode_req forKey:@"GraphicsID"];
     [[NSUserDefaults angbandDefaults] synchronize];
     
     if (game_in_progress)
@@ -945,7 +956,8 @@ static int compare_advances(const void *ap, const void *bp)
 
 - (void)angbandViewDidScale:(AngbandView *)view
 {
-    if (! (inLiveResize && graf_mode != GRAF_MODE_NONE) && view == [self activeView])
+    /* If we're live-resizing with graphics, we're using the live resize optimization, so don't update the image. Otherwise do it. */
+    if (! (inLiveResize && graphics_are_enabled()) && view == [self activeView])
     {
         [self updateImage];
         
@@ -1352,52 +1364,54 @@ static CGImageRef create_angband_image(NSString *name)
  */
 static errr Term_xtra_cocoa_react(void)
 {
+    /* Don't actually switch graphics until the game is running */
+    if (!initialized || !game_in_progress) return (-1);
+
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     AngbandContext *angbandContext = Term->data;
     
-    /* Don't actually switch graphics until the game is running */
-    if (!initialized || !game_in_progress) return (-1);
-    
     /* Handle graphics */
-    if (graf_mode_req != graf_mode)
+    int expected_graf_mode = (current_graphics_mode ? current_graphics_mode->grafID : GRAF_MODE_NONE);
+    if (graf_mode_req != expected_graf_mode)
     {
+        
+        graphics_mode *new_mode;
 		if (graf_mode_req != GRAF_MODE_NONE) {
-			current_graphics_mode = get_graphics_mode(graf_mode_req);
+			new_mode = get_graphics_mode(graf_mode_req);
 		} else {
-			current_graphics_mode = NULL;
-		}
+			new_mode = NULL;
+        }
+        
+        /* Get rid of the old image. CGImageRelease is NULL-safe. */
+        CGImageRelease(pict_image);
+        pict_image = NULL;
+        
+        /* Try creating the image if we want one */
+        if (new_mode != NULL)
+        {
+            NSString *img_name = [NSString stringWithCString:new_mode->file 
+                                                encoding:NSMacOSRomanStringEncoding];
+            pict_image = create_angband_image(img_name);
 
-		if (current_graphics_mode) {
-			NSString *path = [NSString stringWithCString:current_graphics_mode->file 
-							  encoding:NSMacOSRomanStringEncoding];
-			CGImageRelease(pict_image);
-			pict_image = create_angband_image(path);
-			use_graphics = YES;
-			use_transparency = YES;
-			graf_width = current_graphics_mode->cell_width;
-			graf_height = current_graphics_mode->cell_height;
-			ANGBAND_GRAF = current_graphics_mode->pref;
-		} else {
-			CGImageRelease(pict_image);
-			pict_image = NULL;
-			use_graphics = NO;
-			use_transparency = NO;
-			graf_width = 0;
-			graf_height = 0;
-			ANGBAND_GRAF = 0;
-		}
+            /* If we failed to create the image, set the new desired mode to NULL */
+            if (! pict_image)
+                new_mode = NULL;
+        }
         
-        /* update current graphics mode */
-		graf_mode = arg_graphics = graf_mode_req;
+        /* Record what we did */
+        use_graphics = (new_mode != NULL);
+        use_transparency = (new_mode != NULL);
+        ANGBAND_GRAF = (new_mode ? new_mode->pref : NULL);
+        current_graphics_mode = new_mode;
         
-        /* Enable or disable higher picts */
+        /* Enable or disable higher picts. Note: this should be done for all terms. */
         angbandContext->terminal->higher_pict = !! use_graphics;
         
-        if (pict_image)
+        if (pict_image && current_graphics_mode)
         {
-            /* Don't trust the image size, which depends on the resolution; instead get the number of pixels of the best rep (typically there's only one) */
-            pict_rows = (int)(CGImageGetHeight(pict_image) / graf_height);
-            pict_cols = (int)(CGImageGetWidth(pict_image) / graf_width);
+            /* Compute the row and column count via the image height and width. */
+            pict_rows = (int)(CGImageGetHeight(pict_image) / current_graphics_mode->cell_height);
+            pict_cols = (int)(CGImageGetWidth(pict_image) / current_graphics_mode->cell_width);
         }
         else
         {
@@ -1619,7 +1633,6 @@ static void draw_image_tile(CGImageRef image, NSRect srcRect, NSRect dstRect, NS
     CGImageRef subimage = CGImageCreateWithImageInRect(image, *(CGRect *)&srcRect);
     NSGraphicsContext *context = [NSGraphicsContext currentContext];
     [context setCompositingOperation:op];
-    
     CGContextDrawImage([context graphicsPort], *(CGRect *)&dstRect, subimage);
     CGImageRelease(subimage);
 }
@@ -1627,6 +1640,9 @@ static void draw_image_tile(CGImageRef image, NSRect srcRect, NSRect dstRect, NS
 static errr Term_pict_cocoa(int x, int y, int n, const byte *ap, const char *cp,
                             const byte *tap, const char *tcp)
 {
+    
+    /* Paranoia: Bail if we don't have a current graphics mode */
+    if (! current_graphics_mode) return -1;
     
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     AngbandContext* angbandContext = Term->data;
@@ -1648,6 +1664,8 @@ static errr Term_pict_cocoa(int x, int y, int n, const byte *ap, const char *cp,
     
     /* Scan the input */
     int i;
+    int graf_width = current_graphics_mode->cell_width;
+    int graf_height = current_graphics_mode->cell_height;
     for (i = 0; i < n; i++)
     {
         
@@ -1657,13 +1675,14 @@ static errr Term_pict_cocoa(int x, int y, int n, const byte *ap, const char *cp,
         byte ta = *tap++;
         char tc = *tcp++;
         
+        
         /* Graphics -- if Available and Needed */
-        if (use_graphics && ((byte)a & 0x80) && ((byte)c & 0x80))
+        if (use_graphics && (a & 0x80) && (c & 0x80))
         {
             int col, row;
             int t_col, t_row;
             
-            
+
             /* Primary Row and Col */
             row = ((byte)a & 0x7F) % pict_rows;
             col = ((byte)c & 0x7F) % pict_cols;
@@ -1684,8 +1703,9 @@ static errr Term_pict_cocoa(int x, int y, int n, const byte *ap, const char *cp,
             terrainRect.size.width = graf_width;
             terrainRect.size.height = graf_height;
             
-            /* Transparency effect */
-            if (use_transparency)
+            /* Transparency effect. We really want to check current_graphics_mode->alphablend, but as of this writing that's never set, so we do something lame.  */
+            //if (current_graphics_mode->alphablend)
+            if (graf_width > 8 || graf_height > 8)
             {
                 draw_image_tile(pict_image, terrainRect, destinationRect, NSCompositeCopy);
                 draw_image_tile(pict_image, sourceRect, destinationRect, NSCompositeSourceOver); 
@@ -1874,12 +1894,13 @@ static void load_prefs()
                               [NSNumber numberWithFloat:13.f], @"FontSize",
                               [NSNumber numberWithInt:60], @"FramesPerSecond",
                               [NSNumber numberWithBool:YES], @"AllowSound",
+                              [NSNumber numberWithInt:GRAPHICS_NONE], @"GraphicsID",
                               nil];
     [defs registerDefaults:defaults];
     [defaults release];
     
     /* preferred graphics mode */
-    graf_mode_req = [defs integerForKey:@"GraphicsMode"];
+    graf_mode_req = [defs integerForKey:@"GraphicsID"];
     
     /* use sounds */
     allow_sounds = [defs boolForKey:@"AllowSound"];
@@ -2685,6 +2706,41 @@ static void initialize_file_paths(void)
         quit_when_ready = true;
         // must return Cancel, not Later, because we need to get out of the run loop and back to Angband's loop
         return NSTerminateCancel;
+    }
+}
+
+/* Dynamically build the Graphics menu */
+- (void)menuNeedsUpdate:(NSMenu *)menu {
+    
+    /* Only the graphics menu is dynamic */
+    if (! [[menu title] isEqualToString:@"Graphics"])
+        return;
+    
+    /* If it's non-empty, then we've already built it. Currently graphics modes won't change once created; if they ever can we can remove this check.
+       Note that the check mark does change, but that's handled in validateMenuItem: instead of menuNeedsUpdate: */
+    if ([menu numberOfItems] > 0)
+        return;
+    
+    /* This is the action for all these menu items */
+    SEL action = @selector(setGraphicsMode:);
+    
+    /* Add an initial Classic ASCII menu item */
+    NSMenuItem *item = [menu addItemWithTitle:@"Classic ASCII" action:action keyEquivalent:@""];
+    [item setTag:GRAPHICS_NONE];
+    
+    /* Walk through the list of graphics modes */
+    NSInteger i;
+    for (i=0; graphics_modes[i].pNext; i++)
+    {
+        const graphics_mode *graf = &graphics_modes[i];
+        
+        /* Make the title. NSMenuItem throws on a nil title, so ensure it's not nil. */
+        NSString *title = [[NSString alloc] initWithUTF8String:graf->menuname];
+        if (! title) title = [@"(Unknown)" copy];
+        
+        /* Make the item */
+        NSMenuItem *item = [menu addItemWithTitle:title action:action keyEquivalent:@""];
+        [item setTag:graf->grafID];
     }
 }
 
