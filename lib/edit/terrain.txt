@@ -570,3 +570,18 @@ G:#:u
 P:10
 M:60
 F:PERM
+
+# holder for trap detected border floor tile
+N:64:open floor
+G:.:G
+P:5
+F:PWALK | PPASS | MWALK | MPASS | LOOK | BORING
+
+# holder for trap detected border wall tile
+N:65:granite wall
+G:#:G
+P:10
+F:DIG
+X:0:0:0:4
+
+
