@@ -173,6 +173,7 @@ F:60:dark:0x80:0x91
 
 # trap detected floors
 F:64:all:0x81:0x95
+F:65:all:0x81:0x95
 
 
 ##### Object attr/char definitions #####

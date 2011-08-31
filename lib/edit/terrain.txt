@@ -577,7 +577,7 @@ G:.:G
 P:5
 F:PWALK | PPASS | MWALK | MPASS | LOOK | BORING
 
-# holder for trap detected border wall tile
+# holder for trap detected border overlay tile
 N:65:granite wall
 G:#:G
 P:10

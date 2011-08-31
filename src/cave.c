@@ -527,11 +527,12 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 	/* Check for trap detection boundaries */
 	if (use_graphics == GRAPHICS_NONE)
 		grid_get_text(g, &a, &c);
-	else if (g->trapborder) {
-		if ((g->f_idx == FEAT_FLOOR) && !feat_is_known_trap(g->f_idx)) {
-			a = f_info[64].x_attr[g->lighting]; /* 64 is the index of the feat that */
-			c = f_info[64].x_char[g->lighting]; /* holds the tap detect border floor tile */
-		}
+	else if (g->trapborder && (g->f_idx == FEAT_FLOOR)
+		 && (g->m_idx || g->first_kind)) {
+		/* if there is an object or monster here, and this is a plain floor
+		 * display the border here rather than an overlay below */
+		a = f_info[64].x_attr[g->lighting]; /* 64 is the index of the feat that */
+		c = f_info[64].x_char[g->lighting]; /* holds the tap detect border floor tile */
 	}
 
 	/* Save the terrain info for the transparency effects */
@@ -704,6 +705,12 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 
 		/* Get the "player" char */
 		c = r_ptr->x_char;
+	}
+	else if (g->trapborder && (g->f_idx) && !(g->first_kind)
+		&& (use_graphics != GRAPHICS_NONE)) {
+		/* no overlay is used, so we can use the trap border overlay */
+		a = f_info[65].x_attr[g->lighting]; /* 65 is the index of the feat that */
+		c = f_info[65].x_char[g->lighting]; /* holds the trap detect border overlay tile */
 	}
 
 	/* Result */
