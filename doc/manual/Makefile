@@ -8,6 +8,9 @@ TEXFILES := $(SECTIONS:=.tex)
 PDFLATEX  := pdflatex
 MAKEINDEX := makeindex 
 
+CLEAN = $(SECTIONS:=.aux) manual.aux manual.idx manual.ilg \
+	manual.ind manual.log manual.out manual.toc
+
 manual: manual.pdf
 
 manual.pdf: manual.tex $(TEXFILES)
@@ -19,16 +22,3 @@ manual.pdf: manual.tex $(TEXFILES)
 	else \
 		${COMPILE_FAILED}; \
 	fi
-	
-
-clean::
-	for i in $(SECTIONS:=.aux) manual.aux manual.idx manual.ilg \
-		manual.ind manual.log manual.out manual.toc; do \
-		if test -f $$i -o -d $$i; then \
-			if rm -fr $$i; then \
-				${DELETE_OK}; \
-			else \
-				${DELETE_FAILED}; \
-			fi \
-		fi \
-	done
