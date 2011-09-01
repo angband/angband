@@ -3324,6 +3324,111 @@ static void init_morewindows(void)
 
 #ifdef USE_GRAPHICS
 
+/* if the tileset uses alpha blending, the tile set would have
+ * premultiplied alpha. SDL does not use this, so we need to undo
+ * the premultiply */
+static errr gfx_remove_premultiply(void)
+{
+	int i,j, bpp;
+	Uint32 value;
+	Uint8 r,g,b,a;
+	float rf,gf,bf,af;
+	SDL_PixelFormat *fmt;
+
+	fmt = GfxSurface->format;
+	bpp = fmt->BytesPerPixel;
+	if (SDL_LockSurface(GfxSurface)) {
+		/* there was some error */
+		return 1;
+	}
+	/* go through the pixels and unpremultiply them */
+	if (bpp == 4) {
+		Uint32 *row;
+		Uint32 *pixel;
+
+		for (j=0; j < GfxSurface->h; ++j) {
+			row = ((Uint32*)GfxSurface->pixels) +(j*(GfxSurface->pitch>>2));
+			for (i=0; i < GfxSurface->w; ++i) {
+				pixel = row + i;
+				if (*pixel) {
+					SDL_GetRGBA(*pixel,fmt,&r,&g,&b,&a);
+					if (a != 255) {
+						rf = ((float)r)/255.f;
+						gf = ((float)g)/255.f;
+						bf = ((float)b)/255.f;
+						af = ((float)a)/255.f;
+
+						r = (Uint8) ((rf/af)*255.f);
+						g = (Uint8) ((gf/af)*255.f);
+						b = (Uint8) ((bf/af)*255.f);
+
+						*pixel = SDL_MapRGBA(fmt,r,g,b,a);
+					}
+				}
+			}
+		}
+	} else
+	if (bpp == 2) {
+		Uint16 *row;
+		Uint16 *pixel;
+		for (j=0; j < GfxSurface->h; ++j) {
+			row = ((Uint16*)GfxSurface->pixels) +(j*(GfxSurface->pitch>>1));
+			for (i=0; i < GfxSurface->w; ++i) {
+				pixel = row + i;
+				if (*pixel) {
+					value = *pixel;
+					SDL_GetRGBA(value,fmt,&r,&g,&b,&a);
+					if (a != 255) {
+						rf = ((float)r)/255.f;
+						gf = ((float)g)/255.f;
+						bf = ((float)b)/255.f;
+						af = ((float)a)/255.f;
+
+						r = (Uint8) ((rf/af)*255.f);
+						g = (Uint8) ((gf/af)*255.f);
+						b = (Uint8) ((bf/af)*255.f);
+
+						value = SDL_MapRGBA(fmt,r,g,b,a);
+						*pixel = value;
+					}
+				}
+			}
+		}
+	} else
+	if (bpp == 1) {
+		Uint8 *row;
+		Uint8 *pixel;
+		for (j=0; j < GfxSurface->h; ++j) {
+			row = ((Uint8*)GfxSurface->pixels) +(j*(GfxSurface->pitch));
+			for (i=0; i < GfxSurface->w; ++i) {
+				pixel = row + i;
+				if (*pixel) {
+					value = *pixel;
+					SDL_GetRGBA(value,fmt,&r,&g,&b,&a);
+					if (a != 255) {
+						rf = ((float)r)/255.f;
+						gf = ((float)g)/255.f;
+						bf = ((float)b)/255.f;
+						af = ((float)a)/255.f;
+
+						r = (Uint8) ((rf/af)*255.f);
+						g = (Uint8) ((gf/af)*255.f);
+						b = (Uint8) ((bf/af)*255.f);
+
+						value = SDL_MapRGBA(fmt,r,g,b,a);
+						*pixel = value;
+					}
+				}
+			}
+		}
+	} else
+	{
+		return (2);
+	}
+	SDL_UnlockSurface(GfxSurface);
+	return (0);
+}
+
 /*
  * The new streamlined graphics loader.
  * Only uses colour keys.
@@ -3334,6 +3439,11 @@ static errr load_gfx(void)
 	char buf[1024];
 	const char *filename;
 	SDL_Surface *temp;
+
+	if (current_graphics_mode && GfxSurface
+		&& (use_graphics == current_graphics_mode->grafID)) {
+		return (0);
+	}
 
 	current_graphics_mode = get_graphics_mode(use_graphics);
 	if (current_graphics_mode) {
@@ -3355,6 +3465,16 @@ static errr load_gfx(void)
 
 	/* Change the surface type to the current video surface format */
 	GfxSurface = SDL_DisplayFormatAlpha(temp);
+
+	/* if the tileset uses alpha blending, the tile set would have
+         * premultiplied alpha. SDL does not use this, so we need to undo
+         * the premultiply */
+	if (GfxSurface && current_graphics_mode->alphablend) {
+		errr result;
+		result = gfx_remove_premultiply();
+		if (result)
+			return result;
+	}
 
 	/* Make sure we know what pref file to use */
 	ANGBAND_GRAF = current_graphics_mode->pref;
