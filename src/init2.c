@@ -628,16 +628,32 @@ static errr run_parse_k(struct parser *p) {
 static errr finish_parse_k(struct parser *p) {
 	struct object_kind *k, *next = NULL;
 
-	k_info = mem_zalloc(z_info->k_max * sizeof(*k));
-	for (k = parser_priv(p); k; k = next) {
-		if (k->kidx >= z_info->k_max)
-			continue;
-		memcpy(&k_info[k->kidx], k, sizeof(*k));
-		next = k->next;
-		mem_free(k);
+	/* scan the list for the max id */
+	z_info->k_max -= 1;
+	/*z_info->k_max = 0; fails to load existing save file because of
+	too high value in old limits.txt.  Change to this line when save file 
+	compatibility changes and remove line from limits.txt */ 
+	k = parser_priv(p);
+	while (k) {
+		if (k->kidx > z_info->k_max)
+			z_info->k_max = k->kidx;
+		k = k->next;
 	}
 
-	objkinds = parser_priv(p);
+	/* allocate the direct access list and copy the data to it */
+	k_info = mem_zalloc((z_info->k_max+1) * sizeof(*k));
+	for (k = parser_priv(p); k; k = next) {
+		memcpy(&k_info[k->kidx], k, sizeof(*k));
+		next = k->next;
+		if (next)
+			k_info[k->kidx].next = &k_info[next->kidx];
+		else
+			k_info[k->kidx].next = NULL;
+		mem_free(k);
+	}
+	z_info->k_max += 1;
+
+	/*objkinds = parser_priv(p); not used yet, when used, remove the mem_free(k); above */
 	parser_destroy(p);
 	return 0;
 }
@@ -843,19 +859,28 @@ static errr run_parse_a(struct parser *p) {
 static errr finish_parse_a(struct parser *p) {
 	struct artifact *a, *n;
 
-	a_info = mem_zalloc(z_info->a_max * sizeof(*a));
-	for (a = parser_priv(p); a; a = a->next) {
-		if (a->aidx >= z_info->a_max)
-			continue;
-		memcpy(&a_info[a->aidx], a, sizeof(*a));
-	}
-
+	/* scan the list for the max id */
+	z_info->a_max = 0;
 	a = parser_priv(p);
 	while (a) {
-		n = a->next;
-		mem_free(a);
-		a = n;
+		if (a->aidx > z_info->a_max)
+			z_info->a_max = a->aidx;
+		a = a->next;
 	}
+
+	/* allocate the direct access list and copy the data to it */
+	a_info = mem_zalloc((z_info->a_max+1) * sizeof(*a));
+	for (a = parser_priv(p); a; a = n) {
+		memcpy(&a_info[a->aidx], a, sizeof(*a));
+		n = a->next;
+		if (n)
+			a_info[a->aidx].next = &a_info[n->aidx];
+		else
+			a_info[a->aidx].next = NULL;
+
+		mem_free(a);
+	}
+	z_info->a_max += 1;
 
 	parser_destroy(p);
 	return 0;
@@ -1129,19 +1154,27 @@ static errr run_parse_f(struct parser *p) {
 static errr finish_parse_f(struct parser *p) {
 	struct feature *f, *n;
 
-	f_info = mem_zalloc(z_info->f_max * sizeof(*f));
-	for (f = parser_priv(p); f; f = f->next) {
-		if (f->fidx >= z_info->f_max)
-			continue;
-		memcpy(&f_info[f->fidx], f, sizeof(*f));
-	}
-
+	/* scan the list for the max id */
+	z_info->f_max = 0;
 	f = parser_priv(p);
 	while (f) {
-		n = f->next;
-		mem_free(f);
-		f = n;
+		if (f->fidx > z_info->f_max)
+			z_info->f_max = f->fidx;
+		f = f->next;
 	}
+
+	/* allocate the direct access list and copy the data to it */
+	f_info = mem_zalloc((z_info->f_max+1) * sizeof(*f));
+	for (f = parser_priv(p); f; f = n) {
+		memcpy(&f_info[f->fidx], f, sizeof(*f));
+		n = f->next;
+		if (n)
+			f_info[f->fidx].next = &f_info[n->fidx];
+		else
+			f_info[f->fidx].next = NULL;
+		mem_free(f);
+	}
+	z_info->f_max += 1;
 
 	parser_destroy(p);
 	return 0;
@@ -1367,21 +1400,29 @@ static errr run_parse_e(struct parser *p) {
 static errr finish_parse_e(struct parser *p) {
 	struct ego_item *e, *n;
 
-	e_info = mem_zalloc(z_info->e_max * sizeof(*e));
-	for (e = parser_priv(p); e; e = e->next) {
-		if (e->eidx >= z_info->e_max)
-			continue;
-		memcpy(&e_info[e->eidx], e, sizeof(*e));
-	}
-
-	create_slay_cache(e_info);
-
+	/* scan the list for the max id */
+	z_info->e_max = 0;
 	e = parser_priv(p);
 	while (e) {
-		n = e->next;
-		mem_free(e);
-		e = n;
+		if (e->eidx > z_info->e_max)
+			z_info->e_max = e->eidx;
+		e = e->next;
 	}
+
+	/* allocate the direct access list and copy the data to it */
+	e_info = mem_zalloc((z_info->e_max+1) * sizeof(*e));
+	for (e = parser_priv(p); e; e = n) {
+		memcpy(&e_info[e->eidx], e, sizeof(*e));
+		n = e->next;
+		if (n)
+			e_info[e->eidx].next = &e_info[n->eidx];
+		else
+			e_info[e->eidx].next = NULL;
+		mem_free(e);
+	}
+	z_info->e_max += 1;
+
+	create_slay_cache(e_info);
 
 	parser_destroy(p);
 	return 0;
@@ -2180,20 +2221,32 @@ static errr finish_parse_s(struct parser *p) {
 	struct spell *s, *n, *ss;
 	struct object_kind *k;
 
-	s_info = mem_zalloc(z_info->s_max * sizeof(*s_info));
+	/* scan the list for the max id */
+	z_info->s_max = 0;
+	s = parser_priv(p);
+	while (s) {
+		if (s->sidx > z_info->s_max)
+			z_info->s_max = s->sidx;
+		s = s->next;
+	}
+
+	/* allocate the direct access list and copy the data to it */
+	s_info = mem_zalloc((z_info->s_max+1) * sizeof(*s));
 	for (s = parser_priv(p); s; s = n) {
 		n = s->next;
-		if (s->sidx >= z_info->s_max)
-			continue;
+
 		ss = &s_info[s->sidx];
 		memcpy(ss, s, sizeof(*s));
 		k = objkind_get(s->tval, s->sval);
 		if (k) {
 			ss->next = k->spells;
 			k->spells = ss;
+		} else {
+			ss->next = NULL;
 		}
 		mem_free(s);
 	}
+	z_info->s_max += 1;
 
 	parser_destroy(p);
 	return 0;
@@ -2307,20 +2360,28 @@ static errr run_parse_mp(struct parser *p) {
 static errr finish_parse_mp(struct parser *p) {
 	struct monster_pain *mp, *n;
 		
-	pain_messages = mem_zalloc(sizeof(*mp) * z_info->mp_max);
-	for (mp = parser_priv(p); mp; mp = mp->next) {
-		if (mp->pain_idx >= z_info->mp_max)
-			continue;
-		memcpy(&pain_messages[mp->pain_idx], mp, sizeof(*mp));
-	}
-	
+	/* scan the list for the max id */
+	z_info->mp_max = 0;
 	mp = parser_priv(p);
 	while (mp) {
-		n = mp->next;
-		mem_free(mp);
-		mp = n;
+		if (mp->pain_idx > z_info->mp_max)
+			z_info->mp_max = mp->pain_idx;
+		mp = mp->next;
 	}
-	
+
+	/* allocate the direct access list and copy the data to it */
+	pain_messages = mem_zalloc((z_info->mp_max+1) * sizeof(*mp));
+	for (mp = parser_priv(p); mp; mp = n) {
+		memcpy(&pain_messages[mp->pain_idx], mp, sizeof(*mp));
+		n = mp->next;
+		if (n)
+			pain_messages[mp->pain_idx].next = &pain_messages[n->pain_idx];
+		else
+			pain_messages[mp->pain_idx].next = NULL;
+		mem_free(mp);
+	}
+	z_info->mp_max += 1;
+
 	parser_destroy(p);
 	return 0;
 }
@@ -2562,20 +2623,29 @@ static errr run_parse_pit(struct parser *p) {
 static errr finish_parse_pit(struct parser *p) {
 	struct pit_profile *pit, *n;
 		
-	pit_info = mem_zalloc(sizeof(*pit) * z_info->pit_max);
-	for (pit = parser_priv(p); pit; pit = pit->next) {
-		if (pit->pit_idx >= z_info->pit_max)
-			continue;
-		memcpy(&pit_info[pit->pit_idx], pit, sizeof(*pit));
-	}
-	
+	/* scan the list for the max id */
+	z_info->pit_max = 0;
 	pit = parser_priv(p);
 	while (pit) {
-		n = pit->next;
-		mem_free(pit);
-		pit = n;
+		if (pit->pit_idx > z_info->pit_max)
+			z_info->pit_max = pit->pit_idx;
+		pit = pit->next;
 	}
-	
+
+	/* allocate the direct access list and copy the data to it */
+	pit_info = mem_zalloc((z_info->pit_max+1) * sizeof(*pit));
+	for (pit = parser_priv(p); pit; pit = n) {
+		memcpy(&pit_info[pit->pit_idx], pit, sizeof(*pit));
+		n = pit->next;
+		if (n)
+			pit_info[pit->pit_idx].next = &pit_info[n->pit_idx];
+		else
+			pit_info[pit->pit_idx].next = NULL;
+
+		mem_free(pit);
+	}
+	z_info->pit_max += 1;
+
 	parser_destroy(p);
 	return 0;
 }
