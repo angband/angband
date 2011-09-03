@@ -466,6 +466,23 @@ static void init_stat_vals(int lvl)
 		
 }
 
+/*
+ *	Record the first level we find something
+ */
+static bool first_find(int fl[TRIES_SIZE])
+{
+	/* make sure we're not on an iteration above our array limit */
+	if (iter >= TRIES_SIZE) return FALSE;
+
+	/* make sure we haven't found it earlier on this iteration */
+	if (fl[iter] > 0) return FALSE;
+
+	/* assign the depth to this value */
+	fl[iter] = p_ptr->depth;
+	
+	/* success */
+	return TRUE;
+}
 
 
 void drop_on_square(object_type *j_ptr, int y, int x, bool verbose)
@@ -510,215 +527,6 @@ void drop_on_square(object_type *j_ptr, int y, int x, bool verbose)
 		return;
 	}
 }
-/* 
- * A rewrite of monster death that gets rid of some features
- * That we don't want to deal with.  Namely, no notifying the
- * player and no generation of Morgoth artifacts
- * 
- * It also replaces drop near with a new function that drops all 
- * the items on the exact square that the monster was on.
- */
-
-static void monster_death_stats(int m_idx)
-{
-	int j, y, x, level; //removed i
-
-	int dump_item = 0;
-	int dump_gold = 0;
-
-	int number = 0;
-	
-	object_type *i_ptr;
-	object_type object_type_body;
-
-	//s16b this_o_idx, next_o_idx = 0;
-
-	monster_type *m_ptr = cave_monster(cave, m_idx);
-
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
-
-	//bool visible = (m_ptr->ml || rf_has(r_ptr->flags, RF_UNIQUE));
-
-	bool great = (rf_has(r_ptr->flags, RF_DROP_GREAT)) ? TRUE : FALSE;
-	bool good = (rf_has(r_ptr->flags, RF_DROP_GOOD) ? TRUE : FALSE) || great;
-
-	bool gold_ok = (!rf_has(r_ptr->flags, RF_ONLY_ITEM));
-	bool item_ok = (!rf_has(r_ptr->flags, RF_ONLY_GOLD));
-
-	
-
-	/* Get the location */
-	y = m_ptr->fy;
-	x = m_ptr->fx;
-
-	/* Delete any traps the monsters was standing on */
-	cave_set_feat(cave,y,x,FEAT_FLOOR);
-	
-	/* Forget objects */
-	m_ptr->hold_o_idx = 0;
-
-
-	/* Determine how much we can drop */
-	if (rf_has(r_ptr->flags, RF_DROP_20) && randint0(100) < 20) number++;
-	if (rf_has(r_ptr->flags, RF_DROP_40) && randint0(100) < 40) number++;
-	if (rf_has(r_ptr->flags, RF_DROP_60) && randint0(100) < 60) number++;
-
-	if (rf_has(r_ptr->flags, RF_DROP_4)) number += rand_range(2, 6);
-	if (rf_has(r_ptr->flags, RF_DROP_3)) number += rand_range(2, 4);
-	if (rf_has(r_ptr->flags, RF_DROP_2)) number += rand_range(1, 3);
-	if (rf_has(r_ptr->flags, RF_DROP_1)) number++;
-
-	/* Take the best of average of monster level and current depth,
-	   and monster level - to reward fighting OOD monsters */
-	level = MAX((r_ptr->level + p_ptr->depth) / 2, r_ptr->level);
-
-	/* Drop some objects */
-	for (j = 0; j < number; j++)
-	{
-		/* Get local object */
-		i_ptr = &object_type_body;
-
-		assert(i_ptr->kind);
-
-		/* Wipe the object */
-		object_wipe(i_ptr);
-
-		/* Make Gold */
-		if (gold_ok && (!item_ok || (randint0(100) < 50)))
-		{
-			/* Make some gold */
-			make_gold(i_ptr, level, SV_GOLD_ANY);
-			dump_gold++;
-		}
-
-		/* Make Object */
-		else
-		{
-			/* Make an object */
-			if (!make_object(cave, i_ptr, level, good, great, NULL)) continue;
-			dump_item++;
-		}
-
-		
-
-		/* Drop it in the dungeon */
-		drop_near(cave, i_ptr, 0,y, x, TRUE);
-	}
-
-} 
-
-
-
-
-/* This will collect stats on a monster avoiding all
- * unique monsters.  Afterwards it will kill the
- * monsters.
- */
-
-static bool stats_monster(monster_type *m_ptr, int i, bool uniq)
-{
-	static int lvl;
-	/* Get monster race */
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
-		
-	/* get player depth */
-	lvl=p_ptr->depth;
-		
-	
-	/* Get out if we're looking at a unique and don't want to yet*/
-	if ((!uniq) && (rf_has(r_ptr->flags, RF_UNIQUE))) return FALSE;
-		
-	/* Increment monster count */
-	mon_total[lvl] += addval;
-	
-	/* Increment unique count if appropriate */
-	if ((uniq) && (rf_has(r_ptr->flags, RF_UNIQUE)))
-	{
-		/* add to total */
-		uniq_total[lvl] += addval;
-	
-		/* kill the unique if we're in clearing mode */
-		if (clearing) r_ptr->max_num = 0;
-		
-		//debugging print that we killed it
-		//msg_format("Killed %s",r_ptr->name);
-	}	
-	
-	/* Is it mostly dangerous (10 levels ood or less?)*/
-	if ((r_ptr->level > p_ptr->depth) && 
-		(r_ptr->level <= p_ptr->depth+10))
-		{
-			mon_ood[lvl] += addval;
-			
-			/* Is it a unique */
-			if (rf_has(r_ptr->flags, RF_UNIQUE)) uniq_ood[lvl] += addval;
-			
-		}
-		
-		
-	/* Is it deadly? */
-	if (r_ptr->level > p_ptr->depth + 10)
-	{
-		mon_deadly[lvl] += addval;
-	
-		/* Is it a unique? */
-		if (rf_has(r_ptr->flags, RF_UNIQUE)) uniq_deadly[lvl] += addval;
-						
-	}	
-	
-	/* Generate treasure */
-	monster_death_stats(i);	
-	
-	/* remove the monster */
-	delete_monster_idx(i);
-	
-	/* success */
-	return TRUE;
-}
-
-
-/*
- * Delete a single dungeon object
- *
- * This piece of code is identical to delete_object_idx
- * except that it does not include light_spot to save
- * time
- */
-static void delete_object_stat(int o_idx)
-{
-	object_type *j_ptr;
-
-	/* Excise */
-	excise_object_idx(o_idx);
-
-	/* Object */
-	j_ptr = object_byid(o_idx);
-
-	
-	/* Wipe the object */
-	object_wipe(j_ptr);
-
-	/* Count objects */
-	o_cnt--;
-}
-
-/*
- *	Record the first level we find something
- */
-static bool first_find(int fl[TRIES_SIZE])
-{
-	/* make sure we're not on an iteration above our array limit */
-	if (iter >= TRIES_SIZE) return FALSE;
-
-	/* make sure we haven't found it earlier on this iteration */
-	if (fl[iter] > 0) return FALSE;
-
-	/* assign the depth to this value */
-	fl[iter] = p_ptr->depth;
-	
-	/* success */
-	return TRUE;
-}
 
 /*
  * Add values to each category of statistics based 
@@ -755,7 +563,6 @@ static void add_stats(double total[MAX_LVL], double mondrop[MAX_LVL], double inv
  * a much different opinion.  Luckily, I tried to make it
  * trivial to add new items to log.
 */ 
-
 static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool uniq)
 {
 	
@@ -1565,9 +1372,160 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		else gold_floor[lvl] += (gold_temp / tries);
 	}	
 	
-	/* remove the object */	
-	delete_object_stat(cave->o_idx[y][x]);
 }
+
+
+
+/* 
+ * A rewrite of monster death that gets rid of some features
+ * That we don't want to deal with.  Namely, no notifying the
+ * player and no generation of Morgoth artifacts
+ * 
+ * It also replaces drop near with a new function that drops all 
+ * the items on the exact square that the monster was on.
+ */
+void monster_death_stats(int m_idx)
+{
+	int y, x;
+	s16b this_o_idx, next_o_idx = 0;
+
+	monster_type *m_ptr;
+	monster_race *r_ptr;
+
+	bool uniq;
+
+	assert(m_idx > 0);
+	m_ptr = cave_monster(cave, m_idx);
+	r_ptr = &r_info[m_ptr->r_idx];
+
+	
+	/* Check if monster is UNIQUE */
+	uniq = rf_has(r_ptr->flags,RF_UNIQUE);
+
+	/* Get the location */
+	y = m_ptr->fy;
+	x = m_ptr->fx;
+	
+	/* Delete any mimicked objects */
+	if (m_ptr->mimicked_o_idx > 0)
+		delete_object_idx(m_ptr->mimicked_o_idx);
+
+	/* Drop objects being carried */
+	for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx) {
+		object_type *o_ptr;
+
+		/* Get the object */
+		o_ptr = object_byid(this_o_idx);
+
+		/* Line up the next object */
+		next_o_idx = o_ptr->next_o_idx;
+
+		/* Paranoia */
+		o_ptr->held_m_idx = 0;
+		
+		/* Get data */
+		get_obj_data(o_ptr, y, x, TRUE, uniq);
+
+		/* delete the object */
+		delete_object_idx(this_o_idx);
+	}
+	
+	/* Forget objects */
+	m_ptr->hold_o_idx = 0;
+}
+
+
+
+/* This will collect stats on a monster avoiding all
+ * unique monsters.  Afterwards it will kill the
+ * monsters.
+ */
+
+static bool stats_monster(monster_type *m_ptr, int i)
+{
+	static int lvl;
+	/* Get monster race */
+	monster_race *r_ptr = &r_info[m_ptr->r_idx];
+		
+	/* get player depth */
+	lvl=p_ptr->depth;
+		
+		
+	/* Increment monster count */
+	mon_total[lvl] += addval;
+	
+	/* Increment unique count if appropriate */
+	if (rf_has(r_ptr->flags, RF_UNIQUE))
+	{
+		/* add to total */
+		uniq_total[lvl] += addval;
+	
+		/* kill the unique if we're in clearing mode */
+		if (clearing) r_ptr->max_num = 0;
+		
+		//debugging print that we killed it
+		//msg_format("Killed %s",r_ptr->name);
+	}	
+	
+	/* Is it mostly dangerous (10 levels ood or less?)*/
+	if ((r_ptr->level > p_ptr->depth) && 
+		(r_ptr->level <= p_ptr->depth+10))
+		{
+			mon_ood[lvl] += addval;
+			
+			/* Is it a unique */
+			if (rf_has(r_ptr->flags, RF_UNIQUE)) uniq_ood[lvl] += addval;
+			
+		}
+		
+		
+	/* Is it deadly? */
+	if (r_ptr->level > p_ptr->depth + 10)
+	{
+		mon_deadly[lvl] += addval;
+	
+		/* Is it a unique? */
+		if (rf_has(r_ptr->flags, RF_UNIQUE)) uniq_deadly[lvl] += addval;
+						
+	}	
+	
+	/* Generate treasure */
+	monster_death_stats(i);	
+	
+	/* remove the monster */
+	delete_monster_idx(i);
+	
+	/* success */
+	return TRUE;
+}
+
+
+/*
+ * Delete a single dungeon object
+ *
+ * This piece of code is identical to delete_object_idx
+ * except that it does not include light_spot to save
+ * time
+ */
+static void delete_object_stat(int o_idx)
+{
+	object_type *j_ptr;
+
+	/* Excise */
+	excise_object_idx(o_idx);
+
+	/* Object */
+	j_ptr = object_byid(o_idx);
+
+	
+	/* Wipe the object */
+	object_wipe(j_ptr);
+
+	/* Count objects */
+	o_cnt--;
+}
+
+
 
 /* Print heading infor for the file */
 static void print_heading(void)
@@ -2065,7 +2023,7 @@ static void post_process_stats(void)
 /*
  * Scans the dungeon for objects
 */
-static void scan_for_objects(bool mon, bool uniq)
+static void scan_for_objects(void)
 { 
 	int y, x;
 
@@ -2073,15 +2031,13 @@ static void scan_for_objects(bool mon, bool uniq)
 		for (x = 1; x < DUNGEON_WID - 1; x++) {
 			const object_type *o_ptr;
 
-			/* Do not be fooled!
-			 *
-			 * Despite its harmless-seeming name, get_obj_data() does a host
-			 * of crazy things, including deleting the object from the square.
-			 *
-			 * This is why we repeatedly get the first object.
-			 */
+			
 			while ((o_ptr = get_first_object(y, x))) {
-				get_obj_data(o_ptr,y,x,mon,uniq);
+				/* get data on the object */
+				get_obj_data(o_ptr, y, x, FALSE, FALSE);
+				
+				/* delete the object */
+				delete_object_stat(cave->o_idx[y][x]);
 			}
 		}
 	}
@@ -2091,7 +2047,7 @@ static void scan_for_objects(bool mon, bool uniq)
  * This will scan the dungeon for monsters and then kill each
  * and every last one.
 */
-static void scan_for_monsters(bool uniq)
+static void scan_for_monsters(void)
 { 
 	int i;
 		
@@ -2103,7 +2059,7 @@ static void scan_for_monsters(bool uniq)
 		/* Skip dead monsters */
 		if (!m_ptr->r_idx) continue;
 		
-		stats_monster(m_ptr,i, uniq);
+		stats_monster(m_ptr,i);
 	}
 }
 /*
@@ -2116,19 +2072,11 @@ static void stats_collect_level(void)
 	cave_generate(cave,p_ptr);
 	
 	/* Scan for objects, these are floor objects */
-	scan_for_objects(FALSE,FALSE);
+	scan_for_objects();
 		
 	/* Get stats (and kill) all non-unique monsters */
-	scan_for_monsters(FALSE);
+	scan_for_monsters();
 		
-	/* Do second scan for objects, monster objects */
-	scan_for_objects(TRUE,FALSE);
-		
-	/* Get stats (and kill) all unique monster */
-	scan_for_monsters(TRUE);
-		
-	/* Do third scan for objects, unique objects */
-	scan_for_objects(TRUE,TRUE);	
 }
 
 /* 
