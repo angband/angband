@@ -242,6 +242,21 @@ bool prefix_i(const char *s, const char *t)
 	return (TRUE);
 }
 
+/*
+ * rewrite string s in-place "skipping" every occurrence of character c
+ */
+void strskip(char *s, const char c){
+	char *in=s;
+	char *out=s;
+	while(*in){
+		if(*in!=c){
+			*out=*in;
+			out++;
+		}
+		in++;
+	}
+	*out=0;
+}
 
 /*
  * Redefinable "plog" action

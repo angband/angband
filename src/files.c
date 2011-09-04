@@ -1433,6 +1433,9 @@ bool show_file(const char *name, const char *what, int line, int mode)
 			/* TODO: do something with the |...| strings */
 			if (prefix(buf, ".. ")) continue;
 
+			/* skip | characters */
+			strskip(buf,'|');
+
 			/* Count the "real" lines */
 			next++;
 
