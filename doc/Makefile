@@ -13,6 +13,8 @@ SECTIONS := general birth playing attack dungeon customize option command \
 
 INDEX := index
 
+CLEAN = manual.ind manual.ilg manual.toc manual.tex manual.log manual.aux manual.tex manual.pdf
+
 RSTFILESWITHOUTPATH := $(addsuffix .txt, $(SECTIONS))
 RSTINDEXWITHOUTPATH := $(addsuffix .txt, $(INDEX))
 
@@ -44,16 +46,4 @@ manual.pdf: manual.tex
 	else \
 		${COMPILE_FAILED}; \
 	fi
-
-clean:
-	for i in manual.ind manual.ilg manual.toc manual.tex manual.log \
-	manual.aux; do \
-		if test -f $$i -o -d $$i; then \
-			if rm -fr $$i; then \
-				${DELETE_OK}; \
-			else \
-				${DELETE_FAILED}; \
-			fi \
-		fi \
-	done
 
