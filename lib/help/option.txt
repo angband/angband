@@ -5,7 +5,7 @@ Option Descriptions
 Options are accessible through the ``=`` command, which provides an
 interface to the various sets of options available to the player.
 
-In the decriptions below, each option is listed as the textual summary
+In the descriptions below, each option is listed as the textual summary
 which is shown on the "options" screen, plus the internal name of the
 option in brackets, followed by a textual description of the option.
 
@@ -18,13 +18,8 @@ progress), "flush" (forget any keypresses waiting in the keypress queue),
 "fresh" (dump any pending output to the screen), and "sub-windows" (see
 below).
 
-Interface options
-=================
-
-.. _use_sound:
-
-Use sound ``[use_sound]``
-  Turns on sound effects, if your system supports them.
+Interface and Display Options
+=============================
 
 .. _rogue_like_commands:
 
@@ -57,33 +52,6 @@ Open/Disarm/Close without direction ``[easy_open]``
   bother asking for a direction when the player asks to ``o``\pen omething.
   The same applies for ``c``\losing doors and ``D``\isarming traps.
 
-.. _mouse_movement:
-
-Allow mouse clicks to move the player  ``[mouse_movement]``
-  Clicking on the main window will be interpreted as a move command to that
-  spot.
-
-.. _mouse_buttons:
-
-Show mouse status line buttons ``[mouse_buttons]``
-  Creates clickable "buttons" on the bottom line of the main window, to
-  enhance mouse-led play.
-
-.. _xchars_to_file:
-
-Allow accents in output files ``[xchars_to_file]``
-  Extended characters (accents, umlauts and so on) will be printed in files
-  created by the game (character dumps, screenshots etc.).
-
-Display options
-===============
-
-.. _hp_changes_color:
-
-Player color indicates low hit points ``[hp_changes_color]``
-  This option makes the player ``@`` turn various shades of colour from
-  white to red, depending on percentage of HP remaining.
-
 .. _center_player:
 
 Center map continuously ``[center_player]``
@@ -92,18 +60,17 @@ Center map continuously ``[center_player]``
   how one section at a time - the display will "flip" to the next section
   when the player nears the edge.
 
-.. _show_flavors:
-
-Show flavors in object descriptions ``[show_flavors]``
-  Display "flavors" (color or variety) in object descriptions, even for
-  objects whose type is known. This does not affect objects in stores.
-
 .. _view_yellow_light:
 
 Use special colors for torch-lit grids ``[view_yellow_light]``
-  This option causes special colors to be used for "torch-lit" grids in
-  certain situations (see `view_granite_light`_ and `view_special_light`_).
+  This option causes special colors to be used for "torch-lit" grids.
   Turning this option off will slightly improve game speed.
+
+.. _hp_changes_color:
+
+Player color indicates low hit points ``[hp_changes_color]``
+  This option makes the player ``@`` turn various shades of colour from
+  white to red, depending on percentage of HP remaining.
 
 .. _animate_flicker:
 
@@ -118,6 +85,35 @@ Show unique monsters in a special colour ``[purple_uniques]``
   not used for any "normal" monsters - so you can tell at a glance that
   they are unique. If you like the idea but don't like the colour, you can
   edit it via the "interact with colors" option.
+
+.. _show_flavors:
+
+Show flavors in object descriptions ``[show_flavors]``
+  Display "flavors" (color or variety) in object descriptions, even for
+  objects whose type is known. This does not affect objects in stores.
+
+.. _mouse_movement:
+
+Allow mouse clicks to move the player  ``[mouse_movement]``
+  Clicking on the main window will be interpreted as a move command to that
+  spot.
+
+.. _mouse_buttons:
+
+Show mouse status line buttons ``[mouse_buttons]``
+  Creates clickable "buttons" on the bottom line of the main window, to
+  enhance mouse-led play.
+
+.. _use_sound:
+
+Use sound ``[use_sound]``
+  Turns on sound effects, if your system supports them.
+
+.. _xchars_to_file:
+
+Allow accents in output files ``[xchars_to_file]``
+  Extended characters (accents, umlauts and so on) will be printed in files
+  created by the game (character dumps, screenshots etc.).
 
 Disturbance options
 ===================
@@ -136,7 +132,7 @@ Disturb whenever viewable monster moves ``[disturb_near]``
   becomes viewable for the first time, and also whenever any viewable
   monster becomes no longer viewable. This option ignores the existence of
   "telepathy" for the purpose of determining whether a monster is
-  "viewable". See also the `view_reduce_view`_ option.
+  "viewable".
 
 .. _disturb_detect:
 
@@ -207,7 +203,7 @@ Use previous set of randarts ``[birth_keep_randarts]``
 
 Monsters chase recent locations ``[birth_ai_smell]``
   Allow monsters to take advantage of "old" trails that you may have left
-  in the dungeon. This has no effect unless `flow_by_sound`_ is also set.
+  in the dungeon.
 
 .. _birth_ai_packs:
 
