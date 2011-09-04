@@ -259,6 +259,19 @@ void strskip(char *s, const char c){
 }
 
 /*
+ * returns TRUE if string only contains spaces
+ */
+bool contains_only_spaces(const char* s){
+	char spaces[]=" \t";
+	while(*s){
+		if(strchr(spaces,*s)!=NULL)
+			return FALSE;
+		s++;
+	}
+	return TRUE;
+}
+
+/*
  * Redefinable "plog" action
  */
 void (*plog_aux)(const char *) = NULL;

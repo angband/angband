@@ -1255,6 +1255,9 @@ bool show_file(const char *name, const char *what, int line, int mode)
 	char hook[26][32];
 
 	int wid, hgt;
+	
+	/* TRUE if we are inside a RST block that should be skipped */
+	bool skip_lines = FALSE;
 
 
 
@@ -1282,7 +1285,6 @@ bool show_file(const char *name, const char *what, int line, int mode)
 
 	/* Redirect the name */
 	name = filename;
-
 
 	/* Hack XXX XXX XXX */
 	if (what)
@@ -1329,6 +1331,13 @@ bool show_file(const char *name, const char *what, int line, int mode)
 		/* Read a line or stop */
 		if (!file_getl(fff, buf, sizeof(buf))) break;
 
+		/* Skip lines if we are inside a RST directive*/
+		if(skip_lines){
+			if(contains_only_spaces(buf))
+				skip_lines=FALSE;
+			continue;
+		}
+
 		/* Parse a very small subset of RST */
 		/* TODO: should be more flexible */
 		if (prefix(buf, ".. "))
@@ -1364,7 +1373,8 @@ bool show_file(const char *name, const char *what, int line, int mode)
 				}
 			}
 
-			/* Skip this */
+			/* Skip this and enter skip mode*/
+			skip_lines = TRUE;
 			continue;
 		}
 
@@ -1374,7 +1384,6 @@ bool show_file(const char *name, const char *what, int line, int mode)
 
 	/* Save the number of "real" lines */
 	size = next;
-
 
 
 	/* Display the file */
@@ -1388,7 +1397,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 		if (line > (size - (hgt - 4))) line = size - (hgt - 4);
 		if (line < 0) line = 0;
 
-
+		skip_lines = FALSE;
 		/* Re-open the file if needed */
 		if (next > line)
 		{
@@ -1410,9 +1419,19 @@ bool show_file(const char *name, const char *what, int line, int mode)
 			/* Get a line */
 			if (!file_getl(fff, buf, sizeof(buf))) break;
 
+			/* Skip lines if we are inside a RST directive*/
+			if(skip_lines){
+				if(contains_only_spaces(buf))
+					skip_lines=FALSE;
+				continue;
+			}
+
 			/* Skip RST directives */
-			/* TODO: should ignore the full paragraph */
-			if (prefix(buf, ".. ")) continue;
+			if (prefix(buf, ".. "))
+			{
+				skip_lines=TRUE;
+				continue;
+			}
 
 			/* Count the lines */
 			next++;
@@ -1428,10 +1447,19 @@ bool show_file(const char *name, const char *what, int line, int mode)
 			/* Get a line of the file or stop */
 			if (!file_getl(fff, buf, sizeof(buf))) break;
 
-			/* Hack -- skip RST directives */
-			/* TODO: should ignore the full paragraph */
-			/* TODO: do something with the |...| strings */
-			if (prefix(buf, ".. ")) continue;
+			/* Skip lines if we are inside a RST directive*/
+			if(skip_lines){
+				if(contains_only_spaces(buf))
+					skip_lines=FALSE;
+				continue;
+			}
+
+			/* Skip RST directives */
+			if (prefix(buf, ".. "))
+			{
+				skip_lines=TRUE;
+				continue;
+			}
 
 			/* skip | characters */
 			strskip(buf,'|');
