@@ -13,7 +13,8 @@ SECTIONS := general birth playing attack dungeon customize option command \
 
 INDEX := index
 
-CLEAN = manual.ind manual.ilg manual.toc manual.tex manual.log manual.aux manual.tex manual.pdf
+CLEAN = manual.ind manual.ilg manual.toc manual.tex manual.log manual.aux \
+	manual.tex manual.pdf manual.html manual.out
 
 RSTFILESWITHOUTPATH := $(addsuffix .txt, $(SECTIONS))
 RSTINDEXWITHOUTPATH := $(addsuffix .txt, $(INDEX))
