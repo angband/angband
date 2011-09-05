@@ -1255,6 +1255,9 @@ bool show_file(const char *name, const char *what, int line, int mode)
 	char hook[26][32];
 
 	int wid, hgt;
+	
+	/* TRUE if we are inside a RST block that should be skipped */
+	bool skip_lines = FALSE;
 
 
 
@@ -1282,7 +1285,6 @@ bool show_file(const char *name, const char *what, int line, int mode)
 
 	/* Redirect the name */
 	name = filename;
-
 
 	/* Hack XXX XXX XXX */
 	if (what)
@@ -1329,27 +1331,33 @@ bool show_file(const char *name, const char *what, int line, int mode)
 		/* Read a line or stop */
 		if (!file_getl(fff, buf, sizeof(buf))) break;
 
-		/* XXX Parse "menu" items */
-		if (prefix(buf, "***** "))
-		{
-			char b1 = '[', b2 = ']';
+		/* Skip lines if we are inside a RST directive*/
+		if(skip_lines){
+			if(contains_only_spaces(buf))
+				skip_lines=FALSE;
+			continue;
+		}
 
-			/* Notice "menu" requests */
-			if ((buf[6] == b1) && isalpha((unsigned char)buf[7]) &&
-			    (buf[8] == b2) && (buf[9] == ' '))
+		/* Parse a very small subset of RST */
+		/* TODO: should be more flexible */
+		if (prefix(buf, ".. "))
+		{
+			/* parse ".. menu:: [x] filename.txt" (with exact spacing)*/
+			if(prefix(buf+strlen(".. "), "menu:: [") && 
+                           buf[strlen(".. menu:: [x")]==']')
 			{
 				/* This is a menu file */
 				menu = TRUE;
 
 				/* Extract the menu item */
-				k = A2I(buf[7]);
+				k = A2I(buf[strlen(".. menu:: [")]);
 
 				/* Store the menu item (if valid) */
 				if ((k >= 0) && (k < 26))
-					my_strcpy(hook[k], buf + 10, sizeof(hook[0]));
+					my_strcpy(hook[k], buf + strlen(".. menu:: [x] "), sizeof(hook[0]));
 			}
-			/* Notice "tag" requests */
-			else if (buf[6] == '<')
+			/* parse ".. _some_hyperlink_target:" */
+			else if (buf[strlen(".. ")] == '_')
 			{
 				if (tag)
 				{
@@ -1357,7 +1365,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 					buf[strlen(buf) - 1] = '\0';
 
 					/* Compare with the requested tag */
-					if (streq(buf + 7, tag))
+					if (streq(buf + strlen(".. _"), tag))
 					{
 						/* Remember the tagged line */
 						line = next;
@@ -1365,7 +1373,8 @@ bool show_file(const char *name, const char *what, int line, int mode)
 				}
 			}
 
-			/* Skip this */
+			/* Skip this and enter skip mode*/
+			skip_lines = TRUE;
 			continue;
 		}
 
@@ -1375,7 +1384,6 @@ bool show_file(const char *name, const char *what, int line, int mode)
 
 	/* Save the number of "real" lines */
 	size = next;
-
 
 
 	/* Display the file */
@@ -1389,7 +1397,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 		if (line > (size - (hgt - 4))) line = size - (hgt - 4);
 		if (line < 0) line = 0;
 
-
+		skip_lines = FALSE;
 		/* Re-open the file if needed */
 		if (next > line)
 		{
@@ -1411,8 +1419,19 @@ bool show_file(const char *name, const char *what, int line, int mode)
 			/* Get a line */
 			if (!file_getl(fff, buf, sizeof(buf))) break;
 
-			/* Skip tags/links */
-			if (prefix(buf, "***** ")) continue;
+			/* Skip lines if we are inside a RST directive*/
+			if(skip_lines){
+				if(contains_only_spaces(buf))
+					skip_lines=FALSE;
+				continue;
+			}
+
+			/* Skip RST directives */
+			if (prefix(buf, ".. "))
+			{
+				skip_lines=TRUE;
+				continue;
+			}
 
 			/* Count the lines */
 			next++;
@@ -1428,8 +1447,22 @@ bool show_file(const char *name, const char *what, int line, int mode)
 			/* Get a line of the file or stop */
 			if (!file_getl(fff, buf, sizeof(buf))) break;
 
-			/* Hack -- skip "special" lines */
-			if (prefix(buf, "***** ")) continue;
+			/* Skip lines if we are inside a RST directive*/
+			if(skip_lines){
+				if(contains_only_spaces(buf))
+					skip_lines=FALSE;
+				continue;
+			}
+
+			/* Skip RST directives */
+			if (prefix(buf, ".. "))
+			{
+				skip_lines=TRUE;
+				continue;
+			}
+
+			/* skip | characters */
+			strskip(buf,'|');
 
 			/* Count the "real" lines */
 			next++;
