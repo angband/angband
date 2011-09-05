@@ -466,6 +466,23 @@ static void init_stat_vals(int lvl)
 		
 }
 
+/*
+ *	Record the first level we find something
+ */
+static bool first_find(int fl[TRIES_SIZE])
+{
+	/* make sure we're not on an iteration above our array limit */
+	if (iter >= TRIES_SIZE) return FALSE;
+
+	/* make sure we haven't found it earlier on this iteration */
+	if (fl[iter] > 0) return FALSE;
+
+	/* assign the depth to this value */
+	fl[iter] = p_ptr->depth;
+	
+	/* success */
+	return TRUE;
+}
 
 
 void drop_on_square(object_type *j_ptr, int y, int x, bool verbose)
@@ -496,8 +513,8 @@ void drop_on_square(object_type *j_ptr, int y, int x, bool verbose)
 			
 			
 	/* Give it to the floor */
-	if (!floor_carry(cave, by, bx, j_ptr))
-	{
+	if (!floor_carry(cave, by, bx, j_ptr)){
+	
 		/* Message */
 		msg("The %s disappear%s.", o_name, PLURAL(plural));
 
@@ -509,215 +526,6 @@ void drop_on_square(object_type *j_ptr, int y, int x, bool verbose)
 		/* Failure */
 		return;
 	}
-}
-/* 
- * A rewrite of monster death that gets rid of some features
- * That we don't want to deal with.  Namely, no notifying the
- * player and no generation of Morgoth artifacts
- * 
- * It also replaces drop near with a new function that drops all 
- * the items on the exact square that the monster was on.
- */
-
-static void monster_death_stats(int m_idx)
-{
-	int j, y, x, level; //removed i
-
-	int dump_item = 0;
-	int dump_gold = 0;
-
-	int number = 0;
-	
-	object_type *i_ptr;
-	object_type object_type_body;
-
-	//s16b this_o_idx, next_o_idx = 0;
-
-	monster_type *m_ptr = cave_monster(cave, m_idx);
-
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
-
-	//bool visible = (m_ptr->ml || rf_has(r_ptr->flags, RF_UNIQUE));
-
-	bool great = (rf_has(r_ptr->flags, RF_DROP_GREAT)) ? TRUE : FALSE;
-	bool good = (rf_has(r_ptr->flags, RF_DROP_GOOD) ? TRUE : FALSE) || great;
-
-	bool gold_ok = (!rf_has(r_ptr->flags, RF_ONLY_ITEM));
-	bool item_ok = (!rf_has(r_ptr->flags, RF_ONLY_GOLD));
-
-	
-
-	/* Get the location */
-	y = m_ptr->fy;
-	x = m_ptr->fx;
-
-	/* Delete any traps the monsters was standing on */
-	cave_set_feat(cave,y,x,FEAT_FLOOR);
-	
-	/* Forget objects */
-	m_ptr->hold_o_idx = 0;
-
-
-	/* Determine how much we can drop */
-	if (rf_has(r_ptr->flags, RF_DROP_20) && randint0(100) < 20) number++;
-	if (rf_has(r_ptr->flags, RF_DROP_40) && randint0(100) < 40) number++;
-	if (rf_has(r_ptr->flags, RF_DROP_60) && randint0(100) < 60) number++;
-
-	if (rf_has(r_ptr->flags, RF_DROP_4)) number += rand_range(2, 6);
-	if (rf_has(r_ptr->flags, RF_DROP_3)) number += rand_range(2, 4);
-	if (rf_has(r_ptr->flags, RF_DROP_2)) number += rand_range(1, 3);
-	if (rf_has(r_ptr->flags, RF_DROP_1)) number++;
-
-	/* Take the best of average of monster level and current depth,
-	   and monster level - to reward fighting OOD monsters */
-	level = MAX((r_ptr->level + p_ptr->depth) / 2, r_ptr->level);
-
-	/* Drop some objects */
-	for (j = 0; j < number; j++)
-	{
-		/* Get local object */
-		i_ptr = &object_type_body;
-
-		assert(i_ptr->kind);
-
-		/* Wipe the object */
-		object_wipe(i_ptr);
-
-		/* Make Gold */
-		if (gold_ok && (!item_ok || (randint0(100) < 50)))
-		{
-			/* Make some gold */
-			make_gold(i_ptr, level, SV_GOLD_ANY);
-			dump_gold++;
-		}
-
-		/* Make Object */
-		else
-		{
-			/* Make an object */
-			if (!make_object(cave, i_ptr, level, good, great, NULL)) continue;
-			dump_item++;
-		}
-
-		
-
-		/* Drop it in the dungeon */
-		drop_near(cave, i_ptr, 0,y, x, TRUE);
-	}
-
-} 
-
-
-
-
-/* This will collect stats on a monster avoiding all
- * unique monsters.  Afterwards it will kill the
- * monsters.
- */
-
-static bool stats_monster(monster_type *m_ptr, int i, bool uniq)
-{
-	static int lvl;
-	/* Get monster race */
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
-		
-	/* get player depth */
-	lvl=p_ptr->depth;
-		
-	
-	/* Get out if we're looking at a unique and don't want to yet*/
-	if ((!uniq) && (rf_has(r_ptr->flags, RF_UNIQUE))) return FALSE;
-		
-	/* Increment monster count */
-	mon_total[lvl] += addval;
-	
-	/* Increment unique count if appropriate */
-	if ((uniq) && (rf_has(r_ptr->flags, RF_UNIQUE)))
-	{
-		/* add to total */
-		uniq_total[lvl] += addval;
-	
-		/* kill the unique if we're in clearing mode */
-		if (clearing) r_ptr->max_num = 0;
-		
-		//debugging print that we killed it
-		//msg_format("Killed %s",r_ptr->name);
-	}	
-	
-	/* Is it mostly dangerous (10 levels ood or less?)*/
-	if ((r_ptr->level > p_ptr->depth) && 
-		(r_ptr->level <= p_ptr->depth+10))
-		{
-			mon_ood[lvl] += addval;
-			
-			/* Is it a unique */
-			if (rf_has(r_ptr->flags, RF_UNIQUE)) uniq_ood[lvl] += addval;
-			
-		}
-		
-		
-	/* Is it deadly? */
-	if (r_ptr->level > p_ptr->depth + 10)
-	{
-		mon_deadly[lvl] += addval;
-	
-		/* Is it a unique? */
-		if (rf_has(r_ptr->flags, RF_UNIQUE)) uniq_deadly[lvl] += addval;
-						
-	}	
-	
-	/* Generate treasure */
-	monster_death_stats(i);	
-	
-	/* remove the monster */
-	delete_monster_idx(i);
-	
-	/* success */
-	return TRUE;
-}
-
-
-/*
- * Delete a single dungeon object
- *
- * This piece of code is identical to delete_object_idx
- * except that it does not include light_spot to save
- * time
- */
-static void delete_object_stat(int o_idx)
-{
-	object_type *j_ptr;
-
-	/* Excise */
-	excise_object_idx(o_idx);
-
-	/* Object */
-	j_ptr = object_byid(o_idx);
-
-	
-	/* Wipe the object */
-	object_wipe(j_ptr);
-
-	/* Count objects */
-	o_cnt--;
-}
-
-/*
- *	Record the first level we find something
- */
-static bool first_find(int fl[TRIES_SIZE])
-{
-	/* make sure we're not on an iteration above our array limit */
-	if (iter >= TRIES_SIZE) return FALSE;
-
-	/* make sure we haven't found it earlier on this iteration */
-	if (fl[iter] > 0) return FALSE;
-
-	/* assign the depth to this value */
-	fl[iter] = p_ptr->depth;
-	
-	/* success */
-	return TRUE;
 }
 
 /*
@@ -755,7 +563,6 @@ static void add_stats(double total[MAX_LVL], double mondrop[MAX_LVL], double inv
  * a much different opinion.  Luckily, I tried to make it
  * trivial to add new items to log.
 */ 
-
 static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool uniq)
 {
 	
@@ -781,8 +588,8 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 	
 	/* has free action (hack: don't include Inertia)*/
 	if (of_has(f,OF_FREE_ACT) && 
-		!((o_ptr->tval == TV_AMULET) && (o_ptr->sval==SV_AMULET_INERTIA)))
-		{
+		!((o_ptr->tval == TV_AMULET) && (o_ptr->sval==SV_AMULET_INERTIA))){
+		
 			/* add the stats */
 			add_stats( faeq_total,  faeq_mon,  faeq_vault,vault,mon,number);
 			
@@ -792,8 +599,8 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 	
 	
 	/* has see invis */
-	if (of_has(f,OF_SEE_INVIS))
-	{
+	if (of_has(f,OF_SEE_INVIS)){
+	
 		add_stats( sieq_total,  sieq_mon,  sieq_vault,vault,mon,number);
 		first_find(si_it);
 	}
@@ -801,10 +608,11 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
  	if ((of_has(f,OF_RES_ACID)) ||
 		(of_has(f,OF_RES_ELEC)) ||
 		(of_has(f,OF_RES_COLD)) ||
-		(of_has(f,OF_RES_FIRE)))
-	{
-		add_stats( reeq_total,  reeq_mon,  reeq_vault,vault,mon,number);
+		(of_has(f,OF_RES_FIRE))){
+		
+			add_stats( reeq_total,  reeq_mon,  reeq_vault,vault,mon,number);
 	}
+	
 	/* has rbase */
 	if ((of_has(f,OF_RES_ACID)) &&
 		(of_has(f,OF_RES_ELEC)) &&
@@ -813,27 +621,27 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		add_stats( rbeq_total,  rbeq_mon,  rbeq_vault,vault,mon,number);
 
 	/* has resist poison */
-	if (of_has(f,OF_RES_POIS))
-	{
+	if (of_has(f,OF_RES_POIS)){
+	
 		add_stats( poeq_total,  poeq_mon,  poeq_vault,vault,mon,number);
 		first_find(po_it);
 	}
 	/* has resist nexus */
-	if (of_has(f,OF_RES_NEXUS))
-	{
+	if (of_has(f,OF_RES_NEXUS)){
+	
 		add_stats( nxeq_total,  nxeq_mon,  nxeq_vault,vault,mon,number);
 		first_find(nx_it);
 	}
 	/* has resist blind */
-	if (of_has(f,OF_RES_BLIND))
-	{
+	if (of_has(f,OF_RES_BLIND)){
+	
 		add_stats( bleq_total,  bleq_mon,  bleq_vault,vault,mon,number);
 		first_find(bl_it);
 	}
 	
 	/* has resist conf */
-	if (of_has(f,OF_RES_CONFU))
-	{
+	if (of_has(f,OF_RES_CONFU)){
+	
 		add_stats( cfeq_total,  cfeq_mon,  cfeq_vault,vault,mon,number);	
 		first_find(cf_it);
 	}
@@ -843,14 +651,14 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		add_stats( speq_total,  speq_mon,  speq_vault,vault,mon,number);
 				
 	/* has telepathy */
-	if (of_has(f,OF_TELEPATHY))
-	{
+	if (of_has(f,OF_TELEPATHY)){
+	
 		add_stats( teeq_total,  teeq_mon,  teeq_vault,vault,mon,number);
 		first_find(te_it);
 	}
 	
-	switch(o_ptr->tval)
-	{
+	switch(o_ptr->tval){
+	
 		/* armor */
 		case TV_BOOTS:
 		case TV_GLOVES:
@@ -860,8 +668,8 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		case TV_CLOAK:
 		case TV_SOFT_ARMOR:
 		case TV_HARD_ARMOR:
-		case TV_DRAG_ARMOR:
-		{	
+		case TV_DRAG_ARMOR:{
+		
 			/* do not include artifacts */
 			if (o_ptr->artifact) break;
 			
@@ -904,8 +712,8 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		case TV_DIGGING:
 		case TV_HAFTED:
 		case TV_POLEARM:
-		case TV_SWORD:
-		{
+		case TV_SWORD:{
+		
 			/* do not include artifacts */
 			if (o_ptr->artifact) break;
 				
@@ -1022,8 +830,8 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		}
 		
 		/* launchers */
-		case TV_BOW:
-		{
+		case TV_BOW:{
+		
 			/* do not include artifacts */
 			if (o_ptr->artifact) break;
 			
@@ -1070,9 +878,10 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 				add_stats( cubow_total,  cubow_mon,  cubow_vault, vault, mon,number);
 			break;
 		}
+		
 		/* potion */
-		case TV_POTION:
-		{
+		case TV_POTION:{
+		
 			/* add total amounts */
 			add_stats( pot_total, pot_mon, pot_vault,vault,mon,number);
 			
@@ -1080,22 +889,22 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 			effect=object_effect(o_ptr);
 			 
 			/*stat gain*/
-			switch(effect)
-			{
+			switch(effect){
+			
 				/* skip CHR */
 				case EF_GAIN_STR:
 				case EF_GAIN_INT:
 				case EF_GAIN_WIS:
 				case EF_GAIN_DEX:
-				case EF_GAIN_CON:
-				{
+				case EF_GAIN_CON:{
+				
 					add_stats( gain_total,  gain_mon,  gain_vault,vault,mon,number);
 					break;
 				}
 				
 				/* Aug */
-				case EF_GAIN_ALL:
-				{
+				case EF_GAIN_ALL:{
+				
 					int k;
 					/*Augmentation counts as 5 stat gain pots */
 					for (k=1;k<=5;k++)
@@ -1103,8 +912,8 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 					break;	
 				}
 				
-				case EF_ENLIGHTENMENT2:
-				{
+				case EF_ENLIGHTENMENT2:{
+				
 					/* *Enlight* counts as 2 stat pots */
 					int k;
 					for (k=1;k<=2;k++) 
@@ -1112,15 +921,15 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 					break;
 				}
 				
-				case EF_RESTORE_MANA:
-				{	
+				case EF_RESTORE_MANA:{
+				
 					add_stats( rmana_total,  rmana_mon,  rmana_vault,vault,mon,number);
 					break;
 				}
 				
 				case EF_CURE_NONORLYBIG:
-				case EF_CURE_FULL2:
-				{
+				case EF_CURE_FULL2:{
+				
 					add_stats( bigheal_total,  bigheal_mon,  bigheal_vault,vault,mon,number);
 					break;
 				}
@@ -1130,8 +939,8 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		}
 		
 		/* scrolls */
-		case TV_SCROLL:
-		{
+		case TV_SCROLL:{
+		
 			/* add total amounts */
 			add_stats( scroll_total, scroll_mon, scroll_vault,vault,mon,number);
 			
@@ -1139,27 +948,27 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 			effect=object_effect(o_ptr);
 			
 			/* scroll effects */
-			switch(effect)
-			{
+			switch(effect){
+			
 				case EF_BANISHMENT:
 				case EF_LOSKILL:
 				case EF_RUNE:
-				case EF_DESTRUCTION2:
-				{
+				case EF_DESTRUCTION2:{
+				
 					/* add to total */
 					add_stats( escroll_total, escroll_mon, escroll_vault,vault,mon,number);
 					break;
 				}
 				
-				case EF_ACQUIRE:
-				{
+				case EF_ACQUIRE:{
+				
 					/* add to total */
 					add_stats( acq_total, acq_mon, acq_vault,vault,mon,number);
 					break;
 				}
 				
-				case EF_ACQUIRE2:
-				{
+				case EF_ACQUIRE2:{
+				
 					/* do the effect of 2 acquires */
 					add_stats( acq_total, acq_mon, acq_vault,vault,mon,number);
 					add_stats( acq_total, acq_mon, acq_vault,vault,mon,number);
@@ -1170,45 +979,44 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		}
 		
 		/* rods */
-		case TV_ROD:
-		{
+		case TV_ROD:{
+		
 			/* add to total */
 			add_stats( rod_total,  rod_mon,  rod_vault,vault,mon,number);
 			
 			effect=object_effect(o_ptr);
 			
-			switch(effect)
-			{
-			
+			switch(effect){
+						
 				/* utility */
 				case EF_DETECT_TRAP:
 				case EF_DETECT_TREASURE:
 				case EF_DETECT_DOORSTAIR:
 				case EF_LIGHT_LINE:
-				case EF_ILLUMINATION:
-				{
+				case EF_ILLUMINATION:{
+				
 					add_stats( urod_total,  urod_mon,  urod_vault,vault,mon,number);
 					break;
 				}
 			
 				/* teleport other */
-				case EF_TELE_OTHER:
-				{
+				case EF_TELE_OTHER:{
+				
 					add_stats( torod_total,  torod_mon,  torod_vault,vault,mon,number);
 					break;
 				}
 				
 				/* detect all */
-				case EF_DETECT_ALL:
-				{
+				case EF_DETECT_ALL:{
+				
 					add_stats( drod_total,  drod_mon,  drod_vault,vault,mon,number);
 					break;
 				}
 			
 				/* endgame, speed and healing */
 				case EF_HASTE:
-				case EF_HEAL3:
-				{
+				case EF_HEAL3:{
+				
 					add_stats( erod_total,  erod_mon,  erod_vault,vault,mon,number);
 					break;
 				}
@@ -1218,38 +1026,38 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		}
 	
 		/* staves */
-		case TV_STAFF:
-		{
+		case TV_STAFF:{
+		
 			add_stats( staff_total,  staff_mon,  staff_vault,vault,mon,number);
 			
 			effect=object_effect(o_ptr);
 			
-			switch(effect)
-			{
-				case EF_HASTE:
-				{
+			switch(effect){
+			
+				case EF_HASTE:{
+				
 					add_stats( sstaff_total,  sstaff_mon,  sstaff_vault,vault,mon,number);
 					break;
 				}
 				
-				case EF_DESTRUCTION2:
-				{
+				case EF_DESTRUCTION2:{
+				
 					add_stats( dstaff_total,  dstaff_mon,  dstaff_vault,vault,mon,number);
 					break;
 				}
 			
 				case EF_DISPEL_EVIL60:
 				case EF_DISPEL_ALL:
-				case EF_STAFF_HOLY:
-				{
+				case EF_STAFF_HOLY:{
+				
 					add_stats( kstaff_total,  kstaff_mon,  kstaff_vault,vault,mon,number);
 					break;
 				}
 				
 				case EF_CURE_FULL:
 				case EF_BANISHMENT:
-				case EF_STAFF_MAGI:
-				{
+				case EF_STAFF_MAGI:{
+				
 					add_stats( pstaff_total,  pstaff_mon,  pstaff_vault,vault,mon,number);
 					break;
 				}
@@ -1257,16 +1065,16 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 			break;
 		}
 		
-		case TV_WAND:
-		{
+		case TV_WAND:{
+		
 			add_stats( wand_total,  wand_mon,  wand_vault,vault,mon,number);
 			
 			effect=object_effect(o_ptr);
 			
-			switch(effect)
-			{
-				case EF_TELE_OTHER:
-				{
+			switch(effect){
+			
+				case EF_TELE_OTHER:{
+				
 					add_stats( towand_total,  towand_mon,  towand_vault,vault,mon,number);
 					break;
 				}
@@ -1274,18 +1082,18 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 			break;
 		}
 	
-		case TV_RING:
-		{
+		case TV_RING:{
+		
 			add_stats( ring_total,  ring_mon,  ring_vault,vault,mon,number);
 			
 			/* is it cursed */
 			if (of_has(o_ptr->flags,OF_LIGHT_CURSE))
 				add_stats( curing_total,  curing_mon,  curing_vault,vault,mon,number);
 			
-			switch(o_ptr->sval)
-			{
-				case SV_RING_SPEED:
-				{
+			switch(o_ptr->sval){
+			
+				case SV_RING_SPEED:{
+				
 					add_stats( spring_total,  spring_mon,  spring_vault,vault,mon,number);
 					break;
 				}
@@ -1293,26 +1101,26 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 				case SV_RING_STRENGTH:
 				case SV_RING_INTELLIGENCE:
 				case SV_RING_DEXTERITY:
-				case SV_RING_CONSTITUTION:
-				{
+				case SV_RING_CONSTITUTION:{
+				
 					add_stats( string_total,  string_mon,  string_vault,vault,mon,number);
 					break;
 				}
 				
-				case SV_RING_RESIST_POISON:
-				{
+				case SV_RING_RESIST_POISON:{
+				
 					add_stats( poring_total,  poring_mon,  poring_vault,vault,mon,number);
 					break;
 				}
 				
-				case SV_RING_FREE_ACTION:
-				{
+				case SV_RING_FREE_ACTION:{
+				
 					add_stats( faring_total,  faring_mon,  faring_vault,vault,mon,number);
 					break;
 				}
 				
-				case SV_RING_SEE_INVISIBLE:
-				{
+				case SV_RING_SEE_INVISIBLE:{
+				
 					add_stats( siring_total,  siring_mon,  siring_vault,vault,mon,number);
 					break;
 				}
@@ -1320,22 +1128,22 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 				case SV_RING_FLAMES:
 				case SV_RING_ACID:
 				case SV_RING_ICE:
-				case SV_RING_LIGHTNING:
-				{
+				case SV_RING_LIGHTNING:{
+				
 					add_stats( brring_total,  brring_mon,  brring_vault,vault,mon,number);
 					break;
 				}
 				
 				case SV_RING_NARYA:
 				case SV_RING_NENYA:
-				case SV_RING_VILYA:
-				{
+				case SV_RING_VILYA:{
+				
 					add_stats( elring_total,  elring_mon,  elring_vault,vault,mon,number);
 					break;
 				}
 				
-				case SV_RING_POWER:
-				{
+				case SV_RING_POWER:{
+				
 					add_stats( onering_total,  onering_mon,  onering_vault,vault,mon,number);
 					break;
 				}
@@ -1346,32 +1154,32 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		break;
 		}
 		
-		case TV_AMULET:
-		{
+		case TV_AMULET:{
+		
 			add_stats( amu_total,  amu_mon,  amu_vault,vault,mon,number);
 			
 			/* extract flags */
 			object_flags(o_ptr,f);
 			
-			switch(o_ptr->sval)
-			{
+			switch(o_ptr->sval){
+			
 				/* wisdom */
-				case SV_AMULET_WISDOM:
-				{
+				case SV_AMULET_WISDOM:{
+				
 					add_stats( wisamu_total,  wisamu_mon,  wisamu_vault,vault,mon,number);
 					break;
 				}
 				
 				case SV_AMULET_THE_MAGI:
 				case SV_AMULET_TRICKERY:
-				case SV_AMULET_WEAPONMASTERY:
-				{
+				case SV_AMULET_WEAPONMASTERY:{
+				
 					add_stats( endamu_total,  endamu_mon,  endamu_vault,vault,mon,number);
 					break;
 				}
 				
-				case SV_AMULET_ESP:
-				{
+				case SV_AMULET_ESP:{
+				
 					add_stats( teamu_total,  teamu_mon,  teamu_vault,vault,mon,number);
 					break;
 				}
@@ -1386,8 +1194,8 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 	
 		case TV_SHOT:
 		case TV_ARROW:
-		case TV_BOLT:
-		{
+		case TV_BOLT:{
+		
 			add_stats( ammo_total,  ammo_mon,  ammo_vault,vault,mon,number);
 			
 			/* extract flags */
@@ -1404,8 +1212,8 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 			if (o_ptr->ego)
 				add_stats( egammo_total,  egammo_mon,  egammo_vault, vault, mon,number);
 		
-			if ((o_ptr->sval == SV_AMMO_HEAVY) || (o_ptr->sval == SV_AMMO_SILVER))
-			{
+			if ((o_ptr->sval == SV_AMMO_HEAVY) || (o_ptr->sval == SV_AMMO_SILVER)){
+			
 				/* Mithril and seeker ammo */
 				add_stats( vgammo_total,  vgammo_mon,  vgammo_vault, vault, mon,number);
 				
@@ -1424,69 +1232,69 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		
 		/* prayer books and magic books have the same probability 
 		   only track one of them */
-		case TV_MAGIC_BOOK:
-		{
-			switch(o_ptr->sval)
-			{
+		case TV_MAGIC_BOOK:{
+		
+			switch(o_ptr->sval){
+			
 				/* svals begin at 0 and end at 8 */
-				case 0:
-				{
+				case 0:{
+				
 					add_stats( b1_total,  b1_mon,  b1_vault, vault, mon,number);
 					first_find(mb1_it);
 					break;
 				}
 				
-				case 1:
-				{
+				case 1:{
+				
 					add_stats( b2_total,  b2_mon,  b2_vault, vault, mon,number);
 					first_find(mb2_it);
 					break;
 				}
 			
-				case 2:
-				{
+				case 2:{
+				
 					add_stats( b3_total,  b3_mon,  b3_vault, vault, mon,number);
 					first_find(mb3_it);
 					break;
 				}
 				
-				case 3:
-				{
+				case 3:{
+				
 					add_stats( b4_total,  b4_mon,  b4_vault, vault, mon,number);
 					first_find(mb4_it);
 					break;
 				}
 				
-				case 4:
-				{
+				case 4:{
+				
 					add_stats( b5_total,  b5_mon,  b5_vault, vault, mon,number);
 					first_find(mb5_it);
 					break;
 				}
 				
-				case 5:
-				{
+				case 5:{
+				
 					add_stats( b6_total,  b6_mon,  b6_vault, vault, mon,number);
 					first_find(mb6_it);
 					break;
 				}
 				
-				case 6:
-				{
+				case 6:{
+				
 					add_stats( b7_total,  b7_mon,  b7_vault, vault, mon,number);
 					first_find(mb7_it);
 					break;
 				}
 				
-				case 7:
-				{
+				case 7:{
+				
 					add_stats( b8_total,  b8_mon,  b8_vault, vault, mon,number);
 					first_find(mb8_it);
 					break;
 				}
 				
-				case 8:
-				{
+				case 8:{
+				
 					add_stats( b9_total,  b9_mon,  b9_vault, vault, mon,number);
 					first_find(mb9_it);
 					break;
@@ -1498,8 +1306,8 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		}
 	}
 	/* check to see if we have an artifact */
-	if (o_ptr->artifact)
-	{	
+	if (o_ptr->artifact){
+	
 		/* add to artifact level total */
 		art_total[lvl] += addval;
 		
@@ -1524,8 +1332,8 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		
 		/* check to see if it's a special artifact */
 		if ((o_ptr->tval == TV_LIGHT) || (o_ptr->tval == TV_AMULET)
-			|| (o_ptr->tval == TV_RING))
-		{
+			|| (o_ptr->tval == TV_RING)){
+			
 			/* increment special artifact counter */
 			art_spec[lvl] += addval;
 		} else {
@@ -1539,8 +1347,8 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 			if (uniq) art_uniq[lvl] += addval;
 		
 			/* was it in a vault? */
-			if (vault)
-			{
+			if (vault){
+			
 				/* did a monster drop it ?*/
 				if ((mon) || (uniq)) art_mon_vault[lvl] += addval;
 				else art_vault[lvl] += addval;
@@ -1554,8 +1362,8 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 	}
 		
 	/* Get info on gold. */
-	if (o_ptr->tval == TV_GOLD)
-	{
+	if (o_ptr->tval == TV_GOLD){
+	
 		int temp = o_ptr->pval[DEFAULT_PVAL];
 		gold_temp = temp;
 	    gold_total[lvl] += (gold_temp / tries);
@@ -1565,9 +1373,160 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		else gold_floor[lvl] += (gold_temp / tries);
 	}	
 	
-	/* remove the object */	
-	delete_object_stat(cave->o_idx[y][x]);
 }
+
+
+
+/* 
+ * A rewrite of monster death that gets rid of some features
+ * That we don't want to deal with.  Namely, no notifying the
+ * player and no generation of Morgoth artifacts
+ * 
+ * It also replaces drop near with a new function that drops all 
+ * the items on the exact square that the monster was on.
+ */
+void monster_death_stats(int m_idx)
+{
+	int y, x;
+	s16b this_o_idx, next_o_idx = 0;
+
+	monster_type *m_ptr;
+	monster_race *r_ptr;
+
+	bool uniq;
+
+	assert(m_idx > 0);
+	m_ptr = cave_monster(cave, m_idx);
+	r_ptr = &r_info[m_ptr->r_idx];
+
+	
+	/* Check if monster is UNIQUE */
+	uniq = rf_has(r_ptr->flags,RF_UNIQUE);
+
+	/* Get the location */
+	y = m_ptr->fy;
+	x = m_ptr->fx;
+	
+	/* Delete any mimicked objects */
+	if (m_ptr->mimicked_o_idx > 0)
+		delete_object_idx(m_ptr->mimicked_o_idx);
+
+	/* Drop objects being carried */
+	for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx) {
+		object_type *o_ptr;
+
+		/* Get the object */
+		o_ptr = object_byid(this_o_idx);
+
+		/* Line up the next object */
+		next_o_idx = o_ptr->next_o_idx;
+
+		/* Paranoia */
+		o_ptr->held_m_idx = 0;
+		
+		/* Get data */
+		get_obj_data(o_ptr, y, x, TRUE, uniq);
+
+		/* delete the object */
+		delete_object_idx(this_o_idx);
+	}
+	
+	/* Forget objects */
+	m_ptr->hold_o_idx = 0;
+}
+
+
+
+/* This will collect stats on a monster avoiding all
+ * unique monsters.  Afterwards it will kill the
+ * monsters.
+ */
+
+static bool stats_monster(monster_type *m_ptr, int i)
+{
+	static int lvl;
+	/* Get monster race */
+	monster_race *r_ptr = &r_info[m_ptr->r_idx];
+		
+	/* get player depth */
+	lvl=p_ptr->depth;
+		
+		
+	/* Increment monster count */
+	mon_total[lvl] += addval;
+	
+	/* Increment unique count if appropriate */
+	if (rf_has(r_ptr->flags, RF_UNIQUE)){
+	
+		/* add to total */
+		uniq_total[lvl] += addval;
+	
+		/* kill the unique if we're in clearing mode */
+		if (clearing) r_ptr->max_num = 0;
+		
+		//debugging print that we killed it
+		//msg_format("Killed %s",r_ptr->name);
+	}	
+	
+	/* Is it mostly dangerous (10 levels ood or less?)*/
+	if ((r_ptr->level > p_ptr->depth) && 
+		(r_ptr->level <= p_ptr->depth+10)){
+		
+			mon_ood[lvl] += addval;
+			
+			/* Is it a unique */
+			if (rf_has(r_ptr->flags, RF_UNIQUE)) uniq_ood[lvl] += addval;
+			
+		}
+		
+		
+	/* Is it deadly? */
+	if (r_ptr->level > p_ptr->depth + 10){
+	
+		mon_deadly[lvl] += addval;
+	
+		/* Is it a unique? */
+		if (rf_has(r_ptr->flags, RF_UNIQUE)) uniq_deadly[lvl] += addval;
+						
+	}	
+	
+	/* Generate treasure */
+	monster_death_stats(i);	
+	
+	/* remove the monster */
+	delete_monster_idx(i);
+	
+	/* success */
+	return TRUE;
+}
+
+
+/*
+ * Delete a single dungeon object
+ *
+ * This piece of code is identical to delete_object_idx
+ * except that it does not include light_spot to save
+ * time
+ */
+static void delete_object_stat(int o_idx)
+{
+	object_type *j_ptr;
+
+	/* Excise */
+	excise_object_idx(o_idx);
+
+	/* Object */
+	j_ptr = object_byid(o_idx);
+
+	
+	/* Wipe the object */
+	object_wipe(j_ptr);
+
+	/* Count objects */
+	o_cnt--;
+}
+
+
 
 /* Print heading infor for the file */
 static void print_heading(void)
@@ -1931,8 +1890,8 @@ static void mean_and_stdv(int array[TRIES_SIZE])
 	double find = 0.0, tmpfind = 0.0;
 	
 	/* skip town level */
-	for (lvl = 1; lvl < MAX_LVL ; lvl++)
-	{
+	for (lvl = 1; lvl < MAX_LVL ; lvl++){
+	
 		/* calculate the probability of not finding the stat */
 		tmpfind=(1 - stat[lvl]);
 		
@@ -1946,8 +1905,8 @@ static void mean_and_stdv(int array[TRIES_SIZE])
 		tmpcount++;
 		
 		/* print output every 5 levels */
-		if (tmpcount == 5)
-		{
+		if (tmpcount == 5){
+		
 			/* print it */
 			file_putf(stats_log,"%f \t",1-find);
 			
@@ -1966,8 +1925,8 @@ static double total(double stat[MAX_LVL])
 	int k;
 	double out=0;
 
-	for (k = 0; k < MAX_LVL; k++)
-	{
+	for (k = 0; k < MAX_LVL; k++){
+	
 		out += stat[k];
 	}
 
@@ -2065,7 +2024,7 @@ static void post_process_stats(void)
 /*
  * Scans the dungeon for objects
 */
-static void scan_for_objects(bool mon, bool uniq)
+static void scan_for_objects(void)
 { 
 	int y, x;
 
@@ -2073,15 +2032,13 @@ static void scan_for_objects(bool mon, bool uniq)
 		for (x = 1; x < DUNGEON_WID - 1; x++) {
 			const object_type *o_ptr;
 
-			/* Do not be fooled!
-			 *
-			 * Despite its harmless-seeming name, get_obj_data() does a host
-			 * of crazy things, including deleting the object from the square.
-			 *
-			 * This is why we repeatedly get the first object.
-			 */
+			
 			while ((o_ptr = get_first_object(y, x))) {
-				get_obj_data(o_ptr,y,x,mon,uniq);
+				/* get data on the object */
+				get_obj_data(o_ptr, y, x, FALSE, FALSE);
+				
+				/* delete the object */
+				delete_object_stat(cave->o_idx[y][x]);
 			}
 		}
 	}
@@ -2091,19 +2048,19 @@ static void scan_for_objects(bool mon, bool uniq)
  * This will scan the dungeon for monsters and then kill each
  * and every last one.
 */
-static void scan_for_monsters(bool uniq)
+static void scan_for_monsters(void)
 { 
 	int i;
 		
 	/* Go through the monster list */
-	for (i = 1; i < cave_monster_max(cave); i++)
-	{
+	for (i = 1; i < cave_monster_max(cave); i++){
+	
 		monster_type *m_ptr = cave_monster(cave, i);
 		
 		/* Skip dead monsters */
 		if (!m_ptr->r_idx) continue;
 		
-		stats_monster(m_ptr,i, uniq);
+		stats_monster(m_ptr,i);
 	}
 }
 /*
@@ -2116,19 +2073,11 @@ static void stats_collect_level(void)
 	cave_generate(cave,p_ptr);
 	
 	/* Scan for objects, these are floor objects */
-	scan_for_objects(FALSE,FALSE);
+	scan_for_objects();
 		
 	/* Get stats (and kill) all non-unique monsters */
-	scan_for_monsters(FALSE);
+	scan_for_monsters();
 		
-	/* Do second scan for objects, monster objects */
-	scan_for_objects(TRUE,FALSE);
-		
-	/* Get stats (and kill) all unique monster */
-	scan_for_monsters(TRUE);
-		
-	/* Do third scan for objects, unique objects */
-	scan_for_objects(TRUE,TRUE);	
 }
 
 /* 
@@ -2142,8 +2091,8 @@ static void uncreate_artifacts(void)
 	int i;
 	
 	/* Loop through artifacts */
-	for (i = 0; z_info && i < z_info->a_max; i++)
-	{
+	for (i = 0; z_info && i < z_info->a_max; i++){
+	
 		artifact_type *a_ptr = &a_info[i];
 		
 		/* uncreate */
@@ -2161,8 +2110,8 @@ static void revive_uniques(void)
 {
 	int i;
 	
-	for (i = 1; i < z_info->r_max - 1; i++)
-	{
+	for (i = 1; i < z_info->r_max - 1; i++){
+	
 		/* get the monster info */
 		 monster_race *r_ptr = &r_info[i];
 
@@ -2181,14 +2130,14 @@ static void diving_stats(void)
 	int depth;
 	
 	/* iterate through levels */
-	for (depth = 0; depth < MAX_LVL; depth += 5)
-	{
+	for (depth = 0; depth < MAX_LVL; depth += 5){
+	
 		p_ptr->depth = depth;
 		if (p_ptr->depth == 0) p_ptr->depth = 1;
 		
 		/* do many iterations of each level */
-		for (iter = 0; iter < tries; iter++)
-		{
+		for (iter = 0; iter < tries; iter++){
+		
 			/* get level output */
 		     stats_collect_level();
 		}
@@ -2207,8 +2156,7 @@ static void clearing_stats(void)
 	int depth;
 	
 	/* do many iterations of the game */
-	for (iter=0; iter < tries; iter++)
-	{
+	for (iter=0; iter < tries; iter++){
 		
 		/* move all artifacts to uncreated */
 		uncreate_artifacts();
@@ -2217,8 +2165,8 @@ static void clearing_stats(void)
 		revive_uniques();
 		
 		/* do randart regen */
-		if ((regen) && (iter<tries))
-		{
+		if ((regen) && (iter<tries)){
+		
 			/* get seed */
 			int seed_randart=randint0(0x10000000);
 			
@@ -2228,8 +2176,8 @@ static void clearing_stats(void)
 		}
 		
 		/* do game iterations */
-		for (depth = 1 ; depth < MAX_LVL; depth++)
-		{
+		for (depth = 1 ; depth < MAX_LVL; depth++){
+		
 			/* debug */
 			//msg_format("Attempting level %d",depth);
 		
@@ -2306,8 +2254,8 @@ static int stats_prompt(void)
 	if ((temp == 1) || (temp == 2)) simtype = temp; else return 0;
 	
 	/* for clearing sim, check for randart regen */
-	if (temp == 2)
-	{
+	if (temp == 2){
+	
 		/* Prompt */
 		strnfmt(prompt, sizeof(prompt), "Regen randarts? (warning SLOW)");
 		
@@ -2345,8 +2293,8 @@ void stats_collect(void)
 	stats_log = file_open(buf, MODE_WRITE, FTYPE_TEXT);
 	
 	/* Logging didn't work */
-	if (!stats_log)
-	{
+	if (!stats_log){
+	
 		msg("Error - can't open stats.log for writing.");
 		exit(1);
 	}
@@ -2359,8 +2307,8 @@ void stats_collect(void)
 	 */
 	 auto_flag = FALSE;
 	 
-	 if (!OPT(auto_more)) 
-	 {   
+	 if (!OPT(auto_more)){
+	 
 		/* remember that we turned off auto_more */
 		auto_flag = TRUE;
 		
@@ -2403,10 +2351,10 @@ int cave_dist[DUNGEON_HGT][DUNGEON_WID];
 void clear_cave_dist(void)
 {
 	int x,y;
-	for (y = 1; y < DUNGEON_HGT - 1; y++)
-		{
-			for (x = 1; x < DUNGEON_WID - 1; x++)
-			{
+	for (y = 1; y < DUNGEON_HGT - 1; y++){
+	
+			for (x = 1; x < DUNGEON_WID - 1; x++){
+			
 				cave_dist[y][x] = -1;
 			}
 		}
@@ -2446,8 +2394,8 @@ void calc_cave_distances(void)
 		dist++;
 		
 		/* Loop over all visited squares of the previous iteration*/
-		for(i=0 ;i < d_old_max; i++)
-		{
+		for(i=0 ;i < d_old_max; i++){
+		
 			/* Get the square we want to look at */
 			oy = d_y_old[i];
 			ox = d_x_old[i];
@@ -2456,8 +2404,8 @@ void calc_cave_distances(void)
 			//msg("x: %d y: %d dist: %d %d ",ox,oy,dist-1,i);
 		
 			/* Get all adjacent squares */
-			for (d = 0; d < 8; d++)
-			{
+			for (d = 0; d < 8; d++){
+			
 				/* Adjacent square location */
 				ty = oy + ddy_ddd[d];
 				tx = ox + ddx_ddd[d];
@@ -2485,8 +2433,8 @@ void calc_cave_distances(void)
 		}
 		
 		/* copy the new distance list to the old one */
-		for (i=0 ;i<d_new_max; i++)
-		{
+		for (i=0 ;i<d_new_max; i++){
+		
 			d_y_old[i] = d_y_new[i];
 			d_x_old[i] = d_x_new[i];
 		}
@@ -2531,8 +2479,8 @@ void pit_stats(void)
 	type = atoi(tmp_val);
 	if (type < 1) type = 1;
 	
-	if (depth <= 0)
-	{
+	if (depth <= 0){
+	
 		/* Format second default value */	
 		strnfmt(tmp_val, sizeof(tmp_val), "%d", p_ptr->depth);
 	
@@ -2546,14 +2494,14 @@ void pit_stats(void)
 	}
 
 
-	for (j = 0; j < tries; j++)
-	{
+	for (j = 0; j < tries; j++){
+	
 		int i;
 		int pit_idx = 0;
 		int pit_dist = 999;
 		
-		for (i = 0; i < z_info->pit_max; i++)
-		{
+		for (i = 0; i < z_info->pit_max; i++){
+		
 			int offset, dist;
 			pit_profile *pit = &pit_info[i];
 			
@@ -2562,8 +2510,8 @@ void pit_stats(void)
 			offset = Rand_normal(pit->ave, 10);
 			dist = ABS(offset - depth);
 
-			if (dist < pit_dist && one_in_(pit->rarity))
-			{
+			if (dist < pit_dist && one_in_(pit->rarity)){
+			
 				pit_idx = i;
 				pit_dist = dist;
 			}
@@ -2572,8 +2520,8 @@ void pit_stats(void)
 		hist[pit_idx]++;
 	}
 
-	for (p = 0; p < z_info->pit_max; p++)
-	{
+	for (p = 0; p < z_info->pit_max; p++){
+	
 		pit_profile *pit = &pit_info[p];
 		if (pit->name)
 			msg("Type: %s, Number: %d.", pit->name, hist[p]);
@@ -2618,8 +2566,8 @@ void disconnect_stats(void)
 	/* save */
 	tries=temp;
 	
-	for (i = 1; i <= tries; i++)
-	{
+	for (i = 1; i <= tries; i++){
+	
 	/* assume no disconnected areas */
 	has_dsc = FALSE;
 	
@@ -2633,20 +2581,19 @@ void disconnect_stats(void)
 		calc_cave_distances();
 		
 		/*Cycle through the dungeon */
-		for (y = 1; y < DUNGEON_HGT - 1; y++)
-		{
-			for (x = 1; x < DUNGEON_WID - 1; x++)
-			{
+		for (y = 1; y < DUNGEON_HGT - 1; y++){
+		
+			for (x = 1; x < DUNGEON_WID - 1; x++){
+			
 				/* don't care about walls */
 				if (cave->feat[y][x] > FEAT_RUBBLE) continue;
 				
 				/* Can we get there? */
-				if (cave_dist[y][x] >= 0)
-				{	
+				if (cave_dist[y][x] >= 0){
+				
 					/* Is it a  down stairs? */
-					if ((cave->feat[y][x] == FEAT_MORE))// ||
-						//(cave->feat[y][x] == FEAT_LESS))
-					{
+					if ((cave->feat[y][x] == FEAT_MORE)){
+
 						has_dsc_from_stairs = FALSE;
 					
 						//debug
