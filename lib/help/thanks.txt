@@ -8,16 +8,16 @@ so we can fix it. :)
 This version
 ============
 
-This version is brought to you by the Angband dev team:
-- Andi Sidwell (takkaria)
-- Aerdan
-- Erik Osheim
-- Elly Jones 
-- Aaron Bader (fizzix) 
-- Lebannen 
-- Chris Carr (magnate) 
-- Robert Au (myshkin) 
-- Peter Denison (noz)
+ * Andi Sidwell (takkaria)
+ * Aerdan
+ * Erik Osheim (d_m)
+ * Elly Jones
+ * Aaron Bader (fizzix)
+ * Lebannen
+ * Chris Carr (magnate)
+ * Robert Au (myshkin)
+ * Peter Denison (noz)
+ * Gabe Cunningham
 
 Previous maintainers
 ====================
@@ -149,6 +149,12 @@ david3x3x3 and retrobits
 
 qwerty 
   LaTeX-based help file generation
+
+fph
+  Manual and documentation updates, formatting in reStructuredText
+
+Peter Ammon (ridiculous_fish)
+  Rewritten OSX main-cocoa interface
 
 William Moore (MarbleDice) 
   Bitflag code and numerous other improvements and fixes during 3.1.x

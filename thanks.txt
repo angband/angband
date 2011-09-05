@@ -149,7 +149,7 @@ fph
 Manual and documentation updates
 
 Peter Ammon (ridiculous_fish)
-The rewritten OSX main-cocoa interface
+Rewritten OSX main-cocoa interface
 
 William Moore (MarbleDice)
 Bitflag code and numerous other improvements and fixes during 3.1.x
