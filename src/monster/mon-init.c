@@ -86,6 +86,7 @@ static enum parser_error parse_rb_f(struct parser *p) {
 	while (s) {
 		if (grab_flag(rb->flags, RF_SIZE, r_info_flags, s)) {
 			mem_free(flags);
+			quit_fmt("bad f-flag: %s", s);
 			return PARSE_ERROR_INVALID_FLAG;
 		}
 		s = strtok(NULL, " |");
@@ -117,6 +118,7 @@ static enum parser_error parse_rb_s(struct parser *p) {
 	while (s) {
 		if (grab_flag(rb->spell_flags, RSF_SIZE, r_info_spell_flags, s)) {
 			mem_free(flags);
+			quit_fmt("bad s-flag: %s", s);
 			return PARSE_ERROR_INVALID_FLAG;
 		}
 		s = strtok(NULL, " |");
@@ -340,6 +342,7 @@ static enum parser_error parse_r_f(struct parser *p) {
 	while (s) {
 		if (grab_flag(r->flags, RF_SIZE, r_info_flags, s)) {
 			mem_free(flags);
+			quit_fmt("bad f2-flag: %s", s);
 			return PARSE_ERROR_INVALID_FLAG;
 		}
 		s = strtok(NULL, " |");
@@ -363,6 +366,7 @@ static enum parser_error parse_r_mf(struct parser *p) {
 	while (s) {
 		if (remove_flag(r->flags, RF_SIZE, r_info_flags, s)) {
 			mem_free(flags);
+			quit_fmt("bad mf-flag: %s", s);
 			return PARSE_ERROR_INVALID_FLAG;
 		}
 		s = strtok(NULL, " |");
@@ -402,6 +406,7 @@ static enum parser_error parse_r_s(struct parser *p) {
 			r->freq_innate = r->freq_spell;
 		} else {
 			if (grab_flag(r->spell_flags, RSF_SIZE, r_info_spell_flags, s)) {
+				quit_fmt("bad sf-flag: %s", s);
 				ret = PARSE_ERROR_INVALID_FLAG;
 				break;
 			}

@@ -328,4 +328,4 @@ N:34:Ainur
 R:1
 A:1:90
 O:0
-T:Ainu
+T:ainu
