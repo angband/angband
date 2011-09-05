@@ -432,7 +432,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 	spell_colors[RSF_S_SPIDER] = TERM_ORANGE;
 	spell_colors[RSF_S_HOUND] = TERM_ORANGE;
 	spell_colors[RSF_S_HYDRA] = TERM_ORANGE;
-	spell_colors[RSF_S_ANGEL] = TERM_ORANGE;
+	spell_colors[RSF_S_AINU] = TERM_ORANGE;
 	spell_colors[RSF_S_DEMON] = TERM_ORANGE;
 	spell_colors[RSF_S_DRAGON] = TERM_ORANGE;
 	spell_colors[RSF_S_UNDEAD] = TERM_ORANGE;
@@ -1032,10 +1032,10 @@ static void describe_monster_spells(const monster_race *r_ptr,
 		names[vn] = "summon hydras";
 		cols[vn++] = colors[RSF_S_HYDRA];
 	}
-	if (rsf_has(l_ptr->spell_flags, RSF_S_ANGEL))
+	if (rsf_has(l_ptr->spell_flags, RSF_S_AINU))
 	{
-		names[vn] = "summon an angel";
-		cols[vn++] = colors[RSF_S_ANGEL];
+		names[vn] = "summon an ainu";
+		cols[vn++] = colors[RSF_S_AINU];
 	}
 	if (rsf_has(l_ptr->spell_flags, RSF_S_DEMON))
 	{

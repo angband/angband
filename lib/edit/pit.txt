@@ -324,8 +324,8 @@ T:ancient dragon
 S:BR_SOUN
 s:BR_SHAR
 
-N:34:Angels
+N:34:Ainur
 R:1
 A:1:90
 O:0
-T:angel
+T:Ainu

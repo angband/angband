@@ -3920,8 +3920,9 @@ S:1_IN_8
 S:CAUSE_2 | DARKNESS | SCARE
 D:It is a tangible but ghostly form made of white fog.
 
-N:289:Angel
-T:angel
+N:289:Lesser Maia
+T:ainu
+C:o
 C:o
 I:110:264:30:72:255
 W:26:4:0:220
@@ -3930,14 +3931,10 @@ B:HIT:HURT:3d4
 B:HIT:HURT:3d4
 B:HIT:HURT:3d4
 F:DROP_2
-F:IM_ACID
+F:IM_ACID | HAS_LITE
 S:1_IN_3
 S:BLIND | CONF | SCARE
-D:Who knows why you are now facing an angel as an enemy?  Is it a punishment
-D: from your own god for your sins, or a test of your mettle, or has this angel
-D: been sent by another god on behalf of someone who wishes to claim the glory
-D: for his own god?  Perhaps you will never know: but it is here, and you must
-D: fight it.
+D:A lesser spirit that descended into Arda in the beginning.
 
 N:553:Disenchanter bat
 T:bat
@@ -5050,8 +5047,8 @@ D: eyes with spectrums of colour.
 
 ### Dungeon level 34 ###
 
-N:311:Archangel
-T:angel
+N:311:Maia
+T:ainu
 C:B
 I:110:528:30:81:255
 W:34:4:0:1000
@@ -5061,11 +5058,10 @@ B:HIT:HURT:3d5
 B:HIT:HURT:3d5
 F:SMART
 F:DROP_2
-F:IM_COLD | IM_FIRE
+F:IM_COLD | IM_FIRE | HAS_LITE
 S:1_IN_3
 S:BLIND | CONF | HASTE | HEAL | SCARE
-D:An angel protected by an aura of holiness.  Its muscular form looks extremely
-D: powerful next to your own frail body.
+D:A spirit that descended into Arda in the beginning.
 
 N:335:Half-troll
 T:troll
@@ -6215,11 +6211,11 @@ D:An intelligent arachnid whose hairy legs weave spells in the air.
 
 ### Dungeon level 39 ###
 
-N:350:Cherub
-T:angel
+N:350:Greater Maia
+T:Ainu
 C:G
-I:120:880:30:81:255
-W:39:6:0:2700
+I:120:880:30:81:155
+W:39:4:0:2500
 B:HIT:HURT:4d3
 B:HIT:HURT:3d8
 B:HIT:HURT:4d3
@@ -6227,13 +6223,13 @@ B:HIT:HURT:3d8
 F:SMART
 F:DROP_2
 F:MOVE_BODY
-F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE
+F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | HAS_LITE
 S:1_IN_3
 S:BLIND | HASTE | HEAL | MIND_BLAST | SCARE
 S:BO_FIRE
 S:S_MONSTERS
-D:It is an angel moving very quickly, wielding a holy war hammer and casting a
-D: volley of powerful spells in your direction.
+D:A great Maia whose physical form looks overpowering next
+D: to your own frail body.
 
 N:419:Nether wraith
 T:wraith
@@ -6995,7 +6991,7 @@ F:OPEN_DOOR | TAKE_ITEM
 F:NO_FEAR | NO_CONF | NO_SLEEP
 S:1_IN_4
 S:BLIND | CAUSE_3 | CAUSE_4 | HASTE | HEAL | SCARE
-S:S_ANGEL
+# Knight templars summoning Ainu doesn't make much sense -JG
 D:It seems that the more devout the person, the more likely they are to cross
 D: the boundary between piety and sanctimoniousness.  And such is the case with
 D: the Order of the Knights Templar; they are among the most pious and powerful
@@ -7066,10 +7062,10 @@ D: intelligence, but it has been instructed to destroy all it meets.
 
 ### Dungeon level 45 ###
 
-N:415:Seraph
-T:angel
-C:r
-I:120:1320:30:81:255
+N:415:Blue Wizard
+T:ainu
+C:b
+I:120:1320:30:68:255
 W:45:6:0:5000
 B:HIT:HURT:4d6
 B:HIT:HURT:5d5
@@ -7078,13 +7074,14 @@ B:HIT:HURT:4d6
 F:SMART
 F:DROP_2
 F:MOVE_BODY
-F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | NO_FEAR
-S:1_IN_11
+F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | NO_FEAR | SMART | HAS_LITE
+S:1_IN_6
 S:CONF | HASTE | HEAL | TELE_AWAY
 S:BO_MANA | BO_PLAS
-S:S_ANGEL | S_MONSTERS
-D:It is an angel, fast and strong.  You are stunned by its extreme holiness and
-D: try to resist all desires to obey it.
+S:S_AINU | S_MONSTERS
+D:A member of a society of wizards founded by Alatar and Pallandro,
+D: who journeyed into the far east of Middle-Earth.  They are
+D: powerful wizards who make formidable opponents in combat.
 
 N:431:Rotting quylthulg
 T:quylthulg
@@ -7762,10 +7759,10 @@ D: Unlight.  Her poison is legendary, as is her ego.  She normally guards the
 D: pass through Cirith Ungol, but occasionally goes out foraging for food to
 D: feed her voracious appetite.
 
-N:455:Archon
-T:angel
+N:455:Istar
+T:ainu
 C:y
-I:130:1800:30:168:255
+I:130:1800:30:140:255
 W:55:5:0:10000
 B:GAZE:TERRIFY:4d4
 B:GAZE:TERRIFY:4d4
@@ -7774,14 +7771,14 @@ B:HIT:HURT:8d6
 F:SMART | ATTR_FLICKER
 F:DROP_4 | DROP_GOOD
 F:MOVE_BODY
-F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | NO_FEAR
+F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | NO_FEAR | SMART | HAS_LITE
 S:1_IN_3
-S:BLIND | CAUSE_2 | CAUSE_4 | SCARE | TELE_TO
+S:BLIND | CAUSE_2 | CAUSE_4 | SCARE | TELE_TO | HEAL | MISSILE
 S:BO_MANA
-S:S_ANGEL
-D:Never a more heavenly being have you seen.  The very holiness of its presence
-D: makes you deeply respect it.  Few creatures can match the powers of an
-D: Archon; fewer still live to tell the tale after attacking one.
+S:S_AINU
+D:A member of an order of Maiar who came to middle-Earth in the third
+D: age. The Istari are powerful wizards who are quick to join together
+D: in combat to crush their enemies.
 
 N:476:Dracolich
 T:ancient dragon
@@ -8141,8 +8138,8 @@ D: stands a mighty figure.  Its wings envelop you in the chill of death as the
 D: nightwing reaches out to draw you into oblivion.  Your muscles sag and your
 D: mind loses all will to fight as you stand in awe of this mighty being.
 
-N:509:Uriel, Angel of Fire
-T:angel
+N:509:Arien, Maia of the Sun
+T:ainu
 C:R
 I:130:5500:40:192:10
 W:61:3:0:25000
@@ -8150,19 +8147,18 @@ B:HIT:FIRE:4d12
 B:HIT:FIRE:4d12
 B:HIT:HURT:10d10
 B:HIT:HURT:10d10
-F:UNIQUE | MALE | SMART
+F:UNIQUE | FEMALE | SMART
 F:DROP_4 | DROP_GOOD
 F:MOVE_BODY
-F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | RES_PLAS
+F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | RES_PLAS | HAS_LITE
 S:1_IN_2
 S:BLIND | TELE_TO
 S:BA_FIRE
 S:BO_FIRE | BO_MANA | BO_PLAS
 S:BR_FIRE | BR_PLAS
-S:S_ANGEL
-D:A creature of godly appearance, you dare not challenge Uriel's supremacy. 
-D:  Those who stood against him before are but a memory, cremated by his mastery
-D: of elemental fire.
+S:S_AINU
+D:Also called the Sun-Maiden, this Maia has the task of carrying
+D: the sun across the sky.
 
 N:568:Bile Demon
 T:major demon
@@ -8186,9 +8182,9 @@ D: experienced.
 
 ### Dungeon level 62 ###
 
-N:510:Azriel, Angel of Death
-T:angel
-C:D
+N:510:Oss["e], Herald of Ulmo
+T:ainu
+C:w
 I:130:6000:40:204:10
 W:62:3:0:30000
 B:HIT:EXP_80:10d5
@@ -8198,17 +8194,19 @@ B:HIT:HURT:10d10
 F:UNIQUE | MALE | SMART
 F:DROP_4 | DROP_GOOD
 F:MOVE_BODY
-F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE
+F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_WATER
 S:1_IN_2
 S:BLIND | TELE_TO
-S:BA_NETH
-S:BO_MANA | BO_NETH
+S:BA_WATE
+S:BO_MANA | BO_WATE
 S:BR_NETH
-S:S_ANGEL
-D:Azriel commands awesome power, his visage holy enough to shrivel your soul. 
-D:  You shriek with disbelief as his mastery of death draws you to your grave. 
-D:  It is truly beyond all but the mightiest of warriors to stand against him and
-D: live.
+S:S_AINU
+D:The most powerful of Ulmo's servants, Oss["e] is known as the most
+D: accomplished singer among the Maiar, but he is also known for his
+D: ruthlesness. While Ulmo himself moves in the rains and rivers of Arda
+D: and resides in depths of the seas, Oss["e] embodies the waves of the
+D: untamed oceans and seas. Mariners caught in the grips of raging
+D: storms pray to Oss["e] for mercy.
 
 N:515:Dreadlord
 T:ghost
@@ -8338,9 +8336,9 @@ S:S_UNDEAD
 D:A Ringwraith powerful in fell sorcery, he yearns for the life he has lost for
 D: an unlife of everlasting torment.
 
-N:513:Gabriel, the Messenger
-T:angel
-C:w
+N:513:Radagast the Brown
+T:ainu
+C:u
 I:130:7500:40:216:10
 W:64:3:0:35000
 B:HIT:UN_BONUS:6d8
@@ -8350,15 +8348,21 @@ B:HIT:BLIND:10d10
 F:UNIQUE | MALE | SMART | ESCORT
 F:DROP_4 | DROP_GOOD
 F:MOVE_BODY
-F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE
+F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | HAS_LITE
 S:1_IN_2
 S:BLIND | TELE_TO
-S:BO_MANA
-S:S_KIN
-D:Commanding a legion of angels, Gabriel will destroy you for your sins.  He
-D: will crush you like the pitiful insignificant being he sees you to be.  Your
-D: very soul will be taken into judgement by his supreme authority as he
-D: cleanses the world of evil.
+S:BO_MANA | BO_WATER | BO_FIRE | BO_ICEE
+S:S_AINU | S_ANIMAL | S_SPIDER | S_HOUND
+D:A Servant of Yavanna, sent to Middle-Earth as the least of the Istar
+D: as the partner to Saruman the White, against Saruman's wish.
+D: Radagast was tasked with protecting Middle-Earth's flora and fauna. 
+D: With time Radagast became more and more enchanted with nature and
+D: grew less and less interested in the suffering of the free peoples. 
+D: Radagast never returned to Aman from his mission, but it is unknown
+D: whether this is because he wished to stay behind or whether because
+D: he was considered to have failed as a member of the Istar, like
+D: Saruman, Alatar and Pallando were. Radagast wears the humble brown
+D: robes for which he was named after.
 
 N:518:Chaos hound
 T:zephyr hound
@@ -9152,7 +9156,7 @@ F:UNIQUE
 F:DROP_4 | DROP_GOOD | ONLY_ITEM
 F:ATTR_MULTI
 S:1_IN_1
-S:S_ANGEL | S_ANIMAL | S_HI_DEMON | S_HI_DRAGON | S_HI_UNDEAD | S_HOUND
+S:S_AINU | S_ANIMAL | S_HI_DEMON | S_HI_DRAGON | S_HI_UNDEAD | S_HOUND
 S:S_HYDRA | S_KIN | S_MONSTERS | S_SPIDER | S_UNIQUE | S_WRAITH
 D:A gigantic seething mass of flesh, Qlzqqlzuup changes colours in front of your
 D: eyes.  Pulsating first one colour then the next, it knows only it must bring

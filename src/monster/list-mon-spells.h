@@ -112,7 +112,7 @@ RSF(S_ANIMAL,   RST_SUMMON,	"animals",			0,	0,	0,			MSG_SUM_ANIMAL,	FALSE,	100,	
 RSF(S_SPIDER,   RST_SUMMON,	"spiders",			0,	0,	0,			MSG_SUM_SPIDER,	FALSE,	100,	"summons",				RV(0,0,0,0),	RV(0,0,0,0),	"mumbles")
 RSF(S_HOUND,    RST_SUMMON,	"hounds",			0,	0,	0,			MSG_SUM_HOUND,	FALSE,	100,	"summons",				RV(0,0,0,0),	RV(0,0,0,0),	"mumbles")
 RSF(S_HYDRA,    RST_SUMMON,	"hydrae",			0,	0,	0,			MSG_SUM_HYDRA,	FALSE,	100,	"summons",				RV(0,0,0,0),	RV(0,0,0,0),	"mumbles")
-RSF(S_ANGEL,    RST_SUMMON,	"an angel",			0,	0,	0,			MSG_SUM_ANGEL,	FALSE,	100,	"summons",				RV(0,0,0,0),	RV(0,0,0,0),	"mumbles")
+RSF(S_AINU,    RST_SUMMON,	"an ainu",			0,	0,	0,			MSG_SUM_AINU,	FALSE,	100,	"summons",				RV(0,0,0,0),	RV(0,0,0,0),	"mumbles")
 RSF(S_DEMON,    RST_SUMMON,	"a demon",			0,	0,	0,			MSG_SUM_DEMON,	FALSE,	100,	"summons",				RV(0,0,0,0),	RV(0,0,0,0),	"mumbles")
 RSF(S_UNDEAD,   RST_SUMMON,	"the undead",		0,	0,	0,			MSG_SUM_UNDEAD,	FALSE,	100,	"summons",				RV(0,0,0,0),	RV(0,0,0,0),	"mumbles")
 RSF(S_DRAGON,   RST_SUMMON,	"a dragon",			0,	0,	0,			MSG_SUM_DRAGON,	FALSE,	100,	"summons",				RV(0,0,0,0),	RV(0,0,0,0),	"mumbles")

@@ -358,7 +358,7 @@ const const char *angband_sound_name[MSG_MAX] =
 	"breathe_plasma", 
 	"breathe_force", 
 	"summon_monster", 
-	"summon_angel", 
+	"summon_ainu",
 	"summon_undead", 
 	"summon_animal", 
 	"summon_spider", 

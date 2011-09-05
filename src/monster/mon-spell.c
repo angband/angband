@@ -469,7 +469,7 @@ static void do_side_effects(int spell, int dam, int m_idx, bool seen)
 					case S_KIN:
 						summon_kin_type = r_ptr->d_char;
 					case S_MONSTER:	case S_MONSTERS:
-					case S_SPIDER: case S_HOUND: case S_HYDRA: case S_ANGEL:
+					case S_SPIDER: case S_HOUND: case S_HYDRA: case S_AINU:
 					case S_ANIMAL:
 					case S_DEMON: case S_HI_DEMON:
 					case S_UNDEAD: case S_HI_UNDEAD: case S_WRAITH:

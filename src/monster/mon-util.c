@@ -1305,7 +1305,7 @@ static bool summon_specific_okay(int r_idx)
 		case S_SPIDER: return !unique && match_monster_bases(base, "spider", NULL);
 		case S_HOUND: return !unique && match_monster_bases(base, "canine", "zephyr hound", NULL);
 		case S_HYDRA: return !unique && match_monster_bases(base, "hydra", NULL);
-		case S_ANGEL: return !scary && match_monster_bases(base, "angel", NULL);
+		case S_AINU: return !scary && match_monster_bases(base, "ainu", NULL);
 		case S_DEMON: return !scary && rf_has(flags, RF_DEMON);
 		case S_UNDEAD: return !scary && rf_has(flags, RF_UNDEAD);
 		case S_DRAGON: return !scary && rf_has(flags, RF_DRAGON);

@@ -139,7 +139,7 @@ static struct
 } monster_group[] =
 {
 	{ (const char *)-1,   "Uniques" },
-	{ "A",        "Angels" },
+	{ "A",        "Ainur" },
 	{ "a",        "Ants" },
 	{ "b",        "Bats" },
 	{ "B",        "Birds" },
