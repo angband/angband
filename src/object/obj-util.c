@@ -3559,15 +3559,14 @@ int lookup_name(int tval, const char *name)
 	for (k = 1; k < z_info->k_max; k++)
 	{
 		object_kind *k_ptr = &k_info[k];
-		const char *nm = k_ptr->name;
+		char cmp_name[1024];
 
-		if (!nm) continue;
+		if (!k_ptr || !k_ptr->name) continue;
 
-		if (*nm == '&' && *(nm+1))
-			nm += 2;
+		obj_desc_name_format(cmp_name, sizeof cmp_name, 0, k_ptr->name, 0, FALSE);
 
 		/* Found a match */
-		if (k_ptr->tval == tval && !strcmp(name, nm))
+		if (k_ptr->tval == tval && !my_stricmp(cmp_name, name))
 			return k;
 	}
 
@@ -3617,15 +3616,14 @@ int lookup_sval(int tval, const char *name)
 	for (k = 1; k < z_info->k_max; k++)
 	{
 		object_kind *k_ptr = &k_info[k];
-		const char *nm = k_ptr->name;
+		char cmp_name[1024];
 
-		if (!nm) continue;
+		if (!k_ptr || !k_ptr->name) continue;
 
-		if (*nm == '&' && *(nm+1))
-			nm += 2;
+		obj_desc_name_format(cmp_name, sizeof cmp_name, 0, k_ptr->name, 0, FALSE);
 
 		/* Found a match */
-		if (k_ptr->tval == tval && !strcmp(name, nm))
+		if (k_ptr->tval == tval && !my_stricmp(cmp_name, name))
 			return k_ptr->sval;
 	}
 

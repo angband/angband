@@ -21,8 +21,6 @@
 #include "object/tvalsval.h"
 #include "object/pval.h"
 
-static size_t obj_desc_name_format(char *buf, size_t max, size_t end,
-		const char *fmt, const char *modstr, bool pluralise);
 
 /**
  * Puts the object base kind's name into buf.
@@ -235,7 +233,7 @@ static size_t obj_desc_name_prefix(char *buf, size_t max, size_t end,
  * '#' will be replaced with 'modstr' (which may contain the pluralising
  * formats given above).
  */
-static size_t obj_desc_name_format(char *buf, size_t max, size_t end,
+size_t obj_desc_name_format(char *buf, size_t max, size_t end,
 		const char *fmt, const char *modstr, bool pluralise)
 {
 	/* Copy the string */

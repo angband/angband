@@ -569,6 +569,7 @@ void object_know_all_flags(object_type *o_ptr);
 /* obj-desc.c */
 void object_base_name(char *buf, size_t max, int tval, bool plural);
 void object_kind_name(char *buf, size_t max, const object_kind *kind, bool easy_know);
+size_t obj_desc_name_format(char *buf, size_t max, size_t end, const char *fmt, const char *modstr, bool pluralise);
 size_t object_desc(char *buf, size_t max, const object_type *o_ptr, odesc_detail_t mode);
 
 /* obj-info.c */

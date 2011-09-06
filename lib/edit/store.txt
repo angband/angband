@@ -8,67 +8,67 @@
 
 # Armoury
 S:2:33
-I:2:boots:Pair~ of Leather Sandals
-I:2:boots:Pair~ of Leather Boots
-I:1:boots:Pair~ of Iron Shod Boots
-I:2:helm:Hard Leather Cap~
-I:1:helm:Metal Cap~
-I:1:helm:Iron Helm~
-I:2:soft armour:Robe~
-I:4:soft armour:Soft Leather Armour~
-I:2:soft armour:Studded Leather Armour~
-I:2:soft armour:Hard Leather Armour~
-I:2:soft armour:Leather Scale Mail~
-I:1:hard armour:Metal Scale Mail~
-I:1:hard armour:Chain Mail~
-I:2:cloak:Cloak~
-I:2:gloves:Set~ of Leather Gloves
-I:1:gloves:Set~ of Gauntlets
-I:2:shield:Wicker Shield~
-I:1:shield:Small Metal Shield~
-I:2:shield:Leather Shield~
+I:2:boots:Pair of Leather Sandals
+I:2:boots:Pair of Leather Boots
+I:1:boots:Pair of Iron Shod Boots
+I:2:helm:Hard Leather Cap
+I:1:helm:Metal Cap
+I:1:helm:Iron Helm
+I:2:soft armour:Robe
+I:4:soft armour:Soft Leather Armour
+I:2:soft armour:Studded Leather Armour
+I:2:soft armour:Hard Leather Armour
+I:2:soft armour:Leather Scale Mail
+I:1:hard armour:Metal Scale Mail
+I:1:hard armour:Chain Mail
+I:2:cloak:Cloak
+I:2:gloves:Set of Leather Gloves
+I:1:gloves:Set of Gauntlets
+I:2:shield:Wicker Shield
+I:1:shield:Small Metal Shield
+I:2:shield:Leather Shield
 
 # Weaponsmith
 S:3:33
-I:1:sword:Dagger~
-I:1:sword:Main Gauche~
-I:1:sword:Rapier~
-I:2:sword:Short Sword~
-I:2:sword:Cutlass~
-I:1:sword:Tulwar~
-I:1:sword:Broad Sword~
-I:1:sword:Long Sword~
-I:1:sword:Scimitar~
-I:1:sword:Katana~
-I:1:sword:Bastard Sword~
-I:1:polearm:Spear~
-I:1:polearm:Awl-Pike~
-I:1:polearm:Trident~
-I:1:polearm:Pike~
-I:1:polearm:Beaked Axe~
-I:1:polearm:Broad Axe~
-I:1:polearm:Battle Axe~
-I:1:polearm:Lance~
-I:1:polearm:Lucerne Hammer~
-I:1:hafted:Whip~
-I:1:bow:Sling~
-I:1:bow:Short Bow~
-I:1:bow:Long Bow~
-I:1:bow:Light Crossbow~
-I:2:shot:Iron Shot~
-I:2:arrow:Arrow~
-I:2:bolt:Bolt~
+I:1:sword:Dagger
+I:1:sword:Main Gauche
+I:1:sword:Rapier
+I:2:sword:Short Sword
+I:2:sword:Cutlass
+I:1:sword:Tulwar
+I:1:sword:Broad Sword
+I:1:sword:Long Sword
+I:1:sword:Scimitar
+I:1:sword:Katana
+I:1:sword:Bastard Sword
+I:1:polearm:Spear
+I:1:polearm:Awl-Pike
+I:1:polearm:Trident
+I:1:polearm:Pike
+I:1:polearm:Beaked Axe
+I:1:polearm:Broad Axe
+I:1:polearm:Battle Axe
+I:1:polearm:Lance
+I:1:polearm:Lucerne Hammer
+I:1:hafted:Whip
+I:1:bow:Sling
+I:1:bow:Short Bow
+I:1:bow:Long Bow
+I:1:bow:Light Crossbow
+I:2:shot:Iron Shot
+I:2:arrow:Arrow
+I:2:bolt:Bolt
 
 # Temple
 S:4:24
-I:1:hafted:Whip~
-I:1:hafted:Quarterstaff~
-I:2:hafted:Mace~
-I:1:hafted:Ball-and-Chain~
-I:1:hafted:War Hammer~
-I:1:hafted:Morning Star~
-I:2:hafted:Flail~
-I:1:hafted:Lead-Filled Mace~
+I:1:hafted:Whip
+I:1:hafted:Quarterstaff
+I:2:hafted:Mace
+I:1:hafted:Ball-and-Chain
+I:1:hafted:War Hammer
+I:1:hafted:Morning Star
+I:2:hafted:Flail
+I:1:hafted:Lead-Filled Mace
 I:1:scroll:Remove Curse
 I:1:scroll:Blessing
 I:1:scroll:Holy Chant
