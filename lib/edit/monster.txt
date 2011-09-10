@@ -1135,6 +1135,29 @@ F:RAND_50
 F:IM_POIS
 D:It has a copper head and sharp venomous fangs.
 
+N:182:Giant white dragon fly
+T:dragon fly
+C:w
+I:110:14:12:30:1
+W:5:2:0:15
+B:BITE:COLD:1d6
+F:IM_COLD
+S:1_IN_10
+S:BR_COLD
+D:It is a large fly that drips frost.
+
+N:208:Giant green dragon fly
+T:dragon fly
+C:g
+I:110:14:12:30:1
+W:5:2:0:16
+B:BITE:POISON:1d6
+F:RAND_25
+F:IM_POIS
+S:1_IN_10
+S:BR_POIS
+D:A vast, foul-smelling dragonfly.
+
 N:549:Rot jelly
 T:jelly
 C:u
@@ -1221,6 +1244,41 @@ F:RAND_50
 F:IM_POIS
 D:It is recognized by the hard-scaled end of its body that is often rattled to
 D: frighten its prey.
+
+N:231:Giant black dragon fly
+T:dragon fly
+C:s
+I:120:14:12:30:1
+W:6:2:0:18
+F:NEVER_BLOW | RAND_25
+F:IM_ACID
+S:1_IN_10
+S:BR_ACID
+D:The size of a large bird, this fly drips caustic acid.
+
+N:234:Giant gold dragon fly
+T:dragon fly
+C:y
+I:120:14:12:30:1
+W:6:2:0:18
+B:BITE:HURT:1d3
+F:RAND_25
+F:IM_FIRE
+S:1_IN_10
+S:BR_SOUN
+D:Large beating wings support this dazzling insect.  A loud buzzing noise
+D: pervades the air.
+
+N:266:Giant bronze dragon fly
+T:dragon fly
+C:U
+I:120:14:12:30:1
+W:6:0:0:18
+F:NEVER_BLOW | RAND_25
+F:NO_CONF | NO_SLEEP
+S:1_IN_10
+S:BR_CONF
+D:This vast gleaming bronze fly has wings which beat mesmerically fast.
 
 ### Dungeon level 7 ###
 
@@ -2339,17 +2397,6 @@ F:IM_COLD | IM_POIS
 D:A strong orc guarding the pass of Cirith Ungol.  He is mortally afraid of
 D: spiders.
 
-N:182:Giant white dragon fly
-T:dragon fly
-C:w
-I:110:14:12:30:1
-W:14:2:0:60
-B:BITE:COLD:1d6
-F:IM_COLD
-S:1_IN_10
-S:BR_COLD
-D:It is a large fly that drips frost.
-
 N:183:Blue icky thing
 T:icky thing
 C:b
@@ -2642,18 +2689,6 @@ D:It is a strange, vast gelatinous structure that assumes cubic proportions as
 D: it lines all four walls of the corridors it patrols.  Through its transparent
 D: jelly structure you can see treasures it has engulfed, and a few corpses as
 D: well.
-
-N:208:Giant green dragon fly
-T:dragon fly
-C:g
-I:110:14:12:30:1
-W:16:2:0:65
-B:BITE:POISON:1d6
-F:RAND_25
-F:IM_POIS
-S:1_IN_10
-S:BR_POIS
-D:A vast, foul-smelling dragonfly.
 
 N:210:Hummerhorn
 T:insect
@@ -2960,17 +2995,6 @@ S:SHRIEK
 D:A pile of rotting vegetation that slides towards you with a disgusting stench,
 D: waking all it nears.
 
-N:231:Giant black dragon fly
-T:dragon fly
-C:s
-I:120:14:12:30:1
-W:18:2:0:70
-F:NEVER_BLOW | RAND_25
-F:IM_ACID
-S:1_IN_10
-S:BR_ACID
-D:The size of a large bird, this fly drips caustic acid.
-
 N:588:Evil eye
 T:eye
 C:g
@@ -3041,19 +3065,6 @@ F:EMPTY_MIND | STUPID | HAS_LIGHT
 F:IM_FIRE
 -F:HURT_FIRE
 D:It is a strange red growth on the dungeon floor; it seems to burn with flame.
-
-N:234:Giant gold dragon fly
-T:dragon fly
-C:y
-I:120:14:12:30:1
-W:19:2:0:75
-B:BITE:HURT:1d3
-F:RAND_25
-F:IM_FIRE
-S:1_IN_10
-S:BR_SOUN
-D:Large beating wings support this dazzling insect.  A loud buzzing noise
-D: pervades the air.
 
 N:592:Neekerbreeker
 T:insect
@@ -3529,17 +3540,6 @@ W:23:1:0:85
 B:BITE:HURT:4d5
 F:RAND_25
 D:It is looking for prey.
-
-N:266:Giant bronze dragon fly
-T:dragon fly
-C:U
-I:120:14:12:30:1
-W:23:0:0:80
-F:NEVER_BLOW | RAND_25
-F:NO_CONF | NO_SLEEP
-S:1_IN_10
-S:BR_CONF
-D:This vast gleaming bronze fly has wings which beat mesmerically fast.
 
 N:551:Giant silver ant
 T:ant
