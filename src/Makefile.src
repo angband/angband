@@ -115,7 +115,7 @@ ANGFILES = \
 	player/race.o \
 	player/spell.o \
 	player/timed.o \
-	player/util.o \
+	player/p-util.o \
 	score.o \
 	signals.o \
 	save.o \

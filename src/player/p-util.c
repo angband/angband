@@ -1,4 +1,4 @@
-/* player/util.c
+/* player/p-util.c
  * Copyright (c) 2011 The Angband Developers. See COPYING.
  */
 

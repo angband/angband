@@ -623,7 +623,7 @@ depgen:
  option.h ui-event.h monster/list-mon-spells.h player/types.h \
  player/player.h guid.h store.h parser.h x-char.h ui.h z-textblock.h \
  externs.h spells.h list-gf-types.h
-./player/util.o: player/util.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
+./player/p-util.o: player/p-util.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h z-bitflag.h \
