@@ -1874,7 +1874,7 @@ D:He is a cunning and devious orc with a chaotic nature.
 N:141:Giant white tick
 T:spider
 C:w
-I:100:54:12:48:20
+I:100:54:12:150:20
 W:10:2:0:27
 B:BITE:POISON:2d6
 F:ANIMAL | WEIRD_MIND
@@ -3823,8 +3823,8 @@ D:It is a giant beetle with poisonous mandibles.
 N:552:Giant brown tick
 T:spider
 C:u
-I:110:81:12:60:20
-W:25:2:0:47
+I:100:81:12:200:20
+W:25:2:0:70
 B:BITE:POISON:2d6
 B:STING:BLIND:1d1
 F:ANIMAL | WEIRD_MIND
@@ -3888,7 +3888,7 @@ D:It is a huge black panther, clubbed tentacles sprouting from its shoulders.
 N:286:Giant fire tick
 T:spider
 C:R
-I:110:72:14:64:20
+I:110:72:14:120:20
 W:26:1:0:90
 B:BITE:FIRE:3d6
 F:ANIMAL | WEIRD_MIND | HAS_LIGHT
