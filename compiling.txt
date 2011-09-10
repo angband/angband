@@ -1,0 +1,76 @@
+Compiling Instructions
+======================
+
+The methods for compiling Angband vary by platform and by build system. If
+you get Angband working on a different platform or build system please let us
+know so we can add to this file.
+
+Mac OS X
+--------
+
+To build the new Cocoa front-end:
+
+    cd src
+    make -f Makefile.cocoa
+
+To build the legacy Carbon front-end (which is deprecated):
+
+    cd src
+    make -f Makefile.osx
+
+Linux and *nix
+--------------
+
+Linux builds using autotools. There are several different front ends that you
+can optionally build (GCU, SDL, X11, and GTK) using arguments to configure
+such as --enable-sdl, --disable-gtk, etc. Each front end has different
+dependencies (e.g. ncurses, SDL libraries, etc).
+
+To build Angband to be run in-place:
+
+    ./autogen.sh
+    ./configure --with-no-install [other options as needed]
+    make
+
+To build Angband to be installed in some other location:
+
+    ./autogen.sh
+    ./configure --prefix /path/to [other options as needed ]
+    make
+    make install
+
+On some BSDs, you may need to copy install-sh into lib/ and various
+subdirectories of lib/ in order to install correctly.
+
+Cross-building for Windows with Mingw
+-------------------------------------
+
+Many developers (as well as the auto-builder) build Angband for Windows using
+Mingw on Linux. This requires that the necessary Mingw packages are all
+installed.
+
+The command steps will be similar to this:
+
+    cd src
+    MINGW=yes make -f Makefile.win CROSS=i586-mingw32msvc-
+
+Mingw installs commands like 'i586-mingw32msvc-gcc'. The value of CROSS
+should be that same command with the 'gcc' removed. Instead of i586 you may
+see i686, amd64, etc.
+
+Using Mingw on Windows
+----------------------
+
+TODO
+
+Using Visual Studio on Windows
+------------------------------
+
+Blue Baron has detailed instructions for setting this up at:
+
+    src/win/angband_visual_studio_step_by_step.txt
+
+Using Dev-C++
+-------------
+
+TODO
