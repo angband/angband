@@ -3544,11 +3544,11 @@ D:It is looking for prey.
 N:551:Giant silver ant
 T:ant
 C:W
-I:110:41:10:45:40
-W:23:1:0:45
+I:110:41:10:100:40
+W:23:1:0:80
 B:BITE:ACID:4d4
 F:RAND_25
-D:A giant silver ant with a caustic bite.
+D:A giant silver ant with a caustic bite and hard scales.
 
 ### Dungeon level 24 ###
 
@@ -3851,11 +3851,12 @@ D:A troll who is so bright he knows how to read.
 N:283:Giant grey ant
 T:ant
 C:s
-I:110:86:10:60:10
-W:26:1:0:90
+I:110:86:10:200:10
+W:26:1:0:120
+B:BITE:HURT:2d12
 B:BITE:HURT:2d12
 F:RAND_25 | KILL_BODY
-D:It is an ant encased in shaggy grey fur.
+D:It is an ant encased in an impenetrable exoskeleton.
 
 N:284:Ulwarth, Son of Ulfang
 T:person
@@ -4577,7 +4578,7 @@ I:110:36:10:75:10
 W:30:2:0:80
 B:BITE:ELEC:5d5
 F:RAND_25
-F:IM_ELEC
+F:IM_ELEC | FRIENDS
 D:It is a giant ant that crackles with energy.
 
 N:323:Giant army ant
@@ -4585,6 +4586,7 @@ T:ant
 C:o
 I:120:67:10:60:20
 W:30:3:0:90
+B:BITE:HURT:2d12
 B:BITE:HURT:2d12
 F:FRIENDS
 F:RAND_25 | KILL_BODY
