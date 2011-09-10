@@ -2267,9 +2267,9 @@ D:A dark elven torso merged with the bloated form of a giant spider.
 N:172:Killer brown beetle
 T:killer beetle
 C:u
-I:110:59:10:48:30
-W:13:1:0:38
-B:BITE:HURT:3d4
+I:110:59:10:72:30
+W:13:1:0:45
+B:BITE:HURT:4d4
 D:It is a vicious insect with a tough carapace.
 
 N:173:Boldor, King of the Yeeks
@@ -3418,10 +3418,10 @@ D:A strong and cunning orc warrior, the commander of Saruman's orcish horde.
 N:257:Killer stag beetle
 T:killer beetle
 C:g
-I:110:68:12:66:30
+I:110:68:12:76:30
 W:22:1:0:80
-B:CLAW:HURT:1d12
-B:CLAW:HURT:1d12
+B:CLAW:HURT:3d6
+B:CLAW:HURT:3d6
 F:RAND_25
 D:It is a giant beetle with vicious claws.
 
@@ -3536,7 +3536,7 @@ N:265:Killer white beetle
 T:killer beetle
 C:w
 I:110:81:14:66:30
-W:23:1:0:85
+W:23:0:0:85
 B:BITE:HURT:4d5
 F:RAND_25
 D:It is looking for prey.
@@ -3816,6 +3816,7 @@ C:r
 I:110:90:14:60:30
 W:25:1:0:90
 B:BITE:LOSE_STR:4d4
+B:BITE:HURT:4d4
 F:RAND_25
 D:It is a giant beetle with poisonous mandibles.
 
@@ -4612,9 +4613,9 @@ N:325:Killer slicer beetle
 T:killer beetle
 C:y
 I:110:138:14:72:30
-W:30:2:0:200
-B:BITE:HURT:5d8
-B:BITE:HURT:5d8
+W:30:2:0:250
+B:BITE:HURT:7d8
+B:BITE:HURT:7d8
 D:It is a beetle with deadly sharp cutting mandibles and a rock-hard carapace.
 
 N:610:Ogre chieftain
@@ -4673,8 +4674,9 @@ N:327:Death watch beetle
 T:killer beetle
 C:D
 I:110:163:16:72:30
-W:31:3:0:220
-B:BITE:HURT:5d4
+W:31:3:0:300
+B:BITE:HURT:5d6
+B:BITE:HURT:5d6
 B:WAIL:TERRIFY:5d6
 D:It is a giant beetle that produces a chilling sound.
 
@@ -5963,10 +5965,10 @@ D:A lump of rotting black flesh that slurrrrrrrps across the dungeon floor.
 N:399:Killer iridescent beetle
 T:killer beetle
 C:v
-I:110:330:16:72:30
+I:110:330:16:90:30
 W:37:2:0:850
-B:CLAW:ELEC:1d12
-B:CLAW:ELEC:1d12
+B:CLAW:ELEC:2d12
+B:CLAW:ELEC:2d12
 B:GAZE:PARALYZE
 F:IM_ELEC
 F:ATTR_MULTI
