@@ -220,7 +220,7 @@ ince the fifth will quit the game, after killing your character. Also,
 ``Ctrl-Z`` will suspend the game, and return you to the original command
 shell, until you resume the game with the ``fg`` command. There is now a
 compilation option to force the game to prevent the "double ``ctrl-z``
-escape death trick". The ``Ctrl-\\`` and ``Ctrl-D`` and ``Ctrl-S`` keys
+escape death trick". The |``Ctrl-\``| and ``Ctrl-D`` and ``Ctrl-S`` keys
 should not be intercepted.
  
 It is often possible to specify "control-keys" without actually pressing
@@ -303,4 +303,7 @@ example, off the dungeon floor without picking them up.
 If you enter a number between 0 and 9, the first item engraved with ``@#``
 where ``#`` is the number you entered will be selected. See the section
 "Using Inscriptions" for more detail.
+
+.. |``Ctrl-``| replace:: ``Ctrl-\\``
+   I am not sure what is happening, but this yields the correct result
 

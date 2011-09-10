@@ -268,11 +268,13 @@ may be able to "stack" several items in the same grid.
 You pick up objects by moving on top of them. You can carry up to 23
 different items in your backpack while wearing and wielding up to 12
 others. Although you are limited to 23 different items, each item may
-actually be a "pile" of up to 99 similar items. If you ``t``\ake off an
+actually be a "pile" of up to 99 similar items. If you |``t``ake| off an
 item, it will go into your backpack if there is room: if there is no room
 in your backpack, it will drop onto the floor, so be careful when swapping
 one wielded weapon or worn piece of armor for another when your pack is
 full.
+
+.. |``t``ake| replace:: ``t``\ake
 
 You are, however, limited in the total amount of weight that you can carry.
 If you exceed this value, you become slower, making it easier for monsters
@@ -411,8 +413,10 @@ Traps
 
 There are many traps located in the dungeon of varying danger. These traps
 are hidden from sight and are triggered only when your character walks over
-them. If you have found a trap you can attempt to ``D``\isarm it, but
+them. If you have found a trap you can attempt to |``D``isarm| it, but
 failure may mean activating it.
+
+.. |``D``isarm| replace:: ``D``\isarm
 
 There are some magical means to detecting all traps within a certain
 radius. If you cast one of these spells, there will be a ``Dtrap`` green
