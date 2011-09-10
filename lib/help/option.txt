@@ -49,8 +49,14 @@ Always pickup items matching inventory ``[pickup_inven]``
 
 Open/Disarm/Close without direction ``[easy_open]``
   If there is only one closed door next to the character, the game will not
-  bother asking for a direction when the player asks to ``o``\pen omething.
-  The same applies for ``c``\losing doors and ``D``\isarming traps.
+  bother asking for a direction when the player asks to |``o``pen| omething.
+  The same applies for |``c``losing| doors and |``D``isarming| traps.
+
+.. |``o``pen| replace:: ``o``\pen
+
+.. |``c``losing| replace:: ``c``\losing
+
+.. |``D``isarming| replace:: ``D``\isarming
 
 .. _center_player:
 
