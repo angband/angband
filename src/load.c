@@ -1492,6 +1492,50 @@ int rd_misc(void)
 	return 0;
 }
 
+int rd_misc_2(void)
+{
+	byte tmp8u;
+	u16b tmp16u;
+	
+	/* Read the randart version */
+	strip_bytes(4);
+
+	/* Read the randart seed */
+	rd_u32b(&seed_randart);
+
+	/* Skip the flags */
+	strip_bytes(12);
+
+
+	/* Hack -- the two "special seeds" */
+	rd_u32b(&seed_flavor);
+	rd_u32b(&seed_town);
+
+
+	/* Special stuff */
+	rd_u16b(&p_ptr->panic_save);
+	rd_u16b(&p_ptr->total_winner);
+	rd_u16b(&p_ptr->noscore);
+
+
+	/* Read "death" */
+	rd_byte(&tmp8u);
+	p_ptr->is_dead = tmp8u;
+
+	/* Read "feeling" */
+	rd_byte(&tmp8u);
+	cave->feeling = tmp8u;
+	rd_u16b(&tmp16u);
+	cave->feeling_squares = tmp16u;
+
+	rd_s32b(&cave->created_at);
+
+	/* Current turn */
+	rd_s32b(&turn);
+
+	return 0;
+}
+
 int rd_player_hp(void)
 {
 	int i;
