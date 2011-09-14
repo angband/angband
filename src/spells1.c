@@ -2818,11 +2818,12 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
  */
 static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvious)
 {
+
 	/* Get the damage type details */
 	const struct gf_type *gf_ptr = &gf_table[typ];
 
 	/* Source monster */
-	monster_type *m_ptr = cave_monster(cave, who);
+	monster_type *m_ptr;
 
 	/* Monster name (for attacks) */
 	char m_name[80];
@@ -2830,11 +2831,18 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 	/* Monster name (for damage) */
 	char killer[80];
 
+	bool blind, seen;
+
+	if (who == -1) return obvious;
+
+	/* Source monster */
+	m_ptr = cave_monster(cave, who);
+
 	/* Player blind-ness */
-	bool blind = (p_ptr->timed[TMD_BLIND] ? TRUE : FALSE);
+	blind = (p_ptr->timed[TMD_BLIND] ? TRUE : FALSE);
 
 	/* Extract the "see-able-ness" */
-	bool seen = (!blind && m_ptr->ml);
+	seen = (!blind && m_ptr->ml);
 
 	/* No player here */
 	if (!(cave->m_idx[y][x] < 0)) return (FALSE);
