@@ -34,6 +34,9 @@ static const char *dump_separator = "#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#";
 
 /*
  * Remove old lines from pref files
+ *
+ * If you are using setgid, make sure privileges were raised prior
+ * to calling this.
  */
 static void remove_old_dump(const char *cur_fname, const char *mark)
 {
@@ -339,22 +342,29 @@ bool prefs_save(const char *path, void (*dump)(ang_file *), const char *title)
 {
 	ang_file *fff;
 
+	safe_setuid_grab();
+
 	/* Remove old keymaps */
 	remove_old_dump(path, title);
 
 	fff = file_open(path, MODE_APPEND, FTYPE_TEXT);
-	if (!fff) return FALSE;
+	if (!fff) {
+		safe_setuid_drop();
+		return FALSE;
+	}
 
 	/* Append the header */
 	pref_header(fff, title);
 	file_putf(fff, "\n\n");
 	file_putf(fff, "# %s definitions\n\n", strstr(title, " "));
-	
+
 	dump(fff);
 
 	file_putf(fff, "\n\n\n");
 	pref_footer(fff, title);
 	file_close(fff);
+
+	safe_setuid_drop();
 
 	return TRUE;
 }
