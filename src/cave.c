@@ -427,13 +427,17 @@ byte get_color(byte a, int attr, int n)
 bool dtrap_edge(int y, int x) 
 { 
 	/* Check if the square is a dtrap in the first place */ 
- 	if (!cave->info2[y][x] & CAVE2_DTRAP) return FALSE; 
+ 	if (!(cave->info2[y][x] & CAVE2_DTRAP)) return FALSE; 
 
  	/* Check for non-dtrap adjacent grids */ 
- 	if (in_bounds_fully(y + 1, x    ) && (!cave->info2[y + 1][x    ] & CAVE2_DTRAP)) return TRUE; 
- 	if (in_bounds_fully(y    , x + 1) && (!cave->info2[y    ][x + 1] & CAVE2_DTRAP)) return TRUE; 
- 	if (in_bounds_fully(y - 1, x    ) && (!cave->info2[y - 1][x    ] & CAVE2_DTRAP)) return TRUE; 
- 	if (in_bounds_fully(y    , x - 1) && (!cave->info2[y    ][x - 1] & CAVE2_DTRAP)) return TRUE; 
+ 	if (in_bounds_fully(y + 1, x    ) &&
+			(!(cave->info2[y + 1][x    ] & CAVE2_DTRAP))) return TRUE; 
+ 	if (in_bounds_fully(y    , x + 1) &&
+			(!(cave->info2[y    ][x + 1] & CAVE2_DTRAP))) return TRUE; 
+ 	if (in_bounds_fully(y - 1, x    ) &&
+			(!(cave->info2[y - 1][x    ] & CAVE2_DTRAP))) return TRUE; 
+ 	if (in_bounds_fully(y    , x - 1) &&
+			(!(cave->info2[y    ][x - 1] & CAVE2_DTRAP))) return TRUE; 
 
 	return FALSE; 
 }
