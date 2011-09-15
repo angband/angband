@@ -244,10 +244,14 @@ bool mon_inc_timed(int m_idx, int idx, int v, u16b flag)
 	if (v < 0) return (FALSE);
 
 	/* Make it last for a mimimum # of turns if it is a new effect */
-	if ((!m_ptr->m_timed[idx]) && (v < 2)) v = 2;
+	if ((!m_ptr->m_timed[idx]) && (v < 2))
+		v = 2;
 
-	/* New counter amount */
-	v += m_ptr->m_timed[idx];
+	/* New counter amount - prevent overflow*/
+	if (MAX_SHORT - v < m_ptr->m_timed[idx])
+		v = MAX_SHORT;
+	else
+		v += m_ptr->m_timed[idx];
 
 	if (idx == MON_TMD_STUN || idx == MON_TMD_CONF) {
 		if (v > 200) v = 200;
