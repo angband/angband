@@ -1,3 +1,29 @@
+Angband 3.3.1
+=============
+
+These changes were brought to you by Jens, vext01, David3x3x3, Blubaron,
+Daniel Santos, fizzix, CunningGabe, PowerWyrm - thanks all.
+
+  #1461 Prevent <savefile>.old and <savefile>.new being deleted when saving
+  #1462 Fix crash when loading a graphics .prf in text mode
+  #1491 Make "purple uniques" display correctly
+  #1498 Update Nomad's 8x16 tileset
+  #1506 Stop the hidden level-feeling tiles being displayed by accident
+  #1507 Rebalance to-hit vs. AC (so that AC is more useful vs. heavy hitters)
+  #1511 Make shift+keypad work in the GTK port
+  #1512 Change S_IREAD and S_IWRITE for Android compatibility
+  #1513 Ensure that PDSM can't get the Resistance ego
+  #1516 Prevent excessive monster timed effect durations
+  #1518 Correct logic error in randart slay frequency calc
+  #1533 Stop scrolls of light segfaulting on BSD
+9541bb7 Make pref file writing work with setgid installs
+559e486 Save progress towards level feelings
+63de8ad Become aware of mimics after trying to walk into them while afraid
+664de63 Make a mimic on a pile of objects look like a pile
+52a331e Fix buggy earthquake logic
+c2d9fee Make Heroism and Berserk spells grant boldness, like the potions
+
+
 Angband 3.3.0
 =============
 
