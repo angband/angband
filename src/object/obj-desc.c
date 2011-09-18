@@ -321,15 +321,15 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 	const char *basename = obj_desc_get_basename(o_ptr, aware);
 	const char *modstr = obj_desc_get_modstr(o_ptr->kind);
 
-	if (aware && !o_ptr->kind->everseen)
+	if (aware && !o_ptr->kind->everseen && !spoil)
 		o_ptr->kind->everseen = TRUE;
 
 	if (prefix)
 		end = obj_desc_name_prefix(buf, max, end, o_ptr, known,
 				basename, modstr);
 
-	/* Pluralize if (not forced singular) and 
-	 * (not a known/visible artifact) and 
+	/* Pluralize if (not forced singular) and
+	 * (not a known/visible artifact) and
 	 * (not one in stack or forced plural) */
 	end = obj_desc_name_format(buf, max, end, basename, modstr,
 			!(mode & ODESC_SINGULAR) &&
@@ -680,7 +680,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 {
 	bool prefix = mode & ODESC_PREFIX;
 	bool spoil = (mode & ODESC_SPOIL);
-	bool known; 
+	bool known;
 
 	size_t end = 0, i = 0;
 
@@ -692,7 +692,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 			(o_ptr->ident & IDENT_STORE) || spoil;
 
 	/* We've seen it at least once now we're aware of it */
-	if (known && o_ptr->ego) o_ptr->ego->everseen = TRUE;
+	if (known && o_ptr->ego && !spoil) o_ptr->ego->everseen = TRUE;
 
 
 	/*** Some things get really simple descriptions ***/
