@@ -24,6 +24,7 @@
 #include "game-cmd.h"
 #include "game-event.h"
 #include "generate.h"
+#include "monster/mon-timed.h"
 #include "monster/mon-util.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
@@ -737,7 +738,7 @@ void do_cmd_open(cmd_code code, cmd_arg args[])
 			become_aware(m_idx);
 
 			/* Mimic wakes up */
-			mon_clear_timed(m_idx, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
+			mon_clear_timed(m_idx, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
 		} else {
 			/* Message */
 			msg("There is a monster in the way!");

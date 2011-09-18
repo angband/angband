@@ -21,6 +21,7 @@
 #include "cave.h"
 #include "monster/mon-make.h"
 #include "monster/mon-spell.h"
+#include "monster/mon-timed.h"
 #include "monster/mon-util.h"
 #include "object/slays.h"
 #include "object/tvalsval.h"
@@ -490,15 +491,8 @@ bool make_attack_spell(int m_idx)
 		else
 			msg("%^s concentrates on %s body.", m_name, m_poss);
 
-		/* XXX Allow slow speed increases past +10 */
-		if (m_ptr->m_timed[MON_TMD_FAST] &&
-				m_ptr->mspeed > r_ptr->speed + 10 &&
-				m_ptr->mspeed < r_ptr->speed + 20) {
-			msg("%^s starts moving faster.", m_name);
-			m_ptr->mspeed += 2;
-		}
-		(void)mon_inc_timed(m_idx, MON_TMD_FAST, 50, 0);
-	} else 
+		(void)mon_inc_timed(m_idx, MON_TMD_FAST, 50, 0, FALSE);
+	} else
 		do_mon_spell(thrown_spell, m_idx, seen);
 
 	/* Remember what the monster did to us */
@@ -2780,7 +2774,7 @@ static void process_monster(struct cave *c, int m_idx)
 		if (check_state(p_ptr, OF_AGGRAVATE, p_ptr->state.flags))
 		{
 			/* Wake the monster */
-			mon_clear_timed(m_idx, MON_TMD_SLEEP, MON_TMD_FLG_NOTIFY);
+			mon_clear_timed(m_idx, MON_TMD_SLEEP, MON_TMD_FLG_NOTIFY, FALSE);
 
 			/* Notice the "waking up" */
 			if (m_ptr->ml && !m_ptr->unaware)
@@ -2816,7 +2810,8 @@ static void process_monster(struct cave *c, int m_idx)
 			if (m_ptr->m_timed[MON_TMD_SLEEP] > d)
 			{
 				/* Monster wakes up "a little bit" */
-				mon_dec_timed(m_idx, MON_TMD_SLEEP, d , MON_TMD_FLG_NOMESSAGE);
+				mon_dec_timed(m_idx, MON_TMD_SLEEP, d , MON_TMD_FLG_NOMESSAGE,
+					FALSE);
 
 				/* Notice the "not waking up" */
 				if (m_ptr->ml && !m_ptr->unaware)
@@ -2833,7 +2828,8 @@ static void process_monster(struct cave *c, int m_idx)
 			else
 			{
 				/* Reset sleep counter */
-				woke_up = mon_clear_timed(m_idx, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
+				woke_up = mon_clear_timed(m_idx, MON_TMD_SLEEP,
+					MON_TMD_FLG_NOMESSAGE, FALSE);
 
 				/* Notice the "waking up" */
 				if (m_ptr->ml && !m_ptr->unaware)
@@ -2866,10 +2862,10 @@ static void process_monster(struct cave *c, int m_idx)
 	if (woke_up) return;
 
 	if (m_ptr->m_timed[MON_TMD_FAST])
-		mon_dec_timed(m_idx, MON_TMD_FAST, 1, 0);
+		mon_dec_timed(m_idx, MON_TMD_FAST, 1, 0, FALSE);
 
 	if (m_ptr->m_timed[MON_TMD_SLOW])
-		mon_dec_timed(m_idx, MON_TMD_SLOW, 1, 0);
+		mon_dec_timed(m_idx, MON_TMD_SLOW, 1, 0, FALSE);
 
 	if (m_ptr->m_timed[MON_TMD_STUN])
 	{
@@ -2884,9 +2880,9 @@ static void process_monster(struct cave *c, int m_idx)
 
 		/* Hack -- Recover from stun */
 		if (m_ptr->m_timed[MON_TMD_STUN] > d)
-			mon_dec_timed(m_idx, MON_TMD_STUN, 1, MON_TMD_FLG_NOMESSAGE);
+			mon_dec_timed(m_idx, MON_TMD_STUN, 1, MON_TMD_FLG_NOMESSAGE, FALSE);
 		else
-			mon_clear_timed(m_idx, MON_TMD_STUN, MON_TMD_FLG_NOTIFY);
+			mon_clear_timed(m_idx, MON_TMD_STUN, MON_TMD_FLG_NOTIFY, FALSE);
 
 		/* Still stunned */
 		if (m_ptr->m_timed[MON_TMD_STUN]) return;
@@ -2898,9 +2894,10 @@ static void process_monster(struct cave *c, int m_idx)
 
 		/* Still confused */
 		if (m_ptr->m_timed[MON_TMD_CONF] > d)
-			mon_dec_timed(m_idx, MON_TMD_CONF, d , MON_TMD_FLG_NOMESSAGE);
+			mon_dec_timed(m_idx, MON_TMD_CONF, d , MON_TMD_FLG_NOMESSAGE,
+				FALSE);
 		else
-			mon_clear_timed(m_idx, MON_TMD_CONF, MON_TMD_FLG_NOTIFY);
+			mon_clear_timed(m_idx, MON_TMD_CONF, MON_TMD_FLG_NOTIFY, FALSE);
 	}
 
 	if (m_ptr->m_timed[MON_TMD_FEAR])
@@ -2909,9 +2906,9 @@ static void process_monster(struct cave *c, int m_idx)
 		int d = randint1(r_ptr->level / 10 + 1);
 
 		if (m_ptr->m_timed[MON_TMD_FEAR] > d)
-			mon_dec_timed(m_idx, MON_TMD_FEAR, d, MON_TMD_FLG_NOMESSAGE);
+			mon_dec_timed(m_idx, MON_TMD_FEAR, d, MON_TMD_FLG_NOMESSAGE, FALSE);
 		else
-			mon_clear_timed(m_idx, MON_TMD_FEAR, MON_TMD_FLG_NOTIFY);
+			mon_clear_timed(m_idx, MON_TMD_FEAR, MON_TMD_FLG_NOTIFY, FALSE);
 	}
 
 
@@ -3473,7 +3470,7 @@ static void process_monster(struct cave *c, int m_idx)
 	/* Hack -- get "bold" if out of options */
 	if (!do_turn && !do_move && m_ptr->m_timed[MON_TMD_FEAR])
 	{
-		mon_clear_timed(m_idx, MON_TMD_FEAR, MON_TMD_FLG_NOTIFY);
+		mon_clear_timed(m_idx, MON_TMD_FEAR, MON_TMD_FLG_NOTIFY, FALSE);
 	}
 
 	/* If we see an unaware monster do something, become aware of it */
