@@ -259,7 +259,7 @@ static void heal_self(int m_idx, int rlev, bool seen)
 
 	/* Cancel fear */
 	if (m_ptr->m_timed[MON_TMD_FEAR]) {
-		mon_clear_timed(m_idx, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE);
+		mon_clear_timed(m_idx, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE, FALSE);
 		msg("%^s recovers %s courage.", m_name, m_poss);
 	}
 }

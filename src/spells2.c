@@ -1664,7 +1664,7 @@ bool project_los(int typ, int dam, bool obvious)
 
 	int flg = PROJECT_JUMP | PROJECT_KILL | PROJECT_HIDE;
 
-	if(obvious) flg |= PROJECT_AWARE;
+	if (obvious) flg |= PROJECT_AWARE;
 
 	/* Affect all (nearby) monsters */
 	for (i = 1; i < cave_monster_max(cave); i++)
@@ -1796,14 +1796,14 @@ void aggravate_monsters(int who)
 			if (m_ptr->m_timed[MON_TMD_SLEEP])
 			{
 				/* Wake up */
-				mon_clear_timed(i, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
+				mon_clear_timed(i, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
 				sleep = TRUE;
 			}
 		}
 
 		/* Speed up monsters in line of sight */
 		if (player_has_los_bold(m_ptr->fy, m_ptr->fx))
-			mon_inc_timed(i, MON_TMD_FAST, 25, MON_TMD_FLG_NOTIFY);
+			mon_inc_timed(i, MON_TMD_FAST, 25, MON_TMD_FLG_NOTIFY, FALSE);
 	}
 
 	/* Messages */
@@ -2326,7 +2326,8 @@ void earthquake(int cy, int cx, int r)
 					damage = (sn ? damroll(4, 8) : (m_ptr->hp + 1));
 
 					/* Monster is certainly awake */
-					mon_clear_timed(cave->m_idx[yy][xx], MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
+					mon_clear_timed(cave->m_idx[yy][xx], MON_TMD_SLEEP,
+						MON_TMD_FLG_NOMESSAGE, FALSE);
 
 					/* If the quake finished the monster off, show message */
 					if (m_ptr->hp < damage && m_ptr->hp >= 0)
@@ -2502,7 +2503,8 @@ static void cave_light(struct point_set *ps)
 			if (m_ptr->m_timed[MON_TMD_SLEEP] && (randint0(100) < chance))
 			{
 				/* Wake up! */
-				mon_clear_timed(cave->m_idx[y][x], MON_TMD_SLEEP, MON_TMD_FLG_NOTIFY);
+				mon_clear_timed(cave->m_idx[y][x], MON_TMD_SLEEP,
+					MON_TMD_FLG_NOTIFY, FALSE);
 
 			}
 		}
@@ -2869,14 +2871,14 @@ bool slow_monster(int dir)
 bool sleep_monster(int dir, bool aware)
 {
 	int flg = PROJECT_STOP | PROJECT_KILL;
-	if(aware) flg |= PROJECT_AWARE;
+	if (aware) flg |= PROJECT_AWARE;
 	return (project_hook(GF_OLD_SLEEP, dir, p_ptr->lev, flg));
 }
 
 bool confuse_monster(int dir, int plev, bool aware)
 {
 	int flg = PROJECT_STOP | PROJECT_KILL;
-	if(aware) flg |= PROJECT_AWARE;
+	if (aware) flg |= PROJECT_AWARE;
 	return (project_hook(GF_OLD_CONF, dir, plev, flg));
 }
 
@@ -2895,7 +2897,7 @@ bool clone_monster(int dir)
 bool fear_monster(int dir, int plev, bool aware)
 {
 	int flg = PROJECT_STOP | PROJECT_KILL;
-	if(aware) flg |= PROJECT_AWARE;
+	if (aware) flg |= PROJECT_AWARE;
 	return (project_hook(GF_TURN_ALL, dir, plev, flg));
 }
 

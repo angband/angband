@@ -180,7 +180,8 @@ static bool py_attack_real(int y, int x, bool *fear) {
 	}
 
 	/* Disturb the monster */
-	mon_clear_timed(cave->m_idx[y][x], MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
+	mon_clear_timed(cave->m_idx[y][x], MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE,
+		FALSE);
 
 	/* See if the player hit */
 	success = test_hit(chance, r_ptr->ac, m_ptr->ml);
@@ -260,7 +261,7 @@ static bool py_attack_real(int y, int x, bool *fear) {
 		msg("Your hands stop glowing.");
 
 		mon_inc_timed(cave->m_idx[y][x], MON_TMD_CONF,
-				(10 + randint0(p_ptr->lev) / 10), MON_TMD_FLG_NOTIFY);
+				(10 + randint0(p_ptr->lev) / 10), MON_TMD_FLG_NOTIFY, FALSE);
 	}
 
 	/* Damage, check for fear and death */

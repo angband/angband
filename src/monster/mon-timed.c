@@ -162,7 +162,8 @@ static bool mon_resist_effect(const monster_type *m_ptr, int ef_idx, int timer, 
  * Returns TRUE if the monster was affected.
  * Return FALSE if the monster was unaffected.
  */
-static bool mon_set_timed(monster_type *m_ptr, int ef_idx, int timer, u16b flag)
+static bool mon_set_timed(monster_type *m_ptr, int ef_idx, int timer,
+	u16b flag, bool id)
 {
 	mon_timed_effect *effect;
 
@@ -208,7 +209,9 @@ static bool mon_set_timed(monster_type *m_ptr, int ef_idx, int timer, u16b flag)
 	/* Update the visuals, as appropriate. */
 	p_ptr->redraw |= (PR_MONLIST);
 
-	if (m_note && !(flag & MON_TMD_FLG_NOMESSAGE) &&
+	/* Print a message if there is one, if the effect allows for it, and if
+	 * either the monster is visible, or we're trying to ID something */
+	if (m_note && (m_ptr->ml || id) && !(flag & MON_TMD_FLG_NOMESSAGE) &&
 			(flag & MON_TMD_FLG_NOTIFY)) {
 		char m_name[80];
 		monster_desc(m_name, sizeof(m_name), m_ptr, 0x04);
@@ -229,7 +232,7 @@ static bool mon_set_timed(monster_type *m_ptr, int ef_idx, int timer, u16b flag)
  *
  * Returns TRUE if the monster's timer changed.
  */
-bool mon_inc_timed(int m_idx, int ef_idx, int timer, u16b flag)
+bool mon_inc_timed(int m_idx, int ef_idx, int timer, u16b flag, bool id)
 {
 	monster_type *m_ptr;
 	mon_timed_effect *effect;
@@ -242,7 +245,7 @@ bool mon_inc_timed(int m_idx, int ef_idx, int timer, u16b flag)
 
 	/* For negative amounts, we use mon_dec_timed instead */
 	assert(timer > 0);
-	
+
 	/* Make it last for a mimimum # of turns if it is a new effect */
 	if ((!m_ptr->m_timed[ef_idx]) && (timer < 2)) timer = 2;
 
@@ -256,7 +259,7 @@ bool mon_inc_timed(int m_idx, int ef_idx, int timer, u16b flag)
 	if (timer > effect->max_timer)
 		timer = effect->max_timer;
 
-	return mon_set_timed(m_ptr, ef_idx, timer, flag);
+	return mon_set_timed(m_ptr, ef_idx, timer, flag, id);
 }
 
 /**
@@ -268,7 +271,7 @@ bool mon_inc_timed(int m_idx, int ef_idx, int timer, u16b flag)
  *
  * Returns TRUE if the monster's timer changed.
  */
-bool mon_dec_timed(int m_idx, int ef_idx, int timer, u16b flag)
+bool mon_dec_timed(int m_idx, int ef_idx, int timer, u16b flag, bool id)
 {
 	monster_type *m_ptr;
 
@@ -276,7 +279,7 @@ bool mon_dec_timed(int m_idx, int ef_idx, int timer, u16b flag)
 
 	assert(m_idx > 0);
 	m_ptr = cave_monster(cave, m_idx);
-	
+
 	assert(timer > 0);
 
 	/* Decreasing is never resisted */
@@ -287,7 +290,7 @@ bool mon_dec_timed(int m_idx, int ef_idx, int timer, u16b flag)
 	if (timer < 0)
 		timer = 0;
 
-	return mon_set_timed(m_ptr, ef_idx, timer, flag);
+	return mon_set_timed(m_ptr, ef_idx, timer, flag, id);
 }
 
 /**
@@ -295,7 +298,7 @@ bool mon_dec_timed(int m_idx, int ef_idx, int timer, u16b flag)
  *
  * Returns TRUE if the monster's timer was changed.
  */
-bool mon_clear_timed(int m_idx, int ef_idx, u16b flag)
+bool mon_clear_timed(int m_idx, int ef_idx, u16b flag, bool id)
 {
 	monster_type *m_ptr;
 
@@ -309,6 +312,6 @@ bool mon_clear_timed(int m_idx, int ef_idx, u16b flag)
 	/* Clearing never fails */
 	flag |= MON_TMD_FLG_NOFAIL;
 
-	return mon_set_timed(m_ptr, ef_idx, 0, flag);
+	return mon_set_timed(m_ptr, ef_idx, 0, flag, id);
 }
 

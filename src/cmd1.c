@@ -557,7 +557,7 @@ void move_player(int dir, bool disarm)
 
 	int y = py + ddy[dir];
 	int x = px + ddx[dir];
-	
+
 	int m_idx = cave->m_idx[y][x];
 
 	/* Attack monsters */
@@ -567,7 +567,7 @@ void move_player(int dir, bool disarm)
 			become_aware(m_idx);
 
 			/* Mimic wakes up */
-			mon_clear_timed(m_idx, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE);
+			mon_clear_timed(m_idx, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
 
 		} else {
 			py_attack(y, x);
