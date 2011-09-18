@@ -14,6 +14,7 @@ Daniel Santos, fizzix, CunningGabe, PowerWyrm - thanks all.
   #1512 Change S_IREAD and S_IWRITE for Android compatibility
   #1513 Ensure that PDSM can't get the Resistance ego
   #1516 Prevent excessive monster timed effect durations
+  #1517 Increase MAX_ITEMLIST to cope with new ignore/squelch approach
   #1518 Correct logic error in randart slay frequency calc
   #1533 Stop scrolls of light segfaulting on BSD
 9541bb7 Make pref file writing work with setgid installs
