@@ -5,6 +5,7 @@ config.status
 configure
 lib/apex/scores.*
 *.out
+*.exe
 lib/save/1000.*
 .project
 .cproject
