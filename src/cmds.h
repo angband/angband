@@ -130,7 +130,7 @@ void textui_obj_study(void);
 void textui_obj_cast(void);
 
 /* ui-knowledge.c */
-extern int big_pad(int col, int row, byte a, byte c);
+extern int big_pad(int col, int row, byte a, wchar_t c);
 extern void textui_browse_object_knowledge(const char *name, int row);
 extern void textui_knowledge_init(void);
 extern void textui_browse_knowledge(void);

@@ -1015,9 +1015,9 @@ static void Term_fresh_row_text(int y, int x1, int x2)
 errr Term_mark(int x, int y)
 {
 	byte *old_aa = Term->old->a[y];
-	char *old_cc = Term->old->c[y];
+	wchar_t *old_cc = Term->old->c[y];
 	byte *old_taa = Term->old->ta[y];
-	char *old_tcc = Term->old->tc[y];
+	wchar_t *old_tcc = Term->old->tc[y];
 
 	old_aa[x] = Term->attr_blank;
 	old_cc[x] = Term->char_blank;
