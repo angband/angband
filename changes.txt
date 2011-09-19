@@ -14,6 +14,7 @@ Daniel Santos, fizzix, CunningGabe, PowerWyrm - thanks all.
   #1511 Make shift+keypad work in the GTK port
   #1512 Change S_IREAD and S_IWRITE for Android compatibility
   #1513 Ensure that PDSM can't get the Resistance ego
+  #1515 Ensure that devices ID'd by use on unseen monsters provide feedback
   #1516 Prevent excessive monster timed effect durations
   #1517 Increase MAX_ITEMLIST to cope with new ignore/squelch approach
   #1518 Correct logic error in randart slay frequency calc
