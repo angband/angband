@@ -545,7 +545,8 @@ static struct parser_value *parser_getval(struct parser *p, const char *name) {
 			return v;
 		}
 	}
-	assert(0);
+	quit_fmt("parser_getval error: name is %s\n", name);
+	return 0; /* Needed to avoid Windows compiler warning */
 }
 
 const char *parser_getsym(struct parser *p, const char *name) {

@@ -1593,7 +1593,8 @@ struct owner *store_ownerbyidx(struct store *s, unsigned int idx) {
 			return o;
 	}
 
-	notreached;
+	quit_fmt("Bad call to store_ownerbyidx: idx is %d\n", idx);
+	return 0; /* Needed to avoid Windows compiler warning */
 }
 
 static struct owner *store_choose_owner(struct store *s) {

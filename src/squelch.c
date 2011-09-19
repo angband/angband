@@ -296,7 +296,7 @@ static int is_object_good(const object_type *o_ptr)
  */
 byte squelch_level_of(const object_type *o_ptr)
 {
-	byte value;
+	byte value = 0;
 	bitflag f[OF_SIZE], f2[OF_SIZE];
 	int i;
 

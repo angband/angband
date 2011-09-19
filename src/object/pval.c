@@ -52,10 +52,9 @@ int which_pval(const object_type *o_ptr, const int flag)
             return i;
     }
 
-	msg("flag is %d.", flag);
-	msg("kidx is %d.", o_ptr->kind->kidx);
-	pause_line(Term);
-    assert(0);
+	quit_fmt("Bad call to which_pval: flag is %d, kidx is %d\n", flag,
+		o_ptr->kind->kidx);
+	return 0; /* Needed to avoid Windows compiler warning */
 }
 
 /**
