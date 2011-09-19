@@ -2817,8 +2817,10 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
  * Actually, for historical reasons, we just assume that the effects were
  * obvious.  XXX XXX XXX
  */
-static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvious)
+static bool project_p(int who, int r, int y, int x, int dam, int typ,
+	bool obvious)
 {
+	bool blind, seen;
 
 	/* Get the damage type details */
 	const struct gf_type *gf_ptr = &gf_table[typ];
@@ -2832,9 +2834,11 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 	/* Monster name (for damage) */
 	char killer[80];
 
-	bool blind, seen;
+	/* No player here */
+	if (!(cave->m_idx[y][x] < 0)) return (FALSE);
 
-	if (who == -1) return obvious;
+	/* Never affect projector */
+	if (cave->m_idx[y][x] == who) return (FALSE);
 
 	/* Source monster */
 	m_ptr = cave_monster(cave, who);
@@ -2844,12 +2848,6 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 
 	/* Extract the "see-able-ness" */
 	seen = (!blind && m_ptr->ml);
-
-	/* No player here */
-	if (!(cave->m_idx[y][x] < 0)) return (FALSE);
-
-	/* Never affect projector */
-	if (cave->m_idx[y][x] == who) return (FALSE);
 
 	/* Reduce damage by distance */
 	dam = (dam + r) / (r + 1);
