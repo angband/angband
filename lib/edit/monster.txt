@@ -8186,7 +8186,7 @@ D: experienced.
 
 ### Dungeon level 62 ###
 
-N:510:Oss["e], Herald of Ulmo
+N:510:Ossë, Herald of Ulmo
 T:ainu
 C:w
 I:130:6000:40:204:10
@@ -8205,12 +8205,12 @@ S:BA_WATE
 S:BO_MANA | BO_WATE
 S:BR_NETH
 S:S_AINU
-D:The most powerful of Ulmo's servants, Oss["e] is known as the most
+D:The most powerful of Ulmo's servants, Ossë is known as the most
 D: accomplished singer among the Maiar, but he is also known for his
 D: ruthlesness. While Ulmo himself moves in the rains and rivers of Arda
-D: and resides in depths of the seas, Oss["e] embodies the waves of the
+D: and resides in depths of the seas, Ossë embodies the waves of the
 D: untamed oceans and seas. Mariners caught in the grips of raging
-D: storms pray to Oss["e] for mercy.
+D: storms pray to Ossë for mercy.
 
 N:515:Dreadlord
 T:ghost
@@ -9426,7 +9426,7 @@ F:FORCE_SLEEP
 S:1_IN_5
 S:BR_COLD | BR_LIGHT | BR_SHAR | BR_SOUN
 D:The wolfhound of the Valar, Huan has served many masters in his time, from
-D: Celegorm son of F["e]anor to Beren son of Barahir: but now he runs wild and
+D: Celegorm son of Fëanor to Beren son of Barahir: but now he runs wild and
 D: acknowledges no master save himself, as he hunts alone for his nemesis -
 D: Carcharoth, the terrible wolf of Angband.
 

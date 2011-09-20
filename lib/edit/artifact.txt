@@ -2134,6 +2134,6 @@ D: the main host.
 #F:RES_FEAR | RES_BLIND | RES_STUN | RES_CONFU
 #L:4:SEARCH
 #L:2:SPEED
-#D:The pendant of Amandil, the last Lord of And['u]ni["e], and mighty
-#D: ship-captain of N['u]menor. First among N['u]men['o]reans to see
+#D:The pendant of Amandil, the last Lord of Andúnië, and mighty
+#D: ship-captain of Númenor. First among Númenóreans to see
 #D: Sauron for what he was.
