@@ -183,7 +183,7 @@ size_t textblock_calculate_lines(textblock *tb,
 
 	size_t cur_line = 0, n_lines = 0;
 
-	size_t len = wcslen(text);
+	size_t len = tb->strlen;
 	size_t text_offset;
 
 	size_t line_start = 0, line_length = 0;
