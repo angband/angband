@@ -9,22 +9,50 @@ Bugs fixed
 ==========
   #1461 Fix saving and loading so that savefile.{old|new} are ignored
   #1462 Fix loading of graphics pref files in non-graphics mode (Blubaron)
+  #1487 Prevent spoiler calls messing with everseen info
+  #1506 Stop the hidden level-feeling tiles being displayed by accident
+  #1515 Ensure that devices IDd on unseen monsters provide feedback
+  #1516 Prevent excessive durations of monster timed effects
+  #1517 Increase MAX_ITEMLIST to cope with new ignore/squelch approach
+  #1518 Correct logic error in randart slay frequency calculation
+  #1533 Stop scrolls of light segfaulting on BSD (thanks vext01)
+  #1537 Make sure that turning off randarts at birth works properly
+9541bb7 Make pref file writing work with setgid installs
+559e486 Save progress towards level feelings
+52a331e Fix buggy earthquake logic
+c2d9fee Make Heroism and Berserk spells grant boldness, like the potions
 
 User interface
 ==============
-  #1498 Nomad's updated tiles.
+  #1491 Make "purple uniques" display correctly
+  #1498 Nomad's updated tiles
+  #1511 Make shift+keypad work in the GTK port (thanks to Daniel Santos)
 ec47e94 et seq. Blubaron's improved tile support (graphics.txt)
+744c7a6 et seq. New Cocoa front-end for Macs (thanks ridiculous_fish)
   
 Gameplay changes
 ================
-  #1113 Rebalance stealth and monster detection (thanks Jens & Fizzix)
+  #1113 Rebalance stealth and monster detection (thanks Jens & fizzix)
   #1156 Revisit stacks of consumables (thanks Jens)
   #1507 Rebalance to-hit vs. AC (take two, thanks Jens)
-bf5d943 Fizzix's summoning changes
+  #1513 Ensure that PDSM can't get the Resistance ego
+bf5d943 fizzix's summoning changes
 e8b48d5 et seq. CunningGabe's improvements to pits
+8d7ea27 fizzix's animal toughening tweaks
+7cef0aa Angels replaced by Ainu (thanks to Jeff Greene)
+ef38e0f Increase max penalty on =Mouse, remove dam&AC mods on =Dog
+983ead5 CunningGabe's mimic updates
 
 Coding changes
 ==============
+  #1512 Change S_IREAD and S_IWRITE for Android compatibility
 91be218 Aerdan's updates to buildsys
 fbe0ef4 CunningGabe's cleanup of monster code
+c91ae22 Switch over to UTF-8 (thanks Noz)
+3dd44a4 Update wiz-stats
+1aa93be Remove most of limits.txt
 
+Documentation changes
+=====================
+f345482 Convert in-game docs to RST (thanks fph)
+        Instructions for compiling on various platforms
