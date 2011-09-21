@@ -389,7 +389,7 @@ static const grouper group_artifact[] =
 
 
 /*
- * Hack -- Create a "forged" artifact
+ * Create a fake artifact
  */
 bool make_fake_artifact(object_type *o_ptr, struct artifact *artifact)
 {
@@ -447,6 +447,8 @@ static void spoil_artifact(const char *fname)
 
 	/* Dump the header */
 	spoiler_underline(format("Artifact Spoilers for %s", buildid), '=');
+
+	text_out("\n Randart seed is %u\n", seed_randart);
 
 	/* List the artifacts by tval */
 	for (i = 0; group_artifact[i].tval; i++)

@@ -60,6 +60,7 @@ int rd_player_hp(void);
 int rd_player_spells(void);
 int rd_randarts_1(void);
 int rd_randarts_2(void);
+int rd_randarts_3(void);
 int rd_inventory_1(void);
 int rd_inventory_2(void);
 int rd_inventory_3(void);

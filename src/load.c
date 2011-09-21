@@ -43,8 +43,8 @@ static struct ego_item *lookup_ego(int idx)
 /*
  * Read an object, version 4 (added mimicking_o_idx)
  *
- * This function attempts to "repair" old savefiles, and to extract
- * the most up to date values for various object fields.
+ * This function no longer attempts to "repair" old savefiles - the info
+ * held in o_ptr is now authoritative.
  */
 static int rd_item_4(object_type *o_ptr)
 {
@@ -126,7 +126,7 @@ static int rd_item_4(object_type *o_ptr)
 
 	/* Monster holding object */
 	rd_s16b(&o_ptr->held_m_idx);
-	
+
 	rd_s16b(&o_ptr->mimicking_m_idx);
 
 	/* Save the inscription */
@@ -145,65 +145,6 @@ static int rd_item_4(object_type *o_ptr)
 		return -1;
 	if (art_idx > 0)
 		o_ptr->artifact = &a_info[art_idx];
-
-	/* Repair non "wearable" items */
-	if (!wearable_p(o_ptr))
-	{
-		/* Get the correct fields */
-		if (!randcalc_valid(o_ptr->kind->to_h, o_ptr->to_h))
-			o_ptr->to_h = randcalc(o_ptr->kind->to_h, o_ptr->origin_depth, RANDOMISE);
-		if (!randcalc_valid(o_ptr->kind->to_d, o_ptr->to_d))
-			o_ptr->to_d = randcalc(o_ptr->kind->to_d, o_ptr->origin_depth, RANDOMISE);
-		if (!randcalc_valid(o_ptr->kind->to_a, o_ptr->to_a))
-			o_ptr->to_a = randcalc(o_ptr->kind->to_a, o_ptr->origin_depth, RANDOMISE);
-
-		/* Get the correct fields */
-		o_ptr->ac = o_ptr->kind->ac;
-		o_ptr->dd = o_ptr->kind->dd;
-		o_ptr->ds = o_ptr->kind->ds;
-
-		/* Get the correct weight */
-		o_ptr->weight = o_ptr->kind->weight;
-
-		/* All done */
-		return (0);
-	}
-
-
-	/* Get the standard fields */
-	o_ptr->ac = o_ptr->kind->ac;
-	o_ptr->dd = o_ptr->kind->dd;
-	o_ptr->ds = o_ptr->kind->ds;
-
-	/* Get the standard weight */
-	o_ptr->weight = o_ptr->kind->weight;
-
-	/* Artifacts */
-	if (o_ptr->artifact)
-	{
-	        /* Get the new artifact "pvals" */
-	        for (i = 0; i < MAX_PVALS; i++)
-	                o_ptr->pval[i] = o_ptr->artifact->pval[i];
-	        o_ptr->num_pvals = o_ptr->artifact->num_pvals;
-
-	        /* Get the new artifact fields */
-	        o_ptr->ac = o_ptr->artifact->ac;
-	        o_ptr->dd = o_ptr->artifact->dd;
-	        o_ptr->ds = o_ptr->artifact->ds;
-
-	        /* Get the new artifact weight */
-	        o_ptr->weight = o_ptr->artifact->weight;
-	}
-
-	/* Ego items */
-	if (o_ptr->ego)	{
-        /* Hack -- keep some old fields */
-        if ((o_ptr->dd < old_dd) && (o_ptr->ds == old_ds))
-			/* Keep old boosted damage dice */
-			o_ptr->dd = old_dd;
-
-		ego_min_pvals(o_ptr);
-	}
 
 	/* Success */
 	return (0);
@@ -1586,6 +1527,12 @@ int rd_player_spells(void)
 }
 
 
+/* We no longer store randarts in the savefile */
+int rd_randarts_3(void)
+{
+	return 0;
+}
+
 /*
  * Read the random artifacts, version 2
  */
@@ -1598,10 +1545,8 @@ int rd_randarts_2(void)
 	u16b artifact_count;
 	s32b tmp32s;
 
-	if (!OPT(birth_randarts)) {
-		p_ptr->randarts = FALSE;
+	if (!OPT(birth_randarts))
 		return 0;
-	}
 
 	/* Read the number of artifacts */
 	rd_u16b(&artifact_count);
@@ -1667,7 +1612,6 @@ int rd_randarts_2(void)
 
 		/* Initialize only the randart names */
 		do_randart(seed_randart, FALSE);
-		p_ptr->randarts = TRUE;
 
 		/* Mark any stray old artifacts as "empty" */
 		if (artifact_count < z_info->a_max)
@@ -1723,8 +1667,6 @@ int rd_randarts_2(void)
 			rd_u16b(&tmp16u); /* a_ptr->time_dice */
 			rd_u16b(&tmp16u); /* a_ptr->time_sides */
 		}
-
-		p_ptr->randarts = FALSE;
 	}
 
 	return (0);

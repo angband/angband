@@ -3064,8 +3064,8 @@ static bool artifacts_acceptable(void)
 				gloves > 0 ? " gloves" : "",
 				boots > 0 ? " boots" : "");
 
-			msg("Restarting generation process: not enough%s", types);
-			file_putf(log_file, "Restarting generation process: not enough%s", types);
+			file_putf(log_file, "Restarting generation process: not enough%s",
+				types);
 		}
 		return FALSE;
 	}

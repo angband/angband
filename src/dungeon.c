@@ -1643,25 +1643,23 @@ void play_game(void)
 		/* Start in town */
 		p_ptr->depth = 0;
 
-		/* Hack -- seed for flavors */
+		/* Seed for flavors */
 		seed_flavor = randint0(0x10000000);
 
-		/* Hack -- seed for town layout */
+		/* Seed for town layout */
 		seed_town = randint0(0x10000000);
-
-		/* Hack -- seed for random artifacts */
-		seed_randart = randint0(0x10000000);
 
 		/* Roll up a new character. Quickstart is allowed if ht_birth is set */
 		player_birth(p_ptr->ht_birth ? TRUE : FALSE);
-
-		/* Randomize the artifacts if required */
-		if (OPT(birth_randarts) &&
-				(!OPT(birth_keep_randarts) || !p_ptr->randarts)) {
-			do_randart(seed_randart, TRUE);
-			p_ptr->randarts = TRUE;
-		}
 	}
+
+	/* Seed for random artifacts */
+	if (!seed_randart || !OPT(birth_keep_randarts))
+		seed_randart = randint0(0x10000000);
+
+	/* Randomize the artifacts if required */
+	if (OPT(birth_randarts))
+		do_randart(seed_randart, TRUE);
 
 	/* Initialize temporary fields sensibly */
 	p_ptr->object_idx = p_ptr->object_kind_idx = NO_OBJECT;

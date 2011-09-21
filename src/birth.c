@@ -410,21 +410,12 @@ static void get_money(void)
 void player_init(struct player *p)
 {
 	int i;
-	bool keep_randarts = FALSE;
 
 	if (p->inventory)
 		mem_free(p->inventory);
 
-	/* Preserve p_ptr->randarts so that players can use loaded randarts even
-	 * if they create a completely different character */
-	if (p->randarts)
-		keep_randarts = TRUE;
-
 	/* Wipe the player */
 	(void)WIPE(p, struct player);
-
-	if (keep_randarts)
-		p->randarts = TRUE;
 
 	/* Start with no artifacts made yet */
 	for (i = 0; z_info && i < z_info->a_max; i++)

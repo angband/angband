@@ -371,7 +371,7 @@ static void death_spoilers(const char *title, int row)
 /* Menu command: toggle birth_keep_randarts option. */
 static void death_randarts(const char *title, int row)
 {
-	if (p_ptr->randarts)
+	if (OPT(birth_randarts))
 		option_set(option_name(OPT_birth_keep_randarts),
 			get_check("Keep randarts for next game? "));
 	else
