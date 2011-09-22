@@ -981,6 +981,12 @@ void text_out_to_file(byte a, const char *str)
 		int len = wrap - pos;
 		int l_space = -1;
 
+		/* In case we are already past the wrap point (which can happen with
+		 * punctuation at the end of the line), make sure we don't overrun.
+		 */
+		if (len < 0)
+			len = 0;
+
 		/* If we are at the start of the line... */
 		if (pos == 0)
 		{

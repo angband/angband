@@ -509,29 +509,44 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 			/* String */
 			case 's':
 			{
-				const char *arg;
-				char arg2[1024];
+				if (do_long)
+				{
+					const wchar_t *arg;
 
-				/* XXX There is a big bug here: if one
-				 * passes "%.0s" to strnfmt, then really we
-				 * should not dereference the arg at all.
-				 * But it does.  See bug #666.
-				 */
+					/* Get the next argument */
+					arg = va_arg(vp, const wchar_t *);
 
-				/* Get the next argument */
-				arg = tval.t == T_END ? va_arg(vp, const char *) : tval.u.s;
+					/* Hack -- convert NULL to EMPTY */
+					if (!arg) arg = L"";
 
-				/* Hack -- convert NULL to EMPTY */
-				if (!arg) arg = "";
+					/* Format the argument */
+					snprintf(tmp, sizeof(tmp), aux, arg);
 
-				/* Prevent buffer overflows */
-				(void)my_strcpy(arg2, arg, sizeof(arg2));
+					/* Done */
+					break;
+				}
+				else
+				{
+					const char *arg;
 
-				/* Format the argument */
-				sprintf(tmp, aux, arg2);
+					/* XXX There is a big bug here: if one
+					 * passes "%.0s" to strnfmt, then really we
+					 * should not dereference the arg at all.
+					 * But it does.  See bug #666.
+					 */
 
-				/* Done */
-				break;
+					/* Get the next argument */
+					arg = tval.t == T_END ? va_arg(vp, const char *) : tval.u.s;
+
+					/* Hack -- convert NULL to EMPTY */
+					if (!arg) arg = "";
+
+					/* Format the argument */
+					snprintf(tmp, sizeof(tmp), aux, arg);
+
+					/* Done */
+					break;
+				}
 			}
 
 			/* Oops */
