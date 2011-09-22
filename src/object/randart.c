@@ -2980,13 +2980,6 @@ static void scramble_artifact(int a_idx)
 	if (a_ptr->tval == TV_LIGHT) of_on(a_ptr->flags, OF_NO_FUEL);
 	if (a_idx < ART_MIN_NORMAL) of_on(a_ptr->flags, OF_INSTA_ART);
 
-	/*
-	 * Add OF_HIDE_TYPE to all artifacts with nonzero pval because we're
-	 * too lazy to find out which ones need it and which ones don't.
-	 */
-	if (a_ptr->pval[DEFAULT_PVAL])
-		of_on(a_ptr->flags, OF_HIDE_TYPE);
-
 	/* Success */
 	file_putf(log_file, ">>>>>>>>>>>>>>>>>>>>>>>>>> ARTIFACT COMPLETED <<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
 	file_putf(log_file, "Number of tries for artifact %d was: %d\n", a_idx, tries);

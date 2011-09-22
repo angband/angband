@@ -45,10 +45,10 @@ ef38e0f Increase max penalty on =Mouse, remove dam&AC mods on =Dog
 
 Coding changes
 ==============
+  #1221 Switch over to UTF-8 (thanks Noz)
   #1512 Change S_IREAD and S_IWRITE for Android compatibility
 91be218 Aerdan's updates to buildsys
 fbe0ef4 CunningGabe's cleanup of monster code
-c91ae22 Switch over to UTF-8 (thanks Noz)
 3dd44a4 Update wiz-stats
 1aa93be Remove most of limits.txt
 
