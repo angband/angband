@@ -24,6 +24,7 @@ c2d9fee Make Heroism and Berserk spells grant boldness, like the potions
 
 User interface
 ==============
+  #1485 Remove HIDE_TYPE
   #1491 Make "purple uniques" display correctly
   #1498 Nomad's updated tiles
   #1511 Make shift+keypad work in the GTK port (thanks to Daniel Santos)
