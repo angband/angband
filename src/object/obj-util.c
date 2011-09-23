@@ -1401,7 +1401,7 @@ s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 
 	s32b power;
 	int a = 1;
-	int b = 1;
+	int b = 5;
 	static file_mode pricing_mode = MODE_WRITE;
 
 	if (wearable_p(o_ptr))
