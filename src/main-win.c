@@ -1685,8 +1685,8 @@ static void Term_nuke_win(term *t)
 #endif /* 0 */
 
 
-static errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, const byte *tap, const char *tcp);
-static errr Term_pict_win_alpha(int x, int y, int n, const byte *ap, const char *cp, const byte *tap, const char *tcp);
+static errr Term_pict_win(int x, int y, int n, const byte *ap, const wchar_t *cp, const byte *tap, const wchar_t *tcp);
+static errr Term_pict_win_alpha(int x, int y, int n, const byte *ap, const wchar_t *cp, const byte *tap, const wchar_t *tcp);
 
 /*
  * React to global changes
@@ -2492,7 +2492,7 @@ size_t Term_mbstowcs_win(wchar_t *dest, const char *src, int n)
 #ifndef AC_SRC_ALPHA
 #define AC_SRC_ALPHA     0x01
 #endif
-static errr Term_pict_win_alpha(int x, int y, int n, const byte *ap, const char *cp, const byte *tap, const char *tcp)
+static errr Term_pict_win_alpha(int x, int y, int n, const byte *ap, const wchar_t *cp, const byte *tap, const wchar_t *tcp)
 {
 	term_data *td = (term_data*)(Term->data);
 
