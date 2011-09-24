@@ -175,7 +175,7 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 			if (j == p_ptr->quiver_slots - 1 && p_ptr->quiver_remainder > 0)
 				count = p_ptr->quiver_remainder;
 			else
-				count = 99;
+				count = MAX_STACK_SIZE - 1;
 
 			/* Clear the line */
 			prt("", row + i, MAX(col - 2, 0));

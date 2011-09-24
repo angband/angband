@@ -2333,13 +2333,15 @@ void inven_item_increase(int item, int num)
 void save_quiver_size(struct player *p)
 {
 	int i, count = 0;
+	int maxsize = MAX_STACK_SIZE - 1;
+
 	for (i = QUIVER_START; i < QUIVER_END; i++)
 		if (p->inventory[i].kind)
 			count += p->inventory[i].number;
 
 	p->quiver_size = count;
-	p->quiver_slots = (count + 98) / 99;
-	p->quiver_remainder = count % 99;
+	p->quiver_slots = (count + maxsize - 1) / maxsize;
+	p->quiver_remainder = count % maxsize;
 }
 
 
@@ -2692,7 +2694,7 @@ bool inven_stack_okay(const object_type *o_ptr)
 	else if (p_ptr->quiver_remainder == 0)
 		/* Quiver already maxed out */
 		limit = INVEN_PACK;
-	else if (p_ptr->quiver_remainder + o_ptr->number > 99)
+	else if (p_ptr->quiver_remainder + o_ptr->number >= MAX_STACK_SIZE)
 		/* Too much new ammo */
 		limit = INVEN_PACK;
 	else
