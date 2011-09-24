@@ -849,7 +849,8 @@ object_kind *get_obj_num(int level, bool good)
  *
  * Returns the whether or not creation worked.
  */
-bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good, bool great, s32b *value)
+bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
+	bool great, s32b *value)
 {
 	int base;
 	object_kind *kind;
@@ -878,9 +879,13 @@ bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good, bool gr
 	if (kind->gen_mult_prob >= randint1(100))
 		j_ptr->number = randcalc(kind->stack_size, lev, RANDOMISE);
 
-	if(value) *value = object_value_real(j_ptr, j_ptr->number, FALSE, TRUE);
+	if (j_ptr->number >= MAX_STACK_SIZE)
+		j_ptr->number = MAX_STACK_SIZE - 1;
 
 	/* Return value, increased for uncursed out-of-depth objects */
+	if (value)
+		*value = object_value_real(j_ptr, j_ptr->number, FALSE, TRUE);
+
 	if (!cursed_p(j_ptr->flags) && (kind->alloc_min > c->depth)) {
 		if (value) *value = (kind->alloc_min - c->depth) * (*value / 5);
 	}
