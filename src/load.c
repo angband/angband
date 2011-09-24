@@ -48,8 +48,6 @@ static struct ego_item *lookup_ego(int idx)
  */
 static int rd_item_4(object_type *o_ptr)
 {
-	byte old_dd;
-	byte old_ds;
 	byte tmp8u;
 	u16b tmp16u;
 
@@ -97,8 +95,8 @@ static int rd_item_4(object_type *o_ptr)
 
 	rd_s16b(&o_ptr->ac);
 
-	rd_byte(&old_dd);
-	rd_byte(&old_ds);
+	rd_byte(&o_ptr->dd);
+	rd_byte(&o_ptr->ds);
 
 	rd_u16b(&o_ptr->ident);
 

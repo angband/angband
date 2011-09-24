@@ -21,3 +21,4 @@ src/tests/ran-already
 .deps
 doc/manual/*.aux
 mk/buildsys.mk
+*~
