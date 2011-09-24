@@ -764,7 +764,7 @@ static void store_object_absorb(object_type *o_ptr, object_type *j_ptr)
 	int total = o_ptr->number + j_ptr->number;
 
 	/* Combine quantity, lose excess items */
-	o_ptr->number = (total > 99) ? 99 : total;
+	o_ptr->number = (total >= MAX_STACK_SIZE) ? MAX_STACK_SIZE - 1 : total;
 
 	/* Hack -- if rods are stacking, add the charging timeouts */
 	if (o_ptr->tval == TV_ROD)
@@ -1505,7 +1505,7 @@ static void store_create_staples(void)
 				break;
 
 			case MAKE_MAX:
-				o_ptr->number = 99;
+				o_ptr->number = MAX_STACK_SIZE - 1;
 				break;
 		}
 	}
