@@ -3944,12 +3944,6 @@ static void handle_keydown(WPARAM wParam, LPARAM lParam)
 
 		case VK_CLEAR: ch = '5'; kp=TRUE; break;
 		case VK_PAUSE: ch = KC_PAUSE; break;
-
-		case VK_ADD: ch = '+'; kp = TRUE; break;
-		case VK_SUBTRACT: ch = '-'; kp = TRUE; break;
-		case VK_MULTIPLY: ch = '*'; kp = TRUE; break;
-		case VK_DIVIDE: ch = '/'; kp = TRUE; break;
-		case VK_DECIMAL: ch = '.'; kp = TRUE; break;
 	}
 
 	/* we could fall back on using the scancode */
