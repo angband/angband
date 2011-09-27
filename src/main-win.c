@@ -560,6 +560,7 @@ static BLENDFUNCTION blendfn;
 
 #endif /* USE_GRAPHICS */
 
+static int last_keydown;
 
 #ifdef USE_SOUND
 
@@ -4259,6 +4260,8 @@ static void handle_keydown(WPARAM wParam, LPARAM lParam)
 				(ma ? KC_MOD_ALT : 0) | (kp ? KC_MOD_KEYPAD : 0);
 		/*printf("ch=%d mods=%d\n", ch, mods);*/
 		Term_keypress(ch, mods);
+		/* HACK store the key press so we can check for double presses */
+		last_keydown = ch;
 	}
 }
 
@@ -4345,6 +4348,13 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 
 		case WM_CHAR:
 		{
+			/* HACK: chack for double key presses */
+			if (last_keydown == wParam) {
+				last_keydown = 0;
+				return 0;
+			}
+			last_keydown = 0;
+
 			// really vicious hack; [Control]Return -> 10 (Return -> 13)
 			if (wParam == 10) {
 				Term_keypress(13, KC_MOD_CONTROL);
