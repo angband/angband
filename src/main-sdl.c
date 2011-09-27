@@ -130,6 +130,9 @@ static int full_h;
 /* Want fullscreen? */
 static bool fullscreen = FALSE;
 
+static int overdraw = 0;
+static int overdraw_max = 0;
+
 /* XXXXXXXXX */
 static char *ANGBAND_DIR_USER_SDL;
 
@@ -3061,18 +3064,44 @@ static errr Term_pict_sdl(int col, int row, int n, const byte *ap, const wchar_t
 	for (i = 0; i < n; i++)
 	{
 		/* Get the terrain tile */
+		j = (tap[i] & 0x7f);
 		src.x = (tcp[i] & 0x7F) * src.w;
-		src.y = (tap[i] & 0x7F) * src.h;
+		src.y = j * src.h;
 		
+		/* if we are using overdraw, draw the top rectangle */
+		if (overdraw && (row > 2) && (j >= overdraw) && (j <= overdraw_max)) {
+			src.y -= rc.h;
+			rc.y -= rc.h;
+			rc.h = (rc.h << 1); /* double the height */
+			src.h = rc.h;
+			SDL_BlitSurface(win->tiles, &src, win->surface, &rc);
+			rc.h = (rc.h >> 1); /* halve the height */
+			rc.y += rc.h;
+			Term_mark(col, row-tile_height);
+			Term_mark(col, row);
+		} else
 		SDL_BlitSurface(win->tiles, &src, win->surface, &rc);
 		
 		/* If foreground is the same as background, we're done */
 		if ((tap[i] == ap[i]) && (tcp[i] == cp[i])) continue;
 		
 		/* Get the foreground tile */
+		j = (ap[i] & 0x7f);
 		src.x = (cp[i] & 0x7F) * src.w;
-		src.y = (ap[i] & 0x7F) * src.h;
+		src.y = j * src.h;
 		
+		/* if we are using overdraw, draw the top rectangle */
+		if (overdraw && (row > 2) && (j >= overdraw) && (j <= overdraw_max)) {
+			src.y -= rc.h;
+			rc.y -= rc.h;
+			rc.h = (rc.h << 1); /* double the height */
+			src.h = rc.h;
+			SDL_BlitSurface(win->tiles, &src, win->surface, &rc);
+			rc.h = (rc.h >> 1); /* halve the height */
+			rc.y += rc.h;
+			Term_mark(col, row-tile_height);
+			Term_mark(col, row);
+		} else
 		SDL_BlitSurface(win->tiles, &src, win->surface, &rc);
 	}
 	
@@ -3368,6 +3397,8 @@ static errr load_gfx(void)
 
 	/* Make sure we know what pref file to use */
 	ANGBAND_GRAF = current_graphics_mode->pref;
+	overdraw = current_graphics_mode->overdrawRow;
+	overdraw_max = current_graphics_mode->overdrawMax;
 
 	/* Reset the graphics mapping for this tileset */
 	if (character_dungeon) reset_visuals(TRUE);
