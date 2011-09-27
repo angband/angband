@@ -1654,7 +1654,7 @@ void play_game(void)
 	}
 
 	/* Seed for random artifacts */
-	if (!seed_randart || !OPT(birth_keep_randarts))
+	if (!seed_randart || (new_game && !OPT(birth_keep_randarts)))
 		seed_randart = randint0(0x10000000);
 
 	/* Randomize the artifacts if required */
