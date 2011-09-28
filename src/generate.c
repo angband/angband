@@ -753,7 +753,8 @@ static void build_streamer(struct cave *c, int feat, int chance) {
 /**
  * Create up to 'num' objects near the given coordinates in a vault.
  */
-static void vault_objects(struct cave *c, int y, int x, int depth, int num) {
+static void vault_objects(struct cave *c, int y, int x, int depth, int num)
+{
 	int i, j, k;
 
 	/* Attempt to place 'num' objects */
@@ -770,7 +771,7 @@ static void vault_objects(struct cave *c, int y, int x, int depth, int num) {
 			if (randint0(100) < 75)
 				place_object(c, j, k, depth, FALSE, FALSE, ORIGIN_SPECIAL);
 			else
-				place_gold(c, j, k, depth, ORIGIN_VAULT);
+				place_gold(c, j, k, depth, ORIGIN_SPECIAL);
 
 			/* Placement accomplished */
 			break;
