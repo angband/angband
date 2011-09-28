@@ -560,6 +560,7 @@ static BLENDFUNCTION blendfn;
 
 #endif /* USE_GRAPHICS */
 
+static int last_keydown;
 
 #ifdef USE_SOUND
 
@@ -4246,6 +4247,27 @@ static void handle_keydown(WPARAM wParam, LPARAM lParam)
 
 		case VK_CLEAR: ch = '5'; kp=TRUE; break;
 		case VK_PAUSE: ch = KC_PAUSE; break;
+
+		case VK_ADD: ch = '+'; kp = TRUE; break;
+		case VK_SUBTRACT: ch = '-'; kp = TRUE; break;
+		case VK_MULTIPLY: ch = '*'; kp = TRUE; break;
+		case VK_DIVIDE: ch = '/'; kp = TRUE; break;
+		case VK_DECIMAL: ch = '.'; kp = TRUE; break;
+
+		case VK_NUMPAD0: if (mc||ma||ms) {ch = KC_INSERT; kp = TRUE;} break;
+		case VK_NUMPAD1: if (mc||ma||ms) {ch = KC_END; kp = TRUE;} break;
+		case VK_NUMPAD2: if (mc||ma||ms) {ch = ARROW_DOWN; kp = TRUE;} break;
+		case VK_NUMPAD3: if (mc||ma||ms) {ch = KC_PGDOWN; kp = TRUE;} break;
+		case VK_NUMPAD4: if (mc||ma||ms) {ch = ARROW_LEFT; kp = TRUE;} break;
+		case VK_NUMPAD5: if (mc||ma||ms) {ch = '5'; kp = TRUE;} break;
+		case VK_NUMPAD6: if (mc||ma||ms) {ch = ARROW_RIGHT; kp = TRUE;} break;
+		case VK_NUMPAD7: if (mc||ma||ms) {ch = KC_HOME; kp = TRUE;} break;
+		case VK_NUMPAD8: if (mc||ma||ms) {ch = ARROW_UP; kp = TRUE;} break;
+		case VK_NUMPAD9: if (mc||ma||ms) {ch = KC_PGUP; kp = TRUE;} break;
+		/* the "||ms" above probably are not used, since for me, when
+		 * num lock is on, and shift-numpad is pressed, the key where numlock
+		 * is not on is sent here, without the shift
+		 */
 	}
 
 	/* we could fall back on using the scancode */
@@ -4259,6 +4281,8 @@ static void handle_keydown(WPARAM wParam, LPARAM lParam)
 				(ma ? KC_MOD_ALT : 0) | (kp ? KC_MOD_KEYPAD : 0);
 		/*printf("ch=%d mods=%d\n", ch, mods);*/
 		Term_keypress(ch, mods);
+		/* HACK store the key press so we can check for double presses */
+		last_keydown = ch;
 	}
 }
 
@@ -4345,6 +4369,13 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 
 		case WM_CHAR:
 		{
+			/* HACK: chack for double key presses */
+			if (last_keydown == wParam) {
+				last_keydown = 0;
+				return 0;
+			}
+			last_keydown = 0;
+
 			// really vicious hack; [Control]Return -> 10 (Return -> 13)
 			if (wParam == 10) {
 				Term_keypress(13, KC_MOD_CONTROL);
