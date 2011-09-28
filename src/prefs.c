@@ -763,7 +763,7 @@ static enum parser_error parse_prefs_gf(struct parser *p)
 		if (!types[i]) continue;
 
 		gf_to_attr[i][motion] = (byte)parser_getuint(p, "attr");
-		gf_to_char[i][motion] = (char)parser_getuint(p, "char");
+		gf_to_char[i][motion] = (wchar_t)parser_getuint(p, "char");
 	}
 
 	return PARSE_ERROR_NONE;
