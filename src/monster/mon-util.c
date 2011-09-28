@@ -1402,14 +1402,19 @@ int summon_specific(int y1, int x1, int lev, int type, int delay)
 	if (!place_new_monster(cave, y, x, r_idx, FALSE, FALSE, ORIGIN_DROP_SUMMON))
 		return (0);
 
-	/* If delay, try to let the player act before the summoned monsters. */
-	/* NOTE: should really be -100, but energy is currently 0-255. */
-	if (delay)
-		cave_monster(cave, cave->m_idx[y][x])->energy = 0;
-
 	/* Success, return the level of the monster */
 	m_ptr = cave_monster(cave, cave->m_idx[y][x]);
 	r_ptr = &r_info[m_ptr->r_idx];
+
+	/* If delay, try to let the player act before the summoned monsters,
+	 * including slowing down faster monsters for one turn */
+	if (delay) {
+		m_ptr->energy = 0;
+		if (r_ptr->speed > p_ptr->state.speed)
+			mon_inc_timed(cave->m_idx[y][x], MON_TMD_SLOW, 1,
+				MON_TMD_FLG_NOMESSAGE, FALSE);
+	}
+
 
 	/* Monsters that normally come with FRIENDS are weaker */
 	if (rf_has(r_ptr->flags, RF_FRIENDS))
