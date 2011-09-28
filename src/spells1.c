@@ -542,7 +542,7 @@ static void bolt_pict(int y, int x, int ny, int nx, int typ, byte *a, wchar_t *c
 		*a = spell_color(typ);
 	} else {
 		*a = gf_to_attr[typ][motion];
-		Term_mbstowcs(c, &gf_to_char[typ][motion], 1);
+		*c = gf_to_char[typ][motion];
 	}
 }
 
