@@ -33,6 +33,7 @@ ec47e94 et seq. Blubaron's improved tile support (graphics.txt)
   
 Gameplay changes
 ================
+   #572 Prevent instadeaths from IDing summon scrolls/staves by use
   #1113 Rebalance stealth and monster detection (thanks Jens & fizzix)
   #1156 Revisit stacks of consumables (thanks Jens)
   #1507 Rebalance to-hit vs. AC (take two, thanks Jens)
@@ -43,6 +44,12 @@ e8b48d5 et seq. CunningGabe's improvements to pits
 7cef0aa Angels replaced by Ainu (thanks to Jeff Greene)
 ef38e0f Increase max penalty on =Mouse, remove dam&AC mods on =Dog
 983ead5 CunningGabe's mimic updates
+fd5e3b8 et seq. Various difficulty tweaks:
+		- reduce MAX_STACK_SIZE to 25
+		- make DSM slightly rarer/deeper
+		- make stuff more expensive to buy
+		- reduce drops from apprentices/cutpurses
+		- prevent Deep Descent and Teleport Level being sold in stacks
 
 Coding changes
 ==============
