@@ -4380,6 +4380,17 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 			else
 				button = 3;
 
+			/* Extract teh modifiers */
+			/* XXX using the numbers below rather than KC_MOD_CONTROL, KCMOD_SHIFT,
+			 * and KC_MOD_ALT, to avoid having to shift them all the time. They
+			 * need to be shifted because I don't want to change the function
+			 * parameters (which would break the other platforms, which I can't
+			 * test), so the mods need to be encoded into the button.
+			 */
+			if (GetKeyState(VK_CONTROL) & 0x8000) button |= 16;
+			if (GetKeyState(VK_SHIFT)   & 0x8000) button |= 32;
+			if (GetKeyState(VK_MENU)    & 0x8000) button |= 64;
+
 			Term_mousepress(xPos,yPos,button);
 
 			break;
