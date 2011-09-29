@@ -1,3 +1,13 @@
+Angband 3.3.2
+=============
+
+Unfortunately a mistake in the fix for #1515 caused a nasty bug (#1545) 
+where both hasting and slowing of monsters stopped working. This is 
+fixed, along with some or all of the Windows numpad errors (#1494, 
+thanks to Blubaron). Also fixed a minor bug with origin setting of gold 
+in special rooms.
+
+
 Angband 3.3.1
 =============
 

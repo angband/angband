@@ -10,8 +10,8 @@ character through his adventure, you will enter single character commands
 
 === Symbols On Your Map ===
 
-Symbols on your map can be broken down into three categories: Features of
-the dungeon such as walls, floor, doors, and traps; Objects which can be
+Symbols on your map can be broken down into three categories: features of
+the dungeon such as walls, floor, doors, and traps; objects which can be
 picked up such as treasure, weapons, magical devices, etc; and creatures
 which may or may not move about the dungeon, but are mostly harmful to your
 character's well being.
@@ -59,7 +59,7 @@ something you are more comfortable with.
   "   An amulet                       [   Hard armour
   $   Gold or gems                    ]   Misc. armour
   ~   Lights, Tools, Chests, etc      )   A shield
-  ~   Junk, Sticks, Skeletons, etc    &   (unused)
+  ~   Junk, Sticks, Skeletons, etc    &   A pile of items
  
  
                              Monsters
@@ -279,7 +279,7 @@ used, sold, or bought one of these potions, you will only see the flavor.
 You can learn what type of item it is by selling it to a store, using it and
 noticing an effect (for example, quaffing a healing potion when injured), or
 casting the spell identify.  Lastly, items in stores that you have not
-yet identified the flavor of will be labeled {unknown}
+yet identified the flavor of will be labeled {unknown}.
 
 Chests are complex objects, containing traps, locks, and possibly treasure
 or other objects inside them once they are opened.  Many of the commands
@@ -321,10 +321,12 @@ its name immediately and it will be labeled {special}.  However, you may not
 be aware of all its powers.  Note that these inscriptions are fake, and cannot 
 be removed.
 
-Only weapons and armor will receive these pseudo-identifications.  Wands,
-staves, rods, scrolls, potions and mushrooms can only get the {tried} label.
-However, if using or consuming the item creates an obvious effect, you will
-learn the flavor.  For example, if you are injured and drink an unknown
+Only weapons and armor will receive these pseudo-identifications.  
+Wands, staves, rods, scrolls, potions and mushrooms can only get the 
+{tried} label. However, if using or consuming the item creates an 
+obvious effect, you will learn the flavor.  For example, if you are 
+injured and drink an unknown potion of Cure Serious Wounds, you will 
+learn it.
 
 It is rumored that rings of power and extra rare spell books may be found
 deeper in the dungeon...
