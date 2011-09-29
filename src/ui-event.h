@@ -155,6 +155,7 @@ struct mouseclick {
 	byte x;
 	byte y;
 	byte button;
+	byte mods;
 };
 
 /**

@@ -2036,28 +2036,36 @@ errr Term_keypress(keycode_t k, byte mods)
 /*
  * Add a mouse event to the "queue"
  */
-errr Term_mousepress(int x, int y, char button)
+errr Term_mousepress(int x, int y, char button)/*, byte mods);
 {
-  /* Store the char, advance the queue */
-  Term->key_queue[Term->key_head].type = EVT_MOUSE;
-  Term->key_queue[Term->key_head].mouse.x = x;
-  Term->key_queue[Term->key_head].mouse.y = y;
-  Term->key_queue[Term->key_head].mouse.button = button;
-  Term->key_head++;
-  
-  /* Circular queue, handle wrap */
-  if (Term->key_head == Term->key_size) Term->key_head = 0;
-  
-  /* Success (unless overflow) */
-  if (Term->key_head != Term->key_tail) return (0);
+	/* Store the char, advance the queue */
+	Term->key_queue[Term->key_head].type = EVT_MOUSE;
+	Term->key_queue[Term->key_head].mouse.x = x;
+	Term->key_queue[Term->key_head].mouse.y = y;
+	/* XXX for now I encode the mods into the button number, so I would
+	 * not have to worry about the other platforms, when all platforms set
+	 * mods, this code should be replaced with :
+	 * Term->key_queue[Term->key_head].mouse.button = button;
+	 * Term->key_queue[Term->key_head].mouse.mods = mods;
+	 */
+	Term->key_queue[Term->key_head].mouse.button = (button & 0x0F);
+	Term->key_queue[Term->key_head].mouse.mods = ((button & 0xF0)>>4);
+
+	Term->key_head++;
+
+	/* Circular queue, handle wrap */
+	if (Term->key_head == Term->key_size) Term->key_head = 0;
+
+	/* Success (unless overflow) */
+	if (Term->key_head != Term->key_tail) return (0);
   
 #if 0
-  /* Hack -- Forget the oldest key */
-  if (++Term->key_tail == Term->key_size) Term->key_tail = 0;
+	/* Hack -- Forget the oldest key */
+	if (++Term->key_tail == Term->key_size) Term->key_tail = 0;
 #endif
   
-  /* Problem */
-  return (1);
+	/* Problem */
+	return (1);
 }
 
 
