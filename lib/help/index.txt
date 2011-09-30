@@ -1,6 +1,10 @@
-~~~~~~~~~~~~~~
-Angband Manual
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
+The Angband Manual
+~~~~~~~~~~~~~~~~~~
+
+.. image:: ../lib/xtra/graf/mr_att.png
+   :alt: 
+   :align: center
 
 .. sectnum::
 

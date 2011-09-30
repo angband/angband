@@ -4,3 +4,4 @@ body {padding:1em;}
 h2 {font-size:18pt;}
 tt {font-size:large;color:red;background:#dddddd;}
 dt {font-weight:bold;}
+.align-center {display: block; margin-left:auto; margin-right:auto;}
