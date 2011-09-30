@@ -22,6 +22,7 @@ RSTINDEXWITHOUTPATH := $(addsuffix .txt, $(INDEX))
 RSTFILES := $(addprefix $(HELPSRCPATH), $(RSTFILESWITHOUTPATH))
 RSTINDEX := $(addprefix $(HELPSRCPATH), $(RSTINDEXWITHOUTPATH))
 
+STY := $(addprefix $(HELPSRCPATH), angband.sty)
 CSS := $(addprefix $(HELPSRCPATH), angband.css)
 
 manual.html: $(RSTINDEX) $(RSTFILES) $(CSS)
@@ -32,9 +33,9 @@ manual.html: $(RSTINDEX) $(RSTFILES) $(CSS)
 		${COMPILE_FAILED}; \
 	fi
 
-manual.tex: $(RSTINDEX) $(RSTFILES)
+manual.tex: $(RSTINDEX) $(RSTFILES) $(STY)
 	${COMPILE_STATUS}
-	@if $(RST2LATEX) $(HELPSRCPATH)/index.txt > manual.tex; then \
+	@if $(RST2LATEX) $(HELPSRCPATH)/index.txt > manual.tex --stylesheet-path=$(STY) ; then \
 		${COMPILE_OK}; \
 	else \
 		${COMPILE_FAILED}; \
