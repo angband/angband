@@ -3,4 +3,4 @@ body {padding:1em;}
 .toc-backref {font-size:22pt;}
 h2 {font-size:18pt;}
 tt {font-size:large;color:red;background:#dddddd;}
-dt {font-style:bold;}
+dt {font-weight:bold;}
