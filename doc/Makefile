@@ -35,7 +35,7 @@ manual.html: $(RSTINDEX) $(RSTFILES) $(CSS)
 
 manual.tex: $(RSTINDEX) $(RSTFILES) $(STY)
 	${COMPILE_STATUS}
-	@if $(RST2LATEX) $(HELPSRCPATH)/index.txt > manual.tex --stylesheet-path=$(STY) ; then \
+	@if $(RST2LATEX) $(HELPSRCPATH)/index.txt > manual.tex --stylesheet-path=$(STY) --documentclass=scrartcl; then \
 		${COMPILE_OK}; \
 	else \
 		${COMPILE_FAILED}; \
