@@ -3936,7 +3936,10 @@ F:DROP_2
 F:IM_ACID | HAS_LIGHT
 S:1_IN_3
 S:BLIND | CONF | SCARE
-D:A lesser spirit that descended into Arda in the beginning.
+D:One of the first children of Eru, human-like in form but painfully beautiful
+D: to look upon. You can think of no reason that a servant of Eru might face
+D: you in combat; yet this one stands before you, and its eyes are ablaze as it
+D: prepares its next volley of spells. 
 
 N:553:Disenchanter bat
 T:bat
@@ -5065,7 +5068,8 @@ F:DROP_2
 F:IM_COLD | IM_FIRE | HAS_LIGHT
 S:1_IN_3
 S:BLIND | CONF | HASTE | HEAL | SCARE
-D:A spirit that descended into Arda in the beginning.
+D:One of the first children of Eru. Its body shines with glorious light, but
+D: its face is stern as it looks down at you.
 
 N:335:Half-troll
 T:troll
@@ -6235,6 +6239,9 @@ S:S_MONSTERS
 D:A great Maia whose physical form looks overpowering next
 D: to your own frail body.
 
+D:One of the first children of Eru, human-like in form but god-like in power.
+D: The dungeon shakes with each of its steps toward you.
+
 N:419:Nether wraith
 T:wraith
 C:G
@@ -7083,9 +7090,8 @@ S:1_IN_6
 S:CONF | HASTE | HEAL | TELE_AWAY
 S:BO_MANA | BO_PLAS
 S:S_AINU | S_MONSTERS
-D:A member of a society of wizards founded by Alatar and Pallandro,
-D: who journeyed into the far east of Middle-Earth.  They are
-D: powerful wizards who make formidable opponents in combat.
+D:Members of a society of wizards founded by Alatar and Pallandro,
+D: the blue wizards command powerful magics and make formidable opponents.
 
 N:431:Rotting quylthulg
 T:quylthulg
@@ -7780,9 +7786,9 @@ S:1_IN_3
 S:BLIND | CAUSE_2 | CAUSE_4 | SCARE | TELE_TO | HEAL | MISSILE
 S:BO_MANA
 S:S_AINU
-D:A member of an order of Maiar who came to middle-Earth in the third
-D: age. The Istari are powerful wizards who are quick to join together
-D: in combat to crush their enemies.
+D:The Istari are an order of Maia who came to Middle-Earth in the third age.
+D: They have taken the form of human wizards, and channel powerful magic to
+D: crush their foes.
 
 N:476:Dracolich
 T:ancient dragon
@@ -8161,8 +8167,10 @@ S:BA_FIRE
 S:BO_FIRE | BO_MANA | BO_PLAS
 S:BR_FIRE | BR_PLAS
 S:S_AINU
-D:Also called the Sun-Maiden, this Maia has the task of carrying
-D: the sun across the sky.
+D:The Maia who sails the Sun across the sky has descended into Angband to kill
+D: you. She wears no mortal shell; her body is made of fiery golden light,
+D: painfully bright even when you close your eyes, and hot enough to melt armor
+D: and flesh alike.
 
 N:568:Bile Demon
 T:major demon
@@ -8205,12 +8213,11 @@ S:BA_WATE
 S:BO_MANA | BO_WATE
 S:BR_NETH
 S:S_AINU
-D:The most powerful of Ulmo's servants, Ossë is known as the most
-D: accomplished singer among the Maiar, but he is also known for his
-D: ruthlesness. While Ulmo himself moves in the rains and rivers of Arda
-D: and resides in depths of the seas, Ossë embodies the waves of the
-D: untamed oceans and seas. Mariners caught in the grips of raging
-D: storms pray to Ossë for mercy.
+D:Encrusted with barnacles, slimy and dripping, the Maia of the untamed
+D: sea has dragged himself down into Angband to send you to a watery grave.
+D: Ossë is the most powerful and heartless of Ulmo's servants and embodies
+D: the untamed power of the ocean. Terror grows in your heart with each
+D: squelching step of his approach.
 
 N:515:Dreadlord
 T:ghost
@@ -8357,16 +8364,11 @@ S:1_IN_2
 S:BLIND | TELE_TO
 S:BO_MANA | BO_WATE | BO_FIRE | BO_ICEE
 S:S_AINU | S_ANIMAL | S_SPIDER | S_HOUND
-D:A Servant of Yavanna, sent to Middle-Earth as the least of the Istar
-D: as the partner to Saruman the White, against Saruman's wish.
-D: Radagast was tasked with protecting Middle-Earth's flora and fauna. 
-D: With time Radagast became more and more enchanted with nature and
-D: grew less and less interested in the suffering of the free peoples. 
-D: Radagast never returned to Aman from his mission, but it is unknown
-D: whether this is because he wished to stay behind or whether because
-D: he was considered to have failed as a member of the Istar, like
-D: Saruman, Alatar and Pallando were. Radagast wears the humble brown
-D: robes for which he was named after.
+D:A stocky, smiling man in brown robes, holding in his right hand a
+D: gnarled walking stick. Sent to Middle-Earth by Yavanna, Radagast
+D: has studied the plants and animals of Middle-Earth for many years
+D: and considers himself their defender. His humble robes and demeanor
+D: belie his inner strength.
 
 N:518:Chaos hound
 T:zephyr hound
