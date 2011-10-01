@@ -150,7 +150,7 @@ david3x3x3 and retrobits
 qwerty 
   LaTeX-based help file generation
 
-fph
+Federico Poloni (fph)
   Manual and documentation updates, formatting in reStructuredText
 
 Peter Ammon (ridiculous_fish)
