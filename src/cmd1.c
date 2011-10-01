@@ -472,6 +472,9 @@ byte py_pickup(int pickup)
 	/* Objects picked up.  Used to determine time cost of command. */
 	byte objs_picked_up = 0;
 
+	/* Always pickup gold, effortlessly */
+	py_pickup_gold();
+
 	/* Nothing else to pick up -- return */
 	if (!cave->o_idx[py][px]) return objs_picked_up;
 
