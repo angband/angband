@@ -465,20 +465,59 @@ struct keypress inkey(void)
 {
 	ui_event ke = EVENT_EMPTY;
 
-	/* Only accept a keypress */
-	while (ke.type != EVT_ESCAPE && ke.type != EVT_KBRD)
+	/* accept key or mouse press, or something that can be translated to it */
+	while (ke.type != EVT_ESCAPE && ke.type != EVT_KBRD
+		&& ke.type != EVT_MOUSE  && ke.type != EVT_BUTTON)
 		ke = inkey_ex();
 
-	/* Paranoia */
+	/* make the event a keypress */
 	if (ke.type == EVT_ESCAPE) {
 		ke.type = EVT_KBRD;
 		ke.key.code = ESCAPE;
 		ke.key.mods = 0;
+	} else
+	if (ke.type == EVT_MOUSE) {
+		if (ke.mouse.button == 1) {
+			ke.type = EVT_KBRD;
+			ke.key.code = '\n';
+			ke.key.mods = 0;
+		} else {
+			ke.type = EVT_KBRD;
+			ke.key.code = ESCAPE;
+			ke.key.mods = 0;
+		}
+	} else
+	if (ke.type == EVT_BUTTON) {
+		ke.type = EVT_KBRD;
 	}
 
 	return ke.key;
 }
 
+
+/*
+ * Get a "keypress" or a "mousepress" from the user.
+ * on return the event must be either a key press or a mouse press
+ */
+ui_event inkey_m(void)
+{
+	ui_event ke = EVENT_EMPTY;
+
+	/* Only accept a keypress */
+	while (ke.type != EVT_ESCAPE && ke.type != EVT_KBRD
+		&& ke.type != EVT_MOUSE  && ke.type != EVT_BUTTON)
+		ke = inkey_ex();
+	if (ke.type == EVT_ESCAPE) {
+		ke.type = EVT_KBRD;
+		ke.key.code = ESCAPE;
+		ke.key.mods = 0;
+	} else
+	if (ke.type == EVT_BUTTON) {
+		ke.type = EVT_KBRD;
+	}
+
+	return ke;
+}
 
 
 /*
@@ -1821,7 +1860,7 @@ bool get_com_ex(const char *prompt, ui_event *command)
 	prt(prompt, 0, 0);
 
 	/* Get a key */
-	ke = inkey_ex();
+	ke = inkey_m();
 
 	/* Clear the prompt */
 	prt("", 0, 0);
@@ -1830,9 +1869,9 @@ bool get_com_ex(const char *prompt, ui_event *command)
 	*command = ke;
 
 	/* Done */
-	if (ke.type == EVT_KBRD && ke.key.code == ESCAPE)
-		return FALSE;
-	return TRUE;
+	if (ke.type == EVT_KBRD && ke.key.code != ESCAPE)
+		return TRUE;
+	return FALSE;
 }
 
 

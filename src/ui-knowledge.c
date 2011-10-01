@@ -770,7 +770,7 @@ static bool visual_mode_command(ui_event ke, bool *visual_list_ptr,
 		int mx = logical_width(ke.mouse.x - col);
 
 		if ((my >= 0) && (my < eff_height) && (mx >= 0) && (mx < eff_width)
-			&& ((ke.mouse.button) || (a != *attr_top_ptr + my)
+			&& ((ke.mouse.button == 1) || (a != *attr_top_ptr + my)
 				|| (c != *char_left_ptr + mx)))
 		{
 			/* Set the visual */
@@ -798,7 +798,7 @@ static bool visual_mode_command(ui_event ke, bool *visual_list_ptr,
 		}
 
 		/* Cancel change */
-		else if (ke.mouse.button)
+		else if (ke.mouse.button == 2)
 		{
 			*cur_attr_ptr = attr_old;
 			*cur_char_ptr = char_old;

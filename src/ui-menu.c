@@ -479,14 +479,15 @@ bool menu_handle_mouse(menu_type *menu, const ui_event *in,
 {
 	int new_cursor;
 
-	if (!region_inside(&menu->active, in))
-	{
+	if (!region_inside(&menu->active, in)) {
 		/* A click to the left of the active region is 'back' */
 		if (!region_inside(&menu->active, in) &&
 				in->mouse.x < menu->active.col)
 			out->type = EVT_ESCAPE;
-	}
-	else
+	} else
+	if (in->mouse.button == 2) {
+		out->type = EVT_EXCAPE;
+	} else
 	{
 		int count = menu->filter_list ? menu->filter_count : menu->count;
 
