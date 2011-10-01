@@ -540,6 +540,8 @@ bool detect_traps(bool aware)
 
 	bool detect = FALSE;
 
+	object_type *o_ptr;
+
 	(void)aware;
 
 	/* Pick an area to map */
@@ -574,6 +576,32 @@ bool detect_traps(bool aware)
 
 				/* We found something to detect */
 				detect = TRUE;
+			}
+
+			/* Detect traps on chests */
+			/* Scan all objects in the grid */
+			for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
+			{
+				/* Skip non-chests */
+				if (o_ptr->tval != TV_CHEST) continue;
+
+				/* Skip disarmed chests */
+				if (o_ptr->pval[DEFAULT_PVAL] <= 0) continue;
+
+				/* Skip non-trapped chests */
+				if (!chest_traps[o_ptr->pval[DEFAULT_PVAL]]) continue;
+
+				/* Identify once */
+				if (!object_is_known(o_ptr))
+				{
+					detect = TRUE;
+
+					/* Know the trap */
+					object_notice_everything(o_ptr);
+
+					/* Notice it */
+					disturb(p_ptr, 0, 0);
+				}
 			}
 
 			/* Mark as trap-detected */
