@@ -6,7 +6,7 @@
  * 256 flags, due to 32 bytes of storage for item flags in the savefile. Flags
  * below start from 0 on line 21, so a flag's sequence number is its line
  * number minus 21.
- * 
+ *
  * index: the flag number
  * pval: is it a quantitative flag? FALSE means it's just on/off
  * timed: what is the corresponding TMD_ flag
@@ -127,4 +127,5 @@ OF(BRAND_FIZZ,  FALSE,	0,				OFID_WIELD,	OFT_BRAND,	0,		0,	1,	3,	3,		3,	3,		3,		
 OF(BRAND_BUZZ,  FALSE,	0,				OFID_WIELD,	OFT_BRAND,	0,		0,	1,	3,	3,		3,	3,		3,		3,		3,		3,	3,		3,		"")
 OF(BRAND_WARM,  FALSE,	0,				OFID_WIELD,	OFT_BRAND,	0,		0,	1,	3,	3,		3,	3,		3,		3,		3,		3,	3,		3,		"")
 OF(BRAND_COOL,  FALSE,	0,				OFID_WIELD, OFT_BRAND,	0,		0,	1,	3,	3,		3,	3,		3,		3,		3,		3,	3,		3,		"")
+OF(GOOD,		FALSE,	0,				OFID_NONE,	OFT_INT,	0,		0,	0,	0,	0,		0,	0,		0,		0,		0,		0,	0,		0,		"")
 OF(MAX,			FALSE,	0,				0,			0,			0,      0,	0,  0,  0,      0,  0,      0,      0,      0,      0,  0,      0,		"")
