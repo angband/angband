@@ -347,3 +347,9 @@ int textui_obj_cast(void)
 	}
 	return spell;
 }
+
+void textui_obj_cast_wrapper(void)
+{
+	textui_obj_cast();
+}
+
