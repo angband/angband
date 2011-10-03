@@ -70,6 +70,7 @@ static struct cmd_info cmd_item[] =
 	{ "Quaff a potion", 'q', CMD_QUAFF, NULL, NULL },
 	{ "Read a scroll", 'r', CMD_READ_SCROLL, NULL, player_can_read },
 	{ "Fuel your light source", 'F', CMD_REFILL, NULL, NULL },
+	{ "Use an Item", 'U', CMD_USE_ANY, NULL, NULL },
 };
 
 /* General actions */
