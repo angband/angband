@@ -630,8 +630,7 @@ static void textui_process_click(ui_event e)
 				if (cave->o_idx[y][x]) {
 					cmd_insert(CMD_PICKUP);
 				} else {
-					/* do nothing */
-					//textui_cmd_rest();
+					cmd_insert(CMD_HOLD);
 				}
 			} else
 			if (e.mouse.button == 2) {
