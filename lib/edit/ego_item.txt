@@ -1,187 +1,167 @@
 # File: ego_item.txt
 
-
-# This file is used to initialize the "ego-item" information for Angband.
+# This file is used to initialize the "ego-item" affix information for Angband.
 
 # Do not modify this file unless you know exactly what you are doing,
 # unless you wish to risk possible system crashes and broken savefiles.
 
-# The ego-item indexes are defined in "defines.h", and must not be changed
-# or savefile compatibility will be lost.
-
-# Note that several "ego-item" types may share the same "textual name",
-# such as with "Armor of Resistance" and "Shield of Resistance".
-
 # === Understanding ego_item.txt ===
 
-# N: serial number : ego type
-# X: rating : xtra
-# W: depth : rarity : weight : cost
-# A: commonness : min " to " max
+# N: serial number : type : level : name
 # C: to-hit : to-dam : to-ac
 # M: min to-hit : min to-dam : min to-ac
-# T: tval : min_sval : max_sval
 # F: flag | flag | etc.
 # L: pval : min pval : flag | flag | etc.
+# R: num : flag-type | flag-type | etc.
+# Z: num : pval : min pval : flag-type | flag-type | etc.
+# T: tval : min_sval : max_sval : commonness : min to max
+# D: description
 
-# Some fields accept randomized numbers of the form "10+2d3M4" where
-# 10 is the non-variable base, 2d3 is a standard die roll, and
-# M4 uses the m_bonus function to generate a number between 0 and
-# 4 according to a normal distribution.  All three components are
-# optional, and the number of dice is optional and assumed to be 1
-# when not specified.  10+2d3M4 has the range 12-20.  10+M4 has the
-# range 10-14.  10+2d3 has the range 12-16.  10+d3 has the range 11-13.
-# 2d3, d3, M4, 2d3M4, and d3M4 are all acceptable as well.
+# Some fields accept randomized numbers of the form "10+2d3M4" where 10 
+# is the non-variable base, 2d3 is a standard die roll, and M4 uses the 
+# m_bonus function to generate a number between 0 and 4 according to a 
+# normal distribution weighted by dungeon depth.  All three components 
+# are optional, and the number of dice is optional and assumed to be 1 
+# when not specified.  10+2d3M4 has the range 12-20.  10+M4 has the 
+# range 10-14.  10+2d3 has the range 12-16.  10+d3 has the range 11-13. 
+# 2d3, d3, M4, 2d3M4, and d3M4 are all acceptable as well. This random
+# value function does not yet play nice with all negatives though - see
+# http://trac.rephial.org/ticket/xxxx.
 
-# 'N' indicates the beginning of an entry. The serial number must
-# increase for each new item.
+# 'N' indicates the beginning of an entry. The serial number must 
+# increase for each new item. type is prefix or suffix. level is good, 
+# great, uber or artifact - this is the minimum level of item which can 
+# receive this affix. name is the textual name for use in object_desc().
 
-# 'X' is for extra information - Rating affects level feelings.
-# The xtra value determines random extra flags for the ego-item.
-# Nothing happens with a value of 0, 1 stands for "one random extra
-# sustain", 2 is "one random extra resist", and 3 is "one random
-# extra ability".
-
-# 'W' is for extra information. Depth is the depth the object is
-# normally found at, rarity determines how common the object is,
-# weight is in tenth-pounds and cost is the items value.
-
-# 'A' is for allocation details. commonness determines how common
-# the object is, min depth is the earliest it is normally found, max
-# depth is the deepest it is ever found. The "allocation" depth need
-# not match the depth as specified in the "W:" line.
-
-# 'C' is for creation bonuses - to-hit, to-dam, to-ac.
-# Cursed ego-items will negate the given value.  These are
-# extra bonuses on top of the normal values, and all of these
+# 'C' is for combat bonuses - to-hit, to-dam, to-ac. All of these 
 # fields accept randomized values.
 
-# 'M' is for minimum values - minimum allowed to-hit, to-dam, to-ac.
-# The value of 255 is special, meaning "there is no minimum". This
-# allows zero to be a valid minimum (e.g. for mixed-blessing items).
-
-# 'T' is for possible 'tval' and 'sval' values of the base-item.
-# Up to three 'T' entries are possible for a single object. The
-# ego-item can only be generated from items of this tval, with sval
-# in the specified range.
+# 'M' is for minimum values - minimum allowed to-hit, to-dam, to-ac. The 
+# value of 255 is special, meaning "there is no minimum". This allows 
+# zero to be a valid minimum (e.g. for mixed-blessing items). The line 
+# M:255:0:0 is necessary to preserve the intrinsic to-hit penalties of 
+# heavy armour.
+# XXX To do - assume M:255:255:255 if the line is missing?
 
 # 'F' is for flags not associated with any pval. These are fairly 
 # self-explanatory. As many F: lines may be used as are needed to 
-# specify all the flags and flags are separated by the '|' symbol.
+# specify all the flags, and flags are separated by the '|' symbol.
 
 # 'L' is for pval, min pval and flags specific to that pval. Each pval 
 # and its flags need a line to themselves. MAX_PVALS is defined in 
 # src/defines.h - you will need to recompile if you wish to change this 
 # value. A pval can take a random value. The min_pval must be present,
 # but can be 0. As with 'M' above, 255 means "do not apply a minimum".
+# If random pvals result in duplication, identical pvals will be merged.
+
+# 'R' is for random non-pval flags. num is the number of random flags to 
+# add, and flag-type is the OFT_ flag type(s) of flags from which to 
+# select.
+
+# 'Z' is for random pval flags. num is the number of random flags to 
+# add; pval is the pval to apply, which can take a random value. min 
+# pval must be present, and 255 is used to mean "no minimum". flag-type 
+# is the OFT_ flag type(s) from which to select. If num > 1, all will 
+# use the same pval; if you want different random and/or minimum pvals, 
+# use multiple Z: lines - but remember MAX_PVALS.
+
+# 'T' is for possible 'tval' and 'sval' values of the base item. The 
+# affix can only be generated for items of these tvals, with sval in the 
+# specified range. commonness determines how common the affix is, min 
+# depth is the earliest it is normally found, max depth is the deepest 
+# it is ever found, for these svals.
+
+# 'D' is a textual flavour description of the affix, for use in 'I'nspect.
+
+# See src/object/list-object-flags.h for a list of flags and types
+# See src/object/tvalsval.h for a list of tval and sval defines
 
 # Version stamp (required)
 
-V:3.3.0
+V:3.4.0
 
-# 1 (unused)
+### Armour affixes ###
 
-# 2 (unused)
-
-# 3 (unused)
-
-### Body Armor ###
-
-N:4:of Resist Acid
-X:16:0
-W:0:1:0:1000
-A:20:1 to 60
+N:1:suffix:great:Resist Acid
 M:255:0:0
-T:36:0:99
-T:37:0:6
 F:RES_ACID | IGNORE_ACID
+T:34:0:99:20:1 to 60
+T:36:0:99:20:1 to 60
+T:37:0:6:20:1 to 60
 
-N:5:of Resist Lightning
-X:10:0
-W:0:1:0:400
-A:20:1 to 50
+N:2:suffix:great:Resist Lightning
 M:255:0:0
-T:36:0:99
-T:37:0:6
 F:RES_ELEC | IGNORE_ELEC
+T:34:0:99:20:1 to 50
+T:36:0:99:20:1 to 50
+T:37:0:6:20:1 to 50
 
-N:6:of Resist Fire
-X:14:0
-W:0:1:0:800
-A:20:1 to 40
+N:3:suffix:great:Resist Fire
 M:255:0:0
-T:36:0:99
-T:37:0:6
 F:RES_FIRE | IGNORE_FIRE
+T:34:0:99:20:1 to 40
+T:36:0:99:20:1 to 40
+T:37:0:6:20:1 to 40
 
-N:7:of Resist Cold
-X:12:0
-W:0:1:0:600
-A:20:1 to 40
+N:4:suffix:great:Resist Cold
 M:255:0:0
-T:36:0:99
-T:37:0:6
 F:RES_COLD | IGNORE_COLD
+T:34:0:99:20:1 to 40
+T:36:0:99:20:1 to 40
+T:37:0:6:20:1 to 40
 
-N:8:of Resistance
-X:20:0
-W:0:2:0:12500
-A:20:25 to 100
+N:5:suffix:great:Resistance
 C:0:0:d10
 M:255:0:0
-T:36:0:99
-T:37:0:99
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+T:34:0:99:10:25 to 100
+T:36:0:99:10:25 to 100
+T:37:0:99:10:25 to 100
+T:38:7:29:8:70 to 100
 
-N:9:of Elvenkind
-X:25:2
-W:0:4:0:15000
-A:2:50 to 127
+N:6:suffix:uber:Elvenkind
 C:0:0:d10
 M:255:0:0
-T:36:0:99
-T:37:0:99
+F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD |
+F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 L:d2:0:STEALTH
-F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD |
-F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+R:1:HRES
+T:34:0:99:2:50 to 127
+T:36:0:99:2:50 to 127
+T:37:0:99:2:50 to 127
+T:38:7:29:3:70 to 127
 
-N:10:of Vulnerability
-X:0:0
-W:0:2:0:0
-A:10:10 to 80
-C:0:0:d50
+N:10:suffix:good:Vulnerability
+C:0:0:-d50
 M:255:0:0
-T:36:0:99
-T:37:0:99
 F:AGGRAVATE | LIGHT_CURSE
+T:34:0:99:10:10 to 80
+T:35:0:99:10:10 to 80
+T:36:0:99:10:10 to 80
+T:37:0:99:10:10 to 80
 
 ### Robes only ###
 
-N:11:of Permanence
-X:30:2
-W:0:4:0:30000
-A:10:50 to 127
+N:11:suffix:uber:Permanence
 C:0:0:d20
-T:36:2:2
 F:SUST_STR | SUST_DEX | SUST_CON | SUST_INT | SUST_WIS | SUST_CHR |
 F:HOLD_LIFE | RES_ACID | RES_ELEC | RES_FIRE | RES_COLD |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+R:1:HRES
+T:36:2:2:10:50 to 127
 
-### Heavy metal armor only ###
+### Heavy metal or dragon armor only ###
 
-N:12:(Dwarven)
-X:18:0
-W:0:4:0:5000
-A:5:40 to 127
+N:12:prefix:uber:Dwarven
 C:0:0:d15
-M:255:0:0
-T:37:0:99
-F:IGNORE_ACID | IGNORE_FIRE |
-F:FREE_ACT | 
+M:255:0:5
+F:IGNORE_ACID | IGNORE_FIRE | FREE_ACT
 L:d2:1:STR
 L:d2:1:CON
 L:d2M3:1:INFRA
+T:37:0:99:5:40 to 127
+T:38:0:99:5:40 to 127
 
 # 13 (unused)
 
@@ -189,544 +169,346 @@ L:d2M3:1:INFRA
 
 ### Shields ###
 
-N:15:(Dwarven)
-X:20:0
-W:0:4:0:5000
-A:20:40 to 127
+N:15:prefix:uber:Dwarven
 C:1+M3:1+M3:d5
-T:34:3:3
-F:IGNORE_ACID | IGNORE_FIRE |
-F:FREE_ACT | 
+F:IGNORE_ACID | IGNORE_FIRE | FREE_ACT
 L:d2:1:STR
 L:d2:1:CON
+T:34:3:3:10:40 to 127
 
-N:16:of Resist Acid
-X:16:0
-W:0:1:0:1000
-A:20:1 to 60
-T:34:0:99
-F:RES_ACID | IGNORE_ACID
-
-N:17:of Resist Lightning
-X:10:0
-W:0:1:0:400
-A:20:1 to 50
-T:34:0:99
-F:RES_ELEC | IGNORE_ELEC
-
-N:18:of Resist Fire
-X:14:0
-W:0:1:0:800
-A:20:1 to 40
-T:34:0:99
-F:RES_FIRE | IGNORE_FIRE
-
-N:19:of Resist Cold
-X:12:0
-W:0:1:0:600
-A:20:1 to 40
-T:34:0:99
-F:RES_COLD | IGNORE_COLD
-
-N:20:of Resistance
-X:20:0
-W:0:2:0:12500
-A:20:25 to 100
-C:0:0:d10
-T:34:0:99
-F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD |
-F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
-
-N:21:of Elvenkind
-X:25:2
-W:0:4:0:18000
-A:2:50 to 127
-C:0:0:d10
-T:34:0:99
-L:d2:0:STEALTH
-F:RES_FIRE | RES_COLD | RES_ACID | RES_ELEC |
-F:IGNORE_ACID | IGNORE_FIRE | IGNORE_COLD | IGNORE_ELEC
-
-N:22:of Preservation
-X:25:2
-W:60:4:0:24000
-A:2:50 to 127
+N:22:suffix:uber:Preservation
 C:0:0:d20
-T:34:0:99
 F:RES_DISEN | SUST_STR | SUST_CON | SUST_DEX | HOLD_LIFE |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
-
-N:23:of Vulnerability
-X:0:0
-W:0:2:0:0
-A:10:10 to 80
-C:0:0:d50
-T:34:0:99
-F:AGGRAVATE | LIGHT_CURSE
+R:1:HRES
+T:34:0:99:2:50 to 127
 
 
 ### Crowns and Helms ###
 
-N:24:of Intelligence
-X:13:0
-W:0:2:0:500
-A:20:5 to 100
-T:32:0:99
+N:24:suffix:great:Intelligence
 F:SUST_INT
 L:d2:0:INT
+T:32:0:99:20:5 to 100
 
-N:25:of Wisdom
-X:13:0
-W:0:2:0:500
-A:20:5 to 100
-T:32:0:99
+N:25:suffix:great:Wisdom
 F:SUST_WIS
 L:d2:0:WIS
+T:32:0:99:20:5 to 100
 
-N:26:of Beauty
-X:8:0
-W:0:2:0:1000
-A:20:1 to 40
-T:32:0:99
+N:26:suffix:good:Beauty
 F:SUST_CHR
 L:d4:0:CHR
+T:32:0:99:20:1 to 40
 
-N:27:of the Magi
-X:15:3
-W:0:4:0:7500
-A:10:45 to 127
-T:33:0:99
+N:27:suffix:uber:the Magi
 F:SUST_INT
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 L:d3:0:INT
+R:1:MISC | PROT
+T:33:0:99:10:45 to 127
 
-N:28:of Might
-X:19:0
-W:0:4:0:7500
-A:10:45 to 127
-T:33:0:99
+N:28:suffix:uber:Might
 F:SUST_STR | SUST_DEX | SUST_CON | FREE_ACT |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 L:d3:1:STR
 L:d3:1:DEX
 L:d3:1:CON
+T:33:0:99:10:45 to 127
 
-
-N:29:of Lordliness
-X:17:3
-W:0:2:0:7500
-A:20:45 to 100
-T:33:0:99
+N:29:suffix:uber:Lordliness
 F:SUST_WIS | SUST_CHR | RES_FEAR |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 L:d3:1:WIS
 L:d2M3:1:CHR
+R:1:MISC | PROT
+T:33:0:99:20:45 to 100
 
-N:30:of Seeing
-X:8:0
-W:0:2:0:2000
-A:20:10 to 50
-T:32:0:99
+N:30:suffix:great:Seeing
 F:RES_BLIND | SEE_INVIS
 L:d5:0:SEARCH
+T:32:0:99:20:10 to 50
 
-N:31:of Infravision
-X:11:0
-W:0:2:0:500
-A:20:10 to 50
-T:32:0:99
+N:31:suffix:good:Infravision
 L:d5:0:INFRA
+T:32:0:99:20:10 to 50
 
-N:32:of Light
-X:6:0
-W:0:2:0:1000
-A:20:45 to 70
-T:33:0:99
+N:32:suffix:great:Light
 F:LIGHT | RES_LIGHT
+T:33:0:99:20:45 to 70
 
-N:33:of Telepathy
-X:20:0
-W:0:6:0:50000
-A:6:20 to 127
-T:32:0:99
+N:33:suffix:great:Telepathy
 F:TELEPATHY
+T:32:0:99:6:20 to 127
 
-N:34:of Regeneration
-X:10:0
-W:0:4:0:1500
-A:10:1 to 100
-T:32:0:99
+N:34:suffix:great:Regeneration
 F:REGEN
+T:32:0:99:10:1 to 100
 
-N:35:of Teleportation
-X:0:0
-W:0:2:0:0
-A:10:10 to 80
-T:32:0:99
+N:35:suffix:good:Teleportation
 F:TELEPORT | LIGHT_CURSE
+T:32:0:99:10:10 to 80
 
-N:36:of Serenity
-X:20:0
-W:0:6:0:4000
-A:6:50 to 127
-T:33:0:99
+N:36:suffix:great:Serenity
 F:RES_SOUND | RES_CONFU | RES_FEAR | RES_STUN
+T:33:0:99:6:50 to 127
 
-N:37:of Night and Day
-X:18:0
-W:35:6:0:4000
-A:6:50 to 127
-T:33:0:99
+N:37:suffix:great:Night and Day
 F:RES_LIGHT | RES_DARK | LIGHT | SEE_INVIS | RES_BLIND | IGNORE_ACID
+T:33:0:99:6:50 to 127
 
-N:38:of Dullness
-X:0:0
-W:0:2:0:0
-A:10:45 to 80
-T:33:0:99
+N:38:suffix:good:Dullness
 F:LIGHT_CURSE
-L:d5:0:INT | WIS | CHR
+L:-d5:0:INT | WIS | CHR
+T:33:0:99:10:45 to 80
 
-N:39:of Sickliness
-X:0:0
-W:0:2:0:0
-A:10:45 to 80
-T:33:0:99
+N:39:suffix:good:Sickliness
 F:LIGHT_CURSE
-L:d5:0:STR | DEX | CON
+L:-d5:0:STR | DEX | CON
+T:33:0:99:10:45 to 80
 
 
 ### Cloaks ###
 
-N:40:of Protection
-X:10:0
-W:0:2:0:1500
-A:20:1 to 100
+N:40:suffix:great:Protection
 C:0:0:d10
-T:35:0:99
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | RES_SHARD
+T:35:0:99:20:1 to 100
 
-N:41:of Stealth
-X:10:0
-W:0:1:0:500
-A:20:1 to 55
-T:35:0:99
+N:41:suffix:great:Stealth
+M:255:0:0
 L:d3:0:STEALTH
+T:35:0:99:20:1 to 55
+T:30:1:2:20:15 to 100
+T:30:6:6:20:15 to 100
+T:38:0:99:8:40 to 100
 
-N:42:of Aman
-X:20:2
-W:0:6:0:4000
-A:6:30 to 127
+N:42:suffix:great:Aman
 C:0:0:d20
-T:35:0:99
 L:d3:0:STEALTH
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+R:1:HRES
+T:35:0:99:6:30 to 127
 
-N:43:of the Magi
-X:15:3
-W:30:3:0:2000
-A:10:30 to 100
+N:43:suffix:uber:the Magi
 C:0:0:d4
-T:35:0:99
 F:SUST_INT | IGNORE_ACID
 L:d2:1:INT
 L:d3:1:STEALTH
+R:1:MISC | PROT
+T:35:0:99:10:30 to 100
 
-N:44:of Enveloping
-X:0:0
-W:0:1:0:0
-A:10:10 to 80
-C:d10:d10:0
-T:35:0:99
+N:44:suffix:good:Enveloping
+C:-d10:-d10:0
 F:SHOW_MODS | LIGHT_CURSE
+T:35:0:99:10:10 to 80
 
-N:45:of Vulnerability
-X:0:0
-W:0:1:0:0
-A:10:10 to 80
-C:0:0:d50
-T:35:0:99
-F:AGGRAVATE | LIGHT_CURSE
-
-N:46:of Irritation
-X:0:0
-W:0:1:0:0
-A:10:10 to 80
-C:d15:d15:0
-T:35:0:99
+N:46:suffix:good:Irritation
+C:-d15:-d15:0
 F:AGGRAVATE | SHOW_MODS | LIGHT_CURSE
+T:35:0:99:10:10 to 80
 
 # 47 (unused)
 
 ### Gloves ###
 
-N:48:of Free Action
-X:11:0
-W:0:4:0:1000
-A:20:1 to 60
-T:31:0:99
+N:48:suffix:great:Free Action
 F:FREE_ACT
+T:31:0:99:20:1 to 60
+T:30:0:99:16:10 to 100
 
-N:49:of Slaying
-X:17:0
-W:0:4:0:1500
-A:20:10 to 75
+N:49:suffix:great:Slaying
 C:d5:d5:0
-T:31:0:99
 F:SHOW_MODS
-D:They boost your to-hit and to-dam values.
+T:31:0:99:20:10 to 75
+D:Boosts your ability to hit and damage enemies.
 
-N:50:of Agility
-X:14:0
-W:0:6:0:1000
-A:12:20 to 95
-T:31:0:99
+N:50:suffix:great:Agility
 L:d5:0:DEX
+T:31:0:99:12:20 to 95
 
-N:51:of Power
-X:22:0
-W:0:6:0:2500
-A:12:30 to 127
+N:51:suffix:uber:Power
 C:d5:d5:0
-T:31:0:99
-F:SHOW_MODS | 
+F:SHOW_MODS
 L:d5:0:STR
+T:31:0:99:12:30 to 127
 
-N:52:of Thievery
-X:22:0
-W:40:12:0:5000
-A:8:40 to 127
+N:52:suffix:uber:Thievery
 C:d8:d3:0
-T:31:1:1
-T:31:5:5
-F:SHOW_MODS | FEATHER | FREE_ACT | 
+F:SHOW_MODS | FEATHER | FREE_ACT
 L:1+M4:1:DEX
 L:1+d2M3:2:SEARCH
+T:31:1:1:8:40 to 127
+T:31:5:5:8:40 to 127
 
-N:53:of Combat
-X:22:0
-W:50:12:0:7000
-A:5:50 to 127
+N:53:suffix:great:Combat
 C:d3:d8:0
-T:31:2:4
-F:SHOW_MODS | AGGRAVATE | 
+F:SHOW_MODS | AGGRAVATE
 L:d2:1:STR
 L:d2:1:CON
+T:31:2:4:5:50 to 127
 
-N:54:of Weakness
-X:0:0
-W:0:2:0:0
-A:10:10 to 80
-T:31:0:99
-F:LIGHT_CURSE | 
-L:d10:0:STR
+N:54:suffix:good:Weakness
+F:LIGHT_CURSE
+L:-d10:0:STR
+T:31:0:99:10:10 to 80
 
-N:55:of Clumsiness
-X:0:0
-W:0:2:0:0
-A:10:10 to 80
-T:31:0:99
-F:LIGHT_CURSE | 
-L:d10:0:DEX
+N:55:suffix:good:Clumsiness
+F:LIGHT_CURSE
+L:-d10:0:DEX
+T:31:0:99:10:10 to 80
 
 ### Boots ###
 
-N:56:of Slow Descent
-X:7:0
-W:0:5:0:250
-A:20:5 to 40
-T:30:0:99
+N:56:suffix:good:Slow Descent
 F:FEATHER
+T:30:0:99:20:5 to 40
 
-N:57:of Stealth
-X:16:0
-W:0:6:0:500
-A:20:15 to 100
-T:30:1:2
-T:30:6:6
-L:d3:0:STEALTH
-
-N:58:of Free Action
-X:15:0
-W:0:8:0:1000
-A:16:10 to 100
-F:FREE_ACT
-T:30:0:99
-
-N:59:of Speed
-X:25:0
-W:0:24:0:100000
-A:2:20 to 127
-T:30:0:99
+N:59:suffix:uber:Speed
 L:d10:0:SPEED
+T:30:0:99:2:20 to 127
 
-N:60:of Stability
-X:20:0
-W:0:10:0:5000
-A:16:15 to 100
-T:30:0:99
+N:60:suffix:great:Stability
 F:RES_NEXUS | FEATHER
+T:30:0:99:16:15 to 100
 
-N:61:of Elvenkind
-X:30:0
-W:60:30:0:200000
-A:3:60 to 127
-T:30:2:3
+N:61:suffix:uber:Elvenkind
 F:FEATHER | IGNORE_ACID | IGNORE_FIRE
 L:d4:1:STEALTH
 L:3+d6:1:SPEED
+T:30:2:3:2:60 to 127
 
-N:62:of Slowness
-X:0:0
-W:0:5:0:0
-A:10:10 to 80
-T:30:0:99
-L:d5:0:SPEED
-F:LIGHT_CURSE | 
+N:62:suffix:good:Slowness
+F:LIGHT_CURSE
+L:-d5:0:SPEED
+T:30:0:99:10:10 to 80
 
-N:63:of Annoyance
-X:0:0
-W:0:10:0:0
-A:10:10 to 80
-T:30:0:99
-L:d10:0:SPEED | STEALTH
-F:AGGRAVATE | LIGHT_CURSE | 
+N:63:suffix:good:Annoyance
+F:AGGRAVATE | LIGHT_CURSE
+L:-d10:0:SPEED | STEALTH
+T:30:0:99:10:10 to 80
 
 
 ### Weapons ###
 
-N:64:(Holy Avenger)
-X:30:1
-W:0:12:0:20000
-A:13:20 to 70
+N:64:prefix:uber:Holy
 C:d6:d6:d4
-T:21:0:99
-T:22:0:99
-T:23:0:99
-L:d4:0:WIS
 F:SLAY_EVIL | SLAY_UNDEAD | SLAY_DEMON |
 F:SEE_INVIS | BLESSED | RES_FEAR
+L:d4:0:WIS
+R:1:SUST
+T:21:0:99:13:20 to 70
+T:22:0:99:13:20 to 70
+T:23:0:99:13:20 to 70
 
-N:65:(Defender)
-X:25:1
-W:0:12:0:15000
-A:12:20 to 80
+N:65:prefix:uber:Defending
 C:d4:d4:d8
-T:21:0:99
-T:22:0:99
-T:23:0:99
 F:FREE_ACT | SEE_INVIS | FEATHER | REGEN |
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 L:d4:0:STEALTH
+R:1:SUST
+T:21:0:99:12:20 to 80
+T:22:0:99:12:20 to 80
+T:23:0:99:12:20 to 80
 
-N:66:(Blessed)
-X:20:3
-W:0:10:0:5000
-A:19:1 to 60
-T:21:0:99
-T:22:0:99
-T:23:0:99
+N:66:prefix:great:Blessed
 F:BLESSED
 L:d3:0:WIS
+R:1:MISC | PROT
+T:21:0:99:19:1 to 60
+T:22:0:99:19:1 to 60
+T:23:0:99:19:1 to 60
 
-N:67:of Gondolin
-X:30:3
-W:30:20:0:25000
-A:9:30 to 127
+N:67:suffix:uber:Gondolin
 C:d7:d7:0
-T:21:0:99
-T:22:0:99
-T:23:0:99
 F:SLAY_DEMON | SLAY_ORC | SLAY_TROLL | SLAY_DRAGON |
 F:LIGHT | RES_DARK | SEE_INVIS | FREE_ACT |
 F:IGNORE_ACID | IGNORE_FIRE
+R:1:MISC | PROT
+T:21:0:99:9:30 to 127
+T:22:0:99:9:30 to 127
+T:23:0:99:9:30 to 127
 
-N:68:of Westernesse
-X:20:0
-W:0:10:0:20000
-A:14:30 to 127
+N:68:suffix:uber:Westernesse
 C:d5:d5:0
-T:21:0:99
-T:22:0:99
-T:23:0:99
+F:SLAY_ORC | SLAY_TROLL | SLAY_GIANT |
+F:FREE_ACT | SEE_INVIS
 L:d2:1:STR
 L:d2:1:DEX
 L:d2:1:CON
-F:SLAY_ORC | SLAY_TROLL | SLAY_GIANT |
-F:FREE_ACT | SEE_INVIS
+T:21:0:99:14:30 to 127
+T:22:0:99:14:30 to 127
+T:23:0:99:14:30 to 127
 
-N:69:of Extra Attacks
-X:20:0
-W:0:10:0:10000
-A:15:30 to 127
-T:21:0:99
-T:22:0:99
-T:23:0:99
+N:69:suffix:great:Extra Attacks
 L:d2:0:BLOWS
+T:21:0:99:15:30 to 127
+T:22:0:99:15:30 to 127
+T:23:0:99:15:30 to 127
 
-N:70:of Fury
-X:30:0
-W:40:20:0:20000
-A:8:1 to 127
-#T:21:12:99
-#T:22:10:99
-#T:23:16:99
+N:70:suffix:uber:Fury
 C:d10:d10:0
-F:AGGRAVATE | RES_FEAR |  |
+F:AGGRAVATE | RES_FEAR |
 F:IGNORE_ACID | IGNORE_FIRE
-L:1+d2M2:2:STR
+L:d2M2:2:STR
 L:d2:1:BLOWS
+T:21:12:99:8:1 to 127
+T:22:10:99:8:1 to 127
+T:23:16:99:8:1 to 127
 
 # 71 (unused)
 
 # The "Branded" weapons (5)
 
-N:72:of Acid
-X:20:0
-W:0:20:0:5000
-A:11:10 to 100
-T:21:0:99
-T:22:0:99
-T:23:0:99
+# To do - add code that checks for "illegal" flags, i.e. removes the resist
+# from ammo? Or ignore ammo flags in calc_bonuses?
+
+N:72:suffix:great:Acid
 F:BRAND_ACID | RES_ACID | IGNORE_ACID
+T:21:0:99:11:10 to 100
+T:22:0:99:11:10 to 100
+T:23:0:99:11:10 to 100
+T:16:0:99:8:10 to 100
+T:17:0:99:8:10 to 100
+T:18:0:99:8:10 to 100
 
-N:73:of Lightning
-X:20:0
-W:0:15:0:4500
-A:10:10 to 100
-T:21:0:99
-T:22:0:99
-T:23:0:99
+N:73:suffix:great:Lightning
 F:BRAND_ELEC | RES_ELEC | IGNORE_ELEC
+T:21:0:99:10:10 to 100
+T:22:0:99:10:10 to 100
+T:23:0:99:10:10 to 100
+T:16:0:99:8:10 to 100
+T:17:0:99:8:10 to 100
+T:18:0:99:8:10 to 100
 
-N:74:of Flame
-X:15:0
-W:0:8:0:3500
-A:17:10 to 100
-T:21:0:99
-T:22:0:99
-T:23:0:99
+N:74:suffix:great:Flame
 F:BRAND_FIRE | RES_FIRE | IGNORE_FIRE
+T:21:0:99:17:10 to 100
+T:22:0:99:17:10 to 100
+T:23:0:99:17:10 to 100
+T:16:0:99:12:10 to 100
+T:17:0:99:12:10 to 100
+T:18:0:99:12:10 to 100
 
-N:75:of Frost
-X:15:0
-W:0:8:0:3000
-A:16:10 to 100
-T:21:0:99
-T:22:0:99
-T:23:0:99
+N:75:suffix:great:Frost
 F:BRAND_COLD | RES_COLD | IGNORE_COLD
+T:21:0:99:16:10 to 100
+T:22:0:99:16:10 to 100
+T:23:0:99:16:10 to 100
+T:16:0:99:12:10 to 100
+T:17:0:99:12:10 to 100
+T:18:0:99:12:10 to 100
 
-N:76:of Venom
-X:15:0
-W:0:8:0:4000
-A:18:10 to 100
-T:21:0:99
-T:22:0:99
-T:23:0:99
+N:76:suffix:great:Venom
 F:BRAND_POIS
+T:21:0:99:18:10 to 100
+T:22:0:99:18:10 to 100
+T:23:0:99:18:10 to 100
+T:16:0:99:12:10 to 100
+T:17:0:99:12:10 to 100
+T:18:0:99:12:10 to 100
 
 # 77 (unused)
 
@@ -736,159 +518,130 @@ F:BRAND_POIS
 
 # The "Slay" weapons (8)
 
-N:80:of Slay Animal
-X:18:0
-W:0:6:0:3000
-A:20:1 to 19
-T:21:0:99
-T:22:0:99
-T:23:0:99
+N:80:suffix:great:Slay Animal
 F:SLAY_ANIMAL
+T:21:0:99:20:1 to 19
+T:22:0:99:20:1 to 19
+T:23:0:99:20:1 to 19
+T:16:0:99:12:1 to 60
+T:17:0:99:12:1 to 60
+T:18:0:99:12:1 to 60
 
-N:81:of Slay Evil
-X:18:0
-W:0:6:0:3000
-A:20:1 to 19
-T:21:0:99
-T:22:0:99
-T:23:0:99
+N:81:suffix:great:Slay Evil
 F:SLAY_EVIL
+T:21:0:99:20:1 to 19
+T:22:0:99:20:1 to 19
+T:23:0:99:20:1 to 19
+T:16:0:99:12:1 to 60
+T:17:0:99:12:1 to 60
+T:18:0:99:12:1 to 60
 
-N:82:of Slay Undead
-X:18:0
-W:0:6:0:3500
-A:20:4 to 31
-T:21:0:18
-T:22:0:99
-T:23:0:99
+N:82:suffix:great:Slay Undead
 F:SLAY_UNDEAD
+T:21:0:18:20:4 to 31
+T:22:0:99:20:4 to 31
+T:23:0:99:20:4 to 31
+T:16:0:99:8:4 to 77
+T:17:0:99:8:4 to 77
+T:18:0:99:8:4 to 77
 
-N:83:of Slay Demon
-X:14:0
-W:0:6:0:3500
-A:20:6 to 36
-T:21:0:99
-T:22:0:99
-T:23:0:99
+N:83:suffix:great:Slay Demon
 F:SLAY_DEMON
+T:21:0:99:20:6 to 36
+T:22:0:99:20:6 to 36
+T:23:0:99:20:6 to 36
+T:16:0:99:8:6 to 77
+T:17:0:99:8:6 to 77
+T:18:0:99:8:6 to 77
 
-N:84:of Slay Orc
-X:10:0
-W:0:6:0:2500
-A:20:5 to 14
-T:21:0:99
-T:22:0:99
-T:23:0:99
+N:84:suffix:good:Slay Orc
 F:SLAY_ORC
+T:21:0:99:20:5 to 14
+T:22:0:99:20:5 to 14
+T:23:0:99:20:5 to 14
 
-N:85:of Slay Troll
-X:10:0
-W:0:6:0:2500
-A:20:16 to 35
-T:21:0:99
-T:22:0:99
-T:23:0:99
+N:85:suffix:good:Slay Troll
 F:SLAY_TROLL
+T:21:0:99:20:16 to 35
+T:22:0:99:20:16 to 35
+T:23:0:99:20:16 to 35
 
-N:86:of Slay Giant
-X:14:0
-W:0:6:0:2500
-A:20:24 to 38
-T:21:0:99
-T:22:0:99
-T:23:0:99
+N:86:suffix:great:Slay Giant
 F:SLAY_GIANT
+T:21:0:99:20:24 to 38
+T:22:0:99:20:24 to 38
+T:23:0:99:20:24 to 38
+T:16:0:99:8:24 to 66
+T:17:0:99:8:24 to 66
+T:18:0:99:8:24 to 66
 
-N:87:of Slay Dragon
-X:18:0
-W:0:6:0:3500
-A:20:8 to 38
-T:21:0:99
-T:22:0:99
-T:23:0:99
+N:87:suffix:great:Slay Dragon
 F:SLAY_DRAGON
+T:21:0:99:20:8 to 38
+T:22:0:99:20:8 to 38
+T:23:0:99:20:8 to 38
+T:16:0:99:8:8 to 88
+T:17:0:99:8:8 to 88
+T:18:0:99:8:8 to 88
 
 # The *Slay* weapons (8)
 
-N:88:of *Slay Animal*
-X:20:0
-W:0:20:0:6000
-A:20:20 to 60
-T:21:0:99
-T:22:0:99
-T:23:0:99
+N:88:suffix:great:*Slay Animal*
 F:SLAY_ANIMAL | SLOW_DIGEST
 L:d2:0:INT
+T:21:0:99:20:20 to 60
+T:22:0:99:20:20 to 60
+T:23:0:99:20:20 to 60
 
-N:89:of *Slay Evil*
-X:20:3
-W:0:20:0:5000
-A:20:20 to 60
-T:21:0:99
-T:22:0:99
-T:23:0:99
+N:89:suffix:uber:*Slay Evil*
 F:SLAY_EVIL | BLESSED
 L:d2:0:WIS
+R:1:MISC | PROT
+T:21:0:99:20:20 to 60
+T:22:0:99:20:20 to 60
+T:23:0:99:20:20 to 60
 
-N:90:of *Slay Undead*
-X:24:0
-W:0:20:0:8000
-A:20:32 to 77
-T:21:0:18
-T:22:0:99
-T:23:0:99
+N:90:suffix:uber:*Slay Undead*
 F:KILL_UNDEAD | SEE_INVIS
 L:d2:0:WIS
+T:21:0:18:20:32 to 77
+T:22:0:99:20:32 to 77
+T:23:0:99:20:32 to 77
 
-N:91:of *Slay Demon*
-X:16:0
-W:0:20:0:8000
-A:20:37 to 77
-T:21:0:99
-T:22:0:99
-T:23:0:99
+N:91:suffix:uber:*Slay Demon*
 F:KILL_DEMON | RES_FIRE
 L:d2:0:INT
+T:21:0:99:20:37 to 77
+T:22:0:99:20:37 to 77
+T:23:0:99:20:37 to 77
 
-N:92:of *Slay Orc*
-X:14:0
-W:0:20:0:4000
-A:20:15 to 44
-T:21:0:99
-T:22:0:99
-T:23:0:99
+N:92:suffix:great:*Slay Orc*
 F:SLAY_ORC | SUST_DEX
 L:d2:0:DEX
+T:21:0:99:20:15 to 44
+T:22:0:99:20:15 to 44
+T:23:0:99:20:15 to 44
 
-N:93:of *Slay Troll*
-X:14:0
-W:0:20:0:4000
-A:20:36 to 55
-T:21:0:99
-T:22:0:99
-T:23:0:99
+N:93:suffix:great:*Slay Troll*
 F:SLAY_TROLL | REGEN
 L:d2:0:STR
+T:21:0:99:20:36 to 55
+T:22:0:99:20:36 to 55
+T:23:0:99:20:36 to 55
 
-N:94:of *Slay Giant*
-X:16:0
-W:0:20:0:4000
-A:20:39 to 66
-T:21:0:99
-T:22:0:99
-T:23:0:99
+N:94:suffix:great:*Slay Giant*
 F:SLAY_GIANT | SUST_STR
 L:d2:0:STR
+T:21:0:99:20:39 to 66
+T:22:0:99:20:39 to 66
+T:23:0:99:20:39 to 66
 
-N:95:of *Slay Dragon*
-X:24:0
-W:0:20:0:8000
-A:20:39 to 88
-T:21:0:99
-T:22:0:99
-T:23:0:99
+N:95:suffix:uber:*Slay Dragon*
 F:KILL_DRAGON | RES_FEAR
 L:d2:0:CON
+T:21:0:99:20:39 to 88
+T:22:0:99:20:39 to 88
+T:23:0:99:20:39 to 88
 
 ### Lanterns/torches
 
@@ -901,345 +654,131 @@ L:d2:0:CON
 #F:RES_LIGHT
 #L:d2:0:STEALTH
 
-N:97:of Brightness
-X:10:0
-W:0:2:0:2000
-A:20:1 to 55
-T:39:0:1
+N:97:suffix:great:Brightness
 F:LIGHT
+T:39:0:1:20:1 to 55
 
-N:98:(Everburning)
-X:10:0
-W:0:3:0:2500
-A:12:10 to 100
-T:39:1:1 (lanterns only)
+N:98:prefix:great:Everburning
 F:NO_FUEL
+T:39:1:1:12:10 to 100
 
-N:99:of True Sight
-X:10:0
-W:20:8:0:6000 (imported from S)
-A:4:20 to 127
-T:39:1:1
+N:99:suffix:uber:True Sight
 F:RES_BLIND | SEE_INVIS
-
+T:39:1:1:4:20 to 127
 
 ### Digging Tools
 
-N:100:of Digging
-X:4:0
-W:0:1:0:500
-A:20:1 to 65
-T:20:0:99
+N:100:suffix:great:Digging
 F:BRAND_ACID
 L:d4:1:TUNNEL
+T:20:0:99:20:1 to 65
 
-N:101:of Earthquakes
-X:8:0
-W:20:4:0:3000
-A:5:20 to 127
+N:101:suffix:great:Earthquakes
 C:d10:d10:0
-T:20:0:99
+F:BRAND_ACID | IMPACT
 L:d4:1:STR
 L:d6:1:TUNNEL
-F:BRAND_ACID | IMPACT | 
+T:20:0:99:5:20 to 127
 
 ### Cursed Weapons
 
-N:102:of Morgul
-X:0:0
-W:0:5:0:1
-A:10:10 to 80
-T:21:0:99
-T:22:0:99
-T:23:0:99
+N:102:suffix:great:Morgul
 F:SEE_INVIS | AGGRAVATE | HEAVY_CURSE | LIGHT_CURSE |
 F:HOLD_LIFE | DRAIN_EXP | SLAY_UNDEAD | BRAND_POIS
+T:21:0:99:10:10 to 80
+T:22:0:99:10:10 to 80
+T:23:0:99:10:10 to 80
 
 # 103 (unused)
 
 
 ### Missile Launchers ###
 
-N:104:of Accuracy
-X:10:0
-W:0:1:0:1000
-A:20:5 to 55
+N:104:suffix:great:Accuracy
 C:d15:d5:0
 M:15:255:0
-T:19:0:99
+T:19:0:99:20:5 to 55
 D:It has no special abilities, but its to-hit value may be unusually
 D: high.
 
-N:105:of Power
-X:10:0
-W:0:1:0:1000
-A:20:10 to 65
+N:105:suffix:great:Power
 C:d5:d15:0
 M:255:15:0
-T:19:0:99
+T:19:0:99:20:10 to 65
 D:It has no special abilities, but its to-dam value may be unusually
 D: high.
 
-N:106:of Lothlórien
-X:30:3
-W:50:4:0:20000
-A:5:40 to 127
+N:106:suffix:uber:Lothlórien
 C:d10:d10:0
-T:19:12:13
+F:FREE_ACT | IGNORE_ACID | IGNORE_FIRE
 L:1+d2M2:2:DEX
 L:d2:1:MIGHT
-F:FREE_ACT | IGNORE_ACID | IGNORE_FIRE | 
+R:1:MISC | PROT
+T:19:12:13:5:40 to 127
 
-N:107:of the Haradrim
-X:30:0
-W:50:4:0:20000
-A:10:40 to 127
+N:107:suffix:uber:the Haradrim
 C:d5:d5:0
-T:19:23:23
 L:1:1:MIGHT | SHOTS
-F:IGNORE_ACID | IGNORE_FIRE | 
+F:IGNORE_ACID | IGNORE_FIRE
+T:19:23:23:10:40 to 127
 
-N:108:of Extra Might
-X:20:0
-W:0:2:0:10000
-A:10:25 to 100
+N:108:suffix:great:Extra Might
 C:d5:d10:0
-T:19:0:99
 L:1:0:MIGHT
+T:19:0:99:10:25 to 100
 
-N:109:of Extra Shots
-X:20:0
-W:0:2:0:10000
-A:10:25 to 100
+N:109:suffix:uber:Extra Shots
 C:d10:d5:0
-T:19:0:99
 L:1:0:SHOTS
+T:19:0:99:10:25 to 100
 
-N:110:of Buckland
-X:25:0
-W:40:4:0:20000
-A:10:40 to 127
+N:110:suffix:uber:Buckland
 C:d8:d8:0
-T:19:2:2
+F:IGNORE_ACID | IGNORE_FIRE
 L:1+d2M2:2:DEX
 L:d2:1:SHOTS
 L:d2:1:MIGHT
-F:IGNORE_ACID | IGNORE_FIRE | 
+T:19:2:2:10:40 to 127
 
-N:111:of the Nazgûl
-X:0:0
-W:0:2:0:0
-A:10:10 to 80
-C:d10:d10:0
-T:19:0:99
+N:111:suffix:great:the Nazgûl
+C:-d10:d10:0
 F:LIGHT_CURSE | DRAIN_EXP | SEE_INVIS
+T:19:0:99:10:10 to 80
 
 
 ### Ammo ###
 
-N:112:of Slay Animal
-X:10:0
-W:0:6:0:20
-A:12:1 to 60
-T:16:0:99
-T:17:0:99
-T:18:0:99
-F:SLAY_ANIMAL
-
-N:113:of Slay Evil
-X:10:0
-W:0:6:0:20
-A:12:1 to 60
-T:16:0:99
-T:17:0:99
-T:18:0:99
-F:SLAY_EVIL
-
-N:114:of Slay Undead
-X:10:0
-W:0:8:0:25
-A:8:4 to 77
-T:16:0:99
-T:17:0:99
-T:18:0:99
-F:SLAY_UNDEAD
-
-N:115:of Slay Demon
-X:10:0
-W:0:8:0:25
-A:8:6 to 77
-T:16:0:99
-T:17:0:99
-T:18:0:99
-F:SLAY_DEMON
-
-N:116:of Acid
-X:10:0
-W:0:10:0:50
-A:8:10 to 100
-T:16:0:99
-T:17:0:99
-T:18:0:99
-F:BRAND_ACID | IGNORE_ACID
-
-N:117:of Lightning
-X:10:0
-W:0:10:0:45
-A:8:10 to 100
-T:16:0:99
-T:17:0:99
-T:18:0:99
-F:BRAND_ELEC | IGNORE_ELEC
-
-N:118:of Slay Giant
-X:10:0
-W:0:8:0:25
-A:8:24 to 66
-T:16:0:99
-T:17:0:99
-T:18:0:99
-F:SLAY_GIANT
-
-N:119:of Slay Dragon
-X:10:0
-W:0:8:0:40
-A:8:8 to 88
-T:16:0:99
-T:17:0:99
-T:18:0:99
-F:SLAY_DRAGON
-
-N:120:of Holy Might
-X:20:0
-W:40:15:0:60
-A:8:40 to 127
+N:120:suffix:uber:Holy Might
 C:d10:d10:0
-T:16:2:99
-T:17:2:99
-T:18:2:99
 F:SLAY_EVIL | SLAY_DEMON | SLAY_UNDEAD
 F:IGNORE_FIRE | IGNORE_ACID
+T:16:2:99:8:40 to 127
+T:17:2:99:8:40 to 127
+T:18:2:99:8:40 to 127
 
-N:121:of Venom
-X:10:0
-W:0:6:0:40
-A:12:10 to 100
-T:16:0:99
-T:17:0:99
-T:18:0:99
-F:BRAND_POIS
-
-N:122:of Flame
-X:10:0
-W:0:6:0:35
-A:12:10 to 100
-T:16:0:99
-T:17:0:99
-T:18:0:99
-F:BRAND_FIRE | IGNORE_FIRE
-
-N:123:of Frost
-X:10:0
-W:0:6:0:30
-A:12:10 to 100
-T:16:0:99
-T:17:0:99
-T:18:0:99
-F:BRAND_COLD | IGNORE_COLD
-
-N:124:of Wounding
-X:5:0
-W:0:4:0:20
-A:20:15 to 127
+N:124:suffix:great:Wounding
 C:d5:d5:0
-T:16:0:99
-T:17:0:99
-T:18:0:99
+T:16:0:99:20:15 to 127
+T:17:0:99:20:15 to 127
+T:18:0:99:20:15 to 127
 D:Ammunition of Wounding often has unusually high to-hit and to-dam values.
 
-N:125:of Backbiting
-X:0:0
-W:0:0:0:0
-A:0:10 to 80
+N:125:suffix:good:Backbiting
 C:-d25:-d25:0
-T:16:0:99
-T:17:0:99
-T:18:0:99
-
-### Special Broken Items ###
-
-# these won't be generated by the make_ego_item code as long as
-# they keep their rarity of 0 and nobody adds 'T' lines for them.
-
-# Destroyed Weapon
-N:126:(Shattered)
-X:0:0
-W:0:0:0:0
-A:0:1 to 80
-C:d5:d5:0
-
-# Destroyed Body Armor
-
-N:127:(Blasted)
-X:0:0
-W:0:0:0:0
-A:0:1 to 80
-C:0:0:d10
+T:16:0:99:0:10 to 80
+T:17:0:99:0:10 to 80
+T:18:0:99:0:10 to 80
 
 ### Dragon Scale Mail egos ###
 
 # This is the 'default' DSM ego - roughly half of them
-N:128:of Craftsmanship
-X:4:0
-W:0:2:0:500
-A:20:30 to 95
+N:128:suffix:good:Craftsmanship
 C:0:0:1d6M4
 M:0:0:4
-T:38:0:99
+T:38:0:99:20:30 to 95
 D:This armour is finely wrought, tough yet unencumbering.
 
-N:129:of Stealth
-X:16:0
-W:0:10:0:500
-A:8:40 to 100
+N:133:suffix:uber:Speed
 M:255:0:0
-T:38:0:99
-L:d2:0:STEALTH
-
-N:130:of Resistance
-X:10:0
-W:0:10:0:12500
-A:8:70 to 100
-C:0:0:d10
-M:255:0:0
-T:38:7:29
-F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD
-
-N:131:of Elvenkind
-X:25:2
-W:0:33:0:15000
-A:3:70 to 127
-C:0:0:d10
-T:38:7:29
-L:d2:0:STEALTH
-F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD
-
-N:132:(Dwarven)
-X:18:0
-W:0:20:0:5000
-A:5:40 to 127
-C:0:0:d15
-M:255:0:5
-T:38:0:99
-F:FREE_ACT | 
-L:d2:1:STR
-L:d2:1:CON
-L:d2M3:1:INFRA
-
-N:133:of Speed
-X:25:0
-W:0:100:0:100000
-A:1:40 to 127
-M:255:0:0
-T:38:0:99
 L:d5:0:SPEED
+T:38:0:99:1:60 to 127
