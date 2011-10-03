@@ -2036,7 +2036,7 @@ errr Term_keypress(keycode_t k, byte mods)
 /*
  * Add a mouse event to the "queue"
  */
-errr Term_mousepress(int x, int y, char button)/*, byte mods);
+errr Term_mousepress(int x, int y, char button)/*, byte mods);*/
 {
 	/* Store the char, advance the queue */
 	Term->key_queue[Term->key_head].type = EVT_MOUSE;

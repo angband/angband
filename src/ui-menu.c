@@ -486,7 +486,7 @@ bool menu_handle_mouse(menu_type *menu, const ui_event *in,
 			out->type = EVT_ESCAPE;
 	} else
 	if (in->mouse.button == 2) {
-		out->type = EVT_EXCAPE;
+		out->type = EVT_ESCAPE;
 	} else
 	{
 		int count = menu->filter_list ? menu->filter_count : menu->count;
