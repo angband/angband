@@ -194,6 +194,7 @@ extern int int_to_roman(int n, char *roman, size_t bufsize);
 extern void flush(void);
 extern void flush_fail(void);
 extern struct keypress inkey(void);
+extern ui_event inkey_m(void);
 extern ui_event inkey_ex(void);
 extern void anykey(void);
 extern void bell(const char *reason);
