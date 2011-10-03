@@ -2262,7 +2262,7 @@ static void sdl_HandleMouseEvent(SDL_Event *event)
 						
 						/* Send the mousepress to the appropriate term */
 						Term_activate(angband_term[idx]);
-						Term_mousepress(x, y, 1);
+						Term_mousepress(x, y, button);
 						Term_activate(old);
 					}
 				}
@@ -2306,7 +2306,7 @@ static void sdl_HandleMouseEvent(SDL_Event *event)
 						}
 						/* Send the mousepress to the appropriate term */
 						Term_activate(angband_term[idx]);
-						Term_mousepress(x, y, 2);
+						Term_mousepress(x, y, button);
 						Term_activate(old);
 					}
 				}
