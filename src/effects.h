@@ -21,7 +21,7 @@
 /* Types of effect */
 typedef enum
 {
-	#define EFFECT(x, y, r, z)		EF_##x,
+	#define EFFECT(x, y, dd, ds, m, b, r, z)		EF_##x,
 	#include "list-effects.h"
 	#undef EFFECT
 
@@ -35,6 +35,13 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 bool effect_aim(effect_type effect);
 const char *effect_desc(effect_type effect);
 int effect_power(effect_type effect);
+int effect_damdice(effect_type effect);
+int effect_damsides(effect_type effect);
+int effect_damage(effect_type effect, int boost, bool average);
+bool effect_maximise(effect_type effect);
+bool effect_boost(effect_type effect);
+const char *effect_desc(effect_type effect);
+int device_boost(const object_type *o_ptr);
 bool effect_obvious(effect_type effect);
 bool effect_wonder(int dir, int die, int beam);
 
