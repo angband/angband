@@ -105,6 +105,11 @@ static struct
 	{ CMD_STASH, { arg_ITEM, arg_NUMBER }, do_cmd_stash, FALSE, 0 },
 	{ CMD_BUY, { arg_CHOICE, arg_NUMBER }, do_cmd_buy, FALSE, 0 },
 	{ CMD_RETRIEVE, { arg_CHOICE, arg_NUMBER }, do_cmd_retrieve, FALSE, 0 },
+	{ CMD_LOOK, { arg_CHOICE, arg_NUMBER }, NULL, FALSE, 0 },
+	{ CMD_USE_AIMED, { arg_ITEM, arg_TARGET }, do_cmd_use, FALSE, 0 },
+	{ CMD_USE_UNAIMED, { arg_ITEM, arg_TARGET }, do_cmd_use, FALSE, 0 },
+	{ CMD_USE_ANY, { arg_ITEM, arg_TARGET }, do_cmd_use, FALSE, 0 },
+	{ CMD_CONTEXT_MENU, { arg_NONE }, NULL, FALSE, 0 },
 	{ CMD_SUICIDE, { arg_NONE }, do_cmd_suicide, FALSE, 0 },
 	{ CMD_SAVE, { arg_NONE }, do_cmd_save_game, FALSE, 0 },
 	{ CMD_QUIT, { arg_NONE }, do_cmd_quit, FALSE, 0 },
@@ -181,6 +186,18 @@ struct item_selector item_selector[] =
 	{ CMD_REFILL, "Refuel with what fuel source? ",
 	  "You have nothing to refuel with.",
 	  obj_can_refill, (USE_INVEN | USE_FLOOR) },
+
+	{ CMD_USE_AIMED, "Use what Item? ",
+	  "You have nothing to use.",
+	  obj_is_used_aimed, (USE_EQUIP |USE_INVEN | USE_FLOOR | SHOW_FAIL | QUIVER_TAGS) },
+
+	{ CMD_USE_UNAIMED, "Use what Item? ",
+	  "You have nothing to use.",
+	  obj_is_used_unaimed, (USE_EQUIP |USE_INVEN | USE_FLOOR | SHOW_FAIL) },
+
+	{ CMD_USE_ANY, "Use what Item? ",
+	  "You have nothing to use.",
+	  obj_is_useable, (USE_EQUIP |USE_INVEN | USE_FLOOR | SHOW_FAIL | QUIVER_TAGS) },
 };
 
 game_command *cmd_get_top(void)
@@ -557,6 +574,9 @@ void process_command(cmd_context ctx, bool no_request)
 			case CMD_READ_SCROLL:
 			case CMD_FIRE:
 			case CMD_THROW:
+			case CMD_USE_ANY:
+			case CMD_USE_AIMED:
+			case CMD_USE_UNAIMED:
 			{
 				bool get_target = FALSE;
 				object_type *o_ptr = object_from_item_idx(cmd->arg[0].choice);
