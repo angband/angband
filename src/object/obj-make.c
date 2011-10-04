@@ -317,7 +317,9 @@ static bool make_artifact(object_type *o_ptr, int level)
 
 			basemin = kind->alloc_min;
 			basemax = kind->alloc_max;
-		} else {
+		} else { /* If we do have a kind, it must match */
+			if (a_ptr->tval != o_ptr->tval || a_ptr->sval != o_ptr->sval)
+				continue;
 			basemin = o_ptr->kind->alloc_min;
 			basemax = o_ptr->kind->alloc_max;
 		}
@@ -342,7 +344,7 @@ static bool make_artifact(object_type *o_ptr, int level)
 	}
 
 	/* Choose an artifact from the table */
-	while (!o_ptr->artifact && total && count < MAX_TRIES) {
+	while (!o_ptr->artifact && total) {
 		value = randint0(total);
 		for (i = 0; i < z_info->a_max; i++) {
 			/* Found the entry */
@@ -351,18 +353,8 @@ static bool make_artifact(object_type *o_ptr, int level)
 			/* Decrement */
 			value = value - table[i].prob3;
 		}
-		/* Get the data for the chosen artifact */
 		a_ptr = &a_info[table[i].index];
-
-		/* If we already know the base object, the artifact must have the
-		   correct fields */
-		if (!o_ptr->kind || (a_ptr->tval == o_ptr->tval &&
-				a_ptr->sval == o_ptr->sval)) {
-
-			o_ptr->artifact = a_ptr;
-			break;
-		}
-		count++;
+		o_ptr->artifact = a_ptr;
 	}
 
 	mem_free(table);
