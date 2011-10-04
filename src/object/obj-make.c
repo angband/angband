@@ -294,7 +294,7 @@ static bool make_artifact(object_type *o_ptr, int level)
 		a_ptr = &a_info[i];
 
 		/* Skip non-existent entries */
-		if (!a_ptr->name) continue;
+		if (!a_ptr->name || !a_ptr->alloc_prob) continue;
 
 		/* Cannot make an artifact twice */
 		if (a_ptr->created) continue;
@@ -335,7 +335,7 @@ static bool make_artifact(object_type *o_ptr, int level)
 
 		/* Enforce maximum depth (strictly) */
 		if (a_ptr->alloc_max < p_ptr->depth) continue;
-		if (basemax < p_ptr->depth) continue;
+		if (basemax && basemax < p_ptr->depth) continue;
 
 		/* Looks good - add this artifact to the table */
 		table[i].index = a_ptr->aidx;
