@@ -29,7 +29,9 @@
  * Original random artifact generator (randart) by Greg Wooledge.
  * Updated by Chris Carr / Chris Robertson 2001-2010.
  */
-
+#define ART_MIN_NORMAL 16
+#define ART_POWER 13
+/* Both the above two will go in the rewrite - CC 4/10/11 */
 #define BUFLEN 1024
 
 #define MIN_NAME_LEN 5
