@@ -13,6 +13,7 @@
 # F: flag | flag | etc.
 # L: pval : min pval : flag | flag | etc.
 # R: num : flag-type | flag-type | etc.
+# R2: num : flag | flag | etc.
 # Z: num : pval : min pval : flag-type | flag-type | etc. (not implemented)
 # T: tval : min_sval : max_sval : commonness : min to max
 # D: description
@@ -56,7 +57,9 @@
 
 # 'R' is for random non-pval flags. num is the number of random flags to 
 # add, and flag-type is the OFT_ flag type(s) of flags from which to 
-# select.
+# select. 'R2' lines are the same but you specify flags rather than flag
+# types - more labour for finer control. The maximum number of R/R2 lines
+# is EGO_RANDFLAGS_MAX in object.h.
 
 # 'Z' is for random pval flags. num is the number of random flags to 
 # add; pval is the pval to apply, which can take a random value. min 

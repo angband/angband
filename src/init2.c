@@ -1291,7 +1291,7 @@ static enum parser_error parse_e_f(struct parser *p)
 	s = string_make(parser_getstr(p, "flags"));
 	t = strtok(s, " |");
 	while (t) {
-		if (grab_flag(e->flags, OF_SIZE, k_info_flags,t))
+		if (grab_flag(e->flags, OF_SIZE, k_info_flags, t))
 			break;
 		t = strtok(NULL, " |");
 	}
@@ -1364,6 +1364,38 @@ static enum parser_error parse_e_r(struct parser *p)
 	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_e_r2(struct parser *p)
+{
+	struct ego_item *e = parser_priv(p);
+	char *s;
+	char *t;
+
+	if (!e)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	if (!parser_hasval(p, "flags"))
+		return PARSE_ERROR_MISSING_FIELD;
+
+	e->num_randflags[e->num_randlines] = parser_getint(p, "num");
+
+	s = string_make(parser_getstr(p, "flags"));
+	t = strtok(s, " |");
+
+	while (t) {
+		if (grab_flag(e->randmask[e->num_randlines], OF_SIZE, k_info_flags, t))
+			break;
+
+		t = strtok(NULL, " |");
+	}
+
+	e->num_randlines++;
+	if (e->num_randlines > EGO_RANDFLAGS_MAX)
+		return PARSE_ERROR_TOO_MANY_ENTRIES;
+
+	mem_free(s);
+	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_e_t(struct parser *p) {
 	int i, tval, min_sval, max_sval, amin, amax, prob;
 	const char *tmp = parser_getstr(p, "minmax");
@@ -1423,6 +1455,7 @@ struct parser *init_parse_e(void) {
 	parser_reg(p, "F ?str flags", parse_e_f);
 	parser_reg(p, "L rand pval int min str flags", parse_e_l);
 	parser_reg(p, "R int num str flagtypes", parse_e_r);
+	parser_reg(p, "R2 int num str flags", parse_e_r2);
 	parser_reg(p, "T sym tval int min-sval int max-sval int common str minmax", parse_e_t);
 	parser_reg(p, "D str text", parse_e_d);
 	return p;
