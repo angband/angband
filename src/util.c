@@ -1942,11 +1942,14 @@ const char *attr_to_text(byte a)
  */
 bool char_matches_key(wchar_t c, keycode_t key)
 {
-	wchar_t keychar;
-	char k = (char)key;
+	wchar_t keychar[2];
+	char k[2];
+	k[0] = (char)key;
+	k[1] = '\0';
 
-	Term_mbstowcs(&keychar, &k, 1);
-	return (c == keychar);
+	Term_mbstowcs(keychar, k, 1);
+
+	return (c == keychar[0]);
 }
 
 #ifdef SUPPORT_GAMMA
