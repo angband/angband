@@ -29,8 +29,8 @@
 
 /*
  * There is a 1/20 (5%) chance that ego-items with an inflated base-level are
- * generated when an object is turned into an ego-item (see make_ego_item()
- * in object2.c). As above, lower values yield better ego-items more often.
+ * generated when an object is turned into an ego-item (see make_ego_item).
+ * As above, lower values yield better ego-items more often.
  */
 #define GREAT_EGO   20
 
@@ -344,7 +344,7 @@ static bool make_artifact(object_type *o_ptr, int level)
 	}
 
 	/* Choose an artifact from the table */
-	while (!o_ptr->artifact && total) {
+	if (!o_ptr->artifact && total) {
 		value = randint0(total);
 		for (i = 0; i < z_info->a_max; i++) {
 			/* Found the entry */
