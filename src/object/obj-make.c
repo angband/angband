@@ -2,7 +2,7 @@
  * File: obj-make.c
  * Purpose: Object generation functions.
  *
- * Copyright (c) 1987-2007 Angband contributors
+ * Copyright (c) 1987-2011 Angband contributors
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -251,107 +251,25 @@ void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
 }
 
 
-/*
- * Mega-Hack -- Attempt to create one of the "Special Objects".
+/**
+ * Attempt to create an artifact.  If the object is already set to be an
+ * artifact, use that. If the object kind is already set, check only artifacts
+ * for that kind.
  *
- * We are only called from "make_object()"
- *
- * Note -- see "make_artifact()" and "apply_magic()".
- *
- * We *prefer* to create the special artifacts in order, but this is
- * normally outweighed by the "rarity" rolls for those artifacts.
+ * \param o_ptr is the object to turn into an artifact
+ * \param level is the effective creation level
  */
-static bool make_artifact_special(object_type *o_ptr, int level)
-{
-	int i;
-	object_kind *kind;
-
-	/* No artifacts, do nothing */
-	if (OPT(birth_no_artifacts)) return FALSE;
-
-	/* No artifacts in the town */
-	if (!p_ptr->depth) return FALSE;
-
-	/* Check the special artifacts */
-	for (i = 0; i < ART_MIN_NORMAL; ++i) {
-		artifact_type *a_ptr = &a_info[i];
-
-		/* Skip "empty" artifacts */
-		if (!a_ptr->name) continue;
-
-		/* Cannot make an artifact twice */
-		if (a_ptr->created) continue;
-
-		/* Enforce minimum "depth" (loosely) */
-		if (a_ptr->alloc_min > p_ptr->depth) {
-			/* Get the "out-of-depth factor" */
-			int d = (a_ptr->alloc_min - p_ptr->depth) * 2;
-
-			/* Roll for out-of-depth creation */
-			if (randint0(d) != 0) continue;
-		}
-
-		/* Enforce maximum depth (strictly) */
-		if (a_ptr->alloc_max < p_ptr->depth) continue;
-
-		/* Artifact "rarity roll" */
-		if (randint1(100) > a_ptr->alloc_prob) continue;
-
-		/* Find the base object */
-		kind = lookup_kind(a_ptr->tval, a_ptr->sval);
-
-		/* Make sure the kind was found */
-		if (!kind) continue;
-
-		/* Enforce minimum "object" level (loosely) */
-		if (kind->level > level) {
-			/* Get the "out-of-depth factor" */
-			int d = (kind->level - level) * 5;
-
-			/* Roll for out-of-depth creation */
-			if (randint0(d) != 0) continue;
-		}
-
-		/* Assign the template */
-		object_prep(o_ptr, kind, a_ptr->alloc_min, RANDOMISE);
-
-		/* Mark the item as an artifact */
-		o_ptr->artifact = a_ptr;
-
-		/* Copy across all the data from the artifact struct */
-		copy_artifact_data(o_ptr, a_ptr);
-
-		/* Mark the artifact as "created" */
-		a_ptr->created = 1;
-
-		/* Success */
-		return TRUE;
-	}
-
-	/* Failure */
-	return FALSE;
-}
-
-
-/*
- * Attempt to change an object into an artifact.  If the object is already
- * set to be an artifact, use that, or otherwise use a suitable randomly-
- * selected artifact.
- *
- * This routine should only be called by "apply_magic()"
- *
- * Note -- see "make_artifact_special()" and "apply_magic()"
- */
-static bool make_artifact(object_type *o_ptr)
+static bool make_artifact(object_type *o_ptr, int level)
 {
 	artifact_type *a_ptr;
 	int i;
 	bool art_ok = TRUE;
+	object_kind *kind;
 
 	/* Make sure birth no artifacts isn't set */
 	if (OPT(birth_no_artifacts)) art_ok = FALSE;
 
-	/* Special handling of Grond/Morgoth */
+	/* Special handling of quest artifacts - these override the birth option */
 	if (o_ptr->artifact)
 	{
 		switch (o_ptr->artifact->aidx)
@@ -362,32 +280,27 @@ static bool make_artifact(object_type *o_ptr)
 		}
 	}
 
-	if (!art_ok) return (FALSE);
+	if (!art_ok) return FALSE;
 
 	/* No artifacts in the town */
-	if (!p_ptr->depth) return (FALSE);
+	if (!p_ptr->depth) return FALSE;
 
-	/* Paranoia -- no "plural" artifacts */
-	if (o_ptr->number != 1) return (FALSE);
+	/* Paranoia -- no artifact stacks (yet) */
+	if (o_ptr->number != 1) return FALSE;
 
-	/* Check the artifact list (skip the "specials") */
-	for (i = ART_MIN_NORMAL; !o_ptr->artifact && i < z_info->a_max; i++) {
+	/* Check the artifact list */
+	for (i = 0; !o_ptr->artifact && i < z_info->a_max; i++) {
 		a_ptr = &a_info[i];
 
-		/* Skip "empty" items */
+		/* Skip non-existent artifacts */
 		if (!a_ptr->name) continue;
 
 		/* Cannot make an artifact twice */
 		if (a_ptr->created) continue;
 
-		/* Must have the correct fields */
-		if (a_ptr->tval != o_ptr->tval) continue;
-		if (a_ptr->sval != o_ptr->sval) continue;
-
-		/* XXX XXX Enforce minimum "depth" (loosely) */
-		if (a_ptr->alloc_min > p_ptr->depth)
-		{
-			/* Get the "out-of-depth factor" */
+		/* Enforce minimum depth (loosely) */
+		if (a_ptr->alloc_min > p_ptr->depth) {
+			/* Get the out-of-depth factor */
 			int d = (a_ptr->alloc_min - p_ptr->depth) * 2;
 
 			/* Roll for out-of-depth creation */
@@ -397,8 +310,32 @@ static bool make_artifact(object_type *o_ptr)
 		/* Enforce maximum depth (strictly) */
 		if (a_ptr->alloc_max < p_ptr->depth) continue;
 
-		/* We must make the "rarity roll" */
+		/* Artifact rarity roll - actually we want to do this more randomly */
 		if (randint1(100) > a_ptr->alloc_prob) continue;
+
+		/* Find the base object if we don't already have one */
+		if (!o_ptr->kind) {
+			kind = lookup_kind(a_ptr->tval, a_ptr->sval);
+
+			/* Make sure we now have a base object kind */
+			if (!kind) continue;
+
+			/* Enforce minimum base object level (loosely) */
+			if (kind->level > level) {
+				/* Get the out-of-depth factor */
+				int d = (kind->level - level) * 3;
+
+				/* Roll for out-of-depth creation */
+				if (randint0(d) != 0) continue;
+			}
+
+			/* Assign the template */
+			object_prep(o_ptr, kind, level, RANDOMISE);
+		}
+
+		/* Must have the correct fields */
+		if (a_ptr->tval != o_ptr->tval) continue;
+		if (a_ptr->sval != o_ptr->sval) continue;
 
 		/* Mark the item as an artifact */
 		o_ptr->artifact = a_ptr;
@@ -431,15 +368,11 @@ static void apply_magic_weapon(object_type *o_ptr, int level, int power)
 		o_ptr->to_h += m_bonus(10, level);
 		o_ptr->to_d += m_bonus(10, level);
 
-		if (wield_slot(o_ptr) == INVEN_WIELD || obj_is_ammo(o_ptr)) {
+		if (wield_slot(o_ptr) == INVEN_WIELD || obj_is_ammo(o_ptr))
 			/* Super-charge the damage dice */
 			while ((o_ptr->dd * o_ptr->ds > 0) &&
 					one_in_(10L * o_ptr->dd * o_ptr->ds))
 				o_ptr->dd++;
-
-			/* But not too high */
-			if (o_ptr->dd > 9) o_ptr->dd = 9;
-		}
 	}
 }
 
@@ -551,7 +484,9 @@ s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 			power = 2;
 	}
 
-	/* Roll for artifact creation */
+	/* Roll for artifact creation - n.b. this is now only used for objects
+	   whose kind was predetermined (i.e. if we were called directly and not
+	   via make_object) */
 	if (allow_artifacts) {
 		int rolls = 0;
 
@@ -563,7 +498,7 @@ s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 
 		/* Roll for artifacts if allowed */
 		for (i = 0; i < rolls; i++)
-			if (make_artifact(o_ptr)) return 3;
+			if (make_artifact(o_ptr, lev)) return 3;
 	}
 
 	/* Try to make an ego item */
@@ -631,7 +566,7 @@ s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
  * Test whether an object is intrinsically good.
  *
  * Note that this test only applies to the object *kind*, so it is
- * possible to choose a kind which is "good", and then later cause
+ * possible to choose a kind which is good, and then later cause
  * the actual object to be cursed.  We do explicitly forbid objects
  * which are known to be boring or which start out somewhat damaged.
  */
@@ -773,30 +708,38 @@ object_kind *get_obj_num(int level, bool good)
 }
 
 
-/*
- * Attempt to make an object (normal or good/great)
+/**
+ * Attempt to make an object
  *
- * This routine plays nasty games to generate the "special artifacts".
- * We assume that the given object has been "wiped". You can optionally
- * receive the object's value in value if you pass a non-null pointer.
+ * \param c is the current dungeon level.
+ * \param j_ptr is the object struct to be populated.
+ * \param lev is the creation level of the object (not necessarily == depth).
+ * \param good is whether the object is to be good
+ * \param great is whether the object is to be great
+ * \param value is the value to be returned to the calling function
  *
  * Returns the whether or not creation worked.
  */
 bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
 	bool great, s32b *value)
 {
-	int base;
+	int base, art;
 	object_kind *kind;
 
-	/* Try to make a special artifact */
-	if (one_in_(good ? 10 : 1000)) {
-		if (make_artifact_special(j_ptr, lev)) {
-			if (value) *value = object_value_real(j_ptr, 1, FALSE, TRUE);
+	if (great)
+		art = 10;
+	else if (good)
+		art = 100;
+	else
+		art = 1000;
+
+	/* Try to make an artifact */
+	if (one_in_(art)) {
+		if (make_artifact(j_ptr, lev)) {
+			if (value)
+				*value = object_value_real(j_ptr, 1, FALSE, TRUE);
 			return TRUE;
 		}
-
-		/* If we failed to make an artifact, the player gets a great item */
-		good = great = TRUE;
 	}
 
 	/* Base level for the object */
@@ -806,7 +749,7 @@ bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
 	kind = get_obj_num(base, good || great);
 	if (!kind) return FALSE;
 	object_prep(j_ptr, kind, lev, RANDOMISE);
-	apply_magic(j_ptr, lev, TRUE, good, great);
+	apply_magic(j_ptr, lev, FALSE, good, great);
 
 	/* Generate multiple items */
 	if (kind->gen_mult_prob >= randint1(100))
