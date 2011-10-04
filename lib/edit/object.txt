@@ -3927,3 +3927,11 @@ G:":w
 I:40:54
 W:40:0:3:25000
 F:INSTA_ART
+
+# The Amulet of Amandil -- see artifact list
+
+N:565:& Amulet~
+G:":d
+I:40:55
+W:50:0:3:60000
+F:INSTA_ART
