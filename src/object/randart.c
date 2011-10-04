@@ -30,7 +30,6 @@
  * Updated by Chris Carr / Chris Robertson 2001-2010.
  */
 
-#define MAX_TRIES 200
 #define BUFLEN 1024
 
 #define MIN_NAME_LEN 5

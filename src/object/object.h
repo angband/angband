@@ -64,6 +64,9 @@ enum {
 #define EGO_TVALS_MAX 8
 #define EGO_RANDFLAGS_MAX 4
 
+/* Maximum number of attempts to create artifacts */
+#define MAX_TRIES 200
+
 /* ID flags */
 #define IDENT_SENSE     0x0001  /* Has been "sensed" */
 #define IDENT_WORN      0x0002  /* Has been tried on */

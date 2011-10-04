@@ -37,6 +37,7 @@
 /* Define a value for minima which will be ignored. */
 #define NO_MINIMUM 	255
 
+
 /*** Make an ego item ***/
 
 /**
@@ -262,18 +263,18 @@ void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
 static bool make_artifact(object_type *o_ptr, int level)
 {
 	artifact_type *a_ptr;
-	int i;
+	int i, basemin = 0, basemax = 0, total = 0, count = 0;
+	long value = 0;
 	bool art_ok = TRUE;
 	object_kind *kind;
+	alloc_entry *table;
 
 	/* Make sure birth no artifacts isn't set */
 	if (OPT(birth_no_artifacts)) art_ok = FALSE;
 
 	/* Special handling of quest artifacts - these override the birth option */
-	if (o_ptr->artifact)
-	{
-		switch (o_ptr->artifact->aidx)
-		{
+	if (o_ptr->artifact) {
+		switch (o_ptr->artifact->aidx) {
 			case ART_GROND:
 			case ART_MORGOTH:
 				art_ok = TRUE;
@@ -285,33 +286,27 @@ static bool make_artifact(object_type *o_ptr, int level)
 	/* No artifacts in the town */
 	if (!p_ptr->depth) return FALSE;
 
-	/* Paranoia -- no artifact stacks (yet) */
-	if (o_ptr->number != 1) return FALSE;
+	/* Create the allocation table from allowed artifacts
+	   TODO: initialise it once at init and then restrict it here */
+	table = C_ZNEW(z_info->a_max, alloc_entry);
 
-	/* Check the artifact list */
 	for (i = 0; !o_ptr->artifact && i < z_info->a_max; i++) {
 		a_ptr = &a_info[i];
 
-		/* Skip non-existent artifacts */
+		/* Skip non-existent entries */
 		if (!a_ptr->name) continue;
 
 		/* Cannot make an artifact twice */
 		if (a_ptr->created) continue;
 
 		/* Enforce minimum depth (loosely) */
-		if (a_ptr->alloc_min > p_ptr->depth) {
+		if (a_ptr->alloc_min > level) {
 			/* Get the out-of-depth factor */
-			int d = (a_ptr->alloc_min - p_ptr->depth) * 2;
+			int d = (a_ptr->alloc_min - level) * 2;
 
 			/* Roll for out-of-depth creation */
 			if (randint0(d) != 0) continue;
 		}
-
-		/* Enforce maximum depth (strictly) */
-		if (a_ptr->alloc_max < p_ptr->depth) continue;
-
-		/* Artifact rarity roll - actually we want to do this more randomly */
-		if (randint1(100) > a_ptr->alloc_prob) continue;
 
 		/* Find the base object if we don't already have one */
 		if (!o_ptr->kind) {
@@ -320,33 +315,77 @@ static bool make_artifact(object_type *o_ptr, int level)
 			/* Make sure we now have a base object kind */
 			if (!kind) continue;
 
-			/* Enforce minimum base object level (loosely) */
-			if (kind->level > level) {
-				/* Get the out-of-depth factor */
-				int d = (kind->level - level) * 3;
-
-				/* Roll for out-of-depth creation */
-				if (randint0(d) != 0) continue;
-			}
-
-			/* Assign the template */
-			object_prep(o_ptr, kind, level, RANDOMISE);
+			basemin = kind->alloc_min;
+			basemax = kind->alloc_max;
+		} else {
+			basemin = o_ptr->kind->alloc_min;
+			basemax = o_ptr->kind->alloc_max;
 		}
 
-		/* Must have the correct fields */
-		if (a_ptr->tval != o_ptr->tval) continue;
-		if (a_ptr->sval != o_ptr->sval) continue;
+		/* Enforce minimum base object level (loosely) */
+		if (basemin > level) {
+			/* Get the out-of-depth factor */
+			int d = (basemin - level) * 3;
 
-		/* Mark the item as an artifact */
-		o_ptr->artifact = a_ptr;
+			/* Roll for out-of-depth creation */
+			if (randint0(d) != 0) continue;
+		}
+
+		/* Enforce maximum depth (strictly) */
+		if (a_ptr->alloc_max < p_ptr->depth) continue;
+		if (basemax < p_ptr->depth) continue;
+
+		/* Looks good - add this artifact to the table */
+		table[i].index = a_ptr->aidx;
+		table[i].prob3 = a_ptr->alloc_prob;
+		total += a_ptr->alloc_prob;
 	}
 
+	/* Choose an artifact from the table */
+	while (!o_ptr->artifact && total && count < MAX_TRIES) {
+		value = randint0(total);
+		for (i = 0; i < z_info->a_max; i++) {
+			/* Found the entry */
+			if (value < table[i].prob3) break;
+
+			/* Decrement */
+			value = value - table[i].prob3;
+		}
+		/* Get the data for the chosen artifact */
+		a_ptr = &a_info[table[i].index];
+
+		/* If we already know the base object, the artifact must have the
+		   correct fields */
+		if (!o_ptr->kind || (a_ptr->tval == o_ptr->tval &&
+				a_ptr->sval == o_ptr->sval)) {
+
+			o_ptr->artifact = a_ptr;
+			break;
+		}
+		count++;
+	}
+
+	mem_free(table);
+
 	if (o_ptr->artifact) {
+		/* If we haven't got a base object yet, do it now */
+		if (!o_ptr->kind) {
+			kind = lookup_kind(a_ptr->tval, a_ptr->sval);
+
+			/* Make sure we now have a base object kind */
+			if (!kind) return FALSE;
+
+			object_prep(o_ptr, kind, level, RANDOMISE);
+		}
+		/* Paranoia -- no artifact stacks (yet) */
+		if (o_ptr->number != 1) return FALSE;
+
+		/* Actually make the object into the chosen artifact */
 		copy_artifact_data(o_ptr, o_ptr->artifact);
 		o_ptr->artifact->created = 1;
 		return TRUE;
 	}
-
+	/* We didn't manage to select a legal artifact */
 	return FALSE;
 }
 
