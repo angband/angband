@@ -666,7 +666,10 @@ int lookup_flag(const char **flag_table, const char *flag_name) {
 	return i;
 }
 
-errr grab_flag(bitflag *flags, const size_t size, const char **flag_table, const char *flag_name) {
+/* Switch on a single flag in a flagset based on a flag name lookup */
+errr grab_flag(bitflag *flags, const size_t size, const char **flag_table,
+	const char *flag_name)
+{
 	int flag = lookup_flag(flag_table, flag_name);
 
 	if (flag == FLAG_END) return PARSE_ERROR_INVALID_FLAG;
@@ -676,7 +679,24 @@ errr grab_flag(bitflag *flags, const size_t size, const char **flag_table, const
 	return 0;
 }
 
-errr remove_flag(bitflag *flags, const size_t size, const char **flag_table, const char *flag_name) {
+/* Switch on flags in a flagset based on a flag type lookup */
+errr grab_flagtype(bitflag *flags, const char **type_table,
+	const char *type_name)
+{
+	bitflag f[OF_SIZE];
+	int type = lookup_flag(type_table, type_name);
+
+	if (type == FLAG_END) return PARSE_ERROR_INVALID_FLAG;
+
+	create_mask(f, FALSE, type, OFT_MAX);
+	of_union(flags, f);
+
+	return 0;
+}
+
+errr remove_flag(bitflag *flags, const size_t size, const char **flag_table,
+	const char *flag_name)
+{
 	int flag = lookup_flag(flag_table, flag_name);
 
 	if (flag == FLAG_END) return PARSE_ERROR_INVALID_FLAG;

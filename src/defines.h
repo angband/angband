@@ -110,12 +110,6 @@
 
 
 /*
- * Number of tval/min-sval/max-sval slots per ego_item
- */
-#define EGO_TVALS_MAX 3
-
-
-/*
  * Hack -- Maximum number of quests
  */
 #define MAX_Q_IDX	4

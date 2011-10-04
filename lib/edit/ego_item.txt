@@ -13,7 +13,7 @@
 # F: flag | flag | etc.
 # L: pval : min pval : flag | flag | etc.
 # R: num : flag-type | flag-type | etc.
-# Z: num : pval : min pval : flag-type | flag-type | etc.
+# Z: num : pval : min pval : flag-type | flag-type | etc. (not implemented)
 # T: tval : min_sval : max_sval : commonness : min to max
 # D: description
 
@@ -64,6 +64,7 @@
 # is the OFT_ flag type(s) from which to select. If num > 1, all will 
 # use the same pval; if you want different random and/or minimum pvals, 
 # use multiple Z: lines - but remember MAX_PVALS.
+# (Not implemented yet.)
 
 # 'T' is for possible 'tval' and 'sval' values of the base item. The 
 # affix can only be generated for items of these tvals, with sval in the 

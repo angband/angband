@@ -43,23 +43,21 @@ static struct history_chart *histories;
 
 /*
  * This file is used to initialize various variables and arrays for the
- * Angband game.  Note the use of "fd_read()" and "fd_write()" to bypass
- * the common limitation of "read()" and "write()" to only 32767 bytes
- * at a time.
- *
- * Several of the arrays for Angband are built from "template" files in
- * the "lib/edit" directory.
- *
- * Warning -- the "ascii" file parsers use a minor hack to collect the
- * name and text information in a single pass.  Thus, the game will not
- * be able to load any template file with more than 20K of names or 60K
- * of text, even though technically, up to 64K should be legal.
+ * Angband game. Most of the arrays for Angband are built from template
+ * files in the lib/edit directory.
  */
 
 static const char *k_info_flags[] = {
 	#define OF(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s) #a,
 	#include "object/list-object-flags.h"
 	#undef OF
+	NULL
+};
+
+static const char *k_info_flagtypes[] = {
+	#define OFT(a, b) #a,
+	#include "object/list-flag-types.h"
+	#undef OFT
 	NULL
 };
 
@@ -799,7 +797,7 @@ static enum parser_error parse_a_m(struct parser *p) {
 
 static enum parser_error parse_a_l(struct parser *p) {
 	struct artifact *a = parser_priv(p);
-	char *s; 
+	char *s;
 	char *t;
 	assert(a);
 
@@ -1197,8 +1195,33 @@ struct file_parser f_parser = {
 };
 
 /* Parsing functions for ego-item.txt */
-static enum parser_error parse_e_n(struct parser *p) {
+static int ego_find_type(const char *type)
+{
+	if (!my_stricmp(type, "prefix") || streq(type, "1"))
+		return 1;
+	if (!my_stricmp(type, "suffix") || streq(type, "2"))
+		return 2;
+	return 0;
+}
+
+static int ego_find_level(const char *level)
+{
+	if (!my_stricmp(level, "good") || streq(level, "1"))
+		return 1;
+	if (!my_stricmp(level, "great") || streq(level, "2"))
+		return 2;
+	if (!my_stricmp(level, "uber") || streq(level, "3"))
+		return 3;
+	if (!my_stricmp(level, "artifact") || streq(level, "4"))
+		return 4;
+	return 0;
+}
+
+static enum parser_error parse_e_n(struct parser *p)
+{
 	int idx = parser_getint(p, "index");
+	int type = ego_find_type(parser_getsym(p, "type"));
+	int level = ego_find_level(parser_getsym(p, "level"));
 	const char *name = parser_getstr(p, "name");
 	struct ego_item *h = parser_priv(p);
 
@@ -1206,84 +1229,23 @@ static enum parser_error parse_e_n(struct parser *p) {
 	e->next = h;
 	parser_setpriv(p, e);
 	e->eidx = idx;
+
+	if (type)
+		e->type = type;
+	else
+		return PARSE_ERROR_INVALID_VALUE;
+
+	if (level)
+		e->level = level;
+	else
+		return PARSE_ERROR_INVALID_VALUE;
+
 	e->name = string_make(name);
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_e_w(struct parser *p) {
-	int level = parser_getint(p, "level");
-	int rarity = parser_getint(p, "rarity");
-	int cost = parser_getint(p, "cost");
-	struct ego_item *e = parser_priv(p);
-
-	if (!e)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	e->level = level;
-	e->rarity = rarity;
-	e->cost = cost;
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_e_x(struct parser *p) {
-	int rating = parser_getint(p, "rating");
-	int xtra = parser_getint(p, "xtra");
-	struct ego_item *e = parser_priv(p);
-
-	if (!e)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	e->rating = rating;
-	e->xtra = xtra;
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_e_a(struct parser *p) {
-	struct ego_item *e = parser_priv(p);
-	const char *tmp = parser_getstr(p, "minmax");
-	int amin, amax;
-
-	e->alloc_prob = parser_getint(p, "common");
-	if (sscanf(tmp, "%d to %d", &amin, &amax) != 2)
-		return PARSE_ERROR_GENERIC;
-
-	if (amin > 255 || amax > 255 || amin < 0 || amax < 0)
-		return PARSE_ERROR_OUT_OF_BOUNDS;
-
-	e->alloc_min = amin;
-	e->alloc_max = amax;
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_e_t(struct parser *p) {
-	int i;
-	int tval;
-	int min_sval, max_sval;
-
-	struct ego_item *e = parser_priv(p);
-	if (!e)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	tval = tval_find_idx(parser_getsym(p, "tval"));
-	if (tval < 0)
-		return PARSE_ERROR_UNRECOGNISED_TVAL;
-
-	min_sval = parser_getint(p, "min-sval");
-	max_sval = parser_getint(p, "max-sval");
-
-	for (i = 0; i < EGO_TVALS_MAX; i++) {
-		if (!e->tval[i]) {
-			e->tval[i] = tval;
-			e->min_sval[i] = min_sval;
-			e->max_sval[i] = max_sval;
-			break;
-		}
-	}
-
-	if (i == EGO_TVALS_MAX)
-		return PARSE_ERROR_GENERIC;
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_e_c(struct parser *p) {
+static enum parser_error parse_e_c(struct parser *p)
+{
 	struct random th = parser_getrand(p, "th");
 	struct random td = parser_getrand(p, "td");
 	struct random ta = parser_getrand(p, "ta");
@@ -1299,7 +1261,8 @@ static enum parser_error parse_e_c(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_e_m(struct parser *p) {
+static enum parser_error parse_e_m(struct parser *p)
+{
 	int th = parser_getint(p, "th");
 	int td = parser_getint(p, "td");
 	int ta = parser_getint(p, "ta");
@@ -1315,7 +1278,8 @@ static enum parser_error parse_e_m(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_e_f(struct parser *p) {
+static enum parser_error parse_e_f(struct parser *p)
+{
 	struct ego_item *e = parser_priv(p);
 	char *s;
 	char *t;
@@ -1335,9 +1299,10 @@ static enum parser_error parse_e_f(struct parser *p) {
 	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_e_l(struct parser *p) {
+static enum parser_error parse_e_l(struct parser *p)
+{
 	struct ego_item *e = parser_priv(p);
-	char *s; 
+	char *s;
 	char *t;
 
 	if (!e)
@@ -1367,6 +1332,78 @@ static enum parser_error parse_e_l(struct parser *p) {
 	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_e_r(struct parser *p)
+{
+	struct ego_item *e = parser_priv(p);
+	char *s;
+	char *t;
+
+	if (!e)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	if (!parser_hasval(p, "flagtypes"))
+		return PARSE_ERROR_MISSING_FIELD;
+
+	e->num_randflags[e->num_randlines] = parser_getint(p, "num");
+
+	s = string_make(parser_getstr(p, "flagtypes"));
+	t = strtok(s, " |");
+
+	while (t) {
+		if (grab_flagtype(e->randmask[e->num_randlines], k_info_flagtypes, t))
+			break;
+
+		t = strtok(NULL, " |");
+	}
+
+	e->num_randlines++;
+	if (e->num_randlines > EGO_RANDFLAGS_MAX)
+		return PARSE_ERROR_TOO_MANY_ENTRIES;
+
+	mem_free(s);
+	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_e_t(struct parser *p) {
+	int i, tval, min_sval, max_sval, amin, amax, prob;
+	const char *tmp = parser_getstr(p, "minmax");
+	struct ego_item *e = parser_priv(p);
+
+	if (!e)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	tval = tval_find_idx(parser_getsym(p, "tval"));
+	if (tval < 0)
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+
+	if (sscanf(tmp, "%d to %d", &amin, &amax) != 2)
+		return PARSE_ERROR_GENERIC;
+
+	if (amin > 255 || amax > 255 || amin < 0 || amax < 0)
+		return PARSE_ERROR_OUT_OF_BOUNDS;
+
+	min_sval = parser_getint(p, "min-sval");
+	max_sval = parser_getint(p, "max-sval");
+	prob = parser_getint(p, "common");
+
+	for (i = 0; i < EGO_TVALS_MAX; i++) {
+		if (!e->tval[i]) {
+			e->tval[i] = tval;
+			e->min_sval[i] = min_sval;
+			e->max_sval[i] = max_sval;
+			e->alloc_prob[i] = prob;
+			e->alloc_min[i] = amin;
+			e->alloc_max[i] = amax;
+			break;
+		}
+	}
+
+	if (i == EGO_TVALS_MAX)
+		return PARSE_ERROR_TOO_MANY_ENTRIES;
+
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_e_d(struct parser *p) {
 	struct ego_item *e = parser_priv(p);
 
@@ -1380,15 +1417,13 @@ struct parser *init_parse_e(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "V sym version", ignored);
-	parser_reg(p, "N int index str name", parse_e_n);
-	parser_reg(p, "W int level int rarity int pad int cost", parse_e_w);
-	parser_reg(p, "X int rating int xtra", parse_e_x);
-	parser_reg(p, "A int common str minmax", parse_e_a);
-	parser_reg(p, "T sym tval int min-sval int max-sval", parse_e_t);
+	parser_reg(p, "N int index sym type sym level str name", parse_e_n);
 	parser_reg(p, "C rand th rand td rand ta", parse_e_c);
 	parser_reg(p, "M int th int td int ta", parse_e_m);
 	parser_reg(p, "F ?str flags", parse_e_f);
 	parser_reg(p, "L rand pval int min str flags", parse_e_l);
+	parser_reg(p, "R int num str flagtypes", parse_e_r);
+	parser_reg(p, "T sym tval int min-sval int max-sval int common str minmax", parse_e_t);
 	parser_reg(p, "D str text", parse_e_d);
 	return p;
 }
@@ -1422,6 +1457,7 @@ static errr finish_parse_e(struct parser *p) {
 	}
 	z_info->e_max += 1;
 
+	/* Cache the slay combinations on ego affixes for later lookup */
 	create_slay_cache(e_info);
 
 	parser_destroy(p);
@@ -2464,7 +2500,7 @@ static enum parser_error parse_pit_t(struct parser *p) {
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
 	else {
 		pit->base[pit->n_bases++] = base;
-		return PARSE_ERROR_NONE;		
+		return PARSE_ERROR_NONE;
 	}
 }
 
@@ -2578,7 +2614,7 @@ static enum parser_error parse_pit_s2(struct parser *p) {
 		}
 		s = strtok(NULL, " |");
 	}
-	
+
 	mem_free(flags);
 	return PARSE_ERROR_NONE;
 }
@@ -2619,10 +2655,10 @@ struct parser *init_parse_pit(void) {
 static errr run_parse_pit(struct parser *p) {
 	return parse_file(p, "pit");
 }
- 
+
 static errr finish_parse_pit(struct parser *p) {
 	struct pit_profile *pit, *n;
-		
+
 	/* scan the list for the max id */
 	z_info->pit_max = 0;
 	pit = parser_priv(p);
@@ -2784,7 +2820,7 @@ static errr init_alloc(void)
 
 	monster_race *r_ptr;
 
-	ego_item_type *e_ptr;
+/*	ego_item_type *e_ptr; */
 
 	alloc_entry *table;
 
@@ -2879,6 +2915,7 @@ static errr init_alloc(void)
 	}
 
 	/*** Analyze ego_item allocation info ***/
+/* Disabled to ensure compilation - will replace with on-demand alloc */
 
 	/* Clear the "aux" array */
 	(void)C_WIPE(aux, MAX_DEPTH, s16b);
@@ -2889,22 +2926,18 @@ static errr init_alloc(void)
 	/* Size of "alloc_ego_table" */
 	alloc_ego_size = 0;
 
-	/* Scan the ego items */
+	/* Scan the ego items
 	for (i = 1; i < z_info->e_max; i++)
 	{
-		/* Get the i'th ego item */
 		e_ptr = &e_info[i];
 
-		/* Legal items */
 		if (e_ptr->rarity)
 		{
-			/* Count the entries */
 			alloc_ego_size++;
 
-			/* Group by level */
 			num[e_ptr->level]++;
 		}
-	}
+	} */
 
 	/* Collect the level indexes */
 	for (i = 1; i < MAX_DEPTH; i++)
@@ -2914,47 +2947,38 @@ static errr init_alloc(void)
 	}
 
 	/*** Initialize ego-item allocation info ***/
-
 	/* Allocate the alloc_ego_table */
-	alloc_ego_table = C_ZNEW(alloc_ego_size, alloc_entry);
+/*	alloc_ego_table = C_ZNEW(alloc_ego_size, alloc_entry); */
 
 	/* Get the table entry */
-	table = alloc_ego_table;
+/*	table = alloc_ego_table; */
 
-	/* Scan the ego-items */
+	/* Scan the ego-items
 	for (i = 1; i < z_info->e_max; i++)
 	{
-		/* Get the i'th ego item */
 		e_ptr = &e_info[i];
 
-		/* Count valid pairs */
 		if (e_ptr->rarity)
 		{
 			int p, x, y, z;
 
-			/* Extract the base level */
 			x = e_ptr->level;
 
-			/* Extract the base probability */
 			p = (100 / e_ptr->rarity);
 
-			/* Skip entries preceding our locale */
 			y = (x > 0) ? num[x-1] : 0;
 
-			/* Skip previous entries at this locale */
 			z = y + aux[x];
 
-			/* Load the entry */
 			table[z].index = i;
 			table[z].level = x;
 			table[z].prob1 = p;
 			table[z].prob2 = p;
 			table[z].prob3 = p;
 
-			/* Another entry complete for this locale */
 			aux[x]++;
 		}
-	}
+	} */
 
 
 	/* Success */

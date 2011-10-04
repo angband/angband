@@ -36,28 +36,10 @@ enum {
 };
 
 /* The object flag types */
-enum object_flag_type {
-	OFT_PVAL = 1,	/* pval-related but not to a stat */
-	OFT_STAT,		/* affects a stat */
-	OFT_SUST,		/* sustains a stat */
-	OFT_SLAY,		/* a "normal" creature-type slay */
-	OFT_BRAND,		/* a brand against monsters lacking the resist */
-	OFT_KILL,		/* a powerful creature-type slay */
-	OFT_VULN,		/* lowers resistance to an element */
-	OFT_IMM,		/* offers immunity to an element */
-	OFT_LRES,		/* a "base" elemental resistance */
-	OFT_HRES,		/* a "high" elemental resistance */
-	OFT_IGNORE,		/* object ignores an element */
-	OFT_HATES,		/* object can be destroyed by element */
-	OFT_PROT,		/* protection from an effect */
-	OFT_MISC,		/* a good property, suitable for ego items */
-	OFT_LIGHT,		/* applicable only to light sources */
-	OFT_MELEE,		/* applicable only to melee weapons */
-	OFT_CURSE,		/* a "sticky" curse */
-	OFT_BAD,		/* an undesirable flag that isn't a curse */
-	OFT_INT,		/* an internal flag, not shown in the game */
-
-	OFT_MAX
+enum {
+    #define OFT(a, b) OFT_##a,
+    #include "list-flag-types.h"
+    #undef OFT
 };
 
 /* How object flags are IDd */
@@ -89,22 +71,11 @@ enum object_flag_id {
 #define of_inter(f1, f2)       	flag_inter(f1, f2, OF_SIZE)
 #define of_diff(f1, f2)        	flag_diff(f1, f2, OF_SIZE)
 
-/* Hack -- special "xtra" object flag info (type) */
-/* Can get rid of these now we have OFT_ flags */
-/* No - because "POWER" uses two types of OFTs, so cannot get rid of these
- * until ego_item.txt has an X: line with a variable number of OFTs - that's
- * basically waiting for a rewrite of ego generation 
- * -- or we could change OFTs to a bitflag */
-#define OBJECT_XTRA_TYPE_NONE     0
-#define OBJECT_XTRA_TYPE_SUSTAIN  1
-#define OBJECT_XTRA_TYPE_RESIST   2
-#define OBJECT_XTRA_TYPE_POWER    3
-
 
 /*** Structures ***/
 
 /**
- * The object flag structure
+ * The object flag structures
  */
 struct object_flag {
 	u16b index;				/* the OF_ index */
@@ -127,7 +98,11 @@ struct object_flag {
 	s16b boots;
 	const char *message;	/* id message */
 };
-	
+
+struct object_flag_type {
+	u16b index;				/* the OFT_ index */
+	bool pval;				/* is it granular (TRUE) or binary (FALSE) */
+};
 
 /*** Functions ***/
 bool cursed_p(bitflag *f);

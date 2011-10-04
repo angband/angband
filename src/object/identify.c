@@ -448,12 +448,11 @@ void object_notice_indestructible(object_type *o_ptr)
  */
 void object_notice_ego(object_type *o_ptr)
 {
+	int i;
 	bitflag learned_flags[OF_SIZE];
-	bitflag xtra_flags[OF_SIZE];
 
 	if (!o_ptr->ego)
 		return;
-
 
 	/* XXX Eddie print a message on notice ego if not already noticed? */
 	/* XXX Eddie should we do something about everseen of egos here? */
@@ -464,25 +463,8 @@ void object_notice_ego(object_type *o_ptr)
 	/* Learn all flags except random abilities */
 	of_setall(learned_flags);
 
-	switch (o_ptr->ego->xtra)
-	{
-		case OBJECT_XTRA_TYPE_NONE:
-			break;
-		case OBJECT_XTRA_TYPE_SUSTAIN:
-			create_mask(xtra_flags, FALSE, OFT_SUST, OFT_MAX);
-			of_diff(learned_flags, xtra_flags);
-			break;
-		case OBJECT_XTRA_TYPE_RESIST:
-			create_mask(xtra_flags, FALSE, OFT_HRES, OFT_MAX);
-			of_diff(learned_flags, xtra_flags);
-			break;
-		case OBJECT_XTRA_TYPE_POWER:
-			create_mask(xtra_flags, FALSE, OFT_MISC, OFT_PROT, OFT_MAX);
-			of_diff(learned_flags, xtra_flags);
-			break;
-		default:
-			assert(0);
-	}
+	for (i = 0; i < o_ptr->ego->num_randlines; i++)
+		of_diff(learned_flags, o_ptr->ego->randmask[i]);
 
 	of_union(o_ptr->known_flags, learned_flags);
 

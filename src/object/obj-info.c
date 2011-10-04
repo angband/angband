@@ -1217,11 +1217,14 @@ static void describe_flavor_text(textblock *tb, const object_type *o_ptr,
 
 static bool describe_ego(textblock *tb, const struct ego_item *ego)
 {
-	if (ego && ego->xtra)
-	{
-		const char *xtra[] = { "sustain", "higher resistance", "ability" };
-		textblock_append(tb, "It provides one random %s.  ",
-				xtra[ego->xtra - 1]);
+	if (ego && ego->num_randlines) {
+		int i, tot;
+
+		for (i = 0; i < ego->num_randlines; i++)
+			tot += ego->num_randflags[i];
+
+		textblock_append(tb, "It provides %s random power.  ",
+			tot > 1 ? "more than one" : "one");
 
 		return TRUE;
 	}

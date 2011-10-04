@@ -50,7 +50,8 @@ enum {
 
 
 /**
- * Maximum number of pvals on objects
+ * Maximum number of pvals on objects (and therefore of L: lines in
+ * ego-item.txt)
  *
  * Note: all pvals other than DEFAULT_PVAL are assumed to be associated with
  * flags, and any non-flag uses of pval (e.g. chest quality, gold quantity)
@@ -58,6 +59,10 @@ enum {
  */
 #define MAX_PVALS 3
 #define DEFAULT_PVAL 0
+
+/* Maximum number of T: and R: lines in ego-item.txt */
+#define EGO_TVALS_MAX 8
+#define EGO_RANDFLAGS_MAX 4
 
 /* ID flags */
 #define IDENT_SENSE     0x0001  /* Has been "sensed" */
@@ -127,7 +132,7 @@ typedef enum
 	OINFO_SUBJ   = 0x02, /* Describe object from the character's POV */
 	OINFO_FULL   = 0x04, /* Treat object as if fully IDd */
 	OINFO_DUMMY  = 0x08, /* Object does not exist (e.g. knowledge menu) */
-	OINFO_EGO    = 0x10, /* Describe ego random powers */
+	OINFO_EGO    = 0x10  /* Describe ego random powers */
 } oinfo_detail_t;
 
 
@@ -384,47 +389,46 @@ typedef struct artifact
 
 
 /*
- * Information about "ego-items".
+ * Information about ego-item affixes.
  */
 typedef struct ego_item
 {
 	struct ego_item *next;
+											/* N: */
+	u32b eidx;								/* index */
+	byte type;								/* prefix or suffix */
+	byte level;								/* good/great/uber/artifact */
+	char *name;								/* affix name */
+											/* C: */
+	random_value to_h;     					/* Extra to-hit bonus */
+	random_value to_d; 						/* Extra to-dam bonus */
+	random_value to_a; 						/* Extra to-ac bonus */
+											/* M: */
+	byte min_to_h;							/* Minimum to-hit value */
+	byte min_to_d;							/* Minimum to-dam value */
+	byte min_to_a;							/* Minimum to-ac value */
+											/* F: */
+	bitflag flags[OF_SIZE];					/* Flags */
+											/* L: */
+	random_value pval[MAX_PVALS]; 			/* Extra pval bonus */
+	byte min_pval[MAX_PVALS];				/* Minimum pval */
+	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/* pval flags */
+	byte num_pvals;							/* Number of pvals used */
+											/* R: */
+	byte num_randflags[EGO_RANDFLAGS_MAX];	/* Number of random flags */
+	bitflag randmask[EGO_RANDFLAGS_MAX][OF_SIZE];/* Mask for choosing randflags */
+	byte num_randlines;						/* Number of R: lines */
+											/* T: */
+	byte tval[EGO_TVALS_MAX]; 				/* Legal tval */
+	byte min_sval[EGO_TVALS_MAX];			/* Minimum legal sval */
+	byte max_sval[EGO_TVALS_MAX];			/* Maximum legal sval */
+	byte alloc_prob[EGO_TVALS_MAX]; 		/* Chance of being generated */
+	byte alloc_min[EGO_TVALS_MAX];  		/* Min depth (can appear earlier) */
+	byte alloc_max[EGO_TVALS_MAX];  		/* Max depth (cannot appear deeper) */
+											/* D: */
+	char *text;								/* Descriptive text */
 
-	char *name;
-	char *text;
-
-	u32b eidx;
-
-	s32b cost;			/* Ego-item "cost" */
-
-	bitflag flags[OF_SIZE];		/**< Flags */
-	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
-
-	byte level;		/* Minimum level */
-	byte rarity;		/* Object rarity */
-	byte rating;		/* Level rating boost */
-	byte alloc_prob; 	/** Chance of being generated (i.e. rarity) */
-	byte alloc_min;  	/** Minimum depth (can appear earlier) */
-	byte alloc_max;  	/** Maximum depth (will NEVER appear deeper) */
-
-	byte tval[EGO_TVALS_MAX]; 	/* Legal tval */
-	byte min_sval[EGO_TVALS_MAX];	/* Minimum legal sval */
-	byte max_sval[EGO_TVALS_MAX];	/* Maximum legal sval */
-
-	random_value to_h;     		/* Extra to-hit bonus */
-	random_value to_d; 		/* Extra to-dam bonus */
-	random_value to_a; 		/* Extra to-ac bonus */
-	random_value pval[MAX_PVALS]; 	/* Extra pval bonus */
-	byte num_pvals;			/* Number of pvals used */
-
-	byte min_to_h;			/* Minimum to-hit value */
-	byte min_to_d;			/* Minimum to-dam value */
-	byte min_to_a;			/* Minimum to-ac value */
-	byte min_pval[MAX_PVALS];	/* Minimum pval */
-
-	byte xtra;			/* Extra sustain/resist/power */
-
-	bool everseen;			/* Do not spoil squelch menus */
+	bool everseen;							/* Do not spoil squelch menus */
 } ego_item_type;
 
 

@@ -127,21 +127,13 @@ static struct ego_item *ego_find_random(object_type *o_ptr, int level)
  */
 void ego_apply_magic(object_type *o_ptr, int level)
 {
-	int i, flag, x;
+	int i, j, flag, x;
+	bitflag flags[OF_SIZE];
 
-	bitflag flags[OF_SIZE], newf[OF_SIZE];
-	object_flags(o_ptr, flags);
-
-	/* Extra powers */
-	if (o_ptr->ego->xtra == OBJECT_XTRA_TYPE_SUSTAIN)
-		create_mask(newf, FALSE, OFT_SUST, OFT_MAX);
-	else if (o_ptr->ego->xtra == OBJECT_XTRA_TYPE_RESIST)
-		create_mask(newf, FALSE, OFT_HRES, OFT_MAX);
-	else if (o_ptr->ego->xtra == OBJECT_XTRA_TYPE_POWER)
-		create_mask(newf, FALSE, OFT_PROT, OFT_MISC, OFT_MAX);
-
-	if (o_ptr->ego->xtra)
-		of_on(o_ptr->flags,	get_new_attr(flags, newf));
+	/* Random powers */
+	for (i = 0; i < o_ptr->ego->num_randlines; i++)
+		for (j = 0; j < o_ptr->ego->num_randflags[i]; j++)
+			of_on(o_ptr->flags,	get_new_attr(o_ptr->flags, o_ptr->ego->randmask[i]));
 
 	/* Apply extra o_ptr->ego bonuses */
 	o_ptr->to_h += randcalc(o_ptr->ego->to_h, level, RANDOMISE);

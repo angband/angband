@@ -29,6 +29,14 @@ const struct object_flag object_flag_table[] =
     #undef OF
 };
 
+const struct object_flag_type flag_type_table[] =
+{
+    #define OFT(a, b) \
+            { OFT_##a, b },
+    #include "list-flag-types.h"
+    #undef OF
+};
+
 /**
  * Object flag names
  */
@@ -75,7 +83,7 @@ void create_mask(bitflag *f, bool id, ...)
  * Print a message when an object flag is identified by use.
  *
  * \param flag is the flag being noticed
- * \param name is the object name 
+ * \param name is the object name
  */
 void flag_message(int flag, char *name)
 {
