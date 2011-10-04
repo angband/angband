@@ -66,59 +66,57 @@ static int get_new_attr(bitflag flags[OF_SIZE], bitflag newf[OF_SIZE])
 
 
 /**
- * Select an ego-item that fits the object's tval and sval.
+ * Select an ego affix that fits the object.
+ *
+ * \param o_ptr is the object looking for an affix.
+ * \param level is the effective generation level (not necc. dungeon level)
  */
 static struct ego_item *ego_find_random(object_type *o_ptr, int level)
 {
-	int i, j;
+	int i, j, success = 0;
 	long total = 0L;
-
-	/* XXX alloc_ego_table &c should be static to this file */
-	alloc_entry *table = alloc_ego_table;
+	alloc_entry *table;
 	ego_item_type *ego;
 
-	/* Go through all possible ego items and find oens which fit this item */
-	for (i = 0; i < alloc_ego_size; i++) {
-		/* Reset any previous probability of this type being picked */
-		table[i].prob3 = 0;
+	table = C_ZNEW(z_info->a_max, alloc_entry);
 
-		if (level < table[i].level)
-			continue;
+	/* Go through all possible affixes and find ones legal for this item */
+	for (i = 0; i < z_info->e_max; i++) {
+		ego = &e_info[i];
 
-		/* Access the ego item */
-		ego = &e_info[table[i].index];
-
-		/* XXX Ignore cursed items for now */
-		if (cursed_p(ego->flags)) continue;
-
-		/* Test if this is a legal ego-item type for this object */
+		/* Test if this is a legal ego-item type for this object & level */
 		for (j = 0; j < EGO_TVALS_MAX; j++) {
-			/* Require identical base type */
 			if (o_ptr->tval == ego->tval[j] &&
 					o_ptr->sval >= ego->min_sval[j] &&
-					o_ptr->sval <= ego->max_sval[j]) {
-				table[i].prob3 = table[i].prob2;
+					o_ptr->sval <= ego->max_sval[j] &&
+					level >= ego->alloc_min[j] &&
+					level <= ego->alloc_max[j]) {
+				table[i].prob3 = ego->alloc_prob[j];
+				table[i].index = ego->eidx;
 				break;
 			}
 		}
-
-		/* Total */
 		total += table[i].prob3;
 	}
 
+	/* Choose at random from all legal affixes */
 	if (total) {
 		long value = randint0(total);
-		for (i = 0; i < alloc_ego_size; i++) {
+		for (i = 0; i < z_info->e_max; i++) {
 			/* Found the entry */
 			if (value < table[i].prob3) break;
 
 			/* Decrement */
 			value = value - table[i].prob3;
 		}
-
-		return &e_info[table[i].index];
+		success = table[i].index;
 	}
 
+	mem_free(table);
+
+	if (success) return &e_info[success];
+
+	/* No legal affixes */
 	return NULL;
 }
 
@@ -263,7 +261,7 @@ void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
 static bool make_artifact(object_type *o_ptr, int level)
 {
 	artifact_type *a_ptr;
-	int i, basemin = 0, basemax = 0, total = 0, count = 0;
+	int i, basemin = 0, basemax = 0, total = 0;
 	long value = 0;
 	bool art_ok = TRUE;
 	object_kind *kind;

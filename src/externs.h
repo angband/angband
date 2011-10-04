@@ -76,8 +76,6 @@ extern quest *q_list;
 extern struct store *stores;
 extern int store_knowledge;
 extern const char *** name_sections;
-extern s16b alloc_ego_size;
-extern alloc_entry *alloc_ego_table;
 extern s16b alloc_race_size;
 extern alloc_entry *alloc_race_table;
 extern byte gf_to_attr[GF_MAX][BOLT_MAX];

@@ -2820,8 +2820,6 @@ static errr init_alloc(void)
 
 	monster_race *r_ptr;
 
-/*	ego_item_type *e_ptr; */
-
 	alloc_entry *table;
 
 	s16b num[MAX_DEPTH];
@@ -2913,73 +2911,6 @@ static errr init_alloc(void)
 			aux[x]++;
 		}
 	}
-
-	/*** Analyze ego_item allocation info ***/
-/* Disabled to ensure compilation - will replace with on-demand alloc */
-
-	/* Clear the "aux" array */
-	(void)C_WIPE(aux, MAX_DEPTH, s16b);
-
-	/* Clear the "num" array */
-	(void)C_WIPE(num, MAX_DEPTH, s16b);
-
-	/* Size of "alloc_ego_table" */
-	alloc_ego_size = 0;
-
-	/* Scan the ego items
-	for (i = 1; i < z_info->e_max; i++)
-	{
-		e_ptr = &e_info[i];
-
-		if (e_ptr->rarity)
-		{
-			alloc_ego_size++;
-
-			num[e_ptr->level]++;
-		}
-	} */
-
-	/* Collect the level indexes */
-	for (i = 1; i < MAX_DEPTH; i++)
-	{
-		/* Group by level */
-		num[i] += num[i-1];
-	}
-
-	/*** Initialize ego-item allocation info ***/
-	/* Allocate the alloc_ego_table */
-/*	alloc_ego_table = C_ZNEW(alloc_ego_size, alloc_entry); */
-
-	/* Get the table entry */
-/*	table = alloc_ego_table; */
-
-	/* Scan the ego-items
-	for (i = 1; i < z_info->e_max; i++)
-	{
-		e_ptr = &e_info[i];
-
-		if (e_ptr->rarity)
-		{
-			int p, x, y, z;
-
-			x = e_ptr->level;
-
-			p = (100 / e_ptr->rarity);
-
-			y = (x > 0) ? num[x-1] : 0;
-
-			z = y + aux[x];
-
-			table[z].index = i;
-			table[z].level = x;
-			table[z].prob1 = p;
-			table[z].prob2 = p;
-			table[z].prob3 = p;
-
-			aux[x]++;
-		}
-	} */
-
 
 	/* Success */
 	return (0);
@@ -3187,7 +3118,6 @@ void cleanup_angband(void)
 
 	/* Free the allocation tables */
 	free_obj_alloc();
-	FREE(alloc_ego_table);
 	FREE(alloc_race_table);
 
 	event_remove_all_handlers();
