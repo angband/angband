@@ -37,6 +37,31 @@
 /* Define a value for minima which will be ignored. */
 #define NO_MINIMUM 	255
 
+/**
+ * Select an item from an allocation table struct, using the prob3 member.
+ *
+ * \param total is the total of all alloc_probs in the table
+ * \param max is the number of items in the table
+ * \param table is the table itself
+ * (Could calculate total from table, but it would be slower)
+ */
+static int table_pick(long total, int max, alloc_entry *table)
+{
+		long value = randint0(total);
+		int i;
+
+		if (!total) return -1;
+
+		for (i = 0; i < max; i++) {
+			/* Found the entry */
+			if (value < table[i].prob3) return table[i].index;
+
+			/* Decrement */
+			value = value - table[i].prob3;
+		}
+		/* Failure */
+		return -1;
+}
 
 /*** Make an ego item ***/
 
@@ -100,21 +125,11 @@ static struct ego_item *ego_find_random(object_type *o_ptr, int level)
 	}
 
 	/* Choose at random from all legal affixes */
-	if (total) {
-		long value = randint0(total);
-		for (i = 0; i < z_info->e_max; i++) {
-			/* Found the entry */
-			if (value < table[i].prob3) break;
-
-			/* Decrement */
-			value = value - table[i].prob3;
-		}
-		success = table[i].index;
-	}
+	success = table_pick(total, z_info->e_max, table);
 
 	mem_free(table);
 
-	if (success) return &e_info[success];
+	if (success > 0) return &e_info[success];
 
 	/* No legal affixes */
 	return NULL;
@@ -264,12 +279,12 @@ void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
  */
 static bool make_artifact(object_type *o_ptr, int level)
 {
-	artifact_type *a_ptr;
-	int i, basemin = 0, basemax = 0, total = 0;
-	long value = 0;
+	int i, basemin = 0, basemax = 0, success = 0;
+	long total = 0L;
 	bool art_ok = TRUE;
 	object_kind *kind;
 	alloc_entry *table;
+	artifact_type *a_ptr;
 
 	/* Make sure birth no artifacts isn't set */
 	if (OPT(birth_no_artifacts)) art_ok = FALSE;
@@ -345,20 +360,14 @@ static bool make_artifact(object_type *o_ptr, int level)
 		total += a_ptr->alloc_prob;
 	}
 
-	/* Choose an artifact from the table */
-	if (!o_ptr->artifact && total) {
-		value = randint0(total);
-		for (i = 0; i < z_info->a_max; i++) {
-			/* Found the entry */
-			if (value < table[i].prob3) break;
-
-			/* Decrement */
-			value = value - table[i].prob3;
+	/* Choose an artifact from the table, then free it */
+	if (!o_ptr->artifact) {
+		success = table_pick(total, z_info->a_max, table);
+		if (success > 0) {
+			a_ptr = &a_info[success];
+			o_ptr->artifact = a_ptr;
 		}
-		a_ptr = &a_info[table[i].index];
-		o_ptr->artifact = a_ptr;
 	}
-
 	mem_free(table);
 
 	if (o_ptr->artifact) {
