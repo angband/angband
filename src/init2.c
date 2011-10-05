@@ -1258,6 +1258,11 @@ static enum parser_error parse_e_c(struct parser *p)
 	e->to_d = td;
 	e->to_a = ta;
 
+	if (!parser_hasval(p, "wgt_mod"))
+		return PARSE_ERROR_NONE;
+
+	e->wgt_mod = parser_getint(p, "wgt_mod");
+
 	return PARSE_ERROR_NONE;
 }
 
@@ -1450,7 +1455,7 @@ struct parser *init_parse_e(void) {
 	parser_setpriv(p, NULL);
 	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "N int index sym type sym level str name", parse_e_n);
-	parser_reg(p, "C rand th rand td rand ta", parse_e_c);
+	parser_reg(p, "C rand th rand td rand ta ?int wgt_mod", parse_e_c);
 	parser_reg(p, "M int th int td int ta", parse_e_m);
 	parser_reg(p, "F ?str flags", parse_e_f);
 	parser_reg(p, "L rand pval int min str flags", parse_e_l);

@@ -8,7 +8,7 @@
 # === Understanding ego_item.txt ===
 
 # N: serial number : type : level : name
-# C: to-hit : to-dam : to-ac
+# C: to-hit : to-dam : to-ac : weight_mod
 # M: min to-hit : min to-dam : min to-ac
 # F: flag | flag | etc.
 # L: pval : min pval : flag | flag | etc.
@@ -34,8 +34,9 @@
 # great, uber or artifact - this is the minimum level of item which can 
 # receive this affix. name is the textual name for use in object_desc().
 
-# 'C' is for combat bonuses - to-hit, to-dam, to-ac. All of these 
-# fields accept randomized values.
+# 'C' is for combat values - to-hit, to-dam, to-ac. All of these 
+# fields accept randomized values. weight_mod is a percentage which is
+# applied to the weight of the base item. This field is optional.
 
 # 'M' is for minimum values - minimum allowed to-hit, to-dam, to-ac. The 
 # value of 255 is special, meaning "there is no minimum". This allows 
@@ -73,7 +74,8 @@
 # affix can only be generated for items of these tvals, with sval in the 
 # specified range. commonness determines how common the affix is, min 
 # depth is the earliest it is normally found, max depth is the deepest 
-# it is ever found, for these svals.
+# it is ever found, for these svals. You can specify multiple allocations
+# for the same tval/sval range, but each counts towards EGO_TVALS_MAX.
 
 # 'D' is a textual flavour description of the affix, for use in 'I'nspect.
 
@@ -125,7 +127,7 @@ T:hard armour:0:99:10:25 to 100
 T:dragon armour:7:29:8:70 to 100
 
 N:6:suffix:uber:Elvenkind
-C:0:0:d10
+C:0:0:d10:-10
 M:255:0:0
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD

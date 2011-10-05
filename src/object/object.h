@@ -406,6 +406,7 @@ typedef struct ego_item
 	random_value to_h;     					/* Extra to-hit bonus */
 	random_value to_d; 						/* Extra to-dam bonus */
 	random_value to_a; 						/* Extra to-ac bonus */
+	s16b wgt_mod;							/* % change to base item weight */
 											/* M: */
 	byte min_to_h;							/* Minimum to-hit value */
 	byte min_to_d;							/* Minimum to-dam value */

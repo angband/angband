@@ -132,7 +132,8 @@ void ego_apply_magic(object_type *o_ptr, int level)
 	/* Random powers */
 	for (i = 0; i < o_ptr->ego->num_randlines; i++)
 		for (j = 0; j < o_ptr->ego->num_randflags[i]; j++)
-			of_on(o_ptr->flags,	get_new_attr(o_ptr->flags, o_ptr->ego->randmask[i]));
+			of_on(o_ptr->flags,	get_new_attr(o_ptr->flags,
+				o_ptr->ego->randmask[i]));
 
 	/* Apply extra o_ptr->ego bonuses */
 	o_ptr->to_h += randcalc(o_ptr->ego->to_h, level, RANDOMISE);
@@ -150,6 +151,9 @@ void ego_apply_magic(object_type *o_ptr, int level)
 
 	/* Apply flags */
 	of_union(o_ptr->flags, o_ptr->ego->flags);
+
+	/* Adjust weight */
+	o_ptr->weight = ((100 + o_ptr->ego->wgt_mod) * o_ptr->weight) / 100;
 
 	return;
 }
