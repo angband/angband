@@ -117,5 +117,6 @@ bool flag_uses_pval(int flag);
 int obj_flag_type(int flag);
 int pval_mult(int flag);
 bool check_state(struct player *p, int flag, bitflag *f);
+const char *obj_flagtype_name(int of_type);
 
 #endif /* !INCLUDED_OBJFLAG_H */

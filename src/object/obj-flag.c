@@ -216,6 +216,16 @@ int obj_flag_type(int flag)
 }
 
 /**
+ * Return the description of the flag type.
+ */
+const char *obj_flagtype_name(int of_type)
+{
+	const struct object_flag_type *oft_ptr = &flag_type_table[of_type];
+
+	return oft_ptr->desc;
+}
+
+/**
  * Return the pval weighting of a flag. (Some pvals are more important than
  * others.)
  */

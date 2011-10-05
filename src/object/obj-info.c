@@ -1214,17 +1214,33 @@ static void describe_flavor_text(textblock *tb, const object_type *o_ptr,
 	}
 }
 
-
+/**
+ * Describe random powers on ego items
+ *
+ * \param tb is the description textblock we're building
+ * \param ego is the ego type we're analysing
+ */
 static bool describe_ego(textblock *tb, const struct ego_item *ego)
 {
 	if (ego && ego->num_randlines) {
-		int i, tot;
+		int i, of_type, tot = 0;
+		bitflag f[OF_SIZE];
 
-		for (i = 0; i < ego->num_randlines; i++)
-			tot += ego->num_randflags[i];
+		for (i = 0; i < ego->num_randlines; i++) {
+			/* See whether we recognise the flagset for this choice */
+			of_type = obj_flag_type(of_next(ego->randmask[i], FLAG_START));
+			create_mask(f, FALSE, of_type, OFT_MAX);
 
-		textblock_append(tb, "It provides %s random power.  ",
-			tot > 1 ? "more than one" : "one");
+			if (of_is_equal(f, ego->randmask[i])) {
+				textblock_append(tb, "It provides %s random %s.  ",
+					ego->num_randflags[i] > 1 ? "more than one" : "one",
+					obj_flagtype_name(of_type));
+			} else /* We don't, so count the number for later */
+				tot += ego->num_randflags[i];
+		}
+		if (tot)
+			textblock_append(tb, "It provides %s random power.  ",
+				tot > 1 ? "more than one" : "one");
 
 		return TRUE;
 	}
