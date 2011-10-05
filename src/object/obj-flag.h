@@ -37,7 +37,7 @@ enum {
 
 /* The object flag types */
 enum {
-    #define OFT(a, b) OFT_##a,
+    #define OFT(a, b, c) OFT_##a,
     #include "list-flag-types.h"
     #undef OFT
 };
@@ -102,6 +102,7 @@ struct object_flag {
 struct object_flag_type {
 	u16b index;				/* the OFT_ index */
 	bool pval;				/* is it granular (TRUE) or binary (FALSE) */
+	char *desc;				/* description */
 };
 
 /*** Functions ***/

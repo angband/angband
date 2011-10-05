@@ -31,8 +31,8 @@ const struct object_flag object_flag_table[] =
 
 const struct object_flag_type flag_type_table[] =
 {
-    #define OFT(a, b) \
-            { OFT_##a, b },
+    #define OFT(a, b, c) \
+            { OFT_##a, b, c },
     #include "list-flag-types.h"
     #undef OF
 };

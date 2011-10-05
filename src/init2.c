@@ -55,7 +55,7 @@ static const char *k_info_flags[] = {
 };
 
 static const char *k_info_flagtypes[] = {
-	#define OFT(a, b) #a,
+	#define OFT(a, b, c) #a,
 	#include "object/list-flag-types.h"
 	#undef OFT
 	NULL
