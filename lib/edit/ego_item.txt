@@ -8,7 +8,7 @@
 # === Understanding ego_item.txt ===
 
 # N: serial number : type : level : name
-# C: to-hit : to-dam : to-ac : weight_mod
+# C: to-hit : to-dam : to-ac : weight_mod : dice : sides
 # M: min to-hit : min to-dam : min to-ac
 # F: flag | flag | etc.
 # L: pval : min pval : flag | flag | etc.
@@ -36,7 +36,8 @@
 
 # 'C' is for combat values - to-hit, to-dam, to-ac. All of these 
 # fields accept randomized values. weight_mod is a percentage which is
-# applied to the weight of the base item. This field is optional.
+# applied to the weight of the base item. dice and sides are self-explanatory.
+# The last three fields are optional.
 
 # 'M' is for minimum values - minimum allowed to-hit, to-dam, to-ac. The 
 # value of 255 is special, meaning "there is no minimum". This allows 
@@ -781,10 +782,22 @@ T:bolt:0:99:0:10 to 80
 N:128:suffix:good:Craftsmanship
 C:0:0:1d6M4
 M:0:0:4
-T:dragon armour:0:99:20:30 to 95
+T:soft armour:0:99:20:10 to 95
+T:hard armour:0:99:20:10 to 95
+T:dragon armour:0:99:20:10 to 95
 D:This armour is finely wrought, tough yet unencumbering.
 
-N:133:suffix:uber:Speed
+N:129:suffix:uber:Speed
 M:255:0:0
 L:d5:0:SPEED
 T:dragon armour:0:99:1:60 to 127
+
+### New affixes ###
+
+N:131:prefix:great:Massive
+C:0:0:0:20:1:1
+T:digger:0:99:5:20 to 90
+T:hafted:0:99:10:10 to 80
+T:polearm:0:99:10:10 to 80
+T:sword:0:99:10:10 to 80
+D:This huge weapon is considerably larger and heavier than normal.

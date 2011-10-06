@@ -141,7 +141,7 @@ static struct ego_item *ego_find_random(object_type *o_ptr, int level)
  */
 void ego_apply_magic(object_type *o_ptr, int level)
 {
-	int i, j, flag, x;
+	int i, j, flag, pval;
 	bitflag flags[OF_SIZE];
 
 	/* Random powers */
@@ -158,17 +158,19 @@ void ego_apply_magic(object_type *o_ptr, int level)
 	/* Apply pvals */
 	for (i = 0; i < o_ptr->ego->num_pvals; i++) {
 		of_copy(flags, o_ptr->ego->pval_flags[i]);
-		x = randcalc(o_ptr->ego->pval[i], level, RANDOMISE);
+		pval = randcalc(o_ptr->ego->pval[i], level, RANDOMISE);
 		for (flag = of_next(flags, FLAG_START); flag != FLAG_END;
 				flag = of_next(flags, flag + 1))
-			object_add_pval(o_ptr, x, flag);
+			object_add_pval(o_ptr, pval, flag);
 	}
 
 	/* Apply flags */
 	of_union(o_ptr->flags, o_ptr->ego->flags);
 
-	/* Adjust weight */
+	/* Adjust weight, dice and sides */
 	o_ptr->weight = ((100 + o_ptr->ego->wgt_mod) * o_ptr->weight) / 100;
+	o_ptr->dd += o_ptr->ego->dd;
+	o_ptr->ds += o_ptr->ego->ds;
 
 	return;
 }
