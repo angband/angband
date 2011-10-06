@@ -19,6 +19,8 @@ SLAY(ELEC2,		OF_BRAND_BUZZ,  FLAG_END,  RF_IM_ELEC,	2,	"zaps",     		"zap",     
 SLAY(FIRE2,		OF_BRAND_WARM,  FLAG_END,  RF_IM_FIRE,	2,	"singes",			"singe",			"grows warm", 		"creatures not resistant to fire", 			"weak flames")
 SLAY(COLD2,		OF_BRAND_COOL,  FLAG_END,  RF_IM_COLD,	2,	"chills" , 			"chill",  			"grows cool", 		"creatures not resistant to cold", 			"weak frost")
 SLAY(POISON2,	OF_BRAND_ICKY,  FLAG_END,  RF_IM_POIS,	2,	"sickens", 			"sicken",  			"glows green",  	"creatures not resistant to poison", 		"weak venom")
+SLAY(UNDEAD2,	OF_HURT_UNDEAD, RF_UNDEAD, FLAG_END,	2,	"pierces",  		"smite",   			"glows",      		"undead", 									NULL)
+SLAY(DEMON2,	OF_HURT_DEMON,	RF_DEMON,  FLAG_END,	2,	"pierces",  		"smite",   			"glows",      		"demon", 									NULL)
 SLAY(UNDEAD3,	OF_SLAY_UNDEAD, RF_UNDEAD, FLAG_END,	3,	"pierces",  		"smite",   			"glows",      		"undead", 									NULL)
 SLAY(DEMON3,	OF_SLAY_DEMON,  RF_DEMON,  FLAG_END,	3,	"pierces",  		"smite",   			"glows",      		"demons", 									NULL)
 SLAY(ORC3,		OF_SLAY_ORC,    RF_ORC,    FLAG_END,	3,	"pierces",  		"smite",   			"glows",      		"orcs", 									NULL)

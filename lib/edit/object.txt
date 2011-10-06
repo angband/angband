@@ -360,7 +360,7 @@ I:23:7
 W:10:0:150:300
 A:20:10 to 100
 P:0:4d2:0:0:0
-D:A long sabre with an extreme curve to the blade.
+D:A long sword with an extreme curve to the blade.
 
 
 N:37:& Long Sword~
@@ -468,7 +468,7 @@ N:56:& Lead-Filled Mace~
 G:\:D
 I:21:11
 W:15:0:180:502
-A:20:15 to 100
+#A:20:15 to 100
 P:0:4d3:0:0:0
 
 N:57:& Quarterstaff~
@@ -988,7 +988,7 @@ N:164:Mithril Chain Mail~
 G:[:B
 I:37:10
 W:55:0:150:7000
-A:10:55 to 100
+#A:10:55 to 100
 P:28:1d4:-1:0:0
 F:IGNORE_ACID
 
@@ -996,7 +996,7 @@ N:165:Mithril Plate Mail~
 G:[:B
 I:37:11
 W:60:0:300:15000
-A:10:65 to 100
+#A:10:65 to 100
 P:60:2d4:-3:0:0
 F:IGNORE_ACID
 
@@ -1004,7 +1004,7 @@ N:166:Adamantite Plate Mail~
 G:[:G
 I:37:12
 W:75:0:420:20000
-A:10:75 to 100
+#A:10:75 to 100
 P:80:2d4:-4:0:0
 F:IGNORE_ACID
 

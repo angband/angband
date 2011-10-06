@@ -127,5 +127,7 @@ OF(BRAND_FIZZ,  FALSE,	0,				OFID_WIELD,	OFT_BRAND,	0,		0,	1,	3,	3,		3,	3,		3,		
 OF(BRAND_BUZZ,  FALSE,	0,				OFID_WIELD,	OFT_BRAND,	0,		0,	1,	3,	3,		3,	3,		3,		3,		3,		3,	3,		3,		"")
 OF(BRAND_WARM,  FALSE,	0,				OFID_WIELD,	OFT_BRAND,	0,		0,	1,	3,	3,		3,	3,		3,		3,		3,		3,	3,		3,		"")
 OF(BRAND_COOL,  FALSE,	0,				OFID_WIELD, OFT_BRAND,	0,		0,	1,	3,	3,		3,	3,		3,		3,		3,		3,	3,		3,		"")
+OF(HURT_UNDEAD, FALSE,	0,				OFID_NORMAL,OFT_SLAY,	0,		0,	1,	3,	3,		3,	3,		3,		3,		3,		3,	3,		3,		"")
+OF(HURT_DEMON,  FALSE,	0,				OFID_NORMAL,OFT_SLAY,	0,		0,	1,	3,	3,		3,	3,		3,		3,		3,		3,	3,		3,		"")
 OF(GOOD,		FALSE,	0,				OFID_NONE,	OFT_INT,	0,		0,	0,	0,	0,		0,	0,		0,		0,		0,		0,	0,		0,		"")
 OF(MAX,			FALSE,	0,				0,			0,			0,      0,	0,  0,  0,      0,  0,      0,      0,      0,      0,  0,      0,		"")
