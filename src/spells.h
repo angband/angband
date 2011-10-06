@@ -110,6 +110,7 @@ bool check_side_immune(int type);
 int inven_damage(struct player *p, int type, int cperc);
 int adjust_dam(struct player *p, int type, int dam, aspect dam_aspect, int resist);
 void monster_learn_resists(struct monster *m, struct player *p, int type);
+void dedup_gf_flags(bitflag *f);
 
 /* spells2.c */
 extern bool hp_player(int num);

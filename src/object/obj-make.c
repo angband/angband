@@ -89,6 +89,29 @@ static int get_new_attr(bitflag flags[OF_SIZE], bitflag newf[OF_SIZE])
 	return flag;
 }
 
+/**
+ * Check item flags for legality. This function currently does three things:
+ *  - checks slay_table for slay & brand contradictions (dedup_slays)
+ *  - checks gf_table for imm/res/vuln contradictions (dedup_gf_flags)
+ *  - removes all flags from ammo except slays/brands/ignore/hates
+ */
+void check_flags(object_type *o_ptr)
+{
+	bitflag f[OF_SIZE];
+
+	dedup_slays(o_ptr->flags);
+
+	dedup_gf_flags(o_ptr->flags);
+
+	if (obj_is_ammo(o_ptr)) {
+		create_mask(f, FALSE, OFT_SLAY, OFT_BRAND, OFT_KILL, OFT_IGNORE,
+			OFT_HATES, OFT_INT, OFT_MAX);
+		of_inter(o_ptr->flags, f);
+	}
+
+	return;
+}
+
 
 /**
  * Select an ego affix that fits the object.
