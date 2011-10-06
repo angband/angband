@@ -172,8 +172,14 @@ void ego_apply_magic(object_type *o_ptr, int level)
 		o_ptr->ac = ((100 + o_ptr->ego->ac_mod) * o_ptr->ac) / 100;
 
 	o_ptr->weight = ((100 + o_ptr->ego->wgt_mod) * o_ptr->weight) / 100;
+
 	o_ptr->dd += o_ptr->ego->dd;
+	if (o_ptr->dd < 1)
+		o_ptr->dd = 1;
+
 	o_ptr->ds += o_ptr->ego->ds;
+	if (o_ptr->ds < 1)
+		o_ptr->ds = 1;
 
 	return;
 }
