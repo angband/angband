@@ -167,7 +167,10 @@ void ego_apply_magic(object_type *o_ptr, int level)
 	/* Apply flags */
 	of_union(o_ptr->flags, o_ptr->ego->flags);
 
-	/* Adjust weight, dice and sides */
+	/* Adjust AC, weight, dice and sides */
+	if (o_ptr->ac && o_ptr->ego->ac_mod)
+		o_ptr->ac = ((100 + o_ptr->ego->ac_mod) * o_ptr->ac) / 100;
+
 	o_ptr->weight = ((100 + o_ptr->ego->wgt_mod) * o_ptr->weight) / 100;
 	o_ptr->dd += o_ptr->ego->dd;
 	o_ptr->ds += o_ptr->ego->ds;

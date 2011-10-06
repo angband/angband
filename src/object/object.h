@@ -406,6 +406,7 @@ typedef struct ego_item
 	random_value to_h;     					/* Extra to-hit bonus */
 	random_value to_d; 						/* Extra to-dam bonus */
 	random_value to_a; 						/* Extra to-ac bonus */
+	s16b ac_mod;							/* % change to base AC */
 	s16b wgt_mod;							/* % change to base item weight */
 	s16b dd;								/* Extra dice */
 	s16b ds;								/* Extra sides */
