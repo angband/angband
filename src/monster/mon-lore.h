@@ -30,12 +30,12 @@
 /** Variables **/
 
 /** Functions **/
-void cheat_monster_lore(int r_idx, monster_lore *l_ptr);
-void wipe_monster_lore(int r_idx, monster_lore *l_ptr);
-void describe_monster(int r_idx, bool spoilers);
-void roff_top(int r_idx);
-void screen_roff(int r_idx);
-void display_roff(int r_idx);
+void cheat_monster_lore(const monster_race *r_ptr, monster_lore *l_ptr);
+void wipe_monster_lore(const monster_race *r_ptr, monster_lore *l_ptr);
+void describe_monster(const monster_race *r_ptr, const monster_lore *l_ptr, bool spoilers);
+void roff_top(const monster_race *r_ptr);
+void screen_roff(const monster_race *r_ptr, const monster_lore *l_ptr);
+void display_roff(const monster_race *r_ptr, const monster_lore *l_ptr);
 void lore_do_probe(int m_idx);
 void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr, bitflag flags[RF_SIZE]);
 void lore_treasure(int m_idx, int num_item, int num_gold);

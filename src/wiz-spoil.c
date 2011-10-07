@@ -705,7 +705,8 @@ static void spoil_mon_info(const char *fname)
 	for (n = 0; n < count; n++)
 	{
 		int r_idx = who[n];
-		monster_race *r_ptr = &r_info[r_idx];
+		const monster_race *r_ptr = &r_info[r_idx];
+		const monster_lore *l_ptr = &l_list[r_idx];
 
 		/* Prefix */
 		if (rf_has(r_ptr->flags, RF_QUESTOR))
@@ -763,7 +764,7 @@ static void spoil_mon_info(const char *fname)
 		text_out("Exp:%ld\n", (long)(r_ptr->mexp));
 
 		/* Describe */
-		describe_monster(r_idx, TRUE);
+		describe_monster(r_ptr, l_ptr, TRUE);
 
 		/* Terminate the entry */
 		text_out("\n");
