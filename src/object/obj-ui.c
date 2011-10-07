@@ -434,7 +434,7 @@ bool verify_item(const char *prompt, int item)
 
 
 /*
- * Hack -- allow user to "prevent" certain choices.
+ * Prevent certain choices depending on the inscriptions on the item.
  *
  * The item can be negative to mean "item on floor".
  */
@@ -442,8 +442,8 @@ static bool get_item_allow(int item, unsigned char ch, bool is_harmless)
 {
 	object_type *o_ptr;
 	char verify_inscrip[] = "!*";
-
-	unsigned n;
+	bool warn_player = false;
+	char *warning_str = "Really do that with";
 
 	/* Inventory or floor */
 	if (item >= 0)
@@ -451,25 +451,167 @@ static bool get_item_allow(int item, unsigned char ch, bool is_harmless)
 	else
 		o_ptr = object_byid(0 - item);
 
-	/* Check for a "prevention" inscription */
+	/* The prevention inscription to look for */
 	verify_inscrip[1] = ch;
 
-	/* Find both sets of inscriptions, add together, and prompt that number of times */
-	n = check_for_inscrip(o_ptr, verify_inscrip);
+	/* Check for the inscription '!*' */
+	if (!is_harmless && check_for_inscrip(o_ptr, "!*"))
+       	{
+		warn_player = true;
+		warning_str = "Really do that with";
+        }
 
-	if (!is_harmless)
-		n += check_for_inscrip(o_ptr, "!*");
-
-	while (n--)
+	/* Check for various inscriptions */
+	switch (ch)
 	{
-		if (!verify_item("Really try", item))
-			return (FALSE);
+		case 'a':
+		{
+			if (check_for_inscrip(o_ptr, verify_inscrip))
+       			{
+				warn_player = true;
+				warning_str = "Really aim";
+        		}
+			break;
+		}
+		case 'b':
+		{
+			if (check_for_inscrip(o_ptr, verify_inscrip))
+       			{
+				warn_player = true;
+				warning_str = "Really browse";
+        		}
+			break;
+		}
+		case 'd':
+		{
+			if (check_for_inscrip(o_ptr, verify_inscrip))
+       			{
+				warn_player = true;
+				warning_str = "Really drop";
+        		}
+			break;
+		}
+		case 'f':
+		{
+			if (check_for_inscrip(o_ptr, verify_inscrip))
+       			{
+				warn_player = true;
+				warning_str = "Really fire";
+        		}
+			break;
+		}
+		case 'k':
+		{
+			if (check_for_inscrip(o_ptr, verify_inscrip))
+       			{
+				warn_player = true;
+				warning_str = "Really destroy";
+        		}
+			break;
+		}
+		case 'q':
+		{
+			if (check_for_inscrip(o_ptr, verify_inscrip))
+       			{
+				warn_player = true;
+				warning_str = "Really quaff";
+        		}
+			break;
+		}
+		case 'r':
+		{
+			if (check_for_inscrip(o_ptr, verify_inscrip))
+       			{
+				warn_player = true;
+				warning_str = "Really read";
+        		}
+			break;
+		}
+		case 't':
+		{
+			if (check_for_inscrip(o_ptr, verify_inscrip))
+       			{
+				warn_player = true;
+				warning_str = "Really take off";
+        		}
+			break;
+		}
+		case 'u':
+		{
+			if (check_for_inscrip(o_ptr, verify_inscrip))
+       			{
+				warn_player = true;
+				warning_str = "Really use";
+        		}
+			break;
+		}
+		case 'v':
+		{
+			if (check_for_inscrip(o_ptr, verify_inscrip))
+       			{
+				warn_player = true;
+				warning_str = "Really throw";
+        		}
+			break;
+		}
+		case 'w':
+		{
+			if (check_for_inscrip(o_ptr, verify_inscrip))
+       			{
+				warn_player = true;
+				warning_str = "Really wear";
+        		}
+			break;
+		}
+		case 'z':
+		{
+			if (check_for_inscrip(o_ptr, verify_inscrip))
+       			{
+				warn_player = true;
+				warning_str = "Really zap";
+        		}
+			break;
+		}
+		case 'A':
+		{
+			if (check_for_inscrip(o_ptr, verify_inscrip))
+       			{
+				warn_player = true;
+				warning_str = "Really activate";
+        		}
+			break;
+		}
+		case 'E':
+		{
+			if (check_for_inscrip(o_ptr, verify_inscrip))
+       			{
+				warn_player = true;
+				warning_str = "Really eat";
+        		}
+			break;
+		}
+		case 'F':
+		{
+			if (check_for_inscrip(o_ptr, verify_inscrip))
+       			{
+				warn_player = true;
+				warning_str = "Really fuel with";
+        		}
+			break;
+		}
+		default:
+		{
+			break;
+		}
 	}
 
-	/* Allow it */
+	/* Issue the warning */
+	if (warn_player && !verify_item(warning_str, item))
+		return (FALSE);
+
+	/* Action not prevented */
 	return (TRUE);
 }
-
 
 
 /*
