@@ -116,7 +116,7 @@ D: spikes in one door will not have any further effect.
 N:2:& Wooden Torch~
 G:~:u
 I:39:0
-W:1:0:12:2
+W:1:0:22:2
 A:70:1 to 40
 P:0:1d1:0:0:0
 F:EASY_KNOW
@@ -132,7 +132,7 @@ F:EASY_KNOW | IGNORE_FIRE
 N:4:& Flask~ of oil
 G:!:y
 I:77:0
-W:1:0:10:3
+W:1:0:20:3
 A:50:1 to 100
 P:0:1d4:0:0:0
 F:EASY_KNOW | BRAND_FIRE
