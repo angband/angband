@@ -139,6 +139,17 @@ bool player_can_fire(void)
 	return TRUE;
 }
 
+bool player_can_refuel(void)
+{
+	object_type *obj = &p_ptr->inventory[INVEN_LIGHT];
+
+	if (obj->kind && obj->sval == SV_LIGHT_LANTERN)
+		return TRUE;
+
+	msg("Your light cannot be refuelled.");
+	return FALSE;
+}
+
 /*
  * Apply confusion, if needed, to a direction
  *
