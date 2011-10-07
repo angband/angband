@@ -4071,31 +4071,15 @@ bool obj_can_activate(const object_type *o_ptr)
 	return FALSE;
 }
 
-bool obj_can_refill(const object_type *o_ptr)
+bool obj_can_refill(const object_type *obj)
 {
-	bitflag f[OF_SIZE];
-	const object_type *j_ptr = &p_ptr->inventory[INVEN_LIGHT];
+	const object_type *light = &p_ptr->inventory[INVEN_LIGHT];
 
-	/* Get flags */
-	object_flags(o_ptr, f);
+	if (light->sval == SV_LIGHT_LANTERN &&
+			obj->tval == TV_FLASK)
+		return TRUE;
 
-	if (j_ptr->sval == SV_LIGHT_LANTERN)
-	{
-		/* Flasks of oil are okay */
-		if (o_ptr->tval == TV_FLASK) return (TRUE);
-	}
-
-	/* Non-empty, non-everburning sources are okay */
-	if ((o_ptr->tval == TV_LIGHT) &&
-	    (o_ptr->sval == j_ptr->sval) &&
-	    (o_ptr->timeout > 0) &&
-	    !of_has(f, OF_NO_FUEL))
-	{
-		return (TRUE);
-	}
-
-	/* Assume not okay */
-	return (FALSE);
+	return FALSE;
 }
 
 

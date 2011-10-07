@@ -824,66 +824,6 @@ static void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
 }
 
 
-static void refuel_torch(object_type *j_ptr, object_type *o_ptr, int item)
-{
-	bitflag f[OF_SIZE];
-	bitflag g[OF_SIZE];
-
-	/* Refuel */
-	j_ptr->timeout += o_ptr->timeout + 5;
-
-	/* Message */
-	msg("You combine the torches.");
-
-	/* Transfer the LIGHT flag if refuelling from a torch with it to one
-	   without it */
-	object_flags(o_ptr, f);
-	object_flags(j_ptr, g);
-	if (of_has(f, OF_LIGHT) && !of_has(g, OF_LIGHT))
-	{
-		of_on(j_ptr->flags, OF_LIGHT);
-		if (!j_ptr->ego && o_ptr->ego)
-			j_ptr->ego = o_ptr->ego;
-		msg("Your torch shines further!");
-	}
-
-	/* Over-fuel message */
-	if (j_ptr->timeout >= FUEL_TORCH)
-	{
-		j_ptr->timeout = FUEL_TORCH;
-		msg("Your torch is fully fueled.");
-	}
-
-	/* Refuel message */
-	else
-	{
-		msg("Your torch glows more brightly.");
-	}
-
-	/* Decrease the item (from the pack) */
-	if (item >= 0)
-	{
-		inven_item_increase(item, -1);
-		inven_item_describe(item);
-		inven_item_optimize(item);
-	}
-
-	/* Decrease the item (from the floor) */
-	else
-	{
-		floor_item_increase(0 - item, -1);
-		floor_item_describe(0 - item);
-		floor_item_optimize(0 - item);
-	}
-
-	/* Recalculate torch */
-	p_ptr->update |= (PU_TORCH);
-
-	/* Redraw stuff */
-	p_ptr->redraw |= (PR_EQUIP);
-}
-
-
 void do_cmd_refill(cmd_code code, cmd_arg args[])
 {
 	object_type *j_ptr = &p_ptr->inventory[INVEN_LIGHT];
@@ -892,8 +832,7 @@ void do_cmd_refill(cmd_code code, cmd_arg args[])
 	int item = args[0].item;
 	object_type *o_ptr = object_from_item_idx(item);
 
-	if (!item_is_available(item, NULL, USE_INVEN | USE_FLOOR))
-	{
+	if (!item_is_available(item, NULL, USE_INVEN | USE_FLOOR)) {
 		msg("You do not have that item to refill with it.");
 		return;
 	}
@@ -901,25 +840,18 @@ void do_cmd_refill(cmd_code code, cmd_arg args[])
 	/* Check what we're wielding. */
 	object_flags(j_ptr, f);
 
-	if (j_ptr->tval != TV_LIGHT)
-	{
+	if (j_ptr->tval != TV_LIGHT) {
 		msg("You are not wielding a light.");
 		return;
-	}
-
-	else if (of_has(f, OF_NO_FUEL))
-	{
+	} else if (of_has(f, OF_NO_FUEL)) {
+		msg("Your light cannot be refilled.");
+		return;
+	} else if (j_ptr->sval == SV_LIGHT_LANTERN) {
+		refill_lamp(j_ptr, o_ptr, item);
+	} else {
 		msg("Your light cannot be refilled.");
 		return;
 	}
-
-	/* It's a lamp */
-	if (j_ptr->sval == SV_LIGHT_LANTERN)
-		refill_lamp(j_ptr, o_ptr, item);
-
-	/* It's a torch */
-	else if (j_ptr->sval == SV_LIGHT_TORCH)
-		refuel_torch(j_ptr, o_ptr, item);
 
 	p_ptr->energy_use = 50;
 }
