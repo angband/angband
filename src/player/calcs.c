@@ -1398,7 +1398,7 @@ static void calc_torch(void)
 
 			if (o_ptr->artifact) {
 				/* Artifact lights provide permanent bright light */
-				amt = 3 + flag_inc;
+				amt = 2 + flag_inc;
 			} else {
 				if (o_ptr->timeout == 0) {
 					/* Non-artifact lights without fuel provide no light */
