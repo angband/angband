@@ -741,6 +741,13 @@ static void process_world(struct cave *c)
 			{
 				disturb(p_ptr, 0, 0);
 				msg("Your light has gone out!");
+
+				/* If it's a torch, now is the time to delete it */
+				if (o_ptr->sval == SV_LIGHT_TORCH)
+				{
+					inven_item_increase(INVEN_LIGHT, -1);
+					inven_item_optimize(INVEN_LIGHT);
+				}
 			}
 
 			/* The light is getting dim */
