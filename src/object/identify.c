@@ -1085,7 +1085,8 @@ void sense_inventory(void)
 	else
 		rate = p_ptr->class->sense_base / (p_ptr->lev + p_ptr->class->sense_div);
 
-	if (!one_in_(rate)) return;
+	/* Check if player may sense anything this time */
+	if (p_ptr->lev < 20 && !one_in_(rate)) return;
 
 
 	/* Check everything */
