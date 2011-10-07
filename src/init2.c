@@ -22,7 +22,6 @@
 #include "cave.h"
 #include "cmds.h"
 #include "game-event.h"
-#include "game-cmd.h"
 #include "generate.h"
 #include "history.h"
 #include "keymap.h"
@@ -30,7 +29,6 @@
 #include "monster/init.h"
 #include "monster/mon-msg.h"
 #include "monster/mon-util.h"
-#include "object/object.h"
 #include "object/slays.h"
 #include "object/tvalsval.h"
 #include "option.h"
@@ -1270,6 +1268,9 @@ static enum parser_error parse_e_c(struct parser *p)
 	return PARSE_ERROR_NONE;
 }
 
+/* Record which indeces have M: lines for later reference */
+static bool parsed_e_m[1024] = { FALSE };
+
 static enum parser_error parse_e_m(struct parser *p)
 {
 	int th = parser_getint(p, "th");
@@ -1283,6 +1284,7 @@ static enum parser_error parse_e_m(struct parser *p)
 	e->min_to_h = th;
 	e->min_to_d = td;
 	e->min_to_a = ta;
+	parsed_e_m[e->eidx] = TRUE;
 
 	return PARSE_ERROR_NONE;
 }
@@ -1478,6 +1480,7 @@ static errr run_parse_e(struct parser *p) {
 
 static errr finish_parse_e(struct parser *p) {
 	struct ego_item *e, *n;
+	int i;
 
 	/* scan the list for the max id */
 	z_info->e_max = 0;
@@ -1500,6 +1503,14 @@ static errr finish_parse_e(struct parser *p) {
 		mem_free(e);
 	}
 	z_info->e_max += 1;
+
+	/* Apply default minima for missing M: lines */
+	for (i = 0; i < z_info->e_max; i++)
+		if (!parsed_e_m[i]) {
+			e_info[i].min_to_h = NO_MINIMUM;
+			e_info[i].min_to_d = NO_MINIMUM;
+			e_info[i].min_to_a = NO_MINIMUM;
+		}
 
 	/* Cache the slay combinations on ego affixes for later lookup */
 	create_slay_cache(e_info);

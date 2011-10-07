@@ -41,10 +41,9 @@
 
 # 'M' is for minimum values - minimum allowed to-hit, to-dam, to-ac. The 
 # value of 255 is special, meaning "there is no minimum". This allows 
-# zero to be a valid minimum (e.g. for mixed-blessing items). The line 
-# M:255:0:0 is necessary to preserve the intrinsic to-hit penalties of 
-# heavy armour.
-# XXX To do - assume M:255:255:255 if the line is missing?
+# zero to be a valid minimum (e.g. for mixed-blessing items). All minima 
+# are assumed to be no-ops (255) if the line is missing. This is 
+# necessary to preserve the intrinsic to-hit penalties of heavy armour.
 
 # 'F' is for flags not associated with any pval. These are fairly 
 # self-explanatory. As many F: lines may be used as are needed to 
@@ -90,28 +89,24 @@ V:3.4.0
 ### Armour affixes ###
 
 N:1:suffix:great:of Resist Acid
-M:255:0:0
 F:RES_ACID | IGNORE_ACID
 T:shield:0:99:20:1 to 60
 T:soft armour:0:99:20:1 to 60
 T:hard armour:0:6:20:1 to 60
 
 N:2:suffix:great:of Resist Lightning
-M:255:0:0
 F:RES_ELEC | IGNORE_ELEC
 T:shield:0:99:20:1 to 50
 T:soft armour:0:99:20:1 to 50
 T:hard armour:0:6:20:1 to 50
 
 N:3:suffix:great:of Resist Fire
-M:255:0:0
 F:RES_FIRE | IGNORE_FIRE
 T:shield:0:99:20:1 to 40
 T:soft armour:0:99:20:1 to 40
 T:hard armour:0:6:20:1 to 40
 
 N:4:suffix:great:of Resist Cold
-M:255:0:0
 F:RES_COLD | IGNORE_COLD
 T:shield:0:99:20:1 to 40
 T:soft armour:0:99:20:1 to 40
@@ -119,7 +114,6 @@ T:hard armour:0:6:20:1 to 40
 
 N:5:suffix:great:of Resistance
 C:0:0:d10
-M:255:0:0
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 T:shield:0:99:10:25 to 100
@@ -129,7 +123,6 @@ T:dragon armour:7:29:8:70 to 100
 
 N:6:suffix:uber:of Elvenkind
 C:0:0:d10:10:-10
-M:255:0:0
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 L:d2:0:STEALTH
@@ -141,7 +134,6 @@ T:dragon armour:7:29:3:70 to 127
 
 N:10:suffix:good:of Vulnerability
 C:0:0:-d50
-M:255:0:0
 F:AGGRAVATE | LIGHT_CURSE
 T:shield:0:99:10:10 to 80
 T:cloak:0:99:10:10 to 80
@@ -284,7 +276,6 @@ F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | RES_SHARD
 T:cloak:0:99:20:1 to 100
 
 N:41:suffix:great:of Stealth
-M:255:0:0
 L:d3:0:STEALTH
 T:cloak:0:99:20:1 to 55
 T:boots:1:2:20:15 to 100
@@ -788,7 +779,6 @@ T:dragon armour:0:99:20:10 to 95
 D:This armour is finely wrought, tough yet unencumbering.
 
 N:129:suffix:uber:of Speed
-M:255:0:0
 L:d5:0:SPEED
 T:dragon armour:0:99:1:60 to 127
 

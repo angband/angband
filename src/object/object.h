@@ -60,9 +60,11 @@ enum {
 #define MAX_PVALS 3
 #define DEFAULT_PVAL 0
 
-/* Maximum number of T: and R: lines in ego-item.txt */
+/* Maximum number of T: and R: lines in ego-item.txt, and no-op value for
+   missing M: lines */
 #define EGO_TVALS_MAX 8
 #define EGO_RANDFLAGS_MAX 4
+#define NO_MINIMUM 255
 
 /* Maximum number of attempts to create artifacts */
 #define MAX_TRIES 200

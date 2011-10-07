@@ -35,9 +35,6 @@
  */
 #define GREAT_EGO   20
 
-/* Define a value for minima which will be ignored. */
-#define NO_MINIMUM 	255
-
 /**
  * Select an item from an allocation table struct, using the prob3 member.
  *
