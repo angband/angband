@@ -457,7 +457,7 @@ static int rd_item_2(object_type *o_ptr)
 			/* Keep old boosted damage dice */
 			o_ptr->dd = old_dd;
 
-		create_mask(pval_mask, FALSE, OFT_PVAL, OFT_STAT, OFT_MAX);
+		create_pval_mask(pval_mask);
 
         /* Hack -- enforce legal pval, and apply pval flags */
         for (i = 0; i < MAX_PVALS; i++) {
@@ -613,7 +613,7 @@ static int rd_item_1(object_type *o_ptr)
 			/* Keep old boosted damage dice */
 			o_ptr->dd = old_dd;
 
-		create_mask(pval_mask, FALSE, OFT_PVAL, OFT_STAT, OFT_MAX);
+		create_pval_mask(pval_mask);
 
         /* Hack -- enforce legal pval, and apply pval flags */
         for (i = 0; i < MAX_PVALS; i++) {

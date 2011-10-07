@@ -110,7 +110,7 @@ bool object_this_pval_is_visible(const object_type *o_ptr, int pval)
         object_pval_flags_known(o_ptr, f);
 
         /* Create the mask for pval-related flags */
-        create_mask(f2, FALSE, OFT_STAT, OFT_PVAL, OFT_MAX);
+        create_pval_mask(f2);
 
         if (of_is_inter(f[pval], f2))
             return TRUE;
@@ -195,7 +195,7 @@ bool object_add_pval(object_type *o_ptr, int pval, int flag)
 	/* Sanity check (we may be called with 0 - see ticket #1451) */
 	if (!pval) return FALSE;
 
-	create_mask(f, FALSE, OFT_PVAL, OFT_STAT, OFT_MAX);
+	create_pval_mask(f);
 
 	if (of_has(o_ptr->flags, flag)) {
 		/* See if any other flags are associated with this pval */

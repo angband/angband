@@ -526,7 +526,7 @@ static size_t obj_desc_pval(const object_type *o_ptr, char *buf, size_t max,
 	int i;
 
 	object_flags(o_ptr, f);
-	create_mask(f2, FALSE, OFT_PVAL, OFT_STAT, OFT_MAX);
+	create_pval_mask(f2);
 
 	if (!of_is_inter(f, f2)) return end;
 

@@ -235,3 +235,19 @@ int pval_mult(int flag)
 
 	return of_ptr->pval_mult;
 }
+
+/**
+ * Return the set of flags which are governed by pvals (granular flags).
+ */
+void create_pval_mask(bitflag *f)
+{
+	int i;
+
+	of_wipe(f);
+
+	for (i = 0; i < OF_MAX; i++)
+		if (flag_uses_pval(i))
+			of_on(f, i);
+
+	return;
+}
