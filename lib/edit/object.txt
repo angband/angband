@@ -136,7 +136,7 @@ W:1:0:10:3
 A:50:1 to 100
 P:0:1d4:0:0:0
 F:EASY_KNOW | BRAND_FIRE
-L:7500
+C:7500
 D:It can be used to fuel a lantern with 7500 turns of light, up to
 D: a maximum of 15000 turns of light.
 D:  When thrown, it is considered lit, so it does more than nominal
@@ -156,7 +156,7 @@ A:40:0 to 50
 M:100:1d5
 F:EASY_KNOW
 E:FOOD_GOOD
-L:6000
+C:6000
 D:This nutritious but fairly bland food is familiar to anyone contemplating
 D: long journeys.
 
@@ -168,7 +168,7 @@ A:40:5 to 60
 M:100:2d3
 F:EASY_KNOW
 E:FOOD_GOOD
-L:2500
+C:2500
 D:A strange fungal growth, prone to moving if not observed.  Not very tasty
 D: but quite filling.
 
@@ -180,7 +180,7 @@ A:40:30 to 100
 M:10:1d3
 F:EASY_KNOW
 E:FOOD_WAYBREAD
-L:7500
+C:7500
 D:Food of the elves is always good; their waybread is no exception.  These
 D: thin cakes are wrapped in leaves and keep their tastiness for months.
 
@@ -198,7 +198,7 @@ A:10:1 to 100
 M:70:1d4
 F:EASY_KNOW
 E:TMD_ESP
-L:500
+C:500
 
 N:17:Fast Recovery
 G:,:d
@@ -208,7 +208,7 @@ A:10:1 to 40
 M:70:1d4
 F:EASY_KNOW
 E:CURE_BODY
-L:500
+C:500
 
 N:18:Vigor
 G:,:d
@@ -218,7 +218,7 @@ A:10:1 to 100
 M:10:1d3
 F:EASY_KNOW
 E:RESTORE_ALL
-L:500
+C:500
 
 N:19:Clear Mind
 G:,:d
@@ -228,7 +228,7 @@ A:10:1 to 40
 M:70:1d4
 F:EASY_KNOW
 E:CURE_MIND
-L:500
+C:500
 
 N:20:Emergency
 G:,:d
@@ -238,7 +238,7 @@ A:10:1 to 100
 M:70:1d4
 F:EASY_KNOW
 E:SHROOM_EMERGENCY
-L:500
+C:500
 
 N:21:Terror
 G:,:d
@@ -248,7 +248,7 @@ A:10:1 to 40
 M:70:1d4
 F:EASY_KNOW
 E:SHROOM_TERROR
-L:500
+C:500
 
 N:22:Stoneskin
 G:,:d
@@ -258,7 +258,7 @@ A:10:1 to 40
 M:70:1d4
 F:EASY_KNOW
 E:SHROOM_STONE
-L:500
+C:500
 D:Its poison turns your skin to stone, albeit briefly.
 
 N:23:Turbulence
@@ -269,7 +269,7 @@ W:0:0:1:60
 M:70:1d4
 F:EASY_KNOW
 #E:SHROOM_TURB
-L:500
+C:500
 
 N:24:Debility
 G:,:d
@@ -279,7 +279,7 @@ A:10:1 to 40
 M:70:1d4
 F:EASY_KNOW
 E:SHROOM_DEBILITY
-L:500
+C:500
 
 N:25:Sprinting
 G:,:d
@@ -289,7 +289,7 @@ A:1:10 to 100
 M:70:1d4
 F:EASY_KNOW
 E:SHROOM_SPRINTING
-L:500
+C:500
 
 N:26:Purging
 G:,:d
@@ -2094,7 +2094,7 @@ A:80:1 to 15
 M:90:2d3
 F:EASY_KNOW
 E:CURE_LIGHT
-L:150
+C:150
 
 N:319:Cure Serious Wounds
 G:!:d
@@ -2104,7 +2104,7 @@ A:80:5 to 40
 M:80:2d3
 F:EASY_KNOW
 E:CURE_SERIOUS
-L:150
+C:150
 
 N:320:Cure Critical Wounds
 G:!:d
@@ -2114,7 +2114,7 @@ A:80:12 to 100
 M:70:2d3
 F:EASY_KNOW
 E:CURE_CRITICAL
-L:150
+C:150
 
 N:321:Healing
 G:!:d
@@ -2124,7 +2124,7 @@ A:64:30 to 100
 M:25:2
 F:EASY_KNOW
 E:CURE_FULL
-L:200
+C:200
 
 N:322:*Healing*
 G:!:d
@@ -2134,7 +2134,7 @@ A:40:40 to 100
 P:0:1d1:0:0:0
 F:EASY_KNOW
 E:CURE_FULL2
-L:300
+C:300
 
 N:323:Life
 G:!:d
@@ -2341,7 +2341,7 @@ A:10:1 to 10
 M:70:2d3
 F:EASY_KNOW
 E:DRINK_GOOD
-L:1000
+C:1000
 
 N:356:Sleep
 G:!:d
@@ -2352,7 +2352,7 @@ M:70:2d3
 P:0:3d4:0:0:0
 F:EASY_KNOW
 E:PARALYZE
-L:100
+C:100
 
 N:357:Blindness
 G:!:d
@@ -2373,7 +2373,7 @@ M:70:2d3
 P:0:3d4:0:0:0
 F:EASY_KNOW
 E:CONFUSE
-L:50
+C:50
 
 N:359:Poison
 G:!:d
@@ -2394,7 +2394,7 @@ M:70:2d3
 P:0:3d4:0:0:0
 F:EASY_KNOW
 E:SLOW
-L:50
+C:50
 
 N:361:Lose Memories
 G:!:d

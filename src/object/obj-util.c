@@ -1468,9 +1468,9 @@ s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 			total_value = value * qty;
 
 			/* Calculate number of charges, rounded up */
-			charges = o_ptr->pval[DEFAULT_PVAL]
+			charges = o_ptr->extent
 				* qty / o_ptr->number;
-			if ((o_ptr->pval[DEFAULT_PVAL] * qty) % o_ptr->number != 0)
+			if ((o_ptr->extent * qty) % o_ptr->number != 0)
 				charges++;
 
 			/* Pay extra for charges, depending on standard number of charges */
@@ -1608,7 +1608,7 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
 		case TV_GOLD:
 		{
 			/* Too much gold or too many charges */
-			if (o_ptr->pval[DEFAULT_PVAL] + j_ptr->pval[DEFAULT_PVAL] > MAX_PVAL)
+			if (o_ptr->extent + j_ptr->extent > MAX_PVAL)
 				return FALSE;
 
 			/* ... otherwise ok */
@@ -1727,8 +1727,8 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 	if (o_ptr->tval == TV_WAND || o_ptr->tval == TV_STAFF ||
 			o_ptr->tval == TV_GOLD)
 	{
-		int total = o_ptr->pval[DEFAULT_PVAL] + j_ptr->pval[DEFAULT_PVAL];
-		o_ptr->pval[DEFAULT_PVAL] = total >= MAX_PVAL ? MAX_PVAL : total;
+		int total = o_ptr->extent + j_ptr->extent;
+		o_ptr->extent = total >= MAX_PVAL ? MAX_PVAL : total;
 	}
 
 	/* Combine origin data as best we can */
@@ -1812,8 +1812,8 @@ void object_copy_amt(object_type *dst, object_type *src, int amt)
 	 */
 	if (src->tval == TV_WAND || src->tval == TV_STAFF)
 	{
-		dst->pval[DEFAULT_PVAL] =
-			src->pval[DEFAULT_PVAL] * amt / src->number;
+		dst->extent =
+			src->extent * amt / src->number;
 	}
 
 	if (src->tval == TV_ROD)
@@ -2251,8 +2251,8 @@ void inven_item_charges(int item)
 	if (!object_is_known(o_ptr)) return;
 
 	/* Print a message */
-	msg("You have %d charge%s remaining.", o_ptr->pval[DEFAULT_PVAL],
-	    (o_ptr->pval[DEFAULT_PVAL] != 1) ? "s" : "");
+	msg("You have %d charge%s remaining.", o_ptr->extent,
+	    (o_ptr->extent != 1) ? "s" : "");
 }
 
 
@@ -2597,9 +2597,9 @@ void floor_item_charges(int item)
 
 	/* Print a message */
 	msg("There %s %d charge%s remaining.",
-	    (o_ptr->pval[DEFAULT_PVAL] != 1) ? "are" : "is",
-	     o_ptr->pval[DEFAULT_PVAL],
-	    (o_ptr->pval[DEFAULT_PVAL] != 1) ? "s" : "");
+	    (o_ptr->extent != 1) ? "are" : "is",
+	     o_ptr->extent,
+	    (o_ptr->extent != 1) ? "s" : "");
 }
 
 
@@ -2828,8 +2828,8 @@ extern s16b inven_carry(struct player *p, struct object *o)
 			/* Lights sort by decreasing fuel */
 			if (o->tval == TV_LIGHT)
 			{
-				if (o->pval[DEFAULT_PVAL] > j_ptr->pval[DEFAULT_PVAL]) break;
-				if (o->pval[DEFAULT_PVAL] < j_ptr->pval[DEFAULT_PVAL]) continue;
+				if (o->extent > j_ptr->extent) break;
+				if (o->extent < j_ptr->extent) continue;
 			}
 
 			/* Determine the "value" of the pack item */
@@ -3096,7 +3096,7 @@ void combine_pack(void)
 		{
 			/* Count the gold */
 			slide = TRUE;
-			p_ptr->au += o_ptr->pval[DEFAULT_PVAL];
+			p_ptr->au += o_ptr->extent;
 		}
 
 		/* Scan the items above that item */
@@ -3227,8 +3227,8 @@ void reorder_pack(void)
 			/* Lights sort by decreasing fuel */
 			if (o_ptr->tval == TV_LIGHT)
 			{
-				if (o_ptr->pval[DEFAULT_PVAL] > j_ptr->pval[DEFAULT_PVAL]) break;
-				if (o_ptr->pval[DEFAULT_PVAL] < j_ptr->pval[DEFAULT_PVAL]) continue;
+				if (o_ptr->extent > j_ptr->extent) break;
+				if (o_ptr->extent < j_ptr->extent) continue;
 			}
 
 			/* Determine the "value" of the pack item */
@@ -3345,10 +3345,10 @@ void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt)
 	if ((o_ptr->tval == TV_WAND) ||
 	    (o_ptr->tval == TV_STAFF))
 	{
-		q_ptr->pval[DEFAULT_PVAL] = o_ptr->pval[DEFAULT_PVAL] * amt / o_ptr->number;
+		q_ptr->extent = o_ptr->extent * amt / o_ptr->number;
 
 		if (amt < o_ptr->number)
-			o_ptr->pval[DEFAULT_PVAL] -= q_ptr->pval[DEFAULT_PVAL];
+			o_ptr->extent -= q_ptr->extent;
 	}
 
 	/*
@@ -3383,7 +3383,7 @@ void reduce_charges(object_type *o_ptr, int amt)
 	     (o_ptr->tval == TV_STAFF)) &&
 	    (amt < o_ptr->number))
 	{
-		o_ptr->pval[DEFAULT_PVAL] -= o_ptr->pval[DEFAULT_PVAL] * amt / o_ptr->number;
+		o_ptr->extent -= o_ptr->extent * amt / o_ptr->number;
 	}
 
 	if ((o_ptr->tval == TV_ROD) &&
@@ -4013,7 +4013,7 @@ bool obj_has_charges(const object_type *o_ptr)
 {
 	if (o_ptr->tval != TV_WAND && o_ptr->tval != TV_STAFF) return FALSE;
 
-	if (o_ptr->pval[DEFAULT_PVAL] <= 0) return FALSE;
+	if (o_ptr->extent <= 0) return FALSE;
 
 	return TRUE;
 }

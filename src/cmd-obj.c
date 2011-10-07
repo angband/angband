@@ -59,7 +59,7 @@ static int check_devices(object_type *o_ptr)
 	}
 
 	/* Notice empty staffs */
-	if (what && o_ptr->pval[DEFAULT_PVAL] <= 0)
+	if (what && o_ptr->extent <= 0)
 	{
 		flush();
 		msg("The %s has no charges left.", what);
@@ -651,7 +651,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 
 	/* Food feeds the player */
 	if (o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION)
-		player_set_food(p_ptr, p_ptr->food + o_ptr->pval[DEFAULT_PVAL]);
+		player_set_food(p_ptr, p_ptr->food + o_ptr->extent);
 
 	/* Use the turn */
 	p_ptr->energy_use = 100;
@@ -687,7 +687,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	if (used && use == USE_CHARGE)
 	{
 		/* Use a single charge */
-		o_ptr->pval[DEFAULT_PVAL]--;
+		o_ptr->extent--;
 
 		/* Describe charges */
 		if (item >= 0)
@@ -738,7 +738,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 static void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
 {
 	/* Refuel */
-	j_ptr->timeout += o_ptr->timeout ? o_ptr->timeout : o_ptr->pval[DEFAULT_PVAL];
+	j_ptr->timeout += o_ptr->timeout ? o_ptr->timeout : o_ptr->extent;
 
 	/* Message */
 	msg("You fuel your lamp.");

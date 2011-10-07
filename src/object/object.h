@@ -468,7 +468,7 @@ typedef struct object {
 	s16b timeout;		/* Timeout Counter */
 
 	byte number;		/* Number of items */
-	u32b extent;		/* Charges/food value/fuel value/gold amount */
+	s32b extent;		/* Charges/food|fuel value/gold amount/chest status */
 	byte marked;		/* Object is marked */
 	bool ignore;		/* Object is ignored */
 
@@ -480,7 +480,7 @@ typedef struct object {
 	byte origin_depth;  /* What depth the item was found at */
 	u16b origin_xtra;   /* Extra information about origin */
 
-	quark_t note; /* Inscription index */
+	quark_t note; 		/* Inscription index */
 } object_type;
 
 typedef struct flavor {

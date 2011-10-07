@@ -388,13 +388,13 @@ static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max, si
 	if (!known) return end;
 
 	/* May be "empty" */
-	if (!o_ptr->pval[DEFAULT_PVAL])
+	if (!o_ptr->extent)
 		strnfcat(buf, max, &end, " (empty)");
 
 	/* May be "disarmed" */
-	else if (o_ptr->pval[DEFAULT_PVAL] < 0)
+	else if (o_ptr->extent < 0)
 	{
-		if (chest_traps[0 - o_ptr->pval[DEFAULT_PVAL]])
+		if (chest_traps[0 - o_ptr->extent])
 			strnfcat(buf, max, &end, " (disarmed)");
 		else
 			strnfcat(buf, max, &end, " (unlocked)");
@@ -404,7 +404,7 @@ static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max, si
 	else
 	{
 		/* Describe the traps */
-		switch (chest_traps[o_ptr->pval[DEFAULT_PVAL]])
+		switch (chest_traps[o_ptr->extent])
 		{
 			case 0:
 				strnfcat(buf, max, &end, " (Locked)");
@@ -550,7 +550,8 @@ static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max, 
 
 	/* Wands and Staffs have charges */
 	if (aware && (o_ptr->tval == TV_STAFF || o_ptr->tval == TV_WAND))
-		strnfcat(buf, max, &end, " (%d charge%s)", o_ptr->pval[DEFAULT_PVAL], PLURAL(o_ptr->pval[DEFAULT_PVAL]));
+		strnfcat(buf, max, &end, " (%d charge%s)", o_ptr->extent,
+			PLURAL(o_ptr->extent));
 
 	/* Charging things */
 	else if (o_ptr->timeout > 0)
@@ -699,7 +700,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 
 	if (o_ptr->tval == TV_GOLD)
 		return strnfmt(buf, max, "%d gold pieces worth of %s%s",
-				o_ptr->pval[DEFAULT_PVAL], o_ptr->kind->name,
+				o_ptr->extent, o_ptr->kind->name,
 				squelch_item_ok(o_ptr) ? " {squelch}" : "");
 
 	/** Construct the name **/

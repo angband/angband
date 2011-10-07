@@ -202,7 +202,7 @@ static void chest_death(int y, int x, s16b o_idx)
 	number = (o_ptr->sval % SV_CHEST_MIN_LARGE) * 2;
 
 	/* Zero pval means empty chest */
-	if (!o_ptr->pval[DEFAULT_PVAL]) number = 0;
+	if (!o_ptr->extent) number = 0;
 
 	/* Determine the "value" of the items */
 	value = o_ptr->origin_depth - 10 + 2 * o_ptr->sval;
@@ -237,7 +237,7 @@ static void chest_death(int y, int x, s16b o_idx)
 	}
 
 	/* Empty */
-	o_ptr->pval[DEFAULT_PVAL] = 0;
+	o_ptr->extent = 0;
 
 	/* Known */
 	object_notice_everything(o_ptr);
@@ -258,10 +258,10 @@ static void chest_trap(int y, int x, s16b o_idx)
 
 
 	/* Ignore disarmed chests */
-	if (o_ptr->pval[DEFAULT_PVAL] <= 0) return;
+	if (o_ptr->extent <= 0) return;
 
 	/* Obtain the traps */
-	trap = chest_traps[o_ptr->pval[DEFAULT_PVAL]];
+	trap = chest_traps[o_ptr->extent];
 
 	/* Lose strength */
 	if (trap & (CHEST_LOSE_STR))
@@ -310,7 +310,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 	{
 		msg("There is a sudden explosion!");
 		msg("Everything inside the chest is destroyed!");
-		o_ptr->pval[DEFAULT_PVAL] = 0;
+		o_ptr->extent = 0;
 		take_hit(p_ptr, damroll(5, 8), "an exploding chest");
 	}
 }
@@ -335,7 +335,7 @@ static bool do_cmd_open_chest(int y, int x, s16b o_idx)
 
 
 	/* Attempt to unlock it */
-	if (o_ptr->pval[DEFAULT_PVAL] > 0)
+	if (o_ptr->extent > 0)
 	{
 		/* Assume locked, and thus not open */
 		flag = FALSE;
@@ -348,7 +348,7 @@ static bool do_cmd_open_chest(int y, int x, s16b o_idx)
 		if (p_ptr->timed[TMD_CONFUSED] || p_ptr->timed[TMD_IMAGE]) i = i / 10;
 
 		/* Extract the difficulty */
-		j = i - o_ptr->pval[DEFAULT_PVAL];
+		j = i - o_ptr->extent;
 
 		/* Always have a small chance of success */
 		if (j < 2) j = 2;
@@ -416,7 +416,7 @@ static bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 	if (p_ptr->timed[TMD_CONFUSED] || p_ptr->timed[TMD_IMAGE]) i = i / 10;
 
 	/* Extract the difficulty */
-	j = i - o_ptr->pval[DEFAULT_PVAL];
+	j = i - o_ptr->extent;
 
 	/* Always have a small chance of success */
 	if (j < 2) j = 2;
@@ -428,13 +428,13 @@ static bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 	}
 
 	/* Already disarmed/unlocked */
-	else if (o_ptr->pval[DEFAULT_PVAL] <= 0)
+	else if (o_ptr->extent <= 0)
 	{
 		msg("The chest is not trapped.");
 	}
 
 	/* No traps to find. */
-	else if (!chest_traps[o_ptr->pval[DEFAULT_PVAL]])
+	else if (!chest_traps[o_ptr->extent])
 	{
 		msg("The chest is not trapped.");
 	}
@@ -443,8 +443,8 @@ static bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 	else if (randint0(100) < j)
 	{
 		msgt(MSG_DISARM, "You have disarmed the chest.");
-		player_exp_gain(p_ptr, o_ptr->pval[DEFAULT_PVAL]);
-		o_ptr->pval[DEFAULT_PVAL] = (0 - o_ptr->pval[DEFAULT_PVAL]);
+		player_exp_gain(p_ptr, o_ptr->extent);
+		o_ptr->extent = (0 - o_ptr->extent);
 	}
 
 	/* Failure -- Keep trying */
@@ -535,13 +535,13 @@ int count_chests(int *y, int *x, bool trapped)
 		o_ptr = object_byid(o_idx);
 
 		/* Already open */
-		if (o_ptr->pval[DEFAULT_PVAL] == 0) continue;
+		if (o_ptr->extent == 0) continue;
 
 		/* No (known) traps here */
 		if (trapped &&
 		    (!object_is_known(o_ptr) ||
-		     (o_ptr->pval[DEFAULT_PVAL] < 0) ||
-		     !chest_traps[o_ptr->pval[DEFAULT_PVAL]]))
+		     (o_ptr->extent < 0) ||
+		     !chest_traps[o_ptr->extent]))
 		{
 			continue;
 		}

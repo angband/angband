@@ -467,7 +467,7 @@ bool squelch_item_ok(const object_type *o_ptr)
 		return TRUE;
 
 	/* Auto-squelch dead chests */
-	if (o_ptr->tval == TV_CHEST && o_ptr->pval[DEFAULT_PVAL] == 0)
+	if (o_ptr->tval == TV_CHEST && o_ptr->extent == 0)
 		return TRUE;
 
 	/* Do squelching by kind */

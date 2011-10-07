@@ -302,7 +302,7 @@ static void log_all_objects(int level)
 
 				/* Capture gold amounts */
 				if (o_ptr->tval == TV_GOLD)
-					level_data[level].gold[o_ptr->origin] += o_ptr->pval[DEFAULT_PVAL];
+					level_data[level].gold[o_ptr->origin] += o_ptr->extent;
 
 				/* Capture artifact drops */
 				if (o_ptr->artifact)

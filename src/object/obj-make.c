@@ -510,15 +510,8 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
 	of_copy(o_ptr->flags, k->base->flags);
 	of_union(o_ptr->flags, f2);
 
-	/* Assign charges (wands/staves only) */
-	if (o_ptr->tval == TV_WAND || o_ptr->tval == TV_STAFF)
-		o_ptr->pval[DEFAULT_PVAL] = randcalc(k->extent, lev, rand_aspect);
-
-	/* Assign flagless pval for food or oil */
-	if (o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION ||
-			o_ptr->tval == TV_FLASK)
-		o_ptr->pval[DEFAULT_PVAL]
-			= randcalc(k->pval[DEFAULT_PVAL], lev, rand_aspect);
+	/* Assign charges/food/fuel value (wands/staves/food/oil) */
+	o_ptr->extent = randcalc(k->extent, lev, rand_aspect);
 
 	/* Default fuel for lamps */
 	if (o_ptr->tval == TV_LIGHT) {
@@ -628,11 +621,11 @@ s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 			if (o_ptr->kind->level <= 0) break;
 
 			/* Hack -- pick a "difficulty" */
-			o_ptr->pval[DEFAULT_PVAL] = randint1(o_ptr->kind->level);
+			o_ptr->extent = randint1(o_ptr->kind->level);
 
 			/* Never exceed "difficulty" of 55 to 59 */
-			if (o_ptr->pval[DEFAULT_PVAL] > 55)
-				o_ptr->pval[DEFAULT_PVAL] = (s16b)(55 + randint0(5));
+			if (o_ptr->extent > 55)
+				o_ptr->extent = (s16b)(55 + randint0(5));
 
 			break;
 	}
@@ -896,5 +889,5 @@ void make_gold(object_type *j_ptr, int lev, int coin_type)
 	if (value > MAX_SHORT)
 		value = MAX_SHORT;
 
-	j_ptr->pval[DEFAULT_PVAL] = value;
+	j_ptr->extent = value;
 }

@@ -1592,11 +1592,12 @@ bool recharge(int spell_strength)
 	/* Extract the object "level" */
 	lev = o_ptr->kind->level;
 
-	/* 
-	 * Chance of failure = 1 time in 
-	 * [Spell_strength + 100 - item_level - 10 * charge_per_item]/15 
+	/*
+	 * Chance of failure = 1 time in
+	 * [Spell_strength + 100 - item_level - 10 * charge_per_item]/15
 	 */
-	i = (spell_strength + 100 - lev - (10 * (o_ptr->pval[DEFAULT_PVAL] / o_ptr->number))) / 15;
+	i = (spell_strength + 100 - lev - (10 * (o_ptr->extent / o_ptr->number)))
+		/ 15;
 
 	/* Back-fire */
 	if ((i <= 1) || one_in_(i))
@@ -1630,7 +1631,7 @@ bool recharge(int spell_strength)
 		t = (spell_strength / (lev + 2)) + 1;
 
 		/* Recharge based on the power */
-		if (t > 0) o_ptr->pval[DEFAULT_PVAL] += 2 + randint1(t);
+		if (t > 0) o_ptr->extent += 2 + randint1(t);
 
 		/* We no longer think the item is empty */
 		o_ptr->ident &= ~(IDENT_EMPTY);

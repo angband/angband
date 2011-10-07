@@ -1364,7 +1364,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 	/* Get info on gold. */
 	if (o_ptr->tval == TV_GOLD){
 	
-		int temp = o_ptr->pval[DEFAULT_PVAL];
+		int temp = o_ptr->extent;
 		gold_temp = temp;
 	    gold_total[lvl] += (gold_temp / tries);
 	

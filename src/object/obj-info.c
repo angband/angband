@@ -862,7 +862,7 @@ static bool describe_food(textblock *tb, const object_type *o_ptr,
 {
 	/* Describe boring bits */
 	if ((o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION) &&
-		o_ptr->pval[DEFAULT_PVAL])
+		o_ptr->extent)
 	{
 		/* Sometimes adjust for player speed */
 		int multiplier = extract_energy[p_ptr->state.speed];
@@ -870,7 +870,7 @@ static bool describe_food(textblock *tb, const object_type *o_ptr,
 
 		if (object_is_known(o_ptr) || full) {
 			textblock_append(tb, "Nourishes for around ");
-			textblock_append_c(tb, TERM_L_GREEN, "%d", (o_ptr->pval[DEFAULT_PVAL] / 2) *
+			textblock_append_c(tb, TERM_L_GREEN, "%d", (o_ptr->extent / 2) *
 				multiplier / 10);
 			textblock_append(tb, " turns.\n");
 		} else {
