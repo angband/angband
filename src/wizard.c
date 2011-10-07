@@ -1632,6 +1632,8 @@ void do_cmd_debug(void)
 
 	struct keypress cmd;
 
+	const monster_race *r_ptr;
+
 
 	/* Get a "debug command" */
 	if (!get_com("Debug Command: ", &cmd)) return;
@@ -1907,8 +1909,11 @@ void do_cmd_debug(void)
 				if (sym.code == 'a' || sym.code == 'A')
 				{
 					int i;
-					for (i = 0; i < z_info->r_max; i++)
-						cheat_monster_lore(i, &l_list[i]);
+					for (i = 1; i < z_info->r_max; i++)
+					{
+						r_ptr = &r_info[i];
+						cheat_monster_lore(r_ptr, &l_list[i]);
+					}
 					break;
 				}
 				else if (sym.code == 's' || sym.code == 'S')
@@ -1944,7 +1949,10 @@ void do_cmd_debug(void)
 
 			/* Did we find a valid monster? */
 			if (r_idx > 0)
-				cheat_monster_lore(r_idx, &l_list[r_idx]);
+			{
+				r_ptr = &r_info[r_idx];
+				cheat_monster_lore(r_ptr, &l_list[r_idx]);
+			}
 			else
 				msg("No monster found.");
 	
@@ -2034,8 +2042,11 @@ void do_cmd_debug(void)
 				if (sym.code == 'a' || sym.code == 'A')
 				{
 					int i;
-					for (i = 0; i < z_info->r_max; i++)
-						wipe_monster_lore(i, &l_list[i]);
+					for (i = 1; i < z_info->r_max; i++)
+					{
+						r_ptr = &r_info[i];
+						wipe_monster_lore(r_ptr, &l_list[i]);
+					}
 					break;
 				}
 				else if (sym.code == 's' || sym.code == 'S')
@@ -2071,7 +2082,10 @@ void do_cmd_debug(void)
 
 			/* Did we find a valid monster? */
 			if (r_idx > 0)
-				wipe_monster_lore(r_idx, &l_list[r_idx]);
+			{
+				r_ptr = &r_info[r_idx];
+				wipe_monster_lore(r_ptr, &l_list[r_idx]);
+			}
 			else
 				msg("No monster found.");
 	
