@@ -112,26 +112,6 @@ T:shield:0:99:20:1 to 40
 T:soft armour:0:99:20:1 to 40
 T:hard armour:0:6:20:1 to 40
 
-N:5:suffix:great:of Resistance
-C:0:0:d10
-F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD |
-F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
-T:shield:0:99:10:25 to 100
-T:soft armour:0:99:10:25 to 100
-T:hard armour:0:99:10:25 to 100
-T:dragon armour:7:29:8:70 to 100
-
-N:6:suffix:uber:of Elvenkind
-C:0:0:d10:10:-10
-F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD |
-F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
-L:d2:0:STEALTH
-R:1:HRES
-T:shield:0:99:2:50 to 127
-T:soft armour:0:99:2:50 to 127
-T:hard armour:0:99:2:50 to 127
-T:dragon armour:7:29:3:70 to 127
-
 N:10:suffix:good:of Vulnerability
 C:0:0:-d50
 F:AGGRAVATE | LIGHT_CURSE
@@ -140,25 +120,12 @@ T:cloak:0:99:10:10 to 80
 T:soft armour:0:99:10:10 to 80
 T:hard armour:0:99:10:10 to 80
 
-### Robes only ###
-
-N:11:suffix:uber:of Permanence
-C:0:0:d20
-F:SUST_STR | SUST_DEX | SUST_CON | SUST_INT | SUST_WIS | SUST_CHR |
-F:HOLD_LIFE | RES_ACID | RES_ELEC | RES_FIRE | RES_COLD |
-F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
-R:1:HRES
-T:soft armour:2:2:10:50 to 127
-
 ### Heavy metal or dragon armor only ###
 
 N:12:prefix:uber:Dwarven
 C:0:0:d15
 M:255:0:5
 F:IGNORE_ACID | IGNORE_FIRE | FREE_ACT
-L:d2:1:STR
-L:d2:1:CON
-L:d2M3:1:INFRA
 T:hard armour:0:99:5:40 to 127
 T:dragon armour:0:99:5:40 to 127
 
@@ -171,16 +138,7 @@ T:dragon armour:0:99:5:40 to 127
 N:15:prefix:uber:Dwarven
 C:1+M3:1+M3:d5
 F:IGNORE_ACID | IGNORE_FIRE | FREE_ACT
-L:d2:1:STR
-L:d2:1:CON
 T:shield:3:3:10:40 to 127
-
-N:22:suffix:uber:of Preservation
-C:0:0:d20
-F:RES_DISEN | SUST_STR | SUST_CON | SUST_DEX | HOLD_LIFE |
-F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
-R:1:HRES
-T:shield:0:99:2:50 to 127
 
 
 ### Crowns and Helms ###
@@ -199,30 +157,6 @@ N:26:suffix:good:of Beauty
 F:SUST_CHR
 L:d4:0:CHR
 T:helm:0:99:20:1 to 40
-
-N:27:suffix:uber:of the Magi
-F:SUST_INT
-F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD |
-F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
-L:d3:0:INT
-R:1:MISC | PROT
-T:crown:0:99:10:45 to 127
-
-N:28:suffix:uber:of Might
-F:SUST_STR | SUST_DEX | SUST_CON | FREE_ACT |
-F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
-L:d3:1:STR
-L:d3:1:DEX
-L:d3:1:CON
-T:crown:0:99:10:45 to 127
-
-N:29:suffix:uber:of Lordliness
-F:SUST_WIS | SUST_CHR | RES_FEAR |
-F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
-L:d3:1:WIS
-L:d2M3:1:CHR
-R:1:MISC | PROT
-T:crown:0:99:20:45 to 100
 
 N:30:suffix:great:of Seeing
 F:RES_BLIND | SEE_INVIS
@@ -248,14 +182,6 @@ T:helm:0:99:10:1 to 100
 N:35:suffix:good:of Teleportation
 F:TELEPORT | LIGHT_CURSE
 T:helm:0:99:10:10 to 80
-
-N:36:suffix:great:of Serenity
-F:RES_SOUND | RES_CONFU | RES_FEAR | RES_STUN
-T:crown:0:99:6:50 to 127
-
-N:37:suffix:great:of Night and Day
-F:RES_LIGHT | RES_DARK | LIGHT | SEE_INVIS | RES_BLIND | IGNORE_ACID
-T:crown:0:99:6:50 to 127
 
 N:38:suffix:good:of Dullness
 F:LIGHT_CURSE
@@ -289,14 +215,6 @@ F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 R:1:HRES
 T:cloak:0:99:6:30 to 127
 
-N:43:suffix:uber:of the Magi
-C:0:0:d4
-F:SUST_INT | IGNORE_ACID
-L:d2:1:INT
-L:d3:1:STEALTH
-R:1:MISC | PROT
-T:cloak:0:99:10:30 to 100
-
 N:44:suffix:good:of Enveloping
 C:-d10:-d10:0
 F:SHOW_MODS | LIGHT_CURSE
@@ -326,27 +244,6 @@ N:50:suffix:great:of Agility
 L:d5:0:DEX
 T:gloves:0:99:12:20 to 95
 
-N:51:suffix:uber:of Power
-C:d5:d5:0
-F:SHOW_MODS
-L:d5:0:STR
-T:gloves:0:99:12:30 to 127
-
-N:52:suffix:uber:of Thievery
-C:d8:d3:0
-F:SHOW_MODS | FEATHER | FREE_ACT
-L:1+M4:1:DEX
-L:1+d2M3:2:SEARCH
-T:gloves:1:1:8:40 to 127
-T:gloves:5:5:8:40 to 127
-
-N:53:suffix:great:of Combat
-C:d3:d8:0
-F:SHOW_MODS | AGGRAVATE
-L:d2:1:STR
-L:d2:1:CON
-T:gloves:2:4:5:50 to 127
-
 N:54:suffix:good:of Weakness
 F:LIGHT_CURSE
 L:-d10:0:STR
@@ -367,16 +264,6 @@ N:59:suffix:uber:of Speed
 L:d10:0:SPEED
 T:boots:0:99:2:20 to 127
 
-N:60:suffix:great:of Stability
-F:RES_NEXUS | FEATHER
-T:boots:0:99:16:15 to 100
-
-N:61:suffix:uber:of Elvenkind
-F:FEATHER | IGNORE_ACID | IGNORE_FIRE
-L:d4:1:STEALTH
-L:3+d6:1:SPEED
-T:boots:2:3:2:60 to 127
-
 N:62:suffix:good:of Slowness
 F:LIGHT_CURSE
 L:-d5:0:SPEED
@@ -390,27 +277,6 @@ T:boots:0:99:10:10 to 80
 
 ### Weapons ###
 
-N:64:prefix:uber:Holy
-C:d6:d6:d4
-F:SLAY_EVIL | SLAY_UNDEAD | SLAY_DEMON |
-F:SEE_INVIS | BLESSED | RES_FEAR
-L:d4:0:WIS
-R:1:SUST
-T:hafted:0:99:13:20 to 70
-T:polearm:0:99:13:20 to 70
-T:sword:0:99:13:20 to 70
-
-N:65:prefix:uber:Defending
-C:d4:d4:d8
-F:FREE_ACT | SEE_INVIS | FEATHER | REGEN |
-F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD |
-F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
-L:d4:0:STEALTH
-R:1:SUST
-T:hafted:0:99:12:20 to 80
-T:polearm:0:99:12:20 to 80
-T:sword:0:99:12:20 to 80
-
 N:66:prefix:great:Blessed
 F:BLESSED
 L:d3:0:WIS
@@ -419,42 +285,11 @@ T:hafted:0:99:19:1 to 60
 T:polearm:0:99:19:1 to 60
 T:sword:0:99:19:1 to 60
 
-N:67:suffix:uber:of Gondolin
-C:d7:d7:0
-F:SLAY_DEMON | SLAY_ORC | SLAY_TROLL | SLAY_DRAGON |
-F:LIGHT | RES_DARK | SEE_INVIS | FREE_ACT |
-F:IGNORE_ACID | IGNORE_FIRE
-R:1:MISC | PROT
-T:hafted:0:99:9:30 to 127
-T:polearm:0:99:9:30 to 127
-T:sword:0:99:9:30 to 127
-
-N:68:suffix:uber:of Westernesse
-C:d5:d5:0
-F:SLAY_ORC | SLAY_TROLL | SLAY_GIANT |
-F:FREE_ACT | SEE_INVIS
-L:d2:1:STR
-L:d2:1:DEX
-L:d2:1:CON
-T:hafted:0:99:14:30 to 127
-T:polearm:0:99:14:30 to 127
-T:sword:0:99:14:30 to 127
-
 N:69:suffix:great:of Extra Attacks
 L:d2:0:BLOWS
 T:hafted:0:99:15:30 to 127
 T:polearm:0:99:15:30 to 127
 T:sword:0:99:15:30 to 127
-
-N:70:suffix:uber:of Fury
-C:d10:d10:0
-F:AGGRAVATE | RES_FEAR |
-F:IGNORE_ACID | IGNORE_FIRE
-L:d2M2:2:STR
-L:d2:1:BLOWS
-T:hafted:12:99:8:1 to 127
-T:polearm:10:99:8:1 to 127
-T:sword:16:99:8:1 to 127
 
 # 71 (unused)
 
@@ -584,59 +419,20 @@ T:bolt:0:99:8:8 to 88
 
 # The *Slay* weapons (8)
 
-N:88:suffix:great:of *Slay Animal*
-F:SLAY_ANIMAL | SLOW_DIGEST
-L:d2:0:INT
-T:hafted:0:99:20:20 to 60
-T:polearm:0:99:20:20 to 60
-T:sword:0:99:20:20 to 60
-
-N:89:suffix:uber:of *Slay Evil*
-F:SLAY_EVIL | BLESSED
-L:d2:0:WIS
-R:1:MISC | PROT
-T:hafted:0:99:20:20 to 60
-T:polearm:0:99:20:20 to 60
-T:sword:0:99:20:20 to 60
-
 N:90:suffix:uber:Nightbane
-F:KILL_UNDEAD | SEE_INVIS
-L:d2:0:WIS
+F:KILL_UNDEAD
 T:hafted:0:18:20:62 to 127
 T:polearm:0:99:20:62 to 127
 T:sword:0:99:20:62 to 127
 
 N:91:suffix:uber:Demonbane
-F:KILL_DEMON | RES_FIRE
-L:d2:0:INT
+F:KILL_DEMON
 T:hafted:0:99:20:67 to 127
 T:polearm:0:99:20:67 to 127
 T:sword:0:99:20:67 to 127
 
-N:92:suffix:great:of *Slay Orc*
-F:SLAY_ORC | SUST_DEX
-L:d2:0:DEX
-T:hafted:0:99:20:15 to 44
-T:polearm:0:99:20:15 to 44
-T:sword:0:99:20:15 to 44
-
-N:93:suffix:great:of *Slay Troll*
-F:SLAY_TROLL | REGEN
-L:d2:0:STR
-T:hafted:0:99:20:36 to 55
-T:polearm:0:99:20:36 to 55
-T:sword:0:99:20:36 to 55
-
-N:94:suffix:great:of *Slay Giant*
-F:SLAY_GIANT | SUST_STR
-L:d2:0:STR
-T:hafted:0:99:20:39 to 66
-T:polearm:0:99:20:39 to 66
-T:sword:0:99:20:39 to 66
-
 N:95:suffix:uber:Dragonbane
-F:KILL_DRAGON | RES_FEAR
-L:d2:0:CON
+F:KILL_DRAGON
 T:hafted:0:99:20:39 to 88
 T:polearm:0:99:20:39 to 88
 T:sword:0:99:20:39 to 88
@@ -667,15 +463,12 @@ T:light:1:1:4:20 to 127
 ### Digging Tools
 
 N:100:suffix:great:of Digging
-F:BRAND_ACID
 L:d4:1:TUNNEL
 T:digger:0:99:20:1 to 65
 
 N:101:suffix:great:of Earthquakes
 C:d10:d10:0
-F:BRAND_ACID | IMPACT
-L:d4:1:STR
-L:d6:1:TUNNEL
+F:IMPACT
 T:digger:0:99:5:20 to 127
 
 ### Cursed Weapons
@@ -706,20 +499,6 @@ T:bow:0:99:20:10 to 65
 D:It has no special abilities, but its to-dam value may be unusually
 D: high.
 
-N:106:suffix:uber:of Lothlórien
-C:d10:d10:0
-F:FREE_ACT | IGNORE_ACID | IGNORE_FIRE
-L:1+d2M2:2:DEX
-L:d2:1:MIGHT
-R:1:MISC | PROT
-T:bow:12:13:5:40 to 127
-
-N:107:suffix:uber:of the Haradrim
-C:d5:d5:0
-L:1:1:MIGHT | SHOTS
-F:IGNORE_ACID | IGNORE_FIRE
-T:bow:23:23:10:40 to 127
-
 N:108:suffix:great:of Extra Might
 C:d5:d10:0
 L:1:0:MIGHT
@@ -730,14 +509,6 @@ C:d10:d5:0
 L:1:0:SHOTS
 T:bow:0:99:10:25 to 100
 
-N:110:suffix:uber:of Buckland
-C:d8:d8:0
-F:IGNORE_ACID | IGNORE_FIRE
-L:1+d2M2:2:DEX
-L:d2:1:SHOTS
-L:d2:1:MIGHT
-T:bow:2:2:5:40 to 127
-
 N:111:suffix:great:the Nazgûl
 C:-d10:d10:0
 F:LIGHT_CURSE | DRAIN_EXP | SEE_INVIS
@@ -745,14 +516,6 @@ T:bow:0:99:10:10 to 80
 
 
 ### Ammo ###
-
-N:120:suffix:uber:of Holy Might
-C:d10:d10:0
-F:SLAY_EVIL | SLAY_DEMON | SLAY_UNDEAD
-F:IGNORE_FIRE | IGNORE_ACID
-T:shot:2:99:8:40 to 127
-T:arrow:2:99:8:40 to 127
-T:bolt:2:99:8:40 to 127
 
 N:124:suffix:great:of Wounding
 C:d5:d5:0
