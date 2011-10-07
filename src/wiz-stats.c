@@ -1321,14 +1321,14 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		//msg_format("Found artifact %s",a_ptr->name);
 		
 		/* artifact is shallow */
-		if (a_ptr->alloc_min < (p_ptr->depth - 20)) art_shal[lvl] += addval;
+		if (a_ptr->alloc_min[0] < (p_ptr->depth - 20)) art_shal[lvl] += addval;
 		
 		/* artifact is close to the player depth */
-		if ((a_ptr->alloc_min >= p_ptr->depth - 20) &&
-			(a_ptr->alloc_min <= p_ptr->depth )) art_ave[lvl] += addval;
+		if ((a_ptr->alloc_min[0] >= p_ptr->depth - 20) &&
+			(a_ptr->alloc_min[0] <= p_ptr->depth )) art_ave[lvl] += addval;
 		
 		/* artifact is out of depth */
-		if (a_ptr->alloc_min > (p_ptr->depth)) art_ood[lvl] += addval;
+		if (a_ptr->alloc_min[0] > (p_ptr->depth)) art_ood[lvl] += addval;
 		
 		/* check to see if it's a special artifact */
 		if ((o_ptr->tval == TV_LIGHT) || (o_ptr->tval == TV_AMULET)

@@ -518,7 +518,7 @@ static enum parser_error parse_k_c(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	assert(k);
 
-	k->charge = parser_getrand(p, "charges");
+	k->extent = parser_getrand(p, "extent");
 	return PARSE_ERROR_NONE;
 }
 
@@ -608,7 +608,7 @@ struct parser *init_parse_k(void) {
 	parser_reg(p, "W int level int extra int weight int cost", parse_k_w);
 	parser_reg(p, "A int common str minmax", parse_k_a);
 	parser_reg(p, "P int ac rand hd rand to-h rand to-d rand to-a", parse_k_p);
-	parser_reg(p, "C rand charges", parse_k_c);
+	parser_reg(p, "C rand extent", parse_k_c);
 	parser_reg(p, "M int prob rand stack", parse_k_m);
 	parser_reg(p, "F str flags", parse_k_f);
 	parser_reg(p, "E sym name ?rand time", parse_k_e);
@@ -728,15 +728,15 @@ static enum parser_error parse_a_a(struct parser *p) {
 	int amin, amax;
 	assert(a);
 
-	a->alloc_prob = parser_getint(p, "common");
+	a->alloc_prob[0] = parser_getint(p, "common");
 	if (sscanf(tmp, "%d to %d", &amin, &amax) != 2)
 		return PARSE_ERROR_GENERIC;
 
 	if (amin > 255 || amax > 255 || amin < 0 || amax < 0)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 
-	a->alloc_min = amin;
-	a->alloc_max = amax;
+	a->alloc_min[0] = amin;
+	a->alloc_max[0] = amax;
 	return PARSE_ERROR_NONE;
 }
 

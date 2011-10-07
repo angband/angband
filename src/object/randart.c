@@ -405,7 +405,7 @@ static void store_base_power (void)
 		k_ptr = lookup_kind(a_ptr->tval, a_ptr->sval);
 		base_item_level[i] = k_ptr->level;
 		base_item_prob[i] = k_ptr->alloc_prob;
-		base_art_alloc[i] = a_ptr->alloc_prob;
+		base_art_alloc[i] = a_ptr->alloc_prob[0];
 	}
 
 	avg_power = mean(fake_power, j);
@@ -2792,7 +2792,7 @@ static void scramble_artifact(int a_idx)
 		          (ap2 < (power / 10))) );
 
 		/* Got an item - set the new rarity */
-		a_ptr->alloc_prob = alloc_new;
+		a_ptr->alloc_prob[0] = alloc_new;
 
 		if (count >= MAX_TRIES)
 		{
@@ -2824,7 +2824,7 @@ static void scramble_artifact(int a_idx)
 		create_mask(f, FALSE, OFT_IGNORE, OFT_MAX);
 		of_union(a_ptr->flags, f);
 
-		file_putf(log_file, "Alloc prob is %d\n", a_ptr->alloc_prob);
+		file_putf(log_file, "Alloc prob is %d\n", a_ptr->alloc_prob[0]);
 	}
 
 	/* Got a base item. */
@@ -2934,48 +2934,48 @@ static void scramble_artifact(int a_idx)
 
 	/* Set depth and rarity info according to power */
 	/* This is currently very tricky for special artifacts */
-	file_putf(log_file, "Old depths are min %d, max %d\n", a_ptr->alloc_min, a_ptr->alloc_max);
-	file_putf(log_file, "Alloc prob is %d\n", a_ptr->alloc_prob);
+	file_putf(log_file, "Old depths are min %d, max %d\n", a_ptr->alloc_min[0], a_ptr->alloc_max[0]);
+	file_putf(log_file, "Alloc prob is %d\n", a_ptr->alloc_prob[0]);
 
 	/* flip cursed items to avoid overflows */
 	if (ap < 0) ap = -ap;
 
 	if (a_idx < ART_MIN_NORMAL)
 	{
-		a_ptr->alloc_max = 127;
+		a_ptr->alloc_max[0] = 127;
 		if (ap > avg_power)
 		{
-			a_ptr->alloc_prob = 1;
-			a_ptr->alloc_min = MAX(50, ((ap + 150) * 100 /
+			a_ptr->alloc_prob[0] = 1;
+			a_ptr->alloc_min[0] = MAX(50, ((ap + 150) * 100 /
 				max_power));
 		}
 		else if (ap > 30)
 		{
-			a_ptr->alloc_prob = MAX(2, (avg_power - ap) / 20);
-			a_ptr->alloc_min = MAX(25, ((ap + 200) * 100 /
+			a_ptr->alloc_prob[0] = MAX(2, (avg_power - ap) / 20);
+			a_ptr->alloc_min[0] = MAX(25, ((ap + 200) * 100 /
 				max_power));
 		}
 		else /* Just the Phial */
 		{
-			a_ptr->alloc_prob = 50 - ap;
-			a_ptr->alloc_min = 5;
+			a_ptr->alloc_prob[0] = 50 - ap;
+			a_ptr->alloc_min[0] = 5;
 		}
 	}
 	else
 	{
 		file_putf(log_file, "k_ptr->alloc_prob is %d\n", k_ptr->alloc_prob);
-		a_ptr->alloc_max = MIN(127, (ap * 4) / 5);
-		a_ptr->alloc_min = MIN(100, ((ap + 100) * 100 / max_power));
+		a_ptr->alloc_max[0] = MIN(127, (ap * 4) / 5);
+		a_ptr->alloc_min[0] = MIN(100, ((ap + 100) * 100 / max_power));
 
 		/* Leave alloc_prob consistent with base art total rarity */
 	}
 
 	/* sanity check */
-	if (a_ptr->alloc_prob > 99) a_ptr->alloc_prob = 99;
-	if (a_ptr->alloc_prob < 1) a_ptr->alloc_prob = 1;
+	if (a_ptr->alloc_prob[0] > 99) a_ptr->alloc_prob[0] = 99;
+	if (a_ptr->alloc_prob[0] < 1) a_ptr->alloc_prob[0] = 1;
 
-	file_putf(log_file, "New depths are min %d, max %d\n", a_ptr->alloc_min, a_ptr->alloc_max);
-	file_putf(log_file, "Power-based alloc_prob is %d\n", a_ptr->alloc_prob);
+	file_putf(log_file, "New depths are min %d, max %d\n", a_ptr->alloc_min[0], a_ptr->alloc_max[0]);
+	file_putf(log_file, "Power-based alloc_prob is %d\n", a_ptr->alloc_prob[0]);
 
 	/* Restore some flags */
 	if (a_ptr->tval == TV_LIGHT) of_on(a_ptr->flags, OF_NO_FUEL);

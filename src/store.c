@@ -1036,7 +1036,7 @@ static int store_carry(struct store *store, object_type *o_ptr)
 
 				/* Calculate the recharged number of charges */
 				for (i = 0; i < o_ptr->number; i++)
-					charges += randcalc(kind->charge, 0, RANDOMISE);
+					charges += randcalc(kind->extent, 0, RANDOMISE);
 
 				/* Use recharged value only if greater */
 				if (charges > o_ptr->pval[DEFAULT_PVAL])

@@ -1595,9 +1595,9 @@ int rd_randarts_2(void)
 
 			rd_byte(&a_ptr->level);
 			rd_byte(&a_ptr->rarity);
-			rd_byte(&a_ptr->alloc_prob);
-			rd_byte(&a_ptr->alloc_min);
-			rd_byte(&a_ptr->alloc_max);
+			rd_byte(&a_ptr->alloc_prob[0]);
+			rd_byte(&a_ptr->alloc_min[0]);
+			rd_byte(&a_ptr->alloc_max[0]);
 
 			rd_u16b(&a_ptr->effect);
 			rd_u16b(&time_base);
@@ -1729,9 +1729,9 @@ int rd_randarts_1(void)
 
 			rd_byte(&a_ptr->level);
 			rd_byte(&a_ptr->rarity);
-			rd_byte(&a_ptr->alloc_prob);
-			rd_byte(&a_ptr->alloc_min);
-			rd_byte(&a_ptr->alloc_max);
+			rd_byte(&a_ptr->alloc_prob[0]);
+			rd_byte(&a_ptr->alloc_min[0]);
+			rd_byte(&a_ptr->alloc_max[0]);
 
 			rd_u16b(&a_ptr->effect);
 			rd_u16b(&time_base);

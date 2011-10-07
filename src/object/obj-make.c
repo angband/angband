@@ -348,15 +348,15 @@ static bool make_artifact(object_type *o_ptr, int level)
 		a_ptr = &a_info[i];
 
 		/* Skip non-existent entries */
-		if (!a_ptr->name || !a_ptr->alloc_prob) continue;
+		if (!a_ptr->name || !a_ptr->alloc_prob[0]) continue;
 
 		/* Cannot make an artifact twice */
 		if (a_ptr->created) continue;
 
 		/* Enforce minimum depth (loosely) */
-		if (a_ptr->alloc_min > level) {
+		if (a_ptr->alloc_min[0] > level) {
 			/* Get the out-of-depth factor */
-			int d = (a_ptr->alloc_min - level) * 2;
+			int d = (a_ptr->alloc_min[0] - level) * 2;
 
 			/* Roll for out-of-depth creation */
 			if (randint0(d) != 0) continue;
@@ -388,13 +388,13 @@ static bool make_artifact(object_type *o_ptr, int level)
 		}
 
 		/* Enforce maximum depth (strictly) */
-		if (a_ptr->alloc_max < p_ptr->depth) continue;
+		if (a_ptr->alloc_max[0] < p_ptr->depth) continue;
 		if (basemax && basemax < p_ptr->depth) continue;
 
 		/* Looks good - add this artifact to the table */
 		table[i].index = a_ptr->aidx;
-		table[i].prob3 = a_ptr->alloc_prob;
-		total += a_ptr->alloc_prob;
+		table[i].prob3 = a_ptr->alloc_prob[0];
+		total += a_ptr->alloc_prob[0];
 	}
 
 	/* Choose an artifact from the table, then free it */
@@ -512,7 +512,7 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
 
 	/* Assign charges (wands/staves only) */
 	if (o_ptr->tval == TV_WAND || o_ptr->tval == TV_STAFF)
-		o_ptr->pval[DEFAULT_PVAL] = randcalc(k->charge, lev, rand_aspect);
+		o_ptr->pval[DEFAULT_PVAL] = randcalc(k->extent, lev, rand_aspect);
 
 	/* Assign flagless pval for food or oil */
 	if (o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION ||

@@ -9,12 +9,12 @@
 #include "game-cmd.h"
 #include "cave.h"
 
+/* Forward declaration */
 struct player;
 
 /*** Constants ***/
 
 /* Object origin kinds */
-
 enum {
     ORIGIN_NONE = 0,
     ORIGIN_FLOOR,			/* found on the dungeon floor */
@@ -48,26 +48,22 @@ enum {
 #define ORIGIN_SIZE FLAG_SIZE(ORIGIN_MAX)
 #define ORIGIN_BYTES 4 /* savefile bytes - room for 32 origin types */
 
+/* Maximum number of affixes and pvals on objects (and therefore of L: lines in
+   object.txt and ego-item.txt) */
+#define MAX_AFFIXES 	8
+#define MAX_PVALS 		3
+#define DEFAULT_PVAL	0 /* TODO: remove this */
 
-/**
- * Maximum number of pvals on objects (and therefore of L: lines in
- * ego-item.txt)
- *
- * Note: all pvals other than DEFAULT_PVAL are assumed to be associated with
- * flags, and any non-flag uses of pval (e.g. chest quality, gold quantity)
- * are assumed to use DEFAULT_PVAL.
- */
-#define MAX_PVALS 3
-#define DEFAULT_PVAL 0
-
-/* Maximum number of T: and R: lines in ego-item.txt, and no-op value for
+/* Maximum number of T: and R/R2: lines in ego-item.txt, and no-op value for
    missing M: lines */
-#define EGO_TVALS_MAX 8
+#define EGO_TVALS_MAX 	  8
 #define EGO_RANDFLAGS_MAX 4
-#define NO_MINIMUM 255
+#define NO_MINIMUM 		255
 
-/* Maximum number of attempts to create artifacts */
-#define MAX_TRIES 200
+/* Maximum number of attempts to create artifacts, and number of A: lines in
+   artifact.txt */
+#define MAX_TRIES 		200
+#define ART_ALLOC_MAX 	  3
 
 /* ID flags */
 #define IDENT_SENSE     0x0001  /* Has been "sensed" */
@@ -86,93 +82,73 @@ enum {
 #define IDENT_FAKE      0x2000  /* Item is a fake, for displaying knowledge */
 
 /* Whether to learn egos and flavors with less than complete information */
-#define EASY_LEARN 1
+#define EASY_LEARN 		1
 
 /* Maximum number of scroll titles generated */
-#define MAX_TITLES     50
+#define MAX_TITLES    	50
 
-/**
- * Modes for object_desc().
- */
-typedef enum
-{
-	ODESC_BASE   = 0x00,   /*!< Only describe the base name */
-	ODESC_COMBAT = 0x01,   /*!< Also show combat bonuses */
-	ODESC_EXTRA  = 0x02,   /*!< Show charges/inscriptions/pvals */
+/* Modes for object_desc() */
+typedef enum {
+	ODESC_BASE   = 0x00,   	/* Only describe the base name */
+	ODESC_COMBAT = 0x01,   	/* Also show combat bonuses */
+	ODESC_EXTRA  = 0x02,   	/* Show charges/inscriptions/pvals */
 
 	ODESC_FULL   = ODESC_COMBAT | ODESC_EXTRA,
-	                       /*!< Show entire description */
+	                       	/* Show entire description */
 
-	ODESC_STORE  = 0x04,   /*!< This is an in-store description */
-	ODESC_PLURAL = 0x08,   /*!< Always pluralise */
-	ODESC_SINGULAR    = 0x10,    /*!< Always singular */
-	ODESC_SPOIL  = 0x20,    /*!< Display regardless of player knowledge */
-	ODESC_PREFIX = 0x40   /* */
+	ODESC_STORE  = 0x04,   	/* This is an in-store description */
+	ODESC_PLURAL = 0x08,   	/* Always pluralise */
+	ODESC_SINGULAR = 0x10,	/* Always singular */
+	ODESC_SPOIL  = 0x20,    /* Display regardless of player knowledge */
+	ODESC_PREFIX = 0x40,   	/* Article or number */
+	ODESC_AFFIX	 = 0x80		/* Display o_ptr->prefix and ->suffix */
 } odesc_detail_t;
 
-
-/**
- * Modes for item lists in "show_inven()"  "show_equip()" and "show_floor()"
- */
-typedef enum
-{
-	OLIST_NONE   = 0x00,   /* No options */
-   	OLIST_WINDOW = 0x01,   /* Display list in a sub-term (left-align) */
-   	OLIST_QUIVER = 0x02,   /* Display quiver lines */
-   	OLIST_GOLD   = 0x04,   /* Include gold in the list */
-	OLIST_WEIGHT = 0x08,   /* Show item weight */
-	OLIST_PRICE  = 0x10,   /* Show item price */
-	OLIST_FAIL   = 0x20    /* Show device failure */
-
+/* Modes for item lists in show_inven(), show_equip() and show_floor() */
+typedef enum {
+	OLIST_NONE   = 0x00,   	/* No options */
+   	OLIST_WINDOW = 0x01,   	/* Display list in a sub-term (left-align) */
+   	OLIST_QUIVER = 0x02,   	/* Display quiver lines */
+   	OLIST_GOLD   = 0x04,   	/* Include gold in the list */
+	OLIST_WEIGHT = 0x08,   	/* Show item weight */
+	OLIST_PRICE  = 0x10,   	/* Show item price */
+	OLIST_FAIL   = 0x20    	/* Show device failure */
 } olist_detail_t;
 
-
-/**
- * Modes for object_info()
- */
-typedef enum
-{
-	OINFO_NONE   = 0x00, /* No options */
-	OINFO_TERSE  = 0x01, /* Keep descriptions brief, e.g. for dumps */
-	OINFO_SUBJ   = 0x02, /* Describe object from the character's POV */
-	OINFO_FULL   = 0x04, /* Treat object as if fully IDd */
-	OINFO_DUMMY  = 0x08, /* Object does not exist (e.g. knowledge menu) */
-	OINFO_EGO    = 0x10  /* Describe ego random powers */
+/* Modes for object_info() */
+typedef enum {
+	OINFO_NONE   = 0x00, 	/* No options */
+	OINFO_TERSE  = 0x01, 	/* Keep descriptions brief, e.g. for dumps */
+	OINFO_SUBJ   = 0x02, 	/* Describe object from the character's POV */
+	OINFO_FULL   = 0x04, 	/* Treat object as if fully IDd */
+	OINFO_DUMMY  = 0x08, 	/* Object does not exist (e.g. knowledge menu) */
+	OINFO_EGO    = 0x10  	/* Describe ego random powers */
 } oinfo_detail_t;
 
-
-/**
- * Modes for stacking by object_similar()
- */
-typedef enum
-{
-	OSTACK_NONE    = 0x00, /* No options (this does NOT mean no stacking) */
-	OSTACK_STORE   = 0x01, /* Store stacking */
-	OSTACK_PACK    = 0x02, /* Inventory and home */
-	OSTACK_LIST    = 0x04, /* Object list */
-	OSTACK_MONSTER = 0x08, /* Monster carrying objects */
-	OSTACK_FLOOR   = 0x10, /* Floor stacking */
-	OSTACK_QUIVER  = 0x20  /* Quiver */
+/* Modes for stacking by object_similar() */
+typedef enum {
+	OSTACK_NONE    = 0x00, 	/* No options (this does NOT mean no stacking) */
+	OSTACK_STORE   = 0x01, 	/* Store stacking */
+	OSTACK_PACK    = 0x02, 	/* Inventory and home */
+	OSTACK_LIST    = 0x04, 	/* Object list */
+	OSTACK_MONSTER = 0x08, 	/* Monster carrying objects */
+	OSTACK_FLOOR   = 0x10, 	/* Floor stacking */
+	OSTACK_QUIVER  = 0x20  	/* Quiver */
 } object_stack_t;
 
-
-/**
- * Pseudo-ID markers.
- */
-typedef enum
-{
-	INSCRIP_NULL = 0,            /*!< No pseudo-ID status */
-	INSCRIP_STRANGE = 1,         /*!< Item that has mixed combat bonuses */
-	INSCRIP_AVERAGE = 2,         /*!< Item with no interesting features */
-	INSCRIP_MAGICAL = 3,         /*!< Item with combat bonuses */
-	INSCRIP_SPLENDID = 4,        /*!< Obviously good item */
-	INSCRIP_EXCELLENT = 5,       /*!< Ego-item */
-	INSCRIP_SPECIAL = 6,         /*!< Artifact */
+/* Pseudo-ID markers */
+typedef enum {
+	INSCRIP_NULL = 0,            /* No pseudo-ID status */
+	INSCRIP_STRANGE = 1,         /* Item that has mixed combat bonuses */
+	INSCRIP_AVERAGE = 2,         /* Item with no interesting features */
+	INSCRIP_MAGICAL = 3,         /* Item with combat bonuses */
+	INSCRIP_SPLENDID = 4,        /* Obviously good item */
+	INSCRIP_EXCELLENT = 5,       /* Ego-item */
+	INSCRIP_SPECIAL = 6,         /* Artifact */
 	INSCRIP_UNKNOWN = 7,
 
-	INSCRIP_MAX                  /*!< Maximum number of pseudo-ID markers */
+	INSCRIP_MAX                  /* Maximum number of pseudo-ID markers */
 } obj_pseudo_t;
-
 
 /*
  * Some constants used in randart generation and power calculation
@@ -190,10 +166,10 @@ typedef enum
 #define VERYHIGH_TO_DAM        26
 #define AMMO_RESCALER          20 /* this value is also used for torches */
 
-#define sign(x) ((x) > 0 ? 1 : ((x) < 0 ? -1 : 0))
-
 
 /*** Macros ***/
+
+#define sign(x) ((x) > 0 ? 1 : ((x) < 0 ? -1 : 0))
 
 /*
  * Determine if the attr and char should consider the item's flavor
@@ -252,8 +228,7 @@ typedef enum
 /**
  * Information about object types, like rods, wands, etc.
  */
-typedef struct object_base
-{
+typedef struct object_base {
 	char *name;
 
 	int tval;
@@ -264,15 +239,13 @@ typedef struct object_base
 	int break_perc;
 } object_base;
 
-
 /**
  * Information about object kinds, including player knowledge.
  *
  * TODO: split out the user-changeable bits into a separate struct so this
  * one can be read-only.
  */
-typedef struct object_kind
-{
+typedef struct object_kind {
 	char *name;
 	char *text;
 
@@ -310,13 +283,12 @@ typedef struct object_kind
 
 	u16b effect;         /**< Effect this item produces (effects.c) */
 	random_value time;   /**< Recharge time (rods/activation) */
-	random_value charge; /**< Number of charges (staves/wands) */
+	random_value extent; /**< Number of charges / amount of food/fuel/gold */
 
 	byte gen_mult_prob;      /**< Probability of generating more than one */
 	random_value stack_size; /**< Number to generate */
 
 	struct flavor *flavor;         /**< Special object flavor (or zero) */
-
 
 	/** Game-dependent **/
 
@@ -333,10 +305,8 @@ typedef struct object_kind
 	byte squelch;  /**< Squelch settings */
 	bool everseen; /**< Set if kind has ever been seen (to despoilify squelch menus) */
 
-	struct spell *spells;
+	struct spell *spells; /* ?? */
 } object_kind;
-
-
 
 /**
  * Information about artifacts.
@@ -346,8 +316,7 @@ typedef struct object_kind
  * TODO: Fix this max_num/cur_num crap and just have a big boolean array of
  * which artifacts have been created and haven't, so this can become read-only.
  */
-typedef struct artifact
-{
+typedef struct artifact {
 	char *name;
 	char *text;
 
@@ -377,27 +346,24 @@ typedef struct artifact
 
 	byte level;   /** Difficulty level for activation */
 	byte rarity;  /** Unused */
-	byte alloc_prob; /** Chance of being generated (i.e. rarity) */
-	byte alloc_min;  /** Minimum depth (can appear earlier) */
-	byte alloc_max;  /** Maximum depth (will NEVER appear deeper) */
+	byte alloc_prob[ART_ALLOC_MAX]; /** Chance of being generated */
+	byte alloc_min[ART_ALLOC_MAX];  /** Minimum depth (can appear earlier) */
+	byte alloc_max[ART_ALLOC_MAX];  /** Maximum depth (will NEVER appear deeper) */
 
 	bool created;	/**< Whether this artifact has been created */
-	bool seen;	/**< Whether this artifact has been seen this game */
+	bool seen;		/**< Whether this artifact has been seen this game */
 	bool everseen;	/**< Whether this artifact has ever been seen  */
 
 	u16b effect;     /**< Artifact activation (see effects.c) */
 	char *effect_msg;
 
 	random_value time;  /**< Recharge time (if appropriate) */
-
 } artifact_type;
-
 
 /*
  * Information about ego-item affixes.
  */
-typedef struct ego_item
-{
+typedef struct ego_item {
 	struct ego_item *next;
 											/* N: */
 	u32b eidx;								/* index */
@@ -440,8 +406,6 @@ typedef struct ego_item
 	bool everseen;							/* Do not spoil squelch menus */
 } ego_item_type;
 
-
-
 /*
  * Object information, for a specific object.
  *
@@ -469,10 +433,9 @@ typedef struct ego_item
  * The "held_m_idx" field is used to indicate which monster, if any,
  * is holding the object.  Objects being held have "ix=0" and "iy=0".
  */
-typedef struct object
-{
+typedef struct object {
 	struct object_kind *kind;
-	struct ego_item *ego;
+	struct ego_item *ego;		/* Will be removed soon */
 	struct artifact *artifact;
 
 	byte iy;			/* Y-position on map, or zero */
@@ -481,13 +444,17 @@ typedef struct object
 	byte tval;			/* Item type (from kind) */
 	byte sval;			/* Item sub-type (from kind) */
 
-	s16b pval[MAX_PVALS];		/* Item extra-parameter */
-	byte num_pvals;			/* Number of pvals in use */
+	char *prefix;		/* Displayed prefix */
+	char *suffix;		/* Displayed suffix */
+	u16b affix[MAX_AFFIXES]; /* Indeces of ego affixes */
 
-	s16b weight;			/* Item weight */
+	s16b pval[MAX_PVALS];/* Item extra-parameter */
+	byte num_pvals;		/* Number of pvals in use */
 
-	bitflag flags[OF_SIZE];		/**< Flags */
-	bitflag known_flags[OF_SIZE];	/**< Player-known flags */
+	s16b weight;		/* Item weight */
+
+	bitflag flags[OF_SIZE];					/**< Flags */
+	bitflag known_flags[OF_SIZE];			/**< Player-known flags */
 	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
 	u16b ident;			/* Special flags */
 
@@ -501,6 +468,7 @@ typedef struct object
 	s16b timeout;		/* Timeout Counter */
 
 	byte number;		/* Number of items */
+	u32b extent;		/* Charges/food value/fuel value/gold amount */
 	byte marked;		/* Object is marked */
 	bool ignore;		/* Object is ignored */
 

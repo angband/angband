@@ -1151,7 +1151,7 @@ static void wiz_create_artifact(int a_idx)
 		return;
 
 	/* Create the artifact */
-	object_prep(i_ptr, kind, a_ptr->alloc_min, RANDOMISE);
+	object_prep(i_ptr, kind, a_ptr->alloc_min[0], RANDOMISE);
 
 	/* Save the name */
 	i_ptr->artifact = a_ptr;

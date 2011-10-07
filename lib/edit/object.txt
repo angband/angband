@@ -13,7 +13,7 @@
 # W: depth : rarity : weight : cost
 # P: base armor class : base damage : plus to-hit : plus to-dam : plus to-ac
 # A: commonness : min " to " max
-# C: charges
+# C: extent
 # M: chance of being generated in a pile : dice for number of items
 # E: effect when used : recharge time (if applicable)
 # F: flag | flag | etc.
@@ -68,8 +68,8 @@
 # are found throughout the dungeon. The "allocation" depth need not
 # match the depth as specified in the "W:" line.
 
-# 'C' is for charges (wands and staves only).  This field accepts
-# randomized values.
+# 'C' is for charges (wands and staves), amount of money (coins/gems), food
+# value or fuel value (lights). This field accepts randomized values.
 
 # 'F' is for flags not associated with any pval. These are fairly 
 # self-explanatory. As many F: lines may be used as are needed to 
@@ -86,11 +86,9 @@
 # together.
 
 
-
 # Version stamp (required)
 
 V:3.4.0
-
 
 
 ##### Non-kind (contains the "pile" picture) #####
@@ -98,7 +96,6 @@ V:3.4.0
 N:0:<pile>
 I:0:0
 G:&:w
-
 
 
 ##### Various Stuff #####

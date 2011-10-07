@@ -600,7 +600,7 @@ static int stats_dump_objects(void)
 		if (err) return err;
 		err = stats_db_bind_rv(info_stmt, 19, k_ptr->to_a);
 		if (err) return err;
-		err = stats_db_bind_rv(info_stmt, 20, k_ptr->charge);
+		err = stats_db_bind_rv(info_stmt, 20, k_ptr->extent);
 		if (err) return err;
 		err = stats_db_bind_rv(info_stmt, 21, k_ptr->time);
 		if (err) return err;
