@@ -316,7 +316,7 @@ void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
  */
 static bool make_artifact(object_type *o_ptr, int level)
 {
-	int i, basemin = 0, basemax = 0, success = 0;
+	int i, j, basemin = 0, basemax = 0, success = 0, entry = 0;
 	long total = 0L;
 	bool art_ok = TRUE;
 	object_kind *kind;
@@ -353,15 +353,6 @@ static bool make_artifact(object_type *o_ptr, int level)
 		/* Cannot make an artifact twice */
 		if (a_ptr->created) continue;
 
-		/* Enforce minimum depth (loosely) */
-		if (a_ptr->alloc_min[0] > level) {
-			/* Get the out-of-depth factor */
-			int d = (a_ptr->alloc_min[0] - level) * 2;
-
-			/* Roll for out-of-depth creation */
-			if (randint0(d) != 0) continue;
-		}
-
 		/* Find the base object if we don't already have one */
 		if (!o_ptr->kind) {
 			kind = lookup_kind(a_ptr->tval, a_ptr->sval);
@@ -386,20 +377,32 @@ static bool make_artifact(object_type *o_ptr, int level)
 			/* Roll for out-of-depth creation */
 			if (randint0(d) != 0) continue;
 		}
-
-		/* Enforce maximum depth (strictly) */
-		if (a_ptr->alloc_max[0] < p_ptr->depth) continue;
+		/* Enforce maximum base object level (strictly) */
 		if (basemax && basemax < p_ptr->depth) continue;
 
-		/* Looks good - add this artifact to the table */
-		table[i].index = a_ptr->aidx;
-		table[i].prob3 = a_ptr->alloc_prob[0];
-		total += a_ptr->alloc_prob[0];
+		for (j = 0; j < ART_ALLOC_MAX && a_ptr->alloc_prob[j]; j++) {
+			/* Enforce minimum depth (loosely) */
+			if (a_ptr->alloc_min[j] > level) {
+				/* Get the out-of-depth factor */
+				int d = (a_ptr->alloc_min[j] - level) * 2;
+
+				/* Roll for out-of-depth creation */
+				if (randint0(d) != 0) continue;
+			}
+
+			/* Enforce maximum depth (strictly) */
+			if (a_ptr->alloc_max[j] < p_ptr->depth) continue;
+
+			/* Looks good - add this artifact to the table */
+			table[entry].index = a_ptr->aidx;
+			table[entry++].prob3 = a_ptr->alloc_prob[j];
+			total += a_ptr->alloc_prob[j];
+		}
 	}
 
 	/* Choose an artifact from the table, then free it */
 	if (!o_ptr->artifact) {
-		success = table_pick(total, z_info->a_max, table);
+		success = table_pick(total, entry, table);
 		if (success > 0) {
 			a_ptr = &a_info[success];
 			o_ptr->artifact = a_ptr;

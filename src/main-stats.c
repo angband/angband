@@ -444,8 +444,8 @@ static int stats_dump_artifacts(void)
 		if (err) return err;
 		err = stats_db_bind_ints(info_stmt, 14, 2, 
 			a_ptr->tval, a_ptr->sval, a_ptr->weight,
-			a_ptr->cost, a_ptr->alloc_prob, a_ptr->alloc_min,
-			a_ptr->alloc_max, a_ptr->ac, a_ptr->dd,
+			a_ptr->cost, a_ptr->alloc_prob[0], a_ptr->alloc_min[0],
+			a_ptr->alloc_max[0], a_ptr->ac, a_ptr->dd,
 			a_ptr->ds, a_ptr->to_h, a_ptr->to_d,
 			a_ptr->to_a, a_ptr->effect);
 		STATS_DB_STEP_RESET(info_stmt)

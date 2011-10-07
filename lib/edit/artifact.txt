@@ -29,7 +29,8 @@
 
 # 'A' is for allocation details. alloc_prob is the relative chance of
 # being generated, min depth is the earliest it is normally found, max
-# depth is the deepest it is ever found.
+# depth is the deepest it is ever found. The maximum number of these
+# lines is ART_ALLOC_MAX in object.h
 
 # 'P' is for power information. The items base armor class, its base
 # damage and pluses to-hit, to-dam and to-ac.
@@ -183,7 +184,8 @@ D:sight of far places - at a cost, for those espied upon are aware of it.
 N:8:of Barahir
 I:ring:50
 W:50:25:2:65000
-A:40:50 to 100
+A:10:30 to 50
+A:40:51 to 100
 F:RES_POIS | RES_DARK
 F:INSTA_ART
 L:1:STR | INT | WIS | DEX | CON | CHR | STEALTH

@@ -725,18 +725,26 @@ static enum parser_error parse_a_w(struct parser *p) {
 static enum parser_error parse_a_a(struct parser *p) {
 	struct artifact *a = parser_priv(p);
 	const char *tmp = parser_getstr(p, "minmax");
-	int amin, amax;
+	int amin, amax, i;
 	assert(a);
 
-	a->alloc_prob[0] = parser_getint(p, "common");
 	if (sscanf(tmp, "%d to %d", &amin, &amax) != 2)
 		return PARSE_ERROR_GENERIC;
 
 	if (amin > 255 || amax > 255 || amin < 0 || amax < 0)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 
-	a->alloc_min[0] = amin;
-	a->alloc_max[0] = amax;
+	for (i = 0; i < ART_ALLOC_MAX; i++)
+		if (!a->alloc_prob[i]) {
+			a->alloc_prob[i] = parser_getint(p, "common");
+			a->alloc_min[i] = amin;
+			a->alloc_max[i] = amax;
+			break;
+		}
+
+	if (i == ART_ALLOC_MAX)
+		return PARSE_ERROR_TOO_MANY_ENTRIES;
+
 	return PARSE_ERROR_NONE;
 }
 
