@@ -982,18 +982,23 @@ bool apply_disenchant(int mode)
 		return (TRUE);
 	}
 
+	/* Apply disenchantment, depending on which kind of equipment */
+	if ( t == INVEN_WIELD || t == INVEN_BOW )
+	{
+		/* Disenchant to-hit */
+		if (o_ptr->to_h > 0) o_ptr->to_h--;
+		if ((o_ptr->to_h > 5) && (randint0(100) < 20)) o_ptr->to_h--;
 
-	/* Disenchant tohit */
-	if (o_ptr->to_h > 0) o_ptr->to_h--;
-	if ((o_ptr->to_h > 5) && (randint0(100) < 20)) o_ptr->to_h--;
-
-	/* Disenchant todam */
-	if (o_ptr->to_d > 0) o_ptr->to_d--;
-	if ((o_ptr->to_d > 5) && (randint0(100) < 20)) o_ptr->to_d--;
-
-	/* Disenchant toac */
-	if (o_ptr->to_a > 0) o_ptr->to_a--;
-	if ((o_ptr->to_a > 5) && (randint0(100) < 20)) o_ptr->to_a--;
+		/* Disenchant to-dam */
+		if (o_ptr->to_d > 0) o_ptr->to_d--;
+		if ((o_ptr->to_d > 5) && (randint0(100) < 20)) o_ptr->to_d--;
+	}
+	else
+	{
+		/* Disenchant to-ac */
+		if (o_ptr->to_a > 0) o_ptr->to_a--;
+		if ((o_ptr->to_a > 5) && (randint0(100) < 20)) o_ptr->to_a--;
+	}
 
 	/* Message */
 	msg("Your %s (%c) %s disenchanted!",
