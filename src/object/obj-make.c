@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "object/tvalsval.h"
 #include "object/pval.h"
+#include "object/slays.h"
 
 /*
  * The chance of inflating the requested object level (1/x).
@@ -165,7 +166,7 @@ static struct ego_item *ego_find_random(object_type *o_ptr, int level)
 void ego_apply_magic(object_type *o_ptr, int level)
 {
 	int i, j, flag, pval;
-	bitflag flags[OF_SIZE];
+	bitflag flags[OF_SIZE], f2[OF_SIZE];
 
 	/* Random powers */
 	for (i = 0; i < o_ptr->ego->num_randlines; i++)
@@ -179,16 +180,21 @@ void ego_apply_magic(object_type *o_ptr, int level)
 	o_ptr->to_a += randcalc(o_ptr->ego->to_a, level, RANDOMISE);
 
 	/* Apply pvals */
+	of_copy(f2, o_ptr->ego->flags);
 	for (i = 0; i < o_ptr->ego->num_pvals; i++) {
 		of_copy(flags, o_ptr->ego->pval_flags[i]);
 		pval = randcalc(o_ptr->ego->pval[i], level, RANDOMISE);
 		for (flag = of_next(flags, FLAG_START); flag != FLAG_END;
 				flag = of_next(flags, flag + 1))
-			object_add_pval(o_ptr, pval, flag);
+			/* Prevent phantom flags */
+			if (pval)
+				object_add_pval(o_ptr, pval, flag);
+			else
+				of_off(f2, flag);
 	}
 
-	/* Apply flags */
-	of_union(o_ptr->flags, o_ptr->ego->flags);
+	/* Apply remaining flags */
+	of_union(o_ptr->flags, f2);
 
 	/* Adjust AC, weight, dice and sides */
 	if (o_ptr->ac && o_ptr->ego->ac_mod)
@@ -208,8 +214,7 @@ void ego_apply_magic(object_type *o_ptr, int level)
 }
 
 /**
- * Apply minimum pvals to an ego item. Note that 0 is treated as meaning
- * "do not apply a minimum to this pval", so it leaves negative pvals alone.
+ * Apply minimum pvals to an ego item.
  */
 void ego_min_pvals(object_type *o_ptr)
 {
@@ -222,7 +227,8 @@ void ego_min_pvals(object_type *o_ptr)
 			for (flag = of_next(o_ptr->ego->pval_flags[j], FLAG_START);
 					flag != FLAG_END;
 					flag = of_next(o_ptr->ego->pval_flags[j], flag + 1))
-				if (!of_has(o_ptr->flags, flag) ||
+				if ((!of_has(o_ptr->flags, flag) &&
+						o_ptr->ego->min_pval[j] > 0) ||
 						(o_ptr->ego->min_pval[j] != NO_MINIMUM
 						&& of_has(o_ptr->pval_flags[i], flag) &&
 						o_ptr->pval[i] < o_ptr->ego->min_pval[j]))
@@ -473,8 +479,8 @@ static void apply_magic_armour(object_type *o_ptr, int level, int power)
 void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
 		aspect rand_aspect)
 {
-	int i, flag, x;
-	bitflag flags[OF_SIZE];
+	int i, flag, pval;
+	bitflag flags[OF_SIZE], f2[OF_SIZE];
 
 	/* Clean slate */
 	WIPE(o_ptr, object_type);
@@ -492,15 +498,20 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
 	o_ptr->number = 1;
 
 	/* Apply pvals and then copy flags */
+	of_copy(f2, k->flags);
     for (i = 0; i < k->num_pvals; i++) {
         of_copy(flags, k->pval_flags[i]);
-        x = randcalc(k->pval[i], lev, rand_aspect);
+        pval = randcalc(k->pval[i], lev, rand_aspect);
         for (flag = of_next(flags, FLAG_START); flag != FLAG_END;
                 flag = of_next(flags, flag + 1))
-            object_add_pval(o_ptr, x, flag);
+			/* Prevent phantom flags */
+			if (pval)
+				object_add_pval(o_ptr, pval, flag);
+			else
+				of_off(f2, flag);
     }
 	of_copy(o_ptr->flags, k->base->flags);
-	of_union(o_ptr->flags, k->flags);
+	of_union(o_ptr->flags, f2);
 
 	/* Assign charges (wands/staves only) */
 	if (o_ptr->tval == TV_WAND || o_ptr->tval == TV_STAFF)
