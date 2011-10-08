@@ -648,6 +648,7 @@ static void wiz_tweak_item(object_type *o_ptr)
 	WIZ_TWEAK(to_h);
 	WIZ_TWEAK(to_d);
 
+/* FIXME
 	p = "Enter new ego item index: ";
 	strnfmt(tmp_val, sizeof(tmp_val), "0");
 	if (o_ptr->ego)
@@ -655,12 +656,12 @@ static void wiz_tweak_item(object_type *o_ptr)
 	if (!get_string(p, tmp_val, 6)) return;
 	val = atoi(tmp_val);
 	if (val) {
-		o_ptr->ego = &e_info[val];
-		ego_apply_magic(o_ptr, p_ptr->depth);
+		o_ptr->affix[0] = &e_info[val].eidx;
+		ego_apply_magic(o_ptr, p_ptr->depth, o_ptr->affix[0]);
 	} else
-		o_ptr->ego = 0;
+		o_ptr->affix[0] = 0;
 	wiz_display_item(o_ptr, TRUE);
-
+*/
 	p = "Enter new artifact index: ";
 	strnfmt(tmp_val, sizeof(tmp_val), "0");
 	if (o_ptr->artifact)

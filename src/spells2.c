@@ -3073,10 +3073,10 @@ void brand_object(object_type *o_ptr, int brand_type)
 	ego_item_type *e_ptr;
 	bool ok = FALSE;
 
-	/* you can never modify artifacts / ego-items */
+	/* you can never modify artifacts / maxed ego-items */
 	/* you can never modify cursed / worthless items */
 	if (o_ptr->kind && !cursed_p(o_ptr->flags) && o_ptr->kind->cost &&
-	    !o_ptr->artifact && !o_ptr->ego)
+	    !o_ptr->artifact && !o_ptr->affix[MAX_AFFIXES - 1])
 	{
 		char o_name[80];
 		bitflag f[OF_SIZE];
@@ -3087,7 +3087,7 @@ void brand_object(object_type *o_ptr, int brand_type)
 		of_wipe(f);
 		of_on(f, brand_type);
 		i = list_slays(f, f, NULL, brand, NULL, FALSE);
-		
+
 		/* Describe */
 		msg("The %s %s surrounded with an aura of %s.", o_name,
 				(o_ptr->number > 1) ? "are" : "is", brand[0]);
@@ -3108,9 +3108,14 @@ void brand_object(object_type *o_ptr, int brand_type)
 			if (ok) break;
 		}
 
-		o_ptr->ego = &e_info[i];
-		ego_apply_magic(o_ptr, 0);
-		object_notice_ego(o_ptr);
+		/* Use the first available affix */
+		for (j = 0; j < MAX_AFFIXES; j++)
+			if (!o_ptr->affix[j]) {
+				o_ptr->affix[j] = e_ptr->eidx;
+				ego_apply_magic(o_ptr, 0, e_ptr->eidx);
+				object_notice_ego(o_ptr); /* FIXME */
+				break;
+			}
 
 		/* Combine / Reorder the pack (later) */
 		p_ptr->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);

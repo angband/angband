@@ -295,9 +295,6 @@ T:sword:0:99:15:30 to 127
 
 # The "Branded" weapons (5)
 
-# To do - add code that checks for "illegal" flags, i.e. removes the resist
-# from ammo? Or ignore ammo flags in calc_bonuses?
-
 N:72:suffix:great:of Acid
 F:BRAND_ACID | RES_ACID | IGNORE_ACID
 T:hafted:0:99:11:10 to 100

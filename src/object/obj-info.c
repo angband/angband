@@ -1352,8 +1352,8 @@ textblock *object_info_ego(struct ego_item *ego)
 	obj.kind = kind;
 	obj.tval = kind->tval;
 	obj.sval = kind->sval;
-	obj.ego = ego;
-	ego_apply_magic(&obj, 0);
+	obj.affix[0] = ego->eidx;
+	ego_apply_magic(&obj, 0, ego->eidx);
 
 	return object_info_out(&obj, OINFO_FULL | OINFO_EGO | OINFO_DUMMY);
 }

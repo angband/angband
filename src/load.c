@@ -234,7 +234,7 @@ static int rd_item_3(object_type *o_ptr)
 
 	/* Monster holding object */
 	rd_s16b(&o_ptr->held_m_idx);
-	
+
 	/* Save the inscription */
 	rd_string(buf, sizeof(buf));
 	if (buf[0]) o_ptr->note = quark_add(buf);
@@ -307,8 +307,6 @@ static int rd_item_3(object_type *o_ptr)
         if ((o_ptr->dd < old_dd) && (o_ptr->ds == old_ds))
 			/* Keep old boosted damage dice */
 			o_ptr->dd = old_dd;
-
-		ego_min_pvals(o_ptr);
 	}
 
 	/* Success */

@@ -35,6 +35,11 @@
  */
 #define GREAT_EGO   20
 
+/* One_in_ chances of creating an artifact from a normal/good/great item */
+#define ART_NORMAL 1000
+#define ART_GOOD	200
+#define ART_GREAT	 20
+
 /**
  * Select an item from an allocation table struct, using the prob3 member.
  *
@@ -117,7 +122,7 @@ void check_flags(object_type *o_ptr)
  * \param o_ptr is the object looking for an affix.
  * \param level is the effective generation level (not necc. dungeon level)
  */
-static struct ego_item *ego_find_random(object_type *o_ptr, int level)
+static int ego_find_random(object_type *o_ptr, int level, int affix_lev)
 {
 	int i, j, success = 0;
 	long total = 0L;
@@ -136,7 +141,8 @@ static struct ego_item *ego_find_random(object_type *o_ptr, int level)
 					o_ptr->sval >= ego->min_sval[j] &&
 					o_ptr->sval <= ego->max_sval[j] &&
 					level >= ego->alloc_min[j] &&
-					level <= ego->alloc_max[j]) {
+					level <= ego->alloc_max[j] &&
+					affix_lev >= ego->level) {
 				table[i].prob3 = ego->alloc_prob[j];
 				table[i].index = ego->eidx;
 				break;
@@ -150,37 +156,52 @@ static struct ego_item *ego_find_random(object_type *o_ptr, int level)
 
 	mem_free(table);
 
-	if (success > 0) return &e_info[success];
+	if (success > 0) return success;
 
 	/* No legal affixes */
-	return NULL;
+	return 0;
 }
 
 
 /**
- * Apply generation magic to an ego-item.
+ * Apply an affix to an ego-item, checking minima as we go.
  */
-void ego_apply_magic(object_type *o_ptr, int level)
+void ego_apply_magic(object_type *o_ptr, int level, int affix)
 {
-	int i, j, flag, pval;
+	int i, j, flag, pval, amt;
 	bitflag flags[OF_SIZE], f2[OF_SIZE];
+	ego_item_type *ego;
+
+	ego = &e_info[affix];
 
 	/* Random powers */
-	for (i = 0; i < o_ptr->ego->num_randlines; i++)
-		for (j = 0; j < o_ptr->ego->num_randflags[i]; j++)
-			of_on(o_ptr->flags,	get_new_attr(o_ptr->flags,
-				o_ptr->ego->randmask[i]));
+	for (i = 0; i < ego->num_randlines; i++)
+		for (j = 0; j < ego->num_randflags[i]; j++)
+			of_on(o_ptr->flags,	get_new_attr(o_ptr->flags, ego->randmask[i]));
 
-	/* Apply extra o_ptr->ego bonuses */
-	o_ptr->to_h += randcalc(o_ptr->ego->to_h, level, RANDOMISE);
-	o_ptr->to_d += randcalc(o_ptr->ego->to_d, level, RANDOMISE);
-	o_ptr->to_a += randcalc(o_ptr->ego->to_a, level, RANDOMISE);
+	/* Apply extra combat bonuses */
+	amt = randcalc(ego->to_h, level, RANDOMISE);
+	if (ego->min_to_h != NO_MINIMUM && amt < o_ptr->ego->min_to_h)
+		amt = ego->min_to_h;
+	o_ptr->to_h += amt;
+
+	amt = randcalc(ego->to_d, level, RANDOMISE);
+	if (ego->min_to_d != NO_MINIMUM && amt < o_ptr->ego->min_to_d)
+		amt = ego->min_to_d;
+	o_ptr->to_d += amt;
+
+	amt = randcalc(ego->to_a, level, RANDOMISE);
+	if (ego->min_to_a != NO_MINIMUM && amt < o_ptr->ego->min_to_a)
+		amt = ego->min_to_a;
+	o_ptr->to_a += amt;
 
 	/* Apply pvals */
-	of_copy(f2, o_ptr->ego->flags);
-	for (i = 0; i < o_ptr->ego->num_pvals; i++) {
-		of_copy(flags, o_ptr->ego->pval_flags[i]);
-		pval = randcalc(o_ptr->ego->pval[i], level, RANDOMISE);
+	of_copy(f2, ego->flags);
+	for (i = 0; i < ego->num_pvals; i++) {
+		of_copy(flags, ego->pval_flags[i]);
+		pval = randcalc(ego->pval[i], level, RANDOMISE);
+		if (ego->min_pval[i] != NO_MINIMUM && pval < ego->min_pval[i])
+			pval = ego->min_pval[i];
 		for (flag = of_next(flags, FLAG_START); flag != FLAG_END;
 				flag = of_next(flags, flag + 1))
 			/* Prevent phantom flags */
@@ -194,85 +215,51 @@ void ego_apply_magic(object_type *o_ptr, int level)
 	of_union(o_ptr->flags, f2);
 
 	/* Adjust AC, weight, dice and sides */
-	if (o_ptr->ac && o_ptr->ego->ac_mod)
-		o_ptr->ac = ((100 + o_ptr->ego->ac_mod) * o_ptr->ac) / 100;
+	if (o_ptr->ac && ego->ac_mod)
+		o_ptr->ac = ((100 + ego->ac_mod) * o_ptr->ac) / 100;
 
-	o_ptr->weight = ((100 + o_ptr->ego->wgt_mod) * o_ptr->weight) / 100;
+	o_ptr->weight = ((100 + ego->wgt_mod) * o_ptr->weight) / 100;
 
-	o_ptr->dd += o_ptr->ego->dd;
+	o_ptr->dd += ego->dd;
 	if (o_ptr->dd < 1)
 		o_ptr->dd = 1;
 
-	o_ptr->ds += o_ptr->ego->ds;
+	o_ptr->ds += ego->ds;
 	if (o_ptr->ds < 1)
 		o_ptr->ds = 1;
+
+	/* Tidy up and de-duplicate flags */
+	check_flags(o_ptr);
 
 	return;
 }
 
 /**
- * Apply minimum pvals to an ego item.
+ * Try to find an affix for an object, setting o_ptr->affix[n] if successful
+ * and applying various bonuses.
  */
-void ego_min_pvals(object_type *o_ptr)
+static void make_ego_item(object_type *o_ptr, int level, int affix_lev)
 {
-	int i, j, flag;
+	int i;
 
-	if (!o_ptr->ego) return;
+	/* Cannot further improve artifacts or maxed items */
+	if (o_ptr->artifact || o_ptr->affix[MAX_AFFIXES - 1]) return;
 
-	for (i = 0; i < o_ptr->num_pvals; i++)
-		for (j = 0; j < o_ptr->ego->num_pvals; j++)
-			for (flag = of_next(o_ptr->ego->pval_flags[j], FLAG_START);
-					flag != FLAG_END;
-					flag = of_next(o_ptr->ego->pval_flags[j], flag + 1))
-				if ((!of_has(o_ptr->flags, flag) &&
-						o_ptr->ego->min_pval[j] > 0) ||
-						(o_ptr->ego->min_pval[j] != NO_MINIMUM
-						&& of_has(o_ptr->pval_flags[i], flag) &&
-						o_ptr->pval[i] < o_ptr->ego->min_pval[j]))
-					object_add_pval(o_ptr, o_ptr->ego->min_pval[j] -
-						o_ptr->pval[i], flag);
-}
-
-/**
- * Apply minimum standards for ego-items.
- */
-static void ego_apply_minima(object_type *o_ptr)
-{
-	if (!o_ptr->ego) return;
-
-	if (o_ptr->ego->min_to_h != NO_MINIMUM &&
-			o_ptr->to_h < o_ptr->ego->min_to_h)
-		o_ptr->to_h = o_ptr->ego->min_to_h;
-	if (o_ptr->ego->min_to_d != NO_MINIMUM &&
-			o_ptr->to_d < o_ptr->ego->min_to_d)
-		o_ptr->to_d = o_ptr->ego->min_to_d;
-	if (o_ptr->ego->min_to_a != NO_MINIMUM &&
-			o_ptr->to_a < o_ptr->ego->min_to_a)
-		o_ptr->to_a = o_ptr->ego->min_to_a;
-
-	ego_min_pvals(o_ptr);
-}
-
-
-/**
- * Try to find an ego-item for an object, setting o_ptr->ego if successful and
- * applying various bonuses.
- */
-static void make_ego_item(object_type *o_ptr, int level)
-{
-	/* Cannot further improve artifacts or ego items */
-	if (o_ptr->artifact || o_ptr->ego) return;
-
-	/* Occasionally boost the generation level of an item */
+	/* Occasionally boost the generation level of an affix */
 	if (level > 0 && one_in_(GREAT_EGO))
 		level = 1 + (level * MAX_DEPTH / randint1(MAX_DEPTH));
 
-	/* Try to get a legal ego type for this item */
-	o_ptr->ego = ego_find_random(o_ptr, level);
+	/* Use the first available affix slot */
+	for (i = 0; i < MAX_AFFIXES; i++)
+		if (!o_ptr->affix[i]) {
+			/* Try to get a legal affix for this item */
+			o_ptr->affix[i] = ego_find_random(o_ptr, level, affix_lev);
 
-	/* Actually apply the ego template to the item */
-	if (o_ptr->ego)
-		ego_apply_magic(o_ptr, level);
+			/* Actually apply the affix to the item */
+			if (o_ptr->affix[i])
+				ego_apply_magic(o_ptr, level, o_ptr->affix[i]);
+			break;
+		}
 
 	return;
 }
@@ -432,47 +419,6 @@ static bool make_artifact(object_type *o_ptr, int level)
 	return FALSE;
 }
 
-
-/*** Apply magic to an item ***/
-
-/*
- * Apply magic to a weapon.
- */
-static void apply_magic_weapon(object_type *o_ptr, int level, int power)
-{
-	if (power <= 0)
-		return;
-
-	o_ptr->to_h += randint1(5) + m_bonus(5, level);
-	o_ptr->to_d += randint1(5) + m_bonus(5, level);
-
-	if (power > 1) {
-		o_ptr->to_h += m_bonus(10, level);
-		o_ptr->to_d += m_bonus(10, level);
-
-		if (wield_slot(o_ptr) == INVEN_WIELD || obj_is_ammo(o_ptr))
-			/* Super-charge the damage dice */
-			while ((o_ptr->dd * o_ptr->ds > 0) &&
-					one_in_(10L * o_ptr->dd * o_ptr->ds))
-				o_ptr->dd++;
-	}
-}
-
-
-/*
- * Apply magic to armour
- */
-static void apply_magic_armour(object_type *o_ptr, int level, int power)
-{
-	if (power <= 0)
-		return;
-
-	o_ptr->to_a += randint1(5) + m_bonus(5, level);
-	if (power > 1)
-		o_ptr->to_a += m_bonus(10, level);
-}
-
-
 /**
  * Wipe an object clean and make it a standard object of the specified kind.
  */
@@ -535,82 +481,56 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev,
  * Applying magic to an object, which includes creating ego-items, and applying
  * random bonuses,
  *
- * The `good` argument forces the item to be at least `good`, and the `great`
- * argument does likewise.  Setting `allow_artifacts` to TRUE allows artifacts
- * to be created here.
+ * The `good` and `great` arguments affect the number of affixes on the item.
+ * Setting `allow_artifacts` to TRUE allows artifacts to be created here -
+ * this is used if we call directly with a pre-specified object kind; it is
+ * not used if we come via make_object.
  *
  * If `good` or `great` are not set, then the `lev` argument controls the
- * quality of item.
+ * number of affixes on the item.
  *
- * Returns 0 if a normal object, 1 if a good object, 2 if an ego item, 3 if an
- * artifact.
+ * Returns the number of affixes on the object: 0 for a normal object,
+ * MAX_AFFIXES+1 for an artifact.
  */
 s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 		bool good, bool great)
 {
-	int i;
-	s16b power = 0;
+	int i, affix_lev = 1, affixes;
+	bool art = FALSE;
 
-	/* Chance of being `good` and `great` */
-	int good_chance = (lev + 2) * 3;
-	int great_chance = MIN(lev / 4 + lev, 50);
+	/* Set the number and quality of affixes this item will have */
+	affixes = randint0(2 + lev / 25);
+	if (great)
+		affixes += 2 + randint1(2);
+	else if (good)
+		affixes += randint1(2);
+	if (affixes > MAX_AFFIXES)
+		affixes = MAX_AFFIXES;
 
-	/* Roll for "good" */
-	if (good || (randint0(100) < good_chance)) {
-		power = 1;
+	if (randint0(100) < 10 + lev)
+		affix_lev++;
+	if (great || (good && one_in_(4)))
+		affix_lev++;
 
-		/* Roll for "great" */
-		if (great || (randint0(100) < great_chance))
-			power = 2;
-	}
-
-	/* Roll for artifact creation - n.b. this is now only used for objects
-	   whose kind was predetermined (i.e. if we were called directly and not
-	   via make_object) */
+	/* Roll for artifact creation - n.b. this is now only used if we were
+	   called directly and not via make_object */
 	if (allow_artifacts) {
-		int rolls = 0;
+		if (great && one_in_(ART_GREAT))
+			art = TRUE;
+		else if (affix_lev > 1 && one_in_(ART_GOOD))
+			art = TRUE;
+		else if (one_in_(ART_NORMAL))
+			art = TRUE;
 
-		/* Get one roll if excellent */
-		if (power >= 2) rolls = 1;
-
-		/* Get four rolls if forced great */
-		if (great) rolls = 4;
-
-		/* Roll for artifacts if allowed */
-		for (i = 0; i < rolls; i++)
-			if (make_artifact(o_ptr, lev)) return 3;
+		if (art && make_artifact(o_ptr, lev)) return MAX_AFFIXES + 1;
 	}
 
-	/* Try to make an ego item */
-	if (power == 2)
-		make_ego_item(o_ptr, lev);
+	/* Generate and apply affixes */
+	for (i = 0; i < affixes; i++)
+		make_ego_item(o_ptr, lev, affix_lev);
 
-	/* Apply magic */
-	switch (o_ptr->tval)
-	{
-		case TV_DIGGING:
-		case TV_HAFTED:
-		case TV_POLEARM:
-		case TV_SWORD:
-		case TV_BOW:
-		case TV_SHOT:
-		case TV_ARROW:
-		case TV_BOLT:
-			apply_magic_weapon(o_ptr, lev, power);
-			break;
-
-		case TV_DRAG_ARMOR:
-		case TV_HARD_ARMOR:
-		case TV_SOFT_ARMOR:
-		case TV_SHIELD:
-		case TV_HELM:
-		case TV_CROWN:
-		case TV_CLOAK:
-		case TV_GLOVES:
-		case TV_BOOTS:
-			apply_magic_armour(o_ptr, lev, power);
-			break;
-
+	/* Apply special-case magic */
+	switch (o_ptr->tval) {
 		case TV_RING:
 			if (o_ptr->sval == SV_RING_SPEED) {
 				/* Super-charge the ring */
@@ -620,23 +540,20 @@ s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 			break;
 
 		case TV_CHEST:
-			/* Hack -- skip ruined chests */
+			/* Skip ruined chests */
 			if (o_ptr->kind->level <= 0) break;
 
-			/* Hack -- pick a "difficulty" */
+			/* Pick a difficulty */
 			o_ptr->extent = randint1(o_ptr->kind->level);
 
-			/* Never exceed "difficulty" of 55 to 59 */
+			/* Never exceed difficulty of 55 to 59 */
 			if (o_ptr->extent > 55)
 				o_ptr->extent = (s16b)(55 + randint0(5));
 
 			break;
 	}
 
-	/* Apply minima from ego items if necessary */
-	ego_apply_minima(o_ptr);
-
-	return power;
+	return affixes;
 }
 
 
@@ -806,12 +723,17 @@ bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
 	int base, art;
 	object_kind *kind;
 
-	if (great)
-		art = 10;
-	else if (good)
-		art = 100;
-	else
-		art = 1000;
+	/* Base level and artifact chance for the object */
+	if (great) {
+		art = ART_GREAT;
+		base = lev + 10 + m_bonus(5, lev);
+	} else if (good) {
+		art = ART_GOOD;
+		base = lev + 5 + m_bonus(5, lev);
+	} else {
+		art = ART_NORMAL;
+		base = lev;
+	}
 
 	/* Try to make an artifact */
 	if (one_in_(art)) {
@@ -822,14 +744,11 @@ bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
 		}
 	}
 
-	/* Base level for the object */
-	base = (good ? (lev + 10) : lev);
-
 	/* Get the object, prep it and apply magic */
 	kind = get_obj_num(base, good || great);
 	if (!kind) return FALSE;
-	object_prep(j_ptr, kind, lev, RANDOMISE);
-	apply_magic(j_ptr, lev, FALSE, good, great);
+	object_prep(j_ptr, kind, base, RANDOMISE);
+	apply_magic(j_ptr, base, FALSE, good, great);
 
 	/* Generate multiple items */
 	if (kind->gen_mult_prob >= randint1(100))
