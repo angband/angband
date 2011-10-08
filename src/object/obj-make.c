@@ -509,18 +509,20 @@ s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 	bool art = FALSE;
 
 	/* Set the number and quality of affixes this item will have */
+	if (randint0(100) < 10 + lev)
+		affix_lev++;
+	if (great || (good && one_in_(4)))
+		affix_lev++;
+
 	affixes = randint0(2 + lev / 25);
 	if (great)
 		affixes += 2 + randint1(2);
 	else if (good)
 		affixes += randint1(2);
+	if (of_has(o_ptr->flags, OF_GOOD))
+		affixes--;
 	if (affixes > MAX_AFFIXES)
 		affixes = MAX_AFFIXES;
-
-	if (randint0(100) < 10 + lev)
-		affix_lev++;
-	if (great || (good && one_in_(4)))
-		affix_lev++;
 
 	/* Roll for artifact creation - n.b. this is now only used if we were
 	   called directly and not via make_object */
