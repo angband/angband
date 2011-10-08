@@ -891,22 +891,33 @@ static size_t prt_dtrap(int row, int col)
 }
 
 
-
 /*
- * Print whether a character is studying or not.
+ * Print how many spells the player can study.
  */
 static size_t prt_study(int row, int col)
 {
+	/* Can the player learn new spells? */
 	if (p_ptr->new_spells)
 	{
-		char *text = format("Study (%d)", p_ptr->new_spells);
-		put_str(text, row, col);
-		return strlen(text) + 1;
+		/* Check if the player carries a book with spells they can study */
+		if (player_can_study_book())
+		{
+			/* Print study message */
+			char *text = format("Study (%d)", p_ptr->new_spells);
+			put_str(text, row, col);
+			return strlen(text) + 1;
+		}
+		else
+		{
+			/* Print greyed-out study message */
+			char *text = format("Study (%d)", p_ptr->new_spells);
+			c_put_str(TERM_L_DARK, text, row, col);
+			return strlen(text) + 1;
+		}
 	}
 
 	return 0;
 }
-
 
 
 /*
