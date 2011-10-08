@@ -181,19 +181,28 @@ void ego_apply_magic(object_type *o_ptr, int level, int affix)
 
 	/* Apply extra combat bonuses */
 	amt = randcalc(ego->to_h, level, RANDOMISE);
-	if (ego->min_to_h != NO_MINIMUM && amt < o_ptr->ego->min_to_h)
-		amt = ego->min_to_h;
-	o_ptr->to_h += amt;
+	if (ego->min_to_h != NO_MINIMUM) {
+		if (o_ptr->to_h + amt < ego->min_to_h)
+			o_ptr->to_h = ego->min_to_h;
+		else if (amt < ego->min_to_h)
+			o_ptr->to_h += ego->min_to_h;
+	}
 
 	amt = randcalc(ego->to_d, level, RANDOMISE);
-	if (ego->min_to_d != NO_MINIMUM && amt < o_ptr->ego->min_to_d)
-		amt = ego->min_to_d;
-	o_ptr->to_d += amt;
+	if (ego->min_to_d != NO_MINIMUM) {
+		if (o_ptr->to_d + amt < ego->min_to_d)
+			o_ptr->to_d = ego->min_to_d;
+		else if (amt < ego->min_to_d)
+			o_ptr->to_d += ego->min_to_d;
+	}
 
 	amt = randcalc(ego->to_a, level, RANDOMISE);
-	if (ego->min_to_a != NO_MINIMUM && amt < o_ptr->ego->min_to_a)
-		amt = ego->min_to_a;
-	o_ptr->to_a += amt;
+	if (ego->min_to_a != NO_MINIMUM) {
+		if (o_ptr->to_a + amt < ego->min_to_a)
+			o_ptr->to_a = ego->min_to_a;
+		else if (amt < ego->min_to_a)
+			o_ptr->to_a += ego->min_to_a;
+	}
 
 	/* Apply pvals */
 	of_copy(f2, ego->flags);
@@ -406,6 +415,7 @@ static bool make_artifact(object_type *o_ptr, int level)
 			if (!kind) return FALSE;
 
 			object_prep(o_ptr, kind, level, RANDOMISE);
+			o_ptr->artifact = a_ptr;
 		}
 		/* Paranoia -- no artifact stacks (yet) */
 		if (o_ptr->number != 1) return FALSE;
