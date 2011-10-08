@@ -41,7 +41,8 @@ void object_base_name(char *buf, size_t max, int tval, bool plural)
  *
  * Just truncates if the buffer isn't big enough.
  */
-void object_kind_name(char *buf, size_t max, const object_kind *kind, bool easy_know)
+void object_kind_name(char *buf, size_t max, const object_kind *kind,
+	bool easy_know)
 {
 	/* If not aware, use flavor */
 	if (!easy_know && !kind->aware && kind->flavor)
@@ -282,7 +283,8 @@ size_t obj_desc_name_format(char *buf, size_t max, size_t end,
 			if (!singular || !plural || !endmark) return end;
 
 			if (!pluralise)
-				strnfcat(buf, max, &end, "%.*s", plural - singular - 1, singular);
+				strnfcat(buf, max, &end, "%.*s", plural - singular - 1,
+					singular);
 			else
 				strnfcat(buf, max, &end, "%.*s", endmark - plural, plural);
 
@@ -312,11 +314,13 @@ size_t obj_desc_name_format(char *buf, size_t max, size_t end,
  * Format object o_ptr's name into 'buf'.
  */
 static size_t obj_desc_name(char *buf, size_t max, size_t end,
-		const object_type *o_ptr, bool prefix, odesc_detail_t mode,
-		bool spoil)
+		const object_type *o_ptr, odesc_detail_t mode)
 {
-	bool known = object_is_known(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
-	bool aware = object_flavor_is_aware(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
+	bool spoil = mode & ODESC_SPOIL;
+	bool known = object_is_known(o_ptr) || (o_ptr->ident & IDENT_STORE)
+		|| spoil;
+	bool aware = object_flavor_is_aware(o_ptr) || (o_ptr->ident & IDENT_STORE)
+		|| spoil;
 
 	const char *basename = obj_desc_get_basename(o_ptr, aware);
 	const char *modstr = obj_desc_get_modstr(o_ptr->kind);
@@ -324,7 +328,7 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 	if (aware && !o_ptr->kind->everseen && !spoil)
 		o_ptr->kind->everseen = TRUE;
 
-	if (prefix)
+	if (mode & ODESC_PREFIX)
 		end = obj_desc_name_prefix(buf, max, end, o_ptr, known,
 				basename, modstr);
 
@@ -336,7 +340,6 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 			!(o_ptr->artifact &&
 			  (object_name_is_visible(o_ptr) || known)) &&
 			(o_ptr->number != 1 || (mode & ODESC_PLURAL)));
-
 
 	/** Append extra names of various kinds **/
 
@@ -380,7 +383,8 @@ static bool obj_desc_show_armor(const object_type *o_ptr)
 	return FALSE;
 }
 
-static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max, size_t end)
+static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max,
+	size_t end)
 {
 	bool known = object_is_known(o_ptr) || (o_ptr->ident & IDENT_STORE);
 
@@ -443,7 +447,7 @@ static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max, si
 	return end;
 }
 
-static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max, 
+static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 		size_t end, bool spoil)
 {
 	bitflag flags[OF_SIZE];
@@ -458,7 +462,8 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 		if (spoil || object_attack_plusses_are_visible(o_ptr))
 			strnfcat(buf, max, &end, " (%dd%d)", o_ptr->dd, o_ptr->ds);
 		else
-			strnfcat(buf, max, &end, " (%dd%d)", o_ptr->kind->dd, o_ptr->kind->ds);
+			strnfcat(buf, max, &end, " (%dd%d)", o_ptr->kind->dd,
+				o_ptr->kind->ds);
 	}
 
 	if (of_has(flags, OF_SHOW_MULT))
@@ -466,7 +471,8 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 		/* Display shooting power as part of the multiplier */
 		if (of_has(flags, OF_MIGHT) &&
 		    (spoil || object_flag_is_known(o_ptr, OF_MIGHT)))
-			strnfcat(buf, max, &end, " (x%d)", (o_ptr->sval % 10) + o_ptr->pval[which_pval(o_ptr, OF_MIGHT)]);
+			strnfcat(buf, max, &end, " (x%d)",
+				(o_ptr->sval % 10) + o_ptr->pval[which_pval(o_ptr, OF_MIGHT)]);
 		else
 			strnfcat(buf, max, &end, " (x%d)", o_ptr->sval % 10);
 	}
@@ -485,7 +491,8 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 
 			/* Otherwise, always use the full tuple */
 			else
-				strnfcat(buf, max, &end, " (%+d,%+d)", o_ptr->to_h, o_ptr->to_d);
+				strnfcat(buf, max, &end, " (%+d,%+d)", o_ptr->to_h,
+					o_ptr->to_d);
 		}
 	}
 
@@ -500,13 +507,15 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 	}
 	else if (obj_desc_show_armor(o_ptr))
 	{
-		strnfcat(buf, max, &end, " [%d]", object_was_sensed(o_ptr) ? o_ptr->ac : o_ptr->kind->ac);
+		strnfcat(buf, max, &end, " [%d]",
+			object_was_sensed(o_ptr) ? o_ptr->ac : o_ptr->kind->ac);
 	}
 
 	return end;
 }
 
-static size_t obj_desc_light(const object_type *o_ptr, char *buf, size_t max, size_t end)
+static size_t obj_desc_light(const object_type *o_ptr, char *buf, size_t max,
+	size_t end)
 {
 	bitflag f[OF_SIZE];
 
@@ -544,7 +553,8 @@ static size_t obj_desc_pval(const object_type *o_ptr, char *buf, size_t max,
 	return end;
 }
 
-static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max, size_t end)
+static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max,
+	size_t end)
 {
 	bool aware = object_flavor_is_aware(o_ptr) || (o_ptr->ident & IDENT_STORE);
 
@@ -586,7 +596,8 @@ static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max, 
 	return end;
 }
 
-static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, size_t end)
+static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max,
+	size_t end)
 {
 	const char *u[4] = { 0, 0, 0, 0 };
 	int n = 0;
@@ -679,8 +690,7 @@ static size_t obj_desc_aware(const object_type *o_ptr, char *buf, size_t max,
 size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 				   odesc_detail_t mode)
 {
-	bool prefix = mode & ODESC_PREFIX;
-	bool spoil = (mode & ODESC_SPOIL);
+	bool spoil = mode & ODESC_SPOIL;
 	bool known;
 
 	size_t end = 0, i = 0;
@@ -706,7 +716,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 	/** Construct the name **/
 
 	/* Copy the base name to the buffer */
-	end = obj_desc_name(buf, max, end, o_ptr, prefix, mode, spoil);
+	end = obj_desc_name(buf, max, end, o_ptr, mode);
 
 	if (mode & ODESC_COMBAT)
 	{
