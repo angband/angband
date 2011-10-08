@@ -142,7 +142,7 @@ static int ego_find_random(object_type *o_ptr, int level, int affix_lev)
 					o_ptr->sval <= ego->max_sval[j] &&
 					level >= ego->alloc_min[j] &&
 					level <= ego->alloc_max[j] &&
-					affix_lev >= ego->level) {
+					affix_lev >= ego->level[j]) {
 				table[i].prob3 = ego->alloc_prob[j];
 				table[i].index = ego->eidx;
 				break;

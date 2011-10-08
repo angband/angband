@@ -1227,7 +1227,6 @@ static enum parser_error parse_e_n(struct parser *p)
 {
 	int idx = parser_getint(p, "index");
 	int type = ego_find_type(parser_getsym(p, "type"));
-	int level = ego_find_level(parser_getsym(p, "level"));
 	const char *name = parser_getstr(p, "name");
 	struct ego_item *h = parser_priv(p);
 
@@ -1238,11 +1237,6 @@ static enum parser_error parse_e_n(struct parser *p)
 
 	if (type)
 		e->type = type;
-	else
-		return PARSE_ERROR_INVALID_VALUE;
-
-	if (level)
-		e->level = level;
 	else
 		return PARSE_ERROR_INVALID_VALUE;
 
@@ -1418,6 +1412,7 @@ static enum parser_error parse_e_r2(struct parser *p)
 static enum parser_error parse_e_t(struct parser *p) {
 	int i, tval, min_sval, max_sval, amin, amax, prob;
 	const char *tmp = parser_getstr(p, "minmax");
+	int level = ego_find_level(parser_getsym(p, "level"));
 	struct ego_item *e = parser_priv(p);
 
 	if (!e)
@@ -1445,6 +1440,11 @@ static enum parser_error parse_e_t(struct parser *p) {
 			e->alloc_prob[i] = prob;
 			e->alloc_min[i] = amin;
 			e->alloc_max[i] = amax;
+			if (level)
+				e->level[i] = level;
+			else
+				return PARSE_ERROR_INVALID_VALUE;
+
 			break;
 		}
 	}
@@ -1468,7 +1468,7 @@ struct parser *init_parse_e(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "V sym version", ignored);
-	parser_reg(p, "N int index sym type sym level str name", parse_e_n);
+	parser_reg(p, "N int index sym type str name", parse_e_n);
 	parser_reg(p, "C rand th rand td rand ta ?int ac_mod ?int wgt_mod ?int dice ?int sides",
 		parse_e_c);
 	parser_reg(p, "M int th int td int ta", parse_e_m);
@@ -1476,7 +1476,7 @@ struct parser *init_parse_e(void) {
 	parser_reg(p, "L rand pval int min str flags", parse_e_l);
 	parser_reg(p, "R int num str flagtypes", parse_e_r);
 	parser_reg(p, "R2 int num str flags", parse_e_r2);
-	parser_reg(p, "T sym tval int min-sval int max-sval int common str minmax",
+	parser_reg(p, "T sym tval int min-sval int max-sval int common str minmax sym level",
 		parse_e_t);
 	parser_reg(p, "D str text", parse_e_d);
 	return p;

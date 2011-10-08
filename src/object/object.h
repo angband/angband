@@ -368,7 +368,6 @@ typedef struct ego_item {
 											/* N: */
 	u32b eidx;								/* index */
 	byte type;								/* prefix or suffix */
-	byte level;								/* good/great/uber/artifact */
 	char *name;								/* affix name */
 											/* C: */
 	random_value to_h;     					/* Extra to-hit bonus */
@@ -400,6 +399,7 @@ typedef struct ego_item {
 	byte alloc_prob[EGO_TVALS_MAX]; 		/* Chance of being generated */
 	byte alloc_min[EGO_TVALS_MAX];  		/* Min depth (can appear earlier) */
 	byte alloc_max[EGO_TVALS_MAX];  		/* Max depth (cannot appear deeper) */
+	byte level[EGO_TVALS_MAX];				/* good/great/uber/artifact */
 											/* D: */
 	char *text;								/* Descriptive text */
 
