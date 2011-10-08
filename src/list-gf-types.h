@@ -3,7 +3,7 @@
  * Purpose: Spell types used by project() and related functions.
  *
  * Fields:
- * name - type index (GF_THIS) 
+ * name - type index (GF_THIS)
  * desc - text description of attack if blind
  * resist - object flag for resistance
  * num - numerator for resistance
@@ -19,6 +19,7 @@
  */
 
 /* name  		desc				resist          num denom           opp             immunity    side_im	vuln            mon_resist  mon_vuln		obj_hates		obj_imm */
+GF(NONE,		NULL,				0,				0,	RV(0,0,0,0),	0,				0,			FALSE,	0,				0,			0,				0,				0)
 GF(ARROW,		"something sharp",	0,				0,	RV(0,0,0,0),	0,				0,			TRUE,	0,				0,			0,				0,				0)
 GF(MISSILE,		"something",		0,				0,	RV(0,0,0,0),	0,				0,			TRUE,	0,				0,			0,				0,				0)
 GF(MANA,		"something",		0,				0,	RV(0,0,0,0),	0,				0,			TRUE,	0,				0,			0,				0,				0)

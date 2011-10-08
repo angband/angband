@@ -129,7 +129,7 @@ static int ego_find_random(object_type *o_ptr, int level, int affix_lev)
 	alloc_entry *table;
 	ego_item_type *ego;
 
-	table = C_ZNEW(z_info->a_max, alloc_entry);
+	table = C_ZNEW(z_info->e_max, alloc_entry);
 
 	/* Go through all possible affixes and find ones legal for this item */
 	for (i = 0; i < z_info->e_max; i++) {
