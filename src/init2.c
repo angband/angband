@@ -1476,7 +1476,7 @@ struct parser *init_parse_e(void) {
 	parser_reg(p, "L rand pval int min str flags", parse_e_l);
 	parser_reg(p, "R int num str flagtypes", parse_e_r);
 	parser_reg(p, "R2 int num str flags", parse_e_r2);
-	parser_reg(p, "T sym tval int min-sval int max-sval int common str minmax sym level",
+	parser_reg(p, "T sym tval int min-sval int max-sval sym level int common str minmax",
 		parse_e_t);
 	parser_reg(p, "D str text", parse_e_d);
 	return p;
