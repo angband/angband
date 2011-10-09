@@ -278,8 +278,10 @@ static void make_ego_item(object_type *o_ptr, int level, int affix_lev)
 			o_ptr->affix[i] = ego_find_random(o_ptr, level, affix_lev);
 
 			/* Actually apply the affix to the item */
-			if (o_ptr->affix[i])
+			if (o_ptr->affix[i]) {
 				ego_apply_magic(o_ptr, level, o_ptr->affix[i]);
+				obj_affix_name(o_ptr);
+			}
 			break;
 		}
 

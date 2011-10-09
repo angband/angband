@@ -417,19 +417,19 @@ T:bolt:0:99:great:8:8 to 88
 
 # The *Slay* weapons (8)
 
-N:90:suffix:Nightbane
+N:90:suffix:of Nightbane
 F:KILL_UNDEAD
 T:hafted:0:18:uber:20:62 to 127
 T:polearm:0:99:uber:20:62 to 127
 T:sword:0:99:uber:20:62 to 127
 
-N:91:suffix:Demonbane
+N:91:suffix:of Demonbane
 F:KILL_DEMON
 T:hafted:0:99:uber:20:67 to 127
 T:polearm:0:99:uber:20:67 to 127
 T:sword:0:99:uber:20:67 to 127
 
-N:95:suffix:Dragonbane
+N:95:suffix:of Dragonbane
 F:KILL_DRAGON
 T:hafted:0:99:uber:20:39 to 88
 T:polearm:0:99:uber:20:39 to 88
@@ -507,7 +507,7 @@ C:d10:d5:0
 L:1:0:SHOTS
 T:bow:0:99:uber:10:25 to 100
 
-N:111:suffix:the Nazgûl
+N:111:suffix:of the Nazgûl
 C:-d10:d10:0
 F:LIGHT_CURSE | DRAIN_EXP | SEE_INVIS
 T:bow:0:99:great:10:10 to 80

@@ -332,6 +332,10 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 		end = obj_desc_name_prefix(buf, max, end, o_ptr, known,
 				basename, modstr);
 
+	if (mode & ODESC_AFFIX && o_ptr->prefix)
+/* && ((spoil && o_ptr->prefix) || object_ego_is_visible(o_ptr)))   FIXME */
+		strnfcat(buf, max, &end, "%s ", o_ptr->prefix);
+
 	/* Pluralize if (not forced singular) and
 	 * (not a known/visible artifact) and
 	 * (not one in stack or forced plural) */
@@ -346,8 +350,9 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 	if ((object_name_is_visible(o_ptr) || known) && o_ptr->artifact)
 		strnfcat(buf, max, &end, " %s", o_ptr->artifact->name);
 
-	else if ((spoil && o_ptr->ego) || object_ego_is_visible(o_ptr))
-		strnfcat(buf, max, &end, " %s", o_ptr->ego->name);
+	else if (mode & ODESC_AFFIX && o_ptr->suffix)
+/* && ((spoil && o_ptr->suffix) || object_ego_is_visible(o_ptr)))   FIXME */
+		strnfcat(buf, max, &end, " %s", o_ptr->suffix);
 
 	else if (aware && !o_ptr->artifact &&
 			(o_ptr->kind->flavor || o_ptr->kind->tval == TV_SCROLL))
@@ -681,9 +686,7 @@ static size_t obj_desc_aware(const object_type *o_ptr, char *buf, size_t max,
  * ODESC_PLURAL will pluralise regardless of the number in the stack.
  * ODESC_STORE turns off squelch markers, for in-store display.
  * ODESC_SPOIL treats the object as fully identified.
- *
- * Setting 'prefix' to TRUE prepends a 'the', 'a' or the number in the stack,
- * respectively.
+ * ODESC_AFFIX appends a prefix and suffix, if they exist.
  *
  * \returns The number of bytes used of the buffer.
  */
@@ -694,6 +697,9 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 	bool known;
 
 	size_t end = 0, i = 0;
+
+	/* FIXME - this is for testing */
+	mode |= ODESC_AFFIX;
 
 	/* Simple description for null item */
 	if (!o_ptr->tval)
@@ -747,4 +753,44 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 	}
 
 	return end;
+}
+
+/**
+ * Set an object's prefix and suffix in accordance with its affixes. We use
+ * the most powerful affixes to determine the name. TODO: themes.
+ */
+void obj_affix_name(object_type *o_ptr)
+{
+	int i, j, best, best_pref = 0, best_suf = 0, pref_lev = 0, suf_lev = 0;
+	struct ego_item *affix;
+
+	for (i = 0; i < MAX_AFFIXES; i++) {
+		if (o_ptr->affix[i]) {
+			affix = &e_info[o_ptr->affix[i]];
+			best = 0;
+			for (j = 0; j < EGO_TVALS_MAX; j++)
+				if (o_ptr->tval == affix->tval[j] &&
+						o_ptr->sval >= affix->min_sval[j] &&
+						o_ptr->sval <= affix->max_sval[j] &&
+						affix->level[j] > best)
+					best = affix->level[j];
+
+			if (affix->type == 1 && best > pref_lev) {
+				pref_lev = best;
+				best_pref = affix->eidx;
+			} else if (affix->type == 2 && best > suf_lev) {
+				suf_lev = best;
+				best_suf = affix->eidx;
+			}
+		}
+	}
+
+	if (best_pref) {
+		affix = &e_info[best_pref];
+		o_ptr->prefix = affix->name;
+	}
+	if (best_suf) {
+		affix = &e_info[best_suf];
+		o_ptr->suffix = affix->name;
+	}
 }
