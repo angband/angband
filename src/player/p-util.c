@@ -94,6 +94,47 @@ bool player_can_study(void)
 	return TRUE;
 }
 
+/* Does the player carry a book with a spell they can study? */
+bool player_can_study_book(void)
+{
+	int item_list[INVEN_TOTAL];
+	int item_num;
+
+	object_type *o_ptr;
+	struct spell *sp;
+
+	/* Check if the player can cast spells */
+	if (!player_can_cast())
+		return FALSE;
+
+	/* Check if the player can learn new spells */
+	if (!p_ptr->new_spells)
+		return FALSE;
+
+	/* Get the number of books in inventory */
+	item_tester_hook = obj_can_browse;
+	item_num = scan_items(item_list, N_ELEMENTS(item_list), (USE_INVEN));
+
+	/* Check through all available books */
+	for (int i = 0; i < item_num; i++)
+	{
+		o_ptr = object_from_item_idx(i);
+
+		/* Extract spells */
+		for (sp = o_ptr->kind->spells; sp; sp = sp->next)
+		{
+			/* Check if the player can study it */
+			if (spell_okay_to_study(sp->spell_index))
+			{
+				/* There is a spell the player can study */
+				return TRUE;
+			}
+		}
+	}
+
+	return FALSE;
+}
+
 /* Determine if the player can read scrolls. */
 bool player_can_read(void)
 {
