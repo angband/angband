@@ -181,27 +181,30 @@ void ego_apply_magic(object_type *o_ptr, int level, int affix)
 
 	/* Apply extra combat bonuses */
 	amt = randcalc(ego->to_h, level, RANDOMISE);
+	o_ptr->to_h += amt;
 	if (ego->min_to_h != NO_MINIMUM) {
-		if (o_ptr->to_h + amt < ego->min_to_h)
+		if (amt < ego->min_to_h)
+			o_ptr->to_h += ego->min_to_h - amt;
+		if (o_ptr->to_h < ego->min_to_h)
 			o_ptr->to_h = ego->min_to_h;
-		else if (amt < ego->min_to_h)
-			o_ptr->to_h += ego->min_to_h;
 	}
 
 	amt = randcalc(ego->to_d, level, RANDOMISE);
+	o_ptr->to_d += amt;
 	if (ego->min_to_d != NO_MINIMUM) {
-		if (o_ptr->to_d + amt < ego->min_to_d)
+		if (amt < ego->min_to_d)
+			o_ptr->to_d += ego->min_to_d - amt;
+		if (o_ptr->to_d < ego->min_to_d)
 			o_ptr->to_d = ego->min_to_d;
-		else if (amt < ego->min_to_d)
-			o_ptr->to_d += ego->min_to_d;
 	}
 
 	amt = randcalc(ego->to_a, level, RANDOMISE);
+	o_ptr->to_a += amt;
 	if (ego->min_to_a != NO_MINIMUM) {
-		if (o_ptr->to_a + amt < ego->min_to_a)
+		if (amt < ego->min_to_a)
+			o_ptr->to_a += ego->min_to_a - amt;
+		if (o_ptr->to_a < ego->min_to_a)
 			o_ptr->to_a = ego->min_to_a;
-		else if (amt < ego->min_to_a)
-			o_ptr->to_a += ego->min_to_a;
 	}
 
 	/* Apply pvals */
@@ -213,10 +216,15 @@ void ego_apply_magic(object_type *o_ptr, int level, int affix)
 			pval = ego->min_pval[i];
 		for (flag = of_next(flags, FLAG_START); flag != FLAG_END;
 				flag = of_next(flags, flag + 1))
-			/* Prevent phantom flags */
-			if (pval)
+			/* Prevent phantom flags, and check minima after adding */
+			if (pval) {
 				object_add_pval(o_ptr, pval, flag);
-			else
+				if (ego->min_pval[i] != NO_MINIMUM && of_has(o_ptr->flags,
+						flag))
+					if (o_ptr->pval[which_pval(o_ptr, flag)] < ego->min_pval[i])
+						object_add_pval(o_ptr, ego->min_pval[i] -
+							o_ptr->pval[which_pval(o_ptr, flag)], flag);
+			} else
 				of_off(f2, flag);
 	}
 

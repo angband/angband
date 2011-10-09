@@ -58,7 +58,7 @@ enum {
    missing M: lines */
 #define EGO_TVALS_MAX 	  8
 #define EGO_RANDFLAGS_MAX 4
-#define NO_MINIMUM 		255
+#define NO_MINIMUM 		225
 
 /* Maximum number of attempts to create artifacts, and number of A: lines in
    artifact.txt */
