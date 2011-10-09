@@ -159,11 +159,13 @@ typedef enum {
 #define INHIBIT_POWER       20000
 #define HIGH_TO_AC             26
 #define VERYHIGH_TO_AC         36
-#define INHIBIT_AC             56
+#define INHIBIT_AC             51
 #define HIGH_TO_HIT            16
 #define VERYHIGH_TO_HIT        26
+#define INHIBIT_TO_HIT         41
 #define HIGH_TO_DAM            16
 #define VERYHIGH_TO_DAM        26
+#define INHIBIT_TO_DAM         41
 #define AMMO_RESCALER          20 /* this value is also used for torches */
 
 

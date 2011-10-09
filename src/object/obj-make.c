@@ -258,6 +258,8 @@ void ego_apply_magic(object_type *o_ptr, int level, int affix)
 static void make_ego_item(object_type *o_ptr, int level, int affix_lev)
 {
 	int i;
+	object_type object_type_body;
+	object_type *j_ptr = &object_type_body;
 
 	/* Cannot further improve artifacts or maxed items */
 	if (o_ptr->artifact || o_ptr->affix[MAX_AFFIXES - 1]) return;
@@ -265,6 +267,9 @@ static void make_ego_item(object_type *o_ptr, int level, int affix_lev)
 	/* Occasionally boost the generation level of an affix */
 	if (level > 0 && one_in_(GREAT_EGO))
 		level = 1 + (level * MAX_DEPTH / randint1(MAX_DEPTH));
+
+	/* Make a copy of the object in case things go wrong */
+	object_copy(j_ptr, o_ptr);
 
 	/* Use the first available affix slot */
 	for (i = 0; i < MAX_AFFIXES; i++)
@@ -277,6 +282,10 @@ static void make_ego_item(object_type *o_ptr, int level, int affix_lev)
 				ego_apply_magic(o_ptr, level, o_ptr->affix[i]);
 			break;
 		}
+
+	/* Roll back if we've broken something */
+	if (object_power(o_ptr, FALSE, NULL, TRUE) >= INHIBIT_POWER)
+		object_copy(o_ptr, j_ptr);
 
 	return;
 }
