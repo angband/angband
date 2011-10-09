@@ -125,7 +125,7 @@ T:hard armour:0:99:good:10:10 to 80
 
 N:12:prefix:Dwarven
 C:0:0:d15
-M:255:0:5
+M:255:255:5
 F:IGNORE_ACID | IGNORE_FIRE | FREE_ACT
 T:hard armour:0:99:uber:5:40 to 127
 T:dragon armour:0:99:uber:5:40 to 127
@@ -141,18 +141,23 @@ C:1+M3:1+M3:d5
 F:IGNORE_ACID | IGNORE_FIRE | FREE_ACT
 T:shield:3:3:uber:10:40 to 127
 
-
 ### Crowns and Helms ###
 
 N:24:suffix:of Intelligence
 F:SUST_INT
-L:d2:0:INT
+L:d3:0:INT
 T:helm:0:99:great:20:5 to 100
+T:polearm:0:99:great:10:21 to 100
+T:sword:0:99:great:10:21 to 100
+T:hafted:0:99:great:10:21 to 100
 
 N:25:suffix:of Wisdom
 F:SUST_WIS
-L:d2:0:WIS
+L:d3:0:WIS
 T:helm:0:99:great:20:5 to 100
+T:polearm:0:99:great:10:21 to 100
+T:sword:0:99:great:10:21 to 100
+T:hafted:0:99:great:10:21 to 100
 
 N:26:suffix:of Beauty
 F:SUST_CHR
@@ -161,8 +166,10 @@ T:helm:0:99:good:20:1 to 40
 
 N:30:suffix:of Seeing
 F:RES_BLIND | SEE_INVIS
-L:d5:0:SEARCH
 T:helm:0:99:great:20:10 to 50
+T:polearm:0:99:great:10:21 to 100
+T:sword:0:99:great:10:21 to 100
+T:hafted:0:99:great:10:21 to 100
 
 N:31:suffix:of Infravision
 L:d5:0:INFRA
@@ -171,6 +178,7 @@ T:helm:0:99:good:20:10 to 50
 N:32:suffix:of Light
 F:LIGHT | RES_LIGHT
 T:crown:0:99:great:20:45 to 70
+T:helm:0:99:great:20:45 to 70
 
 N:33:suffix:of Telepathy
 F:TELEPATHY
@@ -234,6 +242,9 @@ N:48:suffix:of Free Action
 F:FREE_ACT
 T:gloves:0:99:great:20:1 to 60
 T:boots:0:99:great:16:10 to 100
+T:polearm:0:99:great:10:21 to 100
+T:sword:0:99:great:10:21 to 100
+T:hafted:0:99:great:10:21 to 100
 
 N:49:suffix:of Slaying
 C:d5:d5:0
@@ -242,8 +253,15 @@ T:gloves:0:99:great:20:10 to 75
 D:Boosts your ability to hit and damage enemies.
 
 N:50:suffix:of Agility
-L:d5:0:DEX
-T:gloves:0:99:great:12:20 to 95
+F:SUST_DEX
+L:d3:0:DEX
+T:gloves:0:99:great:12:10 to 95
+T:soft armour:0:99:great:10:11 to 80
+T:hard armour:0:99:great:10:11 to 80
+T:polearm:0:99:great:10:11 to 86
+T:sword:0:99:great:10:11 to 86
+T:hafted:0:99:great:10:11 to 86
+T:bow:0:99:great:10:25 to 100
 
 N:54:suffix:of Weakness
 F:LIGHT_CURSE
@@ -260,6 +278,7 @@ T:gloves:0:99:good:10:10 to 80
 N:56:suffix:of Slow Descent
 F:FEATHER
 T:boots:0:99:good:20:5 to 40
+T:gloves:0:99:good:20:5 to 80
 
 N:59:suffix:of Speed
 L:d10:0:SPEED
@@ -546,7 +565,7 @@ T:dragon armour:0:99:uber:1:60 to 127
 ### New affixes ###
 
 N:130:prefix::Massive
-C:0:0:0:0:20:1:1
+C:0:0:0:0:25:1:0
 T:digger:0:99:great:5:20 to 90
 T:hafted:0:99:great:10:10 to 80
 T:polearm:0:99:great:10:10 to 80
@@ -690,14 +709,14 @@ T:polearm:0:99:good:20:6 to 46
 T:sword:0:99:good:20:6 to 46
 
 N:158:prefix:Hunter's
-C:2:0:0
+C:2d3:0:0
 T:polearm:0:99:good:20:16 to 60
 T:sword:0:99:good:20:16 to 60
 T:bow:12:13:good:15:10 to 127
 T:arrow:0:99:good:18:25 to 100
 
 N:160:prefix:Quality
-C:1:1:0:0:0:0:0
+C:1+M5:1+M5:0:0:0:0:0
 T:hafted:0:99:good:20:6 to 100
 T:polearm:0:99:good:20:6 to 100
 T:sword:0:99:good:20:6 to 100
@@ -739,9 +758,9 @@ T:hafted:10:10:good:20:6 to 100
 
 N:166:prefix:Dragonbone
 C:0:1:0:0:0:0:1
-T:hafted:10:99:great:10:16 to 100
-T:arrow:0:99:great:10:16 to 100
-T:bolt:0:99:great:10:16 to 100
+T:hafted:10:99:good:10:16 to 100
+T:arrow:0:99:good:10:16 to 100
+T:bolt:0:99:good:10:16 to 100
 
 N:167:prefix:Iron
 F:HURT_DEMON
@@ -762,7 +781,7 @@ T:arrow:0:99:good:10:1 to 60
 T:bolt:0:99:good:10:1 to 60
 
 N:170:prefix:Crystal
-C:0:1+d2:0
+C:0:1+d2M3:0
 T:hafted:10:99:good:20:16 to 100
 T:polearm:0:99:good:20:16 to 100
 T:sword:0:99:good:20:16 to 100
@@ -807,7 +826,7 @@ T:arrow:0:99:great:10:45 to 100
 T:bolt:0:99:great:10:45 to 100
 
 N:175:prefix:Diamond
-C:0:3+d3:0
+C:0:3+d2M2:0
 T:hafted:10:99:good:20:26 to 100
 T:polearm:0:99:good:20:26 to 100
 T:sword:0:99:good:20:26 to 100
@@ -817,7 +836,7 @@ T:arrow:0:99:good:10:25 to 100
 T:bolt:0:99:good:10:25 to 100
 
 N:176:prefix:Blackrock
-C:0:2+d2:0:0:75
+C:0:2+d2M2:0:0:75
 T:hafted:10:99:good:20:10 to 66
 T:polearm:0:99:good:20:10 to 66
 T:sword:0:99:good:20:10 to 66
@@ -825,3 +844,134 @@ T:bow:12:99:good:15:10 to 67
 T:shot:0:99:good:15:10 to 66
 T:arrow:0:99:good:15:10 to 66
 T:bolt:0:99:good:15:10 to 66
+
+### New affixes intended to provide for a balanced set which can re-create
+### all previous ego items.
+
+N:177:prefix:Sharp
+C:M5:1+d2M3:0
+T:polearm:0:99:good:50:1 to 100
+T:sword:0:99:good:50:1 to 100
+T:arrow:0:99:good:35:1 to 100
+
+N:178:prefix:Keen
+C:M9:2+d3M5:0
+T:polearm:0:99:good:30:21 to 100
+T:sword:0:99:good:30:21 to 100
+T:arrow:0:99:good:25:21 to 100
+
+N:179:prefix:Vicious
+C:M5:1+d2M3:0
+T:hafted:0:99:good:50:1 to 100
+
+N:180:prefix:Brutal
+C:M9:2+d3M5:0
+T:hafted:0:99:good:30:21 to 100
+
+N:181:prefix:Durable
+F:IGNORE_ACID | IGNORE_FIRE | IGNORE_ELEC | IGNORE_COLD
+T:shot:0:99:good:10:1 to 100
+T:arrow:0:99:good:10:1 to 100
+T:bolt:0:99:good:10:1 to 100
+T:shield:0:99:good:10:1 to 100
+T:cloak:0:99:good:10:1 to 100
+T:soft armour:0:99:good:10:1 to 100
+T:hard armour:0:99:good:10:1 to 100
+
+N:182:suffix:of Warding
+R:1:HRES
+T:shield:0:99:great:10:1 to 100
+T:cloak:0:99:great:10:1 to 100
+T:soft armour:0:99:great:10:1 to 100
+T:hard armour:0:99:great:10:1 to 100
+
+N:183:suffix:of Strength
+F:SUST_STR
+L:d3:1:STR
+T:soft armour:0:99:great:10:11 to 100
+T:hard armour:0:99:great:10:11 to 100
+T:polearm:0:99:great:10:11 to 100
+T:sword:0:99:great:10:11 to 100
+T:hafted:0:99:great:10:11 to 100
+T:gloves:0:99:great:12:10 to 100
+
+N:184:suffix:of Hardiness
+F:SUST_CON
+L:d3:1:CON
+T:soft armour:0:99:great:10:11 to 100
+T:hard armour:0:99:great:10:11 to 100
+
+N:185:suffix:of Vitality
+F:HOLD_LIFE
+T:soft armour:0:99:good:10:11 to 100
+T:hard armour:0:99:good:10:11 to 100
+
+N:186:suffix:of Order
+F:RES_DISEN
+T:soft armour:0:99:great:10:41 to 100
+T:hard armour:0:99:great:10:41 to 100
+T:shield:0:99:great:10:41 to 100
+
+N:187:suffix:of Bodykeeping
+F:SUST_STR | SUST_DEX | SUST_CON
+T:crown:0:99:good:10:45 to 127
+#T:ring:0:99:good:10:25 to 127
+
+N:188:suffix:of Soulkeeping
+F:SUST_INT | SUST_WIS | SUST_CHR
+T:crown:0:99:good:10:45 to 127
+#T:ring:0:99:good:10:25 to 127
+
+N:189:prefix:Fearless
+F:RES_FEAR
+T:crown:0:99:good:10:15 to 127
+T:helm:0:99:good:10:15 to 127
+T:polearm:0:99:great:10:11 to 100
+T:sword:0:99:great:10:11 to 100
+T:hafted:0:99:great:10:11 to 100
+
+N:190:prefix:Silent
+F:RES_SOUND
+T:crown:0:99:great:10:25 to 127
+T:helm:0:99:great:10:25 to 127
+
+N:191:suffix:of Fortitude
+F:RES_STUN
+T:crown:0:99:great:10:25 to 127
+T:helm:0:99:great:10:25 to 127
+
+N:192:suffix:of Certainty
+F:RES_CONFU
+T:crown:0:99:great:10:25 to 127
+T:helm:0:99:great:10:25 to 127
+
+N:193:suffix:of Darkness
+F:RES_DARK
+T:crown:0:99:great:10:25 to 127
+T:helm:0:99:great:10:25 to 127
+
+N:194:suffix:of Searching
+L:d5:0:SEARCH
+T:crown:0:99:good:10:15 to 127
+T:helm:0:99:good:10:15 to 127
+T:gloves:0:99:good:10:15 to 127
+#T:ring:0:99:good:10:5 to 127
+
+N:195:suffix:of Stability
+F:RES_NEXUS
+T:boots:0:99:great:16:15 to 100
+
+N:196:suffix:of Parrying
+C:0:0:d4M6
+T:polearm:0:99:good:10:1 to 100
+T:sword:0:99:good:10:1 to 100
+T:hafted:0:99:good:10:1 to 100
+
+N:197:suffix:of Regeneration
+F:REGEN
+T:polearm:0:99:great:10:21 to 100
+T:sword:0:99:great:10:21 to 100
+T:hafted:0:99:great:10:21 to 100
+T:crown:0:99:great:10:15 to 127
+T:helm:0:99:great:10:15 to 127
+
