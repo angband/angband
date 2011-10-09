@@ -240,10 +240,10 @@ static errr Term_clear_gtk(void);
 static errr Term_wipe_gtk(int x, int y, int n);
 
 /* Draw some textual characters. */
-static errr Term_text_gtk(int x, int y, int n, byte a, const char *s);
+static errr Term_text_gtk(int x, int y, int n, byte a, const wchar_t *s);
 
 /* Draw pretty pictures instead. */
-static errr Term_pict_gtk(int x, int y, int n, const byte *ap, const char *cp, const byte *tap, const char *tcp);
+static errr Term_pict_gtk(int x, int y, int n, const byte *ap, const wchar_t *cp, const byte *tap, const wchar_t *tcp);
 
 /* Do gtk things */
 static errr Term_flush_gtk(void);

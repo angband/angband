@@ -35,8 +35,6 @@ static unsigned int graphics_table[32] = {
 	'+', '|', '?', '?', '?', '?', '?', '.',
 };
 
-iconv_t conv;
-
 /* 
  *Add a bunch of debugger message, to trace where problems are. 
  */
@@ -525,75 +523,43 @@ static errr Term_wipe_gtk(int x, int y, int n)
 	return (0);
 }
 
-char *process_control_chars(int n, const char *s)
-{
-	char *s2 = (char *)malloc(sizeof(char) * n);
-	int i;
-	for (i = 0; i < n; i++) {
-		unsigned char c = s[i];
-		if (c < 32) {
-			s2[i] = graphics_table[c];
-		} else if (c == 127) {
-			s2[i] = '#';
-		} else {
-			s2[i] = c;
-		}
-	}
-
-	return s2;
-}
-
-char *latin1_to_utf8(int n, const char *s)
-{
-	size_t inbytes = n;
-	char *s2 = process_control_chars(n, s);
-	char *p2 = s2;
-
-	size_t outbytes = 4 * n;
-	char *s3 = (char *)malloc(sizeof(char) * outbytes);
-	char *p3 = s3;
-
-	size_t result = iconv(conv, &p2, &inbytes, &p3, &outbytes);
-
-	if (result == (size_t)(-1)) {
-		printf("iconv() failed: %d\n", errno);
-		free(s3);
-		return s2;
-	} else {
-		free(s2);
-		return s3;
-	}
-}
-
 /*
  * Draw some textual characters.
  */
-static errr Term_text_gtk(int x, int y, int n, byte a, const char *s)
+static errr Term_text_gtk(int x, int y, int n, byte a, const wchar_t *s)
 {
 	term_data *td = (term_data*)(Term->data);
 	cairo_rectangle_t r;
+	wchar_t src[255];
+	char mbstr[MB_LEN_MAX * 255];
+	size_t len;
 
-	char *s2;
-	if (conv == NULL)
-		s2 = process_control_chars(n, s);
-	else
-		s2 = latin1_to_utf8(n, s);
+	/* Take a copy of the incoming string, but truncate it at n chars */
+	wcsncpy(src, s, n);
+	src[n] = L'\0';
+	/* Convert to UTF-8 for display */
+	len = wcstombs(mbstr, src, n * MB_LEN_MAX);
+	mbstr[len] = '\0';
 
 	init_cairo_rect(&r, (td->font.w * x), (td->font.h * y),  (td->font.w * n), td->font.h);
-	draw_text(td->surface, &td->font, &td->actual, x, y, n, a, s2);
+	draw_text(td->surface, &td->font, &td->actual, x, y, len, a, mbstr);
 	invalidate_drawing_area(td->drawing_area, r);
 	
-	free(s2);
 	return (0);
 }
 
-static errr Term_pict_gtk(int x, int y, int n, const byte *ap, const char *cp, const byte *tap, const char *tcp)
+static errr Term_pict_gtk(int x, int y, int n, const byte *ap, const wchar_t *cp, const byte *tap, const wchar_t *tcp)
 {
 	term_data *td = (term_data*)(Term->data);
 	cairo_rectangle_t r;
+	char mbforeground[MB_LEN_MAX * 255];
+	char mbterrain[MB_LEN_MAX * 255];
 	
+	wcstombs(mbforeground, cp, n * MB_LEN_MAX);
+	wcstombs(mbterrain, tcp, n * MB_LEN_MAX);
+
 	init_cairo_rect(&r, (td->actual.w * x), (td->actual.h * y),  (td->actual.w * n), (td->actual.h));
-	draw_tiles(td->surface, x, y, n, ap, cp, tap, tcp, &td->font, &td->actual, &td->tile);
+	draw_tiles(td->surface, x, y, n, ap, mbforeground, tap, mbterrain, &td->font, &td->actual, &td->tile);
 	invalidate_drawing_area(td->drawing_area, r);
 			
 	return (0);
@@ -2029,12 +1995,6 @@ static void release_memory()
 static errr term_data_init(term_data *td, int i)
 {
 	term *t = &td->t;
-
-	conv = iconv_open("UTF-8", "ISO-8859-1");
-	if (conv == (iconv_t)(-1)) {
-		printf("iconv_open() failed: %d\n", errno);
-		conv = NULL;
-	}
 
 	td->cols = 80;
 	td->rows = 24;
