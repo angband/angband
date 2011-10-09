@@ -106,7 +106,7 @@ void check_flags(object_type *o_ptr)
 
 	dedup_gf_flags(o_ptr->flags);
 
-	if (obj_is_ammo(o_ptr)) {
+	if (kind_is_ammo(o_ptr->tval)) {
 		create_mask(f, FALSE, OFT_SLAY, OFT_BRAND, OFT_KILL, OFT_IGNORE,
 			OFT_HATES, OFT_INT, OFT_MAX);
 		of_inter(o_ptr->flags, f);
@@ -600,12 +600,14 @@ s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
  */
 static bool kind_is_good(const object_kind *kind)
 {
-		if (!of_has(kind->flags, OF_GOOD) &&
-				!of_has(kind->base->flags, OF_GOOD)) return FALSE;
+		if (of_has(kind->flags, OF_GOOD) ||
+				of_has(kind->base->flags, OF_GOOD)) return TRUE;
 		if (randcalc(kind->to_a, 0, MINIMISE) < 0) return FALSE;
-		if (randcalc(kind->to_h, 0, MINIMISE) < 0) return FALSE;
 		if (randcalc(kind->to_d, 0, MINIMISE) < 0) return FALSE;
-		return TRUE;
+		if (kind_is_armour(kind->tval)) return TRUE;
+		if (randcalc(kind->to_h, 0, MINIMISE) < 0) return FALSE;
+		if (kind_is_weapon(kind->tval) || kind_is_ammo(kind->tval)) return TRUE;
+		return FALSE;
 }
 
 

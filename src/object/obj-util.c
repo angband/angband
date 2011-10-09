@@ -522,7 +522,7 @@ bool slot_can_wield_item(int slot, const object_type *o_ptr)
 {
 	if (o_ptr->tval == TV_RING)
 		return (slot == INVEN_LEFT || slot == INVEN_RIGHT) ? TRUE : FALSE;
-	else if (obj_is_ammo(o_ptr))
+	else if (kind_is_ammo(o_ptr->tval))
 		return (slot >= QUIVER_START && slot < QUIVER_END) ? TRUE : FALSE;
 	else
 		return (wield_slot(o_ptr) == slot) ? TRUE : FALSE;
@@ -3980,25 +3980,50 @@ void display_itemlist(void)
 
 
 /* Basic tval testers */
-bool obj_is_staff(const object_type *o_ptr)  { return o_ptr->tval == TV_STAFF; }
-bool obj_is_wand(const object_type *o_ptr)   { return o_ptr->tval == TV_WAND; }
-bool obj_is_rod(const object_type *o_ptr)    { return o_ptr->tval == TV_ROD; }
-bool obj_is_potion(const object_type *o_ptr) { return o_ptr->tval == TV_POTION; }
-bool obj_is_scroll(const object_type *o_ptr) { return o_ptr->tval == TV_SCROLL; }
-bool obj_is_food(const object_type *o_ptr)   { return o_ptr->tval == TV_FOOD; }
-bool obj_is_light(const object_type *o_ptr)   { return o_ptr->tval == TV_LIGHT; }
-bool obj_is_ring(const object_type *o_ptr)   { return o_ptr->tval == TV_RING; }
+bool kind_is_staff(int tval)  { return tval == TV_STAFF; }
+bool kind_is_wand(int tval)   { return tval == TV_WAND; }
+bool kind_is_rod(int tval)    { return tval == TV_ROD; }
+bool kind_is_potion(int tval) { return tval == TV_POTION; }
+bool kind_is_scroll(int tval) { return tval == TV_SCROLL; }
+bool kind_is_food(int tval)   { return tval == TV_FOOD; }
+bool kind_is_light(int tval)  { return tval == TV_LIGHT; }
+bool kind_is_ring(int tval)   { return tval == TV_RING; }
+bool kind_is_bow(int tval)    { return tval == TV_BOW; }
 
-
-/**
- * Determine whether an object is ammo
- *
- * \param o_ptr is the object to check
- */
-bool obj_is_ammo(const object_type *o_ptr)
+bool kind_is_weapon(int tval)
 {
-	switch (o_ptr->tval)
-	{
+	switch (tval) {
+		case TV_SWORD:
+		case TV_HAFTED:
+		case TV_POLEARM:
+		case TV_DIGGING:
+			return TRUE;
+		default:
+			return FALSE;
+	}
+}
+
+bool kind_is_armour(int tval)
+{
+	switch (tval) {
+		case TV_BOOTS:
+		case TV_GLOVES:
+		case TV_HELM:
+		case TV_CROWN:
+		case TV_SHIELD:
+		case TV_CLOAK:
+		case TV_SOFT_ARMOR:
+		case TV_HARD_ARMOR:
+		case TV_DRAG_ARMOR:
+			return TRUE;
+		default:
+			return FALSE;
+	}
+}
+
+bool kind_is_ammo(int tval)
+{
+	switch (tval) {
 		case TV_SHOT:
 		case TV_ARROW:
 		case TV_BOLT:

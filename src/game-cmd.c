@@ -123,6 +123,47 @@ struct item_selector
 	int mode;
 };
 
+/* item tester hook wrappers for object kinds */
+static bool obj_is_staff(const object_type *o_ptr)
+{
+	return kind_is_staff(o_ptr->tval);
+}
+
+static bool obj_is_wand(const object_type *o_ptr)
+{
+	return kind_is_wand(o_ptr->tval);
+}
+
+static bool obj_is_rod(const object_type *o_ptr)
+{
+	return kind_is_rod(o_ptr->tval);
+}
+
+static bool obj_is_food(const object_type *o_ptr)
+{
+	return kind_is_food(o_ptr->tval);
+}
+
+static bool obj_is_potion(const object_type *o_ptr)
+{
+	return kind_is_potion(o_ptr->tval);
+}
+
+static bool obj_is_scroll(const object_type *o_ptr)
+{
+	return kind_is_scroll(o_ptr->tval);
+}
+
+static bool obj_is_ring(const object_type *o_ptr)
+{
+	return kind_is_ring(o_ptr->tval);
+}
+
+static bool obj_is_ammo(const object_type *o_ptr)
+{
+	return kind_is_ammo(o_ptr->tval);
+}
+
 /** List of requirements for various commands' objects */
 struct item_selector item_selector[] =
 {

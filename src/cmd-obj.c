@@ -249,7 +249,7 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	int num = 1;
 
 	/* If we are stacking ammo in the quiver */
-	if (obj_is_ammo(o_ptr))
+	if (kind_is_ammo(o_ptr->tval))
 	{
 		num = o_ptr->number;
 		combined_ammo = object_similar(o_ptr, &p_ptr->inventory[slot],
@@ -402,7 +402,7 @@ void do_cmd_wield(cmd_code code, cmd_arg args[])
 	}
 
 	/* If the slot is in the quiver and objects can be combined */
-	if (obj_is_ammo(equip_o_ptr) && object_similar(equip_o_ptr, o_ptr,
+	if (kind_is_ammo(equip_o_ptr->tval) && object_similar(equip_o_ptr, o_ptr,
 		OSTACK_QUIVER))
 	{
 		wield_item(o_ptr, item, slot);
@@ -518,7 +518,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	int items_allowed = 0;
 
 	/* Determine how this item is used. */
-	if (obj_is_rod(o_ptr))
+	if (kind_is_rod(o_ptr->tval))
 	{
 		if (!obj_can_zap(o_ptr))
 		{
@@ -530,7 +530,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 		snd = MSG_ZAP_ROD;
 		items_allowed = USE_INVEN | USE_FLOOR;
 	}
-	else if (obj_is_wand(o_ptr))
+	else if (kind_is_wand(o_ptr->tval))
 	{
 		if (!obj_has_charges(o_ptr))
 		{
@@ -542,7 +542,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 		snd = MSG_ZAP_ROD;
 		items_allowed = USE_INVEN | USE_FLOOR;
 	}
-	else if (obj_is_staff(o_ptr))
+	else if (kind_is_staff(o_ptr->tval))
 	{
 		if (!obj_has_charges(o_ptr))
 		{
@@ -554,19 +554,19 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 		snd = MSG_USE_STAFF;
 		items_allowed = USE_INVEN | USE_FLOOR;
 	}
-	else if (obj_is_food(o_ptr))
+	else if (kind_is_food(o_ptr->tval))
 	{
 		use = USE_SINGLE;
 		snd = MSG_EAT;
 		items_allowed = USE_INVEN | USE_FLOOR;
 	}
-	else if (obj_is_potion(o_ptr))
+	else if (kind_is_potion(o_ptr->tval))
 	{
 		use = USE_SINGLE;
 		snd = MSG_QUAFF;
 		items_allowed = USE_INVEN | USE_FLOOR;
 	}
-	else if (obj_is_scroll(o_ptr))
+	else if (kind_is_scroll(o_ptr->tval))
 	{
 		/* Check player can use scroll */
 		if (!player_can_read())

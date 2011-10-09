@@ -261,7 +261,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		file_putf(log_file, "Adding power from to_dam, total is %d\n", p);
 	}
 	/* Add damage from dice for any wieldable weapon or ammo */
-	if (wield_slot(o_ptr) == INVEN_WIELD || obj_is_ammo(o_ptr)) {
+	if (wield_slot(o_ptr) == INVEN_WIELD || kind_is_ammo(o_ptr->tval)) {
 		dice_pwr = (o_ptr->dd * (o_ptr->ds + 1) * DAMAGE_POWER / 4);
 		file_putf(log_file, "Adding %d power for dam dice\n", dice_pwr);
 	/* Add 2nd lot of damage power for nonweapons */
@@ -287,7 +287,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	}
 
 	/* Add launcher bonus for ego ammo, multiply for launcher and rescale */
-	if (obj_is_ammo(o_ptr)) {
+	if (kind_is_ammo(o_ptr->tval)) {
 		if (o_ptr->ego)
 			p += (archery[o_ptr->tval - TV_SHOT].launch_dam * DAMAGE_POWER / 2);
 		p = p * archery[o_ptr->tval - TV_SHOT].launch_mult / (2 * MAX_BLOWS);

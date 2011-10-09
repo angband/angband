@@ -304,10 +304,10 @@ static void py_pickup_aux(int o_idx, bool domsg)
 
 	/* If we have picked up ammo which matches something in the quiver, note
 	 * that it so that we can wield it later (and suppress pick up message) */
-	if (obj_is_ammo(o_ptr)) 
+	if (kind_is_ammo(o_ptr->tval))
 	{
 		int i;
-		for (i = QUIVER_START; i < QUIVER_END; i++) 
+		for (i = QUIVER_START; i < QUIVER_END; i++)
 		{
 			if (!p_ptr->inventory[i].kind) continue;
 			if (!object_similar(&p_ptr->inventory[i], o_ptr,
