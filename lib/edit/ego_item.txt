@@ -574,7 +574,7 @@ T:dragon armour:0:99:uber:1:60 to 127
 
 ### New affixes ###
 
-N:130:prefix::Massive
+N:130:prefix:Massive
 C:0:0:0:0:50:1:0
 T:digger:0:99:great:5:20 to 90
 T:hafted:0:99:great:10:10 to 80

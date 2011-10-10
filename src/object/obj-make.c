@@ -29,8 +29,8 @@
 #define GREAT_OBJ   20
 
 /*
- * There is a 1/20 (5%) chance that ego-items with an inflated base-level are
- * generated when an object is turned into an ego-item (see make_ego_item).
+ * There is a 1/20 (5%) chance that affixes with an inflated base-level are
+ * generated when an object is turned into an ego-item (see obj_add_affix).
  * As above, lower values yield better ego-items more often.
  */
 #define GREAT_EGO   20
@@ -121,14 +121,14 @@ void check_flags(object_type *o_ptr)
 	return;
 }
 
-
 /**
  * Select an ego affix that fits the object.
  *
  * \param o_ptr is the object looking for an affix.
  * \param level is the effective generation level (not necc. dungeon level)
+ * \param affix_lev is the highest quality of affix we're allowed.
  */
-static int ego_find_random(object_type *o_ptr, int level, int affix_lev)
+static int obj_find_affix(object_type *o_ptr, int level, int affix_lev)
 {
 	int i, j, success = 0;
 	long total = 0L;
@@ -168,9 +168,66 @@ static int ego_find_random(object_type *o_ptr, int level, int affix_lev)
 	return 0;
 }
 
+/**
+ * Select an ego theme that fits the object.
+ *
+ * \param o_ptr is the object looking for aa theme
+ * \param level is the effective generation level (not necc. dungeon level)
+ */
+static int obj_find_theme(object_type *o_ptr, int level)
+{
+	int i, j, k, wgt, success = 0;
+	long total = 0L;
+	alloc_entry *table;
+	struct theme *theme;
+
+	table = C_ZNEW(z_info->theme_max, alloc_entry);
+
+	/* Go through all possible themes and find ones legal for this item */
+	for (i = 0; i < z_info->theme_max; i++) {
+		theme = &themes[i];
+
+		/* Test if this is a legal theme for this object & level */
+		for (j = 0; j < EGO_TVALS_MAX; j++) {
+			if (o_ptr->tval == theme->tval[j] &&
+					o_ptr->sval >= theme->min_sval[j] &&
+					o_ptr->sval <= theme->max_sval[j] &&
+					level >= theme->alloc_min[j] &&
+					level <= theme->alloc_max[j]) {
+				table[i].index = theme->index;
+				break;
+			}
+		}
+		if (table[i].index) {
+			/* It's legal, so check for relevant affixes */
+			wgt = 0;
+			for (j = 0; j < MAX_AFFIXES; j++)
+				for (k = 0; k < theme->num_affixes; k++)
+					if (o_ptr->affix[j] == theme->affix[k])
+						wgt += theme->aff_wgt[k];
+			table[i].prob3 = (wgt * 8 * wgt) / theme->tot_wgt;
+		}
+		total += table[i].prob3;
+	}
+
+	/* Choose at random from all legal themes, if we pass the roll */
+	if (randint0(200) < total)
+		success = table_pick(total, z_info->theme_max, table);
+
+	mem_free(table);
+
+	if (success > 0) return success;
+
+	/* No legal themes */
+	return 0;
+}
 
 /**
  * Apply an affix to an ego-item, checking minima as we go.
+ *
+ * \param o_ptr is the object we're modifying
+ * \param level is the generation level
+ * \param affix is the affix we're applying
  */
 void ego_apply_magic(object_type *o_ptr, int level, int affix)
 {
@@ -258,10 +315,25 @@ void ego_apply_magic(object_type *o_ptr, int level, int affix)
 }
 
 /**
- * Try to find an affix for an object, setting o_ptr->affix[n] if successful
- * and applying various bonuses.
+ * Apply a theme to an object
  */
-static void make_ego_item(object_type *o_ptr, int level, int affix_lev)
+static void obj_apply_theme(object_type *o_ptr, int level, int this_one)
+{
+	struct theme *theme = &themes[this_one];
+
+	if (theme->type == 1)
+		o_ptr->prefix = theme->name;
+	else if (theme->type == 2)
+		o_ptr->suffix = theme->name;
+
+	return;
+}
+
+/**
+ * Try to find an affix for an object, setting o_ptr->affix[n] if successful
+ * and checking for a theme for the object.
+ */
+static void obj_add_affix(object_type *o_ptr, int level, int affix_lev)
 {
 	int i;
 	object_type object_type_body;
@@ -281,7 +353,7 @@ static void make_ego_item(object_type *o_ptr, int level, int affix_lev)
 	for (i = 0; i < MAX_AFFIXES; i++)
 		if (!o_ptr->affix[i]) {
 			/* Try to get a legal affix for this item */
-			o_ptr->affix[i] = ego_find_random(o_ptr, level, affix_lev);
+			o_ptr->affix[i] = obj_find_affix(o_ptr, level, affix_lev);
 
 			/* Actually apply the affix to the item */
 			if (o_ptr->affix[i]) {
@@ -291,9 +363,14 @@ static void make_ego_item(object_type *o_ptr, int level, int affix_lev)
 			break;
 		}
 
-	/* Roll back if we've broken something */
+	/* Roll back if we've broken something, otherwise check for a theme */
 	if (object_power(o_ptr, FALSE, NULL, TRUE) >= INHIBIT_POWER)
 		object_copy(o_ptr, j_ptr);
+	else {
+		o_ptr->theme = obj_find_theme(o_ptr, level);
+		if (o_ptr->theme)
+			obj_apply_theme(o_ptr, level, o_ptr->theme);
+	}
 
 	return;
 }
@@ -562,9 +639,9 @@ s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 		if (art && make_artifact(o_ptr, lev)) return MAX_AFFIXES + 1;
 	}
 
-	/* Generate and apply affixes */
-	for (i = 0; i < affixes; i++)
-		make_ego_item(o_ptr, lev, affix_lev);
+	/* Generate and apply affixes, stopping if we acquire a theme */
+	for (i = 0; i < affixes && !o_ptr->theme; i++)
+		obj_add_affix(o_ptr, lev, affix_lev);
 
 	/* Apply special-case magic */
 	switch (o_ptr->tval) {
