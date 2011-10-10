@@ -316,15 +316,35 @@ void ego_apply_magic(object_type *o_ptr, int level, int affix)
 
 /**
  * Apply a theme to an object
+ *
+ * \param o_ptr is the object to which we're applying a theme.
+ * \param level is the effective generation level.
+ * \param this_one is the theme to apply.
  */
 static void obj_apply_theme(object_type *o_ptr, int level, int this_one)
 {
+	size_t i, j;
 	struct theme *theme = &themes[this_one];
 
+	o_ptr->theme = this_one;
+
+	/* Set the object name properly */
 	if (theme->type == 1)
 		o_ptr->prefix = theme->name;
 	else if (theme->type == 2)
 		o_ptr->suffix = theme->name;
+
+	/* Apply the affixes we don't already have, but allow the second and
+	   subsequent applications specified */
+	for (i = 0; i < theme->num_affixes; i++) {
+		bool gotit = FALSE;
+		for (j = 0; j < MAX_AFFIXES; j++)
+			if ((o_ptr->affix[j] == theme->affix[i]) &&
+					(theme->affix[i] != theme->affix[i-1]))
+				gotit = TRUE;
+		if (!gotit)
+			ego_apply_magic(o_ptr, level, theme->affix[i]);
+	}
 
 	return;
 }
@@ -339,8 +359,8 @@ static void obj_add_affix(object_type *o_ptr, int level, int affix_lev)
 	object_type object_type_body;
 	object_type *j_ptr = &object_type_body;
 
-	/* Cannot further improve artifacts or maxed items */
-	if (o_ptr->artifact || o_ptr->affix[MAX_AFFIXES - 1]) return;
+	/* Cannot further improve artifacts or maxed items or themed items */
+	if (o_ptr->artifact || o_ptr->affix[MAX_AFFIXES - 1] || o_ptr->theme) return;
 
 	/* Occasionally boost the generation level of an affix */
 	if (level > 0 && one_in_(GREAT_EGO))
@@ -368,10 +388,12 @@ static void obj_add_affix(object_type *o_ptr, int level, int affix_lev)
 		object_copy(o_ptr, j_ptr);
 	else {
 		o_ptr->theme = obj_find_theme(o_ptr, level);
-		if (o_ptr->theme)
+		if (o_ptr->theme) {
 			obj_apply_theme(o_ptr, level, o_ptr->theme);
+			if (object_power(o_ptr, FALSE, NULL, TRUE) >= INHIBIT_POWER)
+				object_copy(o_ptr, j_ptr);
+		}
 	}
-
 	return;
 }
 

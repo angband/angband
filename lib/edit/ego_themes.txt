@@ -9,9 +9,9 @@
 # === Understanding ego_themes.txt ===
 
 # Ego themes are used to impose some control over the random generation 
-# of ego items. When an item acquires any two of the affixes which pertain 
-# to a theme, there is a chance that it will acquire that theme and that 
-# any remaining affixes will be chosen in accordance with the theme. 
+# of ego items. When an item acquires any two of the affixes which 
+# pertain to a theme, there is a chance that it will acquire that theme 
+# and that other affixes will be applied in accordance with the theme. 
 # This chance is related to the "weighting" given to each affix in a 
 # theme (see below under 'A'). An item can only acquire one theme.
 
@@ -40,9 +40,11 @@
 #  percent chance = x * (x * 4 / y)
 # where x is the total weighting of relevant affixes present on the item
 # and y is the total weighting of all affixes germane to the theme
-# ... so it is important that the total weighting is at least 25.
+# ... so it is important that the y is at least 25.
 # A weighting of 0 means that the affix cannot contribute to the award of
-# the theme, but is applied once the theme is awarded.
+# the theme, but is applied once the theme is awarded. The same affix may
+# be specified more than once (e.g. to boost hit/dam/ac), but all
+# occurrences of one affix must be consecutive.
 
 # 'D' is a textual flavour description of the theme, for use in 'I'nspect.
 
