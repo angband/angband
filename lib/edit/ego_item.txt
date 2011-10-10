@@ -38,7 +38,8 @@
 
 # 'N' indicates the beginning of an entry. The serial number must 
 # increase for each new item. type is prefix or suffix. name is the 
-# textual name for use in object_desc().
+# textual name, which is used in ego_themes.txt - it is important that
+# no two affixes have identical names.
 
 # 'C' is for combat values - to-hit, to-dam, to-ac. All of these fields 
 # accept randomized values. base_ac_mod and weight_mod are percentages 
@@ -992,6 +993,10 @@ C:0:0:d6M6
 T:polearm:0:99:good:10:1 to 100
 T:sword:0:99:good:10:1 to 100
 T:hafted:0:99:good:10:1 to 100
+
+N:197:suffix:of Slicing
+C:0:0:0:0:0:3:1
+T:polearm:20:20:good:10:60 to 100
 
 N:198:suffix:of Chaos
 C:0:0:0:0:0:2:0
