@@ -434,7 +434,7 @@ bool verify_item(const char *prompt, int item)
 
 
 /*
- * Hack -- allow user to "prevent" certain choices.
+ * Hack -- prevent certain choices depending on the inscriptions on the item.
  *
  * The item can be negative to mean "item on floor".
  */
@@ -445,24 +445,116 @@ static bool get_item_allow(int item, unsigned char ch, bool is_harmless)
 
 	unsigned n;
 
+	char *prompt_str;
+
 	/* Inventory or floor */
 	if (item >= 0)
 		o_ptr = &p_ptr->inventory[item];
 	else
 		o_ptr = object_byid(0 - item);
 
-	/* Check for a "prevention" inscription */
+	/* The inscription to look for */
 	verify_inscrip[1] = ch;
 
-	/* Find both sets of inscriptions, add together, and prompt that number of times */
+	/* Look for the inscription */
 	n = check_for_inscrip(o_ptr, verify_inscrip);
 
+	/* Also look for for the inscription '!*' */
 	if (!is_harmless)
 		n += check_for_inscrip(o_ptr, "!*");
 
+	/* Choose string for the prompt */
+	if (n)
+	{
+		switch (ch)
+		{
+			case 'a':
+			{
+				prompt_str = "Really aim";
+				break;
+			}
+			case 'b':
+			{
+				prompt_str = "Really browse";
+				break;
+			}
+			case 'd':
+			{
+				prompt_str = "Really drop";
+				break;
+			}
+			case 'f':
+			{
+				prompt_str = "Really fire";
+				break;
+			}
+			case 'k':
+			{
+				prompt_str = "Really destroy";
+				break;
+			}
+			case 'q':
+			{
+				prompt_str = "Really quaff";
+				break;
+			}
+			case 'r':
+			{
+				prompt_str = "Really read";
+				break;
+			}
+			case 't':
+			{
+				prompt_str = "Really take off";
+				break;
+			}
+			case 'u':
+			{
+				prompt_str = "Really use";
+				break;
+			}
+			case 'v':
+			{
+				prompt_str = "Really throw";
+				break;
+			}
+			case 'w':
+			{
+				prompt_str = "Really wear";
+				break;
+			}
+			case 'z':
+			{
+				prompt_str = "Really zap";
+				break;
+			}
+			case 'A':
+			{
+				prompt_str = "Really activate";
+				break;
+			}
+			case 'E':
+			{
+				prompt_str = "Really eat";
+				break;
+			}
+			case 'F':
+			{
+				prompt_str = "Really fuel with";
+				break;
+			}
+			default:
+			{
+				prompt_str = "Really do that with";
+				break;
+			}
+		}
+	}
+
+	/* Promt for confirmation n times */
 	while (n--)
 	{
-		if (!verify_item("Really try", item))
+		if (!verify_item(prompt_str, item))
 			return (FALSE);
 	}
 
