@@ -38,13 +38,13 @@
 # importance in this theme (1-100). The number of lines is limited by
 # THEME_AFFIX_MAX in object.h. The formula used for the theme is
 #  percent chance = x * (x * 4 / y)
-# where x is the total weighting of relevant affixes present on the item
-# and y is the total weighting of all affixes germane to the theme
-# ... so it is important that the y is at least 25.
-# A weighting of 0 means that the affix cannot contribute to the award of
-# the theme, but is applied once the theme is awarded. The same affix may
-# be specified more than once (e.g. to boost hit/dam/ac), but all
-# occurrences of one affix must be consecutive.
+# where x is the total weighting of relevant affixes present on the item 
+# and y is the total weighting of all affixes germane to the theme ... 
+# so it is important that y is at least 25. A weighting of 0 means that 
+# the affix cannot contribute to the award of the theme, but is applied 
+# once the theme is awarded. The same affix may be specified more than 
+# once (e.g. to boost hit/dam/ac), but all occurrences of one affix must 
+# be consecutive.
 
 # 'D' is a textual flavour description of the theme, for use in 'I'nspect.
 

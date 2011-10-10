@@ -176,7 +176,7 @@ static int obj_find_affix(object_type *o_ptr, int level, int affix_lev)
  */
 static int obj_find_theme(object_type *o_ptr, int level)
 {
-	int i, j, k, wgt, success = 0;
+	int i, j, k, wgt, num, success = 0;
 	long total = 0L;
 	alloc_entry *table;
 	struct theme *theme;
@@ -200,12 +200,15 @@ static int obj_find_theme(object_type *o_ptr, int level)
 		}
 		if (table[i].index) {
 			/* It's legal, so check for relevant affixes */
-			wgt = 0;
+			wgt = num = 0;
 			for (j = 0; j < MAX_AFFIXES; j++)
 				for (k = 0; k < theme->num_affixes; k++)
-					if (o_ptr->affix[j] == theme->affix[k])
+					if (o_ptr->affix[j] == theme->affix[k]) {
+						num++;
 						wgt += theme->aff_wgt[k];
-			table[i].prob3 = (wgt * 8 * wgt) / theme->tot_wgt;
+					}
+			if (num > 1)
+				table[i].prob3 = (wgt * 8 * wgt) / theme->tot_wgt;
 		}
 		total += table[i].prob3;
 	}
