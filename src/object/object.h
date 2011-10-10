@@ -55,10 +55,11 @@ enum {
 #define DEFAULT_PVAL	0 /* TODO: remove this */
 
 /* Maximum number of T: and R/R2: lines in ego-item.txt, and no-op value for
-   missing M: lines */
-#define EGO_TVALS_MAX 	  8
+   missing M: lines, and max affixes per theme */
+#define EGO_TVALS_MAX 	  9
 #define EGO_RANDFLAGS_MAX 4
 #define NO_MINIMUM 		225
+#define THEME_AFFIX_MAX  16
 
 /* Maximum number of attempts to create artifacts, and number of A: lines in
    artifact.txt */
@@ -368,7 +369,7 @@ typedef struct artifact {
 typedef struct ego_item {
 	struct ego_item *next;
 											/* N: */
-	u32b eidx;								/* index */
+	u16b eidx;								/* index */
 	byte type;								/* prefix or suffix */
 	char *name;								/* affix name */
 											/* C: */
@@ -398,10 +399,10 @@ typedef struct ego_item {
 	byte tval[EGO_TVALS_MAX]; 				/* Legal tval */
 	byte min_sval[EGO_TVALS_MAX];			/* Minimum legal sval */
 	byte max_sval[EGO_TVALS_MAX];			/* Maximum legal sval */
+	byte level[EGO_TVALS_MAX];				/* good/great/uber/artifact */
 	byte alloc_prob[EGO_TVALS_MAX]; 		/* Chance of being generated */
 	byte alloc_min[EGO_TVALS_MAX];  		/* Min depth (can appear earlier) */
 	byte alloc_max[EGO_TVALS_MAX];  		/* Max depth (cannot appear deeper) */
-	byte level[EGO_TVALS_MAX];				/* good/great/uber/artifact */
 											/* D: */
 	char *text;								/* Descriptive text */
 
@@ -449,6 +450,7 @@ typedef struct object {
 	char *prefix;		/* Displayed prefix */
 	char *suffix;		/* Displayed suffix */
 	u16b affix[MAX_AFFIXES]; /* Indeces of ego affixes */
+	u16b theme;			/* Ego theme for this object */
 
 	s16b pval[MAX_PVALS];/* Item extra-parameter */
 	byte num_pvals;		/* Number of pvals in use */
@@ -500,6 +502,29 @@ typedef struct flavor {
 	wchar_t x_char;    /* Desired flavor character */
 } flavor_type;
 
+/* Struct to hold ego item themes (t_info[]) from ego_themes.txt */
+struct theme {
+	struct theme *next;
+											/* N: */
+	u16b index;
+	byte type;								/* prefix or suffix */
+	char *name;
+											/* T: */
+	byte tval[EGO_TVALS_MAX]; 				/* Legal tval */
+	byte min_sval[EGO_TVALS_MAX];			/* Minimum legal sval */
+	byte max_sval[EGO_TVALS_MAX];			/* Maximum legal sval */
+	byte alloc_min[EGO_TVALS_MAX];  		/* Min depth (can appear earlier) */
+	byte alloc_max[EGO_TVALS_MAX];  		/* Max depth (cannot appear deeper) */
+											/* A: */
+	u16b affix[THEME_AFFIX_MAX];			/* Affixes germane to this theme */
+	byte aff_wgt[THEME_AFFIX_MAX];			/* Weighting of each affix 1-100 */
+	u16b tot_wgt;							/* Total of all weightings */
+	byte num_affixes;						/* Number of A: lines */
+											/* D: */
+	char *text;								/* Descriptive text */
+
+	bool everseen;							/* Has this savefile seen one */
+};
 
 /*** Functions ***/
 

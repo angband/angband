@@ -1,0 +1,423 @@
+# File: ego_themes.txt
+
+# This file is used to initialize the "ego-item" theme information for 
+# Angband.
+
+# Do not modify this file unless you know exactly what you are doing,
+# unless you wish to risk possible system crashes and broken savefiles.
+
+# === Understanding ego_themes.txt ===
+
+# Ego themes are used to impose some control over the random generation 
+# of ego items. When an item acquires any two of the affixes which pertain 
+# to a theme, there is a chance that it will acquire that theme and that 
+# any remaining affixes will be chosen in accordance with the theme. 
+# This chance is related to the "weighting" given to each affix in a 
+# theme (see below under 'A'). An item can only acquire one theme.
+
+# This is how we create the traditional high-end ego items such as Holy /
+# Westernesse / Gondolin weapons, Elvenkind armour, Lothlorien bows etc.
+
+# N: serial number : type : name
+# T: tval : min sval : max sval : min to max
+# A: affix : weighting
+# D: description
+
+# 'N' indicates the beginning of an entry. The serial number must 
+# increase for each new item. type is prefix or suffix. name is the 
+# textual name for use in object_desc().
+
+# 'T' is for possible 'tval' and 'sval' values of the base item. The 
+# theme can only be applied to items of these tvals, with sval in the 
+# specified range. min depth is the earliest it is normally found, max 
+# depth is the deepest it is ever found, for these svals. You can 
+# specify multiple depths for the same tval/sval range, but each 
+# counts towards EGO_TVALS_MAX.
+
+# 'A' is for affixes, one per line. Each affix has a weighting of its
+# importance in this theme (1-100). The number of lines is limited by
+# THEME_AFFIX_MAX in object.h. The formula used for the theme is
+#  percent chance = x * (x * 4 / y)
+# where x is the total weighting of relevant affixes present on the item
+# and y is the total weighting of all affixes germane to the theme
+# ... so it is important that the total weighting is at least 25.
+# A weighting of 0 means that the affix cannot contribute to the award of
+# the theme, but is applied once the theme is awarded.
+
+# 'D' is a textual flavour description of the theme, for use in 'I'nspect.
+
+# See src/object/list-object-flags.h for a list of flags and types
+# See src/object/tvalsval.h for a list of tval and sval defines
+# See lib/edit/ego_item.txt for a list of affixes which lead to themes
+
+# Version stamp (required)
+
+V:3.4.0
+
+N:0:<unused>
+
+N:1:suffix:of Resistance
+T:shield:0:99:25 to 100
+T:soft armour:0:99:25 to 100
+T:hard armour:0:99:25 to 100
+T:dragon armour:7:29:70 to 100
+A:of Resist Acid:7
+A:of Resist Fire:7
+A:of Resist Lightning:7
+A:of Resist Cold:7
+A:Durable:4
+A:Reinforced:2
+
+N:2:suffix:of Elvenkind
+T:shield:0:99:50 to 100
+T:soft armour:0:99:50 to 100
+T:hard armour:0:99:50 to 100
+T:dragon armour:7:29:70 to 100
+A:Light:1
+A:Reinforced:2
+A:of Resist Acid:3
+A:of Resist Fire:3
+A:of Resist Lightning:3
+A:of Resist Cold:3
+A:Durable:1
+A:of Stealth:8
+A:of Warding:8
+
+N:3:suffix:of Elvenkind
+T:boots:2:3:60 to 127
+A:of Slow Descent:2
+A:Durable:1
+A:of Stealth:4
+A:of Speed:18
+
+N:4:suffix:of Permanence
+T:soft armour:2:2:50 to 127
+A:Reinforced:2
+A:Tough:1
+A:of Bodykeeping:10
+A:of Soulkeeping:10
+A:of Vitality:3
+A:of Resist Acid:3
+A:of Resist Fire:3
+A:of Resist Lightning:3
+A:of Resist Cold:3
+A:Durable:1
+A:of Warding:10
+
+N:5:prefix:Dwarven
+T:hard armour:0:99:40 to 127
+T:dragon armour:0:99:40 to 127
+T:shield:3:3:40 to 127
+A:Reinforced:2
+A:Spiked:8
+A:of Craftsmanship:3
+A:Durable:2
+A:of Strength:6
+A:of Hardiness:6
+A:of Infravision:0
+A:of Free Action:0
+
+N:6:suffix:of Preservation
+T:shield:0:99:50 to 127
+A:Tough:1
+A:Reinforced:2
+A:Arcane:4
+A:of Bodykeeping:7
+A:of Vitality:6
+A:Durable:1
+A:of Warding:7
+
+N:7:suffix:of the Magi
+T:cloak:0:99:30 to 100
+A:Tough:1
+A:of Intelligence:10
+A:Durable:1
+A:of Stealth:6
+A:of Dweomercraft:0
+A:Sophisticated:6
+
+N:8:suffix:of the Magi
+T:crown:0:99:45 to 127
+A:of Resist Acid:3
+A:of Resist Fire:3
+A:of Resist Lightning:3
+A:of Resist Cold:3
+A:of Intelligence:8
+A:Durable:1
+A:of Dweomercraft:0
+A:Sophisticated:4
+
+N:9:suffix:of Might
+T:crown:0:99:45 to 127
+A:of Bodykeeping:8
+A:of Free Action:8
+A:of Strength:8
+A:of Agility:8
+A:of Hardiness:8
+A:Durable:0
+
+N:10:suffix:of Lordliness
+T:crown:0:99:45 to 100
+A:of Wisdom:8
+A:of Beauty:4
+A:Fearless:6
+A:Durable:1
+A:of Dweomercraft:4
+A:Intuitive:2
+
+N:11:suffix:of Serenity
+T:crown:0:99:50 to 100
+A:Silent:6
+A:of Certainty:6
+A:Fearless:6
+A:of Fortitude:6
+
+N:12:suffix:of Night and Day
+T:crown:0:99:50 to 100
+A:of Light:8
+A:of Darkness:9
+A:of Seeing:5
+A:Revealing:4
+A:of Brightness:5
+# add ignore acid?
+
+N:13:suffix:of Power
+T:gloves:0:99:30 to 100
+A:of Slaying:4
+A:of Strength:4
+A:of Strength:0
+
+N:14:suffix:of Thievery
+T:gloves:1:1:40 to 127
+T:gloves:5:5:40 to 127
+A:of Slaying:5
+A:of Slow Descent:2
+A:of Free Action:7
+A:of Agility:0
+A:of Agility:8
+A:of Searching:3
+
+N:15:suffix:of Combat
+T:gloves:2:4:50 to 127
+A:of Slaying:8
+A:of Strength:8
+A:of Hardiness:8
+
+N:16:suffix:of Aman
+T:cloak:0:99:30 to 127
+A:Tough:0
+A:Reinforced:2
+A:of Stealth:10
+A:Durable:1
+A:of Warding:12
+
+N:17:suffix:(Holy Avenger)
+T:hafted:0:99:20 to 100
+T:polearm:0:99:20 to 100
+T:sword:0:99:20 to 100
+A:Quality:0
+A:Silver:1
+A:Iron:1
+A:of Slay Demon:6
+A:of Slay Evil:6
+A:of Slay Undead:6
+A:Pious:1
+A:of Wisdom:6
+A:Fearless:4
+A:Revealing:2
+A:Protective:0
+
+N:18:suffix:(Defender)
+T:hafted:0:99:20 to 100
+T:polearm:0:99:20 to 100
+T:sword:0:99:20 to 100
+A:Quality:1
+A:of Parrying:10
+A:of Free Action:5
+A:Revealing:3
+A:of Slow Descent:0
+A:of Regeneration:5
+A:of Resist Acid:0
+A:of Resist Fire:0
+A:of Resist Lightning:0
+A:of Resist Cold:0
+A:Durable:1
+A:of Stealth:0
+A:Protective:0
+
+N:19:suffix:of Gondolin
+T:hafted:0:99:30 to 127
+T:polearm:0:99:30 to 127
+T:sword:0:99:30 to 127
+A:Quality:0
+A:Iron:1
+A:of Slay Demon:5
+A:of Slay Orc:5
+A:of Slay Troll:5
+A:of Slay Dragon:5
+A:of Brightness:0
+A:of Darkness:0
+A:Revealing:3
+A:of Free Action:5
+A:Durable:1
+A:of Dweomercraft:0
+
+N:20:suffix:of Westernesse
+T:hafted:0:99:30 to 127
+T:polearm:0:99:30 to 127
+T:sword:0:99:30 to 127
+A:Quality:0
+A:of Slay Orc:5
+A:of Slay Troll:5
+A:of Slay Giant:5
+A:of Free Action:5
+A:Revealing:5
+A:of Strength:5
+A:of Agility:5
+A:of Hardiness:5
+
+N:21:suffix:of Fury
+T:hafted:12:99:1 to 127
+T:polearm:10:99:1 to 127
+T:sword:16:99:1 to 127
+A:Quality:0
+A:Quality:1
+A:Aggravating:0
+A:Fearless:8
+A:Durable:1
+A:of Strength:0
+A:of Strength:8
+A:of Extra Attacks:8
+
+N:22:suffix:of *Slay Animal*
+T:hafted:0:99:20 to 60
+T:polearm:0:99:20 to 60
+T:sword:0:99:20 to 60
+A:of Slay Animal:10
+A:of Slow Digestion:7
+A:of Intelligence:7
+
+N:23:suffix:of *Slay Evil*
+T:hafted:0:99:20 to 100
+T:polearm:0:99:20 to 100
+T:sword:0:99:20 to 100
+A:of Slay Evil:10
+A:Pious:7
+A:of Wisdom:7
+A:of Dweomercraft:0
+
+N:24:suffix:of *Slay Undead*
+T:hafted:0:18:62 to 127
+T:polearm:0:99:62 to 127
+T:sword:0:99:62 to 127
+A:Silver:1
+A:of Slay Undead:5
+A:of Nightbane:9
+A:Revealing:5
+A:of Wisdom:5
+
+N:25:suffix:of *Slay Demon*
+T:hafted:0:99:67 to 127
+T:polearm:0:99:67 to 127
+T:sword:0:99:67 to 127
+A:Iron:1
+A:of Slay Demon:5
+A:of Demonbane:9
+A:of Resist Fire:5
+A:of Intelligence:5
+
+N:26:suffix:of *Slay Orc*
+T:hafted:0:99:10 to 44
+T:polearm:0:99:10 to 44
+T:sword:0:99:10 to 44
+A:of Slay Orc:15
+A:Dextrous:5
+A:of Agility:5
+
+N:27:suffix:of *Slay Troll*
+T:hafted:0:99:36 to 66
+T:polearm:0:99:36 to 66
+T:sword:0:99:36 to 66
+A:of Slay Troll:15
+A:of Regeneration:5
+A:of Strength:5
+
+N:28:suffix:of *Slay Giant*
+T:hafted:0:99:39 to 100
+T:polearm:0:99:39 to 100
+T:sword:0:99:39 to 100
+A:of Slay Giant:15
+A:Robust:5
+A:of Strength:5
+
+N:29:suffix:of *Slay Dragon*
+T:hafted:0:99:39 to 100
+T:polearm:0:99:39 to 100
+T:sword:0:99:39 to 100
+A:of Slay Dragon:5
+A:of Dragonbane:10
+A:Fearless:5
+A:of Hardiness:5
+
+N:30:suffix:of Earthquakes
+T:digger:0:99:20 to 127
+A:Brutal:5
+A:of Acid:5
+A:of Impact:10
+A:of Strength:0
+A:of Strength:5
+A:of Digging:0
+A:of Digging:5
+
+N:31:suffix:of Lothlórien
+T:bow:12:13:40 to 127
+A:of Accuracy:5
+A:of Power:5
+A:of Free Action:0
+A:Durable:0
+A:of Agility:0
+A:of Agility:5
+A:of Extra Might:10
+A:of Dweomercraft:0
+
+N:32:suffix:of the Haradrim
+T:bow:23:23:40 to 127
+A:Quality:1
+A:of Extra Might:10
+A:of Extra Shots:10
+A:Durable:0
+
+N:33:suffix:of Buckland
+T:bow:2:2:40 to 127
+A:Quality:1
+A:of Extra Might:8
+A:of Extra Shots:8
+A:Durable:0
+A:of Agility:0
+A:of Agility:8
+
+N:34:suffix:of True Sight
+T:light:0:99:20 to 127
+A:Revealing:100
+A:of Seeing:100
+
+N:35:prefix:Blessed
+T:hafted:0:99:21 to 100
+T:polearm:0:99:21 to 100
+T:sword:0:99:21 to 100
+A:Pious:100
+A:of Wisdom:100
+A:of Dweomercraft:0
+
+N:36:suffix:of Holy Might
+T:shot:2:99:40 to 127
+T:arrow:2:99:40 to 127
+T:bolt:2:99:40 to 127
+A:Quality:0
+A:Quality:0
+A:Silver:1
+A:Iron:1
+A:of Slay Demon:7
+A:of Slay Evil:7
+A:of Slay Undead:7
+A:Durable:1

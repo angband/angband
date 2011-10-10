@@ -408,7 +408,7 @@ N:43:& Blade~ of Chaos
 G:|:v
 I:23:14
 W:70:0:180:4000
-A:10:70 to 100
+#A:10:70 to 100
 P:0:6d5:0:0:0
 F:RES_CHAOS | GOOD
 
@@ -501,7 +501,7 @@ N:61:& Mace~ of Disruption
 G:\:v
 I:21:20
 W:80:0:400:4300
-A:10:80 to 100
+#A:10:80 to 100
 P:0:5d8:0:0:0
 F:SLAY_UNDEAD | GOOD
 
