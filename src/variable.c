@@ -503,6 +503,7 @@ artifact_type *a_info;
  * The ego-item arrays
  */
 ego_item_type *e_info;
+struct theme *themes;
 
 /*
  * The monster race arrays

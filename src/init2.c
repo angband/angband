@@ -188,8 +188,8 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 
 /*
  * Create any missing directories. We create only those dirs which may be
- * empty (user/, save/, apex/, info/, help/). The others are assumed 
- * to contain required files and therefore must exist at startup 
+ * empty (user/, save/, apex/, info/, help/). The others are assumed
+ * to contain required files and therefore must exist at startup
  * (edit/, pref/, file/, xtra/).
  *
  * ToDo: Only create the directories when actually writing files.
@@ -235,6 +235,8 @@ static enum parser_error parse_z(struct parser *p) {
 		z->a_max = value;
 	else if (streq(label, "E"))
 		z->e_max = value;
+	else if (streq(label, "T"))
+		z->theme_max = value;
 	else if (streq(label, "R"))
 		z->r_max = value;
 	else if (streq(label, "P"))
@@ -1546,6 +1548,170 @@ struct file_parser e_parser = {
 	cleanup_e
 };
 
+/* Parsing functions for ego_themes.txt */
+static enum parser_error parse_t_n(struct parser *p)
+{
+	int idx = parser_getint(p, "index");
+	int type = ego_find_type(parser_getsym(p, "type"));
+	const char *name = parser_getstr(p, "name");
+	struct theme *h = parser_priv(p);
+
+	struct theme *t = mem_zalloc(sizeof *t);
+	t->next = h;
+	parser_setpriv(p, t);
+	t->index = idx;
+
+	if (type)
+		t->type = type;
+	else
+		return PARSE_ERROR_INVALID_VALUE;
+
+	t->name = string_make(name);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_t_t(struct parser *p) {
+	int i, tval, min_sval, max_sval, amin, amax;
+	const char *tmp = parser_getstr(p, "minmax");
+	struct theme *t = parser_priv(p);
+
+	if (!t)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	tval = tval_find_idx(parser_getsym(p, "tval"));
+	if (tval < 0)
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+
+	if (sscanf(tmp, "%d to %d", &amin, &amax) != 2)
+		return PARSE_ERROR_GENERIC;
+
+	if (amin > 255 || amax > 255 || amin < 0 || amax < 0)
+		return PARSE_ERROR_OUT_OF_BOUNDS;
+
+	min_sval = parser_getint(p, "min-sval");
+	max_sval = parser_getint(p, "max-sval");
+
+	for (i = 0; i < EGO_TVALS_MAX; i++) {
+		if (!t->tval[i]) {
+			t->tval[i] = tval;
+			t->min_sval[i] = min_sval;
+			t->max_sval[i] = max_sval;
+			t->alloc_min[i] = amin;
+			t->alloc_max[i] = amax;
+			break;
+		}
+	}
+
+	if (i == EGO_TVALS_MAX)
+		return PARSE_ERROR_TOO_MANY_ENTRIES;
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_t_a(struct parser *p) {
+	int i;
+	int weight = parser_getint(p, "weight");
+	const char *sym = parser_getsym(p, "affix");
+	struct ego_item *affix;
+	struct theme *t = parser_priv(p);
+
+	if (!t)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	for (i = 0; i < z_info->e_max; i++) {
+		affix = &e_info[i];
+		if ((affix->eidx && !my_stricmp(sym, affix->name)) ||
+				streq(sym, format("%d", affix->eidx))) {
+			t->affix[t->num_affixes] = affix->eidx;
+			break;
+		}
+	}
+	if (i == z_info->e_max)
+		return PARSE_ERROR_INVALID_VALUE;
+
+	t->aff_wgt[t->num_affixes++] = weight;
+	if (t->num_affixes > THEME_AFFIX_MAX)
+		return PARSE_ERROR_TOO_MANY_ENTRIES;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_t_d(struct parser *p) {
+	struct theme *t = parser_priv(p);
+
+	if (!t)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	t->text = string_append(t->text, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_t(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "V sym version", ignored);
+	parser_reg(p, "N int index sym type str name", parse_t_n);
+	parser_reg(p, "T sym tval int min-sval int max-sval str minmax", parse_t_t);
+	parser_reg(p, "A sym affix int weight", parse_t_a);
+	parser_reg(p, "D str text", parse_t_d);
+	return p;
+}
+
+static errr run_parse_t(struct parser *p) {
+	return parse_file(p, "ego_themes");
+}
+
+static errr finish_parse_t(struct parser *p) {
+	struct theme *t, *n;
+	int i, j;
+
+	/* scan the list for the max id */
+	z_info->theme_max = 0;
+	t = parser_priv(p);
+	while (t) {
+		if (t->index > z_info->theme_max)
+			z_info->theme_max = t->index;
+		t = t->next;
+	}
+
+	/* allocate the direct access list and copy the data to it */
+	themes = mem_zalloc((z_info->theme_max+1) * sizeof(*t));
+	for (t = parser_priv(p); t; t = n) {
+		memcpy(&themes[t->index], t, sizeof(*t));
+		n = t->next;
+		if (n)
+			themes[t->index].next = &themes[n->index];
+		else
+			themes[t->index].next = NULL;
+		mem_free(t);
+	}
+	z_info->theme_max += 1;
+
+	/* Total the weightings for affixes in each theme */
+	for (i = 0; i < z_info->theme_max; i++)
+		for (j = 0; j < themes[i].num_affixes; j++)
+			themes[i].tot_wgt += themes[i].aff_wgt[j];
+
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_t(void)
+{
+	int idx;
+	for (idx = 0; idx < z_info->theme_max; idx++) {
+		string_free(themes[idx].name);
+		mem_free(themes[idx].text);
+	}
+	mem_free(themes);
+}
+
+struct file_parser t_parser = {
+	"ego_themes",
+	init_parse_t,
+	run_parse_t,
+	finish_parse_t,
+	cleanup_t
+};
+
 /* Parsing functions for prace.txt */
 static enum parser_error parse_p_n(struct parser *p) {
 	struct player_race *h = parser_priv(p);
@@ -2608,7 +2774,7 @@ static enum parser_error parse_pit_f(struct parser *p) {
 		}
 		s = strtok(NULL, " |");
 	}
-	
+
 	mem_free(flags);
 	return PARSE_ERROR_NONE;
 }
@@ -2631,7 +2797,7 @@ static enum parser_error parse_pit_f2(struct parser *p) {
 		}
 		s = strtok(NULL, " |");
 	}
-	
+
 	mem_free(flags);
 	return PARSE_ERROR_NONE;
 }
@@ -2654,7 +2820,7 @@ static enum parser_error parse_pit_s(struct parser *p) {
 		}
 		s = strtok(NULL, " |");
 	}
-	
+
 	mem_free(flags);
 	return PARSE_ERROR_NONE;
 }
@@ -2752,12 +2918,12 @@ static errr finish_parse_pit(struct parser *p) {
 static void cleanup_pits(void)
 {
 	int idx;
-	
+
 	for (idx = 0; idx < z_info->pit_max; idx++) {
 		struct pit_profile *pit = &pit_info[idx];
 		struct pit_color_profile *c, *cn;
 		struct pit_forbidden_monster *m, *mn;
-		
+
 		c = pit->colors;
 		while (c) {
 			cn = c->next;
@@ -2771,7 +2937,7 @@ static void cleanup_pits(void)
 			m = mn;
 		}
 		string_free((char *)pit_info[idx].name);
-		
+
 	}
 	mem_free(pit_info);
 }
@@ -3005,8 +3171,10 @@ void init_arrays(void)
 	if (run_parser(&k_parser)) quit("Cannot initialize objects");
 
 	/* Initialize ego-item info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (ego-items)");
-	if (run_parser(&e_parser)) quit("Cannot initialize ego-items");
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (affixes)");
+	if (run_parser(&e_parser)) quit("Cannot initialize affixes");
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (themes)");
+	if (run_parser(&t_parser)) quit("Cannot initialize themes");
 
 	/* Initialize artifact info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (artifacts)");
@@ -3019,7 +3187,7 @@ void init_arrays(void)
 	/* Initialize monster-base info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (monster bases)");
 	if (run_parser(&rb_parser)) quit("Cannot initialize monster bases");
-	
+
 	/* Initialize monster info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (monsters)");
 	if (run_parser(&r_parser)) quit("Cannot initialize monsters");
@@ -3224,6 +3392,7 @@ void cleanup_angband(void)
 	cleanup_parser(&rb_parser);
 	cleanup_parser(&f_parser);
 	cleanup_parser(&e_parser);
+	cleanup_parser(&t_parser);
 	cleanup_parser(&p_parser);
 	cleanup_parser(&c_parser);
 	cleanup_parser(&v_parser);

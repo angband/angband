@@ -502,7 +502,7 @@ typedef struct flavor {
 	wchar_t x_char;    /* Desired flavor character */
 } flavor_type;
 
-/* Struct to hold ego item themes (t_info[]) from ego_themes.txt */
+/* Struct to hold ego item themes (themes[]) from ego_themes.txt */
 struct theme {
 	struct theme *next;
 											/* N: */
