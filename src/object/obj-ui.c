@@ -438,14 +438,15 @@ bool verify_item(const char *prompt, int item)
  *
  * The item can be negative to mean "item on floor".
  */
-static bool get_item_allow(int item, unsigned char ch, bool is_harmless)
+static bool get_item_allow(int item, unsigned char ch, cmd_code cmd,
+		bool is_harmless)
 {
 	object_type *o_ptr;
 	char verify_inscrip[] = "!*";
 
 	unsigned n;
 
-	char *prompt_str;
+	const char *prompt_str;
 
 	/* Inventory or floor */
 	if (item >= 0)
@@ -466,79 +467,79 @@ static bool get_item_allow(int item, unsigned char ch, bool is_harmless)
 	/* Choose string for the prompt */
 	if (n)
 	{
-		switch (ch)
+		switch (cmd)
 		{
-			case 'a':
+			case CMD_USE_WAND:
 			{
 				prompt_str = "Really aim";
 				break;
 			}
-			case 'b':
+			case CMD_BROWSE_SPELL:
 			{
 				prompt_str = "Really browse";
 				break;
 			}
-			case 'd':
+			case CMD_DROP:
 			{
 				prompt_str = "Really drop";
 				break;
 			}
-			case 'f':
+			case CMD_FIRE:
 			{
 				prompt_str = "Really fire";
 				break;
 			}
-			case 'k':
+			case CMD_DESTROY:
 			{
 				prompt_str = "Really destroy";
 				break;
 			}
-			case 'q':
+			case CMD_QUAFF:
 			{
 				prompt_str = "Really quaff";
 				break;
 			}
-			case 'r':
+			case CMD_READ_SCROLL:
 			{
 				prompt_str = "Really read";
 				break;
 			}
-			case 't':
+			case CMD_TAKEOFF:
 			{
 				prompt_str = "Really take off";
 				break;
 			}
-			case 'u':
+			case CMD_USE_STAFF:
 			{
 				prompt_str = "Really use";
 				break;
 			}
-			case 'v':
+			case CMD_THROW:
 			{
 				prompt_str = "Really throw";
 				break;
 			}
-			case 'w':
+			case CMD_WIELD:
 			{
 				prompt_str = "Really wear";
 				break;
 			}
-			case 'z':
+			case CMD_USE_ROD:
 			{
 				prompt_str = "Really zap";
 				break;
 			}
-			case 'A':
+			case CMD_ACTIVATE:
 			{
 				prompt_str = "Really activate";
 				break;
 			}
-			case 'E':
+			case CMD_EAT:
 			{
 				prompt_str = "Really eat";
 				break;
 			}
-			case 'F':
+			case CMD_REFILL:
 			{
 				prompt_str = "Really fuel with";
 				break;
@@ -1080,7 +1081,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 						k = 0 - floor_list[0];
 
 						/* Allow player to "refuse" certain actions */
-						if (!get_item_allow(k, cmdkey, is_harmless))
+						if (!get_item_allow(k, cmdkey, cmd, is_harmless))
 						{
 							done = TRUE;
 							break;
@@ -1118,7 +1119,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 					if (!get_item_okay(k)) continue;
 
 					/* Allow player to "refuse" certain actions */
-					if (!get_item_allow(k, cmdkey, is_harmless)) continue;
+					if (!get_item_allow(k, cmdkey, cmd, is_harmless)) continue;
 
 					/* Accept that choice */
 					(*cp) = k;
@@ -1158,7 +1159,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 				}
 
 				/* Allow player to "refuse" certain actions */
-				if (!get_item_allow(k, cmdkey, is_harmless))
+				if (!get_item_allow(k, cmdkey, cmd, is_harmless))
 				{
 					done = TRUE;
 					break;
@@ -1222,7 +1223,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 				}
 
 				/* Allow player to "refuse" certain actions */
-				if (!get_item_allow(k, cmdkey, is_harmless))
+				if (!get_item_allow(k, cmdkey, cmd, is_harmless))
 				{
 					done = TRUE;
 					break;
@@ -1299,7 +1300,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 				}
 
 				/* Allow player to "refuse" certain actions */
-				if (!get_item_allow(k, cmdkey, is_harmless))
+				if (!get_item_allow(k, cmdkey, cmd, is_harmless))
 				{
 					done = TRUE;
 					break;
