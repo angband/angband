@@ -142,6 +142,16 @@ struct item_selector item_selector[] =
 	{ CMD_REFILL, "refuel with", "fuel source", obj_can_refill, (USE_INVEN | USE_FLOOR) },
 };
 
+const char *cmd_get_verb(cmd_code cmd)
+{
+	size_t i;
+	for (i = 0; i < N_ELEMENTS(item_selector); i++) {
+		if (item_selector[i].command == cmd)
+			return item_selector[i].verb;
+	}
+	return NULL;
+}
+
 game_command *cmd_get_top(void)
 {
 	return &cmd_queue[prev_cmd_idx(cmd_head)];

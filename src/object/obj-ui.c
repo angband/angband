@@ -20,6 +20,7 @@
 #include "button.h"
 #include "tvalsval.h"
 #include "cmds.h"
+#include "game-cmd.h"
 
 /*
  * Display a list of objects.  Each object may be prefixed with a label.
@@ -446,8 +447,6 @@ static bool get_item_allow(int item, unsigned char ch, cmd_code cmd,
 
 	unsigned n;
 
-	const char *prompt_str;
-
 	/* Inventory or floor */
 	if (item >= 0)
 		o_ptr = &p_ptr->inventory[item];
@@ -465,98 +464,20 @@ static bool get_item_allow(int item, unsigned char ch, cmd_code cmd,
 		n += check_for_inscrip(o_ptr, "!*");
 
 	/* Choose string for the prompt */
-	if (n)
-	{
-		switch (cmd)
-		{
-			case CMD_USE_WAND:
-			{
-				prompt_str = "Really aim";
-				break;
-			}
-			case CMD_BROWSE_SPELL:
-			{
-				prompt_str = "Really browse";
-				break;
-			}
-			case CMD_DROP:
-			{
-				prompt_str = "Really drop";
-				break;
-			}
-			case CMD_FIRE:
-			{
-				prompt_str = "Really fire";
-				break;
-			}
-			case CMD_DESTROY:
-			{
-				prompt_str = "Really destroy";
-				break;
-			}
-			case CMD_QUAFF:
-			{
-				prompt_str = "Really quaff";
-				break;
-			}
-			case CMD_READ_SCROLL:
-			{
-				prompt_str = "Really read";
-				break;
-			}
-			case CMD_TAKEOFF:
-			{
-				prompt_str = "Really take off";
-				break;
-			}
-			case CMD_USE_STAFF:
-			{
-				prompt_str = "Really use";
-				break;
-			}
-			case CMD_THROW:
-			{
-				prompt_str = "Really throw";
-				break;
-			}
-			case CMD_WIELD:
-			{
-				prompt_str = "Really wear";
-				break;
-			}
-			case CMD_USE_ROD:
-			{
-				prompt_str = "Really zap";
-				break;
-			}
-			case CMD_ACTIVATE:
-			{
-				prompt_str = "Really activate";
-				break;
-			}
-			case CMD_EAT:
-			{
-				prompt_str = "Really eat";
-				break;
-			}
-			case CMD_REFILL:
-			{
-				prompt_str = "Really fuel with";
-				break;
-			}
-			default:
-			{
-				prompt_str = "Really do that with";
-				break;
-			}
-		}
-	}
+	if (n) {
+		char prompt[1024];
 
-	/* Promt for confirmation n times */
-	while (n--)
-	{
-		if (!verify_item(prompt_str, item))
-			return (FALSE);
+		const char *verb = cmd_get_verb(cmd);
+		if (!verb)
+			verb = "do that with";
+
+		strnfmt(prompt, sizeof(prompt), "Really %s", verb);
+
+		/* Promt for confirmation n times */
+		while (n--) {
+			if (!verify_item(prompt, item))
+				return (FALSE);
+		}
 	}
 
 	/* Allow it */
