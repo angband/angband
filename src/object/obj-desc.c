@@ -21,23 +21,15 @@
 #include "object/tvalsval.h"
 #include "object/pval.h"
 
-/* Local variables for object prefix and suffix text */
-static char *obj_prefix;
-static char *obj_suffix;
-
 /**
  * Set an object's prefix and suffix in accordance with its affixes. We use
  * the most powerful affixes to determine the name. If we have a theme, we
  * don't duplicate affixes which are part of the theme.
  */
-static void obj_affix_names(const object_type *o_ptr)
+void obj_affix_names(object_type *o_ptr)
 {
 	int i, j, best, best_pref = 0, best_suf = 0, pref_lev = 0, suf_lev = 0;
 	bool theme_has;
-
-	/* Clear the prefix and suffix pointers */
-	obj_prefix = NULL;
-	obj_suffix = NULL;
 
 	for (i = 0; i < MAX_AFFIXES; i++) {
 		if (o_ptr->affix[i]) {
@@ -68,17 +60,12 @@ static void obj_affix_names(const object_type *o_ptr)
 		}
 	}
 
-	/* Set the prefix and suffix, and re-check ident status */
-	if (o_ptr->theme && o_ptr->theme->type == 1)
-		obj_prefix = o_ptr->theme->name;
-	else if (best_pref) {
-		obj_prefix = o_ptr->affix[best_pref]->name;
-	}
-	if (o_ptr->theme && o_ptr->theme->type == 2)
-		obj_suffix = o_ptr->theme->name;
-	else if (best_suf) {
-		obj_suffix = o_ptr->affix[best_suf]->name;
-	}
+	/* Set the prefix and suffix */
+	if (best_pref)
+		o_ptr->prefix = o_ptr->affix[best_pref];
+
+	if (best_suf)
+		o_ptr->suffix = o_ptr->affix[best_suf];
 }
 
 /**
@@ -391,10 +378,11 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 		end = obj_desc_name_prefix(buf, max, end, o_ptr, known,	basename,
 			 modstr);
 
-	if (mode & ODESC_AFFIX) {
-		obj_affix_names(o_ptr);
-		if (obj_prefix && (spoil || object_prefix_is_visible(o_ptr)))
-		strnfcat(buf, max, &end, "%s ", obj_prefix);
+	if (mode & ODESC_AFFIX && (spoil || object_prefix_is_visible(o_ptr))) {
+		if (o_ptr->theme && o_ptr->theme->type == 1)
+			strnfcat(buf, max, &end, "%s ", o_ptr->theme->name);
+		else if	(o_ptr->prefix)
+			strnfcat(buf, max, &end, "%s ", o_ptr->prefix->name);
 	}
 	/* Pluralize if (not forced singular) and
 	 * (not a known/visible artifact) and
@@ -410,11 +398,13 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 	if ((object_name_is_visible(o_ptr) || known) && o_ptr->artifact)
 		strnfcat(buf, max, &end, " %s", o_ptr->artifact->name);
 
-	else if (mode & ODESC_AFFIX && obj_suffix && (spoil ||
-			object_suffix_is_visible(o_ptr)))
-		strnfcat(buf, max, &end, " %s", obj_suffix);
+	else if (mode & ODESC_AFFIX && (spoil || object_suffix_is_visible(o_ptr))) {
+		if (o_ptr->theme && o_ptr->theme->type == 2)
+			strnfcat(buf, max, &end, " %s", o_ptr->theme->name);
+		else if	(o_ptr->suffix)
+			strnfcat(buf, max, &end, " %s", o_ptr->suffix->name);
 
-	else if (aware && !o_ptr->artifact &&
+	} else if (aware && !o_ptr->artifact &&
 			(o_ptr->kind->flavor || o_ptr->kind->tval == TV_SCROLL))
 		strnfcat(buf, max, &end, " of %s", o_ptr->kind->name);
 

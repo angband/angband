@@ -313,8 +313,9 @@ void ego_apply_magic(object_type *o_ptr, int level, int affix)
 	if (o_ptr->ds < 1)
 		o_ptr->ds = 1;
 
-	/* Tidy up and de-duplicate flags */
+	/* Tidy up and de-duplicate flags, and set the correct prefix/suffix */
 	check_flags(o_ptr);
+	obj_affix_names(o_ptr);
 
 	return;
 }

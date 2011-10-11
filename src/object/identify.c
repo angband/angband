@@ -166,8 +166,15 @@ bool object_name_is_visible(const object_type *o_ptr)
  */
 bool object_prefix_is_visible(const object_type *o_ptr)
 {
-	return TRUE; /* for testing
-	return o_ptr->ident & IDENT_PREFIX ? TRUE : FALSE; */
+	if (o_ptr->theme && o_ptr->theme->type == 1 &&
+			object_theme_is_known(o_ptr))
+		return TRUE;
+
+	if (o_ptr->prefix && object_affix_is_known(o_ptr, o_ptr->prefix->eidx))
+		return TRUE;
+
+	return FALSE;
+/*	return o_ptr->ident & IDENT_PREFIX ? TRUE : FALSE; */
 }
 
 /**
@@ -175,23 +182,110 @@ bool object_prefix_is_visible(const object_type *o_ptr)
  */
 bool object_suffix_is_visible(const object_type *o_ptr)
 {
-	return TRUE; /* for testing
-	return o_ptr->ident & IDENT_SUFFIX ? TRUE : FALSE; */
+	if (o_ptr->theme && o_ptr->theme->type == 2 &&
+			object_theme_is_known(o_ptr))
+		return TRUE;
+
+	if (o_ptr->suffix && object_affix_is_known(o_ptr, o_ptr->suffix->eidx))
+		return TRUE;
+
+	return FALSE;
+/*	return o_ptr->ident & IDENT_SUFFIX ? TRUE : FALSE; */
 }
 
 /**
- * \returns whether a given affix is known
+ * \returns which affix position is occupied by the affix idx (-1 for none)
  */
-bool object_affix_is_known(const object_type *o_ptr, byte affix)
+s16b which_affix(const object_type *o_ptr, u16b idx)
 {
-	if (!o_ptr->affix[affix])
+	int i;
+
+	for (i = 0; i < MAX_AFFIXES; i++)
+		if (o_ptr->affix[i] && o_ptr->affix[i]->eidx == idx)
+			return i;
+
+	return -1;
+}
+
+/**
+ * \returns whether a given object affix is known
+ * This may not be foolproof, but it's a start. Note that modifications to
+ * dice, sides, base AC or weight are all assumed obvious.
+ */
+bool object_affix_is_known(const object_type *o_ptr, u16b idx)
+{
+	int i;
+	bitflag f[OF_SIZE];
+	ego_item_type *affix = &e_info[idx];
+	ego_item_type *theme_affix;
+
+	if (o_ptr->ident & IDENT_KNOWN)
+		return TRUE;
+
+	/* We have to know all the affix's flags and all its pval flags */
+	if (!of_is_subset(o_ptr->known_flags, affix->flags))
+		return FALSE;
+	for (i = 0; i < affix->num_pvals; i++)
+		if (!of_is_subset(o_ptr->known_flags, affix->pval_flags[i]))
+			return FALSE;
+
+	/* We have to know any flags which were assigned randomly */
+	/* - first we build a set of all flags from all affixes and any theme */
+	of_wipe(f);
+	for (i = 0; i < MAX_AFFIXES; i++)
+		if (o_ptr->affix[i])
+			of_union(f, o_ptr->affix[i]->flags);
+
+	if (o_ptr->theme)
+		for (i = 0; i < o_ptr->theme->num_affixes; i++) {
+			theme_affix = &e_info[o_ptr->theme->affix[i]];
+			of_union(f, theme_affix->flags);
+		}
+
+	/* Then we subtract these from the object's flags - what's left is a
+ 	   set of flags which have come from random flags */
+	of_diff(f, o_ptr->flags);
+
+	/* Finally we look at the randmasks for this affix to see which was
+	   awarded */
+	for (i = 0; i < affix->num_randlines; i++)
+		of_inter(f, affix->randmask[i]);
+
+	/* If we don't know all these, we don't know the affix */
+	if (!of_is_subset(o_ptr->known_flags, f))
 		return FALSE;
 
-/* hmmmm */
-	if ((o_ptr->ident & IDENT_NAME) || (o_ptr->ident & IDENT_STORE))
-		return TRUE;
-	else
+	/* We have to know the combat mods, if there are any. Since these are
+	   random_values, confirming their existence is non-trivial */
+	if ((!(!randcalc_varies(affix->to_h) &&	randcalc_valid(affix->to_h, 0)) ||
+			!(!randcalc_varies(affix->to_d) &&
+			randcalc_valid(affix->to_d, 0))) &&
+			!object_attack_plusses_are_visible(o_ptr))
 		return FALSE;
+
+	if (!(!randcalc_varies(affix->to_a) && randcalc_valid(affix->to_a, 0)) ||
+			!object_defence_plusses_are_visible(o_ptr))
+		return FALSE;
+
+	/* So we know everything */
+	return TRUE;
+}
+/**
+ * \returns whether an object's theme is known
+ */
+bool object_theme_is_known(const object_type *o_ptr)
+{
+	int i;
+
+	if (!o_ptr->theme)
+		return FALSE;
+
+	/* We know a theme when we know all its affixes */
+	for (i = 0; i < o_ptr->theme->num_affixes; i++)
+		if (!object_affix_is_known(o_ptr, o_ptr->theme->affix[i]))
+			return FALSE;
+
+	return TRUE;
 }
 
 /**

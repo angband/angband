@@ -436,8 +436,10 @@ typedef struct ego_item {
  */
 typedef struct object {
 	struct object_kind *kind;
-	struct ego_item *affix[MAX_AFFIXES];
+	struct ego_item *affix[MAX_AFFIXES];/* Affixes applied to the item */
 	struct ego_item *ego; /* remove */
+	struct ego_item *prefix;			/* Affix which is current prefix */
+	struct ego_item *suffix;			/* Affix which is current suffix */
 	struct theme *theme;
 	struct artifact *artifact;
 
@@ -541,8 +543,8 @@ bool object_effect_is_known(const object_type *o_ptr);
 bool object_name_is_visible(const object_type *o_ptr);
 bool object_prefix_is_visible(const object_type *o_ptr);
 bool object_suffix_is_visible(const object_type *o_ptr);
-bool object_affix_is_known(const object_type *o_ptr, byte affix);
-/* bool object_theme_is_known(const object_type *o_ptr); */
+bool object_affix_is_known(const object_type *o_ptr, u16b affix);
+bool object_theme_is_known(const object_type *o_ptr);
 bool object_attack_plusses_are_visible(const object_type *o_ptr);
 bool object_defence_plusses_are_visible(const object_type *o_ptr);
 bool object_flag_is_known(const object_type *o_ptr, int flag);
@@ -577,7 +579,7 @@ void object_base_name(char *buf, size_t max, int tval, bool plural);
 void object_kind_name(char *buf, size_t max, const object_kind *kind, bool easy_know);
 size_t obj_desc_name_format(char *buf, size_t max, size_t end, const char *fmt, const char *modstr, bool pluralise);
 size_t object_desc(char *buf, size_t max, const object_type *o_ptr, odesc_detail_t mode);
-/* void obj_affix_names(const object_type *o_ptr, char *prefix, char *suffix); */
+void obj_affix_names(object_type *o_ptr);
 
 /* obj-info.c */
 textblock *object_info(const object_type *o_ptr, oinfo_detail_t mode);
