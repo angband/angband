@@ -67,20 +67,22 @@ enum {
 #define ART_ALLOC_MAX 	  3
 
 /* ID flags */
-#define IDENT_SENSE     0x0001  /* Has been "sensed" */
+#define IDENT_SENSE     0x0001  /* Has been sensed, i.e. pseudo-IDd */
 #define IDENT_WORN      0x0002  /* Has been tried on */
 #define IDENT_EMPTY     0x0004  /* Is known to be empty */
 #define IDENT_KNOWN     0x0008  /* Fully known */
 #define IDENT_STORE     0x0010  /* Item is in the inventory of a store */
-#define IDENT_ATTACK    0x0020  /* Know combat dice/ac/bonuses */
+#define IDENT_ATTACK    0x0020  /* Know combat dice/bonuses */
 #define IDENT_DEFENCE   0x0040  /* Know AC/etc bonuses */
 #define IDENT_EFFECT    0x0080  /* Know item activation/effect */
 /* xxx */
 #define IDENT_INDESTRUCT 0x0200 /* Tried to destroy it and failed */
-#define IDENT_NAME      0x0400  /* Know the name of ego or artifact if there is one */
+#define IDENT_NAME      0x0400  /* Know name of artifact if any */
 #define IDENT_FIRED     0x0800  /* Has been used as a missile */
 #define IDENT_NOTART    0x1000  /* Item is known not to be an artifact */
 #define IDENT_FAKE      0x2000  /* Item is a fake, for displaying knowledge */
+#define IDENT_PREFIX	0x4000	/* Know current prefix */
+#define IDENT_SUFFIX	0x8000	/* Know current suffix */
 
 /* Whether to learn egos and flavors with less than complete information */
 #define EASY_LEARN 		1
@@ -93,16 +95,15 @@ typedef enum {
 	ODESC_BASE   = 0x00,   	/* Only describe the base name */
 	ODESC_COMBAT = 0x01,   	/* Also show combat bonuses */
 	ODESC_EXTRA  = 0x02,   	/* Show charges/inscriptions/pvals */
-
-	ODESC_FULL   = ODESC_COMBAT | ODESC_EXTRA,
-	                       	/* Show entire description */
-
 	ODESC_STORE  = 0x04,   	/* This is an in-store description */
 	ODESC_PLURAL = 0x08,   	/* Always pluralise */
 	ODESC_SINGULAR = 0x10,	/* Always singular */
 	ODESC_SPOIL  = 0x20,    /* Display regardless of player knowledge */
 	ODESC_PREFIX = 0x40,   	/* Article or number */
-	ODESC_AFFIX	 = 0x80		/* Display o_ptr->prefix and ->suffix */
+	ODESC_AFFIX	 = 0x80,	/* Display object's prefix and suffix, if any */
+
+	ODESC_FULL   = ODESC_COMBAT | ODESC_EXTRA | ODESC_AFFIX
+	                       	/* Show entire description */
 } odesc_detail_t;
 
 /* Modes for item lists in show_inven(), show_equip() and show_floor() */
@@ -420,9 +421,6 @@ typedef struct ego_item {
  * Note that "object" records are "copied" on a fairly regular basis,
  * and care must be taken when handling such objects.
  *
- * Note that "object flags" must now be derived from the object kind,
- * the artifact and ego-item indexes, and the two "xtra" fields.
- *
  * Each cave grid points to one (or zero) objects via the "o_idx"
  * field (above).  Each object then points to one (or zero) objects
  * via the "next_o_idx" field, forming a singly linked list, which
@@ -438,7 +436,9 @@ typedef struct ego_item {
  */
 typedef struct object {
 	struct object_kind *kind;
-	struct ego_item *ego;		/* Will be removed soon */
+	struct ego_item *affix[MAX_AFFIXES];
+	struct ego_item *ego; /* remove */
+	struct theme *theme;
 	struct artifact *artifact;
 
 	byte iy;			/* Y-position on map, or zero */
@@ -446,11 +446,6 @@ typedef struct object {
 
 	byte tval;			/* Item type (from kind) */
 	byte sval;			/* Item sub-type (from kind) */
-
-	char *prefix;		/* Displayed prefix */
-	char *suffix;		/* Displayed suffix */
-	u16b affix[MAX_AFFIXES]; /* Indeces of ego affixes */
-	u16b theme;			/* Ego theme for this object */
 
 	s16b pval[MAX_PVALS];/* Item extra-parameter */
 	byte num_pvals;		/* Number of pvals in use */
@@ -492,14 +487,14 @@ typedef struct flavor {
 	struct flavor *next;
 	unsigned int fidx;
 
-	byte tval;      /* Associated object type */
-	byte sval;      /* Associated object sub-type */
+	byte tval;      	/* Associated object type */
+	byte sval;      	/* Associated object sub-type */
 
-	byte d_attr;    /* Default flavor attribute */
-	wchar_t d_char;    /* Default flavor character */
+	byte d_attr;    	/* Default flavor attribute */
+	wchar_t d_char;    	/* Default flavor character */
 
-	byte x_attr;    /* Desired flavor attribute */
-	wchar_t x_char;    /* Desired flavor character */
+	byte x_attr;    	/* Desired flavor attribute */
+	wchar_t x_char;    	/* Desired flavor character */
 } flavor_type;
 
 /* Struct to hold ego item themes (themes[]) from ego_themes.txt */
@@ -543,7 +538,11 @@ bool object_was_sensed(const object_type *o_ptr);
 bool object_flavor_is_aware(const object_type *o_ptr);
 bool object_flavor_was_tried(const object_type *o_ptr);
 bool object_effect_is_known(const object_type *o_ptr);
-bool object_ego_is_visible(const object_type *o_ptr);
+bool object_name_is_visible(const object_type *o_ptr);
+bool object_prefix_is_visible(const object_type *o_ptr);
+bool object_suffix_is_visible(const object_type *o_ptr);
+bool object_affix_is_known(const object_type *o_ptr, byte affix);
+/* bool object_theme_is_known(const object_type *o_ptr); */
 bool object_attack_plusses_are_visible(const object_type *o_ptr);
 bool object_defence_plusses_are_visible(const object_type *o_ptr);
 bool object_flag_is_known(const object_type *o_ptr, int flag);
@@ -571,7 +570,6 @@ obj_pseudo_t object_pseudo(const object_type *o_ptr);
 void sense_inventory(void);
 bool easy_know(const object_type *o_ptr);
 bool object_check_for_ident(object_type *o_ptr);
-bool object_name_is_visible(const object_type *o_ptr);
 void object_know_all_flags(object_type *o_ptr);
 
 /* obj-desc.c */
@@ -579,7 +577,7 @@ void object_base_name(char *buf, size_t max, int tval, bool plural);
 void object_kind_name(char *buf, size_t max, const object_kind *kind, bool easy_know);
 size_t obj_desc_name_format(char *buf, size_t max, size_t end, const char *fmt, const char *modstr, bool pluralise);
 size_t object_desc(char *buf, size_t max, const object_type *o_ptr, odesc_detail_t mode);
-void obj_affix_name(object_type *o_ptr);
+/* void obj_affix_names(const object_type *o_ptr, char *prefix, char *suffix); */
 
 /* obj-info.c */
 textblock *object_info(const object_type *o_ptr, oinfo_detail_t mode);

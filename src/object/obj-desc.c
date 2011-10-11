@@ -21,6 +21,65 @@
 #include "object/tvalsval.h"
 #include "object/pval.h"
 
+/* Local variables for object prefix and suffix text */
+static char *obj_prefix;
+static char *obj_suffix;
+
+/**
+ * Set an object's prefix and suffix in accordance with its affixes. We use
+ * the most powerful affixes to determine the name. If we have a theme, we
+ * don't duplicate affixes which are part of the theme.
+ */
+static void obj_affix_names(const object_type *o_ptr)
+{
+	int i, j, best, best_pref = 0, best_suf = 0, pref_lev = 0, suf_lev = 0;
+	bool theme_has;
+
+	/* Clear the prefix and suffix pointers */
+	obj_prefix = NULL;
+	obj_suffix = NULL;
+
+	for (i = 0; i < MAX_AFFIXES; i++) {
+		if (o_ptr->affix[i]) {
+			best = 0;
+			theme_has = FALSE;
+			/* Find the affix level of this affix for this object */
+			for (j = 0; j < EGO_TVALS_MAX; j++)
+				if (o_ptr->tval == o_ptr->affix[i]->tval[j] &&
+						o_ptr->sval >= o_ptr->affix[i]->min_sval[j] &&
+						o_ptr->sval <= o_ptr->affix[i]->max_sval[j] &&
+						o_ptr->affix[i]->level[j] > best)
+					best = o_ptr->affix[i]->level[j];
+
+			/* See if the object's theme has this affix */
+			for (j = 0; o_ptr->theme && j < o_ptr->theme->num_affixes; j++)
+				if (o_ptr->theme->affix[j] == o_ptr->affix[i]->eidx)
+					theme_has = TRUE;
+
+			/* Track the best affixes which are not in the theme */
+			if (o_ptr->affix[i]->type == 1 && best > pref_lev && !theme_has) {
+				pref_lev = best;
+				best_pref = i;
+			} else if (o_ptr->affix[i]->type == 2 && best > suf_lev &&
+					!theme_has) {
+				suf_lev = best;
+				best_suf = i;
+			}
+		}
+	}
+
+	/* Set the prefix and suffix, and re-check ident status */
+	if (o_ptr->theme && o_ptr->theme->type == 1)
+		obj_prefix = o_ptr->theme->name;
+	else if (best_pref) {
+		obj_prefix = o_ptr->affix[best_pref]->name;
+	}
+	if (o_ptr->theme && o_ptr->theme->type == 2)
+		obj_suffix = o_ptr->theme->name;
+	else if (best_suf) {
+		obj_suffix = o_ptr->affix[best_suf]->name;
+	}
+}
 
 /**
  * Puts the object base kind's name into buf.
@@ -329,13 +388,14 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 		o_ptr->kind->everseen = TRUE;
 
 	if (mode & ODESC_PREFIX)
-		end = obj_desc_name_prefix(buf, max, end, o_ptr, known,
-				basename, modstr);
+		end = obj_desc_name_prefix(buf, max, end, o_ptr, known,	basename,
+			 modstr);
 
-	if (mode & ODESC_AFFIX && o_ptr->prefix)
-/* && ((spoil && o_ptr->prefix) || object_ego_is_visible(o_ptr)))   FIXME */
-		strnfcat(buf, max, &end, "%s ", o_ptr->prefix);
-
+	if (mode & ODESC_AFFIX) {
+		obj_affix_names(o_ptr);
+		if (obj_prefix && (spoil || object_prefix_is_visible(o_ptr)))
+		strnfcat(buf, max, &end, "%s ", obj_prefix);
+	}
 	/* Pluralize if (not forced singular) and
 	 * (not a known/visible artifact) and
 	 * (not one in stack or forced plural) */
@@ -350,9 +410,9 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 	if ((object_name_is_visible(o_ptr) || known) && o_ptr->artifact)
 		strnfcat(buf, max, &end, " %s", o_ptr->artifact->name);
 
-	else if (mode & ODESC_AFFIX && o_ptr->suffix)
-/* && ((spoil && o_ptr->suffix) || object_ego_is_visible(o_ptr)))   FIXME */
-		strnfcat(buf, max, &end, " %s", o_ptr->suffix);
+	else if (mode & ODESC_AFFIX && obj_suffix && (spoil ||
+			object_suffix_is_visible(o_ptr)))
+		strnfcat(buf, max, &end, " %s", obj_suffix);
 
 	else if (aware && !o_ptr->artifact &&
 			(o_ptr->kind->flavor || o_ptr->kind->tval == TV_SCROLL))
@@ -362,30 +422,11 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 }
 
 /*
- * Is o_ptr armor?
+ * Do we show the base AC value?
  */
 static bool obj_desc_show_armor(const object_type *o_ptr)
 {
-	if (o_ptr->ac) return TRUE;
-
-	switch (o_ptr->tval)
-	{
-		case TV_BOOTS:
-		case TV_GLOVES:
-		case TV_CLOAK:
-		case TV_CROWN:
-		case TV_HELM:
-		case TV_SHIELD:
-		case TV_SOFT_ARMOR:
-		case TV_HARD_ARMOR:
-		case TV_DRAG_ARMOR:
-		{
-			return TRUE;
-			break;
-		}
-	}
-
-	return FALSE;
+	return (o_ptr->ac || kind_is_armour(o_ptr->tval));
 }
 
 static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max,
@@ -686,7 +727,7 @@ static size_t obj_desc_aware(const object_type *o_ptr, char *buf, size_t max,
  * ODESC_PLURAL will pluralise regardless of the number in the stack.
  * ODESC_STORE turns off squelch markers, for in-store display.
  * ODESC_SPOIL treats the object as fully identified.
- * ODESC_AFFIX appends a prefix and suffix, if they exist.
+ * ODESC_AFFIX appends a prefix and suffix, if they exist and are known.
  *
  * \returns The number of bytes used of the buffer.
  */
@@ -709,7 +750,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 			(o_ptr->ident & IDENT_STORE) || spoil;
 
 	/* We've seen it at least once now we're aware of it */
-	if (known && o_ptr->ego && !spoil) o_ptr->ego->everseen = TRUE;
+/*	if (known && o_ptr->ego && !spoil) o_ptr->ego->everseen = TRUE; */
 
 
 	/*** Some things get really simple descriptions ***/
@@ -755,56 +796,3 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 	return end;
 }
 
-/**
- * Set an object's prefix and suffix in accordance with its affixes. We use
- * the most powerful affixes to determine the name. If we have a theme, we
- * don't duplicate affixes which are part of the theme.
- */
-void obj_affix_name(object_type *o_ptr)
-{
-	int i, j, best, best_pref = 0, best_suf = 0, pref_lev = 0, suf_lev = 0;
-	bool theme_has;
-	struct ego_item *affix;
-	struct theme *theme = &themes[o_ptr->theme];
-
-	for (i = 0; i < MAX_AFFIXES; i++) {
-		if (o_ptr->affix[i]) {
-			affix = &e_info[o_ptr->affix[i]];
-			best = 0;
-			theme_has = FALSE;
-			/* Find the affix level of this affix on this object */
-			for (j = 0; j < EGO_TVALS_MAX; j++)
-				if (o_ptr->tval == affix->tval[j] &&
-						o_ptr->sval >= affix->min_sval[j] &&
-						o_ptr->sval <= affix->max_sval[j] &&
-						affix->level[j] > best)
-					best = affix->level[j];
-
-			/* See if the object's theme has this affix */
-			for (j = 0; j < theme->num_affixes; j++)
-				if (theme->affix[j] == affix->eidx)
-					theme_has = TRUE;
-
-			if (affix->type == 1 && best > pref_lev && !theme_has) {
-				pref_lev = best;
-				best_pref = affix->eidx;
-			} else if (affix->type == 2 && best > suf_lev && !theme_has) {
-				suf_lev = best;
-				best_suf = affix->eidx;
-			}
-		}
-	}
-
-	if (o_ptr->theme && theme->type == 1)
-		o_ptr->prefix = theme->name;
-	else if (best_pref) {
-		affix = &e_info[best_pref];
-		o_ptr->prefix = affix->name;
-	}
-	if (o_ptr->theme && theme->type == 2)
-		o_ptr->suffix = theme->name;
-	else if (best_suf) {
-		affix = &e_info[best_suf];
-		o_ptr->suffix = affix->name;
-	}
-}

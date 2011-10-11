@@ -3043,11 +3043,11 @@ void brand_object(object_type *o_ptr, int brand_type)
 	ego_item_type *e_ptr;
 	bool ok = FALSE;
 
-	/* you can never modify artifacts / maxed ego-items */
+	/* you can never modify artifacts / themed / maxed ego-items */
 	/* you can never modify cursed / worthless items */
 	if (o_ptr->kind && !cursed_p(o_ptr->flags) && o_ptr->kind->cost &&
-	    !o_ptr->artifact && !o_ptr->affix[MAX_AFFIXES - 1])
-	{
+	    	!o_ptr->artifact && !o_ptr->affix[MAX_AFFIXES - 1] &&
+			!o_ptr->theme && !of_has(o_ptr->flags, brand_type)) {
 		char o_name[80];
 		bitflag f[OF_SIZE];
 		const char *brand[SL_MAX];
@@ -3062,9 +3062,9 @@ void brand_object(object_type *o_ptr, int brand_type)
 		msg("The %s %s surrounded with an aura of %s.", o_name,
 				(o_ptr->number > 1) ? "are" : "is", brand[0]);
 
-		/* Get the right ego type for the object - the first one
+		/* Get the right affix for the object - the first one
 		 * with the correct flag for this type of object - we assume
-		 * that anyone adding new ego types adds them after the
+		 * that anyone adding new affixes adds them after the
 		 * existing ones */
 		for (i = 0; i < z_info->e_max; i++) {
 			e_ptr = &e_info[i];
@@ -3081,9 +3081,9 @@ void brand_object(object_type *o_ptr, int brand_type)
 		/* Use the first available affix */
 		for (j = 0; j < MAX_AFFIXES; j++)
 			if (!o_ptr->affix[j]) {
-				o_ptr->affix[j] = e_ptr->eidx;
+				o_ptr->affix[j] = e_ptr;
 				ego_apply_magic(o_ptr, 0, e_ptr->eidx);
-				object_notice_ego(o_ptr); /* FIXME */
+/*				object_notice_ego(o_ptr); FIXME */
 				break;
 			}
 

@@ -154,7 +154,7 @@ bool object_effect_is_known(const object_type *o_ptr)
 }
 
 /**
- * \returns whether any ego or artifact name is available to the player
+ * \returns whether any artifact name is available to the player
  */
 bool object_name_is_visible(const object_type *o_ptr)
 {
@@ -162,16 +162,32 @@ bool object_name_is_visible(const object_type *o_ptr)
 }
 
 /**
- * \returns whether both the object is both an ego and the player knows it is
+ * \returns whether any prefix name is available to the player
  */
-bool object_ego_is_visible(const object_type *o_ptr)
+bool object_prefix_is_visible(const object_type *o_ptr)
 {
-	if (!o_ptr->ego)
+	return TRUE; /* for testing
+	return o_ptr->ident & IDENT_PREFIX ? TRUE : FALSE; */
+}
+
+/**
+ * \returns whether any suffix name is available to the player
+ */
+bool object_suffix_is_visible(const object_type *o_ptr)
+{
+	return TRUE; /* for testing
+	return o_ptr->ident & IDENT_SUFFIX ? TRUE : FALSE; */
+}
+
+/**
+ * \returns whether a given affix is known
+ */
+bool object_affix_is_known(const object_type *o_ptr, byte affix)
+{
+	if (!o_ptr->affix[affix])
 		return FALSE;
 
-	if (o_ptr->tval == TV_LIGHT)
-		return TRUE;
-
+/* hmmmm */
 	if ((o_ptr->ident & IDENT_NAME) || (o_ptr->ident & IDENT_STORE))
 		return TRUE;
 	else

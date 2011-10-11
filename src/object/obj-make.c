@@ -201,12 +201,14 @@ static int obj_find_theme(object_type *o_ptr, int level)
 		if (table[i].index) {
 			/* It's legal, so check for relevant affixes */
 			wgt = num = 0;
-			for (j = 0; j < MAX_AFFIXES; j++)
+			for (j = 0; j < MAX_AFFIXES; j++) {
+				if (!o_ptr->affix[j]) continue;
 				for (k = 0; k < theme->num_affixes; k++)
-					if (o_ptr->affix[j] == theme->affix[k]) {
+					if (o_ptr->affix[j]->eidx == theme->affix[k]) {
 						num++;
 						wgt += theme->aff_wgt[k];
 					}
+			}
 			if (num > 1)
 				table[i].prob3 = (wgt * 8 * wgt) / theme->tot_wgt;
 		}
@@ -311,9 +313,8 @@ void ego_apply_magic(object_type *o_ptr, int level, int affix)
 	if (o_ptr->ds < 1)
 		o_ptr->ds = 1;
 
-	/* Tidy up and de-duplicate flags, and sort out our name */
+	/* Tidy up and de-duplicate flags */
 	check_flags(o_ptr);
-	obj_affix_name(o_ptr);
 
 	return;
 }
@@ -328,20 +329,21 @@ void ego_apply_magic(object_type *o_ptr, int level, int affix)
 static void obj_apply_theme(object_type *o_ptr, int level, int this_one)
 {
 	size_t i, j;
-	struct theme *theme = &themes[this_one];
 
-	o_ptr->theme = this_one;
+	o_ptr->theme = &themes[this_one];
 
 	/* Apply the affixes we don't already have, but allow the second and
 	   subsequent applications specified */
-	for (i = 0; i < theme->num_affixes; i++) {
+	for (i = 0; i < o_ptr->theme->num_affixes; i++) {
 		bool gotit = FALSE;
-		for (j = 0; j < MAX_AFFIXES; j++)
-			if ((o_ptr->affix[j] == theme->affix[i]) &&
-					(theme->affix[i] != theme->affix[i-1]))
+		for (j = 0; j < MAX_AFFIXES; j++) {
+			if (!o_ptr->affix[j]) continue;
+			if ((o_ptr->affix[j]->eidx == o_ptr->theme->affix[i]) &&
+					(o_ptr->theme->affix[i] != o_ptr->theme->affix[i-1]))
 				gotit = TRUE;
+		}
 		if (!gotit)
-			ego_apply_magic(o_ptr, level, theme->affix[i]);
+			ego_apply_magic(o_ptr, level, o_ptr->theme->affix[i]);
 	}
 
 	return;
@@ -353,7 +355,7 @@ static void obj_apply_theme(object_type *o_ptr, int level, int this_one)
  */
 static void obj_add_affix(object_type *o_ptr, int level, int affix_lev)
 {
-	int i;
+	int i, chosen;
 	object_type object_type_body;
 	object_type *j_ptr = &object_type_body;
 
@@ -371,11 +373,13 @@ static void obj_add_affix(object_type *o_ptr, int level, int affix_lev)
 	for (i = 0; i < MAX_AFFIXES; i++)
 		if (!o_ptr->affix[i]) {
 			/* Try to get a legal affix for this item */
-			o_ptr->affix[i] = obj_find_affix(o_ptr, level, affix_lev);
+			chosen = obj_find_affix(o_ptr, level, affix_lev);
 
 			/* Actually apply the affix to the item */
-			if (o_ptr->affix[i])
-				ego_apply_magic(o_ptr, level, o_ptr->affix[i]);
+			if (chosen) {
+				o_ptr->affix[i] = &e_info[chosen];
+				ego_apply_magic(o_ptr, level, chosen);
+			}
 			break;
 		}
 
@@ -383,9 +387,9 @@ static void obj_add_affix(object_type *o_ptr, int level, int affix_lev)
 	if (object_power(o_ptr, FALSE, NULL, TRUE) >= INHIBIT_POWER)
 		object_copy(o_ptr, j_ptr);
 	else {
-		o_ptr->theme = obj_find_theme(o_ptr, level);
-		if (o_ptr->theme) {
-			obj_apply_theme(o_ptr, level, o_ptr->theme);
+		chosen = obj_find_theme(o_ptr, level);
+		if (chosen) {
+			obj_apply_theme(o_ptr, level, chosen);
 			if (object_power(o_ptr, FALSE, NULL, TRUE) >= INHIBIT_POWER)
 				object_copy(o_ptr, j_ptr);
 		}

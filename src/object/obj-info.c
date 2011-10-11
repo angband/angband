@@ -1202,7 +1202,7 @@ static void describe_flavor_text(textblock *tb, const object_type *o_ptr,
 		}
 
 		/* Display an additional ego-item description */
-		if ((ego || object_ego_is_visible(o_ptr)) && o_ptr->ego->text)
+/*		if ((ego || object_ego_is_visible(o_ptr)) && o_ptr->ego->text)
 		{
 			if (did_desc) textblock_append(tb, "  ");
 			textblock_append(tb, "%s\n\n", o_ptr->ego->text);
@@ -1210,7 +1210,7 @@ static void describe_flavor_text(textblock *tb, const object_type *o_ptr,
 		else if (did_desc)
 		{
 			textblock_append(tb, "\n\n");
-		}
+		} FIXME with all affix->text */
 	}
 }
 
@@ -1352,7 +1352,7 @@ textblock *object_info_ego(struct ego_item *ego)
 	obj.kind = kind;
 	obj.tval = kind->tval;
 	obj.sval = kind->sval;
-	obj.affix[0] = ego->eidx;
+	obj.affix[0] = ego;
 	ego_apply_magic(&obj, 0, ego->eidx);
 
 	return object_info_out(&obj, OINFO_FULL | OINFO_EGO | OINFO_DUMMY);
