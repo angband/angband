@@ -30,7 +30,6 @@ HEADERS = \
 	ui.h \
 	ui-menu.h \
 	wizard.h \
-	x-char.h \
 	z-bitflag.h \
 	z-file.h \
 	z-form.h \
