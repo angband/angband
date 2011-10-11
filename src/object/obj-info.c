@@ -1185,6 +1185,8 @@ static bool describe_origin(textblock *tb, const object_type *o_ptr)
 static void describe_flavor_text(textblock *tb, const object_type *o_ptr,
 	bool ego)
 {
+	int i;
+
 	/* Display the known artifact description */
 	if (!OPT(birth_randarts) && o_ptr->artifact &&
 			object_is_known(o_ptr) && o_ptr->artifact->text)
@@ -1201,16 +1203,18 @@ static void describe_flavor_text(textblock *tb, const object_type *o_ptr,
 			did_desc = TRUE;
 		}
 
-		/* Display an additional ego-item description */
-/*		if ((ego || object_ego_is_visible(o_ptr)) && o_ptr->ego->text)
-		{
-			if (did_desc) textblock_append(tb, "  ");
-			textblock_append(tb, "%s\n\n", o_ptr->ego->text);
-		}
-		else if (did_desc)
-		{
+		/* Display additional affix descriptions */
+		for (i = 0; i < MAX_AFFIXES; i++)
+			if (o_ptr->affix[i] && o_ptr->affix[i]->text && (ego ||
+					object_affix_is_known(o_ptr, o_ptr->affix[i]->eidx))) {
+				if (did_desc)
+					textblock_append(tb, " ");
+				textblock_append(tb, "%s", o_ptr->affix[i]->text);
+				did_desc = TRUE;
+			}
+
+		if (did_desc)
 			textblock_append(tb, "\n\n");
-		} FIXME with all affix->text */
 	}
 }
 
