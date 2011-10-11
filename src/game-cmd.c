@@ -116,8 +116,8 @@ static struct
 struct item_selector
 {
 	cmd_code command;
-	const char *prompt;
-	const char *noop;
+	const char *verb;
+	const char *type;
 
 	bool (*filter)(const object_type *o_ptr);
 	int mode;
@@ -126,61 +126,20 @@ struct item_selector
 /** List of requirements for various commands' objects */
 struct item_selector item_selector[] =
 {
-	{ CMD_INSCRIBE, "Inscribe which item? ",
-	  "You have nothing to inscribe.",
-	  NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS) },
-
-	{ CMD_UNINSCRIBE, "Un-inscribe which item? ",
-	  "You have nothing to un-inscribe.",
-	  obj_has_inscrip, (USE_EQUIP | USE_INVEN | USE_FLOOR) },
-
-	{ CMD_WIELD, "Wear/wield which item? ",
-	  "You have nothing you can wear or wield.",
-	  obj_can_wear, (USE_INVEN | USE_FLOOR) },
-
-	{ CMD_TAKEOFF, "Take off which item? ",
-	  "You are not wearing anything you can take off.",
-	  obj_can_takeoff, USE_EQUIP },
-
-	{ CMD_DROP, "Drop which item? ",
-	  "You have nothing to drop.",
-	  NULL, (USE_EQUIP | USE_INVEN) },
-
-	{ CMD_FIRE, "Fire which item? ",
-	  "You have nothing to fire.",
-	  obj_can_fire, (USE_INVEN | USE_EQUIP | USE_FLOOR | QUIVER_TAGS) },
-
-	{ CMD_USE_STAFF, "Use which staff? ",
-	  "You have no staff to use.",
-	  obj_is_staff, (USE_INVEN | USE_FLOOR | SHOW_FAIL) },
-
-	{ CMD_USE_WAND, "Aim which wand? ",
-	  "You have no wand to aim.",
-	  obj_is_wand, (USE_INVEN | USE_FLOOR | SHOW_FAIL) },
-
-	{ CMD_USE_ROD, "Zap which rod? ",
-	  "You have no charged rods to zap.",
-	  obj_is_rod, (USE_INVEN | USE_FLOOR | SHOW_FAIL) },
-
-	{ CMD_ACTIVATE, "Activate which item? ",
-	  "You have nothing to activate.",
-	  obj_is_activatable, (USE_EQUIP | SHOW_FAIL) },
-
-	{ CMD_EAT, "Eat which item? ",
-	  "You have nothing to eat.",
-	  obj_is_food, (USE_INVEN | USE_FLOOR) },
-
-	{ CMD_QUAFF, "Quaff which potion? ",
-	  "You have no potions to quaff.",
-	  obj_is_potion, (USE_INVEN | USE_FLOOR) },
-
-	{ CMD_READ_SCROLL, "Read which scroll? ",
-	  "You have no scrolls to read.",
-	  obj_is_scroll, (USE_INVEN | USE_FLOOR) },
-
-	{ CMD_REFILL, "Refuel with what fuel source? ",
-	  "You have nothing to refuel with.",
-	  obj_can_refill, (USE_INVEN | USE_FLOOR) },
+	{ CMD_INSCRIBE, "inscribe", NULL, NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS) },
+	{ CMD_UNINSCRIBE, "un-inscribe", NULL, obj_has_inscrip, (USE_EQUIP | USE_INVEN | USE_FLOOR) },
+	{ CMD_WIELD, "wear or wield", NULL, obj_can_wear, (USE_INVEN | USE_FLOOR) },
+	{ CMD_TAKEOFF, "take off", NULL, obj_can_takeoff, USE_EQUIP },
+	{ CMD_DROP, "drop", NULL, NULL, (USE_EQUIP | USE_INVEN) },
+	{ CMD_FIRE, "fire", NULL, obj_can_fire, (USE_INVEN | USE_EQUIP | USE_FLOOR | QUIVER_TAGS) },
+	{ CMD_USE_STAFF, "use", "staff",  obj_is_staff, (USE_INVEN | USE_FLOOR | SHOW_FAIL) },
+	{ CMD_USE_WAND, "aim", "wand", obj_is_wand, (USE_INVEN | USE_FLOOR | SHOW_FAIL) },
+	{ CMD_USE_ROD, "zap", "rod", obj_is_rod, (USE_INVEN | USE_FLOOR | SHOW_FAIL) },
+	{ CMD_ACTIVATE, "activate", NULL, obj_is_activatable, (USE_EQUIP | SHOW_FAIL) },
+	{ CMD_EAT, "eat", NULL, obj_is_food, (USE_INVEN | USE_FLOOR) },
+	{ CMD_QUAFF, "quaff", "potion", obj_is_potion, (USE_INVEN | USE_FLOOR) },
+	{ CMD_READ_SCROLL, "read", "scroll", obj_is_scroll, (USE_INVEN | USE_FLOOR) },
+	{ CMD_REFILL, "refuel with", "fuel source", obj_can_refill, (USE_INVEN | USE_FLOOR) },
 };
 
 game_command *cmd_get_top(void)
@@ -410,9 +369,24 @@ void process_command(cmd_context ctx, bool no_request)
 			if (!cmd->arg_present[0])
 			{
 				int item;
+				const char *verb = is->verb;
+				const char *type = is->type;
+				const char *type2 = is->type;
+
+				char prompt[1024], none[1024];
+
+				/* Pluralise correctly or things look weird */
+				if (!type) {
+					type = "item";
+					type2 = "items";
+				}
+
+				strnfmt(prompt, sizeof(prompt), "%^s which %s?", verb, type);
+				strnfmt(none, sizeof(none), "You have no %s you can %s.",
+						type2, verb);
 
 				item_tester_hook = is->filter;
-				if (!get_item(&item, is->prompt, is->noop, cmd->command, is->mode))
+				if (!get_item(&item, prompt, none, cmd->command, is->mode))
 					return;
 
 				cmd_set_arg_item(cmd, 0, item);
