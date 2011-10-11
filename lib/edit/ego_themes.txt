@@ -91,6 +91,7 @@ A:of Slow Descent:2
 A:Durable:1
 A:of Stealth:4
 A:of Speed:18
+D:These faerie boots make you both faster and quieter.
 
 N:4:suffix:of Permanence
 T:soft armour:2:2:50 to 127

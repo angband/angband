@@ -1192,6 +1192,10 @@ static void describe_flavor_text(textblock *tb, const object_type *o_ptr,
 			object_is_known(o_ptr) && o_ptr->artifact->text)
 		textblock_append(tb, "%s\n\n", o_ptr->artifact->text);
 
+	else if (o_ptr->theme && o_ptr->theme->text &&
+			object_theme_is_known(o_ptr))
+		textblock_append(tb, "%s\n\n", o_ptr->theme->text);
+
 	/* Display the known object description */
 	else if (object_flavor_is_aware(o_ptr) || object_is_known(o_ptr) || ego)
 	{
