@@ -311,8 +311,9 @@ void ego_apply_magic(object_type *o_ptr, int level, int affix)
 	if (o_ptr->ds < 1)
 		o_ptr->ds = 1;
 
-	/* Tidy up and de-duplicate flags */
+	/* Tidy up and de-duplicate flags, and sort out our name */
 	check_flags(o_ptr);
+	obj_affix_name(o_ptr);
 
 	return;
 }
@@ -330,12 +331,6 @@ static void obj_apply_theme(object_type *o_ptr, int level, int this_one)
 	struct theme *theme = &themes[this_one];
 
 	o_ptr->theme = this_one;
-
-	/* Set the object name properly */
-	if (theme->type == 1)
-		o_ptr->prefix = theme->name;
-	else if (theme->type == 2)
-		o_ptr->suffix = theme->name;
 
 	/* Apply the affixes we don't already have, but allow the second and
 	   subsequent applications specified */
@@ -379,10 +374,8 @@ static void obj_add_affix(object_type *o_ptr, int level, int affix_lev)
 			o_ptr->affix[i] = obj_find_affix(o_ptr, level, affix_lev);
 
 			/* Actually apply the affix to the item */
-			if (o_ptr->affix[i]) {
+			if (o_ptr->affix[i])
 				ego_apply_magic(o_ptr, level, o_ptr->affix[i]);
-				obj_affix_name(o_ptr);
-			}
 			break;
 		}
 

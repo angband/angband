@@ -757,17 +757,22 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 
 /**
  * Set an object's prefix and suffix in accordance with its affixes. We use
- * the most powerful affixes to determine the name. TODO: themes.
+ * the most powerful affixes to determine the name. If we have a theme, we
+ * don't duplicate affixes which are part of the theme.
  */
 void obj_affix_name(object_type *o_ptr)
 {
 	int i, j, best, best_pref = 0, best_suf = 0, pref_lev = 0, suf_lev = 0;
+	bool theme_has;
 	struct ego_item *affix;
+	struct theme *theme = &themes[o_ptr->theme];
 
 	for (i = 0; i < MAX_AFFIXES; i++) {
 		if (o_ptr->affix[i]) {
 			affix = &e_info[o_ptr->affix[i]];
 			best = 0;
+			theme_has = FALSE;
+			/* Find the affix level of this affix on this object */
 			for (j = 0; j < EGO_TVALS_MAX; j++)
 				if (o_ptr->tval == affix->tval[j] &&
 						o_ptr->sval >= affix->min_sval[j] &&
@@ -775,21 +780,30 @@ void obj_affix_name(object_type *o_ptr)
 						affix->level[j] > best)
 					best = affix->level[j];
 
-			if (affix->type == 1 && best > pref_lev) {
+			/* See if the object's theme has this affix */
+			for (j = 0; j < theme->num_affixes; j++)
+				if (theme->affix[j] == affix->eidx)
+					theme_has = TRUE;
+
+			if (affix->type == 1 && best > pref_lev && !theme_has) {
 				pref_lev = best;
 				best_pref = affix->eidx;
-			} else if (affix->type == 2 && best > suf_lev) {
+			} else if (affix->type == 2 && best > suf_lev && !theme_has) {
 				suf_lev = best;
 				best_suf = affix->eidx;
 			}
 		}
 	}
 
-	if (best_pref) {
+	if (o_ptr->theme && theme->type == 1)
+		o_ptr->prefix = theme->name;
+	else if (best_pref) {
 		affix = &e_info[best_pref];
 		o_ptr->prefix = affix->name;
 	}
-	if (best_suf) {
+	if (o_ptr->theme && theme->type == 2)
+		o_ptr->suffix = theme->name;
+	else if (best_suf) {
 		affix = &e_info[best_suf];
 		o_ptr->suffix = affix->name;
 	}
