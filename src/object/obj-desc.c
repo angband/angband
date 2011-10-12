@@ -28,8 +28,12 @@
  */
 void obj_affix_names(object_type *o_ptr)
 {
-	int i, j, best, best_pref = 0, best_suf = 0, pref_lev = 0, suf_lev = 0;
+	int i, j, best, best_pref = -1, best_suf = -1, pref_lev = 0, suf_lev = 0;
 	bool theme_has;
+
+	/* Clear any existing names */
+	o_ptr->prefix = NULL;
+	o_ptr->suffix = NULL;
 
 	for (i = 0; i < MAX_AFFIXES; i++) {
 		if (o_ptr->affix[i]) {
@@ -61,15 +65,11 @@ void obj_affix_names(object_type *o_ptr)
 	}
 
 	/* Set the prefix and suffix */
-	if (best_pref)
+	if (best_pref >= 0)
 		o_ptr->prefix = o_ptr->affix[best_pref];
-	else
-		o_ptr->prefix = NULL;
 
-	if (best_suf)
+	if (best_suf >= 0)
 		o_ptr->suffix = o_ptr->affix[best_suf];
-	else
-		o_ptr->suffix = NULL;
 }
 
 /**
@@ -739,7 +739,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 				   odesc_detail_t mode)
 {
 	bool spoil = mode & ODESC_SPOIL;
-	bool known;
+/*	bool known; */
 
 	size_t end = 0, i = 0;
 
@@ -750,8 +750,8 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 	if (!o_ptr->tval)
 		return strnfmt(buf, max, "(nothing)");
 
-	known = object_is_known(o_ptr) ||
-			(o_ptr->ident & IDENT_STORE) || spoil;
+/*	known = object_is_known(o_ptr) ||
+			(o_ptr->ident & IDENT_STORE) || spoil; */
 
 	/* We've seen it at least once now we're aware of it */
 /*	if (known && o_ptr->ego && !spoil) o_ptr->ego->everseen = TRUE; */
