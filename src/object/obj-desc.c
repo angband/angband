@@ -63,9 +63,13 @@ void obj_affix_names(object_type *o_ptr)
 	/* Set the prefix and suffix */
 	if (best_pref)
 		o_ptr->prefix = o_ptr->affix[best_pref];
+	else
+		o_ptr->prefix = NULL;
 
 	if (best_suf)
 		o_ptr->suffix = o_ptr->affix[best_suf];
+	else
+		o_ptr->suffix = NULL;
 }
 
 /**
