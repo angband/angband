@@ -151,7 +151,7 @@ int apply_autoinscription(object_type *o_ptr)
 		return 0;
 
 	/* Get an object description */
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_ARTICLE | ODESC_FULL);
 
 	if (note[0] != 0)
 		o_ptr->note = quark_add(note);

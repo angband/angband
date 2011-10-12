@@ -1750,10 +1750,10 @@ static void see_floor_items(game_event_type type, game_event_data *data, void *u
 		/* Describe the object.  Less detail if blind. */
 		if (blind)
 			object_desc(o_name, sizeof(o_name), o_ptr,
-					ODESC_PREFIX | ODESC_BASE);
+					ODESC_ARTICLE | ODESC_BASE);
 		else
 			object_desc(o_name, sizeof(o_name), o_ptr,
-					ODESC_PREFIX | ODESC_FULL);
+					ODESC_ARTICLE | ODESC_FULL);
 
 		/* Message */
 		message_flush();

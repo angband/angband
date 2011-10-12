@@ -363,7 +363,7 @@ static s32b artifact_power(int a_idx)
 	if (!make_fake_artifact(&obj, &a_info[a_idx]))
 		return 0;
 
-	object_desc(buf, 256*sizeof(char), &obj, ODESC_PREFIX | ODESC_FULL | ODESC_SPOIL);
+	object_desc(buf, 256*sizeof(char), &obj, ODESC_ARTICLE | ODESC_FULL | ODESC_SPOIL);
 	file_putf(log_file, "%s\n", buf);
 
 	return object_power(&obj, verbose, log_file, TRUE);

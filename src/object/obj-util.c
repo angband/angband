@@ -2278,7 +2278,7 @@ void inven_item_describe(int item)
 	else
 	{
 		/* Get a description */
-		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_ARTICLE | ODESC_FULL);
 
 		/* Print a message */
 		msg("You have %s (%c).", o_name, index_to_label(item));
@@ -2614,7 +2614,7 @@ void floor_item_describe(int item)
 	char o_name[80];
 
 	/* Get a description */
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_ARTICLE | ODESC_FULL);
 
 	/* Print a message */
 	msg("You see %s.", o_name);
@@ -2943,7 +2943,7 @@ s16b inven_takeoff(int item, int amt)
 	i_ptr->number = amt;
 
 	/* Describe the object */
-	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_ARTICLE | ODESC_FULL);
 
 	/* Took off weapon */
 	if (item == INVEN_WIELD)
@@ -3048,7 +3048,7 @@ void inven_drop(int item, int amt)
 	object_split(i_ptr, o_ptr, amt);
 
 	/* Describe local object */
-	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_ARTICLE | ODESC_FULL);
 
 	/* Message */
 	msg("You drop %s (%c).", o_name, index_to_label(item));
@@ -3723,7 +3723,7 @@ void display_object_recall(object_type *o_ptr)
 	char header[120];
 
 	textblock *tb = object_info(o_ptr, OINFO_NONE);
-	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(header, sizeof(header), o_ptr, ODESC_ARTICLE | ODESC_FULL);
 
 	clear_from(0);
 	textui_textblock_place(tb, SCREEN_REGION, header);
@@ -4321,7 +4321,7 @@ void pack_overflow(void)
 	msg("Your pack overflows!");
 
 	/* Describe */
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_ARTICLE | ODESC_FULL);
 
 	/* Message */
 	msg("You drop %s (%c).", o_name, index_to_label(item));

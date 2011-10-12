@@ -3293,7 +3293,7 @@ void do_ident_item(int item, object_type *o_ptr)
 	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
 
 	/* Description */
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_ARTICLE | ODESC_FULL);
 
 	/* Determine the message type. */
 	/* CC: we need to think more carefully about how we define "bad" with

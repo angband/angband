@@ -480,7 +480,7 @@ void process_command(cmd_context ctx, bool no_request)
 
 				object_type *o_ptr = object_from_item_idx(cmd->arg[0].item);
 			
-				object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+				object_desc(o_name, sizeof(o_name), o_ptr, ODESC_ARTICLE | ODESC_FULL);
 				msg("Inscribing %s.", o_name);
 				message_flush();
 			

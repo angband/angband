@@ -234,9 +234,9 @@ static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware)
 }
 
 
-static size_t obj_desc_name_prefix(char *buf, size_t max, size_t end,
+static size_t obj_desc_name_article(char *buf, size_t max, size_t end,
 		const object_type *o_ptr, bool known, const char *basename,
-		const char *modstr)
+		const char *modstr, const char *prefix)
 {
 	if (o_ptr->number <= 0)
 		strnfcat(buf, max, &end, "no more ");
@@ -248,7 +248,12 @@ static size_t obj_desc_name_prefix(char *buf, size_t max, size_t end,
 	else if (*basename == '&')
 	{
 		bool an = FALSE;
-		const char *lookahead = basename + 1;
+		const char *lookahead;
+
+		if (prefix)
+			lookahead = prefix;
+		else
+			lookahead = basename + 1;
 
 		while (*lookahead == ' ') lookahead++;
 
@@ -374,20 +379,25 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 
 	const char *basename = obj_desc_get_basename(o_ptr, aware);
 	const char *modstr = obj_desc_get_modstr(o_ptr->kind);
+	const char *prefix = NULL;
 
 	if (aware && !o_ptr->kind->everseen && !spoil)
 		o_ptr->kind->everseen = TRUE;
 
-	if (mode & ODESC_PREFIX)
-		end = obj_desc_name_prefix(buf, max, end, o_ptr, known,	basename,
-			 modstr);
-
 	if (mode & ODESC_AFFIX && (spoil || object_prefix_is_visible(o_ptr))) {
 		if (o_ptr->theme && o_ptr->theme->type == 1)
-			strnfcat(buf, max, &end, "%s ", o_ptr->theme->name);
+			prefix =  o_ptr->theme->name;
 		else if	(o_ptr->prefix)
-			strnfcat(buf, max, &end, "%s ", o_ptr->prefix->name);
+			prefix =  o_ptr->prefix->name;
 	}
+
+	if (mode & ODESC_ARTICLE)
+		end = obj_desc_name_article(buf, max, end, o_ptr, known, basename,
+			 modstr, prefix);
+
+	if (prefix)
+		strnfcat(buf, max, &end, "%s ", prefix);
+
 	/* Pluralize if (not forced singular) and
 	 * (not a known/visible artifact) and
 	 * (not one in stack or forced plural) */
@@ -714,7 +724,7 @@ static size_t obj_desc_aware(const object_type *o_ptr, char *buf, size_t max,
 /**
  * Describes item `o_ptr` into buffer `buf` of size `max`.
  *
- * ODESC_PREFIX prepends a 'the', 'a' or number
+ * ODESC_ARTICLE prepends a 'the', 'a' or number
  * ODESC_BASE results in a base description.
  * ODESC_COMBAT will add to-hit, to-dam and AC info.
  * ODESC_EXTRA will add pval/charge/inscription/squelch info.

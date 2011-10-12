@@ -241,7 +241,7 @@ void textui_obj_examine(void)
 	/* Display info */
 	o_ptr = object_from_item_idx(item);
 	tb = object_info(o_ptr, OINFO_NONE);
-	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(header, sizeof(header), o_ptr, ODESC_ARTICLE | ODESC_FULL);
 
 	textui_textblock_show(tb, area, format("%^s", header));
 	textblock_free(tb);

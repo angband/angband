@@ -1181,7 +1181,7 @@ static void get_artifact_display_name(char *o_name, size_t namelen, int a_idx)
 
 	make_fake_artifact(o_ptr, &a_info[a_idx]);
 	object_desc(o_name, namelen, o_ptr,
-			ODESC_PREFIX | ODESC_BASE | ODESC_SPOIL);
+			ODESC_ARTICLE | ODESC_BASE | ODESC_SPOIL);
 }
 
 /*
@@ -1259,7 +1259,7 @@ static void desc_art_fake(int a_idx)
 	handle_stuff(p_ptr);
 
 	tb = object_info(o_ptr, OINFO_NONE);
-	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(header, sizeof(header), o_ptr, ODESC_ARTICLE | ODESC_FULL);
 
 	textui_textblock_show(tb, area, format("%^s", header));
 	textblock_free(tb);
@@ -1570,7 +1570,7 @@ static void desc_obj_fake(int k_idx)
 	handle_stuff(p_ptr);
 
 	tb = object_info(o_ptr, OINFO_NONE);
-	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(header, sizeof(header), o_ptr, ODESC_ARTICLE | ODESC_FULL);
 
 	textui_textblock_show(tb, area, format("%^s", header));
 	textblock_free(tb);

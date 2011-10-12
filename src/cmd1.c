@@ -334,7 +334,7 @@ static void py_pickup_aux(int o_idx, bool domsg)
 	if (domsg && !quiver_slot)
 	{
 		/* Describe the object */
-		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_ARTICLE | ODESC_FULL);
 
 		/* Message */
 		msg("You have %s (%c).", o_name, index_to_label(slot));

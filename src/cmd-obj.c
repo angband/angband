@@ -148,7 +148,7 @@ static void activation_message(object_type *o_ptr, const char *message)
 			switch(art_tag_lookup(tag))
 			{
 			case ART_TAG_NAME:
-				end += object_desc(buf, 1024, o_ptr, ODESC_PREFIX | ODESC_BASE); 
+				end += object_desc(buf, 1024, o_ptr, ODESC_ARTICLE | ODESC_BASE); 
 				break;
 			case ART_TAG_KIND:
 				object_kind_name(&buf[end], 1024-end, o_ptr->kind, TRUE);
@@ -339,7 +339,7 @@ void wield_item(object_type *o_ptr, int item, int slot)
 		fmt = "You are wearing %s (%c).";
 
 	/* Describe the result */
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_ARTICLE | ODESC_FULL);
 
 	/* Message */
 	msgt(MSG_WIELD, fmt, o_name, index_to_label(slot));
@@ -424,7 +424,7 @@ void do_cmd_wield(cmd_code code, cmd_arg args[])
 	{
 		/* Prompt */
 		object_desc(o_name, sizeof(o_name), equip_o_ptr,
-					ODESC_PREFIX | ODESC_FULL);
+					ODESC_ARTICLE | ODESC_FULL);
 		
 		/* Forget it */
 		if (!get_check(format("Really take off %s? ", o_name))) return;
@@ -476,7 +476,7 @@ void do_cmd_destroy(cmd_code code, cmd_arg args[])
 	} else {	
 		char o_name[80];
 
-		object_desc(o_name, sizeof o_name, o_ptr, ODESC_PREFIX | ODESC_FULL);
+		object_desc(o_name, sizeof o_name, o_ptr, ODESC_ARTICLE | ODESC_FULL);
 		msgt(MSG_DESTROY, "Ignoring %s.", o_name);
 
 		o_ptr->ignore = TRUE;

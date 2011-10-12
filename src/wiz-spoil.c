@@ -480,7 +480,7 @@ static void spoil_artifact(const char *fname)
 			if (!make_fake_artifact(i_ptr, a_ptr)) continue;
 
 			/* Grab artifact name */
-			object_desc(buf, sizeof(buf), i_ptr, ODESC_PREFIX |
+			object_desc(buf, sizeof(buf), i_ptr, ODESC_ARTICLE |
 				ODESC_COMBAT | ODESC_EXTRA | ODESC_SPOIL);
 
 			/* Print name and underline */

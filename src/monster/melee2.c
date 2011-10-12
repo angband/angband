@@ -2114,7 +2114,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 
 						/* Get a description */
 						object_desc(o_name, sizeof(o_name), o_ptr,
-									ODESC_PREFIX | ODESC_BASE);
+									ODESC_ARTICLE | ODESC_BASE);
 
 						/* Message */
 						msg("%sour %s (%c) was eaten!",
@@ -3375,7 +3375,7 @@ static void process_monster(struct cave *c, int m_idx)
 
 					/* Get the object name */
 					object_desc(o_name, sizeof(o_name), o_ptr,
-								ODESC_PREFIX | ODESC_FULL);
+								ODESC_ARTICLE | ODESC_FULL);
 
 					/* Get the monster name */
 					monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND1);
