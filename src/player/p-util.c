@@ -97,7 +97,7 @@ bool player_can_study(void)
 /* Does the player carry a book with a spell they can study? */
 bool player_can_study_book(void)
 {
-	size_t i;
+	int i;
 	int item_list[INVEN_TOTAL];
 	int item_num;
 	object_type *o_ptr;
