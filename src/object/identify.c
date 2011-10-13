@@ -219,7 +219,7 @@ bool object_affix_is_known(const object_type *o_ptr, u16b idx)
 	ego_item_type *affix = &e_info[idx];
 	ego_item_type *theme_affix;
 
-	if (o_ptr->ident & IDENT_KNOWN)
+	if (o_ptr->ident & IDENT_KNOWN || o_ptr->ident & IDENT_STORE)
 		return TRUE;
 
 	/* We have to know all the affix's flags and all its pval flags */
@@ -279,6 +279,9 @@ bool object_theme_is_known(const object_type *o_ptr)
 
 	if (!o_ptr->theme)
 		return FALSE;
+
+	if (o_ptr->ident & IDENT_KNOWN || o_ptr->ident & IDENT_STORE)
+		return TRUE;
 
 	/* We know a theme when we know all its affixes */
 	for (i = 0; i < o_ptr->theme->num_affixes; i++)
