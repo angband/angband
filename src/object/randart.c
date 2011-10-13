@@ -2794,10 +2794,7 @@ static void scramble_artifact(int a_idx)
 		a_ptr->alloc_prob = alloc_new;
 
 		if (count >= MAX_TRIES)
-		{
-			msg("Warning! Couldn't get appropriate power level on base item.");
 			file_putf(log_file, "Warning! Couldn't get appropriate power level on base item.\n");
-		}
 	}
 	else
 	{
@@ -2925,7 +2922,6 @@ static void scramble_artifact(int a_idx)
 			 * We couldn't generate an artifact within the number of permitted
 			 * iterations.  Show a warning message.
 			 */
-			msg("Warning!  Couldn't get appropriate power level on artifact.");
 			file_putf(log_file, "Warning!  Couldn't get appropriate power level on artifact.\n");
 			message_flush();
 		}
