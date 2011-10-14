@@ -146,6 +146,7 @@
 #define ART_IDX_GEN_AC 68
 #define ART_IDX_GEN_TUNN 69
 #define ART_IDX_GEN_ACTIV 82
+#define ART_IDX_GEN_PSTUN 86
 
 /* Supercharged abilities - treated differently in algorithm */
 
@@ -161,7 +162,7 @@
 #define ART_IDX_NONWEAPON_AGGR 75
 
 /* Total of abilities */
-#define ART_IDX_TOTAL 86
+#define ART_IDX_TOTAL 87
 
 /* Tallies of different ability types */
 /* ToDo: use N_ELEMENTS for these */
@@ -177,7 +178,7 @@
 #define ART_IDX_CLOAK_COUNT 2
 #define ART_IDX_ARMOR_COUNT 7
 #define ART_IDX_GEN_COUNT 31
-#define ART_IDX_HIGH_RESIST_COUNT 12
+#define ART_IDX_HIGH_RESIST_COUNT 13
 
 /* Arrays of indices by item type, used in frequency generation */
 static s16b art_idx_bow[] =
@@ -219,13 +220,13 @@ static s16b art_idx_gen[] =
 	ART_IDX_GEN_RCONF, ART_IDX_GEN_RSOUND, ART_IDX_GEN_RSHARD,
 	ART_IDX_GEN_RNEXUS, ART_IDX_GEN_RNETHER, ART_IDX_GEN_RCHAOS,
 	ART_IDX_GEN_RDISEN, ART_IDX_GEN_AC, ART_IDX_GEN_TUNN,
-	ART_IDX_GEN_ACTIV};
+	ART_IDX_GEN_ACTIV, ART_IDX_GEN_PSTUN};
 static s16b art_idx_high_resist[] =
 	{ART_IDX_GEN_RPOIS, ART_IDX_GEN_RFEAR,
 	ART_IDX_GEN_RLIGHT, ART_IDX_GEN_RDARK, ART_IDX_GEN_RBLIND,
 	ART_IDX_GEN_RCONF, ART_IDX_GEN_RSOUND, ART_IDX_GEN_RSHARD,
 	ART_IDX_GEN_RNEXUS, ART_IDX_GEN_RNETHER, ART_IDX_GEN_RCHAOS,
-	ART_IDX_GEN_RDISEN};
+	ART_IDX_GEN_RDISEN, ART_IDX_GEN_PSTUN};
 
 /* Initialize the data structures for learned probabilities */
 static s16b artprobs[ART_IDX_TOTAL];
@@ -686,6 +687,8 @@ static void adjust_freqs(void)
 		artprobs[ART_IDX_GEN_AC_SUPER] = 5;
 	if (artprobs[ART_IDX_MELEE_AC] < 5)
 		artprobs[ART_IDX_MELEE_AC] = 5;
+	if (artprobs[ART_IDX_GEN_PSTUN] < 3)
+		artprobs[ART_IDX_GEN_PSTUN] = 3;
 
 	/* Cut aggravation frequencies in half since they're used twice */
 	artprobs[ART_IDX_NONWEAPON_AGGR] /= 2;
@@ -1472,6 +1475,7 @@ static void parse_frequencies(void)
 			if (of_has(a_ptr->flags, OF_RES_NETHR)) temp++;
 			if (of_has(a_ptr->flags, OF_RES_CHAOS)) temp++;
 			if (of_has(a_ptr->flags, OF_RES_DISEN)) temp++;
+			if (of_has(a_ptr->flags, OF_RES_STUN)) temp++;
 			file_putf(log_file, "Adding %d for high resists on body armor.\n", temp);
 
 			(artprobs[ART_IDX_ARMOR_HRES]) += temp;
@@ -1582,6 +1586,14 @@ static void parse_frequencies(void)
 			file_putf(log_file, "Adding 1 for resist disenchantment - general.\n");
 
 			(artprobs[ART_IDX_GEN_RDISEN])++;
+		}
+
+		if (of_has(a_ptr->flags, OF_RES_STUN))
+		{
+			/* Resist stunning ability */
+			file_putf(log_file, "Adding 1 for res_stun - general.\n");
+
+			(artprobs[ART_IDX_GEN_PSTUN])++;
 		}
 
 		if (a_ptr->effect)
@@ -1924,6 +1936,7 @@ static void add_high_resist(artifact_type *a_ptr)
 		else if (i == 9) success = add_flag(a_ptr, OF_RES_NETHR);
 		else if (i == 10) success = add_flag(a_ptr, OF_RES_CHAOS);
 		else if (i == 11) success = add_flag(a_ptr, OF_RES_DISEN);
+		else if (i == 12) success = add_flag(a_ptr, OF_RES_STUN);
 
 		count++;
 	}
@@ -2577,7 +2590,7 @@ static void add_ability(artifact_type *a_ptr, s32b target_power)
  */
 static void try_supercharge(artifact_type *a_ptr, s32b target_power)
 {
-	/* Huge damage dice or +3 blows - melee weapon only */
+	/* Huge damage dice or max blows - melee weapon only */
 	if (a_ptr->tval == TV_DIGGING || a_ptr->tval == TV_HAFTED ||
 		a_ptr->tval == TV_POLEARM || a_ptr->tval == TV_SWORD)
 	{
@@ -2591,26 +2604,26 @@ static void try_supercharge(artifact_type *a_ptr, s32b target_power)
 		{
 			of_on(a_ptr->flags, OF_BLOWS);
 			of_on(a_ptr->pval_flags[DEFAULT_PVAL], OF_BLOWS);
-			a_ptr->pval[DEFAULT_PVAL] = 3;
-			file_putf(log_file, "Supercharging melee blows! (+3 blows)\n");
+			a_ptr->pval[DEFAULT_PVAL] = INHIBIT_BLOWS - 1;
+			file_putf(log_file, "Supercharging melee blows! (+2 blows)\n");
 		}
 	}
 
-	/* Bows - +3 might or +3 shots */
+	/* Bows - max might or shots */
 	if (a_ptr->tval == TV_BOW)
 	{
 		if (randint0(z_info->a_max) < artprobs[ART_IDX_BOW_SHOTS_SUPER])
 		{
 			of_on(a_ptr->flags, OF_SHOTS);
 			of_on(a_ptr->pval_flags[DEFAULT_PVAL], OF_SHOTS);
-			a_ptr->pval[DEFAULT_PVAL] = 3;
-			file_putf(log_file, "Supercharging shots for bow!  (3 extra shots)\n");
+			a_ptr->pval[DEFAULT_PVAL] = INHIBIT_SHOTS - 1;
+			file_putf(log_file, "Supercharging shots for bow!  (2 extra shots)\n");
 		}
 		else if (randint0(z_info->a_max) < artprobs[ART_IDX_BOW_MIGHT_SUPER])
 		{
 			of_on(a_ptr->flags, OF_MIGHT);
 			of_on(a_ptr->pval_flags[DEFAULT_PVAL], OF_MIGHT);
-			a_ptr->pval[DEFAULT_PVAL] = 3;
+			a_ptr->pval[DEFAULT_PVAL] = INHIBIT_MIGHT - 1;
 			file_putf(log_file, "Supercharging might for bow!  (3 extra might)\n");
 		}
 	}
@@ -2800,10 +2813,7 @@ static void scramble_artifact(int a_idx)
 		a_ptr->alloc_prob[0] = alloc_new;
 
 		if (count >= MAX_TRIES)
-		{
-			msg("Warning! Couldn't get appropriate power level on base item.");
 			file_putf(log_file, "Warning! Couldn't get appropriate power level on base item.\n");
-		}
 	}
 	else
 	{
@@ -2926,15 +2936,11 @@ static void scramble_artifact(int a_idx)
 		}		/* end of power selection */
 
 		if (verbose && tries >= MAX_TRIES)
-		{
 			/*
 			 * We couldn't generate an artifact within the number of permitted
 			 * iterations.  Show a warning message.
 			 */
-			msg("Warning!  Couldn't get appropriate power level on artifact.");
 			file_putf(log_file, "Warning!  Couldn't get appropriate power level on artifact.\n");
-			message_flush();
-		}
 	}
 
 	/* Set depth and rarity info according to power */
