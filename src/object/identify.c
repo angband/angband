@@ -170,7 +170,7 @@ bool object_prefix_is_visible(const object_type *o_ptr)
 			object_theme_is_known(o_ptr))
 		return TRUE;
 
-	if (o_ptr->prefix && object_affix_is_known(o_ptr, o_ptr->prefix->eidx))
+	else if (o_ptr->prefix && object_affix_is_known(o_ptr, o_ptr->prefix->eidx))
 		return TRUE;
 
 	return FALSE;
@@ -186,7 +186,7 @@ bool object_suffix_is_visible(const object_type *o_ptr)
 			object_theme_is_known(o_ptr))
 		return TRUE;
 
-	if (o_ptr->suffix && object_affix_is_known(o_ptr, o_ptr->suffix->eidx))
+	else if (o_ptr->suffix && object_affix_is_known(o_ptr, o_ptr->suffix->eidx))
 		return TRUE;
 
 	return FALSE;
@@ -219,8 +219,10 @@ bool object_affix_is_known(const object_type *o_ptr, u16b idx)
 	ego_item_type *affix = &e_info[idx];
 	ego_item_type *theme_affix;
 
-	if (o_ptr->ident & IDENT_KNOWN || o_ptr->ident & IDENT_STORE)
+	if (o_ptr->ident & IDENT_KNOWN || o_ptr->ident & IDENT_STORE) {
+		affix->everseen = TRUE;
 		return TRUE;
+	}
 
 	/* We have to know all the affix's flags and all its pval flags */
 	if (!of_is_subset(o_ptr->known_flags, affix->flags))
@@ -268,6 +270,7 @@ bool object_affix_is_known(const object_type *o_ptr, u16b idx)
 		return FALSE;
 
 	/* So we know everything */
+	affix->everseen = TRUE;
 	return TRUE;
 }
 /**
