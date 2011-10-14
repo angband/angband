@@ -171,6 +171,9 @@ typedef enum
  * (a stack of this many equals a weapon of the same damage output)
  */
 #define INHIBIT_POWER       20000
+#define INHIBIT_BLOWS           3
+#define INHIBIT_MIGHT           4
+#define INHIBIT_SHOTS           3
 #define HIGH_TO_AC             26
 #define VERYHIGH_TO_AC         36
 #define INHIBIT_AC             56
