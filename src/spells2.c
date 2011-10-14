@@ -3042,14 +3042,17 @@ void brand_object(object_type *o_ptr, int brand_type)
 	int i, j;
 	ego_item_type *e_ptr;
 	bool ok = FALSE;
+	bitflag f[OF_SIZE];
+
+	create_mask(f, FALSE, OFT_BRAND, OFT_MAX);
+	of_inter(f, o_ptr->flags);
 
 	/* you can never modify artifacts / themed / maxed ego-items */
-	/* you can never modify cursed / worthless items */
+	/* you can never modify cursed / worthless / branded items */
 	if (o_ptr->kind && !cursed_p(o_ptr->flags) && o_ptr->kind->cost &&
 	    	!o_ptr->artifact && !o_ptr->affix[MAX_AFFIXES - 1] &&
-			!o_ptr->theme && !of_has(o_ptr->flags, brand_type)) {
+			!o_ptr->theme && of_is_empty(f)) {
 		char o_name[80];
-		bitflag f[OF_SIZE];
 		const char *brand[SL_MAX];
 
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
