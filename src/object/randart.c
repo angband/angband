@@ -604,6 +604,10 @@ static void do_pval(artifact_type *a_ptr)
 		a_ptr->pval[DEFAULT_PVAL]++;
 		file_putf(log_file, "Increasing pval by 1, new value is: %d\n", a_ptr->pval[DEFAULT_PVAL]);
 	}
+
+	/* Sanity check for lights */
+	if (a_ptr->tval == TV_LIGHT)
+		a_ptr->pval[DEFAULT_PVAL] = 3;
 }
 
 
@@ -1341,7 +1345,7 @@ static void parse_frequencies(void)
 		if (of_has(a_ptr->flags, OF_LIGHT))
 		{
 			/* Handle permanent light */
-			file_putf(log_file, "Adding 1 for permanent light - general.\n");
+			file_putf(log_file, "Adding 1 for light radius - general.\n");
 
 			(artprobs[ART_IDX_GEN_LIGHT])++;
 		}
@@ -2478,7 +2482,7 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 			break;
 
 		case ART_IDX_GEN_LIGHT:
-			add_flag(a_ptr, OF_LIGHT);
+			add_fixed_pval_flag(a_ptr, OF_LIGHT);
 			break;
 
 		case ART_IDX_GEN_SDIG:
@@ -2978,7 +2982,10 @@ static void scramble_artifact(int a_idx)
 	file_putf(log_file, "Power-based alloc_prob is %d\n", a_ptr->alloc_prob[0]);
 
 	/* Restore some flags */
-	if (a_ptr->tval == TV_LIGHT) of_on(a_ptr->flags, OF_NO_FUEL);
+	if (a_ptr->tval == TV_LIGHT) {
+		of_on(a_ptr->flags, OF_NO_FUEL);
+		of_on(a_ptr->flags, OF_LIGHT);
+	}
 	if (a_idx < ART_MIN_NORMAL) of_on(a_ptr->flags, OF_INSTA_ART);
 
 	/* Success */

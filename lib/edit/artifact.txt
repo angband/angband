@@ -74,6 +74,7 @@ A:400:5 to 100
 P:0:1d1:0:0:0
 F:NO_FUEL |
 F:INSTA_ART
+L:2:LIGHT
 E:ILLUMINATION:10+d10
 M:The {kind} well{s} with clear light...
 D:A small crystal phial containing the light of Eärendil's Star.  
@@ -89,6 +90,7 @@ A:40:30 to 100
 P:0:1d1:0:0:0
 F:SEE_INVIS | NO_FUEL |
 F:INSTA_ART
+L:3:LIGHT
 E:MAPPING:50+d50
 M:The {kind} shine{s} brightly...
 D:The shining Star of the North, a treasured heirloom of Elendil's house.
@@ -102,6 +104,7 @@ A:20:50 to 127
 P:0:1d1:0:0:0
 F:SEE_INVIS | HOLD_LIFE | RES_LIGHT | RES_DARK | NO_FUEL |
 F:INSTA_ART
+L:3:LIGHT
 #E:DETECT_ALL:30+d30
 E:CLAIRVOYANCE:50+d50
 M:The {kind} form{s} an image in your mind...
@@ -174,7 +177,7 @@ F:INSTA_ART |
 E:CLAIRVOYANCE:50+d50
 M:The {kind} glow{s} a deep green...
 L:2:INT | WIS
-L:3:SEARCH | INFRA
+L:3:SEARCH | INFRA | LIGHT
 D:A great globe with a heart of fire, the Palantír provides the wearer with 
 D:sight of far places - at a cost, for those espied upon are aware of it.
 
@@ -342,8 +345,9 @@ P:50:2d4:-4:0:25
 F:FREE_ACT | IM_ELEC | RES_DISEN | 
 F:RES_ACID | RES_FIRE | RES_COLD | 
 F:RES_POIS | RES_LIGHT | RES_DARK | 
-F:LIGHT | SEE_INVIS | AGGRAVATE | 
+F:SEE_INVIS | AGGRAVATE | 
 E:STAR_BALL:50
+L:1:LIGHT
 M:Lightning surrounds your {kind}!
 D:A massive suit of heavy dragon scales deeply saturated with many colors.   
 D:It throbs with angry energies, and you feel the raw elemental might of 
@@ -524,12 +528,12 @@ I:shield:Mithril Shield
 W:70:4:80:65000
 A:125:70 to 127
 P:20:1d3:0:0:20
-F:LIGHT |
 F:RES_ELEC | RES_ACID | RES_DISEN | RES_DARK | 
 F:SUST_WIS | SUST_DEX | SUST_CHR
 E:STARLIGHT2:100
 M:Your {kind} glow{s} with the light of a thousand stars...
 L:5:WIS | CHR
+L:1:LIGHT
 D:The legendary shield of Ereinion Gil-galad, who fought his way to the 
 D:gates of the Dark Tower, and with whom came light even to Gorgoroth.
 
@@ -593,10 +597,11 @@ A:0:100 to 100
 P:0:1d1:0:0:0
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_POIS | 
 F:RES_LIGHT | RES_DARK | RES_CONFU | RES_NEXUS | RES_NETHR | 
-F:LIGHT | SEE_INVIS | TELEPATHY | RES_FEAR | 
+F:SEE_INVIS | TELEPATHY | RES_FEAR | 
 F:LIGHT_CURSE | HEAVY_CURSE | PERMA_CURSE | 
 F:INSTA_ART
 L:125:STR | INT | WIS | DEX | CON | CHR | INFRA
+L:1:LIGHT
 D:Containing much of the power of he who once was mightiest among the Ainur, 
 D:this plain iron crown has mounted upon it the two remaining Silmarils, 
 D:greatest treasures of Middle-Earth.
@@ -658,7 +663,7 @@ A:50:40 to 127
 P:7:1d3:0:0:20
 F:RES_FEAR | 
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | 
-F:LIGHT | SEE_INVIS | TELEPATHY
+F:SEE_INVIS | TELEPATHY
 L:4:STR | CON
 L:2:DEX
 L:-1:STEALTH
@@ -703,11 +708,12 @@ A:30:45 to 127
 P:0:1d1:0:0:15
 F:RES_COLD | RES_FIRE | RES_LIGHT | RES_BLIND | 
 F:RES_CONFU | RES_STUN |
-F:LIGHT | SEE_INVIS | REGEN
+F:SEE_INVIS | REGEN
 E:HEAL1:250
 M:You feel a warm tingling inside...
 L:3:STR | CON
 L:2:WIS
+L:1:LIGHT
 D:From dying Númenor, Elendil brought this shining winged circlet, emblem 
 D:of Gondor through an age of the world.
 
@@ -720,10 +726,11 @@ P:0:1d1:0:0:18
 # F: DRAIN_MANA
 F:SEE_INVIS | FREE_ACT |  
 F:RES_SHARD | RES_STUN | RES_COLD | 
-F:RES_LIGHT | RES_DARK | RES_BLIND | LIGHT
+F:RES_LIGHT | RES_DARK | RES_BLIND
 # A:ANALYZE:50
 L:3:INT | CHR | SEARCH
 L:2:DEX
+L:1:LIGHT
 D:A massive golden crown, set with wondrous jewels of thought and warding, 
 D:once worn by the kings of ancient Númenor.
 
@@ -854,7 +861,8 @@ I:gloves:Set of Leather Gloves
 W:10:3:5:30000
 A:180:10 to 80
 P:1:0d0:5:5:10
-F:FREE_ACT | RES_LIGHT | SUST_CON | LIGHT
+F:FREE_ACT | RES_LIGHT | SUST_CON
+L:1:LIGHT
 E:MISSILE:2
 M:{name} glows very brightly...
 D:These gloves glow so brightly as to light the way for the wearer and cast 
@@ -888,7 +896,8 @@ I:gloves:Set of Gauntlets
 W:1:4:25:11000
 A:230:10 to 75
 P:3:1d1:0:0:14
-F:RES_ELEC | LIGHT | RES_LIGHT
+F:RES_ELEC | RES_LIGHT
+L:1:LIGHT
 E:ELEC_BOLT:6+d6
 M:Your {kind} {is} covered in sparks...
 D:A set of handgear with sparks that crackle across its knuckleguards.
@@ -1112,10 +1121,10 @@ I:sword:Broad Sword
 W:20:20:150:40000
 A:50:20 to 80
 P:0:2d5:10:15:0
-F:BLESSED | LIGHT | 
+F:BLESSED | 
 F:SLAY_EVIL | BRAND_FIRE | SLAY_ORC | SLAY_DEMON | RES_FIRE | RES_LIGHT | 
 F:SLOW_DIGEST | SHOW_MODS
-L:1:SEARCH
+L:1:SEARCH | LIGHT
 D:This fiery, shining blade, mate to Orcrist, earned its sobriquet "Beater" 
 D:from dying orcs who dared to behold hidden Gondolin.
 
@@ -1125,10 +1134,10 @@ I:sword:Broad Sword
 W:20:30:150:45000
 A:30:20 to 100
 P:0:2d5:12:16:0
-F:BLESSED | LIGHT | 
+F:BLESSED | 
 F:SLAY_ORC | SLAY_TROLL | SLAY_GIANT | BRAND_ELEC | RES_ELEC | RES_BLIND | 
 F:SLOW_DIGEST | SHOW_MODS
-L:1:SEARCH
+L:1:SEARCH | LIGHT
 D:Like unto Orcrist and Glamdring, and like them long lost, this sword is 
 D:continually covered in tiny arcs of captive lightning that flash and dance 
 D:eerily in the globes of light they create.
@@ -1139,10 +1148,11 @@ I:sword:Broad Sword
 W:20:20:150:40000
 A:50:20 to 80
 P:0:2d5:10:15:0
-F:BLESSED | LIGHT | 
+F:BLESSED |  
 F:SLAY_EVIL | BRAND_COLD | SLAY_ORC | SLAY_DRAGON | RES_COLD | RES_DARK | 
 F:SLOW_DIGEST | SHOW_MODS
 L:3:SEARCH
+L:1:LIGHT
 D:This coldly gleaming blade, mate to Glamdring, is called simply "Biter" 
 D:by orcs who came to know its power all too well.
 
@@ -1238,11 +1248,12 @@ A:6:20 to 127
 P:0:4d5:22:25:0
 F:RES_FEAR | BLESSED |
 F:SLAY_EVIL | BRAND_COLD | SLAY_UNDEAD | KILL_DEMON | SLAY_TROLL | 
-F:FREE_ACT | RES_COLD | RES_LIGHT | LIGHT | SEE_INVIS | SLOW_DIGEST | REGEN | 
+F:FREE_ACT | RES_COLD | RES_LIGHT | SEE_INVIS | SLOW_DIGEST | REGEN | 
 F:SHOW_MODS
 E:COLD_BALL100:40
 M:{name} glows an intense blue...
 L:10:SPEED
+L:1:LIGHT
 D:The weapon of Fingolfin, High King of the Noldor; it shines like a column 
 D:of ice lit by light unquenchable.  Morgoth came but unwillingly to meet it 
 D:of old; his lame foot will remind him of its might should he face it again.
@@ -1272,10 +1283,10 @@ A:30:20 to 127
 P:0:2d5:10:12:0
 F:AGGRAVATE | 
 F:SLAY_EVIL | BRAND_POIS | SLAY_DEMON | FREE_ACT | RES_ELEC | 
-F:RES_LIGHT | RES_DARK | LIGHT | SEE_INVIS | SHOW_MODS
+F:RES_LIGHT | RES_DARK | SEE_INVIS | SHOW_MODS
 L:3:SPEED
 L:2:STR | CON
-L:1:BLOWS
+L:1:BLOWS | LIGHT
 D:Forged of meteoric iron by Eöl the Dark Elf, and as deadly as any 
 D:other blade he forged.
 
@@ -1296,7 +1307,8 @@ I:sword:Rapier
 W:1:3:40:15000
 A:380:5 to 50
 P:0:1d6:12:19:0
-F:SLAY_ANIMAL | BRAND_COLD | RES_COLD | RES_LIGHT | LIGHT | SHOW_MODS
+F:SLAY_ANIMAL | BRAND_COLD | RES_COLD | RES_LIGHT | SHOW_MODS
+L:1:LIGHT
 D:A slender, tapered needle of ice that coldly grips its impaled prey.
 
 
@@ -1320,10 +1332,10 @@ A:60:20 to 100
 P:0:1d7:7:8:0
 F:RES_FEAR | 
 F:SLAY_EVIL | SLAY_UNDEAD | SLAY_ORC | SLAY_ANIMAL | 
-F:FREE_ACT | RES_LIGHT | LIGHT | SEE_INVIS | SHOW_MODS
+F:FREE_ACT | RES_LIGHT | SEE_INVIS | SHOW_MODS
 L:3:SPEED
 L:2:BLOWS
-L:1:STR | DEX | CON
+L:1:STR | DEX | CON | LIGHT
 D:"I will give you a name, and I shall call you Sting."  The perfect size 
 D:for Bilbo, and stamped forever by the courage he found in Mirkwood, this 
 D:sturdy little blade grants the wearer combat prowess and survival 
@@ -1458,10 +1470,11 @@ A:20:15 to 127
 P:0:4d6:15:15:0
 # F:DRAIN_MANA | 
 F:BRAND_FIRE | SLAY_GIANT | SLAY_ANIMAL | RES_FIRE | RES_LIGHT | 
-F:FEATHER | LIGHT | SEE_INVIS | BLESSED | SHOW_MODS
+F:FEATHER | SEE_INVIS | BLESSED | SHOW_MODS
 E:STONE_TO_MUD:5
 M:Your {kind} pulsate{s}...
 L:4:INT | SPEED | INFRA
+L:1:LIGHT
 D:The thrusting spear of wise Oromë the Vala, strong against giants of 
 D:frost, and able to pierce rock or flesh with ease.
 
@@ -1619,10 +1632,11 @@ W:40:8:180:18000
 A:120:45 to 100
 P:0:5d3:18:12:30
 F:BRAND_COLD | BRAND_FIRE | FREE_ACT | RES_FIRE | RES_COLD | 
-F:RES_LIGHT | LIGHT | SEE_INVIS | SHOW_MODS
+F:RES_LIGHT | SEE_INVIS | SHOW_MODS
 E:RECALL:200
 M:{name} pulses a soft white.
 L:3:DEX | CHR | SPEED
+L:1:LIGHT
 D:Holding elemental powers whose struggles turn this weapon red and purest 
 D:white, this shining reaper bears within it a power of going forth and 
 D:returning.
@@ -1635,11 +1649,12 @@ A:70:20 to 100
 P:0:3d6:12:15:0
 # F:DRAIN_MANA | 
 F:KILL_DEMON | 
-F:BRAND_ACID | RES_ACID | RES_DARK | RES_FIRE | LIGHT | 
+F:BRAND_ACID | RES_ACID | RES_DARK | RES_FIRE |
 F:SLAY_DRAGON | SLAY_TROLL | SHOW_MODS
 E:BERSERKER:80+d80
 M:{name} glows in anger!
 L:2:STR | CON
+L:1:LIGHT
 D:Wielded by Húrin Thalion, last lord of Dor-Lómin at the Battle 
 D:of Tears Unnumbered.  He stood alone, his friends and kinsmen 
 D:dead about him, his axe smoking in the black blood of Gothmog's 
@@ -1763,10 +1778,11 @@ I:hafted:Quarterstaff
 W:20:18:150:20000
 A:50:20 to 100
 P:0:1d9:13:15:0
-F:SLAY_EVIL | RES_LIGHT | LIGHT | SEE_INVIS | SHOW_MODS
+F:SLAY_EVIL | RES_LIGHT | SEE_INVIS | SHOW_MODS
 E:IDENTIFY:10
 M:Your {kind} glow{s} yellow...
 L:4:INT | WIS
+L:1:LIGHT
 D:The radiant golden staff of an Istar of legend; this wizard's companion 
 D:grants keen sight and clear knowledge of many hidden things.
 
@@ -1813,11 +1829,12 @@ W:20:15:120:30000
 A:70:20 to 100
 P:0:2d5:10:11:8
 F:BLESSED |
-F:BRAND_COLD | SLAY_ORC | IM_COLD | RES_LIGHT | LIGHT | REGEN | 
+F:BRAND_COLD | SLAY_ORC | IM_COLD | RES_LIGHT | REGEN | 
 F:SHOW_MODS
 E:DRAIN_LIFE1:40
 M:{name} glows white...
 L:4:WIS | INFRA
+L:1:LIGHT
 D:Once wielded by the High Priest of Meneltarma, this great mace gleams coldly 
 D:as though moonlit, and can strike equally mighty spiritual and physical 
 D:blows.
@@ -1830,13 +1847,14 @@ A:40:60 to 127
 P:0:6d3:13:15:0
 # F:DRAIN_HP | 
 F:LIGHT_CURSE | HEAVY_CURSE | AGGRAVATE |  
-F:BRAND_FIRE | IM_FIRE | RES_ELEC | RES_DARK | LIGHT
+F:BRAND_FIRE | IM_FIRE | RES_ELEC | RES_DARK | 
 F:SLAY_ANIMAL | KILL_DRAGON | SLAY_TROLL | SLAY_GIANT | 
 F:SHOW_MODS
 E:FIRE_BALL:15
 M:The {kind} glow{s} deep red...
 L:3:STR
 L:-3:INT | DEX | WIS
+L:1:LIGHT
 D:A great crackling Balrog's whip of flame, this weapon could bring 
 D:even Ungoliant to heel.
 
@@ -1943,11 +1961,12 @@ I:digger:Pick
 W:55:5:180:30000
 A:200:55 to 100
 P:0:4d3:5:20:0
-F:SUST_STR | LIGHT | 
+F:SUST_STR | 
 F:SLAY_ORC | SLAY_TROLL | SLAY_DEMON | BRAND_ACID | 
 F:RES_CHAOS | RES_LIGHT | RES_DARK
 L:5:TUNNEL
 L:3:STR | CON
+L:1:LIGHT
 D:A fine dwarven pick, good for a miner, and suitable as a weapon 
 D:should the wielder ever tunnel through into a foe's stronghold.
 
@@ -1959,12 +1978,12 @@ I:hafted:Ball-and-Chain
 W:65:100:130:60000
 A:20:65 to 127
 P:0:4d4:13:17:10
-F:LIGHT | 
 F:SLAY_EVIL | SLAY_UNDEAD | 
 F:RES_FIRE | RES_ELEC | RES_NETHR | HOLD_LIFE | 
 E:DISPEL_EVIL:100+d100
 M:The {kind} flood{s} the area with goodness...
 L:4:STR | WIS
+L:1:LIGHT
 D:The weapon of a mighty dwarven priest, whose shade is rumoured to 
 D:haunt the halls of Angband still.
 
