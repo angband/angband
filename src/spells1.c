@@ -1301,11 +1301,11 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Make traps */
 		case GF_MAKE_TRAP:
 		{
-			/* Require a "naked" floor grid */
-			if (!cave_naked_bold(y, x)) break;
+			/* Require an "empty" floor grid */
+			if (!cave_empty_bold(y, x)) break;
 
-			/* Place a trap */
-			place_trap(cave, y, x);
+			/* Create a trap */
+			create_trap(cave, y, x);
 
 			break;
 		}
