@@ -1220,6 +1220,18 @@ static void describe_flavor_text(textblock *tb, const object_type *o_ptr,
 		if (did_desc)
 			textblock_append(tb, "\n\n");
 	}
+
+	/* List the affixes on the item */
+	if (o_ptr->affix[0]) {
+		textblock_append(tb, "This item's properties are: ");
+		for (i = 0; i < MAX_AFFIXES; i++)
+			if (o_ptr->affix[i]) {
+				if (i > 0)
+					textblock_append(tb, ", ");
+				textblock_append(tb, "%s", o_ptr->affix[i]->name);
+			}
+		textblock_append(tb, ".\n\n");
+	}
 }
 
 /**
