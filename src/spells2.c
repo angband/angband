@@ -336,7 +336,7 @@ static void uncurse_object(object_type *o_ptr)
 
 
 /*
- * Removes curses from items in inventory.
+ * Removes curses from a selected item.
  *
  * \param heavy removes heavy curses if true
  *
@@ -344,34 +344,35 @@ static void uncurse_object(object_type *o_ptr)
  */
 static int remove_curse_aux(bool heavy)
 {
-	int i, cnt = 0;
+	int item;
+	const char *q, *s;
 
-	/* Attempt to uncurse items being worn */
-	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
-	{
-		object_type *o_ptr = &p_ptr->inventory[i];
+	object_type *o_ptr;
 
-		if (!o_ptr->kind) continue;
-		if (!cursed_p(o_ptr->flags)) continue;
+	/* Get an item */
+	q = "Uncurse which item? ";
+	s = "You have nothing to uncurse.";
+	if (!get_item(&item, q, s, 0, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return (0);
 
-		/* Heavily cursed items need a special spell */
-		if (of_has(o_ptr->flags, OF_HEAVY_CURSE) && !heavy) continue;
+	o_ptr = object_from_item_idx(item);
 
-		/* Perma-cursed items can never be removed */
-		if (of_has(o_ptr->flags, OF_PERMA_CURSE)) continue;
+	if (!o_ptr->kind) return (0);
+	if (!cursed_p(o_ptr->flags)) return (0);
 
-		/* Uncurse, and update things */
-		uncurse_object(o_ptr);
+	/* Heavily cursed items need a special spell */
+	if (of_has(o_ptr->flags, OF_HEAVY_CURSE) && !heavy) return (0);
 
-		p_ptr->update |= (PU_BONUS);
-		p_ptr->redraw |= (PR_EQUIP);
+	/* Perma-cursed items can never be removed */
+	if (of_has(o_ptr->flags, OF_PERMA_CURSE)) return (0);
 
-		/* Count the uncursings */
-		cnt++;
-	}
+	/* Uncurse, and update things */
+	uncurse_object(o_ptr);
+
+	p_ptr->update |= (PU_BONUS);
+	p_ptr->redraw |= (PR_EQUIP);
 
 	/* Return "something uncursed" */
-	return (cnt);
+	return (1);
 }
 
 
