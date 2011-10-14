@@ -731,44 +731,53 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
 {
 	int step = 0;
 	int maxed[A_MAX] = { 0 };
-	bool pure = FALSE;
+	bool caster = FALSE, warrior = FALSE;
 
-	/* Determine whether the class is "pure" */
-	if (p_ptr->class->spell_stat == 0 || p_ptr->class-> max_attacks < 5)
-	{
-		pure = TRUE;
+	/* Determine whether the class is warrior */
+	if (p_ptr->class->max_attacks > 5) { 
+		warrior = TRUE;
+	}
+	
+	/* Determine whether the class is priest/mage */
+	if (p_ptr->class->max_attacks < 5) {
+		caster = TRUE;
 	}
 
-	while (*points_left && step >= 0)
-	{
-		switch (step)
-		{
+	while (*points_left && step >= 0) {
+	
+		switch (step) {
+		
 			/* Buy base STR 17 */
-			case 0:				
-			{
-				if (!maxed[A_STR] && stats[A_STR] < 17)
-				{
+			case 0: {
+			
+				if (!maxed[A_STR] && stats[A_STR] < 17) {
+				
 					if (!buy_stat(A_STR, stats, points_spent, points_left))
 						maxed[A_STR] = TRUE;
-				}
-				else
-				{
+						
+				} else {
+				
 					step++;
+					
+					/* If pure caster skip to step 3 */
+					if (caster){
+						step = 3;
+					}
 				}
 
 				break;
 			}
 
 			/* Try and buy adj DEX of 18/10 */
-			case 1:
-			{
-				if (!maxed[A_DEX] && p_ptr->state.stat_top[A_DEX] < 18+10)
-				{
+			case 1: {
+							
+				if (!maxed[A_DEX] && p_ptr->state.stat_top[A_DEX] < 18+10){
+				
 					if (!buy_stat(A_DEX, stats, points_spent, points_left))
 						maxed[A_DEX] = TRUE;
-				}
-				else
-				{
+						
+				} else {
+				
 					step++;
 				}
 
@@ -776,10 +785,10 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
 			}
 
 			/* If we can't get 18/10 dex, sell it back. */
-			case 2:
-			{
-				if (p_ptr->state.stat_top[A_DEX] < 18+10)
-				{
+			case 2: {
+			
+				if (p_ptr->state.stat_top[A_DEX] < 18+10){
+				
 					while (stats[A_DEX] > 10)
 						sell_stat(A_DEX, stats, points_spent, points_left);
 
@@ -794,24 +803,28 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
 			 * con, but only up to max base of 16 unless a pure class 
 			 * [mage or priest or warrior]
 			 */
-			case 3:
+			case 3: 
 			{
 				int points_trigger = *points_left / 2;
+				
+				if (warrior) {
+					points_trigger = *points_left;
+				}
 
-				if (p_ptr->class->spell_stat)
-				{
+				if (!warrior) {
+				
 					while (!maxed[p_ptr->class->spell_stat] &&
-						   (pure || stats[p_ptr->class->spell_stat] < 16) &&
-						   points_spent[p_ptr->class->spell_stat] < points_trigger)
-					{						
+						   (caster || stats[p_ptr->class->spell_stat] < 16) &&
+						   points_spent[p_ptr->class->spell_stat] < points_trigger) {
+						   
 						if (!buy_stat(p_ptr->class->spell_stat, stats, points_spent,
-									  points_left))
-						{
+									  points_left)) {
+									  
 							maxed[p_ptr->class->spell_stat] = TRUE;
 						}
 
-						if (points_spent[p_ptr->class->spell_stat] > points_trigger)
-						{
+						if (points_spent[p_ptr->class->spell_stat] > points_trigger) {
+						
 							sell_stat(p_ptr->class->spell_stat, stats, points_spent, 
 									  points_left);
 							maxed[p_ptr->class->spell_stat] = TRUE;
@@ -819,17 +832,18 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
 					}
 				}
 
+				/* Skip CON for casters because DEX is more important early and is handled in 4 */
 				while (!maxed[A_CON] &&
-					   (pure || stats[A_CON] < 16) &&
-					   points_spent[A_CON] < points_trigger)
-				{						
-					if (!buy_stat(A_CON, stats, points_spent,points_left))
-					{
+					   !(caster) && stats[A_CON] < 16 &&
+					   points_spent[A_CON] < points_trigger) {
+					   
+					if (!buy_stat(A_CON, stats, points_spent,points_left)) {
+					
 						maxed[A_CON] = TRUE;
 					}
 					
-					if (points_spent[A_CON] > points_trigger)
-					{
+					if (points_spent[A_CON] > points_trigger) {
+					
 						sell_stat(A_CON, stats, points_spent, points_left);
 						maxed[A_CON] = TRUE;
 					}
@@ -843,28 +857,26 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
 			 * If there are any points left, spend as much as possible in 
 			 * order on DEX, non-spell-stat, CHR. 
 			 */
-			case 4:
-			{				
+			case 4:{
+			
 				int next_stat;
 
-				if (!maxed[A_DEX])
-				{
+				if (!maxed[A_DEX]) {
+				
 					next_stat = A_DEX;
-				}
-				else if (!maxed[A_INT] && p_ptr->class->spell_stat != A_INT)
-				{
+					
+				} else if (!maxed[A_INT] && p_ptr->class->spell_stat != A_INT) {
+				
 					next_stat = A_INT;
-				}
-				else if (!maxed[A_WIS] && p_ptr->class->spell_stat != A_WIS)
-				{
+					
+				} else if (!maxed[A_WIS] && p_ptr->class->spell_stat != A_WIS) {
+				
 					next_stat = A_WIS;
-				}
-				else if (!maxed[A_CHR])
-				{
+				} else if (!maxed[A_CHR]) {
+				
 					next_stat = A_CHR;
-				}
-				else
-				{
+				} else {
+				
 					step++;
 					break;
 				}
@@ -876,8 +888,8 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
 				break;
 			}
 
-			default:
-			{
+			default: {
+			
 				step = -1;
 				break;
 			}
