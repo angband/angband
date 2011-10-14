@@ -27,13 +27,13 @@
 #include "files.h"
 #include "init.h"
 
-/* this is used to draw the various terrain characters */
+/* this is used to draw the various terrain characters 
 static unsigned int graphics_table[32] = {
 	000, '*', '#', '?', '?', '?', '?', '.',
 	'+', '?', '?', '+', '+', '+', '+', '+',
 	'~', '-', '-', '-', '_', '+', '+', '+',
 	'+', '|', '?', '?', '?', '?', '?', '.',
-};
+}; */
 
 /* 
  *Add a bunch of debugger message, to trace where problems are. 

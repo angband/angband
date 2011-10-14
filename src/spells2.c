@@ -3040,7 +3040,7 @@ bool curse_weapon(void)
 void brand_object(object_type *o_ptr, int brand_type)
 {
 	int i, j;
-	ego_item_type *e_ptr;
+	ego_item_type *e_ptr = NULL;
 	bool ok = FALSE;
 	bitflag f[OF_SIZE];
 

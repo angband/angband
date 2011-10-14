@@ -442,7 +442,7 @@ static bool make_artifact(object_type *o_ptr, int level)
 	bool art_ok = TRUE;
 	object_kind *kind;
 	alloc_entry *table;
-	artifact_type *a_ptr;
+	artifact_type *a_ptr = NULL;
 
 	/* Make sure birth no artifacts isn't set */
 	if (OPT(birth_no_artifacts)) art_ok = FALSE;
