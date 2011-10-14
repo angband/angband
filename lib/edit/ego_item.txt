@@ -906,7 +906,7 @@ X:10:0
 W:0:2:0:2000
 A:20:1 to 55
 T:39:0:1
-F:LIGHT
+L:1:1:LIGHT
 
 N:98:(Everburning)
 X:10:0
@@ -1231,7 +1231,7 @@ A:5:40 to 127
 C:0:0:d15
 M:255:0:5
 T:38:0:99
-F:FREE_ACT | 
+F:FREE_ACT
 L:d2:1:STR
 L:d2:1:CON
 L:d2M3:1:INFRA

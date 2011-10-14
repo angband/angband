@@ -1360,7 +1360,6 @@ static void calc_torch(void)
 
 	s16b old_light = p_ptr->cur_light;
 	s16b new_light = 0;
-	int extra_light = 0;
 
 	/* Ascertain lightness if in the town */
 	if (!p_ptr->depth && ((turn % (10L * TOWN_DAWN)) < ((10L * TOWN_DAWN) / 2))) {
@@ -1374,8 +1373,7 @@ static void calc_torch(void)
 	}
 
 	/* Examine all wielded objects, use the brightest */
-	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
-	{
+	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)	{
 		bitflag f[OF_SIZE];
 
 		int amt = 0;
@@ -1387,51 +1385,30 @@ static void calc_torch(void)
 		/* Extract the flags */
 		object_flags(o_ptr, f);
 
+		/* Light radius is now a pval */
+		if (of_has(f, OF_LIGHT))
+			amt = o_ptr->pval[which_pval(o_ptr, OF_LIGHT)];
+
 		/* Cursed objects emit no light */
 		if (of_has(f, OF_LIGHT_CURSE))
 			amt = 0;
 
 		/* Examine actual lights */
-		else if (o_ptr->tval == TV_LIGHT)
-		{
-			int flag_inc = of_has(f, OF_LIGHT) ? 1 : 0;
-
-			if (o_ptr->artifact) {
-				/* Artifact lights provide permanent bright light */
-				amt = 2 + flag_inc;
-			} else {
-				if (o_ptr->timeout == 0) {
-					/* Non-artifact lights without fuel provide no light */
-					amt = 0;
-				} else if (o_ptr->sval == SV_LIGHT_TORCH) {
-					amt = 1 + flag_inc;
-				} else if (o_ptr->sval == SV_LIGHT_LANTERN) {
-					amt = 2 + flag_inc;
-				}
-			}
-		}
-
-		else
-		{
-			/* LIGHT flag on an non-cursed non-lights always increases radius */
-			if (of_has(f, OF_LIGHT)) extra_light++;
-		}
+		if (o_ptr->tval == TV_LIGHT && !of_has(o_ptr->flags, OF_NO_FUEL) &&
+				o_ptr->timeout == 0)
+			/* Lights without fuel provide no light */
+			amt = 0;
 
 		/* Alter p_ptr->cur_light if reasonable */
-		if (new_light < amt)
-		    new_light = amt;
+	    new_light += amt;
 	}
-
-	/* Add bonus from LIGHT flags */
-	new_light += extra_light;
 
 	/* Limit light */
 	new_light = MIN(new_light, 5);
 	new_light = MAX(new_light, 0);
 
 	/* Notice changes in the "light radius" */
-	if (old_light != new_light)
-	{
+	if (old_light != new_light) {
 		/* Update the visuals */
 		p_ptr->cur_light = new_light;
 		p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);

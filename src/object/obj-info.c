@@ -953,24 +953,19 @@ static bool describe_light(textblock *tb, const object_type *o_ptr,
 	bool no_fuel = of_has(flags, OF_NO_FUEL) ? TRUE : FALSE;
 	bool is_light = (o_ptr->tval == TV_LIGHT) ? TRUE : FALSE;
 
-	if (o_ptr->tval != TV_LIGHT && !of_has(flags, OF_LIGHT))
+	if (!is_light && !of_has(flags, OF_LIGHT))
 		return FALSE;
 
 	/* Work out radius */
-	if (artifact && is_light)
-		rad = 3;
-	else if (is_light)
-		rad = 2;
-	if (of_has(flags, OF_LIGHT))
-		rad++;
+	rad = o_ptr->pval[which_pval(o_ptr, OF_LIGHT)];
 
 	/* Describe here */
 	textblock_append(tb, "Radius ");
 	textblock_append_c(tb, TERM_L_GREEN, format("%d", rad));
 	if (no_fuel && !artifact)
 		textblock_append(tb, " light.  No fuel required.");
-	else if (is_light && o_ptr->sval == SV_LIGHT_TORCH)
-		textblock_append(tb, " light, reduced when running out of fuel.");
+/*	else if (is_light && o_ptr->sval == SV_LIGHT_TORCH)
+		textblock_append(tb, " light, reduced when running out of fuel."); */
 	else
 		textblock_append(tb, " light.");
 
