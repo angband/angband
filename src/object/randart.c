@@ -3108,6 +3108,35 @@ static errr scramble(void)
 	return (0);
 }
 
+static void fixup_unused_kinds(void)
+{
+	int k_idx;
+
+	for (k_idx = 0; k_idx < z_info->k_max; k_idx++)
+	{
+		object_kind *k_ptr = &k_info[k_idx];
+		int tval = k_ptr->tval;
+		int sval = k_ptr->sval;
+		int a_idx;
+
+		/* Only interested in special artifact kinds */
+		if (!of_has(k_ptr->flags, OF_INSTA_ART))
+			continue;
+
+		/* Check that some artifact uses this tval/sval combination */
+		for (a_idx = 0; a_idx < z_info->a_max; a_idx++)
+		{
+			if (a_info[a_idx].tval == tval &&
+				a_info[a_idx].sval == sval)
+				break;
+		}
+		if (a_idx == z_info->a_max)
+		{
+			/* Zero out the kind as it's not used */
+			memset(k_ptr, 0, sizeof(*k_ptr));
+		}
+	}
+}
 
 static errr do_randart_aux(bool full)
 {
@@ -3205,6 +3234,9 @@ errr do_randart(u32b randart_seed, bool full)
 
 	/* When done, resume use of the Angband "complex" RNG. */
 	Rand_quick = FALSE;
+
+	/* Remove unused INSTA_ART kinds from the k_info array */
+	fixup_unused_kinds();
 
 	return (err);
 }
