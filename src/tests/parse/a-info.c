@@ -98,9 +98,9 @@ int test_a2(void *state) {
 	eq(r, PARSE_ERROR_NONE);
 	a = parser_priv(state);
 	require(a);
-	eq(a->alloc_prob, 3);
-	eq(a->alloc_min, 5);
-	eq(a->alloc_max, 10);
+	eq(a->alloc_prob[0], 3);
+	eq(a->alloc_min[0], 5);
+	eq(a->alloc_max[0], 10);
 	ok;
 }
 
