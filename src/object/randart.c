@@ -1,4 +1,3 @@
-
 /*
  * File: randart.c
  * Purpose: Random artifact generation
@@ -604,10 +603,6 @@ static void do_pval(artifact_type *a_ptr)
 		a_ptr->pval[DEFAULT_PVAL]++;
 		file_putf(log_file, "Increasing pval by 1, new value is: %d\n", a_ptr->pval[DEFAULT_PVAL]);
 	}
-
-	/* Sanity check for lights */
-	if (a_ptr->tval == TV_LIGHT)
-		a_ptr->pval[DEFAULT_PVAL] = 3;
 }
 
 
@@ -2481,8 +2476,14 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 			add_immunity(a_ptr);
 			break;
 
-		case ART_IDX_GEN_LIGHT:
-			add_fixed_pval_flag(a_ptr, OF_LIGHT);
+		case ART_IDX_GEN_LIGHT: {
+				if (!of_is_empty(a_ptr->pval_flags[DEFAULT_PVAL])) {
+					of_on(a_ptr->flags, OF_LIGHT);
+					of_on(a_ptr->pval_flags[DEFAULT_PVAL + 1], OF_LIGHT);
+					a_ptr->pval[DEFAULT_PVAL + 1] = 1;
+				} else
+					break;
+			}
 			break;
 
 		case ART_IDX_GEN_SDIG:
@@ -2985,6 +2986,12 @@ static void scramble_artifact(int a_idx)
 	if (a_ptr->tval == TV_LIGHT) {
 		of_on(a_ptr->flags, OF_NO_FUEL);
 		of_on(a_ptr->flags, OF_LIGHT);
+		if (of_has(a_ptr->pval_flags[DEFAULT_PVAL + 1], OF_LIGHT))
+			a_ptr->pval[DEFAULT_PVAL + 1] = 2 + randint0(3);
+		else {
+			of_on(a_ptr->pval_flags[DEFAULT_PVAL], OF_LIGHT);
+			a_ptr->pval[DEFAULT_PVAL] = 2 + randint0(3);
+		}
 	}
 	if (a_idx < ART_MIN_NORMAL) of_on(a_ptr->flags, OF_INSTA_ART);
 

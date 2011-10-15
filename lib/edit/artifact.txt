@@ -151,10 +151,11 @@ N:6:of the Dwarves
 I:amulet:52
 W:50:50:3:75000
 A:20:50 to 127
-F:SEE_INVIS | FREE_ACT | REGEN | LIGHT | RES_FEAR | 
+F:SEE_INVIS | FREE_ACT | REGEN | RES_FEAR | 
 F:INSTA_ART
 L:3:STR | CON
-L:5:INFRA 
+L:5:INFRA
+L:1:LIGHT
 D:The Nauglamír, a carcanet of gold set with a multitude of shining 
 D:gems of Valinor.  The radiant Silmaril of Fëanor hangs in its midst 
 D:as its crowning glory.  The sturdy spirits of Dwarvish craftsmen who 
