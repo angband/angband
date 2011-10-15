@@ -2074,7 +2074,7 @@ D: the main host.
 N:139:of Amandil
 I:amulet:55
 W:65:30:3:90000
-A:3:60 to 127
+A:30:60 to 127
 F:INSTA_ART
 F:RES_ELEC | RES_COLD | 
 F:RES_FEAR | RES_BLIND | RES_STUN | RES_CONFU
@@ -2083,3 +2083,18 @@ L:2:SPEED
 D:The pendant of Amandil, the last Lord of Andúnië, and mighty
 D: ship-captain of Númenor. First among Númenóreans to see
 D: Sauron for what he was.
+
+
+N:140:of The Sun
+I:shield:Large Metal Shield
+W:40:9:120:160000 
+A:80:40 to 100
+P:12:1d3:0:0:20 
+F:RES_FIRE | RES_FEAR | FREE_ACT
+L:3:LIGHT | SPEED
+E:SUN_HERO:300+4d50
+M:The {kind} shine{s} bright... 
+D:The large shield of Theoden, King of Rohan, who could not be overtaken 
+D: riding into battle. Fey he seemed, or the battle-fury of his fathers 
+D: ran like new fire in his veins. His golden shield was uncovered, and 
+D: lo! it shone like an image of the sun. 
