@@ -2494,6 +2494,7 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 					of_on(a_ptr->flags, OF_LIGHT);
 					of_on(a_ptr->pval_flags[DEFAULT_PVAL + 1], OF_LIGHT);
 					a_ptr->pval[DEFAULT_PVAL + 1] = 1;
+					recalc_num_pvals(a_ptr);
 				} else
 					break;
 			}
