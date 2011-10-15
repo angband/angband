@@ -677,6 +677,7 @@ object_kind *lookup_kind(int tval, int sval);
 int lookup_name(int tval, const char *name);
 int lookup_artifact_name(const char *name);
 int lookup_sval(int tval, const char *name);
+byte add_kind(int tval, const char *name);
 void fixup_artifact_kinds(void);
 int tval_find_idx(const char *name);
 const char *tval_find_name(int tval);

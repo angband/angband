@@ -63,6 +63,7 @@
 #define TV_GOLD         100	/* Gold can only be picked up by players */
 #define TV_MAX			101
 
+#define SV_DYNAMIC 50
 
 /* The "sval" codes for TV_SHOT/TV_ARROW/TV_BOLT */
 #define SV_AMMO_LIGHT		0	/* pebbles */
@@ -80,10 +81,6 @@
 /* The sval codes for TV_LIGHT */
 #define SV_LIGHT_TORCH		0
 #define SV_LIGHT_LANTERN	1
-#define SV_LIGHT_GALADRIEL	4
-#define SV_LIGHT_ELENDIL	5
-#define SV_LIGHT_THRAIN		6
-#define SV_LIGHT_PALANTIR	7
 
 /* Hacky defines */
 #define SV_SCROLL_PHASE_DOOR			1
@@ -267,11 +264,6 @@ enum sval_amulet /* tval 40 */
 	SV_AMULET_SLOW_DIGESTION = 19,
 	SV_AMULET_ADORNMENT = 20,
 	SV_AMULET_INERTIA = 21,
-	SV_AMULET_CARLAMMAS = 50,
-	SV_AMULET_INGWE = 51,
-	SV_AMULET_DWARVES = 52,
-	SV_AMULET_ELESSAR = 53,
-	SV_AMULET_EVENSTAR = 54
 };
 
 enum sval_ring /* tval 45 */
@@ -310,13 +302,8 @@ enum sval_ring /* tval 45 */
 	SV_RING_SEE_INVISIBLE = 37,
 	SV_RING_DELVING = 38,
 
-	/* Artifact rings */
-	SV_RING_BARAHIR = 50,
-	SV_RING_TULKAS = 51,
-	SV_RING_NARYA = 52,
-	SV_RING_NENYA = 53,
-	SV_RING_VILYA = 54,
-	SV_RING_POWER = 55
+	/* Have to fix The One Ring, so it gets the right flavour */
+	SV_RING_POWER = 49,
 };
 
 enum sval_food /* tval 80 */

@@ -3632,37 +3632,90 @@ int lookup_sval(int tval, const char *name)
 	return -1;
 }
 
+byte add_kind(int tval, const char *name)
+{
+	object_kind *new_kind;
+	char decorated_name[1024];
+	static byte dynamic_sval = SV_DYNAMIC;
+
+	/* Make the k_info array one bigger and blank the new entry */
+	k_info = (object_kind *)mem_realloc(k_info, (z_info->k_max + 1) * sizeof(object_kind));
+	new_kind = &k_info[z_info->k_max];
+	memset(new_kind, 0, sizeof(object_kind));
+
+	/* Fill in the new entry, generating the name from what's passed in, or the base
+	 * item type if nothing is passed in.
+	 * The sval is generated from an increasing counter, and returned.
+	 */
+	new_kind->kidx = z_info->k_max;
+	new_kind->tval = tval;
+	new_kind->base = &kb_info[tval];
+	/* Add the required article position and pluralisation to the base name */
+	if (name) {
+		snprintf(decorated_name, 1024, "& %s~", name);
+	} else {
+		snprintf(decorated_name, 1024, "& %s", new_kind->base->name);
+	}
+	new_kind->name = string_make(decorated_name);
+	/* Need to set a new sval */
+	new_kind->sval = dynamic_sval;
+	dynamic_sval++;
+
+	of_on(new_kind->flags, OF_INSTA_ART);
+
+	z_info->k_max += 1;
+
+	return new_kind->sval;
+}
+
 /**
- * Remove kinds that only apply to artifacts, and there is no artifact that
- * uses the kind.
+ * Apply corrections to kinds that only apply to artifacts:
+ *   Remove unused kinds
+ *   Pick up correct level, weight and cost
+ *   Allocate gylph and attribute if necessary
  */
 void fixup_artifact_kinds(void)
 {
 	int k_idx;
 
-	for (k_idx = 0; k_idx < z_info->k_max; k_idx++)
-	{
+	for (k_idx = 0; k_idx < z_info->k_max; k_idx++) {
 		object_kind *k_ptr = &k_info[k_idx];
 		int tval = k_ptr->tval;
 		int sval = k_ptr->sval;
 		int a_idx;
 
 		/* Only interested in special artifact kinds */
+		/* This might be able to be replaced with if(alloc_prob == 0) */
 		if (!of_has(k_ptr->flags, OF_INSTA_ART))
 			continue;
 
 		/* Check that some artifact uses this tval/sval combination */
-		for (a_idx = 0; a_idx < z_info->a_max; a_idx++)
-		{
+		for (a_idx = 0; a_idx < z_info->a_max; a_idx++) {
 			if (a_info[a_idx].tval == tval &&
 				a_info[a_idx].sval == sval)
 				break;
 		}
+
 		if (a_idx == z_info->a_max)
 		{
 			/* Zero out the kind as it's not used */
 			memset(k_ptr, 0, sizeof(*k_ptr));
+		} else {
+			/* It is used, do some minor fixups */
+			struct artifact *a_ptr = &a_info[a_idx];
+
+			k_ptr->level = a_ptr->level;
+			k_ptr->weight = a_ptr->weight;
+			k_ptr->cost = a_ptr->cost;
+
+			if (k_ptr->tval == TV_LIGHT) {
+				/* Hack: lights need display char assigning, as they don't
+				 * have flavours - set to yellow tilde */
+				k_ptr->d_char = L'~';
+				k_ptr->d_attr = color_char_to_attr('y');
+			}
 		}
+
 	}
 }
 

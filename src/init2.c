@@ -697,6 +697,7 @@ static enum parser_error parse_a_n(struct parser *p) {
 static enum parser_error parse_a_i(struct parser *p) {
 	struct artifact *a = parser_priv(p);
 	int tval, sval;
+	const char *sval_name;
 
 	assert(a);
 
@@ -705,7 +706,18 @@ static enum parser_error parse_a_i(struct parser *p) {
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
 	a->tval = tval;
 
-	sval = lookup_sval(a->tval, parser_getsym(p, "sval"));
+	if (!parser_hasval(p, "sval")) {
+		sval_name = NULL;
+		sval = -1;
+	} else {
+		sval_name = parser_getsym(p, "sval");
+		sval = lookup_sval(a->tval, sval_name);
+	}
+
+	/* If we have an undefined sval, add a new kind dynamically
+	 * A NULL name will pick up the name from the base object */
+	if (sval < 0)
+		sval = add_kind(a->tval, sval_name);
 	if (sval < 0)
 		return PARSE_ERROR_UNRECOGNISED_SVAL;
 	a->sval = sval;
@@ -846,7 +858,7 @@ struct parser *init_parse_a(void) {
 	parser_setpriv(p, NULL);
 	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "N int index str name", parse_a_n);
-	parser_reg(p, "I sym tval sym sval", parse_a_i);
+	parser_reg(p, "I sym tval ?sym sval", parse_a_i);
 	parser_reg(p, "W int level int rarity int weight int cost", parse_a_w);
 	parser_reg(p, "A int common str minmax", parse_a_a);
 	parser_reg(p, "P int ac rand hd int to-h int to-d int to-a", parse_a_p);
