@@ -313,7 +313,7 @@ I:23:1
 W:0:0:12:30
 A:20:0 to 100
 P:0:1d4:0:0:0
-D:A short two-edged blade perfect for thrusting.
+D:A short two-edged blade, perfect for thrusting.
 
 N:31:& Main Gauche~
 G:|:W
@@ -321,6 +321,7 @@ I:23:2
 W:3:0:30:45
 A:20:3 to 100
 P:0:1d5:0:0:0
+D:A parrying-dagger for the left hand.
 
 N:32:& Rapier~
 G:|:W
@@ -328,6 +329,7 @@ I:23:3
 W:5:0:40:70
 A:20:5 to 100
 P:0:1d6:0:0:0
+D:A slender sword, perfect for thrusting.
 
 N:33:& Short Sword~
 G:|:W
@@ -335,6 +337,7 @@ I:23:4
 W:5:0:80:90
 A:20:5 to 100
 P:0:1d7:0:0:0
+D:A two-edged blade of intermediate length.
 
 N:34:& Cutlass~
 G:|:W
@@ -351,7 +354,7 @@ I:23:6
 W:5:0:100:170
 A:20:5 to 100
 P:0:2d4:0:0:0
-D:A wider-bladed cousin of the shamshir, with less of a curve.
+D:A wider-bladed cousin of the scimitar, with less of a curve.
 
 N:36:& Scimitar~
 G:|:W
@@ -361,13 +364,13 @@ A:20:10 to 100
 P:0:4d2:0:0:0
 D:A long sword with an extreme curve to the blade.
 
-
 N:37:& Long Sword~
 G:|:W
 I:23:8
 W:10:0:130:300
 A:20:10 to 100
 P:0:2d5:0:0:0
+D:A thin-bladed sword used for thrusting and slashing.
 
 N:38:& Broad Sword~
 G:|:W
@@ -375,6 +378,7 @@ I:23:9
 W:10:0:150:300
 A:20:10 to 100
 P:0:2d5:0:0:0
+D: A two-edged sword with a basket hilt.
 
 
 N:39:& Bastard Sword~
@@ -383,6 +387,7 @@ I:23:10
 W:15:0:140:400
 A:20:15 to 100
 P:0:3d4:0:0:0
+D: A two-edged sword, wielded with one hand or two.
 
 N:40:& Katana~
 G:|:W
@@ -390,6 +395,7 @@ I:23:11
 W:20:0:120:600
 A:20:20 to 100
 P:0:3d5:0:0:0
+D: A long, slightly curved sword with one sharp edge.
 
 N:41:& Zweihander~
 G:|:W
@@ -397,7 +403,7 @@ I:23:12
 W:30:0:200:700
 A:20:30 to 100
 P:0:3d6:0:0:0
-D:A sword requring two hands to wield.
+D:A sword requiring two hands to wield for all but the exceptionally strong.
 
 N:42:& Executioner's Sword~
 G:|:r
@@ -405,6 +411,7 @@ I:23:13
 W:40:0:260:850
 A:20:40 to 100
 P:0:4d5:0:0:0
+D:A very heavy, two-handed sword with no point.
 
 N:43:& Blade~ of Chaos
 G:|:v
@@ -424,6 +431,8 @@ I:21:1
 W:3:0:30:30
 A:20:3 to 100
 P:0:1d3:0:0:0
+D:A long flexible leather line.  
+D:It's loud, cracking sound is more likely to intimidate than wound.
 
 N:51:& Ball-and-Chain~
 G:\:D
@@ -431,6 +440,7 @@ I:21:2
 W:20:0:150:200
 A:20:20 to 100
 P:0:2d4:0:0:0
+D:A heavy spiked ball attached to chain.
 
 N:52:& Morning Star~
 G:\:D
@@ -438,6 +448,7 @@ I:21:3
 W:10:0:150:396
 A:20:10 to 100
 P:0:2d6:0:0:0
+D:A mace with a spiked end.
 
 N:53:& Flail~
 G:\:D
@@ -445,6 +456,7 @@ I:21:4
 W:10:0:150:353
 A:20:10 to 100
 P:0:2d6:0:0:0
+D:Several spiked balls attached to chains and used as a scourge.
 
 N:54:& Two-Handed Great Flail~
 G:\:y
@@ -452,7 +464,7 @@ I:21:5
 W:45:0:280:590
 A:20:45 to 100
 P:0:3d6:0:0:0
-
+D:A flail requiring two hands for all but the exceptionally strong.
 
 ### Clubs ###
 
@@ -462,6 +474,7 @@ I:21:10
 W:5:0:120:130
 A:20:5 to 100
 P:0:2d4:0:0:0
+D:A heavy metal ball at the end of a stout wooden club.
 
 N:56:& Lead-Filled Mace~
 G:\:D
@@ -476,6 +489,7 @@ I:21:12
 W:10:0:150:200
 A:20:10 to 100
 P:0:1d9:0:0:0
+D: A long, solid staff, wielded with two hands.
 
 N:58:& War Hammer~
 G:\:D
@@ -483,6 +497,7 @@ I:21:13
 W:5:0:120:225
 A:20:5 to 100
 P:0:3d3:0:0:0
+D:A hammer on a long pole, with a small spike on the back end.
 
 N:59:& Maul~
 G:\:D
@@ -490,6 +505,7 @@ I:21:14
 W:5:0:200:130
 A:20:5 to 100
 P:0:4d4:0:0:0
+D:A heavy war hammer with a larger head.
 
 N:60:& Great Hammer~
 G:\:D
@@ -497,7 +513,8 @@ I:21:15
 W:5:0:180:500
 A:20:20 to 100
 P:0:8d1:0:0:0
-
+D:A large hammer requiring two hands to wield for all
+D:but the exceptionally strong.
 
 N:61:& Mace~ of Disruption
 G:\:v
@@ -509,7 +526,6 @@ F:SLAY_UNDEAD | GOOD
 
 
 
-
 ### Spears ###
 
 N:65:& Spear~
@@ -518,6 +534,8 @@ I:22:1
 W:5:0:50:36
 A:20:5 to 100
 P:0:1d6:0:0:0
+D:The most ancient weapon known.
+D:A long stick with a sharpened point. 
 
 N:66:& Awl-Pike~
 G:/:s
@@ -525,6 +543,7 @@ I:22:2
 W:10:0:160:340
 A:20:10 to 100
 P:0:1d8:0:0:0
+D:A body-length spear used for thrusting.
 
 N:67:& Trident~
 G:/:y
@@ -532,6 +551,7 @@ I:22:3
 W:5:0:70:120
 A:20:5 to 100
 P:0:1d10:0:0:0
+D:A three-pointed spear that is a symbol of sea-dwellers.
 
 N:68:& Halberd~
 G:/:s
@@ -539,6 +559,7 @@ I:22:4
 W:25:0:190:430
 A:20:25 to 100
 P:0:3d5:0:0:0
+D:A cross between a spear and an axe.
 
 N:69:& Pike~
 G:/:s
@@ -546,7 +567,7 @@ I:22:5
 W:15:0:160:358
 A:20:15 to 100
 P:0:2d5:0:0:0
-
+D:A very long spear often used against mounted opponents.
 
 ### Axes ###
 
@@ -556,6 +577,7 @@ I:22:10
 W:15:0:180:408
 A:20:15 to 100
 P:0:2d6:0:0:0
+D:A small, thin axe attached to a long pole.
 
 N:71:& Broad Axe~
 G:/:s
@@ -563,6 +585,7 @@ I:22:11
 W:15:0:160:304
 A:20:15 to 100
 P:0:2d6:0:0:0
+D:A chopping weapon used for limbs of either animals or trees.
 
 N:72:& Battle Axe~
 G:/:s
@@ -570,6 +593,7 @@ I:22:12
 W:15:0:170:334
 A:20:15 to 100
 P:0:2d8:0:0:0
+D:An axe favored by the Dwarves of the north.
 
 N:73:& Lochaber Axe~
 G:/:D
@@ -577,6 +601,7 @@ I:22:13
 W:45:0:250:750
 A:20:45 to 100
 P:0:3d8:0:0:0
+D:A halberd with an extra long pole.
 
 N:74:& Great Axe~
 G:/:s
@@ -584,7 +609,7 @@ I:22:14
 W:40:0:230:500
 A:20:40 to 100
 P:0:4d4:0:0:0
-
+D:A powerful axe, wielded with both hands.
 
 ### Other misc polearms ###
 
@@ -594,6 +619,8 @@ I:22:20
 W:45:0:250:800
 A:20:45 to 100
 P:0:5d3:0:0:0
+D:A chopping weapon that is often used in farms and
+D:is a symbol of death.
 
 N:76:& Glaive~
 G:/:s
@@ -601,6 +628,7 @@ I:22:21
 W:20:0:190:363
 A:20:20 to 100
 P:0:2d6:0:0:0
+D:A long single blade attached to a pole.
 
 N:77:& Lance~
 G:/:s
@@ -608,6 +636,7 @@ I:22:22
 W:10:0:300:230
 A:20:10 to 100
 P:0:2d8:0:0:0
+D:A heavy, sharpened polearm used by mounted warriors.
 
 N:78:& Scythe~ of Slicing
 G:/:r
@@ -623,7 +652,7 @@ I:22:24
 W:10:0:120:376
 A:20:10 to 100
 P:0:2d5:0:0:0
-
+D:A war hammer with a very long spike.
 
 
 ##### Bows, Crossbows, Slings #####
@@ -633,31 +662,35 @@ G:}:u
 I:19:2
 W:1:0:5:5
 A:20:1 to 100
+D:A strap of leather used to fling shots and debris.
 
 N:91:& Short Bow~
 G:}:U
 I:19:12
 W:3:0:30:50
 A:20:3 to 100
+D:A bow, used to fire arrows at close range.
 
 N:92:& Long Bow~
 G:}:U
 I:19:13
 W:10:0:40:120
 A:20:10 to 100
+D:A hunting weapon, used to fire arrows from afar.
 
 N:93:& Light Crossbow~
 G:}:s
 I:19:23
 W:15:0:110:140
 A:20:15 to 100
+D:A small mechanical bow, used to fire bolts.
 
 N:94:& Heavy Crossbow~
 G:}:s
 I:19:24
 W:30:0:200:300
 A:20:30 to 100
-
+D:A large mechanical bow, used to fire bolts with great range and deadly power.
 
 ##### Missiles #####
 
@@ -668,7 +701,7 @@ W:3:0:2:1
 M:100:7d7
 A:30:3 to 100
 P:0:1d4:0:0:0
-D:It can be shot with a bow.
+D:A small sharpened projectile with feathers to help it fly straight.
 
 N:101:& Seeker Arrow~
 G:{:G
@@ -678,7 +711,7 @@ A:25:55 to 100
 M:100:7d7
 P:0:4d4:0:0:0
 F:GOOD
-D:It can be shot with a bow.
+D:A long slender arrow that can pierce through any material.
 
 N:102:& Mithril Arrow~
 G:{:B
@@ -688,7 +721,7 @@ M:100:7d7
 A:20:50 to 100
 P:0:3d4:0:0:0
 F:IGNORE_ACID | IGNORE_FIRE | GOOD
-D:It can be shot with a bow.
+D:A dwarven arrow of the most durable metal.
 
 
 N:105:& Bolt~
@@ -697,8 +730,9 @@ I:18:1
 W:3:0:3:2
 M:100:5d7
 A:30:3 to 100
+D:A short 
 P:0:1d5:0:0:0
-D:It can be shot with a crossbow.
+D:A short projectile, heavier than an arrow.
 
 N:106:& Seeker Bolt~
 G:{:g
@@ -708,7 +742,7 @@ M:100:5d7
 A:25:65 to 100
 P:0:4d5:0:0:0
 F:GOOD
-D:It can be shot with a crossbow.
+D:A bolt that is designed to pierce through any material.
 
 N:107:& Mithril Bolt~
 G:{:B
@@ -718,8 +752,7 @@ M:100:5d7
 A:20:60 to 100
 P:0:3d5:0:0:0
 F:IGNORE_ACID | GOOD
-D:It can be shot with a crossbow.
-
+D:A dwarven bolt of the most durable metal.
 
 N:110:& Rounded Pebble~
 G:{:s
@@ -728,6 +761,7 @@ W:0:0:4:1
 M:100:5d7
 A:30:0 to 100
 P:0:1d2:0:0:0
+D:A smooth stone that flies straight.
 D:It can be shot with a sling.
 
 N:111:& Iron Shot~
@@ -737,6 +771,7 @@ W:3:0:5:2
 M:100:5d7
 A:25:3 to 100
 P:0:1d4:0:0:0
+D:A heavy iron ball.
 D:It can be shot with a sling.
 
 N:112:& Mithril Shot~
@@ -747,8 +782,8 @@ M:100:5d7
 A:20:40 to 100
 P:0:2d4:5:5:0
 F:IGNORE_ACID | GOOD
+D:A heavy mithril ball.
 D:It can be shot with a sling.
-
 
 ##### Digging Tools #####
 
@@ -759,6 +794,7 @@ W:1:0:60:10
 A:20:5 to 100
 P:0:1d2:0:0:0
 L:1:TUNNEL
+D:A small flat blade used for digging.
 
 N:121:& Pick~
 G:\:g
@@ -767,6 +803,7 @@ W:30:0:180:300
 A:20:30 to 100
 P:0:1d3:0:0:0
 L:2:TUNNEL
+D:A sharp pointed spike, used for mining or combat.
 
 N:122:& Mattock~
 G:\:D
@@ -775,7 +812,7 @@ W:50:0:250:700
 A:20:50 to 100
 P:0:1d8:0:0:0
 L:3:TUNNEL
-
+D:Two sharp blades on a pole, used for mining or combat.
 
 ##### Armor #####
 
@@ -794,6 +831,7 @@ I:30:2
 W:3:0:20:7
 A:20:3 to 100
 P:2:1d1:0:0:0
+D:A set of closed footgear with a sturdy cured leather base.
 
 N:132:& Pair~ of Iron Shod Boots
 G:]:U
@@ -802,6 +840,7 @@ W:5:0:35:12
 A:20:5 to 100
 P:4:1d1:0:0:0
 F:IGNORE_FIRE
+D:A set of closed footgear, covered in iron to protect from fire.
 
 N:133:& Pair~ of Steel Shod Boots
 G:]:s
@@ -810,6 +849,7 @@ W:20:0:60:50
 A:20:20 to 100
 P:7:1d1:0:0:0
 F:IGNORE_FIRE
+D:A heavy set of closed footgear, covered in tempered steel.
 
 N:134:& Pair~ of Mithril Shod Boots
 G:]:B
@@ -818,6 +858,8 @@ W:60:0:40:500
 A:20:60 to 100
 P:8:1d1:0:0:0
 F:IGNORE_ACID | IGNORE_FIRE
+D:A set of dwarven footgear covered in Dwarven mithril.  It is the
+D:most protective and durable of all boots.
 
 N:135:& Pair~ of Ethereal Slippers
 G:]:U
@@ -826,7 +868,8 @@ W:0:0:0:4
 A:10:30 to 100
 P:0:0d0:0:0:0
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
-
+D:A set of light, aery footgear made from an indeterminate, transparent fabric.
+D:You cannot feel its weight.
 
 
 ### Headgear ###
@@ -837,6 +880,7 @@ I:32:2
 W:3:0:20:12
 A:20:3 to 100
 P:2:0d0:0:0:0
+D:A piece of headgear made of tough, cured leather.
 
 N:141:& Metal Cap~
 G:]:s
@@ -844,6 +888,7 @@ I:32:3
 W:10:0:25:30
 A:20:10 to 100
 P:3:1d1:0:0:0
+D:A piece of headgear made from soft metal.
 
 N:142:& Iron Helm~
 G:]:s
@@ -851,6 +896,7 @@ I:32:5
 W:20:0:50:75
 A:20:20 to 100
 P:7:1d3:0:0:0
+D:A heavy piece of headgear made from hard iron.
 
 N:143:& Steel Helm~
 G:]:W
@@ -858,6 +904,7 @@ I:32:6
 W:40:0:60:200
 A:20:40 to 100
 P:9:1d3:0:0:0
+D:A complete covering of the head and shoulders made from tempered steel.
 
 N:144:& Iron Crown~
 G:]:s
@@ -865,6 +912,7 @@ I:33:10
 W:45:0:20:500
 A:20:45 to 100
 P:0:1d1:0:0:0
+D:An open-topped headgear used by lesser royalty.
 
 N:145:& Golden Crown~
 G:]:y
@@ -873,6 +921,7 @@ W:45:0:30:1000
 A:10:45 to 100
 P:0:1d1:0:0:0
 F:IGNORE_ACID
+D:The symbol of kings.  It is an open-topped headgear made from the purest gold
 
 N:146:& Jewel Encrusted Crown~
 G:]:v
@@ -881,7 +930,8 @@ W:50:0:40:2000
 A:10:50 to 100
 P:0:1d1:0:0:0
 F:IGNORE_ACID
-
+D:The symbol of ancient emperors.  It is an open-topped headgear covered with
+D:rubies, sapphires and emeralds.
 
 ### Body armours ###
 
@@ -891,6 +941,7 @@ I:36:2
 W:1:0:20:4
 A:20:1 to 100
 P:2:0d0:0:0:0
+D:An unrestrictive tunic of soft-fabric.
 
 N:151:Soft Leather Armour~
 G:(:U
@@ -898,6 +949,7 @@ I:36:4
 W:3:0:80:20
 A:20:3 to 100
 P:8:0d0:0:0:0
+D:A leather jerkin that covers the vital organs.
 
 N:152:Studded Leather Armour~
 G:(:U
@@ -905,6 +957,7 @@ I:36:7
 W:10:0:100:100
 A:20:5 to 100
 P:12:1d1:-1:0:0
+D:A leather jerkin fastened with metal for extra protection.
 
 N:153:Hard Leather Armour~
 G:(:U
@@ -912,6 +965,7 @@ I:36:6
 W:5:0:120:150
 A:20:10 to 100
 P:16:1d2:-1:0:0
+D:A leather jerkin made from tough, inflexible leather.
 
 N:154:Leather Scale Mail~
 G:(:U
@@ -919,6 +973,7 @@ I:36:11
 W:15:0:140:370
 A:20:15 to 100
 P:20:1d1:-1:0:0
+D:A set of cured leather bodywear made from overlapping leather scales.
 
 N:155:Metal Scale Mail~
 G:[:s
@@ -926,6 +981,7 @@ I:37:1
 W:25:0:250:550
 A:20:25 to 100
 P:38:1d4:-2:0:0
+D:A leather jerkin covered with overlapping metal scales.
 
 N:156:Chain Mail~
 G:[:s
@@ -933,6 +989,7 @@ I:37:2
 W:25:0:220:750
 A:20:20 to 100
 P:32:1d4:-2:0:0
+D:A flexible set of mail made by linked chains.
 
 N:157:Augmented Chain Mail~
 G:[:s
@@ -940,13 +997,16 @@ I:37:3
 W:30:0:270:900
 A:20:35 to 100
 P:42:1d4:-2:0:0
+D:Chain mail with tougher alloys and covered by plates in key locations.
 
+#Seriously guessing what this is, the internet is of no help#
 N:158:Bar Chain Mail~
 G:[:s
 I:37:4
 W:35:0:280:950
 A:20:40 to 100
 P:45:1d4:-2:0:0
+D:Chain mail reinforced by sturdy metal bars.
 
 N:159:Metal Brigandine Armour~
 G:[:s
@@ -954,6 +1014,7 @@ I:37:5
 W:35:0:290:1100
 A:20:45 to 100
 P:48:1d4:-3:0:0
+D:A cloth jerkin covered with thick metal plates.
 
 N:160:Partial Plate Armour~
 G:[:W
@@ -961,6 +1022,7 @@ I:37:6
 W:45:0:260:1200
 A:20:30 to 100
 P:40:1d6:-3:0:0
+D:Two large plates of metal used to cover the torso. 
 
 N:161:Metal Lamellar Armour~
 G:[:W
@@ -968,6 +1030,8 @@ I:37:7
 W:45:0:340:1250
 A:20:50 to 100
 P:58:1d6:-3:0:0
+D:A set of armor similar to scale mail but without the leather backing
+D:and with thicker plates.
 
 N:162:Full Plate Armour~
 G:[:W
@@ -975,6 +1039,7 @@ I:37:8
 W:45:0:360:1350
 A:15:55 to 100
 P:62:2d4:-3:0:0
+D:A set of solid metal plates used to cover the torso, arms and legs.
 
 N:163:Ribbed Plate Armour~
 G:[:W
@@ -982,6 +1047,7 @@ I:37:9
 W:50:0:380:1500
 A:15:60 to 100
 P:66:2d4:-3:0:0
+D:A set of overlapping plates, covering the entire body.
 
 N:164:Mithril Chain Mail~
 G:[:B
@@ -990,6 +1056,7 @@ W:55:0:150:7000
 #A:10:55 to 100
 P:28:1d4:-1:0:0
 F:IGNORE_ACID
+D:Dwarven armor made from the hardest and most durable metal.
 
 N:165:Mithril Plate Mail~
 G:[:B
@@ -998,6 +1065,7 @@ W:60:0:300:15000
 #A:10:65 to 100
 P:60:2d4:-3:0:0
 F:IGNORE_ACID
+D:Dwarven armor made from the hardest and most durable metal plates.
 
 N:166:Adamantite Plate Mail~
 G:[:G
@@ -1049,6 +1117,7 @@ D:This unearthly, completely transparent body mantle folds and drapes in
 D:iridescent patterns around you.  It weighs absolutely nothing.
 
 
+
 ### The Gloves ###
 
 N:174:& Set~ of Leather Gloves
@@ -1057,6 +1126,7 @@ I:31:1
 W:0:0:10:5
 A:20:1 to 100
 P:1:0d0:0:0:0
+D:A set of handgear made from soft leather.
 
 N:175:& Set~ of Gauntlets
 G:]:s
@@ -1064,6 +1134,7 @@ I:31:2
 W:0:0:25:45
 A:20:10 to 100
 P:3:1d1:0:0:0
+D:A set of handgear made from iron.
 
 N:176:& Set~ of Mithril Gauntlets
 G:]:B
@@ -1072,6 +1143,7 @@ W:0:0:25:700
 A:20:40 to 100
 P:6:1d1:0:0:0
 F:IGNORE_ACID | IGNORE_FIRE
+D:An incredibly protective and durable set of handgear.
 
 N:177:& Set~ of Caestus
 G:]:U
@@ -1125,6 +1197,7 @@ I:34:3
 W:10:0:60:80
 A:20:15 to 100
 P:5:1d2:0:0:0
+D:A metal shield designed to protect from enemy attacks.
 
 N:183:& Leather Shield~
 G:):U
@@ -1132,6 +1205,7 @@ I:34:4
 W:15:0:90:200
 A:20:10 to 100
 P:8:1d3:0:0:0
+D:A thick leather shield designed to protect from enemy attacks.
 
 N:184:& Large Metal Shield~
 G:):s
@@ -1139,6 +1213,7 @@ I:34:5
 W:30:0:120:500
 A:20:30 to 100
 P:12:1d5:0:0:0
+D:An oversized metal shield.  You can fit your entire body behind it.
 
 N:185:& Mithril Shield~
 G:):B
@@ -1147,9 +1222,8 @@ W:70:0:100:10000
 A:10:70 to 100
 P:16:1d4:0:0:10
 F:IGNORE_ACID | GOOD
-
-
-
+D:A gleaming Dwarven shield that can repel all but the strongest attacks 
+D: and will never corrode.
 
 ##### Rings #####
 
