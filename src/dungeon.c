@@ -1670,6 +1670,9 @@ void play_game(void)
 	if (OPT(birth_randarts))
 		do_randart(seed_randart, TRUE);
 
+	/* Remove unused artifact kinds from the k_info array */
+	fixup_artifact_kinds();
+
 	/* Initialize temporary fields sensibly */
 	p_ptr->object_idx = p_ptr->object_kind_idx = NO_OBJECT;
 	p_ptr->monster_race_idx = 0;

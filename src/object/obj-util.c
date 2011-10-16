@@ -3633,6 +3633,40 @@ int lookup_sval(int tval, const char *name)
 }
 
 /**
+ * Remove kinds that only apply to artifacts, and there is no artifact that
+ * uses the kind.
+ */
+void fixup_artifact_kinds(void)
+{
+	int k_idx;
+
+	for (k_idx = 0; k_idx < z_info->k_max; k_idx++)
+	{
+		object_kind *k_ptr = &k_info[k_idx];
+		int tval = k_ptr->tval;
+		int sval = k_ptr->sval;
+		int a_idx;
+
+		/* Only interested in special artifact kinds */
+		if (!of_has(k_ptr->flags, OF_INSTA_ART))
+			continue;
+
+		/* Check that some artifact uses this tval/sval combination */
+		for (a_idx = 0; a_idx < z_info->a_max; a_idx++)
+		{
+			if (a_info[a_idx].tval == tval &&
+				a_info[a_idx].sval == sval)
+				break;
+		}
+		if (a_idx == z_info->a_max)
+		{
+			/* Zero out the kind as it's not used */
+			memset(k_ptr, 0, sizeof(*k_ptr));
+		}
+	}
+}
+
+/**
  * Returns the numeric equivalent tval of the textual tval `name`.
  */
 int tval_find_idx(const char *name)
