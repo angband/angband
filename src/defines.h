@@ -110,12 +110,6 @@
 
 
 /*
- * Number of tval/min-sval/max-sval slots per ego_item
- */
-#define EGO_TVALS_MAX 3
-
-
-/*
  * Hack -- Maximum number of quests
  */
 #define MAX_Q_IDX	4
@@ -473,17 +467,8 @@ enum
 
 /*** Important artifact indexes (see "lib/edit/artifact.txt") ***/
 
-#define ART_POWER			13
 #define ART_MORGOTH			34
 #define ART_GROND			111
-#define ART_PALANTIR			7
-
-/*
- * Hack -- first "normal" artifact in the artifact list.  All of
- * the artifacts with indexes from 1 to 15 are "special" (lights,
- * rings, amulets), and the ones from 16 to 127 are "normal".
- */
-#define ART_MIN_NORMAL		16
 
 
 /*** Function flags ***/

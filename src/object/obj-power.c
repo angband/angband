@@ -42,15 +42,11 @@
 #define WEAP_DAMAGE				12 /* and for off-weapon combat flags */
 #define BASE_JEWELRY_POWER		 4
 #define BASE_ARMOUR_POWER		 1
-#define BASE_LIGHT_POWER		 6 /* for rad-2; doubled for rad-3 */
 #define DAMAGE_POWER             5 /* i.e. 2.5 */
 #define TO_HIT_POWER             3 /* i.e. 1.5 */
 #define BASE_AC_POWER            2 /* i.e. 1 */
 #define TO_AC_POWER              2 /* i.e. 1 */
 #define MAX_BLOWS                5
-#define INHIBIT_BLOWS            3
-#define INHIBIT_MIGHT            4
-#define INHIBIT_SHOTS            3
 #define INHIBIT_IMMUNITIES       4
 
 /**
@@ -60,7 +56,7 @@
  * - the assumed bonus on launchers (for rating ego ammo)
  * - twice the assumed multiplier (for rating any ammo)
  * N.B. Ammo tvals are assumed to be consecutive! We access this array using
- * (o_ptr->tval - TV_SHOT) for ammo, and 
+ * (o_ptr->tval - TV_SHOT) for ammo, and
  * (o_ptr->sval / 10) for launchers
  */
 static struct archery {
@@ -80,6 +76,7 @@ static struct archery {
  * - additional power bonus for a "full set" of these flags
  * - number of these flags which constitute a "full set"
  * - whether value is damage-dependent
+ * TODO: take these out to list-flag-types.h
  */
 static struct set {
 	int type;
@@ -190,7 +187,7 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file*
 			} else {
 				file_putf(log_file, desc[i]);
 			}
-			file_putf(log_file, "x%d ", s_mult[i]); 
+			file_putf(log_file, "x%d ", s_mult[i]);
 		}
 		file_putf(log_file, "\nsv is: %d\n", sv);
 		file_putf(log_file, " and t_m_p is: %d \n", tot_mon_power);
@@ -252,11 +249,15 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		slay_pwr = slay_power(o_ptr, verbose, log_file, known);
 
 	/* Start with any damage boost from the item itself */
-	p += (o_ptr->to_d * DAMAGE_POWER / 2);
-	file_putf(log_file, "Adding power from to_dam, total is %d\n", p);
-
+	if (o_ptr->to_d >= INHIBIT_TO_DAM) {
+		p += INHIBIT_POWER;
+		file_putf(log_file, "INHIBITING: damage bonus too high\n");
+	} else {
+		p += (o_ptr->to_d * DAMAGE_POWER / 2);
+		file_putf(log_file, "Adding power from to_dam, total is %d\n", p);
+	}
 	/* Add damage from dice for any wieldable weapon or ammo */
-	if (wield_slot(o_ptr) == INVEN_WIELD || obj_is_ammo(o_ptr)) {
+	if (wield_slot(o_ptr) == INVEN_WIELD || kind_is_ammo(o_ptr->tval)) {
 		dice_pwr = (o_ptr->dd * (o_ptr->ds + 1) * DAMAGE_POWER / 4);
 		file_putf(log_file, "Adding %d power for dam dice\n", dice_pwr);
 	/* Add 2nd lot of damage power for nonweapons */
@@ -282,7 +283,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	}
 
 	/* Add launcher bonus for ego ammo, multiply for launcher and rescale */
-	if (obj_is_ammo(o_ptr)) {
+	if (kind_is_ammo(o_ptr->tval)) {
 		if (o_ptr->ego)
 			p += (archery[o_ptr->tval - TV_SHOT].launch_dam * DAMAGE_POWER / 2);
 		p = p * archery[o_ptr->tval - TV_SHOT].launch_mult / (2 * MAX_BLOWS);
@@ -352,9 +353,13 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	}
 
 	/* Add power for +to_hit */
-	p += (o_ptr->to_h * TO_HIT_POWER / 2);
-	file_putf(log_file, "Adding power for to hit, total is %d\n", p);
-
+	if (o_ptr->to_h >= INHIBIT_TO_HIT) {
+		p += INHIBIT_POWER;
+		file_putf(log_file, "INHIBITING: to-hit bonus too high\n");
+	} else {
+		p += (o_ptr->to_h * TO_HIT_POWER / 2);
+		file_putf(log_file, "Adding power for to hit, total is %d\n", p);
+	}
 	/* Add power for base AC and adjust for weight */
 	if (o_ptr->ac) {
 		p += BASE_ARMOUR_POWER;
@@ -393,17 +398,6 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		file_putf(log_file, "INHIBITING: AC bonus too high\n");
 	}
 
-	/* Add power for light sources by radius XXX Hack - rewrite calc_torch! */
-	if (wield_slot(o_ptr) == INVEN_LIGHT) {
-		p += BASE_LIGHT_POWER;
-
-		/* Artifact lights have larger radius so add more */
-		if (o_ptr->artifact)
-			p += BASE_LIGHT_POWER;
-
-		file_putf(log_file, "Adding power for light radius, total is %d\n", p);
-	}
-
 	/* Add base power for jewelry */
 	if (object_is_jewelry(o_ptr)) {
 		p += BASE_JEWELRY_POWER;
@@ -411,7 +405,8 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	}
 
 	/* Add power for non-derived flags (derived flags have flag_power 0) */
-	for (i = of_next(flags, FLAG_START); i != FLAG_END; i = of_next(flags, i + 1)) {
+	for (i = of_next(flags, FLAG_START); i != FLAG_END;
+			i = of_next(flags, i + 1)) {
 		if (flag_uses_pval(i)) {
 			j = which_pval(o_ptr, i);
 			if (known || object_this_pval_is_visible(o_ptr, j)) {
@@ -423,7 +418,8 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 
 		if (flag_power(i)) {
 			p += (k * flag_power(i) * slot_mult(i, wield_slot(o_ptr)));
-			file_putf(log_file, "Adding power for %s, total is %d\n", flag_name(i), p);
+			file_putf(log_file, "Adding power for %s, total is %d\n",
+				flag_name(i), p);
 		}
 
 		/* Track combinations of flag types - note we ignore SUST_CHR */

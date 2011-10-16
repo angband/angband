@@ -1210,13 +1210,19 @@ static void update_monster_subwindow(game_event_type type, game_event_data *data
 {
 	term *old = Term;
 	term *inv_term = user;
+	const monster_race *r_ptr;
+	const monster_lore *l_ptr;
 
 	/* Activate */
 	Term_activate(inv_term);
 
 	/* Display monster race info */
 	if (p_ptr->monster_race_idx)
-		display_roff(p_ptr->monster_race_idx);
+	{
+		r_ptr = &r_info[p_ptr->monster_race_idx];
+		l_ptr = &l_list[p_ptr->monster_race_idx];
+		display_roff(r_ptr, l_ptr);
+	}
 
 	Term_fresh();
 	
@@ -1750,10 +1756,10 @@ static void see_floor_items(game_event_type type, game_event_data *data, void *u
 		/* Describe the object.  Less detail if blind. */
 		if (blind)
 			object_desc(o_name, sizeof(o_name), o_ptr,
-					ODESC_PREFIX | ODESC_BASE);
+					ODESC_ARTICLE | ODESC_BASE);
 		else
 			object_desc(o_name, sizeof(o_name), o_ptr,
-					ODESC_PREFIX | ODESC_FULL);
+					ODESC_ARTICLE | ODESC_FULL);
 
 		/* Message */
 		message_flush();

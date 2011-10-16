@@ -1100,7 +1100,7 @@ errr file_character(const char *path, bool full)
 			continue;
 		}
 		object_desc(o_name, sizeof(o_name), &p_ptr->inventory[i],
-				ODESC_PREFIX | ODESC_FULL);
+				ODESC_ARTICLE | ODESC_FULL);
 
 		x_file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
 		if (p_ptr->inventory[i].kind)
@@ -1114,7 +1114,7 @@ errr file_character(const char *path, bool full)
 		if (!p_ptr->inventory[i].kind) break;
 
 		object_desc(o_name, sizeof(o_name), &p_ptr->inventory[i],
-					ODESC_PREFIX | ODESC_FULL);
+					ODESC_ARTICLE | ODESC_FULL);
 
 		x_file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
 		object_info_chardump(fp, &p_ptr->inventory[i], 5, 72);
@@ -1132,7 +1132,7 @@ errr file_character(const char *path, bool full)
 		for (i = 0; i < st_ptr->stock_num; i++)
 		{
 			object_desc(o_name, sizeof(o_name), &st_ptr->stock[i],
-						ODESC_PREFIX | ODESC_FULL);
+						ODESC_ARTICLE | ODESC_FULL);
 			x_file_putf(fp, "%c) %s\n", I2A(i), o_name);
 
 			object_info_chardump(fp, &st_ptr->stock[i], 5, 72);

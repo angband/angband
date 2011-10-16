@@ -136,7 +136,11 @@ errr run_parser(struct file_parser *fp);
 errr parse_file(struct parser *p, const char *filename);
 void cleanup_parser(struct file_parser *fp);
 int lookup_flag(const char **flag_table, const char *flag_name);
-errr grab_flag(bitflag *flags, const size_t size, const char **flag_table, const char *flag_name);
-errr remove_flag(bitflag *flags, const size_t size, const char **flag_table, const char *flag_name);
+errr grab_flag(bitflag *flags, const size_t size, const char **flag_table,
+	const char *flag_name);
+errr grab_flagtype(bitflag *flags, const char **type_table,
+	const char *type_name);
+errr remove_flag(bitflag *flags, const size_t size, const char **flag_table,
+	const char *flag_name);
 
 #endif /* !PARSER_H */

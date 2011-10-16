@@ -159,7 +159,7 @@ static void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MA
 		known = object_is_known(o_ptr);
 
 		/* Drain charges - requires a charged item */
-		if (i < INVEN_PACK && (!known || o_ptr->pval[DEFAULT_PVAL] > 0) &&
+		if (i < INVEN_PACK && (!known || o_ptr->extent > 0) &&
 				(o_ptr->tval == TV_STAFF || o_ptr->tval == TV_WAND))
 			melee_colors[RBE_UN_POWER] = TERM_L_RED;
 
@@ -1867,15 +1867,11 @@ static void describe_monster_movement(const monster_race *r_ptr,
  * monster flag.
  * 
  */
-void cheat_monster_lore(int r_idx, monster_lore *l_ptr)
+void cheat_monster_lore(const monster_race *r_ptr, monster_lore *l_ptr)
 {
-	const monster_race *r_ptr;
-
 	int i;
 
-	assert(r_idx > 0);
-	r_ptr = &r_info[r_idx];
-
+	assert(r_ptr);
 	assert(l_ptr);
 	
 	/* Hack -- Maximal kills */
@@ -1932,15 +1928,11 @@ void cheat_monster_lore(int r_idx, monster_lore *l_ptr)
  * Sets the number of total kills, observed blows, and observed drops to 0.
  * Also wipes all knowledge of monster flags.
  */
-void wipe_monster_lore(int r_idx, monster_lore *l_ptr)
+void wipe_monster_lore(const monster_race *r_ptr, monster_lore *l_ptr)
 {
-	const monster_race *r_ptr;
-
 	int i;
 
-	assert(r_idx > 0);
-	r_ptr = &r_info[r_idx];
-
+	assert(r_ptr);
 	assert(l_ptr);
 	
 	/* Hack -- No kills */
@@ -1986,17 +1978,14 @@ void wipe_monster_lore(int r_idx, monster_lore *l_ptr)
  * saves about 60K of memory at the cost of disk access during monster
  * recall, which is optional to the user.
  */
-void describe_monster(int r_idx, bool spoilers)
+void describe_monster(const monster_race *r_ptr, const monster_lore *l_ptr, bool spoilers)
 {
-	const monster_race *r_ptr;
 	monster_lore lore;
-	const monster_lore *l_ptr;
 	bitflag f[RF_SIZE];
 	int melee_colors[RBE_MAX], spell_colors[RSF_MAX];
 
-	assert(r_idx > 0);
-	r_ptr = &r_info[r_idx];
-	l_ptr = &l_list[r_idx];
+	assert(r_ptr);
+	assert(l_ptr);
 
 	/* Determine the special attack colors */
 	get_attack_colors(melee_colors, spell_colors);
@@ -2021,7 +2010,7 @@ void describe_monster(int r_idx, bool spoilers)
 
 	/* Cheat -- know everything */
 	if (OPT(cheat_know) || spoilers)
-		cheat_monster_lore(r_idx, &lore);
+		cheat_monster_lore(r_ptr, &lore);
 
 	/* Show kills of monster vs. player(s) */
 	if (!spoilers)
@@ -2059,15 +2048,12 @@ void describe_monster(int r_idx, bool spoilers)
 /**
  * Display the "name" and "attr/chars" of a monster race.
  */
-void roff_top(int r_idx)
+void roff_top(const monster_race *r_ptr)
 {
-	const monster_race *r_ptr;
-
 	byte a1, a2;
 	wchar_t c1, c2;
 
-	assert(r_idx > 0);
-	r_ptr = &r_info[r_idx];
+	assert(r_ptr);
 
 	/* Get the chars */
 	c1 = r_ptr->d_char;
@@ -2113,9 +2099,10 @@ void roff_top(int r_idx)
 /**
  * Describes the given monster race at the top of the main term.
  */
-void screen_roff(int r_idx)
+void screen_roff(const monster_race *r_ptr, const monster_lore *l_ptr)
 {
-	assert(r_idx > 0);
+	assert(r_ptr);
+	assert(l_ptr);
 
 	/* Flush messages */
 	message_flush();
@@ -2127,21 +2114,22 @@ void screen_roff(int r_idx)
 	text_out_hook = text_out_to_screen;
 
 	/* Recall monster */
-	describe_monster(r_idx, FALSE);
+	describe_monster(r_ptr, l_ptr, FALSE);
 
 	/* Describe monster */
-	roff_top(r_idx);
+	roff_top(r_ptr);
 }
 
 
 /**
  * Describe the given monster race in the current "term" window.
  */
-void display_roff(int r_idx)
+void display_roff(const monster_race *r_ptr, const monster_lore *l_ptr)
 {
 	int y;
 
-	assert(r_idx > 0);
+	assert(r_ptr);
+	assert(l_ptr);
 
 	/* Erase the window */
 	for (y = 0; y < Term->hgt; y++) {
@@ -2156,10 +2144,10 @@ void display_roff(int r_idx)
 	text_out_hook = text_out_to_screen;
 
 	/* Recall monster */
-	describe_monster(r_idx, FALSE);
+	describe_monster(r_ptr, l_ptr, FALSE);
 
 	/* Describe monster */
-	roff_top(r_idx);
+	roff_top(r_ptr);
 }
 
 

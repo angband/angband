@@ -21,6 +21,56 @@
 #include "object/tvalsval.h"
 #include "object/pval.h"
 
+/**
+ * Set an object's prefix and suffix in accordance with its affixes. We use
+ * the most powerful affixes to determine the name. If we have a theme, we
+ * don't duplicate affixes which are part of the theme.
+ */
+void obj_affix_names(object_type *o_ptr)
+{
+	int i, j, best, best_pref = -1, best_suf = -1, pref_lev = 0, suf_lev = 0;
+	bool theme_has;
+
+	/* Clear any existing names */
+	o_ptr->prefix = NULL;
+	o_ptr->suffix = NULL;
+
+	for (i = 0; i < MAX_AFFIXES; i++) {
+		if (o_ptr->affix[i]) {
+			best = 0;
+			theme_has = FALSE;
+			/* Find the affix level of this affix for this object */
+			for (j = 0; j < EGO_TVALS_MAX; j++)
+				if (o_ptr->tval == o_ptr->affix[i]->tval[j] &&
+						o_ptr->sval >= o_ptr->affix[i]->min_sval[j] &&
+						o_ptr->sval <= o_ptr->affix[i]->max_sval[j] &&
+						o_ptr->affix[i]->level[j] > best)
+					best = o_ptr->affix[i]->level[j];
+
+			/* See if the object's theme has this affix */
+			for (j = 0; o_ptr->theme && j < o_ptr->theme->num_affixes; j++)
+				if (o_ptr->theme->affix[j] == o_ptr->affix[i]->eidx)
+					theme_has = TRUE;
+
+			/* Track the best affixes which are not in the theme */
+			if (o_ptr->affix[i]->type == 1 && best > pref_lev && !theme_has) {
+				pref_lev = best;
+				best_pref = i;
+			} else if (o_ptr->affix[i]->type == 2 && best > suf_lev &&
+					!theme_has) {
+				suf_lev = best;
+				best_suf = i;
+			}
+		}
+	}
+
+	/* Set the prefix and suffix */
+	if (best_pref >= 0)
+		o_ptr->prefix = o_ptr->affix[best_pref];
+
+	if (best_suf >= 0)
+		o_ptr->suffix = o_ptr->affix[best_suf];
+}
 
 /**
  * Puts the object base kind's name into buf.
@@ -41,7 +91,8 @@ void object_base_name(char *buf, size_t max, int tval, bool plural)
  *
  * Just truncates if the buffer isn't big enough.
  */
-void object_kind_name(char *buf, size_t max, const object_kind *kind, bool easy_know)
+void object_kind_name(char *buf, size_t max, const object_kind *kind,
+	bool easy_know)
 {
 	/* If not aware, use flavor */
 	if (!easy_know && !kind->aware && kind->flavor)
@@ -183,9 +234,9 @@ static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware)
 }
 
 
-static size_t obj_desc_name_prefix(char *buf, size_t max, size_t end,
+static size_t obj_desc_name_article(char *buf, size_t max, size_t end,
 		const object_type *o_ptr, bool known, const char *basename,
-		const char *modstr)
+		const char *modstr, const char *prefix)
 {
 	if (o_ptr->number <= 0)
 		strnfcat(buf, max, &end, "no more ");
@@ -197,7 +248,12 @@ static size_t obj_desc_name_prefix(char *buf, size_t max, size_t end,
 	else if (*basename == '&')
 	{
 		bool an = FALSE;
-		const char *lookahead = basename + 1;
+		const char *lookahead;
+
+		if (prefix)
+			lookahead = prefix;
+		else
+			lookahead = basename + 1;
 
 		while (*lookahead == ' ') lookahead++;
 
@@ -282,7 +338,8 @@ size_t obj_desc_name_format(char *buf, size_t max, size_t end,
 			if (!singular || !plural || !endmark) return end;
 
 			if (!pluralise)
-				strnfcat(buf, max, &end, "%.*s", plural - singular - 1, singular);
+				strnfcat(buf, max, &end, "%.*s", plural - singular - 1,
+					singular);
 			else
 				strnfcat(buf, max, &end, "%.*s", endmark - plural, plural);
 
@@ -312,21 +369,34 @@ size_t obj_desc_name_format(char *buf, size_t max, size_t end,
  * Format object o_ptr's name into 'buf'.
  */
 static size_t obj_desc_name(char *buf, size_t max, size_t end,
-		const object_type *o_ptr, bool prefix, odesc_detail_t mode,
-		bool spoil)
+		const object_type *o_ptr, odesc_detail_t mode)
 {
-	bool known = object_is_known(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
-	bool aware = object_flavor_is_aware(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
+	bool spoil = mode & ODESC_SPOIL;
+	bool known = object_is_known(o_ptr) || (o_ptr->ident & IDENT_STORE)
+		|| spoil;
+	bool aware = object_flavor_is_aware(o_ptr) || (o_ptr->ident & IDENT_STORE)
+		|| spoil;
 
 	const char *basename = obj_desc_get_basename(o_ptr, aware);
 	const char *modstr = obj_desc_get_modstr(o_ptr->kind);
+	const char *prefix = NULL;
 
 	if (aware && !o_ptr->kind->everseen && !spoil)
 		o_ptr->kind->everseen = TRUE;
 
+	if (mode & ODESC_AFFIX && (spoil || object_prefix_is_visible(o_ptr))) {
+		if (o_ptr->theme && o_ptr->theme->type == 1)
+			prefix =  o_ptr->theme->name;
+		else if	(o_ptr->prefix)
+			prefix =  o_ptr->prefix->name;
+	}
+
+	if (mode & ODESC_ARTICLE)
+		end = obj_desc_name_article(buf, max, end, o_ptr, known, basename,
+			 modstr, prefix);
+
 	if (prefix)
-		end = obj_desc_name_prefix(buf, max, end, o_ptr, known,
-				basename, modstr);
+		strnfcat(buf, max, &end, "%s ", prefix);
 
 	/* Pluralize if (not forced singular) and
 	 * (not a known/visible artifact) and
@@ -337,16 +407,18 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 			  (object_name_is_visible(o_ptr) || known)) &&
 			(o_ptr->number != 1 || (mode & ODESC_PLURAL)));
 
-
 	/** Append extra names of various kinds **/
 
 	if ((object_name_is_visible(o_ptr) || known) && o_ptr->artifact)
 		strnfcat(buf, max, &end, " %s", o_ptr->artifact->name);
 
-	else if ((spoil && o_ptr->ego) || object_ego_is_visible(o_ptr))
-		strnfcat(buf, max, &end, " %s", o_ptr->ego->name);
+	else if (mode & ODESC_AFFIX && (spoil || object_suffix_is_visible(o_ptr))) {
+		if (o_ptr->theme && o_ptr->theme->type == 2)
+			strnfcat(buf, max, &end, " %s", o_ptr->theme->name);
+		else if	(o_ptr->suffix)
+			strnfcat(buf, max, &end, " %s", o_ptr->suffix->name);
 
-	else if (aware && !o_ptr->artifact &&
+	} else if (aware && !o_ptr->artifact &&
 			(o_ptr->kind->flavor || o_ptr->kind->tval == TV_SCROLL))
 		strnfcat(buf, max, &end, " of %s", o_ptr->kind->name);
 
@@ -354,33 +426,15 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 }
 
 /*
- * Is o_ptr armor?
+ * Do we show the base AC value?
  */
 static bool obj_desc_show_armor(const object_type *o_ptr)
 {
-	if (o_ptr->ac) return TRUE;
-
-	switch (o_ptr->tval)
-	{
-		case TV_BOOTS:
-		case TV_GLOVES:
-		case TV_CLOAK:
-		case TV_CROWN:
-		case TV_HELM:
-		case TV_SHIELD:
-		case TV_SOFT_ARMOR:
-		case TV_HARD_ARMOR:
-		case TV_DRAG_ARMOR:
-		{
-			return TRUE;
-			break;
-		}
-	}
-
-	return FALSE;
+	return (o_ptr->ac || kind_is_armour(o_ptr->tval));
 }
 
-static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max, size_t end)
+static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max,
+	size_t end)
 {
 	bool known = object_is_known(o_ptr) || (o_ptr->ident & IDENT_STORE);
 
@@ -388,13 +442,13 @@ static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max, si
 	if (!known) return end;
 
 	/* May be "empty" */
-	if (!o_ptr->pval[DEFAULT_PVAL])
+	if (!o_ptr->extent)
 		strnfcat(buf, max, &end, " (empty)");
 
 	/* May be "disarmed" */
-	else if (o_ptr->pval[DEFAULT_PVAL] < 0)
+	else if (o_ptr->extent < 0)
 	{
-		if (chest_traps[0 - o_ptr->pval[DEFAULT_PVAL]])
+		if (chest_traps[0 - o_ptr->extent])
 			strnfcat(buf, max, &end, " (disarmed)");
 		else
 			strnfcat(buf, max, &end, " (unlocked)");
@@ -404,7 +458,7 @@ static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max, si
 	else
 	{
 		/* Describe the traps */
-		switch (chest_traps[o_ptr->pval[DEFAULT_PVAL]])
+		switch (chest_traps[o_ptr->extent])
 		{
 			case 0:
 				strnfcat(buf, max, &end, " (Locked)");
@@ -443,7 +497,7 @@ static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max, si
 	return end;
 }
 
-static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max, 
+static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 		size_t end, bool spoil)
 {
 	bitflag flags[OF_SIZE];
@@ -458,7 +512,8 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 		if (spoil || object_attack_plusses_are_visible(o_ptr))
 			strnfcat(buf, max, &end, " (%dd%d)", o_ptr->dd, o_ptr->ds);
 		else
-			strnfcat(buf, max, &end, " (%dd%d)", o_ptr->kind->dd, o_ptr->kind->ds);
+			strnfcat(buf, max, &end, " (%dd%d)", o_ptr->kind->dd,
+				o_ptr->kind->ds);
 	}
 
 	if (of_has(flags, OF_SHOW_MULT))
@@ -466,7 +521,8 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 		/* Display shooting power as part of the multiplier */
 		if (of_has(flags, OF_MIGHT) &&
 		    (spoil || object_flag_is_known(o_ptr, OF_MIGHT)))
-			strnfcat(buf, max, &end, " (x%d)", (o_ptr->sval % 10) + o_ptr->pval[which_pval(o_ptr, OF_MIGHT)]);
+			strnfcat(buf, max, &end, " (x%d)",
+				(o_ptr->sval % 10) + o_ptr->pval[which_pval(o_ptr, OF_MIGHT)]);
 		else
 			strnfcat(buf, max, &end, " (x%d)", o_ptr->sval % 10);
 	}
@@ -485,7 +541,8 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 
 			/* Otherwise, always use the full tuple */
 			else
-				strnfcat(buf, max, &end, " (%+d,%+d)", o_ptr->to_h, o_ptr->to_d);
+				strnfcat(buf, max, &end, " (%+d,%+d)", o_ptr->to_h,
+					o_ptr->to_d);
 		}
 	}
 
@@ -500,13 +557,15 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 	}
 	else if (obj_desc_show_armor(o_ptr))
 	{
-		strnfcat(buf, max, &end, " [%d]", object_was_sensed(o_ptr) ? o_ptr->ac : o_ptr->kind->ac);
+		strnfcat(buf, max, &end, " [%d]",
+			object_was_sensed(o_ptr) ? o_ptr->ac : o_ptr->kind->ac);
 	}
 
 	return end;
 }
 
-static size_t obj_desc_light(const object_type *o_ptr, char *buf, size_t max, size_t end)
+static size_t obj_desc_light(const object_type *o_ptr, char *buf, size_t max,
+	size_t end)
 {
 	bitflag f[OF_SIZE];
 
@@ -526,7 +585,7 @@ static size_t obj_desc_pval(const object_type *o_ptr, char *buf, size_t max,
 	int i;
 
 	object_flags(o_ptr, f);
-	create_mask(f2, FALSE, OFT_PVAL, OFT_STAT, OFT_MAX);
+	create_pval_mask(f2);
 
 	if (!of_is_inter(f, f2)) return end;
 
@@ -544,13 +603,15 @@ static size_t obj_desc_pval(const object_type *o_ptr, char *buf, size_t max,
 	return end;
 }
 
-static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max, size_t end)
+static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max,
+	size_t end)
 {
 	bool aware = object_flavor_is_aware(o_ptr) || (o_ptr->ident & IDENT_STORE);
 
 	/* Wands and Staffs have charges */
 	if (aware && (o_ptr->tval == TV_STAFF || o_ptr->tval == TV_WAND))
-		strnfcat(buf, max, &end, " (%d charge%s)", o_ptr->pval[DEFAULT_PVAL], PLURAL(o_ptr->pval[DEFAULT_PVAL]));
+		strnfcat(buf, max, &end, " (%d charge%s)", o_ptr->extent,
+			PLURAL(o_ptr->extent));
 
 	/* Charging things */
 	else if (o_ptr->timeout > 0)
@@ -585,7 +646,8 @@ static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max, 
 	return end;
 }
 
-static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, size_t end)
+static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max,
+	size_t end)
 {
 	const char *u[4] = { 0, 0, 0, 0 };
 	int n = 0;
@@ -662,50 +724,50 @@ static size_t obj_desc_aware(const object_type *o_ptr, char *buf, size_t max,
 /**
  * Describes item `o_ptr` into buffer `buf` of size `max`.
  *
- * ODESC_PREFIX prepends a 'the', 'a' or number
+ * ODESC_ARTICLE prepends a 'the', 'a' or number
  * ODESC_BASE results in a base description.
  * ODESC_COMBAT will add to-hit, to-dam and AC info.
  * ODESC_EXTRA will add pval/charge/inscription/squelch info.
  * ODESC_PLURAL will pluralise regardless of the number in the stack.
  * ODESC_STORE turns off squelch markers, for in-store display.
  * ODESC_SPOIL treats the object as fully identified.
- *
- * Setting 'prefix' to TRUE prepends a 'the', 'a' or the number in the stack,
- * respectively.
+ * ODESC_AFFIX appends a prefix and suffix, if they exist and are known.
  *
  * \returns The number of bytes used of the buffer.
  */
 size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 				   odesc_detail_t mode)
 {
-	bool prefix = mode & ODESC_PREFIX;
-	bool spoil = (mode & ODESC_SPOIL);
-	bool known;
+	bool spoil = mode & ODESC_SPOIL;
+/*	bool known; */
 
 	size_t end = 0, i = 0;
+
+	/* FIXME - this is for testing */
+	mode |= ODESC_AFFIX;
 
 	/* Simple description for null item */
 	if (!o_ptr->tval)
 		return strnfmt(buf, max, "(nothing)");
 
-	known = object_is_known(o_ptr) ||
-			(o_ptr->ident & IDENT_STORE) || spoil;
+/*	known = object_is_known(o_ptr) ||
+			(o_ptr->ident & IDENT_STORE) || spoil; */
 
 	/* We've seen it at least once now we're aware of it */
-	if (known && o_ptr->ego && !spoil) o_ptr->ego->everseen = TRUE;
+/*	if (known && o_ptr->ego && !spoil) o_ptr->ego->everseen = TRUE; */
 
 
 	/*** Some things get really simple descriptions ***/
 
 	if (o_ptr->tval == TV_GOLD)
 		return strnfmt(buf, max, "%d gold pieces worth of %s%s",
-				o_ptr->pval[DEFAULT_PVAL], o_ptr->kind->name,
+				o_ptr->extent, o_ptr->kind->name,
 				squelch_item_ok(o_ptr) ? " {squelch}" : "");
 
 	/** Construct the name **/
 
 	/* Copy the base name to the buffer */
-	end = obj_desc_name(buf, max, end, o_ptr, prefix, mode, spoil);
+	end = obj_desc_name(buf, max, end, o_ptr, mode);
 
 	if (mode & ODESC_COMBAT)
 	{
@@ -737,3 +799,4 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 
 	return end;
 }
+

@@ -213,7 +213,7 @@ EFFECT(POLYMORPH,      TRUE,   7,	"polymorphs a monster into another kind of cre
 EFFECT(STARLIGHT,      FALSE,  5,	"fires a line of light in all directions, each one causing light-sensitive creatures 6d8 damage")
 EFFECT(STARLIGHT2,     FALSE,  7,	"fires a line of light in all directions, each one causing 10d8 damage")
 EFFECT(BERSERKER,      FALSE, 10,	"puts you in a berserker rage for d50+50 turns")
-
+EFFECT(SUN_HERO,	   FALSE,  9,	"creates a large ball of light for 20d10 damage and fills you with berserk rage")
 EFFECT(WONDER,         TRUE,   9,	"creates random and unpredictable effects")
 
 EFFECT(WAND_BREATH,    TRUE,  12,	"shoots a large ball of one of the base elements for 120-200 damage")

@@ -302,7 +302,7 @@ static void log_all_objects(int level)
 
 				/* Capture gold amounts */
 				if (o_ptr->tval == TV_GOLD)
-					level_data[level].gold[o_ptr->origin] += o_ptr->pval[DEFAULT_PVAL];
+					level_data[level].gold[o_ptr->origin] += o_ptr->extent;
 
 				/* Capture artifact drops */
 				if (o_ptr->artifact)
@@ -444,8 +444,8 @@ static int stats_dump_artifacts(void)
 		if (err) return err;
 		err = stats_db_bind_ints(info_stmt, 14, 2, 
 			a_ptr->tval, a_ptr->sval, a_ptr->weight,
-			a_ptr->cost, a_ptr->alloc_prob, a_ptr->alloc_min,
-			a_ptr->alloc_max, a_ptr->ac, a_ptr->dd,
+			a_ptr->cost, a_ptr->alloc_prob[0], a_ptr->alloc_min[0],
+			a_ptr->alloc_max[0], a_ptr->ac, a_ptr->dd,
 			a_ptr->ds, a_ptr->to_h, a_ptr->to_d,
 			a_ptr->to_a, a_ptr->effect);
 		STATS_DB_STEP_RESET(info_stmt)
@@ -513,10 +513,10 @@ static int stats_dump_egos(void)
 		if (err) return err;
 		err = stats_db_bind_rv(info_stmt, 5, e_ptr->to_a); 
 		if (err) return err;
-		err = stats_db_bind_ints(info_stmt, 9, 5, 
-			e_ptr->cost, e_ptr->level, e_ptr->rarity,
-			e_ptr->rating, e_ptr->num_pvals, e_ptr->min_to_h, 
-			e_ptr->min_to_d, e_ptr->min_to_a, e_ptr->xtra);
+		err = stats_db_bind_ints(info_stmt, 9, 5,
+			e_ptr->type, e_ptr->level,
+			e_ptr->num_pvals, e_ptr->min_to_h, 
+			e_ptr->min_to_d, e_ptr->min_to_a, e_ptr->num_randlines);
 		if (err) return err;
 		STATS_DB_STEP_RESET(info_stmt)
 
@@ -600,7 +600,7 @@ static int stats_dump_objects(void)
 		if (err) return err;
 		err = stats_db_bind_rv(info_stmt, 19, k_ptr->to_a);
 		if (err) return err;
-		err = stats_db_bind_rv(info_stmt, 20, k_ptr->charge);
+		err = stats_db_bind_rv(info_stmt, 20, k_ptr->extent);
 		if (err) return err;
 		err = stats_db_bind_rv(info_stmt, 21, k_ptr->time);
 		if (err) return err;

@@ -422,7 +422,7 @@ bool make_fake_artifact(object_type *o_ptr, struct artifact *artifact)
  */
 static void spoil_artifact(const char *fname)
 {
-	int i, j;
+	int i, j, k;
 
 	object_type *i_ptr;
 	object_type object_type_body;
@@ -480,7 +480,7 @@ static void spoil_artifact(const char *fname)
 			if (!make_fake_artifact(i_ptr, a_ptr)) continue;
 
 			/* Grab artifact name */
-			object_desc(buf, sizeof(buf), i_ptr, ODESC_PREFIX |
+			object_desc(buf, sizeof(buf), i_ptr, ODESC_ARTICLE |
 				ODESC_COMBAT | ODESC_EXTRA | ODESC_SPOIL);
 
 			/* Print name and underline */
@@ -495,10 +495,15 @@ static void spoil_artifact(const char *fname)
 			 * its power rating.
 			 */
 			text_out("\nMin Level %u, Max Level %u, Generation chance %u, Power %d, %d.%d lbs\n",
-				a_ptr->alloc_min, a_ptr->alloc_max,
-				a_ptr->alloc_prob, object_power(i_ptr, FALSE,
+				a_ptr->alloc_min[0], a_ptr->alloc_max[0],
+				a_ptr->alloc_prob[0], object_power(i_ptr, FALSE,
 				NULL, TRUE), (a_ptr->weight / 10),
 				(a_ptr->weight % 10));
+
+			for (k = 1; k < ART_ALLOC_MAX && a_ptr->alloc_prob[k]; k++)
+				text_out("Min Level %u, Max Level %u, Generation chance %u\n",
+				a_ptr->alloc_min[k], a_ptr->alloc_max[k],
+				a_ptr->alloc_prob[k]);
 
 			if (OPT(birth_randarts)) text_out("%s.\n", a_ptr->text);
 
@@ -705,7 +710,8 @@ static void spoil_mon_info(const char *fname)
 	for (n = 0; n < count; n++)
 	{
 		int r_idx = who[n];
-		monster_race *r_ptr = &r_info[r_idx];
+		const monster_race *r_ptr = &r_info[r_idx];
+		const monster_lore *l_ptr = &l_list[r_idx];
 
 		/* Prefix */
 		if (rf_has(r_ptr->flags, RF_QUESTOR))
@@ -763,7 +769,7 @@ static void spoil_mon_info(const char *fname)
 		text_out("Exp:%ld\n", (long)(r_ptr->mexp));
 
 		/* Describe */
-		describe_monster(r_idx, TRUE);
+		describe_monster(r_ptr, l_ptr, TRUE);
 
 		/* Terminate the entry */
 		text_out("\n");

@@ -29,6 +29,14 @@ const struct object_flag object_flag_table[] =
     #undef OF
 };
 
+const struct object_flag_type flag_type_table[] =
+{
+    #define OFT(a, b, c) \
+            { OFT_##a, b, c },
+    #include "list-flag-types.h"
+    #undef OF
+};
+
 /**
  * Object flag names
  */
@@ -75,7 +83,7 @@ void create_mask(bitflag *f, bool id, ...)
  * Print a message when an object flag is identified by use.
  *
  * \param flag is the flag being noticed
- * \param name is the object name 
+ * \param name is the object name
  */
 void flag_message(int flag, char *name)
 {
@@ -208,6 +216,16 @@ int obj_flag_type(int flag)
 }
 
 /**
+ * Return the description of the flag type.
+ */
+const char *obj_flagtype_name(int of_type)
+{
+	const struct object_flag_type *oft_ptr = &flag_type_table[of_type];
+
+	return oft_ptr->desc;
+}
+
+/**
  * Return the pval weighting of a flag. (Some pvals are more important than
  * others.)
  */
@@ -216,4 +234,20 @@ int pval_mult(int flag)
 	const struct object_flag *of_ptr = &object_flag_table[flag];
 
 	return of_ptr->pval_mult;
+}
+
+/**
+ * Return the set of flags which are governed by pvals (granular flags).
+ */
+void create_pval_mask(bitflag *f)
+{
+	int i;
+
+	of_wipe(f);
+
+	for (i = 0; i < OF_MAX; i++)
+		if (flag_uses_pval(i))
+			of_on(f, i);
+
+	return;
 }

@@ -741,6 +741,13 @@ static void process_world(struct cave *c)
 			{
 				disturb(p_ptr, 0, 0);
 				msg("Your light has gone out!");
+
+				/* If it's a torch, now is the time to delete it */
+				if (o_ptr->sval == SV_LIGHT_TORCH)
+				{
+					inven_item_increase(INVEN_LIGHT, -1);
+					inven_item_optimize(INVEN_LIGHT);
+				}
 			}
 
 			/* The light is getting dim */
@@ -761,8 +768,10 @@ static void process_world(struct cave *c)
 	/* Handle experience draining */
 	if (check_state(p_ptr, OF_DRAIN_EXP, p_ptr->state.flags))
 	{
-		if ((p_ptr->exp > 0) && one_in_(10))
-			player_exp_lose(p_ptr, 1, FALSE);
+		if ((p_ptr->exp > 0) && one_in_(10)) {
+			s32b d = damroll(10, 6) + (p_ptr->exp/100) * MON_DRAIN_LIFE;
+			player_exp_lose(p_ptr, d / 10, FALSE);
+		}
 
 		wieldeds_notice_flag(p_ptr, OF_DRAIN_EXP);
 	}
@@ -1660,6 +1669,9 @@ void play_game(void)
 	/* Randomize the artifacts if required */
 	if (OPT(birth_randarts))
 		do_randart(seed_randart, TRUE);
+
+	/* Remove unused artifact kinds from the k_info array */
+	fixup_artifact_kinds();
 
 	/* Initialize temporary fields sensibly */
 	p_ptr->object_idx = p_ptr->object_kind_idx = NO_OBJECT;

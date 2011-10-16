@@ -58,7 +58,7 @@ static void show_obj_list(int num_obj, int num_head, char labels[50][80],
 				strnfmt(o_name[i], sizeof(o_name[i]), "(nothing)");
 		}
 		else
-			object_desc(o_name[i], sizeof(o_name[i]), o_ptr, ODESC_PREFIX | ODESC_FULL);
+			object_desc(o_name[i], sizeof(o_name[i]), o_ptr, ODESC_ARTICLE | ODESC_FULL);
 
 		/* Max length of label + object name */
 		max_len = MAX(max_len, strlen(labels[i]) + strlen(o_name[i]));
@@ -423,7 +423,7 @@ bool verify_item(const char *prompt, int item)
 	}
 
 	/* Describe */
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_ARTICLE | ODESC_FULL);
 
 	/* Prompt */
 	strnfmt(out_val, sizeof(out_val), "%s %s? ", prompt, o_name);

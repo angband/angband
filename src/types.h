@@ -54,17 +54,18 @@ typedef struct color_type color_type;
  */
 typedef struct maxima
 {
-	u16b f_max;       /**< Maximum number of terrain features */
-	u16b k_max;       /**< Maximum number of object base kinds */
-	u16b a_max;       /**< Maximum number of artifact kinds */
-	u16b e_max;       /**< Maximum number of ego-item kinds */
-	u16b r_max;       /**< Maximum number of monster races */
-	u16b mp_max;	  /**< Maximum number of monster pain message sets */
-	u16b s_max;       /**< Maximum number of magic spells */
-	u16b pit_max;	  /**< Maximum number of monster pit types */
+	u16b f_max;     /**< Maximum number of terrain features */
+	u16b k_max;     /**< Maximum number of object base kinds */
+	u16b a_max;     /**< Maximum number of artifact kinds */
+	u16b e_max;     /**< Maximum number of ego-item affixes */
+	u16b theme_max;	/**< Maximum number of ego themes */
+	u16b r_max;     /**< Maximum number of monster races */
+	u16b mp_max;	/**< Maximum number of monster pain message sets */
+	u16b s_max;     /**< Maximum number of magic spells */
+	u16b pit_max;	/**< Maximum number of monster pit types */
 
-	u16b o_max;       /**< Maximum number of objects on a given level */
-	u16b m_max;       /**< Maximum number of monsters on a given level */
+	u16b o_max;     /**< Maximum number of objects on a given level */
+	u16b m_max;     /**< Maximum number of monsters on a given level */
 } maxima;
 
 

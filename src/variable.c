@@ -432,17 +432,6 @@ int store_knowledge = STORE_NONE;
 const char *** name_sections;
 
 /*
- * The size of the "alloc_ego_table"
- */
-s16b alloc_ego_size;
-
-/*
- * The array[alloc_ego_size] of entries in the "ego allocator table"
- */
-alloc_entry *alloc_ego_table;
-
-
-/*
  * The size of "alloc_race_table" (at most z_info->r_max)
  */
 s16b alloc_race_size;
@@ -514,6 +503,7 @@ artifact_type *a_info;
  * The ego-item arrays
  */
 ego_item_type *e_info;
+struct theme *themes;
 
 /*
  * The monster race arrays

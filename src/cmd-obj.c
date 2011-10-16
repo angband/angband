@@ -59,7 +59,7 @@ static int check_devices(object_type *o_ptr)
 	}
 
 	/* Notice empty staffs */
-	if (what && o_ptr->pval[DEFAULT_PVAL] <= 0)
+	if (what && o_ptr->extent <= 0)
 	{
 		flush();
 		msg("The %s has no charges left.", what);
@@ -148,7 +148,7 @@ static void activation_message(object_type *o_ptr, const char *message)
 			switch(art_tag_lookup(tag))
 			{
 			case ART_TAG_NAME:
-				end += object_desc(buf, 1024, o_ptr, ODESC_PREFIX | ODESC_BASE); 
+				end += object_desc(buf, 1024, o_ptr, ODESC_ARTICLE | ODESC_BASE); 
 				break;
 			case ART_TAG_KIND:
 				object_kind_name(&buf[end], 1024-end, o_ptr->kind, TRUE);
@@ -249,7 +249,7 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	int num = 1;
 
 	/* If we are stacking ammo in the quiver */
-	if (obj_is_ammo(o_ptr))
+	if (kind_is_ammo(o_ptr->tval))
 	{
 		num = o_ptr->number;
 		combined_ammo = object_similar(o_ptr, &p_ptr->inventory[slot],
@@ -339,7 +339,7 @@ void wield_item(object_type *o_ptr, int item, int slot)
 		fmt = "You are wearing %s (%c).";
 
 	/* Describe the result */
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_ARTICLE | ODESC_FULL);
 
 	/* Message */
 	msgt(MSG_WIELD, fmt, o_name, index_to_label(slot));
@@ -402,7 +402,7 @@ void do_cmd_wield(cmd_code code, cmd_arg args[])
 	}
 
 	/* If the slot is in the quiver and objects can be combined */
-	if (obj_is_ammo(equip_o_ptr) && object_similar(equip_o_ptr, o_ptr,
+	if (kind_is_ammo(equip_o_ptr->tval) && object_similar(equip_o_ptr, o_ptr,
 		OSTACK_QUIVER))
 	{
 		wield_item(o_ptr, item, slot);
@@ -424,7 +424,7 @@ void do_cmd_wield(cmd_code code, cmd_arg args[])
 	{
 		/* Prompt */
 		object_desc(o_name, sizeof(o_name), equip_o_ptr,
-					ODESC_PREFIX | ODESC_FULL);
+					ODESC_ARTICLE | ODESC_FULL);
 		
 		/* Forget it */
 		if (!get_check(format("Really take off %s? ", o_name))) return;
@@ -476,7 +476,7 @@ void do_cmd_destroy(cmd_code code, cmd_arg args[])
 	} else {	
 		char o_name[80];
 
-		object_desc(o_name, sizeof o_name, o_ptr, ODESC_PREFIX | ODESC_FULL);
+		object_desc(o_name, sizeof o_name, o_ptr, ODESC_ARTICLE | ODESC_FULL);
 		msgt(MSG_DESTROY, "Ignoring %s.", o_name);
 
 		o_ptr->ignore = TRUE;
@@ -518,7 +518,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	int items_allowed = 0;
 
 	/* Determine how this item is used. */
-	if (obj_is_rod(o_ptr))
+	if (kind_is_rod(o_ptr->tval))
 	{
 		if (!obj_can_zap(o_ptr))
 		{
@@ -530,7 +530,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 		snd = MSG_ZAP_ROD;
 		items_allowed = USE_INVEN | USE_FLOOR;
 	}
-	else if (obj_is_wand(o_ptr))
+	else if (kind_is_wand(o_ptr->tval))
 	{
 		if (!obj_has_charges(o_ptr))
 		{
@@ -542,7 +542,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 		snd = MSG_ZAP_ROD;
 		items_allowed = USE_INVEN | USE_FLOOR;
 	}
-	else if (obj_is_staff(o_ptr))
+	else if (kind_is_staff(o_ptr->tval))
 	{
 		if (!obj_has_charges(o_ptr))
 		{
@@ -554,19 +554,19 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 		snd = MSG_USE_STAFF;
 		items_allowed = USE_INVEN | USE_FLOOR;
 	}
-	else if (obj_is_food(o_ptr))
+	else if (kind_is_food(o_ptr->tval))
 	{
 		use = USE_SINGLE;
 		snd = MSG_EAT;
 		items_allowed = USE_INVEN | USE_FLOOR;
 	}
-	else if (obj_is_potion(o_ptr))
+	else if (kind_is_potion(o_ptr->tval))
 	{
 		use = USE_SINGLE;
 		snd = MSG_QUAFF;
 		items_allowed = USE_INVEN | USE_FLOOR;
 	}
-	else if (obj_is_scroll(o_ptr))
+	else if (kind_is_scroll(o_ptr->tval))
 	{
 		/* Check player can use scroll */
 		if (!player_can_read())
@@ -651,7 +651,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 
 	/* Food feeds the player */
 	if (o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION)
-		player_set_food(p_ptr, p_ptr->food + o_ptr->pval[DEFAULT_PVAL]);
+		player_set_food(p_ptr, p_ptr->food + o_ptr->extent);
 
 	/* Use the turn */
 	p_ptr->energy_use = 100;
@@ -687,7 +687,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	if (used && use == USE_CHARGE)
 	{
 		/* Use a single charge */
-		o_ptr->pval[DEFAULT_PVAL]--;
+		o_ptr->extent--;
 
 		/* Describe charges */
 		if (item >= 0)
@@ -738,7 +738,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 static void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
 {
 	/* Refuel */
-	j_ptr->timeout += o_ptr->timeout ? o_ptr->timeout : o_ptr->pval[DEFAULT_PVAL];
+	j_ptr->timeout += o_ptr->timeout ? o_ptr->timeout : o_ptr->extent;
 
 	/* Message */
 	msg("You fuel your lamp.");
@@ -824,66 +824,6 @@ static void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
 }
 
 
-static void refuel_torch(object_type *j_ptr, object_type *o_ptr, int item)
-{
-	bitflag f[OF_SIZE];
-	bitflag g[OF_SIZE];
-
-	/* Refuel */
-	j_ptr->timeout += o_ptr->timeout + 5;
-
-	/* Message */
-	msg("You combine the torches.");
-
-	/* Transfer the LIGHT flag if refuelling from a torch with it to one
-	   without it */
-	object_flags(o_ptr, f);
-	object_flags(j_ptr, g);
-	if (of_has(f, OF_LIGHT) && !of_has(g, OF_LIGHT))
-	{
-		of_on(j_ptr->flags, OF_LIGHT);
-		if (!j_ptr->ego && o_ptr->ego)
-			j_ptr->ego = o_ptr->ego;
-		msg("Your torch shines further!");
-	}
-
-	/* Over-fuel message */
-	if (j_ptr->timeout >= FUEL_TORCH)
-	{
-		j_ptr->timeout = FUEL_TORCH;
-		msg("Your torch is fully fueled.");
-	}
-
-	/* Refuel message */
-	else
-	{
-		msg("Your torch glows more brightly.");
-	}
-
-	/* Decrease the item (from the pack) */
-	if (item >= 0)
-	{
-		inven_item_increase(item, -1);
-		inven_item_describe(item);
-		inven_item_optimize(item);
-	}
-
-	/* Decrease the item (from the floor) */
-	else
-	{
-		floor_item_increase(0 - item, -1);
-		floor_item_describe(0 - item);
-		floor_item_optimize(0 - item);
-	}
-
-	/* Recalculate torch */
-	p_ptr->update |= (PU_TORCH);
-
-	/* Redraw stuff */
-	p_ptr->redraw |= (PR_EQUIP);
-}
-
-
 void do_cmd_refill(cmd_code code, cmd_arg args[])
 {
 	object_type *j_ptr = &p_ptr->inventory[INVEN_LIGHT];
@@ -892,8 +832,7 @@ void do_cmd_refill(cmd_code code, cmd_arg args[])
 	int item = args[0].item;
 	object_type *o_ptr = object_from_item_idx(item);
 
-	if (!item_is_available(item, NULL, USE_INVEN | USE_FLOOR))
-	{
+	if (!item_is_available(item, NULL, USE_INVEN | USE_FLOOR)) {
 		msg("You do not have that item to refill with it.");
 		return;
 	}
@@ -901,25 +840,18 @@ void do_cmd_refill(cmd_code code, cmd_arg args[])
 	/* Check what we're wielding. */
 	object_flags(j_ptr, f);
 
-	if (j_ptr->tval != TV_LIGHT)
-	{
+	if (j_ptr->tval != TV_LIGHT) {
 		msg("You are not wielding a light.");
 		return;
-	}
-
-	else if (of_has(f, OF_NO_FUEL))
-	{
+	} else if (of_has(f, OF_NO_FUEL)) {
+		msg("Your light cannot be refilled.");
+		return;
+	} else if (j_ptr->sval == SV_LIGHT_LANTERN) {
+		refill_lamp(j_ptr, o_ptr, item);
+	} else {
 		msg("Your light cannot be refilled.");
 		return;
 	}
-
-	/* It's a lamp */
-	if (j_ptr->sval == SV_LIGHT_LANTERN)
-		refill_lamp(j_ptr, o_ptr, item);
-
-	/* It's a torch */
-	else if (j_ptr->sval == SV_LIGHT_TORCH)
-		refuel_torch(j_ptr, o_ptr, item);
 
 	p_ptr->energy_use = 50;
 }

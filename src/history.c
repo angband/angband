@@ -256,7 +256,7 @@ bool history_add_artifact(struct artifact *artifact, bool known, bool found)
 	object_wipe(o_ptr);
 	make_fake_artifact(o_ptr, artifact);
 	object_desc(o_name, sizeof(o_name), o_ptr,
-				ODESC_PREFIX | ODESC_BASE | ODESC_SPOIL);
+				ODESC_ARTICLE | ODESC_BASE | ODESC_SPOIL);
 	strnfmt(buf, sizeof(buf), (found)?"Found %s":"Missed %s", o_name);
 
 	/* Known objects gets different treatment */

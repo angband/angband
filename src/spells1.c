@@ -86,6 +86,37 @@ int check_for_resist(struct player *p, int type, bitflag *flags, bool real)
 	return result;
 }
 
+/**
+ * Adjust a flagset so it only has one flag for each GF_ type.
+ */
+void dedup_gf_flags(bitflag *f)
+{
+	int i, result;
+
+	for (i = 0; i < GF_MAX; i++) {
+		const struct gf_type *gf_ptr = &gf_table[i];
+		result = 0;
+		if (gf_ptr->immunity && of_has(f, gf_ptr->immunity))
+			result += 2;
+		if (gf_ptr->resist && of_has(f, gf_ptr->resist))
+			result += 1;
+		if (gf_ptr->vuln && of_has(f, gf_ptr->vuln))
+			result -= 1;
+
+		if (result > 1) {
+			of_off(f, gf_ptr->resist);
+			of_off(f, gf_ptr->vuln);
+		} else if (result == 1) {
+			of_on(f, gf_ptr->resist);
+			of_off(f, gf_ptr->immunity);
+			of_off(f, gf_ptr->vuln);
+		} else if (result == 0) {
+			of_off(f, gf_ptr->resist);
+			of_off(f, gf_ptr->vuln);
+		}
+	}
+	return;
+}
 
 /**
  * Check whether the player is immune to side effects of a GF_ type.
@@ -1301,11 +1332,11 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Make traps */
 		case GF_MAKE_TRAP:
 		{
-			/* Require a "naked" floor grid */
-			if (!cave_naked_bold(y, x)) break;
+			/* Require an "empty" floor grid */
+			if (!cave_empty_bold(y, x)) break;
 
-			/* Place a trap */
-			place_trap(cave, y, x);
+			/* Create a trap */
+			create_trap(cave, y, x);
 
 			break;
 		}
@@ -1562,10 +1593,10 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ,
 				if (o_ptr->tval == TV_CHEST)
 				{
 					/* Disarm/Unlock traps */
-					if (o_ptr->pval[DEFAULT_PVAL] > 0)
+					if (o_ptr->extent > 0)
 					{
 						/* Disarm or Unlock */
-						o_ptr->pval[DEFAULT_PVAL] = (0 - o_ptr->pval[DEFAULT_PVAL]);
+						o_ptr->extent = (0 - o_ptr->extent);
 
 						/* Identify */
 						object_notice_everything(o_ptr);

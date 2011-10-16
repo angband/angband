@@ -6,7 +6,7 @@
  * 256 flags, due to 32 bytes of storage for item flags in the savefile. Flags
  * below start from 0 on line 21, so a flag's sequence number is its line
  * number minus 21.
- * 
+ *
  * index: the flag number
  * pval: is it a quantitative flag? FALSE means it's just on/off
  * timed: what is the corresponding TMD_ flag
@@ -85,7 +85,7 @@ OF(RES_CHAOS,   FALSE,	0,				OFID_NORMAL,OFT_HRES,	20,		0,	1,  1,  1,      1,  1
 OF(RES_DISEN,   FALSE, 	0,				OFID_NORMAL,OFT_HRES,	20,		0,	1,  1,  1,      1,  1,      1,      1,      1,      1,  1,      1,		"Your %s glows.")
 OF(SLOW_DIGEST, FALSE,	0,				OFID_TIMED,	OFT_MISC,	2,		0,	1,  1,  1,      1,  1,      1,      1,      1,      1,  1,      1,		"You feel your %s slow your metabolism.")
 OF(FEATHER,     FALSE,	0,				OFID_NORMAL,OFT_MISC,	1,		0,	1,  1,  1,      1,  1,      1,      1,      1,      1,  1,      1,		"Your %s slows your fall.")
-OF(LIGHT,       FALSE,	0,				OFID_WIELD,	OFT_MISC,	3,		0,	1,  1,  1,      1,  10,     1,      1,      1,      1,  1,      1,		"")
+OF(LIGHT,       TRUE,	0,				OFID_WIELD,	OFT_PVAL,	3,		6,	1,  1,  1,      1,  3,      1,      1,      1,      1,  1,      1,		"")
 OF(REGEN,       FALSE,	0,				OFID_TIMED,	OFT_MISC,	5,		0,	1,  1,  2,      2,  2,      2,      2,      2,      2,  2,      2,		"You feel your %s speed up your recovery.")
 OF(TELEPATHY,   FALSE,	TMD_TELEPATHY,	OFID_WIELD,	OFT_MISC,	35,		0,	1,	1,	2,		2,	2,		2,		2,		2,		2,	2,		2,		"")
 OF(SEE_INVIS,   FALSE,	TMD_SINVIS,		OFID_WIELD,	OFT_MISC,	6,		0,	1,  1,  2,      2,  2,      2,      2,      2,      2,  2,      2,		"")
@@ -127,4 +127,7 @@ OF(BRAND_FIZZ,  FALSE,	0,				OFID_WIELD,	OFT_BRAND,	0,		0,	1,	3,	3,		3,	3,		3,		
 OF(BRAND_BUZZ,  FALSE,	0,				OFID_WIELD,	OFT_BRAND,	0,		0,	1,	3,	3,		3,	3,		3,		3,		3,		3,	3,		3,		"")
 OF(BRAND_WARM,  FALSE,	0,				OFID_WIELD,	OFT_BRAND,	0,		0,	1,	3,	3,		3,	3,		3,		3,		3,		3,	3,		3,		"")
 OF(BRAND_COOL,  FALSE,	0,				OFID_WIELD, OFT_BRAND,	0,		0,	1,	3,	3,		3,	3,		3,		3,		3,		3,	3,		3,		"")
+OF(HURT_UNDEAD, FALSE,	0,				OFID_NORMAL,OFT_SLAY,	0,		0,	1,	3,	3,		3,	3,		3,		3,		3,		3,	3,		3,		"")
+OF(HURT_DEMON,  FALSE,	0,				OFID_NORMAL,OFT_SLAY,	0,		0,	1,	3,	3,		3,	3,		3,		3,		3,		3,	3,		3,		"")
+OF(GOOD,		FALSE,	0,				OFID_NONE,	OFT_INT,	0,		0,	0,	0,	0,		0,	0,		0,		0,		0,		0,	0,		0,		"")
 OF(MAX,			FALSE,	0,				0,			0,			0,      0,	0,  0,  0,      0,  0,      0,      0,      0,      0,  0,      0,		"")

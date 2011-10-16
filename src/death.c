@@ -282,7 +282,7 @@ static void death_info(const char *title, int row)
 
 				/* Get the object description */
 				object_desc(o_name, sizeof(o_name), o_ptr,
-							ODESC_PREFIX | ODESC_FULL);
+							ODESC_ARTICLE | ODESC_FULL);
 
 				/* Get the inventory color */
 				attr = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
@@ -344,7 +344,7 @@ static void death_examine(const char *title, int row)
 		object_type *o_ptr = &p_ptr->inventory[item];
 
 		tb = object_info(o_ptr, OINFO_FULL);
-		object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
+		object_desc(header, sizeof(header), o_ptr, ODESC_ARTICLE | ODESC_FULL);
 
 		textui_textblock_show(tb, area, format("%^s", header));
 		textblock_free(tb);

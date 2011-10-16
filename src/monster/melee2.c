@@ -1892,17 +1892,17 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 						    (o_ptr->tval == TV_WAND))
 						{
 							/* Charged? */
-							if (o_ptr->pval[DEFAULT_PVAL])
+							if (o_ptr->extent)
 							{
 								/* Get number of charge to drain */
 								unpower = (rlev / (o_ptr->kind->level + 2)) + 1;
 
 								/* Get new charge value, don't allow negative */
-								newcharge = MAX((o_ptr->pval[DEFAULT_PVAL]
+								newcharge = MAX((o_ptr->extent
 										- unpower),0);
 								
 								/* Remove the charges */
-								o_ptr->pval[DEFAULT_PVAL] = newcharge;
+								o_ptr->extent = newcharge;
 							}
 						}
 
@@ -1987,7 +1987,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 
 							/* Amount of gold to put in this object */
 							amt = gold > MAX_PVAL ? MAX_PVAL : gold;
-							o.pval[DEFAULT_PVAL] = amt;
+							o.extent = amt;
 							gold -= amt;
 
 							/* Set origin to stolen, so it is not confused with
@@ -2114,7 +2114,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 
 						/* Get a description */
 						object_desc(o_name, sizeof(o_name), o_ptr,
-									ODESC_PREFIX | ODESC_BASE);
+									ODESC_ARTICLE | ODESC_BASE);
 
 						/* Message */
 						msg("%sour %s (%c) was eaten!",
@@ -3375,7 +3375,7 @@ static void process_monster(struct cave *c, int m_idx)
 
 					/* Get the object name */
 					object_desc(o_name, sizeof(o_name), o_ptr,
-								ODESC_PREFIX | ODESC_FULL);
+								ODESC_ARTICLE | ODESC_FULL);
 
 					/* Get the monster name */
 					monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND1);

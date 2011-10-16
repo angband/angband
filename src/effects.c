@@ -1575,6 +1575,15 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			return TRUE;
 		}
 
+		case EF_SUN_HERO:
+		{
+			(void)light_area(damroll(20, 10), 8);
+			dur = randint1(25) + 25;
+			if (player_inc_timed(p_ptr, TMD_BOLD, dur, TRUE, TRUE)) *ident = TRUE;
+			if (player_inc_timed(p_ptr, TMD_SHERO, dur, TRUE, TRUE)) *ident = TRUE;
+			return TRUE;
+		}
+
 		case EF_WONDER:
 		{
 			if (effect_wonder(dir, randint1(100) + p_ptr->lev / 5,

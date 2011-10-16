@@ -116,10 +116,10 @@ bool search(bool verbose)
 					if (o_ptr->tval != TV_CHEST) continue;
 
 					/* Skip disarmed chests */
-					if (o_ptr->pval[DEFAULT_PVAL] <= 0) continue;
+					if (o_ptr->extent <= 0) continue;
 
 					/* Skip non-trapped chests */
-					if (!chest_traps[o_ptr->pval[DEFAULT_PVAL]]) continue;
+					if (!chest_traps[o_ptr->extent]) continue;
 
 					/* Identify once */
 					if (!object_is_known(o_ptr))
@@ -198,7 +198,7 @@ static void py_pickup_gold(void)
 			verbal = TRUE;
 
 		/* Increment total value */
-		total_gold += (s32b)o_ptr->pval[DEFAULT_PVAL];
+		total_gold += (s32b)o_ptr->extent;
 
 		/* Delete the gold */
 		delete_object_idx(this_o_idx);
@@ -304,10 +304,10 @@ static void py_pickup_aux(int o_idx, bool domsg)
 
 	/* If we have picked up ammo which matches something in the quiver, note
 	 * that it so that we can wield it later (and suppress pick up message) */
-	if (obj_is_ammo(o_ptr)) 
+	if (kind_is_ammo(o_ptr->tval))
 	{
 		int i;
-		for (i = QUIVER_START; i < QUIVER_END; i++) 
+		for (i = QUIVER_START; i < QUIVER_END; i++)
 		{
 			if (!p_ptr->inventory[i].kind) continue;
 			if (!object_similar(&p_ptr->inventory[i], o_ptr,
@@ -334,7 +334,7 @@ static void py_pickup_aux(int o_idx, bool domsg)
 	if (domsg && !quiver_slot)
 	{
 		/* Describe the object */
-		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_ARTICLE | ODESC_FULL);
 
 		/* Message */
 		msg("You have %s (%c).", o_name, index_to_label(slot));

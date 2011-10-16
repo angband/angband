@@ -1133,22 +1133,6 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 					add_stats( brring_total,  brring_mon,  brring_vault,vault,mon,number);
 					break;
 				}
-				
-				case SV_RING_NARYA:
-				case SV_RING_NENYA:
-				case SV_RING_VILYA:{
-				
-					add_stats( elring_total,  elring_mon,  elring_vault,vault,mon,number);
-					break;
-				}
-				
-				case SV_RING_POWER:{
-				
-					add_stats( onering_total,  onering_mon,  onering_vault,vault,mon,number);
-					break;
-				}
-				
-				
 			}
 		
 		break;
@@ -1321,14 +1305,14 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 		//msg_format("Found artifact %s",a_ptr->name);
 		
 		/* artifact is shallow */
-		if (a_ptr->alloc_min < (p_ptr->depth - 20)) art_shal[lvl] += addval;
+		if (a_ptr->alloc_min[0] < (p_ptr->depth - 20)) art_shal[lvl] += addval;
 		
 		/* artifact is close to the player depth */
-		if ((a_ptr->alloc_min >= p_ptr->depth - 20) &&
-			(a_ptr->alloc_min <= p_ptr->depth )) art_ave[lvl] += addval;
+		if ((a_ptr->alloc_min[0] >= p_ptr->depth - 20) &&
+			(a_ptr->alloc_min[0] <= p_ptr->depth )) art_ave[lvl] += addval;
 		
 		/* artifact is out of depth */
-		if (a_ptr->alloc_min > (p_ptr->depth)) art_ood[lvl] += addval;
+		if (a_ptr->alloc_min[0] > (p_ptr->depth)) art_ood[lvl] += addval;
 		
 		/* check to see if it's a special artifact */
 		if ((o_ptr->tval == TV_LIGHT) || (o_ptr->tval == TV_AMULET)
@@ -1364,7 +1348,7 @@ static void get_obj_data(const object_type *o_ptr, int y, int x, bool mon, bool 
 	/* Get info on gold. */
 	if (o_ptr->tval == TV_GOLD){
 	
-		int temp = o_ptr->pval[DEFAULT_PVAL];
+		int temp = o_ptr->extent;
 		gold_temp = temp;
 	    gold_total[lvl] += (gold_temp / tries);
 	

@@ -151,7 +151,7 @@ int apply_autoinscription(object_type *o_ptr)
 		return 0;
 
 	/* Get an object description */
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_ARTICLE | ODESC_FULL);
 
 	if (note[0] != 0)
 		o_ptr->note = quark_add(note);
@@ -467,7 +467,7 @@ bool squelch_item_ok(const object_type *o_ptr)
 		return TRUE;
 
 	/* Auto-squelch dead chests */
-	if (o_ptr->tval == TV_CHEST && o_ptr->pval[DEFAULT_PVAL] == 0)
+	if (o_ptr->tval == TV_CHEST && o_ptr->extent == 0)
 		return TRUE;
 
 	/* Do squelching by kind */

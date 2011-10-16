@@ -241,7 +241,7 @@ void textui_obj_examine(void)
 	/* Display info */
 	o_ptr = object_from_item_idx(item);
 	tb = object_info(o_ptr, OINFO_NONE);
-	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(header, sizeof(header), o_ptr, ODESC_ARTICLE | ODESC_FULL);
 
 	textui_textblock_show(tb, area, format("%^s", header));
 	textblock_free(tb);
@@ -493,6 +493,9 @@ void do_cmd_query_symbol(void)
 
 	u16b *who;
 
+	const monster_race *r_ptr;
+	const monster_lore *l_ptr;
+
 	/* Get a character, or abort */
 	if (!get_com("Enter character to be identified, or control+[ANU]: ", &sym))
 		return;
@@ -609,6 +612,8 @@ void do_cmd_query_symbol(void)
 	{
 		/* Extract a race */
 		r_idx = who[i];
+		r_ptr = &r_info[r_idx];
+		l_ptr = &l_list[r_idx];
 
 		/* Hack -- Auto-recall */
 		monster_race_track(r_idx);
@@ -617,7 +622,7 @@ void do_cmd_query_symbol(void)
 		handle_stuff(p_ptr);
 
 		/* Hack -- Begin the prompt */
-		roff_top(r_idx);
+		roff_top(r_ptr);
 
 		/* Hack -- Complete the prompt */
 		Term_addstr(-1, TERM_WHITE, " [(r)ecall, ESC]");
@@ -632,7 +637,7 @@ void do_cmd_query_symbol(void)
 				screen_save();
 
 				/* Recall on screen */
-				screen_roff(who[i]);
+				screen_roff(r_ptr, l_ptr);
 
 				/* Hack -- Complete the prompt (again) */
 				Term_addstr(-1, TERM_WHITE, " [(r)ecall, ESC]");

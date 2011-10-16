@@ -522,7 +522,7 @@ bool slot_can_wield_item(int slot, const object_type *o_ptr)
 {
 	if (o_ptr->tval == TV_RING)
 		return (slot == INVEN_LEFT || slot == INVEN_RIGHT) ? TRUE : FALSE;
-	else if (obj_is_ammo(o_ptr))
+	else if (kind_is_ammo(o_ptr->tval))
 		return (slot >= QUIVER_START && slot < QUIVER_END) ? TRUE : FALSE;
 	else
 		return (wield_slot(o_ptr) == slot) ? TRUE : FALSE;
@@ -1411,7 +1411,7 @@ s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 
 		if (verbose)
 		{
-			path_build(buf, sizeof(buf), ANGBAND_DIR_USER, 					"pricing.log");
+			path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "pricing.log");
                 	log_file = file_open(buf, pricing_mode, FTYPE_TEXT);
                 	if (!log_file)
                 	{
@@ -1468,9 +1468,9 @@ s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 			total_value = value * qty;
 
 			/* Calculate number of charges, rounded up */
-			charges = o_ptr->pval[DEFAULT_PVAL]
+			charges = o_ptr->extent
 				* qty / o_ptr->number;
-			if ((o_ptr->pval[DEFAULT_PVAL] * qty) % o_ptr->number != 0)
+			if ((o_ptr->extent * qty) % o_ptr->number != 0)
 				charges++;
 
 			/* Pay extra for charges, depending on standard number of charges */
@@ -1608,7 +1608,7 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
 		case TV_GOLD:
 		{
 			/* Too much gold or too many charges */
-			if (o_ptr->pval[DEFAULT_PVAL] + j_ptr->pval[DEFAULT_PVAL] > MAX_PVAL)
+			if (o_ptr->extent + j_ptr->extent > MAX_PVAL)
 				return FALSE;
 
 			/* ... otherwise ok */
@@ -1727,8 +1727,8 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 	if (o_ptr->tval == TV_WAND || o_ptr->tval == TV_STAFF ||
 			o_ptr->tval == TV_GOLD)
 	{
-		int total = o_ptr->pval[DEFAULT_PVAL] + j_ptr->pval[DEFAULT_PVAL];
-		o_ptr->pval[DEFAULT_PVAL] = total >= MAX_PVAL ? MAX_PVAL : total;
+		int total = o_ptr->extent + j_ptr->extent;
+		o_ptr->extent = total >= MAX_PVAL ? MAX_PVAL : total;
 	}
 
 	/* Combine origin data as best we can */
@@ -1812,8 +1812,8 @@ void object_copy_amt(object_type *dst, object_type *src, int amt)
 	 */
 	if (src->tval == TV_WAND || src->tval == TV_STAFF)
 	{
-		dst->pval[DEFAULT_PVAL] =
-			src->pval[DEFAULT_PVAL] * amt / src->number;
+		dst->extent =
+			src->extent * amt / src->number;
 	}
 
 	if (src->tval == TV_ROD)
@@ -2251,8 +2251,8 @@ void inven_item_charges(int item)
 	if (!object_is_known(o_ptr)) return;
 
 	/* Print a message */
-	msg("You have %d charge%s remaining.", o_ptr->pval[DEFAULT_PVAL],
-	    (o_ptr->pval[DEFAULT_PVAL] != 1) ? "s" : "");
+	msg("You have %d charge%s remaining.", o_ptr->extent,
+	    (o_ptr->extent != 1) ? "s" : "");
 }
 
 
@@ -2278,7 +2278,7 @@ void inven_item_describe(int item)
 	else
 	{
 		/* Get a description */
-		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_ARTICLE | ODESC_FULL);
 
 		/* Print a message */
 		msg("You have %s (%c).", o_name, index_to_label(item));
@@ -2597,9 +2597,9 @@ void floor_item_charges(int item)
 
 	/* Print a message */
 	msg("There %s %d charge%s remaining.",
-	    (o_ptr->pval[DEFAULT_PVAL] != 1) ? "are" : "is",
-	     o_ptr->pval[DEFAULT_PVAL],
-	    (o_ptr->pval[DEFAULT_PVAL] != 1) ? "s" : "");
+	    (o_ptr->extent != 1) ? "are" : "is",
+	     o_ptr->extent,
+	    (o_ptr->extent != 1) ? "s" : "");
 }
 
 
@@ -2614,7 +2614,7 @@ void floor_item_describe(int item)
 	char o_name[80];
 
 	/* Get a description */
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_ARTICLE | ODESC_FULL);
 
 	/* Print a message */
 	msg("You see %s.", o_name);
@@ -2828,8 +2828,8 @@ extern s16b inven_carry(struct player *p, struct object *o)
 			/* Lights sort by decreasing fuel */
 			if (o->tval == TV_LIGHT)
 			{
-				if (o->pval[DEFAULT_PVAL] > j_ptr->pval[DEFAULT_PVAL]) break;
-				if (o->pval[DEFAULT_PVAL] < j_ptr->pval[DEFAULT_PVAL]) continue;
+				if (o->extent > j_ptr->extent) break;
+				if (o->extent < j_ptr->extent) continue;
 			}
 
 			/* Determine the "value" of the pack item */
@@ -2943,7 +2943,7 @@ s16b inven_takeoff(int item, int amt)
 	i_ptr->number = amt;
 
 	/* Describe the object */
-	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_ARTICLE | ODESC_FULL);
 
 	/* Took off weapon */
 	if (item == INVEN_WIELD)
@@ -3048,7 +3048,7 @@ void inven_drop(int item, int amt)
 	object_split(i_ptr, o_ptr, amt);
 
 	/* Describe local object */
-	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_ARTICLE | ODESC_FULL);
 
 	/* Message */
 	msg("You drop %s (%c).", o_name, index_to_label(item));
@@ -3096,7 +3096,7 @@ void combine_pack(void)
 		{
 			/* Count the gold */
 			slide = TRUE;
-			p_ptr->au += o_ptr->pval[DEFAULT_PVAL];
+			p_ptr->au += o_ptr->extent;
 		}
 
 		/* Scan the items above that item */
@@ -3227,8 +3227,8 @@ void reorder_pack(void)
 			/* Lights sort by decreasing fuel */
 			if (o_ptr->tval == TV_LIGHT)
 			{
-				if (o_ptr->pval[DEFAULT_PVAL] > j_ptr->pval[DEFAULT_PVAL]) break;
-				if (o_ptr->pval[DEFAULT_PVAL] < j_ptr->pval[DEFAULT_PVAL]) continue;
+				if (o_ptr->extent > j_ptr->extent) break;
+				if (o_ptr->extent < j_ptr->extent) continue;
 			}
 
 			/* Determine the "value" of the pack item */
@@ -3345,10 +3345,10 @@ void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt)
 	if ((o_ptr->tval == TV_WAND) ||
 	    (o_ptr->tval == TV_STAFF))
 	{
-		q_ptr->pval[DEFAULT_PVAL] = o_ptr->pval[DEFAULT_PVAL] * amt / o_ptr->number;
+		q_ptr->extent = o_ptr->extent * amt / o_ptr->number;
 
 		if (amt < o_ptr->number)
-			o_ptr->pval[DEFAULT_PVAL] -= q_ptr->pval[DEFAULT_PVAL];
+			o_ptr->extent -= q_ptr->extent;
 	}
 
 	/*
@@ -3383,7 +3383,7 @@ void reduce_charges(object_type *o_ptr, int amt)
 	     (o_ptr->tval == TV_STAFF)) &&
 	    (amt < o_ptr->number))
 	{
-		o_ptr->pval[DEFAULT_PVAL] -= o_ptr->pval[DEFAULT_PVAL] * amt / o_ptr->number;
+		o_ptr->extent -= o_ptr->extent * amt / o_ptr->number;
 	}
 
 	if ((o_ptr->tval == TV_ROD) &&
@@ -3632,6 +3632,93 @@ int lookup_sval(int tval, const char *name)
 	return -1;
 }
 
+byte add_kind(int tval, const char *name)
+{
+	object_kind *new_kind;
+	char decorated_name[1024];
+	static byte dynamic_sval = SV_DYNAMIC;
+
+	/* Make the k_info array one bigger and blank the new entry */
+	k_info = (object_kind *)mem_realloc(k_info, (z_info->k_max + 1) * sizeof(object_kind));
+	new_kind = &k_info[z_info->k_max];
+	memset(new_kind, 0, sizeof(object_kind));
+
+	/* Fill in the new entry, generating the name from what's passed in, or the base
+	 * item type if nothing is passed in.
+	 * The sval is generated from an increasing counter, and returned.
+	 */
+	new_kind->kidx = z_info->k_max;
+	new_kind->tval = tval;
+	new_kind->base = &kb_info[tval];
+	/* Add the required article position and pluralisation to the base name */
+	if (name) {
+		snprintf(decorated_name, 1024, "& %s~", name);
+	} else {
+		snprintf(decorated_name, 1024, "& %s", new_kind->base->name);
+	}
+	new_kind->name = string_make(decorated_name);
+	/* Need to set a new sval */
+	new_kind->sval = dynamic_sval;
+	dynamic_sval++;
+
+	of_on(new_kind->flags, OF_INSTA_ART);
+
+	z_info->k_max += 1;
+
+	return new_kind->sval;
+}
+
+/**
+ * Apply corrections to kinds that only apply to artifacts:
+ *   Remove unused kinds
+ *   Pick up correct level, weight and cost
+ *   Allocate gylph and attribute if necessary
+ */
+void fixup_artifact_kinds(void)
+{
+	int k_idx;
+
+	for (k_idx = 0; k_idx < z_info->k_max; k_idx++) {
+		object_kind *k_ptr = &k_info[k_idx];
+		int tval = k_ptr->tval;
+		int sval = k_ptr->sval;
+		int a_idx;
+
+		/* Only interested in special artifact kinds */
+		/* This might be able to be replaced with if(alloc_prob == 0) */
+		if (!of_has(k_ptr->flags, OF_INSTA_ART))
+			continue;
+
+		/* Check that some artifact uses this tval/sval combination */
+		for (a_idx = 0; a_idx < z_info->a_max; a_idx++) {
+			if (a_info[a_idx].tval == tval &&
+				a_info[a_idx].sval == sval)
+				break;
+		}
+
+		if (a_idx == z_info->a_max)
+		{
+			/* Zero out the kind as it's not used */
+			memset(k_ptr, 0, sizeof(*k_ptr));
+		} else {
+			/* It is used, do some minor fixups */
+			struct artifact *a_ptr = &a_info[a_idx];
+
+			k_ptr->level = a_ptr->level;
+			k_ptr->weight = a_ptr->weight;
+			k_ptr->cost = a_ptr->cost;
+
+			if (k_ptr->tval == TV_LIGHT) {
+				/* Hack: lights need display char assigning, as they don't
+				 * have flavours - set to yellow tilde */
+				k_ptr->d_char = L'~';
+				k_ptr->d_attr = color_char_to_attr('y');
+			}
+		}
+
+	}
+}
+
 /**
  * Returns the numeric equivalent tval of the textual tval `name`.
  */
@@ -3723,7 +3810,7 @@ void display_object_recall(object_type *o_ptr)
 	char header[120];
 
 	textblock *tb = object_info(o_ptr, OINFO_NONE);
-	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(header, sizeof(header), o_ptr, ODESC_ARTICLE | ODESC_FULL);
 
 	clear_from(0);
 	textui_textblock_place(tb, SCREEN_REGION, header);
@@ -3980,25 +4067,50 @@ void display_itemlist(void)
 
 
 /* Basic tval testers */
-bool obj_is_staff(const object_type *o_ptr)  { return o_ptr->tval == TV_STAFF; }
-bool obj_is_wand(const object_type *o_ptr)   { return o_ptr->tval == TV_WAND; }
-bool obj_is_rod(const object_type *o_ptr)    { return o_ptr->tval == TV_ROD; }
-bool obj_is_potion(const object_type *o_ptr) { return o_ptr->tval == TV_POTION; }
-bool obj_is_scroll(const object_type *o_ptr) { return o_ptr->tval == TV_SCROLL; }
-bool obj_is_food(const object_type *o_ptr)   { return o_ptr->tval == TV_FOOD; }
-bool obj_is_light(const object_type *o_ptr)   { return o_ptr->tval == TV_LIGHT; }
-bool obj_is_ring(const object_type *o_ptr)   { return o_ptr->tval == TV_RING; }
+bool kind_is_staff(int tval)  { return tval == TV_STAFF; }
+bool kind_is_wand(int tval)   { return tval == TV_WAND; }
+bool kind_is_rod(int tval)    { return tval == TV_ROD; }
+bool kind_is_potion(int tval) { return tval == TV_POTION; }
+bool kind_is_scroll(int tval) { return tval == TV_SCROLL; }
+bool kind_is_food(int tval)   { return tval == TV_FOOD; }
+bool kind_is_light(int tval)  { return tval == TV_LIGHT; }
+bool kind_is_ring(int tval)   { return tval == TV_RING; }
+bool kind_is_bow(int tval)    { return tval == TV_BOW; }
 
-
-/**
- * Determine whether an object is ammo
- *
- * \param o_ptr is the object to check
- */
-bool obj_is_ammo(const object_type *o_ptr)
+bool kind_is_weapon(int tval)
 {
-	switch (o_ptr->tval)
-	{
+	switch (tval) {
+		case TV_SWORD:
+		case TV_HAFTED:
+		case TV_POLEARM:
+		case TV_DIGGING:
+			return TRUE;
+		default:
+			return FALSE;
+	}
+}
+
+bool kind_is_armour(int tval)
+{
+	switch (tval) {
+		case TV_BOOTS:
+		case TV_GLOVES:
+		case TV_HELM:
+		case TV_CROWN:
+		case TV_SHIELD:
+		case TV_CLOAK:
+		case TV_SOFT_ARMOR:
+		case TV_HARD_ARMOR:
+		case TV_DRAG_ARMOR:
+			return TRUE;
+		default:
+			return FALSE;
+	}
+}
+
+bool kind_is_ammo(int tval)
+{
+	switch (tval) {
 		case TV_SHOT:
 		case TV_ARROW:
 		case TV_BOLT:
@@ -4013,7 +4125,7 @@ bool obj_has_charges(const object_type *o_ptr)
 {
 	if (o_ptr->tval != TV_WAND && o_ptr->tval != TV_STAFF) return FALSE;
 
-	if (o_ptr->pval[DEFAULT_PVAL] <= 0) return FALSE;
+	if (o_ptr->extent <= 0) return FALSE;
 
 	return TRUE;
 }
@@ -4046,31 +4158,15 @@ bool obj_can_activate(const object_type *o_ptr)
 	return FALSE;
 }
 
-bool obj_can_refill(const object_type *o_ptr)
+bool obj_can_refill(const object_type *obj)
 {
-	bitflag f[OF_SIZE];
-	const object_type *j_ptr = &p_ptr->inventory[INVEN_LIGHT];
+	const object_type *light = &p_ptr->inventory[INVEN_LIGHT];
 
-	/* Get flags */
-	object_flags(o_ptr, f);
+	if (light->sval == SV_LIGHT_LANTERN &&
+			obj->tval == TV_FLASK)
+		return TRUE;
 
-	if (j_ptr->sval == SV_LIGHT_LANTERN)
-	{
-		/* Flasks of oil are okay */
-		if (o_ptr->tval == TV_FLASK) return (TRUE);
-	}
-
-	/* Non-empty, non-everburning sources are okay */
-	if ((o_ptr->tval == TV_LIGHT) &&
-	    (o_ptr->sval == j_ptr->sval) &&
-	    (o_ptr->timeout > 0) &&
-	    !of_has(f, OF_NO_FUEL))
-	{
-		return (TRUE);
-	}
-
-	/* Assume not okay */
-	return (FALSE);
+	return FALSE;
 }
 
 
@@ -4296,7 +4392,7 @@ void pack_overflow(void)
 	msg("Your pack overflows!");
 
 	/* Describe */
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_ARTICLE | ODESC_FULL);
 
 	/* Message */
 	msg("You drop %s (%c).", o_name, index_to_label(item));

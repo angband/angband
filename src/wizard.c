@@ -396,7 +396,7 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 
 	/* Describe fully */
 	object_desc(buf, sizeof(buf), o_ptr,
-				ODESC_PREFIX | ODESC_FULL | ODESC_SPOIL);
+				ODESC_ARTICLE | ODESC_FULL | ODESC_SPOIL);
 
 	prt(buf, 2, j);
 
@@ -648,6 +648,7 @@ static void wiz_tweak_item(object_type *o_ptr)
 	WIZ_TWEAK(to_h);
 	WIZ_TWEAK(to_d);
 
+/* FIXME
 	p = "Enter new ego item index: ";
 	strnfmt(tmp_val, sizeof(tmp_val), "0");
 	if (o_ptr->ego)
@@ -655,12 +656,12 @@ static void wiz_tweak_item(object_type *o_ptr)
 	if (!get_string(p, tmp_val, 6)) return;
 	val = atoi(tmp_val);
 	if (val) {
-		o_ptr->ego = &e_info[val];
-		ego_apply_magic(o_ptr, p_ptr->depth);
+		o_ptr->affix[0] = &e_info[val].eidx;
+		ego_apply_magic(o_ptr, p_ptr->depth, o_ptr->affix[0]);
 	} else
-		o_ptr->ego = 0;
+		o_ptr->affix[0] = 0;
 	wiz_display_item(o_ptr, TRUE);
-
+*/
 	p = "Enter new artifact index: ";
 	strnfmt(tmp_val, sizeof(tmp_val), "0");
 	if (o_ptr->artifact)
@@ -1151,7 +1152,7 @@ static void wiz_create_artifact(int a_idx)
 		return;
 
 	/* Create the artifact */
-	object_prep(i_ptr, kind, a_ptr->alloc_min, RANDOMISE);
+	object_prep(i_ptr, kind, a_ptr->alloc_min[0], RANDOMISE);
 
 	/* Save the name */
 	i_ptr->artifact = a_ptr;
@@ -1631,6 +1632,8 @@ void do_cmd_debug(void)
 
 	struct keypress cmd;
 
+	const monster_race *r_ptr;
+
 
 	/* Get a "debug command" */
 	if (!get_com("Debug Command: ", &cmd)) return;
@@ -1906,8 +1909,11 @@ void do_cmd_debug(void)
 				if (sym.code == 'a' || sym.code == 'A')
 				{
 					int i;
-					for (i = 0; i < z_info->r_max; i++)
-						cheat_monster_lore(i, &l_list[i]);
+					for (i = 1; i < z_info->r_max; i++)
+					{
+						r_ptr = &r_info[i];
+						cheat_monster_lore(r_ptr, &l_list[i]);
+					}
 					break;
 				}
 				else if (sym.code == 's' || sym.code == 'S')
@@ -1943,7 +1949,10 @@ void do_cmd_debug(void)
 
 			/* Did we find a valid monster? */
 			if (r_idx > 0)
-				cheat_monster_lore(r_idx, &l_list[r_idx]);
+			{
+				r_ptr = &r_info[r_idx];
+				cheat_monster_lore(r_ptr, &l_list[r_idx]);
+			}
 			else
 				msg("No monster found.");
 	
@@ -2033,8 +2042,11 @@ void do_cmd_debug(void)
 				if (sym.code == 'a' || sym.code == 'A')
 				{
 					int i;
-					for (i = 0; i < z_info->r_max; i++)
-						wipe_monster_lore(i, &l_list[i]);
+					for (i = 1; i < z_info->r_max; i++)
+					{
+						r_ptr = &r_info[i];
+						wipe_monster_lore(r_ptr, &l_list[i]);
+					}
 					break;
 				}
 				else if (sym.code == 's' || sym.code == 'S')
@@ -2070,7 +2082,10 @@ void do_cmd_debug(void)
 
 			/* Did we find a valid monster? */
 			if (r_idx > 0)
-				wipe_monster_lore(r_idx, &l_list[r_idx]);
+			{
+				r_ptr = &r_info[r_idx];
+				wipe_monster_lore(r_ptr, &l_list[r_idx]);
+			}
 			else
 				msg("No monster found.");
 	

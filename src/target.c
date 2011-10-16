@@ -609,6 +609,9 @@ static struct keypress target_set_interactive_aux(int y, int x, int mode)
 
 	char coords[20];
 
+	const monster_race *r_ptr;
+	const monster_lore *l_ptr;
+
 	/* Describe the square location */
 	coords_desc(coords, sizeof(coords), y, x);
 
@@ -665,7 +668,8 @@ static struct keypress target_set_interactive_aux(int y, int x, int mode)
 		if (cave->m_idx[y][x] > 0)
 		{
 			monster_type *m_ptr = cave_monster(cave, cave->m_idx[y][x]);
-			monster_race *r_ptr = &r_info[m_ptr->r_idx];
+			r_ptr = &r_info[m_ptr->r_idx];
+			l_ptr = &l_list[m_ptr->r_idx];
 
 			/* Visible */
 			if (m_ptr->ml && !m_ptr->unaware)
@@ -699,7 +703,7 @@ static struct keypress target_set_interactive_aux(int y, int x, int mode)
 						screen_save();
 
 						/* Recall on screen */
-						screen_roff(m_ptr->r_idx);
+						screen_roff(r_ptr, l_ptr);
 
 						/* Command */
 						query = inkey();
@@ -776,7 +780,7 @@ static struct keypress target_set_interactive_aux(int y, int x, int mode)
 
 					/* Obtain an object description */
 					object_desc(o_name, sizeof(o_name), o_ptr,
-								ODESC_PREFIX | ODESC_FULL);
+								ODESC_ARTICLE | ODESC_FULL);
 
 					/* Describe the object */
 					if (p_ptr->wizard)
@@ -900,7 +904,7 @@ static struct keypress target_set_interactive_aux(int y, int x, int mode)
 
 				/* Obtain an object description */
 				object_desc(o_name, sizeof(o_name), o_ptr,
-							ODESC_PREFIX | ODESC_FULL);
+							ODESC_ARTICLE | ODESC_FULL);
 
 				/* Describe the object */
 				if (p_ptr->wizard)

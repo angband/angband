@@ -177,6 +177,8 @@ bool flag_on(bitflag *flags, const size_t size, const int flag)
 	const size_t flag_offset = FLAG_OFFSET(flag);
 	const int flag_binary = FLAG_BINARY(flag);
 
+	if (!flag) return FALSE;
+
 	assert(flag_offset < size);
 
 	if (flags[flag_offset] & flag_binary) return FALSE;
@@ -190,6 +192,8 @@ bool flag_on_dbg(bitflag *flags, const size_t size, const int flag, const char *
 {
 	const size_t flag_offset = FLAG_OFFSET(flag);
 	const int flag_binary = FLAG_BINARY(flag);
+
+	if (!flag) return FALSE;
 
 	if (flag_offset >= size)
 	{
@@ -218,6 +222,8 @@ bool flag_off(bitflag *flags, const size_t size, const int flag)
 {
 	const size_t flag_offset = FLAG_OFFSET(flag);
 	const int flag_binary = FLAG_BINARY(flag);
+
+	if (!flag) return FALSE;
 
 	assert(flag_offset < size);
 

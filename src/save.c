@@ -1,8 +1,8 @@
 /*
  * File: save.c
- * Purpose: Old-style savefile saving
+ * Purpose: Savefile block saving functions
  *
- * Copyright (c) 1997 Ben Harrison
+ * Copyright (c) 1997 Ben Harrison and others
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -37,6 +37,13 @@ static void wr_item(const object_type *o_ptr)
 
 	wr_s16b(0);
 
+	/* Save the constants we will use when loading items, so we don't have to
+	   worry if they change (thanks to Gabe Cunningham) */
+	wr_byte(MAX_PVALS);
+	wr_byte(OF_SIZE);
+	wr_byte(OF_BYTES);
+	wr_byte(MAX_AFFIXES);
+
 	/* Location */
 	wr_byte(o_ptr->iy);
 	wr_byte(o_ptr->ix);
@@ -44,23 +51,45 @@ static void wr_item(const object_type *o_ptr)
 	wr_byte(o_ptr->tval);
 	wr_byte(o_ptr->sval);
 
-        for (i = 0; i < MAX_PVALS; i++) {
+	for (i = 0; i < MAX_PVALS; i++)
 		wr_s16b(o_ptr->pval[i]);
-        }
-        wr_byte(o_ptr->num_pvals);
+
+	wr_byte(o_ptr->num_pvals);
 
 	wr_byte(0);
 
 	wr_byte(o_ptr->number);
 	wr_s16b(o_ptr->weight);
 
-	if (o_ptr->artifact) wr_byte(o_ptr->artifact->aidx);
-	else wr_byte(0);
+	if (o_ptr->artifact)
+		wr_byte(o_ptr->artifact->aidx);
+	else
+		wr_byte(0);
 
-	if (o_ptr->ego) wr_byte(o_ptr->ego->eidx);
-	else wr_byte(0);
+	if (o_ptr->theme)
+		wr_u16b(o_ptr->theme->index);
+	else
+		wr_u16b(0);
+
+	for (i = 0; i < MAX_AFFIXES; i++) {
+		if (o_ptr->affix[i])
+			wr_u16b(o_ptr->affix[i]->eidx);
+		else
+			wr_u16b(0);
+	}
+
+	if (o_ptr->prefix)
+		wr_u16b(o_ptr->prefix->eidx);
+	else
+		wr_u16b(0);
+
+	if (o_ptr->suffix)
+		wr_u16b(o_ptr->suffix->eidx);
+	else
+		wr_u16b(0);
 
 	wr_s16b(o_ptr->timeout);
+	wr_s32b(o_ptr->extent);
 
 	wr_s16b(o_ptr->to_h);
 	wr_s16b(o_ptr->to_d);
@@ -93,7 +122,7 @@ static void wr_item(const object_type *o_ptr)
 
 	/* Held by monster index */
 	wr_s16b(o_ptr->held_m_idx);
-	
+
 	wr_s16b(o_ptr->mimicking_m_idx);
 
 	/* Save the inscription (if any) */
@@ -432,7 +461,7 @@ void wr_squelch(void)
 		byte flags = 0;
 
 		/* Figure out and write the everseen flag */
-		if (e_info[i].everseen) flags |= 0x02;
+		if (e_info[i].everseen) flags |= 0x02; /* XXX Ugh - where is this set?*/
 		wr_byte(flags);
 	}
 

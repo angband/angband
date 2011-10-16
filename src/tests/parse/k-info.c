@@ -128,8 +128,8 @@ int test_c0(void *state) {
 	eq(r, 0);
 	k = parser_priv(state);
 	require(k);
-	eq(k->charge.dice, 2);
-	eq(k->charge.sides, 8);
+	eq(k->extent.dice, 2);
+	eq(k->extent.sides, 8);
 	ok;
 }
 

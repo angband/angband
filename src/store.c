@@ -773,7 +773,7 @@ static void store_object_absorb(object_type *o_ptr, object_type *j_ptr)
 	/* Hack -- if wands/staves are stacking, combine the charges */
 	if ((o_ptr->tval == TV_WAND) || (o_ptr->tval == TV_STAFF))
 	{
-		o_ptr->pval[DEFAULT_PVAL] += j_ptr->pval[DEFAULT_PVAL];
+		o_ptr->extent += j_ptr->extent;
 	}
 
 	if ((o_ptr->origin != j_ptr->origin) ||
@@ -1036,11 +1036,11 @@ static int store_carry(struct store *store, object_type *o_ptr)
 
 				/* Calculate the recharged number of charges */
 				for (i = 0; i < o_ptr->number; i++)
-					charges += randcalc(kind->charge, 0, RANDOMISE);
+					charges += randcalc(kind->extent, 0, RANDOMISE);
 
 				/* Use recharged value only if greater */
-				if (charges > o_ptr->pval[DEFAULT_PVAL])
-					o_ptr->pval[DEFAULT_PVAL] = charges;
+				if (charges > o_ptr->extent)
+					o_ptr->extent = charges;
 			}
 
 			break;
@@ -1217,7 +1217,7 @@ static void store_delete_index(struct store *store, int what)
 				/* Hack -- decrement the total charges of staves and wands. */
 				if (o_ptr->tval == TV_STAFF || o_ptr->tval == TV_WAND)
 				{
-					o_ptr->pval[DEFAULT_PVAL] -= num * o_ptr->pval[DEFAULT_PVAL] / o_ptr->number;
+					o_ptr->extent -= num * o_ptr->extent / o_ptr->number;
 				}
 			}
 		}
@@ -1794,7 +1794,7 @@ static void store_display_entry(menu_type *menu, int oid, bool cursor, int row, 
 {
 	object_type *o_ptr;
 	s32b x;
-	odesc_detail_t desc = ODESC_PREFIX;
+	odesc_detail_t desc = ODESC_ARTICLE;
 
 	char o_name[80];
 	char out_val[160];
@@ -1810,7 +1810,7 @@ static void store_display_entry(menu_type *menu, int oid, bool cursor, int row, 
 	/* Describe the object - preserving insriptions in the home */
 	if (store->sidx == STORE_HOME) desc = ODESC_FULL;
 	else desc = ODESC_FULL | ODESC_STORE;
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | desc);
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_ARTICLE | desc);
 
 	/* Display the object */
 	c_put_str(tval_to_attr[o_ptr->tval & 0x7F], o_name, row, col);
@@ -2191,7 +2191,7 @@ void do_cmd_buy(cmd_code code, cmd_arg args[])
 	}
 
 	/* Describe the object (fully) */
-	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_ARTICLE | ODESC_FULL);
 
 	/* Extract the price for the entire stack */
 	price = price_item(i_ptr, FALSE, i_ptr->number);
@@ -2229,13 +2229,13 @@ void do_cmd_buy(cmd_code code, cmd_arg args[])
 
 	/* Message */
 	object_desc(o_name, sizeof(o_name), &p_ptr->inventory[item_new],
-				ODESC_PREFIX | ODESC_FULL);
+				ODESC_ARTICLE | ODESC_FULL);
 	msg("You have %s (%c).", o_name, index_to_label(item_new));
 
 	/* Hack - Reduce the number of charges in the original stack */
 	if (o_ptr->tval == TV_WAND || o_ptr->tval == TV_STAFF)
 	{
-		o_ptr->pval[DEFAULT_PVAL] -= i_ptr->pval[DEFAULT_PVAL];
+		o_ptr->extent -= i_ptr->extent;
 	}
 
 	/* Handle stuff */
@@ -2318,7 +2318,7 @@ void do_cmd_retrieve(cmd_code code, cmd_arg args[])
 
 	/* Describe just the result */
 	object_desc(o_name, sizeof(o_name), &p_ptr->inventory[item_new],
-				ODESC_PREFIX | ODESC_FULL);
+				ODESC_ARTICLE | ODESC_FULL);
 	
 	/* Message */
 	msg("You have %s (%c).", o_name, index_to_label(item_new));
@@ -2418,7 +2418,7 @@ static bool store_purchase(int item)
 	}
 
 	/* Describe the object (fully) */
-	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_ARTICLE | ODESC_FULL);
 
 	/* Attempt to buy it */
 	if (store->sidx != STORE_HOME)
@@ -2557,7 +2557,7 @@ void do_cmd_sell(cmd_code code, cmd_arg args[])
 /*	msg("Value is %d", value); */
 
 	/* Get the description all over again */
-	object_desc(o_name, sizeof(o_name), &sold_item, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), &sold_item, ODESC_ARTICLE | ODESC_FULL);
 
 	/* Describe the result (in message buffer) */
 	msg("You sold %s (%c) for %ld gold.",
@@ -2622,7 +2622,7 @@ void do_cmd_stash(cmd_code code, cmd_arg args[])
 	distribute_charges(o_ptr, &dropped_item, amt);
 	
 	/* Describe */
-	object_desc(o_name, sizeof(o_name), &dropped_item, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), &dropped_item, ODESC_ARTICLE | ODESC_FULL);
 
 	/* Message */
 	msg("You drop %s (%c).", o_name, index_to_label(item));
@@ -2718,7 +2718,7 @@ static bool store_sell(void)
 	}
 
 	/* Get a full description */
-	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_ARTICLE | ODESC_FULL);
 
 	/* Real store */
 	if (store->sidx != STORE_HOME)
@@ -2777,7 +2777,7 @@ static void store_examine(int item)
 
 	/* Show full info in most stores, but normal info in player home */
 	tb = object_info(o_ptr, (store->sidx != STORE_HOME) ? OINFO_FULL : OINFO_NONE);
-	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(header, sizeof(header), o_ptr, ODESC_ARTICLE | ODESC_FULL);
 
 	textui_textblock_show(tb, area, header);
 	textblock_free(tb);

@@ -70,20 +70,22 @@ void object_pval_flags_known(const object_type *o_ptr,
     for (i = 0; i < MAX_PVALS; i++)
         of_inter(flags[i], o_ptr->known_flags);
 
-	/* Kind and ego pval_flags may have shifted pvals so we iterate */
+	/* Kind and ego pval_flags may have shifted pvals or gone so we iterate */
 	if (object_flavor_is_aware(o_ptr))
 	    for (i = 0; i < MAX_PVALS; i++)
 			for (flag = of_next(o_ptr->kind->pval_flags[i], FLAG_START);
 					flag != FLAG_END; flag = of_next(o_ptr->kind->pval_flags[i],
 					flag + 1))
-				of_on(flags[which_pval(o_ptr, flag)], flag);
+				if (of_has(o_ptr->flags, flag))
+					of_on(flags[which_pval(o_ptr, flag)], flag);
 
 	if (o_ptr->ego && easy_know(o_ptr))
 	    for (i = 0; i < MAX_PVALS; i++)
 			for (flag = of_next(o_ptr->ego->pval_flags[i], FLAG_START);
 					flag != FLAG_END; flag = of_next(o_ptr->ego->pval_flags[i],
 					flag + 1))
-				of_on(flags[which_pval(o_ptr, flag)], flag);
+				if (of_has(o_ptr->flags, flag))
+					of_on(flags[which_pval(o_ptr, flag)], flag);
 }
 
 /**
@@ -108,7 +110,7 @@ bool object_this_pval_is_visible(const object_type *o_ptr, int pval)
         object_pval_flags_known(o_ptr, f);
 
         /* Create the mask for pval-related flags */
-        create_mask(f2, FALSE, OFT_STAT, OFT_PVAL, OFT_MAX);
+        create_pval_mask(f2);
 
         if (of_is_inter(f[pval], f2))
             return TRUE;
@@ -193,7 +195,7 @@ bool object_add_pval(object_type *o_ptr, int pval, int flag)
 	/* Sanity check (we may be called with 0 - see ticket #1451) */
 	if (!pval) return FALSE;
 
-	create_mask(f, FALSE, OFT_PVAL, OFT_STAT, OFT_MAX);
+	create_pval_mask(f);
 
 	if (of_has(o_ptr->flags, flag)) {
 		/* See if any other flags are associated with this pval */
@@ -215,15 +217,20 @@ bool object_add_pval(object_type *o_ptr, int pval, int flag)
 	/* Create a new pval if we can */
 	if (o_ptr->num_pvals < MAX_PVALS) {
 		o_ptr->pval[o_ptr->num_pvals] = pval;
-		of_on(o_ptr->pval_flags[o_ptr->num_pvals], flag);
 		if (a != -1) { /* then we need to move the flag to the new pval */
 			o_ptr->pval[o_ptr->num_pvals] += o_ptr->pval[a];
 			of_off(o_ptr->pval_flags[a], flag);
 		} else /* We need to add it to object_flags */
 			of_on(o_ptr->flags, flag);
-		o_ptr->num_pvals++; /* We do this last because pvals start from zero */
-		/* We invert the logic because we've already added a pval */
-		return (!object_dedup_pvals(o_ptr));
+		if (!o_ptr->pval[o_ptr->num_pvals]) { /* Then the net result was 0 */
+			of_off(o_ptr->flags, flag);
+			return FALSE;
+		} else {
+			of_on(o_ptr->pval_flags[o_ptr->num_pvals], flag);
+			o_ptr->num_pvals++; /* We do this last because pvals start from 0 */
+			/* We invert the logic because we've already added a pval */
+			return (!object_dedup_pvals(o_ptr));
+		}
 	} else { /* we use the closest existing pval */
 		best_pval = object_closest_pval(o_ptr,
 			(pval + (a == -1 ? 0 : o_ptr->pval[a])));

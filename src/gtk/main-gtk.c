@@ -27,13 +27,13 @@
 #include "files.h"
 #include "init.h"
 
-/* this is used to draw the various terrain characters */
+/* this is used to draw the various terrain characters 
 static unsigned int graphics_table[32] = {
 	000, '*', '#', '?', '?', '?', '?', '.',
 	'+', '?', '?', '+', '+', '+', '+', '+',
 	'~', '-', '-', '-', '_', '+', '+', '+',
 	'+', '|', '?', '?', '?', '?', '?', '.',
-};
+}; */
 
 /* 
  *Add a bunch of debugger message, to trace where problems are. 
@@ -2222,7 +2222,7 @@ static void inv_slot(char *str, size_t len, int i, bool equip)
 	if (item_tester_okay(o_ptr) || equip)
 	{
 		/* Obtain an item description */
-		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_ARTICLE | ODESC_FULL);
 			
 		/* Obtain the length of the description */
 		strnfmt(label, sizeof(label), "%c) ", index_to_label(i));
