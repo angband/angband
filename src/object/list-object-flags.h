@@ -85,7 +85,7 @@ OF(RES_CHAOS,   FALSE,	0,				OFID_NORMAL,OFT_HRES,	20,		0,	1,  1,  1,      1,  1
 OF(RES_DISEN,   FALSE, 	0,				OFID_NORMAL,OFT_HRES,	20,		0,	1,  1,  1,      1,  1,      1,      1,      1,      1,  1,      1,		"Your %s glows.")
 OF(SLOW_DIGEST, FALSE,	0,				OFID_TIMED,	OFT_MISC,	2,		0,	1,  1,  1,      1,  1,      1,      1,      1,      1,  1,      1,		"You feel your %s slow your metabolism.")
 OF(FEATHER,     FALSE,	0,				OFID_NORMAL,OFT_MISC,	1,		0,	1,  1,  1,      1,  1,      1,      1,      1,      1,  1,      1,		"Your %s slows your fall.")
-OF(LIGHT,       TRUE,	0,				OFID_WIELD,	OFT_PVAL,	3,		6,	1,  1,  1,      1,  10,     1,      1,      1,      1,  1,      1,		"")
+OF(LIGHT,       TRUE,	0,				OFID_WIELD,	OFT_PVAL,	3,		6,	1,  1,  1,      1,  3,      1,      1,      1,      1,  1,      1,		"")
 OF(REGEN,       FALSE,	0,				OFID_TIMED,	OFT_MISC,	5,		0,	1,  1,  2,      2,  2,      2,      2,      2,      2,  2,      2,		"You feel your %s speed up your recovery.")
 OF(TELEPATHY,   FALSE,	TMD_TELEPATHY,	OFID_WIELD,	OFT_MISC,	35,		0,	1,	1,	2,		2,	2,		2,		2,		2,		2,	2,		2,		"")
 OF(SEE_INVIS,   FALSE,	TMD_SINVIS,		OFID_WIELD,	OFT_MISC,	6,		0,	1,  1,  2,      2,  2,      2,      2,      2,      2,  2,      2,		"")

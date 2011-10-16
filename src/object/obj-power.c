@@ -42,7 +42,6 @@
 #define WEAP_DAMAGE				12 /* and for off-weapon combat flags */
 #define BASE_JEWELRY_POWER		 4
 #define BASE_ARMOUR_POWER		 1
-#define BASE_LIGHT_POWER		 6 /* for rad-2; doubled for rad-3 */
 #define DAMAGE_POWER             5 /* i.e. 2.5 */
 #define TO_HIT_POWER             3 /* i.e. 1.5 */
 #define BASE_AC_POWER            2 /* i.e. 1 */
@@ -388,17 +387,6 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	if (o_ptr->to_a >= INHIBIT_AC) {
 		p += INHIBIT_POWER;
 		file_putf(log_file, "INHIBITING: AC bonus too high\n");
-	}
-
-	/* Add power for light sources by radius XXX Hack - rewrite calc_torch! */
-	if (wield_slot(o_ptr) == INVEN_LIGHT) {
-		p += BASE_LIGHT_POWER;
-
-		/* Artifact lights have larger radius so add more */
-		if (o_ptr->artifact)
-			p += BASE_LIGHT_POWER;
-
-		file_putf(log_file, "Adding power for light radius, total is %d\n", p);
 	}
 
 	/* Add base power for jewelry */

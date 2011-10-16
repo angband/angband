@@ -1411,7 +1411,7 @@ s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 
 		if (verbose)
 		{
-			path_build(buf, sizeof(buf), ANGBAND_DIR_USER, 					"pricing.log");
+			path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "pricing.log");
                 	log_file = file_open(buf, pricing_mode, FTYPE_TEXT);
                 	if (!log_file)
                 	{
