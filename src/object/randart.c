@@ -2489,7 +2489,8 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 			break;
 
 		case ART_IDX_GEN_LIGHT: {
-				if (!of_is_empty(a_ptr->pval_flags[DEFAULT_PVAL])) {
+				if (a_ptr->tval != TV_LIGHT &&
+						!of_is_empty(a_ptr->pval_flags[DEFAULT_PVAL])) {
 					of_on(a_ptr->flags, OF_LIGHT);
 					of_on(a_ptr->pval_flags[DEFAULT_PVAL + 1], OF_LIGHT);
 					a_ptr->pval[DEFAULT_PVAL + 1] = 1;
@@ -2833,8 +2834,16 @@ static void scramble_artifact(int a_idx)
 		}
 
 		/* Clear the activations for rings and amulets but not lights */
-		if (a_ptr->tval != TV_LIGHT) a_ptr->effect = 0;
-
+		if (a_ptr->tval != TV_LIGHT)
+			a_ptr->effect = 0;
+		/* Restore lights */
+		else {
+			of_on(a_ptr->flags, OF_LIGHT);
+			of_on(a_ptr->flags, OF_NO_FUEL);
+			of_on(a_ptr->pval_flags[DEFAULT_PVAL], OF_LIGHT);
+			a_ptr->pval[DEFAULT_PVAL] = 2 + randint0(3);
+			a_ptr->num_pvals = 1;
+		}
 		/* Artifacts ignore everything */
 		create_mask(f, FALSE, OFT_IGNORE, OFT_MAX);
 		of_union(a_ptr->flags, f);
@@ -2988,18 +2997,9 @@ static void scramble_artifact(int a_idx)
 	file_putf(log_file, "New depths are min %d, max %d\n", a_ptr->alloc_min, a_ptr->alloc_max);
 	file_putf(log_file, "Power-based alloc_prob is %d\n", a_ptr->alloc_prob);
 
-	/* Restore some flags */
-	if (a_ptr->tval == TV_LIGHT) {
-		of_on(a_ptr->flags, OF_NO_FUEL);
-		of_on(a_ptr->flags, OF_LIGHT);
-		if (of_has(a_ptr->pval_flags[DEFAULT_PVAL + 1], OF_LIGHT))
-			a_ptr->pval[DEFAULT_PVAL + 1] = 2 + randint0(3);
-		else {
-			of_on(a_ptr->pval_flags[DEFAULT_PVAL], OF_LIGHT);
-			a_ptr->pval[DEFAULT_PVAL] = 2 + randint0(3);
-		}
-	}
-	if (a_idx < ART_MIN_NORMAL) of_on(a_ptr->flags, OF_INSTA_ART);
+	/* This will go */
+	if (a_idx < ART_MIN_NORMAL)
+		of_on(a_ptr->flags, OF_INSTA_ART);
 
 	/* Success */
 	file_putf(log_file, ">>>>>>>>>>>>>>>>>>>>>>>>>> ARTIFACT COMPLETED <<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
