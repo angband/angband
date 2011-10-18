@@ -68,7 +68,7 @@ static struct cmd_info cmd_item[] =
 	{ "Eat some food", 'E', CMD_EAT, NULL, NULL },
 	{ "Quaff a potion", 'q', CMD_QUAFF, NULL, NULL },
 	{ "Read a scroll", 'r', CMD_READ_SCROLL, NULL, player_can_read },
-	{ "Fuel your light source", 'F', CMD_REFILL, NULL, NULL },
+	{ "Fuel your light source", 'F', CMD_REFILL, NULL, player_can_refuel }
 };
 
 /* General actions */
