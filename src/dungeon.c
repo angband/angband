@@ -761,8 +761,10 @@ static void process_world(struct cave *c)
 	/* Handle experience draining */
 	if (check_state(p_ptr, OF_DRAIN_EXP, p_ptr->state.flags))
 	{
-		if ((p_ptr->exp > 0) && one_in_(10))
-			player_exp_lose(p_ptr, 1, FALSE);
+		if ((p_ptr->exp > 0) && one_in_(10)) {
+			s32b d = damroll(10, 6) + (p_ptr->exp/100) * MON_DRAIN_LIFE;
+			player_exp_lose(p_ptr, d / 10, FALSE);
+		}
 
 		wieldeds_notice_flag(p_ptr, OF_DRAIN_EXP);
 	}
