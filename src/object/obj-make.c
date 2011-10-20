@@ -863,7 +863,7 @@ bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good,
 		}
 
 		/* If we failed to make an artifact, the player gets a great item */
-		good = great = TRUE;
+		good = TRUE;
 	}
 
 	/* Base level for the object */
