@@ -1505,7 +1505,7 @@ static void display_object(int col, int row, bool cursor, int oid)
 	if (of_has(kind->flags, OF_INSTA_ART) && artifact_is_known(get_artifact_from_kind(kind)))
 		get_artifact_display_name(o_name, sizeof(o_name), get_artifact_from_kind(kind));
 	else
- 		object_kind_name(o_name, sizeof(o_name), kind, OPT(cheat_know));
+ 		object_kind_name(o_name, sizeof(o_name), kind, OPT(cheat_xtra));
 
 	/* If the type is "tried", display that */
 	if (kind->tried && !aware)
