@@ -55,10 +55,8 @@ in the vein of
 and 
 .I moria.
 .B Angband 
-3.2.0 is an official stable release incorporating all the changes
-and improvements added since the last official stable release (
-.B Angband 
-3.0.9b).
+4.0 is an experimental release incorporating all the changes the devteam felt
+like trying out.
 .PP
 This version of
 .B Angband
