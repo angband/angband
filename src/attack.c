@@ -171,7 +171,7 @@ static bool py_attack_real(int y, int x, bool *fear) {
 	if (m_ptr->ml) monster_race_track(m_ptr->r_idx);
 
 	/* Track a new monster */
-	if (m_ptr->ml) health_track(p_ptr, cave->m_idx[y][x]);
+	if (m_ptr->ml) health_track(p_ptr, m_ptr);
 
 	/* Handle player fear (only for invisible monsters) */
 	if (check_state(p_ptr, OF_AFRAID, p_ptr->state.flags)) {
@@ -470,7 +470,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 		
 				/* Track this monster */
 				if (m_ptr->ml) monster_race_track(m_ptr->r_idx);
-				if (m_ptr->ml) health_track(p_ptr, cave->m_idx[y][x]);
+				if (m_ptr->ml) health_track(p_ptr, m_ptr);
 			}
 		
 			/* Complex message */

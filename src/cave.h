@@ -8,6 +8,7 @@
 #include "z-type.h"
 
 struct player;
+struct monster;
 
 extern int distance(int y1, int x1, int y2, int x2);
 extern bool los(int y1, int x1, int y2, int x2);
@@ -29,7 +30,7 @@ extern void wiz_dark(void);
 extern int project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg);
 extern bool projectable(int y1, int x1, int y2, int x2, int flg);
 extern void scatter(int *yp, int *xp, int y, int x, int d, int m);
-extern void health_track(struct player *p, int m_idx);
+extern void health_track(struct player *p, struct monster *m_ptr);
 extern void monster_race_track(int r_idx);
 extern void track_object(int item);
 extern void track_object_kind(int k_idx);

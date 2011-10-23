@@ -57,7 +57,7 @@ void delete_monster_idx(int m_idx)
 	if (target_get_monster() == m_idx) target_set_monster(0);
 
 	/* Hack -- remove tracked monster */
-	if (p_ptr->health_who == m_idx) health_track(p_ptr, 0);
+	if (p_ptr->health_who == m_ptr) health_track(p_ptr, NULL);
 
 	/* Monster is gone */
 	cave->m_idx[y][x] = 0;
@@ -170,8 +170,8 @@ static void compact_monsters_aux(int i1, int i2)
 		target_set_monster(i2);
 
 	/* Hack -- Update the health bar */
-	if (p_ptr->health_who == i1)
-		p_ptr->health_who = i2;
+	if (p_ptr->health_who == m_ptr)
+		p_ptr->health_who = cave_monster(cave, i2);
 
 	/* Hack -- move monster */
 	COPY(cave_monster(cave, i2), cave_monster(cave, i1), struct monster);
@@ -1416,7 +1416,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note)
 	l_ptr = &l_list[m_ptr->r_idx];
 
 	/* Redraw (later) if needed */
-	if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
+	if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
 
 	/* Wake it up */
 	mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);

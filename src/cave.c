@@ -3494,9 +3494,10 @@ void scatter(int *yp, int *xp, int y, int x, int d, int m)
 	(*xp) = nx;
 }
 
-void health_track(struct player *p, int m_idx)
+/* XXX: this does not belong here */
+void health_track(struct player *p, struct monster *m_ptr)
 {
-	p->health_who = m_idx;
+	p->health_who = m_ptr;
 	p->redraw |= PR_HEALTH;
 }
 

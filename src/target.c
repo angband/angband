@@ -688,7 +688,7 @@ static struct keypress target_set_interactive_aux(int y, int x, int mode)
 				monster_race_track(m_ptr->r_idx);
 
 				/* Hack -- health bar for this monster */
-				health_track(p_ptr, cave->m_idx[y][x]);
+				health_track(p_ptr, m_ptr);
 
 				/* Hack -- handle stuff */
 				handle_stuff(p_ptr);
@@ -1048,7 +1048,7 @@ bool target_set_closest(int mode)
 
 	/* Set up target information */
 	monster_race_track(m_ptr->r_idx);
-	health_track(p_ptr, cave->m_idx[y][x]);
+	health_track(p_ptr, m_ptr);
 	target_set_monster(m_idx);
 
 	/* Visual cue */
@@ -1264,7 +1264,7 @@ bool target_set_interactive(int mode, int x, int y)
 	target_set_monster(0);
 
 	/* Cancel tracking */
-	/* health_track(0); */
+	/* health_track(NULL); */
 
 	/* Calculate the window location for the help prompt */
 	Term_get_size(&wid, &hgt);
@@ -1313,7 +1313,7 @@ bool target_set_interactive(int mode, int x, int y)
 			if (path_drawn) load_path(path_n, path_g, path_char, path_attr);
 
 			/* Cancel tracking */
-			/* health_track(0); */
+			/* health_track(NULL); */
 
 			/* Assume no "direction" */
 			d = 0;
@@ -1379,7 +1379,7 @@ bool target_set_interactive(int mode, int x, int y)
 
 					if ((m_idx > 0) && target_able(m_idx))
 					{
-						health_track(p_ptr, m_idx);
+						health_track(p_ptr, cave_monster(cave, m_idx));
 						target_set_monster(m_idx);
 						done = TRUE;
 					}

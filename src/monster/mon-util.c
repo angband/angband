@@ -998,7 +998,7 @@ void update_mon(int m_idx, bool full)
 			cave_light_spot(cave, fy, fx);
 
 			/* Update health bar as needed */
-			if (p_ptr->health_who == m_idx)
+			if (p_ptr->health_who == m_ptr)
 				p_ptr->redraw |= (PR_HEALTH);
 
 			/* Hack -- Count "fresh" sightings */
@@ -1029,7 +1029,7 @@ void update_mon(int m_idx, bool full)
 				cave_light_spot(cave, fy, fx);
 
 				/* Update health bar as needed */
-				if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
+				if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
 
 				/* Disturb on disappearance */
 				if (OPT(disturb_move)) disturb(p_ptr, 1, 0);

@@ -2221,7 +2221,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			if (m_ptr->hp > m_ptr->maxhp) m_ptr->hp = m_ptr->maxhp;
 
 			/* Redraw (later) if needed */
-			if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
+			if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
 
 			/* Message */
 			else m_note = MON_MSG_HEALTHIER;
@@ -2709,7 +2709,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 	if (who > 0)
 	{
 		/* Redraw (later) if needed */
-		if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
+		if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
 
 		/* Wake the monster up */
 		mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
@@ -3433,7 +3433,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 				if (m_ptr->ml) monster_race_track(m_ptr->r_idx);
 
 				/* Hack - auto-track */
-				if (m_ptr->ml) health_track(p_ptr, cave->m_idx[y][x]);
+				if (m_ptr->ml) health_track(p_ptr, m_ptr);
 			}
 		}
 	}

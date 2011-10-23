@@ -1921,7 +1921,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 							m_ptr->hp += heal;
 
 							/* Redraw (later) if needed */
-							if (cave_monster(cave, p->health_who) == m_ptr)
+							if (p->health_who == m_ptr)
 								p->redraw |= (PR_HEALTH);
 
 							/* Combine / Reorder the pack */
@@ -2788,7 +2788,7 @@ static void process_monster(struct cave *c, int m_idx)
 				msg("%^s wakes up.", m_name);
 
 				/* Hack -- Update the health bar */
-				if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
+				if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
 			}
 
 			/* Efficiency XXX XXX */
@@ -2843,7 +2843,7 @@ static void process_monster(struct cave *c, int m_idx)
 					msg("%^s wakes up.", m_name);
 
 					/* Hack -- Update the health bar */
-					if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
+					if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
 
 					/* Hack -- Count the wakings */
 					if (l_ptr->wake < MAX_UCHAR)

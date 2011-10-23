@@ -204,7 +204,7 @@ static bool mon_set_timed(monster_type *m_ptr, int ef_idx, int timer,
 	else
 		m_ptr->m_timed[ef_idx] = timer;
 
-	if (p_ptr->health_who == m_ptr->midx) p_ptr->redraw |= (PR_HEALTH);
+	if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
 
 	/* Update the visuals, as appropriate. */
 	p_ptr->redraw |= (PR_MONLIST);
