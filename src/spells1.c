@@ -2727,7 +2727,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			add_monster_message(m_name, m_idx, note_dies, FALSE);
 
 			/* Generate treasure, etc */
-			monster_death(m_idx, FALSE);
+			monster_death(m_ptr, FALSE);
 
 			/* Delete the monster */
 			delete_monster_idx(m_idx);
@@ -2767,7 +2767,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 		if (do_sleep)
 			obvious = mon_inc_timed(m_ptr, MON_TMD_SLEEP, 500 + p_ptr->lev * 10,
 				flag | MON_TMD_FLG_NOTIFY, id);
-		else if (mon_take_hit(m_idx, dam, &fear, ""))
+		else if (mon_take_hit(m_ptr, dam, &fear, ""))
 			mon_died = TRUE;
 		else
 		{

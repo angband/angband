@@ -242,7 +242,7 @@ void compact_monsters(int num_to_compact)
 			if (randint0(100) < chance) continue;
 
 			/* Delete the monster */
-			delete_monster_idx(m_idx);
+			delete_monster(m_ptr->fy, m_ptr->fx);
 
 			/* Count the monster */
 			num_compacted++;
@@ -1280,7 +1280,7 @@ static void build_quest_stairs(int y, int x)
  * If `stats` is true, then we skip updating the monster memory. This is
  * used by stats-generation code, for efficiency.
  */
-void monster_death(int m_idx, bool stats)
+void monster_death(struct monster *m_ptr, bool stats)
 {
 	int i, y, x;
 	int dump_item = 0;
@@ -1288,24 +1288,19 @@ void monster_death(int m_idx, bool stats)
 	int total = 0;
 	s16b this_o_idx, next_o_idx = 0;
 
-	monster_type *m_ptr;
-	monster_race *r_ptr;
+	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	bool visible;
 
 	object_type *i_ptr;
 	object_type object_type_body;
 
-	assert(m_idx > 0);
-	m_ptr = cave_monster(cave, m_idx);
-	r_ptr = &r_info[m_ptr->r_idx];
-
 	visible = (m_ptr->ml || rf_has(r_ptr->flags, RF_UNIQUE));
 
 	/* Get the location */
 	y = m_ptr->fy;
 	x = m_ptr->fx;
-	
+
 	/* Delete any mimicked objects */
 	if (m_ptr->mimicked_o_idx > 0)
 		delete_object_idx(m_ptr->mimicked_o_idx);
@@ -1402,16 +1397,13 @@ void monster_death(int m_idx, bool stats)
  * worth more than subsequent monsters.  This would also need to
  * induce changes in the monster recall code.  XXX XXX XXX
  **/
-bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note)
+bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 {
-	monster_type *m_ptr;
 	monster_race *r_ptr;
 	monster_lore *l_ptr;
 
 	s32b div, new_exp, new_exp_frac;
 
-	assert(m_idx > 0);
-	m_ptr = cave_monster(cave, m_idx);
 	r_ptr = &r_info[m_ptr->r_idx];
 	l_ptr = &l_list[m_ptr->r_idx];
 
@@ -1509,7 +1501,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note)
 		player_exp_gain(p_ptr, new_exp);
 
 		/* Generate treasure */
-		monster_death(m_idx, FALSE);
+		monster_death(m_ptr, FALSE);
 
 		/* Recall even invisible uniques or winners */
 		if (m_ptr->ml || rf_has(r_ptr->flags, RF_UNIQUE)) {
@@ -1524,7 +1516,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note)
 		}
 
 		/* Delete the monster */
-		delete_monster_idx(m_idx);
+		delete_monster_idx(m_ptr->midx);
 
 		/* Not afraid */
 		(*fear) = FALSE;

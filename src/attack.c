@@ -264,7 +264,7 @@ static bool py_attack_real(int y, int x, bool *fear) {
 	}
 
 	/* Damage, check for fear and death */
-	stop = mon_take_hit(cave->m_idx[y][x], dmg, fear, NULL);
+	stop = mon_take_hit(m_ptr, dmg, fear, NULL);
 
 	if (stop)
 		(*fear) = FALSE;
@@ -478,7 +478,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 				msg("You do %d (out of %d) damage.", dmg, m_ptr->hp);
 		
 			/* Hit the monster, check for death */
-			if (!mon_take_hit(cave->m_idx[y][x], dmg, &fear, note_dies)) {
+			if (!mon_take_hit(m_ptr, dmg, &fear, note_dies)) {
 				message_pain(cave->m_idx[y][x], dmg);
 				if (fear && m_ptr->ml)
 					add_monster_message(m_name, cave->m_idx[y][x], MON_MSG_FLEE_IN_TERROR, TRUE);

@@ -43,8 +43,8 @@ bool place_new_monster(struct cave *, int y, int x, int r_idx, bool sleep,
 bool pick_and_place_monster(struct cave *c, int y, int x, int depth, bool sleep,
 	bool group_okay, byte origin);
 bool pick_and_place_distant_monster(struct cave *c, struct loc loc, int dis, bool sleep, int depth);
-void monster_death(int m_idx, bool stats);
-bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note);
+void monster_death(struct monster *m, bool stats);
+bool mon_take_hit(struct monster *m, int dam, bool *fear, const char *note);
 
 
 
