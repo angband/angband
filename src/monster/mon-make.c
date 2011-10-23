@@ -1355,7 +1355,7 @@ void monster_death(int m_idx, bool stats)
 
 	/* Take note of any dropped treasure */
 	if (visible && (dump_item || dump_gold))
-		lore_treasure(m_idx, dump_item, dump_gold);
+		lore_treasure(m_ptr, dump_item, dump_gold);
 
 	/* Update monster list window */
 	p_ptr->redraw |= PR_MONLIST;
