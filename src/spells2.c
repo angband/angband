@@ -1824,14 +1824,14 @@ void aggravate_monsters(int who)
 			if (m_ptr->m_timed[MON_TMD_SLEEP])
 			{
 				/* Wake up */
-				mon_clear_timed(i, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
+				mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
 				sleep = TRUE;
 			}
 		}
 
 		/* Speed up monsters in line of sight */
 		if (player_has_los_bold(m_ptr->fy, m_ptr->fx))
-			mon_inc_timed(i, MON_TMD_FAST, 25, MON_TMD_FLG_NOTIFY, FALSE);
+			mon_inc_timed(m_ptr, MON_TMD_FAST, 25, MON_TMD_FLG_NOTIFY, FALSE);
 	}
 
 	/* Messages */
@@ -2354,8 +2354,8 @@ void earthquake(int cy, int cx, int r)
 					damage = (sn ? damroll(4, 8) : (m_ptr->hp + 1));
 
 					/* Monster is certainly awake */
-					mon_clear_timed(cave->m_idx[yy][xx], MON_TMD_SLEEP,
-						MON_TMD_FLG_NOMESSAGE, FALSE);
+					mon_clear_timed(m_ptr, MON_TMD_SLEEP,
+							MON_TMD_FLG_NOMESSAGE, FALSE);
 
 					/* If the quake finished the monster off, show message */
 					if (m_ptr->hp < damage && m_ptr->hp >= 0)
@@ -2531,7 +2531,7 @@ static void cave_light(struct point_set *ps)
 			if (m_ptr->m_timed[MON_TMD_SLEEP] && (randint0(100) < chance))
 			{
 				/* Wake up! */
-				mon_clear_timed(cave->m_idx[y][x], MON_TMD_SLEEP,
+				mon_clear_timed(m_ptr, MON_TMD_SLEEP,
 					MON_TMD_FLG_NOTIFY, FALSE);
 
 			}

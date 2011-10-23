@@ -232,16 +232,12 @@ static bool mon_set_timed(monster_type *m_ptr, int ef_idx, int timer,
  *
  * Returns TRUE if the monster's timer changed.
  */
-bool mon_inc_timed(int m_idx, int ef_idx, int timer, u16b flag, bool id)
+bool mon_inc_timed(struct monster *m_ptr, int ef_idx, int timer, u16b flag, bool id)
 {
-	monster_type *m_ptr;
 	mon_timed_effect *effect;
 
 	assert(ef_idx >= 0 && ef_idx < MON_TMD_MAX);
 	effect = &effects[ef_idx];
-
-	assert(m_idx > 0);
-	m_ptr = cave_monster(cave, m_idx);
 
 	/* For negative amounts, we use mon_dec_timed instead */
 	assert(timer > 0);
@@ -271,15 +267,9 @@ bool mon_inc_timed(int m_idx, int ef_idx, int timer, u16b flag, bool id)
  *
  * Returns TRUE if the monster's timer changed.
  */
-bool mon_dec_timed(int m_idx, int ef_idx, int timer, u16b flag, bool id)
+bool mon_dec_timed(struct monster *m_ptr, int ef_idx, int timer, u16b flag, bool id)
 {
-	monster_type *m_ptr;
-
 	assert(ef_idx >= 0 && ef_idx < MON_TMD_MAX);
-
-	assert(m_idx > 0);
-	m_ptr = cave_monster(cave, m_idx);
-
 	assert(timer > 0);
 
 	/* Decreasing is never resisted */
@@ -298,14 +288,9 @@ bool mon_dec_timed(int m_idx, int ef_idx, int timer, u16b flag, bool id)
  *
  * Returns TRUE if the monster's timer was changed.
  */
-bool mon_clear_timed(int m_idx, int ef_idx, u16b flag, bool id)
+bool mon_clear_timed(struct monster *m_ptr, int ef_idx, u16b flag, bool id)
 {
-	monster_type *m_ptr;
-
 	assert(ef_idx >= 0 && ef_idx < MON_TMD_MAX);
-
-	assert(m_idx > 0);
-	m_ptr = cave_monster(cave, m_idx);
 
 	if (!m_ptr->m_timed[ef_idx]) return FALSE;
 

@@ -1411,7 +1411,7 @@ int summon_specific(int y1, int x1, int lev, int type, int delay)
 	if (delay) {
 		m_ptr->energy = 0;
 		if (r_ptr->speed > p_ptr->state.speed)
-			mon_inc_timed(cave->m_idx[y][x], MON_TMD_SLOW, 1,
+			mon_inc_timed(m_ptr, MON_TMD_SLOW, 1,
 				MON_TMD_FLG_NOMESSAGE, FALSE);
 	}
 

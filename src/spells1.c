@@ -2191,7 +2191,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			m_ptr->hp = m_ptr->maxhp;
 
 			/* Speed up */
-			mon_inc_timed(m_idx, MON_TMD_FAST, 50, MON_TMD_FLG_NOTIFY, id);
+			mon_inc_timed(m_ptr, MON_TMD_FAST, 50, MON_TMD_FLG_NOTIFY, id);
 
 			/* Attempt to clone. */
 			if (multiply_monster(m_idx))
@@ -2212,7 +2212,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			if (seen) obvious = TRUE;
 
 			/* Wake up */
-			mon_clear_timed(m_idx, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, id);
+			mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, id);
 
 			/* Heal */
 			m_ptr->hp += dam;
@@ -2682,7 +2682,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 		if (m_ptr->m_timed[MON_TMD_STUN])
 			do_stun /= 2;
 
-		obvious = mon_inc_timed(m_idx, MON_TMD_STUN, do_stun,
+		obvious = mon_inc_timed(m_ptr, MON_TMD_STUN, do_stun,
 			flag | MON_TMD_FLG_NOTIFY, id);
 	}
 
@@ -2690,19 +2690,19 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 	{
 		int tmp = damroll(3, (do_conf / 2)) + 1;
 
-		obvious = mon_inc_timed(m_idx, MON_TMD_CONF, tmp,
+		obvious = mon_inc_timed(m_ptr, MON_TMD_CONF, tmp,
 			flag | MON_TMD_FLG_NOTIFY, id);
 	}
 
 	else if (do_slow)
-		obvious = mon_inc_timed(m_idx, MON_TMD_SLOW, do_slow,
+		obvious = mon_inc_timed(m_ptr, MON_TMD_SLOW, do_slow,
 			flag | MON_TMD_FLG_NOTIFY, id);
 	else if (do_haste)
-		obvious = mon_inc_timed(m_idx, MON_TMD_FAST, do_haste,
+		obvious = mon_inc_timed(m_ptr, MON_TMD_FAST, do_haste,
 			flag | MON_TMD_FLG_NOTIFY, id);
 
 	if (do_fear)
-		obvious = mon_inc_timed(m_idx, MON_TMD_FEAR, do_fear,
+		obvious = mon_inc_timed(m_ptr, MON_TMD_FEAR, do_fear,
 			flag | MON_TMD_FLG_NOTIFY, id);
 
 	/* If another monster did the damage, hurt the monster by hand */
@@ -2712,7 +2712,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 		if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
 
 		/* Wake the monster up */
-		mon_clear_timed(m_idx, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
+		mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
 
 		/* Hurt the monster */
 		m_ptr->hp -= dam;
@@ -2765,7 +2765,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 		}
 
 		if (do_sleep)
-			obvious = mon_inc_timed(m_idx, MON_TMD_SLEEP, 500 + p_ptr->lev * 10,
+			obvious = mon_inc_timed(m_ptr, MON_TMD_SLEEP, 500 + p_ptr->lev * 10,
 				flag | MON_TMD_FLG_NOTIFY, id);
 		else if (mon_take_hit(m_idx, dam, &fear, ""))
 			mon_died = TRUE;
