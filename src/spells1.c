@@ -2632,7 +2632,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 					m_note = MON_MSG_CHANGE;
 
 					/* Add the message now before changing the monster race */
-					add_monster_message(m_name, m_idx, m_note, FALSE);
+					add_monster_message(m_name, m_ptr, m_note, FALSE);
 
 					/* No more messages */
 					m_note = MON_MSG_NONE;
@@ -2724,7 +2724,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			if (!seen) note_dies = MON_MSG_MORIA_DEATH;
 
 			/* dump the note*/
-			add_monster_message(m_name, m_idx, note_dies, FALSE);
+			add_monster_message(m_name, m_ptr, note_dies, FALSE);
 
 			/* Generate treasure, etc */
 			monster_death(m_ptr, FALSE);
@@ -2741,11 +2741,11 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			/* Give detailed messages if visible or destroyed */
 			if ((m_note != MON_MSG_NONE) && seen)
 			{
-				add_monster_message(m_name, m_idx, m_note, FALSE);
+				add_monster_message(m_name, m_ptr, m_note, FALSE);
 			}
 
 			/* Hack -- Pain message */
-			else if (dam > 0) message_pain(m_idx, dam);
+			else if (dam > 0) message_pain(m_ptr, dam);
 		}
 	}
 
@@ -2761,7 +2761,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			if (!seen) note_dies = MON_MSG_MORIA_DEATH;
 
 			/* Save the death notification for later */
-			add_monster_message(m_name, m_idx, note_dies, FALSE);
+			add_monster_message(m_name, m_ptr, note_dies, FALSE);
 		}
 
 		if (do_sleep)
@@ -2774,15 +2774,15 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			/* Give detailed messages if visible or destroyed */
 			if ((m_note != MON_MSG_NONE) && seen)
 			{
-				add_monster_message(m_name, m_idx, m_note, FALSE);
+				add_monster_message(m_name, m_ptr, m_note, FALSE);
 			}
 
 			/* Hack -- Pain message */
 			else if (dam > 0)
-				message_pain(m_idx, dam);
+				message_pain(m_ptr, dam);
 
 			if (fear && m_ptr->ml)
-				add_monster_message(m_name, m_idx, MON_MSG_FLEE_IN_TERROR, TRUE);
+				add_monster_message(m_name, m_ptr, MON_MSG_FLEE_IN_TERROR, TRUE);
 		}
 	}
 

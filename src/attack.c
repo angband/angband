@@ -312,7 +312,7 @@ void py_attack(int y, int x) {
 	if (fear && m_ptr->ml) {
 		char m_name[80];
 		monster_desc(m_name, sizeof(m_name), m_ptr, 0);
-		add_monster_message(m_name, cave->m_idx[y][x], MON_MSG_FLEE_IN_TERROR, TRUE);
+		add_monster_message(m_name, m_ptr, MON_MSG_FLEE_IN_TERROR, TRUE);
 	}
 }
 
@@ -479,9 +479,9 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 		
 			/* Hit the monster, check for death */
 			if (!mon_take_hit(m_ptr, dmg, &fear, note_dies)) {
-				message_pain(cave->m_idx[y][x], dmg);
+				message_pain(m_ptr, dmg);
 				if (fear && m_ptr->ml)
-					add_monster_message(m_name, cave->m_idx[y][x], MON_MSG_FLEE_IN_TERROR, TRUE);
+					add_monster_message(m_name, m_ptr, MON_MSG_FLEE_IN_TERROR, TRUE);
 			}
 		}
 	}

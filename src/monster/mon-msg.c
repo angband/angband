@@ -103,18 +103,13 @@ static const char *msg_repository[MAX_MON_MSG + 1] =
  * Adds to the message queue a message describing a monster's reaction
  * to damage.
  */
-void message_pain(int m_idx, int dam)
+void message_pain(struct monster *m_ptr, int dam)
 {
 	long oldhp, newhp, tmp;
 	int percentage;
 
-	monster_type *m_ptr;
-
 	int msg_code = MON_MSG_UNHARMED;
 	char m_name[80];
-
-	assert(m_idx > 0);
-	m_ptr = cave_monster(cave, m_idx);
 
 	/* Get the monster name */
 	monster_desc(m_name, sizeof(m_name), m_ptr, 0);
@@ -122,7 +117,7 @@ void message_pain(int m_idx, int dam)
 	/* Notice non-damage */
 	if (dam == 0)
 	{
-		add_monster_message(m_name, m_idx, msg_code, FALSE);
+		add_monster_message(m_name, m_ptr, msg_code, FALSE);
 		return;
 	}
 
@@ -147,7 +142,7 @@ void message_pain(int m_idx, int dam)
 	else
 		msg_code = MON_MSG_0;
 
-	add_monster_message(m_name, m_idx, msg_code, FALSE);
+	add_monster_message(m_name, m_ptr, msg_code, FALSE);
 }
 
 #define SINGULAR_MON   1
@@ -247,11 +242,11 @@ static char *get_mon_msg_action(byte msg_code, bool do_plural,
  * messages don't happen due to monster attacks hitting other monsters.
  * Returns TRUE if the message is redundant.
  */
-static bool redundant_monster_message(int m_idx, int msg_code)
+static bool redundant_monster_message(struct monster *m_ptr, int msg_code)
 {
 	int i;
 
-	assert(m_idx > 0);
+	assert(m_ptr);
 	assert(msg_code >= 0 && msg_code < MAX_MON_MSG);
 
 	/* No messages yet */
@@ -259,7 +254,7 @@ static bool redundant_monster_message(int m_idx, int msg_code)
 
 	for (i = 0; i < size_mon_hist; i++) {
 		/* Not the same monster */
-		if (m_idx != mon_message_hist[i].monster_idx) continue;
+		if (m_ptr != mon_message_hist[i].mon) continue;
 
 		/* Not the same code */
 		if (msg_code != mon_message_hist[i].message_code) continue;
@@ -278,22 +273,16 @@ static bool redundant_monster_message(int m_idx, int msg_code)
  * different monster descriptions for the same race.
  * Return TRUE on success.
  */
-bool add_monster_message(const char *mon_name, int m_idx, int msg_code,
-		bool delay)
+bool add_monster_message(const char *mon_name, struct monster *m_ptr,
+		int msg_code, bool delay)
 {
 	int i;
 	byte mon_flags = 0;
+	int r_idx = m_ptr->r_idx;
 
-	monster_type *m_ptr;
-	int r_idx;
-
-	assert(m_idx > 0);
-	m_ptr = cave_monster(cave, m_idx);
-	r_idx = m_ptr->r_idx;
-	
 	assert(msg_code >= 0 && msg_code < MAX_MON_MSG);
 
-	if (redundant_monster_message(m_idx, msg_code)) return (FALSE);
+	if (redundant_monster_message(m_ptr, msg_code)) return (FALSE);
 
 	/* Paranoia */
 	if (!mon_name || !mon_name[0]) mon_name = "it";
@@ -346,7 +335,7 @@ bool add_monster_message(const char *mon_name, int m_idx, int msg_code,
 
 	/* record which monster had this message stored */
 	if (size_mon_hist >= MAX_STORED_MON_CODES) return (TRUE);
-	mon_message_hist[size_mon_hist].monster_idx = m_idx;
+	mon_message_hist[size_mon_hist].mon = m_ptr;
 	mon_message_hist[size_mon_hist].message_code = msg_code;
 	size_mon_hist++;
 
