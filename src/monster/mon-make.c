@@ -1423,7 +1423,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, const char *note)
 
 	/* Become aware of its presence */
 	if (m_ptr->unaware)
-		become_aware(m_idx);
+		become_aware(m_ptr);
 
 	/* Hurt it */
 	m_ptr->hp -= dam;

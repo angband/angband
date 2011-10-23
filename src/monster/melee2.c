@@ -461,7 +461,7 @@ bool make_attack_spell(int m_idx)
 
 	/* If we see an unaware monster try to cast a spell, become aware of it */
 	if (m_ptr->unaware)
-		become_aware(m_idx);
+		become_aware(m_ptr);
 
 	/* Calculate spell failure rate */
 	failrate = 25 - (rlev + 3) / 4;
@@ -2956,7 +2956,7 @@ static void process_monster(struct cave *c, int m_idx)
 	}
 
 	/* Mimics lie in wait */
-	if (is_mimicking(m_idx)) return;
+	if (is_mimicking(m_ptr)) return;
 	
 	/* Attempt to cast a spell */
 	if (make_attack_spell(m_idx)) return;
@@ -3475,7 +3475,7 @@ static void process_monster(struct cave *c, int m_idx)
 
 	/* If we see an unaware monster do something, become aware of it */
 	if (do_turn && m_ptr->unaware)
-		become_aware(m_idx);
+		become_aware(m_ptr);
 
 }
 

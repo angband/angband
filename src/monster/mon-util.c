@@ -976,7 +976,7 @@ void update_mon(int m_idx, bool full)
 	}
 
 	/* If a mimic looks like a squelched item, it's not seen */
-	if (is_mimicking(m_idx)) {
+	if (is_mimicking(m_ptr)) {
 		object_type *o_ptr = object_byid(m_ptr->mimicked_o_idx);
 		if (squelch_item_ok(o_ptr))
 			easy = flag = FALSE;
@@ -1470,16 +1470,10 @@ bool multiply_monster(int m_idx)
  * When a player becomes aware of a mimic, we update the monster memory
  * and delete the "fake item" that the monster was mimicking.
  */
-void become_aware(int m_idx)
+void become_aware(struct monster *m_ptr)
 {
-	monster_type *m_ptr;
-	const monster_race *r_ptr;
-	monster_lore *l_ptr;
-
-	assert(m_idx > 0);
-	m_ptr = cave_monster(cave, m_idx);
-	r_ptr = &r_info[m_ptr->r_idx];
-	l_ptr = &l_list[m_ptr->r_idx];
+	const monster_race *r_ptr = &r_info[m_ptr->r_idx];
+	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
 	if (m_ptr->unaware) {
 		m_ptr->unaware = FALSE;
@@ -1529,13 +1523,8 @@ void become_aware(int m_idx)
 /**
  * Returns TRUE if the given monster is currently mimicking an item.
  */
-bool is_mimicking(int m_idx)
+bool is_mimicking(struct monster *m_ptr)
 {
-	const monster_type *m_ptr;
-	
-	assert(m_idx > 0);
-	m_ptr = cave_monster(cave, m_idx);	
-
 	return (m_ptr->unaware && m_ptr->mimicked_o_idx);
 }
 

@@ -732,13 +732,14 @@ void do_cmd_open(cmd_code code, cmd_arg args[])
 	if (cave->m_idx[y][x] > 0)
 	{
 		int m_idx = cave->m_idx[y][x];
+		struct monster *m_ptr = cave_monster(cave, m_idx);
 
 		/* Mimics surprise the player */
-		if (is_mimicking(m_idx)) {
-			become_aware(m_idx);
+		if (is_mimicking(m_ptr)) {
+			become_aware(m_ptr);
 
 			/* Mimic wakes up */
-			mon_clear_timed(cave_monster(cave, m_idx), MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
+			mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
 		} else {
 			/* Message */
 			msg("There is a monster in the way!");
@@ -1807,30 +1808,26 @@ void do_cmd_spike(cmd_code code, cmd_arg args[])
  */
 static bool do_cmd_walk_test(int y, int x)
 {
-
 	int m_idx = cave->m_idx[y][x];
-	
+	struct monster *m_ptr = cave_monster(cave, m_idx);
+
 	/* Allow attack on visible monsters if unafraid */
-	if ((m_idx > 0) && (cave_monster(cave, m_idx)->ml) && !is_mimicking(m_idx))
+	if (m_idx > 0 && m_ptr->ml && !is_mimicking(m_ptr))
 	{
 		/* Handle player fear */
-		if(check_state(p_ptr, OF_AFRAID, p_ptr->state.flags))
+		if (check_state(p_ptr, OF_AFRAID, p_ptr->state.flags))
 		{
 			/* Extract monster name (or "it") */
 			char m_name[80];
-			const monster_type *m_ptr;
-
-			m_ptr = cave_monster(cave, m_idx);
 			monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 			/* Message */
-			msgt(MSG_AFRAID,
-				"You are too afraid to attack %s!", m_name);
+			msgt(MSG_AFRAID, "You are too afraid to attack %s!", m_name);
 
 			/* Nope */
 			return (FALSE);
 		}
-		
+
 		return (TRUE);
 	}
 

@@ -558,7 +558,7 @@ void grid_data_as_text(grid_data *g, byte *ap, wchar_t *cp, byte *tap, wchar_t *
 	}
 
 	/* If there's a monster */
-	if (g->m_idx > 0 && !is_mimicking(g->m_idx))
+	if (g->m_idx > 0 && !is_mimicking(cave_monster(cave, g->m_idx)))
 	{
 		if (g->hallucinate)
 		{
