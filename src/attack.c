@@ -145,7 +145,7 @@ static int critical_norm(int weight, int plus, int dam, u32b *msg_type) {
  */
 static bool py_attack_real(int y, int x, bool *fear) {
 	/* Information about the target of the attack */
-	monster_type *m_ptr = cave_monster(cave, cave->m_idx[y][x]);
+	monster_type *m_ptr = cave_monster_at(cave, y, x);
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	char m_name[80];
 	bool stop = FALSE;
@@ -291,7 +291,7 @@ void py_attack(int y, int x) {
 	int blow_energy = 10000 / p_ptr->state.num_blows;
 	int blows = 0;
 	bool fear = FALSE;
-	monster_type *m_ptr = cave_monster(cave, cave->m_idx[y][x]);
+	monster_type *m_ptr = cave_monster_at(cave, y, x);
 	
 	/* disturb the player */
 	disturb(p_ptr, 0,0);
@@ -424,7 +424,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 
 	/* Try the attack on the monster at (x, y) if any */
 	if (cave->m_idx[y][x] > 0) {
-		monster_type *m_ptr = cave_monster(cave, cave->m_idx[y][x]);
+		monster_type *m_ptr = cave_monster_at(cave, y, x);
 		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 		int visible = m_ptr->ml;
 
@@ -517,7 +517,7 @@ static struct attack_result make_ranged_shot(object_type *o_ptr, int y, int x) {
 
 	object_type *j_ptr = &p_ptr->inventory[INVEN_BOW];
 
-	monster_type *m_ptr = cave_monster(cave, cave->m_idx[y][x]);
+	monster_type *m_ptr = cave_monster_at(cave, y, x);
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	int bonus = p_ptr->state.to_h + o_ptr->to_h + j_ptr->to_h;
@@ -559,7 +559,7 @@ static struct attack_result make_ranged_shot(object_type *o_ptr, int y, int x) {
 static struct attack_result make_ranged_throw(object_type *o_ptr, int y, int x) {
 	struct attack_result result = {FALSE, 0, 0, "hit"};
 
-	monster_type *m_ptr = cave_monster(cave, cave->m_idx[y][x]);
+	monster_type *m_ptr = cave_monster_at(cave, y, x);
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	int bonus = p_ptr->state.to_h + o_ptr->to_h;

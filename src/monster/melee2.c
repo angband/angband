@@ -3257,7 +3257,7 @@ static void process_monster(struct cave *c, int m_idx)
 		/* A monster is in the way */
 		if (do_move && (cave->m_idx[ny][nx] > 0))
 		{
-			monster_type *n_ptr = cave_monster(cave, cave->m_idx[ny][nx]);
+			monster_type *n_ptr = cave_monster_at(cave, ny, nx);
 
 			/* Kill weaker monsters */
 			int kill_ok = rf_has(r_ptr->flags, RF_KILL_BODY);

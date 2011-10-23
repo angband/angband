@@ -121,6 +121,7 @@ extern bool cave_in_bounds(struct cave *c, int y, int x);
 extern bool cave_in_bounds_fully(struct cave *c, int y, int x);
 
 extern struct monster *cave_monster(struct cave *c, int idx);
+extern struct monster *cave_monster_at(struct cave *c, int y, int x);
 extern int cave_monster_max(struct cave *c);
 extern int cave_monster_count(struct cave *c);
 

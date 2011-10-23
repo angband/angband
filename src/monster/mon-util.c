@@ -1403,7 +1403,7 @@ int summon_specific(int y1, int x1, int lev, int type, int delay)
 		return (0);
 
 	/* Success, return the level of the monster */
-	m_ptr = cave_monster(cave, cave->m_idx[y][x]);
+	m_ptr = cave_monster_at(cave, y, x);
 	r_ptr = &r_info[m_ptr->r_idx];
 
 	/* If delay, try to let the player act before the summoned monsters,

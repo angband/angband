@@ -3894,6 +3894,13 @@ struct monster *cave_monster(struct cave *c, int idx) {
 }
 
 /**
+ * Get a monster on the current level by its position.
+ */
+struct monster *cave_monster_at(struct cave *c, int y, int x) {
+	return cave_monster(cave, cave->m_idx[y][x]);
+}
+
+/**
  * The maximum number of monsters allowed in the level.
  */
 int cave_monster_max(struct cave *c) {

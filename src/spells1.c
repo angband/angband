@@ -3427,7 +3427,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 			/* Track if possible */
 			if (cave->m_idx[y][x] > 0)
 			{
-				monster_type *m_ptr = cave_monster(cave, cave->m_idx[y][x]);
+				monster_type *m_ptr = cave_monster_at(cave, y, x);
 
 				/* Hack -- auto-recall */
 				if (m_ptr->ml) monster_race_track(m_ptr->r_idx);
