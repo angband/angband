@@ -37,88 +37,89 @@ static bool repeat_prev_allowed = FALSE;
 static bool repeating = FALSE;
 
 /* A simple list of commands and their handling functions. */
-static struct
+struct command_info
 {
 	cmd_code cmd;
+	const char *verb;
 	enum cmd_arg_type arg_type[CMD_MAX_ARGS];
 	cmd_handler_fn fn;
 	bool repeat_allowed;
 	int auto_repeat_n;
-} game_cmds[] =
+};
+
+static const struct command_info game_cmds[] =
 {
-	{ CMD_LOADFILE, { arg_NONE }, NULL, FALSE, 0 },
-	{ CMD_NEWGAME, { arg_NONE }, NULL, FALSE, 0 },
+	{ CMD_LOADFILE, "load a savefile", { arg_NONE }, NULL, FALSE, 0 },
+	{ CMD_NEWGAME, "start a new game", { arg_NONE }, NULL, FALSE, 0 },
 
-	{ CMD_BIRTH_RESET, { arg_NONE }, NULL, FALSE, 0 },
-	{ CMD_CHOOSE_SEX, { arg_CHOICE }, NULL, FALSE, 0 },
-	{ CMD_CHOOSE_RACE, { arg_CHOICE }, NULL, FALSE, 0 },
-	{ CMD_CHOOSE_CLASS, { arg_CHOICE }, NULL, FALSE, 0 },
- 	{ CMD_FINALIZE_OPTIONS, { arg_CHOICE }, NULL, FALSE },
-	{ CMD_BUY_STAT, { arg_CHOICE }, NULL, FALSE, 0 },
-	{ CMD_SELL_STAT, { arg_CHOICE }, NULL, FALSE, 0 },
-	{ CMD_RESET_STATS, { arg_CHOICE }, NULL, FALSE, 0 },
-	{ CMD_ROLL_STATS, { arg_NONE }, NULL, FALSE, 0 },
-	{ CMD_PREV_STATS, { arg_NONE }, NULL, FALSE, 0 },
-	{ CMD_NAME_CHOICE, { arg_STRING }, NULL, FALSE, 0 },
-	{ CMD_ACCEPT_CHARACTER, { arg_NONE }, NULL, FALSE, 0 },
+	{ CMD_BIRTH_RESET, "go back to the beginning", { arg_NONE }, NULL, FALSE, 0 },
+	{ CMD_CHOOSE_SEX, "select sex", { arg_CHOICE }, NULL, FALSE, 0 },
+	{ CMD_CHOOSE_RACE, "select race", { arg_CHOICE }, NULL, FALSE, 0 },
+	{ CMD_CHOOSE_CLASS, "select class", { arg_CHOICE }, NULL, FALSE, 0 },
+ 	{ CMD_FINALIZE_OPTIONS, "finalise options", { arg_CHOICE }, NULL, FALSE },
+	{ CMD_BUY_STAT, "buy points in a stat", { arg_CHOICE }, NULL, FALSE, 0 },
+	{ CMD_SELL_STAT, "sell points in a stat", { arg_CHOICE }, NULL, FALSE, 0 },
+	{ CMD_RESET_STATS, "reset stats", { arg_CHOICE }, NULL, FALSE, 0 },
+	{ CMD_ROLL_STATS, "roll new stats", { arg_NONE }, NULL, FALSE, 0 },
+	{ CMD_PREV_STATS, "use previously rolled stats", { arg_NONE }, NULL, FALSE, 0 },
+	{ CMD_NAME_CHOICE, "choose name", { arg_STRING }, NULL, FALSE, 0 },
+	{ CMD_ACCEPT_CHARACTER, "accept character", { arg_NONE }, NULL, FALSE, 0 },
 
-	{ CMD_GO_UP, { arg_NONE }, do_cmd_go_up, FALSE, 0 },
-	{ CMD_GO_DOWN, { arg_NONE }, do_cmd_go_down, FALSE, 0 },
-	{ CMD_SEARCH, { arg_NONE }, do_cmd_search, TRUE, 10 },
-	{ CMD_TOGGLE_SEARCH, { arg_NONE }, do_cmd_toggle_search, FALSE, 0 },
-	{ CMD_WALK, { arg_DIRECTION }, do_cmd_walk, TRUE, 0 },
-	{ CMD_RUN, { arg_DIRECTION }, do_cmd_run, FALSE, 0 },
-	{ CMD_JUMP, { arg_DIRECTION }, do_cmd_jump, FALSE, 0 },
-	{ CMD_OPEN, { arg_DIRECTION }, do_cmd_open, TRUE, 99 },
-	{ CMD_CLOSE, { arg_DIRECTION }, do_cmd_close, TRUE, 99 },
-	{ CMD_TUNNEL, { arg_DIRECTION }, do_cmd_tunnel, TRUE, 99 },
-	{ CMD_HOLD, { arg_NONE }, do_cmd_hold, TRUE, 0 },
-	{ CMD_DISARM, { arg_DIRECTION }, do_cmd_disarm, TRUE, 99 },
-	{ CMD_BASH, { arg_DIRECTION }, do_cmd_bash, TRUE, 99 },
-	{ CMD_ALTER, { arg_DIRECTION }, do_cmd_alter, TRUE, 99 },
-	{ CMD_JAM, { arg_DIRECTION }, do_cmd_spike, FALSE, 0 },
-	{ CMD_REST, { arg_CHOICE }, do_cmd_rest, FALSE, 0 },
-	{ CMD_PATHFIND, { arg_POINT }, do_cmd_pathfind, FALSE, 0 },
-	{ CMD_PICKUP, { arg_ITEM }, do_cmd_pickup, FALSE, 0 },
-	{ CMD_AUTOPICKUP, { arg_NONE }, do_cmd_autopickup, FALSE, 0 },
-	{ CMD_WIELD, { arg_ITEM, arg_NUMBER }, do_cmd_wield, FALSE, 0 },
-	{ CMD_TAKEOFF, { arg_ITEM }, do_cmd_takeoff, FALSE, 0 },
-	{ CMD_DROP, { arg_ITEM, arg_NUMBER }, do_cmd_drop, FALSE, 0 },
-	{ CMD_UNINSCRIBE, { arg_ITEM }, do_cmd_uninscribe, FALSE, 0 },
-	{ CMD_EAT, { arg_ITEM }, do_cmd_use, FALSE, 0 },
-	{ CMD_QUAFF, { arg_ITEM, arg_TARGET }, do_cmd_use, FALSE, 0 },
-	{ CMD_USE_ROD, { arg_ITEM, arg_TARGET }, do_cmd_use, FALSE, 0 },
-	{ CMD_USE_STAFF, { arg_ITEM }, do_cmd_use, FALSE, 0 },
-	{ CMD_USE_WAND, { arg_ITEM, arg_TARGET }, do_cmd_use, FALSE, 0 },
-	{ CMD_READ_SCROLL, { arg_ITEM, arg_TARGET }, do_cmd_use, FALSE, 0 },
-	{ CMD_ACTIVATE, { arg_ITEM, arg_TARGET }, do_cmd_use, FALSE, 0 },
-	{ CMD_REFILL, { arg_ITEM }, do_cmd_refill, FALSE, 0 },
-	{ CMD_FIRE, { arg_ITEM, arg_TARGET }, do_cmd_fire, FALSE, 0 },
-	{ CMD_THROW, { arg_ITEM, arg_TARGET }, do_cmd_throw, FALSE, 0 },
-	{ CMD_DESTROY, { arg_ITEM }, do_cmd_destroy, FALSE, 0 },
-	{ CMD_ENTER_STORE, { arg_NONE }, do_cmd_store, FALSE, 0 },
-	{ CMD_INSCRIBE, { arg_ITEM, arg_STRING }, do_cmd_inscribe, FALSE, 0 },
-	{ CMD_STUDY_SPELL, { arg_CHOICE }, do_cmd_study_spell, FALSE, 0 },
-	{ CMD_STUDY_BOOK, { arg_ITEM }, do_cmd_study_book, FALSE, 0 },
-	{ CMD_CAST, { arg_CHOICE, arg_TARGET }, do_cmd_cast, FALSE, 0 },
-	{ CMD_SELL, { arg_ITEM, arg_NUMBER }, do_cmd_sell, FALSE, 0 },
-	{ CMD_STASH, { arg_ITEM, arg_NUMBER }, do_cmd_stash, FALSE, 0 },
-	{ CMD_BUY, { arg_CHOICE, arg_NUMBER }, do_cmd_buy, FALSE, 0 },
-	{ CMD_RETRIEVE, { arg_CHOICE, arg_NUMBER }, do_cmd_retrieve, FALSE, 0 },
-	{ CMD_SUICIDE, { arg_NONE }, do_cmd_suicide, FALSE, 0 },
-	{ CMD_SAVE, { arg_NONE }, do_cmd_save_game, FALSE, 0 },
-	{ CMD_QUIT, { arg_NONE }, do_cmd_quit, FALSE, 0 },
-	{ CMD_HELP, { arg_NONE }, NULL, FALSE, 0 },
-	{ CMD_REPEAT, { arg_NONE }, NULL, FALSE, 0 },
+	{ CMD_GO_UP, "go up stairs", { arg_NONE }, do_cmd_go_up, FALSE, 0 },
+	{ CMD_GO_DOWN, "go down stairs", { arg_NONE }, do_cmd_go_down, FALSE, 0 },
+	{ CMD_SEARCH, "search", { arg_NONE }, do_cmd_search, TRUE, 10 },
+	{ CMD_TOGGLE_SEARCH, "toggle search mode", { arg_NONE }, do_cmd_toggle_search, FALSE, 0 },
+	{ CMD_WALK, "walk", { arg_DIRECTION }, do_cmd_walk, TRUE, 0 },
+	{ CMD_RUN, "run", { arg_DIRECTION }, do_cmd_run, FALSE, 0 },
+	{ CMD_JUMP, "jump", { arg_DIRECTION }, do_cmd_jump, FALSE, 0 },
+	{ CMD_OPEN, "open", { arg_DIRECTION }, do_cmd_open, TRUE, 99 },
+	{ CMD_CLOSE, "close", { arg_DIRECTION }, do_cmd_close, TRUE, 99 },
+	{ CMD_TUNNEL, "tunnel", { arg_DIRECTION }, do_cmd_tunnel, TRUE, 99 },
+	{ CMD_HOLD, "stay still", { arg_NONE }, do_cmd_hold, TRUE, 0 },
+	{ CMD_DISARM, "disarm", { arg_DIRECTION }, do_cmd_disarm, TRUE, 99 },
+	{ CMD_BASH, "bash", { arg_DIRECTION }, do_cmd_bash, TRUE, 99 },
+	{ CMD_ALTER, "alter", { arg_DIRECTION }, do_cmd_alter, TRUE, 99 },
+	{ CMD_JAM, "jam", { arg_DIRECTION }, do_cmd_spike, FALSE, 0 },
+	{ CMD_REST, "rest", { arg_CHOICE }, do_cmd_rest, FALSE, 0 },
+	{ CMD_PATHFIND, "walk", { arg_POINT }, do_cmd_pathfind, FALSE, 0 },
+	{ CMD_PICKUP, "pickup", { arg_ITEM }, do_cmd_pickup, FALSE, 0 },
+	{ CMD_AUTOPICKUP, "autopickup", { arg_NONE }, do_cmd_autopickup, FALSE, 0 },
+	{ CMD_WIELD, "wear or wield", { arg_ITEM, arg_NUMBER }, do_cmd_wield, FALSE, 0 },
+	{ CMD_TAKEOFF, "take off", { arg_ITEM }, do_cmd_takeoff, FALSE, 0 },
+	{ CMD_DROP, "drop", { arg_ITEM, arg_NUMBER }, do_cmd_drop, FALSE, 0 },
+	{ CMD_UNINSCRIBE, "un-inscribe", { arg_ITEM }, do_cmd_uninscribe, FALSE, 0 },
+	{ CMD_EAT, "eat", { arg_ITEM }, do_cmd_use, FALSE, 0 },
+	{ CMD_QUAFF, "quaff", { arg_ITEM, arg_TARGET }, do_cmd_use, FALSE, 0 },
+	{ CMD_USE_ROD, "zap", { arg_ITEM, arg_TARGET }, do_cmd_use, FALSE, 0 },
+	{ CMD_USE_STAFF, "use", { arg_ITEM }, do_cmd_use, FALSE, 0 },
+	{ CMD_USE_WAND, "aim", { arg_ITEM, arg_TARGET }, do_cmd_use, FALSE, 0 },
+	{ CMD_READ_SCROLL, "read", { arg_ITEM, arg_TARGET }, do_cmd_use, FALSE, 0 },
+	{ CMD_ACTIVATE, "activate", { arg_ITEM, arg_TARGET }, do_cmd_use, FALSE, 0 },
+	{ CMD_REFILL, "refuel with", { arg_ITEM }, do_cmd_refill, FALSE, 0 },
+	{ CMD_FIRE, "fire", { arg_ITEM, arg_TARGET }, do_cmd_fire, FALSE, 0 },
+	{ CMD_THROW, "throw", { arg_ITEM, arg_TARGET }, do_cmd_throw, FALSE, 0 },
+	{ CMD_DESTROY, "ignore", { arg_ITEM }, do_cmd_destroy, FALSE, 0 },
+	{ CMD_ENTER_STORE, "go into", { arg_NONE }, do_cmd_store, FALSE, 0 },
+	{ CMD_INSCRIBE, "inscribe", { arg_ITEM, arg_STRING }, do_cmd_inscribe, FALSE, 0 },
+	{ CMD_STUDY_SPELL, "study", { arg_CHOICE }, do_cmd_study_spell, FALSE, 0 },
+	{ CMD_STUDY_BOOK, "study", { arg_ITEM }, do_cmd_study_book, FALSE, 0 },
+	{ CMD_CAST, "cast", { arg_CHOICE, arg_TARGET }, do_cmd_cast, FALSE, 0 },
+	{ CMD_SELL, "sell", { arg_ITEM, arg_NUMBER }, do_cmd_sell, FALSE, 0 },
+	{ CMD_STASH, "stash", { arg_ITEM, arg_NUMBER }, do_cmd_stash, FALSE, 0 },
+	{ CMD_BUY, "buy", { arg_CHOICE, arg_NUMBER }, do_cmd_buy, FALSE, 0 },
+	{ CMD_RETRIEVE, "retrieve", { arg_CHOICE, arg_NUMBER }, do_cmd_retrieve, FALSE, 0 },
+	{ CMD_SUICIDE, "commit suicide", { arg_NONE }, do_cmd_suicide, FALSE, 0 },
+	{ CMD_SAVE, "save", { arg_NONE }, do_cmd_save_game, FALSE, 0 },
+	{ CMD_QUIT, "quit", { arg_NONE }, do_cmd_quit, FALSE, 0 },
+	{ CMD_HELP, "help", { arg_NONE }, NULL, FALSE, 0 },
+	{ CMD_REPEAT, "repeat", { arg_NONE }, NULL, FALSE, 0 },
 };
 
 /* Item selector type (everything required for get_item()) */
 struct item_selector
 {
 	cmd_code command;
-	const char *prompt;
-	const char *noop;
-
+	const char *type;
 	bool (*filter)(const object_type *o_ptr);
 	int mode;
 };
@@ -126,62 +127,31 @@ struct item_selector
 /** List of requirements for various commands' objects */
 struct item_selector item_selector[] =
 {
-	{ CMD_INSCRIBE, "Inscribe which item? ",
-	  "You have nothing to inscribe.",
-	  NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS) },
-
-	{ CMD_UNINSCRIBE, "Un-inscribe which item? ",
-	  "You have nothing to un-inscribe.",
-	  obj_has_inscrip, (USE_EQUIP | USE_INVEN | USE_FLOOR) },
-
-	{ CMD_WIELD, "Wear/wield which item? ",
-	  "You have nothing you can wear or wield.",
-	  obj_can_wear, (USE_INVEN | USE_FLOOR) },
-
-	{ CMD_TAKEOFF, "Take off which item? ",
-	  "You are not wearing anything you can take off.",
-	  obj_can_takeoff, USE_EQUIP },
-
-	{ CMD_DROP, "Drop which item? ",
-	  "You have nothing to drop.",
-	  NULL, (USE_EQUIP | USE_INVEN) },
-
-	{ CMD_FIRE, "Fire which item? ",
-	  "You have nothing to fire.",
-	  obj_can_fire, (USE_INVEN | USE_EQUIP | USE_FLOOR | QUIVER_TAGS) },
-
-	{ CMD_USE_STAFF, "Use which staff? ",
-	  "You have no staff to use.",
-	  obj_is_staff, (USE_INVEN | USE_FLOOR | SHOW_FAIL) },
-
-	{ CMD_USE_WAND, "Aim which wand? ",
-	  "You have no wand to aim.",
-	  obj_is_wand, (USE_INVEN | USE_FLOOR | SHOW_FAIL) },
-
-	{ CMD_USE_ROD, "Zap which rod? ",
-	  "You have no charged rods to zap.",
-	  obj_is_rod, (USE_INVEN | USE_FLOOR | SHOW_FAIL) },
-
-	{ CMD_ACTIVATE, "Activate which item? ",
-	  "You have nothing to activate.",
-	  obj_is_activatable, (USE_EQUIP | SHOW_FAIL) },
-
-	{ CMD_EAT, "Eat which item? ",
-	  "You have nothing to eat.",
-	  obj_is_food, (USE_INVEN | USE_FLOOR) },
-
-	{ CMD_QUAFF, "Quaff which potion? ",
-	  "You have no potions to quaff.",
-	  obj_is_potion, (USE_INVEN | USE_FLOOR) },
-
-	{ CMD_READ_SCROLL, "Read which scroll? ",
-	  "You have no scrolls to read.",
-	  obj_is_scroll, (USE_INVEN | USE_FLOOR) },
-
-	{ CMD_REFILL, "Refuel with what fuel source? ",
-	  "You have nothing to refuel with.",
-	  obj_can_refill, (USE_INVEN | USE_FLOOR) },
+	{ CMD_INSCRIBE, NULL, NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS) },
+	{ CMD_UNINSCRIBE, NULL, obj_has_inscrip, (USE_EQUIP | USE_INVEN | USE_FLOOR) },
+	{ CMD_WIELD, NULL, obj_can_wear, (USE_INVEN | USE_FLOOR) },
+	{ CMD_TAKEOFF, NULL, obj_can_takeoff, USE_EQUIP },
+	{ CMD_DROP, NULL, NULL, (USE_EQUIP | USE_INVEN) },
+	{ CMD_FIRE, NULL, obj_can_fire, (USE_INVEN | USE_EQUIP | USE_FLOOR | QUIVER_TAGS) },
+	{ CMD_USE_STAFF, "staff",  obj_is_staff, (USE_INVEN | USE_FLOOR | SHOW_FAIL) },
+	{ CMD_USE_WAND, "wand", obj_is_wand, (USE_INVEN | USE_FLOOR | SHOW_FAIL) },
+	{ CMD_USE_ROD, "rod", obj_is_rod, (USE_INVEN | USE_FLOOR | SHOW_FAIL) },
+	{ CMD_ACTIVATE, NULL, obj_is_activatable, (USE_EQUIP | SHOW_FAIL) },
+	{ CMD_EAT, "food", obj_is_food, (USE_INVEN | USE_FLOOR) },
+	{ CMD_QUAFF, "potion", obj_is_potion, (USE_INVEN | USE_FLOOR) },
+	{ CMD_READ_SCROLL, "scroll", obj_is_scroll, (USE_INVEN | USE_FLOOR) },
+	{ CMD_REFILL, "fuel source", obj_can_refill, (USE_INVEN | USE_FLOOR) },
 };
+
+const char *cmd_get_verb(cmd_code cmd)
+{
+	size_t i;
+	for (i = 0; i < N_ELEMENTS(game_cmds); i++) {
+		if (game_cmds[i].cmd == cmd)
+			return game_cmds[i].verb;
+	}
+	return NULL;
+}
 
 game_command *cmd_get_top(void)
 {
@@ -410,9 +380,24 @@ void process_command(cmd_context ctx, bool no_request)
 			if (!cmd->arg_present[0])
 			{
 				int item;
+				const char *verb = game_cmds[idx].verb;
+				const char *type = is->type;
+				const char *type2 = is->type;
+
+				char prompt[1024], none[1024];
+
+				/* Pluralise correctly or things look weird */
+				if (!type) {
+					type = "item";
+					type2 = "items";
+				}
+
+				strnfmt(prompt, sizeof(prompt), "%^s which %s?", verb, type);
+				strnfmt(none, sizeof(none), "You have no %s you can %s.",
+						type2, verb);
 
 				item_tester_hook = is->filter;
-				if (!get_item(&item, is->prompt, is->noop, cmd->command, is->mode))
+				if (!get_item(&item, prompt, none, cmd->command, is->mode))
 					return;
 
 				cmd_set_arg_item(cmd, 0, item);

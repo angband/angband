@@ -176,6 +176,11 @@ typedef struct game_command
 
 
 /**
+ * Return the verb that goes alongside the given command.
+ */
+const char *cmd_get_verb(cmd_code cmd);
+
+/**
  * Returns the top command on the queue.
  */
 game_command *cmd_get_top(void);
