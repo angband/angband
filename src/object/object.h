@@ -97,7 +97,9 @@ typedef enum
 	ODESC_PLURAL = 0x08,   /*!< Always pluralise */
 	ODESC_SINGULAR    = 0x10,    /*!< Always singular */
 	ODESC_SPOIL  = 0x20,    /*!< Display regardless of player knowledge */
-	ODESC_PREFIX = 0x40   /* */
+	ODESC_PREFIX = 0x40,   /* */
+
+	ODESC_CAPITAL = 0x80	/*!< Capitalise object name */
 } odesc_detail_t;
 
 

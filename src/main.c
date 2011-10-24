@@ -191,14 +191,14 @@ static void user_name(char *buf, size_t len, int id)
 	struct passwd *pw = getpwuid(id);
 
 	/* Default to PLAYER */
-	if (!pw)
-	{
+	if (!pw || !pw->pw_name || !pw->pw_name[0] ) {
 		my_strcpy(buf, "PLAYER", len);
 		return;
 	}
 
-	/* Capitalise and copy */
-	strnfmt(buf, len, "%^s", pw->pw_name);
+	/* Copy and capitalise */
+	my_strcpy(buf, pw->pw_name, len);
+	my_strcap(buf);
 }
 
 #endif /* SET_UID */

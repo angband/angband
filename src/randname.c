@@ -203,7 +203,7 @@ int main(int argc, char *argv[])
 	for (i = 0; i < 20; i++)
 	{
 		randname_make(RANDNAME_TOLKIEN, 5, 9, name, 256, name_sections);
-		name[0] = toupper((unsigned char) name[0]);
+		my_strcap(name);
 		printf("%s\n", name);
 	}
 

@@ -1041,9 +1041,9 @@ bool target_set_closest(int mode)
 
 	/* Target the monster */
 	m_ptr = cave_monster(cave, m_idx);
-	monster_desc(m_name, sizeof(m_name), m_ptr, 0x00);
+	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_CAPITAL);
 	if (!(mode & TARGET_QUIET))
-		msg("%^s is targeted.", m_name);
+		msg("%s is targeted.", m_name);
 	Term_fresh();
 
 	/* Set up target information */

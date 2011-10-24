@@ -1963,10 +1963,11 @@ bool probing(void)
 			if (!probe) msg("Probing...");
 
 			/* Get "the monster" or "something" */
-			monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND1);
+			monster_desc(m_name, sizeof(m_name), m_ptr,
+					MDESC_IND1 | MDESC_CAPITAL);
 
 			/* Describe the monster */
-			msg("%^s has %d hit points.", m_name, m_ptr->hp);
+			msg("%s has %d hit points.", m_name, m_ptr->hp);
 
 			/* Learn all of the non-spell, non-treasure flags */
 			lore_do_probe(i);
@@ -2345,10 +2346,10 @@ void earthquake(int cy, int cx, int r)
 					}
 
 					/* Describe the monster */
-					monster_desc(m_name, sizeof(m_name), m_ptr, 0);
+					monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_CAPITAL);
 
 					/* Scream in pain */
-					msg("%^s wails out in pain!", m_name);
+					msg("%s wails out in pain!", m_name);
 
 					/* Take damage from the quake */
 					damage = (sn ? damroll(4, 8) : (m_ptr->hp + 1));
@@ -2359,7 +2360,7 @@ void earthquake(int cy, int cx, int r)
 
 					/* If the quake finished the monster off, show message */
 					if (m_ptr->hp < damage && m_ptr->hp >= 0)
-						msg("%^s is embedded in the rock!", m_name);
+						msg("%s is embedded in the rock!", m_name);
 
 					/* Apply damage directly */
 					m_ptr->hp -= damage;
@@ -3380,8 +3381,12 @@ void do_ident_item(int item, object_type *o_ptr)
 	/* Describe */
 	if (item >= INVEN_WIELD)
 	{
-		msgt(msg_type, "%^s: %s (%c).",
+		/* Format and capitalise */
+		char *msg = format("%s: %s (%c).",
 			  describe_use(item), o_name, index_to_label(item));
+		my_strcap(msg);
+
+		msgt(msg_type, msg);
 	}
 	else if (item >= 0)
 	{

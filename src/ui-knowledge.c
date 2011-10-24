@@ -1268,9 +1268,10 @@ static void desc_art_fake(int a_idx)
 	handle_stuff(p_ptr);
 
 	tb = object_info(o_ptr, OINFO_NONE);
-	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(header, sizeof(header), o_ptr,
+			ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL);
 
-	textui_textblock_show(tb, area, format("%^s", header));
+	textui_textblock_show(tb, area, header);
 	textblock_free(tb);
 
 #if 0
@@ -1579,9 +1580,10 @@ static void desc_obj_fake(int k_idx)
 	handle_stuff(p_ptr);
 
 	tb = object_info(o_ptr, OINFO_NONE);
-	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
+	object_desc(header, sizeof(header), o_ptr,
+			ODESC_PREFIX | ODESC_FULL | ODESC_CAPITAL);
 
-	textui_textblock_show(tb, area, format("%^s", header));
+	textui_textblock_show(tb, area, header);
 	textblock_free(tb);
 }
 
