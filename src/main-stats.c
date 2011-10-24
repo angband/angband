@@ -241,12 +241,12 @@ static void kill_all_monsters(int level)
 	int i;
 
 	for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
-		const monster_type *m_ptr = cave_monster(cave, i);
+		monster_type *m_ptr = cave_monster(cave, i);
 		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 		level_data[level].monsters[m_ptr->r_idx]++;
 
-		monster_death(i, TRUE);
+		monster_death(m_ptr, TRUE);
 
 		if (rf_has(r_ptr->flags, RF_UNIQUE))
 			r_ptr->max_num = 0;

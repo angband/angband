@@ -27,13 +27,13 @@
 #include "files.h"
 #include "init.h"
 
-/* this is used to draw the various terrain characters */
+/* this is used to draw the various terrain characters
 static unsigned int graphics_table[32] = {
 	000, '*', '#', '?', '?', '?', '?', '.',
 	'+', '?', '?', '+', '+', '+', '+', '+',
 	'~', '-', '-', '-', '_', '+', '+', '+',
 	'+', '|', '?', '?', '?', '?', '?', '.',
-};
+}; */
 
 /* 
  *Add a bunch of debugger message, to trace where problems are. 
@@ -2502,7 +2502,7 @@ static void handle_sidebar(game_event_type type, game_event_data *data, void *us
 	
 	xtra_win_data *xd = &xdata[5];
 	long xp = (long)p_ptr->exp;
-	monster_type *m_ptr = cave_monster(cave, p_ptr->health_who);
+	monster_type *m_ptr = cave_monster(cave, p_ptr->health_who->midx);
 	int i = 0, sidebar_length = 12;
 
 	/* Calculate XP for next level */

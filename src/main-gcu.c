@@ -768,7 +768,7 @@ errr init_gcu(int argc, char **argv) {
 	int i;
 	int rows, cols, y, x;
 	int next_win = 0;
-	bool graphics = TRUE;
+/*	bool graphics = TRUE; */
 
 	/* Initialize info about terminal capabilities */
 	termtype = getenv("TERM");
@@ -780,8 +780,8 @@ errr init_gcu(int argc, char **argv) {
 			use_big_screen = TRUE;
 		else if (prefix(argv[i], "-B"))
 			bold_extended = TRUE;
-		else if (prefix(argv[i], "-a"))
-			graphics = FALSE;
+/*		else if (prefix(argv[i], "-a"))
+			graphics = FALSE; */
 		else
 			plog_fmt("Ignoring option: %s", argv[i]);
 	}
