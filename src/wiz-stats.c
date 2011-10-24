@@ -1861,13 +1861,13 @@ static void mean_and_stdv(int array[TRIES_SIZE])
 	double tot=0, mean, stdev, temp=0;
 	
 	/* get the maximum iteration value */
-	if (tries > TRIES_SIZE) maxiter = TRIES_SIZE; else maxiter = tries; 
+	maxiter = MIN(tries, TRIES_SIZE); 
 	
 	/* sum the array */
 	for (k = 0; k < maxiter; k++) tot += array[k];
 	
 	/* compute the mean */
-	mean = tot / tries;
+	mean = tot / maxiter;
 	
 	/* sum up the squares */
 	for (k = 0; k < maxiter; k++) temp += (array[k] - mean) * (array[k] - mean);
