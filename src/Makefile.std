@@ -29,7 +29,7 @@ SYS_x11 = -DUSE_X11 -lX11
 
 # Support curses console mode (main-gcu.c)
 # If this fails, try the alternate below
-SYS_gcu = -DUSE_GCU -DUSE_NCURSES -lncurses
+SYS_gcu = -DUSE_GCU -DUSE_NCURSES -lncursesw
 #SYS_gcu = -DUSE_GCU -lcurses -ltermcap
 
 # Support the GTK2 graphical tookit (main-gtk.c)

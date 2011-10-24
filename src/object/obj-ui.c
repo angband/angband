@@ -20,6 +20,7 @@
 #include "button.h"
 #include "tvalsval.h"
 #include "cmds.h"
+#include "game-cmd.h"
 
 /*
  * Display a list of objects.  Each object may be prefixed with a label.
@@ -434,11 +435,12 @@ bool verify_item(const char *prompt, int item)
 
 
 /*
- * Hack -- allow user to "prevent" certain choices.
+ * Hack -- prevent certain choices depending on the inscriptions on the item.
  *
  * The item can be negative to mean "item on floor".
  */
-static bool get_item_allow(int item, unsigned char ch, bool is_harmless)
+static bool get_item_allow(int item, unsigned char ch, cmd_code cmd,
+		bool is_harmless)
 {
 	object_type *o_ptr;
 	char verify_inscrip[] = "!*";
@@ -451,19 +453,31 @@ static bool get_item_allow(int item, unsigned char ch, bool is_harmless)
 	else
 		o_ptr = object_byid(0 - item);
 
-	/* Check for a "prevention" inscription */
+	/* The inscription to look for */
 	verify_inscrip[1] = ch;
 
-	/* Find both sets of inscriptions, add together, and prompt that number of times */
+	/* Look for the inscription */
 	n = check_for_inscrip(o_ptr, verify_inscrip);
 
+	/* Also look for for the inscription '!*' */
 	if (!is_harmless)
 		n += check_for_inscrip(o_ptr, "!*");
 
-	while (n--)
-	{
-		if (!verify_item("Really try", item))
-			return (FALSE);
+	/* Choose string for the prompt */
+	if (n) {
+		char prompt[1024];
+
+		const char *verb = cmd_get_verb(cmd);
+		if (!verb)
+			verb = "do that with";
+
+		strnfmt(prompt, sizeof(prompt), "Really %s", verb);
+
+		/* Promt for confirmation n times */
+		while (n--) {
+			if (!verify_item(prompt, item))
+				return (FALSE);
+		}
 	}
 
 	/* Allow it */
@@ -988,7 +1002,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 						k = 0 - floor_list[0];
 
 						/* Allow player to "refuse" certain actions */
-						if (!get_item_allow(k, cmdkey, is_harmless))
+						if (!get_item_allow(k, cmdkey, cmd, is_harmless))
 						{
 							done = TRUE;
 							break;
@@ -1026,7 +1040,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 					if (!get_item_okay(k)) continue;
 
 					/* Allow player to "refuse" certain actions */
-					if (!get_item_allow(k, cmdkey, is_harmless)) continue;
+					if (!get_item_allow(k, cmdkey, cmd, is_harmless)) continue;
 
 					/* Accept that choice */
 					(*cp) = k;
@@ -1066,7 +1080,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 				}
 
 				/* Allow player to "refuse" certain actions */
-				if (!get_item_allow(k, cmdkey, is_harmless))
+				if (!get_item_allow(k, cmdkey, cmd, is_harmless))
 				{
 					done = TRUE;
 					break;
@@ -1130,7 +1144,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 				}
 
 				/* Allow player to "refuse" certain actions */
-				if (!get_item_allow(k, cmdkey, is_harmless))
+				if (!get_item_allow(k, cmdkey, cmd, is_harmless))
 				{
 					done = TRUE;
 					break;
@@ -1207,7 +1221,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 				}
 
 				/* Allow player to "refuse" certain actions */
-				if (!get_item_allow(k, cmdkey, is_harmless))
+				if (!get_item_allow(k, cmdkey, cmd, is_harmless))
 				{
 					done = TRUE;
 					break;
