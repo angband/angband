@@ -223,7 +223,7 @@ static void regen_monsters(void)
 			if (m_ptr->hp > m_ptr->maxhp) m_ptr->hp = m_ptr->maxhp;
 
 			/* Redraw (later) if needed */
-			if (p_ptr->health_who == i) p_ptr->redraw |= (PR_HEALTH);
+			if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
 		}
 	}
 }
@@ -1279,7 +1279,7 @@ static void dungeon(struct cave *c)
 	target_set_monster(0);
 
 	/* Cancel the health bar */
-	health_track(p_ptr, 0);
+	health_track(p_ptr, NULL);
 
 	/* Disturb */
 	disturb(p_ptr, 1, 0);
@@ -1761,7 +1761,7 @@ void play_game(void)
 		target_set_monster(0);
 
 		/* Cancel the health bar */
-		health_track(p_ptr, 0);
+		health_track(p_ptr, NULL);
 
 
 		/* Forget the view */

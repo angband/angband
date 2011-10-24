@@ -2191,7 +2191,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			m_ptr->hp = m_ptr->maxhp;
 
 			/* Speed up */
-			mon_inc_timed(m_idx, MON_TMD_FAST, 50, MON_TMD_FLG_NOTIFY, id);
+			mon_inc_timed(m_ptr, MON_TMD_FAST, 50, MON_TMD_FLG_NOTIFY, id);
 
 			/* Attempt to clone. */
 			if (multiply_monster(m_idx))
@@ -2212,7 +2212,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			if (seen) obvious = TRUE;
 
 			/* Wake up */
-			mon_clear_timed(m_idx, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, id);
+			mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, id);
 
 			/* Heal */
 			m_ptr->hp += dam;
@@ -2221,7 +2221,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			if (m_ptr->hp > m_ptr->maxhp) m_ptr->hp = m_ptr->maxhp;
 
 			/* Redraw (later) if needed */
-			if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
+			if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
 
 			/* Message */
 			else m_note = MON_MSG_HEALTHIER;
@@ -2632,7 +2632,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 					m_note = MON_MSG_CHANGE;
 
 					/* Add the message now before changing the monster race */
-					add_monster_message(m_name, m_idx, m_note, FALSE);
+					add_monster_message(m_name, m_ptr, m_note, FALSE);
 
 					/* No more messages */
 					m_note = MON_MSG_NONE;
@@ -2682,7 +2682,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 		if (m_ptr->m_timed[MON_TMD_STUN])
 			do_stun /= 2;
 
-		obvious = mon_inc_timed(m_idx, MON_TMD_STUN, do_stun,
+		obvious = mon_inc_timed(m_ptr, MON_TMD_STUN, do_stun,
 			flag | MON_TMD_FLG_NOTIFY, id);
 	}
 
@@ -2690,29 +2690,29 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 	{
 		int tmp = damroll(3, (do_conf / 2)) + 1;
 
-		obvious = mon_inc_timed(m_idx, MON_TMD_CONF, tmp,
+		obvious = mon_inc_timed(m_ptr, MON_TMD_CONF, tmp,
 			flag | MON_TMD_FLG_NOTIFY, id);
 	}
 
 	else if (do_slow)
-		obvious = mon_inc_timed(m_idx, MON_TMD_SLOW, do_slow,
+		obvious = mon_inc_timed(m_ptr, MON_TMD_SLOW, do_slow,
 			flag | MON_TMD_FLG_NOTIFY, id);
 	else if (do_haste)
-		obvious = mon_inc_timed(m_idx, MON_TMD_FAST, do_haste,
+		obvious = mon_inc_timed(m_ptr, MON_TMD_FAST, do_haste,
 			flag | MON_TMD_FLG_NOTIFY, id);
 
 	if (do_fear)
-		obvious = mon_inc_timed(m_idx, MON_TMD_FEAR, do_fear,
+		obvious = mon_inc_timed(m_ptr, MON_TMD_FEAR, do_fear,
 			flag | MON_TMD_FLG_NOTIFY, id);
 
 	/* If another monster did the damage, hurt the monster by hand */
 	if (who > 0)
 	{
 		/* Redraw (later) if needed */
-		if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
+		if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
 
 		/* Wake the monster up */
-		mon_clear_timed(m_idx, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
+		mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
 
 		/* Hurt the monster */
 		m_ptr->hp -= dam;
@@ -2724,10 +2724,10 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			if (!seen) note_dies = MON_MSG_MORIA_DEATH;
 
 			/* dump the note*/
-			add_monster_message(m_name, m_idx, note_dies, FALSE);
+			add_monster_message(m_name, m_ptr, note_dies, FALSE);
 
 			/* Generate treasure, etc */
-			monster_death(m_idx, FALSE);
+			monster_death(m_ptr, FALSE);
 
 			/* Delete the monster */
 			delete_monster_idx(m_idx);
@@ -2741,11 +2741,11 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			/* Give detailed messages if visible or destroyed */
 			if ((m_note != MON_MSG_NONE) && seen)
 			{
-				add_monster_message(m_name, m_idx, m_note, FALSE);
+				add_monster_message(m_name, m_ptr, m_note, FALSE);
 			}
 
 			/* Hack -- Pain message */
-			else if (dam > 0) message_pain(m_idx, dam);
+			else if (dam > 0) message_pain(m_ptr, dam);
 		}
 	}
 
@@ -2761,28 +2761,28 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			if (!seen) note_dies = MON_MSG_MORIA_DEATH;
 
 			/* Save the death notification for later */
-			add_monster_message(m_name, m_idx, note_dies, FALSE);
+			add_monster_message(m_name, m_ptr, note_dies, FALSE);
 		}
 
 		if (do_sleep)
-			obvious = mon_inc_timed(m_idx, MON_TMD_SLEEP, 500 + p_ptr->lev * 10,
+			obvious = mon_inc_timed(m_ptr, MON_TMD_SLEEP, 500 + p_ptr->lev * 10,
 				flag | MON_TMD_FLG_NOTIFY, id);
-		else if (mon_take_hit(m_idx, dam, &fear, ""))
+		else if (mon_take_hit(m_ptr, dam, &fear, ""))
 			mon_died = TRUE;
 		else
 		{
 			/* Give detailed messages if visible or destroyed */
 			if ((m_note != MON_MSG_NONE) && seen)
 			{
-				add_monster_message(m_name, m_idx, m_note, FALSE);
+				add_monster_message(m_name, m_ptr, m_note, FALSE);
 			}
 
 			/* Hack -- Pain message */
 			else if (dam > 0)
-				message_pain(m_idx, dam);
+				message_pain(m_ptr, dam);
 
 			if (fear && m_ptr->ml)
-				add_monster_message(m_name, m_idx, MON_MSG_FLEE_IN_TERROR, TRUE);
+				add_monster_message(m_name, m_ptr, MON_MSG_FLEE_IN_TERROR, TRUE);
 		}
 	}
 
@@ -3427,13 +3427,13 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 			/* Track if possible */
 			if (cave->m_idx[y][x] > 0)
 			{
-				monster_type *m_ptr = cave_monster(cave, cave->m_idx[y][x]);
+				monster_type *m_ptr = cave_monster_at(cave, y, x);
 
 				/* Hack -- auto-recall */
 				if (m_ptr->ml) monster_race_track(m_ptr->r_idx);
 
 				/* Hack - auto-track */
-				if (m_ptr->ml) health_track(p_ptr, cave->m_idx[y][x]);
+				if (m_ptr->ml) health_track(p_ptr, m_ptr);
 			}
 		}
 	}

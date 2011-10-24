@@ -326,24 +326,18 @@ static void prt_sp(int row, int col)
  */
 byte monster_health_attr(void)
 {
-	byte attr = TERM_WHITE;
-	
-	/* Not tracking */
-	if (!p_ptr->health_who)
+	struct monster *mon = p_ptr->health_who;
+	byte attr;
+
+	if (!mon) {
+		/* Not tracking */
 		attr = TERM_DARK;
 
-	/* Tracking an unseen, hallucinatory, or dead monster */
-	else if ((!cave_monster(cave, p_ptr->health_who)->ml) ||
-			(p_ptr->timed[TMD_IMAGE]) ||
-			(cave_monster(cave, p_ptr->health_who)->hp < 0))
-	{
+	} else if (!mon->ml || mon->hp < 0 || p_ptr->timed[TMD_IMAGE]) {
 		/* The monster health is "unknown" */
 		attr = TERM_WHITE;
-	}
-	
-	else
-	{
-		struct monster *mon = cave_monster(cave, p_ptr->health_who);
+
+	} else {
 		int pct;
 
 		/* Default to almost dead */
@@ -393,20 +387,18 @@ byte monster_health_attr(void)
 static void prt_health(int row, int col)
 {
 	byte attr = monster_health_attr();
-	struct monster *mon;
-	
+	struct monster *mon = p_ptr->health_who;
+
 	/* Not tracking */
-	if (!p_ptr->health_who)
+	if (!mon)
 	{
 		/* Erase the health bar */
 		Term_erase(col, row, 12);
 		return;
 	}
 
-	mon = cave_monster(cave, p_ptr->health_who);
-
 	/* Tracking an unseen, hallucinatory, or dead monster */
-	if ((!mon->ml) || /* Unseen */
+	if (!mon->ml || /* Unseen */
 			(p_ptr->timed[TMD_IMAGE]) || /* Hallucination */
 			(mon->hp < 0)) /* Dead (?) */
 	{
@@ -417,15 +409,11 @@ static void prt_health(int row, int col)
 	/* Tracking a visible monster */
 	else
 	{
-		int pct, len;
-
-		monster_type *m_ptr = cave_monster(cave, p_ptr->health_who);
-
 		/* Extract the "percent" of health */
-		pct = 100L * m_ptr->hp / m_ptr->maxhp;
+		int pct = 100L * mon->hp / mon->maxhp;
 
 		/* Convert percent into "health" */
-		len = (pct < 10) ? 1 : (pct < 90) ? (pct / 10 + 1) : 10;
+		int len = (pct < 10) ? 1 : (pct < 90) ? (pct / 10 + 1) : 10;
 
 		/* Default to "unknown" */
 		Term_putstr(col, row, 12, TERM_WHITE, "[----------]");

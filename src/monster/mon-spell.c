@@ -211,7 +211,7 @@ static void drain_mana(int m_idx, int rlev, bool seen)
 			m_ptr->hp = m_ptr->maxhp;
 
 		/* Redraw (later) if needed */
-		if (p_ptr->health_who == m_idx)
+		if (p_ptr->health_who == m_ptr)
 			p_ptr->redraw |= (PR_HEALTH);
 
 		/* Special message */
@@ -255,11 +255,11 @@ static void heal_self(int m_idx, int rlev, bool seen)
 		msg("%^s sounds healthier.", m_name);
 
 	/* Redraw (later) if needed */
-	if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
+	if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
 
 	/* Cancel fear */
 	if (m_ptr->m_timed[MON_TMD_FEAR]) {
-		mon_clear_timed(m_idx, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE, FALSE);
+		mon_clear_timed(m_ptr, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE, FALSE);
 		msg("%^s recovers %s courage.", m_name, m_poss);
 	}
 }

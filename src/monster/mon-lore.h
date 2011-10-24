@@ -38,7 +38,7 @@ void screen_roff(const monster_race *r_ptr, const monster_lore *l_ptr);
 void display_roff(const monster_race *r_ptr, const monster_lore *l_ptr);
 void lore_do_probe(int m_idx);
 void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr, bitflag flags[RF_SIZE]);
-void lore_treasure(int m_idx, int num_item, int num_gold);
+void lore_treasure(struct monster *m_ptr, int num_item, int num_gold);
 
 
 #endif /* MONSTER_LORE_H */

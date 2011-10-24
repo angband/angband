@@ -145,7 +145,7 @@ static int critical_norm(int weight, int plus, int dam, u32b *msg_type) {
  */
 static bool py_attack_real(int y, int x, bool *fear) {
 	/* Information about the target of the attack */
-	monster_type *m_ptr = cave_monster(cave, cave->m_idx[y][x]);
+	monster_type *m_ptr = cave_monster_at(cave, y, x);
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	char m_name[80];
 	bool stop = FALSE;
@@ -171,7 +171,7 @@ static bool py_attack_real(int y, int x, bool *fear) {
 	if (m_ptr->ml) monster_race_track(m_ptr->r_idx);
 
 	/* Track a new monster */
-	if (m_ptr->ml) health_track(p_ptr, cave->m_idx[y][x]);
+	if (m_ptr->ml) health_track(p_ptr, m_ptr);
 
 	/* Handle player fear (only for invisible monsters) */
 	if (check_state(p_ptr, OF_AFRAID, p_ptr->state.flags)) {
@@ -180,8 +180,7 @@ static bool py_attack_real(int y, int x, bool *fear) {
 	}
 
 	/* Disturb the monster */
-	mon_clear_timed(cave->m_idx[y][x], MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE,
-		FALSE);
+	mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
 
 	/* See if the player hit */
 	success = test_hit(chance, r_ptr->ac, m_ptr->ml);
@@ -260,12 +259,12 @@ static bool py_attack_real(int y, int x, bool *fear) {
 		p_ptr->confusing = FALSE;
 		msg("Your hands stop glowing.");
 
-		mon_inc_timed(cave->m_idx[y][x], MON_TMD_CONF,
+		mon_inc_timed(m_ptr, MON_TMD_CONF,
 				(10 + randint0(p_ptr->lev) / 10), MON_TMD_FLG_NOTIFY, FALSE);
 	}
 
 	/* Damage, check for fear and death */
-	stop = mon_take_hit(cave->m_idx[y][x], dmg, fear, NULL);
+	stop = mon_take_hit(m_ptr, dmg, fear, NULL);
 
 	if (stop)
 		(*fear) = FALSE;
@@ -292,7 +291,7 @@ void py_attack(int y, int x) {
 	int blow_energy = 10000 / p_ptr->state.num_blows;
 	int blows = 0;
 	bool fear = FALSE;
-	monster_type *m_ptr = cave_monster(cave, cave->m_idx[y][x]);
+	monster_type *m_ptr = cave_monster_at(cave, y, x);
 	
 	/* disturb the player */
 	disturb(p_ptr, 0,0);
@@ -313,7 +312,7 @@ void py_attack(int y, int x) {
 	if (fear && m_ptr->ml) {
 		char m_name[80];
 		monster_desc(m_name, sizeof(m_name), m_ptr, 0);
-		add_monster_message(m_name, cave->m_idx[y][x], MON_MSG_FLEE_IN_TERROR, TRUE);
+		add_monster_message(m_name, m_ptr, MON_MSG_FLEE_IN_TERROR, TRUE);
 	}
 }
 
@@ -425,7 +424,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 
 	/* Try the attack on the monster at (x, y) if any */
 	if (cave->m_idx[y][x] > 0) {
-		monster_type *m_ptr = cave_monster(cave, cave->m_idx[y][x]);
+		monster_type *m_ptr = cave_monster_at(cave, y, x);
 		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 		int visible = m_ptr->ml;
 
@@ -471,7 +470,7 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 		
 				/* Track this monster */
 				if (m_ptr->ml) monster_race_track(m_ptr->r_idx);
-				if (m_ptr->ml) health_track(p_ptr, cave->m_idx[y][x]);
+				if (m_ptr->ml) health_track(p_ptr, m_ptr);
 			}
 		
 			/* Complex message */
@@ -479,10 +478,10 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 				msg("You do %d (out of %d) damage.", dmg, m_ptr->hp);
 		
 			/* Hit the monster, check for death */
-			if (!mon_take_hit(cave->m_idx[y][x], dmg, &fear, note_dies)) {
-				message_pain(cave->m_idx[y][x], dmg);
+			if (!mon_take_hit(m_ptr, dmg, &fear, note_dies)) {
+				message_pain(m_ptr, dmg);
 				if (fear && m_ptr->ml)
-					add_monster_message(m_name, cave->m_idx[y][x], MON_MSG_FLEE_IN_TERROR, TRUE);
+					add_monster_message(m_name, m_ptr, MON_MSG_FLEE_IN_TERROR, TRUE);
 			}
 		}
 	}
@@ -518,7 +517,7 @@ static struct attack_result make_ranged_shot(object_type *o_ptr, int y, int x) {
 
 	object_type *j_ptr = &p_ptr->inventory[INVEN_BOW];
 
-	monster_type *m_ptr = cave_monster(cave, cave->m_idx[y][x]);
+	monster_type *m_ptr = cave_monster_at(cave, y, x);
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	int bonus = p_ptr->state.to_h + o_ptr->to_h + j_ptr->to_h;
@@ -560,7 +559,7 @@ static struct attack_result make_ranged_shot(object_type *o_ptr, int y, int x) {
 static struct attack_result make_ranged_throw(object_type *o_ptr, int y, int x) {
 	struct attack_result result = {FALSE, 0, 0, "hit"};
 
-	monster_type *m_ptr = cave_monster(cave, cave->m_idx[y][x]);
+	monster_type *m_ptr = cave_monster_at(cave, y, x);
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	int bonus = p_ptr->state.to_h + o_ptr->to_h;

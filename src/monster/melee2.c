@@ -461,7 +461,7 @@ bool make_attack_spell(int m_idx)
 
 	/* If we see an unaware monster try to cast a spell, become aware of it */
 	if (m_ptr->unaware)
-		become_aware(m_idx);
+		become_aware(m_ptr);
 
 	/* Calculate spell failure rate */
 	failrate = 25 - (rlev + 3) / 4;
@@ -491,7 +491,7 @@ bool make_attack_spell(int m_idx)
 		else
 			msg("%^s concentrates on %s body.", m_name, m_poss);
 
-		(void)mon_inc_timed(m_idx, MON_TMD_FAST, 50, 0, FALSE);
+		(void)mon_inc_timed(m_ptr, MON_TMD_FAST, 50, 0, FALSE);
 	} else
 		do_mon_spell(thrown_spell, m_idx, seen);
 
@@ -1921,7 +1921,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 							m_ptr->hp += heal;
 
 							/* Redraw (later) if needed */
-							if (cave_monster(cave, p->health_who) == m_ptr)
+							if (p->health_who == m_ptr)
 								p->redraw |= (PR_HEALTH);
 
 							/* Combine / Reorder the pack */
@@ -2774,7 +2774,7 @@ static void process_monster(struct cave *c, int m_idx)
 		if (check_state(p_ptr, OF_AGGRAVATE, p_ptr->state.flags))
 		{
 			/* Wake the monster */
-			mon_clear_timed(m_idx, MON_TMD_SLEEP, MON_TMD_FLG_NOTIFY, FALSE);
+			mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOTIFY, FALSE);
 
 			/* Notice the "waking up" */
 			if (m_ptr->ml && !m_ptr->unaware)
@@ -2788,7 +2788,7 @@ static void process_monster(struct cave *c, int m_idx)
 				msg("%^s wakes up.", m_name);
 
 				/* Hack -- Update the health bar */
-				if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
+				if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
 			}
 
 			/* Efficiency XXX XXX */
@@ -2810,7 +2810,7 @@ static void process_monster(struct cave *c, int m_idx)
 			if (m_ptr->m_timed[MON_TMD_SLEEP] > d)
 			{
 				/* Monster wakes up "a little bit" */
-				mon_dec_timed(m_idx, MON_TMD_SLEEP, d , MON_TMD_FLG_NOMESSAGE,
+				mon_dec_timed(m_ptr, MON_TMD_SLEEP, d , MON_TMD_FLG_NOMESSAGE,
 					FALSE);
 
 				/* Notice the "not waking up" */
@@ -2828,7 +2828,7 @@ static void process_monster(struct cave *c, int m_idx)
 			else
 			{
 				/* Reset sleep counter */
-				woke_up = mon_clear_timed(m_idx, MON_TMD_SLEEP,
+				woke_up = mon_clear_timed(m_ptr, MON_TMD_SLEEP,
 					MON_TMD_FLG_NOMESSAGE, FALSE);
 
 				/* Notice the "waking up" */
@@ -2843,7 +2843,7 @@ static void process_monster(struct cave *c, int m_idx)
 					msg("%^s wakes up.", m_name);
 
 					/* Hack -- Update the health bar */
-					if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
+					if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
 
 					/* Hack -- Count the wakings */
 					if (l_ptr->wake < MAX_UCHAR)
@@ -2862,10 +2862,10 @@ static void process_monster(struct cave *c, int m_idx)
 	if (woke_up) return;
 
 	if (m_ptr->m_timed[MON_TMD_FAST])
-		mon_dec_timed(m_idx, MON_TMD_FAST, 1, 0, FALSE);
+		mon_dec_timed(m_ptr, MON_TMD_FAST, 1, 0, FALSE);
 
 	if (m_ptr->m_timed[MON_TMD_SLOW])
-		mon_dec_timed(m_idx, MON_TMD_SLOW, 1, 0, FALSE);
+		mon_dec_timed(m_ptr, MON_TMD_SLOW, 1, 0, FALSE);
 
 	if (m_ptr->m_timed[MON_TMD_STUN])
 	{
@@ -2880,9 +2880,9 @@ static void process_monster(struct cave *c, int m_idx)
 
 		/* Hack -- Recover from stun */
 		if (m_ptr->m_timed[MON_TMD_STUN] > d)
-			mon_dec_timed(m_idx, MON_TMD_STUN, 1, MON_TMD_FLG_NOMESSAGE, FALSE);
+			mon_dec_timed(m_ptr, MON_TMD_STUN, 1, MON_TMD_FLG_NOMESSAGE, FALSE);
 		else
-			mon_clear_timed(m_idx, MON_TMD_STUN, MON_TMD_FLG_NOTIFY, FALSE);
+			mon_clear_timed(m_ptr, MON_TMD_STUN, MON_TMD_FLG_NOTIFY, FALSE);
 
 		/* Still stunned */
 		if (m_ptr->m_timed[MON_TMD_STUN]) return;
@@ -2894,10 +2894,10 @@ static void process_monster(struct cave *c, int m_idx)
 
 		/* Still confused */
 		if (m_ptr->m_timed[MON_TMD_CONF] > d)
-			mon_dec_timed(m_idx, MON_TMD_CONF, d , MON_TMD_FLG_NOMESSAGE,
+			mon_dec_timed(m_ptr, MON_TMD_CONF, d , MON_TMD_FLG_NOMESSAGE,
 				FALSE);
 		else
-			mon_clear_timed(m_idx, MON_TMD_CONF, MON_TMD_FLG_NOTIFY, FALSE);
+			mon_clear_timed(m_ptr, MON_TMD_CONF, MON_TMD_FLG_NOTIFY, FALSE);
 	}
 
 	if (m_ptr->m_timed[MON_TMD_FEAR])
@@ -2906,9 +2906,9 @@ static void process_monster(struct cave *c, int m_idx)
 		int d = randint1(r_ptr->level / 10 + 1);
 
 		if (m_ptr->m_timed[MON_TMD_FEAR] > d)
-			mon_dec_timed(m_idx, MON_TMD_FEAR, d, MON_TMD_FLG_NOMESSAGE, FALSE);
+			mon_dec_timed(m_ptr, MON_TMD_FEAR, d, MON_TMD_FLG_NOMESSAGE, FALSE);
 		else
-			mon_clear_timed(m_idx, MON_TMD_FEAR, MON_TMD_FLG_NOTIFY, FALSE);
+			mon_clear_timed(m_ptr, MON_TMD_FEAR, MON_TMD_FLG_NOTIFY, FALSE);
 	}
 
 
@@ -2956,7 +2956,7 @@ static void process_monster(struct cave *c, int m_idx)
 	}
 
 	/* Mimics lie in wait */
-	if (is_mimicking(m_idx)) return;
+	if (is_mimicking(m_ptr)) return;
 	
 	/* Attempt to cast a spell */
 	if (make_attack_spell(m_idx)) return;
@@ -3257,7 +3257,7 @@ static void process_monster(struct cave *c, int m_idx)
 		/* A monster is in the way */
 		if (do_move && (cave->m_idx[ny][nx] > 0))
 		{
-			monster_type *n_ptr = cave_monster(cave, cave->m_idx[ny][nx]);
+			monster_type *n_ptr = cave_monster_at(cave, ny, nx);
 
 			/* Kill weaker monsters */
 			int kill_ok = rf_has(r_ptr->flags, RF_KILL_BODY);
@@ -3470,12 +3470,12 @@ static void process_monster(struct cave *c, int m_idx)
 	/* Hack -- get "bold" if out of options */
 	if (!do_turn && !do_move && m_ptr->m_timed[MON_TMD_FEAR])
 	{
-		mon_clear_timed(m_idx, MON_TMD_FEAR, MON_TMD_FLG_NOTIFY, FALSE);
+		mon_clear_timed(m_ptr, MON_TMD_FEAR, MON_TMD_FLG_NOTIFY, FALSE);
 	}
 
 	/* If we see an unaware monster do something, become aware of it */
 	if (do_turn && m_ptr->unaware)
-		become_aware(m_idx);
+		become_aware(m_ptr);
 
 }
 

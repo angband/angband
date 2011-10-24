@@ -2193,17 +2193,12 @@ void lore_do_probe(int m_idx)
  * gold and items are dropped, and remembers that information to be
  * described later by the monster recall code.
  */
-void lore_treasure(int m_idx, int num_item, int num_gold)
+void lore_treasure(struct monster *m_ptr, int num_item, int num_gold)
 {
-	const monster_type *m_ptr;
-	monster_lore *l_ptr;
+	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
 	assert(num_item >= 0);
 	assert(num_gold >= 0);
-	
-	assert(m_idx > 0);
-	m_ptr = cave_monster(cave, m_idx);
-	l_ptr = &l_list[m_ptr->r_idx];
 
 	/* Note the number of things dropped */
 	if (num_item > l_ptr->drop_item)
