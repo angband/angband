@@ -199,14 +199,17 @@ static void spell_menu_destroy(menu_type *m)
 static int spell_menu_select(menu_type *m, const char *noun, const char *verb)
 {
 	struct spell_menu_data *d = menu_priv(m);
+	char buf[80];
 
 	screen_save();
-
 	region_erase_bordered(&m->active);
-	prt(format("%^s which %s? ", verb, noun), 0, 0);
+
+	/* Format, capitalise and display */
+	strnfmt(buf, sizeof buf, "%s which %s? ", verb, noun);
+	my_strcap(buf);
+	prt(buf, 0, 0);
 
 	menu_select(m, 0, TRUE);
-
 	screen_load();
 
 	return d->selected_spell;

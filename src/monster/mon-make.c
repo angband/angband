@@ -1444,10 +1444,11 @@ bool mon_take_hit(struct monster *m_ptr, int dam, bool *fear, const char *note)
 			/* Hack -- allow message suppression */
 			if (strlen(note) <= 1) {
 				/* Be silent */
+			} else {
+				char *str = format("%s%s", m_name, note);
+				my_strcap(str);
+				msgt(soundfx, "%s", str);
 			}
-
-			else 
-				msgt(soundfx, "%^s%s", m_name, note);
 		}
 
 		/* Death by physical attack -- invisible monster */

@@ -40,14 +40,6 @@
  * These limitations could be fixed by stealing some of the code from,
  * say, "vsprintf()" and placing it into my "vstrnfmt()" function.
  *
- * Note that a "^" inside a "format sequence" causes the first non-space
- * character in the string resulting from the combination of the format
- * sequence and the argument(s) to be "capitalized" if possible.  Note
- * that the "^" character is removed before the "standard" formatting
- * routines are called.  Likewise, a "*" inside a "format sequence" is
- * removed from the "format sequence", and replaced by the textual form
- * of the next argument in the argument list.  See examples below.
- *
  * Legal format characters: %,b,n,p,c,s,d,i,o,u,X,x,E,e,F,f,G,g,r,v.
  *
  * Format("%%")
@@ -130,9 +122,8 @@
  * For example: "s = buf; n = vstrnfmt(s+n, 100-n, ...); ..." will allow
  * multiple bounded "appends" to "buf", with constant access to "strlen(buf)".
  *
- * For example: "format("%^-.*s", i, txt)" will produce a string containing
- * the first "i" characters of "txt", left justified, with the first non-space
- * character capitilized, if reasonable.
+ * For example: "format("%-.*s", i, txt)" will produce a string containing
+ * the first "i" characters of "txt", left justified.
  */
 
 
@@ -192,9 +183,6 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 
 	/* The argument is "long" */
 	bool do_long;
-
-	/* The argument needs to be uppercased */
-	bool titlecase;
 
 	/* Bytes used in buffer */
 	size_t n;
@@ -283,7 +271,6 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 		aux[q++] = '%';
 
 		do_long = FALSE;
-		titlecase = FALSE;
 
 		/* Build the "aux" string */
 		while (TRUE)
@@ -350,11 +337,6 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 					while (aux[q]) q++;
 
 					/* Skip the "*" */
-					s++;
-				}
-				else if (*s == '^')
-				{
-					titlecase = TRUE;
 					s++;
 				}
 
@@ -557,23 +539,6 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 
 				/* Return "error" */
 				return (0);
-			}
-		}
-
-		if (titlecase)
-		{
-			for (q = 0; tmp[q]; q++)
-			{
-				/* Notice first non-space */
-				if (!isspace(tmp[q]))
-				{
-					/* Capitalize if possible */
-					if (islower(tmp[q]))
-						tmp[q] = toupper(tmp[q]);
-
-					/* Done */
-					break;
-				}
 			}
 		}
 

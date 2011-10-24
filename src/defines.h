@@ -506,19 +506,6 @@ enum
 
 
 /*
- * Bit flags for the "monster_desc" function
- */
-#define MDESC_OBJE		0x01	/* Objective (or Reflexive) */
-#define MDESC_POSS		0x02	/* Possessive (or Reflexive) */
-#define MDESC_IND1		0x04	/* Indefinites for hidden monsters */
-#define MDESC_IND2		0x08	/* Indefinites for visible monsters */
-#define MDESC_PRO1		0x10	/* Pronominalize hidden monsters */
-#define MDESC_PRO2		0x20	/* Pronominalize visible monsters */
-#define MDESC_HIDE		0x40	/* Assume the monster is hidden */
-#define MDESC_SHOW		0x80	/* Assume the monster is visible */
-
-
-/*
  * Bit flags for the "get_item" function
  */
 #define USE_EQUIP     0x01	/* Allow equip items */

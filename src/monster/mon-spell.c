@@ -177,12 +177,12 @@ static void drain_mana(int m_idx, int rlev, bool seen)
 	char m_name[80];
 
 	/* Get the monster name (or "it") */
-	monster_desc(m_name, sizeof(m_name), m_ptr, 0x00);
+	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_CAPITAL);
 
 	if (!p_ptr->csp) {
 		msg("The draining fails.");
 		if (OPT(birth_ai_learn) && !(m_ptr->smart & SM_IMM_MANA)) {
-			msg("%^s notes that you have no mana!", m_name);
+			msg("%s notes that you have no mana!", m_name);
 			m_ptr->smart |= SM_IMM_MANA;
 		}
 		return;
@@ -216,7 +216,7 @@ static void drain_mana(int m_idx, int rlev, bool seen)
 
 		/* Special message */
 		if (seen)
-			msg("%^s appears healthier.", m_name);
+			msg("%s appears healthier.", m_name);
 	}
 }
 
@@ -233,10 +233,11 @@ static void heal_self(int m_idx, int rlev, bool seen)
 	char m_name[80], m_poss[80];
 
 	/* Get the monster name (or "it") */
-	monster_desc(m_name, sizeof(m_name), m_ptr, 0x00);
+	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_CAPITAL);
 
 	/* Get the monster possessive ("his"/"her"/"its") */
-	monster_desc(m_poss, sizeof(m_poss), m_ptr, MDESC_PRO2 | MDESC_POSS);
+	monster_desc(m_poss, sizeof(m_poss), m_ptr,
+			MDESC_PRO2 | MDESC_POSS);
 
 	/* Heal some */
 	m_ptr->hp += (rlev * 6);
@@ -246,13 +247,14 @@ static void heal_self(int m_idx, int rlev, bool seen)
 		m_ptr->hp = m_ptr->maxhp;
 
 		if (seen)
-			msg("%^s looks REALLY healthy!", m_name);
+			msg("%s looks REALLY healthy!", m_name);
 		else
-			msg("%^s sounds REALLY healthy!", m_name);
-	} else if (seen) /* Partially healed */
-		msg("%^s looks healthier.", m_name);
-	else
-		msg("%^s sounds healthier.", m_name);
+			msg("%s sounds REALLY healthy!", m_name);
+	} else if (seen) { /* Partially healed */
+		msg("%s looks healthier.", m_name);
+	} else {
+		msg("%s sounds healthier.", m_name);
+	}
 
 	/* Redraw (later) if needed */
 	if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
@@ -260,7 +262,7 @@ static void heal_self(int m_idx, int rlev, bool seen)
 	/* Cancel fear */
 	if (m_ptr->m_timed[MON_TMD_FEAR]) {
 		mon_clear_timed(m_ptr, MON_TMD_FEAR, MON_TMD_FLG_NOMESSAGE, FALSE);
-		msg("%^s recovers %s courage.", m_name, m_poss);
+		msg("%s recovers %s courage.", m_name, m_poss);
 	}
 }
 
@@ -538,7 +540,7 @@ void do_mon_spell(int spell, int m_idx, bool seen)
 	int rlev = ((r_ptr->level >= 1) ? r_ptr->level : 1);
 
 	/* Get the monster name (or "it") */
-	monster_desc(m_name, sizeof(m_name), m_ptr, 0x00);
+	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_CAPITAL);
 
 	/* See if it hits */
 	if (rs_ptr->hit == 100) 
@@ -554,12 +556,12 @@ void do_mon_spell(int spell, int m_idx, bool seen)
 	if (!seen)
 		msg("Something %s.", rs_ptr->blind_verb);
 	else if (!hits) {
-		msg("%^s %s %s, but misses.", m_name, rs_ptr->verb,	rs_ptr->desc);
+		msg("%s %s %s, but misses.", m_name, rs_ptr->verb,	rs_ptr->desc);
 		return;
 	} else if (rs_ptr->msgt)
-		msgt(rs_ptr->msgt, "%^s %s %s.", m_name, rs_ptr->verb, rs_ptr->desc);
+		msgt(rs_ptr->msgt, "%s %s %s.", m_name, rs_ptr->verb, rs_ptr->desc);
 	else 
-		msg("%^s %s %s.", m_name, rs_ptr->verb, rs_ptr->desc);
+		msg("%s %s %s.", m_name, rs_ptr->verb, rs_ptr->desc);
 
 
 	/* Try a saving throw if available */
