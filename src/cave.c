@@ -558,7 +558,7 @@ void grid_data_as_text(grid_data *g, byte *ap, wchar_t *cp, byte *tap, wchar_t *
 	}
 
 	/* If there's a monster */
-	if (g->m_idx > 0 && !is_mimicking(g->m_idx))
+	if (g->m_idx > 0 && !is_mimicking(cave_monster(cave, g->m_idx)))
 	{
 		if (g->hallucinate)
 		{
@@ -3494,9 +3494,10 @@ void scatter(int *yp, int *xp, int y, int x, int d, int m)
 	(*xp) = nx;
 }
 
-void health_track(struct player *p, int m_idx)
+/* XXX: this does not belong here */
+void health_track(struct player *p, struct monster *m_ptr)
 {
-	p->health_who = m_idx;
+	p->health_who = m_ptr;
 	p->redraw |= PR_HEALTH;
 }
 
@@ -3890,6 +3891,13 @@ bool cave_isfeel(struct cave *c, int y, int x){
  */
 struct monster *cave_monster(struct cave *c, int idx) {
 	return &c->monsters[idx];
+}
+
+/**
+ * Get a monster on the current level by its position.
+ */
+struct monster *cave_monster_at(struct cave *c, int y, int x) {
+	return cave_monster(cave, cave->m_idx[y][x]);
 }
 
 /**

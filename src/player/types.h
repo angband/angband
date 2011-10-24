@@ -146,7 +146,7 @@ typedef struct player
 	s16b inven_cnt;			/* Number of items in inventory */
 	s16b equip_cnt;			/* Number of items in equipment */
 
-	s16b health_who;		/* Health bar trackee */
+	struct monster *health_who;		/* Health bar trackee */
 
 	s16b monster_race_idx;	/* Monster race trackee */
 
