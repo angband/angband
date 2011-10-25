@@ -141,7 +141,16 @@ ANGFILES = \
 	wizard.o \
 	x-spell.o \
 	xtra2.o \
-	xtra3.o
+	xtra3.o \
+	borg/borg1.o \
+	borg/borg2.o \
+	borg/borg3.o \
+	borg/borg4.o \
+	borg/borg5.o \
+	borg/borg6.o \
+	borg/borg7.o \
+	borg/borg8.o \
+	borg/borg9.o
 
 STATSFILES = stats/db.o
 
