@@ -969,7 +969,7 @@ static bool describe_light(textblock *tb, const object_type *o_ptr,
 	else
 		textblock_append(tb, " light.");
 
-	if (!terse && is_light && !no_fuel)
+	if (!terse && is_light && !no_fuel && o_ptr->sval != SV_LIGHT_TORCH)
 	{
 		const char *name = (o_ptr->sval == SV_LIGHT_TORCH) ? "torches" : "lanterns";
 		int turns = (o_ptr->sval == SV_LIGHT_TORCH) ? FUEL_TORCH : FUEL_LAMP;
