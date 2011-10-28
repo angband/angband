@@ -149,9 +149,6 @@ extern void play_game(void);
 extern int value_check_aux1(const object_type *o_ptr);
 extern void idle_update(void);
 
-/* melee2.c */
-extern bool make_attack_spell(int m_idx);
-
 /* pathfind.c */
 extern bool findpath(int y, int x);
 extern void run_step(int dir);

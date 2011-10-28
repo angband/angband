@@ -2195,27 +2195,19 @@ void display_roff(const monster_race *r_ptr, const monster_lore *l_ptr)
 /**
  * Learn about a monster (by "probing" it)
  */
-void lore_do_probe(int m_idx)
+void lore_do_probe(struct monster *m)
 {
-	const monster_type *m_ptr;
-	monster_race *r_ptr;
-	monster_lore *l_ptr;
-
+	monster_lore *l_ptr = &l_list[m->r_idx];
 	unsigned i;
-	
-	assert(m_idx > 0);
-	m_ptr = cave_monster(cave, m_idx);
-	r_ptr = &r_info[m_ptr->r_idx];
-	l_ptr = &l_list[m_ptr->r_idx];
-	
+
 	/* Know various things */
 	rf_setall(l_ptr->flags);
-	rsf_copy(l_ptr->spell_flags, r_ptr->spell_flags);
+	rsf_copy(l_ptr->spell_flags, m->race->spell_flags);
 	for (i = 0; i < MONSTER_BLOW_MAX; i++)
 		l_ptr->blows[i] = MAX_UCHAR;
 
 	/* Update monster recall window */
-	if (p_ptr->monster_race_idx == m_ptr->r_idx)
+	if (p_ptr->monster_race_idx == m->race->ridx)
 		p_ptr->redraw |= (PR_MONSTER);
 }
 

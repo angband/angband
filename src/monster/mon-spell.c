@@ -166,13 +166,12 @@ static void swap_stats(void)
 /**
  * Drain mana from the player, healing the caster.
  *
- * \param m_idx is the monster casting
+ * \param m_ptr is the monster casting
  * \param rlev is its level
  * \param seen is whether @ can see it
  */
-static void drain_mana(int m_idx, int rlev, bool seen)
+static void drain_mana(struct monster *m_ptr, int rlev, bool seen)
 {
-	monster_type *m_ptr = cave_monster(cave, m_idx);
 	int r1;
 	char m_name[80];
 
@@ -223,13 +222,12 @@ static void drain_mana(int m_idx, int rlev, bool seen)
 /**
  * Monster self-healing.
  *
- * \param m_idx is the monster casting
+ * \param m_ptr is the monster casting
  * \param rlev is its level
  * \param seen is whether @ can see it
  */
-static void heal_self(int m_idx, int rlev, bool seen)
+static void heal_self(struct monster *m_ptr, int rlev, bool seen)
 {
-	monster_type *m_ptr = cave_monster(cave, m_idx);
 	char m_name[80], m_poss[80];
 
 	/* Get the monster name (or "it") */
@@ -269,9 +267,8 @@ static void heal_self(int m_idx, int rlev, bool seen)
 /**
  *	This function is used when a group of monsters is summoned.
  */
-static int summon_monster_aux(int flag, int m_idx, int rlev, int summon_max)
+static int summon_monster_aux(int flag, struct monster *m_ptr, int rlev, int summon_max)
 {
-	monster_type *m_ptr = cave_monster(cave, m_idx);
 	int count = 0, val = 0, attempts = 0;
 	int temp;
 
@@ -300,15 +297,12 @@ static int summon_monster_aux(int flag, int m_idx, int rlev, int summon_max)
  *
  * \param spell is the attack type
  * \param dam is the amount of damage caused by the attack
- * \param m_idx is the attacking monster
+ * \param m_ptr is the attacking monster
  * \param rlev is its level
  * \param seen is whether @ can see it
  */
-static void do_side_effects(int spell, int dam, int m_idx, bool seen)
+static void do_side_effects(int spell, int dam, struct monster *m_ptr, bool seen)
 {
-	monster_type *m_ptr = cave_monster(cave, m_idx);
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
-
 	const struct spell_effect *re_ptr;
 	const struct mon_spell *rs_ptr = &mon_spell_table[spell];
 
@@ -318,7 +312,7 @@ static void do_side_effects(int spell, int dam, int m_idx, bool seen)
 	bool sustain = FALSE, perma = FALSE, chosen[RSE_MAX] = { 0 };
 
 	/* Extract the monster level */
-	int rlev = ((r_ptr->level >= 1) ? r_ptr->level : 1);
+	int rlev = ((m_ptr->race->level >= 1) ? m_ptr->race->level : 1);
 
 	/* First we note all the effects we'll be doing. */
 	for (re_ptr = spell_effect_table; re_ptr->index < RSE_MAX; re_ptr++) {
@@ -449,11 +443,11 @@ static void do_side_effects(int spell, int dam, int m_idx, bool seen)
 						break;
 
 					case S_DRAIN_MANA:
-						drain_mana(m_idx, rlev, seen);
+						drain_mana(m_ptr, rlev, seen);
 						break;
 
 					case S_HEAL:
-						heal_self(m_idx, rlev, seen);
+						heal_self(m_ptr, rlev, seen);
 						break;
 
 					case S_DARKEN:
@@ -465,11 +459,11 @@ static void do_side_effects(int spell, int dam, int m_idx, bool seen)
 						break;
 
 					case S_AGGRAVATE:
-						aggravate_monsters(m_idx);
+						aggravate_monsters(m_ptr);
 						break;
 
 					case S_KIN:
-						summon_kin_type = r_ptr->d_char;
+						summon_kin_type = m_ptr->race->d_char;
 					case S_MONSTER:	case S_MONSTERS:
 					case S_SPIDER: case S_HOUND: case S_HYDRA: case S_AINU:
 					case S_ANIMAL:
@@ -477,12 +471,12 @@ static void do_side_effects(int spell, int dam, int m_idx, bool seen)
 					case S_UNDEAD: case S_HI_UNDEAD: case S_WRAITH:
 					case S_DRAGON: case S_HI_DRAGON:
 					case S_UNIQUE:
-						count = summon_monster_aux(re_ptr->flag, m_idx, rlev, re_ptr->base.base);
+						count = summon_monster_aux(re_ptr->flag, m_ptr, rlev, re_ptr->base.base);
 
 						/* In the special case that uniques or wraiths were summoned but all were dead
 							S_HI_UNDEAD is used instead */
 						if ((!count) && ((re_ptr->flag == S_WRAITH) || (re_ptr->flag == S_UNIQUE)))
-							count = summon_monster_aux(S_HI_UNDEAD, m_idx, rlev, re_ptr->base.base);
+							count = summon_monster_aux(S_HI_UNDEAD, m_ptr, rlev, re_ptr->base.base);
 
 						if (count && p_ptr->timed[TMD_BLIND])
 							msgt(rs_ptr->msgt, "You hear %s appear nearby.",
@@ -520,15 +514,12 @@ static int mon_spell_dam(int spell, int hp, int rlev, aspect dam_aspect)
  * Process a monster spell 
  *
  * \param spell is the monster spell flag (RSF_FOO)
- * \param m_idx is the attacking monster
+ * \param m_ptr is the attacking monster
  * \param seen is whether the player can see the monster at this moment
  */
-void do_mon_spell(int spell, int m_idx, bool seen)
+void do_mon_spell(int spell, struct monster *m_ptr, bool seen)
 {
 	const struct mon_spell *rs_ptr = &mon_spell_table[spell];
-
-	monster_type *m_ptr = cave_monster(cave, m_idx);
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	char m_name[80], ddesc[80];
 
@@ -537,7 +528,7 @@ void do_mon_spell(int spell, int m_idx, bool seen)
 	int dam = 0, flag = 0, rad = 0;
 
 	/* Extract the monster level */
-	int rlev = ((r_ptr->level >= 1) ? r_ptr->level : 1);
+	int rlev = ((m_ptr->race->level >= 1) ? m_ptr->race->level : 1);
 
 	/* Get the monster name (or "it") */
 	monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_CAPITAL);
@@ -581,17 +572,17 @@ void do_mon_spell(int spell, int m_idx, bool seen)
 		flag = PROJECT_STOP | PROJECT_KILL;
 	else if (rs_ptr->type & (RST_BALL | RST_BREATH)) {
 		flag = PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
-		rad = rf_has(r_ptr->flags, RF_POWERFUL) ? 3 : 2;
+		rad = rf_has(m_ptr->race->flags, RF_POWERFUL) ? 3 : 2;
 	}
 
 	if (rs_ptr->gf) {
-		(void)project(m_idx, rad, p_ptr->py, p_ptr->px, dam, rs_ptr->gf, flag);
+		(void)project(m_ptr->midx, rad, p_ptr->py, p_ptr->px, dam, rs_ptr->gf, flag);
 		monster_learn_resists(m_ptr, p_ptr, rs_ptr->gf);
 	}
 	else /* Note that non-projectable attacks are unresistable */
 		take_hit(p_ptr, dam, ddesc);
 
-	do_side_effects(spell, dam, m_idx, seen);
+	do_side_effects(spell, dam, m_ptr, seen);
 
 	return;
 }

@@ -1751,7 +1751,7 @@ bool dispel_monsters(int dam)
 /*
  * Wake up all monsters, and speed up "los" monsters.
  */
-void aggravate_monsters(int who)
+void aggravate_monsters(struct monster *who)
 {
 	int i;
 
@@ -1766,18 +1766,12 @@ void aggravate_monsters(int who)
 		if (!m_ptr->r_idx) continue;
 
 		/* Skip aggravating monster (or player) */
-		if (i == who) continue;
+		if (m_ptr == who) continue;
 
 		/* Wake up nearby sleeping monsters */
-		if (m_ptr->cdis < MAX_SIGHT * 2)
-		{
-			/* Wake up */
-			if (m_ptr->m_timed[MON_TMD_SLEEP])
-			{
-				/* Wake up */
-				mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
-				sleep = TRUE;
-			}
+		if ((m_ptr->cdis < MAX_SIGHT * 2) && m_ptr->m_timed[MON_TMD_SLEEP]) {
+			mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOMESSAGE, FALSE);
+			sleep = TRUE;
 		}
 
 		/* Speed up monsters in line of sight */
@@ -1921,7 +1915,7 @@ bool probing(void)
 			msg("%s has %d hit points.", m_name, m_ptr->hp);
 
 			/* Learn all of the non-spell, non-treasure flags */
-			lore_do_probe(i);
+			lore_do_probe(m_ptr);
 
 			/* Probe worked */
 			probe = TRUE;

@@ -63,18 +63,15 @@
 /*
  * Remove the "bad" spells from a spell list
  */
-static void remove_bad_spells(int m_idx, bitflag f[RSF_SIZE])
+static void remove_bad_spells(struct monster *m_ptr, bitflag f[RSF_SIZE])
 {
-	monster_type *m_ptr = cave_monster(cave, m_idx);
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
-
 	bitflag f2[RSF_SIZE], ai_flags[OF_SIZE];
 
 	size_t i;	
 	u32b smart = 0L;
 
 	/* Stupid monsters act randomly */
-	if (rf_has(r_ptr->flags, RF_STUPID)) return;
+	if (rf_has(m_ptr->race->flags, RF_STUPID)) return;
 
 	/* Take working copy of spell flags */
 	rsf_copy(f2, f);
@@ -111,10 +108,10 @@ static void remove_bad_spells(int m_idx, bitflag f[RSF_SIZE])
 
 	/* Cancel out certain flags based on knowledge */
 	if (!of_is_empty(ai_flags))
-		unset_spells(f2, ai_flags, r_ptr);
+		unset_spells(f2, ai_flags, m_ptr->race);
 
 	if (smart & SM_IMM_MANA && randint0(100) <
-			50 * (rf_has(r_ptr->flags, RF_SMART) ? 2 : 1))
+			50 * (rf_has(m_ptr->race->flags, RF_SMART) ? 2 : 1))
 		rsf_off(f2, RSF_DRAIN_MANA);
 
 	/* use working copy of spell flags */
@@ -196,11 +193,8 @@ static bool summon_possible(int y1, int x1)
  *
  * This function could be an efficiency bottleneck.
  */
-static int choose_attack_spell(int m_idx, bitflag f[RSF_SIZE])
+static int choose_attack_spell(struct monster *m_ptr, bitflag f[RSF_SIZE])
 {
-	monster_type *m_ptr = cave_monster(cave, m_idx);
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
-
 	int num = 0;
 	byte spells[RSF_MAX];
 
@@ -211,7 +205,7 @@ static int choose_attack_spell(int m_idx, bitflag f[RSF_SIZE])
 
 
 	/* Smart monsters restrict their spell choices. */
-	if (OPT(birth_ai_smart) && !rf_has(r_ptr->flags, RF_STUPID))
+	if (OPT(birth_ai_smart) && !rf_has(m_ptr->race->flags, RF_STUPID))
 	{
 		/* What have we got? */
 		has_escape = test_spells(f, RST_ESCAPE);
@@ -353,14 +347,12 @@ static int choose_attack_spell(int m_idx, bitflag f[RSF_SIZE])
  * Note the special "MFLAG_NICE" flag, which prevents a monster from using
  * any spell attacks until the player has had a single chance to move.
  */
-bool make_attack_spell(int m_idx)
+bool make_attack_spell(struct monster *m_ptr)
 {
 	int chance, thrown_spell, rlev, failrate;
 
 	bitflag f[RSF_SIZE];
 
-	monster_type *m_ptr = cave_monster(cave, m_idx);
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
 	char m_name[80], m_poss[80], ddesc[80];
@@ -388,7 +380,7 @@ bool make_attack_spell(int m_idx)
 	if (m_ptr->mflag & MFLAG_NICE) return FALSE;
 
 	/* Hack -- Extract the spell probability */
-	chance = (r_ptr->freq_innate + r_ptr->freq_spell) / 2;
+	chance = (m_ptr->race->freq_innate + m_ptr->race->freq_spell) / 2;
 
 	/* Not allowed to cast spells */
 	if (!chance) return FALSE;
@@ -408,13 +400,13 @@ bool make_attack_spell(int m_idx)
 	}
 
 	/* Extract the monster level */
-	rlev = ((r_ptr->level >= 1) ? r_ptr->level : 1);
+	rlev = ((m_ptr->race->level >= 1) ? m_ptr->race->level : 1);
 
 	/* Extract the racial spell flags */
-	rsf_copy(f, r_ptr->spell_flags);
+	rsf_copy(f, m_ptr->race->spell_flags);
 
 	/* Allow "desperate" spells */
-	if (rf_has(r_ptr->flags, RF_SMART) &&
+	if (rf_has(m_ptr->race->flags, RF_SMART) &&
 	    m_ptr->hp < m_ptr->maxhp / 10 &&
 	    randint0(100) < 50)
 
@@ -422,10 +414,10 @@ bool make_attack_spell(int m_idx)
 		set_spells(f, RST_HASTE | RST_ANNOY | RST_ESCAPE | RST_HEAL | RST_TACTIC | RST_SUMMON);
 
 	/* Remove the "ineffective" spells */
-	remove_bad_spells(m_idx, f);
+	remove_bad_spells(m_ptr, f);
 
 	/* Check whether summons and bolts are worth it. */
-	if (!rf_has(r_ptr->flags, RF_STUPID))
+	if (!rf_has(m_ptr->race->flags, RF_STUPID))
 	{
 		/* Check for a clean bolt shot */
 		if (test_spells(f, RST_BOLT) &&
@@ -454,7 +446,7 @@ bool make_attack_spell(int m_idx)
 	monster_desc(ddesc, sizeof(ddesc), m_ptr, MDESC_SHOW | MDESC_IND2);
 
 	/* Choose a spell to cast */
-	thrown_spell = choose_attack_spell(m_idx, f);
+	thrown_spell = choose_attack_spell(m_ptr, f);
 
 	/* Abort if no spell was chosen */
 	if (!thrown_spell) return FALSE;
@@ -469,7 +461,7 @@ bool make_attack_spell(int m_idx)
 		failrate += 20;
 
 	/* Stupid monsters will never fail (for jellies and such) */
-	if (OPT(birth_ai_smart) || rf_has(r_ptr->flags, RF_STUPID))
+	if (OPT(birth_ai_smart) || rf_has(m_ptr->race->flags, RF_STUPID))
 		failrate = 0;
 
 	/* Check for spell failure (innate attacks never fail) */
@@ -492,8 +484,9 @@ bool make_attack_spell(int m_idx)
 			msg("%s concentrates on %s body.", m_name, m_poss);
 
 		(void)mon_inc_timed(m_ptr, MON_TMD_FAST, 50, 0, FALSE);
-	} else
-		do_mon_spell(thrown_spell, m_idx, seen);
+	} else {
+		do_mon_spell(thrown_spell, m_ptr, seen);
+	}
 
 	/* Remember what the monster did to us */
 	if (seen) {
@@ -533,12 +526,8 @@ bool make_attack_spell(int m_idx)
  * Note that this function is responsible for about one to five percent
  * of the processor use in normal conditions...
  */
-static int mon_will_run(int m_idx)
+static int mon_will_run(struct monster *m_ptr)
 {
-	monster_type *m_ptr = cave_monster(cave, m_idx);
-
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
-
 	u16b p_lev, m_lev;
 	u16b p_chp, p_mhp;
 	u16b m_chp, m_mhp;
@@ -557,7 +546,7 @@ static int mon_will_run(int m_idx)
 	p_lev = p_ptr->lev;
 
 	/* Examine monster power (level plus morale) */
-	m_lev = r_ptr->level + (m_idx & 0x08) + 25;
+	m_lev = m_ptr->race->level + (m_ptr->midx & 0x08) + 25;
 
 	/* Optimize extreme cases below */
 	if (m_lev > p_lev + 4) return (FALSE);
@@ -635,7 +624,7 @@ static bool near_permwall(const monster_type *m_ptr, struct cave *c)
  * being close enough to chase directly.  I have no idea what will
  * happen if you combine "smell" with low "aaf" values.
  */
-static bool get_moves_aux(struct cave *c, int m_idx, int *yp, int *xp)
+static bool get_moves_aux(struct cave *c, struct monster *m_ptr, int *yp, int *xp)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
@@ -645,17 +634,13 @@ static bool get_moves_aux(struct cave *c, int m_idx, int *yp, int *xp)
 	int when = 0;
 	int cost = 999;
 
-	monster_type *m_ptr = cave_monster(cave, m_idx);
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
-
 	/* Monster can go through rocks */
-	if (flags_test(r_ptr->flags, RF_SIZE, RF_PASS_WALL, RF_KILL_WALL, FLAG_END)){
+	if (flags_test(m_ptr->race->flags, RF_SIZE, RF_PASS_WALL, RF_KILL_WALL, FLAG_END)){
 	
 	    /* If monster is near a permwall, use normal pathfinding */
 	    if (!near_permwall(m_ptr, c)) return (FALSE);
     }
 		
-
 	/* Monster location */
 	y1 = m_ptr->fy;
 	x1 = m_ptr->fx;
@@ -672,7 +657,7 @@ static bool get_moves_aux(struct cave *c, int m_idx, int *yp, int *xp)
 
 	/* Monster is too far away to notice the player */
 	if (c->cost[y1][x1] > MONSTER_FLOW_DEPTH) return (FALSE);
-	if (c->cost[y1][x1] > (OPT(birth_small_range) ? r_ptr->aaf / 2 : r_ptr->aaf)) return (FALSE);
+	if (c->cost[y1][x1] > (OPT(birth_small_range) ? m_ptr->race->aaf / 2 : m_ptr->race->aaf)) return (FALSE);
 
 	/* Hack -- Player can see us, run towards him */
 	if (player_has_los_bold(y1, x1)) return (FALSE);
@@ -716,14 +701,11 @@ static bool get_moves_aux(struct cave *c, int m_idx, int *yp, int *xp)
  * but instead of heading directly for it, the monster should "swerve"
  * around the player so that he has a smaller chance of getting hit.
  */
-static bool get_fear_moves_aux(struct cave *c, int m_idx, int *yp, int *xp)
+static bool get_fear_moves_aux(struct cave *c, struct monster *m_ptr, int *yp, int *xp)
 {
 	int y, x, y1, x1, fy, fx, py, px, gy = 0, gx = 0;
 	int when = 0, score = -1;
 	int i;
-
-	monster_type *m_ptr = cave_monster(cave, m_idx);
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	/* Player location */
 	py = p_ptr->py;
@@ -746,7 +728,7 @@ static bool get_fear_moves_aux(struct cave *c, int m_idx, int *yp, int *xp)
 
 	/* Monster is too far away to use flow information */
 	if (c->cost[fy][fx] > MONSTER_FLOW_DEPTH) return (FALSE);
-	if (c->cost[fy][fx] > (OPT(birth_small_range) ? r_ptr->aaf / 2 : r_ptr->aaf)) return (FALSE);
+	if (c->cost[fy][fx] > (OPT(birth_small_range) ? m_ptr->race->aaf / 2 : m_ptr->race->aaf)) return (FALSE);
 
 	/* Check nearby grids, diagonals first */
 	for (i = 7; i >= 0; i--)
@@ -945,10 +927,8 @@ static const int *dist_offsets_x[10] =
  *
  * Return TRUE if a safe location is available.
  */
-static bool find_safety(struct cave *c, int m_idx, int *yp, int *xp)
+static bool find_safety(struct cave *c, struct monster *m_ptr, int *yp, int *xp)
 {
-	monster_type *m_ptr = cave_monster(cave, m_idx);
-
 	int fy = m_ptr->fy;
 	int fx = m_ptr->fx;
 
@@ -1031,10 +1011,8 @@ static bool find_safety(struct cave *c, int m_idx, int *yp, int *xp)
  *
  * Return TRUE if a good location is available.
  */
-static bool find_hiding(int m_idx, int *yp, int *xp)
+static bool find_hiding(struct monster *m_ptr, int *yp, int *xp)
 {
-	monster_type *m_ptr = cave_monster(cave, m_idx);
-
 	int fy = m_ptr->fy;
 	int fx = m_ptr->fx;
 
@@ -1108,13 +1086,10 @@ static bool find_hiding(int m_idx, int *yp, int *xp)
  *
  * We store the directions in a special "mm" array
  */
-static bool get_moves(struct cave *c, int m_idx, int mm[5])
+static bool get_moves(struct cave *c, struct monster *m_ptr, int mm[5])
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
-
-	monster_type *m_ptr = cave_monster(cave, m_idx);
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	int y, ay, x, ax;
 
@@ -1126,7 +1101,7 @@ static bool get_moves(struct cave *c, int m_idx, int mm[5])
 	bool done = FALSE;
 
 	/* Flow towards the player */
-	get_moves_aux(c, m_idx, &y2, &x2);
+	get_moves_aux(c, m_ptr, &y2, &x2);
 
 	/* Extract the "pseudo-direction" */
 	y = m_ptr->fy - y2;
@@ -1136,8 +1111,8 @@ static bool get_moves(struct cave *c, int m_idx, int mm[5])
 
 	/* Normal animal packs try to get the player out of corridors. */
 	if (OPT(birth_ai_packs) &&
-	    rf_has(r_ptr->flags, RF_FRIENDS) && rf_has(r_ptr->flags, RF_ANIMAL) &&
-	    !flags_test(r_ptr->flags, RF_SIZE, RF_PASS_WALL, RF_KILL_WALL, FLAG_END))
+	    rf_has(m_ptr->race->flags, RF_FRIENDS) && rf_has(m_ptr->race->flags, RF_ANIMAL) &&
+	    !flags_test(m_ptr->race->flags, RF_SIZE, RF_PASS_WALL, RF_KILL_WALL, FLAG_END))
 	{
 		int i, open = 0;
 
@@ -1158,16 +1133,16 @@ static bool get_moves(struct cave *c, int m_idx, int mm[5])
 		if ((open < 7) && (p_ptr->chp > p_ptr->mhp / 2))
 		{
 			/* Find hiding place */
-			if (find_hiding(m_idx, &y, &x)) done = TRUE;
+			if (find_hiding(m_ptr, &y, &x)) done = TRUE;
 		}
 	}
 
 
 	/* Apply fear */
-	if (!done && mon_will_run(m_idx))
+	if (!done && mon_will_run(m_ptr))
 	{
 		/* Try to find safe place */
-		if (!(OPT(birth_ai_smart) && find_safety(c, m_idx, &y, &x)))
+		if (!(OPT(birth_ai_smart) && find_safety(c, m_ptr, &y, &x)))
 		{
 			/* This is not a very "smart" method XXX XXX */
 			y = (-y);
@@ -1177,7 +1152,7 @@ static bool get_moves(struct cave *c, int m_idx, int mm[5])
 		else
 		{
 			/* Adjust movement */
-			get_fear_moves_aux(c, m_idx, &y, &x);
+			get_fear_moves_aux(c, m_ptr, &y, &x);
 		}
 
 		done = TRUE;
@@ -1185,7 +1160,7 @@ static bool get_moves(struct cave *c, int m_idx, int mm[5])
 
 
 	/* Monster groups try to surround the player */
-	if (!done && OPT(birth_ai_packs) && rf_has(r_ptr->flags, RF_FRIENDS))
+	if (!done && OPT(birth_ai_packs) && rf_has(m_ptr->race->flags, RF_FRIENDS))
 	{
 		int i;
 
@@ -1412,23 +1387,10 @@ static bool get_moves(struct cave *c, int m_idx, int mm[5])
 /*
  * Hack -- compare the "strength" of two monsters XXX XXX XXX
  */
-static int compare_monsters(const monster_type *m_ptr, const monster_type *n_ptr)
+static int compare_monsters(const struct monster *m_ptr, const struct monster *n_ptr)
 {
-	monster_race *r_ptr;
-
-	u32b mexp1, mexp2;
-
-	/* Race 1 */
-	r_ptr = &r_info[m_ptr->r_idx];
-
-	/* Extract mexp */
-	mexp1 = r_ptr->mexp;
-
-	/* Race 2 */
-	r_ptr = &r_info[n_ptr->r_idx];
-
-	/* Extract mexp */
-	mexp2 = r_ptr->mexp;
+	u32b mexp1 = m_ptr->race->mexp;
+	u32b mexp2 = n_ptr->race->mexp;
 
 	/* Compare */
 	if (mexp1 < mexp2) return (-1);
@@ -1536,8 +1498,6 @@ static const char *desc_moan[MAX_DESC_MOAN] =
  */
 static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 {
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
-
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
 	int ap_cnt;
@@ -1561,13 +1521,13 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 
 
 	/* Not allowed to attack */
-	if (rf_has(r_ptr->flags, RF_NEVER_BLOW)) return (FALSE);
+	if (rf_has(m_ptr->race->flags, RF_NEVER_BLOW)) return (FALSE);
 
 	/* Total armor */
 	ac = p->state.ac + p->state.to_a;
 
 	/* Extract the effective monster level */
-	rlev = ((r_ptr->level >= 1) ? r_ptr->level : 1);
+	rlev = ((m_ptr->race->level >= 1) ? m_ptr->race->level : 1);
 
 
 	/* Get the monster name (or "it") */
@@ -1592,10 +1552,10 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 		const char *act = NULL;
 
 		/* Extract the attack infomation */
-		int effect = r_ptr->blow[ap_cnt].effect;
-		int method = r_ptr->blow[ap_cnt].method;
-		int d_dice = r_ptr->blow[ap_cnt].d_dice;
-		int d_side = r_ptr->blow[ap_cnt].d_side;
+		int effect = m_ptr->race->blow[ap_cnt].effect;
+		int method = m_ptr->race->blow[ap_cnt].method;
+		int d_dice = m_ptr->race->blow[ap_cnt].d_dice;
+		int d_side = m_ptr->race->blow[ap_cnt].d_side;
 
 
 		/* Hack -- no more attacks */
@@ -1608,7 +1568,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 		if (m_ptr->ml) visible = TRUE;
 
 		/* Extract visibility from carrying light */
-		if (rf_has(r_ptr->flags, RF_HAS_LIGHT)) visible = TRUE;
+		if (rf_has(m_ptr->race->flags, RF_HAS_LIGHT)) visible = TRUE;
 
 		/* Extract the attack "power" */
 		switch (effect)
@@ -1660,7 +1620,7 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
 					rf_on(l_ptr->flags, RF_EVIL);
 				}
 
-				if (rf_has(r_ptr->flags, RF_EVIL) &&
+				if (rf_has(m_ptr->race->flags, RF_EVIL) &&
 				    p->lev >= rlev &&
 				    randint0(100) + p->lev > 50)
 				{
@@ -2777,10 +2737,8 @@ static bool make_attack_normal(struct monster *m_ptr, struct player *p)
  * Technically, need to check for monster in the way combined
  * with that monster being in a wall (or door?) XXX
  */
-static void process_monster(struct cave *c, int m_idx)
+static void process_monster(struct cave *c, struct monster *m_ptr)
 {
-	monster_type *m_ptr = cave_monster(cave, m_idx);
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
 	int i, d, oy, ox, ny, nx;
@@ -2881,7 +2839,7 @@ static void process_monster(struct cave *c, int m_idx)
 		int d = 1;
 
 		/* Make a "saving throw" against stun */
-		if (randint0(5000) <= r_ptr->level * r_ptr->level)
+		if (randint0(5000) <= m_ptr->race->level * m_ptr->race->level)
 			/* Recover fully */
 			d = m_ptr->m_timed[MON_TMD_STUN];
 
@@ -2896,7 +2854,7 @@ static void process_monster(struct cave *c, int m_idx)
 	}
 
 	if (m_ptr->m_timed[MON_TMD_CONF]) {
-		int d = randint1(r_ptr->level / 10 + 1);
+		int d = randint1(m_ptr->race->level / 10 + 1);
 
 		/* Still confused */
 		if (m_ptr->m_timed[MON_TMD_CONF] > d)
@@ -2908,7 +2866,7 @@ static void process_monster(struct cave *c, int m_idx)
 
 	if (m_ptr->m_timed[MON_TMD_FEAR]) {
 		/* Amount of "boldness" */
-		int d = randint1(r_ptr->level / 10 + 1);
+		int d = randint1(m_ptr->race->level / 10 + 1);
 
 		if (m_ptr->m_timed[MON_TMD_FEAR] > d)
 			mon_dec_timed(m_ptr, MON_TMD_FEAR, d, MON_TMD_FLG_NOMESSAGE, FALSE);
@@ -2941,7 +2899,7 @@ static void process_monster(struct cave *c, int m_idx)
 				rf_on(l_ptr->flags, RF_MULTIPLY);
 
 			/* Try to multiply (only breeders allowed) */
-			if (rf_has(r_ptr->flags, RF_MULTIPLY) && multiply_monster(m_idx)) {
+			if (rf_has(m_ptr->race->flags, RF_MULTIPLY) && multiply_monster(m_ptr)) {
 				/* Make a sound */
 				if (m_ptr->ml)
 					sound(MSG_MULTIPLY);
@@ -2956,7 +2914,7 @@ static void process_monster(struct cave *c, int m_idx)
 	if (is_mimicking(m_ptr)) return;
 
 	/* Attempt to cast a spell */
-	if (make_attack_spell(m_idx)) return;
+	if (make_attack_spell(m_ptr)) return;
 
 	/* Reset */
 	stagger = FALSE;
@@ -2977,7 +2935,7 @@ static void process_monster(struct cave *c, int m_idx)
 				rf_on(l_ptr->flags, RF_RAND_25);
 
 			/* Stagger */
-			if (flags_test(r_ptr->flags, RF_SIZE, RF_RAND_25, RF_RAND_50, FLAG_END))
+			if (flags_test(m_ptr->race->flags, RF_SIZE, RF_RAND_25, RF_RAND_50, FLAG_END))
 				stagger = TRUE;
 
 		/* Random movement (50%) */
@@ -2987,13 +2945,13 @@ static void process_monster(struct cave *c, int m_idx)
 				rf_on(l_ptr->flags, RF_RAND_50);
 
 			/* Stagger */
-			if (rf_has(r_ptr->flags, RF_RAND_50))
+			if (rf_has(m_ptr->race->flags, RF_RAND_50))
 				stagger = TRUE;
 
 		/* Random movement (75%) */
 		} else if (roll < 75) {
 			/* Stagger */
-			if (flags_test_all(r_ptr->flags, RF_SIZE, RF_RAND_25, RF_RAND_50, FLAG_END))
+			if (flags_test_all(m_ptr->race->flags, RF_SIZE, RF_RAND_25, RF_RAND_50, FLAG_END))
 				stagger = TRUE;
 		}
 	}
@@ -3001,7 +2959,7 @@ static void process_monster(struct cave *c, int m_idx)
 	/* Normal movement */
 	if (!stagger)
 		/* Logical moves, may do nothing */
-		if (!get_moves(cave, m_idx, mm)) return;
+		if (!get_moves(cave, m_ptr, mm)) return;
 
 	/* Assume nothing */
 	do_turn = FALSE;
@@ -3042,12 +3000,12 @@ static void process_monster(struct cave *c, int m_idx)
 			}
 
 			/* Monster moves through walls (and doors) */
-			if (rf_has(r_ptr->flags, RF_PASS_WALL))
+			if (rf_has(m_ptr->race->flags, RF_PASS_WALL))
 				/* Pass through walls/doors/rubble */
 				do_move = TRUE;
 
 			/* Monster destroys walls (and doors) */
-			else if (rf_has(r_ptr->flags, RF_KILL_WALL)) {
+			else if (rf_has(m_ptr->race->flags, RF_KILL_WALL)) {
 				/* Eat through walls/doors/rubble */
 				do_move = TRUE;
 
@@ -3076,7 +3034,7 @@ static void process_monster(struct cave *c, int m_idx)
 				}
 
 				/* Creature can open doors. */
-				if (rf_has(r_ptr->flags, RF_OPEN_DOOR))	{
+				if (rf_has(m_ptr->race->flags, RF_OPEN_DOOR))	{
 					/* Closed doors and secret doors */
 					if ((cave->feat[ny][nx] == FEAT_DOOR_HEAD) ||
 							 (cave->feat[ny][nx] == FEAT_SECRET)) {
@@ -3111,7 +3069,7 @@ static void process_monster(struct cave *c, int m_idx)
 				}
 
 				/* Stuck doors -- attempt to bash them down if allowed */
-				if (may_bash && rf_has(r_ptr->flags, RF_BASH_DOOR))	{
+				if (may_bash && rf_has(m_ptr->race->flags, RF_BASH_DOOR))	{
 					int k;
 
 					/* Door power */
@@ -3168,7 +3126,7 @@ static void process_monster(struct cave *c, int m_idx)
 			do_move = FALSE;
 
 			/* Break the ward */
-			if (randint1(BREAK_GLYPH) < r_ptr->level) {
+			if (randint1(BREAK_GLYPH) < m_ptr->race->level) {
 				/* Describe observable breakage */
 				if (cave->info[ny][nx] & (CAVE_MARK))
 					msg("The rune of protection is broken!");
@@ -3192,7 +3150,7 @@ static void process_monster(struct cave *c, int m_idx)
 				rf_on(l_ptr->flags, RF_NEVER_BLOW);
 
 			/* Some monsters never attack */
-			if (rf_has(r_ptr->flags, RF_NEVER_BLOW))
+			if (rf_has(m_ptr->race->flags, RF_NEVER_BLOW))
 				/* Do not move */
 				do_move = FALSE;
 
@@ -3211,7 +3169,7 @@ static void process_monster(struct cave *c, int m_idx)
 
 
 		/* Some monsters never move */
-		if (do_move && rf_has(r_ptr->flags, RF_NEVER_MOVE))	{
+		if (do_move && rf_has(m_ptr->race->flags, RF_NEVER_MOVE))	{
 			/* Learn about lack of movement */
 			if (m_ptr->ml)
 				rf_on(l_ptr->flags, RF_NEVER_MOVE);
@@ -3226,11 +3184,11 @@ static void process_monster(struct cave *c, int m_idx)
 			monster_type *n_ptr = cave_monster_at(cave, ny, nx);
 
 			/* Kill weaker monsters */
-			int kill_ok = rf_has(r_ptr->flags, RF_KILL_BODY);
+			int kill_ok = rf_has(m_ptr->race->flags, RF_KILL_BODY);
 
 			/* Move weaker monsters if they can swap places */
 			/* (not in a wall) */
-			int move_ok = (rf_has(r_ptr->flags, RF_MOVE_BODY) &&
+			int move_ok = (rf_has(m_ptr->race->flags, RF_MOVE_BODY) &&
 						   cave_floor_bold(m_ptr->fy, m_ptr->fx));
 
 			/* Assume no movement */
@@ -3309,8 +3267,8 @@ static void process_monster(struct cave *c, int m_idx)
 				}
 
 				/* Take or Kill objects on the floor */
-				if (rf_has(r_ptr->flags, RF_TAKE_ITEM) ||
-						rf_has(r_ptr->flags, RF_KILL_ITEM))	{
+				if (rf_has(m_ptr->race->flags, RF_TAKE_ITEM) ||
+						rf_has(m_ptr->race->flags, RF_KILL_ITEM))	{
 					bitflag obj_flags[OF_SIZE];
 					bitflag mon_flags[RF_SIZE];
 
@@ -3333,9 +3291,9 @@ static void process_monster(struct cave *c, int m_idx)
 					react_to_slay(obj_flags, mon_flags);
 
 					/* The object cannot be picked up by the monster */
-					if (o_ptr->artifact || rf_is_inter(r_ptr->flags, mon_flags)) {
+					if (o_ptr->artifact || rf_is_inter(m_ptr->race->flags, mon_flags)) {
 						/* Only give a message for "take_item" */
-						if (rf_has(r_ptr->flags, RF_TAKE_ITEM))	{
+						if (rf_has(m_ptr->race->flags, RF_TAKE_ITEM))	{
 							/* Describe observable situations */
 							if (m_ptr->ml && player_has_los_bold(ny, nx) &&
 									!squelch_item_ok(o_ptr))
@@ -3345,7 +3303,7 @@ static void process_monster(struct cave *c, int m_idx)
 						}
 
 					/* Pick up the item */
-					} else if (rf_has(r_ptr->flags, RF_TAKE_ITEM)) {
+					} else if (rf_has(m_ptr->race->flags, RF_TAKE_ITEM)) {
 						object_type *i_ptr;
 						object_type object_type_body;
 
@@ -3390,9 +3348,9 @@ static void process_monster(struct cave *c, int m_idx)
 	/* If we haven't done anything, try casting a spell again */
 	if (OPT(birth_ai_smart) && !do_turn && !do_move)
 		/* Cast spell */
-		if (make_attack_spell(m_idx)) return;
+		if (make_attack_spell(m_ptr)) return;
 
-	if (rf_has(r_ptr->flags, RF_HAS_LIGHT))
+	if (rf_has(m_ptr->race->flags, RF_HAS_LIGHT))
 		do_view = TRUE;
 
 	/* Notice changes in view */
@@ -3415,23 +3373,17 @@ static void process_monster(struct cave *c, int m_idx)
 }
 
 
-static bool monster_can_flow(struct cave *c, int m_idx)
+static bool monster_can_flow(struct cave *c, struct monster *m_ptr)
 {
-	monster_type *m_ptr;
-	monster_race *r_ptr;
-	int fy, fx;
+	int fy = m_ptr->fy;
+	int fx = m_ptr->fx;
 
 	assert(c);
-
-	m_ptr = cave_monster(cave, m_idx);
-	r_ptr = &r_info[m_ptr->r_idx];
-	fy = m_ptr->fy;
-	fx = m_ptr->fx;
 
 	/* Check the flow (normal aaf is about 20) */
 	if ((c->when[fy][fx] == c->when[p_ptr->py][p_ptr->px]) &&
 	    (c->cost[fy][fx] < MONSTER_FLOW_DEPTH) &&
-	    (c->cost[fy][fx] < (OPT(birth_small_range) ? r_ptr->aaf / 2 : r_ptr->aaf)))
+	    (c->cost[fy][fx] < (OPT(birth_small_range) ? m_ptr->race->aaf / 2 : m_ptr->race->aaf)))
 		return TRUE;
 	return FALSE;
 }
@@ -3463,23 +3415,19 @@ void process_monsters(struct cave *c, byte minimum_energy)
 {
 	int i;
 
-	monster_type *m_ptr;
-	monster_race *r_ptr;
-
 	/* Process the monsters (backwards) */
 	for (i = cave_monster_max(c) - 1; i >= 1; i--)
 	{
+		monster_type *m_ptr;
+
 		/* Handle "leaving" */
 		if (p_ptr->leaving) break;
-
 
 		/* Get the monster */
 		m_ptr = cave_monster(cave, i);
 
-
 		/* Ignore "dead" monsters */
-		if (!m_ptr->r_idx) continue;
-
+		if (!m_ptr->race) continue;
 
 		/* Not enough energy to move */
 		if (m_ptr->energy < minimum_energy) continue;
@@ -3487,12 +3435,7 @@ void process_monsters(struct cave *c, byte minimum_energy)
 		/* Use up "some" energy */
 		m_ptr->energy -= 100;
 
-
 		/* Heal monster? XXX XXX XXX */
-
-
-		/* Get the race */
-		r_ptr = &r_info[m_ptr->r_idx];
 
 		/*
 		 * Process the monster if the monster either:
@@ -3501,13 +3444,13 @@ void process_monsters(struct cave *c, byte minimum_energy)
 		 * - can "see" the player (checked backwards)
 		 * - can "smell" the player from far away (flow)
 		 */
-		if ((m_ptr->cdis <= (OPT(birth_small_range) ? r_ptr->aaf / 2 : r_ptr->aaf)) ||
+		if ((m_ptr->cdis <= (OPT(birth_small_range) ? m_ptr->race->aaf / 2 : m_ptr->race->aaf)) ||
 		    (m_ptr->hp < m_ptr->maxhp) ||
 		    player_has_los_bold(m_ptr->fy, m_ptr->fx) ||
-		    monster_can_flow(c, i))
+		    monster_can_flow(c, m_ptr))
 		{
 			/* Process the monster */
-			process_monster(c, i);
+			process_monster(c, m_ptr);
 		}
 	}
 }

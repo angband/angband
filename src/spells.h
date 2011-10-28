@@ -151,7 +151,7 @@ extern bool turn_undead(bool aware);
 extern bool dispel_undead(int dam);
 extern bool dispel_evil(int dam);
 extern bool dispel_monsters(int dam);
-extern void aggravate_monsters(int who);
+extern void aggravate_monsters(struct monster *who);
 extern bool banishment(void);
 extern bool mass_banishment(void);
 extern bool probing(void);

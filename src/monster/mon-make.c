@@ -929,6 +929,7 @@ static bool place_new_monster_one(int y, int x, monster_race *r_ptr,
 	(void)WIPE(n_ptr, monster_type);
 
 	/* Save the race */
+	n_ptr->race = r_ptr;
 	n_ptr->r_idx = r_ptr->ridx;
 
 	/* Enforce sleeping if needed */

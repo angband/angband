@@ -57,7 +57,7 @@ void update_monsters(bool full);
 s16b monster_carry(struct monster *m, object_type *j_ptr);
 void monster_swap(int y1, int x1, int y2, int x2);
 int summon_specific(int y1, int x1, int lev, int type, int delay);
-bool multiply_monster(int m_idx);
+bool multiply_monster(const struct monster *m);
 void become_aware(struct monster *m);
 bool is_mimicking(struct monster *m);
 void update_smart_learn(struct monster *m, struct player *p, int flag);

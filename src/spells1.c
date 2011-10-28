@@ -2206,10 +2206,8 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 			mon_inc_timed(m_ptr, MON_TMD_FAST, 50, MON_TMD_FLG_NOTIFY, id);
 
 			/* Attempt to clone. */
-			if (multiply_monster(m_idx))
-			{
+			if (multiply_monster(m_ptr))
 				m_note = MON_MSG_SPAWN;
-			}
 
 			/* No "real" damage */
 			dam = 0;

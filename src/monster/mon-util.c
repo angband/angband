@@ -1434,16 +1434,11 @@ int summon_specific(int y1, int x1, int lev, int type, int delay)
  *
  * Returns TRUE if the monster successfully reproduced.
  */
-bool multiply_monster(int m_idx)
+bool multiply_monster(const monster_type *m_ptr)
 {
-	const monster_type *m_ptr;
-
 	int i, y, x;
 
 	bool result = FALSE;
-
-	assert(m_idx > 0);
-	m_ptr = cave_monster(cave, m_idx);
 
 	/* Try up to 18 times */
 	for (i = 0; i < 18; i++) {
