@@ -28,6 +28,9 @@
 #include "init.h"
 #include "grafmode.h"
 
+#include <langinfo.h>
+#include <xlocale.h>
+
 /*
  * Notes:
  *
@@ -255,7 +258,6 @@ struct GlyphInfo
 	bool monospace;
 	float offsets[256][3];
 	float heights[256][3];
-	float widths[256];
 };
 
 static GlyphInfo glyph_data[MAX_TERM_DATA+1];
@@ -723,9 +725,6 @@ static GlyphInfo *get_glyph_info(ATSUFontID fid, float size)
 		if(info->ascent < ascent) info->ascent = ascent;
 		if(info->descent < descent) info->descent = descent;
 
-
-		info->widths[i] = (stop - start)/(1<<16);
-
 		if(info->font_wid == 0) info->font_wid = stop - start;
 		else if((info->font_wid != stop - start) && (stop - start != 0)) {
 			info->monospace = false;
@@ -1077,7 +1076,7 @@ static CGImageRef GetTileImage(int row, int col, bool has_alpha)
 	return timg; 
 }
 
-static void DrawTile(int x, int y, byte a, byte c, byte ta, byte tc)
+static void DrawTile(int x, int y, byte a, wchar_t c, byte ta, wchar_t tc)
 {
 	term_data *td = (term_data*) Term->data;
 
@@ -1110,7 +1109,7 @@ static void DrawTile(int x, int y, byte a, byte c, byte ta, byte tc)
 	}
 }
 
-static void ShowTextAt(int x, int y, int color, int n, const char *text )
+static void ShowTextAt(int x, int y, int color, int n, const wchar_t *text )
 {
 	term_data *td = (term_data*) Term->data;
 	GlyphInfo *info = td->ginfo;
@@ -1119,13 +1118,39 @@ static void ShowTextAt(int x, int y, int color, int n, const char *text )
 		Term_wipe_mac_aux(x, y, n); 
 	}
 
-	int c = *(unsigned char*) text;
+	/* Cribbed from the SDL port */
+	wchar_t src[255];
+	UInt8 text_mb[MB_LEN_MAX * 255];
+	wcsncpy(src, text, n);
+	src[n] = L'\0';
+	size_t text_bytes = wcstombs(text_mb, src, n * MB_LEN_MAX);
+	text_mb[text_bytes] = '\0';
 
-	int xp = x * td->tile_wid + (td->tile_wid - (info->widths[c] + td->spacing))/2;
+	CFStringRef text_str = CFStringCreateWithBytes(
+		kCFAllocatorDefault, text_mb, text_bytes,
+		kCFStringEncodingUTF8, false);
+	assert(text_str != NULL);
+	CTFontRef font = CTFontCreateWithGraphicsFont(
+		info->fontRef, (CGFloat)td->font_size,
+		NULL, NULL);
+	assert(font != NULL);
+
+	CFIndex text_len = CFStringGetLength(text_str);
+	UniChar *characters = (UniChar *)mem_alloc(n * sizeof(UniChar));
+	CGGlyph *glyphs = (CGGlyph *)mem_alloc(n * sizeof(CGGlyph));
+
+	assert(characters != NULL);
+	assert(glyphs != NULL);
+
+	CFStringGetCharacters(text_str, CFRangeMake(0, n), characters);
+	CTFontGetGlyphsForCharacters(font, characters, glyphs, n);
+
+	int xp = x * td->tile_wid - td->spacing / 2; 
 	/* Only round once. */
-	int yp = y * td->tile_hgt + info->ascent + (td->tile_hgt - td->font_hgt)/2;
+	int yp = y * td->tile_hgt + info->ascent + 
+		(td->tile_hgt - td->font_hgt)/2;
 
-	 CGRect r;
+	CGRect r;
 	if(use_graphics || !use_overwrite_hack) {
 		r = (CGRect) {{x*td->tile_wid, y*td->tile_hgt},
 											{n*td->tile_wid, td->tile_hgt}};
@@ -1141,44 +1166,27 @@ static void ShowTextAt(int x, int y, int color, int n, const char *text )
 	term_data_color(color);
 	/* Monospace; use preset text spacing when tiling is wider than text */
 	if(n == 1 || info->monospace) {
-		/* See the Accessing Font Metrics section of Apple's Core Text 
-		 * Programming Guide for the sample code that inspired this
-		 * block. */
-		UniChar *characters;
-		CGGlyph *glyphs;
-		CTFontRef font = CTFontCreateWithGraphicsFont(
-			td->ginfo->fontRef, (CGFloat)td->font_size,
-			NULL, NULL);
-		CFStringRef text_str = CFStringCreateWithCString(
-			kCFAllocatorDefault, text, 
-			kCFStringEncodingISOLatin1);
-
-		characters = (UniChar *)mem_alloc(sizeof(UniChar) * n);
-		assert(characters != NULL);
-		glyphs = (CGGlyph *)mem_alloc(sizeof(CGGlyph) * n);
-		assert(glyphs != NULL);
-
-		CFStringGetCharacters(text_str, CFRangeMake(0, n), characters);
-		CFRelease(text_str);
-		CTFontGetGlyphsForCharacters(font, characters, glyphs, n);
 		CGContextShowGlyphsAtPoint(focus.ctx, 
 			(CGFloat)xp, (CGFloat)yp, glyphs, n);
 		mem_free(characters);
 		mem_free(glyphs);
+		CFRelease(text_str);
+		CFRelease(font);
 		if(use_clip_hack)
 			CGContextRestoreGState(focus.ctx);
 		return;
 	}
 
-	
-	GlyphInfo *gi = td->ginfo;
-
 	UniChar utext[n];
 	for(int i = 0; i < n; i++) utext[i] = text[i];
-	ATSUSetTextPointerLocation(gi->layout, utext, 0, n, n);
-	ATSUSetRunStyle(gi->layout, info->style, 0, n);
+	ATSUSetTextPointerLocation(info->layout, utext, 0, n, n);
+	ATSUSetRunStyle(info->layout, info->style, 0, n);
 	ATSUDrawText(info->layout, 0, n, xp*(1<<16), yp*(1<<16));
 
+	mem_free(characters);
+	mem_free(glyphs);
+	CFRelease(text_str);
+	CFRelease(font);
 	if(use_clip_hack)
 		CGContextRestoreGState (focus.ctx);
 
@@ -1690,7 +1698,7 @@ static errr Term_curs_mac(int x, int y)
 	CGContextSaveGState(focus.ctx);
 
 	/* Temporarily set stroke color to yellow */
-	char c;
+	wchar_t c;
 	byte a = TERM_YELLOW;
 	CGContextSetRGBStrokeColor(focus.ctx, focus.color_info[a][0],
 							focus.color_info[a][1], focus.color_info[a][2], 1);
@@ -1733,7 +1741,7 @@ static errr Term_curs_mac(int x, int y)
 static void Term_wipe_mac_aux(int x, int y, int n)
 {
 	/* Use old screen image kept inside the term package */
-	const char *cp = &(Term->old->c[y][x]);
+	const wchar_t *cp = &(Term->old->c[y][x]);
 
 	/* And write it in the background color */
 	ShowTextAt(x, y, COLOR_BLACK, n, cp);
@@ -1774,7 +1782,7 @@ static errr Term_wipe_mac(int x, int y, int n)
  *
  * Draw several ("n") chars, with an attr, at a given location.
  */
-static errr Term_text_mac(int x, int y, int n, byte a, const char *cp)
+static errr Term_text_mac(int x, int y, int n, byte a, const wchar_t *cp)
 {
 	if(!focus.ctx) activate(focus.active);
 
@@ -1785,8 +1793,9 @@ static errr Term_text_mac(int x, int y, int n, byte a, const char *cp)
 	return (0);
 }
 
-static errr Term_pict_mac(int x, int y, int n, const byte *ap, const char *cp,
-			  const byte *tap, const char *tcp)
+static errr Term_pict_mac(int x, int y, int n, const byte *ap,
+			const wchar_t *cp, const byte *tap, 
+			const wchar_t *tcp)
 {
 	if(!focus.ctx) activate(focus.active);
 
@@ -1794,9 +1803,9 @@ static errr Term_pict_mac(int x, int y, int n, const byte *ap, const char *cp,
 	for (int i = 0; i < n; i++)
 	{
 		byte a = *ap++;
-		char c = *cp++;
+		wchar_t c = *cp++;
 		byte ta = *tap++;
-		char tc = *tcp++;
+		wchar_t tc = *tcp++;
 
 		/* Hack -- a filler for tiles */
 		if (a == 255 && (tile_height != 1 || tile_width != 1))
@@ -2548,10 +2557,11 @@ static void init_menubar(void)
 		SetMenuItemRefCon(m, i, -1);
 	}
 	/* Note that menu indices start at 1, while grafIDs start at 0.
-	 * Hence the + 1. */
+	 * Hence the + 1. The RefCon is the grafID, not the menu index. */
 	size_t i = 0;
 	do {
-		SetMenuItemRefCon(m, graphics_modes[i].grafID + 1, i);
+		SetMenuItemRefCon(m, graphics_modes[i].grafID + 1,
+			graphics_modes[i].grafID);
 	} while (graphics_modes[i++].pNext);
 
 	/* Set up bigtile menus */
@@ -4064,7 +4074,7 @@ int main(void)
 	/* Set up the display handlers and things. */
 	init_display();
 
-	if(graphics_modes[graf_mode].grafID) graphics_aux(graf_mode);
+	if(graf_mode) graphics_aux(graf_mode);
 
 	/* We are now initialized */
 	initialized = TRUE;
