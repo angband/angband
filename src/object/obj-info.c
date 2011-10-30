@@ -945,19 +945,21 @@ static bool describe_food(textblock *tb, const object_type *o_ptr,
  * Describe things that look like lights.
  */
 static bool describe_light(textblock *tb, const object_type *o_ptr,
-		const bitflag flags[OF_SIZE], bool terse)
+		const bitflag flags[OF_SIZE], oinfo_detail_t mode)
 {
 	int rad = 0;
 
 	bool artifact = o_ptr->artifact ? TRUE : FALSE;
 	bool no_fuel = of_has(flags, OF_NO_FUEL) ? TRUE : FALSE;
 	bool is_light = (o_ptr->tval == TV_LIGHT) ? TRUE : FALSE;
+	bool terse = mode & OINFO_TERSE;
 
 	if (!is_light && !of_has(flags, OF_LIGHT))
 		return FALSE;
 
 	/* Work out radius */
-	rad = o_ptr->pval[which_pval(o_ptr, OF_LIGHT)];
+	if (of_has(flags, OF_LIGHT))
+		rad = o_ptr->pval[which_pval(o_ptr, OF_LIGHT)];
 
 	/* Describe here */
 	textblock_append(tb, "Radius ");
@@ -1327,20 +1329,18 @@ static textblock *object_info_out(const object_type *o_ptr, oinfo_detail_t mode)
 	if (ego && describe_ego(tb, o_ptr->ego)) something = TRUE;
 	if (something) textblock_append(tb, "\n");
 
-	if (!ego && describe_effect(tb, o_ptr, full, terse, subjective))
-	{
+	if (!ego && describe_effect(tb, o_ptr, full, terse, subjective)) {
 		something = TRUE;
 		textblock_append(tb, "\n");
 	}
 
-	if (subjective && describe_combat(tb, o_ptr, mode))
-	{
+	if (subjective && describe_combat(tb, o_ptr, mode)) {
 		something = TRUE;
 		textblock_append(tb, "\n");
 	}
 
 	if (!terse && describe_food(tb, o_ptr, subjective, full)) something = TRUE;
-	if (describe_light(tb, o_ptr, flags, terse)) something = TRUE;
+	if (describe_light(tb, o_ptr, flags, mode)) something = TRUE;
 	if (!terse && subjective && describe_digger(tb, o_ptr, mode)) something = TRUE;
 
 	if (!something)
