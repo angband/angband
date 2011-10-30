@@ -104,6 +104,7 @@ typedef struct player
 	s16b timed[TMD_MAX];	/* Timed effects */
 
 	s16b word_recall;	/* Word of recall counter */
+	s16b deep_descent;	/* Deep Descent counter */
 
 	s16b energy;		/* Current energy */
 

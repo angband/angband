@@ -820,6 +820,37 @@ static void process_world(struct cave *c)
 			}
 		}
 	}
+
+	/* Delayed Deep Descent */
+	if (p_ptr->deep_descent) {
+		/* Count down towards recall */
+		p_ptr->deep_descent--;
+
+		/* Activate the recall */
+		if (p_ptr->deep_descent == 0) {
+			int i, target_depth = p_ptr->depth;
+
+			/* Calculate target depth */
+			for (i = 5; i > 0; i--) {
+				if (is_quest(target_depth)) break;
+				if (target_depth >= MAX_DEPTH - 1) break;
+				
+				target_depth++;
+			}
+
+			disturb(p_ptr, 0, 0);
+
+			/* Determine the level */
+			if (target_depth > p_ptr->depth) {
+				msgt(MSG_TPLEVEL, "The floor opens beneath you!");
+				dungeon_change_level(target_depth);
+			} else {
+				/* Otherwise do something disastrous */
+				msgt(MSG_TPLEVEL, "You are thrown back in an explosion!");
+				destroy_area(p_ptr->py, p_ptr->px, 5, TRUE);
+			}		
+		}
+	}
 }
 
 

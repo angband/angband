@@ -1632,9 +1632,9 @@ E:TELE_LONG
 N:262:Teleport Level
 G:?:w
 I:70:3
-W:20:0:5:250
-A:40:20 to 100
-M:25:2
+W:20:0:5:800
+A:16:20 to 100
+M:10:2
 F:EASY_KNOW
 E:TELE_LEVEL
 
@@ -1887,8 +1887,8 @@ N:293:Deep Descent
 G:?:w
 I:70:32
 W:10:0:5:250
-A:16:1 to 100
-M:25:2
+A:20:1 to 100
+M:20:2
 F:EASY_KNOW
 E:DEEP_DESCENT
 
