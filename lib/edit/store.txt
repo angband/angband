@@ -87,9 +87,8 @@ I:4:scroll:Identify
 I:3:scroll:Phase Door
 I:1:scroll:Monster Confusion
 I:1:scroll:Magic Mapping
-I:2:scroll:Treasure Detection
-I:1:scroll:Trap Detection
-I:1:scroll:Door/Stair Location
+I:2:scroll:Trap Detection
+I:2:scroll:Door/Stair Location
 I:1:scroll:Detect Invisible
 I:1:scroll:Recharging
 I:1:scroll:Satisfy Hunger
