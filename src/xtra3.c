@@ -932,7 +932,7 @@ static size_t prt_unignore(int row, int col)
 	if (p_ptr->unignoring) {
 		const char *str = "Unignoring";
 		put_str(str, row, col);
-		return strlen(str);
+		return strlen(str) + 1;
 	}
 
 	return 0;
