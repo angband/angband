@@ -704,6 +704,10 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 
 	/** Construct the name **/
 
+	if (o_ptr->marked == MARK_AWARE) {
+		return strnfmt(buf, max, "an unknown item");
+	}
+
 	/* Copy the base name to the buffer */
 	end = obj_desc_name(buf, max, end, o_ptr, prefix, mode, spoil);
 
@@ -728,9 +732,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 		end = obj_desc_charges(o_ptr, buf, max, end);
 
 		if (mode & ODESC_STORE)
-		{
 			end = obj_desc_aware(o_ptr, buf, max, end);
-		}
 		else
 			end = obj_desc_inscrip(o_ptr, buf, max, end);
 	}

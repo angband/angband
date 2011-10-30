@@ -1571,7 +1571,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ,
 						object_notice_everything(o_ptr);
 
 						/* Notice */
-						if (o_ptr->marked && !squelch_item_ok(o_ptr))
+						if (o_ptr->marked > MARK_UNAWARE && !squelch_item_ok(o_ptr))
 						{
 							msg("Click!");
 							obvious = TRUE;
