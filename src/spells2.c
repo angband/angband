@@ -718,7 +718,7 @@ bool detect_doorstairs(bool aware)
 /*
  * Detect all treasure around the player.
  */
-bool detect_treasure(bool aware)
+bool detect_treasure(bool aware, bool full)
 {
 	int i;
 	int y, x;
@@ -788,13 +788,13 @@ bool detect_treasure(bool aware)
 		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
 
 		/* Hack -- memorize it */
-		o_ptr->marked = TRUE;
+		o_ptr->marked = full ? MARK_SEEN : MARK_AWARE;
 
 		/* Redraw */
 		cave_light_spot(cave, y, x);
 
 		/* Detect */
-		if (!squelch_item_ok(o_ptr))
+		if (!squelch_item_ok(o_ptr) || !full)
 			objects = TRUE;
 	}
 
@@ -924,7 +924,7 @@ bool detect_objects_magic(bool aware)
 		    ((o_ptr->to_a > 0) || (o_ptr->to_h + o_ptr->to_d > 0)))
 		{
 			/* Memorize the item */
-			o_ptr->marked = TRUE;
+			o_ptr->marked = MARK_SEEN;
 
 			/* Redraw */
 			cave_light_spot(cave, y, x);
@@ -1158,7 +1158,7 @@ bool detect_all(bool aware)
 	/* Detect everything */
 	if (detect_traps(aware)) detect = TRUE;
 	if (detect_doorstairs(aware)) detect = TRUE;
-	if (detect_treasure(aware)) detect = TRUE;
+	if (detect_treasure(aware, TRUE)) detect = TRUE;
 	if (detect_monsters_invis(aware)) detect = TRUE;
 	if (detect_monsters_normal(aware)) detect = TRUE;
 

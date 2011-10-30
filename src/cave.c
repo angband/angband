@@ -541,11 +541,13 @@ void grid_data_as_text(grid_data *g, byte *ap, wchar_t *cp, byte *tap, wchar_t *
 
 
 	/* If there's an object, deal with that. */
-	if (g->first_kind)
-	{
+	if (g->unseen_object) {
+		a = TERM_RED;
+		c = L'*';
+	} else if (g->first_kind) {
 		if (g->hallucinate) {
 			/* Just pick a random object to display. */
-			hallucinatory_object(&a, &c);
+			hallucinatory_object(&a, &c); 
 		} else if (g->multiple_objects) {
 			/* Get the "pile" feature instead */
 			a = object_kind_attr(&k_info[0]);
@@ -554,7 +556,7 @@ void grid_data_as_text(grid_data *g, byte *ap, wchar_t *cp, byte *tap, wchar_t *
 			/* Normal attr and char */
 			a = object_kind_attr(g->first_kind);
 			c = object_kind_char(g->first_kind);
-		}			
+		}	
 	}
 
 	/* If there's a monster */
@@ -781,6 +783,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	g->first_kind = NULL;
 	g->multiple_objects = FALSE;
 	g->lighting = FEAT_LIGHTING_DARK;
+	g->unseen_object = FALSE;
 
 	g->f_idx = cave->feat[y][x];
 	if (f_info[g->f_idx].mimic)
@@ -808,19 +811,13 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	/* Objects */
 	for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
 	{
-		/* Memorized objects */
-		if (o_ptr->marked && !squelch_item_ok(o_ptr))
-		{
-			/* First item found */
-			if (!g->first_kind)
-			{
+		if (o_ptr->marked == MARK_AWARE) {
+			g->unseen_object = TRUE;
+		} else if (o_ptr->marked == MARK_SEEN && !squelch_item_ok(o_ptr)) {
+			if (!g->first_kind) {
 				g->first_kind = o_ptr->kind;
-			}
-			else
-			{
+			} else {
 				g->multiple_objects = TRUE;
-
-				/* And we know all we need to know. */
 				break;
 			}
 		}
@@ -832,7 +829,6 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 		/* If the monster isn't "visible", make sure we don't list it.*/
 		monster_type *m_ptr = cave_monster(cave, g->m_idx);
 		if (!m_ptr->ml) g->m_idx = 0;
-
 	}
 
 	/* Rare random hallucination on non-outer walls */
@@ -1094,7 +1090,7 @@ void cave_note_spot(struct cave *c, int y, int x)
 		return;
 
 	for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
-		o_ptr->marked = TRUE;
+		o_ptr->marked = MARK_SEEN;
 
 	if (c->info[y][x] & CAVE_MARK)
 		return;
@@ -2957,7 +2953,7 @@ void wiz_light(void)
 		if (o_ptr->held_m_idx) continue;
 
 		/* Memorize */
-		o_ptr->marked = TRUE;
+		o_ptr->marked = MARK_SEEN;
 	}
 
 	/* Scan all normal grids */
@@ -3025,7 +3021,7 @@ void wiz_dark(void)
 		if (o_ptr->held_m_idx) continue;
 
 		/* Forget the object */
-		o_ptr->marked = FALSE;
+		o_ptr->marked = MARK_UNAWARE;
 	}
 
 	/* Fully update the visuals */

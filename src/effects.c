@@ -642,7 +642,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			(void)do_inc_stat(A_WIS);
 			(void)detect_traps(TRUE);
 			(void)detect_doorstairs(TRUE);
-			(void)detect_treasure(TRUE);
+			(void)detect_treasure(TRUE, TRUE);
 			identify_pack();
 			*ident = TRUE;
 			return TRUE;
@@ -721,7 +721,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_DETECT_TREASURE:
 		{
-			if (detect_treasure(aware)) *ident = TRUE;
+			if (detect_treasure(aware, FALSE)) *ident = TRUE;
 			return TRUE;
 		}
 
