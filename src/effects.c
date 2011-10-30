@@ -1021,7 +1021,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			int i, target_depth = p_ptr->depth;
 			
 			/* Calculate target depth */
-			for (i = 2; i > 0; i--) {
+			for (i = 5; i > 0; i--) {
 				if (is_quest(target_depth)) break;
 				if (target_depth >= MAX_DEPTH - 1) break;
 				
@@ -1029,8 +1029,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			}
 
 			if (target_depth > p_ptr->depth) {
-				msgt(MSG_TPLEVEL, "You sink through the floor...");
-				dungeon_change_level(target_depth);
+				msgt(MSG_TPLEVEL, "The air around you starts to swirl...");
+				p_ptr->deep_descent = 3 + randint1(4);
 				*ident = TRUE;
 				return TRUE;
 			} else {
