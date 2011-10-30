@@ -1653,9 +1653,9 @@ E:MAPPING
 N:264:Treasure Detection
 G:?:w
 I:70:5
-W:0:0:5:30
+W:0:0:5:70
 A:50:0 to 70
-M:70:1d3
+M:40:1d5
 F:EASY_KNOW
 E:DETECT_TREASURE
 
@@ -3025,12 +3025,11 @@ E:IDENTIFY
 
 ### Detection ###
 
+# XXX rm post-3.4
 N:430:Treasure Location
 G:-:d
 I:66:1
 W:5:0:15:1000
-A:10:8 to 75
-P:0:1d1:0:0:0
 F:EASY_KNOW
 E:DETECT_TREASURE:50
 
