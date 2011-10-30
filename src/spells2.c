@@ -1158,7 +1158,7 @@ bool detect_all(bool aware)
 	/* Detect everything */
 	if (detect_traps(aware)) detect = TRUE;
 	if (detect_doorstairs(aware)) detect = TRUE;
-	if (detect_treasure(aware, TRUE)) detect = TRUE;
+	if (detect_treasure(aware, FALSE)) detect = TRUE;
 	if (detect_monsters_invis(aware)) detect = TRUE;
 	if (detect_monsters_normal(aware)) detect = TRUE;
 
