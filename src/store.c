@@ -738,7 +738,7 @@ static void mass_produce(object_type *o_ptr)
 		case TV_BOLT:
 		{
 			if (cost <= 5L)
-				size = randint1(3) * 20;         /* 20-60 in 20s */
+				size = randint1(2) * 20;         /* 20-40 in 20s */
 			else if (cost > 5L && cost <= 50L)
 				size = randint1(4) * 10;         /* 10-40 in 10s */
 			else if (cost > 50 && cost <= 500L)
