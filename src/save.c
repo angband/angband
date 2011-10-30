@@ -390,7 +390,7 @@ void wr_player(void)
 	wr_s16b(0);	/* oops */
 	wr_s16b(0);	/* oops */
 	wr_s16b(p_ptr->sc);
-	wr_s16b(0);	/* oops */
+	wr_s16b(p_ptr->deep_descent);
 
 	wr_s16b(p_ptr->food);
 	wr_s16b(p_ptr->energy);

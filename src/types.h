@@ -212,6 +212,7 @@ typedef struct
 	u32b f_idx;		/* Feature index */
 	struct object_kind *first_kind;	/* The "kind" of the first item on the grid */
 	bool multiple_objects;	/* Is there more than one item there? */
+	bool unseen_object;	/* Is there an unaware object there? */
 
 	enum grid_light_level lighting; /* Light level */
 	bool in_view; /* TRUE when the player can currently see the grid. */

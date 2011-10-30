@@ -318,9 +318,9 @@
 
 
 /*
- * A "stack" of items is limited to 25 items (hard-coded).
+ * A "stack" of items is limited to 40 items (hard-coded).
  */
-#define MAX_STACK_SIZE 26
+#define MAX_STACK_SIZE 41
 
 
 /*

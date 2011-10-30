@@ -187,6 +187,13 @@ typedef enum
 
 #define sign(x) ((x) > 0 ? 1 : ((x) < 0 ? -1 : 0))
 
+/* Values for struct object->marked */
+enum {
+	MARK_UNAWARE = 0,
+	MARK_AWARE = 1,
+	MARK_SEEN = 2
+};
+
 
 /*** Macros ***/
 

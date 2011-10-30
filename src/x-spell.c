@@ -507,7 +507,7 @@ static bool cast_mage_spell(int spell, int dir)
 
 		case SPELL_TREASURE_DETECTION:
 		{
-			(void)detect_treasure(TRUE);
+			(void)detect_treasure(TRUE, TRUE);
 			break;
 		}
 

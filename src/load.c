@@ -1282,7 +1282,7 @@ int rd_player(void)
 	strip_bytes(8);
 	rd_s16b(&p_ptr->sc);
 	p_ptr->sc_birth = p_ptr->sc;
-	strip_bytes(2);
+	rd_s16b(&p_ptr->deep_descent);
 
 	/* Read the flags */
 	rd_s16b(&p_ptr->food);

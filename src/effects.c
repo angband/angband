@@ -642,7 +642,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			(void)do_inc_stat(A_WIS);
 			(void)detect_traps(TRUE);
 			(void)detect_doorstairs(TRUE);
-			(void)detect_treasure(TRUE);
+			(void)detect_treasure(TRUE, TRUE);
 			identify_pack();
 			*ident = TRUE;
 			return TRUE;
@@ -721,7 +721,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_DETECT_TREASURE:
 		{
-			if (detect_treasure(aware)) *ident = TRUE;
+			if (detect_treasure(aware, FALSE)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -1021,7 +1021,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			int i, target_depth = p_ptr->depth;
 			
 			/* Calculate target depth */
-			for (i = 2; i > 0; i--) {
+			for (i = 5; i > 0; i--) {
 				if (is_quest(target_depth)) break;
 				if (target_depth >= MAX_DEPTH - 1) break;
 				
@@ -1029,8 +1029,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			}
 
 			if (target_depth > p_ptr->depth) {
-				msgt(MSG_TPLEVEL, "You sink through the floor...");
-				dungeon_change_level(target_depth);
+				msgt(MSG_TPLEVEL, "The air around you starts to swirl...");
+				p_ptr->deep_descent = 3 + randint1(4);
 				*ident = TRUE;
 				return TRUE;
 			} else {

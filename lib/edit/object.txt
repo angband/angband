@@ -1632,9 +1632,9 @@ E:TELE_LONG
 N:262:Teleport Level
 G:?:w
 I:70:3
-W:20:0:5:250
-A:40:20 to 100
-M:25:2
+W:20:0:5:800
+A:16:20 to 100
+M:10:2
 F:EASY_KNOW
 E:TELE_LEVEL
 
@@ -1653,9 +1653,9 @@ E:MAPPING
 N:264:Treasure Detection
 G:?:w
 I:70:5
-W:0:0:5:30
+W:0:0:5:70
 A:50:0 to 70
-M:70:1d3
+M:40:1d5
 F:EASY_KNOW
 E:DETECT_TREASURE
 
@@ -1887,8 +1887,8 @@ N:293:Deep Descent
 G:?:w
 I:70:32
 W:10:0:5:250
-A:16:1 to 100
-M:25:2
+A:20:1 to 100
+M:20:2
 F:EASY_KNOW
 E:DEEP_DESCENT
 
@@ -3025,12 +3025,11 @@ E:IDENTIFY
 
 ### Detection ###
 
+# XXX rm post-3.4
 N:430:Treasure Location
 G:-:d
 I:66:1
 W:5:0:15:1000
-A:10:8 to 75
-P:0:1d1:0:0:0
 F:EASY_KNOW
 E:DETECT_TREASURE:50
 
