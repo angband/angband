@@ -547,7 +547,7 @@ void grid_data_as_text(grid_data *g, byte *ap, wchar_t *cp, byte *tap, wchar_t *
 	} else if (g->first_kind) {
 		if (g->hallucinate) {
 			/* Just pick a random object to display. */
-			hallucinatory_object(&a, &c); 
+			hallucinatory_object(&a, &c);
 		} else if (g->multiple_objects) {
 			/* Get the "pile" feature instead */
 			a = object_kind_attr(&k_info[0]);
@@ -556,42 +556,36 @@ void grid_data_as_text(grid_data *g, byte *ap, wchar_t *cp, byte *tap, wchar_t *
 			/* Normal attr and char */
 			a = object_kind_attr(g->first_kind);
 			c = object_kind_char(g->first_kind);
-		}	
+		}
 	}
 
 	/* If there's a monster */
-	if (g->m_idx > 0 && !is_mimicking(cave_monster(cave, g->m_idx)))
-	{
-		if (g->hallucinate)
-		{
+	if (g->m_idx > 0) {
+		if (g->hallucinate) {
 			/* Just pick a random monster to display. */
 			hallucinatory_monster(&a, &c);
-		}
-		else
-		{
+		} else if (!is_mimicking(cave_monster(cave, g->m_idx)))	{
 			monster_type *m_ptr = cave_monster(cave, g->m_idx);
 			monster_race *r_ptr = &r_info[m_ptr->r_idx];
-				
+
 			byte da;
 			wchar_t dc;
-			
+
 			/* Desired attr & char */
 			da = r_ptr->x_attr;
 			dc = r_ptr->x_char;
 
 			/* Special attr/char codes */
-			if (da & 0x80)
-			{
+			if (da & 0x80) {
 				/* Use attr */
 				a = da;
-				
+
 				/* Use char */
 				c = dc;
 			}
-			
+
 			/* Turn uniques purple if desired (violet, actually) */
-			else if (OPT(purple_uniques) && rf_has(r_ptr->flags, RF_UNIQUE))
-			{
+			else if (OPT(purple_uniques) && rf_has(r_ptr->flags, RF_UNIQUE)) {
 				/* Use (light) violet attr */
 				a = TERM_VIOLET;
 
@@ -602,8 +596,7 @@ void grid_data_as_text(grid_data *g, byte *ap, wchar_t *cp, byte *tap, wchar_t *
 			/* Multi-hued monster */
 			else if (rf_has(r_ptr->flags, RF_ATTR_MULTI) ||
 					 rf_has(r_ptr->flags, RF_ATTR_FLICKER) ||
-					 rf_has(r_ptr->flags, RF_ATTR_RAND))
-			{
+					 rf_has(r_ptr->flags, RF_ATTR_RAND)) {
 				/* Multi-hued attr */
 				a = m_ptr->attr ? m_ptr->attr : da;
 				
