@@ -739,24 +739,19 @@ bool detect_treasure(bool aware, bool full)
 
 
 	/* Scan the dungeon */
-	for (y = y1; y < y2; y++)
-	{
-		for (x = x1; x < x2; x++)
-		{
+	for (y = y1; y < y2; y++) {
+		for (x = x1; x < x2; x++) {
 			if (!in_bounds_fully(y, x)) continue;
 
 			/* Notice embedded gold */
 			if ((cave->feat[y][x] == FEAT_MAGMA_H) ||
-			    (cave->feat[y][x] == FEAT_QUARTZ_H))
-			{
+				    (cave->feat[y][x] == FEAT_QUARTZ_H))
 				/* Expose the gold */
 				cave->feat[y][x] += 0x02;
-			}
 
 			/* Magma/Quartz + Known Gold */
 			if ((cave->feat[y][x] == FEAT_MAGMA_K) ||
-			    (cave->feat[y][x] == FEAT_QUARTZ_K))
-			{
+			    (cave->feat[y][x] == FEAT_QUARTZ_K)) {
 				/* Hack -- Memorize */
 				cave->info[y][x] |= (CAVE_MARK);
 
@@ -770,8 +765,7 @@ bool detect_treasure(bool aware, bool full)
 	}
 
 	/* Scan objects */
-	for (i = 1; i < o_max; i++)
-	{
+	for (i = 1; i < o_max; i++)	{
 		object_type *o_ptr = object_byid(i);
 
 		/* Skip dead objects */
@@ -787,8 +781,9 @@ bool detect_treasure(bool aware, bool full)
 		/* Only detect nearby objects */
 		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
 
-		/* Hack -- memorize it */
-		o_ptr->marked = full ? MARK_SEEN : MARK_AWARE;
+		/* Memorize it */
+		if (o_ptr->marked < MARK_SEEN)
+			o_ptr->marked = full ? MARK_SEEN : MARK_AWARE;
 
 		/* Redraw */
 		cave_light_spot(cave, y, x);
