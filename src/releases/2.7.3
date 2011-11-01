@@ -1,0 +1,55 @@
+markdown = "true"
+Downloads
+=========
+This is the first of the 2.7.x releases to survive at all, but sadly not in source code form:
+
+ - [Compiled, statically linked Linux x86 version][1] 
+ - [OS/2][2] 
+
+[1]:http://rephial.org/downloads/2.7/angband-2.7.3-linux.tar.gz "Compiled Linux tarball, 485k"
+[2]:http://rephial.org/downloads/2.7/angband-2.7.3-os2.zip "OS/2 port, 360k zip file"
+
+Background
+==========
+Version 2.7.3 was released on 24th February 1995, and made relatively few changes in an attempt to get closer to a stable, bug-free changes.  Despite this aim, there /were/ more behind-the-scenes cleanups and changes, such as the introduction of a fractional speed system whereby actions can take less than a turn. 
+
+As such, the intended "stable beta" release was pushed back to [2.7.4](http://rephial.org/release/2.7.4).
+
+[3]:http://groups.google.co.uk/group/rec.games.roguelike.angband/msg/709778731923e0d9?hl=en&
+[4]:http://groups.google.co.uk/group/rec.games.roguelike.angband/msg/318facbaca5312d8?hl=en&
+
+Changelist [*1]
+==========
+Features
+--------
+ - A new speed/energy system giving fraction-of-turn speeds.
+ - Direction (number) keys always treated direction keys, even in roguelike mode.
+ - Changed "learn spells" to give one at a time to priests
+ - Changed "drop" into "drop here or nearby"
+ - Character info now goes name, sex, race, class
+ - Changed the way "walls" are "illuminated"
+ - Required the "0" key to induce "repeat command"
+
+Maintenance
+-----------
+ - Reduced the effect of "NICE" during autorolling
+ - New main-ibm.c and main-emx.c were installed
+ - Made several small changes for "Amiga" compilation
+ - Dungeon.c/command.c cleaned up (fewer screen flushes)
+ - Cleaned up the "inventory command" processing
+ - Told savefile to "repair" items using templates
+ - Rewrote use of "object_level" (might fix some bugs)
+ - Did some work on the borg (needs less memory now)
+
+Bugfixes
+--------
+ - Fixed visual glitch in beam weapon display
+ - Free action / one ring bug in k_list.txt fixed
+ - Fixed cost->weight bug in "special artifacts"
+ - Fixed "map area" bug involving doors that go nowhere
+ - Fixed some form of bug involving "msg_flag"
+ - Fixed the "rating boost" in "place_good()"
+ - Updated "birth.c" and fixed several bugs
+ - Fixed "light" bugs in pre-2.7.3 savefiles
+
+[*1]:The changelist has been pieced together from newsgroup postings around the time of release - it is unlikely to be complete and may not be accurate.

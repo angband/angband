@@ -1,0 +1,45 @@
+markdown = "true"
+Background
+==========
+Version 2.7.2 was released on 12 February 1995, as part of Ben Harrison's massive rewriting and cleanup effort.  Once again, it consisted mostly of bugfixes and "behind the scenes" improvements, and was intended to provide a stable point for which platform-specific parts could be written.  Previously, these parts of the code were undergoing as many changes from week to week as the rest of the new sections, so people trying to port to the Amiga, say, were finding it hard to keep up.
+
+In addition to these, however, there were many small changes to the behaviour of stores, and one or two notable gameplay changes.  These included the introduction of the \*Identify\* scroll to try and reduce the need for sources outside of the game such as spoilers in order to learn about the things in it.  This release also stopped use of ammunition as weaponry (so it was no longer possible to attack creatures by hand with a high-powered arrow).
+
+Changelist [*1]
+==========
+ - Uses a parsable ascii file for the artifact templates
+ - Makes the stores much more "full" of items, 
+ - Allows the temple to purchase blessed weapons, 
+ - Allows the weapon shop to purchase diggers, 
+ - Allows the armor shop to purchase cloaks,
+ - Prevents the shopkeepers from buying inscribed objects, 
+ - Allows "cursed" items to be uncursed and enchanted into a normal item which can be sold at the shops, 
+ - Allows shop-keepers to buy/sell enchanted broken things, 
+ - Cleans up the "armor taking damage from acid" routine so that among other things if your armor takes damage you take less,
+ - Changes the town generation code to be much more "central" oriented, 
+ - Implements daybreak and nightfall while in town, 
+ - Makes the inventory-destruction power of monster attacks based on the attack strength, 
+ - Adds a few random resists to certain types of ego-items, 
+ - Adds a "Scroll of \*Identify\*" for learning all about a particular item  available only on level 30, or in the black market),
+ - Instantiates the "choice" window (for Macintosh anyway), 
+ - Allows alphabetic responses to the "Quantity" prompt to be treated as "99" so that "drop/buy/sell all items" is easier to enter,
+ - Permits the shops to sell items with high costs, 
+ - Allows arbitrary sized rooms to be illuminated correctly, 
+ - Adds options to prohibit certain types of stacking and to allow forcing certain items to stack, 
+ - Allows true multi-platform software control of the recall/choice windows,
+ - Fixes (and repairs) the "overlapping artifact flag" problem, 
+ - Makes the player always leave the dungeon by the stairs, 
+ - Cleans up the apply_magic() routine to more closely correspond to the game balance achieved in 2.6.0,  
+ - Prepares for allowing "extra lines" on curses/etc screens to be used as inventory listers or recall windows, 
+ - Fixes the "monsters not dropping the correct treasure" bug,
+ - Fixes a minor bug that let people carry too much weight, 
+ - Makes the priest "bad weapon" messages work correctly, 
+ - Prevents a memory bomb on Solaris, 
+ - Regularizes the use of "random.c" by perverting the name space, 
+ - Prevents illegal items from being selected in some bizarre situations, 
+ - Fixes the disappearing ring trick, 
+ - Prevents the creation of Grond/Morgoth in weird places, 
+ - Fixes savefiles in which various "odd" things had happened, 
+ - Verifies a few minor code level things, etc.
+
+[*1]:The changelist has been pieced together from newsgroup postings around the time of release - it is unlikely to be complete and may not be accurate.

@@ -1,0 +1,52 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][src]
+ - [DOS][dos]
+ - [RISC OS][ros]
+
+[src]:http://rephial.org/downloads/2.7/angband-2.7.9v2-src.tar.gz "Source tarball, 810k"
+[dos]:http://rephial.org/downloads/2.7/angband-2.7.9v2-dos.zip "DOS port, 416k zip file"
+[ros]:http://rephial.org/downloads/2.7/angband-2.7.9v2-ros.arc "RISC OS port, 619k Arc file"
+
+Background
+==========
+Version 2.7.9v2 was released by Ben Harrison on 7th January 1996, as part of a series of six 2.7.9 releases intended to stabilise and clean up the game before the milestone of version 2.8.0.
+
+Changelist
+==========
+Features
+--------
+ - The "great" objects (ego-items and artifacts) are now more common. 
+ - Monsters can no longer be summoned, created, or teleported, on top of a
+   glyph of warding. 
+ - The priest prayer "Confuse Creature" was renamed "Scare Monster", and the
+   mage spell "Confusion" was renamed "Confuse Monster". 
+ - The mage spells of the "Resistance" variety are no longer worth as much
+   experience. 
+ - The priest prayers of the "healing" variety now heal more than the
+   corresponding potions (Nd10 vs Nd8). 
+ - Some of the on-line help files and such were updated. 
+ - The "preserve" mode now only preserves "unknown" artifacts. 
+
+Bugfixes and maintenance
+------------------------
+ - Throwing an object no longer causes a SEGV error. 
+ - Bashing non-doors no longer creates open doors. 
+ - The "destroy traps/doors" effects now works. 
+ - The Macintosh "save bug" was squashed by using "absolute" path names. 
+ - Several of the "main-xxx.c", "Makefile.xxx", and "pref-xxx.prf" files
+   were updated. 
+ - The "main-ibm.c" file absorbed the "main-wat.c" and "main-286.c" files,
+   and uses the new "TERM_XTRA_FROSH" command for efficiency. 
+ - Some "typos" in various files were fixed. 
+ - The cursor is no longer misplaced in the "choose_sex()" function. 
+ - Several hard-coded numerical constants were replaced by symbolic
+   constants (player race, player class, etc). 
+ - Various functions were optimized. 
+ - The "note_spot()" function is used more often. 
+ - Some "color" glitches in "main-gcu.c" were fixed. 
+ - When the area around the player is "forgotten", for example, by
+   earthquake, darkness, or sunset, and the memorize torch lit grids option is
+   set, the grids near the player are now re-memorized. 
+ 

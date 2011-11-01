@@ -1,0 +1,63 @@
+markdown = "true"
+Background
+==========
+2.5.3 was released on 10th January 1994, as part of Charles Swiger's quickfire 2.5 series of releases. This was the first release Charles considered stable, rather than beta-quality.
+
+Changelist
+==========
+Features
+--------
+ - Improved on the line of sight/in_bounds code to make it faster.
+ - Tweaked the recall monster code some.
+ - Added support for HPUX thanks to Chris Ang.
+ - Sped up the code some (by macroizing some stuff).
+ - Switched description of "the Ring of Power" to "the One Ring".
+ - Added support for Ultrix thanks to Eugene Hung.
+ - Moved the gender code into the creature_list array and reordered the descriptions so that desc_list[i] = c_list[i], this was a pain, but I caught a few more inconsistencies doing so.
+ - Anduril is now "The Longsword 'Anduril'", thanks J.Kewley.
+ - Added an option "plain_descriptions" so that items will be displayed without their 'flavor' if that's what the user prefers.
+ - Modified object creation so that it makes objects at the average of the dun_level and the creature's level.
+ - Added flag for haggling rather than a compile-time define.
+ - Touched up a few artifacts (Beleg C. -> Belthronding), Sting vs. Weapon of Westernesse, made artifacts display a little more info (searching, infra)
+ - Moved Master Mystics to dun_level 50.
+ - Redid some of the object description code to give more informative messages and to avoid some braindamage.
+ - Added option to display weight for equipment list (seperate from inven list) because new descriptions can be longer and will overrun the available space.
+ - Made monsters resist damage from weapons a little better.
+ - Large kobolds resist poison too.
+ - Made pits not activate the "special" message but vaults will.
+ - Improved HPUX support (thanks to Chris Ang)
+
+Bugfixes
+--------
+ - Fixed a typo giving Bladeturner +305 to AC (thanks DGK).
+ - Fixed some code that fails on K&R compilers, and reorganized the static prototypes so they'll do some good for non-ANSI compilers.
+ - Fixed 'screen too small for moria' message to read 'Angband'.
+ - Turned down the delays a little.
+ - Worked around the 'infamous monster heal bug', when restoring savefiles.
+ - Fixed a few more monster descriptions (made worm mass descriptions consistent).
+ - Fixed 'Set of Cestus' to 'Set of Cesti'.
+ - Reindented the whole set of source code; use 4-2 indenting & a 90 col editor reindentation has revealed some questionable syntax RE: '=&' vs '= &' which may have caused some subtle bugs.
+ - Fixed monsters running away due to '= -' versus '-='.
+ - Fixed up some of the library files.
+ - Fixed some bugs in the util.c for supporting microsleep on those machines that need it.
+ - Fixed possibly letting character go up and down stairs first 100 turns and get feelings each time.
+ - Made see invisible never auto-detect, as this is not worth fixing right.
+ - Fixed keypad wizard commands (made 'em the save as the rogue wizard commands).
+ - Fixed a few more '= -' expressions.
+ - Fixed a bug in the wizard level identify code.
+ - Fixed Makefile bug ".o.c" versus ".c.o".
+ - Fixed unique deaths not being recalled if you can't see them when they die.
+ - Patched a few more non-ANSI-compiler problems, & min/max.
+ - Fixed teleporting leaving lighted area with wide-area light.
+ - Fixed a possible lighting bug (casting light spell with light item), and made unlighting a little more impressive.
+ - Fixed overlong inscriptions (thanks grabiner@zariski.harvard.edu).
+ - Fixed minor misspellings.
+ - Tried to fix up some minor lighting errors; also touched up a monster or two.
+ - Fixed object descriptions displaying the p1 value inappropriately (+x).
+ - Removed LINT_ARG define so that we always get function prototypes.
+ - Tweaked the Makefile some more (make clean does better now).
+ - Removed need for -fwritable-strings [TL].
+ - Added const char * declarations all over the place (very painful); note that the player ghost violate the const char * of the monster list.
+ - Fixed fleeing monsters trying to run through doors.
+ - Made wide-area light light up "knight-move" (L's) squares.
+ - Error in "if (t_ptr->name2 = SN_ATTACKS)" fixed (BIG thanks to jk@cs.man.ac.uk).

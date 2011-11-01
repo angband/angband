@@ -1,0 +1,176 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][src]
+ - [Windows][win]
+ - [DOS][dos]
+ - [OS/2][os2]
+
+[src]:http://rephial.org/downloads/2.8/angband-2.8.1-src.tar.gz "Source tarball, 795k"
+[win]:http://rephial.org/downloads/2.8/angband-2.8.1-win.zip "Windows port, 619k zipfile"
+[dos]:http://rephial.org/downloads/2.8/angband-2.8.1-dos.zip "DOS port, 571k zipfile"
+[os2]:http://rephial.org/downloads/2.8/angband-2.8.1-os2.zip "OS/2 port, 436k zip file"
+
+Background
+==========
+Version 2.8.1 was released on 10th March 1997 by Ben Harrison.  The changelist gives a pretty detailed explanation of the changes, but it is worth drawing attention to the most important change made here - the introduction of floor stacking, where floor tiles are allowed to hold a number of objects instead of just one.
+
+It has often been said since that floor stacking changed the character of the game significantly, as the choice of where you fight monsters is less important when you are likely to keep all the items they drop regardless of whether it is a narrow corridor or wide open space.  Likewise, the fact that all drops survive means that there is simply more stuff so that it takes longer to sort through, the piles need you to step on them to get an idea of what is there, and so on. 
+
+Changelist
+==========
+Features
+--------
+ - The race/class restrictions have been relaxed, and "illegal" combinations
+   are labelled "for advanced players only". 
+ - Whenever the "r" key may be used to activate on-screen monster recall, it
+   may also be used to disable this on-screen recall. 
+ - Searching will no longer find "traps" on non-chest objects. 
+ - Pack overflow is now handled at the start of the players turn, not the
+   end, which has various subtle effects. 
+ - A new monster flag was introduced to force "nasty" monsters to refrain
+   from using spell attacks until the player has had a chance to react to
+   their birth. 
+ - Objects can now "stack" on the ground if a special "testing" option is
+   activated. Looking at a stack of objects describes each object in turn. The
+   map displays the picture of the uppermost "memorized" object in each grid,
+   if any. 
+ - The player's current mana/hitpoints are no longer adjusted when the
+   maximum mana/hitpoints change, except to enforce maximum limits. Among
+   other things, gaining a level no longer raises the player's current
+   mana/hitpoints immediately. This prevents some bizarre implications of the
+   old adjustment semantics. 
+ - The "target" and "look" commands have been combined. Both allow the user
+   to "examine" nearby "interesting" grids (or all grids), setting a target if
+   desired. The "target" command requires grids to contain "targetable"
+   monsters to be considered interesting, and uses the "space" key to jump
+   immediately to the next "interesting" grid, instead of furthur examining
+   the grid containing the monster. The "return" key will always step through
+   the description (forever), and the "+" key will always jump to the next
+   "interesting" grid. 
+ - The monster recall window is now maintained in a more intelligent manner.
+   Whenever the player attacks a single monster, that monster race will be
+   auto-recalled. Note that player spells which affect multiple monsters, or
+   which work by affecting all monsters in line of sight (even if only a
+   single monster is thus affected), will not trigger auto-recall. The
+   "monster recall window" is now updated whenever "interesting" information
+   (flags, attacks, spells) is learned by the player while the monsters are
+   being processed. 
+ - Scrolls/Staffs of darkness now blind before bringing darkness. 
+ - Monsters can now "carry" objects if a special "testing" option is
+   activated. Looking at a monster described all of objects being carried by
+   the monster. When a monster dies, all of the objects being carried are
+   dropped in the monster grid before the standard monster drop is calculated.
+   When a monster is deleted, all objects being carried are deleted as well.
+   Any objects picked up or stolen by the monster will be carried. 
+ - The detection spells now "detect" terrain/objects/monsters even if they
+   are already "visible" or "detected", and give a message about successful
+   detection. The "door" detection spells now detect all doors, not just
+   secret doors. The monster detection spells now make every detected monster
+   "visible" for one player turn. 
+ - Several spoiler files have been updated. New directories have been
+   created at the ftp site for help files and spoiler files. 
+ - The "display objects" window option is now used to allow an object kind
+   to be "recalled" in a window. Currently, this is used to provide the old
+   "display spell choices" functionality, using the same display code as the
+   "browse" command, with the browse, study, cast, and pray commands
+   auto-tracking whichever book is used with the command. v
+ - The basic "tunnel" command is now selected using "T" (or "^T" in the
+   roguelike command set) if needed. The standard "open" and "disarm" commands
+   must be used on chests, and the standard "bash" command may be used on
+   locked doors. 
+ - The "+" keypress (as well as the various "control" combinations such as
+   control-direction or control-keypad, which map to the "+" keypress) is now
+   a new "alter" command, which will take a direction, and perform the
+   "obvious" command that direction, that is, attack monsters, tunnel into
+   walls (or veins or rubble), disarm traps, bash jammed doors, open closed
+   (or locked) doors. This command always takes a full turn, and will have no
+   effect if there is no "obvious" command, in particular, this command will
+   only induce movement when used to bash jammed doors or disarm traps, so it
+   can be used to attack adjacent grids without moving into those grids. 
+ - The player now gets experience from killing monsters based on his
+   "maximum" player level, not the "current" player level. 
+ - All artifact activations now include a brief visual description. 
+ - Wearing unidentified artifacts no longer allows artifact identity
+   detection via the "list artifacts" command. 
+ - Opening doors now takes energy. 
+
+Bugfixes and maintenance
+------------------------
+ - The "use_sound" and "use_graphics" flags were restored, but must be set
+   by "main-xxx.c" files which support them based on the "arg_sound" and
+   "arg_graphics" flags. 
+ - Some more sound support has been added. 
+ - The "player sex" concept was generalized into a table. 
+ - Monster death and chest death now use "drop_near()". 
+ - The "drop_near()" function was changed to use a "better" method for
+   determining where an object should fall, and it seems to work well with the
+   new "stacking" code. The radius of the drop zone was increased. 
+ - Various "resistance tables" have been added as sub-screens of the
+   "character description" screen. 
+ - Some onscreen instructions have been added to "birth.c" for display
+   during initial player creation. 
+ - The "z-term.c" package has been optimized (again), causing some changes.
+   The "Term->pict_hook" function now takes a length, an array of attrs and an
+   array of chars, instead of a single attr and char. The "Term->text_hook"
+   function still takes a "string", but it is no longer "null-terminated". The
+   "cursor" is now erased and redrawn on every non-trivial refresh. Trivial
+   refresh calls now have no effect. 
+ - The old "use_sound" and "use_graphics" flags have been changed to
+   "arg_sound" and "arg_graphics", and now have the semantics that the user
+   has requested the use of sound or graphics. These flags are ignored by the
+   game itself, and now the appropriate "main-xxx.c" file must interpret these
+   flags "correctly" (or ignore them). 
+ - Macintosh Angband now supports basic "graphics" (using the same pixmap
+   array as Amiga Angband), allows each window to be scaled to any desired
+   size, allows the use of non-mono-spaced fonts, and supports simple "sounds". 
+ - The "main-x11.c" and "main-xaw.c" files have been fixed. 
+ - Cheating death no longer induces screen weirdness. 
+ - Leaving a store no longer induces screen weirdness. 
+ - A new monster flag was introduced to prevent monsters from being
+   processed during the turn of their birth. This allowed the removal of the
+   "m_fast" and "o_fast" arrays, and some code. 
+ - The "other_query" option is now used exclusively to activate verification
+   of "use object on ground" commands, which can be used to select objects
+   from the middle of object stacks. The default behavior is to accept the
+   top-most acceptable object. 
+ - Stacks of objects on the dungeon floor, and monsters carrying objects,
+   are now stored in the savefile, but the "order" of the objects in both
+   stacks in not currently maintained. 
+ - Unidentified missiles will no longer stack with identified missiles, even
+   if they are identical. 
+ - Objects are no longer restricted to a single rating bonus. 
+ - Inscriptions on store items are removed when purchased. 
+ - Cleaned up the messages involved in taking off equipment. 
+ - Cleaned up the use of "temporary" objects. 
+ - You can no longer drop equipped cursed items in your home. 
+ - Running may work better around closed doors, but more investigation is
+   needed. 
+ - The "you are confused" message is now used whenever the player specifies
+   a direction but gets a different one. 
+ - Using the "finder" string now activates the "shower" string, and the
+   "shower" string now hilites only the matching portion of each line, if any. 
+ - A problem with the interactive creation of new macros using "main-x11.c"
+   or "main-xaw.c" has been repaired. 
+ - The messages about remaining spells/prayers to be learned are now more
+   detailed and correctly pluralized. 
+ - It is no longer possible to accidentally accept a shop-keepers initial
+   (non-final) offer by hitting return. 
+ - Inability to create a glyph of warding is now mentioned. 
+ - Scrolls of identify/recharging/enchantment no longer describe themselves
+   when they are read. 
+ - The "stat display" now indicates which stats cannot be improved by
+   quaffing stat potions, using a "bang" instead of a "colon". 
+ - There is an optional "pref-gcu.prf" file which allows basic use of the
+   standard VT100 keypad keys and arrow keys. 
+ - The sub-window processing has been optimized, especially for the cases
+   when they are not being actively used. 
+ - Direction "5" is no longer accepted for commands such as "run" or
+   "close", so running in place is no longer a fatal error, and in fact, "5"
+   acts like "escape" for these commands. 
+ - Creating a character dump no longer messes up the screen. 
+ - Digestion can no longer be negative or non-existent. 
+ - Changing the terrain feature of a grid has been made into a general
+   function, catching some weirdness involving things like the memorization of
+   new glyphs of warding in dark rooms. 
+ 

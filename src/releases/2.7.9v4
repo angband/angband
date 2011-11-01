@@ -1,0 +1,151 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][src]
+ - [DOS][dos]
+ - [RISC OS][ros]
+ - [Amiga][ami]
+ - [OS/2][os2]
+
+[src]:http://rephial.org/downloads/2.7/angband-2.7.9v4-src.tar.gz "Source tarball, 856k"
+[os2]:http://rephial.org/downloads/2.7/angband-2.7.9v4-os2.zip "OS/2 port, 522k zip file"
+[dos]:http://rephial.org/downloads/2.7/angband-2.7.9v4-dos.zip "DOS port, 617k zip file"
+[ros]:http://rephial.org/downloads/2.7/angband-2.7.9v4-ros.arc "RISC OS port, 529k Arc file"
+[ami]:http://rephial.org/downloads/2.7/angband-2.7.9v4-ami.lha "Amiga port, 657k lha file."
+
+Background
+==========
+Version 2.7.9v4 was released on 24th February 1996, and consisted of the same sort of mixed bag of code cleanup, bugfixes and gameplay tweaks as the other 2.7.9 releases.
+
+Changelist
+==========
+Features
+--------
+ - The "disturb_other" option now induces disturbance when the player status
+   changes. This includes various subtle changes in "food", "cuts" and
+   "stuns", that do not induce actual messages. 
+ - The "list artifacts" command can now be used in the dungeon, since it
+   does not show the unknown artifacts on the dungeon floor, or in the player
+   inventory. 
+ - Cheating death now restores your hitpoints and spellpoints, and your
+   food, and such, and "recalls" you to the town. 
+ - The player can now directly drop/sell "equipment" items in stores. 
+ - The player inventory is correctly combined and reordered in stores, and
+   the "do_cmd_redraw()" function works in almost all situations. 
+ - Each store has been given an additional two "base items" from which to
+   choose its "stock", making certain items more common (low level books,
+   lanterns/oil, boots/armor, scrolls of identify/recall, and arrows/bolts),
+   and the temple sells more potions of restore life levels and no potions of
+   restore wisdom. 
+ - The "halberds" now do "3d5" damage not "3d4", some of the artifacts have
+   been given slightly different rarities or minimum levels, the "electric"
+   and "acid" brands now do "x3" damage not "x5" or "x2", and a few monsters
+   have been given new abilities. 
+ - There are some new spoiler files, and an "info.tar.gz" spoiler archive.
+   Many (but not all) of the files have been updated for Angband 2.7.9v4. 
+ - Items can no longer provide "immunity" to poison, only resistance, this
+   affected only a single artifact, and simplified some code. speed. 
+ - The eyes, icky things, jellies, oozes, molds, and mushrooms are no longer
+   "animals". 
+ - The "animal nest" code now uses the "animal" flag to choose contents. 
+ - Some more attr/char changes were made to the monster list, for example,
+   the "snakes" are now a special race using the "J" symbol. 
+ - Monster pits/nests now include all "acceptable" non-unique monsters,
+   including invisible, teleporting, and multiplying, monsters. 
+ - The player can no longer target non-projectable monsters, except via the
+   "target a location" command. This allows the use of macros which assume
+   that the "nearest" target is actually projectable. 
+ - The player can no longer "accidentally" run into a wall, running now
+   stops next to embedded treasure and rubble, and the running code has been
+   optimized some more. 
+ - The "command.txt" file has been updated to correctly describe the new
+   "Interact with macros", "Interact with visuals", "Interact with colors",
+   "Interact with options", and "Interact with the system" commands. 
+ - Most of the commands available in the dungeon are now available in
+   stores, though the "keymaps" are ignored. 
+ - Mushrooms of restore strength now cost 350 gold. 
+ - The "look" / "target" commands now start at the "closest" location. 
+ - The "message recall" command now allows the use of the "/" key for a
+   primitive "search" ability. 
+ - The "Ettin" monster was restored to full hitpoints. 
+ - The "auto-scum" code now accepts any non-boring feeling on the first four
+   dungeon levels. 
+ - The chance of out-of-depth monsters has been doubled, in such a way that
+   it is "possible" to get monsters which are up to 10 levels out of depth. 
+ - Out of depth monsters now contribute more to the level rating. 
+ - Several of the "stat tables" have been adjusted slightly, the main change
+   is that the player should get multiple blows more easily. 
+
+Bugfixes and maintenance
+------------------------
+ - The "tombstone" picture is now loaded from "lib/file/dead.txt". 
+ - Running no longer stops next to secret doors (early release bug). 
+ - Wimpy monsters no longer induce cuts/stuns (early release bug). 
+ - The "character dump" code has been cleaned up and optimized. 
+ - The "list artifacts" and "list uniques" commands now use a generic
+   "display file" method using a temporary file. 
+ - You can now put "tab" characters in "help" files and other text files
+   used by Angband. They are expanded using eight character tab stops. 
+ - There are nice new generic "my_fgets()" and "my_fputs()" functions. 
+ - The "main-xaw.c" file now uses the "GRAPHIC_xxx" defines, and uses the
+   color set from "main-x11.c" which is apparently "better". 
+ - The "handle_stuff()" routine, and the functions which induce it, were
+   cleaned up and verified. 
+ - The "character_icky" flag is now used only to indicate that the "dungeon"
+   is not currently displayed in the main window. Most of the special screens
+   were modified to allow the use of "msg_print()". 
+ - The character display is no longer shown when loading a saved game, for
+   increased efficiency and code simplification. 
+ - The "notice_stuff()" function has been completely removed, and broken out
+   into various "set_xxx()" functions, and the functions that update the
+   bonuses, mana, and spells. This should increase efficiency and enforce more
+   correct semantics for blindness and related things. 
+ - The "fiddle" flag is now used only to show extra debugging messages. 
+ - There are new "main-win.c", "main-ibm.c", "main-ami.c", and "main-acn.c"
+   files. 
+ - The "food" code needed some work. There is now a generic "set_food()"
+   function, and much simpler "digestion" code. The result is faster, has
+   fewer possible bugs, and is much more sensitive to player 
+ - Some of the global arrays were made non-dynamic for efficiency. 
+ - Repeated commands are now handled by the command itself. The "repeat"
+   count is not displayed until the command is actually repeating. 
+ - The "attr/char" info from the "I" lines in the "x_info.txt" files have
+   been split out into a separate "G" line to fix some "sscanf()" problems. 
+ - The user can now modify the attr/char of terrain feature zero (used for
+   "unseen" grids), object zero (used eventually for "stacks" of items), and
+   monster zero (used for the "player"). 
+ - There are now new command line arguments to activate "graphics" mode (-g)
+   and "sound" mode (-v), when supported. 
+ - Autorolling is now "aborted" after a million rounds, and uses the same
+   "semi-efficient" method on all machines. 
+ - The "main-ibm.c" file now uses new "true color palette code", and allows
+   the use of the new "color specification" methods. 
+ - Faulty use of the "GetAppDir()" function in the Macintosh version may
+   have been "fixed". 
+ - Invisible traps can be given different attr/char codes from floors, but
+   the attr/char codes for invisible traps are never used. 
+ - The "trapper" and "lurker" monsters are now "translucent". 
+ - The "main-x11.c" file now handles the "mirror" window correctly. 
+ - Cursed shovels can no longer have a positive "pval" bonus. 
+ - There is a new "interact with colors" command which allows the user to
+   modify the internal representations of various colors, on systems which
+   support such modification, such as the Macintosh. 
+ - The special "Term_user(0)" command is now be reserved for "weird" stuff
+   like changing graphics/sound mode, or executing "shell" commands. 
+ - Various things are now updated more often in stores. 
+ - The "Term_pict()" function, and the related hooks, now take an attr/char
+   pair instead of a picture index for optimal usage. 
+ - Trap doors are no longer improperly created at dungeon level 99. 
+ - The create staircase spell now "memorizes" the new stairs. 
+ - Angband now autoloads the "user.prf" and "user-xxx.prf" user pref files,
+   plus one of "font-xxx.prf" or "graf-xxx.prf" as appropriate. 
+ - The "pref-xaw.prf" file now simply includes "pref-x11.prf". 
+ - A typo in the "pref-ibm.prf" file was fixed, and part of the file was
+   split off a "font-ibm.prf" file. The "pref-win.prf" file now simply
+   includes "pref-ibm.prf". 
+ - The Windows version has a new "graf-win.prf" file that "correctly"
+   encodes the various bitmap entries using the new row/col metaphor, plus a
+   "font-win.prf" file with the "non-bitmap" attr/char mappings. 
+ - Various "graf-xxx.prf" files were fixed to handle the four new items,
+   and/or the change from "seedy looking human" to "novice paladin". 
+ - The "dehex()" function was fixed. 

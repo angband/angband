@@ -1,0 +1,174 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][src]
+ - [Windows][win]
+ - Mac [PPC][ppc] or [68k][68k]
+ - [RISC OS][ros] 
+ - [Amiga][ami]
+ - [OS/2][os2]
+
+[src]:http://rephial.org/downloads/2.8/angband-2.8.3-src.tar.gz "Source tarball, 804k"
+[win]:http://rephial.org/downloads/2.8/angband-2.8.3-win.zip "Windows port, 586k zipfile"
+[68k]:http://rephial.org/downloads/2.8/angband-2.8.3-mac.sit.bin.gz "Mac 68k port, 601k .sit.gz file"
+[ppc]:http://rephial.org/downloads/2.8/angband-2.8.3-ppc.sit.bin.gz "Mac PPC port, 644k .sit.gz file"
+[ros]:http://rephial.org/downloads/2.8/angband-2.8.3-ros.arc "RISC OS port, 686k Arc file"
+[ami]:http://rephial.org/downloads/2.8/angband-2.8.3-ami.lha "Amiga port, 520k lha file"
+[os2]:http://rephial.org/downloads/2.8/angband-2.8.3-os2.zip "OS/2 port, 505k zip file"
+
+Background
+==========
+Version 2.8.3 was released on 9th February 1998 by Ben Harrison.  The changes made for this release are almost entirely bugfixes and code cleanups, making it truly unusual in the time of Ben's maintainership.  
+
+It also marked the last true release that Ben would make as time to devote to Angband became more scarce for him - he released 2.8.5-beta as an "unoffical testing version" more than a year later, but that was mostly a collection of other people's patches, without the dynamic changes characteristic of a Ben release.  Indeed, it mostly echoed Robert R&uuml;hlmann's unofficial 2.8.3h release that was made during a long period of Ben's absence from the newsgroup, and was never finalised.
+
+The stability of this version, and gap between this release and the next official one meant that 2.8.3 was used as a leaping-off point for many of the variants that have come to characterise the Angband "scene", and many of those based on 2.8.1 also incorporated many of the bugfixes and changes made here.  For similar reasons, it is also the release that did most to define what people think of as Angband, as the game underwent relatively few gameplay changes over the next ten years or so compared to its first six.
+
+Changelist
+==========
+Features
+--------
+ - The "depth_in_feet" option has been restored due to popular demand. 
+ - The "show_flavors" option has replaced the "inventory_colors" option,
+   which (like the old "hilight_seams" option) can be simulated by clever use
+   of a user pref file (use attr 0x01 for all "E" entries). The "show_flavors"
+   option is grouped with the other "show_xxx" options. 
+ - The "lib/help/options.txt" help file was updated. 
+ - Becoming aware of an object via purchasing the object in a store now
+   induces pack reordering, as does quaffing potions of self knowledge. 
+ - The map scrolling the occurs when the player gets too close to the edge
+   of the map has been delayed until after the move is complete, preventing
+   the annoying situation in which the player is redrawn, some messages are
+   displayed, and then the map is redrawn. 
+ - Accept (but convert to underscore) all non-alphanumeric characters when
+   building the player "basename" from the player "fullname". This affects the
+   names used for new savefiles on some systems, and the names used for
+   player-specific user pref files on all systems. 
+ - The "lib/file/news.txt" file was redesigned. Various of the online help
+   files were updated slightly. Much commenting was performed. 
+ - The inventory, equipment, and browsing commands now display a special
+   prompt of the form "(xxx) Command: ", where "xxx" indicates what type of
+   special display mode is active, and then they prompt for a command. The
+   "total weight" is no longer displayed in the prompts. 
+ - The character display screens have been cleaned up and consolidated into
+   two screens. Both display the player name, sex, race, class, title,
+   hitpoints, mana, and complete stat info. The "standard" one also displays
+   age, height, weight, status, maximize, preserve, level, experience, gold,
+   burden, bonuses, infravision, skills, and history. The "special" one also
+   displays player level and various flags which are known to be induced by
+   equipment (or inate abilities). 
+ - Command macros have been replaced by keymaps (or normal macros). Macros
+   are now really intended to be used only as a simulation of real hardware
+   based macros, with the ability to manage them at a software level. 
+ - Keymaps may now specify a command count, so, for example, you can now
+   make a keymap from "s" to "05s" to induce semi-repeated searching, but then
+   you would have to use "d" or "\s" or "01s" to sell single items.
+   Pre-supplying an explicit command count will allow the keymap to be used
+   without its numeric count, so, for example, typing "01s" in the example
+   above would search for one turn. 
+ - Keymaps have been changed. For each "mode" (original and roguelike), each
+   "keypress" can be mapped to any sequence of keys, as with macros. This
+   sequence of keys will not be matched against macros or keymaps, and so
+   every "command key" in the sequence must be an "underlying" one. The
+   "interact with macros" command now allows dumping of all keymaps for the
+   current mode to a file, and for interactive modification of keymaps.
+   Keymaps can appear in user pref files. The default mappings for both
+   keysets are listed in the main "pref.prf" file. Commands which take a
+   direction now extract the legal directions from the bodies of keymaps for
+   the current mode. Note that a keymap may specify a sequence of several
+   actions, and if the "flush_failure" option is set, then any failures will
+   cancel any pending actions. 
+ - The "interact with macros (and keymaps)" screen now uses a more user
+   friendly method for macro/keymap creation. 
+ - Objects from the second page of a store are now always have indexes from
+   "m" to "x", and you may get/purchase objects from either "page" of the
+   display. The "m" and "p" and "s" store commands will be, at some point in
+   the future, removed. Start using "g" and "d" instead. 
+ - Nar the Dwarf now has the "ONLY_ITEM" flag. 
+ - Option "hidden_player" to hide player when running. 
+ - Option "verify_destroy" to verify object destruction. 
+ - Option "verify_special" to verify unsupported commands. 
+ - Option "allow_quantity" to allow quantity specification. 
+
+
+Bugfixes and maintenance
+-------------------------
+ - The "-s" command line argument now works when no high scores exist. 
+ - Bad assumptions about the return value of "isupper" have been fixed. 
+ - The character description screen now shows the correct Shots/turn, and no
+   longer displays the maximized stat indicator in the wrong column. 
+ - The "window option flags" that control the "display_player()" dumps were
+   renamed to reflect their actual purpose. 
+ - User pref file expressions now treat all printable characters except
+   space and brackets as "token" characters, allowing correct processing of
+   hyphenated race names. 
+ - Previously, when using "main-win.c", "main-mac.c", or "main-ami.c", the
+   "SAVEFILE_MUTABLE" flag told the game to pick a new name for the savefile
+   whenever the player name changed. This flag has been removed, and now, on
+   those platforms, the game will only pick a new name for the savefile when a
+   brand new character has just been created and the savefile has no name yet.
+   This means that, on these machines, changing your name will no longer
+   change the name of your savefile! 
+ - A brand new "main-emx.c" file was obtained, along with "Makefile.emx" and
+   "pref-emx.prf", which not only allows the use of standard macros ala
+   "main-ibm.prf", but which supports the full set of eight windows. 
+ - Some minor random cleanups were done. 
+ - The "misc_to_attr"/"misc_to_char" arrays have been activated, and are
+   being used for both "spell effects" and "object flavors", which will allow
+   "lib/user/font.prf" and/or "lib/user/graf.prf" to specify better attr/char
+   codes when they are available. It is no longer possible to force a flavored
+   objects to change its "appearance" when identified. 
+ - The "NOT" expression in user pref files has been fixed. 
+ - A new "main-dos.c" file has been created to leverage the "Allegro"
+   graphics library for DOS-386 machine. It can now be compiled with the
+   standard "main-ibm.c" file as a backup method. Both files have been cleaned
+   up somewhat. The "main-ibm.c" file now sets the cursor visibility
+   correctly, and cleans up the video mode on exit. 
+ - The "Term_save()" and "Term_load()" calls have been wrapped in new
+   "screen_save()" and "screen_load()" functions, with a static variable to
+   make sure they are never called incorrectly. The "character_icky" and
+   "character_xtra" flags have been converted into counters. 
+ - The "main-win.c" file now recognizes "keypad 5" (and various other
+   special keys, such as "pause"). 
+ - The "main-win.c" and "main-mac.c" files no longer allow the game to be
+   saved when it is in an inconsistant state. 
+ - The "bell()" function now takes a string to add to the message recall,
+   and it may be extended at some point to use the "plog" method to show error
+   messages to the user, but this would require special code for some of the
+   "main-xxx.c" files. 
+ - It is now officially illegal to "resize" the primary Angband window (this
+   is enforced by the "z-term.c" package), which must be at least 24x80 in
+   size. This change has made a lot of code faster and safer. 
+ - The "target" code was wrapped lightly in an interface. The "macro" and
+   "quark" and "message" packages were wrapped lightly as well. 
+ - The "dispel" prayers now do the "correct" amount of damage, that is, for
+   some number D between 1 and N, where N is some multiple of the player
+   level, all appropriate monsters take D damage. 
+ - The "main-xaw.c" file now saves all keypress events in "old_td", which
+   should fix some old bugs. 
+ - The "update_flow()" function was optimized. 
+ - The "Borg" and "Debug" commands now always prompt for acceptance of the
+   first usage per session, with plenty of warnings, unless a new option is set. 
+ - Multi-page self knowledge displays have been fixed. 
+ - Minor cleanups (comments, indentation, and such). 
+ - Most global array variables are now dynamically allocated. 
+ - Allow "special" artifacts to be created in any order. 
+ - Only the "cave_set_feat()" function may change features. 
+ - Cleaned up "generate.c" with some higher level functions. 
+ - Optimized "message_add()" and "object_desc()" functions. 
+ - Major optimizations of various "cave.c" functions. 
+ - New "project_path()" function (using actual range). 
+ - New "update_view()" code (absorbed "update_lite()"). 
+ - The entrances to shops are now more widely illuminated. 
+ - Compilation option for "new field of view algorithm". 
+ - Compilation option for "complex wall illumination". 
+ - There is a new "project_path()" function for calculating projection
+   paths. Range is now correctly applied to diagonal projections. All "ball"
+   attacks now auto-explode if they reach maximum range. 
+ - The "update_view()" function was optimized, and absorbed the
+   "update_lite()" function. The "display torch lit grids in yellow" option
+   now affects only grids which are not perma-lit. There is a new version of
+   the "update_view()" algorithm which is much better. 
+ - A new bitmap file has been uploaded for Windows Angband, and the
+   precompiled archive has been recreated using the new file. 
+ - New "ext-mac" and "ext-win" archives have been uploaded. 

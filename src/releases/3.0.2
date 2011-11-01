@@ -1,0 +1,85 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][src]
+ - [Windows][win] and [extra Windows bits][winext]
+ - Mac [OS X][osx], [PPC][ppc] or [68k][68k], and [extra Mac bits][macext]
+
+[src]:http://rephial.org/downloads/3.0/angband-3.0.2-src.tar.gz "Source tarball, 1.4M"
+[win]:http://rephial.org/downloads/3.0/angband-3.0.2-win.zip "Windows port, 977k zipfile"
+[winext]:http://rephial.org/downloads/3.0/extra-3.0.2-win.zip "Fonts, sounds, etc. for the Window port. 195k zip file"
+[osx]:http://rephial.org/downloads/3.0/angband-3.0.2-mac-osx.sit.bin "Mac OS X port, 1.6M .sit file"
+[68k]:http://rephial.org/downloads/3.0/angband-3.0.2-mac-68k.sit.bin "Mac 68k port, 1M .sit file"
+[ppc]:http://rephial.org/downloads/3.0/angband-3.0.2-mac-ppc.sit.bin "Mac PPC build, 1M .sit file"
+[macext]:http://rephial.org/downloads/3.0/extra-3.0.2-mac.sit.bin "Extra Mac bits, 1.1M .sit file"
+
+Background
+==========
+Version 3.0.2 was released on 20th December 2002 by Robert R&uuml;hlmann, and once again incorporated patches and cleanups from a number of people in addition to Robert's own improvements.
+
+This release saw more improvements to the Lua scripting interface, with scripts able to be called when a variety of events happened as well as to handle spells and effects.  There were also a number of UI and platform-specific improvements such as increased support for different graphical tilesets.
+
+As well as other small gameplay tweaks, the spells "Genocide" and "Mass Genocide" were renamed after some players said they were uncomfortable with the words being used in a game because of the associations with real-life horrors.  While there was much disagreement, Robert changed the names to "Banishment" and "Mass Banishment", which incidentally are also more descriptive of the actual actions of the spells.
+
+Changelist
+==========
+ - Limited the maximum size of floor stacks to 23, so that get_item() can
+   always display a list containing all objects.
+ - Renamed 'genocide' to 'banishment' and 'mass genocide' to 'mass
+   banishment' since that name fits much better to the effect.  The priest's
+   'banishment' spell has been renamed to 'banish evil' to avoid confusion
+   and since that is what it actually does.
+ - Replaced silver arrows and bolts with mithril ammo since slay evil was
+   too powerful.
+ - Changed the color of seeker bolts to green since there are so many 'light
+   blue' ammo objects now.
+ - 'Golden staves' had the wrong color. (John I'anson-Holton)
+ - Improved indentation of the object descriptions in the character dump.
+   (Andrew Sidwell)
+ - Destruction/Earthquake spells didn't properly destroy stacks of objects.
+   After saving and loading the game, parts of the stacks were restored.
+   (reported by Matthias Kurzke)
+ - Zapping a stack of recharging rods would instantly recharge all but one
+   of them. (Tormod Haugen)
+ - Fixed an error in the LCC Makefile.
+ - Fixed an off-by-one error that prevented savefiles with the maximum
+   number of monsters or objects from loading correctly. (Takeshi Mogami)
+ - Fixed an abuse that allowed the player to kill a monster with a ball
+   spell by staying out of sight and detection range of the monster while
+   the monster just patiently waited without ever getting a turn (reported
+   by Tormod Haugen).  Wounded monsters will now always get their turn, even
+   when out of range.
+ - The Elfstone 'Elessar' and the Jewel 'Evenstar' have the INSTA_ART flag
+   now to make the APW-Borg happy.
+ - Amulets of resistance are now fully known after identifying one for the
+   first time. (Dr. Andrew White)
+ - The option for flushing of pending input when failing to cast a spell
+   didn't work.
+ - Fixed several bugs in the scorefile handling that could lead to
+   duplicated entries for a single character. (reported by Hallvard Furuseth
+   and Mauro Scarpa)
+ - Unified the code for object infos and artifact spoilers. (Andrew Sidwell)
+ - Added event-handler code to call Lua functions when things happen	in the
+   game.
+ - Allow multiple Lua event handlers per event.
+ - Moved the generation of the player's fixed starting equipment (food and
+   torches) to a Lua event handler.
+ - Which objects a store will buy and sell is now determined by a Lua
+   script.
+ - Added various improvments to make finding errors in Lua code easier.
+ - The lib/edit/*.txt files can now optionally contain the names of the
+   default object, monster, terrain, and flavor colors instead of just a
+   character specifying the Angband color code.
+ - Changed the format of the flavor.txt file to make parsing easier.
+ - Allow the use of the Angband version number in conditional statements of
+   the *.prf file format.
+ - Added Takeshi Mogami's bigtile patch that allows tile-graphics to have
+   doubled width.
+ - Added support for David Gervais' 32x32 tileset to the Windows, X11, and
+   XAW ports.  The tiles are available as a separate download from:
+   ftp://clockwork.dementia.org/angband/Extra/32x32.zip
+   (Takeshi Mogami)
+ - Improved the error message when a font can't be loaded in the X11 and
+   XPJ frontends.
+ - Fixed a memory leak when switching between the various tilesets in the
+   Windows version.

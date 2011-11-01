@@ -1,0 +1,89 @@
+markdown = "true"
+release_name = "PCAngband 1.3"
+release_code = "2.4.i"
+Downloads
+=========
+ - [DOS executable version][1] (342k)
+ - [Source code][2] (538k)
+
+[1]: http://rephial.org/downloads/2.4/pcangband-1.31.zip
+[2]: http://rephial.org/downloads/2.4/pcangband-1.31-src.zip
+
+Background
+==========
+Version 1.3 of PCAngband was released on 18th August 1993 as part of Charles Teague's series of releases based on his [Frog-knows] (http://rephial.org/release/2.4.fk) port to the PC.  It was quickly followed on 28th August by a bugfix release, called version 1.31.
+
+This version made major gameplay changes in addition to fixing yet more bugs from the earlier releases - the most major gameplay change being targetting.  This had previously been implemented for testing in another offpsring-of-Moria game, Morgul, as a way of making missile attacks "fairer", as monsters could fire missiles at the player without being aligned on one of the eight cardinal directions but players could not respond in kind.  This addition didn't make it to the main UNIX game initially, but like most of the changes made here it did get there eventually, in [version 2.5.6](http://rephial.org/release/2.5.6).
+
+Changelist
+==============
+Features
+--------
+ - Morgul's targetting code has been added.
+ - Multi-hued dragons will now change color every move; they are no longer "LIGHTCYAN", they randomly change from the colors of the "hued" dragons.
+ - There is now such a thing as boots of free action.
+ - Angband will now put multiple messages on a line, if they fit, like UMoria 5.5 does.
+ - The UMoria 5.5 inventory sorting, which keeps spellbooks in order, was put in, and then later extended by patches posted to rec.games.moria.
+ - When at level 50, Exp to Adv now displays "*\*\*\*", like in UMoria 5.5.
+ - Everyone now has a very slight chance of using a wand/staff/rod, even if their "use device" skill is too low (from UMoria 5.5 code).
+ - New option added to allow the player to select old-Moria-style "always pickup without asking".
+ - "Balor" renamed to "Lesser balrog" to be more Tolkien-ish.  Also, "Necromancer" renamed to "Warlock" to avoid confusion with Sauron.
+ - Mages/rangers/rogues can wear gloves/gauntlets/cestus of agility, without penalty to their spellcasting skills.
+ * Potions of Death can now be thrown for lots of damage.
+ * The Phial, The Star, and The Arkenstone now have different descriptions before they are IDed.
+ * Monsters can now be confused by bronze/gold/etc dragon breath (even if it's from your DSM).  But, BEWARE!  If you breath Chaos, you can polymorph monsters (Not uniques, and not into uniques; also the new monster will not be drastically wimpier/tougher than the old one).
+ * When items are stolen/destroyed/disenchanted, you will be told what item was affected.
+ * Word of Recall will ask you if you want to go.  If you say no, then you still use up the scroll/mana/charge.
+ * New rest option '&'.  It acts like '*', but it waits until confusion, hallucination, blindness, slowness, etc are all over as well as HP and mana.
+ * Inventory and store iventory displays have been colorized by item type.  This makes it easier to find a particular type of item.  Ifyou don't like it, don't worry.  There's a new option added to turn it off.
+ * Player HP display will now display HP in yellow if the player is badly hurt, and in red if he's nearly dead.
+ * Monster lightning attacks can now destroy items, like in UMoria 5.5.
+ * Redraw command implemented.
+ * If you kill a monster that's worth a lot of exp, you don't lose extra experience points when gaining levels.  I'm not sure why Moria did it this way, but I figure that, if a 1st level player kills an Ogre, then he deserves every last experience point.
+ * Command line "usage" is now more helpful. (try 'angband -?')
+ * Telepathy allows you to see through walls, but it will no longer locate "mindless undead".  Normal vision can still see them.
+ * Group monsters will now appear in smaller groups if they are out-of-depth.  Conversely, they will appear in larger groups if they are "too wimpy" for a given depth.
+ * Object creation code changed so that rags, broken swords and daggers, and rusty chainmail is not considered for "GOOD" or better items.
+ * Also, the new spellbooks are now candidates for creation as "GOOD" items, and Raal's/Wrath of God are candidates for creation as "SPECIAL" items.  This should make it easier to find these books. 
+ * The messages given when items are stolen/detroyed/disenchanted have been improved.
+ * All "thievish" monsters now pick up objects.  So do Green glutton ghosts.  Giants do not.  Mirkwood spiders are now evil.
+ * There is now such a thing as a "giant pit".  It's found at the same depth as troll pits.  Giants are, on average, weaker than trolls, but giants are immune to wands/rods of light.
+ * Rods can be recharged with recharging scrolls/spells.  The rod will never explode, but if the recharge fails, it may take even longer to recharge.  If the recharge is successful, the recharging time of the rod will be lessened.
+ * The pseudo-ID of warriors/rogues/paladins will now tell you what letter item was noticed.  The detect magic/cursed ability of other classes still doesn't, because it's supposed to be a less specific ability.
+ * The ball spell code has been changed.  Now your fireballs, and monster's breath weapons will destroy only pre-existing items. Items dropped by monsters killed in the blast are assumed to have	been shielded by the corpse of the dying monster.  For example, if 2 fire hounds breath at you in a row, and the first breath causes a monster near you to die and drop a scroll, that scroll is safe	from the effect of the 1st breath.  However, the second fire breath will destroy the scroll (unless it fell outside the area of effect). This is a bit different from Moria, or previous Angband version, but it means that you don't have to be quite so careful when using fire/frost/acid balls to kill things.
+
+Bugfixes
+--------
+ - The Dragon Scale Mail artifacts are now possible.
+ - The Cestus artifacts are now possible.
+ - The autoroller has been fixed twice: 1st to stop repeated messages
+   that "you can learn some new [spells|prayers]"; and 2nd, to properly
+   calculate the player's disarm skill.
+ - Cubragol bug fixed.  It now knows it's a crossbow again.
+ - "of Westernesse" weapons now have SLAY_ORC, like they should.
+ - Better messages are used when a monster casts a spell at you and you are blind.  No more "You blink and your eyes clear" while you're still blind...
+ - The resurrection code will now heal cuts, so the resurrected player doesn't just die again...
+ - Player ghost code fixed twice: 1st, ghost HP no longer wrap around 256; and 2nd, player ghost experience value fixed.
+ - Artifacts, once IDed, are now called "The ..." instead of "a ...".
+ - Some uniques that should have been evil were not; this is fixed.
+ - Items that were immune to acid, but not also resistant to it, could lose AC; this is fixed.
+ - Elemental brand (from priest spellbook, or from Cubragol) can no longer be used to enchant items beyond normal levels.
+ - The scrolls of Curse Weapon and Curse Armour now destroy the	affected item even more thoroughly.
+ - Lots of places where bounds-checking was needed had it added.
+ - The object corruption bug (aka "the mush bug") has been fixed.
+ - Fixed display of player's gold, for values over 99,999,999.  It will	still look funny if you have over 999,999,999.
+ - Activate of an artifact will no longer cost you a move if you have nothing to activate or abort.
+ * The room lighting code should no longer leave a corner unlit.
+ * The "money bug" has been fixed.
+ * The 24 item limit at home is still there, but you won't lose any items if you try to drop more.
+ * You should no longer be able to detroy stairs and shops with	earthquakes, wall building, word of destruction.
+ * The code should now stop giving "you seem to be missing a book" messages when you know all knowable spells.
+ * Spell handling code changed heavily to improve handling of monster spell resists.
+ * Priest book "Godly Insights" should have had "Detect Monsters" as its first spell.  Now it does (but you'll have to drop/sell all your existing copies, and then get a new one for this to take effect).
+ * Potion of Berserk Strength could permanantly cost you 10 HP, if your	HP were re-calculated while it lasted; this is fixed.
+ * When you peruse a book, the letters should now match those used to cast the spells/prayers.
+ * If you hit an unsued key in wizard mode, using the non-rogue command	set, it will no longer ask you for a filename (it was trying to	dump the list of created artifacts to a file).
+ * Lots of other changes from UMoria 5.21 -> UMoria 5.5 applied.
+ * Exp. pts. display fixed.
+ * Door lighting has been fixed, so lighting a room shouldn't flood into another room.
+ * Dragons who pick up items (are they any?) won't pick up an item if it has XD or SD.  Before they wouldn't pick up a SD item,	but would if it had only XD.

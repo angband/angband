@@ -1,0 +1,73 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][1] 
+ - [Mac][2]
+ - [DOS][3] 
+ - [Windows][4] 
+
+[1]:http://rephial.org/downloads/2.7/angband-2.7.4-src.tar.gz "Source tarball, 631k"
+[2]:http://rephial.org/downloads/2.7/angband-2.7.4-mac.sea.bin.gz "Mac port, 402k"
+[3]:http://rephial.org/downloads/2.7/angband-2.7.4-dos.zip "DOS port, 446k zip file"
+[4]:http://rephial.org/downloads/2.7/angband-2.7.4-win.exe "Windows installer, 363k"
+
+Background
+==========
+2.7.4 was the first reasonably stable version of Ben Harrison's reign (though it was still described a couple of times as a "stable beta"), and was released on 28th March 1995.  It was already a massively different game than the last stable release, 2.6.1, though for all the visible changes there had been even greater ones hidden from view in the code.
+
+Of course, it was never /just/ going to be bugfixes in one of Ben's releases, so there was also the massive change of removing the auxiliary weapon slot and replacing it with a dedicated bow slot.  In order to try and head off the inevitable controversy that resulted, the inventory was increased by a slot so that people who didn't want to use a bow wouldn't lose out.  This didn't really work, as arguments still ensued over the relative realism of each approach, and which gave the better gameplay effects.
+
+In addition, keymaps were introduced which allowed an abstraction of keypresses from the commands they activate, and the fractional speed system introduced in the previous release was used to give monsters a chance of being slightly faster or slower than normal.
+
+
+Changelist [*1]
+==========
+Features
+--------
+ - Added monster flow AI option
+ - Allowed the macro-ization of normal keys
+ - Rearranged the player equipment
+ - Replaced "aux slot" with "bow slot"
+ - Rewrote some code to use the new "bow slot"
+ - Enchant weapon will enchant the bow sometimes
+ - Removed the now meaningless "x"/"X" command
+ - Extended the player pack to allow 23 items
+ - Added "pack overflow" at 24 items, added warnings
+ - Removed "stealth boost" from Feanor
+ - Worked on the throw code to allow better "breakage"
+ - Changed allocation of speed bonuses on rings/boots
+ - Changed cost of boots/rings of speed to reflect new bonuses
+ - Added new "pre-computed view" option.
+ - Gave monsters the possibility of slight speed adjustments from their racial template (slightly faster and slower than normal kobolds, say).
+ - Wrote a "keymap" function to allow "command redefinition"
+ - Used this function to "merge" orginal/roguelike keysets
+ - Allowed access to this function via the "!" command
+
+Maintenance
+-----------
+ - Wrote a new "main-x11.c" (Recall/Choice windows)
+ - Did a little work on the borg
+ - Removed some obsolete functions
+ - More renaming and rearranging
+ - Eliminated old types ("int16u", etc), replaced with u16b, etc.
+ - Optimized process_monsters() and update_view()
+ - Macro-ized floor_grid() and friends
+ - Verified correct use of floor_grid() and friends
+ - Reduced use of "random()" to speed up the code
+ - Rewrote "monster reproduction" algorithm
+ - Reordered the savefile options (especially option set 3)
+ - Fixed a few visual glitches with "get_item()" calls
+ - Changed "tval" of certain objects to optimize "floor_grid()"
+ - Made some of the error messages more verbose
+ - Removed some use of floating point maths
+
+Bugfixes
+--------
+ - Fixed a bug in "repeated commands"
+ - Fixed "takeoff" in roguelike mode
+ - Fixed some bugs in the parsing of macros
+ - Fixed a bug in Cubragol's activation
+ - Fixed two artifact's activation (Dethanc and Firestar?)
+ - Wrote a hack to allow proper Windows savefile names
+
+[*1]:The changelist has been pieced together from newsgroup postings around the time of release - it is unlikely to be complete and may not be accurate.

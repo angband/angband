@@ -1,0 +1,269 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][src]
+ - [Windows][win]
+ - [DOS][dos]
+ - Mac [PPC][ppc] or [68k][68k]
+ - [Amiga][ami]
+
+[src]:http://rephial.org/downloads/2.9/angband-2.9.0-src.tar.gz "Source tarball, 875k"
+[win]:http://rephial.org/downloads/2.9/angband-2.9.0-win.zip "Windows port, 816k zipfile"
+[dos]:http://rephial.org/downloads/2.9/angband-2.9.0-dos.zip "DOS port, 986k zip file"
+[68k]:http://rephial.org/downloads/2.9/angband-2.9.0-mac.sit.bin "Mac 68k port, 726k .sit file"
+[ppc]:http://rephial.org/downloads/2.9/angband-2.9.0-ppc.sit.bin "Mac PPC port, 723k .sit file"
+[ami]:http://rephial.org/downloads/2.9/angband-2.9.0-ami.lha "Amiga port, 507k lha file"
+
+Background
+==========
+Version 2.9.0 was released on 11th April 2000 by Robert R&uuml;hlmann, and was his first as Angband maintainer, having been officially named as such by Ben Harrison on r.g.r.a. the previous day.  Ben had appeared only infrequently on the newsgroup over the previous year or two, and there had been frequent posts asking where he'd gone or calling for a new maintainer.  In one of his rare posts, he had suggested that if anyone wanted to take over, they only had to release a new version and if the community agreed it was official, it would be.  
+
+It appears that Robert did just that, releasing an unofficial version that fixed bugs and incorporated patches people had made to the game, called Angband 2.8.3h.  The 'h' was because these releases had started as changes to the DOS port of 2.8.3, adding new interface options and graphics support, which were releases 'a' to 'g'.  Soon after Robert's 2.8.3h, Ben released a 2.8.5-beta source-only release for testing, which incorporated the same patches and many of the same bugfixes, as well as a few other changes Ben had stored up since the 2.8.3 release.
+
+Some time after that, Robert contacted Ben offering to help in any way he could to keep Angband developing, and they came to an agreement that Robert would take over and carry on where Ben left off.  They decided to hold off the announcement until a new version was ready to be released, presumably to stop community pressure to rush such a release out before it was ready.  As a result of his previous 2.8.3h release and his time as Zangband maintainer, he was readily accepted as a safe pair of hands for the future of Angband.
+
+There are a whole slew of changes in this release, reflecting the fact that this was the first release for two years - options were rearranged, many new ones added (some as a result of publically available patches, some from scratch), many new UI improvements and bugfixes, and yet more code cleanups.
+
+
+Changelist
+==========
+Changes for version 2.8.5-beta
+------------------------------
+ - Incorporated various patches.
+ - Cleaned up various things.
+ - Defined and used some useful constants (stores, stats, options, etc).
+ - Added four new "blocks" of options ("birth", "cheat", "adult", "score"),
+   where "birth" options can appear in user pref files, "birth" and "cheat"
+   options can be changed via "Interact with options", "adult" options are
+   copied from corresponding "birth" options at birth, and "score" options
+   are set whenever the corresponding "cheat" options are set.
+ - Moved the "maximize", "preserve", and "auto_roller" birth-time questions
+   into the "birth"/"adult" options, and reduced the old birth-time questions
+   to just the sex/race/class questions, and added a new question to allow the
+   use of the "Interact with options" command before character birth.
+ - The player may now select a random sex/race/class.
+ - Changed the old "maximize"/"preserve" flags into "adult" options.
+ - Added "point_based" birth option to enable point based character creation.
+ - Added "ironman" birth option to disable the use of stairs up and recall.
+ - Added "no_stores" birth option to disable the use of stores and the home.
+ - Added "no_artifacts" birth option to disable the creation of artifacts.
+ - Added "rand_artifacts" birth option to enable the Greg Wooledge random
+   artifacts patch (with a few minor changes), using "init3.c" to hold the
+   majority of the new code.  You must enable a compilation option to get
+   support for this option.  Characters using this option must continue to
+   use the same version of the random artifacts code forever.
+ - Added "auto_more" option to disable the display of messages to the main
+   window.  This option should only be used when another window is being
+   used to display messages.  This option will cause message display used
+   for "prompting" purposes, such as that used during savefile loading, to
+   work incorrectly.
+ - Added "smart_monsters" option to activate new monster intelligence code.
+ - Added "smart_packs" option to activate new pack monster intelligence code.
+ - Added "easy_open" option to make the open/disarm/close commands assume
+   the "obvious" direction if one exists.
+ - Added "easy_alter" option to open doors and disarm traps on movement.
+ - Added "easy_floor" option to make interaction with floor objects cleaner.
+ - Added "show_piles" option to display piles of objects using a special
+   attr/char.
+ - Added "center_player" option to scroll the map to center the player
+   whenever possible, along with an updated "Map sector" prompt to show
+   the fractional map sector information.
+ - Added "run_avoid_center" option to disable "center_player" when running.
+ - Added "scroll_target" option to allow targetting of grids not on the
+   current panel.
+ - Added "load"/"append" commands to "interact with options" command.
+ - Unified "load user pref file" sub-commands.
+ - The player "basename" now defaults to "PLAYER" when appropriate, allowing
+   its use during player birth for user pref file loading prompts.
+ - Removed the old "testing_stack" and "testing_carry" options (making them
+   standard features), so now multiple objects can stack in one grid, and
+   dying monsters will drop objects they have picked up.
+ - Use the new "score" options instead of the "noscore" cheater hack.  Now
+   the "noscore" variable is used only for marking the use of wizard mode,
+   debug commands, borg commands, and cheating death.
+ - Display sex/race/class as it is chosen during birth.
+ - Objects held by monsters are no longer lost during savefile loading.
+ - Changed "Acquire" and "Access" in most comments to "Get".
+ - Made VERSION_EXTRA slightly more "official".
+ - The object "discount" field has been overloaded to contain information
+   about "special inscriptions" (from object sensing), by using values above
+   100 for inscriptions and below 100 for discounts.
+ - Changed "50% off" discount plus an "on sale" inscription (when shopkeepers
+   retire) to a simple "40% off" discount.
+ - Added a new "10% off" discount.
+ - Include both "normal" inscriptions and "special" inscriptions in object
+   descriptions, if room is available.
+ - Minor tweaks to "main-gcu.c", including better color support, and support
+   for multiple "windows".
+ - Minor tweaks to "main-emx.c".
+ - Moved rings of poison resistance to dungeon level 40 (was 60).
+ - Minor improvements to the refueling code.
+ - Ensure generation of at least one of each quest monster on quest levels.
+ - Denial of "^g" verification in stores no longer browses to the next page
+   of objects.
+ - Earthquake can no longer leave living monsters embedded in walls.
+ - It is no longer true that "resist chaos" implies "resist confusion".
+   However, all base objects and artifacts which provide "resist chaos"
+   explicitly provide "resist confusion" as well.
+ - Detect doors now detects locked and jammed doors.
+ - The player's speed can no longer run off either end of extract_energy.
+ - All adverse monster conditions are shown on the health bar, and the
+   monster health bar now changes when monster conditions change.
+ - The 'c' debug command permits the entire third column of entries to be
+   created.
+ - Entry into debug mode is only confirmed once per character, not once
+   per session.
+ - The "update_flow()" function uses FLOW_MAX, instead of TEMP_MAX.
+ - The player can now interrupt the special rest commands.
+ - The "chest_traps" array is no longer accessed with a negative index.
+ - The "earthquake()" function now uses ddd_ddx/ddd_ddy instead of ddx/ddy.
+ - The "cheat_know" option now saves the monster into a correctly sized chunk
+   of memory.
+ - The "say_comment_6()" function can no longer run off the end of its array.
+ - The 'I' command displays multiple pages of info correctly.
+ - The character display now indicates sustained bonuses and immunities.
+ - Keymaps are dumped in the same format as they are read.
+ - Random teleport can no longer interrupt entering a store.
+ - The "ALLOW_TERROR" option is now disabled by the "ANGBAND_LITE" option.
+ - The debug command 'e' now allows current and maximum experience to be
+   altered.
+ - Secret doors the player reveals are sometimes locked or jammed.  
+ - The spell lists now use color, and distinguishes between spells which
+   have not yet been learned, and which cannot yet be learned.
+ - Destroyed levels are now less common.
+ - Arrows now break less often.
+ - Rods now sort based on recharge time.  Wands/Staffs now sort based on
+   charges.  Lites now sort based on fuel.
+ - The "object_desc()" function has been cleaned up, and a "safer" version
+   can now be selected via a compilation option.
+ - The "summon_kin" monster flag has been added, and given to some monsters,
+   to allow the summoning of monsters with the same symbol as the caster.
+ - The "summon_hi_demon" monster flag has been added, and given to some
+   monsters, to allow the summoning of powerful daemons.
+ - Targetting code permits '.' to be used to select the target.
+ - The "word of recall" code has been centralized.
+ - On systems where Angband is running set-[ug]id, players may put a
+   ".angband.prf" file in their home directory and have it read.  This
+   probably violates some security compilation options.
+ 
+Changes for 2.9.0
+-----------------
+ - Chaos resistance no longer automatically grants confusion resistance.
+   All normal items and standard artifacts with chaos resistance now
+   provide confusion resistance as well.
+ - Two-handed swords appear earlier now.
+ - Added an optional point-based character generator.
+ -  Added randomized character generation.
+ - Moved the questions about the autoroller, maximize, and preserve mode
+   to a new option screen.
+ - Added an option to display piles of items with a special symbol
+ - Allowed secret doors to be looked or stuck
+ - Items with an '=g' inscription will be automatically picked up
+ - Added options to automatically select the direction when opening
+   doors/chests and disarming traps.
+ - Added an option to display piles of items on the floor as lists.
+ - Arrows break less often now.
+ - Refilling a latern from another latern leaves an empty latern now.
+   Empty laterns are no longer displayed as choice for refilling.
+ - Added random artifacts.  Note that importing characters created with
+   older versions of the random artifacts generator is not supported.
+ - Scrolling while targetting.
+ - Improved monster AI.
+ - Increased the maximum number of vaults to 64.
+ - Very high or low speed modifiers no longer cause problems.
+ - Entry into debug, wizard, or borg mode is only confirmed once per
+   character, not once per session.
+ - The debug command 'e' now allows current and maximum experience to be
+   altered.
+ - Boldor, Gabriel, Khamul, Murazor, Tselukas, Draebor, Hoarmurath,
+   Thuringwethil, Omarax, Qlzqqlzuup, and Feagwath can now summon similar
+   monsters.
+ - Master quylthulg, Emperor Quylthulg, Qlzqqlzuup, Murazor, Pazuzu,
+   Lungorthin, Gothmog, Sauron, and Morgoth can now summon greater demons.
+ - Ancalagon the Black can now breath fire.
+ - Objects carried by monsters are now loaded properly.
+ - A command to repeat the last command has been added ('n' in original,
+   ''' in roguelike keyset).
+ - At character creation, some extra difficulty options are
+   available (no artifacts, no stores, no up stairs/recall).
+ - The "special" inscriptions ("cursed", "worthless", "good", ...) are
+   now handled outside the normal inscription system, and so neither
+   overwrite, nor are overwritten by, normal inscriptions.
+ - Made destroyed levels rarer.
+ - The quest monsters (Sauron and Morgoth) are now always generated on
+   levels 99 and 100.
+ - Fixed a bug in the "know complete monster info" cheat option.
+ - The spell-list now uses color.
+ - The disarm traps spell will now work on the locks of doors, revealing
+   secret doors and unlocking locked doors.
+ - The 'detect doors' spell can now detect locked and jammed doors.
+ - Monsters crushed by an earthquake spell are now killed.
+ - Fixed a bug that could cause problems when entering illegal values
+   while haggling with a shopkeeper.
+ - Support for Adam Bolt's tiles.
+ - Support for transparency and lighting effects.
+ - Added class and race dependent player graphics.
+ - Cleaned up the new code introduced in the 2.8.5 beta version.
+ - Fixed the bug with opening a door you are standing on with the easy_open
+   patch.
+ - Random artifacts with chaos resist can now get confusion resist too.
+ - Fixed a bug that added a discount to a cursed item when wielding it.
+ - The fear resistance of level 30+ warriors is now correctly displayed.
+ 
+Compilation changes
+-------------------
+ - Added a compile.txt file with compile guides for various systems and
+   compilers.
+ - Added a makefile for the free Borland C++ 5.5 compiler.
+ - Removed lots of compiler warnings.
+ - Fixed a problem when compiling Angband on newer (glibc-based) Linux
+   systems.
+ - Added a compile-time option to allow players to put an .angband.prf
+   file in their home directory and have it read on systems where
+   Angband is running set-[ug]id.  Default is off.
+ - Added support for compiling a Linux SVGALIB version with graphics.
+ - Added support for the use of the 8x8 and 16x16 tiles in the X11
+   version.
+ 
+Windows specific changes
+------------------------
+ - You can select between the "old" tiles, the new tiles, and ASCII mode.
+ - The Windows version no longer requires changes to angband.ini when
+   installing.  The angband.ini file will be created when you first start
+   the program, so it doesn't need to be present in the binary archive.
+   That also allows easy updates to newer versions, since the settings
+   in the angband.ini are not overwritten when installing a new version
+   over an old one.
+ - The windows can be resized and the (graphical) tiles will adjust
+   automatically to the new size.
+ - Added the "Show scores" command to the menu.
+ - Fixed a bug that created all files as "read-only" (causing the game to
+   fail when saving the game).
+ - Fixed a bug that caused all numbers to be registered twice by the game,
+   leading to "double-steps".
+ - Fixed a bug that didn't free the used bitmaps correctly when closing
+   the game.
+ 
+DOS-specific changes
+--------------------
+ - Graphics, sounds, and music options
+   You can switch the graphics/music/sound options from the user menu
+   (press ! to get there).  The volume of the sound and the music can be
+   adjusted from 0 (min) to 255 (max).  All changes to the screen-resolution
+   and the selection between the old and the new graphical tiles will be
+   active after you restart Angband.
+ - Terminal windows
+   The windows can be activated from the "Angband options screen"
+   (press the '=' key to get there) in the "Window flags" menu.
+   Just toggle the display you want for "Term-1" and "Term-2".
+ - Added a stone-background to the terminals.
+ - Midi jukebox
+   DOS-Angband automatically plays midi-files from the "lib/xtra/music"
+   folder in your Angband-directory.
+ - Sound Events
+   DOS-Angband will play samples from the "lib/xtra/sound" folder to the
+   corresponding Angband-event. You can configure the available samples in
+   the "lib/xtra/sound/sound.cfg" file.  Multiple sounds per event are
+   supported.
+ - "Classic mode": If you want the old display, just start Angband with the 
+   '-mibm' option ('Angband.exe -mibm').

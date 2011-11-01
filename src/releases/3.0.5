@@ -1,0 +1,72 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][src]
+ - [Windows][win] and [extra Windows bits][winext]
+ - [DOS][dos] and [extra DOS bits][dosext]
+ - Mac [OS X][osx], [PPC][ppc] or [68k][68k]
+ - [RISC OS][ros]
+
+[src]:http://rephial.org/downloads/3.0/angband-3.0.5-src.tar.gz "Source tarball, 1.5M"
+[win]:http://rephial.org/downloads/3.0/angband-3.0.5-win.zip "Windows port, 1.2M zipfile"
+[winext]:http://rephial.org/downloads/3.0/extra-3.0.5-win.zip "Fonts, sounds, etc, 200k zipfile"
+[dos]:http://rephial.org/downloads/3.0/angband-3.0.5-dos.zip "DOS port, 1.3M zipfile"
+[dosext]:http://rephial.org/downloads/3.0/extra-3.0.5-dos.zip "Fonts, sounds, etc, 185k zipfile"
+[osx]:http://rephial.org/downloads/3.0/angband-3.0.5-mac-osx.dmg "Mac OS X port, 1.7M .dmg file"
+[68k]:http://rephial.org/downloads/3.0/angband-3.0.5-mac-68k.sit.bin "Mac 68k port, 1.1M .sit file"
+[ppc]:http://rephial.org/downloads/3.0/angband-3.0.5-mac-ppc.sit.bin "Mac PPC port, 1.6M .sit file"
+[ros]:http://rephial.org/downloads/3.0/angband-3.0.5-ros.zip "RISC OS port, 843k zip file"
+
+Background
+==========
+Version 3.0.5 was released on 23rd May 2004 by Robert R&uuml;hlmann.  This contained a number of bugfixes for the recently-released [3.0.4](http://rephial.org/release/3.0.4), but also made some adjustments to gameplay.  
+
+The most important of these were changing the Glyph of Warding back to its pre-3.0 behaviour of protecting from melee as well as ranged attacks, and making summoned monsters appear next to the summoner rather than the player, in an attempt to cut down on the use (or rather abuse) of specially-dug anti-summoner corridors to reduce the effectiveness of these monsters.  This change had been tested in some variants, most notably UnAngband, whose author Andrew Doull had first suggested the change almost ten years earlier in 1995.
+
+Changelist
+==========
+ - Summoned creatures appear near the caster now instead of near the
+   player.
+ - Made rods of detection invulnerable to electric attacks.
+ - Restored the old behavior of the Glyph of Warding to protect against
+   direct melee attacks when standing on it.
+ - Rods can no longer be drained by monsters.
+ - The minor vault "Interlock" had switched height and width definitions,
+   causing it to be created in a chaotic state. (Werner Baer)
+ - Spells that prompt the user for an item (identify, enchantment,
+   recharging) or an monster letter (banishment) no longer use mana if
+   canceled.
+ - The order of mage spells in the books in the non-Lua version is now
+   the same as in the Lua version.
+ - Give energy to monsters and the player at the end of the game turn
+   instead of at the start.  This prevents various odd effects when
+   loading a saved game. (reported by Phil)
+ - The activation descriptions for rings were missing with Lua scripting
+   turned off. (Jeff Greene)
+ - The SHATTER (earthquake) attack of monsters can cause the player to be
+   pushed into another position.  Processing of the remaining blows of
+   the monster should stop in that case. Otherwise the player could get
+    hit "through a wall" that was created by the earthquake. (Jeff Greene)
+ - Removed the autoroller delay.
+ - Cleaned up the paragraph handling in the object descriptions.
+   (Hallvard B Furuseth)
+ - "It cannot be harmed by acid and fire" should be "... acid *or* fire".
+   (Hallvard B Furuseth)
+ - Piles of wands, staves, and rods can be used from the ground without
+   picking them up first.
+ -  Fixed a problem in the Unix/Linux makefiles.  The POSIX standard
+    doesn't allow a dot instead of a colon as separator for the chown
+    parameters.
+ - Removed an accidental use of floating point code that prevented
+   Angband from running on old machines without an FPU.
+ - Removed unnecessary event handlers that negativly affected performance.
+ - The "pseudo graphics" used by the (n)curses version didn't support
+   terrain lightning correctly.
+ - The window resize control was sometimes overwritten with a black tile
+   in the OS X version.
+ -  Removed the warning message about missing preferences from the OS X
+    version.  The first thing a new player sees after starting Angband
+    shouldn't be a "scary" message.
+ - Added a Windows helpfile created by Jordan Hobbs.
+ - Added project files for building Angband with MS Visual C++ 7.1.
+   (Tasha Jessup)

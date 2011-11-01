@@ -1,0 +1,35 @@
+playtab = "class='selected'"
+<div id="downloads">
+
+<h2>Download</h2>
+
+<ul>
+<li class="version">3.3.2
+<li><a href="/downloads/3.3/angband-v3.3.2-win.zip" onclick="pageTracker._trackPageview(this.pathname);">Windows</a></li>
+<li><a href="/downloads/3.3/Angband-v3.3.2-osx.dmg" onclick="pageTracker._trackPageview(this.pathname);">Mac OS X</a></li>
+<li><a href="/downloads/3.3/angband-v3.3.2.tar.gz" onclick="pageTracker._trackPageview(this.pathname);">Source</a></li>
+
+</ul>
+
+</div>
+
+<div id="intro">
+<p><b>Angband</b> is a free, single-player dungeon exploration game
+where you take the role of an adventurer, exploring a deep dungeon,
+fighting monsters, and acquiring the best weaponry you can, in
+preparation for a final battle with Morgoth, the Lord of Darkness.</p>
+</div>
+
+<div id="therest">
+<p>Getting started with the game is easy. You can play with graphics or in original ASCII text (it's more fun than it sounds), and there is extensive in-game help. Pressing 'Enter' also brings up a list of commands you can choose from whilst you're getting started.</p>
+
+<p>Angband has an active community, split mostly between the <a href="http://angband.oook.cz/forum/">forums</a> and the <a href="http://angband.oook.cz/rgra.php">newsgroup</a>.  If you enjoy the game, you might want to take a look, as hints and tips are often shared, and those asking for advice are welcome.  <a href="/donate">Donations</a> towards server costs are also always welcome.</p>
+
+<p>After downloading the game, you may want to look at downloading <a href="http://www.dubtrain.com/angband">extra sound effects</a>, reading the <a href="http://www.juti.nl/hugo/Angband/Spoiler/">spoilers</a>, or reading the rather excellent <a href="http://angband.calamarain.net/">Angband Comic</a>.
+
+<p>If you want to help develop the game, then please read the
+Development page. We have a wiki here too, which is being used to track
+feature requests, help plan future versions, and is also where the new
+manual is being written.</p>
+
+</div>

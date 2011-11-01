@@ -1,0 +1,25 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][1]
+ - [Windows][2]  and [extra "console" executable][3]
+ - [Mac OS X][4], universal binary
+
+[1]:http://rephial.org/downloads/3.0/angband-3.0.9a-src.tar.gz "Source tarball, 2.8M"
+[2]:http://rephial.org/downloads/3.0/angband-3.0.9a-win.zip "Windows port, 1.5M zip file"
+[3]:http://rephial.org/downloads/3.0/angband-3.0.9a-con.zip "Windows console port, 559k zip file"
+[4]:http://rephial.org/downloads/3.0/angband-3.0.9a-osx.dmg "Max OS X port, 2.3M .dmg file"
+
+
+Background
+==========
+Version 3.0.9 was released on 27th February 2008 by Andrew Sidwell, and its main aim was to defuse a pointless argument on the newsgroup by changing shop UI behaviour.
+
+The change in question was to make buying in stores not be started by "Enter" but instead have it start only using the 'p' or 'g' keys.  Other changes included:
+ - A bugfix making monsters just as smart as they were in 3.0.8 -- a bug had crept in where they were less effective at seeking the player out.
+ - Autoconf support being made to work better
+ - inclusion of David Gervais' tiles for the first time with the source archive, since they had [recently][5] become available under the Creative Commons' "ShareALike" licence.
+
+This was also the first release of Angband to have a universal binary on the Mac OS X platform.
+
+[5]:http://angband.oook.cz/rgrd.php?showpost=119430 "Newsgroup posting announcing Gervais' tiles becoming Free"

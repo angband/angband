@@ -1,0 +1,131 @@
+markdown = "true"
+release_name = "PCAngband 1.4"
+release_code = "2.5.5b"
+Downloads
+=========
+ - [DOS executable version][1] (359k)
+ - [Source code][2] (573k)
+
+[1]: http://rephial.org/downloads/2.4/pcangband-1.4.zip
+[2]: http://rephial.org/downloads/2.4/pcangband-1.4-src.zip
+
+Background
+==========
+Version 1.4 of PCAngband was released on 7th March 1994 as the last of Charles Teague's series of releases based on his [Frog-knows](http://rephial.org/release/2.4.fk) port to the PC.  
+
+This was the first version to be released for the PC since development restarted on the UNIX version, and so there is some divergence between the two games.  This version includes some changes from the 2.5 series of releases, and a lot of the changes made in this version were reincorporated into the multi-platform Angband.  Many got into [version 2.6.0](http://rephial.org/release/2.6.0), others took longer (a version of the new stat system was implemented as "maximize mode" in [2.7.5](http://rephial.org/release/2.7.5)), and some may never have made it there at all.  
+
+There were no more releases of Angband directly based on this release, and Charles Teague vanished from the newsgroups, presumably having run out of time to devote to Angband.
+
+Changelist
+==========
+Features
+--------
+ * PC Angband uses my new speed system, making speed 4 (extremely
+   fast) only 1/3 faster than speed 3 (very fast).  Monsters do not
+   move "in sync" with each other, so 1/2 of a group of slow monsters
+   may move one round, and the other half the new round.  No random
+   factor was incorporated (too much complexity for too little gain),
+   so you can still "pillar" monsters if you are fast/patient enough.
+ * Maximum stats are now 18/100 +/- your race & class bonuses.  So
+   a hobbit mage cannot, even with a lot of potions, become as strong
+   as a half troll warrior.
+ * Also, the racial/professional stat bonuses have been adjusted...
+   see 'stats140.doc' for new values.
+ * Living characters are added into the high score list when they
+   are saved.  The score list is shown after you save, showing you
+   where you rank.
+ * At shallow depths, monsters which are out-of-depth will be only
+   slightly out-of-depth, preventing baby MHDs at 50'.  This gradually
+   fades away, until 600', where everything is back to normal.
+ * Throw-object code overhauled: 
+     1. Artifacts never vanish when thrown;
+     2. Throwing of objects not normally throw will ask for (y/n);
+     3. Many objects do not always vanish if they hit a monster.
+ * ESP will no longer wake monsters faster than normal.
+ * Artifacts sometimes resist disenchantment or acid damage (even
+   those w/o resist dis/acid).  However, they also sometimes resist
+   enchantment as well.
+ * Enchanting an item will no longer automatically remove any curses
+   on it.  In order to break a curse by enchanting the item, the
+   enchantment must succeed, the item must be at least +0, and then
+   you have a 25% chance.
+ * Celefarn -> Celegorm; Eldrakyn -> Eldrak; 'Hammerhand' -> of
+   Hammerhand; of Rohan -> of the Rohirrim; of the Eorlingas ->
+   of Eorlingas;
+ * Enhanced color has been added to magical spell effects.
+ * Priest spells Find Traps and Detect Doors/Stairs have been combined
+   into a single spell; a new spell, Spiritual Hammer, has been added.
+   It's a low level, low damage, bolt spell that does holy damage.
+ * Mage bolt spells (and their wand/rod/artifact equivalents) can
+   sometimes shoot a "beam" that strikes all monsters in its path.
+   For player-cast spells, the odds improve with high INT.
+ * Ancient dragons, and all unique dragons, DSMs, Dragon wands, some
+   artifact can now breathe/cast bigger blasts.  Also, Cloudkill,
+   Ice Storm, and Orb of Draining (at high levels) do bigger blasts.
+ * Nether bolt damage was far too little, because of a typo.  Fixed.
+ * When viewing the monster memory, the monster's name will be shown
+   in that monster's color (color-changing monsters' names will be
+   one of the possible colors for that monster).
+ * Also, monster memory code will now note monsters that give better
+   than normal treasure.
+ * Mystics' kick-attack, and Medusa's embrace-attack messages fixed.
+ * Some unique monsters (k,o,y,I,L,O,T,&) have a honor guard of lesser
+   monsters escorting them.
+ * Detect Enchantment is no longer useless.
+ * stone-to-mud on rubble can find an object, like digging can.
+ * Polymorph is no longer so insanely deadly.  The resulting monster
+   should be roughly on par with the polymorphed monster.
+ * The ESP code is now more sensible about what monsters are mindless
+   (and therefore not detected).  Also, some really dumb monsters
+   (insects, etc) are only detected intermittently.
+ * Ammo "of Slaying" is no longer less powerful than "of Wounding".
+   Slaying ammo is +2 "dice", Wounding is +1 "die".  Also, there is
+   a slim chance of any enchanted ammo having extra "dice".
+ * Ammo that is stolen/destroyed will be lost 1 at a time, rather
+   then the whole pile at once.
+ * Some (quite rare) "of Might" bows will have an extra multiple
+   of damage.
+ * Cursed items will not have their value ruined, so you can sell them
+   if you get rid of the minuses (probably not worth it, but...)
+ * The F)ile character command will include a listing of the objects
+   you have stored in your House.
+ * 'A'ctivate command will no longer cost you a move if you abort.
+ * The line-wrapping of messages has been enhanced to be able to
+   split a message, fitting part at the end of one line, and
+   continuing it on the next.
+ * When calculating how many swings you get with your weapon, the
+   code will no longer use a minimum weight of 5 pounds.  This makes
+   extremely light weapons like stilettos, other daggers, and whips
+   quite useful for low level characters.
+ * When using the 'g'et-key option, walking over an object will give
+   a description of what's on the floor beneath you.
+ * When your experience has been drained, you can still get 10% of
+   experience towards your max. experience.  It's still worthwhile to
+   have and use Restore Life Levels potions, but if you have none, you at least
+   get something for killing things.
+ * Whips are no longer just 'whips of fire'; they can be any of the
+   other weapon types as well.
+ * High level rods are no longer easier to use than high level staves/
+   wands (rods somewhat harder; wands/staves somewhat easier).
+ * As your character gains levels, his 'age' will increase, (adjusted
+   by race & class) so you don't have a 15 year old mage casting
+   Hellfire at Nightwalkers.  (Silly, yes, but so what?)
+ * New ability descriptions beyond "Superb": "Heroic" and "Legendary".
+ * The random code has been changed to use BSD's random number
+   generator (a Very Good R.N.G.) from CWS's Angband 2.5 code.
+ * In Wizard mode, it will ask you if you wish to die, like NetHack's
+   discover mode.
+ * "peek" mode is now only reachable by adding '-w -a' at the command
+   line, since it's unfair for non-wizard characters.
+
+Bugsfixes
+---------
+ * The code is no longer prejudiced against dark blue.  (It shows up
+   quite dark on my screen, so I had avoided it.  But I shouldn't
+   be letting my specific hardware affect code that I'm releasing to
+   the general public.)
+ * The annoying "HEY!..." message when a monster is in a wall has been
+   removed (this was an old debugging msg that I forgot to remove).
+ * Item letters in Pseudo ID/disenchantment are now correct.
+ * No more cursed "Godly Insights" prayer books.

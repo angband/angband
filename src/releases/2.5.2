@@ -1,0 +1,13 @@
+markdown = "true"
+Background
+==========
+2.5.2 was released on 20th December 1993, as part of Charles Swiger's quickfire 2.5 series of releases. This was another beta-testing release leading up to 2.5.3.
+
+Changelist
+==========
+ - Revamped inventory_carry, fixes book ordering for magic users (from PCAngband)
+ - Included code for BSD's random() function, which offers a much better RNG
+ - Fixed "killed by an arrow trap.." (doubled period) and "up staircase ." messages
+ - Went back and redid objdes() code to fix a whole bunch of punctuation errors, including inscriptions, monster/item interactions with spells, etc; the results should look better and probably work faster, too
+ - Genderized the whole game, including massive changes to recall.c.  It makes the  program a little larger, but the descriptions are incredibly more cool
+ - Resynchronized monsters.c with describe_mon.c, fixed some minor incongruities  as I came across them (such as immobile monsters 'being able to open doors')

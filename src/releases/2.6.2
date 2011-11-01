@@ -1,0 +1,159 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][1] (408k)
+ - [Library files][2] (51k)
+
+[1]: http://rephial.org/downloads/2.6/angband-2.6.2-src.tar.gz
+[2]: http://rephial.org/downloads/2.6/angband-2.6.2-lib.tar.gz
+
+Background
+==========
+The 2.6.2 release was made on 1st January 1995, in [rather rushed fashion][3] as Charles Swiger was moving and would no longer have internet access in order to keep up with bug reports, requests and make new releases.  Unlike the "disappearing maintainers" that came before and after him, he didn't stay away very long, and was back posting in the newsgroup rec.games.roguelike.angband  by June 1995, by which time Ben Harrison was firmly in place as the next maintainer.
+
+This release would have been intended as a beta-test for a stable 2.6.3 release,   had such a thing happened, and the combination of that, the rush to release because of other commitments and the large number of new features led to this being a rather buggy release.  Many of the changes (such as more stat damaging attacks, opening doors without giving directions) caused some disquiet, and without a maintainer around to defend the decisions, it's hard to tell whether this version would have been readily adopted.
+
+As it actually turned out, Ben Harrison was ready with the start of his code cleanup - announcing his [Angband 2.7.0](http://rephial.org/release/2.7.0) based off the previous Mac release of 2.6.1 a mere six days after this one.  Some of the more widely-accepted changes did make it into the 2.7.x series, but many were left here, quite possibly hardly tried at all.
+
+[3]:http://groups.google.co.uk/group/rec.games.roguelike.angband/browse_thread/thread/22c6300bae95ece3/81b557356c56cf4a?lnk=st&q=swiger+group%3Arec.games.roguelike.angband&rnum=1&hl=en#81b557356c56cf4a
+[4]:http://groups.google.co.uk/group/rec.games.roguelike.angband/browse_thread/thread/c61dbf1e56b0a672/d9bba35320422cdd?q=group%3Arec.games.roguelike.angband+harrison&lnk=ol&hl=en&
+
+Changelist
+==========
+Additions
+---------
+ - Autoroller now aborts after 10000 rounds if the game was compiled with
+   "NICE" defined.
+ - Show character's to-hit, to-dam, and AC stats when player is asked whether
+   or not to accept a character.
+ - Changed fear code so that immobile monsters won't run away. Also, monsters
+   won't run very far away (25 is the max. distance).
+ - The score command ('v') no longer costs a turn.
+ - Soulkeeper's and Gondor's activations now heal cuts.
+ - Poison resistance added to Bladeturner's activation.
+ - Stores no longer reset every time the town level is generated.
+   (This causes a little problem with empty stores for new characters
+   though.)
+ - Spellcasting without enough mana now has a 1/3 chance of permanently
+   reducing your constitution. (That is, a Potion of Restore Constitution
+   won't restore the lost stat. A potion of Constitution or Augmentation
+   will be needed to raise it again.)
+ - Floating point used to calculate bonuses on some weapons, armor,
+   rings, etc. This should make the bonus distribution smoother and
+   without jumps in bonuses between certain levels. (I was tempted to
+   put a Pentium joke here, but I won't.)
+ - Arunruth now has Resist Cold.
+ - Bows of Might & Accuracy and artifact bows made rarer.
+ - Cursed gloves of strength and dexterity now always have a negative bonus.
+ - Ring of Speed (+2) now costs three times as much as ROS (+1).
+ - New options: shuffling shop owners, disable bell ringing, prompt before
+   throwing. An option titled "Use new screen layout" has been added,
+   but it's never used by the program. (You apparently always get the new
+   screen layout, but that's OK since it's nice.)
+ - New screen layout: Display of player stats changed a bit. (Max mana shown, equippy chars
+   moved, etc.).
+ - Stat decrementing routine rewritten (more floating point!), so that stat
+   reductions will be a bit different.
+ - Players are now told if mana is lost because the wrong type of gloves is
+   being worn or their armor is too heavy. A little typo ("more more") got
+   introduced though.
+ - Wereworms are now evil. Most players probably already knew this. :-)
+ - A wall crunching, acid breathing worm called a "Dhole" was nearly added
+   to the game!
+ - Without immunity to acid or temporary acid resistance, corrosion can
+   do inventory damage and has a 1/4 chance of causing charisma loss.
+   Having temporary acid resistance reduces the chance of inventory
+   and charisma damage by 1/10. Permanent acid resistance provides no
+   protection against corrosion.
+ - Without any form of poison resistance, poison now has a 1/6 chance
+   of damaging a player's constitution.
+ - With no form of fire resistance, there is a chance of inventory
+   damage and a 1/5 chance of the player being weakened. If a player has
+   only permanent fire resistance, the chance of inventory damage and
+   weakening is reduced by 1/10. Immunity to fire and/or temporary fire
+   resistance provide complete protection from fire for equipment,
+   inventory, and strength.
+ - Damage from cold is similar to that of fire, except that there is a
+   chance of dexterity loss instead of weakening.
+ - Damage from lightning parallels that of cold damage.
+ - With no acid resistance of any form, acid can damage equipment and
+   inventory and WILL damage a player's charisma. Having permanent acid
+   resistance reduces the chance of charisma damage to 1/20. Immunity to
+   acid and/or temporary acid resistance provide complete protection
+   from acid for equipment, inventory, and charisma.
+ - The game won't ask for a direction when opening chests and doors,
+   closing doors, or disarming chests and traps if there's only 1
+   object in sight.
+ - Rangers' multiple bow shots are restored, but halved.
+ - '.' monsters can no longer be targeted.
+ - Praying without enough mana now has a 1/3 chance of permanently reducing
+   your constitution just as with mages.
+ - "Ordinary" magic books and prayer books can be destroyed by fire,
+   plasma, and meteors if they're on the dungeon floor. (They're still
+   safe from if they are being carried.)
+ - Some changes in the signal handler. WARNING: these changes don't work
+   well for me under Linux. Interrupting (^C), answering 'n' to the
+   suicide question, and then interrupting any time afterwards results
+   in the loss of my character.
+ - Cloned monsters now heal completely and have a 1/3 chanced of speeding up.
+ - No charge for aborting staffs of Genocide or Perceptions.
+ - If enabled by an option, store owners can change. (1/100 chance of this
+   happening every 1000 turns.)
+ - You can browse in stores with a space as well as 'b'.
+ - Mushrooms of Restoring are now 1/10 as likely to occur.
+ - All bows are no longer always excellent; Artifact bows are much harder to
+   generate [ desj@ccr-p.ida.org (David desJardins) dj]
+ - Multiple characters now work better
+ - Renamed 'worm mass' to 'worm' to match its plural nature
+ - Made header files idempotent, made all .c's include the global .h's, added
+   precompiled header support for NeXT (speed up my development)
+ - General Makefile cleanup and improvement
+ - Added support for SGI machines running IRIX
+ - Display max mana [ Martian <abigail@xs4all.nl>, Abby ]
+ - Added options for throw confirmation and disabling the bell [Abby]
+ - Updated docs for (HA), mentioned '~' and '|' keys
+ - Incorporated support for Amiga [cjmcgee1@unity.ncsu.edu (Christopher Mcgee)]
+ - added support for DEC OSF/1, fixed stricmp declaration [tl]
+ - Added some POSIX/BSDI compliance [pb]
+
+
+Bugfixes
+--------
+ - Fixed a bug which prevented the player from being interrupted from
+   resting or searching if a monster teleported the player to the
+   monster ("xxx commands you to return!"). The same bug fix prevents
+   a player from being disturbed if a monster tries to drain mana
+   from a player with no mana.
+ - Fixed the problem where a level feeling sometimes wouldn't be printed
+   after restoring from a save file. (The number of turns spent on the
+   current level was being reset after restoring.)
+ - The activation timeout on Eriril is no longer reset if the player aborts
+   the identify.
+ - A bug was fixed, and acid now causes loss of HPs.
+ - A bug was fixed, and spiked pits now cause a loss of HPs.
+ - The timeout on Rods of Perception won't be reset if the identify
+   is aborted.
+ - Rods of Healing will now cure all of blindness, poison, and confusion
+   instead of just curing one and then stopping.
+ - Door creation no longer destroys artifacts, stairs, or store doors.
+ - A couple of problems with disenchantment breath messages fixed.
+ - Fixed problem with blindness resistance not working with darkness breath.
+ - "imitates Bill Cosby in pain" message no longer used. (ahh...)
+ - Staffs of Curing fixed ala Rods of Curing
+ - It's now "impossible (at least, harder)" to make a profit from the store.
+ - Wands of Frost now shoot frost bolts instead of lightning bolts (oops). 
+ - Fixed typos with 'Quarterstraff', 'staisfy hunger', 'Beleg', monster gender
+ - Fixed bug when falling through a trap door into a spiked pit [jn]
+ - Fixed possible bug restoring flag values [Abby]
+ - Fixed bug initialize curses when printing out the usage message [jn]
+ - Fixed bug with cursed gloves [jn]
+ - Fixed bug relighting after darkness
+ - Fixed problems with compatibility with pure K&R C compilers
+ - Fix more problems with const declarations, prototyping, disenchantment
+   messages, blinding when RB, not lose mana when aborting genocide [rh]
+ - Added some bounds-checking for m_bonus() so that crazy items won't be
+   created at (excessive) levels in wizard mode
+ - Rangers again get multiple shots, but only a max of 3 per turn
+   (except that Crossbows now always only can produce one shot)
+ - Fixed a bug checking view after stone-to-mud [dbd]
+ - Incorporated dbd's new "running w/ wide-area light fixes"

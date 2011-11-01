@@ -1,0 +1,104 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][src]
+ - [Windows][win]
+ - [DOS][dos]
+ - Mac [PPC][ppc] or [68k][68k]
+ - [RISC OS][ros]
+ - [Amiga][ami]
+
+[src]:http://rephial.org/downloads/2.9/angband-2.9.2-src.tar.gz "Source tarball, 1M"
+[win]:http://rephial.org/downloads/2.9/angband-2.9.2-win.zip "Windows port, 880k zipfile"
+[dos]:http://rephial.org/downloads/2.9/angband-2.9.2-dos.zip "DOS port, 1.1M zip file"
+[68k]:http://rephial.org/downloads/2.9/angband-2.9.2-mac-68k.bin "Mac 68k port, 612k .sit file"
+[ppc]:http://rephial.org/downloads/2.9/angband-2.9.2-mac-ppc.bin "Mac PPC port, 609k .sit file"
+[ros]:http://rephial.org/downloads/2.9/angband-2.9.2-ros.zip "RISC OS port, 825k zip file"
+[ami]:http://rephial.org/downloads/2.9/angband-2.9.2-ami.lha "Amiga port, 540k lha file"
+
+Background
+===========
+Version 2.9.2 was released on 12th February 2001 by Robert R&uuml;hlmann.
+
+Changelist
+==========
+ - Fixed several security problems (buffer overflows, tempfile-races,
+   reading files that the player has no permission to read, and incorrect or
+   missing bounds-checking).
+ - Splitted the lib/user/ folder into lib/pref/ for the default "pref files"
+   that are distributed with the game, and lib/user/ (or ~/.angband/Angband/
+   on multi-user systems) for files created by the user.
+ - Added extra status information (stunned, asleep, ...) when looking at
+   monsters.
+ - Added context sensitive help to the options screen (press '?' to get info
+   about an option).
+ - Made the "hitpoint warning" message orange by default, so that it's
+   easier to spot.
+ -  Updated the helpfiles a bit.
+ - The names of the generated vaults are now displayed when the cheat_room
+   option is turned on.
+ - Added support for poison branded ego weapons (but no poison branded
+   weapons exist yet).
+ - The helpfile display now supports links to specific sections of a
+   helpfile.
+ - The helpfile display, knowlegde screen, and message history can now
+   use screens bigger than the default 80x24.
+ - The dungeon coordinates are now displayed when targetting in wizard mode.
+ - Improved error-checking for savefile loading and *_info.txt parsing.
+ - Intrinsic immunities of the player are now displayed in the character
+   sheet.
+ - The "known uniques" list displays the number of killed uniques.
+ - Fixed a bug that messed up the description of the "genocide" artifact
+   activation.
+ - The activation of Avavir works correctly now.
+ - The Bubbles vault no longer has inaccessible areas.
+ - Changed the description for experience drain attacks of monsters.
+ - The random character generation restricts the class to the "legal"
+   choices for the player's race.
+ - The "word of recall" artifact activation didn't check the ironman option.
+ - Exiting Angband explicitly frees all allocated memory now.
+ - Artifacts are now inscribed {indestructible} when the player tries to
+   destroy them and pseudo-id can improve this to {special} or {terrible}
+   later.
+ - Killing Morgoth will now create a down staircase.
+ - Increased the variable size for the weight carried by the player to
+   prevent problems with carrying huge amounts of stuff.
+ - The debug mode command to change the number of items does now properly
+   adjust the weight carried by the player.
+ - The game is now saved before printing the tombstone, not after.  That
+   makes cheating by killing the process a little bit harder.
+ - The input is now flushed before verifying casting prayers or spells
+   without enough mana to prevent accidential "overcasting".
+ - Fixed a bug that prevented redefining the keymaps of the number keys from
+   working correctly if the keymap contained another number.
+ - Fixed a bug that allowed the player to see the flavor of an item in a
+   store when examining it.
+ - Fixed a bug that sometimes didn't update the maximum player level
+   correctly.
+ - Made the 'Crown' vault a "Greater vault".
+ - Marked the 'randomize artifacts' options as "beta".
+ - Corrected the displayed duration for "essence of speed" and "globe of
+   invulnerability".
+ - Fixed a bug that could cause the initial offer required when haggling
+   to be wrong.
+ - Fixed a rare bug that could cause the game to lockup when resting in town
+   for a long time.
+ - Fixed the formatting of the object spoilers.
+ - Completely changed the window resizing behaviour in the Windows version.
+ - Added support to use Angband+APWBorg as a screensaver in Windows.
+ - Added support for the new version of the Cygwin compiler for Windows.
+ - Menu entries in the Windows version are now disabled in situations where
+   they don't make sense.
+ - Fixed a bug in the DOS version that caused midi-file playing to stop
+   after the first song.
+ - Updated the Amiga files.
+ -  Fixed a compile problem in the Mac version.
+ - The loading of bitmap files in the X11 version is no longer dependent on
+   the byte-order of the machine.
+ - Improved the speed of the gamma-correction code in the X11 version.
+ - Added autoconf support (beta) for Unix/Linux.
+ - Added a compile time option to prevent users from changing the path to
+   the Angband files.
+ - Added very basic support for GTK+.
+ - Exiting the curses version properly cleans up the term now.
+ - The X11/XAW version starts with only one window by default.

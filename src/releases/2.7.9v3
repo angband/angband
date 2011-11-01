@@ -1,0 +1,103 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][src]
+ - [DOS][dos]
+ - [RISC OS][ros]
+ - [Amiga][ami]
+
+[src]:http://rephial.org/downloads/2.7/angband-2.7.9v3-src.tar.gz "Source tarball, 835k"
+[dos]:http://rephial.org/downloads/2.7/angband-2.7.9v3-dos.zip "DOS port, 615k zip file"
+[ros]:http://rephial.org/downloads/2.7/angband-2.7.9v3-ros.arc "RISC OS port, 615k Arc file"
+[ami]:http://rephial.org/downloads/2.7/angband-2.7.9v3-ami.lha "Amiga port, 453k lha file."
+
+Background
+==========
+Version 2.7.9v3 was released on 24th January 1996 by Ben Harrison, and contained a host of internal cleanups as well as UI and gameplay changes.
+
+One notable UI change was the ability to use the "repeat count" command to specify things other than repeats for some commands.  To drop two things from inventory slot 'e' for instance, you could now type '02de'.  The main advantage of this change was that it allowed macros to be written that would work consistently on any number of items - '0k-y' destroying a pile of objects on the floor, for instance.
+
+Another change was that the damage dice of artifact weapons were all brought in line with the type of weapon they were based on so that, for instance, 'Aglarang' went from a damage roll of 6d8 to one of 8d4, because the Katana upon which it is based is 3d4.  The reasons for this were not explained at the time as it apparently went unremarked upon.  Perhaps it was to make artifacts less immediately obvious, perhaps to fit a notion of "consistency", or perhaps it was in preparation for some underlying change to how artifacts were generated which never happened.
+
+Changelist
+==========
+Features
+--------
+ - The "repeat count" is now used for various things, such as the "quantity"
+   of the "drop" or "destroy" command, if it is not being used for anything
+   else. 
+ - There is a new "recall most recent message" command ("ctrl-O"). 
+ - The "staff of darkness" now attempts to blind the player. 
+ - Aiming a wand of wonder on the ground at itself can no longer destroy the
+   wand, since this could have "messy" results. 
+ - The object distribution was cleaned up slightly. The artifact damage
+   sides were brought in line with the underlying object damage sides. 
+ - The player's total gold is now displayed in the Home. 
+ - The "Giant clear centipede" is now "clear". The "Giant purple worm" now
+   resists poison. The "Umber Hulk" is now a light umber "X" monster. The
+   "clear" monsters are now "white" in the recall window. 
+ - The "color scheme" of several monsters has been changed. See the new
+   "r_info.txt" file for more information. Most of the changes involve new
+   color schemes for "elemental" monsters (dragons, hounds, etc) and "people"
+   monsters (mages, warriors, etc). 
+ - The character description screen was cleaned up a bit, making room for
+   on-screen display of blows/round and shots/round. 
+ - The "options", "pref", and "macro" commands were made into full screen
+   commands starting at line two, and were cleaned up a lot. 
+ - A new command was added to directly specify a "user pref command", as if
+   it came from a "user pref file". 
+ - The glyph of protection now uses the "semi-colon" symbol. 
+ - Several terrain features got new colors, and the special lighting effects
+   now only affect floor grids. The result is much faster, and still rather
+   interesting to watch. 
+ - Several uses of the "saving throw" now have better "semantics" and/or
+   "messages". 
+ - Several messages about traps now include the name of the trap. 
+ - The "main-x11.c" and "main-xaw.c" files now support the "mirror" window,
+   and correctly handle the "TERM_XTRA_CLEAR" command. 
+ - A pre-compiled version using "main-ibm.c" for DOS-286 is now available. 
+
+Bugfixes and maintenance
+------------------------
+ - One of the shop-keepers had an incorrect tolerance of zero. 
+ - The "main-ibm.c" file had to be rewritten several more times. It now
+   handles all known environments correctly. It was given a new default color
+   scheme, and a method to allow the user to choose among several pre-defined
+   color sets. The keypress code was cleaned up once and for all, and the
+   "main-win.c" file was changed to use the same macro triggers, and a new
+   "pref-ibm.prf" file was created using the new triggers. 
+ - Some minor bugs in "main-cap.c" and "main-gcu.c" were fixed. 
+ - The "show reduced map" command was optimized a lot. 
+ - The "notice_stuff()" function was broken up into several generic
+   "set_xxx()" functions, to handle "changes" in various "properties" of the
+   player, such as "blindness" or "paralysis". This now only made the game
+   faster, but also provided better "world semantics", and fixed some "bugs"
+   involving "blindness", "see invisible", etc. 
+ - Importing pre-2.7.9 no longer causes "Calris" to become re-cursed, as
+   long as the "uncursed" inscription is still present. 
+ - When an object is picked up (or a trap is disarmed) in a dark hallway or
+   room, a "marked" floor grid is no longer left behind. 
+ - The "note_spot()" function is now called when an object is dropped into a
+   grid (by the player or monsters). Also, neither "note_spot()" nor
+   "lite_spot()" are called during dungeon level generation. 
+ - Objects and terrain features now have separate "memorized" flags to
+   prevent visual glitches when memorized objects are picked up by the player
+   or by monsters. This had the side effect that "detected" dungeon objects
+   converted from pre-2.7.9v3 savefiles will lose their "detection" status,
+   leaving behind a "known" floor grid. 
+ - The "earthquake" spell now correctly creates "wall" grids. 
+ - The "monster health bar" is now updated after a monster casts a "heal"
+   spell on itself, drains mana/charges to heal self, or is hit by a "heal
+   monster" attack. 
+ - The "get_item()" function no longer has any visual glitches. 
+ - The "get_spell()" function now correctly uses the "mirror" window. 
+ - A nice generic quick-sort function now allows all of the sorting to be
+   done by one optimized function, and allows many more things to be sorted at
+   low cost. 
+ - The Borg was given a few patches, and was optimized some more. Also, it
+   was taught to consider all possible equipment combinations, and to use the
+   home to "stockpile" certain items. 
+ - Some patches for EM/ESA and Amiga and DOS-286 were added. 
+ - More optimizations were performed (visual display of the map grids, full
+   screen map, running, the Borg, the player command loop, message
+   memorization, update monster). 

@@ -1,0 +1,61 @@
+markdown = "true"
+Background
+==========
+2.6.0 was a testing version released on 4th September 1994, incorporating a large number of bugfixes and improvements, and merging in those changes that were considered to have worked well in PCAngband.  This was the last large incorporation of ideas from PCAngband - from this point until the variant explosion, development of the game happened in one place.
+
+Changelist
+==========
+ - Monster recall indicates good / special treasures
+ - Adjusted the stores so that some shopkeepers have a higher amount of gold available, and the Black Market makes much more reasonable offers
+ - Monsters now usually wake up when their rooms get lit...
+ - Non-wizards can only check artifacts if on town level
+ - Added 'satisfy hunger' option (instead of 'create food')
+ - Adjusted magical bonuses a little more
+ - Roughly doubled demon ('&') hitpoints to make them more reasonable
+ - Stairs on town level now are always lit
+ - Incorporated patches for OS/2 support [pb]
+ - Added support for {Free,Net}BSD [pb]
+ - Radical save-file cleanup, including: fixing invis. monster, saving old_turn, saving monster max hp and fear, saving player fear, additional space for flags
+ - Fixed a minor bug in monster recall displays
+ - Fixed some minor problems in the scorefile routines [js <surge@dilbert.cqs.washington.edu>]
+ - Cleaned up the code here and there
+ - Fixed a bug generating treasure in vaults that resulted in slightly worse treasure then intended [hmj <HMJ@IPG.PH.KCL.AC.UK>]
+ - Fixed a few other monster problems
+ - Fixed a bug displaying inventory when you weren't carrying anything
+ - Cleaned up how the scores are displayed some
+ - Fixed a minor glich with the recall code (single spaces at the start of a line)
+ - Fixed a bug always generating "cloak [1,0]"
+ - Fixed bugs with SECURE functioning under the Andrew File System
+ - Fixed a bug with stat_type being trashed with prt_stat() and cnv_stat()
+ - Fixed a bug with multiple missile weapons' damage bonus accumulating [randy@PICARD.TAMU.EDU (Randy Hutson)]
+ - Fixed some minor problems with heavy weapons and BLESSED_BLADES [dbd]
+ - Undid new lighting to avoid dbd's wrath :-)
+ - Fix bug with '|' (see uniques) command  [ken wigle@niktow.canisius.edu (kw)]
+ - Fixed running with wide-area light bug (very cool!)
+ - Fixed bugs with spellbooks [kw]
+ - Fixed messaging punctuation
+ - Fixed _major_ bug with line_spell() overwriting the stack (!)
+ - Creeping 'xxx' coin monsters always generate 'xxx' treasure
+ - Opening a chest will no longer generate chests in the treasure drop
+ 
+From  PCAngband 1.40
+--------------------
+ - Incorporated new attacks/round table
+ - Fixed nether bolt damage
+ - Creatures that multiply don't do so if only seen via telepathy
+ - Speed now burns up food less rapidly, since speed is less powerful
+ - Cuts now behave better with odd constitution adjustments
+ - Fixed clearing commands from get_com via Escape
+ - Artifacts now don't waste a turn when Escaping from using them
+ - Cubragol's fiery enchantment now seeks out unenchanted bolts rather then simply failing if the first bolt listed is enchanted
+ - ...also, C's bolts now resist fire
+ - Totila now really does confuse monsters
+ - Using spikes now decreases one's encumbrance
+ - Cleaned up the dungeon generation code some more
+ - Fixed 'buried in rock' bug with escorts in vaults
+ - Incorporated new bow & missile ammo code
+ - New lighting (again :-)
+ - Wizards have the option to cheat death
+ - Players still gain a little experience even after life draining
+ - Tunneling (stone to mud) will sometimes produce an object under rubble
+ - Better object throwing code (many items won't disappear)

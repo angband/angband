@@ -1,0 +1,6 @@
+<div id="wikinav"><div class="highlight_box"> Navigation:<br /><a href="http://rephial.org/wiki/Home">Home</a><br /><a href="http://rephial.org/wiki/IndexPage">IndexPage</a><br /></div><div class="highlight_box"> This page:<br /><a href="http://rephial.org/wiki/xref/FeatureRequests">Links to here</a><br />Last modified:<br />2009-02-20 at 13:55<br /></div></div>
+
+<div id="wikihead"><h2>FeatureRequests</h2></div>
+
+<div id="wikicontent"><div class="page"><h5 id="s3_1">Context sensitive help for inventory/equipment lists</h5><p>See <a class="extlink" href="http://angband.oook.cz/forum/showthread.php?t=1529">Oook thread</a> for more detail.<h5 id="s3_2">Remove &#39;You may not do that now&#39; warnings where possible</h5><p>The Windows &#39;x&#39; (close window) icon and the File -&gt; Exit menu option are disabled whenever an action is in progress (e.g. inventory being shown). It would be more consistent to instead show a &quot;Do you really want to exit Angband?&quot; prompt. Clicking &#39;Yes&#39; should cancel out action(s) in progress until the game can save+exit (or quit+exit).<p>Similarly File -&gt; New and File -&gt; Open are usually disabled. File -&gt; New could (after warning) act as &#39;save+new character&#39; and File -&gt; Open as &#39;save+load character&#39;.</div></div>
+

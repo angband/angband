@@ -1,0 +1,76 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][1]
+ - [Windows][2]  and [extra "console" executable][3]
+ - [Mac OS X][5]
+ - [RISC OS][6] 
+
+[1]:http://rephial.org/downloads/3.0/angband-3.0.9-src.tar.gz "Source tarball, 2.3M"
+[2]:http://rephial.org/downloads/3.0/angband-3.0.9-win.zip "Windows port, 1M zip file"
+[3]:http://rephial.org/downloads/3.0/angband-3.0.9-con.zip "Console executable for the Windows port, 295k zip file"
+[5]:http://rephial.org/downloads/3.0/angband-3.0.9-osx.dmg "Max OS X port, 1.5M .dmg file"
+[6]:http://rephial.org/downloads/3.0/angband-3.0.9-ros.zip "RISC OS port, 695k zip file"
+
+Background
+==========
+Version 3.0.9 was released on 28th July 2007 by Andrew Sidwell, with the aim of fixing the (many) bugs that creeped into the 3.0.8 release earlier in the month. The definition of a bug was reasonably loose, as the deficiencies of the squelch interface were considered enough to introduce a new option determining whether worthless items get automatically squelched, and a new command 'K' to mark "items similar to this" to be squelched.
+
+Changelist
+==========
+
+ * Add 'K' command to "mark item kind as squelch".
+ * Add squelch_worthless option; does what it says on the tin.
+ * Fix use of an uninitialised variable.  (ctate)
+ * Restore the "jump into trap and don't autopickup" command.  It doesn't "flip pickup" in the same way the old command did.
+ * Always cast to (unsigned char) for the islower(), isdigit(), etc functions
+ * Make graphics for flavoured items work properly in the object browser.
+ * Fix command menu display in bigtile menu via something of a hack.
+ * Display full monster picture in monster list in bigtile mode.
+ * Fix obviously wrong code in main-gcu. (William McBrine)
+ * Make disturb_panel work again (this is a 3.0.6 bug).
+ * Add _GNU_SOURCE define to silence setresgid() errors. 
+ * Give items that provide light descriptions in obj-info.c.
+ * Describe the NO_FUEL flag.
+ * Fix behaviour of the LITE flag.
+ * Collect Banishment effects into one big lump sum.  Death now comes quickly.
+ * Use better spell and object descriptions.  (Hugo Kornelis)
+ * Added <click> or 'g' to some prompts where they are now acceptable inputs.
+ * Fix acid damage of objects to make it a chance rather than a certainty.
+ * Don't count hidden squelchable objects when deciding where to place things in monster drops (or whatever).  This should stop drops from killing a monster appearing miles away from that monster with nothing appearing in between.
+ * Make 'Glyph of Warding' 'shove' items out of the way when created on a spot.
+ * Fix bug in removal of autoinscriptions
+ * "!d" stops squelch auto-dropping things, and "!k" marks an object not to be squelched.
+ * (Windows) Open windows in reverse order so the Term 5 is behind Term 4 is behind Term 3 and so on.
+ * (GTK) Remember user preferences.
+ * Miscellaneous small things reported by Hugo Kornelis. (for more info, see http://dev.rephial.org/trac/ticket/252)
+ * Rewrite description of birth_no_preserve to make it even less ambiguous.
+ * Allow use of objects from the floor when blind.
+ * Reset text indent after squelch help.  This means monster recall no longer gets 1-char indents from the side of the screen.
+ * (Linux only) Always enter stores when moving onto them.
+ * Only mark things as squelchable if we know the 'flavour' through ID or whatever.
+ * Fixed object detection behaviour w.r.t the hide_squelchable option.
+ * Add 'link' to the high score table from knowledge menu.
+ * Mark starting equipment as 'everseen' for squelching & object knowledge purposes.
+ * Add missing entries in the monster knowledge list.
+ * Tidied up the knowledge screens, so that recalled text is always at the top of the screen, and stop giving artifact spoilers.
+ * Report the right number of items in your inventory after a store transaction.
+ * Stop superfluous '-more-'s in the shops.
+ * Avoid possible out-of-bounds array access if you're clev50 when when entering the store.
+ * Rearrange object knowledge menu, so flavoured items come first.
+ * Make EAT_LITE monsters eat light again.
+ * Show resist blindness properly in self knowledge displays.
+ * Let 'h' work in stores with the roguelike keyset.
+ * Removed the x11 "keycode translations" (i.e. rewriting "^_]3244" type sequences to "\[PgUp]" type sequences)  for '-' and '=' from the pref files to prevent x11's automatic macros from breaking those keys.  This was most often manifested when trying to use items on the floor.
+ * Fixed bug in "Interact with macros" menu where the echoing of macros as you typed them would be messed up if any "keycode translations" took place.
+
+Autoconf
+--------
+Please use gmake on BSDs.  It should work OK.
+
+ * Install all files properly.
+ * Expand DEFAULT_PATH correctly.
+ * Remember to include X11 paths.
+ * Chown the angband executable when appropriate.
+ * Fix SDL sound support.
+ * Fix the "cannot find .depend" error.

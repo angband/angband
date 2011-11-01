@@ -1,0 +1,140 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][src]
+ - [Windows][win] and [extra Windows bits][winext]
+ - [DOS][dos] and [extra DOS bits][dosext]
+ - Mac [OS X][osx], [PPC][ppc] or [68k][68k], and [extra Mac bits][macext]
+ - [RISC OS][ros]
+ - [Amiga][ami]
+
+[src]:http://rephial.org/downloads/3.0/angband-3.0.0-src.tar.gz "Source tarball, 1.3M"
+[win]:http://rephial.org/downloads/3.0/angband-3.0.0-win.zip "Windows port, 934k zipfile"
+[winext]:http://rephial.org/downloads/3.0/extra-3.0.0-win.zip "Fonts, sounds, etc. for the Windows port. 218k zip file"
+[dos]:http://rephial.org/downloads/3.0/angband-3.0.0-dos.zip "DOS port, 1.1M zip file"
+[dosext]:http://rephial.org/downloads/3.0/extra-3.0.0-dos.zip "Fonts, sounds, etc. for the DOS port. 202k zip file"
+[osx]:http://rephial.org/downloads/3.0/angband-3.0.0-mac-osx.sit.bin "Mac OS X port, 973k .sit file"
+[68k]:http://rephial.org/downloads/3.0/angband-3.0.0-mac-68k.sit.bin "Mac 68k port, 988k .sit file"
+[ppc]:http://rephial.org/downloads/3.0/angband-3.0.0-mac-ppc.sit.bin "Mac PPC build, 973k .sit file"
+[macext]:http://rephial.org/downloads/3.0/extra-3.0.0-mac.sit.bin "Extra Mac bits, 507k .sit file"
+[ros]:http://rephial.org/downloads/3.0/angband-3.0.0-ros.zip "RISC OS port, 794k zip file"
+[ami]:http://rephial.org/downloads/3.0/angband-3.0.0-ami.lha "Amiga port, 730k lha file"
+
+Background
+==========
+Version 3.0.0 was released on 30th May 2002 by Robert R&uuml;hlmann, as the culmination of a series of alpha releases (2.9.4 - 2.9.7) that were designed to make sure that such a numerically significant release was as stable and playable as the number suggested. For completeness, I have listed the release dates of the alpha version below, as they were all ported to the various current platforms, unlike say, 2.8.5's beta version.
+
+ - 2.9.4 - 8th November 2001
+ - 2.9.5 - 23rd November 2001
+ - 2.9.6 - 9th December 2001
+ - 2.9.7 - 16th March 2002
+
+These releases contained nothing that wasn't in 3.0.0, they were mostly just to ensure that the game was balanced properly after the info file "patch" by Jonathan Ellis (JLE) and the spell lists from GWAngband were incorporated into the game, and to give a chance for new features such as the use of Lua scripting to be tested across the various platforms Angband caters for.
+
+The JLE patch is one of the biggest changes to happen to the game in Robert's time as maintainer, as it made additions to objects, artifacts and more, and tweaked rarities and abilities to attempt to rebalance the game.  This is an aim most players agreed on, though these particular changes were not universally welcomed.
+
+The spell list overhaul based on Greg Wooledge's work in GWAngband had similar aims.  Mages in particular had far more range and depth in defensive spells than attacking ones, and the altered spell lists aimed to readjust this so that they could be a distinct non-melee-based choice.  As such, Globe of Invulnerability was removed as it promoted mages engaging in hand-to-hand combat (albeit massively aided by the spell) rather than magic-based attacks, and replaced with a mage equivalent to the Priest's Glyph of Warding, Run of Protection.
+
+Lua scripting, already used in Kamband and [ToME](http://www.t-o-m-e.net/), was introduced to Angband in an attempt to make the game easier to modify and promote the easy generation of new variants in the same manner as the edit files had done previously.  This was really just a preliminary implementation of the idea, and it never really showed its potential as it was just used to duplicate the present C code.  As such, it effectively just complicated compiling or altering the game, despite its good intentions.  It would eventually be removed with [version 3.0.8](http://rephial.org/3.0.8) and was not incorporated from here into any variants, even those that used other code improvements from the 3.0 series of releases.  It may yet return, though it would be unlikely to be in the same form.
+
+As well as all these very visible changes, a great deal of work had been done to make the code more secure and reliable, as well as the general improvements and cleanups that were by this time the staple part of an Angband release.
+
+Changelist
+==========
+ - Added Jonathan Ellis' JLE patch that adds a new player race
+   ("Kobold"), many new artifacts, vaults, monsters, objects, and
+   ego-items; rebalances the gameplay; and adds a new color scheme for
+   monsters.
+ - Added some new object flags ("kill demon", "kill undead"),
+   activations, monster attacks ("cause hallucination") and monster
+   spells/abilities (summon animal, throw boulder) for the JLE patch.
+ - Replaced the Mage, Rogue, and Ranger spell-lists with the spell-list
+   from Greg Wooledge's GWAngband. This gives magic-users a much broader
+   range of attack-spells to choose from including chaos, nether, sound,
+   shards, and gravity effects.  Other big changes are the removal of
+   the 'Globe of Invulnerability' and the addition of 'Rune of
+   Protection'.
+ - *WARNING:*  All spells known by magic-users are discarded
+   when importing an old savefile, so that the player can choose freely
+   from the new spell-list.  Don't forget to relearn your spells before
+   trying to use them.  Macros / keymaps with old spells probably won't
+   work anymore - change them if necessary.
+ - Standing on a glyph no longer protects the player from melee
+   attacks.
+ - Increased the range of infravision granted by potions of
+   infravision to +5.
+ - Increased the damage of many wands and rods.
+ - The player can now reset the recall depth when recalling from a
+   level above the deepest reached level.
+ - Adjusted the damage caps for various breath attacks. (JLE)
+ - Made the light radius cumulative.
+ - Added the [Lua scripting language](http://www.lua.org/) for easier
+   customization.  Currently the scripts handle the effects of using
+   objects such as staves, wands, rods, potions, scrolls, food, and
+   activatable objects.  The player-spells are also defined in a script.
+ - Added support for object descriptions that are displayed when
+   examining objects.
+ - Moved the item flavors into an external file and added *.prf files
+   for the flavors.
+ - Added message compression ("You tunnel into the granite wall. <5x>").
+ - Added a display of the player's current equipment aka "equippy chars"
+   to the main screen.
+ - Various prompts at player birth use 'Enter' instead of 'ESC' now.
+ - Added a no-item-stacking-on-floor birth-option.
+ - Improved the layout of the store prompts a bit.
+ - Added basic support for a bigger main window (bigscreen). Note that
+   the town will be regenerated when loading an old savefile, so don't
+   leave any objects on the floor when you upgrade your savefile!
+ - Added support for a hitpoint-warning sound effect.
+ - You can now browse books in the stores.
+ - Reorganized and cleaned up the list of options.
+ - The known uniques list is now separated into two columns to make it
+   easier to read. One column for the names and one for the
+   "is dead/alive" text.
+ - Allowed examining multiple items without having to return to the
+   tombstone screen.
+ - Added an option to review messages to the tombstone screen.
+ - Changed the keys to view high scores from 't' to 'v' and allowed
+   upper case for each of the options in the tombstone screen.
+ - Added color to the monster recall.
+ - Allowed using the roguelike keyset to navigate in the options screen.
+ - Savefiles from pre-2.9.0 versions are no longer accepted.
+ - Replaced the old (Acorn) RISC OS code with a newer version.
+ - Added new VisualC++ 6.0 project files provided by Peter Rowe.
+ - The default number of windows for the GTK port is now 1 instead of 8.
+ - Fixed a crash-bug on WinXP machines when reading the filenames of
+   sounds. (Werner Baer)
+ - Executables build with configure under Cygwin no longer require the
+   Cygwin DLL.
+ - Added the latest Amiga code (Bablos).
+ - Fixed a possible crash when searching disarmed chests for traps.
+ - Monsters draining large stacks of wands or staffs could get negative
+   hitpoints due to the overflow of a signed 16 bit variable.
+ - Fixed the problems with the 'repeat command' command.
+ - Bounds-checking for detection spells and some wizard mode commands
+   was missing.  That could cause crashs when resizing the Terms.
+ - 'Interact with visuals' could display negative char numbers.
+ - Don't partially repair blasted equipment when loading the savefile.
+ - Fixed a bug that caused an infinite loop in the RNG when the u32b
+   type has more than 32 bits.
+ - The confirmation for wizard mode was required every time wizard mode
+   was switched on.
+ - Vaults could sometimes have up to 9 times the requested number of
+   monsters.
+
+Improvements by Hallvard B Furuseth
+-----------------------------------
+ - Running 'angband --help' will now display basic usage info.
+ - Problems with the lib/ folder were not correctly reported when using
+   the (n)curses interface.
+ - Fixed a minor problem with curses on machines with signed-chars.
+ - Fixed a possible integer overflow in the gamma correction code on
+   16 bit machines.
+ - Various bugfixes and improvements in the SLang, XAW, VME, VCS, GCU,
+   XPJ, Acorn, and GTK frontends.
+ - Several changes to the autoconf support like better handling of
+   "--with-libpath=<path>", better detection of the Athena Widget set,
+   compiling GTK versions with "--enable-gtk", and the result of the
+   usleep() detection is now actually used.
+ - Fixed a compatibility problem with 64 bit machines.
+ - Corrected two wrong option names in the help files.

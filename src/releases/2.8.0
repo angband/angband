@@ -1,0 +1,131 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][src]
+ - [Windows][win]
+ - [DOS][dos]
+ - Mac [PPC][ppc] or [68k][68k]
+ - [OS/2][os2]
+
+[src]:http://rephial.org/downloads/2.8/angband-2.8.0-src.tar.gz "Source tarball, 773k"
+[win]:http://rephial.org/downloads/2.8/angband-2.8.0-win.zip "Windows port, 712k zipfile"
+[dos]:http://rephial.org/downloads/2.8/angband-2.8.0-dos.zip "DOS port, 594k zipfile"
+[68k]:http://rephial.org/downloads/2.8/angband-2.8.0-mac.sit.bin.gz "Mac 68k port, 357k .sit.gz file"
+[ppc]:http://rephial.org/downloads/2.8/angband-2.8.0-ppc.sit.bin.gz "Mac PPC port, 442k .sit.gz file"
+[os2]:http://rephial.org/downloads/2.8/angband-2.8.0-os2.zip "OS/2 port, 503k zip file"
+
+Background
+==========
+Version 2.8.0 was released on 12th October 1996 by Ben Harrison.
+
+One of the major changes Ben had planned for 2.8.0 was changing the savefile code so as to allow for different (and more) information to be stored in savefiles. At some point, he realised that these changes would not in fact be consistent with his second aim for 2.8.0 - a stable release because of the nice round number.  In the interests of fixing some bugs that required the new savefile code he went ahead and moved to 2.8.0 sooner rather than later, declaring that "2.8.1 will have to be a stable version of 2.8.0".  
+
+The most important of these changes was that the random number generator (RNG) state would now be stored in the savefile which would prevent some well-known forms of savefile abuse (or save-scumming), though unfortunately also open up some new ones.  It also opened up the possibility of rearranging and making space for new monsters, and reintroducing player ghosts (though of course this one didn't actually happen), amongst others.
+
+Changelist
+==========
+ - Use "Rand_div()" instead of the faster but less random "Rand_mod()", and
+   save the RNG state in the savefile. 
+ - New methods are needed for loading/saving savefiles with the new terrain
+   feature flags, and to save normal options and window options so that future
+   option changes will not cause trouble. 
+ - Messages are now memorized as complete strings. The message recall window
+   shows one message per line, using the '4' and '6' keys to "slide" the
+   viewing area left and right to view long messages. 
+ - The "look" command now starts on the player. 
+ - Monsters are now healed when they drain charges from the pack. 
+ - The "options" interface was cleaned up somewhat. 
+ - The "z-term.c" function was optimized and verified some more. 
+ - Object destruction now uses correct pluralization rules. 
+ - The "overhead map window" is redrawn whenever the player moves. 
+ - Stupid monsters now rarely wake up when illuminated. 
+ - Pack combination now performs its own "reorganization", avoiding bizarre
+   "rearrangement" messages. 
+ - There is a new function to combine "paths" with "files", which allows the
+   use of "absolute filenames" and "tilde filenames" in certain situations,
+   such as the "character dump". 
+ - Using a "count" with the "destroy" command will bypass "verification"
+   unless the "other_query_flag" option is set. 
+ - The "wield" and "takeoff" commands now use the "w" and "t" keys (like the
+   original keyset) for the underlying commands, and the "[" and "]" keys are
+   now unused. The "_" key can now be used to enter a store, and walking onto
+   a store generates this "keypress". The "ctrl-e" command was replaced by the
+   "ctrl-i" (tab) command, to "flip" any "windows" displaying the equipment or
+   inventory. 
+ - There are some new "sub-window flags" which induce various new displays
+   in sub-windows, including "recall old messages" and "display complete spell
+   list". 
+ - The various "windows" are now handled in a more generic manner, using a
+   set of 8 pointers to "term" structures, and, for each, a set of "usage"
+   flags, accessable via a new "options" screen, which, in combination with
+   the new "p_ptr->window" field, allows the game to determine what should be
+   displayed in each window. 
+ - All of the source files were "indented" and cleaned up a bit. 
+ - The "main-mac.c" file was cleaned up quite a bit, and, among other
+   things, now allows "monster recall" to "wrap" at the window edges. 
+ - The "resurrection" code now works, and "cheating death" now marks your
+   social class as zero (and counts deaths in your age), as well as marking
+   your savefile as having cheated death, which disables placement on the
+   high-score list. 
+ - There is now a generalized "c_roff()" command, which provides colored,
+   word-wrapping, multi-line output, and which is now used for the monster
+   recall code, which may thus be "colored" at some point. 
+ - An object inscription of the form "^x" will induce verification of the
+   command "x" while the object is being worn. Inscribing "^;" on a shovel
+   will thus prevent attacking (or walking) with the shovel, while inscribing
+   "^+" on your weapon will prevent digging with it. 
+ - Several options were added, removed, modified, combined, etc, and the
+   "option.txt" helpfile was updated accordingly, so read it. 
+ - New options allow the "look" command to see everything on the current
+   panel, and for the "list" commands to "wrap" at the edges of the list, and
+   for new "special lighting effects", and for new "optimizations" of various
+   things, and for new "disturbance" criteria, etc. 
+ - The "map_info()" function was optimized, and the "special lighting
+   effects" were completely rewritten. 
+ - Shop-keeper rotation is no longer optional, and is four times as common
+   as before. Buying the last item from a shop now induces a possible
+   shop-keeper rotation, plus the creation of new stock. 
+ - The "feature types" can now take an index of another feature type which
+   they should "mimic", allowing the generic "conversion" of secret doors into
+   walls, all locked/jammed doors into closed doors, all walls into the same
+   wall, and hidden treasure into normal veins. Floors and invisible traps
+   often bypass this field for efficiency. 
+ - The general store now buys and sells basic ammunition. 
+ - New object/monster allocation table routines have been written, which
+   optimize various things, including the generation of pits and nests, and
+   the summon/escort code. Monster nests now contain up to 64 different types
+   of monsters. 
+ - Thrown objects (and fired missiles) now rarely "disappear" unless they
+   are thrown at a monster (intentionally or accidentally), or if they attempt
+   to land in a crowded area. 
+ - The "inkey()" code was cleaned up somewhat. The "default action" code in
+   the X11 keypress code needs to be tested. 
+ - The hard-coded "feature" codes were replaced with constants, plus a few
+   hard-coded "offsets" from the "shop" / "trap" / "door" constants. 
+ - Several fields and variables and such were renamed, primarily to migrate
+   from "inven_type *i_ptr" to "object_type *o_ptr", and from "fdat" and
+   "ftyp" to "info" and "feat" for cave grids. 
+ - The "delay()" function has been migrated into another "Term_xtra()" hook,
+   using the "TERM_XTRA_DELAY" action. All standard "main-xxx.c" files were
+   changed to use the new method. The "delay_factor" is now "cubed" when used
+   to give a better "range" of delay values, ranging from a single millisecond
+   to almost a full second. 
+ - Chests are now quite a bit "better" than they used to be. 
+ - The windows no longer continuously "shrink" in the Windows version, the
+   pixmaps are not "garbled", and double-clicking savefiles works. 
+ - Ancient "Archimedes Angband 1.2" savefiles can now be parsed. 
+ - Dungeon generation now uses "stack" memory instead of heap memory, since
+   the Windows version appeared to be fragmenting memory for no apparent reason. 
+ - Artifacts are no longer lost due to "aborted" level generation.
+ - The "showing" ('=') action (which displays matching lines in yellow), and
+   the "finding" ('/') action (which changes the current line), are now
+   available in the online help, listing uniques/artifacts, and the message
+   recall, and both actions remember "previous" settings. 
+ - Starting a new character should reset the "cheat" options. 
+ - The "main-gcu.c" file needs to play games with "bool" to prevent
+   conflicts with various versions of "curses". 
+ - The "polymorph" code was slightly broken. 
+ - Certain versions (DOS, Windows, etc, but not Unix or Macintosh) require
+   the "O_BINARY" flag in the "fd_make()" and "fd_open()" routines in "util.c"
+   or the "lib/data/*.raw" files get broken. Some compilers do not support the
+   "O_CREAT" flag. (?) 

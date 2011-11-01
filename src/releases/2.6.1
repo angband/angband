@@ -1,0 +1,40 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][1] (398k)
+ - [Library files][2] (51k)
+
+[1]: http://rephial.org/downloads/2.6/angband-2.6.1-src.tar.gz
+[2]: http://rephial.org/downloads/2.6/angband-2.6.1-lib.tar.gz
+
+Background
+==========
+2.6.1 was a "stable" release made on 18th September 1994. The game was now playable on a huge range of UNIX platforms and was ported to others including the Mac, and it was from the Mac port of this version that Ben Harrison was to launch his assault on the game's internal structures when he took over as maintainer (and, indeed, before).
+
+Changelist
+==========
+ - Added monster fear if player level >> monster level [hh]
+ - Added identification of objects on floor via '-' [hh]
+ - Adjusted player's number of attacks per round
+ - *Enlighnment* potions now detect traps, s. doors, treasure, etc.
+ - The Arkenstone also detects s. doors and traps
+ - Adjusted the monster picking up an item code to be smarter
+ - Improved support for Solaris 2.x [tl]
+ - Added support for DEC OSF/1 (Alpha) [tl]
+
+ - Fixed bug with '|' (show uniques) when in wizard mode
+ - Fixed a bug whereby a ghost could be generated (on a destroyed level) without setting the 'special level' message
+ - Fixed bug with names in dispel_creature [hman@marina.dei.unipd.it (Heiko Herold) hh]
+ - Fixed some minor bugs with bounds checking [ randall@theory.lcs.mit.edu (Keith H Randall) kr ]
+ - Fixed const typing with my_stricmp [cb]
+ - Fixed bug with unlocking/opening things being impossible [kw]
+ - Fixed bug with using multiple characters (the -n & -u options) [kw]
+ - Fixed bug with generating Olog-Hai and Uruk-Hai in vaults [kr]
+ - Fixed bug with reverting character stats when creating a char [kr]
+ - Fixed bug with displaying all artifacts with '~' [rh]
+ - Fixed bug with with special offer when it didn't change the price of item [rh]
+ - Fixed bug with using file descriptors under Linux [rh]
+ - Many one-liners: Belthronding, Rohirrim, CURBRAGOL, chr_adj, todis_adj [jk]
+ - Fixed bugs with blindness resistance [rh]
+ - Fixed bug with Satisfy Hunger/Create Food names in spell books
+ - Fixed prototype for my_stricmp [jk]

@@ -1,0 +1,196 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][src]
+ - [Windows][win] and [extra Windows bits][winext]
+ - [DOS][dos] and [extra DOS bits][dosext]
+ - Mac [OS X][osx], [PPC][ppc] or [68k][68k], and [extra Mac bits][macext]
+ - [RISC OS][ros]
+
+[src]:http://rephial.org/downloads/3.0/angband-3.0.4-src.tar.gz "Source tarball, 1.5M"
+[win]:http://rephial.org/downloads/3.0/angband-3.0.4-win.zip "Windows port, 1.1M zipfile"
+[winext]:http://rephial.org/downloads/3.0/extra-3.0.4-win.zip "Fonts, sounds, etc. for the Window port. 196k zip file"
+[dos]:http://rephial.org/downloads/3.0/angband-3.0.4-dos.zip "DOS port, 1.3M zip file"
+[dosext]:http://rephial.org/downloads/3.0/extra-3.0.4-dos.zip "Fonts, sounds, etc. for the DOS port. 185k zip file"
+[osx]:http://rephial.org/downloads/3.0/angband-3.0.4-mac-osx.sit.bin "Mac OS X port, 1.6M .sit file"
+[68k]:http://rephial.org/downloads/3.0/angband-3.0.4-mac-68k.sit.bin "Mac 68k port, 1.1M .sit file"
+[ppc]:http://rephial.org/downloads/3.0/angband-3.0.4-mac-ppc.sit.bin "Mac PPC build, 1.6M .sit file"
+[macext]:http://rephial.org/downloads/3.0/extra-3.0.4-mac.sit.bin "Extra Mac bits, 929k .sit file"
+[ros]:http://rephial.org/downloads/3.0/angband-3.0.4-ros.zip "RISC OS port, 774k zip file"
+
+Background
+==========
+Version 3.0.4 was released on 6th March 2004 by Robert R&uuml;hlmann.  
+
+This release had another go at improving game balance, by tweaking some rarities, artifacts, stat/ability tables, and so on.  It also incorporated the rod, staff and wand stacking system previously tested in NPPAngband and OAngband, where these items can stack with similar ones even if they have different numbers of charges left.
+
+As well as this, there were all sorts of bugfixes, UI and platform-specific improvements, which are all detailed in Robert's changelist, reproduced below.
+
+Changelist
+==========
+ - Made the water vortex immune to water-based attacks.
+ - Chaos resistance protects against confusion by chaos based attacks.
+ - Smoothed out the tables for extra mana-points per level, hitpoint
+   bonus from constitution, "spells per level" vs. "spell stat", and
+   INT/WIS dependent failure rate adjustment.  The old steps have been
+   replaced by a steady increase, so small stat improvements are more
+   useful.  Please note that this will also affect characters imported
+   from older versions, so these might gain or lose some spells, mana,
+   and hitpoints when imported into Angband 3.0.4.
+ - Gave the 'thanc daggers a 2d4 damage dice instead of 1d4 and made them
+   more common. (Jonathan Ellis)
+ - Gave each of the Paur* gauntlets a single minor power (slow-digestion,
+   regeneration, permanent light, feather fall) and made them more
+   common. (Jonathan Ellis)
+ - Rods, wands, and staves with different charges can now be stacked.
+   (based on the NPPAngband version that in turn is based on
+   Leon Marrick's rod/wand stacking in OAngband.
+ - Rods can't be recharged anymore, but can be vulnerable to electricity.
+ - Rods of Recall, Perception, Curing, Healing, Restoration, and Speed
+   will not be destroyed by electricity.
+ - Made Raal's Tome of Destruction more, and Kelek's Grimoire of Power
+   less common. (Timo Pietilä)
+ - Heavy crossbows no longer can get the 'of the Haradrim' suffix and
+   'light crossbows of the Haradrim' get a smaller damage bonus. (Timo
+   Pietilä)
+ - Removed fire brand from ammo 'of Holy Might'. (Timo Pietilä)
+ - Give the short range teleport effect from gravity attacks on monsters
+   an additional 1 in 3 chance to teleport the monster away.  This should
+   make abusing the Rift spell a bit harder.
+ - Added a level dependent chance to resist the teleportation effect of
+   gravity attacks for monsters and the player. (suggested by Jonathan
+   Ellis)
+ - Junk items like broken sticks, empty bottles, and rodent skeletons are
+   no longer generated in the dungeon.
+ - Removed the old haggling code.  The auto-haggling code is now
+   permanently active and will give the normal price of items without the
+   10% "sales tax".
+ - Replaced the old screendump code with HTML screendump code that
+   handles graphics, bigscreen, bigtile, and other display oddities much
+   better. (based on the htmldump-patch by Darkgod).
+ - Added support for artifact and ego-item descriptions. (with help from
+   Hallvard B Furuseth)
+ - Added artifact descriptions.  The texts are mainly taken from OAngband
+   and other variants. (Jonathan Ellis)
+ - Added object descriptions assembled by Hallvard B Furuseth.  The
+   descriptions are mostly copied from obj-long.spo version 3.0.2 by Hugo
+   Kornelis, Stephen S. Lee, Leonard Dickens and Craig Lewis.
+ - Added ego item descriptions for some ego types. (Hallvard B Furuseth)
+ - "Easy open" ignores broken doors now when trying to close doors.
+ - Added the equipment flag matrix to the character dump.
+ - Added new 8x8 tiles and tile definitions provided by "Dawnmist".
+ - Added the player's maximum depth in the dungeon to the character
+   display and the dump.
+ - Removed several broken tile definitions for the 32x32 tiles.
+ - Use the proper monster flags instead of workarounds for various
+   resists and immunities.  This also allows the reporting of these flags
+   in the monster recall and the spoilers. (pointed out by Leon Marrick)
+ - You can now use either 'm' or 'p' to cast spells or pray.
+ - Allow direct melee attacks on visible monsters in walls.  You still
+   have to tunnel into the wall if you are trying to attack an invisible
+   monster. (suggested by Greg Stark)
+ - Show infos like "It cannot be harmed by the elements." when
+   'Inspecting' books, just as for other item types.
+ - Changed the behavior of the 'auto_more' option, so that it
+   automatically skips '-more-' prompts instead of not displaying
+   messages on the top line. (Tom Houser)
+ - Changed the "Do you really want to quit?" prompt to "Do you really
+   want to commit suicide?".
+ - Added a 'show scores' command to the knowledge menu.
+ - Changed the wording for the scores display a bit.
+ - Added the kill count of non-unique monsters to the knowledge menu.
+ - Added a modified version of Mogami's macro trigger patch. This patch
+   modifies how macro trigger keys are displayed on screen and written in
+   .prf files.  The trigger keys are no longer displayed in ugly key code
+   style, such like ^__FFBE\r or ^_O_FF53\r, but in more smart style,
+   such like \[F1] or \[alt-Right].
+ - Added a better character selection screen with support for using the
+   cursor keys, display of info about the various race and class choices,
+   and context sensitive help.  The code is based on the EyAngband's
+   birth screen that again is probably based on ZAngband's birth screen.
+ - Select the sex, race, and class choices from a dead character as
+   defaults for a new character.
+ - Added a stripped down version of Takeshi Mogami's "auto_dump" feature
+   from Hengband.  Automatic pref file dumps from the game are now
+   marked, so that they can be replaced when dumping to the same
+   pref-file again.
+ - Allow the banishment spell to be aborted at the "Choose a monster race
+   to banish" prompt without using up a scroll or charge.
+ - Added John Rauser's monster list patch that allows the user to display
+   a list of the visible monsters in a window.
+ - Improved the navigation in the help files.
+ - Recharging wands or staves that have been fully \*identified* before
+   will now automatically reveal the new number of charges in the device.
+   This fixes a bug where an already \*ID'ed* wand or staff couldn't be
+   \*ID'ed* again after recharging (but plain ID works), despite the
+   number of charges being unknown. (bug reported by Eddie Grove)
+ - text_to_ascii() didn't check that the characters used in \xAB
+   sequences represent real hex characters.  Invalid hex sequences are
+   now converted to the '?' character. (reported by Kieron Dunbar)
+ - Improved the handling of incomplete '\x' sequences in macros.  The old
+   code could skip the final NUL-byte of the string if it ended with
+   '\x', leading to a potential buffer overflow.
+ - Fixed a typo in the description of the "wild cat". (Jay McAbee)
+ - Monster groups ignored their fear when the smart_packs option was
+   turned on. (reported by Eddie Grove)
+ - Rods and staves of probing are no longer automatically identified when
+   used without a monster nearby. (reported by "someog")
+ - Prevent the player from being hit multiple times by area effect spells
+   and breaths that can blink the player (nexus, gravity).
+ - The player can now get a level feeling when entering level 1 without
+   spending 1000 game turns in town first. (Tom Houser)
+ - Branding ammo or weapons will now automatically try to combine and
+   reorder the resulting objects, even if the enchantment of to-hit and
+   to-dam fails. (reported by John D. Goulden)
+ - Try to output minor warning messages (such as "illegal option choice"
+   when selecting a non existing item for a command) as soon as possible.
+   (reported by "Mogami")
+ - Show all minor error messages immediately in the message window.
+ - The effects of light spells are only obvious if you aren't blind.
+ - Wands and rods of light don't give a message and aren't automatically
+   identified when using them while blind. (reported by Steve Kroon)
+ - Refilling a lantern from a stack of laterns will now only use the oil
+   from one lantern, not from the whole stack. (reported by Jay McAbee)
+ - Prevent earthquake/destruction spells from working in town.  This
+   prevents inappropriate messages (like "The cave ceiling collapses!").
+ - Automatically try to load the "Kobold.prf" file at startup if the
+   player is a Kobold.
+ - Improved the output of item and monster descriptions in spoilers and
+   character dumps.  In some cases punctuation and spaces were wrapped to
+   the next line.
+ - The basic object spoilers only reported the prices for unidentified
+   items.  (reported by Hugo Kornelis)
+ - Only print the "You feel (less) resistant to ..." messages when not
+   immune to the specific element. (reported by Jeff Greene)
+ - The cursor keys in the X11 ports behave the same way now, no matter if
+   num-lock is on or off.
+ - Change colors in main-gcu.c. This is Dominik Grzelak's patch to change
+   bright white from blue back to bright white. (Ed Cogburn)
+ - Added a workaround for a bug in the curses version with USE_GETCH.
+   The news.txt screen was erased by the first call to the getch()
+   function. (Frank Palazzolo)
+ - Angband consumed 100% of the cpu while waiting for a keypress in the
+   GTK port. (Sheldon Simms)
+ - Allow text to be copied from the game window in the X11 port.
+   (modified version of the code in Kieron Dunbar's sCthangband 1.0.10)
+ - Added transparency support to the 32x32 tiles in the Windows port.
+   This requires a modified tiles bitmap and a new transparency mask
+   originally created by Andrew Doull:
+   ftp://clockwork.dementia.org/angband/Extra/graf-32x32-304.zip
+ - Removed the hackish 'Show scores' menu entry from the Windows version.
+   Use the new knowledge menu entry instead.
+ - Applied lots of Mac specific patches by "pelpel".
+ - Allow initialization of the game to continue, even if the
+   lib/data/\*.raw files can't be written.  In that case the data parsed
+   from the lib/edit/*.txt files stays in memory and is used instead of
+   the *.raw data.  This currently wastes some memory, since the text
+   arrays are not resized to the minimum required length.
+ - Added a performance tweak for the Angband Borg.
+ - Increased the data-type of the shopkeeper purse limit from signed
+   16 bit to signed 32 bit.  This will allow shopkeepers with a higher
+   limit than 32768 gold to be added.
+ - Added a compile time option to store the savefiles and scores in the
+   player's home directory (under ~\/.angband\/Angband/) on multi-user
+   machines.
+ - Use a different delay function in the DOS version that works around
+   the restricted 55ms resolution on Windows 2000 and XP.

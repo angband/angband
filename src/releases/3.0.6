@@ -1,0 +1,135 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][src]
+ - [Windows][win] and [extra Windows bits][winext] 
+ - [DOS][dos] and [extra DOS bits][dosext] 
+ - [Mac OS X][osx] and [extra Mac bits][macext] 
+ - [RISC OS][ros] 
+
+[src]:http://rephial.org/downloads/3.0/angband-3.0.6-src.tar.gz "Source tarball, 1.5M"
+[win]:http://rephial.org/downloads/3.0/angband-3.0.6-win.zip "Windows port, 1.2M zip file"
+[winext]:http://rephial.org/downloads/3.0/extra-3.0.6-win.zip "Fonts, sounds, etc, for the Windows port.  219k zip file"
+[dos]:http://rephial.org/downloads/3.0/angband-3.0.6-dos.zip "DOS port, 1.3M zip file"
+[dosext]:http://rephial.org/downloads/3.0/extra-3.0.6-dos.zip "Fonts, sounds, etc. for the DOS port.  202k zip file."
+[osx]:http://rephial.org/downloads/3.0/angband-3.0.6-mac-osx.dmg "Mac OS X port, 1.7M .dmg file"
+[macext]:http://rephial.org/downloads/3.0/extra-3.0.6-mac.zip "Extra bits for the Mac, 10k zip file"
+[ros]:http://rephial.org/downloads/3.0/angband-3.0.6-ros.zip "RISC OS port, 841 k zip file"
+
+Background
+==========
+Version 3.0.6 was released on 18th June 2005 by Robert R&uuml;hlmann, more than a year after the previous release, and Robert's last as Angband maintainer.  Shortly after this, in October 2005, he announced that he no longer wished to be Angband maintainer, as he was no longer enjoying the job, and feeling "burnt out".  While he was willing to continue packaging up other people's bugfixes and patches, if anyone wanted to step forward with the support of the community he was more than happy to step down.
+
+Still, this release didn't keep the game standing still, with a large collection of bugfixes, platform-specific improvements and gameplay tweaks.
+
+Changelist
+==========
+ - Wands and staves are no longer destroyed when a recharge attempt
+   backfires.  Instead all the charges are drained.
+ - Renamed the artifact short sword 'Gilettar' to 'Dagmor' since that
+   name is mentioned for the sword of Beren in Tolkien's notes.
+   (suggested by Tyler Witter)
+ - Added a new type of subwindow for displaying the dungeon area around
+   the player.
+ - Added a new subwindow type "Display player (compact)" that displays
+   the left-hand-side of the main term (player stats, hitpoints, gold,
+   ...) in a separate window.
+ - Added a new window type that displays the info from the status line.
+ - Turned the "scroll map while targeting" option permanently on.
+ - Added a display of the temporary resists to the status line.  The
+   resists are only displayed if there is enough room after the dungeon
+   level (when using a main or status term with at least 85 cols).
+   The verbosity of the output (between "Acid Elec Fire Cold Pois" and
+   "AEFCP") depends on the term width.
+ - Display the player's speed in the character dump and on the info page.
+ - Identified scrolls can now look different from unidentified ones.
+   This allows the use of the individual scroll tiles created by David
+   Gervais.
+ - Allow the ammo-branding activation of 'Cubragol' to be aborted without
+   using up the charge. (Diego Gonzalez and Jeff Greene)
+ - Use actual monster and object symbols instead of a list of hardcoded
+   symbols when hallucinating.
+ - Added Craig Oliver's Sound FX Patch version 1.1 that adds about 120
+   new sound events to the game.
+   (see also http://www.chambrook.org/angband/soundfx.php)
+ - Scroll the map when the player is 1/4th of the visible grids away from
+    the edge of the map display.
+ - Allow the OS X version to be started from a read-only medium, for
+   example from a disk image or a central installation under
+   'Applications'.  All user-specific files like savefiles, scores,
+   char-dumps, and saved preferences are stored in
+   Library\/Preferences\/Angband\/' and its subfolders inside the user's
+   home directory.
+ - The Mac OS X application bundle now includes all the necessary files
+    from the lib folder.  The separate lib folder in the distribution is
+   no longer necessary.  This means that the OS X version can now be
+   installed by simply dragging the application icon to the target
+   directory.
+ - The OS X version would crash when changing the sound or graphics
+   options before a character was created or loaded. (reported by Patrick
+    Hughes)
+ - Don't save the Mac OS X preferences on exit if the game hasn't been
+   initialized properly to prevent corruption of the preference file in
+   case of an error at startup.  Skip loading the preference file if it
+   is broken. (problem reported by Matt Stone)
+ - Include the basic Angband sound files per default in the OS X version.
+ - Made the tile size independent of the font size in the X11 version.
+   Store various window settings like the window size between sessions.
+ - Don't add a hardcoded 'games' subdirectory to the installation path on
+   multi-user machines.
+ - Allow all user created files to be saved in subdirectories under
+   ~\/.angband/Angband/ when PRIVATE_USER_PATH is defined.
+ - Allow the use of the 'vcs' display module on systems with devfs-style
+   '\/dev/vc/*' terminals.
+ - The virtual console (vcs) front-end does now implement cursor
+   visibility and bigscreen support.  (Alexander Ulyanov)
+ - Enable cursor visibility in the "gcu" front-end on Linux systems.
+   (Alexander Ulyanov)
+ - Fixed a bug in the Xaw frontend, which made Angband crash if the main
+   window geometry was specified as an X resource. (Alexander Ulyanov)
+ - Make X11 frontends show floors as centered dots, walls as blocks, and
+   treasures as diamonds. (Alexander Ulyanov)
+ - Removed the restriction of bigtile mode to the main window in the X11
+   version.
+ - Added Alexander Ulyanov's Linux framebuffer display module from:
+   http://posband.earthsea.org/misc/angband-lfb-20050220.tar.gz
+ - Added compile instructions for MinGW/MSYS on Windows. (Tuomas
+   Härkönen)
+ - Added compile instructions for gcc on Mac OS X.
+ - Fixed a stupid bug that could cause the game to hang or crash when
+   killing quest monsters near the edge of the dungeon. (Ivan Tuckwell
+   and Dr. Andrew White)
+ - Added missing tiles and tile assignments for the 32x32 tiles. (Ivan
+   Jekic and David Gervais)
+ - The charges of rods of perception weren't handled correctly when
+   compiling with scripting turned off. (reported by "Twilight" and Jeff
+   Greene)
+ - Cursed speed rings should not increase the level feeling. (Anssi
+   Ramela and Jeff Greene)
+ - Refresh the list of visible monsters after (Mass) Banishment,
+   Earthquake, and Destruction spells, when using the 'delete nearby
+   monsters' function in debug mode, as well as when pressing Ctrl-R.
+   ("Twilight")
+ - Don't try to write zero-length blocks when saving the lib/data/*.raw
+   files. (suggested by Juha Niemimaki)
+ - Corrected the item description for scrolls of recharging. (reported by
+   Hugo Kornelis)
+ - The experience loss as a result of one of the One Ring's activations
+   is now 1/4 of both max and current experience instead of the
+   unintended reduction of max exp by 3/16 of the current experience.
+   (Hugo Kornelis)
+ - Cleaned up the handling of experience draining when the player has
+   Hold Life. The fixed part of the exp drain by nether breaths is now
+   also reduced by Hold Life. (Hugo Kornelis)
+ - The 'star ball' activation fired one ball more when scripting was
+   enabled.  (Hugo Kornelis)
+ - The object description for the 'cure wounds' activation reads
+   "activates for cure wounds (4d7)", but it actually cures 4d8 points of
+   damage.  The description has been fixed. (Hugo Kornelis)
+ - The "recharge item" artifact activation can now be canceled at the
+   "Recharge which item" prompt without draining the artifact's charge.
+   (Hugo Kornelis)
+ - The symbol for the Shield of Deflection was a light blue [ instead of
+   a ) like all other shields. (Hugo Kornelis)
+ - Reduced the price for "Raal's Tome of Destruction". (Hugo Kornelis and
+   Timo Pietila)  

@@ -1,0 +1,75 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][1] (423k)
+
+[1]: http://rephial.org/downloads/2.5/angband-2.5.0-src.tar.gz
+
+Background
+==========
+2.5.0-beta was released on 8th December 1993, and was the first release after the legendary Frog-knows release.  It marked the start of Charles Swiger's time as Angband maintainer, which lasted around a year and ended with the 2.6.2 release late in 1994.  
+
+Charles took over almost by default a version for UNIX that had no ambitions to be a separate game (unlike FAngband, the first variant), at around the time the Angband FTP maintainer was giving up on being able to regain contact with Sean Marsh and so was looking for a new "official" maintainer.  This manner of accession to the maintainership was to become a regular feature of Angband's history over the next thirteen years.
+
+His releases at first consisted of very many bugfixes and a gradual flow of new features.  Many of the bugfixes and features were taken from suggestions and patches made on the net, or drawn directly from UMoria 5.5, PCAngband 1.3 and FAngband.  As a result, many of these features and bugfixes are probably also found on the changelists for the PCAngband releases.
+
+Changelist
+==========
+This list of changes from [Frog-knows](http://rephial.org/release/2.4.fk) is drawn from [the original announcement email][3]
+
+Features
+--------
+ - New lighting
+ - Resist fear intrinsic added, though not really used anywhere
+ - Monster fear
+ - Mana penalty for armour based on weight increased(doesn't seem to change much), and gloves of free action/dexterity don't cause the additional mana penalty
+ - Artifacts likely to resist enchantment/disenchantment & other attacks
+ - Monsters can pick up things (but not 'X' getting Slay 'X' weapons, etc)
+ - If blind then messages change - serious updating 
+ - Redo secondary effects, this was a pain in the butt
+ - Add y/n to word of recall spells.
+ - Fireball effects now have differing radii
+ - More uniques have appropriate escorts
+ - Destroyed levels added
+ - Fixed up the artifacts a little (like being frost brand and not RC, etc)
+ - Added TR_BLESS_BLADE & TR_ATTACK_SPEED.  Ringil is still +1 speed, though.
+ - Added another resistance to one or two items ala Fangband.
+ - Defenders & Slay Evil weapons are BLESS_BLADE, Slay Undead are HOLD_LIFE.
+ - Prayer penalty for priests not using blessed edged weapons
+ - Scrolls of aquirement and *aquirement* auto-identify themselves when used
+ - Rods immune to lightning
+ - Cleaned up the display a little
+ - Add delay timing code so that bolts, etc can be seen
+ - Can check what artifacts have been generated while not wizard
+ - Be a little nicer about out-of-depth monsters on the early levels
+ - Added moria 5.5 'sleeping dragon' code
+ - Giant pits added
+ - Added autoroller from PC code
+ - Added PCAngband's new speed code
+ - Added improved look command from PCAngband
+ - Print amount of gold stolen
+ - Print object stolen
+ - The names of the Phial, Star, & Arkenstone change if not identified
+ - Minimum weight for multiple attack calc reduced from 5 to 3
+
+Bugfixes
+--------
+ - Fixed potion identification
+ - Fixed missing attack for 'kicks you' (mystics)
+ - Fix up earthquake effects to not destroy artifacts & some other things
+ - Fixed up naming code a little, also renamed monster descriptions & fixed miscellaneous spelling errors whenever I ran across them
+ - Vastly more sanity checking in level generation
+ - More sanity checking in compact_monsters & create/summon monsters
+ - Player ghost/save bug fixed
+ - Hopefully reset stats correctly when gaining or losing
+ - Better messages when an item gets destroyed
+ - Prevented free bashing from detecting an invisible monster
+ - Fixed the "you seem to be missing a book" message
+ - Fixed *enlightment* potion
+ - Revamped enchantment code
+ - Can't create up staircases on town level
+ - Dispelling things in sight prints their names and not it/and the converse
+ - Tweaked self knowledge messages for clarity
+ - Tweaked death.c and save.c for better messages and prompting
+
+[3]: http://groups.google.co.uk/group/rec.games.roguelike.angband/msg/2de7476cdb2c56e9?hl=en

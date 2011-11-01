@@ -1,0 +1,18 @@
+title = "Angband Development"
+developtab = "class='selected'"
+<h2>Development</h2>
+
+<p>Angband is currently maintained by Andi Sidwell, as head of a loose-knit bunch of coders who have an interest in improving the game.  Development is co-ordinated in a bunch of ways (listed from most-used to least-used):</p>
+
+<ul>
+<li>The <a href='http://trac.rephial.org/'>issue tracker</a>: tracks features, bugs, and contains <a href='http://trac.rephial.org/roadmap'>plans for forthcoming releases</a>.
+<li><a href='http://github.com/angband/angband'>GitHub</a>: this is where to find out development code, create branches, and see what is going on in the world of Angband code.
+<li>The <a href="http://isparp.co.uk/angband/irclogs">IRC channel</a>: #angband-dev on irc.freenode.net.
+<li id="mailing-list">The <a href='http://angband.oook.cz/mailman/listinfo/angband-dev'>development mailing list</a>: discussion of planned features, coding issues or what have you.
+</ul>
+
+<p>If you're interested in contributing, take a look through the issue tracker for outstanding issues and give us a holler on the IRC channel (#angband-dev).  You should also be aware of the <a href="http://trac.rephial.org/wiki/CodingGuidelines">coding guidelines</a>.
+
+<p>You can get the current development code on the <a href='http://github.com/angband/angband'>Angband project</a> at github.  To get it, use <code>git clone git://github.com/angband/angband.git</code>.  You may find <a href='http://help.github.com/'>GitHub</a> useful.
+
+<p>We also have an <a href='/nightlies/'>autobuilder</a> which compiles the latest development version every four hours for Windows and OS X.

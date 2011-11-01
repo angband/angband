@@ -1,0 +1,57 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][src]
+ - [RISC OS][ros]
+ - [Amiga][ami]
+ - [OS/2][os2]
+
+[src]:http://rephial.org/downloads/2.7/angband-2.7.9v5-src.tar.gz "Source tarball, 867k"
+[os2]:http://rephial.org/downloads/2.7/angband-2.7.9v5-os2.zip "OS/2 port, 521k zip file"
+[ros]:http://rephial.org/downloads/2.7/angband-2.7.9v5-ros.arc "RISC OS port, 559k Arc file"
+[ami]:http://rephial.org/downloads/2.7/angband-2.7.9v5-ami.lha "Amiga port, 688k lha file."
+
+Background
+==========
+Version 2.7.9v5 was released on 7th March 1996 by Ben Harrison, and consisted of more tweaks, bugfixes and internal code cleanup.
+
+Changelist
+======================================
+Features
+--------
+ - The "teleport player" spells now act instantaneously. 
+ - You are now correctly notified when you can learn new spells. 
+ - Changing equipment now correctly updates the lite radius. 
+ - The running code has been optimized some more, and now stops next to
+   rubble, and can now take a "maximal run distance" argument. 
+ - Various options have been removed, modified, or moved around. 
+ - The "disturb" options now work "better" with "telepathy". 
+ - The "show uniques" and "show artifacts" no longer crash if the "tmpnam()"
+   function fails. In fact, there is a new "path_temp()" function to acquire a
+   temporary file name, since the standard one seems to fail on many machines.
+   Also, these commands now use the same interface as the "on line help"
+   commands. 
+ - The "request_command()" function is now used in stores, allowing the
+   "keyset" and "command macro" code to work in stores. Using "p" and "s" to
+   "buy" and "sell" in stores is handled by a hack. 
+
+Bugfixes and maintenance
+------------------------
+ - Many of the source files were reorganized for various reasons. 
+ - Several "Makefile.xxx" files were updated for the new files. 
+ - Some changes were made to the "term.c" package to optimize stuff, and to
+   allow the use of the new "Term_pict()" hook in various situations. Most
+   "main-xxx.c" files needed some minor changes, look for "TERM_XTRA_BEVIS",
+   "TERM_XTRA_INVIS", and "scan_events". 
+ - Creating a new character using a reduced savefile will not clear the
+   "aware" flags on objects. In "player_wipe()" in "birth.c", change "if
+   (k_ptr->has_flavor) k_ptr->aware = FALSE" into "k_ptr->aware = FALSE". 
+ - Every call to "get_mon_num()" and "get_obj_num()" should check for
+   "failure" (a return value of zero), since otherwise, weird things may
+   happen, including the creation of bizarre "player" monsters, and division
+   by zero errors if you "look" at it. These checks must be done AFTER any
+   "global restrictions" are reset. 
+ - The Borg no longer has problems "swapping" his rings. 
+ - Using "angband -n" now correctly loads the old savefile. 
+ - The Cloaks of Aman, Cloaks of Stealth, and Boots of Quiet, should all say
+    "(+X to stealth)" not just "(+X)". 

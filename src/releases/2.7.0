@@ -1,0 +1,33 @@
+markdown = "true"
+Background
+==========
+Version 2.7.0 was announced by Ben Harrison on 7th January 1995 as a "Major Angband Update", and released on 14th January, just two weeks after Charles Swiger had released 2.6.2 and announced that he would no longer be around to take care of Angband.
+
+This wasn't a rushed release to try and claim the maintainership, however - Ben had been working on his changes for some time, basing them on the previous 2.6.1 release of the Macintosh port, and originally planning to feed them back into the game through Charles Swiger.  The bulk of the changes were focused on improving the code structure and the platform-independence of the code, so that it was easier for ports on different platforms to share the same main code base.  
+
+The initial focus on portability and code improvement was one of the main reasons Ben was so quickly accepted - before his work, people on non-UNIX platforms were forever lagging behind the latest version of the code as they waited for the various platform-specific changes to be made before they could play.  Another reason was the obviously buggy nature of Charles Swiger's last rushed release and the prospect of him not being around to fix it for the forseeable future.
+
+This was the start of the second age of Angband, where the internals of the game were overhauled, paving the way for the explosion of Angband variants.
+
+[1]: http://groups.google.co.uk/group/rec.games.roguelike.angband/browse_thread/thread/3c1ac310a157513e/7610e5ab3232c561?lnk=st&q=group%3Arec.games.roguelike.angband+harrison&rnum=23&hl=en#7610e5ab3232c561
+[2]: http://groups.google.co.uk/group/rec.games.roguelike.angband/browse_thread/thread/a700210fd1b1ee76/8d9b1867999a6335?lnk=st&q=group%3Arec.games.roguelike.angband+harrison&rnum=3&hl=en#8d9b1867999a6335
+
+Changelist
+==========
+ - Macintosh and X11 support (and soon IBM), with colour.
+ - Multiple line message recall, stored in savefile too.
+ - Targetting allowed from within "Direction?" query.
+ - Bolt attacks will continue "through" the target location.
+ - Inventory tagger (assign "hot keys" to individual items). --> http://groups.google.co.uk/group/rec.games.roguelike.angband/msg/fe1d19fe851d700c?hl=en&
+ - Item grouper -- almost all items can now be stacked.
+ - Items can be bought or sold in any sized group.
+ - Runtime parsing of the monster race list from a text file.
+ - Runtime parsing of the treasure templates from a text file.
+ - Rewrite of the savefile to eliminate some ancient bugs.
+ - Major standardization of the variable naming schemes.
+ - Reorganization of the source files.
+ - A single function to handle all bolts, balls, breath, etc.
+ - Rewrote the "Sustain Stat" code to allow more control.
+ - Rewrote the "Artifact Creation" routines to clean them up.
+ - Cleaned up a countless number of functions and algorithms.
+ - And fixed a countless number of bugs...

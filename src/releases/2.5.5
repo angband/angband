@@ -1,0 +1,33 @@
+markdown = "true"
+Background
+==========
+2.5.5 was released on 7th February 1994, as part of Charles Swiger's quickfire 2.5 series of releases. This was considered a stable release.
+
+Changelist
+==========
+Features
+--------
+ - Darkness breath and scrolls now blind you for a while (like light breath)
+ - Level feeling now saved in the save file
+ - Now display home inventory at death or part of char description [ct/dgk]
+ - Everything that Slays Undead now is See Invisible
+ - Made some SU weapons Hold Life, and some SE Blessed Blades
+ - Whips of Fire now have Resist Fire
+ - Made the low hitpoint warning more noticeable
+ - Reduced MAX_{T,M}ALLOC to 400 and 600 respectively to reduce memory hogging for those systems which would appreciate this....
+ - Caused create food to fill you up and not create an item [cba]
+
+Bugfixes
+--------
+ - Fixed chests to generate treasure at the correct level [dbd]
+ - Fixed self_knowledge code wrt negative p1 values (again)
+ - Maybe fixed some more header file braindamage
+ - Tried to fix a bug where stackable items could be placed over your weapon, causing you to lose the weapon
+ - Fixed a bug displaying (+0) digging implements
+ - Fix so that storebought chests don't give hellacious treasure (backwards compatibility problem w/ old savefiles)
+ - Fixed small display glitch while rolling [ch]
+ - Fixed msgs when throwing items at monsters
+ - Fixed Belthronding not getting a "special level" msg
+ - Added equippy chars [dgk/cba]
+ - Fixed item colors not being randomly shuffled for new characters [dk]
+ - Changed Celefarn->Celegorm, touched up a few other artifact names

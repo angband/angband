@@ -1,0 +1,23 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][1]
+ - [Windows][2]  and [extra "console" executable][3]
+ - [Mac OS X][4], universal binary
+
+[1]:http://rephial.org/downloads/3.0/angband-3.0.9b-src.tar.gz "Source tarball, 2.8M"
+[2]:http://rephial.org/downloads/3.0/angband-3.0.9b-win.zip "Windows port, 1.5M zip file"
+[3]:http://rephial.org/downloads/3.0/angband-3.0.9b-con.zip "Windows console port, 562k zip file"
+[4]:http://rephial.org/downloads/3.0/angband-3.0.9b-osx.dmg "Max OS X port, 2.0M .dmg file"
+
+
+Background
+==========
+
+Angband 3.0.9b was released on the 19th March 2008 by Andrew Sidwell to fix a few more bugs that had crept into the earlier 3.0.9a bugfix release.  Its changelist is as follows:
+ - Fix detection of curses libraries using autoconf.
+ - Fix broken install using autoconf.
+ - Add the tvals for oil and dragon armor to the tval squelch list.
+ - Once again dump modified colour information to pref files.
+ - Fix warnings when compiling the SDL port.
+ - Fix up roguelike keys in the store (vs. 3.0.9a)

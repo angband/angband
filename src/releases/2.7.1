@@ -1,0 +1,42 @@
+markdown = "true"
+Background
+==========
+Version 2.7.1 was released on 17th January 1997, and is a fair illustration of the development process used by Ben Harrison - release early, release often - with this release coming just a week after 2.7.0.  It incorporated more internal code cleanup, bugfixes from the first release, and (obviously) more bugs caused by the rewriting work.  [2.7.4](http://rephial.org/release/2.7.4) was the first version Ben considered a "stable beta" rather than just beta.
+
+Changelist [*1]
+==========
+ - Rewrote the "term.c" code to be more efficient, and generic
+ - Improved the "cannot make cursor invisible" case for "curses"
+ - Rewrote the "torch-lite" code (improved efficiency, plus color)
+ - Rewrote the "room lighting" code to fix some ancient bugs.
+ - Fixed a typo in "ego_names" (affected "backbiting" and "morgul")
+ - Fixed the "unstacking" code to prevent "weight gain"
+ - Fixed the "stacking" code to allow "arrows of fire"
+ - Rewrote the "treasure drop recall" code (again)
+ - Fixed the "no experience for new spells" bug
+ - Fixed the "really slow regeneration" bug
+ - Added some stuff to "signals.c" to make it compile
+ - Made the "floating recall window" generic, and disable-able
+ - Prepared for the "floating choices window" to be added later
+ - Added some "visual options" like "hilite player" and "torch lite"
+ - Improved/Fixed the "item creator" in "wizard.c"
+ - Added options to prevent being "disturbed" by distant monsters
+ - Split "spells.c" back into "spells1.c" and "spells2.c".
+ - Let "tables.c" and "variables.c" absorb "player.c"
+ - Removed the "stat damage" code from fire/cold/etc.
+ - Improved "artifact" code, fixed the "Artifact 'Ringil'" message
+ - Made "your armor is damaged" *block* "your skin is damaged"
+ - Note that now "your armor resists!" will protect you from damage
+ - Simplified the "aware"/"known" conditions for objects.
+ - Note that buying an item from the store *fully* identifies it.
+ - Fixed a "bug" where "genocide" can be listed before other spells.
+ - Taught rods to "auto-restack" as they recharge.  Kind of annoying.
+ - Removed more chunks of the code, some obsolete, some broken.
+ - Indented extra pieces of "wrapped" messages (untested).
+ - Converted more spells to "project()" hooks, fixed "beams of lite"
+ - Removed "The kobold is hit." message during "call light".
+ - Taught "trappers" and such to "look" like whatever they are on.
+ - Took "random.c" out of the Makefile for Unix.
+ - Cleaned up some "compiler" problems.
+
+[*1]:The changelist has been pieced together from newsgroup postings around the time of release - it is unlikely to be complete and may not be accurate.

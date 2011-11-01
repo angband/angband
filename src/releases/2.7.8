@@ -1,0 +1,68 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][1]
+ - [Windows version][2] and [extra Windows bits][8] 
+ - [DOS version][3] 
+ - Mac [PPC][5] and [68k][4]
+ - [RISC OS version][6] 
+
+[1]:http://rephial.org/downloads/2.7/angband-2.7.8-src.tar.gz "Source tarball,  752k"
+[2]:http://rephial.org/downloads/2.7/angband-2.7.8-win.exe "Windows installer, 480k"
+[3]:http://rephial.org/downloads/2.7/angband-2.7.8-dos.zip "DOS port, 484k zip file"
+[4]:http://rephial.org/downloads/2.7/angband-2.7.8-mac.cpt.bin.gz "Mac 68k port, 436k cpt.gz file"
+[5]:http://rephial.org/downloads/2.7/angband-2.7.8-ppc.cpt.bin.gz "Mac PPC port, 459k cpt.gz file"
+[6]:http://rephial.org/downloads/2.7/angband-2.7.8-ros.spk "RISC OS port, 435k Sparkive"
+[8]:http://rephial.org/downloads/2.7/extra-2.7.8-win.zip "Fonts, sounds, etc. for Windows port.  225k zip file"
+
+Background
+==========
+Version 2.7.8 was released to the world on 4th September 1995, and was Ben Harrison's second stable release of the game - one he said should be recommended to "your friends without net access".  As such, it underwent a longer-than-normal period of testing before release, though it still contained any number of fairly major code-level and gameplay changes.
+
+One such change was the addition of a "destroy" command, something that later players would find it hard to live without.  Before this version, the only way to destroy an item was to throw it so that it would break, traditionally at a wall or at oneself.  This could be considered the start of the slippery slope towards a tidy dungeon and the introduction of "squelching" - the automated destruction of items that the player is not interested in - which made it to the game in [version 3.0.7](http://rephial.org/release/3.0.7) a mere twelve years later.  In fact, squelching had [been proposed][squelch] as an addition to the game in r.g.r.a a mere two posts after Ben announced the "destroy" command was being /considered/ for inclusion.
+
+There was another long-term, perhaps unexpected, effect of this release as player ghosts were "temporarily" removed from the game.  These had been one of the staple features of previous versions and a good way for players to find a great reward or an early death for their characters.  Their removal was because of the various hacks that were used in the code to allow the ghosts to exist, and they were promised to return when a new way to implement them was found.  As of the latest release at the time of writing, they are yet to reappear.[*2]
+
+As this was intended as a super-stable version, Ben also went to special effort to ensure that savefiles from earlier versions of the game, as far back as [2.5.1](http://rephial.org/release/2.5.1) and [frog-knows](http://rephial.org/release/2.4.fk), would be safely loaded by the game.  Though not without modifications, such as any player ghosts being killed, or other things that could not be supported by the new version.
+
+[squelch]:http://groups.google.co.uk/group/rec.games.roguelike.angband/browse_thread/thread/5ff33f48ee96f32a/a2d539f0ce836f81?&hl=en#a2d539f0ce836f81
+
+
+Changelist [*1]
+==========
+ - Player ghosts removed
+ - Screendumps can be saved and loaded (using '(' and ')')
+ - New screen layout - Mana changed to Spell Points with a Max/Cur display, amongst other changes.
+ - Internal changes to abilities corresponding to stats, blows, etc.
+ - Shop changes - more shopkeepers, max price per transaction now changed to per-item.
+ - New auto-generated spoilers.
+ - 'Broken' flag introduced for junk objects.
+ - New blindness code.
+ - Special inscriptions such as '!k' to check before destroying it
+ - New "destroy an item" command
+ - Preliminary support for sounds
+ - Activation of 'One Ring' altered and made more dangerous
+ - Pseudo-ID changed - 'blessed' becomes 'good'
+ - creature.c absorbed by monster.c
+ - Rods recharge even when not carried
+ - Direction for wands is now requested before they are "tried"
+ - Artifact activation the same as for wands rods and staffs, so even fighters now benefit from high INT
+ - UnIDed items never stack
+ - Cleanups in message printing (msg_format introduced)
+ - Online help improvements (both browser and the help itself - a full set of documentation included with the game for the first time in years)
+ - Monster escorts rewritten
+ - Pickup messages changed (likely to be changed back in the future)
+ - Priests can now pray with a given book (choice within that book is still random)
+ - "Bloating" code changed
+ - Spell cleanups
+ - Some foods removed - all hairy molds that duplicated mushrooms - replaced with mushrooms of naivety, disease, sickness, paralysis and restore strength.
+ - Added rod of door/stair location
+ - Explicit messages for pack reorganisation, combination and object destruction.
+ - Inscriptions handled differently internally - can now be longer whilst still saving memory.
+ - Save file conversions can be made from as many previous versions as it was possible to test
+ - Many bugfixes
+
+
+[*1]:The changelist has been pieced together from newsgroup postings around the time of release - it is unlikely to be complete and may not be accurate.
+
+[*2]:[Version 3.0.8](http://rephial.org/release/3.0.8), in July 2007

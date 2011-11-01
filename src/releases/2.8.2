@@ -1,0 +1,197 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][src]
+ - [Windows][win] and [extra bits for Windows][winext]
+ - [DOS][dos]
+ - Mac [PPC][ppc] or [68k][68k]
+ - [OS/2][os2]
+
+[src]:http://rephial.org/downloads/2.8/angband-2.8.2-src.tar.gz "Source tarball, 770k"
+[win]:http://rephial.org/downloads/2.8/angband-2.8.2-win.zip "Windows port, 574k zipfile"
+[winext]:http://rephial.org/downloads/2.8/extra-2.8.2-win.zip "Fonts, sounds, etc. for the Windows port. 152k zipfile"
+[dos]:http://rephial.org/downloads/2.8/angband-2.8.2-dos.zip "DOS port, 552k zipfile"
+[68k]:http://rephial.org/downloads/2.8/angband-2.8.2-mac.sit.bin.gz "Mac 68k port, 589k .sit.gz file"
+[ppc]:http://rephial.org/downloads/2.8/angband-2.8.2-ppc.sit.bin.gz "Mac PPC port, 631k .sit.gz file"
+[os2]:http://rephial.org/downloads/2.8/angband-2.8.2-os2.zip "OS/2 port, 474k zip file"
+
+Background
+==========
+Version 2.8.2 was released on 12th September 1997 by Ben Harrison, complete with the usual collection of internal code cleanups and bugfixes.  In particular, there were several bugs to do with the floor stacking introduced in [2.8.1](http://rephial.org/release/2.8.1) that were fixed in this version.
+
+There was one controversial change made here - possibly the only change that was completely reversed in a later version purely through player disgruntlement - to stop commands prompting for the number of items that should be dropped, destroyed, sold, etc.  Instead, players were required to either repeat the command affecting one item at a time, or use the "Repeat Count" method of specifying a quantity before choosing the command to execute.  Many people found it effectively unusable, and the problem of explaining such a system to new players were also raised as an objection.  Ben restored quantity prompts, implemented slightly differently, in the [next release](http://rephial.org/release/2.8.3).
+
+Changelist
+==========
+Features
+--------
+ - The "help" files have been cleaned up and updated (a little). 
+ - The "show_choices" option, if active, and if only one sub-window is being
+   used to display inventory or equipment, will temporarily take control of
+   that sub-window to make sure it always displays the "relevant" screen
+   during item selection. This is independant of the "ctrl-e" command, which
+   changes the "default" display. 
+ - The useless "display spell info in a sub-window" option has been replaced
+   with a new "display player flags in a sub-window", using the new
+   "display_player(2)" method. The only way to see a list of spells is to
+   activate "object recall" in a window (possibly the same one in which
+   "monster recall" is active), and then you will see your "most recently
+   selected spellbook" spells. Also, stat modifiers are always "known" in the
+   "player flags" display. 
+ - The heroism and beserk strength potions no longer affect maximum health,
+   but they still do a small amount of healing when used. 
+ - The "other_query_flag" option allows the user to choose items from floor
+   stacks, instead of just auto-choosing the first legal item. 
+ - The "toggle choice window" command was restored to "^E", so that the
+   "tab" key ("^I") can be saved for something special in the future. 
+ - A new command, "knowledge", has been created, and bound to the "~" (and
+   "|") key, absorbing the old "known artifacts" and "known uniques" commands,
+   and adding a new (silly) sub-option for "known objects". 
+ - The "object_flags_known()" function now assumes that the player knows the
+   "standard" properties of all ego-items. 
+ - Five more (obvious) types of ego-ammo are half-added to the game. 
+ - The "cheating" options are handled in a standardized manner. 
+ - When the player dies, the "savefile" is now untouched until after the
+   "tombstone" is displayed. This will facilitate some forms of savefile abuse
+   which were disabled a few versions back. 
+ - Warriors now get intrinsic "resist fear" at player level 30. 
+ - Paralysis attacks on a paralyzed player always do at least one hp of
+   damage. This should prevent "infinite paralysis" from floating eyes. Being
+   paralyzed or stunned now prevents regeneration just like being cut or
+   poisoned (or starving). 
+ - The "town" is now centered in a large field of solid walls, and the panel
+   always causes the town to be "centered" on the screen, except when the
+   "view world" command is being used. All dungeon levels are now the same
+   size, though smaller levels may be created if desired by filling the rest
+   of the dungeon with perma-walls. 
+ - Normal commands which take a direction now verify that the direction
+   makes sense before applying confusion and attempting the action. It is now
+   illegal to attempt some actions on an unknown grid. The "alter" command
+   chooses the action based on the requested grid, which may or may not work
+   if the player is confused. 
+ - You must now use the "repeat count" method to specify any quantity above
+   one for any command, including the buy/sell store commands. The "zero"
+   count may be used to special "all" of a stack, which also disables the
+   confirmation for the "destroy" command. 
+ - High stats are now displayed "correctly" (not as "18/***"). 
+ - Only walking and running induce standard player movement. This has
+   affected the semantics of bashing and disarming. 
+ - Offscreen monsters can be "visible" if appropriate, and messages about
+   such monsters will mention the fact that they are currently "offscreen". 
+ - Telepathy on "weird mind" monsters will now work on some monsters, all of
+   the time, instead of on all monsters, some of the time. 
+ - Monsters now stay fully visible while detected, so that, for example, the
+   "center map" and "redraw" commands will not cancel the effects of "detect
+   monsters". The "mflag" repair code has been rewritten. 
+ - The player can now tunnel through doors, they are harder than anything
+   except granite. You may also tunnel through secret doors, and there is a
+   (small) chance you will find the door while digging. 
+
+Bugfixes and maintenance
+------------------------
+ - Filling up the object array in "drop_near()" and "place_object()" will no
+   longer result in the possible permanent loss of artifacts. 
+ - The "sounds" have been cleaned up somewhat, but they are still really
+   stupid. 
+ - The "color" handling was cleaned up in "main-win.c", "main-mac.c", and
+   "main-x11.c". The default colors for "dark gray" and "blue" were made
+   slightly "lighter". 
+ - The source files were cleaned up. Various comments were updated. 
+ - The "xtra object flags" from old savefiles are ignored. Some new flags
+   (resist fear, lite, dark) have been added to the "resist" set. 
+ - Objects now lose their "marked" flag when picked up from the ground. Old
+   savefiles will be repaired. 
+ - The spoiler file generation code had a few syntactic flaws. 
+ - The "graphics" support for the Amiga, Macintosh, and Windows versions
+   have all been unified, and they all use the same "graf-xxx.prf" file. 
+ - The "main-win.c" has been rewritten, and seems to work. It now uses the
+   "standard" bitmap file, and can handle any "tile size", whether or not
+   there is a font available in that size, though the interface is pretty
+   annoying. 
+ - Using the "option" screen now induces a complete "redraw" because people
+   get confused otherwise. The "do_cmd_redraw()" command now completely
+   redraws the current "lite" and "view" regions. 
+ - When saving the game, monster/object compaction is now synchronized,
+   preventing a variety of bizarre bugs. 
+ - The "z-term.c" file no longer induces occasional graphics glitches. 
+ - The "main.c" file now allows specific "visual display systems" to be
+   chosen, and allows "command line args" to be passed to the underlying
+   "main-xxx.c" file. The "main-x11.c" and "main-xaw.c" files are better. 
+ - The "rubble" terrain is now a "pile of rubble". 
+ - Some code has been cleaned up somewhat, including the "sector" code, the
+   "haggling" code, the "running" code, the "get_item()" code, and the
+   "object_forge" code. 
+ - Some functions have been optimized, including "update_view()",
+   "update_lite()", "update_mon()", and "process_monsters()". 
+ - The old "cave" variable was split into several global two dimensional
+   arrays, one for each field in the old "cave_type" structure. All of these
+   new variables, and some of the old variables, are now allocated in global
+   memory, instead of dynamically on the heap, for efficiency. 
+ - The "option" variables were moved into the player structure as an array
+   of bool's, and the global "option" structures were broken out into several
+   different arrays. The old "allow_stack" options were replaced by the new
+   stack/carry options. The "show_details" option now defaults to TRUE. 
+ - The old negative "c_ptr->m_idx" semantics have been restored. The player
+   grid now always contains a "c_ptr->m_idx" value of -1. A new
+   "monster_swap()" function has been added to swap the locations of any two
+   monsters and players, by location. A new "player_place" function has been
+   added to control initial player placement. 
+ - Savefiles containing dungeons with illegal depth, size, or player
+   location (including all old "town" levels) will be ignored, and the player
+   will be placed in a newly generated town level. Any savefile checksums from
+   old versions are also ignored. 
+ - The "cur_hgt" and "cur_wid" variables have been replaced by direct
+   reference to the DUNGEON_HGT and DUNGEON_WID compilation constants, which
+   replace the old MAX_HGT and MAX_WID compilation constants. 
+ - The "tval_to_char" array has been removed. The "use_color" option has
+   been converted into an "inventory_colors" option, which allows the
+   "tval_to_attr" array to be used. You must now redefine all the standard
+   colors to "white" to totally disable the use of color, and even that will
+   only affect the physical appearance. 
+ - The use of various pointer variables was standardized. 
+ - The "resistance" screen was cleaned up, more flags were added, footers
+   were added, the columns are now color coded by parity, and the equippy
+   chars use the actual object attr/chars. 
+ - All of the "do_cmd_xxx()" functions now take no arguments, so
+   "do_cmd_help()" lost an argument, and "do_cmd_walk()" and "do_cmd_stay()"
+   were broken into sub-functions. 
+ - The "extra shots" and "extra might" flags were turned into flags which
+   are modified by "pval". The artifact launchers were slightly rebalanced,
+   changing Cubragol from "M*4" to "M*3", Belthronding from "M*6,D+3" to
+   "M*6,D+1", and Bard from "M*4,D+3" to "M*5,D+2". 
+ - The object flags were reorganized slightly for various reasons. Some of
+   the object flags were renamed. The "RES_FEAR" object flag was added. All
+   objects which grant immunity also grant resistance, for consistency. 
+ - The "p_ptr" structure was cleaned up somewhat, and absorbed many global
+   variables, as well as a few newly created ones. 
+ - The initialization of options was moved into "init2.c" and "load2.c"
+   where it belonged. The "X"/"Y" actions can now be used in "pref.prf" to set
+   "default" options, and in "user.prf" to set "override" options. 
+ - The ability to conditionally evaluate sections of user pref files based
+   on the current "system", and/or player class or race or name has been
+   added. The standard user pref files have been converted to use this method.
+   The "RACE.prf" and "CLASS.prf" files are no longer included explicitly, and
+   any old files should be moved into "user.prf" with conditionals. The game
+   now loads "pref.prf" during initialization, one of "font.prf" or "graf.prf"
+   during "reset_visuals()", and then "user.prf" and "PLAYER.prf" after a
+   character is prepared. 
+ - The "wizard" flag no longer grants telepathy, but there is a new "detect
+   all monsters" debug command. 
+ - New "floor_carry()", "monster_carry()", "monster_place()" functions were
+   created, unifying a lot of redundant code. Objects can now combine when
+   picked up by monsters. 
+ - The recall window updating code has been optimized, and is only performed
+   when the player is about to type a command. 
+ - A bug in "excise_object_idx()" meant that if you picked up an object from
+   the middle of a stack, then the objects below that one will be "invisible"
+   until you save/restore. 
+ - The "main-mac.c" file was modified to use the "modern" names for all
+   "Toolbox" functions, to allow compilation with the latest version of
+   CodeWarrior. Note that the resulting executable cannot read "Unix" style
+   text files. 
+ - The "update_view()" function was excessively optimized, so that in
+   certain circumstances, certain perma-lit wall grids were not memorized or
+   displayed when they should have been. Making all perma-lit walls
+   "translucent" would have fixed all these problems, and would make the game
+   faster, but would cause annoying visual and semantic weirdness when a dark
+   hallway was placed next to a lit room. 

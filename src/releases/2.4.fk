@@ -1,0 +1,241 @@
+markdown = "true"
+release_name = "2.4.frog-knows"
+Downloads
+=========
+ - [Unix source code] [1] (396k)
+ - [PC version 1.0] [2] (299k)
+ - [PC source code for version 1.0] [3] (468k)
+ - [PC version 1.1] [4] (305k)
+
+[1]: http://rephial.org/downloads/2.4/angband-2.4.fk.tar.gz
+[2]: http://rephial.org/downloads/2.4/pcangband-1.0.zip
+[3]: http://rephial.org/downloads/2.4/pcangband-1.0-src.zip
+[4]: http://rephial.org/downloads/2.4/pcangband-1.2.zip
+
+Background
+==========
+2.4.frog-knows is the rather unusual version number given to the very first public release of Angband outside of the University of Warwick, and was released on 11th April 1993 for UNIX with a near-simultaneous release of the PC port (for DOS) [^1].  A purely bugfixing release for the PC followed very shortly afterwards, on 20th April - PCAngband 1.1.
+
+Inside the University, the game had been playable and actively developed over the previous couple of years - there were even publically-posted winner descriptions on the newsgroup rec.games.moria that helped to make the eventual release of Angband to the public highly anticipated.  
+
+Alex Cutler and Andy Astrand created it by building on UMoria 5.2.1 and put in many of the distinguishing features of the game such as unique monsters, artifacts and special rooms.  They were working on still more features, such as special quest levels, but when they graduated and so stopped developing Angband this code (much of it already playable) was lost.  Instead, development was taken over by Sean Marsh and Geoff Hill who continued improving the game throughout the next academic year, culminating in the Frog-knows release.  
+
+Between the four of them (and with contributions from many others, most notably Charles Teague who contributed the PC port) the fundamentals of the game had all been put in place in that first public release - a major expansion of monsters drawn from Tolkien's works and the Rolemaster and D&D role-playing games, more object types, the introduction of pseudo-ID to make non-spellcasting classes more playable, extra races and special rooms in dungeons.
+
+After the initial release, there were only a couple of minor bugfixes released before the end of the academic year, when Sean Marsh and Geoff Hill graduated from Warwick and could no longer work on Angband.  Players fixed bugs in their own copies, and posted their patches on FTP sites and the newsgroup, but their was no "official" release of Angband until the [2.5](http://rephial.org/release/2.5.0-beta) series. Charles Teague continued releasing bugfixes and improvements to his PC port over the next twelve months or so, and ports for the Mac, Atari ST and Amiga emerged, largely trying to standardise around the developments in PCAngband.
+
+Changelist
+==========
+The following list of changes from UMoria 5.2.1 is adapted from [Geoff Hill's release notes](http://groups.google.co.uk/group/rec.games.moria/msg/5eeefc6dc80adcba?dmode=source&hl=en).
+
+Monsters
+--------
+Quest is to kill Morgoth. That is the only quest. BUT there are
+about a hundred unique monsters that all appear at their own depths
+and can only be killed once. The unique creatures are designed to present a challenge for the depth they are met. i.e. they are just a little harder than a typical monster for that depth.
+
+Most monsters have been changed. Any monster that would realistically be gregarious appears in groups, so orcs usually appear in groups (except for orc captains of course) and so do wood spiders, mumakil, trolls, etc. Monsters have different letters too. e.g. h is demi-humanoids (e.g. hobbits, dark elves)
+
+Monsters have many many more spells and abilities than in basic Moria
+e.g.  a Great Wyrm of Balance has the following breath weapons: Sound,
+Chaos, Shards, and Disenchantment.  All do big damage (Sound stuns you
+or knocks you out in extreme cases, Chaos mass polymorphs monsters and
+confuses you, Shards wound you and Disenchantment reduces the plusses
+on your equipment).  This is just an example - Sauron's spells fill
+nearly a page.
+
+It remembers players who have died and will sometimes place them on a level to attack you.  These will appear as say "Geoff the Human Warrior" (or whatever the class was) on the home level and those down in the dungeon as "Geoff the mummified human".  If they are of high level they can come back as a spirit skeleton, zombie, poltergeist, ghost, wraith, vampire, master vampire, or lich, with abilities appropriate to the type of 'ghost'.
+
+
+The Dungeon
+-----------
+Levels have been tweaked a little map-wise.  They have
+slightly more rooms. Treasure pits have been added.  They can
+be almost as big as a standard screen and have several shapes, and
+present a big challenge to an adventurer as they contain monsters and
+treasures far better than is normally found at that depth. In extreme
+cases watch out for D's at 1000 feet in a weird shaped room.
+
+When you go down the stairs in the dungeon it leaves an up
+staircase you can escape up into should the need arise. (in Nethack
+fashion).
+
+Items
+-----
+Items have seen a massive expansion in depth and usefulness. 
+
+New armours are:
+ * Metal shod boots
+ * Shields of deflections
+ * Steel helms, 
+ * Shadow cloaks, 
+ * Cestus, 
+ * Mithril chainmail,
+ * Mithril plate,
+ * Adamantite plate mail and 
+ * Dragonscale armors e.g.
+   - Multi-hued which resists acid, lightning, cold, fire and poison,
+   - Shining (resists dark and light), 
+   - Power dragonscale (resists just about everything and is very rare)
+
+New armor flags are telepathy, light (permanent
+light source) and bonuses to wisdom or intelligence on headgear (along with
+cursed ones such as helms of weakness etc). Gloves, gauntlets and cestus
+can now be of Strength, Agility, Power (big plus to Str and a bonus to hit and damage) or Slaying (as in Moria). Shields and body armor can be of Elvenkind (basically like an armor of resistance but with a bigger AC plus and a bonus to stealth). 
+
+New weapon types to go with such old moria favourites as Holy Avengers and Defenders, e.g. 
+  - Blades of chaos
+  - Scythes of slicing
+  - Mace of disruption
+  - Weapons of westernesse (+1 Str, Dex and Con; Free Action; See Invisible; Slay orcs, undead and evil)
+  - Slay Giant
+  - Slay Troll 
+
+There are also some really BAD weapons called morgul weapons (they are hideous, don't wield them :)). 
+
+Only one ring of speed will work now... but boots of
+speed are *slightly* more common - plus there are hastes available in
+other sources - e.g. a Mace called Taratol which activates for a haste
+from time to time, Boots of Feanor (unique boots of speed which
+activate for a permananent haste just like a potion of speed) and best
+of all a 4d5 Longsword named Ringil which gives you a permanent haste
+and does just about everything else you might want.
+
+
+New rings abound, e.g. 
+ * Rings of Poison Resistance
+ * Elemental rings such as Flames which give +15 AC, fire resistance, and slaying (e.g. about +8 to hit and damage would be typical)
+ * Ring of See Invisible
+ * Ring of Free Action
+ * Rings of Damage (up to about +20)
+ * Ring of Accuracy (up to about +20)
+ * Ring of Protection (up to about +20 AC). 
+
+Amulets are pretty unchanged.
+
+Wands, staffs and scrolls have been massively expanded. For example a staff of perception which activates for identify, Wand of Annihiliation which does a LOT of damage to living creatures, Scroll of *Acquirement* which creates a handful of very good treasure, and many many more. 
+
+Rods are a new invention, they are like a staff but cannot be burnt and do
+not have charges, instead they can be activated once every so often in
+the same way as a wand or staff and then take time to recharge.  e.g. a
+Rod of Illumination activates for "light room" once every 30 turns,
+right up to a Rod of Restoration which restores stats or life energies
+but only once every 1000 turns. 
+
+Potions, yet again have been expanded - e.g. potions of life which heal everything and restore stat drainss. Stat gain potions are commoner at 1500 ft Str, Dex, Con and 1600 ft for Int and Wis and 1000ft for Cha (note this well stat gainers!) and furthermore Stat gains add 1 or 2 stat points per potion and above 18 are now much more effective.   They become less effective as you get nearer 18/100 where a potion will only add 1 or 2 percentiles each.  A potion of self knowledge also exists which will list your intrinsics and abilities (e.g. Your eyes are sensitive to Infrared, Your weapon strikes at undead with holy wrath, etc, etc.).
+
+Spell books - The standard spell books have been tweaked a little. new
+spell books also exist which can only be found by adventuring in the
+dungeon. I will not give away the fun of finding them, just list
+their names for you here. 
+
+Spell books are called Resistance of Scarabtarices, 
+Mordenkaine's Escapes, Kelek's Grimoire of Power, Tenser's
+Transformations, and Raal's Tome of Destruction.
+
+Prayer books are called Ethereal Openings, Godly insights (it's got identify in
+it btw), Purifications and Healing, Holy infusions, and Wrath of God.
+
+These books have some fun fun fun spells/prayers in them and are found
+at differing depths and rarity ratings.  Wrath of God and Raal's Tome
+are as rare as a ring of speed if not rarer.
+
+Artifacts
+---------
+There are many many unique items to be found.  They are only ever
+found once per game, and if created on a level and not found by the
+adventurer they will never occur again that game. They cannot be
+destroyed by any ordinary means, being immune to monster's pick up,
+fireballs, dragonbreath and other mortal means of destruction - short
+of throwing them at a monster (been done before :) ).
+
+They all do fun things, some good some bad, and only about half are
+listed in the .doc file. Some are little better than ordinary but
+others are truly awesome.
+
+Artifacts have a chance of being created whenever an object of the
+appropriate type is created by the game, SO to find Deathwreaker you
+need to find a high number of maces of disruption, thus it is very
+rare except for at extreme depths....
+
+
+Level Feelings
+--------------
+Sometimes when you enter a level you will be given a message such as:
+"You feel your luck is turning", "You feel there is something very good
+about this level" and some others.
+
+Every level when created is given a rating based on the number of
+out of depth monsters and objects that are created on the level. The
+higher the rating the better the feeling. A superb feeling is always
+worth searching out as it will contain a number of very good items -
+or monsters of course *cackle*.
+
+If you get a special feeling it means an artifact has been created, or
+a player ghost, or a pit of monsters.
+
+So remember unless dropped by a monster you won't usually find an artifact
+unless the feeling you have for a level is a special one - these are
+the most fun levels, dangerous, and with the highest potential for
+finding a /nice/ item.
+
+Races
+-----
+ * Human: Unchanged.
+ * Half-elf: Unchanged.
+ * Elf: Now have Resist Light as an intrinsic.
+ * Hobbit: Now have Sustain Dex as an intrinsic and 7-sided hitdice.
+ * Gnome: Now have Free Action and 8-sided hitdice (awesome mages).
+ * Dwarf: Can now never be blinded.
+ * Half-Orc: Now have built-in Resist Dark.
+ * Half-Troll: Now have Sustain Str.
+ * Dunedain: Good fighting stats, 10-sided hit dice, +80% exp per level and Sustain Con
+ * High elves: Good stats (especially Int); 10-sided hit dice; +80% per level; See Invisible and Feather Falling as intrinsics; and infravision.
+
+
+Classes
+-------
+ * *Fighter*
+
+   Unchanged except for inbuilt identify - this works that after a time
+   carrying a weapon or armor you get a feeling about it. i.e. if you
+   carry a sword in your backpack for a while it will say "You feel there
+   is something good about the sword you are carrying in your backpack."
+
+   This ability becomes faster as you raise levels and the feelings
+   correspond as follows:
+
+    - Terrible: Morgul weapon or very bad artifact.  
+    - Bad: Cursed.
+    - Average: No plusses.
+    - Good: Plusses but no abilities.
+    - Excellent: Has flags, e.g. resistance or slay evil
+    - Special: The object is an artifact.
+
+   This makes fighters a playable class as you know which items to
+   identify - and with staffs and rods of perception the lack of identify
+   is less of a problem.
+
+ * *Mage*
+
+   Unchanged except for the spell changes.
+
+ * *Priest*
+
+   Unchanged (but note, identify is available in a special spell book)
+
+ * *Rogue*
+
+   Now needs more experience per level, but has fighters in built
+   identify (but slower in use) Otherwise unchanged.
+
+ * *Ranger*
+
+   Ranger reduced to need same experience as mage, but has no identify.
+
+ * *Paladin*
+
+    Priest prayers plus inbuilt fighter identify (again slower), Awesome
+    (try a dunedain one).
+
+[^1]: Release notes for [UNIX] (http://groups.google.co.uk/group/rec.games.moria/msg/3a9c92f06428fc9c?dmode=source&hl=en) and [PC](http://groups.google.co.uk/group/rec.games.moria/msg/9fdabc7c7efde96e?dmode=source&hl=en) versions.

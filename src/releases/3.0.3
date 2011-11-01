@@ -1,0 +1,46 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][src]
+ - [Windows][win] and [extra Windows bits][winext]
+ - [DOS][dos] and [extra DOS bits][dosext]
+ - Mac [OS X][osx], [PPC][ppc] or [68k][68k], and [extra Mac bits][macext]
+ - [RISC OS][ros]
+ - [Amiga][ami]
+
+[src]:http://rephial.org/downloads/3.0/angband-3.0.3-src.tar.gz "Source tarball, 1.4M"
+[win]:http://rephial.org/downloads/3.0/angband-3.0.3-win.zip "Windows port, 978k zipfile"
+[winext]:http://rephial.org/downloads/3.0/extra-3.0.3-win.zip "Fonts, sounds, etc. for the Window port. 195k zip file"
+[dos]:http://rephial.org/downloads/3.0/angband-3.0.3-dos.zip "DOS port, 1.2M zip file"
+[dosext]:http://rephial.org/downloads/3.0/extra-3.0.3-dos.zip "Fonts, sounds, etc. for the DOS port. 184k zip file"
+[osx]:http://rephial.org/downloads/3.0/angband-3.0.3-mac-osx.sit.bin "Mac OS X port, 1.6M .sit file"
+[68k]:http://rephial.org/downloads/3.0/angband-3.0.3-mac-68k.sea.bin "Mac 68k port, 1.1M .sea file"
+[ppc]:http://rephial.org/downloads/3.0/angband-3.0.3-mac-ppc.sit.bin "Mac PPC build, 969k .sit file"
+[macext]:http://rephial.org/downloads/3.0/extra-3.0.3-mac.sit.bin "Extra Mac bits, 1.1M .sit file"
+[ros]:http://rephial.org/downloads/3.0/angband-3.0.3-ros.zip "RISC OS port, 774k zip file"
+[ami]:http://rephial.org/downloads/3.0/angband-3.0.3-ami.lha "Amiga port, 725k lha file"
+
+Background
+==========
+Version 3.0.3 was released on 26th January 2003 by Robert R&uuml;hlmann, and fixed a few niggly bugs.
+
+Changelist
+==========
+ - Reduced the size of the 32x32 tiles bitmap.  The smaller bitmap should
+   fix the problem on older Windows versions (Windows 95 and 98) with
+   restrictions of the maximal bitmap size .
+   The tiles are available as a separate download from:
+   ftp://clockwork.dementia.org/angband/Extra/graf-32x32-302.zip
+ - Fixed a bug in the text-output routines used for character dumps that
+   sometimes introduced bogus output. (reported by Pasi Vartiainen)
+ - Fixed a wrong entry in the template for the X11 startup shell script.
+   ("Mynstral")
+ - Fixed the display of \*slays* in character dumps. (Matthias Kurzke)
+ - The "It might have hidden powers." message will now displayed in the
+   character dumps.  This makes it easier to see if an artifact or ego-item
+   with random abilities has already been \*identified*.
+ - Curses on unidentified items are no longer revealed in character dumps or
+   in the output of the 'Inspect' command.
+ - Fixed a typo - "intellegence". (Greg Stark)
+ - Updated the DOS version to compile with the latest version of the Allegro
+   library.

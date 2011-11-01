@@ -1,0 +1,50 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][src]
+ - [Windows][win] and [extra Windows bits][winext]
+ - [DOS][dos] and [extra DOS bits][dosext]
+ - Mac [OS X][osx], [PPC][ppc] or [68k][68k]
+ - [Amiga][ami]
+
+[src]:http://rephial.org/downloads/3.0/angband-3.0.1-src.tar.gz "Source tarball, 1.3M"
+[win]:http://rephial.org/downloads/3.0/angband-3.0.1-win.zip "Windows port, 937k zipfile"
+[winext]:http://rephial.org/downloads/3.0/extra-3.0.1-win.zip "Fonts, sounds, etc. for the Window port. 220k zip file"
+[dos]:http://rephial.org/downloads/3.0/angband-3.0.1-dos.zip "DOS port, 1.1M zip file"
+[dosext]:http://rephial.org/downloads/3.0/extra-3.0.1-dos.zip "Fonts, sounds, etc. for the DOS port. 202k zip file"
+[osx]:http://rephial.org/downloads/3.0/angband-3.0.1-mac-osx.sit.bin "Mac OS X port, 974k .sit file"
+[68k]:http://rephial.org/downloads/3.0/angband-3.0.1-mac-68k.sit.bin "Mac 68k port, 988k .sit file"
+[ppc]:http://rephial.org/downloads/3.0/angband-3.0.1-mac-ppc.sit.bin "Mac PPC build, 974k .sit file"
+[ami]:http://rephial.org/downloads/3.0/angband-3.0.1-ami.lha "Amiga port, 731k lha file"
+
+Background
+==========
+Version 3.0.1 was released on 13th July 2002 by Robert R&uuml;hlmann.  It consisted entirely of bugfixes, improvements in the security of the code, and platform-specific improvements.
+
+Changelist
+==========
+ - Added support for creating ego-item light-sources in ego_item.txt.
+ - Added bigscreen support to main-gcu.c. (pelpel)
+ - Check the panel-bounds more carefully to prevent problems when using
+   a huge main window (higher or wider than the dungeon).
+ - Added the missing error message for a vault that is too big.
+ - Applied the bugfixes from the new Lua 4.0.1 release. (Lua devteam)
+ - Added a boundary check to the macro adding code to prevent crashes
+   when defining more than the maximum number of macros. (Eytan Zweig)
+ - Fixed various potential buffer overflows.
+ - Updated the Makefile for the lcc-win32 compiler and added compile
+   instructions to compile.txt.
+ - Added x-spell.o and use-obj.o to various Makefiles and fixed some
+   missing dependencies. (Hallvard B. Furuseth)
+ - my_strnicmp() in main-ros.c was quite buggy. (Hallvard B. Furuseth)
+ - The islower(), isupper(), ... and the tolower() and toupper()
+   functions take an 'int' as the argument but actually expect it to be
+   an 'unsigned char' or EOF.  We now cast the argument to 'unsigned
+   char' to prevent breakage with 8-bit character data on hosts where
+   'char' is signed.  (based on the patch by Hallvard B. Furuseth)
+ - Fixed an off-by-one error when checking if playing Angband is allowed
+   at this time of day. (Hallvard B. Furuseth)
+ - Fixed the activation of 'The Shield of Deflection of Gil-galad'.
+ - Show the 'cursed' flag of artifacts in the spoilers. (KUSUNOSE Toru)
+ - Fixed a bug that allowed changes to the 'birth_no_stacking' birth-
+   option to affect the current game. (KUSUNOSE Toru)

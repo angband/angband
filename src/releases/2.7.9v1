@@ -1,0 +1,104 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][src]
+ - [Amiga][ami]
+ - [OS/2][os2]
+
+[src]:http://rephial.org/downloads/2.7/angband-2.7.9v1-src.tar.gz "Source tarball, 799k"
+[os2]:http://rephial.org/downloads/2.7/angband-2.7.9v1-os2.zip "OS/2 port, 359k zip file"
+[ami]:http://rephial.org/downloads/2.7/angband-2.7.9v1-ami.lha "Amiga port, 394k lha file."
+
+Background
+==========
+Version 2.7.9v1 was released on  21st December 1995, and was the first of six 2.7.9 releases made by Ben Harrison in the next five months.  This was partly about wanting the nice round number of 2.8.0 to be a stable version, and partly about wanting to make some major changes to the savefile format that Ben believed should be synchronised with the change in the minor version number in the savefile.
+
+As usual in one of Ben's releases, most of the changes were internal rearrangements, optimisations and cleanups.  Unusually, there weren't many gameplay changes to go with them.
+
+Changelist
+==========
+Features
+--------
+ - All high starting stats affect starting gold negatively. The auto-roller
+   shows max-stats before asking for min-stats. 
+ - Multi-hued and Clear monsters look better with "use_graphics". 
+ - Monster death messages via missiles now resemble by spells. 
+ - Granite is harder than quartz is harder than magma. Quartz is actually
+   rather hard, consider a digger. 
+ - Spiking is now the only command that does not ask for an item. 
+ - There is now a "generic" option manager, with an option table. You can
+   now specify "forced values" for options in pref files. 
+ - The "make macro" function is simpler, and also easier to use. 
+ - There is now a maximum limit (of 128) on all "depth" values. You cannot
+   descend below level 128 (6400 feet) except as a wizard. 
+ - The "attack to cause earthquakes" is now an actual blow effect. 
+ - You now get a "You die." message when you die, ala "nethack". 
+ - Turning off haggling results in fixed prices being displayed. Haggling
+   and then turning off haggling also works "correctly". 
+ - Picking up an item describes the entire resulting slot. 
+ - Low dexterity no longer penalizes disarming ability. 
+ - Some of the "ego-item extensions" are now actual "ego-items". Thus, a
+   "Mace of Kill Evil (+1 to WIS)", and other such items. 
+ - All "boosted" ammo is an ego-item, usually "of Wounding". 
+ - The "Q" key (suicide) has been re-installed for roguelike keyset. 
+ - The internal direction "5" is now "target" and "zero" is nothing. 
+ - Genocide (and mass genocide) no longer work on Unique monsters. 
+ - Support for the "Acorn" RISC OS has been added. 
+
+Bugfixes and maintenance
+------------------------
+ - Filling a level with too many objects no longer causes nasty visual errors. 
+ - Generating a level with "too many" objects or monsters now causes the
+   level to be regenerated, with no "annoying" messages. 
+ - The \*enchant* weapon and \*enchant* armor scrolls were fixed. 
+ - The Borg is very different (and for the better). 
+ - The "l_list" / "r_list" arrays have been absorbed by "r_info". The
+   "x_list" / "k_list" arrays have been absorbed by "k_info". The "v_list" array
+   is now "a_info", and "e_info" was added, for "ego-item" info. 
+ - The "init.c" file is MUCH faster and prettier. 
+ - The "main-cur.c" file is gone (ancient curses support), and the
+   "main-cap.c" file is complete (play without "curses"). 
+ - Several arrays are now malloc'd instead of staticly declared. Several
+   tables have been moved into "init.c" or "birth.c". Several tables have been
+   modified to use 40 (not 80) bytes. 
+ - The "bash monster" code has been removed. 
+ - All "commands" that take directions check for "legality" first. All
+   "commands" that take directions will "attack" monsters in way. The
+   "get_a_dir()" spawned "get_aim_dir()" and "get_rep_dir()". 
+ - There are new global "running" and "resting" variables. 
+ - There are "generic" routines to "lose"/"gain" a stat 
+ - Some "Random" checks now use "percentage" code. 
+ - A few variables and defines were renamed for consistency. A few more
+   variables have more precise types (bool,byte,s16b). 
+ - The "message recall" code is hyper-efficient, space-wise anyway. 
+ - There is a generic "get_spell()" routine for casting and studying. 
+ - Studying spells/prayers takes a turn, and requires a book choice. 
+ - Curing of various maladies takes (blind, etc) place right away. 
+ - Curse weapon affects only weapons, curse armor only body armor. 
+ - There is now a "get_lib_path()" function for each machine. 
+ - The "lib/README" and "lib/RECORD" files have been "moved". The
+   "lib/README" file is now required (to verify "lib" folder). The
+   "lib/RECORD" file (high scores) is portable between platforms. 
+ - You can customize the macro/message/quark support in "config.h". 
+ - The ego-item indexes have been re-arranged, and renamed, etc. There has
+   been some modification of the ego-item "textual names". Each "ego-item" can
+   only apply to a given "equipment slot" now. 
+ - A lot of code is now conditional on "SET_UID", which is cleaner. 
+ - You get better messages if the "lib/RECORD" file is "locked". Empty and
+   missing files ("load.txt" or "time.txt") are different. A missing
+   "permissions" file defaults to maximal permissions. An empty "permissions"
+   file defaults to "standard" restrictions. 
+ - The stores are now a slightly more complex structure. 
+ - An explicit "break" is placed in the message recall at birth. 
+ - The dungeon generation code has been cleaned up some more. 
+ - The "inkey()" function now handles ALL keypress input. 
+ - The "use_stat" array is now recalculated by "calc_bonuses()". 
+ - The "handle_stuff()" function is slightly cleaner/faster. 
+ - The "hardcoded arrays" have removed except from "save-old.c". 
+ - The "name" and "text" fields of various arrays have been optimized. You
+   can now specify a "description" for objects, artifacts, ego-items. This
+   description, however, is not currently used for anything. 
+ - The "recharge" code has been "fixed" and now handles stacks. 
+ - Clearing the screen now induces an actual screen clear. Clearing a
+   portion of the screen now takes (x,y,w,h). 
+ - Some unused functions (umask, chmod, etc) were removed. 

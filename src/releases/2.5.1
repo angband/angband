@@ -1,0 +1,26 @@
+markdown = "true"
+Background
+==========
+2.5.1 was released on 15th December 1993, just one week after the [2.5.0 beta release](http://rephial.org/release/2.5.0-beta).  It was Charles Swiger's first "official" release as Angband maintainer, having been blessed with the title by the FTP maintainer since the tentative 2.5.0-beta release the week before.  It was still considered as being for testing purposes rather than a stable release.
+
+Changelist
+==========
+ * Fixed inventory bug with taking off equipped items
+ * Fixed delay causing divide-by-zero crashes
+ * Made word of recall a toggle, not yes/no, as that seems to be less aggravating
+ * Maybe fixed redisplay on edge of maps
+ * Fixed open/topen/fopen/tfopen which already exists on some systems
+ * Fixed a possible problem with displaying monster injury status
+ * Fixed a problem displaying the level feelings
+ * Fixed dropping worthless items in your home (they silently disappeared)
+ * Silently reconnect invisible monsters (*why* does this happen?)
+ * Fixed light redisplay while in stores (thanks to DGK)
+ * Adjusted code to stop allocating too high plusses on magical items and   too many bows of might/accuracy.
+ * Fixed desc_monsters.c overrun causing crash when looking at ghosts
+ * Added some bounds checking on reading options st 2.4 savefiles don't mess up 
+ * Readjusted magical plusses some more, made more things variable (such as AC +   for Amulet of Magi, etc ad nauseaum), also caused prices to be more responsive to the pluses on the items
+ * Redid monster fear code so that some monsters are 'fearless': E's, g's, most   undead and demons except intelligent ones, and all immobile monsters
+ * Added global variable monster_is_afraid so that fear messages only occur after the player has gotten all of his swings; much nicer to look at
+ * Monsters that heal themselves may 'regain their courage' when they cast heal
+ * PDSM no longer resists disenchantment or shards -- so watch out!  Note that
+   Bladeturner still resists everything, so it becomes a better choice.
