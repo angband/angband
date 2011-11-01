@@ -700,8 +700,7 @@ static void process_world(struct cave *c)
 	o_ptr = &p_ptr->inventory[INVEN_LIGHT];
 
 	/* Burn some fuel in the current light */
-	if (o_ptr->tval == TV_LIGHT)
-	{
+	if (o_ptr->tval == TV_LIGHT) {
 		bitflag f[OF_SIZE];
 		bool burn_fuel = TRUE;
 
@@ -717,42 +716,34 @@ static void process_world(struct cave *c)
 		    burn_fuel = FALSE;
 
 		/* Use some fuel (except on artifacts, or during the day) */
-		if (burn_fuel && o_ptr->timeout > 0)
-		{
+		if (burn_fuel && o_ptr->timeout > 0) {
 			/* Decrease life-span */
 			o_ptr->timeout--;
 
 			/* Hack -- notice interesting fuel steps */
 			if ((o_ptr->timeout < 100) || (!(o_ptr->timeout % 100)))
-			{
 				/* Redraw stuff */
 				p_ptr->redraw |= (PR_EQUIP);
-			}
 
 			/* Hack -- Special treatment when blind */
-			if (p_ptr->timed[TMD_BLIND])
-			{
+			if (p_ptr->timed[TMD_BLIND]) {
 				/* Hack -- save some light for later */
 				if (o_ptr->timeout == 0) o_ptr->timeout++;
-			}
 
 			/* The light is now out */
-			else if (o_ptr->timeout == 0)
-			{
+			} else if (o_ptr->timeout == 0) {
 				disturb(p_ptr, 0, 0);
 				msg("Your light has gone out!");
 
 				/* If it's a torch, now is the time to delete it */
-				if (o_ptr->sval == SV_LIGHT_TORCH)
-				{
+				if (o_ptr->sval == SV_LIGHT_TORCH) {
 					inven_item_increase(INVEN_LIGHT, -1);
 					inven_item_optimize(INVEN_LIGHT);
 				}
 			}
 
 			/* The light is getting dim */
-			else if ((o_ptr->timeout < 100) && (!(o_ptr->timeout % 10)))
-			{
+			else if ((o_ptr->timeout < 50) && (!(o_ptr->timeout % 20))) {
 				disturb(p_ptr, 0, 0);
 				msg("Your light is growing faint.");
 			}
