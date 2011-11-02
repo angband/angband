@@ -3810,16 +3810,19 @@ void display_itemlist(void)
 				object_type *o_ptr = object_byid(floor_list[i]);
 				unsigned j;
 
-				/* Skip gold/squelched */
-				if (o_ptr->tval == TV_GOLD || squelch_item_ok(o_ptr))
-					continue;
+				if (squelch_item_ok(o_ptr)) continue;
+				if (o_ptr->tval == TV_GOLD && o_ptr->marked == MARK_SEEN) continue;
 
 				/* See if we've already seen a similar item; if so, just add */
 				/* to its count */
 				for (j = 0; j < counter; j++) {
 					if (object_similar(o_ptr, types[j],	OSTACK_LIST) &&
 							seen[j] == this_seen) {
-						counts[j] += o_ptr->number;
+						if (o_ptr->marked == MARK_SEEN)
+							counts[j] += o_ptr->number;
+						else
+							counts[j] = 1;
+
 						if ((my - p_ptr->py) * (my - p_ptr->py) +
 								(mx - p_ptr->px) * (mx - p_ptr->px) <
 								dy[j] * dy[j] + dx[j] * dx[j]) {

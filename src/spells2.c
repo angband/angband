@@ -782,7 +782,7 @@ bool detect_treasure(bool aware, bool full)
 		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
 
 		/* Memorize it */
-		if (o_ptr->marked < MARK_SEEN)
+		if (o_ptr->marked == MARK_UNAWARE)
 			o_ptr->marked = full ? MARK_SEEN : MARK_AWARE;
 
 		/* Redraw */
