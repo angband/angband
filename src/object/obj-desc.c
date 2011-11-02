@@ -697,16 +697,16 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 
 	/*** Some things get really simple descriptions ***/
 
+	if (o_ptr->marked == MARK_AWARE) {
+		return strnfmt(buf, max, "an unknown item");
+	}
+
 	if (o_ptr->tval == TV_GOLD)
 		return strnfmt(buf, max, "%d gold pieces worth of %s%s",
 				o_ptr->pval[DEFAULT_PVAL], o_ptr->kind->name,
 				squelch_item_ok(o_ptr) ? " {squelch}" : "");
 
 	/** Construct the name **/
-
-	if (o_ptr->marked == MARK_AWARE) {
-		return strnfmt(buf, max, "an unknown item");
-	}
 
 	/* Copy the base name to the buffer */
 	end = obj_desc_name(buf, max, end, o_ptr, prefix, mode, spoil);
