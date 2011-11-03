@@ -1,0 +1,24 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][1]
+ - [Windows][2]
+ - [Mac OS X][3], universal binary
+
+[1]:http://rephial.org/downloads/3.1/angband-3.1.2v2.tar.gz "Source tarball, 3.3M"
+[2]:http://rephial.org/downloads/3.1/angband-3.1.2v2-win.zip "Windows port, 1.5M zip file"
+[3]:http://rephial.org/downloads/3.1/Angband-3.1.2v2-osx.dmg "Max OS X port, 2.2M .dmg file"
+
+Background
+==========
+Angband 3.1.2v2 was released on 14th February 2010 and was a minor bugfix release for issues in 3.1.2.
+
+Changelist 
+==========
+ - stop writing out the pricing log, to improve performance on flash drives
+ - fix OS X fresh install bug
+ - fix description of Berserker spell
+ - unarmed attacks now allow the player to learn "notice on attack" things
+ - fix colours in GCU port
+ - fix the verb used when attacking monsters with slays/brands
+ - fire at closest monster is now bound to 'Tab' in roguelike mode

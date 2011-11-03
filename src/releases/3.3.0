@@ -1,0 +1,42 @@
+markdown = "true"
+Downloads
+=========
+ - [Source code][1]
+ - [Windows][2]
+ - [Mac OS X][3], universal binary
+
+[1]:http://rephial.org/downloads/3.1/angband-v3.3.0.tar.gz "Source tarball, 3.4M"
+[2]:http://rephial.org/downloads/3.1/angband-v3.3.0-win.zip "Windows port, 2.5M zip file"
+[3]:http://rephial.org/downloads/3.1/Angband-v3.3.0-osx.dmg "Max OS X port, 3.2M .dmg file"
+
+Background
+==========
+Angband 3.3.0 was released on 31st July 2010, and had several significant changes from 3.2.0:
+
+ - Dungeon generation had its first major overhaul for two decades. As
+   well as rooms and vaults, pits and nests you will now find special "cavern"
+   and "labyrinth" levels occasionally. Both of these new level types, for
+   different reasons, can be quite dangerous.
+
+ - Level feelings were redesigned to separate danger from reward, with the latter getting a delay on each new level.
+
+ - Objects may now have up to three pvals, which are displayed in <angle
+   brackets>. So an object may provide +1 to STR and +2 to stealth at the same
+   time.
+
+ - The old macro system was removed and keymaps revamped to provide the functionality in a hopefully clearer way.
+ 
+ - Destroying items was changed to squelch the individual item instead.
+
+ - Resistances were revamped, and "protections" introduced against non-damaging effects (such as stun).
+
+ - Some items have been rebalanced: Dragon Scale armours are no longer quite
+   so frequently powerful, and magical effects which hinder monsters (slow,
+   sleep, confuse, scare) are now more useful. Elemental rings no longer boost
+   your melee damage. Teleport Other is now a bolt, affecting only one monster
+   at a time, and *Destruction* now removes artifacts as well as monsters.
+   Potions that cure wounds are no longer quite so powerful.
+
+ - Spiking doors was made more useful, and locking doors introduced (by
+   using the Disarm command). Monsters may take several turns to open/bash a
+   locked and spiked door.
