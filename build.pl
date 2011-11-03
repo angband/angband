@@ -131,6 +131,7 @@ $output_files->{"release"} = {};
 $dir = "src/releases";
 opendir(DIR, "$dir") or die $!;
 my @releases = ();
+my $newest_mod = 0;
 	
 while (my $file = readdir(DIR)) {
 	next unless (-f "$dir/$file");
@@ -140,7 +141,12 @@ while (my $file = readdir(DIR)) {
 		$table{"release_name"} = $file;
 	}
 	$table{"title"} = "Angband Releases: $table{'release_name'}";
-	push(@releases, \%table);
+
+        if ($table{"_lastmod"} > $newest_mod) {
+            $newest_mod = $table{"_lastmod"}
+        };	
+
+        push(@releases, \%table);
 }
 
 closedir(DIR);
@@ -162,6 +168,9 @@ for my $release (@releases) {
 	
 	%$release = apply_template("release_template.html", %$release);
 	%$release = apply_template("template.html", %$release);
+        if ($newest_mod > $release->{'_lastmod'}) {
+            $release->{'_lastmod'} = $newest_mod;
+        }
 	$output_files->{"release"}->{$release->{'filename'}} = $release;
 }
 
