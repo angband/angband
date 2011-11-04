@@ -145,6 +145,14 @@ static const flag_type ignore_flags[] =
 	{ OF_IGNORE_COLD, "cold" },
 };
 
+static const flag_type hates_flags[] =
+{
+	{ OF_HATES_ACID, "acid" },
+	{ OF_HATES_ELEC, "electricity" },
+	{ OF_HATES_FIRE, "fire" },
+	{ OF_HATES_COLD, "cold" },
+};
+
 static const flag_type sustain_flags[] =
 {
 	{ OF_SUST_STR, "strength" },
@@ -303,7 +311,7 @@ static bool describe_immune(textblock *tb, const bitflag flags[OF_SIZE])
 
 
 /*
- * Describe 'ignores' of an object.
+ * Describe IGNORE_ flags of an object.
  */
 static bool describe_ignores(textblock *tb, const bitflag flags[OF_SIZE])
 {
@@ -315,6 +323,24 @@ static bool describe_ignores(textblock *tb, const bitflag flags[OF_SIZE])
 		return FALSE;
 
 	textblock_append(tb, "Cannot be harmed by ");
+	info_out_list(tb, descs, count);
+
+	return TRUE;
+}
+
+/*
+ * Describe HATES_ flags of an object.
+ */
+static bool describe_hates(textblock *tb, const bitflag flags[OF_SIZE])
+{
+	const char *descs[N_ELEMENTS(hates_flags)];
+	size_t count = info_collect(tb, hates_flags, N_ELEMENTS(hates_flags),
+			flags, descs);
+
+	if (!count)
+		return FALSE;
+
+	textblock_append(tb, "Can be destroyed by ");
 	info_out_list(tb, descs, count);
 
 	return TRUE;
@@ -1324,6 +1350,7 @@ static textblock *object_info_out(const object_type *o_ptr, oinfo_detail_t mode)
 	if (describe_slays(tb, flags, o_ptr->tval)) something = TRUE;
 	if (describe_immune(tb, flags)) something = TRUE;
 	if (describe_ignores(tb, flags)) something = TRUE;
+	if (describe_hates(tb, flags)) something = TRUE;
 	if (describe_sustains(tb, flags)) something = TRUE;
 	if (describe_misc_magic(tb, flags)) something = TRUE;
 	if (ego && describe_ego(tb, o_ptr->ego)) something = TRUE;
