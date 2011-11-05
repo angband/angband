@@ -1350,6 +1350,7 @@ static textblock *object_info_out(const object_type *o_ptr, oinfo_detail_t mode)
 	if (describe_slays(tb, flags, o_ptr->tval)) something = TRUE;
 	if (describe_immune(tb, flags)) something = TRUE;
 	if (describe_ignores(tb, flags)) something = TRUE;
+	dedup_hates_flags(flags);
 	if (describe_hates(tb, flags)) something = TRUE;
 	if (describe_sustains(tb, flags)) something = TRUE;
 	if (describe_misc_magic(tb, flags)) something = TRUE;

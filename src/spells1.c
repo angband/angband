@@ -125,6 +125,22 @@ void monster_learn_resists(struct monster *m, struct player *p, int type)
 	return;
 }
 
+/**
+ * Strip the HATES_ flags out of a flagset for any IGNORE_ flags that are
+ * present
+ */
+void dedup_hates_flags(bitflag *f)
+{
+	size_t i;
+
+	for (i = 0; i < GF_MAX; i++) {
+		const struct gf_type *gf_ptr = &gf_table[i];
+		if (gf_ptr->obj_imm && of_has(f, gf_ptr->obj_imm) &&
+				gf_ptr->obj_hates && of_has(f, gf_ptr->obj_hates))
+			of_off(f, gf_ptr->obj_hates);
+	}
+}
+
 /*
  * Helper function -- return a "nearby" race for polymorphing
  *
