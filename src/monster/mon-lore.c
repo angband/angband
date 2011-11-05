@@ -1468,6 +1468,44 @@ static void describe_monster_abilities(const monster_race *r_ptr,
 		prev = TRUE;
 	}
 
+	/* Collect known but average susceptibilities */
+	vn = 0;
+	if (rf_has(l_ptr->flags, RF_IM_ACID)   && !rf_has(f, RF_IM_ACID))
+		descs[vn++] = "acid";
+	if (rf_has(l_ptr->flags, RF_IM_ELEC)   && !rf_has(f, RF_IM_ELEC))
+		descs[vn++] = "lightning";
+	if (rf_has(l_ptr->flags, RF_IM_FIRE)   && !rf_has(f, RF_IM_FIRE) &&
+	    !rf_has(f, RF_HURT_FIRE))
+		descs[vn++] = "fire";
+	if (rf_has(l_ptr->flags, RF_IM_COLD)   && !rf_has(f, RF_IM_COLD) &&
+	    !rf_has(f, RF_HURT_COLD))
+		descs[vn++] = "cold";
+	if (rf_has(l_ptr->flags, RF_IM_POIS)   && !rf_has(f, RF_IM_POIS))
+		descs[vn++] = "poison";
+	if (rf_has(l_ptr->flags, RF_IM_WATER)  && !rf_has(f, RF_IM_WATER))
+		descs[vn++] = "water";
+	if (rf_has(l_ptr->flags, RF_RES_NETH)  && !rf_has(f, RF_RES_NETH))
+		descs[vn++] = "nether";
+	if (rf_has(l_ptr->flags, RF_RES_PLAS)  && !rf_has(f, RF_RES_PLAS))
+		descs[vn++] = "plasma";
+	if (rf_has(l_ptr->flags, RF_RES_NEXUS) && !rf_has(f, RF_RES_NEXUS))
+		descs[vn++] = "nexus";
+	if (rf_has(l_ptr->flags, RF_RES_DISE)  && !rf_has(f, RF_RES_DISE))
+		descs[vn++] = "disenchantment";
+
+	if (vn)
+	{
+		/* Output connecting text */
+		if (prev)
+			text_out(", and does not resist ");
+		else
+			text_out("%s does not resist ", wd_he[msex]);
+
+		/* Write the text */
+		output_list(descs, vn, TERM_L_UMBER, "or ");
+		prev = TRUE;
+	}
+
 	/* Collect non-effects */
 	vn = 0;
 	if (rf_has(f, RF_NO_STUN)) descs[vn++] = "stunned";
