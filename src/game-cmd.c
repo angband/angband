@@ -187,15 +187,15 @@ struct item_selector item_selector[] =
 	  "You have nothing to refuel with.",
 	  obj_can_refill, (USE_INVEN | USE_FLOOR) },
 
-	{ CMD_USE_AIMED, "Use what Item? ",
+	{ CMD_USE_AIMED, "Use what item? ",
 	  "You have nothing to use.",
 	  obj_is_used_aimed, (USE_EQUIP |USE_INVEN | USE_FLOOR | SHOW_FAIL | QUIVER_TAGS) },
 
-	{ CMD_USE_UNAIMED, "Use what Item? ",
+	{ CMD_USE_UNAIMED, "Use what item? ",
 	  "You have nothing to use.",
 	  obj_is_used_unaimed, (USE_EQUIP |USE_INVEN | USE_FLOOR | SHOW_FAIL) },
 
-	{ CMD_USE_ANY, "Use what Item? ",
+	{ CMD_USE_ANY, "Use what item? ",
 	  "You have nothing to use.",
 	  obj_is_useable, (USE_EQUIP |USE_INVEN | USE_FLOOR | SHOW_FAIL | QUIVER_TAGS) },
 };
