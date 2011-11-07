@@ -139,8 +139,6 @@ static bool borg_object_similar(borg_item  *o_ptr, borg_item  *j_ptr)
 {
     /* NOTE: This assumes the giving of one item at a time */
     int total = o_ptr->iqty + 1;
-	int i;
-
 
     /* Require identical object types */
     if (o_ptr->kind != j_ptr->kind) return (0);
@@ -245,10 +243,8 @@ static bool borg_object_similar(borg_item  *o_ptr, borg_item  *j_ptr)
             if (o_ptr->name2 != j_ptr->name2) return (FALSE);
 
             /* Hack -- Never stack "powerful" items */
-            for (i = 0; i < 12 && i < OF_SIZE; i++)
-			{
-				if (o_ptr->flags[i] || j_ptr->flags[i]) return (FALSE);
-			}
+            if (!of_is_empty(o_ptr->flags) || !of_is_empty(j_ptr->flags))
+				return FALSE;
 
             /* Hack -- Never stack recharging items */
             if (o_ptr->timeout || j_ptr->timeout) return (FALSE);

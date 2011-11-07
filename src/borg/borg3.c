@@ -1334,11 +1334,10 @@ int borg_wield_slot(borg_item *item)
 bool borg_object_star_id_aux(borg_item *borg_item, object_type *real_item)
 {
 	bitflag f[OF_SIZE];
-	int i = OF_SIZE;
 
     /* the data directly from the real item    */
     object_flags(real_item, f);
-	for (i = 0; i < 12 && i < OF_SIZE; i++) borg_item->flags[i] = f[i];
+    of_copy(borg_item->flags, f);
 
     borg_item->needs_I = FALSE;
 
@@ -1917,7 +1916,7 @@ void borg_item_analyze(borg_item *item, object_type *real_item, cptr desc)
     item->level = k_info[item->kind].level;
 
     /* Extract the base flags -- Kind only given if 'able' */
-	for (i = 0; i < 12 && i < OF_SIZE; i++) item->flags[i] = f[i];
+    of_copy(item->flags, f);
 
     /* Base Cost -- Guess */
 
