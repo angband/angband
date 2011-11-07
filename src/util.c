@@ -341,15 +341,19 @@ ui_event inkey_ex(void)
 #ifdef ALLOW_BORG
 
 	/* Mega-Hack -- Use the special hook */
-	if (inkey_hack && ((ke.key = (*inkey_hack)(inkey_xtra)) != 0))
+	if (inkey_hack)
 	{
-		/* Cancel the various "global parameters" */
-		inkey_flag = FALSE;
-		inkey_scan = 0;
-		ke.type = EVT_KBRD;
+		ke.key = (*inkey_hack)(inkey_xtra);
+		if (ke.key.type != EVT_NONE)
+		{
+			/* Cancel the various "global parameters" */
+			inkey_flag = FALSE;
+			inkey_scan = 0;
+			ke.type = EVT_KBRD;
 
-		/* Accept result */
-		return (ke);
+			/* Accept result */
+			return (ke);
+		}
 	}
 
 #endif /* ALLOW_BORG */
