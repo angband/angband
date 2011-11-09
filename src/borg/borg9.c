@@ -3227,7 +3227,7 @@ void resurrect_borg(void)
  * A special function hook (see "util.c") which allows the Borg to take
  * control of the "inkey()" function, and substitute in fake keypresses.
  */
-extern char (*inkey_hack)(int flush_first);
+extern struct keypress (*inkey_hack)(int flush_first);
 
 /*
  * This function lets the Borg "steal" control from the user.
@@ -3261,9 +3261,10 @@ extern char (*inkey_hack)(int flush_first);
  * the game has asked for the next keypress, but the various "keypress"
  * routines should be able to handle this.
  */
-static char borg_inkey_hack(int flush_first)
+static struct keypress borg_inkey_hack(int flush_first)
 {
     char borg_ch;
+    struct keypress key = {EVT_KBRD, 0, 0};
 
 	ui_event ch_evt;
 
@@ -3299,7 +3300,8 @@ static char borg_inkey_hack(int flush_first)
         flush();
 
         /* Done */
-        return (0);
+        key.type = EVT_NONE;
+        return key;
     }
 
 
@@ -3383,7 +3385,8 @@ static char borg_inkey_hack(int flush_first)
 #endif /* BABLOS */
 
         /* Cheat death */
-        return ('n');
+        key.code = 'n';
+        return key;
     }
 
     /* with 292, there is a flush() introduced as it asks for confirmation.
@@ -3397,7 +3400,8 @@ static char borg_inkey_hack(int flush_first)
     {
         /* Return the confirmation */
         borg_note("# Confirming use of Spell/Prayer.");
-        return ('y');
+        key.code = 'y';
+        return key;
     }
 
     /* with 292, there is a flush() introduced as it asks for confirmation.
@@ -3413,7 +3417,8 @@ static char borg_inkey_hack(int flush_first)
         /* reset the flag */
         borg_confirm_target = FALSE;
         /* Return 5 for old target */
-            return ('5');
+        key.code = '5';
+        return key;
     }
 
 	/* Wearing two rings.  Place this on the left hand */
@@ -3423,7 +3428,8 @@ static char borg_inkey_hack(int flush_first)
         (streq(buf, "(Equip: c-d,")))
     {
         /* Left hand */
-        return ('c');
+        key.code = 'c';
+        return key;
     }
 
 	/* Mega-Hack -- Handle death */
@@ -3460,7 +3466,8 @@ static char borg_inkey_hack(int flush_first)
             borg_oops("player died");
 
             /* Useless keypress */
-            return (KTRL('C'));
+            key.code = KTRL('C');
+            return key;
         }
     }
 
@@ -3483,7 +3490,8 @@ static char borg_inkey_hack(int flush_first)
             borg_parse(buf);
         }
         /* Clear the message */
-        return (' ');
+        key.code = ' ';
+        return key;
     }
 
 
@@ -3508,7 +3516,8 @@ static char borg_inkey_hack(int flush_first)
         }
 
         /* Clear the message */
-        return (' ');
+        key.code = ' ';
+        return key;
 
     }
     /* Flush messages */
@@ -3519,7 +3528,10 @@ static char borg_inkey_hack(int flush_first)
     borg_ch = borg_inkey(TRUE);
 
     /* Use the key */
-    if (borg_ch) return (borg_ch);
+    if (borg_ch) {
+        key.code = borg_ch;
+        return key;
+    }
 
 
 	/* Check for user abort */
@@ -3538,7 +3550,8 @@ static char borg_inkey_hack(int flush_first)
 		borg_oops("user abort");
 
 		/* Hack -- Escape */
-		return (ESCAPE);
+		key.code = ESCAPE;
+		return key;
 	}
 
 	/* for some reason, selling and buying in the store sets the event handler to Select. */
@@ -3575,14 +3588,18 @@ static char borg_inkey_hack(int flush_first)
     borg_ch = borg_inkey(TRUE);
 
     /* Use the key */
-    if (borg_ch) return (borg_ch);
+    if (borg_ch) {
+        key.code = borg_ch;
+        return key;
+    }
 
 
     /* Oops */
     borg_oops("normal abort");
 
     /* Hack -- Escape */
-    return (ESCAPE);
+    key.code = ESCAPE;
+    return key;
 }
 
 /*
@@ -5939,16 +5956,16 @@ void do_cmd_borg(void);
  */
 void do_cmd_borg(void)
 {
-    char cmd;
+    struct keypress cmd;
 
+    cmd.type = EVT_KBRD;
 
 #ifdef BABLOS
-
     if (auto_play)
     {
         auto_play = FALSE;
         keep_playing = TRUE;
-        cmd = 'z';
+        cmd.code = 'z';
     }
     else
     {
@@ -5970,7 +5987,7 @@ void do_cmd_borg(void)
 #endif /* BABLOS */
 
     /* Simple help */
-    if (cmd == '?')
+    if (cmd.code == '?')
     {
         int i = 2;
 
@@ -6030,7 +6047,7 @@ void do_cmd_borg(void)
     /* Hack -- force initialization */
     if (!initialized) borg_init_9();
 
-    switch (cmd)
+    switch (cmd.code)
     {
         /* Command: Nothing */
         case '$':
@@ -6223,7 +6240,7 @@ void do_cmd_borg(void)
             /* Get a "Borg command", or abort */
             if (!get_com("Borg command: Toggle Flag: (m/d/s/f/g) ", &cmd)) return;
 
-            switch (cmd)
+            switch (cmd.code)
             {
                 /* Give borg thought messages in window */
                 case 'm':
@@ -6282,7 +6299,7 @@ void do_cmd_borg(void)
             if (!get_com("Borg command: Toggle Cheat: (d/i/e/s/p)", &cmd))
                 return;
 
-            switch (cmd)
+            switch (cmd.code)
             {
                 case 'd':
                 case 'D':
@@ -6344,7 +6361,7 @@ void do_cmd_borg(void)
             if (!get_com("Borg command: Show grids: ", &cmd)) return;
 
             /* Extract a flag */
-            switch (cmd)
+            switch (cmd.code)
             {
                 case '0': low = high = 1 << 0; break;
                 case '1': low = high = 1 << 1; break;
@@ -6448,7 +6465,7 @@ void do_cmd_borg(void)
             if (!get_com("Borg command: Show grids: ", &cmd)) return;
 
             /* Extract a flag */
-            switch (cmd)
+            switch (cmd.code)
             {
                 case '0': mask = 1 << 0; break; /* Mark */
                 case '1': mask = 1 << 1; break; /* Glow */
@@ -7025,7 +7042,6 @@ void do_cmd_borg(void)
         {
            int new_borg_stop_dlevel = 127;
            int new_borg_stop_clevel = 51;
-           char cmd;
 
            /* Get the new max depth */
            new_borg_stop_dlevel = get_quantity("Enter new auto-stop dlevel: ", MAX_DEPTH -1);
@@ -7034,7 +7050,7 @@ void do_cmd_borg(void)
 
            borg_stop_dlevel = new_borg_stop_dlevel;
            borg_stop_clevel = new_borg_stop_clevel;
-           if (cmd =='n' || cmd =='N' ) borg_stop_king = FALSE;
+           if (cmd.code =='n' || cmd.code =='N' ) borg_stop_king = FALSE;
 
            break;
        }
@@ -7206,13 +7222,12 @@ void do_cmd_borg(void)
         case 'h':
         case 'H':
         {
-            char cmd;
             int item, to;
 
             /* Get a "Borg command", or abort */
             if (!get_com("Dynamic Borg Has What: ((i)nv/(w)orn/(a)rtifact/(s)kill) ", &cmd)) return;
 
-            switch (cmd)
+            switch (cmd.code)
             {
                 case 'i':
                 case 'I':
@@ -7253,7 +7268,7 @@ void do_cmd_borg(void)
             borg_notice_home(NULL, FALSE);
             for (;item < to; item++)
             {
-                switch (cmd)
+                switch (cmd.code)
                 {
                     case 'i':
                     case 'I':
@@ -7339,30 +7354,26 @@ void do_cmd_borg(void)
 		/* Command: Resurrect Borg */
 		case 'R':
 		{
-           char cmd;
-			int i =0;
+			/* Confirm it */
+			get_com("Are you sure you want to Respawn this borg? (y or n)? ", &cmd);
 
-           /* Confirm it */
-           get_com("Are you sure you want to Respawn this borg? (y or n)? ", &cmd);
-
-		   if (cmd =='y' || cmd =='Y' )
-           {
+			if (cmd.code =='y' || cmd.code =='Y' )
+			{
 			   resurrect_borg();
-		   }
-           break;
+			}
+			break;
        }
 
 		/* Command: Restock the Stores */
 		case 'r':
 		{
-           char cmd;
 			int n;
 
-           /* Confirm it */
-           get_com("Are you sure you want to Restock the stores? (y or n)? ", &cmd);
+			/* Confirm it */
+			get_com("Are you sure you want to Restock the stores? (y or n)? ", &cmd);
 
-           if (cmd =='y' || cmd =='Y' )
-           {
+			if (cmd.code =='y' || cmd.code =='Y' )
+			{
 				/* Message */
 				msg("Updating Shops...");
 
@@ -7375,9 +7386,9 @@ void do_cmd_borg(void)
 					/* Maintain */
 					store_maint(&stores[n]);
 				}
-		   }
+			}
 
-           break;
+			break;
        }
 
         case ';':
