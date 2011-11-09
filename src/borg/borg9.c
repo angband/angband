@@ -3726,10 +3726,7 @@ glyph translate_visuals[255][255];
 void init_translate_visuals(void)
 {
     int i, j;
-
-    bool graf_new = (use_graphics && streq(ANGBAND_GRAF, "new"));
-    bool graf_david = (use_graphics && streq(ANGBAND_GRAF, "david"));
-
+    enum grid_light_level lighting;
 
     /* Extract default attr/char code for features */
     for (i = 0; i < z_info->f_max; i++)
@@ -3738,30 +3735,11 @@ void init_translate_visuals(void)
 
         if (!f_ptr->name) continue;
 
-        /* Store the underlying values */
-        translate_visuals[(byte)f_ptr->x_attr][(byte)f_ptr->x_char].d_attr = f_ptr->d_attr;
-        translate_visuals[(byte)f_ptr->x_attr][(byte)f_ptr->x_char].d_char = f_ptr->d_char;
-
-        /* Add the various ASCII lighting levels */
-        if (f_ptr->x_attr == TERM_WHITE)
+        for (lighting = 0; lighting < FEAT_LIGHTING_MAX; lighting++)
         {
-            translate_visuals[TERM_YELLOW][(byte)f_ptr->x_char].d_attr = f_ptr->d_attr;
-            translate_visuals[TERM_YELLOW][(byte)f_ptr->x_char].d_char = f_ptr->d_char;
-
-            translate_visuals[TERM_L_DARK][(byte)f_ptr->x_char].d_attr = f_ptr->d_attr;
-            translate_visuals[TERM_L_DARK][(byte)f_ptr->x_char].d_char = f_ptr->d_char;
-
-            translate_visuals[TERM_SLATE][(byte)f_ptr->x_char].d_attr = f_ptr->d_attr;
-            translate_visuals[TERM_SLATE][(byte)f_ptr->x_char].d_char = f_ptr->d_char;
-        }
-        else if (graf_new && feat_supports_lighting((byte)i) &&
-                 (f_ptr->x_char & 0x80) && (f_ptr->x_attr & 0x80))
-        {
-            translate_visuals[(byte)f_ptr->x_attr][(byte)f_ptr->x_char + 1].d_attr = f_ptr->d_attr;
-            translate_visuals[(byte)f_ptr->x_attr][(byte)f_ptr->x_char + 1].d_char = f_ptr->d_char;
-
-            translate_visuals[(byte)f_ptr->x_attr][(byte)f_ptr->x_char + 2].d_attr = f_ptr->d_attr;
-            translate_visuals[(byte)f_ptr->x_attr][(byte)f_ptr->x_char + 2].d_char = f_ptr->d_char;
+        	byte char_idx = f_ptr->x_char[lighting] & 0xFF;
+        	translate_visuals[(byte)f_ptr->x_attr[lighting]][char_idx].d_attr = f_ptr->d_attr;
+        	translate_visuals[(byte)f_ptr->x_attr[lighting]][char_idx].d_char = f_ptr->d_char;
         }
     }
 
@@ -3789,7 +3767,7 @@ void init_translate_visuals(void)
         translate_visuals[(byte)r_ptr->x_attr][(byte)r_ptr->x_char].d_char = r_ptr->d_char;
 
         /* Multi-hued monster in ASCII mode */
-        if (rf_has(r_ptr->flags, RF_CHAR_MULTI) &&
+        if (rf_has(r_ptr->flags, RF_ATTR_MULTI) &&
             !((r_ptr->x_attr & 0x80) && (r_ptr->x_char & 0x80)))
         {
             for (j = 0; j < 16; j++)
