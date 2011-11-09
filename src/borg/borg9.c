@@ -3121,18 +3121,17 @@ void resurrect_borg(void)
 		/* Hack -- seed for town layout */
 		seed_town = randint0(0x10000000);
 
-		/* Hack -- seed for random artifacts */
-		seed_randart = randint0(0x10000000);
-
 		/* Roll up a new character. Quickstart is allowed if ht_birth is set */
 		player_birth(TRUE);
 
+		/* Seed for random artifacts */
+		if (!seed_randart || !OPT(birth_keep_randarts))
+			seed_randart = randint0(0x10000000);
+
 		/* Randomize the artifacts if required */
-		if (OPT(birth_randarts) &&
-				(!OPT(birth_keep_randarts) || !p_ptr->randarts)) {
+		if (OPT(birth_randarts))
 			do_randart(seed_randart, TRUE);
-			p_ptr->randarts = TRUE;
-		}
+
 #if 0
 	/* Borrow commands from birth.c */
 	get_stats(stats);
