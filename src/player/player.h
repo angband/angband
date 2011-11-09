@@ -14,6 +14,23 @@ extern const byte adj_str_blow[STAT_RANGE];
 extern const byte adj_dex_safe[STAT_RANGE];
 extern const byte adj_con_fix[STAT_RANGE];
 extern const byte adj_str_hold[STAT_RANGE];
+#ifdef ALLOW_BORG
+extern const byte adj_int_dev[STAT_RANGE];
+extern const byte adj_wis_sav[STAT_RANGE];
+extern const byte adj_dex_dis[STAT_RANGE];
+extern const byte adj_int_dis[STAT_RANGE];
+extern const byte adj_dex_ta[STAT_RANGE];
+extern const byte adj_str_td[STAT_RANGE];
+extern const byte adj_dex_th[STAT_RANGE];
+extern const byte adj_str_th[STAT_RANGE];
+extern const byte adj_str_wgt[STAT_RANGE];
+extern const byte adj_str_dig[STAT_RANGE];
+extern const byte adj_dex_blow[STAT_RANGE];
+extern const int adj_con_mhp[STAT_RANGE];
+extern const int adj_mag_study[STAT_RANGE];
+extern const int adj_mag_mana[STAT_RANGE];
+extern const byte blows_table[12][12];
+#endif
 
 void calc_bonuses(object_type inventory[], player_state *state, bool id_only);
 int calc_blows(const object_type *o_ptr, player_state *state, int extra_blows);
@@ -39,6 +56,10 @@ extern byte player_sp_attr(struct player *p);
 extern struct player_race *player_id2race(guid id);
 
 /* spell.c */
+#ifdef ALLOW_BORG
+extern const byte adj_mag_fail[STAT_RANGE];
+extern const int adj_mag_stat[STAT_RANGE];
+#endif
 int spell_collect_from_book(const object_type *o_ptr, int *spells);
 int spell_book_count_spells(const object_type *o_ptr, bool (*tester)(int spell));
 bool spell_okay_list(bool (*spell_test)(int spell), const int spells[], int n_spells);
