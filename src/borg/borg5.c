@@ -3171,11 +3171,11 @@ static void borg_update_map(void)
     {
         /* Direct access XXX XXX XXX */
         byte *aa = &(Term->scr->a[dy+1][13]);
-        char *cc = &(Term->scr->c[dy+1][13]);
+        wchar_t *cc = &(Term->scr->c[dy+1][13]);
 
 #ifdef ALLOW_BORG_GRAPHICS
        byte a_trans;
-       char c_trans;
+       wchar_t c_trans;
 #endif /* ALLOW_BORG_GRAPHICS */
 
 
@@ -3200,8 +3200,8 @@ static void borg_update_map(void)
 #ifdef ALLOW_BORG_GRAPHICS
 
            /* Translate the glyph into an ASCII char */
-           a_trans = translate_visuals[(byte)t_a][(byte)t_c].d_attr;
-           c_trans = translate_visuals[(byte)t_a][(byte)t_c].d_char;
+           a_trans = translate_visuals[(byte)t_a][t_c].d_attr;
+           c_trans = translate_visuals[(byte)t_a][t_c].d_char;
 
            if ((a_trans != 0) || (c_trans != 0))
            {
@@ -3677,7 +3677,7 @@ static void borg_update_map(void)
                      /* Check for memory overflow */
                     if (borg_wank_num == AUTO_VIEW_MAX)
                     {
-						borg_note(format("# Wank problem at grid (%d,%d) ta:%d, tc:%d, borg at (%d,%d)",y,x,t_a,t_c,c_y,c_x));
+						borg_note(format("# Wank problem at grid (%d,%d) ta:%d, tc:%lc, borg at (%d,%d)",y,x,t_a,t_c,c_y,c_x));
                         borg_oops("too many objects...");
 					}
 

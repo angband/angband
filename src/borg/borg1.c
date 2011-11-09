@@ -1407,7 +1407,7 @@ void mmove2(int *py, int *px, int y1, int x1, int y2, int x2)
  *
  * XXX XXX XXX We assume the given location is legal
  */
-errr borg_what_char(int x, int y, byte *a, char *c)
+errr borg_what_char(int x, int y, byte *a, wchar_t *c)
 {
     /* Direct access XXX XXX XXX */
     (*a) = (Term->scr->a[y][x]);
@@ -1444,12 +1444,13 @@ errr borg_what_char(int x, int y, byte *a, char *c)
 errr borg_what_text(int x, int y, int n, byte *a, char *s)
 {
     int i;
+    wchar_t screen_str[1024];
 
     byte t_a;
-    char t_c;
+    wchar_t t_c;
 
     byte *aa;
-    char *cc;
+    wchar_t *cc;
 
 	int w, h;
 
@@ -1480,10 +1481,10 @@ errr borg_what_text(int x, int y, int n, byte *a, char *s)
         t_c = *cc++;
 
         /* Handle spaces */
-        if ((t_c == ' ') || !t_a)
+        if ((t_c == L' ') || !t_a)
         {
             /* Save space */
-            s[i] = ' ';
+            screen_str[i] = L' ';
         }
 
         /* Handle real text */
@@ -1504,16 +1505,18 @@ errr borg_what_text(int x, int y, int n, byte *a, char *s)
             }
 
             /* Save char */
-            s[i] = t_c;
+            screen_str[i] = t_c;
         }
     }
 
     /* Terminate the string */
-    s[i] = '\0';
+    screen_str[i] = L'\0';
 
     /* Save the attribute */
     (*a) = d_a;
 
+    /* Convert back to a char string */
+    wcstombs(s, screen_str, n+1);
     /* Too short */
     if ((n > 0) && (i != n)) return (1);
 

@@ -1983,7 +1983,7 @@ extern void borg_flush(void);
 /*
  * Obtain some text from the screen (single character)
  */
-extern errr borg_what_char(int x, int y, byte *a, char *c);
+extern errr borg_what_char(int x, int y, byte *a, wchar_t *c);
 
 /*
  * Obtain some text from the screen (multiple characters)
