@@ -1414,7 +1414,7 @@ void borg_near_monster_type(int dist)
 			(rsf_has(r_ptr->spell_flags, RSF_S_SPIDER)) ||
 			(rsf_has(r_ptr->spell_flags, RSF_S_HOUND)) ||
 			(rsf_has(r_ptr->spell_flags, RSF_S_HYDRA)) ||
-			(rsf_has(r_ptr->spell_flags, RSF_S_ANGEL)) ||
+			(rsf_has(r_ptr->spell_flags, RSF_S_AINU)) ||
 			(rsf_has(r_ptr->spell_flags, RSF_S_DEMON)) ||
 			(rsf_has(r_ptr->spell_flags, RSF_S_UNDEAD)) ||
 			(rsf_has(r_ptr->spell_flags, RSF_S_DRAGON)) ||
@@ -4829,7 +4829,7 @@ static int borg_thrust_damage_one(int i)
     if (rf_has(r_ptr->flags, RF_MULTIPLY))
         dam = (dam * 3/2);
 
-    /* Enhance the preceived damgage to summoner in order to influence the
+    /* Enhance the perceived damage to summoner in order to influence the
      * choice of targets.
      */
     if ( (rsf_has(r_ptr->spell_flags, RSF_S_KIN)) ||
@@ -4840,7 +4840,7 @@ static int borg_thrust_damage_one(int i)
          (rsf_has(r_ptr->spell_flags, RSF_S_SPIDER)) ||
          (rsf_has(r_ptr->spell_flags, RSF_S_HOUND)) ||
          (rsf_has(r_ptr->spell_flags, RSF_S_HYDRA)) ||
-         (rsf_has(r_ptr->spell_flags, RSF_S_ANGEL)) ||
+         (rsf_has(r_ptr->spell_flags, RSF_S_AINU)) ||
          (rsf_has(r_ptr->spell_flags, RSF_S_DEMON)) ||
          (rsf_has(r_ptr->spell_flags, RSF_S_UNDEAD)) ||
          (rsf_has(r_ptr->spell_flags, RSF_S_DRAGON)) ||
@@ -5929,7 +5929,7 @@ int borg_launch_damage_one(int i, int dam, int typ, int ammo_location)
     if (rf_has(r_ptr->flags, RF_MULTIPLY))
         dam = (dam * 3/2);
 
-    /* Enhance the preceived damage to summoner in order to influence the
+    /* Enhance the perceived damage to summoner in order to influence the
      * choice of targets.
      */
     if ( (rsf_has(r_ptr->spell_flags, RSF_S_KIN)) ||
@@ -5940,7 +5940,7 @@ int borg_launch_damage_one(int i, int dam, int typ, int ammo_location)
          (rsf_has(r_ptr->spell_flags, RSF_S_SPIDER)) ||
          (rsf_has(r_ptr->spell_flags, RSF_S_HOUND)) ||
          (rsf_has(r_ptr->spell_flags, RSF_S_HYDRA)) ||
-         (rsf_has(r_ptr->spell_flags, RSF_S_ANGEL)) ||
+         (rsf_has(r_ptr->spell_flags, RSF_S_AINU)) ||
          (rsf_has(r_ptr->spell_flags, RSF_S_DEMON)) ||
          (rsf_has(r_ptr->spell_flags, RSF_S_UNDEAD)) ||
          (rsf_has(r_ptr->spell_flags, RSF_S_DRAGON)) ||
