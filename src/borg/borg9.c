@@ -4996,7 +4996,7 @@ void borg_write_map(bool ask)
             if (ag->take)
             {
                 borg_take *take = &borg_takes[ag->take];
-                object_kind *k_ptr = &k_info[take->k_idx];
+                object_kind *k_ptr = take->kind;
                 ch = k_ptr->d_char;
             }
 
@@ -6611,7 +6611,7 @@ void do_cmd_borg(void)
                 borg_take *take = &borg_takes[i];
 
                 /* Still alive */
-                if (take->k_idx)
+                if (take->kind)
                 {
                     int x = take->x;
                     int y = take->y;

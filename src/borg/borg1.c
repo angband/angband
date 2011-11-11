@@ -2752,7 +2752,7 @@ int borg_lookup_kind(int tval, int sval)
 	}
 
 	/* Failure */
-	msg("No object (%s,%d)", tval_find_name(tval), tval, sval);
+	msg("No object (%s,%d,%d)", tval_find_name(tval), tval, sval);
 	return 0;
 }
 

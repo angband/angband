@@ -133,7 +133,7 @@ static borg_wank *borg_wanks;
  *
  * Hack -- we use "base level" instead of "allocation levels".
  */
-static int borg_guess_kind(byte a, char c,int y,int x)
+static struct object_kind *borg_guess_kind(byte a, char c,int y,int x)
 {
     /* ok, this is an real cheat.  he ought to use the look command
      * in order to correctly id the object.  But I am passing that up for
@@ -141,11 +141,9 @@ static int borg_guess_kind(byte a, char c,int y,int x)
      */
 
     /* Cheat the Actual item */
-    s16b k_idx;
     object_type *o_ptr;
-    k_idx = cave->o_idx[y][x];
-    o_ptr= object_byid(k_idx);
-    return (o_ptr->kind->kidx);
+    o_ptr= object_byid(cave->o_idx[y][x]);
+    return (o_ptr->kind);
 #if 0
 /* The rest here is the original code.  It made several mistakes */
     /* Actual item */
@@ -237,11 +235,11 @@ void borg_delete_take(int i)
     borg_take *take = &borg_takes[i];
 
     /* Paranoia -- Already wiped */
-    if (!take->k_idx) return;
+    if (!take->kind) return;
 
     /* Note */
     if (borg_verbose) borg_note(format("# Forgetting an object '%s' at (%d,%d)",
-                     (k_info[take->k_idx].name),
+                     (take->kind->name),
                      take->y, take->x));
 
     /* Access the grid */
@@ -301,7 +299,7 @@ static void borg_follow_take(int i)
 
 
     /* Paranoia */
-    if (!take->k_idx) return;
+    if (!take->kind) return;
 
 
     /* Old location */
@@ -324,7 +322,7 @@ static void borg_follow_take(int i)
 
     /* Note */
     borg_note(format("# There was an object '%s' at (%d,%d)",
-                     (k_info[take->k_idx].name),
+                     (take->kind->name),
                      ox, oy));
 
 
@@ -337,7 +335,7 @@ static void borg_follow_take(int i)
 /*
  * Obtain a new "take" index
  */
-static int borg_new_take(int k_idx, int y, int x)
+static int borg_new_take(struct object_kind *kind, int y, int x)
 {
     int i, n = -1;
 
@@ -351,7 +349,7 @@ static int borg_new_take(int k_idx, int y, int x)
     for (i = 1; (n < 0) && (i < borg_takes_nxt); i++)
     {
         /* Reuse "dead" objects */
-        if (!borg_takes[i].k_idx) n = i;
+        if (!borg_takes[i].kind) n = i;
     }
 
     /* Allocate a new object */
@@ -382,8 +380,8 @@ static int borg_new_take(int k_idx, int y, int x)
     take = &borg_takes[n];
 
     /* Save the kind */
-    take->k_idx = k_idx;
-	take->tval = k_info[k_idx].tval;
+    take->kind = kind;
+	take->tval = kind->tval;
 
     /* Save the location */
     take->x = x;
@@ -399,13 +397,13 @@ static int borg_new_take(int k_idx, int y, int x)
 	take->orbed = FALSE;
 
 	/* Assess a estimated value */
-	if (k_info[k_idx].aware)
+	if (kind->aware)
 	{
 		/* Standard Value of an item */
-		take->value = k_info[k_idx].cost;
+		take->value = kind->cost;
 
 		/* Money needs a value */
-		if (k_idx >= K_MONEY_START && k_idx <= K_MONEY_STOP) take->value = 30;
+		if (take->tval == TV_GOLD) take->value = 30;
 	}
 	else
 	{
@@ -423,7 +421,7 @@ static int borg_new_take(int k_idx, int y, int x)
 
     /* Note */
     borg_note(format("# Creating an object '%s' at (%d,%d)",
-                     (k_info[take->k_idx].name),
+                     (take->kind->name),
                      take->x, take->y));
 
     /* Wipe goals only if I have some light source */
@@ -443,21 +441,22 @@ static int borg_new_take(int k_idx, int y, int x)
  */
 static bool observe_take_diff(int y, int x, byte a, char c)
 {
-    int i, k_idx;
+    int i;
+    struct object_kind *kind;
 
     borg_take *take;
 
     /* Guess the kind */
-    k_idx = borg_guess_kind(a, c,y,x);
+    kind = borg_guess_kind(a, c,y,x);
 
     /* Oops */
-    if (!k_idx) return (FALSE);
+    if (!kind) return (FALSE);
 
     /* no new takes if hallucinations */
     if (borg_skill[BI_ISIMAGE]) return (FALSE);
 
     /* Make a new object */
-    i = borg_new_take(k_idx, y, x);
+    i = borg_new_take(kind, y, x);
 
     /* Get the object */
     take = &borg_takes[i];
@@ -488,7 +487,7 @@ static bool observe_take_move(int y, int x, int d, byte a, char c)
         borg_take *take = &borg_takes[i];
 
         /* Skip dead objects */
-        if (!take->k_idx) continue;
+        if (!take->kind) continue;
 
         /* Skip assigned objects */
         if (take->seen) continue;
@@ -504,7 +503,7 @@ static bool observe_take_move(int y, int x, int d, byte a, char c)
         if (z > d) continue;
 
         /* Access the kind */
-        k_ptr = &k_info[take->k_idx];
+        k_ptr = take->kind;
 
         /* Require matching char if not hallucinating*/
         if (!borg_skill[BI_ISIMAGE] && c != k_ptr->d_char) continue;
@@ -613,9 +612,7 @@ static int borg_guess_race(byte a, char c, bool multi, int y, int x)
     int b_i = 0, b_s = 0;
 #endif
 
-    s16b m_idx;
     monster_type   *m_ptr;
-    m_idx = cave->m_idx[y][x];
     m_ptr= cave_monster(cave, cave->m_idx[y][x]);
 
     /* Actual monsters */
@@ -1052,7 +1049,7 @@ static void borg_update_kill_new(int i)
     if (m_ptr->maxhp)
     {
         /* Cheat the "percent" of health */
-        pct = 100L * m_ptr->hp / (m_ptr->maxhp > 1) ? m_ptr->maxhp : 1;
+        pct = 100L * m_ptr->hp / ((m_ptr->maxhp > 1) ? m_ptr->maxhp : 1);
     }
     else
     {
@@ -1382,7 +1379,7 @@ static bool borg_follow_kill_aux(int i, int y, int x)
             if (borg_skill[BI_SINV] || borg_see_inv) return (TRUE);
 
             /* Monster is not invisible */
-            if (!(rf_has(r_info->flags, RF_INVISIBLE))) return (TRUE);
+            if (!(rf_has(r_ptr->flags, RF_INVISIBLE))) return (TRUE);
         }
 
         /* Use "infravision" */
@@ -2538,10 +2535,10 @@ static int borg_locate_kill(cptr who, int y, int x, int r)
         take = &borg_takes[i];
 
         /* Skip "dead" objects */
-        if (!take->k_idx) continue;
+        if (!take->kind) continue;
 
         /* Access kind */
-        k_ptr = &k_info[take->k_idx];
+        k_ptr = take->kind;
 
         /* Verify char */
         if (k_ptr->d_char != r_ptr->d_char) continue;
@@ -2576,12 +2573,9 @@ static int borg_locate_kill(cptr who, int y, int x, int r)
     {
         take = &borg_takes[b_i];
 
-        /* Access kind */
-        k_ptr = &k_info[take->k_idx];
-
         /* Note */
         borg_note(format("# Converting an object '%s' at (%d,%d)",
-                         (k_ptr->name),
+                         (take->kind->name),
                          take->y, take->x));
 
         /* Save location */
@@ -3848,7 +3842,7 @@ void borg_update(void)
         borg_take *take = &borg_takes[i];
 
         /* Skip dead objects */
-        if (!take->k_idx) continue;
+        if (!take->kind) continue;
 
         /* Clear flags */
         take->seen = FALSE;
@@ -3869,7 +3863,7 @@ void borg_update(void)
 
         /* Note */
         borg_note(format("# Expiring an object '%s' (%d) at (%d,%d)",
-                         (k_info[take->k_idx].name), take->k_idx,
+                         (take->kind->name), take->kind->kidx,
                          take->y, take->x));
 
         /* Kill the object */
@@ -5328,7 +5322,7 @@ void borg_update(void)
         borg_take *take = &borg_takes[i];
 
         /* Skip dead objects */
-        if (!take->k_idx) continue;
+        if (!take->kind) continue;
 
         /* Skip seen objects */
         if (take->when >= borg_t - 2) continue;

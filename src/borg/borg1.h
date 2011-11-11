@@ -308,8 +308,6 @@ typedef const char *cptr;
 #define RING_ACID			208
 #define RING_ICE			209
 #define RING_LIGHTNING		210
-#define K_MONEY_START		520
-#define K_MONEY_STOP		530
 
 
 /* The sval of some items are needed and the game does not supply some any if it has an effect (activation) */
@@ -615,7 +613,7 @@ typedef struct borg_take borg_take;
 
 struct borg_take
 {
-    s16b    k_idx;      /* Kind index */
+    struct object_kind *kind;      /* Kind */
 
     bool    known;      /* Verified kind */
 

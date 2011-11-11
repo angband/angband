@@ -6397,7 +6397,7 @@ static int borg_launch_bolt_aux(int y, int x, int rad, int dam, int typ, int max
 			if (ag->take)
 			{
 				borg_take *take = &borg_takes[ag->take];
-				object_kind *k_ptr = &k_info[take->k_idx];
+				object_kind *k_ptr = take->kind;
 
 				switch (typ)
 				{
@@ -15048,8 +15048,8 @@ static bool borg_play_step(int y2, int x2)
          * So there is no advantage to the borg.
          */
 
-        if (strstr(k_info[take->k_idx].name, "chest") &&
-            !strstr(k_info[take->k_idx].name, "Ruined"))
+        if (strstr(take->kind->name, "chest") &&
+            !strstr(take->kind->name, "Ruined"))
         {
             object_type *o_ptr = object_byid(cave->o_idx[y2][x2]);
 
@@ -15060,7 +15060,7 @@ static bool borg_play_step(int y2, int x2)
                 chest_traps[o_ptr->pval[DEFAULT_PVAL]])
             {
                 borg_note(format("# Searching a '%s' at (%d,%d)",
-                         k_info[take->k_idx].name,
+                         take->kind->name,
                          take->y, take->x));
 
                 /* Walk onto it */
@@ -15076,7 +15076,7 @@ static bool borg_play_step(int y2, int x2)
                 borg_skill[BI_DEV] - o_ptr->pval[DEFAULT_PVAL] >= borg_chest_fail_tolerance )
             {
                 borg_note(format("# Disarming a '%s' at (%d,%d)",
-                         k_info[take->k_idx].name,
+                         take->kind->name,
                          take->y, take->x));
 
                 /* Open it */
@@ -15090,7 +15090,7 @@ static bool borg_play_step(int y2, int x2)
             if (o_ptr->pval[DEFAULT_PVAL] < 0 || !object_is_known(o_ptr))
             {
                 borg_note(format("# Opening a '%s' at (%d,%d)",
-                         k_info[take->k_idx].name,
+                         take->kind->name,
                          take->y, take->x));
 
                 /* Open it */
@@ -15164,7 +15164,7 @@ static bool borg_play_step(int y2, int x2)
         /*** Handle other takes ***/
         /* Message */
         borg_note(format("# Walking onto and deleting a '%s' at (%d,%d)",
-                         k_info[take->k_idx].name,
+                         take->kind->name,
                          take->y, take->x));
 
 		/* Delete the item from the list */
@@ -17861,7 +17861,7 @@ bool borg_flow_take(bool viewable, int nearness)
         bool item_bad;
 
         /* Skip dead objects */
-        if (!take->k_idx) continue;
+        if (!take->kind) continue;
 
         /* Access the location */
         x = take->x;
@@ -17908,7 +17908,7 @@ bool borg_flow_take(bool viewable, int nearness)
 		 */
 		if (borg_gold >= 500000)
 		{
-			if (take->k_idx >= K_MONEY_START &&	take->k_idx <= K_MONEY_STOP) continue;
+			if (take->tval == TV_GOLD) continue;
 			if ((take->tval ==  TV_MAGIC_BOOK || take->tval == TV_PRAYER_BOOK) &&
 				take->tval != p_ptr->class->spell_book) continue;
 			if ((take->tval == TV_SHOT || take->tval == TV_ARROW || take->tval == TV_BOLT) &&
@@ -18016,7 +18016,7 @@ bool borg_flow_take_scum(bool viewable, int nearness)
         borg_take *take = &borg_takes[i];
 
         /* Skip dead objects */
-        if (!take->k_idx) continue;
+        if (!take->kind) continue;
 
         /* Access the location */
         x = take->x;
@@ -18118,13 +18118,13 @@ bool borg_flow_take_lunal(bool viewable, int nearness)
     for (i = 1; i < borg_takes_nxt; i++)
     {
         borg_take *take = &borg_takes[i];
-	    object_kind *k_ptr = &k_info[take->k_idx];
+	    object_kind *k_ptr = take->kind;
 
         int a;
         bool item_bad;
 
         /* Skip dead objects */
-        if (!take->k_idx) continue;
+        if (!k_ptr) continue;
 
         /* Access the location */
         x = take->x;
@@ -18134,10 +18134,9 @@ bool borg_flow_take_lunal(bool viewable, int nearness)
         item_bad = TRUE;
 
 		/* Gold is good to have */
-		if (take->k_idx >= K_MONEY_START &&
-			take->k_idx <= K_MONEY_STOP)
+		if (take->tval == TV_GOLD)
 		{
-			borg_note(format("# Lunal Item %s, at %d,%d", k_info[take->k_idx].name, y, x ));
+			borg_note(format("# Lunal Item %s, at %d,%d", take->kind->name, y, x ));
 			item_bad = FALSE;
 		}
 
@@ -18154,7 +18153,7 @@ bool borg_flow_take_lunal(bool viewable, int nearness)
 				if (take->value <= 0) continue;
 
 				/* Both objects should have the same ID value */
-				if (take->k_idx != borg_items[ii].kind) continue;
+				if (take->kind->kidx != borg_items[ii].kind) continue;
 
 				/* Certain types of items can stack */
 				if (k_ptr->sval == borg_items[ii].sval &&
@@ -18172,10 +18171,11 @@ bool borg_flow_take_lunal(bool viewable, int nearness)
 		if (!borg_items[INVEN_MAX_PACK-1].iqty && item_bad == TRUE)
 		{
 			/* Certain Potions are worthless */
-			if (take->k_idx >= borg_lookup_kind(TV_POTION, SV_POTION_INC_STR) &&
-				take->k_idx <= borg_lookup_kind(TV_POTION, SV_POTION_DETECT_INVIS))
+			if (take->tval == TV_POTION &&
+				(take->kind->sval >= SV_POTION_INC_STR) &&
+				(take->kind->sval <= SV_POTION_DETECT_INVIS))
 			{
-				borg_note(format("# Lunal Item %s, at %d,%d", k_info[take->k_idx].name, y, x ));
+				borg_note(format("# Lunal Item %s, at %d,%d", take->kind->name, y, x ));
 				item_bad = FALSE;
 			}
 
@@ -18183,9 +18183,9 @@ bool borg_flow_take_lunal(bool viewable, int nearness)
 			/* Certain insta_arts are good.  Note that there is no top end of this.  So if an item
 			 * were added after the last artifact, it would also be picked up.
 			 */
-			if (take->k_idx >= borg_lookup_kind(TV_LIGHT, SV_PHIAL))
+			if (of_has(take->kind->flags, OF_INSTA_ART))
 			{
-				borg_note(format("# Lunal Item %s, at %d,%d", k_info[take->k_idx].name, y, x ));
+				borg_note(format("# Lunal Item %s, at %d,%d", take->kind->name, y, x ));
 				item_bad = FALSE;
 			}
 

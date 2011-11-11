@@ -2060,6 +2060,7 @@ void borg_item_analyze(borg_item *item, object_type *real_item, cptr desc)
 
     /* XXX XXX XXX Repair various "ego-items" */
 
+#if 0
 	/* Repair the Planatir of Westerness. The borg thinks
 	 * it is an ego item.since it has an ego name (Westerness).
 	 */
@@ -2073,7 +2074,6 @@ void borg_item_analyze(borg_item *item, object_type *real_item, cptr desc)
 		item->pval = 2;
 	}
 
-#if 0
 	/* Repair the Shield of the Haradrim. The borg thinks
 	 * it is an ego item.since it has an ego name (Haradrim).
 	 */
@@ -4063,7 +4063,7 @@ void borg_cheat_equip(void)
     for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
     {
 		/* skip non items */
-		if (!p_ptr->inventory[i].kind->kidx)
+		if (!p_ptr->inventory[i].kind)
 		{
 			/* Be sure to wipe it from the borg equip */
 			WIPE(&borg_items[i], borg_item);
@@ -4073,24 +4073,24 @@ void borg_cheat_equip(void)
         buf[0] = '\0';
 
         /* Describe a real item */
-        if (p_ptr->inventory[i].kind->kidx)
+        if (p_ptr->inventory[i].kind)
         {
             /* Describe it */
             object_desc(buf, sizeof(buf), &p_ptr->inventory[i], ODESC_FULL);
+
+			/* Analyze the item (no price) */
+			borg_item_analyze(&borg_items[i], &p_ptr->inventory[i], buf);
+
+			/* get the fully id stuff */
+			if (p_ptr->inventory[i].ident & (IDENT_KNOWN | IDENT_EFFECT))
+			{
+				borg_items[i].fully_identified = TRUE;
+				borg_items[i].needs_I = FALSE;
+			}
+
+			/* Uninscribe items with ! inscriptions */
+			if (strstr(borg_items[i].desc, "!")) borg_send_deinscribe(i);
         }
-
-        /* Analyze the item (no price) */
-        borg_item_analyze(&borg_items[i], &p_ptr->inventory[i], buf);
-
-        /* get the fully id stuff */
-        if (p_ptr->inventory[i].ident & (IDENT_KNOWN | IDENT_EFFECT))
-        {
-            borg_items[i].fully_identified = TRUE;
-            borg_items[i].needs_I = FALSE;
-    	}
-
-		/* Uninscribe items with ! inscriptions */
-		if (strstr(borg_items[i].desc, "!")) borg_send_deinscribe(i);
     }
 }
 
@@ -4111,7 +4111,7 @@ void borg_cheat_inven(void)
     for (i = 0; i < INVEN_MAX_PACK; i++)
     {
 		/* Skip non-items */
-		if (!p_ptr->inventory[i].kind->kidx)
+		if (!p_ptr->inventory[i].kind)
 		{
 			/* Wipe from borg lists */
 			WIPE(&borg_items[i], borg_item);
@@ -4120,12 +4120,8 @@ void borg_cheat_inven(void)
         /* Default to "nothing" */
         buf[0] = '\0';
 
-        /* Describe a real item */
-        if (p_ptr->inventory[i].kind->kidx)
-        {
-            /* Describe it */
-            object_desc(buf, sizeof(buf), &p_ptr->inventory[i], ODESC_FULL);
-        }
+        /* Describe it */
+        object_desc(buf, sizeof(buf), &p_ptr->inventory[i], ODESC_FULL);
 
 		/* Skip Empty slots */
 		if (streq(buf,"(nothing)")) continue;
