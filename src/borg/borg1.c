@@ -1913,7 +1913,7 @@ void borg_update_frame(void)
     if (p_ptr->lev < p_ptr->max_lev) borg_skill[BI_ISFIXLEV] = TRUE;
 
     /* Extract "LEVEL xxxxxx" */
-    borg_skill[BI_CLEVEL] = borg_skill[BI_CLEVEL] = p_ptr->lev;
+    borg_skill[BI_CLEVEL] = p_ptr->lev;
 
     /* cheat the max clevel */
     borg_skill[BI_MAXCLEVEL] = p_ptr->max_lev;

@@ -8379,11 +8379,8 @@ int borg_danger_aux(int y, int x, int c, int i, bool average, bool full_damage)
 
     int q=0, r, p, v1=0, v2=0, b_v2 = 0, b_v1 = 0;
 
-    int glyph =0;
-
     int fake_speed = borg_skill[BI_SPEED];
     int monster_speed = kill->speed;
-	int monster_moves = kill->moves;
     int t, e;
 
 	int ii;
@@ -9655,7 +9652,7 @@ cptr borg_prepared(int depth)
       	return (borg_prepared_buffer);
 
     }
-
+    return "No reason";
 }
 
 /*

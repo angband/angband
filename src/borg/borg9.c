@@ -4936,12 +4936,7 @@ void borg_write_map(bool ask)
 
     struct store *st_ptr = &stores[7];
 
-    bool *okay;
-
     char o_name[80];
-
-    /* Allocate the "okay" array */
-    C_MAKE(okay, z_info->a_max, bool);
 
     /* Hack -- drop permissions */
     safe_setuid_drop();
@@ -5301,6 +5296,9 @@ void borg_write_map(bool ask)
 	}
 
 #if 0
+    /* Allocate the "okay" array */
+    C_MAKE(okay, z_info->a_max, bool);
+
     /*** Dump the Uniques and Artifact Lists ***/
 
     /* Scan the artifacts */
@@ -6505,10 +6503,6 @@ void do_cmd_borg(void)
 			int x = 1;
 			s16b ty, tx;
 
-			u16b mask;
-
-			mask = borg_grids[y][x].info;
-
 			target_get(&tx, &ty);
 			y = ty;
 			x = tx;
@@ -6715,7 +6709,6 @@ void do_cmd_borg(void)
                 int x, y;
                 int o;
                 int false_y, false_x;
-                borg_grid *ag;
 
                 false_y = c_y;
                 false_x = c_x;
@@ -6742,9 +6735,6 @@ void do_cmd_borg(void)
                         /* Grid in that direction */
                         x = false_x + ddx_ddd[i];
                         y = false_y + ddy_ddd[i];
-
-                        /* Access the grid */
-                        ag = &borg_grids[y][x];
 
                         /* Flow cost at that grid */
                         c = borg_data_flow->data[y][x] * 10;

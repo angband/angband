@@ -2706,7 +2706,6 @@ bool borg_test_stuff(void)
 {
     int i, b_i = -1;
     s32b v, b_v = -1;
-	bool OK_toID = FALSE;
 
     /* don't ID stuff when you can't recover spent spell point immediately */
     if (((borg_skill[BI_CURSP] < 50 && borg_spell_legal(2, 5)) ||
@@ -3057,16 +3056,11 @@ bool borg_swap_rings(void)
 {
     int hole = INVEN_MAX_PACK - 1;
     int icky = INVEN_MAX_PACK - 2;
-	int i;
 
     s32b v1, v2;
 
-    bool fix = FALSE;
-
 	char current_right_ring[80];
 	char current_left_ring[80];
-
-    borg_item *item;
 
     /*** Check conditions ***/
 
@@ -3124,9 +3118,6 @@ bool borg_swap_rings(void)
     /* Erase left ring */
     WIPE(&borg_items[INVEN_LEFT], borg_item);
 
-    /* Fix later */
-    fix = TRUE;
-
     /* Examine the inventory */
     borg_notice(FALSE);
 
@@ -3153,9 +3144,6 @@ bool borg_swap_rings(void)
 
     /* Erase the ring */
     WIPE(&borg_items[INVEN_RIGHT], borg_item);
-
-    /* Fix later */
-    fix = TRUE;
 
     /* Examine the inventory */
     borg_notice(FALSE);
@@ -3584,9 +3572,8 @@ bool borg_backup_swap(int p)
  */
 bool borg_stack_quiver(void)
 {
-	int i, b_i = -1;
-	int th, p;
-	int b_th = 0;
+	int i;
+	int p;
 
     borg_item *item;
 	borg_item *slot;
@@ -3666,8 +3653,6 @@ bool borg_stack_quiver(void)
 bool borg_dump_quiver(void)
 {
 	int i, b_i = -1;
-	int th;
-	int b_th = 0;
 	int quiver_capacity;
 
     borg_item *item;
@@ -4234,7 +4219,6 @@ bool borg_wear_quiver(void)
 	char target_desc[80];
     borg_item *item;
     bool fix = FALSE;
-	bool match = FALSE;
 
     /* hack to prevent the swap till you drop loop */
     if (borg_skill[BI_ISHUNGRY] || borg_skill[BI_ISWEAK]) return (FALSE);
@@ -4275,7 +4259,6 @@ bool borg_wear_quiver(void)
 					item->to_d  == slot->to_d &&
 					item->to_h  == slot->to_h)
 				{
-					match = TRUE;
 					b_i = i;
 				}
 			}
@@ -4908,8 +4891,6 @@ bool borg_wear_recharge(void)
     for (i = 0; i < INVEN_TOTAL; i++)
     {
         borg_item *item = &borg_items[i];
-        object_type *o_ptr;  /* cheat */
-        o_ptr = &p_ptr->inventory[i]; /* cheat */
 
         /* Skip empty items */
         if (!item->iqty) continue;

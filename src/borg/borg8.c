@@ -439,7 +439,6 @@ static void borg_think_home_sell_aux2_slow(  int n, int start_i )
     {
         borg_item *item;
         borg_item *item2;
-        bool stacked = FALSE;
 
         item = &borg_items[i];
         item2= &borg_shops[7].ware[n];
@@ -461,7 +460,6 @@ static void borg_think_home_sell_aux2_slow(  int n, int start_i )
         {
             item2->iqty++;
             item->iqty--;
-            stacked = TRUE;
         }
         else
         {
@@ -517,7 +515,6 @@ static void borg_think_home_sell_aux2_fast(  int n, int start_i )
     borg_item *item2;
     s32b home_power;
     int i, k, p;
-    bool stacked = FALSE;
     bool skip_it = FALSE;
 
     /* get the starting best (current) */
@@ -564,7 +561,6 @@ static void borg_think_home_sell_aux2_fast(  int n, int start_i )
             {
                 /* if this stacks with what was previously here */
                 item2->iqty++;
-                stacked = TRUE;
             }
             else
             {
@@ -644,7 +640,7 @@ static void borg_think_home_sell_aux2_fast(  int n, int start_i )
 /* locate useless item */
 static void borg_think_home_sell_aux3( )
 {
-    int     p, i;
+    int     i;
     s32b    borg_empty_home_power;
     s32b    power;
 
@@ -2044,7 +2040,8 @@ static bool borg_think_home_grab_aux(void)
 		{
 			if (sold_item_tval[p] == item->tval && sold_item_sval[p] == item->sval && sold_item_store[p] == 7) skip_it = TRUE;
 		}
-		if (skip_it == TRUE); continue;
+		if (skip_it == TRUE)
+			continue;
 
         /* Save shop item */
         COPY(&safe_shops[7].ware[n], &borg_shops[7].ware[n], borg_item);
@@ -2648,7 +2645,6 @@ static bool borg_think_shop_sell(void)
  */
 static bool borg_think_shop_buy(void)
 {
-    int qty =1;
 	char purchase_target = '0';
 
     /* Buy something if requested */
@@ -2657,8 +2653,6 @@ static bool borg_think_shop_buy(void)
         borg_shop *shop = &borg_shops[goal_shop];
 
         borg_item *item = &shop->ware[goal_ware];
-
-        qty = borg_min_item_quantity(item);
 
 		purchase_target = shop_orig[goal_ware];
 
@@ -3636,7 +3630,6 @@ bool borg_think_dungeon_munchkin(void)
 	int j, b_j = -1;
 	int i,ii, x, y;
 	int closeness = 8;
-	bool adjacent_monster = FALSE;
 
 	borg_grid *ag = &borg_grids[c_y][c_x];
 
@@ -4369,7 +4362,6 @@ bool borg_think_dungeon(void)
 {
     int i, j;
     int b_j = -1;
-	int y,x;
 
     byte feat = cave->feat[c_y][c_x];
 

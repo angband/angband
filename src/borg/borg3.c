@@ -1725,7 +1725,6 @@ static s32b borg_object_value_known(borg_item *item)
  */
 void borg_item_analyze(borg_item *item, object_type *real_item, cptr desc)
 {
-	object_kind *k_ptr;
 	bitflag f[OF_SIZE];
 	bitflag known_f[OF_SIZE];
 
@@ -1815,10 +1814,6 @@ void borg_item_analyze(borg_item *item, object_type *real_item, cptr desc)
 	/* Rods are considered pval 1 if charged */
   	if (item->tval == TV_ROD)
   	{
-		char *buf;
-
-		k_ptr = &k_info[real_item->kind->kidx];
-
 		if (item->iqty == 1 && real_item->timeout) item->pval = 0;
   		else
 		{
@@ -2604,7 +2599,6 @@ bool borg_quaff_unknown(void)
 bool borg_read_unknown(void)
 {
     int i, n = -1;
-    borg_grid *ag = &borg_grids[c_y][c_x];
 
     /* Scan the pack */
     for (i = 0; i < INVEN_MAX_PACK; i++)
@@ -2748,7 +2742,6 @@ bool borg_use_unknown(void)
 bool borg_read_scroll(int sval)
 {
     int i;
-    borg_grid *ag = &borg_grids[c_y][c_x];
 
     /* Dark */
     if (no_light()) return (FALSE);
@@ -3511,8 +3504,6 @@ bool borg_spell_okay(int book, int what)
 
     borg_magic *as = &borg_magics[book][what];
 
-    borg_grid *ag = &borg_grids[c_y][c_x];
-
     /* Dark */
     if (no_light()) return (FALSE);
 
@@ -3701,8 +3692,6 @@ bool borg_prayer_okay(int book, int what)
     int reserve_mana =0;
 
     borg_magic *as = &borg_magics[book][what];
-
-    borg_grid *ag = &borg_grids[c_y][c_x];
 
     /* Dark */
     if (no_light()) return (FALSE);

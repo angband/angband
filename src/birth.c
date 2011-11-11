@@ -482,7 +482,7 @@ void player_init(struct player *p)
 /**
  * Try to wield everything wieldable in the inventory.
  */
-static void wield_all(struct player *p)
+void wield_all(struct player *p)
 {
 	object_type *o_ptr;
 	object_type *i_ptr;
