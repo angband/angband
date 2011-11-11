@@ -3706,26 +3706,6 @@ static void borg_display_item(object_type *item2)
 
 glyph translate_visuals[255][255];
 
-/*
- * Return the "attr" for a given item.
- * Use "flavor" if available.
- * Default to user definitions.
- */
-#define borg_object_kind_attr(T) \
-   (((T)->flavor) ? \
-    (flavor_info[(T)->flavor].x_attr) : \
-    ((T)->x_attr))
-
-/*
- * Return the "char" for a given item.
- * Use "flavor" if available.
- * Default to user definitions.
- */
-#define borg_object_kind_char(T) \
-   (((T)->flavor) ? \
-    (flavor_info[(T)->flavor].x_char) : \
-    ((T)->x_char))
-
 void init_translate_visuals(void)
 {
     int i, j;
@@ -3754,8 +3734,8 @@ void init_translate_visuals(void)
         if (!k_ptr->name) continue;
 
         /* Store the underlying values */
-        translate_visuals[(byte)borg_object_kind_attr(k_ptr)][(byte)borg_object_kind_char(k_ptr)].d_attr = k_ptr->d_attr;
-        translate_visuals[(byte)borg_object_kind_attr(k_ptr)][(byte)borg_object_kind_char(k_ptr)].d_char = k_ptr->d_char;
+        translate_visuals[(byte)object_kind_attr(k_ptr)][(byte)object_kind_char(k_ptr)].d_attr = k_ptr->d_attr;
+        translate_visuals[(byte)object_kind_attr(k_ptr)][(byte)object_kind_char(k_ptr)].d_char = k_ptr->d_char;
     }
 
     /* Extract default attr/char code for monsters */
