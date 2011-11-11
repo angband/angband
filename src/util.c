@@ -465,9 +465,19 @@ struct keypress inkey(void)
 {
 	ui_event ke = EVENT_EMPTY;
 
-	/* accept key or mouse press, or something that can be translated to it */
+	/* Only accept a keypress */
+	/*while (ke.type != EVT_ESCAPE && ke.type != EVT_KBRD)
+		ke = inkey_ex();
+
+	/* Paranoia */ /*
+	if (ke.type == EVT_ESCAPE) {
+		ke.type = EVT_KBRD;
+		ke.key.code = ESCAPE;
+		ke.key.mods = 0;
+  }
+  */
 	while (ke.type != EVT_ESCAPE && ke.type != EVT_KBRD
-		&& ke.type != EVT_MOUSE  && ke.type != EVT_BUTTON)
+    && ke.type != EVT_MOUSE  && ke.type != EVT_BUTTON)
 		ke = inkey_ex();
 
 	/* make the event a keypress */
@@ -475,25 +485,24 @@ struct keypress inkey(void)
 		ke.type = EVT_KBRD;
 		ke.key.code = ESCAPE;
 		ke.key.mods = 0;
-	} else
-	if (ke.type == EVT_MOUSE) {
-		if (ke.mouse.button == 1) {
-			ke.type = EVT_KBRD;
-			ke.key.code = '\n';
-			ke.key.mods = 0;
-		} else {
-			ke.type = EVT_KBRD;
-			ke.key.code = ESCAPE;
-			ke.key.mods = 0;
-		}
-	} else
+  } else
+  if (ke.type == EVT_MOUSE) {
+    if (ke.mouse.button == 1) {
+		  ke.type = EVT_KBRD;
+		  ke.key.code = '\n';
+		  ke.key.mods = 0;
+    } else {
+		  ke.type = EVT_KBRD;
+		  ke.key.code = ESCAPE;
+		  ke.key.mods = 0;
+    }
+  } else
 	if (ke.type == EVT_BUTTON) {
 		ke.type = EVT_KBRD;
-	}
+  }
 
 	return ke.key;
 }
-
 
 /*
  * Get a "keypress" or a "mousepress" from the user.
@@ -505,19 +514,20 @@ ui_event inkey_m(void)
 
 	/* Only accept a keypress */
 	while (ke.type != EVT_ESCAPE && ke.type != EVT_KBRD
-		&& ke.type != EVT_MOUSE  && ke.type != EVT_BUTTON)
+    && ke.type != EVT_MOUSE  && ke.type != EVT_BUTTON)
 		ke = inkey_ex();
 	if (ke.type == EVT_ESCAPE) {
 		ke.type = EVT_KBRD;
 		ke.key.code = ESCAPE;
 		ke.key.mods = 0;
-	} else
+  } else
 	if (ke.type == EVT_BUTTON) {
 		ke.type = EVT_KBRD;
-	}
+  }
 
-	return ke;
+  return ke;
 }
+
 
 
 /*
@@ -1870,7 +1880,7 @@ bool get_com_ex(const char *prompt, ui_event *command)
 
 	/* Done */
 	if (ke.type == EVT_KBRD && ke.key.code != ESCAPE)
-		return TRUE;
+	  return TRUE;
 	return FALSE;
 }
 

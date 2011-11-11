@@ -109,8 +109,8 @@ static struct cmd_info cmd_info[] =
 {
 	{ "Browse a book", 'b', CMD_BROWSE_SPELL, textui_spell_browse, NULL },
 	{ "Gain new spells", 'G', CMD_STUDY_BOOK, textui_obj_study, player_can_study },
-	{ "Cast a spell", 'm', CMD_CAST, textui_obj_cast_wrapper, player_can_cast },
-	{ "Cast a spell", 'p', CMD_CAST, textui_obj_cast_wrapper, player_can_cast },
+	{ "Cast a spell", 'm', CMD_CAST, textui_obj_cast, player_can_cast },
+	{ "Cast a spell", 'p', CMD_CAST, textui_obj_cast, player_can_cast },
 	{ "Full dungeon map",             'M', CMD_NULL, do_cmd_view_map },
 	{ "Toggle ignoring of items",     'K', CMD_NULL, textui_cmd_toggle_ignore },
 	{ "Display visible item list",    ']', CMD_NULL, do_cmd_itemlist },
@@ -521,7 +521,7 @@ static ui_event textui_get_command(void)
 
 int get_direction_player (int y, int x)
 {
-	/* copied from pathfind_direction_to */
+  /* copied from pathfind_direction_to */
 	int adx = ABS(x - p_ptr->px);
 	int ady = ABS(y - p_ptr->py);
 	int dx = x - p_ptr->px;
@@ -587,60 +587,60 @@ static void textui_process_click(ui_event e)
 	if (!in_bounds_fully(y, x)) return;
 
 	/* XXX show context menu here */
-	if ((p_ptr->py == y) && (p_ptr->px == x)) {
-		if (e.mouse.mods & KC_MOD_SHIFT) {
-			/* shift-click - cast magic */
-			if (e.mouse.button == 1) {
-				textui_obj_cast();
-			} else
-			if (e.mouse.button == 2) {
-				Term_keypress('I',0);
-				//cmd_insert(CMD_USE_AIMED);
-			}
-		} else
-		if (e.mouse.mods & KC_MOD_CONTROL) {
-			/* ctrl-click - use feature / use inventory item */
-			/* switch with default */
-			if (e.mouse.button == 1) {
-				//cmd_insert(CMD_ACTIVATE);
-				if (cave->feat[p_ptr->py][p_ptr->px] == FEAT_LESS) {
-					cmd_insert(CMD_GO_UP);
-				} else
-				if (cave->feat[p_ptr->py][p_ptr->px] == FEAT_MORE) {
-					cmd_insert(CMD_GO_DOWN);
-				}
-			} else
-			if (e.mouse.button == 2) {
-				//cmd_insert(CMD_USE_UNAIMED);
-				cmd_insert(CMD_USE_ANY);
-			}
-		} else
-		if (e.mouse.mods & KC_MOD_ALT) {
-			/* alt-click - Search  or show char screen */
-			/* XXX call a platform specific hook */
-			if (e.mouse.button == 1) {
- 				cmd_insert(CMD_SEARCH);
-			} else
-			if (e.mouse.button == 2) {
-				Term_keypress('C',0);
-				//cmd_insert(CMD_CHAR_SCREEN);
-			}
-		} else
-		{
-			if (e.mouse.button == 1) {
-				if (cave->o_idx[y][x]) {
-					cmd_insert(CMD_PICKUP);
-				} else {
-					cmd_insert(CMD_HOLD);
-				}
-			} else
-			if (e.mouse.button == 2) {
-				// show a context menu
-				Term_keypress('~',0);
-				//cmd_insert(CMD_OPTIONS);
-			}
-		}
-	}
+  if ((p_ptr->py == y) && (p_ptr->px == x)) {
+    if (e.mouse.mods & KC_MOD_SHIFT) {
+      /* shift-click - cast magic */
+      if (e.mouse.button == 1) {
+        textui_obj_cast();
+      } else
+      if (e.mouse.button == 2) {
+        Term_keypress('I',0);
+			  //cmd_insert(CMD_USE_AIMED);
+      }
+    } else
+    if (e.mouse.mods & KC_MOD_CONTROL) {
+      /* ctrl-click - use feature / use inventory item */
+      /* switch with default */
+      if (e.mouse.button == 1) {
+			  //cmd_insert(CMD_ACTIVATE);
+        if (cave->feat[p_ptr->py][p_ptr->px] == FEAT_LESS) {
+  			  cmd_insert(CMD_GO_UP);
+        } else
+        if (cave->feat[p_ptr->py][p_ptr->px] == FEAT_MORE) {
+  			  cmd_insert(CMD_GO_DOWN);
+        }
+      } else
+      if (e.mouse.button == 2) {
+			  cmd_insert(CMD_USE_UNAIMED);
+			  //cmd_insert(CMD_USE_ANY);
+      }
+    } else
+    if (e.mouse.mods & KC_MOD_ALT) {
+      /* alt-click - Search  or show char screen */
+      /* XXX call a platform specific hook */
+      if (e.mouse.button == 1) {
+ 			  cmd_insert(CMD_SEARCH);
+      } else
+      if (e.mouse.button == 2) {
+        Term_keypress('C',0);
+			  //cmd_insert(CMD_CHAR_SCREEN);
+      }
+    } else
+    {
+      if (e.mouse.button == 1) {
+        if (cave->o_idx[y][x]) {
+  			  cmd_insert(CMD_PICKUP);
+        } else {
+  			  cmd_insert(CMD_HOLD);
+        }
+      } else
+      if (e.mouse.button == 2) {
+        // show a context menu
+        Term_keypress('~',0);
+			  //cmd_insert(CMD_OPTIONS);
+      }
+    }
+  }
 
 	else if (e.mouse.button == 1)
 	{
@@ -650,60 +650,61 @@ static void textui_process_click(ui_event e)
 		}
 		else
 		{
-			if (e.mouse.mods & KC_MOD_SHIFT) {
-				/* shift-click - run */
-				cmd_insert(CMD_WALK);
-				cmd_set_arg_direction(cmd_get_top(), 0, get_direction_player(y,x));
-			} else
-			if (e.mouse.mods & KC_MOD_CONTROL) {
-				/* control-click - alter */
-  				cmd_insert(CMD_ALTER);
-				cmd_set_arg_direction(cmd_get_top(), 0, get_direction_player(y,x));
-			} else
-			if (e.mouse.mods & KC_MOD_ALT) {
-				/* alt-click - look */
-				if (target_set_interactive(TARGET_LOOK, x, y))
-				{
-					msg("Target Selected.");
-				}
-  				//cmd_insert(CMD_LOOK);
-				//cmd_set_arg_point(cmd_get_top(), 0, y, x);
-			} else
-			{
-				cmd_insert(CMD_PATHFIND);
-				cmd_set_arg_point(cmd_get_top(), 0, y, x);
-			}
+      if (e.mouse.mods & KC_MOD_SHIFT) {
+        /* shift-click - run */
+			  cmd_insert(CMD_WALK);
+			  cmd_set_arg_direction(cmd_get_top(), 0, get_direction_player(y,x));
+      } else
+      if (e.mouse.mods & KC_MOD_CONTROL) {
+        /* control-click - alter */
+  			cmd_insert(CMD_ALTER);
+			  cmd_set_arg_direction(cmd_get_top(), 0, get_direction_player(y,x));
+      } else
+      if (e.mouse.mods & KC_MOD_ALT) {
+        /* alt-click - look */
+	      if (target_set_interactive(TARGET_LOOK, x, y))
+	      {
+		      msg("Target Selected.");
+	      }
+  			//cmd_insert(CMD_LOOK);
+			  //cmd_set_arg_point(cmd_get_top(), 0, y, x);
+      } else
+      {
+			  cmd_insert(CMD_PATHFIND);
+			  cmd_set_arg_point(cmd_get_top(), 0, y, x);
+      }
 		}
 	}
 
 	else if (e.mouse.button == 2)
 	{
-		int m_idx = cave->m_idx[y][x];
-		if (m_idx && target_able(m_idx)) {
+    int m_idx = cave->m_idx[y][x];
+    if (m_idx && target_able(m_idx)) {
 			health_track(p_ptr, m_idx);
-			target_set_monster(m_idx);
-		} else {
-			target_set_location(y,x);
-		}
-		if (e.mouse.mods & KC_MOD_SHIFT) {
-			/* shift-click - cast spell at target */
-			if (textui_obj_cast() >= 0) {
-				cmd_set_arg_target(cmd_get_top(), 1, DIR_TARGET);
-			}
-		} else
-		if (e.mouse.mods & KC_MOD_CONTROL) {
-			/* control-click - fire at target */
-  			cmd_insert(CMD_USE_AIMED);
+      target_set_monster(m_idx);
+    } else {
+      target_set_location(y,x);
+    }
+    if (e.mouse.mods & KC_MOD_SHIFT) {
+      /* shift-click - cast spell at target */
+      if (textui_obj_cast() >= 0) {
+			  cmd_set_arg_target(cmd_get_top(), 1, DIR_TARGET);
+      }
+    } else
+    if (e.mouse.mods & KC_MOD_CONTROL) {
+      /* control-click - fire at target */
+  		cmd_insert(CMD_USE_AIMED);
  			cmd_set_arg_target(cmd_get_top(), 1, DIR_TARGET);
-		} else
-		if (e.mouse.mods & KC_MOD_ALT) {
-			/* alt-click - throw at target */
-  			cmd_insert(CMD_THROW);
+    } else
+    if (e.mouse.mods & KC_MOD_ALT) {
+      /* alt-click - throw at target */
+  		cmd_insert(CMD_THROW);
 			cmd_set_arg_target(cmd_get_top(), 1, DIR_TARGET);
-		} else
-		{
-			msg("Target set.");
-		}
+    } else
+    {
+		  //target_set_location(y, x);
+		  msg("Target set.");
+    }
 	}
 }
 

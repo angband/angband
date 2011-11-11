@@ -109,7 +109,7 @@ static struct
 	{ CMD_USE_AIMED, { arg_ITEM, arg_TARGET }, do_cmd_use, FALSE, 0 },
 	{ CMD_USE_UNAIMED, { arg_ITEM, arg_TARGET }, do_cmd_use, FALSE, 0 },
 	{ CMD_USE_ANY, { arg_ITEM, arg_TARGET }, do_cmd_use, FALSE, 0 },
-	{ CMD_CONTEXT_MENU, { arg_NONE }, NULL, FALSE, 0 },
+	{ CMD_CONTEXT_MENU, { arg_TARGET }, NULL, FALSE, 0 },
 	{ CMD_SUICIDE, { arg_NONE }, do_cmd_suicide, FALSE, 0 },
 	{ CMD_SAVE, { arg_NONE }, do_cmd_save_game, FALSE, 0 },
 	{ CMD_QUIT, { arg_NONE }, do_cmd_quit, FALSE, 0 },
