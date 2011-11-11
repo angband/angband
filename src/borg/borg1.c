@@ -853,10 +853,6 @@ int borg_class;     /* Player class */
 /*
  * Hack -- access the class/race records
  */
-
-player_race *rb_ptr;    /* Player race info */
-player_class *cb_ptr;   /* Player class info */
-
 player_magic *mb_ptr;   /* Player magic info */
 
 

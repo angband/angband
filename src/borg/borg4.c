@@ -63,6 +63,8 @@
 static void borg_notice_aux1(void)
 {
     int         i, hold;
+    const struct player_race *rb_ptr = p_ptr->race;
+    const struct player_class *cb_ptr = p_ptr->class;
 
     int         extra_blows = 0;
 

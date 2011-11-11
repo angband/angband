@@ -480,7 +480,7 @@ typedef const char *cptr;
 #define SV_PHIAL					4
 
 #define EGO_AMAN					42 /* Where did not name2 go in 330? */
-#define MAX_CLASSES					5 /* Max # of classes 0 = warrior, 5 = Paladin */
+#define MAX_CLASSES					6 /* Max # of classes 0 = warrior, 5 = Paladin */
 #define MAX_RACES					10
 /*
  * Flags for the "info" field of grids
@@ -1626,8 +1626,6 @@ extern int borg_class;      /* Current class */
  * Constant state structures
  */
 
-extern player_race *rb_ptr; /* Player race info */
-extern player_class *cb_ptr;    /* Player class info */
 extern player_magic *mb_ptr;    /* Player magic info */
 
 
