@@ -24,8 +24,6 @@ extern bool keep_playing;
 #endif /* bablos */
 bool borg_cheat_death;
 
-static s16b stat_use[6];
-
 /*
  * This file implements the "Ben Borg", an "Automatic Angband Player".
  *
@@ -2448,6 +2446,9 @@ static void borg_parse(cptr msg)
 
 #ifndef BABLOS
 
+#if 0
+static s16b stat_use[6];
+
 static int adjust_stat_borg(int value, int amount, int borg_roll)
 {
     /* Negative amounts or maximize mode */
@@ -2824,6 +2825,8 @@ static void get_money_borg(void)
     /* Save the gold */
     p_ptr->au = gold;
 }
+#endif
+
 /*
  * Name segments for random player names
  * Copied Cth by DvE
@@ -3030,7 +3033,6 @@ static void player_outfit_borg(struct player *p)
 void resurrect_borg(void)
 {
 	int i,j;
-	int stats[A_MAX];
 
 	/* Cheat death */
     p_ptr->is_dead = FALSE;
@@ -3133,6 +3135,7 @@ void resurrect_borg(void)
 			do_randart(seed_randart, TRUE);
 
 #if 0
+	int stats[A_MAX];
 	/* Borrow commands from birth.c */
 	get_stats(stats);
 	get_bonuses();
@@ -4670,8 +4673,6 @@ void init_borg_txt_file(void)
 void borg_init_9(void)
 {
     byte *test;
-	int i;
-
 
     /*** Hack -- verify system ***/
 
@@ -4775,6 +4776,7 @@ void borg_init_9(void)
 #ifndef ALLOW_BORG_GRAPHICS
     if (!borg_graphics)
     {
+    	int i;
         /* Reset the # and % -- Scan the features */
         for (i = 1; i < z_info->f_max; i++)
         {
@@ -4928,7 +4930,6 @@ void borg_write_map(bool ask)
     char line[DUNGEON_WID + 1];
 
     borg_item *item;
-	player_state *state = &p_ptr->state;
     int i,j;
 	int to, itemm;
 

@@ -2478,7 +2478,6 @@ static bool borg_heal(int danger )
 	int cmw_heal = 50;
 
 	int heal_heal = 300;
-	int star_heal = 1200;
 
     int stats_needing_fix = 0;
 
@@ -11798,7 +11797,7 @@ static int borg_defend_aux_genocide(int p1)
 	int total_danger_to_me = 0;
 
     char genocide_target = (char)0;
-    char b_threat_id = (char)0;
+    unsigned char b_threat_id = (char)0;
 
     bool genocide_spell = FALSE;
     int fail_allowed = 25;
@@ -15117,7 +15116,7 @@ static bool borg_play_step(int y2, int x2)
 		 * item and change the flag.
 		 */
 		if (take->orbed == FALSE &&
-			(take->k_idx >=borg_lookup_kind(TV_SWORD, SV_DAGGER) && take->k_idx < borg_lookup_kind(TV_SCROLL, SV_SCROLL_PHASE_DOOR)))
+			(take->tval >= TV_SHOT && take->tval < TV_STAFF))
 		{
 			if (distance(take->y, take->x, c_y, c_x) == 1)
 			{
@@ -16873,7 +16872,7 @@ bool borg_flow_kill_corridor_1(bool viewable)
 				/* This is a good grid */
 				wall_north++;
 			}
-			if (n_array[i] == 1 && ((ag->feat >= FEAT_NONE && ag->feat <= FEAT_MORE) ||
+			if (n_array[i] == 1 && ((ag->feat <= FEAT_MORE) ||
 				(ag->feat >= FEAT_MAGMA && ag->feat <= FEAT_QUARTZ_K) ||
 				(ag->feat >= FEAT_WALL_EXTRA && ag->feat <= FEAT_WALL_SOLID)))
 			{
@@ -16926,7 +16925,7 @@ bool borg_flow_kill_corridor_1(bool viewable)
 				/* This is a good grid */
 				wall_south++;
 			}
-			if (s_array[i] == 1 && ((ag->feat >= FEAT_NONE && ag->feat <= FEAT_MORE) ||
+			if (s_array[i] == 1 && ((ag->feat <= FEAT_MORE) ||
 				(ag->feat >= FEAT_MAGMA && ag->feat <= FEAT_QUARTZ_K) ||
 				(ag->feat >= FEAT_WALL_EXTRA && ag->feat <= FEAT_WALL_SOLID)))
 			{
@@ -16980,7 +16979,7 @@ bool borg_flow_kill_corridor_1(bool viewable)
 				/* This is a good grid */
 				wall_east++;
 			}
-			if (e_array[i] == 1 && ((ag->feat >= FEAT_NONE && ag->feat <= FEAT_MORE) ||
+			if (e_array[i] == 1 && ((ag->feat <= FEAT_MORE) ||
 				(ag->feat >= FEAT_MAGMA && ag->feat <= FEAT_QUARTZ_K) ||
 				(ag->feat >= FEAT_WALL_EXTRA && ag->feat <= FEAT_WALL_SOLID)))
 			{
@@ -17035,7 +17034,7 @@ bool borg_flow_kill_corridor_1(bool viewable)
 				/* This is a good grid */
 				wall_west++;
 			}
-			if (w_array[i] == 1 && ((ag->feat >= FEAT_NONE && ag->feat <= FEAT_MORE) ||
+			if (w_array[i] == 1 && ((ag->feat <= FEAT_MORE) ||
 				(ag->feat >= FEAT_MAGMA && ag->feat <= FEAT_QUARTZ_K) ||
 				(ag->feat >= FEAT_WALL_EXTRA && ag->feat <= FEAT_WALL_SOLID)))
 			{
