@@ -138,6 +138,19 @@ depgen:
  player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
  externs.h spells.h list-gf-types.h buildid.h cave.h cmds.h files.h \
  history.h object/tvalsval.h prefs.h squelch.h ui-menu.h
+./cmd-context.o: cmd0.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
+ defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+ ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+ object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+ z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+ object/list-object-flags.h object/object.h monster/constants.h \
+ monster/list-blow-methods.h monster/list-blow-effects.h \
+ monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+ player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
+ monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+ player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
+ externs.h spells.h list-gf-types.h cave.h cmds.h files.h keymap.h \
+ textui.h ui-menu.h wizard.h
 ./cmd-misc.o: cmd-misc.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
