@@ -519,57 +519,106 @@ static ui_event textui_get_command(void)
 	return ke;
 }
 
-int get_direction_player (int y, int x)
+int show_command_list(struct cmd_info cmd_list[], int size)
 {
-  /* copied from pathfind_direction_to */
-	int adx = ABS(x - p_ptr->px);
-	int ady = ABS(y - p_ptr->py);
-	int dx = x - p_ptr->px;
-	int dy = y - p_ptr->py;
+  menu_type *m;
+	region r;
+	int selected;
+  int i;
 
-	if (dx == 0 && dy == 0)
-		return DIR_NONE;
+  m = menu_dynamic_new();
+  if (!m) {
+    return 0;
+  }
+  m->selections = lower_case;
+  for (i=0; i < size; ++i) {
+	  menu_dynamic_add(m, cmd_list[i].desc, i+1);
+  }
 
-	if (dx >= 0 && dy >= 0)
-	{
-		if (adx < ady * 2 && ady < adx * 2)
-			return DIR_NE;
-		else if (adx > ady)
-			return DIR_E;
-		else
-			return DIR_N;
-	}
-	else if (dx > 0 && dy < 0)
-	{
-		if (adx < ady * 2 && ady < adx * 2)
-			return DIR_SE;
-		else if (adx > ady)
-			return DIR_E;
-		else
-			return DIR_S;
-	}
-	else if (dx < 0 && dy > 0)
-	{
-		if (adx < ady * 2 && ady < adx * 2)
-			return DIR_NW;
-		else if (adx > ady)
-			return DIR_W;
-		else
-			return DIR_N;
-	}
-	else if (dx <= 0 && dy <= 0)
-	{
-		if (adx < ady * 2 && ady < adx * 2)
-			return DIR_SW;
-		else if (adx > ady)
-			return DIR_W;
-		else
-			return DIR_S;
-	}
+	/* work out display region */
+	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
+	r.col = 80 - r.width;
+	r.row = 1;
+	r.page_rows = m->count;
 
-	assert(0);
-	return DIR_UNKNOWN;
+	screen_save();
+	menu_layout(m, &r);
+	region_erase_bordered(&r);
+
+	prt("(Enter to select, ESC) Command:", 0, 0);
+	selected = menu_dynamic_select(m);
+  menu_dynamic_free(m);
+
+	screen_load();
+
+  if ((selected > 0) && (selected < size+1)) {
+    /* execute the command */
+    Term_keypress(cmd_list[selected-1].key,0);
+  }
+
+  return 1;
 }
+
+int context_menu_command()
+{
+  menu_type *m;
+	region r;
+	int selected;
+
+  m = menu_dynamic_new();
+  if (!m) {
+    return 0;
+  }
+
+  m->selections = lower_case;
+	menu_dynamic_add(m, "Item", 1);
+	menu_dynamic_add(m, "Action", 2);
+	menu_dynamic_add(m, "Item Management", 3);
+	menu_dynamic_add(m, "Info", 4);
+	menu_dynamic_add(m, "Util", 5);
+	menu_dynamic_add(m, "Misc", 6);
+
+	/* work out display region */
+	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
+	r.col = 80 - r.width;
+	r.row = 1;
+	r.page_rows = m->count;
+
+	screen_save();
+	menu_layout(m, &r);
+	region_erase_bordered(&r);
+
+	prt("(Enter to select, ESC) Command:", 0, 0);
+	selected = menu_dynamic_select(m);
+  menu_dynamic_free(m);
+
+	screen_load();
+
+	if (selected == 1) {
+    show_command_list(cmd_item, N_ELEMENTS(cmd_item));
+  } else
+	if (selected == 2) {
+    show_command_list(cmd_action, N_ELEMENTS(cmd_action));
+  } else
+	if (selected == 3) {
+    show_command_list(cmd_item_manage, N_ELEMENTS(cmd_item_manage));
+  } else
+	if (selected == 4) {
+    show_command_list(cmd_info, N_ELEMENTS(cmd_info));
+  } else
+	if (selected == 5) {
+    show_command_list(cmd_util, N_ELEMENTS(cmd_util));
+  } else
+	if (selected == 6) {
+    show_command_list(cmd_hidden, N_ELEMENTS(cmd_hidden));
+  }
+
+  return 1;
+}
+
+int context_menu_player();
+int context_menu_cave(struct cave *cave, int y, int x, int adjacent);
+int get_direction_player (int y, int x);
 
 /**
  * Handle a textui mouseclick.
@@ -594,7 +643,7 @@ static void textui_process_click(ui_event e)
         textui_obj_cast();
       } else
       if (e.mouse.button == 2) {
-        Term_keypress('I',0);
+        Term_keypress('i',0);
 			  //cmd_insert(CMD_USE_AIMED);
       }
     } else
@@ -636,7 +685,8 @@ static void textui_process_click(ui_event e)
       } else
       if (e.mouse.button == 2) {
         // show a context menu
-        Term_keypress('~',0);
+        context_menu_player();
+        //Term_keypress('~',0);
 			  //cmd_insert(CMD_OPTIONS);
       }
     }
@@ -652,7 +702,7 @@ static void textui_process_click(ui_event e)
 		{
       if (e.mouse.mods & KC_MOD_SHIFT) {
         /* shift-click - run */
-			  cmd_insert(CMD_WALK);
+			  cmd_insert(CMD_RUN);
 			  cmd_set_arg_direction(cmd_get_top(), 0, get_direction_player(y,x));
       } else
       if (e.mouse.mods & KC_MOD_CONTROL) {
@@ -670,8 +720,14 @@ static void textui_process_click(ui_event e)
 			  //cmd_set_arg_point(cmd_get_top(), 0, y, x);
       } else
       {
-			  cmd_insert(CMD_PATHFIND);
-			  cmd_set_arg_point(cmd_get_top(), 0, y, x);
+        if ((y-p_ptr->py >= -1) && (y-p_ptr->py <= 1)
+          && (x-p_ptr->px >= -1) && (x-p_ptr->px <= 1)) {
+			    cmd_insert(CMD_WALK);
+			    cmd_set_arg_direction(cmd_get_top(), 0, get_direction_player(y,x));
+        } else {
+			    cmd_insert(CMD_PATHFIND);
+			    cmd_set_arg_point(cmd_get_top(), 0, y, x);
+        }
       }
 		}
 	}
@@ -702,8 +758,14 @@ static void textui_process_click(ui_event e)
 			cmd_set_arg_target(cmd_get_top(), 1, DIR_TARGET);
     } else
     {
-		  //target_set_location(y, x);
-		  msg("Target set.");
+		  //msg("Target set.");
+      /* see if the click was adjacent to the player */
+      if ((y-p_ptr->py >= -1) && (y-p_ptr->py <= 1)
+        && (x-p_ptr->px >= -1) && (x-p_ptr->px <= 1)) {
+        context_menu_cave(cave,y,x,1);
+      } else {
+        context_menu_cave(cave,y,x,0);
+      }
     }
 	}
 }

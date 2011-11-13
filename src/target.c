@@ -605,7 +605,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 	int floor_num;
 
 	//struct keypress query;
-	ui_event press;
+  ui_event press;
 
 	char out_val[256];
 
@@ -618,7 +618,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 	while (1)
 	{
 		/* Paranoia */
-		press.type = EVT_KBRD;
+    press.type = EVT_KBRD;
 		press.key.code = ' ';
 		press.key.mods = 0;
 
@@ -656,7 +656,8 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 
 			prt(out_val, 0, 0);
 			move_cursor_relative(y, x);
-
+      //input = inkey_m();
+      //if (
 			press.key = inkey();
 
 			/* Stop on everything but "return" */
@@ -745,7 +746,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 					}
 
 					/* Normal commands */
-					if ((press.type == EVT_MOUSE) && (press.mouse.button == 1) && (KEY_GRID_X(press) == x) && (KEY_GRID_Y(press) == y))
+				  if ((press.type == EVT_MOUSE) && (press.mouse.button == 1) && (KEY_GRID_X(press) == x) && (KEY_GRID_Y(press) == y))
 						recall = !recall;
 					else
 					if ((press.type == EVT_KBRD) && (press.key.code == 'r'))
@@ -754,21 +755,21 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 						break;
 				}
 
-				if (press.type == EVT_MOUSE) {
-					/* Stop on right click */
-					if (press.mouse.button == 2)
-						break;
+        if (press.type == EVT_MOUSE) {
+				  /* Stop on right click */
+				  if (press.mouse.button == 2)
+					  break;
 
-					/* Sometimes stop at "space" key */
-					if (press.mouse.button && !(mode & (TARGET_LOOK))) break;
-				} else {
-					/* Stop on everything but "return"/"space" */
-					if (press.key.code != '\n' && press.key.code != '\r' && press.key.code != ' ')
-						break;
+				  /* Sometimes stop at "space" key */
+				  if (press.mouse.button && !(mode & (TARGET_LOOK))) break;
+        } else {
+				  /* Stop on everything but "return"/"space" */
+				  if (press.key.code != '\n' && press.key.code != '\r' && press.key.code != ' ')
+					  break;
 
-					/* Sometimes stop at "space" key */
-					if ((press.key.code == ' ') && !(mode & (TARGET_LOOK))) break;
-				}
+				  /* Sometimes stop at "space" key */
+				  if ((press.key.code == ' ') && !(mode & (TARGET_LOOK))) break;
+        }
 
 				/* Take account of gender */
 				if (rf_has(r_ptr->flags, RF_FEMALE)) s1 = "She is ";
@@ -813,20 +814,20 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 					move_cursor_relative(y, x);
 					press = inkey_m();
 
-					if (press.type == EVT_MOUSE) {
-						/* Stop on right click */
-						if (press.mouse.button == 2)
-							break;
+          if (press.type == EVT_MOUSE) {
+				    /* Stop on right click */
+				    if (press.mouse.button == 2)
+					    break;
 
-						/* Sometimes stop at "space" key */
-						if (press.mouse.button && !(mode & (TARGET_LOOK))) break;
-					} else {
-						/* Stop on everything but "return"/"space" */
-						if ((press.key.code != '\n') && (press.key.code != '\r') && (press.key.code != ' ')) break;
+				    /* Sometimes stop at "space" key */
+				    if (press.mouse.button && !(mode & (TARGET_LOOK))) break;
+          } else {
+					  /* Stop on everything but "return"/"space" */
+					  if ((press.key.code != '\n') && (press.key.code != '\r') && (press.key.code != ' ')) break;
 
-						/* Sometimes stop at "space" key */
-						if ((press.key.code == ' ') && !(mode & (TARGET_LOOK))) break;
-					}
+					  /* Sometimes stop at "space" key */
+					  if ((press.key.code == ' ') && !(mode & (TARGET_LOOK))) break;
+          }
 
 					/* Change the intro */
 					s2 = "also carrying ";
@@ -876,7 +877,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 
 				/* Display objects */
 				if (((press.type == EVT_MOUSE) && (press.mouse.button == 1) && (KEY_GRID_X(press) == x) && (KEY_GRID_Y(press) == y))
-					|| ((press.type == EVT_KBRD) && (press.key.code == 'r')))
+          || ((press.type == EVT_KBRD) && (press.key.code == 'r')))
 				{
 					int rdone = 0;
 					int pos;
@@ -895,11 +896,11 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 						/* Load screen */
 						screen_load();
 
-						if (press.type == EVT_MOUSE) {
-							pos = press.mouse.y-1;
-						} else {
-							pos = press.key.code - 'a';
-						}
+            if (press.type == EVT_MOUSE) {
+						  pos = press.mouse.y-1;
+            } else {
+						  pos = press.key.code - 'a';
+            }
 						if (0 <= pos && pos < floor_num)
 						{
 							track_object(-floor_list[pos]);
@@ -1018,24 +1019,24 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 			move_cursor_relative(y, x);
 			press = inkey_m();
 
-			if (press.type == EVT_MOUSE) {
+      if (press.type == EVT_MOUSE) {
 				/* Stop on right click */
 				if (press.mouse.button == 2)
 					break;
-			} else {
-				/* Stop on everything but "return"/"space" */
-				if ((press.key.code != '\n') && (press.key.code != '\r') && (press.key.code != ' ')) break;
-			}
+      } else {
+			  /* Stop on everything but "return"/"space" */
+			  if ((press.key.code != '\n') && (press.key.code != '\r') && (press.key.code != ' ')) break;
+      }
 		}
 
 		/* Stop on everything but "return" */
-		if (press.type == EVT_MOUSE) {
-			/* Stop on right click */
-			if (press.mouse.button != 2)
-				break;
-		} else {
-			if ((press.key.code != '\n') && (press.key.code != '\r')) break;
-		}
+      if (press.type == EVT_MOUSE) {
+				/* Stop on right click */
+				if (press.mouse.button != 2)
+					break;
+      } else {
+    		if ((press.key.code != '\n') && (press.key.code != '\r')) break;
+      }
 	}
 
 	/* Keep going */
@@ -1279,7 +1280,7 @@ bool target_set_interactive(int mode, int x, int y)
 	bool help = FALSE;
 
 	//struct keypress query;
-	ui_event press;
+  ui_event press;
 
 	/* These are used for displaying the path to the target */
 	wchar_t path_char[MAX_RANGE];
@@ -1293,7 +1294,7 @@ bool target_set_interactive(int mode, int x, int y)
 		x = p_ptr->px;
 		y = p_ptr->py;
 	}
-	/* If we /have/ been given an initial location, make sure we
+    /* If we /have/ been given an initial location, make sure we
 	   honour it by going into "free targetting" mode. */
 	else
 	{
@@ -1360,54 +1361,52 @@ bool target_set_interactive(int mode, int x, int y)
 
 
 			/* Analyze */
-			if (press.type == EVT_MOUSE) {
-				if (press.mouse.button == 2) {
-					y = KEY_GRID_Y(press);
-					x = KEY_GRID_X(press);
-					if (press.mouse.mods & KC_MOD_CONTROL) {
-						/* same as keyboard target selection command below */
-						int m_idx = cave->m_idx[y][x];
+      if (press.type == EVT_MOUSE) {
+        if (press.mouse.button == 2) {
+				  y = KEY_GRID_Y(press);//.mouse.y;
+  			  x = KEY_GRID_X(press);//.mouse.x;
+          if (press.mouse.mods & KC_MOD_CONTROL) {
+            /* same as keyboard target selection command below */
+					  int m_idx = cave->m_idx[y][x];
 
-						if ((m_idx > 0) && target_able(m_idx)) {
-							health_track(p_ptr, m_idx);
-							target_set_monster(m_idx);
-							done = TRUE;
-						} else {
-							bell("Illegal target!");
-						}
-					} else
-					if (press.mouse.mods & KC_MOD_ALT) {
-						/* go to spot - same as 'g' command below */
-						cmd_insert(CMD_PATHFIND);
-						cmd_set_arg_point(cmd_get_top(), 0, y, x);
-						done = TRUE;
-					} else
-					{
-						/* cancel look mode */
-  						done = TRUE;
-					}
-				} else
-				/*if (press.mouse.button == 3) {
-				} else*/
-				{
-					y = KEY_GRID_Y(press);
-					x = KEY_GRID_X(press);
-					if (cave->m_idx[y][x] || cave->o_idx[y][x]){// || cave->feat[y][x]&) {
-						/* scan the interesting list and see if there in anything here
-						 * if so, go back to interesting  */
-						/* TODO add check for interesting features */
-						for (i = 0; i < point_set_size(targets); i++) {
-							if ((y == targets->pts[i].y) && (x == targets->pts[i].x)) {
-								m = i;
-								flag = TRUE;
-								break;
-							}
-						}
-					} else {
-						flag = FALSE;
-					}
-				}
-			} else
+					  if ((m_idx > 0) && target_able(m_idx)) {
+						  health_track(p_ptr, m_idx);
+						  target_set_monster(m_idx);
+						  done = TRUE;
+					  } else {
+						  bell("Illegal target!");
+					  }
+          } else
+          if (press.mouse.mods & KC_MOD_ALT) {
+            /* go to spot - same as 'g' command below */
+					  cmd_insert(CMD_PATHFIND);
+					  cmd_set_arg_point(cmd_get_top(), 0, y, x);
+					  done = TRUE;
+          } else
+          {
+            /* cancel look mode */
+  					done = TRUE;
+          }
+        } else
+        /*if (press.mouse.button == 3) {
+        } else*/
+        {
+					y = KEY_GRID_Y(press);//.mouse.y;
+					x = KEY_GRID_X(press);//.mouse.x;
+          if (cave->m_idx[y][x] || cave->o_idx[y][x]){// || cave->feat[y][x]&) {
+            /* scan the interesting list and see if there in anything here */
+					  for (i = 0; i < point_set_size(targets); i++) {
+              if ((y == targets->pts[i].y) && (x == targets->pts[i].x)) {
+                m = i;
+                flag = TRUE;
+                break;
+              }
+            }
+          } else {
+            flag = FALSE;
+          }
+        }
+      } else
 			switch (press.key.code)
 			{
 				case ESCAPE:
@@ -1585,45 +1584,55 @@ bool target_set_interactive(int mode, int x, int y)
 			d = 0;
 
 			/* Analyze the keypress */
-			if (press.type == EVT_MOUSE) {
-				if (press.mouse.button == 2) {
-					y = KEY_GRID_Y(press);
-  					x = KEY_GRID_X(press);
-					if (press.mouse.mods & KC_MOD_CONTROL) {
-						/* same as keyboard target selection command below */
-						target_set_location(y, x);
-						done = TRUE;
-					} else
-					if (press.mouse.mods & KC_MOD_ALT) {
-						/* go to spot - same as 'g' command below */
-						cmd_insert(CMD_PATHFIND);
-						cmd_set_arg_point(cmd_get_top(), 0, y, x);
-						done = TRUE;
-					} else
-					{
-						/* cancel look mode */
-  						done = TRUE;
-					}
-				} else
-				/*if (press.mouse.button == 3) {
-				} else*/
-				{
-					y = KEY_GRID_Y(press);
-					x = KEY_GRID_X(press);
-					if (cave->m_idx[y][x] || cave->o_idx[y][x]) {
-						/* scan the interesting list and see if there in anything here */
-						for (i = 0; i < point_set_size(targets); i++) {
-							if ((y == targets->pts[i].y) && (x == targets->pts[i].x)) {
-								m = i;
-								flag = TRUE;
-								break;
-							}
-						}
-					} else {
-						flag = FALSE;
-					}
-				}
-			} else
+      if (press.type == EVT_MOUSE) {
+        if (press.mouse.button == 2) {
+          if (mode & (TARGET_KILL)) {
+				    if ((y == KEY_GRID_Y(press)) 
+              && (x == KEY_GRID_X(press))) {
+              d = -1;
+            }
+          }
+				  y = KEY_GRID_Y(press);//.mouse.y;
+  			  x = KEY_GRID_X(press);//.mouse.x;
+          if (press.mouse.mods & KC_MOD_CONTROL) {
+            /* same as keyboard target selection command below */
+					  target_set_location(y, x);
+					  done = TRUE;
+          } else
+          if (press.mouse.mods & KC_MOD_ALT) {
+            /* go to spot - same as 'g' command below */
+					  cmd_insert(CMD_PATHFIND);
+					  cmd_set_arg_point(cmd_get_top(), 0, y, x);
+					  done = TRUE;
+          } else
+          {
+            /* cancel look mode */
+  					done = TRUE;
+            if (d == -1) {
+   					  target_set_location(y, x);
+              d = 0;
+            }
+          }
+        } else
+        /*if (press.mouse.button == 3) {
+        } else*/
+        {
+					y = KEY_GRID_Y(press);//.mouse.y;
+					x = KEY_GRID_X(press);//.mouse.x;
+          if (cave->m_idx[y][x] || cave->o_idx[y][x]) {
+            /* scan the interesting list and see if there in anything here */
+					  for (i = 0; i < point_set_size(targets); i++) {
+              if ((y == targets->pts[i].y) && (x == targets->pts[i].x)) {
+                m = i;
+                flag = TRUE;
+                break;
+              }
+            }
+          } else {
+            flag = FALSE;
+          }
+        }
+      } else
 			switch (press.key.code)
 			{
 				case ESCAPE:

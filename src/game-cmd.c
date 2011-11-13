@@ -105,11 +105,9 @@ static struct
 	{ CMD_STASH, { arg_ITEM, arg_NUMBER }, do_cmd_stash, FALSE, 0 },
 	{ CMD_BUY, { arg_CHOICE, arg_NUMBER }, do_cmd_buy, FALSE, 0 },
 	{ CMD_RETRIEVE, { arg_CHOICE, arg_NUMBER }, do_cmd_retrieve, FALSE, 0 },
-	{ CMD_LOOK, { arg_CHOICE, arg_NUMBER }, NULL, FALSE, 0 },
 	{ CMD_USE_AIMED, { arg_ITEM, arg_TARGET }, do_cmd_use, FALSE, 0 },
 	{ CMD_USE_UNAIMED, { arg_ITEM, arg_TARGET }, do_cmd_use, FALSE, 0 },
 	{ CMD_USE_ANY, { arg_ITEM, arg_TARGET }, do_cmd_use, FALSE, 0 },
-	{ CMD_CONTEXT_MENU, { arg_TARGET }, NULL, FALSE, 0 },
 	{ CMD_SUICIDE, { arg_NONE }, do_cmd_suicide, FALSE, 0 },
 	{ CMD_SAVE, { arg_NONE }, do_cmd_save_game, FALSE, 0 },
 	{ CMD_QUIT, { arg_NONE }, do_cmd_quit, FALSE, 0 },
@@ -150,6 +148,10 @@ struct item_selector item_selector[] =
 	{ CMD_DROP, "Drop which item? ",
 	  "You have nothing to drop.",
 	  NULL, (USE_EQUIP | USE_INVEN) },
+
+	{ CMD_THROW, "Throw which item? ",
+	  "You have nothing to throw.",
+	  NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR) },
 
 	{ CMD_FIRE, "Fire which item? ",
 	  "You have nothing to fire.",

@@ -124,11 +124,12 @@ extern int cmp_monsters(const void *a, const void *b);
 
 
 /* ui-spell.c -- just for now */
+int get_spell(const object_type *o_ptr, const char *verb,
+		bool (*spell_test)(int spell));
 void textui_book_browse(const object_type *o_ptr);
 void textui_spell_browse(void);
 void textui_obj_study(void);
 int textui_obj_cast(void);
-void textui_obj_cast_wrapper(void);
 
 /* ui-knowledge.c */
 extern int big_pad(int col, int row, byte a, wchar_t c);
