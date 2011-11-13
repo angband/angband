@@ -25,6 +25,7 @@
 #include "textui.h"
 #include "ui-menu.h"
 #include "wizard.h"
+#include "target.h"
 
 /*
  * This file contains (several) big lists of commands, so that they can be
@@ -68,7 +69,8 @@ static struct cmd_info cmd_item[] =
 	{ "Eat some food", 'E', CMD_EAT, NULL, NULL },
 	{ "Quaff a potion", 'q', CMD_QUAFF, NULL, NULL },
 	{ "Read a scroll", 'r', CMD_READ_SCROLL, NULL, player_can_read },
-	{ "Fuel your light source", 'F', CMD_REFILL, NULL, player_can_refuel }
+	{ "Fuel your light source", 'F', CMD_REFILL, NULL, player_can_refuel },
+	{ "Use an item", 'U', CMD_USE_ANY, NULL, NULL }
 };
 
 /* General actions */
@@ -517,6 +519,106 @@ static ui_event textui_get_command(void)
 	return ke;
 }
 
+int show_command_list(struct cmd_info cmd_list[], int size)
+{
+	menu_type *m;
+	region r;
+	int selected;
+	int i;
+
+	m = menu_dynamic_new();
+	if (!m) {
+		return 0;
+	}
+	m->selections = lower_case;
+	for (i=0; i < size; ++i) {
+		menu_dynamic_add(m, cmd_list[i].desc, i+1);
+	}
+
+	/* work out display region */
+	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
+	r.col = 80 - r.width;
+	r.row = 1;
+	r.page_rows = m->count;
+
+	screen_save();
+	menu_layout(m, &r);
+	region_erase_bordered(&r);
+
+	prt("(Enter to select, ESC) Command:", 0, 0);
+	selected = menu_dynamic_select(m);
+	menu_dynamic_free(m);
+
+	screen_load();
+
+	if ((selected > 0) && (selected < size+1)) {
+		/* execute the command */
+		Term_keypress(cmd_list[selected-1].key,0);
+	}
+
+	return 1;
+}
+
+int context_menu_command()
+{
+	menu_type *m;
+	region r;
+	int selected;
+
+	m = menu_dynamic_new();
+	if (!m) {
+		return 0;
+	}
+
+	m->selections = lower_case;
+	menu_dynamic_add(m, "Item", 1);
+	menu_dynamic_add(m, "Action", 2);
+	menu_dynamic_add(m, "Item Management", 3);
+	menu_dynamic_add(m, "Info", 4);
+	menu_dynamic_add(m, "Util", 5);
+	menu_dynamic_add(m, "Misc", 6);
+
+	/* work out display region */
+	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
+	r.col = 80 - r.width;
+	r.row = 1;
+	r.page_rows = m->count;
+
+	screen_save();
+	menu_layout(m, &r);
+	region_erase_bordered(&r);
+
+	prt("(Enter to select, ESC) Command:", 0, 0);
+	selected = menu_dynamic_select(m);
+	menu_dynamic_free(m);
+
+	screen_load();
+
+	if (selected == 1) {
+		show_command_list(cmd_item, N_ELEMENTS(cmd_item));
+	} else
+	if (selected == 2) {
+		show_command_list(cmd_action, N_ELEMENTS(cmd_action));
+	} else
+	if (selected == 3) {
+		show_command_list(cmd_item_manage, N_ELEMENTS(cmd_item_manage));
+	} else
+	if (selected == 4) {
+		show_command_list(cmd_info, N_ELEMENTS(cmd_info));
+	} else
+	if (selected == 5) {
+		show_command_list(cmd_util, N_ELEMENTS(cmd_util));
+	} else
+	if (selected == 6) {
+		show_command_list(cmd_hidden, N_ELEMENTS(cmd_hidden));
+	}
+
+	return 1;
+}
+
+int context_menu_player();
+int context_menu_cave(struct cave *cave, int y, int x, int adjacent);
+int get_direction_player (int y, int x);
 
 /**
  * Handle a textui mouseclick.
@@ -534,10 +636,63 @@ static void textui_process_click(ui_event e)
 	if (!in_bounds_fully(y, x)) return;
 
 	/* XXX show context menu here */
-	if ((p_ptr->py == y) && (p_ptr->px == x))
-		textui_cmd_rest();
+	if ((p_ptr->py == y) && (p_ptr->px == x)) {
+		if (e.mouse.mods & KC_MOD_SHIFT) {
+			/* shift-click - cast magic */
+			if (e.mouse.button == 1) {
+				textui_obj_cast();
+			} else
+			if (e.mouse.button == 2) {
+				Term_keypress('i',0);
+				//cmd_insert(CMD_USE_AIMED);
+			}
+		} else
+		if (e.mouse.mods & KC_MOD_CONTROL) {
+			/* ctrl-click - use feature / use inventory item */
+			/* switch with default */
+			if (e.mouse.button == 1) {
+				//cmd_insert(CMD_ACTIVATE);
+				if (cave->feat[p_ptr->py][p_ptr->px] == FEAT_LESS) {
+					cmd_insert(CMD_GO_UP);
+				} else
+				if (cave->feat[p_ptr->py][p_ptr->px] == FEAT_MORE) {
+					cmd_insert(CMD_GO_DOWN);
+				}
+			} else
+			if (e.mouse.button == 2) {
+				cmd_insert(CMD_USE_UNAIMED);
+				//cmd_insert(CMD_USE_ANY);
+			}
+		} else
+		if (e.mouse.mods & KC_MOD_ALT) {
+			/* alt-click - Search  or show char screen */
+			/* XXX call a platform specific hook */
+			if (e.mouse.button == 1) {
+ 				cmd_insert(CMD_SEARCH);
+			} else
+			if (e.mouse.button == 2) {
+				Term_keypress('C',0);
+				//cmd_insert(CMD_CHAR_SCREEN);
+			}
+		} else
+		{
+			if (e.mouse.button == 1) {
+				if (cave->o_idx[y][x]) {
+					cmd_insert(CMD_PICKUP);
+				} else {
+					cmd_insert(CMD_HOLD);
+				}
+			} else
+			if (e.mouse.button == 2) {
+				// show a context menu
+				context_menu_player();
+				//Term_keypress('~',0);
+				//cmd_insert(CMD_OPTIONS);
+			}
+		}
+	}
 
-	else /* if (e.mousebutton == 1) */
+	else if (e.mouse.button == 1)
 	{
 		if (p_ptr->timed[TMD_CONFUSED])
 		{
@@ -545,18 +700,77 @@ static void textui_process_click(ui_event e)
 		}
 		else
 		{
-			cmd_insert(CMD_PATHFIND);
-			cmd_set_arg_point(cmd_get_top(), 0, y, x);
+			if (e.mouse.mods & KC_MOD_SHIFT) {
+				/* shift-click - run */
+				cmd_insert(CMD_RUN);
+				cmd_set_arg_direction(cmd_get_top(), 0, get_direction_player(y,x));
+			} else
+			if (e.mouse.mods & KC_MOD_CONTROL) {
+				/* control-click - alter */
+				cmd_insert(CMD_ALTER);
+				cmd_set_arg_direction(cmd_get_top(), 0, get_direction_player(y,x));
+			} else
+			if (e.mouse.mods & KC_MOD_ALT) {
+				/* alt-click - look */
+				if (target_set_interactive(TARGET_LOOK, x, y)) {
+					msg("Target Selected.");
+				}
+				//cmd_insert(CMD_LOOK);
+				//cmd_set_arg_point(cmd_get_top(), 0, y, x);
+			} else
+			{
+				if ((y-p_ptr->py >= -1) && (y-p_ptr->py <= 1)
+					&& (x-p_ptr->px >= -1) && (x-p_ptr->px <= 1)) {
+					cmd_insert(CMD_WALK);
+					cmd_set_arg_direction(cmd_get_top(), 0, get_direction_player(y,x));
+				} else {
+					cmd_insert(CMD_PATHFIND);
+					cmd_set_arg_point(cmd_get_top(), 0, y, x);
+				}
+			}
 		}
 	}
 
-#if 0
-	else if (e.mousebutton == 2)
+	else if (e.mouse.button == 2)
 	{
-		target_set_location(y, x);
-		msg_print("Target set.");
+		int m_idx = cave->m_idx[y][x];
+		if (m_idx && target_able(m_idx)) {
+			monster_type *m_ptr = cave_monster(cave, m_idx);
+			/* Set up target information */
+			monster_race_track(m_ptr->r_idx);
+			health_track(p_ptr, m_ptr);
+			//health_track(p_ptr, m_idx);
+			target_set_monster(m_idx);
+		} else {
+			target_set_location(y,x);
+		}
+		if (e.mouse.mods & KC_MOD_SHIFT) {
+			/* shift-click - cast spell at target */
+			if (textui_obj_cast() >= 0) {
+				cmd_set_arg_target(cmd_get_top(), 1, DIR_TARGET);
+			}
+		} else
+		if (e.mouse.mods & KC_MOD_CONTROL) {
+			/* control-click - fire at target */
+			cmd_insert(CMD_USE_AIMED);
+			cmd_set_arg_target(cmd_get_top(), 1, DIR_TARGET);
+		} else
+		if (e.mouse.mods & KC_MOD_ALT) {
+			/* alt-click - throw at target */
+			cmd_insert(CMD_THROW);
+			cmd_set_arg_target(cmd_get_top(), 1, DIR_TARGET);
+		} else
+		{
+			//msg("Target set.");
+			/* see if the click was adjacent to the player */
+			if ((y-p_ptr->py >= -1) && (y-p_ptr->py <= 1)
+				&& (x-p_ptr->px >= -1) && (x-p_ptr->px <= 1)) {
+				context_menu_cave(cave,y,x,1);
+			} else {
+				context_menu_cave(cave,y,x,0);
+			}
+		}
 	}
-#endif
 }
 
 

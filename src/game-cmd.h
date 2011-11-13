@@ -83,6 +83,14 @@ typedef enum cmd_code
 	CMD_STASH,
 	CMD_RETRIEVE,
 
+  /* commands added by Brett */	
+  /* use a rod, wand, or fire ammo */
+  CMD_USE_AIMED,
+  /* use a staff, scroll, potion, or food */
+  CMD_USE_UNAIMED,
+  /* use a any useable item */
+  CMD_USE_ANY,
+
 	/* Hors categorie Commands */
 	CMD_SUICIDE,
 	CMD_SAVE,
