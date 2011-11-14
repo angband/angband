@@ -494,15 +494,37 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 				if (do_long)
 				{
 					const wchar_t *arg;
+					wchar_t arg2[1024];
+
+					/* XXX There is a big bug here: if one
+					 * passes "%.0s" to strnfmt, then really we
+					 * should not dereference the arg at all.
+					 * But it does.  See bug #666.
+					 */
 
 					/* Get the next argument */
-					arg = va_arg(vp, const wchar_t *);
+					arg = tval.t == T_END ? va_arg(vp, const wchar_t *) : tval.u.s;
 
 					/* Hack -- convert NULL to EMPTY */
 					if (!arg) arg = L"";
 
+					/* Prevent buffer overflows */
+					(void)my_strcpy(arg2, arg, sizeof(arg2));
+
 					/* Format the argument */
-					snprintf(tmp, sizeof(tmp), aux, arg);
+					sprintf(tmp, aux, arg2);
+
+					/* there is no point in using snprintf in a snprintf replacement function */
+					/*const wchar_t *arg;
+
+					/* Get the next argument */
+					/*arg = va_arg(vp, const wchar_t *);
+
+					/* Hack -- convert NULL to EMPTY */
+					/*if (!arg) arg = L"";
+
+					/* Format the argument */
+					/*snprintf(tmp, sizeof(tmp), aux, arg);
 
 					/* Done */
 					break;
@@ -510,6 +532,7 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 				else
 				{
 					const char *arg;
+					char arg2[1024];
 
 					/* XXX There is a big bug here: if one
 					 * passes "%.0s" to strnfmt, then really we
@@ -523,8 +546,29 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 					/* Hack -- convert NULL to EMPTY */
 					if (!arg) arg = "";
 
+					/* Prevent buffer overflows */
+					(void)my_strcpy(arg2, arg, sizeof(arg2));
+
 					/* Format the argument */
-					snprintf(tmp, sizeof(tmp), aux, arg);
+					sprintf(tmp, aux, arg2);
+
+					/* there is no point in using snprintf in a snprintf replacement function */
+					/*const char *arg;
+
+					/* XXX There is a big bug here: if one
+					 * passes "%.0s" to strnfmt, then really we
+					 * should not dereference the arg at all.
+					 * But it does.  See bug #666.
+					 */
+
+					/* Get the next argument */
+					/*arg = tval.t == T_END ? va_arg(vp, const char *) : tval.u.s;
+
+					/* Hack -- convert NULL to EMPTY */
+					/*if (!arg) arg = "";
+
+					/* Format the argument */
+					/*snprintf(tmp, sizeof(tmp), aux, arg);
 
 					/* Done */
 					break;
