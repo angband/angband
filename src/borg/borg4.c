@@ -1766,9 +1766,9 @@ static void borg_notice_aux2(void)
 
     /*** Process the Needs ***/
 
-    /* No need for fuel if its not a torch or lantern */
-    if ((borg_items[INVEN_LIGHT].sval != SV_LIGHT_TORCH) &&
-        (borg_items[INVEN_LIGHT].sval != SV_LIGHT_LANTERN)) borg_skill[BI_AFUEL] += 1000;
+    /* No need for fuel if we know it doesn't need it */
+    if (of_has(borg_items[INVEN_LIGHT].flags, OF_NO_FUEL))
+        borg_skill[BI_AFUEL] += 1000;
 
     /* No need to *buy* stat increase potions */
     if (my_stat_cur[A_STR] >= (18+100) + 10 * op_ptr->opt[OPT_birth_maximize] *
