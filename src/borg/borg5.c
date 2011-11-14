@@ -1174,7 +1174,7 @@ static void borg_update_kill_old(int i)
     if (m_ptr->maxhp)
     {
         /* Cheat the "percent" of health */
-        pct = 100L * m_ptr->hp / (m_ptr->maxhp > 1) ? m_ptr->maxhp : 1;
+        pct = 100L * m_ptr->hp / ((m_ptr->maxhp > 1) ? m_ptr->maxhp : 1);
     }
     else
     {
