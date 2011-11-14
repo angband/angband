@@ -2099,8 +2099,8 @@ bool borg_crush_junk(void)
         }
         borg_keypress(I2A(i));
 
-        /* Verify destruction */
-        borg_keypress('y');
+        /* This item only */
+        borg_keypress('a');
 
         /* Success */
         return (TRUE);
@@ -2480,8 +2480,8 @@ bool borg_crush_hole(void)
         borg_keypress('k');
         borg_keypress(I2A(b_i));
 
-        /* Verify destruction */
-        borg_keypress('y');
+        /* This item only */
+        borg_keypress('a');
 
         /* Success */
         return (TRUE);
@@ -2651,8 +2651,8 @@ bool borg_crush_slow(void)
 			borg_keypress(I2A(b_i));
 		}
 
-        /* Verify destruction */
-        borg_keypress('y');
+        /* This item only */
+        borg_keypress('a');
     }
 
     /* Hack -- no need */
