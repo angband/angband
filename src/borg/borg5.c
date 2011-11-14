@@ -296,6 +296,7 @@ static void borg_follow_take(int i)
 	borg_grid *ag = &borg_grids[take->y][take->x];
 	borg_kill *kill = &borg_kills[ag->kill];
     monster_race *r_ptr = &r_info[kill->r_idx];
+    struct object_kind *old_kind;
 
 
     /* Paranoia */
@@ -305,6 +306,7 @@ static void borg_follow_take(int i)
     /* Old location */
     ox = take->x;
     oy = take->y;
+    old_kind = take->kind;
 
     /* delete them if they are under me */
     if (take->y == c_y && take->x == c_x)
@@ -322,9 +324,7 @@ static void borg_follow_take(int i)
 
     /* Note */
     borg_note(format("# There was an object '%s' at (%d,%d)",
-                     (take->kind->name),
-                     ox, oy));
-
+                     (old_kind->name), ox, oy));
 
     /* Kill the object */
     borg_delete_take(i);
