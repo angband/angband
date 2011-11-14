@@ -296,7 +296,8 @@ borg_verbose = FALSE
 # he can find some wands early on to assist with monster killing.
 
 borg_munchkin_start = TRUE
-
+borg_munchkin_level = 12
+borg_munchkin_depth = 16
 
 # Enchant Limit
 

@@ -4298,6 +4298,38 @@ void init_borg_txt_file(void)
 		fp = file_open(buf, MODE_READ, -1);
 	    /*fp = fopen(buf, "r"); */
 
+	/* setup default values, in case any are missing */
+	borg_worships_damage = FALSE;
+	borg_worships_speed = FALSE;
+	borg_worships_hp= FALSE;
+	borg_worships_mana = FALSE;
+	borg_worships_ac = FALSE;
+	borg_worships_gold = FALSE;
+	borg_plays_risky = FALSE;
+	borg_scums_uniques = TRUE;
+	borg_kills_uniques = FALSE;
+	borg_uses_swaps = TRUE;
+	borg_slow_optimizehome = FALSE;
+	borg_stop_dlevel = 128;
+	borg_stop_clevel = 55;
+	borg_no_deeper = 127;
+	borg_stop_king = TRUE;
+	borg_uses_calcs = FALSE;
+	borg_respawn_winners = FALSE;
+	borg_respawn_class = -1;
+	borg_respawn_race = -1;
+	borg_chest_fail_tolerance = 7;
+	borg_delay_factor = 1;
+	borg_money_scum_amount = 0;
+	borg_self_scum = TRUE;
+	borg_lunal_mode = FALSE;
+	borg_self_lunal = TRUE;
+	borg_verbose = FALSE;
+	borg_munchkin_start = FALSE;
+	borg_munchkin_level = 12;
+	borg_munchkin_depth = 16;
+	borg_enchant_limit = 10;
+
     /* No file, use defaults*/
     if (!fp)
     {
@@ -4305,39 +4337,6 @@ void init_borg_txt_file(void)
         msg("*****WARNING***** You do not have a proper BORG.TXT file!");
         msg("Make sure BORG.TXT is located in the \\user\\ subdirectory!");
         msg(NULL);
-
-        /* use default values */
-        borg_worships_damage = FALSE;
-        borg_worships_speed = FALSE;
-        borg_worships_hp= FALSE;
-        borg_worships_mana = FALSE;
-        borg_worships_ac = FALSE;
-        borg_worships_gold = FALSE;
-        borg_plays_risky = FALSE;
-        borg_scums_uniques = TRUE;
-        borg_kills_uniques = FALSE;
-        borg_uses_swaps = TRUE;
-        borg_slow_optimizehome = FALSE;
-        borg_stop_dlevel = 128;
-        borg_stop_clevel = 55;
-		borg_no_deeper = 127;
-        borg_stop_king = TRUE;
-        borg_uses_calcs = FALSE;
-        borg_respawn_winners = FALSE;
-        borg_respawn_class = -1;
-        borg_respawn_race = -1;
-        borg_chest_fail_tolerance = 7;
-        borg_delay_factor = 1;
-        borg_money_scum_amount = 0;
-		borg_self_scum = TRUE;
-		borg_lunal_mode = FALSE;
-		borg_self_lunal = TRUE;
-		borg_verbose = FALSE;
-		borg_munchkin_start = FALSE;
-		borg_munchkin_level = 12;
-		borg_munchkin_depth = 16;
-		borg_enchant_limit = 10;
-
         return;
     }
 
