@@ -3058,8 +3058,6 @@ static void borg_forget_map(void)
     borg_forget_view();
 }
 
-static byte Get_f_info_number[256];
-
 /*
  * Update the "map" based on visual info on the screen
  *
@@ -3157,54 +3155,23 @@ static void borg_update_map(void)
 
     borg_grid *ag;
 	grid_data g;
-    byte t_a;
-    byte t_c;
 
     /* Analyze the current map panel */
     for (dy = 0; dy < SCREEN_HGT; dy++)
     {
-        /* Direct access XXX XXX XXX */
-        byte *aa = &(Term->scr->a[dy+1][13]);
-        wchar_t *cc = &(Term->scr->c[dy+1][13]);
-
-#ifdef ALLOW_BORG_GRAPHICS
-       byte a_trans;
-       wchar_t c_trans;
-#endif /* ALLOW_BORG_GRAPHICS */
-
-
         /* Scan the row */
         for (dx = 0; dx < SCREEN_WID; dx++)
         {
             bool old_wall;
             bool new_wall;
 
-
             /* Obtain the map location */
             x = w_x + dx;
             y = w_y + dy;
 
-			/* Cheat the exact information from the screen */
+			/* map_info returns the information the player is allowed to
+			 * know about the screen location */
 			map_info(y, x, &g);
-
-            /* Save contents */
-            t_a = *aa++;
-            t_c = *cc++;
-
-#ifdef ALLOW_BORG_GRAPHICS
-
-           /* Translate the glyph into an ASCII char */
-           a_trans = translate_visuals[(byte)t_a][t_c].d_attr;
-           c_trans = translate_visuals[(byte)t_a][t_c].d_char;
-
-           if ((a_trans != 0) || (c_trans != 0))
-           {
-               /* Translation found */
-               t_a = a_trans;
-               t_c = c_trans;
-           }
-#endif /* ALLOW_BORG_GRAPHICS */
-
 
             /* Get the borg_grid */
             ag = &borg_grids[y][x];
@@ -3212,54 +3179,25 @@ static void borg_update_map(void)
             /* Notice "on-screen" */
             ag->info |= BORG_OKAY;
 
-			/* Cheat features from the game if the spot is in view */
-			if (player_can_see_bold(y,x))
-			{
-				ag->feat = cave->feat[y][x];
-			}
+            ag->feat = g.f_idx;
 
 			/* Notice "knowledge" */
-            if (t_c != ' ') ag->info |= BORG_MARK;
-
+            if (ag->feat != FEAT_NONE)
+            	ag->info |= BORG_MARK;
 
             /* Notice the player */
-            if (t_c == '@')
+            if (g.is_player)
             {
                 /* Memorize player location */
                 c_x = x;
                 c_y = y;
-
-                /* Hack -- white */
-                t_a = TERM_WHITE;
-
-                /* mark the borg_grid if stair under me */
-                /* I might be standing on a stair */
-                if (borg_on_dnstairs)
-                {
-                    ag->feat = FEAT_MORE;
-                    borg_on_dnstairs = FALSE;
-                }
-                if (borg_on_upstairs)
-                {
-                    ag->feat = FEAT_LESS;
-                    borg_on_upstairs = FALSE;
-                }
-
-
-                /* AJG Just get the char from the features array */
-                if (ag->feat != FEAT_NONE)
-                    t_c = f_info[ag->feat].d_char;
-                else
-                    t_c = f_info[FEAT_FLOOR].d_char;
             }
-
 
             /* Save the old "wall" or "door" */
             old_wall = !borg_cave_floor_grid(ag);
 
-            /* Analyze symbol */
-            /* AJG Adjust for funky graphics */
-            switch (Get_f_info_number[t_c])
+            /* Analyze know information about grid */
+            switch (g.f_idx)
             {
                 /* Darkness */
                 case FEAT_NONE:
@@ -3277,8 +3215,6 @@ static void borg_update_map(void)
                 /* Floors */
                 case FEAT_FLOOR:
                 {
-                    byte info = cave->info[y][x];
-
 					/* Handle "blind" */
                     if (borg_skill[BI_ISBLIND])
                     {
@@ -3286,7 +3222,7 @@ static void borg_update_map(void)
                     }
 
 					/* Handle "dark" floors */
-                    if (!(info & CAVE_GLOW))
+                    if (g.lighting == FEAT_LIGHTING_DARK)
                     {
                         /* Dark floor grid */
                         ag->info |= BORG_DARK;
@@ -3294,7 +3230,7 @@ static void borg_update_map(void)
                     }
 
 					/* Handle Glowing floors */
-                    if (info & CAVE_GLOW)
+                    else if (g.lighting == FEAT_LIGHTING_BRIGHT)
 					{
 							/* Perma Glowing Grid */
 							ag->info |= BORG_GLOW;
@@ -3303,15 +3239,14 @@ static void borg_update_map(void)
 							ag->info &= ~BORG_DARK;
 					}
 
-					/* torch-lit grids */
-			        ag->info |= BORG_LIGHT;
+                    /* torch-lit grids */
+                    else
+                    {
+						ag->info |= BORG_LIGHT;
 
-					/* Assume not dark */
-					ag->info &= ~BORG_DARK;
-
-                    /* Known floor */
-                    ag->feat = FEAT_FLOOR;
-
+						/* Assume not dark */
+						ag->info &= ~BORG_DARK;
+                    }
                     /* Done */
                     break;
                 }
@@ -3320,23 +3255,6 @@ static void borg_update_map(void)
                 case FEAT_OPEN:
                 case FEAT_BROKEN:
                 {
-                    /* The borg cannot distinguish at a glance which is
-                       which so the actual cave_feat is plugged in */
-                    byte feat = cave->feat[y][x];
-
-                    /* Accept broken */
-                    if (ag->feat == FEAT_BROKEN) break;
-
-                    /* Hack- cheat the broken into memory */
-                    if (feat == FEAT_BROKEN)
-                    {
-                        ag->feat = FEAT_BROKEN;
-                        break;
-                    }
-
-                    /* Assume normal */
-                    ag->feat = FEAT_OPEN;
-
                     /* Done */
                     break;
                 }
@@ -3373,31 +3291,11 @@ static void borg_update_map(void)
                      * limit his capacity to search.  We will set a flag on
                      * the level is perma grids are found.
                      */
-                    byte feat = cave->feat[y][x];
-
-                    /* forget previously located walls */
-                    if (ag->feat == FEAT_PERM_INNER) break;
-
                     /* is it a perma grid? */
-                    if (feat == FEAT_PERM_INNER)
+                    if (ag->feat == FEAT_PERM_INNER)
                     {
-                        ag->feat = FEAT_PERM_INNER;
                         vault_on_level = TRUE;
-                        break;
                     }
-                    /* is it a non perma grid? */
-                    if (feat >= FEAT_PERM_EXTRA)
-                    {
-                        ag->feat = FEAT_PERM_SOLID;
-                        break;
-                    }
-                    /* Accept non-granite */
-                    if (ag->feat >= FEAT_WALL_EXTRA &&
-                        ag->feat <= FEAT_PERM_EXTRA) break;
-
-                    /* Assume granite */
-                    ag->feat = FEAT_WALL_EXTRA;
-
                     /* Done */
                     break;
                 }
@@ -3406,12 +3304,6 @@ static void borg_update_map(void)
                 case FEAT_MAGMA:
                 case FEAT_QUARTZ:
 				{
-                    /* Accept quartz */
-                    if (ag->feat == FEAT_QUARTZ) break;
-
-                    /* Assume magma */
-                    ag->feat = FEAT_MAGMA;
-
                     /* Done */
                     break;
                 }
@@ -3437,13 +3329,6 @@ static void borg_update_map(void)
 						/* do not overflow */
 						if (track_vein_num > 99) track_vein_num = 99;
 					}
-
-					/* Accept quartz */
-                    if (ag->feat == FEAT_QUARTZ_K) break;
-
-                    /* Assume magma */
-                    ag->feat = FEAT_MAGMA_K;
-
                     /* Done */
                     break;
                 }
@@ -3451,9 +3336,6 @@ static void borg_update_map(void)
                 /* Rubble */
                 case FEAT_RUBBLE:
                 {
-                    /* Assume rubble */
-                    ag->feat = FEAT_RUBBLE;
-
                     /* Done */
                     break;
                 }
@@ -3497,16 +3379,6 @@ static void borg_update_map(void)
 							if (track_closed_num > 254) track_closed_num = 254;
 						}
 					}
-
-                  	/* Accept jammed ones defined in borg9.c*/
-                    if ((ag->feat >= FEAT_DOOR_HEAD + 0x08) && (ag->feat <= FEAT_DOOR_TAIL)) break;
-
-                    /* Accept closed and locked */
-                    if ((ag->feat >= FEAT_DOOR_HEAD) && (ag->feat <= FEAT_DOOR_HEAD + 0x07)) break;
-
-					/* Assume easy until we learn its Jammed */
-                   	ag->feat = FEAT_DOOR_HEAD + 0x00;
-
                     /* Done */
                     break;
                 }
@@ -3529,37 +3401,6 @@ static void borg_update_map(void)
                 case FEAT_TRAP_HEAD+14:
                 case FEAT_TRAP_TAIL:
                 {
-
-                    /* Minor cheat for the borg.  If the borg is running
-                     * in the graphics mode (not the AdamBolt Tiles) he will
-                     * mis-id the glyph of warding as a trap
-                     */
-                    byte feat = cave->feat[y][x];
-                    if (feat == FEAT_GLYPH)
-                    {
-                        ag->feat = FEAT_GLYPH;
-                        /* Check for an existing glyph */
-                        for (i = 0; i < track_glyph_num; i++)
-                        {
-                            /* Stop if we already new about this glyph */
-                            if ((track_glyph_x[i] == x) && (track_glyph_y[i] == y)) break;
-                        }
-
-                        /* Track the newly discovered glyph */
-                        if ((i == track_glyph_num) && (i < track_glyph_size))
-                        {
-                            track_glyph_x[i] = x;
-                            track_glyph_y[i] = y;
-                            track_glyph_num++;
-                        }
-
-                        /* done */
-                        break;
-                    }
-
-                    /* Assume trap door */
-                    ag->feat = FEAT_TRAP_HEAD + 0x00;
-
                     /* Done */
                     break;
                 }
@@ -3567,33 +3408,28 @@ static void borg_update_map(void)
                 /* glyph of warding stuff here,  */
                 case FEAT_GLYPH:
                 {
-                    ag->feat = FEAT_GLYPH;
+					/* Check for an existing glyph */
+					for (i = 0; i < track_glyph_num; i++)
+					{
+						/* Stop if we already new about this glyph */
+						if ((track_glyph_x[i] == x) && (track_glyph_y[i] == y)) break;
+					}
 
-                    /* Check for an existing glyph */
-                    for (i = 0; i < track_glyph_num; i++)
-                    {
-                        /* Stop if we already new about this glyph */
-                        if ((track_glyph_x[i] == x) && (track_glyph_y[i] == y)) break;
-                    }
+					/* Track the newly discovered glyph */
+					if ((i == track_glyph_num) && (i < track_glyph_size))
+					{
+						track_glyph_x[i] = x;
+						track_glyph_y[i] = y;
+						track_glyph_num++;
+					}
 
-                    /* Track the newly discovered glyph */
-                    if ((i == track_glyph_num) && (i < track_glyph_size))
-                    {
-                        track_glyph_x[i] = x;
-                        track_glyph_y[i] = y;
-                        track_glyph_num++;
-                    }
-
-                    /* done */
-                    break;
+					/* done */
+					break;
                 }
 
                 /* Up stairs */
                 case FEAT_LESS:
                 {
-                    /* Obvious */
-                    ag->feat = FEAT_LESS;
-
                     /* Check for an existing "up stairs" */
                     for (i = 0; i < track_less_num; i++)
                     {
@@ -3615,15 +3451,11 @@ static void borg_update_map(void)
                 /* Down stairs */
                 case FEAT_MORE:
                 {
-                    /* Obvious */
-                    ag->feat = FEAT_MORE;
-
                     /* Check for an existing "down stairs" */
                     for (i = 0; i < track_more_num; i++)
                     {
                         /* We already knew about that one */
                         if ((track_more_x[i] == x) && (track_more_y[i] == y)) break;
-
                     }
 
                     /* Track the newly discovered "down stairs" */
@@ -3633,7 +3465,6 @@ static void borg_update_map(void)
                         track_more_y[i] = y;
                         track_more_num++;
                     }
-
                     /* Done */
                     break;
                 }
@@ -3650,10 +3481,7 @@ static void borg_update_map(void)
 
                 {
                     /* Shop type */
-                    i = D2I(t_c) - 1;
-
-                    /* Obvious */
-                    ag->feat = FEAT_SHOP_HEAD + i;
+                    i = ag->feat - FEAT_SHOP_HEAD;
 
                     /* Save new information */
                     track_shop_x[i] = x;
@@ -3662,56 +3490,44 @@ static void borg_update_map(void)
                     /* Done */
                     break;
                 }
+            }
 
-                /* Monsters/Objects */
-                default:
-                {
-                    borg_wank *wank;
+            /* Now do non-feature stuff */
+            if (g.first_kind || g.m_idx)
+            {
+				/* Monsters/Objects */
+				borg_wank *wank;
 
-                     /* Check for memory overflow */
-                    if (borg_wank_num == AUTO_VIEW_MAX)
-                    {
-						borg_note(format("# Wank problem at grid (%d,%d) ta:%d, tc:%lc, borg at (%d,%d)",y,x,t_a,t_c,c_y,c_x));
-                        borg_oops("too many objects...");
-					}
+				 /* Check for memory overflow */
+				if (borg_wank_num == AUTO_VIEW_MAX)
+				{
+					borg_note(format("# Wank problem at grid (%d,%d) m:%d o:%d, borg at (%d,%d)",
+					                 y, x, g.m_idx, g.first_kind ? g.first_kind->kidx : 0, c_y, c_x));
+					borg_oops("too many objects...");
+				}
 
-                    /* Access next wank, advance */
-                    wank = &borg_wanks[borg_wank_num++];
+				/* Access next wank, advance */
+				wank = &borg_wanks[borg_wank_num++];
 
-                    /* Save some information */
-                    wank->x = x;
-                    wank->y = y;
-                    wank->t_a = t_a;
-                    wank->t_c = t_c;
-                    wank->is_take = borg_is_take[(byte)(t_c)];
-                    wank->is_kill = borg_is_kill[(byte)(t_c)];
-
-                    /* mark old unknown squares as possible floor grids */
-                    if (ag->feat == FEAT_NONE)
-                        ag->feat = FEAT_INVIS;
-
-                    /* Mark old wall/door grids as probable floor grids */
-                    if (!borg_cave_floor_grid(ag))
-					{
-                        if (!(ag->kill))
-						{
-							ag->feat = FEAT_INVIS;
-						}
-						else
-						{
-							/* Leave grids with PASS_WALL monsters alone */
-							if (!rf_has(r_info[borg_kills[ag->kill].r_idx].flags,
-								RF_PASS_WALL))
-							{
-								ag->feat = FEAT_INVIS;
-							}
-						}
-					}
-
-
-                    /* Done */
-                    break;
-                }
+				/* Save some information */
+				wank->x = x;
+				wank->y = y;
+				/* monster symbol takes priority */
+				/* TODO: Store known information about monster/object, instead
+				 * of just the screen character */
+				if (g.m_idx)
+				{
+					monster_type *m_ptr = cave_monster(cave, g.m_idx);
+					wank->t_a = m_ptr->attr;
+					wank->t_c = r_info[m_ptr->r_idx].d_char;
+				}
+				else
+				{
+					wank->t_a = g.first_kind->d_attr;
+					wank->t_c = g.first_kind->d_char;
+				}
+				wank->is_take = (g.first_kind != NULL);
+				wank->is_kill = (g.m_idx != 0);
             }
 
             /* Save the new "wall" or "door" */
@@ -5559,17 +5375,6 @@ void borg_init_5(void)
     /* Save the entries */
     for (i = 0; i < size; i++) borg_normal_text[i] = text[i];
     for (i = 0; i < size; i++) borg_normal_what[i] = what[i];
-
-   /* Initialize */
-   for (i = 0; i < 256; i++) Get_f_info_number[i] = -1;
-
-   for (i = z_info->f_max - 1; i >= 0; i--)
-   {
-       if (i == FEAT_SECRET || i == FEAT_INVIS)
-           continue;
-
-       Get_f_info_number[f_info[i].d_char] = i;
-   }
 }
 
 
