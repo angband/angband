@@ -2766,7 +2766,7 @@ bool borg_think_store(void)
     if (borg_choose_shop())
     {
 		/* Note Pref. */
-		borg_note(format("# Currently in store '%d' would prefere '%d'.",shop_num+1,goal_shop+1));
+		borg_note(format("# Currently in store '%d' would prefer '%d'.",shop_num+1,goal_shop+1));
 
        	/* Try to sell stuff */
 		if (borg_think_shop_sell()) return (TRUE);
