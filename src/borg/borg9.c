@@ -3568,6 +3568,12 @@ static struct keypress borg_inkey_hack(int flush_first)
     Rand_quick = TRUE;
     Rand_value = borg_rand_local;
 
+    /* Don't interrupt our own resting or a repeating command */
+    if (p_ptr->resting || cmd_get_nrepeats() > 0)
+    {
+        key.type = EVT_NONE;
+        return key;
+    }
 
     /* Think */
     while (!borg_think()) /* loop */;
