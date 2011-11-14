@@ -4910,7 +4910,7 @@ static s32b borg_power_aux2(void)
 
     /* Reward fuel */
     k = 0;
-    for (; k < 5 && k < borg_skill[BI_AFUEL]; k++) value += 60000L;
+    for (; k < 6 && k < borg_skill[BI_AFUEL]; k++) value += 60000L;
     if (borg_skill[BI_STR] >= 15)
     {
 		for (; k < 10 && k < borg_skill[BI_AFUEL]; k++) value += 6000L - (k * 100);
