@@ -976,8 +976,8 @@ static void borg_notice_aux2(void)
         if (!item->iqty) continue;
 
 		/* Does the borg need to get an ID for it? */
-		if (strstr(item->note, "magical") || strstr(item->note, "special") ||
-			strstr(item->note, "ego") ||streq(item->note, "splendid") ||streq(item->note, "excellent")) my_need_id ++;
+		if (item->note && (strstr(item->note, "magical") || strstr(item->note, "special") ||
+			strstr(item->note, "ego") ||streq(item->note, "splendid") ||streq(item->note, "excellent"))) my_need_id ++;
 
         /* Hack -- skip un-aware items */
         if (!item->kind) continue;
