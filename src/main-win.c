@@ -91,6 +91,7 @@
 #define WINVER 0x0500
 #endif
 
+#include <windows.h>
 #include <locale.h>
 
 #define uint unsigned int
