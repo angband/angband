@@ -543,10 +543,10 @@ static bool borg_think(void)
 
     /* Parse "inven" mode */
     if ((0 == borg_what_text(0, 0, 6, &t_a, buf)) &&
-		(streq(buf, "(Inven")) && borg_best_item != -1)
+	    (streq(buf, "(Inven")))
 	{
-		borg_keypress(I2A(borg_best_item));
-
+		if (borg_best_item != -1)
+			borg_keypress(I2A(borg_best_item));
 
         /* Leave this mode */
         borg_keypress(ESCAPE);
@@ -5995,7 +5995,6 @@ void do_cmd_borg(void)
 
         /* Prompt for key */
         msg("Commands: ");
-        msg(NULL);
 
         /* Restore the screen */
         Term_load();
