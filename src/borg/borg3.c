@@ -1911,7 +1911,7 @@ void borg_item_analyze(borg_item *item, object_type *real_item, cptr desc)
     item->level = k_info[item->kind].level;
 
     /* Extract the base flags -- Kind only given if 'able' */
-    of_copy(item->flags, f);
+    of_copy(item->flags, known_f);
 
     /* Base Cost -- Guess */
 
