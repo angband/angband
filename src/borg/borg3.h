@@ -238,7 +238,12 @@ extern int borg_slot(int tval, int sval);
 /*
  * Item usage functions
  */
-extern bool borg_refuel_torch(void);
+enum borg_need {
+	BORG_NO_NEED,
+	BORG_MET_NEED,
+	BORG_UNMET_NEED,
+};
+extern enum borg_need borg_maintain_light(void);
 extern bool borg_refuel_lantern(void);
 
 /*

@@ -805,31 +805,8 @@ static void borg_notice_aux1(void)
     /* Lite */
     if (item->tval == TV_LIGHT)
     {
-        /* Torches Bright -- extra radius two */
-        if (item->sval == SV_LIGHT_TORCH && item->timeout >= 1501) borg_skill[BI_CURLITE] = borg_skill[BI_CURLITE] + 2;
-
-        /* Torches -- extra radius one */
-        if (item->sval == SV_LIGHT_TORCH &&
-			item->timeout <= 1501 && item->timeout >= 1) borg_skill[BI_CURLITE] = borg_skill[BI_CURLITE] + 1;
-
-		/* Torch of Brightness -- extra radius one */
-        if (item->sval == SV_LIGHT_TORCH &&
-			of_has(item->flags, OF_LIGHT) &&
-			item->timeout >= 1) borg_skill[BI_CURLITE] = borg_skill[BI_CURLITE] + 1;
-
-        /* Lanterns -- radius two */
-        if (item->sval == SV_LIGHT_LANTERN && item->timeout >= 1) borg_skill[BI_CURLITE] = borg_skill[BI_CURLITE] + 2;
-
-        /* Artifact lites -- radius three */
-        /* HACK assume non-torch/non lantern lite is artifact */
-        if ((item->sval != SV_LIGHT_TORCH) &&
-            (item->sval != SV_LIGHT_LANTERN))
-        {
-			/* We grant +2 here even though the artifact is +3 because the other +1 was granted
-			 * higher up in a special handle for non *ID* artifacts in the form of BI_LIGHT
-			 */
-            borg_skill[BI_CURLITE] = borg_skill[BI_CURLITE] + 2;
-        }
+        if (of_has(item->flags, OF_LIGHT))
+            borg_skill[BI_CURLITE] = borg_skill[BI_CURLITE] + item->pval;
     }
 
 	/* Special way to handle See Inv */
@@ -9006,9 +8983,6 @@ cptr borg_restock(int depth)
 
     /*** Level 2 and 3 ***/
 
-    /* Must have good lite */
-    if (borg_skill[BI_CURLITE] < 2) return ("rs lite+1");
-
     /* Must have "fuel" */
     if (borg_skill[BI_AFUEL] < 2 && !borg_skill[BI_LIGHT]) return ("rs fuel+2");
 
@@ -9038,6 +9012,9 @@ cptr borg_restock(int depth)
 
 
     /*** Level 10 - 19  ***/
+
+    /* Must have good light */
+    if (borg_skill[BI_CURLITE] < 2) return "rs light+1";
 
     /* Must have "cure" */
     if ((borg_skill[BI_MAXCLEVEL] < 30) && borg_skill[BI_ACLW] + borg_skill[BI_ACSW] + borg_skill[BI_ACCW] < 2) return ("rs cure");
@@ -9124,9 +9101,6 @@ static cptr borg_prepared_aux(int depth)
 
 
     /*** Essential Items for Level 2 ***/
-
-    /* Require lite (radius two) */
-    if (borg_skill[BI_CURLITE] < 2) return ("2 Lite");
 
     /* Require fuel */
     if (borg_skill[BI_AFUEL] < 5 && !borg_skill[BI_LIGHT]) return ("5 Fuel");
@@ -9239,6 +9213,8 @@ static cptr borg_prepared_aux(int depth)
 
     /*** Essential Items for Level 10 to 19 ***/
 
+    /* Require light (radius 2) */
+    if (borg_skill[BI_CURLITE] < 2) return "2 Light";
 
     /* Escape or Teleport */
     if (borg_skill[BI_ATELEPORT] + borg_skill[BI_AESCAPE] < 2) return ("2 tele&esc");

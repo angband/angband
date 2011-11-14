@@ -2362,53 +2362,65 @@ int borg_slot(int tval, int sval)
     return (n);
 }
 
-
-
-/*
- * Hack -- refuel a torch
- */
-bool borg_refuel_torch(void)
+enum borg_need borg_maintain_light(void)
 {
-    int i;
+	int i;
+	borg_item *current_light = &borg_items[INVEN_LIGHT];
 
-    /* Look for a torch */
-    i = borg_slot(TV_LIGHT, SV_LIGHT_TORCH);
+    /*  current torch */
+	if (current_light->tval == TV_LIGHT)
+	{
+		if (current_light->sval == SV_LIGHT_TORCH)
+		{
+			if (current_light->timeout > 250)
+			{
+				return BORG_NO_NEED;
+			}
+			else
+			{
+				/* Look for another torch */
+				i = borg_slot(TV_LIGHT, SV_LIGHT_TORCH);
+				if (i < 0)
+					return BORG_UNMET_NEED;
 
-    /* None available */
-    if (i < 0) return (FALSE);
+				/* Torches automatically disappear when they get to 0 turns
+				 * so we don't need to actively swap them out */
+				return BORG_NO_NEED;
+			}
+		}
 
-    /* must first wield before one can refuel */
-    if (borg_items[INVEN_LIGHT].sval != SV_LIGHT_TORCH)
-    {
-        return (FALSE);
-    }
+		/* Refuel current lantern */
+		if (current_light->sval == SV_LIGHT_LANTERN)
+		{
+			/* Refuel the lantern if needed */
+			if (borg_items[INVEN_LIGHT].timeout < 1000)
+			{
+				if (borg_refuel_lantern())
+					return BORG_MET_NEED;
 
-    /* Dont bother with empty */
-    if (borg_items[i].timeout == 0)
-    {
-        return (FALSE);
-    }
+				return BORG_UNMET_NEED;
+			}
+		}
+		return BORG_NO_NEED;
+	}
+	else
+	{
+		i = borg_slot(TV_LIGHT, SV_LIGHT_LANTERN);
+		if (i < 0)
+		{
+			i = borg_slot(TV_LIGHT, SV_LIGHT_TORCH);
+		}
 
-    /* Cant refuel nothing */
-    if (borg_items[INVEN_LIGHT].iqty == 0)
-    {
-        return (FALSE);
-    }
-
-    /* Log the message */
-    borg_note(format("# Refueling with %s.", borg_items[i].desc));
-
-    /* Perform the action */
-    borg_keypress('F');
-    borg_keypress(I2A(i));
-
-    /* Hack -- Clear "shop" goals */
-    goal_shop = goal_ware = goal_item = -1;
-
-    /* Success */
-    return (TRUE);
+		if (i < 0)
+		{
+			return BORG_UNMET_NEED;
+		} else {
+			borg_keypress('w');
+			borg_keypress(I2A(i));
+			return BORG_MET_NEED;
+		}
+	}
 }
-
 
 /*
  * Hack -- refuel a lantern

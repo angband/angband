@@ -3691,25 +3691,12 @@ bool borg_caution(void)
     /* Hack -- require light */
     if (!borg_skill[BI_CURLITE] && !borg_skill[BI_LIGHT]) /* No Lite, AND Not Glowing */
     {
-        borg_item *item = &borg_items[INVEN_LIGHT];
-
-        /* Must have light -- Refuel current torch */
-        if ((item->tval == TV_LIGHT) && (item->sval == SV_LIGHT_TORCH))
+        enum borg_need need = borg_maintain_light();
+        if (need == BORG_MET_NEED)
+            return TRUE;
+        else if ((need == BORG_UNMET_NEED) && borg_skill[BI_CDEPTH])
         {
-            /* Try to refuel the torch */
-            if ((item->timeout < 1500) && borg_refuel_torch()) return (TRUE);
-        }
-
-        /* Must have light -- Refuel current lantern */
-        if ((item->tval == TV_LIGHT) && (item->sval == SV_LIGHT_LANTERN))
-        {
-            /* Try to refill the lantern */
-            if ((item->timeout < 1000) && borg_refuel_lantern()) return (TRUE);
-        }
-
-        /* Flee for fuel */
-        if (borg_skill[BI_CDEPTH] && (item->timeout < 250))
-        {
+            /* Flee for fuel */
             /* Start leaving */
             if (!goal_leaving)
             {
@@ -14409,37 +14396,14 @@ bool borg_recover(void)
 {
     int p = 0;
     int q;
+    enum borg_need need;
 
     /*** Handle annoying situations ***/
-
-    /* Refuel current torch */
-    if ((borg_items[INVEN_LIGHT].tval == TV_LIGHT) &&
-        (borg_items[INVEN_LIGHT].sval == SV_LIGHT_TORCH))
-    {
-        /* Refuel the torch if needed */
-        if (borg_items[INVEN_LIGHT].timeout < 2500)
-        {
-            if (borg_refuel_torch()) return (TRUE);
-
-            /* Take note */
-            borg_note(format("# Need to refuel but cant!", p));
-        }
-    }
-
-    /* Refuel current lantern */
-    if ((borg_items[INVEN_LIGHT].tval == TV_LIGHT) &&
-        (borg_items[INVEN_LIGHT].sval == SV_LIGHT_LANTERN))
-    {
-        /* Refuel the lantern if needed */
-        if (borg_items[INVEN_LIGHT].timeout < 5000)
-        {
-            if (borg_refuel_lantern()) return (TRUE);
-
-            /* Take note */
-            borg_note(format("# Need to refuel but cant!", p));
-        }
-    }
-
+	need = borg_maintain_light();
+	if (need == BORG_MET_NEED)
+		return TRUE;
+	else if (need == BORG_UNMET_NEED)
+        borg_note(format("# Need to refuel but cant!", p));
 
     /*** Do not recover when in danger ***/
 
