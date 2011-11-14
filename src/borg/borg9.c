@@ -1049,8 +1049,8 @@ static cptr suffix_spell[] =
 
 #if 0
 /* XXX XXX XXX */
-msg("%^s looks healthier.", m_name);
-msg("%^s looks REALLY healthy!", m_name);
+msg("%s looks healthier.", m_name);
+msg("%s looks REALLY healthy!", m_name);
 #endif
 
 
@@ -1493,7 +1493,7 @@ static void borg_parse_aux(cptr msg, int len)
     {
         tmp = strlen("You hit ");
         strnfmt(who, 1 + len - (tmp + 1), "%s", msg + tmp);
-        strnfmt(buf, 256, "HIT:%^s", who);
+        strnfmt(buf, 256, "HIT:%s", who);
         borg_react(msg, buf);
         return;
     }
@@ -1503,7 +1503,7 @@ static void borg_parse_aux(cptr msg, int len)
     {
         tmp = strlen("You miss ");
         strnfmt(who, 1 + len - (tmp + 1), "%s", msg + tmp);
-        strnfmt(buf, 256, "MISS:%^s", who);
+        strnfmt(buf, 256, "MISS:%s", who);
         borg_react(msg, buf);
         return;
     }
@@ -1513,7 +1513,7 @@ static void borg_parse_aux(cptr msg, int len)
     {
         tmp = strlen("You are too afraid to attack ");
         strnfmt(who, 1 + len - (tmp + 1), "%s", msg + tmp);
-        strnfmt(buf, 256, "MISS:%^s", who);
+        strnfmt(buf, 256, "MISS:%s", who);
         borg_react(msg, buf);
         return;
     }
@@ -1543,7 +1543,7 @@ static void borg_parse_aux(cptr msg, int len)
         {
             tmp = strlen(suffix_pain[i]);
             strnfmt(who, 1 + len - tmp, "%s", msg);
-            strnfmt(buf, 256, "PAIN:%^s", who);
+            strnfmt(buf, 256, "PAIN:%s", who);
             borg_react(msg, buf);
             return;
         }
@@ -1558,7 +1558,7 @@ static void borg_parse_aux(cptr msg, int len)
         {
             tmp = strlen(prefix_kill[i]);
             strnfmt(who, 1 + len - (tmp + 1), "%s", msg + tmp);
-            strnfmt(buf, 256, "KILL:%^s", who);
+            strnfmt(buf, 256, "KILL:%s", who);
             borg_react(msg, buf);
             return;
         }
@@ -1573,7 +1573,7 @@ static void borg_parse_aux(cptr msg, int len)
         {
             tmp = strlen(suffix_died[i]);
             strnfmt(who, 1 + len - tmp, "%s", msg);
-            strnfmt(buf, 256, "DIED:%^s", who);
+            strnfmt(buf, 256, "DIED:%s", who);
             borg_react(msg, buf);
             return;
         }
@@ -1587,7 +1587,7 @@ static void borg_parse_aux(cptr msg, int len)
         {
             tmp = strlen(suffix_blink[i]);
             strnfmt(who, 1 + len - tmp, "%s", msg);
-            strnfmt(buf, 256, "BLINK:%^s", who);
+            strnfmt(buf, 256, "BLINK:%s", who);
             borg_react(msg, buf);
             return;
         }
@@ -1598,7 +1598,7 @@ static void borg_parse_aux(cptr msg, int len)
     {
         tmp = strlen(" misses you.");
         strnfmt(who, 1 + len - tmp, "%s", msg);
-        strnfmt(buf, 256, "MISS_BY:%^s", who);
+        strnfmt(buf, 256, "MISS_BY:%s", who);
         borg_react(msg, buf);
         return;
     }
@@ -1609,7 +1609,7 @@ static void borg_parse_aux(cptr msg, int len)
     {
         tmp = strlen(" is repelled.");
         strnfmt(who, 1 + len - tmp, "%s", msg);
-        strnfmt(buf, 256, "MISS_BY:%^s", who);
+        strnfmt(buf, 256, "MISS_BY:%s", who);
         borg_react(msg, buf);
         return;
     }
@@ -1622,7 +1622,7 @@ static void borg_parse_aux(cptr msg, int len)
         {
             tmp = strlen(suffix_hit_by[i]);
             strnfmt(who, 1 + len - tmp, "%s", msg);
-            strnfmt(buf, 256, "HIT_BY:%^s", who);
+            strnfmt(buf, 256, "HIT_BY:%s", who);
             borg_react(msg, buf);
 
             /* If I was hit, then I am not on a glyph */
@@ -1665,7 +1665,7 @@ static void borg_parse_aux(cptr msg, int len)
         {
             tmp = strlen(suffix_spell[i]);
             strnfmt(who, 1 + len - tmp, "%s", msg);
-            strnfmt(buf, 256, "SPELL_%03d:%^s", i, who);
+            strnfmt(buf, 256, "SPELL_%03d:%s", i, who);
             borg_react(msg, buf);
             return;
         }
@@ -1677,7 +1677,7 @@ static void borg_parse_aux(cptr msg, int len)
     {
         tmp = strlen(" falls asleep!");
         strnfmt(who, 1 + len - tmp, "%s", msg);
-        strnfmt(buf, 256, "STATE_SLEEP:%^s", who);
+        strnfmt(buf, 256, "STATE_SLEEP:%s", who);
         borg_react(msg, buf);
         return;
     }
@@ -1687,7 +1687,7 @@ static void borg_parse_aux(cptr msg, int len)
     {
         tmp = strlen(" looks confused.");
         strnfmt(who, 1 + len - tmp, "%s", msg);
-        strnfmt(buf, 256, "STATE_CONFUSED:%^s", who);
+        strnfmt(buf, 256, "STATE_CONFUSED:%s", who);
         borg_react(msg, buf);
         return;
     }
@@ -1697,7 +1697,7 @@ static void borg_parse_aux(cptr msg, int len)
     {
         tmp = strlen(" looks more confused.");
         strnfmt(who, 1 + len - tmp, "%s", msg);
-        strnfmt(buf, 256, "STATE_CONFUSED:%^s", who);
+        strnfmt(buf, 256, "STATE_CONFUSED:%s", who);
         borg_react(msg, buf);
         return;
     }
@@ -1707,7 +1707,7 @@ static void borg_parse_aux(cptr msg, int len)
     {
         tmp = strlen(" wakes up.");
         strnfmt(who, 1 + len - tmp, "%s", msg);
-        strnfmt(buf, 256, "STATE_AWAKE:%^s", who);
+        strnfmt(buf, 256, "STATE_AWAKE:%s", who);
         borg_react(msg, buf);
         return;
     }
@@ -1717,7 +1717,7 @@ static void borg_parse_aux(cptr msg, int len)
     {
         tmp = strlen(" flees in terror!");
         strnfmt(who, 1 + len - tmp, "%s", msg);
-        strnfmt(buf, 256, "STATE__FEAR:%^s", who);
+        strnfmt(buf, 256, "STATE__FEAR:%s", who);
         borg_react(msg, buf);
         return;
     }
@@ -1727,7 +1727,7 @@ static void borg_parse_aux(cptr msg, int len)
     {
         tmp = strlen(" recovers his courage.");
         strnfmt(who, 1 + len - tmp, "%s", msg);
-        strnfmt(buf, 256, "STATE__BOLD:%^s", who);
+        strnfmt(buf, 256, "STATE__BOLD:%s", who);
         borg_react(msg, buf);
         return;
     }
@@ -1737,7 +1737,7 @@ static void borg_parse_aux(cptr msg, int len)
     {
         tmp = strlen(" recovers her courage.");
         strnfmt(who, 1 + len - tmp, "%s", msg);
-        strnfmt(buf, 256, "STATE__BOLD:%^s", who);
+        strnfmt(buf, 256, "STATE__BOLD:%s", who);
         borg_react(msg, buf);
         return;
     }
@@ -1747,7 +1747,7 @@ static void borg_parse_aux(cptr msg, int len)
     {
         tmp = strlen(" recovers its courage.");
         strnfmt(who, 1 + len - tmp, "%s", msg);
-        strnfmt(buf, 256, "STATE__BOLD:%^s", who);
+        strnfmt(buf, 256, "STATE__BOLD:%s", who);
         borg_react(msg, buf);
         return;
     }
