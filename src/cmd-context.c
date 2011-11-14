@@ -138,8 +138,8 @@ int context_menu_player()
   		menu_dynamic_add(m, "Floor", 13);
 	}
 	menu_dynamic_add(m, "Character", 7);
+	menu_dynamic_add(m, "Keymaps", 10);
 	menu_dynamic_add(m, "Other", 9);
-	menu_dynamic_add(m, "Commands", 10);
 
 	/* work out display region */
 	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
