@@ -3,6 +3,7 @@
 /* Purpose: Highest level functions for the Borg -BEN- */
 #include "angband.h"
 #include "object/tvalsval.h"
+#include "birth.h"
 #include "cave.h"
 #include "target.h"
 #include "spells.h"

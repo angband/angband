@@ -5074,7 +5074,6 @@ void borg_update(void)
 
 	    borg_kill *kill = &borg_kills[i];
 
-	    monster_type    *m_ptr;
 	    monster_race 	*r_ptr;
 
 		/* Reset the 'vault monsters */
@@ -5083,7 +5082,6 @@ void borg_update(void)
         /* Skip dead monsters */
         if (!kill->r_idx) continue;
 
-	    m_ptr = cave_monster(cave, cave->m_idx[kill->y][kill->x]);
 	    r_ptr = &r_info[kill->r_idx];
 
         /* Skip monsters that dont chase */
