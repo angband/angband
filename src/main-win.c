@@ -3273,18 +3273,21 @@ static void check_for_save_file(LPSTR cmd_line)
  * be switched off when recording.
  */
 
-extern char (*inkey_hack)(int flush_first);
+extern struct keypress (*inkey_hack)(int flush_first);
 
-static char screensaver_inkey_hack_buffer[1024];
+static struct keypress screensaver_inkey_hack_buffer[1024];
 
-static char screensaver_inkey_hack(int flush_first)
+static struct keypress screensaver_inkey_hack(int flush_first)
 {
 	static int screensaver_inkey_hack_index = 0;
 
 	if (screensaver_inkey_hack_index < sizeof(screensaver_inkey_hack_buffer))
 		return (screensaver_inkey_hack_buffer[screensaver_inkey_hack_index++]);
 	else
-		return ESCAPE;
+	{
+		struct keypress key = {EVT_KBRD, ESCAPE, 0};
+		return key;
+	}
 }
 
 #endif /* ALLOW_BORG */
@@ -3299,6 +3302,7 @@ static void start_screensaver(void)
 
 #ifdef ALLOW_BORG
 	int i, j;
+	struct keypress key = {EVT_KBRD, 0, 0};
 #endif /* ALLOW_BORG */
 
 	/* Set the name for process_player_name() */
@@ -3325,7 +3329,6 @@ static void start_screensaver(void)
 	SendMessage(data[0].w, WM_COMMAND, IDM_OPTIONS_LOW_PRIORITY, 0);
 
 #ifdef ALLOW_BORG
-
 	/*
 	 * MegaHack - Try to start the Borg.
 	 *
@@ -3346,22 +3349,30 @@ static void start_screensaver(void)
 	 * Luckily it's possible to send the same keypresses no matter if
 	 * the character is alive, dead, or not even yet created.
 	 */
-	screensaver_inkey_hack_buffer[j++] = ESCAPE; /* Gender */
-	screensaver_inkey_hack_buffer[j++] = ESCAPE; /* Race */
-	screensaver_inkey_hack_buffer[j++] = ESCAPE; /* Class */
-	screensaver_inkey_hack_buffer[j++] = 'n'; /* Modify options */
-	screensaver_inkey_hack_buffer[j++] = '\r'; /* Reroll */
+	key.code = ESCAPE;
+	screensaver_inkey_hack_buffer[j++] = key; /* Gender */
+	screensaver_inkey_hack_buffer[j++] = key; /* Race */
+	screensaver_inkey_hack_buffer[j++] = key; /* Class */
+	key.code = 'n';
+	screensaver_inkey_hack_buffer[j++] = key; /* Modify options */
+	key.code = '\r';
+	screensaver_inkey_hack_buffer[j++] = key; /* Reroll */
 
-	if (!file_exists)
+	if (!file_exist)
 	{
 		/* Savefile name */
 		int n = strlen(saverfilename);
 		for (i = 0; i < n; i++)
-			screensaver_inkey_hack_buffer[j++] = saverfilename[i];
+		{
+			key.code = saverfilename[i];
+			screensaver_inkey_hack_buffer[j++] = key;
+		}
 	}
 
-	screensaver_inkey_hack_buffer[j++] = '\r'; /* Return */
-	screensaver_inkey_hack_buffer[j++] = ESCAPE; /* Character info */
+	key.code = '\r';
+	screensaver_inkey_hack_buffer[j++] = key; /* Return */
+	key.code = ESCAPE;
+	screensaver_inkey_hack_buffer[j++] = key; /* Character info */
 
 	/*
 	 * Make sure the "verify_special" options is off, so that we can
@@ -3375,26 +3386,32 @@ static void start_screensaver(void)
 	 * Make sure the "OPT(cheat_live)" option is set, so that the Borg can
 	 * automatically restart.
 	 */
-	screensaver_inkey_hack_buffer[j++] = '5'; /* Cheat options */
+	key.code = '5';
+	screensaver_inkey_hack_buffer[j++] = key; /* Cheat options */
 
 	/* Cursor down to "cheat live" */
-	for (i = 0; i < OPT_OPT(cheat_live) - OPT_CHEAT; i++)
-		screensaver_inkey_hack_buffer[j++] = '2';
+	key.code = '2';
+	for (i = 0; i < OPT_cheat_live - OPT_CHEAT - 1; i++)
+		screensaver_inkey_hack_buffer[j++] = key;
 
-	screensaver_inkey_hack_buffer[j++] = 'y'; /* Switch on "OPT(cheat_live)" */
-	screensaver_inkey_hack_buffer[j++] = ESCAPE; /* Leave cheat options */
-	screensaver_inkey_hack_buffer[j++] = ESCAPE; /* Leave options */
+	key.code = 'y';
+	screensaver_inkey_hack_buffer[j++] = key; /* Switch on "OPT(cheat_live)" */
+	key.code = ESCAPE;
+	screensaver_inkey_hack_buffer[j++] = key; /* Leave cheat options */
+	screensaver_inkey_hack_buffer[j++] = key; /* Leave options */
 
 	/*
 	 * Now start the Borg!
 	 */
 
-	screensaver_inkey_hack_buffer[j++] = KTRL('Z'); /* Enter borgmode */
-	screensaver_inkey_hack_buffer[j++] = 'z'; /* Run Borg */
+	key.code = KTRL('Z');
+	screensaver_inkey_hack_buffer[j++] = key; /* Enter borgmode */
+	key.code = 'z';
+	screensaver_inkey_hack_buffer[j++] = key; /* Run Borg */
 #endif /* ALLOW_BORG */
 
 	/* Play game */
-	play_game((bool)!file_exist);
+	play_game();
 }
 
 #endif /* USE_SAVER */
@@ -4167,7 +4184,7 @@ static void handle_keydown(WPARAM wParam, LPARAM lParam)
 	if (screensaver_active)
 	{
 		stop_screensaver();
-		return 0;
+		return;
 	}
 #endif /* USE_SAVER */
 
