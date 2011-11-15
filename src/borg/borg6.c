@@ -5039,9 +5039,9 @@ bool borg_target_unknown_wall(int y, int x)
     /* check for 'in a hall' x axis */
     /* This check is for this: */
     /*
-     *      x
-     *    ..@..
-     *      x
+     *      x        x
+     *    ..@.  or  .@..
+     *      x        x
      *
      * 'x' being 'not a floor' and '.' being a floor.
      *
@@ -5056,9 +5056,9 @@ bool borg_target_unknown_wall(int y, int x)
      */
 
     if ((borg_grids[c_y+1][c_x].feat == FEAT_FLOOR &&
-        borg_grids[c_y+2][c_x].feat == FEAT_FLOOR &&
         borg_grids[c_y-1][c_x].feat == FEAT_FLOOR &&
-        borg_grids[c_y-2][c_x].feat == FEAT_FLOOR) &&
+        (borg_grids[c_y+2][c_x].feat == FEAT_FLOOR ||
+        borg_grids[c_y-2][c_x].feat == FEAT_FLOOR)) &&
         (borg_grids[c_y][c_x+1].feat != FEAT_FLOOR &&
          borg_grids[c_y][c_x-1].feat != FEAT_FLOOR))
         x_hall = TRUE;
@@ -5068,9 +5068,9 @@ bool borg_target_unknown_wall(int y, int x)
      * hallway.
      */
     if ((borg_grids[c_y][c_x+1].feat == FEAT_FLOOR &&
-        borg_grids[c_y][c_x+2].feat == FEAT_FLOOR &&
         borg_grids[c_y][c_x-1].feat == FEAT_FLOOR &&
-        borg_grids[c_y][c_x-2].feat == FEAT_FLOOR) &&
+        (borg_grids[c_y][c_x+2].feat == FEAT_FLOOR ||
+        borg_grids[c_y][c_x-2].feat == FEAT_FLOOR)) &&
         (borg_grids[c_y+1][c_x].feat != FEAT_FLOOR &&
          borg_grids[c_y-1][c_x].feat != FEAT_FLOOR))
         y_hall = TRUE;

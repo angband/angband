@@ -3179,11 +3179,12 @@ static void borg_update_map(void)
             /* Notice "on-screen" */
             ag->info |= BORG_OKAY;
 
-            ag->feat = g.f_idx;
-
 			/* Notice "knowledge" */
-            if (ag->feat != FEAT_NONE)
-            	ag->info |= BORG_MARK;
+            if (g.f_idx != FEAT_NONE)
+            {
+                ag->info |= BORG_MARK;
+                ag->feat = g.f_idx;
+            }
 
             /* Notice the player */
             if (g.is_player)
@@ -3247,6 +3248,7 @@ static void borg_update_map(void)
 						/* Assume not dark */
 						ag->info &= ~BORG_DARK;
                     }
+
                     /* Done */
                     break;
                 }
