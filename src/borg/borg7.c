@@ -2573,6 +2573,12 @@ bool borg_crush_slow(void)
 		if (item->tval == TV_ROD && (item->sval == SV_ROD_LIGHT &&
             borg_skill[BI_CURLITE] <= 0)) continue;
 
+		/* Don't crush it if it's current fuel */
+		if (item->tval == TV_FLASK &&
+			borg_items[INVEN_LIGHT].sval == SV_LIGHT_LANTERN) continue;
+		if (item->sval == SV_LIGHT_TORCH &&
+			borg_items[INVEN_LIGHT].sval == SV_LIGHT_TORCH) continue;
+
 		/* Rods of healing are too hard to come by */
 		if (item->tval == TV_ROD && item->sval == SV_ROD_HEALING) continue;
 
@@ -2653,6 +2659,13 @@ bool borg_crush_slow(void)
 
         /* This item only */
         borg_keypress('a');
+
+        /* once squelched, equipped items need to be taken off */
+        if (b_i >= QUIVER_START)
+        {
+        	borg_keypress('t');
+        	borg_keypress(b_i+73);
+        }
     }
 
     /* Hack -- no need */
