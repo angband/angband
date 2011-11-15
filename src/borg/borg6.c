@@ -17766,8 +17766,8 @@ bool borg_flow_take(bool viewable, int nearness)
 
 
 	/* Missile carry limit */
-	if (borg_class == CLASS_RANGER) full_quiver = 198;
-	else full_quiver = 99;
+	if (borg_class == CLASS_RANGER) full_quiver = (MAX_STACK_SIZE-1) * 2;
+	else full_quiver = MAX_STACK_SIZE - 1;
 
 	/* Efficiency -- Nothing to take */
     if (!borg_takes_cnt) return (FALSE);

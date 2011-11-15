@@ -3615,7 +3615,7 @@ bool borg_stack_quiver(void)
 				item->dd == slot->dd &&
 				item->ds == slot->ds &&
 				streq(item->note, slot->note) &&
-				(item->iqty + slot->iqty <= 99))
+				(item->iqty + slot->iqty <= (MAX_STACK_SIZE-1)))
 			{
 				/* These are essentially the same */
 				borg_note(format("# Unwielding %s.  Combining quiver slots %c & %c.",
@@ -3660,8 +3660,8 @@ bool borg_dump_quiver(void)
     if (time_this_panel > 150) return (FALSE);
 
 	/* How many should I carry */
-	if (borg_class == CLASS_RANGER || borg_class == CLASS_WARRIOR) quiver_capacity = 198;
-	else quiver_capacity = 99;
+	if (borg_class == CLASS_RANGER || borg_class == CLASS_WARRIOR) quiver_capacity = (MAX_STACK_SIZE-1) * 2;
+	else quiver_capacity = MAX_STACK_SIZE-1;
 
     /* Scan equip */
     for (i = QUIVER_END-1; i >= QUIVER_START; i--)
@@ -4202,7 +4202,7 @@ bool borg_wear_stuff(void)
  * Equip useful missiles.
  *
  * Look through the inventory for missiles that need to be wielded.
- * The quiver has 10 slots and can carry 99 of the identical missiles.
+ * The quiver has 10 slots and can carry MAX_STACK_SIZE-1 of the identical missiles.
  */
 bool borg_wear_quiver(void)
 {
