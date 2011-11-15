@@ -28,32 +28,27 @@
 # bottom half of the double row.
 
 
-N:1:old
+N:1:Original Tiles
 I:8:8:8x8.png
-M:Original Tiles
+P:old
 X:0:0:0
 
-N:2:new
+N:2:Adam Bolt's tiles
 I:16:16:16x16.png
-M:Adam Bolt's tiles
+P:new
 X:0:0:0
 
-N:3:david
+N:3:David Gervais' tiles
 I:32:32:32x32.png
-M:David Gervais' tiles
+P:david
 X:0:0:0
 
-N:4:nomad
+N:4:Nomad's tiles
 I:16:16:8x16.png
-M:Nomad's tiles
+P:nomad
 X:0:0:0
 
-#N:5:david
+#N:5:Shockbolt's tiles
 #I:64:64:64x64.png
-#M:64x64 Test tiles
-#X:0:0:0
-
-#N:6:shock
-#I:64:64:64x64.png
-#M:Shockbolt's tiles
-#X:1:29:29
+#P:shock
+#X:1:29:31

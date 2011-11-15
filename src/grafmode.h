@@ -41,7 +41,7 @@ typedef struct _graphics_mode {
 	byte overdrawMax;
 	u16b cell_width;
 	u16b cell_height;
-	char pref[8];
+	char pref[32];
 	char file[32];
 	char menuname[32];
 } graphics_mode;
