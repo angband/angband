@@ -952,6 +952,24 @@ void wieldeds_notice_flag(struct player *p, int flag)
 
 
 /**
+ * Notice to-hit bonus on attacking.
+ */
+void wieldeds_notice_to_hit_on_attack(void)
+/* Used e.g. for ranged attacks where the item's to_d is not involved. */
+/* Does not apply to weapon or bow which should be done separately */
+{
+	int i;
+
+	for (i = INVEN_WIELD + 2; i < INVEN_TOTAL; i++)
+		if (p_ptr->inventory[i].kind &&
+		    p_ptr->inventory[i].to_h)
+			object_notice_attack_plusses(&p_ptr->inventory[i]);
+
+	return;
+}
+
+
+/**
  * Notice things which happen on attacking.
  */
 void wieldeds_notice_on_attack(void)

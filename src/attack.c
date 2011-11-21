@@ -444,6 +444,9 @@ static void ranged_helper(int item, int dir, int range, int shots, ranged_attack
 			monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 		
 			object_notice_attack_plusses(o_ptr);
+
+			/* Learn by use for other equipped items */
+			wieldeds_notice_to_hit_on_attack();
 		
 			/* No negative damage; change verb if no damage done */
 			if (dmg <= 0) {
