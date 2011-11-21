@@ -4045,13 +4045,26 @@ bool obj_can_activate(const object_type *o_ptr)
 	return FALSE;
 }
 
+/**
+ * Check if an object can be used to refuel other objects.
+ */
 bool obj_can_refill(const object_type *obj)
 {
 	const object_type *light = &p_ptr->inventory[INVEN_LIGHT];
+	bitflag flags[OF_SIZE];
+	bool no_fuel;
 
-	if (light->sval == SV_LIGHT_LANTERN &&
-			obj->tval == TV_FLASK)
-		return TRUE;
+	/* Get flags */
+	object_flags(obj, flags);
+	no_fuel = of_has(flags, OF_NO_FUEL) ? TRUE : FALSE;
+
+	/* A lantern can be refueled from a flask or another lantern */
+	if (light->sval == SV_LIGHT_LANTERN) {
+		if (obj->tval == TV_FLASK) return TRUE;
+		else if(obj->sval == SV_LIGHT_LANTERN &&
+		        obj->timeout > 0 &&
+		        !no_fuel) return TRUE;
+	}
 
 	return FALSE;
 }
