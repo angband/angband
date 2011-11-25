@@ -1882,11 +1882,14 @@ void borg_item_analyze(borg_item *item, object_type *real_item, cptr desc)
   	item->weight = real_item->weight;
 
 	/* Index known if ID'd */
-	if (item->ident)
+	if (item->ident && real_item->artifact)
 	{
   		/* Artifact Index --Only known if ID'd*/
   		item->name1 = real_item->artifact->aidx;
+	}
 
+	if (item->ident && real_item->ego)
+	{
   		/* Ego Index --Only known if ID'd*/
   		item->name2 = real_item->ego->eidx;
 	}
