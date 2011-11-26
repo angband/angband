@@ -15000,7 +15000,7 @@ static bool borg_play_step(int y2, int x2)
 
 
     /* Objects -- Take */
-    if (ag->take)
+    if (ag->take && borg_takes[ag->take].kind)
     {
         borg_take *take = &borg_takes[ag->take];
 
@@ -15016,8 +15016,6 @@ static bool borg_play_step(int y2, int x2)
             !strstr(take->kind->name, "Ruined"))
         {
             object_type *o_ptr = object_byid(cave->o_idx[y2][x2]);
-
-            borg_take *take = &borg_takes[ag->take];
 
             /* Unknown, Search it */
             if (!object_is_known(o_ptr) &&
