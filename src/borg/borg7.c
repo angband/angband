@@ -2472,10 +2472,6 @@ bool borg_crush_hole(void)
         /* Message */
         borg_note(format("# Destroying %s.", item->desc));
 
-        /* Destroy all items */
-        borg_keypresses("099");
-        borg_keypress('\n');
-
         /* Destroy that item */
         borg_keypress('k');
         borg_keypress(I2A(b_i));
@@ -2573,12 +2569,6 @@ bool borg_crush_slow(void)
 		if (item->tval == TV_ROD && (item->sval == SV_ROD_LIGHT &&
             borg_skill[BI_CURLITE] <= 0)) continue;
 
-		/* Don't crush it if it's current fuel */
-		if (item->tval == TV_FLASK &&
-			borg_items[INVEN_LIGHT].sval == SV_LIGHT_LANTERN) continue;
-		if (item->sval == SV_LIGHT_TORCH &&
-			borg_items[INVEN_LIGHT].sval == SV_LIGHT_TORCH) continue;
-
 		/* Rods of healing are too hard to come by */
 		if (item->tval == TV_ROD && item->sval == SV_ROD_HEALING) continue;
 
@@ -2640,32 +2630,31 @@ bool borg_crush_slow(void)
         borg_note(format("# Destroying %s.", item->desc));
 
         /* Destroy one item */
-        borg_keypress('0');
-        borg_keypress('1');
-        borg_keypress('\n');
 
-        /* Destroy that item */
-        borg_keypress('k');
 		/* Quiver Slot */
 		if (b_i >= QUIVER_START)
 		{
-			borg_keypress('/');
+			/* Have to take it off before dropping */
+			borg_keypress('t');
 			borg_keypress((b_i+73));
-		}
-		else
-		{
-			borg_keypress(I2A(b_i));
+			return FALSE;
 		}
 
+		/* Drop one item */
+		borg_keypress('0');
+		borg_keypress('1');
+		borg_keypress('\n');
+		borg_keypress('d');
+		borg_keypress(I2A(b_i));
+
+        /* Destroy that item */
+        borg_keypress('k');
+        /* Now on the floor */
+        borg_keypress('-');
+        /* Assume first - TODO: this might be wrong ! */
+        borg_keypress('a');
         /* This item only */
         borg_keypress('a');
-
-        /* once squelched, equipped items need to be taken off */
-        if (b_i >= QUIVER_START)
-        {
-        	borg_keypress('t');
-        	borg_keypress(b_i+73);
-        }
     }
 
     /* Hack -- no need */
