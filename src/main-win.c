@@ -1444,6 +1444,9 @@ static void term_remove_font(const char *name)
 	/* Remove it */
 	RemoveFontResource(buf);
 
+	/* Notify other applications of the change  XXX */
+	PostMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
+
 	return;
 }
 
