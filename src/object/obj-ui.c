@@ -287,13 +287,13 @@ void show_equip(olist_detail_t mode)
 
 	object_type *o_ptr;
 
-   int num_obj = 0;
-   char labels[50][80];
-   object_type *objects[50];
+	int num_obj = 0;
+	char labels[50][80];
+	object_type *objects[50];
 
 	char tmp_val[80];
 
-   bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
+	bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
 
 	/* Find the last equipment slot to display */
 	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
@@ -367,9 +367,9 @@ void show_floor(const int *floor_list, int floor_num, olist_detail_t mode)
 
 	object_type *o_ptr;
 
-   int num_obj = 0;
-   char labels[50][80];
-   object_type *objects[50];
+	int num_obj = 0;
+	char labels[50][80];
+	object_type *objects[50];
 
 	if (floor_num > MAX_FLOOR_STACK) floor_num = MAX_FLOOR_STACK;
 
@@ -615,7 +615,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 	unsigned char cmdkey = cmd_lookup_key(cmd);
 
 	//struct keypress which;
-  ui_event press;
+	ui_event press;
 
 	int j, k;
 
@@ -730,8 +730,12 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 	else
 	{
 		/* Hack -- Start on equipment if requested */
-		if ((p_ptr->command_wrk == USE_EQUIP) && use_equip)
+		if ((p_ptr->command_wrk == USE_EQUIP) && allow_equip)
 			p_ptr->command_wrk = USE_EQUIP;
+		else if ((p_ptr->command_wrk == USE_INVEN) && allow_inven)
+			p_ptr->command_wrk = USE_INVEN;
+		else if ((p_ptr->command_wrk == USE_FLOOR) && allow_floor)
+			p_ptr->command_wrk = USE_FLOOR;
 
 		/* If we are using the quiver then start on equipment */
 		else if (use_quiver)
@@ -958,7 +962,17 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 					} else
 					if ((press.mouse.y <= i2-i1+1) ){
 					//&& (press.mouse.x > Term->wid - 1 - max_len - ex_width)) {
-						k = label_to_inven(index_to_label(i1+press.mouse.y-1));
+						//k = label_to_inven(index_to_label(i1+press.mouse.y-1));
+						/* get the item index, allowing for skipped indices */
+						for (j = i1; j <= i2; j++) {
+							if (get_item_okay(j)) {
+								if (press.mouse.y == 1) {
+									k = j;
+									break;
+								}
+								press.mouse.y--;
+							}
+						}
 					}
 				} else
 				if (p_ptr->command_wrk == USE_EQUIP) {
@@ -971,7 +985,21 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 						}
 					} else
 					if (press.mouse.y <= e2-e1+1) {
-						k = label_to_equip(index_to_label(e1+press.mouse.y-1));
+						//k = label_to_equip(index_to_label(e1+press.mouse.y-1));
+						/* get the item index, allowing for skipped indices */
+						for (j = e1; j <= e2; j++) {
+							/* skip the quiver slot which is a blank line in the list */
+							if (j == 36) {
+								press.mouse.y--;
+							} else
+							if (get_item_okay(j)) {
+								if (press.mouse.y == 1) {
+									k = j;
+									break;
+								}
+								press.mouse.y--;
+							}
+						}
 					}
 				} else
 				if (p_ptr->command_wrk == USE_FLOOR) {
@@ -986,6 +1014,16 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 					if ((press.mouse.y <= floor_num+1) && (press.mouse.y >= 1)) {
 						/* Special index */
 						k = 0 - floor_list[press.mouse.y-1];
+						/* get the item index, allowing for skipped indices */
+						for (j = f1; j <= f2; j++) {
+							if (get_item_okay(0 - floor_list[j])) {
+								if (press.mouse.y == 1) {
+									k = 0 - floor_list[j];
+									break;
+								}
+								press.mouse.y--;
+							}
+						}
 						/* Allow player to "refuse" certain actions */
 						if (!get_item_allow(k, cmdkey, cmd, is_harmless))
 						{
