@@ -1492,7 +1492,8 @@ static void MoreDraw(sdl_Window *win)
 {
 	SDL_Rect rc;
 	sdl_Button *button;
-	int y = 20, i;
+	int y = 20;
+	graphics_mode *mode;
 	
 	/* Wow - a different colour! */
 	SDL_Color colour = {160, 60, 60, 0};
@@ -1551,13 +1552,17 @@ static void MoreDraw(sdl_Window *win)
 
 	sdl_WindowText(win, colour, 20, y, "Available Graphics:");
 	
-	i=0;
-	do {
-		if (!graphics_modes[i].menuname[0]) continue;
-		button = sdl_ButtonBankGet(&win->buttons, GfxButtons[graphics_modes[i].grafID]);
+	mode = graphics_modes;
+	while (mode) {
+		if (!mode->menuname[0]) {
+			mode = mode->pNext;
+			continue;
+		}
+		button = sdl_ButtonBankGet(&win->buttons, GfxButtons[mode->grafID]);
 		sdl_ButtonMove(button, 200, y);
 		y += 20;
-	} while (graphics_modes[i++].grafID != 0); 
+		mode = mode->pNext;
+	} 
 #endif	
 
 	button = sdl_ButtonBankGet(&win->buttons, MoreFullscreen);
@@ -1578,8 +1583,8 @@ static void MoreActivate(sdl_Button *sender)
 {
 	int width = 300;
 	int height = 300;
-	int i;
 	sdl_Button *button;
+	graphics_mode *mode;
 	
 	SDL_Color ucolour = {160, 60, 60, 0};
 	SDL_Color scolour = {210, 110, 110, 0};
@@ -1636,20 +1641,25 @@ static void MoreActivate(sdl_Button *sender)
 	
 	SelectedGfx = use_graphics;
 	
-	i = 0;
-	do {
-		if (!graphics_modes[i].menuname[0]) continue;
-		GfxButtons[graphics_modes[i].grafID] = sdl_ButtonBankNew(&PopUp.buttons);
-		button = sdl_ButtonBankGet(&PopUp.buttons, GfxButtons[graphics_modes[i].grafID]);
+	mode = graphics_modes;
+	while (mode) {
+		if (!mode->menuname[0]) {
+			mode = mode->pNext;
+			continue;
+		}
+		GfxButtons[mode->grafID] = sdl_ButtonBankNew(&PopUp.buttons);
+		button = sdl_ButtonBankGet(&PopUp.buttons, GfxButtons[mode->grafID]);
 		
 		button->unsel_colour = ucolour;
 		button->sel_colour = scolour;
 		sdl_ButtonSize(button, 50 , PopUp.font.height + 2);
 		sdl_ButtonVisible(button, TRUE);
-		sdl_ButtonCaption(button, graphics_modes[i].menuname);
-		button->tag = graphics_modes[i].grafID;
+		sdl_ButtonCaption(button, mode->menuname);
+		button->tag = mode->grafID;
 		button->activate = SelectGfx;
-	} while (graphics_modes[i++].grafID != 0); 
+
+		mode = mode->pNext;
+	} 
 #endif
 	MoreFullscreen = sdl_ButtonBankNew(&PopUp.buttons);
 	button = sdl_ButtonBankGet(&PopUp.buttons, MoreFullscreen);
