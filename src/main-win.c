@@ -1312,14 +1312,10 @@ static bool init_graphics(void)
 		graphics_mode *mode = NULL;
 
 		if (arg_graphics) {
-			int i = 0;
-			while (graphics_modes[i].grafID != 0)  {
-				if (graphics_modes[i].grafID == arg_graphics) {
-					mode = &(graphics_modes[i]);
-					break;
-				}
-				i++;
-			}
+			mode = get_graphics_mode(arg_graphics);
+		}
+		if (!mode) {
+			mode = get_graphics_mode(1);
 		}
 		if (mode) {
 			if (!mode->pref[0]) {
@@ -1329,7 +1325,7 @@ static bool init_graphics(void)
 			wid = mode->cell_width;
 			hgt = mode->cell_height;
 			if ((wid < 2) || (hgt < 2)) {
-				plog_fmt("invalid tile dimensions in tileset name: '%s'", mode->menuname);
+				plog_fmt("invalid tile dimensions in tileset: '%s'", mode->menuname);
 				return FALSE;
 			}
 
@@ -2759,6 +2755,7 @@ static void init_windows(void)
 
 	MENUITEMINFO mii;
 	HMENU hm;
+	graphics_mode *mode;
 
 	/* Main window */
 	td = &data[0];
@@ -2922,17 +2919,26 @@ static void init_windows(void)
 
 	/* Populate the graphic options sub menu with the graphics modes */
 	hm = GetMenu(data[0].w);
-	i=0;
 	mii.cbSize = sizeof(MENUITEMINFO);
 	mii.fMask = MIIM_ID | MIIM_TYPE;
 	mii.fType = MFT_STRING;
-	while (graphics_modes[i].grafID != 0) {
-		mii.wID = graphics_modes[i].grafID + IDM_OPTIONS_GRAPHICS_NONE;
-		mii.dwTypeData = graphics_modes[i].menuname;
-		mii.cch = strlen(graphics_modes[i].menuname);
-		InsertMenuItem(hm,IDM_OPTIONS_GRAPHICS_NONE, FALSE, &mii);
-		++i;
+	mode = graphics_modes;
+	while (mode) {
+		if (mode->grafID != GRAPHICS_NONE) {
+			mii.wID = mode->grafID + IDM_OPTIONS_GRAPHICS_NONE;
+			mii.dwTypeData = mode->menuname;
+			mii.cch = strlen(mode->menuname);
+			InsertMenuItem(hm,IDM_OPTIONS_GRAPHICS_NICE, FALSE, &mii);
+		}
+		mode = mode->pNext;
 	}
+	//mii.cbSize = sizeof(MENUITEMINFO);
+	mii.fMask = MIIM_TYPE;
+	mii.fType = MFT_SEPARATOR;
+	mii.wID = 399;
+	mii.dwTypeData = 0;
+	mii.cch = 0;
+	InsertMenuItem(hm,IDM_OPTIONS_GRAPHICS_NICE, FALSE, &mii);
 
 	/* setup the alpha blending function */
 	blendfn.BlendOp = AC_SRC_OVER;
@@ -2968,6 +2974,7 @@ static void stop_screensaver(void)
 static void setup_menus(void)
 {
 	size_t i;
+	graphics_mode *mode;
 
 	HMENU hm = GetMenu(data[0].w);
 
@@ -3105,11 +3112,12 @@ static void setup_menus(void)
 	}
 
 	/* Menu "Options", disable all */
-	i = 0;
-	do {
-		EnableMenuItem(hm, graphics_modes[i].grafID + IDM_OPTIONS_GRAPHICS_NONE,
+	mode = graphics_modes;
+	while (mode) {
+		EnableMenuItem(hm, mode->grafID + IDM_OPTIONS_GRAPHICS_NONE,
 					   MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
-	} while (graphics_modes[i++].grafID != 0); 
+		mode = mode->pNext;
+	} 
 
 	EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_NICE,
 				   MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
@@ -3139,11 +3147,12 @@ static void setup_menus(void)
 		               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 
 	/* Menu "Options", update all */
-	i = 0;
-	do {
-		CheckMenuItem(hm, graphics_modes[i].grafID + IDM_OPTIONS_GRAPHICS_NONE,
-					  (arg_graphics == graphics_modes[i].grafID ? MF_CHECKED : MF_UNCHECKED));
-	} while (graphics_modes[i++].grafID != 0); 
+	mode = graphics_modes;
+	while (mode) {
+		CheckMenuItem(hm, mode->grafID + IDM_OPTIONS_GRAPHICS_NONE,
+	                (arg_graphics == mode->grafID ? MF_CHECKED : MF_UNCHECKED));
+		mode = mode->pNext;
+	} 
 
 	CheckMenuItem(hm, IDM_OPTIONS_GRAPHICS_NICE,
 				  (arg_graphics_nice ? MF_CHECKED : MF_UNCHECKED));
@@ -3235,10 +3244,13 @@ static void setup_menus(void)
 #ifdef USE_GRAPHICS
 	if (inkey_flag && initialized) {
 		/* Menu "Options", Item "Graphics" */
-		i = 0;
-		do {
-			EnableMenuItem(hm, graphics_modes[i].grafID + IDM_OPTIONS_GRAPHICS_NONE,MF_ENABLED );
-		} while (graphics_modes[i++].grafID != 0); 
+		mode = graphics_modes;
+		while (mode) {
+			if ((mode->grafID == 0) || (mode->file && mode->file[0])) {
+				EnableMenuItem(hm, mode->grafID + IDM_OPTIONS_GRAPHICS_NONE, MF_ENABLED);
+			}
+			mode = mode->pNext;
+		} 
 
 		EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_NICE, MF_ENABLED);
 
