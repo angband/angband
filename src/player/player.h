@@ -60,11 +60,16 @@ bool player_set_food(struct player *p, int v);
 /* util.c */
 s16b modify_stat_value(int value, int amount);
 bool player_can_cast(void);
+bool player_can_cast_msg(void);
 bool player_can_study(void);
+bool player_can_study_msg(void);
 bool player_can_study_book(void);
 bool player_can_read(void);
+bool player_can_read_msg(void);
 bool player_can_fire(void);
+bool player_can_fire_msg(void);
 bool player_can_refuel(void);
+bool player_can_refuel_msg(void);
 bool player_confuse_dir(struct player *p, int *dir, bool too);
 
 #endif /* !PLAYER_PLAYER_H */
