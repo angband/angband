@@ -1350,12 +1350,61 @@ static bool init_graphics(void)
 
 		/* Load the image or quit */
 		if (alphablend) {
-			if (!ReadDIB2_PNG(data[0].w, buf, &infGraph, NULL, TRUE)) {
-				plog_fmt("Cannot read file '%s'", name);
-				return FALSE;
+			/* see if the given file is already pre mulitiplied */
+			if (strstr(name, "_pre")) {
+				/* if so, just load it */
+				if (!ReadDIB2_PNG(data[0].w, buf, &infGraph, NULL, FALSE)) {
+					plog_fmt("Cannot read file '%s'", name);
+					return FALSE;
+				}
+			} else {
+				/* if not, see if there is already a premultiplied tileset */
+				/* the there is load it */
+				char *ext;
+				char modname[1024];
+				bool have_space = 0;
+				my_strcpy(modname, buf,1024);
+				ext = strstr(modname,".png");
+				/* make sure we have enough space to make the desired name */
+				if (ext && ((ext-buf) < 1019)) {
+					have_space = TRUE;
+					strcpy(ext, "_pre.png");
+					if (!file_exists(modname)) {
+						/* if the file does not exist, mark that we need to 
+						 * create it, so clear the extension pointer */
+						ext = NULL;
+					} else
+					if (file_newer(buf, modname)) {
+						/* if the base file is newer than the premultiplied file,
+						 * mark that we need to recreate the premultiplied file. */
+						ext = NULL;
+					}
+				}
+				if (ext && have_space) {
+					/* at this point we know the file exists, so load it */
+					if (!ReadDIB2_PNG(data[0].w, modname, &infGraph, NULL, FALSE)) {
+						plog_fmt("Cannot read premultiplied version of file '%s'", name);
+						return FALSE;
+					}
+				} else
+				/* if not, load the base file and premultiply it */
+				{
+					if (!ReadDIB2_PNG(data[0].w, buf, &infGraph, NULL, TRUE)) {
+						plog_fmt("Cannot read file '%s'", name);
+						return FALSE;
+					}
+					/* save the premultiplied file */
+					/* saving alpha without a mask is not working yet
+					if (SavePNG(data[0].w, modname,
+							infGraph.hBitmap,infGraph.hPalette,
+							1, NULL,
+							infGraph.ImageWidth, infGraph.ImageHeight, FALSE) < 0) {
+						plog_fmt("Cannot write premultiplied version of file '%s'", name);
+					}*/
+				}
 			}
 		} else {
-			if (!ReadDIB2_PNG(data[0].w, buf, &infGraph, &infMask, FALSE)) {
+ 			if (!ReadDIB2_PNG(data[0].w, buf, &infGraph, &infMask, FALSE)) {
 				plog_fmt("Cannot read file '%s'", name);
 				return FALSE;
 			}
