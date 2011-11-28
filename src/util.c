@@ -477,7 +477,7 @@ struct keypress inkey(void)
   }
   */
 	while (ke.type != EVT_ESCAPE && ke.type != EVT_KBRD
-    && ke.type != EVT_MOUSE  && ke.type != EVT_BUTTON)
+			&& ke.type != EVT_MOUSE  && ke.type != EVT_BUTTON)
 		ke = inkey_ex();
 
 	/* make the event a keypress */
@@ -485,21 +485,21 @@ struct keypress inkey(void)
 		ke.type = EVT_KBRD;
 		ke.key.code = ESCAPE;
 		ke.key.mods = 0;
-  } else
-  if (ke.type == EVT_MOUSE) {
-    if (ke.mouse.button == 1) {
-		  ke.type = EVT_KBRD;
-		  ke.key.code = '\n';
-		  ke.key.mods = 0;
-    } else {
-		  ke.type = EVT_KBRD;
-		  ke.key.code = ESCAPE;
-		  ke.key.mods = 0;
-    }
-  } else
+	} else
+	if (ke.type == EVT_MOUSE) {
+		if (ke.mouse.button == 1) {
+			ke.type = EVT_KBRD;
+			ke.key.code = '\n';
+			ke.key.mods = 0;
+		} else {
+			ke.type = EVT_KBRD;
+			ke.key.code = ESCAPE;
+			ke.key.mods = 0;
+		}
+	} else
 	if (ke.type == EVT_BUTTON) {
 		ke.type = EVT_KBRD;
-  }
+	}
 
 	return ke.key;
 }
@@ -514,16 +514,16 @@ ui_event inkey_m(void)
 
 	/* Only accept a keypress */
 	while (ke.type != EVT_ESCAPE && ke.type != EVT_KBRD
-    && ke.type != EVT_MOUSE  && ke.type != EVT_BUTTON)
+			&& ke.type != EVT_MOUSE  && ke.type != EVT_BUTTON)
 		ke = inkey_ex();
 	if (ke.type == EVT_ESCAPE) {
 		ke.type = EVT_KBRD;
 		ke.key.code = ESCAPE;
 		ke.key.mods = 0;
-  } else
+	} else
 	if (ke.type == EVT_BUTTON) {
 		ke.type = EVT_KBRD;
-  }
+	}
 
   return ke;
 }
@@ -1700,7 +1700,8 @@ s16b get_quantity(const char *prompt, int max)
  */
 bool get_check(const char *prompt)
 {
-	struct keypress ke;
+	//struct keypress ke;
+	ui_event ke;
 
 	char buf[80];
 
@@ -1722,7 +1723,7 @@ bool get_check(const char *prompt)
   
 	/* Prompt for it */
 	prt(buf, 0, 0);
-	ke = inkey();
+	ke = inkey_m();
 
 	/* Kill the buttons */
 	button_kill('y');
@@ -1736,6 +1737,9 @@ bool get_check(const char *prompt)
 	prt("", 0, 0);
 
 	/* Normal negation */
+	if (ke.type == EVT_MOUSE) {
+		if ((ke.mouse.button != 1) && (ke.mouse.y != 0)) return (FALSE);
+	} else
 	if ((ke.code != 'Y') && (ke.code != 'y')) return (FALSE);
 
 	/* Success */
