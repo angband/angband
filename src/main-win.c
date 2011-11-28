@@ -1350,12 +1350,12 @@ static bool init_graphics(void)
 
 		/* Load the image or quit */
 		if (alphablend) {
-			if (!ReadDIB2_PNG(data[0].w, buf, &infGraph, NULL)) {
+			if (!ReadDIB2_PNG(data[0].w, buf, &infGraph, NULL, TRUE)) {
 				plog_fmt("Cannot read file '%s'", name);
 				return FALSE;
 			}
 		} else {
-			if (!ReadDIB2_PNG(data[0].w, buf, &infGraph, &infMask)) {
+			if (!ReadDIB2_PNG(data[0].w, buf, &infGraph, &infMask, FALSE)) {
 				plog_fmt("Cannot read file '%s'", name);
 				return FALSE;
 			}

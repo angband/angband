@@ -42,7 +42,7 @@
  * case, the DIBINIT structure pointed to by pInfo is filled with the appropriate
  * handles, and FALSE if something went wrong.
  */
-BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask) {
+BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask, BOOL premultiply) {
 	png_structp png_ptr;
 	png_infop info_ptr;
 	byte header[8];
@@ -153,7 +153,48 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask) {
 
 	/* we are done with the file pointer, so close it */
 	fclose(fp);
-	
+
+	/* pre multiply the image colors by the alhpa if thats what we want */
+	if (premultiply && (color_type == PNG_COLOR_TYPE_RGB_ALPHA)) {
+		int x;
+		png_byte r,g,b,a;
+		png_bytep row;
+		/* process the file */
+		for (y = 0; y < height; ++y) {
+			row = row_pointers[y];
+			for (x = 0; x < width; ++x) {
+				a = *(row + x*4 + 3);
+				if (a == 0) {
+					/* for every alpha that is fully transparent, make the
+					 * corresponding color true black */
+					*(row + x*4 + 0) = 0;
+					*(row + x*4 + 1) = 0;
+					*(row + x*4 + 2) = 0;
+				} else
+				if (a != 255) {
+					float rf,gf,bf,af;
+					/* blend the color value based on this value */
+					r = *(row + x*4 + 0);
+					g = *(row + x*4 + 1);
+					b = *(row + x*4 + 2);
+
+					rf = ((float)r) / 255.f;
+					gf = ((float)g) / 255.f;
+					bf = ((float)b) / 255.f;
+					af = ((float)a) / 255.f;
+        
+					r = (png_byte)(rf*af*255.f);
+					g = (png_byte)(gf*af*255.f);
+					b = (png_byte)(bf*af*255.f);
+        
+					*(row + x*4 + 0) = r;
+					*(row + x*4 + 1) = g;
+					*(row + x*4 + 2) = b;
+				}
+			}
+		}
+	}
+  
 	/* create the DIB */
 	bi.bmiHeader.biWidth = (LONG)width;
 	bi.bmiHeader.biHeight = -((LONG)height);
@@ -191,7 +232,7 @@ BOOL ReadDIB2_PNG(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo, DIBINIT *pMask) {
 		biSrc.bmiHeader.biBitCount = 24;
 		biSrc.bmiHeader.biSizeImage = width*height*3;
 	}
-		
+
 	hDC = GetDC(hWnd);
 	
 	hPalette = GetStockObject(DEFAULT_PALETTE);

@@ -30,6 +30,6 @@ extern void FreeDIB(DIBINIT *dib);
 
 /* new png stuff */
 extern BOOL ReadDIB_PNG(HWND, LPSTR, DIBINIT *);
-extern BOOL ReadDIB2_PNG(HWND, LPSTR, DIBINIT *, DIBINIT *);
+extern BOOL ReadDIB2_PNG(HWND, LPSTR, DIBINIT *, DIBINIT *, BOOL);
 
 #endif /* !INCLUDED_READDIB_H */
