@@ -114,7 +114,7 @@ static bool spell_menu_handler(menu_type *m, const ui_event *e, int oid)
 		return d->browse ? TRUE : FALSE;
 	}
 
-	return TRUE;
+	return FALSE;
 }
 
 /**

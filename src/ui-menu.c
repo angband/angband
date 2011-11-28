@@ -646,6 +646,9 @@ ui_event menu_select(menu_type *menu, int notify, bool popup)
 
 		/* Handle mouse & keyboard commands */
 		if (in.type == EVT_MOUSE) {
+			if (!no_act && menu_handle_action(menu, &in)) {
+				continue;
+			}
 			menu_handle_mouse(menu, &in, &out);
 		} else if (in.type == EVT_KBRD) {
 			if (!no_act && menu->cmd_keys &&
