@@ -467,7 +467,7 @@ struct keypress inkey(void)
 
 	/* Only accept a keypress */
 	/*while (ke.type != EVT_ESCAPE && ke.type != EVT_KBRD)
-		ke = inkey_ex();
+		ke = inkey_ex();*/
 
 	/* Paranoia */ /*
 	if (ke.type == EVT_ESCAPE) {

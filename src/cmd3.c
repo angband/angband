@@ -120,12 +120,12 @@ void do_cmd_inven(void)
 		        p_ptr->total_weight / 10, p_ptr->total_weight % 10,
 		        abs(diff) / 10, abs(diff) % 10,
 		        (diff < 0 ? "overweight" : "remaining")),
-	    0, 0);
+	    0, 0);*/
 
 	/* Get a new command */
 	/*e = inkey_ex();
 	if (!(e.type == EVT_KBRD && e.key.code == ESCAPE))
-		Term_event_push(&e);
+		Term_event_push(&e);*/
 
 	/* Prompt for a command */
 	prt(format("(Inventory) Burden %d.%d lb (%d.%d lb %s). Item for command: ",
@@ -136,16 +136,16 @@ void do_cmd_inven(void)
 
 
 	/* Get an item to use a context command on */
-  if (get_item(&diff, NULL, NULL, CMD_NULL, USE_EQUIP|USE_INVEN|USE_FLOOR|IS_HARMLESS)) {
-	  object_type *o_ptr;
+	if (get_item(&diff, NULL, NULL, CMD_NULL, USE_EQUIP|USE_INVEN|USE_FLOOR|IS_HARMLESS)) {
+		object_type *o_ptr;
 
-  	/* Track the object kind */
-  	track_object(diff);
+		/* Track the object kind */
+		track_object(diff);
 
-  	o_ptr = object_from_item_idx(diff);
+		o_ptr = object_from_item_idx(diff);
 
-    context_menu_object(o_ptr, diff);
-  }
+		context_menu_object(o_ptr, diff);
+	}
 
 	/* Load screen */
 	screen_load();
