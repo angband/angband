@@ -1740,7 +1740,7 @@ bool get_check(const char *prompt)
 	if (ke.type == EVT_MOUSE) {
 		if ((ke.mouse.button != 1) && (ke.mouse.y != 0)) return (FALSE);
 	} else
-	if ((ke.code != 'Y') && (ke.code != 'y')) return (FALSE);
+	if ((ke.key.code != 'Y') && (ke.key.code != 'y')) return (FALSE);
 
 	/* Success */
 	return (TRUE);
