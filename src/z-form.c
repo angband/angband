@@ -180,6 +180,7 @@
 size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 {
 	const char *s;
+	int i = 0, len = 0;
 
 	/* The argument is "long" */
 	bool do_long;
