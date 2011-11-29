@@ -91,7 +91,6 @@
 #define WINVER 0x0500
 #endif
 
-#include <windows.h>
 #include <locale.h>
 
 #define uint unsigned int
@@ -285,7 +284,7 @@
  * Exclude parts of WINDOWS.H that are not needed (Win32)
  */
 #define WIN32_LEAN_AND_MEAN
-#define NONLS             /* All NLS defines and routines */
+/*#define NONLS*/             /* All NLS defines and routines */
 #define NOSERVICE         /* All Service Controller routines, SERVICE_ equates, etc. */
 #define NOKANJI           /* Kanji support stuff. */
 #define NOMCX             /* Modem Configuration Extensions */
