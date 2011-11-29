@@ -569,7 +569,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	else if (obj_is_scroll(o_ptr))
 	{
 		/* Check player can use scroll */
-		if (!player_can_read())
+		if (!player_can_read_msg())
 			return;
 
 		use = USE_SINGLE;
@@ -590,8 +590,8 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	}
 	else if (obj_is_ammo(o_ptr))
 	{
-    do_cmd_fire(code,args);
-    return;
+		do_cmd_fire(code,args);
+		return;
 	}
 	else
 	{
@@ -875,7 +875,7 @@ void do_cmd_study_spell(cmd_code code, cmd_arg args[])
 	int i;
 
 	/* Check the player can study at all atm */
-	if (!player_can_study())
+	if (!player_can_study_msg())
 		return;
 
 	/* Check that the player can actually learn the nominated spell. */
@@ -918,7 +918,7 @@ void do_cmd_cast(cmd_code code, cmd_arg args[])
 	const char *noun = ((p_ptr->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
 	/* Check the player can cast spells at all */
-	if (!player_can_cast())
+	if (!player_can_cast_msg())
 		return;
 
 	/* Check spell is in a book they can access */
@@ -978,7 +978,7 @@ void do_cmd_study_book(cmd_code code, cmd_arg args[])
 	const char *p = ((p_ptr->class->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
 	/* Check the player can study at all atm */
-	if (!player_can_study())
+	if (!player_can_study_msg())
 		return;
 
 	/* Check that the player has access to the nominated spell book. */
