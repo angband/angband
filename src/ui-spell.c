@@ -114,7 +114,7 @@ static bool spell_menu_handler(menu_type *m, const ui_event *e, int oid)
 		return d->browse ? TRUE : FALSE;
 	}
 
-	return TRUE;
+	return FALSE;
 }
 
 /**
@@ -239,7 +239,7 @@ static void spell_menu_browse(menu_type *m, const char *noun)
  *
  * Returns the spell selected, or -1.
  */
-static int get_spell(const object_type *o_ptr, const char *verb,
+int get_spell(const object_type *o_ptr, const char *verb,
 		bool (*spell_test)(int spell))
 {
 	menu_type *m;
@@ -348,4 +348,30 @@ void textui_obj_cast(void)
 		cmd_insert(CMD_CAST);
 		cmd_set_arg_choice(cmd_get_top(), 0, spell);
 	}
+}
+/* same as above but returns the spell used. two functions to avoid some
+ * compiler warnings initializing commands in cmd0.c */
+int textui_obj_cast_ret(void)
+{
+	int item;
+	int spell;
+
+	const char *verb = ((p_ptr->class->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
+
+	item_tester_hook = obj_can_cast_from;
+	if (!get_item(&item, "Cast from which book? ",
+			"You have no books that you can read.",
+			CMD_CAST, (USE_INVEN | USE_FLOOR)))
+		return -1;
+
+	/* Track the object kind */
+	track_object(item);
+
+	/* Ask for a spell */
+	spell = get_spell(object_from_item_idx(item), verb, spell_okay_to_cast);
+	if (spell >= 0) {
+		cmd_insert(CMD_CAST);
+		cmd_set_arg_choice(cmd_get_top(), 0, spell);
+	}
+  return spell;
 }

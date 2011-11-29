@@ -189,8 +189,18 @@ void do_cmd_change_name(void)
 					break;
 			}
 		} else if (ke.type == EVT_MOUSE) {
-			/* Just flip through the screens */			
-			mode = (mode + 1) % INFO_SCREENS;
+			if (ke.mouse.button == 1) {
+				/* Flip through the screens */			
+				mode = (mode + 1) % INFO_SCREENS;
+			} else
+			if (ke.mouse.button == 2) {
+				/* exit the screen */
+				more = FALSE;
+			} else
+			{
+				/* Flip backwards through the screens */			
+				mode = (mode - 1) % INFO_SCREENS;
+			}
 		}
 
 		/* Flush messages */
@@ -315,13 +325,18 @@ void do_cmd_messages(void)
 
 		/* Scroll forwards or backwards using mouse clicks */
 		if (ke.type == EVT_MOUSE) {
-			if (ke.mouse.y <= hgt / 2) {
-				/* Go older if legal */
-				if (i + 20 < n)
-					i += 20;
-			} else {
-				/* Go newer */
-				i = (i >= 20) ? (i - 20) : 0;
+			if (ke.mouse.button == 1) {
+				if (ke.mouse.y <= hgt / 2) {
+					/* Go older if legal */
+					if (i + 20 < n)
+						i += 20;
+				} else {
+					/* Go newer */
+					i = (i >= 20) ? (i - 20) : 0;
+				}
+			} else
+			if (ke.mouse.button == 2) {
+				more = FALSE;
 			}
 		} else if (ke.type == EVT_KBRD) {
 			switch (ke.key.code) {

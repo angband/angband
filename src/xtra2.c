@@ -249,7 +249,7 @@ void verify_panel_int(bool centered)
 int motion_dir(int y1, int x1, int y2, int x2)
 {
 	/* No movement required */
-	if ((y1 == y2) && (x1 == x2)) return (5);
+	if ((y1 == y2) && (x1 == x2)) return (DIR_NONE);
 
 	/* South or North */
 	if (x1 == x2) return ((y1 < y2) ? 2 : 8);
@@ -373,16 +373,20 @@ bool get_rep_dir(int *dp)
 		}
 
 		/* Check mouse coordinates */
-		if (ke.type == EVT_MOUSE)
-		{
-			/*if (ke.button) */
-			{
+		if (ke.type == EVT_MOUSE) {
+			if (ke.mouse.button == 1) {
 				int y = KEY_GRID_Y(ke);
 				int x = KEY_GRID_X(ke);
 				struct loc from = loc(p_ptr->px, p_ptr->py);
 				struct loc to = loc(x, y);
 
 				dir = pathfind_direction_to(from, to);
+			} else
+			if (ke.mouse.button == 2) {
+				/* Clear the prompt */
+				prt("", 0, 0);
+
+				return (FALSE);
 			}
 		}
 
@@ -481,13 +485,16 @@ bool get_aim_dir(int *dp)
 		/* Get a command (or Cancel) */
 		if (!get_com_ex(p, &ke)) break;
 
-		if (ke.type == EVT_MOUSE)
-		{
-			if (target_set_interactive(TARGET_KILL, KEY_GRID_X(ke), KEY_GRID_Y(ke)))
-				dir = 5;
-		}
-		else if (ke.type == EVT_KBRD)
-		{
+		if (ke.type == EVT_MOUSE) {
+			if (ke.mouse.button == 1) {
+				if (target_set_interactive(TARGET_KILL, KEY_GRID_X(ke), KEY_GRID_Y(ke)))
+					dir = 5;
+			} else
+			if (ke.mouse.button == 2) {
+				break;
+			}
+		} else
+ 		if (ke.type == EVT_KBRD) {
 			if (ke.key.code == '*')
 			{
 				/* Set new target, use target if legal */

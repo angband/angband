@@ -4099,6 +4099,66 @@ bool obj_has_inscrip(const object_type *o_ptr)
 	return (o_ptr->note ? TRUE : FALSE);
 }
 
+bool obj_is_useable(const object_type *o_ptr)
+{
+  if ((o_ptr->tval == TV_ROD) || (o_ptr->tval == TV_WAND)
+    || (o_ptr->tval == TV_STAFF) || (o_ptr->tval == TV_SCROLL)
+    || (o_ptr->tval == TV_POTION) || (o_ptr->tval == TV_FOOD)) {
+    return TRUE;
+  }
+  if (object_effect(o_ptr))
+    return TRUE;
+  if ((o_ptr->tval == TV_BOLT) || (o_ptr->tval == TV_ARROW)
+    || (o_ptr->tval == TV_SHOT)) {
+    return o_ptr->tval == p_ptr->state.ammo_tval;
+  }
+
+	return FALSE;
+}
+
+bool obj_is_used_aimed(const object_type *o_ptr)
+{
+  //return obj_needs_aim(o_ptr);
+	int effect;
+  if (o_ptr->tval == TV_WAND) {
+    return TRUE;
+  }
+  if (o_ptr->tval == TV_ROD && !object_flavor_is_aware(o_ptr)) {
+    return TRUE;
+  }
+  if ((o_ptr->tval == TV_BOLT) || (o_ptr->tval == TV_ARROW)
+    || (o_ptr->tval == TV_SHOT)) {
+    return o_ptr->tval == p_ptr->state.ammo_tval;
+  }
+  effect = object_effect(o_ptr);
+  if (effect && effect_aim(effect)) {
+    return TRUE;
+  }
+
+	return FALSE;
+}
+bool obj_is_used_unaimed(const object_type *o_ptr)
+{
+	int effect;
+  if ((o_ptr->tval == TV_STAFF) || (o_ptr->tval == TV_SCROLL)
+    || (o_ptr->tval == TV_POTION) || (o_ptr->tval == TV_FOOD)) {
+    return TRUE;
+  }
+  if ((o_ptr->tval == TV_ROD) && !(!object_flavor_is_aware(o_ptr))) {
+    return TRUE;
+  }
+  if ((o_ptr->tval == TV_BOLT) || (o_ptr->tval == TV_ARROW)
+    || (o_ptr->tval == TV_SHOT)) {
+    return FALSE;
+  }
+  effect = object_effect(o_ptr);
+  if (!effect || !effect_aim(effect)) {
+    return TRUE;
+  }
+
+	return FALSE;
+}
+
 /*** Generic utility functions ***/
 
 /*

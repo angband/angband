@@ -479,14 +479,15 @@ bool menu_handle_mouse(menu_type *menu, const ui_event *in,
 {
 	int new_cursor;
 
-	if (!region_inside(&menu->active, in))
-	{
+	if (in->mouse.button == 2) {
+		out->type = EVT_ESCAPE;
+	} else
+	if (!region_inside(&menu->active, in)) {
 		/* A click to the left of the active region is 'back' */
 		if (!region_inside(&menu->active, in) &&
 				in->mouse.x < menu->active.col)
 			out->type = EVT_ESCAPE;
-	}
-	else
+	} else
 	{
 		int count = menu->filter_list ? menu->filter_count : menu->count;
 
@@ -645,6 +646,9 @@ ui_event menu_select(menu_type *menu, int notify, bool popup)
 
 		/* Handle mouse & keyboard commands */
 		if (in.type == EVT_MOUSE) {
+			if (!no_act && menu_handle_action(menu, &in)) {
+				continue;
+			}
 			menu_handle_mouse(menu, &in, &out);
 		} else if (in.type == EVT_KBRD) {
 			if (!no_act && menu->cmd_keys &&

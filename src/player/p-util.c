@@ -59,6 +59,26 @@ bool player_can_cast(void)
 {
 	if (!p_ptr->class->spell_book)
 	{
+		return FALSE;
+	}
+
+	if (p_ptr->timed[TMD_BLIND] || no_light())
+	{
+		return FALSE;
+	}
+
+	if (p_ptr->timed[TMD_CONFUSED])
+	{
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+bool player_can_cast_msg(void)
+{
+	if (!p_ptr->class->spell_book)
+	{
 		msg("You cannot pray or produce magics.");
 		return FALSE;
 	}
@@ -82,6 +102,18 @@ bool player_can_cast(void)
 bool player_can_study(void)
 {
 	if (!player_can_cast())
+		return FALSE;
+
+	if (!p_ptr->new_spells)
+	{
+		return FALSE;
+	}
+
+	return TRUE;
+}
+bool player_can_study_msg(void)
+{
+	if (!player_can_cast_msg())
 		return FALSE;
 
 	if (!p_ptr->new_spells)
@@ -131,6 +163,30 @@ bool player_can_read(void)
 {
 	if (p_ptr->timed[TMD_BLIND])
 	{
+		return FALSE;
+	}
+
+	if (no_light())
+	{
+		return FALSE;
+	}
+
+	if (p_ptr->timed[TMD_CONFUSED])
+	{
+		return FALSE;
+	}
+
+	if (p_ptr->timed[TMD_AMNESIA])
+	{
+		return FALSE;
+	}
+
+	return TRUE;
+}
+bool player_can_read_msg(void)
+{
+	if (p_ptr->timed[TMD_BLIND])
+	{
 		msg("You can't see anything.");
 		return FALSE;
 	}
@@ -155,9 +211,20 @@ bool player_can_read(void)
 
 	return TRUE;
 }
-
 /* Determine if the player can fire with the bow */
 bool player_can_fire(void)
+{
+	object_type *o_ptr = &p_ptr->inventory[INVEN_BOW];
+
+	/* Require a usable launcher */
+	if (!o_ptr->tval || !p_ptr->state.ammo_tval)
+	{
+		return FALSE;
+	}
+
+	return TRUE;
+}
+bool player_can_fire_msg(void)
 {
 	object_type *o_ptr = &p_ptr->inventory[INVEN_BOW];
 
@@ -172,6 +239,16 @@ bool player_can_fire(void)
 }
 
 bool player_can_refuel(void)
+{
+	object_type *obj = &p_ptr->inventory[INVEN_LIGHT];
+
+	if (obj->kind && obj->sval == SV_LIGHT_LANTERN)
+		return TRUE;
+
+	return FALSE;
+}
+
+bool player_can_refuel_msg(void)
 {
 	object_type *obj = &p_ptr->inventory[INVEN_LIGHT];
 

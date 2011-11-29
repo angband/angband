@@ -1849,7 +1849,7 @@ void close_game(void)
 
 static void write_html_escape_char(ang_file *fp, wchar_t c)
 {
-	char mbseq[MB_CUR_MAX];
+	//char mbseq[MB_CUR_MAX];
 
 	switch (c)
 	{
@@ -1863,9 +1863,15 @@ static void write_html_escape_char(ang_file *fp, wchar_t c)
 			file_putf(fp, "&amp;");
 			break;
 		default:
+      {
+      char *mbseq = (char*) mem_alloc(sizeof(char)*(MB_CUR_MAX+1));
 			wctomb(mbseq, c);
 			file_putf(fp, "%s", mbseq);
+      mem_free(mbseq);
+			//wctomb(mbseq, c);
+			//file_putf(fp, "%s", mbseq);
 			break;
+      }
 	}
 }
 

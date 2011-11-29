@@ -2175,6 +2175,8 @@ static void sdl_HandleMouseEvent(SDL_Event *event)
 			
 			sdl_Window *window;
 			bool res;
+			SDLMod mods;
+			int button;
 			int idx = sdl_LocateWin(mouse.x, mouse.y);
 			
 			if (event->button.button == SDL_BUTTON_LEFT)
@@ -2183,6 +2185,7 @@ static void sdl_HandleMouseEvent(SDL_Event *event)
 				mouse.left = 1;
 				mouse.leftx = event->button.x;
 				mouse.lefty = event->button.y;
+				button = 1;
 				
 				/* Pop up window gets priority */
 				if (popped) window = &PopUp; else window = &StatusBar;
@@ -2249,10 +2252,20 @@ static void sdl_HandleMouseEvent(SDL_Event *event)
 						/* Calculate the 'cell' coords */
 						int x = (mouse.x - win->left - win->border) / win->tile_wid;
 						int y = (mouse.y - win->top - win->title_height) / win->tile_hgt;
+						mods = SDL_GetModState();
+						if (mods & KMOD_CTRL) {
+							button |= 16;
+						}
+						if (mods & KMOD_SHIFT) {
+							button |= 32;
+						}
+						if (mods & KMOD_ALT) {
+							button |= 64;
+						}
 						
 						/* Send the mousepress to the appropriate term */
 						Term_activate(angband_term[idx]);
-						Term_mousepress(x, y, 1);
+						Term_mousepress(x, y, button);
 						Term_activate(old);
 					}
 				}
@@ -2264,7 +2277,8 @@ static void sdl_HandleMouseEvent(SDL_Event *event)
 				mouse.right = 1;
 				mouse.rightx = event->button.x;
 				mouse.righty = event->button.y;
-				
+				button = 2;
+
 				/* Right-click always cancels the popup */
 				if (popped)
 				{
@@ -2283,9 +2297,19 @@ static void sdl_HandleMouseEvent(SDL_Event *event)
 					/* Bounds check */
 					if ((x >= 0) && (y >= 0) && (x < win->cols) && (y < win->rows))
 					{
+						mods = SDL_GetModState();
+						if (mods & KMOD_CTRL) {
+							button |= 16;
+						}
+						if (mods & KMOD_SHIFT) {
+							button |= 32;
+						}
+						if (mods & KMOD_ALT) {
+							button |= 64;
+						}
 						/* Send the mousepress to the appropriate term */
 						Term_activate(angband_term[idx]);
-						Term_mousepress(x, y, 2);
+						Term_mousepress(x, y, button);
 						Term_activate(old);
 					}
 				}

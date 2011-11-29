@@ -730,7 +730,7 @@ static bool describe_damage(textblock *tb, const object_type *o_ptr,
 	if (cnt) textblock_append(tb, " vs. others");
 	textblock_append(tb, ".\n");
 
-	return true;
+	return TRUE;
 }
 
 
