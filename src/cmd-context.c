@@ -393,7 +393,7 @@ int context_menu_cave(struct cave *cave, int y, int x, int adjacent, int mx, int
 	} else
 	if (selected == 3) {
 		/* cast a spell on the spot */
-		if (textui_obj_cast() >= 0) {
+		if (textui_obj_cast_ret() >= 0) {
 			cmd_set_arg_target(cmd_get_top(), 1, DIR_TARGET);
 		}
 	} else

@@ -326,7 +326,32 @@ void textui_obj_study(void)
 /**
  * Cast a spell from a book.
  */
-int textui_obj_cast(void)
+void textui_obj_cast(void)
+{
+	int item;
+	int spell;
+
+	const char *verb = ((p_ptr->class->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
+
+	item_tester_hook = obj_can_cast_from;
+	if (!get_item(&item, "Cast from which book? ",
+			"You have no books that you can read.",
+			CMD_CAST, (USE_INVEN | USE_FLOOR)))
+		return;
+
+	/* Track the object kind */
+	track_object(item);
+
+	/* Ask for a spell */
+	spell = get_spell(object_from_item_idx(item), verb, spell_okay_to_cast);
+	if (spell >= 0) {
+		cmd_insert(CMD_CAST);
+		cmd_set_arg_choice(cmd_get_top(), 0, spell);
+	}
+}
+/* same as above but returns the spell used. two functions to avoid some
+ * compiler warnings initializing commands in cmd0.c */
+int textui_obj_cast_ret(void)
 {
 	int item;
 	int spell;

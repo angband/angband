@@ -783,7 +783,7 @@ static void textui_process_click(ui_event e)
 		}
 		if (e.mouse.mods & KC_MOD_SHIFT) {
 			/* shift-click - cast spell at target */
-			if (textui_obj_cast() >= 0) {
+			if (textui_obj_cast_ret() >= 0) {
 				cmd_set_arg_target(cmd_get_top(), 1, DIR_TARGET);
 			}
 		} else
