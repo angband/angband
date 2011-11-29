@@ -2357,9 +2357,10 @@ static bool store_purchase(int item)
 		return FALSE;
 	}
 
+	if (item < 0) return FALSE;
+
 	/* Get the actual object */
 	o_ptr = &store->stock[item];
-	if (item < 0) return FALSE;
 
 	/* Clear all current messages */
 	msg_flag = FALSE;
@@ -2756,6 +2757,7 @@ static bool store_sell(void)
 	return TRUE;
 }
 
+//static bool store_sell(int sell_count)
 
 /*
  * Examine an item in a store
@@ -2876,6 +2878,8 @@ static bool store_process_command_key(struct keypress kp)
 	return TRUE;
 }
 
+int context_menu_store(struct store *store, const int oid, int x, int y);
+int context_menu_store_item(struct store *store, const int oid, int x, int y);
 
 /*
  *
@@ -2889,6 +2893,47 @@ static bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
 		/* Nothing for now, except "handle" the event */
 		return TRUE;
 		/* In future, maybe we want a display a list of what you can do. */
+	}
+	else if (event->type == EVT_MOUSE)
+	{
+		if (event->mouse.button == 2) {
+			/* exit the store? what already does this? menu_handle_mouse
+			 * so exit this so that menu_handle_mouse will be called */
+			return FALSE;
+		} else
+		if (event->mouse.button == 1) {
+			bool action = FALSE;
+			if ((event->mouse.y == 0) || (event->mouse.y == 1)) {
+				/* show the store context menu */
+				struct store *store = current_store();
+				context_menu_store(store,oid,event->mouse.x,event->mouse.y);
+				action = TRUE;
+			} else
+			/* if press is on a list item, so store item context */
+			if (event->mouse.y == 4+oid) {
+				/* click was on an item */
+				struct store *store = current_store();
+				context_menu_store_item(store,oid, event->mouse.x,event->mouse.y);
+				action = TRUE;
+			}
+			if (action) {
+				store_flags |= (STORE_FRAME_CHANGE | STORE_GOLD_CHANGE);
+
+				/* Let the game handle any core commands (equipping, etc) */
+				process_command(CMD_STORE, TRUE);
+
+				/* Notice and handle stuff */
+				notice_stuff(p_ptr);
+				handle_stuff(p_ptr);
+
+				/* Display the store */
+				store_display_recalc(m);
+				store_menu_recalc(m);
+				store_redraw();
+
+				return TRUE;
+			}
+		}
 	}
 	else if (event->type == EVT_KBRD)
 	{

@@ -61,15 +61,15 @@ static struct cmd_info cmd_item[] =
 	{ "Take off/unwield an item", 't', CMD_TAKEOFF, NULL, NULL },
 	{ "Examine an item", 'I', CMD_NULL, textui_obj_examine },
 	{ "Drop an item", 'd', CMD_DROP, NULL, NULL },
-	{ "Fire your missile weapon", 'f', CMD_FIRE, NULL, player_can_fire },
+	{ "Fire your missile weapon", 'f', CMD_FIRE, NULL, player_can_fire_msg },
 	{ "Use a staff", 'u', CMD_USE_STAFF, NULL, NULL },
 	{ "Aim a wand", 'a', CMD_USE_WAND, NULL, NULL },
 	{ "Zap a rod", 'z', CMD_USE_ROD, NULL, NULL },
 	{ "Activate an object", 'A', CMD_ACTIVATE, NULL, NULL },
 	{ "Eat some food", 'E', CMD_EAT, NULL, NULL },
 	{ "Quaff a potion", 'q', CMD_QUAFF, NULL, NULL },
-	{ "Read a scroll", 'r', CMD_READ_SCROLL, NULL, player_can_read },
-	{ "Fuel your light source", 'F', CMD_REFILL, NULL, player_can_refuel },
+	{ "Read a scroll", 'r', CMD_READ_SCROLL, NULL, player_can_read_msg },
+	{ "Fuel your light source", 'F', CMD_REFILL, NULL, player_can_refuel_msg },
 	{ "Use an item", 'U', CMD_USE_ANY, NULL, NULL }
 };
 
@@ -108,9 +108,9 @@ static struct cmd_info cmd_item_manage[] =
 static struct cmd_info cmd_info[] =
 {
 	{ "Browse a book", 'b', CMD_BROWSE_SPELL, textui_spell_browse, NULL },
-	{ "Gain new spells", 'G', CMD_STUDY_BOOK, textui_obj_study, player_can_study },
-	{ "Cast a spell", 'm', CMD_CAST, textui_obj_cast, player_can_cast },
-	{ "Cast a spell", 'p', CMD_CAST, textui_obj_cast, player_can_cast },
+	{ "Gain new spells", 'G', CMD_STUDY_BOOK, textui_obj_study, player_can_study_msg },
+	{ "Cast a spell", 'm', CMD_CAST, textui_obj_cast, player_can_cast_msg },
+	{ "Cast a spell", 'p', CMD_CAST, textui_obj_cast, player_can_cast_msg },
 	{ "Full dungeon map",             'M', CMD_NULL, do_cmd_view_map },
 	{ "Toggle ignoring of items",     'K', CMD_NULL, textui_cmd_toggle_ignore },
 	{ "Display visible item list",    ']', CMD_NULL, do_cmd_itemlist },
@@ -519,7 +519,7 @@ static ui_event textui_get_command(void)
 	return ke;
 }
 
-int show_command_list(struct cmd_info cmd_list[], int size)
+int show_command_list(struct cmd_info cmd_list[], int size, int mx, int my)
 {
 	menu_type *m;
 	region r;
@@ -537,9 +537,23 @@ int show_command_list(struct cmd_info cmd_list[], int size)
 
 	/* work out display region */
 	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
-	r.col = 80 - r.width;
-	r.row = 1;
+	if (mx > Term->wid - r.width - 1) {
+		r.col = Term->wid - r.width - 1;
+	} else {
+		r.col = mx + 1;
+	}
 	r.page_rows = m->count;
+	if (my > Term->hgt - r.page_rows - 1) {
+		if (my - r.page_rows - 1 <= 0) {
+			/* menu has too many items, so put in upper right corner */
+			r.row = 1;
+			r.col = Term->wid - r.width - 1;
+		} else {
+			r.row = Term->hgt - r.page_rows - 1;
+		}
+	} else {
+		r.row = my + 1;
+	}
 
 	screen_save();
 	menu_layout(m, &r);
@@ -559,7 +573,7 @@ int show_command_list(struct cmd_info cmd_list[], int size)
 	return 1;
 }
 
-int context_menu_command()
+int context_menu_command(int mx, int my)
 {
 	menu_type *m;
 	region r;
@@ -580,9 +594,23 @@ int context_menu_command()
 
 	/* work out display region */
 	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
-	r.col = 80 - r.width;
-	r.row = 1;
+	if (mx > Term->wid - r.width - 1) {
+		r.col = Term->wid - r.width - 1;
+	} else {
+		r.col = mx + 1;
+	}
 	r.page_rows = m->count;
+	if (my > Term->hgt - r.page_rows - 1) {
+		if (my - r.page_rows - 1 <= 0) {
+			/* menu has too many items, so put in upper right corner */
+			r.row = 1;
+			r.col = Term->wid - r.width - 1;
+		} else {
+			r.row = Term->hgt - r.page_rows - 1;
+		}
+	} else {
+		r.row = my + 1;
+	}
 
 	screen_save();
 	menu_layout(m, &r);
@@ -595,29 +623,29 @@ int context_menu_command()
 	screen_load();
 
 	if (selected == 1) {
-		show_command_list(cmd_item, N_ELEMENTS(cmd_item));
+		show_command_list(cmd_item, N_ELEMENTS(cmd_item),mx,my);
 	} else
 	if (selected == 2) {
-		show_command_list(cmd_action, N_ELEMENTS(cmd_action));
+		show_command_list(cmd_action, N_ELEMENTS(cmd_action),mx,my);
 	} else
 	if (selected == 3) {
-		show_command_list(cmd_item_manage, N_ELEMENTS(cmd_item_manage));
+		show_command_list(cmd_item_manage, N_ELEMENTS(cmd_item_manage),mx,my);
 	} else
 	if (selected == 4) {
-		show_command_list(cmd_info, N_ELEMENTS(cmd_info));
+		show_command_list(cmd_info, N_ELEMENTS(cmd_info),mx,my);
 	} else
 	if (selected == 5) {
-		show_command_list(cmd_util, N_ELEMENTS(cmd_util));
+		show_command_list(cmd_util, N_ELEMENTS(cmd_util),mx,my);
 	} else
 	if (selected == 6) {
-		show_command_list(cmd_hidden, N_ELEMENTS(cmd_hidden));
+		show_command_list(cmd_hidden, N_ELEMENTS(cmd_hidden),mx,my);
 	}
 
 	return 1;
 }
 
-int context_menu_player();
-int context_menu_cave(struct cave *cave, int y, int x, int adjacent);
+int context_menu_player(int mx, int my);
+int context_menu_cave(struct cave *cave, int y, int x, int adjacent,int mx, int my);
 
 /**
  * Handle a textui mouseclick.
@@ -684,7 +712,7 @@ static void textui_process_click(ui_event e)
 			} else
 			if (e.mouse.button == 2) {
 				// show a context menu
-				context_menu_player();
+				context_menu_player(e.mouse.x, e.mouse.y);
 				//Term_keypress('~',0);
 				//cmd_insert(CMD_OPTIONS);
 			}
@@ -703,6 +731,14 @@ static void textui_process_click(ui_event e)
 				/* shift-click - run */
 				cmd_insert(CMD_RUN);
 				cmd_set_arg_direction(cmd_get_top(), 0, coords_to_dir(y,x));
+				/*if ((y-p_ptr->py >= -1) && (y-p_ptr->py <= 1)
+					&& (x-p_ptr->px >= -1) && (x-p_ptr->px <= 1)) {
+					cmd_insert(CMD_JUMP);
+					cmd_set_arg_direction(cmd_get_top(), 0, coords_to_dir(y,x));
+				} else {
+				  cmd_insert(CMD_RUN);
+				  cmd_set_arg_direction(cmd_get_top(), 0, coords_to_dir(y,x));
+				}*/
 			} else
 			if (e.mouse.mods & KC_MOD_CONTROL) {
 				/* control-click - alter */
@@ -766,9 +802,9 @@ static void textui_process_click(ui_event e)
 			/* see if the click was adjacent to the player */
 			if ((y-p_ptr->py >= -1) && (y-p_ptr->py <= 1)
 				&& (x-p_ptr->px >= -1) && (x-p_ptr->px <= 1)) {
-				context_menu_cave(cave,y,x,1);
+				context_menu_cave(cave,y,x,1,e.mouse.x, e.mouse.y);
 			} else {
-				context_menu_cave(cave,y,x,0);
+				context_menu_cave(cave,y,x,0,e.mouse.x, e.mouse.y);
 			}
 		}
 	}

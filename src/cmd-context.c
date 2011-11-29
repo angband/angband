@@ -32,7 +32,7 @@
 int context_menu_command();
 int context_menu_object(const object_type *o_ptr, const int slot);
 
-int context_menu_player_2()
+int context_menu_player_2(int mx, int my)
 {
 	menu_type *m;
 	region r;
@@ -55,9 +55,23 @@ int context_menu_player_2()
 
 	/* work out display region */
 	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
-	r.col = 80 - r.width;
-	r.row = 1;
+	if (mx > Term->wid - r.width - 1) {
+		r.col = Term->wid - r.width - 1;
+	} else {
+		r.col = mx + 1;
+	}
 	r.page_rows = m->count;
+	if (my > Term->hgt - r.page_rows - 1) {
+		if (my - r.page_rows - 1 <= 0) {
+			/* menu has too many items, so put in upper right corner */
+			r.row = 1;
+			r.col = Term->wid - r.width - 1;
+		} else {
+			r.row = Term->hgt - r.page_rows - 1;
+		}
+	} else {
+		r.row = my + 1;
+	}
 
 	screen_save();
 	menu_layout(m, &r);
@@ -105,7 +119,7 @@ int context_menu_player_2()
 	return 1;
 }
 
-int context_menu_player()
+int context_menu_player(int mx, int my)
 {
 	menu_type *m;
 	region r;
@@ -135,7 +149,12 @@ int context_menu_player()
 	menu_dynamic_add(m, "Inventory", 5);
 	/* if object under player add pickup option */
 	if (cave->o_idx[p_ptr->py][p_ptr->px]) {
+		object_type *o_ptr;
   		menu_dynamic_add(m, "Floor", 13);
+		o_ptr = object_from_item_idx(-1);
+		if (!o_ptr->next_o_idx) {
+  			menu_dynamic_add(m, "Pickup", 14);
+		}
 	}
 	menu_dynamic_add(m, "Character", 7);
 	menu_dynamic_add(m, "Keymaps", 10);
@@ -143,9 +162,23 @@ int context_menu_player()
 
 	/* work out display region */
 	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
-	r.col = 80 - r.width;
-	r.row = 1;
+	if (mx > Term->wid - r.width - 1) {
+		r.col = Term->wid - r.width - 1;
+	} else {
+		r.col = mx + 1;
+	}
 	r.page_rows = m->count;
+	if (my > Term->hgt - r.page_rows - 1) {
+		if (my - r.page_rows - 1 <= 0) {
+			/* menu has too many items, so put in upper right corner */
+			r.row = 1;
+			r.col = Term->wid - r.width - 1;
+		} else {
+			r.row = Term->hgt - r.page_rows - 1;
+		}
+	} else {
+		r.row = my + 1;
+	}
 
 	screen_save();
 	menu_layout(m, &r);
@@ -198,7 +231,7 @@ int context_menu_player()
 	case 9:
 		{
 			/* show another layer of menu options screen */
-			context_menu_player_2();
+			context_menu_player_2(mx,my);
 		} break;
 	case 10:
 		{
@@ -259,12 +292,19 @@ int context_menu_player()
 
 
 		} break;
+	case 14:
+		{
+			/* pick the item up */
+			cmd_insert(CMD_PICKUP);
+			cmd_set_arg_item(cmd_get_top(), 0, -1);
+		} break;
+
 	}
 
 	return 1;
 }
 
-int context_menu_cave(struct cave *cave, int y, int x, int adjacent)
+int context_menu_cave(struct cave *cave, int y, int x, int adjacent, int mx, int my)
 {
 	menu_type *m;
 	region r;
@@ -305,14 +345,30 @@ int context_menu_cave(struct cave *cave, int y, int x, int adjacent)
 		menu_dynamic_add(m, "Walk Towards", 14);
 		menu_dynamic_add(m, "Run Towards", 15);
 	}
-	menu_dynamic_add(m, "Fire On", 16);
+	if (player_can_fire()) {
+		menu_dynamic_add(m, "Fire On", 16);
+	}
 	menu_dynamic_add(m, "Throw To", 17);
 
 	/* work out display region */
 	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
-	r.col = 80 - r.width;
-	r.row = 1;
+	if (mx > Term->wid - r.width - 1) {
+		r.col = Term->wid - r.width - 1;
+	} else {
+		r.col = mx + 1;
+	}
 	r.page_rows = m->count;
+	if (my > Term->hgt - r.page_rows - 1) {
+		if (my - r.page_rows - 1 <= 0) {
+			/* menu has too many items, so put in upper right corner */
+			r.row = 1;
+			r.col = Term->wid - r.width - 1;
+		} else {
+			r.row = Term->hgt - r.page_rows - 1;
+		}
+	} else {
+		r.row = my + 1;
+	}
 
 	screen_save();
 	menu_layout(m, &r);
@@ -515,7 +571,7 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 
 	/* work out display region */
 	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
-	r.col = 80 - r.width;
+	r.col = Term->wid - r.width - 1;
 	r.row = 1;
 	r.page_rows = m->count;
 
@@ -539,7 +595,7 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 		tb = object_info(o_ptr, OINFO_NONE);
 		object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
-		textui_textblock_show(tb, area, format("%^s", header));
+		textui_textblock_show(tb, area, format("%s", header));
 		textblock_free(tb);
 	} else
 	if (selected == 2) {
@@ -621,3 +677,188 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 	}
 	return 1;
 }
+
+/* pick the context menu options appropiate for a store */
+int context_menu_store(struct store *store, const int oid, int mx, int my)
+{
+	menu_type *m;
+	region r;
+	int selected;
+	object_type *o_ptr;
+
+	m = menu_dynamic_new();
+	if (!m || !store) {
+		return 0;
+	}
+
+	/* Get the actual object */
+	o_ptr = &store->stock[oid];
+
+	m->selections = lower_case;
+	menu_dynamic_add(m, "Inspect Inventory", 1);
+	if (store->sidx == STORE_HOME) {
+		/*menu_dynamic_add(m, "Stash One", 2);*/
+		menu_dynamic_add(m, "Stash", 3);
+		menu_dynamic_add(m, "Examine", 4);
+		menu_dynamic_add(m, "Take", 6);
+		if (o_ptr->number > 1) {
+			menu_dynamic_add(m, "Take One", 5);
+		}
+	} else {
+		/*menu_dynamic_add(m, "Sell One", 2);*/
+		menu_dynamic_add(m, "Sell", 3);
+		menu_dynamic_add(m, "Examine", 4);
+		menu_dynamic_add(m, "Buy", 6);
+		if (o_ptr->number > 1) {
+			menu_dynamic_add(m, "Buy One", 5);
+		}
+	}
+	menu_dynamic_add(m, "Exit", 7);
+
+
+	/* work out display region */
+	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
+	if (mx > Term->wid - r.width - 1) {
+		r.col = Term->wid - r.width - 1;
+	} else {
+		r.col = mx + 1;
+	}
+	r.page_rows = m->count;
+	if (my > Term->hgt - r.page_rows - 1) {
+		if (my - r.page_rows - 1 <= 0) {
+			/* menu has too many items, so put in upper right corner */
+			r.row = 1;
+			r.col = Term->wid - r.width - 1;
+		} else {
+			r.row = Term->hgt - r.page_rows - 1;
+		}
+	} else {
+		r.row = my + 1;
+	}
+
+	screen_save();
+	menu_layout(m, &r);
+	region_erase_bordered(&r);
+
+	prt("(Enter to select, ESC) Command:", 0, 0);
+	selected = menu_dynamic_select(m);
+	menu_dynamic_free(m);
+
+	screen_load();
+	if (selected == 1) {
+		Term_keypress('I', 0);
+	} else
+	if (selected == 2) {
+		Term_keypress('s', 0);
+		/* oid is store item we do not know item we want to sell here */
+		/*if (store->sidx == STORE_HOME) {
+			cmd_insert(CMD_STASH);
+		} else {
+			cmd_insert(CMD_SELL);
+		}
+		cmd_set_arg_item(cmd_get_top(), 0, oid);
+		cmd_set_arg_number(cmd_get_top(), 1, 1);*/
+	} else
+	if (selected == 3) {
+		Term_keypress('s', 0);
+	} else
+	if (selected == 4) {
+		Term_keypress('x', 0);
+	} else
+	if (selected == 5) {
+		if (store->sidx == STORE_HOME) {
+			cmd_insert(CMD_RETRIEVE);
+		} else {
+			cmd_insert(CMD_BUY);
+		}
+		cmd_set_arg_choice(cmd_get_top(), 0, oid);
+		cmd_set_arg_number(cmd_get_top(), 1, 1);
+	} else
+	if (selected == 6) {
+		Term_keypress('p', 0);
+	} else
+	if (selected == 7) {
+		Term_keypress(ESCAPE, 0);
+	}
+	return 1;
+}
+
+/* pick the context menu options appropiate for an item available in a store */
+int context_menu_store_item(struct store *store, const int oid, int mx, int my)
+{
+	menu_type *m;
+	region r;
+	int selected;
+	object_type *o_ptr;
+
+	/* Get the actual object */
+	o_ptr = &store->stock[oid];
+
+
+	m = menu_dynamic_new();
+	if (!m || !store) {
+		return 0;
+	}
+
+	m->selections = lower_case;
+	menu_dynamic_add(m, "Examine", 4);
+	if (store->sidx == STORE_HOME) {
+		menu_dynamic_add(m, "Take", 6);
+		if (o_ptr->number > 1) {
+			menu_dynamic_add(m, "Take One", 5);
+		}
+	} else {
+		menu_dynamic_add(m, "Buy", 6);
+		if (o_ptr->number > 1) {
+			menu_dynamic_add(m, "Buy One", 5);
+		}
+	}
+
+	/* work out display region */
+	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
+	if (mx > Term->wid - r.width - 1) {
+		r.col = Term->wid - r.width - 1;
+	} else {
+		r.col = mx + 1;
+	}
+	r.page_rows = m->count;
+	if (my > Term->hgt - r.page_rows - 1) {
+		if (my - r.page_rows - 1 <= 0) {
+			/* menu has too many items, so put in upper right corner */
+			r.row = 1;
+			r.col = Term->wid - r.width - 1;
+		} else {
+			r.row = Term->hgt - r.page_rows - 1;
+		}
+	} else {
+		r.row = my + 1;
+	}
+
+	screen_save();
+	menu_layout(m, &r);
+	region_erase_bordered(&r);
+
+	prt("(Enter to select, ESC) Command:", 0, 0);
+	selected = menu_dynamic_select(m);
+	menu_dynamic_free(m);
+
+	screen_load();
+	if (selected == 4) {
+		Term_keypress('x', 0);
+	} else
+	if (selected == 5) {
+		if (store->sidx == STORE_HOME) {
+			cmd_insert(CMD_RETRIEVE);
+		} else {
+			cmd_insert(CMD_BUY);
+		}
+		cmd_set_arg_choice(cmd_get_top(), 0, oid);
+		cmd_set_arg_number(cmd_get_top(), 1, 1);
+	} else
+	if (selected == 6) {
+		Term_keypress('p', 0);
+	}
+
+	return 1;
+}
+
