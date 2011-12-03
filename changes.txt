@@ -17,23 +17,40 @@ Bugs fixed
   #1518 Correct logic error in randart slay frequency calculation
   #1533 Stop scrolls of light segfaulting on BSD (thanks vext01)
   #1537 Make sure that turning off randarts at birth works properly
+  #1553 Fix randarts (blows/shots supercharge, RES_STUN)
+  #1571 Use the displayed damage dice for damage calculation
+  #1582 Make to-hit values IDd by shooting (thanks artes)
 9541bb7 Make pref file writing work with setgid installs
 559e486 Save progress towards level feelings
 52a331e Fix buggy earthquake logic
 c2d9fee Make Heroism and Berserk spells grant boldness, like the potions
+d9407cc Avoid crash on leaving level while hallucinating (thanks PowerWyrm)
+d864ea0 Prevent crash when 'r'ecalling the Everburning ego
 
 User interface
 ==============
+   #449 Describe each HATES_ flag only if IGNORE_ flag is not present
+   #614 Improve the warning message for !-incribed items
+  #1171 Darken the "Study" message when current books have no new spells
   #1485 Remove HIDE_TYPE
   #1491 Make "purple uniques" display correctly
   #1498 Nomad's updated tiles
   #1511 Make shift+keypad work in the GTK port (thanks to Daniel Santos)
 ec47e94 et seq. Blubaron's improved tile support (graphics.txt)
 744c7a6 et seq. New Cocoa front-end for Macs (thanks ridiculous_fish)
-  
+a101077 et seq. Blubaron's improved mouse support (Windows/SDL)
+b19e71b Remove randarts "restarting generation" messages
+0f5ab8d Display what monsters are known not to resist (thanks David3x3x3)
+
 Gameplay changes
 ================
+   #547 Trap detection now detects traps on chests (thanks artes)
    #572 Prevent instadeaths from IDing summon scrolls/staves by use
+   #631 Make enchant/disenchant more consistent
+   #778 Objects on the floor no longer prevent trap creation
+   #851 DRAIN_EXP now drains xp in proportion to total xp (thanks artes)
+  #1039 OF_LIGHT is now a pval flag
+  #1094 All items pseudo on pickup from after cl20
   #1113 Rebalance stealth and monster detection (thanks Jens & fizzix)
   #1156 Revisit stacks of consumables (thanks Jens)
   #1507 Rebalance to-hit vs. AC (take two, thanks Jens)
@@ -45,22 +62,34 @@ e8b48d5 et seq. CunningGabe's improvements to pits
 ef38e0f Increase max penalty on =Mouse, remove dam&AC mods on =Dog
 983ead5 CunningGabe's mimic updates
 fd5e3b8 et seq. Various difficulty tweaks:
-		- reduce MAX_STACK_SIZE to 25
+		- reduce MAX_STACK_SIZE to 40
 		- make DSM slightly rarer/deeper
 		- make stuff more expensive to buy
 		- reduce drops from apprentices/cutpurses
 		- prevent Deep Descent and Teleport Level being sold in stacks
+f4e1eb7 takkaria's lighting changes (torches radius 1, Phial radius 2)
+77728a2 fizzix's birth changes (fewer birth points, fairer class bonuses)
+b695d46 artes's changes to monsters with poison resistance
+9f4c70f Make failed special artifacts good instead of great
+ce25538 Remove DROP_GOOD from all non-uniques
+b294d59 Make Deep Descent a timed effect (like recall) and drop 250'
+e8965e0 takkaria's fuzzy detection changes 
 
 Coding changes
 ==============
   #1221 Switch over to UTF-8 (thanks Noz)
+  #1381 Split describe_combat (thanks artes)
   #1512 Change S_IREAD and S_IWRITE for Android compatibility
 91be218 Aerdan's updates to buildsys
 fbe0ef4 CunningGabe's cleanup of monster code
 3dd44a4 Update wiz-stats
 1aa93be Remove most of limits.txt
+a914ed2 pkg_deb script now excludes non-DFSG wav files
+		Replaced many indices with pointers in function calls (ongoing)
+9861f45 et seq. Remove all uses of %^s and use my_strcap() instead
 
 Documentation changes
 =====================
 f345482 Convert in-game docs to RST (thanks fph)
+b1ab879 Document the "wipe recall" wizmode command
         Instructions for compiling on various platforms
