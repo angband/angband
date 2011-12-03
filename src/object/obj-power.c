@@ -421,7 +421,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	if (extra_stat_bonus > 249) {
 		file_putf(log_file, "Inhibiting!  (Total ability bonus of %d is too high)\n", extra_stat_bonus);
 		p += INHIBIT_POWER;
-	} else {
+	} else if (extra_stat_bonus > 0) {
 		p += ability_power[extra_stat_bonus / 10];
 		file_putf(log_file, "Adding power for pval total of %d, total is %d\n", extra_stat_bonus, p);
 	}
