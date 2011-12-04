@@ -127,7 +127,7 @@ A:6:85
 O:0
 T:dragon
 T:ancient dragon
-S:BR_ACID | BR_ELEC | BR_FIRE |
+S:BR_ACID | BR_ELEC | BR_FIRE
 S:BR_COLD | BR_POIS
 
 N:10:Demons

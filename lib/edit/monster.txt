@@ -15,7 +15,7 @@
 # I: speed : hit points : vision : armor class : alertness
 # W: depth : rarity : unused (always 0) : experience for kill
 # B: attack method : attack effect : damage
-# S: spell frequency |
+# S: spell frequency
 # S: spell type | spell type | etc
 # F: flag | flag | etc
 # -F: flag | flag | etc

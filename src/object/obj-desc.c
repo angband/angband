@@ -452,8 +452,7 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 	object_flags(o_ptr, flags);
 	object_flags_known(o_ptr, flags_known);
 
-	if (of_has(flags, OF_SHOW_DICE))
-	{
+	if (of_has(flags, OF_SHOW_DICE)) {
 		/* Only display the real damage dice if the combat stats are known */
 		if (spoil || object_attack_plusses_are_visible(o_ptr))
 			strnfcat(buf, max, &end, " (%dd%d)", o_ptr->dd, o_ptr->ds);
@@ -461,8 +460,7 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 			strnfcat(buf, max, &end, " (%dd%d)", o_ptr->kind->dd, o_ptr->kind->ds);
 	}
 
-	if (of_has(flags, OF_SHOW_MULT))
-	{
+	if (of_has(flags, OF_SHOW_MULT)) {
 		/* Display shooting power as part of the multiplier */
 		if (of_has(flags, OF_MIGHT) &&
 		    (spoil || object_flag_is_known(o_ptr, OF_MIGHT)))
@@ -472,10 +470,9 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 	}
 
 	/* Show weapon bonuses */
-	if (spoil || object_attack_plusses_are_visible(o_ptr))
-	{
-		if (of_has(flags, OF_SHOW_MODS) || o_ptr->to_d || o_ptr->to_h)
-		{
+	if (spoil || object_attack_plusses_are_visible(o_ptr)) {
+		if (wield_slot(o_ptr) == INVEN_WIELD || wield_slot(o_ptr) == INVEN_BOW
+				|| obj_is_ammo(o_ptr) || o_ptr->to_d || o_ptr->to_h) {
 			/* Make an exception for body armor with only a to-hit penalty */
 			if (o_ptr->to_h < 0 && o_ptr->to_d == 0 &&
 			    (o_ptr->tval == TV_SOFT_ARMOR ||
@@ -491,17 +488,14 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 
 
 	/* Show armor bonuses */
-	if (spoil || object_defence_plusses_are_visible(o_ptr))
-	{
+	if (spoil || object_defence_plusses_are_visible(o_ptr)) {
 		if (obj_desc_show_armor(o_ptr))
 			strnfcat(buf, max, &end, " [%d,%+d]", o_ptr->ac, o_ptr->to_a);
 		else if (o_ptr->to_a)
 			strnfcat(buf, max, &end, " [%+d]", o_ptr->to_a);
 	}
 	else if (obj_desc_show_armor(o_ptr))
-	{
 		strnfcat(buf, max, &end, " [%d]", object_was_sensed(o_ptr) ? o_ptr->ac : o_ptr->kind->ac);
-	}
 
 	return end;
 }

@@ -6,7 +6,7 @@
  * 256 flags, due to 32 bytes of storage for item flags in the savefile. Flags
  * below start from 0 on line 21, so a flag's sequence number is its line
  * number minus 21.
- * 
+ *
  * index: the flag number
  * pval: is it a quantitative flag? FALSE means it's just on/off
  * timed: what is the corresponding TMD_ flag
@@ -110,8 +110,8 @@ OF(XXX6,        FALSE,	0,				0,			0,			0,		0,	0,	0,	0,		0,	0,		0,		0,		0,		0,	0,
 OF(INSTA_ART,   FALSE,	0,				OFID_NONE,	OFT_INT,	0,      0,	0,  0,  0,      0,  0,      0,      0,      0,      0,  0,      0,		"")
 OF(EASY_KNOW,   FALSE,	0,				OFID_NONE,	OFT_INT,	0,      0,	0,  0,  0,      0,  0,      0,      0,      0,      0,  0,      0,		"")
 OF(XXX7,   		FALSE,	0,				0,			0,			0,      0,	0,  0,  0,      0,  0,      0,      0,      0,      0,  0,      0,		"")
-OF(SHOW_MODS,   FALSE,	0,				OFID_NONE,	OFT_INT,	0,      0,	0,  0,  0,      0,  0,      0,      0,      0,      0,  0,      0,		"")
-OF(XXX8,        FALSE,	0,				0,			0,			0,      0,	0,  0,  0,      0,  0,      0,      0,      0,      0,  0,      0,		"")
+OF(XXX8,		FALSE,	0,				0,			0,			0,      0,	0,  0,  0,      0,  0,      0,      0,      0,      0,  0,      0,		"")
+OF(XXX9,        FALSE,	0,				0,			0,			0,      0,	0,  0,  0,      0,  0,      0,      0,      0,      0,  0,      0,		"")
 OF(LIGHT_CURSE, FALSE,	0,				OFID_WIELD,	OFT_CURSE,	-5,     0,	1,  1,  1,      1,  1,      1,      1,      1,      1,  1,      1,		"")
 OF(HEAVY_CURSE, FALSE,	0,				OFID_WIELD,	OFT_CURSE,	-15,    0,	1,  1,  1,      1,  1,      1,      1,      1,      1,  1,      1,		"")
 OF(PERMA_CURSE, FALSE,	0,				OFID_WIELD,	OFT_CURSE,	-25,    0,	1,  1,  1,      1,  1,      1,      1,      1,      1,  1,      1,		"")
