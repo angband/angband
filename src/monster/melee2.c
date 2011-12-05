@@ -2764,26 +2764,22 @@ static void process_monster(struct cave *c, int m_idx)
 	bool did_open_door;
 	bool did_bash_door;
 
+	char m_name[80];
+
+	/* Get the monster name */
+	monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 	/* Handle "sleep" */
-	if (m_ptr->m_timed[MON_TMD_SLEEP])
-	{
+	if (m_ptr->m_timed[MON_TMD_SLEEP]) {
 		u32b notice;
 
 		/* Aggravation */
-		if (check_state(p_ptr, OF_AGGRAVATE, p_ptr->state.flags))
-		{
+		if (check_state(p_ptr, OF_AGGRAVATE, p_ptr->state.flags)) {
 			/* Wake the monster */
 			mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOTIFY, FALSE);
 
 			/* Notice the "waking up" */
-			if (m_ptr->ml && !m_ptr->unaware)
-			{
-				char m_name[80];
-
-				/* Get the monster name */
-				monster_desc(m_name, sizeof(m_name), m_ptr, 0);
-
+			if (m_ptr->ml && !m_ptr->unaware) {
 				/* Dump a message */
 				msg("%s wakes up.", m_name);
 
@@ -2799,46 +2795,31 @@ static void process_monster(struct cave *c, int m_idx)
 		notice = randint0(1024);
 
 		/* Hack -- See if monster "notices" player */
-		if ((notice * notice * notice) <= p_ptr->state.noise)
-		{
+		if ((notice * notice * notice) <= p_ptr->state.noise) {
 			int d = 1;
 
 			/* Wake up faster near the player */
 			if (m_ptr->cdis < 50) d = (100 / m_ptr->cdis);
 
 			/* Still asleep */
-			if (m_ptr->m_timed[MON_TMD_SLEEP] > d)
-			{
+			if (m_ptr->m_timed[MON_TMD_SLEEP] > d) {
 				/* Monster wakes up "a little bit" */
 				mon_dec_timed(m_ptr, MON_TMD_SLEEP, d , MON_TMD_FLG_NOMESSAGE,
 					FALSE);
 
 				/* Notice the "not waking up" */
-				if (m_ptr->ml && !m_ptr->unaware)
-				{
+				if (m_ptr->ml && !m_ptr->unaware) {
 					/* Hack -- Count the ignores */
 					if (l_ptr->ignore < MAX_UCHAR)
-					{
 						l_ptr->ignore++;
-					}
 				}
-			}
-
-			/* Just woke up */
-			else
-			{
+			} else {
 				/* Reset sleep counter */
 				woke_up = mon_clear_timed(m_ptr, MON_TMD_SLEEP,
 					MON_TMD_FLG_NOMESSAGE, FALSE);
 
 				/* Notice the "waking up" */
-				if (m_ptr->ml && !m_ptr->unaware)
-				{
-					char m_name[80];
-
-					/* Get the monster name */
-					monster_desc(m_name, sizeof(m_name), m_ptr, 0);
-
+				if (m_ptr->ml && !m_ptr->unaware) {
 					/* Dump a message */
 					msg("%s wakes up.", m_name);
 
@@ -2847,9 +2828,7 @@ static void process_monster(struct cave *c, int m_idx)
 
 					/* Hack -- Count the wakings */
 					if (l_ptr->wake < MAX_UCHAR)
-					{
 						l_ptr->wake++;
-					}
 				}
 			}
 		}
@@ -2867,16 +2846,13 @@ static void process_monster(struct cave *c, int m_idx)
 	if (m_ptr->m_timed[MON_TMD_SLOW])
 		mon_dec_timed(m_ptr, MON_TMD_SLOW, 1, 0, FALSE);
 
-	if (m_ptr->m_timed[MON_TMD_STUN])
-	{
+	if (m_ptr->m_timed[MON_TMD_STUN]) {
 		int d = 1;
 
 		/* Make a "saving throw" against stun */
 		if (randint0(5000) <= r_ptr->level * r_ptr->level)
-		{
 			/* Recover fully */
 			d = m_ptr->m_timed[MON_TMD_STUN];
-		}
 
 		/* Hack -- Recover from stun */
 		if (m_ptr->m_timed[MON_TMD_STUN] > d)
@@ -2888,8 +2864,7 @@ static void process_monster(struct cave *c, int m_idx)
 		if (m_ptr->m_timed[MON_TMD_STUN]) return;
 	}
 
-	if (m_ptr->m_timed[MON_TMD_CONF])
-	{
+	if (m_ptr->m_timed[MON_TMD_CONF]) {
 		int d = randint1(r_ptr->level / 10 + 1);
 
 		/* Still confused */
@@ -2900,8 +2875,7 @@ static void process_monster(struct cave *c, int m_idx)
 			mon_clear_timed(m_ptr, MON_TMD_CONF, MON_TMD_FLG_NOTIFY, FALSE);
 	}
 
-	if (m_ptr->m_timed[MON_TMD_FEAR])
-	{
+	if (m_ptr->m_timed[MON_TMD_FEAR]) {
 		/* Amount of "boldness" */
 		int d = randint1(r_ptr->level / 10 + 1);
 
@@ -2920,34 +2894,26 @@ static void process_monster(struct cave *c, int m_idx)
 	/* Attempt to "mutiply" (all monsters are allowed an attempt for lore
 	 * purposes, even non-breeders)
 	 */
-	if (num_repro < MAX_REPRO)
-	{
+	if (num_repro < MAX_REPRO) {
 		int k, y, x;
 
 		/* Count the adjacent monsters */
 		for (k = 0, y = oy - 1; y <= oy + 1; y++)
-		{
 			for (x = ox - 1; x <= ox + 1; x++)
-			{
 				/* Count monsters */
 				if (cave->m_idx[y][x] > 0) k++;
-			}
-		}
 
 		/* Multiply slower in crowded areas */
-		if ((k < 4) && (k == 0 || one_in_(k * MON_MULT_ADJ)))
-		{
+		if ((k < 4) && (k == 0 || one_in_(k * MON_MULT_ADJ))) {
 			/* Successful breeding attempt, learn about that now */
-			if (m_ptr->ml) rf_on(l_ptr->flags, RF_MULTIPLY);
-			
+			if (m_ptr->ml)
+				rf_on(l_ptr->flags, RF_MULTIPLY);
+
 			/* Try to multiply (only breeders allowed) */
-			if (rf_has(r_ptr->flags, RF_MULTIPLY) && multiply_monster(m_idx))
-			{
+			if (rf_has(r_ptr->flags, RF_MULTIPLY) && multiply_monster(m_idx)) {
 				/* Make a sound */
 				if (m_ptr->ml)
-				{
 					sound(MSG_MULTIPLY);
-				}
 
 				/* Multiplying takes energy */
 				return;
@@ -2957,64 +2923,54 @@ static void process_monster(struct cave *c, int m_idx)
 
 	/* Mimics lie in wait */
 	if (is_mimicking(m_ptr)) return;
-	
+
 	/* Attempt to cast a spell */
 	if (make_attack_spell(m_idx)) return;
-
 
 	/* Reset */
 	stagger = FALSE;
 
 	/* Confused */
 	if (m_ptr->m_timed[MON_TMD_CONF])
-	{
 		/* Stagger */
 		stagger = TRUE;
-	}
 
 	/* Random movement - always attempt for lore purposes */
-	else
-	{
+	else {
 		int roll = randint0(100);
-		
+
 		/* Random movement (25%) */
-		if (roll < 25)
-		{
+		if (roll < 25) {
 			/* Learn about small random movement */
-			if (m_ptr->ml) rf_on(l_ptr->flags, RF_RAND_25);
+			if (m_ptr->ml)
+				rf_on(l_ptr->flags, RF_RAND_25);
 
-			/* Stagger */			
-			if (flags_test(r_ptr->flags, RF_SIZE, RF_RAND_25, RF_RAND_50, FLAG_END)) stagger = TRUE;
-		}
-		
-		/* Random movement (50%) */
-		else if (roll < 50)
-		{
-			/* Learn about medium random movement */
-			if (m_ptr->ml) rf_on(l_ptr->flags, RF_RAND_50);
-
-			/* Stagger */			
-			if (rf_has(r_ptr->flags, RF_RAND_50)) stagger = TRUE;
-		}
-		
-		/* Random movement (75%) */
-		else if (roll < 75)
-		{
-			/* Stagger */			
-			if (flags_test_all(r_ptr->flags, RF_SIZE, RF_RAND_25, RF_RAND_50, FLAG_END))
-			{
+			/* Stagger */
+			if (flags_test(r_ptr->flags, RF_SIZE, RF_RAND_25, RF_RAND_50, FLAG_END))
 				stagger = TRUE;
-			}
+
+		/* Random movement (50%) */
+		} else if (roll < 50) {
+			/* Learn about medium random movement */
+			if (m_ptr->ml)
+				rf_on(l_ptr->flags, RF_RAND_50);
+
+			/* Stagger */
+			if (rf_has(r_ptr->flags, RF_RAND_50))
+				stagger = TRUE;
+
+		/* Random movement (75%) */
+		} else if (roll < 75) {
+			/* Stagger */
+			if (flags_test_all(r_ptr->flags, RF_SIZE, RF_RAND_25, RF_RAND_50, FLAG_END))
+				stagger = TRUE;
 		}
 	}
 
 	/* Normal movement */
 	if (!stagger)
-	{
 		/* Logical moves, may do nothing */
 		if (!get_moves(cave, m_idx, mm)) return;
-	}
-
 
 	/* Assume nothing */
 	do_turn = FALSE;
@@ -3025,10 +2981,8 @@ static void process_monster(struct cave *c, int m_idx)
 	did_open_door = FALSE;
 	did_bash_door = FALSE;
 
-
 	/* Process moves */
-	for (i = 0; i < 5; i++)
-	{
+	for (i = 0; i < 5; i++)	{
 		/* Get the direction (or stagger) */
 		d = (stagger ? ddd[randint0(8)] : mm[i]);
 
@@ -3036,13 +2990,10 @@ static void process_monster(struct cave *c, int m_idx)
 		ny = oy + ddy[d];
 		nx = ox + ddx[d];
 
-
 		/* Floor is open? */
 		if (cave_floor_bold(ny, nx))
-		{
 			/* Go ahead and move */
 			do_move = TRUE;
-		}
 
 		/* Permanent wall in the way */
 		else if (cave->feat[ny][nx] >= FEAT_PERM_EXTRA)
@@ -3051,27 +3002,21 @@ static void process_monster(struct cave *c, int m_idx)
 		}
 
 		/* Normal wall, door, or secret door in the way */
-		else
-		{
+		else {
 			/* There's some kind of feature in the way, so learn about
-			 * kill-wall and pass-wall now
-			 */
-			if (m_ptr->ml)
-			{
+			 * kill-wall and pass-wall now */
+			if (m_ptr->ml) {
 				rf_on(l_ptr->flags, RF_PASS_WALL);
 				rf_on(l_ptr->flags, RF_KILL_WALL);
 			}
 
 			/* Monster moves through walls (and doors) */
 			if (rf_has(r_ptr->flags, RF_PASS_WALL))
-			{
 				/* Pass through walls/doors/rubble */
 				do_move = TRUE;
-			}
 
 			/* Monster destroys walls (and doors) */
-			else if (rf_has(r_ptr->flags, RF_KILL_WALL))
-			{
+			else if (rf_has(r_ptr->flags, RF_KILL_WALL)) {
 				/* Eat through walls/doors/rubble */
 				do_move = TRUE;
 
@@ -3083,28 +3028,24 @@ static void process_monster(struct cave *c, int m_idx)
 
 				/* Note changes to viewable region */
 				if (player_has_los_bold(ny, nx)) do_view = TRUE;
-			}
 
 			/* Handle doors and secret doors */
-			else if (((cave->feat[ny][nx] >= FEAT_DOOR_HEAD) &&
+			} else if (((cave->feat[ny][nx] >= FEAT_DOOR_HEAD) &&
 						 (cave->feat[ny][nx] <= FEAT_DOOR_TAIL)) ||
-						(cave->feat[ny][nx] == FEAT_SECRET))
-			{
+						(cave->feat[ny][nx] == FEAT_SECRET)) {
 				bool may_bash = TRUE;
 
 				/* Take a turn */
 				do_turn = TRUE;
-				
+
 				/* Learn about door abilities */
-				if (m_ptr->ml)
-				{
+				if (m_ptr->ml) {
 					rf_on(l_ptr->flags, RF_OPEN_DOOR);
 					rf_on(l_ptr->flags, RF_BASH_DOOR);
 				}
 
 				/* Creature can open doors. */
-				if (rf_has(r_ptr->flags, RF_OPEN_DOOR))
-				{
+				if (rf_has(r_ptr->flags, RF_OPEN_DOOR))	{
 					/* Closed doors and secret doors */
 					if ((cave->feat[ny][nx] == FEAT_DOOR_HEAD) ||
 							 (cave->feat[ny][nx] == FEAT_SECRET)) {
@@ -3113,10 +3054,9 @@ static void process_monster(struct cave *c, int m_idx)
 
 						/* Do not bash the door */
 						may_bash = FALSE;
-					}
 
 					/* Locked doors (not jammed) */
-					else if (cave->feat[ny][nx] < FEAT_DOOR_HEAD + 0x08) {
+					} else if (cave->feat[ny][nx] < FEAT_DOOR_HEAD + 0x08) {
 						int k;
 
 						/* Door power */
@@ -3124,7 +3064,11 @@ static void process_monster(struct cave *c, int m_idx)
 
 						/* Try to unlock it */
 						if (randint0(m_ptr->hp / 10) > k) {
-							msg("Something fiddles with a lock.");
+							/* Print a message */
+							if (m_ptr->ml)
+								msg("%s fiddles with the lock.", m_name);
+							else
+								msg("Something fiddles with a lock.");
 
 							/* Reduce the power of the door by one */
 							cave_set_feat(c, ny, nx, cave->feat[ny][nx] - 1);
@@ -3136,8 +3080,7 @@ static void process_monster(struct cave *c, int m_idx)
 				}
 
 				/* Stuck doors -- attempt to bash them down if allowed */
-				if (may_bash && rf_has(r_ptr->flags, RF_BASH_DOOR))
-				{
+				if (may_bash && rf_has(r_ptr->flags, RF_BASH_DOOR))	{
 					int k;
 
 					/* Door power */
@@ -3145,7 +3088,11 @@ static void process_monster(struct cave *c, int m_idx)
 
 					/* Attempt to bash */
 					if (randint0(m_ptr->hp / 10) > k) {
-						msg("Something slams against a door.");
+						/* Print a message */
+						if (m_ptr->ml)
+							msg("%s slams against the door.", m_name);
+						else
+							msg("Something slams against a door.");
 
 						/* Reduce the power of the door by one */
 						cave_set_feat(c, ny, nx, cave->feat[ny][nx] - 1);
@@ -3168,40 +3115,32 @@ static void process_monster(struct cave *c, int m_idx)
 			}
 
 			/* Deal with doors in the way */
-			if (did_open_door || did_bash_door)
-			{
+			if (did_open_door || did_bash_door)	{
 				/* Break down the door */
 				if (did_bash_door && (randint0(100) < 50))
-				{
 					cave_set_feat(c, ny, nx, FEAT_BROKEN);
-				}
 
 				/* Open the door */
 				else
-				{
 					cave_set_feat(c, ny, nx, FEAT_OPEN);
-				}
 
 				/* Handle viewable doors */
-				if (player_has_los_bold(ny, nx)) do_view = TRUE;
+				if (player_has_los_bold(ny, nx))
+					do_view = TRUE;
 			}
 		}
 
 
 		/* Hack -- check for Glyph of Warding */
-		if (do_move && (cave->feat[ny][nx] == FEAT_GLYPH))
-		{
+		if (do_move && (cave->feat[ny][nx] == FEAT_GLYPH)) {
 			/* Assume no move allowed */
 			do_move = FALSE;
 
 			/* Break the ward */
-			if (randint1(BREAK_GLYPH) < r_ptr->level)
-			{
+			if (randint1(BREAK_GLYPH) < r_ptr->level) {
 				/* Describe observable breakage */
 				if (cave->info[ny][nx] & (CAVE_MARK))
-				{
 					msg("The rune of protection is broken!");
-				}
 
 				/* Forget the rune */
 				cave->info[ny][nx] &= ~CAVE_MARK;
@@ -3216,21 +3155,18 @@ static void process_monster(struct cave *c, int m_idx)
 
 
 		/* The player is in the way. */
-		if (do_move && (cave->m_idx[ny][nx] < 0))
-		{
+		if (do_move && (cave->m_idx[ny][nx] < 0)) {
 			/* Learn about if the monster attacks */
-			if (m_ptr->ml) rf_on(l_ptr->flags, RF_NEVER_BLOW);
+			if (m_ptr->ml)
+				rf_on(l_ptr->flags, RF_NEVER_BLOW);
 
 			/* Some monsters never attack */
 			if (rf_has(r_ptr->flags, RF_NEVER_BLOW))
-			{
 				/* Do not move */
 				do_move = FALSE;
-			}
-			
+
 			/* Otherwise, attack the player */
-			else
-			{
+			else {
 				/* Do the attack */
 				make_attack_normal(m_ptr, p_ptr);
 
@@ -3244,10 +3180,10 @@ static void process_monster(struct cave *c, int m_idx)
 
 
 		/* Some monsters never move */
-		if (do_move && rf_has(r_ptr->flags, RF_NEVER_MOVE))
-		{
+		if (do_move && rf_has(r_ptr->flags, RF_NEVER_MOVE))	{
 			/* Learn about lack of movement */
-			if (m_ptr->ml) rf_on(l_ptr->flags, RF_NEVER_MOVE);
+			if (m_ptr->ml)
+				rf_on(l_ptr->flags, RF_NEVER_MOVE);
 
 			/* Do not move */
 			do_move = FALSE;
@@ -3255,8 +3191,7 @@ static void process_monster(struct cave *c, int m_idx)
 
 
 		/* A monster is in the way */
-		if (do_move && (cave->m_idx[ny][nx] > 0))
-		{
+		if (do_move && (cave->m_idx[ny][nx] > 0)) {
 			monster_type *n_ptr = cave_monster_at(cave, ny, nx);
 
 			/* Kill weaker monsters */
@@ -3270,50 +3205,43 @@ static void process_monster(struct cave *c, int m_idx)
 			/* Assume no movement */
 			do_move = FALSE;
 
-			if (compare_monsters(m_ptr, n_ptr) > 0)
-			{
+			if (compare_monsters(m_ptr, n_ptr) > 0) 	{
 				/* Learn about pushing and shoving */
-				if (m_ptr->ml)
-				{
+				if (m_ptr->ml) {
 					rf_on(l_ptr->flags, RF_KILL_BODY);
 					rf_on(l_ptr->flags, RF_MOVE_BODY);
 				}
 
-				if (kill_ok || move_ok)
-				{
+				if (kill_ok || move_ok) {
 					/* Get the names of the monsters involved */
-					char m_name[80];
+					char m1_name[80];
 					char n_name[80];
-					monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND1);
+					monster_desc(m1_name, sizeof(m1_name), m_ptr, MDESC_IND1);
 					monster_desc(n_name, sizeof(n_name), n_ptr, MDESC_IND1);
 
 					/* Allow movement */
 					do_move = TRUE;
 
 					/* Monster ate another monster */
-					if (kill_ok)
-					{
+					if (kill_ok) {
 						/* Note if visible */
 						if (m_ptr->ml && (m_ptr->mflag & (MFLAG_VIEW)))
-							msg("%s tramples over %s.", m_name, n_name);
+							msg("%s tramples over %s.", m1_name, n_name);
 
 						delete_monster(ny, nx);
-					}
-					else
-					{
+					} else {
 						/* Note if visible */
 						if (m_ptr->ml && (m_ptr->mflag & (MFLAG_VIEW)))
-							msg("%s pushes past %s.", m_name, n_name);
+							msg("%s pushes past %s.", m1_name, n_name);
 					}
 				}
 			}
 		}
 
 		/* Creature has been allowed move */
-		if (do_move)
-		{
+		if (do_move) {
 			s16b this_o_idx, next_o_idx = 0;
-			
+
 			/* Learn about no lack of movement */
 			if (m_ptr->ml) rf_on(l_ptr->flags, RF_NEVER_MOVE);
 
@@ -3324,19 +3252,14 @@ static void process_monster(struct cave *c, int m_idx)
 			monster_swap(oy, ox, ny, nx);
 
 			/* Possible disturb */
-			if (m_ptr->ml &&
-			    (OPT(disturb_move) ||
-			     ((m_ptr->mflag & (MFLAG_VIEW)) &&
-			      OPT(disturb_near))))
-			{
+			if (m_ptr->ml && (OPT(disturb_move) ||
+					((m_ptr->mflag & (MFLAG_VIEW)) && OPT(disturb_near))))
 				/* Disturb */
 				disturb(p_ptr, 0, 0);
-			}
-
 
 			/* Scan all objects in the grid */
-			for (this_o_idx = cave->o_idx[ny][nx]; this_o_idx; this_o_idx = next_o_idx)
-			{
+			for (this_o_idx = cave->o_idx[ny][nx]; this_o_idx;
+					this_o_idx = next_o_idx) {
 				object_type *o_ptr;
 
 				/* Get the object */
@@ -3347,21 +3270,20 @@ static void process_monster(struct cave *c, int m_idx)
 
 				/* Skip gold */
 				if (o_ptr->tval == TV_GOLD) continue;
-				
+
 				/* Learn about item pickup behavior */
-				if (m_ptr->ml)
-				{
+				if (m_ptr->ml) {
 					rf_on(l_ptr->flags, RF_TAKE_ITEM);
 					rf_on(l_ptr->flags, RF_KILL_ITEM);
 				}
 
 				/* Take or Kill objects on the floor */
-				if (rf_has(r_ptr->flags, RF_TAKE_ITEM) || rf_has(r_ptr->flags, RF_KILL_ITEM))
-				{
+				if (rf_has(r_ptr->flags, RF_TAKE_ITEM) ||
+						rf_has(r_ptr->flags, RF_KILL_ITEM))	{
 					bitflag obj_flags[OF_SIZE];
 					bitflag mon_flags[RF_SIZE];
 
-					char m_name[80];
+					char m1_name[80];
 					char o_name[80];
 
 					rf_wipe(mon_flags);
@@ -3374,39 +3296,33 @@ static void process_monster(struct cave *c, int m_idx)
 								ODESC_PREFIX | ODESC_FULL);
 
 					/* Get the monster name */
-					monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND1);
+					monster_desc(m1_name, sizeof(m1_name), m_ptr, MDESC_IND1);
 
 					/* React to objects that hurt the monster */
 					react_to_slay(obj_flags, mon_flags);
 
 					/* The object cannot be picked up by the monster */
-					if (o_ptr->artifact || rf_is_inter(r_ptr->flags, mon_flags))
-					{
+					if (o_ptr->artifact || rf_is_inter(r_ptr->flags, mon_flags)) {
 						/* Only give a message for "take_item" */
-						if (rf_has(r_ptr->flags, RF_TAKE_ITEM))
-						{
+						if (rf_has(r_ptr->flags, RF_TAKE_ITEM))	{
 							/* Describe observable situations */
-							if (m_ptr->ml && player_has_los_bold(ny, nx) && !squelch_item_ok(o_ptr))
-							{
+							if (m_ptr->ml && player_has_los_bold(ny, nx) &&
+									!squelch_item_ok(o_ptr))
 								/* Dump a message */
 								msg("%s tries to pick up %s, but fails.",
-								           m_name, o_name);
-							}
+									m1_name, o_name);
 						}
-					}
 
 					/* Pick up the item */
-					else if (rf_has(r_ptr->flags, RF_TAKE_ITEM))
-					{
+					} else if (rf_has(r_ptr->flags, RF_TAKE_ITEM)) {
 						object_type *i_ptr;
 						object_type object_type_body;
 
 						/* Describe observable situations */
-						if (player_has_los_bold(ny, nx) && !squelch_item_ok(o_ptr))
-						{
+						if (player_has_los_bold(ny, nx) &&
+								!squelch_item_ok(o_ptr))
 							/* Dump a message */
-							msg("%s picks up %s.", m_name, o_name);
-						}
+							msg("%s picks up %s.", m1_name, o_name);
 
 						/* Get local object */
 						i_ptr = &object_type_body;
@@ -3419,17 +3335,14 @@ static void process_monster(struct cave *c, int m_idx)
 
 						/* Carry the object */
 						monster_carry(m_ptr, i_ptr);
-					}
 
 					/* Destroy the item */
-					else
-					{
+					} else {
 						/* Describe observable situations */
-						if (player_has_los_bold(ny, nx) && !squelch_item_ok(o_ptr))
-						{
+						if (player_has_los_bold(ny, nx) &&
+								!squelch_item_ok(o_ptr))
 							/* Dump a message */
 							msgt(MSG_DESTROY, "%s crushes %s.", m_name, o_name);
-						}
 
 						/* Delete the object */
 						delete_object_idx(this_o_idx);
@@ -3445,16 +3358,14 @@ static void process_monster(struct cave *c, int m_idx)
 
 	/* If we haven't done anything, try casting a spell again */
 	if (OPT(birth_ai_smart) && !do_turn && !do_move)
-	{
 		/* Cast spell */
 		if (make_attack_spell(m_idx)) return;
-	}
 
-	if (rf_has(r_ptr->flags, RF_HAS_LIGHT)) do_view = TRUE;
+	if (rf_has(r_ptr->flags, RF_HAS_LIGHT))
+		do_view = TRUE;
 
 	/* Notice changes in view */
-	if (do_view)
-	{
+	if (do_view) {
 		/* Update the visuals */
 		p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 
@@ -3465,14 +3376,11 @@ static void process_monster(struct cave *c, int m_idx)
 
 	/* Hack -- get "bold" if out of options */
 	if (!do_turn && !do_move && m_ptr->m_timed[MON_TMD_FEAR])
-	{
 		mon_clear_timed(m_ptr, MON_TMD_FEAR, MON_TMD_FLG_NOTIFY, FALSE);
-	}
 
 	/* If we see an unaware monster do something, become aware of it */
 	if (do_turn && m_ptr->unaware)
 		become_aware(m_ptr);
-
 }
 
 
