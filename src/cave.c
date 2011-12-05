@@ -771,7 +771,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	assert(y < DUNGEON_HGT);
 
 	info = cave->info[y][x];
-
+	
 	/* Default "clear" values, others will be set later where appropriate. */
 	g->first_kind = NULL;
 	g->multiple_objects = FALSE;
@@ -804,7 +804,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	/* Objects */
 	for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
 	{
-		if (o_ptr->marked == MARK_AWARE && !squelch_item_ok(o_ptr)) {
+		if (o_ptr->marked == MARK_AWARE) {
 			g->unseen_object = TRUE;
 		} else if (o_ptr->marked == MARK_SEEN && !squelch_item_ok(o_ptr)) {
 			if (!g->first_kind) {
