@@ -503,7 +503,6 @@ static object_kind *choose_item(int a_idx)
 	k_ptr = lookup_kind(tval, sval);
 	a_ptr->tval = k_ptr->tval;
 	a_ptr->sval = k_ptr->sval;
-	a_ptr->pval[DEFAULT_PVAL] = randcalc(k_ptr->pval[DEFAULT_PVAL], 0, MINIMISE);
 	a_ptr->to_h = randcalc(k_ptr->to_h, 0, MINIMISE);
 	a_ptr->to_d = randcalc(k_ptr->to_d, 0, MINIMISE);
 	a_ptr->to_a = randcalc(k_ptr->to_a, 0, MINIMISE);
@@ -512,8 +511,10 @@ static object_kind *choose_item(int a_idx)
 	a_ptr->ds = k_ptr->ds;
 	a_ptr->weight = k_ptr->weight;
 	of_copy(a_ptr->flags, k_ptr->flags);
-	for (i = 0; i < MAX_PVALS; i++)
+	for (i = 0; i < MAX_PVALS; i++) {
 		of_copy(a_ptr->pval_flags[i], k_ptr->pval_flags[i]);
+		a_ptr->pval[i] = randcalc(k_ptr->pval[i], 0, MINIMISE);
+	}
 	a_ptr->num_pvals = k_ptr->num_pvals;
 	a_ptr->effect = 0;
 
