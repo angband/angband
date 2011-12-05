@@ -62,7 +62,7 @@ void do_cmd_redraw(void)
 
 	/* Reset "inkey()" */
 	flush();
-	
+
 	if (character_dungeon)
 		verify_panel();
 
@@ -431,8 +431,8 @@ void do_cmd_messages(void)
  */
 void do_cmd_note(void) {
 	/* Allocate/Initialize strings to get and format user input. */
-	char tmp[200];
-	char note[220];
+	char tmp[70];
+	char note[90];
 	my_strcpy(tmp, "", sizeof(tmp));
 	my_strcpy(note, "", sizeof(note));
 
