@@ -544,9 +544,11 @@ void place_object(struct cave *c, int y, int x, int level, bool good, bool great
 			otype.artifact->created = FALSE;
 		return;
 	} else {
- 			if (otype.artifact)
+ 		if (otype.artifact)
 			c->good_item = TRUE;
-		c->obj_rating += rating;
+		if (rating > 250000)
+			rating = 250000; /* avoid overflows */
+		c->obj_rating += (rating / 10) * (rating / 10);
 	}
 }
 
@@ -3562,14 +3564,14 @@ static int calc_obj_feeling(struct cave *c)
 	/* Check the loot adjusted for depth */
 	x = c->obj_rating / c->depth;
 
-	if (x > 6000) return 20;
-	if (x > 3500) return 30;
-	if (x > 2000) return 40;
-	if (x > 1000) return 50;
-	if (x > 500) return 60;
-	if (x > 300) return 70;
-	if (x > 200) return 80;
-	if (x > 100) return 90;
+	if (x > 16000000) return 20;
+	if (x > 4000000) return 30;
+	if (x > 1000000) return 40;
+	if (x > 250000) return 50;
+	if (x > 64000) return 60;
+	if (x > 16000) return 70;
+	if (x > 4000) return 80;
+	if (x > 1000) return 90;
 	return 100;
 }
 
