@@ -106,36 +106,17 @@ void do_cmd_inven(void)
 	/* Save screen */
 	screen_save();
 
-	/* Hack -- show empty slots */
-	item_tester_full = TRUE;
-
-	/* Display the inventory */
-	show_inven(OLIST_WEIGHT | OLIST_QUIVER);
-
-	/* Hack -- hide empty slots */
-	item_tester_full = FALSE;
-
-	/* Prompt for a command */
-	/*prt(format("(Inventory) Burden %d.%d lb (%d.%d lb %s). Command: ",
-		        p_ptr->total_weight / 10, p_ptr->total_weight % 10,
-		        abs(diff) / 10, abs(diff) % 10,
-		        (diff < 0 ? "overweight" : "remaining")),
-	    0, 0);*/
-
-	/* Get a new command */
-	/*e = inkey_ex();
-	if (!(e.type == EVT_KBRD && e.key.code == ESCAPE))
-		Term_event_push(&e);*/
-
 	/* Prompt for a command */
 	prt(format("(Inventory) Burden %d.%d lb (%d.%d lb %s). Item for command: ",
 		        p_ptr->total_weight / 10, p_ptr->total_weight % 10,
 		        abs(diff) / 10, abs(diff) % 10,
 		        (diff < 0 ? "overweight" : "remaining")),
-	    0, 0);
+			0, 0);
 
+	/* Hack -- show empty slots */
+	item_tester_full = TRUE;
 
-	/* Get an item to use a context command on */
+	/* Get an item to use a context command on (Display the inventory) */
 	if (get_item(&diff, NULL, NULL, CMD_NULL, USE_EQUIP|USE_INVEN|USE_FLOOR|IS_HARMLESS)) {
 		object_type *o_ptr;
 
@@ -146,6 +127,10 @@ void do_cmd_inven(void)
 
 		context_menu_object(o_ptr, diff);
 	}
+
+
+	/* Hack -- hide empty slots */
+	item_tester_full = FALSE;
 
 	/* Load screen */
 	screen_load();
