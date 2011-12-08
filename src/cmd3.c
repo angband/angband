@@ -125,7 +125,9 @@ void do_cmd_inven(void)
 
 		o_ptr = object_from_item_idx(diff);
 
-		context_menu_object(o_ptr, diff);
+		if (o_ptr && o_ptr->kind) {
+			context_menu_object(o_ptr, diff);
+		}
 	}
 
 
