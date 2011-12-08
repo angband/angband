@@ -806,8 +806,18 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 		/* Viewing inventory */
 		if (p_ptr->command_wrk == USE_INVEN)
 		{
+			/* Hack - show the quiver counts in certain cases like the 'i' command */
+			if (item_tester_full) {
+				olist_mode |= OLIST_QUIVER;
+			}
+
 			/* Redraw if needed */
 			if (show_list) show_inven(olist_mode);
+
+			/* Hack - hide the quiver counts outside the inventory page */
+			if (item_tester_full) {
+				olist_mode &= ~OLIST_QUIVER;
+			}
 
 			/* Begin the prompt */
 			strnfmt(out_val, sizeof(out_val), "Inven:");
