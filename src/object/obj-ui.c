@@ -933,12 +933,14 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 		/* Finish the prompt */
 		my_strcat(out_val, " ESC", sizeof(out_val));
 
-		/* Build the prompt */
-		strnfmt(tmp_val, sizeof(tmp_val), "(%s) %s", out_val, pmt);
+		/* if we have a prompt header, show the part that we just built */
+		if (pmt) {
+			/* Build the prompt */
+			strnfmt(tmp_val, sizeof(tmp_val), "(%s) %s", out_val, pmt);
 
-		/* Show the prompt */
-		prt(tmp_val, 0, 0);
-
+			/* Show the prompt */
+			prt(tmp_val, 0, 0);
+		}
 
 		/* Get a key */
 		//which = inkey();
