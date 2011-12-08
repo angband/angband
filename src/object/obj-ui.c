@@ -1036,16 +1036,22 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 								press.mouse.y--;
 							}
 						}
-						/* Allow player to "refuse" certain actions */
-						if (!get_item_allow(k, cmdkey, cmd, is_harmless))
-						{
-							done = TRUE;
-						}
+						/* check the bounds the item number */
+						if ((k < 0) && (k > -512)) {
+							/* Allow player to "refuse" certain actions */
+							if (!get_item_allow(k, cmdkey, cmd, is_harmless))
+							{
+								done = TRUE;
+							}
 
-						/* Accept that choice */
-						(*cp) = k;
-						item = TRUE;
-						done = TRUE;
+							/* Accept that choice */
+							(*cp) = k;
+							item = TRUE;
+							done = TRUE;
+						} else {
+							/* set k to a value that will be invalid below */
+							k = -1;
+						}
 					}
 				}
 				if (k >= 0) {
