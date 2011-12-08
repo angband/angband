@@ -806,8 +806,18 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 		/* Viewing inventory */
 		if (p_ptr->command_wrk == USE_INVEN)
 		{
+			/* Hack - show the quiver counts in certain cases like the 'i' command */
+			if (item_tester_full) {
+				olist_mode |= OLIST_QUIVER;
+			}
+
 			/* Redraw if needed */
 			if (show_list) show_inven(olist_mode);
+
+			/* Hack - hide the quiver counts outside the inventory page */
+			if (item_tester_full) {
+				olist_mode &= ~OLIST_QUIVER;
+			}
 
 			/* Begin the prompt */
 			strnfmt(out_val, sizeof(out_val), "Inven:");
@@ -933,12 +943,14 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 		/* Finish the prompt */
 		my_strcat(out_val, " ESC", sizeof(out_val));
 
-		/* Build the prompt */
-		strnfmt(tmp_val, sizeof(tmp_val), "(%s) %s", out_val, pmt);
+		/* if we have a prompt header, show the part that we just built */
+		if (pmt) {
+			/* Build the prompt */
+			strnfmt(tmp_val, sizeof(tmp_val), "(%s) %s", out_val, pmt);
 
-		/* Show the prompt */
-		prt(tmp_val, 0, 0);
-
+			/* Show the prompt */
+			prt(tmp_val, 0, 0);
+		}
 
 		/* Get a key */
 		//which = inkey();
@@ -1024,16 +1036,22 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 								press.mouse.y--;
 							}
 						}
-						/* Allow player to "refuse" certain actions */
-						if (!get_item_allow(k, cmdkey, cmd, is_harmless))
-						{
-							done = TRUE;
-						}
+						/* check the bounds the item number */
+						if ((k < 0) && (k > -512)) {
+							/* Allow player to "refuse" certain actions */
+							if (!get_item_allow(k, cmdkey, cmd, is_harmless))
+							{
+								done = TRUE;
+							}
 
-						/* Accept that choice */
-						(*cp) = k;
-						item = TRUE;
-						done = TRUE;
+							/* Accept that choice */
+							(*cp) = k;
+							item = TRUE;
+							done = TRUE;
+						} else {
+							/* set k to a value that will be invalid below */
+							k = -1;
+						}
 					}
 				}
 				if (k >= 0) {

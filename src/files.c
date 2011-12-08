@@ -1863,15 +1863,14 @@ static void write_html_escape_char(ang_file *fp, wchar_t c)
 			file_putf(fp, "&amp;");
 			break;
 		default:
-      {
-      char *mbseq = (char*) mem_alloc(sizeof(char)*(MB_CUR_MAX+1));
-			wctomb(mbseq, c);
-			file_putf(fp, "%s", mbseq);
-      mem_free(mbseq);
-			//wctomb(mbseq, c);
-			//file_putf(fp, "%s", mbseq);
-			break;
-      }
+			{
+				char *mbseq = (char*) mem_alloc(sizeof(char)*(MB_CUR_MAX+1));
+				wctomb(mbseq, c);
+				mbseq[MB_CUR_MAX] = '\0';
+				file_putf(fp, "%s", mbseq);
+				mem_free(mbseq);
+				break;
+			}
 	}
 }
 
