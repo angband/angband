@@ -91,6 +91,7 @@ size_t randname_make(randname_type name_type, size_t min, size_t max, char *word
 
 		wordlist = sections[name_type];
 
+		(void)WIPE(lprobs, name_probs);
 		build_prob(lprobs, wordlist);
 
 		cached_type = name_type;
