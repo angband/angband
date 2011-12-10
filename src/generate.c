@@ -3564,6 +3564,9 @@ static int calc_obj_feeling(struct cave *c)
 	/* Check the loot adjusted for depth */
 	x = c->obj_rating / c->depth;
 
+	/* Apply a minimum feeling if there's an artifact on the level */
+	if (c->good_item && x < 64001) return 60;
+
 	if (x > 16000000) return 20;
 	if (x > 4000000) return 30;
 	if (x > 1000000) return 40;
