@@ -476,11 +476,13 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 	menu_type *m;
 	region r;
 	int selected;
+	char header[120];
 
 	m = menu_dynamic_new();
 	if (!m || !o_ptr) {
 		return 0;
 	}
+	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_BASE);
 
 	m->selections = lower_case;
 	menu_dynamic_add(m, "Inspect", 1);
@@ -579,15 +581,13 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 	menu_layout(m, &r);
 	region_erase_bordered(&r);
 
-	prt("(Enter to select, ESC) Command:", 0, 0);
+	prt(format("(Enter to select, ESC) Command for %s:", header), 0, 0);
 	selected = menu_dynamic_select(m);
 	menu_dynamic_free(m);
 
 	screen_load();
 	if (selected == 1) {
 		/* copied from textui_obj_examine */
-		char header[120];
-
 		textblock *tb;
 		region area = { 0, 0, 0, 0 };
 
