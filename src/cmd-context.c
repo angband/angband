@@ -597,6 +597,7 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 
 		textui_textblock_show(tb, area, format("%s", header));
 		textblock_free(tb);
+		return 2;
 	} else
 	if (selected == 2) {
 		/* wield the item */
@@ -649,6 +650,7 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 		/* browse a spellbook */
 		/* copied from textui_spell_browse */
 		textui_book_browse(o_ptr);
+		return 2;
 	} else
 	if (selected == 10) {
 		/* study a spell book */
@@ -664,6 +666,7 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 			cmd_insert(CMD_STUDY_BOOK);
 			cmd_set_arg_item(cmd_get_top(), 0, slot);
 		}
+		return 2;
 	} else
 	if (selected == 11) {
 		/* use the item to refill a light source */
@@ -674,6 +677,10 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 		/* throw the item */
 		cmd_insert(CMD_THROW);
 		cmd_set_arg_item(cmd_get_top(), 0, slot);
+	} else
+	if (selected == -1) {
+		/* this menu was canceled, tell whatever called us to display its menu again */
+		return 3;
 	}
 	return 1;
 }
