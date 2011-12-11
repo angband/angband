@@ -97,7 +97,6 @@ int context_menu_object(const object_type *o_ptr, const int slot);
 
 void do_cmd_inven(void)
 {
-	//ui_event e;
 	int diff = weight_remaining();
 
 	/* Hack -- Start in "inventory" mode */
@@ -107,7 +106,7 @@ void do_cmd_inven(void)
 	screen_save();
 
 	/* Prompt for a command */
-	prt(format("(Inventory) Burden %d.%d lb (%d.%d lb %s). Item for command: ",
+	prt(format("(Inventory) Burden %d.%d lb (%d.%d lb %s). Select Item: ",
 		        p_ptr->total_weight / 10, p_ptr->total_weight % 10,
 		        abs(diff) / 10, abs(diff) % 10,
 		        (diff < 0 ? "overweight" : "remaining")),
@@ -144,9 +143,9 @@ void do_cmd_inven(void)
  */
 void do_cmd_equip(void)
 {
-	ui_event e;
+	int diff = weight_remaining();
 
-	/* Hack -- Start in "equipment" mode */
+	/* Hack -- Start in "inventory" mode */
 	p_ptr->command_wrk = (USE_EQUIP);
 
 	/* Save screen */
@@ -155,19 +154,23 @@ void do_cmd_equip(void)
 	/* Hack -- show empty slots */
 	item_tester_full = TRUE;
 
-	/* Display the equipment */
-	show_equip(OLIST_WEIGHT);
+	/* Get an item to use a context command on (Display the inventory) */
+	if (get_item(&diff, "Select Item:", NULL, CMD_NULL, USE_EQUIP|USE_INVEN|USE_FLOOR|IS_HARMLESS)) {
+		object_type *o_ptr;
 
-	/* Hack -- undo the hack above */
+		/* Track the object kind */
+		track_object(diff);
+
+		o_ptr = object_from_item_idx(diff);
+
+		if (o_ptr && o_ptr->kind) {
+			context_menu_object(o_ptr, diff);
+		}
+	}
+
+
+	/* Hack -- hide empty slots */
 	item_tester_full = FALSE;
-
-	/* Prompt for a command */
-	prt("(Equipment) Command: ", 0, 0);
-
-	/* Get a new command */
-	e = inkey_ex();
-	if (!(e.type == EVT_KBRD && e.key.code == ESCAPE))
-		Term_event_push(&e);
 
 	/* Load screen */
 	screen_load();
