@@ -797,6 +797,7 @@ int context_menu_store_item(struct store *store, const int oid, int mx, int my)
 	region r;
 	int selected;
 	object_type *o_ptr;
+	char header[120];
 
 	/* Get the actual object */
 	o_ptr = &store->stock[oid];
@@ -806,6 +807,7 @@ int context_menu_store_item(struct store *store, const int oid, int mx, int my)
 	if (!m || !store) {
 		return 0;
 	}
+	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_BASE);
 
 	m->selections = lower_case;
 	menu_dynamic_add(m, "Examine", 4);
@@ -845,7 +847,7 @@ int context_menu_store_item(struct store *store, const int oid, int mx, int my)
 	menu_layout(m, &r);
 	region_erase_bordered(&r);
 
-	prt("(Enter to select, ESC) Command:", 0, 0);
+	prt(format("(Enter to select, ESC) Command for %s:", header), 0, 0);
 	selected = menu_dynamic_select(m);
 	menu_dynamic_free(m);
 
