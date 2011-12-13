@@ -1366,11 +1366,11 @@ bool target_set_interactive(int mode, int x, int y)
 
 			/* Analyze */
 			if (press.type == EVT_MOUSE) {
-        if (press.mouse.button == 3) {
-          /* give the target selection command */
-          press.mouse.button = 2;
-          press.mouse.mods = KC_MOD_CONTROL;
-        }
+				if (press.mouse.button == 3) {
+					/* give the target selection command */
+					press.mouse.button = 2;
+					press.mouse.mods = KC_MOD_CONTROL;
+				}
 				if (press.mouse.button == 2) {
 					y = KEY_GRID_Y(press);//.mouse.y;
 					x = KEY_GRID_X(press);//.mouse.x;
@@ -1407,6 +1407,9 @@ bool target_set_interactive(int mode, int x, int y)
 					y = KEY_GRID_Y(press);//.mouse.y;
 					x = KEY_GRID_X(press);//.mouse.x;
 					if (cave->m_idx[y][x] || cave->o_idx[y][x]){// || cave->feat[y][x]&) {
+						/* reset the flag, to make sure we stay in this mode if
+						 * something is actually there */
+						flag = FALSE;
 						/* scan the interesting list and see if there in anything here */
 						for (i = 0; i < point_set_size(targets); i++) {
 							if ((y == targets->pts[i].y) && (x == targets->pts[i].x)) {
