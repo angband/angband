@@ -738,7 +738,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 			p_ptr->command_wrk = USE_FLOOR;
 
 		/* If we are using the quiver then start on equipment */
-		else if (use_quiver && allow_eqiup)
+		else if (use_quiver && allow_equip)
 			p_ptr->command_wrk = USE_EQUIP;
 
 		/* Use inventory if allowed */
@@ -746,7 +746,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 			p_ptr->command_wrk = USE_INVEN;
 
 		/* Use equipment if allowed */
-		else if (use_equip && allow_eqiup)
+		else if (use_equip && allow_equip)
 			p_ptr->command_wrk = USE_EQUIP;
 
 		/* Use floor if allowed */
