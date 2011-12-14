@@ -523,6 +523,10 @@ size_t vstrnfmt(char *buf, size_t max, const char *fmt, va_list vp)
 					}
 					arg2[len] = '\0';
 
+					/* Remove the l from aux, since we no longer have wchar_t as input */
+					aux[q-2] = 's';
+					aux[q-1] = '\0';
+
 					/* Format the argument */
 					sprintf(tmp, aux, arg2);
 
