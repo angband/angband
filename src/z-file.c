@@ -252,6 +252,11 @@ size_t path_build(char *buf, size_t len, const char *base, const char *leaf)
 #define O_BINARY 0
 #endif
 
+/* Avoid a compiler warning when cross compiling for windows */
+#ifdef __STRICT_ANSI__
+FILE *fdopen(int handle, const char *mode);
+#endif
+
 /* Private structure to hold file pointers and useful info. */
 struct ang_file
 {
