@@ -149,11 +149,11 @@ int context_menu_player(int mx, int my)
 	menu_dynamic_add(m, "Inventory", 5);
 	/* if object under player add pickup option */
 	if (cave->o_idx[p_ptr->py][p_ptr->px]) {
-		object_type *o_ptr;
   		menu_dynamic_add(m, "Floor", 13);
-		o_ptr = object_from_item_idx(-1);
-		if (!o_ptr->next_o_idx) {
+		if (p_ptr->inven_cnt < INVEN_MAX_PACK) {
   			menu_dynamic_add(m, "Pickup", 14);
+		} else {
+  			menu_dynamic_add(m, "Pickup (Full)", 14);
 		}
 	}
 	menu_dynamic_add(m, "Character", 7);
@@ -561,7 +561,11 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 		menu_dynamic_add(m, "Drop", 6);
 	} else
 	{
-		menu_dynamic_add(m, "Pickup", 7);
+		if (p_ptr->inven_cnt < INVEN_MAX_PACK) {
+			menu_dynamic_add(m, "Pickup", 7);
+		} else {
+			menu_dynamic_add(m, "Pickup (Full)", 7);
+		}
 	}
 	if (obj_has_inscrip(o_ptr)) {
 		menu_dynamic_add(m, "Uninscribe", 5);
