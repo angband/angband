@@ -142,7 +142,7 @@ void do_cmd_toggle_search(cmd_code code, cmd_arg args[])
 /*
  * Determine if a grid contains a chest
  */
-static s16b chest_check(int y, int x)
+s16b chest_check(int y, int x)
 {
 	s16b this_o_idx, next_o_idx = 0;
 

@@ -31,6 +31,7 @@
 
 int context_menu_command();
 int context_menu_object(const object_type *o_ptr, const int slot);
+s16b chest_check(int y, int x);
 
 int context_menu_player_2(int mx, int my)
 {
@@ -324,6 +325,22 @@ int context_menu_cave(struct cave *cave, int y, int x, int adjacent, int mx, int
 	}
 	if (adjacent) {
 		menu_dynamic_add(m, "Attack", 4);
+		if (cave->o_idx[y][x]) {
+			s16b o_idx = chest_check(y,x);
+			if (o_idx) {
+				object_type *o_ptr = object_byid(o_idx);
+				if (object_is_known(o_ptr)) {
+					if (o_ptr->pval[DEFAULT_PVAL] > 0) {
+						menu_dynamic_add(m, "Disarm Chest", 5);
+						menu_dynamic_add(m, "Open Chest", 8);
+					} else {
+						menu_dynamic_add(m, "Open Disarmed Chest", 8);
+					}
+				} else {
+					menu_dynamic_add(m, "Open Chest", 8);
+				}
+			}
+		}
 		if (cave_istrap(cave, y, x)) {
 			menu_dynamic_add(m, "Disarm", 5);
 			menu_dynamic_add(m, "Jump Onto", 6);
