@@ -670,7 +670,6 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 			cmd_insert(CMD_STUDY_BOOK);
 			cmd_set_arg_item(cmd_get_top(), 0, slot);
 		}
-		return 2;
 	} else
 	if (selected == 11) {
 		/* use the item to refill a light source */
