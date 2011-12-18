@@ -28,6 +28,7 @@
 #include "target.h"
 #include "object/tvalsval.h"
 #include "object/object.h"
+#include "monster/mon-lore.h"
 
 int context_menu_command();
 int context_menu_object(const object_type *o_ptr, const int slot);
@@ -321,6 +322,9 @@ int context_menu_cave(struct cave *cave, int y, int x, int adjacent, int mx, int
 
 	m->selections = lower_case;
 	menu_dynamic_add(m, "Look At", 1);
+	if (cave->m_idx[y][x]) {
+		menu_dynamic_add(m, "Recall Info", 18);
+	}
 	menu_dynamic_add(m, "Use Item On", 2);
 	if (player_can_cast()) {
 		menu_dynamic_add(m, "Cast On", 3);
@@ -485,6 +489,28 @@ int context_menu_cave(struct cave *cave, int y, int x, int adjacent, int mx, int
 		/* throw an item towards the spot */
 		cmd_insert(CMD_THROW);
  		cmd_set_arg_target(cmd_get_top(), 1, DIR_TARGET);
+	} else
+	if (selected == 18) {
+		/* recall monster Info */
+		monster_race *r_ptr;
+		monster_lore *l_ptr;
+		monster_type *m_ptr = cave_monster_at(cave, y, x);
+		if (m_ptr) {
+			r_ptr = &r_info[m_ptr->r_idx];
+			l_ptr = &l_list[m_ptr->r_idx];
+
+			/* Save screen */
+			screen_save();
+
+			/* Recall on screen */
+			screen_roff(r_ptr, l_ptr);
+
+			/* wait for a key or mouse press */
+			anykey();
+
+			/* Load screen */
+			screen_load();
+		}
 	}
 
 	return 1;
