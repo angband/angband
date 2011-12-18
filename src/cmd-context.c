@@ -443,7 +443,8 @@ int context_menu_cave(struct cave *cave, int y, int x, int adjacent, int mx, int
 		if ((feat >= FEAT_SHOP_HEAD) && (feat <= FEAT_SHOP_TAIL)) {
 			prt(format("(Enter to select command, ESC to cancel) You see the entrance to the %s:", name), 0, 0);
 		} else {
-			prt(format("(Enter to select command, ESC to cancel) You see %s %s:", (is_a_vowel(name[0])) ? "an" : "a", name), 0, 0);
+			prt(format("(Enter to select command, ESC to cancel) You see %s %s:",
+					(is_a_vowel(name[0])) ? "an" : "a", name), 0, 0);
 		}
 	}
 
