@@ -29,6 +29,7 @@
 #include "object/tvalsval.h"
 #include "object/object.h"
 #include "monster/mon-lore.h"
+#include "monster/mon-util.h"
 
 int context_menu_command();
 int context_menu_object(const object_type *o_ptr, const int slot);
@@ -397,8 +398,55 @@ int context_menu_cave(struct cave *cave, int y, int x, int adjacent, int mx, int
 	screen_save();
 	menu_layout(m, &r);
 	region_erase_bordered(&r);
+	if (p_ptr->timed[TMD_IMAGE]) {
+		prt("(Enter to select command, ESC to cancel) You see something strange:", 0, 0);
+	} else
+	if (cave->m_idx[y][x]) {
+		char m_name[80];
+		monster_type *m_ptr = cave_monster_at(cave, y, x);
 
-	prt("(Enter to select, ESC) Command:", 0, 0);
+		/* Get the monster name ("a kobold") */
+		monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND2);
+
+		prt(format("(Enter to select command, ESC to cancel) You see %s:", m_name), 0, 0);
+	} else
+	if (cave->o_idx[y][x]) {
+		char o_name[80];
+
+		/* Get the single object in the list */
+		object_type *o_ptr = object_byid(cave->o_idx[y][x]);
+
+		/* Obtain an object description */
+		object_desc(o_name, sizeof (o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+
+		prt(format("(Enter to select command, ESC to cancel) You see %s:", o_name), 0, 0);
+	} else
+	{
+		/* Feature (apply mimic) */
+		const char *name;
+		int feat = f_info[cave->feat[y][x]].mimic;
+
+		/* Require knowledge about grid, or ability to see grid */
+		if (!(cave->info[y][x] & (CAVE_MARK)) && !player_can_see_bold(y,x)) {
+			/* Forget feature */
+			feat = FEAT_NONE;
+		}
+
+		/* Terrain feature if needed */
+		name = f_info[feat].name;
+
+		/* Hack -- handle unknown grids */
+		if (feat == FEAT_NONE) name = "unknown_grid";
+		if (feat == FEAT_INVIS) name = f_info[FEAT_FLOOR].name;
+
+		/* Hack -- special introduction for store doors */
+		if ((feat >= FEAT_SHOP_HEAD) && (feat <= FEAT_SHOP_TAIL)) {
+			prt(format("(Enter to select command, ESC to cancel) You see the entrance to the %s:", name), 0, 0);
+		} else {
+			prt(format("(Enter to select command, ESC to cancel) You see %s %s:", (is_a_vowel(name[0])) ? "an" : "a", name), 0, 0);
+		}
+	}
+
 	selected = menu_dynamic_select(m);
 	menu_dynamic_free(m);
 
