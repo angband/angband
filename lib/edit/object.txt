@@ -147,6 +147,14 @@ D: a maximum of 15000 turns of light.
 D:  When thrown, it is considered lit, so it does more than nominal
 D: damage (which occurs even against creatures resistant to fire).
 
+N:6:<unknown item>
+I:0:1
+G:*:r
+
+N:7:<unknown treasure>
+I:0:2
+G:*:o
+
 
 
 ##### Food #####

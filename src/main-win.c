@@ -517,8 +517,6 @@ static HPALETTE hPal;
  */
 static HWND hwndSaver;
 
-static bool screensaver_active = FALSE;
-
 static HANDLE screensaverSemaphore;
 
 static char saverfilename[1024];
@@ -528,6 +526,8 @@ static HMENU main_menu;
 #define MOUSE_SENS 10
 
 #endif /* USE_SAVER */
+
+static bool screensaver_active = FALSE;
 
 
 #ifdef USE_GRAPHICS
@@ -1443,6 +1443,9 @@ static void term_remove_font(const char *name)
 
 	/* Remove it */
 	RemoveFontResource(buf);
+
+	/* Notify other applications of the change  XXX */
+	PostMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
 
 	return;
 }
@@ -4358,43 +4361,41 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 		case WM_RBUTTONDOWN:
 		case WM_LBUTTONDOWN:
 		{
+			if (screensaver_active) {
 #ifdef USE_SAVER
-			if (screensaver_active)
-			{
 				stop_screensaver();
+#else
+				screensaver_active = FALSE;
+#endif /* USE_SAVER */
 				return 0;
+			} else {
+				/* Get the text grid */
+				xPos = GET_X_LPARAM(lParam);
+				yPos = GET_Y_LPARAM(lParam);
+				xPos /= td->tile_wid;
+				yPos /= td->tile_hgt;
+
+				if (uMsg == WM_LBUTTONDOWN)
+					button = 1;
+				else if (uMsg == WM_RBUTTONDOWN)
+					button = 2;
+				else
+					button = 3;
+
+				/* Extract the modifiers */
+				/* XXX using the numbers below rather than KC_MOD_CONTROL, KCMOD_SHIFT,
+				 * and KC_MOD_ALT, to avoid having to shift them all the time. They
+				 * need to be shifted because I don't want to change the function
+				 * parameters (which would break the other platforms, which I can't
+				 * test), so the mods need to be encoded into the button.
+				 */
+				if (GetKeyState(VK_CONTROL) & 0x8000) button |= 16;
+				if (GetKeyState(VK_SHIFT)   & 0x8000) button |= 32;
+				if (GetKeyState(VK_MENU)    & 0x8000) button |= 64;
+
+				Term_mousepress(xPos,yPos,button);
 			}
 			break;
-#else
-
-			/* Get the text grid */
-			xPos = GET_X_LPARAM(lParam);
-			yPos = GET_Y_LPARAM(lParam);
-			xPos /= td->tile_wid;
-			yPos /= td->tile_hgt;
-
-			if (uMsg == WM_LBUTTONDOWN)
-				button = 1;
-			else if (uMsg == WM_RBUTTONDOWN)
-				button = 2;
-			else
-				button = 3;
-
-			/* Extract teh modifiers */
-			/* XXX using the numbers below rather than KC_MOD_CONTROL, KCMOD_SHIFT,
-			 * and KC_MOD_ALT, to avoid having to shift them all the time. They
-			 * need to be shifted because I don't want to change the function
-			 * parameters (which would break the other platforms, which I can't
-			 * test), so the mods need to be encoded into the button.
-			 */
-			if (GetKeyState(VK_CONTROL) & 0x8000) button |= 16;
-			if (GetKeyState(VK_SHIFT)   & 0x8000) button |= 32;
-			if (GetKeyState(VK_MENU)    & 0x8000) button |= 64;
-
-			Term_mousepress(xPos,yPos,button);
-
-			break;
-#endif /* USE_SAVER */
 		}
 
 #ifdef USE_SAVER
