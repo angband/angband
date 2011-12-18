@@ -97,6 +97,7 @@ int context_menu_object(const object_type *o_ptr, const int slot);
 
 void do_cmd_inven(void)
 {
+	int item;
 	int ret = 3;
 	int diff = weight_remaining();
 
@@ -119,16 +120,16 @@ void do_cmd_inven(void)
 				0, 0);
 
 		/* Get an item to use a context command on (Display the inventory) */
-		if (get_item(&diff, NULL, NULL, CMD_NULL, USE_EQUIP|USE_INVEN|USE_FLOOR|IS_HARMLESS)) {
+		if (get_item(&item, NULL, NULL, CMD_NULL, USE_EQUIP|USE_INVEN|USE_FLOOR|IS_HARMLESS)) {
 			object_type *o_ptr;
 
 			/* Track the object kind */
-			track_object(diff);
+			track_object(item);
 
-			o_ptr = object_from_item_idx(diff);
+			o_ptr = object_from_item_idx(item);
 
 			if (o_ptr && o_ptr->kind) {
-				while ((ret = context_menu_object(o_ptr, diff)) == 2);
+				while ((ret = context_menu_object(o_ptr, item)) == 2);
 			}
 		} else {
 			ret = -1;
@@ -148,6 +149,7 @@ void do_cmd_inven(void)
  */
 void do_cmd_equip(void)
 {
+	int item;
 	int ret = 3;
 	int diff = weight_remaining();
 
@@ -163,16 +165,16 @@ void do_cmd_equip(void)
 	/* Loop this menu until an object context menu says differently */
 	while (ret == 3) {
 		/* Get an item to use a context command on (Display the inventory) */
-		if (get_item(&diff, "Select Item:", NULL, CMD_NULL, USE_EQUIP|USE_INVEN|USE_FLOOR|IS_HARMLESS)) {
+		if (get_item(&item, "Select Item:", NULL, CMD_NULL, USE_EQUIP|USE_INVEN|USE_FLOOR|IS_HARMLESS)) {
 			object_type *o_ptr;
 
 			/* Track the object kind */
-			track_object(diff);
+			track_object(item);
 
-			o_ptr = object_from_item_idx(diff);
+			o_ptr = object_from_item_idx(item);
 
 			if (o_ptr && o_ptr->kind) {
-				while ((ret = context_menu_object(o_ptr, diff)) == 2);
+				while ((ret = context_menu_object(o_ptr, item)) == 2);
 			}
 		} else {
 			ret = -1;
