@@ -159,7 +159,9 @@ int context_menu_player(int mx, int my)
 		}
 	}
 	menu_dynamic_add(m, "Character", 7);
-	menu_dynamic_add(m, "Keymaps", 10);
+	/* XXX Don't show the keymap line until the keymap list is implemented, to
+	 * avoid confusion as to what should be there */
+	/*menu_dynamic_add(m, "Keymaps", 10);*/
 	menu_dynamic_add(m, "Other", 9);
 
 	/* work out display region */
