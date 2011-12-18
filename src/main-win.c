@@ -1312,14 +1312,10 @@ static bool init_graphics(void)
 		graphics_mode *mode = NULL;
 
 		if (arg_graphics) {
-			int i = 0;
-			while (graphics_modes[i].grafID != 0)  {
-				if (graphics_modes[i].grafID == arg_graphics) {
-					mode = &(graphics_modes[i]);
-					break;
-				}
-				i++;
-			}
+			mode = get_graphics_mode(arg_graphics);
+		}
+		if (!mode) {
+			mode = get_graphics_mode(1);
 		}
 		if (mode) {
 			if (!mode->pref[0]) {
@@ -1329,7 +1325,7 @@ static bool init_graphics(void)
 			wid = mode->cell_width;
 			hgt = mode->cell_height;
 			if ((wid < 2) || (hgt < 2)) {
-				plog_fmt("invalid tile dimensions in tileset name: '%s'", mode->menuname);
+				plog_fmt("invalid tile dimensions in tileset: '%s'", mode->menuname);
 				return FALSE;
 			}
 
@@ -1354,12 +1350,61 @@ static bool init_graphics(void)
 
 		/* Load the image or quit */
 		if (alphablend) {
-			if (!ReadDIB2_PNG(data[0].w, buf, &infGraph, NULL)) {
-				plog_fmt("Cannot read file '%s'", name);
-				return FALSE;
+			/* see if the given file is already pre mulitiplied */
+			if (strstr(name, "_pre")) {
+				/* if so, just load it */
+				if (!ReadDIB2_PNG(data[0].w, buf, &infGraph, NULL, FALSE)) {
+					plog_fmt("Cannot read file '%s'", name);
+					return FALSE;
+				}
+			} else {
+				/* if not, see if there is already a premultiplied tileset */
+				/* the there is load it */
+				char *ext;
+				char modname[1024];
+				bool have_space = 0;
+				my_strcpy(modname, buf,1024);
+				ext = strstr(modname,".png");
+				/* make sure we have enough space to make the desired name */
+				if (ext && ((ext-buf) < 1019)) {
+					have_space = TRUE;
+					strcpy(ext, "_pre.png");
+					if (!file_exists(modname)) {
+						/* if the file does not exist, mark that we need to 
+						 * create it, so clear the extension pointer */
+						ext = NULL;
+					} else
+					if (file_newer(buf, modname)) {
+						/* if the base file is newer than the premultiplied file,
+						 * mark that we need to recreate the premultiplied file. */
+						ext = NULL;
+					}
+				}
+				if (ext && have_space) {
+					/* at this point we know the file exists, so load it */
+					if (!ReadDIB2_PNG(data[0].w, modname, &infGraph, NULL, FALSE)) {
+						plog_fmt("Cannot read premultiplied version of file '%s'", name);
+						return FALSE;
+					}
+				} else
+				/* if not, load the base file and premultiply it */
+				{
+					if (!ReadDIB2_PNG(data[0].w, buf, &infGraph, NULL, TRUE)) {
+						plog_fmt("Cannot read file '%s'", name);
+						return FALSE;
+					}
+					/* save the premultiplied file */
+					/* saving alpha without a mask is not working yet
+					if (SavePNG(data[0].w, modname,
+							infGraph.hBitmap,infGraph.hPalette,
+							1, NULL,
+							infGraph.ImageWidth, infGraph.ImageHeight, FALSE) < 0) {
+						plog_fmt("Cannot write premultiplied version of file '%s'", name);
+					}*/
+				}
 			}
 		} else {
-			if (!ReadDIB2_PNG(data[0].w, buf, &infGraph, &infMask)) {
+ 			if (!ReadDIB2_PNG(data[0].w, buf, &infGraph, &infMask, FALSE)) {
 				plog_fmt("Cannot read file '%s'", name);
 				return FALSE;
 			}
@@ -1443,6 +1488,9 @@ static void term_remove_font(const char *name)
 
 	/* Remove it */
 	RemoveFontResource(buf);
+
+	/* Notify other applications of the change  XXX */
+	PostMessage(HWND_BROADCAST, WM_FONTCHANGE, 0, 0);
 
 	return;
 }
@@ -2759,6 +2807,7 @@ static void init_windows(void)
 
 	MENUITEMINFO mii;
 	HMENU hm;
+	graphics_mode *mode;
 
 	/* Main window */
 	td = &data[0];
@@ -2922,17 +2971,26 @@ static void init_windows(void)
 
 	/* Populate the graphic options sub menu with the graphics modes */
 	hm = GetMenu(data[0].w);
-	i=0;
 	mii.cbSize = sizeof(MENUITEMINFO);
 	mii.fMask = MIIM_ID | MIIM_TYPE;
 	mii.fType = MFT_STRING;
-	while (graphics_modes[i].grafID != 0) {
-		mii.wID = graphics_modes[i].grafID + IDM_OPTIONS_GRAPHICS_NONE;
-		mii.dwTypeData = graphics_modes[i].menuname;
-		mii.cch = strlen(graphics_modes[i].menuname);
-		InsertMenuItem(hm,IDM_OPTIONS_GRAPHICS_NONE, FALSE, &mii);
-		++i;
+	mode = graphics_modes;
+	while (mode) {
+		if (mode->grafID != GRAPHICS_NONE) {
+			mii.wID = mode->grafID + IDM_OPTIONS_GRAPHICS_NONE;
+			mii.dwTypeData = mode->menuname;
+			mii.cch = strlen(mode->menuname);
+			InsertMenuItem(hm,IDM_OPTIONS_GRAPHICS_NICE, FALSE, &mii);
+		}
+		mode = mode->pNext;
 	}
+	//mii.cbSize = sizeof(MENUITEMINFO);
+	mii.fMask = MIIM_TYPE;
+	mii.fType = MFT_SEPARATOR;
+	mii.wID = 399;
+	mii.dwTypeData = 0;
+	mii.cch = 0;
+	InsertMenuItem(hm,IDM_OPTIONS_GRAPHICS_NICE, FALSE, &mii);
 
 	/* setup the alpha blending function */
 	blendfn.BlendOp = AC_SRC_OVER;
@@ -2968,6 +3026,7 @@ static void stop_screensaver(void)
 static void setup_menus(void)
 {
 	size_t i;
+	graphics_mode *mode;
 
 	HMENU hm = GetMenu(data[0].w);
 
@@ -3105,11 +3164,12 @@ static void setup_menus(void)
 	}
 
 	/* Menu "Options", disable all */
-	i = 0;
-	do {
-		EnableMenuItem(hm, graphics_modes[i].grafID + IDM_OPTIONS_GRAPHICS_NONE,
+	mode = graphics_modes;
+	while (mode) {
+		EnableMenuItem(hm, mode->grafID + IDM_OPTIONS_GRAPHICS_NONE,
 					   MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
-	} while (graphics_modes[i++].grafID != 0); 
+		mode = mode->pNext;
+	} 
 
 	EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_NICE,
 				   MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
@@ -3139,11 +3199,12 @@ static void setup_menus(void)
 		               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 
 	/* Menu "Options", update all */
-	i = 0;
-	do {
-		CheckMenuItem(hm, graphics_modes[i].grafID + IDM_OPTIONS_GRAPHICS_NONE,
-					  (arg_graphics == graphics_modes[i].grafID ? MF_CHECKED : MF_UNCHECKED));
-	} while (graphics_modes[i++].grafID != 0); 
+	mode = graphics_modes;
+	while (mode) {
+		CheckMenuItem(hm, mode->grafID + IDM_OPTIONS_GRAPHICS_NONE,
+	                (arg_graphics == mode->grafID ? MF_CHECKED : MF_UNCHECKED));
+		mode = mode->pNext;
+	} 
 
 	CheckMenuItem(hm, IDM_OPTIONS_GRAPHICS_NICE,
 				  (arg_graphics_nice ? MF_CHECKED : MF_UNCHECKED));
@@ -3235,10 +3296,13 @@ static void setup_menus(void)
 #ifdef USE_GRAPHICS
 	if (inkey_flag && initialized) {
 		/* Menu "Options", Item "Graphics" */
-		i = 0;
-		do {
-			EnableMenuItem(hm, graphics_modes[i].grafID + IDM_OPTIONS_GRAPHICS_NONE,MF_ENABLED );
-		} while (graphics_modes[i++].grafID != 0); 
+		mode = graphics_modes;
+		while (mode) {
+			if ((mode->grafID == 0) || (mode->file && mode->file[0])) {
+				EnableMenuItem(hm, mode->grafID + IDM_OPTIONS_GRAPHICS_NONE, MF_ENABLED);
+			}
+			mode = mode->pNext;
+		} 
 
 		EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_NICE, MF_ENABLED);
 

@@ -1,0 +1,30 @@
+The Shockbolt tileset contains 64x64/128x64 pixel tiles made for angband V, including creatures, monsters, npc, items of all kinds, terrain, spell effects, traps etc.
+
+The Shockbolt tileset can only be used within Angband V, and remains the property of the creator Raymond Gaustadnes. Modifications or the like of any tiles/images/artwork that go into the Shockbolt tileset is forbidden without creators permission.
+
+The Shockbolt tileset is specifically made to be used with Angband V. Permission to use any of it's tiles/images/artwork must be acquired from creator before use. The Shockbolt tileset shares some tiles with ToME, these tiles are for use within both Angband V and ToME. Despite of this, the remaining tiles/images/artwork made for ToME can only be used within ToME. Any tiles/images/artwork made for variants of Angband are assumed to be added the Shockbolt tileset so that in effect, there is only one version of the tiles, the Shockbolt tileset.
+
+Regardless of using the Shockbolt tileset for a free game/project or a commercial game/project, written permission must always be acquired from the creator Raymond Gaustadnes before using the tiles/images/artwork. Once permission is acquired for use within a free game/project, the use of the tiles/images/artwork is permitted for as long as the game/project remains non-profit.
+
+To obtain permission to use the Shockbolt tileset within a commercial game/project, a non-exclusive license can/must be acquired. The cost of acquiring a non-exclusive one-time license is set to 500€ and is subject to change should the creator Raymond Gaustadnes want to do so.
+
+A permission is granted for a single game/project and should you wish to use the tileset for another game/project, permission must also be acquired for that. This goes for both non-profit games/projects and commercial games/projects.
+
+This information and the conditions for the use of the Shockbolt tileset is subject to change at any time by the creator Raymond Gaustadnes.
+
+Regards,
+
+Raymond Gaustadnes
+raymond@ironthrone.no
+www.ironthronegames.com
+
+------------------------------------
+
+Currently some of the tiles in the 64x64.png tilesheet were resized from tiles made by David Gervais.
+
+ * David Gervais' (32x32) graphics may be redistributed, modified, and used
+   only under the terms of the Creative Commons Attribution 3.0 licence:
+   http://creativecommons.org/licenses/by/3.0/
+
+
+
