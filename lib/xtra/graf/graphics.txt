@@ -48,7 +48,7 @@ I:16:16:8x16.png
 P:nomad
 X:0:0:0
 
-#N:5:Shockbolt's tiles
-#I:64:64:64x64.png
-#P:shock
-#X:1:29:31
+N:5:Shockbolt's tiles
+I:64:64:64x64.png
+P:shock
+X:1:29:31
