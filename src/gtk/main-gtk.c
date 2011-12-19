@@ -2502,7 +2502,8 @@ static void handle_sidebar(game_event_type type, game_event_data *data, void *us
 	
 	xtra_win_data *xd = &xdata[5];
 	long xp = (long)p_ptr->exp;
-	monster_type *m_ptr = cave_monster(cave, p_ptr->health_who->midx);
+	monster_type *m_ptr = p_ptr->health_who != NULL ?
+            cave_monster(cave, p_ptr->health_who->midx) : NULL;
 	int i = 0, sidebar_length = 12;
 
 	/* Calculate XP for next level */
