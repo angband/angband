@@ -1311,7 +1311,7 @@ void display_map(int *cy, int *cx)
 			if (mp[row][col] < tp)
 			{
 				/* Hack - make every grid on the map lit */
-				g.lighting = FEAT_LIGHTING_BRIGHT;
+				g.lighting = FEAT_LIGHTING_LIT; /*FEAT_LIGHTING_BRIGHT;*/
 				grid_data_as_text(&g, &ta, &tc, &ta, &tc);
 
 				/* Add the character */
@@ -1361,6 +1361,7 @@ void display_map(int *cy, int *cx)
 void do_cmd_view_map(void)
 {
 	int cy, cx;
+	byte w, h;
 	const char *prompt = "Hit any key to continue";
 	
 	/* Save screen */
@@ -1375,6 +1376,12 @@ void do_cmd_view_map(void)
 	/* Clear the screen */
 	Term_clear();
 
+	/* store the tile multipliers */
+	w = tile_width;
+	h = tile_height;
+	tile_width = 1;
+	tile_height = 1;
+
 	/* Display the map */
 	display_map(&cy, &cx);
 
@@ -1386,6 +1393,10 @@ void do_cmd_view_map(void)
 
 	/* Get any key */
 	(void)anykey();
+
+	/* Restore the tile multipliers */
+	tile_width = w;
+	tile_height = h;
 
 	/* Load screen */
 	screen_load();

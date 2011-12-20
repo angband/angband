@@ -1492,7 +1492,8 @@ static void MoreDraw(sdl_Window *win)
 {
 	SDL_Rect rc;
 	sdl_Button *button;
-	int y = 20, i;
+	int y = 20;
+	graphics_mode *mode;
 	
 	/* Wow - a different colour! */
 	SDL_Color colour = {160, 60, 60, 0};
@@ -1551,13 +1552,17 @@ static void MoreDraw(sdl_Window *win)
 
 	sdl_WindowText(win, colour, 20, y, "Available Graphics:");
 	
-	i=0;
-	do {
-		if (!graphics_modes[i].menuname[0]) continue;
-		button = sdl_ButtonBankGet(&win->buttons, GfxButtons[graphics_modes[i].grafID]);
+	mode = graphics_modes;
+	while (mode) {
+		if (!mode->menuname[0]) {
+			mode = mode->pNext;
+			continue;
+		}
+		button = sdl_ButtonBankGet(&win->buttons, GfxButtons[mode->grafID]);
 		sdl_ButtonMove(button, 200, y);
 		y += 20;
-	} while (graphics_modes[i++].grafID != 0); 
+		mode = mode->pNext;
+	} 
 #endif	
 
 	button = sdl_ButtonBankGet(&win->buttons, MoreFullscreen);
@@ -1578,8 +1583,8 @@ static void MoreActivate(sdl_Button *sender)
 {
 	int width = 300;
 	int height = 300;
-	int i;
 	sdl_Button *button;
+	graphics_mode *mode;
 	
 	SDL_Color ucolour = {160, 60, 60, 0};
 	SDL_Color scolour = {210, 110, 110, 0};
@@ -1636,20 +1641,25 @@ static void MoreActivate(sdl_Button *sender)
 	
 	SelectedGfx = use_graphics;
 	
-	i = 0;
-	do {
-		if (!graphics_modes[i].menuname[0]) continue;
-		GfxButtons[graphics_modes[i].grafID] = sdl_ButtonBankNew(&PopUp.buttons);
-		button = sdl_ButtonBankGet(&PopUp.buttons, GfxButtons[graphics_modes[i].grafID]);
+	mode = graphics_modes;
+	while (mode) {
+		if (!mode->menuname[0]) {
+			mode = mode->pNext;
+			continue;
+		}
+		GfxButtons[mode->grafID] = sdl_ButtonBankNew(&PopUp.buttons);
+		button = sdl_ButtonBankGet(&PopUp.buttons, GfxButtons[mode->grafID]);
 		
 		button->unsel_colour = ucolour;
 		button->sel_colour = scolour;
 		sdl_ButtonSize(button, 50 , PopUp.font.height + 2);
 		sdl_ButtonVisible(button, TRUE);
-		sdl_ButtonCaption(button, graphics_modes[i].menuname);
-		button->tag = graphics_modes[i].grafID;
+		sdl_ButtonCaption(button, mode->menuname);
+		button->tag = mode->grafID;
 		button->activate = SelectGfx;
-	} while (graphics_modes[i++].grafID != 0); 
+
+		mode = mode->pNext;
+	} 
 #endif
 	MoreFullscreen = sdl_ButtonBankNew(&PopUp.buttons);
 	button = sdl_ButtonBankGet(&PopUp.buttons, MoreFullscreen);
@@ -3267,111 +3277,6 @@ static void init_morewindows(void)
 
 #ifdef USE_GRAPHICS
 
-/* if the tileset uses alpha blending, the tile set would have
- * premultiplied alpha. SDL does not use this, so we need to undo
- * the premultiply */
-static errr gfx_remove_premultiply(void)
-{
-	int i,j, bpp;
-	Uint32 value;
-	Uint8 r,g,b,a;
-	float rf,gf,bf,af;
-	SDL_PixelFormat *fmt;
-
-	fmt = GfxSurface->format;
-	bpp = fmt->BytesPerPixel;
-	if (SDL_LockSurface(GfxSurface)) {
-		/* there was some error */
-		return 1;
-	}
-	/* go through the pixels and unpremultiply them */
-	if (bpp == 4) {
-		Uint32 *row;
-		Uint32 *pixel;
-
-		for (j=0; j < GfxSurface->h; ++j) {
-			row = ((Uint32*)GfxSurface->pixels) +(j*(GfxSurface->pitch>>2));
-			for (i=0; i < GfxSurface->w; ++i) {
-				pixel = row + i;
-				if (*pixel) {
-					SDL_GetRGBA(*pixel,fmt,&r,&g,&b,&a);
-					if (a != 255) {
-						rf = ((float)r)/255.f;
-						gf = ((float)g)/255.f;
-						bf = ((float)b)/255.f;
-						af = ((float)a)/255.f;
-
-						r = (Uint8) ((rf/af)*255.f);
-						g = (Uint8) ((gf/af)*255.f);
-						b = (Uint8) ((bf/af)*255.f);
-
-						*pixel = SDL_MapRGBA(fmt,r,g,b,a);
-					}
-				}
-			}
-		}
-	} else
-	if (bpp == 2) {
-		Uint16 *row;
-		Uint16 *pixel;
-		for (j=0; j < GfxSurface->h; ++j) {
-			row = ((Uint16*)GfxSurface->pixels) +(j*(GfxSurface->pitch>>1));
-			for (i=0; i < GfxSurface->w; ++i) {
-				pixel = row + i;
-				if (*pixel) {
-					value = *pixel;
-					SDL_GetRGBA(value,fmt,&r,&g,&b,&a);
-					if (a != 255) {
-						rf = ((float)r)/255.f;
-						gf = ((float)g)/255.f;
-						bf = ((float)b)/255.f;
-						af = ((float)a)/255.f;
-
-						r = (Uint8) ((rf/af)*255.f);
-						g = (Uint8) ((gf/af)*255.f);
-						b = (Uint8) ((bf/af)*255.f);
-
-						value = SDL_MapRGBA(fmt,r,g,b,a);
-						*pixel = value;
-					}
-				}
-			}
-		}
-	} else
-	if (bpp == 1) {
-		Uint8 *row;
-		Uint8 *pixel;
-		for (j=0; j < GfxSurface->h; ++j) {
-			row = ((Uint8*)GfxSurface->pixels) +(j*(GfxSurface->pitch));
-			for (i=0; i < GfxSurface->w; ++i) {
-				pixel = row + i;
-				if (*pixel) {
-					value = *pixel;
-					SDL_GetRGBA(value,fmt,&r,&g,&b,&a);
-					if (a != 255) {
-						rf = ((float)r)/255.f;
-						gf = ((float)g)/255.f;
-						bf = ((float)b)/255.f;
-						af = ((float)a)/255.f;
-
-						r = (Uint8) ((rf/af)*255.f);
-						g = (Uint8) ((gf/af)*255.f);
-						b = (Uint8) ((bf/af)*255.f);
-
-						value = SDL_MapRGBA(fmt,r,g,b,a);
-						*pixel = value;
-					}
-				}
-			}
-		}
-	} else
-	{
-		return (2);
-	}
-	SDL_UnlockSurface(GfxSurface);
-	return (0);
-}
-
 /*
  * The new streamlined graphics loader.
  * Only uses colour keys.
@@ -3408,16 +3313,6 @@ static errr load_gfx(void)
 
 	/* Change the surface type to the current video surface format */
 	GfxSurface = SDL_DisplayFormatAlpha(temp);
-
-	/* if the tileset uses alpha blending, the tile set would have
-         * premultiplied alpha. SDL does not use this, so we need to undo
-         * the premultiply */
-	if (GfxSurface && current_graphics_mode->alphablend) {
-		errr result;
-		result = gfx_remove_premultiply();
-		if (result)
-			return result;
-	}
 
 	/* Make sure we know what pref file to use */
 	ANGBAND_GRAF = current_graphics_mode->pref;

@@ -30,6 +30,7 @@
 #include "spells.h"
 #include "squelch.h"
 #include "z-queue.h"
+#include "grafmode.h"
 
 struct object *o_list;
 
@@ -279,13 +280,20 @@ void reset_visuals(bool load_prefs)
 
 
 	/* Graphic symbols */
-	if (use_graphics)
-		process_pref_file("graf.prf", FALSE, FALSE);
+	if (use_graphics) {
+		/* if we have a graphics mode, see if the mode has a pref file name */
+		graphics_mode *mode = get_graphics_mode(use_graphics);
+		if (mode && strstr(mode->pref,".prf")) {
+			(void)process_pref_file(mode->pref, FALSE, FALSE);
+		} else {
+			(void)process_pref_file("graf.prf", FALSE, FALSE);
+		}
+		/* process_pref_file("graf.prf", FALSE, FALSE); */
 
 	/* Normal symbols */
-	else
+	} else {
 		process_pref_file("font.prf", FALSE, FALSE);
-
+	}
 #ifdef ALLOW_BORG_GRAPHICS
 	/* Initialize the translation table for the borg */
 	init_translate_visuals();

@@ -32,13 +32,13 @@ static enum parser_error parse_graf_n(struct parser *p) {
 	}
 	mode->pNext = list;
 	mode->grafID = parser_getuint(p, "index");
-	strncpy(mode->pref, parser_getstr(p, "prefname"), 8);
+	strncpy(mode->menuname, parser_getstr(p, "menuname"), 32);
 
 	mode->alphablend = 0;
 	mode->overdrawRow = 0;
 	mode->overdrawMax = 0;
 	strncpy(mode->file, "", 32);
-	strncpy(mode->menuname, "Unknown", 32);
+	strncpy(mode->pref, "none", 32);
 	
 	parser_setpriv(p, mode);
 	return PARSE_ERROR_NONE;
@@ -55,12 +55,12 @@ static enum parser_error parse_graf_i(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_graf_m(struct parser *p) {
+static enum parser_error parse_graf_p(struct parser *p) {
 	graphics_mode *mode = parser_priv(p);
 	if (!mode) {
 		return PARSE_ERROR_INVALID_VALUE;
 	}
-	strncpy(mode->menuname, parser_getstr(p, "menuname"), 32);
+	strncpy(mode->pref, parser_getstr(p, "prefname"), 32);
 	return PARSE_ERROR_NONE;
 }
 
@@ -80,9 +80,9 @@ static struct parser *init_parse_grafmode(void) {
 	parser_setpriv(p, NULL);
 
 	parser_reg(p, "V sym version", ignored);
-	parser_reg(p, "N uint index str prefname", parse_graf_n);
+	parser_reg(p, "N uint index str menuname", parse_graf_n);
 	parser_reg(p, "I uint wid uint hgt str filename", parse_graf_i);
-	parser_reg(p, "M str menuname", parse_graf_m);
+	parser_reg(p, "P str prefname", parse_graf_p);
 	parser_reg(p, "X uint alpha uint row uint max", parse_graf_x);
 
 	return p;
