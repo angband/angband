@@ -738,19 +738,19 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 			p_ptr->command_wrk = USE_FLOOR;
 
 		/* If we are using the quiver then start on equipment */
-		else if (use_quiver)
+		else if (use_quiver && allow_equip)
 			p_ptr->command_wrk = USE_EQUIP;
 
 		/* Use inventory if allowed */
-		else if (use_inven)
+		else if (use_inven && allow_inven)
 			p_ptr->command_wrk = USE_INVEN;
 
 		/* Use equipment if allowed */
-		else if (use_equip)
+		else if (use_equip && allow_equip)
 			p_ptr->command_wrk = USE_EQUIP;
 
 		/* Use floor if allowed */
-		else if (use_floor)
+		else if (use_floor && allow_floor)
 			p_ptr->command_wrk = USE_FLOOR;
 
 		/* Hack -- Use (empty) inventory */
@@ -1023,7 +1023,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 							p_ptr->command_wrk = USE_EQUIP;
 						}
 					} else
-					if ((press.mouse.y <= floor_num+1) && (press.mouse.y >= 1)) {
+					if ((press.mouse.y <= floor_num) && (press.mouse.y >= 1)) {
 						/* Special index */
 						k = 0 - floor_list[press.mouse.y-1];
 						/* get the item index, allowing for skipped indices */
@@ -1037,7 +1037,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 							}
 						}
 						/* check the bounds the item number */
-						if ((k < 0) && (k > -512)) {
+						if (k < 0) {
 							/* Allow player to "refuse" certain actions */
 							if (!get_item_allow(k, cmdkey, cmd, is_harmless))
 							{

@@ -542,8 +542,8 @@ void grid_data_as_text(grid_data *g, byte *ap, wchar_t *cp, byte *tap, wchar_t *
 
 	/* If there's an object, deal with that. */
 	if (g->unseen_object) {
-		a = TERM_RED;
-		c = L'*';
+		a = object_kind_attr(&k_info[6]);
+		c = object_kind_char(&k_info[6]);
 	} else if (g->first_kind) {
 		if (g->hallucinate) {
 			/* Just pick a random object to display. */

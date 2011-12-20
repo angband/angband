@@ -31,6 +31,7 @@
 
 int context_menu_command();
 int context_menu_object(const object_type *o_ptr, const int slot);
+s16b chest_check(int y, int x);
 
 int context_menu_player_2(int mx, int my)
 {
@@ -149,11 +150,12 @@ int context_menu_player(int mx, int my)
 	menu_dynamic_add(m, "Inventory", 5);
 	/* if object under player add pickup option */
 	if (cave->o_idx[p_ptr->py][p_ptr->px]) {
-		object_type *o_ptr;
+		object_type *o_ptr = object_byid(cave->o_idx[p_ptr->py][p_ptr->px]);
   		menu_dynamic_add(m, "Floor", 13);
-		o_ptr = object_from_item_idx(-1);
-		if (!o_ptr->next_o_idx) {
+		if (inven_carry_okay(o_ptr)) {
   			menu_dynamic_add(m, "Pickup", 14);
+		} else {
+  			menu_dynamic_add(m, "Pickup (Full)", 14);
 		}
 	}
 	menu_dynamic_add(m, "Character", 7);
@@ -323,6 +325,22 @@ int context_menu_cave(struct cave *cave, int y, int x, int adjacent, int mx, int
 	}
 	if (adjacent) {
 		menu_dynamic_add(m, "Attack", 4);
+		if (cave->o_idx[y][x]) {
+			s16b o_idx = chest_check(y,x);
+			if (o_idx) {
+				object_type *o_ptr = object_byid(o_idx);
+				if (object_is_known(o_ptr)) {
+					if (o_ptr->pval[DEFAULT_PVAL] > 0) {
+						menu_dynamic_add(m, "Disarm Chest", 5);
+						menu_dynamic_add(m, "Open Chest", 8);
+					} else {
+						menu_dynamic_add(m, "Open Disarmed Chest", 8);
+					}
+				} else {
+					menu_dynamic_add(m, "Open Chest", 8);
+				}
+			}
+		}
 		if (cave_istrap(cave, y, x)) {
 			menu_dynamic_add(m, "Disarm", 5);
 			menu_dynamic_add(m, "Jump Onto", 6);
@@ -476,11 +494,13 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 	menu_type *m;
 	region r;
 	int selected;
+	char header[120];
 
 	m = menu_dynamic_new();
 	if (!m || !o_ptr) {
 		return 0;
 	}
+	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_BASE);
 
 	m->selections = lower_case;
 	menu_dynamic_add(m, "Inspect", 1);
@@ -559,7 +579,11 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 		menu_dynamic_add(m, "Drop", 6);
 	} else
 	{
-		menu_dynamic_add(m, "Pickup", 7);
+		if (inven_carry_okay(o_ptr)) {
+			menu_dynamic_add(m, "Pickup", 7);
+		} else {
+			menu_dynamic_add(m, "Pickup (Full)", 7);
+		}
 	}
 	if (obj_has_inscrip(o_ptr)) {
 		menu_dynamic_add(m, "Uninscribe", 5);
@@ -579,15 +603,13 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 	menu_layout(m, &r);
 	region_erase_bordered(&r);
 
-	prt("(Enter to select, ESC) Command:", 0, 0);
+	prt(format("(Enter to select, ESC) Command for %s:", header), 0, 0);
 	selected = menu_dynamic_select(m);
 	menu_dynamic_free(m);
 
 	screen_load();
 	if (selected == 1) {
 		/* copied from textui_obj_examine */
-		char header[120];
-
 		textblock *tb;
 		region area = { 0, 0, 0, 0 };
 
@@ -597,6 +619,7 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 
 		textui_textblock_show(tb, area, format("%s", header));
 		textblock_free(tb);
+		return 2;
 	} else
 	if (selected == 2) {
 		/* wield the item */
@@ -649,6 +672,7 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 		/* browse a spellbook */
 		/* copied from textui_spell_browse */
 		textui_book_browse(o_ptr);
+		return 2;
 	} else
 	if (selected == 10) {
 		/* study a spell book */
@@ -674,6 +698,10 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 		/* throw the item */
 		cmd_insert(CMD_THROW);
 		cmd_set_arg_item(cmd_get_top(), 0, slot);
+	} else
+	if (selected == -1) {
+		/* this menu was canceled, tell whatever called us to display its menu again */
+		return 3;
 	}
 	return 1;
 }
@@ -790,6 +818,7 @@ int context_menu_store_item(struct store *store, const int oid, int mx, int my)
 	region r;
 	int selected;
 	object_type *o_ptr;
+	char header[120];
 
 	/* Get the actual object */
 	o_ptr = &store->stock[oid];
@@ -799,6 +828,7 @@ int context_menu_store_item(struct store *store, const int oid, int mx, int my)
 	if (!m || !store) {
 		return 0;
 	}
+	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_BASE);
 
 	m->selections = lower_case;
 	menu_dynamic_add(m, "Examine", 4);
@@ -838,7 +868,7 @@ int context_menu_store_item(struct store *store, const int oid, int mx, int my)
 	menu_layout(m, &r);
 	region_erase_bordered(&r);
 
-	prt("(Enter to select, ESC) Command:", 0, 0);
+	prt(format("(Enter to select, ESC) Command for %s:", header), 0, 0);
 	selected = menu_dynamic_select(m);
 	menu_dynamic_free(m);
 
