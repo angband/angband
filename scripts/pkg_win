@@ -18,7 +18,7 @@ else
 	OUT=$2
 fi
 
-            
+
 function cp_unix2dos {
   # Just in case they're already DOS_format, we strip them to UNIX first. :)
   awk '{ sub("\r$", ""); sub("$", "\r"); print }' $1 > $2
@@ -68,10 +68,7 @@ cp ../lib/pref/*.prf lib/pref
 
 cp ../lib/xtra/font/*.fon lib/xtra/font
 
-cp ../lib/xtra/graf/8x8.png lib/xtra/graf
-cp ../lib/xtra/graf/8x16.png lib/xtra/graf
-cp ../lib/xtra/graf/16x16.png lib/xtra/graf
-cp ../lib/xtra/graf/32x32.png lib/xtra/graf
+cp ../lib/xtra/graf/*.png lib/xtra/graf
 cp ../lib/xtra/graf/graphics.txt lib/xtra/graf
 
 cp ../lib/xtra/sound/sound.cfg lib/xtra/sound
