@@ -324,7 +324,7 @@ int context_menu_player(int mx, int my)
 	case 15:
 		{
 			/* center the map on the player */
-			Term_keypress(KTRL('L'),0);
+			do_cmd_center_map();
 		} break;
 
 	}
