@@ -32,7 +32,7 @@
 #include "monster/mon-lore.h"
 #include "monster/mon-util.h"
 
-int context_menu_command();
+int context_menu_command(void);
 int context_menu_object(const object_type *o_ptr, const int slot);
 s16b chest_check(int y, int x);
 void textui_cmd_destroy_menu(int item);

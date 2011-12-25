@@ -525,14 +525,26 @@ int show_command_list(struct cmd_info cmd_list[], int size, int mx, int my)
 	region r;
 	int selected;
 	int i;
+	char cmd_name[80];
+	char key[3];
 
 	m = menu_dynamic_new();
 	if (!m) {
 		return 0;
 	}
 	m->selections = lower_case;
+	key[2] = '\0';
+
 	for (i=0; i < size; ++i) {
-		menu_dynamic_add(m, cmd_list[i].desc, i+1);
+		if (KTRL(cmd_list[i].key) == cmd_list[i].key) {
+			key[0] = '^';
+			key[1] = UN_KTRL(cmd_list[i].key);
+		} else {
+			key[0] = cmd_list[i].key;
+			key[1] = '\0';
+		}
+		strnfmt(cmd_name, 80, "%s (%s)",  cmd_list[i].desc, key);
+		menu_dynamic_add(m, cmd_name, i+1);
 	}
 
 	/* work out display region */
