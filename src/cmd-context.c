@@ -654,6 +654,9 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 	}
 	if (slot >= 0) {
 		menu_dynamic_add(m, "Drop", 6);
+		if (o_ptr->number > 1) {
+			menu_dynamic_add(m, "Drop All", 13);
+		}
 	} else
 	{
 		if (inven_carry_okay(o_ptr)) {
@@ -775,6 +778,14 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 		/* throw the item */
 		cmd_insert(CMD_THROW);
 		cmd_set_arg_item(cmd_get_top(), 0, slot);
+	} else
+	if (selected == 13) {
+		/* drop all of the item stack */
+		if (get_check(format("Drop %s? ", header))) {
+			cmd_insert(CMD_DROP);
+			cmd_set_arg_item(cmd_get_top(), 0, slot);
+			cmd_set_arg_number(cmd_get_top(), 1, o_ptr->number);
+		}
 	} else
 	if (selected == -1) {
 		/* this menu was canceled, tell whatever called us to display its menu again */
