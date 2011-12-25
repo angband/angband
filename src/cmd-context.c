@@ -50,6 +50,8 @@ int context_menu_player_2(int mx, int my)
 	menu_dynamic_add(m, "Knowledge", 1);
 	menu_dynamic_add(m, "Show Map", 2);
 	menu_dynamic_add(m, "Show Messages", 3);
+	menu_dynamic_add(m, "Show Monster List", 9);
+	menu_dynamic_add(m, "Show Object List", 10);
 	menu_dynamic_add(m, "Toggle Searching", 4);
 	menu_dynamic_add(m, "Toggle Squelched", 5);
 	menu_dynamic_add(m, "Squelch an item", 6);
@@ -110,13 +112,21 @@ int context_menu_player_2(int mx, int my)
 		/* destroy/squelch an item */
 		Term_keypress('k',0);
 	} else
+	if (selected == 7) {
+		/* show the commands */
+		context_menu_command();
+	} else
 	if (selected == 8) {
 		/* show options screen */
 		Term_keypress('=',0);
 	} else
-	if (selected == 7) {
-		/* show the commands */
-		context_menu_command();
+	if (selected == 9) {
+		/* show the monster list */
+		Term_keypress('[',0);
+	} else
+	if (selected == 10) {
+		/* show the object list */
+		Term_keypress(']',0);
 	}
 
 	return 1;
