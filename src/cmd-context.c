@@ -26,6 +26,7 @@
 #include "ui-menu.h"
 #include "wizard.h"
 #include "target.h"
+#include "squelch.h"
 #include "object/tvalsval.h"
 #include "object/object.h"
 #include "monster/mon-lore.h"
@@ -34,6 +35,7 @@
 int context_menu_command();
 int context_menu_object(const object_type *o_ptr, const int slot);
 s16b chest_check(int y, int x);
+void textui_cmd_destroy_menu(int item);
 
 int context_menu_player_2(int mx, int my)
 {
@@ -163,11 +165,13 @@ int context_menu_player(int mx, int my)
 	/* if object under player add pickup option */
 	if (cave->o_idx[p_ptr->py][p_ptr->px]) {
 		object_type *o_ptr = object_byid(cave->o_idx[p_ptr->py][p_ptr->px]);
-  		menu_dynamic_add(m, "Floor", 13);
-		if (inven_carry_okay(o_ptr)) {
-  			menu_dynamic_add(m, "Pickup", 14);
-		} else {
-  			menu_dynamic_add(m, "Pickup (Full)", 14);
+		if (!squelch_item_ok(o_ptr) || p_ptr->unignoring) {
+  			menu_dynamic_add(m, "Floor", 13);
+			if (inven_carry_okay(o_ptr)) {
+  				menu_dynamic_add(m, "Pickup", 14);
+			} else {
+  				menu_dynamic_add(m, "Pickup (Full)", 14);
+			}
 		}
 	}
 	menu_dynamic_add(m, "Character", 7);
@@ -428,7 +432,8 @@ int context_menu_cave(struct cave *cave, int y, int x, int adjacent, int mx, int
 
 		prt(format("(Enter to select command, ESC to cancel) You see %s:", m_name), 0, 0);
 	} else
-	if (cave->o_idx[y][x]) {
+	if (cave->o_idx[y][x] && (!squelch_item_ok(object_byid(cave->o_idx[y][x]))
+			|| p_ptr->unignoring)) {
 		char o_name[80];
 
 		/* Get the single object in the list */
@@ -683,13 +688,17 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 			menu_dynamic_add(m, "Pickup (Full)", 7);
 		}
 	}
+	menu_dynamic_add(m, "Throw", 12);
 	if (obj_has_inscrip(o_ptr)) {
 		menu_dynamic_add(m, "Uninscribe", 5);
-	} else
-	{
+	} else {
 		menu_dynamic_add(m, "Inscribe", 4);
 	}
-	menu_dynamic_add(m, "Throw", 12);
+	if (squelch_item_ok(o_ptr)) {
+		menu_dynamic_add(m, "Unignore", 14);
+	} else {
+		menu_dynamic_add(m, "Ignore", 14);
+	}
 
 	/* work out display region */
 	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
@@ -804,6 +813,10 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 			cmd_set_arg_item(cmd_get_top(), 0, slot);
 			cmd_set_arg_number(cmd_get_top(), 1, o_ptr->number);
 		}
+	} else
+	if (selected == 14) {
+		/* squelch or unsquelch the item */
+		textui_cmd_destroy_menu(slot);
 	} else
 	if (selected == -1) {
 		/* this menu was canceled, tell whatever called us to display its menu again */

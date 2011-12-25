@@ -151,7 +151,6 @@ void do_cmd_equip(void)
 {
 	int item;
 	int ret = 3;
-	int diff = weight_remaining();
 
 	/* Hack -- Start in "inventory" mode */
 	p_ptr->command_wrk = (USE_EQUIP);
@@ -198,24 +197,18 @@ enum
 	IGNORE_THIS_QUALITY
 };
 
-void textui_cmd_destroy(void)
+void textui_cmd_destroy_menu(int item)
 {
-	int item;
 	object_type *o_ptr;
-
 	char out_val[160];
 
 	menu_type *m;
 	region r;
 	int selected;
 
-	/* Get an item */
-	const char *q = "Ignore which item? ";
-	const char *s = "You have nothing to ignore.";
-	if (!get_item(&item, q, s, CMD_DESTROY, USE_INVEN | USE_EQUIP | USE_FLOOR))
-		return;
-
 	o_ptr = object_from_item_idx(item);
+	if (!(o_ptr->kind))
+		return;
 
 	m = menu_dynamic_new();
 	m->selections = lower_case;
@@ -296,6 +289,19 @@ void textui_cmd_destroy(void)
 	p_ptr->notice |= PN_SQUELCH;
 
 	menu_dynamic_free(m);
+}
+
+void textui_cmd_destroy(void)
+{
+	int item;
+
+	/* Get an item */
+	const char *q = "Ignore which item? ";
+	const char *s = "You have nothing to ignore.";
+	if (!get_item(&item, q, s, CMD_DESTROY, USE_INVEN | USE_EQUIP | USE_FLOOR))
+		return;
+
+	textui_cmd_destroy_menu(item);
 }
 
 void textui_cmd_toggle_ignore(void)
