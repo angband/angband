@@ -174,6 +174,9 @@ int context_menu_player(int mx, int my)
 	/* XXX Don't show the keymap line until the keymap list is implemented, to
 	 * avoid confusion as to what should be there */
 	/*menu_dynamic_add(m, "Keymaps", 10);*/
+	if (!OPT(center_player)) {
+		menu_dynamic_add(m, "Center Map", 15);
+	}
 	menu_dynamic_add(m, "Other", 9);
 
 	/* work out display region */
@@ -313,6 +316,11 @@ int context_menu_player(int mx, int my)
 			/* pick the item up */
 			cmd_insert(CMD_PICKUP);
 			cmd_set_arg_item(cmd_get_top(), 0, -1);
+		} break;
+	case 15:
+		{
+			/* center the map on the player */
+			Term_keypress(KTRL('L'),0);
 		} break;
 
 	}
