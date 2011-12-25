@@ -120,7 +120,7 @@ static const struct option options[OPT_MAX] =
 { "use_old_target",      "Use old target by default",                   FALSE }, /* 3 */
 { "pickup_always",       "Always pickup items",                         FALSE }, /* 4 */
 { "pickup_inven",        "Always pickup items matching inventory",      TRUE },  /* 5 */
-{ "show_flavors",        "Show flavors in object descriptions",         FALSE },  /* 6 */
+{ "show_flavors",        "Show flavors in object descriptions",         FALSE }, /* 6 */
 { "disturb_move",        "Disturb whenever any monster moves",          FALSE }, /* 7 */
 { "disturb_near",        "Disturb whenever viewable monster moves",     TRUE },  /* 8 */
 { "disturb_detect",      "Disturb whenever leaving trap detected area", TRUE },  /* 9 */
@@ -128,14 +128,14 @@ static const struct option options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 11 */
 { NULL,                  NULL,                                          FALSE }, /* 12 */
 { "view_yellow_light",   "Color: Illuminate torchlight in yellow",      FALSE }, /* 13 */
-{ "easy_open",           "Open/disarm/close without direction",         TRUE }, /* 14 */
+{ "easy_open",           "Open/disarm/close without direction",         TRUE },  /* 14 */
 { "animate_flicker",     "Color: Shimmer multi-colored things",         FALSE }, /* 15 */
 { "center_player",       "Center map continuously",                     FALSE }, /* 16 */
 { "purple_uniques",      "Color: Show unique monsters in purple",       FALSE }, /* 17 */
 { NULL,                  NULL,                                          FALSE }, /* 18 */
 { "auto_more",           "Automatically clear '-more-' prompts",        FALSE }, /* 19 */
 { "hp_changes_color",    "Color: Player color indicates % hit points",  FALSE }, /* 20 */
-{ "mouse_movement",      "Allow mouse clicks to move the player",       FALSE }, /* 21 */
+{ "mouse_movement",      "Allow mouse clicks to move the player",       TRUE },  /* 21 */
 { "mouse_buttons",       "Show mouse status line buttons",              FALSE }, /* 22 */
 { "notify_recharge",     "Notify on object recharge",                   FALSE }, /* 23 */
 { NULL,                  NULL,                                          FALSE }, /* 24 */
