@@ -62,7 +62,8 @@ enum {
 	kGraf16x16 = 3,
 	kGraf32x32 = 4,
 	kGraf8x16 = 5,
-	kBigTile = 6
+	kGraf64x64 = 6,
+	kBigTile = 7
 };
 
 
