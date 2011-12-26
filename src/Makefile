@@ -21,7 +21,7 @@ DISTCLEAN = autoconf.h
 export CFLAGS LDFLAGS
 
 angband: angband.o $(MAINFILES)
-	$(CC) -o angband angband.o $(MAINFILES) $(LDFLAGS) $(LDADD)
+	$(CC) -o angband angband.o $(MAINFILES) $(LDFLAGS) $(LDADD) $(LIBS)
 	@printf "%10s %-20s\n" LINK $@
 
 angband.o: $(OBJECTS)

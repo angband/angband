@@ -202,7 +202,7 @@ if test "$enable_curses" = "yes"; then
 		AC_DEFINE(USE_NCURSES, 1, [Define to 1 if NCurses is found.])
 		AC_DEFINE(USE_GCU, 1, [Define to 1 if using the Curses frontend.])
 		CFLAGS="${CFLAGS} ${NCURSES_CFLAGS}"
-		LDFLAGS="${LDFLAGS} ${NCURSES_LIBS}"
+		LIBS="${LIBS} ${NCURSES_LIBS}"
 	fi 
 fi
 
@@ -217,7 +217,7 @@ if test "$enable_x11" = "yes"; then
 	else
 		AC_DEFINE(USE_X11, 1, [Define to 1 if using the X11 frontend and X11 libraries are found.])
 		CFLAGS="$CFLAGS $X_CFLAGS"
-		LDFLAGS="$LDFLAGS $X_PRE_LIBS $X_LIBS -lX11 $X_EXTRA_LIBS"
+		LIBS="${LIBS} ${X_PRE_LIBS} ${X_LIBS} -lX11 ${X_EXTRA_LIBS}"
 		with_x11=yes
 	fi
 fi
@@ -235,7 +235,7 @@ if test "$enable_sdl" = "yes"; then
 		if test "$with_sdl" = "yes"; then
 			AC_DEFINE(USE_SDL, 1, [Define to 1 if using the SDL interface and SDL is found.])
 			CFLAGS="${CFLAGS} ${SDL_CFLAGS}"
-			LDFLAGS="${LDFLAGS} ${SDL_LIBS} -lSDL_image -lSDL_ttf"
+			LIBS="${LIBS} ${SDL_LIBS} -lSDL_image -lSDL_ttf"
 		fi
 	fi
 fi
@@ -260,7 +260,8 @@ if test "$enable_gtk" = "yes"; then
 	if test "$with_gtk" = "yes"; then
 		AC_DEFINE(USE_GTK, 1, [Define to 1 if using the GTK+ 2.x interface and GTK+ 2.x is found.])
 		CFLAGS="${CFLAGS} $GTK_CFLAGS"
-		LDFLAGS="${LDFLAGS} $GTK_LIBS -rdynamic -export-dynamic"
+		LDFLAGS="${LDFLAGS} -rdynamic -export-dynamic"
+		LIBS="${LIBS} ${GTK_LIBS}"
 	fi
 fi
 
@@ -273,12 +274,12 @@ if test "$enable_sdl_mixer" = "yes"; then
 		AC_DEFINE(SOUND_SDL, 1, [Define to 1 if using SDL_mixer sound support and it's found.])
 		SDL_CFLAGS=`sdl-config --cflags`
 		CFLAGS="${CFLAGS} ${SDL_CFLAGS}"
-		LDFLAGS="${LDFLAGS} -lSDL_mixer"
+		LIBS="${LIBS} -lSDL_mixer"
 	fi
 fi
 
 
-LDFLAGS="${LDFLAGS} -lm"
+LIBS="${LIBS} -lm"
 
 
 dnl Test checking
@@ -288,7 +289,7 @@ fi
 
 dnl Stats checking
 
-LDFLAGS_SAVE="$LDFLAGS"
+LIBS_SAVE="$LIBS"
 if test "$enable_stats" = "yes"; then
 	# SQLite3 detection
 	SQLITE3_OK=yes
@@ -308,15 +309,15 @@ if test "$enable_stats" = "yes"; then
 	])
 	if test "x$SQLITE3_OK" = xyes; then
 		AC_CHECK_LIB(sqlite3, sqlite3_open, [
-			SQLITE3_LDFLAGS="-lsqlite3"
+			SQLITE3_LIBS="-lsqlite3"
 		], [
 			SQLITE3_OK=missing
 			for sqlite3_path in $SEARCH_DIR_LIBS; do
 				if test "x$ac_cv_lib_sqlite3_sqlite3_open" != xyes; then
 					unset ac_cv_lib_sqlite3_sqlite3_open
-					LDFLAGS="$LDFLAGS_SAVE -L$sqlite3_path"
+					LIBS="$LIBS_SAVE -L$sqlite3_path"
 					AC_CHECK_LIB(sqlite3, sqlite3_open, [
-						SQLITE3_LDFLAGS="-L$sqlite3_path -lsqlite3"
+						SQLITE3_LIBS="-L$sqlite3_path -lsqlite3"
 						SQLITE3_OK=yes
 					])
 				fi
@@ -326,13 +327,13 @@ if test "$enable_stats" = "yes"; then
 	if test "x$SQLITE3_OK" = xyes; then
 		AC_DEFINE(USE_STATS, 1, [Define to 1 to build the stats frontend])
 		CFLAGS="${CFLAGS} ${SQLITE3_CFLAGS}"
-		LDFLAGS="${LDFLAGS_SAVE} ${SQLITE3_LDFLAGS}"
+		LIBS="${LIBS_SAVE} ${SQLITE3_LIBS}"
 		AC_SUBST(USE_STATS, 1)
 	else
 		AC_MSG_ERROR(Could not find sqlite3 library; disabling stats)
 		enable_stats=no
 		AC_DEFINE(USE_STATS, 0, [Define to 0 to omit the stats frontend])
-		LDFLAGS="$LDFLAGS_SAVE"
+		LIBS="$LIBS_SAVE"
 		AC_SUBST(USE_STATS, 0)
 	fi
 fi
