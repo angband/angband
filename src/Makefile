@@ -18,7 +18,7 @@ GCOVS = $(OBJECTS:.o=.c.gcov)
 CLEAN = angband.o angband.exe win/angband.res
 DISTCLEAN = autoconf.h
 
-export CFLAGS LDFLAGS
+export CFLAGS LDFLAGS LIBS
 
 angband: angband.o $(MAINFILES)
 	$(CC) -o angband angband.o $(MAINFILES) $(LDFLAGS) $(LDADD) $(LIBS)

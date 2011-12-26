@@ -289,7 +289,7 @@ fi
 
 dnl Stats checking
 
-LIBS_SAVE="$LIBS"
+LDFLAGS_SAVE="$LDFLAGS"
 if test "$enable_stats" = "yes"; then
 	# SQLite3 detection
 	SQLITE3_OK=yes
@@ -315,9 +315,10 @@ if test "$enable_stats" = "yes"; then
 			for sqlite3_path in $SEARCH_DIR_LIBS; do
 				if test "x$ac_cv_lib_sqlite3_sqlite3_open" != xyes; then
 					unset ac_cv_lib_sqlite3_sqlite3_open
-					LIBS="$LIBS_SAVE -L$sqlite3_path"
+					LDFLAGS="${LDFLAGS_SAVE} -L$sqlite3_path"
 					AC_CHECK_LIB(sqlite3, sqlite3_open, [
-						SQLITE3_LIBS="-L$sqlite3_path -lsqlite3"
+						SQLITE3_LDFLAGS="-L$sqlite3_path"
+						SQLITE3_LIBS="-lsqlite3"
 						SQLITE3_OK=yes
 					])
 				fi
@@ -327,13 +328,14 @@ if test "$enable_stats" = "yes"; then
 	if test "x$SQLITE3_OK" = xyes; then
 		AC_DEFINE(USE_STATS, 1, [Define to 1 to build the stats frontend])
 		CFLAGS="${CFLAGS} ${SQLITE3_CFLAGS}"
-		LIBS="${LIBS_SAVE} ${SQLITE3_LIBS}"
+		LDFLAGS="${LDFLAGS_SAVE} ${SQLITE3_LDFLAGS}"
+		LIBS="${LIBS} ${SQLITE3_LIBS}"
 		AC_SUBST(USE_STATS, 1)
 	else
 		AC_MSG_ERROR(Could not find sqlite3 library; disabling stats)
 		enable_stats=no
 		AC_DEFINE(USE_STATS, 0, [Define to 0 to omit the stats frontend])
-		LIBS="$LIBS_SAVE"
+		LDFLAGS="$LDFLAGS_SAVE"
 		AC_SUBST(USE_STATS, 0)
 	fi
 fi
