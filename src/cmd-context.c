@@ -165,7 +165,7 @@ int context_menu_player(int mx, int my)
 	/* if object under player add pickup option */
 	if (cave->o_idx[p_ptr->py][p_ptr->px]) {
 		object_type *o_ptr = object_byid(cave->o_idx[p_ptr->py][p_ptr->px]);
-		if (!squelch_item_ok(o_ptr) || p_ptr->unignoring) {
+		if (!squelch_item_ok(o_ptr)) {
   			menu_dynamic_add(m, "Floor", 13);
 			if (inven_carry_okay(o_ptr)) {
   				menu_dynamic_add(m, "Pickup", 14);
@@ -358,15 +358,17 @@ int context_menu_cave(struct cave *cave, int y, int x, int adjacent, int mx, int
 			s16b o_idx = chest_check(y,x);
 			if (o_idx) {
 				object_type *o_ptr = object_byid(o_idx);
-				if (object_is_known(o_ptr)) {
-					if (o_ptr->pval[DEFAULT_PVAL] > 0) {
-						menu_dynamic_add(m, "Disarm Chest", 5);
-						menu_dynamic_add(m, "Open Chest", 8);
+				if (!squelch_item_ok(o_ptr)) {
+					if (object_is_known(o_ptr)) {
+						if (o_ptr->pval[DEFAULT_PVAL] > 0) {
+							menu_dynamic_add(m, "Disarm Chest", 5);
+							menu_dynamic_add(m, "Open Chest", 8);
+						} else {
+							menu_dynamic_add(m, "Open Disarmed Chest", 8);
+						}
 					} else {
-						menu_dynamic_add(m, "Open Disarmed Chest", 8);
+						menu_dynamic_add(m, "Open Chest", 8);
 					}
-				} else {
-					menu_dynamic_add(m, "Open Chest", 8);
 				}
 			}
 		}
@@ -432,8 +434,7 @@ int context_menu_cave(struct cave *cave, int y, int x, int adjacent, int mx, int
 
 		prt(format("(Enter to select command, ESC to cancel) You see %s:", m_name), 0, 0);
 	} else
-	if (cave->o_idx[y][x] && (!squelch_item_ok(object_byid(cave->o_idx[y][x]))
-			|| p_ptr->unignoring)) {
+	if (cave->o_idx[y][x] && !squelch_item_ok(object_byid(cave->o_idx[y][x]))) {
 		char o_name[80];
 
 		/* Get the single object in the list */
