@@ -597,6 +597,9 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 	int selected;
 	char header[120];
 
+	textblock *tb;
+	region area = { 0, 0, 0, 0 };
+
 	m = menu_dynamic_new();
 	if (!m || !o_ptr) {
 		return 0;
@@ -708,6 +711,14 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 	r.page_rows = m->count;
 
 	screen_save();
+
+	/* Display info */
+	tb = object_info(o_ptr, OINFO_NONE);
+	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
+
+	textui_textblock_place(tb, area, format("%s", header));
+	textblock_free(tb);
+
 	menu_layout(m, &r);
 	region_erase_bordered(&r);
 
@@ -718,9 +729,6 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 	screen_load();
 	if (selected == 1) {
 		/* copied from textui_obj_examine */
-		textblock *tb;
-		region area = { 0, 0, 0, 0 };
-
 		/* Display info */
 		tb = object_info(o_ptr, OINFO_NONE);
 		object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);

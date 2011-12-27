@@ -104,14 +104,14 @@ void do_cmd_inven(void)
 	/* Hack -- Start in "inventory" mode */
 	p_ptr->command_wrk = (USE_INVEN);
 
-	/* Save screen */
-	screen_save();
-
 	/* Hack -- show empty slots */
 	item_tester_full = TRUE;
 
 	/* Loop this menu until an object context menu says differently */
 	while (ret == 3) {
+		/* Save screen */
+		screen_save();
+
 		/* Prompt for a command */
 		prt(format("(Inventory) Burden %d.%d lb (%d.%d lb %s). Select Item: ",
 			        p_ptr->total_weight / 10, p_ptr->total_weight % 10,
@@ -123,6 +123,9 @@ void do_cmd_inven(void)
 		if (get_item(&item, NULL, NULL, CMD_NULL, USE_EQUIP|USE_INVEN|USE_FLOOR|IS_HARMLESS)) {
 			object_type *o_ptr;
 
+			/* Load screen */
+			screen_load();
+
 			/* Track the object kind */
 			track_object(item);
 
@@ -132,15 +135,15 @@ void do_cmd_inven(void)
 				while ((ret = context_menu_object(o_ptr, item)) == 2);
 			}
 		} else {
+			/* Load screen */
+			screen_load();
+
 			ret = -1;
 		}
 	}
 
 	/* Hack -- hide empty slots */
 	item_tester_full = FALSE;
-
-	/* Load screen */
-	screen_load();
 }
 
 
@@ -155,17 +158,20 @@ void do_cmd_equip(void)
 	/* Hack -- Start in "inventory" mode */
 	p_ptr->command_wrk = (USE_EQUIP);
 
-	/* Save screen */
-	screen_save();
-
 	/* Hack -- show empty slots */
 	item_tester_full = TRUE;
 
 	/* Loop this menu until an object context menu says differently */
 	while (ret == 3) {
+		/* Save screen */
+		screen_save();
+
 		/* Get an item to use a context command on (Display the inventory) */
 		if (get_item(&item, "Select Item:", NULL, CMD_NULL, USE_EQUIP|USE_INVEN|USE_FLOOR|IS_HARMLESS)) {
 			object_type *o_ptr;
+
+			/* Load screen */
+			screen_load();
 
 			/* Track the object kind */
 			track_object(item);
@@ -176,6 +182,9 @@ void do_cmd_equip(void)
 				while ((ret = context_menu_object(o_ptr, item)) == 2);
 			}
 		} else {
+			/* Load screen */
+			screen_load();
+
 			ret = -1;
 		}
 	}
@@ -183,9 +192,6 @@ void do_cmd_equip(void)
 
 	/* Hack -- hide empty slots */
 	item_tester_full = FALSE;
-
-	/* Load screen */
-	screen_load();
 }
 
 enum
