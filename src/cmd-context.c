@@ -694,7 +694,7 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 	} else {
 		menu_dynamic_add(m, "Inscribe", 4);
 	}
-	if (squelch_item_ok(o_ptr)) {
+	if (object_is_squelched(o_ptr)) {
 		menu_dynamic_add(m, "Unignore", 14);
 	} else {
 		menu_dynamic_add(m, "Ignore", 14);
