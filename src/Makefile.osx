@@ -55,6 +55,7 @@ endif
 
 # Note that Makefile.inc sets VERSION, and so we must run version.sh after
 # including Makefile.inc
+USE_OSX = 1
 include Makefile.inc
 
 VERSION := $(shell ../scripts/version.sh)
