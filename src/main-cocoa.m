@@ -142,8 +142,9 @@ static NSFont *default_font;
     /* Last time we drew, so we can throttle drawing */
     CFAbsoluteTime lastRefreshTime;
     
-    /* To address subpixel rendering overdraw problems, we cache all the characters we're told to draw (in the form (attribute << 8) | (character) */
-    uint16_t *charOverdrawCache;
+    /* To address subpixel rendering overdraw problems, we cache all the characters and attributes we're told to draw */
+    wchar_t *charOverdrawCache;
+    byte *attrOverdrawCache;
 }
 
 - (void)drawRect:(NSRect)rect inView:(NSView *)view;
@@ -163,8 +164,8 @@ static NSFont *default_font;
 /* Return the rect for a tile at given coordinates. */
 - (NSRect)rectInImageForTileAtX:(int)x Y:(int)y;
 
-/* Draw the glyph at the given index in the array into the given tile rect. */
-- (void)drawGlyphAtIndex:(unsigned int)idx inRect:(NSRect)tile;
+/* Draw the given wide character into the given tile rect. */
+- (void)drawWChar:(wchar_t)wchar inRect:(NSRect)tile;
 
 /* Locks focus on the Angband image, and scales the CTM appropriately. */
 - (CGContextRef)lockFocus;
@@ -220,7 +221,7 @@ static NSFont *default_font;
 @end
 
 /* To indicate that a grid element contains a picture, we store 0xFFFF. */
-#define NO_OVERDRAW ((uint16_t)(0xFFFF))
+#define NO_OVERDRAW ((wchar_t)(0xFFFF))
 
 /* Here is some support for rounding to pixels in a scaled context */
 static double push_pixel(double pixel, double scale, BOOL increase)
@@ -616,14 +617,23 @@ static int compare_advances(const void *ap, const void *bp)
 #endif
 }
 
-- (void)drawGlyphAtIndex:(unsigned int)idx inRect:(NSRect)tile
+- (void)drawWChar:(wchar_t)wchar inRect:(NSRect)tile
 {
     CGContextRef ctx = [[NSGraphicsContext currentContext] graphicsPort];
     CGFloat tileOffsetY = -fontDescender;
     CGFloat tileOffsetX;
-    
-    CGSize advance = CGSizeMake(glyphWidths[idx], 0);
-    CGGlyph glyph = glyphArray[idx];
+    NSFont *screenFont = [angbandViewFont screenFont];
+    UniChar unicharString[2] = {(UniChar)wchar, 0};
+
+    // Get glyph and advance
+    CGGlyph thisGlyphArray[1] = {};
+    CGSize advances[1] = {};
+    bzero(thisGlyphArray, 1);
+    bzero(advances, 1);
+    CTFontGetGlyphsForCharacters((CTFontRef)screenFont, unicharString, thisGlyphArray, 1);
+    CGGlyph glyph = thisGlyphArray[0];
+    CTFontGetAdvancesForGlyphs((CTFontRef)screenFont, kCTFontHorizontalOrientation, thisGlyphArray, advances, 1);
+    CGSize advance = advances[0];
     
     /* If our font is not monospaced, our tile width is deliberately not big enough for every character. In that event, if our glyph is too wide, we need to compress it horizontally. Compute the compression ratio. 1.0 means no compression. */
     double compressionRatio;
@@ -671,6 +681,7 @@ static int compare_advances(const void *ap, const void *bp)
 - (void)clearOverdrawCache
 {
     bzero(charOverdrawCache, self->cols * self->rows * sizeof *charOverdrawCache);
+    bzero(attrOverdrawCache, self->cols * self->rows * sizeof *attrOverdrawCache);
 }
 
 /* Lock and unlock focus on our image or layer, setting up the CTM appropriately. */
@@ -780,6 +791,7 @@ static int compare_advances(const void *ap, const void *bp)
         
         /* Allocate overdraw cache, unscanned and collectable. */
         self->charOverdrawCache = NSAllocateCollectable(self->cols * self->rows *sizeof *charOverdrawCache, 0);
+        self->attrOverdrawCache = NSAllocateCollectable(self->cols * self->rows *sizeof *attrOverdrawCache, 0);
         
         /* Allocate our array of views */
         angbandViews = [[NSMutableArray alloc] init];
@@ -823,6 +835,8 @@ static int compare_advances(const void *ap, const void *bp)
     /* Free overdraw cache (unless we're GC, in which case it was allocated collectable) */
     if (! [NSGarbageCollector defaultCollector]) free(self->charOverdrawCache);
     self->charOverdrawCache = NULL;
+    if (! [NSGarbageCollector defaultCollector]) free(self->attrOverdrawCache);
+    self->attrOverdrawCache = NULL;
 }
 
 /* Usual Cocoa fare */
@@ -1638,8 +1652,9 @@ static void draw_image_tile(CGImageRef image, NSRect srcRect, NSRect dstRect, NS
     CGImageRelease(subimage);
 }
 
-static errr Term_pict_cocoa(int x, int y, int n, const byte *ap, const char *cp,
-                            const byte *tap, const char *tcp)
+static errr Term_pict_cocoa(int x, int y, int n, const byte *ap,
+                            const wchar_t *cp, const byte *tap,
+                            const wchar_t *tcp)
 {
     
     /* Paranoia: Bail if we don't have a current graphics mode */
@@ -1648,7 +1663,7 @@ static errr Term_pict_cocoa(int x, int y, int n, const byte *ap, const char *cp,
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     AngbandContext* angbandContext = Term->data;
     
-    /* Indicate that we have a picture here (and hence this should not be overdrawn by term_text_cocoa) */
+    /* Indicate that we have a picture here (and hence this should not be overdrawn by Term_text_cocoa) */
     angbandContext->charOverdrawCache[y * angbandContext->cols + x] = NO_OVERDRAW;
     
     /* Lock focus */
@@ -1671,10 +1686,10 @@ static errr Term_pict_cocoa(int x, int y, int n, const byte *ap, const char *cp,
     {
         
         byte a = *ap++;
-        char c = *cp++;
+        wchar_t c = *cp++;
         
         byte ta = *tap++;
-        char tc = *tcp++;
+        wchar_t tc = *tcp++;
         
         
         /* Graphics -- if Available and Needed */
@@ -1732,7 +1747,7 @@ static errr Term_pict_cocoa(int x, int y, int n, const byte *ap, const char *cp,
  *
  * Draw several ("n") chars, with an attr, at a given location.
  */
-static errr term_text_cocoa(int x, int y, int n, byte a, const char *cp)
+static errr Term_text_cocoa(int x, int y, int n, byte a, const wchar_t *cp)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     
@@ -1751,7 +1766,10 @@ static errr term_text_cocoa(int x, int y, int n, byte a, const char *cp)
     /* record our data in our cache */
     int start = y * angbandContext->cols + x;
     int location;
-    for (location = 0; location < n; location++) angbandContext->charOverdrawCache[start + location] = (a << 8) | ((unsigned char)cp[location]);
+    for (location = 0; location < n; location++) {
+        angbandContext->charOverdrawCache[start + location] = cp[location];
+        angbandContext->attrOverdrawCache[start + location] = a;
+    }
     
     /* Focus on our layer */
     [angbandContext lockFocus];
@@ -1786,8 +1804,7 @@ static errr term_text_cocoa(int x, int y, int n, byte a, const char *cp)
         // Nothing to overdraw if we're at an edge
         if (overdrawX >= 0 && (size_t)overdrawX < angbandContext->cols)
         {
-            uint16_t previouslyDrawnVal = angbandContext->charOverdrawCache[y * angbandContext->cols + overdrawX];
-            
+            wchar_t previouslyDrawnVal = angbandContext->charOverdrawCache[y * angbandContext->cols + overdrawX];
             // Don't overdraw if it's not text
             if (previouslyDrawnVal != NO_OVERDRAW)
             {
@@ -1802,11 +1819,10 @@ static errr term_text_cocoa(int x, int y, int n, byte a, const char *cp)
                 // Redraw text if we have any
                 if (previouslyDrawnVal != 0)
                 {
-                    byte color = previouslyDrawnVal >> 8;
-                    unsigned char index = previouslyDrawnVal & 0xFF;
+                    byte color = angbandContext->attrOverdrawCache[y * angbandContext->cols + overdrawX]; 
                     
                     set_color_for_index(color);
-                    [angbandContext drawGlyphAtIndex:index inRect:overdrawRect];
+                    [angbandContext drawWChar:previouslyDrawnVal inRect:overdrawRect];
                 }
             }
         }
@@ -1818,7 +1834,7 @@ static errr term_text_cocoa(int x, int y, int n, byte a, const char *cp)
     /* Draw each */
     NSRect rectToDraw = charRect;
     for (i=0; i < n; i++) {
-        [angbandContext drawGlyphAtIndex:(unsigned char)cp[i] inRect:rectToDraw];
+        [angbandContext drawWChar:cp[i] inRect:rectToDraw];
         rectToDraw.origin.x += tileWidth;
     }
 
@@ -1835,6 +1851,46 @@ static errr term_text_cocoa(int x, int y, int n, byte a, const char *cp)
     
     /* Success */
     return (0);
+}
+
+static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
+{
+    int i;
+    int count = 0;
+
+    /* Unicode code point to UTF-8
+     *  0x0000-0x007f:   0xxxxxxx
+     *  0x0080-0x07ff:   110xxxxx 10xxxxxx
+     *  0x0800-0xffff:   1110xxxx 10xxxxxx 10xxxxxx
+     * 0x10000-0x1fffff: 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+     * Note that UTF-16 limits Unicode to 0x10ffff. This code is not
+     * endian-agnostic.
+     */
+    for (i = 0; i < n; i++) {
+        if ((src[i] & 0x80) == 0) {
+            dest[count++] = src[i];
+            if (src[i] == 0) break;
+        } else if ((src[i] & 0xe0) == 0xc0) {
+            dest[count++] = (((unsigned char)src[i] & 0x1f) << 6)| 
+                            ((unsigned char)src[i+1] & 0x3f);
+            i++;
+        } else if ((src[i] & 0xf0) == 0xe0) {
+            dest[count++] = (((unsigned char)src[i] & 0x0f) << 12) | 
+                            (((unsigned char)src[i+1] & 0x3f) << 6) |
+                            ((unsigned char)src[i+2] & 0x3f);
+            i += 2;
+        } else if ((src[i] & 0xf8) == 0xf0) {
+            dest[count++] = (((unsigned char)src[i] & 0x0f) << 18) | 
+                            (((unsigned char)src[i+1] & 0x3f) << 12) |
+                            (((unsigned char)src[i+2] & 0x3f) << 6) |
+                            ((unsigned char)src[i+3] & 0x3f);
+            i += 3;
+        } else {
+            /* Should not get here; asserting a known false expression */
+            assert((src[i] & 0xf8) == 0xf0);
+        }
+    }
+    return count;
 }
 
 /* Post a nonsense event so that our event loop wakes up */
@@ -1875,8 +1931,9 @@ static term *term_data_link(int i)
     newterm->xtra_hook = Term_xtra_cocoa;
     newterm->wipe_hook = Term_wipe_cocoa;
     newterm->curs_hook = Term_curs_cocoa;
-    newterm->text_hook = term_text_cocoa;
+    newterm->text_hook = Term_text_cocoa;
     newterm->pict_hook = Term_pict_cocoa;
+    newterm->mbcs_hook = Term_mbcs_cocoa;
     
     /* Global pointer */
     angband_term[i] = newterm;
@@ -2184,7 +2241,7 @@ static errr cocoa_get_cmd(cmd_context context, bool wait)
 /* Return the directory into which we put data (save and config) */
 static NSString *get_data_directory(void)
 {
-    return [@"~/Documents/Angband/" stringByExpandingTildeInPath];
+    return [@"~/Library/Preferences/Angband-v4/" stringByExpandingTildeInPath];
 }
 
 /*
