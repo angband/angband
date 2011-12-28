@@ -2995,7 +2995,7 @@ static void init_windows(void)
 	/* setup the alpha blending function */
 	blendfn.BlendOp = AC_SRC_OVER;
 	blendfn.BlendFlags = 0;
-	blendfn.AlphaFormat = AC_SRC_NO_PREMULT_ALPHA;//AC_SRC_ALPHA;
+	blendfn.AlphaFormat = AC_SRC_ALPHA;
 	blendfn.SourceConstantAlpha = 255;
 
 
