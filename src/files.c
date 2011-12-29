@@ -776,7 +776,7 @@ static int get_panel(int oid, data_panel *panel, size_t size)
 	P_I(TERM_L_BLUE, "Shots", "%y/turn",	i2u(p_ptr->state.num_shots), END  );
 	P_I(TERM_L_BLUE, "Infra", "%y ft",	i2u(p_ptr->state.see_infra * 10), END  );
 	P_I(TERM_L_BLUE, "Speed", "%y",		s2u(show_speed()), END );
-	P_I(TERM_L_BLUE, "Burden","%.1y lbs",	f2u(p_ptr->total_weight/10.0), END  );
+	P_I(TERM_L_BLUE, "Burden","%.1y lbs",	f2u(p_ptr->total_weight/10.0F), END  );
 	assert(i == boundaries[3].page_rows);
 	return ret;
   }

@@ -3588,7 +3588,7 @@ bool borg_caution(void)
         /* Only go down if fleeing or prepared */
         if (goal_fleeing == TRUE || goal_fleeing_lunal== TRUE || goal_fleeing_munchkin) stair_more = TRUE;
 
-        if ((cptr)NULL == borg_prepared(borg_skill[BI_CDEPTH]+1))
+        if ((char *)NULL == borg_prepared(borg_skill[BI_CDEPTH]+1))
             stair_more = TRUE;
 
         if (!track_less_num && (borg_skill[BI_CURLITE] == 0 || borg_skill[BI_ISHUNGRY] || borg_skill[BI_ISWEAK] || borg_skill[BI_FOOD] < 2))
@@ -15535,7 +15535,7 @@ bool borg_twitchy(void)
 /*
  * Commit the current "flow"
  */
-static bool borg_flow_commit(cptr who, int why)
+static bool borg_flow_commit(char *who, int why)
 {
     int cost;
 
@@ -15795,7 +15795,7 @@ bool borg_flow_stair_more(int why, bool sneak, bool brave)
     if (!track_more_num) return (FALSE);
 
     /* not unless safe or munchkin/Lunal Mode or brave */
-    if (!borg_lunal_mode && !borg_munchkin_mode && !brave && (cptr)NULL != borg_prepared(borg_skill[BI_CDEPTH] + 1))
+    if (!borg_lunal_mode && !borg_munchkin_mode && !brave && (char *)NULL != borg_prepared(borg_skill[BI_CDEPTH] + 1))
         return (FALSE);
 
     /* dont go down if hungry or low on food, unless fleeing a scary town */
@@ -16489,7 +16489,7 @@ bool borg_flow_shop_entry(int i)
 {
     int x, y;
 
-    cptr name = (f_info[0x08+i].name);
+    char *name = (f_info[0x08+i].name);
 
     /* Must be in town */
     if (borg_skill[BI_CDEPTH]) return (FALSE);

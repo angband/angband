@@ -512,7 +512,7 @@ void Term_queue_char(term *t, int x, int y, byte a, wchar_t c, byte ta, wchar_t 
 
 /* Queue a large-sized tile */
 
-void Term_big_queue_char(term *t, int x, int y, byte a, char c, byte a1, char c1)
+void Term_big_queue_char(term *t, int x, int y, byte a, wchar_t c, byte a1, wchar_t c1)
 {
         int hor, vert;
 
@@ -1631,7 +1631,7 @@ errr Term_putch(int x, int y, byte a, wchar_t c)
 /*
  * Move to a location and, using an attr, add a big tile
  */
-void Term_big_putch(int x, int y, byte a, char c)
+void Term_big_putch(int x, int y, byte a, wchar_t c)
 {
 	int hor, vert;
 

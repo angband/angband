@@ -2486,7 +2486,7 @@ static errr Term_pict_win_alpha(int x, int y, int n, const byte *ap, const wchar
 	for (i = n-1; i >= 0; i--, x2 -= w2)
 	{
 		byte a = ap[i];
-		char c = cp[i];
+		wchar_t c = cp[i];
 
 		/* Extract picture */
 		int row = (a & 0x7F);

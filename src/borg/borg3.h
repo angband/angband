@@ -54,7 +54,7 @@ struct borg_item
 {
     char desc[80];  /* Actual Description */
 
-    cptr note;      /* Pointer to tail of 'desc' */
+    char *note;      /* Pointer to tail of 'desc' */
 
     s16b kind;      /* Kind index */
 
@@ -79,7 +79,7 @@ struct borg_item
 
     byte name1;     /* Artifact index (if any) */
     byte name2;     /* Ego-item index (if any) */
-	byte activation; /* Artifact activation and effects*/
+	u16b activation; /* Artifact activation and effects*/
 
     s16b timeout;   /* Timeout counter */
 
@@ -153,7 +153,7 @@ typedef struct borg_magic borg_magic;
  */
 struct borg_magic
 {
-    cptr name;      /* Textual name */
+    char *name;      /* Textual name */
 
     byte status;    /* Status (see above) */
 
@@ -210,7 +210,7 @@ extern int borg_wield_slot(borg_item *item);
 /*
  * Analyze an item, given a textual description
  */
-extern void borg_item_analyze(borg_item *item, object_type *real_item, cptr desc);
+extern void borg_item_analyze(borg_item *item, object_type *real_item, char *desc);
 
 
 /* look for a *id*'d item */
@@ -222,7 +222,7 @@ extern bool borg_object_star_id_aux(borg_item *borg_item, object_type *real_item
 /*
  * Inscribe an object
  */
-extern void borg_send_inscribe(int i, cptr str);
+extern void borg_send_inscribe(int i, char *str);
 extern void borg_send_deinscribe(int i);
 
 /*
