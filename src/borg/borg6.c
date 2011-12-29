@@ -3934,7 +3934,7 @@ bool borg_caution(void)
    {
         int d, b_d = -1;
         int r, b_r = -1;
-		int b_p, p1 = -1;
+		int b_p = -1, p1 = -1;
         int b_x = c_x;
         int b_y = c_y;
 		int ii;

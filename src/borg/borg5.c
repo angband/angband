@@ -5329,7 +5329,7 @@ void borg_init_5(void)
     borg_unique_size = size;
 
     /* Allocate the arrays */
-    C_MAKE(borg_unique_text, borg_unique_size, char *);
+    C_MAKE(borg_unique_text, borg_unique_size, const char *);
     C_MAKE(borg_unique_what, borg_unique_size, s16b);
 
     /* Save the entries */
@@ -5369,7 +5369,7 @@ void borg_init_5(void)
     borg_normal_size = size;
 
     /* Allocate the arrays */
-    C_MAKE(borg_normal_text, borg_normal_size, char *);
+    C_MAKE(borg_normal_text, borg_normal_size, const char *);
     C_MAKE(borg_normal_what, borg_normal_size, s16b);
 
     /* Save the entries */
