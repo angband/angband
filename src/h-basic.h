@@ -18,6 +18,8 @@
      defined(__WINNT__) || defined(__NT__)
 #  ifndef WINDOWS
 #   define WINDOWS
+#	define inline __inline
+#	define snprintf _snprintf
 #  endif
 # endif
 
@@ -34,12 +36,14 @@
 /*
  * Using C99, assume we have stdint and stdbool
  */
-# if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+# if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) \
+  || (defined(_MSC_VER) && _MSC_VER >= 1600L)
 #  define HAVE_STDINT_H
-#  define HAVE_STDBOOL_H
 # endif
 
-
+# if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+#  define HAVE_STDBOOL_H
+# endif
 
 /*
  * Everyone except RISC OS has fcntl.h and sys/stat.h

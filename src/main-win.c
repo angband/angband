@@ -126,16 +126,6 @@
 
 #endif /* ALLOW_BORG */
 
-#ifndef GetWindowLongPtr
-#define GetWindowLongPtr GetWindowLong
-#endif
-#ifndef SetWindowLongPtr
-#define SetWindowLongPtr SetWindowLong
-#endif
-#ifndef GWLP_USERDATA
-#define GWLP_USERDATA GWL_USERDATA
-#endif
-
 /*
  * This may need to be removed for some compilers XXX XXX XXX
  */
@@ -185,6 +175,16 @@
  */
 #include <windows.h>
 #include <windowsx.h>
+
+#ifndef GetWindowLongPtr
+#define GetWindowLongPtr GetWindowLong
+#endif
+#ifndef SetWindowLongPtr
+#define SetWindowLongPtr SetWindowLong
+#endif
+#ifndef GWLP_USERDATA
+#define GWLP_USERDATA GWL_USERDATA
+#endif
 
 #ifdef USE_SOUND
 

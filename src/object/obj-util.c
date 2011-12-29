@@ -205,12 +205,6 @@ void flavor_init(void)
 }
 
 
-
-#ifdef ALLOW_BORG_GRAPHICS
-extern void init_translate_visuals(void);
-#endif /* ALLOW_BORG_GRAPHICS */
-
-
 /*
  * Reset the "visual" lists
  *
@@ -294,10 +288,6 @@ void reset_visuals(bool load_prefs)
 	} else {
 		process_pref_file("font.prf", FALSE, FALSE);
 	}
-#ifdef ALLOW_BORG_GRAPHICS
-	/* Initialize the translation table for the borg */
-	init_translate_visuals();
-#endif /* ALLOW_BORG_GRAPHICS */
 }
 
 
