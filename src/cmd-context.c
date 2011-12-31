@@ -42,23 +42,26 @@ int context_menu_player_2(int mx, int my)
 	menu_type *m;
 	region r;
 	int selected;
+	char *labels;
 
 	m = menu_dynamic_new();
 	if (!m) {
 		return 0;
 	}
 
-	m->selections = lower_case;
-	menu_dynamic_add(m, "Knowledge", 1);
-	menu_dynamic_add(m, "Show Map", 2);
-	menu_dynamic_add(m, "Show Messages", 3);
-	menu_dynamic_add(m, "Show Monster List", 9);
-	menu_dynamic_add(m, "Show Object List", 10);
-	menu_dynamic_add(m, "Toggle Searching", 4);
-	menu_dynamic_add(m, "Toggle Squelched", 5);
-	menu_dynamic_add(m, "Squelch an item", 6);
-	menu_dynamic_add(m, "Options", 8);
-	menu_dynamic_add(m, "Commands", 7);
+	labels = string_make(lower_case);
+	m->selections = labels;
+
+	menu_dynamic_add_label(m, "Knowledge", '~', 1, labels);
+	menu_dynamic_add_label(m, "Show Map", 'M', 2, labels);
+	menu_dynamic_add_label(m, "^Show Messages", 'P', 3, labels);
+	menu_dynamic_add_label(m, "Show Monster List", '[', 9, labels);
+	menu_dynamic_add_label(m, "Show Object List", ']', 10, labels);
+	menu_dynamic_add_label(m, "Toggle Searching", 'S', 4, labels);
+	menu_dynamic_add_label(m, "Toggle Squelched", 'K', 5, labels);
+	menu_dynamic_add_label(m, "Squelch an item", 'k', 6, labels);
+	menu_dynamic_add_label(m, "Options", '=', 8, labels);
+	menu_dynamic_add_label(m, "Commands", '?', 7, labels);
 
 	/* work out display region */
 	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
@@ -86,7 +89,9 @@ int context_menu_player_2(int mx, int my)
 
 	prt("(Enter to select, ESC) Command:", 0, 0);
 	selected = menu_dynamic_select(m);
+
 	menu_dynamic_free(m);
+	string_free(labels);
 
 	screen_load();
 
@@ -139,49 +144,52 @@ int context_menu_player(int mx, int my)
 	menu_type *m;
 	region r;
 	int selected;
+	char *labels;
 
 	m = menu_dynamic_new();
 	if (!m) {
 		return 0;
 	}
 
-	m->selections = lower_case;
-	menu_dynamic_add(m, "Use", 1);
+	labels = string_make(lower_case);
+	m->selections = labels;
+
+	menu_dynamic_add_label(m, "Use", 'U', 1, labels);
 	/* if player can cast, add casting option */
 	if (player_can_cast()) {
-		menu_dynamic_add(m, "Cast", 2);
+		menu_dynamic_add_label(m, "Cast", 'm', 2, labels);
 	}
 	/* if player is on stairs add option to use them */
 	if (cave->feat[p_ptr->py][p_ptr->px] == FEAT_LESS) {
-		menu_dynamic_add(m, "Go Up", 11);
+		menu_dynamic_add_label(m, "Go Up", '<', 11, labels);
 	} else
 	if (cave->feat[p_ptr->py][p_ptr->px] == FEAT_MORE) {
-		menu_dynamic_add(m, "Go Down", 12);
+		menu_dynamic_add_label(m, "Go Down", '>', 12, labels);
 	}
-	menu_dynamic_add(m, "Search", 3);
-	menu_dynamic_add(m, "Look", 6);
-	menu_dynamic_add(m, "Rest", 4);
-	menu_dynamic_add(m, "Inventory", 5);
+	menu_dynamic_add_label(m, "Search", 's', 3, labels);
+	menu_dynamic_add_label(m, "Look", 'l', 6, labels);
+	menu_dynamic_add_label(m, "Rest", 'R', 4, labels);
+	menu_dynamic_add_label(m, "Inventory", 'i', 5, labels);
 	/* if object under player add pickup option */
 	if (cave->o_idx[p_ptr->py][p_ptr->px]) {
 		object_type *o_ptr = object_byid(cave->o_idx[p_ptr->py][p_ptr->px]);
 		if (!squelch_item_ok(o_ptr)) {
-  			menu_dynamic_add(m, "Floor", 13);
+  			menu_dynamic_add_label(m, "Floor", 'i', 13, labels);
 			if (inven_carry_okay(o_ptr)) {
-  				menu_dynamic_add(m, "Pickup", 14);
+  				menu_dynamic_add_label(m, "Pickup", 'g', 14, labels);
 			} else {
-  				menu_dynamic_add(m, "Pickup (Full)", 14);
+  				menu_dynamic_add_label(m, "Pickup (Full)", 'g', 14, labels);
 			}
 		}
 	}
-	menu_dynamic_add(m, "Character", 7);
+	menu_dynamic_add_label(m, "Character", 'C', 7, labels);
 	/* XXX Don't show the keymap line until the keymap list is implemented, to
 	 * avoid confusion as to what should be there */
 	/*menu_dynamic_add(m, "Keymaps", 10);*/
 	if (!OPT(center_player)) {
-		menu_dynamic_add(m, "Center Map", 15);
+		menu_dynamic_add_label(m, "^Center Map", 'M', 15, labels);
 	}
-	menu_dynamic_add(m, "Other", 9);
+	menu_dynamic_add_label(m, "Other", ' ', 9, labels);
 
 	/* work out display region */
 	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
@@ -209,7 +217,9 @@ int context_menu_player(int mx, int my)
 
 	prt("(Enter to select, ESC) Command:", 0, 0);
 	selected = menu_dynamic_select(m);
+
 	menu_dynamic_free(m);
+	string_free(labels);
 
 	screen_load();
 
@@ -337,23 +347,30 @@ int context_menu_cave(struct cave *cave, int y, int x, int adjacent, int mx, int
 	menu_type *m;
 	region r;
 	int selected;
+	char *labels;
 
 	m = menu_dynamic_new();
 	if (!m) {
 		return 0;
 	}
 
-	m->selections = lower_case;
-	menu_dynamic_add(m, "Look At", 1);
+	labels = string_make(lower_case);
+	m->selections = labels;
+
+	menu_dynamic_add_label(m, "Look At", 'l', 1, labels);
 	if (cave->m_idx[y][x]) {
-		menu_dynamic_add(m, "Recall Info", 18);
+		menu_dynamic_add_label(m, "Recall Info", '/', 18, labels);
 	}
-	menu_dynamic_add(m, "Use Item On", 2);
+	menu_dynamic_add_label(m, "Use Item On", 'U', 2, labels);
 	if (player_can_cast()) {
-		menu_dynamic_add(m, "Cast On", 3);
+		menu_dynamic_add_label(m, "Cast On", 'm', 3, labels);
 	}
 	if (adjacent) {
-		menu_dynamic_add(m, "Attack", 4);
+		if (cave->m_idx[y][x]) {
+			menu_dynamic_add_label(m, "Attack", '+', 4, labels);
+		} else {
+			menu_dynamic_add_label(m, "Alter", '+', 4, labels);
+		}
 		if (cave->o_idx[y][x]) {
 			s16b o_idx = chest_check(y,x);
 			if (o_idx) {
@@ -361,43 +378,43 @@ int context_menu_cave(struct cave *cave, int y, int x, int adjacent, int mx, int
 				if (!squelch_item_ok(o_ptr)) {
 					if (object_is_known(o_ptr)) {
 						if (o_ptr->pval[DEFAULT_PVAL] > 0) {
-							menu_dynamic_add(m, "Disarm Chest", 5);
-							menu_dynamic_add(m, "Open Chest", 8);
+							menu_dynamic_add_label(m, "Disarm Chest", 'D', 5, labels);
+							menu_dynamic_add_label(m, "Open Chest", 'o', 8, labels);
 						} else {
-							menu_dynamic_add(m, "Open Disarmed Chest", 8);
+							menu_dynamic_add_label(m, "Open Disarmed Chest", 'o', 8, labels);
 						}
 					} else {
-						menu_dynamic_add(m, "Open Chest", 8);
+						menu_dynamic_add_label(m, "Open Chest", 'o', 8, labels);
 					}
 				}
 			}
 		}
 		if (cave_istrap(cave, y, x)) {
-			menu_dynamic_add(m, "Disarm", 5);
-			menu_dynamic_add(m, "Jump Onto", 6);
+			menu_dynamic_add_label(m, "Disarm", 'D', 5, labels);
+			menu_dynamic_add_label(m, "Jump Onto", 'W', 6, labels);
 		}
 		if (cave_isopendoor(cave, y, x)) {
-			menu_dynamic_add(m, "Close", 7);
+			menu_dynamic_add_label(m, "Close", 'c', 7, labels);
 		} else
 		if (cave_iscloseddoor(cave, y, x)) {
-			menu_dynamic_add(m, "Open", 8);
-			menu_dynamic_add(m, "Bash", 9);
-			menu_dynamic_add(m, "Jam", 10);
+			menu_dynamic_add_label(m, "Open", 'o', 8, labels);
+			menu_dynamic_add_label(m, "Bash", 'B', 9, labels);
+			menu_dynamic_add_label(m, "Jam", 'j', 10, labels);
 		} else
 		if (cave_isdiggable(cave, y, x)) {
-			menu_dynamic_add(m, "Tunnel", 11);
+			menu_dynamic_add_label(m, "Tunnel", 'T', 11, labels);
 		}
-		menu_dynamic_add(m, "Search", 12);
-		menu_dynamic_add(m, "Walk Towards", 14);
+		menu_dynamic_add_label(m, "Search", 's', 12, labels);
+		menu_dynamic_add_label(m, "Walk Towards", ';', 14, labels);
 	} else {
-		menu_dynamic_add(m, "Pathfind To", 13);
-		menu_dynamic_add(m, "Walk Towards", 14);
-		menu_dynamic_add(m, "Run Towards", 15);
+		menu_dynamic_add_label(m, "Pathfind To", ',', 13, labels);
+		menu_dynamic_add_label(m, "Walk Towards", ';', 14, labels);
+		menu_dynamic_add_label(m, "Run Towards", '.', 15, labels);
 	}
 	if (player_can_fire()) {
-		menu_dynamic_add(m, "Fire On", 16);
+		menu_dynamic_add_label(m, "Fire On", 'f', 16, labels);
 	}
-	menu_dynamic_add(m, "Throw To", 17);
+	menu_dynamic_add_label(m, "Throw To", 'v', 17, labels);
 
 	/* work out display region */
 	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
@@ -473,7 +490,9 @@ int context_menu_cave(struct cave *cave, int y, int x, int adjacent, int mx, int
 	}
 
 	selected = menu_dynamic_select(m);
+
 	menu_dynamic_free(m);
+	string_free(labels);
 
 	screen_load();
 
@@ -595,6 +614,7 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 	menu_type *m;
 	region r;
 	int selected;
+	char *labels;
 	char header[120];
 
 	textblock *tb;
@@ -606,102 +626,104 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 	}
 	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_BASE);
 
-	m->selections = lower_case;
-	menu_dynamic_add(m, "Inspect", 1);
+	labels = string_make(lower_case);
+	m->selections = labels;
+
+	menu_dynamic_add_label(m, "Inspect", 'I', 1, labels);
 
 	if (obj_can_browse(o_ptr)) {
 		if (obj_can_cast_from(o_ptr) && player_can_cast()) {
-			menu_dynamic_add(m, "Cast", 8);
+			menu_dynamic_add_label(m, "Cast", 'm', 8, labels);
 		}
 		if (obj_can_study(o_ptr) && player_can_study()) {
-			menu_dynamic_add(m, "Study", 10);
+			menu_dynamic_add_label(m, "Study", 'G', 10, labels);
 		}
 		if (player_can_read()) {
-			menu_dynamic_add(m, "Browse", 9);
+			menu_dynamic_add_label(m, "Browse", 'b', 9, labels);
 		}
 	} else
 	if (obj_is_useable(o_ptr)) {
 		if (obj_is_wand(o_ptr)) {
 			if (obj_has_charges(o_ptr)) {
-				menu_dynamic_add(m, "Aim", 8);
+				menu_dynamic_add_label(m, "Aim", 'a', 8, labels);
 			} else {
-				menu_dynamic_add(m, "Aim (grey)", 8);
+				menu_dynamic_add_label(m, "Aim (grey)", 'a', 8, labels);
 			}
 		} else
 		if (obj_is_rod(o_ptr)) {
 			if (obj_can_zap(o_ptr)) {
-				menu_dynamic_add(m, "Zap", 8);
+				menu_dynamic_add_label(m, "Zap", 'z', 8, labels);
 			} else {
-				menu_dynamic_add(m, "Zap (grey)", 8);
+				menu_dynamic_add_label(m, "Zap (grey)", 'z', 8, labels);
 			}
 		} else
 		if (obj_is_staff(o_ptr)) {
 			if (obj_has_charges(o_ptr)) {
-				menu_dynamic_add(m, "Use", 8);
+				menu_dynamic_add_label(m, "Use", 'u', 8, labels);
 			} else {
-				menu_dynamic_add(m, "Use (grey)", 8);
+				menu_dynamic_add_label(m, "Use (grey)", 'u', 8, labels);
 			}
 		} else
 		if (obj_is_scroll(o_ptr)) {
 			if (player_can_read()) {
-				menu_dynamic_add(m, "Read", 8);
+				menu_dynamic_add_label(m, "Read", 'r', 8, labels);
 			} else {
-				menu_dynamic_add(m, "Read (grey)", 8);
+				menu_dynamic_add_label(m, "Read (grey)", 'r', 8, labels);
 			}
 		} else
 		if (obj_is_potion(o_ptr)) {
-			menu_dynamic_add(m, "Quaff", 8);
+			menu_dynamic_add_label(m, "Quaff", 'q', 8, labels);
 		} else
 		if (obj_is_food(o_ptr)) {
-			menu_dynamic_add(m, "Eat", 8);
+			menu_dynamic_add_label(m, "Eat", 'E', 8, labels);
 		} else
 		if (obj_is_activatable(o_ptr)) {
-			menu_dynamic_add(m, "Activate", 8);
+			menu_dynamic_add_label(m, "Activate", 'A', 8, labels);
 		} else
 		if (obj_can_fire(o_ptr)) {
-			menu_dynamic_add(m, "Fire", 8);
+			menu_dynamic_add_label(m, "Fire", 'f', 8, labels);
 		} else
 		{
-			menu_dynamic_add(m, "Use", 8);
+			menu_dynamic_add_label(m, "Use", 'U', 8, labels);
 		}
 	}
 	if (obj_can_refill(o_ptr)) {
-		menu_dynamic_add(m, "Refill", 11);
+		menu_dynamic_add_label(m, "Refill", 'F', 11, labels);
 	}
-	if ((slot > INVEN_WIELD) && obj_can_takeoff(o_ptr)) {
-		menu_dynamic_add(m, "Take off", 3);
+	if ((slot >= INVEN_WIELD) && obj_can_takeoff(o_ptr)) {
+		menu_dynamic_add_label(m, "Take off", 't', 3, labels);
 	} else
-	if ((slot <= INVEN_WIELD) && obj_can_wear(o_ptr)) {
+	if ((slot < INVEN_WIELD) && obj_can_wear(o_ptr)) {
 		//if (obj_is_armor(o_ptr)) {
 		//	menu_dynamic_add(m, "Wear", 2);
 		//} else {
 		// 	menu_dynamic_add(m, "Wield", 2);
 		//}
-		menu_dynamic_add(m, "Equip", 2);
+		menu_dynamic_add_label(m, "Equip", 'w', 2, labels);
 	}
 	if (slot >= 0) {
-		menu_dynamic_add(m, "Drop", 6);
+		menu_dynamic_add_label(m, "Drop", 'd', 6, labels);
 		if (o_ptr->number > 1) {
-			menu_dynamic_add(m, "Drop All", 13);
+			menu_dynamic_add_label(m, "Drop All", 'd', 13, labels);
 		}
 	} else
 	{
 		if (inven_carry_okay(o_ptr)) {
-			menu_dynamic_add(m, "Pickup", 7);
+			menu_dynamic_add_label(m, "Pickup", 'g', 7, labels);
 		} else {
-			menu_dynamic_add(m, "Pickup (Full)", 7);
+			menu_dynamic_add_label(m, "Pickup (Full)", 'g', 7, labels);
 		}
 	}
-	menu_dynamic_add(m, "Throw", 12);
+	menu_dynamic_add_label(m, "Throw", 'v', 12, labels);
 	if (obj_has_inscrip(o_ptr)) {
-		menu_dynamic_add(m, "Uninscribe", 5);
+		menu_dynamic_add_label(m, "Uninscribe", '}', 5, labels);
 	} else {
-		menu_dynamic_add(m, "Inscribe", 4);
+		menu_dynamic_add_label(m, "Inscribe", '{', 4, labels);
 	}
 	if (object_is_squelched(o_ptr)) {
-		menu_dynamic_add(m, "Unignore", 14);
+		menu_dynamic_add_label(m, "Unignore", 'k', 14, labels);
 	} else {
-		menu_dynamic_add(m, "Ignore", 14);
+		menu_dynamic_add_label(m, "Ignore", 'k', 14, labels);
 	}
 
 	/* work out display region */
@@ -724,7 +746,9 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 
 	prt(format("(Enter to select, ESC) Command for %s:", header), 0, 0);
 	selected = menu_dynamic_select(m);
+
 	menu_dynamic_free(m);
+	string_free(labels);
 
 	screen_load();
 	if (selected == 1) {
@@ -840,6 +864,7 @@ int context_menu_store(struct store *store, const int oid, int mx, int my)
 	menu_type *m;
 	region r;
 	int selected;
+	char *labels;
 	object_type *o_ptr;
 
 	m = menu_dynamic_new();
@@ -850,26 +875,28 @@ int context_menu_store(struct store *store, const int oid, int mx, int my)
 	/* Get the actual object */
 	o_ptr = &store->stock[oid];
 
-	m->selections = lower_case;
-	menu_dynamic_add(m, "Inspect Inventory", 1);
+	labels = string_make(lower_case);
+	m->selections = labels;
+
+	menu_dynamic_add_label(m, "Inspect Inventory", 'I', 1, labels);
 	if (store->sidx == STORE_HOME) {
 		/*menu_dynamic_add(m, "Stash One", 2);*/
-		menu_dynamic_add(m, "Stash", 3);
-		menu_dynamic_add(m, "Examine", 4);
-		menu_dynamic_add(m, "Take", 6);
+		menu_dynamic_add_label(m, "Stash", 'd', 3, labels);
+		menu_dynamic_add_label(m, "Examine", 'x', 4, labels);
+		menu_dynamic_add_label(m, "Take", 'p', 6, labels);
 		if (o_ptr->number > 1) {
-			menu_dynamic_add(m, "Take One", 5);
+			menu_dynamic_add_label(m, "Take One", 'o', 5, labels);
 		}
 	} else {
 		/*menu_dynamic_add(m, "Sell One", 2);*/
-		menu_dynamic_add(m, "Sell", 3);
-		menu_dynamic_add(m, "Examine", 4);
-		menu_dynamic_add(m, "Buy", 6);
+		menu_dynamic_add_label(m, "Sell", 'd', 3, labels);
+		menu_dynamic_add_label(m, "Examine", 'x', 4, labels);
+		menu_dynamic_add_label(m, "Buy", 'p', 6, labels);
 		if (o_ptr->number > 1) {
-			menu_dynamic_add(m, "Buy One", 5);
+			menu_dynamic_add_label(m, "Buy One", 'o', 5, labels);
 		}
 	}
-	menu_dynamic_add(m, "Exit", 7);
+	menu_dynamic_add_label(m, "Exit", '`', 7, labels);
 
 
 	/* work out display region */
@@ -898,7 +925,9 @@ int context_menu_store(struct store *store, const int oid, int mx, int my)
 
 	prt("(Enter to select, ESC) Command:", 0, 0);
 	selected = menu_dynamic_select(m);
+
 	menu_dynamic_free(m);
+	string_free(labels);
 
 	screen_load();
 	if (selected == 1) {
@@ -945,6 +974,7 @@ int context_menu_store_item(struct store *store, const int oid, int mx, int my)
 	menu_type *m;
 	region r;
 	int selected;
+	char *labels;
 	object_type *o_ptr;
 	char header[120];
 
@@ -958,17 +988,19 @@ int context_menu_store_item(struct store *store, const int oid, int mx, int my)
 	}
 	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_BASE);
 
-	m->selections = lower_case;
-	menu_dynamic_add(m, "Examine", 4);
+	labels = string_make(lower_case);
+	m->selections = labels;
+
+	menu_dynamic_add_label(m, "Examine", 'x', 4, labels);
 	if (store->sidx == STORE_HOME) {
-		menu_dynamic_add(m, "Take", 6);
+		menu_dynamic_add_label(m, "Take", 'p', 6, labels);
 		if (o_ptr->number > 1) {
-			menu_dynamic_add(m, "Take One", 5);
+			menu_dynamic_add_label(m, "Take One", 'o', 5, labels);
 		}
 	} else {
-		menu_dynamic_add(m, "Buy", 6);
+		menu_dynamic_add_label(m, "Buy", 'p', 6, labels);
 		if (o_ptr->number > 1) {
-			menu_dynamic_add(m, "Buy One", 5);
+			menu_dynamic_add_label(m, "Buy One", 'o', 5, labels);
 		}
 	}
 
@@ -998,7 +1030,9 @@ int context_menu_store_item(struct store *store, const int oid, int mx, int my)
 
 	prt(format("(Enter to select, ESC) Command for %s:", header), 0, 0);
 	selected = menu_dynamic_select(m);
+
 	menu_dynamic_free(m);
+	string_free(labels);
 
 	screen_load();
 	if (selected == 4) {

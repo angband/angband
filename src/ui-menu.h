@@ -316,6 +316,7 @@ bool menu_handle_keypress(menu_type *menu, const ui_event *in, ui_event *out);
 
 menu_type *menu_dynamic_new(void);
 void menu_dynamic_add(menu_type *m, const char *text, int value);
+void menu_dynamic_add_label(menu_type *m, const char *text, const char label, int value, char *label_list);
 size_t menu_dynamic_longest_entry(menu_type *m);
 int menu_dynamic_select(menu_type *m);
 void menu_dynamic_free(menu_type *m);
