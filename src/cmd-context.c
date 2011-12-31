@@ -187,7 +187,7 @@ int context_menu_player(int mx, int my)
 	 * avoid confusion as to what should be there */
 	/*menu_dynamic_add(m, "Keymaps", 10);*/
 	if (!OPT(center_player)) {
-		menu_dynamic_add_label(m, "^Center Map", 'M', 15, labels);
+		menu_dynamic_add_label(m, "^Center Map", 'L', 15, labels);
 	}
 	menu_dynamic_add_label(m, "Other", ' ', 9, labels);
 
