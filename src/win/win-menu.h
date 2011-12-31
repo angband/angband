@@ -119,6 +119,8 @@
 #define IDM_TILE_12X20		188
 #define IDM_TILE_16X25		189
 
+#define IDM_WINDOW_OPT          180
+
 #define IDM_HELP_GENERAL		901
 #define IDM_HELP_SPOILERS		902
 

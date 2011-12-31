@@ -2935,6 +2935,8 @@ static void setup_menus(void)
 	EnableMenuItem(hm, IDM_FILE_EXIT,
 	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 
+	EnableMenuItem(hm, IDM_WINDOW_OPT,
+	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 
 	/* No character available */
 	if (!character_generated)
@@ -2951,6 +2953,8 @@ static void setup_menus(void)
 	{
 		/* Menu "File", Item "Save" */
 		EnableMenuItem(hm, IDM_FILE_SAVE, MF_BYCOMMAND | MF_ENABLED);
+		/* Allow accessing the window options */
+		EnableMenuItem(hm, IDM_WINDOW_OPT, MF_BYCOMMAND | MF_ENABLED);
 	}
 
 	if (!game_in_progress || !character_generated || inkey_flag)
@@ -3702,6 +3706,13 @@ static void process_menus(WORD wCmd)
 
 			term_getsize(td);
 			term_window_resize(td);
+
+			break;
+		}
+
+		case IDM_WINDOW_OPT: {
+			Term_keypress('=',0);
+			Term_keypress('w',0);
 
 			break;
 		}
