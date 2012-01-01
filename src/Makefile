@@ -7,7 +7,7 @@ INCLUDE = $(HDRS) $(INCS)
 OBJECTS = $(ANGFILES) $(ZFILES)
 SRCS    = ${OBJECTS:.o=.c} ${MAINFILES:.o=.c}
 SUBDIRS = gtk monster object player
-PROG    = angband
+PROG    = angband$(EXEEXT)
 VERSION := $(shell ../scripts/version.sh)
 CFLAGS += -DBUILD_ID=${VERSION} -I. -std=c99 -Wdeclaration-after-statement -O0
 
@@ -15,13 +15,13 @@ CFLAGS += -DBUILD_ID=${VERSION} -I. -std=c99 -Wdeclaration-after-statement -O0
 GCOBJS = $(OBJECTS:.o=.gcno) $(OBJECTS:.o=.gcda)
 GCOVS = $(OBJECTS:.o=.c.gcov)
 
-CLEAN = angband.o angband.exe win/angband.res
+CLEAN = angband.o $(PROG) win/angband.res
 DISTCLEAN = autoconf.h
 
 export CFLAGS LDFLAGS LIBS
 
-angband: angband.o $(MAINFILES)
-	$(CC) -o angband angband.o $(MAINFILES) $(LDFLAGS) $(LDADD) $(LIBS)
+angband$(EXEEXT): angband.o $(MAINFILES)
+	$(CC) -o angband$(EXEEXT) angband.o $(MAINFILES) $(LDFLAGS) $(LDADD) $(LIBS)
 	@printf "%10s %-20s\n" LINK $@
 
 win/angband.res: win/angband.rc
