@@ -24,6 +24,10 @@ angband: angband.o $(MAINFILES)
 	$(CC) -o angband angband.o $(MAINFILES) $(LDFLAGS) $(LDADD) $(LIBS)
 	@printf "%10s %-20s\n" LINK $@
 
+WRES = $(CROSS)windres
+win/angband.res: win/angband.rc
+	$(WRES) $< -O coff -o $@
+
 angband.o: $(OBJECTS)
 	$(LD) -r -o $@ $(OBJECTS)
 	@printf "%10s %-20s\n" LINK $@

@@ -11,18 +11,12 @@
 #else
 
 /*
- * Extract the "WINDOWS" flag from the compiler
+ * Native MSVC compiler doesn't understand inline or snprintf
  */
-# if defined(_Windows) || defined(__WINDOWS__) || \
-     defined(__WIN32__) || defined(WIN32) || \
-     defined(__WINNT__) || defined(__NT__)
-#  ifndef WINDOWS
-#   define WINDOWS
+#ifdef _MSC_VER
 #	define inline __inline
 #	define snprintf _snprintf
-#  endif
-# endif
-
+#endif
 
 /* Necessary? */
 #ifdef NDS
@@ -53,8 +47,16 @@
 
 #endif /* HAVE_CONFIG_H */
 
-
-
+/*
+ * Extract the "WINDOWS" flag from the compiler
+ */
+# if defined(_Windows) || defined(__WINDOWS__) || \
+     defined(__WIN32__) || defined(WIN32) || \
+     defined(__WINNT__) || defined(__NT__)
+#  ifndef WINDOWS
+#   define WINDOWS
+#  endif
+# endif
 
 /*
  * OPTION: set "SET_UID" if the machine is a "multi-user" wmachine.

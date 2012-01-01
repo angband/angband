@@ -82,7 +82,7 @@ ifeq ($(USE_TEST),1)
 endif
 
 ifeq ($(USE_WIN),1)
-	MAINFILES += main-win.o
+        MAINFILES += win/angband.res main-win.o win/readdib.o win/readpng.o win/scrnshot.o
 endif
 
 ifeq ($(USE_OSX),1)

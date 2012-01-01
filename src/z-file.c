@@ -821,8 +821,7 @@ void my_dclose(ang_dir *dir)
 	FREE(dir);
 }
 
-#endif /* WINDOWS */
-
+#else /* WINDOWS */
 
 #ifdef HAVE_DIRENT_H
 
@@ -904,4 +903,4 @@ void my_dclose(ang_dir *dir)
 }
 
 #endif /* HAVE_DIRENT_H */
-
+#endif /* WINDOWS */
