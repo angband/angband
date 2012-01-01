@@ -289,12 +289,24 @@ static void do_cmd_options_win(const char *name, int row)
 			int choicey = ke.mouse.y - 5;
 			int choicex = (ke.mouse.x - 35)/5;
 
+			if (ke.mouse.button == 2)
+				break;
+
 			if ((choicey >= 0) && (choicey < PW_MAX_FLAGS)
 				&& (choicex > 0) && (choicex < ANGBAND_TERM_MAX)
 				&& !(ke.mouse.x % 5))
 			{
-				y = choicey;
-				x = (ke.mouse.x - 35)/5;
+				if ((choicey == y) && (choicex == x)) {
+					/* Toggle flag (off) */
+					if (new_flags[x] & (1L << y))
+						new_flags[x] &= ~(1L << y);
+					/* Toggle flag (on) */
+					else
+						new_flags[x] |= (1L << y);
+				} else {
+					y = choicey;
+					x = (ke.mouse.x - 35)/5;
+				}
 			}
 		}
 

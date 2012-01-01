@@ -1,156 +1,159 @@
 /* File: angband.rc */
+#include "win-menu.h"
 
 ANGBAND MENU
 {
 	POPUP "&File"
 	{
-		MENUITEM "&New", 100
-		MENUITEM "&Open...", 101
+		MENUITEM "&New", IDM_FILE_NEW
+		MENUITEM "&Open...", IDM_FILE_OPEN
 		MENUITEM SEPARATOR
-		MENUITEM "&Save", 110
+		MENUITEM "&Save", IDM_FILE_SAVE
 		MENUITEM SEPARATOR
-		MENUITEM "E&xit", 130
+		MENUITEM "E&xit", IDM_FILE_EXIT
 	}
 
 	POPUP "&Window"
 	{
 		POPUP "&Visibility"
 		{
-			MENUITEM "Term-0 window", 200
-			MENUITEM "Term-1 window", 201
-			MENUITEM "Term-2 window", 202
-			MENUITEM "Term-3 window", 203
-			MENUITEM "Term-4 window", 204
-			MENUITEM "Term-5 window", 205
-			MENUITEM "Term-6 window", 206
-			MENUITEM "Term-7 window", 207
+			MENUITEM "Term-0 window", IDM_WINDOW_VIS_0
+			MENUITEM "Term-1 window", IDM_WINDOW_VIS_1
+			MENUITEM "Term-2 window", IDM_WINDOW_VIS_2
+			MENUITEM "Term-3 window", IDM_WINDOW_VIS_3
+			MENUITEM "Term-4 window", IDM_WINDOW_VIS_4
+			MENUITEM "Term-5 window", IDM_WINDOW_VIS_5
+			MENUITEM "Term-6 window", IDM_WINDOW_VIS_6
+			MENUITEM "Term-7 window", IDM_WINDOW_VIS_7
 		}
 
 		POPUP "&Font"
 		{
-			MENUITEM "Term-0 window", 210
-			MENUITEM "Term-1 window", 211
-			MENUITEM "Term-2 window", 212
-			MENUITEM "Term-3 window", 213
-			MENUITEM "Term-4 window", 214
-			MENUITEM "Term-5 window", 215
-			MENUITEM "Term-6 window", 216
-			MENUITEM "Term-7 window", 217
+			MENUITEM "Term-0 window", IDM_WINDOW_FONT_0
+			MENUITEM "Term-1 window", IDM_WINDOW_FONT_1
+			MENUITEM "Term-2 window", IDM_WINDOW_FONT_2
+			MENUITEM "Term-3 window", IDM_WINDOW_FONT_3
+			MENUITEM "Term-4 window", IDM_WINDOW_FONT_4
+			MENUITEM "Term-5 window", IDM_WINDOW_FONT_5
+			MENUITEM "Term-6 window", IDM_WINDOW_FONT_6
+			MENUITEM "Term-7 window", IDM_WINDOW_FONT_7
 		}
 
 		MENUITEM SEPARATOR
 
 		POPUP "Bizarre Display"
 		{
-			MENUITEM "Term-0 window", 230
-			MENUITEM "Term-1 window", 231
-			MENUITEM "Term-2 window", 232
-			MENUITEM "Term-3 window", 233
-			MENUITEM "Term-4 window", 234
-			MENUITEM "Term-5 window", 235
-			MENUITEM "Term-6 window", 236
-			MENUITEM "Term-7 window", 237
+			MENUITEM "Term-0 window", IDM_WINDOW_BIZ_0
+			MENUITEM "Term-1 window", IDM_WINDOW_BIZ_1
+			MENUITEM "Term-2 window", IDM_WINDOW_BIZ_2
+			MENUITEM "Term-3 window", IDM_WINDOW_BIZ_3
+			MENUITEM "Term-4 window", IDM_WINDOW_BIZ_4
+			MENUITEM "Term-5 window", IDM_WINDOW_BIZ_5
+			MENUITEM "Term-6 window", IDM_WINDOW_BIZ_6
+			MENUITEM "Term-7 window", IDM_WINDOW_BIZ_7
 		}
 
 		POPUP "Increase Tile Width"
 		{
-			MENUITEM "Term-0 window", 240
-			MENUITEM "Term-1 window", 241
-			MENUITEM "Term-2 window", 242
-			MENUITEM "Term-3 window", 243
-			MENUITEM "Term-4 window", 244
-			MENUITEM "Term-5 window", 245
-			MENUITEM "Term-6 window", 246
-			MENUITEM "Term-7 window", 247
+			MENUITEM "Term-0 window", IDM_WINDOW_I_WID_0
+			MENUITEM "Term-1 window", IDM_WINDOW_I_WID_1
+			MENUITEM "Term-2 window", IDM_WINDOW_I_WID_2
+			MENUITEM "Term-3 window", IDM_WINDOW_I_WID_3
+			MENUITEM "Term-4 window", IDM_WINDOW_I_WID_4
+			MENUITEM "Term-5 window", IDM_WINDOW_I_WID_5
+			MENUITEM "Term-6 window", IDM_WINDOW_I_WID_6
+			MENUITEM "Term-7 window", IDM_WINDOW_I_WID_7
 		}
 
 		POPUP "Decrease Tile Width"
 		{
-			MENUITEM "Term-0 window", 250
-			MENUITEM "Term-1 window", 251
-			MENUITEM "Term-2 window", 252
-			MENUITEM "Term-3 window", 253
-			MENUITEM "Term-4 window", 254
-			MENUITEM "Term-5 window", 255
-			MENUITEM "Term-6 window", 256
-			MENUITEM "Term-7 window", 257
+			MENUITEM "Term-0 window", IDM_WINDOW_D_WID_0
+			MENUITEM "Term-1 window", IDM_WINDOW_D_WID_1
+			MENUITEM "Term-2 window", IDM_WINDOW_D_WID_2
+			MENUITEM "Term-3 window", IDM_WINDOW_D_WID_3
+			MENUITEM "Term-4 window", IDM_WINDOW_D_WID_4
+			MENUITEM "Term-5 window", IDM_WINDOW_D_WID_5
+			MENUITEM "Term-6 window", IDM_WINDOW_D_WID_6
+			MENUITEM "Term-7 window", IDM_WINDOW_D_WID_7
 		}
 
 		POPUP "Increase Tile Height"
 		{
-			MENUITEM "Term-0 window", 260
-			MENUITEM "Term-1 window", 261
-			MENUITEM "Term-2 window", 262
-			MENUITEM "Term-3 window", 263
-			MENUITEM "Term-4 window", 264
-			MENUITEM "Term-5 window", 265
-			MENUITEM "Term-6 window", 266
-			MENUITEM "Term-7 window", 267
+			MENUITEM "Term-0 window", IDM_WINDOW_I_HGT_0
+			MENUITEM "Term-1 window", IDM_WINDOW_I_HGT_1
+			MENUITEM "Term-2 window", IDM_WINDOW_I_HGT_2
+			MENUITEM "Term-3 window", IDM_WINDOW_I_HGT_3
+			MENUITEM "Term-4 window", IDM_WINDOW_I_HGT_4
+			MENUITEM "Term-5 window", IDM_WINDOW_I_HGT_5
+			MENUITEM "Term-6 window", IDM_WINDOW_I_HGT_6
+			MENUITEM "Term-7 window", IDM_WINDOW_I_HGT_7
 		}
 
 		POPUP "Decrease Tile Height"
 		{
-			MENUITEM "Term-0 window", 270
-			MENUITEM "Term-1 window", 271
-			MENUITEM "Term-2 window", 272
-			MENUITEM "Term-3 window", 273
-			MENUITEM "Term-4 window", 274
-			MENUITEM "Term-5 window", 275
-			MENUITEM "Term-6 window", 276
-			MENUITEM "Term-7 window", 277
+			MENUITEM "Term-0 window", IDM_WINDOW_D_HGT_0
+			MENUITEM "Term-1 window", IDM_WINDOW_D_HGT_1
+			MENUITEM "Term-2 window", IDM_WINDOW_D_HGT_2
+			MENUITEM "Term-3 window", IDM_WINDOW_D_HGT_3
+			MENUITEM "Term-4 window", IDM_WINDOW_D_HGT_4
+			MENUITEM "Term-5 window", IDM_WINDOW_D_HGT_5
+			MENUITEM "Term-6 window", IDM_WINDOW_D_HGT_6
+			MENUITEM "Term-7 window", IDM_WINDOW_D_HGT_7
 		}
 
 		MENUITEM SEPARATOR
 
 		POPUP "Term 0 Font Tile Size"
 		{
-			MENUITEM "Font",    190
-			MENUITEM "8 x 16",  194
-			MENUITEM "8 x 8",   191
-			MENUITEM "16 x 16", 192
-			MENUITEM "32 x 32", 193
-			MENUITEM "16 x 32", 196
-			MENUITEM "12 x 20", 188
-			MENUITEM "16 x 25", 189
+			MENUITEM "Font",    IDM_TILE_FONT
+			MENUITEM "8 x 16",  IDM_TILE_08X16
+			MENUITEM "8 x 8",   IDM_TILE_08X08
+			MENUITEM "16 x 16", IDM_TILE_16X16
+			MENUITEM "32 x 32", IDM_TILE_32X32
+			MENUITEM "16 x 32", IDM_TILE_16X32
+			MENUITEM "12 x 20", IDM_TILE_12X20
+			MENUITEM "16 x 25", IDM_TILE_16X25
 		}
+		MENUITEM SEPARATOR
+		MENUITEM "Term Options",    IDM_WINDOW_OPT
 	}
 
 	POPUP "&Options"
 	{
 		POPUP "&Graphics"
 		{
-			MENUITEM "&None", 400
+			MENUITEM "&None", IDM_OPTIONS_GRAPHICS_NONE
 			MENUITEM SEPARATOR
-			MENUITEM "Enable nice &graphics", 445
+			MENUITEM "Enable nice &graphics", IDM_OPTIONS_GRAPHICS_NICE
 			MENUITEM SEPARATOR
 			POPUP "&Tile Multiplier"
 			{
-				MENUITEM "&1x1", 447
-				MENUITEM "&2x1", 448
-				MENUITEM "2x2", 450
-				MENUITEM "3x1", 451
-				MENUITEM "&3x3", 452
-				MENUITEM "&4x2", 449
-				MENUITEM "4x4", 453
-				MENUITEM "&6x3", 454
-				MENUITEM "6x6", 455
-				MENUITEM "&8x4", 456
-				MENUITEM "8x8", 457
-				MENUITEM "16x8", 458
-				MENUITEM "16x16", 459
+				MENUITEM "&1x1", IDM_OPTIONS_TILE_1x1
+				MENUITEM "&2x1", IDM_OPTIONS_TILE_2x1
+				MENUITEM "2x2", IDM_OPTIONS_TILE_2x2
+				MENUITEM "3x1", IDM_OPTIONS_TILE_3x1
+				MENUITEM "&3x3", IDM_OPTIONS_TILE_3x3
+				MENUITEM "&4x2", IDM_OPTIONS_TILE_4x2
+				MENUITEM "4x4", IDM_OPTIONS_TILE_4x4
+				MENUITEM "&6x3", IDM_OPTIONS_TILE_6x3
+				MENUITEM "6x6", IDM_OPTIONS_TILE_6x6
+				MENUITEM "&8x4", IDM_OPTIONS_TILE_8x4
+				MENUITEM "8x8", IDM_OPTIONS_TILE_8x8
+				MENUITEM "16x8", IDM_OPTIONS_TILE_16x8
+				MENUITEM "16x16", IDM_OPTIONS_TILE_16x16
 			}
 		}
 
 		MENUITEM SEPARATOR
-		MENUITEM "Low Priority", 420
-		MENUITEM "Activate Screensaver", 430
-		MENUITEM "&Map", 440
-		MENUITEM "&Screenshot", 441
+		MENUITEM "Low Priority", IDM_OPTIONS_LOW_PRIORITY
+		MENUITEM "Activate Screensaver", IDM_OPTIONS_SAVER
+		MENUITEM "&Map", IDM_OPTIONS_MAP
+		MENUITEM "&Screenshot", IDM_OPTIONS_SCREENSHOT
 	}
 
 	POPUP "&Help"
 	{
-		MENUITEM "&Contents", 901
+		MENUITEM "&Contents", IDM_HELP_GENERAL
 	}
 }
 

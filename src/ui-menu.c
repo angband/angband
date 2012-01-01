@@ -903,6 +903,14 @@ void menu_dynamic_add(menu_type *m, const char *text, int value)
 	}
 }
 
+void menu_dynamic_add_label(menu_type *m, const char *text, const char label, int value, char *label_list)
+{
+	if(label && m->selections && (m->selections == label_list)) {
+		label_list[m->count] = label;
+	}
+	menu_dynamic_add(m,text,value);
+}
+
 size_t menu_dynamic_longest_entry(menu_type *m)
 {
 	size_t biggest = 0;
