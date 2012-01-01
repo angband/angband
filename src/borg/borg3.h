@@ -56,7 +56,7 @@ struct borg_item
 
     char *note;      /* Pointer to tail of 'desc' */
 
-    s16b kind;      /* Kind index */
+    u32b kind;      /* Kind index */
 
     bool ident;      /* True if item is identified */
 	bool aware;		/* Player is aware of the effects */
