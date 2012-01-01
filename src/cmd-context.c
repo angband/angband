@@ -398,7 +398,8 @@ int context_menu_cave(struct cave *cave, int y, int x, int adjacent, int mx, int
 		} else
 		if (cave_iscloseddoor(cave, y, x)) {
 			menu_dynamic_add_label(m, "Open", 'o', 8, labels);
-			menu_dynamic_add_label(m, "Bash", 'B', 9, labels);
+			menu_dynamic_add_label(m, "Bash Open", 'B', 9, labels);
+			menu_dynamic_add_label(m, "Lock", 'D', 5, labels);
 			menu_dynamic_add_label(m, "Jam", 'j', 10, labels);
 		} else
 		if (cave_isdiggable(cave, y, x)) {
