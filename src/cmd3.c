@@ -104,14 +104,14 @@ void do_cmd_inven(void)
 	/* Hack -- Start in "inventory" mode */
 	p_ptr->command_wrk = (USE_INVEN);
 
-	/* Save screen */
-	screen_save();
-
 	/* Hack -- show empty slots */
 	item_tester_full = TRUE;
 
 	/* Loop this menu until an object context menu says differently */
 	while (ret == 3) {
+		/* Save screen */
+		screen_save();
+
 		/* Prompt for a command */
 		prt(format("(Inventory) Burden %d.%d lb (%d.%d lb %s). Select Item: ",
 			        p_ptr->total_weight / 10, p_ptr->total_weight % 10,
@@ -123,6 +123,9 @@ void do_cmd_inven(void)
 		if (get_item(&item, NULL, NULL, CMD_NULL, USE_EQUIP|USE_INVEN|USE_FLOOR|IS_HARMLESS)) {
 			object_type *o_ptr;
 
+			/* Load screen */
+			screen_load();
+
 			/* Track the object kind */
 			track_object(item);
 
@@ -132,15 +135,15 @@ void do_cmd_inven(void)
 				while ((ret = context_menu_object(o_ptr, item)) == 2);
 			}
 		} else {
+			/* Load screen */
+			screen_load();
+
 			ret = -1;
 		}
 	}
 
 	/* Hack -- hide empty slots */
 	item_tester_full = FALSE;
-
-	/* Load screen */
-	screen_load();
 }
 
 
@@ -151,22 +154,24 @@ void do_cmd_equip(void)
 {
 	int item;
 	int ret = 3;
-	int diff = weight_remaining();
 
 	/* Hack -- Start in "inventory" mode */
 	p_ptr->command_wrk = (USE_EQUIP);
-
-	/* Save screen */
-	screen_save();
 
 	/* Hack -- show empty slots */
 	item_tester_full = TRUE;
 
 	/* Loop this menu until an object context menu says differently */
 	while (ret == 3) {
+		/* Save screen */
+		screen_save();
+
 		/* Get an item to use a context command on (Display the inventory) */
 		if (get_item(&item, "Select Item:", NULL, CMD_NULL, USE_EQUIP|USE_INVEN|USE_FLOOR|IS_HARMLESS)) {
 			object_type *o_ptr;
+
+			/* Load screen */
+			screen_load();
 
 			/* Track the object kind */
 			track_object(item);
@@ -177,6 +182,9 @@ void do_cmd_equip(void)
 				while ((ret = context_menu_object(o_ptr, item)) == 2);
 			}
 		} else {
+			/* Load screen */
+			screen_load();
+
 			ret = -1;
 		}
 	}
@@ -184,9 +192,6 @@ void do_cmd_equip(void)
 
 	/* Hack -- hide empty slots */
 	item_tester_full = FALSE;
-
-	/* Load screen */
-	screen_load();
 }
 
 enum
@@ -198,24 +203,18 @@ enum
 	IGNORE_THIS_QUALITY
 };
 
-void textui_cmd_destroy(void)
+void textui_cmd_destroy_menu(int item)
 {
-	int item;
 	object_type *o_ptr;
-
 	char out_val[160];
 
 	menu_type *m;
 	region r;
 	int selected;
 
-	/* Get an item */
-	const char *q = "Ignore which item? ";
-	const char *s = "You have nothing to ignore.";
-	if (!get_item(&item, q, s, CMD_DESTROY, USE_INVEN | USE_EQUIP | USE_FLOOR))
-		return;
-
 	o_ptr = object_from_item_idx(item);
+	if (!(o_ptr->kind))
+		return;
 
 	m = menu_dynamic_new();
 	m->selections = lower_case;
@@ -296,6 +295,19 @@ void textui_cmd_destroy(void)
 	p_ptr->notice |= PN_SQUELCH;
 
 	menu_dynamic_free(m);
+}
+
+void textui_cmd_destroy(void)
+{
+	int item;
+
+	/* Get an item */
+	const char *q = "Ignore which item? ";
+	const char *s = "You have nothing to ignore.";
+	if (!get_item(&item, q, s, CMD_DESTROY, USE_INVEN | USE_EQUIP | USE_FLOOR))
+		return;
+
+	textui_cmd_destroy_menu(item);
 }
 
 void textui_cmd_toggle_ignore(void)

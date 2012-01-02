@@ -1086,6 +1086,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 		switch (press.key.code)
 		{
 			case ESCAPE:
+			case ' ':
 			{
 				done = TRUE;
 				break;

@@ -492,6 +492,48 @@ bool squelch_item_ok(const object_type *o_ptr)
 }
 
 /*
+ * Determines if an object is already squelched. Same as squelch_item_ok above,
+ * without the first (p_ptr->unignoring) test.
+ */
+bool object_is_squelched(const object_type *o_ptr)
+{
+	byte type;
+
+	/* Do squelch individual objects that marked ignore */
+	if (o_ptr->ignore)
+		return TRUE;
+
+	/* Don't squelch artifacts unless marked to be squelched */
+	if (o_ptr->artifact ||
+			check_for_inscrip(o_ptr, "!k") || check_for_inscrip(o_ptr, "!*"))
+		return FALSE;
+
+	/* Auto-squelch dead chests */
+	if (o_ptr->tval == TV_CHEST && o_ptr->pval[DEFAULT_PVAL] == 0)
+		return TRUE;
+
+	/* Do squelching by kind */
+	if (object_flavor_is_aware(o_ptr) ?
+		 kind_is_squelched_aware(o_ptr->kind) :
+		 kind_is_squelched_unaware(o_ptr->kind))
+		return TRUE;
+
+	type = squelch_type_of(o_ptr);
+	if (type == TYPE_MAX)
+		return FALSE;
+
+	/* Squelch items known not to be special */
+	if (object_is_known_not_artifact(o_ptr) && squelch_level[type] == SQUELCH_ALL)
+		return TRUE;
+
+	/* Get result based on the feeling and the squelch_level */
+	if (squelch_level_of(o_ptr) <= squelch_level[type])
+		return TRUE;
+	else
+		return FALSE;
+}
+
+/*
  * Drop all {squelch}able items.
  */
 void squelch_drop(void)
