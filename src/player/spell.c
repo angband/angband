@@ -25,7 +25,7 @@
 /*
  * Stat Table (INT/WIS) -- Minimum failure rate (percentage)
  */
-static const byte adj_mag_fail[STAT_RANGE] =
+const byte adj_mag_fail[STAT_RANGE] =
 {
 	99	/* 3 */,
 	99	/* 4 */,
@@ -70,7 +70,7 @@ static const byte adj_mag_fail[STAT_RANGE] =
 /*
  * Stat Table (INT/WIS) -- failure rate adjustment
  */
-static const int adj_mag_stat[STAT_RANGE] =
+const int adj_mag_stat[STAT_RANGE] =
 {
 	-5	/* 3 */,
 	-4	/* 4 */,
