@@ -3588,7 +3588,7 @@ bool borg_caution(void)
         /* Only go down if fleeing or prepared */
         if (goal_fleeing == TRUE || goal_fleeing_lunal== TRUE || goal_fleeing_munchkin) stair_more = TRUE;
 
-        if ((cptr)NULL == borg_prepared(borg_skill[BI_CDEPTH]+1))
+        if ((char *)NULL == borg_prepared(borg_skill[BI_CDEPTH]+1))
             stair_more = TRUE;
 
         if (!track_less_num && (borg_skill[BI_CURLITE] == 0 || borg_skill[BI_ISHUNGRY] || borg_skill[BI_ISWEAK] || borg_skill[BI_FOOD] < 2))
@@ -3934,7 +3934,7 @@ bool borg_caution(void)
    {
         int d, b_d = -1;
         int r, b_r = -1;
-		int b_p, p1 = -1;
+		int b_p = -1, p1 = -1;
         int b_x = c_x;
         int b_y = c_y;
 		int ii;
@@ -13972,6 +13972,7 @@ static int borg_perma_aux_berserk_potion(void)
     return (0);
 }
 
+#ifdef UNUSED
 /* Glyph of Warding in a a-s corridor */
 static int borg_perma_aux_glyph(void)
 {
@@ -14066,6 +14067,7 @@ static int borg_perma_aux_glyph(void)
     /* default to can't do it. */
     return (0);
 }
+#endif
 
 /*
  * Detect Inviso/Monsters
@@ -15535,7 +15537,7 @@ bool borg_twitchy(void)
 /*
  * Commit the current "flow"
  */
-static bool borg_flow_commit(cptr who, int why)
+static bool borg_flow_commit(char *who, int why)
 {
     int cost;
 
@@ -15795,7 +15797,7 @@ bool borg_flow_stair_more(int why, bool sneak, bool brave)
     if (!track_more_num) return (FALSE);
 
     /* not unless safe or munchkin/Lunal Mode or brave */
-    if (!borg_lunal_mode && !borg_munchkin_mode && !brave && (cptr)NULL != borg_prepared(borg_skill[BI_CDEPTH] + 1))
+    if (!borg_lunal_mode && !borg_munchkin_mode && !brave && (char *)NULL != borg_prepared(borg_skill[BI_CDEPTH] + 1))
         return (FALSE);
 
     /* dont go down if hungry or low on food, unless fleeing a scary town */
@@ -16489,7 +16491,7 @@ bool borg_flow_shop_entry(int i)
 {
     int x, y;
 
-    cptr name = (f_info[0x08+i].name);
+    char *name = (f_info[0x08+i].name);
 
     /* Must be in town */
     if (borg_skill[BI_CDEPTH]) return (FALSE);

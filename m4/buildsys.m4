@@ -108,7 +108,7 @@ AC_DEFUN([BUILDSYS_SHARED_LIB], [
 		solaris*)
 			AC_MSG_RESULT(Solaris)
 			LIB_CFLAGS='-fPIC -DPIC'
-			LIB_LDFLAGS='-shared -Wl,-soname=${LIB}.${LIB_MAJOR}.${LIB_MINOR}'
+			LIB_LDFLAGS='-shared -Wl,-soname=${SHARED_LIB}.${LIB_MAJOR}.${LIB_MINOR}'
 			LIB_PREFIX='lib'
 			LIB_SUFFIX='.so'
 			LDFLAGS_RPATH='-Wl,-rpath,${libdir}'
@@ -136,7 +136,7 @@ AC_DEFUN([BUILDSYS_SHARED_LIB], [
 		cygwin* | mingw*)
 			AC_MSG_RESULT(Win32)
 			LIB_CFLAGS=''
-			LIB_LDFLAGS='-shared -Wl,--out-implib,${LIB}.a'
+			LIB_LDFLAGS='-shared -Wl,--out-implib,${SHARED_LIB}.a'
 			LIB_PREFIX='lib'
 			LIB_SUFFIX='.dll'
 			LDFLAGS_RPATH='-Wl,-rpath,${libdir}'
@@ -145,12 +145,12 @@ AC_DEFUN([BUILDSYS_SHARED_LIB], [
 			PLUGIN_SUFFIX='.dll'
 			INSTALL_LIB='&& ${MKDIR_P} ${DESTDIR}${bindir} && ${INSTALL} -m 755 $$i ${DESTDIR}${bindir}/$$i && ${INSTALL} -m 755 $$i.a ${DESTDIR}${libdir}/$$i.a'
 			UNINSTALL_LIB='&& rm -f ${DESTDIR}${bindir}/$$i ${DESTDIR}${libdir}/$$i.a'
-			CLEAN_LIB='${LIB}.a'
+			CLEAN_LIB='${SHARED_LIB}.a'
 			;;
 		*)
 			AC_MSG_RESULT(GNU)
 			LIB_CFLAGS='-fPIC -DPIC'
-			LIB_LDFLAGS='-shared -Wl,-soname=${LIB}.${LIB_MAJOR}'
+			LIB_LDFLAGS='-shared -Wl,-soname=${SHARED_LIB}.${LIB_MAJOR}'
 			LIB_PREFIX='lib'
 			LIB_SUFFIX='.so'
 			LDFLAGS_RPATH='-Wl,-rpath,${libdir}'

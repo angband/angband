@@ -305,7 +305,7 @@ static void display_group_member(menu_type *menu, int oid,
 	/* Do visual mode */
 	if (o_funcs->is_visual && o_funcs->xattr)
 	{
-		byte c = *o_funcs->xchar(oid);
+		wchar_t c = *o_funcs->xchar(oid);
 		byte a = *o_funcs->xattr(oid);
 
 		c_put_str(attr, format("%d/%d", a, c), row, 60);
@@ -703,7 +703,7 @@ static void display_visual_list(int col, int row, int height, int width, byte at
 
 
 /*
- * Place the cursor at the collect position for visual mode
+ * Place the cursor at the correct position for visual mode
  */
 static void place_visual_list_cursor(int col, int row, byte a, byte c, byte attr_top, byte char_left)
 {

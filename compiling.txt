@@ -5,8 +5,11 @@ The methods for compiling Angband vary by platform and by build system. If
 you get Angband working on a different platform or build system please let us
 know so we can add to this file.
 
-Mac OS X
---------
+BUILDING ON Mac OS X
+====================
+
+Native builds
+-------------
 
 To build the new Cocoa front-end:
 
@@ -18,8 +21,13 @@ To build the legacy Carbon front-end (which is deprecated):
     cd src
     make -f Makefile.osx
 
-Linux and *nix
---------------
+
+
+BUILDING ON LINUX / *NIX
+========================
+
+Native builds
+-------------
 
 Linux builds using autotools. There are several different front ends that you
 can optionally build (GCU, SDL, X11, and GTK) using arguments to configure
@@ -42,6 +50,7 @@ To build Angband to be installed in some other location:
 On some BSDs, you may need to copy install-sh into lib/ and various
 subdirectories of lib/ in order to install correctly.
 
+
 Cross-building for Windows with Mingw
 -------------------------------------
 
@@ -49,26 +58,72 @@ Many developers (as well as the auto-builder) build Angband for Windows using
 Mingw on Linux. This requires that the necessary Mingw packages are all
 installed.
 
-The command steps will be similar to this:
+This type of build now also uses autotools, so you must configure it to
+cross-compile, e.g.
 
-    cd src
-    MINGW=yes make -f Makefile.win CROSS=i586-mingw32msvc-
+	./autogen.sh
+	./configure --enable-win --disable-curses --build=i686-pc-linux-gnu --host=i586-mingw32msvc  
 
-Mingw installs commands like 'i586-mingw32msvc-gcc'. The value of CROSS
-should be that same command with the 'gcc' removed. Instead of i586 you may
-see i686, amd64, etc.
+Mingw installs commands like 'i586-mingw32msvc-gcc'. The value of --host
+should be that same command with the '-gcc' removed. Instead of i586 you may
+see i686, amd64, etc. The value of --build should be the host you're building
+on. (See http://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/
+autoconf-2.68/html_node/Specifying-Target-Triplets.html#Specifying%20Names for
+gory details of how these triplets are arrived at)
 
-Using Mingw on Windows
-----------------------
+TODO: you will probably need to manually disable curses, or the host curses
+installation will be found, and will not be able to link properly. More
+checking of permissible combinations to configure is necessary 
 
-TODO
 
-Using Visual Studio on Windows
-------------------------------
+
+BUILDING ON WINDOWS
+===================
+
+Using MinGW
+-----------
+
+This build now also uses autotools, so should be very similar to the Linux
+build:
+
+	./autogen.sh
+	./configure --enable-win
+	make
+	
+The install target almost certainly won't work
+
+Following build, to get the program to run, you need to copy the executable
+from the src directory into the top-level dir, and copy 2 DLLs (libpng12.dll
+and zlib1.dll) from src/win/dll to the top-level dir 
+
+
+Using eclipse (Indigo) on Windows (with MinGW)
+----------------------------------------------
+
+For eclipse with EGit, select File | Import..., Git | Projects from Git, Next >
+Clone your/the upstream repo, or Add your existing cloned repo, Next >
+Select "Use the New Projects Wizard", Finish
+In the New Project Wizard, select C/C++ | Makefile Project with Existing Code, Next >
+Give the project a name (Angband),
+	navigate to the repo you cloned in "Existing Code Location",
+	Select "C", but not "C++"
+	Choose "MinGW GCC" Toolchain, Finish
+Once the project is set up, r-click | Properties
+go to C/C++ Build | Toolchain Editor, select "Gnu Make Builder" instead of
+	"CDT Internal Builder"
+go to C/C++ Build, uncheck "Generate Makefiles automatically"  
+
+You still need to run ./autogen.sh and ./configure manually, outside eclipse
+(see above)	
+  
+
+Using Visual Studio
+-------------------
 
 Blue Baron has detailed instructions for setting this up at:
 
     src/win/angband_visual_studio_step_by_step.txt
+
 
 Using Dev-C++
 -------------

@@ -75,7 +75,7 @@ int size_depth;
 int size_obj;
 int *formula[1000];
 
-cptr prefix_pref[] =
+char *prefix_pref[] =
 {
 /* personal attributes */
     "_STR",
@@ -1515,7 +1515,7 @@ errr borg_what_text(int x, int y, int n, byte *a, char *s)
 /*
  * Log a message to a file
  */
-void borg_info(cptr what)
+void borg_info(char *what)
 {
 
 }
@@ -1525,7 +1525,7 @@ void borg_info(cptr what)
 /*
  * Memorize a message, Log it, Search it, and Display it in pieces
  */
-void borg_note(cptr what)
+void borg_note(char *what)
 {
     int j, n, i, k;
 
@@ -1667,7 +1667,7 @@ void borg_note(cptr what)
 /*
  * Abort the Borg, noting the reason
  */
-void borg_oops(cptr what)
+void borg_oops(char *what)
 {
     /* Stop processing */
     borg_active = FALSE;
@@ -1718,9 +1718,9 @@ errr borg_keypress(char k)
 /*
  * Add a keypress to the "queue" (fake event)
  */
-errr borg_keypresses(cptr str)
+errr borg_keypresses(char *str)
 {
-    cptr s;
+    char *s;
 
     /* Enqueue them */
     for (s = str; *s; s++) borg_keypress(*s);
@@ -1776,9 +1776,9 @@ void borg_flush(void)
 /*
  * Hack -- take a note later
  */
-bool borg_tell(cptr what)
+bool borg_tell(char *what)
 {
-    cptr s;
+    char *s;
 
     /* Hack -- self note */
     borg_keypress(':');
@@ -1794,9 +1794,9 @@ bool borg_tell(cptr what)
 /*
  * Attempt to change the borg's name
  */
-bool borg_change_name(cptr str)
+bool borg_change_name(char *str)
 {
-    cptr s;
+    char *s;
 
     /* Cancel everything */
     borg_keypress(ESCAPE);
@@ -1826,9 +1826,9 @@ bool borg_change_name(cptr str)
 /*
  * Attempt to dump a character description file
  */
-bool borg_dump_character(cptr str)
+bool borg_dump_character(char *str)
 {
-    cptr s;
+    char *s;
 
     /* Cancel everything */
     borg_keypress(ESCAPE);
@@ -2192,8 +2192,7 @@ borg_check_formula(int *formula)
     return 1;
 }
 
-cptr
-borg_prt_formula(int *formula)
+char *borg_prt_formula(int *formula)
 {
     static char FormulaStr[2000];
     char tmpStr[50];
@@ -2491,7 +2490,7 @@ void borg_sort(void *u, void *v, int n)
  */
 bool borg_sort_comp_hook(void *u, void *v, int a, int b)
 {
-    cptr *text = (cptr*)(u);
+    char **text = (char **)(u);
     s16b *what = (s16b*)(v);
 
     int cmp;
@@ -2517,10 +2516,10 @@ bool borg_sort_comp_hook(void *u, void *v, int a, int b)
  */
 void borg_sort_swap_hook(void *u, void *v, int a, int b)
 {
-    cptr *text = (cptr*)(u);
+    char **text = (char**)(u);
     s16b *what = (s16b*)(v);
 
-    cptr texttmp;
+    char *texttmp;
     s16b whattmp;
 
     /* Swap "text" */

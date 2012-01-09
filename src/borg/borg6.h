@@ -130,7 +130,7 @@ extern int borg_attack_aux_thrust(void);
 
 
 extern void borg_log_battle(bool);
-extern void borg_log_event(cptr event);
+extern void borg_log_event(char *event);
 extern bool borg_target_unknown_wall(int g_y,int g_x);
 
 /*

@@ -823,7 +823,7 @@ static bool borg_think(void)
  *
  * See "message_pain()" for details.
  */
-static cptr suffix_pain[] =
+static char *suffix_pain[] =
 {
     " is unharmed."
     " barely notices.",
@@ -881,7 +881,7 @@ static cptr suffix_pain[] =
  *
  * See "mon_take_hit()" for details.
  */
-static cptr prefix_kill[] =
+static char *prefix_kill[] =
 {
     "You have killed ",
     "You have slain ",
@@ -895,7 +895,7 @@ static cptr prefix_kill[] =
  *
  * See "project_m()", "do_cmd_fire()", "mon_take_hit()" for details.
  */
-static cptr suffix_died[] =
+static char *suffix_died[] =
 {
     " dies.",
     " is destroyed.",
@@ -903,7 +903,7 @@ static cptr suffix_died[] =
     " shrivels away in the light!",
     NULL
 };
-static cptr suffix_blink[] =
+static char *suffix_blink[] =
 {
     " disappears!",      /* from teleport other */
     " changes!",         /* from polymorph spell */
@@ -919,7 +919,7 @@ static cptr suffix_blink[] =
  *
  * See "make_attack_normal()" for details.
  */
-static cptr suffix_hit_by[] =
+static char *suffix_hit_by[] =
 {
     " hits you.",
     " touches you.",
@@ -946,7 +946,7 @@ static cptr suffix_hit_by[] =
  *
  * See "make_attack_spell()" for details.
  */
-static cptr suffix_spell[] =
+static char *suffix_spell[] =
 {
     " makes a high pitched shriek.",        /* 0 RF4_SHRIEK */
     " tries to cast a spell, but fails.",   /* 1 RF4_FAILS */
@@ -1061,7 +1061,7 @@ msg("%s looks REALLY healthy!", m_name);
  *
  * See "do_cmd_feeling()" for details.
  */
-static cptr prefix_feeling[] =
+static char *prefix_feeling[] =
 {
     "Looks like any other level",
     "You feel there is something special",
@@ -1115,7 +1115,7 @@ static cptr prefix_feeling[] =
  * XXX XXX XXX We notice a few "terrain feature" messages here so
  * we can acquire knowledge about wall types and door types.
  */
-static void borg_parse_aux(cptr msg, int len)
+static void borg_parse_aux(char *msg, int len)
 {
     int i, tmp;
 
@@ -2373,7 +2373,7 @@ static void borg_parse_aux(cptr msg, int len)
  * pieces, and also multiple messages which may be "combined"
  * into a single set of messages.
  */
-static void borg_parse(cptr msg)
+static void borg_parse(char *msg)
 {
     static char len = 0;
     static char buf[1024];
@@ -3708,69 +3708,6 @@ static void borg_display_item(object_type *item2)
 	if (item->fully_identified) borg_prt_binary(f[2], 19, j+32);
 }
 
-
-#ifdef ALLOW_BORG_GRAPHICS
-
-glyph translate_visuals[255][255];
-
-void init_translate_visuals(void)
-{
-    int i, j;
-    enum grid_light_level lighting;
-
-    /* Extract default attr/char code for features */
-    for (i = 0; i < z_info->f_max; i++)
-    {
-        feature_type *f_ptr = &f_info[i];
-
-        if (!f_ptr->name) continue;
-
-        for (lighting = 0; lighting < FEAT_LIGHTING_MAX; lighting++)
-        {
-        	byte char_idx = f_ptr->x_char[lighting] & 0xFF;
-        	translate_visuals[(byte)f_ptr->x_attr[lighting]][char_idx].d_attr = f_ptr->d_attr;
-        	translate_visuals[(byte)f_ptr->x_attr[lighting]][char_idx].d_char = f_ptr->d_char;
-        }
-    }
-
-    /* Extract default attr/char code for objects */
-    for (i = 0; i < z_info->k_max; i++)
-    {
-        object_kind *k_ptr = &k_info[i];
-
-        if (!k_ptr->name) continue;
-
-        /* Store the underlying values */
-        translate_visuals[(byte)object_kind_attr(k_ptr)][(byte)object_kind_char(k_ptr)].d_attr = k_ptr->d_attr;
-        translate_visuals[(byte)object_kind_attr(k_ptr)][(byte)object_kind_char(k_ptr)].d_char = k_ptr->d_char;
-    }
-
-    /* Extract default attr/char code for monsters */
-    for (i = 0; i < z_info->r_max; i++)
-    {
-        monster_race *r_ptr = &r_info[i];
-
-        if (!r_ptr->name) continue;
-
-        /* Store the underlying values */
-        translate_visuals[(byte)r_ptr->x_attr][(byte)r_ptr->x_char].d_attr = r_ptr->d_attr;
-        translate_visuals[(byte)r_ptr->x_attr][(byte)r_ptr->x_char].d_char = r_ptr->d_char;
-
-        /* Multi-hued monster in ASCII mode */
-        if (rf_has(r_ptr->flags, RF_ATTR_MULTI) &&
-            !((r_ptr->x_attr & 0x80) && (r_ptr->x_char & 0x80)))
-        {
-            for (j = 0; j < 16; j++)
-            {
-                translate_visuals[j][(byte)r_ptr->x_char].d_attr = j;
-                translate_visuals[j][(byte)r_ptr->x_char].d_char = r_ptr->d_char;
-            }
-        }
-    }
-}
-
-#endif /* ALLOW_BORG_GRAPHICS */
-
 static int
 borg_getval(char ** string, char * val)
 {
@@ -4778,12 +4715,6 @@ void borg_init_9(void)
     }
 #endif
 
-#ifdef ALLOW_BORG_GRAPHICS
-
-   init_translate_visuals();
-
-#else /* ALLOW_BORG_GRAPHICS */
-
 #ifdef USE_GRAPHICS
    /* The Borg can't work with graphics on, so switch it off */
    if (use_graphics)
@@ -4796,8 +4727,6 @@ void borg_init_9(void)
        reset_visuals(TRUE);
    }
 #endif /* USE_GRAPHICS */
-
-#endif /* ALLOW_BORG_GRAPHICS */
 
     /*** Redraw ***/
     /* Redraw map */
@@ -5053,7 +4982,7 @@ void borg_write_map(bool ask)
     file_putf(borg_map_file, "\n\n  [Last Messages]\n\n");
     while (i-- >0)
     {
-        cptr msg  = message_str((s16b)i);
+        const char *msg  = message_str((s16b)i);
 
         /* Eliminate some lines */
         if (prefix(msg, "# Matched")
@@ -5247,7 +5176,7 @@ void borg_write_map(bool ask)
             for (j = 0; j < 8; j++)
             {
                 borg_magic *as = &borg_magics[i][j];
-                cptr legal;
+                char *legal;
                 int failpercent =0;
 
                 if (as->level <99)
@@ -7047,7 +6976,7 @@ void do_cmd_borg(void)
             for (i = 1; i <= 101; i++)
             {
   			   /* Dump fear code*/
-               if ((cptr)NULL != borg_prepared(i)) break;
+               if ((char*)NULL != borg_prepared(i)) break;
             }
             borg_slow_return = TRUE;
             msg("Max Level: %d  Prep'd For: %d  Reason: %s", borg_skill[BI_MAXDEPTH], i-1, borg_prepared(i) );
@@ -7142,7 +7071,7 @@ void do_cmd_borg(void)
                 for (j = 0; j < 9; j++)
                 {
                     borg_magic *as = &borg_magics[i][j];
-                    cptr legal;
+                    char *legal;
                     int failpercent = 0;
 
                     if (as->level <99)

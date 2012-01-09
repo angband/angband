@@ -21,9 +21,6 @@
 #define MAKE(P, T) \
 	((P) = ZNEW(T))
 
-typedef const char *cptr;
-
-
 /* Mega-Hack - indices of the player classes */
 
 #define CLASS_WARRIOR            0
@@ -1104,7 +1101,7 @@ enum
 };
 
 extern int *formula[1000];
-extern cptr prefix_pref[];
+extern char *prefix_pref[];
 
 /*
  * Hack -- optional cheating flags
@@ -1954,7 +1951,7 @@ extern errr borg_keypress(char k);
 /*
  * Queue several keypresses
  */
-extern errr borg_keypresses(cptr str);
+extern errr borg_keypresses(char *str);
 
 /*
  * Dequeue a keypress
@@ -1981,34 +1978,34 @@ extern errr borg_what_text(int x, int y, int n, byte *a, char *s);
 /*
  * Log a message to a file
  */
-extern void borg_info(cptr what);
+extern void borg_info(char *what);
 
 /*
  * Log a message, Search it, and Show/Memorize it in pieces
  */
-extern void borg_note(cptr what);
+extern void borg_note(char *what);
 
 
 /*
  * Abort the Borg, noting the reason
  */
-extern void borg_oops(cptr what);
+extern void borg_oops(char *what);
 
 
 /*
  * Take a "memory note"
  */
-extern bool borg_tell(cptr what);
+extern bool borg_tell(char *what);
 
 /*
  * Change the player name
  */
-extern bool borg_change_name(cptr str);
+extern bool borg_change_name(char *str);
 
 /*
  * Dump a character description
  */
-extern bool borg_dump_character(cptr str);
+extern bool borg_dump_character(char *str);
 
 /*
  * Save the game (but do not quit)
@@ -2032,30 +2029,17 @@ extern int borg_check_formula(int *);
 /*
  * return a string for the formula
  */
-extern cptr borg_prt_formula(int *formula);
+extern char *borg_prt_formula(int *formula);
 
 /*
  * Print the string for an item
  */
-extern cptr borg_prt_item(int item);
+extern char *borg_prt_item(int item);
 
 /*
  * Initialize this file
  */
 extern void borg_init_1(void);
-
-#ifdef ALLOW_BORG_GRAPHICS
-
-typedef struct glyph
-{
-   byte d_attr;        /* Attribute */
-   char d_char;        /* Character */
-} glyph;
-
-
-extern glyph translate_visuals[255][255];
-
-#endif /* ALLOW_BORG_GRAPHICS */
 
 #endif
 
