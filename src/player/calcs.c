@@ -76,7 +76,7 @@ const byte adj_chr_gold[STAT_RANGE] =
 /*
  * Stat Table (INT) -- Magic devices
  */
-static const byte adj_int_dev[STAT_RANGE] =
+const byte adj_int_dev[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -121,7 +121,7 @@ static const byte adj_int_dev[STAT_RANGE] =
 /*
  * Stat Table (WIS) -- Saving throw
  */
-static const byte adj_wis_sav[STAT_RANGE] =
+const byte adj_wis_sav[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -167,7 +167,7 @@ static const byte adj_wis_sav[STAT_RANGE] =
 /*
  * Stat Table (DEX) -- disarming
  */
-static const byte adj_dex_dis[STAT_RANGE] =
+const byte adj_dex_dis[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -213,7 +213,7 @@ static const byte adj_dex_dis[STAT_RANGE] =
 /*
  * Stat Table (INT) -- disarming
  */
-static const byte adj_int_dis[STAT_RANGE] =
+const byte adj_int_dis[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -258,7 +258,7 @@ static const byte adj_int_dis[STAT_RANGE] =
 /*
  * Stat Table (DEX) -- bonus to ac (plus 128)
  */
-static const byte adj_dex_ta[STAT_RANGE] =
+const byte adj_dex_ta[STAT_RANGE] =
 {
 	128 + -4	/* 3 */,
 	128 + -3	/* 4 */,
@@ -303,7 +303,7 @@ static const byte adj_dex_ta[STAT_RANGE] =
 /*
  * Stat Table (STR) -- bonus to dam (plus 128)
  */
-static const byte adj_str_td[STAT_RANGE] =
+const byte adj_str_td[STAT_RANGE] =
 {
 	128 + -2	/* 3 */,
 	128 + -2	/* 4 */,
@@ -349,7 +349,7 @@ static const byte adj_str_td[STAT_RANGE] =
 /*
  * Stat Table (DEX) -- bonus to hit (plus 128)
  */
-static const byte adj_dex_th[STAT_RANGE] =
+const byte adj_dex_th[STAT_RANGE] =
 {
 	128 + -3	/* 3 */,
 	128 + -2	/* 4 */,
@@ -395,7 +395,7 @@ static const byte adj_dex_th[STAT_RANGE] =
 /*
  * Stat Table (STR) -- bonus to hit (plus 128)
  */
-static const byte adj_str_th[STAT_RANGE] =
+const byte adj_str_th[STAT_RANGE] =
 {
 	128 + -3	/* 3 */,
 	128 + -2	/* 4 */,
@@ -441,7 +441,7 @@ static const byte adj_str_th[STAT_RANGE] =
 /*
  * Stat Table (STR) -- weight limit in deca-pounds
  */
-static const byte adj_str_wgt[STAT_RANGE] =
+const byte adj_str_wgt[STAT_RANGE] =
 {
 	5	/* 3 */,
 	6	/* 4 */,
@@ -533,7 +533,7 @@ const byte adj_str_hold[STAT_RANGE] =
 /*
  * Stat Table (STR) -- digging value
  */
-static const byte adj_str_dig[STAT_RANGE] =
+const byte adj_str_dig[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -625,7 +625,7 @@ const byte adj_str_blow[STAT_RANGE] =
 /*
  * Stat Table (DEX) -- index into the "blow" table
  */
-static const byte adj_dex_blow[STAT_RANGE] =
+const byte adj_dex_blow[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -763,7 +763,7 @@ const byte adj_con_fix[STAT_RANGE] =
 /*
  * Stat Table (CON) -- extra 1/100th hitpoints per level
  */
-static const int adj_con_mhp[STAT_RANGE] =
+const int adj_con_mhp[STAT_RANGE] =
 {
 	-250	/* 3 */,
 	-150	/* 4 */,
@@ -805,7 +805,7 @@ static const int adj_con_mhp[STAT_RANGE] =
 	1250	/* 18/220+ */
 };
 
-static const int adj_mag_study[STAT_RANGE] =
+const int adj_mag_study[STAT_RANGE] =
 {
 	  0	/* 3 */,
 	  0	/* 4 */,
@@ -850,7 +850,7 @@ static const int adj_mag_study[STAT_RANGE] =
 /*
  * Stat Table (INT/WIS) -- extra 1/100 mana-points per level
  */
-static const int adj_mag_mana[STAT_RANGE] =
+const int adj_mag_mana[STAT_RANGE] =
 {
 	  0	/* 3 */,
 	 10	/* 4 */,
@@ -920,7 +920,7 @@ static const int adj_mag_mana[STAT_RANGE] =
  * The player gets blows/round equal to 100/this number, up to a maximum of
  * "num" blows/round, plus any "bonus" blows/round.
  */
-static const byte blows_table[12][12] =
+const byte blows_table[12][12] =
 {
 	/* P */
    /* D:   0,   1,   2,   3,   4,   5,   6,   7,   8,   9,   10,  11+ */
