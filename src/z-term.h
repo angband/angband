@@ -350,7 +350,7 @@ extern errr Term_xtra(int n, int v);
 extern size_t Term_mbstowcs(wchar_t *dest, const char *src, int n);
 
 extern void Term_queue_char(term *t, int x, int y, byte a, wchar_t c, byte ta, wchar_t tc);
-extern void Term_big_queue_char(term *t, int x, int y, byte a, char c, byte a1, char c1);
+extern void Term_big_queue_char(term *t, int x, int y, byte a, wchar_t c, byte a1, wchar_t c1);
 extern void Term_queue_chars(int x, int y, int n, byte a, const wchar_t *s);
 
 extern errr Term_fresh(void);
@@ -360,7 +360,7 @@ extern errr Term_draw(int x, int y, byte a, wchar_t c);
 extern errr Term_addch(byte a, wchar_t c);
 extern errr Term_addstr(int n, byte a, const char *s);
 extern errr Term_putch(int x, int y, byte a, wchar_t c);
-extern void Term_big_putch(int x, int y, byte a, char c);
+extern void Term_big_putch(int x, int y, byte a, wchar_t c);
 extern errr Term_putstr(int x, int y, int n, byte a, const char *s);
 extern errr Term_erase(int x, int y, int n);
 extern errr Term_clear(void);

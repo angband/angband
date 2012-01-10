@@ -277,7 +277,7 @@ s16b Rand_normal(int mean, int stand) {
 	}
 
 	/* Convert the index into an offset */
-	offset = (long)stand * (long)low / RANDNOR_STD;
+	offset = (s16b)((long)stand * (long)low / RANDNOR_STD);
 
 	/* One half should be negative */
 	if (one_in_(2)) return (mean - offset);

@@ -580,7 +580,7 @@ struct random parser_getrand(struct parser *p, const char *name) {
 	return v->u.rval;
 }
 
-char parser_getchar(struct parser *p, const char *name) {
+wchar_t parser_getchar(struct parser *p, const char *name) {
 	struct parser_value *v = parser_getval(p, name);
 	assert((v->spec.type & ~PARSE_T_OPT) == PARSE_T_CHAR);
 	return v->u.cval;

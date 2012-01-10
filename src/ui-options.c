@@ -895,7 +895,7 @@ static void do_cmd_hp_warn(const char *name, int row)
 {
 	bool res;
 	char tmp[4] = "";
-	u16b warn;
+	byte warn;
 
 	strnfmt(tmp, sizeof(tmp), "%i", op_ptr->hitpoint_warn);
 
@@ -914,7 +914,7 @@ static void do_cmd_hp_warn(const char *name, int row)
 	/* Process input */
 	if (res)
 	{
-		warn = (u16b) strtoul(tmp, NULL, 0);
+		warn = (byte) strtoul(tmp, NULL, 0);
 		
 		/* Reset nonsensical warnings */
 		if (warn > 9)

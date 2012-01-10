@@ -30,6 +30,7 @@ ifndef MINGW
 endif
 
 # Include list of object files and add system-specific ones
+USE_WIN = 1
 include Makefile.inc
 
 ifdef CONSOLE

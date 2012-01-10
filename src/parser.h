@@ -122,7 +122,7 @@ extern unsigned int parser_getuint(struct parser *p, const char *name);
 extern struct random parser_getrand(struct parser *p, const char *name);
 
 /** Returns the character named `name`. This symbol must exist. */
-extern char parser_getchar(struct parser *p, const char *name);
+extern wchar_t parser_getchar(struct parser *p, const char *name);
 
 /** Fills the provided struct with the parser's state, if any. Returns true if
  * the parser is in an error state, and false otherwise.

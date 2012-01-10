@@ -49,8 +49,45 @@ GTKHEADERS = \
 ZFILES = z-bitflag.o z-file.o z-form.o z-msg.o z-quark.o z-queue.o z-rand.o \
 	z-term.o z-type.o z-util.o z-virt.o z-textblock.o
 
-MAINFILES = main.o main-crb.o main-gcu.o $(GTKMAINFILES) \
-	main-sdl.o main-win.o main-x11.o snd-sdl.o main-test.o
+MAINFILES = 
+
+ifneq ($(USE_WIN), 1)
+ifneq ($(USE_OSX), 1)
+        MAINFILES += main.o
+endif
+endif
+
+ifeq ($(USE_SDL),1)
+        MAINFILES += main-sdl.o
+endif
+
+ifeq ($(USE_GCU),1)
+        MAINFILES += main-gcu.o
+endif
+
+ifeq ($(USE_GTK),1)
+        MAINFILES += $(GTKMAINFILES)
+endif
+
+ifeq ($(USE_X11),1)
+        MAINFILES += main-x11.o
+endif
+
+ifeq ($(SOUND_SDL),1)
+        MAINFILES += snd-sdl.o
+endif
+
+ifeq ($(USE_TEST),1)
+        MAINFILES += main-test.o
+endif
+
+ifeq ($(USE_WIN),1)
+        MAINFILES += win/angband.res main-win.o win/readdib.o win/readpng.o win/scrnshot.o
+endif
+
+ifeq ($(USE_OSX),1)
+        MAINFILES += main-crb.o 
+endif
 
 GTKMAINFILES = \
 	gtk/main-gtk.o \

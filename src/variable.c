@@ -244,7 +244,7 @@ color_type color_table[MAX_COLORS] =
 /*
  * Standard sound (and message) names
  */
-const const char *angband_sound_name[MSG_MAX] =
+const char *angband_sound_name[MSG_MAX] =
 {
 	"",
 	"hit",

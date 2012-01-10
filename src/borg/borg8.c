@@ -3290,7 +3290,7 @@ bool borg_think_dungeon_lunal(void)
     if (borg_self_lunal)
     {
 		if (borg_skill[BI_MAXDEPTH] <= borg_skill[BI_CDEPTH] + 15 ||
-    	    (cptr)NULL != borg_prepared(borg_skill[BI_CDEPTH] - 5) ||
+    	    (char *)NULL != borg_prepared(borg_skill[BI_CDEPTH] - 5) ||
     	    borg_skill[BI_CDEPTH] >= 50 ||
 	        borg_skill[BI_CDEPTH] == 0 ||
 			borg_skill[BI_ISWEAK])
@@ -4155,7 +4155,7 @@ static bool borg_think_dungeon_brave(void)
 
         /* Go down if fleeing or prepared. */
         stair_more = goal_fleeing;
-        if ((cptr)NULL == borg_prepared(borg_skill[BI_CDEPTH]+1))
+        if ((char *)NULL == borg_prepared(borg_skill[BI_CDEPTH]+1))
             stair_more = TRUE;
 
         /* Continue fleeing the level */
@@ -4636,7 +4636,7 @@ bool borg_think_dungeon(void)
 	/* Quick check to see if borg needs to engage his lunal mode */
     if (borg_self_lunal && !borg_plays_risky)  /* Risky borg in a hurry */
     {
-		if ((cptr)NULL == borg_prepared(borg_skill[BI_CDEPTH] + 15) && /* Prepared */
+		if ((char *)NULL == borg_prepared(borg_skill[BI_CDEPTH] + 15) && /* Prepared */
 			borg_skill[BI_MAXDEPTH] >= borg_skill[BI_CDEPTH] + 15 && /* Right zone */
 			borg_skill[BI_CDEPTH] >=1  && /* In dungeon fully */
 			borg_skill[BI_CDEPTH] > borg_skill[BI_CLEVEL] / 3) /* Not shallow */
@@ -4665,7 +4665,7 @@ bool borg_think_dungeon(void)
 
     /* Keep borg on a suitable level */
     if (track_less_num && borg_skill[BI_CLEVEL] < 10 &&
-        !goal_less && (cptr)NULL != borg_prepared(borg_skill[BI_CDEPTH]))
+        !goal_less && (char *)NULL != borg_prepared(borg_skill[BI_CDEPTH]))
     {
         /* Note */
         borg_note("# Needing to get back on correct depth");
@@ -4733,7 +4733,7 @@ bool borg_think_dungeon(void)
     }
 
 	/* if I must go to town without delay */
-    if ((cptr)NULL != borg_restock(borg_skill[BI_CDEPTH]))
+    if ((char *)NULL != borg_restock(borg_skill[BI_CDEPTH]))
     {
 		if (borg_leave_level(FALSE)) return (TRUE);
 	}
@@ -5025,7 +5025,7 @@ bool borg_think_dungeon(void)
 		}
 
         /* Only go down if fleeing or prepared. */
-        if ((cptr)NULL == borg_prepared(borg_skill[BI_CDEPTH]+1))
+        if ((char *)NULL == borg_prepared(borg_skill[BI_CDEPTH]+1))
             stair_more = TRUE;
 
         /* Continue leaving the level */
@@ -5057,7 +5057,7 @@ bool borg_think_dungeon(void)
      * in leave_level too.
      */
     if (borg_skill[BI_CDEPTH] != 0 &&
-        (cptr)NULL == borg_prepared(borg_skill[BI_CDEPTH] + 5) && !stair_less)
+        (char *)NULL == borg_prepared(borg_skill[BI_CDEPTH] + 5) && !stair_less)
     {
         /* Take next stairs */
         stair_more = TRUE;

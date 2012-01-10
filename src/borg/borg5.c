@@ -83,7 +83,7 @@ static s16b *borg_msg_use;
 
 static int borg_unique_size;        /* Number of uniques */
 static s16b *borg_unique_what;      /* Indexes of uniques */
-static cptr *borg_unique_text;      /* Names of uniques */
+static const char **borg_unique_text;      /* Names of uniques */
 
 /*
  * Hack -- help identify "normal" monster names
@@ -91,7 +91,7 @@ static cptr *borg_unique_text;      /* Names of uniques */
 
 static int borg_normal_size;        /* Number of normals */
 static s16b *borg_normal_what;      /* Indexes of normals */
-static cptr *borg_normal_text;      /* Names of normals */
+static const char **borg_normal_text;      /* Names of normals */
 
 
 
@@ -107,7 +107,7 @@ struct borg_wank
     byte y;
 
     byte t_a;
-    char t_c;
+    wchar_t t_c;
 
     bool is_take;
     bool is_kill;
@@ -133,7 +133,7 @@ static borg_wank *borg_wanks;
  *
  * Hack -- we use "base level" instead of "allocation levels".
  */
-static struct object_kind *borg_guess_kind(byte a, char c,int y,int x)
+static struct object_kind *borg_guess_kind(byte a, wchar_t c,int y,int x)
 {
     /* ok, this is an real cheat.  he ought to use the look command
      * in order to correctly id the object.  But I am passing that up for
@@ -439,7 +439,7 @@ static int borg_new_take(struct object_kind *kind, int y, int x)
 /*
  * Attempt to notice a changing "take"
  */
-static bool observe_take_diff(int y, int x, byte a, char c)
+static bool observe_take_diff(int y, int x, byte a, wchar_t c)
 {
     int i;
     struct object_kind *kind;
@@ -475,7 +475,7 @@ static bool observe_take_diff(int y, int x, byte a, char c)
  * Note that, of course, objects are never supposed to move,
  * but we may want to take account of "falling" missiles later.
  */
-static bool observe_take_move(int y, int x, int d, byte a, char c)
+static bool observe_take_move(int y, int x, int d, byte a, wchar_t c)
 {
     int i, z, ox, oy;
 
@@ -601,7 +601,7 @@ static bool observe_take_move(int y, int x, int d, byte a, char c)
  *
  * Hack -- try not to choose "unique" monsters, or we will flee a lot.
  */
-static int borg_guess_race(byte a, char c, bool multi, int y, int x)
+static int borg_guess_race(byte a, wchar_t c, bool multi, int y, int x)
 {
     /*  ok, this is an real cheat.  he ought to use the look command
      * in order to correctly id the monster.  but i am passing that up for
@@ -740,7 +740,7 @@ static int borg_guess_race(byte a, char c, bool multi, int y, int x)
  * as noted above is impossible), which is a hack, but may prevent
  * crashes, even if it does induce strange behavior.
  */
-static int borg_guess_race_name(cptr who)
+static int borg_guess_race_name(char *who)
 {
     int k, m, n;
 
@@ -881,7 +881,7 @@ static int borg_guess_race_name(cptr who)
  *   #54433333333333445#
  *   ###################
  */
-static void borg_fear_grid(cptr who, int y, int x, int k)  /* 8-8, this was uint */
+static void borg_fear_grid(char *who, int y, int x, int k)  /* 8-8, this was uint */
 {
 	int x1=0, y1=0;
 	borg_kill *kill;
@@ -957,7 +957,7 @@ static void borg_fear_grid(cptr who, int y, int x, int k)  /* 8-8, this was uint
  * This is applied when the borg cannot find the source of a message.  He assumes it is an
  * invisible monster.  This will keep him from resting while unseen guys attack him.
  */
-static void borg_fear_regional(cptr who, int y, int x, int k, bool seen_guy) /* 8-8 , had been uint */
+static void borg_fear_regional(char *who, int y, int x, int k, bool seen_guy) /* 8-8 , had been uint */
 {
     int x0, y0, x1, x2, y1, y2;
 
@@ -1755,7 +1755,7 @@ static int borg_new_kill(int r_idx, int y, int x)
 /*
  * Attempt to notice a changing "kill"
  */
-static bool observe_kill_diff(int y, int x, byte a, char c)
+static bool observe_kill_diff(int y, int x, byte a, wchar_t c)
 {
     int i, r_idx;
 
@@ -1792,7 +1792,7 @@ static bool observe_kill_diff(int y, int x, byte a, char c)
  * Assume that the monster moved at most 'd' grids.
  * If "flag" is TRUE, allow monster "conversion"
  */
-static bool observe_kill_move(int y, int x, int d, byte a, char c, bool flag)
+static bool observe_kill_move(int y, int x, int d, byte a, wchar_t c, bool flag)
 {
     int i, z, ox, oy;
     int r_idx;
@@ -2452,7 +2452,7 @@ static int borg_fear_spell(int i)
  *
  * XXX XXX XXX Currently, confusion may cause messages to be ignored.
  */
-static int borg_locate_kill(cptr who, int y, int x, int r)
+static int borg_locate_kill(char *who, int y, int x, int r)
 {
     int i, d, r_idx;
 
@@ -2820,7 +2820,7 @@ static void borg_count_death(int i)
  *
  * Note that we must use the "old" player location
  */
-static bool borg_handle_self(cptr str)
+static bool borg_handle_self(char *str)
 {
     int i;
 
@@ -3614,9 +3614,9 @@ void borg_update(void)
 
     int hit_dist;
 
-    cptr msg;
+    char *msg;
 
-    cptr what;
+    char *what;
 
     borg_grid *ag;
 
@@ -5199,7 +5199,7 @@ void borg_update(void)
  *
  * Actually, we simply "queue" them for later analysis
  */
-void borg_react(cptr msg, cptr buf)
+void borg_react(char *msg, char *buf)
 {
     int len;
 
@@ -5258,7 +5258,7 @@ void borg_init_5(void)
     int size;
 
     s16b what[1024];
-    char* text[1024];
+    const char *text[1024];
 
 
     /*** Message tracking ***/
@@ -5329,7 +5329,7 @@ void borg_init_5(void)
     borg_unique_size = size;
 
     /* Allocate the arrays */
-    C_MAKE(borg_unique_text, borg_unique_size, cptr);
+    C_MAKE(borg_unique_text, borg_unique_size, const char *);
     C_MAKE(borg_unique_what, borg_unique_size, s16b);
 
     /* Save the entries */
@@ -5369,7 +5369,7 @@ void borg_init_5(void)
     borg_normal_size = size;
 
     /* Allocate the arrays */
-    C_MAKE(borg_normal_text, borg_normal_size, cptr);
+    C_MAKE(borg_normal_text, borg_normal_size, const char *);
     C_MAKE(borg_normal_what, borg_normal_size, s16b);
 
     /* Save the entries */

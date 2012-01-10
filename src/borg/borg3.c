@@ -843,7 +843,7 @@ static byte borg_magic_index[2][9][9] =
     }
 };
 
-static cptr borg_magic_name[2][9][9] =
+static char *borg_magic_name[2][9][9] =
 {
     /*** Spells ***/
 
@@ -1096,23 +1096,23 @@ static cptr borg_magic_name[2][9][9] =
  */
 static int borg_single_size;        /* Number of "singles" */
 static s16b *borg_single_what;      /* Kind indexes for "singles" */
-static cptr *borg_single_text;      /* Textual prefixes for "singles" */
+static char **borg_single_text;      /* Textual prefixes for "singles" */
 
 /*
  * Constant "item description parsers" (plurals)
  */
 static int borg_plural_size;        /* Number of "plurals" */
 static s16b *borg_plural_what;      /* Kind index for "plurals" */
-static cptr *borg_plural_text;      /* Textual prefixes for "plurals" */
-static cptr *borg_sv_plural_text;   /* Save Textual prefixes for "plurals" (in kind order) */
+static char **borg_plural_text;      /* Textual prefixes for "plurals" */
+static char **borg_sv_plural_text;   /* Save Textual prefixes for "plurals" (in kind order) */
 
 /*
  * Constant "item description parsers" (suffixes)
  */
 static int borg_artego_size;        /* Number of "artegos" */
 static s16b *borg_artego_what;      /* Indexes for "artegos" */
-static cptr *borg_artego_text;      /* Textual prefixes for "artegos" */
-static cptr *borg_sv_art_text;      /* Save textual prefixes for "artifacts" (in kind order) */
+static char **borg_artego_text;      /* Textual prefixes for "artegos" */
+static char **borg_sv_art_text;      /* Save textual prefixes for "artifacts" (in kind order) */
 
 /*
  * Return the slot that items of the given type are wielded into
@@ -1723,7 +1723,7 @@ static s32b borg_object_value_known(borg_item *item)
  * correctly handle objects with "bizarre" inscriptions, or even with
  * "broken" inscriptions, so we should be okay.
  */
-void borg_item_analyze(borg_item *item, object_type *real_item, cptr desc)
+void borg_item_analyze(borg_item *item, object_type *real_item, char *desc)
 {
 	bitflag f[OF_SIZE];
 	bitflag known_f[OF_SIZE];
@@ -1819,7 +1819,7 @@ void borg_item_analyze(borg_item *item, object_type *real_item, cptr desc)
 		{
 			if (strstr(item->desc, "charging"))
 			{
-				cptr s;
+				char *s;
 				int number;
 
 				/* Assume all are charging */
@@ -1832,7 +1832,7 @@ void borg_item_analyze(borg_item *item, object_type *real_item, cptr desc)
 
 				if (isdigit(desc[0]))
 				{
-					cptr ss;
+					char *ss;
 
 					/* Find the first space */
 					for (ss = desc; *ss && (*ss != ' '); ss++) /* loop */;
@@ -2289,9 +2289,9 @@ void borg_item_analyze(borg_item *item, object_type *real_item, cptr desc)
 /*
  * Send a command to inscribe item number "i" with the inscription "str".
  */
-void borg_send_inscribe(int i, cptr str)
+void borg_send_inscribe(int i, char *str)
 {
-    cptr s;
+    char *s;
 
     /* Label it */
     borg_keypress(c1);
@@ -4469,7 +4469,7 @@ void borg_init_3(void)
     int size;
 
     s16b what[514];
-    cptr text[514];
+    char *text[514];
 
     char buf[256];
 
@@ -4535,7 +4535,7 @@ void borg_init_3(void)
     /* Sort */
     borg_sort(text, what, size);
 
-    C_MAKE(borg_sv_plural_text, z_info->k_max, cptr);
+    C_MAKE(borg_sv_plural_text, z_info->k_max, char *);
     for (i = 0; i < size; i++) borg_sv_plural_text[what[i]] = text[i];
 
 
@@ -4543,7 +4543,7 @@ void borg_init_3(void)
     borg_plural_size = size;
 
     /* Allocate the "item parsing arrays" (plurals) */
-    C_MAKE(borg_plural_text, borg_plural_size, cptr);
+    C_MAKE(borg_plural_text, borg_plural_size, char *);
     C_MAKE(borg_plural_what, borg_plural_size, s16b);
 
     /* Save the entries */
@@ -4593,7 +4593,7 @@ void borg_init_3(void)
 
         artifact_type *a_ptr = &a_info[i];
 
-        cptr name = (a_ptr->name);
+        char *name = (a_ptr->name);
 
         /* Skip "empty" items */
         if (!a_ptr->name) continue;
@@ -4650,7 +4650,7 @@ void borg_init_3(void)
     borg_single_size = size;
 
     /* Allocate the "item parsing arrays" (plurals) */
-    C_MAKE(borg_single_text, borg_single_size, cptr);
+    C_MAKE(borg_single_text, borg_single_size, char *);
     C_MAKE(borg_single_what, borg_single_size, s16b);
 
     /* Save the entries */
@@ -4680,7 +4680,7 @@ void borg_init_3(void)
         size++;
     }
 
-    C_MAKE(borg_sv_art_text, z_info->a_max, cptr);
+    C_MAKE(borg_sv_art_text, z_info->a_max, char *);
     for (i = 0; i < size; i++) borg_sv_art_text[what[i]] = text[i];
 
     /* Collect the "ego-item names" */
@@ -4710,7 +4710,7 @@ void borg_init_3(void)
     borg_artego_size = size;
 
     /* Allocate the "item parsing arrays" (plurals) */
-    C_MAKE(borg_artego_text, borg_artego_size, cptr);
+    C_MAKE(borg_artego_text, borg_artego_size, char *);
     C_MAKE(borg_artego_what, borg_artego_size, s16b);
 
     /* Save the entries */
@@ -4718,7 +4718,7 @@ void borg_init_3(void)
     for (i = 0; i < size; i++) borg_artego_what[i] = what[i];
 }
 
-cptr borg_prt_item(int item)
+char *borg_prt_item(int item)
 {
             if (item < z_info->k_max)
             {
