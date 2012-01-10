@@ -3279,7 +3279,7 @@ static struct keypress screensaver_inkey_hack_buffer[1024];
 
 static struct keypress screensaver_inkey_hack(int flush_first)
 {
-	static int screensaver_inkey_hack_index = 0;
+	static size_t screensaver_inkey_hack_index = 0;
 
 	if (screensaver_inkey_hack_index < sizeof(screensaver_inkey_hack_buffer))
 		return (screensaver_inkey_hack_buffer[screensaver_inkey_hack_index++]);
