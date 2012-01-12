@@ -15,13 +15,13 @@ CFLAGS += -DBUILD_ID=${VERSION} -I. -std=c99 -Wdeclaration-after-statement -O0
 GCOBJS = $(OBJECTS:.o=.gcno) $(OBJECTS:.o=.gcda)
 GCOVS = $(OBJECTS:.o=.c.gcov)
 
-CLEAN = angband.o $(PROG) win/angband.res
+CLEAN = angband.o $(OBJECTS) win/angband.res
 DISTCLEAN = autoconf.h
 
 export CFLAGS LDFLAGS LIBS
 
-angband$(PROG_SUFFIX): angband.o $(MAINFILES)
-	$(CC) -o angband$(PROG_SUFFIX) angband.o $(MAINFILES) $(LDFLAGS) $(LDADD) $(LIBS)
+$(PROG): angband.o $(MAINFILES)
+	$(CC) -o $@ angband.o $(MAINFILES) $(LDFLAGS) $(LDADD) $(LIBS)
 	@printf "%10s %-20s\n" LINK $@
 
 win/angband.res: win/angband.rc
