@@ -1612,6 +1612,7 @@ void play_game(void)
 	/* Hack -- Turn off the cursor */
 	(void)Term_set_cursor(FALSE);
 
+	op_ptr->hitpoint_warn = 3;
 
 	/*** Try to load the savefile ***/
 
