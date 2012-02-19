@@ -582,7 +582,35 @@ static int mon_will_run(int m_idx)
 	return (FALSE);
 }
 
-
+/* From Will Asher in DJA:
+ * Find whether a monster is near a permanent wall
+ * this decides whether PASS_WALL & KILL_WALL monsters 
+ * use the monster flow code
+ */
+static bool near_permwall(const monster_type *m_ptr, struct cave *c)
+{
+	int y, x;
+	int my = m_ptr->fy;
+	int mx = m_ptr->fx;
+	
+	/* if PC is in LOS, there's no need to go around walls */
+    if (projectable(my, mx, p_ptr->py, p_ptr->px, PROJECT_NONE)) return FALSE;
+    
+    /* PASS_WALL & KILL_WALL monsters occasionally flow for a turn anyway */
+    if (randint0(99) < 5) return TRUE;
+    
+	/* Search the nearby grids, which are always in bounds */
+	for (y = (my - 2); y <= (my + 2); y++)
+	{
+		for (x = (mx - 2); x <= (mx + 2); x++)
+		{
+            if (!cave_in_bounds_fully(c, y, x)) continue;
+            /* vault walls are always FEAT_PERM_INNER */
+            if (cave_isperm(c, y, x)) return TRUE;
+		}
+	}
+	return FALSE;
+}
 
 
 /*
@@ -621,7 +649,12 @@ static bool get_moves_aux(struct cave *c, int m_idx, int *yp, int *xp)
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	/* Monster can go through rocks */
-	if (flags_test(r_ptr->flags, RF_SIZE, RF_PASS_WALL, RF_KILL_WALL, FLAG_END)) return (FALSE);
+	if (flags_test(r_ptr->flags, RF_SIZE, RF_PASS_WALL, RF_KILL_WALL, FLAG_END)){
+	
+	    /* If monster is near a permwall, use normal pathfinding */
+	    if (!near_permwall(m_ptr, c)) return (FALSE);
+    }
+		
 
 	/* Monster location */
 	y1 = m_ptr->fy;
