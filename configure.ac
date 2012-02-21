@@ -199,6 +199,7 @@ if test "x$enable_gtk" = "xyes"; then
 	fi
 fi
 
+MAINFILES="\$(BASEMAINFILES)"
 
 dnl curses checking
 if test "$enable_curses" = "yes"; then
@@ -206,9 +207,9 @@ if test "$enable_curses" = "yes"; then
 	if test "$with_curses" = "yes"; then
 		AC_DEFINE(USE_NCURSES, 1, [Define to 1 if NCurses is found.])
 		AC_DEFINE(USE_GCU, 1, [Define to 1 if using the Curses frontend.])
-		AC_SUBST(USE_GCU, 1)
 		CFLAGS="${CFLAGS} ${NCURSES_CFLAGS}"
 		LIBS="${LIBS} ${NCURSES_LIBS}"
+		MAINFILES="${MAINFILES} \$(GCUMAINFILES)"
 	fi 
 fi
 
@@ -222,9 +223,9 @@ if test "$enable_x11" = "yes"; then
 		with_x11=no
 	else
 		AC_DEFINE(USE_X11, 1, [Define to 1 if using the X11 frontend and X11 libraries are found.])
-		AC_SUBST(USE_X11, 1)
 		CFLAGS="$CFLAGS $X_CFLAGS"
 		LIBS="${LIBS} ${X_PRE_LIBS} ${X_LIBS} -lX11 ${X_EXTRA_LIBS}"
+		MAINFILES="${MAINFILES} \$(X11MAINFILES)"
 		with_x11=yes
 	fi
 fi
@@ -241,9 +242,9 @@ if test "$enable_sdl" = "yes"; then
 
 		if test "$with_sdl" = "yes"; then
 			AC_DEFINE(USE_SDL, 1, [Define to 1 if using the SDL interface and SDL is found.])
-			AC_SUBST(USE_SDL, 1)
 			CFLAGS="${CFLAGS} ${SDL_CFLAGS}"
 			LIBS="${LIBS} ${SDL_LIBS} -lSDL_image -lSDL_ttf"
+			MAINFILES="${MAINFILES} \$(SDLMAINFILES)"
 		fi
 	fi
 fi
@@ -267,20 +268,21 @@ if test "$enable_gtk" = "yes"; then
 
 	if test "$with_gtk" = "yes"; then
 		AC_DEFINE(USE_GTK, 1, [Define to 1 if using the GTK+ 2.x interface and GTK+ 2.x is found.])
-		AC_SUBST(USE_GTK, 1)
 		CFLAGS="${CFLAGS} $GTK_CFLAGS"
 		LDFLAGS="${LDFLAGS} -rdynamic -export-dynamic"
 		LIBS="${LIBS} ${GTK_LIBS}"
+		MAINFILES="${MAINFILES} \$(GTKMAINFILES)"
 	fi
 fi
 
 dnl Windows checking
 if test "$enable_win" = "yes"; then
 	AC_DEFINE(USE_WIN, 1, [Define to 1 if using the Windows interface.])
-	AC_SUBST(USE_WIN, 1)
 	CFLAGS="${CFLAGS} -DWINDOWS -static -Iwin/include"
 	LDFLAGS="${LDFLAGS} -Lwin/lib"
 	LIBS="${LIBS} -mwindows -lwinmm -lzlib -llibpng -lmsimg32"
+dnl Note complete replacement of all main files
+	MAINFILES="\$(WINMAINFILES)"
 fi
 
 dnl SDL mixer checking
@@ -289,10 +291,10 @@ if test "$enable_sdl_mixer" = "yes"; then
 
 	if test "$found_sdl_mixer" = "yes"; then
 		AC_DEFINE(SOUND_SDL, 1, [Define to 1 if using SDL_mixer sound support and it's found.])
-		AC_SUBST(SOUND_SDL, 1)
 		SDL_CFLAGS=`sdl-config --cflags`
 		CFLAGS="${CFLAGS} ${SDL_CFLAGS}"
 		LIBS="${LIBS} -lSDL_mixer"
+		MAINFILES="${MAINFILES} \$(SNDSDLFILES)"
 	fi
 fi
 
@@ -303,7 +305,7 @@ LIBS="${LIBS} -lm"
 dnl Test checking
 if test "$enable_test" = "yes"; then
 	AC_DEFINE(USE_TEST, 1, [Define to 1 to build the test frontend])
-	AC_SUBST(USE_TEST, 1)
+	MAINFILES="${MAINFILES} \$(TESTMAINFILES)"
 fi
 
 dnl Stats checking
@@ -349,6 +351,7 @@ if test "$enable_stats" = "yes"; then
 		CFLAGS="${CFLAGS} ${SQLITE3_CFLAGS}"
 		LDFLAGS="${LDFLAGS_SAVE} ${SQLITE3_LDFLAGS}"
 		LIBS="${LIBS} ${SQLITE3_LIBS}"
+		MAINFILES="${MAINFILES} \$(STATSMAINFILES)"
 		AC_SUBST(USE_STATS, 1)
 	else
 		AC_MSG_ERROR(Could not find sqlite3 library; disabling stats)
@@ -359,7 +362,7 @@ if test "$enable_stats" = "yes"; then
 	fi
 fi
 
-
+AC_SUBST(MAINFILES, ${MAINFILES})
 AC_CONFIG_FILES([mk/buildsys.mk mk/extra.mk mk/sinc@&t@lude.mk])
 AC_OUTPUT
 

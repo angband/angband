@@ -1729,8 +1729,6 @@ void borg_item_analyze(borg_item *item, object_type *real_item, char *desc)
 	bitflag known_f[OF_SIZE];
 
     char *scan;
-	int i;
-
 
     /* Wipe the item */
     WIPE(item, borg_item);

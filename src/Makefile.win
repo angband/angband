@@ -30,8 +30,8 @@ ifndef MINGW
 endif
 
 # Include list of object files and add system-specific ones
-USE_WIN = 1
 include Makefile.inc
+MAINFILES="$(WINMAINFILES)"
 
 ifdef CONSOLE
   CFLAGS = -DUSE_GCU -DWIN32_CONSOLE_MODE -I$(PDCURSES_INC)

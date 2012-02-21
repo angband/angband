@@ -4523,8 +4523,8 @@ static s32b borg_power_aux1(void)
 	 */
 	if (amt_ego ||
 	    ((e_info[borg_items[INVEN_OUTER].name2].xtra == OBJECT_XTRA_TYPE_RESIST ||
-	     e_info[borg_items[INVEN_OUTER].name2].xtra == OBJECT_XTRA_TYPE_POWER)) &&
-	     !borg_items[INVEN_OUTER].fully_identified) value += 999999L;
+	     e_info[borg_items[INVEN_OUTER].name2].xtra == OBJECT_XTRA_TYPE_POWER) &&
+	     !borg_items[INVEN_OUTER].fully_identified)) value += 999999L;
 
     /*** Penalize various things ***/
 
