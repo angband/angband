@@ -359,6 +359,17 @@ static term_data data[MAX_TERM_DATA];
 static term_data *my_td;
 
 /*
+ * Default winndow layout function
+ */
+int default_layout_win(void);
+int default_layout_win(void)
+{
+	/* move to a new file: src/win/win-layout.c */
+	return 0;
+}
+
+
+/*
  * game in progress
  */
 bool game_in_progress = FALSE;
@@ -912,12 +923,19 @@ static void load_prefs(void)
 	int i;
 
 	char buf[1024];
+	bool first_start;
+
+	if (file_exists(ini_file)) {
+		first_start = FALSE;
+	} else {
+		first_start = TRUE;
+	}
 
 	/* Extract the "arg_graphics" flag */
 	arg_graphics = GetPrivateProfileInt("Angband", "Graphics", GRAPHICS_NONE, ini_file);
 
-        /* Extract the "arg_graphics_nice" flag */
-        arg_graphics_nice = GetPrivateProfileInt("Angband", "Graphics_Nice", TRUE, ini_file);
+	/* Extract the "arg_graphics_nice" flag */
+	arg_graphics_nice = GetPrivateProfileInt("Angband", "Graphics_Nice", TRUE, ini_file);
 
 	/* Extract the tile width */
 	tile_width = GetPrivateProfileInt("Angband", "TileWidth", FALSE, ini_file);
@@ -946,6 +964,10 @@ static void load_prefs(void)
 		sprintf(buf, "Term-%d", i);
 
 		load_prefs_aux(td, buf);
+	}
+
+	if (first_start) {
+		default_layout_win();
 	}
 
 	/* Paranoia */
@@ -3730,6 +3752,15 @@ static void process_menus(WORD wCmd)
 		case IDM_WINDOW_OPT: {
 			Term_keypress('=',0);
 			Term_keypress('w',0);
+
+			break;
+		}
+		case IDM_WINDOW_RESET: {
+			if (MessageBox(NULL,
+					"This will reset the size and layout of the angband windows\n based on your screen size. Do you want to continue?",
+					VERSION_NAME, MB_YESNO|MB_ICONWARNING) == IDYES) {
+				default_layout_win();
+			}
 
 			break;
 		}
