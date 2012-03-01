@@ -2752,7 +2752,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 		}
 
 		/* Damaged monster */
-		else
+		else if (!is_mimicking(m_ptr))
 		{
 			/* Give detailed messages if visible or destroyed */
 			if ((m_note != MON_MSG_NONE) && seen)
