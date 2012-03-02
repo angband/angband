@@ -1379,7 +1379,7 @@ int summon_specific(int y1, int x1, int lev, int type, int delay)
 	}
 
 	/* Failure */
-	if (i == 20) return (0);
+	if (i == 60) return (0);
 
 	/* Save the "summon" type */
 	summon_specific_type = type;
