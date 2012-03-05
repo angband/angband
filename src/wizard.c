@@ -1932,7 +1932,7 @@ void do_cmd_debug(void)
 		/* Create a trap */
 		case 'T':
 		{
-			if (cave->feat[p_ptr->py][p_ptr->px] != FEAT_FLOOR) 
+			if (!cave_isfloor(cave, p_ptr->py, p_ptr->px))
 				msg("You can't place a trap there!");
 			else if (p_ptr->depth == 0)
 				msg("You can't place a trap in the town!");

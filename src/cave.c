@@ -3847,12 +3847,19 @@ bool cave_isdiggable(struct cave *c, int y, int x) {
 }
 
 /**
+ * True if the feature is passable by the player.
+ */
+bool feat_ispassable(feature_type *f_ptr) {
+	return ff_has(f_ptr->flags, FF_PWALK);
+}
+
+/**
  * True if the square is passable by the player.
  *
  * This function is the logical negation of cave_iswall().
  */
 bool cave_ispassable(struct cave *c, int y, int x) {
-	return !(c->info[y][x] & CAVE_WALL);
+	return feat_ispassable(&f_info[c->feat[y][x]]);
 }
 
 /**
@@ -3894,8 +3901,22 @@ bool cave_isroom(struct cave *c, int y, int x) {
 /**
  * True if cave square is a feeling trigger square 
  */
-bool cave_isfeel(struct cave *c, int y, int x){
+bool cave_isfeel(struct cave *c, int y, int x) {
 	return c->info2[y][x] & CAVE2_FEEL;
+}
+
+/**
+ * True if the feature is "boring".
+ */
+bool feat_isboring(feature_type *f_ptr) {
+	return ff_has(f_ptr->flags, FF_BORING);
+}
+
+/**
+ * True if the cave square is "boring".
+ */
+bool cave_isboring(struct cave *c, int y, int x) {
+	return feat_isboring(&f_info[c->feat[y][x]]);
 }
 
 /**

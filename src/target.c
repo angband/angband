@@ -354,34 +354,8 @@ static bool target_set_interactive_accept(int y, int x)
 	}
 
 	/* Interesting memorized features */
-	if (cave->info[y][x] & (CAVE_MARK))
-	{
-		/* Notice glyphs */
-		if (cave->feat[y][x] == FEAT_GLYPH) return (TRUE);
-
-		/* Notice doors */
-		if (cave->feat[y][x] == FEAT_OPEN) return (TRUE);
-		if (cave->feat[y][x] == FEAT_BROKEN) return (TRUE);
-
-		/* Notice stairs */
-		if (cave_isstairs(cave, y, x)) return (TRUE);
-
-		/* Notice shops */
-		if (cave_isshop(cave, y, x)) return (TRUE);
-
-		/* Notice traps */
-		if (cave_isknowntrap(cave, y, x)) return TRUE;
-
-		/* Notice doors */
-		if (cave_iscloseddoor(cave, y, x)) return TRUE;
-
-		/* Notice rubble */
-		if (cave->feat[y][x] == FEAT_RUBBLE) return (TRUE);
-
-		/* Notice veins with treasure */
-		if (cave->feat[y][x] == FEAT_MAGMA_K) return (TRUE);
-		if (cave->feat[y][x] == FEAT_QUARTZ_K) return (TRUE);
-	}
+	if (cave->info[y][x] & (CAVE_MARK) && !cave_isboring(cave, y, x))
+		return (TRUE);
 
 	/* Nope */
 	return (FALSE);
