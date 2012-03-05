@@ -1172,7 +1172,7 @@ static int draw_path(u16b path_n, u16b *path_g, wchar_t *c, byte *a, int y1, int
 			/* Known objects are yellow. */
 			colour = TERM_YELLOW;
 
-		else if (!cave_floor_bold(y,x) &&
+		else if (!cave_ispassable(cave, y,x) &&
 				 ((cave->info[y][x] & (CAVE_MARK)) || player_can_see_bold(y,x)))
 			/* Known walls are blue. */
 			colour = TERM_BLUE;

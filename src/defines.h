@@ -797,15 +797,6 @@ enum
 	(((Y) > 0) && ((Y) < DUNGEON_HGT-1) && \
 	 ((X) > 0) && ((X) < DUNGEON_WID-1))
 
-/*
- * Determine if a "legal" grid is a "floor" grid
- *
- * Line 1 -- forbid doors, rubble, seams, walls
- *
- * Note the use of the new "CAVE_WALL" flag.
- */
-#define cave_floor_bold(Y,X) \
-	(!(cave->info[Y][X] & (CAVE_WALL)))
 
 /*
  * Determine if a "legal" grid is within "los" of the player

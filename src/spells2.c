@@ -2380,7 +2380,7 @@ void earthquake(int cy, int cx, int r)
 			{
 				int feat = FEAT_FLOOR;
 
-				bool floor = cave_floor_bold(yy, xx);
+				bool floor = cave_ispassable(cave, yy, xx);
 
 				/* Delete objects */
 				delete_object(yy, xx);
@@ -2587,7 +2587,7 @@ static void light_room(int y1, int x1, bool light)
 		x = ps->pts[i].x, y = ps->pts[i].y;
 
 		/* Walls get lit, but stop light */
-		if (!cave_floor_bold(y, x)) continue;
+		if (!cave_ispassable(cave, y, x)) continue;
 
 		/* Spread adjacent */
 		cave_room_aux(ps, y + 1, x);

@@ -133,7 +133,7 @@ static void do_cmd_wiz_hack_ben(void)
 				/* Display player/floors/walls */
 				if ((y == py) && (x == px))
 					print_rel(L'@', a, y, x);
-				else if (cave_floor_bold(y, x))
+				else if (cave_ispassable(cave, y, x))
 					print_rel(L'*', a, y, x);
 				else
 					print_rel(L'#', a, y, x);
@@ -1478,12 +1478,12 @@ static void do_cmd_wiz_query(void)
 			if (!mask && (cave->info[y][x] & (CAVE_MARK))) continue;
 
 			/* Color */
-			if (cave_floor_bold(y, x)) a = TERM_YELLOW;
+			if (cave_ispassable(cave, y, x)) a = TERM_YELLOW;
 
 			/* Display player/floors/walls */
 			if ((y == py) && (x == px))
 				print_rel(L'@', a, y, x);
-			else if (cave_floor_bold(y, x))
+			else if (cave_ispassable(cave, y, x))
 				print_rel(L'*', a, y, x);
 			else
 				print_rel(L'#', a, y, x);
