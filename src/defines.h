@@ -703,22 +703,44 @@ enum
 
 enum
 {
-	FF_PWALK        = 0x00000001,
-	FF_PPASS        = 0x00000002,
-	FF_MWALK        = 0x00000004,
-	FF_MPASS        = 0x00000008,
-	FF_LOOK         = 0x00000010,
-	FF_DIG          = 0x00000020,
-	FF_DOOR         = 0x00000040,
-	FF_EXIT_UP      = 0x00000080,
-	FF_EXIT_DOWN    = 0x00000100,
-	FF_PERM         = 0x00000200,
-	FF_TRAP         = 0x00000400,
-	FF_SHOP         = 0x00000800,
-	FF_HIDDEN       = 0x00001000,
-	FF_BORING       = 0x00002000
+	FF_NONE,
+	FF_PWALK,
+	FF_PPASS,
+	FF_MWALK,
+	FF_MPASS,
+	FF_LOOK,
+	FF_DIG,
+	FF_DOOR,
+	FF_EXIT_UP,
+	FF_EXIT_DOWN,
+	FF_PERM,
+	FF_TRAP,
+	FF_SHOP,
+	FF_HIDDEN,
+	FF_BORING,
+	FF_MAX
 };
 
+#define FF_SIZE               FLAG_SIZE(FF_MAX)
+
+#define ff_has(f, flag)        flag_has_dbg(f, FF_SIZE, flag, #f, #flag)
+/* #define rf_next(f, flag)       flag_next(f, RF_SIZE, flag)
+#define rf_is_empty(f)         flag_is_empty(f, RF_SIZE)
+#define rf_is_full(f)          flag_is_full(f, RF_SIZE)
+#define rf_is_inter(f1, f2)    flag_is_inter(f1, f2, RF_SIZE)
+#define rf_is_subset(f1, f2)   flag_is_subset(f1, f2, RF_SIZE)
+#define rf_is_equal(f1, f2)    flag_is_equal(f1, f2, RF_SIZE)
+#define rf_on(f, flag)         flag_on_dbg(f, RF_SIZE, flag, #f, #flag)
+#define rf_off(f, flag)        flag_off(f, RF_SIZE, flag)
+#define rf_wipe(f)             flag_wipe(f, RF_SIZE)
+#define rf_setall(f)           flag_setall(f, RF_SIZE)
+#define rf_negate(f)           flag_negate(f, RF_SIZE)
+#define rf_copy(f1, f2)        flag_copy(f1, f2, RF_SIZE)
+#define rf_union(f1, f2)       flag_union(f1, f2, RF_SIZE)
+#define rf_comp_union(f1, f2)  flag_comp_union(f1, f2, RF_SIZE)
+#define rf_inter(f1, f2)       flag_inter(f1, f2, RF_SIZE)
+#define rf_diff(f1, f2)        flag_diff(f1, f2, RF_SIZE)
+*/
 
 /*** Macro Definitions ***/
 

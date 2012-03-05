@@ -90,7 +90,7 @@ typedef struct feature
 	byte dig;      /**< How hard is it to dig through? */
 
 	u32b effect;   /**< Effect on entry to grid */
-	u32b flags;    /**< Terrain flags */
+	bitflag flags[FF_SIZE];    /**< Terrain flags */
 
 	byte d_attr;   /**< Default feature attribute */
 	wchar_t d_char;   /**< Default feature character */
