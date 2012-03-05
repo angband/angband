@@ -364,12 +364,10 @@ static bool target_set_interactive_accept(int y, int x)
 		if (cave->feat[y][x] == FEAT_BROKEN) return (TRUE);
 
 		/* Notice stairs */
-		if (cave->feat[y][x] == FEAT_LESS) return (TRUE);
-		if (cave->feat[y][x] == FEAT_MORE) return (TRUE);
+		if (cave_isstairs(cave, y, x)) return (TRUE);
 
 		/* Notice shops */
-		if ((cave->feat[y][x] >= FEAT_SHOP_HEAD) &&
-		    (cave->feat[y][x] <= FEAT_SHOP_TAIL)) return (TRUE);
+		if (cave_isshop(cave, y, x)) return (TRUE);
 
 		/* Notice traps */
 		if (cave_isknowntrap(cave, y, x)) return TRUE;
@@ -995,7 +993,7 @@ static ui_event target_set_interactive_aux(int y, int x, int mode)
 			s3 = (is_a_vowel(name[0])) ? "an " : "a ";
 
 			/* Hack -- special introduction for store doors */
-			if ((feat >= FEAT_SHOP_HEAD) && (feat <= FEAT_SHOP_TAIL))
+			if (feature_isshop(feat))
 			{
 				s3 = "the entrance to the ";
 			}
