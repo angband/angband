@@ -14,9 +14,7 @@
 # Feature attr/char definitions
 
 # <darkness>
-F:0:bright:0x79:0x78
-F:0:lit:0x79:0x79
-F:0:dark:0x79:0x7a
+F:0:all:0x80:0x80
 
 # open floor (+ invisible trap)
 F:1:bright:0x96:0x80
