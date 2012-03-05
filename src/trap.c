@@ -106,7 +106,7 @@ void place_trap(struct cave *c, int y, int x)
 void create_trap(struct cave *c, int y, int x)
 {
 	assert(cave_in_bounds(c, y, x));
-	assert(cave_empty_bold(y, x));
+	assert(cave_isempty(cave, y, x));
 
 	/* Place an invisible trap */
 	cave_set_feat(c, y, x, FEAT_INVIS);

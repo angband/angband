@@ -871,7 +871,7 @@ static bool place_new_monster_one(int y, int x, monster_race *race,
 	assert(race && race->name);
 
 	/* Require empty space */
-	if (!cave_empty_bold(y, x)) return (FALSE);
+	if (!cave_isempty(cave, y, x)) return (FALSE);
 
 	/* No creation on glyph of warding */
 	if (cave->feat[y][x] == FEAT_GLYPH) return (FALSE);
@@ -1042,7 +1042,7 @@ static bool place_new_monster_group(struct cave *c, int y, int x,
 			int my = hy + ddy_ddd[i];
 
 			/* Walls and Monsters block flow */
-			if (!cave_empty_bold(my, mx)) continue;
+			if (!cave_isempty(cave, my, mx)) continue;
 
 			/* Attempt to place another monster */
 			if (place_new_monster_one(my, mx, r_ptr, sleep, origin)) {
@@ -1147,7 +1147,7 @@ bool place_new_monster(struct cave *c, int y, int x, monster_race *race, bool sl
 			scatter(&ny, &nx, y, x, d, 0);
 
 			/* Require empty grids */
-			if (!cave_empty_bold(ny, nx)) continue;
+			if (!cave_isempty(cave, ny, nx)) continue;
 
 			/* Set the escort index */
 			place_monster_race = race;

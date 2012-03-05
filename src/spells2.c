@@ -2174,7 +2174,7 @@ void earthquake(int cy, int cx, int r)
 			x = px + ddx_ddd[i];
 
 			/* Skip non-empty grids */
-			if (!cave_empty_bold(y, x)) continue;
+			if (!cave_isempty(cave, y, x)) continue;
 
 			/* Important -- Skip "quake" grids */
 			if (map[16+y-cy][16+x-cx]) continue;
@@ -2288,7 +2288,7 @@ void earthquake(int cy, int cx, int r)
 							x = xx + ddx_ddd[i];
 
 							/* Skip non-empty grids */
-							if (!cave_empty_bold(y, x)) continue;
+							if (!cave_isempty(cave, y, x)) continue;
 
 							/* Hack -- no safety on glyph of warding */
 							if (cave->feat[y][x] == FEAT_GLYPH) continue;

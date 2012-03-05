@@ -786,54 +786,6 @@ enum
 	(!(cave->info[Y][X] & (CAVE_WALL)))
 
 /*
- * Determine if a "legal" grid is a "clean" floor grid
- *
- * Line 1 -- forbid non-floors
- * Line 2 -- forbid normal objects
- */
-#define cave_clean_bold(Y,X) \
-	((cave->feat[Y][X] == FEAT_FLOOR) && \
-	 (cave->o_idx[Y][X] == 0))
-
-/*
- * Determine if a "legal" grid is an "empty" floor grid
- *
- * Line 1 -- forbid doors, rubble, seams, walls
- * Line 2 -- forbid player/monsters
- */
-#define cave_empty_bold(Y,X) \
-	(cave_floor_bold(Y,X) && \
-	 (cave->m_idx[Y][X] == 0))
-
-/*
- * Determine if a "legal" grid is an "naked" floor grid
- *
- * Line 1 -- forbid non-floors
- * Line 2 -- forbid normal objects
- * Line 3 -- forbid player/monsters
- */
-#define cave_naked_bold(Y,X) \
-	((cave->feat[Y][X] == FEAT_FLOOR) && \
-	 (cave->o_idx[Y][X] == 0) && \
-	 (cave->m_idx[Y][X] == 0))
-
-
-/*
- * Determine if a "legal" grid is "permanent"
- *
- * Line 1 -- perma-walls
- * Line 2-3 -- stairs
- * Line 4-5 -- shop doors
- */
-#define cave_perma_bold(Y,X) \
-	((cave->feat[Y][X] >= FEAT_PERM_EXTRA) || \
-	 ((cave->feat[Y][X] == FEAT_LESS) || \
-	  (cave->feat[Y][X] == FEAT_MORE)) || \
-	 ((cave->feat[Y][X] >= FEAT_SHOP_HEAD) && \
-	  (cave->feat[Y][X] <= FEAT_SHOP_TAIL)))
-
-
-/*
  * Determine if a "legal" grid is within "los" of the player
  *
  * Note the use of comparison to zero to force a "boolean" result

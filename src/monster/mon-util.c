@@ -1361,7 +1361,7 @@ int summon_specific(int y1, int x1, int lev, int type, int delay)
 		scatter(&y, &x, y1, x1, d, 0);
 
 		/* Require "empty" floor grid */
-		if (!cave_empty_bold(y, x)) continue;
+		if (!cave_isempty(cave, y, x)) continue;
 
 		/* Hack -- no summon on glyph of warding */
 		if (cave->feat[y][x] == FEAT_GLYPH) continue;
@@ -1433,7 +1433,7 @@ bool multiply_monster(const monster_type *m_ptr)
 		scatter(&y, &x, m_ptr->fy, m_ptr->fx, d, 0);
 
 		/* Require an "empty" floor grid */
-		if (!cave_empty_bold(y, x)) continue;
+		if (!cave_isempty(cave, y, x)) continue;
 
 		/* Create a new monster (awake, no groups) */
 		result = place_new_monster(cave, y, x, m_ptr->race, FALSE, FALSE,

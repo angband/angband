@@ -1386,7 +1386,7 @@ static void do_cmd_wiz_named(monster_race *r, bool slp)
 		scatter(&y, &x, py, px, d, 0);
 
 		/* Require empty grids */
-		if (!cave_empty_bold(y, x)) continue;
+		if (!cave_isempty(cave, y, x)) continue;
 
 		/* Place it (allow groups) */
 		if (place_new_monster(cave, y, x, r, slp, TRUE, ORIGIN_DROP_WIZARD)) break;

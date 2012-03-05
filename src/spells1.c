@@ -230,7 +230,7 @@ void teleport_away(struct monster *m_ptr, int dis)
 			if (!in_bounds_fully(ny, nx)) continue;
 
 			/* Require "empty" floor space */
-			if (!cave_empty_bold(ny, nx)) continue;
+			if (!cave_isempty(cave, ny, nx)) continue;
 
 			/* Hack -- no teleport onto glyph of warding */
 			if (cave->feat[ny][nx] == FEAT_GLYPH) continue;
@@ -305,7 +305,7 @@ void teleport_player(int dis)
 			if (!in_bounds_fully(y, x)) continue;
 
 			/* Require "naked" floor space */
-			if (!cave_naked_bold(y, x)) continue;
+			if (!cave_isempty(cave, y, x)) continue;
 
 			/* No teleporting into vaults and such */
 			if (cave->info[y][x] & (CAVE_ICKY)) continue;
@@ -367,7 +367,7 @@ void teleport_player_to(int ny, int nx)
 		}
 
 		/* Accept "naked" floor grids */
-		if (cave_naked_bold(y, x)) break;
+		if (cave_isempty(cave, y, x)) break;
 
 		/* Occasionally advance the distance */
 		if (++ctr > (4 * dis * dis + 4 * dis + 1))
@@ -1328,7 +1328,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_MAKE_TRAP:
 		{
 			/* Require an "empty" floor grid */
-			if (!cave_empty_bold(y, x)) break;
+			if (!cave_isempty(cave, y, x)) break;
 
 			/* Create a trap */
 			create_trap(cave, y, x);

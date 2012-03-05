@@ -332,7 +332,8 @@ bool cave_valid_bold(int y, int x)
 	object_type *o_ptr;
 
 	/* Forbid perma-grids */
-	if (cave_perma_bold(y, x)) return (FALSE);
+	if (cave_isperm(cave, y, x) || cave_isshop(cave, y, x) || 
+		cave_isstairs(cave, y, x)) return (FALSE);
 
 	/* Check objects */
 	for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
@@ -3790,6 +3791,9 @@ bool cave_isdownstairs(struct cave *c, int y, int x) {
     return c->feat[y][x] == FEAT_MORE;
 }
 
+/*
+ * True if the square is a shop entrance.
+ */
 bool cave_isshop(struct cave *c, int y, int x) {
 	return c->feat[y][x] >= FEAT_SHOP_HEAD
 	    && c->feat[y][x] <= FEAT_SHOP_TAIL;
