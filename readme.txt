@@ -13,4 +13,4 @@ If you're compiling the game yourself, read http://rephial.org/wiki/Compiling.
 
 Enjoy!
 
--- Andi Sidwell, maintainer
+-- The Angband Dev Team
