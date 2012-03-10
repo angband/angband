@@ -1626,6 +1626,9 @@ void play_game(void)
 	if (ANGBAND_TERM_MAX > 6) window_flag[6] = (PW_OVERHEAD);
 	if (ANGBAND_TERM_MAX > 7) window_flag[7] = (PW_PLAYER_2);
 
+	/* Set up the subwindows */
+	subwindow_set_flags(window_flag,ANGBAND_TERM_MAX);
+
 	/*** Try to load the savefile ***/
 
 	p_ptr->is_dead = TRUE;
