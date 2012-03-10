@@ -1590,6 +1590,7 @@ static void process_some_user_pref_files(void)
  */
 void play_game(void)
 {
+	u32b window_flag[ANGBAND_TERM_MAX];
 	/* Initialize */
 	bool new_game = init_angband();
 
@@ -1612,7 +1613,18 @@ void play_game(void)
 	/* Hack -- Turn off the cursor */
 	(void)Term_set_cursor(FALSE);
 
+	/* set a default warning level that will be overridden by the savefile */
 	op_ptr->hitpoint_warn = 3;
+
+	/* initialize window options that will be overridden by the savefile */
+	memset(window_flag, 0, sizeof(u32b)*ANGBAND_TERM_MAX);
+	if (ANGBAND_TERM_MAX > 1) window_flag[1] = (PW_MESSAGE);
+	if (ANGBAND_TERM_MAX > 2) window_flag[2] = (PW_INVEN);
+	if (ANGBAND_TERM_MAX > 3) window_flag[3] = (PW_MONLIST);
+	if (ANGBAND_TERM_MAX > 4) window_flag[4] = (PW_ITEMLIST);
+	if (ANGBAND_TERM_MAX > 5) window_flag[5] = (PW_MONSTER | PW_OBJECT);
+	if (ANGBAND_TERM_MAX > 6) window_flag[6] = (PW_OVERHEAD);
+	if (ANGBAND_TERM_MAX > 7) window_flag[7] = (PW_PLAYER_2);
 
 	/*** Try to load the savefile ***/
 
