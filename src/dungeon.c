@@ -1627,7 +1627,7 @@ void play_game(void)
 	if (ANGBAND_TERM_MAX > 7) window_flag[7] = (PW_PLAYER_2);
 
 	/* Set up the subwindows */
-	subwindow_set_flags(window_flag,ANGBAND_TERM_MAX);
+	subwindow_set_flags(window_flag, ANGBAND_TERM_MAX);
 
 	/*** Try to load the savefile ***/
 
