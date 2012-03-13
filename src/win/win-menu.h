@@ -1,5 +1,5 @@
 /*
- * File: main-win.c
+ * File: win-menu.h
  * Purpose: Menu constants -- see "ANGBAND.RC"
  *
  * Copyright (c) 1997 Ben Harrison, Skirmantas Kligys, Robert Ruehlmann,

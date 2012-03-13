@@ -274,12 +274,6 @@
 #define DEFAULT_FONT	"8X12x.FON"
 
 
-
-/*
- * Forward declare
- */
-typedef struct _term_data term_data;
-
 /*
  * Extra "term" data
  *
@@ -290,62 +284,7 @@ typedef struct _term_data term_data;
  * "font_want" can be in almost any form as long as it could be construed
  * as attempting to represent the name of a font.
  */
-struct _term_data
-{
-	term t;
-
-	const char *s;
-
-	HWND w;
-
-	DWORD dwStyle;
-	DWORD dwExStyle;
-
-	uint keys;
-
-	byte rows;
-	byte cols;
-
-	uint pos_x;
-	uint pos_y;
-	uint size_wid;
-	uint size_hgt;
-	uint size_ow1;
-	uint size_oh1;
-	uint size_ow2;
-	uint size_oh2;
-
-	bool size_hack;
-
-	bool xtra_hack;
-
-	bool visible;
-	bool maximized;
-
-	bool bizarre;
-
-	char *font_want;
-	char *font_file;
-
-	HFONT font_id;
-
-	uint font_wid;
-	uint font_hgt;
-
-	uint tile_wid;
-	uint tile_hgt;
-
-	uint map_tile_wid;
-	uint map_tile_hgt;
-
-	bool map_active;
-};
-
-
-/*
- * Maximum number of windows XXX XXX XXX
- */
-#define MAX_TERM_DATA 8
+#include "win/win-term.h"
 
 
 /*
@@ -359,14 +298,9 @@ static term_data data[MAX_TERM_DATA];
 static term_data *my_td;
 
 /*
- * Default winndow layout function
+ * Default window layout function
  */
-int default_layout_win(void);
-int default_layout_win(void)
-{
-	/* move to a new file: src/win/win-layout.c */
-	return 0;
-}
+int default_layout_win(term_data *data, int maxterms);
 
 
 /*
@@ -967,7 +901,7 @@ static void load_prefs(void)
 	}
 
 	if (first_start) {
-		default_layout_win();
+		default_layout_win(data,MAX_TERM_DATA);
 	}
 
 	/* Paranoia */
@@ -1559,14 +1493,19 @@ static void term_change_font(term_data *td)
 
 			/* Force the use of that font */
 			(void)term_force_font(td, tmp);
-		}
+
+			/* Reset the tile info */
+			td->tile_wid = td->font_wid;
+			td->tile_hgt = td->font_hgt;
 
 		/* HACK - Assume bizarre */
 		td->bizarre = TRUE;
 
 		/* Reset the tile info */
-		td->tile_wid = td->font_wid;
-		td->tile_hgt = td->font_hgt;
+		if (!td->tile_wid || !td->tile_hgt) {
+			td->tile_wid = td->font_wid;
+			td->tile_hgt = td->font_hgt;
+		}
 
 		/* Analyze the font */
 		term_getsize(td);
@@ -3759,7 +3698,64 @@ static void process_menus(WORD wCmd)
 			if (MessageBox(NULL,
 					"This will reset the size and layout of the angband windows\n based on your screen size. Do you want to continue?",
 					VERSION_NAME, MB_YESNO|MB_ICONWARNING) == IDYES) {
-				default_layout_win();
+				term *old = Term;
+				int i;
+				RECT rc;
+
+				(void)default_layout_win(data,MAX_TERM_DATA);
+
+				for (i=0; i < MAX_TERM_DATA; i++) {
+					/* Activate */
+					Term_activate(&(data[i].t));
+	        
+					/* Resize the term */
+					Term_resize(data[i].cols, data[i].rows);
+				}
+				/* Restore */
+				Term_activate(old);
+
+				/* Do something to sub-windows */
+				for (i = MAX_TERM_DATA - 1; i >= 0; i--) {
+					if (!(data[i].w)) continue;
+					
+					/* Client window size */
+					rc.left = 0;
+					rc.top = 0;
+					rc.right = rc.left + data[i].cols * data[i].tile_wid + data[i].size_ow1 + data[i].size_ow2;
+					rc.bottom = rc.top + data[i].rows * data[i].tile_hgt + data[i].size_oh1 + data[i].size_oh2;
+
+					/* Get total window size (without menu for sub-windows) */
+					AdjustWindowRectEx(&rc, data[i].dwStyle, TRUE, data[i].dwExStyle);
+
+					/* Total size */
+					data[i].size_wid = rc.right - rc.left;
+					data[i].size_hgt = rc.bottom - rc.top;
+
+					if (i==0) {
+						SetWindowPos(data[i].w, 0, data[i].pos_x, data[i].pos_y,
+							data[i].size_wid, data[i].size_hgt, 0);
+					} else {
+						SetWindowPos(data[i].w, data[0].w, data[i].pos_x, data[i].pos_y,
+							data[i].size_wid, data[i].size_hgt, 0);
+					}
+					if (data[i].visible) {
+						ShowWindow(data[i].w, SW_SHOW);
+					} else {
+						ShowWindow(data[i].w, SW_HIDE);
+					}
+
+					/* Redraw later */
+					InvalidateRect(data[i].w, NULL, TRUE);
+				}
+
+				/* Focus on main window */
+				SetFocus(data[0].w);
+
+				/* React to changes */
+				Term_xtra_win_react();
+
+				/* Hack -- Force redraw */
+				Term_key_push(KTRL('R'));			
 			}
 
 			break;
