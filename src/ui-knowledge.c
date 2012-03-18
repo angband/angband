@@ -28,6 +28,7 @@
 #include "store.h"
 #include "ui.h"
 #include "ui-menu.h"
+#include "grafmode.h"
 
 /* Flag value for missing array entry */
 #define MISSING -17
