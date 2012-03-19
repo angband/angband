@@ -852,7 +852,9 @@ static bool visual_mode_command(ui_event ke, bool *visual_list_ptr,
 		case 'v':
 		{
 		        /* No visual mode without graphics, for now - NRM */
-		        if (current_graphics_mode->grafID == 0) break;
+		       if (current_graphics_mode != NULL)
+			       if (current_graphics_mode->grafID == 0)
+				       break;
 
 			if (!*visual_list_ptr)
 			{
