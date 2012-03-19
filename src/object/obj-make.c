@@ -558,8 +558,13 @@ s16b apply_magic(object_type *o_ptr, int lev, bool allow_artifacts,
 	s16b power = 0;
 
 	/* Chance of being `good` and `great` */
-	int good_chance = (lev + 2) * 3;
-	int great_chance = MIN(lev / 4 + lev, 50);
+	/* This has changed over the years:
+	 * 3.0.0:   good = MIN(75, lev + 10);      great = MIN(20, lev / 2); 
+	 * 3.3.0:	good = (lev + 2) * 3;          great = MIN(lev / 4 + lev, 50);
+	 * The calculations below are somewhere between the two.		-AS-
+	 */
+	int good_chance = (2 * lev) + 5;
+	int great_chance = MIN(40, (lev * 3) / 4);
 
 	/* Roll for "good" */
 	if (good || (randint0(100) < good_chance)) {
