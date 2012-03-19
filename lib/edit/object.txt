@@ -2026,7 +2026,7 @@ N:310:Strength
 G:!:d
 I:75:1
 W:30:0:4:8000
-A:50:30 to 100
+A:30:30 to 100
 M:10:2
 F:EASY_KNOW
 E:GAIN_STR
@@ -2035,7 +2035,7 @@ N:311:Intelligence
 G:!:d
 I:75:2
 W:30:0:4:8000
-A:50:30 to 100
+A:30:30 to 100
 M:10:2
 F:EASY_KNOW
 E:GAIN_INT
@@ -2044,7 +2044,7 @@ N:312:Wisdom
 G:!:d
 I:75:3
 W:30:0:4:8000
-A:50:30 to 100
+A:30:30 to 100
 M:10:2
 F:EASY_KNOW
 E:GAIN_WIS
@@ -2053,7 +2053,7 @@ N:313:Dexterity
 G:!:d
 I:75:4
 W:30:0:4:8000
-A:50:30 to 100
+A:30:30 to 100
 M:10:2
 F:EASY_KNOW
 E:GAIN_DEX
@@ -2062,7 +2062,7 @@ N:314:Constitution
 G:!:d
 I:75:5
 W:30:0:4:8000
-A:50:30 to 100
+A:30:30 to 100
 M:10:2
 F:EASY_KNOW
 E:GAIN_CON
@@ -2071,7 +2071,7 @@ N:315:Charisma
 G:!:d
 I:75:6
 W:20:0:4:1000
-A:50:15 to 100
+A:30:15 to 100
 M:10:2
 F:EASY_KNOW
 E:GAIN_CHR
@@ -2194,7 +2194,7 @@ N:333:Brawn
 G:!:d
 I:75:24
 W:3:0:4:1000
-A:40:10 to 30
+A:30:20 to 40
 M:10:2
 F:EASY_KNOW
 E:BRAWN
@@ -2203,7 +2203,7 @@ N:334:Intellect
 G:!:d
 I:75:25
 W:20:0:4:1000
-A:40:10 to 30
+A:30:20 to 40
 M:10:2
 F:EASY_KNOW
 E:INTELLECT
@@ -2212,7 +2212,7 @@ N:335:Contemplation
 G:!:d
 I:75:26
 W:20:0:4:1000
-A:40:10 to 30
+A:30:20 to 40
 M:10:2
 F:EASY_KNOW
 E:CONTEMPLATION
@@ -2221,7 +2221,7 @@ N:336:Nimbleness
 G:!:d
 I:75:27
 W:5:0:4:1000
-A:40:10 to 30
+A:30:20 to 40
 M:10:2
 F:EASY_KNOW
 E:NIMBLENESS
@@ -2230,7 +2230,7 @@ N:337:Toughness
 G:!:d
 I:75:28
 W:10:0:4:1000
-A:40:10 to 30
+A:30:20 to 40
 M:10:2
 F:EASY_KNOW
 E:TOUGHNESS
