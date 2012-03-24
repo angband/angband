@@ -2696,7 +2696,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ,
 	else if (do_stun)
 	{
 		if (m_ptr->m_timed[MON_TMD_STUN])
-			do_stun /= 2;
+			do_stun  = do_stun / 2 + 1;
 
 		obvious = mon_inc_timed(m_ptr, MON_TMD_STUN, do_stun,
 			flag | MON_TMD_FLG_NOTIFY, id);
