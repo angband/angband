@@ -208,17 +208,24 @@ const char *feature_group_text[] =
 
 
 /* Useful method declarations */
-static void display_visual_list(int col, int row, int height, int width,
+static void display_tiles(int col, int row, int height, int width,
 				byte attr_top, byte char_left);
 
-static bool visual_mode_command(ui_event ke, bool *visual_list_ptr,
-				int height, int width,
-				byte *attr_top_ptr, byte *char_left_ptr,
-				byte *cur_attr_ptr, byte *cur_char_ptr,
-				int col, int row, int *delay);
+static bool tile_picker_command(ui_event ke, bool * tile_picker_ptr,
+				int height, int width, byte * attr_top_ptr,
+				byte * char_left_ptr, byte * cur_attr_ptr,
+				byte * cur_char_ptr, int col, int row,
+				int *delay);
 
-static void place_visual_list_cursor(int col, int row, byte a,
-				byte c, byte attr_top, byte char_left);
+static void place_tile_cursor(int col, int row, byte a, byte c,
+				     byte attr_top, byte char_left);
+
+static void display_glyphs(int col, int row, int height, int width, byte a, 
+			   wchar_t c);
+
+static bool glyph_command(ui_event ke, bool *glyph_picker_ptr,
+			  int height, int width, byte *cur_attr_ptr,
+			  wchar_t *cur_char_ptr, int col, int row);
 
 /*
  * Clipboard variables for copy&paste in visual mode
@@ -351,7 +358,9 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	region object_region = { MISSING, 6, 0, -2 };
 
 	/* display state variables */
-	bool visual_list = FALSE;
+	bool tiles = (current_graphics_mode != NULL);
+	bool tile_picker = FALSE;
+	bool glyph_picker = FALSE;
 	byte attr_top = 0;
 	byte char_left = 0;
 
@@ -388,6 +397,9 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 	/* Disable the roguelike commands for the duration */
 	OPT(rogue_like_commands) = FALSE;
+
+	/* Determine if using tiles or not */
+	if (tiles) tiles = (current_graphics_mode->grafID != 0);
 
 	if (g_funcs.gcomp)
 		sort(obj_list, o_count, sizeof(*obj_list), g_funcs.gcomp);
@@ -490,7 +502,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 		}
 
 		/* HACK ... */
-		if (!visual_list)
+		if (!(tile_picker || glyph_picker)) 
 		{
 			/* ... The object menu may be browsing the entire group... */
 			o_funcs.is_visual = FALSE;
@@ -514,7 +526,8 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			const char *xtra = o_funcs.xtra_prompt ? o_funcs.xtra_prompt(oid) : "";
 			const char *pvs = "";
 
-			if (visual_list) pvs = ", ENTER to accept";
+			if (tile_picker) pvs = ", ENTER to accept";
+			else if (glyph_picker) pvs = ", 'i' to insert, ENTER to accept";
 			else if (o_funcs.xattr) pvs = ", 'v' for visuals";
 
 			prt(format("<dir>%s%s%s, ESC", pvs, pedit, xtra), hgt - 1, 0);
@@ -528,7 +541,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			panel = 1 - panel;
 		}
 
-		if (g_funcs.summary && !visual_list)
+		if (g_funcs.summary && !tile_picker && !glyph_picker)
 		{
 			g_funcs.summary(g_cur, obj_list, g_o_count, g_offset[g_cur],
 			                object_menu.active.row + object_menu.active.page_rows,
@@ -540,13 +553,24 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 		handle_stuff(p_ptr);
 
-		if (visual_list)
+		if (tile_picker) 
 		{
 		        bigcurs = TRUE;
-			display_visual_list(g_name_len + 3, 7, browser_rows-1,
-			                             wid - (g_name_len + 3), attr_top, char_left);
-			place_visual_list_cursor(g_name_len + 3, 7, *o_funcs.xattr(oid), 
-										*o_funcs.xchar(oid), attr_top, char_left);
+			display_tiles(g_name_len + 3, 7, browser_rows - 1,
+				      wid - (g_name_len + 3), attr_top, 
+				      char_left);
+			place_tile_cursor(g_name_len + 3, 7, 
+					  *o_funcs.xattr(oid),
+					  (byte) *o_funcs.xchar(oid), 
+					  attr_top, char_left);
+		}
+
+		if (glyph_picker) 
+		{
+		        display_glyphs(g_name_len + 3, 7, browser_rows - 1,
+				       wid - (g_name_len + 3), 
+				       *o_funcs.xattr(oid),
+				       *o_funcs.xchar(oid));
 		}
 
 		if (delay)
@@ -561,7 +585,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 		}
 
 		ke = inkey_ex();
-		if (!visual_list)
+		if (!tile_picker && !glyph_picker)
 		{
 			ui_event ke0 = EVENT_EMPTY;
 
@@ -575,13 +599,30 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 		}
 
 		/* XXX Do visual mode command if needed */
-		if (o_funcs.xattr && o_funcs.xchar)
+		if (o_funcs.xattr && o_funcs.xchar) 
 		{
-			if (visual_mode_command(ke, &visual_list, browser_rows - 1,
-					wid - (g_name_len + 3), &attr_top, &char_left,
-					o_funcs.xattr(oid), (byte *)o_funcs.xchar(oid),
-					g_name_len + 3, 7, &delay))
-				continue;
+		        if (tiles)
+			{
+			        if (tile_picker_command(ke, &tile_picker, 
+							browser_rows - 1, 
+							wid - (g_name_len + 3),
+							&attr_top, &char_left, 
+							o_funcs.xattr(oid),
+							(byte *) o_funcs.xchar(oid), 
+							g_name_len + 3, 7, 
+							&delay))
+				    continue;
+			}
+			else 
+			{
+			        if (glyph_command(ke, &glyph_picker, 
+						  browser_rows - 1, 
+						  wid - (g_name_len + 3), 
+						  o_funcs.xattr(oid), 
+						  o_funcs.xchar(oid), 
+						  g_name_len + 3, 7))
+				    continue;
+			}
 		}
 
 		switch (ke.type)
@@ -665,9 +706,9 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 }
 
 /*
- * Display visuals.
+ * Display tiles.
  */
-static void display_visual_list(int col, int row, int height, int width, byte attr_top, byte char_left)
+static void display_tiles(int col, int row, int height, int width, byte attr_top, byte char_left)
 {
 	int i, j;
 
@@ -704,9 +745,9 @@ static void display_visual_list(int col, int row, int height, int width, byte at
 
 
 /*
- * Place the cursor at the correct position for visual mode
+ * Place the cursor at the correct position for tile picking
  */
-static void place_visual_list_cursor(int col, int row, byte a, byte c, byte attr_top, byte char_left)
+static void place_tile_cursor(int col, int row, byte a, byte c, byte attr_top, byte char_left)
 {
 	int i = a - attr_top;
 	int j = c - char_left;
@@ -720,9 +761,9 @@ static void place_visual_list_cursor(int col, int row, byte a, byte c, byte attr
 
 
 /*
- * Remove the visual list and clear the screen 
+ * Remove the tile display and clear the screen 
  */
-static void remove_visual_list(int col, int row, bool *visual_list_ptr, int width, int height)
+static void remove_tiles(int col, int row, bool *picker_ptr, int width, int height)
 {
 	int i;
 
@@ -730,7 +771,7 @@ static void remove_visual_list(int col, int row, bool *visual_list_ptr, int widt
 	bigcurs = FALSE;
 
 	/* Cancel visual list */
-	*visual_list_ptr = FALSE;
+	*picker_ptr = FALSE;
 
 	/* Clear the display lines */
 	for (i = 0; i < height; i++)
@@ -739,13 +780,13 @@ static void remove_visual_list(int col, int row, bool *visual_list_ptr, int widt
 }
 
 /*
- *  Do visual mode command -- Change symbols
+ *  Do tile picker command -- Change tiles
  */
-static bool visual_mode_command(ui_event ke, bool *visual_list_ptr,
-				int height, int width,
-				byte *attr_top_ptr, byte *char_left_ptr,
-				byte *cur_attr_ptr, byte *cur_char_ptr,
-				int col, int row, int *delay)
+static bool tile_picker_command(ui_event ke, bool *tile_picker_ptr,
+				int height, int width, byte *attr_top_ptr,
+				byte *char_left_ptr, byte *cur_attr_ptr,
+				byte *cur_char_ptr, int col, int row,
+				int *delay)
 {
 	static byte attr_old = 0;
 	static char char_old = 0;
@@ -793,7 +834,7 @@ static bool visual_mode_command(ui_event ke, bool *visual_list_ptr,
 
 			/* Accept change */
 			if (ke.mouse.button)
-			  remove_visual_list(col, row, visual_list_ptr, width, height);
+			  remove_tiles(col, row, tile_picker_ptr, width, height);
 
 			return TRUE;
 		}
@@ -803,7 +844,7 @@ static bool visual_mode_command(ui_event ke, bool *visual_list_ptr,
 		{
 			*cur_attr_ptr = attr_old;
 			*cur_char_ptr = char_old;
-			remove_visual_list(col, row, visual_list_ptr, width, height);
+			remove_tiles(col, row, tile_picker_ptr, width, height);
 
 			return TRUE;
 		}
@@ -822,12 +863,12 @@ static bool visual_mode_command(ui_event ke, bool *visual_list_ptr,
 	{
 		case ESCAPE:
 		{
-			if (*visual_list_ptr)
+			if (*tile_picker_ptr)
 			{
 				/* Cancel change */
 				*cur_attr_ptr = attr_old;
 				*cur_char_ptr = char_old;
-				remove_visual_list(col, row, visual_list_ptr, width, height);
+				remove_tiles(col, row, tile_picker_ptr, width, height);
 
 				return TRUE;
 			}
@@ -838,10 +879,10 @@ static bool visual_mode_command(ui_event ke, bool *visual_list_ptr,
 		case '\n':
 		case '\r':
 		{
-			if (*visual_list_ptr)
+			if (*tile_picker_ptr)
 			{
 				/* Accept change */
-			  remove_visual_list(col, row, visual_list_ptr, width, height);
+			  remove_tiles(col, row, tile_picker_ptr, width, height);
 				return TRUE;
 			}
 
@@ -856,9 +897,9 @@ static bool visual_mode_command(ui_event ke, bool *visual_list_ptr,
 			       if (current_graphics_mode->grafID == 0)
 				       break;
 
-			if (!*visual_list_ptr)
+			if (!*tile_picker_ptr)
 			{
-				*visual_list_ptr = TRUE;
+				*tile_picker_ptr = TRUE;
 				bigcurs = TRUE;
 
 				*attr_top_ptr = (byte)MAX(0, (int)*cur_attr_ptr - frame_top);
@@ -872,7 +913,7 @@ static bool visual_mode_command(ui_event ke, bool *visual_list_ptr,
 				/* Cancel change */
 				*cur_attr_ptr = attr_old;
 				*cur_char_ptr = char_old;
-				remove_visual_list(col, row, visual_list_ptr, width, height);
+				remove_tiles(col, row, tile_picker_ptr, width, height);
 			}
 
 			return TRUE;
@@ -881,7 +922,7 @@ static bool visual_mode_command(ui_event ke, bool *visual_list_ptr,
 		case 'C':
 		case 'c':
 		{
-			/* Set the visual */
+			/* Set the tile */
 			attr_idx = *cur_attr_ptr;
 			char_idx = *cur_char_ptr;
 
@@ -914,7 +955,7 @@ static bool visual_mode_command(ui_event ke, bool *visual_list_ptr,
 			byte a = *cur_attr_ptr;
 			byte c = *cur_char_ptr;
 
-			if (!*visual_list_ptr)
+			if (!*tile_picker_ptr)
 				break;
 
 			bigcurs = TRUE;
@@ -928,7 +969,7 @@ static bool visual_mode_command(ui_event ke, bool *visual_list_ptr,
 			a += ddy[d];
 			c += ddx[d];
 
-			/* Set the visual */
+			/* Set the tile */
 			*cur_attr_ptr = a;
 			*cur_char_ptr = c;
 
@@ -957,7 +998,179 @@ static bool visual_mode_command(ui_event ke, bool *visual_list_ptr,
 		}
 	}
 
-	/* Visual mode command is not used */
+	/* Tile picker command is not used */
+	return FALSE;
+}
+
+
+/*
+ * Display glyph and colours
+ */
+static void display_glyphs(int col, int row, int height, int width, byte a, 
+			   wchar_t c)
+{
+        int i;
+	int x, y;
+
+	/* Clear the display lines */
+	for (i = 0; i < height; i++)
+	        Term_erase(col, row + i, width);
+
+	/* Prompt */
+	prt("Choose colour:", row + height/2, col);
+	Term_locate(&x, &y);
+	for (i = 0; i < MAX_COLORS; i++) big_pad(x + i, y, i, c);
+	
+	/* Place the cursor */
+	Term_gotoxy(x + a, y);
+}
+
+/*
+ *  Do glyph picker command -- Change glyphs
+ */
+static bool glyph_command(ui_event ke, bool *glyph_picker_ptr,
+			  int height, int width, byte *cur_attr_ptr,
+			  wchar_t *cur_char_ptr, int col, int row)
+{
+        static byte attr_old = 0;
+	static char char_old = 0;
+	
+	/* Get mouse movement */
+	if (ke.type == EVT_MOUSE)
+	{
+	        byte a = *cur_attr_ptr;
+
+		int mx = logical_width(ke.mouse.x - col);
+		
+		if (ke.mouse.y != row + height/2) return FALSE;
+		
+		if ((mx >= 0) && (mx < MAX_COLORS) && (ke.mouse.button == 1))
+		{
+		        /* Set the visual */
+		        *cur_attr_ptr = a = mx - 14;
+
+			/* Accept change */
+			remove_tiles(col, row, glyph_picker_ptr, width, height);
+			
+			return TRUE;
+		}
+
+		else
+		{
+		        return FALSE;
+		}
+	}
+
+	if (ke.type != EVT_KBRD)
+	        return FALSE;
+
+
+	switch (ke.key.code)
+	{
+	        case ESCAPE:
+		{
+		        if (*glyph_picker_ptr)
+			{
+			        /* Cancel change */
+			        *cur_attr_ptr = attr_old;
+				*cur_char_ptr = char_old;
+				remove_tiles(col, row, glyph_picker_ptr, width, height);
+				
+				return TRUE;
+			}
+
+			break;
+		}
+
+	    case '\n':
+	    case '\r':
+	    {
+		    if (*glyph_picker_ptr)
+		    {
+			    /* Accept change */
+			    remove_tiles(col, row, glyph_picker_ptr, width, height);
+			    return TRUE;
+		    }
+		    
+		    break;
+	    }
+
+	    case 'V':
+	    case 'v':
+	    {
+		    if (!*glyph_picker_ptr)
+		    {
+			    *glyph_picker_ptr = TRUE;
+
+			    attr_old = *cur_attr_ptr;
+			    char_old = *cur_char_ptr;
+		    }
+		    else
+		    {
+			    /* Cancel change */
+			    *cur_attr_ptr = attr_old;
+			    *cur_char_ptr = char_old;
+			    remove_tiles(col, row, glyph_picker_ptr, width, height);
+		    }
+
+		    return TRUE;
+	    }
+
+	    case 'i':
+	    case 'I':
+	    {
+		    if (*glyph_picker_ptr)
+		    {
+			    char code_point[6];
+			    bool res = FALSE;
+	
+			    /* Ask the user for a code point */
+			    Term_gotoxy(col, row + height/2 + 2);
+			    res = get_string("(up to 5 hex digits):", code_point, 5);
+	
+			    /* Process input */
+			    if (res)
+			    {
+				    unsigned long int point = strtoul(code_point, (char **)NULL, 16);
+				    *cur_char_ptr = (wchar_t) point;
+				    return TRUE;
+			    }
+		    }
+		    
+		    break;
+		    
+		    
+	    }
+	    
+	    default:
+	    {
+		    int d = target_dir(ke.key);
+		    byte a = *cur_attr_ptr;
+		    
+		    if (!*glyph_picker_ptr)
+			break;
+
+		    /* Horizontal only */
+		    if (ddy[d] != 0) break;
+		    
+		    /* Horizontal movement */
+		    if (ddx[d] != 0) {
+			a += ddx[d] + BASIC_COLORS;
+			a = a % BASIC_COLORS;
+			*cur_attr_ptr = a;
+		    }
+    
+	
+		    /* We need to always eat the input even if it is clipped,
+		     * otherwise it will be interpreted as a change object
+		     * selection command with messy results.
+		     */
+		    return TRUE;
+	    }
+	}
+
+
+	/* Glyph picker command is not used */
 	return FALSE;
 }
 
