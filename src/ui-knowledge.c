@@ -211,10 +211,10 @@ const char *feature_group_text[] =
 static void display_tiles(int col, int row, int height, int width,
 				byte attr_top, byte char_left);
 
-static bool tile_picker_command(ui_event ke, bool * tile_picker_ptr,
-				int height, int width, byte * attr_top_ptr,
-				byte * char_left_ptr, byte * cur_attr_ptr,
-				byte * cur_char_ptr, int col, int row,
+static bool tile_picker_command(ui_event ke, bool *tile_picker_ptr,
+				int height, int width, byte *attr_top_ptr,
+				byte *char_left_ptr, byte *cur_attr_ptr,
+				byte *cur_char_ptr, int col, int row,
 				int *delay);
 
 static void place_tile_cursor(int col, int row, byte a, byte c,
@@ -604,24 +604,19 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 		        if (tiles)
 			{
 			        if (tile_picker_command(ke, &tile_picker, 
-							browser_rows - 1, 
-							wid - (g_name_len + 3),
-							&attr_top, &char_left, 
-							o_funcs.xattr(oid),
-							(byte *) o_funcs.xchar(oid), 
-							g_name_len + 3, 7, 
-							&delay))
-				    continue;
+				    browser_rows - 1, wid - (g_name_len + 3),
+				    &attr_top, &char_left, o_funcs.xattr(oid),
+				    (byte *) o_funcs.xchar(oid), 
+				    g_name_len + 3, 7, &delay))
+				  continue;
 			}
 			else 
 			{
 			        if (glyph_command(ke, &glyph_picker, 
-						  browser_rows - 1, 
-						  wid - (g_name_len + 3), 
-						  o_funcs.xattr(oid), 
-						  o_funcs.xchar(oid), 
-						  g_name_len + 3, 7))
-				    continue;
+				    browser_rows - 1, wid - (g_name_len + 3), 
+				    o_funcs.xattr(oid), o_funcs.xchar(oid), 
+				    g_name_len + 3, 7))
+				  continue;
 			}
 		}
 
