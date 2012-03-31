@@ -37,7 +37,7 @@
 /**
  * Mouse button structure
  */
-typedef structz
+typedef struct _button_mouse_1d
 {
 	char label[MAX_MOUSE_LABEL]; /*!< Label on the button */
 	int left;                    /*!< Column containing the left edge of the button */
@@ -45,12 +45,18 @@ typedef structz
 	unsigned char key;           /*!< Keypress corresponding to the button */
 } button_mouse;
 
-
+typedef struct _button_backup
+{
+	struct _button_backup *next; /* the button set that will be restored after this one */
+	button_mouse *buttons;       /* the list of buttons */
+        int num;                     /* the number of buttons in the list */
+        int length;                  /* the length of the row of buttons */
+} button_backup;
 
 /*** Variables ***/
 
 static button_mouse *button_mse;
-static button_mouse *button_backup;
+static button_backup *button_backups;
 
 static int button_start_x;
 static int button_start_y;
@@ -129,11 +135,39 @@ int button_add(const char *label, unsigned char keypress)
  */
 void button_backup_all(void)
 {
+	button_backup *newbackup;
+
+	newbackup = RNEW(button_backup);
+	if(!newbackup) {
+		return;
+	}
+	if (button_num == 0) {
+		newbackup->buttons = NULL;
+		newbackup->num = 0;
+		newbackup->length = 0;
+	} else {
+		newbackup->buttons = C_RNEW(button_num, button_mouse);
+		if (!(newbackup->buttons)) {
+			FREE(newbackup);
+			return;
+		}
+		/* Straight memory copy */
+		(void)C_COPY(newbackup->buttons, button_mse, button_num, button_mouse);
+
+		newbackup->num = button_num;
+		newbackup->length = button_length;
+	}
+
+	/* push the backup onto the stack */
+	newbackup->next = button_backups;
+	button_backups = newbackup;
+
+
 	/* Check we haven't already done this */
-	if (button_backup[0].key) return;
+	/*if (button_backup[0].key) return;*/
 
 	/* Straight memory copy */
-	(void)C_COPY(button_backup, button_mse, MAX_MOUSE_BUTTONS, button_mouse);
+	/*(void)C_COPY(button_backup, button_mse, MAX_MOUSE_BUTTONS, button_mouse);*/
 }
 
 
@@ -147,14 +181,37 @@ void button_restore(void)
 	/* Remove the current lot */
 	button_kill_all();
 
-	/* Get all the previous buttons, copy them back */
-	while (button_backup[i].key)
-	{
-		/* Add them all back, forget the backups */
-		button_add(button_backup[i].label, button_backup[i].key);
-		button_backup[i].key = '\0';
-		i++;
+	if (button_backups) {
+		button_backup *next;
+
+		if (button_backups->buttons) {
+			/* traight memory copy */
+			if (button_backups->num > MAX_MOUSE_BUTTONS) {
+				(void)C_COPY(button_mse, button_backups->buttons, MAX_MOUSE_BUTTONS, button_mouse);
+				button_num = MAX_MOUSE_BUTTONS;
+				button_length = button_backups->length;
+				/* modify the length of the button row based on the buttons that were not copied */
+				for (i = MAX_MOUSE_BUTTONS; i < button_backups->num; i++) {
+					button_length -= strlen(button_backups->buttons[i].label);
+				}
+			} else {
+				(void)C_COPY(button_mse, button_backups->buttons, button_backups->num, button_mouse);
+				button_num = button_backups->num;
+				button_length = button_backups->length;
+			}
+			FREE(button_backups->buttons);
+		}
+		/* remove the backup from the stack */
+		next = button_backups->next;
+		if (button_backups->buttons) {
+			FREE(button_backups->buttons);
+		}
+		FREE(button_backups);
+		button_backups = next;
 	}
+			
+	/* signal that the buttons need to be redrawn */
+	p_ptr->redraw |= (PR_BUTTONS);
 }
 
 
@@ -236,7 +293,7 @@ void button_init(button_add_f add, button_kill_f kill)
 {
 	/* Prepare mouse button arrays */
 	button_mse = C_ZNEW(MAX_MOUSE_BUTTONS, button_mouse);
-	button_backup = C_ZNEW(MAX_MOUSE_BUTTONS, button_mouse);
+	button_backups = NULL;
 
 	/* Initialise the hooks */
 	button_add_hook = add;
@@ -255,8 +312,16 @@ void button_hook(button_add_f add, button_kill_f kill)
  */
 void button_free(void)
 {
+	button_backup *next;
+	while (button_backups) {
+		next = button_backups->next;
+		if (button_backups->buttons) {
+			FREE(button_backups->buttons);
+		}
+		FREE(button_backups);
+		button_backups = next;
+	}
 	FREE(button_mse);
-	FREE(button_backup);
 }
 
 /**
@@ -298,7 +363,7 @@ size_t button_print(int row, int col)
 
 
 #if 0
-typedef struct _button_mouse
+typedef struct _button_mouse_2d
 {
   struct _button_mouse *next;
   byte id;
