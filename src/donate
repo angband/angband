@@ -1,21 +1,7 @@
 title = "Donate to Angband"
 <h2>Donate</h2>
 
-<p>If you want to donate to the server hosting costs for rephial.org, then you can do so using PayPal below.  When you donate, if you wish to remain anonymous, please say so.  Accounts will be published here with who donated and when.  Angband uses up the lion's share of the resources on the server, but we do use it for some other sites and email too.  If you do donate, thanks very much!
-
-<p>Note that when donating, enter your amount and then click "Update Total" before doing anything else, or PayPal tends to forget the amount you enter.
-
-<form action="https://www.paypal.com/cgi-bin/webscr" method="post" style="float: left; margin-right: 10px;">
-<input type="hidden" name="cmd" value="_s-xclick">
-<input type="hidden" name="hosted_button_id" value="6988048">
-<input type="submit" value="Donate in US Dollars">
-</form>
-
-<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
-<input type="hidden" name="cmd" value="_s-xclick">
-<input type="hidden" name="hosted_button_id" value="6987856">
-<input type="submit" value="Donate in UK pounds">
-</form>
+<p>We're not accepting donations right now, but this page exists as a testamnt to all the people who have donated to server costs over the years!  If you've ever donated, thanks a lot for helping to keep the game moving.
 
 <h3>Donations received to date</h3>
 
@@ -28,6 +14,7 @@ title = "Donate to Angband"
 </thead>
 
 <tbody>
+<tr><td>3 March 2012 <td>fruviad <td>$25.00
 <tr><td>18 Dec 2011 <td>lux <td>$19.00
 <tr><td>4 June 2011 <td>Sven Siegmund (Zababa) <td>$12.34
 <tr><td>29 April 2011 <td>Sean Kehoe <td>$20.00
