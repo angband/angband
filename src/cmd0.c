@@ -902,6 +902,9 @@ void textui_process_command(bool no_request)
 	else if (e.type == EVT_KBRD)
 		done = textui_process_key(e.key);
 
+	else if (e.type == EVT_BUTTON)
+		done = textui_process_key(e.key);
+
 	if (!done)
 		do_cmd_unknown();
 }
