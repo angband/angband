@@ -31,6 +31,7 @@
 #include "squelch.h"
 #include "ui.h"
 #include "ui-menu.h"
+#include "button.h"
 
 
 
@@ -145,11 +146,19 @@ void do_cmd_change_name(void)
 
 		/* Prompt */
 		Term_putstr(2, 23, -1, TERM_WHITE, p);
+		/* display the mouse buttons */
+		if (OPT(mouse_buttons)) {
+			if (Term->hgt == 24) {
+				button_print(23, 2+62);
+			} else {
+				button_print(Term->hgt - 1, COL_MAP);
+			}
+		}
 
 		/* Query */
 		ke = inkey_ex();
 
-		if (ke.type == EVT_KBRD) {
+		if ((ke.type == EVT_KBRD)||(ke.type == EVT_BUTTON)) {
 			switch (ke.key.code) {
 				case ESCAPE: more = FALSE; break;
 				case 'c': {
