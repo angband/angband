@@ -46,7 +46,7 @@ else
   CFLAGS += -Iwin/include -Lwin/lib
   LDFLAGS += -Lwin/lib
 
-  IOBJS = $(BASEOBJS) win/angband.res main-win.o win/readdib.o win/readpng.o win/scrnshot.o
+  IOBJS = $(BASEOBJS) win/angband.res main-win.o win/readdib.o win/readpng.o win/scrnshot.o win/win-layout.o
   LIBS = -mwindows -lwinmm -lzlib -llibpng -lmsimg32
 endif
 
