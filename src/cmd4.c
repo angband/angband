@@ -131,6 +131,12 @@ void do_cmd_change_name(void)
 	/* Save screen */
 	screen_save();
 
+	/* add some 1d buttons for if we are using them */
+	button_add("[c]", 'c');
+	button_add("[f]", 'f');
+	button_add("[->]", 'h');
+	button_add("[<-]", 'l');
+
 	/* Forever */
 	while (more)
 	{
@@ -206,6 +212,11 @@ void do_cmd_change_name(void)
 		/* Flush messages */
 		message_flush();
 	}
+	/* Remove the 1d buttons that we added earlier */
+	button_kill('c');
+	button_kill('f');
+	button_kill('h');
+	button_kill('l');
 
 	/* Load screen */
 	screen_load();
