@@ -683,14 +683,12 @@ static void textui_process_click(ui_event e)
 			} else
 			if (e.mouse.button == 2) {
 				Term_keypress('i',0);
-				//cmd_insert(CMD_USE_AIMED);
 			}
 		} else
 		if (e.mouse.mods & KC_MOD_CONTROL) {
 			/* ctrl-click - use feature / use inventory item */
 			/* switch with default */
 			if (e.mouse.button == 1) {
-				//cmd_insert(CMD_ACTIVATE);
 				if (cave->feat[p_ptr->py][p_ptr->px] == FEAT_LESS) {
 					cmd_insert(CMD_GO_UP);
 				} else
@@ -700,7 +698,6 @@ static void textui_process_click(ui_event e)
 			} else
 			if (e.mouse.button == 2) {
 				cmd_insert(CMD_USE_UNAIMED);
-				//cmd_insert(CMD_USE_ANY);
 			}
 		} else
 		if (e.mouse.mods & KC_MOD_ALT) {
@@ -711,7 +708,6 @@ static void textui_process_click(ui_event e)
 			} else
 			if (e.mouse.button == 2) {
 				Term_keypress('C',0);
-				//cmd_insert(CMD_CHAR_SCREEN);
 			}
 		} else
 		{
@@ -725,8 +721,6 @@ static void textui_process_click(ui_event e)
 			if (e.mouse.button == 2) {
 				// show a context menu
 				context_menu_player(e.mouse.x, e.mouse.y);
-				//Term_keypress('~',0);
-				//cmd_insert(CMD_OPTIONS);
 			}
 		}
 	}
@@ -788,7 +782,6 @@ static void textui_process_click(ui_event e)
 			/* Set up target information */
 			monster_race_track(m_ptr->r_idx);
 			health_track(p_ptr, m_ptr);
-			//health_track(p_ptr, m_idx);
 			target_set_monster(m_idx);
 		} else {
 			target_set_location(y,x);
