@@ -73,7 +73,7 @@ int default_layout_win(term_data *data, int maxterms)
 
 	if ((sx == 1024) && (sy == 768)) {
 		arg_graphics = 3;
-		arg_graphics_nice = 1;
+		arg_graphics_nice = 0;
 		tile_width = 4;
 		tile_height = 2;
 
@@ -159,7 +159,7 @@ int default_layout_win(term_data *data, int maxterms)
 	}
 	if ((sx == 1280) && (sy == 1024)) {
 		arg_graphics = 5;
-		arg_graphics_nice = 1;
+		arg_graphics_nice = 0;
 		tile_width = 4;
 		tile_height = 2;
 
@@ -331,7 +331,7 @@ int default_layout_win(term_data *data, int maxterms)
 
 	/* setup main window */
 	arg_graphics = mode;
-	arg_graphics_nice = 1;
+	arg_graphics_nice = 0;
 	tile_width = mult_wid;
 	tile_height = mult_hgt;
 
