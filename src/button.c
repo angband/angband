@@ -37,7 +37,7 @@
 /**
  * Mouse button structure
  */
-typedef struct
+typedef structz
 {
 	char label[MAX_MOUSE_LABEL]; /*!< Label on the button */
 	int left;                    /*!< Column containing the left edge of the button */
@@ -52,7 +52,8 @@ typedef struct
 static button_mouse *button_mse;
 static button_mouse *button_backup;
 
-static int button_start;
+static int button_start_x;
+static int button_start_y;
 static int button_length;
 static int button_num;
 
@@ -268,7 +269,7 @@ char button_get_key(int x, int y)
 
 	for (i = 0; i < button_num; i++)
 	{
-		if ((y == Term->hgt - 1) &&
+		if ((y == button_start_y) &&
 		    (x >= button_start + button_mse[i].left) &&
 		    (x <= button_start + button_mse[i].right))
 		{
@@ -286,7 +287,8 @@ size_t button_print(int row, int col)
 {
 	int j;
 
-	button_start = col;
+	button_start_x = col;
+	button_start_y = row;
 
 	for (j = 0; j < button_num; j++)
 		c_put_str(TERM_SLATE, button_mse[j].label, row, col + button_mse[j].left);
