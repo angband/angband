@@ -125,6 +125,21 @@ void do_cmd_change_name(void)
 	const char *p;
 
 	bool more = TRUE;
+	bool button_state;
+
+	if (OPT(mouse_movement)) {
+		/**
+		 * show some buttons on the last line regardless of whether
+		 * mouse buttons are usually shown
+		 */
+		button_state = OPT(mouse_buttons);
+		if (!button_state) {
+			option_set("mouse_buttons", TRUE);
+		}
+	} else {
+		/* make sure we do not change the state of the mouse_buttons option below */
+		button_state = TRUE;
+	}
 
 	/* Prompt */
 	p = "['c' to change name, 'f' to file, 'h' to change mode, or ESC]";
@@ -132,11 +147,18 @@ void do_cmd_change_name(void)
 	/* Save screen */
 	screen_save();
 
+	/* backup the previous buttons and clear them */
+	button_backup_all();
+	button_kill_all();
+
 	/* add some 1d buttons for if we are using them */
 	button_add("[c]", 'c');
 	button_add("[f]", 'f');
 	button_add("[->]", 'h');
 	button_add("[<-]", 'l');
+
+	button_add("[Ret]",'\n');
+	button_add("[ESC]",ESCAPE);
 
 	/* Forever */
 	while (more)
@@ -222,10 +244,10 @@ void do_cmd_change_name(void)
 		message_flush();
 	}
 	/* Remove the 1d buttons that we added earlier */
-	button_kill('c');
-	button_kill('f');
-	button_kill('h');
-	button_kill('l');
+	button_restore();
+	if (!button_state) {
+		option_set("mouse_buttons", FALSE);
+	}
 
 	/* Load screen */
 	screen_load();
