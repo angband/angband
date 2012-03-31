@@ -1497,6 +1497,7 @@ static void term_change_font(term_data *td)
 			/* Reset the tile info */
 			td->tile_wid = td->font_wid;
 			td->tile_hgt = td->font_hgt;
+		}
 
 		/* HACK - Assume bizarre */
 		td->bizarre = TRUE;
