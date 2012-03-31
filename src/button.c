@@ -270,8 +270,8 @@ char button_get_key(int x, int y)
 	for (i = 0; i < button_num; i++)
 	{
 		if ((y == button_start_y) &&
-		    (x >= button_start + button_mse[i].left) &&
-		    (x <= button_start + button_mse[i].right))
+		    (x >= button_start_x + button_mse[i].left) &&
+		    (x <= button_start_x + button_mse[i].right))
 		{
 			return button_mse[i].key;
 		}
