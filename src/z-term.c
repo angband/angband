@@ -1736,12 +1736,6 @@ errr Term_erase(int x, int y, int n)
 	scr_taa = Term->scr->ta[y];
 	scr_tcc = Term->scr->tc[y];
 
-	if ((n > 0) && (scr_aa[x] == 255))
-	{
-		x--;
-		n++;
-	}
-
 	/* Scan every column */
 	for (i = 0; i < n; i++, x++)
 	{

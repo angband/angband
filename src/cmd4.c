@@ -31,6 +31,7 @@
 #include "squelch.h"
 #include "ui.h"
 #include "ui-menu.h"
+#include "button.h"
 
 
 
@@ -124,12 +125,40 @@ void do_cmd_change_name(void)
 	const char *p;
 
 	bool more = TRUE;
+	bool button_state;
+
+	if (OPT(mouse_movement)) {
+		/**
+		 * show some buttons on the last line regardless of whether
+		 * mouse buttons are usually shown
+		 */
+		button_state = OPT(mouse_buttons);
+		if (!button_state) {
+			option_set("mouse_buttons", TRUE);
+		}
+	} else {
+		/* make sure we do not change the state of the mouse_buttons option below */
+		button_state = TRUE;
+	}
 
 	/* Prompt */
 	p = "['c' to change name, 'f' to file, 'h' to change mode, or ESC]";
 
 	/* Save screen */
 	screen_save();
+
+	/* backup the previous buttons and clear them */
+	button_backup_all();
+	button_kill_all();
+
+	/* add some 1d buttons for if we are using them */
+	button_add("[c]", 'c');
+	button_add("[f]", 'f');
+	button_add("[->]", 'h');
+	button_add("[<-]", 'l');
+
+	button_add("[Ret]",'\n');
+	button_add("[ESC]",ESCAPE);
 
 	/* Forever */
 	while (more)
@@ -139,11 +168,19 @@ void do_cmd_change_name(void)
 
 		/* Prompt */
 		Term_putstr(2, 23, -1, TERM_WHITE, p);
+		/* display the mouse buttons */
+		if (OPT(mouse_buttons)) {
+			if (Term->hgt == 24) {
+				button_print(23, 2+62);
+			} else {
+				button_print(Term->hgt - 1, COL_MAP);
+			}
+		}
 
 		/* Query */
 		ke = inkey_ex();
 
-		if (ke.type == EVT_KBRD) {
+		if ((ke.type == EVT_KBRD)||(ke.type == EVT_BUTTON)) {
 			switch (ke.key.code) {
 				case ESCAPE: more = FALSE; break;
 				case 'c': {
@@ -205,6 +242,11 @@ void do_cmd_change_name(void)
 
 		/* Flush messages */
 		message_flush();
+	}
+	/* Remove the 1d buttons that we added earlier */
+	button_restore();
+	if (!button_state) {
+		option_set("mouse_buttons", FALSE);
 	}
 
 	/* Load screen */
