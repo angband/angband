@@ -448,10 +448,12 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	menu_init(&group_menu, MN_SKIN_SCROLL, menu_find_iter(MN_ITER_STRINGS));
 	menu_setpriv(&group_menu, grp_cnt, g_names);
 	menu_layout(&group_menu, &group_region);
+	group_menu.flags |= MN_DBL_TAP;
 
 	menu_init(&object_menu, MN_SKIN_SCROLL, &object_iter);
 	menu_setpriv(&object_menu, 0, &o_funcs);
 	menu_layout(&object_menu, &object_region);
+	object_menu.flags |= MN_DBL_TAP;
 
 	o_funcs.is_visual = FALSE;
 
@@ -635,7 +637,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			case EVT_MOUSE:
 			{
 				/* Change active panels */
-				if (region_inside(&inactive_menu->boundary, &ke))
+				if (region_inside(&inactive_menu->active, &ke))
 				{
 					swap(active_menu, inactive_menu);
 					swap(active_cursor, inactive_cursor);
@@ -796,7 +798,7 @@ static bool tile_picker_command(ui_event ke, bool *tile_picker_ptr,
 
 
 	/* Get mouse movement */
-	if (ke.type == EVT_MOUSE)
+	if (*tile_picker_ptr &&  (ke.type == EVT_MOUSE))
 	{
 		int eff_width = actual_width(width);
 		int eff_height = actual_height(height);
@@ -1031,7 +1033,7 @@ static bool glyph_command(ui_event ke, bool *glyph_picker_ptr,
 	static char char_old = 0;
 	
 	/* Get mouse movement */
-	if (ke.type == EVT_MOUSE)
+	if (*glyph_picker_ptr && (ke.type == EVT_MOUSE))
 	{
 	        byte a = *cur_attr_ptr;
 
