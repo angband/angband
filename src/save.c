@@ -76,6 +76,7 @@ static void wr_item(const object_type *o_ptr)
 	wr_byte(o_ptr->origin);
 	wr_byte(o_ptr->origin_depth);
 	wr_u16b(o_ptr->origin_xtra);
+	wr_byte(o_ptr->ignore);
 
 	for (i = 0; i < OF_BYTES && i < OF_SIZE; i++)
 		wr_byte(o_ptr->flags[i]);

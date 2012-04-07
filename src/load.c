@@ -41,6 +41,115 @@ static struct ego_item *lookup_ego(int idx)
 
 
 /*
+ * Read an object, version 5 (added mimicking_o_idx)
+ *
+ * This function no longer attempts to "repair" old savefiles - the info
+ * held in o_ptr is now authoritative.
+ */
+static int rd_item_5(object_type *o_ptr)
+{
+	byte tmp8u;
+	u16b tmp16u;
+
+	byte ego_idx;
+	byte art_idx;
+
+	size_t i, j;
+
+	char buf[128];
+
+	byte ver = 1;
+
+	rd_u16b(&tmp16u);
+	rd_byte(&ver);
+	assert(tmp16u == 0xffff);
+
+	strip_bytes(2);
+
+	/* Location */
+	rd_byte(&o_ptr->iy);
+	rd_byte(&o_ptr->ix);
+
+	/* Type/Subtype */
+	rd_byte(&o_ptr->tval);
+	rd_byte(&o_ptr->sval);
+	for (i = 0; i < MAX_PVALS; i++) {
+		rd_s16b(&o_ptr->pval[i]);
+	}
+	rd_byte(&o_ptr->num_pvals);
+
+	/* Pseudo-ID bit */
+	rd_byte(&tmp8u);
+
+	rd_byte(&o_ptr->number);
+	rd_s16b(&o_ptr->weight);
+
+	rd_byte(&art_idx);
+	rd_byte(&ego_idx);
+
+	rd_s16b(&o_ptr->timeout);
+
+	rd_s16b(&o_ptr->to_h);
+	rd_s16b(&o_ptr->to_d);
+	rd_s16b(&o_ptr->to_a);
+
+	rd_s16b(&o_ptr->ac);
+
+	rd_byte(&o_ptr->dd);
+	rd_byte(&o_ptr->ds);
+
+	rd_u16b(&o_ptr->ident);
+
+	rd_byte(&o_ptr->marked);
+
+	rd_byte(&o_ptr->origin);
+	rd_byte(&o_ptr->origin_depth);
+	rd_u16b(&o_ptr->origin_xtra);
+	rd_byte(&o_ptr->ignore);
+
+	for (i = 0; i < OF_BYTES && i < OF_SIZE; i++)
+		rd_byte(&o_ptr->flags[i]);
+	if (i < OF_BYTES) strip_bytes(OF_BYTES - i);
+
+	of_wipe(o_ptr->known_flags);
+
+	for (i = 0; i < OF_BYTES && i < OF_SIZE; i++)
+		rd_byte(&o_ptr->known_flags[i]);
+	if (i < OF_BYTES) strip_bytes(OF_BYTES - i);
+
+	for (j = 0; j < MAX_PVALS; j++) {
+		for (i = 0; i < OF_BYTES && i < OF_SIZE; i++)
+			rd_byte(&o_ptr->pval_flags[j][i]);
+		if (i < OF_BYTES) strip_bytes(OF_BYTES - i);
+	}
+
+	/* Monster holding object */
+	rd_s16b(&o_ptr->held_m_idx);
+
+	rd_s16b(&o_ptr->mimicking_m_idx);
+
+	/* Save the inscription */
+	rd_string(buf, sizeof(buf));
+	if (buf[0]) o_ptr->note = quark_add(buf);
+
+
+	/* Lookup item kind */
+	o_ptr->kind = lookup_kind(o_ptr->tval, o_ptr->sval);
+	if (!o_ptr->kind)
+		return 0;
+
+	o_ptr->ego = lookup_ego(ego_idx);
+
+	if (art_idx >= z_info->a_max)
+		return -1;
+	if (art_idx > 0)
+		o_ptr->artifact = &a_info[art_idx];
+
+	/* Success */
+	return (0);
+}
+
+/*
  * Read an object, version 4 (added mimicking_o_idx)
  *
  * This function no longer attempts to "repair" old savefiles - the info
@@ -1890,6 +1999,7 @@ static int rd_inventory(rd_item_t rd_item_version)
 /*
  * Read the player inventory - wrapper functions
  */
+int rd_inventory_5(void) { return rd_inventory(rd_item_5); }
 int rd_inventory_4(void) { return rd_inventory(rd_item_4); }
 int rd_inventory_3(void) { return rd_inventory(rd_item_3); }
 int rd_inventory_2(void) { return rd_inventory(rd_item_2); } /* remove post-3.3 */
@@ -1963,6 +2073,7 @@ static int rd_stores(rd_item_t rd_item_version)
 /*
  * Read the stores - wrapper functions
  */
+int rd_stores_5(void) { return rd_stores(rd_item_5); }
 int rd_stores_4(void) { return rd_stores(rd_item_4); }
 int rd_stores_3(void) { return rd_stores(rd_item_3); }
 int rd_stores_2(void) { return rd_stores(rd_item_2); } /* remove post-3.3 */
@@ -2220,6 +2331,7 @@ static int rd_objects(rd_item_t rd_item_version)
 /*
  * Read the object list - wrapper functions
  */
+int rd_objects_5(void) { return rd_objects(rd_item_5); }
 int rd_objects_4(void) { return rd_objects(rd_item_4); }
 int rd_objects_3(void) { return rd_objects(rd_item_3); }
 int rd_objects_2(void) { return rd_objects(rd_item_2); } /* remove post-3.3 */
