@@ -101,6 +101,7 @@ extern bool cave_isdoor(struct cave *c, int y, int x);
 extern bool cave_issecrettrap(struct cave *c, int y, int x);
 extern bool cave_isknowntrap(struct cave *c, int y, int x);
 extern bool cave_istrap(struct cave *c, int y, int x);
+extern bool cave_isstair(struct cave *c, int y, int x);
 
 /* BEHAVIOR PREDICATES */
 extern bool cave_isopen(struct cave *c, int y, int x);
