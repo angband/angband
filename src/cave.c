@@ -3792,6 +3792,12 @@ bool cave_istrap(struct cave *c, int y, int x) {
 	return cave_issecrettrap(cave, y, x) || cave_isknowntrap(cave, y, x);
 }
 
+/**
+ * True if cave is an up or down stair
+ */
+ bool cave_isstair(struct cave*c, int y, int x) {
+    return c->feat[y][x] == FEAT_LESS || c->feat[y][x] == FEAT_MORE;
+}
 
 
 /**
