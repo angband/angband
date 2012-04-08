@@ -535,27 +535,33 @@ void Term_big_queue_char(term *t, int x, int y, byte a, wchar_t c, byte a1, wcha
 			}
 
 			/* Now vertical */
-			for (vert = 1; vert <= tile_height; vert++)
-			{
+			for (vert = 1; vert <= tile_height; vert++){
+			
+				/* Leave space on bottom for status */
+				if (y + vert + 1 < t-> hgt) {
 			        /* Queue dummy character */
 			        if (a & 0x80)
 				        Term_queue_char(t, x + hor, y + vert, 255, -1, 0, 0);
-				else
+					else
 				        Term_queue_char(t, x + hor, y + vert, TERM_WHITE, ' ', a1, c1);
+				}
 			}
 		}
 	}
 	else
 	{
 	        /* Only vertical */
-	        for (vert = 1; vert <= tile_height; vert++)
-		{
-		        /* Queue dummy character */
-		        if (a & 0x80)
-			        Term_queue_char(t, x, y + vert, 255, -1, 0, 0);
-			else
-			        Term_queue_char(t, x, y + vert, TERM_WHITE, ' ', a1, c1);
-		}
+	        for (vert = 1; vert <= tile_height; vert++) {	
+			
+				/* Leave space on bottom for status */
+				if (y + vert + 1 < t->hgt) {
+					/* Queue dummy character */
+					if (a & 0x80)
+						Term_queue_char(t, x, y + vert, 255, -1, 0, 0);
+					else
+						Term_queue_char(t, x, y + vert, TERM_WHITE, ' ', a1, c1);
+				}
+			}
 	}
 }
 
