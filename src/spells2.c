@@ -2048,7 +2048,7 @@ void destroy_area(int y1, int x1, int r, bool full)
 			delete_monster(y, x);
 			
 			/* Don't remove stairs */
-			if (cave_isstair(cave, y, x)) continue;	
+			if (cave_isstairs(cave, y, x)) continue;	
 			
 			/* Lose knowledge (keeping knowledge of stairs) */
 			cave->info[y][x] &= ~(CAVE_MARK);
