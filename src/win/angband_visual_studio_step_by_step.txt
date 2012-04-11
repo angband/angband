@@ -9,51 +9,49 @@ To build Angband using Microsoft's Visual Studio.
     the src directory is in the project directory, rather than in another
     subdirectory.
 
- 4. Rename src\player\util.c to src\player\p-util.c or something like that.
+ 4. Copy libpng.dll and zlib1.dll from src\win\dll\ to the project directory.
 
- 5. Copy libpng.dll and zlib1.dll from src\win\dll\ to the project directory.
-
- 6. In the project settings, in the C/C++ tab, in the additional include
+ 5. In the project settings, in the C/C++ tab, in the additional include
     directories ilne, add: src, src/win, src/win/include.
 
- 7. In the project settings, in the Link tab, in the Object/library modules
-    line, add: "src\win\zlib1.lib src\win\libpng.lib winmm.lib " to the front
+ 6. In the project settings, in the Link tab, in the Object/library modules
+    line, add: "src\win\zlib1.lib src\win\libpng.lib msimg32.lib winmm.lib " to the front
     of the line.
 
- 8. In the project settings, also in the Link tab, remove any directory names
+ 7. In the project settings, also in the Link tab, remove any directory names
     (usually Debug\ or Release\) from in front of the executable name. Doing
     this will put the executeable in the project directory so you do not have
     to move it every time the project is compiled.
 
- 9. Add all of the files that end in ".c" or ".h" in the src directory EXCEPT
+ 8. Add all of the files that end in ".c" or ".h" in the src directory EXCEPT
     those that have "main" in their name and snd-sdl.c to the project files.
     This can be done by right-clicking on the project in visual studio and 
     choosing "Add Files to Project" from the context menu or by going to
     "Project" -> "Add to Project" -> "Files" from the menu bar.
 
-10. Add all of the files that end in ".c" or ".h" in the src\player directory
+ 9. Add all of the files that end in ".c" or ".h" in the src\player directory
     to the project.
 
-11. Add all of the files that end in ".c" or ".h" in the src\object directory
+10. Add all of the files that end in ".c" or ".h" in the src\object directory
     to the project.
 
-12. Add all of the files that end in ".c" or ".h" in the src\monster directory
+11. Add all of the files that end in ".c" or ".h" in the src\monster directory
     to the project.
 
-13. Add all of the files that end in ".c" or ".h" in the src\win directory
+12. Add all of the files that end in ".c" or ".h" in the src\win directory
     to the project, as well as angband.rc.
 
-14. Add main-win.c from the src directory to the project.
+13. Add main-win.c from the src directory to the project.
 
-15. Save the project, then compile the project. There will be a lot of
+14. Save the project, then compile the project. There will be a lot of
     warnings, but there should not be any errors. The warnings can be ignored.
 
-16. If there are no errors, enjoy playing angband. There should not be any
+15. If there are no errors, enjoy playing angband. There should not be any
     errors and the executable should be built. If there are any errors, and
     you do not know how to fix them, you can ask on the forums at
     http://angband.oook.cz or in the #angband-dev IRC channel on Freenode.
 
-17. Report bugs or request changes at trac.rephial.org.
+16. Report bugs or request changes at trac.rephial.org.
 
-18. To submit bug fixes, changes, etc please open pull requests on the Github
+17. To submit bug fixes, changes, etc please open pull requests on the Github
     site.
