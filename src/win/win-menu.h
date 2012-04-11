@@ -1,5 +1,5 @@
 /*
- * File: main-win.c
+ * File: win-menu.h
  * Purpose: Menu constants -- see "ANGBAND.RC"
  *
  * Copyright (c) 1997 Ben Harrison, Skirmantas Kligys, Robert Ruehlmann,
@@ -120,6 +120,7 @@
 #define IDM_TILE_16X25		189
 
 #define IDM_WINDOW_OPT          180
+#define IDM_WINDOW_RESET        181
 
 #define IDM_HELP_GENERAL		901
 #define IDM_HELP_SPOILERS		902
