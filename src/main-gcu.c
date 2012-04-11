@@ -518,6 +518,8 @@ static errr Term_xtra_gcu_event(int v) {
 		case KEY_UP:    i = ARROW_UP;    break;
 		case KEY_LEFT:  i = ARROW_LEFT;  break;
 		case KEY_RIGHT: i = ARROW_RIGHT; break;
+		case KEY_DC:    i = KC_DELETE; break;
+		case KEY_BACKSPACE: i = KC_BACKSPACE; break;
 
 		/* keypad keys */
 		case 0xFC: i = '0'; break;
@@ -528,9 +530,6 @@ static errr Term_xtra_gcu_event(int v) {
 		case 0xE9: i = '5'; break;
 		case 0xC1: i = '7'; break;
 		case 0xF4: i = '9'; break;
-
-		/* try to compensate for inadequate terminfo */
-		case 263: i = '\b'; break;
 
 		default: {
 			if (i < KEY_MIN) break;

@@ -1373,8 +1373,8 @@ bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, st
 			break;
 		}
 		
-		case 0x7F:
-		case '\010':
+               case KC_BACKSPACE:
+               case KC_DELETE:
 		{
 			/* If this is the first time round, backspace means "delete all" */
 			if (firsttime)
@@ -1387,13 +1387,21 @@ bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, st
 			}
 
 			/* Refuse to backspace into oblivion */
-			if (*curs == 0) break;
+			if((keypress.code == KC_BACKSPACE && *curs == 0) ||
+			   (keypress.code == KC_DELETE && *curs >= *len))
+				break;
 
 			/* Move the string from k to nul along to the left by 1 */
-			memmove(&buf[*curs - 1], &buf[*curs], *len - *curs);
+			if(keypress.code == KC_BACKSPACE)
+				memmove(&buf[*curs - 1], &buf[*curs],
+					*len - *curs);
+			else
+				memmove(&buf[*curs], &buf[*curs+1],
+					*len - *curs -1);
 
 			/* Decrement */
-			(*curs)--;
+			if(keypress.code == KC_BACKSPACE)
+				(*curs)--;
 			(*len)--;
 
 			/* Terminate */
