@@ -513,7 +513,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	bool was_aware = object_flavor_is_aware(o_ptr);
 	int dir = 5;
 	int px = p_ptr->px, py = p_ptr->py;
-	int snd, boost, level;
+	int snd, boost;
 	use_type use;
 	int items_allowed = 0;
 
@@ -626,21 +626,19 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 			msgt(snd, "You activate it.");
 			if (o_ptr->artifact->effect_msg)
 				activation_message(o_ptr, o_ptr->artifact->effect_msg);
-			level = o_ptr->artifact->level;
 		}
 		else
 		{
 			/* Make a noise! */
 			sound(snd);
-			level = o_ptr->kind->level;
 		}
 
 		/* A bit of a hack to make ID work better.
 			-- Check for "obvious" effects beforehand. */
 		if (effect_obvious(effect)) object_flavor_aware(o_ptr);
 
-		/* Boost damage effects if skill > difficulty */
-		boost = MAX(p_ptr->state.skills[SKILL_DEVICE] - level, 0);
+		/* Boost damage effects */
+		boost = device_boost(o_ptr);
 
 		/* Do effect */
 		used = effect_do(effect, &ident, was_aware, dir, beam, boost);

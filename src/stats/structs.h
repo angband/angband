@@ -33,6 +33,10 @@ typedef struct
 {
 	u16b index;          /* Effect index */
 	bool aim;            /* Whether the effect requires aiming */
+	u16b damdice;		 /* Number of dice (0 for no damage) */
+	u16b damsides;		 /* Number of sides per dice (0 for no damage) */
+	bool maximise;		 /* Is damage maximized */
+	bool boost;			 /* Apply boost from device skill */
 	u16b power;          /* Power rating for obj-power.c */
 	const char *desc;    /* Effect description */
 } info_entry;

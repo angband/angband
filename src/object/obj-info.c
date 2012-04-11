@@ -1016,7 +1016,7 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr, bool full,
 	const char *desc;
 	random_value timeout = {0, 0, 0, 0};
 
-	int effect = 0, fail;
+	int effect = 0, fail, boost;
 
 	if (o_ptr->artifact)
 	{
@@ -1074,18 +1074,25 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr, bool full,
 	    textblock_append(tb, "When read, it ");
 	else
 	    textblock_append(tb, "When activated, it ");
-
+		
 	/* Print a colourised description */
 	do
 	{
 		if (isdigit((unsigned char) *desc))
-			textblock_append_c(tb, TERM_L_GREEN, "%c", *desc);
+			textblock_append_c(tb, TERM_L_YELLOW, "%c", *desc);
 		else
 			textblock_append(tb, "%c", *desc);
 	} while (*desc++);
 
 	textblock_append(tb, ".\n");
 
+	if (effect_boost(effect)){	
+		boost = device_boost(o_ptr);		
+		textblock_append(tb, "After adjusting for skill, your average damage is ");
+		textblock_append_c(tb, TERM_L_GREEN, "%d\n\n", 
+			effect_damage(effect, boost, TRUE)); 
+	}
+	
 	if (randcalc(timeout, 0, MAXIMISE) > 0)
 	{
 		int min_time, max_time;
