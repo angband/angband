@@ -890,7 +890,7 @@ static const struct {
 	{ 192, "birth_maximize" },
 	{ 193, "birth_randarts" },
 	{ 195, "birth_ironman" },
-	{ 196, "birth_no_stores" },
+	{ 196, "birth_small_range" },
 	{ 197, "birth_no_artifacts" },
 	{ 198, "birth_no_stacking" },
 	{ 199, "birth_no_preserve" },

@@ -250,13 +250,11 @@ Restrict the use of stairs/recall ``[birth_ironman]``
   spell of stair-creation, except on the quest levels of Sauron and
   Morgoth.
 
-.. _birth_no_stores:
+.. _birth_small_range:
 
-Restrict the use of stores/home ``[birth_no_stores]``
-  The stores are all closed. The home is someone else's, and locked. You
-  can keep nothing but what you carry with you, and get nothing but what
-  you find in the dungeon. No selling items, or buying potions of restore
-  stat... Not recommended for new players, or indeed for sane players.
+Halve view and spell distances ``[birth_small_range]``
+  Distance of seeing, casting spells, shooting and so on are all halved.
+  This is useful for playing with large tiles, or on small devices.
 
 .. _birth_no_artifacts:
 

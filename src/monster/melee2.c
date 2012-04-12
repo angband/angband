@@ -672,7 +672,7 @@ static bool get_moves_aux(struct cave *c, int m_idx, int *yp, int *xp)
 
 	/* Monster is too far away to notice the player */
 	if (c->cost[y1][x1] > MONSTER_FLOW_DEPTH) return (FALSE);
-	if (c->cost[y1][x1] > r_ptr->aaf) return (FALSE);
+	if (c->cost[y1][x1] > (OPT(birth_small_range) ? r_ptr->aaf / 2 : r_ptr->aaf)) return (FALSE);
 
 	/* Hack -- Player can see us, run towards him */
 	if (player_has_los_bold(y1, x1)) return (FALSE);
@@ -746,7 +746,7 @@ static bool get_fear_moves_aux(struct cave *c, int m_idx, int *yp, int *xp)
 
 	/* Monster is too far away to use flow information */
 	if (c->cost[fy][fx] > MONSTER_FLOW_DEPTH) return (FALSE);
-	if (c->cost[fy][fx] > r_ptr->aaf) return (FALSE);
+	if (c->cost[fy][fx] > (OPT(birth_small_range) ? r_ptr->aaf / 2 : r_ptr->aaf)) return (FALSE);
 
 	/* Check nearby grids, diagonals first */
 	for (i = 7; i >= 0; i--)
@@ -3433,7 +3433,7 @@ static bool monster_can_flow(struct cave *c, int m_idx)
 	/* Check the flow (normal aaf is about 20) */
 	if ((c->when[fy][fx] == c->when[p_ptr->py][p_ptr->px]) &&
 	    (c->cost[fy][fx] < MONSTER_FLOW_DEPTH) &&
-	    (c->cost[fy][fx] < r_ptr->aaf))
+	    (c->cost[fy][fx] < (OPT(birth_small_range) ? r_ptr->aaf / 2 : r_ptr->aaf)))
 		return TRUE;
 	return FALSE;
 }
@@ -3503,7 +3503,7 @@ void process_monsters(struct cave *c, byte minimum_energy)
 		 * - can "see" the player (checked backwards)
 		 * - can "smell" the player from far away (flow)
 		 */
-		if ((m_ptr->cdis <= r_ptr->aaf) ||
+		if ((m_ptr->cdis <= (OPT(birth_small_range) ? r_ptr->aaf / 2 : r_ptr->aaf)) ||
 		    (m_ptr->hp < m_ptr->maxhp) ||
 		    player_has_los_bold(m_ptr->fy, m_ptr->fx) ||
 		    monster_can_flow(c, i))

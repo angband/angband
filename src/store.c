@@ -3071,12 +3071,6 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 		return;
 	}
 
-	/* Check if we can enter the store */
-	if (OPT(birth_no_stores)) {
-		msg("The doors are locked.");
-		return;
-	}
-
 	/* Shut down the normal game view - it won't be updated - and start
 	   up the store state. */
 	event_signal(EVENT_LEAVE_GAME);

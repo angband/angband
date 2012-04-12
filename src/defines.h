@@ -191,8 +191,12 @@
 /*
  * More maximum values
  */
-#define MAX_SIGHT	20	/* Maximum view distance */
-#define MAX_RANGE	20	/* Maximum range (spells, etc) */
+#define MAX_SIGHT_LGE   20      /* Maximum view distance */
+#define MAX_RANGE_LGE   20      /* Maximum projection range */
+#define MAX_SIGHT_SML   10      /* Maximum view distance (small devices) */
+#define MAX_RANGE_SML   10      /* Maximum projection range (small devices) */
+#define MAX_SIGHT (OPT(birth_small_range) ? MAX_SIGHT_SML : MAX_SIGHT_LGE)  
+#define MAX_RANGE (OPT(birth_small_range) ? MAX_RANGE_SML : MAX_RANGE_LGE)
 
 
 
