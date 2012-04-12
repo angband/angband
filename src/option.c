@@ -74,7 +74,7 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_birth_ai_cheat,
 		OPT_birth_ai_smart,
 		OPT_birth_ironman,
-		OPT_birth_no_stores,
+		OPT_birth_small_range,
 		OPT_birth_no_artifacts,
 		OPT_birth_no_stacking,
 		OPT_birth_no_preserve,
@@ -167,7 +167,7 @@ static const struct option options[OPT_MAX] =
 { "birth_maximize",      "Maximise effect of race/class bonuses",       TRUE },  /* 50 */
 { "birth_randarts",      "Randomise the artifacts (except a very few)", FALSE }, /* 51 */
 { "birth_ironman",       "Restrict the use of stairs/recall",           FALSE }, /* 52 */
-{ "birth_no_stores",     "Restrict the use of stores/home",             FALSE }, /* 53 */
+{ "birth_small_range",   "Halve view and spell distances",              FALSE }, /* 53 */
 { "birth_no_artifacts",  "Restrict creation of artifacts",              FALSE }, /* 54 */
 { "birth_no_stacking",   "Don't stack objects on the floor",            FALSE }, /* 55 */
 { "birth_no_preserve",   "Lose artifacts when leaving level",           FALSE }, /* 56 */

@@ -1550,7 +1550,8 @@ static void describe_monster_abilities(const monster_race *r_ptr,
 
 		text_out("%s %s intruders, which %s may notice from ", wd_he[msex], 
 				act, wd_he[msex]);
-		text_out_c(TERM_L_BLUE, "%d", 10 * r_ptr->aaf);
+		text_out_c(TERM_L_BLUE, "%d", 
+			   (OPT(birth_small_range) ? 5 : 10) * r_ptr->aaf);
 		text_out(" feet.  ");
 	}
 

@@ -27,6 +27,12 @@
 
 static int view_n;
 static u16b view_g[VIEW_MAX];
+static int  vinfo_grids;
+static int  vinfo_slopes;
+static u32b vinfo_bits_3;
+static u32b vinfo_bits_2;
+static u32b vinfo_bits_1;
+static u32b vinfo_bits_0;
 
 /*
  * Approximate distance between two points.
@@ -1960,8 +1966,8 @@ struct vinfo_hack {
 
 	long slopes[VINFO_MAX_SLOPES];
 
-	long slopes_min[MAX_SIGHT+1][MAX_SIGHT+1];
-	long slopes_max[MAX_SIGHT+1][MAX_SIGHT+1];
+	long slopes_min[MAX_SIGHT_LGE+1][MAX_SIGHT_LGE+1];
+	long slopes_max[MAX_SIGHT_LGE+1][MAX_SIGHT_LGE+1];
 };
 
 static int cmp_longs(const void *a, const void *b)
@@ -1997,10 +2003,10 @@ static void vinfo_init_aux(vinfo_hack *hack, int y, int x, long m)
 		if (i == hack->num_slopes)
 		{
 			/* Paranoia */
-			if (hack->num_slopes >= VINFO_MAX_SLOPES)
+			if (hack->num_slopes >= vinfo_slopes)
 			{
 				quit_fmt("Too many slopes (%d)!",
-			         	VINFO_MAX_SLOPES);
+					 vinfo_slopes);
 			}
 
 			/* Save the slope, and advance */
@@ -2045,6 +2051,14 @@ errr vinfo_init(void)
 	vinfo_type *queue[VINFO_MAX_GRIDS*2];
 
 
+	/* Set the variables for the grids, bits and slopes actually used */
+	vinfo_grids = (OPT(birth_small_range) ? 48 : 161);
+	vinfo_slopes = (OPT(birth_small_range) ? 36 : 126);
+	vinfo_bits_3 = (OPT(birth_small_range) ? 0x00000000 : 0x3FFFFFFF);
+	vinfo_bits_2 = (OPT(birth_small_range) ? 0x00000000 : 0xFFFFFFFF);
+	vinfo_bits_1 = (OPT(birth_small_range) ? 0x0000000F : 0xFFFFFFFF);
+	vinfo_bits_0 = (OPT(birth_small_range) ? 0xFFFFFFFF : 0xFFFFFFFF);
+
 	/* Make hack */
 	hack = ZNEW(vinfo_hack);
 
@@ -2062,10 +2076,10 @@ errr vinfo_init(void)
 			hack->slopes_max[y][x] = 0;
 
 			/* Paranoia */
-			if (num_grids >= VINFO_MAX_GRIDS)
+			if (num_grids >= vinfo_grids)
 			{
 				quit_fmt("Too many grids (%d >= %d)!",
-				         num_grids, VINFO_MAX_GRIDS);
+				         num_grids, vinfo_grids);
 			}
 
 			/* Count grids */
@@ -2099,17 +2113,17 @@ errr vinfo_init(void)
 
 
 	/* Enforce maximal efficiency */
-	if (num_grids < VINFO_MAX_GRIDS)
+	if (num_grids < vinfo_grids)
 	{
 		quit_fmt("Too few grids (%d < %d)!",
-		         num_grids, VINFO_MAX_GRIDS);
+		         num_grids, vinfo_grids);
 	}
 
 	/* Enforce maximal efficiency */
-	if (hack->num_slopes < VINFO_MAX_SLOPES)
+	if (hack->num_slopes < vinfo_slopes)
 	{
 		quit_fmt("Too few slopes (%d < %d)!",
-		         hack->num_slopes, VINFO_MAX_SLOPES);
+		         hack->num_slopes, vinfo_slopes);
 	}
 
 	sort(hack->slopes, hack->num_slopes, sizeof(*hack->slopes), cmp_longs);
@@ -2217,12 +2231,15 @@ errr vinfo_init(void)
 
 
 	/* Verify maximal bits XXX XXX XXX */
-	if (((vinfo[1].bits_3 | vinfo[2].bits_3) != VINFO_BITS_3) ||
-	    ((vinfo[1].bits_2 | vinfo[2].bits_2) != VINFO_BITS_2) ||
-	    ((vinfo[1].bits_1 | vinfo[2].bits_1) != VINFO_BITS_1) ||
-	    ((vinfo[1].bits_0 | vinfo[2].bits_0) != VINFO_BITS_0))
-	{
-		quit("Incorrect bit masks!");
+	if (((vinfo[1].bits_3 | vinfo[2].bits_3) != vinfo_bits_3)
+	    || ((vinfo[1].bits_2 | vinfo[2].bits_2) != vinfo_bits_2)
+	    || ((vinfo[1].bits_1 | vinfo[2].bits_1) != vinfo_bits_1)
+	    || ((vinfo[1].bits_0 | vinfo[2].bits_0) != vinfo_bits_0)) {
+	        quit_fmt("Incorrect bit masks: %x\n%x\n%x\n%x\n", 
+			 (vinfo[1].bits_3 | vinfo[2].bits_3),
+			 (vinfo[1].bits_2 | vinfo[2].bits_2),
+			 (vinfo[1].bits_1 | vinfo[2].bits_1),
+			 (vinfo[1].bits_0 | vinfo[2].bits_0));
 	}
 
 
@@ -2536,10 +2553,10 @@ void update_view(void)
 		vinfo_type *queue[VINFO_MAX_GRIDS*2];
 
 		/* Slope bit vector */
-		u32b bits0 = VINFO_BITS_0;
-		u32b bits1 = VINFO_BITS_1;
-		u32b bits2 = VINFO_BITS_2;
-		u32b bits3 = VINFO_BITS_3;
+		u32b bits0 = vinfo_bits_0;
+		u32b bits1 = vinfo_bits_1;
+		u32b bits2 = vinfo_bits_2;
+		u32b bits3 = vinfo_bits_3;
 
 		/* Reset queue */
 		queue_head = queue_tail = 0;

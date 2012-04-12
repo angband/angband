@@ -1716,6 +1716,9 @@ void play_game(void)
 	/* Flush the message */
 	Term_fresh();
 
+	/* Prepare "vinfo" array**/
+	(void)vinfo_init();
+
 	/* Flavor the objects */
 	flavor_init();
 

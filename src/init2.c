@@ -2718,12 +2718,6 @@ static errr init_other(void)
 	mon_msg = C_ZNEW(MAX_STORED_MON_MSG, monster_race_message);
 	mon_message_hist = C_ZNEW(MAX_STORED_MON_CODES, monster_message_history);
 
-	/*** Prepare "vinfo" array ***/
-
-	/* Used by "update_view()" */
-	(void)vinfo_init();
-
-
 	/*** Prepare entity arrays ***/
 
 	/* Objects */
