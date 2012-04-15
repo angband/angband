@@ -116,6 +116,7 @@ ANGBAND MENU
 		}
 		MENUITEM SEPARATOR
 		MENUITEM "Term Options",    IDM_WINDOW_OPT
+		MENUITEM "Reset Layout",    IDM_WINDOW_RESET
 	}
 
 	POPUP "&Options"
