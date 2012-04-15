@@ -451,10 +451,11 @@ I:91:1:5
 D:Magically renders you well-fed (but not satiated).
 D:  This will also cure a bloated stomach.
 
-N:78:Remove Curse
-I:91:1:6
-D:Removes all ordinary curses from all equipped items.
-D:  Heavy or permanent curses are not affected.
+## Remove in 3.4 until curses are redone
+#N:78:Remove Curse
+#I:91:1:6
+#D:Removes all ordinary curses from all equipped items.
+#D:  Heavy or permanent curses are not affected.
 
 N:79:Resist Heat and Cold
 I:91:1:7
@@ -626,10 +627,11 @@ D:  Chance of success and number of charges gained increase with your
 D: level and decrease with level of wand or staff and number of charges.
 D:  A failed attempt to recharge destroys one wand or staff from the stack.
 
-N:112:Dispel Curse
-I:91:7:2
-D:Removes all ordinary and heavy curses from all equipped objects.
-D:  Permanent curses are not affected.
+## Remove in 3.4 until curses are redone
+#N:112:Dispel Curse
+#I:91:7:2
+#D:Removes all ordinary and heavy curses from all equipped objects.
+#D:  Permanent curses are not affected.
 
 N:113:Enchant Weapon
 I:91:7:3

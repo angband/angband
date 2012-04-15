@@ -109,7 +109,7 @@
 #define PRAYER_CHANT                   11
 #define PRAYER_SANCTUARY               12
 #define PRAYER_SATISFY_HUNGER          13
-#define PRAYER_REMOVE_CURSE            14
+//#define PRAYER_REMOVE_CURSE            14
 #define PRAYER_RESIST_HEAT_COLD        15
 
 /* Chants and Blessings */
@@ -155,7 +155,7 @@
 /* Holy Infusions */
 #define PRAYER_UNBARRING_WAYS          46
 #define PRAYER_RECHARGING              47
-#define PRAYER_DISPEL_CURSE            48
+//#define PRAYER_DISPEL_CURSE            48
 #define PRAYER_ENCHANT_WEAPON          49
 #define PRAYER_ENCHANT_ARMOUR          50
 #define PRAYER_ELEMENTAL_BRAND         51
@@ -983,12 +983,14 @@ static bool cast_priest_spell(int spell, int dir)
 			player_set_food(p_ptr, PY_FOOD_MAX - 1);
 			break;
 		}
-
+		
+        /* Remove curse has been removed in 3.4 until curses are redone
 		case PRAYER_REMOVE_CURSE:
 		{
 			remove_curse();
 			break;
 		}
+		*/
 
 		case PRAYER_RESIST_HEAT_COLD:
 		{
@@ -1237,13 +1239,15 @@ static bool cast_priest_spell(int spell, int dir)
 		{
 			return recharge(15);
 		}
-
+		
+        /* Dispel Curse has been removed in 3.4 until curses are redone 
 		case PRAYER_DISPEL_CURSE:
 		{
 			(void)remove_all_curse();
 			break;
 		}
-
+		*/
+		
 		case PRAYER_ENCHANT_WEAPON:
 		{
 			return enchant_spell(randint0(4) + 1, randint0(4) + 1, 0);

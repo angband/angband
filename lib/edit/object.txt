@@ -1744,20 +1744,22 @@ M:25:2
 F:EASY_KNOW
 E:ENCHANT_ARMOR2
 
+## Removed in 3.4 until curses are redone
 N:275:Remove Curse
 G:?:w
 I:70:16
 W:10:0:5:100
-A:16:10 to 100
+#A:16:10 to 100
 M:25:2
 F:EASY_KNOW
 E:REMOVE_CURSE
 
+## Removed in 3.4 until curses are redone
 N:276:*Remove Curse*
 G:?:w
 I:70:17
 W:50:0:5:8000
-A:16:50 to 100
+#A:16:50 to 100
 M:25:2
 F:EASY_KNOW
 E:REMOVE_CURSE2
@@ -2997,11 +2999,12 @@ C:4+d3
 F:EASY_KNOW
 E:HASTE
 
+## Remove in 3.4 until curses are redone
 N:422:Remove Curse
 G:_:d
 I:55:23
 W:40:0:50:500
-A:20:40 to 100
+#A:20:40 to 100
 P:0:1d2:0:0:0
 C:4+d3
 F:EASY_KNOW
