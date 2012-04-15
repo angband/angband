@@ -256,7 +256,8 @@ D:  Uniques or monsters that resist confusion are not affected.
 
 N:41:Rend Soul
 I:90:8:2
-D:Fires a nether bolt that always hits its target.
+D:Fires a nether bolt that always hits its target. Does
+D:not affect undead.
 D:  Sometimes a beam is fired instead that hurts each monster
 D: in its path.
 D:  The chance to get a beam goes up with your character level.
@@ -265,8 +266,7 @@ N:42:Word of Destruction
 I:90:8:4
 D:Destroys everything in a 15-square radius circle around you.
 D:  All monsters, objects, and terrain features in the area of
-D: effect are destroyed, except stairs, permanent walls and
-D: artifacts.
+D: effect are destroyed, except stairs and permanent walls.
 D:  You will also be blinded for 10+1d10 turns, unless you
 D: have resistance to blindness or light.
 D:  This spell has no effect when used in the town.
@@ -605,8 +605,7 @@ N:108:Word of Destruction
 I:91:8:3
 D:Destroys everything in a 15-square radius circle around you.
 D:  All monsters, objects, and terrain features in the area of
-D: effect are destroyed, except stairs, permanent walls and
-D: artifacts.
+D: effect are destroyed, except stairs and permanent walls.
 D:  You will also be blinded for 10+1d10 turns, unless you
 D: have resistance to blindness or light.
 D:  This prayer has no effect when used in the town.
@@ -636,10 +635,12 @@ D:  A failed attempt to recharge destroys one wand or staff from the stack.
 N:113:Enchant Weapon
 I:91:7:3
 D:Attempts to improve the to-hit bonus and the to-dam bonus of a weapon.
+D: Also gives a chance to break a curse.
 
 N:114:Enchant Armour
 I:91:7:4
 D:Attempts to improve the armour class bonus of a piece of armour.
+D: Also gives a chance to break a curse.
 
 N:115:Elemental Brand
 I:91:7:5
