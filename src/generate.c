@@ -3645,7 +3645,13 @@ void cave_generate(struct cave *c, struct player *p) {
 		if (p->depth == 0) {
 			dun->profile = &town_profile;
 			dun->profile->builder(c, p);
-		} else {
+		} else if (is_quest(c->depth)) {
+		
+		    /* Quest levels must be normal levels */
+		    dun->profile = &cave_profiles[NUM_CAVE_PROFILES - 1];
+			dun->profile->builder(c, p);
+			
+		} else {	
 			int perc = randint0(100);
 			int last = NUM_CAVE_PROFILES - 1;
 			int i;
