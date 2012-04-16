@@ -3309,7 +3309,7 @@ bool cavern_gen(struct cave *c, struct player *p) {
 		k = MAX(MIN(c->depth / 3, 10), 2);
 	
 		/* Scale number of monsters items by cavern size */
-		k = (3 * k * (h *  w)) / (DUNGEON_HGT * DUNGEON_WID);
+		k = MAX((4 * k * (h *  w)) / (DUNGEON_HGT * DUNGEON_WID), 6);
 	
 		/* Put some rubble in corridors */
 		alloc_objects(c, SET_BOTH, TYP_RUBBLE, randint1(k), c->depth, 0);
@@ -3325,11 +3325,11 @@ bool cavern_gen(struct cave *c, struct player *p) {
 			pick_and_place_distant_monster(c, loc(p->px, p->py), 0, TRUE, c->depth);
 	
 		/* Put some objects/gold in the dungeon */
-		alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(6, 3), c->depth,
+		alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(2 * k / 3, 0), c->depth,
 			ORIGIN_CAVERN);
-		alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(6, 3), c->depth,
+		alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(k / 2, 0), c->depth,
 			ORIGIN_CAVERN);
-		alloc_objects(c, SET_BOTH, TYP_GOOD, randint0(2), c->depth,
+		alloc_objects(c, SET_BOTH, TYP_GOOD, randint0(k / 4), c->depth,
 			ORIGIN_CAVERN);
 	}
 
