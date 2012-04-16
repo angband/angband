@@ -3254,7 +3254,7 @@ bool cavern_gen(struct cave *c, struct player *p) {
 	int size = h * w;
 	int limit = size / 13;
 
-	int density = rand_range(25, 30);
+	int density = rand_range(25, 40);
 	int times = rand_range(3, 6);
 
 	int *colors = C_ZNEW(size, int);
