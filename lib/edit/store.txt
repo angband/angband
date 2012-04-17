@@ -70,6 +70,7 @@ I:1:hafted:Morning Star
 I:2:hafted:Flail
 I:1:hafted:Lead-Filled Mace
 #I:1:scroll:Remove Curse
+I:1:scroll:Word of Recall
 I:1:scroll:Blessing
 I:1:scroll:Holy Chant
 I:1:scroll:Light
