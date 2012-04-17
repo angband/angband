@@ -72,7 +72,8 @@ WINMAINFILES = \
         main-win.o \
         win/readdib.o \
         win/readpng.o \
-        win/scrnshot.o
+        win/scrnshot.o \
+		win/win-layout.o
 
 X11MAINFILES = main-x11.o
 
