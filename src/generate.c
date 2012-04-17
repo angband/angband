@@ -2410,8 +2410,8 @@ static void set_cave_dimensions(struct cave *c, int h, int w)
 /**
  * Generate a new dungeon level.
  */
-#define DUN_AMT_ROOM 7 /* Number of objects for rooms */
-#define DUN_AMT_ITEM 2 /* Number of objects for rooms/corridors */
+#define DUN_AMT_ROOM 9 /* Number of objects for rooms */
+#define DUN_AMT_ITEM 3 /* Number of objects for rooms/corridors */
 #define DUN_AMT_GOLD 3 /* Amount of treasure for rooms/corridors */
 static bool default_gen(struct cave *c, struct player *p) {
 	int i, j, k, y, x, y1, x1;
