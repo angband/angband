@@ -73,7 +73,6 @@ I:1:hafted:Lead-Filled Mace
 I:1:scroll:Blessing
 I:1:scroll:Holy Chant
 I:1:scroll:Light
-I:2:potion:Cure Light Wounds
 I:1:potion:Boldness
 I:1:potion:Heroism
 I:3:prayer book:[Beginners Handbook]
