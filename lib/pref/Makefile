@@ -9,6 +9,6 @@ CONFIG = flvr-dvg.prf font-win.prf \
        font-gcu.prf font-sdl.prf graf-dvg.prf graf.prf graf-xxx.prf     \
        xtra-dvg.prf \
        flvr-nmd.prf graf-nmd.prf xtra-nmd.prf \
-       flvr-shb.prf graf-shb.prf xtra-sbg.prf
+       flvr-shb.prf graf-shb.prf xtra-shb.prf
 PACKAGE = pref
 
