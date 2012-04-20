@@ -2032,6 +2032,9 @@ errr Term_keypress(keycode_t k, byte mods)
 			case 9:
 			  	k = KC_TAB;
 			  	break;
+			case 27:
+			  	k = ESCAPE;
+			  	break;
 		}
 	}
 	/* Store the char, advance the queue */

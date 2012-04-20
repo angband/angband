@@ -3168,6 +3168,9 @@ static void term_data_link_sdl(term_window *win)
 	/* Never refresh one row */
 	t->never_frosh = TRUE;
 	
+	/* Differentiate between BS/^h, Tab/^i, etc. */
+	t->complex_input = TRUE;
+
 	/* Ignore the init/nuke hooks */
 	
 	/* Prepare the template hooks */
