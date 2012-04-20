@@ -1682,7 +1682,7 @@ void borg_oops(char *what)
 /*
  * A Queue of keypresses to be sent
  */
-static char *borg_key_queue;
+static keycode_t *borg_key_queue;
 static s16b borg_key_head;
 static s16b borg_key_tail;
 
@@ -1690,7 +1690,7 @@ static s16b borg_key_tail;
 /*
  * Add a keypress to the "queue" (fake event)
  */
-errr borg_keypress(char k)
+errr borg_keypress(keycode_t k)
 {
     /* Hack -- Refuse to enqueue "nul" */
     if (!k) return (-1);
@@ -2544,7 +2544,7 @@ void borg_init_1(void)
 
 
     /* Allocate the "keypress queue" */
-    C_MAKE(borg_key_queue, KEY_SIZE, char);
+    C_MAKE(borg_key_queue, KEY_SIZE, keycode_t);
 
 
     /* Prapare a local random number seed */
