@@ -4190,6 +4190,23 @@ static void handle_wm_paint(HWND hWnd)
 }
 
 
+int extract_modifiers(keycode_t ch, bool kp) {
+	bool mc = FALSE;
+	bool ms = FALSE;
+	bool ma = FALSE;
+
+	/* Extract the modifiers */
+	if (GetKeyState(VK_CONTROL) & 0x8000) mc = TRUE;
+	if (GetKeyState(VK_SHIFT)   & 0x8000) ms = TRUE;
+	if (GetKeyState(VK_MENU)    & 0x8000) ma = TRUE;
+
+	int mods =
+		(mc && (kp || MODS_INCLUDE_CONTROL(ch)) ? KC_MOD_CONTROL : 0) |
+		(ms && (kp || MODS_INCLUDE_SHIFT(ch)) ? KC_MOD_SHIFT : 0) |
+		(ma ? KC_MOD_ALT : 0) | (kp ? KC_MOD_KEYPAD : 0);
+	return mods;
+}
+
 /*
  * We ignore the modifier keys (shift, control, alt, num lock, scroll lock),
  * and the normal keys (escape, tab, return, letters, numbers, etc), but we
@@ -4203,9 +4220,6 @@ static void handle_keydown(WPARAM wParam, LPARAM lParam)
 {
 	keycode_t ch = 0;
 
-	bool mc = FALSE;
-	bool ms = FALSE;
-	bool ma = FALSE;
 	bool kp = FALSE;
 
 #ifdef USE_SAVER
@@ -4215,11 +4229,6 @@ static void handle_keydown(WPARAM wParam, LPARAM lParam)
 		return;
 	}
 #endif /* USE_SAVER */
-
-	/* Extract the modifiers */
-	if (GetKeyState(VK_CONTROL) & 0x8000) mc = TRUE;
-	if (GetKeyState(VK_SHIFT)   & 0x8000) ms = TRUE;
-	if (GetKeyState(VK_MENU)    & 0x8000) ma = TRUE;
 
 	/* for VK_ http://msdn.microsoft.com/en-us/library/dd375731(v=vs.85).aspx */
 	switch (wParam) {
@@ -4244,9 +4253,8 @@ static void handle_keydown(WPARAM wParam, LPARAM lParam)
 		/* Backspace is calling both backspace and delete
 		   Removed the backspace call, so it only calls delete */
 		case VK_BACK: break;
-
 		/* Tab is registering as ^i; don't read it here*/
-		case VK_TAB: break;
+	        case VK_TAB: break;
 		case VK_PRIOR: ch = KC_PGUP; break;
 		case VK_NEXT: ch = KC_PGDOWN; break;
 		case VK_END: ch = KC_END; break;
@@ -4265,10 +4273,7 @@ static void handle_keydown(WPARAM wParam, LPARAM lParam)
 	/* see http://source.winehq.org/source/include/dinput.h#L468 */
 
 	if (ch) {
-		int mods = 
-				(mc && (kp || MODS_INCLUDE_CONTROL(ch)) ? KC_MOD_CONTROL : 0) |
-				(ms && (kp || MODS_INCLUDE_SHIFT(ch)) ? KC_MOD_SHIFT : 0) |
-				(ma ? KC_MOD_ALT : 0) | (kp ? KC_MOD_KEYPAD : 0);
+		int mods = extract_modifiers(ch, kp);
 		printf("ch=%d mods=%d\n", ch, mods);
 		fflush(stdout);
 		Term_keypress(ch, mods);
@@ -4358,23 +4363,34 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 
 		case WM_CHAR:
 		{
-			int vsc = (lParam>>16)&0xFF;
+			int vsc = LOBYTE(HIWORD(lParam));
+			//(lParam>>16)&0xFF;
 			int vk = MapVirtualKey(vsc, 1);
 			printf("wParam=%d lParam=%d vsc=%d vk=%d\n",
 			       wParam, lParam, vsc, vk);
 			fflush(stdout);
-			if (wParam == 10 && vk == 13) {
-				// fix control-enter
-				Term_keypress(KC_ENTER, KC_MOD_CONTROL);
-			} else if (wParam == 8 && vk == 8) {
-				// fix backspace
-				Term_keypress(KC_BACKSPACE, 0);
-			} else if (wParam == 9 && vk == 9) {
-				// fix tab
-				Term_keypress(KC_TAB, 0);
-			} else {
-				Term_keypress(wParam, 0);
+
+			keycode_t ch;
+			// We don't want to translate some keys to their ascii values
+			// so we have to intercept them here.
+			switch (vk)
+			{
+				case 8: // fix backspace
+					ch = KC_BACKSPACE;
+					break;
+				case 9: // fix tab
+					ch = KC_TAB;
+					break;
+				case 13: // fix enter
+					ch = KC_ENTER;
+					break;
+				default:
+					Term_keypress(wParam, 0);
+					return 0;
 			}
+			int mods = extract_modifiers(ch, FALSE);
+			Term_keypress(ch, mods);
+
 			return 0;
 		}
 
