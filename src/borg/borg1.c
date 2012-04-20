@@ -1812,7 +1812,7 @@ bool borg_change_name(char *str)
     for (s = str; *s; s++) borg_keypress(*s);
 
     /* End the name */
-    borg_keypress('\r');
+    borg_keypress(KC_ENTER);
 
     /* Cancel everything */
     borg_keypress(ESCAPE);
@@ -1844,7 +1844,7 @@ bool borg_dump_character(char *str)
     for (s = str; *s; s++) borg_keypress(*s);
 
     /* End the file name */
-    borg_keypress('\r');
+    borg_keypress(KC_ENTER);
 
     /* Cancel everything */
     borg_keypress(ESCAPE);

@@ -3317,7 +3317,7 @@ static void start_screensaver(void)
 	screensaver_inkey_hack_buffer[j++] = key; /* Class */
 	key.code = 'n';
 	screensaver_inkey_hack_buffer[j++] = key; /* Modify options */
-	key.code = '\r';
+	key.code = KC_ENTER;
 	screensaver_inkey_hack_buffer[j++] = key; /* Reroll */
 
 	if (!file_exist)
@@ -3331,7 +3331,7 @@ static void start_screensaver(void)
 		}
 	}
 
-	key.code = '\r';
+	key.code = KC_ENTER;
 	screensaver_inkey_hack_buffer[j++] = key; /* Return */
 	key.code = ESCAPE;
 	screensaver_inkey_hack_buffer[j++] = key; /* Character info */

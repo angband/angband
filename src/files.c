@@ -1616,8 +1616,7 @@ bool show_file(const char *name, const char *what, int line, int mode)
 			/* down a line */
 			case ARROW_DOWN:
 			case '2':
-			case '\n':
-			case '\r': line++; break;
+			case KC_ENTER: line++; break;
 
 			/* down a page */
 			case KC_PGDOWN:
