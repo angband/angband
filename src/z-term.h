@@ -116,6 +116,8 @@ struct term_win
  *	- Value "char_blank"
  *	  Use this "char" value for "blank" grids
  *
+ *	- Flag "complex_input"
+ *	  Distinguish between Enter/^m/^j, Tab/^i, etc.
  *
  *	- Ignore this pointer
  *
@@ -182,6 +184,8 @@ struct term
 
 	byte attr_blank;
 	wchar_t char_blank;
+
+	bool complex_input;
 
 	ui_event *key_queue;
 

@@ -2614,6 +2614,9 @@ static void term_data_link(term_data *td)
 	/* Use a "software" cursor */
 	t->soft_cursor = TRUE;
 
+	/* Differentiate between BS/^h, Tab/^i, etc. */
+	t->complex_input = TRUE;
+
 	/* Use "Term_pict" for "graphic" data */
 	t->higher_pict = TRUE;
 

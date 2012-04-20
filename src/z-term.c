@@ -2014,9 +2014,26 @@ static void log_keypress(ui_event e)
  */
 errr Term_keypress(keycode_t k, byte mods)
 {
+  printf("Term_keypress(%d,%d)\n", k, mods);
+  fflush(stdout);
 	/* Hack -- Refuse to enqueue non-keys */
 	if (!k) return (-1);
 
+	if(!Term->complex_input) {
+		switch (k)
+		{
+			case '\r':
+			case '\n':
+			  	k = KC_ENTER;
+			  	break;
+			case 8:
+			  	k = KC_BACKSPACE;
+			  	break;
+			case 9:
+			  	k = KC_TAB;
+			  	break;
+		}
+	}
 	/* Store the char, advance the queue */
 	Term->key_queue[Term->key_head].type = EVT_KBRD;
 	Term->key_queue[Term->key_head].key.code = k;

@@ -731,6 +731,9 @@ static errr term_data_init_gcu(term_data *td, int rows, int cols, int y, int x) 
 	t->attr_blank = TERM_WHITE;
 	t->char_blank = ' ';
 
+	/* Differentiate between BS/^h, Tab/^i, etc. */
+	t->complex_input = TRUE;
+
 	/* Set some hooks */
 	t->init_hook = Term_init_gcu;
 	t->nuke_hook = Term_nuke_gcu;
