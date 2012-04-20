@@ -4203,11 +4203,10 @@ int extract_modifiers(keycode_t ch, bool kp) {
 	if (GetKeyState(VK_SHIFT)   & 0x8000) ms = TRUE;
 	if (GetKeyState(VK_MENU)    & 0x8000) ma = TRUE;
 
-	int mods =
+	return
 		(mc && (kp || MODS_INCLUDE_CONTROL(ch)) ? KC_MOD_CONTROL : 0) |
 		(ms && (kp || MODS_INCLUDE_SHIFT(ch)) ? KC_MOD_SHIFT : 0) |
 		(ma ? KC_MOD_ALT : 0) | (kp ? KC_MOD_KEYPAD : 0);
-	return mods;
 }
 
 /*
@@ -4292,7 +4291,8 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 	term_data *td;
 	int i;
 
-	int xPos, yPos, button;
+	int xPos, yPos, button, vsc, vk, mods;
+	keycode_t ch;
 
 #ifdef USE_SAVER
 	static int iMouse = 0;
@@ -4366,14 +4366,12 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 
 		case WM_CHAR:
 		{
-			int vsc = LOBYTE(HIWORD(lParam));
-			//(lParam>>16)&0xFF;
-			int vk = MapVirtualKey(vsc, 1);
+			vsc = LOBYTE(HIWORD(lParam));
+			vk = MapVirtualKey(vsc, 1);
 			printf("wParam=%d lParam=%d vsc=%d vk=%d\n",
 			       wParam, lParam, vsc, vk);
 			fflush(stdout);
 
-			keycode_t ch;
 			// We don't want to translate some keys to their ascii values
 			// so we have to intercept them here.
 			switch (vk)
@@ -4387,11 +4385,14 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 				case 13: // fix enter
 					ch = KC_ENTER;
 					break;
+				case 27: // fix escape
+					ch = ESCAPE;
+					break;
 				default:
 					Term_keypress(wParam, 0);
 					return 0;
 			}
-			int mods = extract_modifiers(ch, FALSE);
+			mods = extract_modifiers(ch, FALSE);
 			Term_keypress(ch, mods);
 
 			return 0;

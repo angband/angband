@@ -522,6 +522,7 @@ static errr Term_xtra_gcu_event(int v) {
 		case KEY_BACKSPACE: i = KC_BACKSPACE; break;
 		case 9:         i = KC_TAB; break;
 		case 13:        i = KC_ENTER; break;
+		case 27:        i = ESCAPE; break;
 
 		/* keypad keys */
 		case 0xFC: i = '0'; break;
