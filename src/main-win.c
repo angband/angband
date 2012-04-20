@@ -4245,7 +4245,8 @@ static void handle_keydown(WPARAM wParam, LPARAM lParam)
 		   Removed the backspace call, so it only calls delete */
 		case VK_BACK: break;
 
-		case VK_TAB: ch = KC_TAB; break;
+		/* Tab is registering as ^i; don't read it here*/
+		case VK_TAB: break;
 		case VK_PRIOR: ch = KC_PGUP; break;
 		case VK_NEXT: ch = KC_PGDOWN; break;
 		case VK_END: ch = KC_END; break;
@@ -4268,7 +4269,8 @@ static void handle_keydown(WPARAM wParam, LPARAM lParam)
 				(mc && (kp || MODS_INCLUDE_CONTROL(ch)) ? KC_MOD_CONTROL : 0) |
 				(ms && (kp || MODS_INCLUDE_SHIFT(ch)) ? KC_MOD_SHIFT : 0) |
 				(ma ? KC_MOD_ALT : 0) | (kp ? KC_MOD_KEYPAD : 0);
-		/*printf("ch=%d mods=%d\n", ch, mods);*/
+		printf("ch=%d mods=%d\n", ch, mods);
+		fflush(stdout);
 		Term_keypress(ch, mods);
 	}
 }
@@ -4356,9 +4358,20 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 
 		case WM_CHAR:
 		{
-			// really vicious hack; [Control]Return -> 10 (Return -> 13)
-			if (wParam == 10) {
-				Term_keypress(13, KC_MOD_CONTROL);
+			int vsc = (lParam>>16)&0xFF;
+			int vk = MapVirtualKey(vsc, 1);
+			printf("wParam=%d lParam=%d vsc=%d vk=%d\n",
+			       wParam, lParam, vsc, vk);
+			fflush(stdout);
+			if (wParam == 10 && vk == 13) {
+				// fix control-enter
+				Term_keypress(KC_ENTER, KC_MOD_CONTROL);
+			} else if (wParam == 8 && vk == 8) {
+				// fix backspace
+				Term_keypress(KC_BACKSPACE, 0);
+			} else if (wParam == 9 && vk == 9) {
+				// fix tab
+				Term_keypress(KC_TAB, 0);
 			} else {
 				Term_keypress(wParam, 0);
 			}
