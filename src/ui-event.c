@@ -26,7 +26,6 @@ static const struct {
 	const char *desc;
 } mappings[] = {
 	{ ESCAPE, "Escape" },
-	{ KC_RETURN, "Return" },
 	{ KC_ENTER, "Enter" },
 	{ KC_TAB, "Tab" },
 	{ KC_DELETE, "Delete" },

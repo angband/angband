@@ -2017,6 +2017,24 @@ errr Term_keypress(keycode_t k, byte mods)
 	/* Hack -- Refuse to enqueue non-keys */
 	if (!k) return (-1);
 
+	if(!Term->complex_input) {
+		switch (k)
+		{
+			case '\r':
+			case '\n':
+			  	k = KC_ENTER;
+			  	break;
+			case 8:
+			  	k = KC_BACKSPACE;
+			  	break;
+			case 9:
+			  	k = KC_TAB;
+			  	break;
+			case 27:
+			  	k = ESCAPE;
+			  	break;
+		}
+	}
 	/* Store the char, advance the queue */
 	Term->key_queue[Term->key_head].type = EVT_KBRD;
 	Term->key_queue[Term->key_head].key.code = k;

@@ -396,7 +396,7 @@ static int textui_get_count(void)
 		else
 		{
 			/* XXX nasty hardcoding of action menu key */
-			if (ke.code != '\n' && ke.code != '\r')
+			if (ke.code != KC_ENTER)
 				Term_keypress(ke.code, ke.mods);
 
 			break;
@@ -857,14 +857,15 @@ static bool textui_process_key(struct keypress kp)
 	struct cmd_info *cmd;
 
 	/* XXXmacro this needs rewriting */
-	unsigned char c = (unsigned char)kp.code;
+	keycode_t c = kp.code;
 
-	if (c == '\n' || c == '\r')
+	if (c == KC_ENTER)
 		c = textui_action_menu_choose();
 
 	if (c == '\0' || c == ESCAPE || c == ' ' || c == '\a')
 		return TRUE;
 
+	if(c > UCHAR_MAX) return FALSE;
 	cmd = converted_list[c];
 	if (!cmd) return FALSE;
 

@@ -1387,7 +1387,7 @@ static void dungeon(struct cave *c)
 
 	/* Make basic mouse buttons */
 	(void) button_add("[ESC]", ESCAPE);
-	(void) button_add("[Ret]", '\r');
+	(void) button_add("[Ret]", KC_ENTER);
 	(void) button_add("[Spc]", ' ');
 	(void) button_add("[Rpt]", 'n');
 	(void) button_add("[Std]", ',');

@@ -2508,6 +2508,9 @@ static errr term_data_init(term_data *td, int i)
 	t->attr_blank = TERM_WHITE;
 	t->char_blank = ' ';
 
+	/* Differentiate between BS/^h, Tab/^i, etc. */
+	t->complex_input = TRUE;
+
 	/* Hooks */
 	t->xtra_hook = Term_xtra_x11;
 	t->curs_hook = Term_curs_x11;

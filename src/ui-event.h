@@ -87,13 +87,6 @@ typedef enum
 /**
  * Keyset mappings for various keys.
  */
-#define ESCAPE        0x1B
-#define KC_RETURN     0x0A /* ASCII \n */
-#define KC_ENTER      0x0D /* ASCII \r */
-#define KC_TAB        0x09 /* ASCII \t */
-#define KC_DELETE     0x7F
-#define KC_BACKSPACE  0x08 /* ASCII \h */
-
 #define ARROW_DOWN    0x80
 #define ARROW_LEFT    0x81
 #define ARROW_RIGHT   0x82
@@ -124,6 +117,11 @@ typedef enum
 #define KC_PAUSE      0x99
 #define KC_BREAK      0x9a
 #define KC_BEGIN      0x9b
+#define KC_ENTER      0x9c /* ASCII \r */
+#define KC_TAB        0x9d /* ASCII \t */
+#define KC_DELETE     0x9e
+#define KC_BACKSPACE  0x9f /* ASCII \h */
+#define ESCAPE        0xE000
 
 /* we have up until 0x9F before we start edging into displayable Unicode */
 /* then we could move into private use area 1, 0xE000 onwards */
