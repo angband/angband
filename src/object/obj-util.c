@@ -3809,7 +3809,7 @@ void display_itemlist(void)
 				unsigned j;
 
 				if (squelch_item_ok(o_ptr)) continue;
-				if (o_ptr->tval == TV_GOLD && o_ptr->marked == MARK_SEEN) continue;
+				if (o_ptr->tval == TV_GOLD) continue;
 
 				/* See if we've already seen a similar item; if so, just add */
 				/* to its count */
