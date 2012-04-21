@@ -2017,7 +2017,7 @@ void do_cmd_debug(void)
 		/* Wizard Light the Level */
 		case 'w':
 		{
-			wiz_light();
+			wiz_light(TRUE);
 			break;
 		}
 

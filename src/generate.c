@@ -2859,7 +2859,7 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 			ORIGIN_LABYRINTH);
 
 	/* If we want the players to see the maze layout, do that now */
-	if (known) wiz_light();
+	if (known) wiz_light(FALSE);
 
 	/* Deallocate our lists */
 	FREE(sets);

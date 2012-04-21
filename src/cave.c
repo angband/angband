@@ -2957,7 +2957,7 @@ void cave_update_flow(struct cave *c)
  * This function "illuminates" every grid in the dungeon, memorizes all
  * "objects", and memorizes all grids as with magic mapping.
  */
-void wiz_light(void)
+void wiz_light(bool full)
 {
 	int i, y, x;
 
@@ -2973,8 +2973,9 @@ void wiz_light(void)
 		/* Skip held objects */
 		if (o_ptr->held_m_idx) continue;
 
-		/* Memorize */
-		o_ptr->marked = MARK_SEEN;
+		/* Memorize it */
+		if (o_ptr->marked < MARK_SEEN)
+			o_ptr->marked = full ? MARK_SEEN : MARK_AWARE;
 	}
 
 	/* Scan all normal grids */
