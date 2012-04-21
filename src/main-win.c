@@ -4276,8 +4276,8 @@ static void handle_keydown(WPARAM wParam, LPARAM lParam)
 
 	if (ch) {
 		int mods = extract_modifiers(ch, kp);
-		printf("ch=%d mods=%d\n", ch, mods);
-		fflush(stdout);
+		/* printf("ch=%d mods=%d\n", ch, mods); */
+		/* fflush(stdout); */
 		Term_keypress(ch, mods);
 	}
 }
@@ -4368,9 +4368,9 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 		{
 			vsc = LOBYTE(HIWORD(lParam));
 			vk = MapVirtualKey(vsc, 1);
-			printf("wParam=%d lParam=%d vsc=%d vk=%d\n",
-			       wParam, lParam, vsc, vk);
-			fflush(stdout);
+			/* printf("wParam=%d lParam=%d vsc=%d vk=%d\n", */
+			/*        wParam, lParam, vsc, vk); */
+			/* fflush(stdout); */
 
 			// We don't want to translate some keys to their ascii values
 			// so we have to intercept them here.

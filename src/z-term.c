@@ -2014,8 +2014,6 @@ static void log_keypress(ui_event e)
  */
 errr Term_keypress(keycode_t k, byte mods)
 {
-  printf("Term_keypress(%d,%d)\n", k, mods);
-  fflush(stdout);
 	/* Hack -- Refuse to enqueue non-keys */
 	if (!k) return (-1);
 
