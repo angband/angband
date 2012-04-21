@@ -34,11 +34,11 @@
 #define SPELL_LIGHT_AREA                3
 #define SPELL_FIND_TRAPS_DOORS          4
 #define SPELL_CURE_LIGHT_WOUNDS         5
-#define SPELL_TREASURE_DETECTION        6
-/* #define SPELL_OBJECT_DETECTION          7 */
+#define SPELL_OBJECT_DETECTION        6
+
 #define SPELL_IDENTIFY                  8
 #define SPELL_DETECT_INVISIBLE          9
-#define SPELL_DETECT_ENCHANTMENT        10
+#define SPELL_TREASURE_DETECTION        10
 #define SPELL_STINKING_CLOUD            11
 #define SPELL_LIGHTNING_BOLT            12
 #define SPELL_CONFUSE_MONSTER           13
@@ -505,7 +505,7 @@ static bool cast_mage_spell(int spell, int dir)
 			break;
 		}
 
-		case SPELL_TREASURE_DETECTION:
+		case SPELL_OBJECT_DETECTION:
 		{
 			(void)detect_treasure(TRUE, TRUE);
 			break;
@@ -750,9 +750,9 @@ static bool cast_mage_spell(int spell, int dir)
 			break;
 		}
 
-		case SPELL_DETECT_ENCHANTMENT:
+		case SPELL_TREASURE_DETECTION:
 		{
-			(void)detect_objects_magic(TRUE);
+			(void)detect_treasure(TRUE, FALSE);
 			break;
 		}
 

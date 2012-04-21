@@ -618,7 +618,7 @@ static byte borg_magic_index[2][9][9] =
             1  /* SPELL_DETECT_MONSTERS */,
             2  /* SPELL_PHASE_DOOR */,
             3  /* SPELL_LIGHT_AREA */,
-            6  /* SPELL_TREASURE_DETECTION */,
+            6  /* SPELL_OBJECT_DETECTION */,
             5  /* SPELL_CURE_LIGHT_WOUNDS */,
             4  /* SPELL_FIND_TRAPS_DOORS */,
             11 /* SPELL_STINKING_CLOUD */,
@@ -658,7 +658,7 @@ static byte borg_magic_index[2][9][9] =
             29 /* SPELL_HASTE_SELF */,
             39 /* SPELL_MASS_SLEEP */,
             57 /* SPELL_FIRE_BALL */,
-            10 /* SPELL_DETECT_ENCHANTMENT */,
+            10 /* SPELL_TREASURE_DETECTION */,
             99,
             99,
             99
