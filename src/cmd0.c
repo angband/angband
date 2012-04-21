@@ -857,7 +857,7 @@ static bool textui_process_key(struct keypress kp)
 	struct cmd_info *cmd;
 
 	/* XXXmacro this needs rewriting */
-	keycode_t c = (unsigned char)kp.code;
+	keycode_t c = kp.code;
 
 	if (c == KC_ENTER)
 		c = textui_action_menu_choose();
@@ -865,6 +865,7 @@ static bool textui_process_key(struct keypress kp)
 	if (c == '\0' || c == ESCAPE || c == ' ' || c == '\a')
 		return TRUE;
 
+	if(c > UCHAR_MAX) return FALSE;
 	cmd = converted_list[c];
 	if (!cmd) return FALSE;
 
