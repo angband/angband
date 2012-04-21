@@ -547,9 +547,18 @@ void grid_data_as_text(grid_data *g, byte *ap, wchar_t *cp, byte *tap, wchar_t *
 
 
 	/* If there's an object, deal with that. */
-	if (g->unseen_object) {
+	if (g->unseen_money) {
+	
+		/* $$$ gets an orange star*/
+		a = object_kind_attr(&k_info[7]);
+		c = object_kind_char(&k_info[7]);
+		
+	} else if (g->unseen_object) {	
+	
+		/* Everything else gets a red star */    
 		a = object_kind_attr(&k_info[6]);
 		c = object_kind_char(&k_info[6]);
+		
 	} else if (g->first_kind) {
 		if (g->hallucinate) {
 			/* Just pick a random object to display. */
@@ -783,6 +792,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	g->multiple_objects = FALSE;
 	g->lighting = FEAT_LIGHTING_DARK;
 	g->unseen_object = FALSE;
+	g->unseen_money = FALSE;
 
 	g->f_idx = cave->feat[y][x];
 	if (f_info[g->f_idx].mimic)
@@ -811,7 +821,14 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
 	{
 		if (o_ptr->marked == MARK_AWARE) {
-			g->unseen_object = TRUE;
+		
+			/* Distinguish between unseen money and objects */
+			if (o_ptr->tval == TV_GOLD) {
+			    g->unseen_money = TRUE;
+			} else {
+				g->unseen_object = TRUE;
+			}
+			
 		} else if (o_ptr->marked == MARK_SEEN && !squelch_item_ok(o_ptr)) {
 			if (!g->first_kind) {
 				g->first_kind = o_ptr->kind;
