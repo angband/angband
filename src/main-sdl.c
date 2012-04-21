@@ -2447,6 +2447,10 @@ static void sdl_keypress(SDL_keysym keysym)
 		case SDLK_DELETE: ch = KC_DELETE; break;
 		case SDLK_END: ch = KC_END; break;
 		case SDLK_PAGEDOWN: ch = KC_PGDOWN; break;
+		case SDLK_ESCAPE: ch = ESCAPE; break;
+		case SDLK_BACKSPACE: ch = KC_BACKSPACE; break;
+		case SDLK_RETURN: ch = KC_ENTER; break;
+		case SDLK_TAB: ch = KC_TAB; break;
 
 		case SDLK_F1: ch = KC_F1; break;
 		case SDLK_F2: ch = KC_F2; break;

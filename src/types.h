@@ -30,10 +30,10 @@ typedef s16b s16b_wid[DUNGEON_WID];
 /** Function hook types **/
 
 /** Function prototype for the UI to provide to create native buttons */
-typedef int (*button_add_f)(const char *, unsigned char);
+typedef int (*button_add_f)(const char *, keycode_t);
 
 /** Function prototype for the UI to provide to remove native buttons */
-typedef int (*button_kill_f)(unsigned char);
+typedef int (*button_kill_f)(keycode_t);
 
 
 

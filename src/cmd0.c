@@ -857,7 +857,7 @@ static bool textui_process_key(struct keypress kp)
 	struct cmd_info *cmd;
 
 	/* XXXmacro this needs rewriting */
-	unsigned char c = (unsigned char)kp.code;
+	keycode_t c = (unsigned char)kp.code;
 
 	if (c == KC_ENTER)
 		c = textui_action_menu_choose();

@@ -88,7 +88,7 @@ button_kill_f button_kill_hook;
 /*
  * Add a button
  */
-int button_add_text(const char *label, unsigned char keypress)
+int button_add_text(const char *label, keycode_t keypress)
 {
 	int i;
 	int length = strlen(label);
@@ -122,7 +122,7 @@ int button_add_text(const char *label, unsigned char keypress)
 /*
  * Add a button
  */
-int button_add(const char *label, unsigned char keypress)
+int button_add(const char *label, keycode_t keypress)
 {
 	if (!button_add_hook)
 		return 0;
@@ -218,7 +218,7 @@ void button_restore(void)
 /*
  * Remove a button
  */
-int button_kill_text(unsigned char keypress)
+int button_kill_text(keycode_t keypress)
 {
 	int i, j, length;
 
@@ -263,7 +263,7 @@ int button_kill_text(unsigned char keypress)
 /*
  * Kill a button
  */
-int button_kill(unsigned char keypress)
+int button_kill(keycode_t keypress)
 {
 	if (!button_kill_hook) return 0;
 	else
