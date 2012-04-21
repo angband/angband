@@ -2841,7 +2841,7 @@ static void scramble_artifact(int a_idx)
 			of_on(a_ptr->flags, OF_LIGHT);
 			of_on(a_ptr->flags, OF_NO_FUEL);
 			of_on(a_ptr->pval_flags[DEFAULT_PVAL], OF_LIGHT);
-			a_ptr->pval[DEFAULT_PVAL] = 2 + randint0(3);
+			a_ptr->pval[DEFAULT_PVAL] = 2 + randint0(2);
 			a_ptr->num_pvals = 1;
 		}
 		/* Artifacts ignore everything */
