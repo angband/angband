@@ -2410,8 +2410,8 @@ static void set_cave_dimensions(struct cave *c, int h, int w)
 /**
  * Generate a new dungeon level.
  */
-#define DUN_AMT_ROOM 7 /* Number of objects for rooms */
-#define DUN_AMT_ITEM 2 /* Number of objects for rooms/corridors */
+#define DUN_AMT_ROOM 9 /* Number of objects for rooms */
+#define DUN_AMT_ITEM 3 /* Number of objects for rooms/corridors */
 #define DUN_AMT_GOLD 3 /* Amount of treasure for rooms/corridors */
 static bool default_gen(struct cave *c, struct player *p) {
 	int i, j, k, y, x, y1, x1;
@@ -2713,8 +2713,8 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 	/* Most labyrinths have soft (diggable) walls */
 	bool soft = randint0(c->depth) < 35 || randint0(3) < 2;
 
-	/* There's a base 1 in 100 to accept the labyrinth */
-	int chance = 1;
+	/* There's a base 2 in 100 to accept the labyrinth */
+	int chance = 2;
 
 	/* If we're too shallow then don't do it */
 	if (c->depth < 13) return FALSE;
@@ -3254,7 +3254,7 @@ bool cavern_gen(struct cave *c, struct player *p) {
 	int size = h * w;
 	int limit = size / 13;
 
-	int density = rand_range(25, 30);
+	int density = rand_range(25, 40);
 	int times = rand_range(3, 6);
 
 	int *colors = C_ZNEW(size, int);
@@ -3309,7 +3309,7 @@ bool cavern_gen(struct cave *c, struct player *p) {
 		k = MAX(MIN(c->depth / 3, 10), 2);
 	
 		/* Scale number of monsters items by cavern size */
-		k = (2 * k * (h *  w)) / (DUNGEON_HGT * DUNGEON_WID);
+		k = MAX((4 * k * (h *  w)) / (DUNGEON_HGT * DUNGEON_WID), 6);
 	
 		/* Put some rubble in corridors */
 		alloc_objects(c, SET_BOTH, TYP_RUBBLE, randint1(k), c->depth, 0);
@@ -3321,15 +3321,15 @@ bool cavern_gen(struct cave *c, struct player *p) {
 		new_player_spot(c, p);
 	
 		/* Put some monsters in the dungeon */
-		for (i = MIN_M_ALLOC_LEVEL + randint1(8) + k; i > 0; i--)
+		for (i = randint1(8) + k; i > 0; i--)
 			pick_and_place_distant_monster(c, loc(p->px, p->py), 0, TRUE, c->depth);
 	
 		/* Put some objects/gold in the dungeon */
-		alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(6, 3), c->depth,
+		alloc_objects(c, SET_BOTH, TYP_OBJECT, Rand_normal(2 * k / 3, 0), c->depth,
 			ORIGIN_CAVERN);
-		alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(6, 3), c->depth,
+		alloc_objects(c, SET_BOTH, TYP_GOLD, Rand_normal(k / 2, 0), c->depth,
 			ORIGIN_CAVERN);
-		alloc_objects(c, SET_BOTH, TYP_GOOD, randint0(2), c->depth,
+		alloc_objects(c, SET_BOTH, TYP_GOOD, randint0(k / 4), c->depth,
 			ORIGIN_CAVERN);
 	}
 
