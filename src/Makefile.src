@@ -19,7 +19,6 @@ HEADERS = \
 	game-cmd.h \
 	game-event.h \
 	guid.h \
-	$(GTKHEADERS) \
 	h-basic.h \
 	init.h \
 	main.h \
@@ -42,10 +41,6 @@ HEADERS = \
 	z-util.h \
 	z-virt.h
 
-GTKHEADERS = \
-	gtk/cairo-utils.h \
-	gtk/main-gtk.h \
-	
 ZFILES = z-bitflag.o z-file.o z-form.o z-msg.o z-quark.o z-queue.o z-rand.o \
 	z-term.o z-type.o z-util.o z-virt.o z-textblock.o
 
@@ -54,10 +49,6 @@ ZFILES = z-bitflag.o z-file.o z-form.o z-msg.o z-quark.o z-queue.o z-rand.o \
 BASEMAINFILES = main.o
 
 GCUMAINFILES = main-gcu.o
-
-GTKMAINFILES = \
-	gtk/main-gtk.o \
-	gtk/cairo-utils.o
 
 OSXMAINFILES = main-crb.o
 

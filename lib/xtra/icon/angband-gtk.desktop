@@ -1,8 +1,0 @@
-[Desktop Entry]
-Name=Angband (GTK)
-Type=Application
-Comment=A roguelike dungeon exploration game based on the books of J.R.R.Tolkien
-Exec=angband -mgtk
-TryExec=angband
-Icon=/usr/share/angband/xtra/icon/att-32.png
-Categories=Game;RolePlaying;
