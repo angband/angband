@@ -627,7 +627,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_ENLIGHTENMENT:
 		{
 			msg("An image of your surroundings forms in your mind...");
-			wiz_light();
+			wiz_light(TRUE);
 			*ident = TRUE;
 			return TRUE;
 		}
@@ -637,7 +637,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			msg("You begin to feel more enlightened...");
 			message_flush();
-			wiz_light();
+			wiz_light(TRUE);
 			(void)do_inc_stat(A_INT);
 			(void)do_inc_stat(A_WIS);
 			(void)detect_traps(TRUE);
@@ -1094,7 +1094,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_CLAIRVOYANCE:
 		{
 			*ident = TRUE;
-			wiz_light();
+			wiz_light(FALSE);
 			(void)detect_traps(TRUE);
 			(void)detect_doorstairs(TRUE);
 			return TRUE;

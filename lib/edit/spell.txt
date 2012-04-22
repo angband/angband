@@ -72,9 +72,9 @@ N:5:Cure Light Wounds
 I:90:0:5
 D:Cures 15% of your wounds (min 15hp) and heals 20 points worth of cuts.
 
-N:6:Detect Treasure
+N:6:Detect Objects
 I:90:0:4
-D:Detects all treasure in the immediate area.
+D:Detects all objects in the immediate area.
 
 N:8:Identify
 I:90:2:5
@@ -84,12 +84,9 @@ N:9:Reveal Monsters
 I:90:2:6
 D:Detects all monsters in the immediate area, for one turn only.
 
-N:10:Detect Enchantment
+N:10:Detect Treasure
 I:90:3:5
-D:Detects all enchanted objects in the immediate area.
-D:  Enchanted objects include artifacts, ego items, amulets, rings,
-D: staffs, wands, rods, scrolls, potions, spellbooks, and all items
-D: that give a bonus to-hit, to-dam, or to AC.
+D:Detects all treasure in the immediate area.
 
 N:11:Stinking Cloud
 I:90:0:8

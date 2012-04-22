@@ -25,7 +25,7 @@ extern errr vinfo_init(void);
 extern void forget_view(void);
 extern void update_view(void);
 extern void map_area(void);
-extern void wiz_light(void);
+extern void wiz_light(bool full);
 extern void wiz_dark(void);
 extern int project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg);
 extern bool projectable(int y1, int x1, int y2, int x2, int flg);
