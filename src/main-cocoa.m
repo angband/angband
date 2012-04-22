@@ -35,6 +35,7 @@
 
 /* Mac headers */
 #include <Cocoa/Cocoa.h>
+#include <Carbon/Carbon.h> // For keycodes
 
 /* We know how to double-buffer either into a CGLayer or a CGImage.  Currently CGLayers are a lot faster, probably because NSImage thrashes between a CGImageRef and a bitmap context. */
 #ifndef BUFFER_WITH_CGLAYER
@@ -1856,6 +1857,9 @@ static term *term_data_link(int i)
     /* Initialize the term */
     term_init(newterm, 80, 24, 256 /* keypresses, for some reason? */);
     
+    /* Differentiate between BS/^h, Tab/^i, etc. */
+    newterm->complex_input = TRUE;
+
     /* Use a "software" cursor */
     newterm->soft_cursor = TRUE;
     
@@ -2323,6 +2327,14 @@ static BOOL send_event(NSEvent *event)
                     break;
             }
             
+			/* override special keys */
+			switch([event keyCode]) {
+			case kVK_Return: ch = KC_ENTER; break;
+			case kVK_Escape: ch = ESCAPE; break;
+			case kVK_Tab: ch = KC_TAB; break;
+			case kVK_Delete: ch = KC_BACKSPACE; break;
+			}
+
             /* Hide the mouse pointer */
             [NSCursor setHiddenUntilMouseMoves:YES];
             

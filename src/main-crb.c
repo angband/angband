@@ -1858,6 +1858,9 @@ static void term_data_link(int i)
 	/* Use a "software" cursor */
 	td->t->soft_cursor = TRUE;
 
+    /* Differentiate between BS/^h, Tab/^i, etc. */
+    td->t->complex_input = TRUE;
+
 	/*
 	 * We have an "icky" lower right corner, since
 	 * the window resize control is placed there
@@ -3601,8 +3604,9 @@ static OSStatus KeyboardCommand ( EventHandlerCallRef inCallRef,
 
 		/* main keyboard but deal with here */
 		case 48: ch = KC_TAB; break;
-		case 36: ch = KC_RETURN; break;
+		case 36: ch = KC_ENTER; break;
 		case 51: ch = KC_BACKSPACE; break;
+		case 53: ch = ESCAPE; break;
 
 		/* middle bit */
 		case 114: ch = KC_HELP; break;

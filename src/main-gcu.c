@@ -520,6 +520,9 @@ static errr Term_xtra_gcu_event(int v) {
 		case KEY_RIGHT: i = ARROW_RIGHT; break;
 		case KEY_DC:    i = KC_DELETE; break;
 		case KEY_BACKSPACE: i = KC_BACKSPACE; break;
+		case 9:         i = KC_TAB; break;
+		case 13:        i = KC_ENTER; break;
+		case 27:        i = ESCAPE; break;
 
 		/* keypad keys */
 		case 0xFC: i = '0'; break;
@@ -730,6 +733,9 @@ static errr term_data_init_gcu(term_data *td, int rows, int cols, int y, int x) 
 	/* Erase with "white space" */
 	t->attr_blank = TERM_WHITE;
 	t->char_blank = ' ';
+
+	/* Differentiate between BS/^h, Tab/^i, etc. */
+	t->complex_input = TRUE;
 
 	/* Set some hooks */
 	t->init_hook = Term_init_gcu;

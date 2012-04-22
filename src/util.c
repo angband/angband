@@ -1351,8 +1351,7 @@ bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, st
 			break;
 		}
 		
-		case '\n':
-		case '\r':
+		case KC_ENTER:
 		{
 			*curs = *len;
 			return TRUE;

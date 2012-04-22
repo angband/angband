@@ -2447,6 +2447,10 @@ static void sdl_keypress(SDL_keysym keysym)
 		case SDLK_DELETE: ch = KC_DELETE; break;
 		case SDLK_END: ch = KC_END; break;
 		case SDLK_PAGEDOWN: ch = KC_PGDOWN; break;
+		case SDLK_ESCAPE: ch = ESCAPE; break;
+		case SDLK_BACKSPACE: ch = KC_BACKSPACE; break;
+		case SDLK_RETURN: ch = KC_ENTER; break;
+		case SDLK_TAB: ch = KC_TAB; break;
 
 		case SDLK_F1: ch = KC_F1; break;
 		case SDLK_F2: ch = KC_F2; break;
@@ -3168,6 +3172,9 @@ static void term_data_link_sdl(term_window *win)
 	/* Never refresh one row */
 	t->never_frosh = TRUE;
 	
+	/* Differentiate between BS/^h, Tab/^i, etc. */
+	t->complex_input = TRUE;
+
 	/* Ignore the init/nuke hooks */
 	
 	/* Prepare the template hooks */

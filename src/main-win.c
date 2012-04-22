@@ -2614,6 +2614,9 @@ static void term_data_link(term_data *td)
 	/* Use a "software" cursor */
 	t->soft_cursor = TRUE;
 
+	/* Differentiate between BS/^h, Tab/^i, etc. */
+	t->complex_input = TRUE;
+
 	/* Use "Term_pict" for "graphic" data */
 	t->higher_pict = TRUE;
 
@@ -3317,7 +3320,7 @@ static void start_screensaver(void)
 	screensaver_inkey_hack_buffer[j++] = key; /* Class */
 	key.code = 'n';
 	screensaver_inkey_hack_buffer[j++] = key; /* Modify options */
-	key.code = '\r';
+	key.code = KC_ENTER;
 	screensaver_inkey_hack_buffer[j++] = key; /* Reroll */
 
 	if (!file_exist)
@@ -3331,7 +3334,7 @@ static void start_screensaver(void)
 		}
 	}
 
-	key.code = '\r';
+	key.code = KC_ENTER;
 	screensaver_inkey_hack_buffer[j++] = key; /* Return */
 	key.code = ESCAPE;
 	screensaver_inkey_hack_buffer[j++] = key; /* Character info */
@@ -4190,6 +4193,22 @@ static void handle_wm_paint(HWND hWnd)
 }
 
 
+int extract_modifiers(keycode_t ch, bool kp) {
+	bool mc = FALSE;
+	bool ms = FALSE;
+	bool ma = FALSE;
+
+	/* Extract the modifiers */
+	if (GetKeyState(VK_CONTROL) & 0x8000) mc = TRUE;
+	if (GetKeyState(VK_SHIFT)   & 0x8000) ms = TRUE;
+	if (GetKeyState(VK_MENU)    & 0x8000) ma = TRUE;
+
+	return
+		(mc && (kp || MODS_INCLUDE_CONTROL(ch)) ? KC_MOD_CONTROL : 0) |
+		(ms && (kp || MODS_INCLUDE_SHIFT(ch)) ? KC_MOD_SHIFT : 0) |
+		(ma ? KC_MOD_ALT : 0) | (kp ? KC_MOD_KEYPAD : 0);
+}
+
 /*
  * We ignore the modifier keys (shift, control, alt, num lock, scroll lock),
  * and the normal keys (escape, tab, return, letters, numbers, etc), but we
@@ -4203,9 +4222,6 @@ static void handle_keydown(WPARAM wParam, LPARAM lParam)
 {
 	keycode_t ch = 0;
 
-	bool mc = FALSE;
-	bool ms = FALSE;
-	bool ma = FALSE;
 	bool kp = FALSE;
 
 #ifdef USE_SAVER
@@ -4215,11 +4231,6 @@ static void handle_keydown(WPARAM wParam, LPARAM lParam)
 		return;
 	}
 #endif /* USE_SAVER */
-
-	/* Extract the modifiers */
-	if (GetKeyState(VK_CONTROL) & 0x8000) mc = TRUE;
-	if (GetKeyState(VK_SHIFT)   & 0x8000) ms = TRUE;
-	if (GetKeyState(VK_MENU)    & 0x8000) ma = TRUE;
 
 	/* for VK_ http://msdn.microsoft.com/en-us/library/dd375731(v=vs.85).aspx */
 	switch (wParam) {
@@ -4244,8 +4255,8 @@ static void handle_keydown(WPARAM wParam, LPARAM lParam)
 		/* Backspace is calling both backspace and delete
 		   Removed the backspace call, so it only calls delete */
 		case VK_BACK: break;
-
-		case VK_TAB: ch = KC_TAB; break;
+		/* Tab is registering as ^i; don't read it here*/
+	        case VK_TAB: break;
 		case VK_PRIOR: ch = KC_PGUP; break;
 		case VK_NEXT: ch = KC_PGDOWN; break;
 		case VK_END: ch = KC_END; break;
@@ -4264,11 +4275,9 @@ static void handle_keydown(WPARAM wParam, LPARAM lParam)
 	/* see http://source.winehq.org/source/include/dinput.h#L468 */
 
 	if (ch) {
-		int mods = 
-				(mc && (kp || MODS_INCLUDE_CONTROL(ch)) ? KC_MOD_CONTROL : 0) |
-				(ms && (kp || MODS_INCLUDE_SHIFT(ch)) ? KC_MOD_SHIFT : 0) |
-				(ma ? KC_MOD_ALT : 0) | (kp ? KC_MOD_KEYPAD : 0);
-		/*printf("ch=%d mods=%d\n", ch, mods);*/
+		int mods = extract_modifiers(ch, kp);
+		/* printf("ch=%d mods=%d\n", ch, mods); */
+		/* fflush(stdout); */
 		Term_keypress(ch, mods);
 	}
 }
@@ -4282,7 +4291,8 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 	term_data *td;
 	int i;
 
-	int xPos, yPos, button;
+	int xPos, yPos, button, vsc, vk, mods;
+	keycode_t ch;
 
 #ifdef USE_SAVER
 	static int iMouse = 0;
@@ -4356,12 +4366,35 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 
 		case WM_CHAR:
 		{
-			// really vicious hack; [Control]Return -> 10 (Return -> 13)
-			if (wParam == 10) {
-				Term_keypress(13, KC_MOD_CONTROL);
-			} else {
-				Term_keypress(wParam, 0);
+			vsc = LOBYTE(HIWORD(lParam));
+			vk = MapVirtualKey(vsc, 1);
+			/* printf("wParam=%d lParam=%d vsc=%d vk=%d\n", */
+			/*        wParam, lParam, vsc, vk); */
+			/* fflush(stdout); */
+
+			// We don't want to translate some keys to their ascii values
+			// so we have to intercept them here.
+			switch (vk)
+			{
+				case 8: // fix backspace
+					ch = KC_BACKSPACE;
+					break;
+				case 9: // fix tab
+					ch = KC_TAB;
+					break;
+				case 13: // fix enter
+					ch = KC_ENTER;
+					break;
+				case 27: // fix escape
+					ch = ESCAPE;
+					break;
+				default:
+					Term_keypress(wParam, 0);
+					return 0;
 			}
+			mods = extract_modifiers(ch, FALSE);
+			Term_keypress(ch, mods);
+
 			return 0;
 		}
 

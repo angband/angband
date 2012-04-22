@@ -1239,8 +1239,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 				break;
 			}
 
-			case '\n':
-			case '\r':
+			case KC_ENTER:
 			{
 				/* Choose "default" inventory item */
 				if (p_ptr->command_wrk == USE_INVEN)

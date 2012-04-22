@@ -1946,7 +1946,7 @@ extern int borg_lookup_kind(int tval, int sval);
 /*
  * Queue a keypress
  */
-extern errr borg_keypress(char k);
+extern errr borg_keypress(keycode_t k);
 
 /*
  * Queue several keypresses

@@ -318,7 +318,7 @@ static void do_cmd_options_win(const char *name, int row)
 
 			/* Toggle */
 			else if (ke.key.code == '5' || ke.key.code == 't' ||
-					ke.key.code == '\n' || ke.key.code == '\r')
+					ke.key.code == KC_ENTER)
 			{
 				/* Hack -- ignore the main window */
 				if (x == 0)
@@ -836,8 +836,7 @@ static bool askfor_aux_numbers(char *buf, size_t buflen, size_t *curs, size_t *l
 	switch (keypress.code)
 	{
 		case ESCAPE:
-		case '\n':
-		case '\r':
+		case KC_ENTER:
 		case ARROW_LEFT:
 		case ARROW_RIGHT:
 		case 0x7F:

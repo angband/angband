@@ -414,8 +414,7 @@ void do_cmd_messages(void)
 
 				case ARROW_DOWN:
 				case '2':
-				case '\r':
-				case '\n':
+				case KC_ENTER:
 					i = (i >= 1) ? (i - 1) : 0;
 					break;
 
