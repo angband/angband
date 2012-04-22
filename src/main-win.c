@@ -1884,7 +1884,6 @@ static void Term_xtra_win_sound(int v)
 #ifdef USE_SOUND
 	int i;
 	char buf[1024];
-	char sound_type[4];
 	MCI_OPEN_PARMS op;
 	MCI_PLAY_PARMS pp;
 	MCIDEVICEID pDevice;
@@ -1909,8 +1908,7 @@ static void Term_xtra_win_sound(int v)
 	path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_SOUND, sound_file[v][Rand_simple(i)]);
 
 	/* Check for file type */
-	sound_type = buf + strlen(buf) - 3;
-	if (streq(sound_type, "mp3"))
+	if (streq(buf + strlen(buf) - 3, "mp3"))
 	{
 	        op.dwCallback = 0;
 		op.lpstrDeviceType = (char*)MCI_ALL_DEVICE_ID;
