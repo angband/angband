@@ -49,7 +49,7 @@ About the game
 ==============
 
 Angband has been maintained by a succession of volunteers since it was
-written in the early 1990s. The current maintainer is Andi Sidwell.
+written in the early 1990s. The most recent maintainer is Andi Sidwell.
 
 Angband will run on a wide variety of systems (including Unix, Macintosh,
 Windows). It is written in C, and the source code is freely available.
@@ -152,7 +152,7 @@ that your character is standing on a staircase. Keep pressing space until
 the prompt goes away.
 
 Now press ``i``, to display your character's "inventory". New characters
-tart out with some objects to help them survive (though there is an option
+start out with some objects to help them survive (though there is an option
 to start with more money instead). Your character will have some food, a
 potion, some torches, and a scroll. Press ``e`` to see what you are
 wearing. You will find you are wearing armour on your body, wielding a

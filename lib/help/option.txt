@@ -115,12 +115,6 @@ Show mouse status line buttons ``[mouse_buttons]``
 Use sound ``[use_sound]``
   Turns on sound effects, if your system supports them.
 
-.. _xchars_to_file:
-
-Allow accents in output files ``[xchars_to_file]``
-  Extended characters (accents, umlauts and so on) will be printed in files
-  created by the game (character dumps, screenshots etc.).
-
 Disturbance options
 ===================
 
@@ -224,13 +218,15 @@ Monsters act smarter in groups ``[birth_ai_packs]``
 
 Monsters learn from their mistakes ``[birth_ai_learn]``
   Allow monsters to learn what spell attacks you are resistant to, and to
-  use this information to choose the best attacks.
+  use this information to choose the best attacks.  This option makes the
+  game very difficult and is not recommended.
 
 .. _birth_ai_cheat:
 
 Monsters exploit players weaknesses ``[birth_ai_cheat]``
   Allow monsters to know what spell attacks you are resistant to, and to
-  use this information to choose the best attacks.
+  use this information to choose the best attacks.  This option makes the 
+  game very difficult and is not recommended.
 
 .. _birth_ai_smart:
 
@@ -280,7 +276,7 @@ Lose artifacts when leaving level ``[birth_no_preserve]``
 
 .. _birth_no_stairs:
 
-Don't generate connected stairs ``[birth_no_stairs]``
+Don't generate connected stairs ``[birth_no_s	tairs]``
   Never generate a staircase back to the level you came from, if you used a
   staircase to get to the level.
 

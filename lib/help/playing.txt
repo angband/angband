@@ -93,10 +93,10 @@ Original Keyset Command Summary
  ``e``   Equipment list                 ``E``  Eat some food
  ``f``   Fire an item                   ``F``  Fuel your lantern/torch
  ``g``   Get objects on floor           ``G``  Gain new spells/prayers
- ``h``   (unused)                       ``H``  (unused)
+ ``h``   Fire default ammo at target    ``H``  (unused)
  ``i``   Inventory list                 ``I``  Observe an item
  ``j``   Jam a door                     ``J``  (unused)
- ``k``   Ignore an item                 ``K``  Unignore items
+ ``k``   Squelch an item                ``K``  Toggle squelch
  ``l``   Look around                    ``L``  Locate player on map
  ``m``   Cast a spell                   ``M``  Full dungeon map
  ``n``   (unused)                       ``N``  (unused)
@@ -204,6 +204,7 @@ Roguelike Keyset Command Summary
  ``\``  (special - bypass keymap)       ``|``  (unused)
   |`|   (special - escape)              ``~``  Check knowledge
  ``/``  Identify symbol                 ``?``  Help
+ ``TAB``Fire default ammo at target
 ======= =============================  ======= ============================
 
 Special Keys

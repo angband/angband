@@ -2,16 +2,15 @@
 Version Information
 ===================
 
-This file was last updated for Angband 3.1.2 and is a historical document.
+The current version is 3.4.  Detailed information about this version and
+previous versions can be found at http://rephial.org.  Also additional
+information can be found at the angband forums (http://angband.oook.cz)
+or the newsgroup (rec.games.roguelike.angband).  
 
-For more information versions since then, please consult rephial.org's release
-page: http://rephial.org/release.
+This file was last updated for Angband 3.1.2 and remains here mainly
+for historical purposes.
 
-Make sure to read the newsgroup (``rec.games.roguelike.angband``), and to
-visit the Official Angband Home Page (http://rephial.org) for the most up
-to date information about Angband.
-
-Angband 3.1.2 has an incredibly complex history, and is the result of a lot
+Angband has an incredibly complex history, and is the result of a lot
 of work by a lot of people, all of whom have contributed their time and
 energy for free, being rewarded only by the pleasure of keeping alive one
 of the best freeware games available anywhere.
