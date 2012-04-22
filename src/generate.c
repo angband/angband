@@ -2713,8 +2713,8 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 	/* Most labyrinths have soft (diggable) walls */
 	bool soft = randint0(c->depth) < 35 || randint0(3) < 2;
 
-	/* There's a base 1 in 100 to accept the labyrinth */
-	int chance = 1;
+	/* There's a base 2 in 100 to accept the labyrinth */
+	int chance = 2;
 
 	/* If we're too shallow then don't do it */
 	if (c->depth < 13) return FALSE;
