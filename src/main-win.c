@@ -1884,6 +1884,9 @@ static void Term_xtra_win_sound(int v)
 #ifdef USE_SOUND
 	int i;
 	char buf[1024];
+	MCI_OPEN_PARMS op;
+	MCI_PLAY_PARMS pp;
+	MCIDEVICEID pDevice;
 #endif /* USE_SOUND */
 
 	/* Illegal sound */
@@ -1904,8 +1907,31 @@ static void Term_xtra_win_sound(int v)
 	/* Build the path */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_SOUND, sound_file[v][Rand_simple(i)]);
 
-	/* Play the sound, catch errors */
-	PlaySound(buf, 0, SND_FILENAME | SND_ASYNC);
+	/* Check for file type */
+	if (streq(buf + strlen(buf) - 3, "mp3"))
+	{
+	        op.dwCallback = 0;
+		op.lpstrDeviceType = (char*)MCI_ALL_DEVICE_ID;
+		op.lpstrElementName = buf;
+		op.lpstrAlias = NULL;
+
+		/* Open command */
+		mciSendCommand(0, MCI_OPEN, MCI_OPEN_ELEMENT | MCI_WAIT,
+			       (DWORD)&op);
+		pDevice = op.wDeviceID;
+
+		/* Play command */
+		pp.dwCallback = 0;
+		pp.dwFrom = 0;
+		mciSendCommand(pDevice, MCI_PLAY, MCI_NOTIFY | MCI_FROM,
+			       (DWORD)&pp);
+	}
+
+	else
+	{
+	        /* Play the sound, catch errors */
+	        PlaySound(buf, 0, SND_FILENAME | SND_ASYNC);
+	}
 
 #else /* USE_SOUND */
 
