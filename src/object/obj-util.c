@@ -3809,7 +3809,7 @@ void display_itemlist(void)
 				unsigned j;
 
 				if (squelch_item_ok(o_ptr)) continue;
-				if (o_ptr->tval == TV_GOLD && o_ptr->marked == MARK_SEEN) continue;
+				if (o_ptr->tval == TV_GOLD) continue;
 
 				/* See if we've already seen a similar item; if so, just add */
 				/* to its count */
@@ -3895,7 +3895,7 @@ void display_itemlist(void)
 			continue;
 
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);
-		if (counts[i] > 1)
+		if ((counts[i] > 1) && (seen[i]))
 			strnfmt(o_desc, sizeof(o_desc), "%s (x%d) %d %c, %d %c", o_name, counts[i],
 				(dy[i] > 0) ? dy[i] : -dy[i], (dy[i] > 0) ? 'S' : 'N',
 				(dx[i] > 0) ? dx[i] : -dx[i], (dx[i] > 0) ? 'E' : 'W');
