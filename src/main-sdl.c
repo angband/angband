@@ -2421,7 +2421,7 @@ static void sdl_keypress(SDL_keysym keysym)
 		case SDLK_KP_MULTIPLY: ch = '*'; kp = TRUE; break;
 		case SDLK_KP_MINUS: ch = '-'; kp = TRUE; break;
 		case SDLK_KP_PLUS: ch = '+'; kp = TRUE; break;
-		case SDLK_KP_ENTER: ch = '\n'; kp = TRUE; break;
+		case SDLK_KP_ENTER: ch = KC_ENTER; kp = TRUE; break;
 		case SDLK_KP_EQUALS: ch = '='; kp = TRUE; break;
 
 		/* have have these to get consistent ctrl-shift behaviour */

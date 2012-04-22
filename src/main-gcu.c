@@ -418,7 +418,7 @@ void do_gcu_resize(void) {
  * Process events, with optional wait
  */
 static errr Term_xtra_gcu_event(int v) {
-	int i, j, k;
+	int i, j, k, mods=0;
 
 	if (v) {
 		/* Wait for a keypress; use halfdelay(1) so if the user takes more */
@@ -520,6 +520,7 @@ static errr Term_xtra_gcu_event(int v) {
 		case KEY_RIGHT: i = ARROW_RIGHT; break;
 		case KEY_DC:    i = KC_DELETE; break;
 		case KEY_BACKSPACE: i = KC_BACKSPACE; break;
+		case KEY_ENTER: i = KC_ENTER; mods |= KC_MOD_KEYPAD; break;
 		case 9:         i = KC_TAB; break;
 		case 13:        i = KC_ENTER; break;
 		case 27:        i = ESCAPE; break;
@@ -551,7 +552,7 @@ static errr Term_xtra_gcu_event(int v) {
 #endif
 
 	/* Enqueue the keypress */
-	Term_keypress(i, 0);
+	Term_keypress(i, mods);
 
 	/* Success */
 	return (0);
