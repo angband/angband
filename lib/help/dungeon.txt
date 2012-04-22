@@ -67,7 +67,7 @@ Objects
 ``"``   An amulet                     ``[``   Hard armour
 ``$``   Gold or gems                  ``]``   Misc. armour
 ``~``   Lights, Tools, Chests, etc    ``)``   A shield
-``~``   Junk, Sticks, Skeletons, etc  ``&``   (unused)
+``&``   Multiple items
 =====  =============================  =====  =============================
  
 Monsters
@@ -188,13 +188,11 @@ The Weaponsmith's Shop (``3``)
   tocked here, unless they are sold to the shop by the player first.
 
 The Temple (``4``)
-  The Temple deals in healing potions, as well as bless scrolls, remove
-  curse scrolls, and some approved priestly weapons, as well as prayer
-  books.
+  The Temple deals in basic potions and scrolls, some approved priestly 
+  weapons, as well as prayer books.
 
 The Alchemy shop (``5``)
-  The Alchemy Shop deals in all types of potions and scrolls, including 
-  stat restoring potions.
+  The Alchemy Shop deals in all types of potions and scrolls.
 
 The Magic User's Shop (``6``)
   The Magic User's Shop deals in all sorts of rings, wands, amulets, and
@@ -243,9 +241,9 @@ A character must wield a torch or lamp in order to supply his own light. A
 torch or lamp burns fuel as it is used, and once it is out of fuel, it
 stops supplying light. You will be warned as the light approaches this
 point. You may use the "Fuel" command (``F``) to refuel your lantern (with
-flasks of oil) or your torch (with other torches), so it is a good idea to
-carry extra torches or flasks of oil, as appropriate. There are rumours of
-objects of exceptional power which glow with their own never-ending light.
+flasks of oil), and it is a good idea to carry extra torches or flasks of 
+oil, as appropriate. There are rumours of objects of exceptional power 
+which glow with their own never-ending light.
 
 Objects Found In The Dungeon
 ============================
@@ -254,21 +252,18 @@ The mines are full of objects just waiting to be picked up and used. How
 did they get there? Well, the main source for useful items are all the
 foolish adventurers that proceeded into the dungeon before you. They get
 killed, and the helpful creatures scatter the various treasure throughout
-the dungeon. There are a few cursed items present in the dungeon - either
-left behind as the result of a failed attempt to create a magic items, or
-deliberately placed by evil sorcerers. Some will inconvenience you but a
-very few are deadly.
+the dungeon. 
 
-Only one object may occupy a given floor location, which may or may not
-also contain one creature. Doors, rubble, traps, and staircases are
-considered "objects" for this purpose. As below, any item may actually be a
-"pile" of up to 99 identical items. With the right choice of "options", you
+Several objects may occupy a given floor location, which may or may not
+also contain one creature. However, Doors, rubble, traps, and staircases 
+cannot coexist with items.  As below, any item may actually be a "pile" 
+of up to 99 identical items. With the right choice of "options", you
 may be able to "stack" several items in the same grid.
 
 You pick up objects by moving on top of them. You can carry up to 23
 different items in your backpack while wearing and wielding up to 12
 others. Although you are limited to 23 different items, each item may
-actually be a "pile" of up to 99 similar items. If you |``t``ake| off an
+actually be a "pile" of up to 40 similar items. If you |``t``ake| off an
 item, it will go into your backpack if there is room: if there is no room
 in your backpack, it will drop onto the floor, so be careful when swapping
 one wielded weapon or worn piece of armor for another when your pack is
@@ -316,29 +311,28 @@ You may "inscribe" any object with a textual inscription of your choice.
 These inscriptions are not limited in length, though you may not be able to
 see the whole inscription on the item. The game applies special meaning to
 inscriptions containing any text of the form ``@#`` or ``@x#`` or ``!x`` or
-``!*``, see ``command.txt``.
+``!*``, see ``customize.txt``.
 
-The game provides some "fake" inscriptions to help you keep track of your
-possessions. Wands and staves which are known to be empty will be inscribed
-with ``{empty}``. Objects which have been tried at least once but haven't
-been identified yet will be inscribed with "tried". Cursed objects are
-inscribed with ``{cursed}``. In addition while carrying or wielding weapons
-or armor you may learn qualities of these items. ``{average}`` means that
-the item has no magical bonuses. ``{magical}`` means that it has magical
-bonuses although these bonuses may be negative. An item with negative
-bonuses is not necessarily cursed. An ``{ego}`` item has special abilities.
-If the abilities are not obvious to the wielder the item will get an
-``{excellent}`` tag. If the item has obvious abilities, such as an increase
-to a statistic it will be labeled ``{splendid}``. Lastly, if at any point
-you pick up an Artifact you will learn its name immediately and it will be
-labeled ``{special}``. However, you may not be aware of all its powers.
-Note that these inscriptions are fake, and cannot be removed.
+The game provides some "fake" inscriptions to help you keep track of your 
+possessions. Wands and staves which are known to be empty will be inscribed 
+with ``{empty}``. Objects which have been tried at least once but haven't 
+been identified yet will be inscribed with "tried". In addition while 
+carrying or wielding weapons or armor you may learn qualities of these 
+items. ``{average}`` means that the item has no magical bonuses. 
+``{magical}`` means that it has magical bonuses although these bonuses may 
+be negative. An item with negative bonuses is not necessarily cursed. An 
+``{ego}`` item has special abilities. If the abilities are not obvious to 
+the wielder the item will get an ``{excellent}`` tag. If the item has 
+obvious abilities, such as an increase to a statistic it will be labeled 
+``{splendid}``. Lastly, if at any point you pick up an Artifact you will 
+learn its name immediately and it will be labeled ``{special}``. However, 
+you may not be aware of all its powers. Note that these inscriptions are 
+fake, and cannot be removed. 
 
 Only weapons and armor will receive these pseudo-identifications. Wands,
 taves, rods, scrolls, potions and mushrooms can only get the ``{tried}``
 label. However, if using or consuming the item creates an obvious effect,
-you will learn the flavor. For example, if you are injured and drink an
-unknown
+you will learn the flavor.
 
 It is rumored that rings of power and extra rare spell books may be found
 deeper in the dungeon...
@@ -350,21 +344,14 @@ chest full of treasure will grow teeth in its lid and bite your hand off...
 Cursed Objects
 ==============
 
-Some objects, mainly armor and weapons, have had curses laid upon them.
-These horrible objects will look like any other normal item, but will
-detract from your character's stats or abilities if worn. They will also be
-impossible to remove until a remove curse is performed. In fact some are so
-badly cursed that even this will not work, and more potent methods are
-needed.
-
-If you wear or wield a cursed item, you will immediately feel deathly cold,
-and the item will be marked with the fake inscription ``{cursed}``.
-
-Shopkeepers will refuse to buy any item which is known to be cursed, either
-by having been identified or by being marked with the fake inscription.
-
-Weapons and armor can be uncursed either by spells of remove curse or by
-attempting to enchant them with spells or scrolls.
+There remain some special objects of great power that have been cursed.  If
+you wield a cursed item, you will not be able to take it off.  All cursed
+items will be automatically identified as cursed when you add them into
+your inventory.  It is also possible to have your weapons or armor cursed
+through magical means, and this can destroy even the strongest artifact and
+leave you saddled with a useless piece of junk.  If you want or need to 
+remove a curse, scrolls of enchantment can be found in the dungeon that
+have a chance of lifting all curses except for permanent ones.
 
 Mining
 ======
@@ -385,8 +372,8 @@ or shovel and begin digging out a section. When that section is removed, he
 can locate another section of the vein and begin the process again. Since
 granite rock is much harder to dig through, it is much faster to follow the
 vein exactly and dig around the granite. Eventually, it becomes easier to
-imply kill monsters and discover items in the dungeon to sell, than to walk
-around digging for treasure. But, early on, mineral veins can be a
+simply kill monsters and discover items in the dungeon to sell, than to 
+walk around digging for treasure. But, early on, mineral veins can be a
 wonderful source of easy treasure.
 
 If the character has a scroll, staff, or spell of treasure location, he can
@@ -457,8 +444,6 @@ like normal floors.
 Creatures in the dungeon will generally know and use these secret doors,
 and can often be counted on to leave them open behind them when they pass
 through.
-
-For historical reasons, secret doors are never locked.
 
 Winning The Game
 ================
