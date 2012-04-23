@@ -2333,6 +2333,7 @@ static BOOL send_event(NSEvent *event)
 			case kVK_Escape: ch = ESCAPE; break;
 			case kVK_Tab: ch = KC_TAB; break;
 			case kVK_Delete: ch = KC_BACKSPACE; break;
+			case kVK_ANSI_KeypadEnter: ch = KC_ENTER; kp = TRUE; break;
 			}
 
             /* Hide the mouse pointer */

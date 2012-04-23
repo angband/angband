@@ -4318,6 +4318,7 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 	int i;
 
 	int xPos, yPos, button, vsc, vk, mods;
+	bool kp = FALSE, extended_key;
 	keycode_t ch;
 
 #ifdef USE_SAVER
@@ -4393,9 +4394,10 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 		case WM_CHAR:
 		{
 			vsc = LOBYTE(HIWORD(lParam));
+			extended_key = HIBYTE(HIWORD(lParam)) & 0x1;
 			vk = MapVirtualKey(vsc, 1);
-			/* printf("wParam=%d lParam=%d vsc=%d vk=%d\n", */
-			/*        wParam, lParam, vsc, vk); */
+			/* printf("wParam=%d lParam=%d vsc=%d vk=%d kp=%d\n", */
+			/*        wParam, lParam, vsc, vk, extended_key); */
 			/* fflush(stdout); */
 
 			// We don't want to translate some keys to their ascii values
@@ -4410,6 +4412,7 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 					break;
 				case 13: // fix enter
 					ch = KC_ENTER;
+					if(extended_key) kp = TRUE;
 					break;
 				case 27: // fix escape
 					ch = ESCAPE;
@@ -4418,7 +4421,7 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 					Term_keypress(wParam, 0);
 					return 0;
 			}
-			mods = extract_modifiers(ch, FALSE);
+			mods = extract_modifiers(ch, kp);
 			Term_keypress(ch, mods);
 
 			return 0;

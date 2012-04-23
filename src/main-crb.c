@@ -3588,7 +3588,7 @@ static OSStatus KeyboardCommand ( EventHandlerCallRef inCallRef,
 		case 67: ch = '*'; kp = TRUE; break;
 		case 69: ch = '+'; kp = TRUE; break;
 		case 75: ch = '/'; kp = TRUE; break;
-		case 76: ch = '\n'; kp = TRUE; break;
+		case 76: ch = KC_ENTER; kp = TRUE; break;
 		case 78: ch = '-'; kp = TRUE; break;
 		case 81: ch = '='; kp = TRUE; break;
 		case 82: ch = '0'; kp = TRUE; break;
