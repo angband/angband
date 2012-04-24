@@ -100,10 +100,10 @@ F:60:dark:0x99:0x82
 ### F:61:          # permanent wall
 ### F:62:          # permanent wall
 ### F:63:          # permanent wall
-F:64:bright:0x97:0x89
-F:64:lit:0x88:0xCD # open floor  
-F:64:dark:0x97:0x8B
-F:65:all:0x88:0xCB # granite wall  
+F:64:bright:0x88:0xC6
+F:64:lit:0x88:0xC7 # trap detect under monster/object  
+F:64:dark:0x88:0xC8
+F:65:all:0x88:0xCB # trap detect
 
 ##### Monster attr/char definitions ##### r_info.txt
 
@@ -303,7 +303,7 @@ R:186:0x8F:0xD2  # Warg
 R:187:0x8F:0xAD  # Giant black louse  
 R:188:0x8E:0xE1  # Lurker  
 R:189:0x8D:0x9B  # Wererat  
-R:190:0x8D:0x8F  # Black ogre  
+R:190:0x9D:0x88  # Black ogre  
 R:191:0x8E:0xDB  # Magic mushroom patch  
 R:192:0x9D:0x89  # Guardian naga  
 R:193:0x90:0xC0  # Light hound  
@@ -404,7 +404,7 @@ R:283:0x91:0x84  # Giant grey ant
 R:284:0x95:0x96  # Ulwarth, Son of Ulfang  
 R:285:0x90:0xB9  # Displacer beast  
 R:286:0x8F:0xAF  # Giant fire tick  
-R:287:0x8D:0x90  # Cave ogre  
+R:287:0x9D:0x97  # Cave ogre  
 R:288:0x94:0x8C  # White wraith  
 R:289:0x8E:0xB6  # Lesser Maia  
 R:553:0x95:0x81  # Disenchanter bat  
@@ -717,6 +717,8 @@ R:547:0x9F:0xE1  # Morgoth, Lord of Darkness
 ##### Object attr/char definitions ##### k_info.txt
 
 K:0:0:0x87:0xB6 # <pile>  
+K:0:1:0x89:0xB6 # <unknown item>  
+K:0:2:0x88:0xC0 # <unknown treasure>  
 K:spike:Iron Spike:0x87:0x98 # & Iron Spike~  
 K:light:Wooden Torch:0x87:0x9A # & Wooden Torch~  
 K:light:Lantern:0x87:0x99 # & Lantern~  

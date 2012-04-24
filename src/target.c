@@ -1287,8 +1287,8 @@ bool target_set_interactive(int mode, int x, int y)
 	ui_event press;
 
 	/* These are used for displaying the path to the target */
-	wchar_t path_char[MAX_RANGE];
-	byte path_attr[MAX_RANGE];
+	wchar_t path_char[MAX_RANGE_LGE];
+	byte path_attr[MAX_RANGE_LGE];
 	struct point_set *targets;
 
 	/* If we haven't been given an initial location, start on the
