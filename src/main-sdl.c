@@ -1482,7 +1482,7 @@ static void WidthChange(sdl_Button *sender)
 {
 	tile_width += sender->tag;
 	if (tile_width < 1) tile_width = 1;
-	if (tile_width > 6) tile_width = 6;
+	if (tile_width > 12) tile_width = 12;
 	do_update = TRUE;
 }
 
@@ -1490,7 +1490,7 @@ static void HeightChange(sdl_Button *sender)
 {
 	tile_height += sender->tag;
 	if (tile_height < 1) tile_height = 1;
-	if (tile_height > 3) tile_height = 3;
+	if (tile_height > 8) tile_height = 8;
 	do_update = TRUE;
 }
 #endif
