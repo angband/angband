@@ -396,7 +396,7 @@ bool borg_check_LIGHT(void)
 {
     int i, x, y;
     int corners, floors;
-	int floor_goal;
+	int floor_goal=0;
 	byte feat;
 
     int q_x, q_y;
