@@ -1956,7 +1956,7 @@ extern errr borg_keypresses(char *str);
 /*
  * Dequeue a keypress
  */
-extern char borg_inkey(bool take);
+extern keycode_t borg_inkey(bool take);
 
 /*
  * Flush the keypresses

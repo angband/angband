@@ -2062,13 +2062,13 @@ bool borg_crush_junk(void)
         {
 	        /* Destroy one item */
 	        borg_keypresses("01");
-			borg_keypress('\n');
+			borg_keypress(KC_ENTER);
 		}
 		else
 		{
 			/* Destroy all items */
         	borg_keypresses("099");
-			borg_keypress('\n');
+			borg_keypress(KC_ENTER);
 		}
 
         /* Destroy that item */
@@ -2643,7 +2643,7 @@ bool borg_crush_slow(void)
 		/* Drop one item */
 		borg_keypress('0');
 		borg_keypress('1');
-		borg_keypress('\n');
+		borg_keypress(KC_ENTER);
 		borg_keypress('d');
 		borg_keypress(I2A(b_i));
 
@@ -4917,7 +4917,7 @@ bool borg_wear_recharge(void)
         borg_keypress('R');
         borg_keypress('7');
         borg_keypress('5');
-        borg_keypress('\n');
+        borg_keypress(KC_ENTER);
 
         /* done */
         return (TRUE);
@@ -4940,7 +4940,7 @@ bool borg_wear_recharge(void)
         borg_keypress('R');
         borg_keypress('7');
         borg_keypress('5');
-        borg_keypress('\n');
+        borg_keypress(KC_ENTER);
 
         /* done */
         return (TRUE);

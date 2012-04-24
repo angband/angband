@@ -1361,7 +1361,7 @@ static void borg_parse_aux(char *msg, int len)
         borg_keypress('p');
         borg_keypress('t');
         borg_keypress('y');
-        borg_keypress('\n');
+        borg_keypress(KC_ENTER);
 
         /* done */
 
@@ -3266,7 +3266,7 @@ extern struct keypress (*inkey_hack)(int flush_first);
  */
 static struct keypress borg_inkey_hack(int flush_first)
 {
-    char borg_ch;
+    keycode_t borg_ch;
     struct keypress key = {EVT_KBRD, 0, 0};
 
 	ui_event ch_evt;

@@ -3463,7 +3463,7 @@ bool borg_caution(void)
         borg_keypress('5');
         borg_keypress('0');
         borg_keypress('0');
-        borg_keypress('\n');
+        borg_keypress(KC_ENTER);
 
 		/* I'm not in a store */
 		borg_in_shop = FALSE;
@@ -14717,7 +14717,7 @@ bool borg_recover(void)
                 borg_keypress('1');
                 borg_keypress('0');
                 borg_keypress('0');
-                borg_keypress('\n');
+                borg_keypress(KC_ENTER);
 
 				/* I'm not in a store */
 				borg_in_shop = FALSE;
@@ -14749,7 +14749,7 @@ bool borg_recover(void)
 				/* Rest until done */
 				borg_keypress('R');
 				borg_keypress('&');
-				borg_keypress('\n');
+				borg_keypress(KC_ENTER);
 
 				/* Reset our panel clock, we need to be here */
 				time_this_panel =0;
@@ -14783,7 +14783,7 @@ bool borg_recover(void)
             /* Rest until done */
             borg_keypress('R');
             borg_keypress('*');
-            borg_keypress('\n');
+            borg_keypress(KC_ENTER);
 
 			/* I'm not in a store */
 			borg_in_shop = FALSE;
@@ -14808,7 +14808,7 @@ bool borg_recover(void)
             /* Rest until done */
             borg_keypress('R');
             borg_keypress('*');
-            borg_keypress('\n');
+            borg_keypress(KC_ENTER);
 
 			/* I'm not in a store */
 			borg_in_shop = FALSE;
@@ -14827,7 +14827,7 @@ bool borg_recover(void)
         /* Rest until done */
         borg_keypress('R');
         borg_keypress('*');
-        borg_keypress('\n');
+        borg_keypress(KC_ENTER);
 
 		/* I'm not in a store */
 		borg_in_shop = FALSE;
@@ -15030,7 +15030,7 @@ static bool borg_play_step(int y2, int x2)
                 /* Walk onto it */
                 borg_keypress('0');
                 borg_keypress('5');
-		        borg_keypress('\n');
+		        borg_keypress(KC_ENTER);
                 borg_keypress('s');
                 return (TRUE);
             }
@@ -15270,7 +15270,7 @@ static bool borg_play_step(int y2, int x2)
             borg_note("# Opening a door");
             borg_keypress('0');
             borg_keypress('9');
-	        borg_keypress('\n');
+	        borg_keypress(KC_ENTER);
             borg_keypress('o');
         }
         borg_keypress(I2D(dir));
@@ -15410,7 +15410,7 @@ static bool borg_play_step(int y2, int x2)
             borg_keypress('9');
         }
 
-        borg_keypress('\n');
+        borg_keypress(KC_ENTER);
         borg_keypress('T');
         borg_keypress(I2D(dir));
 		/* Remove mineral veins from the list.
@@ -19564,7 +19564,7 @@ bool borg_flow_spastic(bool bored)
         /* Tweak -- Search a little */
         borg_keypress('0');
         borg_keypress('5');
-        borg_keypress('\n');
+        borg_keypress(KC_ENTER);
         borg_keypress('s');
 
         /* Success */
