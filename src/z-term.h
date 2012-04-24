@@ -232,6 +232,9 @@ struct term
 	errr (*pict_hook)(int x, int y, int n, const byte *ap, const wchar_t *cp, const byte *tap, const wchar_t *tcp);
 
 	size_t (*mbcs_hook)(wchar_t *dest, const char *src, int n);
+
+	void (*view_map_hook)(term *t);
+
 };
 
 
