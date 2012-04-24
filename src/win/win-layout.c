@@ -77,6 +77,7 @@ int default_layout_win(term_data *data, int maxterms)
 		tile_width = 4;
 		tile_height = 2;
 
+		string_free(data[0].font_want);
 		data[0].font_want = string_make("8x12x.fon");
 		data[0].font_wid = 8;
 		data[0].font_hgt = 12;
@@ -90,6 +91,7 @@ int default_layout_win(term_data *data, int maxterms)
 		data[0].maximized = 0;
 
 		/* messages window */
+		string_free(data[1].font_want);
 		data[1].font_want = string_make("6x10x.fon");
 		data[1].font_wid = 6;
 		data[1].font_hgt = 10;
@@ -103,6 +105,7 @@ int default_layout_win(term_data *data, int maxterms)
 		data[1].maximized = 0;
 
 		/* inventory window */
+		string_free(data[2].font_want);
 		data[2].font_want = string_make("6x10x.fon");
 		data[2].font_wid = 6;
 		data[2].font_hgt = 10;
@@ -116,6 +119,7 @@ int default_layout_win(term_data *data, int maxterms)
 		data[2].maximized = 0;
 
 		/* monster list window */
+		string_free(data[3].font_want);
 		data[3].font_want = string_make("6x10x.fon");
 		data[3].font_wid = 6;
 		data[3].font_hgt = 10;
@@ -129,6 +133,7 @@ int default_layout_win(term_data *data, int maxterms)
 		data[3].maximized = 0;
 
 		/* object list window */
+		string_free(data[4].font_want);
 		data[4].font_want = string_make("6x10x.fon");
 		data[4].font_wid = 6;
 		data[4].font_hgt = 10;
@@ -142,6 +147,7 @@ int default_layout_win(term_data *data, int maxterms)
 		data[4].maximized = 0;
 
 		/* recall window */
+		string_free(data[5].font_want);
 		data[5].font_want = string_make("6x10x.fon");
 		data[5].font_wid = 6;
 		data[5].font_hgt = 10;
@@ -163,6 +169,7 @@ int default_layout_win(term_data *data, int maxterms)
 		tile_width = 4;
 		tile_height = 2;
 
+		string_free(data[0].font_want);
 		data[0].font_want = string_make("8x12x.fon");
 		data[0].font_wid = 8;
 		data[0].font_hgt = 12;
@@ -176,6 +183,7 @@ int default_layout_win(term_data *data, int maxterms)
 		data[0].maximized = 0;
 
 		/* messages window */
+		string_free(data[1].font_want);
 		data[1].font_want = string_make("6x10x.fon");
 		data[1].font_wid = 6;
 		data[1].font_hgt = 10;
@@ -189,6 +197,7 @@ int default_layout_win(term_data *data, int maxterms)
 		data[1].maximized = 0;
 
 		/* inventory window */
+		string_free(data[2].font_want);
 		data[2].font_want = string_make("6x10x.fon");
 		data[2].font_wid = 6;
 		data[2].font_hgt = 10;
@@ -202,6 +211,7 @@ int default_layout_win(term_data *data, int maxterms)
 		data[2].maximized = 0;
 
 		/* monster list window */
+		string_free(data[3].font_want);
 		data[3].font_want = string_make("6x10x.fon");
 		data[3].font_wid = 6;
 		data[3].font_hgt = 10;
@@ -215,6 +225,7 @@ int default_layout_win(term_data *data, int maxterms)
 		data[3].maximized = 0;
 
 		/* object list window */
+		string_free(data[4].font_want);
 		data[4].font_want = string_make("6x10x.fon");
 		data[4].font_wid = 6;
 		data[4].font_hgt = 10;
@@ -228,6 +239,7 @@ int default_layout_win(term_data *data, int maxterms)
 		data[4].maximized = 0;
 
 		/* recall window */
+		string_free(data[5].font_want);
 		data[5].font_want = string_make("6x10x.fon");
 		data[5].font_wid = 6;
 		data[5].font_hgt = 10;
@@ -335,6 +347,7 @@ int default_layout_win(term_data *data, int maxterms)
 	tile_width = mult_wid;
 	tile_height = mult_hgt;
 
+	string_free(data[0].font_want);
 	data[0].font_want = string_make(main_font);
 	data[0].font_wid = fx;
 	data[0].font_hgt = fy;
@@ -369,6 +382,7 @@ int default_layout_win(term_data *data, int maxterms)
 
 	/* setup sub windows */
 	for (i = 1; i < maxterms; i++) {
+		string_free(data[i].font_want);
 		data[i].font_want = string_make(sub_font);
 		data[i].font_wid = fx2;
 		data[i].font_hgt = fy2;
