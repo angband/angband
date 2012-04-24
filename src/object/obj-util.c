@@ -3684,6 +3684,23 @@ static int compare_types(const object_type *o1, const object_type *o2)
 		return CMP(o1->tval, o2->tval);
 }
 
+/** 
+ * Return true if the item is unknown (has yet to
+ * be seen by the player)
+ */
+
+static bool is_unknown(const object_type *o_ptr)
+{
+		
+	grid_data gd = { 0 };
+	
+	map_info(o_ptr->iy, o_ptr->ix, &gd);
+	return gd.unseen_object;
+		
+}	
+	
+	
+
 /**
  * Sort comparator for objects
  * -1 if o1 should be first
@@ -3694,6 +3711,13 @@ static int compare_types(const object_type *o1, const object_type *o2)
  */
 static int compare_items(const object_type *o1, const object_type *o2)
 {
+
+	/* unknown objects go at the end, order doesn't matter */
+	if (is_unknown(o1) || is_unknown(o2)) {
+		if (!is_unknown(o1)) return -1;
+		return 1;
+	}
+
 	/* known artifacts will sort first */
 	if (object_is_known_artifact(o1) && object_is_known_artifact(o2))
 		return compare_types(o1, o2);
@@ -3773,7 +3797,6 @@ void display_itemlist(void)
 	object_type *types[MAX_ITEMLIST];
 	int counts[MAX_ITEMLIST];
 	int dx[MAX_ITEMLIST], dy[MAX_ITEMLIST];
-	bool seen[MAX_ITEMLIST];
 	unsigned counter = 0;
 
 	int dungeon_hgt = p_ptr->depth == 0 ? TOWN_HGT : DUNGEON_HGT;
@@ -3796,11 +3819,7 @@ void display_itemlist(void)
 	/* Look at each square of the dungeon for items */
 	for (my = 0; my < dungeon_hgt; my++) {
 		for (mx = 0; mx < dungeon_wid; mx++) {
-			bool this_seen = TRUE;
-			grid_data gd = { 0 };
-			map_info(my, mx, &gd);
-			if (gd.unseen_object)
-				this_seen = FALSE;
+			
 			num = scan_floor(floor_list, MAX_FLOOR_STACK, my, mx, 0x02);
 
 			/* Iterate over all the items found on this square */
@@ -3815,7 +3834,7 @@ void display_itemlist(void)
 				/* to its count */
 				for (j = 0; j < counter; j++) {
 					if (object_similar(o_ptr, types[j],	OSTACK_LIST) &&
-							seen[j] == this_seen) {
+							!is_unknown(o_ptr)) {
 						if (o_ptr->marked == MARK_SEEN)
 							counts[j] += o_ptr->number;
 						else
@@ -3838,15 +3857,14 @@ void display_itemlist(void)
 					types[counter] = o_ptr;
 					counts[counter] = o_ptr->number;
 					dy[counter] = my - p_ptr->py;
-					dx[counter] = mx - p_ptr->px;
-					seen[counter] = this_seen;
+					dx[counter] = mx - p_ptr->px;					
 
 					while (j > 0 && compare_items(types[j - 1], types[j]) > 0) {
 						object_type *tmp_o = types[j - 1];
 						int tmpcount = counts[j - 1];
 						int tmpdx = dx[j - 1];
 						int tmpdy = dy[j - 1];
-						bool tmpseen = seen[j - 1];
+						
 
 						types[j - 1] = types[j];
 						types[j] = tmp_o;
@@ -3856,8 +3874,7 @@ void display_itemlist(void)
 						dy[j] = tmpdy;
 						counts[j - 1] = counts[j];
 						counts[j] = tmpcount;
-						seen[j - 1] = seen[j];
-						seen[j] = tmpseen;
+						
 						j--;
 					}
 					counter++;
@@ -3895,7 +3912,7 @@ void display_itemlist(void)
 			continue;
 
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);
-		if ((counts[i] > 1) && (seen[i]))
+		if ((counts[i] > 1) && !(is_unknown(o_ptr)))
 			strnfmt(o_desc, sizeof(o_desc), "%s (x%d) %d %c, %d %c", o_name, counts[i],
 				(dy[i] > 0) ? dy[i] : -dy[i], (dy[i] > 0) ? 'S' : 'N',
 				(dx[i] > 0) ? dx[i] : -dx[i], (dx[i] > 0) ? 'E' : 'W');
@@ -3928,7 +3945,7 @@ void display_itemlist(void)
 		/* Note that the number of items actually displayed */
 		disp_count++;
 
-		if (!seen[i])
+		if (is_unknown(o_ptr))
 			/* unknown object */
 			attr = TERM_RED;
 		else if (o_ptr->artifact && object_is_known(o_ptr))
@@ -3944,7 +3961,7 @@ void display_itemlist(void)
 			/* default */
 			attr = TERM_WHITE;
 
-		if (seen[i]) {
+		if (!(is_unknown(o_ptr))) {
 			a = object_kind_attr(o_ptr->kind);
 			c = object_kind_char(o_ptr->kind);
 		} else {
