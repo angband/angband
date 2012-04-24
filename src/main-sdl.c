@@ -184,6 +184,7 @@ struct term_window
 	SDL_Surface *surface;	/* The surface for this window */
 #ifdef USE_GRAPHICS
 	SDL_Surface *tiles;		/* The appropriately sized tiles for this window */
+	SDL_Surface *onebyone;		/* The appropriately sized tiles for this window */
 #endif	
 	byte Term_idx;			/* Index of term that relates to this */
 	
@@ -914,10 +915,13 @@ static void term_windowFree(term_window* win)
 		win->surface = NULL;
 #ifdef USE_GRAPHICS
 		/* Invalidate the gfx surface */
-		if (win->tiles)
-		{
+		if (win->tiles) {
 			SDL_FreeSurface(win->tiles);
 			win->tiles = NULL;
+		}
+		if (win->onebyone) {
+			SDL_FreeSurface(win->onebyone);
+			win->onebyone = NULL;
 		}
 #endif
 		term_nuke(&win->term_data);
@@ -1402,10 +1406,13 @@ static void AcceptChanges(sdl_Button *sender)
 		for (i = 0; i < ANGBAND_TERM_MAX; i++)
 		{
 			term_window *win = &windows[i];
-			if (win->tiles)
-			{
+			if (win->tiles) {
 				SDL_FreeSurface(win->tiles);
 				win->tiles = NULL;
+			}
+			if (win->onebyone) {
+				SDL_FreeSurface(win->onebyone);
+				win->onebyone = NULL;
 			}
 		}
 	}	
@@ -3046,6 +3053,41 @@ static errr sdl_BuildTileset(term_window *win)
 		}
 	}
 
+	/* see if we need to make a seperate surface for the map view */
+	if (!((tile_width == 1) && (tile_height == 1))) {
+		/* Calculate the size of the new surface */
+		x = ta * win->tile_wid;
+		y = td * win->tile_hgt;
+	
+		/* Make it */
+		win->onebyone = SDL_CreateRGBSurface(SDL_SWSURFACE, x, y,
+				GfxSurface->format->BitsPerPixel,
+				GfxSurface->format->Rmask, GfxSurface->format->Gmask,
+				GfxSurface->format->Bmask, GfxSurface->format->Amask);
+	
+		/* Bugger */
+		if (!win->onebyone) return (1);
+	
+		/* For every tile... */
+		for (xx = 0; xx < ta; xx++) {
+			for (yy = 0; yy < td; yy++) {
+				SDL_Rect src, dest;
+				int dwid = win->tile_wid;
+				int dhgt = win->tile_hgt;
+
+				/* Source rectangle (on GfxSurface) */
+				RECT(xx * info->cell_width, yy * info->cell_height,
+					 info->cell_width, info->cell_height, &src);
+
+				/* Destination rectangle (win->tiles) */
+				RECT(xx * dwid, yy * dhgt, dwid, dhgt, &dest);
+
+				/* Do the stretch thing */
+				sdl_StretchBlit(GfxSurface, &src, win->onebyone, &dest);
+			}
+		}
+	}
+
 	return (0);
 }
 #endif
@@ -3074,7 +3116,7 @@ static errr Term_pict_sdl(int col, int row, int n, const byte *ap, const wchar_t
 		sdl_BuildTileset(win);
 		if (!win->tiles) return (1);
 	}
-	
+
 	/* Make the destination rectangle */
 	RECT(col * win->tile_wid, row * win->tile_hgt, win->tile_wid, win->tile_hgt, &rc);
 	
@@ -3150,6 +3192,42 @@ static errr Term_pict_sdl(int col, int row, int n, const byte *ap, const wchar_t
 	return (0);
 }
 
+static void Term_view_map_sdl(term *t)
+{
+	SDL_Surface *fulltiles;
+	/* Get the right window */
+	term_window *win = (term_window*)(t->data);
+
+	/* First time a pict is requested we load the tileset in */
+	if (!win->tiles)
+	{
+		sdl_BuildTileset(win);
+	}
+	/* override large tiles with small ones for the map view */
+	if (win->onebyone) {
+		/* Save screen so we can load it again after the tile image is restored */
+		screen_save();
+
+		fulltiles = win->tiles;
+		win->tiles = win->onebyone;
+	}
+
+	t->view_map_hook = NULL;
+	do_cmd_view_map();
+	t->view_map_hook = Term_view_map_sdl;
+
+	if (win->onebyone) {
+		win->tiles = fulltiles;
+
+		/*
+		 * Load screen with the correct tiles - the screen load in the
+		 * view map command was still using the image with small tiles
+		 */
+		screen_load();
+	}
+}
+
+
 /*
  * Create and initialize the Term contined within this window.
  */
@@ -3184,6 +3262,7 @@ static void term_data_link_sdl(term_window *win)
 	t->wipe_hook = Term_wipe_sdl;
 	t->text_hook = Term_text_sdl;
 	t->pict_hook = Term_pict_sdl;
+	t->view_map_hook = Term_view_map_sdl;
 	
 	/* Remember where we came from */
 	t->data = win;
@@ -3405,10 +3484,13 @@ static void init_windows(void)
 			if (win->top < StatusHeight) win->top = StatusHeight;
 #ifdef USE_GRAPHICS			
 			/* Invalidate the gfx surface */
-			if (win->tiles)
-			{
+			if (win->tiles) {
 				SDL_FreeSurface(win->tiles);
 				win->tiles = NULL;
+			}
+			if (win->onebyone) {
+				SDL_FreeSurface(win->onebyone);
+				win->onebyone = NULL;
 			}
 #endif
 			/* This will set up the window correctly */
