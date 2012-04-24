@@ -839,8 +839,8 @@ static bool askfor_aux_numbers(char *buf, size_t buflen, size_t *curs, size_t *l
 		case KC_ENTER:
 		case ARROW_LEFT:
 		case ARROW_RIGHT:
-		case 0x7F:
-		case '\010':
+		case KC_DELETE:
+		case KC_BACKSPACE:
 		case '0':
 		case '1':
 		case '2':
