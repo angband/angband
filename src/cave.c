@@ -1386,7 +1386,10 @@ void do_cmd_view_map(void)
 	int cy, cx;
 	byte w, h;
 	const char *prompt = "Hit any key to continue";
-	
+	if (Term->view_map_hook) {
+		(*(Term->view_map_hook))(Term);
+		return;
+	}
 	/* Save screen */
 	screen_save();
 

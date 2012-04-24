@@ -255,6 +255,11 @@ static ui_event inkey_aux(int scan_cutoff)
  */
 struct keypress *inkey_next = NULL;
 
+/**
+ * See if more propmts will be skipped while in a keymap.
+ */
+static bool keymap_auto_more;
+
 
 #ifdef ALLOW_BORG
 
@@ -322,7 +327,7 @@ ui_event inkey_ex(void)
 	}
 
 	/* Hack -- Use the "inkey_next" pointer */
-	if (inkey_next && inkey_next->code)
+	while (inkey_next && inkey_next->code)
 	{
 		/* Get next character, and advance */
 		ke.key = *inkey_next++;
@@ -331,9 +336,32 @@ ui_event inkey_ex(void)
 		inkey_flag = FALSE;
 		inkey_scan = 0;
 
+		/* peek at the key, and see if we want to skip more prompts */
+		if (ke.key.code == '(') {
+			keymap_auto_more = TRUE;
+			/* since we are not returning this char, make sure the next key below works well */
+			if (!inkey_next || !inkey_next->code) {
+				ke.type = EVT_NONE;
+				break;
+			}
+			continue;
+		} else
+		if (ke.key.code == ')') {
+			keymap_auto_more = FALSE;
+			/* since we are not returning this char, make sure the next key below works well */
+			if (!inkey_next || !inkey_next->code) {
+				ke.type = EVT_NONE;
+				break;
+			}
+			continue;
+		}
+
 		/* Accept result */
 		return (ke);
 	}
+
+	/* make sure that the flag to skip more prompts is off */
+	keymap_auto_more = FALSE;
 
 	/* Forget pointer */
 	inkey_next = NULL;
@@ -581,7 +609,7 @@ static void msg_flush(int x)
 	/* Pause for response */
 	Term_putstr(x, 0, -1, a, "-more-");
 
-	if (!OPT(auto_more))
+	if ((!OPT(auto_more)) && !keymap_auto_more)
 		anykey();
 
 	/* Clear the line */
