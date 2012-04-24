@@ -377,7 +377,7 @@ static int textui_get_count(void)
 			return -1;
 
 		/* Simple editing (delete or backspace) */
-		else if (ke.code == 0x7F || ke.code == KTRL('H'))
+		else if (ke.code == KC_DELETE || ke.code == KC_BACKSPACE)
 			count = count / 10;
 
 		/* Actual numeric data */
