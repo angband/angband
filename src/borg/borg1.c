@@ -1696,7 +1696,11 @@ errr borg_keypress(keycode_t k)
     if (!k) return (-1);
 
 	/* Hack -- note the keypress */
-   	borg_note(format("& Key <%c>", k));
+	if(k >= 32 && k <= 126) {
+		borg_note(format("& Key <%c> (0x%02X)", k, k));
+	} else {
+		borg_note(format("& Key <0x%02X>", k));
+	}
 
     /* Store the char, advance the queue */
     borg_key_queue[borg_key_head++] = k;
@@ -1733,7 +1737,7 @@ errr borg_keypresses(char *str)
 /*
  * Get the next Borg keypress
  */
-char borg_inkey(bool take)
+keycode_t borg_inkey(bool take)
 {
     int i;
 
@@ -1783,7 +1787,7 @@ bool borg_tell(char *what)
     /* Hack -- self note */
     borg_keypress(':');
     for (s = what; *s; s++) borg_keypress(*s);
-    borg_keypress('\n');
+    borg_keypress(KC_ENTER);
 
     /* Success */
     return (TRUE);

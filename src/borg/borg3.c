@@ -1474,7 +1474,7 @@ bool borg_object_star_id( void )
                 }
 
                 /* end the inscription */
-                borg_keypress('\n');
+                borg_keypress(KC_ENTER);
 
             }
 
@@ -2315,7 +2315,7 @@ void borg_send_inscribe(int i, char *str)
     for (s = str; *s; s++) borg_keypress(*s);
 
     /* End the inscription */
-    borg_keypress('\n');
+    borg_keypress(KC_ENTER);
 
 }
 
