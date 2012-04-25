@@ -116,10 +116,6 @@ static term_data data[MAX_TERM_DATA];
 /* Number of initialized "term" structures */
 static int active = 0;
 
-#define CTRL_ORE 1
-#define CTRL_WALL 2
-#define CTRL_ROCK 3
-
 #ifdef A_COLOR
 
 /*
@@ -143,6 +139,7 @@ static int colortable[BASIC_COLORS];
 /* Screen info: use one big Term 0, or other subwindows? */
 static bool use_big_screen = FALSE;
 static bool bold_extended = FALSE;
+static bool ascii_walls = FALSE;
 
 /*
  * Background color we should draw with; either BLACK or DEFAULT
@@ -582,6 +579,31 @@ int create_color(int i, int scale) {
  * React to changes
  */
 static errr Term_xtra_gcu_react(void) {
+	if (ascii_walls) {
+		int i;
+		ascii_walls = FALSE;
+		for (i = 0; i < 3; i++) {
+			// magma as %:D
+			f_info[50].x_char[i] = f_info[52].x_char[i] = 0x23;
+			f_info[50].x_attr[i] = f_info[52].x_attr[i] = 0x01;
+
+			// quartz as %:D
+			f_info[51].x_char[i] = f_info[53].x_char[i] = 0x23;
+			f_info[51].x_attr[i] = f_info[53].x_attr[i] = 0x01;
+
+			// quartz/magma w treasure as *:o
+			f_info[54].x_char[i] = f_info[55].x_char[i] = 0x2A;
+			f_info[54].x_attr[i] = f_info[55].x_attr[i] = 0x03;
+
+			// granite walls as #:D
+			f_info[56].x_char[i] = 0x23;
+			f_info[56].x_attr[i] = 0x01;
+
+			// permanent walls as #:r
+			f_info[60].x_char[i] = 0x23;
+			f_info[60].x_attr[i] = 0x04;
+		}
+	}
 
 #ifdef A_COLOR
 	if (COLORS == 256 || COLORS == 88) {
@@ -600,11 +622,9 @@ static errr Term_xtra_gcu_react(void) {
 
 		for (i = 0; i < BASIC_COLORS; i++) {
 			int fg = create_color(i, scale);
+			int isbold = bold_extended ? A_BRIGHT : A_NORMAL;
 			init_pair(i + 1, fg, bg_color);
-			if (bold_extended)
-				colortable[i] = COLOR_PAIR(i + 1) | A_BRIGHT;
-			else
-				colortable[i] = COLOR_PAIR(i + 1);
+			colortable[i] = COLOR_PAIR(i + 1) | isbold;
 		}
 	}
 #endif
@@ -693,20 +713,22 @@ static errr Term_text_gcu(int x, int y, int n, byte a, const wchar_t *s) {
 	term_data *td = (term_data *)(Term->data);
 
 #ifdef A_COLOR
-	/* Set the color */
-	if (can_use_color) (void)wattrset(td->win, colortable[a & 255]);
+	if (can_use_color) {
+		/* the lower 7 bits of the attribute indicate the fg/bg */
+		int attr = a & 127;
+
+		/* the high bit of the attribute indicates a reversed fg/bg */
+		int flip = a > 127 ? A_REVERSE : A_NORMAL;
+
+		wattrset(td->win, colortable[attr] | flip);
+		mvwaddnwstr(td->win, y, x, s, n);
+		wattrset(td->win, A_NORMAL);
+		return 0;
+	}
 #endif
 
-	/* Move cursor and write to screen */
 	mvwaddnwstr(td->win, y, x, s, n);
-
-#if defined(A_COLOR)
-	/* Unset the color */
-	if (can_use_color) wattrset(td->win, A_NORMAL);
-#endif
-
-	/* Success */
-	return (0);
+	return 0;
 }
 
 
@@ -774,7 +796,6 @@ errr init_gcu(int argc, char **argv) {
 	int i;
 	int rows, cols, y, x;
 	int next_win = 0;
-/*	bool graphics = TRUE; */
 
 	/* Initialize info about terminal capabilities */
 	termtype = getenv("TERM");
@@ -782,29 +803,22 @@ errr init_gcu(int argc, char **argv) {
 
 	/* Parse args */
 	for (i = 1; i < argc; i++) {
-		if (prefix(argv[i], "-b"))
+		if (prefix(argv[i], "-b")) {
 			use_big_screen = TRUE;
-		else if (prefix(argv[i], "-B"))
+		} else if (prefix(argv[i], "-B")) {
 			bold_extended = TRUE;
-/*		else if (prefix(argv[i], "-a"))
-			graphics = FALSE; */
-		else
+		} else if (prefix(argv[i], "-a")) {
+			ascii_walls = TRUE;
+		} else {
 			plog_fmt("Ignoring option: %s", argv[i]);
+		}
 	}
-
-/*	if (graphics) {
-		ctrl_char[CTRL_WALL] = ' ';
-		ctrl_attr[CTRL_ORE] = A_REVERSE;
-		ctrl_attr[CTRL_WALL] = A_REVERSE;
-		ctrl_attr[CTRL_ROCK] = A_REVERSE;
-	}*/
 
 	/* Extract the normal keymap */
 	keymap_norm_prepare();
 
 	/* We do it like this to prevent a link error with curseses that
-	 * lack ESCDELAY.
-	 */
+	 * lack ESCDELAY. */
 	if (!getenv("ESCDELAY"))
 		putenv("ESCDELAY=20");
 
@@ -864,9 +878,9 @@ errr init_gcu(int argc, char **argv) {
 		colortable[TERM_MUD]         = (COLOR_PAIR(PAIR_YELLOW));
 		colortable[TERM_L_YELLOW]    = (COLOR_PAIR(PAIR_YELLOW | A_BRIGHT));
 		colortable[TERM_MAGENTA]     = (COLOR_PAIR(PAIR_MAGENTA | A_BRIGHT));
-		colortable[TERM_L_TEAL]      = (COLOR_PAIR(PAIR_CYAN | A_BRIGHT));
-		colortable[TERM_L_VIOLET]    = (COLOR_PAIR(PAIR_MAGENTA | A_BRIGHT));
-		colortable[TERM_L_PINK]      = (COLOR_PAIR(PAIR_MAGENTA | A_BRIGHT));
+		colortable[TERM_L_TEAL]      = (COLOR_PAIR(PAIR_CYAN) | A_BRIGHT);
+		colortable[TERM_L_VIOLET]    = (COLOR_PAIR(PAIR_MAGENTA) | A_BRIGHT);
+		colortable[TERM_L_PINK]      = (COLOR_PAIR(PAIR_MAGENTA) | A_BRIGHT);
 		colortable[TERM_MUSTARD]     = (COLOR_PAIR(PAIR_YELLOW));
 		colortable[TERM_BLUE_SLATE]  = (COLOR_PAIR(PAIR_BLUE));
 		colortable[TERM_DEEP_L_BLUE] = (COLOR_PAIR(PAIR_BLUE));
@@ -887,7 +901,7 @@ errr init_gcu(int argc, char **argv) {
 	/* Extract the game keymap */
 	keymap_game_prepare();
 
-	/*** Now prepare the term(s) ***/
+	/* Now prepare the term(s) */
 	for (i = 0; i < MAX_TERM_DATA; i++) {
 		if (use_big_screen && i > 0) break;
 
