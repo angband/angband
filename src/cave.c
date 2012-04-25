@@ -459,23 +459,26 @@ static bool feat_is_treasure(int feat) {
  */
 static void grid_get_attr(grid_data *g, byte *a)
 {
+	/* Save the high-bit, since it's used for attr inversion. */
+	byte a0 = *a & 0x80;
+
 	/* We will never tint traps or treasure */
 	if (feat_is_known_trap(g->f_idx) || feat_is_treasure(g->f_idx)) return;
 
 	/* Tint the trap detection edge green. */
 	if (g->trapborder) {
-		*a = (*a & 128) | (g->in_view ? TERM_L_GREEN : TERM_GREEN);
+		*a = a0 | (g->in_view ? TERM_L_GREEN : TERM_GREEN);
 		return;
 	}
 
 	/* If the square isn't white we won't apply any other lighting effects. */
-	if (*a != TERM_WHITE) return;
+	if ((*a & 0x7F) != TERM_WHITE) return;
 
 	/* If it's a floor tile then we'll tint based on lighting. */
 	if (g->f_idx == FEAT_FLOOR) {
 		switch (g->lighting) {
-			case FEAT_LIGHTING_BRIGHT: *a = TERM_YELLOW; break;
-			case FEAT_LIGHTING_DARK: *a = TERM_L_DARK; break;
+			case FEAT_LIGHTING_BRIGHT: *a = a0 | TERM_YELLOW; break;
+			case FEAT_LIGHTING_DARK: *a = a0 | TERM_L_DARK; break;
 			default: break;
 		}
 		return;
@@ -483,7 +486,7 @@ static void grid_get_attr(grid_data *g, byte *a)
 
 	/* If it's another kind of tile, only tint when unlit. */
 	if (g->f_idx > FEAT_INVIS && g->lighting == FEAT_LIGHTING_DARK)
-		*a = TERM_SLATE;
+		*a = a0 | TERM_SLATE;
 }
 
 
