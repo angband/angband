@@ -2444,7 +2444,7 @@ static bool default_gen(struct cave *c, struct player *p) {
 	/* scale the various generation variables */
 	num_rooms = (dun->profile->dun_rooms * size_percent) / 100;
 	set_cave_dimensions(c, DUNGEON_HGT, DUNGEON_WID);
-	//ROOM_LOG("height=%d  width=%d  nrooms=%d", c->height, c->width, num_rooms);
+	ROOM_LOG("height=%d  width=%d  nrooms=%d", c->height, c->width, num_rooms);
 
 	/* Initially fill with basic granite */
 	fill_rectangle(c, 0, 0, DUNGEON_HGT - 1, DUNGEON_WID - 1, FEAT_WALL_EXTRA);
@@ -2799,18 +2799,13 @@ static bool labyrinth_gen(struct cave *c, struct player *p) {
 	/* Determine the character location */
 	new_player_spot(c, p);
 
-	/* The level should have exactly one down and one up staircase */
-	if (OPT(birth_no_stairs)) {
-		/* new_player_spot() won't have created stairs, so make both*/
-		alloc_stairs(c, FEAT_MORE, 1, 3);
+	/* Generate a single set of stairs up if necessary. */
+	if (!cave_find(c, &y, &x, cave_isupstairs))
 		alloc_stairs(c, FEAT_LESS, 1, 3);
-	} else if (p->create_down_stair) {
-		/* new_player_spot() will have created down, so only create up */
-		alloc_stairs(c, FEAT_LESS, 1, 3);
-	} else {
-		/* new_player_spot() will have created up, so only create down */
+
+	/* Generate a single set of stairs down if necessary. */
+	if (!cave_find(c, &y, &x, cave_isdownstairs))
 		alloc_stairs(c, FEAT_MORE, 1, 3);
-	}
 
 	/* Generate a door for every 100 squares in the labyrinth */
 	for (i = n / 100; i > 0; i--) {

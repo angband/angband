@@ -3833,8 +3833,22 @@ bool cave_istrap(struct cave *c, int y, int x) {
 /**
  * True if cave is an up or down stair
  */
- bool cave_isstairs(struct cave*c, int y, int x) {
-    return c->feat[y][x] == FEAT_LESS || c->feat[y][x] == FEAT_MORE;
+bool cave_isstairs(struct cave*c, int y, int x) {
+    return cave_isupstairs(c, y, x) || cave_isdownstairs(c, y, x);
+}
+
+/**
+ * True if cave is an up stair.
+ */
+bool cave_isupstairs(struct cave*c, int y, int x) {
+    return c->feat[y][x] == FEAT_LESS;
+}
+
+/**
+ * True if cave is a down stair.
+ */
+bool cave_isdownstairs(struct cave*c, int y, int x) {
+    return c->feat[y][x] == FEAT_MORE;
 }
 
 
