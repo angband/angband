@@ -116,10 +116,6 @@ static term_data data[MAX_TERM_DATA];
 /* Number of initialized "term" structures */
 static int active = 0;
 
-#define CTRL_ORE 1
-#define CTRL_WALL 2
-#define CTRL_ROCK 3
-
 #ifdef A_COLOR
 
 /*
@@ -600,11 +596,9 @@ static errr Term_xtra_gcu_react(void) {
 
 		for (i = 0; i < BASIC_COLORS; i++) {
 			int fg = create_color(i, scale);
+			int isbold = bold_extended ? A_BRIGHT : A_NORMAL;
 			init_pair(i + 1, fg, bg_color);
-			if (bold_extended)
-				colortable[i] = COLOR_PAIR(i + 1) | A_BRIGHT;
-			else
-				colortable[i] = COLOR_PAIR(i + 1);
+			colortable[i] = COLOR_PAIR(i + 1) | isbold;
 		}
 	}
 #endif
@@ -693,20 +687,22 @@ static errr Term_text_gcu(int x, int y, int n, byte a, const wchar_t *s) {
 	term_data *td = (term_data *)(Term->data);
 
 #ifdef A_COLOR
-	/* Set the color */
-	if (can_use_color) (void)wattrset(td->win, colortable[a & 255]);
+	if (can_use_color) {
+		/* the lower 7 bits of the attribute indicate the fg/bg */
+		int attr = a & 127;
+
+		/* the high bit of the attribute indicates a reversed fg/bg */
+		int flip = a > 127 ? A_REVERSE : A_NORMAL;
+
+		wattrset(td->win, colortable[attr] | flip);
+		mvwaddnwstr(td->win, y, x, s, n);
+		wattrset(td->win, A_NORMAL);
+		return 0;
+	}
 #endif
 
-	/* Move cursor and write to screen */
 	mvwaddnwstr(td->win, y, x, s, n);
-
-#if defined(A_COLOR)
-	/* Unset the color */
-	if (can_use_color) wattrset(td->win, A_NORMAL);
-#endif
-
-	/* Success */
-	return (0);
+	return 0;
 }
 
 
@@ -782,22 +778,14 @@ errr init_gcu(int argc, char **argv) {
 
 	/* Parse args */
 	for (i = 1; i < argc; i++) {
-		if (prefix(argv[i], "-b"))
+		if (prefix(argv[i], "-b")) {
 			use_big_screen = TRUE;
-		else if (prefix(argv[i], "-B"))
+		} else if (prefix(argv[i], "-B")) {
 			bold_extended = TRUE;
-/*		else if (prefix(argv[i], "-a"))
-			graphics = FALSE; */
-		else
+		} else {
 			plog_fmt("Ignoring option: %s", argv[i]);
+		}
 	}
-
-/*	if (graphics) {
-		ctrl_char[CTRL_WALL] = ' ';
-		ctrl_attr[CTRL_ORE] = A_REVERSE;
-		ctrl_attr[CTRL_WALL] = A_REVERSE;
-		ctrl_attr[CTRL_ROCK] = A_REVERSE;
-	}*/
 
 	/* Extract the normal keymap */
 	keymap_norm_prepare();
@@ -864,9 +852,9 @@ errr init_gcu(int argc, char **argv) {
 		colortable[TERM_MUD]         = (COLOR_PAIR(PAIR_YELLOW));
 		colortable[TERM_L_YELLOW]    = (COLOR_PAIR(PAIR_YELLOW | A_BRIGHT));
 		colortable[TERM_MAGENTA]     = (COLOR_PAIR(PAIR_MAGENTA | A_BRIGHT));
-		colortable[TERM_L_TEAL]      = (COLOR_PAIR(PAIR_CYAN | A_BRIGHT));
-		colortable[TERM_L_VIOLET]    = (COLOR_PAIR(PAIR_MAGENTA | A_BRIGHT));
-		colortable[TERM_L_PINK]      = (COLOR_PAIR(PAIR_MAGENTA | A_BRIGHT));
+		colortable[TERM_L_TEAL]      = (COLOR_PAIR(PAIR_CYAN) | A_BRIGHT);
+		colortable[TERM_L_VIOLET]    = (COLOR_PAIR(PAIR_MAGENTA) | A_BRIGHT);
+		colortable[TERM_L_PINK]      = (COLOR_PAIR(PAIR_MAGENTA) | A_BRIGHT);
 		colortable[TERM_MUSTARD]     = (COLOR_PAIR(PAIR_YELLOW));
 		colortable[TERM_BLUE_SLATE]  = (COLOR_PAIR(PAIR_BLUE));
 		colortable[TERM_DEEP_L_BLUE] = (COLOR_PAIR(PAIR_BLUE));
