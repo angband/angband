@@ -139,6 +139,7 @@ static int colortable[BASIC_COLORS];
 /* Screen info: use one big Term 0, or other subwindows? */
 static bool use_big_screen = FALSE;
 static bool bold_extended = FALSE;
+static bool ascii_walls = FALSE;
 
 /*
  * Background color we should draw with; either BLACK or DEFAULT
@@ -578,6 +579,31 @@ int create_color(int i, int scale) {
  * React to changes
  */
 static errr Term_xtra_gcu_react(void) {
+	if (ascii_walls) {
+		int i;
+		ascii_walls = FALSE;
+		for (i = 0; i < 3; i++) {
+			// magma as %:D
+			f_info[50].x_char[i] = f_info[52].x_char[i] = 0x23;
+			f_info[50].x_attr[i] = f_info[52].x_attr[i] = 0x01;
+
+			// quartz as %:D
+			f_info[51].x_char[i] = f_info[53].x_char[i] = 0x23;
+			f_info[51].x_attr[i] = f_info[53].x_attr[i] = 0x01;
+
+			// quartz/magma w treasure as *:o
+			f_info[54].x_char[i] = f_info[55].x_char[i] = 0x2A;
+			f_info[54].x_attr[i] = f_info[55].x_attr[i] = 0x03;
+
+			// granite walls as #:D
+			f_info[56].x_char[i] = 0x23;
+			f_info[56].x_attr[i] = 0x01;
+
+			// permanent walls as #:r
+			f_info[60].x_char[i] = 0x23;
+			f_info[60].x_attr[i] = 0x04;
+		}
+	}
 
 #ifdef A_COLOR
 	if (COLORS == 256 || COLORS == 88) {
@@ -770,7 +796,6 @@ errr init_gcu(int argc, char **argv) {
 	int i;
 	int rows, cols, y, x;
 	int next_win = 0;
-/*	bool graphics = TRUE; */
 
 	/* Initialize info about terminal capabilities */
 	termtype = getenv("TERM");
@@ -782,6 +807,8 @@ errr init_gcu(int argc, char **argv) {
 			use_big_screen = TRUE;
 		} else if (prefix(argv[i], "-B")) {
 			bold_extended = TRUE;
+		} else if (prefix(argv[i], "-a")) {
+			ascii_walls = TRUE;
 		} else {
 			plog_fmt("Ignoring option: %s", argv[i]);
 		}
@@ -791,8 +818,7 @@ errr init_gcu(int argc, char **argv) {
 	keymap_norm_prepare();
 
 	/* We do it like this to prevent a link error with curseses that
-	 * lack ESCDELAY.
-	 */
+	 * lack ESCDELAY. */
 	if (!getenv("ESCDELAY"))
 		putenv("ESCDELAY=20");
 
@@ -875,7 +901,7 @@ errr init_gcu(int argc, char **argv) {
 	/* Extract the game keymap */
 	keymap_game_prepare();
 
-	/*** Now prepare the term(s) ***/
+	/* Now prepare the term(s) */
 	for (i = 0; i < MAX_TERM_DATA; i++) {
 		if (use_big_screen && i > 0) break;
 
