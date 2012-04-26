@@ -1502,7 +1502,7 @@ errr borg_what_text(int x, int y, int n, byte *a, char *s)
     (*a) = d_a;
 
     /* Convert back to a char string */
-    wcstombs(s, screen_str, n+1);
+    wcstombs(s, screen_str, ABS(n)+1);
     /* Too short */
     if ((n > 0) && (i != n)) return (1);
 
