@@ -434,6 +434,10 @@ ui_event inkey_ex(void)
 		/* Get a key (see above) */
 		ke = inkey_aux(inkey_scan);
 
+		if(inkey_scan && ke.type == EVT_NONE)
+			/* The keypress timed out. We need to stop here. */
+			break;
+
 		/* Handle mouse buttons */
 		if ((ke.type == EVT_MOUSE) && (OPT(mouse_buttons)))
 		{
