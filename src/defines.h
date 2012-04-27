@@ -643,6 +643,8 @@ enum
 
 #define CAVE2_DTRAP		0x01	/* trap detected grid */
 #define CAVE2_FEEL		0x02	/* hidden points to trigger feelings*/
+#define CAVE2_DEDGE		0x04	/* border of trap detected area */
+#define CAVE2_VERT		0x08	/* use an alternate visual for this grid */
 
 /* 
  * Information for Feelings 
