@@ -2,6 +2,9 @@ dnl Process this file with autoconf to produce a configure script.
 AC_INIT(Angband, 3.3.0, bugs@rephial.org)
 AC_CONFIG_SRCDIR(src)
 
+AC_CANONICAL_HOST
+AC_CANONICAL_TARGET
+
 BUILDSYS_INIT
 BUILDSYS_TOUCH_DEPS
 
