@@ -819,7 +819,7 @@ static void process_world(struct cave *c)
 
 		/* Activate the recall */
 		if (p_ptr->deep_descent == 0) {
-			int i, target_depth = p_ptr->depth;
+			int i, target_depth = p_ptr->max_depth;
 
 			/* Calculate target depth */
 			for (i = 5; i > 0; i--) {
