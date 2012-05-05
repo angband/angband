@@ -18,1120 +18,1352 @@ depgen:
 
 # Dependencies
 ./attack.o: attack.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h attack.h cave.h cmds.h \
- monster/mon-make.h monster/mon-msg.h monster/mon-timed.h \
- monster/mon-util.h object/slays.h object/list-slays.h object/tvalsval.h \
- target.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h attack.h \
+  cave.h cmds.h monster/mon-make.h angband.h monster/mon-msg.h \
+  monster/mon-timed.h monster/mon-util.h object/slays.h \
+  object/list-slays.h object/tvalsval.h target.h
 ./birth.o: birth.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h cmds.h files.h game-event.h history.h \
- object/inventory.h object/tvalsval.h squelch.h ui-menu.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h cmds.h \
+  files.h game-event.h history.h object/inventory.h object/tvalsval.h \
+  squelch.h ui-menu.h
 ./button.o: button.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h button.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h button.h
 ./cave.o: cave.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h cave.h game-event.h \
- monster/mon-util.h object/tvalsval.h squelch.h cmds.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h cave.h \
+  game-event.h monster/mon-util.h angband.h object/tvalsval.h squelch.h \
+  cmds.h
 ./cmd0.o: cmd0.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h cave.h cmds.h files.h keymap.h \
- textui.h ui-menu.h wizard.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h cave.h cmds.h \
+  files.h keymap.h textui.h ui-menu.h wizard.h target.h
 ./cmd1.o: cmd1.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h attack.h cave.h cmds.h game-event.h \
- generate.h history.h monster/mon-timed.h monster/mon-util.h \
- object/inventory.h object/tvalsval.h squelch.h trap.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h attack.h \
+  cave.h cmds.h game-event.h generate.h history.h monster/mon-timed.h \
+  monster/mon-util.h angband.h object/inventory.h object/tvalsval.h \
+  squelch.h trap.h
 ./cmd2.o: cmd2.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h attack.h cave.h cmds.h files.h \
- game-event.h generate.h monster/mon-timed.h monster/mon-util.h \
- object/tvalsval.h squelch.h trap.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h attack.h \
+  cave.h cmds.h files.h game-event.h generate.h monster/mon-timed.h \
+  monster/mon-util.h angband.h object/tvalsval.h squelch.h trap.h
 ./cmd3.o: cmd3.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h button.h cave.h cmds.h \
- monster/mon-lore.h object/inventory.h object/tvalsval.h squelch.h \
- ui-menu.h target.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h button.h \
+  cave.h cmds.h monster/mon-lore.h angband.h object/inventory.h \
+  object/tvalsval.h squelch.h ui-menu.h target.h
 ./cmd4.o: cmd4.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h buildid.h cave.h cmds.h files.h \
- history.h object/tvalsval.h prefs.h squelch.h ui-menu.h
-./cmd-context.o: cmd0.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h cave.h cmds.h files.h keymap.h \
- textui.h ui-menu.h wizard.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h buildid.h \
+  cave.h cmds.h files.h history.h object/tvalsval.h prefs.h squelch.h \
+  ui-menu.h button.h
+./cmd-context.o: cmd-context.c angband.h h-basic.h z-bitflag.h z-form.h \
+  z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
+  z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
+  game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h \
+  defines.h z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h \
+  h-basic.h object/list-object-flags.h object/object.h \
+  monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h object/obj-flag.h object/object.h player/types.h \
+  store.h parser.h ui.h z-textblock.h z-type.h externs.h spells.h \
+  list-gf-types.h cave.h cmds.h files.h keymap.h textui.h ui-menu.h \
+  wizard.h target.h squelch.h object/tvalsval.h monster/mon-lore.h \
+  angband.h monster/mon-util.h
 ./cmd-misc.o: cmd-misc.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h cave.h cmds.h monster/mon-util.h \
- wizard.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h cave.h cmds.h \
+  monster/mon-util.h angband.h wizard.h
 ./cmd-obj.o: cmd-obj.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h cave.h cmds.h effects.h \
- list-effects.h object/inventory.h object/tvalsval.h target.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h cave.h cmds.h \
+  effects.h list-effects.h object/inventory.h object/tvalsval.h target.h
 ./death.o: death.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h cmds.h files.h history.h savefile.h \
- ui-menu.h wizard.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h cmds.h \
+  files.h history.h savefile.h ui-menu.h wizard.h
 ./debug.o: debug.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h debug.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h debug.h
 ./dungeon.o: dungeon.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h button.h cave.h cmds.h files.h \
- game-event.h generate.h init.h monster/mon-make.h monster/mon-spell.h \
- monster/list-spell-effects.h monster/mon-util.h object/tvalsval.h \
- prefs.h savefile.h target.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h button.h \
+  cave.h cmds.h files.h game-event.h generate.h init.h monster/mon-make.h \
+  angband.h monster/mon-spell.h monster/list-spell-effects.h \
+  monster/mon-util.h object/tvalsval.h prefs.h savefile.h target.h
 ./effects.o: effects.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h cave.h effects.h list-effects.h \
- monster/mon-spell.h monster/list-spell-effects.h monster/mon-util.h \
- trap.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h cave.h \
+  effects.h list-effects.h monster/mon-spell.h angband.h \
+  monster/list-spell-effects.h monster/mon-util.h trap.h
 ./files.o: files.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h buildid.h cave.h cmds.h files.h \
- history.h object/tvalsval.h object/pval.h savefile.h ui-menu.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h buildid.h \
+  cave.h cmds.h files.h history.h object/tvalsval.h object/pval.h \
+  angband.h savefile.h ui-menu.h
 ./game-cmd.o: game-cmd.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h cmds.h object/tvalsval.h target.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h cmds.h \
+  object/tvalsval.h target.h
 ./game-event.o: game-event.c z-virt.h h-basic.h game-event.h
 ./generate.o: generate.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h cave.h files.h generate.h \
- monster/mon-make.h monster/mon-spell.h monster/list-spell-effects.h \
- object/tvalsval.h trap.h z-queue.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h cave.h \
+  files.h generate.h monster/mon-make.h angband.h monster/mon-spell.h \
+  monster/list-spell-effects.h object/tvalsval.h trap.h z-queue.h \
+  h-basic.h
 ./grafmode.o: grafmode.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h grafmode.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h grafmode.h
 ./guid.o: guid.c guid.h
 ./history.o: history.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h history.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h history.h
 ./init2.o: init2.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h buildid.h button.h cave.h cmds.h \
- game-event.h generate.h history.h keymap.h init.h monster/init.h \
- monster/mon-msg.h monster/mon-util.h object/slays.h object/list-slays.h \
- object/tvalsval.h prefs.h randname.h squelch.h \
- object/list-object-flags.h list-effects.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h buildid.h \
+  button.h cave.h cmds.h game-event.h generate.h history.h keymap.h \
+  init.h monster/init.h monster/mon-msg.h angband.h monster/mon-util.h \
+  object/slays.h object/list-slays.h object/tvalsval.h prefs.h randname.h \
+  squelch.h object/list-object-flags.h list-effects.h
 ./keymap.o: keymap.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h keymap.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h keymap.h
 ./load.o: load.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h cave.h history.h monster/mon-make.h \
- monster/mon-spell.h monster/list-spell-effects.h object/tvalsval.h \
- savefile.h squelch.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h cave.h \
+  history.h monster/mon-make.h angband.h monster/mon-spell.h \
+  monster/list-spell-effects.h object/tvalsval.h savefile.h squelch.h
 ./monster/mon-init.o: monster/mon-init.c externs.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h list-player-flags.h \
- h-basic.h z-bitflag.h h-basic.h z-form.h z-virt.h defines.h z-rand.h \
- cave.h types.h z-term.h ui-event.h z-type.h player/types.h \
- object/obj-flag.h z-file.h z-textblock.h z-file.h z-quark.h game-cmd.h \
- object/list-object-flags.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h z-bitflag.h z-util.h z-rand.h z-quark.h \
- z-msg.h config.h option.h game-cmd.h object/obj-flag.h object/object.h \
- player/types.h player/player.h guid.h store.h parser.h ui.h \
- z-textblock.h externs.h monster/list-mon-spells.h spells.h \
- list-gf-types.h monster/mon-msg.h monster/mon-power.h monster/monster.h \
- monster/mon-spell.h monster/list-spell-effects.h monster/mon-util.h \
- parser.h z-util.h z-virt.h monster/list-mon-flags.h \
- monster/list-mon-spells.h monster/list-blow-methods.h \
- monster/list-blow-effects.h
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h \
+  list-player-flags.h h-basic.h z-bitflag.h h-basic.h z-form.h z-virt.h \
+  defines.h z-rand.h cave.h types.h z-term.h ui-event.h z-type.h \
+  player/types.h object/obj-flag.h z-rand.h z-file.h z-textblock.h \
+  z-file.h z-quark.h z-bitflag.h game-cmd.h cave.h \
+  object/list-object-flags.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h z-bitflag.h z-util.h z-rand.h z-quark.h \
+  z-msg.h config.h option.h game-cmd.h object/obj-flag.h object/object.h \
+  player/types.h player/player.h guid.h player/types.h store.h parser.h \
+  ui.h z-textblock.h externs.h monster/list-mon-spells.h spells.h \
+  list-gf-types.h monster/mon-msg.h monster/mon-power.h monster/monster.h \
+  monster/mon-spell.h monster/list-spell-effects.h monster/mon-util.h \
+  monster/monster.h parser.h z-util.h z-virt.h monster/list-mon-flags.h \
+  monster/list-mon-spells.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h
 ./monster/melee1.o: monster/melee1.c angband.h h-basic.h z-bitflag.h z-form.h \
- z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
- z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
- game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
- z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
- object/object.h monster/constants.h monster/list-blow-methods.h \
- monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
- defines.h h-basic.h player/types.h object/obj-flag.h object/object.h \
- option.h ui-event.h monster/mon-timed.h monster/list-mon-spells.h \
- player/types.h player/player.h guid.h store.h parser.h ui.h \
- z-textblock.h externs.h spells.h list-gf-types.h attack.h \
- monster/monster.h object/tvalsval.h spells.h
+  z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
+  z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
+  game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
+  z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
+  object/object.h monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h attack.h cave.h \
+  monster/monster.h object/tvalsval.h spells.h
 ./monster/melee2.o: monster/melee2.c angband.h h-basic.h z-bitflag.h z-form.h \
- z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
- z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
- game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
- z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
- object/object.h monster/constants.h monster/list-blow-methods.h \
- monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
- defines.h h-basic.h player/types.h object/obj-flag.h object/object.h \
- option.h ui-event.h monster/mon-timed.h monster/list-mon-spells.h \
- player/types.h player/player.h guid.h store.h parser.h ui.h \
- z-textblock.h externs.h spells.h list-gf-types.h attack.h \
- monster/mon-make.h monster/mon-spell.h monster/list-spell-effects.h \
- monster/mon-util.h object/slays.h object/list-slays.h object/tvalsval.h \
- spells.h squelch.h
+  z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
+  z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
+  game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
+  z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
+  object/object.h monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h attack.h cave.h \
+  monster/mon-make.h monster/mon-spell.h monster/list-spell-effects.h \
+  monster/mon-timed.h monster/mon-util.h object/slays.h \
+  object/list-slays.h object/tvalsval.h spells.h squelch.h
 ./monster/mon-lore.o: monster/mon-lore.c angband.h h-basic.h z-bitflag.h z-form.h \
- z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
- z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
- game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
- z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
- object/object.h monster/constants.h monster/list-blow-methods.h \
- monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
- defines.h h-basic.h player/types.h object/obj-flag.h object/object.h \
- option.h ui-event.h monster/mon-timed.h monster/list-mon-spells.h \
- player/types.h player/player.h guid.h store.h parser.h ui.h \
- z-textblock.h externs.h spells.h list-gf-types.h monster/mon-lore.h \
- monster/mon-spell.h monster/list-spell-effects.h object/tvalsval.h
+  z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
+  z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
+  game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
+  z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
+  object/object.h monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h monster/mon-lore.h \
+  monster/mon-spell.h monster/list-spell-effects.h object/tvalsval.h
 ./monster/mon-make.o: monster/mon-make.c angband.h h-basic.h z-bitflag.h z-form.h \
- z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
- z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
- game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
- z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
- object/object.h monster/constants.h monster/list-blow-methods.h \
- monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
- defines.h h-basic.h player/types.h object/obj-flag.h object/object.h \
- option.h ui-event.h monster/mon-timed.h monster/list-mon-spells.h \
- player/types.h player/player.h guid.h store.h parser.h ui.h \
- z-textblock.h externs.h spells.h list-gf-types.h history.h target.h \
- monster/mon-lore.h monster/mon-make.h monster/mon-util.h \
- object/tvalsval.h
+  z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
+  z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
+  game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
+  z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
+  object/object.h monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h history.h target.h \
+  monster/mon-lore.h monster/mon-make.h monster/mon-timed.h \
+  monster/mon-util.h object/tvalsval.h
 ./monster/mon-msg.o: monster/mon-msg.c angband.h h-basic.h z-bitflag.h z-form.h \
- z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
- z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
- game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
- z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
- object/object.h monster/constants.h monster/list-blow-methods.h \
- monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
- defines.h h-basic.h player/types.h object/obj-flag.h object/object.h \
- option.h ui-event.h monster/mon-timed.h monster/list-mon-spells.h \
- player/types.h player/player.h guid.h store.h parser.h ui.h \
- z-textblock.h externs.h spells.h list-gf-types.h monster/mon-msg.h \
- monster/mon-util.h
+  z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
+  z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
+  game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
+  z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
+  object/object.h monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h monster/mon-msg.h \
+  monster/mon-util.h
 ./monster/mon-power.o: monster/mon-power.c angband.h h-basic.h z-bitflag.h z-form.h \
- z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
- z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
- game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
- z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
- object/object.h monster/constants.h monster/list-blow-methods.h \
- monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
- defines.h h-basic.h player/types.h object/obj-flag.h object/object.h \
- option.h ui-event.h monster/mon-timed.h monster/list-mon-spells.h \
- player/types.h player/player.h guid.h store.h parser.h ui.h \
- z-textblock.h externs.h spells.h list-gf-types.h monster/mon-power.h \
- monster/monster.h monster/mon-spell.h monster/list-spell-effects.h
+  z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
+  z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
+  game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
+  z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
+  object/object.h monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h monster/mon-power.h \
+  monster/monster.h monster/mon-spell.h monster/list-spell-effects.h
 ./monster/mon-spell.o: monster/mon-spell.c angband.h h-basic.h z-bitflag.h z-form.h \
- z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
- z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
- game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
- z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
- object/object.h monster/constants.h monster/list-blow-methods.h \
- monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
- defines.h h-basic.h player/types.h object/obj-flag.h object/object.h \
- option.h ui-event.h monster/mon-timed.h monster/list-mon-spells.h \
- player/types.h player/player.h guid.h store.h parser.h ui.h \
- z-textblock.h externs.h spells.h list-gf-types.h spells.h effects.h \
- list-effects.h monster/mon-spell.h monster/list-spell-effects.h \
- monster/mon-util.h monster/list-mon-spells.h \
- monster/list-spell-effects.h
+  z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
+  z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
+  game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
+  z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
+  object/object.h monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h spells.h effects.h \
+  list-effects.h monster/mon-spell.h monster/list-spell-effects.h \
+  monster/mon-timed.h monster/mon-util.h monster/list-mon-spells.h \
+  monster/list-spell-effects.h
 ./monster/mon-timed.o: monster/mon-timed.c angband.h h-basic.h z-bitflag.h z-form.h \
- z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
- z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
- game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
- z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
- object/object.h monster/constants.h monster/list-blow-methods.h \
- monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
- defines.h h-basic.h player/types.h object/obj-flag.h object/object.h \
- option.h ui-event.h monster/mon-timed.h monster/list-mon-spells.h \
- player/types.h player/player.h guid.h store.h parser.h ui.h \
- z-textblock.h externs.h spells.h list-gf-types.h monster/mon-msg.h \
- monster/mon-spell.h monster/list-spell-effects.h monster/mon-util.h
+  z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
+  z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
+  game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
+  z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
+  object/object.h monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h monster/mon-msg.h \
+  monster/mon-spell.h monster/list-spell-effects.h monster/mon-timed.h \
+  monster/mon-util.h
 ./monster/mon-util.o: monster/mon-util.c angband.h h-basic.h z-bitflag.h z-form.h \
- z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
- z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
- game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
- z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
- object/object.h monster/constants.h monster/list-blow-methods.h \
- monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
- defines.h h-basic.h player/types.h object/obj-flag.h object/object.h \
- option.h ui-event.h monster/mon-timed.h monster/list-mon-spells.h \
- player/types.h player/player.h guid.h store.h parser.h ui.h \
- z-textblock.h externs.h spells.h list-gf-types.h monster/mon-make.h \
- monster/mon-msg.h monster/mon-spell.h monster/list-spell-effects.h \
- monster/mon-util.h squelch.h
+  z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
+  z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
+  game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
+  z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
+  object/object.h monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h monster/mon-make.h \
+  monster/mon-msg.h monster/mon-spell.h monster/list-spell-effects.h \
+  monster/mon-timed.h monster/mon-util.h squelch.h
 ./object/identify.o: object/identify.c angband.h h-basic.h z-bitflag.h z-form.h \
- z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
- z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
- game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
- z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
- object/object.h monster/constants.h monster/list-blow-methods.h \
- monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
- defines.h h-basic.h player/types.h object/obj-flag.h object/object.h \
- option.h ui-event.h monster/mon-timed.h monster/list-mon-spells.h \
- player/types.h player/player.h guid.h store.h parser.h ui.h \
- z-textblock.h externs.h spells.h list-gf-types.h game-event.h history.h \
- object/slays.h object/list-slays.h object/tvalsval.h object/pval.h \
- spells.h squelch.h
+  z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
+  z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
+  game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
+  z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
+  object/object.h monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h cave.h game-event.h \
+  history.h object/slays.h object/list-slays.h object/tvalsval.h \
+  object/pval.h angband.h spells.h squelch.h
 ./object/obj-desc.o: object/obj-desc.c angband.h h-basic.h z-bitflag.h z-form.h \
- z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
- z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
- game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
- z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
- object/object.h monster/constants.h monster/list-blow-methods.h \
- monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
- defines.h h-basic.h player/types.h object/obj-flag.h object/object.h \
- option.h ui-event.h monster/mon-timed.h monster/list-mon-spells.h \
- player/types.h player/player.h guid.h store.h parser.h ui.h \
- z-textblock.h externs.h spells.h list-gf-types.h squelch.h \
- object/tvalsval.h object/pval.h
+  z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
+  z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
+  game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
+  z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
+  object/object.h monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h squelch.h \
+  object/tvalsval.h object/pval.h angband.h
 ./object/obj-flag.o: object/obj-flag.c angband.h h-basic.h z-bitflag.h z-form.h \
- z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
- z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
- game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
- z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
- object/object.h monster/constants.h monster/list-blow-methods.h \
- monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
- defines.h h-basic.h player/types.h object/obj-flag.h object/object.h \
- option.h ui-event.h monster/mon-timed.h monster/list-mon-spells.h \
- player/types.h player/player.h guid.h store.h parser.h ui.h \
- z-textblock.h externs.h spells.h list-gf-types.h \
- object/list-object-flags.h
+  z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
+  z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
+  game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
+  z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
+  object/object.h monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h \
+  object/list-object-flags.h
 ./object/obj-info.o: object/obj-info.c angband.h h-basic.h z-bitflag.h z-form.h \
- z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
- z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
- game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
- z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
- object/object.h monster/constants.h monster/list-blow-methods.h \
- monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
- defines.h h-basic.h player/types.h object/obj-flag.h object/object.h \
- option.h ui-event.h monster/mon-timed.h monster/list-mon-spells.h \
- player/types.h player/player.h guid.h store.h parser.h ui.h \
- z-textblock.h externs.h spells.h list-gf-types.h attack.h effects.h \
- list-effects.h cmds.h object/tvalsval.h object/slays.h \
- object/list-slays.h object/pval.h
+  z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
+  z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
+  game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
+  z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
+  object/object.h monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h attack.h effects.h \
+  list-effects.h cmds.h object/tvalsval.h z-textblock.h object/slays.h \
+  object/list-slays.h object/pval.h angband.h
 ./object/obj-make.o: object/obj-make.c angband.h h-basic.h z-bitflag.h z-form.h \
- z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
- z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
- game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
- z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
- object/object.h monster/constants.h monster/list-blow-methods.h \
- monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
- defines.h h-basic.h player/types.h object/obj-flag.h object/object.h \
- option.h ui-event.h monster/mon-timed.h monster/list-mon-spells.h \
- player/types.h player/player.h guid.h store.h parser.h ui.h \
- z-textblock.h externs.h spells.h list-gf-types.h object/tvalsval.h \
- object/pval.h
+  z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
+  z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
+  game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
+  z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
+  object/object.h monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h cave.h \
+  object/tvalsval.h object/pval.h angband.h object/slays.h \
+  object/list-slays.h
 ./object/obj-power.o: object/obj-power.c angband.h h-basic.h z-bitflag.h z-form.h \
- z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
- z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
- game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
- z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
- object/object.h monster/constants.h monster/list-blow-methods.h \
- monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
- defines.h h-basic.h player/types.h object/obj-flag.h object/object.h \
- option.h ui-event.h monster/mon-timed.h monster/list-mon-spells.h \
- player/types.h player/player.h guid.h store.h parser.h ui.h \
- z-textblock.h externs.h spells.h list-gf-types.h object/slays.h \
- object/list-slays.h object/tvalsval.h object/pval.h init.h effects.h \
- list-effects.h monster/mon-power.h monster/monster.h
+  z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
+  z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
+  game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
+  z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
+  object/object.h monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h object/slays.h \
+  object/list-slays.h object/tvalsval.h object/pval.h angband.h init.h \
+  effects.h list-effects.h monster/mon-power.h monster/monster.h
 ./object/obj-ui.o: object/obj-ui.c angband.h h-basic.h z-bitflag.h z-form.h \
- z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
- z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
- game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
- z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
- object/object.h monster/constants.h monster/list-blow-methods.h \
- monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
- defines.h h-basic.h player/types.h object/obj-flag.h object/object.h \
- option.h ui-event.h monster/mon-timed.h monster/list-mon-spells.h \
- player/types.h player/player.h guid.h store.h parser.h ui.h \
- z-textblock.h externs.h spells.h list-gf-types.h button.h \
- object/tvalsval.h cmds.h
+  z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
+  z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
+  game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
+  z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
+  object/object.h monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h button.h \
+  object/tvalsval.h cmds.h game-cmd.h
 ./object/obj-util.o: object/obj-util.c angband.h h-basic.h z-bitflag.h z-form.h \
- z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
- z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
- game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
- z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
- object/object.h monster/constants.h monster/list-blow-methods.h \
- monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
- defines.h h-basic.h player/types.h object/obj-flag.h object/object.h \
- option.h ui-event.h monster/mon-timed.h monster/list-mon-spells.h \
- player/types.h player/player.h guid.h store.h parser.h ui.h \
- z-textblock.h externs.h spells.h list-gf-types.h effects.h \
- list-effects.h generate.h history.h monster/mon-make.h \
- object/inventory.h object/tvalsval.h prefs.h randname.h spells.h \
- squelch.h z-queue.h
+  z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
+  z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
+  game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
+  z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
+  object/object.h monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h cave.h effects.h \
+  list-effects.h game-cmd.h generate.h history.h monster/mon-make.h \
+  object/inventory.h object/tvalsval.h prefs.h randname.h spells.h \
+  squelch.h z-queue.h h-basic.h grafmode.h
 ./object/pval.o: object/pval.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h z-bitflag.h \
- game-cmd.h cave.h z-type.h object/list-object-flags.h object/object.h \
- monster/constants.h monster/list-blow-methods.h \
- monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
- defines.h h-basic.h player/types.h object/obj-flag.h object/object.h \
- option.h ui-event.h monster/mon-timed.h monster/list-mon-spells.h \
- player/types.h player/player.h guid.h store.h parser.h ui.h \
- z-textblock.h externs.h spells.h list-gf-types.h object/pval.h \
- object/tvalsval.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h z-bitflag.h \
+  game-cmd.h cave.h z-type.h object/list-object-flags.h object/object.h \
+  monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h object/pval.h \
+  angband.h object/tvalsval.h
 ./object/randart.o: object/randart.c angband.h h-basic.h z-bitflag.h z-form.h \
- z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
- z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
- game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
- z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
- object/object.h monster/constants.h monster/list-blow-methods.h \
- monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
- defines.h h-basic.h player/types.h object/obj-flag.h object/object.h \
- option.h ui-event.h monster/mon-timed.h monster/list-mon-spells.h \
- player/types.h player/player.h guid.h store.h parser.h ui.h \
- z-textblock.h externs.h spells.h list-gf-types.h object/slays.h \
- object/list-slays.h object/tvalsval.h object/pval.h init.h effects.h \
- list-effects.h randname.h
+  z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
+  z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
+  game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
+  z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
+  object/object.h monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h object/slays.h \
+  object/list-slays.h object/tvalsval.h object/pval.h angband.h init.h \
+  effects.h list-effects.h randname.h
 ./object/slays.o: object/slays.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h z-bitflag.h \
- game-cmd.h cave.h z-type.h object/list-object-flags.h object/object.h \
- monster/constants.h monster/list-blow-methods.h \
- monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
- defines.h h-basic.h player/types.h object/obj-flag.h object/object.h \
- option.h ui-event.h monster/mon-timed.h monster/list-mon-spells.h \
- player/types.h player/player.h guid.h store.h parser.h ui.h \
- z-textblock.h externs.h spells.h list-gf-types.h object/slays.h \
- object/list-slays.h object/list-slays.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h z-bitflag.h \
+  game-cmd.h cave.h z-type.h object/list-object-flags.h object/object.h \
+  monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h object/slays.h \
+  object/list-slays.h object/list-slays.h
 ./option.o: option.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h
 ./parser.o: parser.c externs.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h list-player-flags.h \
- h-basic.h z-bitflag.h h-basic.h z-form.h z-virt.h defines.h z-rand.h \
- cave.h types.h z-term.h ui-event.h z-type.h player/types.h \
- object/obj-flag.h z-file.h z-textblock.h z-file.h z-quark.h game-cmd.h \
- object/list-object-flags.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h z-bitflag.h z-util.h z-rand.h z-quark.h \
- z-msg.h config.h option.h game-cmd.h object/obj-flag.h object/object.h \
- monster/constants.h monster/monster.h player/types.h player/player.h \
- guid.h store.h parser.h ui.h z-textblock.h externs.h \
- monster/list-mon-spells.h object/object.h player/types.h store.h types.h \
- z-file.h z-msg.h spells.h list-gf-types.h parser.h z-form.h z-util.h \
- z-virt.h z-term.h
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h \
+  list-player-flags.h h-basic.h z-bitflag.h h-basic.h z-form.h z-virt.h \
+  defines.h z-rand.h cave.h types.h z-term.h ui-event.h z-type.h \
+  player/types.h object/obj-flag.h z-rand.h z-file.h z-textblock.h \
+  z-file.h z-quark.h z-bitflag.h game-cmd.h cave.h \
+  object/list-object-flags.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h z-bitflag.h z-util.h z-rand.h z-quark.h \
+  z-msg.h config.h option.h game-cmd.h object/obj-flag.h object/object.h \
+  monster/constants.h monster/monster.h player/types.h player/player.h \
+  guid.h player/types.h store.h parser.h ui.h z-textblock.h externs.h \
+  monster/list-mon-spells.h object/object.h player/types.h store.h \
+  types.h z-file.h z-msg.h spells.h list-gf-types.h parser.h z-form.h \
+  z-util.h z-virt.h z-term.h
 ./randname.o: randname.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h randname.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h randname.h
 ./pathfind.o: pathfind.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h cave.h squelch.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h cave.h \
+  squelch.h
 ./prefs.o: prefs.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h keymap.h prefs.h squelch.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h keymap.h \
+  prefs.h squelch.h
 ./player/calcs.o: player/calcs.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h z-bitflag.h \
- game-cmd.h cave.h z-type.h object/list-object-flags.h object/object.h \
- monster/constants.h monster/list-blow-methods.h \
- monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
- defines.h h-basic.h player/types.h object/obj-flag.h object/object.h \
- option.h ui-event.h monster/mon-timed.h monster/list-mon-spells.h \
- player/types.h player/player.h guid.h store.h parser.h ui.h \
- z-textblock.h externs.h spells.h list-gf-types.h files.h game-event.h \
- monster/mon-msg.h monster/mon-util.h object/tvalsval.h object/pval.h \
- spells.h squelch.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h z-bitflag.h \
+  game-cmd.h cave.h z-type.h object/list-object-flags.h object/object.h \
+  monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h cave.h files.h \
+  game-event.h monster/mon-msg.h monster/mon-util.h object/tvalsval.h \
+  object/pval.h angband.h spells.h squelch.h
 ./player/class.o: player/class.c externs.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h list-player-flags.h \
- h-basic.h z-bitflag.h h-basic.h z-form.h z-virt.h defines.h z-rand.h \
- cave.h types.h z-term.h ui-event.h z-type.h player/types.h \
- object/obj-flag.h z-file.h z-textblock.h z-file.h z-quark.h game-cmd.h \
- object/list-object-flags.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h z-bitflag.h z-util.h z-rand.h z-quark.h \
- z-msg.h config.h option.h game-cmd.h object/obj-flag.h object/object.h \
- player/types.h player/player.h guid.h store.h parser.h ui.h \
- z-textblock.h externs.h monster/list-mon-spells.h spells.h \
- list-gf-types.h player/player.h
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h \
+  list-player-flags.h h-basic.h z-bitflag.h h-basic.h z-form.h z-virt.h \
+  defines.h z-rand.h cave.h types.h z-term.h ui-event.h z-type.h \
+  player/types.h object/obj-flag.h z-rand.h z-file.h z-textblock.h \
+  z-file.h z-quark.h z-bitflag.h game-cmd.h cave.h \
+  object/list-object-flags.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h z-bitflag.h z-util.h z-rand.h z-quark.h \
+  z-msg.h config.h option.h game-cmd.h object/obj-flag.h object/object.h \
+  player/types.h player/player.h guid.h player/types.h store.h parser.h \
+  ui.h z-textblock.h externs.h monster/list-mon-spells.h spells.h \
+  list-gf-types.h player/player.h player/types.h
 ./player/player.o: player/player.c externs.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h list-player-flags.h \
- h-basic.h z-bitflag.h h-basic.h z-form.h z-virt.h defines.h z-rand.h \
- cave.h types.h z-term.h ui-event.h z-type.h player/types.h \
- object/obj-flag.h z-file.h z-textblock.h z-file.h z-quark.h game-cmd.h \
- object/list-object-flags.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h z-bitflag.h z-util.h z-rand.h z-quark.h \
- z-msg.h config.h option.h game-cmd.h object/obj-flag.h object/object.h \
- player/types.h player/player.h guid.h store.h parser.h ui.h \
- z-textblock.h externs.h monster/list-mon-spells.h spells.h \
- list-gf-types.h history.h player/player.h
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h \
+  list-player-flags.h h-basic.h z-bitflag.h h-basic.h z-form.h z-virt.h \
+  defines.h z-rand.h cave.h types.h z-term.h ui-event.h z-type.h \
+  player/types.h object/obj-flag.h z-rand.h z-file.h z-textblock.h \
+  z-file.h z-quark.h z-bitflag.h game-cmd.h cave.h \
+  object/list-object-flags.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h z-bitflag.h z-util.h z-rand.h z-quark.h \
+  z-msg.h config.h option.h game-cmd.h object/obj-flag.h object/object.h \
+  player/types.h player/player.h guid.h player/types.h store.h parser.h \
+  ui.h z-textblock.h externs.h monster/list-mon-spells.h spells.h \
+  list-gf-types.h history.h player/player.h
 ./player/race.o: player/race.c externs.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h list-player-flags.h \
- h-basic.h z-bitflag.h h-basic.h z-form.h z-virt.h defines.h z-rand.h \
- cave.h types.h z-term.h ui-event.h z-type.h player/types.h \
- object/obj-flag.h z-file.h z-textblock.h z-file.h z-quark.h game-cmd.h \
- object/list-object-flags.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h z-bitflag.h z-util.h z-rand.h z-quark.h \
- z-msg.h config.h option.h game-cmd.h object/obj-flag.h object/object.h \
- player/types.h player/player.h guid.h store.h parser.h ui.h \
- z-textblock.h externs.h monster/list-mon-spells.h spells.h \
- list-gf-types.h player/player.h
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h \
+  list-player-flags.h h-basic.h z-bitflag.h h-basic.h z-form.h z-virt.h \
+  defines.h z-rand.h cave.h types.h z-term.h ui-event.h z-type.h \
+  player/types.h object/obj-flag.h z-rand.h z-file.h z-textblock.h \
+  z-file.h z-quark.h z-bitflag.h game-cmd.h cave.h \
+  object/list-object-flags.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h z-bitflag.h z-util.h z-rand.h z-quark.h \
+  z-msg.h config.h option.h game-cmd.h object/obj-flag.h object/object.h \
+  player/types.h player/player.h guid.h player/types.h store.h parser.h \
+  ui.h z-textblock.h externs.h monster/list-mon-spells.h spells.h \
+  list-gf-types.h player/player.h player/types.h
 ./player/spell.o: player/spell.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h z-bitflag.h \
- game-cmd.h cave.h z-type.h object/list-object-flags.h object/object.h \
- monster/constants.h monster/list-blow-methods.h \
- monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
- defines.h h-basic.h player/types.h object/obj-flag.h object/object.h \
- option.h ui-event.h monster/mon-timed.h monster/list-mon-spells.h \
- player/types.h player/player.h guid.h store.h parser.h ui.h \
- z-textblock.h externs.h spells.h list-gf-types.h object/tvalsval.h \
- spells.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h z-bitflag.h \
+  game-cmd.h cave.h z-type.h object/list-object-flags.h object/object.h \
+  monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h cave.h \
+  object/tvalsval.h game-cmd.h spells.h
 ./player/timed.o: player/timed.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h z-bitflag.h \
- game-cmd.h cave.h z-type.h object/list-object-flags.h object/object.h \
- monster/constants.h monster/list-blow-methods.h \
- monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
- defines.h h-basic.h player/types.h object/obj-flag.h object/object.h \
- option.h ui-event.h monster/mon-timed.h monster/list-mon-spells.h \
- player/types.h player/player.h guid.h store.h parser.h ui.h \
- z-textblock.h externs.h spells.h list-gf-types.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h z-bitflag.h \
+  game-cmd.h cave.h z-type.h object/list-object-flags.h object/object.h \
+  monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h cave.h
 ./player/p-util.o: player/p-util.c angband.h h-basic.h z-bitflag.h z-form.h \
- z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
- z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
- game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
- z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
- object/object.h monster/constants.h monster/list-blow-methods.h \
- monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
- defines.h h-basic.h player/types.h object/obj-flag.h object/object.h \
- option.h ui-event.h monster/mon-timed.h monster/list-mon-spells.h \
- player/types.h player/player.h guid.h store.h parser.h ui.h \
- z-textblock.h externs.h spells.h list-gf-types.h object/tvalsval.h
+  z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
+  z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
+  game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h \
+  z-bitflag.h game-cmd.h cave.h z-type.h object/list-object-flags.h \
+  object/object.h monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h cave.h \
+  object/tvalsval.h
 ./score.o: score.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h buildid.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h buildid.h
 ./signals.o: signals.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h files.h savefile.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h files.h \
+  savefile.h
 ./save.o: save.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h cave.h history.h monster/mon-make.h \
- savefile.h squelch.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h cave.h \
+  history.h monster/mon-make.h angband.h savefile.h squelch.h
 ./savefile.o: savefile.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h savefile.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h savefile.h
 ./spells1.o: spells1.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h cave.h generate.h object/tvalsval.h \
- monster/mon-make.h monster/mon-msg.h monster/mon-spell.h \
- monster/list-spell-effects.h monster/mon-timed.h monster/mon-util.h \
- squelch.h trap.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h cave.h \
+  generate.h object/tvalsval.h monster/mon-make.h angband.h \
+  monster/mon-msg.h monster/mon-spell.h monster/list-spell-effects.h \
+  monster/mon-timed.h monster/mon-util.h squelch.h trap.h
 ./spells2.o: spells2.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h cave.h generate.h history.h \
- monster/mon-lore.h monster/mon-make.h monster/mon-timed.h \
- monster/mon-util.h object/slays.h object/list-slays.h object/tvalsval.h \
- squelch.h target.h trap.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h cave.h \
+  generate.h history.h monster/mon-lore.h angband.h monster/mon-make.h \
+  monster/mon-timed.h monster/mon-util.h object/slays.h \
+  object/list-slays.h object/tvalsval.h squelch.h target.h trap.h
 ./squelch.o: squelch.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h cmds.h ui-menu.h object/tvalsval.h \
- object/pval.h squelch.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h cmds.h \
+  ui-menu.h object/tvalsval.h object/pval.h angband.h squelch.h
 ./store.o: store.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h cave.h cmds.h game-event.h history.h \
- init.h object/inventory.h object/tvalsval.h squelch.h target.h textui.h \
- ui-menu.h z-debug.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h cave.h cmds.h \
+  game-event.h history.h init.h object/inventory.h object/tvalsval.h \
+  squelch.h target.h textui.h ui-menu.h z-debug.h
 ./tables.o: tables.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h object/tvalsval.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h \
+  object/tvalsval.h
 ./target.o: target.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h cave.h monster/mon-lore.h \
- monster/mon-util.h squelch.h target.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h cave.h \
+  monster/mon-lore.h angband.h monster/mon-util.h squelch.h target.h
 ./trap.o: trap.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h attack.h cave.h effects.h \
- list-effects.h trap.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h attack.h \
+  cave.h effects.h list-effects.h trap.h
 ./ui.o: ui.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h defines.h \
- list-player-flags.h z-file.h z-util.h z-rand.h z-term.h ui-event.h \
- z-quark.h z-msg.h config.h option.h types.h game-cmd.h object/obj-flag.h \
- z-rand.h z-file.h z-textblock.h z-file.h defines.h z-quark.h z-bitflag.h \
- game-cmd.h cave.h types.h z-type.h h-basic.h object/list-object-flags.h \
- object/object.h monster/constants.h monster/list-blow-methods.h \
- monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
- defines.h h-basic.h player/types.h object/obj-flag.h object/object.h \
- option.h ui-event.h monster/mon-timed.h angband.h \
- monster/list-mon-spells.h player/types.h player/player.h guid.h store.h \
- parser.h ui.h z-textblock.h z-type.h externs.h spells.h list-gf-types.h
+  list-player-flags.h z-file.h z-util.h z-rand.h z-term.h ui-event.h \
+  z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h
 ./ui-birth.o: ui-birth.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h button.h cmds.h files.h game-event.h \
- object/tvalsval.h ui-birth.h ui-menu.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h button.h \
+  cmds.h files.h game-event.h object/tvalsval.h ui-birth.h ui-menu.h
 ./ui-event.o: ui-event.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h
 ./ui-knowledge.o: ui-knowledge.c angband.h h-basic.h z-bitflag.h z-form.h \
- z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
- z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
- game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h \
- defines.h z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h \
- h-basic.h object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h cave.h cmds.h history.h \
- monster/mon-lore.h object/tvalsval.h squelch.h ui-menu.h
+  z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
+  z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
+  game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h \
+  defines.h z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h \
+  h-basic.h object/list-object-flags.h object/object.h \
+  monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h object/obj-flag.h object/object.h player/types.h \
+  store.h parser.h ui.h z-textblock.h z-type.h externs.h spells.h \
+  list-gf-types.h cave.h cmds.h history.h monster/mon-lore.h angband.h \
+  object/tvalsval.h squelch.h ui-menu.h grafmode.h
 ./ui-menu.o: ui-menu.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h ui-menu.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h ui-menu.h
 ./ui-options.o: ui-options.c angband.h h-basic.h z-bitflag.h z-form.h \
- z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
- z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
- game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h \
- defines.h z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h \
- h-basic.h object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h cmds.h keymap.h squelch.h prefs.h \
- object/tvalsval.h ui-menu.h files.h
+  z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
+  z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
+  game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h \
+  defines.h z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h \
+  h-basic.h object/list-object-flags.h object/object.h \
+  monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h object/obj-flag.h object/object.h player/types.h \
+  store.h parser.h ui.h z-textblock.h z-type.h externs.h spells.h \
+  list-gf-types.h cmds.h keymap.h squelch.h prefs.h object/tvalsval.h \
+  ui-menu.h files.h
 ./ui-spell.o: ui-spell.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h cave.h object/tvalsval.h ui-menu.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h cave.h \
+  object/tvalsval.h ui-menu.h
 ./util.o: util.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h button.h cmds.h game-event.h \
- randname.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h button.h \
+  cmds.h game-event.h randname.h
 ./variable.o: variable.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h buildid.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h buildid.h
 ./wiz-spoil.o: wiz-spoil.c angband.h h-basic.h z-bitflag.h z-form.h \
- z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
- z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
- game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h \
- defines.h z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h \
- h-basic.h object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h buildid.h cmds.h monster/mon-lore.h \
- object/tvalsval.h ui-menu.h wizard.h
+  z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
+  z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
+  game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h \
+  defines.h z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h \
+  h-basic.h object/list-object-flags.h object/object.h \
+  monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h object/obj-flag.h object/object.h player/types.h \
+  store.h parser.h ui.h z-textblock.h z-type.h externs.h spells.h \
+  list-gf-types.h buildid.h cmds.h monster/mon-lore.h angband.h \
+  object/tvalsval.h ui-menu.h wizard.h
 ./wiz-stats.o: wiz-stats.c angband.h h-basic.h z-bitflag.h z-form.h \
- z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
- z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
- game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h \
- defines.h z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h \
- h-basic.h object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h cave.h cmds.h wizard.h \
- monster/mon-make.h object/tvalsval.h effects.h list-effects.h generate.h
+  z-virt.h defines.h list-player-flags.h z-file.h z-util.h z-rand.h \
+  z-term.h ui-event.h z-quark.h z-msg.h config.h option.h types.h \
+  game-cmd.h object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h \
+  defines.h z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h \
+  h-basic.h object/list-object-flags.h object/object.h \
+  monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h object/obj-flag.h object/object.h player/types.h \
+  store.h parser.h ui.h z-textblock.h z-type.h externs.h spells.h \
+  list-gf-types.h cave.h cmds.h wizard.h monster/mon-make.h angband.h \
+  object/tvalsval.h effects.h list-effects.h generate.h
 ./wizard.o: wizard.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h cave.h cmds.h files.h \
- monster/mon-lore.h monster/mon-make.h monster/mon-util.h \
- object/tvalsval.h ui-menu.h target.h wizard.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h cave.h cmds.h \
+  files.h monster/mon-lore.h angband.h monster/mon-make.h \
+  monster/mon-util.h object/tvalsval.h ui-menu.h target.h wizard.h
 ./x-spell.o: x-spell.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h cave.h effects.h list-effects.h \
- object/tvalsval.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h cave.h \
+  effects.h list-effects.h object/tvalsval.h
 ./xtra2.o: xtra2.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h cmds.h keymap.h history.h \
- object/tvalsval.h pathfind.h target.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h cmds.h \
+  keymap.h history.h object/tvalsval.h pathfind.h target.h
 ./xtra3.o: xtra3.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h buildid.h button.h cave.h files.h \
- game-event.h monster/mon-lore.h monster/mon-util.h object/tvalsval.h \
- textui.h ui-birth.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h buildid.h \
+  button.h cave.h files.h game-event.h monster/mon-lore.h angband.h \
+  monster/mon-util.h object/tvalsval.h textui.h ui-birth.h
+./borg/borg1.o: borg/borg1.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h z-bitflag.h \
+  game-cmd.h cave.h z-type.h object/list-object-flags.h object/object.h \
+  monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h object/tvalsval.h \
+  cave.h borg/borg1.h
+./borg/borg2.o: borg/borg2.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h z-bitflag.h \
+  game-cmd.h cave.h z-type.h object/list-object-flags.h object/object.h \
+  monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h object/tvalsval.h \
+  cave.h borg/borg1.h borg/borg2.h
+./borg/borg3.o: borg/borg3.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h z-bitflag.h \
+  game-cmd.h cave.h z-type.h object/list-object-flags.h object/object.h \
+  monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h object/tvalsval.h \
+  cave.h borg/borg1.h borg/borg3.h
+./borg/borg4.o: borg/borg4.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h z-bitflag.h \
+  game-cmd.h cave.h z-type.h object/list-object-flags.h object/object.h \
+  monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h object/tvalsval.h \
+  cave.h files.h borg/borg1.h borg/borg2.h borg/borg3.h borg/borg4.h
+./borg/borg5.o: borg/borg5.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h z-bitflag.h \
+  game-cmd.h cave.h z-type.h object/list-object-flags.h object/object.h \
+  monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h object/tvalsval.h \
+  cave.h monster/mon-spell.h monster/list-spell-effects.h borg/borg1.h \
+  borg/borg2.h borg/borg3.h borg/borg4.h borg/borg5.h borg/borg6.h
+./borg/borg6.o: borg/borg6.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h z-bitflag.h \
+  game-cmd.h cave.h z-type.h object/list-object-flags.h object/object.h \
+  monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h object/tvalsval.h \
+  cave.h monster/mon-spell.h monster/list-spell-effects.h borg/borg1.h \
+  borg/borg2.h borg/borg3.h borg/borg4.h borg/borg5.h borg/borg6.h \
+  borg/borg7.h
+./borg/borg7.o: borg/borg7.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h z-bitflag.h \
+  game-cmd.h cave.h z-type.h object/list-object-flags.h object/object.h \
+  monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h object/tvalsval.h \
+  cave.h borg/borg1.h borg/borg2.h borg/borg3.h borg/borg4.h borg/borg5.h \
+  borg/borg6.h borg/borg7.h
+./borg/borg8.o: borg/borg8.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h z-bitflag.h \
+  game-cmd.h cave.h z-type.h object/list-object-flags.h object/object.h \
+  monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h object/tvalsval.h \
+  cave.h borg/borg1.h borg/borg2.h borg/borg3.h borg/borg4.h borg/borg5.h \
+  borg/borg6.h borg/borg7.h borg/borg8.h cmds.h
+./borg/borg9.o: borg/borg9.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-quark.h z-bitflag.h \
+  game-cmd.h cave.h z-type.h object/list-object-flags.h object/object.h \
+  monster/constants.h monster/list-blow-methods.h \
+  monster/list-blow-effects.h monster/list-mon-flags.h monster/monster.h \
+  defines.h h-basic.h z-bitflag.h z-rand.h cave.h player/types.h \
+  object/obj-flag.h object/object.h option.h ui-event.h \
+  monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
+  player/player.h guid.h player/types.h store.h parser.h ui.h \
+  z-textblock.h externs.h spells.h list-gf-types.h object/tvalsval.h \
+  birth.h cave.h target.h spells.h object/inventory.h borg/borg1.h \
+  borg/borg2.h borg/borg3.h borg/borg4.h borg/borg5.h borg/borg6.h \
+  borg/borg7.h borg/borg8.h cmds.h borg/borg9.h
 ./buildid.o: buildid.c buildid.h
 ./z-bitflag.o: z-bitflag.c z-bitflag.h h-basic.h z-form.h z-virt.h \
- defines.h list-player-flags.h
+  defines.h list-player-flags.h
 ./z-file.o: z-file.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h
 ./z-form.o: z-form.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h
 ./z-msg.o: z-msg.c z-virt.h h-basic.h z-term.h ui-event.h z-msg.h
 ./z-quark.o: z-quark.c z-virt.h h-basic.h z-quark.h
 ./z-queue.o: z-queue.c z-queue.h h-basic.h
 ./z-rand.o: z-rand.c z-rand.h h-basic.h defines.h list-player-flags.h
 ./z-term.o: z-term.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
- defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
- ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
- object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
- z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
- object/list-object-flags.h object/object.h monster/constants.h \
- monster/list-blow-methods.h monster/list-blow-effects.h \
- monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
- player/types.h object/obj-flag.h object/object.h option.h ui-event.h \
- monster/mon-timed.h angband.h monster/list-mon-spells.h player/types.h \
- player/player.h guid.h store.h parser.h ui.h z-textblock.h z-type.h \
- externs.h spells.h list-gf-types.h
+  defines.h list-player-flags.h z-file.h z-util.h z-rand.h z-term.h \
+  ui-event.h z-quark.h z-msg.h config.h option.h types.h game-cmd.h \
+  object/obj-flag.h z-rand.h z-file.h z-textblock.h z-file.h defines.h \
+  z-quark.h z-bitflag.h game-cmd.h cave.h types.h z-type.h h-basic.h \
+  object/list-object-flags.h object/object.h monster/constants.h \
+  monster/list-blow-methods.h monster/list-blow-effects.h \
+  monster/list-mon-flags.h monster/monster.h defines.h h-basic.h \
+  z-bitflag.h z-rand.h cave.h player/types.h object/obj-flag.h \
+  object/object.h option.h ui-event.h monster/mon-timed.h angband.h \
+  monster/list-mon-spells.h player/types.h player/player.h guid.h \
+  object/obj-flag.h object/object.h player/types.h store.h parser.h ui.h \
+  z-textblock.h z-type.h externs.h spells.h list-gf-types.h
 ./z-type.o: z-type.c h-basic.h z-form.h z-term.h ui-event.h ui.h \
- z-textblock.h z-file.h defines.h list-player-flags.h z-type.h z-virt.h
+  z-textblock.h z-file.h defines.h list-player-flags.h z-type.h z-virt.h
 ./z-util.o: z-util.c z-util.h h-basic.h
 ./z-virt.o: z-virt.c z-virt.h h-basic.h z-util.h
 ./z-textblock.o: z-textblock.c z-term.h h-basic.h ui-event.h z-textblock.h \
- z-file.h defines.h list-player-flags.h z-virt.h z-form.h
+  z-file.h defines.h list-player-flags.h z-virt.h z-form.h
