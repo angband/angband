@@ -290,9 +290,7 @@ void keypress_to_text(char *buf, size_t len, const struct keypress *src,
  */
 void keypress_to_readable(char *buf, size_t len, struct keypress src)
 {
-	size_t cur = 0;
 	size_t end = 0;
-
 	keycode_t i = src.code;
 	int mods = src.mods;
 	const char *desc = keycode_find_desc(i);
@@ -307,7 +305,7 @@ void keypress_to_readable(char *buf, size_t len, struct keypress src)
 
 	if (mods) {
 		if (mods & KC_MOD_CONTROL && !(mods & ~KC_MOD_CONTROL) &&
-				i != '\\^') {
+				i != '^') {
 			strnfcat(buf, len, &end, "^");
 		} else {
 			if (mods & KC_MOD_CONTROL) strnfcat(buf, len, &end, "Control-");
