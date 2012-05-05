@@ -348,7 +348,7 @@ C:1:X
 
 # Pickup an item (with autopickup)
 A:^Gg
-C:0:g
+C:1:g
 
 # Message colors
 %:message.prf
