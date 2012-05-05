@@ -387,6 +387,14 @@ static bool do_cmd_open_chest(int y, int x, s16b o_idx)
 		cave_light_spot(cave, y, x);
 	}
 
+	/*
+	 * empty chests were always squelched in squelch_item_okay so we
+	 * might as well squelch it here
+	 */
+	if (o_ptr->pval[DEFAULT_PVAL] == 0) {
+		o_ptr->ignore = TRUE;
+	}
+
 	/* Result */
 	return (more);
 }
