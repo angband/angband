@@ -354,13 +354,17 @@ C:1:^U
 A:T
 C:1:^T
 
-# Allow use of the "destroy" command
+# Allow use of the "ignore" command
 A:k
 C:1:^D
 
-# Allow use of the "squelch item kind" command
+# Allow use of the "unignore" command
 A:K
 C:1:^G
+
+# Allow use of the "walk into trapdoors" command
+A:W
+C:1:-
 
 # Locate player on map
 A:L
