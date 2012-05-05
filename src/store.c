@@ -2777,6 +2777,9 @@ static void store_examine(int item)
 	/* Get the actual object */
 	o_ptr = &store->stock[item];
 
+	/* Hack -- no flush needed */
+	msg_flag = FALSE;
+
 	/* Show full info in most stores, but normal info in player home */
 	tb = object_info(o_ptr, (store->sidx != STORE_HOME) ? OINFO_FULL : OINFO_NONE);
 	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
@@ -2844,6 +2847,9 @@ static void store_menu_recalc(menu_type *m)
 static bool store_process_command_key(struct keypress kp)
 {
 	int cmd = 0;
+
+	/* Hack -- no flush needed */
+	msg_flag = FALSE;
 
 	/* Process the keycode */
 	switch (kp.code) {

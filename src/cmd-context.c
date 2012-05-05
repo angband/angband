@@ -1025,7 +1025,10 @@ int context_menu_store_item(struct store *store, const int oid, int mx, int my)
 		r.row = my + 1;
 	}
 
+	/* Hack -- no flush needed */
+	msg_flag = FALSE;
 	screen_save();
+
 	menu_layout(m, &r);
 	region_erase_bordered(&r);
 
