@@ -2574,6 +2574,9 @@ void do_cmd_sell(cmd_code code, cmd_arg args[])
 	inven_item_increase(item, -amt);
 	inven_item_optimize(item);
 
+	/* Notice if pack items need to be combined or reordered */
+	notice_stuff(p_ptr);
+
 	/* Handle stuff */
 	handle_stuff(p_ptr);
 
