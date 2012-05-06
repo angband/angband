@@ -284,3 +284,45 @@ void keypress_to_text(char *buf, size_t len, const struct keypress *src,
 	buf[end] = '\0';
 }
 
+
+/*
+ * Convert a keypress into something readable.
+ */
+void keypress_to_readable(char *buf, size_t len, struct keypress src)
+{
+	size_t end = 0;
+	keycode_t i = src.code;
+	int mods = src.mods;
+	const char *desc = keycode_find_desc(i);
+
+	/* un-ktrl control characters if they don't have a description */
+	/* this is so that Tab (^I) doesn't get turned into ^I but gets
+	 * displayed as [Tab] */
+	if (i < 0x20 && !desc) {
+		mods |= KC_MOD_CONTROL;
+		i = UN_KTRL(i);
+	}
+
+	if (mods) {
+		if (mods & KC_MOD_CONTROL && !(mods & ~KC_MOD_CONTROL) &&
+				i != '^') {
+			strnfcat(buf, len, &end, "^");
+		} else {
+			if (mods & KC_MOD_CONTROL) strnfcat(buf, len, &end, "Control-");
+			if (mods & KC_MOD_SHIFT) strnfcat(buf, len, &end, "Shift-");
+			if (mods & KC_MOD_ALT) strnfcat(buf, len, &end, "Alt-");
+			if (mods & KC_MOD_META) strnfcat(buf, len, &end, "Meta-");
+			if (mods & KC_MOD_KEYPAD) strnfcat(buf, len, &end, "Keypad-");
+		}
+	}
+
+	if (desc) {
+		strnfcat(buf, len, &end, "%s", desc);
+	} else {
+		strnfcat(buf, len, &end, "%c", i);
+	}
+
+	/* Terminate */
+	buf[end] = '\0';
+}
+

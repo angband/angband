@@ -181,7 +181,10 @@ const char *keycode_find_desc(keycode_t kc);
 void keypress_to_text(char *buf, size_t len, const struct keypress *src,
 	bool expand_backslash);
 
-/** Covert a textual representation of keypresses into actual keypresses */
+/** Convert a textual representation of keypresses into actual keypresses */
 void keypress_from_text(struct keypress *buf, size_t len, const char *str);
+
+/** Convert a keypress into something the user can read (not designed to be used internally */
+void keypress_to_readable(char *buf, size_t len, struct keypress src);
 
 #endif /* INCLUDED_UI_EVENT_H */

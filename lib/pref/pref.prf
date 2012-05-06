@@ -270,10 +270,6 @@ C:0:^C
 A:w0
 C:0:X
 
-# Original keymap: Repeat last command
-A:^V
-C:0:n
-
 # Pickup an item (with autopickup)
 A:^Gg
 C:0:g
@@ -287,14 +283,6 @@ C:1:{K}5
 C:1:{MK}5
 C:1:{K}[Begin]
 C:1:{MK}[Begin]
-
-# Run
-A:.
-C:1:,
-
-# Stay still
-A:,
-C:1:.
 
 # Movement (rogue keys)
 A:;1
@@ -350,66 +338,6 @@ C:1:^K
 A:+9
 C:1:^U
 
-# Allow use of the "tunnel" command
-A:T
-C:1:^T
-
-# Allow use of the "destroy" command
-A:k
-C:1:^D
-
-# Allow use of the "squelch item kind" command
-A:K
-C:1:^G
-
-# Locate player on map
-A:L
-C:1:W
-
-# Browse a book (Peruse)
-A:b
-C:1:P
-
-# Jam a door (Spike)
-A:j
-C:1:S
-
-# Toggle search mode
-A:S
-C:1:#
-
-# Use a staff (Zap)
-A:u
-C:1:Z
-
-# Take off equipment
-A:t
-C:1:T
-
-# Fire an item
-A:f
-C:1:t
-
-# Fire default ammo at nearest target
-A:h
-C:1:[Tab]
-
-# Bash a door (Force)
-A:B
-C:1:f
-
-# Look around (examine)
-A:l
-C:1:x
-
-# Aim a wand (Zap)
-A:a
-C:1:z
-
-# Zap a rod (Activate)
-A:z
-C:1:a
-
 # Hack -- Commit suicide
 A:Q
 C:1:^C
@@ -418,13 +346,9 @@ C:1:^C
 A:w0
 C:1:X
 
-# Roguelike keymap: Repeat last command
-A:^V
-C:1:'
-
 # Pickup an item (with autopickup)
 A:^Gg
-C:0:g
+C:1:g
 
 # Message colors
 %:message.prf
