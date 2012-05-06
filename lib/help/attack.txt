@@ -22,7 +22,7 @@ wall is no longer there, and the creature can be targetted normally.
 If you are wielding a weapon, the damage for the weapon is used when you
 hit a creature. Otherwise you get a single punch which does minimal damage.
 
-You may |``w``ield| one weapon for melee combat, and also one missile
+You may |'w'ield| one weapon for melee combat, and also one missile
 launcher (bow, crossbow or sling). You may also wear one amulet (around the
 one and only neck of the character), two rings (on the two "ring" fingers,
 i.e. the third finger of each hand: a magic ring does not function when
@@ -32,7 +32,7 @@ boots and a cloak. Any or all of these items may provide powers to the
 character in terms of bonuses to-hit, to-damage, to-armor class, or to
 other stats.
 
-.. |``w``ield| replace:: ``w``\ield
+.. |'w'ield| replace:: 'w'\ield
 
 Firing a missile (while wielding the appropriate launcher) is the only way
 to get the "full" power out of the missile. You may of course throw an
@@ -47,28 +47,28 @@ receive a damage reduction. This is not true for monsters, whose AC only
 affects the character's difficulty to hit them.
 
 If you wish to see how much damage your weapon will do, you can
-|``I``nspect| it. You will find the number of blows and how much damage you
+|'I'nspect| it. You will find the number of blows and how much damage you
 would do per round, including information on whether your weapon damages
 other types of monsters differently.
 
-.. |``I``nspect| replace:: ``I``\nspect
+.. |'I'nspect| replace:: 'I'\nspect
 
 Monster Memories
 ================
 
 There are hundreds of different creatures in the pits of Angband, many of
 which have the same letter symbol and color on the screen. The exact
-species of a creature can be discovered by |``l``ooking| at it. It is also
+species of a creature can be discovered by |'l'ooking| at it. It is also
 very difficult to keep track of the capabilities of various creatures.
 Luckily, Angband automatically keeps track of your experiences with a
 particular creature. This feature is called the monster memory. Your
 monster memory recalls the particular attacks of each creature (whether or
 not technically a monster) which you have suffered, as well as recalling if
 you have observed them to multiply or move erratically, or drop treasure,
-etc. Otherwise you would imply have to take notes, which is an unnecessary
+etc. Otherwise you would simply have to take notes, which is an unnecessary
 bother.
 
-.. |``l``ooking| replace:: ``l``\ooking
+.. |'l'ooking| replace:: 'l'\ooking
 
 If you have killed enough of a particular creature, or suffered enough
 attacks, recalling the monster memory may also provide you with information
@@ -98,20 +98,23 @@ digging tool, or when carrying two weapons, each of which provides a rare
 power that the character needs at two separate times.
 
 Weapons have two main magical characteristics, their enchanted ability to
-hit and their enchanted ability to do damage, expressed as ``(+#,+#)``. A
-normal weapon would be ``(+0,+0)``. Many weapons in Angband have bonuses to
+hit and their enchanted ability to do damage, expressed as '(+#,+#)'. A
+normal weapon would be '(+0,+0)'. Many weapons in Angband have bonuses to
 hit and/or do damage. A very few weapons are cursed, and have penalties
 that diminish your hit and/or damage bonuses. Cursed weapons cannot be
-unwielded until the curse is lifted. Identifying a weapon will inform you
-of the magical bonuses and penalties and whether or not it is cursed.
+unwielded until the curse is lifted.  Luckily, all cursed items will be
+immediately shown as {cursed} when you pick them up.  Unluckily, it is 
+rumored that there exist some powerful magic that can cause your weapons
+or armour to become cursed.  Magically identifying a weapon will inform 
+you of the magical bonuses and penalties.
 
 Angband assumes that your youth in the rough environment near the dungeons
 has taught you the relative merits of different weapons, and displays as
 part of their description the damage dice which define their capabilities.
 Any damage enchantment is added to the dice roll for that weapon. The dice
-used for a given weapon is displayed as ``XdY``. The number ``X`` indicates
-how many dice to roll, and number ``Y`` indicates how many sides they have.
-A ``2d6`` weapon will thus give damage from 2 to 12, plus any damage bonus.
+used for a given weapon is displayed as 'XdY'. The number 'X' indicates
+how many dice to roll, and number 'Y' indicates how many sides they have.
+A '2d6' weapon will thus give damage from 2 to 12, plus any damage bonus.
 The weight of a weapon is also a consideration. Heavy weapons may hit
 harder, but they are also harder to use. Depending on your strength,
 dexterity, character class, and weapon weight, you may get attack more
@@ -126,10 +129,10 @@ Missile weapons, such as bows, have their characteristics added to those of
 the missile used, if the proper weapon/missile combination is used, and
 then the launcher multiplier is applied to the total damage, making missile
 weapons very powerful given the proper missiles, especially if they are
-enchanted. Like weapons, |``I``nspecting| ammunition will tell you how much
+enchanted. Like weapons, |'I'nspecting| ammunition will tell you how much
 damage you will do with your current missile launcher.
 
-.. |``I``nspecting| replace:: ``I``\nspecting
+.. |'I'nspecting| replace:: 'I'\nspecting
 
 Although you receive any magical bonuses an unidentified weapon may possess
 when you wield it, those bonuses will not be immediately added to the
@@ -141,12 +144,12 @@ Finally, some rare weapons have special abilities. These are called ego
 weapons, and are feared by great and meek. An ego weapon must be wielded to
 receive the benefit of its abilities. It should be noted that some of these
 items are considerably more powerful than others, and generally the most
-powerful items are the rarest. Also important is the fact that not all
-ego-items are nice. Some items will have an obvious effect, like an
-increase in infravision, or extra strength. These effects will be noticed
-as soon as you wield the item. Other effects, like most resistances, will
-need to be learned. You can learn them by either suffering an appropriate
-attack, or by using magical means of identification.
+powerful items are the rarest. Some items will have an obvious effect, 
+like an increase in infravision, or extra strength. These effects will be 
+noticed as soon as you wield the item. Other effects, like most 
+resistances, will need to be learned. You can learn them by either 
+suffering an appropriate attack, or by using magical means of 
+identification.
 
 Some of the more common ego weapons are described at the end of this file.
 
@@ -160,9 +163,9 @@ quality of armor being worn. Armor class will generally run from about 0 to
 The larger your armor class, the more protective it is. A negative armor
 class would actually help get you hit. Armor protects you in three manners.
 First, it makes you harder to be hit for damage. A hit for no damage counts
-as a miss, and is described as a miss. Secondly, good armor will absorb
+as a miss, and is described as a miss. Second, good armor will absorb
 some of the damage that your character would have taken from normal
-attacks. Thirdly, acid damage is reduced by wearing body armor (but the
+attacks. Third, acid damage is reduced by wearing body armor (but the
 armor may be damaged instead). It is obvious that a high armor class is
 vital for surviving the deeper levels of Angband.
 
@@ -171,16 +174,16 @@ weapons, is assumed known by the player, and a magic bonus, which will not
 be displayed unless the armor has been identified or was bought in a store.
 
 Armor class values are always displayed between a set of square brackets,
-as ``[#]`` or ``[#,+#]``. The first value is the base armor class of the
+as '[#]' or '[#,+#]'. The first value is the base armor class of the
 armor. The second number is the magical bonus of the item, which is only
 displayed if known, and will always have a sign preceding the value. These
 plusses can be determined by wielding the armor in combat and being hit.
-Note that a few rings, amulets, and weapons also have the ``[+#]``
+Note that a few rings, amulets, and weapons also have the '[+#]'
 notation, indicating that they provide an armor bonus. Many pieces of heavy
-body armor will also have a ``(-#)`` (in normal brackets) before the
-``[#,+#]``, which indicates that the weight of the armor decreases your
+body armor will also have a '(-#)' (in normal brackets) before the
+'[#,+#]', which indicates that the weight of the armor decreases your
 chances of hitting monsters. This can range from nonexistent for very light
-armor to ``(-8)`` for the heaviest armor!
+armor to '(-8)' for the heaviest armor!
 
 Non-melee attacks and resistances
 =================================
@@ -196,14 +199,14 @@ care or paralyze the target. In some cases, a melee attack may also do
 this. These attacks are resisted by monsters of higher level (native to
 deeper dungeon depths) and characters with a high saving throw - saving
 throws being dependent on class, level and wisdom. There are also available
-resistances to fear, blindness and confusion, and the power of "free
-action" prevents magical paralysis and most slowing attacks (the player may
-still be paralyzed by being "knocked out" in melee or by a stunning attack,
-but this is very rare.) It should also be noticed that unique monsters
-automatically pass their saving throws, and some monsters are naturally
-resistant to confusion, fear and sleep-monster attacks. Some monsters may
-have spells that 'cause wounds' that can be deadly if successful but do no
-damage if the saving throw is passed.
+resistances to fear, blindness, confusion and stunning, and the power of 
+"free action" prevents magical paralysis and most slowing attacks (the 
+player may still be paralyzed by being "knocked out" in melee or by a 
+stunning attack, but this is very rare.) It should also be noticed that 
+most unique monsters automatically pass their saving throws, and some 
+monsters are naturally resistant to confusion, fear and sleep-monster 
+attacks. Some monsters may have spells that 'cause wounds' that can be 
+deadly if successful but do no damage if the saving throw is passed.
 
 Some melee attacks by monsters may drain a stat, as can some traps: this is
 prevented by having that stat sustained. Drained stats are temporary and
@@ -215,8 +218,8 @@ no saving throw, except to those that would actually teleport him up or
 down one dungeon level. Having resistance to nexus will also prevent being
 level-teleported, but will not help against normal teleportation spell
 attacks. The player may teleport monsters in the same way, with a spell,
-wand or rod. No monsters, even Morgoth himself, resist this teleportation.
-Yet...
+wand or rod. No monsters, even Morgoth himself, canresist this 
+teleportation.  Yet...
 
 Other attacks are usually element-based, including the aforementioned
 example of dragon breath. Many monsters can breathe various attacks or cast
@@ -296,7 +299,7 @@ character), sound (which will stun a non-resistant character and may destroy
 his potions), crystal shards (which will cut a non-resistant character and
 may destroy his potions), inertia (which will slow a character even if he
 has free action), gravity (which will blink a character, also stunning and
-lowing), force (which will stun the character), plasma (which will stun,
+slowing), force (which will stun the character), plasma (which will stun,
 and may destroy items which are vulnerable to either fire or lightning),
 time (which may drain experience regardless of hold life, or drain stats
 regardless of sustains), water bolts and balls (which may confuse and stun,
@@ -326,14 +329,12 @@ the game: indeed, of the above list, only fire, cold, acid, lightning,
 poison and confusion resists are regarded as truly vital, with blindness,
 chaos and nether the next most desirable. Some attack forms are not
 resistable, but thankfully these are rare: resist shards will prevent all
-other magical attacks which cut (namely ice bolts), and resist sound will
-prevent all magical stunning (force breath, water bolts and balls, ice
-bolts, gravity and plasma), and confusion resistance will prevent confusion
-by a water bolt or ball, but there is no resistance to the physical damage
-caused by these following attacks: inertia, force, gravity, plasma, time,
-ice, water, mana. There is no resistance to any of the side-effects of a
-time attack, or indeed to anything but the stunning effects of a gravity
-attack.
+other magical attacks which cut (namely ice bolts), and confusion resistance 
+will prevent confusion by a water bolt or ball, but there is no resistance 
+to the physical damage caused by these following attacks: inertia, force, 
+gravity, plasma, time, ice, water, mana. There is no resistance to any of 
+the side-effects of a time attack, or indeed to anything but the stunning 
+effects of a gravity attack.
 
 A note on speed
 ===============
@@ -353,16 +354,15 @@ provide speed bonuses: these may include boots of speed, rings of speed and
 a few very rare artifacts. Boots will provide a random 1d10 to speed: rings
 of speed may be bigger than that - generally the best that the player will
 get is two just over (+10), but individual rings of up to (+23) speed have
-been known (although the record cursed one is much higher, at (-56): only
-one unsuccessful roll away from being a (+56) ring...)
+been known.
 
 Separate from the question of permanent speed (as determined by the
-player's peed items and the monster's natural speed) is that of temporary
+player's speed items and the monster's natural speed) is that of temporary
 speed. The player may cast a spell of haste-self, or use a potion, staff or
 rod of speed or use an artifact activation to speed him temporarily: or a
 monster may cast a haste-self spell, or be affected by another monster
 "shrieking for help" or the player reading a scroll of aggravate monster.
-In all cases, (+10) peed is added temporarily to the affected monster or
+In all cases, (+10) speed is added temporarily to the affected monster or
 player. Using two or more sources of temporary speed is cumulative only in
 duration - one cannot get from normal speed to (+20) using a potion and a
 spell of speed. Spells of temporary slowing (including monsters breathing
@@ -392,7 +392,7 @@ Ego Melee Weapons:
   from weapon to weapon.
 
 (Holy Avenger)
-  A Holy Avenger is one of the more powerful of weapons. A Holy Avenger
+  A Holy Avenger is often one of the most powerful weapons. A Holy Avenger
   will increase your wisdom and your armour class. This weapon will do
   extra damage when used against evil, demonic and undead creatures, and
   will also give you the ability to see invisible creatures. These weapons
@@ -422,7 +422,7 @@ Elemental Branded Weapons
   Each of the five elemental attacks has a corresponding weapon which will
   do treble its base damage to creatures not resistant to that element. (It
   should be noted that the magical damage bonus is not affected by this: a
-  weapon of Flame ``(2d6) (+5,+6)`` does 6d6+6 damage per hit, not 6d6+18,
+  weapon of Flame '(2d6) (+5,+6)' does 6d6+6 damage per hit, not 6d6+18,
 
   against creatures which are not fire-resistant.) There are weapons of
 
@@ -441,11 +441,6 @@ Weapons of |*Slay*ing| enemies
   |*Slay*| Dragon, Demon or Undead are also more powerful against their
   opponents, doing five times their base damage rather than the normal
   three.
-
-Weapon of Morgul
-  These blades are so foully cursed with evil, it is rumored that it is
-  nearly impossible to remove them without a special curse-removing spell,
-  much stronger than normal Remove Curse.
 
 Shovels and Picks of Digging
   These powerful diggers will dig through granite as if it were mere wood,
@@ -468,8 +463,8 @@ Launchers of Extra Shots
 
 Launchers of Extra Might
   These launchers have a higher base damage than normally made launchers of
-  their type. For instance, a ``Long Bow of Extra Might (x3)(+X,+Y)(+1)``
-  is really a Long Bow ``(x4)(+X,+Y)`` where ``(+X,+Y)`` is the standard
+  their type. For instance, a 'Long Bow of Extra Might (x3)(+X,+Y)(+1)'
+  is really a Long Bow '(x4)(+X,+Y)' where '(+X,+Y)' is the standard
   to-hit and to-dam. As the damage multiplier with the bow affects
   **everything** the base arrow damage, the magical damage bonus on both
   the bow and the arrow, and any bonuses for slaying or elemental-branded
@@ -484,11 +479,6 @@ Ammo of Elemental Brands, and Ammo of Slaying enemies
   damage for slay evil and slay animal, triple damage for all other lays
   and for all elemental brands. Unlike melee weapons, the slays and
   elemental brands **do** affect the magical damage bonus for ammo.
-
-Ammo of Backbiting
-  This cursed ammunition will never hit what it is aimed at. Rumour has it
-  that it will curve round and hit the person who shot it in the back: but
-  so far, this rumour has proved unfounded, and is believed to be false.
 
 These are the most common types of ego-weapon: note that they are not the 
 ONLY ego-items available in the dungeon, there may be more.
@@ -521,8 +511,7 @@ Armor of Elvenkind
   This is the same as Resistance armor, only generally better enchanted. It
   will make you more stealthy. This armor also possesses an extra
   resistance, at random from the following list: poison, light, dark,
-  blindness, confusion, nexus, fear, nether, chaos, disenchantment, sound
-  and shards.
+  nexus, nether, chaos, disenchantment, sound, and shards.
 
 Robes of Permanence
   These robes are designed especially for wizards. Just like Elvenkind
@@ -535,7 +524,7 @@ Dragon Scale Mails
   These extremely rare pieces of armour come in many different colors, each
   protecting you against the relevant dragons. Naturally they are all
   resistant to acid damage. They also occasionally allow you to breathe as
-  a dragon would!
+  a dragon would.  Dragon Scale Mails can also have egos as well.
 
 Ego Helms:
 ----------
@@ -586,16 +575,6 @@ Helm of Regeneration
   food faster than normal while wearing this helm because of the
   regenerative effects.
 
-Helms of Teleportation
-  This cursed helm will always keep the player on the hop, never sure where
-  he is and never able to stay in one place.
-
-Crowns of Sickliness
-  Ruling is such a drain on one's health... This crown will debilitate its
-  wearer, reducing his strength, dexterity and constitution.
-
-Helms/Crowns of Dullness
-  These helms can reduce your wisdom, intelligence and charisma.
  
 Ego Cloaks:
 -----------
@@ -610,18 +589,6 @@ Cloak of Stealth
 Cloak of Aman
   These exceptionally rare cloaks provide great stealth, have a very high
   enchantment, and one random resistance.
-
-Cloak of Enveloping
-  This cloak gets in the way of everything you try to do. You can't seem to
-  hit monsters without having to shove aside several folds of cloth, and
-  yet more layers cushion the blow and reduce the damage you do.
-
-Cloak of Irritation
-  This cloak not only envelops its wearer but aggravates all who see it.
-
-Cloaks of Vulnerability
-  This severely cursed cloak appears to be powerful, but in fact lets
-  through the full force of every attack directed at it.
 
 Ego Gloves:
 -----------
@@ -644,12 +611,6 @@ Gauntlets of Power
   These spiked gauntlets will boost the wearer's strength as well as the
   wearer's to-hit and to-dam numbers.
 
-Gauntlets of Weakness
-  These gauntlets sap your strength.
-
-Gauntlets of Clumsiness
-  These gauntlets make you fumble.
-
 Ego Boots:
 ----------
 Boots of Slow Descent
@@ -664,13 +625,6 @@ Boots of Free Action
 
 Boots of Speed
   The wearer of these boots will become unnaturally fast.
-
-Boots of Slowness
-  They seem to be stuck to the ground, and you can hardly move at all while
-  wearing these things.
-
-Boots of Annoyance
-  These boots will both slow the player and aggravate monsters.
 
 Once again, these are not necessarily the ONLY ego-items in the dungeon, 
 only the most common.
