@@ -75,7 +75,7 @@ Monsters
 
 =====   =================== =====  ==================================== 
 '$'     Creeping Coins      ','    Mushroom Patch
-'a'     Giant Ant           'A'    Angelic being
+'a'     Giant Ant           'A'    Ainu
 'b'     Giant Bat           'B'    Bird
 'c'     Giant Centipede     'C'    Canine (Dog)
 'd'     Dragon              'D'    Ancient Dragon
