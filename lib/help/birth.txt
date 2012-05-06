@@ -35,10 +35,10 @@ Each character also has six primary "stats": strength, intelligence,
 wisdom, dexterity, constitution, and charisma, which modify the abilities
 of the character in a variety of ways. Every stat has a numerical value,
 ranging from a minimum of 3, up to a normal maximum of 18, and even higher,
-into the "percentile" range, represented as ``18/01`` through ``18/100``:
+into the "percentile" range, represented as '18/01' through '18/100':
 this is the maximum that can be achieved intrinsically, for any given stat.
 These stats can be modified further by equipment, race and class bonuses up
-to a maximum of ``18/220``.
+to a maximum of '18/220'.
 
 Each character also has several primary "skills": disarming, magic devices,
 saving throws, stealth, searching ability, searching frequency, fighting
@@ -76,7 +76,7 @@ Each character has an "armour class", abbreviated to AC, representing how
 well the character can avoid damage. The armour class is affected by
 dexterity and equipment, so the concept includes both avoiding blows and
 being able to take blows without being hurt. Armour class on equipment is
-always denoted in square brackets, usually as a figure of ``[X,+Y]`` where
+always denoted in square brackets, usually as a figure of '[X,+Y]' where
 X is the intrinsic AC of the armour in question, and Y is the magical bonus
 to armour class provided by that item.
 

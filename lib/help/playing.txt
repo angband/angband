@@ -13,9 +13,9 @@ are mapped to the "underlying commands" by choosing one of the two standard
 
 The original keyset is very similar to the "underlying" command set, with a
 few additions (such as the ability to use the numeric "directions" to
-"walk" or the ``5`` key to "stay still"). The roguelike keyset provides
+"walk" or the '5' key to "stay still"). The roguelike keyset provides
 similar additions, and also allows the use of the
-``h``/``j``/``k``/``l``/``y``/``u``/``b``/``n`` keys to "walk" (or, in
+'h'/'j'/'k'/'l'/'y'/'u'/'b'/'n' keys to "walk" (or, in
 combination with the shift or control keys, to run or alter), which thus
 requires a variety of key mappings to allow access to the underlying
 commands used for walking/running/altering. In particular, the "roguelike"
@@ -24,15 +24,15 @@ keyset includes many more "capital" and "control" keys, as shown below.
 Note that any keys that are not required for access to the underlying
 command set may be used by the user to extend the "keyset" which is being
 used, by defining new "keymaps". To avoid the use of any "keymaps", press
-backslash (``\``) plus the "underlying command" key. You may enter
-"control-keys" as a caret (``^``) plus the key (so ``^`` + ``p`` yields
-``^p``).
+backslash ('\') plus the "underlying command" key. You may enter
+"control-keys" as a caret ('^') plus the key (so '^' + 'p' yields
+'^p').
 
 Some commands allow an optional "repeat count", which allows you to tell
 the game that you wish to do the command multiple times, unless you press a
-key or are otherwise disturbed. To enter a "repeat count", type ``0``,
+key or are otherwise disturbed. To enter a "repeat count", type '0',
 followed by the numerical count, followed by the command. You must type
-``space`` before entering certain commands. Skipping the numerical count
+'space' before entering certain commands. Skipping the numerical count
 yields a count of 99. An option allows certain commands (open, disarm,
 alter, etc) to auto-repeat.
 
@@ -43,19 +43,19 @@ quantity, a file name, or various other things. Normally you can hit return
 to choose the "default" response, or escape to cancel the command entirely.
 
 Some commands will prompt for a spell or an inventory item. Pressing pace
-(or ``*``) will give you a list of choices. Pressing ``-`` (minus) selects
+(or '*') will give you a list of choices. Pressing '-' (minus) selects
 the item on the floor. Pressing a lowercase letter selects the given item.
 Pressing a capital letter selects the given item after verification.
-Pressing a numeric digit ``#`` selects the first item (if any) whose
-inscription contains ``@#`` or ``@x#``, where ``x`` is the current
+Pressing a numeric digit '#' selects the first item (if any) whose
+inscription contains '@#' or '@x#', where 'x' is the current
 "underlying command". You may only specify items which are "legal" for the
-command. Whenever an item inscription contains ``!*`` or ``!x`` (with ``x``
+command. Whenever an item inscription contains '!*' or '!x' (with 'x'
 as above) you must verify its selection.
 
 Some commands will prompt for a direction. You may enter a "compass"
 direction using any of the "direction keys" shown below. Sometimes, you may
-specify that you wish to use the current "target", by pressing ``t`` or
-``5``, or that you wish to select a new target, by pressing ``*`` (see
+specify that you wish to use the current "target", by pressing 't' or
+'5', or that you wish to select a new target, by pressing '*' (see
 "Target" below).
 
         Original Keyset Directions 
@@ -79,7 +79,7 @@ using the roguelike keyset), instead of using the "walk" command plus a
 direction. The roguelike keyset allows you to "run" or "alter" by simply
 holding the shift or control modifier key down while pressing a "roguelike"
 direction key, instead of using the "run" or "alter" command plus a
-direction. Both keysets allow the use of the ``5`` key to "stand still",
+direction. Both keysets allow the use of the '5' key to "stand still",
 which is most convenient when using the original keyset.
 
 Original Keyset Command Summary
@@ -143,12 +143,13 @@ Original Keyset Command Summary
  ``/``   Identify symbol                ``?``  Help
 ======== =============================  ====== ============================
 
-.. |`| replace:: \ `````
+.. |`| replace:: \ ''`
 
 Roguelike Keyset Command Summary
 ================================
 
 ======= =============================  ======= ============================
+<<<<<<< HEAD
  ``a``  Zap a rod (Activate)            ``A``  Activate an artifact
  ``b``  (walk - south west)             ``B``  (run - south west)
  ``c``  Close a door                    ``C``  Character description
@@ -214,39 +215,39 @@ Certain special keys may be intercepted by the operating system or the host
 machine, causing unexpected results. In general, these special keys are
 control keys, and often, you can disable their special effects.
 
-If you are playing on a UNIX or similar system, then ``Ctrl-C`` will
+If you are playing on a UNIX or similar system, then 'Ctrl-C' will
 interrupt Angband. The second and third interrupt will induce a warning
 bell, and the fourth will induce both a warning bell and a special message,
 ince the fifth will quit the game, after killing your character. Also,
-``Ctrl-Z`` will suspend the game, and return you to the original command
-shell, until you resume the game with the ``fg`` command. There is now a
-compilation option to force the game to prevent the "double ``ctrl-z``
-escape death trick". The |``Ctrl-\``| and ``Ctrl-D`` and ``Ctrl-S`` keys
+'Ctrl-Z' will suspend the game, and return you to the original command
+shell, until you resume the game with the 'fg' command. There is now a
+compilation option to force the game to prevent the "double 'ctrl-z'
+escape death trick". The |'Ctrl-\'| and 'Ctrl-D' and 'Ctrl-S' keys
 should not be intercepted.
  
 It is often possible to specify "control-keys" without actually pressing
-the control key, by typing a caret (``^``) followed by the key. This is
+the control key, by typing a caret ('^') followed by the key. This is
 useful for specifying control-key commands which might be caught by the
 operating system as explained above.
 
-Pressing backslash (``\``) before a command will bypass all keymaps, and
+Pressing backslash ('\') before a command will bypass all keymaps, and
 the next keypress will be interpreted as an "underlying command" key,
-unless it is a caret (``^``), in which case the keypress after that will be
+unless it is a caret ('^'), in which case the keypress after that will be
 turned into a control-key and interpreted as a command in the underlying
 angband keyset. The backslash key is useful for creating actions which are
 not affected by any keymap definitions that may be in force, for example,
-the sequence ``\`` + ``.`` + ``6`` will always mean "run east", even if the
-``.`` key has been mapped to a different underlying command.
+the sequence '\' + '.' + '6' will always mean "run east", even if the
+'.' key has been mapped to a different underlying command.
 
-The ``0`` and ``^`` and ``\`` keys all have special meaning when entered at
+The '0' and '^' and '\' keys all have special meaning when entered at
 the command prompt, and there is no "useful" way to specify any of them as
 an "underlying command", which is okay, since they would have no effect.
 
-For many input requests or queries, the special character ``ESCAPE`` will
-abort the command. The ``[y/n]`` prompts may be answered with ``y`` or
-``n``, or ``escape``. The ``-more-`` message prompts may be cleared (after
-reading the displayed message) by pressing ``ESCAPE``, ``SPACE``,
-``RETURN``, ``LINEFEED``, or by any keypress, if the ``quick_messages``
+For many input requests or queries, the special character 'ESCAPE' will
+abort the command. The '[y/n]' prompts may be answered with 'y' or
+'n', or 'escape'. The '-more-' message prompts may be cleared (after
+reading the displayed message) by pressing 'ESCAPE', 'SPACE',
+'RETURN', 'LINEFEED', or by any keypress, if the 'quick_messages'
 option is turned on.
  
 Command Counts
@@ -267,13 +268,13 @@ after the count and you will be prompted for the command.
 Counted commands are very useful for time consuming commands, as they
 automatically terminate on success, or if you are attacked. You may also
 terminate any counted command (or resting or running), by typing any
-character. This character is ignored, but it is safest to use a ``SPACE``
-or ``ESCAPE`` which are always ignored as commands in case you type the
+character. This character is ignored, but it is safest to use a 'SPACE'
+or 'ESCAPE' which are always ignored as commands in case you type the
 command just after the count expires.
 
 You can tell Angband to automatically use a repeat count of 99 with
 commands you normally want to repeat (open, disarm, tunnel, bash, alter,
-etc) by setting the ``always_repeat`` option.
+etc) by setting the 'always_repeat' option.
   
 Selection of Objects
 ====================
@@ -283,28 +284,28 @@ For example, the command to read a scroll will ask you which of the
 scrolls that you are carrying that you wish to read.  In such cases, the
 selection is made by typing a letter of the alphabet.  The prompt will
 indicate the possible letters, and will also allow you to type the key
-``*``, which causes all of the available options to be described.  The list
+'*', which causes all of the available options to be described.  The list
 of choices will also be shown in the Choice window, if you are using a
 windows environment and windows are turned on.  Often you will be able to
-press ``/`` to select an object from your equipment instead of your
-inventory.  Pressing ``space`` once will have the same effect as ``*``, and
-the second time will cancel the command and run the ``i`` or ``e`` command.
+press '/' to select an object from your equipment instead of your
+inventory.  Pressing 'space' once will have the same effect as '*', and
+the second time will cancel the command and run the 'i' or 'e' command.
  
 The particular object may be selected by an upper case or a lower case
 letter. If lower case is used, the selection takes place immediately. If
 upper case is used, then the particular option is described, and you are
 given the option of confirming or retracting that choice. Upper case
 selection is thus safer, but requires an extra key stroke. Also see the
-``!*`` and ``!x`` inscriptions, below.
+'!*' and '!x' inscriptions, below.
 
-For many commands, you can also use ``-`` to select an object on the floor
+For many commands, you can also use '-' to select an object on the floor
 where you are standing. This lets you read scrolls or quaff potions, for
 example, off the dungeon floor without picking them up.
 
-If you enter a number between 0 and 9, the first item engraved with ``@#``
-where ``#`` is the number you entered will be selected. See the section
+If you enter a number between 0 and 9, the first item engraved with '@#'
+where '#' is the number you entered will be selected. See the section
 "Using Inscriptions" for more detail.
 
-.. |``Ctrl-``| replace:: ``Ctrl-\\``
+.. |'Ctrl-'| replace:: 'Ctrl-\\'
    I am not sure what is happening, but this yields the correct result
 
