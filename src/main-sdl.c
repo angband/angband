@@ -2403,6 +2403,7 @@ static void sdl_keypress(SDL_keysym keysym)
 	bool ms = (keysym.mod & KMOD_SHIFT) > 0;
 	bool ma = (keysym.mod & KMOD_ALT) > 0;
 	bool mm = (keysym.mod & KMOD_META) > 0;
+	bool mg = (keysym.mod & KMOD_MODE) > 0;
 	bool kp = FALSE;
 
 	byte mods = (ma ? KC_MOD_ALT : 0) | (mm ? KC_MOD_META : 0);
@@ -2432,16 +2433,16 @@ static void sdl_keypress(SDL_keysym keysym)
 		case SDLK_KP_EQUALS: ch = '='; kp = TRUE; break;
 
 		/* have have these to get consistent ctrl-shift behaviour */
-		case SDLK_0: if (!ms || mc || ma) ch = '0'; break;
-		case SDLK_1: if (!ms || mc || ma) ch = '1'; break;
-		case SDLK_2: if (!ms || mc || ma) ch = '2'; break;
-		case SDLK_3: if (!ms || mc || ma) ch = '3'; break;
-		case SDLK_4: if (!ms || mc || ma) ch = '4'; break;
-		case SDLK_5: if (!ms || mc || ma) ch = '5'; break;
-		case SDLK_6: if (!ms || mc || ma) ch = '6'; break;
-		case SDLK_7: if (!ms || mc || ma) ch = '7'; break;
-		case SDLK_8: if (!ms || mc || ma) ch = '8'; break;
-		case SDLK_9: if (!ms || mc || ma) ch = '9'; break;
+		case SDLK_0: if ((!ms || mc || ma) && !mg) ch = '0'; break;
+		case SDLK_1: if ((!ms || mc || ma) && !mg) ch = '1'; break;
+		case SDLK_2: if ((!ms || mc || ma) && !mg) ch = '2'; break;
+		case SDLK_3: if ((!ms || mc || ma) && !mg) ch = '3'; break;
+		case SDLK_4: if ((!ms || mc || ma) && !mg) ch = '4'; break;
+		case SDLK_5: if ((!ms || mc || ma) && !mg) ch = '5'; break;
+		case SDLK_6: if ((!ms || mc || ma) && !mg) ch = '6'; break;
+		case SDLK_7: if ((!ms || mc || ma) && !mg) ch = '7'; break;
+		case SDLK_8: if ((!ms || mc || ma) && !mg) ch = '8'; break;
+		case SDLK_9: if ((!ms || mc || ma) && !mg) ch = '9'; break;
 
 		case SDLK_UP: ch = ARROW_UP; break;
 		case SDLK_DOWN: ch = ARROW_DOWN; break;
