@@ -22,7 +22,7 @@ wall is no longer there, and the creature can be targetted normally.
 If you are wielding a weapon, the damage for the weapon is used when you
 hit a creature. Otherwise you get a single punch which does minimal damage.
 
-You may |``w``ield| one weapon for melee combat, and also one missile
+You may |'w'ield| one weapon for melee combat, and also one missile
 launcher (bow, crossbow or sling). You may also wear one amulet (around the
 one and only neck of the character), two rings (on the two "ring" fingers,
 i.e. the third finger of each hand: a magic ring does not function when
@@ -32,7 +32,7 @@ boots and a cloak. Any or all of these items may provide powers to the
 character in terms of bonuses to-hit, to-damage, to-armor class, or to
 other stats.
 
-.. |``w``ield| replace:: ``w``\ield
+.. |'w'ield| replace:: 'w'\ield
 
 Firing a missile (while wielding the appropriate launcher) is the only way
 to get the "full" power out of the missile. You may of course throw an
@@ -47,18 +47,18 @@ receive a damage reduction. This is not true for monsters, whose AC only
 affects the character's difficulty to hit them.
 
 If you wish to see how much damage your weapon will do, you can
-|``I``nspect| it. You will find the number of blows and how much damage you
+|'I'nspect| it. You will find the number of blows and how much damage you
 would do per round, including information on whether your weapon damages
 other types of monsters differently.
 
-.. |``I``nspect| replace:: ``I``\nspect
+.. |'I'nspect| replace:: 'I'\nspect
 
 Monster Memories
 ================
 
 There are hundreds of different creatures in the pits of Angband, many of
 which have the same letter symbol and color on the screen. The exact
-species of a creature can be discovered by |``l``ooking| at it. It is also
+species of a creature can be discovered by |'l'ooking| at it. It is also
 very difficult to keep track of the capabilities of various creatures.
 Luckily, Angband automatically keeps track of your experiences with a
 particular creature. This feature is called the monster memory. Your
@@ -68,7 +68,7 @@ you have observed them to multiply or move erratically, or drop treasure,
 etc. Otherwise you would simply have to take notes, which is an unnecessary
 bother.
 
-.. |``l``ooking| replace:: ``l``\ooking
+.. |'l'ooking| replace:: 'l'\ooking
 
 If you have killed enough of a particular creature, or suffered enough
 attacks, recalling the monster memory may also provide you with information
@@ -98,8 +98,8 @@ digging tool, or when carrying two weapons, each of which provides a rare
 power that the character needs at two separate times.
 
 Weapons have two main magical characteristics, their enchanted ability to
-hit and their enchanted ability to do damage, expressed as ``(+#,+#)``. A
-normal weapon would be ``(+0,+0)``. Many weapons in Angband have bonuses to
+hit and their enchanted ability to do damage, expressed as '(+#,+#)'. A
+normal weapon would be '(+0,+0)'. Many weapons in Angband have bonuses to
 hit and/or do damage. A very few weapons are cursed, and have penalties
 that diminish your hit and/or damage bonuses. Cursed weapons cannot be
 unwielded until the curse is lifted.  Luckily, all cursed items will be
@@ -112,9 +112,9 @@ Angband assumes that your youth in the rough environment near the dungeons
 has taught you the relative merits of different weapons, and displays as
 part of their description the damage dice which define their capabilities.
 Any damage enchantment is added to the dice roll for that weapon. The dice
-used for a given weapon is displayed as ``XdY``. The number ``X`` indicates
-how many dice to roll, and number ``Y`` indicates how many sides they have.
-A ``2d6`` weapon will thus give damage from 2 to 12, plus any damage bonus.
+used for a given weapon is displayed as 'XdY'. The number 'X' indicates
+how many dice to roll, and number 'Y' indicates how many sides they have.
+A '2d6' weapon will thus give damage from 2 to 12, plus any damage bonus.
 The weight of a weapon is also a consideration. Heavy weapons may hit
 harder, but they are also harder to use. Depending on your strength,
 dexterity, character class, and weapon weight, you may get attack more
@@ -129,10 +129,10 @@ Missile weapons, such as bows, have their characteristics added to those of
 the missile used, if the proper weapon/missile combination is used, and
 then the launcher multiplier is applied to the total damage, making missile
 weapons very powerful given the proper missiles, especially if they are
-enchanted. Like weapons, |``I``nspecting| ammunition will tell you how much
+enchanted. Like weapons, |'I'nspecting| ammunition will tell you how much
 damage you will do with your current missile launcher.
 
-.. |``I``nspecting| replace:: ``I``\nspecting
+.. |'I'nspecting| replace:: 'I'\nspecting
 
 Although you receive any magical bonuses an unidentified weapon may possess
 when you wield it, those bonuses will not be immediately added to the
@@ -174,16 +174,16 @@ weapons, is assumed known by the player, and a magic bonus, which will not
 be displayed unless the armor has been identified or was bought in a store.
 
 Armor class values are always displayed between a set of square brackets,
-as ``[#]`` or ``[#,+#]``. The first value is the base armor class of the
+as '[#]' or '[#,+#]'. The first value is the base armor class of the
 armor. The second number is the magical bonus of the item, which is only
 displayed if known, and will always have a sign preceding the value. These
 plusses can be determined by wielding the armor in combat and being hit.
-Note that a few rings, amulets, and weapons also have the ``[+#]``
+Note that a few rings, amulets, and weapons also have the '[+#]'
 notation, indicating that they provide an armor bonus. Many pieces of heavy
-body armor will also have a ``(-#)`` (in normal brackets) before the
-``[#,+#]``, which indicates that the weight of the armor decreases your
+body armor will also have a '(-#)' (in normal brackets) before the
+'[#,+#]', which indicates that the weight of the armor decreases your
 chances of hitting monsters. This can range from nonexistent for very light
-armor to ``(-8)`` for the heaviest armor!
+armor to '(-8)' for the heaviest armor!
 
 Non-melee attacks and resistances
 =================================
@@ -422,7 +422,7 @@ Elemental Branded Weapons
   Each of the five elemental attacks has a corresponding weapon which will
   do treble its base damage to creatures not resistant to that element. (It
   should be noted that the magical damage bonus is not affected by this: a
-  weapon of Flame ``(2d6) (+5,+6)`` does 6d6+6 damage per hit, not 6d6+18,
+  weapon of Flame '(2d6) (+5,+6)' does 6d6+6 damage per hit, not 6d6+18,
 
   against creatures which are not fire-resistant.) There are weapons of
 
@@ -463,8 +463,8 @@ Launchers of Extra Shots
 
 Launchers of Extra Might
   These launchers have a higher base damage than normally made launchers of
-  their type. For instance, a ``Long Bow of Extra Might (x3)(+X,+Y)(+1)``
-  is really a Long Bow ``(x4)(+X,+Y)`` where ``(+X,+Y)`` is the standard
+  their type. For instance, a 'Long Bow of Extra Might (x3)(+X,+Y)(+1)'
+  is really a Long Bow '(x4)(+X,+Y)' where '(+X,+Y)' is the standard
   to-hit and to-dam. As the damage multiplier with the bow affects
   **everything** the base arrow damage, the magical damage bonus on both
   the bow and the arrow, and any bonuses for slaying or elemental-branded
