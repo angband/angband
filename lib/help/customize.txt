@@ -218,30 +218,62 @@ experiment to see which ones are the most useful for you.
 User Pref Files (Keymaps)
 =========================
 
-The "Interact with keymaps" menu allows you to define "keymaps", which maps
-a single keypress to a series of keypresses. Keymaps are not recursive;
-i.e. keypresses in the action field do not get expanded again. Angband uses
-keymaps to map the original and the roguelike keysets to the underlying
-command set, and allows the user to modify or add keymaps of their own.
-Note that all keymap actions must be specified using underlying commands,
-not keypresses from the original or roguelike keysets. The original keyset
-is almost identical to the underlying keyset, except that "numbers" are
-mapped to ``;`` plus a direction, ``5`` is mapped to ``,``, and a few
-control-keys are mapped to various things. See ``command.txt`` for the full
-et of underlying commands. Some uses for keymaps include the ability to
-"disable" a command by mapping it to ``\x00``.
+The "Interact with keymaps" menu allows you to set up keymaps.  Keymaps map
+a single keypress to a series of keypresses.  For example you might map the
+key F1 to "maa" (the keypresses to cast "Magic Missile" as a spellcaster).
+This can speed up access to commonly-used features.
 
-Keymaps can be specified in user pref files as lines of the form
-``A:<action>`` and ``C:<T>:<keystr>``, where ``<T>`` is the keyset
-(``0``/``1`` for original/roguelike), ``<keystr>`` is the encoded keypress,
-and <action> is the encoded keymap action.
+Keymaps have two parts: the trigger key and the action.  These are written
+where possible just as ordinary characters.  However, if modifier keys
+(shift, control, etc.) are used then they are encoded as special characters
+within curly braces {}.
 
-Note that any keys that are not required for access to the underlying
-command set may be used by the user to extend the "keyset" which is being
-used, by defining new "keymaps". To avoid the use of any "keymaps", press
-backslash (``\``) plus the "underlying command" key. You may enter
-"control-keys" as a caret (``^``) plus the key (so ``^`` + "``p`` yields
-``^p``).
+Possibls modifiers are:
+	K = Keypad (for numbers)
+	M = Meta (Cmd-key on OS X, alt on most other platforms)
+	^ = Control
+	S = Shift
+
+If the only modifier is the control key, the curly braces {} aren't included.
+For example:
+
+	{^S}& = Control-Shift-S
+	^D    = Control-D
+
+Special keys, like F1, F2, or Tab, are all written within square brackets [].
+For example:
+
+	^[F1]     = Control-F1
+	{^S}[Tab] = Control-Shift-Tab
+
+Special keys include [Escape].
+
+The game will run keymaps in whatever keyset you use (original or roguelike).
+So if you write keymaps for roguelike keys and swith to original keys, they 
+may not work as you expect!  Keymap actions aren't recursive either, so if you
+had a keymap whose trigger was F1, including F1 inside the action wouldn't run
+the keymap action again.
+
+When you're running a keymap, you might want to automatically skip any -more-
+prompts.  To do this, include whatever commands you want to skip -more- prompts
+during with '()'.
+
+Keymaps are written in pref files as:
+
+	A:<action>
+	C:<T>:<trigger>
+
+The action must always come first,  <T> means 'keyset Type', which is either
+0 for the original keyset or 1 for the roguelike keyset.  For example
+
+	A:maa
+	C:0:[F1]
+
+Angband uses a few built-in keymaps.  These are for the movement keys (they
+are mapped to ';' plus the number, e.g. '5' -> ';5'), amongst others.  You
+can see the full list in pref.prf but they shouldn't impact on you in any way.
+
+To avoid triggering a keymap, you can use the backslash ('\') command.
 
 User Pref Files (Visuals)
 =========================

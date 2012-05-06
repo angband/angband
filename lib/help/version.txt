@@ -2,7 +2,10 @@
 Version Information
 ===================
 
-This file was last updated for Angband 3.1.2.
+This file was last updated for Angband 3.1.2 and is a historical document.
+
+For more information versions since then, please consult rephial.org's release
+page: http://rephial.org/release.
 
 Make sure to read the newsgroup (``rec.games.roguelike.angband``), and to
 visit the Official Angband Home Page (http://rephial.org) for the most up
