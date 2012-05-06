@@ -303,21 +303,21 @@ A:;9
 C:1:u
 
 # Running (shift + rogue keys)
-A:.1
+A:,1
 C:1:B
-A:.2
+A:,2
 C:1:J
-A:.3
+A:,3
 C:1:N
-A:.4
+A:,4
 C:1:H
-A:.6
+A:,6
 C:1:L
-A:.7
+A:,7
 C:1:Y
-A:.8
+A:,8
 C:1:K
-A:.9
+A:,9
 C:1:U
 
 # Altering (control + rogue keys)
