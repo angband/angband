@@ -96,7 +96,7 @@ Original Keyset Command Summary
  ``h``   (unused)                       ``H``  (unused)
  ``i``   Inventory list                 ``I``  Observe an item
  ``j``   Jam a door                     ``J``  (unused)
- ``k``   Destroy an item                ``K``  (unused)
+ ``k``   Ignore an item                 ``K``  Unignore items
  ``l``   Look around                    ``L``  Locate player on map
  ``m``   Cast a spell                   ``M``  Full dungeon map
  ``n``   (unused)                       ``N``  (unused)
@@ -108,7 +108,7 @@ Original Keyset Command Summary
  ``t``   Take off equipment             ``T``  Dig a tunnel
  ``u``   Use a staff                    ``U``  (unused)
  ``v``   Throw an item                  ``V``  Version info
- ``w``   Wear/wield equipment           ``W``  (unused)
+ ``w``   Wear/wield equipment           ``W``  Walk into a trap
  ``x``   (unused)                       ``X``  (unused)
  ``y``   (unused)                       ``Y``  (unused)
  ``z``   Zap a rod                      ``Z``  (unused)
@@ -126,7 +126,7 @@ Original Keyset Command Summary
  ``}``   Uninscribe an object           ``^L``  (unused)
  ``[``   Display visible monster list   ``^M``  (special - return)
  ``]``   Display visible object list    ``^N``  (unused)
- ``-``   Walk (flip pickup)             ``^O``  (unused)
+ ``-``   (unused)                       ``^O``  (unused)
  ``_``   Enter store                    ``^P``  Show previous messages
  ``+``   Alter grid                     ``^Q``  (unused)
  ``=``   Set options                    ``^R``  Redraw the screen
@@ -178,10 +178,10 @@ Roguelike Keyset Command Summary
  ``!``  Interact with system            ``^A`` (special - debug command)
  ``@``  (unused)                        ``^B`` (alter - south west)
  ``#``  Toggle search mode              ``^C`` (special - break)
- ``$``  (unused)                        ``^D`` Destroy item
+ ``$``  (unused)                        ``^D`` Ignore item
  ``%``  (unused)                        ``^E`` Toggle choice window
  ``^``  (special - control key)         ``^F`` Repeat level feeling
- ``&``  (unused)                        ``^G`` (unused)
+ ``&``  (unused)                        ``^G`` Unignore items
  ``*``  Target monster or location      ``^H`` (alter - west)
  ``(``  Load screen dump                ``^I`` (special - tab)
  ``)``  Dump screen dump                ``^J`` alter - south)
@@ -189,7 +189,7 @@ Roguelike Keyset Command Summary
  ``}``  Uninscribe an object            ``^L`` (alter - east)
  ``[``  Display visible monster list    ``^M`` (special - return)
  ``]``  Display visible object list     ``^N`` (alter - south east)
- ``-``  Walk (flip pickup)              ``^O`` (unused)
+ ``-``  Walk into a trap                ``^O`` (unused)
  ``_``  Enter store                     ``^P`` Show previous messages
  ``+``  Alter grid                      ``^Q`` (unused)
  ``=``  Set options                     ``^R`` Redraw the screen

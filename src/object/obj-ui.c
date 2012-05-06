@@ -21,6 +21,8 @@
 #include "tvalsval.h"
 #include "cmds.h"
 #include "game-cmd.h"
+#include "keymap.h"
+
 
 /*
  * Display a list of objects.  Each object may be prefixed with a label.
@@ -454,6 +456,7 @@ static bool get_item_allow(int item, unsigned char ch, cmd_code cmd,
 		o_ptr = object_byid(0 - item);
 
 	/* The inscription to look for */
+	/* XXX needs to do un-KTRL... */
 	verify_inscrip[1] = ch;
 
 	/* Look for the inscription */
@@ -540,7 +543,7 @@ static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
 			}
 
 			/* Check the special tags */
-			if ((cmd_lookup(s[1]) == cmd) && (s[2] == tag))
+			if ((cmd_lookup(s[1], KEYMAP_MODE_ORIG) == cmd) && (s[2] == tag))
 			{
 				/* Save the actual inventory ID */
 				*cp = i;
@@ -612,7 +615,7 @@ bool get_item(int *cp, const char *pmt, const char *str, cmd_code cmd, int mode)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
-	unsigned char cmdkey = cmd_lookup_key(cmd);
+	unsigned char cmdkey = cmd_lookup_key(cmd, KEYMAP_MODE_ORIG);
 
 	//struct keypress which;
 	ui_event press;
