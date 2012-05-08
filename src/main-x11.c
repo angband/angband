@@ -1650,8 +1650,8 @@ static void react_keypress(XKeyEvent *ev)
 	/* Extract "modifier flags" */
 	int mc = (ev->state & ControlMask) ? TRUE : FALSE;
 	int ms = (ev->state & ShiftMask) ? TRUE : FALSE;
-	int mo = (m->alt_mask && (ev->state & m->alt_mask)) ? TRUE : FALSE;
-	int mx = (m->super_mask && (ev->state & m->super_mask)) ? TRUE : FALSE;
+	int mo = (ev->state & m->alt_mask) ? TRUE : FALSE;
+	int mx = (ev->state & m->super_mask) ? TRUE : FALSE;
 	int kp = FALSE;
 
 	byte mods = (mo ? KC_MOD_ALT : 0) | (mx ? KC_MOD_META : 0);
