@@ -107,6 +107,7 @@
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 #include <X11/keysymdef.h>
+#include <X11/XKBlib.h>
 
 #include "main.h"
 
@@ -196,6 +197,8 @@ typedef struct infofnt infofnt;
  *	- The default Screen for the display
  *	- The virtual root (usually just the root)
  *	- The default colormap (from a macro)
+ *  - The Alt key modifier mask
+ *  - The Super key modifier mask
  *
  *	- The "name" of the display
  *
@@ -222,6 +225,8 @@ struct metadpy
 	Screen *screen;
 	Window root;
 	Colormap cmap;
+	unsigned int alt_mask;
+	unsigned int super_mask;
 
 	char *name;
 
@@ -593,6 +598,23 @@ static const char *get_default_font(int term_num)
 }
 
 
+/* look up keyboard modifiers using the Xkb extension */
+
+unsigned int xkb_mask_modifier( XkbDescPtr xkb, const char *name )
+{
+	unsigned int mask=0;
+	
+	if  ( strcmp(name, "Caps Lock") == 0 ) return 2;
+	
+	for(int i = 0; i <= XkbNumVirtualMods; i++ ) {
+		char* modStr = XGetAtomName( xkb->dpy, xkb->names->vmods[i] );
+		if( modStr != NULL && strcmp(name, modStr) == 0 ) {
+			XkbVirtualModsToReal( xkb, 1 << i, &mask );
+			return mask;
+		}
+	}
+	return 0;
+}
 
 /**** Generic code ****/
 
@@ -614,7 +636,8 @@ static const char *get_default_font(int term_num)
 static errr Metadpy_init_2(Display *dpy, const char *name)
 {
 	metadpy *m = Metadpy;
-
+	XkbDescPtr xkb;
+	
 	/*** Open the display if needed ***/
 
 	/* If no Display given, attempt to Create one */
@@ -646,6 +669,16 @@ static errr Metadpy_init_2(Display *dpy, const char *name)
 	/* Get the Screen and Virtual Root Window */
 	m->screen = DefaultScreenOfDisplay(dpy);
 	m->root = RootWindowOfScreen(m->screen);
+
+	/* get the modifier key layout */
+	m->alt_mask = Mod1Mask;
+	m->super_mask = Mod4Mask;
+	xkb = XkbGetKeyboard(dpy, XkbAllComponentsMask, XkbUseCoreKbd);
+	if (xkb != NULL) {
+        m->alt_mask = xkb_mask_modifier( xkb, "Alt" );
+        m->super_mask = xkb_mask_modifier( xkb, "Super" );
+		XkbFreeKeyboard( xkb, 0, True );
+	}
 
 	/* Get the default colormap */
 	m->cmap = DefaultColormapOfScreen(m->screen);
@@ -1608,16 +1641,17 @@ static int term_windows_open;
 static void react_keypress(XKeyEvent *ev)
 {
 	int n, ch = 0;
+	metadpy *m = Metadpy;
 
 	KeySym ks;
 
 	char buf[128];
 
-	/* Extract four "modifier flags" */
+	/* Extract "modifier flags" */
 	int mc = (ev->state & ControlMask) ? TRUE : FALSE;
 	int ms = (ev->state & ShiftMask) ? TRUE : FALSE;
-	int mo = (ev->state & Mod1Mask) ? TRUE : FALSE;
-	int mx = (ev->state & Mod2Mask) ? TRUE : FALSE;
+	int mo = (m->alt_mask && (ev->state & m->alt_mask)) ? TRUE : FALSE;
+	int mx = (m->super_mask && (ev->state & m->super_mask)) ? TRUE : FALSE;
 	int kp = FALSE;
 
 	byte mods = (mo ? KC_MOD_ALT : 0) | (mx ? KC_MOD_META : 0);
