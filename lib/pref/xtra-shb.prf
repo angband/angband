@@ -43,17 +43,29 @@ R:0:0x84:0xB3 #
 
 ##### Half-Elf Classes #####
 ?:[EQU $RACE Half-Elf]
-R:0:0x83:0x8F #  
+R:0:0x83:0x97 #  
+?:[AND [EQU $RACE Half-Elf] [EQU $GENDER Female] ]
+R:0:0x84:0xB5 #  
 ?:[AND [EQU $CLASS Mage] [EQU $RACE Half-Elf] ]
-R:0:0x83:0x88 #  
+R:0:0x83:0x91 #  
+?:[AND [EQU $CLASS Mage] [EQU $RACE Half-Elf]  [EQU $GENDER Female] ]
+R:0:0x84:0xB6 #  
 ?:[AND [EQU $CLASS Priest] [EQU $RACE Half-Elf] ]
-R:0:0x83:0x8C #  
+R:0:0x83:0x94 #  
+?:[AND [EQU $CLASS Priest] [EQU $RACE Half-Elf]  [EQU $GENDER Female] ]
+R:0:0x84:0xB7 #  
 ?:[AND [EQU $CLASS Rogue] [EQU $RACE Half-Elf] ]
-R:0:0x83:0x8E #  
+R:0:0x83:0x96 #  
+?:[AND [EQU $CLASS Rogue] [EQU $RACE Half-Elf]  [EQU $GENDER Female] ]
+R:0:0x84:0xB8 #  
 ?:[AND [EQU $CLASS Ranger] [EQU $RACE Half-Elf] ]
-R:0:0x83:0x8D #  
+R:0:0x83:0x95 #  
+?:[AND [EQU $CLASS Ranger] [EQU $RACE Half-Elf]  [EQU $GENDER Female] ]
+R:0:0x84:0xB9 #  
 ?:[AND [EQU $CLASS Paladin] [EQU $RACE Half-Elf] ]
-R:0:0x83:0x8B #  
+R:0:0x83:0x93 #  
+?:[AND [EQU $CLASS Paladin] [EQU $RACE Half-Elf]  [EQU $GENDER Female] ]
+R:0:0x84:0xBA #  
 
 ##### Elf Classes #####
 ?:[EQU $RACE Elf]
