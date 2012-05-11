@@ -4244,8 +4244,10 @@ int extract_modifiers(keycode_t ch, bool kp) {
  * "pause" key (between scroll lock and numlock).  We also catch a few odd
  * keys which I do not recognize, but which are listed among keys which we
  * do catch, so they should be harmless to catch.
+ *
+ * return whether the keypress was NOT handled
  */
-static void handle_keydown(WPARAM wParam, LPARAM lParam)
+static bool handle_keydown(WPARAM wParam, LPARAM lParam)
 {
 	keycode_t ch = 0;
 
@@ -4255,7 +4257,7 @@ static void handle_keydown(WPARAM wParam, LPARAM lParam)
 	if (screensaver_active)
 	{
 		stop_screensaver();
-		return;
+		return TRUE;
 	}
 #endif /* USE_SAVER */
 
@@ -4306,7 +4308,9 @@ static void handle_keydown(WPARAM wParam, LPARAM lParam)
 		/* printf("ch=%d mods=%d\n", ch, mods); */
 		/* fflush(stdout); */
 		Term_keypress(ch, mods);
+		return FALSE;
 	}
+	return TRUE;
 }
 
 
@@ -4388,7 +4392,7 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 		case WM_SYSKEYDOWN:
 		case WM_KEYDOWN:
 		{
-			handle_keydown(wParam, lParam);
+			return handle_keydown(wParam, lParam);
 			break;
 		}
 
@@ -4797,7 +4801,7 @@ static LRESULT FAR PASCAL AngbandListProc(HWND hWnd, UINT uMsg,
 		case WM_SYSKEYDOWN:
 		case WM_KEYDOWN:
 		{
-			handle_keydown(wParam, lParam);
+			return handle_keydown(wParam, lParam);
 			break;
 		}
 
