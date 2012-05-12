@@ -339,6 +339,9 @@ void object_flavor_aware(object_type *o_ptr)
 	o_ptr->kind->aware = TRUE;
 
 	/* Fix squelch/autoinscribe */
+	if (kind_is_squelched_unaware(o_ptr->kind)) {
+		kind_squelch_when_aware(o_ptr->kind);
+	}
 	p_ptr->notice |= PN_SQUELCH;
 	apply_autoinscription(o_ptr);
 
