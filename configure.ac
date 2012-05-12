@@ -51,8 +51,15 @@ if test "x$wsetgid$with_private_dirs$with_no_install" != "xyes";  then
     and compiled, touching nothing else on the system - make install is not
     run.
 "
-
 	AC_MSG_ERROR([Please specify an installation method.])
+fi
+
+if test "x$with_no_install" = "x"; then
+	echo "Note: You have chosen to compile for installation, with data files
+    in standard locations. For development, you may wish to consider using
+    --with-no-install which will leave the game to run from the directory
+    into which it was extracted and compiled.
+"
 fi
 
 AC_PROG_CC
@@ -99,14 +106,10 @@ if test "x$bindir" = "x\${exec_prefix}/bin"; then
   bindir=${exec_prefix}/games
 fi
 
-AC_ARG_WITH(configpath, [  --with-configpath=PATH  use PATH as the path to the Angband configuration folder])
-
-if test "x$with_configpath" != "x"; then
-	configpath="${with_configpath}"
-elif test "x$with_no_install" != "x"; then
+if test "x$with_no_install" != "x"; then
 	configpath="${PWD}/lib/"
 else
-	configpath="${prefix}/etc/${PACKAGE}/"
+	configpath="${sysconfdir}/${PACKAGE}/"
 fi
 
 case "/$configpath" in
@@ -114,15 +117,11 @@ case "/$configpath" in
 	*)  MY_EXPAND_DIR(configdir, "$configpath/") ;;
 esac
 
-AC_ARG_WITH(libpath, [  --with-libpath=PATH     use PATH as the path to the Angband lib folder])
-
-if test "x$with_libpath" != "x"; then
-	libpath="${with_libpath}"
-elif test "x$with_no_install" != "x"; then
+if test "x$with_no_install" != "x"; then
 	libpath="${PWD}/lib/"
 	bindir=".."
 else
-	libpath="${prefix}/share/${PACKAGE}/"
+	libpath="${datarootdir}/${PACKAGE}/"
 fi
 
 case "/$libpath" in
@@ -130,14 +129,10 @@ case "/$libpath" in
 	*)  MY_EXPAND_DIR(libdatadir, "$libpath/") ;;
 esac
 
-AC_ARG_WITH(varpath, [  --with-varpath=PATH     use PATH as the path to the Angband saved data folder])
-
-if test "x$with_varpath" != "x"; then
-	varpath="${with_varpath}"
-elif test "x$with_no_install" != "x"; then
+if test "x$with_no_install" != "x"; then
 	varpath="${PWD}/lib/"
 else
-	varpath="${prefix}/var/games/${PACKAGE}/"
+	varpath="${localstatedir}/games/${PACKAGE}/"
 fi
 
 case "/$varpath" in

@@ -270,11 +270,6 @@ int main(int argc, char *argv[])
 	/* Default permissions on files */
 	(void)umask(022);
 
-#endif /* SET_UID */
-
-
-#ifdef SET_UID
-
 	/* Get the user id */
 	player_uid = getuid();
 
