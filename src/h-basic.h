@@ -163,6 +163,9 @@ typedef int errr;
 
   #include <stdbool.h>
 
+  #undef TRUE
+  #undef FALSE
+
   #define TRUE  true
   #define FALSE false
 

@@ -4841,7 +4841,7 @@ void borg_write_map(bool ask)
 {
     char buf2[1024];
     char buf[80];
-    ang_file *borg_map_file;
+    ang_file *borg_map_file = NULL;
     char line[DUNGEON_WID + 1];
 
     borg_item *item;
