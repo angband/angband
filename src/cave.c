@@ -804,7 +804,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	g->is_player = (cave->m_idx[y][x] < 0) ? TRUE : FALSE;
 	g->m_idx = (g->is_player) ? 0 : cave->m_idx[y][x];
 	g->hallucinate = p_ptr->timed[TMD_IMAGE] ? TRUE : FALSE;
-	g->trapborder = (dtrap_edge(y, x)) ? TRUE : FALSE;
+	g->trapborder = (cave->info2[y][x] & CAVE2_DEDGE) ? TRUE : FALSE;
 
 	if (g->in_view)
 	{
@@ -3049,7 +3049,7 @@ void wiz_dark(void)
 		{
 			/* Process the grid */
 			cave->info[y][x] &= ~(CAVE_MARK);
-			cave->info2[y][x] &= ~(CAVE2_DTRAP);
+			cave->info2[y][x] &= ~(CAVE2_DTRAP|CAVE2_DEDGE);
 		}
 	}
 

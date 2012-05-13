@@ -616,6 +616,13 @@ bool detect_traps(bool aware)
 		{
 			if (!in_bounds_fully(y, x)) continue;
 
+			/* see if this grid is on the edge */
+			if (dtrap_edge(y, x)) {
+				cave->info2[y][x] |= CAVE2_DEDGE;
+			} else {
+				cave->info2[y][x] &= ~CAVE2_DEDGE;
+			}
+
 			/* Redraw */
 			cave_light_spot(cave, y, x);
 		}

@@ -466,10 +466,6 @@ bool squelch_item_ok(const object_type *o_ptr)
 	if (o_ptr->ignore)
 		return TRUE;
 
-	/* Auto-squelch dead chests */
-	if (o_ptr->tval == TV_CHEST && o_ptr->pval[DEFAULT_PVAL] == 0)
-		return TRUE;
-
 	/* Do squelching by kind */
 	if (object_flavor_is_aware(o_ptr) ?
 		 kind_is_squelched_aware(o_ptr->kind) :
@@ -507,10 +503,6 @@ bool object_is_squelched(const object_type *o_ptr)
 	if (o_ptr->artifact ||
 			check_for_inscrip(o_ptr, "!k") || check_for_inscrip(o_ptr, "!*"))
 		return FALSE;
-
-	/* Auto-squelch dead chests */
-	if (o_ptr->tval == TV_CHEST && o_ptr->pval[DEFAULT_PVAL] == 0)
-		return TRUE;
 
 	/* Do squelching by kind */
 	if (object_flavor_is_aware(o_ptr) ?

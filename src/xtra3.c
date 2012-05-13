@@ -867,7 +867,7 @@ static size_t prt_dtrap(int row, int col)
 	if (info & (CAVE2_DTRAP))
 	{
 		/* The player is on the border */
-		if (dtrap_edge(p_ptr->py, p_ptr->px))
+		if (info & (CAVE2_DEDGE))
 			c_put_str(TERM_YELLOW, "DTrap", row, col);
 		else
 			c_put_str(TERM_L_GREEN, "DTrap", row, col);
