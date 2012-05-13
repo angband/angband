@@ -83,7 +83,10 @@ int context_menu_player_2(int mx, int my)
 		r.row = my + 1;
 	}
 
+	/* Hack -- no flush needed */
+	msg_flag = FALSE;
 	screen_save();
+
 	menu_layout(m, &r);
 	region_erase_bordered(&r);
 
@@ -211,7 +214,10 @@ int context_menu_player(int mx, int my)
 		r.row = my + 1;
 	}
 
+	/* Hack -- no flush needed */
+	msg_flag = FALSE;
 	screen_save();
+
 	menu_layout(m, &r);
 	region_erase_bordered(&r);
 
@@ -437,7 +443,10 @@ int context_menu_cave(struct cave *cave, int y, int x, int adjacent, int mx, int
 		r.row = my + 1;
 	}
 
+	/* Hack -- no flush needed */
+	msg_flag = FALSE;
 	screen_save();
+
 	menu_layout(m, &r);
 	region_erase_bordered(&r);
 	if (p_ptr->timed[TMD_IMAGE]) {
@@ -733,6 +742,8 @@ int context_menu_object(const object_type *o_ptr, const int slot)
 	r.row = 1;
 	r.page_rows = m->count;
 
+	/* Hack -- no flush needed */
+	msg_flag = FALSE;
 	screen_save();
 
 	/* Display info */
@@ -920,7 +931,10 @@ int context_menu_store(struct store *store, const int oid, int mx, int my)
 		r.row = my + 1;
 	}
 
+	/* Hack -- no flush needed */
+	msg_flag = FALSE;
 	screen_save();
+
 	menu_layout(m, &r);
 	region_erase_bordered(&r);
 
@@ -1025,7 +1039,10 @@ int context_menu_store_item(struct store *store, const int oid, int mx, int my)
 		r.row = my + 1;
 	}
 
+	/* Hack -- no flush needed */
+	msg_flag = FALSE;
 	screen_save();
+
 	menu_layout(m, &r);
 	region_erase_bordered(&r);
 

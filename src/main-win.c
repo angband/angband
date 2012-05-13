@@ -197,7 +197,7 @@
 #define MMNOAUX          /* Auxiliary audio support */
 #define MMNOTIMER        /* Timer support */
 #define MMNOJOY          /* Joystick support */
-#define MMNOMCI          /* MCI support */
+/*#define MMNOMCI */         /* MCI support */
 #define MMNOMMIO         /* Multimedia file I/O support */
 #define MMNOMMSYSTEM     /* General MMSYSTEM functions */
 
@@ -1716,6 +1716,9 @@ static errr Term_xtra_win_react(void)
 				td->t.pict_hook = Term_pict_win;
 			}
 		}
+
+		/* make sure the current graphics mode is set */
+		current_graphics_mode = get_graphics_mode(arg_graphics);
 
 		/* Change setting */
 		use_graphics = arg_graphics;
@@ -4170,6 +4173,22 @@ static void process_menus(WORD wCmd)
 				if (arg_graphics != selected_mode) {
 					arg_graphics = selected_mode;
 
+					/* hard code values when switching to text mode */
+					if ((selected_mode == GRAPHICS_NONE)
+							&& !use_graphics_nice) {
+						td = &data[0];
+						td->tile_wid = td->font_wid;
+						td->tile_hgt = td->font_hgt;
+						tile_width = 1;
+						tile_height = 1;
+
+						/* React to changes */
+						term_getsize(td);
+
+						term_window_resize(td);
+					}
+
+
 					/* React to changes */
 					Term_xtra_win_react();
 
@@ -4244,8 +4263,10 @@ int extract_modifiers(keycode_t ch, bool kp) {
  * "pause" key (between scroll lock and numlock).  We also catch a few odd
  * keys which I do not recognize, but which are listed among keys which we
  * do catch, so they should be harmless to catch.
+ *
+ * return whether the keypress was NOT handled
  */
-static void handle_keydown(WPARAM wParam, LPARAM lParam)
+static bool handle_keydown(WPARAM wParam, LPARAM lParam)
 {
 	keycode_t ch = 0;
 
@@ -4255,7 +4276,7 @@ static void handle_keydown(WPARAM wParam, LPARAM lParam)
 	if (screensaver_active)
 	{
 		stop_screensaver();
-		return;
+		return TRUE;
 	}
 #endif /* USE_SAVER */
 
@@ -4306,7 +4327,9 @@ static void handle_keydown(WPARAM wParam, LPARAM lParam)
 		/* printf("ch=%d mods=%d\n", ch, mods); */
 		/* fflush(stdout); */
 		Term_keypress(ch, mods);
+		return FALSE;
 	}
+	return TRUE;
 }
 
 
@@ -4388,7 +4411,7 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 		case WM_SYSKEYDOWN:
 		case WM_KEYDOWN:
 		{
-			handle_keydown(wParam, lParam);
+			return handle_keydown(wParam, lParam);
 			break;
 		}
 
@@ -4797,7 +4820,7 @@ static LRESULT FAR PASCAL AngbandListProc(HWND hWnd, UINT uMsg,
 		case WM_SYSKEYDOWN:
 		case WM_KEYDOWN:
 		{
-			handle_keydown(wParam, lParam);
+			return handle_keydown(wParam, lParam);
 			break;
 		}
 

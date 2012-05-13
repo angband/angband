@@ -2575,6 +2575,9 @@ void do_cmd_sell(cmd_code code, cmd_arg args[])
 	inven_item_increase(item, -amt);
 	inven_item_optimize(item);
 
+	/* Notice if pack items need to be combined or reordered */
+	notice_stuff(p_ptr);
+
 	/* Handle stuff */
 	handle_stuff(p_ptr);
 
@@ -2778,6 +2781,9 @@ static void store_examine(int item)
 	/* Get the actual object */
 	o_ptr = &store->stock[item];
 
+	/* Hack -- no flush needed */
+	msg_flag = FALSE;
+
 	/* Show full info in most stores, but normal info in player home */
 	tb = object_info(o_ptr, (store->sidx != STORE_HOME) ? OINFO_FULL :
 		OINFO_NONE);
@@ -2847,6 +2853,9 @@ static void store_menu_recalc(menu_type *m)
 static bool store_process_command_key(struct keypress kp)
 {
 	int cmd = 0;
+
+	/* Hack -- no flush needed */
+	msg_flag = FALSE;
 
 	/* Process the keycode */
 	switch (kp.code) {
