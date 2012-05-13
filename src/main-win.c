@@ -1717,6 +1717,9 @@ static errr Term_xtra_win_react(void)
 			}
 		}
 
+		/* make sure the current graphics mode is set */
+		current_graphics_mode = get_graphics_mode(arg_graphics);
+
 		/* Change setting */
 		use_graphics = arg_graphics;
 
@@ -4169,6 +4172,22 @@ static void process_menus(WORD wCmd)
 				/* Toggle "arg_graphics" */
 				if (arg_graphics != selected_mode) {
 					arg_graphics = selected_mode;
+
+					/* hard code values when switching to text mode */
+					if ((selected_mode == GRAPHICS_NONE)
+							&& !use_graphics_nice) {
+						td = &data[0];
+						td->tile_wid = td->font_wid;
+						td->tile_hgt = td->font_hgt;
+						tile_width = 1;
+						tile_height = 1;
+
+						/* React to changes */
+						term_getsize(td);
+
+						term_window_resize(td);
+					}
+
 
 					/* React to changes */
 					Term_xtra_win_react();
