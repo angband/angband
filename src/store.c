@@ -2989,6 +2989,7 @@ static bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
 						msg_flag = FALSE;
 						prt("Examine which item?", 0, 0);
 						oid = store_get_stock(m, oid);
+						prt("", 0, 0);
 					/*}*/
 					store_examine(oid); break;
 				}
