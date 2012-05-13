@@ -666,6 +666,16 @@ bool item_tester_okay(const object_type *o_ptr)
 }
 
 
+/** 
+ * Return true if the item is unknown (has yet to be seen by the player).
+ */
+static bool is_unknown(const object_type *o_ptr)
+{
+	grid_data gd = { 0 };
+	map_info(o_ptr->iy, o_ptr->ix, &gd);
+	return gd.unseen_object;
+}	
+
 
 /*
  * Get the indexes of objects at a given floor location. -TNB-
@@ -705,8 +715,10 @@ int scan_floor(int *items, int max_size, int y, int x, int mode)
 		if ((mode & 0x01) && !item_tester_okay(o_ptr)) continue;
 
 		/* Marked */
-		if ((mode & 0x02) && (!o_ptr->marked || squelch_item_ok(o_ptr)))
-			continue;
+		if ((mode & 0x02)) {
+			if (!o_ptr->marked) continue;
+			if (!is_unknown(o_ptr) && squelch_item_ok(o_ptr)) continue;
+		}
 
 		/* Accept this item */
 		items[num++] = this_o_idx;
@@ -3682,23 +3694,7 @@ static int compare_types(const object_type *o1, const object_type *o2)
 		return CMP(o1->sval, o2->sval);
 	else
 		return CMP(o1->tval, o2->tval);
-}
-
-/** 
- * Return true if the item is unknown (has yet to
- * be seen by the player)
- */
-
-static bool is_unknown(const object_type *o_ptr)
-{
-		
-	grid_data gd = { 0 };
-	
-	map_info(o_ptr->iy, o_ptr->ix, &gd);
-	return gd.unseen_object;
-		
 }	
-	
 	
 
 /**
@@ -3827,7 +3823,7 @@ void display_itemlist(void)
 				object_type *o_ptr = object_byid(floor_list[i]);
 				unsigned j;
 
-				if (squelch_item_ok(o_ptr)) continue;
+				if (!is_unknown(o_ptr) && squelch_item_ok(o_ptr)) continue;
 				if (o_ptr->tval == TV_GOLD) continue;
 
 				/* See if we've already seen a similar item; if so, just add */
@@ -3906,10 +3902,6 @@ void display_itemlist(void)
 		char o_desc[86];
 
 		object_type *o_ptr = types[i];
-
-		/* We shouldn't list coins or squelched items */
-		if (o_ptr->tval == TV_GOLD || squelch_item_ok(o_ptr))
-			continue;
 
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);
 		if ((counts[i] > 1) && !(is_unknown(o_ptr)))
