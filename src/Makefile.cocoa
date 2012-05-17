@@ -14,7 +14,7 @@ OPT ?= -O2
 
 NAME = Angband
 APPNAME = $(NAME).app
-EXE = Angband
+EXE = angband
 
 ARCH = -arch i386 -arch x86_64
 WARNINGS = -W -Wall -Wno-unused-parameter -Wno-missing-field-initializers
