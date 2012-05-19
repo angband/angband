@@ -2,7 +2,7 @@
 Option Descriptions
 ===================
 
-Options are accessible through the ``=`` command, which provides an
+Options are accessible through the '=' command, which provides an
 interface to the various sets of options available to the player.
 
 In the descriptions below, each option is listed as the textual summary
@@ -23,44 +23,44 @@ Interface and Display Options
 
 .. _rogue_like_commands:
 
-Rogue-like commands ``[rogue_like_commands]``
+Rogue-like commands '[rogue_like_commands]'
   Selects the "roguelike" command set (see "command.txt" for info).
 
 .. _use_old_target:
 
-Use old target by default ``[use_old_target]``
+Use old target by default '[use_old_target]'
   Forces all commands which normally ask for a "direction" to use the
   current "target" if there is one. Use of this option can be dangerous if
   you target locations on the ground, unless you clear them when done.
 
 .. _pickup_always:
 
-Always pickup items ``[pickup_always]``
+Always pickup items '[pickup_always]'
   Automatically picks up items when you walk upon them, provided it is safe
   to do so.
 
 .. _pickup_inven:
 
-Always pickup items matching inventory ``[pickup_inven]``
+Always pickup items matching inventory '[pickup_inven]'
   Like `pickup_always`_, but picks up an item only if it is a copy of an
   item that you already have in your inventory.
 
 .. _easy_open:
 
-Open/Disarm/Close without direction ``[easy_open]``
+Open/Disarm/Close without direction '[easy_open]'
   If there is only one closed door next to the character, the game will not
-  bother asking for a direction when the player asks to |``o``pen| omething.
-  The same applies for |``c``losing| doors and |``D``isarming| traps.
+  bother asking for a direction when the player asks to |'o'pen| omething.
+  The same applies for |'c'losing| doors and |'D'isarming| traps.
 
-.. |``o``pen| replace:: ``o``\pen
+.. |'o'pen| replace:: 'o'\pen
 
-.. |``c``losing| replace:: ``c``\losing
+.. |'c'losing| replace:: 'c'\losing
 
-.. |``D``isarming| replace:: ``D``\isarming
+.. |'D'isarming| replace:: 'D'\isarming
 
 .. _center_player:
 
-Center map continuously ``[center_player]``
+Center map continuously '[center_player]'
   The map always centres on the player with this option on. With it off, it
   is divided into 25 sections, with coordinates (0,0) to (4,4), and will
   how one section at a time - the display will "flip" to the next section
@@ -68,25 +68,25 @@ Center map continuously ``[center_player]``
 
 .. _view_yellow_light:
 
-Use special colors for torch-lit grids ``[view_yellow_light]``
+Use special colors for torch-lit grids '[view_yellow_light]'
   This option causes special colors to be used for "torch-lit" grids.
   Turning this option off will slightly improve game speed.
 
 .. _hp_changes_color:
 
-Player color indicates low hit points ``[hp_changes_color]``
-  This option makes the player ``@`` turn various shades of colour from
+Player color indicates low hit points '[hp_changes_color]'
+  This option makes the player '@' turn various shades of colour from
   white to red, depending on percentage of HP remaining.
 
 .. _animate_flicker:
 
-Animate multi-coloured monsters and items ``[animate_flicker]``
+Animate multi-coloured monsters and items '[animate_flicker]'
   Certain powerful monsters and items will shimmer in real time, i.e.
   between keypresses.
 
 .. _purple_uniques:
 
-Show unique monsters in a special colour ``[purple_uniques]``
+Show unique monsters in a special colour '[purple_uniques]'
   All "unique" monsters will be shown in a light purple colour, which is
   not used for any "normal" monsters - so you can tell at a glance that
   they are unique. If you like the idea but don't like the colour, you can
@@ -94,46 +94,40 @@ Show unique monsters in a special colour ``[purple_uniques]``
 
 .. _show_flavors:
 
-Show flavors in object descriptions ``[show_flavors]``
+Show flavors in object descriptions '[show_flavors]'
   Display "flavors" (color or variety) in object descriptions, even for
   objects whose type is known. This does not affect objects in stores.
 
 .. _mouse_movement:
 
-Allow mouse clicks to move the player  ``[mouse_movement]``
+Allow mouse clicks to move the player  '[mouse_movement]'
   Clicking on the main window will be interpreted as a move command to that
   spot.
 
 .. _mouse_buttons:
 
-Show mouse status line buttons ``[mouse_buttons]``
+Show mouse status line buttons '[mouse_buttons]'
   Creates clickable "buttons" on the bottom line of the main window, to
   enhance mouse-led play.
 
 .. _use_sound:
 
-Use sound ``[use_sound]``
+Use sound '[use_sound]'
   Turns on sound effects, if your system supports them.
-
-.. _xchars_to_file:
-
-Allow accents in output files ``[xchars_to_file]``
-  Extended characters (accents, umlauts and so on) will be printed in files
-  created by the game (character dumps, screenshots etc.).
 
 Disturbance options
 ===================
 
 .. _disturb_move:
 
-Disturb whenever any monster moves ``[disturb_move]``
+Disturb whenever any monster moves '[disturb_move]'
   Disturb the player when any monster moves, appears, or disappears. This
   includes monsters which are only visible due to telepathy, so you should
   probably turn this option off if you want to "rest" near such monsters.
 
 .. _disturb_near:
 
-Disturb whenever viewable monster moves ``[disturb_near]``
+Disturb whenever viewable monster moves '[disturb_near]'
   Disturb the player when any viewable monster moves, whenever any monster
   becomes viewable for the first time, and also whenever any viewable
   monster becomes no longer viewable. This option ignores the existence of
@@ -142,35 +136,35 @@ Disturb whenever viewable monster moves ``[disturb_near]``
 
 .. _disturb_detect:
 
-Disturb whenever leaving trap detected area ``[disturb_detect]``
+Disturb whenever leaving trap detected area '[disturb_detect]'
   This option causes you to be disturbed when you reach the edge of your
   last invocation of detect traps.
 
 .. _disturb_state:
 
-Disturb whenever player state changes ``[disturb_state]``
+Disturb whenever player state changes '[disturb_state]'
   This option causes you to be disturbed whenever the player state changes,
   including changes in hunger, resistance, confusion, etc.
 
 .. _auto_more:
 
-Automatically clear -more- prompts ``[auto_more]``
-  The game does not wait for a keypress when it comes to a ``-more-``
+Automatically clear -more- prompts '[auto_more]'
+  The game does not wait for a keypress when it comes to a '-more-'
   prompt, but carries on going.
 
 .. _notify_recharge:
 
-Notify on object recharge ``[notify_recharge]``
+Notify on object recharge '[notify_recharge]'
   This causes the game to print a message when any rechargeable object
   (i.e. a rod or activatable weapon or armour item) finishes recharging. It
-  is the equivalent of inscribing ``{!!}`` on all such items.
+  is the equivalent of inscribing '{!!}' on all such items.
 
 Birth options
 =============
 
 .. _birth_maximize:
 
-Maximize effect of race/class bonuses ``[birth_maximize]``
+Maximize effect of race/class bonuses '[birth_maximize]'
   Normally, if a character should find potions that permanently increase
   his stats, the maximum that can be achieved without equipment bonuses is
   18/100. If maximize mode is on (which is the default), then the race and
@@ -189,7 +183,7 @@ Maximize effect of race/class bonuses ``[birth_maximize]``
 
 .. _birth_randarts:
 
-Randomize the artifacts (except a very few) ``[birth_randarts]``
+Randomize the artifacts (except a very few) '[birth_randarts]'
   A different set of artifacts will be created, in place of the standard
   ones. This is intended primarily for people who have played enough to
   know what most of the standard artifacts do and want some variety. The
@@ -198,7 +192,7 @@ Randomize the artifacts (except a very few) ``[birth_randarts]``
 
 .. _birth_keep_randarts:
 
-Use previous set of randarts ``[birth_keep_randarts]``
+Use previous set of randarts '[birth_keep_randarts]'
   Does what it says on the tin. Note that this option must be set at the
   END of the game, from the death menu. Once you have restarted the game,
   it is too late to set it (but you can still un-set it if you change your
@@ -207,13 +201,13 @@ Use previous set of randarts ``[birth_keep_randarts]``
 
 .. _birth_ai_smell:
 
-Monsters chase recent locations ``[birth_ai_smell]``
+Monsters chase recent locations '[birth_ai_smell]'
   Allow monsters to take advantage of "old" trails that you may have left
   in the dungeon.
 
 .. _birth_ai_packs:
 
-Monsters act smarter in groups ``[birth_ai_packs]``
+Monsters act smarter in groups '[birth_ai_packs]'
   "Group" monsters will use tactics that groups of monsters might
   reasonably employ - such as hiding out of sight around a corner, trying
   to draw the character out into the middle of a room so they can surround
@@ -222,19 +216,21 @@ Monsters act smarter in groups ``[birth_ai_packs]``
 
 .. _birth_ai_learn:
 
-Monsters learn from their mistakes ``[birth_ai_learn]``
+Monsters learn from their mistakes '[birth_ai_learn]'
   Allow monsters to learn what spell attacks you are resistant to, and to
-  use this information to choose the best attacks.
+  use this information to choose the best attacks.  This option makes the
+  game very difficult and is not recommended.
 
 .. _birth_ai_cheat:
 
-Monsters exploit players weaknesses ``[birth_ai_cheat]``
+Monsters exploit players weaknesses '[birth_ai_cheat]'
   Allow monsters to know what spell attacks you are resistant to, and to
-  use this information to choose the best attacks.
+  use this information to choose the best attacks.  This option makes the 
+  game very difficult and is not recommended.
 
 .. _birth_ai_smart:
 
-Monsters behave more intelligently (broken) ``[birth_ai_smart]``
+Monsters behave more intelligently (broken) '[birth_ai_smart]'
   Monsters have a certain amount of intelligence and will use it -
   teleporting away when low on hit points, using their more powerful spells
   in preference to the less powerful spells, etc. Not all monsters are, of
@@ -243,7 +239,7 @@ Monsters behave more intelligently (broken) ``[birth_ai_smart]``
 
 .. _birth_ironman:
 
-Restrict the use of stairs/recall ``[birth_ironman]``
+Restrict the use of stairs/recall '[birth_ironman]'
   This option, not recommended for non-advanced players, prevents the
   generation of up staircases, and makes the scroll and effect of Word of
   Recall not function: and teleport-level always goes down, as does the
@@ -252,25 +248,25 @@ Restrict the use of stairs/recall ``[birth_ironman]``
 
 .. _birth_small_range:
 
-Halve view and spell distances ``[birth_small_range]``
+Halve view and spell distances '[birth_small_range]'
   Distance of seeing, casting spells, shooting and so on are all halved.
   This is useful for playing with large tiles, or on small devices.
 
 .. _birth_no_artifacts:
 
-Restrict the creation of artifacts ``[birth_no_artifacts]``
+Restrict the creation of artifacts '[birth_no_artifacts]'
   No artifacts will be created. Ever. Just *how* masochistic are you?
 
 .. _birth_no_stacking:
 
-Don't stack objects on the floor ``[birth_no_stacking]``
+Don't stack objects on the floor '[birth_no_stacking]'
   Items dropped on the floor will spread out instead of stacking. Normal
   items will disappear if there is no empty grid within a radius of three
   squares.
 
 .. _birth_no_preserve:
 
-Lose artifacts when leaving level ``[birth_no_preserve]``
+Lose artifacts when leaving level '[birth_no_preserve]'
   Normally if you leave a level with an unidentified artifact on it you may
   still find it later. With this option on, if you leave a level with an
   artifact on it's gone for the rest of the game whether you knew it was
@@ -280,19 +276,19 @@ Lose artifacts when leaving level ``[birth_no_preserve]``
 
 .. _birth_no_stairs:
 
-Don't generate connected stairs ``[birth_no_stairs]``
+Don't generate connected stairs '[birth_no_s	tairs]'
   Never generate a staircase back to the level you came from, if you used a
   staircase to get to the level.
 
 .. _birth_no_feelings:
 
-Don't show level feelings ``[birth_no_feelings]``
+Don't show level feelings '[birth_no_feelings]'
   The "quality" of a level is never revealed, no matter how long you spend
   on the level.
 
 .. _birth_no_selling:
 
-Items always sell for 0 gold ``[birth_no_selling]``
+Items always sell for 0 gold '[birth_no_selling]'
   Shopkeepers will never pay you for items you sell, though they will still
   identify unknown items for you, and will still sell you their wares. To
   balance out income in the game, gold found in the dungeon will be
@@ -303,27 +299,27 @@ Cheating options
 
 .. _cheat_hear:
 
-Peek into monster creation ``[cheat_hear]``
+Peek into monster creation '[cheat_hear]'
   Cheaters never win. But they can peek at monster creation.
 
 .. _cheat_room:
 
-Peek into dungeon creation ``[cheat_room]``
+Peek into dungeon creation '[cheat_room]'
   Cheaters never win. But they can peek at room creation.
 
 .. _cheat_xtra:
 
-Peek into something else ``[cheat_xtra]``
+Peek into something else '[cheat_xtra]'
   Cheaters never win. But they can see debugging messages.
 
 .. _cheat_know:
 
-Know complete monster info ``[cheat_know]``
+Know complete monster info '[cheat_know]'
   Cheaters never win. But they can know all about monsters.
 
 .. _cheat_live:
 
-Allow player to avoid death    ``[cheat_live]``
+Allow player to avoid death    '[cheat_live]'
    Cheaters never win. But they can cheat death.
 
 Window flags
@@ -392,11 +388,11 @@ Display borg status
 Left Over Information
 =====================
 
-The ``hitpoint_warn`` value, if non-zero, is the percentage of maximal
+The 'hitpoint_warn' value, if non-zero, is the percentage of maximal
 hitpoints at which the player is warned that he may die. It is also used as
 the cut-off for using the color red to display both hitpoints and mana.
 
-The ``delay_factor`` value, if non-zero, will slow down the visual effects
+The 'delay_factor' value, if non-zero, will slow down the visual effects
 used for missile, bolt, beam, and ball attacks. The actual time delay is
-equal to ``delay_factor`` squared, in milliseconds.
+equal to 'delay_factor' squared, in milliseconds.
 

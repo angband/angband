@@ -27,7 +27,7 @@ class, and background history. These are randomly determined, but are
 affected by the sex and race of the character. In general, these attributes
 are only used to provide flavour to the character, to assist in the role
 playing, but they do have a few minor effects on the game. For example,
-background history affects social class, which affects the tarting money.
+background history affects social class, which affects the starting money.
 (Not a lot, in the case of some races: for instance, Half-Trolls are always
 going to be the scum of society, even if their father was the Clan Chief.)
 
@@ -35,16 +35,16 @@ Each character also has six primary "stats": strength, intelligence,
 wisdom, dexterity, constitution, and charisma, which modify the abilities
 of the character in a variety of ways. Every stat has a numerical value,
 ranging from a minimum of 3, up to a normal maximum of 18, and even higher,
-into the "percentile" range, represented as ``18/01`` through ``18/100``:
+into the "percentile" range, represented as '18/01' through '18/100':
 this is the maximum that can be achieved intrinsically, for any given stat.
 These stats can be modified further by equipment, race and class bonuses up
-to a maximum of ``18/220``.
+to a maximum of '18/220'.
 
 Each character also has several primary "skills": disarming, magic devices,
 saving throws, stealth, searching ability, searching frequency, fighting
 skill, and shooting skill, which are derived from the character's race,
-class, level, stats, and current equipment. These kills have rather obvious
-effects, but will be described more completely below.
+class, level, stats, and current equipment. These skills have rather 
+obvious effects, but will be described more completely below.
 
 Each character may have one or more "racially intrinsic skills", based on
 the race of the character. These may include special resistances, or
@@ -59,7 +59,7 @@ experience to gain levels. As the experience rises, so does the level, and
 as the level rises, certain other abilities and characteristics rise as
 well. All characters start at 0 experience and at the first level.
 
-Each character has some gold, which can be used to buy items from the hops
+Each character has some gold, which can be used to buy items from the shops
 in the town, and which can be obtained not only from selling items to the
 shops, but also by taking it from dead monsters and by finding it in the
 dungeon. Each character starts out with some gold, the amount of which is
@@ -76,7 +76,7 @@ Each character has an "armour class", abbreviated to AC, representing how
 well the character can avoid damage. The armour class is affected by
 dexterity and equipment, so the concept includes both avoiding blows and
 being able to take blows without being hurt. Armour class on equipment is
-always denoted in square brackets, usually as a figure of ``[X,+Y]`` where
+always denoted in square brackets, usually as a figure of '[X,+Y]' where
 X is the intrinsic AC of the armour in question, and Y is the magical bonus
 to armour class provided by that item.
 
@@ -156,7 +156,7 @@ Elf
 Hobbit
   Hobbits, or Halflings, are very good at shooting, throwing, and have good
   saving throws. They also are very good at searching, disarming,
-  perception, and stealth; so they make excel- lent rogues, but prefer to
+  perception, and stealth; so they make excellent rogues, but prefer to
   be called burglars. They will be much weaker than humans, and not good at
   melee fighting. Halflings have fair infravision. They have a strong hold
   on their life force, and are thus resistant to life draining. Hobbits are
@@ -170,10 +170,9 @@ Gnome
   mages, and have very good saving throws. They are good at searching,
   disarming, perception, and stealth. They have lower strength than humans
   so they are not very good at fighting with hand weapons. Gnomes have good
-  infravision, so they can detect warm-blooded creatures up to 40 feet
-  away. Gnomes are intrinsically protected against paralysis and some
-  slowing effects. Gnomes are excellent at using wands and staves and can
-  identify them when found.
+  infravision.  Gnomes are intrinsically protected against paralysis and 
+  some   slowing effects. Gnomes are excellent at using wands and staves
+  and can identify them when found.
 
 .. _Dwarf:
 
@@ -206,7 +205,7 @@ Half-Orc
 
 Half-Troll
   Half-Trolls are incredibly strong, and have more hit points than any
-  other character race. They are also very stupid and low. They will make
+  other character race. They are also very stupid and slow. They will make
   great warriors and iffy priests. They are bad at searching, disarming,
   perception, and stealth. They are so ugly that a Half-Orc grimaces in
   their presence. Half-trolls always have their strength sustained, and
@@ -287,13 +286,13 @@ Mage
 Priest
   A Priest is a character of holy devotion. They explore the dungeon only
   to destroy the evil that lurks within, and if treasure just happens to
-  fall into their packs, well, so much more to the glory of their church!
+  fall into their packs, well, so much more to the glory of their temple!
   Priests receive their spells from a deity, and therefore do not choose
   which spells they will learn. They are familiar with magical devices,
   preferring to call them "instruments of God", but are not as good as a
   mage in their use. Priests have great saving throws, and make decent
   fighters, but they are not as good at using sharp weapons (swords and
-  polearms) owing to the Church's strictures about shedding blood, so they
+  polearms) owing to the holy strictures about shedding blood, so they
   are better off using blunt weapons such as maces. Wisdom is the priest's
   primary stat and at high enough levels they can cast many prayers without
   a chance of failure. Priests have poor stealth.
@@ -318,7 +317,7 @@ Rogue
 Ranger
   A Ranger is a warrior/mage and a very powerful class. He is a good
   fighter, and the best of all the classes with missile weapons, especially
-  bows. The ranger learns spells much more lowly than a mage, but is
+  bows. The ranger learns spells much more slowly than a mage, but is
   capable of learning all but the most powerful spells. Because a ranger is
   really a dual class character, more experience is required for him to
   advance. A ranger has good stealth, good perception, good searching, a
@@ -445,8 +444,8 @@ Stealth
   The ability to move silently about is very useful. Characters with good
   stealth can usually surprise their opponents, gaining the first blow.
   Also, creatures may fail to notice a stealthy character entirely,
-  allowing a player to avoid certain fights. This skill is based entirely
-  upon race and class, and will never improve unless magically enhanced.
+  allowing a player to avoid certain fights. This skill is based upon race 
+  and class, but can me magically enhanced.
  
 Disarming
   Disarming is the ability to remove traps safely, and also includes
@@ -487,8 +486,8 @@ points per level, adjusted for constitution) and an XP modifier of
       Race       STR  INT  WIS  DEX  CON  CHR  HD (base)  XP/level  Infra
 ================ ===  ===  ===  ===  ===  ===  =========  ========  ======
       Human        0    0    0    0    0    0      10         +0%   None
-      Half-Elf    -1   +1    0   +1   -1   +1       9        +10%   20'
-      Elf         -1   +2   +1   +1   -2   +1       8        +20%   30'
+      Half-Elf     0   +1   -1   +1   -1   +1      10        +10%   20'
+      Elf         -1   +2   -1   +1   -1   +1       9        +20%   30'
       Hobbit      -2   +2   +1   +3   +2   +1       7        +10%   40'
       Gnome       -1   +2    0   +2   +1   -2       8        +25%   40'
       Dwarf       +2   -3   +2   -2   +2   -3      11        +20%   50'
@@ -502,12 +501,12 @@ points per level, adjusted for constitution) and an XP modifier of
 ================ ===  ===  ===  ===  ===  ===  ========== ========
       Class      STR  INT  WIS  DEX  CON  CHR  HD (bonus) XP/level
 ================ ===  ===  ===  ===  ===  ===  ========== ========
-      Warrior     +5   -2   -2   +2   +2   -1       9         +0%
-      Mage        -5   +3    0   +1   -2   +1       0        +30%
-      Priest      -1   -3   +3   -1    0   +2       2        +20%
-      Rogue       +2   +1   -2   +3   +1   -1       6        +25%
-      Ranger      +2   +2    0   +1   +1   +1       4        +30%
-      Paladin     +3   -3   +1    0   +2   +2       6        +35%
+      Warrior     +3   -2   -2   +2   +2   -1       9         +0%
+      Mage        -3   +3    0   +0   -2   +1       0        +30%
+      Priest      -1   -3   +3   -1   +1   +2       2        +20%
+      Rogue        0   +1   -3   +3   -1   -1       6        +25%
+      Ranger       0   +2   -2   +1   -1   +1       4        +30%
+      Paladin     +1   -3   +1   -1   +2   +2       6        +35%
 ================ ===  ===  ===  ===  ===  ===  ========== ========
  
 Ability Tables
@@ -518,26 +517,26 @@ Ability Tables
 ============ ======  ======  =====  =======  ======  ======  ======  ===== 
   Human         0       0       0       0       0      10       0       0
   Half-Elf      2       3       3       1       6      11      -1       5
-  Elf           5       6       6       1       8      12      -5      15
+  Elf           5       6       6       2       8      12      -5      15
   Hobbit       15      18      18       4      12      15     -10      20
-  Gnome        10      12      12       3       6      13      -8      12
+  Gnome        10      22      12       3       6      13      -8      12
   Dwarf         2       9       9      -1       7      10      15       0
   Half-Orc     -3      -3      -3      -1       0       7      12      -5
   Half-Troll   -5      -8      -8      -2      -1       5      20     -10
-  Dunadan       4       5       5       2       3      13      15      10
-  High-Elf      4      20      20       3       3      14      10      25
-  Kobold       10       5       0       4      15      15      -5      10
+  Dunadan       4       5       5       1       3      13      15      10
+  High-Elf      4      20      20       2       3      14      10      25
+  Kobold       10       5       0       3      15      15      -5      10
 ============ ======  ======  =====  =======  ======  ======  ======  =====
 
 ==========  ======= ======= ======= ======= ======  ======  ======= =======
  Class      Disarm  Device   Save   Stealth Search  Percep   Fight   Bows 
 ==========  ======= ======= ======= ======= ======  ======  ======= =======
- Warrior    25(+10) 18(+7)  18(+10)  1(+0)  14(+0)   7(+0)  70(+45) 55(+45)
+ Warrior    25(+10) 18(+7)  18(+10)  0(+0)  14(+0)   2(+0)  70(+45) 55(+45)
  Mage       30(+7)  36(+13) 30(+9)   2(+0)  16(+0)  20(+0)  34(+15) 20(+15)
  Priest     25(+7)  30(+10) 32(+12)  2(+0)  16(+0)   8(+0)  48(+20) 35(+20)
- Rogue      45(+15) 32(+10) 28(+10)  5(+0)  32(+0)  24(+0)  60(+40) 66(+30)
+ Rogue      45(+15) 32(+10) 28(+10)  3(+1)  32(+0)  24(+0)  60(+40) 66(+30)
  Ranger     30(+8)  32(+10) 28(+10)  3(+0)  24(+0)  16(+0)  56(+30) 72(+45)
- Paladin    20(+7)  25(+10) 25(+11)  1(+0)  12(+0)   2(+0)  68(+35) 40(+30)
+ Paladin    20(+7)  24(+10) 25(+11)  0(+0)  12(+0)   2(+0)  68(+35) 40(+30)
 ==========  ======= ======= ======= ======= ======  ======  ======= =======
 
 For character classes, there are two figures: the first figure is the base
@@ -566,7 +565,7 @@ Point-based
   money that you can use to buy equipment at the start of the game.
 
   On selecting this option, you will find that the points have already been
-  assigned to default recommended values. These represent an expert's
+  assigned to default recommended values. These represent an algorithm's
   opinion for the ideal point spending. However, you are free to reallocate
   them as you wish.
 
@@ -589,5 +588,5 @@ score list.
 
 You can play a dynasty of characters. If you use a Roman numeral at the end
 of your character name (like "Fred I" or "Pimplesnarg XVI"), the game will
-automatically increment the numeral each time you die.
+automatically increment the numeral each time you die (or win!).
 

@@ -8,16 +8,21 @@ so we can fix it. :)
 This version
 ============
 
- * Andi Sidwell (takkaria)
- * Aerdan
+ * Robert Au (myshkin)
+ * Raymond "Shockbolt" Gaustadnes
+ * Peter Denison (noz)
+ * Nick McConnell
+ * Kiyoshi Aman (Aerdan)
+ * Gabe Cunningham
  * Erik Osheim (d_m)
  * Elly Jones
- * Aaron Bader (fizzix)
- * Lebannen
+ * David Barr (david3x3x3)
+ * Chris Weisiger (derakon)
  * Chris Carr (magnate)
- * Robert Au (myshkin)
- * Peter Denison (noz)
- * Gabe Cunningham
+ * Buzzkill
+ * Brett Reid (Blue baron)
+ * Andi Sidwell (takkaria)
+ * Aaron Bader (fizzix)
 
 Previous maintainers
 ====================
@@ -41,37 +46,39 @@ Contributors
 Many thanks go to the following people who have contributed patches,
 bugfixes, and other stuff for Angband:
 
-Peter Berger, Andrew Hill, Werner Baer, Tom Morton, "Cyric the Mad", Chris
-Kern, Jurriaan Kalkman, Alexander Wilkins, Mauro Scarpa, "facade", Dennis
-van Es, Kenneth A. Strom, Wei-Hwa Huang, Nikodemus, Timo Pietila, Shayne
-Steele, Dr. Andrew White, Greg Flint, Christopher Jeris, Ian Parkhouse,
-"Warhammer", Scott Holder, Brent Ross, Kazuo Ito, Willem Siemelink,
-"Luthien", David J. Grabiner, Ilya Bely, "chungkuo", Kieron Dunbar, George
-W. Harris, Joseph Oberlander, Paul Moore, Andreas Tophinke, Leon Marrick,
-Peter J. Rowe, Wim Benthem, Jaroslav Sladek, Keith Perkins, Hugo Kornelis,
-Pete Mack, Marco K, Frank Palazzolo, Christer Nyfalt, Andrew Doull, Kenneth
-Boyd, Iain McFall, Kiyoshi Aman, Christophe Cavalaria, Nick McConnell,
-Brendon Oliver, "Zaxx", "theninja", "Twilight Forest", "jbu",
-"AnonymousHero", Stefan O'Rear, "SilverD", Ed Graham, Tobias Franke,
-"rhinocesaurus", "Bron", "Mangojuice", Gabriel Cunningham, Chris Robertson,
-Joe Buck, "tigen", "Big Al", Paul Blay, J. D. White, Rowan Beentje,
-"pelpel", Shanoah Alkire, Alexander Philips, "mikon", "Antoine",
-"Irashtar", "roustk", Diego Gonzalez, Takeshi Mogami, Julian Lighton, Aram
-Harrow, William Tanksley, Chris Ang, Dean Anderson, Daniel Nash, David
-Blackston, Heino Vander Sanden, Mark Kvale, Sheldon Simms, Topi Ylinen,
-"Gileba", Jeff Greene, Joshua Middendorf, Tom Demuyt, Alexander Ulyanov,
-Alexander Malmberg, Chris R. Martin, Chris Herborth, Craig Oliver,
-"DarkGod", David Boeren, David DeLaney, David Kahane, Dennis Payne,
-Desvignes Sebastien, Ekkehard Kraemer, Eugene Hung, HansJoachim Baader,
-Heiko Herold, John Rauser, Jonathan Sari, Joseph William Dixon, Joseph
-Hall, John M. Kewley, Ken Wigle, Keith H. Randall, Kevin Bracey, Mike
-Marcelais, Maarten Hazewinkel, Peter Ammon, Peter Seebach, Randy Hutson,
-Scott Egashira, Skirmantas Kligys, Steve Linberg, Silas Dunsmore, Tom
-Harris, Ron Anderson, Ross E. Becker, Denis Eropkin, Torbjorn Lindgren,
-Lars Haugseth, Jon Taylor, Roland Jay Roberts, "Sergey", "cb", Michael
-Pope, "hmj", Colin Spry, Ed Cogburn, "Yendor", Thomas Dedorson, "Ewert",
-Rooslan S. Khayrov, Thapper, "Max Stats", "SSK", "ChodTheWacko", "Zaxx",
-Jonas Lith, Jens Schou
+Peter Berger, Andrew Hill, Werner Baer, Tom Morton, "Cyric the Mad", 
+Chris Kern, Jurriaan Kalkman, Alexander Wilkins, Mauro Scarpa, "facade", 
+Dennis van Es, Kenneth A. Strom, Wei-Hwa Huang, Nikodemus, Timo Pietila, 
+Shayne Steele, Dr. Andrew White, Greg Flint, Christopher Jeris, Ian 
+Parkhouse, "Warhammer", Scott Holder, Brent Ross, Kazuo Ito, Willem 
+Siemelink, "Luthien", David J. Grabiner, Ilya Bely, "chungkuo", Kieron 
+Dunbar, George W. Harris, Joseph Oberlander, Paul Moore, Andreas 
+Tophinke, Leon Marrick, Peter J. Rowe, Wim Benthem, Jaroslav Sladek, 
+Keith Perkins, Hugo Kornelis, Pete Mack, Marco K, Frank Palazzolo, 
+Christer Nyfalt, Andrew Doull, Kenneth Boyd, Iain McFall, Christophe 
+Cavalaria, Brendon Oliver, "Zaxx", "theninja", "Twilight Forest", "jbu", 
+"AnonymousHero", Stefan O'Rear, "SilverD", Ed Graham, Tobias Franke, 
+"rhinocesaurus", "Bron", "Mangojuice", Chris Robertson, Joe Buck, 
+"tigen", "Big Al", Paul Blay, J. D. White, Rowan Beentje, "pelpel", 
+Shanoah Alkire, Alexander Philips, "mikon", "Antoine", "Irashtar", 
+"roustk", Diego Gonzalez, Takeshi Mogami, Julian Lighton, Aram Harrow, 
+William Tanksley, Chris Ang, Dean Anderson, Daniel Nash, David 
+Blackston, Heino Vander Sanden, Mark Kvale, Sheldon Simms, Topi Ylinen, 
+"Gileba", Jeff Greene, Joshua Middendorf, Tom Demuyt, Alexander Ulyanov, 
+Alexander Malmberg, Chris R. Martin, Chris Herborth, Craig Oliver, 
+"DarkGod", David Boeren, David DeLaney, David Kahane, Dennis Payne, 
+Desvignes Sebastien, Ekkehard Kraemer, Eugene Hung, HansJoachim Baader, 
+Heiko Herold, John Rauser, Jonathan Sari, Joseph William Dixon, Joseph 
+Hall, John M. Kewley, Ken Wigle, Keith H. Randall, Kevin Bracey, Mike 
+Marcelais, Maarten Hazewinkel, Peter Ammon, Peter Seebach, Randy Hutson, 
+Scott Egashira, Skirmantas Kligys, Steve Linberg, Silas Dunsmore, Tom 
+Harris, Ron Anderson, Ross E. Becker, Denis Eropkin, Torbjorn Lindgren, 
+Lars Haugseth, Jon Taylor, Roland Jay Roberts, "Sergey", "cb", Michael 
+Pope, "hmj", Colin Spry, Ed Cogburn, "Yendor", Thomas Dedorson, "Ewert", 
+Rooslan S. Khayrov, Thapper, "Max Stats", "SSK", "ChodTheWacko", "Zaxx", 
+Jonas Lith, Jens Schou, "Lebannen" 
+
+
 
 Greg Wooledge <greg at wooledge.org> 
   Basic autoconf support, the original random artifact generator, and
@@ -92,15 +99,11 @@ Jonathan Ellis <jonathan at franz-liszt.freeserve.co.uk>
 John I'anson-Holton <jianson at milbank.com> 
   Many bugfixes and patches
 
-
 Steven Fuerst <sfuerst at physics.usyd.edu.au> 
   Improved X11, XAW, and GTK code
 
 "Bablos" <angband at blueyonder.co.uk> 
   Updated Amiga code
-
-Chris "Derakon" Weisiger 
-  Numerous contributions, including new Angband vaults
 
 Matthias Kurzke <mawende at gmx.net> 
   Ego-item patch and various code changes for the JLE patch
@@ -137,15 +140,9 @@ Eddie Grove
 Nomad 
   8x16 tiles
 
-Brett Reid 
-  Windows PNG support and other improvements
-
 The UPX team (Markus Oberhumer and Laszlo Molnar) 
   The UPX packer for executables http://upx.tsx.org/ is used to reduce the
   size of the Windows and DOS binaries.
-
-david3x3x3 and retrobits 
-  Android port
 
 qwerty 
   LaTeX-based help file generation

@@ -2,16 +2,15 @@
 Version Information
 ===================
 
-This file was last updated for Angband 3.1.2 and is a historical document.
+The current version is 3.4.  Detailed information about this version and
+previous versions can be found at http://rephial.org.  Also additional
+information can be found at the angband forums (http://angband.oook.cz)
+or the newsgroup (rec.games.roguelike.angband).  
 
-For more information versions since then, please consult rephial.org's release
-page: http://rephial.org/release.
+This file was last updated for Angband 3.1.2 and remains here mainly
+for historical purposes.
 
-Make sure to read the newsgroup (``rec.games.roguelike.angband``), and to
-visit the Official Angband Home Page (http://rephial.org) for the most up
-to date information about Angband.
-
-Angband 3.1.2 has an incredibly complex history, and is the result of a lot
+Angband has an incredibly complex history, and is the result of a lot
 of work by a lot of people, all of whom have contributed their time and
 energy for free, being rewarded only by the pleasure of keeping alive one
 of the best freeware games available anywhere.
@@ -22,7 +21,7 @@ we must rely on simpler methods, such as change logs, source file diffs,
 and word of mouth. Some of this information is summarised in this file.
 
 Please be sure to read the copyright information contained in the file
-``copying.txt``.
+'copying.txt'.
 
 Brief Version History
 =====================
@@ -126,7 +125,7 @@ and artifacts - have led to the current version.
 And with the greater amount of user-customizability that is now possible,
 it was inevitable that SOMEBODY would eventually go and actually do
 something with it. Jonathan Ellis started customizing the user-editable
-text files in the ``edit`` directory for his own personal use - originally,
+text files in the 'edit' directory for his own personal use - originally,
 only by fixing bugs and inconsistencies (less powerful monsters being worth
 more experience per kill than more powerful ones, dragons doing a decent
 amount of damage in melee, monsters with two claws and one mouth getting
@@ -172,7 +171,7 @@ what changes were made, and exactly when they were made. Most releases
 involved so many changes from the previous release as to make "diff files"
 not very useful, since often the diff files are as long as the code itself.
 Most of the changes, with the notable exception of the creation of some of
-the new ``main-xxx.c`` files for the various new platforms, and a few other
+the new 'main-xxx.c' files for the various new platforms, and a few other
 minor exceptions generally noted directly in comments in the source, were
 written by Ben or Robert, either spontaneously, or, more commonly, as the
 result of a suggestion or comment by an Angband player.
@@ -184,7 +183,7 @@ is no longer recognizable, for example, via "diff -r", often because it was
 rewritten from scratch.
 
 The second most important modification was the design of a generic
-``z-term.c`` package, which allows Angband to be ported to a new machine
+'z-term.c' package, which allows Angband to be ported to a new machine
 with as few as 50 lines of code. Angband 2.9.3 thus runs without
 modification on many machines, including Macintosh, PowerMac, Unix/X11,
 Unix/Curses, Amiga, Windows, OS2-386, DOS-386, and even DOS-286.
@@ -194,19 +193,19 @@ It would be difficult to list all of the changes between Angband 2.6.1 and
 level cleanup. Many of the changes are invisible to the user, but still
 provide increased simplicity and efficiency, and decreased code size, or
 make other more visable changes possible. For example, the new
-``project()`` code that handles all bolts, beams, and balls, the new
-``update_view()`` code that simplifies line of sight computation, or the
-new ``generate()`` code that builds new levels in the dungeon. Many changes
+'project()' code that handles all bolts, beams, and balls, the new
+'update_view()' code that simplifies line of sight computation, or the
+new 'generate()' code that builds new levels in the dungeon. Many changes
 have been made to increase efficiency, including the new
-``process_monsters()`` and ``update_monsters()`` functions, and the new
-``objdes()`` and ``light_spot()`` routines. The generic ``z-term.c``
+'process_monsters()' and 'update_monsters()' functions, and the new
+'objdes()' and 'light_spot()' routines. The generic 'z-term.c'
 package yielded efficient screen updates, and enabled the efficient use of
 color.
 
 The most visible (to ordinary players) changes that happened as a result of 
 Ben Harrison's maintainership were:
 
-- a far greater degree of user-customizability as shown by the ``info.txt``
+- a far greater degree of user-customizability as shown by the 'info.txt'
   files 
 - the "fractional" speed system, with +10 in the new scheme equalling +1
   in old money 
