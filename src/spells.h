@@ -134,6 +134,7 @@ extern bool detect_close_buried_treasure(void);
 extern bool detect_monsters_normal(bool aware);
 extern bool detect_monsters_invis(bool aware);
 extern bool detect_monsters_evil(bool aware);
+extern bool detect_monsters_entire_level(void);
 extern bool detect_all(bool aware);
 extern void stair_creation(void);
 extern bool enchant(object_type *o_ptr, int n, int eflag);

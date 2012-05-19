@@ -1427,33 +1427,6 @@ static void do_cmd_wiz_zap(int d)
 
 
 /*
- * Un-hide all monsters
- */
-static void do_cmd_wiz_unhide(int d)
-{
-	int i;
-
-	/* Process monsters */
-	for (i = 1; i < cave_monster_max(cave); i++)
-	{
-		monster_type *m_ptr = cave_monster(cave, i);
-
-		/* Skip dead monsters */
-		if (!m_ptr->r_idx) continue;
-
-		/* Skip distant monsters */
-		if (m_ptr->cdis > d) continue;
-
-		/* Detect the monster */
-		m_ptr->mflag |= (MFLAG_MARK | MFLAG_SHOW);
-
-		/* Update the monster */
-		update_mon(i, FALSE);
-	}
-}
-
-
-/*
  * Query the dungeon
  */
 static void do_cmd_wiz_query(void)
@@ -1994,8 +1967,7 @@ void do_cmd_debug(void)
 		/* Un-hide all monsters */
 		case 'u':
 		{
-			if (p_ptr->command_arg <= 0) p_ptr->command_arg = 255;
-			do_cmd_wiz_unhide(p_ptr->command_arg);
+			detect_monsters_entire_level();
 			break;
 		}
 
