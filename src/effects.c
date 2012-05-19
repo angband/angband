@@ -643,6 +643,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			(void)detect_traps(TRUE);
 			(void)detect_doorstairs(TRUE);
 			(void)detect_treasure(TRUE, TRUE);
+			(void)detect_monsters_entire_level();
 			identify_pack();
 			*ident = TRUE;
 			return TRUE;

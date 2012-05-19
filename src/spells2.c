@@ -1070,8 +1070,39 @@ bool detect_monsters_evil(bool aware)
 	return flag;
 }
 
+/* 
+ * Detect all monsters on the level (used for *enlightenment* only)
+ */
+bool detect_monsters_entire_level(void)
+{
+	int i;
+	bool detect = FALSE;
+	
+	for (i = 1; i < cave_monster_max(cave); i++)
+	{
+		monster_type *m_ptr = cave_monster(cave, i);
+	
+		/* Skip dead monsters */
+		if (!m_ptr->r_idx) continue;
 
+		/* Detect the monster */
+		m_ptr->mflag |= (MFLAG_MARK | MFLAG_SHOW);
 
+		/* Update the monster */
+		update_mon(i, FALSE);
+		
+		detect = TRUE;
+	}
+	
+	if (detect)
+		msg("An image of all nearby life-forms appears in your mind");
+	else
+		/* Let's see who the first person is to ever see this message! */
+		msg("The level is devoid of life");
+		
+	return detect;
+}
+	
 /*
  * Detect everything
  */
