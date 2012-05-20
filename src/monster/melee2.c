@@ -2808,14 +2808,12 @@ static void process_monster(struct cave *c, int m_idx)
 
 		/* Aggravation */
 		if (check_state(p_ptr, OF_AGGRAVATE, p_ptr->state.flags)) {
-			/* Wake the monster */
+			/* Wake the monster and notify player */
 			mon_clear_timed(m_ptr, MON_TMD_SLEEP, MON_TMD_FLG_NOTIFY, FALSE);
 
-			/* Notice the "waking up" */
+			/* Update the health bar */
 			if (m_ptr->ml && !m_ptr->unaware) {
-				/* Dump a message */
-				msg("%s wakes up.", m_name);
-
+				
 				/* Hack -- Update the health bar */
 				if (p_ptr->health_who == m_ptr) p_ptr->redraw |= (PR_HEALTH);
 			}
