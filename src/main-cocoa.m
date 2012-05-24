@@ -30,7 +30,7 @@
 
 /* Default creator signature */
 #ifndef ANGBAND_CREATOR
-# define ANGBAND_CREATOR 'ANGB'
+# define ANGBAND_CREATOR 'A271'
 #endif
 
 /* Mac headers */
@@ -157,6 +157,9 @@ static NSFont *default_font;
 
 /* Returns the scale factor, that is, the scaling between our base logical coordinates and the image size. */
 - (NSSize)scaleFactor;
+
+/* Sets the scale factor and resizes appropriately */
+- (void)setScaleFactor:(NSSize)newScaleFactor;
 
 /* Returns the size of the image. */
 - (NSSize)imageSize;
@@ -540,6 +543,25 @@ static int compare_advances(const void *ap, const void *bp)
     
     /* Restore the old term */
     Term_activate(old);
+}
+
+- (void)setScaleFactor:(NSSize)newScaleFactor
+{
+    NSSize baseSize = [self baseSize];
+    NSSize newSize = NSMakeSize(baseSize.width * newScaleFactor.width,
+        baseSize.height * newScaleFactor.height);
+    
+    NSWindow *window = [self makePrimaryWindow];
+    NSRect frame = [window frame];
+
+    // Note:
+    // oldorigin.y + frame.size.height == neworigin.y + newSize.height
+
+    frame.origin.y += frame.size.height - newSize.height;
+    frame.size = newSize;
+    
+    [window setFrame:frame display:YES];
+
 }
 
 - (void)setTerm:(term *)t
@@ -2656,10 +2678,12 @@ static void initialize_file_paths(void)
     
     /* Update all of our terms */
     int i;
+    NSSize unitScaleFactor = NSMakeSize(1, 1);
     for (i=0; i < ANGBAND_TERM_MAX; i++) {
         if (angband_term[i])
         {
             [(id)angband_term[i]->data setSelectionFont:default_font];
+            [(id)angband_term[i]->data setScaleFactor:unitScaleFactor];
         }
     }
     
