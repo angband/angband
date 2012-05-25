@@ -2278,7 +2278,7 @@ static errr cocoa_get_cmd(cmd_context context, bool wait)
 /* Return the directory into which we put data (save and config) */
 static NSString *get_data_directory(void)
 {
-    return [@"~/Library/Preferences/Angband-v4/" stringByExpandingTildeInPath];
+    return [@"~/Documents/Angband/" stringByExpandingTildeInPath];
 }
 
 /*
