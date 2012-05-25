@@ -1251,9 +1251,6 @@ static void Term_init_cocoa(term *t)
     
     NSDisableScreenUpdates();
     
-    /* Tell it its font. We could in principle have a different font per term, but we don't yet. */
-    [context setSelectionFont:default_font];
-        
     /* Figure out the frame autosave name based on the index of this term */
     NSString *autosaveName = nil;
     int termIdx;
@@ -1266,10 +1263,19 @@ static void Term_init_cocoa(term *t)
         }
     }
     
+    /* Set its font. */
+    NSString *fontName = [[NSUserDefaults angbandDefaults] 
+        stringForKey:[NSString stringWithFormat:@"FontName-%d", termIdx]];
+    if (! fontName) fontName = [default_font fontName];
+    float fontSize = [[NSUserDefaults angbandDefaults] 
+        floatForKey:[NSString stringWithFormat:@"FontSize-%d", termIdx]];
+    if (! fontSize) fontSize = [default_font pointSize];
+    [context setSelectionFont:[NSFont fontWithName:fontName size:fontSize]];
+        
     /* Get the window */
     NSWindow *window = [context makePrimaryWindow];
     
-    /* Set its title */
+    /* Set its title and, for auxiliary terms, tentative size */
     if (termIdx == 0)
     {
         [window setTitle:@"Angband"];
@@ -1277,6 +1283,7 @@ static void Term_init_cocoa(term *t)
     else
     {
         [window setTitle:[NSString stringWithFormat:@"Term %d", termIdx]];
+        [context setScaleFactor:NSMakeSize(1,1)];
     }
     
     
@@ -2000,7 +2007,7 @@ static void load_prefs()
     frames_per_second = [[NSUserDefaults angbandDefaults] integerForKey:@"FramesPerSecond"];
     
     /* font */
-    default_font = [[NSFont fontWithName:[defs valueForKey:@"FontName"] size:[defs floatForKey:@"FontSize"]] retain];
+    default_font = [[NSFont fontWithName:[defs valueForKey:@"FontName-0"] size:[defs floatForKey:@"FontSize-0"]] retain];
     if (! default_font) default_font = [[NSFont fontWithName:@"Monaco" size:13.] retain];
 }
 
@@ -2664,43 +2671,54 @@ static void initialize_file_paths(void)
 - (IBAction)editFont:sender
 {
     NSFontPanel *panel = [NSFontPanel sharedFontPanel];
-    [panel setPanelFont:default_font isMultiple:NO];
+    NSFont *termFont = default_font;
+
+    int i;
+    for (i=0; i < ANGBAND_TERM_MAX; i++) {
+        if ([(id)angband_term[i]->data isKeyWindow]) {
+            termFont = [(id)angband_term[i]->data selectionFont];
+            break;
+        }
+    }
+    
+    [panel setPanelFont:termFont isMultiple:NO];
     [panel orderFront:self];
 }
 
 - (void)changeFont:(id)sender
 {
+    int keyTerm;
+    for (keyTerm=0; keyTerm < ANGBAND_TERM_MAX; keyTerm++) {
+        if ([(id)angband_term[keyTerm]->data isKeyWindow]) {
+            break;
+        }
+    }
+    
     NSFont *oldFont = default_font;
     NSFont *newFont = [sender convertFont:oldFont];
     if (! newFont) return; //paranoia
     
-    /* Store it as the default font */
-    [newFont retain];
-    [default_font release];
-    default_font = newFont;
+    /* Store it as the default font if we changed the main window */
+    if (keyTerm == 0) {
+        [newFont retain];
+        [default_font release];
+        default_font = newFont;
+    }
     
     /* Record it in the preferences */
     NSUserDefaults *defs = [NSUserDefaults angbandDefaults];
-    [defs setValue:[default_font fontName] forKey:@"FontName"];
-    [defs setFloat:[default_font pointSize] forKey:@"FontSize"];
+    [defs setValue:[newFont fontName] 
+        forKey:[NSString stringWithFormat:@"FontName-%d", keyTerm]];
+    [defs setFloat:[newFont pointSize]
+        forKey:[NSString stringWithFormat:@"FontSize-%d", keyTerm]];
     [defs synchronize];
     
     NSDisableScreenUpdates();
     
     /* Update main window */
-    int i;
-    NSSize unitScaleFactor = NSMakeSize(1, 1);
-    for (i=0; i < ANGBAND_TERM_MAX; i++) {
-        if (angband_term[i])
-        {
-            AngbandContext *angbandContext = angband_term[i]->data;
-            if ([(id)angbandContext isKeyWindow]) {
-                [(id)angbandContext setSelectionFont:default_font];
-                [(id)angbandContext setScaleFactor:unitScaleFactor];
-                break;
-            }
-        }
-    }
+    AngbandContext *angbandContext = angband_term[keyTerm]->data;
+    [(id)angbandContext setSelectionFont:newFont];
+    [(id)angbandContext setScaleFactor:NSMakeSize(1,1)];
     
     NSEnableScreenUpdates();
 }
