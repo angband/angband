@@ -2421,14 +2421,14 @@ static BOOL send_event(NSEvent *event)
                     break;
             }
             
-			/* override special keys */
-			switch([event keyCode]) {
-			case kVK_Return: ch = KC_ENTER; break;
-			case kVK_Escape: ch = ESCAPE; break;
-			case kVK_Tab: ch = KC_TAB; break;
-			case kVK_Delete: ch = KC_BACKSPACE; break;
-			case kVK_ANSI_KeypadEnter: ch = KC_ENTER; kp = TRUE; break;
-			}
+            /* override special keys */
+            switch([event keyCode]) {
+                case kVK_Return: ch = KC_ENTER; break;
+                case kVK_Escape: ch = ESCAPE; break;
+                case kVK_Tab: ch = KC_TAB; break;
+                case kVK_Delete: ch = KC_BACKSPACE; break;
+                case kVK_ANSI_KeypadEnter: ch = KC_ENTER; kp = TRUE; break;
+            }
 
             /* Hide the mouse pointer */
             [NSCursor setHiddenUntilMouseMoves:YES];
@@ -2442,8 +2442,8 @@ static BOOL send_event(NSEvent *event)
                 byte mods = 0;
                 if (mo) mods |= KC_MOD_ALT;
                 if (mx) mods |= KC_MOD_META;
-                if (mc) mods |= KC_MOD_CONTROL;
-                if (ms) mods |= KC_MOD_SHIFT;
+                if (mc && MODS_INCLUDE_CONTROL(ch)) mods |= KC_MOD_CONTROL;
+                if (ms && MODS_INCLUDE_SHIFT(ch)) mods |= KC_MOD_SHIFT;
                 if (kp) mods |= KC_MOD_KEYPAD;
                 Term_keypress(ch, mods);
 #else
