@@ -1890,6 +1890,11 @@ static errr Term_text_cocoa(int x, int y, int n, byte a, const wchar_t *cp)
     return (0);
 }
 
+/* From the Linux mbstowcs(3) man page:
+ *   If dest is NULL, n is ignored, and the conversion  proceeds  as  above,
+ *   except  that  the converted wide characters are not written out to mem‐
+ *   ory, and that no length limit exists.
+ */
 static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
 {
     int i;
@@ -1903,21 +1908,24 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
      * Note that UTF-16 limits Unicode to 0x10ffff. This code is not
      * endian-agnostic.
      */
-    for (i = 0; i < n; i++) {
+    for (i = 0; i < n || dest == NULL; i++) {
         if ((src[i] & 0x80) == 0) {
-            dest[count++] = src[i];
+            if (dest != NULL) dest[count] = src[i];
             if (src[i] == 0) break;
         } else if ((src[i] & 0xe0) == 0xc0) {
-            dest[count++] = (((unsigned char)src[i] & 0x1f) << 6)| 
+            if (dest != NULL) dest[count] = 
+                            (((unsigned char)src[i] & 0x1f) << 6)| 
                             ((unsigned char)src[i+1] & 0x3f);
             i++;
         } else if ((src[i] & 0xf0) == 0xe0) {
-            dest[count++] = (((unsigned char)src[i] & 0x0f) << 12) | 
+            if (dest != NULL) dest[count] = 
+                            (((unsigned char)src[i] & 0x0f) << 12) | 
                             (((unsigned char)src[i+1] & 0x3f) << 6) |
                             ((unsigned char)src[i+2] & 0x3f);
             i += 2;
         } else if ((src[i] & 0xf8) == 0xf0) {
-            dest[count++] = (((unsigned char)src[i] & 0x0f) << 18) | 
+            if (dest != NULL) dest[count] = 
+                            (((unsigned char)src[i] & 0x0f) << 18) | 
                             (((unsigned char)src[i+1] & 0x3f) << 12) |
                             (((unsigned char)src[i+2] & 0x3f) << 6) |
                             ((unsigned char)src[i+3] & 0x3f);
@@ -1926,6 +1934,7 @@ static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
             /* Should not get here; asserting a known false expression */
             assert((src[i] & 0xf8) == 0xf0);
         }
+        count++;
     }
     return count;
 }
