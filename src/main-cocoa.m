@@ -197,6 +197,9 @@ static NSFont *default_font;
 /* Return whether the context's primary window is ordered in or not */
 - (BOOL)isOrderedIn;
 
+/* Return whether the context's primary window is key */
+- (BOOL)isKeyWindow;
+
 /* Invalidate the whole image */
 - (void)setNeedsDisplay:(BOOL)val;
 
@@ -1077,6 +1080,11 @@ static NSMenuItem *superitem(NSMenuItem *self)
 - (BOOL)isOrderedIn
 {
     return [[[angbandViews lastObject] window] isVisible];
+}
+
+- (BOOL)isKeyWindow
+{
+    return [[[angbandViews lastObject] window] isKeyWindow];
 }
 
 - (void)orderOut
@@ -2513,7 +2521,7 @@ static void update_term_visibility(void)
         }
     }
     
-    for (i=0; i < ANGBAND_TERM_MAX; i++) {        
+    for (i=0; i < ANGBAND_TERM_MAX; i++) {
         /* Now show or hide */
         term *t = angband_term[i];
         if (t)
@@ -2538,6 +2546,9 @@ static void update_term_visibility(void)
         }
         
     }
+
+    /* Ensure that the main window is frontmost */
+    [(id)angband_term[0]->data orderFront];
 }
 
 /*
@@ -2676,14 +2687,18 @@ static void initialize_file_paths(void)
     
     NSDisableScreenUpdates();
     
-    /* Update all of our terms */
+    /* Update main window */
     int i;
     NSSize unitScaleFactor = NSMakeSize(1, 1);
     for (i=0; i < ANGBAND_TERM_MAX; i++) {
         if (angband_term[i])
         {
-            [(id)angband_term[i]->data setSelectionFont:default_font];
-            [(id)angband_term[i]->data setScaleFactor:unitScaleFactor];
+            AngbandContext *angbandContext = angband_term[i]->data;
+            if ([(id)angbandContext isKeyWindow]) {
+                [(id)angbandContext setSelectionFont:default_font];
+                [(id)angbandContext setScaleFactor:unitScaleFactor];
+                break;
+            }
         }
     }
     
