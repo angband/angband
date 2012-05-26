@@ -1997,7 +1997,7 @@ static void load_prefs()
     
     /* Make some default defaults */
     NSDictionary *defaults = [[NSDictionary alloc] initWithObjectsAndKeys:
-                              @"Monaco", @"FontName",
+                              @"Menlo", @"FontName",
                               [NSNumber numberWithFloat:13.f], @"FontSize",
                               [NSNumber numberWithInt:60], @"FramesPerSecond",
                               [NSNumber numberWithBool:YES], @"AllowSound",
@@ -2017,7 +2017,7 @@ static void load_prefs()
     
     /* font */
     default_font = [[NSFont fontWithName:[defs valueForKey:@"FontName-0"] size:[defs floatForKey:@"FontSize-0"]] retain];
-    if (! default_font) default_font = [[NSFont fontWithName:@"Monaco" size:13.] retain];
+    if (! default_font) default_font = [[NSFont fontWithName:@"Menlo" size:13.] retain];
 }
 
 /* Arbitary limit on number of possible samples per event */

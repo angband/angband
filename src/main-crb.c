@@ -2317,7 +2317,7 @@ static void cf_load_prefs()
 								kFontNoScriptCode, kFontNoLanguageCode, &fid);
 			if(fid) td->font_id = fid;
 			/* Use the default */
-			else my_strcpy(td->font_name, "Monaco", sizeof(td->font_name));
+			else my_strcpy(td->font_name, "Menlo-Regular", sizeof(td->font_name));
 		}
 	}
 	
@@ -2342,16 +2342,16 @@ static void cf_load_prefs()
  */
 static void term_data_hack(term_data *td)
 {
-	/* Default to Monaco font */
+	/* Default to Menlo font */
 	ATSUFontID fid = 0;
 
-	ATSUFindFontFromName("Monaco", strlen("Monaco"), kFontPostscriptName,
+	ATSUFindFontFromName("Menlo-Regular", strlen("Menlo-Regular"), kFontPostscriptName,
 							kFontMacintoshPlatform, kFontNoScriptCode,
 							kFontNoLanguageCode, &fid);
 
 
 	if(!fid)
-		quit("Failed to find font 'Monaco'");
+		quit("Failed to find font 'Menlo'");
 
 	/* Wipe it */
 	WIPE(td, term_data);
@@ -2361,7 +2361,7 @@ static void term_data_hack(term_data *td)
 
 	/* Default font */
 	td->font_id = fid;
-	my_strcpy(td->font_name, "Monaco", sizeof(td->font_name));
+	my_strcpy(td->font_name, "Menlo-Regular", sizeof(td->font_name));
 
 	/* Default font size - was 12 */
 	td->font_size = 14;
