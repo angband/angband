@@ -30,7 +30,7 @@
 
 /* Default creator signature */
 #ifndef ANGBAND_CREATOR
-# define ANGBAND_CREATOR 'ANGB'
+# define ANGBAND_CREATOR 'A271'
 #endif
 
 /* Mac headers */
@@ -142,8 +142,9 @@ static NSFont *default_font;
     /* Last time we drew, so we can throttle drawing */
     CFAbsoluteTime lastRefreshTime;
     
-    /* To address subpixel rendering overdraw problems, we cache all the characters we're told to draw (in the form (attribute << 8) | (character) */
-    uint16_t *charOverdrawCache;
+    /* To address subpixel rendering overdraw problems, we cache all the characters and attributes we're told to draw */
+    wchar_t *charOverdrawCache;
+    byte *attrOverdrawCache;
 }
 
 - (void)drawRect:(NSRect)rect inView:(NSView *)view;
@@ -157,14 +158,17 @@ static NSFont *default_font;
 /* Returns the scale factor, that is, the scaling between our base logical coordinates and the image size. */
 - (NSSize)scaleFactor;
 
+/* Sets the scale factor and resizes appropriately */
+- (void)setScaleFactor:(NSSize)newScaleFactor;
+
 /* Returns the size of the image. */
 - (NSSize)imageSize;
 
 /* Return the rect for a tile at given coordinates. */
 - (NSRect)rectInImageForTileAtX:(int)x Y:(int)y;
 
-/* Draw the glyph at the given index in the array into the given tile rect. */
-- (void)drawGlyphAtIndex:(unsigned int)idx inRect:(NSRect)tile;
+/* Draw the given wide character into the given tile rect. */
+- (void)drawWChar:(wchar_t)wchar inRect:(NSRect)tile;
 
 /* Locks focus on the Angband image, and scales the CTM appropriately. */
 - (CGContextRef)lockFocus;
@@ -193,6 +197,9 @@ static NSFont *default_font;
 /* Return whether the context's primary window is ordered in or not */
 - (BOOL)isOrderedIn;
 
+/* Return whether the context's primary window is key */
+- (BOOL)isKeyWindow;
+
 /* Invalidate the whole image */
 - (void)setNeedsDisplay:(BOOL)val;
 
@@ -220,7 +227,7 @@ static NSFont *default_font;
 @end
 
 /* To indicate that a grid element contains a picture, we store 0xFFFF. */
-#define NO_OVERDRAW ((uint16_t)(0xFFFF))
+#define NO_OVERDRAW ((wchar_t)(0xFFFF))
 
 /* Here is some support for rounding to pixels in a scaled context */
 static double push_pixel(double pixel, double scale, BOOL increase)
@@ -541,6 +548,25 @@ static int compare_advances(const void *ap, const void *bp)
     Term_activate(old);
 }
 
+- (void)setScaleFactor:(NSSize)newScaleFactor
+{
+    NSSize baseSize = [self baseSize];
+    NSSize newSize = NSMakeSize(baseSize.width * newScaleFactor.width,
+        baseSize.height * newScaleFactor.height);
+    
+    NSWindow *window = [self makePrimaryWindow];
+    NSRect frame = [window frame];
+
+    // Note:
+    // oldorigin.y + frame.size.height == neworigin.y + newSize.height
+
+    frame.origin.y += frame.size.height - newSize.height;
+    frame.size = newSize;
+    
+    [window setFrame:frame display:YES];
+
+}
+
 - (void)setTerm:(term *)t
 {
     terminal = t;
@@ -616,14 +642,23 @@ static int compare_advances(const void *ap, const void *bp)
 #endif
 }
 
-- (void)drawGlyphAtIndex:(unsigned int)idx inRect:(NSRect)tile
+- (void)drawWChar:(wchar_t)wchar inRect:(NSRect)tile
 {
     CGContextRef ctx = [[NSGraphicsContext currentContext] graphicsPort];
     CGFloat tileOffsetY = -fontDescender;
     CGFloat tileOffsetX;
-    
-    CGSize advance = CGSizeMake(glyphWidths[idx], 0);
-    CGGlyph glyph = glyphArray[idx];
+    NSFont *screenFont = [angbandViewFont screenFont];
+    UniChar unicharString[2] = {(UniChar)wchar, 0};
+
+    // Get glyph and advance
+    CGGlyph thisGlyphArray[1] = {};
+    CGSize advances[1] = {};
+    bzero(thisGlyphArray, 1);
+    bzero(advances, 1);
+    CTFontGetGlyphsForCharacters((CTFontRef)screenFont, unicharString, thisGlyphArray, 1);
+    CGGlyph glyph = thisGlyphArray[0];
+    CTFontGetAdvancesForGlyphs((CTFontRef)screenFont, kCTFontHorizontalOrientation, thisGlyphArray, advances, 1);
+    CGSize advance = advances[0];
     
     /* If our font is not monospaced, our tile width is deliberately not big enough for every character. In that event, if our glyph is too wide, we need to compress it horizontally. Compute the compression ratio. 1.0 means no compression. */
     double compressionRatio;
@@ -671,6 +706,7 @@ static int compare_advances(const void *ap, const void *bp)
 - (void)clearOverdrawCache
 {
     bzero(charOverdrawCache, self->cols * self->rows * sizeof *charOverdrawCache);
+    bzero(attrOverdrawCache, self->cols * self->rows * sizeof *attrOverdrawCache);
 }
 
 /* Lock and unlock focus on our image or layer, setting up the CTM appropriately. */
@@ -780,6 +816,7 @@ static int compare_advances(const void *ap, const void *bp)
         
         /* Allocate overdraw cache, unscanned and collectable. */
         self->charOverdrawCache = NSAllocateCollectable(self->cols * self->rows *sizeof *charOverdrawCache, 0);
+        self->attrOverdrawCache = NSAllocateCollectable(self->cols * self->rows *sizeof *attrOverdrawCache, 0);
         
         /* Allocate our array of views */
         angbandViews = [[NSMutableArray alloc] init];
@@ -823,6 +860,8 @@ static int compare_advances(const void *ap, const void *bp)
     /* Free overdraw cache (unless we're GC, in which case it was allocated collectable) */
     if (! [NSGarbageCollector defaultCollector]) free(self->charOverdrawCache);
     self->charOverdrawCache = NULL;
+    if (! [NSGarbageCollector defaultCollector]) free(self->attrOverdrawCache);
+    self->attrOverdrawCache = NULL;
 }
 
 /* Usual Cocoa fare */
@@ -1043,6 +1082,11 @@ static NSMenuItem *superitem(NSMenuItem *self)
     return [[[angbandViews lastObject] window] isVisible];
 }
 
+- (BOOL)isKeyWindow
+{
+    return [[[angbandViews lastObject] window] isKeyWindow];
+}
+
 - (void)orderOut
 {
     [[[angbandViews lastObject] window] orderOut:self];
@@ -1207,9 +1251,6 @@ static void Term_init_cocoa(term *t)
     
     NSDisableScreenUpdates();
     
-    /* Tell it its font. We could in principle have a different font per term, but we don't yet. */
-    [context setSelectionFont:default_font];
-        
     /* Figure out the frame autosave name based on the index of this term */
     NSString *autosaveName = nil;
     int termIdx;
@@ -1222,10 +1263,19 @@ static void Term_init_cocoa(term *t)
         }
     }
     
+    /* Set its font. */
+    NSString *fontName = [[NSUserDefaults angbandDefaults] 
+        stringForKey:[NSString stringWithFormat:@"FontName-%d", termIdx]];
+    if (! fontName) fontName = [default_font fontName];
+    float fontSize = [[NSUserDefaults angbandDefaults] 
+        floatForKey:[NSString stringWithFormat:@"FontSize-%d", termIdx]];
+    if (! fontSize) fontSize = [default_font pointSize];
+    [context setSelectionFont:[NSFont fontWithName:fontName size:fontSize]];
+        
     /* Get the window */
     NSWindow *window = [context makePrimaryWindow];
     
-    /* Set its title */
+    /* Set its title and, for auxiliary terms, tentative size */
     if (termIdx == 0)
     {
         [window setTitle:@"Angband"];
@@ -1233,6 +1283,7 @@ static void Term_init_cocoa(term *t)
     else
     {
         [window setTitle:[NSString stringWithFormat:@"Term %d", termIdx]];
+        [context setScaleFactor:NSMakeSize(1,1)];
     }
     
     
@@ -1638,8 +1689,9 @@ static void draw_image_tile(CGImageRef image, NSRect srcRect, NSRect dstRect, NS
     CGImageRelease(subimage);
 }
 
-static errr Term_pict_cocoa(int x, int y, int n, const byte *ap, const char *cp,
-                            const byte *tap, const char *tcp)
+static errr Term_pict_cocoa(int x, int y, int n, const byte *ap,
+                            const wchar_t *cp, const byte *tap,
+                            const wchar_t *tcp)
 {
     
     /* Paranoia: Bail if we don't have a current graphics mode */
@@ -1648,7 +1700,7 @@ static errr Term_pict_cocoa(int x, int y, int n, const byte *ap, const char *cp,
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     AngbandContext* angbandContext = Term->data;
     
-    /* Indicate that we have a picture here (and hence this should not be overdrawn by term_text_cocoa) */
+    /* Indicate that we have a picture here (and hence this should not be overdrawn by Term_text_cocoa) */
     angbandContext->charOverdrawCache[y * angbandContext->cols + x] = NO_OVERDRAW;
     
     /* Lock focus */
@@ -1671,10 +1723,10 @@ static errr Term_pict_cocoa(int x, int y, int n, const byte *ap, const char *cp,
     {
         
         byte a = *ap++;
-        char c = *cp++;
+        wchar_t c = *cp++;
         
         byte ta = *tap++;
-        char tc = *tcp++;
+        wchar_t tc = *tcp++;
         
         
         /* Graphics -- if Available and Needed */
@@ -1732,7 +1784,7 @@ static errr Term_pict_cocoa(int x, int y, int n, const byte *ap, const char *cp,
  *
  * Draw several ("n") chars, with an attr, at a given location.
  */
-static errr term_text_cocoa(int x, int y, int n, byte a, const char *cp)
+static errr Term_text_cocoa(int x, int y, int n, byte a, const wchar_t *cp)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     
@@ -1751,7 +1803,10 @@ static errr term_text_cocoa(int x, int y, int n, byte a, const char *cp)
     /* record our data in our cache */
     int start = y * angbandContext->cols + x;
     int location;
-    for (location = 0; location < n; location++) angbandContext->charOverdrawCache[start + location] = (a << 8) | ((unsigned char)cp[location]);
+    for (location = 0; location < n; location++) {
+        angbandContext->charOverdrawCache[start + location] = cp[location];
+        angbandContext->attrOverdrawCache[start + location] = a;
+    }
     
     /* Focus on our layer */
     [angbandContext lockFocus];
@@ -1786,8 +1841,7 @@ static errr term_text_cocoa(int x, int y, int n, byte a, const char *cp)
         // Nothing to overdraw if we're at an edge
         if (overdrawX >= 0 && (size_t)overdrawX < angbandContext->cols)
         {
-            uint16_t previouslyDrawnVal = angbandContext->charOverdrawCache[y * angbandContext->cols + overdrawX];
-            
+            wchar_t previouslyDrawnVal = angbandContext->charOverdrawCache[y * angbandContext->cols + overdrawX];
             // Don't overdraw if it's not text
             if (previouslyDrawnVal != NO_OVERDRAW)
             {
@@ -1802,11 +1856,10 @@ static errr term_text_cocoa(int x, int y, int n, byte a, const char *cp)
                 // Redraw text if we have any
                 if (previouslyDrawnVal != 0)
                 {
-                    byte color = previouslyDrawnVal >> 8;
-                    unsigned char index = previouslyDrawnVal & 0xFF;
+                    byte color = angbandContext->attrOverdrawCache[y * angbandContext->cols + overdrawX]; 
                     
                     set_color_for_index(color);
-                    [angbandContext drawGlyphAtIndex:index inRect:overdrawRect];
+                    [angbandContext drawWChar:previouslyDrawnVal inRect:overdrawRect];
                 }
             }
         }
@@ -1818,7 +1871,7 @@ static errr term_text_cocoa(int x, int y, int n, byte a, const char *cp)
     /* Draw each */
     NSRect rectToDraw = charRect;
     for (i=0; i < n; i++) {
-        [angbandContext drawGlyphAtIndex:(unsigned char)cp[i] inRect:rectToDraw];
+        [angbandContext drawWChar:cp[i] inRect:rectToDraw];
         rectToDraw.origin.x += tileWidth;
     }
 
@@ -1835,6 +1888,55 @@ static errr term_text_cocoa(int x, int y, int n, byte a, const char *cp)
     
     /* Success */
     return (0);
+}
+
+/* From the Linux mbstowcs(3) man page:
+ *   If dest is NULL, n is ignored, and the conversion  proceeds  as  above,
+ *   except  that  the converted wide characters are not written out to mem‐
+ *   ory, and that no length limit exists.
+ */
+static size_t Term_mbcs_cocoa(wchar_t *dest, const char *src, int n)
+{
+    int i;
+    int count = 0;
+
+    /* Unicode code point to UTF-8
+     *  0x0000-0x007f:   0xxxxxxx
+     *  0x0080-0x07ff:   110xxxxx 10xxxxxx
+     *  0x0800-0xffff:   1110xxxx 10xxxxxx 10xxxxxx
+     * 0x10000-0x1fffff: 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+     * Note that UTF-16 limits Unicode to 0x10ffff. This code is not
+     * endian-agnostic.
+     */
+    for (i = 0; i < n || dest == NULL; i++) {
+        if ((src[i] & 0x80) == 0) {
+            if (dest != NULL) dest[count] = src[i];
+            if (src[i] == 0) break;
+        } else if ((src[i] & 0xe0) == 0xc0) {
+            if (dest != NULL) dest[count] = 
+                            (((unsigned char)src[i] & 0x1f) << 6)| 
+                            ((unsigned char)src[i+1] & 0x3f);
+            i++;
+        } else if ((src[i] & 0xf0) == 0xe0) {
+            if (dest != NULL) dest[count] = 
+                            (((unsigned char)src[i] & 0x0f) << 12) | 
+                            (((unsigned char)src[i+1] & 0x3f) << 6) |
+                            ((unsigned char)src[i+2] & 0x3f);
+            i += 2;
+        } else if ((src[i] & 0xf8) == 0xf0) {
+            if (dest != NULL) dest[count] = 
+                            (((unsigned char)src[i] & 0x0f) << 18) | 
+                            (((unsigned char)src[i+1] & 0x3f) << 12) |
+                            (((unsigned char)src[i+2] & 0x3f) << 6) |
+                            ((unsigned char)src[i+3] & 0x3f);
+            i += 3;
+        } else {
+            /* Should not get here; asserting a known false expression */
+            assert((src[i] & 0xf8) == 0xf0);
+        }
+        count++;
+    }
+    return count;
 }
 
 /* Post a nonsense event so that our event loop wakes up */
@@ -1875,8 +1977,9 @@ static term *term_data_link(int i)
     newterm->xtra_hook = Term_xtra_cocoa;
     newterm->wipe_hook = Term_wipe_cocoa;
     newterm->curs_hook = Term_curs_cocoa;
-    newterm->text_hook = term_text_cocoa;
+    newterm->text_hook = Term_text_cocoa;
     newterm->pict_hook = Term_pict_cocoa;
+    newterm->mbcs_hook = Term_mbcs_cocoa;
     
     /* Global pointer */
     angband_term[i] = newterm;
@@ -1894,7 +1997,7 @@ static void load_prefs()
     
     /* Make some default defaults */
     NSDictionary *defaults = [[NSDictionary alloc] initWithObjectsAndKeys:
-                              @"Monaco", @"FontName",
+                              @"Menlo", @"FontName",
                               [NSNumber numberWithFloat:13.f], @"FontSize",
                               [NSNumber numberWithInt:60], @"FramesPerSecond",
                               [NSNumber numberWithBool:YES], @"AllowSound",
@@ -1913,8 +2016,8 @@ static void load_prefs()
     frames_per_second = [[NSUserDefaults angbandDefaults] integerForKey:@"FramesPerSecond"];
     
     /* font */
-    default_font = [[NSFont fontWithName:[defs valueForKey:@"FontName"] size:[defs floatForKey:@"FontSize"]] retain];
-    if (! default_font) default_font = [[NSFont fontWithName:@"Monaco" size:13.] retain];
+    default_font = [[NSFont fontWithName:[defs valueForKey:@"FontName-0"] size:[defs floatForKey:@"FontSize-0"]] retain];
+    if (! default_font) default_font = [[NSFont fontWithName:@"Menlo" size:13.] retain];
 }
 
 /* Arbitary limit on number of possible samples per event */
@@ -2327,14 +2430,14 @@ static BOOL send_event(NSEvent *event)
                     break;
             }
             
-			/* override special keys */
-			switch([event keyCode]) {
-			case kVK_Return: ch = KC_ENTER; break;
-			case kVK_Escape: ch = ESCAPE; break;
-			case kVK_Tab: ch = KC_TAB; break;
-			case kVK_Delete: ch = KC_BACKSPACE; break;
-			case kVK_ANSI_KeypadEnter: ch = KC_ENTER; kp = TRUE; break;
-			}
+            /* override special keys */
+            switch([event keyCode]) {
+                case kVK_Return: ch = KC_ENTER; break;
+                case kVK_Escape: ch = ESCAPE; break;
+                case kVK_Tab: ch = KC_TAB; break;
+                case kVK_Delete: ch = KC_BACKSPACE; break;
+                case kVK_ANSI_KeypadEnter: ch = KC_ENTER; kp = TRUE; break;
+            }
 
             /* Hide the mouse pointer */
             [NSCursor setHiddenUntilMouseMoves:YES];
@@ -2348,8 +2451,8 @@ static BOOL send_event(NSEvent *event)
                 byte mods = 0;
                 if (mo) mods |= KC_MOD_ALT;
                 if (mx) mods |= KC_MOD_META;
-                if (mc) mods |= KC_MOD_CONTROL;
-                if (ms) mods |= KC_MOD_SHIFT;
+                if (mc && MODS_INCLUDE_CONTROL(ch)) mods |= KC_MOD_CONTROL;
+                if (ms && MODS_INCLUDE_SHIFT(ch)) mods |= KC_MOD_SHIFT;
                 if (kp) mods |= KC_MOD_KEYPAD;
                 Term_keypress(ch, mods);
 #else
@@ -2434,7 +2537,7 @@ static void update_term_visibility(void)
         }
     }
     
-    for (i=0; i < ANGBAND_TERM_MAX; i++) {        
+    for (i=0; i < ANGBAND_TERM_MAX; i++) {
         /* Now show or hide */
         term *t = angband_term[i];
         if (t)
@@ -2459,6 +2562,9 @@ static void update_term_visibility(void)
         }
         
     }
+
+    /* Ensure that the main window is frontmost */
+    [(id)angband_term[0]->data orderFront];
 }
 
 /*
@@ -2574,37 +2680,54 @@ static void initialize_file_paths(void)
 - (IBAction)editFont:sender
 {
     NSFontPanel *panel = [NSFontPanel sharedFontPanel];
-    [panel setPanelFont:default_font isMultiple:NO];
+    NSFont *termFont = default_font;
+
+    int i;
+    for (i=0; i < ANGBAND_TERM_MAX; i++) {
+        if ([(id)angband_term[i]->data isKeyWindow]) {
+            termFont = [(id)angband_term[i]->data selectionFont];
+            break;
+        }
+    }
+    
+    [panel setPanelFont:termFont isMultiple:NO];
     [panel orderFront:self];
 }
 
 - (void)changeFont:(id)sender
 {
+    int keyTerm;
+    for (keyTerm=0; keyTerm < ANGBAND_TERM_MAX; keyTerm++) {
+        if ([(id)angband_term[keyTerm]->data isKeyWindow]) {
+            break;
+        }
+    }
+    
     NSFont *oldFont = default_font;
     NSFont *newFont = [sender convertFont:oldFont];
     if (! newFont) return; //paranoia
     
-    /* Store it as the default font */
-    [newFont retain];
-    [default_font release];
-    default_font = newFont;
+    /* Store it as the default font if we changed the main window */
+    if (keyTerm == 0) {
+        [newFont retain];
+        [default_font release];
+        default_font = newFont;
+    }
     
     /* Record it in the preferences */
     NSUserDefaults *defs = [NSUserDefaults angbandDefaults];
-    [defs setValue:[default_font fontName] forKey:@"FontName"];
-    [defs setFloat:[default_font pointSize] forKey:@"FontSize"];
+    [defs setValue:[newFont fontName] 
+        forKey:[NSString stringWithFormat:@"FontName-%d", keyTerm]];
+    [defs setFloat:[newFont pointSize]
+        forKey:[NSString stringWithFormat:@"FontSize-%d", keyTerm]];
     [defs synchronize];
     
     NSDisableScreenUpdates();
     
-    /* Update all of our terms */
-    int i;
-    for (i=0; i < ANGBAND_TERM_MAX; i++) {
-        if (angband_term[i])
-        {
-            [(id)angband_term[i]->data setSelectionFont:default_font];
-        }
-    }
+    /* Update main window */
+    AngbandContext *angbandContext = angband_term[keyTerm]->data;
+    [(id)angbandContext setSelectionFont:newFont];
+    [(id)angbandContext setScaleFactor:NSMakeSize(1,1)];
     
     NSEnableScreenUpdates();
 }

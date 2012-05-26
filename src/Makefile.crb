@@ -1,33 +1,47 @@
-# File: Makefile.cocoa
+# File: Makefile.crb
 
-# This is a Makefile for Mac OS X Cocoa port of Angband.
+# This is a (rather crude) Makefile for the deprecated Mac OS X Carbon port of
+# Angband.
 #
-# Based on Makefile.osx
+# Based on Makefile.std, made separate because this port does not uses
+# main.c.
 
 # default target
 all: install
 
 # settings
-CC = clang
+CC = gcc
 LD = ld
 OPT ?= -O2
 
 NAME = Angband
 APPNAME = $(NAME).app
-EXE = Angband
+EXE = angband
 
-ARCH = -arch i386 -arch x86_64
+ARCH = -arch i386 -arch ppc
 WARNINGS = -W -Wall -Wno-unused-parameter -Wno-missing-field-initializers
 JUST_C = -std=c99 -Wdeclaration-after-statement
 OBJ_CFLAGS = -std=c99 -x objective-c -mmacosx-version-min=10.4
-CFLAGS = -g -I. $(WARNINGS) $(OPT) -DMACH_O_CARBON -DHAVE_MKSTEMP \
+CFLAGS = -I. $(WARNINGS) $(OPT) -DMACH_O_CARBON -DHAVE_MKSTEMP \
+	-DPRIVATE_USER_PATH=\"~/Library/Preferences\" -DUSE_PRIVATE_PATHS \
 	-fno-stack-protector $(ARCH)
-LIBS = -framework Cocoa
+LIBS = -framework CoreFoundation -framework QuickTime -framework Carbon \
+	-framework Cocoa
 
 # Import user prefs
 # If you don't want to edit this file, put your module redefinitions
 # and build flags in "./config"
 -include config
+
+#
+# Provide a CFLAGS override so that older versions of OS X can continue to
+# compile their own builds.  The default CFLAGS provide a backwards-compatible
+# binary, but will error when building on <10.3.9.
+#
+ppc: CFLAGS = \
+	-Wall -std=gnu99 $(OPT) -DMACH_O_CARBON -DHAVE_MKSTEMP \
+	-DPRIVATE_USER_PATH=\"~/Library/Preferences\" -DUSE_PRIVATE_PATHS
+ppc: OBJ_CFLAGS = -std=c99 -x objective-c -mmacosx-version-min=10.0
 
 # -DALLOW_BORG is required for all .o files in a borg build 
 ifneq (,$(findstring borg, $(MAKECMDGOALS)))
@@ -42,6 +56,7 @@ endif
 
 # Note that Makefile.inc sets VERSION, and so we must run version.sh after
 # including Makefile.inc
+USE_OSX = 1
 include Makefile.inc
 
 VERSION := $(shell ../scripts/version.sh)
@@ -49,7 +64,7 @@ CFLAGS += -DBUILD_ID=${VERSION}
 
 BOBJS = borg1.o borg2.o borg3.o borg4.o borg5.o borg6.o borg7.o borg8.o borg9.o
 OBJS = $(BASEOBJS)
-OSX_OBJS = main-cocoa.o
+OSX_OBJS = main-crb.o
 
 
 
@@ -59,12 +74,15 @@ OSX_OBJS = main-cocoa.o
 
 
 $(EXE).o: $(OBJS)
-	$(LD) -r -arch x86_64 -o $@.x86_64 $(OBJS)
+	$(LD) -r -arch ppc -o $@.ppc $(OBJS)
 	$(LD) -r -arch i386 -o $@.i386 $(OBJS)
-	lipo -arch x86_64 $@.x86_64 -arch i386 $@.i386 -create -output angband.o
+	lipo -arch ppc $@.ppc -arch i386 $@.i386 -create -output angband.o
 
 $(EXE): $(EXE).o $(OSX_OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(EXE).o $(OSX_OBJS) $(LIBS) 
+
+ppc: $(OBJS) 
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(OBJS) $(LIBS) 
 
 borg: $(OBJS) $(BOBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(OBJS) $(BOBJS) $(LIBS) 
@@ -74,19 +92,22 @@ borg: $(OBJS) $(BOBJS)
 #
 
 clean:
-	-rm -f $(OBJS) $(EXE) $(EXE).o.i386 $(EXE).o $(OSX_OBJS)
+	-rm -f $(OBJS) $(EXE) $(EXE).o.ppc $(EXE).o.i386 $(EXE).o $(OSX_OBJS)
 
 
 #
 # Basic build rules and dependencies
 #
 
-main-cocoa.o : main-cocoa.m
+main-crb.o : main-crb.c
 	@printf "%10s %-20s (objective-c)\n" CC $<
-	$(CC) $(CFLAGS) $(OBJ_CFLAGS) -c -o $@ $<
+	@$(CC) $(CFLAGS) $(OBJ_CFLAGS) -c -o $@ $<
 %.o : %.c
 	@printf "%10s %-20s\n" CC $<
-	$(CC) $(JUST_C) $(CFLAGS) -c -o $@ $<
+	@$(CC) $(JUST_C) $(CFLAGS) -c -o $@ $<
+
+
+main-crb.o: osx/osx_tables.h
 
 
 #
@@ -114,9 +135,11 @@ APPRES = $(APPCONT)/Resources
 # of 8x8.png for Vanilla.  Make sure setting dpi to 72, *not* preserving
 # the actual size of image.  When you have them ready, put them in
 # the lib/xtra/graf directory and rebuild.
-PLIST = cocoa/Angband-Cocoa.xml
+ICONFILES = osx/Angband.icns osx/Save.icns osx/Edit.icns osx/Data.icns
+PLIST = osx/Angband.xml
 
-ICONFILES = cocoa/Angband_Icons.icns cocoa/Save.icns cocoa/Edit.icns cocoa/Data.icns
+GRAPHSRC=../lib/xtra/graf/
+TILES = $(GRAPHSRC)8x8.png $(GRAPHSRC)8x16.png $(GRAPHSRC)16x16.png $(GRAPHSRC)32x32.png $(GRAPHSRC)64x64.png
 
 LIBFILES = \
   ../lib/edit/*.txt \
@@ -131,7 +154,7 @@ install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
 	@mkdir -p $(APPCONT)
 	@mkdir -p $(APPBIN)
 	@mkdir -p $(APPRES)
-	@mkdir -p $(APPRES)/English.lproj/MainMenu.nib 
+	@mkdir -p $(APPRES)/English.lproj/main.nib 
 	@mkdir -p $(APPRES)/lib/edit
 	@mkdir -p $(APPRES)/lib/file
 	@mkdir -p $(APPRES)/lib/help
@@ -146,18 +169,16 @@ install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
 	@cp ../lib/help/*.txt $(APPRES)/lib/help
 	@cp ../lib/help/*.hlp $(APPRES)/lib/help
 	@cp ../lib/pref/*.prf $(APPRES)/lib/pref
+	@cp ../lib/xtra/graf/*.txt $(APPRES)/lib/xtra/graf
 
 	# 'optionally' install sound and graphics tiles, if present
-	# TODO: read the tile pngs from $(APPRES)/lib/xtra/graf/
-	# so we can just recursively copy that directory.
-	-cp ../lib/xtra/graf/graphics.txt $(APPRES)/lib/xtra/graf
-	-cp ../lib/xtra/graf/*.png $(APPRES)/
+	-cp $(TILES) $(APPRES)/lib/xtra/graf
 	-cp ../lib/xtra/sound/*.wav $(APPRES)/lib/xtra/sound
 	-cp ../lib/xtra/sound/sound.cfg $(APPRES)/lib/xtra/sound
 
 	install -m 755 $(EXE) $(APPBIN)
 	install -m 644 $(ICONFILES) $(APPRES)
-	cp cocoa/English.lproj/MainMenu.nib/*ib $(APPRES)/English.lproj/MainMenu.nib
+	cp osx/English.lproj/main.nib/*ib $(APPRES)/English.lproj/main.nib
 	sed -e 's/\$$VERSION\$$/$(VERSION)/' -e 's/\$$COPYRIGHT\$$/$(COPYRIGHT)/' \
 		-e 's/\$$NAME\$$/$(NAME)/' -e 's/\$$EXECUTABLE\$$/$(EXE)/' \
 		$(PLIST) > $(APPCONT)/Info.plist
@@ -176,10 +197,13 @@ PACKAGE_NAME = $(NAME)-$(VERSION)
 
 # In the unlikely event that tar+zip isn't enough...
 
-dist: install
+../doc/manual.pdf:
+	$(MAKE) -C ../doc manual.pdf
+
+dist: install ../doc/manual.pdf
 	@rm -rf disttemp*
 	mkdir -p disttemp/Docs
-	cp ../changes.txt ../copying.txt ../faq.txt ../readme.txt disttemp/Docs
+	cp ../changes.txt ../copying.txt ../faq.txt ../readme.txt ../doc/manual.pdf disttemp/Docs
 	cp -R -p "$(APPBNDL)" disttemp
 	SetFile -a B disttemp/$(APPNAME)
 

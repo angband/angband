@@ -277,7 +277,7 @@ C:0:g
 ##### Roguelike Keyset Mappings #####
 
 # Stay still (numerical)
-A:,
+A:.
 C:1:5
 C:1:{K}5
 C:1:{MK}5
