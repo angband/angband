@@ -83,4 +83,5 @@ int test_0(void *state) {
 const char *suite_name = "player/history";
 struct test tests[] = {
 	{ "0", test_0 },
+	{ NULL, NULL },
 };
