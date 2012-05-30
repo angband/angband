@@ -97,6 +97,22 @@ from the src directory into the top-level dir, and copy 2 DLLs (libpng12.dll
 and zlib1.dll) from src/win/dll to the top-level dir 
 
 
+Using Cygwin (with MinGW)
+-------------------------
+
+Use the Cygwin setup.exe to install the mingw-gcc-core package and any
+dependencies suggested by the installer.
+
+Run these commands:
+
+	./autogen.sh
+	./configure --enable-win --with-no-install --host=i686-pc-mingw32
+	make
+
+As with the "Using MinGW" process, you need to copy the executable and
+DLLs to the top-level dir.
+
+
 Using eclipse (Indigo) on Windows (with MinGW)
 ----------------------------------------------
 
