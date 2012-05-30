@@ -87,7 +87,18 @@ dnl needed because h-basic.h checks for this define for autoconf support.
 CFLAGS="$CFLAGS -DHAVE_CONFIG_H"
 CPPFLAGS="$CPPFLAGS -I." 
 
-test "$GCC" = "yes" && CFLAGS="$CFLAGS -fno-strength-reduce -W -Wall -Wno-unused-parameter -Wno-missing-field-initializers -pedantic"
+if test "$GCC" = "yes"; then
+	CFLAGS="$CFLAGS -fno-strength-reduce -W -Wall -Wno-unused-parameter -pedantic"
+	AC_MSG_CHECKING([if gcc supports -Wno-missing-field-initializers])
+	_gcc_cflags_save=$CFLAGS
+	CFLAGS="-Wno-missing-field-initializers"
+	AC_COMPILE_IFELSE([AC_LANG_SOURCE([])],_gcc_wopt=yes,_gcc_wopt=no)
+	AC_MSG_RESULT($_gcc_wopt)
+	CFLAGS=$_gcc_cflags_save;
+	if test x"$_gcc_wopt" = xyes ; then
+		CFLAGS="$CFLAGS -Wno-missing-field-initializers"
+	fi
+fi
 
 MY_PROG_MAKE_SYSVINC
 MY_PROG_MAKE_SINCLUDE

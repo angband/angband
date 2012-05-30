@@ -100,6 +100,9 @@ and zlib1.dll) from src/win/dll to the top-level dir
 Using Cygwin (with MinGW)
 -------------------------
 
+Use this option if you want to build a native Windows executable that
+can run with or without Cygwin.
+
 Use the Cygwin setup.exe to install the mingw-gcc-core package and any
 dependencies suggested by the installer.
 
@@ -111,6 +114,10 @@ Run these commands:
 
 As with the "Using MinGW" process, you need to copy the executable and
 DLLs to the top-level dir.
+
+If you want to build the Unix version of Angband that uses X11 or
+Curses and run it under Cygwin, then follow the native build
+instructions (./autogen.sh; ./configure; make; make install).
 
 
 Using eclipse (Indigo) on Windows (with MinGW)
