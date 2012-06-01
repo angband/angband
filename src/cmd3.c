@@ -559,7 +559,11 @@ static void lookup_symbol(struct keypress sym, char *buf, size_t max)
 	}
 
 	/* No matches */
-	strnfmt(buf, max, "%c - %s.", (char)sym.code, "Unknown Symbol");
+        if (isprint((char)sym.code)) {
+	    strnfmt(buf, max, "%c - Unknown Symbol.", (char)sym.code);
+        } else {
+	    strnfmt(buf, max, "? - Unknown Symbol.");
+        }
 	
 	return;
 }

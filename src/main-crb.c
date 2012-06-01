@@ -1894,8 +1894,8 @@ static size_t Term_mbcs_mac(wchar_t *dest, const char *src, int n)
                             ((unsigned char)src[i+3] & 0x3f);
             i += 3;
         } else {
-            /* Should not get here; asserting a known false expression */
-            assert((src[i] & 0xf8) == 0xf0);
+            /* Found an invalid multibyte sequence */
+            return (size_t)-1;
         }
         count++;
     }
