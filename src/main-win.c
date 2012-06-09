@@ -3729,6 +3729,11 @@ static void process_menus(WORD wCmd)
 			break;
 		}
 		case IDM_WINDOW_RESET: {
+			/* This feature is bugged and causes the game to crash in windows.  It's been disabled for the 3.4 release. */
+			plog("This feature is disabled for this version.");
+			break;
+			
+			
 			if (MessageBox(NULL,
 					"This will reset the size and layout of the angband windows\n based on your screen size. Do you want to continue?",
 					VERSION_NAME, MB_YESNO|MB_ICONWARNING) == IDYES) {
