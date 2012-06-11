@@ -1,4 +1,4 @@
-# !/bin/sh
+#!/bin/sh
 
 TOP_DIR=$(dirname $0)
 LAST_DIR=$PWD
