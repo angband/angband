@@ -2655,6 +2655,7 @@ static void initialize_file_paths(void)
     
     //void init_file_paths(const char *configpath, const char *libpath, const char *datapath)
     init_file_paths(libpath, libpath, basepath);
+    create_needed_dirs();
     
 }
 
