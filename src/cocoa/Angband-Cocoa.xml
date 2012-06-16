@@ -5,17 +5,23 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>Angband</string>
+	<string>$EXECUTABLE$</string>
 	<key>CFBundleIconFile</key>
-	<string>Angband_Icons</string>
+	<string>$NAME$_Icons</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.rephial.angband</string>
+	<string>org.rephial.$EXECUTABLE$</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>3.4.0</string>
+	<string>$VERSION$</string>
+	<key>CFBundleLongVersionString</key>
+	<string>$VERSION$, Copyright $COPYRIGHT$</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright © $COPYRIGHT$</string>
+	<key>CFBundleGetInfoString</key>
+	<string>$VERSION$, © $COPYRIGHT$</string>
 	<key>CFBundleSignature</key>
 	<string>A271</string>
 	<key>CFBundleVersion</key>
@@ -36,7 +42,7 @@
             <key>CFBundleTypeIconFile</key>
             <string>Save</string>
             <key>CFBundleTypeName</key>
-            <string>Angband saved game</string>
+            <string>$NAME$ saved game</string>
             <key>CFBundleTypeOSTypes</key>
             <array>
                 <string>SAVE</string>
@@ -52,7 +58,7 @@
             <key>CFBundleTypeIconFile</key>
             <string>Edit</string>
             <key>CFBundleTypeName</key>
-            <string>Angband game data</string>
+            <string>$NAME$ game data</string>
             <key>CFBundleTypeOSTypes</key>
             <array>
                 <string>TEXT</string>
@@ -68,7 +74,7 @@
             <key>CFBundleTypeIconFile</key>
             <string>Data</string>
             <key>CFBundleTypeName</key>
-            <string>Angband game data</string>
+            <string>$NAME$ game data</string>
             <key>CFBundleTypeOSTypes</key>
             <array>
                 <string>DATA</string>
