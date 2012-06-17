@@ -235,12 +235,15 @@ static int columns_get_cursor(int row, int col, int n, int top, region *loc)
 {
 	int rows_per_page = loc->page_rows;
 	int colw = loc->width / (n + rows_per_page - 1) / rows_per_page;
-	int cursor = row + rows_per_page * (col - loc->col) / colw;
+	int cursor;
 
-	if (cursor < 0) cursor = 0;	/* assert: This should never happen */
-	if (cursor >= n) cursor = n - 1;
+	if (colw < 1) return 0;
+	
+	cursor = row + rows_per_page * (col - loc->col) / colw;
 
-	return cursor;
+	if (cursor < 0) return 0;	/* assert: This should never happen */
+	else if (cursor >= n) return n - 1;
+	else return cursor;
 }
 
 static void display_columns(menu_type *menu, int cursor, int *top, region *loc)
