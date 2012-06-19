@@ -4067,10 +4067,13 @@ bool obj_can_refill(const object_type *obj)
 
 	/* A lantern can be refueled from a flask or another lantern */
 	if (light->sval == SV_LIGHT_LANTERN) {
-		if (obj->tval == TV_FLASK) return TRUE;
-		else if(obj->sval == SV_LIGHT_LANTERN &&
-		        obj->timeout > 0 &&
-		        !no_fuel) return TRUE;
+		if (obj->tval == TV_FLASK) 
+			return TRUE;
+		else if (obj->tval == TV_LIGHT &&
+			obj->sval == SV_LIGHT_LANTERN &&
+			obj->timeout > 0 &&
+			!no_fuel) 
+			return TRUE;
 	}
 
 	return FALSE;
