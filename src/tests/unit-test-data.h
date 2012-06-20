@@ -29,6 +29,26 @@ static struct object_base TEST_DATA sword_base = {
 	.break_perc = 50,
 };
 
+static struct object_base TEST_DATA light_base = {
+	.name = "Test Light~",
+	.tval = TV_LIGHT,
+	.next = NULL,
+	.break_perc = 50,
+};
+
+static struct object_base TEST_DATA flask_base = {
+	.name = "Test Flask~",
+	.tval = TV_FLASK,
+	.next = NULL,
+	.break_perc = 100,
+};
+
+static struct object_base TEST_DATA rod_base = {
+	.name = "Test Rod~",
+	.tval = TV_ROD,
+	.next = NULL,
+};
+
 static struct artifact TEST_DATA test_artifact_sword = {
 	.name = "Test Artifact",
 	.text = "A test artifact.",
@@ -115,6 +135,7 @@ static struct object_kind TEST_DATA test_longsword = {
 static struct object_kind TEST_DATA test_torch = {
 	.name = "Test Torch",
 	.text = "A test torch [1].",
+	.base = &light_base,
 	.kidx = 1,
 	.tval = TV_LIGHT,
 	.sval = SV_LIGHT_TORCH,
@@ -171,6 +192,204 @@ static struct object_kind TEST_DATA test_torch = {
 	.alloc_min = 1,
 	.alloc_max = 10,
 	.level = 0,
+
+	.effect = 0,
+	.gen_mult_prob = 0,
+	.flavor = NULL,
+};
+
+static struct object_kind TEST_DATA test_lantern = {
+	.name = "Test Lantern",
+	.text = "A test lantern.",
+	.base = &light_base,
+	.kidx = 1,
+	.tval = TV_LIGHT,
+	.sval = SV_LIGHT_LANTERN,
+	.pval = {
+			{
+				.base = 5000,
+				.dice = 0,
+				.sides = 0,
+				.m_bonus = 0,
+			},
+			{
+				.base = 0,
+				.dice = 0,
+				.sides = 0,
+				.m_bonus = 0,
+			},
+			{
+				.base = 0,
+				.dice = 0,
+				.sides = 0,
+				.m_bonus = 0,
+			},
+	},
+
+	.to_h = {
+			.base = 0,
+			.dice = 0,
+			.sides = 0,
+			.m_bonus = 0,
+	},
+	.to_d = {
+			.base = 0,
+			.dice = 0,
+			.sides = 0,
+			.m_bonus = 0,
+	},
+	.to_a = {
+			.base = 0,
+			.dice = 0,
+			.sides = 0,
+			.m_bonus = 0,
+	},
+
+	.dd = 1,
+	.ds = 1,
+	.weight = 10,
+
+	.cost = 1,
+
+	.d_attr = 0,
+	.d_char = L'~',
+
+	.alloc_prob = 10,
+	.alloc_min = 1,
+	.alloc_max = 10,
+	.level = 0,
+
+	.effect = 0,
+	.gen_mult_prob = 0,
+	.flavor = NULL,
+};
+
+static struct object_kind TEST_DATA test_flask = {
+	.name = "Test Flask",
+	.text = "A test flask.",
+	.base = &flask_base,
+	.kidx = 1,
+	.tval = TV_FLASK,
+	.sval = 0,
+	.pval = {
+			{
+				.base = 7500,
+				.dice = 0,
+				.sides = 0,
+				.m_bonus = 0,
+			},
+			{
+				.base = 0,
+				.dice = 0,
+				.sides = 0,
+				.m_bonus = 0,
+			},
+			{
+				.base = 0,
+				.dice = 0,
+				.sides = 0,
+				.m_bonus = 0,
+			},
+	},
+
+	.to_h = {
+			.base = 0,
+			.dice = 0,
+			.sides = 0,
+			.m_bonus = 0,
+	},
+	.to_d = {
+			.base = 0,
+			.dice = 0,
+			.sides = 0,
+			.m_bonus = 0,
+	},
+	.to_a = {
+			.base = 0,
+			.dice = 0,
+			.sides = 0,
+			.m_bonus = 0,
+	},
+
+	.dd = 1,
+	.ds = 4,
+	.weight = 20,
+
+	.cost = 3,
+
+	.d_attr = 11,
+	.d_char = L'!',
+
+	.alloc_prob = 50,
+	.alloc_min = 1,
+	.alloc_max = 100,
+	.level = 1,
+
+	.effect = 0,
+	.gen_mult_prob = 0,
+	.flavor = NULL,
+};
+
+static struct object_kind TEST_DATA test_rod_treasure_location = {
+	.name = "Test Rod of Treasure Location",
+	.text = "A test rod of treasure location.",
+	.base = &rod_base,
+	.kidx = 1,
+	.tval = TV_ROD,
+	.sval = 1,
+	.pval = {
+			{
+				.base = 0,
+				.dice = 0,
+				.sides = 0,
+				.m_bonus = 0,
+			},
+			{
+				.base = 0,
+				.dice = 0,
+				.sides = 0,
+				.m_bonus = 0,
+			},
+			{
+				.base = 0,
+				.dice = 0,
+				.sides = 0,
+				.m_bonus = 0,
+			},
+	},
+
+	.to_h = {
+			.base = 0,
+			.dice = 0,
+			.sides = 0,
+			.m_bonus = 0,
+	},
+	.to_d = {
+			.base = 0,
+			.dice = 0,
+			.sides = 0,
+			.m_bonus = 0,
+	},
+	.to_a = {
+			.base = 0,
+			.dice = 0,
+			.sides = 0,
+			.m_bonus = 0,
+	},
+
+	.dd = 0,
+	.ds = 0,
+	.weight = 15,
+
+	.cost = 1000,
+
+	.d_attr = 0,
+	.d_char = L'-',
+
+	.alloc_prob = 30,
+	.alloc_min = 8,
+	.alloc_max = 75,
+	.level = 5,
 
 	.effect = 0,
 	.gen_mult_prob = 0,
