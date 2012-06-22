@@ -2506,7 +2506,7 @@ static errr Term_pict_win_alpha(int x, int y, int n, const byte *ap, const wchar
 			StretchBlt(hdc, x2, y2, tw2, th2, hdcSrc, x3, y3, w1, h1, SRCCOPY);
 		}
 		if (overdraw && (trow >= overdraw) && (y > 2) && (trow <= overdrawmax)) {
-			AlphaBlend(hdc, x2, y2-th2, tw2, th2, hdcSrc, x1, y1-h1, w1, h1, blendfn);
+			AlphaBlend(hdc, x2, y2-th2, tw2, th2, hdcSrc, x3, y3-h1, w1, h1, blendfn);
 			/* tell the core that the top tile is different than what it thinks */
 			Term_mark(x, y-tile_height);
 			Term_mark(x, y); /* ugg this means that this tile is drawn every frame */

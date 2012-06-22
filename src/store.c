@@ -2909,6 +2909,9 @@ static int store_get_stock(menu_type *m, int oid)
 
 	if (e.type == EVT_SELECT) {
 		return m->cursor;
+	} else
+	if (e.type == EVT_ESCAPE) {
+		return -1;
 	}
 
 	/* if we do not have a new selection, just return the original item */
@@ -2985,10 +2988,14 @@ static bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
 					/*if (TRUE) {*/
 						/* use the old way of purchasing items */
 						msg_flag = FALSE;
-						prt("Purchase which item?", 0, 0);
+						prt("Purchase which item? (ESC to cancel, Enter to select)", 0, 0);
 						oid = store_get_stock(m, oid);
+						prt("", 0, 0);
 					/*}*/
-					storechange = store_purchase(oid); break;
+					if (oid >= 0) {
+						storechange = store_purchase(oid);
+					}
+					break;
 				}
 			case 'l':
 			case 'x':
@@ -2996,11 +3003,14 @@ static bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
 					/*if (TRUE) {*/
 						/* use the old way of examining items */
 						msg_flag = FALSE;
-						prt("Examine which item?", 0, 0);
+						prt("Examine which item? (ESC to cancel, Enter to select)", 0, 0);
 						oid = store_get_stock(m, oid);
 						prt("", 0, 0);
 					/*}*/
-					store_examine(oid); break;
+					if (oid >= 0) {
+						store_examine(oid);
+					}
+					break;
 				}
 
 			/* XXX redraw functionality should be another menu_iter handler */
