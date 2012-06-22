@@ -2392,10 +2392,13 @@ static BOOL send_event(NSEvent *event)
             unichar c = [[event characters] characterAtIndex:0];
             keycode_t ch;
             switch (c) {
-                case NSUpArrowFunctionKey: ch = ARROW_UP; break;
-                case NSDownArrowFunctionKey: ch = ARROW_DOWN; break;
-                case NSLeftArrowFunctionKey: ch = ARROW_LEFT; break;
-                case NSRightArrowFunctionKey: ch = ARROW_RIGHT; break;
+                /* Note that NSNumericPadKeyMask is set if any of the arrow
+                 * keys are pressed. We don't want KC_MOD_KEYPAD set for
+                 * those. See #1662 for more details. */
+                case NSUpArrowFunctionKey: ch = ARROW_UP; kp = 0; break;
+                case NSDownArrowFunctionKey: ch = ARROW_DOWN; kp = 0; break;
+                case NSLeftArrowFunctionKey: ch = ARROW_LEFT; kp = 0; break;
+                case NSRightArrowFunctionKey: ch = ARROW_RIGHT; kp = 0; break;
                 case NSF1FunctionKey: ch = KC_F1; break;
                 case NSF2FunctionKey: ch = KC_F2; break;
                 case NSF3FunctionKey: ch = KC_F3; break;
