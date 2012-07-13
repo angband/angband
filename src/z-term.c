@@ -1025,18 +1025,16 @@ errr Term_mark(int x, int y)
 	byte *old_taa = Term->old->ta[y];
 	wchar_t *old_tcc = Term->old->tc[y];
 
-	old_aa[x] = Term->attr_blank;
-	old_cc[x] = Term->char_blank;
-	old_taa[x] = Term->attr_blank;
-	old_tcc[x] = Term->char_blank;
-
-	/* Check for new min/max row info */
-	if (y < Term->y1) Term->y1 = y;
-	if (y > Term->y2) Term->y2 = y;
-	
-	/* Check for new min/max col info in this row */
-	if (x < Term->x1[y]) Term->x1[y] = x;
-	if (x > Term->x2[y]) Term->x2[y] = x;
+	/*
+	 * using 0x80 as the blank attribute and an impossible value for
+	 * the blank char is ok since this function is only called by tile
+	 * functions, but ideally there should be a test to use the blank text
+	 * attr/char pair
+	 */
+	old_aa[x] = 0x80; 
+	old_cc[x] = 0;
+	old_taa[x] = 0x80;
+	old_tcc[x] = 0;
 
 	return (0);
 }
@@ -1258,34 +1256,34 @@ errr Term_fresh(void)
 			int tx = old->cx;
 			int ty = old->cy;
 
-			byte *old_aa = old->a[ty];
-			wchar_t *old_cc = old->c[ty];
+			byte *scr_aa = scr->a[ty];
+			wchar_t *scr_cc = scr->c[ty];
 
-			byte oa = old_aa[tx];
-			wchar_t oc = old_cc[tx];
+			byte sa = scr_aa[tx];
+			wchar_t sc = scr_cc[tx];
 
-			byte *old_taa = old->ta[ty];
-			wchar_t *old_tcc = old->tc[ty];
+			byte *scr_taa = scr->ta[ty];
+			wchar_t *scr_tcc = scr->tc[ty];
 
-			byte ota = old_taa[tx];
-			wchar_t otc = old_tcc[tx];
+			byte sta = scr_taa[tx];
+			wchar_t stc = scr_tcc[tx];
 
 			/* Hack -- use "Term_pict()" always */
 			if (Term->always_pict)
 			{
-				(void)((*Term->pict_hook)(tx, ty, 1, &oa, &oc, &ota, &otc));
+				(void)((*Term->pict_hook)(tx, ty, 1, &sa, &sc, &sta, &stc));
 			}
 
 			/* Hack -- use "Term_pict()" sometimes */
-			else if (Term->higher_pict && (oa & 0x80))
+			else if (Term->higher_pict && (sa & 0x80))
 			{
-				(void)((*Term->pict_hook)(tx, ty, 1, &oa, &oc, &ota, &otc));
+				(void)((*Term->pict_hook)(tx, ty, 1, &sa, &sc, &sta, &stc));
 			}
 
 			/* Hack -- restore the actual character */
-			else if (oa || Term->always_text)
+			else if (sa || Term->always_text)
 			{
-				(void)((*Term->text_hook)(tx, ty, 1, oa, &oc));
+				(void)((*Term->text_hook)(tx, ty, 1, sa, &sc));
 			}
 
 			/* Hack -- erase the grid */
