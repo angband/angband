@@ -17,10 +17,14 @@ EXE = angband
 ARCH = -arch i386 -arch x86_64
 WARNINGS = -W -Wall -Wno-unused-parameter -Wno-missing-field-initializers
 JUST_C = -std=c99 -Wdeclaration-after-statement
-OBJ_CFLAGS = -std=c99 -x objective-c -mmacosx-version-min=10.4
+OBJ_CFLAGS = -std=c99 -x objective-c -mmacosx-version-min=10.5
 CFLAGS = -g -I. $(WARNINGS) $(OPT) -DMACH_O_CARBON -DHAVE_MKSTEMP \
 	-fno-stack-protector $(ARCH)
 LIBS = -framework Cocoa
+# Fix for bug #1663: Set the deployment target via environment variable
+# for the final link command. See http://grauonline.de/wordpress/?p=71
+# or http://stackoverflow.com/questions/5509885/creating-app-for-old-mac-from-new-mac-machine
+DEPLOYMENT_TARGET = MACOSX_DEPLOYMENT_TARGET=10.5
 
 # Import user prefs
 # If you don't want to edit this file, put your module redefinitions
@@ -62,7 +66,7 @@ $(EXE).o: $(OBJS)
 	lipo -arch x86_64 $@.x86_64 -arch i386 $@.i386 -create -output angband.o
 
 $(EXE): $(EXE).o $(OSX_OBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(EXE).o $(OSX_OBJS) $(LIBS) 
+	$(DEPLOYMENT_TARGET) $(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(EXE).o $(OSX_OBJS) $(LIBS) 
 
 borg: $(OBJS) $(BOBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(OBJS) $(BOBJS) $(LIBS) 
