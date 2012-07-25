@@ -382,9 +382,7 @@ static bool do_cmd_open_chest(int y, int x, s16b o_idx)
 
 		/* Squelch chest if autosquelch calls for it */
 		p_ptr->notice |= PN_SQUELCH;
-
-		/* Redraw chest, to be on the safe side (it may have been squelched) */
-		cave_light_spot(cave, y, x);
+		
 	}
 
 	/*
@@ -394,7 +392,13 @@ static bool do_cmd_open_chest(int y, int x, s16b o_idx)
 	if (o_ptr->pval[DEFAULT_PVAL] == 0) {
 		o_ptr->ignore = TRUE;
 	}
+	
+	/* Redraw chest, to be on the safe side (it may have been squelched) */
+	cave_light_spot(cave, y, x);
 
+	/* Refresh */
+	Term_fresh();
+	
 	/* Result */
 	return (more);
 }
