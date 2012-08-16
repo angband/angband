@@ -26,6 +26,9 @@ Bugs fixed
   #1592 Avoid pricing errors for negative pvals (thanks PowerWyrm)
   #1593 Remove ghost pvals on randarts
   #1594 Initialise random name tables properly
+  #1661 Fix buggy refilling behavior
+  #1665 Partial fix to allow pick-up in darkness
+  #1666 Refresh screen after opening chests
 9541bb7 Make pref file writing work with setgid installs
 559e486 Save progress towards level feelings
 52a331e Fix buggy earthquake logic
@@ -34,6 +37,8 @@ d9407cc Avoid crash on leaving level while hallucinating (thanks PowerWyrm)
 d864ea0 Prevent crash when 'r'ecalling the Everburning ego
 0a5ea4d Correct door fiddling/bashing messages for visible monsters
 8071637 Fix summon_specific so it fails properly
+a945067 Avoid crash with "reset layout" option
+1384cc7 Avoid crash when clicking squelch menu 
 
 User interface
 ==============
@@ -57,6 +62,7 @@ ab91c7e Add Andrew White's borg
 44eaf2d Nick's UTF8 glyph picker
 de24939 Fix GCU port to recognise backspace and del as distinct keys
 bceddcb Blubaron's default layout for Windows
+c252fd0 Blubaron's store UI improvement
 
 Gameplay changes
 ================
@@ -112,6 +118,7 @@ a914ed2 pkg_deb script now excludes non-DFSG wav files
 		Replaced many indices with pointers in function calls (ongoing)
 9861f45 et seq. Remove all uses of %^s and use my_strcap() instead
 a48326c et seq. Enable MinGW to use the buildsys, and other improvements (Noz)
+		Various improvements to Carbon and Cocoa ports (myshkin)
 
 Documentation changes
 =====================
