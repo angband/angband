@@ -263,9 +263,14 @@ if test "$enable_sdl_mixer" = "yes"; then
 
 	if test "$found_sdl_mixer" = "yes"; then
 		AC_DEFINE(SOUND_SDL, 1, [Define to 1 if using SDL_mixer sound support and it's found.])
-		SDL_CFLAGS=`sdl-config --cflags`
-		CFLAGS="${CFLAGS} ${SDL_CFLAGS}"
-		LIBS="${LIBS} -lSDL_mixer"
+		if test "$with_sdl" = "yes"; then
+			LIBS="${LIBS} -lSDL_mixer"
+		else
+			SDL_CFLAGS=`sdl-config --cflags`
+			CFLAGS="${CFLAGS} ${SDL_CFLAGS}"
+			SDL_LIBS=`sdl-config --libs`
+			LIBS="${LIBS} ${SDL_LIBS} -lSDL_mixer"
+		fi
 		MAINFILES="${MAINFILES} \$(SNDSDLFILES)"
 	fi
 fi
