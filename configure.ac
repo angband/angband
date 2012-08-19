@@ -193,9 +193,9 @@ AC_ARG_ENABLE(stats,
 
 dnl Sound modules
 AC_ARG_ENABLE(sdl_mixer,
-	[AS_HELP_STRING([--enable-sdl-mixer], [Enables SDL mixer sound support (default: enabled)])],
+	[AS_HELP_STRING([--enable-sdl-mixer], [Enables SDL mixer sound support (default: disabled unless SDL enabled)])],
 	[enable_sdl_mixer=$enable_sdl_mixer],
-	[enable_sdl_mixer=yes])
+	[enable_sdl_mixer=$enable_sdl])
 
 MAINFILES="\$(BASEMAINFILES)"
 
