@@ -632,22 +632,6 @@ static void wiz_tweak_item(object_type *o_ptr)
 	/* Hack -- leave artifacts alone */
 	if (o_ptr->artifact) return;
 
-#define WIZ_TWEAK(attribute) do {\
-	p = "Enter new '" #attribute "' setting: ";\
-	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->attribute);\
-	if (!get_string(p, tmp_val, 6)) return;\
-	o_ptr->attribute = atoi(tmp_val);\
-	wiz_display_item(o_ptr, TRUE);\
-} while (0)
-	for (i = 0; i < MAX_PVALS; i++) {
-		WIZ_TWEAK(pval[i]);
-		if (o_ptr->pval[i])
-			o_ptr->num_pvals = (i + 1);
-	}
-	WIZ_TWEAK(to_a);
-	WIZ_TWEAK(to_h);
-	WIZ_TWEAK(to_d);
-
 	p = "Enter new ego item index: ";
 	strnfmt(tmp_val, sizeof(tmp_val), "0");
 	if (o_ptr->ego)
@@ -673,6 +657,22 @@ static void wiz_tweak_item(object_type *o_ptr)
 	} else
 		o_ptr->artifact = 0;
 	wiz_display_item(o_ptr, TRUE);
+
+#define WIZ_TWEAK(attribute) do {\
+	p = "Enter new '" #attribute "' setting: ";\
+	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->attribute);\
+	if (!get_string(p, tmp_val, 6)) return;\
+	o_ptr->attribute = atoi(tmp_val);\
+	wiz_display_item(o_ptr, TRUE);\
+} while (0)
+	for (i = 0; i < MAX_PVALS; i++) {
+		WIZ_TWEAK(pval[i]);
+		if (o_ptr->pval[i])
+			o_ptr->num_pvals = (i + 1);
+	}
+	WIZ_TWEAK(to_a);
+	WIZ_TWEAK(to_h);
+	WIZ_TWEAK(to_d);
 }
 
 
