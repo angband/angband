@@ -218,7 +218,7 @@ EFFECT(WONDER,         TRUE,   9,	"creates random and unpredictable effects")
 
 EFFECT(WAND_BREATH,    TRUE,  12,	"shoots a large ball of one of the base elements for 120-200 damage")
 EFFECT(STAFF_MAGI,     FALSE, 20,	"restores both intelligence and manapoints to maximum")
-EFFECT(STAFF_HOLY,     FALSE, 12,	"inflicts damage on evil creatures you can see, cures 50 hit points, heals all temporary effects and grants you protection from evil")
+EFFECT(STAFF_HOLY,     FALSE, 12,	"inflicts damage on evil creatures you can see, heals 50 hit points, cures all temporary negative effects and grants you protection from evil")
 EFFECT(DRINK_GOOD,     FALSE,  0,	NULL)
 EFFECT(DRINK_BREATH,   TRUE,   8,	"causes you to breathe either cold or flames for 80 damage")
 EFFECT(DRINK_SALT,     FALSE,  0,	"induces vomiting and paralysis for 4 turns, resulting in severe hunger but also curing poison")
