@@ -322,7 +322,7 @@ void do_cmd_open(cmd_code code, cmd_arg args[])
 	x = p_ptr->px + ddx[dir];
 
 	/* Check for chests */
-	o_idx = chest_check(y, x);
+	o_idx = chest_check(y, x, CHEST_OPENABLE);
 
 
 	/* Verify legality */
@@ -344,7 +344,7 @@ void do_cmd_open(cmd_code code, cmd_arg args[])
 		x = p_ptr->px + ddx[dir];
 
 		/* Check for chest */
-		o_idx = chest_check(y, x);
+		o_idx = chest_check(y, x, CHEST_OPENABLE);
 	}
 
 
@@ -1010,7 +1010,7 @@ void do_cmd_disarm(cmd_code code, cmd_arg args[])
 	x = p_ptr->px + ddx[dir];
 
 	/* Check for chests */
-	o_idx = chest_check(y, x);
+	o_idx = chest_check(y, x, CHEST_TRAPPED);
 
 
 	/* Verify legality */
@@ -1032,7 +1032,7 @@ void do_cmd_disarm(cmd_code code, cmd_arg args[])
 		x = p_ptr->px + ddx[dir];
 
 		/* Check for chests */
-		o_idx = chest_check(y, x);
+		o_idx = chest_check(y, x, CHEST_TRAPPED);
 	}
 
 

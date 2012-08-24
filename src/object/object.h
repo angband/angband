@@ -165,6 +165,14 @@ typedef enum
 	INSCRIP_MAX                  /*!< Maximum number of pseudo-ID markers */
 } obj_pseudo_t;
 
+/*
+ * Chest check types
+ */
+enum chest_query {
+	CHEST_ANY,
+	CHEST_OPENABLE,
+	CHEST_TRAPPED
+};
 
 /*
  * Some constants used in randart generation and power calculation
@@ -537,8 +545,8 @@ byte chest_trap_type(const object_type *o_ptr);
 bool is_trapped_chest(const object_type *o_ptr);
 bool is_locked_chest(const object_type *o_ptr);
 void unlock_chest(object_type *o_ptr);
-s16b chest_check(int y, int x);
-int count_chests(int *y, int *x, bool trapped);
+s16b chest_check(int y, int x, enum chest_query check_type);
+int count_chests(int *y, int *x, enum chest_query check_type);
 bool do_cmd_open_chest(int y, int x, s16b o_idx);
 bool do_cmd_disarm_chest(int y, int x, s16b o_idx);
 

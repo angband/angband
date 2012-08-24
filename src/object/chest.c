@@ -144,9 +144,9 @@ void unlock_chest(object_type *o_ptr)
 }
 
 /*
- * Determine if a grid contains a chest
+ * Determine if a grid contains a chest matching the query type
  */
-s16b chest_check(int y, int x)
+s16b chest_check(int y, int x, enum chest_query check_type)
 {
 	s16b this_o_idx, next_o_idx = 0;
 
@@ -165,8 +165,22 @@ s16b chest_check(int y, int x)
 		/* Skip unknown chests XXX XXX */
 		/* if (!o_ptr->marked) continue; */
 
-		/* Check for chest */
-		if (o_ptr->tval == TV_CHEST) return (this_o_idx);
+		/* Check for chests */
+		switch (check_type)
+		{
+		case CHEST_ANY:
+			if (o_ptr->tval == TV_CHEST)
+				return this_o_idx;
+			break;
+		case CHEST_OPENABLE:
+			if ((o_ptr->tval == TV_CHEST) && (o_ptr->pval[DEFAULT_PVAL] != 0))
+				return this_o_idx;
+			break;
+		case CHEST_TRAPPED:
+			if (is_trapped_chest(o_ptr) && object_is_known(o_ptr))
+				return this_o_idx;
+			break;
+		}
 	}
 
 	/* No chest */
@@ -178,11 +192,9 @@ s16b chest_check(int y, int x)
  * Return the number of chests around (or under) the character.
  * If requested, count only trapped chests.
  */
-int count_chests(int *y, int *x, bool trapped)
+int count_chests(int *y, int *x, enum chest_query check_type)
 {
 	int d, count, o_idx;
-
-	object_type *o_ptr;
 
 	/* Count how many matches */
 	count = 0;
@@ -195,22 +207,7 @@ int count_chests(int *y, int *x, bool trapped)
 		int xx = p_ptr->px + ddx_ddd[d];
 
 		/* No (visible) chest is there */
-		if ((o_idx = chest_check(yy, xx)) == 0) continue;
-
-		/* Grab the object */
-		o_ptr = object_byid(o_idx);
-
-		/* Already open */
-		if (o_ptr->pval[DEFAULT_PVAL] == 0) continue;
-
-		/* No (known) traps here */
-		if (trapped &&
-		    (!object_is_known(o_ptr) ||
-		     (o_ptr->pval[DEFAULT_PVAL] < 0) ||
-		     !chest_traps[o_ptr->pval[DEFAULT_PVAL]]))
-		{
-			continue;
-		}
+		if ((o_idx = chest_check(yy, xx, check_type)) == 0) continue;
 
 		/* Count it */
 		++count;
