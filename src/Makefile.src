@@ -105,6 +105,7 @@ ANGFILES = \
 	monster/mon-spell.o \
 	monster/mon-timed.o \
 	monster/mon-util.o \
+	object/chest.o \
 	object/identify.o \
 	object/obj-desc.o \
 	object/obj-flag.o \

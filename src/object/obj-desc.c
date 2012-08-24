@@ -392,9 +392,9 @@ static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max, si
 		strnfcat(buf, max, &end, " (empty)");
 
 	/* May be "disarmed" */
-	else if (o_ptr->pval[DEFAULT_PVAL] < 0)
+	else if (!is_locked_chest(o_ptr))
 	{
-		if (chest_traps[0 - o_ptr->pval[DEFAULT_PVAL]])
+		if (chest_trap_type(o_ptr) != 0)
 			strnfcat(buf, max, &end, " (disarmed)");
 		else
 			strnfcat(buf, max, &end, " (unlocked)");
@@ -404,7 +404,7 @@ static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max, si
 	else
 	{
 		/* Describe the traps */
-		switch (chest_traps[o_ptr->pval[DEFAULT_PVAL]])
+		switch (chest_trap_type(o_ptr))
 		{
 			case 0:
 				strnfcat(buf, max, &end, " (Locked)");

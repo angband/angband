@@ -532,6 +532,16 @@ typedef struct flavor {
 
 /*** Functions ***/
 
+/* chest.c */
+byte chest_trap_type(const object_type *o_ptr);
+bool is_trapped_chest(const object_type *o_ptr);
+bool is_locked_chest(const object_type *o_ptr);
+void unlock_chest(object_type *o_ptr);
+s16b chest_check(int y, int x);
+int count_chests(int *y, int *x, bool trapped);
+bool do_cmd_open_chest(int y, int x, s16b o_idx);
+bool do_cmd_disarm_chest(int y, int x, s16b o_idx);
+
 /* identify.c */
 extern s32b object_last_wield;
 

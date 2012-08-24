@@ -581,14 +581,8 @@ bool detect_traps(bool aware)
 			/* Scan all objects in the grid to look for traps on chests */
 			for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
 			{
-				/* Skip non-chests */
-				if (o_ptr->tval != TV_CHEST) continue;
-
-				/* Skip disarmed chests */
-				if (o_ptr->pval[DEFAULT_PVAL] <= 0) continue;
-
-				/* Skip non-trapped chests */
-				if (!chest_traps[o_ptr->pval[DEFAULT_PVAL]]) continue;
+				/* Skip anything not a trapped chest */
+				if (!is_trapped_chest(o_ptr)) continue;
 
 				/* Identify once */
 				if (!object_is_known(o_ptr))
