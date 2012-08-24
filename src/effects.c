@@ -1618,13 +1618,19 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			dam = 120 * (100 + boost) / 100;
 			if (dispel_evil(dam)) *ident = TRUE;
+			if (hp_player(50)) *ident = TRUE;
 			if (player_inc_timed(p_ptr, TMD_PROTEVIL, randint1(25) + 3 *
 				p_ptr->lev, TRUE, TRUE)) *ident = TRUE;
 			if (player_clear_timed(p_ptr, TMD_POISONED, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_TERROR, TRUE)) *ident = TRUE;
 			if (player_clear_timed(p_ptr, TMD_AFRAID, TRUE)) *ident = TRUE;
-			if (hp_player(50)) *ident = TRUE;
 			if (player_clear_timed(p_ptr, TMD_STUN, TRUE)) *ident = TRUE;
 			if (player_clear_timed(p_ptr, TMD_CUT, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_SLOW, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_BLIND, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_CONFUSED, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_IMAGE, TRUE)) *ident = TRUE;
+			if (player_clear_timed(p_ptr, TMD_AMNESIA, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
