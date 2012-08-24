@@ -1671,7 +1671,7 @@ void do_cmd_debug(void)
 		/* Create an artifact */
 		case 'C':
 		{
-			if (p_ptr->command_arg > 0)
+			if (p_ptr->command_arg > 0 && p_ptr->command_arg < z_info->a_max)
 			{
 				wiz_create_artifact(p_ptr->command_arg);
 			}
@@ -1697,7 +1697,7 @@ void do_cmd_debug(void)
 						a_idx = lookup_artifact_name(name); 
 					
 					/* Did we find a valid artifact? */
-					if (a_idx != -1)
+					if (a_idx != -1 && a_idx < z_info->a_max)
 						wiz_create_artifact(a_idx);
 					else
 						msg("No artifact found.");

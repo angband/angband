@@ -3607,7 +3607,7 @@ int lookup_artifact_name(const char *name)
 			return i;
 		
 		/* Test for close matches */
-		if (a_ptr->name && my_stristr(a_ptr->name, name) && a_idx == -1)
+		if (strlen(name) >= 3 && a_ptr->name && my_stristr(a_ptr->name, name) && a_idx == -1)
 			a_idx = i;
 	} 
 
