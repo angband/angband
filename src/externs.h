@@ -31,7 +31,6 @@ extern const s16b ddy_ddd[9];
 extern const byte extract_energy[200];
 extern const s32b player_exp[PY_MAX_LEVEL];
 extern const player_sex sex_info[MAX_SEXES];
-extern const byte chest_traps[64];
 extern const char *stat_names[A_MAX];
 extern const char *stat_names_reduced[A_MAX];
 extern const char *window_flag_desc[32];
@@ -151,7 +150,6 @@ extern void move_player(int dir, bool disarm);
 
 /* cmd2.c */
 int count_feats(int *y, int *x, bool (*test)(struct cave *cave, int y, int x), bool under);
-int count_chests(int *y, int *x, bool trapped);
 int coords_to_dir(int y, int x);
 
 /* death.c */

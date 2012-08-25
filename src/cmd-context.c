@@ -34,7 +34,6 @@
 
 int context_menu_command(void);
 int context_menu_object(const object_type *o_ptr, const int slot);
-s16b chest_check(int y, int x);
 void textui_cmd_destroy_menu(int item);
 
 int context_menu_player_2(int mx, int my)
@@ -378,12 +377,12 @@ int context_menu_cave(struct cave *cave, int y, int x, int adjacent, int mx, int
 			menu_dynamic_add_label(m, "Alter", '+', 4, labels);
 		}
 		if (cave->o_idx[y][x]) {
-			s16b o_idx = chest_check(y,x);
+			s16b o_idx = chest_check(y,x, CHEST_ANY);
 			if (o_idx) {
 				object_type *o_ptr = object_byid(o_idx);
 				if (!squelch_item_ok(o_ptr)) {
 					if (object_is_known(o_ptr)) {
-						if (o_ptr->pval[DEFAULT_PVAL] > 0) {
+						if (is_locked_chest(o_ptr)) {
 							menu_dynamic_add_label(m, "Disarm Chest", 'D', 5, labels);
 							menu_dynamic_add_label(m, "Open Chest", 'o', 8, labels);
 						} else {

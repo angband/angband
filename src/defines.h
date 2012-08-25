@@ -654,7 +654,7 @@ enum
 
 
 /*
- * Chest trap flags (see "tables.c")
+ * Chest trap flags (see "object/chest.c")
  */
 #define CHEST_LOSE_STR	0x01
 #define CHEST_LOSE_CON	0x02
