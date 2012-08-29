@@ -15021,7 +15021,7 @@ static bool borg_play_step(int y2, int x2)
 
             /* Unknown, Search it */
             if (!object_is_known(o_ptr) &&
-                chest_traps[o_ptr->pval[DEFAULT_PVAL]])
+                chest_trap_type(o_ptr))
             {
                 borg_note(format("# Searching a '%s' at (%d,%d)",
                          take->kind->name,

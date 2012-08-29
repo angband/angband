@@ -1575,23 +1575,19 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ,
 			case GF_KILL_DOOR:
 			{
 				/* Chests are noticed only if trapped or locked */
-				if (o_ptr->tval == TV_CHEST)
+				if (is_locked_chest(o_ptr))
 				{
-					/* Disarm/Unlock traps */
-					if (o_ptr->pval[DEFAULT_PVAL] > 0)
+					/* Disarm or Unlock */
+					unlock_chest(o_ptr);
+
+					/* Identify */
+					object_notice_everything(o_ptr);
+
+					/* Notice */
+					if (o_ptr->marked > MARK_UNAWARE && !squelch_item_ok(o_ptr))
 					{
-						/* Disarm or Unlock */
-						o_ptr->pval[DEFAULT_PVAL] = (0 - o_ptr->pval[DEFAULT_PVAL]);
-
-						/* Identify */
-						object_notice_everything(o_ptr);
-
-						/* Notice */
-						if (o_ptr->marked > MARK_UNAWARE && !squelch_item_ok(o_ptr))
-						{
-							msg("Click!");
-							obvious = TRUE;
-						}
+						msg("Click!");
+						obvious = TRUE;
 					}
 				}
 
