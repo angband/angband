@@ -196,7 +196,6 @@ static void change_path(const char *info)
   for(i=0;i<N_ELEMENTS(change_path_map_keys);i++) {
     if(my_stricmp(path, change_path_map_keys[i]) == 0) {
       string_free(*change_path_map_values[i]);
-      printf("DIR: %s", dir);
       *change_path_map_values[i] = string_make(dir);
 
       /* the directory may not exist and may need to be created. */
