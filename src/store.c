@@ -2927,7 +2927,8 @@ int context_menu_store_item(struct store *store, const int oid, int x, int y);
 static bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
 {
 	bool processed = TRUE;
-
+	struct store *store = current_store();
+	
 	if (event->type == EVT_SELECT)
 	{
 		/* Nothing for now, except "handle" the event */
@@ -2988,7 +2989,11 @@ static bool store_menu_handle(menu_type *m, const ui_event *event, int oid)
 					/*if (TRUE) {*/
 						/* use the old way of purchasing items */
 						msg_flag = FALSE;
-						prt("Purchase which item? (ESC to cancel, Enter to select)", 0, 0);
+						if (store->sidx != STORE_HOME) {
+						   prt("Purchase which item? (ESC to cancel, Enter to select)", 0, 0);
+						} else {
+						   prt("Get which item? (Esc to cancel, Enter to select)", 0, 0);
+						}
 						oid = store_get_stock(m, oid);
 						prt("", 0, 0);
 					/*}*/
