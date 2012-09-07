@@ -8499,15 +8499,10 @@ int borg_danger_aux(int y, int x, int c, int i, bool average, bool full_damage)
     if (!kill->awake)
     {
         int inc = r_ptr->sleep + 5;
-		/* Reduce the fear if Borg is higher level */
+	/* Reduce the fear if Borg is higher level */
         if (borg_skill[BI_CLEVEL] >= 25 )
         {
              v1 = v1 / 2;
-        }
-        else
-        {
-            /* low clevel weaklings should still fear alot*/
-            v1 = v1;
         }
 
 		/* Tweak danger based on the "alertness" of the monster */
@@ -8787,15 +8782,10 @@ int borg_danger_aux(int y, int x, int c, int i, bool average, bool full_damage)
         if (!kill->awake)
         {
             int inc = r_ptr->sleep + 5;
-			/* weaklings and should still fear */
+	    /* weaklings and should still fear */
             if (borg_skill[BI_CLEVEL] >= 25 )
             {
                  v2 = v2 / 2;
-            }
-            else
-            {
-                /* only subract 50% of the danger */
-                v2 = v2;
             }
 
 			/* Tweak danger based on the "alertness" of the monster */
