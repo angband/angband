@@ -34,14 +34,14 @@ Features that do not block line of sight
 ----------------------------------------
 
 ===== =========================  =====  ================================== 
-'.'   A floor space              '1'   Entrance to General Store
-'.'   A trap (hidden)            '2'   Entrance to Armoury
-'^'   A trap (known)             '3'   Entrance to Weapon Smith
-';'   A glyph of warding         '4'   Entrance to Temple
-'''   An open door               '5'   Entrance to Alchemy Shop
-'''   A broken door              '6'   Entrance to Magic Shop
-'<'   A staircase up             '7'   Entrance to the Black Market
-'>'   A staircase down           '8'   Entrance to your Home
+'.'   A floor space              '1'    Entrance to General Store
+'.'   A trap (hidden)            '2'    Entrance to Armoury
+'^'   A trap (known)             '3'    Entrance to Weapon Smith
+';'   A glyph of warding         '4'    Entrance to Temple
+'''   An open door               '5'    Entrance to Alchemy Shop
+'''   A broken door              '6'    Entrance to Magic Shop
+'<'   A staircase up             '7'    Entrance to the Black Market
+'>'   A staircase down           '8'    Entrance to your Home
 ===== =========================  =====  ================================== 
 
 Features that block line of sight
@@ -58,15 +58,15 @@ Objects
 -------
  
 =====  =============================  =====  =============================
-'!'    A potion (or flask)            '/'   A pole-arm
-'?'    A scroll (or book)             '|'   An edged weapon
-','    A mushroom (or food)           '\'   A hafted weapon
-'-'    A wand or rod                  '}'   A sling, bow, or x-bow
-'_'    A staff                        '{'   A shot, arrow, or bolt
-'='    A ring                         '('   Soft armour
-'"'    An amulet                      '['   Hard armour
-'$'    Gold or gems                   ']'   Misc. armour
-'~'    Lights, Tools, Chests, etc     ')'   A shield
+'!'    A potion (or flask)            '/'    A pole-arm
+'?'    A scroll (or book)             '|'    An edged weapon
+','    A mushroom (or food)           '\'    A hafted weapon
+'-'    A wand or rod                  '}'    A sling, bow, or x-bow
+'_'    A staff                        '{'    A shot, arrow, or bolt
+'='    A ring                         '('    Soft armour
+'"'    An amulet                      '['    Hard armour
+'$'    Gold or gems                   ']'    Misc. armour
+'~'    Lights, Tools, Chests, etc     ')'    A shield
 '&'    Multiple items
 =====  =============================  =====  =============================
  
