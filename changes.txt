@@ -7,6 +7,7 @@ changes made since 3.3.0
 
 Bugs fixed
 ==========
+  #1187 Fix opening chests in stacks (Noz)
   #1461 Fix saving and loading so that savefile.{old|new} are ignored
   #1462 Fix loading of graphics pref files in non-graphics mode (Blubaron)
   #1487 Prevent spoiler calls messing with everseen info
@@ -107,6 +108,7 @@ d315993 Reduce good/great chances for item generation
 Coding changes
 ==============
   #1221 Switch over to UTF-8 (thanks Noz)
+  #1263 Add desktop entries to source and buildsystem (Noz)
   #1381 Split describe_combat (thanks artes)
   #1512 Change S_IREAD and S_IWRITE for Android compatibility
   #1551 Remove the now-redundant SHOW_MODS flag
