@@ -77,7 +77,7 @@
 
 # Version stamp (required)
 
-V:3.3.0
+V:3.4.0
 
 # 1 (unused)
 

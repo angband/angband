@@ -4,7 +4,7 @@
 # I: slots taken up by this item : textual tval : textual name
 #
 
-# V:3.1.0
+# V:3.4.0
 
 # Armoury
 S:2:33
