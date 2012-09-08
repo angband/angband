@@ -31,7 +31,7 @@ The Angband Manual
 
 .. include:: version.txt
 
-.. include:: 330.txt
+.. include:: 340.txt
 
 .. include:: thanks.txt
 

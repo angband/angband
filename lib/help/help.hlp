@@ -1,45 +1,45 @@
 Please choose one of the following online help files:
-    (l) README for Angband 3.3     (330.txt)
+    (a) README for Angband 3.4     (340.txt)
 
-    (a) General information        (general.txt)
-    (b) Creating a character       (birth.txt)
-    (c) Exploring the dungeon      (dungeon.txt)
-    (d) Attacking monsters         (attack.txt)
-    (e) Playing the game           (playing.txt)
-    (f) Command descriptions       (command.txt)
-    (g) Option descriptions        (option.txt)
-    (h) Customising the game       (customize.txt)
-    (i) Historic information       (version.txt)
-    (j) Spoiler menu (if any)      (spoiler.hlp)
-    (k) User menu (if any)         (user.hlp)
+    (b) General information        (general.txt)
+    (c) Creating a character       (birth.txt)
+    (d) Exploring the dungeon      (dungeon.txt)
+    (e) Attacking monsters         (attack.txt)
+    (f) Playing the game           (playing.txt)
+    (g) Command descriptions       (command.txt)
+    (h) Option descriptions        (option.txt)
+    (i) Customising the game       (customize.txt)
+    (j) Historic information       (version.txt)
+    (k) Spoiler menu (if any)      (spoiler.hlp)
+    (l) User menu (if any)         (user.hlp)
 
 Browser/help commands:
   #     go to line         %  go to file         ?  go to last file/main menu
   SPACE advance 1 page     -  back up 1 page     /  search for text
   RET   advance 1 line     =  back up 1 line     &  show (highlight) some text
   +     advance 1/2 page   _  back up 1/2 page   !  toggle case sentitivity
+  
+.. menu:: [a] 340.txt
 
-.. menu:: [a] general.txt
+.. menu:: [b] general.txt
 
-.. menu:: [b] birth.txt
+.. menu:: [c] birth.txt
 
-.. menu:: [c] dungeon.txt
+.. menu:: [d] dungeon.txt
 
-.. menu:: [d] attack.txt
+.. menu:: [e] attack.txt
 
-.. menu:: [e] playing.txt
+.. menu:: [f] playing.txt
 
-.. menu:: [f] command.txt
+.. menu:: [g] command.txt
 
-.. menu:: [g] option.txt
+.. menu:: [h] option.txt
 
-.. menu:: [h] customize.txt
+.. menu:: [i] customize.txt
 
-.. menu:: [i] version.txt
+.. menu:: [j] version.txt
 
-.. menu:: [j] spoiler.hlp
+.. menu:: [k] spoiler.hlp
 
-.. menu:: [k] user.hlp
-
-.. menu:: [l] 330.txt
+.. menu:: [l] user.hlp
 
