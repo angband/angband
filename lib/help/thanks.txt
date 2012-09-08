@@ -17,10 +17,10 @@ This version
  * Erik Osheim (d_m)
  * Elly Jones
  * David Barr (david3x3x3)
- * Chris Weisiger (derakon)
+ * Chris Weisiger (Derakon)
  * Chris Carr (magnate)
  * Buzzkill
- * Brett Reid (Blue baron)
+ * Brett Reid (Blubaron)
  * Andi Sidwell (takkaria)
  * Aaron Bader (fizzix)
 

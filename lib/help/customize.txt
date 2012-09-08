@@ -165,20 +165,21 @@ where possible just as ordinary characters.  However, if modifier keys
 (shift, control, etc.) are used then they are encoded as special characters
 within curly braces {}.
 
-Possibls modifiers are:
+Possible modifiers are::
+
 	K = Keypad (for numbers)
 	M = Meta (Cmd-key on OS X, alt on most other platforms)
 	^ = Control
 	S = Shift
 
 If the only modifier is the control key, the curly braces {} aren't included.
-For example:
+For example::
 
 	{^S}& = Control-Shift-S
 	^D    = Control-D
 
 Special keys, like F1, F2, or Tab, are all written within square brackets [].
-For example:
+For example::
 
 	^[F1]     = Control-F1
 	{^S}[Tab] = Control-Shift-Tab
@@ -195,13 +196,13 @@ When you're running a keymap, you might want to automatically skip any -more-
 prompts.  To do this, include whatever commands you want to skip -more- prompts
 during with '()'.
 
-Keymaps are written in pref files as:
+Keymaps are written in pref files as::
 
 	A:<action>
 	C:<T>:<trigger>
 
 The action must always come first,  <T> means 'keyset Type', which is either
-0 for the original keyset or 1 for the roguelike keyset.  For example
+0 for the original keyset or 1 for the roguelike keyset.  For example::
 
 	A:maa
 	C:0:[F1]

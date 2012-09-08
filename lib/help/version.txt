@@ -239,9 +239,10 @@ class itself customizable to an extent.
 A Posting from the Original Author
 ==================================
 
-  From: koeneke@ionet.net (Robert Alan Koeneke) Newsgroups:
-  rec.games.roguelike.angband,rec.games.roguelike.moria Subject: Early
-  history of Moria Date: Wed, 21 Feb 1996 04:20:51 GMT
+  | From: koeneke@ionet.net (Robert Alan Koeneke) 
+  | Newsgroups: rec.games.roguelike.angband,rec.games.roguelike.moria 
+  | Subject: Early history of Moria 
+  | Date: Wed, 21 Feb 1996 04:20:51 GMT
 
   I had some email show up asking about the origin of Moria, and its
   relation to Rogue. So I thought I would just post some text on the early
@@ -349,8 +350,9 @@ A Posting from the Original Author
   it and Angband and play them... Maybe something has been added that will
   surprise me! That would be nice... I never got to play Moria and be
   surprised...
-  Robert Alan Koeneke
-  koeneke@ionet.net
+
+  | Robert Alan Koeneke
+  | koeneke@ionet.net
 
 Previous Versions (outdated)
 ============================
@@ -358,21 +360,31 @@ Previous Versions (outdated)
 VMS Moria Version 4.8
 ---------------------
 
-- Version 0.1  : 03/25/83
-- Version 1.0  : 05/01/84
-- Version 2.0  : 07/10/84
-- Version 3.0  : 11/20/84
-- Version 4.0  : 01/20/85
+===========   ========
+Version 0.1   03/25/83
+Version 1.0   05/01/84
+Version 2.0   07/10/84
+Version 3.0   11/20/84
+Version 4.0   01/20/85
+===========   ========
 
 Modules:
 
-- V1.0  Dungeon Generator      - RAK
--       Character Generator    - RAK & JWT
--       Moria Module           - RAK
--       Miscellaneous          - RAK & JWT
-- V2.0  Town Level & Misc      - RAK
-- V3.0  Internal Help & Misc   - RAK
-- V4.0  Source Release Version - RAK
++------+------------------------+-----------+
+| V1.0 | Dungeon Generator      | RAK       |
++      +------------------------+-----------+
+|      | Character Generator    | RAK & JWT |
++      +------------------------+-----------+
+|      | Moria Module           | RAK       |
++      +------------------------+-----------+
+|      | Miscellaneous          | RAK & JWT | 
++------+------------------------+-----------+
+| V2.0 | Town Level & Misc      | RAK       |
++------+------------------------+-----------+
+| V3.0 | Internal Help & Misc   | RAK       |
++------+------------------------+-----------+
+| V4.0 | Source Release Version | RAK       |
++------+------------------------+-----------+
 
 ===============================   ================================
 Robert Alan Koeneke               Jimmey Wayne Todd Jr.
@@ -382,11 +394,13 @@ Student/University of Oklahoma    Student/University of Oklahoma
 Umoria Version 5.2 (formerly UNIX Moria)
 ----------------------------------------
 
-Version 4.83 :  5/14/87
-Version 4.85 : 10/26/87
-Version 4.87 :  5/27/88
-Version 5.0  :  11/2/89
-Version 5.2  :   5/9/90
+============ ========
+Version 4.83  5/14/87
+Version 4.85 10/26/87
+Version 4.87  5/27/88
+Version 5.0   11/2/89
+Version 5.2    5/9/90
+============ ========
 
 James E. Wilson, U.C. Berkeley
                  wilson@ernie.Berkeley.EDU
@@ -395,7 +409,7 @@ James E. Wilson, U.C. Berkeley
 Other contributors:
 
 ======================  ==================================================
-D. G. Kneller           MSDOS Moria port
+\D. G. Kneller          MSDOS Moria port
 Christopher J. Stuart   recall, options, inventory, and running code
 Curtis McCauley         Macintosh Moria port
 Stephen A. Jacobs       Atari ST Moria port
@@ -403,37 +417,36 @@ William Setzer          object naming code
 David J. Grabiner       numerous bug reports, and consistency checking
 Dan Bernstein           UNIX hangup signal fix, many bug fixes
 and many others...
-
 ======================  ==================================================
 
-Copyright (c) 1989 James E. Wilson, Robert A. Koeneke
-  This software may be copied and distributed for educational, research, 
+| Copyright (c) 1989 James E. Wilson, Robert A. Koeneke
+| This software may be copied and distributed for educational, research, 
   and not for profit purposes provided that this copyright and statement 
   are included in all such copies.
 
-Umoria Version 5.2, patch level 1
----------------------------------
+Early Angband credits
+---------------------
 
-Angband Version 2.0
+Version 2.0
   Alex Cutler, Andy Astrand, Sean Marsh, Geoff Hill, Charles Teague.
 
-Angband Version 2.4
+Version 2.4
   05/09/1993
 
-Angband Version 2.5
+Version 2.5
   12/05/1993 Charles Swiger
 
-Angband Version 2.6
+Version 2.6
   09/04/1994 Charles Swiger
 
-Angband Version 2.7
+Version 2.7
   01/01/1995 Ben Harrison
 
-Angband Version 2.8
+Version 2.8
   01/01/1997 Ben Harrison
 
-Angband Version 2.9
-  10th April 2000 Robert Ruehlmann
+Version 2.9
+  04/10/2000 Robert Ruehlmann
 
 Contributors (incomplete)
 =========================
