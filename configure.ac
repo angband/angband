@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(Angband, 3.3.0, bugs@rephial.org)
+AC_INIT(Angband, 3.4.0, bugs@rephial.org)
 AC_CONFIG_SRCDIR(src)
 
 AC_CANONICAL_HOST
@@ -115,7 +115,7 @@ if test "x$with_private_dirs" != "x"; then
 	AC_DEFINE(USE_PRIVATE_PATHS, 1, [Define to use private save and score paths.])
 fi
 
-# Only change bindir if it's the configure-supplied default, which handily doesn't expand exec_prefix
+# Only change bindir  it's the configure-supplied default, which handily doesn't expand exec_prefix
 if test "x$bindir" = "x\${exec_prefix}/bin"; then
   bindir=${exec_prefix}/games
 fi
