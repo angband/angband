@@ -1,8 +1,7 @@
-Angband 3.4.0-dev
+Angband 3.4.0
 =================
 
-Welcome to the changelog for Angband 3.4. This paragraph will be rewritten
-nearer to release. In the meantime, this file tracks at a high level the
+Welcome to the changelog for Angband 3.4. This file tracks the
 changes made since 3.3.0
 
 Bugs fixed
