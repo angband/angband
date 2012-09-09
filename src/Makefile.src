@@ -5,7 +5,7 @@
 # across a range of different makefiles, to cut down on maintenance.
 #
 
-VERSION = 3.4.0
+VERSION = 3.5-dev
 COPYRIGHT = (c) 1995-2012 Angband contributors
 
 HEADERS = \
