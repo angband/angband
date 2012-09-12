@@ -1,35 +1,128 @@
-Angband 3.5-dev
-===============
+Angband 3.4.0
+=================
 
-Welcome to the changelog for Angband 3.5. This file tracks the
-changes made since 3.4.0. References are to tickets at trac.rephial.org, or
-(if no ticket exists) to git commit IDs.
+Welcome to the changelog for Angband 3.4. This file tracks the
+changes made since 3.3.0
 
 Bugs fixed
 ==========
-
-
-
+  #1187 Fix opening chests in stacks (Noz)
+  #1461 Fix saving and loading so that savefile.{old|new} are ignored
+  #1462 Fix loading of graphics pref files in non-graphics mode (Blubaron)
+  #1487 Prevent spoiler calls messing with everseen info
+  #1506 Stop the hidden level-feeling tiles being displayed by accident
+  #1515 Ensure that devices IDd on unseen monsters provide feedback
+  #1516 Prevent excessive durations of monster timed effects
+  #1517 Increase MAX_ITEMLIST to cope with new ignore/squelch approach
+  #1518 Correct logic error in randart slay frequency calculation
+  #1526 Mimics behave consistently when hit by friendly fire
+  #1531 Remove pvals properly if they end up at zero (thanks PowerWyrm)
+  #1533 Stop scrolls of light segfaulting on BSD (thanks vext01)
+  #1537 Make sure that turning off randarts at birth works properly
+  #1553 Fix randarts (blows/shots supercharge, RES_STUN)
+  #1571 Use the displayed damage dice for damage calculation
+  #1578 Avoid div/0 crash in project_m for stun attacks
+  #1582 Make to-hit values IDd by shooting (thanks artes)
+  #1592 Avoid pricing errors for negative pvals (thanks PowerWyrm)
+  #1593 Remove ghost pvals on randarts
+  #1594 Initialise random name tables properly
+  #1661 Fix buggy refilling behavior
+  #1665 Partial fix to allow pick-up in darkness
+  #1666 Refresh screen after opening chests
+9541bb7 Make pref file writing work with setgid installs
+559e486 Save progress towards level feelings
+52a331e Fix buggy earthquake logic
+c2d9fee Make Heroism and Berserk spells grant boldness, like the potions
+d9407cc Avoid crash on leaving level while hallucinating (thanks PowerWyrm)
+d864ea0 Prevent crash when 'r'ecalling the Everburning ego
+0a5ea4d Correct door fiddling/bashing messages for visible monsters
+8071637 Fix summon_specific so it fails properly
+a945067 Avoid crash with "reset layout" option
+1384cc7 Avoid crash when clicking squelch menu 
 
 User interface
 ==============
-
-
-
+   #449 Describe each HATES_ flag only if IGNORE_ flag is not present
+   #614 Improve the warning message for !-incribed items
+  #1171 Darken the "Study" message when current books have no new spells
+  #1485 Remove HIDE_TYPE
+  #1491 Make "purple uniques" display correctly
+  #1498 Nomad's updated tiles
+  #1511 Make shift+keypad work in the GTK port (thanks to Daniel Santos)
+  #1633 Save squelch status of items
+ec47e94 et seq. Blubaron's improved tile support (graphics.txt)
+744c7a6 et seq. New Cocoa front-end for Macs (thanks ridiculous_fish)
+a101077 et seq. Blubaron's improved mouse support (Windows/SDL)
+b19e71b Remove randarts "restarting generation" messages
+0f5ab8d Display what monsters are known not to resist (thanks David3x3x3)
+54d939a Many more fixes and enhancements from Blubaron
+c25349c Add Shockbolt's 64x64 tileset
+d992d84 Even more improvements from Blubaron
+ab91c7e Add Andrew White's borg
+44eaf2d Nick's UTF8 glyph picker
+de24939 Fix GCU port to recognise backspace and del as distinct keys
+bceddcb Blubaron's default layout for Windows
+c252fd0 Blubaron's store UI improvement
 
 Gameplay changes
 ================
-
-
-
-
+   #547 Trap detection now detects traps on chests (thanks artes)
+   #572 Prevent instadeaths from IDing summon scrolls/staves by use
+   #631 Make enchant/disenchant more consistent
+   #778 Objects on the floor no longer prevent trap creation
+   #851 DRAIN_EXP now drains xp in proportion to total xp (thanks artes)
+  #1039 OF_LIGHT is now a pval flag
+  #1094 All items pseudo on pickup from after cl20
+  #1113 Rebalance stealth and monster detection (thanks Jens & fizzix)
+  #1156 Revisit stacks of consumables (thanks Jens)
+  #1507 Rebalance to-hit vs. AC (take two, thanks Jens)
+  #1513 Ensure that PDSM can't get the Resistance ego
+  #1514 Move to fuzzy detection for objects not in LOS
+bf5d943 fizzix's summoning changes
+e8b48d5 et seq. CunningGabe's improvements to pits
+8d7ea27 fizzix's animal toughening tweaks
+7cef0aa Angels replaced by Ainu (thanks to Jeff Greene)
+ef38e0f Increase max penalty on =Mouse, remove dam&AC mods on =Dog
+983ead5 CunningGabe's mimic updates
+fd5e3b8 et seq. Various difficulty tweaks:
+		- reduce MAX_STACK_SIZE to 40
+		- make DSM slightly rarer/deeper
+		- make stuff more expensive to buy
+		- reduce drops from apprentices/cutpurses
+		- prevent Deep Descent and Teleport Level being sold in stacks
+f4e1eb7 takkaria's lighting changes (torches radius 1, Phial radius 2)
+77728a2 fizzix's birth changes (fewer birth points, fairer class bonuses)
+b695d46 artes's changes to monsters with poison resistance
+9f4c70f Make failed special artifacts good instead of great
+ce25538 Remove DROP_GOOD from all non-uniques
+b294d59 Make Deep Descent a timed effect (like recall) and drop 250'
+803171a Allow PASS_WALL monsters to revert to normal pathing near permarock
+14b1e13 Make object feelings react more to single great objects
+1c96ef9 Make artifacts give a minimum feeling of "worthwhile"
+d315993 Reduce good/great chances for item generation
+0db8924 Destruction effects no longer destroy stairs
+19d1ad4 Nick's small_device option for reduce range and sight
+34bbdb6 Remove all remove curse items and spells (except *remove curse*)
 
 Coding changes
 ==============
-
-
-
-
+  #1221 Switch over to UTF-8 (thanks Noz)
+  #1263 Add desktop entries to source and buildsystem (Noz)
+  #1381 Split describe_combat (thanks artes)
+  #1512 Change S_IREAD and S_IWRITE for Android compatibility
+  #1551 Remove the now-redundant SHOW_MODS flag
+91be218 Aerdan's updates to buildsys
+fbe0ef4 CunningGabe's cleanup of monster code
+3dd44a4 Update wiz-stats
+1aa93be Remove most of limits.txt
+a914ed2 pkg_deb script now excludes non-DFSG wav files
+		Replaced many indices with pointers in function calls (ongoing)
+9861f45 et seq. Remove all uses of %^s and use my_strcap() instead
+a48326c et seq. Enable MinGW to use the buildsys, and other improvements (Noz)
+		Various improvements to Carbon and Cocoa ports (myshkin)
 
 Documentation changes
 =====================
+f345482 Convert in-game docs to RST (thanks fph)
+b1ab879 Document the "wipe recall" wizmode command
+        Instructions for compiling on various platforms
