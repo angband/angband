@@ -113,7 +113,7 @@ static struct cmd_info cmd_info[] =
 	{ "Cast a spell", { 'm' }, CMD_CAST, textui_obj_cast, player_can_cast_msg },
 	{ "Cast a spell", { 'p' }, CMD_CAST, textui_obj_cast, player_can_cast_msg },
 	{ "Full dungeon map", { 'M' }, CMD_NULL, do_cmd_view_map },
-	{ "Toggle ignoring of items", { 'K', KTRL('G') }, CMD_NULL, textui_cmd_toggle_ignore },
+	{ "Toggle ignoring of items", { 'K', 'O' }, CMD_NULL, textui_cmd_toggle_ignore },
 	{ "Display visible item list", { ']' }, CMD_NULL, do_cmd_itemlist },
 	{ "Display visible monster list", { '[' }, CMD_NULL, do_cmd_monlist },
 	{ "Locate player on map", { 'L', 'W' }, CMD_NULL, do_cmd_locate },

@@ -337,7 +337,7 @@ Uninscribe an object ('}')
   This command removes the inscription on an object. This command will have
   no effect on "fake" inscriptions added by the game itself.
   
-Toggle squelch ('K')
+Toggle squelch ('K') or Toggle squelch ('O')
   This command will toggle squelch settings.  If on, all squelched items 
   will be hidden from view.  If off, all items will be shown regardless
   of their squelch setting.  See the customize section for more info.
