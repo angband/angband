@@ -211,7 +211,7 @@ Angband uses a few built-in keymaps.  These are for the movement keys (they
 are mapped to ';' plus the number, e.g. '5' -> ';5'), amongst others.  You
 can see the full list in pref.prf but they shouldn't impact on you in any way.
 
-To avoid triggering a keymap, you can use the backslash ('\') command.
+To avoid triggering a keymap, you can use the backslash ('\\') command.
 
 User Pref Files (Visuals)
 =========================

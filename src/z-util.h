@@ -71,7 +71,8 @@ extern bool suffix(const char *s, const char *t);
 #define streq(s, t)		(!strcmp(s, t))
 
 /* skip occurrences of a characters */
-void strskip(char *s, const char c);
+extern void strskip(char *s, const char c);
+extern void strescape(char *s, const char c);
 
 /* determines if a string is "empty" */
 bool contains_only_spaces(const char* s);
