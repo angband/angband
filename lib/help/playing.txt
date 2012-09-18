@@ -119,7 +119,7 @@ Original Keyset Command Summary
   '$'    (unused)                        '^D'   (unused)
   '%'    (unused)                        '^E'   Toggle choice window
   '^'    (special - control key)         '^F'   Repeat level feeling
-  '&'    (unused)                        '^G'   (unused)
+  '&'    (unused)                        '^G'   Do autopickup
   '*'    Target monster or location      '^H'   (unused)
   '('    Load screen dump                '^I'   (special - tab)
   ')'    Dump screen dump                '^J'   (special - linefeed)
@@ -165,7 +165,7 @@ Roguelike Keyset Command Summary
   'l'   (walk - east)                    'L'   (run - east)
   'm'   Cast a spell                     'M'   Full dungeon map
   'n'   (walk - south east)              'N'   (run - south east)
-  'o'   Open a door or chest             'O'   (unused)
+  'o'   Open a door or chest             'O'   Toggle squelch
   'p'   Pray a prayer                    'P'   Browse a book
   'q'   Quaff a potion                   'Q'   Quit (commit suicide)
   'r'   Read a scroll                    'R'   Rest for a period
@@ -183,7 +183,7 @@ Roguelike Keyset Command Summary
   '$'   (unused)                         '^D'  Ignore item
   '%'   (unused)                         '^E'  Toggle choice window
   '^'   (special - control key)          '^F'  Repeat level feeling
-  '&'   (unused)                         '^G'  Unignore items
+  '&'   (unused)                         '^G'  Do autopickup
   '*'   Target monster or location       '^H'  (alter - west)
   '('   Load screen dump                 '^I'  (special - tab)
   ')'   Dump screen dump                 '^J'  alter - south)
