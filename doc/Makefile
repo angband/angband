@@ -9,7 +9,7 @@ PDFLATEX := pdflatex
 MAKEINDEX := makeindex
 
 SECTIONS := general birth playing attack dungeon customize option command \
-            debug thanks version 330
+            debug ../../thanks version readme
 
 INDEX := index
 
