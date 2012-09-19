@@ -1,0 +1,47 @@
+Command summary: (@ is optional count, ~ is direction, ^R redraws, ESC aborts)
+  a	   Aim and fire a wand	       | @ B ~	    Bash item or monster
+  b	   Browse a book	       |   C	    Character description
+  c ~	   Close a door		       | @ D ~	    Disarm a trap/chest
+  d	   Drop an item		       |   E	    Eat some food
+  e	   Equipment list	       |   F	    Fill lamp with oil
+  f	   Fire/Throw an item	       |   G	    Gain new magic spells
+  i	   Inventory list	       |   L	    Locate with map
+@ j ~	   Jam a door with spike       |   M	    Map shown reduced size
+  l ~	   Look given direction	       | @ R	    Rest for a period
+  m	   Magic spell casting	       |   S	    Search Mode
+@ o ~	   Open a door/chest	       | @ T ~	    Tunnel in a direction
+  p	   Pray			       |   A        Activate an Artifact
+  q	   Quaff a potion	       |   =	    Set options
+  r	   Read a scroll	       |   ?	    Type this page
+@ s	   Search for traps or doors   |   {	    Inscribe an object
+  t	   Take off an item	       | @ -	    Move without pickup
+  u	   Use a staff		       |   . ~	    Run in direction
+  v	   Version info and credits    |   /	    Identify a character
+  w	   Wear/Wield an item	       |   CTRL-K   Quit the game
+  x	   Exchange weapon	       | @ CTRL-P   Repeat the last message
+  <	   Go up an up-staircase       |   CTRL-X   Save character and quit
+  >	   Go down a down-staircase    | @ ~	    for movement
+  z        Zap a Rod                   |   g        get an item (OPTIONAL)
+Directions:	7  8  9
+		4  5  6	 [5 is stay]
+		1  2  3
+
+To give a count to a command, type a '#', followed by the digits. A count
+of 0 defaults to a count of 99. Counts only work with some commands, and
+will be terminated by the same things that end a rest or a run. In
+particular, typing any character during the execution of a counted command
+will terminate the command. To count a movement command, hit space after
+the number, and you will be prompted for the command, which may be a digit.
+
+Counted searches or tunnels will terminate on success, or if you are
+attacked. A count with control-P will specify the number of previous messages.
+
+Control-R will redraw the screen whenever it is input, not only at command
+level. Control commands may be entered with a single key stroke, or with two
+key strokes by typing ^ and then a letter.
+
+Type ESCAPE to abort the look command at any point.
+
+Some commands will prompt for a spell, or an inventory item. Selection is
+by an alphabetic character - entering a capital causes a desription to be
+printed, and the selection may be aborted.

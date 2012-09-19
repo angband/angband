@@ -1,0 +1,5 @@
+#!/bin/sh
+
+echo Angband Heavies
+
+for i in `cat GAMELOG | cut -f1 -d' ' | sort | uniq | xargs` ; do o=`egrep $i GAMELOG | wc -l` ; echo $o $i ; done | sort -rn

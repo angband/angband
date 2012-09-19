@@ -1,0 +1,55 @@
+			  VMS Moria Version 4.8
+Version 0.1  : 03/25/83
+Version 1.0  : 05/01/84
+Version 2.0  : 07/10/84
+Version 3.0  : 11/20/84
+Version 4.0  : 01/20/85
+
+Modules :
+     V1.0  Dungeon Generator	  - RAK
+	   Character Generator	  - RAK & JWT
+	   Moria Module		  - RAK
+	   Miscellaneous	  - RAK & JWT
+     V2.0  Town Level & Misc	  - RAK
+     V3.0  Internal Help & Misc	  - RAK
+     V4.0  Source Release Version - RAK
+
+Robert Alan Koeneke		  Jimmey Wayne Todd Jr.
+Student/University of Oklahoma	  Student/University of Oklahoma
+
+
+
+
+
+			Umoria Version 5.2 (formerly UNIX Moria)
+Version 4.83 :	5/14/87
+Version 4.85 : 10/26/87
+Version 4.87 :	5/27/88
+Version 5.0  :	11/2/89
+Version 5.2  :   5/9/90
+
+James E. Wilson, U.C. Berkeley
+		 wilson@ernie.Berkeley.EDU
+		 ...!ucbvax!ucbernie!wilson
+
+Other contributors:
+D. G. Kneller	      - MSDOS Moria port
+Christopher J. Stuart - recall, options, inventory, and running code
+Curtis McCauley	      - Macintosh Moria port
+Stephen A. Jacobs     - Atari ST Moria port
+William Setzer	      - object naming code
+David J. Grabiner     - numerous bug reports, and consistency checking
+Dan Bernstein	      - UNIX hangup signal fix, many bug fixes
+and many others...
+
+
+
+
+
+
+Copyright (c) 1989 James E. Wilson, Robert A. Keoneke
+  This software may be copied and distributed for educational, research, and
+  not for profit purposes provided that this copyright and statement are
+  included in all such copies.
+
+Umoria Version 5.2, patch level 0
