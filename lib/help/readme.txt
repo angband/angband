@@ -35,6 +35,9 @@ All monsters that were in the Angel class have been replaced with the much
 more thematic "Ainu".  This is more of a cosmetic change than a gameplay
 change, but the three Ainu uniques are now slightly different.
 
+The amount of items in any stack is now limited to 40.  This has the
+largest effect on the quiver, but also affects inventory and shops.
+
 All weak curses are gone.  The only curses are now heavy curses on 
 artifacts, and permanent curses on the very special artifacts.  Remove
 Curse scrolls and spells of all forms are gone as well.  Heavy curses can
