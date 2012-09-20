@@ -19,6 +19,7 @@
 # P: base armor class : base damage : plus to-hit : plus to-dam : plus to-ac
 # A: depth/rarity : depth/rarity : etc
 # F: flag | flag | etc
+# D: description
 
 # 'N' indicates the beginning of an entry. The serial number must
 # increase for each new item. The '&' and '~' symbols are use to
@@ -59,6 +60,10 @@
 # lines may be used as are needed to specify all the flags and flags
 # are separated by the '|' symbol.
 
+# 'D' is for description. As many D: lines may be used as are needed
+# to describe the object. Note that lines will need spaces at their
+# ends or the beginning of the next line to prevent words from running
+# together.
 
 ### New items added by JLE are:
 # 90: Mattock
@@ -71,7 +76,7 @@
 
 # Version stamp (required)
 
-V:2.9.4
+V:2.9.5
 
 
 ##### Non-kind (contains the "pile" picture) #####
@@ -1190,7 +1195,8 @@ I:45:18:0
 W:50:0:2:3000
 A:50/2
 P:0:0d0:0:0:15
-F:RES_FIRE | IGNORE_FIRE
+F:RES_FIRE | IGNORE_FIRE | 
+F:ACTIVATE
 
 N:147:Acid
 G:=:d
@@ -1198,7 +1204,8 @@ I:45:17:0
 W:50:0:2:3000
 A:50/2
 P:0:0d0:0:0:15
-F:RES_ACID | IGNORE_ACID
+F:RES_ACID | IGNORE_ACID | 
+F:ACTIVATE
 
 N:148:Ice
 G:=:d
@@ -1206,7 +1213,8 @@ I:45:19:0
 W:50:0:2:3000
 A:50/2
 P:0:0d0:0:0:15
-F:RES_COLD | IGNORE_COLD
+F:RES_COLD | IGNORE_COLD | 
+F:ACTIVATE
 
 N:149:Woe
 G:=:d
@@ -1369,9 +1377,10 @@ I:40:8:0
 W:70:0:3:30000
 A:70/8
 P:0:0d0:0:0:3
-F:FREE_ACT | SEE_INVIS | SEARCH | SUST_INT | 
+F:FREE_ACT | SEE_INVIS | SEARCH | SUST_INT | INT | 
 F:RES_BLIND | RES_CONFU | 
-F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | 
+F:HIDE_TYPE
 
 N:172:DOOM
 G:":d
@@ -3252,8 +3261,87 @@ A:70/4
 P:0:1d1:0:0:0
 F:EASY_KNOW
 
-##### Items 423 to 436 unused #####
+##### Items 423 to 430 are new amulets thought up by JLE #####
 
+N:423:ESP
+G:":d
+I:40:13:0
+W:50:0:3:25000
+A:60/8
+F:TELEPATHY | SEARCH | 
+F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD | 
+F:HIDE_TYPE
+
+N:424:Resistance
+G:":d
+I:40:14:0
+W:60:0:3:20000
+A:60/8
+F:RES_FIRE | RES_ACID | RES_ELEC | RES_COLD | 
+F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+# Note: It looks useless at its depth. In fact, it isn't: it allows the player 
+# to now wear a combination of armor and shield, neither of which has the basic
+# four resists, without having to find Colluin or Dor-Lomin first. To have this 
+# power too early in the game would make it too easy.
+
+
+N:425:Regeneration
+G:":d
+I:40:15:0
+W:30:0:3:600
+A:30/3
+F:REGEN | EASY_KNOW
+
+N:426:Devotion
+G:":d
+I:40:18:0
+W:70:0:3:30000
+A:70/8
+F:WIS | CHR | SUST_WIS | SUST_CHR | LITE | 
+F:RES_DARK | RES_LITE | RES_FIRE | HOLD_LIFE | 
+F:HIDE_TYPE
+
+N:427:Weaponmastery
+G:":d
+I:40:19:0
+W:70:0:3:30000
+P:0:0d0:0:0:0
+A:70/8
+F:STR | SUST_STR | SUST_CON | FREE_ACT | 
+F:RES_FEAR | RES_DISEN | HIDE_TYPE
+
+N:428:Trickery
+G:":d
+I:40:20:1
+W:70:0:3:30000
+A:70/8
+F:DEX | SUST_DEX | STEALTH | SPEED | SEARCH | INFRA | 
+F:RES_NEXUS | RES_POIS | HIDE_TYPE
+
+N:429:Infravision
+G:":d
+I:40:21:0
+W:10:0:3:200
+A:10/2
+F:INFRA | HIDE_TYPE
+
+N:430:Resist Lightning
+G:":d
+I:40:22:0
+W:10:0:3:300
+A:10/1
+F:RES_ELEC | IGNORE_ELEC
+
+### And a ring ###
+
+N:431:Lightning
+G:=:d
+I:45:38:0
+W:50:0:2:5000
+A:50/2
+F:RES_ELEC | IGNORE_ELEC | ACTIVATE
+
+### Items 432-436 unused ###
 
 ### Three new types of ammo ###
 
@@ -3281,10 +3369,7 @@ A:60/4:95/3
 P:0:3d5:0:0:0
 F:SHOW_MODS | SLAY_EVIL | IGNORE_ACID
 
-##### Items 440 to 444 reserved (old "fake" objects) #####
-
-##### Items 445 to 479 reserved (old "terrain" objects) #####
-
+##### Objects 440 - 479 are unused #####
 
 ##### And here starts the gold/gems #####
 
@@ -3400,7 +3485,7 @@ P:0:1d1:0:0:0
 F:INSTA_ART
 
 
-##### Objects 500 to 512 (514) are the "Special Artifacts" #####
+##### Objects 500 to 514 are the "Special Artifacts" #####
 
 # These objects do not specify "full names" because the artifact name
 # is added in "obj-desc.c" based on the artifact index ("i_ptr->name1").

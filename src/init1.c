@@ -1351,6 +1351,21 @@ errr parse_k_info(char *buf, header *head)
 			s = t;
 		}
 	}
+
+	/* Process 'D' for "Description" */
+	else if (buf[0] == 'D')
+	{
+		/* There better be a current k_ptr */
+		if (!k_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
+
+		/* Get the text */
+		s = buf+2;
+
+		/* Store the text */
+		if (!add_text(&(k_ptr->text), head, s))
+			return (PARSE_ERROR_OUT_OF_MEMORY);
+	}
+
 	else
 	{
 		/* Oops */
@@ -2993,10 +3008,14 @@ errr parse_flavor_info(char *buf, header *head)
 	/* Process 'N' for "Number" */
 	if (buf[0] == 'N')
 	{
-		int tval;
+		int tval, sval;
+		int result;
 
 		/* Scan the value */
-		if (2 != sscanf(buf, "N:%d:%d", &i, &tval)) return (PARSE_ERROR_GENERIC);
+		result = sscanf(buf, "N:%d:%d:%d", &i, &tval, &sval);
+
+		/* Either two or three values */
+		if ((result != 2) && (result != 3)) return (PARSE_ERROR_GENERIC);
 
 		/* Verify information */
 		if (i <= error_idx) return (PARSE_ERROR_NON_SEQUENTIAL_RECORDS);
@@ -3012,6 +3031,15 @@ errr parse_flavor_info(char *buf, header *head)
 
 		/* Save the tval */
 		flavor_ptr->tval = (byte)tval;
+
+		/* Save the sval */
+		if (result == 2)
+		{
+			/* Megahack - unknown sval */
+			flavor_ptr->sval = SV_UNKNOWN;
+		}
+		else
+			flavor_ptr->sval = (byte)sval;
 	}
 
 	/* Process 'F' for "Flavor" */
@@ -3023,7 +3051,7 @@ errr parse_flavor_info(char *buf, header *head)
 		if (!flavor_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
 
 		/* Paranoia */
-		if (strlen(buf) < 6) return (PARSE_ERROR_GENERIC);
+		if (strlen(buf) < 5) return (PARSE_ERROR_GENERIC);
 
 		/* Extract the attr */
 		tmp = color_char_to_attr(buf[4]);
@@ -3035,12 +3063,15 @@ errr parse_flavor_info(char *buf, header *head)
 		flavor_ptr->d_attr = tmp;
 		flavor_ptr->d_char = buf[2];
 
-		/* Get the text */
-		s = buf+6;
+		if (strlen(buf) > 5)
+		{
+			/* Get the text */
+			s = buf+6;
 
-		/* Store the text */
-		if (!add_text(&flavor_ptr->text, head, s))
-			return (PARSE_ERROR_OUT_OF_MEMORY);
+			/* Store the text */
+			if (!add_text(&flavor_ptr->text, head, s))
+				return (PARSE_ERROR_OUT_OF_MEMORY);
+		}
 	}
 
 	else

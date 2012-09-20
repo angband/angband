@@ -11,7 +11,7 @@
 
 # Version stamp (required)
 
-V:2.9.4
+V:2.9.5
 
 
 # Maximum number of feature types
@@ -21,7 +21,7 @@ M:F:64
 M:K:515
 
 # Maximum number of artifacts
-M:A:136
+M:A:137
 
 # Maximum number of ego-item types
 M:E:128
@@ -45,7 +45,7 @@ M:H:165
 M:B:4
 
 # Maximum number of flavors
-M:L:299
+M:L:303
 
 # Maximum number of objects on the level
 M:O:512

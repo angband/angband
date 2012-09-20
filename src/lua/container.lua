@@ -2,7 +2,7 @@
 -- Written by Waldemar Celes
 -- TeCGraf/PUC-Rio
 -- Jul 1998
--- $Id: container.lua,v 1.1 2001/10/27 19:35:28 angband Exp $
+-- $Id: container.lua,v 1.2 2001/11/08 17:34:50 angband Exp $
 
 -- This code is free software; you can redistribute it and/or modify it.
 -- The software provided hereunder is on an "as is" basis, and
@@ -267,7 +267,7 @@ function classContainer:doparse (s)
 
  -- try array
  do
-  local b,e,decl = strfind(s,"^%s*([_%w][][_@%s%w%d%*&]*[]_%w%d])%s*;%s*")
+  local b,e,decl = strfind(s,"^%s*([_%w][][_@%s%w%d%*&%-%>]*[]_%w%d])%s*;%s*")
   if b then
    _curr_code = strsub(s,b,e)
    Array(decl)

@@ -185,4 +185,6 @@ extern bool curse_armor(void);
 extern bool curse_weapon(void);
 
 extern void map_area(void);
+extern void wiz_lite(void);
+extern void wiz_dark(void);
 

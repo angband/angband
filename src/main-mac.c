@@ -43,7 +43,7 @@
  * obsolete preference files can be ignored.  This should probably
  * be replaced with a "structured" preference file of some kind.
  *
- * Note that "init1.c", "init2.c", "load1.c", "load2.c", and "birth.c"
+ * Note that "init1.c", "init2.c", "load.c", and "birth.c"
  * should probably be "unloaded" as soon as they are no longer needed,
  * to save space, but I do not know how to do this.  XXX XXX XXX
  *

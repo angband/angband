@@ -1137,6 +1137,7 @@ struct flavor_type
 	u32b text;      /* Text (offset) */
 	
 	byte tval;      /* Associated object type */
+	byte sval;      /* Associated object sub-type */
 
 	byte d_attr;    /* Default flavor attribute */
 	char d_char;    /* Default flavor character */

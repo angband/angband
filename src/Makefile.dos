@@ -41,8 +41,7 @@ OBJS = \
   generate.o \
   init1.o \
   init2.o \
-  load1.o \
-  load2.o \
+  load.o \
   melee1.o \
   melee2.o \
   monster1.o \
@@ -150,3 +149,4 @@ clean:
 cleanall: clean
 	del *.exe
 	del lua\*.exe
+

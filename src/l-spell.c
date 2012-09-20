@@ -1,6 +1,6 @@
 /*
 ** Lua binding: spell
-** Generated automatically by tolua 4.0a - angband on Wed Nov  7 17:42:03 2001.
+** Generated automatically by tolua 4.0a - angband on Tue Nov 20 21:40:23 2001.
 */
 
 #include "lua/tolua.h"
@@ -1815,6 +1815,44 @@ tolua_lerror:
  return 0;
 }
 
+/* function: wiz_lite */
+static int toluaI_spell_wiz_lite00(lua_State* tolua_S)
+{
+ if (
+ !tolua_isnoobj(tolua_S,1)
+ )
+ goto tolua_lerror;
+ else
+ {
+ {
+  wiz_lite();
+ }
+ }
+ return 0;
+tolua_lerror:
+ tolua_error(tolua_S,"#ferror in function 'wiz_lite'.");
+ return 0;
+}
+
+/* function: wiz_dark */
+static int toluaI_spell_wiz_dark00(lua_State* tolua_S)
+{
+ if (
+ !tolua_isnoobj(tolua_S,1)
+ )
+ goto tolua_lerror;
+ else
+ {
+ {
+  wiz_dark();
+ }
+ }
+ return 0;
+tolua_lerror:
+ tolua_error(tolua_S,"#ferror in function 'wiz_dark'.");
+ return 0;
+}
+
 /* Open function */
 int tolua_spell_open (lua_State* tolua_S)
 {
@@ -1975,6 +2013,8 @@ int tolua_spell_open (lua_State* tolua_S)
  tolua_function(tolua_S,NULL,"curse_armor",toluaI_spell_curse_armor00);
  tolua_function(tolua_S,NULL,"curse_weapon",toluaI_spell_curse_weapon00);
  tolua_function(tolua_S,NULL,"map_area",toluaI_spell_map_area00);
+ tolua_function(tolua_S,NULL,"wiz_lite",toluaI_spell_wiz_lite00);
+ tolua_function(tolua_S,NULL,"wiz_dark",toluaI_spell_wiz_dark00);
  return 1;
 }
 /* Close function */
@@ -2135,4 +2175,6 @@ void tolua_spell_close (lua_State* tolua_S)
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"curse_armor");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"curse_weapon");
  lua_pushnil(tolua_S); lua_setglobal(tolua_S,"map_area");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"wiz_lite");
+ lua_pushnil(tolua_S); lua_setglobal(tolua_S,"wiz_dark");
 }

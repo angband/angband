@@ -1715,8 +1715,8 @@ cptr window_flag_desc[32] =
 	"Display object recall",
 	NULL,
 	"Display snap-shot",
-	NULL,
-	NULL,
+	"Display script source",
+	"Display script variables",
 	"Display borg messages",
 	"Display borg status",
 	NULL,
@@ -1768,7 +1768,7 @@ cptr option_text[OPT_MAX] =
 	"disturb_panel",			/* OPT_disturb_panel */
 	"disturb_state",			/* OPT_disturb_state */
 	"disturb_minor",			/* OPT_disturb_minor */
-	"disturb_other",			/* OPT_disturb_other */
+	NULL,						/* xxx disturb_other */
 	NULL,						/* xxx alert_hitpoint */
 	"alert_failure",			/* OPT_alert_failure */
 	"verify_destroy",			/* OPT_verify_destroy */
@@ -2032,7 +2032,7 @@ cptr option_desc[OPT_MAX] =
 	"Disturb whenever map panel changes",		/* OPT_disturb_panel */
 	"Disturb whenever player state changes",	/* OPT_disturb_state */
 	"Disturb whenever boring things happen",	/* OPT_disturb_minor */
-	"Disturb whenever various things happen",	/* OPT_disturb_other */
+	NULL,										/* xxx disturb_other */
 	NULL,										/* xxx alert_hitpoint */
 	"Alert user to various failures",			/* OPT_alert_failure */
 	"Verify destruction of objects",			/* OPT_verify_destroy */
@@ -2296,7 +2296,7 @@ const bool option_norm[OPT_MAX] =
 	TRUE,		/* OPT_disturb_panel */
 	TRUE,		/* OPT_disturb_state */
 	TRUE,		/* OPT_disturb_minor */
-	TRUE,		/* OPT_disturb_other */
+	FALSE,		/* xxx disturb_other */
 	FALSE,		/* xxx alert_hitpoint */
 	FALSE,		/* OPT_alert_failure */
 	TRUE,		/* OPT_verify_destroy */
@@ -2574,12 +2574,12 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_disturb_panel,
 		OPT_disturb_state,
 		OPT_disturb_minor,
-		OPT_disturb_other,
 		OPT_alert_failure,
 		OPT_verify_destroy,
 		OPT_verify_special,
 		OPT_allow_quantity,
 		OPT_auto_more,
+		255,
 		255,
 		255,
 		255,

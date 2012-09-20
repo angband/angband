@@ -133,7 +133,7 @@ extern cptr *macro__act;
 extern term *angband_term[ANGBAND_TERM_MAX];
 extern char angband_term_name[ANGBAND_TERM_MAX][16];
 extern byte angband_color_table[256][4];
-extern const char angband_sound_name[MSG_MAX][16];
+extern const cptr angband_sound_name[MSG_MAX];
 extern sint view_n;
 extern u16b *view_g;
 extern sint temp_n;
@@ -403,11 +403,8 @@ extern void init_file_paths(char *path);
 extern void init_angband(void);
 extern void cleanup_angband(void);
 
-/* load1.c */
-extern errr rd_savefile_old(void);
-
-/* load2.c */
-extern errr rd_savefile_new(void);
+/* load.c */
+extern bool load_player(void);
 
 /* melee1.c */
 extern bool make_attack_normal(int m_idx);
@@ -525,7 +522,6 @@ extern void display_koff(int k_idx);
 
 /* save.c */
 extern bool save_player(void);
-extern bool load_player(void);
 
 /* spells1.c */
 extern s16b poly_r_idx(int r_idx);
@@ -773,6 +769,7 @@ extern errr user_home(char *buf, int len);
 /* util.c */
 extern void repeat_push(int what);
 extern bool repeat_pull(int *what);
+extern void repeat_clear(void);
 extern void repeat_check(void);
 #endif /* ALLOW_REPEAT */
 

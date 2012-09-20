@@ -1818,7 +1818,7 @@ K:511:0x84/0x95
 
 
 # player
-R:0:0x8E/0x80
+R:0:0x92/0x80
 
 # filthy street urchin
 R:1:0xAA/0x80
@@ -1841,25 +1841,25 @@ R:6:0xAA/0x83
 # village idiot
 R:7:0xAA/0x84
 
-# pitiful looking beggar
+# pitiful-looking beggar
 R:8:0xAA/0x85
 
-# mangy looking leper
+# mangy-looking leper
 R:9:0xAA/0x86
 
-# squint eyed rogue
+# squint-eyed rogue
 R:10:0xAA/0x87
 
 # singing, happy drunk
 R:11:0xAA/0x88
 
-# aimless looking merchant
+# aimless-looking merchant
 R:12:0xAA/0x89
 
-# mean looking mercenary
+# mean-looking mercenary
 R:13:0xAA/0x8A
 
-# battle scarred veteran
+# battle-scarred veteran
 R:14:0xAA/0x8B
 
 # grey mold
@@ -2123,13 +2123,13 @@ R:100:0xA0/0x91
 # bloodshot eye
 R:101:0xA6/0x9E
 
-# pink naga
+# red naga
 R:102:0xA9/0x8A
 
-# pink jelly
+# red jelly
 R:103:0xA8/0x91
 
-# giant pink frog
+# giant red frog
 R:104:0xA2/0x8E
 
 # green icky thing
@@ -2213,7 +2213,7 @@ R:130:0xA6/0x80
 # baby red dragon
 R:131:0xA6/0x81
 
-# giant pink ant
+# giant fire ant
 R:132:0xA5/0x8D
 
 # brodda, the easterling
@@ -2249,7 +2249,7 @@ R:142:0xA9/0x83
 # disenchanter mold
 R:143:0xA9/0x84
 
-# pseudo dragon
+# pseudo-dragon
 R:144:0xA6/0x82
 
 # tengu
@@ -2420,7 +2420,7 @@ R:199:0xA1/0x92
 # griffon
 R:200:0xA0/0x8B
 
-# homonculous
+# homunculus
 R:201:0xA0/0x94
 
 # gnome mage
@@ -2471,7 +2471,7 @@ R:216:0xA2/0x93
 # water spirit
 R:217:0x9F/0x80
 
-# giant pink scorpion
+# giant red scorpion
 R:218:0xA3/0x83
 
 # earth spirit
@@ -2489,7 +2489,7 @@ R:222:0xA4/0x97
 # energy hound
 R:223:0xA4/0x98
 
-# mimic (potion)
+# potion mimic
 R:224:0x9D/0x8E
 
 # blink dog
@@ -2543,7 +2543,7 @@ R:240:0xA7/0x86
 # water hound
 R:241:0xA4/0x9B
 
-# chimera
+# chimaera
 R:242:0xA0/0x8C
 
 # quylthulg
@@ -2561,16 +2561,16 @@ R:246:0xA7/0x9C
 # cloud giant
 R:247:0xA1/0x96
 
-# ugluk, the uruk
-R:248:0xA9/0x9D
-
 # lugdush, the uruk
-R:249:0xA9/0x9E
+R:248:0xA9/0x9E
+
+# ugluk, the uruk
+R:249:0xA9/0x9D
 
 # blue dragon bat
 R:250:0xA5/0x91
 
-# mimic (scroll)
+# scroll mimic
 R:251:0x9D/0x8D
 
 # fire vortex
@@ -2663,7 +2663,7 @@ R:280:0xAD/0x84
 # carrion crawler
 R:281:0xA5/0x9C
 
-# killer pink beetle
+# killer red beetle
 R:282:0xA0/0x9F
 
 # giant grey ant
@@ -2675,7 +2675,7 @@ R:284:0xAB/0x87
 # displacer beast
 R:285:0xA7/0x87
 
-# giant red tick
+# giant fire tick
 R:286:0xAC/0x93
 
 # cave ogre
@@ -2684,13 +2684,13 @@ R:287:0xA1/0x8D
 # white wraith
 R:288:0xA3/0x9F
 
-# monadic deva
+# angel
 R:289:0x9D/0x8F
 
 # mim, betrayer of turin
 R:290:0xA8/0x80
 
-# killer red beetle
+# killer fire beetle
 R:291:0xA1/0x80
 
 # creeping adamantite coins
@@ -2714,7 +2714,7 @@ R:297:0xA1/0x90
 # vampire
 R:298:0xA3/0x9A
 
-# gorgimera
+# gorgimaera
 R:299:0xA0/0x8D
 
 # colbran
@@ -2747,16 +2747,16 @@ R:308:0xA2/0x97
 # ice troll
 R:309:0xA3/0x8D
 
-# giant purple worm
+# purple worm
 R:310:0xAD/0x85
 
-# movanic deva
+# archangel
 R:311:0x9D/0x90
 
 # catoblepas
 R:312:0xAC/0x81
 
-# mimic (ring)
+# ring mimic
 R:313:0xAD/0x9E
 
 # young blue dragon
@@ -2867,7 +2867,7 @@ R:348:0xA3/0x93
 # fire elemental
 R:349:0x9F/0x83
 
-# astral deva
+# cherub
 R:350:0x9D/0x91
 
 # water elemental
@@ -2939,7 +2939,7 @@ R:372:0xA6/0x8D
 # mumak
 R:373:0xAC/0x82
 
-# giant red ant
+# giant fire ant
 R:374:0xA5/0x8D
 
 # mature white dragon
@@ -3062,7 +3062,7 @@ R:413:0xA6/0x9F
 # emperor wight
 R:414:0xA4/0x83
 
-# planetar
+# seraph
 R:415:0x9D/0x92
 
 # vargo, tyrant of fire
@@ -3167,7 +3167,7 @@ R:448:0xA0/0x99
 # adunaphel the quiet
 R:449:0xA4/0x87
 
-# dark elven sorceror
+# dark elven sorcerer
 R:450:0xA8/0x81
 
 # master lich
@@ -3182,7 +3182,7 @@ R:453:0xA4/0x88
 # gorlim, betrayer of barahir
 R:454:0xAB/0x99
 
-# solar
+# archon
 R:455:0x9D/0x93
 
 # glabrezu
@@ -3266,7 +3266,7 @@ R:481:0xAD/0x9A
 # master mystic
 R:482:0xAB/0x9B
 
-# muar, the balrog
+# the balrog of moria
 R:483:0xAD/0x96
 
 # nightwing
@@ -3299,7 +3299,7 @@ R:492:0xA4/0x8A
 # grand master mystic
 R:493:0xAB/0x9D
 
-# khamul the easterling
+# khamul, the black easterling
 R:494:0xA4/0x8B
 
 # ethereal hound
@@ -3329,10 +3329,10 @@ R:502:0xAC/0x9B
 # aether vortex
 R:503:0xAC/0x9C
 
-# the lernean hydra
+# the lernaean hydra
 R:504:0xA2/0x9B
 
-# thuringwethil
+# thuringwethil, the vampire messenger
 R:505:0xA3/0x9D
 
 # great hell wyrm
@@ -3404,7 +3404,7 @@ R:527:0xA2/0x81
 # vecna, the emperor lich
 R:528:0xA1/0x86
 
-# omarax the eye tyrant
+# omarax, the eye tyrant
 R:529:0xA7/0x81
 
 # ungoliant, the unlight
@@ -3419,10 +3419,10 @@ R:532:0xAB/0x9F
 # the emperor quylthulg
 R:533:0xA2/0x82
 
-# qlzqqlzuup, the lord of flesh
+# qlzqqlzuup, the emperor quylthulg
 R:534:0xA2/0x83
 
-# murazor, the witch-king of angmar
+# the witch-king of angmar
 R:535:0xA4/0x8E
 
 # pazuzu, lord of air
@@ -3446,11 +3446,12 @@ R:541:0x9E/0x85
 # feagwath the undead sorceror
 R:542:0xA1/0x87
 
-# carcharoth, the jaws of thirst
-R:543:0x9E/0x86
+# huan, wolfhound of the valar
+# R:543:ToDo (cerberus, guardian of hades)
+R:543:0x9E/0x87
 
-# cerberus, guardian of hades
-R:544:0x9E/0x87
+# carcharoth, the jaws of thirst
+R:544:0x9E/0x86
 
 # gothmog, the high captain of balrogs
 R:545:0xAD/0x98
@@ -3460,6 +3461,213 @@ R:546:0xAC/0x80
 
 # morgoth, lord of darkness
 R:547:0xA1/0x99
+
+# silver mouse
+# R:548:ToDo
+
+# rot jelly
+# R:549:ToDo
+
+# giant tan bat
+# R:550:ToDo
+
+# giant silver ant
+# R:551:ToDo
+
+# giant brown tick
+# R:552:ToDo
+
+# disenchanter bat
+# R:553:ToDo
+
+# shimmering mold
+# R:554:ToDo
+
+# wyvern
+R:555:0xB1/0x83
+
+# chest mimic
+R:556:0xB9/0x88
+
+# demilich
+# R:557:ToDo
+
+# archlich
+# R:558:ToDo
+
+# crow
+R:559:0xB7/0x86
+
+# raven
+R:560:0xB7/0x87
+
+# crebain
+# R:561:ToDo
+
+# winged horror
+# R:562:ToDo
+
+# cave bear
+# R:563:ToDo
+
+# grizzly bear
+R:564:0xB8/0x81
+
+# werebear
+# R:565:ToDo
+
+# beorn, the shape-changer
+# R:566:ToDo
+
+# barbazu
+# R:567:ToDo
+
+# bile demon
+# R:568:ToDo
+
+# osyluth
+# R:569:ToDo
+
+# gelugon
+# R:570:ToDo
+
+# horned reaper
+# R:571:ToDo
+
+# pit fiend
+# R:572:ToDo
+
+# greater balrog
+# R:573:ToDo
+
+# baby bronze dragon
+# R:574:ToDo
+
+# baby gold dragon
+# R:575:ToDo
+
+# great swamp wyrm
+# R:576:ToDo
+
+# great wyrm of perplexity
+# R:577:ToDo
+
+# great bile wyrm
+# R:578:ToDo
+
+# great wyrm of thunder
+# R:579:ToDo
+
+# ranger
+# R:580:ToDo
+
+# paladin
+# R:581:ToDo
+
+# ranger chieftain
+# R:582:ToDo
+
+# berserker
+R:583:0xB8/0x95
+
+# cyclops
+R:584:0xBA/0x81
+
+# polyphemus, the blind cyclops
+# R:585:ToDo
+
+# atlas, the titan
+# R:586:ToDo
+
+# kronos, lord of the titans
+# R:587:ToDo
+
+# evil eye
+# R:588:ToDo
+
+# spectator
+R:589:0xB1/0x9B
+
+# gauth
+# R:590:ToDo
+
+# beholder hive-mother
+# R:591:ToDo
+
+# neekerbreeker
+# R:592:ToDo
+
+# giant firefly
+# R:593:ToDo
+
+# eol, the dark elf
+# R:594:ToDo
+
+# maeglin, the traitor of gondolin
+# R:595:ToDo
+
+# elder vampire
+# R:596:ToDo
+
+# silent watcher
+R:597:0xB1/0x8E
+
+# nighthawk
+# R:598:ToDo
+
+# ghoul
+R:599:0xB4/0x8F
+
+# ghast
+R:600:0xB9/0x80
+
+# greater basilisk
+# R:601:ToDo
+
+# aranea
+# R:602:ToDo
+
+# elder aranea
+# R:603:ToDo
+
+# kobold shaman
+# R:604:ToDo
+
+# bat of gorgoroth
+# R:605:ToDo
+
+# doombat
+R:606:0xBA/0x8C
+
+# wolf chieftain
+# R:607:ToDo
+
+# bone golem
+# R:608:ToDo
+
+# bronze golem
+# R:609:ToDo
+
+# ogre chieftain
+# R:610:ToDo
+
+# ar-pharazon the golden
+# R:611:ToDo
+
+# troll chieftain
+# R:612:ToDo
+
+# shardstorm
+# R:613:ToDo
+
+# storm of unmagic
+# R:614:ToDo
+
+# greater mummy
+R:615:0xBA/0x91
+ 
+# multi-hued hound
+R:616:0xB2/0x81
 
 
 # Load the special player pictures

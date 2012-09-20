@@ -152,10 +152,6 @@ Disturb whenever boring things happen    [disturb_minor]
     including monsters bashing down doors, inventory feelings, and
     beginning to run out of fuel.
 
-***** <disturb_other>
-Disturb whenever various things happen    [disturb_other]
-    This option is currently unused.
-
 ***** <alert_failure>
 Alert user to various failures    [alert_failure]
     Produce a "bell" noise, and flush all pending input, when various

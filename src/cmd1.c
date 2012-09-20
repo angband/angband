@@ -490,6 +490,9 @@ void search(void)
 					/* Skip non-chests */
 					if (o_ptr->tval != TV_CHEST) continue;
 
+					/* Skip disarmed chests */
+					if (o_ptr->pval <= 0) continue;
+
 					/* Skip non-trapped chests */
 					if (!chest_traps[o_ptr->pval]) continue;
 

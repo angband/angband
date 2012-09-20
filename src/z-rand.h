@@ -87,7 +87,6 @@ extern u32b Rand_state[RAND_DEG];
 
 
 extern void Rand_state_init(u32b seed);
-extern u32b Rand_mod(u32b m);
 extern u32b Rand_div(u32b m);
 extern s16b Rand_normal(int mean, int stand);
 extern u32b Rand_simple(u32b m);

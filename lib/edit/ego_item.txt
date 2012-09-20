@@ -83,7 +83,7 @@
 
 # Version stamp (required)
 
-V:2.9.4
+V:2.9.5
 
 # 1 (unused)
 
@@ -713,7 +713,7 @@ F:SLAY_DRAGON
 
 # The *Slay* weapons (8)
 
-N:88:of *Slay Animal
+N:88:of *Slay Animal*
 X:24:20:0
 W:0:20:0:6000
 C:0:0:0:2
@@ -769,7 +769,7 @@ F:STR | SLAY_TROLL | REGEN
 
 N:94:of *Slay Giant*
 X:24:16:0
-W:0:25:0:4000
+W:0:20:0:4000
 C:0:0:0:2
 T:21:0:99
 T:22:0:99

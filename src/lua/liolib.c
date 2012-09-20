@@ -1,5 +1,5 @@
 /*
-** $Id: liolib.c,v 1.1 2001/10/27 19:35:29 angband Exp $
+** $Id: liolib.c,v 1.2 2001/11/11 16:53:01 angband Exp $
 ** Standard I/O (and system) library
 ** See Copyright Notice in lua.h
 */
@@ -515,13 +515,6 @@ static int io_rename (lua_State *L) {
 }
 
 
-static int io_tmpname (lua_State *L) {
-  lua_pushstring(L, tmpnam(NULL));
-  return 1;
-}
-
-
-
 static int io_getenv (lua_State *L) {
   lua_pushstring(L, getenv(luaL_check_string(L, 1)));  /* if NULL push nil */
   return 1;
@@ -666,7 +659,6 @@ static const struct luaL_reg iolib[] = {
   {"remove",   io_remove},
   {"rename",   io_rename},
   {"setlocale", setloc},
-  {"tmpname",   io_tmpname}
 };
 
 

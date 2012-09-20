@@ -1,5 +1,10 @@
 -- Use objects
 
+
+-- Larger values makes using devices harder
+USE_DEVICE = 3
+
+
 function eat_food(object)
 	local ident = FALSE
 
@@ -86,7 +91,7 @@ function eat_food(object)
 			end
 		end
 	elseif object.sval == SV_FOOD_POISON then
-		if not (player.resist_pois or player.oppose_pois) then
+		if not (player.resist_pois or (player.oppose_pois > 0)) then
 			if set_poisoned(player.poisoned + rand_int(10) + 10) then
 				ident = TRUE
 			end
@@ -123,7 +128,7 @@ function quaff_potion(object)
 		set_paralyzed(player.paralyzed + 4)
 		ident = TRUE
 	elseif object.sval == SV_POTION_POISON then
-		if not (player.resist_pois or player.oppose_pois) then
+		if not (player.resist_pois or (player.oppose_pois > 0)) then
 			if set_poisoned(player.poisoned + rand_int(15) + 10) then
 				ident = TRUE
 			end
@@ -199,7 +204,7 @@ function quaff_potion(object)
 	elseif object.sval == SV_POTION_BOLDNESS then
 		if set_afraid(0) then ident = TRUE end
 	elseif object.sval == SV_POTION_SPEED then
-		if not player.fast then
+		if player.fast > 0 then
 			if set_fast(randint(25) + 15) then ident = TRUE end
 		else
 			set_fast(player.fast + 5)
@@ -494,6 +499,459 @@ function read_scroll(object)
 end
 
 
+function use_staff(object)
+	local ident = FALSE
+	local used_charge = TRUE
+
+	if object.sval == SV_STAFF_DARKNESS then
+		if not player.resist_blind then
+			if set_blind(player.blind + 3 + randint(5)) then ident = TRUE end
+		end
+		if unlite_area(10, 3) then ident = TRUE end
+	elseif object.sval == SV_STAFF_SLOWNESS then
+		if set_slow(player.slow + randint(30) + 15) then ident = TRUE end
+	elseif object.sval == SV_STAFF_HASTE_MONSTERS then
+		if speed_monsters() then ident = TRUE end
+	elseif object.sval == SV_STAFF_SUMMONING then
+		for k = 0, randint(4) do
+			if summon_specific(player.py, player.px, player.depth, 0) then
+				ident = TRUE
+			end
+		end
+	elseif object.sval == SV_STAFF_TELEPORTATION then
+		teleport_player(100)
+		ident = TRUE
+	elseif object.sval == SV_STAFF_IDENTIFY then
+		if not ident_spell() then used_charge = FALSE end
+		ident = TRUE
+	elseif object.sval == SV_STAFF_REMOVE_CURSE then
+		if remove_curse() then
+			if player.blind > 0 then
+				msg_print("The staff glows blue for a moment...")
+			end
+			ident = TRUE
+		end
+	elseif object.sval == SV_STAFF_STARLITE then
+		if player.blind > 0 then
+			msg_print("The end of the staff glows brightly...")
+		end
+
+		for i = 1, 9 do
+			lite_line(ddd[i])
+		end
+		ident = TRUE
+	elseif object.sval == SV_STAFF_LITE then
+		if lite_area(damroll(2, 8), 2) then ident = TRUE end
+	elseif object.sval == SV_STAFF_MAPPING then
+		map_area()
+		ident = TRUE
+	elseif object.sval == SV_STAFF_DETECT_GOLD then
+		if detect_treasure() then ident = TRUE end
+		if detect_objects_gold() then ident = TRUE end
+	elseif object.sval == SV_STAFF_DETECT_ITEM then
+		if detect_objects_normal() then ident = TRUE end
+	elseif object.sval == SV_STAFF_DETECT_TRAP then
+		if detect_traps() then ident = TRUE end
+	elseif object.sval == SV_STAFF_DETECT_DOOR then
+		if detect_doors() then ident = TRUE end
+		if detect_stairs() then ident = TRUE end
+	elseif object.sval == SV_STAFF_DETECT_INVIS then
+		if detect_monsters_invis() then ident = TRUE end
+	elseif object.sval == SV_STAFF_DETECT_EVIL then
+		if detect_monsters_evil() then ident = TRUE end
+	elseif object.sval == SV_STAFF_CURE_LIGHT then
+		if hp_player(randint(8)) then ident = TRUE end
+	elseif object.sval == SV_STAFF_CURING then
+		if set_blind(0) then ident = TRUE end
+		if set_poisoned(0) then ident = TRUE end
+		if set_confused(0) then ident = TRUE end
+		if set_stun(0) then ident = TRUE end
+		if set_cut(0) then ident = TRUE end
+	elseif object.sval == SV_STAFF_HEALING then
+		if hp_player(300) then ident = TRUE end
+		if set_stun(0) then ident = TRUE end
+		if set_cut(0) then ident = TRUE end
+	elseif object.sval == SV_STAFF_THE_MAGI then
+		if do_res_stat(A_INT) then ident = TRUE end
+
+		if player.csp < player.msp then
+			player.csp = player.msp
+			player.csp_frac = 0
+			msg_print("Your feel your head clear.")
+			player.redraw = bOr(player.redraw, PR_MANA)
+			player.window = bOr(player.window, bOr(PW_PLAYER_0, PW_PLAYER_1))
+			ident = TRUE
+		end
+	elseif object.sval == SV_STAFF_SLEEP_MONSTERS then
+		if sleep_monsters() then ident = TRUE end
+	elseif object.sval == SV_STAFF_SLOW_MONSTERS then
+		if slow_monsters() then ident = TRUE end
+	elseif object.sval == SV_STAFF_SPEED then
+		if player.fast > 0 then
+			if set_fast(randint(30) + 15) then ident = TRUE end
+		else
+			set_fast(player.fast + 5)
+		end
+	elseif object.sval == SV_STAFF_PROBING then
+		probing()
+		ident = TRUE
+	elseif object.sval == SV_STAFF_DISPEL_EVIL then
+		if dispel_evil(60) then ident = TRUE end
+	elseif object.sval == SV_STAFF_POWER then
+		if dispel_monsters(120) then ident = TRUE end
+	elseif object.sval == SV_STAFF_HOLINESS then
+		if dispel_evil(120) then ident = TRUE end
+		if set_protevil(player.protevil + randint(25) + 3 * player.lev) then
+			ident = TRUE
+		end
+		if set_poisoned(0) then ident = TRUE end
+		if set_afraid(0) then ident = TRUE end
+		if hp_player(50) then ident = TRUE end
+		if set_stun(0) then ident = TRUE end
+		if set_cut(0) then ident = TRUE end
+	elseif object.sval == SV_STAFF_GENOCIDE then
+		genocide()
+		ident = TRUE
+	elseif object.sval == SV_STAFF_EARTHQUAKES then
+		earthquake(player.py, player.px, 10)
+		ident = TRUE
+	elseif object.sval == SV_STAFF_DESTRUCTION then
+		destroy_area(player.py, player.px, 15, TRUE)
+		ident = TRUE
+	end
+
+	return ident, used_charge
+end
+
+
+function aim_wand(object)
+	local ident = FALSE
+
+	local success
+	local dir
+
+	-- Allow direction to be cancelled for free
+	success, dir = get_aim_dir()
+	if not success then return FALSE, FALSE end
+
+	-- Take a turn
+	player.energy_use = 100
+
+	-- Get the object level
+	local lev = k_info[object.k_idx].level
+
+	-- Base chance of success
+	local chance = player.skill_dev
+
+	-- Confusion hurts skill
+	if player.confused > 0 then chance = chance / 2 end
+
+	-- High level objects are harder
+	if lev > 50 then
+		chance = chance - 50
+	else
+		chance = chance - lev
+	end
+
+	-- Give everyone a (slight) chance
+	if (chance < USE_DEVICE) and (rand_int(USE_DEVICE - chance + 1) == 0) then
+		chance = USE_DEVICE
+	end
+
+	-- Roll for usage
+	if (chance < USE_DEVICE) or (randint(chance) < USE_DEVICE) then
+		if flush_failure then flush() end
+		msg_print("You failed to use the wand properly.")
+		return FALSE, FALSE
+	end
+
+	-- The wand is already empty!
+	if object.pval <= 0 then
+		if flush_failure then flush() end
+		msg_print("The wand has no charges left.")
+
+		object.ident = bOr(object.ident, IDENT_EMPTY)
+		player.notice = bOr(player.notice, bOr(PN_COMBINE, PN_REORDER))
+		player.window = bOr(player.window, PW_INVEN)
+
+		return FALSE, FALSE
+	end
+
+	-- Sound
+	sound(MSG_ZAP)
+
+	local sval = object.sval
+
+	-- Hack -- Wand of wonder can do anything before it
+	if sval == SV_WAND_WONDER then sval = rand_int(SV_WAND_WONDER) end
+
+	if sval == SV_WAND_HEAL_MONSTER then
+		if heal_monster(dir) then ident = TRUE end
+	elseif sval == SV_WAND_HASTE_MONSTER then
+		if speed_monster(dir) then ident = TRUE end
+	elseif sval == SV_WAND_CLONE_MONSTER then
+		if clone_monster(dir) then ident = TRUE end
+	elseif sval == SV_WAND_TELEPORT_AWAY then
+		if teleport_monster(dir) then ident = TRUE end
+	elseif sval == SV_WAND_DISARMING then
+		if disarm_trap(dir) then ident = TRUE end
+	elseif sval == SV_WAND_TRAP_DOOR_DEST then
+		if destroy_door(dir) then ident = TRUE end
+	elseif sval == SV_WAND_STONE_TO_MUD then
+		if wall_to_mud(dir) then ident = TRUE end
+	elseif sval == SV_WAND_LITE then
+		msg_print("A line of blue shimmering light appears.")
+		lite_line(dir)
+		ident = TRUE
+	elseif sval == SV_WAND_SLEEP_MONSTER then
+		if sleep_monster(dir) then ident = TRUE end
+	elseif sval == SV_WAND_SLOW_MONSTER then
+		if slow_monster(dir) then ident = TRUE end
+	elseif sval == SV_WAND_CONFUSE_MONSTER then
+		if confuse_monster(dir, 10) then ident = TRUE end
+	elseif sval == SV_WAND_FEAR_MONSTER then
+		if fear_monster(dir, 10) then ident = TRUE end
+	elseif sval == SV_WAND_DRAIN_LIFE then
+		if drain_life(dir, 150) then ident = TRUE end
+	elseif sval == SV_WAND_POLYMORPH then
+		if poly_monster(dir) then ident = TRUE end
+	elseif sval == SV_WAND_STINKING_CLOUD then
+		fire_ball(GF_POIS, dir, 12, 2)
+		ident = TRUE
+	elseif sval == SV_WAND_MAGIC_MISSILE then
+		fire_bolt_or_beam(20, GF_MISSILE, dir, damroll(3, 4))
+		ident = TRUE
+	elseif sval == SV_WAND_ACID_BOLT then
+		fire_bolt_or_beam(20, GF_ACID, dir, damroll(10, 8))
+		ident = TRUE
+	elseif sval == SV_WAND_ELEC_BOLT then
+		fire_bolt_or_beam(20, GF_ELEC, dir, damroll(6, 6))
+		ident = TRUE
+	elseif sval == SV_WAND_FIRE_BOLT then
+		fire_bolt_or_beam(20, GF_FIRE, dir, damroll(12, 8))
+		ident = TRUE
+	elseif sval == SV_WAND_COLD_BOLT then
+		fire_bolt_or_beam(20, GF_COLD, dir, damroll(6, 8))
+		ident = TRUE
+	elseif sval == SV_WAND_ACID_BALL then
+		fire_ball(GF_ACID, dir, 120, 2)
+		ident = TRUE
+	elseif sval == SV_WAND_ELEC_BALL then
+		fire_ball(GF_ELEC, dir, 64, 2)
+		ident = TRUE
+	elseif sval == SV_WAND_FIRE_BALL then
+		fire_ball(GF_FIRE, dir, 144, 2)
+		ident = TRUE
+	elseif sval == SV_WAND_COLD_BALL then
+		fire_ball(GF_COLD, dir, 96, 2)
+		ident = TRUE
+	elseif sval == SV_WAND_WONDER then
+		msg_print("Oops.  Wand of wonder activated.")
+	elseif sval == SV_WAND_DRAGON_FIRE then
+		fire_ball(GF_FIRE, dir, 200, 3)
+		ident = TRUE
+	elseif sval == SV_WAND_DRAGON_COLD then
+		fire_ball(GF_COLD, dir, 160, 3)
+		ident = TRUE
+	elseif sval == SV_WAND_DRAGON_BREATH then
+		local choice = randint(5)
+
+		if choice == 1 then
+			fire_ball(GF_ACID, dir, 200, 3)
+		elseif choice == 2 then
+			fire_ball(GF_ELEC, dir, 160, 3)
+		elseif choice == 3 then
+			fire_ball(GF_FIRE, dir, 200, 3)
+		elseif choice == 4 then
+			fire_ball(GF_COLD, dir, 160, 3)
+		else
+			fire_ball(GF_POIS, dir, 120, 3)
+		end
+
+		ident = TRUE
+	elseif sval == SV_WAND_ANNIHILATION then
+		if drain_life(dir, 250) then ident = TRUE end
+	end
+
+	return ident, TRUE
+end
+
+
+function zap_rod(object)
+	local ident = FALSE
+
+	local dir
+
+	-- Get a direction (unless KNOWN not to need it)
+	if (object.sval >= SV_ROD_MIN_DIRECTION) or not object_aware_p(object) then
+		local success
+
+		-- Allow direction to be cancelled for free
+		success, dir = get_aim_dir()
+		if not success then return FALSE, FALSE end
+	end
+
+	-- Take a turn
+	player.energy_use = 100
+
+	-- Get the object level
+	local lev = k_info[object.k_idx].level
+
+	-- Base chance of success
+	local chance = player.skill_dev
+
+	-- Confusion hurts skill
+	if player.confused > 0 then chance = chance / 2 end
+
+	-- High level objects are harder
+	if lev > 50 then
+		chance = chance - 50
+	else
+		chance = chance - lev
+	end
+
+	-- Give everyone a (slight) chance
+	if (chance < USE_DEVICE) and (rand_int(USE_DEVICE - chance + 1) == 0) then
+		chance = USE_DEVICE
+	end
+
+	-- Roll for usage
+	if (chance < USE_DEVICE) or (randint(chance) < USE_DEVICE) then
+		if flush_failure then flush() end
+		msg_print("You failed to use the rod properly.")
+		return FALSE, FALSE
+	end
+
+	-- Still charging
+	if object.pval > 0 then
+		if flush_failure then flush() end
+		msg_print("The rod is still charging.")
+		return FALSE, FALSE
+	end
+
+	-- Sound
+	sound(MSG_ZAP)
+
+	local sval = object.sval
+
+	if sval == SV_ROD_DETECT_TRAP then
+		if detect_traps() then ident = TRUE end
+		object.pval = 50
+	elseif sval == SV_ROD_DETECT_DOOR then
+		if detect_doors() then ident = TRUE end
+		if detect_stairs() then ident = TRUE end
+		object.pval = 70
+	elseif sval == SV_ROD_IDENTIFY then
+		ident = TRUE
+		if ident_spell() then object.pval = 10 end
+	elseif sval == SV_ROD_RECALL then
+		set_recall()
+		ident = TRUE
+		object.pval = 60
+	elseif sval == SV_ROD_ILLUMINATION then
+		if lite_area(damroll(2, 8), 2) then ident = TRUE end
+		object.pval = 30
+	elseif sval == SV_ROD_MAPPING then
+		map_area()
+		ident = TRUE
+		object.pval = 99
+	elseif sval == SV_ROD_DETECTION then
+		detect_all()
+		ident = TRUE
+		object.pval = 99
+	elseif sval == SV_ROD_PROBING then
+		probing()
+		ident = TRUE
+		object.pval = 50
+	elseif sval == SV_ROD_CURING then
+		if set_blind(0) then ident = TRUE end
+		if set_poisoned(0) then ident = TRUE end
+		if set_confused(0) then ident = TRUE end
+		if set_stun(0) then ident = TRUE end
+		if set_cut(0) then ident = TRUE end
+		object.pval = 999
+	elseif sval == SV_ROD_HEALING then
+		if hp_player(500) then ident = TRUE end
+		if set_stun(0) then ident = TRUE end
+		if set_cut(0) then ident = TRUE end
+		object.pval = 999
+	elseif sval == SV_ROD_RESTORATION then
+		if restore_level() then ident = TRUE end
+		if do_res_stat(A_STR) then ident = TRUE end
+		if do_res_stat(A_INT) then ident = TRUE end
+		if do_res_stat(A_WIS) then ident = TRUE end
+		if do_res_stat(A_DEX) then ident = TRUE end
+		if do_res_stat(A_CON) then ident = TRUE end
+		if do_res_stat(A_CHR) then ident = TRUE end
+		object.pval = 999
+	elseif sval == SV_ROD_SPEED then
+		if player.fast == 0 then
+			if set_fast(randint(30) + 15) then ident = TRUE end
+		else
+			set_fast(player.fast + 5)
+		end
+		object.pval = 99
+	elseif sval == SV_ROD_TELEPORT_AWAY then
+		if teleport_monster(dir) then ident = TRUE end
+		object.pval = 25
+	elseif sval == SV_ROD_DISARMING then
+		if disarm_trap(dir) then ident = TRUE end
+		object.pval = 30
+	elseif sval == SV_ROD_LITE then
+		msg_print("A line of blue shimmering light appears.")
+		lite_line(dir)
+		ident = TRUE
+		object.pval = 9
+	elseif sval == SV_ROD_SLEEP_MONSTER then
+		if sleep_monster(dir) then ident = TRUE end
+		object.pval = 18
+	elseif sval == SV_ROD_SLOW_MONSTER then
+		if slow_monster(dir) then ident = TRUE end
+		object.pval = 20
+	elseif sval == SV_ROD_DRAIN_LIFE then
+		if drain_life(dir, 150) then ident = TRUE end
+		object.pval = 23
+	elseif sval == SV_ROD_POLYMORPH then
+		if poly_monster(dir) then ident = TRUE end
+		object.pval = 25
+	elseif sval == SV_ROD_ACID_BOLT then
+		fire_bolt_or_beam(10, GF_ACID, dir, damroll(12, 8))
+		ident = TRUE
+		object.pval = 12
+	elseif sval == SV_ROD_ELEC_BOLT then
+		fire_bolt_or_beam(10, GF_ELEC, dir, damroll(6, 6))
+		ident = TRUE
+		object.pval = 11
+	elseif sval == SV_ROD_FIRE_BOLT then
+		fire_bolt_or_beam(10, GF_FIRE, dir, damroll(16, 8))
+		ident = TRUE
+		object.pval = 15
+	elseif sval == SV_ROD_COLD_BOLT then
+		fire_bolt_or_beam(10, GF_COLD, dir, damroll(10, 8))
+		ident = TRUE
+		object.pval = 13
+	elseif sval == SV_ROD_ACID_BALL then
+		fire_ball(GF_ACID, dir, 120, 2)
+		ident = TRUE
+		object.pval = 27
+	elseif sval == SV_ROD_ELEC_BALL then
+		fire_ball(GF_ELEC, dir, 64, 2)
+		ident = TRUE
+		object.pval = 23
+	elseif sval == SV_ROD_FIRE_BALL then
+		fire_ball(GF_FIRE, dir, 144, 2)
+		ident = TRUE
+		object.pval = 30
+	elseif sval == SV_ROD_COLD_BALL then
+		fire_ball(GF_COLD, dir, 96, 2)
+		ident = TRUE
+		object.pval = 25
+	end
+
+	return ident, used_charge
+end
+
+
 function use_object_hook(object)
 	local ident = FALSE
 	local used = FALSE
@@ -504,6 +962,12 @@ function use_object_hook(object)
 		ident, used = quaff_potion(object)
 	elseif object.tval == TV_SCROLL then
 		ident, used = read_scroll(object)
+	elseif object.tval == TV_STAFF then
+		ident, used = use_staff(object)
+	elseif object.tval == TV_WAND then
+		ident, used = aim_wand(object)
+	elseif object.tval == TV_ROD then
+		ident, used = zap_rod(object)
 	end
 
 	return ident, used

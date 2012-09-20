@@ -18,7 +18,7 @@ SRCS = \
   xtra1.c xtra2.c spells1.c spells2.c \
   melee1.c melee2.c save.c files.c \
   cmd1.c cmd2.c cmd3.c cmd4.c cmd5.c cmd6.c \
-  store.c birth.c load2.c load2.c \
+  store.c birth.c load.c \
   wizard1.c wizard2.c \
   generate.c dungeon.c init1.c init2.c randart.c \
   sound-ami.c main-ami.c main.c
@@ -34,7 +34,7 @@ OBJS = \
   cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o
 
 OBJS2 = \
-  store.o birth.o load1.o load2.o \
+  store.o birth.o load.o \
   wizard1.o wizard2.o \
   generate.o dungeon.o init1.o init2.o randart.o \
   sound-ami.o main-ami.o main.o optimap.o
@@ -92,8 +92,7 @@ files.o: files.c $(INCS)
 generate.o: generate.c $(INCS)
 init1.o: init1.c $(INCS)
 init2.o: init2.c $(INCS)
-load1.o: load1.c $(INCS)
-load2.o: load2.c $(INCS)
+load.o: load.c $(INCS)
 main-ami.o: main-ami.c $(INCS)
 main.o: main.c $(INCS)
 melee1.o: melee1.c $(INCS)

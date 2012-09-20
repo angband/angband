@@ -56,22 +56,54 @@ static cptr syllables[MAX_SYLLABLES] =
 static char scroll_adj[MAX_TITLES][16];
 
 
-void flavor_test(byte tval)
+static void flavor_assign_fixed(void)
+{
+	int i, j;
+
+	for (i = 0; i < z_info->flavor_max; i++)
+	{
+		flavor_type *flavor_ptr = &flavor_info[i];
+
+		/* Skip random flavors */
+		if (flavor_ptr->sval == SV_UNKNOWN) continue;
+
+		for (j = 0; j < z_info->k_max; j++)
+		{
+			/* Skip other objects */
+			if ((k_info[j].tval == flavor_ptr->tval) &&
+			    (k_info[j].sval == flavor_ptr->sval))
+			{
+				/* Store the flavor index */
+				k_info[j].flavor = i;
+			}
+		}
+	}
+}
+
+
+static void flavor_assign_random(byte tval)
 {
 	int i, j;
 	int flavor_count = 0;
 	int choice;
 
-	/* Count the flavors for the given tval */
+	/* Count the random flavors for the given tval */
 	for (i = 0; i < z_info->flavor_max; i++)
 	{
-		if (flavor_info[i].tval == tval) flavor_count++;
+		if ((flavor_info[i].tval == tval) &&
+		    (flavor_info[i].sval == SV_UNKNOWN))
+		{
+			flavor_count++;
+		}
 	}
 
 	for (i = 0; i < z_info->k_max; i++)
 	{
 		/* Skip other object types */
 		if (k_info[i].tval != tval) continue;
+
+		/* Skip objects that already are flavored */
+		if (k_info[i].flavor != 0) continue;
 
 		/* HACK - Ordinary food is "boring" */
 		if ((tval == TV_FOOD) && (k_info[i].sval >= SV_FOOD_MIN_FOOD))
@@ -81,26 +113,23 @@ void flavor_test(byte tval)
 
 		/* Select a flavor */
 		choice = rand_int(flavor_count);
-
-		/*
-		 * MegaHack - the first three potions have fixed flavors
-		 */
-		if ((tval == TV_POTION) && (k_info[i].sval <= SV_POTION_SLIME_MOLD))
-			choice = k_info[i].sval;
-		
+	
 		/* Find and store the flavor */
 		for (j = 0; j < z_info->flavor_max; j++)
 		{
 			/* Skip other tvals */
 			if (flavor_info[j].tval != tval) continue;
 
+			/* Skip assigned svals */
+			if (flavor_info[j].sval != SV_UNKNOWN) continue;
+
 			if (choice == 0)
 			{
 				/* Store the flavor index */
 				k_info[i].flavor = j;
 
-				/* Hack - Mark the flavor as used */
-				flavor_info[j].tval = 0;
+				/* Mark the flavor as used */
+				flavor_info[j].sval = k_info[i].sval;
 
 				/* One less flavor to choose from */
 				flavor_count--;
@@ -155,14 +184,16 @@ void flavor_init(void)
 	Rand_value = seed_flavor;
 
 
-	flavor_test(TV_RING);
-	flavor_test(TV_AMULET);
-	flavor_test(TV_STAFF);
-	flavor_test(TV_WAND);
-	flavor_test(TV_ROD);
-	flavor_test(TV_FOOD);
-	flavor_test(TV_POTION);
-	flavor_test(TV_SCROLL);
+	flavor_assign_fixed();
+
+	flavor_assign_random(TV_RING);
+	flavor_assign_random(TV_AMULET);
+	flavor_assign_random(TV_STAFF);
+	flavor_assign_random(TV_WAND);
+	flavor_assign_random(TV_ROD);
+	flavor_assign_random(TV_FOOD);
+	flavor_assign_random(TV_POTION);
+	flavor_assign_random(TV_SCROLL);
 
 	/* Scrolls (random titles, always white) */
 	for (i = 0; i < MAX_TITLES; i++)
@@ -642,8 +673,6 @@ void object_flags_known(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
  * None of the Special Rings/Amulets are "EASY_KNOW", though they could be,
  * at least, those which have no "pluses", such as the three artifact lites.
  *
- * Hack -- Display "The One Ring" as "a Plain Gold Ring" until aware.
- *
  * The "pluralization" rules are extremely hackish, in fact, for efficiency,
  * we only handle things like "torch"/"torches" and "cutlass"/"cutlasses",
  * and we would not handle "box"/"boxes", or "knife"/"knives", correctly.
@@ -808,12 +837,6 @@ void object_desc(char *buf, const object_type *o_ptr, int pref, int mode)
 			modstr = flavor_text + flavor_info[k_ptr->flavor].text;
 			if (aware) append_name = TRUE;
 			basenm = (flavor ? "& # Ring~" : "& Ring~");
-
-			/* Mega-Hack -- The One Ring */
-			if (!aware && (o_ptr->sval == SV_RING_POWER))
-			{
-				modstr = "Plain Gold";
-			}
 
 			break;
 		}
@@ -2252,7 +2275,7 @@ bool identify_fully_aux(const object_type *o_ptr)
 {
 	FILE *fff;
 	char file_name[1024];
-	bool known;
+	bool known = FALSE;
 
 
 	/* Temporary file */
@@ -2265,8 +2288,17 @@ bool identify_fully_aux(const object_type *o_ptr)
 	text_out_hook = text_out_to_file;
 	text_out_file = fff;
 
-	/* Output the description */
-	known = identify_fully_aux2(o_ptr, OBJECT_FLAGS_KNOWN);
+	/* Display the object description */
+	if (k_info[o_ptr->k_idx].text)
+	{
+		known = TRUE;
+		text_out(k_text + k_info[o_ptr->k_idx].text);
+		text_out("\n\n");
+	}
+
+	/* Output the flag descriptions */
+	if (identify_fully_aux2(o_ptr, OBJECT_FLAGS_KNOWN))
+		known = TRUE;
 
 	/* Close the file */
 	my_fclose(fff);
@@ -3460,6 +3492,11 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 
 			/* Success */
 			return (TRUE);
+		}
+		else
+		{
+			/* Invalid repeat - reset it */
+			repeat_clear();
 		}
 	}
 

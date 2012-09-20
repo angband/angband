@@ -16,6 +16,11 @@ extern errr script_init(void);
 extern errr script_free(void);
 
 /*
+ * Display the script debug menu
+ */
+extern void do_cmd_script(void);
+
+/*
  * Execute a string of scripting code
  */
 extern bool script_do_string(cptr script);

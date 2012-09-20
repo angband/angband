@@ -39,8 +39,7 @@ EXOBJS = \
 	generate.o \
 	init1.o \
 	init2.o \
-	load1.o \
-	load2.o \
+	load.o \
 	main-win.o \
 	melee1.o \
 	melee2.o \
@@ -67,6 +66,8 @@ EXOBJS = \
 	z-util.o \
 	z-virt.o \
 	script.o \
+	use-obj.o \
+	l-monst.o l-object.o l-player.o l-random.o l-ui.o l-misc.o l-spell.o \
 	$(LUAOBJS)
 
 HDRS = \
@@ -93,23 +94,40 @@ default:	angband
 
 install:	angband movebin cleanobjs
 
-# movebin:
-#		copy angband.exe ..
-#		del angband.exe
-
 movebin:
-		mv -f angband.exe ../angband.exe
+	mv -f angband.exe ../angband.exe
 
 cleanobjs:
-		rm -f $(EXOBJS)
+	rm -f $(EXOBJS)
 
 cleanbin:
-		rm -f angband
+	rm -f angband
 
 clean:	cleanobjs cleanbin
 
-tolua: $(TOLUAOBJS)
-	$(CC) -o lua/tolua $(TOLUAOBJS) $(INCDIRS) $(LIBDIRS) $(LUALIBS)
+lua/tolua: $(TOLUAOBJS)
+	$(CC) -o lua/tolua $(TOLUAOBJS) $(LUALIBS)
+
+l-monst.c: lua/tolua l-monst.pkg
+	lua/tolua -n monster -o l-monst.c l-monst.pkg
+
+l-object.c: lua/tolua l-object.pkg
+	lua/tolua -n object -o l-object.c l-object.pkg
+
+l-player.c: lua/tolua l-player.pkg
+	lua/tolua -n player -o l-player.c l-player.pkg
+
+l-random.c: lua/tolua l-random.pkg
+	lua/tolua -n random -o l-random.c l-random.pkg
+
+l-ui.c: lua/tolua l-ui.pkg
+	lua/tolua -n ui -o l-ui.c l-ui.pkg
+
+l-misc.c: lua/tolua l-misc.pkg
+	lua/tolua -n misc -o l-misc.c l-misc.pkg
+
+l-spell.c: lua/tolua l-spell.pkg
+	lua/tolua -n spell -o l-spell.c l-spell.pkg
 
 #
 # Dependency rules
@@ -176,10 +194,7 @@ init1.o: init1.c $(INCS) init.h
 init2.o: init2.c $(INCS) init.h
 	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
 
-load1.o: load1.c $(INCS)
-	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
-
-load2.o: load2.c $(INCS)
+load.o: load.c $(INCS)
 	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
 
 main.o: main.c $(INCS)

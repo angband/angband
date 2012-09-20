@@ -41,8 +41,7 @@ OBJS=\
 	melee2.obj \
 	melee1.obj \
 	main-win.obj \
-	load1.obj \
-	load2.obj \
+	load.obj \
 	init2.obj \
 	init1.obj \
 	generate.obj \
@@ -523,8 +522,8 @@ MAIN-WIN_C=\
 main-win.obj: $(MAIN-WIN_C) main-win.c
 	$(CC) -c $(CFLAGS) main-win.c
 
-# Build LOAD1.C
-LOAD1_C=\
+# Build LOAD.C
+LOAD_C=\
 	angband.h\
 	h-basic.h\
 	h-config.h\
@@ -541,29 +540,8 @@ LOAD1_C=\
 	types.h\
 	externs.h\
 
-load1.obj: $(LOAD1_C) load1.c
-	$(CC) -c $(CFLAGS) load1.c
-
-# Build LOAD2.C
-LOAD2_C=\
-	angband.h\
-	h-basic.h\
-	h-config.h\
-	h-system.h\
-	h-type.h\
-	h-define.h\
-	z-util.h\
-	z-virt.h\
-	z-form.h\
-	z-rand.h\
-	z-term.h\
-	config.h\
-	defines.h\
-	types.h\
-	externs.h\
-
-load2.obj: $(LOAD2_C) load2.c
-	$(CC) -c $(CFLAGS) load2.c
+load.obj: $(LOAD_C) load.c
+	$(CC) -c $(CFLAGS) load.c
 
 # Build INIT2.C
 INIT2_C=\

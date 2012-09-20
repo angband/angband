@@ -2073,7 +2073,7 @@ static void a_m_aux_2(object_type *o_ptr, int level, int power)
  * Apply magic to an item known to be a "ring" or "amulet"
  *
  * Hack -- note special rating boost for ring of speed
- * Hack -- note special rating boost for amulet of the magi
+ * Hack -- note special rating boost for certain amulets
  * Hack -- note special "pval boost" code for ring of speed
  * Hack -- note that some items must be cursed (or blessed)
  */
@@ -2167,10 +2167,11 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 					break;
 				}
 
-				/* Flames, Acid, Ice */
+				/* Flames, Acid, Ice, Lightning */
 				case SV_RING_FLAMES:
 				case SV_RING_ACID:
 				case SV_RING_ICE:
+				case SV_RING_LIGHTNING:
 				{
 					/* Bonus to armor class */
 					o_ptr->to_a = 5 + randint(5) + m_bonus(10, level);
@@ -2213,7 +2214,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 				case SV_RING_DAMAGE:
 				{
 					/* Bonus to damage */
-					o_ptr->to_d = 5 + randint(5) + m_bonus(10, level);
+					o_ptr->to_d = 5 + randint(3) + m_bonus(7, level);
 
 					/* Cursed */
 					if (power < 0)
@@ -2235,7 +2236,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 				case SV_RING_ACCURACY:
 				{
 					/* Bonus to hit */
-					o_ptr->to_h = 5 + randint(5) + m_bonus(10, level);
+					o_ptr->to_h = 5 + randint(3) + m_bonus(7, level);
 
 					/* Cursed */
 					if (power < 0)
@@ -2279,8 +2280,8 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 				case SV_RING_SLAYING:
 				{
 					/* Bonus to damage and to hit */
-					o_ptr->to_d = randint(5) + m_bonus(10, level);
-					o_ptr->to_h = randint(5) + m_bonus(10, level);
+					o_ptr->to_d = randint(5) + m_bonus(5, level);
+					o_ptr->to_h = randint(5) + m_bonus(5, level);
 
 					/* Cursed */
 					if (power < 0)
@@ -2308,9 +2309,10 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 			/* Analyze */
 			switch (o_ptr->sval)
 			{
-				/* Amulet of wisdom/charisma */
+				/* Amulet of wisdom/charisma/infravision */
 				case SV_AMULET_WISDOM:
 				case SV_AMULET_CHARISMA:
+				case SV_AMULET_INFRAVISION:
 				{
 					o_ptr->pval = 1 + m_bonus(5, level);
 
@@ -2351,11 +2353,63 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 					break;
 				}
 
+				/* Amulet of ESP -- never cursed */
+				case SV_AMULET_ESP:
+				{
+					o_ptr->pval = randint(5) + m_bonus(5, level);
+
+					break;
+				}
+
 				/* Amulet of the Magi -- never cursed */
 				case SV_AMULET_THE_MAGI:
 				{
-					o_ptr->pval = randint(5) + m_bonus(5, level);
+					o_ptr->pval = 1 + m_bonus(3, level);
 					o_ptr->to_a = randint(5) + m_bonus(5, level);
+
+					/* Boost the rating */
+					rating += 25;
+
+					/* Mention the item */
+					if (cheat_peek) object_mention(o_ptr);
+
+					break;
+				}
+
+				/* Amulet of Devotion -- never cursed */
+				case SV_AMULET_DEVOTION:
+				{
+					o_ptr->pval = 1 + m_bonus(3, level);
+
+					/* Boost the rating */
+					rating += 25;
+
+					/* Mention the item */
+					if (cheat_peek) object_mention(o_ptr);
+
+					break;
+				}
+
+				/* Amulet of Weaponmastery -- never cursed */
+				case SV_AMULET_WEAPONMASTERY:
+				{
+					o_ptr->to_h = 1 + m_bonus(4, level);
+					o_ptr->to_d = 1 + m_bonus(4, level);
+					o_ptr->pval = 1 + m_bonus(2, level);
+
+					/* Boost the rating */
+					rating += 25;
+
+					/* Mention the item */
+					if (cheat_peek) object_mention(o_ptr);
+
+					break;
+				}
+
+				/* Amulet of Trickery -- never cursed */
+				case SV_AMULET_TRICKERY:
+				{
+					o_ptr->pval = randint(1) + m_bonus(3, level);
 
 					/* Boost the rating */
 					rating += 25;
@@ -2812,6 +2866,9 @@ static bool kind_is_good(int k_idx)
 		case TV_AMULET:
 		{
 			if (k_ptr->sval == SV_AMULET_THE_MAGI) return (TRUE);
+			if (k_ptr->sval == SV_AMULET_DEVOTION) return (TRUE);
+			if (k_ptr->sval == SV_AMULET_WEAPONMASTERY) return (TRUE);
+			if (k_ptr->sval == SV_AMULET_TRICKERY) return (TRUE);
 			return (FALSE);
 		}
 	}
@@ -4433,19 +4490,19 @@ void spell_info(char *p, int spell)
 				sprintf(p, " dam %d", 55 + plev);
 				break;
 			case SPELL_ACID_BOLT:
-				sprintf(p, " dam %dd8", (6 + ((plev - 5) / 4)));
+				sprintf(p, " dam %dd8", (7 + ((plev - 5) / 4)));
 				break;
 			case SPELL_CLOUD_KILL:
-				sprintf(p, " dam %d", 20 + plev / 2);
+				sprintf(p, " dam %d", 50 + plev);
 				break;
 			case SPELL_ACID_BALL:
-				sprintf(p, " dam %d", 40 + plev);
+				sprintf(p, " dam %d", 45 + plev);
 				break;
 			case SPELL_ICE_STORM:
-				sprintf(p, " dam %d", 70 + plev);
+				sprintf(p, " dam %d", 75 + (plev * 3));
 				break;
 			case SPELL_METEOR_SWARM:
-				sprintf(p, " dam %d", 65 + plev);
+				sprintf(p, " dam %d", 50 + (plev * 3));
 				break;
 			case SPELL_MANA_STORM:
 				sprintf(p, " dam %d", 300 + plev * 2);

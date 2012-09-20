@@ -9,10 +9,22 @@ SRCS = \
   xtra1.c xtra2.c spells1.c spells2.c \
   melee1.c melee2.c save.c files.c \
   cmd1.c cmd2.c cmd3.c cmd4.c cmd5.c cmd6.c \
-  store.c birth.c load1.c load2.c \
+  store.c birth.c load.c \
   wizard1.c wizard2.c \
   generate.c dungeon.c init1.c init2.c randart.c \
   main-lsl.c main.c
+
+LUAOBJS = \
+  lua/lapi.o lua/ldebug.o lua/lmem.o lua/lstrlib.o lua/lvm.o \
+  lua/tolua_lb.o lua/lauxlib.o lua/ldo.o lua/lobject.o lua/ltable.o \
+  lua/lzio.o lua/tolua_rg.o lua/lbaselib.o lua/lfunc.o lua/lparser.o \
+  lua/ltests.o lua/tolua_bd.o lua/tolua_tm.o lua/lcode.o lua/lgc.o \
+  lua/lstate.o lua/ltm.o lua/tolua_eh.o lua/tolua_tt.o lua/ldblib.o \
+  lua/llex.o lua/lstring.o lua/lundump.o lua/tolua_gp.o
+
+TOLUAOBJS = \
+  lua/tolua.o lua/tolualua.o lua/liolib.o \
+  $(LUAOBJS)
 
 OBJS = \
   z-util.o z-virt.o z-form.o z-rand.o z-term.o \
@@ -21,10 +33,15 @@ OBJS = \
   xtra1.o xtra2.o spells1.o spells2.o \
   melee1.o melee2.o save.o files.o \
   cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
-  store.o birth.o load1.o load2.o \
+  store.o birth.o load.o \
   wizard1.o wizard2.o \
   generate.o dungeon.o init1.o init2.o randart.o \
-  main-lsl.o main.o
+  main-lsl.o main.o \
+  script.o use-obj.o \
+  l-monst.o l-object.o l-player.o l-random.o l-ui.o \
+  l-misc.o l-spell.o \
+  $(LUAOBJS)
+
 
 CC = gcc
 
@@ -52,6 +69,7 @@ install: angband
 #
 clean:
 	\rm -f *.o angband
+	\rm -f ./lua/*.o ./lua/tolua
 
 
 #
@@ -59,6 +77,14 @@ clean:
 #
 depend:
 	makedepend -D__MAKEDEPEND__ $(SRCS)
+
+#
+# Lua stuff
+#
+
+lua/tolua: $(TOLUAOBJS)
+	$(CC) -o lua/tolua $(TOLUAOBJS) $(LDFLAGS) $(LIBS)
+
 
 #
 # Hack -- some file dependencies
@@ -87,8 +113,7 @@ generate.o: generate.c $(INCS)
 init1.o: init1.c $(INCS)
 init2.o: init2.c $(INCS)
 randart.o: randart.c $(INCS)
-load1.o: load1.c $(INCS)
-load2.o: load2.c $(INCS)
+load.o: load.c $(INCS)
 main-cap.o: main-cap.c $(INCS)
 main-gcu.o: main-gcu.c $(INCS)
 main-x11.o: main-x11.c $(INCS)
@@ -117,3 +142,27 @@ z-term.o: z-term.c $(HDRS) z-term.h z-virt.h
 z-util.o: z-util.c $(HDRS) z-util.h
 z-virt.o: z-virt.c $(HDRS) z-virt.h z-util.h
 
+#
+# Build wrappers
+#
+
+l-monst.c: lua/tolua l-monst.pkg
+	lua/tolua -n monster -o l-monst.c l-monst.pkg
+
+l-object.c: lua/tolua l-object.pkg
+	lua/tolua -n object -o l-object.c l-object.pkg
+
+l-player.c: lua/tolua l-player.pkg
+	lua/tolua -n player -o l-player.c l-player.pkg
+
+l-random.c: lua/tolua l-random.pkg
+	lua/tolua -n random -o l-random.c l-random.pkg
+
+l-ui.c: lua/tolua l-ui.pkg
+	lua/tolua -n ui -o l-ui.c l-ui.pkg
+
+l-misc.c: lua/tolua l-misc.pkg
+	lua/tolua -n misc -o l-misc.c l-misc.pkg
+
+l-spell.c: lua/tolua l-spell.pkg
+	lua/tolua -n spell -o l-spell.c l-spell.pkg

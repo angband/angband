@@ -213,7 +213,7 @@ byte angband_color_table[256][4] =
 /*
  * Standard sound (and message) names
  */
-const char angband_sound_name[SOUND_MAX][16] =
+const cptr angband_sound_name[SOUND_MAX] =
 {
 	"",
 	"hit",
@@ -244,6 +244,7 @@ const char angband_sound_name[SOUND_MAX][16] =
 	"nothing_to_open",
 	"lockpick_fail",
 	"stairs",
+	"hitpoint_warn",
 };
 
 

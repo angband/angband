@@ -1463,30 +1463,6 @@ static void do_cmd_wiz_query(void)
 }
 
 
-static void do_cmd_script(void)
-{
-	char buf[1024];
-
-	char tmp[80];
-
-	/* Prompt */
-	prt("Lua script: ", 0, 0);
-
-	/* Default filename */
-	sprintf(tmp, "test.lua");
-
-	/* Ask for a file */
-	if (!askfor_aux(tmp, 80)) return;
-
-	/* Clear the prompt */
-	prt("", 0, 0);
-
-	path_build(buf, 1024, ANGBAND_DIR_SCRIPT, tmp);
-
-	script_do_file(buf);
-}
-
-
 #ifdef ALLOW_SPOILERS
 
 /*

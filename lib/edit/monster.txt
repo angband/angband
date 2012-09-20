@@ -386,7 +386,7 @@
 
 # Version stamp (required)
 
-V:2.9.4
+V:2.9.5
 
 
 ##### Non-race (contains the "player" picture) #####
@@ -9307,7 +9307,7 @@ S:1_IN_5 |
 S:HOLD | SCARE | CAUSE_3 | CAUSE_4 | DRAIN_MANA | 
 S:BRAIN_SMASH | DARKNESS | BO_NETH | S_UNDEAD | 
 D:A terrible robed undead figure, this creature has existed in its 
-D:unlife for many centuries by stealing the life of others. It can 
+D:unlife for many centuries by stealing the life of others.  It can 
 D:summon the very shades of its victims from beyond the grave to 
 D:come enslaved to its aid.
 
@@ -9319,14 +9319,14 @@ B:GAZE:TERRIFY
 B:GAZE:PARALYZE
 B:GAZE:LOSE_STR
 B:GAZE:HALLU
-F:EMPTY_MIND | COLD_BLOOD | NEVER_MOVE |
-F:IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | EVIL |
-F:HURT_ROCK | COLD_BLOOD | HURT_LITE | NO_FEAR |
-F:NO_CONF | NO_SLEEP | NO_FEAR | 
-S:1_IN_6 | 
+F:EMPTY_MIND | NEVER_MOVE | EVIL |
+F:IM_FIRE | IM_COLD | IM_ELEC | IM_POIS |
+F:HURT_ROCK | COLD_BLOOD | HURT_LITE |
+F:NO_CONF | NO_SLEEP | NO_FEAR
+S:1_IN_6 |
 S:SHRIEK | S_MONSTER | S_MONSTERS | HOLD | CONF | MIND_BLAST | DRAIN_MANA
-D:A figure carved from stone, with three vulture faces whose eyes glow 
-D:with a malevolent light.
+D:A figure carved from stone, with three vulture faces whose eyes glow
+D: with a malevolent light.
 
 N:598:Nighthawk
 G:B:u
@@ -9341,7 +9341,7 @@ D:Trained to hunt and kill without fear.
 N:599:Ghoul
 G:z:U
 I:110:15d10:30:30:20
-W:26:1:0:95
+W:26:2:0:95
 B:CLAW:PARALYZE:1d4
 B:CLAW:PARALYZE:1d4
 B:BITE:POISON:1d6
@@ -9355,7 +9355,7 @@ D:Flesh is falling off in chunks from this decaying abomination.
 N:600:Ghast
 G:z:u
 I:120:30d10:30:50:20
-W:30:1:0:130
+W:30:3:0:130
 B:CLAW:PARALYZE:2d4
 B:CLAW:PARALYZE:2d4
 B:BITE:LOSE_CON:2d4
@@ -9433,13 +9433,13 @@ I:120:20d10:20:30:30
 W:28:3:0:100
 B:BITE:POISON:1d10
 B:CLAW:HURT:1d4
-F:DROP_60 | RAND_25 | MOVE_BODY | 
-F:BASH_DOOR | MOVE_BODY | WEIRD_MIND | 
+F:DROP_60 | RAND_25 | MOVE_BODY |
+F:BASH_DOOR | WEIRD_MIND |
 F:ANIMAL | IM_POIS | FRIENDS
-S:1_IN_8 | 
+S:1_IN_8 |
 S:SCARE | BR_POIS | BR_DARK
-D:Fed with horrid meats and grown to enormous size, this slavering creature 
-D:seeks livelier prey.
+D:Fed with horrid meats and grown to enormous size, this slavering creature
+D: seeks livelier prey.
 
 N:606:Doombat
 G:b:R
@@ -9471,7 +9471,7 @@ D:and whose howls strike fear into even the boldest heart.
 N:608:Bone golem
 G:g:D
 I:120:35d100:20:170:50
-W:61:3:0:23000
+W:68:3:0:23000
 B:HIT:UN_BONUS:8d8
 B:HIT:UN_BONUS:8d8
 B:HIT:LOSE_STR:6d6
@@ -9489,7 +9489,7 @@ D:previous victims.
 N:609:Bronze golem
 G:g:o
 I:120:40d100:20:170:50
-W:65:3:0:26000
+W:75:3:0:26000
 B:HIT:HURT:10d10
 B:HIT:HURT:10d10
 B:HIT:HURT:10d10
@@ -9520,17 +9520,17 @@ D:wielding a huge club and pushing his own followers rudely aside.
 N:611:Ar-Pharazon the Golden
 G:p:y
 I:130:40d100:30:45:255
-W:55:1:0:2500
+W:55:1:0:32500
 B:HIT:HURT:8d8
 B:HIT:HURT:8d8
 B:HIT:HURT:8d8
 B:HIT:HURT:8d8
-F:FORCE_SLEEP | FORCE_MAXHP | UNIQUE | 
+F:FORCE_SLEEP | FORCE_MAXHP | UNIQUE | EVIL | MALE
 F:ONLY_ITEM | DROP_1D2 | DROP_3D2 | DROP_GOOD | DROP_GREAT | 
 F:SMART | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | MOVE_BODY
 F:IM_FIRE | IM_ELEC | IM_POIS
 S:1_IN_6 |
-S:HEAL | HASTE | TELE_AWAY | S_MONSTERS | S_KIN
+S:HEAL | TELE_AWAY | S_MONSTERS | S_KIN
 D:Last and proudest king of ancient Numenor. Corrupted by power and 
 D:avarice, he fell victim to Sauron's wiles, tried to fight the Valar 
 D:themselves, and condemned Numenor to oblivion. 

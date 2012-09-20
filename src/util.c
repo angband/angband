@@ -3779,6 +3779,19 @@ bool repeat_pull(int *what)
 }
 
 
+void repeat_clear(void)
+{
+	/* Start over from the failed pull */
+	if (repeat__idx)
+		repeat__cnt = --repeat__idx;
+	/* Paranoia */
+	else
+		repeat__cnt = repeat__idx;
+
+	return;
+}
+
+
 /*
  * Repeat previous command, or begin memorizing new command.
  */

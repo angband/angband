@@ -803,11 +803,11 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 			else text_out(" and ");
 
 			/* Dump */
-			text_out(vp[n]);
+			text_out_c(TERM_ORANGE, vp[n]);
 		}
 
 		/* End */
-		text_out_c(TERM_ORANGE, ".  ");
+		text_out(".  ");
 	}
 
 

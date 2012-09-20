@@ -73,7 +73,7 @@ angband_files =    init.lua object.lua test.lua
 EXTRA_DIST =    $(angband_files)
 
 
-@SET_GID_TRUE@angbanddir = @DEFAULT_PATH@file
+@SET_GID_TRUE@angbanddir = @DEFAULT_PATH@script
 
 @SET_GID_TRUE@angband_DATA =   $(angband_files)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs

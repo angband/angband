@@ -702,7 +702,7 @@ fi
 
 PACKAGE=angband
 
-VERSION=2.9.4-alpha
+VERSION=2.9.5-alpha
 
 if test "`cd $srcdir && pwd`" != "`pwd`" && test -f $srcdir/config.status; then
   { echo "configure: error: source directory already configured; run "make distclean" there first" 1>&2; exit 1; }

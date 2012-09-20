@@ -104,52 +104,6 @@ void Rand_state_init(u32b seed)
 
 
 /*
- * Extract a "random" number from 0 to m-1, via "modulus"
- *
- * Note that "m" should probably be less than 500000, or the
- * results may be rather biased towards low values.
- */
-u32b Rand_mod(u32b m)
-{
-	int j;
-	u32b r;
-
-	/* Hack -- simple case */
-	if (m <= 1) return (0);
-
-	/* Use the "simple" RNG */
-	if (Rand_quick)
-	{
-		/* Cycle the generator */
-		r = (Rand_value = LCRNG(Rand_value));
-
-		/* Mutate a 28-bit "random" number */
-		r = ((r >> 4) % m);
-	}
-
-	/* Use the "complex" RNG */
-	else
-	{
-		/* Acquire the next index */
-		j = Rand_place + 1;
-		if (j == RAND_DEG) j = 0;
-
-		/* Update the table, extract an entry */
-		r = (Rand_state[j] += Rand_state[Rand_place]);
-
-		/* Advance the index */
-		Rand_place = j;
-
-		/* Extract a "random" number */
-		r = ((r >> 4) % m);
-	}
-
-	/* Use the value */
-	return (r);
-}
-
-
-/*
  * Extract a "random" number from 0 to m-1, via "division"
  *
  * This method selects "random" 28-bit numbers, and then uses
@@ -185,7 +139,7 @@ u32b Rand_div(u32b m)
 			r = (Rand_value = LCRNG(Rand_value));
 
 			/* Mutate a 28-bit "random" number */
-			r = (r >> 4) / n;
+			r = ((r >> 4) & 0x0FFFFFFF) / n;
 
 			/* Done */
 			if (r < m) break;

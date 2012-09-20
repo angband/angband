@@ -53,6 +53,11 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
 			/* Success */
 			return (TRUE);
 		}
+		else
+		{
+			/* Invalid repeat - reset it */
+			repeat_clear();
+		}
 	}
 
 #endif /* ALLOW_REPEAT */
@@ -904,7 +909,7 @@ void do_cmd_cast(void)
 			{
 				if (!get_aim_dir(&dir)) return;
 				fire_bolt_or_beam(beam, GF_ACID, dir,
-				                  damroll(6+((plev-5)/4), 8));
+				                  damroll(7+((plev-5)/4), 8));
 				break;
 			}
 
@@ -912,7 +917,7 @@ void do_cmd_cast(void)
 			{
 				if (!get_aim_dir(&dir)) return;
 				fire_ball(GF_POIS, dir,
-				          20 + (plev / 2), 3);
+				          50 + plev, 3);
 				break;
 			}
 
@@ -920,7 +925,7 @@ void do_cmd_cast(void)
 			{
 				if (!get_aim_dir(&dir)) return;
 				fire_ball(GF_ACID, dir,
-				          40 + (plev), 2);
+				          45 + plev, 2);
 				break;
 			}
 
@@ -928,7 +933,7 @@ void do_cmd_cast(void)
 			{
 				if (!get_aim_dir(&dir)) return;
 				fire_ball(GF_COLD, dir,
-				          70 + (plev), 3);
+				          75 + (plev * 3), 3);
 				break;
 			}
 
@@ -936,7 +941,7 @@ void do_cmd_cast(void)
 			{
 				if (!get_aim_dir(&dir)) return;
 				fire_ball(GF_METEOR, dir,
-				          65 + (plev), 3);
+				          50 + (plev * 3), 3);
 				break;
 			}
 

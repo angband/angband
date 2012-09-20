@@ -31,6 +31,8 @@ R:0:0x92/0x87
 R:0:0x92/0x88
 ?:[AND [EQU $CLASS Warrior] [EQU $RACE High-Elf] ]
 R:0:0x92/0x89
+?:[AND [EQU $CLASS Warrior] [EQU $RACE Kobold] ]
+R:0:0x92/0x92
 
 ?:[AND [EQU $CLASS Mage] [EQU $RACE Human] ]
 R:0:0x93/0x80
@@ -52,6 +54,8 @@ R:0:0x93/0x87
 R:0:0x93/0x88
 ?:[AND [EQU $CLASS Mage] [EQU $RACE High-Elf] ]
 R:0:0x93/0x89
+?:[AND [EQU $CLASS Mage] [EQU $RACE Kobold] ]
+R:0:0x93/0x92
 
 ?:[AND [EQU $CLASS Priest] [EQU $RACE Human] ]
 R:0:0x94/0x80
@@ -73,6 +77,8 @@ R:0:0x94/0x87
 R:0:0x94/0x88
 ?:[AND [EQU $CLASS Priest] [EQU $RACE High-Elf] ]
 R:0:0x94/0x89
+?:[AND [EQU $CLASS Priest] [EQU $RACE Kobold] ]
+R:0:0x94/0x92
 
 ?:[AND [EQU $CLASS Rogue] [EQU $RACE Human] ]
 R:0:0x95/0x80
@@ -94,6 +100,8 @@ R:0:0x95/0x87
 R:0:0x95/0x88
 ?:[AND [EQU $CLASS Rogue] [EQU $RACE High-Elf] ]
 R:0:0x95/0x89
+?:[AND [EQU $CLASS Rogue] [EQU $RACE Kobold] ]
+R:0:0x95/0x92
 
 ?:[AND [EQU $CLASS Ranger] [EQU $RACE Human] ]
 R:0:0x96/0x80
@@ -115,6 +123,8 @@ R:0:0x96/0x87
 R:0:0x96/0x88
 ?:[AND [EQU $CLASS Ranger] [EQU $RACE High-Elf] ]
 R:0:0x96/0x89
+?:[AND [EQU $CLASS Ranger] [EQU $RACE Kobold] ]
+R:0:0x96/0x92
 
 ?:[AND [EQU $CLASS Paladin] [EQU $RACE Human] ]
 R:0:0x97/0x80
@@ -136,4 +146,6 @@ R:0:0x97/0x87
 R:0:0x97/0x88
 ?:[AND [EQU $CLASS Paladin] [EQU $RACE High-Elf] ]
 R:0:0x97/0x89
+?:[AND [EQU $CLASS Paladin] [EQU $RACE Kobold] ]
+R:0:0x97/0x92
 

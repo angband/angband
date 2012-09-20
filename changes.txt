@@ -1,4 +1,54 @@
-Changes in Angband 2.9.4:
+Changes in Angband 2.9.5 alpha:
+- Added support for object descriptions that are displayed when examining
+  objects.
+- Moved the effects of using staves, wands, and rods to a Lua script.
+- Lesser vaults have a couple of guaranteed "good" items, and greater
+  vaults have a couple of guaranteed "great" items. Guarded by
+  out-of-depth monsters of course. (JLE)
+- Reduced the fail rate of identify. (JLE)
+- Made recharging easier for mages. (JLE)
+- Made it harder for rangers and rogues to cast Resistance. (JLE)
+- Removed "meteor swarm" from the rogue's spell list. (JLE)
+- Added eight new amulets: ESP, Resistance, Regeneration, Resist Lightning,
+  Devotion, Trickery, Weaponmastery, Infravision. (JLE)
+- Amulets of the Magi give an int boost now. (JLE)
+- Added activations to the elemental rings. (JLE)
+- Ar-Pharazon the Golden is worth more exp and doesn't haste self anymore.
+  (JLE)
+- Moved bone and bronze golems deeper. (JLE)
+- Ghouls and Ghasts are less common now. (JLE)
+- Edited the artifact list. (JLE)
+- Made *slay giant* as common as the other *slays*. (jianson)
+- Toned down the to-dam and to-hit values from rings. (JLE)
+- Adjusted the damage caps for various breath attacks. (JLE)
+- Changed the damage of some mage spells. (JLE)
+- Added the icons for the Kobold player race.
+- Added some 16x16 tiles for new monsters.
+- Added support for a hitpoint-warning sound effect.
+- Added the missing asterix to the *slay animal* ego weapon name. (jianson)
+- Fixed flavors such as the slime mold juice, potions of water, and the
+  One Ring are now defined in the lib/edit/flavor.txt file.
+- Removed the code for loading pre-2.9.0 savefiles.
+- Shattered weapons are no longer partially restored when loading a
+  savefile.
+- Fixed problems with the "repeated commands" after failures such as
+  running out of ammo. (Bahman Rabii)
+- Changed the spelling of "aluminium" in the item flavors. (JLE)
+- Removed some duplicated potion flavors and added new flavors for the
+  new amulets.
+- Made the text part of the flavor definitions optional.
+- Fixed some problems with 64-bit machines.
+- Added a debugging menu, a debug window, and basic tracing functionality
+  for scripts.
+- Fixed the install path for the script files.
+- Assigned a default 16x16 icon for the player.
+- Removed some duplicated monster flags.
+- Fixed a possible crash with searching disarmed chests for traps.
+- Removed the unused "disturb_other" option.
+- Fixed the problem with the potion of enlightenment.
+- The wrong part of the monster recall was colorized.
+
+Changes in Angband 2.9.4 alpha:
 - Added basic support for a bigger main window (bigscreen). Note that
   the town will be  regenerated when loading an old savefile, so don't
   leave any objects on the floor when you upgrade your savefile!

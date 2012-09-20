@@ -47,7 +47,7 @@
 /*
  * Current version string
  */
-#define VERSION_STRING	"2.9.4"
+#define VERSION_STRING	"2.9.5 alpha"
 
 
 /*
@@ -55,8 +55,16 @@
  */
 #define VERSION_MAJOR	2
 #define VERSION_MINOR	9
-#define VERSION_PATCH	4
+#define VERSION_PATCH	5
 #define VERSION_EXTRA	0
+
+
+/*
+ * Oldest version number that can still be imported
+ */
+#define OLD_VERSION_MAJOR	2
+#define OLD_VERSION_MINOR	9
+#define OLD_VERSION_PATCH	0
 
 
 /*
@@ -848,151 +856,11 @@
 
 
 
-/*** Artifact indexes (see "lib/edit/artifact.txt") ***/
+/*** Important artifact indexes (see "lib/edit/artifact.txt") ***/
 
-
-/* Lites */
-#define ART_GALADRIEL		1
-#define ART_ELENDIL			2
-#define ART_THRAIN			3
-
-/* Amulets */
-#define ART_CARLAMMAS		4
-#define ART_INGWE			5
-#define ART_DWARVES			6
-
-/* Rings */
-#define ART_BARAHIR			8
-#define ART_TULKAS			9
-#define ART_NARYA			10
-#define ART_NENYA			11
-#define ART_VILYA			12
 #define ART_POWER			13
-
-/* Dragon Scale */
-#define ART_RAZORBACK		16
-#define ART_BLADETURNER		17
-
-/* Hard Armour */
-#define ART_SOULKEEPER		19
-#define ART_ISILDUR			20
-#define ART_ROHIRRIM		21
-#define ART_BELEGENNON		22
-#define ART_CELEBORN		23
-#define ART_ARVEDUI			24
-#define ART_CASPANION		25
-
-/* Soft Armour */
-#define ART_HITHLOMIR		27
-#define ART_THALKETTOTH		28
-
-/* Shields */
-#define ART_THORIN			30
-#define ART_CELEGORM		31
-#define ART_ANARION			32
-
-/* Helms and Crowns */
 #define ART_MORGOTH			34
-#define ART_BERUTHIEL		35
-#define ART_THRANDUIL		36
-#define ART_THENGEL			37
-#define ART_HAMMERHAND		38
-#define ART_DOR				39
-#define ART_HOLHENNETH		40
-#define ART_GORLIM			41
-#define ART_GONDOR			42
-
-/* Cloaks */
-#define ART_COLLUIN			44
-#define ART_HOLCOLLETH		45
-#define ART_THINGOL			46
-#define ART_THORONGIL		47
-#define ART_COLANNON		48
-#define ART_LUTHIEN			49
-#define ART_TUOR			50
-
-/* Gloves */
-#define ART_CAMBELEG		52
-#define ART_CAMMITHRIM		53
-#define ART_PAURHACH		54
-#define ART_PAURNIMMEN		55
-#define ART_PAURAEGEN		56
-#define ART_PAURNEN			57
-#define ART_CAMLOST			58
-#define ART_FINGOLFIN		59
-
-/* Boots */
-#define ART_FEANOR			60
-#define ART_DAL				61
-#define ART_THROR			62
-
-/* Swords */
-#define ART_MAEDHROS		64
-#define ART_ANGRIST			65
-#define ART_NARTHANC		66
-#define ART_NIMTHANC		67
-#define ART_DETHANC			68
-#define ART_RILIA			69
-#define ART_BELANGIL		70
-#define ART_CALRIS			71
-#define ART_ARUNRUTH		72
-#define ART_GLAMDRING		73
-#define ART_AEGLIN			74
-#define ART_ORCRIST			75
-#define ART_GURTHANG		76
-#define ART_ZARCUTHRA		77
-#define ART_MORMEGIL		78
-#define ART_GONDRICAM		79
-#define ART_CRISDURIAN		80
-#define ART_AGLARANG		81
-#define ART_RINGIL			82
-#define ART_ANDURIL			83
-#define ART_ANGUIREL		84
-#define ART_ELVAGIL			85
-#define ART_FORASGIL		86
-#define ART_CARETH			87
-#define ART_STING			88
-#define ART_HARADEKKET		89
-#define ART_GILETTAR		90
-#define ART_DOOMCALLER		91
-
-/* Polearms */
-#define ART_THEODEN			93
-#define ART_PAIN			94
-#define ART_OSONDIR			95
-#define ART_TIL				96
-#define ART_AEGLOS			97
-#define ART_OROME			98
-#define ART_NIMLOTH			99
-#define ART_EORLINGAS		100
-#define ART_DURIN			101
-#define ART_EONWE			102
-#define ART_BALLI			103
-#define ART_LOTHARANG		104
-#define ART_MUNDWINE		105
-#define ART_BARUKKHELED		106
-#define ART_WRATH			107
-#define ART_ULMO			108
-#define ART_AVAVIR			109
-
-/* Hafted */
 #define ART_GROND			111
-#define ART_TOTILA			112
-#define ART_THUNDERFIST		113
-#define ART_BLOODSPIKE		114
-#define ART_FIRESTAR		115
-#define ART_TARATOL			116
-#define ART_AULE			117
-#define ART_NAR				118
-#define ART_ERIRIL			119
-#define ART_OLORIN			120
-#define ART_DEATHWREAKER	121
-#define ART_TURMIL			122
-
-/* Bows */
-#define ART_BELTHRONDING	124
-#define ART_BARD			125
-#define ART_CUBRAGOL		126
 
 
 /*
@@ -1019,9 +887,9 @@
 #define EGO_RESIST_COLD		7
 #define EGO_RESISTANCE		8
 #define EGO_ELVENKIND		9
-/* xxx */
+#define EGO_ARMR_VULN		10
 #define EGO_PERMANENCE		11
-/* xxx */
+#define EGO_ARMR_DWARVEN	12
 /* xxx */
 /* xxx */
 /* xxx */
@@ -1032,9 +900,9 @@
 #define EGO_ENDURE_FIRE		18
 #define EGO_ENDURE_COLD		19
 #define EGO_ENDURANCE		20
-/* xxx */
-/* xxx */
-/* xxx */
+#define EGO_SHIELD_ELVENKIND	21
+#define EGO_SHIELD_PRESERVATION	22
+#define EGO_SHIELD_VULN		23
 
 /* Crowns and Helms */
 #define EGO_INTELLIGENCE	24
@@ -1058,7 +926,7 @@
 #define EGO_PROTECTION		40
 #define EGO_STEALTH			41
 #define EGO_AMAN			42
-/* xxx */
+#define EGO_CLOAK_MAGI		43
 #define EGO_ENVELOPING		44
 #define EGO_VULNERABILITY	45
 #define EGO_IRRITATION		46
@@ -1069,8 +937,8 @@
 #define EGO_SLAYING			49
 #define EGO_AGILITY			50
 #define EGO_POWER			51
-/* xxx */
-/* xxx */
+#define EGO_GLOVES_THIEVERY	52
+#define EGO_GAUNTLETS_COMBAT	53
 #define EGO_WEAKNESS		54
 #define EGO_CLUMSINESS		55
 
@@ -1079,7 +947,7 @@
 #define EGO_QUIET			57
 #define EGO_MOTION			58
 #define EGO_SPEED			59
-/* xxx */
+#define EGO_STABILITY		60
 #define EGO_NOISE			61
 #define EGO_SLOWNESS		62
 #define EGO_ANNOYANCE		63
@@ -1088,10 +956,10 @@
 #define EGO_HA				64
 #define EGO_DF				65
 #define EGO_BLESS_BLADE		66
-/* xxx */
+#define EGO_GONDOLIN		67
 #define EGO_WEST			68
 #define EGO_ATTACKS			69
-/* xxx */
+#define EGO_FURY			70
 /* xxx */
 #define EGO_BRAND_ACID		72
 #define EGO_BRAND_ELEC		73
@@ -1122,19 +990,19 @@
 /* xxx */
 /* xxx */
 #define EGO_DIGGING			100
-/* xxx */
+#define EGO_DIGGER_EARTHQUAKE		101
 #define EGO_MORGUL			102
 /* xxx */
 
 /* Bows */
 #define EGO_ACCURACY		104
 #define EGO_VELOCITY		105
-/* xxx */
-/* xxx */
+#define EGO_BOW_LORIEN		106
+#define EGO_CROSSBOW_HARAD	107
 #define EGO_EXTRA_MIGHT		108
 #define EGO_EXTRA_SHOTS		109
-/* xxx */
-/* xxx */
+#define EGO_SLING_BUCKLAND	110
+#define EGO_NAZGUL			111
 
 /* Ammo */
 #define EGO_HURT_ANIMAL		112
@@ -1145,8 +1013,8 @@
 #define EGO_HURT_TROLL		117
 #define EGO_HURT_GIANT		118
 #define EGO_HURT_DRAGON		119
-/* xxx */
-/* xxx */
+#define EGO_AMMO_HOLY		120
+#define EGO_AMMO_VENOM		121
 #define EGO_FLAME			122
 #define EGO_FROST			123
 #define EGO_WOUNDING		124
@@ -1215,6 +1083,7 @@
 #define SV_AMMO_LIGHT		0	/* pebbles */
 #define SV_AMMO_NORMAL		1	/* shots, arrows, bolts */
 #define SV_AMMO_HEAVY		2	/* seeker arrows and bolts */
+#define SV_AMMO_SILVER		3	/* silver arrows and bolts */
 
 /* The "sval" codes for TV_BOW (note information in "sval") */
 #define SV_SLING			2	/* (x2) */
@@ -1230,6 +1099,7 @@
 #define SV_PICK				4
 #define SV_ORCISH_PICK		5
 #define SV_DWARVEN_PICK		6
+#define SV_MATTOCK			7
 
 /* The "sval" values for TV_HAFTED */
 #define SV_WHIP					2	/* 1d6 */
@@ -1358,6 +1228,7 @@
 #define SV_LITE_GALADRIEL	4
 #define SV_LITE_ELENDIL		5
 #define SV_LITE_THRAIN		6
+#define SV_LITE_PALANTIR	7
 
 /* The "sval" codes for TV_AMULET */
 #define SV_AMULET_DOOM			0
@@ -1369,10 +1240,21 @@
 #define SV_AMULET_WISDOM		6
 #define SV_AMULET_CHARISMA		7
 #define SV_AMULET_THE_MAGI		8
-/* xxx */
+#define SV_AMULET_SUSTENANCE	9
 #define SV_AMULET_CARLAMMAS		10
 #define SV_AMULET_INGWE			11
 #define SV_AMULET_DWARVES		12
+#define SV_AMULET_ESP			13
+#define SV_AMULET_RESIST		14
+#define SV_AMULET_REGEN			15
+#define SV_AMULET_ELESSAR		16
+#define SV_AMULET_EVENSTAR		17
+#define SV_AMULET_DEVOTION		18
+#define SV_AMULET_WEAPONMASTERY	19
+#define SV_AMULET_TRICKERY		20
+#define SV_AMULET_INFRAVISION		21
+#define SV_AMULET_RESIST_LIGHTNING  22
+
 
 /* The sval codes for TV_RING */
 #define SV_RING_WOE				0
@@ -1413,6 +1295,7 @@
 #define SV_RING_NENYA			35
 #define SV_RING_VILYA			36
 #define SV_RING_POWER			37
+#define SV_RING_LIGHTNING		38
 
 
 /* The "sval" codes for TV_STAFF */
@@ -1674,6 +1557,10 @@
  */
 #define SV_BOOK_MIN_GOOD	4
 
+/*
+ * Special "sval" value -- unknown "sval"
+ */
+#define SV_UNKNOWN			255
 
 
 /*** Monster blow constants ***/
@@ -1880,22 +1767,22 @@
 /*
  * Bit flags for the "p_ptr->window" variable (etc)
  */
-#define PW_INVEN		0x00000001L	/* Display inven/equip */
-#define PW_EQUIP		0x00000002L	/* Display equip/inven */
-#define PW_PLAYER_0		0x00000004L	/* Display player (basic) */
-#define PW_PLAYER_1		0x00000008L	/* Display player (extra) */
+#define PW_INVEN            0x00000001L /* Display inven/equip */
+#define PW_EQUIP            0x00000002L /* Display equip/inven */
+#define PW_PLAYER_0         0x00000004L /* Display player (basic) */
+#define PW_PLAYER_1         0x00000008L /* Display player (extra) */
 /* xxx */
 /* xxx */
-#define PW_MESSAGE		0x00000040L	/* Display messages */
-#define PW_OVERHEAD		0x00000080L	/* Display overhead view */
-#define PW_MONSTER		0x00000100L	/* Display monster recall */
-#define PW_OBJECT		0x00000200L	/* Display object recall */
+#define PW_MESSAGE          0x00000040L /* Display messages */
+#define PW_OVERHEAD         0x00000080L /* Display overhead view */
+#define PW_MONSTER          0x00000100L /* Display monster recall */
+#define PW_OBJECT           0x00000200L /* Display object recall */
 /* xxx */
-#define PW_SNAPSHOT		0x00000800L	/* Display snap-shot */
-/* xxx */
-/* xxx */
-#define PW_BORG_1		0x00004000L	/* Display borg messages */
-#define PW_BORG_2		0x00008000L	/* Display borg status */
+#define PW_SNAPSHOT         0x00000800L /* Display snap-shot */
+#define PW_SCRIPT_SOURCE    0x00001000L /* Display script source */
+#define PW_SCRIPT_VARS      0x00002000L /* Display script variables */
+#define PW_BORG_1           0x00004000L /* Display borg messages */
+#define PW_BORG_2           0x00008000L /* Display borg status */
 
 
 /*** Cave flags ***/
@@ -2655,7 +2542,7 @@
 #define OPT_disturb_panel			22
 #define OPT_disturb_state			23
 #define OPT_disturb_minor			24
-#define OPT_disturb_other			25
+/* xxx OPT_disturb_other */
 /* xxx OPT_alert_hitpoint */
 #define OPT_alert_failure			27
 #define OPT_verify_destroy			28
@@ -2773,7 +2660,7 @@
 #define disturb_panel			op_ptr->opt[OPT_disturb_panel]
 #define disturb_state			op_ptr->opt[OPT_disturb_state]
 #define disturb_minor			op_ptr->opt[OPT_disturb_minor]
-#define disturb_other			op_ptr->opt[OPT_disturb_other]
+/* xxx disturb_other */
 /* xxx */
 #define alert_failure			op_ptr->opt[OPT_alert_failure]
 #define verify_destroy			op_ptr->opt[OPT_verify_destroy]
@@ -3227,14 +3114,6 @@ extern int PlayerUID;
 # undef MESSAGE_BUF
 # define MESSAGE_BUF	4096
 #endif
-
-
-/*
- * r_info indices of the quest monsters
- * (required for loading old savefiles)
- */
-#define R_INFO_SAURON 546
-#define R_INFO_MORGOTH 547
 
 
 /*

@@ -1020,6 +1020,842 @@ static bool read_scroll(object_type *o_ptr, bool *ident)
 }
 
 
+static bool use_staff(object_type *o_ptr, bool *ident)
+{
+	int py = p_ptr->py;
+	int px = p_ptr->px;
+
+	int k;
+
+	bool use_charge = TRUE;
+
+	/* Analyze the staff */
+	switch (o_ptr->sval)
+	{
+		case SV_STAFF_DARKNESS:
+		{
+			if (!p_ptr->resist_blind)
+			{
+				if (set_blind(p_ptr->blind + 3 + randint(5))) *ident = TRUE;
+			}
+			if (unlite_area(10, 3)) *ident = TRUE;
+			break;
+		}
+
+		case SV_STAFF_SLOWNESS:
+		{
+			if (set_slow(p_ptr->slow + randint(30) + 15)) *ident = TRUE;
+			break;
+		}
+
+		case SV_STAFF_HASTE_MONSTERS:
+		{
+			if (speed_monsters()) *ident = TRUE;
+			break;
+		}
+
+		case SV_STAFF_SUMMONING:
+		{
+			for (k = 0; k < randint(4); k++)
+			{
+				if (summon_specific(py, px, p_ptr->depth, 0))
+				{
+					*ident = TRUE;
+				}
+			}
+			break;
+		}
+
+		case SV_STAFF_TELEPORTATION:
+		{
+			teleport_player(100);
+			*ident = TRUE;
+			break;
+		}
+
+		case SV_STAFF_IDENTIFY:
+		{
+			if (!ident_spell()) use_charge = FALSE;
+			*ident = TRUE;
+			break;
+		}
+
+		case SV_STAFF_REMOVE_CURSE:
+		{
+			if (remove_curse())
+			{
+				if (!p_ptr->blind)
+				{
+					msg_print("The staff glows blue for a moment...");
+				}
+				*ident = TRUE;
+			}
+			break;
+		}
+
+		case SV_STAFF_STARLITE:
+		{
+			if (!p_ptr->blind)
+			{
+				msg_print("The end of the staff glows brightly...");
+			}
+			for (k = 0; k < 8; k++) lite_line(ddd[k]);
+			*ident = TRUE;
+			break;
+		}
+
+		case SV_STAFF_LITE:
+		{
+			if (lite_area(damroll(2, 8), 2)) *ident = TRUE;
+			break;
+		}
+
+		case SV_STAFF_MAPPING:
+		{
+			map_area();
+			*ident = TRUE;
+			break;
+		}
+
+		case SV_STAFF_DETECT_GOLD:
+		{
+			if (detect_treasure()) *ident = TRUE;
+			if (detect_objects_gold()) *ident = TRUE;
+			break;
+		}
+
+		case SV_STAFF_DETECT_ITEM:
+		{
+			if (detect_objects_normal()) *ident = TRUE;
+			break;
+		}
+
+		case SV_STAFF_DETECT_TRAP:
+		{
+			if (detect_traps()) *ident = TRUE;
+			break;
+		}
+
+		case SV_STAFF_DETECT_DOOR:
+		{
+			if (detect_doors()) *ident = TRUE;
+			if (detect_stairs()) *ident = TRUE;
+			break;
+		}
+
+		case SV_STAFF_DETECT_INVIS:
+		{
+			if (detect_monsters_invis()) *ident = TRUE;
+			break;
+		}
+
+		case SV_STAFF_DETECT_EVIL:
+		{
+			if (detect_monsters_evil()) *ident = TRUE;
+			break;
+		}
+
+		case SV_STAFF_CURE_LIGHT:
+		{
+			if (hp_player(randint(8))) *ident = TRUE;
+			break;
+		}
+
+		case SV_STAFF_CURING:
+		{
+			if (set_blind(0)) *ident = TRUE;
+			if (set_poisoned(0)) *ident = TRUE;
+			if (set_confused(0)) *ident = TRUE;
+			if (set_stun(0)) *ident = TRUE;
+			if (set_cut(0)) *ident = TRUE;
+			break;
+		}
+
+		case SV_STAFF_HEALING:
+		{
+			if (hp_player(300)) *ident = TRUE;
+			if (set_stun(0)) *ident = TRUE;
+			if (set_cut(0)) *ident = TRUE;
+			break;
+		}
+
+		case SV_STAFF_THE_MAGI:
+		{
+			if (do_res_stat(A_INT)) *ident = TRUE;
+			if (p_ptr->csp < p_ptr->msp)
+			{
+				p_ptr->csp = p_ptr->msp;
+				p_ptr->csp_frac = 0;
+				*ident = TRUE;
+				msg_print("Your feel your head clear.");
+				p_ptr->redraw |= (PR_MANA);
+				p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
+			}
+			break;
+		}
+
+		case SV_STAFF_SLEEP_MONSTERS:
+		{
+			if (sleep_monsters()) *ident = TRUE;
+			break;
+		}
+
+		case SV_STAFF_SLOW_MONSTERS:
+		{
+			if (slow_monsters()) *ident = TRUE;
+			break;
+		}
+
+		case SV_STAFF_SPEED:
+		{
+			if (!p_ptr->fast)
+			{
+				if (set_fast(randint(30) + 15)) *ident = TRUE;
+			}
+			else
+			{
+				(void)set_fast(p_ptr->fast + 5);
+			}
+			break;
+		}
+
+		case SV_STAFF_PROBING:
+		{
+			probing();
+			*ident = TRUE;
+			break;
+		}
+
+		case SV_STAFF_DISPEL_EVIL:
+		{
+			if (dispel_evil(60)) *ident = TRUE;
+			break;
+		}
+
+		case SV_STAFF_POWER:
+		{
+			if (dispel_monsters(120)) *ident = TRUE;
+			break;
+		}
+
+		case SV_STAFF_HOLINESS:
+		{
+			if (dispel_evil(120)) *ident = TRUE;
+			k = 3 * p_ptr->lev;
+			if (set_protevil(p_ptr->protevil + randint(25) + k)) *ident = TRUE;
+			if (set_poisoned(0)) *ident = TRUE;
+			if (set_afraid(0)) *ident = TRUE;
+			if (hp_player(50)) *ident = TRUE;
+			if (set_stun(0)) *ident = TRUE;
+			if (set_cut(0)) *ident = TRUE;
+			break;
+		}
+
+		case SV_STAFF_GENOCIDE:
+		{
+			(void)genocide();
+			*ident = TRUE;
+			break;
+		}
+
+		case SV_STAFF_EARTHQUAKES:
+		{
+			earthquake(py, px, 10);
+			*ident = TRUE;
+			break;
+		}
+
+		case SV_STAFF_DESTRUCTION:
+		{
+			destroy_area(py, px, 15, TRUE);
+			*ident = TRUE;
+			break;
+		}
+	}
+
+	return (use_charge);
+}
+
+
+static bool aim_wand(object_type *o_ptr, bool *ident)
+{
+	int lev, chance, dir, sval;
+
+
+	/* Allow direction to be cancelled for free */
+	if (!get_aim_dir(&dir)) return (FALSE);
+
+	/* Take a turn */
+	p_ptr->energy_use = 100;
+
+	/* Not identified yet */
+	*ident = FALSE;
+
+	/* Get the level */
+	lev = k_info[o_ptr->k_idx].level;
+
+	/* Base chance of success */
+	chance = p_ptr->skill_dev;
+
+	/* Confusion hurts skill */
+	if (p_ptr->confused) chance = chance / 2;
+
+	/* High level objects are harder */
+	chance = chance - ((lev > 50) ? 50 : lev);
+
+	/* Give everyone a (slight) chance */
+	if ((chance < USE_DEVICE) && (rand_int(USE_DEVICE - chance + 1) == 0))
+	{
+		chance = USE_DEVICE;
+	}
+
+	/* Roll for usage */
+	if ((chance < USE_DEVICE) || (randint(chance) < USE_DEVICE))
+	{
+		if (flush_failure) flush();
+		msg_print("You failed to use the wand properly.");
+		return (FALSE);
+	}
+
+	/* The wand is already empty! */
+	if (o_ptr->pval <= 0)
+	{
+		if (flush_failure) flush();
+		msg_print("The wand has no charges left.");
+		o_ptr->ident |= (IDENT_EMPTY);
+		p_ptr->notice |= (PN_COMBINE | PN_REORDER);
+		p_ptr->window |= (PW_INVEN);
+		return (FALSE);
+	}
+
+
+	/* Sound */
+	sound(MSG_ZAP);
+
+
+	/* XXX Hack -- Extract the "sval" effect */
+	sval = o_ptr->sval;
+
+	/* XXX Hack -- Wand of wonder can do anything before it */
+	if (sval == SV_WAND_WONDER) sval = rand_int(SV_WAND_WONDER);
+
+	/* Analyze the wand */
+	switch (sval)
+	{
+		case SV_WAND_HEAL_MONSTER:
+		{
+			if (heal_monster(dir)) *ident = TRUE;
+			break;
+		}
+
+		case SV_WAND_HASTE_MONSTER:
+		{
+			if (speed_monster(dir)) *ident = TRUE;
+			break;
+		}
+
+		case SV_WAND_CLONE_MONSTER:
+		{
+			if (clone_monster(dir)) *ident = TRUE;
+			break;
+		}
+
+		case SV_WAND_TELEPORT_AWAY:
+		{
+			if (teleport_monster(dir)) *ident = TRUE;
+			break;
+		}
+
+		case SV_WAND_DISARMING:
+		{
+			if (disarm_trap(dir)) *ident = TRUE;
+			break;
+		}
+
+		case SV_WAND_TRAP_DOOR_DEST:
+		{
+			if (destroy_door(dir)) *ident = TRUE;
+			break;
+		}
+
+		case SV_WAND_STONE_TO_MUD:
+		{
+			if (wall_to_mud(dir)) *ident = TRUE;
+			break;
+		}
+
+		case SV_WAND_LITE:
+		{
+			msg_print("A line of blue shimmering light appears.");
+			lite_line(dir);
+			*ident = TRUE;
+			break;
+		}
+
+		case SV_WAND_SLEEP_MONSTER:
+		{
+			if (sleep_monster(dir)) *ident = TRUE;
+			break;
+		}
+
+		case SV_WAND_SLOW_MONSTER:
+		{
+			if (slow_monster(dir)) *ident = TRUE;
+			break;
+		}
+
+		case SV_WAND_CONFUSE_MONSTER:
+		{
+			if (confuse_monster(dir, 10)) *ident = TRUE;
+			break;
+		}
+
+		case SV_WAND_FEAR_MONSTER:
+		{
+			if (fear_monster(dir, 10)) *ident = TRUE;
+			break;
+		}
+
+		case SV_WAND_DRAIN_LIFE:
+		{
+			if (drain_life(dir, 150)) *ident = TRUE;
+			break;
+		}
+
+		case SV_WAND_POLYMORPH:
+		{
+			if (poly_monster(dir)) *ident = TRUE;
+			break;
+		}
+
+		case SV_WAND_STINKING_CLOUD:
+		{
+			fire_ball(GF_POIS, dir, 12, 2);
+			*ident = TRUE;
+			break;
+		}
+
+		case SV_WAND_MAGIC_MISSILE:
+		{
+			fire_bolt_or_beam(20, GF_MISSILE, dir, damroll(3, 4));
+			*ident = TRUE;
+			break;
+		}
+
+		case SV_WAND_ACID_BOLT:
+		{
+			fire_bolt_or_beam(20, GF_ACID, dir, damroll(10, 8));
+			*ident = TRUE;
+			break;
+		}
+
+		case SV_WAND_ELEC_BOLT:
+		{
+			fire_bolt_or_beam(20, GF_ELEC, dir, damroll(6, 6));
+			*ident = TRUE;
+			break;
+		}
+
+		case SV_WAND_FIRE_BOLT:
+		{
+			fire_bolt_or_beam(20, GF_FIRE, dir, damroll(12, 8));
+			*ident = TRUE;
+			break;
+		}
+
+		case SV_WAND_COLD_BOLT:
+		{
+			fire_bolt_or_beam(20, GF_COLD, dir, damroll(6, 8));
+			*ident = TRUE;
+			break;
+		}
+
+		case SV_WAND_ACID_BALL:
+		{
+			fire_ball(GF_ACID, dir, 120, 2);
+			*ident = TRUE;
+			break;
+		}
+
+		case SV_WAND_ELEC_BALL:
+		{
+			fire_ball(GF_ELEC, dir, 64, 2);
+			*ident = TRUE;
+			break;
+		}
+
+		case SV_WAND_FIRE_BALL:
+		{
+			fire_ball(GF_FIRE, dir, 144, 2);
+			*ident = TRUE;
+			break;
+		}
+
+		case SV_WAND_COLD_BALL:
+		{
+			fire_ball(GF_COLD, dir, 96, 2);
+			*ident = TRUE;
+			break;
+		}
+
+		case SV_WAND_WONDER:
+		{
+			msg_print("Oops.  Wand of wonder activated.");
+			break;
+		}
+
+		case SV_WAND_DRAGON_FIRE:
+		{
+			fire_ball(GF_FIRE, dir, 200, 3);
+			*ident = TRUE;
+			break;
+		}
+
+		case SV_WAND_DRAGON_COLD:
+		{
+			fire_ball(GF_COLD, dir, 160, 3);
+			*ident = TRUE;
+			break;
+		}
+
+		case SV_WAND_DRAGON_BREATH:
+		{
+			switch (randint(5))
+			{
+				case 1:
+				{
+					fire_ball(GF_ACID, dir, 200, 3);
+					break;
+				}
+
+				case 2:
+				{
+					fire_ball(GF_ELEC, dir, 160, 3);
+					break;
+				}
+
+				case 3:
+				{
+					fire_ball(GF_FIRE, dir, 200, 3);
+					break;
+				}
+
+				case 4:
+				{
+					fire_ball(GF_COLD, dir, 160, 3);
+					break;
+				}
+
+				default:
+				{
+					fire_ball(GF_POIS, dir, 120, 3);
+					break;
+				}
+			}
+
+			*ident = TRUE;
+			break;
+		}
+
+		case SV_WAND_ANNIHILATION:
+		{
+			if (drain_life(dir, 250)) *ident = TRUE;
+			break;
+		}
+	}
+
+	return (TRUE);
+}
+
+
+static bool zap_rod(object_type *o_ptr, bool *ident)
+{
+	int chance, dir, lev;
+
+	/* Get a direction (unless KNOWN not to need it) */
+	if ((o_ptr->sval >= SV_ROD_MIN_DIRECTION) || !object_aware_p(o_ptr))
+	{
+		/* Get a direction, allow cancel */
+		if (!get_aim_dir(&dir)) return FALSE;
+	}
+
+
+	/* Take a turn */
+	p_ptr->energy_use = 100;
+
+	/* Not identified yet */
+	*ident = FALSE;
+
+	/* Extract the item level */
+	lev = k_info[o_ptr->k_idx].level;
+
+	/* Base chance of success */
+	chance = p_ptr->skill_dev;
+
+	/* Confusion hurts skill */
+	if (p_ptr->confused) chance = chance / 2;
+
+	/* High level objects are harder */
+	chance = chance - ((lev > 50) ? 50 : lev);
+
+	/* Give everyone a (slight) chance */
+	if ((chance < USE_DEVICE) && (rand_int(USE_DEVICE - chance + 1) == 0))
+	{
+		chance = USE_DEVICE;
+	}
+
+	/* Roll for usage */
+	if ((chance < USE_DEVICE) || (randint(chance) < USE_DEVICE))
+	{
+		if (flush_failure) flush();
+		msg_print("You failed to use the rod properly.");
+		return FALSE;
+	}
+
+	/* Still charging */
+	if (o_ptr->pval)
+	{
+		if (flush_failure) flush();
+		msg_print("The rod is still charging.");
+		return FALSE;
+	}
+
+
+	/* Sound */
+	sound(MSG_ZAP);
+
+
+	/* Analyze the rod */
+	switch (o_ptr->sval)
+	{
+		case SV_ROD_DETECT_TRAP:
+		{
+			if (detect_traps()) *ident = TRUE;
+			o_ptr->pval = 50;
+			break;
+		}
+
+		case SV_ROD_DETECT_DOOR:
+		{
+			if (detect_doors()) *ident = TRUE;
+			if (detect_stairs()) *ident = TRUE;
+			o_ptr->pval = 70;
+			break;
+		}
+
+		case SV_ROD_IDENTIFY:
+		{
+			*ident = TRUE;
+			if (ident_spell()) o_ptr->pval = 10;
+			break;
+		}
+
+		case SV_ROD_RECALL:
+		{
+			set_recall();
+			*ident = TRUE;
+			o_ptr->pval = 60;
+			break;
+		}
+
+		case SV_ROD_ILLUMINATION:
+		{
+			if (lite_area(damroll(2, 8), 2)) *ident = TRUE;
+			o_ptr->pval = 30;
+			break;
+		}
+
+		case SV_ROD_MAPPING:
+		{
+			map_area();
+			*ident = TRUE;
+			o_ptr->pval = 99;
+			break;
+		}
+
+		case SV_ROD_DETECTION:
+		{
+			detect_all();
+			*ident = TRUE;
+			o_ptr->pval = 99;
+			break;
+		}
+
+		case SV_ROD_PROBING:
+		{
+			probing();
+			*ident = TRUE;
+			o_ptr->pval = 50;
+			break;
+		}
+
+		case SV_ROD_CURING:
+		{
+			if (set_blind(0)) *ident = TRUE;
+			if (set_poisoned(0)) *ident = TRUE;
+			if (set_confused(0)) *ident = TRUE;
+			if (set_stun(0)) *ident = TRUE;
+			if (set_cut(0)) *ident = TRUE;
+			o_ptr->pval = 999;
+			break;
+		}
+
+		case SV_ROD_HEALING:
+		{
+			if (hp_player(500)) *ident = TRUE;
+			if (set_stun(0)) *ident = TRUE;
+			if (set_cut(0)) *ident = TRUE;
+			o_ptr->pval = 999;
+			break;
+		}
+
+		case SV_ROD_RESTORATION:
+		{
+			if (restore_level()) *ident = TRUE;
+			if (do_res_stat(A_STR)) *ident = TRUE;
+			if (do_res_stat(A_INT)) *ident = TRUE;
+			if (do_res_stat(A_WIS)) *ident = TRUE;
+			if (do_res_stat(A_DEX)) *ident = TRUE;
+			if (do_res_stat(A_CON)) *ident = TRUE;
+			if (do_res_stat(A_CHR)) *ident = TRUE;
+			o_ptr->pval = 999;
+			break;
+		}
+
+		case SV_ROD_SPEED:
+		{
+			if (!p_ptr->fast)
+			{
+				if (set_fast(randint(30) + 15)) *ident = TRUE;
+			}
+			else
+			{
+				(void)set_fast(p_ptr->fast + 5);
+			}
+			o_ptr->pval = 99;
+			break;
+		}
+
+		case SV_ROD_TELEPORT_AWAY:
+		{
+			if (teleport_monster(dir)) *ident = TRUE;
+			o_ptr->pval = 25;
+			break;
+		}
+
+		case SV_ROD_DISARMING:
+		{
+			if (disarm_trap(dir)) *ident = TRUE;
+			o_ptr->pval = 30;
+			break;
+		}
+
+		case SV_ROD_LITE:
+		{
+			msg_print("A line of blue shimmering light appears.");
+			lite_line(dir);
+			*ident = TRUE;
+			o_ptr->pval = 9;
+			break;
+		}
+
+		case SV_ROD_SLEEP_MONSTER:
+		{
+			if (sleep_monster(dir)) *ident = TRUE;
+			o_ptr->pval = 18;
+			break;
+		}
+
+		case SV_ROD_SLOW_MONSTER:
+		{
+			if (slow_monster(dir)) *ident = TRUE;
+			o_ptr->pval = 20;
+			break;
+		}
+
+		case SV_ROD_DRAIN_LIFE:
+		{
+			if (drain_life(dir, 150)) *ident = TRUE;
+			o_ptr->pval = 23;
+			break;
+		}
+
+		case SV_ROD_POLYMORPH:
+		{
+			if (poly_monster(dir)) *ident = TRUE;
+			o_ptr->pval = 25;
+			break;
+		}
+
+		case SV_ROD_ACID_BOLT:
+		{
+			fire_bolt_or_beam(10, GF_ACID, dir, damroll(12, 8));
+			*ident = TRUE;
+			o_ptr->pval = 12;
+			break;
+		}
+
+		case SV_ROD_ELEC_BOLT:
+		{
+			fire_bolt_or_beam(10, GF_ELEC, dir, damroll(6, 6));
+			*ident = TRUE;
+			o_ptr->pval = 11;
+			break;
+		}
+
+		case SV_ROD_FIRE_BOLT:
+		{
+			fire_bolt_or_beam(10, GF_FIRE, dir, damroll(16, 8));
+			*ident = TRUE;
+			o_ptr->pval = 15;
+			break;
+		}
+
+		case SV_ROD_COLD_BOLT:
+		{
+			fire_bolt_or_beam(10, GF_COLD, dir, damroll(10, 8));
+			*ident = TRUE;
+			o_ptr->pval = 13;
+			break;
+		}
+
+		case SV_ROD_ACID_BALL:
+		{
+			fire_ball(GF_ACID, dir, 120, 2);
+			*ident = TRUE;
+			o_ptr->pval = 27;
+			break;
+		}
+
+		case SV_ROD_ELEC_BALL:
+		{
+			fire_ball(GF_ELEC, dir, 64, 2);
+			*ident = TRUE;
+			o_ptr->pval = 23;
+			break;
+		}
+
+		case SV_ROD_FIRE_BALL:
+		{
+			fire_ball(GF_FIRE, dir, 144, 2);
+			*ident = TRUE;
+			o_ptr->pval = 30;
+			break;
+		}
+
+		case SV_ROD_COLD_BALL:
+		{
+			fire_ball(GF_COLD, dir, 96, 2);
+			*ident = TRUE;
+			o_ptr->pval = 25;
+			break;
+		}
+	}
+
+	return TRUE;
+}
+
+
 bool use_object(object_type *o_ptr, bool *ident)
 {
 	bool used;
@@ -1032,6 +1868,7 @@ bool use_object(object_type *o_ptr, bool *ident)
 			used = eat_food(o_ptr, ident);
 			break;
 		}
+
 		case TV_POTION:
 		{
 			used = quaff_potion(o_ptr, ident);
@@ -1041,6 +1878,24 @@ bool use_object(object_type *o_ptr, bool *ident)
 		case TV_SCROLL:
 		{
 			used = read_scroll(o_ptr, ident);
+			break;
+		}
+
+		case TV_STAFF:
+		{
+			used = use_staff(o_ptr, ident);
+			break;
+		}
+
+		case TV_WAND:
+		{
+			used = aim_wand(o_ptr, ident);
+			break;
+		}
+
+		case TV_ROD:
+		{
+			used = zap_rod(o_ptr, ident);
 			break;
 		}
 	}
