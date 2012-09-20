@@ -293,6 +293,9 @@ s16b tokenize(char *buf, s16b num, char **tokens)
  *
  * Specify colors for message-types.
  *   M:<type>:<attr>
+ *
+ * Specify the attr/char values for "flavors" by flavors index.
+ *   L:<num>:<a>/<c>
  */
 errr process_pref_file_command(char *buf)
 {
@@ -368,6 +371,24 @@ errr process_pref_file_command(char *buf)
 			f_ptr = &f_info[i];
 			if (n1) f_ptr->x_attr = n1;
 			if (n2) f_ptr->x_char = n2;
+			return (0);
+		}
+	}
+
+
+	/* Process "L:<num>:<a>/<c>" -- attr/char for flavors */
+	else if (buf[0] == 'L')
+	{
+		if (tokenize(buf+2, 3, zz) == 3)
+		{
+			flavor_type *flavor_ptr;
+			i = (huge)strtol(zz[0], NULL, 0);
+			n1 = strtol(zz[1], NULL, 0);
+			n2 = strtol(zz[2], NULL, 0);
+			if ((i < 0) || (i >= z_info->flavor_max)) return (1);
+			flavor_ptr = &flavor_info[i];
+			if (n1) flavor_ptr->x_attr = n1;
+			if (n2) flavor_ptr->x_char = n2;
 			return (0);
 		}
 	}
@@ -2044,7 +2065,6 @@ void display_player(int mode)
 }
 
 
-
 /*
  * Hack -- Dump a character description file
  *
@@ -2067,10 +2087,6 @@ errr file_character(cptr name, bool full)
 	char o_name[80];
 
 	char buf[1024];
-
-	int k, info_length;
-	cptr info[128];
-	cptr blanks = "     ";
 
 
 	/* Unused parameter */
@@ -2107,6 +2123,9 @@ errr file_character(cptr name, bool full)
 	/* Invalid file */
 	if (!fff) return (-1);
 
+
+	text_out_hook = text_out_to_file;
+	text_out_file = fff;
 
 	/* Begin dump */
 	fprintf(fff, "  [%s %s Character Dump]\n\n",
@@ -2167,13 +2186,7 @@ errr file_character(cptr name, bool full)
 			        index_to_label(i), o_name);
 
 			/* Describe random object attributes */
-			info_length = identify_random_gen(&inventory[i], info, 128);
-
-			/* Write it */
-			for (k = 0; k < info_length; k++)
-			{
-				fprintf(fff, "%s%s\n", blanks, info[k]);
-			}
+			identify_random_gen(&inventory[i]);
 		}
 		fprintf(fff, "\n\n");
 	}
@@ -2189,13 +2202,7 @@ errr file_character(cptr name, bool full)
 		        index_to_label(i), o_name);
 
 		/* Describe random object attributes */
-		info_length = identify_random_gen(&inventory[i], info, 128);
-
-		/* Write it */
-		for (k = 0; k < info_length; k++)
-		{
-			fprintf(fff, "%s%s\n", blanks, info[k]);
-		}
+		identify_random_gen(&inventory[i]);
 	}
 	fprintf(fff, "\n\n");
 
@@ -2213,13 +2220,7 @@ errr file_character(cptr name, bool full)
 			fprintf(fff, "%c) %s\n", I2A(i), o_name);
 
 			/* Describe random object attributes */
-			info_length = identify_random_gen(&st_ptr->stock[i], info, 128);
-
-			/* Write it */
-			for (k = 0; k < info_length; k++)
-			{
-				fprintf(fff, "%s%s\n", blanks, info[k]);
-			}
+			identify_random_gen(&st_ptr->stock[i]);
 		}
 
 		/* Add an empty line */

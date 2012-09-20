@@ -742,9 +742,9 @@ void lore_do_probe(int m_idx)
 
 
 	/* Hack -- Memorize some flags */
-	l_ptr->r_flags1 = r_ptr->flags1;
-	l_ptr->r_flags2 = r_ptr->flags2;
-	l_ptr->r_flags3 = r_ptr->flags3;
+	l_ptr->flags1 = r_ptr->flags1;
+	l_ptr->flags2 = r_ptr->flags2;
+	l_ptr->flags3 = r_ptr->flags3;
 
 	/* Update monster recall window */
 	if (p_ptr->monster_race_idx == m_ptr->r_idx)
@@ -776,12 +776,12 @@ void lore_treasure(int m_idx, int num_item, int num_gold)
 
 
 	/* Note the number of things dropped */
-	if (num_item > l_ptr->r_drop_item) l_ptr->r_drop_item = num_item;
-	if (num_gold > l_ptr->r_drop_gold) l_ptr->r_drop_gold = num_gold;
+	if (num_item > l_ptr->drop_item) l_ptr->drop_item = num_item;
+	if (num_gold > l_ptr->drop_gold) l_ptr->drop_gold = num_gold;
 
 	/* Hack -- memorize the good/great flags */
-	if (r_ptr->flags1 & (RF1_DROP_GOOD)) l_ptr->r_flags1 |= (RF1_DROP_GOOD);
-	if (r_ptr->flags1 & (RF1_DROP_GREAT)) l_ptr->r_flags1 |= (RF1_DROP_GREAT);
+	if (r_ptr->flags1 & (RF1_DROP_GOOD)) l_ptr->flags1 |= (RF1_DROP_GOOD);
+	if (r_ptr->flags1 & (RF1_DROP_GREAT)) l_ptr->flags1 |= (RF1_DROP_GREAT);
 
 	/* Update monster recall window */
 	if (p_ptr->monster_race_idx == m_ptr->r_idx)
@@ -915,7 +915,7 @@ void update_mon(int m_idx, bool full)
 			if (r_ptr->flags2 & (RF2_EMPTY_MIND))
 			{
 				/* Memorize flags */
-				l_ptr->r_flags2 |= (RF2_EMPTY_MIND);
+				l_ptr->flags2 |= (RF2_EMPTY_MIND);
 			}
 
 			/* Weird mind, occasional telepathy */
@@ -928,11 +928,11 @@ void update_mon(int m_idx, bool full)
 					flag = TRUE;
 
 					/* Memorize flags */
-					l_ptr->r_flags2 |= (RF2_WEIRD_MIND);
+					l_ptr->flags2 |= (RF2_WEIRD_MIND);
 
 					/* Hack -- Memorize mental flags */
-					if (r_ptr->flags2 & (RF2_SMART)) l_ptr->r_flags2 |= (RF2_SMART);
-					if (r_ptr->flags2 & (RF2_STUPID)) l_ptr->r_flags2 |= (RF2_STUPID);
+					if (r_ptr->flags2 & (RF2_SMART)) l_ptr->flags2 |= (RF2_SMART);
+					if (r_ptr->flags2 & (RF2_STUPID)) l_ptr->flags2 |= (RF2_STUPID);
 				}
 			}
 
@@ -943,8 +943,8 @@ void update_mon(int m_idx, bool full)
 				flag = TRUE;
 
 				/* Hack -- Memorize mental flags */
-				if (r_ptr->flags2 & (RF2_SMART)) l_ptr->r_flags2 |= (RF2_SMART);
-				if (r_ptr->flags2 & (RF2_STUPID)) l_ptr->r_flags2 |= (RF2_STUPID);
+				if (r_ptr->flags2 & (RF2_SMART)) l_ptr->flags2 |= (RF2_SMART);
+				if (r_ptr->flags2 & (RF2_STUPID)) l_ptr->flags2 |= (RF2_STUPID);
 			}
 		}
 
@@ -1001,8 +1001,8 @@ void update_mon(int m_idx, bool full)
 			if (flag)
 			{
 				/* Memorize flags */
-				if (do_invisible) l_ptr->r_flags2 |= (RF2_INVISIBLE);
-				if (do_cold_blood) l_ptr->r_flags2 |= (RF2_COLD_BLOOD);
+				if (do_invisible) l_ptr->flags2 |= (RF2_INVISIBLE);
+				if (do_cold_blood) l_ptr->flags2 |= (RF2_COLD_BLOOD);
 			}
 		}
 	}
@@ -1024,7 +1024,7 @@ void update_mon(int m_idx, bool full)
 			if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
 
 			/* Hack -- Count "fresh" sightings */
-			if (l_ptr->r_sights < MAX_SHORT) l_ptr->r_sights++;
+			if (l_ptr->sights < MAX_SHORT) l_ptr->sights++;
 
 			/* Disturb on appearance */
 			if (disturb_move) disturb(1, 0);
@@ -1902,9 +1902,9 @@ static bool summon_specific_okay(int r_idx)
 	/* Check our requirements */
 	switch (summon_specific_type)
 	{
-		case SUMMON_ANT:
+		case SUMMON_ANIMAL:
 		{
-			okay = ((r_ptr->d_char == 'a') &&
+			okay = ((r_ptr->flags3 & (RF3_ANIMAL)) &&
 			        !(r_ptr->flags1 & (RF1_UNIQUE)));
 			break;
 		}

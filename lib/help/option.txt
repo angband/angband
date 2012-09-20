@@ -17,7 +17,7 @@ macros in progress), "fresh" (dump any pending output to the screen), and
 "sub-windows" (see below).
 
 
-=== Option Set 1 -- User Interface ===
+=== User Interface options ===
 
 ***** <rogue_like_commands>
 Rogue-like commands    [rogue_like_commands]
@@ -59,10 +59,6 @@ Repeat obvious commands    [always_repeat]
     any grid, that you wish to automatically "repeat" the command 99 times
     (see "command.txt"), unless an explicit repeat count was given.
 
-***** <depth_in_feet>
-Show dungeon level in feet    [depth_in_feet]
-    Display dungeon depths in "feet" instead of "levels".
-
 ***** <stack_force_notes>
 Merge inscriptions when stacking    [stack_force_notes]
     Force otherwise identical objects to merge, even if one has an empty
@@ -75,41 +71,38 @@ Merge discounts when stacking    [stack_force_costs]
     discounts.  The resulting stack keeps the largest discount.  This option
     may cause you to lose "value", but will give you optimal pack usage.
 
-***** <show_labels>
-Show labels in equipment listings    [show_labels]
-    Display "labels" (what an object is being used for) for objects in all
-    "equipment" listings.
-
-***** <show_weights>
-Show weights in all object listings    [show_weights]
-    Display "weights" (in pounds) of objects in all "inventory", "equipment",
-    "store items", and "home items" listings.
-
-***** <show_choices>
-Show choices in inven/equip listings    [show_choices]
-    Display "choices" (legal responses) in any sub-windows which are being
-    used to display your inventory or equipment.  Also, if one sub-window
-    is being used to display your inventory or equipment, then this option
-    will cause it to be (temporarily) toggled as needed to always show the
-    "appropriate" set of objects (inventory or equipment).
-
-***** <show_details>
-Show details in monster descriptions    [show_details]
-    Display "details" (including number of monsters killed, and textual
-    descriptions) in monster descriptions.
-    are displaying the monster.
-
-***** <show_flavors>
-Show flavors in object descriptions    [show_flavors]
-    Display "flavors" (color or variety) in object descriptions, even for
-    objects whose type is known.  This does not affect objects in stores.
-
 ***** <ring_bell>
 Audible bell (on errors, etc)    [ring_bell]
     Attempt to make a "bell" noise when various "errors" occur.
 
+***** <easy_open>
+Open/Disarm/Close without direction    [easy_open]
+    If there is only one closed door next to the character, the game will 
+    not bother asking for a direction when the player asks to "o"pen 
+    something. The same applies for "c"losing doors and "D"isarming traps.
 
-=== Option Set 2 -- Disturbance ===
+***** <easy_alter>
+Open/Disarm doors/traps on movement.    [easy_alter]
+     Moving into a closed door will attempt once to open it, and moving 
+     into a trap will attempt once to disarm it. If the player ever wishes
+     to leave a known teleport trap as a guaranteed escape route, this 
+     option must therefore be off.
+
+***** <easy_floor>
+Display floor stacks in a list    [easy_floor]
+     When moving into a stack, if this option is *off*, the character will 
+     attempt to pick up items from the stack, from top to bottom, until the 
+     stack is gone or the inventory is full. This option allows the player
+     to interact with other items than the one at the top of the stack.
+
+***** <scroll_target>
+Scroll map while targetting    [scroll_target]
+     This allows the player to target monsters which are off-screen from the
+     player's point of view, as the view will scroll to show the whereabouts
+     of all monsters in line of sight so the player can target them.
+
+
+=== Disturbance options ===
 
 ***** <run_ignore_stairs>
 Run past stairs    [run_ignore_stairs]
@@ -163,11 +156,6 @@ Disturb whenever boring things happen    [disturb_minor]
 Disturb whenever various things happen    [disturb_other]
     This option is currently unused.
 
-***** <alert_hitpoint>
-Alert user to critical hitpoints    [alert_hitpoint]
-    Produce a "bell" noise, and flush all pending input, when your hitpoints
-    reach the "critical point" chosen elsewhere, preventing stupid deaths.
-
 ***** <alert_failure>
 Alert user to various failures    [alert_failure]
     Produce a "bell" noise, and flush all pending input, when various
@@ -192,7 +180,7 @@ Automatically clear -more- prompts    [auto_more]
     prompt, but carries on going.
 
 
-=== Option Set 3 -- Game-play ===
+=== Game-play options ===
 
 ***** <auto_haggle>
 Auto-haggle in stores    [auto_haggle]
@@ -295,31 +283,8 @@ Monsters exploit players weaknesses    [smart_cheat]
     Allow monsters to know what spell attacks you are resistant to,
     and to use this information to choose the best attacks.
 
-***** <easy_open>
-Open/Disarm/Close without direction    [easy_open]
-    If there is only one closed door next to the character, the game will 
-    not bother asking for a direction when the player asks to "o"pen 
-    something. The same applies for "c"losing doors and "D"isarming traps.
 
-***** <easy_alter>
-Open/Disarm doors/traps on movement.    [easy_alter]
-     Moving into a closed door will attempt once to open it, and moving 
-     into a trap will attempt once to disarm it. If the player ever wishes
-     to leave a known teleport trap as a guaranteed escape route, this 
-     option must therefore be off.
-
-***** <easy_floor>
-Display floor stacks in a list    [easy_floor]
-     When moving into a stack, if this option is *off*, the character will 
-     attempt to pick up items from the stack, from top to bottom, until the 
-     stack is gone or the inventory is full. This option allows the player
-     to interact with other items than the one at the top of the stack.
-
-***** <show_piles>
-Show stacks using special attr/character     [show_piles]
-     Stacks of items on the floor are shown using the "&" symbol.
-
-=== Option Set 4 -- Efficiency ===
+=== Efficiency options ===
 
 ***** <view_reduce_lite>
 Reduce lite-radius when running    [view_reduce_lite]
@@ -395,6 +360,42 @@ Compress messages in savefiles    [compress_savefile]
     the player has received.  This can cut the size of the savefile by a
     drastic amount, but will result in the loss of message information.
 
+
+=== Display options ===
+
+***** <depth_in_feet>
+Show dungeon level in feet    [depth_in_feet]
+    Display dungeon depths in "feet" instead of "levels".
+
+***** <show_labels>
+Show labels in equipment listings    [show_labels]
+    Display "labels" (what an object is being used for) for objects in all
+    "equipment" listings.
+
+***** <show_weights>
+Show weights in all object listings    [show_weights]
+    Display "weights" (in pounds) of objects in all "inventory", "equipment",
+    "store items", and "home items" listings.
+
+***** <show_choices>
+Show choices in inven/equip listings    [show_choices]
+    Display "choices" (legal responses) in any sub-windows which are being
+    used to display your inventory or equipment.  Also, if one sub-window
+    is being used to display your inventory or equipment, then this option
+    will cause it to be (temporarily) toggled as needed to always show the
+    "appropriate" set of objects (inventory or equipment).
+
+***** <show_details>
+Show details in monster descriptions    [show_details]
+    Display "details" (including number of monsters killed, and textual
+    descriptions) in monster descriptions.
+    are displaying the monster.
+
+***** <show_flavors>
+Show flavors in object descriptions    [show_flavors]
+    Display "flavors" (color or variety) in object descriptions, even for
+    objects whose type is known.  This does not affect objects in stores.
+
 ***** <hilite_player>
 Hilite the player with the cursor    [hilite_player]
     Place the visible cursor on the player.  This looks fine on some Unix
@@ -455,14 +456,12 @@ Avoid centering while running    [run_avoid_center]
      The map does not centre on the player if the player moves with the "run" 
      command, only when the running finishes.
 
-***** <scroll_target>
-Scroll map while targetting    [scroll_target]
-     This allows the player to target monsters which are off-screen from the
-     player's point of view, as the view will scroll to show the whereabouts
-     of all monsters in line of sight so the player can target them.
+***** <show_piles>
+Show stacks using special attr/character     [show_piles]
+     Stacks of items on the floor are shown using the "&" symbol.
 
 
-=== Option Set 5 -- Birth Options ===
+=== Birth options ===
 
 ***** <birth_point_based>
 Allow purchase of stats using points    [birth_point_based]
@@ -543,7 +542,7 @@ Randomize some of the artifacts    [birth_rand_artifacts]
      to be compatible between different Angband versions!
 
 
-=== Option Set 6 -- Cheating Options ===
+=== Cheating options ===
 
 ***** <cheat_peek>
 Peek into object creation    [cheat_peek]

@@ -14,7 +14,8 @@ Kieron Dunbar, Timo Pietla, George W. Harris, Willem Siemelink,
 Joseph Oberlander, Paul Moore, Andreas Tophinke, Leon Marrick
 
 Greg Wooledge < greg@wooledge.org >
-Basic autoconf support, random artifacts
+Basic autoconf support, random artifacts, and various ideas for rebalancing
+the game
 
 Tim Baker < dbaker@direct.ca >
 Made the "easy patch" and organized the patches for the Angband 2.8.5 beta
@@ -23,7 +24,8 @@ Eytan Zweig < eytanzw@yahoo.com >
 Many bugreports, and patches
 
 Jonathan Ellis < jonathan@franz-liszt.freeserve.co.uk >
-Updated helpfiles
+Updated edit- and help-files; added tons of new monsters, artifacts,
+vaults, objects, as well as a new player race; and rebalanced many things
 
 John I'anson-Holton < jianson@milbank.com >
 Many bugfixes and patches
@@ -40,7 +42,7 @@ Chris Weisiger
 New Angband vaults
 
 Matthias Kurzke < mawende@gmx.net >
-Ego-item patch
+Ego-item patch and various code changes for the JLE patch
 
 Ed Cogburn < ecogburn@greene.xtn.net >
 Close game patch
@@ -77,3 +79,4 @@ the oversight!
 
 -- 
 Robert Ruehlmann < rr9@angband.org >
+

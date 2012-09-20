@@ -226,6 +226,64 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
 }
 
 
+void do_cmd_browse_aux(const object_type *o_ptr)
+{
+	int sval;
+
+	int spell;
+	int num = 0;
+
+	byte spells[PY_MAX_SPELLS];
+
+
+	/* Get the item's sval */
+	sval = o_ptr->sval;
+
+
+	/* Track the object kind */
+	object_kind_track(o_ptr->k_idx);
+
+	/* Hack -- Handle stuff */
+	handle_stuff();
+
+
+	/* Extract spells */
+	for (spell = 0; spell < PY_MAX_SPELLS; spell++)
+	{
+		/* Check for this spell */
+		if ((spell < 32) ?
+		    (spell_flags[cp_ptr->spell_type][sval][0] & (1L << spell)) :
+		    (spell_flags[cp_ptr->spell_type][sval][1] & (1L << (spell - 32))))
+		{
+			/* Collect this spell */
+			spells[num++] = spell;
+		}
+	}
+
+
+	/* Save screen */
+	screen_save();
+
+	/* Display the spells */
+	print_spells(spells, num, 1, 20);
+
+	/* Prompt for a command */
+	put_str("(Browsing) Command: ", 0, 0);
+
+	/* Hack -- Get a new command */
+	p_ptr->command_new = inkey();
+
+	/* Load screen */
+	screen_load();
+
+
+	/* Hack -- Process "Escape" */
+	if (p_ptr->command_new == ESCAPE)
+	{
+		/* Reset stuff */
+		p_ptr->command_new = 0;
+	}
+}
 
 
 /*
@@ -238,12 +296,7 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
  */
 void do_cmd_browse(void)
 {
-	int item, sval;
-
-	int spell;
-	int num = 0;
-
-	byte spells[PY_MAX_SPELLS];
+	int item;
 
 	object_type *o_ptr;
 
@@ -295,53 +348,8 @@ void do_cmd_browse(void)
 		o_ptr = &o_list[0 - item];
 	}
 
-	/* Get the item's sval */
-	sval = o_ptr->sval;
-
-
-	/* Track the object kind */
-	object_kind_track(o_ptr->k_idx);
-
-	/* Hack -- Handle stuff */
-	handle_stuff();
-
-
-	/* Extract spells */
-	for (spell = 0; spell < PY_MAX_SPELLS; spell++)
-	{
-		/* Check for this spell */
-		if ((spell < 32) ?
-		    (spell_flags[cp_ptr->spell_type][sval][0] & (1L << spell)) :
-		    (spell_flags[cp_ptr->spell_type][sval][1] & (1L << (spell - 32))))
-		{
-			/* Collect this spell */
-			spells[num++] = spell;
-		}
-	}
-
-
-	/* Save screen */
-	screen_save();
-
-	/* Display the spells */
-	print_spells(spells, num, 1, 20);
-
-	/* Prompt for a command */
-	put_str("(Browsing) Command: ", 0, 0);
-
-	/* Hack -- Get a new command */
-	p_ptr->command_new = inkey();
-
-	/* Load screen */
-	screen_load();
-
-
-	/* Hack -- Process "Escape" */
-	if (p_ptr->command_new == ESCAPE)
-	{
-		/* Reset stuff */
-		p_ptr->command_new = 0;
-	}
+	/* Browse the book */
+	do_cmd_browse_aux(o_ptr);
 }
 
 
@@ -503,9 +511,6 @@ void do_cmd_study(void)
 		           p_ptr->new_spells, p,
 		           (p_ptr->new_spells != 1) ? "s" : "");
 	}
-
-	/* Save the new_spells value */
-	p_ptr->old_spells = p_ptr->new_spells;
 
 	/* Redraw Study Status */
 	p_ptr->redraw |= (PR_STUDY);

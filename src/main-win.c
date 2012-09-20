@@ -24,13 +24,13 @@
  * See also "main-dos.c" and "main-ibm.c".
  *
  *
- * The "lib/user/pref-win.prf" file contains keymaps, macro definitions,
+ * The "lib/pref/pref-win.prf" file contains keymaps, macro definitions,
  * and/or color redefinitions.
  *
- * The "lib/user/font-win.prf" contains attr/char mappings for use with the
+ * The "lib/pref/font-win.prf" contains attr/char mappings for use with the
  * normal "*.fon" font files in the "lib/xtra/font/" directory.
  *
- * The "lib/user/graf-win.prf" contains attr/char mappings for use with the
+ * The "lib/pref/graf-win.prf" contains attr/char mappings for use with the
  * special "*.bmp" bitmap files in the "lib/xtra/graf/" directory, which
  * are activated by a menu item.
  *
@@ -38,7 +38,7 @@
  * Compiling this file, and using the resulting executable, requires
  * several extra files not distributed with the standard Angband code.
  * If "USE_GRAPHICS" is defined, then "readdib.h" and "readdib.c" must
- * be placed into "src/", and the "8X8.BMP" bitmap file must be placed
+ * be placed into "src/", and the "8x8.bmp" bitmap file must be placed
  * into "lib/xtra/graf".  In any case, some "*.fon" files (including
  * "8X13.FON" if nothing else) must be placed into "lib/xtra/font/".
  * If "USE_SOUND" is defined, then some special library (for example,
@@ -561,9 +561,6 @@ static cptr ANGBAND_DIR_XTRA_FONT;
 static cptr ANGBAND_DIR_XTRA_GRAF;
 static cptr ANGBAND_DIR_XTRA_SOUND;
 static cptr ANGBAND_DIR_XTRA_HELP;
-#if USE_MUSIC
-static cptr ANGBAND_DIR_XTRA_MUSIC;
-#endif /* USE_MUSIC */
 
 /*
  * The "complex" color values
@@ -1275,7 +1272,7 @@ static int new_palette(void)
 			plog("Please switch to high- or true-color mode.");
 
 			/* Cleanup */
-			rnfree(lppe, lppeSize);
+			free(lppe);
 
 			/* Fail */
 			return (FALSE);
@@ -1331,14 +1328,14 @@ static int new_palette(void)
 	}
 
 	/* Free something */
-	if (lppe) rnfree(lppe, lppeSize);
+	if (lppe) free(lppe);
 
 	/* Create a new palette, or fail */
 	hNewPal = CreatePalette(pLogPal);
 	if (!hNewPal) quit("Cannot create palette!");
 
 	/* Free the palette */
-	rnfree(pLogPal, pLogPalSize);
+	free(pLogPal);
 
 	/* Main window */
 	td = &data[0];
@@ -2904,14 +2901,13 @@ static void setup_menus(void)
 	}
 
 	/* A character available */
-	if (game_in_progress && character_generated && inkey_flag && can_save)
+	if (game_in_progress && character_generated && inkey_flag)
 	{
 		/* Menu "File", Item "Save" */
 		EnableMenuItem(hm, IDM_FILE_SAVE, MF_BYCOMMAND | MF_ENABLED);
 	}
 
-	if (!game_in_progress || !character_generated ||
-	    (inkey_flag && can_save))
+	if (!game_in_progress || !character_generated || inkey_flag)
 	{
 		/* Menu "File", Item "Exit" */
 		EnableMenuItem(hm, IDM_FILE_EXIT, MF_BYCOMMAND | MF_ENABLED);
@@ -3262,7 +3258,7 @@ static void start_screensaver(void)
 	 * automatically restart.
 	 */
 
-	screensaver_inkey_hack_buffer[j++] = '6'; /* Cheat options */
+	screensaver_inkey_hack_buffer[j++] = '7'; /* Cheat options */
 
 	/* Cursor down to "cheat live" */
 	for (i = 0; i < OPT_cheat_live - OPT_CHEAT; i++)
@@ -3394,8 +3390,7 @@ static void process_menus(WORD wCmd)
 		/* Save game */
 		case IDM_FILE_SAVE:
 		{
-			if (game_in_progress && character_generated &&
-			    inkey_flag && can_save)
+			if (game_in_progress && character_generated && inkey_flag)
 			{
 				/* Hack -- Forget messages */
 				msg_flag = FALSE;
@@ -3479,7 +3474,7 @@ static void process_menus(WORD wCmd)
 			if (game_in_progress && character_generated)
 			{
 				/* Paranoia */
-				if (!inkey_flag || !can_save)
+				if (!inkey_flag)
 				{
 					plog("You may not do that right now.");
 					break;
@@ -4103,7 +4098,7 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 		{
 			if (game_in_progress && character_generated)
 			{
-				if (!inkey_flag || !can_save)
+				if (!inkey_flag)
 				{
 					plog("You may not do that right now.");
 					return 0;
@@ -4676,6 +4671,10 @@ static void hack_quit(cptr str)
  */
 static void hook_plog(cptr str)
 {
+#ifdef USE_SAVER
+	if (screensaver_active) return;
+#endif /* USE_SAVER */
+
 	/* Warning */
 	if (str)
 	{
@@ -4697,17 +4696,17 @@ static void hook_quit(cptr str)
 #endif /* USE_SOUND */
 
 
-	/* Give a warning */
-	if (str)
-	{
-		MessageBox(data[0].w, str, "Error",
-		           MB_ICONEXCLAMATION | MB_OK | MB_ICONSTOP);
-	}
-
 #ifdef USE_SAVER
 	if (!screensaver_active)
 #endif /* USE_SAVER */
 	{
+	   	/* Give a warning */
+   		if (str)
+	   	{
+   			MessageBox(data[0].w, str, "Error",
+   			           MB_ICONEXCLAMATION | MB_OK | MB_ICONSTOP);
+	   	}
+
 		/* Save the preferences */
 		save_prefs();
 	}
@@ -4767,10 +4766,6 @@ static void hook_quit(cptr str)
 	string_free(ANGBAND_DIR_XTRA_GRAF);
 	string_free(ANGBAND_DIR_XTRA_SOUND);
 	string_free(ANGBAND_DIR_XTRA_HELP);
-
-#ifdef USE_MUSIC
-	string_free(ANGBAND_DIR_XTRA_MUSIC);
-#endif /* USE_MUSIC */
 
 #ifdef HAS_CLEANUP
 	cleanup_angband();
@@ -4916,19 +4911,6 @@ static void init_stuff(void)
 	validate_dir(ANGBAND_DIR_XTRA_SOUND);
 
 #endif /* USE_SOUND */
-
-#ifdef USE_MUSIC
-
-	/* Build the "music" path */
-	path_build(path, 1024, ANGBAND_DIR_XTRA, "music");
-
-	/* Allocate the path */
-	ANGBAND_DIR_XTRA_MUSIC = string_make(path);
-
-	/* Validate the "music" directory */
-	validate_dir(ANGBAND_DIR_XTRA_MUSIC);
-
-#endif /* USE_MUSIC */
 
 	/* Build the "help" path */
 	path_build(path, 1024, ANGBAND_DIR_XTRA, "help");

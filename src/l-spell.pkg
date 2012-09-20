@@ -1,0 +1,188 @@
+$#include "angband.h"
+
+typedef char* cptr;
+typedef int errr;
+
+
+/***** Constants *****/
+
+/*
+ * Legal restrictions for "summon_specific()"
+ */
+#define SUMMON_ANIMAL		11
+#define SUMMON_SPIDER		12
+#define SUMMON_HOUND		13
+#define SUMMON_HYDRA		14
+#define SUMMON_ANGEL		15
+#define SUMMON_DEMON		16
+#define SUMMON_UNDEAD		17
+#define SUMMON_DRAGON		18
+/* xxx */
+#define SUMMON_HI_DEMON		26
+#define SUMMON_HI_UNDEAD	27
+#define SUMMON_HI_DRAGON	28
+/* xxx */
+#define SUMMON_WRAITH		31
+#define SUMMON_UNIQUE		32
+#define SUMMON_KIN			33
+
+
+/*
+ * Spell types used by project(), and related functions.
+ */
+#define GF_XXX1			1
+#define GF_ARROW        2
+#define GF_MISSILE      3
+#define GF_MANA         4
+#define GF_HOLY_ORB     5
+#define GF_LITE_WEAK	6
+#define GF_DARK_WEAK	7
+#define GF_WATER        8
+#define GF_PLASMA       9
+#define GF_METEOR       10
+#define GF_ICE          11
+#define GF_GRAVITY      12
+#define GF_INERTIA      13
+#define GF_FORCE        14
+#define GF_TIME         15
+#define GF_ACID         16
+#define GF_ELEC         17
+#define GF_FIRE         18
+#define GF_COLD         19
+#define GF_POIS         20
+#define GF_XXX2			21
+#define GF_LITE         22
+#define GF_DARK         23
+#define GF_XXX3			24
+#define GF_CONFUSION    25
+#define GF_SOUND        26
+#define GF_SHARD        27
+#define GF_NEXUS        28
+#define GF_NETHER       29
+#define GF_CHAOS        30
+#define GF_DISENCHANT   31
+#define GF_XXX4			32
+#define GF_KILL_WALL	33
+#define GF_KILL_DOOR	34
+#define GF_KILL_TRAP	35
+#define GF_MAKE_WALL	36
+#define GF_MAKE_DOOR	37
+#define GF_MAKE_TRAP	38
+#define GF_XXX5			39
+#define GF_XXX6			40
+#define GF_AWAY_UNDEAD	41
+#define GF_AWAY_EVIL	42
+#define GF_AWAY_ALL		43
+#define GF_TURN_UNDEAD	44
+#define GF_TURN_EVIL	45
+#define GF_TURN_ALL		46
+#define GF_DISP_UNDEAD	47
+#define GF_DISP_EVIL	48
+#define GF_DISP_ALL		49
+#define GF_XXX7			50
+#define GF_OLD_CLONE	51
+#define GF_OLD_POLY		52
+#define GF_OLD_HEAL		53
+#define GF_OLD_SPEED	54
+#define GF_OLD_SLOW		55
+#define GF_OLD_CONF		56
+#define GF_OLD_SLEEP	57
+#define GF_OLD_DRAIN	58
+#define GF_XXX8			59
+
+
+/***** Types *****/
+
+
+
+/***** Variables *****/
+
+
+
+/***** Functions *****/
+
+extern s16b poly_r_idx(int r_idx);
+extern void teleport_away(int m_idx, int dis);
+extern void teleport_player(int dis);
+extern void teleport_player_to(int ny, int nx);
+extern void teleport_player_level(void);
+extern void take_hit(int dam, cptr kb_str);
+extern void acid_dam(int dam, cptr kb_str);
+extern void elec_dam(int dam, cptr kb_str);
+extern void fire_dam(int dam, cptr kb_str);
+extern void cold_dam(int dam, cptr kb_str);
+extern bool inc_stat(int stat);
+extern bool dec_stat(int stat, int amount, int permanent);
+extern bool res_stat(int stat);
+extern bool apply_disenchant(int mode);
+extern bool project(int who, int rad, int y, int x, int dam, int typ, int flg);
+
+extern void warding_glyph(void);
+extern void identify_pack(void);
+extern bool remove_curse(void);
+extern bool remove_all_curse(void);
+extern void self_knowledge(void);
+extern bool lose_all_info(void);
+extern void set_recall(void);
+extern bool detect_traps(void);
+extern bool detect_doors(void);
+extern bool detect_stairs(void);
+extern bool detect_treasure(void);
+extern bool detect_objects_gold(void);
+extern bool detect_objects_normal(void);
+extern bool detect_objects_magic(void);
+extern bool detect_monsters_normal(void);
+extern bool detect_monsters_invis(void);
+extern bool detect_monsters_evil(void);
+extern bool detect_all(void);
+extern void stair_creation(void);
+extern bool enchant(object_type *o_ptr, int n, int eflag);
+extern bool enchant_spell(int num_hit, int num_dam, int num_ac);
+extern bool ident_spell(void);
+extern bool identify_fully(void);
+extern bool recharge(int num);
+extern bool speed_monsters(void);
+extern bool slow_monsters(void);
+extern bool sleep_monsters(void);
+extern bool banish_evil(int dist);
+extern bool turn_undead(void);
+extern bool dispel_undead(int dam);
+extern bool dispel_evil(int dam);
+extern bool dispel_monsters(int dam);
+extern void aggravate_monsters(int who);
+extern bool genocide(void);
+extern bool mass_genocide(void);
+extern bool probing(void);
+extern void destroy_area(int y1, int x1, int r, bool full);
+extern void earthquake(int cy, int cx, int r);
+extern void lite_room(int y1, int x1);
+extern void unlite_room(int y1, int x1);
+extern bool lite_area(int dam, int rad);
+extern bool unlite_area(int dam, int rad);
+extern bool fire_ball(int typ, int dir, int dam, int rad);
+extern bool fire_bolt(int typ, int dir, int dam);
+extern bool fire_beam(int typ, int dir, int dam);
+extern bool fire_bolt_or_beam(int prob, int typ, int dir, int dam);
+extern bool lite_line(int dir);
+extern bool drain_life(int dir, int dam);
+extern bool wall_to_mud(int dir);
+extern bool destroy_door(int dir);
+extern bool disarm_trap(int dir);
+extern bool heal_monster(int dir);
+extern bool speed_monster(int dir);
+extern bool slow_monster(int dir);
+extern bool sleep_monster(int dir);
+extern bool confuse_monster(int dir, int plev);
+extern bool poly_monster(int dir);
+extern bool clone_monster(int dir);
+extern bool fear_monster(int dir, int plev);
+extern bool teleport_monster(int dir);
+extern bool door_creation(void);
+extern bool trap_creation(void);
+extern bool destroy_doors_touch(void);
+extern bool sleep_monsters_touch(void);
+extern bool curse_armor(void);
+extern bool curse_weapon(void);
+
+extern void map_area(void);
+

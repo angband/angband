@@ -1,12 +1,12 @@
 === Version Information ===
 
-This file was last updated for Angband 2.9.2.
+This file was last updated for Angband 2.9.4.
 
 Make sure to read the newsgroup ("rec.games.roguelike.angband"), and to visit
 the Official Angband Home Page ("http://thangorodrim.angband.org") for the
 most up to date information about Angband.
 
-Angband 2.9.2 has an incredibly complex history, and is the result of a
+Angband 2.9.4 has an incredibly complex history, and is the result of a
 lot of work by a lot of people, all of whom have contributed their time
 and energy for free, being rewarded only by the pleasure of keeping alive
 one of the best freeware games available anywhere.
@@ -24,9 +24,9 @@ First came "VMS Moria", by Robert Alan Koeneke (1985).
 
 Then came "Umoria" (Unix Moria), by James E. Wilson (1989).
 
-Details about the history of the various flavors of "moria", the direct
+Details about the history of the various flavors of "Moria", the direct
 ancestor to Angband, can be found elsewhere, and a note from Robert Alan
-Koeneke is included in this file.  Note that "moria" has been ported to
+Koeneke is included in this file.  Note that "Moria" has been ported to
 a variety of platforms, and has its own newsgroup, and its own fans.
 
 In 1990, Alex Cutler and Andy Astrand, with the help of other students
@@ -61,12 +61,12 @@ code that acted as a "curses" emulator.  One such port was "Macintosh
 Angband 2.6.1", by Keith Randall, which added support for color, and
 which formed the basis for the first release of Angband 2.7.0.
 
-During the last half of 1994, I (Ben Harrison) had been playing with
+During the last half of 1994, Ben Harrison had been playing with
 the Angband source, primarily to investigate the possibility of making
 some kind of automatic player for Angband, like the old "rogue-o-matic"
-program for the game "rogue".  The difficulty of compiling a version
+program for the game "Rogue".  The difficulty of compiling a version
 for the Macintosh, and the complexity of the code, prevented this, and
-so I began cleaning up the code in various ways for my own personal use.
+so Ben began cleaning up the code in various ways for his personal use.
 
 In late 1994, Charles Swiger announced that he was starting a real job
 and would no longer be able to be the Angband maintainer.  This induced
@@ -74,9 +74,9 @@ some amount of uproar in the Angband community (as represented by the
 Angband newsgroup), with various people attempting to form "committees"
 to take over the maintenance of Angband.  Since committees have never
 given us anything but trouble (think "COBOL"), there was very little
-resistance when, on the first day of 1995, I made my code available,
+resistance when, on the first day of 1995, Ben made his code available,
 calling it "Angband 2.7.0", and by default, taking over as the new
-maintainer of Angband.  Or, at least, that is how I remember it...
+maintainer of Angband.
 
 Angband 2.7.0 was a very clean (but very buggy) rewrite that, among other
 things, allowed extremely simple porting to multiple platforms, starting
@@ -90,7 +90,7 @@ to the major ftp archives as the first "stable" version in a year or so,
 with new "help files" and "spoiler files" for the "online help", plus a
 variety of minor tweaks and some new features.
 
-After Angband 2.7.8 was released, I created a web site to keep track of
+After Angband 2.7.8 was released, Ben created a web site to keep track of
 all the changes made in each version (though a few may have been missed),
 and acquired the use of a new develoepement ftp server to supplement the
 official "mirror" server.  This web site is now permanently located at
@@ -104,147 +104,128 @@ graphics support and such for a few more platforms.
 After the release of Angband 2.8.3 Ben's free time was more and more
 occupied by his work.  He released a beta version of Angband 2.8.5,
 introducing many new features, but couldn't give as much attention to
-maintaining the game as he wanted to.
+maintaining the game as he wanted to.  Meanwhile, an "unofficial" version
+by Robert Ruehlmann, incorporating three popular patches (the "Easy Patch" 
+by Tim Baker, for opening doors and disarming traps without specifying 
+the direction: Greg Wooledge's "Random Artifacts" patch: and Keldon Jones's
+"Optional Monster AI Improvement"), named "2.8.3h", was gaining popularity.
 
-So in March 2000, I (Robert Ruehlmann) offered to take over Angband and
+So in March 2000, Robert Ruehlmann offered to take over Angband and
 started to fix the remaining bugs in the Angband 2.8.5 beta.  The
-resulting version has now been released as Angband 2.9.0.
+resulting version was to be released as Angband 2.9.0. Further 
+bugfixes and a couple of new features - including many in the realms
+of user-customizability, with greater control over ego-items, player
+races and classes, monsters, items and artifacts - have led to the 
+current version.
+
+And with the greater amount of user-customizability that is now possible,
+it was inevitable that SOMEBODY would eventually go and actually do 
+something with it.  Jonathan Ellis started customizing the user-editable
+text files in the "edit" directory for his own personal use - originally, 
+only by fixing bugs and inconsistencies (less powerful monsters being worth
+more experience per kill than more powerful ones, dragons doing a decent 
+amount of damage in melee, monsters with two claws and one mouth getting 
+one claw and three bite attacks, and so on).  
+
+At first, this was all that could really be done with it: adding new 
+monsters and items was impossible, as the limits were fixed. And so only 
+three new monsters made an appearance, each of them replacing an existing 
+monster in the order: and one new artifact - "The Palantir of Westernesse". 
+Gameplay balance could be tweaked somewhat, by changing the level, power and 
+rarity of certain items and monsters: and some changes were made, mostly 
+with the attempt to reduce the notorious "triple whammy" effect of needing 
+poison, confusion and nether resistance (or over 550 hps, if without nether 
+resistance) all at once, straight after passing 2000', forcing excessive 
+scumming before this depth or risking unavoidable instant death: and then
+having nothing left to do but dive straight to 4000' and scum for speed
+items, missing out on some of the most interesting depths of the dungeon.
+This problem, at least, could be addressed, but actual new things were less
+easy to add...
+
+That all changed with Angband 2.9.1, which for the first time moved the 
+limits themselves to a separate user-editable file, and allowed more 
+monsters and items to be created without removing the old ones. At the 
+same time, a patch by Matthias Kurzke was incorporated which allowed the 
+creation of new ego-items.  Various new powers, for the player and 
+monsters, were added to the game - but no items or monsters yet had these 
+powers (resist fear, poison brand, lose charisma, summon greater demons,
+and so on): indeed, arguably it could be said that the game had not even
+adjusted properly to Ben Harrison's fractional speed system (Angband 2.7.0)
+or the addition of the other attack forms such as shards, sound, chaos, 
+nexus and so on (even before Ben.) 
+
 
 The Official Angband Home Page ("http://thangorodrim.angband.org/") serves
 not only as the most up to date description of Angband, but also lists
 changes made between versions, and changes planned for upcoming versions,
 and lists various email addresses and web sites related to Angband.
 
-=== Some of the changes between Angband 2.6.1 and Angband 2.7.8 ===
+=== Some of the changes between Angband 2.6.1 and now ===
 
-It is very hard to pin down, along the way from 2.6.2 to 2.7.8, exactly
-what changes were made, and exactly when they were made.  Most releases
-involved so many changes from the previous release as to make "diff files"
-not very useful, since often the diff files are as long as the code itself.
-Most of the changes, with the notable exception of the creation of some of
-the new "main-xxx.c" files for the various new platforms, and a few other
-minor exceptions generally noted directly in comments in the source, were
-written by myself, either spontaneously, or, more commonly, as the result
-of a suggestion or comment by an Angband player.
+It is very hard to pin down, along the way from 2.6.2 to the current
+version, exactly what changes were made, and exactly when they were made.
+Most releases involved so many changes from the previous release as to make
+"diff files" not very useful, since often the diff files are as long as the
+code itself. Most of the changes, with the notable exception of the creation
+of some of the new "main-xxx.c" files for the various new platforms, and a
+few other minor exceptions generally noted directly in comments in the
+source, were written by Ben or Robert, either spontaneously, or, more
+commonly, as the result of a suggestion or comment by an Angband player.
 
-The most important modification was a massive "code level cleanup" that made
-all of my other modifications much simpler and safer.  This cleanup was so
-massive that in many places the code is no longer recognizable, for example,
-via "diff -r", often because it was rewritten from scratch.
+The most important modification was a massive "code level cleanup" for 2.7.x, 
+largely completed in 2.7.8, that made all other modifications much simpler 
+and safer.  This cleanup was so massive that in many places the code is no 
+longer recognizable, for example, via "diff -r", often because it was 
+rewritten from scratch.
 
 The second most important modification was the design of a generic "z-term.c"
 package, which allows Angband to be ported to a new machine with as few as 50
-lines of code.  Angband 2.7.8 thus runs without modification on many machines,
+lines of code.  Angband 2.9.3 thus runs without modification on many machines,
 including Macintosh, PowerMac, Unix/X11, Unix/Curses, Amiga, Windows, OS2-386,
 DOS-386, and even DOS-286.
 
 It would be difficult to list all of the changes between Angband 2.6.1 and
-Angband 2.7.8, because many of them were made in passing during the massive
-code level cleanup.  Many of the changes are invisible to the user, but still
-provide increased simplicity and efficiency, and decreased code size, or make
-other more visable changes possible.  For example, the new "project()" code
-that handles all bolts, beams, and balls, the new "update_view()" code that
-simplifies line of sight computation, or the new "generate()" code that builds
-new levels in the dungeon.  Many changes have been made to increase efficiency,
-including the new "process_monsters()" and "update_monsters()" functions, and
-the new "objdes()" and "lite_spot()" routines.  The generic "z-term.c" package
-yielded efficient screen updates, and enabled the efficient use of "color".
+the current version, because many of them were made in passing during the
+massive code level cleanup.  Many of the changes are invisible to the user,
+but still provide increased simplicity and efficiency, and decreased code
+size, or make other more visable changes possible.  For example, the new
+"project()" code that handles all bolts, beams, and balls, the new
+"update_view()" code that simplifies line of sight computation, or the new
+"generate()" code that builds new levels in the dungeon.  Many changes have
+been made to increase efficiency, including the new "process_monsters()"
+and "update_monsters()" functions, and the new "objdes()" and "lite_spot()"
+routines.  The generic "z-term.c" package yielded efficient screen updates,
+and enabled the efficient use of "color". 
 
-But anyway, here are a few things that come to mind, in no particular order,
-and with very little time or effort.  Somehow I managed to put off updating
-this file to the very end, and it will just have to do for now.  The recent
-changes (and bug fixes) can be found at the Official Angband Home Page.
+The most visible (to ordinary players) changes that happened as a result of 
+Ben Harrison's maintainership were (a) a far greater degree of user-
+customizability as shown by the info.txt files, (b) the "fractional" speed
+system, with +10 in the new scheme equalling +1 in old money, and
+(c) object stacking, the ability to have more than one object in a square:
+first tried in 2.7.9, completed in 2.8.2.
 
-    color
-    macros
-    keymaps
-    user pref files
-    generic feature array, with template file
-    generic object array, with template file
-    generic artifact array, with template file
-    generic ego-item array, with template file
-    generic monster array, with template fils
-    generic vault array, with template file
-    binary image files for the template files
-    special stat effect tables
-    a special table of spells
-    a special table of options
-    inventory tagging
-    inventory restrictions
-    using objects off the floor
-    various new runtime options
-    the new "destroy" command
-    the new "examine" command
-    the new "note" command
-    the new "dump screen" command
-    the new "load screen" command
-    the new "un-inscribe" command
-    the new "change visuals" command
-    the new "change colors" command
-    the new "change macros" command
-    the new "save game" command
-    the new "fire" vs "throw" commands
-    rearranged equipment slots
-    a standard bow slot
-    an extra inventory slot
-    an underlying keyset
-    refueling torches
-    better monster memory
-    nicer targetting mode
-    object stacking
-    the recall window
-    the choice window
-    the mirror window
-    new high score code
-    special lighting effects
-    intelligent monsters
-    new monster flags
-    text formatting code
-    much cleaner store code
-    generic spell projections
-    scrolls of *identify*
-    maximize mode
-    preserve mode
-    new inscription code
-    new message recall code
-    new spell and prayer code
-    massive cleanup of effects code
-    new object allocation routines
-    powerful (but simple) on line help
-    robust savefile cheat preventers
-    new official cheating options
-    new blindness code
-    new hallucination code
-    optimized object description code
-    new keypress input routines
-    actual object discounts
-    fractional (assymptotic) speed
-    postponing updates/redraws
-    run-time price determination
-    better wizard commands
-    the automatic player
-    launchers of extra shots
-    elemental ignore flags
-    new ego-item types
-    new player ghost creation
-    no more sliding objects
-    no more sliding monsters
-    new object flags
-    new chest trap code
-    regularized the artifact code
-    regularized the ego-item code
-    new monster abilities
-    new monster spell attacks
-    some new store owners
-    run-time skill computation
-    player kills vs anscestor kills
-    better room illumination code
-    better group monster code
-    table access through pointers
-    more redefinable constants
-    slightly new screen layout
-    extreme code cleaning
-    extreme optimizations
+It should also be pointed out at this point that the far cleaner nature of 
+Ben's code as compared to previous versions has given many other people the 
+opportunity to base code for their own Angband variants on it. And so a 
+plethora of new variants have appeared, many of them far more different from 
+Angband now than Angband ever was from Moria, and yet still based on Ben's 
+coding ideals for Angband.
+
+For Angband 2.9.0, the first few new visible features were a random artifact 
+generator (originally developed from a variant by Greg Wooledge), an option to 
+improve monster AI (believed to have originally started out life in a patch 
+written by Keldon Jones), and a patch to allow easier handling of opening and 
+closing doors and disarming traps (by Tim Baker). For Angband 2.9.1 has also 
+come such things as the ability to increase the size of the editable textfiles
+and thus the number of monsters, artifacts, items, ego-items and vaults in 
+the game (many new vaults were written by Chris Weisiger, some by others, and 
+the number of vaults in the game at this time was doubled), and much greater 
+customizability of ego-items has become possible thanks to a patch written by 
+Matthias Kurzke. It is also now possible to add new character races to the 
+game, and to edit the shopkeepers with respect to their greed, tolerance of 
+haggling and reactions to the character based on his race. Angband 2.9.2 adds 
+support for poison branded weapons to the game.  Angband 2.9.3 made the
+character class itself customizable to an extent.
 
 
 === A Posting from the Original Author ===

@@ -812,7 +812,7 @@ static errr init_names(void)
 	}
 
 	/* Free the old names */
-	C_KILL(a_name, a_head.name_size, char);
+	FREE(a_name);
 
 	for (i = 0; i < z_info->a_max; i++)
 	{
@@ -820,7 +820,7 @@ static errr init_names(void)
 	}
 
 	/* Free the "names" array */
-	C_FREE((void*)names, z_info->a_max, cptr);
+	FREE((void*)names);
 
 	/* Store the names */
 	a_name = a_base;
@@ -931,6 +931,8 @@ static s32b artifact_power(int a_idx)
 			p += (a_ptr->dd * a_ptr->ds + 1) / 2;
 			if (a_ptr->flags1 & TR1_SLAY_EVIL) p = (p * 3) / 2;
 			if (a_ptr->flags1 & TR1_KILL_DRAGON) p = (p * 3) / 2;
+			if (a_ptr->flags1 & TR1_KILL_DEMON) p = (p * 3) / 2;
+			if (a_ptr->flags1 & TR1_KILL_UNDEAD) p = (p * 3) / 2;
 			if (a_ptr->flags1 & TR1_SLAY_ANIMAL) p = (p * 4) / 3;
 			if (a_ptr->flags1 & TR1_SLAY_UNDEAD) p = (p * 4) / 3;
 			if (a_ptr->flags1 & TR1_SLAY_DRAGON) p = (p * 4) / 3;
@@ -1408,6 +1410,8 @@ static void remove_contradictory(artifact_type *a_ptr)
 
 	if (a_ptr->flags3 & TR3_LIGHT_CURSE) a_ptr->flags3 &= ~(TR3_BLESSED);
 	if (a_ptr->flags1 & TR1_KILL_DRAGON) a_ptr->flags1 &= ~(TR1_SLAY_DRAGON);
+	if (a_ptr->flags1 & TR1_KILL_DEMON) a_ptr->flags1 &= ~(TR1_SLAY_DEMON);
+	if (a_ptr->flags1 & TR1_KILL_UNDEAD) a_ptr->flags1 &= ~(TR1_SLAY_UNDEAD);
 	if (a_ptr->flags3 & TR3_DRAIN_EXP) a_ptr->flags3 &= ~(TR3_HOLD_LIFE);
 }
 
@@ -1415,6 +1419,8 @@ static void remove_contradictory(artifact_type *a_ptr)
 /*
  * Randomly select an extra ability to be added to the artifact in question.
  * XXX - This function is way too large.
+ *
+ * ToDo: Add the KILL_UNDEAD and KILL_DEMON flags.
  */
 static void add_ability(artifact_type *a_ptr)
 {
@@ -2091,7 +2097,7 @@ static errr scramble(void)
 	}
 
 	/* Free the "kinds" array */
-	C_FREE(kinds, z_info->a_max, s16b);
+	FREE(kinds);
 
 	/* Success */
 	return (0);

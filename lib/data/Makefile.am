@@ -20,6 +20,7 @@ if SET_GID
 	  touch "$(DESTDIR)$(angbanddir)/artifact.raw" && \
 	  touch "$(DESTDIR)$(angbanddir)/cost_adj.raw" && \
 	  touch "$(DESTDIR)$(angbanddir)/ego_item.raw" && \
+	  touch "$(DESTDIR)$(angbanddir)/flavor.raw" && \
 	  touch "$(DESTDIR)$(angbanddir)/limits.raw" && \
 	  touch "$(DESTDIR)$(angbanddir)/monster.raw" && \
 	  touch "$(DESTDIR)$(angbanddir)/object.raw" && \

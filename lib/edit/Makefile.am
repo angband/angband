@@ -4,6 +4,7 @@ angband_files = \
   artifact.txt \
   cost_adj.txt \
   ego_item.txt \
+  flavor.txt \
   limits.txt \
   monster.txt \
   object.txt \

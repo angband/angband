@@ -64,9 +64,10 @@ EXEEXT = @EXEEXT@
 GAMEGROUP = @GAMEGROUP@
 MAKEINFO = @MAKEINFO@
 PACKAGE = @PACKAGE@
+RANLIB = @RANLIB@
 VERSION = @VERSION@
 
-SUBDIRS = apex bone data edit file help info pref save user xtra
+SUBDIRS = apex bone data edit file help info pref save script user xtra
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../src/autoconf.h
 CONFIG_CLEAN_FILES = 

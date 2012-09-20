@@ -4412,7 +4412,7 @@ void spell_info(char *p, int spell)
 				sprintf(p, " dam %dd8", (3 + ((plev - 5) / 4)));
 				break;
 			case SPELL_TELEPORT_SELF:
-				sprintf(p, " range %d", plev * 10);
+				sprintf(p, " range %d", plev * 5);
 				break;
 			case SPELL_SPEAR_OF_LIGHT:
 				strcpy(p, " dam 6d8");
@@ -4436,7 +4436,7 @@ void spell_info(char *p, int spell)
 				sprintf(p, " dam %dd8", (6 + ((plev - 5) / 4)));
 				break;
 			case SPELL_CLOUD_KILL:
-				sprintf(p, " dam %d", 40 + plev / 2);
+				sprintf(p, " dam %d", 20 + plev / 2);
 				break;
 			case SPELL_ACID_BALL:
 				sprintf(p, " dam %d", 40 + plev);

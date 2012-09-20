@@ -111,6 +111,7 @@ struct maxima
 	u16b h_max;		/* Max size for "h_info[]" */
 	u16b b_max;		/* Max size per element of "b_info[]" */
 	u16b c_max;		/* Max size for "c_info[]" */
+	u16b flavor_max; /* Max size for "flavor_info[]" */
 
 	u16b o_max;		/* Max size for "o_list[]" */
 	u16b m_max;		/* Max size for "m_list[]" */
@@ -187,7 +188,7 @@ struct object_kind
 	char x_char;		/* Desired object character */
 
 
-	byte flavor;		/* Special object flavor (or zero) */
+	u16b flavor;		/* Special object flavor (or zero) */
 
 
 	bool aware;			/* The player is "aware" of the item's effects */
@@ -331,7 +332,7 @@ struct monster_race
 
 	s16b extra;				/* Unused (for now) */
 
-	byte freq_inate;		/* Inate spell frequency */
+	byte freq_innate;		/* Innate spell frequency */
 	byte freq_spell;		/* Other spell frequency */
 
 	u32b flags1;			/* Flags 1 (general) */
@@ -368,32 +369,32 @@ struct monster_race
  */
 struct monster_lore
 {
-	s16b r_sights;			/* Count sightings of this monster */
-	s16b r_deaths;			/* Count deaths from this monster */
+	s16b sights;			/* Count sightings of this monster */
+	s16b deaths;			/* Count deaths from this monster */
 
-	s16b r_pkills;			/* Count monsters killed in this life */
-	s16b r_tkills;			/* Count monsters killed in all lives */
+	s16b pkills;			/* Count monsters killed in this life */
+	s16b tkills;			/* Count monsters killed in all lives */
 
-	byte r_wake;			/* Number of times woken up (?) */
-	byte r_ignore;			/* Number of times ignored (?) */
+	byte wake;				/* Number of times woken up (?) */
+	byte ignore;			/* Number of times ignored (?) */
 
-	byte r_xtra1;			/* Something (unused) */
-	byte r_xtra2;			/* Something (unused) */
+	byte xtra1;				/* Something (unused) */
+	byte xtra2;				/* Something (unused) */
 
-	byte r_drop_gold;		/* Max number of gold dropped at once */
-	byte r_drop_item;		/* Max number of item dropped at once */
+	byte drop_gold;			/* Max number of gold dropped at once */
+	byte drop_item;			/* Max number of item dropped at once */
 
-	byte r_cast_inate;		/* Max number of inate spells seen */
-	byte r_cast_spell;		/* Max number of other spells seen */
+	byte cast_innate;		/* Max number of innate spells seen */
+	byte cast_spell;		/* Max number of other spells seen */
 
-	byte r_blows[4];		/* Number of times each blow type was seen */
+	byte blows[4];			/* Number of times each blow type was seen */
 
-	u32b r_flags1;			/* Observed racial flags */
-	u32b r_flags2;			/* Observed racial flags */
-	u32b r_flags3;			/* Observed racial flags */
-	u32b r_flags4;			/* Observed racial flags */
-	u32b r_flags5;			/* Observed racial flags */
-	u32b r_flags6;			/* Observed racial flags */
+	u32b flags1;			/* Observed racial flags */
+	u32b flags2;			/* Observed racial flags */
+	u32b flags3;			/* Observed racial flags */
+	u32b flags4;			/* Observed racial flags */
+	u32b flags5;			/* Observed racial flags */
+	u32b flags6;			/* Observed racial flags */
 };
 
 
@@ -982,19 +983,6 @@ struct player_type
 
 	s16b new_spells;		/* Number of spells available */
 
-	s16b old_spells;
-
-	bool old_cumber_armor;
-	bool old_cumber_glove;
-	bool old_heavy_wield;
-	bool old_heavy_shoot;
-	bool old_icky_wield;
-
-	s16b old_lite;		/* Old radius of lite (if any) */
-	s16b old_view;		/* Old radius of view (if any) */
-
-	s16b old_food_aux;	/* Old value of food */
-
 	bool cumber_armor;	/* Mana draining armor */
 	bool cumber_glove;	/* Mana draining gloves */
 	bool heavy_wield;	/* Heavy weapon */
@@ -1139,4 +1127,20 @@ struct high_score
 	char max_dun[4];		/* Max Dungeon Level (number) */
 
 	char how[32];		/* Method of death (string) */
+};
+
+
+typedef struct flavor_type flavor_type;
+
+struct flavor_type
+{
+	u32b text;      /* Text (offset) */
+	
+	byte tval;      /* Associated object type */
+
+	byte d_attr;    /* Default flavor attribute */
+	char d_char;    /* Default flavor character */
+
+	byte x_attr;    /* Desired flavor attribute */
+	char x_char;    /* Desired flavor character */
 };

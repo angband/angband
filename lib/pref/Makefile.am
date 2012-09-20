@@ -1,6 +1,8 @@
 ## Makefile.am -- Process this file with automake to process Makefile.in
 
 angband_files = \
+  flvr-xxx.prf \
+  flvr-new.prf \
   font.prf \
   font-ami.prf \
   font-dos.prf \

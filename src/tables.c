@@ -1085,56 +1085,6 @@ const byte blows_table[12][12] =
 };
 
 
-#if 0
-
-/*
- * This is the "old" table used to calculate multiple blows.
- *
- * Note that this table used a different indexing scheme to determine "P"
- */
-
-const byte old_blows_table[11][12] =
-{
-	/* P/D */
-	/* 3,  10, /01, /50, /90,/100,/101,/110,/120,/130,/140,/150 */
-
-	/* 0+ */
-	{  1,   1,   1,   1,   1,   1,   2,   2,   2,   2,   2,   3},
-
-	/* 2+ */
-	{  1,   1,   1,   1,   2,   2,   3,   3,   3,   3,   3,   4},
-
-	/* 3+ */
-	{  1,   1,   1,   2,   2,   3,   4,   4,   4,   4,   4,   5},
-
-	/* 4+ */
-	{  1,   1,   2,   2,   3,   3,   4,   4,   4,   5,   5,   5},
-
-	/* 6+ */
-	{  1,   2,   2,   3,   3,   4,   4,   4,   5,   5,   5,   5},
-
-	/* 8+ */
-	{  1,   2,   2,   3,   4,   4,   4,   5,   5,   5,   5,   5},
-
-	/* 10+ */
-	{  2,   2,   3,   3,   4,   4,   5,   5,   5,   5,   5,   6},
-
-	/* 13+ */
-	{  2,   3,   3,   3,   4,   4,   5,   5,   5,   5,   5,   6},
-
-	/* 15+ */
-	{  3,   3,   3,   4,   4,   4,   5,   5,   5,   5,   6,   6},
-
-	/* 18+ */
-	{  3,   3,   3,   4,   4,   4,   5,   5,   5,   5,   6,   6},
-
-	/* 20+ */
-	{  3,   3,   4,   4,   4,   4,   5,   5,   5,   6,   6,   6}
-};
-
-#endif
-
-
 /*
  * This table allows quick conversion from "speed" to "energy"
  * The basic function WAS ((S>=110) ? (S-110) : (100 / (120-S)))
@@ -1819,7 +1769,7 @@ cptr option_text[OPT_MAX] =
 	"disturb_state",			/* OPT_disturb_state */
 	"disturb_minor",			/* OPT_disturb_minor */
 	"disturb_other",			/* OPT_disturb_other */
-	"alert_hitpoint",			/* OPT_alert_hitpoint */
+	NULL,						/* xxx alert_hitpoint */
 	"alert_failure",			/* OPT_alert_failure */
 	"verify_destroy",			/* OPT_verify_destroy */
 	"verify_special",			/* OPT_verify_special */
@@ -2083,7 +2033,7 @@ cptr option_desc[OPT_MAX] =
 	"Disturb whenever player state changes",	/* OPT_disturb_state */
 	"Disturb whenever boring things happen",	/* OPT_disturb_minor */
 	"Disturb whenever various things happen",	/* OPT_disturb_other */
-	"Alert user to critical hitpoints",			/* OPT_alert_hitpoint */
+	NULL,										/* xxx alert_hitpoint */
 	"Alert user to various failures",			/* OPT_alert_failure */
 	"Verify destruction of objects",			/* OPT_verify_destroy */
 	"Verify use of special commands",			/* OPT_verify_special */
@@ -2347,7 +2297,7 @@ const bool option_norm[OPT_MAX] =
 	TRUE,		/* OPT_disturb_state */
 	TRUE,		/* OPT_disturb_minor */
 	TRUE,		/* OPT_disturb_other */
-	FALSE,		/* OPT_alert_hitpoint */
+	FALSE,		/* xxx alert_hitpoint */
 	FALSE,		/* OPT_alert_failure */
 	TRUE,		/* OPT_verify_destroy */
 	TRUE,		/* OPT_verify_special */
@@ -2597,15 +2547,15 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_use_old_target,
 		OPT_always_pickup,
 		OPT_always_repeat,
-		OPT_depth_in_feet,
 		OPT_stack_force_notes,
 		OPT_stack_force_costs,
-		OPT_show_labels,
-		OPT_show_weights,
-		OPT_show_choices,
-		OPT_show_details,
-		OPT_show_flavors,
 		OPT_ring_bell,
+		OPT_easy_open,
+		OPT_easy_alter,
+		OPT_easy_floor,
+		OPT_scroll_target,
+		255,
+		255,
 		255,
 		255,
 		255,
@@ -2625,12 +2575,12 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_disturb_state,
 		OPT_disturb_minor,
 		OPT_disturb_other,
-		OPT_alert_hitpoint,
 		OPT_alert_failure,
 		OPT_verify_destroy,
 		OPT_verify_special,
 		OPT_allow_quantity,
 		OPT_auto_more,
+		255,
 		255,
 		255,
 		255,
@@ -2654,10 +2604,10 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_smart_packs,
 		OPT_smart_learn,
 		OPT_smart_cheat,
-		OPT_easy_open,
-		OPT_easy_alter,
-		OPT_easy_floor,
-		OPT_show_piles,
+		255,
+		255,
+		255,
+		255,
 		255,
 		255
 	},
@@ -2674,6 +2624,28 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_fresh_before,
 		OPT_fresh_after,
 		OPT_compress_savefile,
+		255,
+		255,
+		255,
+		255,
+		255,
+		255,
+		255,
+		255,
+		255,
+		255,
+		255,
+	},
+
+	/*** Display ***/
+
+	{
+		OPT_depth_in_feet,
+		OPT_show_labels,
+		OPT_show_weights,
+		OPT_show_choices,
+		OPT_show_details,
+		OPT_show_flavors,
 		OPT_hilite_player,
 		OPT_view_yellow_lite,
 		OPT_view_bright_lite,
@@ -2681,10 +2653,13 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_view_special_lite,
  		OPT_center_player,
  		OPT_run_avoid_center,
-		OPT_scroll_target,
+		OPT_show_piles,
 		255,
 		255,
 		255,
+		255,
+		255,
+		255
 	},
 
 	/*** Birth ***/

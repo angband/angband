@@ -197,34 +197,35 @@ bool make_attack_normal(int m_idx)
 		/* Extract the attack "power" */
 		switch (effect)
 		{
-			case RBE_HURT: power = 60; break;
-			case RBE_POISON:	power =  5; break;
-			case RBE_UN_BONUS:	power = 20; break;
-			case RBE_UN_POWER:	power = 15; break;
-			case RBE_EAT_GOLD:	power =  5; break;
-			case RBE_EAT_ITEM:	power =  5; break;
-			case RBE_EAT_FOOD:	power =  5; break;
-			case RBE_EAT_LITE:	power =  5; break;
-			case RBE_ACID:		power =  0; break;
-			case RBE_ELEC:		power = 10; break;
-			case RBE_FIRE:		power = 10; break;
-			case RBE_COLD:		power = 10; break;
-			case RBE_BLIND:		power =  2; break;
-			case RBE_CONFUSE:	power = 10; break;
-			case RBE_TERRIFY:	power = 10; break;
-			case RBE_PARALYZE:	power =  2; break;
-			case RBE_LOSE_STR:	power =  0; break;
-			case RBE_LOSE_DEX:	power =  0; break;
-			case RBE_LOSE_CON:	power =  0; break;
-			case RBE_LOSE_INT:	power =  0; break;
-			case RBE_LOSE_WIS:	power =  0; break;
-			case RBE_LOSE_CHR:	power =  0; break;
-			case RBE_LOSE_ALL:	power =  2; break;
-			case RBE_SHATTER:	power = 60; break;
-			case RBE_EXP_10:	power =  5; break;
-			case RBE_EXP_20:	power =  5; break;
-			case RBE_EXP_40:	power =  5; break;
-			case RBE_EXP_80:	power =  5; break;
+			case RBE_HURT:      power = 60; break;
+			case RBE_POISON:    power =  5; break;
+			case RBE_UN_BONUS:  power = 20; break;
+			case RBE_UN_POWER:  power = 15; break;
+			case RBE_EAT_GOLD:  power =  5; break;
+			case RBE_EAT_ITEM:  power =  5; break;
+			case RBE_EAT_FOOD:  power =  5; break;
+			case RBE_EAT_LITE:  power =  5; break;
+			case RBE_ACID:      power =  0; break;
+			case RBE_ELEC:      power = 10; break;
+			case RBE_FIRE:      power = 10; break;
+			case RBE_COLD:      power = 10; break;
+			case RBE_BLIND:     power =  2; break;
+			case RBE_CONFUSE:   power = 10; break;
+			case RBE_TERRIFY:   power = 10; break;
+			case RBE_PARALYZE:  power =  2; break;
+			case RBE_LOSE_STR:  power =  0; break;
+			case RBE_LOSE_DEX:  power =  0; break;
+			case RBE_LOSE_CON:  power =  0; break;
+			case RBE_LOSE_INT:  power =  0; break;
+			case RBE_LOSE_WIS:  power =  0; break;
+			case RBE_LOSE_CHR:  power =  0; break;
+			case RBE_LOSE_ALL:  power =  2; break;
+			case RBE_SHATTER:   power = 60; break;
+			case RBE_EXP_10:    power =  5; break;
+			case RBE_EXP_20:    power =  5; break;
+			case RBE_EXP_40:    power =  5; break;
+			case RBE_EXP_80:    power =  5; break;
+			case RBE_HALLU:     power = 10; break;
 		}
 
 
@@ -244,7 +245,7 @@ bool make_attack_normal(int m_idx)
 				/* Remember the Evil-ness */
 				if (m_ptr->ml)
 				{
-					l_ptr->r_flags3 |= (RF3_EVIL);
+					l_ptr->flags3 |= (RF3_EVIL);
 				}
 
 				/* Message */
@@ -1135,6 +1136,26 @@ bool make_attack_normal(int m_idx)
 					}
 					break;
 				}
+
+				case RBE_HALLU:
+				{
+					/* Take damage */
+					take_hit(damage, ddesc);
+
+					/* Increase "image" */
+					if (!p_ptr->resist_chaos)
+					{
+						if (set_image(p_ptr->image + 3 + randint(rlev / 2)))
+						{
+							obvious = TRUE;
+						}
+					}
+
+					/* Learn about the player */
+					update_smart_learn(m_idx, DRS_RES_CHAOS);
+
+					break;
+				}
 			}
 
 
@@ -1243,12 +1264,12 @@ bool make_attack_normal(int m_idx)
 		if (visible)
 		{
 			/* Count "obvious" attacks (and ones that cause damage) */
-			if (obvious || damage || (l_ptr->r_blows[ap_cnt] > 10))
+			if (obvious || damage || (l_ptr->blows[ap_cnt] > 10))
 			{
 				/* Count attacks of this type */
-				if (l_ptr->r_blows[ap_cnt] < MAX_UCHAR)
+				if (l_ptr->blows[ap_cnt] < MAX_UCHAR)
 				{
-					l_ptr->r_blows[ap_cnt]++;
+					l_ptr->blows[ap_cnt]++;
 				}
 			}
 		}
@@ -1264,9 +1285,9 @@ bool make_attack_normal(int m_idx)
 
 
 	/* Always notice cause of death */
-	if (p_ptr->is_dead && (l_ptr->r_deaths < MAX_SHORT))
+	if (p_ptr->is_dead && (l_ptr->deaths < MAX_SHORT))
 	{
-		l_ptr->r_deaths++;
+		l_ptr->deaths++;
 	}
 
 

@@ -934,7 +934,7 @@ static int truncate_names( void )
 
 
 /*
- | The PathName translation is now done by two seperate functions:
+ | The PathName translation is now done by two separate functions:
  | unixify_name() and riscosify_name().
  |
  | This is done because only the UNIX=>RISCOS translation should
@@ -2345,7 +2345,7 @@ static int attach_font_to_term( term_data *t, char *font )
  |
  | Subdirectories are recursively searched.
  |
- | 1.10 - Uses <variant>$FontPaths to get a (space seperated) list of paths
+ | 1.10 - Uses <variant>$FontPaths to get a (space separated) list of paths
  | to search.  For each path name, the menu text will be the name and the
  | path searched will be <variant>$<name>$FontPath
  |

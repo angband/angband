@@ -14,8 +14,8 @@
 - Add support for automatically numbering characters ("Rocky IV").
 - Finish the GTK+ port, maybe write a qt version.
 - Improve the command-line option usage display.
-- Try to open the file handles for score and savefiles at startup and
-  then drop all permissions.
+- Open the file handles for score and savefiles at startup and then drop
+  all permissions.
 - Improve the scorefile format.
 - Add color support to the show_file() function.
 - Find a better way for saving options than appending to *.prf files.
@@ -51,4 +51,14 @@
 - "Panic saves" shouldn't overwrite normal savefiles.
 - Replace the maximize mode option with a "half-maximized" mode.
 - Properly integrate the transparency code into the game.
-- Simplify the FREE() and KILL() macros.
+- Add a command to display the 'time of day'.
+- Add the possibility to reset the recall depth when recalling.
+- Mimics should be true objects until the player steps next to them.
+- Throwing potions should cause the potions effect on the target.
+- Add race-specific starting equipment.
+- Change the spell list and remove or downgrade the GoI spell.
+- Extend the use of scripts for customization.
+- Create a script-debugger.
+- Allow a restricted amount of functions to be used by the player
+  for macros and add a better macro recorder.
+

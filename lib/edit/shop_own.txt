@@ -16,18 +16,17 @@
 
 # Version stamp (required)
 
-V:2.9.3
-
+V:2.9.4
 
 # General Store
 N:0:0:Bilbo the Friendly
-I:3:200:175:108:4:12
+I:3:5000:175:108:4:12
 N:0:1:Rincewind the Chicken
-I:0:200:175:108:4:12
+I:0:10000:175:108:4:12
 N:0:2:Snafu the Midget
-I:4:300:170:107:5:15
+I:4:20000:170:107:5:15
 N:0:3:Lyar-el the Comely
-I:2:300:165:107:6:18
+I:2:30000:165:107:6:18
 
 # Armoury
 N:1:0:Kon-Dar the Ugly
@@ -51,9 +50,9 @@ I:5:30000:195:112:4:8
 
 # Temple
 N:3:0:Ludwig the Humble
-I:0:5000:175:109:6:15
+I:0:15000:175:109:6:15
 N:3:1:Gunnar the Paladin
-I:0:10000:185:110:5:23
+I:0:20000:185:110:5:23
 N:3:2:Delilah the Pure
 I:2:25000:180:107:6:20
 N:3:3:Bosk the Wise
@@ -71,21 +70,21 @@ I:0:15000:220:111:4:9
 
 # Magic Shop
 N:5:0:Ariel the Sorceress
-I:1:20000:200:110:7:8
+I:1:15000:200:110:7:8
 N:5:1:Buggerby the Great
 I:4:20000:215:113:6:10
 N:5:2:Inglorian the Mage
-I:0:30000:200:110:7:10
+I:0:25000:200:110:7:10
 N:5:3:Luthien Starshine
 I:9:30000:175:110:5:11
 
 # Black Market
 N:6:0:Lo-Hak the Awful
-I:7:20000:250:150:10:5
+I:7:15000:250:150:10:5
 N:6:1:Histor the Goblin
-I:6:20000:250:150:10:5
+I:10:20000:250:150:10:5
 N:6:2:Durwin the Shifty
-I:0:30000:250:150:10:5
+I:6:25000:250:150:10:5
 N:6:3:Drago the Fair
 I:2:30000:250:150:10:5
 

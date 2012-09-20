@@ -1916,7 +1916,7 @@ errr quarks_free(void)
 	}
 
 	/* Free the list of "quarks" */
-	C_FREE((void*)quark__str, QUARK_MAX, cptr);
+	FREE((void*)quark__str);
 
 	/* Success */
 	return (0);
@@ -2050,8 +2050,11 @@ u16b message_type(s16b age)
 {
 	s16b x;
 
-	/* Forgotten messages have no special color */
-	if ((age < 0) || (age >= message_num())) return (TERM_WHITE);
+	/* Paranoia */
+	if (!message__type) return (MSG_GENERIC);
+
+	/* Forgotten messages are generic */
+	if ((age < 0) || (age >= message_num())) return (MSG_GENERIC);
 
 	/* Get the "logical" index */
 	x = (message__next + MESSAGE_MAX - (age + 1)) % MESSAGE_MAX;
@@ -2062,11 +2065,24 @@ u16b message_type(s16b age)
 
 
 /*
+ * Recall the "color" of a message type
+ */
+byte message_type_color(u16b type)
+{
+	byte color = message__color[type];
+
+	if (color == TERM_DARK) color = TERM_WHITE;
+
+	return (color);
+}
+
+
+/*
  * Recall the "color" of a saved message
  */
 byte message_color(s16b age)
 {
-	return message__color[message_type(age)];
+	return message_type_color(message_type(age));
 }
 
 
@@ -2309,9 +2325,9 @@ errr messages_init(void)
 void messages_free(void)
 {
 	/* Free the messages */
-	C_FREE(message__ptr, MESSAGE_MAX, u16b);
-	C_FREE(message__buf, MESSAGE_BUF, char);
-	C_FREE(message__type, MESSAGE_MAX, u16b);
+	FREE(message__ptr);
+	FREE(message__buf);
+	FREE(message__type);
 }
 
 
@@ -2430,7 +2446,7 @@ static void msg_print_aux(u16b type, cptr msg)
 	int n;
 	char *t;
 	char buf[1024];
-	byte color = TERM_WHITE;
+	byte color;
 
 
 	/* Hack -- Reset */
@@ -2485,12 +2501,8 @@ static void msg_print_aux(u16b type, cptr msg)
 	/* Analyze the buffer */
 	t = buf;
 
-	/* Get the color of the message (if legal) */
-	if (message__color)
-		color = message__color[type];
-
-	/* HACK -- no "black" messages */
-	if (color == TERM_DARK) color = TERM_WHITE;
+	/* Get the color of the message */
+	color = message_type_color(type);
 
 	/* Split message */
 	while (n > 72)
@@ -2733,8 +2745,6 @@ void prt(cptr str, int row, int col)
 }
 
 
-
-
 /*
  * Print some (colored) text to the screen at the current cursor position,
  * automatically "wrapping" existing text (at spaces) when necessary to
@@ -2744,12 +2754,12 @@ void prt(cptr str, int row, int col)
  * calls to this function will work correctly.
  *
  * Once this function has been called, the cursor should not be moved
- * until all the related "c_roff()" calls to the window are complete.
+ * until all the related "text_out()" calls to the window are complete.
  *
  * This function will correctly handle any width up to the maximum legal
  * value of 256, though it works best for a standard 80 character width.
  */
-void c_roff(byte a, cptr str)
+void text_out_to_screen(byte a, cptr str)
 {
 	int x, y;
 
@@ -2778,6 +2788,8 @@ void c_roff(byte a, cptr str)
 
 			/* Clear line, move cursor */
 			Term_erase(x, y, 255);
+
+			continue;
 		}
 
 		/* Clean up the char */
@@ -2842,15 +2854,106 @@ void c_roff(byte a, cptr str)
 
 
 /*
- * As above, but in "white"
+ * Write text to the given file and apply line-wrapping.
+ *
+ * Hook function for text_out(). Make sure that text_out_file points
+ * to an open text-file.
+ *
+ * Long lines will be wrapped on the last space before column 75,
+ * directly at column 75 if the word is *very* long, or when
+ * encountering a newline character.
+ *
+ * Buffers the last line till a wrap occurs.  Flush the buffer with
+ * an explicit newline if necessary.
  */
-void roff(cptr str)
+void text_out_to_file(byte attr, cptr str)
 {
-	/* Spawn */
-	c_roff(TERM_WHITE, str);
+	cptr r;
+
+	/* Line buffer */
+	static char roff_buf[256];
+
+	/* Current pointer into line roff_buf */
+	static char *roff_p = roff_buf;
+
+	/* Last space saved into roff_buf */
+	static char *roff_s = NULL;
+
+
+	/* Unused */
+	(void)attr;
+
+	/* Scan the given string, character at a time */
+	for (; *str; str++)
+	{
+		char ch = *str;
+		bool wrap = (ch == '\n');
+
+		if (!isprint(ch)) ch = ' ';
+
+		if (roff_p >= roff_buf + 75) wrap = TRUE;
+
+		if ((ch == ' ') && (roff_p + 2 >= roff_buf + 75)) wrap = TRUE;
+
+		/* Handle line-wrap */
+		if (wrap)
+		{
+			/* Terminate the current line */
+			*roff_p = '\0';
+
+			r = roff_p;
+
+			/* Wrap the line on the last known space */
+			if (roff_s && (ch != ' '))
+			{
+				*roff_s = '\0';
+				r = roff_s + 1;
+			}
+
+			/* Output the line */
+			fprintf(text_out_file, "%s\n", roff_buf);
+
+			/* Reset the buffer */
+			roff_s = NULL;
+			roff_p = roff_buf;
+			roff_buf[0] = '\0';
+
+			/* Copy the remaining line into the buffer */
+			while (*r) *roff_p++ = *r++;
+
+			/* Append the last character */
+			if (ch != ' ') *roff_p++ = ch;
+
+			continue;
+		}
+
+		/* Remember the last space character */
+		if (ch == ' ') roff_s = roff_p;
+
+		/* Save the char */
+		*roff_p++ = ch;
+	}
 }
 
 
+/*
+ * Output text to the screen or to a file depending on the selected
+ * text_out hook.
+ */
+void text_out(cptr str)
+{
+	text_out_c(TERM_WHITE, str);
+}
+
+
+/*
+ * Output text to the screen (in color) or to a file depending on the
+ * selected hook.
+ */
+void text_out_c(byte a, cptr str)
+{
+	text_out_hook(a, str);
+}
 
 
 /*

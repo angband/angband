@@ -12,7 +12,7 @@
 #include "angband.h"
 
 #include "init.h"
-
+#include "script.h"
 
 /*
  * This file is used to initialize various variables and arrays for the
@@ -125,6 +125,7 @@ void init_file_paths(char *path)
 	ANGBAND_DIR_PREF = string_make("");
 	ANGBAND_DIR_USER = string_make("");
 	ANGBAND_DIR_XTRA = string_make("");
+	ANGBAND_DIR_SCRIPT = string_make("");
 
 
 #else /* VM */
@@ -187,6 +188,10 @@ void init_file_paths(char *path)
 	/* Build a path name */
 	strcpy(tail, "xtra");
 	ANGBAND_DIR_XTRA = string_make(path);
+
+	/* Build a path name */
+	strcpy(tail, "script");
+	ANGBAND_DIR_SCRIPT = string_make(path);
 
 #endif /* VM */
 
@@ -283,6 +288,7 @@ header c_head;
 header h_head;
 header b_head;
 header g_head;
+header flavor_head;
 
 
 
@@ -380,7 +386,7 @@ static void display_parse_error(cptr filename, errr err, cptr buf)
 	oops = (((err > 0) && (err < PARSE_ERROR_MAX)) ? err_str[err] : "unknown");
 
 	/* Oops */
-	msg_format("Error at line %d of '%s'.", error_line, filename);
+	msg_format("Error at line %d of '%s.txt'.", error_line, filename);
 	msg_format("Record %d contains a '%s' error.", error_idx, oops);
 	msg_format("Parsing '%s'.", buf);
 	message_flush();
@@ -552,14 +558,14 @@ static errr init_info(cptr filename, header *head,
 		/*** Kill the fake arrays ***/
 
 		/* Free the "*_info" array */
-		C_KILL(head->info_ptr, head->info_size, char);
+		KILL(head->info_ptr);
 
 		/* Hack -- Free the "fake" arrays */
 		if (name)
-			C_KILL(head->name_ptr, z_info->fake_name_size, char);
+			KILL(head->name_ptr);
 
 		if (text)
-			C_KILL(head->text_ptr, z_info->fake_text_size, char);
+			KILL(head->text_ptr);
 
 #endif /* ALLOW_TEMPLATES */
 
@@ -602,14 +608,14 @@ static errr init_info(cptr filename, header *head,
  */
 static errr free_info(header *head)
 {
-	if (head->info_ptr)
-		C_FREE(head->info_ptr, head->info_size, char);
+	if (head->info_size)
+		FREE(head->info_ptr);
 
-	if (head->name_ptr)
-		C_FREE(head->name_ptr, head->name_size, char);
+	if (head->name_size)
+		FREE(head->name_ptr);
 
-	if (head->text_ptr)
-		C_FREE(head->text_ptr, head->text_size, char);
+	if (head->text_size)
+		FREE(head->text_ptr);
 
 	/* Success */
 	return (0);
@@ -864,6 +870,24 @@ static errr init_g_info(void)
 }
 
 
+/*
+ * Initialize the "flavor_info" array
+ */
+static errr init_flavor_info(void)
+{
+	/* Init the header */
+	init_header(&flavor_head, z_info->flavor_max, sizeof(flavor_type));
+
+#ifdef ALLOW_TEMPLATES
+
+	/* Save a pointer to the parsing function */
+	flavor_head.parse_info_txt = parse_flavor_info;
+
+#endif /* ALLOW_TEMPLATES */
+
+	return init_info("flavor", &flavor_head,
+	                 (void*)&flavor_info, (void*)&flavor_name, (void*)&flavor_text);
+}
 
 
 /*** Initialize others ***/
@@ -1802,6 +1826,10 @@ void init_angband(void)
 	note("[Initializing arrays... (prices)]");
 	if (init_g_info()) quit("Cannot initialize prices");
 
+	/* Initialize flavor info */
+	note("[Initializing arrays... (flavors)]");
+	if (init_flavor_info()) quit("Cannot initialize flavors");
+	
 	/* Initialize some other arrays */
 	note("[Initializing arrays... (other)]");
 	if (init_other()) quit("Cannot initialize other stuff");
@@ -1810,6 +1838,9 @@ void init_angband(void)
 	note("[Initializing arrays... (alloc)]");
 	if (init_alloc()) quit("Cannot initialize alloc stuff");
 
+	/* Initialize scripting */
+	note("[Initializing scripts... (scripts)]");
+	if (script_init()) quit("Cannot initialize scripts");
 
 	/*** Load default user pref files ***/
 
@@ -1828,6 +1859,10 @@ void cleanup_angband(void)
 {
 	int i, j;
 
+
+	/* Free the scripting support */
+	script_free();
+
 	/* Free the macros */
 	for (i = 0; i < macro__num; ++i)
 	{
@@ -1835,8 +1870,8 @@ void cleanup_angband(void)
 		string_free(macro__act[i]);
 	}
 
-	C_FREE((void*)macro__pat, MACRO_MAX, cptr);
-	C_FREE((void*)macro__act, MACRO_MAX, cptr);
+	FREE((void*)macro__pat);
+	FREE((void*)macro__act);
 
 	/* Free the keymaps */
 	for (i = 0; i < KEYMAP_MODES; ++i)
@@ -1848,9 +1883,9 @@ void cleanup_angband(void)
 	}
 
 	/* Free the allocation tables */
-	C_FREE(alloc_ego_table, alloc_ego_size, alloc_entry);
-	C_FREE(alloc_race_table, alloc_race_size, alloc_entry);
-	C_FREE(alloc_kind_table, alloc_kind_size, alloc_entry);
+	FREE(alloc_ego_table);
+	FREE(alloc_race_table);
+	FREE(alloc_kind_table);
 
 	if (store)
 	{
@@ -1861,49 +1896,49 @@ void cleanup_angband(void)
 			store_type *st_ptr = &store[i];
 
 			/* Free the store inventory */
-			C_FREE(st_ptr->stock, st_ptr->stock_size, object_type);
+			FREE(st_ptr->stock);
 
 			/* No "legal items" for the black market or home */
 			if ((i == STORE_B_MARKET) || (i == STORE_HOME)) continue;
 
 			/* Free the legal item choices */
-			C_FREE(st_ptr->table, STORE_CHOICES, s16b);
+			FREE(st_ptr->table);
 		}
 	}
 
 	/* Free the stores */
-	C_FREE(store, MAX_STORES, store_type);
+	FREE(store);
 
 	/* Free the player inventory */
-	C_FREE(inventory, INVEN_TOTAL, object_type);
+	FREE(inventory);
 
 	/* Free the quest list */
-	C_FREE(q_list, MAX_Q_IDX, quest);
+	FREE(q_list);
 
 	/* Free the lore, monster, and object lists */
-	C_FREE(l_list, z_info->r_max, monster_lore);
-	C_FREE(m_list, z_info->m_max, monster_type);
-	C_FREE(o_list, z_info->o_max, object_type);
+	FREE(l_list);
+	FREE(m_list);
+	FREE(o_list);
 
 #ifdef MONSTER_FLOW
 
 	/* Flow arrays */
-	C_FREE(cave_when, DUNGEON_HGT, byte_wid);
-	C_FREE(cave_cost, DUNGEON_HGT, byte_wid);
+	FREE(cave_when);
+	FREE(cave_cost);
 
 #endif /* MONSTER_FLOW */
 
 	/* Free the cave */
-	C_FREE(cave_o_idx, DUNGEON_HGT, s16b_wid);
-	C_FREE(cave_m_idx, DUNGEON_HGT, s16b_wid);
-	C_FREE(cave_feat, DUNGEON_HGT, byte_wid);
-	C_FREE(cave_info, DUNGEON_HGT, byte_256);
+	FREE(cave_o_idx);
+	FREE(cave_m_idx);
+	FREE(cave_feat);
+	FREE(cave_info);
 
 	/* Free the "update_view()" array */
-	C_FREE(view_g, VIEW_MAX, u16b);
+	FREE(view_g);
 
 	/* Free the temp array */
-	C_FREE(temp_g, TEMP_MAX, u16b);
+	FREE(temp_g);
 
 	/* Free the messages */
 	messages_free();
@@ -1912,6 +1947,7 @@ void cleanup_angband(void)
 	quarks_free();
 
 	/* Free the info, name, and text arrays */
+	free_info(&flavor_head);
 	free_info(&g_head);
 	free_info(&b_head);
 	free_info(&p_head);

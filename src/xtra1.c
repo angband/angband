@@ -343,7 +343,7 @@ static void prt_depth(void)
 	}
 
 	/* Right-Adjust the "depth", and clear old values */
-	prt(format("%7s", depths), 23, COL_DEPTH);
+	prt(format("%7s", depths), ROW_DEPTH, COL_DEPTH);
 }
 
 
@@ -1146,6 +1146,8 @@ static void calc_spells(void)
 
 	const magic_type *s_ptr;
 
+	s16b old_spells;
+
 	cptr p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
 
@@ -1157,6 +1159,9 @@ static void calc_spells(void)
 
 	/* Hack -- handle "xtra" mode */
 	if (character_xtra) return;
+
+	/* Save the new_spells value */
+	old_spells = p_ptr->new_spells;
 
 
 	/* Determine the number of spells allowed */
@@ -1376,7 +1381,7 @@ static void calc_spells(void)
 	if (p_ptr->new_spells > k) p_ptr->new_spells = k;
 
 	/* Spell count changed */
-	if (p_ptr->old_spells != p_ptr->new_spells)
+	if (old_spells != p_ptr->new_spells)
 	{
 		/* Message if needed */
 		if (p_ptr->new_spells)
@@ -1386,9 +1391,6 @@ static void calc_spells(void)
 			           p_ptr->new_spells, p,
 			           (p_ptr->new_spells != 1) ? "s" : "");
 		}
-
-		/* Save the new_spells value */
-		p_ptr->old_spells = p_ptr->new_spells;
 
 		/* Redraw Study Status */
 		p_ptr->redraw |= (PR_STUDY);
@@ -1411,6 +1413,8 @@ static void calc_mana(void)
 
 	object_type *o_ptr;
 
+	bool old_cumber_glove = p_ptr->cumber_glove;
+	bool old_cumber_armor = p_ptr->cumber_armor;
 
 	/* Hack -- Must be literate */
 	if (!cp_ptr->spell_book) return;
@@ -1511,7 +1515,7 @@ static void calc_mana(void)
 	if (character_xtra) return;
 
 	/* Take note when "glove state" changes */
-	if (p_ptr->old_cumber_glove != p_ptr->cumber_glove)
+	if (old_cumber_glove != p_ptr->cumber_glove)
 	{
 		/* Message */
 		if (p_ptr->cumber_glove)
@@ -1522,14 +1526,11 @@ static void calc_mana(void)
 		{
 			msg_print("Your hands feel more suitable for spellcasting.");
 		}
-
-		/* Save it */
-		p_ptr->old_cumber_glove = p_ptr->cumber_glove;
 	}
 
 
 	/* Take note when "armor state" changes */
-	if (p_ptr->old_cumber_armor != p_ptr->cumber_armor)
+	if (old_cumber_armor != p_ptr->cumber_armor)
 	{
 		/* Message */
 		if (p_ptr->cumber_armor)
@@ -1540,9 +1541,6 @@ static void calc_mana(void)
 		{
 			msg_print("You feel able to move more freely.");
 		}
-
-		/* Save it */
-		p_ptr->old_cumber_armor = p_ptr->cumber_armor;
 	}
 }
 
@@ -1594,32 +1592,62 @@ static void calc_hitpoints(void)
  */
 static void calc_torch(void)
 {
-	object_type *o_ptr = &inventory[INVEN_LITE];
+	int i;
+	object_type *o_ptr;
+	u32b f1, f2, f3;
+
+	s16b old_lite = p_ptr->cur_lite;
+
 
 	/* Assume no light */
 	p_ptr->cur_lite = 0;
 
-	/* Player is glowing */
-	if (p_ptr->lite) p_ptr->cur_lite = 1;
-
-	/* Examine actual lites */
-	if (o_ptr->tval == TV_LITE)
+	/* Loop through all wielded items */
+	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 	{
-		/* Torches (with fuel) provide some lite */
-		if ((o_ptr->sval == SV_LITE_TORCH) && (o_ptr->pval > 0))
-		{
-			p_ptr->cur_lite = 1;
-		}
+		o_ptr = &inventory[i];
 
-		/* Lanterns (with fuel) provide more lite */
-		if ((o_ptr->sval == SV_LITE_LANTERN) && (o_ptr->pval > 0))
-		{
-			p_ptr->cur_lite = 2;
-		}
+		/* Skip empty slots */
+		if (!o_ptr->k_idx) continue;
 
-		/* Artifact Lites provide permanent, bright, lite */
-		if (artifact_p(o_ptr)) p_ptr->cur_lite = 3;
+		/* Examine actual lites */
+		if (o_ptr->tval == TV_LITE)
+		{
+			/* Artifact Lites provide permanent, bright, lite */
+			if (artifact_p(o_ptr))
+			{
+				p_ptr->cur_lite += 3;
+				continue;
+			}
+			
+			/* Lanterns (with fuel) provide more lite */
+			if ((o_ptr->sval == SV_LITE_LANTERN) && (o_ptr->pval > 0))
+			{
+				p_ptr->cur_lite += 2;
+				continue;
+			}
+			
+			/* Torches (with fuel) provide some lite */
+			if ((o_ptr->sval == SV_LITE_TORCH) && (o_ptr->pval > 0))
+			{
+				p_ptr->cur_lite += 1;
+				continue;
+			}
+		}
+		else
+		{
+			/* Extract the flags */
+			object_flags(o_ptr, &f1, &f2, &f3);
+
+			/* does this item glow? */
+			if (f3 & TR3_LITE) p_ptr->cur_lite++;
+		}
 	}
+
+
+	/* Player is glowing */
+	if (p_ptr->lite) p_ptr->cur_lite++;
+
 
 	/* Reduce lite when running if requested */
 	if (p_ptr->running && view_reduce_lite)
@@ -1629,16 +1657,12 @@ static void calc_torch(void)
 	}
 
 	/* Notice changes in the "lite radius" */
-	if (p_ptr->old_lite != p_ptr->cur_lite)
+	if (old_lite != p_ptr->cur_lite)
 	{
 		/* Update the visuals */
 		p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
-
-		/* Remember the old lite */
-		p_ptr->old_lite = p_ptr->cur_lite;
 	}
 }
-
 
 
 /*
@@ -1696,6 +1720,10 @@ static void calc_bonuses(void)
 	int old_stat_use[A_MAX];
 	int old_stat_ind[A_MAX];
 
+	bool old_heavy_shoot;
+	bool old_heavy_wield;
+	bool old_icky_wield;
+
 	object_type *o_ptr;
 
 	u32b f1, f2, f3;
@@ -1721,6 +1749,10 @@ static void calc_bonuses(void)
 		old_stat_use[i] = p_ptr->stat_use[i];
 		old_stat_ind[i] = p_ptr->stat_ind[i];
 	}
+
+	old_heavy_shoot = p_ptr->heavy_shoot;
+	old_heavy_wield = p_ptr->heavy_wield;
+	old_icky_wield = p_ptr->icky_wield;
 
 
 	/*** Reset ***/
@@ -1935,7 +1967,6 @@ static void calc_bonuses(void)
 		/* Good flags */
 		if (f3 & (TR3_SLOW_DIGEST)) p_ptr->slow_digest = TRUE;
 		if (f3 & (TR3_FEATHER)) p_ptr->ffall = TRUE;
-		if (f3 & (TR3_LITE)) p_ptr->lite = TRUE;
 		if (f3 & (TR3_REGEN)) p_ptr->regenerate = TRUE;
 		if (f3 & (TR3_TELEPATHY)) p_ptr->telepathy = TRUE;
 		if (f3 & (TR3_SEE_INVIS)) p_ptr->see_inv = TRUE;
@@ -2501,7 +2532,7 @@ static void calc_bonuses(void)
 	if (character_xtra) return;
 
 	/* Take note when "heavy bow" changes */
-	if (p_ptr->old_heavy_shoot != p_ptr->heavy_shoot)
+	if (old_heavy_shoot != p_ptr->heavy_shoot)
 	{
 		/* Message */
 		if (p_ptr->heavy_shoot)
@@ -2516,13 +2547,10 @@ static void calc_bonuses(void)
 		{
 			msg_print("You feel relieved to put down your heavy bow.");
 		}
-
-		/* Save it */
-		p_ptr->old_heavy_shoot = p_ptr->heavy_shoot;
 	}
 
 	/* Take note when "heavy weapon" changes */
-	if (p_ptr->old_heavy_wield != p_ptr->heavy_wield)
+	if (old_heavy_wield != p_ptr->heavy_wield)
 	{
 		/* Message */
 		if (p_ptr->heavy_wield)
@@ -2535,15 +2563,12 @@ static void calc_bonuses(void)
 		}
 		else
 		{
-			msg_print("You feel relieved to put down your heavy weapon.");
+			msg_print("You feel relieved to put down your heavy weapon.");	
 		}
-
-		/* Save it */
-		p_ptr->old_heavy_wield = p_ptr->heavy_wield;
 	}
 
 	/* Take note when "illegal weapon" changes */
-	if (p_ptr->old_icky_wield != p_ptr->icky_wield)
+	if (old_icky_wield != p_ptr->icky_wield)
 	{
 		/* Message */
 		if (p_ptr->icky_wield)
@@ -2558,9 +2583,6 @@ static void calc_bonuses(void)
 		{
 			msg_print("You feel more comfortable after removing your weapon.");
 		}
-
-		/* Save it */
-		p_ptr->old_icky_wield = p_ptr->icky_wield;
 	}
 }
 

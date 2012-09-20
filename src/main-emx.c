@@ -739,7 +739,7 @@ static void Term_nuke_pipe_emx(term *t)
 		fputc(PIP_NUKE, tp->out); /* Terminate client */
 		fflush(tp->out);
 		fclose(tp->out);         /* Close Pipe */
-  		FREE(t->data, termData); /* free xtra memory for pipe data */
+  		FREE(t->data);           /* free xtra memory for pipe data */
 		t->data=NULL;            /* Paranoia */
 	}
 }
@@ -1095,7 +1095,7 @@ static void Term_init_emx(term *t)
 static void Term_nuke_emx(term *t)
 {
 	if (t->data_flag && t->data != NULL) {
- 		FREE(t->data, termData);
+ 		FREE(t->data);
    		t->data = NULL;
     	}
 }

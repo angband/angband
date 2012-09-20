@@ -345,7 +345,7 @@ XImage *ReadBMP(Display *dpy, char *Name)
 	/* Failure */
 	if (Res == NULL)
 	{
-		C_KILL(Data, total, char);
+		KILL(Data);
 		fclose(f);
 		return (NULL);
 	}

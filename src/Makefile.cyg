@@ -11,50 +11,18 @@ WRES = windres
 LIBS = -s -mno-cygwin -mwindows -e _mainCRTStartup -lwinmm
 CFLAGS = -Wall -W -pedantic -mno-cygwin -O2 -fno-strength-reduce -DUSE_TRANSPARENCY -DWINDOWS
 
+LUALIBS = -s -mno-cygwin
 
-SRCS = \
-	angband.rc \
-	birth.c \
-	cave.c \
-	cmd1.c \
-	cmd2.c \
-	cmd3.c \
-	cmd4.c \
-	cmd5.c \
-	cmd6.c \
-	dungeon.c \
-	files.c \
-	generate.c \
-	init1.c \
-	init2.c \
-	load1.c \
-	load2.c \
-	main-win.c \
-	melee1.c \
-	melee2.c \
-	monster1.c \
-	monster2.c \
-	object1.c \
-	object2.c \
-	randart.c \
-	readdib.c \
-	save.c \
-	spells1.c \
-	spells2.c \
-	store.c \
-	tables.c \
-	util.c \
-	variable.c \
-	wizard1.c \
-	wizard2.c \
-	xtra1.c \
-	xtra2.c \
-	z-form.c \
-	z-rand.c \
-	z-term.c \
-	z-util.c \
-	z-virt.c 
+LUAOBJS = \
+	lua/lapi.o      lua/ldebug.o  lua/lmem.o     lua/lstrlib.o  lua/lvm.o       lua/tolua_lb.o \
+	lua/lauxlib.o   lua/ldo.o     lua/lobject.o  lua/ltable.o   lua/lzio.o      lua/tolua_rg.o \
+	lua/lbaselib.o  lua/lfunc.o   lua/lparser.o  lua/ltests.o   lua/tolua_bd.o  lua/tolua_tm.o \
+	lua/lcode.o     lua/lgc.o     lua/lstate.o   lua/ltm.o      lua/tolua_eh.o  lua/tolua_tt.o \
+	lua/ldblib.o    lua/llex.o    lua/lstring.o  lua/lundump.o  lua/tolua_gp.o
 
+TOLUAOBJS = \
+	lua/tolua.o lua/tolualua.o lua/liolib.o \
+	$(LUAOBJS)
 
 EXOBJS = \
 	angband.res \
@@ -97,8 +65,9 @@ EXOBJS = \
 	z-rand.o \
 	z-term.o \
 	z-util.o \
-	z-virt.o 
-
+	z-virt.o \
+	script.o \
+	$(LUAOBJS)
 
 HDRS = \
 	h-basic.h \
@@ -139,6 +108,8 @@ cleanbin:
 
 clean:	cleanobjs cleanbin
 
+tolua: $(TOLUAOBJS)
+	$(CC) -o lua/tolua $(TOLUAOBJS) $(INCDIRS) $(LIBDIRS) $(LUALIBS)
 
 #
 # Dependency rules
@@ -292,5 +263,8 @@ z-util.o: z-util.c $(HDRS) z-util.h
 	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
 
 z-virt.o: z-virt.c $(HDRS) z-virt.h z-util.h
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+.c.o:
 	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
 

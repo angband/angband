@@ -208,7 +208,7 @@ u32b Rand_div(u32b m)
 			r = (Rand_state[j] += Rand_state[Rand_place]);
 
 			/* Hack -- extract a 28-bit "random" number */
-			r = (r >> 4) / n;
+			r = ((r >> 4) & 0x0FFFFFFF) / n;
 
 			/* Advance the index */
 			Rand_place = j;

@@ -528,6 +528,14 @@ char *g_text;
 
 
 /*
+ * The object flavor arrays
+ */
+flavor_type *flavor_info;
+char *flavor_name;
+char *flavor_text;
+
+
+/*
  * Hack -- The special Angband "System Suffix"
  * This variable is used to choose an appropriate "pref-xxx" file
  */
@@ -611,6 +619,12 @@ cptr ANGBAND_DIR_USER;
  */
 cptr ANGBAND_DIR_XTRA;
 
+/*
+ * Script files
+ * These files are portable between platforms
+ */
+cptr ANGBAND_DIR_SCRIPT;
+
 
 /*
  * Total Hack -- allow all items to be listed (even empty ones)
@@ -661,6 +675,19 @@ bool (*get_obj_num_hook)(int k_idx);
 
 
 /*
+ * Hack - the destination file for text_out_to_file.
+ */
+FILE *text_out_file = NULL;
+
+
+/*
+ * Hack -- function hook to output (colored) text to the
+ * screen or to a file.
+ */
+void (*text_out_hook)(byte a, cptr str);
+
+
+/*
  * The "highscore" file descriptor, if available.
  */
 int highscore_fd = -1;
@@ -670,8 +697,3 @@ int highscore_fd = -1;
  * Use transparent tiles
  */
 bool use_transparency = FALSE;
-
-/*
- * Game can be saved
- */
-bool can_save = TRUE;

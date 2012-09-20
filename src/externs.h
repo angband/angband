@@ -202,6 +202,9 @@ extern char *b_text;
 extern byte *g_info;
 extern char *g_name;
 extern char *g_text;
+extern flavor_type *flavor_info;
+extern char *flavor_name;
+extern char *flavor_text;
 extern cptr ANGBAND_SYS;
 extern cptr ANGBAND_GRAF;
 extern cptr ANGBAND_DIR;
@@ -216,6 +219,7 @@ extern cptr ANGBAND_DIR_SAVE;
 extern cptr ANGBAND_DIR_PREF;
 extern cptr ANGBAND_DIR_USER;
 extern cptr ANGBAND_DIR_XTRA;
+extern cptr ANGBAND_DIR_SCRIPT;
 extern bool item_tester_full;
 extern byte item_tester_tval;
 extern bool (*item_tester_hook)(const object_type*);
@@ -223,9 +227,10 @@ extern bool (*ang_sort_comp)(vptr u, vptr v, int a, int b);
 extern void (*ang_sort_swap)(vptr u, vptr v, int a, int b);
 extern bool (*get_mon_num_hook)(int r_idx);
 extern bool (*get_obj_num_hook)(int k_idx);
+extern FILE *text_out_file;
+extern void (*text_out_hook)(byte a, cptr str);
 extern int highscore_fd;
 extern bool use_transparency;
-extern bool can_save;
 
 
 /*
@@ -343,6 +348,7 @@ extern void do_cmd_save_screen(void);
 extern void do_cmd_knowledge(void);
 
 /* cmd5.c */
+extern void do_cmd_browse_aux(const object_type *o_ptr);
 extern void do_cmd_browse(void);
 extern void do_cmd_study(void);
 extern void do_cmd_cast(void);
@@ -411,6 +417,7 @@ extern bool make_attack_spell(int m_idx);
 extern void process_monsters(byte minimum_energy);
 
 /* monster1.c */
+extern void describe_monster(int r_idx, bool spoilers);
 extern void screen_roff(int r_idx);
 extern void display_roff(int r_idx);
 
@@ -446,8 +453,8 @@ extern void object_flags(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
 extern void object_flags_known(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3);
 extern void object_desc(char *buf, const object_type *o_ptr, int pref, int mode);
 extern void object_desc_store(char *buf, const object_type *o_ptr, int pref, int mode);
-extern cptr item_activation(const object_type *o_ptr);
-extern int identify_random_gen(const object_type *o_ptr, cptr *info, int len);
+extern void describe_item_activation(const object_type *o_ptr);
+extern void identify_random_gen(const object_type *o_ptr);
 extern bool identify_fully_aux(const object_type *o_ptr);
 extern char index_to_label(int i);
 extern s16b label_to_inven(int c);
@@ -510,7 +517,6 @@ extern s16b inven_takeoff(int item, int amt);
 extern void inven_drop(int item, int amt);
 extern void combine_pack(void);
 extern void reorder_pack(void);
-extern void display_spell_list(void);
 extern s16b spell_chance(int spell);
 extern bool spell_okay(int spell, bool known);
 extern void spell_info(char *p, int spell);
@@ -591,6 +597,7 @@ extern bool fire_bolt(int typ, int dir, int dam);
 extern bool fire_beam(int typ, int dir, int dam);
 extern bool fire_bolt_or_beam(int prob, int typ, int dir, int dam);
 extern bool lite_line(int dir);
+extern bool strong_lite_line(int dir);
 extern bool drain_life(int dir, int dam);
 extern bool wall_to_mud(int dir);
 extern bool destroy_door(int dir);
@@ -608,6 +615,8 @@ extern bool door_creation(void);
 extern bool trap_creation(void);
 extern bool destroy_doors_touch(void);
 extern bool sleep_monsters_touch(void);
+extern bool curse_armor(void);
+extern bool curse_weapon(void);
 
 /* store.c */
 extern void do_cmd_store(void);
@@ -667,8 +676,10 @@ extern void c_put_str(byte attr, cptr str, int row, int col);
 extern void put_str(cptr str, int row, int col);
 extern void c_prt(byte attr, cptr str, int row, int col);
 extern void prt(cptr str, int row, int col);
-extern void c_roff(byte a, cptr str);
-extern void roff(cptr str);
+extern void text_out_to_file(byte attr, cptr str);
+extern void text_out_to_screen(byte a, cptr str);
+extern void text_out(cptr str);
+extern void text_out_c(byte a, cptr str);
 extern void clear_from(int row);
 extern bool askfor_aux(char *buf, int len);
 extern bool get_string(cptr prompt, char *buf, int len);

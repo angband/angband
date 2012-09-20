@@ -156,9 +156,7 @@ Elemental Branded Weapons.
      element. (It should be noted that the magical damage bonus is not
      affected by this: a weapon of Flame (2d6) (+5,+6) does 6d6+6 damage 
      per hit, not 6d6+18, against creatures which are not fire-resistant.)
-     There are weapons of Flame, Frost, Lightning and Acid elemental brands,
-     which are named respectively "Burning", "Freezing", "Shocking" and
-     "Melting".
+     There are weapons of Flame, Frost, Lightning, Acid and Poison brands.
 
 Weapons of Slaying enemies.
      These weapons do extra damage against creatures of a vulnerable type.
@@ -222,7 +220,10 @@ Ammo of Backbiting.
     back: but so far, this rumour has proved unfounded, and is believed
     to be false.
 
-Apart from these there are some very rare and well made blades in the
+These are the most common types of ego-weapon: note that they are not the 
+ONLY ego-items available in the dungeon, there may be more.
+
+Apart from these there are some very rare and well made weapons in the
 dungeon with not necessarily any special abilities. These include Blades
 of Chaos, Maces of Disruption, and Scythes of Slicing.  They can also be
 ego weapons like the ones above.  For example, a Blade of Chaos (Holy
@@ -236,26 +237,26 @@ quality of armor being worn. Armor class will generally run from about 0 to
  
 The larger your armor class, the more protective it is.  A negative armor
 class would actually help get you hit.  Armor protects you in three manners.
-One, it makes you harder to be hit for damage.  A hit for no damage is the
-same as a miss.  Two, good armor will absorb some of the damage that your
-character would have taken from normal attacks.  Three, acid damage is
-reduced by wearing body armor (but the armor will be damaged instead).  It
-is obvious that a high armor class is a must for surviving the deeper levels
-of Angband.
+Firstly, it makes you harder to be hit for damage.  A hit for no damage 
+counts as a miss, and is described as a miss.  Secondly, good armor will 
+absorb some of the damage that your character would have taken from normal 
+attacks.  Thirdly, acid damage is reduced by wearing body armor (but the 
+armor will be damaged instead).  It is obvious that a high armor class is 
+vital for surviving the deeper levels of Angband.
 
 Each piece of armour has a base armor value, which, like the damage from
 weapons, is assumed known by the player, and a magic bonus, which will not
 be displayed unless the armor has been identified or was bought in a store.
 
-Armor class values are always displayed between a set of brackets as "[#]"
-or "[#,+#]".  The first value is the armor class of the item.  The second
-number is the magical bonus of the item which is only displayed if known,
-and will always have a sign preceding the value.  Note that a few rings,
-amulets, and weapons also have the "[+#]" notation, indicating that they
-provide an armor bonus.  Many pieces of heavy body armor will also have a
-"(-#)" before the "[#,+#]", which indicates that the weight of the armor
-decreases your chances of hitting monsters.  This can range from nonexistent
-for very light armor to (-8) for the very heaviest armor!
+Armor class values are always displayed between a set of square brackets, 
+as "[#]" or "[#,+#]".  The first value is the base armor class of the armor.  
+The second number is the magical bonus of the item, which is only displayed 
+if known, and will always have a sign preceding the value.  Note that a few 
+rings, amulets, and weapons also have the "[+#]" notation, indicating that 
+they provide an armor bonus.  Many pieces of heavy body armor will also have 
+a "(-#)" (in normal brackets) before the "[#,+#]", which indicates that the 
+weight of the armor decreases your chances of hitting monsters.  This can 
+range from nonexistent for very light armor to (-8) for the heaviest armor!
 
 Some pieces of armor will possess special abilities denoted by the following
 names:
@@ -367,11 +368,6 @@ Cloak of Stealth.
      This cloak will increase the wearer's stealth, making the wearer less
      likely to wake up sleeping monsters.
 
-Cloak of the Magi.
-     This cloak increases and sustains intelligence, and allows its wearer
-     to remain hidden from monsters, all the better to surprise them by 
-     casting a spell on them.
-
 Cloak of Aman.
      These exceptionally rare cloaks provide great stealth, have a very 
      high enchantment, and one random resistance.
@@ -441,6 +437,9 @@ Boots of Slowness.
 Boots of Annoyance.
      These boots will both slow the player and aggravate monsters.
 
+Once again, these are not necessarily the ONLY ego-items in the dungeon, 
+only the most common.
+
 Apart from these there are some very rare and well-made armours in the
 dungeon with not necessarily any special abilities. These include Shields of
 Deflection, Adamantite Plate Mail, Mithril Plate Mail, Mithril Chain Mail,
@@ -483,7 +482,7 @@ Some monsters may cast spells that teleport the player character. To these,
 there is no saving throw, except to those that would actually teleport him 
 up or down one dungeon level. Having resistance to nexus will also prevent
 being level-teleported, but not normal teleportation spell attacks. The 
-player may teleport monsters in the same way, with a spell or a wand or rod.
+player may teleport monsters in the same way, with a spell, wand or rod.
 
 Other attacks are usually elemental-based, including the aforementioned
 example of dragon breath. Many monsters can breathe various attacks or
@@ -499,9 +498,9 @@ other targets. Ball spells and breath weapons affect an area: other monsters
 caught in the blast take reduced damage depending on how close to the 
 centre of the blast they are. Bolt and ball spells depend on the level of 
 the monster or player: breath weapons are proportional to a fraction of the 
-monster's current hit points, with a maximum cap on the damage which is 
+monster's current hit points, with a maximum cap on the damage (which is 
 higher for the most common of such attacks, owing to the fact that the 
-resistances are also easier to find.
+resistances are also easier to find.)
 
 In the case of fire, cold, lightning, acid and poison, if the monster has 
 resistance to a player attack of this kind it will take almost no damage.

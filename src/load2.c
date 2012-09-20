@@ -847,6 +847,15 @@ static errr rd_item(object_type *o_ptr)
 			/* Force a meaningful pval */
 			if (!o_ptr->pval) o_ptr->pval = 1;
 		}
+
+		/* Mega-Hack - enforce "(Blasted)" status */
+		if (o_ptr->name2 == EGO_BLASTED)
+		{
+			/* These were set to k_info values by preceding code */
+			o_ptr->ac = 0;
+			o_ptr->dd = 0;
+			o_ptr->ds = 0;
+		}
 	}
 
 
@@ -913,29 +922,29 @@ static void rd_lore(int r_idx)
 		strip_bytes(20);
 
 		/* Kills during this life */
-		rd_s16b(&l_ptr->r_pkills);
+		rd_s16b(&l_ptr->pkills);
 
 		/* Strip something */
 		strip_bytes(2);
 
 		/* Count observations of attacks */
-		rd_byte(&l_ptr->r_blows[0]);
-		rd_byte(&l_ptr->r_blows[1]);
-		rd_byte(&l_ptr->r_blows[2]);
-		rd_byte(&l_ptr->r_blows[3]);
+		rd_byte(&l_ptr->blows[0]);
+		rd_byte(&l_ptr->blows[1]);
+		rd_byte(&l_ptr->blows[2]);
+		rd_byte(&l_ptr->blows[3]);
 
 		/* Count some other stuff */
-		rd_byte(&l_ptr->r_wake);
-		rd_byte(&l_ptr->r_ignore);
+		rd_byte(&l_ptr->wake);
+		rd_byte(&l_ptr->ignore);
 
 		/* Strip something */
 		strip_bytes(2);
 
 		/* Count kills by player */
-		rd_s16b(&l_ptr->r_tkills);
+		rd_s16b(&l_ptr->tkills);
 
 		/* Count deaths of player */
-		rd_s16b(&l_ptr->r_deaths);
+		rd_s16b(&l_ptr->deaths);
 
 		/* Read the "Racial" monster limit per level */
 		rd_byte(&r_ptr->max_num);
@@ -944,47 +953,47 @@ static void rd_lore(int r_idx)
 		strip_bytes(1);
 
 		/* Hack -- guess at "sights" */
-		l_ptr->r_sights = MAX(l_ptr->r_tkills, l_ptr->r_deaths);
+		l_ptr->sights = MAX(l_ptr->tkills, l_ptr->deaths);
 	}
 
 	/* Current */
 	else
 	{
 		/* Count sights/deaths/kills */
-		rd_s16b(&l_ptr->r_sights);
-		rd_s16b(&l_ptr->r_deaths);
-		rd_s16b(&l_ptr->r_pkills);
-		rd_s16b(&l_ptr->r_tkills);
+		rd_s16b(&l_ptr->sights);
+		rd_s16b(&l_ptr->deaths);
+		rd_s16b(&l_ptr->pkills);
+		rd_s16b(&l_ptr->tkills);
 
 		/* Count wakes and ignores */
-		rd_byte(&l_ptr->r_wake);
-		rd_byte(&l_ptr->r_ignore);
+		rd_byte(&l_ptr->wake);
+		rd_byte(&l_ptr->ignore);
 
 		/* Extra stuff */
-		rd_byte(&l_ptr->r_xtra1);
-		rd_byte(&l_ptr->r_xtra2);
+		rd_byte(&l_ptr->xtra1);
+		rd_byte(&l_ptr->xtra2);
 
 		/* Count drops */
-		rd_byte(&l_ptr->r_drop_gold);
-		rd_byte(&l_ptr->r_drop_item);
+		rd_byte(&l_ptr->drop_gold);
+		rd_byte(&l_ptr->drop_item);
 
 		/* Count spells */
-		rd_byte(&l_ptr->r_cast_inate);
-		rd_byte(&l_ptr->r_cast_spell);
+		rd_byte(&l_ptr->cast_innate);
+		rd_byte(&l_ptr->cast_spell);
 
 		/* Count blows of each type */
-		rd_byte(&l_ptr->r_blows[0]);
-		rd_byte(&l_ptr->r_blows[1]);
-		rd_byte(&l_ptr->r_blows[2]);
-		rd_byte(&l_ptr->r_blows[3]);
+		rd_byte(&l_ptr->blows[0]);
+		rd_byte(&l_ptr->blows[1]);
+		rd_byte(&l_ptr->blows[2]);
+		rd_byte(&l_ptr->blows[3]);
 
 		/* Memorize flags */
-		rd_u32b(&l_ptr->r_flags1);
-		rd_u32b(&l_ptr->r_flags2);
-		rd_u32b(&l_ptr->r_flags3);
-		rd_u32b(&l_ptr->r_flags4);
-		rd_u32b(&l_ptr->r_flags5);
-		rd_u32b(&l_ptr->r_flags6);
+		rd_u32b(&l_ptr->flags1);
+		rd_u32b(&l_ptr->flags2);
+		rd_u32b(&l_ptr->flags3);
+		rd_u32b(&l_ptr->flags4);
+		rd_u32b(&l_ptr->flags5);
+		rd_u32b(&l_ptr->flags6);
 
 
 		/* Read the "Racial" monster limit per level */
@@ -997,12 +1006,12 @@ static void rd_lore(int r_idx)
 	}
 
 	/* Repair the lore flags */
-	l_ptr->r_flags1 &= r_ptr->flags1;
-	l_ptr->r_flags2 &= r_ptr->flags2;
-	l_ptr->r_flags3 &= r_ptr->flags3;
-	l_ptr->r_flags4 &= r_ptr->flags4;
-	l_ptr->r_flags5 &= r_ptr->flags5;
-	l_ptr->r_flags6 &= r_ptr->flags6;
+	l_ptr->flags1 &= r_ptr->flags1;
+	l_ptr->flags2 &= r_ptr->flags2;
+	l_ptr->flags3 &= r_ptr->flags3;
+	l_ptr->flags4 &= r_ptr->flags4;
+	l_ptr->flags5 &= r_ptr->flags5;
+	l_ptr->flags6 &= r_ptr->flags6;
 }
 
 
@@ -2000,7 +2009,7 @@ static errr rd_dungeon_aux(s16b depth, s16b py, s16b px)
 
 	/*** Player ***/
 
-	/* Save depth */
+	/* Load depth */
 	p_ptr->depth = depth;
 
 	/* Place player in dungeon */
@@ -2410,6 +2419,9 @@ static errr rd_dungeon_aux(s16b depth, s16b py, s16b px)
 	/* The dungeon is ready */
 	character_dungeon = TRUE;
 
+	/* Regenerate town in post 2.9.3 versions */
+	if (older_than(2, 9, 4) && (p_ptr->depth == 0))
+		character_dungeon = FALSE;
 
 	/* Success */
 	return (0);
@@ -2551,8 +2563,9 @@ static errr rd_dungeon(void)
 
 	/*** Player ***/
 
-	/* Save depth */
+	/* Load depth */
 	p_ptr->depth = depth;
+
 
 	/* Place player in dungeon */
 	if (!player_place(py, px))
@@ -2706,6 +2719,10 @@ static errr rd_dungeon(void)
 	/* The dungeon is ready */
 	character_dungeon = TRUE;
 
+	/* Regenerate town in post 2.9.3 versions */
+	if (older_than(2, 9, 4) && (p_ptr->depth == 0))
+		character_dungeon = FALSE;
+
 	/* Success */
 	return (0);
 }
@@ -2816,23 +2833,23 @@ static errr rd_savefile_new_aux(void)
 		if (older_than(2, 7, 6))
 		{
 			/* Assume no kills */
-			l_ptr->r_pkills = 0;
+			l_ptr->pkills = 0;
 
 			/* Hack -- no previous lives */
 			if (sf_lives == 0)
 			{
 				/* All kills by this life */
-				l_ptr->r_pkills = l_ptr->r_tkills;
+				l_ptr->pkills = l_ptr->tkills;
 			}
 
 			/* Hack -- handle uniques */
 			if (r_ptr->flags1 & (RF1_UNIQUE))
 			{
 				/* Assume no kills */
-				l_ptr->r_pkills = 0;
+				l_ptr->pkills = 0;
 
 				/* Handle dead uniques */
-				if (r_ptr->max_num == 0) l_ptr->r_pkills = 1;
+				if (r_ptr->max_num == 0) l_ptr->pkills = 1;
 			}
 		}
 	}

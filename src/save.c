@@ -430,7 +430,7 @@ static errr wr_savefile(void)
 
 
 	/* Kill array XXX XXX XXX */
-	C_KILL(data_head, 65535, byte);
+	KILL(data_head);
 
 
 	/* Success */
@@ -596,7 +596,7 @@ static errr rd_savefile(void)
 
 
 	/* Kill array XXX XXX XXX */
-	C_KILL(data_head, 65535, byte);
+	KILL(data_head);
 
 
 	/* Success */
@@ -771,40 +771,40 @@ static void wr_lore(int r_idx)
 	monster_lore *l_ptr = &l_list[r_idx];
 
 	/* Count sights/deaths/kills */
-	wr_s16b(l_ptr->r_sights);
-	wr_s16b(l_ptr->r_deaths);
-	wr_s16b(l_ptr->r_pkills);
-	wr_s16b(l_ptr->r_tkills);
+	wr_s16b(l_ptr->sights);
+	wr_s16b(l_ptr->deaths);
+	wr_s16b(l_ptr->pkills);
+	wr_s16b(l_ptr->tkills);
 
 	/* Count wakes and ignores */
-	wr_byte(l_ptr->r_wake);
-	wr_byte(l_ptr->r_ignore);
+	wr_byte(l_ptr->wake);
+	wr_byte(l_ptr->ignore);
 
 	/* Extra stuff */
-	wr_byte(l_ptr->r_xtra1);
-	wr_byte(l_ptr->r_xtra2);
+	wr_byte(l_ptr->xtra1);
+	wr_byte(l_ptr->xtra2);
 
 	/* Count drops */
-	wr_byte(l_ptr->r_drop_gold);
-	wr_byte(l_ptr->r_drop_item);
+	wr_byte(l_ptr->drop_gold);
+	wr_byte(l_ptr->drop_item);
 
 	/* Count spells */
-	wr_byte(l_ptr->r_cast_inate);
-	wr_byte(l_ptr->r_cast_spell);
+	wr_byte(l_ptr->cast_innate);
+	wr_byte(l_ptr->cast_spell);
 
 	/* Count blows of each type */
-	wr_byte(l_ptr->r_blows[0]);
-	wr_byte(l_ptr->r_blows[1]);
-	wr_byte(l_ptr->r_blows[2]);
-	wr_byte(l_ptr->r_blows[3]);
+	wr_byte(l_ptr->blows[0]);
+	wr_byte(l_ptr->blows[1]);
+	wr_byte(l_ptr->blows[2]);
+	wr_byte(l_ptr->blows[3]);
 
 	/* Memorize flags */
-	wr_u32b(l_ptr->r_flags1);
-	wr_u32b(l_ptr->r_flags2);
-	wr_u32b(l_ptr->r_flags3);
-	wr_u32b(l_ptr->r_flags4);
-	wr_u32b(l_ptr->r_flags5);
-	wr_u32b(l_ptr->r_flags6);
+	wr_u32b(l_ptr->flags1);
+	wr_u32b(l_ptr->flags2);
+	wr_u32b(l_ptr->flags3);
+	wr_u32b(l_ptr->flags4);
+	wr_u32b(l_ptr->flags5);
+	wr_u32b(l_ptr->flags6);
 
 
 	/* Monster limit per level */

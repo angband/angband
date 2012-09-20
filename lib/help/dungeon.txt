@@ -109,7 +109,7 @@ urchins, young children who will mob an adventurer for money, and seem to
 come out of the woodwork when excited.  Blubbering idiots are a constant
 annoyance, but not harmful.  Public drunks wander about the town singing,
 and are of no threat to anyone.  Sneaky rogues hang about watching for a
-likely victim to mug.  And finally, what town would be complete without a
+likely victim to mug.  And finally, no town would be complete without a
 swarm of half drunk warriors, who take offense or become annoyed just for
 the fun of it. (There are assumed to be other people in the town, but they 
 are not represented on the screen as they do not interact with the player
@@ -162,7 +162,7 @@ the store owner to clear out his stock and acquire new items.  If you have
 a lot of spare gold, you can purchase every item in a store, which will
 induce the store owner to bring out new stock, and perhaps even retire.
 
-Store owners will not buy harmful or useless items.  If an object is
+Store owners will not buy known harmful or useless items.  If an object is
 unidentified, they will pay you some base price for it.  Once they have
 bought it they will immediately identify the object.  If it is a good object,
 they will add it to their inventory.  If it was a bad bargain, they simply
@@ -204,8 +204,8 @@ The Black Market ("7")
      not known for their tolerance...
 
 Your Home ("8")
-     This is your house where  you  can  store  objects  that you 
-     cannot carry on your travels, or will need at a  later date.
+     This is your house where you can store objects that you 
+     cannot carry on your travels, or will need at a later date.
 
 
 === Within The Dungeon ===
@@ -252,8 +252,9 @@ The mines are full of objects just waiting to be picked up and used.  How
 did they get there?  Well, the main source for useful items are all the
 foolish adventurers that proceeded into the dungeon before you.  They get
 killed, and the helpful creatures scatter the various treasure throughout
-the dungeon.  Many cursed items are placed there by evil sorcerers, who 
-enjoy a good joke. Especially when it gets the player killed.
+the dungeon.  Many cursed items present in the dungeon - either left behind 
+as the result of a failed attempt to create a magic items, or deliberately
+placed by evil sorcerers who enjoy a good joke when it gets you killed...
 
 Only one object may occupy a given floor location, which may or may not also
 contain one creature.  Doors, rubble, traps, and staircases are considered

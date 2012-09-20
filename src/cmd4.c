@@ -867,22 +867,23 @@ void do_cmd_options(void)
 		prt("(2) Disturbance Options", 5, 5);
 		prt("(3) Game-Play Options", 6, 5);
 		prt("(4) Efficiency Options", 7, 5);
-		prt("(5) Birth Options", 8, 5);
-		prt("(6) Cheat Options", 9, 5);
+		prt("(5) Display Options", 8, 5);
+		prt("(6) Birth Options", 9, 5);
+		prt("(7) Cheat Options", 10, 5);
 
 		/* Window flags */
-		prt("(W) Window flags", 11, 5);
+		prt("(W) Window flags", 12, 5);
 
 		/* Load and Append */
-		prt("(L) Load a user pref file", 13, 5);
-		prt("(A) Append options to a file", 14, 5);
+		prt("(L) Load a user pref file", 14, 5);
+		prt("(A) Append options to a file", 15, 5);
 
 		/* Special choices */
-		prt("(D) Base Delay Factor", 16, 5);
-		prt("(H) Hitpoint Warning", 17, 5);
+		prt("(D) Base Delay Factor", 17, 5);
+		prt("(H) Hitpoint Warning", 18, 5);
 
 		/* Prompt */
-		prt("Command: ", 19, 0);
+		prt("Command: ", 20, 0);
 
 		/* Get command */
 		ch = inkey();
@@ -914,16 +915,22 @@ void do_cmd_options(void)
 			do_cmd_options_aux(3, "Efficiency Options");
 		}
 
-		/* Birth Options */
+		/* Display Options */
 		else if (ch == '5')
 		{
-			do_cmd_options_aux(4, "Birth Options");
+			do_cmd_options_aux(4, "Display Options");
+		}
+
+		/* Birth Options */
+		else if (ch == '6')
+		{
+			do_cmd_options_aux(5, "Birth Options");
 		}
 
 		/* Cheating Options */
-		else if (ch == '6')
+		else if (ch == '7')
 		{
-			do_cmd_options_aux(5, "Cheat Options");
+			do_cmd_options_aux(6, "Cheat Options");
 		}
 
 		/* Window flags */
@@ -936,7 +943,7 @@ void do_cmd_options(void)
 		else if ((ch == 'L') || (ch == 'l'))
 		{
 			/* Ask for and load a user pref file */
-			do_cmd_pref_file_hack(19);
+			do_cmd_pref_file_hack(20);
 		}
 
 		/* Append options to a file */
@@ -945,7 +952,7 @@ void do_cmd_options(void)
 			char ftmp[80];
 
 			/* Prompt */
-			prt("Command: Append options to a file", 19, 0);
+			prt("Command: Append options to a file", 20, 0);
 
 			/* Prompt */
 			prt("File: ", 21, 0);
@@ -973,7 +980,7 @@ void do_cmd_options(void)
 		else if ((ch == 'D') || (ch == 'd'))
 		{
 			/* Prompt */
-			prt("Command: Base Delay Factor", 19, 0);
+			prt("Command: Base Delay Factor", 20, 0);
 
 			/* Get a new value */
 			while (1)
@@ -995,7 +1002,7 @@ void do_cmd_options(void)
 		else if ((ch == 'H') || (ch == 'h'))
 		{
 			/* Prompt */
-			prt("Command: Hitpoint Warning", 19, 0);
+			prt("Command: Hitpoint Warning", 20, 0);
 
 			/* Get a new value */
 			while (1)
@@ -1692,11 +1699,11 @@ void do_cmd_visuals(void)
 		prt("(2) Dump monster attr/chars", 5, 5);
 		prt("(3) Dump object attr/chars", 6, 5);
 		prt("(4) Dump feature attr/chars", 7, 5);
-		prt("(5) (unused)", 8, 5);
+		prt("(5) Dump flavor attr/chars", 8, 5);
 		prt("(6) Change monster attr/chars", 9, 5);
 		prt("(7) Change object attr/chars", 10, 5);
 		prt("(8) Change feature attr/chars", 11, 5);
-		prt("(9) (unused)", 12, 5);
+		prt("(9) Change flavor attr/chars", 12, 5);
 #endif
 		prt("(0) Reset visuals", 13, 5);
 
@@ -1895,6 +1902,62 @@ void do_cmd_visuals(void)
 			msg_print("Dumped feature attr/chars.");
 		}
 
+		/* Dump flavor attr/chars */
+		else if (ch == '5')
+		{
+			char ftmp[80];
+
+			/* Prompt */
+			prt("Command: Dump flavor attr/chars", 15, 0);
+
+			/* Prompt */
+			prt("File: ", 17, 0);
+
+			/* Default filename */
+			sprintf(ftmp, "%s.prf", op_ptr->base_name);
+
+			/* Get a filename */
+			if (!askfor_aux(ftmp, 80)) continue;
+
+			/* Build the filename */
+			path_build(buf, 1024, ANGBAND_DIR_USER, ftmp);
+
+			/* Append to the file */
+			fff = my_fopen(buf, "a");
+
+			/* Failure */
+			if (!fff) continue;
+
+
+			/* Skip some lines */
+			fprintf(fff, "\n\n");
+
+			/* Start dumping */
+			fprintf(fff, "# Flavor attr/char definitions\n\n");
+
+			/* Dump flavors */
+			for (i = 0; i < z_info->flavor_max; i++)
+			{
+				flavor_type *flavor_ptr = &flavor_info[i];
+
+				/* Dump a comment */
+				fprintf(fff, "# %s\n", (flavor_text + flavor_ptr->text));
+
+				/* Dump the flavor attr/char info */
+				fprintf(fff, "L:%d:0x%02X:0x%02X\n\n", i,
+				        (byte)(flavor_ptr->x_attr), (byte)(flavor_ptr->x_char));
+			}
+
+			/* All done */
+			fprintf(fff, "\n\n\n\n");
+
+			/* Close */
+			my_fclose(fff);
+
+			/* Message */
+			msg_print("Dumped flavor attr/chars.");
+		}
+
 		/* Modify monster attr/chars */
 		else if (ch == '6')
 		{
@@ -2060,7 +2123,62 @@ void do_cmd_visuals(void)
 			}
 		}
 
-#endif
+		/* Modify flavor attr/chars */
+		else if (ch == '9')
+		{
+			static int f = 0;
+
+			/* Prompt */
+			prt("Command: Change flavor attr/chars", 15, 0);
+
+			/* Hack -- query until done */
+			while (1)
+			{
+				flavor_type *flavor_ptr = &flavor_info[f];
+
+				byte da = (byte)(flavor_ptr->d_attr);
+				char dc = (byte)(flavor_ptr->d_char);
+				byte ca = (byte)(flavor_ptr->x_attr);
+				char cc = (byte)(flavor_ptr->x_char);
+
+				/* Label the object */
+				Term_putstr(5, 17, -1, TERM_WHITE,
+				            format("Flavor = %d, Text = %-40.40s",
+				                   f, (flavor_text + flavor_ptr->text)));
+
+				/* Label the Default values */
+				Term_putstr(10, 19, -1, TERM_WHITE,
+				            format("Default attr/char = %3d / %3d", da, dc));
+				Term_putstr(40, 19, -1, TERM_WHITE, "<< ? >>");
+				Term_putch(43, 19, da, dc);
+
+				/* Label the Current values */
+				Term_putstr(10, 20, -1, TERM_WHITE,
+				            format("Current attr/char = %3d / %3d", ca, cc));
+				Term_putstr(40, 20, -1, TERM_WHITE, "<< ? >>");
+				Term_putch(43, 20, ca, cc);
+
+				/* Prompt */
+				Term_putstr(0, 22, -1, TERM_WHITE,
+				            "Command (n/N/a/A/c/C): ");
+
+				/* Get a command */
+				cx = inkey();
+
+				/* All done */
+				if (cx == ESCAPE) break;
+
+				/* Analyze */
+				if (cx == 'n') f = (f + z_info->flavor_max + 1) % z_info->flavor_max;
+				if (cx == 'N') f = (f + z_info->flavor_max - 1) % z_info->flavor_max;
+				if (cx == 'a') flavor_info[f].x_attr = (byte)(ca + 1);
+				if (cx == 'A') flavor_info[f].x_attr = (byte)(ca - 1);
+				if (cx == 'c') flavor_info[f].x_char = (byte)(cc + 1);
+				if (cx == 'C') flavor_info[f].x_char = (byte)(cc - 1);
+			}
+		}
+
+#endif /* ALLOW_VISUALS */
 
 		/* Reset visuals */
 		else if (ch == '0')
@@ -2713,7 +2831,7 @@ static void do_cmd_knowledge_artifacts(void)
 	}
 
 	/* Free the "okay" array */
-	C_KILL(okay, z_info->a_max, bool);
+	KILL(okay);
 
 	/* Close the file */
 	my_fclose(fff);
@@ -2758,7 +2876,7 @@ static void do_cmd_knowledge_uniques(void)
 		monster_lore *l_ptr = &l_list[i];
 
 		/* Require known monsters */
-		if (!cheat_know && !l_ptr->r_sights) continue;
+		if (!cheat_know && !l_ptr->sights) continue;
 
 		/* Require unique monsters */
 		if (!(r_ptr->flags1 & (RF1_UNIQUE))) continue;
@@ -2790,7 +2908,7 @@ static void do_cmd_knowledge_uniques(void)
 	}
 
 	/* Free the "who" array */
-	C_KILL(who, z_info->r_max, u16b);
+	KILL(who);
 
 	/* Close the file */
 	my_fclose(fff);

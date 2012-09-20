@@ -29,7 +29,7 @@
  * Note the macros below which simplify the details of allocation,
  * deallocation, setting, clearing, casting, size extraction, etc.
  *
- * The macros MAKE/C_MAKE and KILL/C_KILL have a "procedural" metaphor,
+ * The macros MAKE/C_MAKE and KILL have a "procedural" metaphor,
  * and they actually modify their arguments.
  *
  * Note that, for some reason, some allocation macros may disallow
@@ -91,15 +91,6 @@
 	(T*)(memcpy((char*)(P1),(const char*)(P2),SIZE(T)))
 
 
-/* Free an array of N things of type T at P, return NULL */
-#define C_FREE(P,N,T) \
-	(T*)(rnfree(P,C_SIZE(N,T)))
-
-/* Free one thing of type T at P, return NULL */
-#define FREE(P,T) \
-	(T*)(rnfree(P,SIZE(T)))
-
-
 /* Allocate, and return, an array of type T[N] */
 #define C_RNEW(N,T) \
 	((T*)(ralloc(C_SIZE(N,T))))
@@ -127,20 +118,20 @@
 	((P)=ZNEW(T))
 
 
-/* Free an array of type T[N], at location P, and set P to NULL */
-#define C_KILL(P,N,T) \
-	((P)=C_FREE(P,N,T))
+/* Free one thing at P, return NULL */
+#define FREE(P) \
+	(rnfree(P))
 
-/* Free a thing of type T, at location P, and set P to NULL */
-#define KILL(P,T) \
-	((P)=FREE(P,T))
+/* Free a thing at location P and set P to NULL */
+#define KILL(P) \
+	((P)=FREE(P))
 
 
 
 /**** Available variables ****/
 
 /* Replacement hook for "rnfree()" */
-extern vptr (*rnfree_aux)(vptr, huge);
+extern vptr (*rnfree_aux)(vptr);
 
 /* Replacement hook for "rpanic()" */
 extern vptr (*rpanic_aux)(huge);
@@ -151,8 +142,8 @@ extern vptr (*ralloc_aux)(huge);
 
 /**** Available functions ****/
 
-/* De-allocate a given amount of memory */
-extern vptr rnfree(vptr p, huge len);
+/* De-allocate memory */
+extern vptr rnfree(vptr p);
 
 /* Panic, attempt to Allocate 'len' bytes */
 extern vptr rpanic(huge len);

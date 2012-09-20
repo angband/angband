@@ -64,6 +64,7 @@ EXEEXT = @EXEEXT@
 GAMEGROUP = @GAMEGROUP@
 MAKEINFO = @MAKEINFO@
 PACKAGE = @PACKAGE@
+RANLIB = @RANLIB@
 VERSION = @VERSION@
 
 angband_files =    delete.me
@@ -203,6 +204,7 @@ install-data-hook:
 @SET_GID_TRUE@	  touch "$(DESTDIR)$(angbanddir)/artifact.raw" && \
 @SET_GID_TRUE@	  touch "$(DESTDIR)$(angbanddir)/cost_adj.raw" && \
 @SET_GID_TRUE@	  touch "$(DESTDIR)$(angbanddir)/ego_item.raw" && \
+@SET_GID_TRUE@	  touch "$(DESTDIR)$(angbanddir)/flavor.raw" && \
 @SET_GID_TRUE@	  touch "$(DESTDIR)$(angbanddir)/limits.raw" && \
 @SET_GID_TRUE@	  touch "$(DESTDIR)$(angbanddir)/monster.raw" && \
 @SET_GID_TRUE@	  touch "$(DESTDIR)$(angbanddir)/object.raw" && \

@@ -1,0 +1,184 @@
+$#include "angband.h"
+
+typedef char* cptr;
+typedef int errr;
+
+
+/***** Constants *****/
+
+#define TERM_DARK		0	/* 'd' */	/* 0,0,0 */
+#define TERM_WHITE		1	/* 'w' */	/* 4,4,4 */
+#define TERM_SLATE		2	/* 's' */	/* 2,2,2 */
+#define TERM_ORANGE		3	/* 'o' */	/* 4,2,0 */
+#define TERM_RED		4	/* 'r' */	/* 3,0,0 */
+#define TERM_GREEN		5	/* 'g' */	/* 0,2,1 */
+#define TERM_BLUE		6	/* 'b' */	/* 0,0,4 */
+#define TERM_UMBER		7	/* 'u' */	/* 2,1,0 */
+#define TERM_L_DARK		8	/* 'D' */	/* 1,1,1 */
+#define TERM_L_WHITE	9	/* 'W' */	/* 3,3,3 */
+#define TERM_VIOLET		10	/* 'v' */	/* 4,0,4 */
+#define TERM_YELLOW		11	/* 'y' */	/* 4,4,0 */
+#define TERM_L_RED		12	/* 'R' */	/* 4,0,0 */
+#define TERM_L_GREEN	13	/* 'G' */	/* 0,4,0 */
+#define TERM_L_BLUE		14	/* 'B' */	/* 0,4,4 */
+#define TERM_L_UMBER	15	/* 'U' */	/* 3,2,1 */
+
+
+#define MSG_GENERIC          0
+#define MSG_HIT              1
+#define MSG_MISS             2
+#define MSG_FLEE             3
+#define MSG_DROP             4
+#define MSG_KILL             5
+#define MSG_LEVEL            6
+#define MSG_DEATH            7
+#define MSG_STUDY            8
+#define MSG_TELEPORT         9
+#define MSG_SHOOT           10
+#define MSG_QUAFF           11
+#define MSG_ZAP             12
+#define MSG_WALK            13
+#define MSG_TPOTHER         14
+#define MSG_HITWALL         15
+#define MSG_EAT             16
+#define MSG_STORE1          17
+#define MSG_STORE2          18
+#define MSG_STORE3          19
+#define MSG_STORE4          20
+#define MSG_DIG             21
+#define MSG_OPENDOOR        22
+#define MSG_SHUTDOOR        23
+#define MSG_TPLEVEL         24
+#define MSG_BELL            25
+#define MSG_NOTHING_TO_OPEN 26
+#define MSG_LOCKPICK_FAIL   27
+#define MSG_STAIRS          28
+#define MSG_HITPOINT_WARN   29
+
+#define MSG_MAX             30
+
+
+/*
+ * Bit flags for the "p_ptr->notice" variable
+ */
+#define PN_COMBINE		0x00000001L	/* Combine the pack */
+#define PN_REORDER		0x00000002L	/* Reorder the pack */
+/* xxx (many) */
+
+
+/*
+ * Bit flags for the "p_ptr->update" variable
+ */
+#define PU_BONUS		0x00000001L	/* Calculate bonuses */
+#define PU_TORCH		0x00000002L	/* Calculate torch radius */
+/* xxx (many) */
+#define PU_HP			0x00000010L	/* Calculate chp and mhp */
+#define PU_MANA			0x00000020L	/* Calculate csp and msp */
+#define PU_SPELLS		0x00000040L	/* Calculate spells */
+/* xxx (many) */
+#define PU_FORGET_VIEW	0x00010000L	/* Forget field of view */
+#define PU_UPDATE_VIEW	0x00020000L	/* Update field of view */
+/* xxx (many) */
+#define PU_FORGET_FLOW	0x00100000L	/* Forget flow data */
+#define PU_UPDATE_FLOW	0x00200000L	/* Update flow data */
+/* xxx (many) */
+#define PU_MONSTERS		0x10000000L	/* Update monsters */
+#define PU_DISTANCE		0x20000000L	/* Update distances */
+/* xxx */
+#define PU_PANEL		0x80000000L	/* Update panel */
+
+
+/*
+ * Bit flags for the "p_ptr->redraw" variable
+ */
+#define PR_MISC			0x00000001L	/* Display Race/Class */
+#define PR_TITLE		0x00000002L	/* Display Title */
+#define PR_LEV			0x00000004L	/* Display Level */
+#define PR_EXP			0x00000008L	/* Display Experience */
+#define PR_STATS		0x00000010L	/* Display Stats */
+#define PR_ARMOR		0x00000020L	/* Display Armor */
+#define PR_HP			0x00000040L	/* Display Hitpoints */
+#define PR_MANA			0x00000080L	/* Display Mana */
+#define PR_GOLD			0x00000100L	/* Display Gold */
+#define PR_DEPTH		0x00000200L	/* Display Depth */
+/* xxx */
+#define PR_HEALTH		0x00000800L	/* Display Health Bar */
+#define PR_CUT			0x00001000L	/* Display Extra (Cut) */
+#define PR_STUN			0x00002000L	/* Display Extra (Stun) */
+#define PR_HUNGER		0x00004000L	/* Display Extra (Hunger) */
+/* xxx */
+#define PR_BLIND		0x00010000L	/* Display Extra (Blind) */
+#define PR_CONFUSED		0x00020000L	/* Display Extra (Confused) */
+#define PR_AFRAID		0x00040000L	/* Display Extra (Afraid) */
+#define PR_POISONED		0x00080000L	/* Display Extra (Poisoned) */
+#define PR_STATE		0x00100000L	/* Display Extra (State) */
+#define PR_SPEED		0x00200000L	/* Display Extra (Speed) */
+#define PR_STUDY		0x00400000L	/* Display Extra (Study) */
+/* xxx */
+#define PR_EXTRA		0x01000000L	/* Display Extra Info */
+#define PR_BASIC		0x02000000L	/* Display Basic Info */
+/* xxx */
+#define PR_MAP			0x08000000L	/* Display Map */
+/* xxx (many) */
+
+/*
+ * Bit flags for the "p_ptr->window" variable (etc)
+ */
+#define PW_INVEN		0x00000001L	/* Display inven/equip */
+#define PW_EQUIP		0x00000002L	/* Display equip/inven */
+#define PW_PLAYER_0		0x00000004L	/* Display player (basic) */
+#define PW_PLAYER_1		0x00000008L	/* Display player (extra) */
+/* xxx */
+/* xxx */
+#define PW_MESSAGE		0x00000040L	/* Display messages */
+#define PW_OVERHEAD		0x00000080L	/* Display overhead view */
+#define PW_MONSTER		0x00000100L	/* Display monster recall */
+#define PW_OBJECT		0x00000200L	/* Display object recall */
+/* xxx */
+#define PW_SNAPSHOT		0x00000800L	/* Display snap-shot */
+/* xxx */
+/* xxx */
+#define PW_BORG_1		0x00004000L	/* Display borg messages */
+#define PW_BORG_2		0x00008000L	/* Display borg status */
+
+
+/***** Types *****/
+
+
+
+/***** Variables *****/
+
+
+
+/***** Functions *****/
+
+extern void notice_stuff(void);
+extern void update_stuff(void);
+extern void redraw_stuff(void);
+extern void window_stuff(void);
+extern void handle_stuff(void);
+
+extern char inkey(void);
+extern void bell(cptr reason);
+extern void sound(int val);
+extern void msg_print(cptr msg);
+extern void message(u16b message_type, s16b extra, cptr message_text);
+extern void message_flush(void);
+extern void screen_save(void);
+extern void screen_load(void);
+extern void c_put_str(byte attr, cptr str, int row, int col);
+extern void put_str(cptr str, int row, int col);
+extern void c_prt(byte attr, cptr str, int row, int col);
+extern void prt(cptr str, int row, int col);
+extern void clear_from(int row);
+extern void pause_line(int row);
+extern void request_command(bool shopping);
+
+/*
+extern bool askfor_aux(char *buf, int len);
+extern bool get_string(cptr prompt, char *buf, int len);
+extern s16b get_quantity(cptr prompt, int max);
+extern bool get_check(cptr prompt);
+extern bool get_com(cptr prompt, char *command);
+*/
+

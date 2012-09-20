@@ -1006,7 +1006,7 @@ static void process_world(void)
 static bool enter_wizard_mode(void)
 {
 	/* Ask first time */
-	if (verify_special || !(p_ptr->noscore & 0x0002))
+	if (verify_special && !(p_ptr->noscore & 0x0002))
 	{
 		/* Mention effects */
 		msg_print("You are about to enter 'wizard' mode for the very first time!");
@@ -1719,20 +1719,20 @@ static void process_player_aux(void)
 {
 	static int old_monster_race_idx = 0;
 
-	static u32b	old_r_flags1 = 0L;
-	static u32b	old_r_flags2 = 0L;
-	static u32b	old_r_flags3 = 0L;
-	static u32b	old_r_flags4 = 0L;
-	static u32b	old_r_flags5 = 0L;
-	static u32b	old_r_flags6 = 0L;
+	static u32b	old_flags1 = 0L;
+	static u32b	old_flags2 = 0L;
+	static u32b	old_flags3 = 0L;
+	static u32b	old_flags4 = 0L;
+	static u32b	old_flags5 = 0L;
+	static u32b	old_flags6 = 0L;
 
-	static byte	old_r_blows0 = 0;
-	static byte	old_r_blows1 = 0;
-	static byte	old_r_blows2 = 0;
-	static byte	old_r_blows3 = 0;
+	static byte	old_blows0 = 0;
+	static byte	old_blows1 = 0;
+	static byte	old_blows2 = 0;
+	static byte	old_blows3 = 0;
 
-	static byte	old_r_cast_inate = 0;
-	static byte	old_r_cast_spell = 0;
+	static byte	old_cast_innate = 0;
+	static byte	old_cast_spell = 0;
 
 
 	/* Tracking a monster */
@@ -1743,39 +1743,39 @@ static void process_player_aux(void)
 
 		/* Check for change of any kind */
 		if ((old_monster_race_idx != p_ptr->monster_race_idx) ||
-		    (old_r_flags1 != l_ptr->r_flags1) ||
-		    (old_r_flags2 != l_ptr->r_flags2) ||
-		    (old_r_flags3 != l_ptr->r_flags3) ||
-		    (old_r_flags4 != l_ptr->r_flags4) ||
-		    (old_r_flags5 != l_ptr->r_flags5) ||
-		    (old_r_flags6 != l_ptr->r_flags6) ||
-		    (old_r_blows0 != l_ptr->r_blows[0]) ||
-		    (old_r_blows1 != l_ptr->r_blows[1]) ||
-		    (old_r_blows2 != l_ptr->r_blows[2]) ||
-		    (old_r_blows3 != l_ptr->r_blows[3]) ||
-		    (old_r_cast_inate != l_ptr->r_cast_inate) ||
-		    (old_r_cast_spell != l_ptr->r_cast_spell))
+		    (old_flags1 != l_ptr->flags1) ||
+		    (old_flags2 != l_ptr->flags2) ||
+		    (old_flags3 != l_ptr->flags3) ||
+		    (old_flags4 != l_ptr->flags4) ||
+		    (old_flags5 != l_ptr->flags5) ||
+		    (old_flags6 != l_ptr->flags6) ||
+		    (old_blows0 != l_ptr->blows[0]) ||
+		    (old_blows1 != l_ptr->blows[1]) ||
+		    (old_blows2 != l_ptr->blows[2]) ||
+		    (old_blows3 != l_ptr->blows[3]) ||
+		    (old_cast_innate != l_ptr->cast_innate) ||
+		    (old_cast_spell != l_ptr->cast_spell))
 		{
 			/* Memorize old race */
 			old_monster_race_idx = p_ptr->monster_race_idx;
 
 			/* Memorize flags */
-			old_r_flags1 = l_ptr->r_flags1;
-			old_r_flags2 = l_ptr->r_flags2;
-			old_r_flags3 = l_ptr->r_flags3;
-			old_r_flags4 = l_ptr->r_flags4;
-			old_r_flags5 = l_ptr->r_flags5;
-			old_r_flags6 = l_ptr->r_flags6;
+			old_flags1 = l_ptr->flags1;
+			old_flags2 = l_ptr->flags2;
+			old_flags3 = l_ptr->flags3;
+			old_flags4 = l_ptr->flags4;
+			old_flags5 = l_ptr->flags5;
+			old_flags6 = l_ptr->flags6;
 
 			/* Memorize blows */
-			old_r_blows0 = l_ptr->r_blows[0];
-			old_r_blows1 = l_ptr->r_blows[1];
-			old_r_blows2 = l_ptr->r_blows[2];
-			old_r_blows3 = l_ptr->r_blows[3];
+			old_blows0 = l_ptr->blows[0];
+			old_blows1 = l_ptr->blows[1];
+			old_blows2 = l_ptr->blows[2];
+			old_blows3 = l_ptr->blows[3];
 
 			/* Memorize castings */
-			old_r_cast_inate = l_ptr->r_cast_inate;
-			old_r_cast_spell = l_ptr->r_cast_spell;
+			old_cast_innate = l_ptr->cast_innate;
+			old_cast_spell = l_ptr->cast_spell;
 
 			/* Window stuff */
 			p_ptr->window |= (PW_MONSTER);
@@ -2556,10 +2556,6 @@ void play_game(bool new_game)
 	{
 		quit("main window is too small");
 	}
-
-	/* Forbid resizing */
-	Term->fixed_shape = TRUE;
-
 
 	/* Hack -- Turn off the cursor */
 	(void)Term_set_cursor(0);

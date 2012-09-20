@@ -52,6 +52,14 @@
 
 # 'B' is for spell/prayer info - number of the spell, level, mana
 # required, fail-rate, experience for first casting.
+# (Note: Spellbooks are treated in the following orders...
+# Mage: Magic for Beginners, Conjurings and Tricks, Incantations and 
+# Illusions, Sorcery and Evocations, Mordenkainen's Escapes, Raal's
+# Tome of Destruction, Kelek's Grimoire of Power, Resistance of 
+# Scarabtarices, Tenser's Transformations.
+# Priest: Book of Common Prayer, Words of Wisdom, Chants and Blessings,
+# Exorcism and Dispelling, Godly Insights, Purifications and Healing,
+# Wrath of God, Holy Infusions, Ethereal Openings.)
 
 # 'T' is for class titles.
 
@@ -63,7 +71,7 @@
 
 # Version stamp (required)
 
-V:2.9.3
+V:2.9.4
 
 
 N:0:Warrior
@@ -79,13 +87,13 @@ E:37:4:1:1
 F:BRAVERY_30 | PSEUDO_ID_HEAVY | PSEUDO_ID_IMPROV
 T:Rookie
 T:Soldier
-T:Mercenary
-T:Veteran
 T:Swordsman
+T:Swashbuckler
+T:Veteran
+T:Myrmidon
+T:Commando
 T:Champion
 T:Hero
-T:Baron
-T:Duke
 T:Lord
 
 N:1:Mage
@@ -108,7 +116,7 @@ T:Evoker
 T:Conjurer
 T:Warlock
 T:Sorcerer
-T:Mage Lord
+T:Arch-Mage
 B:0:1:1:22:4
 B:1:1:1:23:4
 B:2:1:2:24:4
@@ -147,11 +155,11 @@ B:34:9:12:40:44
 B:35:15:17:60:29
 B:36:20:18:60:24
 B:37:25:25:75:19
-B:38:10:6:50:12
-B:39:12:9:60:16
-B:40:20:15:70:20
-B:41:27:25:75:29
-B:42:35:35:85:34
+B:38:10:6:30:12
+B:39:12:9:40:16
+B:40:20:12:50:20
+B:41:27:15:55:29
+B:42:35:20:65:34
 B:43:42:45:95:200
 B:44:5:5:50:8
 B:45:10:10:70:40
@@ -159,15 +167,15 @@ B:46:25:30:95:160
 B:47:30:50:70:40
 B:48:40:75:80:100
 B:49:4:5:50:20
-B:50:4:5:50:20
-B:51:4:5:50:20
-B:52:8:10:75:40
-B:53:15:20:85:60
+B:50:8:5:50:20
+B:51:12:5:50:20
+B:52:16:10:75:40
+B:53:30:20:85:60
 B:54:5:5:50:80
 B:55:10:12:75:120
 B:56:15:20:80:200
 B:57:22:30:50:250
-B:58:45:70:75:250
+B:58:45:70:95:250
 B:59:99:0:0:0
 B:60:99:0:0:0
 B:61:99:0:0:0
@@ -179,7 +187,7 @@ S:-1:-3:3:-1:0:2
 C:25:30:32:2:16:8:48:35
 X:7:10:12:0:0:0:20:20
 I:2:20:10000:40
-A:5:35:3
+A:4:35:3
 M:91:2:1:1:350
 E:91:0:1:1
 E:21:5:1:1
@@ -188,13 +196,13 @@ F:BLESS_WEAPON | ZERO_FAIL | PSEUDO_ID_IMPROV
 T:Believer
 T:Acolyte
 T:Adept
+T:Evangelist
+T:Priest
 T:Curate
 T:Canon
-T:Lama
+T:Bishop
+T:Prophet
 T:Patriarch
-T:Priest
-T:High Priest
-T:Priest Lord
 B:0:1:1:10:4
 B:1:1:2:15:4
 B:2:1:2:20:4
@@ -273,14 +281,14 @@ E:36:4:1:1
 F:CUMBER_GLOVE | CHOOSE_SPELLS | PSEUDO_ID_HEAVY | PSEUDO_ID_IMPROV
 T:Vagabond
 T:Cutpurse
+T:Footpad
 T:Robber
 T:Burglar
 T:Filcher
 T:Sharper
-T:Low Thief
-T:High Thief
+T:Rogue
+T:Thief
 T:Master Thief
-T:Assassin
 B:0:99:0:0:0
 B:1:5:1:50:1
 B:2:7:2:55:1
@@ -350,23 +358,23 @@ N:4:Ranger
 S:2:2:0:1:1:1
 C:30:32:28:3:24:16:56:72
 X:8:10:10:0:0:0:30:45
-I:4:30:120000:5
+I:4:30:30000:40
 A:5:35:4
 M:90:1:0:3:400
 E:90:0:1:1
 E:23:16:1:1
 E:19:13:1:1
 E:17:1:15:20
-F:CUMBER_GLOVE | EXTRA_SHOT | CHOOSE_SPELLS
+F:CUMBER_GLOVE | EXTRA_SHOT | CHOOSE_SPELLS | PSEUDO_ID_IMPROV
 T:Runner
 T:Strider
 T:Scout
 T:Courser
 T:Tracker
 T:Guide
+T:Explorer
 T:Pathfinder
-T:Low Ranger
-T:High Ranger
+T:Ranger
 T:Ranger Lord
 B:0:3:1:30:1
 B:1:3:2:35:2
@@ -438,7 +446,7 @@ S:3:-3:1:0:2:2
 C:20:24:25:1:12:2:68:40
 X:7:10:11:0:0:0:35:30
 I:6:35:80000:40
-A:5:30:4
+A:5:30:5
 M:91:2:1:1:400
 E:91:0:1:1
 E:23:16:1:1
@@ -451,8 +459,8 @@ T:Defender
 T:Warder
 T:Knight
 T:Guardian
-T:Low Paladin
-T:High Paladin
+T:Chevalier
+T:Paladin
 T:Paladin Lord
 B:0:1:1:30:4
 B:1:2:2:35:4
@@ -483,26 +491,26 @@ B:25:29:22:50:3
 B:26:31:24:60:3
 B:27:33:28:60:3
 B:28:35:32:70:4
-B:29:37:70:90:5
-B:30:39:38:95:10
+B:29:99:0:0:0
+B:30:99:0:0:0
 B:31:5:5:50:1
 B:32:15:15:80:12
 B:33:25:25:80:16
 B:34:30:15:80:135
-B:35:37:55:80:215
+B:35:99:0:0:0
 B:36:17:15:50:25
 B:37:23:25:60:35
-B:38:35:60:80:115
-B:39:40:80:90:200
-B:40:40:80:90:250
+B:38:99:0:0:0
+B:39:45:80:90:250
+B:40:99:0:0:0
 B:41:20:13:70:20
-B:42:30:20:75:40
+B:42:99:0:0:0
 B:43:30:35:80:200
 B:44:40:40:80:100
-B:45:47:70:75:250
+B:45:99:0:0:0
 B:46:10:16:50:20
 B:47:25:30:80:15
-B:48:30:50:80:130
+B:48:99:0:0:0
 B:49:40:70:80:200
 B:50:42:80:85:250
 B:51:47:95:85:250
@@ -511,7 +519,7 @@ B:53:20:20:50:4
 B:54:25:25:80:12
 B:55:35:50:75:115
 B:56:40:60:75:10
-B:57:45:70:75:250
+B:57:99:0:0:0
 B:58:99:0:0:0
 B:59:99:0:0:0
 B:60:99:0:0:0

@@ -1,3 +1,37 @@
+Changes in Angband 2.9.4:
+- Added basic support for a bigger main window (bigscreen). Note that
+  the town will be  regenerated when loading an old savefile, so don't
+  leave any objects on the floor when you upgrade your savefile!
+- Moved the item flavors into an external file and added *.prf files for
+  the flavors.
+- Made the light radius cumulative.
+- Added the Lua scripting language < http://www.lua.org/ > for easier
+  customization.  ATM the effects of using various objects (scrolls, food,
+  potions) is handled by Lua scripts.
+- You can now browse books in the stores.
+- Removed the redundant "show hitpoint warnings on/off" option.
+- Reorganized the options.
+- Unified the creation of monster spoilers and the monster recall.
+- Added color to the monster recall.
+- The overhead map of the town scales to the available window size.
+- Increased the damage of many wands and rods.
+- The extended object-info if now generated and displayed via a temp-file.
+- Added Jonathan Ellis' JLE patch that adds a new player race ("kobold"),
+  many new artifacts, vaults, monsters, objects, and ego-items; rebalances
+  the gameplay; and adds a new color scheme for monsters.
+- Added some new object flags ("kill demon", "kill undead"), activations,
+  monster attacks ("cause halluzination") and monster spells/abilities
+  (summon animal, throw boulder) for the JLE patch.
+- Don't partially repair blasted equipment when loading the savefile.
+- Fixed a bug that caused an infinite loop in the RNG when the u32b type has
+  more than 32 bits.
+- Corrected the spell-information for the 'cloud-kill' and 'teleport self'
+  spells.
+- The confirmation for wizard mode was required every time wizard mode was
+  switched on.
+- The vault_monsters() call could generate up to nine times the requested
+  number of monsters.
+
 Changes in Angband 2.9.3:
 - The known uniques list is now separated into two columns to make it
   easier to read. One column for the names and one for the "is dead/alive"

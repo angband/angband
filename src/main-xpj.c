@@ -2847,7 +2847,7 @@ static XImage *ReadFONT(Display *dpy, char *Name, u16b size)
 	/* Failure */
 	if (Res == NULL)
 	{
-		C_KILL(Data, total, char);
+		KILL(Data);
 		fclose(fp);
 
 		return (NULL);

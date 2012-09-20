@@ -1455,14 +1455,14 @@ static void rd_lore_old(int r_idx)
 	strip_bytes(16);
 
 	/* Read kills and deaths */
-	rd_s16b(&l_ptr->r_pkills);
-	rd_s16b(&l_ptr->r_deaths);
+	rd_s16b(&l_ptr->pkills);
+	rd_s16b(&l_ptr->deaths);
 
 	/* Forget old info */
 	strip_bytes(10);
 
 	/* Guess at "sights" */
-	l_ptr->r_sights = MAX(l_ptr->r_pkills, l_ptr->r_deaths);
+	l_ptr->sights = MAX(l_ptr->pkills, l_ptr->deaths);
 }
 
 
@@ -2713,7 +2713,7 @@ static errr rd_savefile_old_aux(void)
 		if (r_ptr->flags1 & (RF1_UNIQUE))
 		{
 			/* Hack -- Note living uniques */
-			if (r_ptr->max_num != 0) l_ptr->r_pkills = 0;
+			if (r_ptr->max_num != 0) l_ptr->pkills = 0;
 		}
 	}
 	note("Loaded Monster Memory");
@@ -2839,10 +2839,10 @@ static errr rd_savefile_old_aux(void)
 
 
 	/* Hack -- reset morgoth */
-	l_list[R_INFO_MORGOTH].r_pkills = 0;
+	l_list[R_INFO_MORGOTH].pkills = 0;
 
 	/* Hack -- reset sauron */
-	l_list[R_INFO_SAURON].r_pkills = 0;
+	l_list[R_INFO_SAURON].pkills = 0;
 
 
 	/* Add first quest */

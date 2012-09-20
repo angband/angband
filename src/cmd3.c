@@ -950,12 +950,16 @@ void do_cmd_locate(void)
 
 
 	/* Start at current panel */
-	y2 = y1 = p_ptr->wy;
-	x2 = x1 = p_ptr->wx;
+	y1 = p_ptr->wy;
+	x1 = p_ptr->wx;
 
 	/* Show panels until done */
 	while (1)
 	{
+		/* Get the current panel */
+		y2 = p_ptr->wy;
+		x2 = p_ptr->wx;
+		
 		/* Describe the location */
 		if ((y2 == y1) && (x2 == x1))
 		{
@@ -964,8 +968,8 @@ void do_cmd_locate(void)
 		else
 		{
 			sprintf(tmp_val, "%s%s of",
-			        ((y2 < y1) ? " North" : (y2 > y1) ? " South" : ""),
-			        ((x2 < x1) ? " West" : (x2 > x1) ? " East" : ""));
+			        ((y2 < y1) ? " north" : (y2 > y1) ? " south" : ""),
+			        ((x2 < x1) ? " west" : (x2 > x1) ? " east" : ""));
 		}
 
 		/* Prepare to ask which way to look */
@@ -1004,40 +1008,14 @@ void do_cmd_locate(void)
 		if (!dir) break;
 
 		/* Apply the motion */
-		y2 += (ddy[dir] * PANEL_HGT);
-		x2 += (ddx[dir] * PANEL_WID);
+		change_panel(dir);
 
-		/* Verify the row */
-		if (y2 < 0) y2 = 0;
-		if (y2 > DUNGEON_HGT - SCREEN_HGT) y2 = DUNGEON_HGT - SCREEN_HGT;
-
-		/* Verify the col */
-		if (x2 < 0) x2 = 0;
-		if (x2 > DUNGEON_WID - SCREEN_WID) x2 = DUNGEON_WID - SCREEN_WID;
-
-		/* Handle "changes" */
-		if ((p_ptr->wy != y2) || (p_ptr->wx != x2))
-		{
-			/* Update panel */
-			p_ptr->wy = y2;
-			p_ptr->wx = x2;
-
-			/* Redraw map */
-			p_ptr->redraw |= (PR_MAP);
-
-			/* Window stuff */
-			p_ptr->window |= (PW_OVERHEAD);
-
-			/* Handle stuff */
-			handle_stuff();
-		}
+		/* Handle stuff */
+		handle_stuff();
 	}
 
 	/* Verify panel */
-	p_ptr->update |= (PU_PANEL);
-
-	/* Handle stuff */
-	handle_stuff();
+	verify_panel();
 }
 
 
@@ -1173,8 +1151,8 @@ bool ang_sort_comp_hook(vptr u, vptr v, int a, int b)
 	if (*why >= 4)
 	{
 		/* Extract player kills */
-		z1 = l_list[w1].r_pkills;
-		z2 = l_list[w2].r_pkills;
+		z1 = l_list[w1].pkills;
+		z2 = l_list[w2].pkills;
 
 		/* Compare player kills */
 		if (z1 < z2) return (TRUE);
@@ -1186,8 +1164,8 @@ bool ang_sort_comp_hook(vptr u, vptr v, int a, int b)
 	if (*why >= 3)
 	{
 		/* Extract total kills */
-		z1 = l_list[w1].r_tkills;
-		z2 = l_list[w2].r_tkills;
+		z1 = l_list[w1].tkills;
+		z2 = l_list[w2].tkills;
 
 		/* Compare total kills */
 		if (z1 < z2) return (TRUE);
@@ -1372,7 +1350,7 @@ void do_cmd_query_symbol(void)
 		monster_lore *l_ptr = &l_list[i];
 
 		/* Nothing to recall */
-		if (!cheat_know && !l_ptr->r_sights) continue;
+		if (!cheat_know && !l_ptr->sights) continue;
 
 		/* Require non-unique monsters if needed */
 		if (norm && (r_ptr->flags1 & (RF1_UNIQUE))) continue;
@@ -1388,7 +1366,7 @@ void do_cmd_query_symbol(void)
 	if (!n)
 	{
 		/* XXX XXX Free the "who" array */
-		C_FREE(who, z_info->r_max, u16b);
+		FREE(who);
 
 		return;
 	}
@@ -1422,7 +1400,7 @@ void do_cmd_query_symbol(void)
 	if (query != 'y')
 	{
 		/* XXX XXX Free the "who" array */
-		C_FREE(who, z_info->r_max, u16b);
+		FREE(who);
 
 		return;
 	}
@@ -1522,5 +1500,5 @@ void do_cmd_query_symbol(void)
 	prt(buf, 0, 0);
 
 	/* Free the "who" array */
-	C_FREE(who, z_info->r_max, u16b);
+	FREE(who);
 }

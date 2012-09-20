@@ -727,7 +727,7 @@ bool make_attack_spell(int m_idx)
 	if (m_ptr->mflag & (MFLAG_NICE)) return (FALSE);
 
 	/* Hack -- Extract the spell probability */
-	chance = (r_ptr->freq_inate + r_ptr->freq_spell) / 2;
+	chance = (r_ptr->freq_innate + r_ptr->freq_spell) / 2;
 
 	/* Not allowed to cast spells */
 	if (!chance) return (FALSE);
@@ -1202,12 +1202,15 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_XXX8X4 */
+		/* RF4_BOULDER */
 		case RF4_OFFSET+31:
 		{
+			disturb(1, 0);
+			if (blind) msg_format("You hear something grunt with exertion.", m_name);
+			else msg_format("%^s hurls a boulder at you!", m_name);
+			bolt(m_idx, GF_ARROW, damroll(1 + r_ptr->level / 7, 12));
 			break;
 		}
-
 
 
 		/* RF5_BA_ACID */
@@ -1981,7 +1984,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF6_XXX6X6 */
+		/* RF6_ANIMAL */
 		case RF6_OFFSET+15:
 		{
 			break;
@@ -2060,15 +2063,15 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF6_S_ANT */
+		/* RF6_S_ANIMAL */
 		case RF6_OFFSET+20:
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
-			else msg_format("%^s magically summons ants.", m_name);
+			else msg_format("%^s magically summons animals.", m_name);
 			for (k = 0; k < 6; k++)
 			{
-				count += summon_specific(y, x, rlev, SUMMON_ANT);
+				count += summon_specific(y, x, rlev, SUMMON_ANIMAL);
 			}
 			if (blind && count)
 			{
@@ -2280,30 +2283,30 @@ bool make_attack_spell(int m_idx)
 		/* Innate spell */
 		if (thrown_spell < 32*4)
 		{
-			l_ptr->r_flags4 |= (1L << (thrown_spell - 32*3));
-			if (l_ptr->r_cast_inate < MAX_UCHAR) l_ptr->r_cast_inate++;
+			l_ptr->flags4 |= (1L << (thrown_spell - 32*3));
+			if (l_ptr->cast_innate < MAX_UCHAR) l_ptr->cast_innate++;
 		}
 
 		/* Bolt or Ball */
 		else if (thrown_spell < 32*5)
 		{
-			l_ptr->r_flags5 |= (1L << (thrown_spell - 32*4));
-			if (l_ptr->r_cast_spell < MAX_UCHAR) l_ptr->r_cast_spell++;
+			l_ptr->flags5 |= (1L << (thrown_spell - 32*4));
+			if (l_ptr->cast_spell < MAX_UCHAR) l_ptr->cast_spell++;
 		}
 
 		/* Special spell */
 		else if (thrown_spell < 32*6)
 		{
-			l_ptr->r_flags6 |= (1L << (thrown_spell - 32*5));
-			if (l_ptr->r_cast_spell < MAX_UCHAR) l_ptr->r_cast_spell++;
+			l_ptr->flags6 |= (1L << (thrown_spell - 32*5));
+			if (l_ptr->cast_spell < MAX_UCHAR) l_ptr->cast_spell++;
 		}
 	}
 
 
 	/* Always take note of monsters that kill you */
-	if (p_ptr->is_dead && (l_ptr->r_deaths < MAX_SHORT))
+	if (p_ptr->is_dead && (l_ptr->deaths < MAX_SHORT))
 	{
-		l_ptr->r_deaths++;
+		l_ptr->deaths++;
 	}
 
 
@@ -3367,9 +3370,9 @@ static void process_monster(int m_idx)
 				if (m_ptr->ml)
 				{
 					/* Hack -- Count the ignores */
-					if (l_ptr->r_ignore < MAX_UCHAR)
+					if (l_ptr->ignore < MAX_UCHAR)
 					{
-						l_ptr->r_ignore++;
+						l_ptr->ignore++;
 					}
 				}
 			}
@@ -3395,9 +3398,9 @@ static void process_monster(int m_idx)
 					if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
 
 					/* Hack -- Count the wakings */
-					if (l_ptr->r_wake < MAX_UCHAR)
+					if (l_ptr->wake < MAX_UCHAR)
 					{
-						l_ptr->r_wake++;
+						l_ptr->wake++;
 					}
 				}
 			}
@@ -3558,7 +3561,7 @@ static void process_monster(int m_idx)
 				/* Take note if visible */
 				if (m_ptr->ml)
 				{
-					l_ptr->r_flags2 |= (RF2_MULTIPLY);
+					l_ptr->flags2 |= (RF2_MULTIPLY);
 				}
 
 				/* Multiplying takes energy */
@@ -3592,7 +3595,7 @@ static void process_monster(int m_idx)
 			if (rand_int(100) < 25)
 			{
 				/* Memorize flags */
-				if (m_ptr->ml) l_ptr->r_flags1 |= (RF1_RAND_25);
+				if (m_ptr->ml) l_ptr->flags1 |= (RF1_RAND_25);
 
 				/* Stagger */
 				stagger = TRUE;
@@ -3606,7 +3609,7 @@ static void process_monster(int m_idx)
 			if (rand_int(100) < 50)
 			{
 				/* Memorize flags */
-				if (m_ptr->ml) l_ptr->r_flags1 |= (RF1_RAND_50);
+				if (m_ptr->ml) l_ptr->flags1 |= (RF1_RAND_50);
 
 				/* Stagger */
 				stagger = TRUE;
@@ -3620,7 +3623,7 @@ static void process_monster(int m_idx)
 			if (rand_int(100) < 75)
 			{
 				/* Memorize flags */
-				if (m_ptr->ml) l_ptr->r_flags1 |= (RF1_RAND_50 | RF1_RAND_25);
+				if (m_ptr->ml) l_ptr->flags1 |= (RF1_RAND_50 | RF1_RAND_25);
 
 				/* Stagger */
 				stagger = TRUE;
@@ -3839,7 +3842,7 @@ static void process_monster(int m_idx)
 		    (r_ptr->flags1 & (RF1_NEVER_BLOW)))
 		{
 			/* Hack -- memorize lack of attacks */
-			if (m_ptr->ml) l_ptr->r_flags1 |= (RF1_NEVER_BLOW);
+			if (m_ptr->ml) l_ptr->flags1 |= (RF1_NEVER_BLOW);
 
 			/* Do not move */
 			do_move = FALSE;
@@ -3864,7 +3867,7 @@ static void process_monster(int m_idx)
 		if (do_move && (r_ptr->flags1 & (RF1_NEVER_MOVE)))
 		{
 			/* Hack -- memorize lack of attacks */
-			if (m_ptr->ml) l_ptr->r_flags1 |= (RF1_NEVER_MOVE);
+			if (m_ptr->ml) l_ptr->flags1 |= (RF1_NEVER_MOVE);
 
 			/* Do not move */
 			do_move = FALSE;
@@ -3978,6 +3981,8 @@ static void process_monster(int m_idx)
 
 					/* React to objects that hurt the monster */
 					if (f1 & (TR1_KILL_DRAGON)) flg3 |= (RF3_DRAGON);
+					if (f1 & (TR1_KILL_DEMON)) flg3 |= (RF3_DEMON);
+					if (f1 & (TR1_KILL_UNDEAD)) flg3 |= (RF3_UNDEAD);
 					if (f1 & (TR1_SLAY_DRAGON)) flg3 |= (RF3_DRAGON);
 					if (f1 & (TR1_SLAY_TROLL)) flg3 |= (RF3_TROLL);
 					if (f1 & (TR1_SLAY_GIANT)) flg3 |= (RF3_GIANT);
@@ -4082,28 +4087,28 @@ static void process_monster(int m_idx)
 	if (m_ptr->ml)
 	{
 		/* Monster opened a door */
-		if (did_open_door) l_ptr->r_flags2 |= (RF2_OPEN_DOOR);
+		if (did_open_door) l_ptr->flags2 |= (RF2_OPEN_DOOR);
 
 		/* Monster bashed a door */
-		if (did_bash_door) l_ptr->r_flags2 |= (RF2_BASH_DOOR);
+		if (did_bash_door) l_ptr->flags2 |= (RF2_BASH_DOOR);
 
 		/* Monster tried to pick something up */
-		if (did_take_item) l_ptr->r_flags2 |= (RF2_TAKE_ITEM);
+		if (did_take_item) l_ptr->flags2 |= (RF2_TAKE_ITEM);
 
 		/* Monster tried to crush something */
-		if (did_kill_item) l_ptr->r_flags2 |= (RF2_KILL_ITEM);
+		if (did_kill_item) l_ptr->flags2 |= (RF2_KILL_ITEM);
 
 		/* Monster pushed past another monster */
-		if (did_move_body) l_ptr->r_flags2 |= (RF2_MOVE_BODY);
+		if (did_move_body) l_ptr->flags2 |= (RF2_MOVE_BODY);
 
 		/* Monster ate another monster */
-		if (did_kill_body) l_ptr->r_flags2 |= (RF2_KILL_BODY);
+		if (did_kill_body) l_ptr->flags2 |= (RF2_KILL_BODY);
 
 		/* Monster passed through a wall */
-		if (did_pass_wall) l_ptr->r_flags2 |= (RF2_PASS_WALL);
+		if (did_pass_wall) l_ptr->flags2 |= (RF2_PASS_WALL);
 
 		/* Monster destroyed a wall */
-		if (did_kill_wall) l_ptr->r_flags2 |= (RF2_KILL_WALL);
+		if (did_kill_wall) l_ptr->flags2 |= (RF2_KILL_WALL);
 	}
 
 

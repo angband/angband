@@ -3470,3 +3470,6 @@ R:547:0x92/0x9E
 # Load the special player pictures
 %:xtra-xxx.prf
 
+# Load the flavored objects
+%:flvr-xxx.prf
+

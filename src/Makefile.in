@@ -64,7 +64,10 @@ EXEEXT = @EXEEXT@
 GAMEGROUP = @GAMEGROUP@
 MAKEINFO = @MAKEINFO@
 PACKAGE = @PACKAGE@
+RANLIB = @RANLIB@
 VERSION = @VERSION@
+
+SUBDIRS = lua
 
 bin_PROGRAMS = angband
 
@@ -72,13 +75,13 @@ WRES = windres
 
 SUFFIXES = .rc
 
-angband_LDADD = @ANGBAND_OBJS@
-angband_DEPENDENCIES = @ANGBAND_OBJS@
+angband_LDADD = lua/liblua.a @ANGBAND_OBJS@
+angband_DEPENDENCIES = lua/liblua.a @ANGBAND_OBJS@
 
-angband_SOURCES =    z-util.c z-virt.c z-form.c z-rand.c z-term.c   variable.c tables.c util.c cave.c   object1.c object2.c monster1.c monster2.c   xtra1.c xtra2.c spells1.c spells2.c   melee1.c melee2.c save.c files.c   cmd1.c cmd2.c cmd3.c cmd4.c cmd5.c cmd6.c   store.c birth.c load1.c load2.c   wizard1.c wizard2.c   main-cap.c main-gcu.c main-x11.c main-xaw.c main.c   main-win.c main-xpj.c main-vcs.c   generate.c dungeon.c init1.c init2.c randart.c   angband.h config.h defines.h externs.h h-basic.h   h-config.h h-define.h h-system.h h-type.h init.h   types.h z-form.h z-rand.h z-term.h z-util.h   z-virt.h
+angband_SOURCES =    z-util.c z-virt.c z-form.c z-rand.c z-term.c   variable.c tables.c util.c cave.c   object1.c object2.c monster1.c monster2.c   xtra1.c xtra2.c spells1.c spells2.c   melee1.c melee2.c save.c files.c   cmd1.c cmd2.c cmd3.c cmd4.c cmd5.c cmd6.c   store.c birth.c load1.c load2.c   wizard1.c wizard2.c   main-cap.c main-gcu.c main-x11.c main-xaw.c main.c   main-win.c main-xpj.c main-vcs.c   generate.c dungeon.c init1.c init2.c randart.c   angband.h config.h defines.h externs.h h-basic.h   h-config.h h-define.h h-system.h h-type.h init.h   types.h z-form.h z-rand.h z-term.h z-util.h   z-virt.h   script.c script.h   l-monst.c l-object.c l-player.c l-random.c l-ui.c l-misc.c l-spell.c   use-obj.c
 
 
-EXTRA_angband_SOURCES =    main-acn.c main-ami.c main-dos.c main-emx.c main-gtk.c   main-ibm.c main-lsl.c main-mac.c main-sla.c main-vme.c   main-xxx.c   Makefile.acn Makefile.ami Makefile.bcc Makefile.cyg   Makefile.dos Makefile.emx Makefile.gtk Makefile.ibm   Makefile.lcc Makefile.lsl Makefile.std Makefile.wat   Makefile.win   angband.rc angband.ico readdib.c readdib.h   maid-x11.c maid-x11.h
+EXTRA_angband_SOURCES =    main-acn.c main-ami.c main-dos.c main-emx.c main-gtk.c   main-ibm.c main-lsl.c main-mac.c main-sla.c main-vme.c   main-xxx.c   Makefile.acn Makefile.ami Makefile.bcc Makefile.cyg   Makefile.dos Makefile.emx Makefile.gtk Makefile.ibm   Makefile.lcc Makefile.lsl Makefile.std Makefile.wat   Makefile.win   angband.rc angband.ico readdib.c readdib.h   maid-x11.c maid-x11.h   l-monst.pkg l-object.pkg l-player.pkg l-random.pkg l-ui.pkg   l-misc.pkg l-spell.pkg
 
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = autoconf.h
@@ -101,7 +104,8 @@ monster2.o xtra1.o xtra2.o spells1.o spells2.o melee1.o melee2.o save.o \
 files.o cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o store.o birth.o \
 load1.o load2.o wizard1.o wizard2.o main-cap.o main-gcu.o main-x11.o \
 main-xaw.o main.o main-win.o main-xpj.o main-vcs.o generate.o dungeon.o \
-init1.o init2.o randart.o
+init1.o init2.o randart.o script.o l-monst.o l-object.o l-player.o \
+l-random.o l-ui.o l-misc.o l-spell.o use-obj.o
 angband_LDFLAGS = 
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -204,6 +208,61 @@ angband$(EXEEXT): $(angband_OBJECTS) $(angband_DEPENDENCIES)
 	@rm -f angband$(EXEEXT)
 	$(LINK) $(angband_LDFLAGS) $(angband_OBJECTS) $(angband_LDADD) $(LIBS)
 
+# This directory's subdirectories are mostly independent; you can cd
+# into them and run `make' without going through this Makefile.
+# To change the values of `make' variables: instead of editing Makefiles,
+# (1) if the variable is set in `config.status', edit `config.status'
+#     (which will cause the Makefiles to be regenerated when you run `make');
+# (2) otherwise, pass the desired values on the `make' command line.
+
+@SET_MAKE@
+
+all-recursive install-data-recursive install-exec-recursive \
+installdirs-recursive install-recursive uninstall-recursive  \
+check-recursive installcheck-recursive info-recursive dvi-recursive:
+	@set fnord $(MAKEFLAGS); amf=$$2; \
+	dot_seen=no; \
+	target=`echo $@ | sed s/-recursive//`; \
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  echo "Making $$target in $$subdir"; \
+	  if test "$$subdir" = "."; then \
+	    dot_seen=yes; \
+	    local_target="$$target-am"; \
+	  else \
+	    local_target="$$target"; \
+	  fi; \
+	  (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
+	   || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
+	done; \
+	if test "$$dot_seen" = "no"; then \
+	  $(MAKE) $(AM_MAKEFLAGS) "$$target-am" || exit 1; \
+	fi; test -z "$$fail"
+
+mostlyclean-recursive clean-recursive distclean-recursive \
+maintainer-clean-recursive:
+	@set fnord $(MAKEFLAGS); amf=$$2; \
+	dot_seen=no; \
+	rev=''; list='$(SUBDIRS)'; for subdir in $$list; do \
+	  rev="$$subdir $$rev"; \
+	  test "$$subdir" = "." && dot_seen=yes; \
+	done; \
+	test "$$dot_seen" = "no" && rev=". $$rev"; \
+	target=`echo $@ | sed s/-recursive//`; \
+	for subdir in $$rev; do \
+	  echo "Making $$target in $$subdir"; \
+	  if test "$$subdir" = "."; then \
+	    local_target="$$target-am"; \
+	  else \
+	    local_target="$$target"; \
+	  fi; \
+	  (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
+	   || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
+	done && test -z "$$fail"
+tags-recursive:
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  test "$$subdir" = . || (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) tags); \
+	done
+
 tags: TAGS
 
 ID: $(HEADERS) $(SOURCES) $(LISP)
@@ -214,9 +273,14 @@ ID: $(HEADERS) $(SOURCES) $(LISP)
 	here=`pwd` && cd $(srcdir) \
 	  && mkid -f$$here/ID $$unique $(LISP)
 
-TAGS:  $(HEADERS) $(SOURCES) autoconf.h.in $(TAGS_DEPENDENCIES) $(LISP)
+TAGS: tags-recursive $(HEADERS) $(SOURCES) autoconf.h.in $(TAGS_DEPENDENCIES) $(LISP)
 	tags=; \
 	here=`pwd`; \
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+   if test "$$subdir" = .; then :; else \
+	    test -f $$subdir/TAGS && tags="$$tags -i $$here/$$subdir/TAGS"; \
+   fi; \
+	done; \
 	list='$(SOURCES) $(HEADERS)'; \
 	unique=`for i in $$list; do echo $$i; done | \
 	  awk '    { files[$$0] = 1; } \
@@ -248,6 +312,16 @@ distdir: $(DISTFILES)
 	    || cp -p $$d/$$file $(distdir)/$$file || :; \
 	  fi; \
 	done
+	for subdir in $(SUBDIRS); do \
+	  if test "$$subdir" = .; then :; else \
+	    test -d $(distdir)/$$subdir \
+	    || mkdir $(distdir)/$$subdir \
+	    || exit 1; \
+	    chmod 777 $(distdir)/$$subdir; \
+	    (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) top_distdir=../$(top_distdir) distdir=../$(distdir)/$$subdir distdir) \
+	      || exit 1; \
+	  fi; \
+	done
 birth.o: birth.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
 	z-term.h config.h defines.h types.h externs.h
@@ -271,7 +345,7 @@ cmd5.o: cmd5.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	z-term.h config.h defines.h types.h externs.h
 cmd6.o: cmd6.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
-	z-term.h config.h defines.h types.h externs.h
+	z-term.h config.h defines.h types.h externs.h script.h
 dungeon.o: dungeon.c angband.h h-basic.h autoconf.h h-config.h \
 	h-system.h h-type.h h-define.h z-util.h z-virt.h z-form.h \
 	z-rand.h z-term.h config.h defines.h types.h externs.h
@@ -286,7 +360,33 @@ init1.o: init1.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	z-term.h config.h defines.h types.h externs.h init.h
 init2.o: init2.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
-	z-term.h config.h defines.h types.h externs.h init.h
+	z-term.h config.h defines.h types.h externs.h init.h script.h
+l-misc.o: l-misc.c lua/tolua.h lua/lua.h angband.h h-basic.h autoconf.h \
+	h-config.h h-system.h h-type.h h-define.h z-util.h z-virt.h \
+	z-form.h z-rand.h z-term.h config.h defines.h types.h externs.h
+l-monst.o: l-monst.c lua/tolua.h lua/lua.h angband.h h-basic.h \
+	autoconf.h h-config.h h-system.h h-type.h h-define.h z-util.h \
+	z-virt.h z-form.h z-rand.h z-term.h config.h defines.h types.h \
+	externs.h
+l-object.o: l-object.c lua/tolua.h lua/lua.h angband.h h-basic.h \
+	autoconf.h h-config.h h-system.h h-type.h h-define.h z-util.h \
+	z-virt.h z-form.h z-rand.h z-term.h config.h defines.h types.h \
+	externs.h
+l-player.o: l-player.c lua/tolua.h lua/lua.h angband.h h-basic.h \
+	autoconf.h h-config.h h-system.h h-type.h h-define.h z-util.h \
+	z-virt.h z-form.h z-rand.h z-term.h config.h defines.h types.h \
+	externs.h
+l-random.o: l-random.c lua/tolua.h lua/lua.h angband.h h-basic.h \
+	autoconf.h h-config.h h-system.h h-type.h h-define.h z-util.h \
+	z-virt.h z-form.h z-rand.h z-term.h config.h defines.h types.h \
+	externs.h
+l-spell.o: l-spell.c lua/tolua.h lua/lua.h angband.h h-basic.h \
+	autoconf.h h-config.h h-system.h h-type.h h-define.h z-util.h \
+	z-virt.h z-form.h z-rand.h z-term.h config.h defines.h types.h \
+	externs.h
+l-ui.o: l-ui.c lua/tolua.h lua/lua.h angband.h h-basic.h autoconf.h \
+	h-config.h h-system.h h-type.h h-define.h z-util.h z-virt.h \
+	z-form.h z-rand.h z-term.h config.h defines.h types.h externs.h
 load1.o: load1.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
 	z-term.h config.h defines.h types.h externs.h
@@ -348,6 +448,10 @@ randart.o: randart.c angband.h h-basic.h autoconf.h h-config.h \
 save.o: save.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
 	z-term.h config.h defines.h types.h externs.h
+script.o: script.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
+	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
+	z-term.h config.h defines.h types.h externs.h script.h \
+	lua/lua.h lua/lualib.h lua/lauxlib.h lua/tolua.h
 spells1.o: spells1.c angband.h h-basic.h autoconf.h h-config.h \
 	h-system.h h-type.h h-define.h z-util.h z-virt.h z-form.h \
 	z-rand.h z-term.h config.h defines.h types.h externs.h
@@ -360,6 +464,9 @@ store.o: store.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 tables.o: tables.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
 	z-term.h config.h defines.h types.h externs.h
+use-obj.o: use-obj.c angband.h h-basic.h autoconf.h h-config.h \
+	h-system.h h-type.h h-define.h z-util.h z-virt.h z-form.h \
+	z-rand.h z-term.h config.h defines.h types.h externs.h
 util.o: util.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
 	z-term.h config.h defines.h types.h externs.h
@@ -371,7 +478,7 @@ wizard1.o: wizard1.c angband.h h-basic.h autoconf.h h-config.h \
 	z-rand.h z-term.h config.h defines.h types.h externs.h
 wizard2.o: wizard2.c angband.h h-basic.h autoconf.h h-config.h \
 	h-system.h h-type.h h-define.h z-util.h z-virt.h z-form.h \
-	z-rand.h z-term.h config.h defines.h types.h externs.h
+	z-rand.h z-term.h config.h defines.h types.h externs.h script.h
 xtra1.o: xtra1.c angband.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h z-util.h z-virt.h z-form.h z-rand.h \
 	z-term.h config.h defines.h types.h externs.h
@@ -391,34 +498,35 @@ z-virt.o: z-virt.c z-virt.h h-basic.h autoconf.h h-config.h h-system.h \
 	h-type.h h-define.h z-util.h
 
 info-am:
-info: info-am
+info: info-recursive
 dvi-am:
-dvi: dvi-am
+dvi: dvi-recursive
 check-am: all-am
-check: check-am
+check: check-recursive
 installcheck-am:
-installcheck: installcheck-am
+installcheck: installcheck-recursive
 all-recursive-am: autoconf.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 install-exec-am: install-binPROGRAMS
 	@$(NORMAL_INSTALL)
 	$(MAKE) $(AM_MAKEFLAGS) install-exec-hook
-install-exec: install-exec-am
+install-exec: install-exec-recursive
 
 install-data-am:
-install-data: install-data-am
+install-data: install-data-recursive
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
-install: install-am
+install: install-recursive
 uninstall-am: uninstall-binPROGRAMS
-uninstall: uninstall-am
+uninstall: uninstall-recursive
 all-am: Makefile $(PROGRAMS) autoconf.h
-all-redirect: all-am
+all-redirect: all-recursive-am
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
-installdirs:
+installdirs: installdirs-recursive
+installdirs-am:
 	$(mkinstalldirs)  $(DESTDIR)$(bindir)
 
 
@@ -435,17 +543,17 @@ mostlyclean-am:  mostlyclean-hdr mostlyclean-binPROGRAMS \
 		mostlyclean-compile mostlyclean-tags \
 		mostlyclean-generic
 
-mostlyclean: mostlyclean-am
+mostlyclean: mostlyclean-recursive
 
 clean-am:  clean-hdr clean-binPROGRAMS clean-compile clean-tags \
 		clean-generic mostlyclean-am
 
-clean: clean-am
+clean: clean-recursive
 
 distclean-am:  distclean-hdr distclean-binPROGRAMS distclean-compile \
 		distclean-tags distclean-generic clean-am
 
-distclean: distclean-am
+distclean: distclean-recursive
 
 maintainer-clean-am:  maintainer-clean-hdr maintainer-clean-binPROGRAMS \
 		maintainer-clean-compile maintainer-clean-tags \
@@ -453,22 +561,48 @@ maintainer-clean-am:  maintainer-clean-hdr maintainer-clean-binPROGRAMS \
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 
-maintainer-clean: maintainer-clean-am
+maintainer-clean: maintainer-clean-recursive
 
 .PHONY: mostlyclean-hdr distclean-hdr clean-hdr maintainer-clean-hdr \
 mostlyclean-binPROGRAMS distclean-binPROGRAMS clean-binPROGRAMS \
 maintainer-clean-binPROGRAMS uninstall-binPROGRAMS install-binPROGRAMS \
 mostlyclean-compile distclean-compile clean-compile \
-maintainer-clean-compile tags mostlyclean-tags distclean-tags \
-clean-tags maintainer-clean-tags distdir info-am info dvi-am dvi check \
-check-am installcheck-am installcheck all-recursive-am install-exec-am \
-install-exec install-data-am install-data install-am install \
-uninstall-am uninstall all-redirect all-am all installdirs \
-mostlyclean-generic distclean-generic clean-generic \
+maintainer-clean-compile install-data-recursive \
+uninstall-data-recursive install-exec-recursive \
+uninstall-exec-recursive installdirs-recursive uninstalldirs-recursive \
+all-recursive check-recursive installcheck-recursive info-recursive \
+dvi-recursive mostlyclean-recursive distclean-recursive clean-recursive \
+maintainer-clean-recursive tags tags-recursive mostlyclean-tags \
+distclean-tags clean-tags maintainer-clean-tags distdir info-am info \
+dvi-am dvi check check-am installcheck-am installcheck all-recursive-am \
+install-exec-am install-exec install-data-am install-data install-am \
+install uninstall-am uninstall all-redirect all-am all installdirs-am \
+installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 angband.res: angband.rc
 	$(WRES) $< -O coff -o $@
+
+l-monst.c: lua/tolua l-monst.pkg
+	lua/tolua -n monster -o l-monst.c l-monst.pkg
+
+l-object.c: lua/tolua l-object.pkg
+	lua/tolua -n object -o l-object.c l-object.pkg
+
+l-player.c: lua/tolua l-player.pkg
+	lua/tolua -n player -o l-player.c l-player.pkg
+
+l-random.c: lua/tolua l-random.pkg
+	lua/tolua -n random -o l-random.c l-random.pkg
+
+l-ui.c: lua/tolua l-ui.pkg
+	lua/tolua -n ui -o l-ui.c l-ui.pkg
+
+l-misc.c: lua/tolua l-misc.pkg
+	lua/tolua -n misc -o l-misc.c l-misc.pkg
+
+l-spell.c: lua/tolua l-spell.pkg
+	lua/tolua -n spell -o l-spell.c l-spell.pkg
 
 install-exec-hook:
 @SET_GID_TRUE@	chgrp "@GAMEGROUP@" "$(DESTDIR)$(bindir)/angband"

@@ -776,11 +776,15 @@ static void vault_traps(int y, int x, int yd, int xd, int num)
 
 
 /*
- * Hack -- Place some sleeping monsters near the given location
+ * Place some sleeping monsters near the given location
  */
 static void vault_monsters(int y1, int x1, int num)
 {
 	int k, i, y, x;
+	int mon_level_old = monster_level;
+
+	/* Temporary increase monster level */
+	monster_level += 2;
 
 	/* Try to summon "num" monsters "near" the given location */
 	for (k = 0; k < num; k++)
@@ -797,11 +801,14 @@ static void vault_monsters(int y1, int x1, int num)
 			if (!cave_empty_bold(y, x)) continue;
 
 			/* Place the monster (allow groups) */
-			monster_level = p_ptr->depth + 2;
 			(void)place_monster(y, x, TRUE, TRUE);
-			monster_level = p_ptr->depth;
+
+			break;
 		}
 	}
+
+	/* Restore monster level */
+	monster_level = mon_level_old;
 }
 
 
@@ -3097,11 +3104,6 @@ static void cave_gen(void)
 /*
  * Builds a store at a given pseudo-location
  *
- * As of 2.8.1 (?) the town is actually centered in the middle of a
- * complete level, and thus the top left corner of the town itself
- * is no longer at (0,0), but rather, at (qy,qx), so the constants
- * in the comments below should be mentally modified accordingly.
- *
  * As of 2.7.4 (?) the stores are placed in a more "user friendly"
  * configuration, such that the four "center" buildings always
  * have at least four grids between them, to allow easy running,
@@ -3118,13 +3120,10 @@ static void build_store(int n, int yy, int xx)
 {
 	int y, x, y0, x0, y1, x1, y2, x2, tmp;
 
-	int qy = SCREEN_HGT;
-	int qx = SCREEN_WID;
-
 
 	/* Find the "center" of the store */
-	y0 = qy + yy * 9 + 6;
-	x0 = qx + xx * 14 + 12;
+	y0 = yy * 9 + 6;
+	x0 = xx * 14 + 12;
 
 	/* Determine the store boundaries */
 	y1 = y0 - randint((yy == 0) ? 3 : 2);
@@ -3209,9 +3208,6 @@ static void town_gen_hack(void)
 {
 	int y, x, k, n;
 
-	int qy = SCREEN_HGT;
-	int qx = SCREEN_WID;
-
 	int rooms[MAX_STORES];
 
 
@@ -3247,8 +3243,8 @@ static void town_gen_hack(void)
 	while (TRUE)
 	{
 		/* Pick a location at least "three" from the outer walls */
-		y = qy + rand_range(3, SCREEN_HGT - 4);
-		x = qx + rand_range(3, SCREEN_WID - 4);
+		y = rand_range(3, TOWN_HGT - 4);
+		x = rand_range(3, TOWN_WID - 4);
 
 		/* Require a "naked" floor grid */
 		if (cave_naked_bold(y, x)) break;
@@ -3288,12 +3284,7 @@ static void town_gen_hack(void)
 static void town_gen(void)
 {
 	int i, y, x;
-
 	int residents;
-
-	int qy = SCREEN_HGT;
-	int qx = SCREEN_WID;
-
 	bool daytime;
 
 
@@ -3328,9 +3319,9 @@ static void town_gen(void)
 	}
 
 	/* Then place some floors */
-	for (y = qy+1; y < qy+SCREEN_HGT-1; y++)
+	for (y = 1; y < TOWN_HGT - 1; y++)
 	{
-		for (x = qx+1; x < qx+SCREEN_WID-1; x++)
+		for (x = 1; x < TOWN_WID - 1; x++)
 		{
 			/* Create empty floor */
 			cave_set_feat(y, x, FEAT_FLOOR);

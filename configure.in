@@ -7,7 +7,7 @@ AC_INIT(src/main.c)
 dnl write the resulting #defines into a header file
 AM_CONFIG_HEADER(src/autoconf.h)
 
-AM_INIT_AUTOMAKE(angband, 2.9.3)
+AM_INIT_AUTOMAKE(angband, 2.9.4-alpha)
 
 AC_ARG_WITH(setgid,
 [  --with-setgid=NAME      install angband as group NAME],
@@ -40,6 +40,7 @@ AC_SUBST(DEFAULT_PATH)
 
 dnl Checks for programs.
 AC_PROG_CC
+AC_PROG_RANLIB
 
 dnl -fno-strength-reduce prevents a bug in some versions of gcc
 if test "$GCC" = yes; then
@@ -47,60 +48,6 @@ if test "$GCC" = yes; then
 fi
 
 dnl Checks for libraries.
-
-dnl SGI (IRIX) may need -lsun for the NIS version of getpwnam
-AC_CHECK_LIB(sun, getpwnam)
-
-dnl Check for ncurses, curses, or termcap
-dnl Try -lncurses, -lcurses, -lcurses -ltermcap, and finally plain -ltermcap
-use_ncurses=no
-AC_CHECK_LIB(ncurses, initscr,
-  [AC_CHECK_HEADER(ncurses.h, use_ncurses=yes,
-     [AC_CHECK_HEADER(/usr/include/ncurses/ncurses.h,
-        [CFLAGS="-I/usr/include/ncurses $CFLAGS" use_ncurses=yes])])])
-if test "$use_ncurses" = yes; then
-  AC_DEFINE(USE_GCU) AC_DEFINE(USE_NCURSES)
-  LIBS="-lncurses $LIBS"
-else
-  AC_CHECK_LIB(curses, initscr,
-    [AC_DEFINE(USE_GCU) LIBS="-lcurses $LIBS"],
-    [AC_CHECK_LIB(curses, endwin,
-       [AC_DEFINE(USE_GCU) LIBS="-lcurses -ltermcap $LIBS"],
-       [AC_CHECK_LIB(termcap, tgetent,
-          [AC_DEFINE(USE_CAP) LIBS="-ltermcap $LIBS"])],
-       -ltermcap)])
-fi
-
-dnl Checks for header files.
-AC_PATH_XTRA
-
-if test "$no_x" != "yes"; then
-  AC_DEFINE(USE_X11)
-  AC_DEFINE(USE_XPJ)
-  AC_DEFINE(USE_TRANSPARENCY)
-  ANGBAND_OBJS="maid-x11.o"
-  AC_SUBST(ANGBAND_OBJS)
-
-  LIBS="-lX11 $X_EXTRA_LIBS $LIBS"
-  CFLAGS="$CFLAGS $X_CFLAGS"
-  LDFLAGS="$LDFLAGS $X_LIBS"
-  dnl X_PRE_LIBS is prepended to LIBS below.
-
-  dnl Check for the Athena widget set
-  dnl
-  dnl Does anyone know if it is OK to put '-lXmu -lXt' *before* X_PRE_LIBS?
-  dnl If so this code can be simplified by inserting X_PRE_LIBS in LIBS above.
-  dnl Today libraries come in the same sequence as in the old src/Makefile.std,
-  dnl since that is presumably the way which has been tested most.
-  x_more_libs="$X_PRE_LIBS -lXt"
-  AC_CHECK_LIB(Xmu, main, x_more_libs="$X_PRE_LIBS -lXmu -lXt", , $x_more_libs)
-  AC_CHECK_LIB(Xext, main, x_more_libs="-lXext $x_more_libs", , $x_more_libs)
-  AC_CHECK_LIB(Xaw, XawInitializeWidgetSet,
-               [AC_DEFINE(USE_XAW)
-                LIBS="-lXaw $x_more_libs $LIBS"],
-               LIBS="$X_PRE_LIBS $LIBS",
-               $x_more_libs)
-fi
 
 AC_CYGWIN
 AC_MINGW32
@@ -114,6 +61,60 @@ if test "$CYGWIN" = "yes"; then
   AM_CONDITIONAL(CYGWIN, test "$CYGWIN" = "yes")
   ANGBAND_OBJS="readdib.o angband.res"
   AC_SUBST(ANGBAND_OBJS)
+else
+  dnl SGI (IRIX) may need -lsun for the NIS version of getpwnam
+  AC_CHECK_LIB(sun, getpwnam)
+
+  dnl Check for ncurses, curses, or termcap
+  dnl Try -lncurses, -lcurses, -lcurses -ltermcap, and finally plain -ltermcap
+  use_ncurses=no
+  AC_CHECK_LIB(ncurses, initscr,
+    [AC_CHECK_HEADER(ncurses.h, use_ncurses=yes,
+       [AC_CHECK_HEADER(/usr/include/ncurses/ncurses.h,
+          [CFLAGS="-I/usr/include/ncurses $CFLAGS" use_ncurses=yes])])])
+  if test "$use_ncurses" = yes; then
+    AC_DEFINE(USE_GCU) AC_DEFINE(USE_NCURSES)
+    LIBS="-lncurses $LIBS"
+  else
+    AC_CHECK_LIB(curses, initscr,
+      [AC_DEFINE(USE_GCU) LIBS="-lcurses $LIBS"],
+      [AC_CHECK_LIB(curses, endwin,
+         [AC_DEFINE(USE_GCU) LIBS="-lcurses -ltermcap $LIBS"],
+         [AC_CHECK_LIB(termcap, tgetent,
+            [AC_DEFINE(USE_CAP) LIBS="-ltermcap $LIBS"])],
+         -ltermcap)])
+  fi
+
+  dnl Checks for header files.
+  AC_PATH_XTRA
+
+  if test "$no_x" != "yes"; then
+    AC_DEFINE(USE_X11)
+    AC_DEFINE(USE_XPJ)
+    AC_DEFINE(USE_TRANSPARENCY)
+    ANGBAND_OBJS="maid-x11.o"
+    AC_SUBST(ANGBAND_OBJS)
+
+    LIBS="-lX11 $X_EXTRA_LIBS $LIBS"
+    CFLAGS="$CFLAGS $X_CFLAGS"
+    LDFLAGS="$LDFLAGS $X_LIBS"
+    dnl X_PRE_LIBS is prepended to LIBS below.
+
+    dnl Check for the Athena widget set
+    dnl
+    dnl Does anyone know if it is OK to put '-lXmu -lXt' *before* X_PRE_LIBS?
+    dnl If so this code can be simplified by inserting X_PRE_LIBS in LIBS above.
+    dnl Today libraries come in the same sequence as in the old src/Makefile.std,
+    dnl since that is presumably the way which has been tested most.
+    x_more_libs="$X_PRE_LIBS -lXt"
+    AC_CHECK_LIB(Xmu, main, x_more_libs="$X_PRE_LIBS -lXmu -lXt", , $x_more_libs)
+    AC_CHECK_LIB(Xext, main, x_more_libs="-lXext $x_more_libs", , $x_more_libs)
+    AC_CHECK_LIB(Xaw, XawInitializeWidgetSet,
+                 [AC_DEFINE(USE_XAW)
+                  LIBS="-lXaw $x_more_libs $LIBS"],
+                 LIBS="$X_PRE_LIBS $LIBS",
+                 $x_more_libs)
+  fi
 fi
 
 AC_HEADER_STDC
@@ -134,5 +135,4 @@ AC_FUNC_STRFTIME
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(gethostname mkdir select strstr strtol usleep mkstemp setegid)
 
-AC_OUTPUT(Makefile src/Makefile lib/Makefile lib/apex/Makefile lib/bone/Makefile lib/data/Makefile lib/edit/Makefile lib/file/Makefile lib/help/Makefile lib/info/Makefile lib/pref/Makefile lib/save/Makefile lib/user/Makefile lib/xtra/Makefile)
-
+AC_OUTPUT(Makefile src/Makefile src/lua/Makefile lib/Makefile lib/apex/Makefile lib/bone/Makefile lib/data/Makefile lib/edit/Makefile lib/file/Makefile lib/help/Makefile lib/info/Makefile lib/pref/Makefile lib/save/Makefile lib/script/Makefile lib/user/Makefile lib/xtra/Makefile)

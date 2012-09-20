@@ -1,6 +1,6 @@
 ###################################################################
 #
-#  makefile.bcc - Angband makefile for Borland C++ 5.5 (Win32)
+#  Makefile.bcc - Angband makefile for Borland C++ 5.5 (Win32)
 #
 ###################################################################
 
@@ -15,7 +15,7 @@
 #
 # Set tool and version names:
 
-CPP        = bcc32
+CC         = bcc32
 LINKER     = ilink32
 RC         = brc32
 
@@ -37,28 +37,47 @@ EXE_FILE = angband.exe
 #
 # Set any compiler options
 
-CCOPTS = -jb -j1 -Hc -tW -lGn -e$(EXE_FILE) -w- \
+CCOPTS = -Hc -tW -lGn -e$(EXE_FILE) -w- \
 	-D_WIN32_WINNT=0x0400 -DWINVER=0x0400 \
 	-DUSE_TRANSPARENCY
 
 # Compile flags:
-CPPFLAGS= $(CCOPTS) $(DBGOPT)
+CCFLAGS= $(CCOPTS) $(DBGOPT)
 
 
 ######################## Targets ##################################
 
+LUAOBJS = \
+  lua\lapi.obj lua\ldebug.obj lua\lmem.obj lua\lstrlib.obj lua\lvm.obj \
+  lua\tolua_lb.obj lua\lauxlib.obj lua\ldo.obj lua\lobject.obj \
+  lua\ltable.obj lua\lzio.obj lua\tolua_rg.obj lua\lbaselib.obj \
+  lua\lfunc.obj lua\lparser.obj lua\ltests.obj lua\tolua_bd.obj \
+  lua\tolua_tm.obj lua\lcode.obj lua\lgc.obj lua\lstate.obj \
+  lua\ltm.obj lua\tolua_eh.obj lua\tolua_tt.obj lua\ldblib.obj \
+  lua\llex.obj lua\lstring.obj lua\lundump.obj lua\tolua_gp.obj
+
+TOLUAOBJS = \
+  lua\tolua.obj lua\tolualua.obj lua\liolib.obj \
+  $(LUAOBJS)
+
 OBJ = \
-	main-win.obj readdib.obj \
-	birth.obj cave.obj cmd1.obj cmd2.obj \
-	cmd3.obj cmd4.obj cmd5.obj cmd6.obj \
-	dungeon.obj files.obj generate.obj init1.obj \
-	init2.obj randart.obj load1.obj load2.obj \
-	melee1.obj melee2.obj monster1.obj monster2.obj \
-	object1.obj object2.obj save.obj spells1.obj \
-	spells2.obj store.obj tables.obj util.obj \
-	variable.obj wizard1.obj wizard2.obj xtra1.obj \
-	xtra2.obj z-form.obj z-rand.obj z-term.obj \
-	z-util.obj z-virt.obj
+  main-win.obj readdib.obj \
+  birth.obj cave.obj cmd1.obj cmd2.obj \
+  cmd3.obj cmd4.obj cmd5.obj cmd6.obj \
+  dungeon.obj files.obj generate.obj init1.obj \
+  init2.obj randart.obj load1.obj load2.obj \
+  melee1.obj melee2.obj monster1.obj monster2.obj \
+  object1.obj object2.obj save.obj spells1.obj \
+  spells2.obj store.obj tables.obj util.obj \
+  variable.obj wizard1.obj wizard2.obj xtra1.obj \
+  xtra2.obj z-form.obj z-rand.obj z-term.obj \
+  z-util.obj z-virt.obj \
+  script.obj \
+  l-monst.obj l-object.obj l-player.obj l-random.obj l-random.obj \
+  l-ui.obj l-misc.obj l-spell.obj \
+  use-obj.obj \
+  $(LUAOBJS)
+
 
 all : $(EXE_FILE)
 
@@ -80,16 +99,36 @@ install: $(EXE_FILE)
 $(EXE_FILE): $(OBJ) angband.res
 	$(LINKER) -aa -x $(OBJ) c0w32.obj, $(EXE_FILE),, cw32.lib import32.lib,, angband.res
 
+lua\tolua.exe: $(TOLUAOBJS)
+	$(LINKER) -aa -x $(TOLUAOBJS) c0x32.obj, lua\tolua.exe,, cw32.lib import32.lib
+
 angband.res: angband.rc
 	$(RC) -r angband.rc
 
+l-monst.c: lua\tolua.exe l-monst.pkg
+	lua\tolua.exe -n monster -o l-monst.c l-monst.pkg
+
+l-object.c: lua\tolua.exe l-object.pkg
+	lua\tolua.exe -n object -o l-object.c l-object.pkg
+
+l-player.c: lua\tolua.exe l-player.pkg
+	lua\tolua.exe -n player -o l-player.c l-player.pkg
+
+l-random.c: lua\tolua.exe l-random.pkg
+	lua\tolua.exe -n random -o l-random.c l-random.pkg
+
+l-ui.c: lua\tolua.exe l-ui.pkg
+	lua\tolua.exe -n ui -o l-ui.c l-ui.pkg
+
+l-misc.c: lua\tolua.exe l-misc.pkg
+	lua\tolua.exe -n misc -o l-misc.c l-misc.pkg
+
+l-spell.c: lua\tolua.exe l-spell.pkg
+	lua\tolua.exe -n spell -o l-spell.c l-spell.pkg
+
 ########################### Implicit Rules ########################
 .c.obj:
-	$(CPP) $(CPPFLAGS) -c {$? }
-
-.c.i:
-	$(CPP) $(CPPFLAGS) -c -Sr -Sd {$? }
+	$(CC) $(CCFLAGS) -c {$? }
 
 .obj.exe:
-	$(CPP) $(CPPFLAGS) $<
-
+	$(CC) $(CCFLAGS) $<

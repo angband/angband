@@ -805,6 +805,14 @@ void self_knowledge(void)
 		{
 			info[i++] = "Your weapon is a great bane of dragons.";
 		}
+		if (f1 & (TR1_KILL_DEMON))
+		{
+			info[i++] = "Your weapon is a great bane of demon.";
+		}
+		if (f1 & (TR1_KILL_UNDEAD))
+		{
+			info[i++] = "Your weapon is a great bane of undead.";
+		}
 
 
 		/* Indicate Blessing */
@@ -1399,7 +1407,7 @@ bool detect_monsters_invis(void)
 		if (r_ptr->flags2 & (RF2_INVISIBLE))
 		{
 			/* Take note that they are invisible */
-			l_ptr->r_flags2 |= (RF2_INVISIBLE);
+			l_ptr->flags2 |= (RF2_INVISIBLE);
 
 			/* Update monster recall window */
 			if (p_ptr->monster_race_idx == m_ptr->r_idx)
@@ -1466,7 +1474,7 @@ bool detect_monsters_evil(void)
 		if (r_ptr->flags3 & (RF3_EVIL))
 		{
 			/* Take note that they are evil */
-			l_ptr->r_flags3 |= (RF3_EVIL);
+			l_ptr->flags3 |= (RF3_EVIL);
 
 			/* Update monster recall window */
 			if (p_ptr->monster_race_idx == m_ptr->r_idx)
@@ -3370,6 +3378,12 @@ bool lite_line(int dir)
 	return (project_hook(GF_LITE_WEAK, dir, damroll(6, 8), flg));
 }
 
+bool strong_lite_line(int dir)
+{
+	int flg = PROJECT_BEAM | PROJECT_GRID | PROJECT_KILL;
+	return (project_hook(GF_LITE, dir, damroll(10, 8), flg));
+}
+
 bool drain_life(int dir, int dam)
 {
 	int flg = PROJECT_STOP | PROJECT_KILL;
@@ -3488,4 +3502,133 @@ bool sleep_monsters_touch(void)
 
 	int flg = PROJECT_KILL | PROJECT_HIDE;
 	return (project(-1, 1, py, px, p_ptr->lev, GF_OLD_SLEEP, flg));
+}
+
+
+/*
+ * Curse the players armor
+ */
+bool curse_armor(void)
+{
+	object_type *o_ptr;
+
+	char o_name[80];
+
+
+	/* Curse the body armor */
+	o_ptr = &inventory[INVEN_BODY];
+
+	/* Nothing to curse */
+	if (!o_ptr->k_idx) return (FALSE);
+
+
+	/* Describe */
+	object_desc(o_name, o_ptr, FALSE, 3);
+
+	/* Attempt a saving throw for artifacts */
+	if (artifact_p(o_ptr) && (rand_int(100) < 50))
+	{
+		/* Cool */
+		msg_format("A %s tries to %s, but your %s resists the effects!",
+		           "terrible black aura", "surround your armor", o_name);
+	}
+
+	/* not artifact or failed save... */
+	else
+	{
+		/* Oops */
+		msg_format("A terrible black aura blasts your %s!", o_name);
+
+		/* Blast the armor */
+		o_ptr->name1 = 0;
+		o_ptr->name2 = EGO_BLASTED;
+		o_ptr->to_a = 0 - randint(5) - randint(5);
+		o_ptr->to_h = 0;
+		o_ptr->to_d = 0;
+		o_ptr->ac = 0;
+		o_ptr->dd = 0;
+		o_ptr->ds = 0;
+
+		/* Curse it */
+		o_ptr->ident |= (IDENT_CURSED);
+
+		/* Break it */
+		o_ptr->ident |= (IDENT_BROKEN);
+
+		/* Recalculate bonuses */
+		p_ptr->update |= (PU_BONUS);
+
+		/* Recalculate mana */
+		p_ptr->update |= (PU_MANA);
+
+		/* Window stuff */
+		p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
+	}
+
+	return (TRUE);
+}
+
+
+/*
+ * Curse the players weapon
+ */
+bool curse_weapon(void)
+{
+	object_type *o_ptr;
+
+	char o_name[80];
+
+
+	/* Curse the weapon */
+	o_ptr = &inventory[INVEN_WIELD];
+
+	/* Nothing to curse */
+	if (!o_ptr->k_idx) return (FALSE);
+
+
+	/* Describe */
+	object_desc(o_name, o_ptr, FALSE, 3);
+
+	/* Attempt a saving throw */
+	if (artifact_p(o_ptr) && (rand_int(100) < 50))
+	{
+		/* Cool */
+		msg_format("A %s tries to %s, but your %s resists the effects!",
+		           "terrible black aura", "surround your weapon", o_name);
+	}
+
+	/* not artifact or failed save... */
+	else
+	{
+		/* Oops */
+		msg_format("A terrible black aura blasts your %s!", o_name);
+
+		/* Shatter the weapon */
+		o_ptr->name1 = 0;
+		o_ptr->name2 = EGO_SHATTERED;
+		o_ptr->to_h = 0 - randint(5) - randint(5);
+		o_ptr->to_d = 0 - randint(5) - randint(5);
+		o_ptr->to_a = 0;
+		o_ptr->ac = 0;
+		o_ptr->dd = 0;
+		o_ptr->ds = 0;
+
+		/* Curse it */
+		o_ptr->ident |= (IDENT_CURSED);
+
+		/* Break it */
+		o_ptr->ident |= (IDENT_BROKEN);
+
+		/* Recalculate bonuses */
+		p_ptr->update |= (PU_BONUS);
+
+		/* Recalculate mana */
+		p_ptr->update |= (PU_MANA);
+
+		/* Window stuff */
+		p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
+	}
+
+	/* Notice */
+	return (TRUE);
 }

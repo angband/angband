@@ -175,6 +175,10 @@
  */
 #define ALLOW_SPOILERS
 
+/*
+ * OPTION: Compile in scripting support
+ */
+#define USE_SCRIPT
 
 /*
  * OPTION: Allow "do_cmd_colors" at run-time

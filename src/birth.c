@@ -564,7 +564,7 @@ static void player_wipe(void)
 		if (r_ptr->flags1 & (RF1_UNIQUE)) r_ptr->max_num = 1;
 
 		/* Clear player kills */
-		l_ptr->r_pkills = 0;
+		l_ptr->pkills = 0;
 	}
 
 

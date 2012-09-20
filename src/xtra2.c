@@ -2181,10 +2181,10 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 		if (m_ptr->ml || (r_ptr->flags1 & (RF1_UNIQUE)))
 		{
 			/* Count kills this life */
-			if (l_ptr->r_pkills < MAX_SHORT) l_ptr->r_pkills++;
+			if (l_ptr->pkills < MAX_SHORT) l_ptr->pkills++;
 
 			/* Count kills in all lives */
-			if (l_ptr->r_tkills < MAX_SHORT) l_ptr->r_tkills++;
+			if (l_ptr->tkills < MAX_SHORT) l_ptr->tkills++;
 
 			/* Hack -- Auto-recall */
 			monster_race_track(m_ptr->r_idx);
@@ -2273,12 +2273,12 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 bool modify_panel(int wy, int wx)
 {
 	/* Verify wy, adjust if needed */
-	if (p_ptr->depth == 0) wy = SCREEN_HGT;
+	if (p_ptr->depth == 0) wy = 0;
 	else if (wy > DUNGEON_HGT - SCREEN_HGT) wy = DUNGEON_HGT - SCREEN_HGT;
 	else if (wy < 0) wy = 0;
 
 	/* Verify wx, adjust if needed */
-	if (p_ptr->depth == 0) wx = SCREEN_WID;
+	if (p_ptr->depth == 0) wx = 0;
 	else if (wx > DUNGEON_WID - SCREEN_WID) wx = DUNGEON_WID - SCREEN_WID;
 	else if (wx < 0) wx = 0;
 
@@ -2953,6 +2953,9 @@ static void target_set_interactive_prepare(int mode)
 	{
 		for (x = p_ptr->wx; x < p_ptr->wx + SCREEN_WID; x++)
 		{
+			/* Check bounds */
+			if (!in_bounds_fully(y, x)) continue;
+
 			/* Require line of sight, unless "look" is "expanded" */
 			if (!expand_look && !player_has_los_bold(y, x)) continue;
 

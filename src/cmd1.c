@@ -191,7 +191,7 @@ sint tot_dam_aux(const object_type *o_ptr, int tdam, const monster_type *m_ptr)
 			{
 				if (m_ptr->ml)
 				{
-					l_ptr->r_flags3 |= (RF3_ANIMAL);
+					l_ptr->flags3 |= (RF3_ANIMAL);
 				}
 
 				if (mult < 2) mult = 2;
@@ -203,7 +203,7 @@ sint tot_dam_aux(const object_type *o_ptr, int tdam, const monster_type *m_ptr)
 			{
 				if (m_ptr->ml)
 				{
-					l_ptr->r_flags3 |= (RF3_EVIL);
+					l_ptr->flags3 |= (RF3_EVIL);
 				}
 
 				if (mult < 2) mult = 2;
@@ -215,7 +215,7 @@ sint tot_dam_aux(const object_type *o_ptr, int tdam, const monster_type *m_ptr)
 			{
 				if (m_ptr->ml)
 				{
-					l_ptr->r_flags3 |= (RF3_UNDEAD);
+					l_ptr->flags3 |= (RF3_UNDEAD);
 				}
 
 				if (mult < 3) mult = 3;
@@ -227,7 +227,7 @@ sint tot_dam_aux(const object_type *o_ptr, int tdam, const monster_type *m_ptr)
 			{
 				if (m_ptr->ml)
 				{
-					l_ptr->r_flags3 |= (RF3_DEMON);
+					l_ptr->flags3 |= (RF3_DEMON);
 				}
 
 				if (mult < 3) mult = 3;
@@ -239,7 +239,7 @@ sint tot_dam_aux(const object_type *o_ptr, int tdam, const monster_type *m_ptr)
 			{
 				if (m_ptr->ml)
 				{
-					l_ptr->r_flags3 |= (RF3_ORC);
+					l_ptr->flags3 |= (RF3_ORC);
 				}
 
 				if (mult < 3) mult = 3;
@@ -251,7 +251,7 @@ sint tot_dam_aux(const object_type *o_ptr, int tdam, const monster_type *m_ptr)
 			{
 				if (m_ptr->ml)
 				{
-					l_ptr->r_flags3 |= (RF3_TROLL);
+					l_ptr->flags3 |= (RF3_TROLL);
 				}
 
 				if (mult < 3) mult = 3;
@@ -263,7 +263,7 @@ sint tot_dam_aux(const object_type *o_ptr, int tdam, const monster_type *m_ptr)
 			{
 				if (m_ptr->ml)
 				{
-					l_ptr->r_flags3 |= (RF3_GIANT);
+					l_ptr->flags3 |= (RF3_GIANT);
 				}
 
 				if (mult < 3) mult = 3;
@@ -275,7 +275,7 @@ sint tot_dam_aux(const object_type *o_ptr, int tdam, const monster_type *m_ptr)
 			{
 				if (m_ptr->ml)
 				{
-					l_ptr->r_flags3 |= (RF3_DRAGON);
+					l_ptr->flags3 |= (RF3_DRAGON);
 				}
 
 				if (mult < 3) mult = 3;
@@ -287,12 +287,35 @@ sint tot_dam_aux(const object_type *o_ptr, int tdam, const monster_type *m_ptr)
 			{
 				if (m_ptr->ml)
 				{
-					l_ptr->r_flags3 |= (RF3_DRAGON);
+					l_ptr->flags3 |= (RF3_DRAGON);
 				}
 
 				if (mult < 5) mult = 5;
 			}
 
+			/* Execute demon */
+			if ((f1 & (TR1_KILL_DEMON)) &&
+			    (r_ptr->flags3 & (RF3_DEMON)))
+			{
+				if (m_ptr->ml)
+				{
+					l_ptr->flags3 |= (RF3_DEMON);
+				}
+
+				if (mult < 5) mult = 5;
+			}
+
+			/* Execute undead */
+			if ((f1 & (TR1_KILL_UNDEAD)) &&
+			    (r_ptr->flags3 & (RF3_UNDEAD)))
+			{
+				if (m_ptr->ml)
+				{
+					l_ptr->flags3 |= (RF3_UNDEAD);
+				}
+
+				if (mult < 5) mult = 5;
+			}
 
 			/* Brand (Acid) */
 			if (f1 & (TR1_BRAND_ACID))
@@ -302,7 +325,7 @@ sint tot_dam_aux(const object_type *o_ptr, int tdam, const monster_type *m_ptr)
 				{
 					if (m_ptr->ml)
 					{
-						l_ptr->r_flags3 |= (RF3_IM_ACID);
+						l_ptr->flags3 |= (RF3_IM_ACID);
 					}
 				}
 
@@ -321,7 +344,7 @@ sint tot_dam_aux(const object_type *o_ptr, int tdam, const monster_type *m_ptr)
 				{
 					if (m_ptr->ml)
 					{
-						l_ptr->r_flags3 |= (RF3_IM_ELEC);
+						l_ptr->flags3 |= (RF3_IM_ELEC);
 					}
 				}
 
@@ -340,7 +363,7 @@ sint tot_dam_aux(const object_type *o_ptr, int tdam, const monster_type *m_ptr)
 				{
 					if (m_ptr->ml)
 					{
-						l_ptr->r_flags3 |= (RF3_IM_FIRE);
+						l_ptr->flags3 |= (RF3_IM_FIRE);
 					}
 				}
 
@@ -359,7 +382,7 @@ sint tot_dam_aux(const object_type *o_ptr, int tdam, const monster_type *m_ptr)
 				{
 					if (m_ptr->ml)
 					{
-						l_ptr->r_flags3 |= (RF3_IM_COLD);
+						l_ptr->flags3 |= (RF3_IM_COLD);
 					}
 				}
 
@@ -378,7 +401,7 @@ sint tot_dam_aux(const object_type *o_ptr, int tdam, const monster_type *m_ptr)
 				{
 					if (m_ptr->ml)
 					{
-						l_ptr->r_flags3 |= (RF3_IM_POIS);
+						l_ptr->flags3 |= (RF3_IM_POIS);
 					}
 				}
 
@@ -1196,7 +1219,7 @@ void py_attack(int y, int x)
 				{
 					if (m_ptr->ml)
 					{
-						l_ptr->r_flags3 |= (RF3_NO_CONF);
+						l_ptr->flags3 |= (RF3_NO_CONF);
 					}
 
 					msg_format("%^s is unaffected.", m_name);

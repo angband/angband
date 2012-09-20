@@ -117,6 +117,7 @@ static cptr r_info_blow_effect[] =
 	"EXP_20",
 	"EXP_40",
 	"EXP_80",
+	"HALLU",
 	NULL
 };
 
@@ -274,7 +275,7 @@ static cptr r_info_flags4[] =
 	"XXX5X4",
 	"XXX6X4",
 	"XXX7X4",
-	"XXX8X4"
+	"BOULDER"
 };
 
 /*
@@ -341,7 +342,7 @@ static cptr r_info_flags6[] =
 	"S_HI_DEMON",
 	"S_MONSTER",
 	"S_MONSTERS",
-	"S_ANT",
+	"S_ANIMAL",
 	"S_SPIDER",
 	"S_HOUND",
 	"S_HYDRA",
@@ -386,8 +387,8 @@ static cptr k_info_flags1[] =
 	"SLAY_GIANT",
 	"SLAY_DRAGON",
 	"KILL_DRAGON",
-	"XXX5",
-	"XXX6",
+	"KILL_DEMON",
+	"KILL_UNDEAD",
 	"BRAND_POIS",
 	"BRAND_ACID",
 	"BRAND_ELEC",
@@ -525,7 +526,10 @@ static cptr a_info_act[ACT_MAX] =
 	"WOR",
 	"CONFUSE",
 	"PROBE",
-	"FIREBRAND"
+	"FIREBRAND",
+	"STARLIGHT",
+	"MANA_BOLT",
+	"BERSERKER"
 };
 
 
@@ -845,6 +849,18 @@ errr parse_z_info(char *buf, header *head)
 		z_info->b_max = max;
 	}
 
+	/* Process 'L' for "Maximum flavor_info[] subindex" */
+	else if (buf[2] == 'L')
+	{
+		int max;
+
+		/* Scan for the value */
+		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_GENERIC);
+
+		/* Save the value */
+		z_info->flavor_max = max;
+	}
+	
 	/* Process 'O' for "Maximum o_list[] index" */
 	else if (buf[2] == 'O')
 	{
@@ -1551,7 +1567,7 @@ errr parse_a_info(char *buf, header *head)
 		if (!*s) return (PARSE_ERROR_GENERIC);
 
 		/* Get the activation */
-		grab_one_activation(a_ptr, buf + 2);
+		if (grab_one_activation(a_ptr, buf + 2)) return (PARSE_ERROR_GENERIC);
 
 		/* Scan for the values */
 		if (2 != sscanf(s, "%d:%d",
@@ -2058,7 +2074,7 @@ errr parse_r_info(char *buf, header *head)
 					return (PARSE_ERROR_INVALID_SPELL_FREQ);
 
 				/* Extract a "frequency" */
-				r_ptr->freq_spell = r_ptr->freq_inate = 100 / i;
+				r_ptr->freq_spell = r_ptr->freq_innate = 100 / i;
 
 				/* Start at next entry */
 				s = t;
@@ -2950,6 +2966,83 @@ errr parse_g_info(char *buf, header *head)
 			*g_ptr = adj;
 		}
 	}
+	else
+	{
+		/* Oops */
+		return (PARSE_ERROR_UNDEFINED_DIRECTIVE);
+	}
+
+	/* Success */
+	return (0);
+}
+
+
+/*
+ * Initialize the "flavor_info" array, by parsing an ascii "template" file
+ */
+errr parse_flavor_info(char *buf, header *head)
+{
+	int i;
+	
+	char *s;
+
+	/* Current entry */
+	static flavor_type *flavor_ptr;
+
+
+	/* Process 'N' for "Number" */
+	if (buf[0] == 'N')
+	{
+		int tval;
+
+		/* Scan the value */
+		if (2 != sscanf(buf, "N:%d:%d", &i, &tval)) return (PARSE_ERROR_GENERIC);
+
+		/* Verify information */
+		if (i <= error_idx) return (PARSE_ERROR_NON_SEQUENTIAL_RECORDS);
+
+		/* Verify information */
+		if (i >= head->info_num) return (PARSE_ERROR_TOO_MANY_ENTRIES);
+
+		/* Save the index */
+		error_idx = i;
+
+		/* Point at the "info" */
+		flavor_ptr = &flavor_info[i];
+
+		/* Save the tval */
+		flavor_ptr->tval = (byte)tval;
+	}
+
+	/* Process 'F' for "Flavor" */
+	else if (buf[0] == 'F')
+	{
+		int tmp;
+
+		/* There better be a current flavor_ptr */
+		if (!flavor_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
+
+		/* Paranoia */
+		if (strlen(buf) < 6) return (PARSE_ERROR_GENERIC);
+
+		/* Extract the attr */
+		tmp = color_char_to_attr(buf[4]);
+
+		/* Paranoia */
+		if (tmp < 0) return (PARSE_ERROR_GENERIC);
+
+		/* Save the values */
+		flavor_ptr->d_attr = tmp;
+		flavor_ptr->d_char = buf[2];
+
+		/* Get the text */
+		s = buf+6;
+
+		/* Store the text */
+		if (!add_text(&flavor_ptr->text, head, s))
+			return (PARSE_ERROR_OUT_OF_MEMORY);
+	}
+
 	else
 	{
 		/* Oops */
