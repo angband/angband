@@ -121,30 +121,5 @@
 #include <stdarg.h>
 
 
-#ifdef ACORN
-
-/*
- * Hack -- ACORN replacement for the "rename" function
- */
-
-#define rename(a,b) rename_acn(a,b)
-
-extern int rename_acn(const char *old, const char *new);
-
-/*
- * Hack -- ACORN replacement for the "remove" function
- */
-
-#define remove(a)   remove_acn(a)
-
-extern int remove_acn(const char *filename);
-
-/*
- * XXX XXX XXX What about the "unlink" function?
- */
-
-#endif /* ACORN */
-
-
 #endif
 

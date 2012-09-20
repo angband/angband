@@ -25,8 +25,7 @@ SRCS = \
   melee1.c melee2.c save.c files.c \
   cmd1.c cmd2.c cmd3.c cmd4.c cmd5.c cmd6.c \
   store.c birth.c load1.c load2.c \
-  wizard1.c wizard2.c borg.c borg-map.c \
-  borg-obj.c borg-ext.c borg-aux.c borg-ben.c \
+  wizard1.c wizard2.c \
   generate.c dungeon.c init1.c init2.c \
   main-win.c readdib.c itsybits.c
 
@@ -38,8 +37,7 @@ OBJS = \
   melee1.obj melee2.obj save.obj files.obj \
   cmd1.obj cmd2.obj cmd3.obj cmd4.obj cmd5.obj cmd6.obj \
   store.obj birth.obj load1.obj load2.obj \
-  wizard1.obj wizard2.obj borg.obj borg-map.obj \
-  borg-obj.obj borg-ext.obj borg-aux.obj borg-ben.obj \
+  wizard1.obj wizard2.obj \
   generate.obj dungeon.obj init1.obj init2.obj \
   main-win.obj readdib.obj itsybits.obj
 
@@ -51,8 +49,7 @@ OBJS32 = \
   melee1.o32 melee2.o32 save.o32 files.o32 \
   cmd1.o32 cmd2.o32 cmd3.o32 cmd4.o32 cmd5.o32 cmd6.o32 \
   store.o32 birth.o32 load1.o32 load2.o32 \
-  wizard1.o32 wizard2.o32 borg.o32 borg-map.o32 \
-  borg-obj.o32 borg-ext.o32 borg-aux.o32 borg-ben.o32 \
+  wizard1.o32 wizard2.o32 \
   generate.o32 dungeon.o32 init1.o32 init2.o32 \
   main-win.o32 readdib.o32 itsybits.o32
 
@@ -168,8 +165,7 @@ xtra1 xtra2 spells1 spells2 +
 melee1 melee2 save files +
 cmd1 cmd2 cmd3 cmd4 cmd5 cmd6 +
 store birth load1 load2 +
-wizard1 wizard2 borg borg-map +
-borg-obj borg-ext borg-aux borg-ben +
+wizard1 wizard2 +
 generate dungeon init1 init2 +
 main-win readdib itsybits,+
 ..\angband.exe,..\angband.map,import cwl,..\ext-win\src\angband.def
@@ -200,8 +196,7 @@ xtra1.o32 xtra2.o32 spells1.o32 spells2.o32 +
 melee1.o32 melee2.o32 save.o32 files.o32 +
 cmd1.o32 cmd2.o32 cmd3.o32 cmd4.o32 cmd5.o32 cmd6.o32 +
 store.o32 birth.o32 load1.o32 load2.o32 +
-wizard1.o32 wizard2.o32 borg.o32 borg-map.o32 +
-borg-obj.o32 borg-ext.o32 borg-aux.o32 borg-ben.o32 +
+wizard1.o32 wizard2.o32 +
 generate.o32 dungeon.o32 init1.o32 init2.o32 +
 main-win.o32 readdib.o32 itsybits.o32,+
 ..\angband32.exe,..\angband.map,import32 cw32,..\ext-win\src\angband.def

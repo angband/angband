@@ -59,8 +59,8 @@
 
 typedef struct term_data term_data;
 
-struct term_data {
-
+struct term_data
+{
     term		t;
 
     cptr		name;
@@ -112,8 +112,8 @@ static term_data choice;
  * parts of each Red,Green,Blue are shown in the comments below,
  * again, these values are *before* gamma correction.
  */
-static local_color_data_type color_data[16] = {
-
+static local_color_data_type color_data[16] =
+{
     /* XXX XXX XXX 0,0,0 */,		/* TERM_DARK */
     /* XXX XXX XXX 4,4,4 */,		/* TERM_WHITE */
     /* XXX XXX XXX 2,2,2 */,		/* TERM_SLATE */
@@ -147,7 +147,7 @@ static local_color_data_type color_data[16] = {
 
 #endif
 
- 
+
 
 /*** Function hooks needed by "Term" ***/
 
@@ -202,7 +202,7 @@ static errr Term_user_xxx(int n)
     term_data *td = (term_data*)(Term->data);
 
     /* XXX XXX XXX Handle the request */
-    
+
     /* Unknown */
     return (1);
 }
@@ -230,7 +230,7 @@ static errr Term_xtra_xxx(int n, int v)
     switch (n)
     {
         case TERM_XTRA_EVENT:
-        
+
             /* XXX XXX XXX Process some pending events */
             /* Wait for at least one event if "v" is non-zero */
             /* otherwise, if no events are ready, return at once. */
@@ -250,88 +250,88 @@ static errr Term_xtra_xxx(int n, int v)
             return (0);
 
         case TERM_XTRA_FLUSH:
-        
+
             /* XXX XXX XXX Flush all pending events */
             /* This action should handle all events waiting on the */
             /* queue, optionally discarding all "keypress" events, */
             /* since they will be discarded anyway in "term.c". */
             /* This action is required, but is often not "essential". */
-            
+
             return (0);
 
         case TERM_XTRA_CLEAR:
-        
+
             /* XXX XXX XXX Clear the entire window */
             /* This action should clear the entire window, and redraw */
             /* any "borders" or other "graphic" aspects of the window. */
             /* This action is required. */
-            
+
             return (0);
 
         case TERM_XTRA_SHAPE:
-        
+
             /* XXX XXX XXX Set the cursor visibility (optional) */
             /* This action should change the visibility of the cursor, */
             /* if possible, to the requested value (0=off, 1=on) */
             /* This action is optional, but can improve both the */
             /* efficiency (and attractiveness) of the program. */
-            
+
             return (0);
-            
+
         case TERM_XTRA_FROSH:
-        
+
             /* XXX XXX XXX Flush a row of output (optional) */
             /* This action should make sure that row "v" of the "output" */
             /* to the window will actually appear on the window. */
             /* This action is optional on most systems. */
-            
+
             return (0);
-            
+
         case TERM_XTRA_FRESH:
-        
+
             /* XXX XXX XXX Flush output (optional) */
             /* This action should make sure that all "output" to the */
             /* window will actually appear on the window. */
             /* This action is optional if all "output" will eventually */
             /* show up on its own, or when actually requested. */
-            
+
             return (0);
-            
+
         case TERM_XTRA_NOISE:
-        
+
             /* XXX XXX XXX Make a noise (optional) */
             /* This action should produce a "beep" noise. */
             /* This action is optional, but nice. */
-            
+
             return (0);
 
         case TERM_XTRA_SOUND:
-        
+
             /* XXX XXX XXX Make a sound (optional) */
             /* This action should produce sound number "v", where */
             /* the "name" of that sound is "sound_names[v]". */
             /* This action is optional, and not important. */
-            
+
             return (0);
-            
+
         case TERM_XTRA_BORED:
-        
+
             /* XXX XXX XXX Handle random events when bored (optional) */
             /* This action is optional, and not important */
-            
+
             return (0);
-            
+
         case TERM_XTRA_REACT:
-        
+
             /* XXX XXX XXX React to global changes (optional) */
             /* For example, this action can be used to react to */
             /* changes in the global "color_table[256][4]" array. */
             /* This action is optional, but can be very useful */
-            
+
             return (0);
-            
+
         case TERM_XTRA_ALIVE:
-        
+
             /* XXX XXX XXX Change the "hard" level (optional) */
             /* This action is used if the program changes "aliveness" */
             /* by being either "suspended" (v=0) or "resumed" (v=1) */
@@ -340,11 +340,11 @@ static errr Term_xtra_xxx(int n, int v)
             /* case this action should clean up to let other programs */
             /* use the screen, or resume from such a cleaned up state. */
             /* This action is currently only used on UNIX machines */
-            
+
             return (0);
-            
+
         case TERM_XTRA_LEVEL:
-        
+
             /* XXX XXX XXX Change the "soft" level (optional) */
             /* This action is used when the term window changes "activation" */
             /* either by becoming "inactive" (v=0) or "active" (v=1) */
@@ -354,7 +354,7 @@ static errr Term_xtra_xxx(int n, int v)
             /* the "focus", which window is "raised", or anything like that. */
             /* This action is optional if all the other things which depend */
             /* on what term is active handle activation themself. */
-            
+
             return (0);
     }
 
@@ -471,7 +471,7 @@ static errr Term_text_xxx(int x, int y, int n, byte a, cptr s)
     term_data *td = (term_data*)(Term->data);
 
     /* XXX XXX XXX Normally use color "color_data[a & 0x0F]" */
-    
+
     /* XXX XXX XXX Draw the string */
 
     /* Success */
@@ -534,7 +534,7 @@ static void term_data_link(term_data *td)
     /* Erase with "white space" */
     t->attr_blank = TERM_WHITE;
     t->char_blank = ' ';
-    
+
     /* Prepare the init/nuke hooks */
     t->init_hook = Term_init_xxx;
     t->nuke_hook = Term_nuke_xxx;
@@ -563,7 +563,7 @@ static void term_data_link(term_data *td)
  * simply adds a call to "init_xxx()" to that function, conditional
  * on some form of "USE_XXX" define.
  */
- 
+
 /*
  * XXX XXX XXX Initialization function
  */
@@ -608,7 +608,7 @@ void init_xxx(void)
     term_screen = &screen.t;
 }
 
- 
+
 #else /* USE_XXX */
 
 /*
@@ -639,7 +639,7 @@ static void init_stuff(void)
     /* so that it points at the "lib" directory.  Every machine */
     /* handles this in a different way */
     strcpy(path, "XXX XXX XXX");
-    
+
     /* Prepare the filepaths */
     init_file_paths(path);
 }
@@ -703,7 +703,7 @@ void main(void)
     /* XXX XXX XXX Hack -- Use the "pref-xxx.prf" file */
     ANGBAND_SYS = "xxx";
 
- 
+
     /* XXX XXX XXX Event loop forever */
     while (TRUE) /* Handle Events */;
 }

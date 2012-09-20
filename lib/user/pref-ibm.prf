@@ -14,19 +14,19 @@
 
 
 
-##
-## Hack -- Some foreign keyboards have a special key on the keyboard, which
-## is used to generate the "<", ">", and "|" keys (alone, shifted, alt-ed).
-## If this key does not work, simply uncomment the lines below.
-##
-#A:<
-#P:^_x56\r
 #
-#A:>
-#P:^_Sx56\r
+# Hack -- Some foreign keyboards have a special key on the keyboard, which
+# is used to generate the "<", ">", and "|" keys (alone, shifted, alt-ed).
 #
-#A:|
-#P:^_Ax56\r
+
+A:<
+P:^_x56\r
+
+A:>
+P:^_Sx56\r
+
+A:|
+P:^_Ax56\r
 
 
 #

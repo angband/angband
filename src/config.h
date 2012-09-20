@@ -187,7 +187,17 @@
 
 
 /*
- * OPTION: Allow "macro definition" at run-time
+ * OPTION: Allow "do_cmd_colors" at run-time
+ */
+#define ALLOW_COLORS
+
+/*
+ * OPTION: Allow "do_cmd_visuals" at run-time
+ */
+#define ALLOW_VISUALS
+
+/*
+ * OPTION: Allow "do_cmd_macros" at run-time
  */
 #define ALLOW_MACROS
 
@@ -207,14 +217,6 @@
  * OPTION: Allow monsters to "flee" from strong players
  */
 #define ALLOW_TERROR
-
-/*
- * OPTION: Allow "titles" for the player (based on level and class)
- * Using this option adds a huge table of strings in "tables.c" and
- * prints pretty "titles" such as "Ranger Lord" after the race and
- * class, and on the tombstone, and in the "description" files.
- */
-/* #define ALLOW_TITLES */
 
 
 /*
@@ -352,7 +354,18 @@
  * is a software level flag as well ("use_color") which is almost as
  * good at speeding up the code.
  */
-#define USE_COLOR		/* Include full support for color terminals */
+#define USE_COLOR
+
+
+/*
+ * OPTION: Allow the use of "sound" in various places.
+ */
+#define USE_SOUND
+
+/*
+ * OPTION: Allow the use of "graphics" in various places
+ */
+#define USE_GRAPHICS
 
 
 /*
@@ -373,9 +386,6 @@
 
 /* Do not handle signals */
 # undef HANDLE_SIGNALS
-
-/* Use something */
-# define USE_ITSYBITSY
 
 #endif
 
@@ -500,6 +510,51 @@
 
 
 /*
+ * Hack -- Special "ancient DOS-286" version
+ */
+#ifdef USE_286
+# define ANGBAND_LITE
+# undef DELAY_LOAD_R_TEXT
+# define DELAY_LOAD_R_TEXT
+#endif
+
+/*
+ * Hack -- Special "ancient Macintosh" version
+ */
+#ifdef ANGBAND_LITE_MAC
+# define ANGBAND_LITE
+# undef USE_COLOR
+# undef ALLOW_TEMPLATES
+#endif
+
+
+/*
+ * OPTION: Attempt to minimize the size of the game
+ */
+/* #define ANGBAND_LITE */
+
+/*
+ * Hack -- React to the "ANGBAND_LITE" flag
+ */
+#ifdef ANGBAND_LITE
+# undef GRAPHIC_RECALL
+# undef GRAPHIC_CHOICE
+# undef GRAPHIC_MIRROR
+# undef ALLOW_COLORS
+# undef ALLOW_VISUALS
+# undef ALLOW_MACROS
+# undef MONSTER_FLOW
+# undef WDT_TRACK_OPTIONS
+# undef DRS_SMART_OPTIONS
+# undef ALLOW_OLD_SAVEFILES
+# undef ALLOW_BORG
+# undef ALLOW_WIZARD
+# undef ALLOW_SPOILERS
+#endif
+
+
+
+/*
  * OPTION: Attempt to prevent all "cheating"
  */
 /* #define VERIFY_HONOR */
@@ -514,42 +569,4 @@
 # define VERIFY_TIMESTAMPS
 #endif
 
-
-/*
- * Hack -- Save ~60K for DOS-286 version
- */
-#ifdef USE_286
-# undef DELAY_LOAD_R_TEXT
-# define DELAY_LOAD_R_TEXT
-#endif
-
-/*
- * Hack -- React to the "USE_286" flag
- */
-#ifdef USE_286
-# undef GRAPHIC_RECALL
-# undef GRAPHIC_CHOICE
-# undef GRAPHIC_MIRROR
-# define ANGBAND_LITE
-#endif
-
-
-/*
- * OPTION: Attempt to minimize the size of the game
- */
-/* #define ANGBAND_LITE */
-
-/*
- * Hack -- React to the "ANGBAND_LITE" flag
- */
-#ifdef ANGBAND_LITE
-# undef MONSTER_FLOW
-# undef WDT_TRACK_OPTIONS
-# undef DRS_SMART_OPTIONS
-# undef ALLOW_OLD_SAVEFILES
-# undef ALLOW_BORG
-# undef ALLOW_WIZARD
-# undef ALLOW_SPOILERS
-# undef ALLOW_TITLES
-#endif
 

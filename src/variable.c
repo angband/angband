@@ -33,6 +33,16 @@ byte version_minor = VERSION_MINOR;
 byte version_patch = VERSION_PATCH;
 byte version_extra = VERSION_EXTRA;
 
+
+/*
+ * Hack -- Savefile version
+ */
+byte sf_major;			/* Savefile's "version_major" */
+byte sf_minor;			/* Savefile's "version_minor" */
+byte sf_patch;			/* Savefile's "version_patch" */
+byte sf_extra;			/* Savefile's "version_extra" */
+
+
 /*
  * Hack -- Savefile information
  */
@@ -51,11 +61,11 @@ bool arg_force_roguelike;	/* Command arg -- Force roguelike keyset */
 
 bool character_generated;	/* The character exists */
 bool character_dungeon;		/* The character has a dungeon */
-bool character_loaded;		/* The character was loaded from the savefile */
-bool character_saved;		/* The character was saved to the savefile */
+bool character_loaded;		/* The character was loaded from a savefile */
+bool character_saved;		/* The character was just saved to a savefile */
 
 bool character_icky;		/* The game is in an icky full screen mode */
-bool character_xtra;		/* The game is in an unused state (unused) */
+bool character_xtra;		/* The game is in an icky startup mode */
 
 u32b seed_flavor;		/* Hack -- consistent object colors */
 u32b seed_town;			/* Hack -- consistent town layout */
@@ -131,14 +141,14 @@ s16b inven_nxt;			/* Hack -- unused */
 s16b inven_cnt;			/* Number of items in inventory */
 s16b equip_cnt;			/* Number of items in equipment */
 
-s16b i_cnt = 0;			/* Object counter */
-s16b m_cnt = 0;			/* Monster counter */
-
 s16b i_nxt = 1;			/* Object free scanner */
 s16b m_nxt = 1;			/* Monster free scanner */
 
 s16b i_max = 1;			/* Object heap size */
 s16b m_max = 1;			/* Monster heap size */
+
+s16b i_top = 0;			/* Object top size */
+s16b m_top = 0;			/* Monster top size */
 
 
 /* Software options (set via the '=' command).  See "tables.c" */
@@ -155,7 +165,6 @@ bool always_repeat;		/* Auto-repeat some commands */
 bool use_old_target;		/* Use old target when possible */
 
 bool show_equip_label;		/* Shop labels in equipment list */
-bool equippy_chars;		/* Show equippy characters */
 bool depth_in_feet;		/* Display the depth in "feet" */
 bool notice_seams;		/* Highlight mineral seams */
 
@@ -194,9 +203,6 @@ bool fresh_before;		/* Flush output before normal commands */
 bool fresh_after;		/* Flush output after normal commands */
 bool fresh_message;		/* Flush output after all messages */
 
-bool filch_message;		/* Flush messages before new messages */
-bool filch_disturb;		/* Flush messages before disturbances */
-
 bool alert_hitpoint;		/* Alert user to critical hitpoints */
 bool alert_failure;		/* Alert user to various failures */
 
@@ -229,27 +235,27 @@ bool show_health_bar;		/* Show monster health bar */
 bool show_inven_weight;		/* Show weights in inven */
 bool show_equip_weight;		/* Show weights in equip */
 bool show_store_weight;		/* Show weights in store */
-bool plain_descriptions;	/* Plain descriptions */
 
 bool stack_allow_items;		/* Allow weapons and armor and such to stack */
 bool stack_allow_wands;		/* Allow wands and staffs and rods to stack */
 bool stack_force_notes;		/* Force items with different notes to stack */
 bool stack_force_costs;		/* Force items with different costs to stack */
 
-bool auto_combine_pack;		/* Automatically combine items in the pack */
-bool auto_reorder_pack;		/* Automatically reorder items in the pack */
-
 
 /* Efficiency options */
 
-bool view_reduce_lite;		/* Reduce torch lite if running */
-bool view_reduce_lite_town;	/* Reduce torch lite if running (in town) */
+bool view_reduce_lite;		/* Reduce lite radius when running */
+bool view_reduce_view;		/* Reduce view radius in town */
 
 bool optimize_display;		/* Optimize various things (visual display) */
 bool optimize_various;		/* Optimize various things (message recall) */
 
 
 /* Special options */
+
+bool use_mirror_debug;		/* Use "mirror" window -- debug messages */
+
+bool use_mirror_around;		/* Use "mirror" window -- auto-mapping */
 
 bool use_mirror_recent;		/* Use "mirror" window -- recent monsters */
 
@@ -437,6 +443,17 @@ char *message__buf;
 
 
 /*
+ * The array of indexes of "live" objects
+ */
+s16b i_fast[MAX_I_IDX];
+
+/*
+ * The array of indexes of "live" monsters
+ */
+s16b m_fast[MAX_M_IDX];
+
+
+/*
  * The array of "cave grids" [MAX_WID][MAX_HGT].
  * Not completely allocated, that would be inefficient
  * Not completely hardcoded, that would overflow memory
@@ -446,7 +463,7 @@ cave_type *cave[MAX_HGT];
 /*
  * The array of dungeon items [MAX_I_IDX]
  */
-inven_type *i_list;
+object_type *i_list;
 
 /*
  * The array of dungeon monsters [MAX_M_IDX]
@@ -467,7 +484,7 @@ store_type *store;
 /*
  * The player's inventory [INVEN_TOTAL]
  */
-inven_type *inventory;
+object_type *inventory;
 
 
 /*
@@ -504,16 +521,17 @@ race_entry *alloc_race_table;
 
 /*
  * Specify attr/char pairs for inventory items (by tval)
- * XXX XXX XXX Note the assumed tval maximum of 128
+ * XXX XXX XXX Note the implied maximum "tval" of 128
  */
 byte tval_to_attr[128];
 char tval_to_char[128];
 
 /*
  * Simple keymap method, see "init.c" and "cmd6.c".
+ * XXX XXX XXX Note the implied maximum "key" of 128
  */
-byte keymap_cmds[256];
-byte keymap_dirs[256];
+byte keymap_cmds[128];
+byte keymap_dirs[128];
 
 
 /*
@@ -583,7 +601,7 @@ char *f_text;
  * The object kind arrays
  */
 header *k_head;
-inven_kind *k_info;
+object_kind *k_info;
 char *k_name;
 char *k_text;
 
@@ -704,7 +722,7 @@ byte item_tester_tval;
  * Here is a "hook" used during calls to "get_item()" and
  * "show_inven()" and "show_equip()", and the choice window routines.
  */
-bool (*item_tester_hook)(inven_type*);
+bool (*item_tester_hook)(object_type*);
 
 
 

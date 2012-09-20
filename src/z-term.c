@@ -402,6 +402,9 @@ errr Term_xtra(int n, int v)
  */
 static errr Term_curs_hack(int x, int y)
 {
+    /* XXX XXX XXX */
+    if (x || y) return (-2);
+
     /* Oops */
     return (-1);
 }
@@ -412,6 +415,9 @@ static errr Term_curs_hack(int x, int y)
  */
 static errr Term_wipe_hack(int x, int y, int n)
 {
+    /* XXX XXX XXX */
+    if (x || y || n) return (-2);
+
     /* Oops */
     return (-1);
 }
@@ -422,6 +428,9 @@ static errr Term_wipe_hack(int x, int y, int n)
  */
 static errr Term_pict_hack(int x, int y, byte a, char c)
 {
+    /* XXX XXX XXX */
+    if (x || y || a || c) return (-2);
+
     /* Oops */
     return (-1);
 }
@@ -432,6 +441,9 @@ static errr Term_pict_hack(int x, int y, byte a, char c)
  */
 static errr Term_text_hack(int x, int y, int n, byte a, cptr s)
 {
+    /* XXX XXX XXX */
+    if (x || y || n || a || s) return (-2);
+
     /* Oops */
     return (-1);
 }
@@ -516,7 +528,7 @@ static void Term_fresh_row_text_wipe(int y)
 
     /* The "old" data */
     int oa, oc;
-    
+
     /* The "new" data */
     int na, nc;
 
@@ -536,8 +548,8 @@ static void Term_fresh_row_text_wipe(int y)
         nc = old_cc[x] = scr_cc[x];
 
         /* Notice unchanged areas */
-        if ((na == oa) && (nc == oc)) {
-
+        if ((na == oa) && (nc == oc))
+        {
             /* Flush as needed (see above) */
             if (n)
             {
@@ -545,12 +557,14 @@ static void Term_fresh_row_text_wipe(int y)
                 text[n] = '\0';
 
                 /* Draw the pending chars */
-                if (fa) {
+                if (fa)
+                {
                     (void)((*Term->text_hook)(fx, y, n, fa, text));
                 }
-                
+
                 /* Hack -- Erase "leading" spaces */
-                else {
+                else
+                {
                     (void)((*Term->wipe_hook)(fx, y, n));
                 }
 
@@ -572,12 +586,14 @@ static void Term_fresh_row_text_wipe(int y)
                 text[n] = '\0';
 
                 /* Draw the pending chars */
-                if (fa) {
+                if (fa)
+                {
                     (void)((*Term->text_hook)(fx, y, n, fa, text));
                 }
 
                 /* Hack -- Erase "leading" spaces */
-                else {
+                else
+                {
                     (void)((*Term->wipe_hook)(fx, y, n));
                 }
 
@@ -603,12 +619,14 @@ static void Term_fresh_row_text_wipe(int y)
         text[n] = '\0';
 
         /* Draw the pending chars */
-        if (fa) {
+        if (fa)
+        {
             (void)((*Term->text_hook)(fx, y, n, fa, text));
         }
 
         /* Hack -- Erase fully blank lines */
-        else {
+        else
+        {
             (void)((*Term->wipe_hook)(fx, y, n));
         }
     }
@@ -643,7 +661,7 @@ static void Term_fresh_row_text_text(int y)
 
     /* The "old" data */
     int oa, oc;
-    
+
     /* The "new" data */
     int na, nc;
 
@@ -663,8 +681,8 @@ static void Term_fresh_row_text_text(int y)
         nc = old_cc[x] = scr_cc[x];
 
         /* Notice unchanged areas */
-        if ((na == oa) && (nc == oc)) {
-
+        if ((na == oa) && (nc == oc))
+        {
             /* Flush as needed (see above) */
             if (n)
             {
@@ -749,7 +767,7 @@ static void Term_fresh_row_both_wipe(int y)
 
     /* The "old" data */
     int oa, oc;
-    
+
     /* The "new" data */
     int na, nc;
 
@@ -769,8 +787,8 @@ static void Term_fresh_row_both_wipe(int y)
         nc = old_cc[x] = scr_cc[x];
 
         /* Notice unchanged areas */
-        if ((na == oa) && (nc == oc)) {
-
+        if ((na == oa) && (nc == oc))
+        {
             /* Flush as needed (see above) */
             if (n)
             {
@@ -778,12 +796,14 @@ static void Term_fresh_row_both_wipe(int y)
                 text[n] = '\0';
 
                 /* Draw the pending chars */
-                if (fa) {
+                if (fa)
+                {
                     (void)((*Term->text_hook)(fx, y, n, fa, text));
                 }
 
                 /* Hack -- Erase "leading" spaces */
-                else {
+                else
+                {
                     (void)((*Term->wipe_hook)(fx, y, n));
                 }
 
@@ -796,8 +816,8 @@ static void Term_fresh_row_both_wipe(int y)
         }
 
         /* Use "Term_pict" for "special" data */
-        if ((na & 0x80) && (nc & 0x80)) {
-
+        if ((na & 0x80) && (nc & 0x80))
+        {
             /* Flush as needed (see above) */
             if (n)
             {
@@ -805,12 +825,14 @@ static void Term_fresh_row_both_wipe(int y)
                 text[n] = '\0';
 
                 /* Draw the pending chars */
-                if (fa) {
+                if (fa)
+                {
                     (void)((*Term->text_hook)(fx, y, n, fa, text));
                 }
 
                 /* Hack -- Erase "leading" spaces */
-                else {
+                else
+                {
                     (void)((*Term->wipe_hook)(fx, y, n));
                 }
 
@@ -835,12 +857,14 @@ static void Term_fresh_row_both_wipe(int y)
                 text[n] = '\0';
 
                 /* Draw the pending chars */
-                if (fa) {
+                if (fa)
+                {
                     (void)((*Term->text_hook)(fx, y, n, fa, text));
                 }
 
                 /* Hack -- Erase "leading" spaces */
-                else {
+                else
+                {
                     (void)((*Term->wipe_hook)(fx, y, n));
                 }
 
@@ -866,12 +890,14 @@ static void Term_fresh_row_both_wipe(int y)
         text[n] = '\0';
 
         /* Draw the pending chars */
-        if (fa) {
+        if (fa)
+        {
             (void)((*Term->text_hook)(fx, y, n, fa, text));
         }
 
         /* Hack -- Erase fully blank lines */
-        else {
+        else
+        {
             (void)((*Term->wipe_hook)(fx, y, n));
         }
     }
@@ -906,7 +932,7 @@ static void Term_fresh_row_both_text(int y)
 
     /* The "old" data */
     int oa, oc;
-    
+
     /* The "new" data */
     int na, nc;
 
@@ -926,8 +952,8 @@ static void Term_fresh_row_both_text(int y)
         nc = old_cc[x] = scr_cc[x];
 
         /* Notice unchanged areas */
-        if ((na == oa) && (nc == oc)) {
-
+        if ((na == oa) && (nc == oc))
+        {
             /* Flush as needed (see above) */
             if (n)
             {
@@ -946,8 +972,8 @@ static void Term_fresh_row_both_text(int y)
         }
 
         /* Use "Term_pict" for "special" data */
-        if ((na & 0x80) && (nc & 0x80)) {
-
+        if ((na & 0x80) && (nc & 0x80))
+        {
             /* Flush as needed (see above) */
             if (n)
             {
@@ -1141,17 +1167,20 @@ errr Term_fresh(void)
             char c = old_cc[tx];
 
             /* Hack -- use "Term_pict()" always */
-            if (Term->always_pict) {
+            if (Term->always_pict)
+            {
                 (void)((*Term->pict_hook)(tx, ty, a, c));
             }
 
             /* Hack -- use "Term_pict()" sometimes */
-            else if (Term->higher_pict && (a & 0x80) && (c & 0x80)) {
+            else if (Term->higher_pict && (a & 0x80) && (c & 0x80))
+            {
                 (void)((*Term->pict_hook)(tx, ty, a, c));
             }
 
             /* Hack -- restore the actual character */
-            else if (a || Term->always_text) {
+            else if (a || Term->always_text)
+            {
                 char buf[2];
                 buf[0] = c;
                 buf[1] = '\0';
@@ -1159,7 +1188,8 @@ errr Term_fresh(void)
             }
 
             /* Hack -- erase the grid */
-            else {
+            else
+            {
                 (void)((*Term->wipe_hook)(tx, ty, 1));
             }
         }
@@ -1182,7 +1212,7 @@ errr Term_fresh(void)
     {
         byte a = Term->attr_blank;
         char c = Term->char_blank;
-        
+
         /* Physically erase the entire window */
         Term_xtra(TERM_XTRA_CLEAR, 0);
 
@@ -1217,143 +1247,147 @@ errr Term_fresh(void)
     }
 
 
-    /* Handle "icky corner" */
-    if (Term->icky_corner)
+    /* Something to update */
+    if (scr->y1 <= scr->y2)
     {
-        /* Avoid the corner */
-        if (scr->y2 > scr->h - 2)
+        /* Handle "icky corner" */
+        if (Term->icky_corner)
         {
             /* Avoid the corner */
-            if (scr->x2[scr->h - 1] > scr->w - 2)
+            if (scr->y2 > scr->h - 2)
             {
                 /* Avoid the corner */
-                scr->x2[scr->h - 1] = scr->w - 2;
-            }
-        }
-    }
-
-
-    /* Always use "Term_pict()" */
-    if (Term->always_pict) {
-
-        /* Scan the "modified" rows */
-        for (y = scr->y1; y <= scr->y2; ++y) {
-    
-            /* Flush each "modified" row */
-            if (scr->x1[y] <= scr->x2[y]) {
-
-                /* Flush the row */
-                Term_fresh_row_pict(y);
-            }
-
-            /* This row is all done */
-            scr->x1[y] = scr->w;
-            scr->x2[y] = 0;
-    
-            /* Hack -- Flush that row (if allowed) */
-            if (!Term->never_frosh) Term_xtra(TERM_XTRA_FROSH, y);
-        }
-    }
-
-    /* Sometimes use "Term_pict()" */
-    else if (Term->higher_pict) {
-
-        /* Never use "Term_wipe()" */
-        if (Term->always_text) {
-
-            /* Scan the "modified" rows */
-            for (y = scr->y1; y <= scr->y2; ++y) {
-    
-                /* Flush each "modified" row */
-                if (scr->x1[y] <= scr->x2[y]) {
-
-                    /* Flush the row */
-                    Term_fresh_row_both_text(y);
+                if (scr->x2[scr->h - 1] > scr->w - 2)
+                {
+                    /* Avoid the corner */
+                    scr->x2[scr->h - 1] = scr->w - 2;
                 }
-            
+            }
+        }
+
+
+        /* Always use "Term_pict()" */
+        if (Term->always_pict)
+        {
+            /* Scan the "modified" rows */
+            for (y = scr->y1; y <= scr->y2; ++y)
+            {
+                /* Flush each "modified" row */
+                if (scr->x1[y] <= scr->x2[y])
+                {
+                    /* Flush the row */
+                    Term_fresh_row_pict(y);
+                }
+
                 /* This row is all done */
                 scr->x1[y] = scr->w;
                 scr->x2[y] = 0;
-    
+
                 /* Hack -- Flush that row (if allowed) */
                 if (!Term->never_frosh) Term_xtra(TERM_XTRA_FROSH, y);
             }
         }
 
-        /* Sometimes use "Term_wipe()" */
-        else {
+        /* Sometimes use "Term_pict()" */
+        else if (Term->higher_pict)
+        {
+            /* Never use "Term_wipe()" */
+            if (Term->always_text)
+            {
+                /* Scan the "modified" rows */
+                for (y = scr->y1; y <= scr->y2; ++y)
+                {
+                    /* Flush each "modified" row */
+                    if (scr->x1[y] <= scr->x2[y])
+                    {
+                        /* Flush the row */
+                        Term_fresh_row_both_text(y);
+                    }
 
-            /* Scan the "modified" rows */
-            for (y = scr->y1; y <= scr->y2; ++y) {
-    
-                /* Flush each "modified" row */
-                if (scr->x1[y] <= scr->x2[y]) {
+                    /* This row is all done */
+                    scr->x1[y] = scr->w;
+                    scr->x2[y] = 0;
 
-                    /* Flush the row */
-                    Term_fresh_row_both_wipe(y);
+                    /* Hack -- Flush that row (if allowed) */
+                    if (!Term->never_frosh) Term_xtra(TERM_XTRA_FROSH, y);
                 }
-            
-                /* This row is all done */
-                scr->x1[y] = scr->w;
-                scr->x2[y] = 0;
-    
-                /* Hack -- Flush that row (if allowed) */
-                if (!Term->never_frosh) Term_xtra(TERM_XTRA_FROSH, y);
+            }
+
+            /* Sometimes use "Term_wipe()" */
+            else
+            {
+                /* Scan the "modified" rows */
+                for (y = scr->y1; y <= scr->y2; ++y)
+                {
+                    /* Flush each "modified" row */
+                    if (scr->x1[y] <= scr->x2[y])
+                    {
+                        /* Flush the row */
+                        Term_fresh_row_both_wipe(y);
+                    }
+
+                    /* This row is all done */
+                    scr->x1[y] = scr->w;
+                    scr->x2[y] = 0;
+
+                    /* Hack -- Flush that row (if allowed) */
+                    if (!Term->never_frosh) Term_xtra(TERM_XTRA_FROSH, y);
+                }
             }
         }
+
+        /* Never use "Term_pict()" */
+        else
+        {
+            /* Never use "Term_wipe()" */
+            if (Term->always_text)
+            {
+                /* Scan the "modified" rows */
+                for (y = scr->y1; y <= scr->y2; ++y)
+                {
+                    /* Flush each "modified" row */
+                    if (scr->x1[y] <= scr->x2[y])
+                    {
+                        /* Flush the row */
+                        Term_fresh_row_text_text(y);
+                    }
+
+                    /* This row is all done */
+                    scr->x1[y] = scr->w;
+                    scr->x2[y] = 0;
+
+                    /* Hack -- Flush that row (if allowed) */
+                    if (!Term->never_frosh) Term_xtra(TERM_XTRA_FROSH, y);
+                }
+            }
+
+            /* Sometimes use "Term_wipe()" */
+            else
+            {
+                /* Scan the "modified" rows */
+                for (y = scr->y1; y <= scr->y2; ++y)
+                {
+                    /* Flush each "modified" row */
+                    if (scr->x1[y] <= scr->x2[y])
+                    {
+                        /* Flush the row */
+                        Term_fresh_row_text_wipe(y);
+                    }
+
+                    /* This row is all done */
+                    scr->x1[y] = scr->w;
+                    scr->x2[y] = 0;
+
+                    /* Hack -- Flush that row (if allowed) */
+                    if (!Term->never_frosh) Term_xtra(TERM_XTRA_FROSH, y);
+                }
+            }
+        }
+
+        /* No rows are invalid */
+        scr->y1 = scr->h;
+        scr->y2 = 0;
     }
-
-    /* Never use "Term_pict()" */
-    else {
-
-        /* Never use "Term_wipe()" */
-        if (Term->always_text) {
-
-            /* Scan the "modified" rows */
-            for (y = scr->y1; y <= scr->y2; ++y) {
-    
-                /* Flush each "modified" row */
-                if (scr->x1[y] <= scr->x2[y]) {
-
-                    /* Flush the row */
-                    Term_fresh_row_text_text(y);
-                }
-            
-                /* This row is all done */
-                scr->x1[y] = scr->w;
-                scr->x2[y] = 0;
-    
-                /* Hack -- Flush that row (if allowed) */
-                if (!Term->never_frosh) Term_xtra(TERM_XTRA_FROSH, y);
-            }
-        }
-
-        /* Sometimes use "Term_wipe()" */
-        else {
-
-            /* Scan the "modified" rows */
-            for (y = scr->y1; y <= scr->y2; ++y) {
-    
-                /* Flush each "modified" row */
-                if (scr->x1[y] <= scr->x2[y]) {
-
-                    /* Flush the row */
-                    Term_fresh_row_text_wipe(y);
-                }
-            
-                /* This row is all done */
-                scr->x1[y] = scr->w;
-                scr->x2[y] = 0;
-    
-                /* Hack -- Flush that row (if allowed) */
-                if (!Term->never_frosh) Term_xtra(TERM_XTRA_FROSH, y);
-            }
-        }
-    }
-
-    /* No rows are invalid */
-    scr->y1 = scr->h;
-    scr->y2 = 0;
 
 
     /* Cursor update -- Show new Cursor */
@@ -1818,10 +1852,42 @@ errr Term_what(int x, int y, byte *a, char *c)
 
 
 /*
+ * XXX XXX XXX Mega-Hack -- special "Term_inkey_hook" hook
+ *
+ * This special function hook basically acts as a replacement function
+ * for both "Term_flush()" and "Term_inkey()", depending on whether the
+ * first parameter is NULL or not, and is currently used only to allow
+ * the "Borg" to bypass the "standard" keypress routines, and instead
+ * use its own internal algorithms to "generate" keypress values.
+ *
+ * Note that this function hook can do anything it wants, including
+ * in most cases simply doing exactly what is normally done by the
+ * functions below, and in other cases, doing some of the same things
+ * to check for "interuption" by the user, and replacing the rest of
+ * the code with specialized "think about the world" code.
+ *
+ * Similar results could be obtained by "stealing" the "Term->xtra_hook"
+ * hook, and doing special things for "TERM_XTRA_EVENT", "TERM_XTRA_FLUSH",
+ * and "TERM_XTRA_BORED", but this method is a lot "cleaner", and gives
+ * much better results when "profiling" the code.
+ * 
+ * See the "Borg" documentation for more details.
+ */
+errr (*Term_inkey_hook)(char *ch, bool wait, bool take) = NULL;
+
+
+/*
  * Flush and forget the input
  */
 errr Term_flush()
 {
+    /* XXX XXX XXX */
+    if (Term_inkey_hook)
+    {
+        /* Special "Borg" hook (flush keys) */
+        return ((*Term_inkey_hook)(NULL, NULL, NULL));
+    }
+
     /* Hack -- Flush all events */
     Term_xtra(TERM_XTRA_FLUSH, 0);
 
@@ -1839,7 +1905,7 @@ errr Term_flush()
  */
 errr Term_keypress(int k)
 {
-    /* Hack -- Refuse to enqueue "nul" */
+    /* Hack -- Refuse to enqueue non-keys */
     if (!k) return (-1);
 
     /* Store the char, advance the queue */
@@ -1866,7 +1932,7 @@ errr Term_keypress(int k)
  */
 errr Term_key_push(int k)
 {
-    /* Hack -- Refuse to enqueue "nul" */
+    /* Hack -- Refuse to enqueue non-keys */
     if (!k) return (-1);
 
     /* Hack -- Overflow may induce circular queue */
@@ -1890,6 +1956,7 @@ errr Term_key_push(int k)
 
 
 
+
 /*
  * Check for a pending keypress on the key queue.
  *
@@ -1905,30 +1972,37 @@ errr Term_inkey(char *ch, bool wait, bool take)
     /* Assume no key */
     (*ch) = '\0';
 
-    /* Hack -- get bored */
-    if (!Term->never_bored) {
+    /* XXX XXX XXX */
+    if (Term_inkey_hook)
+    {
+        /* Special "Borg" hook (generate keys) */
+        return ((*Term_inkey_hook)(ch, wait, take));
+    }
 
+    /* Hack -- get bored */
+    if (!Term->never_bored)
+    {
         /* Process random events */
         Term_xtra(TERM_XTRA_BORED, 0);
     }
 
     /* Wait */
-    if (wait) {
-    
+    if (wait)
+    {
         /* Process pending events while necessary */
-        while (Term->key_head == Term->key_tail) {
-
+        while (Term->key_head == Term->key_tail)
+        {
             /* Process events (wait for one) */
             Term_xtra(TERM_XTRA_EVENT, TRUE);
         }
     }
 
     /* Do not Wait */
-    else {
-    
+    else
+    {
         /* Process pending events if necessary */
-        if (Term->key_head == Term->key_tail) {
-
+        if (Term->key_head == Term->key_tail)
+        {
             /* Process events (do not wait) */
             Term_xtra(TERM_XTRA_EVENT, FALSE);
         }
@@ -2079,7 +2153,7 @@ errr Term_load(void)
             scr_aa[x] = mem_aa[x];
             scr_cc[x] = mem_cc[x];
         }
-        
+
         /* Assume changed */
         scr->x1[y] = 0;
         scr->x2[y] = scr->w - 1;
@@ -2125,11 +2199,11 @@ errr Term_resize(int w, int h)
 
     /* Resize the "old" contents */
     term_win_init(old, w, h);
-        
+
 
     /* Nuke the "scr" contents */
     term_win_nuke(scr);
-    
+
     /* Resize the "scr" contents */
     term_win_init(scr, w, h);
 
@@ -2166,8 +2240,8 @@ errr Term_activate(term *t)
     if (Term) Term_xtra(TERM_XTRA_LEVEL, 0);
 
     /* Hack -- Call the special "init" hook */
-    if (!t->active_flag) {
-
+    if (!t->active_flag)
+    {
         /* Call the "init" hook */
         if (t->init_hook) (*t->init_hook)(t);
 
@@ -2196,14 +2270,14 @@ errr Term_activate(term *t)
 errr term_nuke(term *t)
 {
     /* Hack -- Call the special "nuke" hook */
-    if (t->active_flag) {
-    
+    if (t->active_flag)
+    {
         /* Call the "nuke" hook */
         if (t->nuke_hook) (*t->nuke_hook)(t);
 
         /* Remember */
         t->active_flag = FALSE;
-        
+
         /* Assume not mapped */
         t->mapped_flag = FALSE;
     }
@@ -2264,7 +2338,7 @@ errr term_init(term *t, int w, int h, int k)
 
     /* Cursor invisible */
     t->scr->cv = 0;
-    
+
     /* Cursor usable */
     t->scr->cu = 0;
 

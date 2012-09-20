@@ -195,7 +195,7 @@ static int            game_local_chars;
  */
 static int active = 0;
 
- 
+
 /*
  * The main screen information
  */
@@ -504,7 +504,7 @@ static void Term_init_gcu(term *t)
 {
     /* Count init's, handle first */
     if (active++ != 0) return;
-    
+
     /* Erase the screen */
     (void)clear();
 
@@ -564,8 +564,8 @@ static errr Term_xtra_gcu_event(int v)
     int i, k;
 
     /* Wait */
-    if (v) {
-
+    if (v)
+    {
         /* Paranoia -- Wait for it */
         nodelay(stdscr, FALSE);
 
@@ -579,10 +579,10 @@ static errr Term_xtra_gcu_event(int v)
         if (i == ERR) exit_game_panic();
         if (i == EOF) exit_game_panic();
     }
-    
-    /* Do not wait */
-    else {
 
+    /* Do not wait */
+    else
+    {
         /* Do not wait for it */
         nodelay(stdscr, TRUE);
 
@@ -612,12 +612,12 @@ static errr Term_xtra_gcu_event(int v)
 static errr Term_xtra_gcu_event(int v)
 {
     int i, k;
-    
+
     char buf[2];
 
     /* Wait */
-    if (v) {
-    
+    if (v)
+    {
         /* Wait for one byte */
         i = read(0, buf, 1);
 
@@ -626,8 +626,8 @@ static errr Term_xtra_gcu_event(int v)
     }
 
     /* Do not wait */
-    else {
-
+    else
+    {
         /* Get the current flags for stdin */
         k = fcntl(0, F_GETFL, 0);
 
@@ -649,7 +649,7 @@ static errr Term_xtra_gcu_event(int v)
 
     /* Enqueue the keypress */
     Term_keypress(buf[0]);
-    
+
     /* Success */
     return (0);
 }
@@ -697,7 +697,7 @@ static errr Term_xtra_gcu(int n, int v)
         /* Process events */
         case TERM_XTRA_EVENT:
             return (Term_xtra_gcu_event(v));
-        
+
         /* Flush events */
         case TERM_XTRA_FLUSH:
             while (!Term_xtra_gcu_event(FALSE));
@@ -822,11 +822,11 @@ errr init_gcu(void)
 #endif
 
     /* Attempt to use customized colors */
-    if (can_fix_color) {
-
+    if (can_fix_color)
+    {
         /* Prepare the color pairs */
-        for (i = 0; i < 16; i++) {
-        
+        for (i = 0; i < 16; i++)
+        {
             /* Reset the color */
             init_pair(i, i, i);
 
@@ -856,8 +856,8 @@ errr init_gcu(void)
     }
 
     /* Attempt to use colors */
-    else if (can_use_color) {
-
+    else if (can_use_color)
+    {
         /* Color-pair 0 is *always* WHITE on BLACK */
 
         /* Prepare the color pairs */

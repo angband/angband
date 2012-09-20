@@ -21,30 +21,14 @@
 
 
 /*
- * Hack -- fake definitions for Acorn (see "main-acn.c")
+ * Hack -- assist "main-acn.c" XXX XXX XXX
  */
 #ifdef ACORN
-
-# define     O_RDONLY        0
-# define     O_WRONLY        1
-# define     O_RDWR          2
-
-# define     O_CREAT         0x10
-# define     O_TRUNC         0x20
-# define     O_EXCL          0x40
-# define     O_BINARY        0x80
-
-# define     EEXIST          17
-
+# define O_RDONLY	0
+# define O_WRONLY	1
+# define O_RDWR		2
 #endif
 
-
-/*
- * Hack -- force definition
- */
-#ifndef O_BINARY
-# define O_BINARY 0
-#endif
 
 /*
  * Hack -- force definitions -- see fd_seek()
@@ -134,12 +118,14 @@
 #  define D2I(X)	((X) - '0')
 #  define I2D(X)	((X) + '0')
 #  define KTRL(X)	((X) & 0x1F)
+#  define ESCAPE	'\033'
 #else
 #  define A2I(X)	((X) - 'a')
 #  define I2A(X)	((X) + 'a')
 #  define D2I(X)	((X) - '0')
 #  define I2D(X)	((X) + '0')
 #  define KTRL(X)	((X) & 0x1F)
+#  define ESCAPE	'\033'
 #endif
 
 

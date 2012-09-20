@@ -9,7 +9,7 @@
 
 /***************************************************************************
  * Version: 1.3, 12/24/95
- * 
+ *
  * Some of the ideas in this code came from main-win.c by Skirmantas Kligys
  * (kligys@scf.usc.edu).
  ***************************************************************************/
@@ -104,19 +104,19 @@ void *read_bmp_file ()
   BITMAPCOREHEADER bch;
   PICINFO *pp;
   pp=malloc(sizeof(PICINFO));
-  
+
   bmap = NULL;
   pal = NULL;
-  
+
   sprintf (path, "%s/8x13.bmp", ANGBAND_DIR_XTRA);
   infile = fopen(path, "r");
-  
+
   buf=(unsigned char *) malloc (54);
 
   fread (buf, 1, 26, infile);
 
   memcpy (&bch, buf + 14, 12);
-  
+
   if (bch.bcSize == 40)		/* truly MS_Windows 3.x ?*/
     {
       fread (buf + 26, 1, 28, infile);/* then we need the rest */
@@ -126,7 +126,7 @@ void *read_bmp_file ()
   else
     iswindows = FALSE;
 
-  p=malloc (768);  
+  p=malloc (768);
   pal = p;
 
   if (iswindows)		/*  MS_Windows 3.x */
@@ -150,7 +150,7 @@ void *read_bmp_file ()
 
   if ((pp->bpp >> 3) < 3)
     output_type = 1;
-  
+
   /* w is the size of a horizontal line in bytes
    * bih.biWidth is the number of valid pixels in a line
    * the latter one is passed to vgadisp.c as pp->width
@@ -221,7 +221,7 @@ void *read_bmp_file ()
       /* 4bit non compressed */
       ptr = pal;
       for (i = 0; i < palsize; i++)
-	{ 
+	{
 	  fread (ptr + 3 * i, 1, 3, infile);
 	  if (iswindows)
 	    fread (&dummy, 1, 1, infile);
@@ -236,7 +236,7 @@ void *read_bmp_file ()
       pal = p;
       ptr = bmap;
       if ((!iswindows) || (bih.biCompression == 0))
-	{ 
+	{
 	  for (j = h - 1; j >= 0; j--)
 	    for (i = 0, count = 0; i < (w / 2); i++)
 	      {
@@ -418,7 +418,8 @@ void *bmap;
 void *font;
 
 /* Initialize the screen font */
-void initfont () {
+void initfont ()
+{
   FILE *fontfile;
   void *temp;
   char path[255];
@@ -428,14 +429,15 @@ void initfont () {
    * necessary to avoid problems from this.  Anyone have a bitmapped 8x13
    * font file laying around that they could send me? |-> */
   sprintf (path, "%s/8x12alt.psf", ANGBAND_DIR_XTRA);
-  if (!(fontfile = fopen(path,"r"))) {
+  if (!(fontfile = fopen(path,"r")))
+  {
     printf ("Error: could not open font file.  Aborting....\n");
     exit(1);
   }
 
   /* Junk the 4-byte header */
   fread (&junk,4,1,fontfile);
-  
+
   /* Initialize font */
   temp = malloc (12*256);
   fread (temp,1,3328,fontfile);
@@ -443,12 +445,13 @@ void initfont () {
   gl_expandfont (8,12,15,temp,font);
   gl_setfont (8,12,font);
   free (temp);
-  
+
 }
 
 
 /* Initialize palette values for colors 0-15 */
-void setpal() {
+void setpal()
+{
   gl_setpalettecolor (0,00,00,00); /* Black */
   gl_setpalettecolor (3,63,63,63); /* White */
   gl_setpalettecolor (13,40,40,40); /* Gray */
@@ -475,16 +478,22 @@ const char pal_trans[16]={0,3,13,11,2,7,12,5,1,10,15,4,14,6,9,8};
  * Check for "events"
  * If block, then busy-loop waiting for event, else check once and exit
  ***************************************************************************/
-static errr CheckEvents (int block) {
+static errr CheckEvents (int block)
+{
   int k=0;
 
-  if (block) {
+  if (block)
+  {
     k=vga_getkey();
     if (k<1) return (1);
-  } else while ((k=vga_getkey())<1);
-    
-  Term_keypress(k);
+  }
+  else
+  {
+    while ((k=vga_getkey())<1);
+  }
   
+  Term_keypress(k);
+
   return(0);
 }
 
@@ -493,39 +502,45 @@ static errr CheckEvents (int block) {
  * Low-level graphics routine (assumes valid input)
  * Do a "special thing"
  ***************************************************************************/
-static errr term_xtra_svgalib (int n, int v) {
-  
-  switch (n) {
-   case TERM_XTRA_EVENT: {
+static errr term_xtra_svgalib (int n, int v)
+{
+
+  switch (n)
+  {
+   case TERM_XTRA_EVENT:
+   {
      if (v) return (CheckEvents (FALSE));
      while (!CheckEvents (TRUE));
      return (0);
    }
   }
   return(1);
-  
+
 }
 
 /****************************************************************************
  * Low-level graphics routine (assumes valid input)
  * Draws a "cursor" at (x,y)
  ***************************************************************************/
-static errr term_curs_svgalib (int x, int y, int z) {
-  gl_fillbox (x*CHAR_W,y*CHAR_H,CHAR_W,CHAR_H-1,15); 
+static errr term_curs_svgalib (int x, int y, int z)
+{
+  gl_fillbox (x*CHAR_W,y*CHAR_H,CHAR_W,CHAR_H-1,15);
   return(0);
 }
 
 /****************************************************************************
- * Low-level graphics routine (assumes valid input) 
+ * Low-level graphics routine (assumes valid input)
  * Erases a rectangular block of characters from (x,y) to (x+w,y+h)
  ***************************************************************************/
-static errr term_wipe_svgalib (int x,int y,int w,int h) {
+static errr term_wipe_svgalib (int x,int y,int w,int h)
+{
   gl_fillbox (x*CHAR_W,y*CHAR_H,w*CHAR_W,h*CHAR_H,0);
   return(0);
 }
 
 /* Translates "normal" attribute code to a bitmap offset */
-unsigned int char_to_grfx (unsigned char a, unsigned char c) {
+unsigned int char_to_grfx (unsigned char a, unsigned char c)
+{
   if (c==32) return 32; /* Spaces don't have attributes */
   else return (c+(a-128)*128);
 }
@@ -534,43 +549,48 @@ unsigned int char_to_grfx (unsigned char a, unsigned char c) {
  * Low-level graphics routine (assumes valid input)
  * Draw n chars at location (x,y) with value s and attribute a
  ***************************************************************************/
-errr term_text_svgalib (int x, int y, int n, unsigned char a, cptr s) {
+errr term_text_svgalib (int x, int y, int n, unsigned char a, cptr s)
+{
   unsigned int g;
   int i;
-  
+
   /* If we see a "text" (a<=127) attribute, output colored text */
-  if (a<=127) {  
+  if (a<=127)
+  {
     gl_colorfont (8,12,pal_trans[a],font);
     gl_writen (x*CHAR_W,y*CHAR_H,n,(char *)s);
-    
+
   }
-  
+
   /* Otherwise, we are displaying graphics */
-  else {
-    for (i=0;i<n;i++) {
-      
+  else
+  {
+    for (i=0;i<n;i++)
+    {
+
       g=char_to_grfx (a,s[i]); /* Translates attribute into bitmap offset */
-      
+
       /* Hack - draw only the top 12 lines of the graphic so that lines
-       * aren't left lying around on the screen when character spaces from 
+       * aren't left lying around on the screen when character spaces from
        * the 12-point font are used to overwrite 13-point graphic blocks. */
       gl_copyboxfromcontext (buffer,g%BM_COLS*CHAR_W,g/BM_COLS*CHAR_H,CHAR_W,
 			     CHAR_H-1,(x+i)*CHAR_W,y*CHAR_H);
     }
   }
-  
+
   return(0);
 }
 
-void term_load_bitmap() {
+void term_load_bitmap()
+{
   void *temp;
-  
+
   temp=read_bmp_file();
   gl_putbox(0,0,512,221,temp); /* Blit bitmap into buffer */
   free (temp);
-  
+
   return;
-  
+
 }
 
 
@@ -578,24 +598,25 @@ void term_load_bitmap() {
  * Term hook
  * Initialize a new term
  ***************************************************************************/
-static void term_init_svgalib (term *t) {
+static void term_init_svgalib (term *t)
+{
   int VGAMODE, VIRTUAL;
 
   /* Initialize the low-level library.  As of now, vga_init() will fail due to
-   * lack of appropriate I/O permissions unless angband is run as root, even 
-   * though SVGALIB programs can be run by any user if they are suid root.  I 
-   * think that this is caused by all the jacking around with setting and 
-   * dropping privs in main.c, but I haven't been able to pin down exactly 
+   * lack of appropriate I/O permissions unless angband is run as root, even
+   * though SVGALIB programs can be run by any user if they are suid root.  I
+   * think that this is caused by all the jacking around with setting and
+   * dropping privs in main.c, but I haven't been able to pin down exactly
    * where the problem is as of yet.... */
   vga_init();
   VGAMODE=G640x480x256; /* Hardwire this mode in for now */
   VIRTUAL=1;
-  
+
   /* Set up the bitmap buffer context */
   gl_setcontextvgavirtual(VGAMODE);
   buffer=gl_allocatecontext();
   gl_getcontext(buffer);
-  
+
   term_load_bitmap(); /* Load bitmap into virtual screen */
 
   /* Set up the physical screen context */
@@ -616,23 +637,25 @@ static void term_init_svgalib (term *t) {
  * Term hook
  * Nuke an old term
  ***************************************************************************/
-static void term_nuke_svgalib (term *t) {
-  vga_setmode (TEXT); 
+static void term_nuke_svgalib (term *t)
+{
+  vga_setmode (TEXT);
 }
 
 
 /****************************************************************************
  * Hook SVGAlib routines into term.c
  ***************************************************************************/
-errr init_lsl (void) {
+errr init_lsl (void)
+{
   term *t=&term_screen_body;
-  
+
   term_init(t,80,24,1024); /* Initialize the term */
- 
+
   use_graphics=TRUE; /* Show the wear/wield inventory as graphics */
-  
+
   t->soft_cursor=TRUE; /* The cursor is done via software and needs erasing */
-  
+
   /* Add hooks */
   t->init_hook=term_init_svgalib;
   t->nuke_hook=term_nuke_svgalib;
@@ -640,10 +663,10 @@ errr init_lsl (void) {
   t->wipe_hook=term_wipe_svgalib;
   t->curs_hook=term_curs_svgalib;
   t->xtra_hook=term_xtra_svgalib;
-  
+
   term_screen=t; /* Save the term */
   Term_activate(term_screen);
-  
+
   return(0);
 }
 

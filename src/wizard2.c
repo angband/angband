@@ -30,35 +30,6 @@ static void do_cmd_wiz_hack_ben(void)
 }
 
 
-/*
- * Same as "askfor_aux()" but with a position and explicit default.
- */
-static int get_string_default(char *buf, cptr dflt, int row, int col, int len)
-{
-    /* Go to the cursor location */
-    Term_gotoxy(col, row);
-
-    /* Start with the default */
-    strcpy(buf, dflt);
-
-    /* Get some input (or the default) */
-    return (askfor_aux(buf, len));
-}
-
-
-/*
- * Same as "askfor()" but with an explicit default response.
- */
-static int askfor_default(char *buf, cptr dflt, int len)
-{
-    /* Start with the default */
-    strcpy(buf, dflt);
-
-    /* Get some input (or the default) */
-    return (askfor_aux(buf, len));
-}
-
-
 
 /*
  * Output a long int in binary format.
@@ -69,15 +40,17 @@ static void prt_binary(u32b flags, int row, int col)
     u32b        bitmask;
 
     /* Scan the flags */
-    for (i = bitmask = 1; i <= 32; i++, bitmask *= 2) {
-
+    for (i = bitmask = 1; i <= 32; i++, bitmask *= 2)
+    {
         /* Dump set bits */
-        if (flags & bitmask) {
+        if (flags & bitmask)
+        {
             Term_putch(col++, row, TERM_BLUE, '*');
         }
 
         /* Dump unset bits */
-        else {
+        else
+        {
             Term_putch(col++, row, TERM_WHITE, '-');
         }
     }
@@ -103,87 +76,74 @@ static void do_cmd_wiz_bamf(void)
  */
 static void do_cmd_wiz_change_aux(void)
 {
+    int			i;
+
     int			tmp_int;
 
     long		tmp_long;
 
     char		tmp_val[160];
 
+    char		ppp[80];
 
-    prt("(3 - 118) Strength     = ", 0, 0);
-    sprintf(tmp_val, "%d", p_ptr->stat_max[A_STR]);
-    if (!askfor_aux(tmp_val, 3)) return;
 
-    tmp_int = atoi(tmp_val);
-    if ((tmp_int >= 3) && (tmp_int <= 18 + 100)) {
-        p_ptr->stat_cur[A_STR] = p_ptr->stat_max[A_STR] = tmp_int;
-    }
+    /* Query the stats */
+    for (i = 0; i < 6; i++)
+    {
+        /* Prompt */
+        sprintf(ppp, "%s (3-118): ", stat_names[i]);
 
-    prt("(3 - 118) Intelligence = ", 0, 0);
-    sprintf(tmp_val, "%d", p_ptr->stat_max[A_INT]);
-    if (!askfor_aux(tmp_val, 3)) return;
+        /* Default */
+        sprintf(tmp_val, "%d", p_ptr->stat_max[i]);
 
-    tmp_int = atoi(tmp_val);
-    if ((tmp_int >= 3) && (tmp_int <= 18 + 100)) {
-        p_ptr->stat_cur[A_INT] = p_ptr->stat_max[A_INT] = tmp_int;
-    }
+        /* Query */
+        if (!get_string(ppp, tmp_val, 3)) return;
 
-    prt("(3 - 118) Wisdom       = ", 0, 0);
-    sprintf(tmp_val, "%d", p_ptr->stat_max[A_WIS]);
-    if (!askfor_aux(tmp_val, 3)) return;
+        /* Extract */
+        tmp_int = atoi(tmp_val);
 
-    tmp_int = atoi(tmp_val);
-    if ((tmp_int >= 3) && (tmp_int <= 18 + 100)) {
-        p_ptr->stat_cur[A_WIS] = p_ptr->stat_max[A_WIS] = tmp_int;
-    }
+        /* Verify */
+        if (tmp_int > 18+100) tmp_int = 18+100;
+        else if (tmp_int < 3) tmp_int = 3;
 
-    prt("(3 - 118) Dexterity    = ", 0, 0);
-    sprintf(tmp_val, "%d", p_ptr->stat_max[A_DEX]);
-    if (!askfor_aux(tmp_val, 3)) return;
-
-    tmp_int = atoi(tmp_val);
-    if ((tmp_int >= 3) && (tmp_int <= 18 + 100)) {
-        p_ptr->stat_cur[A_DEX] = p_ptr->stat_max[A_DEX] = tmp_int;
-    }
-
-    prt("(3 - 118) Constitution = ", 0, 0);
-    sprintf(tmp_val, "%d", p_ptr->stat_max[A_CON]);
-    if (!askfor_aux(tmp_val, 3)) return;
-
-    tmp_int = atoi(tmp_val);
-    if ((tmp_int >= 3) && (tmp_int <= 18 + 100)) {
-        p_ptr->stat_cur[A_CON] = p_ptr->stat_max[A_CON] = tmp_int;
-    }
-
-    prt("(3 - 118) Charisma     = ", 0, 0);
-    sprintf(tmp_val, "%d", p_ptr->stat_max[A_CHR]);
-    if (!askfor_aux(tmp_val, 3)) return;
-
-    tmp_int = atoi(tmp_val);
-    if ((tmp_int >= 3) && (tmp_int <= 18 + 100)) {
-        p_ptr->stat_cur[A_CHR] = p_ptr->stat_max[A_CHR] = tmp_int;
+        /* Save it */
+        p_ptr->stat_cur[i] = p_ptr->stat_max[i] = tmp_int;
     }
 
 
-    prt("Gold = ", 0, 0);
-    sprintf(tmp_val, "%ld", p_ptr->au);
-    if (!askfor_aux(tmp_val, 9)) return;
+    /* Default */
+    sprintf(tmp_val, "%ld", (long)(p_ptr->au));
 
+    /* Query */
+    if (!get_string("Gold: ", tmp_val, 9)) return;
+
+    /* Extract */
     tmp_long = atol(tmp_val);
-    if (*tmp_val && (tmp_long >= 0)) {
-        p_ptr->au = tmp_long;
-    }
+
+    /* Verify */
+    if (tmp_long < 0) tmp_long = 0L;
+
+    /* Save */
+    p_ptr->au = tmp_long;
 
 
-    prt("Experience = ", 0, 0);
-    sprintf(tmp_val, "%ld", p_ptr->max_exp);
-    if (!askfor_aux(tmp_val, 8)) return;
+    /* Default */
+    sprintf(tmp_val, "%ld", (long)(p_ptr->max_exp));
 
+    /* Query */
+    if (!get_string("Experience: ", tmp_val, 9)) return;
+
+    /* Extract */
     tmp_long = atol(tmp_val);
-    if (*tmp_val && (tmp_long >= 0)) {
-        p_ptr->max_exp = tmp_long;
-        check_experience();
-    }
+
+    /* Verify */
+    if (tmp_long < 0) tmp_long = 0L;
+
+    /* Save */
+    p_ptr->max_exp = tmp_long;
+
+    /* Update */
+    check_experience();
 }
 
 
@@ -261,23 +221,23 @@ static void do_cmd_wiz_change()
  * Originally by David Reeve Sward <sward+@CMU.EDU>
  * Verbose item flags by -Bernd-
  */
-static void wiz_display_item(inven_type *i_ptr)
+static void wiz_display_item(object_type *i_ptr)
 {
     int 	i, j = 13;
 
     u32b	f1, f2, f3;
-    
+
     char        buf[256];
 
 
     /* Extract the flags */
-    inven_flags(i_ptr, &f1, &f2, &f3);
-    
+    object_flags(i_ptr, &f1, &f2, &f3);
+
     /* Clear the screen */
     for (i = 1; i <= 23; i++) prt("", i, j - 2);
 
     /* Describe fully */
-    objdes_store(buf, i_ptr, TRUE, 3);
+    object_desc_store(buf, i_ptr, TRUE, 3);
 
     prt(buf, 2, j);
 
@@ -293,7 +253,7 @@ static void wiz_display_item(inven_type *i_ptr)
                 i_ptr->pval, i_ptr->to_a, i_ptr->to_h, i_ptr->to_d), 6, j);
 
     prt(format("name1 = %-4d  name2 = %-4d  cost = %ld",
-                i_ptr->name1, i_ptr->name2, (long)item_value(i_ptr)), 7, j);
+                i_ptr->name1, i_ptr->name2, (long)object_value(i_ptr)), 7, j);
 
     prt(format("ident = %04x  timeout = %-d",
                 i_ptr->ident, i_ptr->timeout), 8, j);
@@ -381,7 +341,7 @@ static void strip_name(char *buf, int k_idx)
 {
     char *t;
 
-    inven_kind *k_ptr = &k_info[k_idx];
+    object_kind *k_ptr = &k_info[k_idx];
 
     cptr str = (k_name + k_ptr->name);
 
@@ -390,7 +350,8 @@ static void strip_name(char *buf, int k_idx)
     while ((*str == ' ') || (*str == '&')) str++;
 
     /* Copy useful chars */
-    for (t = buf; *str; str++) {
+    for (t = buf; *str; str++)
+    {
         if (*str != '~') *t++ = *str;
     }
 
@@ -433,7 +394,8 @@ static int wiz_create_itemtype(void)
     clear_screen();
 
     /* Print all tval's and their descriptions */
-    for (num = 0; (num < 60) && tvals[num].tval; num++) {
+    for (num = 0; (num < 60) && tvals[num].tval; num++)
+    {
         row = 2 + (num % 20);
         col = 30 * (num / 20);
         ch = head[num/20] + (num%20);
@@ -466,13 +428,13 @@ static int wiz_create_itemtype(void)
     clear_screen();
 
     /* We have to search the whole itemlist. */
-    for (num = 0, i = 1; (num < 60) && (i < MAX_K_IDX); i++) {
-
-        inven_kind *k_ptr = &k_info[i];
+    for (num = 0, i = 1; (num < 60) && (i < MAX_K_IDX); i++)
+    {
+        object_kind *k_ptr = &k_info[i];
 
         /* Analyze matching items */
-        if (k_ptr->tval == tval) {
-
+        if (k_ptr->tval == tval)
+        {
             /* Hack -- Skip instant artifacts */
             if (k_ptr->flags3 & TR3_INSTA_ART) continue;
 
@@ -513,40 +475,38 @@ static int wiz_create_itemtype(void)
 
 
 /*
- * Specify pval, flags and some other things.
- * Choices are shown in order of importance.
- * pval goes first, for example.
- *
- * originally by RAK
- *
- * ...not much remains. - Bernd -
- *
+ * Tweak an item
  */
-static void wiz_tweak_item(inven_type *i_ptr)
+static void wiz_tweak_item(object_type *i_ptr)
 {
-    char                tmp_val[80];
+    cptr	p;
+    char        tmp_val[80];
 
 
     /* Hack -- leave artifacts alone */
     if (artifact_p(i_ptr)) return;
 
-    prt("Change 'pval' setting: ", 0, 0);
-    if (!askfor_default(tmp_val, format("%d", i_ptr->pval), 5)) return;
+    p = "Enter new 'pval' setting: ";
+    sprintf(tmp_val, "%d", i_ptr->pval);
+    if (!get_string(p, tmp_val, 5)) return;
     i_ptr->pval = atoi(tmp_val);
     wiz_display_item(i_ptr);
 
-    prt("Change AC modifier: ", 0, 0);
-    if (!askfor_default(tmp_val, format("%d", i_ptr->to_a), 5)) return;
+    p = "Enter new 'to_a' setting: ";
+    sprintf(tmp_val, "%d", i_ptr->to_a);
+    if (!get_string(p, tmp_val, 5)) return;
     i_ptr->to_a = atoi(tmp_val);
     wiz_display_item(i_ptr);
 
-    prt("New to-hit modifier: ", 0, 0);
-    if (!askfor_default(tmp_val, format("%d", i_ptr->to_h), 3)) return;
+    p = "Enter new 'to_h' setting: ";
+    sprintf(tmp_val, "%d", i_ptr->to_h);
+    if (!get_string(p, tmp_val, 5)) return;
     i_ptr->to_h = atoi(tmp_val);
     wiz_display_item(i_ptr);
 
-    prt("New to-dam modifier: ", 0, 0);
-    if (!askfor_default(tmp_val, format("%d", i_ptr->to_h), 3)) return;
+    p = "Enter new 'to_d' setting: ";
+    sprintf(tmp_val, "%d", i_ptr->to_d);
+    if (!get_string(p, tmp_val, 5)) return;
     i_ptr->to_d = atoi(tmp_val);
     wiz_display_item(i_ptr);
 }
@@ -555,9 +515,9 @@ static void wiz_tweak_item(inven_type *i_ptr)
 /*
  * Apply magic to an item or turn it into an artifact. -Bernd-
  */
-static void wiz_reroll_item(inven_type *i_ptr)
+static void wiz_reroll_item(object_type *i_ptr)
 {
-    inven_type  mod_item;
+    object_type mod_item;
     char        ch;
 
     bool	changed = FALSE;
@@ -571,45 +531,50 @@ static void wiz_reroll_item(inven_type *i_ptr)
     mod_item = *i_ptr;
 
     /* Main loop. Ask for magification and artifactification */
-    while (TRUE) {
-
+    while (TRUE)
+    {
         /* Display full item debug information */
         wiz_display_item(&mod_item);
 
         /* Ask wizard what to do. */
-        if (!get_com("[a]ccept, [n]ormal, [g]ood, [e]xcellent? ", &ch)) {
+        if (!get_com("[a]ccept, [n]ormal, [g]ood, [e]xcellent? ", &ch))
+        {
             changed = FALSE;
             break;
         }
 
         /* Create/change it! */
-        if (ch == 'A' || ch == 'a') {
+        if (ch == 'A' || ch == 'a')
+        {
             changed = TRUE;
             break;
         }
 
         /* Apply normal magic, but first clear object */
-        else if (ch == 'n' || ch == 'N') {
+        else if (ch == 'n' || ch == 'N')
+        {
              invcopy(&mod_item, i_ptr->k_idx);
              apply_magic(&mod_item, dun_level, FALSE, FALSE, FALSE);
         }
 
         /* Apply good magic, but first clear object */
-        else if (ch == 'g' || ch == 'g') {
+        else if (ch == 'g' || ch == 'g')
+        {
              invcopy(&mod_item, i_ptr->k_idx);
              apply_magic(&mod_item, dun_level, FALSE, TRUE, FALSE);
         }
 
         /* Apply great magic, but first clear object */
-        else if (ch == 'e' || ch == 'e') {
+        else if (ch == 'e' || ch == 'e')
+        {
              invcopy(&mod_item, i_ptr->k_idx);
              apply_magic(&mod_item, dun_level, FALSE, TRUE, TRUE);
         }
     }
 
     /* Notice change */
-    if (changed) {
-
+    if (changed)
+    {
         /* Apply changes */
         *i_ptr = mod_item;
 
@@ -619,8 +584,8 @@ static void wiz_reroll_item(inven_type *i_ptr)
         /* Recalculate bonuses */
         p_ptr->update |= (PU_BONUS);
 
-        /* Combine / Reorder the pack */
-        p_ptr->update |= (PU_COMBINE | PU_REORDER);
+        /* Combine / Reorder the pack (later) */
+        p_ptr->notice |= (PN_COMBINE | PN_REORDER);
     }
 }
 
@@ -641,7 +606,7 @@ static void wiz_reroll_item(inven_type *i_ptr)
  * counter flags to prevent weirdness.  We use the items to collect
  * statistics on item creation relative to the initial item.
  */	
-static void wiz_statistics(inven_type *i_ptr)
+static void wiz_statistics(object_type *i_ptr)
 {
     long        i, matches, better, worse, other;
     int         x1, y1;
@@ -649,14 +614,14 @@ static void wiz_statistics(inven_type *i_ptr)
     char        *quality;
     bool        good, great;
 
-    inven_type  test_item;
-    inven_type	*j_ptr = &test_item;
-    
+    object_type test_item;
+    object_type	*j_ptr = &test_item;
+
     cptr q = "Rolls: %ld, Matches: %ld, Better: %ld, Worse: %ld, Other: %ld";
 
     /* Hack -- find a clean grid */
-    while (TRUE) {
-
+    while (TRUE)
+    {
         /* Pick a location */
         y1 = rand_int(cur_hgt);
         x1 = rand_int(cur_wid);
@@ -671,32 +636,36 @@ static void wiz_statistics(inven_type *i_ptr)
 
 
     /* Interact */
-    while (TRUE) {
-
+    while (TRUE)
+    {
         cptr pmt = "Roll for [n]ormal, [g]ood, or [e]xcellent treasure? ";
-        
+
         /* Display item */
         wiz_display_item(i_ptr);
 
         /* Get choices */
         if (!get_com(pmt, &ch)) break;
 
-        if (ch == 'n' || ch == 'N') {
+        if (ch == 'n' || ch == 'N')
+        {
             good = FALSE;
             great = FALSE;
             quality = "normal";
         }
-        else if (ch == 'g' || ch == 'G') {
+        else if (ch == 'g' || ch == 'G')
+        {
             good = TRUE;
             great = FALSE;
             quality = "good";
         }
-        else if (ch == 'e' || ch == 'E') {
+        else if (ch == 'e' || ch == 'E')
+        {
             good = TRUE;
             great = TRUE;
             quality = "excellent";
         }
-        else {
+        else
+        {
             good = FALSE;
             great = FALSE;
             break;
@@ -711,18 +680,17 @@ static void wiz_statistics(inven_type *i_ptr)
         matches = better = worse = other = 0;
 
         /* Let's rock and roll */
-        for (i = 0; i <= TEST_ROLL; i++) {
-
-
+        for (i = 0; i <= TEST_ROLL; i++)
+        {
             /* Output every few rolls */
-            if ((i < 100) || (i % 100 == 0)) {
-            
+            if ((i < 100) || (i % 100 == 0))
+            {
                 /* Do not wait */
                 inkey_scan = TRUE;
 
                 /* Allow interupt */
-                if (inkey()) {
- 
+                if (inkey())
+                {
                     /* Flush */
                     flush();
 
@@ -757,7 +725,8 @@ static void wiz_statistics(inven_type *i_ptr)
             if ((j_ptr->pval == i_ptr->pval) &&
                 (j_ptr->to_a == i_ptr->to_a) &&
                 (j_ptr->to_h == i_ptr->to_h) &&
-                (j_ptr->to_d == i_ptr->to_d)) {
+                (j_ptr->to_d == i_ptr->to_d))
+            {
                 matches++;
             }
 
@@ -765,7 +734,8 @@ static void wiz_statistics(inven_type *i_ptr)
             else if ((j_ptr->pval >= i_ptr->pval) &&
                     (j_ptr->to_a >= i_ptr->to_a) &&
                     (j_ptr->to_h >= i_ptr->to_h) &&
-                    (j_ptr->to_d >= i_ptr->to_d)) {
+                    (j_ptr->to_d >= i_ptr->to_d))
+            {
                 better++;
             }
 
@@ -773,12 +743,14 @@ static void wiz_statistics(inven_type *i_ptr)
             else if ((j_ptr->pval <= i_ptr->pval) &&
                     (j_ptr->to_a <= i_ptr->to_a) &&
                     (j_ptr->to_h <= i_ptr->to_h) &&
-                    (j_ptr->to_d <= i_ptr->to_d)) {
+                    (j_ptr->to_d <= i_ptr->to_d))
+            {
                 worse++;
             }
 
             /* Assume different */
-            else {
+            else
+            {
                 other++;
             }
         }
@@ -797,7 +769,7 @@ static void wiz_statistics(inven_type *i_ptr)
 /*
  * Change the quantity of a the item
  */
-static void wiz_quantity_item(inven_type *i_ptr)
+static void wiz_quantity_item(object_type *i_ptr)
 {
     int         tmp_int;
 
@@ -807,17 +779,23 @@ static void wiz_quantity_item(inven_type *i_ptr)
     /* Never duplicate artifacts */
     if (artifact_p(i_ptr)) return;
 
-    /* Ask for a value */
-    prt("Number of items ", 0, 0);
-    askfor_default(tmp_val, format("%d", i_ptr->number), 3);
-    tmp_int = atoi(tmp_val);
 
-    /* Paranoia -- require legal quantity */
-    if (tmp_int < 1) tmp_int = 1;
-    if (tmp_int > 99) tmp_int = 99;
+    /* Default */
+    sprintf(tmp_val, "%d", i_ptr->number);
 
-    /* Accept modifications */
-    i_ptr->number = tmp_int;
+    /* Query */
+    if (get_string("Quantity: ", tmp_val, 2))
+    {
+        /* Extract */
+        tmp_int = atoi(tmp_val);
+
+        /* Paranoia */
+        if (tmp_int < 1) tmp_int = 1;
+        if (tmp_int > 99) tmp_int = 99;
+
+        /* Accept modifications */
+        i_ptr->number = tmp_int;
+    }
 }
 
 
@@ -833,9 +811,9 @@ static void do_cmd_wiz_play(void)
 {
     int      	item;
 
-    inven_type 	*i_ptr;
+    object_type 	*i_ptr;
 
-    inven_type	forge;
+    object_type	forge;
 
     char 	ch;
 
@@ -843,18 +821,21 @@ static void do_cmd_wiz_play(void)
 
 
     /* Get an item (from equip or inven) */
-    if (!get_item(&item, "Play with which object? ", TRUE, TRUE, TRUE)) {
+    if (!get_item(&item, "Play with which object? ", TRUE, TRUE, TRUE))
+    {
         if (item == -2) msg_print("You have nothing to play with.");
         return;
     }
 
     /* Get the item (in the pack) */
-    if (item >= 0) {
+    if (item >= 0)
+    {
         i_ptr = &inventory[item];
     }
 
     /* Get the item (on the floor) */
-    else {
+    else
+    {
         i_ptr = &i_list[0 - item];
     }
 
@@ -865,7 +846,7 @@ static void do_cmd_wiz_play(void)
 
     /* Icky */
     character_icky = TRUE;
-    
+
     /* Save the screen */
     Term_save();
 
@@ -874,35 +855,41 @@ static void do_cmd_wiz_play(void)
     forge = (*i_ptr);
 
     /* The main loop */
-    while (TRUE) {
-
+    while (TRUE)
+    {
         /* Display the item */
         wiz_display_item(&forge);
 
         /* Get choice */
-        if (!get_com("[a]ccept [s]tatistics [r]eroll [t]weak [q]uantity? ", &ch)) {
+        if (!get_com("[a]ccept [s]tatistics [r]eroll [t]weak [q]uantity? ", &ch))
+        {
             changed = FALSE;
             break;
         }
 
-        if (ch == 'A' || ch == 'a') {
+        if (ch == 'A' || ch == 'a')
+        {
             changed = TRUE;
             break;
         }
 
-        if (ch == 's' || ch == 'S') {
+        if (ch == 's' || ch == 'S')
+        {
             wiz_statistics(&forge);
         }
 
-        if (ch == 'r' || ch == 'r') {
+        if (ch == 'r' || ch == 'r')
+        {
             wiz_reroll_item(&forge);
         }
 
-        if (ch == 't' || ch == 'T') {
+        if (ch == 't' || ch == 'T')
+        {
             wiz_tweak_item(&forge);
         }
 
-        if (ch == 'q' || ch == 'Q') {
+        if (ch == 'q' || ch == 'Q')
+        {
             wiz_quantity_item(&forge);
         }
     }
@@ -913,11 +900,11 @@ static void do_cmd_wiz_play(void)
 
     /* Not Icky */
     character_icky = FALSE;
-    
-    
-    /* Accept change */
-    if (changed) {
 
+
+    /* Accept change */
+    if (changed)
+    {
         /* Message */
         msg_print("Changes accepted.");
 
@@ -929,13 +916,14 @@ static void do_cmd_wiz_play(void)
 
         /* Recalculate bonuses */
         p_ptr->update |= (PU_BONUS);
-        
-        /* Combine / Reorder the pack */
-        p_ptr->update |= (PU_COMBINE | PU_REORDER);
+
+        /* Combine / Reorder the pack (later) */
+        p_ptr->notice |= (PN_COMBINE | PN_REORDER);
     }
 
     /* Ignore change */
-    else {
+    else
+    {
         msg_print("Changes ignored.");
     }
 }
@@ -952,7 +940,7 @@ static void do_cmd_wiz_play(void)
  */
 static void wiz_create_item()
 {
-    inven_type	forge;
+    object_type	forge;
 
     int         k_idx;
 
@@ -960,18 +948,18 @@ static void wiz_create_item()
     /* Icky */
     character_icky = TRUE;
 
-    /* Save the screen */    
+    /* Save the screen */
     Term_save();
 
     /* Get object base type */
     k_idx = wiz_create_itemtype();
 
-    /* Restore the screen */    
+    /* Restore the screen */
     Term_load();
 
     /* Not Icky */
     character_icky = FALSE;
-    
+
 
     /* Return if failed */
     if (!k_idx) return;
@@ -1041,71 +1029,63 @@ static void do_cmd_wiz_cure_all()
 /*
  * Go to any level
  */
-static void do_cmd_wiz_jump(int level)
+static void do_cmd_wiz_jump(void)
 {
-    int		i;
+    /* Ask for level */
+    if (command_arg <= 0)
+    {
+        char	ppp[80];
 
-    char	tmp_val[160];
+        char	tmp_val[160];
 
+        /* Prompt */
+        sprintf(ppp, "Jump to level (0-%d): ", MAX_DEPTH-1);
 
-    if (level > 0) {
-        i = level;
-    }
-    else {
-        prt("Go to which level (0-500)? ", 0, 0);
-        i = (-1);
-        if (get_string_default(tmp_val, format("%d", dun_level), 0, 27, 10)) {
-            i = atoi(tmp_val);
-        }
-    }
+        /* Default */
+        sprintf(tmp_val, "%d", dun_level);
 
-    if (i > MAX_DEPTH - 1) i = MAX_DEPTH - 1;
+        /* Ask for a level */
+        if (!get_string(ppp, tmp_val, 10)) return;
 
-    if (i >= 0) {
-        msg_print("You jump...");
-        dun_level = (i < 500) ? i : 500;
-        new_level_flag = TRUE;
+        /* Extract request */
+        command_arg = atoi(tmp_val);
     }
 
-    prt("", 0, 0);
+    /* Paranoia */
+    if (command_arg < 0) command_arg = 0;
+
+    /* Paranoia */
+    if (command_arg > MAX_DEPTH - 1) command_arg = MAX_DEPTH - 1;
+
+    /* Accept request */
+    msg_format("You jump to dungeon level %d.", command_arg);
+
+    /* Change level */
+    dun_level = command_arg;
+    new_level_flag = TRUE;
 }
 
 
 /*
- * Identify a lot of objects
+ * Become aware of a lot of objects
  */
-
-static void do_cmd_wiz_learn()
+static void do_cmd_wiz_learn(void)
 {
-    int			i, m;
+    int		i;
 
-    char		tmp_val[160];
+    /* Scan every object */
+    for (i = 1; i < MAX_K_IDX; i++)
+    {
+        object_kind *k_ptr = &k_info[i];
 
-
-    /* Prompt */
-    prt("Identify objects up to level (0-200): ", 0, 0);
-
-    /* Identify all the objects */
-    if (askfor(tmp_val, 10)) {
-
-        /* Extract a max level */
-        m = atoi(tmp_val);
-
-        /* Scan every object */
-        for (i = 1; i < MAX_K_IDX; i++) {
-
-            inven_kind *k_ptr = &k_info[i];
-
-            if (k_ptr->level <= m) {
-                inven_type inv;
-                invcopy(&inv, i);
-                inven_aware(&inv);
-            }
+        /* Induce awareness */
+        if (k_ptr->level <= command_arg)
+        {
+            object_type inv;
+            invcopy(&inv, i);
+            object_aware(&inv);
         }
     }
-
-    /* Clear the prompt */
-    prt("", 0, 0);
 }
 
 
@@ -1121,15 +1101,20 @@ static void do_cmd_rerate()
     max_value = (PY_MAX_LEVEL * 5 * (p_ptr->hitdie - 1)) / 8 +
         PY_MAX_LEVEL;
     player_hp[0] = p_ptr->hitdie;
-    do {
-        for (i = 1; i < PY_MAX_LEVEL; i++) {
+
+    /* XXX XXX XXX XXX */
+    do
+    {
+        for (i = 1; i < PY_MAX_LEVEL; i++)
+        {
             player_hp[i] = randint(p_ptr->hitdie);
             player_hp[i] += player_hp[i - 1];
         }
     }
     while ((player_hp[PY_MAX_LEVEL - 1] < min_value) ||
            (player_hp[PY_MAX_LEVEL - 1] > max_value));
-
+    /* XXX XXX XXX XXX */
+    
     percent = (int)(((long)player_hp[PY_MAX_LEVEL - 1] * 200L) /
                 (p_ptr->hitdie + ((PY_MAX_LEVEL - 1) * p_ptr->hitdie)));
 
@@ -1151,9 +1136,9 @@ static void do_cmd_rerate()
 static void do_cmd_wiz_summon(int num)
 {
     int i;
-    
-    for (i = 0; i < num; i++) {
 
+    for (i = 0; i < num; i++)
+    {
         (void)summon_specific(py, px, dun_level, 0);
     }
 }
@@ -1175,8 +1160,8 @@ static void do_cmd_wiz_named(int r_idx, int slp)
     if (r_idx >= MAX_R_IDX-1) return;
 
     /* Try 10 times */
-    for (i = 0; i < 10; i++) {
-
+    for (i = 0; i < 10; i++)
+    {
         int d = 1;
 
         /* Pick a location */
@@ -1200,8 +1185,8 @@ static void do_cmd_wiz_zap(void)
     int        i;
 
     /* Genocide everyone nearby */
-    for (i = 1; i < m_max; i++) {
-
+    for (i = 1; i < m_max; i++)
+    {
         monster_type *m_ptr = &m_list[i];
 
         /* Paranoia -- Skip dead monsters */
@@ -1246,8 +1231,8 @@ void do_cmd_wizard(void)
     (void)(get_com("Wizard Command: ", &cmd));
 
     /* Analyze the command */
-    switch (cmd) {
-
+    switch (cmd)
+    {
         /* Nothing */
         case ESCAPE:
         case ' ':
@@ -1281,7 +1266,7 @@ void do_cmd_wizard(void)
         case 'b':
             do_cmd_wiz_bamf();
             break;
-            
+
         /* Create any object */
         case 'c':
             wiz_create_item();
@@ -1319,7 +1304,7 @@ void do_cmd_wizard(void)
 
         /* Go up or down in the dungeon */
         case 'j':
-            do_cmd_wiz_jump(command_arg);
+            do_cmd_wiz_jump();
             break;
 
         /* Self-Knowledge */
@@ -1376,10 +1361,12 @@ void do_cmd_wizard(void)
 
         /* Increase Experience */
         case 'x':
-            if (command_arg) {
+            if (command_arg)
+            {
                 gain_exp(command_arg);
             }
-            else {
+            else
+            {
                 gain_exp(p_ptr->exp + 1);
             }
             break;

@@ -1289,51 +1289,39 @@
 
 
 /*
- * New cave grid flags for Angband 2.8.0 (and 2.7.9)
+ * Special cave grid flags
  */
-#define CAVE_F_01	0x0001 	/* feature mask */
-#define CAVE_F_02	0x0002 	/* feature mask */
-#define CAVE_F_04	0x0004 	/* feature mask */
-#define CAVE_F_08	0x0008 	/* feature mask */
-#define CAVE_F_10	0x0010 	/* feature mask */
-#define CAVE_F_20	0x0020 	/* feature mask */
-#define CAVE_F_40	0x0040 	/* unused (for now) */
-#define CAVE_F_80	0x0080 	/* unused (for now) */
-#define CAVE_MARK	0x0100 	/* memorized feature */
-#define CAVE_GLOW	0x0200 	/* self-illuminating */
-#define CAVE_ICKY	0x0400 	/* part of a vault */
-#define CAVE_ROOM	0x0800 	/* part of a room */
-#define CAVE_LITE	0x1000 	/* lite flag  */
-#define CAVE_VIEW	0x2000 	/* view flag */
-#define CAVE_TEMP	0x4000 	/* temp flag */
-#define CAVE_XTRA	0x8000 	/* misc flag */
+#define CAVE_MARK	0x01 	/* memorized feature */
+#define CAVE_GLOW	0x02 	/* self-illuminating */
+#define CAVE_ICKY	0x04 	/* part of a vault */
+#define CAVE_ROOM	0x08 	/* part of a room */
+#define CAVE_LITE	0x10 	/* lite flag  */
+#define CAVE_VIEW	0x20 	/* view flag */
+#define CAVE_TEMP	0x40 	/* temp flag */
+#define CAVE_XTRA	0x80 	/* misc flag */
 
 
 
 /*
  * Bit flags for the "project()" function
  *
- *   BEAM: Work as a beam weapon -- affect every grid passed through
- *   HIDE: Do not "show" our progress (no visual feedback to player)
+ *   JUMP: Jump directly to the target location (this is a hack)
+ *   BEAM: Work as a beam weapon (affect every grid passed through)
+ *   THRU: Continue "through" the target (used for "bolts"/"beams")
  *   STOP: Stop as soon as we hit a monster (used for "bolts")
- *   THRU: Continue "through" the targer (used for "bolts"/"beams")
  *   GRID: Affect each grid in the "blast area" in some way
- *   ITEM: Affect each item in the "blast area" in some way
- *   ONLY: Only affect the grid/item if there is no monster there
- *   XTRA: Do "extra" damage to player if he is in the "blast area"
- *
- * Notes:
- *   THRU, without STOP, means "go until we hit a wall or something"
+ *   ITEM: Affect each object in the "blast area" in some way
+ *   KILL: Affect each monster in the "blast area" in some way
+ *   HIDE: Hack -- disable "visual" feedback from projection
  */
-#define PROJECT_BEAM	0x01
-#define PROJECT_HIDE	0x02
-#define PROJECT_STOP	0x04
-#define PROJECT_THRU	0x08
+#define PROJECT_JUMP	0x01
+#define PROJECT_BEAM	0x02
+#define PROJECT_THRU	0x04
+#define PROJECT_STOP	0x08
 #define PROJECT_GRID	0x10
 #define PROJECT_ITEM	0x20
-#define PROJECT_ONLY	0x40
-#define PROJECT_XTRA	0x80
-
+#define PROJECT_KILL	0x40
+#define PROJECT_HIDE	0x80
 
 /*
  * Bit flags for the "enchant()" function
@@ -1382,6 +1370,14 @@
 
 
 /*
+ * Bit flags for the "p_ptr->notice" variable
+ */
+#define PN_COMBINE	0x00000001L	/* Combine the pack */
+#define PN_REORDER	0x00000002L	/* Reorder the pack */
+/* xxx (many) */
+
+
+/*
  * Bit flags for the "p_ptr->update" variable
  */
 #define PU_BONUS	0x00000001L	/* Calculate bonuses */
@@ -1391,8 +1387,6 @@
 #define PU_MANA		0x00000020L	/* Calculate csp and msp */
 #define PU_SPELLS	0x00000040L	/* Calculate spells */
 /* xxx (many) */
-#define PU_COMBINE	0x00000100L	/* Combine the pack */
-#define PU_REORDER	0x00000200L	/* Reorder the pack */
 /* xxx (many) */
 #define PU_UN_VIEW	0x00010000L	/* Forget view */
 #define PU_UN_LITE	0x00020000L	/* Forget lite */
@@ -1404,6 +1398,7 @@
 #define PU_DISTANCE	0x02000000L	/* Update distances */
 /* xxx */
 #define PU_FLOW		0x10000000L	/* Update flow */
+/* xxx (many) */
 
 
 /*
@@ -1419,7 +1414,7 @@
 #define PR_MANA		0x00000080L	/* Display Mana */
 #define PR_GOLD		0x00000100L	/* Display Gold */
 #define PR_DEPTH	0x00000200L	/* Display Depth */
-#define PR_EQUIPPY	0x00000400L	/* Display Equippy Chars */
+/* xxx */
 #define PR_HEALTH	0x00000800L	/* Display Health Bar */
 #define PR_CUT		0x00001000L	/* Display Extra (Cut) */
 #define PR_STUN		0x00002000L	/* Display Extra (Stun) */
@@ -1438,6 +1433,7 @@
 #define PR_MAP		0x04000000L	/* Display Map */
 #define PR_WIPE		0x08000000L	/* Hack -- Total Redraw */
 /* xxx */
+#define PR_AROUND	0x20000000L	/* Redraw "around" the player */
 #define PR_RECENT	0x40000000L	/* Redraw "recent" monster info */
 #define PR_CHOOSE	0x80000000L	/* Redraw "choices" or whatever */
 
@@ -1475,10 +1471,10 @@
 #define GF_PLASMA       12
 #define GF_HOLY_ORB     13
 #define GF_WATER        14
-#define GF_LITE         15	/* Lite, plus Lite damage */
-#define GF_DARK         16	/* Dark, plus Dark damage */
-#define GF_LITE_WEAK	17	/* Lite, plus Lite damage if susceptible */
-#define GF_DARK_WEAK	18	/* Dark, plus Dark damage if susceptible */
+#define GF_LITE         15
+#define GF_DARK         16
+#define GF_LITE_WEAK	17
+#define GF_DARK_WEAK	18
 #define GF_SHARDS       20
 #define GF_SOUND        21
 #define GF_CONFUSION    22
@@ -1499,16 +1495,23 @@
 #define GF_MAKE_WALL	45
 #define GF_MAKE_DOOR	46
 #define GF_MAKE_TRAP	47
-#define GF_OLD_CLONE	50
-#define GF_OLD_TPORT	51
+#define GF_OLD_CLONE	51
 #define GF_OLD_POLY	52
 #define GF_OLD_HEAL	53
 #define GF_OLD_SPEED	54
 #define GF_OLD_SLOW	55
 #define GF_OLD_CONF	56
-#define GF_OLD_SCARE	57
-#define GF_OLD_SLEEP	58
-#define GF_OLD_DRAIN	59
+#define GF_OLD_SLEEP	57
+#define GF_OLD_DRAIN	58
+#define GF_AWAY_UNDEAD	61
+#define GF_AWAY_EVIL	62
+#define GF_AWAY_ALL	63
+#define GF_TURN_UNDEAD	64
+#define GF_TURN_EVIL	65
+#define GF_TURN_ALL	66
+#define GF_DISP_UNDEAD	67
+#define GF_DISP_EVIL	68
+#define GF_DISP_ALL	69
 
 
 /*
@@ -1936,7 +1939,7 @@
 #define RF4_XXX6		0x20000000	
 #define RF4_XXX7		0x40000000	
 #define RF4_XXX8		0x80000000	
- 
+
 /*
  * New monster race bit flags
  */
@@ -2017,10 +2020,10 @@
 
 #define RF4_INT_MASK \
    0L
-   
+
 #define RF5_INT_MASK \
   (RF5_HOLD | RF5_SLOW | RF5_CONF | RF5_BLIND | RF5_SCARE)
-  
+
 #define RF6_INT_MASK \
    (RF6_BLINK |  RF6_TPORT | RF6_TELE_LEVEL | RF6_TELE_AWAY | \
     RF6_HEAL | RF6_HASTE | RF6_TRAPS | \
@@ -2030,7 +2033,7 @@
     RF6_S_HI_DRAGON | RF6_S_HI_UNDEAD | RF6_S_WRAITH | RF6_S_UNIQUE)
 
 
- 
+
 /*** Macro Definitions ***/
 
 
@@ -2057,7 +2060,7 @@
  * do not, allowing an abusively fast single bit check below.
  */
 #define floor_grid_bold(Y,X) \
-    (!(cave[Y][X].feat & 0x20))
+    (!(cave[Y][X].ftyp & 0x20))
 
 /*
  * Determine if a "legal" grid is a "clean" floor grid
@@ -2068,7 +2071,7 @@
  */
 #define clean_grid_bold(Y,X) \
     (floor_grid_bold(Y,X) && \
-     ((cave[Y][X].feat & 0x3F) == 0x01) && \
+     (cave[Y][X].ftyp == 0x01) && \
      (!cave[Y][X].i_idx))
 
 /*
@@ -2094,7 +2097,7 @@
  */
 #define naked_grid_bold(Y,X) \
     (floor_grid_bold(Y,X) && \
-     ((cave[Y][X].feat & 0x3F) == 0x01) && \
+     (cave[Y][X].ftyp == 0x01) && \
      !(cave[Y][X].i_idx) && \
      !(cave[Y][X].m_idx) && \
      !(((Y) == py) && ((X) == px)))
@@ -2106,7 +2109,7 @@
  * Note the use of comparison to zero to force a "boolean" result
  */
 #define player_has_los_bold(Y,X) \
-    ((cave[Y][X].feat & CAVE_VIEW) != 0)
+    ((cave[Y][X].fdat & CAVE_VIEW) != 0)
 
 
 
@@ -2127,9 +2130,9 @@
  * Line 4 -- forbid artifact grids
  */
 #define valid_grid_bold(Y,X) \
-    (((cave[Y][X].feat & 0x3F) < 0x3C) && \
-     (((cave[Y][X].feat & 0x3F) < 0x06) || \
-      ((cave[Y][X].feat & 0x3F) > 0x0F)) && \
+    ((cave[Y][X].ftyp < 0x3C) && \
+     ((cave[Y][X].ftyp < 0x06) || \
+      (cave[Y][X].ftyp > 0x0F)) && \
      !(artifact_p(&i_list[cave[Y][X].i_idx])))
 
 /*
@@ -2152,13 +2155,13 @@
 /*
  * Determine if a given inventory item is "aware"
  */
-#define inven_aware_p(T) \
+#define object_aware_p(T) \
     (k_info[(T)->k_idx].aware)
 
 /*
  * Determine if a given inventory item is "tried"
  */
-#define inven_tried_p(T) \
+#define object_tried_p(T) \
     (k_info[(T)->k_idx].tried)
 
 
@@ -2167,7 +2170,7 @@
  * Test One -- Check for special "known" tag
  * Test Two -- Check for "Easy Know" + "Aware"
  */
-#define inven_known_p(T) \
+#define object_known_p(T) \
     (((T)->ident & ID_KNOWN) || \
      (k_info[(T)->k_idx].easy_know && k_info[(T)->k_idx].aware))
 
@@ -2177,7 +2180,7 @@
  * Allow user redefinition of "aware" items.
   * Default to the "base" attr for unaware items
  */
-#define inven_attr(T) \
+#define object_attr(T) \
     ((k_info[(T)->k_idx].aware) ? \
      (k_info[(T)->k_idx].x_attr) : \
      (k_info[(T)->k_idx].i_attr))
@@ -2187,7 +2190,7 @@
  * Allow user redefinition of "aware" items.
  * Default to the "base" char for unaware items
  */
-#define inven_char(T) \
+#define object_char(T) \
     ((k_info[(T)->k_idx].aware) ? \
      (k_info[(T)->k_idx].x_char) : \
      (k_info[(T)->k_idx].i_char))
@@ -2231,14 +2234,6 @@
 # define geteuid() PlayerUID
 #endif
 
-
-
-/*** Keypress constants ***/
-
-/*
- * Hack -- The "escape" keypress value
- */
-#define ESCAPE          '\033'
 
 
 /*** Color constants ***/

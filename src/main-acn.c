@@ -25,7 +25,7 @@
  *
  */
 
-#define VERSION "2.7.9v4 (12-Feb-96)"
+#define VERSION "2.7.9v5 (14-Mar-96)"
 
 /* Hack to prevent types clash from OSLib */
 typedef unsigned int bits;
@@ -1743,6 +1743,11 @@ static void init_stuff(void)
     init_file_paths(buf);
 }
 
+/*
+ * To speed up the game, turn off explicit stack-limit checking
+ * and set a sufficiently large stack size to start with.
+ */
+int __root_stack_size=20*1024;
 
 int main(int argc, char *argv[])
 {
@@ -2147,6 +2152,69 @@ FILE *my_fopen(const char *filename, const char *mode)
     return f;
 }
 
+/*
+ * Hack -- replacement for "fgets()"
+ *
+ * Read a string, without a newline, to a file
+ *
+ * Process tabs, strip internal non-printables
+ */
+errr my_fgets(FILE *fff, char *buf, huge n)
+{
+    int i = 0;
+
+    char *s;
+
+    char tmp[1024];
+
+    /* Read a line */
+    if (fgets(tmp, 1024, fff))
+    {
+        /* Convert weirdness */
+        for (s = tmp; *s; s++)
+        {
+            /* Handle newline */
+            if (*s == '\n')
+            {
+                /* Terminate */
+                buf[i] = '\0';
+
+                /* Success */
+                return (0);
+            }
+
+            /* Handle tabs */
+            else if (*s == '\t')
+            {
+                /* Hack -- require room */
+                if (i + 8 >= n) break;
+
+                /* Append a space */
+                buf[i++] = ' ';
+
+                /* Append some more spaces */
+                while (!(i % 8)) buf[i++] = ' ';
+            }
+
+            /* Handle printables */
+            else if (isprint(*s))
+            {
+                /* Copy */
+                buf[i++] = *s;
+
+                /* Check length */
+                if (i >= n) break;
+            }
+        }
+    }
+
+    /* Nothing */
+    buf[0] = '\0';
+
+    /* Failure */
+    return (1);
+}
+
 errr my_fclose(FILE *fff)
 {
     /* Close, check for error */
@@ -2330,4 +2398,15 @@ errr fd_lock(int fd, int what)
 {
     return 0;
 }
+
+/*
+ * Hack -- acquire a "temporary" file name if possible
+ */
+errr path_temp(char *buf, int max)
+{
+    strncpy(buf, translate_name(tmpnam(NULL)), max);
+
+    return 0;
+}
+
 #endif /* __riscos */

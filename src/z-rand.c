@@ -82,8 +82,8 @@ void Rand_state_init(u32b seed)
     for (i = 1; i < RAND_DEG; i++) Rand_state[i] = LCRNG(Rand_state[i-1]);
 
     /* Cycle the table ten times per degree */
-    for (i = 0; i < RAND_DEG * 10; i++) {
-
+    for (i = 0; i < RAND_DEG * 10; i++)
+    {
         /* Acquire the next index */
         j = Rand_place + 1;
         if (j == RAND_DEG) j = 0;
@@ -112,18 +112,18 @@ s32b Rand_mod(s32b m)
     if (m <= 1) return (0);
 
     /* Use the "simple" RNG */
-    if (Rand_quick) {
-
+    if (Rand_quick)
+    {
         /* Cycle the generator */
         r = (Rand_value = LCRNG(Rand_value));
-        
+
         /* Mutate a 28-bit "random" number */
         r = ((r >> 4) % m);
     }
 
     /* Use the "complex" RNG */
-    else {
-    
+    else
+    {
         /* Acquire the next index */
         j = Rand_place + 1;
         if (j == RAND_DEG) j = 0;
@@ -165,26 +165,28 @@ s32b Rand_div(s32b m)
     n = (0x10000000 / m);
 
     /* Use a simple RNG */
-    if (Rand_quick) {
-
+    if (Rand_quick)
+    {
         /* Wait for it */
-        do {
-
+        while (1)
+        {
             /* Cycle the generator */
             r = (Rand_value = LCRNG(Rand_value));
-        
+
             /* Mutate a 28-bit "random" number */
             r = (r >> 4) / n;
 
-        } while (r >= m);
+            /* Done */
+            if (r < m) break;
+        }
     }
 
     /* Use a complex RNG */
-    else {
-    
+    else
+    {
         /* Wait for it */
-        do {
-
+        while (1)
+        {
             int j;
 
             /* Acquire the next index */
@@ -200,7 +202,9 @@ s32b Rand_div(s32b m)
             /* Advance the index */
             Rand_place = j;
 
-        } while (r >= m);
+            /* Done */
+            if (r < m) break;
+        }
     }
 
     /* Use the value */
@@ -293,29 +297,31 @@ s16b randnor(int mean, int stand)
 
     /* Paranoia */
     if (stand < 1) return (mean);
-    
+
     /* Roll for probability */
     tmp = rand_int(32768);
 
     /* Binary Search */
-    while (low < high) {
-
+    while (low < high)
+    {
         int mid = (low + high) >> 1;
 
         /* Move right if forced */
-        if (randnor_table[mid] < tmp) {
+        if (randnor_table[mid] < tmp)
+        {
             low = mid + 1;
         }
 
         /* Move left otherwise */
-        else {
+        else
+        {
             high = mid;
         }
     }
 
     /* Convert the index into an offset */
     offset = (long)stand * (long)low / RANDNOR_STD;
-    
+
     /* One half should be negative */
     if (rand_int(100) < 50) return (mean - offset);
 

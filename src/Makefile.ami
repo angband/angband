@@ -20,8 +20,7 @@ angband: \
   melee1.o melee2.o save.o files.o \
   cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
   store.o birth.o load1.o load2.o \
-  wizard1.o wizard2.o borg.o borg-map.o \
-  borg-obj.o borg-ext.o borg-aux.o borg-ben.o \
+  wizard1.o wizard2.o \
   generate.o dungeon.o init1.o init2.o \
   main-ami.o main.o
     echo Linking
@@ -42,8 +41,7 @@ xtra1.o xtra2.o spells1.o spells2.o
 melee1.o melee2.o save.o files.o
 cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o
 store.o birth.o load1.o load2.o
-wizard1.o wizard2.o borg.o borg-map.o
-borg-obj.o borg-ext.o borg-aux.o borg-ben.o
+wizard1.o wizard2.o
 generate.o dungeon.o init1.o init2.o
 main-acn.o main.o
 

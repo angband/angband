@@ -778,7 +778,7 @@ static errr Term_xtra_cap_event(int v)
         /* Hack -- Handle "errors" */
         if ((i <= 0) && (errno != EINTR)) exit_game_panic();
     }
-    
+
     /* Do not wait */
     else
     {
@@ -794,7 +794,7 @@ static errr Term_xtra_cap_event(int v)
         /* Replace the flags for stdin */
         if (fcntl(0, F_SETFL, arg)) return (1);
     }
-    
+
     /* No keys ready */
     if ((i != 1) || (!buf[0])) return (1);
 
@@ -905,7 +905,7 @@ static errr Term_xtra_cap(int n, int v)
             do_cl();
             do_move(0, 0, 0, 0);
             return (0);
-        
+
         /* Make a noise */
         case TERM_XTRA_NOISE:
             (void)write(1, "\007", 1);
@@ -948,10 +948,10 @@ static void Term_init_cap(term *t)
     /* Assume cursor at top left */
     curx = 0;
     cury = 0;
-    
+
     /* Assume visible cursor */
     curv = 1;
-    
+
     /* Clear the screen */
     do_cl();
 

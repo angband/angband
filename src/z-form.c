@@ -153,6 +153,11 @@ static uint vstrnfmt_aux_dflt(char *buf, uint max, cptr fmt, vptr arg)
 {
     int len;
     char tmp[32];
+
+    /* XXX XXX */
+    fmt = fmt ? fmt : 0;
+
+    /* Pointer display */
     sprintf(tmp, "<<%p>>", arg);
     len = strlen(tmp);
     if (len >= max) len = max - 1;
@@ -221,414 +226,414 @@ static vstrnfmt_aux_func vstrnfmt_aux = vstrnfmt_aux_dflt;
  */
 uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
 {
-  cptr s;
+    cptr s;
 
-  /* The argument is "long" */
-  bool do_long;
+    /* The argument is "long" */
+    bool do_long;
 
-  /* The argument needs "processing" */
-  bool do_xtra;
+    /* The argument needs "processing" */
+    bool do_xtra;
 
-  /* Bytes used in buffer */
-  uint n;
+    /* Bytes used in buffer */
+    uint n;
 
-  /* Bytes used in format sequence */
-  uint q;
+    /* Bytes used in format sequence */
+    uint q;
 
-  /* Format sequence */
-  char aux[128];
+    /* Format sequence */
+    char aux[128];
 
-  /* Resulting string */
-  char tmp[1024];
-
-
-  /* Mega-Hack -- treat "illegal" length as "infinite" */
-  if (!max) max = 32767;
-
-  /* Mega-Hack -- treat "no format" as "empty string" */
-  if (!fmt) fmt = "";
+    /* Resulting string */
+    char tmp[1024];
 
 
-  /* Begin the buffer */
-  n = 0;
+    /* Mega-Hack -- treat "illegal" length as "infinite" */
+    if (!max) max = 32767;
 
-  /* Begin the format string */
-  s = fmt;
-
-  /* Scan the format string */
-  while (TRUE)
-  {
-    /* All done */
-    if (!*s) break;
-
-    /* Normal character */
-    if (*s != '%')
-    {
-      /* Check total length */
-      if (n == max-1) break;
-
-      /* Save the character */
-      buf[n++] = *s++;
-
-      /* Continue */
-      continue;
-    }
-
-    /* Skip the "percent" */
-    s++;
-
-    /* Pre-process "%%" */
-    if (*s == '%')
-    {
-      /* Check total length */
-      if (n == max-1) break;
-
-      /* Save the percent */
-      buf[n++] = '%';
-
-      /* Skip the "%" */
-      s++;
-
-      /* Continue */
-      continue;
-    }
-
-    /* Pre-process "%n" */
-    if (*s == 'n')
-    {
-      int *arg;
-
-      /* Access the next argument */
-      arg = va_arg(vp, int *);
-
-      /* Save the current length */
-      (*arg) = n;
-
-      /* Skip the "n" */
-      s++;
-
-      /* Continue */
-      continue;
-    }
-
-    /* Hack -- Pre-process "%r" */
-    if (*s == 'r')
-    {
-      /* Extract the next argument, and save it (globally) */
-      vstrnfmt_aux = va_arg(vp, vstrnfmt_aux_func);
-
-      /* Skip the "r" */
-      s++;
-
-      /* Continue */
-      continue;
-    }
+    /* Mega-Hack -- treat "no format" as "empty string" */
+    if (!fmt) fmt = "";
 
 
-    /* Begin the "aux" string */
-    q = 0;
+    /* Begin the buffer */
+    n = 0;
 
-    /* Save the "percent" */
-    aux[q++] = '%';
+    /* Begin the format string */
+    s = fmt;
 
-    /* Assume no "long" argument */
-    do_long = FALSE;
-
-    /* Assume no "xtra" processing */
-    do_xtra = FALSE;
-
-    /* Build the "aux" string */
+    /* Scan the format string */
     while (TRUE)
     {
-      /* Error -- format sequence is not terminated */
-      if (!*s)
-      {
-        /* Terminate the buffer */
-        buf[0] = '\0';
+        /* All done */
+        if (!*s) break;
 
-        /* Return "error" */
-        return (0);
-      }
-
-      /* Error -- format sequence may be too long */
-      if (q > 100)
-      {
-        /* Terminate the buffer */
-        buf[0] = '\0';
-
-        /* Return "error" */
-        return (0);
-      }
-
-      /* Handle "alphabetic" chars */
-      if (isalpha(*s))
-      {
-        /* Hack -- handle "long" request */
-        if (*s == 'l')
+        /* Normal character */
+        if (*s != '%')
         {
-          /* Save the character */
-          aux[q++] = *s++;
+            /* Check total length */
+            if (n == max-1) break;
 
-          /* Note the "long" flag */
-          do_long = TRUE;
+            /* Save the character */
+            buf[n++] = *s++;
+
+            /* Continue */
+            continue;
         }
 
-        /* Mega-Hack -- handle "extra-long" request */
-        else if (*s == 'L')
-        {
-          /* Error -- illegal format char */
-          buf[0] = '\0';
+        /* Skip the "percent" */
+        s++;
 
-          /* Return "error" */
-          return (0);
+        /* Pre-process "%%" */
+        if (*s == '%')
+        {
+            /* Check total length */
+            if (n == max-1) break;
+
+            /* Save the percent */
+            buf[n++] = '%';
+
+            /* Skip the "%" */
+            s++;
+
+            /* Continue */
+            continue;
         }
 
-        /* Handle normal end of format sequence */
-        else
+        /* Pre-process "%n" */
+        if (*s == 'n')
         {
-          /* Save the character */
-          aux[q++] = *s++;
+            int *arg;
 
-          /* Stop processing the format sequence */
-          break;
-        }
-      }
+            /* Access the next argument */
+            arg = va_arg(vp, int *);
 
-      /* Handle "non-alphabetic" chars */
-      else
-      {
-        /* Hack -- Handle 'star' (for "variable length" argument) */
-        if (*s == '*')
-        {
-          int arg;
+            /* Save the current length */
+            (*arg) = n;
 
-          /* Access the next argument */
-          arg = va_arg(vp, int);
+            /* Skip the "n" */
+            s++;
 
-          /* Hack -- append the "length" */
-          sprintf(aux + q, "%d", arg);
-
-          /* Hack -- accept the "length" */
-          while (aux[q]) q++;
-
-          /* Skip the "*" */
-          s++;
+            /* Continue */
+            continue;
         }
 
-        /* Mega-Hack -- Handle 'caret' (for "uppercase" request) */
-        else if (*s == '^')
+        /* Hack -- Pre-process "%r" */
+        if (*s == 'r')
         {
-          /* Note the "xtra" flag */
-          do_xtra = TRUE;
+            /* Extract the next argument, and save it (globally) */
+            vstrnfmt_aux = va_arg(vp, vstrnfmt_aux_func);
 
-          /* Skip the "^" */
-          s++;
+            /* Skip the "r" */
+            s++;
+
+            /* Continue */
+            continue;
         }
 
-        /* Collect "normal" characters (digits, "-", "+", ".", etc) */
-        else
+
+        /* Begin the "aux" string */
+        q = 0;
+
+        /* Save the "percent" */
+        aux[q++] = '%';
+
+        /* Assume no "long" argument */
+        do_long = FALSE;
+
+        /* Assume no "xtra" processing */
+        do_xtra = FALSE;
+
+        /* Build the "aux" string */
+        while (TRUE)
         {
-          /* Save the character */
-          aux[q++] = *s++;
+            /* Error -- format sequence is not terminated */
+            if (!*s)
+            {
+                /* Terminate the buffer */
+                buf[0] = '\0';
+
+                /* Return "error" */
+                return (0);
+            }
+
+            /* Error -- format sequence may be too long */
+            if (q > 100)
+            {
+                /* Terminate the buffer */
+                buf[0] = '\0';
+
+                /* Return "error" */
+                return (0);
+            }
+
+            /* Handle "alphabetic" chars */
+            if (isalpha(*s))
+            {
+                /* Hack -- handle "long" request */
+                if (*s == 'l')
+                {
+                    /* Save the character */
+                    aux[q++] = *s++;
+
+                    /* Note the "long" flag */
+                    do_long = TRUE;
+                }
+
+                /* Mega-Hack -- handle "extra-long" request */
+                else if (*s == 'L')
+                {
+                    /* Error -- illegal format char */
+                    buf[0] = '\0';
+
+                    /* Return "error" */
+                    return (0);
+                }
+
+                /* Handle normal end of format sequence */
+                else
+                {
+                    /* Save the character */
+                    aux[q++] = *s++;
+
+                    /* Stop processing the format sequence */
+                    break;
+                }
+            }
+
+            /* Handle "non-alphabetic" chars */
+            else
+            {
+                /* Hack -- Handle 'star' (for "variable length" argument) */
+                if (*s == '*')
+                {
+                    int arg;
+
+                    /* Access the next argument */
+                    arg = va_arg(vp, int);
+
+                    /* Hack -- append the "length" */
+                    sprintf(aux + q, "%d", arg);
+
+                    /* Hack -- accept the "length" */
+                    while (aux[q]) q++;
+
+                    /* Skip the "*" */
+                    s++;
+                }
+
+                /* Mega-Hack -- Handle 'caret' (for "uppercase" request) */
+                else if (*s == '^')
+                {
+                    /* Note the "xtra" flag */
+                    do_xtra = TRUE;
+
+                    /* Skip the "^" */
+                    s++;
+                }
+
+                /* Collect "normal" characters (digits, "-", "+", ".", etc) */
+                else
+                {
+                    /* Save the character */
+                    aux[q++] = *s++;
+                }
+            }
         }
-      }
+
+
+        /* Terminate "aux" */
+        aux[q] = '\0';
+
+        /* Clear "tmp" */
+        tmp[0] = '\0';
+
+        /* Process the "format" char */
+        switch (aux[q-1])
+        {
+            /* Simple Character -- standard format */
+            case 'c':
+            {
+                int arg;
+
+                /* Access next argument */
+                arg = va_arg(vp, int);
+
+                /* Format the argument */
+                sprintf(tmp, aux, arg);
+
+                /* Done */
+                break;
+            }
+
+            /* Signed Integers -- standard format */
+            case 'd': case 'i':
+            {
+                if (do_long)
+                {
+                    long arg;
+
+                    /* Access next argument */
+                    arg = va_arg(vp, long);
+
+                    /* Format the argument */
+                    sprintf(tmp, aux, arg);
+                }
+                else
+                {
+                    int arg;
+
+                    /* Access next argument */
+                    arg = va_arg(vp, int);
+
+                    /* Format the argument */
+                    sprintf(tmp, aux, arg);
+                }
+
+                /* Done */
+                break;
+            }
+
+            /* Unsigned Integers -- various formats */
+            case 'u': case 'o': case 'x': case 'X':
+            {
+                if (do_long)
+                {
+                    unsigned long arg;
+
+                    /* Access next argument */
+                    arg = va_arg(vp, unsigned long);
+
+                    /* Format the argument */
+                    sprintf(tmp, aux, arg);
+                }
+                else
+                {
+                    unsigned int arg;
+
+                    /* Access next argument */
+                    arg = va_arg(vp, unsigned int);
+
+                    /* Format the argument */
+                    sprintf(tmp, aux, arg);
+                }
+
+                /* Done */
+                break;
+            }
+
+            /* Floating Point -- various formats */
+            case 'f':
+            case 'e': case 'E':
+            case 'g': case 'G':
+            {
+                double arg;
+
+                /* Access next argument */
+                arg = va_arg(vp, double);
+
+                /* Format the argument */
+                sprintf(tmp, aux, arg);
+
+                /* Done */
+                break;
+            }
+
+            /* Pointer -- implementation varies */
+            case 'p':
+            {
+                vptr arg;
+
+                /* Access next argument */
+                arg = va_arg(vp, vptr);
+
+                /* Format the argument */
+                sprintf(tmp, aux, arg);
+
+                /* Done */
+                break;
+            }
+
+            /* String */
+            case 's':
+            {
+                cptr arg;
+
+                /* Access next argument */
+                arg = va_arg(vp, cptr);
+
+                /* Hack -- convert NULL to EMPTY */
+                if (!arg) arg = "";
+
+                /* Format the argument */
+                sprintf(tmp, aux, arg);
+
+                /* Done */
+                break;
+            }
+
+            /* User defined data */
+            case 'V':
+            case 'v':
+            {
+                vptr arg;
+
+                /* Access next argument */
+                arg = va_arg(vp, vptr);
+
+                /* Format the "user data" */
+                (void)vstrnfmt_aux(tmp, 1000, aux, arg);
+
+                /* Done */
+                break;
+            }
+
+
+            /* Oops */
+            default:
+            {
+                /* Error -- illegal format char */
+                buf[0] = '\0';
+
+                /* Return "error" */
+                return (0);
+            }
+        }
+
+
+        /* Mega-Hack -- handle "capitilization" */
+        if (do_xtra)
+        {
+            /* Now append "tmp" to "buf" */
+            for (q = 0; tmp[q]; q++)
+            {
+                /* Notice first non-space */
+                if (!isspace(tmp[q]))
+                {
+                    /* Capitalize if possible */
+                    if (islower(tmp[q])) tmp[q] = toupper(tmp[q]);
+
+                    /* Done */
+                    break;
+                }
+            }
+        }
+
+        /* Now append "tmp" to "buf" */
+        for (q = 0; tmp[q]; q++)
+        {
+            /* Check total length */
+            if (n == max-1) break;
+
+            /* Save the character */
+            buf[n++] = tmp[q];
+        }
     }
 
 
-    /* Terminate "aux" */
-    aux[q] = '\0';
+    /* Terminate buffer */
+    buf[n] = '\0';
 
-    /* Clear "tmp" */
-    tmp[0] = '\0';
-
-    /* Process the "format" char */
-    switch (aux[q-1])
-    {
-      /* Simple Character -- standard format */
-      case 'c':
-      {
-        int arg;
-
-        /* Access next argument */
-        arg = va_arg(vp, int);
-
-        /* Format the argument */
-        sprintf(tmp, aux, arg);
-
-        /* Done */
-        break;
-      }
-
-      /* Signed Integers -- standard format */
-      case 'd': case 'i':
-      {
-        if (do_long)
-        {
-          long arg;
-
-          /* Access next argument */
-          arg = va_arg(vp, long);
-
-          /* Format the argument */
-          sprintf(tmp, aux, arg);
-        }
-        else
-        {
-          int arg;
-
-          /* Access next argument */
-          arg = va_arg(vp, int);
-
-          /* Format the argument */
-          sprintf(tmp, aux, arg);
-        }
-
-        /* Done */
-        break;
-      }
-
-      /* Unsigned Integers -- various formats */
-      case 'u': case 'o': case 'x': case 'X':
-      {
-        if (do_long)
-        {
-          unsigned long arg;
-
-          /* Access next argument */
-          arg = va_arg(vp, unsigned long);
-
-          /* Format the argument */
-          sprintf(tmp, aux, arg);
-        }
-        else
-        {
-          unsigned int arg;
-
-          /* Access next argument */
-          arg = va_arg(vp, unsigned int);
-
-          /* Format the argument */
-          sprintf(tmp, aux, arg);
-        }
-
-        /* Done */
-        break;
-      }
-
-      /* Floating Point -- various formats */
-      case 'f':
-      case 'e': case 'E':
-      case 'g': case 'G':
-      {
-        double arg;
-
-        /* Access next argument */
-        arg = va_arg(vp, double);
-
-        /* Format the argument */
-        sprintf(tmp, aux, arg);
-
-        /* Done */
-        break;
-      }
-
-      /* Pointer -- implementation varies */
-      case 'p':
-      {
-        vptr arg;
-
-        /* Access next argument */
-        arg = va_arg(vp, vptr);
-
-        /* Format the argument */
-        sprintf(tmp, aux, arg);
-
-        /* Done */
-        break;
-      }
-
-      /* String */
-      case 's':
-      {
-        cptr arg;
-
-        /* Access next argument */
-        arg = va_arg(vp, cptr);
-
-        /* Hack -- convert NULL to EMPTY */
-        if (!arg) arg = "";
-
-        /* Format the argument */
-        sprintf(tmp, aux, arg);
-
-        /* Done */
-        break;
-      }
-
-      /* User defined data */
-      case 'V':
-      case 'v':
-      {
-        vptr arg;
-
-        /* Access next argument */
-        arg = va_arg(vp, vptr);
-
-        /* Format the "user data" */
-        (void)vstrnfmt_aux(tmp, 1000, aux, arg);
-
-        /* Done */
-        break;
-      }
-
-
-      /* Oops */
-      default:
-      {
-        /* Error -- illegal format char */
-        buf[0] = '\0';
-
-        /* Return "error" */
-        return (0);
-      }
-    }
-
-
-    /* Mega-Hack -- handle "capitilization" */
-    if (do_xtra)
-    {
-      /* Now append "tmp" to "buf" */
-      for (q = 0; tmp[q]; q++)
-      {
-        /* Notice first non-space */
-        if (!isspace(tmp[q]))
-        {
-          /* Capitalize if possible */
-          if (islower(tmp[q])) tmp[q] = toupper(tmp[q]);
-
-          /* Done */
-          break;
-        }
-      }
-    }
-
-    /* Now append "tmp" to "buf" */
-    for (q = 0; tmp[q]; q++)
-    {
-      /* Check total length */
-      if (n == max-1) break;
-
-      /* Save the character */
-      buf[n++] = tmp[q];
-    }
-  }
-
-
-  /* Terminate buffer */
-  buf[n] = '\0';
-
-  /* Return length */
-  return (n);
+    /* Return length */
+    return (n);
 }
 
 
@@ -638,38 +643,38 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
  */
 char *vformat(cptr fmt, va_list vp)
 {
-  static char *format_buf = NULL;
-  static huge format_len = 0;
+    static char *format_buf = NULL;
+    static huge format_len = 0;
 
-  /* Initial allocation */
-  if (!format_buf)
-  {
-    format_len = 1024;
-    C_MAKE(format_buf, format_len, char);
-  }
+    /* Initial allocation */
+    if (!format_buf)
+    {
+        format_len = 1024;
+        C_MAKE(format_buf, format_len, char);
+    }
 
-  /* Null format yields last result */
-  if (!fmt) return (format_buf);
+    /* Null format yields last result */
+    if (!fmt) return (format_buf);
 
-  /* Keep going until successful */
-  while (1)
-  {
-    uint len;
+    /* Keep going until successful */
+    while (1)
+    {
+        uint len;
 
-    /* Build the string */
-    len = vstrnfmt(format_buf, format_len, fmt, vp);
+        /* Build the string */
+        len = vstrnfmt(format_buf, format_len, fmt, vp);
 
-    /* Success */
-    if (len < format_len-1) break;
+        /* Success */
+        if (len < format_len-1) break;
 
-    /* Grow the buffer */
-    C_KILL(format_buf, format_len, char);
-    format_len = format_len * 2;
-    C_MAKE(format_buf, format_len, char);
-  }
+        /* Grow the buffer */
+        C_KILL(format_buf, format_len, char);
+        format_len = format_len * 2;
+        C_MAKE(format_buf, format_len, char);
+    }
 
-  /* Return the new buffer */
-  return (format_buf);
+    /* Return the new buffer */
+    return (format_buf);
 }
 
 
@@ -679,21 +684,21 @@ char *vformat(cptr fmt, va_list vp)
  */
 uint strnfmt(char *buf, uint max, cptr fmt, ...)
 {
-  uint len;
+    uint len;
 
-  va_list vp;
+    va_list vp;
 
-  /* Begin the Varargs Stuff */
-  va_start(vp, fmt);
+    /* Begin the Varargs Stuff */
+    va_start(vp, fmt);
 
-  /* Do a virtual fprintf to stderr */
-  len = vstrnfmt(buf, max, fmt, vp);
+    /* Do a virtual fprintf to stderr */
+    len = vstrnfmt(buf, max, fmt, vp);
 
-  /* End the Varargs Stuff */
-  va_end(vp);
+    /* End the Varargs Stuff */
+    va_end(vp);
 
-  /* Return the number of bytes written */
-  return (len);
+    /* Return the number of bytes written */
+    return (len);
 }
 
 
@@ -703,21 +708,21 @@ uint strnfmt(char *buf, uint max, cptr fmt, ...)
  */
 uint strfmt(char *buf, cptr fmt, ...)
 {
-  uint len;
+    uint len;
 
-  va_list vp;
+    va_list vp;
 
-  /* Begin the Varargs Stuff */
-  va_start(vp, fmt);
+    /* Begin the Varargs Stuff */
+    va_start(vp, fmt);
 
-  /* Build the string, assume 32K buffer */
-  len = vstrnfmt(buf, 32767, fmt, vp);
+    /* Build the string, assume 32K buffer */
+    len = vstrnfmt(buf, 32767, fmt, vp);
 
-  /* End the Varargs Stuff */
-  va_end(vp);
+    /* End the Varargs Stuff */
+    va_end(vp);
 
-  /* Return the number of bytes written */
-  return (len);
+    /* Return the number of bytes written */
+    return (len);
 }
 
 
@@ -731,20 +736,20 @@ uint strfmt(char *buf, cptr fmt, ...)
  */
 char *format(cptr fmt, ...)
 {
-  char *res;
-  va_list vp;
+    char *res;
+    va_list vp;
 
-  /* Begin the Varargs Stuff */
-  va_start(vp, fmt);
+    /* Begin the Varargs Stuff */
+    va_start(vp, fmt);
 
-  /* Format the args */
-  res = vformat(fmt, vp);
+    /* Format the args */
+    res = vformat(fmt, vp);
 
-  /* End the Varargs Stuff */
-  va_end(vp);
+    /* End the Varargs Stuff */
+    va_end(vp);
 
-  /* Return the result */
-  return (res);
+    /* Return the result */
+    return (res);
 }
 
 
@@ -755,20 +760,20 @@ char *format(cptr fmt, ...)
  */
 void plog_fmt(cptr fmt, ...)
 {
-  char *res;
-  va_list vp;
+    char *res;
+    va_list vp;
 
-  /* Begin the Varargs Stuff */
-  va_start(vp, fmt);
+    /* Begin the Varargs Stuff */
+    va_start(vp, fmt);
 
-  /* Format the args */
-  res = vformat(fmt, vp);
+    /* Format the args */
+    res = vformat(fmt, vp);
 
-  /* End the Varargs Stuff */
-  va_end(vp);
+    /* End the Varargs Stuff */
+    va_end(vp);
 
-  /* Call plog */
-  plog(res);
+    /* Call plog */
+    plog(res);
 }
 
 
@@ -778,20 +783,20 @@ void plog_fmt(cptr fmt, ...)
  */
 void quit_fmt(cptr fmt, ...)
 {
-  char *res;
-  va_list vp;
+    char *res;
+    va_list vp;
 
-  /* Begin the Varargs Stuff */
-  va_start(vp, fmt);
+    /* Begin the Varargs Stuff */
+    va_start(vp, fmt);
 
-  /* Format */
-  res = vformat(fmt, vp);
+    /* Format */
+    res = vformat(fmt, vp);
 
-  /* End the Varargs Stuff */
-  va_end(vp);
+    /* End the Varargs Stuff */
+    va_end(vp);
 
-  /* Call quit() */
-  quit(res);
+    /* Call quit() */
+    quit(res);
 }
 
 
@@ -801,20 +806,20 @@ void quit_fmt(cptr fmt, ...)
  */
 void core_fmt(cptr fmt, ...)
 {
-  char *res;
-  va_list vp;
+    char *res;
+    va_list vp;
 
-  /* Begin the Varargs Stuff */
-  va_start(vp, fmt);
+    /* Begin the Varargs Stuff */
+    va_start(vp, fmt);
 
-  /* If requested, Do a virtual fprintf to stderr */
-  res = vformat(fmt, vp);
+    /* If requested, Do a virtual fprintf to stderr */
+    res = vformat(fmt, vp);
 
-  /* End the Varargs Stuff */
-  va_end(vp);
+    /* End the Varargs Stuff */
+    va_end(vp);
 
-  /* Call core() */
-  core(res);
+    /* Call core() */
+    core(res);
 }
 
 

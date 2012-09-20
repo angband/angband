@@ -7,8 +7,6 @@
  * Original code by "Billy Tanksley (wtanksle@ucsd.edu)"
  * Use "Makefile.ibm" to compile Angband using this file.
  *
- * Support for DPMI added by "Chris Tate (ctate@world.std.com)"
- *
  * Support for DJGPP v2 by "Scott Egashira (egashira@u.washington.edu)"
  *
  * Extensive modifications by "Ben Harrison (benh@voicenet.com)",
@@ -20,7 +18,8 @@
  *
  * DOS-286 (conio.h) changes by (Roland Jay Roberts (jay@map.com)
  * Use "Makefile.286" (not ready) to compile this file for DOS-286,
- * and be sure to define "USE_IBM", "USE_WAT", and "USE_286".
+ * and be sure to define "USE_IBM", "USE_WAT", and "USE_286".  Also,
+ * depending on your compiler, you may need to define "USE_CONIO".
  *
  * True color palette support by "Mike Marcelais (mrmarcel@eos.ncsu.edu)",
  * with interface to the "color_table" array by Ben Harrison.
@@ -49,176 +48,45 @@
 
 
 /*
- * Use a "virtual" screen to "buffer" screen writes
+ * Use a "virtual" screen to "buffer" screen writes.
  */
 #define USE_VIRTUAL
 
 
-/*
- * Use "curs_set()" calls, which use "int86()" calls
- */
-#define USE_CURS_SET
-
-
-/*
- * XXX XXX XXX Hack -- Support for DOS-286
- */
-#ifdef USE_286
-# define USE_CONIO
-# undef USE_CURS_SET
-#endif
-
-
-/*
- * XXX XXX XXX Hack -- Support for "conio.h"
- */
-#ifdef USE_CONIO
-# undef USE_VIRTUAL
-#endif
-
-
+#include <bios.h>
+#include <dos.h>
 
 #ifdef USE_WAT
 
-# include <bios.h>
-# include <dos.h>
 # include <conio.h>
 
 # ifndef USE_CONIO
+
 #  include <graph.h>
+
+#  define bioskey(C)	_bios_keybrd(C)
+
 # endif
 
-# define int86(a,b,c) int386(a,b,c)
+# ifndef USE_286
+#  define int86(a,b,c)	int386(a,b,c)
+# endif
+
+# define inportb(x)	inp(x)
+# define outportb(x,y)	outp(x,y)
 
 #else /* USE_WAT */
 
-# ifdef __DJGPP__
+# if __DJGPP__ > 1
 
-/*
- * The following unions/structures are "stolen" from "DOS.H",
- * which cannot simply be included because it induces conflicts
- */
-
-union REGS {
-
-  struct {
-        unsigned short di, _upper_di;
-        unsigned short si, _upper_si;
-        unsigned short bp, _upper_bp;
-        unsigned short cflag, _upper_cflag;
-        unsigned short bx, _upper_bx;
-        unsigned short dx, _upper_dx;
-        unsigned short cx, _upper_cx;
-        unsigned short ax, _upper_ax;
-        unsigned short flags;
-  } x;
- 
-  struct {
-        unsigned short di, _upper_di;
-        unsigned short si, _upper_si;
-        unsigned short bp, _upper_bp;
-        unsigned short cflag, _upper_cflag;
-        unsigned short bx, _upper_bx;
-        unsigned short dx, _upper_dx;
-        unsigned short cx, _upper_cx;
-        unsigned short ax, _upper_ax;
-        unsigned short flags;
-  } w;
- 
-  struct {
-        unsigned short di, _upper_di;
-        unsigned short si, _upper_si;
-        unsigned short bp, _upper_bp;
-        unsigned long cflag;
-        unsigned char bl;
-        unsigned char bh;
-        unsigned short _upper_bx;
-        unsigned char dl;
-        unsigned char dh;
-        unsigned short _upper_dx;
-        unsigned char cl;
-        unsigned char ch;
-        unsigned short _upper_cx;
-        unsigned char al;
-        unsigned char ah;
-        unsigned short _upper_ax;
-        unsigned short flags;
-  } h;
-};
-
-
-# else /* __DJGPP__ */
-
-/*
- * Include the "go32" support
- */
-#  include <go32.h>
- 
-/*
- * Require the "go32" support
- */
-#  ifndef __GO32__
-#   error This file will not compile on non-extended IBM
-#  endif
-
-
-/*
- * The following unions/structures are "stolen" from "DOS.H",
- * which cannot simply be included because it induces conflicts
- */
-
-union REGS {
-
-  struct {
-        unsigned long ax;
-        unsigned long bx;
-        unsigned long cx;
-        unsigned long dx;
-        unsigned long si;
-        unsigned long di;
-        unsigned long cflag;
-        unsigned long flags;
-  } x;
-  
-  struct {
-        unsigned char al;
-        unsigned char ah;
-        unsigned short upper_ax;
-        unsigned char bl;
-        unsigned char bh;
-        unsigned short upper_bx;
-        unsigned char cl;
-        unsigned char ch;
-        unsigned short upper_cx;
-        unsigned char dl;
-        unsigned char dh;
-        unsigned short upper_dx;
-  } h;
-};
-
-
-# endif /* __DJGPP__ */
-
-
-/*
- * External function -- the "int86()" call in "DOS.H"
- */
-extern int int86(int ivec, union REGS *in, union REGS *out);
-
-
-/*
- * More header files
- */
 # include <pc.h>
 # include <osfcn.h>
-# include <bios.h>
-# include <graphics.h>
 
-/*
- * Hack -- use "bcopy()" instead of "memcpy()"
- */
-# define memcpy(T,S,N) bcopy(S,T,N)
-
+# else /* __DJGPP__ > 1 */
+#  ifdef __DJGPP__
+#   error "Upgrade to version 2.0 of DJGPP"
+#  endif /* __DJGPP__ */
+# endif /* __DJGPP__ > 1 */
 
 #endif /* USE_WAT */
 
@@ -231,6 +99,11 @@ extern int int86(int ivec, union REGS *in, union REGS *out);
  * Hack -- write directly to video card
  */
 extern int directvideo = 1;
+
+/*
+ * Hack -- no virtual screen
+ */
+# undef USE_VIRTUAL
 
 #endif /* USE_CONIO */
 
@@ -280,20 +153,24 @@ extern int directvideo = 1;
 /*
  * Blinking text (hard-coded by DOS)
  */
-#define VUD_BLINK	0x80
+#define VUD_BRIGHT	0x80
 
 
 /*
  * Screen Size
  */
-static int rows;
-static int cols;
+static int rows = 25;
+static int cols = 80;
 
 
 /*
  * Physical Screen
  */
-#define PhysicalScreen ((byte *)(0xB800 << 4))
+#ifdef USE_286
+# define PhysicalScreen ((byte *)MK_FP(0xB800,0x0000))
+#else
+# define PhysicalScreen ((byte *)(0xB800 << 4))
+#endif
 
 
 #ifdef USE_VIRTUAL
@@ -313,16 +190,12 @@ static byte *VirtualScreen;
 #endif
 
 
-#ifdef USE_CURS_SET
-
 /*
  * Hack -- the cursor "visibility"
  */
 static int saved_cur_v;
 static int saved_cur_high;
 static int saved_cur_low;
-
-#endif
 
 
 #ifndef USE_CONIO
@@ -363,24 +236,24 @@ static byte use_color_complex = FALSE;
  * the opposite of many systems which give the values as "0xRRGGBB", and
  * is the opposite of the "R,G,B" codes in the comments.
  */
-static long ibm_color_complex[16] = {
-
-    0x000000L,		/* 0 0 0  Dark       */
-    0x3f3f3fL,		/* 4 4 4  White      */
-    0x232323L,		/* 2 2 2  Slate      */
-    0x00233fL,		/* 4 2 0  Orange     */
-    0x000023L,		/* 2 0 0  Red        */
-    0x112300L,		/* 0 2 1  Green      */
-    0x3f0000L,		/* 0 0 4  Blue       */
-    0x001123L,		/* 2 1 0  Umber      */
-    0x111111L,		/* 1 1 1  Lt. Dark   */
-    0x353535L,		/* 3 3 3  Lt. Slate  */
-    0x230023L,		/* 2 0 2  Purple     */
-    0x003f3fL,		/* 4 4 0  Yellow     */
-    0x35113fL,		/* 4 1 3  Lt. Red    */
-    0x003f00L,		/* 0 4 0  Lt. Green  */
-    0x3f3f00L,		/* 0 4 4  Lt. Blue   */
-    0x112335L		/* 3 2 1  Lt. Umber  */
+static long ibm_color_complex[16] =
+{
+    0x000000L,          /* 0 0 0  Dark       */
+    0x3f3f3fL,          /* 4 4 4  White      */
+    0x232323L,          /* 2 2 2  Slate      */
+    0x00233fL,          /* 4 2 0  Orange     */
+    0x000035L,          /* 3 0 0  Red        */
+    0x112300L,          /* 0 2 1  Green      */
+    0x3f0000L,          /* 0 0 4  Blue       */
+    0x001123L,          /* 2 1 0  Umber      */
+    0x111111L,          /* 1 1 1  Lt. Dark   */
+    0x353535L,          /* 3 3 3  Lt. Slate  */
+    0x3f003fL,          /* 4 0 4  Purple     */
+    0x003f3fL,          /* 4 4 0  Yellow     */
+    0x00003fL,          /* 4 0 0  Lt. Red    */
+    0x003f00L,          /* 0 4 0  Lt. Green  */
+    0x3f3f00L,          /* 0 4 4  Lt. Blue   */
+    0x112335L           /* 3 2 1  Lt. Umber  */
 };
 
 
@@ -399,8 +272,8 @@ static long ibm_color_complex[16] = {
  *
  * Note that many of the choices below suck, but so do crappy monitors.
  */
-static byte ibm_color_simple[16] = {
-
+static byte ibm_color_simple[16] =
+{
     VID_BLACK,			/* Dark */
     VID_WHITE,			/* White */
     VID_CYAN,			/* Slate XXX */
@@ -424,50 +297,42 @@ static byte ibm_color_simple[16] = {
 /*
  * Activate the "ibm_color_complex" palette information.
  *
- * On Watcom machines, we can simply use the special "_remapallpalette()"
+ * Code by Mike Marcelais, with help from "The programmer's guide
+ * to the EGA and VGA video cards" [Farraro].
+ *
+ * On VGA cards, colors go through a double-indirection when looking
+ * up the `real' color when in 16 color mode.  The color value in the
+ * attribute is looked up in the EGA color registers.  Then that value
+ * is looked up in the VGA color registers.  Then the color is displayed.
+ * This is done for compatability.  However, the EGA registers are
+ * initialized by default to 0..5, 14, 7, 38..3F and not 0..F which means
+ * that unless these are reset, the VGA setpalette function will not
+ * update the correct palette register!
+ *
+ * DJGPP's GrSetColor() does _not_ set the EGA palette list, only the
+ * VGA color list.
+ *
+ * Note that the "traditional" method, using "int86(0x10)", is very slow
+ * when called in protected mode, so we use a faster method using video
+ * ports instead.
+ *
+ * On Watcom machines, we could simply use the special "_remapallpalette()"
  * function, which not only sets both palette lists (see below) but also
- * checks for legality of the monitor mode.
- *
- * WARNING:   -- Mike Marcelais
- *
- *   On VGA cards, colors go through a double-indirection when looking
- *   up the `real' color when in 16 color mode.  The color value in the
- *   attribute is looked up in the EGA color registers.  Then that value
- *   is looked up in the VGA color registers.  Then the color is displayed.
- *   This is done for compatability.  However, the EGA registers are
- *   initialized by default to 0..5, 14, 7, 38..3F and not 0..F which means
- *   that unless these are reset, the VGA setpalette function will not
- *   update the correct palette register!
- *
- *   DJGPP's GrSetColor() does _not_ set the EGA palette list, only the
- *      VGA color list.
- *
- *   Source: The programmer's guide to the EGA and VGA video cards.  [Farraro]
- *
- *   Note that the "traditional" method, using "int86(0x10)", is very slow
- *   when called in protected mode, so we use a faster method using video
- *   ports instead.
+ * checks for legality of the monitor mode, but, if we are doing bitmapped
+ * graphics, that function forgets to set the EGA registers for some reason.
  */
-static bool activate_color_complex(void)
+static void activate_color_complex(void)
 {
-
-#ifdef USE_WAT
-
-    /* Use a special Watcom function */
-    return (_remapallpalette(ibm_color_complex));
-
-#else /* USE_WAT */
-
     int i;
 
-# if 1
+#if 1
 
     /* Edit the EGA palette */
     inportb(0x3da);
 
     /* Edit the colors */
-    for (i = 0; i < 16; i++) {
-
+    for (i = 0; i < 16; i++)
+    {
         /* Set color "i" */
         outportb(0x3c0, i);
 
@@ -482,19 +347,19 @@ static bool activate_color_complex(void)
     outportb(0x3c8, 0);
 
     /* Send the colors */
-    for (i = 0; i < 16; i++) {
-
+    for (i = 0; i < 16; i++)
+    {
         /* Send the red, green, blue components */
         outportb(0x3c9, ((ibm_color_complex[i]) & 0xFF));
         outportb(0x3c9, ((ibm_color_complex[i] >> 8) & 0xFF));
         outportb(0x3c9, ((ibm_color_complex[i] >> 16) & 0xFF));
-    };
+    }
 
-# else /* 1 */
+#else /* 1 */
 
     /* Set the colors */
-    for (i = 0; i < 16; i++) {
-
+    for (i = 0; i < 16; i++)
+    {
         union REGS r;
 
         /* Set EGA color */
@@ -520,31 +385,23 @@ static bool activate_color_complex(void)
 
         /* Use this "green" value */
         r.h.ch = ((ibm_color_complex[i] >> 8) & 0xFF);
-        
+
         /* Use this "blue" value */
         r.h.cl = ((ibm_color_complex[i] >> 16) & 0xFF);
-        
+
         /* Use this "red" value */
         r.h.dh = ((ibm_color_complex[i]) & 0xFF);
 
         /* Do it */
         int86(0x10, &r, &r);
-    };
+    }
 
-# endif /* 1 */
+#endif /* 1 */
 
-#endif /* USE_WAT */
-
-    /* Success */
-    return (TRUE);
 };
 
 
 /*
- * React to changes in global variables
- *
- * Currently, this includes only changes in the desired color set
- *
  * Note the use of "(x >> 2)" to convert an 8 bit value to a 6 bit value
  * without losing much precision.
  */
@@ -553,15 +410,15 @@ static int Term_xtra_ibm_react(void)
     int i;
 
     /* Complex method */
-    if (use_color_complex) {
-
+    if (use_color_complex)
+    {
         long rv, gv, bv, code;
 
         bool change = FALSE;
 
         /* Save the default colors */
-        for (i = 0; i < 16; i++) {
-
+        for (i = 0; i < 16; i++)
+        {
             /* Extract desired values */
             rv = color_table[i][1] >> 2;
             gv = color_table[i][2] >> 2;
@@ -571,8 +428,8 @@ static int Term_xtra_ibm_react(void)
             code = ((rv) | (gv << 8) | (bv << 16));
 
             /* Activate changes */
-            if (ibm_color_complex[i] != code) {
-
+            if (ibm_color_complex[i] != code)
+            {
                 /* Note the change */
                 change = TRUE;
 
@@ -586,23 +443,21 @@ static int Term_xtra_ibm_react(void)
     }
 
     /* Simple method */
-    else {
-
+    else
+    {
         /* Save the default colors */
-        for (i = 0; i < 16; i++) {
-
+        for (i = 0; i < 16; i++)
+        {
             /* Simply accept the desired colors */
             ibm_color_simple[i] = color_table[i][0];
         }
     }
-    
+
     /* Success */
     return (0);
 }
 
 
-
-#ifdef USE_CURS_SET
 
 /*
  * Hack -- set the cursor "visibility"
@@ -610,24 +465,24 @@ static int Term_xtra_ibm_react(void)
 static void curs_set(int v)
 {
     /* If needed */
-    if (saved_cur_v != v) {
-
+    if (saved_cur_v != v)
+    {
         union REGS r;
 
         /* Set cursor */
         r.h.ah = 1;
 
         /* Visible */
-        if (v) {
-
+        if (v)
+        {
             /* Use the saved values */
             r.h.ch = saved_cur_high;
             r.h.cl = saved_cur_low;
         }
-    
-        /* Invisible */
-        else {
 
+        /* Invisible */
+        else
+        {
             /* Make it invisible */
             r.h.ch = 0x20;
             r.h.cl = 0x00;
@@ -635,29 +490,12 @@ static void curs_set(int v)
 
         /* Make the call */
         int86(0x10, &r, &r);
-        
+
         /* Save the cursor state */
         saved_cur_v = v;
     }
 }
 
-#endif
-
-
-
-#ifdef USE_WAT
-
-# ifndef USE_CONIO
-
-/*
- * Hack -- Use with Watcom C/C++
- */
-#define bioskey(C) \
-	_bios_keybrd(C)
-
-# endif /* USE_CONIO */
-
-#endif /* USE_WAT */
 
 
 /*
@@ -706,7 +544,7 @@ static void curs_set(int v)
  * Norm:  352f   372a   4a2d   4e2b   4f00   5000   5100   4b00
  * Shft:  352f   372a   4a2d   4e2b   4f31   5032   5133   4b34
  * Ctrl: (9500) (9600) (8e00) (9000)  7500  (9100)  7600   7300
- * 
+ *
  *         5      6      7      8      9      0      .     Enter
  * Norm: (4c00)  4d00   4700   4800   4900   5200   5300  (e00d)
  * Shft:  4c35   4d36   4737   4838   4939   5230   532e  (e00d)
@@ -745,8 +583,8 @@ static errr Term_xtra_ibm_event(int v)
     k = (k & 0xFF);
 
     /* Process "normal" keys */
-    if ((s <= 58) || (s == 0xE0)) {
-
+    if ((s <= 58) || (s == 0xE0))
+    {
         /* Enqueue it */
         if (k) Term_keypress(k);
 
@@ -771,7 +609,7 @@ static errr Term_xtra_ibm_event(int v)
 
     /* Introduce the hexidecimal scan code */
     Term_keypress('x');
-        
+
     /* Encode the hexidecimal scan code */
     Term_keypress(hexsym[s/16]);
     Term_keypress(hexsym[s%16]);
@@ -794,8 +632,8 @@ static errr Term_xtra_ibm(int n, int v)
     int i;
 
     /* Analyze the request */
-    switch (n) {
-       
+    switch (n)
+    {
         /* Make a "bell" noise */
         case TERM_XTRA_NOISE:
 
@@ -805,18 +643,14 @@ static errr Term_xtra_ibm(int n, int v)
             /* Success */
             return (0);
 
-#ifdef USE_CURS_SET
-
-        /* Set cursor visibility */
+        /* Set the cursor shape */
         case TERM_XTRA_SHAPE:
-        
-            /* Set cursor visibility */
+
+            /* Set cursor shape */
             curs_set(v);
 
             /* Success */
        	    return (0);
-
-#endif
 
 #ifdef USE_VIRTUAL
 
@@ -851,8 +685,8 @@ static errr Term_xtra_ibm(int n, int v)
 #else /* USE_CONIO */
 
             /* Clear each line (virtual or physical) */
-            for (i = 0; i < rows; i++) {
-
+            for (i = 0; i < rows; i++)
+            {
                 /* Clear the line */
                 memcpy((VirtualScreen + ((i*cols) << 1)), wiper, (cols << 1));
             }
@@ -880,7 +714,7 @@ static errr Term_xtra_ibm(int n, int v)
 
         /* Process events */
         case TERM_XTRA_EVENT:
-        
+
             /* Process one event */
             return (Term_xtra_ibm_event(v));
 
@@ -895,7 +729,7 @@ static errr Term_xtra_ibm(int n, int v)
 
         /* React to global changes */
         case TERM_XTRA_REACT:
-        
+
             /* React to "color_table" changes */
             return (Term_xtra_ibm_react());
     }
@@ -931,7 +765,7 @@ static errr Term_curs_ibm(int x, int y)
     r.h.dh = y;
 
     /* Place the cursor */
-    int386(0x10, &r, &r);
+    int86(0x10, &r, &r);
 
 # endif /* USE_CONIO */
 
@@ -987,15 +821,15 @@ static errr Term_text_ibm(int x, int y, int n, byte a, cptr s)
 
 
     /* Handle "complex" color */
-    if (use_color_complex) {
-
+    if (use_color_complex)
+    {
         /* Extract a color index */
         attr = (a & 0x0F);
     }
 
     /* Handle "simple" color */
-    else {
-
+    else
+    {
         /* Extract a color value */
         attr = ibm_color_simple[a & 0x0F];
     }
@@ -1017,7 +851,8 @@ static errr Term_text_ibm(int x, int y, int n, byte a, cptr s)
     dest = VirtualScreen + (((cols * y) + x) << 1);
 
     /* Save the data */
-    while (*s) {
+    while (*s)
+    {
         *dest++ = *s++;
         *dest++ = attr;
     }
@@ -1048,23 +883,202 @@ static void Term_nuke_ibm(term *t)
     /* Move the cursor to the bottom of the screen */
     Term_curs_ibm(0, rows-1);
 
-#ifdef USE_CURS_SET
-
-    /* Make the cursor visible */
-    curs_set(1);
-
-    /* Restore the original video mode */
 #ifdef USE_WAT
-    _setvideomode( _DEFAULTMODE );
+    /* Restore the original video mode */
+    _setvideomode(_DEFAULTMODE);
 #else
+    /* Restore the original video mode */
     r.h.ah = 0x00;
     r.h.al = 0x03;
     int86(0x10, &r, &r);
 #endif
 
-#endif
-
+    /* Make the cursor visible */
+    curs_set(1);
 }
+
+
+
+#ifdef USE_GRAPHICS
+
+#ifdef USE_286
+
+/*
+ * In 286 mode we don't need to worry about translating from a 32bit
+ * pointer to a 16 bit pointer so we just call the interrupt function
+ *
+ * Note the use of "intr()" instead of "int86()" so we can pass
+ * segment registers.
+ */
+void enable_graphic_font(void *font)
+{
+   union REGPACK regs = {0};
+
+   regs.h.ah = 0x11;           /* Text font function */
+   regs.h.bh = 0x10;           /* Size of a character -- 16 bytes */
+   regs.h.cl = 0xFF;           /* Last character in font */
+   regs.x.es = FP_SEG(font);   /* Pointer to font */
+   regs.x.bp = FP_OFF(font);
+   intr(0x10, &regs);
+};
+
+#else /* USE_286 */
+
+#ifdef USE_WAT
+
+/*
+ * This structure is used by the DMPI function to hold registers when
+ * doing a real mode interrupt call.  (Stolen from the DJGPP <dpmi.h>
+ * header file).
+ */
+
+typedef union {
+  struct {
+    unsigned long edi;
+    unsigned long esi;
+    unsigned long ebp;
+    unsigned long res;
+    unsigned long ebx;
+    unsigned long edx;
+    unsigned long ecx;
+    unsigned long eax;
+  } d;
+  struct {
+    unsigned short di, di_hi;
+    unsigned short si, si_hi;
+    unsigned short bp, bp_hi;
+    unsigned short res, res_hi;
+    unsigned short bx, bx_hi;
+    unsigned short dx, dx_hi;
+    unsigned short cx, cx_hi;
+    unsigned short ax, ax_hi;
+    unsigned short flags;
+    unsigned short es;
+    unsigned short ds;
+    unsigned short fs;
+    unsigned short gs;
+    unsigned short ip;
+    unsigned short cs;
+    unsigned short sp;
+    unsigned short ss;
+  } x;
+  struct {
+    unsigned char edi[4];
+    unsigned char esi[4];
+    unsigned char ebp[4];
+    unsigned char res[4];
+    unsigned char bl, bh, ebx_b2, ebx_b3;
+    unsigned char dl, dh, edx_b2, edx_b3;
+    unsigned char cl, ch, ecx_b2, ecx_b3;
+    unsigned char al, ah, eax_b2, eax_b3;
+  } h;
+} __dpmi_regs;
+
+unsigned  __dpmi_allocate_dos_memory(int size, unsigned *selector)
+{
+    union REGPACK regs = {0};
+
+    regs.w.ax  = 0x100;   /* DPMI function -- allocate low memory */
+    regs.w.bx  = size;    /* Number of Paragraphs to allocate */
+    intr(0x31, &regs);    /* DPMI interface */
+
+    *selector = regs.w.dx;
+    return(regs.w.ax);
+};
+
+void __dpmi_free_dos_memory(unsigned sel)
+{
+    union REGPACK regs = {0};
+
+    regs.w.ax  = 0x101;      /* DPMI function -- free low memory */
+    regs.x.edx = sel;        /* PM selector for memory block */
+    intr(0x31, &regs);       /* DPMI interface */
+};
+
+void __dpmi_int(int intno, __dpmi_regs *dblock)
+{
+    union REGPACK regs = {0};
+
+    regs.w.ax  = 0x300;           /* DPMI function -- real mode interrupt */
+    regs.h.bl  = intno;           /* interrupt 0x10 */
+    regs.x.edi = FP_OFF(dblock);  /* Pointer to dblock (offset and segment) */
+    regs.x.es  = FP_SEG(dblock);
+    intr(0x31, &regs);            /* DPMI interface */
+};
+
+unsigned short __dpmi_sel = 0x0000;
+#define _farsetsel(x) __dpmi_sel=(x)
+extern void _farnspokeb(unsigned long offset, unsigned char value);
+#pragma aux _farnspokeb =        \
+          "push   fs"            \
+          "mov    fs,__dpmi_sel" \
+          "mov    fs:[eax],bl"   \
+          "pop    fs"            \
+          parm [eax] [bl];
+
+#else /* USE_WAT */
+
+#include <dpmi.h>
+#include <go32.h>
+#include <sys/farptr.h>
+
+#endif /* USE_WAT */
+
+/*
+ * Since you cannot send 32bit pointers to a 16bit interrupt handler
+ * and the video BIOS wants a (16bit) pointer to the font, we have
+ * to allocate a block of dos memory, copy the font into it, then
+ * translate a 32bit pointer into a 16bit pointer to that block.
+ *
+ * DPMI - Dos Protected Mode Interface provides functions that let
+ *        us do that.
+ */
+void enable_graphic_font(const char *font)
+{
+    __dpmi_regs dblock = {{0}};
+
+    unsigned seg, sel, i;
+
+    /*
+     * Allocate a block of memory 4096 bytes big in `low memory' so a real
+     * mode interrupt can access it.  Real mode pointer is returned as seg:0
+     * Protected mode pointer is sel:0.
+     */
+    seg = __dpmi_allocate_dos_memory(256,&sel);
+
+    /* Copy the information into low memory buffer, by copying one byte at
+     * a time.  According to the info in <sys/farptr.h>, the functions
+     * _farsetsel() and _farnspokeb() will optimise away completely
+     */
+    _farsetsel(sel);               /* Set the selector to write to */
+    for (i = 0; i<4096; i++)
+    {
+        _farnspokeb(i,*font++);      /* Copy 1 byte into low (far) memory */
+    }
+
+    /*
+     * Now we use DPMI as a jumper to call the real mode interrupt.  This
+     * is needed because loading `es' while in protected mode with a real
+     * mode pointer will cause an Protection Fault and calling the interrupt
+     * directly using the protected mode pointer will result in garbage
+     * being received by the interrupt routine
+     */
+    dblock.d.eax = 0x1100;         /* BIOS function -- set font */
+    dblock.d.ebx = 0x1000;         /* bh = size of a letter; bl = 0 (reserved) */
+    dblock.d.ecx = 0x00FF;         /* Last character in font */
+    dblock.x.es  = seg;            /* Pointer to font segment */
+    dblock.d.ebp = 0x0000;         /* Pointer to font offset */
+
+    __dpmi_int(0x10, &dblock);
+
+    /* We're done with the low memory, free it */
+    __dpmi_free_dos_memory(sel);
+};
+
+#endif /* USE_286 */
+
+#endif /* ALLOW_GRAPH */
+
 
 
 /*
@@ -1081,83 +1095,141 @@ errr init_ibm(void)
 {
     int i;
     int mode;
+    int rv, gv, bv;
+    bool want_graphics;
 
     term *t = &term_screen_body;
 
     union REGS r;
 
+    /* Check for "Windows" */
+    if (getenv("windir"))
+    {
+       r.h.ah = 0x16;           /* Windows API Call -- Set device focus */
+       r.h.al = 0x8B;           /* Causes Dos boxes to become fullscreen */
+       r.h.bh = r.h.bl = 0x00;  /* 0x0000 = current Dos box */
+       int86(0x2F,&r,&r);       /* Call the Windows API */
+    };
+
 #ifdef USE_WAT
 
-# ifndef USE_CONIO
+    /* Set the video mode */
+    if (_setvideomode(_VRES16COLOR))
+    {
+       mode = 0x13;
+    }
+
+    /* Wimpy monitor */
+    else
+    {
+       mode = 0x03;
+    }
+
     /* Force 25 line mode */
+    _setvideomode(_TEXTC80);
     _settextrows(25);
-# endif
-
-    /* Assume the size of the screen */
-    rows = 25;
-    cols = 80;
-
-    /* Instantiate the color set, check for success */
-    if (activate_color_complex()) use_color_complex = TRUE;
 
 #else /* USE_WAT */
 
+    /* Set video mode */
+    r.h.ah = 0x00;
+    r.h.al = 0x13; /* VGA only mode */
+    int86(0x10, &r, &r);
+
     /* Get video mode */
-    r.h.ah = 0x00;
-    r.h.al = 0x13;
+    r.h.ah = 0x0F;
     int86(0x10, &r, &r);
-    mode = ScreenMode();
+    mode = r.h.al;
+
+    /* Set video mode */
     r.h.ah = 0x00;
-    r.h.al = 0x03;
+    r.h.al = 0x03; /* Color text mode */
     int86(0x10, &r, &r);
-
-    /* Acquire the size of the screen */
-    rows = ScreenRows();
-    cols = ScreenCols();
-
-    /* Paranoia -- require minimum size */
-    if ((rows < 24) || (cols < 80)) quit("Screen too small!");
-
-    /* Check video mode */
-    if (mode == 0x13) {
-
-        /* Instantiate the color set, check for success */
-        if (activate_color_complex()) use_color_complex = TRUE;
-    }
 
 #endif /* USE_WAT */
 
+    /* Check video mode */
+    if (mode == 0x13)
+    {
+        /* Remember the mode */
+        use_color_complex = TRUE;
+
+        /* Instantiate the color set */
+        activate_color_complex();
+    }
+
+    /* Graphics request */
+    want_graphics = use_graphics;
+
+    /* No graphics */
+    use_graphics = FALSE;
+
+#ifdef USE_GRAPHICS
+
+    /* Try to activate bitmap graphics */
+    if (want_graphics && use_color_complex)
+    {
+        FILE *f;
+
+        char buf[4096];
+
+        /* Access the font file */
+        sprintf(buf, "%s%s", ANGBAND_DIR_XTRA, "angband.fnt");
+
+        /* Open the file */
+        f = fopen(buf, "rb");
+
+        /* Okay */
+        if (f)
+        {
+            /* Load the bitmap data */
+            if (fread(buf,1,4096,f) != 4096)
+            {
+                quit("Corrupt 'angband.fnt' file");
+            }
+
+            /* Close the file */
+            fclose(f);
+
+            /* Enable graphics */
+            enable_graphic_font(buf);
+
+            /* Enable colors (again) */
+            activate_color_complex();
+
+            /* Use graphics */
+            use_graphics = TRUE;
+        }
+    }
+
+#endif
 
     /* Initialize "color_table" */
-    for (i = 0; i < 16; i++) {
-
-        int rv, gv, bv;
-
+    for (i = 0; i < 16; i++)
+    {
         /* Extract the "complex" codes */
         rv = ((ibm_color_complex[i]) & 0xFF);
         gv = ((ibm_color_complex[i] >> 8) & 0xFF);
         bv = ((ibm_color_complex[i] >> 16) & 0xFF);
 
         /* Save the "complex" codes */
+        color_table[i][0] = ibm_color_simple[i];
         color_table[i][1] = ((rv << 2) | (rv >> 4));
         color_table[i][2] = ((gv << 2) | (gv >> 4));
         color_table[i][3] = ((bv << 2) | (bv >> 4));
-
-        /* Save the "simple" code */
-        color_table[i][0] = ibm_color_simple[i];
     }
-    
+
 
 #ifndef USE_CONIO
 
     /* Build a "wiper line" */
-    for (i = 0; i < 80; i++) {
-
-        /* Hack -- space */
+    for (i = 0; i < 80; i++)
+    {
+        /* Space */
         wiper[2*i] = ' ';
 
-        /* Hack -- black */
-        wiper[2*i+1] = 0;
+        /* Black */
+	wiper[2*i+1] = 0;
     }
 
 #endif
@@ -1175,7 +1247,9 @@ errr init_ibm(void)
     Term_xtra_ibm(TERM_XTRA_CLEAR, 0);
 
 
-#ifdef USE_CURS_SET
+    /* Place the cursor */
+    Term_curs_ibm(0, 0);
+
 
     /* Access the "default" cursor info */   
     r.h.ah = 3;
@@ -1183,21 +1257,15 @@ errr init_ibm(void)
 
     /* Make the call */
     int86(0x10, &r, &r);
-    
+
     /* Extract the standard cursor info */
     saved_cur_v = 1;
     saved_cur_high = r.h.ch;
     saved_cur_low = r.h.cl;
 
-#endif
-
 
     /* Initialize the term */
     term_init(t, 80, 24, 256);
-
-    /* Erase with "black space" */
-    t->attr_blank = TERM_DARK;
-    t->char_blank = ' ';
 
     /* Prepare the init/nuke hooks */
     t->init_hook = Term_init_ibm;

@@ -1,7 +1,7 @@
-This is the README file for Angband 2.7.9 (v5) (3/7/96)
+This is the README file for Angband 2.7.9v6 (4/13/96)
 
-Angband 2.7.9v5 is a "bug-fix" version, fixing bugs in Angband 2.7.9v5,
-reorganizating some files, optimizing some stuff, etc.
+Angband 2.7.9v6 is a minor revision of Angband 2.7.9v5, which fixes a few
+bugs, cleans up a few things, and optimizes the code some more.
 
 See the Official Angband Home Page "http://www.voicenet.com/~benh/Angband/"
 for more information about exactly what has changed recently.
@@ -266,3 +266,4 @@ The "lib/xtra" directory contains special system files, if any.
 
 
 --- Ben ---
+

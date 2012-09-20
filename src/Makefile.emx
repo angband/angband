@@ -25,10 +25,8 @@
 #		  Needs 4OS2.
 #
 
-VERSION         = 279v4
+VERSION         = 279v5
 EXPORT          = angband-$(VERSION).os2.zip
-
-.KEEP_STATE:
 
 CC 		= gcc
 AR		= ar
@@ -36,9 +34,11 @@ CFLAGS 		= -MMD -O3 -DUSE_EMX -Zmt
 LFLAGS 		= -lvideo 
 
 # Uncomment this if you have nice installed
-#NICE 		= nice -i -n -30
+NICE 		= nice -i -n -30
 
 ###################################################################################
+
+.KEEP_STATE:
 
 default: all depends :-)
 
@@ -49,8 +49,9 @@ clean:
     -+@ del aclient.exe
     -+@ del depends
     -+@ del _state.mk
-    -+@ del *.o
+    -+@ del *.a
     -+@ del *.d
+    -+@ del *.o
 
 patches:  ..\patches.txt ..\exp\patches.uue ..\exp\files.uue
 
@@ -68,8 +69,7 @@ OBJS = \
   melee1.o melee2.o save.o files.o \
   cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
   store.o birth.o load1.o load2.o \
-  wizard1.o wizard2.o borg.o borg-map.o \
-  borg-obj.o borg-ext.o borg-aux.o borg-ben.o \
+  wizard1.o wizard2.o \
   generate.o dungeon.o init1.o init2.o
 
 .c.o:
@@ -106,23 +106,20 @@ EXPFILES = angband.exe;aclient.exe;patches.txt;readme;startwnd.cmd
            cd ..                                ^ \
            del tmpdir /xsqy >& nul
   
-PATCHFILES  = *.c
-PATCHFILES += *.h
-PATCHFILES += makefile*
-PATCHFILES += ..\lib\user\pref-emx.prf
+PATCHFILES  = *.c *.h makefile* ..\lib\user\pref-emx.prf
 
-..\patches.txt .PHONY .IGNORE:
 # Needs 4OS2! 
-    +@ echo These are the changes to the original source  > ..\patches.txt ^ \
-       echo archive ($(VERSION)). You don't need to apply them >> ..\patches.txt ^ \
-       echo if you can get the latest archive, which will >> ..\patches.txt ^ \
-       echo have them applied already. >> ..\patches.txt ^ \
-       echo. >> ..\patches.txt ^ \
-       except (*~) for %a in ($(PATCHFILES)) \
+..\patches.txt .PHONY .IGNORE:
+    +@ echo These are the changes to the original source  > ..\patches.txt       	^ \
+       echo archive ($(VERSION)). You don't need to apply them >> ..\patches.txt 	^ \
+       echo if you can get the latest archive, which will >> ..\patches.txt 		^ \
+       echo have them applied already. >> ..\patches.txt 				^ \
+       echo. >> ..\patches.txt 								^ \
+       except (*~) for %a in ($(PATCHFILES)) 						  \
        do (diff -c ..\old\src\%a %a >> ..\patches.txt)
 
-..\exp\patches.uue: ..\patches.txt
 # Needs 4OS2!
+..\exp\patches.uue: ..\patches.txt
     +@ md ..\exp >& nul                                         ^ \
        cd ..\exp                                                ^ \
        copy ..\patches.txt patches-$(VERSION).os2               ^ \
@@ -134,8 +131,8 @@ PATCHFILES += ..\lib\user\pref-emx.prf
 FILES  = main-emx.c makefile.emx ..\lib\user\pref-emx.prf 
 FILESP = main-emx.c makefile.emx pref-emx.prf 
 
-..\exp\files.uue: $(FILES)
 # Needs 4OS2!
+..\exp\files.uue: $(FILES)
     +@ 	md ..\exp >& nul                                        ^ \
 	cd ..\exp                                               ^ \
 	for %a in ($(FILES)) copy ..\src\%a > nul               ^ \
@@ -189,7 +186,7 @@ angband.a: $(OBJS)
     $(AR) r angband.a $(OBJS)
 
 aclient.exe: main-emx.c
-    $(NICE) $(CC) $(CFLAGS) -D__EMX__CLIENT__=main  -o aclient.exe main-emx.c -lvideo
+    $(NICE) $(CC) $(CFLAGS) -Wall -D__EMX__CLIENT__ -o aclient.exe main-emx.c -lvideo
 
 main-emx.o: main-emx.c
     $(NICE) $(CC) $(CFLAGS) -Wall -c main-emx.c -o main-emx.o

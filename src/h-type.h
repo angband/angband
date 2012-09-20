@@ -60,36 +60,34 @@ typedef int errr;
 
 
 /*
- * Many annoying machines define "uint" in some "include" file
- * Note that this "redefinition" should work on any machine,
- * but Macintosh is known not to define "uint" anywhere.
+ * Hack -- prevent problems with non-MACINTOSH
  */
-#if !defined(MACINTOSH)
-# undef uint
-# define uint uint_hack
-#endif
+#undef uint
+#define uint uint_hack
 
 /*
- * Hack -- allow compilation on some annoying (IBM-ish) machines.
+ * Hack -- prevent problems with MSDOS and WINDOWS
  */
-#if defined(WINDOWS) || defined(MSDOS)
-# undef huge
-# define huge huge_hack
-#endif
+#undef huge
+#define huge huge_hack
 
 /*
- * Hack -- allow compilation on some annoying (Amiga-ish) machines.
+ * Hack -- prevent problems with AMIGA
  */
-#if defined(AMIGA)
-# undef byte
-# define byte byte_hack
-#endif
+#undef byte
+#define byte byte_hack
+
+/*
+ * Hack -- prevent problems with C++
+ */
+#undef bool
+#define bool bool_hack
 
 
 /* Note that "signed char" is not always "defined" */
 /* So always use "s16b" to hold small signed values */
-/* A (possibly signed) char (a byte) */
-/* typedef char char; */
+/* A signed byte of memory */
+/* typedef signed char syte; */
 
 /* Note that unsigned values can cause math problems */
 /* An unsigned byte of memory */

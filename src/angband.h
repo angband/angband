@@ -54,7 +54,7 @@
  * of Angband, as in, from pre-2.4.frog-knows days, and thus the
  * reference to "5.0" is rather misleading...
  */
- 
+
 /*
  * UNIX ANGBAND Version 5.0
  */

@@ -165,13 +165,11 @@
 
 
 /*
- * Select some special code for compilation, if compiling under
- * CodeWarrior, since the more "obsolete" code seems to fail.
- *
- * This code might also work under Think C 6.0, with some tweaking.
+ * Select some special code for compilation, this will work under
+ * CodeWarrior 7, and Think C 8.0, and perhaps others as well.
  */
 
-#if defined(__MWERKS__) /* || defined(powerc) || defined(__powerc) */
+#if defined(__MWERKS__)
 
 /*
  * Use the special "AppleEventHandler" code
@@ -179,7 +177,7 @@
 # define USE_SFL_CODE
 
 /*
- * Use "FindFolder()" instead of "SystemEnvirons()"
+ * Attempt to use the "FindFolder()" function
  */
 # define USE_FIND_FOLDER
 
@@ -228,40 +226,40 @@ typedef struct term_data term_data;
 /*
  * Extra "term" data
  */
-struct term_data {
+struct term_data
+{
+    term		t;
 
-  term		t;
+    Rect		r;
 
-  Rect		r;
+    cptr		s;
 
-  cptr		s;
+    WindowPtr	w;
 
-  WindowPtr	w;
+    int		fake;
 
-  int		fake;
+    int		keys;
 
-  int		keys;
+    int		rows;
+    int		cols;
 
-  int		rows;
-  int		cols;
+    int		size_wid;
+    int		size_hgt;
 
-  int		size_wid;
-  int		size_hgt;
+    int		size_ow1;
+    int		size_oh1;
+    int		size_ow2;
+    int		size_oh2;
 
-  int		size_ow1;
-  int		size_oh1;
-  int		size_ow2;
-  int		size_oh2;
+    int		mapped;
+    int		font_id;
+    int		font_size;
+    int		font_face;
 
-  int		mapped;
-  int		font_id;
-  int		font_size;
-  int		font_face;
-
-  int		font_wid;
-  int		font_hgt;
-  int		font_o_x;
-  int		font_o_y;
+    int		font_wid;
+    int		font_hgt;
+    int		font_o_x;
+    int		font_o_y;
 };
 
 
@@ -330,8 +328,8 @@ static bool initialized = FALSE;
 /*
  * Actual "RGB" data for color quickdraw
  */
-static RGBColor mac_clr[16] = {
-
+static RGBColor mac_clr[16] =
+{
     {0,0,0},			/* TERM_DARK */
     {65535,65535,65535},	/* TERM_WHITE */
     {32768,32768,32768},        /* TERM_SLATE */
@@ -461,7 +459,7 @@ static bool askfor_file(char *buf, int len)
     if (reply.good)
     {
         int fc;
-        
+
         /* Get info */
         GetWDInfo(reply.vRefNum, &vrefnum, &drefnum, &junk);
 
@@ -509,7 +507,7 @@ static void ptocstr(StringPtr src)
 
     /* Hack -- pointer */
     char *s = (char*)(src);
-    
+
     /* Hack -- convert the string */
     for (i = s[0]; i; i--, s++) s[0] = s[1];
 
@@ -533,8 +531,11 @@ static void ptocstr(StringPtr src)
  */
 static void pstrcat(StringPtr dst, StringPtr src)
 {
-	BlockMove(src + 1, dst + *dst + 1, *src);	/* copy string in */
-	*dst += *src;					/* adjust length byte */
+    /* copy string in */
+    BlockMove(src + 1, dst + *dst + 1, *src);
+
+    /* adjust length byte */
+    *dst += *src;
 }
 
 /*
@@ -542,29 +543,37 @@ static void pstrcat(StringPtr dst, StringPtr src)
  */
 static void pstrinsert(StringPtr dst, StringPtr src)
 {
-	BlockMove(dst + 1, dst + *src + 1, *dst);	/* make room for new string */
-	BlockMove(src + 1, dst + 1, *src);		/* copy new string in */
-	*dst += *src;					/* adjust length byte */
+    /* make room for new string */
+    BlockMove(dst + 1, dst + *src + 1, *dst);
+
+    /* copy new string in */	
+    BlockMove(src + 1, dst + 1, *src);
+
+    /* adjust length byte */		
+    *dst += *src;
 }
 
 static void PathNameFromDirID(long dirID, short vRefNum, StringPtr fullPathName)
 {
-	CInfoPBRec	block;
-	Str255	directoryName;
-	OSErr	err;
+    CInfoPBRec	block;
+    Str255	directoryName;
+    OSErr	err;
 
-	fullPathName[0] = '\0';
+    fullPathName[0] = '\0';
 
-	block.dirInfo.ioDrParID = dirID;
-	block.dirInfo.ioNamePtr = directoryName;
-	do {
-		block.dirInfo.ioVRefNum = vRefNum;
-		block.dirInfo.ioFDirIndex = -1;
-		block.dirInfo.ioDrDirID = block.dirInfo.ioDrParID;
-		err = PBGetCatInfo(&block,FALSE);
-		pstrcat(directoryName, (StringPtr)"\p:");
-		pstrinsert(fullPathName, directoryName);
-	} while (block.dirInfo.ioDrDirID != 2);
+    block.dirInfo.ioDrParID = dirID;
+    block.dirInfo.ioNamePtr = directoryName;
+
+    while (1)
+    {
+        block.dirInfo.ioVRefNum = vRefNum;
+        block.dirInfo.ioFDirIndex = -1;
+        block.dirInfo.ioDrDirID = block.dirInfo.ioDrParID;
+        err = PBGetCatInfo(&block,FALSE);
+        pstrcat(directoryName, (StringPtr)"\p:");
+        pstrinsert(fullPathName, directoryName);
+        if (block.dirInfo.ioDrDirID == 2) break;
+    }
 }
 
 #endif
@@ -577,8 +586,8 @@ static void PathNameFromDirID(long dirID, short vRefNum, StringPtr fullPathName)
 static void activate(WindowPtr w)
 {
     /* Activate */
-    if (active != w) {
-
+    if (active != w)
+    {
         /* Activate */
         if (w) SetPort(w);
 
@@ -758,7 +767,7 @@ static void Term_nuke_mac(term *t)
 static errr Term_xtra_mac_react(void)
 {
     int i;
-    
+
     /* Check colors */
     if (has_color)
     {
@@ -792,13 +801,13 @@ static errr Term_xtra_mac(int n, int v)
     term_data *td = (term_data*)(Term->data);
 
     Rect r;
-    
+
     /* Analyze */
     switch (n)
     {
         /* Make a noise */
         case TERM_XTRA_NOISE:
-        
+
             /* Make a noise */
             SysBeep(1);
 
@@ -810,7 +819,7 @@ static errr Term_xtra_mac(int n, int v)
 
             /* Process an event */
             (void)CheckEvents(0);
-            
+
             /* Success */
             return (0);
 
@@ -819,7 +828,7 @@ static errr Term_xtra_mac(int n, int v)
 
             /* Process an event */
             (void)CheckEvents(v);
-            
+
             /* Success */
             return (0);
 
@@ -942,7 +951,7 @@ static errr Term_wipe_mac(int x, int y, int n)
 static errr Term_text_mac(int x, int y, int n, byte a, cptr s)
 {
     int xp, yp;
-    
+
     term_data *td = (term_data*)(Term->data);
 
     /* Activate the color if needed */
@@ -951,13 +960,13 @@ static errr Term_text_mac(int x, int y, int n, byte a, cptr s)
     /* Starting pixel */
     xp = x * td->font_wid + td->font_o_x + td->size_ow1;
     yp = y * td->font_hgt + td->font_o_y + td->size_oh1;
-    
+
     /* Move to the correct location */
     MoveTo(xp, yp);
 
     /* Draw the character */
     if (n == 1) DrawChar(*s);
-    
+
     /* Draw the string */
     else DrawText(s, 0, n);
 
@@ -1018,10 +1027,7 @@ static void term_data_link(term_data *td)
  *
  * Code by: Maarten Hazewinkel (mmhazewi@cs.ruu.nl)
  *
- * This function, or another related function, probably one that was
- * added or changed between 2.7.8 and 2.7.9, is causing Angband to fail
- * when run under System 6, with a "cannot read ... news.txt" message.
- * XXX XXX XXX
+ * This function does not appear to work correctly with System 6.
  */
 static void SetupAppDir(void)
 {
@@ -1086,7 +1092,7 @@ static void term_data_check_font(term_data *td)
     /* Extract the font info */
     GetFontInfo(&info);
 
-    /* Extract the font sizing values */
+    /* Extract the font sizing values XXX XXX XXX */
     td->font_wid = CharWidth('@'); /* info.widMax; */
     td->font_hgt = info.ascent + info.descent;
     td->font_o_x = 0;
@@ -1097,13 +1103,14 @@ static void term_data_check_font(term_data *td)
 
     /* Hack -- notice non-mono-space */
     if (CharWidth('i') != td->font_wid) td->fake = TRUE;
+    if (CharWidth('1') != td->font_wid) td->fake = TRUE;
 
     /* Mega-Hack -- no width at all */
     if (td->font_wid < 1) td->fake = TRUE;
-    
+
     /* Mega-Hack -- enforce some width */
     if (td->font_wid < 1) td->font_wid = 8;
-    
+
     /* Destroy the old window */
     DisposeWindow(tmpw);
 
@@ -1188,7 +1195,7 @@ static void save_prefs()
     term_data *td;
 
     WindowPtr old_win;
-    
+
     old_win = active;
 
 
@@ -1306,6 +1313,9 @@ static void save_prefs()
 
 /*
  * Load the preferences from the current "file"
+ *
+ * XXX XXX XXX Being able to undefine various windows is
+ * slightly bizarre, and may cause problems.
  */
 static void load_prefs(void)
 {
@@ -1326,17 +1336,19 @@ static void load_prefs(void)
     if ((old_major != VERSION_MAJOR) ||
         (old_minor != VERSION_MINOR) ||
         (old_patch != VERSION_PATCH) ||
-        (old_extra != VERSION_EXTRA)) {
-
+        (old_extra != VERSION_EXTRA))
+    {
         /* Message */
-        /* mac_warning("Ignoring old preferences."); */
-        
+        mac_warning("Ignoring old preferences.");
+
         /* Ignore */
         return;
     }
 
 
     /*** Screen info ***/
+
+    if (feof(fff)) return;
 
     td = &screen;
 
@@ -1346,22 +1358,18 @@ static void load_prefs(void)
     td->font_size = getshort();
     td->font_face = getshort();
 
-    term_data_check_font(td);
-
-    td->keys = 1024;
-
     td->cols = getshort();
     td->rows = getshort();
 
     td->r.left = getshort();
     td->r.top = getshort();
 
-    term_data_check_size(td);
-
 
     /*** Mirror info ***/
 
 #ifdef GRAPHIC_MIRROR
+
+    if (feof(fff)) return;
 
     td = &mirror;
 
@@ -1371,17 +1379,11 @@ static void load_prefs(void)
     td->font_size = getshort();
     td->font_face = getshort();
 
-    term_data_check_font(td);
-
-    td->keys = 1024;
-
     td->cols = getshort();
     td->rows = getshort();
 
     td->r.left = getshort();
     td->r.top = getshort();
-
-    term_data_check_size(td);
 
 #endif /* GRAPHIC_MIRROR */
 
@@ -1390,6 +1392,8 @@ static void load_prefs(void)
 
 #ifdef GRAPHIC_RECALL
 
+    if (feof(fff)) return;
+
     td = &recall;
 
     td->mapped = getshort();
@@ -1398,17 +1402,11 @@ static void load_prefs(void)
     td->font_size = getshort();
     td->font_face = getshort();
 
-    term_data_check_font(td);
-
-    td->keys = 16;
-
     td->cols = getshort();
     td->rows = getshort();
 
     td->r.left = getshort();
     td->r.top = getshort();
-
-    term_data_check_size(td);
 
 #endif /* GRAPHIC_RECALL */
 
@@ -1417,6 +1415,8 @@ static void load_prefs(void)
 
 #ifdef GRAPHIC_CHOICE
 
+    if (feof(fff)) return;
+
     td = &choice;
 
     td->mapped = getshort();
@@ -1425,17 +1425,11 @@ static void load_prefs(void)
     td->font_size = getshort();
     td->font_face = getshort();
 
-    term_data_check_font(td);
-
-    td->keys = 16;
-
     td->cols = getshort();
     td->rows = getshort();
 
     td->r.left = getshort();
     td->r.top = getshort();
-
-    term_data_check_size(td);
 
 #endif /* GRAPHIC_CHOICE */
 
@@ -1444,92 +1438,100 @@ static void load_prefs(void)
 
 
 
+/*
+ * Hack -- default data for a window
+ */
+static void term_data_hack(term_data *td)
+{
+    short fid;
+
+    /* Default to Monaco font */
+    GetFNum("\pmonaco", &fid);
+
+    /* Wipe it */
+    WIPE(td, term_data);
+
+    /* Default name */
+    td->s = "Window";
+
+    /* Default borders */
+    td->size_ow1 = 2;
+    td->size_ow2 = 2;
+    td->size_oh2 = 2;
+
+    /* Default visibility */
+    td->mapped = TRUE;
+
+    /* Default font */
+    td->font_id = fid;
+
+    /* Default font size */
+    td->font_size = 12;
+
+    /* Default font face */
+    td->font_face = 0;
+
+    /* Default size */
+    td->rows = 24;
+    td->cols = 80;
+
+    /* Default position */
+    td->r.left = 0;
+    td->r.top = 0;
+
+    /* Minimal keys */
+    td->keys = 16;
+}
+
 
 /*
  * Read the preference file, Create the windows.
  *
- * Note the use of the "FindFolder()" function to track down the preference
- * file, when we are using a Power Macintosh (and thus System 7).  Although
- * the "SysEnvirons()" method is obsolete and flaky, it works with System 6.
+ * We attempt to use "FindFolder()" to track down the preference file,
+ * but if this fails, for any reason, we will try the "SysEnvirons()"
+ * method, which may work better with System 6.
  */
 static void init_windows()
 {
-    short fid;
-
     term_data *td;
-
-#ifdef USE_FIND_FOLDER
-
-    OSErr	err;
-    short	vref;
-    long	dirID;
-    char	foo[128];
-
-#else
 
     SysEnvRec env;
     short savev;
     long saved;
 
-#endif
-
-
-    /* Default to Monaco font */
-    GetFNum("\pmonaco", &fid);
-
+    bool oops;
 
 
     /* Screen window */
     td = &screen;
-    WIPE(td, term_data);
+
+    /* Defaults */
+    term_data_hack(td);
+
+    /* Title it */
     td->s = "Angband";
-    td->size_ow1 = 2;
-    td->size_ow2 = 2;
-    td->size_oh2 = 2;
 
-    /* Screen (Monaco 12) */
-    td->mapped = TRUE;
-    td->font_id = fid;
-    td->font_size = 12;
-    td->font_face = 0;
-    term_data_check_font(td);
-
-    /* Screen (allow a *lot* of keys) */
-    td->keys = 1024;
-
-    /* Screen (80x24, bottom right) */
-    td->rows = 24;
-    td->cols = 80;
+    /* Bottom right */
     td->r.left = 9999;
     td->r.top = 9999;
-    term_data_check_size(td);
+
+    /* Many keys */
+    td->keys = 1024;
 
 #ifdef GRAPHIC_MIRROR
 
     /* Mirror window */
     td = &mirror;
-    WIPE(td, term_data);
+
+    /* Defaults */
+    term_data_hack(td);
+
+    /* Title it */
     td->s = "Mirror";
-    td->size_ow1 = 2;
-    td->size_ow2 = 2;
-    td->size_oh2 = 2;
 
-    /* Mirror (Monaco 12) */
-    td->mapped = TRUE;
-    td->font_id = fid;
-    td->font_size = 12;
-    td->font_face = 0;
-    term_data_check_font(td);
-
-    /* Mirror (no keys needed) */
-    td->keys = 16;
-
-    /* Mirror (80x24, top right) */
-    td->rows = 24;
-    td->cols = 80;
+    /* Top right */
     td->r.left = 9999;
     td->r.top = 40;
-    term_data_check_size(td);
 
 #endif /* GRAPHIC_MIRROR */
 
@@ -1537,28 +1539,16 @@ static void init_windows()
 
     /* Recall window */
     td = &recall;
-    WIPE(td, term_data);
+
+    /* Defaults */
+    term_data_hack(td);
+
+    /* Title it */
     td->s = "Recall";
-    td->size_ow1 = 2;
-    td->size_ow2 = 2;
-    td->size_oh2 = 2;
 
-    /* Recall (Monaco 12) */
-    td->mapped = TRUE;
-    td->font_id = fid;
-    td->font_size = 12;
-    td->font_face = 0;
-    term_data_check_font(td);
-
-    /* Recall (no keys needed) */
-    td->keys = 16;
-
-    /* Recall (80x24, top left) */
-    td->rows = 24;
-    td->cols = 80;
+    /* Top left */
     td->r.left = 0;
     td->r.top = 40;
-    term_data_check_size(td);
 
 #endif /* GRAPHIC_RECALL */
 
@@ -1566,76 +1556,81 @@ static void init_windows()
 
     /* Choice window */
     td = &choice;
-    WIPE(td, term_data);
+
+    /* Defaults */
+    term_data_hack(td);
+
+    /* Title and borders */
     td->s = "Choice";
-    td->size_ow1 = 2;
-    td->size_ow2 = 2;
-    td->size_oh2 = 2;
 
-    /* Choice (Monaco 12) */
-    td->mapped = TRUE;
-    td->font_id = fid;
-    td->font_size = 12;
-    td->font_face = 0;
-    term_data_check_font(td);
-
-    /* Choice (no keys needed) */
-    td->keys = 16;
-
-    /* Choice (80x24, bottom left) */
-    td->rows = 24;
-    td->cols = 80;
+    /* Bottom left */
     td->r.left = 0;
     td->r.top = 9999;
-    term_data_check_size(td);
 
 #endif /* GRAPHIC_CHOICE */
+
+
+    /* Assume failure */
+    oops = TRUE;
 
     /* Assume failure */
     fff = NULL;
 
-
 #ifdef USE_FIND_FOLDER
 
-    /* Find the folder */
-    err = FindFolder(kOnSystemDisk, kPreferencesFolderType, kCreateFolder,
-                     &vref, &dirID);
-
-    /* Find it if allowed */
-    if (!err)
+    /* System 7 */
+    if (has_seven)
     {
-        /* Find it */
-	PathNameFromDirID(dirID, vref, (StringPtr)foo);
+        OSErr	err;
+        short	vref;
+        long	dirID;
+        char	foo[128];
 
-        /* Convert the string */
-	ptocstr((StringPtr)foo);
+        /* Find the folder */
+        err = FindFolder(kOnSystemDisk, kPreferencesFolderType, kCreateFolder,
+                         &vref, &dirID);
 
-        /* Append the preference file name */
-	strcat(foo, "Angband Preferences");
+        /* Success */
+        if (!err)
+        {
+            /* Extract a path name */
+            PathNameFromDirID(dirID, vref, (StringPtr)foo);
+
+            /* Convert the string */
+            ptocstr((StringPtr)foo);
+
+            /* Append the preference file name */
+            strcat(foo, "Angband Preferences");
 	
-	/* Open the preference file */
-	fff = fopen(foo, "r");
+            /* Open the preference file */
+            fff = fopen(foo, "r");
+	
+            /* Success */
+            oops = FALSE;
+        }
     }
 
-#else
+#endif /* FIND_FOLDER */
 
-    /* Save */
-    HGetVol(0, &savev, &saved);
+    /* Oops */
+    if (oops)
+    {
+        /* Save */
+        HGetVol(0, &savev, &saved);
 
-    /* Go to the "system" folder */
-    SysEnvirons(curSysEnvVers, &env);
-    SetVol(0, env.sysVRefNum);
+        /* Go to the "system" folder */
+        SysEnvirons(curSysEnvVers, &env);
+        SetVol(0, env.sysVRefNum);
 
-    /* Open the file */
-    fff = fopen(":Preferences:Angband Preferences", "r");
-    if (!fff) fff = fopen(":Angband Preferences", "r");
+        /* Open the file */
+        fff = fopen(":Preferences:Angband Preferences", "r");
+        if (!fff) fff = fopen(":Angband Preferences", "r");
 
-    /* Restore */
-    HSetVol(0, savev, saved);
+        /* Restore */
+        HSetVol(0, savev, saved);
+    }
 
-#endif
-
-    /* Parse it */
+    /* Load preferences */
     if (fff)
     {
         /* Load a real preference file */
@@ -1645,36 +1640,40 @@ static void init_windows()
         my_fclose(fff);
     }
 
-#if 0
-    /* No such file */
-    else
-    {
-        /* Warning */
-	mac_warning("Error while attempting to load preferences!");
-    }
-#endif
 
 #ifdef GRAPHIC_RECALL
-    /* Link/Activate the Recall "term" */
-    term_data_link(&recall);
-    term_recall = &recall.t;
+    /* Activate */
+    td = &recall;
+    term_data_check_font(td);
+    term_data_check_size(td);
+    term_data_link(td);
+    term_recall = &(td->t);
 #endif /* GRAPHIC_RECALL */
 
 #ifdef GRAPHIC_CHOICE
-    /* Link/Activate the Choice "term" */
-    term_data_link(&choice);
-    term_choice = &choice.t;
+    /* Activate */
+    td = &choice;
+    term_data_check_font(td);
+    term_data_check_size(td);
+    term_data_link(td);
+    term_choice = &(td->t);
 #endif /* GRAPHIC_CHOICE */
 
 #ifdef GRAPHIC_MIRROR
-    /* Link/Activate the Mirror "term" */
-    term_data_link(&mirror);
-    term_mirror = &mirror.t;
+    /* Activate */
+    td = &mirror;
+    term_data_check_font(td);
+    term_data_check_size(td);
+    term_data_link(td);
+    term_mirror = &(td->t);
 #endif /* GRAPHIC_MIRROR */
 
-    /* Link/Activate the Screen "term" */
-    term_data_link(&screen);
-    term_screen = &screen.t;
+    /* Activate */
+    td = &screen;
+    term_data_check_font(td);
+    term_data_check_size(td);
+    term_data_link(td);
+    term_screen = &(td->t);
 }
 
 
@@ -1683,22 +1682,15 @@ static void init_windows()
  */
 static void save_pref_file(void)
 {
-
-#ifdef USE_FIND_FOLDER
-
-    OSErr	err;
-    short	vref;
-    long	dirID;
-    char	foo[128];
-
-#else
+    bool oops;
 
     SysEnvRec env;
     short savev;
     long saved;
 
-#endif
 
+    /* Assume failure */
+    oops = TRUE;
 
     /* Assume failure */
     fff = NULL;
@@ -1711,44 +1703,59 @@ static void save_pref_file(void)
 
 #ifdef USE_FIND_FOLDER
 
-    /* Find the folder */
-    err = FindFolder(kOnSystemDisk, kPreferencesFolderType, kCreateFolder,
-                     &vref, &dirID);
-
-    /* Use the result */
-    if (!err)
+    /* System 7 */
+    if (has_seven)
     {
-	PathNameFromDirID(dirID, vref, (StringPtr)foo);
+        OSErr	err;
+        short	vref;
+        long	dirID;
+        char	foo[128];
 
-        /* Convert the string */
-	ptocstr((StringPtr)foo);
+        /* Find the folder */
+        err = FindFolder(kOnSystemDisk, kPreferencesFolderType, kCreateFolder,
+                         &vref, &dirID);
 
-        /* Append the preference file name */
-	strcat(foo, "Angband Preferences");
+        /* Success */
+        if (!err)
+        {
+            /* Extract a path name */
+            PathNameFromDirID(dirID, vref, (StringPtr)foo);
 
-	/* Open the preference file */
-	fff = fopen(foo, "w");
+            /* Convert the string */
+            ptocstr((StringPtr)foo);
+
+            /* Append the preference file name */
+            strcat(foo, "Angband Preferences");
+
+            /* Open the preference file */
+            fff = fopen(foo, "w");
+
+            /* Success */
+            oops = FALSE;
+        }
     }
 
-#else
+#endif /* FIND_FOLDER */
 
-    /* Save */
-    HGetVol(0, &savev, &saved);
+    /* Oops */
+    if (oops)
+    {
+        /* Save */
+        HGetVol(0, &savev, &saved);
 
-    /* Go to "system" folder */
-    SysEnvirons(curSysEnvVers, &env);
-    SetVol(0, env.sysVRefNum);
+        /* Go to "system" folder */
+        SysEnvirons(curSysEnvVers, &env);
+        SetVol(0, env.sysVRefNum);
 
-    /* Open the preference file */
-    fff = fopen(":Preferences:Angband Preferences", "w");
-    if (!fff) fff = fopen(":Angband Preferences", "w");
+        /* Open the preference file */
+        fff = fopen(":Preferences:Angband Preferences", "w");
+        if (!fff) fff = fopen(":Angband Preferences", "w");
 
-    /* Restore */
-    HSetVol(0, savev, saved);
+        /* Restore */
+        HSetVol(0, savev, saved);
+    }
 
-#endif
-
-    /* Write prefs if allowed */
+    /* Save preferences */
     if (fff)
     {
         /* Write the preferences */
@@ -1757,13 +1764,6 @@ static void save_pref_file(void)
         /* Close it */
         my_fclose(fff);
     }
-
-    /* Failure to save preferences */
-    else
-    {
-        /* Warning */
-        mac_warning("Error while attempting to save preferences!");
-    }
 }
 
 
@@ -1771,7 +1771,7 @@ static void save_pref_file(void)
 /*
  * Set up the menus
  *
- * Font menu creation from "Maarten Hazewinkel" 
+ * Font menu creation from "Maarten Hazewinkel"
  */
 static void init_menubar()
 {
@@ -1792,7 +1792,7 @@ static void init_menubar()
 
     /* Oops */
     if (!menu) quit(NULL);
-    
+
     /* Add the DA's to the "apple" menu */
     AddResMenu(menu, 'DRVR');
 
@@ -1810,7 +1810,7 @@ static void init_menubar()
 
     /* Fake window */
     r.left = r.right = r.top = r.bottom = 0;
-    
+
     /* Make the fake window */
     tmpw = NewWindow(0, &r, "\p", false, documentProc, 0, 0, 0);
 
@@ -1854,10 +1854,10 @@ static void init_menubar()
     /* Destroy the old window */
     DisposeWindow(tmpw);
 
-    /* Hack -- look cute */
+    /* Hack -- look cute XXX XXX */
     /* SetItemStyle(menu, 1, bold); */
 
-    /* Hack -- look cute */
+    /* Hack -- look cute XXX XXX */
     /* SetItemStyle(menu, 2, extend); */
 
     /* Update the menu bar */
@@ -1950,6 +1950,9 @@ static void do_menu_file_open(bool all)
     SFReply reply;
     Point topleft;
 
+
+    /* XXX XXX XXX */
+
     /* vrefnum = GetSFCurVol(); */
     vrefnum = -*((short*)0x214);
 
@@ -1965,7 +1968,7 @@ static void do_menu_file_open(bool all)
 
     /* Check for errors */
     err = PBGetCatInfo((CInfoPBPtr)&pb,FALSE);
-    
+
     /* Success */
     if ((err == noErr) && (pb.ioFlAttrib & 0x10))
     {
@@ -1997,7 +2000,7 @@ static void do_menu_file_open(bool all)
         /* Get any file */
         SFGetFile(topleft, "\p", NULL, -1, types, NULL, &reply);
     }
-    
+
     /* Allow "save" files */
     else
     {
@@ -2087,7 +2090,7 @@ static void setup_menus()
     {
         EnableItem(m,4);
     }
-    
+
     /* Enable "save" */
     if (initialized && character_generated)
     {
@@ -2161,7 +2164,7 @@ static void setup_menus()
             /* GetMenuItemText(m,i,s); */
             GetItem(m,i,s);
             GetFNum(s,&fnum);
- 
+
             /* Check active font */
             if (td->font_id == fnum) CheckItem(m, i, TRUE);
         }
@@ -2251,7 +2254,7 @@ static void menu(long mc)
     term_data *td = NULL;
 
     WindowPtr old_win;
-    
+
 
     /* Analyze the menu command */
     menuid = HiWord(mc);
@@ -2314,14 +2317,14 @@ static void menu(long mc)
                 case 2:		/* Open... */
 
                     do_menu_file_open(FALSE);
-                    
+
                     break;
 
 
                 case 3:		/* Import... */
 
                     do_menu_file_open(TRUE);
-                    
+
                     break;
 
 
@@ -2342,7 +2345,7 @@ static void menu(long mc)
                              HideWindow(screen.w);
                          }
                     }
-                    
+
 #ifdef GRAPHIC_MIRROR
 
                     if (td == &mirror)
@@ -2360,7 +2363,7 @@ static void menu(long mc)
                              HideWindow(mirror.w);
                          }
                     }
-                    
+
 #endif /* GRAPHIC_MIRROR */
 
 #ifdef GRAPHIC_RECALL
@@ -2380,7 +2383,7 @@ static void menu(long mc)
                              HideWindow(recall.w);
                          }
                     }
-                    
+
 #endif /* GRAPHIC_RECALL */
 
 #ifdef GRAPHIC_CHOICE
@@ -2482,10 +2485,12 @@ static void menu(long mc)
             if (selection == 1)
             {
                 /* Toggle the setting */
-                if (td->font_face & bold) {
+                if (td->font_face & bold)
+                {
                     td->font_face &= ~bold;
                 }
-                else {
+                else
+                {
                     td->font_face |= bold;
                 }
 
@@ -2506,10 +2511,12 @@ static void menu(long mc)
             if (selection == 2)
             {		
                 /* Toggle the setting */
-                if (td->font_face & extend) {
+                if (td->font_face & extend)
+                {
                     td->font_face &= ~extend;
                 }
-                else {
+                else
+                {
                     td->font_face |= extend;
                 }
 
@@ -2576,7 +2583,7 @@ static void menu(long mc)
 
             /* Restore the window */
             activate(old_win);
-            
+
             break;
 
 
@@ -2623,7 +2630,7 @@ static void menu(long mc)
 
                     /* Mapped XXX XXX XXX */
                     screen.t.mapped_flag = TRUE;
-                    
+
                     /* Show the window */
                     ShowWindow(screen.w);
 
@@ -2641,7 +2648,7 @@ static void menu(long mc)
 
                     /* Mapped XXX XXX XXX */
                     mirror.t.mapped_flag = TRUE;
-                    
+
                     /* Show the window */
                     ShowWindow(mirror.w);
 
@@ -2661,7 +2668,7 @@ static void menu(long mc)
 
                     /* Mapped XXX XXX XXX */
                     choice.t.mapped_flag = TRUE;
-                    
+
                     /* Show the window */
                     ShowWindow(choice.w);
 
@@ -2681,7 +2688,7 @@ static void menu(long mc)
 
                     /* Mapped XXX XXX XXX */
                     recall.t.mapped_flag = TRUE;
-                    
+
                     /* Show the window */
                     ShowWindow(recall.w);
 
@@ -2846,7 +2853,7 @@ static void check_for_save_file()
     {
         /* Forget */
         open_when_ready = FALSE;
-        
+
         /* Game is in progress */
 	game_in_progress = 1;
 
@@ -2913,7 +2920,7 @@ static void check_for_save_file(void)
 
             /* Wait for it */
             pause_line(23);
-            
+
             /* Flush input */
             flush();
 
@@ -3016,7 +3023,7 @@ static bool CheckEvents(bool wait)
     long newsize;
 
     int ch, ck;
-    
+
     int mc, ms, mo, mx;
 
     huge curTicks;
@@ -3205,7 +3212,7 @@ static bool CheckEvents(bool wait)
                                  HideWindow(screen.w);
                              }
                         }
-                        
+
 #ifdef GRAPHIC_MIRROR
 
                         if (w == mirror.w)
@@ -3223,7 +3230,7 @@ static bool CheckEvents(bool wait)
                                  HideWindow(mirror.w);
                              }
                         }
-                        
+
 #endif /* GRAPHIC_MIRROR */
 
 #ifdef GRAPHIC_RECALL
@@ -3243,7 +3250,7 @@ static bool CheckEvents(bool wait)
                                  HideWindow(recall.w);
                              }
                         }
-                        
+
 #endif /* GRAPHIC_RECALL */
 
 #ifdef GRAPHIC_CHOICE
@@ -3401,7 +3408,7 @@ static bool CheckEvents(bool wait)
                 case inContent:
 
                     SelectWindow(w);
-                    
+
                     break;
                 }
 
@@ -3410,12 +3417,12 @@ static bool CheckEvents(bool wait)
 
                 /* Disk Event -- From "Maarten Hazewinkel" */
                 case diskEvt:
-                
+
                     /* check for error when mounting the disk */
                     if (HiWord(event.message) != noErr)
                     {
                         Point p = {120, 120};
-                        
+
                         DILoad();
                         DIBadMount(p, event.message);
                         DIUnload();
@@ -3478,7 +3485,7 @@ static bool CheckEvents(bool wait)
                     {
                         /* Forget */
                         open_when_ready = FALSE;
-        
+
                         /* Game is in progress */
                         game_in_progress = 1;
 
@@ -3524,7 +3531,7 @@ static vptr lifeboat = NULL;
 static errr hook_rnfree(vptr v, huge size)
 {
     #pragma unused (size)
-    
+
     /* Dispose */
     DisposePtr(v);
 
@@ -3547,7 +3554,7 @@ static vptr hook_ralloc(huge size)
 static vptr hook_rpanic(huge size)
 {
     #pragma unused (size)
-    
+
     vptr mem = NULL;
 
     /* Free the lifeboat */
@@ -3639,31 +3646,103 @@ void delay(int x)
 /*
  * Init some stuff
  *
- * XXX XXX XXX Hack -- This function attempts to "fix" two nasty bugs.
+ * XXX XXX XXX Hack -- This function attempts to "fix" the nasty
+ * "Macintosh Save Bug" by using "absolute" path names, since on
+ * System 7 machines anyway, the "current working directory" often
+ * "changes" due to background processes, invalidating any "relative"
+ * path names.  Note that the Macintosh is limited to 255 character
+ * path names, so be careful about deeply embedded directories...
  *
- * First, on System 7 machines, the "current working directory" often
- * "changes" due to background processes, which invalidates all of the
- * path names we may have built relative to "lib", so we use an absolute
- * file name, which is a bad thing, since only the first 250 characters
- * of a pathname on the Macintosh are valid.
- *
- * Second, on System 6 machines, something is not working, so for now
- * we are simply using the old "current working directory" method, in
- * which we assume that the current working directory includes both the
- * application and the "lib" folder.  This may or may not work.
+ * XXX XXX XXX Hack -- This function attempts to "fix" the nasty
+ * "missing lib folder bug" by allowing the user to help find the
+ * "lib" folder by hand if the "application folder" code fails...
  */
 static void init_stuff(void)
 {
+    int i;
+
+    short vrefnum;
+    long drefnum;
+    long junk;
+
+    SFTypeList types;
+    SFReply reply;
+
+    Rect r;
+    Point topleft;
+
     char path[1024];
 
-    /* XXX XXX XXX Hack -- prevent the "Macintosh Save Bug" */
+
+    /* Fake rectangle */
+    r.left = 0;
+    r.top = 0;
+    r.right = 344;
+    r.bottom = 188;
+
+    /* Center it */
+    center_rect(&r, &qd.screenBits.bounds);
+
+    /* Extract corner */
+    topleft.v = r.top;
+    topleft.h = r.left;
+
+
+    /* Default to the "lib" folder with the application */
     refnum_to_name(path, app_dir, app_vol, (char*)("\plib:"));
 
-    /* XXX XXX XXX Hack -- prevent (?) file errors on System 6 */
-    if (!has_seven) strcpy(path, ":lib:");
 
-    /* Prepare the filepaths */
-    init_file_paths(path);
+    /* Check until done */
+    while (1)
+    {
+        /* Prepare the paths */
+        init_file_paths(path);
+
+        /* Check for "news.txt" */
+        strcpy(path, ANGBAND_DIR_FILE);
+        strcat(path, "news.txt");
+
+        /* Attempt to open and close that file */
+        if (0 == fd_close(fd_open(path, O_RDONLY))) break;
+
+        /* Warning */
+        plog("Warning -- Unable to locate the Angband 'lib' folder.");
+
+        /* Warning */
+        plog("Please 'open' any file in any sub-folder of the 'lib' folder.");
+
+        /* Allow "text" files */
+        types[0] = 'TEXT';
+
+        /* Allow "save" files */
+        types[1] = 'SAVE';
+
+        /* Allow "data" files */
+        types[2] = 'DATA';
+
+        /* Get any file */
+        SFGetFile(topleft, "\p", NULL, 3, types, NULL, &reply);
+
+        /* Allow cancel */
+        if (!reply.good) quit(NULL);
+
+        /* Extract textual file name for given file */
+        GetWDInfo(reply.vRefNum, &vrefnum, &drefnum, &junk);
+        refnum_to_name(path, drefnum, vrefnum, (char*)reply.fName);
+
+        /* Hack -- Remove the "filename" */
+        i = strlen(path) - 1;
+        while ((i > 0) && (path[i] != ':')) i--;
+        if (path[i] == ':') path[i+1] = '\0';
+
+        /* Hack -- allow "lib" folders */
+        if (suffix(path, "lib:")) continue;
+
+        /* Hack -- Remove the "sub-folder" */
+        i = i - 1;
+        while ((i > 1) && (path[i] != ':')) i--;
+        if (path[i] == ':') path[i+1] = '\0';
+    }
 }
 
 
@@ -3713,7 +3792,7 @@ void main(void)
             if (env.systemVersion >= 0x0700) has_seven = TRUE;
         }
     }
-    
+
 #endif
 
 
@@ -3728,21 +3807,21 @@ void main(void)
         /* Install the hook (ignore error codes) */
         AEInstallEventHandler(kCoreEventClass, kAEOpenApplication, AEH_Start_UPP,
                               0L, FALSE);
-                              
+
         /* Obtain a "Universal Procedure Pointer" */
         AEH_Quit_UPP = NewAEEventHandlerProc(AEH_Quit);
 
         /* Install the hook (ignore error codes) */
         AEInstallEventHandler(kCoreEventClass, kAEQuitApplication, AEH_Quit_UPP,
                               0L, FALSE);
-                              
+
         /* Obtain a "Universal Procedure Pointer" */
         AEH_Print_UPP = NewAEEventHandlerProc(AEH_Print);
 
         /* Install the hook (ignore error codes) */
         AEInstallEventHandler(kCoreEventClass, kAEPrintDocuments, AEH_Print_UPP,
                               0L, FALSE);
-                              
+
         /* Obtain a "Universal Procedure Pointer" */
         AEH_Open_UPP = NewAEEventHandlerProc(AEH_Open);
 
@@ -3750,7 +3829,7 @@ void main(void)
         AEInstallEventHandler(kCoreEventClass, kAEOpenDocuments, AEH_Open_UPP,
                               0L, FALSE);
     }
-    
+
 #endif
 
 
@@ -3827,7 +3906,7 @@ void main(void)
     /* Mega-Hack -- Allocate a "lifeboat" */
     lifeboat = NewPtr(16384);
 
- 
+
     /* Hack -- process all events */
     while (CheckEvents(TRUE)) ;
 
@@ -3842,7 +3921,7 @@ void main(void)
 
     /* Prompt the user */
     prt("[Choose 'New' or 'Open' from the 'File' menu]", 23, 15);
-    
+
     /* Flush the prompt */
     Term_fresh();
 

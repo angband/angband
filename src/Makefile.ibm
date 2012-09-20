@@ -1,20 +1,18 @@
 # File: Makefile.ibm
 
-# Purpose: Makefile support for "main-ibm.c"
+# Purpose: Makefile support for "main-ibm.c" and Gnu C
 
 # Note: Rename to "Makefile" before using
-
+# Added extra targets: mrmarcel@eos.ncsu.edu (Mike Marcelais)
 
 OBJS = \
   z-util.o z-virt.o z-form.o z-rand.o z-term.o \
   variable.o tables.o util.o cave.o \
   object1.o object2.o monster1.o monster2.o \
-  xtra1.o xtra2.o spells1.o spells2.o \
-  melee1.o melee2.o save.o files.o \
+  xtra1.o xtra2.o spells1.o spells2.o melee1.o melee2.o \
+  load1.o load2.o save.o files.o \
   cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
-  store.o birth.o load1.o load2.o \
-  wizard1.o wizard2.o borg.o borg-map.o \
-  borg-obj.o borg-ext.o borg-aux.o borg-ben.o \
+  store.o birth.o wizard1.o wizard2.o \
   generate.o dungeon.o init1.o init2.o \
   main-ibm.o main.o
 
@@ -30,37 +28,25 @@ CFLAGS = -Wall -O2 -DUSE_IBM
 # Libraries
 
 LIBS = -lpc
-
-# Name of Binary
-
-BINARY = angband.bin
+GLIBS= -lgrx20
 
 # Name of Program
 
-PROGRAM = angband.exe
+PROGRAM = angband.exe makepref.exe gredit.exe
 
 
-## Install full executable
-#
-#install: $(BINARY)
-#	strip $(BINARY)
-#	coff2exe -s c:/djgcc/bin/go32.exe $(BINARY)
-#	copy $(PROGRAM) ..
-#
-
-
-# Install simple binary
-
-install: $(BINARY)
-	copy $(BINARY) ..
-
+all: $(PROGRAM)
 
 # Generate binary file
 
-$(BINARY): $(OBJS)
-	$(CC) $(CFLAGS) -o $(BINARY) $(OBJS) $(LIBS)
+angband.exe: $(OBJS)
+	$(CC) $(CFLAGS) -o angband.bin $(OBJS) $(LIBS)
 
+gredit.exe: gredit.o
+	$(CC) $(CFLAGS) -o gredit.bin gredit.o $(LIBS) $(GLIBS)
 
+makepref.exe: makepref.o
+	$(CC) $(CFLAGS) -o makepref.bin makepref.o $(LIBS)
 # Compile source files
 
 .c.o:
@@ -70,5 +56,6 @@ $(BINARY): $(OBJS)
 # Clean up
 
 clean:
-	del *.o $(BINARY) $(PROGRAM)
+	del *.o $(PROGRAM) *.bin
+
 

@@ -176,7 +176,7 @@ struct term {
     errr (*xtra_hook)(int n, int v);
 
     errr (*curs_hook)(int x, int y);
-    
+
     errr (*wipe_hook)(int x, int y, int n);
 
     errr (*pict_hook)(int x, int y, byte a, char c);

@@ -33,6 +33,10 @@
  */
 #define ALLOW_SPOILERS
 
+/*
+ * OPTION: Ancient Macintosh version
+ */
+/* #define ANGBAND_LITE_MAC */
 
 /*
  * Precompile the header files

@@ -105,7 +105,8 @@ static __chip UWORD blankpointer[] = {0,0,0,0,0,0,0,0};
 static UWORD amipens[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0xffff};
 static UWORD penconv[] = {0,1,2,4,11,15,9,6,3,1,13,4,11,15,8,5,0xffff};
 static LONG wbpens[] = {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
-static ULONG default_colors[] = {
+static ULONG default_colors[] =
+{
    0x000000, 0xffffff, 0xc7c7c7, 0xff9200,
    0xff0000, 0x00cd00, 0x0000fe, 0xc86400,
    0x8a8a8a, 0xe0e0e0, 0xa500ff, 0xfffd00,
@@ -160,7 +161,8 @@ errr init_ami(void)
    LONG pen;
 
    // We *must* have kickstart 37 or later
-   if(IntuitionBase->LibNode.lib_Version < 37) {
+   if(IntuitionBase->LibNode.lib_Version < 37)
+   {
       FAIL("Sorry, this program requires KickStart 2.04 or later.");
    }
 
@@ -175,16 +177,21 @@ errr init_ami(void)
       FAIL("Unable to open keymap.library v36+\n");
 
    // Check if user want to use graphics
-   if(GetVar("ANGBAND_NOGFX",tmpstr,256,0)>=0) {
+   if(GetVar("ANGBAND_NOGFX",tmpstr,256,0)>=0)
+   {
       use_graphics=FALSE;
-   } else {
+   }
+   else
+   {
       use_graphics=TRUE;
    }
 
    // Initialize color palette
-   for(i=0; i<32; i++) {
+   for(i=0; i<32; i++)
+   {
       // If undefined, use default palette
-      if(color_table[i][0]==0 && color_table[i][1]==0 && color_table[i][2]==0 && color_table[i][3]==0) {
+      if(color_table[i][0]==0 && color_table[i][1]==0 && color_table[i][2]==0 && color_table[i][3]==0)
+      {
          color_table[i][0] = 1;
          color_table[i][1] = (default_colors[i] & 0xff0000) >> 16;
          color_table[i][2] = (default_colors[i] & 0x00ff00) >> 8;
@@ -193,52 +200,66 @@ errr init_ami(void)
    }
 
    // Search for prefered screenmode
-   if(GetVar("ANGBAND_MODEID",tmpstr,256,0)>0) {
+   if(GetVar("ANGBAND_MODEID",tmpstr,256,0)>0)
+   {
       // Use workbench
-      if(!stricmp(tmpstr,"workbench")) {
-         if(!v39) {
+      if(!stricmp(tmpstr,"workbench"))
+      {
+         if(!v39)
+         {
             FAIL("Workbench can only be used with Kickstart 3.0 or later.");
          }
          scr_m=-1;
          usewb=TRUE;
          use_chunky=use_graphics;
          // Get a lock on the workbench screen
-         if((wbscr=LockPubScreen("Workbench"))==NULL) {
+         if((wbscr=LockPubScreen("Workbench"))==NULL)
+         {
             FAIL("Unable to get a lock on the Workbench screen.\n");
          }
          wblock=TRUE;
          // Find suitable pens to use on public screen
-         for(i=0; i<32; i++) {
+         for(i=0; i<32; i++)
+         {
             pen=ObtainBestPen(wbscr->ViewPort.ColorMap,
                               color_table[i][1]<<24,
                               color_table[i][2]<<24,
                               color_table[i][3]<<24,
                               OBP_Precision, PRECISION_EXACT);
-            if(pen==-1) {
+            if(pen==-1)
+            {
                FAIL("Unable to obtain suitable pens to use on Workbench screen.\n");
             }
             wbpens[i]=pen;
          }
          for(i=0; i<16; i++) penconv[i]=(UWORD)wbpens[i];
       // Use specified screenmode
-      } else {
+      }
+      else
+      {
          scr_m=strtol(tmpstr,&s,0);
          if(ModeNotAvailable(scr_m)) scr_m = 0;
       }
    }
 
    // Search for prefered font, and open it
-   if(GetVar("ANGBAND_FONT",tmpstr,256,0)>0) {
-      if(s=strchr(tmpstr,' ')) {
+   if(GetVar("ANGBAND_FONT",tmpstr,256,0)>0)
+   {
+      if(s=strchr(tmpstr,' '))
+      {
          *s++=0;
          attr.ta_Name  = tmpstr;
          attr.ta_YSize = atoi(s);
          attr.ta_Style = FS_NORMAL;
          attr.ta_Flags = FPF_DISKFONT;
-         if(DiskfontBase=OpenLibrary("diskfont.library",0)) {
-            if(font=OpenDiskFont(&attr)) {
+         if(DiskfontBase=OpenLibrary("diskfont.library",0))
+         {
+            if(font=OpenDiskFont(&attr))
+            {
                ownfont=TRUE;
-            } else {
+            }
+            else
+            {
                printf("Unable to open your specified font.\n");
             }
             CloseLibrary(DiskfontBase);
@@ -247,7 +268,8 @@ errr init_ami(void)
    }
 
    // If font not available, use default font
-   if(font==NULL) {
+   if(font==NULL)
+   {
       font=GfxBase->DefaultFont;
       ownfont=FALSE;
    }
@@ -261,17 +283,20 @@ errr init_ami(void)
    scr_h = 24*font_h; if(!usewb && scr_h<200) scr_h = 200;
 
    // Find a nice screenmode
-   if(scr_m==0 && v39) {
+   if(scr_m==0 && v39)
+   {
       scr_m = BestModeID(BIDTAG_NominalWidth, scr_w, BIDTAG_NominalHeight, scr_h, BIDTAG_Depth, 4, TAG_END);
    }
 
    // Use default screenmode
-   if(scr_m==0 || scr_m==INVALID_ID) {
+   if(scr_m==0 || scr_m==INVALID_ID)
+   {
       scr_m = (DEFAULT_MONITOR_ID | HIRES_KEY);
    }
 
    // Open intuition screen
-   if(!usewb) {
+   if(!usewb)
+   {
       if((amiscr=OpenScreenTags(NULL,
              SA_Width, scr_w,
              SA_Height, scr_h,
@@ -290,7 +315,9 @@ errr init_ami(void)
       {
          FAIL("Unable to open screen.");
       }
-   } else {
+   }
+   else
+   {
       // Check if it is large enough
       if(wbscr->Width < scr_w || wbscr->Height < scr_h)
          FAIL("Workbench screen is too small.\n");
@@ -319,7 +346,8 @@ errr init_ami(void)
    }
 
    // Unlock public screen
-   if(wblock) {
+   if(wblock)
+   {
       UnlockPubScreen(NULL,wbscr);
       wblock=FALSE;
    }
@@ -335,7 +363,8 @@ errr init_ami(void)
    if(ownfont && font) SetFont(rp,font);
 
    // Initialize chunky graphics
-   if(use_chunky) {
+   if(use_chunky)
+   {
       tmp_w = ((font_w+15)>>4)<<4;
       memcpy(&tmpRastPort,rp,sizeof(struct RastPort));
       InitBitMap(&tmpBitMap,8,tmp_w,1);
@@ -347,27 +376,34 @@ errr init_ami(void)
    }
 
    // Load graphics
-   if(use_graphics) {
-      if(!load_gfx()) {
+   if(use_graphics)
+   {
+      if(!load_gfx())
+      {
          FAIL(NULL);
       }
    }
 
    // Convert graphics to chunky format
-   if(use_chunky) {
-      if(!conv_gfx()) {
+   if(use_chunky)
+   {
+      if(!conv_gfx())
+      {
          FAIL(NULL);
       }
    }
 
    // Fill window with color 0
-   if(usewb) {
+   if(usewb)
+   {
       SetAPen(rp,PEN(0));
       RectFill(rp,0,0,scr_w-1,scr_h-1);
    }
    // Clear display memory
-   for(x=0; x<80; x++) {
-      for(y=0; y<24; y++) {
+   for(x=0; x<80; x++)
+   {
+      for(y=0; y<24; y++)
+      {
          chrmem[x][y]=' ';
          colmem[x][y]=0;
       }
@@ -430,15 +466,18 @@ static errr amiga_wipe(int x, int y, int n)
 {
    int xx;
 
-   if((n>0) && !iconified) {
+   if((n>0) && !iconified)
+   {
       // Erase rectangular area on screen
-      if(usewb) {
+      if(usewb)
+      {
          SetAPen(rp,PEN(0));
          RectFill(rp,x*font_w,y*font_h,(x+n)*font_w-1,(y+1)*font_h-1);
       }
       else EraseRect(rp,x*font_w,y*font_h,(x+n)*font_w-1,(y+1)*font_h-1);
       // Erase memory
-      for(xx=x; xx<(x+n); xx++) {
+      for(xx=x; xx<(x+n); xx++)
+      {
          chrmem[xx][y]=' ';
          colmem[xx][y]=0;
       }
@@ -455,8 +494,10 @@ static errr amiga_clear(void)
    // Fill window with background color
    SetRast(rp,PEN(0));
    // Fill screen memory with blanks
-   for(x=0; x<80; x++) {
-      for(y=0; y<24; y++) {
+   for(x=0; x<80; x++)
+   {
+      for(y=0; y<24; y++)
+      {
          chrmem[x][y]=' ';
          colmem[x][y]=0;
       }
@@ -470,16 +511,20 @@ static errr amiga_text(int x, int y, int n, byte a, cptr s)
 {
    int i;
 
-   if(x>=0 && y>=0 && n>0 && !iconified) {
+   if(x>=0 && y>=0 && n>0 && !iconified)
+   {
       // Clear cursor
       cursor_off();
       // Update cursor position
       cursor_xpos = x;
       cursor_ypos = y;
       // Draw gfx one char at a time
-      if(a&0xc0 && use_graphics) {
+      if(a&0xc0 && use_graphics)
+      {
          for(i=0; i<n; i++) put_gfx(x+i,y,s[i],a);
-      } else {
+      }
+      else
+      {
          // Draw the string on screen
          SetAPen(rp,PEN(a&0x0f));
          SetBPen(rp,PEN(0));
@@ -487,7 +532,8 @@ static errr amiga_text(int x, int y, int n, byte a, cptr s)
          Text(rp,(char *)s,n);
       }
       // Draw the string in memory
-      for(i=0; i<n; i++) {
+      for(i=0; i<n; i++)
+      {
          chrmem[x+i][y]=s[i];
          colmem[x+i][y]=a;
       }
@@ -502,7 +548,8 @@ static errr amiga_text(int x, int y, int n, byte a, cptr s)
 static errr amiga_xtra(int n, int v)
 {
    // Analyze the request
-   switch(n) {
+   switch(n)
+   {
       // Make a noise
       case TERM_XTRA_CLEAR:
          return(amiga_clear());
@@ -512,11 +559,13 @@ static errr amiga_xtra(int n, int v)
          return(0);
       // Change the cursor visibility
       case TERM_XTRA_SHAPE:
-         if (v) {
+         if (v)
+         {
              cursor_on();
              cursor_visible=TRUE;
          }
-         else {
+         else
+         {
              cursor_off();
              cursor_visible=FALSE;
          }
@@ -562,14 +611,16 @@ static errr amiga_event(int v)
    int i,len;
 
    // Check for messages to the window
-   if((imsg=(struct IntuiMessage *)GetMsg(amiwin->UserPort))==NULL) {
+   if((imsg=(struct IntuiMessage *)GetMsg(amiwin->UserPort))==NULL)
+   {
       // If we don't want blocking, return
       if(!v) return(0);
       // No messages, so wait for one
       Wait(1<<amiwin->UserPort->mp_SigBit);
       imsg=(struct IntuiMessage *)GetMsg(amiwin->UserPort);
    }
-   if(imsg) {
+   if(imsg)
+   {
       // Get message attributes
       iclass=imsg->Class;
       icode=imsg->Code;
@@ -578,9 +629,11 @@ static errr amiga_event(int v)
       // Reply the message
       ReplyMsg((struct Message *)imsg);
       // Do we have a keypress?
-      if(iclass==IDCMP_RAWKEY) {
+      if(iclass==IDCMP_RAWKEY)
+      {
          // Use a blank mouse-pointer on this window
-         if(!usewb && pointer_visible) {
+         if(!usewb && pointer_visible)
+         {
             SetPointer(amiwin,blankpointer,2,16,0,0);
             pointer_visible=FALSE;
          }
@@ -590,20 +643,24 @@ static errr amiga_event(int v)
          ie.ie_EventAddress = (APTR *) *((ULONG *)iaddr);
          len=MapRawKey(&ie,buf,80,NULL);
          // Send ANSI sequence to meta-terminal
-         for(i=0; i<len; i++) {
+         for(i=0; i<len; i++)
+         {
             if(!iconified) Term_keypress((unsigned char)buf[i]);
          }
          return(0);
       }
       // Mouse event - Make pointer visible
-      if(iclass==IDCMP_MOUSEMOVE || iclass==IDCMP_MOUSEBUTTONS) {
-         if(!usewb && !pointer_visible) {
+      if(iclass==IDCMP_MOUSEMOVE || iclass==IDCMP_MOUSEBUTTONS)
+      {
+         if(!usewb && !pointer_visible)
+         {
             ClearPointer(amiwin);
             pointer_visible=TRUE;
          }
       }
       // Time for some cursor anim?
-      if(iclass==IDCMP_INTUITICKS) {
+      if(iclass==IDCMP_INTUITICKS)
+      {
          cursor_anim();
          return(1);
       }
@@ -625,10 +682,12 @@ void cursor_on(void)
 {
    int col,x0,y0,x1,y1;
 
-   if(!cursor_lit && !iconified) {
+   if(!cursor_lit && !iconified)
+   {
       cursor_frame=0;
       col=colmem[cursor_xpos][cursor_ypos];
-      if(col&0x80 && use_graphics) {
+      if(col&0x80 && use_graphics)
+      {
          // Draw an outlined cursor
          x0=cursor_xpos*font_w;
          y0=cursor_ypos*font_h;
@@ -636,7 +695,9 @@ void cursor_on(void)
          y1=y0+font_h-1;
          SetAPen(rp,PEN(CURSOR_PEN));
          Move(rp,x0,y0); Draw(rp,x1,y0); Draw(rp,x1,y1); Draw(rp,x0,y1); Draw(rp,x0,y0);
-      } else {
+      }
+      else
+      {
          // Draw a filled cursor
          SetAPen(rp,PEN(col&0x0f));
          SetBPen(rp,PEN(CURSOR_PEN));
@@ -652,12 +713,16 @@ void cursor_off(void)
 {
    int col,chr;
 
-   if(cursor_lit && !iconified) {
+   if(cursor_lit && !iconified)
+   {
       col=colmem[cursor_xpos][cursor_ypos];
       chr=chrmem[cursor_xpos][cursor_ypos];
-      if(col&0xf0 && use_graphics) {
+      if(col&0xf0 && use_graphics)
+      {
          put_gfx(cursor_xpos,cursor_ypos,chr,col);
-      } else {
+      }
+      else
+      {
          SetAPen(rp,PEN(col&0x0f));
          SetBPen(rp,PEN(0));
          Move(rp,font_w*cursor_xpos,font_h*cursor_ypos+font_b);
@@ -690,25 +755,32 @@ int load_gfx(void)
    map_h = mpt_h * 32;
 
    // Allocate bitmap and bitplanes
-   if(v39) {
+   if(v39)
+   {
       // Allocate temp bitmap with bitplanes
-      if((tmpbm=AllocBitMap(GFXW,GFXH,5,BMF_INTERLEAVED,rp->BitMap))==NULL) {
+      if((tmpbm=AllocBitMap(GFXW,GFXH,5,BMF_INTERLEAVED,rp->BitMap))==NULL)
+      {
          fprintf(stderr,"Unable to allocate temp bitmap.\n");
          return(FALSE);
       }
       // Allocate tile bitmap with bitplanes
-      if((gfxbm=AllocBitMap(gfx_w,gfx_h,5,BMF_INTERLEAVED,rp->BitMap))==NULL) {
+      if((gfxbm=AllocBitMap(gfx_w,gfx_h,5,BMF_INTERLEAVED,rp->BitMap))==NULL)
+      {
          fprintf(stderr,"Unable to allocate tile bitmap.\n");
          return(FALSE);
       }
       // Allocate map bitmap with bitplanes
-      if((mapbm=AllocBitMap(map_w,map_h,5,BMF_INTERLEAVED,rp->BitMap))==NULL) {
+      if((mapbm=AllocBitMap(map_w,map_h,5,BMF_INTERLEAVED,rp->BitMap))==NULL)
+      {
          fprintf(stderr,"Unable to allocate map bitmap.\n");
          return(FALSE);
       }
-   } else {
+   }
+   else
+   {
       // Allocate temp bitmap structure
-      if((tmpbm=AllocMem(sizeof(struct BitMap), MEMF_PUBLIC))==NULL) {
+      if((tmpbm=AllocMem(sizeof(struct BitMap), MEMF_PUBLIC))==NULL)
+      {
          fprintf(stderr,"Unable to allocate temp bitmap.\n");
          return(FALSE);
       }
@@ -716,15 +788,18 @@ int load_gfx(void)
       InitBitMap(tmpbm,5,GFXW,GFXH);
       for(plane=0; plane<5; tmpbm->Planes[plane++]=0);
       // Allocate bitplanes for the bitmap
-      for(plane=0; plane<5; plane++) {
-         if((p=AllocRaster(GFXW,GFXH))==NULL) {
+      for(plane=0; plane<5; plane++)
+      {
+         if((p=AllocRaster(GFXW,GFXH))==NULL)
+         {
             fprintf(stderr,"Unable to allocate temp bitplanes.\n");
             return(FALSE);
          }
          tmpbm->Planes[plane]=p;
       }
       // Allocate tile bitmap structure
-      if((gfxbm=AllocMem(sizeof(struct BitMap), MEMF_PUBLIC))==NULL) {
+      if((gfxbm=AllocMem(sizeof(struct BitMap), MEMF_PUBLIC))==NULL)
+      {
          fprintf(stderr,"Unable to allocate tile bitmap.\n");
          return(FALSE);
       }
@@ -732,15 +807,18 @@ int load_gfx(void)
       InitBitMap(gfxbm,5,gfx_w,gfx_h);
       for(plane=0; plane<5; gfxbm->Planes[plane++]=0);
       // Allocate bitplanes for the bitmap
-      for(plane=0; plane<5; plane++) {
-         if((p=AllocRaster(gfx_w,gfx_h))==NULL) {
+      for(plane=0; plane<5; plane++)
+      {
+         if((p=AllocRaster(gfx_w,gfx_h))==NULL)
+         {
             fprintf(stderr,"Unable to allocate tile bitplanes.\n");
             return(FALSE);
          }
          gfxbm->Planes[plane]=p;
       }
       // Allocate map bitmap structure
-      if((mapbm=AllocMem(sizeof(struct BitMap), MEMF_PUBLIC))==NULL) {
+      if((mapbm=AllocMem(sizeof(struct BitMap), MEMF_PUBLIC))==NULL)
+      {
          fprintf(stderr,"Unable to allocate tile bitmap.\n");
          return(FALSE);
       }
@@ -748,8 +826,10 @@ int load_gfx(void)
       InitBitMap(mapbm,5,map_w,map_h);
       for(plane=0; plane<5; mapbm->Planes[plane++]=0);
       // Allocate bitplanes for the bitmap
-      for(plane=0; plane<5; plane++) {
-         if((p=AllocRaster(map_w,map_h))==NULL) {
+      for(plane=0; plane<5; plane++)
+      {
+         if((p=AllocRaster(map_w,map_h))==NULL)
+         {
             fprintf(stderr,"Unable to allocate tile bitplanes.\n");
             return(FALSE);
          }
@@ -758,15 +838,18 @@ int load_gfx(void)
    }
 
    // Open file
-   if((file=Open(MGFX,MODE_OLDFILE))==NULL) {
+   if((file=Open(MGFX,MODE_OLDFILE))==NULL)
+   {
       fprintf(stderr,"Unable to open graphics file.\n");
       return(FALSE);
    }
 
    // Read file into bitmap
-   for(plane=0; plane<5 && !error; plane++) {
+   for(plane=0; plane<5 && !error; plane++)
+   {
       p=tmpbm->Planes[plane];
-      for(row=0; row<GFXH && !error; row++) {
+      for(row=0; row<GFXH && !error; row++)
+      {
          error=(Read(file,p,GFXB)!=GFXB);
          p+=tmpbm->BytesPerRow;
       }
@@ -776,7 +859,8 @@ int load_gfx(void)
    Close(file);
 
    // Did we get any errors while reading?
-   if(error) {
+   if(error)
+   {
       fprintf(stderr,"Error while reading graphics file.\n");
       return(FALSE);
    }
@@ -814,9 +898,12 @@ int load_gfx(void)
    BitMapScale(&bsa);
 
    // Free temp bitmap
-   if(v39) {
+   if(v39)
+   {
       FreeBitMap(tmpbm);
-   } else {
+   }
+   else
+   {
       for(plane=0; plane<5; plane++) if(tmpbm->Planes[plane]) FreeRaster(tmpbm->Planes[plane],GFXW,GFXH);
       FreeMem(tmpbm, sizeof(struct BitMap));
    }
@@ -841,24 +928,26 @@ int conv_gfx(void)
    s5 = gfxbm->Planes[4];
 
    // Allocate memory for chunky graphics
-   if((chunkygfx=AllocMem(gfx_w*gfx_h, MEMF_PUBLIC))==NULL) {
+   if((chunkygfx=AllocMem(gfx_w*gfx_h, MEMF_PUBLIC))==NULL)
+   {
       fprintf(stderr,"Couldn't allocate chunky gfx buffer.\n");
       return(FALSE);
    }
-   if((chunkytmp=AllocMem(tmp_w*font_h, MEMF_PUBLIC))==NULL) {
+   if((chunkytmp=AllocMem(tmp_w*font_h, MEMF_PUBLIC))==NULL)
+   {
       fprintf(stderr,"Couldn't allocate chunky temp buffer.\n");
       return(FALSE);
    }
 
    dp = chunkygfx;
 
-   for(y=0; y<gfx_h; y++) {
-
+   for(y=0; y<gfx_h; y++)
+   {
       ox=0;
       sm=0x80;
 
-      for(x=0; x<gfx_w; x++) {
-
+      for(x=0; x<gfx_w; x++)
+      {
          b = 0;
          if(*(s1+ox) & sm) b |= 1;
          if(*(s2+ox) & sm) b |= 2;
@@ -871,7 +960,8 @@ int conv_gfx(void)
             *(dp++) = GPEN(b);
 
          sm = sm>>1;
-         if(sm==0) {
+         if(sm==0)
+         {
             sm = 0x80;
             ox++;
          }
@@ -887,9 +977,12 @@ int conv_gfx(void)
    }
 
    // Free planar graphics
-   if(v39) {
+   if(v39)
+   {
       FreeBitMap(gfxbm);
-   } else {
+   }
+   else
+   {
       for(p=0; p<5; p++) if(gfxbm->Planes[p]) FreeRaster(gfxbm->Planes[p],gfx_w,gfx_h);
       FreeMem(gfxbm, sizeof(struct BitMap));
    }
@@ -913,32 +1006,39 @@ void put_gfx(int x, int y, int chr, int col)
    int c  = chr&0x1f;
 
    // Just a black tile
-   if(a==0 && c==0) {
+   if(a==0 && c==0)
+   {
       SetAPen(rp,PEN(0));
       RectFill(rp, x0, y0, x1, y1);
       return;
    }
 
    // Player - Remap for race and class
-   if(a==12 && c==0) {
+   if(a==12 && c==0)
+   {
       a = ((p_ptr->pclass * 10 + p_ptr->prace) >> 5) + 12;
       c = ((p_ptr->pclass * 10 + p_ptr->prace) & 0x1f);
    }
 
    // Use chunky graphics
-   if(use_chunky) {
+   if(use_chunky)
+   {
       // Draw tile with black background (inventory, equipment, store)
-      if(col & 0x40) {
+      if(col & 0x40)
+      {
          // Copy from chunky buffer to temp buffer
-         for(j=0; j<font_h; j++) for(i=0; i<font_w; i++) {
+         for(j=0; j<font_h; j++) for(i=0; i<font_w; i++)
+         {
             tmp = *(chunkygfx+c*font_w+i+(a*font_h+j)*gfx_w);
             *(chunkytmp+i+j*tmp_w) = (tmp & 0x80)? tmp & 0x7f : GPEN(0);
          }
       }
       // Draw tile with normal background (dungeon, town)
-      else {
+      else
+      {
          // Copy from chunky buffer to temp buffer
-         for(j=0; j<font_h; j++) for(i=0; i<font_w; i++) {
+         for(j=0; j<font_h; j++) for(i=0; i<font_w; i++)
+         {
             *(chunkytmp+i+j*tmp_w) = *(chunkygfx+c*font_w+i+(a*font_h+j)*gfx_w) & 0x7f;
          }
       }
@@ -946,15 +1046,18 @@ void put_gfx(int x, int y, int chr, int col)
    }
 
    // Use planar graphics
-   else {
+   else
+   {
       // Draw tile with black background (inventory, equipment, store)
-      if(col & 0x40) {
+      if(col & 0x40)
+      {
          SetAPen(rp,PEN(0));
          RectFill(rp, x0, y0, x1, y1);
          BltMaskBitMapRastPort(gfxbm, c*font_w, a*font_h, rp, x0, y0, font_w, font_h, (ABC|ANBC|ABNC), gfxmask);
       }
       // Draw tile with normal background (dungeon, town)
-      else {
+      else
+      {
          BltBitMapRastPort(gfxbm, c*font_w, a*font_h, rp, x0, y0, font_w, font_h, 0xc0);
       }
    }
@@ -970,23 +1073,30 @@ void cursor_anim(void)
    cursor_frame=(++cursor_frame)%8;
 
    // Small cursor on map
-   if(cursor_map) {
-      if(cursor_frame&2) {
+   if(cursor_map)
+   {
+      if(cursor_frame&2)
+      {
          SetAPen(rp, PEN(CURSOR_PEN));
          RectFill(rp, map_x+i*mpt_w, map_y+j*mpt_h, map_x+(i+1)*mpt_w-1, map_y+(j+1)*mpt_h-1);
-      } else {
+      }
+      else
+      {
          ta = ((p_ptr->pclass * 10 + p_ptr->prace) >> 5) + 12;
          tc = ((p_ptr->pclass * 10 + p_ptr->prace) & 0x1f);
          BltBitMapRastPort(mapbm, tc*mpt_w, ta*mpt_h, rp, map_x+i*mpt_w, map_y+j*mpt_h, mpt_w, mpt_h, 0xc0);
       }
    }
-   else if(cursor_visible && !iconified) {
+   else if(cursor_visible && !iconified)
+   {
       col=colmem[cursor_xpos][cursor_ypos];
-      if(col&0x80 && use_graphics) {
+      if(col&0x80 && use_graphics)
+      {
          // First draw the tile under cursor
          put_gfx(cursor_xpos,cursor_ypos,chrmem[cursor_xpos][cursor_ypos],col);
          // Draw an outlined cursor
-         if(cursor_frame<4) {
+         if(cursor_frame<4)
+         {
             x0=cursor_xpos*font_w;
             y0=cursor_ypos*font_h;
             x1=x0+font_w-1;
@@ -994,7 +1104,9 @@ void cursor_anim(void)
             SetAPen(rp,PEN(CURSOR_PEN));
             Move(rp,x0,y0); Draw(rp,x1,y0); Draw(rp,x1,y1); Draw(rp,x0,y1); Draw(rp,x0,y0);
          }
-      } else {
+      }
+      else
+      {
          // Draw a filled cursor
          SetAPen(rp,PEN(col&0x0f));
          SetBPen(rp,(cursor_frame<4)?PEN(CURSOR_PEN):PEN(0));
@@ -1013,61 +1125,77 @@ int amiga_fail(char *msg)
    if(msg) fprintf(stderr,"%s\n",msg);
 
    // Unlock public screen
-   if(wblock) {
+   if(wblock)
+   {
       UnlockPubScreen(NULL,wbscr);
       wblock=FALSE;
    }
 
    // Close intuition window
-   if(amiwin) {
+   if(amiwin)
+   {
       CloseWindow(amiwin);
       amiwin=NULL;
    }
    // Free obtained pens
-   if(wbscr) {
+   if(wbscr)
+   {
       for(i=0; i<32; i++) ReleasePen(wbscr->ViewPort.ColorMap,wbpens[i]);
    }
    // Close intuition screen
-   if(amiscr) {
+   if(amiscr)
+   {
       CloseScreen(amiscr);
       amiscr=NULL;
    }
    // Free chunky gfx buffer
-   if(chunkygfx) {
+   if(chunkygfx)
+   {
       FreeMem(chunkygfx, font_w*font_h);
       chunkygfx=NULL;
    }
-   if(chunkytmp) {
+   if(chunkytmp)
+   {
       FreeMem(chunkytmp, tmp_w*font_h);
       chunkytmp=NULL;
    }
    // Free bitmap and its bitplanes
-   if(gfxbm) {
-      if(v39) {
+   if(gfxbm)
+   {
+      if(v39)
+      {
          FreeBitMap(gfxbm);
-      } else {
+      }
+      else
+      {
          for(p=0; p<5; p++) if(gfxbm->Planes[p]) FreeRaster(gfxbm->Planes[p],gfx_w,gfx_h);
          FreeMem(gfxbm, sizeof(struct BitMap));
       }
       gfxbm=NULL;
    }
-   if(mapbm) {
-      if(v39) {
+   if(mapbm)
+   {
+      if(v39)
+      {
          FreeBitMap(mapbm);
-      } else {
+      }
+      else
+      {
          for(p=0; p<5; p++) if(mapbm->Planes[p]) FreeRaster(mapbm->Planes[p],map_w,map_h);
          FreeMem(mapbm, sizeof(struct BitMap));
       }
       mapbm=NULL;
    }
    // Close font
-   if(ownfont && font) {
+   if(ownfont && font)
+   {
       CloseFont(font);
       font=NULL;
       ownfont=FALSE;
    }
    // Close keymap.library
-   if(KeymapBase) {
+   if(KeymapBase)
+   {
       CloseLibrary(KeymapBase);
       KeymapBase=NULL;
    }
@@ -1096,23 +1224,29 @@ void amiga_map(void)
    map_y = ((font_h * 24) - (mpt_h * cur_hgt)) / 2;
 
    // Draw all "interesting" features
-   for(i=0; i<cur_wid; i++) {
-      for(j=0; j<cur_hgt; j++) {
+   for(i=0; i<cur_wid; i++)
+   {
+      for(j=0; j<cur_hgt; j++)
+      {
          // Get frame tile
-         if(i==0 || i==cur_wid-1 || j==0 || j==cur_hgt-1) {
+         if(i==0 || i==cur_wid-1 || j==0 || j==cur_hgt-1)
+         {
             ta = f_info[63].z_attr;
             tc = f_info[63].z_char;
          }
          // Get tile
-         else {
+         else
+         {
             map_info(j, i, &ta, (char *)&tc);
          }
          // Ignore non-graphics
-         if(ta&0x80) {
+         if(ta&0x80)
+         {
             ta &= 0x1f;
             tc &= 0x1f;
             // Player
-            if(ta==12 && tc==0) {
+            if(ta==12 && tc==0)
+            {
                ta = ((p_ptr->pclass * 10 + p_ptr->prace) >> 5) + 12;
                tc = ((p_ptr->pclass * 10 + p_ptr->prace) & 0x1f);
             }
@@ -1138,18 +1272,24 @@ void load_palette(void)
 {
    int i;
 
-   if(amiscr) {
-      if(v39) {
+   if(amiscr)
+   {
+      if(v39)
+      {
          palette32[0]=16<<16;
          palette32[16*3+1]=0;
-         for(i=0; i<16; i++) {
+         for(i=0; i<16; i++)
+         {
             palette32[i*3+1] = color_table[use_graphics?i+16:i][1] << 24;
             palette32[i*3+2] = color_table[use_graphics?i+16:i][2] << 24;
             palette32[i*3+3] = color_table[use_graphics?i+16:i][3] << 24;
          }
          LoadRGB32(&amiscr->ViewPort, palette32);
-      } else {
-         for(i=0; i<16; i++) {
+      }
+      else
+      {
+         for(i=0; i<16; i++)
+         {
             palette4[i] =  (color_table[use_graphics?i+16:i][1] >> 4) << 8;
             palette4[i] |= (color_table[use_graphics?i+16:i][2] >> 4) << 4;
             palette4[i] |= (color_table[use_graphics?i+16:i][3] >> 4);

@@ -14,10 +14,11 @@
 
 # Ego-items 1-63 are "armor", and 64-127 are "weapons"
 
-# Note that every "ego-item" type has a different "name", and can only be
+# Note that every "ego-item" type has a different "index", and can only be
 # created from items that belong to a certain "slot" in the equipment, if
-# one assumes that "ammo" belongs to an imaginary slot (23).  This info is
-# currently unused, but may be used in Angband 2.8.0.
+# one assumes that "ammo" belongs to an imaginary slot (23).  However, it
+# is possible for several "ego-item" types to have the same "textual name",
+# such as with "Armor of Resistance" and "Shield of Resistance".
 
 
 # Version stamp
@@ -315,13 +316,13 @@ X:35:7
 W:0:0:0:250
 F:FEATHER
 
-N:57:of Quiet
+N:57:of Stealth
 X:35:16
 W:0:0:0:500
 C:0:0:0:3
 F:STEALTH
 
-N:58:of Motion
+N:58:of Free Action
 X:35:15
 W:0:0:0:1000
 F:FREE_ACT

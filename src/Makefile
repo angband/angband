@@ -51,8 +51,7 @@ SRCS = \
   melee1.c melee2.c save.c files.c \
   cmd1.c cmd2.c cmd3.c cmd4.c cmd5.c cmd6.c \
   store.c birth.c load1.c load2.c \
-  wizard1.c wizard2.c borg.c borg-map.c \
-  borg-obj.c borg-ext.c borg-aux.c borg-ben.c \
+  wizard1.c wizard2.c  \
   generate.c dungeon.c init1.c init2.c \
   main-cap.c main-gcu.c main-x11.c main-xaw.c main.c
 
@@ -64,8 +63,7 @@ OBJS = \
   melee1.o melee2.o save.o files.o \
   cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
   store.o birth.o load1.o load2.o \
-  wizard1.o wizard2.o borg.o borg-map.o \
-  borg-obj.o borg-ext.o borg-aux.o borg-ben.o \
+  wizard1.o wizard2.o \
   generate.o dungeon.o init1.o init2.o \
   main-cap.o main-gcu.o main-x11.o main-xaw.o main.o
 
@@ -260,15 +258,6 @@ INCS = \
 
 
 birth.o: birth.c $(INCS)
-borg-aux.o: borg-aux.c $(INCS) borg-aux.h borg-ext.h
-borg-aux.o: borg-obj.h borg-map.h borg.h
-borg-ben.o: borg-ben.c $(INCS) borg-ben.h borg-aux.h borg-ext.h
-borg-ben.o: borg-obj.h borg-map.h borg.h
-borg-ext.o: borg-ext.c $(INCS) borg-ext.h
-borg-ext.o: borg-obj.h borg-map.h borg.h
-borg-obj.o: borg-obj.c $(INCS) borg-obj.h borg.h
-borg-map.o: borg-map.c $(INCS) borg-map.h borg.h
-borg.o: borg.c $(INCS) borg.h
 cave.o: cave.c $(INCS)
 cmd1.o: cmd1.c $(INCS)
 cmd2.o: cmd2.c $(INCS)

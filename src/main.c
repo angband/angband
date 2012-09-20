@@ -18,7 +18,7 @@
  * all the others use this file for their "main()" function.
  */
 
- 
+
 #if !defined(MACINTOSH) && !defined(WINDOWS) && !defined(ACORN)
 
 
@@ -47,8 +47,8 @@ static bool is_wizard(int uid)
     if (!fp) return (TRUE);
 
     /* Scan the wizard file */
-    while (0 == my_fgets(fp, buf, 1024)) {
-
+    while (0 == my_fgets(fp, buf, 1024))
+    {
         int test;
 
         /* Skip comments and blank lines */
@@ -139,7 +139,7 @@ static void init_stuff(void)
 #else /* AMIGA / VM */
 
     cptr tail;
-    
+
     /* Get the environment variable */
     tail = getenv("ANGBAND_PATH");
 
@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
     bool done = FALSE;
 
     bool new_game = FALSE;
-    
+
     int show_score = 0;
 
 
@@ -230,11 +230,13 @@ int main(int argc, char *argv[])
     /* Redundant setting necessary in case root is running the game */
     /* If not root or game not setuid the following two calls do nothing */
 
-    if (setgid(getegid()) != 0) {
+    if (setgid(getegid()) != 0)
+    {
       quit("setgid(): cannot set permissions correctly!");
     }
 
-    if (setuid(geteuid()) != 0) {
+    if (setuid(geteuid()) != 0)
+    {
       quit("setuid(): cannot set permissions correctly!");
     }
 
@@ -254,12 +256,14 @@ int main(int argc, char *argv[])
     can_be_wizard = is_wizard(player_uid);
 
     /* Initialize the "time" checker */
-    if (check_time_init() || check_time()) {
+    if (check_time_init() || check_time())
+    {
         quit("The gates to Angband are closed (bad time).");
     }
 
     /* Initialize the "load" checker */
-    if (check_load_init() || check_load()) {
+    if (check_load_init() || check_load())
+    {
         quit("The gates to Angband are closed (bad load).");
     }
 
@@ -270,109 +274,110 @@ int main(int argc, char *argv[])
 
 
     /* Process the command line arguments */
-    for (--argc, ++argv; argc > 0; --argc, ++argv) {
-
+    for (--argc, ++argv; argc > 0; --argc, ++argv)
+    {
         /* Require proper options */
         if (argv[0][0] != '-') goto usage;
 
         /* Analyze option */
-        switch (argv[0][1]) {
-
-          case 'c':
-          case 'C':
-            ANGBAND_DIR_USER = &argv[0][2];
-            break;
+        switch (argv[0][1])
+        {
+            case 'c':
+            case 'C':
+                ANGBAND_DIR_USER = &argv[0][2];
+                break;
 
 #ifndef VERIFY_SAVEFILE
-          case 'd':
-          case 'D':
-            ANGBAND_DIR_SAVE = &argv[0][2];
-            break;
+            case 'd':
+            case 'D':
+                ANGBAND_DIR_SAVE = &argv[0][2];
+                break;
 #endif
 
-          case 'i':
-          case 'I':
-            ANGBAND_DIR_INFO = &argv[0][2];
-            break;
+            case 'i':
+            case 'I':
+                ANGBAND_DIR_INFO = &argv[0][2];
+                break;
 
-          case 'N':
-          case 'n':
-            new_game = TRUE;
-            break;
+            case 'N':
+            case 'n':
+                new_game = TRUE;
+                break;
 
-          case 'R':
-          case 'r':
-            arg_force_roguelike = TRUE;
-            break;
+            case 'R':
+            case 'r':
+                arg_force_roguelike = TRUE;
+                break;
 
-          case 'O':
-          case 'o':
-            arg_force_original = TRUE;
-            break;
+            case 'O':
+            case 'o':
+                arg_force_original = TRUE;
+                break;
 
-          case 'V':
-          case 'v':
-            use_sound = TRUE;
-            break;
+            case 'V':
+            case 'v':
+                use_sound = TRUE;
+                break;
 
-          case 'G':
-          case 'g':
-            use_graphics = TRUE;
-            break;
+            case 'G':
+            case 'g':
+                use_graphics = TRUE;
+                break;
 
-          case 'S':
-          case 's':
-            show_score = atoi(&argv[0][2]);
-            if (show_score <= 0) show_score = 10;
-            break;
+            case 'S':
+            case 's':
+                show_score = atoi(&argv[0][2]);
+                if (show_score <= 0) show_score = 10;
+                break;
 
-          case 'F':
-          case 'f':
-            arg_fiddle = TRUE;
-            break;
+            case 'F':
+            case 'f':
+                arg_fiddle = TRUE;
+                break;
 
 #ifdef SET_UID
-          case 'P':
-          case 'p':
-            if (can_be_wizard) {
-                player_uid = atoi(&argv[0][2]);
-                user_name(player_name, player_uid);
-            }
-            break;
+            case 'P':
+            case 'p':
+                if (can_be_wizard)
+                {
+                    player_uid = atoi(&argv[0][2]);
+                    user_name(player_name, player_uid);
+                }
+                break;
 #endif
 
-          case 'W':
-          case 'w':
-            if (can_be_wizard) arg_wizard = TRUE;
-            break;
+            case 'W':
+            case 'w':
+                if (can_be_wizard) arg_wizard = TRUE;
+                break;
 
-          case 'u':
-          case 'U':
-            if (!argv[0][2]) goto usage;
-            strcpy(player_name, &argv[0][2]);
-            break;
+            case 'u':
+            case 'U':
+                if (!argv[0][2]) goto usage;
+                strcpy(player_name, &argv[0][2]);
+                break;
 
-          default:
-          usage:
+            default:
+            usage:
 
-            /* Note -- the Term is NOT initialized */
-            puts("Usage: angband [options]");
-            puts("  -n       Start a new character");
-            puts("  -o       Use the original keyset");
-            puts("  -r       Use the rogue-like keyset");
-            puts("  -v       Activate the use_sound flag");
-            puts("  -g       Activate the use_graphics flag");
-            puts("  -f       Activate 'fiddle' mode");
-            puts("  -w       Activate 'wizard' mode");
-            puts("  -p<uid>  Play with the <uid> userid");
-            puts("  -u<name> Play with your <name> savefile");
-            puts("  -s<num>  Show <num> high scores (or top 10).");
-            puts("  -c<path> Look for pref files in the directory <path>");
-            puts("  -d<path> Look for save files in the directory <path>");
-            puts("  -i<path> Look for info files in the directory <path>");
+                /* Note -- the Term is NOT initialized */
+                puts("Usage: angband [options]");
+                puts("  -n       Start a new character");
+                puts("  -o       Use the original keyset");
+                puts("  -r       Use the rogue-like keyset");
+                puts("  -v       Activate the use_sound flag");
+                puts("  -g       Activate the use_graphics flag");
+                puts("  -f       Activate 'fiddle' mode");
+                puts("  -w       Activate 'wizard' mode");
+                puts("  -p<uid>  Play with the <uid> userid");
+                puts("  -u<name> Play with your <name> savefile");
+                puts("  -s<num>  Show <num> high scores (or top 10).");
+                puts("  -c<path> Look for pref files in the directory <path>");
+                puts("  -d<path> Look for save files in the directory <path>");
+                puts("  -i<path> Look for info files in the directory <path>");
 
-            /* Actually abort the process */
-            quit(NULL);
+                /* Actually abort the process */
+                quit(NULL);
         }
     }
 
@@ -388,7 +393,8 @@ int main(int argc, char *argv[])
 
 #ifdef USE_XAW
     /* Attempt to use the "main-xaw.c" support */
-    if (!done) {
+    if (!done)
+    {
         extern errr init_xaw(void);
         if (0 == init_xaw()) done = TRUE;
         if (done) ANGBAND_SYS = "xaw";
@@ -397,7 +403,8 @@ int main(int argc, char *argv[])
 
 #ifdef USE_X11
     /* Attempt to use the "main-x11.c" support */
-    if (!done) {
+    if (!done)
+    {
         extern errr init_x11(void);
         if (0 == init_x11()) done = TRUE;
         if (done) ANGBAND_SYS = "x11";
@@ -407,7 +414,8 @@ int main(int argc, char *argv[])
 
 #ifdef USE_GCU
     /* Attempt to use the "main-gcu.c" support */
-    if (!done) {
+    if (!done)
+    {
         extern errr init_gcu(void);
         if (0 == init_gcu()) done = TRUE;
         if (done) ANGBAND_SYS = "gcu";
@@ -416,7 +424,8 @@ int main(int argc, char *argv[])
 
 #ifdef USE_CAP
     /* Attempt to use the "main-cap.c" support */
-    if (!done) {
+    if (!done)
+    {
         extern errr init_cap(void);
         if (0 == init_cap()) done = TRUE;
         if (done) ANGBAND_SYS = "cap";
@@ -426,7 +435,8 @@ int main(int argc, char *argv[])
 
 #ifdef USE_IBM
     /* Attempt to use the "main-ibm.c" support */
-    if (!done) {
+    if (!done)
+    {
         extern errr init_ibm(void);
         if (0 == init_ibm()) done = TRUE;
         if (done) ANGBAND_SYS = "ibm";
@@ -435,7 +445,8 @@ int main(int argc, char *argv[])
 
 #ifdef __EMX__
     /* Attempt to use the "main-emx.c" support */
-    if (!done) {
+    if (!done)
+    {
         extern errr init_emx(void);
         if (0 == init_emx()) done = TRUE;
         if (done) ANGBAND_SYS = "emx";
@@ -443,9 +454,32 @@ int main(int argc, char *argv[])
 #endif
 
 
+#ifdef USE_SLA
+    /* Attempt to use the "main-sla.c" support */
+    if (!done)
+    {
+        extern errr init_sla(void);
+        if (0 == init_sla()) done = TRUE;
+        if (done) ANGBAND_SYS = "sla";
+    }
+#endif
+
+
+#ifdef USE_LSL
+    /* Attempt to use the "main-lsl.c" support */
+    if (!done)
+    {
+        extern errr init_lsl(void);
+        if (0 == init_lsl()) done = TRUE;
+        if (done) ANGBAND_SYS = "lsl";
+    }
+#endif
+
+
 #ifdef USE_AMI
     /* Attempt to use the "main-ami.c" support */
-    if (!done) {
+    if (!done)
+    {
         extern errr init_ami(void);
         if (0 == init_ami()) done = TRUE;
         if (done) ANGBAND_SYS = "ami";
@@ -453,12 +487,13 @@ int main(int argc, char *argv[])
 #endif
 
 
-#ifdef USE_LSL
-    /* Attempt to use the "main-lsl.c" support */
-    if (!done) {
-        extern errr init_lsl(void);
-        if (0 == init_lsl()) done = TRUE;
-        if (done) ANGBAND_SYS = "lsl";
+#ifdef USE_VME
+    /* Attempt to use the "main-vme.c" support */
+    if (!done)
+    {
+        extern errr init_vme(void);
+        if (0 == init_vme()) done = TRUE;
+        if (done) ANGBAND_SYS = "vme";
     }
 #endif
 

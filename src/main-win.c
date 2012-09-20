@@ -33,66 +33,39 @@
  * clear of the current window, and redraw the borders and other things.
  *
  * XXX XXX XXX
- * The "use_graphics" option should affect ALL of the windows,
- * for example, the "recall" window needs the monster pictures.
- * This may require changes to many different pieces of the code,
- * for example, the "infGraph" variable should perhaps be broken
- * into one "infGraph" for each window, or for each active font.
+ * The "use_graphics" option should affect ALL of the windows, not just
+ * the main "screen" window.  The "FULL_GRAPHICS" option is supposed to
+ * enable this behavior, but it will load one bitmap file for each of
+ * the windows, which may take a lot of memory, especially since with
+ * a little clever code, we could load each bitmap only when needed,
+ * and only free it once nobody is using it any more.
  *
  * XXX XXX XXX
- * Currently we "force" the use of the "10x20" font when "use_graphics"
- * is activated, instead of simply forcing the use of the current font
- * (which would load the various bitmaps files), to prevent any nasty
- * errors in the "term_force_font()" function.
- *
- * XXX XXX XXX
- * Note that starting in "use_graphics" mode with a font that does
- * not have a corresponding bitmap file is not allowed.
- *
- * XXX XXX XXX
- * We need to attempt to handle user modification of the color set
- * in the "Term_xtra_win_react()" function, and to correctly prepare
- * the global "color_table[]" variable at startup.  Also, we should
- * modify the "default" color set.  See "main-ibm.c" for more info.
- *
- * XXX XXX XXX
- * We need to think about the meaning of "scrollable" windows, and about
- * a "resizable" main window, especially in terms of efficiency.  It seems
- * that it would be sufficient to allow resizing and NOT allow scrolling.
- * How often do you REALLY need to scroll Angband windows, anyway?  And
- * if we MUST scroll them, is there any way to have Windows itself take
- * care of doing the offsets and clipping so we can ignore it?
- *
- * XXX XXX XXX
- * We should allow the use of bitmap sets with a "size" which is SMALLER
- * than the current font, though they may not look very good, and all the
- * bitmaps should be "centered" in the grid if they are too small.  This
- * may also require changes to a lot of the code.
- *
- * XXX XXX XXX
- * Verify the use of the "td_ptr" variable, and the various silliness
- * required to have the "screen" window act in a "special" way.
+ * The user should be able to select the "bitmap" for a window independant
+ * from the "font", and should be allowed to select any bitmap file which
+ * is strictly smaller than the font file.  Currently, bitmap selection
+ * always imitates the font selection unless the "Font" and "Graf" lines
+ * are used in the "ANGBAND.INI" file.  This may require the addition
+ * of a menu item for each window to select the bitmaps.
  *
  * XXX XXX XXX
  * The various "warning" messages assume the existance of the "screen.w"
- * window, I think, and only a few calls actually check for its existance.
- *
- * XXX XXX XXX
- * The "ANGBAND.INI" file needs to use "Visible" for the "window is shown"
- * flags, and needs an entry for the Mirror window.  If the "death.wav"
- * sound file is duplicated into "kill.wav", and the "terror.wav" file
- * is renamed "flee.wav", then the "Sound" section of "ANGBAND.INI" can
- * be removed.  The "ANGBAND.RC" (?) file needs menu item(s) for the mirror
- * window.
+ * window, I think, and only a few calls actually check for its existance,
+ * this may be okay since "NULL" means "on top of all windows". (?)
  *
  * XXX XXX XXX
  * Special "Windows Help Files" can be placed into "lib/xtra/help/" for
- * use with the "winhelp.exe" program.
+ * use with the "winhelp.exe" program.  These files *may* be available
+ * at the ftp site somewhere.
  *
  * XXX XXX XXX
  * The "prepare menus" command should "gray out" any menu command which
  * is not allowed at the current time.  This will simplify the actual
  * processing of menu commands, which can assume the command is legal.
+ *
+ * XXX XXX XXX
+ * Remove the old "FontFile" entries from the "*.ini" file, and remove
+ * the entire section about "sounds", after renaming a few sound files.
  */
 
 
@@ -100,6 +73,7 @@
 
 
 #ifdef WINDOWS
+
 
 /*
  * Extract the "WIN32" flag from the compiler
@@ -111,7 +85,14 @@
 #endif
 
 /*
- * Menu constants
+ * XXX XXX XXX Hack -- broken sound libraries
+ */
+#ifdef BEN_HACK
+# undef USE_SOUND
+#endif
+
+/*
+ * Menu constants -- see "ANGBAND.RC"
  */
 #define IDM_FILE_NEW             101
 #define IDM_FILE_OPEN            102
@@ -125,15 +106,15 @@
 #define IDM_OPTIONS_MIRROR       212
 #define IDM_OPTIONS_RECALL       213
 #define IDM_OPTIONS_CHOICE       214
-#define IDM_OPTIONS_RESIZABLE    221
-#define IDM_OPTIONS_GRAPHICS     222
-#define IDM_OPTIONS_SOUND        223
-#define IDM_OPTIONS_SAVER        231
+#define IDM_OPTIONS_GRAPHICS     221
+#define IDM_OPTIONS_SOUND        222
+#define IDM_OPTIONS_UNUSED       231
+#define IDM_OPTIONS_SAVER        232
 #define IDM_HELP_GENERAL         901
 #define IDM_HELP_SPOILERS        902
 
 /*
- * XXX XXX XXX This may need to be removed for some compilers
+ * This may need to be removed for some compilers XXX XXX XXX
  */
 #define STRICT
 
@@ -200,23 +181,11 @@
 #include <commdlg.h>
 
 /*
- * The "itsybitsy" code (?) does not work with Win32
- */
-#ifdef WIN32
-# undef  USE_ITSYBITSY
-#endif
-
-/*
- * Include the "itsybits" support
- */
-#ifdef USE_ITSYBITSY
-# include "itsybits.h"
-#endif
-
-/*
  * Include the support for loading bitmaps
  */
-#include "readdib.h"
+#ifdef USE_GRAPHICS
+# include "readdib.h"
+#endif
 
 /*
  * Hack -- allow use of the Borg as a screen-saver
@@ -229,6 +198,7 @@
  * string.h excludes this because __STDC__=1
  */
 int stricmp(const char *, const char *);
+
 
 /*
  * Cannot include "dos.h", so we define some things by hand.
@@ -245,9 +215,15 @@ unsigned _cdecl _dos_getfileattr(const char *, unsigned *);
  * Silliness in WIN32 drawing routine
  */
 #ifdef WIN32
-# define MoveTo(H,X,Y) \
-         MoveToEx(H, X, Y, NULL)
+# define MoveTo(H,X,Y) MoveToEx(H, X, Y, NULL)
 #endif /* WIN32 */
+
+/*
+ * Silliness for Windows 95
+ */
+#ifndef WS_EX_TOOLWINDOW
+# define WS_EX_TOOLWINDOW 0
+#endif
 
 /*
  * Foreground color bits (hard-coded by DOS)
@@ -281,7 +257,7 @@ unsigned _cdecl _dos_getfileattr(const char *, unsigned *);
 /*
  * Blinking text (hard-coded by DOS)
  */
-#define VUD_BLINK	0x80
+#define VUD_BRIGHT	0x80
 
 
 /*
@@ -292,71 +268,62 @@ typedef struct _term_data term_data;
 /*
  * Extra "term" data
  *
- * XXX XXX XXX The "type_1" variable is TRUE for "closable" windows,
- * that is, everything BUT the main window.  The "type_2" variable
- * should be used to replace the "screen_resizable" global variable,
- * and would mark a window as "resizable".  Some other things check
- * against the actual identity of the window.
- *
- * Note the use of "want_file" for the name of the font or bitmap
- * that the user thinks he wants, and the use of "font_file" and
- * "graf_file" for the names of the actual font and/or bitmap that
- * have actually been loaded.
+ * Note the use of "font_want" and "graf_want" for the names of the
+ * font/graf files requested by the user, and the use of "font_file"
+ * and "graf_file" for the currently active font/graf files.
  *
  * The "font_file" and "graf_file" are capitilized, and are of the
- * form "7X13.FON" and "7X13.BMP", while "want_file" can be in many
- * formats ("7x13", "7x13.fon", "7x13.bmp", etc).
+ * form "8X13.FON" and "8X13.BMP", while "font_want" and "graf_want"
+ * can be in almost any form as long as it could be construed as
+ * attempting to represent the name of a font or bitmap or file.
  */
-struct _term_data {
+struct _term_data
+{
+    term     t;
 
-  term     t;
+    cptr     s;
 
-  cptr     s;
+    HWND     w;
 
-  HWND     w;
-
-  DWORD    dwStyle;
-  DWORD    dwExStyle;
-
-  byte     type_1;
-  byte     type_2;
-
-  uint     keys;
-
-  uint     rows;
-  uint     cols;
-  uint     vis_rows;
-  uint     vis_cols;
-  uint     scroll_vpos;
-  uint     scroll_hpos;
-
-  uint     pos_x;
-  uint     pos_y;
-  uint     size_wid;
-  uint     size_hgt;
-  uint     client_wid;
-  uint     client_hgt;
-  uint     size_ow1;
-  uint     size_oh1;
-  uint     size_ow2;
-  uint     size_oh2;
-
-#ifdef USE_ITSYBITSY
-  uint     cap_size;
+#ifdef USE_GRAPHICS
+    DIBINIT infGraph;
 #endif
 
-  byte     visible;
-  byte     resizing;
+    DWORD    dwStyle;
+    DWORD    dwExStyle;
 
-  cptr     want_file;
+    uint     keys;
 
-  cptr     font_file;
-  cptr     graf_file;
+    uint     rows;
+    uint     cols;
+    uint     vis_rows;
+    uint     vis_cols;
 
-  HFONT    font_id;
+    uint     pos_x;
+    uint     pos_y;
+    uint     size_wid;
+    uint     size_hgt;
+    uint     client_wid;
+    uint     client_hgt;
+    uint     size_ow1;
+    uint     size_oh1;
+    uint     size_ow2;
+    uint     size_oh2;
 
-  uint     font_wid;
-  uint     font_hgt;
+    byte     visible;
+
+    byte     size_hack;
+
+    cptr     font_want;
+    cptr     graf_want;
+
+    cptr     font_file;
+    cptr     graf_file;
+
+    HFONT    font_id;
+
+    uint     font_wid;
+    uint     font_hgt;
 };
 
 
@@ -387,7 +354,7 @@ static term_data choice;
 #endif
 
 /*
- * Hack -- flag used for the window creation routines
+ * Mega-Hack -- global "window creation" pointer
  */
 static term_data *td_ptr;
 
@@ -395,8 +362,6 @@ static term_data *td_ptr;
  * Various boolean flags
  */
 bool game_in_progress  = FALSE;  /* game in progress */
-bool save_enabled      = FALSE;  /* game can be saved */
-bool screen_resizable  = FALSE;  /* main window ("screen") resizable */
 bool initialized       = FALSE;  /* note when "open"/"new" become valid */
 bool paletted          = FALSE;  /* screen paletted, i.e. 256 colors */
 bool colors16          = FALSE;  /* 16 colors screen, don't use RGB() */
@@ -431,12 +396,6 @@ static HWND hwndSaver;
 #endif
 
 /*
- * The actual "graphic data" for the "screen" window
- * XXX XXX XXX Should perhaps have one per window (?)
- */
-static DIBINIT infGraph;
-
-/*
  * An array of sound file names
  */
 static cptr sound_file[SOUND_MAX];
@@ -468,33 +427,33 @@ static cptr AngList  = "AngList";
  * Note that all characters are assumed to be drawn on a black background.
  * This may require calling "Term_wipe()" before "Term_text()", etc.
  *
- * XXX XXX XXX These colors are slightly out of date, see "defines.h"
- * XXX XXX XXX See "main-ibm.c" for a more up to date set of colors
  * XXX XXX XXX See "main-ibm.c" for a method to allow color editing
+ *
+ * XXX XXX XXX The color codes below were taken from "main-ibm.c".
  */
-static const COLORREF win_clr[16] = {
-
-  PALETTERGB(0x00, 0x00, 0x00),  /* BLACK */
-  PALETTERGB(0xFF, 0xFF, 0xFF),  /* WHITE */
-  PALETTERGB(0xA0, 0xA0, 0xA0),  /* GRAY */
-  PALETTERGB(0xFF, 0x92, 0x00),  /* ORANGE */
-  PALETTERGB(0xB0, 0x00, 0x00),  /* RED */
-  PALETTERGB(0x00, 0xB0, 0x00),  /* GREEN */
-  PALETTERGB(0x00, 0x00, 0xFF),  /* BLUE */
-  PALETTERGB(0xC8, 0x64, 0x00),  /* UMBER */
-  PALETTERGB(0x70, 0x70, 0x70),  /* DARKGRAY */
-  PALETTERGB(0xD0, 0xD0, 0xD0),  /* LIGHTGRAY */
-  PALETTERGB(0xA5, 0x00, 0xFF),  /* VIOLET */
-  PALETTERGB(0xFF, 0xFD, 0x00),  /* YELLOW */
-  PALETTERGB(0xFF, 0x00, 0xBC),  /* LIGHTRED */
-  PALETTERGB(0x00, 0xFF, 0x00),  /* LIGHTGREEN */
-  PALETTERGB(0x00, 0xC8, 0xFF),  /* LIGHTBLUE */
-  PALETTERGB(0xFF, 0xCC, 0x80)   /* LIGHTUMBER */
+static COLORREF win_clr[16] =
+{
+    PALETTERGB(0x00, 0x00, 0x00),  /* 0 0 0  Dark */
+    PALETTERGB(0xFF, 0xFF, 0xFF),  /* 4 4 4  White */
+    PALETTERGB(0x8D, 0x8D, 0x8D),  /* 2 2 2  Slate */
+    PALETTERGB(0xFF, 0x8D, 0x00),  /* 4 2 0  Orange */
+    PALETTERGB(0xD7, 0x00, 0x00),  /* 3 0 0  Red (was 2,0,0) */
+    PALETTERGB(0x00, 0x8D, 0x44),  /* 0 2 1  Green */
+    PALETTERGB(0x00, 0x00, 0xFF),  /* 0 0 4  Blue */
+    PALETTERGB(0x8D, 0x44, 0x00),  /* 2 1 0  Umber */
+    PALETTERGB(0x44, 0x44, 0x44),  /* 1 1 1  Lt. Dark */
+    PALETTERGB(0xD7, 0xD7, 0xD7),  /* 3 3 3  Lt. Slate */
+    PALETTERGB(0xFF, 0x00, 0xFF),  /* 4 0 4  Violet (was 2,0,2) */
+    PALETTERGB(0xFF, 0xFF, 0x00),  /* 4 4 0  Yellow */
+    PALETTERGB(0xFF, 0x00, 0x00),  /* 4 0 0  Lt. Red (was 4,1,3) */
+    PALETTERGB(0x00, 0xFF, 0x00),  /* 0 4 0  Lt. Green */
+    PALETTERGB(0x00, 0xFF, 0xFF),  /* 0 4 4  Lt. Blue */
+    PALETTERGB(0xD7, 0x8D, 0x44)   /* 3 2 1  Lt. Umber */
 };
 
 
 /*
- * Palette indices for 16 colors XXX XXX XXX (?)
+ * Palette indices for 16 colors
  *
  * See "main-ibm.c" for original table information
  *
@@ -502,8 +461,8 @@ static const COLORREF win_clr[16] = {
  *
  * Note that many of the choices below suck, but so do crappy monitors.
  */
-static const BYTE win_pal[16] = {
-
+static BYTE win_pal[16] =
+{
     VID_BLACK,			/* Dark */
     VID_WHITE,			/* White */
     VID_CYAN,			/* Slate XXX */
@@ -514,7 +473,7 @@ static const BYTE win_pal[16] = {
     VID_YELLOW,			/* Umber XXX */
     VID_BLACK | VID_BRIGHT,	/* Light Dark */
     VID_CYAN | VID_BRIGHT,	/* Light Slate XXX */
-    VID_MAGENTA,		/* Violet */
+    VID_MAGENTA,		/* Violet XXX */
     VID_YELLOW | VID_BRIGHT,	/* Yellow */
     VID_MAGENTA | VID_BRIGHT,	/* Light Red XXX */
     VID_GREEN | VID_BRIGHT,	/* Light Green */
@@ -529,16 +488,16 @@ static const BYTE win_pal[16] = {
  */
 static cptr extract_file_name(cptr s)
 {
-  cptr p;
+    cptr p;
 
-  /* Start at the end */
-  p = s + strlen(s) - 1;
+    /* Start at the end */
+    p = s + strlen(s) - 1;
 
-  /* Back up to divider */  
-  while ((p >= s) && (*p != ':') && (*p != '\\')) p--;
+    /* Back up to divider */
+    while ((p >= s) && (*p != ':') && (*p != '\\')) p--;
 
-  /* Return file name */
-  return (p+1);
+    /* Return file name */
+    return (p+1);
 }
 
 
@@ -548,47 +507,47 @@ static cptr extract_file_name(cptr s)
  */
 static bool check_file(cptr s)
 {
-  char path[1024];
+    char path[1024];
 
 #ifdef WIN32
 
-  DWORD attrib;
+    DWORD attrib;
 
 #else /* WIN32 */
 
-  unsigned int attrib;
+    unsigned int attrib;
 
 #endif /* WIN32 */
 
-  /* Copy it */
-  strcpy(path, s);
+    /* Copy it */
+    strcpy(path, s);
 
 #ifdef WIN32
 
-  /* Examine */
-  attrib = GetFileAttributes(path);
+    /* Examine */
+    attrib = GetFileAttributes(path);
 
-  /* Require valid filename */
-  if (attrib == INVALID_FILE_NAME) return (FALSE);
+    /* Require valid filename */
+    if (attrib == INVALID_FILE_NAME) return (FALSE);
 
-  /* Prohibit directory */
-  if (attrib & FILE_ATTRIBUTE_DIRECTORY) return (FALSE);
+    /* Prohibit directory */
+    if (attrib & FILE_ATTRIBUTE_DIRECTORY) return (FALSE);
 
 #else /* WIN32 */
 
-  /* Examine and verify */
-  if (_dos_getfileattr(path, &attrib)) return (FALSE);
+    /* Examine and verify */
+    if (_dos_getfileattr(path, &attrib)) return (FALSE);
 
-  /* Prohibit something */
-  if (attrib & FA_LABEL) return (FALSE);
+    /* Prohibit something */
+    if (attrib & FA_LABEL) return (FALSE);
 
-  /* Prohibit directory */
-  if (attrib & FA_DIREC) return (FALSE);
+    /* Prohibit directory */
+    if (attrib & FA_DIREC) return (FALSE);
 
 #endif /* WIN32 */
 
-  /* Success */
-  return (TRUE);
+    /* Success */
+    return (TRUE);
 }
 
 
@@ -597,55 +556,55 @@ static bool check_file(cptr s)
  */
 static bool check_dir(cptr s)
 {
-  int i;
-  
-  char path[1024];
+    int i;
+
+    char path[1024];
 
 #ifdef WIN32
 
-  DWORD attrib;
+    DWORD attrib;
 
 #else /* WIN32 */
 
-  unsigned int attrib;
+    unsigned int attrib;
 
 #endif /* WIN32 */
 
-  /* Copy it */
-  strcpy(path, s);
+    /* Copy it */
+    strcpy(path, s);
 
-  /* Check length */
-  i = strlen(path);
+    /* Check length */
+    i = strlen(path);
 
-  /* Remove trailing backslash */
-  if (path[i-1] == '\\') path[--i] = '\0';
+    /* Remove trailing backslash */
+    if (path[i-1] == '\\') path[--i] = '\0';
 
 #ifdef WIN32
 
-  /* Examine */
-  attrib = GetFileAttributes(path);
+    /* Examine */
+    attrib = GetFileAttributes(path);
 
-  /* Require valid filename */
-  if (attrib == INVALID_FILE_NAME) return (FALSE);
+    /* Require valid filename */
+    if (attrib == INVALID_FILE_NAME) return (FALSE);
 
-  /* Require directory */
-  if (!(attrib & FILE_ATTRIBUTE_DIRECTORY)) return (FALSE);
+    /* Require directory */
+    if (!(attrib & FILE_ATTRIBUTE_DIRECTORY)) return (FALSE);
 
 #else /* WIN32 */
 
-  /* Examine and verify */
-  if (_dos_getfileattr(path, &attrib)) return (FALSE);
+    /* Examine and verify */
+    if (_dos_getfileattr(path, &attrib)) return (FALSE);
 
-  /* Prohibit something */
-  if (attrib & FA_LABEL) return (FALSE);
+    /* Prohibit something */
+    if (attrib & FA_LABEL) return (FALSE);
 
-  /* Require directory */
-  if (!(attrib & FA_DIREC)) return (FALSE);
+    /* Require directory */
+    if (!(attrib & FA_DIREC)) return (FALSE);
 
 #endif /* WIN32 */
 
-  /* Success */
-  return (TRUE);
+    /* Success */
+    return (TRUE);
 }
 
 
@@ -654,11 +613,11 @@ static bool check_dir(cptr s)
  */
 static void validate_file(cptr s)
 {
-  /* Verify or fail */
-  if (!check_file(s))
-  {
-    quit_fmt("Cannot find required file:\n%s", s);
-  }
+    /* Verify or fail */
+    if (!check_file(s))
+    {
+        quit_fmt("Cannot find required file:\n%s", s);
+    }
 }
 
 
@@ -667,11 +626,11 @@ static void validate_file(cptr s)
  */
 static void validate_dir(cptr s)
 {
-  /* Verify or fail */
-  if (!check_dir(s))
-  {
-    quit_fmt("Cannot find required directory:\n%s", s);
-  }
+    /* Verify or fail */
+    if (!check_dir(s))
+    {
+        quit_fmt("Cannot find required directory:\n%s", s);
+    }
 }
 
 
@@ -680,88 +639,37 @@ static void validate_dir(cptr s)
  */
 static void term_getsize(term_data *td)
 {
-  HDC         hdcDesktop;
-  HFONT       hfOld;
-  TEXTMETRIC  tm;
-  RECT        rc;
+    RECT        rc;
 
-  /* all this trouble to get the cell size */
-  hdcDesktop = GetDC(HWND_DESKTOP);
-  hfOld = SelectObject(hdcDesktop, td->font_id);
-  GetTextMetrics(hdcDesktop, &tm);
-  SelectObject(hdcDesktop, hfOld);
-  ReleaseDC(HWND_DESKTOP, hdcDesktop);
+    /* Window sizes */
+    td->client_wid = td->vis_cols * td->font_wid + td->size_ow1 + td->size_ow2;
+    td->client_hgt = td->vis_rows * td->font_hgt + td->size_oh1 + td->size_oh2;
 
-  /* Font size info */
-  td->font_wid = tm.tmAveCharWidth;
-  td->font_hgt = tm.tmHeight;
+    /* Fake window size */
+    rc.left = rc.top = 0;
+    rc.right = rc.left + td->client_wid;
+    rc.bottom = rc.top + td->client_hgt;
 
-  /* Window sizes */
-  td->client_wid = td->vis_cols * td->font_wid + td->size_ow1 + td->size_ow2;
-  td->client_hgt = td->vis_rows * td->font_hgt + td->size_oh1 + td->size_oh2;
+    /* XXX XXX XXX */
+    /* rc.right += 1; */
+    /* rc.bottom += 1; */
 
-  /* position not important */
-  rc.left = rc.top = 0;
-  rc.right = rc.left + td->client_wid;
-  rc.bottom = rc.top + td->client_hgt;
-
-  /* Main window */
-  if (!(td->type_1))
-  {
-    if (screen_resizable)
-    {
-      rc.right  += GetSystemMetrics(SM_CXVSCROLL) - 1;
-      rc.bottom += GetSystemMetrics(SM_CYHSCROLL) - 1;
-    }
-  }
-
-  /* Sub-windows */
-  else
-  {
-
-#ifdef USE_ITSYBITSY
-
-    rc.right += GetSystemMetrics(SM_CXVSCROLL);
-    rc.bottom += 1;
-
-#else
-
-    /* Note the nasty off by one silliness */
-    rc.right += GetSystemMetrics(SM_CXVSCROLL) + 1;
-    rc.bottom -= 1;
-
-#endif
-
-  }
-
-#ifdef USE_ITSYBITSY
-
-  if (!(td->type_1))
-  {
+    /* Adjust */
     AdjustWindowRectEx(&rc, td->dwStyle, TRUE, td->dwExStyle);
-  }
-  else
-  {
-    ibAdjustWindowRect(&rc, td->dwStyle, FALSE, td->cap_size);
-  }
 
-#else
+    /* Total size */
+    td->size_wid = rc.right - rc.left;
+    td->size_hgt = rc.bottom - rc.top;
 
-  AdjustWindowRectEx(&rc, td->dwStyle, TRUE, td->dwExStyle);
+    /* See CreateWindowEx */
+    if (!td->w) return;
 
-#endif
+    /* Extract actual location */
+    GetWindowRect(td->w, &rc);
 
-  /* Total size */
-  td->size_wid = rc.right - rc.left;
-  td->size_hgt = rc.bottom - rc.top;
-
-  /* See CreateWindowEx */
-  if (!td->w) return;
-
-  /* Extract actual location */
-  GetWindowRect(td->w, &rc);
-  td->pos_x = rc.left;
-  td->pos_y = rc.top;
+    /* Save the location */
+    td->pos_x = rc.left;
+    td->pos_y = rc.top;
 }
 
 
@@ -770,51 +678,49 @@ static void term_getsize(term_data *td)
  */
 static void save_prefs_aux(term_data *td, cptr sec_name)
 {
-  char buf[32];
+    char buf[32];
 
-  RECT rc;
+    RECT rc;
 
-  if (td->w)
-  {
-    /* Main window */
-    if (!(td->type_1))
+    if (!td->w) return;
+
+    /* Visible (Sub-windows) */
+    if (td != &screen)
     {
-      strcpy(buf, screen_resizable ? "1" : "0");
-      WritePrivateProfileString(sec_name, "Resizable", buf, ini_file);
+        strcpy(buf, td->visible ? "1" : "0");
+        WritePrivateProfileString(sec_name, "Visible", buf, ini_file);
     }
 
-    /* Sub-windows */
-    else
-    {
-      strcpy(buf, td->visible ? "1" : "0");
-      WritePrivateProfileString(sec_name, "Visible", buf, ini_file);
-
-#ifdef USE_ITSYBITSY
-      wsprintf(buf, "%d", td->cap_size);
-      WritePrivateProfileString(sec_name, "CapSize", buf, ini_file);
-#endif
-
-    }
-
+    /* Desired font */
     if (td->font_file)
     {
-      WritePrivateProfileString(sec_name, "FontFile", td->font_file, ini_file);
+        WritePrivateProfileString(sec_name, "Font", td->font_file, ini_file);
     }
 
+    /* Desired graf */
+    if (td->graf_file)
+    {
+        WritePrivateProfileString(sec_name, "Graf", td->graf_file, ini_file);
+    }
+
+    /* Current size (x) */
     wsprintf(buf, "%d", td->vis_cols);
     WritePrivateProfileString(sec_name, "Columns", buf, ini_file);
 
+    /* Current size (y) */
     wsprintf(buf, "%d", td->vis_rows);
     WritePrivateProfileString(sec_name, "Rows", buf, ini_file);
 
+    /* Acquire position */
     GetWindowRect(td->w, &rc);
 
+    /* Current position (x) */
     wsprintf(buf, "%d", rc.left);
     WritePrivateProfileString(sec_name, "PositionX", buf, ini_file);
 
+    /* Current position (y) */
     wsprintf(buf, "%d", rc.top);
     WritePrivateProfileString(sec_name, "PositionY", buf, ini_file);
-  }
 }
 
 
@@ -825,28 +731,26 @@ static void save_prefs_aux(term_data *td, cptr sec_name)
  */
 static void save_prefs(void)
 {
-  char       buf[32];
-  RECT       rc;
-  term_data *td;
+    char       buf[32];
 
-  strcpy(buf, use_graphics ? "1" : "0");
-  WritePrivateProfileString("Angband", "Graphics", buf, ini_file);
+    strcpy(buf, use_graphics ? "1" : "0");
+    WritePrivateProfileString("Angband", "Graphics", buf, ini_file);
 
-  strcpy(buf, use_sound ? "1" : "0");
-  WritePrivateProfileString("Angband", "Sound", buf, ini_file);
+    strcpy(buf, use_sound ? "1" : "0");
+    WritePrivateProfileString("Angband", "Sound", buf, ini_file);
 
-  save_prefs_aux(&screen, "Main window");
-  
+    save_prefs_aux(&screen, "Main window");
+
 #ifdef GRAPHIC_MIRROR
-  save_prefs_aux(&mirror, "Mirror window");
+    save_prefs_aux(&mirror, "Mirror window");
 #endif
 
 #ifdef GRAPHIC_RECALL
-  save_prefs_aux(&recall, "Recall window");
+    save_prefs_aux(&recall, "Recall window");
 #endif
 
 #ifdef GRAPHIC_CHOICE
-  save_prefs_aux(&choice, "Choice window");
+    save_prefs_aux(&choice, "Choice window");
 #endif
 
 }
@@ -857,40 +761,30 @@ static void save_prefs(void)
  */
 static void load_prefs_aux(term_data *td, cptr sec_name)
 {
-  char tmp[128];
-  char buf[128];
+    char tmp[128];
 
-  /* Main window */
-  if (!(td->type_1))
-  {
-    screen_resizable = (GetPrivateProfileInt(sec_name, "Resizable", 0, ini_file) != 0);
-  }
+    /* Visibility (Sub-window) */
+    if (td != &screen)
+    {
+        /* Extract visibility */
+        td->visible = (GetPrivateProfileInt(sec_name, "Visible", td->visible, ini_file) != 0);
+    }
 
-  /* Sub-window */
-  else
-  {
-    td->visible = (GetPrivateProfileInt(sec_name, "Visible", 0, ini_file) != 0);
+    /* Desired font, with default */
+    GetPrivateProfileString(sec_name, "Font", "8X13.FON", tmp, 127, ini_file);
+    td->font_want = string_make(extract_file_name(tmp));
 
-#ifdef USE_ITSYBITSY
-    td->cap_size = GetPrivateProfileInt(sec_name, "CapSize", 0, ini_file);
-    if (td->cap_size > 127) td->cap_size = 127;
-#endif
+    /* Desired graf, with default */
+    GetPrivateProfileString(sec_name, "Graf", "8X13.BMP", tmp, 127, ini_file);
+    td->graf_want = string_make(extract_file_name(tmp));
 
-  }
+    /* Window size */
+    td->vis_cols = GetPrivateProfileInt(sec_name, "Columns", td->vis_cols, ini_file);
+    td->vis_rows = GetPrivateProfileInt(sec_name, "Rows", td->vis_rows, ini_file);
 
-  /* Extract font choice */
-  GetPrivateProfileString(sec_name, "FontFile", "7x13.fon", tmp, 127, ini_file);
-
-  /* Hack -- Save the desired font choice */
-  td->want_file = string_make(extract_file_name(tmp));
-
-  /* Window size */
-  td->vis_cols = GetPrivateProfileInt(sec_name, "Columns", 80, ini_file);
-  td->vis_rows = GetPrivateProfileInt(sec_name, "Rows", 5, ini_file);
-
-  /* Window position */
-  td->pos_x = GetPrivateProfileInt(sec_name, "PositionX", 0, ini_file);
-  td->pos_y = GetPrivateProfileInt(sec_name, "PositionY", 0, ini_file);
+    /* Window position */
+    td->pos_x = GetPrivateProfileInt(sec_name, "PositionX", td->pos_x, ini_file);
+    td->pos_y = GetPrivateProfileInt(sec_name, "PositionY", td->pos_y, ini_file);
 }
 
 
@@ -899,29 +793,29 @@ static void load_prefs_aux(term_data *td, cptr sec_name)
  */
 static void load_prefs_sound(int i)
 {
-  char aux[128];
-  char wav[128];
-  char tmp[128];
-  char buf[1024];
+    char aux[128];
+    char wav[128];
+    char tmp[128];
+    char buf[1024];
 
-  /* Capitalize the sound name */
-  strcpy(aux, sound_names[i]);
-  aux[0] = FORCEUPPER(aux[0]);
+    /* Capitalize the sound name */
+    strcpy(aux, sound_names[i]);
+    aux[0] = FORCEUPPER(aux[0]);
 
-  /* Default to standard name plus ".wav" */
-  strcpy(wav, sound_names[i]);
-  strcat(wav, ".wav");
+    /* Default to standard name plus ".wav" */
+    strcpy(wav, sound_names[i]);
+    strcat(wav, ".wav");
 
-  /* Look up the sound by its proper name, using default */
-  GetPrivateProfileString("Sound", aux, wav, tmp, 127, ini_file);
+    /* Look up the sound by its proper name, using default */
+    GetPrivateProfileString("Sound", aux, wav, tmp, 127, ini_file);
 
-  /* Access the sound */
-  strcpy(buf, ANGBAND_DIR_XTRA);
-  strcat(buf, "sound\\");
-  strcat(buf, extract_file_name(tmp));
+    /* Access the sound */
+    strcpy(buf, ANGBAND_DIR_XTRA);
+    strcat(buf, "sound\\");
+    strcat(buf, extract_file_name(tmp));
 
-  /* Save the sound filename, if it exists */
-  if (check_file(buf)) sound_file[i] = string_make(buf);
+    /* Save the sound filename, if it exists */
+    if (check_file(buf)) sound_file[i] = string_make(buf);
 }
 
 
@@ -930,31 +824,31 @@ static void load_prefs_sound(int i)
  */
 static void load_prefs(void)
 {
-  int i;
-  
-  /* Extract the "use_graphics" flag */
-  use_graphics = (GetPrivateProfileInt("Angband", "Graphics", 0, ini_file) != 0);
+    int i;
 
-  /* Extract the "use_sound" flag */
-  use_sound = (GetPrivateProfileInt("Angband", "Sound", 0, ini_file) != 0);
+    /* Extract the "use_graphics" flag */
+    use_graphics = (GetPrivateProfileInt("Angband", "Graphics", 0, ini_file) != 0);
 
-  /* Load window prefs */
-  load_prefs_aux(&screen, "Main window");
+    /* Extract the "use_sound" flag */
+    use_sound = (GetPrivateProfileInt("Angband", "Sound", 0, ini_file) != 0);
+
+    /* Load window prefs */
+    load_prefs_aux(&screen, "Main window");
 
 #ifdef GRAPHIC_MIRROR
-  load_prefs_aux(&mirror, "Mirror window");
+    load_prefs_aux(&mirror, "Mirror window");
 #endif
 
 #ifdef GRAPHIC_RECALL
-  load_prefs_aux(&recall, "Recall window");
+    load_prefs_aux(&recall, "Recall window");
 #endif
 
 #ifdef GRAPHIC_CHOICE
-  load_prefs_aux(&choice, "Choice window");
+    load_prefs_aux(&choice, "Choice window");
 #endif
 
-  /* Prepare the sounds */
-  for (i = 1; i < SOUND_MAX; i++) load_prefs_sound(i);
+    /* Prepare the sounds */
+    for (i = 1; i < SOUND_MAX; i++) load_prefs_sound(i);
 }
 
 
@@ -964,10 +858,9 @@ static void load_prefs(void)
  * entry palette derived from "win_clr[]" which is used for
  * the basic 16 Angband colors.
  *
- * XXX XXX XXX Use this function to allow changing the colors,
- * using the new "TERM_XTRA_REACT" hook.
+ * This function is never called before all windows are ready.
  */
-void new_palette(void)
+static void new_palette(void)
 {
     HPALETTE       hBmPal;
     HPALETTE       hNewPal;
@@ -983,26 +876,61 @@ void new_palette(void)
     if (!paletted) return;
 
 
-    /* Check the bitmap palette */
-    hBmPal = infGraph.hPalette;
+    /* No palette */
+    hBmPal = NULL;
 
     /* No bitmap */
-    if (!hBmPal)
+    lppeSize = 0;
+    lppe = NULL;
+    nEntries = 0;
+
+#ifdef USE_GRAPHICS
+
+#ifdef GRAPHIC_CHOICE
+    /* Check choice window */
+    if (choice.graf_file)
     {
-      lppeSize = 0;
-      lppe = NULL;
-      nEntries = 0;
+        /* Check the bitmap palette */
+        hBmPal = choice.infGraph.hPalette;
+    }
+#endif /* GRAPHIC_CHOICE */
+
+#ifdef GRAPHIC_RECALL
+    /* Check recall window */
+    if (recall.graf_file)
+    {
+        /* Check the bitmap palette */
+        hBmPal = recall.infGraph.hPalette;
+    }
+#endif /* GRAPHIC_RECALL */
+
+#ifdef GRAPHIC_MIRROR
+    /* Check mirror window */
+    if (mirror.graf_file)
+    {
+        /* Check the bitmap palette */
+        hBmPal = mirror.infGraph.hPalette;
+    }
+#endif /* GRAPHIC_MIRROR */
+
+    /* Check screen window */
+    if (screen.graf_file)
+    {
+        /* Check the bitmap palette */
+        hBmPal = screen.infGraph.hPalette;
     }
 
     /* Use the bitmap */
-    else
+    if (hBmPal)
     {
-      lppeSize = 256*sizeof(PALETTEENTRY);
-      lppe = (LPPALETTEENTRY)ralloc(lppeSize);
-      nEntries = GetPaletteEntries(hBmPal, 0, 255, lppe);
-      if (nEntries == 0) quit("Corrupted bitmap palette");
-      if (nEntries > 220) quit("Bitmap must have no more than 220 colors");
+        lppeSize = 256*sizeof(PALETTEENTRY);
+        lppe = (LPPALETTEENTRY)ralloc(lppeSize);
+        nEntries = GetPaletteEntries(hBmPal, 0, 255, lppe);
+        if (nEntries == 0) quit("Corrupted bitmap palette");
+        if (nEntries > 220) quit("Bitmap must have no more than 220 colors");
     }
+
+#endif
 
     /* Size of palette */
     pLogPalSize = sizeof(LOGPALETTE) + (16+nEntries)*sizeof(PALETTEENTRY);
@@ -1019,18 +947,24 @@ void new_palette(void)
     /* Save the bitmap data */
     for (i = 0; i < nEntries; i++)
     {
-      pLogPal->palPalEntry[i] = lppe[i];
+        pLogPal->palPalEntry[i] = lppe[i];
     }
 
     /* Save the normal data */
     for (i = 0; i < 16; i++)
     {
-      LPPALETTEENTRY p;
-      p = &(pLogPal->palPalEntry[i+nEntries]);
-      p->peRed = GetRValue(win_clr[i]);
-      p->peGreen = GetGValue(win_clr[i]);
-      p->peBlue = GetBValue(win_clr[i]);
-      p->peFlags = PC_NOCOLLAPSE;
+        LPPALETTEENTRY p;
+
+        /* Access the entry */
+        p = &(pLogPal->palPalEntry[i+nEntries]);
+
+        /* Save the colors */
+        p->peRed = GetRValue(win_clr[i]);
+        p->peGreen = GetGValue(win_clr[i]);
+        p->peBlue = GetBValue(win_clr[i]);
+
+        /* Save the flags */
+        p->peFlags = PC_NOCOLLAPSE;
     }
 
     /* Free something */
@@ -1044,40 +978,28 @@ void new_palette(void)
     rnfree(pLogPal, pLogPalSize);
 
 
-    if (screen.w)
-    {
-      hdc = GetDC(screen.w);
-      SelectPalette(hdc, hNewPal, 0);
-      i = RealizePalette(hdc);
-      ReleaseDC(screen.w, hdc);
-      if (i == 0) quit("Cannot realize palette");
-    }
-    
+    hdc = GetDC(screen.w);
+    SelectPalette(hdc, hNewPal, 0);
+    i = RealizePalette(hdc);
+    ReleaseDC(screen.w, hdc);
+    if (i == 0) quit("Cannot realize palette");
+
 #ifdef GRAPHIC_MIRROR
-    if (mirror.w)
-    {
-      hdc = GetDC(mirror.w);
-      SelectPalette(hdc, hNewPal, 0);
-      ReleaseDC(mirror.w, hdc);
-    }
+    hdc = GetDC(mirror.w);
+    SelectPalette(hdc, hNewPal, 0);
+    ReleaseDC(mirror.w, hdc);
 #endif
 
 #ifdef GRAPHIC_RECALL
-    if (recall.w)
-    {
-      hdc = GetDC(recall.w);
-      SelectPalette(hdc, hNewPal, 0);
-      ReleaseDC(recall.w, hdc);
-    }
+    hdc = GetDC(recall.w);
+    SelectPalette(hdc, hNewPal, 0);
+    ReleaseDC(recall.w, hdc);
 #endif
 
 #ifdef GRAPHIC_CHOICE
-    if (choice.w)
-    {
-      hdc = GetDC(choice.w);
-      SelectPalette(hdc, hNewPal, 0);
-      ReleaseDC(choice.w, hdc);
-    }
+    hdc = GetDC(choice.w);
+    SelectPalette(hdc, hNewPal, 0);
+    ReleaseDC(choice.w, hdc);
 #endif
 
     /* Delete old palette */
@@ -1093,181 +1015,301 @@ void new_palette(void)
  */
 static void term_window_resize(term_data *td)
 {
-  RECT  rc;
-  POINT pt;
+    RECT  rc;
+    POINT pt;
 
-  /* Require window */
-  if (!td->w) return;
+    /* Require window */
+    if (!td->w) return;
 
-  /* Main window */
-  if (!(td->type_1))
-  {
-    /* get old window center */
-    GetWindowRect(td->w, &rc);
-    pt.x = (rc.left + rc.right) / 2;
-    pt.y = (rc.top  + rc.bottom) / 2;
-
-    /* determine left top corner, adjust it */
-    pt.x -= td->size_wid / 2;
-    pt.y -= td->size_hgt/ 2;
-    if (pt.x < 0) pt.x = 0;
-    if (pt.y < 0) pt.y = 0;
-
-    SetWindowPos(td->w, 0, pt.x, pt.y,
-                 td->size_wid, td->size_hgt,
-                 SWP_NOZORDER);
-  }
-
-  /* Sub-windows */
-  else
-  {
+    /* Resize the window */
     SetWindowPos(td->w, 0, 0, 0,
                  td->size_wid, td->size_hgt,
                  SWP_NOMOVE | SWP_NOZORDER);
-  }
 
-  /* Redraw later */
-  InvalidateRect(td->w, NULL, TRUE);
+    /* Redraw later */
+    InvalidateRect(td->w, NULL, TRUE);
 }
 
 
 
 /*
- * Mega-Hack -- force the use of a new font for a window
+ * Force the use of a new "font file" for a term_data
+ *
+ * This function may be called before the "window" is ready
+ *
+ * This function returns zero only if everything succeeds.
  */
-static void term_force_font(term_data *td, cptr name)
+static errr term_force_font(term_data *td, cptr name)
 {
-  int i;
+    int i;
 
-  int wid, hgt;
+    int wid, hgt;
 
-  cptr s;
+    cptr s;
 
-  char base[16];
+    char base[16];
 
-  char base_font[16];
-  char base_graf[16];
+    char base_font[16];
 
-  char buf[1024];
-
-
-  /*** Analyze given name ***/
-
-  /* Extract the base name (with suffix) */
-  s = extract_file_name(name);
-
-  /* Extract font width */
-  wid = atoi(s);
-
-  /* Default font height */
-  hgt = 0;
-
-  /* Copy, capitalize, remove suffix, extract width */
-  for (i = 0; (i < 16 - 1) && s[i] && (s[i] != '.'); i++)
-  {
-      /* Capitalize */
-      base[i] = FORCEUPPER(s[i]);
-
-      /* Extract "hgt" when found */
-      if (base[i] == 'X') hgt = atoi(s+i+1);
-  }
-
-  /* Terminate */
-  base[i] = '\0';
-
-  /* Allow unknown size (?) */
-  if (!wid || !hgt) wid = hgt = 0;
-
-  /* Build base_font */
-  strcpy(base_font, base);
-  strcat(base_font, ".FON");
-
-  /* Build base_graf */
-  strcpy(base_graf, base);
-  strcat(base_graf, ".BMP");
+    char buf[1024];
 
 
-  /*** Load the new font ***/
+    /* Forget the old font (if needed) */
+    if (td->font_id) DeleteObject(td->font_id);
 
-  /* Forget the old font (if needed) */
-  if (td->font_id) DeleteObject(td->font_id);
+    /* Forget old font */
+    if (td->font_file)
+    {
+        bool used = FALSE;
 
-  /* XXX XXX XXX Remove old font resource when no longer needed */
+        /* Check "screen" */
+        if ((td != &screen) &&
+            (screen.font_file) &&
+            (streq(screen.font_file, td->font_file)))
+        {
+            used = TRUE;
+        }
 
-  /* Forget the old font name (if needed) */
-  if (td->font_file) string_free(td->font_file);
+#ifdef GRAPHIC_MIRROR
+        /* Check "mirror" */
+        if ((td != &mirror) &&
+            (mirror.font_file) &&
+            (streq(mirror.font_file, td->font_file)))
+        {
+            used = TRUE;
+        }
+#endif /* GRAPHIC_MIRROR */
 
-  /* Save new font name */
-  td->font_file = string_make(base_font);
+#ifdef GRAPHIC_CHOICE
+        /* Check "choice" */
+        if ((td != &choice) &&
+            (choice.font_file) &&
+            (streq(choice.font_file, td->font_file)))
+        {
+            used = TRUE;
+        }
+#endif /* GRAPHIC_CHOICE */
 
-  /* Access the font file */
-  strcpy(buf, ANGBAND_DIR_XTRA);
-  strcat(buf, "font\\");
-  strcat(buf, base_font);
+#ifdef GRAPHIC_RECALL
+        /* Check "recall" */
+        if ((td != &recall) &&
+            (recall.font_file) &&
+            (streq(recall.font_file, td->font_file)))
+        {
+            used = TRUE;
+        }
+#endif /* GRAPHIC_RECALL */
 
-  /* Validate file */
-  validate_file(buf);
+        /* Remove unused font resources */
+        if (!used) RemoveFontResource(td->font_file);
 
-  /* Load the new font or quit */
-  if (!AddFontResource(buf))
-  {
-    quit_fmt("Font file corrupted:\n%s", buf);
-  }
+        /* Free the old name */
+        string_free(td->font_file);
 
-  /* Create the font */
-  td->font_id = CreateFont(hgt, wid, 0, 0, FW_DONTCARE, 0, 0, 0,
-                           ANSI_CHARSET, OUT_DEFAULT_PRECIS,
-                           CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
-                           FIXED_PITCH | FF_DONTCARE, base_font);
+        /* Forget it */
+        td->font_file = NULL;
+    }
 
 
-  /*** Load the new bitmap ***/
+    /* No name given */
+    if (!name) return (1);
 
-  /* XXX XXX XXX Using graphics, screen, ready */
-  if (use_graphics && (td == &screen) && screen.w)
-  {
+    /* Extract the base name (with suffix) */
+    s = extract_file_name(name);
+
+    /* Extract font width */
+    wid = atoi(s);
+
+    /* Default font height */
+    hgt = 0;
+
+    /* Copy, capitalize, remove suffix, extract width */
+    for (i = 0; (i < 16 - 1) && s[i] && (s[i] != '.'); i++)
+    {
+        /* Capitalize */
+        base[i] = FORCEUPPER(s[i]);
+
+        /* Extract "hgt" when found */
+        if (base[i] == 'X') hgt = atoi(s+i+1);
+    }
+
+    /* Terminate */
+    base[i] = '\0';
+
+
+    /* Build base_font */
+    strcpy(base_font, base);
+    strcat(base_font, ".FON");
+
+
+    /* Access the font file */
+    strcpy(buf, ANGBAND_DIR_XTRA);
+    strcat(buf, "font\\");
+    strcat(buf, base_font);
+
+    /* Verify file */
+    if (!check_file(buf)) return (1);
+
+
+    /* Save new font name */
+    td->font_file = string_make(base_font);
+
+    /* Load the new font or quit */
+    if (!AddFontResource(buf))
+    {
+       quit_fmt("Font file corrupted:\n%s", buf);
+    }
+
+    /* Create the font XXX XXX XXX Note use of "base" */
+    td->font_id = CreateFont(hgt, wid, 0, 0, FW_DONTCARE, 0, 0, 0,
+                             ANSI_CHARSET, OUT_DEFAULT_PRECIS,
+                             CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+                             FIXED_PITCH | FF_DONTCARE, base);
+
+
+    /* Hack -- Unknown size */
+    if (!wid || !hgt)
+    {
+        HDC         hdcDesktop;
+        HFONT       hfOld;
+        TEXTMETRIC  tm;
+
+        /* all this trouble to get the cell size */
+        hdcDesktop = GetDC(HWND_DESKTOP);
+        hfOld = SelectObject(hdcDesktop, td->font_id);
+        GetTextMetrics(hdcDesktop, &tm);
+        SelectObject(hdcDesktop, hfOld);
+        ReleaseDC(HWND_DESKTOP, hdcDesktop);
+
+        /* Font size info */
+        wid = tm.tmAveCharWidth;
+        hgt = tm.tmHeight;
+    }
+
+    /* Save the size info */
+    td->font_wid = wid;
+    td->font_hgt = hgt;
+
+
+    /* Analyze the font */
+    term_getsize(td);
+
+    /* Resize the window */
+    term_window_resize(td);
+
+    /* Success */
+    return (0);
+}
+
+
+#ifdef USE_GRAPHICS
+
+/*
+ * Force the use of a new "graf file" for a term_data
+ *
+ * This function is never called before the windows are ready
+ *
+ * This function returns zero only if everything succeeds.
+ */
+static errr term_force_graf(term_data *td, cptr name)
+{
+    int i;
+
+    int wid, hgt;
+
+    cptr s;
+
+    char base[16];
+
+    char base_graf[16];
+
+    char buf[1024];
+
+
+    /* Forget old stuff */
+    if (td->graf_file)
+    {
+        /* Free the old information */
+        if (td->infGraph.hDIB) GlobalFree(td->infGraph.hDIB);
+        if (td->infGraph.hPalette) DeleteObject(td->infGraph.hPalette);
+        if (td->infGraph.hBitmap) DeleteObject(td->infGraph.hBitmap);
+
+        /* Forget them */
+        td->infGraph.hDIB = 0;
+        td->infGraph.hPalette = 0;
+        td->infGraph.hBitmap = 0;
+
+        /* Forget old graf name */
+        string_free(td->graf_file);
+
+        /* Forget it */
+        td->graf_file = NULL;
+    }
+
+
+    /* No name */
+    if (!name) return (1);
+
+    /* Extract the base name (with suffix) */
+    s = extract_file_name(name);
+
+    /* Extract font width */
+    wid = atoi(s);
+
+    /* Default font height */
+    hgt = 0;
+
+    /* Copy, capitalize, remove suffix, extract width */
+    for (i = 0; (i < 16 - 1) && s[i] && (s[i] != '.'); i++)
+    {
+        /* Capitalize */
+        base[i] = FORCEUPPER(s[i]);
+
+        /* Extract "hgt" when found */
+        if (base[i] == 'X') hgt = atoi(s+i+1);
+    }
+
+    /* Terminate */
+    base[i] = '\0';
+
+    /* Require actual sizes */
+    if (!wid || !hgt) return (1);
+
+    /* Build base_graf */
+    strcpy(base_graf, base);
+    strcat(base_graf, ".BMP");
+
+
     /* Access the graf file */
     strcpy(buf, ANGBAND_DIR_XTRA);
     strcat(buf, "graf\\");
     strcat(buf, base_graf);
 
-    /* Validate file */
-    validate_file(buf);
+    /* Verify file */
+    if (!check_file(buf)) return (1);
 
-    /* Free the old information */
-    if (infGraph.hDIB) GlobalFree(infGraph.hDIB);
-    if (infGraph.hPalette) DeleteObject(infGraph.hPalette);
-    if (infGraph.hBitmap) DeleteObject(infGraph.hBitmap);
-
-    /* Forget old graf name (if needed) */
-    if (td->graf_file) string_free(td->graf_file);
 
     /* Save new graf name */
     td->graf_file = string_make(base_graf);
 
     /* Load the bitmap or quit */
-    if (!ReadDIB(screen.w, buf, &infGraph))
+    if (!ReadDIB(td->w, buf, &td->infGraph))
     {
-      quit_fmt("Bitmap corrupted:\n%s", buf);
+        quit_fmt("Bitmap corrupted:\n%s", buf);
     }
 
     /* Save the new sizes */
-    infGraph.CellWidth = wid;
-    infGraph.CellHeight = hgt;
-  }
+    td->infGraph.CellWidth = wid;
+    td->infGraph.CellHeight = hgt;
 
+    /* Activate a palette */
+    new_palette();
 
-  /*** Other stuff ***/
-
-  /* Activate a palette */
-  new_palette();
-
-  /* Analyze the font */
-  term_getsize(td);
-
-  /* Resize the window */
-  term_window_resize(td);
+    /* Success */
+    return (0);
 }
+
+#endif
 
 
 /*
@@ -1277,78 +1319,105 @@ static void term_force_font(term_data *td, cptr name)
  */
 static void term_change_font(term_data *td)
 {
-  OPENFILENAME ofn;
+    OPENFILENAME ofn;
 
-  char tmp[128];
+    char tmp[128];
 
-  char buf[1024];
+    char buf[1024];
 
-  /* Access the "font" folder */
-  strcpy(buf, ANGBAND_DIR_XTRA);
-  strcat(buf, "font");
+    /* Access the "font" folder */
+    strcpy(buf, ANGBAND_DIR_XTRA);
+    strcat(buf, "font");
 
-  /* Assume nothing */
-  tmp[0] = '\0';
+    /* Assume nothing */
+    tmp[0] = '\0';
 
-  /* Extract a default if possible */
-  if (td->font_file) strcpy(tmp, td->font_file);
+    /* Extract a default if possible */
+    if (td->font_file) strcpy(tmp, td->font_file);
 
-  /* Ask for a choice */
-  memset(&ofn, 0, sizeof(ofn));
-  ofn.lStructSize = sizeof(ofn);
-  ofn.hwndOwner = screen.w;
-  ofn.lpstrFilter = "Font Files (*.fon)\0*.fon\0";
-  ofn.nFilterIndex = 1;
-  ofn.lpstrFile = tmp;
-  ofn.nMaxFile = 128;
-  ofn.lpstrInitialDir = buf;
-  ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
-  ofn.lpstrDefExt = "fon";
+    /* Ask for a choice */
+    memset(&ofn, 0, sizeof(ofn));
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = screen.w;
+    ofn.lpstrFilter = "Font Files (*.fon)\0*.fon\0";
+    ofn.nFilterIndex = 1;
+    ofn.lpstrFile = tmp;
+    ofn.nMaxFile = 128;
+    ofn.lpstrInitialDir = buf;
+    ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+    ofn.lpstrDefExt = "fon";
 
-  /* Force choice if legal */
-  if (GetOpenFileName(&ofn)) term_force_font(td, tmp);
+    /* Force choice if legal */
+    if (GetOpenFileName(&ofn))
+    {
+        /* Force the font */
+        if (term_force_font(td, tmp))
+        {
+            /* Oops */
+            (void)term_force_font(td, "8X13.FON");
+        }
+    }
 }
 
+
+#ifdef USE_GRAPHICS
 
 /*
  * Allow the user to change the graf (and font) for a window
  *
- * XXX XXX XXX This is only called for graphic windows
+ * XXX XXX XXX This is only called for graphic windows, and
+ * changes the font and the bitmap for the window, and is
+ * only called if "use_graphics" is true.
  */
 static void term_change_bitmap(term_data *td)
 {
-  OPENFILENAME ofn;
-  
-  char tmp[128];
+    OPENFILENAME ofn;
 
-  char buf[1024];
+    char tmp[128];
 
-  /* Access the "graf" folder */
-  strcpy(buf, ANGBAND_DIR_XTRA);
-  strcat(buf, "graf");
+    char buf[1024];
 
-  /* Assume nothing */
-  tmp[0] = '\0';
+    /* Access the "graf" folder */
+    strcpy(buf, ANGBAND_DIR_XTRA);
+    strcat(buf, "graf");
 
-  /* Extract a default if possible */
-  if (td->graf_file) strcpy(tmp, td->graf_file);
+    /* Assume nothing */
+    tmp[0] = '\0';
 
-  /* Ask for a choice */
-  memset(&ofn, 0, sizeof(ofn));
-  ofn.lStructSize = sizeof(ofn);
-  ofn.hwndOwner = screen.w;
-  ofn.lpstrFilter = "Bitmap Files (*.bmp)\0*.bmp\0";
-  ofn.nFilterIndex = 1;
-  ofn.lpstrFile = tmp;
-  ofn.nMaxFile = 128;
-  ofn.lpstrInitialDir = buf;
-  ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
-  ofn.lpstrDefExt = "bmp";
+    /* Extract a default if possible */
+    if (td->graf_file) strcpy(tmp, td->graf_file);
 
-  /* Force choice if legal */
-  if (GetOpenFileName(&ofn)) term_force_font(td, tmp);
+    /* Ask for a choice */
+    memset(&ofn, 0, sizeof(ofn));
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = screen.w;
+    ofn.lpstrFilter = "Bitmap Files (*.bmp)\0*.bmp\0";
+    ofn.nFilterIndex = 1;
+    ofn.lpstrFile = tmp;
+    ofn.nMaxFile = 128;
+    ofn.lpstrInitialDir = buf;
+    ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+    ofn.lpstrDefExt = "bmp";
+
+    /* Force choice if legal */
+    if (GetOpenFileName(&ofn))
+    {
+        /* XXX XXX XXX */
+
+        /* Force the requested font and bitmap */
+        if (term_force_font(td, tmp) ||
+            term_force_graf(td, tmp))
+        {
+            /* Force the "standard" font */
+            (void)term_force_font(td, "8X13.FON");
+
+            /* Force the "standard" bitmap */
+            (void)term_force_graf(td, "8X13.BMP");
+        }
+    }
 }
 
+#endif
 
 
 /*
@@ -1358,27 +1427,6 @@ static void term_data_redraw(term_data *td)
 {
     /* Activate the term */
     Term_activate(&td->t);
-
-    /* Main screen XXX XXX XXX */
-    if (!(td->type_1) && !screen_resizable)
-    {
-      HPEN hpenOld, hpenLtGray;
-      HDC  hdc = GetDC(td->w);
-
-      /* Frame the window in white */
-      hpenLtGray = CreatePen(PS_SOLID, 1, win_clr[TERM_WHITE]);
-      hpenOld = SelectObject(hdc, hpenLtGray);
-
-      MoveTo(hdc, 0, 0);
-      LineTo(hdc, 0, td->client_hgt-1);
-      LineTo(hdc, td->client_wid-1, td->client_hgt-1);
-      LineTo(hdc, td->client_wid-1, 0);
-      LineTo(hdc, 0, 0);
-
-      SelectObject(hdc, hpenOld);
-      DeleteObject(hpenLtGray);
-      ReleaseDC(td->w, hdc);
-    }
 
     /* Redraw the contents */
     Term_redraw();
@@ -1417,12 +1465,34 @@ static void Term_nuke_win(term *t)
 
 
 /*
- * Interact with the User (unused)
+ * Interact with the User
  */
 static errr Term_user_win(int n)
 {
-  /* Success */
-  return (0);
+    char buf[128];
+
+    /* Ask about "color16" */
+    sprintf(buf, "%d", !colors16);
+    if (get_string("Complex colors (0-1): ", buf, 2))
+    {
+        colors16 = atoi(buf) ? 0 : 1;
+    }
+
+    /* Ask about "paletted" */
+    sprintf(buf, "%d", paletted);
+    if (get_string("Paletted (0-1): ", buf, 2))
+    {
+        paletted = atoi(buf) ? 1 : 0;
+    }
+
+    /* React to changes */
+    Term_xtra(TERM_XTRA_REACT, 0);
+
+    /* Hack -- Force redraw */
+    Term_key_push(KTRL('R'));
+
+    /* Success */
+    return (0);
 }
 
 
@@ -1431,26 +1501,79 @@ static errr Term_user_win(int n)
  */
 static errr Term_xtra_win_react(void)
 {
-  static old_use_graphics = FALSE;
+    int i;
+
+    static old_use_graphics = FALSE;
 
 
-  /* XXX XXX XXX Check "color_table[]" */
+    /* XXX XXX XXX Check "color_table[]" */
 
-  
-  /* XXX XXX XXX Check "use_graphics" */
-  if (use_graphics && !old_use_graphics) {
 
-    /* Hack -- set the player picture */
-    r_info[0].l_attr = 0x87;
-    r_info[0].l_char = 0x80 | (10 * p_ptr->pclass + p_ptr->prace);
+    /* Simple color */
+    if (colors16)
+    {
+        /* Save the default colors */
+        for (i = 0; i < 16; i++)
+        {
+            /* Simply accept the desired colors */
+            win_pal[i] = color_table[i][0];
+        }
+    }
 
-    /* Remember */
-    old_use_graphics = TRUE;
-  }
-  
+    /* Complex color */
+    else
+    {
+        COLORREF code;
 
-  /* Success */
-  return (0);
+        byte rv, gv, bv;
+
+        bool change = FALSE;
+
+        /* Save the default colors */
+        for (i = 0; i < 16; i++)
+        {
+            /* Extract desired values */
+            rv = color_table[i][1];
+            gv = color_table[i][2];
+            bv = color_table[i][3];
+
+            /* Extract a full color code */
+            code = PALETTERGB(rv, gv, bv);
+
+            /* Activate changes */
+            if (win_clr[i] != code)
+            {
+                /* Note the change */
+                change = TRUE;
+
+                /* Apply the desired color */
+                win_clr[i] = code;
+            }
+        }
+
+        /* Activate the palette if needed */
+        if (change) new_palette();
+    }
+
+
+#ifdef USE_GRAPHICS
+
+    /* XXX XXX XXX Check "use_graphics" */
+    if (use_graphics && !old_use_graphics)
+    {
+        /* Hack -- set the player picture */
+        r_info[0].l_attr = 0x87;
+        r_info[0].l_char = 0x80 | (10 * p_ptr->pclass + p_ptr->prace);
+
+        /* Remember */
+        old_use_graphics = TRUE;
+    }
+
+#endif
+
+
+    /* Success */
+    return (0);
 }
 
 
@@ -1459,32 +1582,32 @@ static errr Term_xtra_win_react(void)
  */
 static errr Term_xtra_win_event(int v)
 {
-  MSG msg;
+    MSG msg;
 
-  /* Wait for an event */
-  if (v)
-  {
-    /* Block */
-    if (GetMessage(&msg, NULL, 0, 0))
+    /* Wait for an event */
+    if (v)
     {
-      TranslateMessage(&msg);
-      DispatchMessage(&msg);
+        /* Block */
+        if (GetMessage(&msg, NULL, 0, 0))
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
     }
-  }
 
-  /* Check for an event */
-  else
-  {
-    /* Check */
-    if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+    /* Check for an event */
+    else
     {
-      TranslateMessage(&msg);
-      DispatchMessage(&msg);
+        /* Check */
+        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
     }
-  }
 
-  /* Success */
-  return 0;
+    /* Success */
+    return 0;
 }
 
 
@@ -1493,17 +1616,17 @@ static errr Term_xtra_win_event(int v)
  */
 static errr Term_xtra_win_flush(void)
 {
-  MSG msg;
-  
-  /* Process all pending events */
-  while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-  {
-    TranslateMessage(&msg);
-    DispatchMessage(&msg);
-  }
+    MSG msg;
 
-  /* Success */
-  return (0);
+    /* Process all pending events */
+    while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+    {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+
+    /* Success */
+    return (0);
 }
 
 
@@ -1514,28 +1637,26 @@ static errr Term_xtra_win_flush(void)
  */
 static errr Term_xtra_win_clear(void)
 {
-  term_data *td = (term_data*)(Term->data);
+    term_data *td = (term_data*)(Term->data);
 
-  HDC  hdc;
-  RECT rc;
+    HDC  hdc;
+    RECT rc;
 
-  int w = min(80, td->vis_cols);
-  int h = min(24, td->vis_rows);
+    /* Rectangle to erase */
+    rc.left   = td->size_ow1;
+    rc.right  = rc.left + td->vis_cols * td->font_wid;
+    rc.top    = td->size_oh1;
+    rc.bottom = rc.top + td->vis_rows * td->font_hgt;
 
-  /* Rectangle to erase in client coords */
-  rc.left   = td->size_ow1;
-  rc.right  = rc.left + w * td->font_wid;
-  rc.top    = td->size_oh1;
-  rc.bottom = rc.top + h * td->font_hgt;
+    /* Erase it */
+    hdc = GetDC(td->w);
+    SetBkColor(hdc, RGB(0,0,0));
+    SelectObject(hdc, td->font_id);
+    ExtTextOut(hdc, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL);
+    ReleaseDC(td->w, hdc);
 
-  hdc = GetDC(td->w);
-  SetBkColor(hdc, RGB(0,0,0));
-  SelectObject(hdc, td->font_id);
-  ExtTextOut(hdc, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL);
-  ReleaseDC(td->w, hdc);
-
-  /* Success */
-  return 0;
+    /* Success */
+    return 0;
 }
 
 
@@ -1544,33 +1665,40 @@ static errr Term_xtra_win_clear(void)
  */
 static errr Term_xtra_win_noise(void)
 {
-  MessageBeep(MB_ICONASTERISK);
-  return (0);
+    MessageBeep(MB_ICONASTERISK);
+    return (0);
 }
+
 
 /*
  * Hack -- make a sound
  */
 static errr Term_xtra_win_sound(int v)
 {
-  /* Unknown sound */
-  if ((v < 0) || (v >= SOUND_MAX)) return (1);
+    /* Unknown sound */
+    if ((v < 0) || (v >= SOUND_MAX)) return (1);
 
-  /* Unknown sound */
-  if (!sound_file[v]) return (1);
+    /* Unknown sound */
+    if (!sound_file[v]) return (1);
+
+#ifdef USE_SOUND
 
 #ifdef WIN32
 
-  /* Play the sound, catch errors */
-  return (PlaySound(sound_file[v], 0, SND_FILENAME | SND_ASYNC));
+    /* Play the sound, catch errors */
+    return (PlaySound(sound_file[v], 0, SND_FILENAME | SND_ASYNC));
 
 #else /* WIN32 */
 
-  /* Play the sound, catch errors */
-  return (sndPlaySound(sound_file[v], SND_ASYNC));
+    /* Play the sound, catch errors */
+    return (sndPlaySound(sound_file[v], SND_ASYNC));
 
 #endif /* WIN32 */
 
+#endif /* USE_SOUND */
+
+    /* Oops */
+    return (1);
 }
 
 
@@ -1579,40 +1707,40 @@ static errr Term_xtra_win_sound(int v)
  */
 static errr Term_xtra_win(int n, int v)
 {
-  /* Handle a subset of the legal requests */
-  switch (n)
-  {
-    /* Make a bell sound */
-    case TERM_XTRA_NOISE:
-      return (Term_xtra_win_noise());
+    /* Handle a subset of the legal requests */
+    switch (n)
+    {
+        /* Make a bell sound */
+        case TERM_XTRA_NOISE:
+            return (Term_xtra_win_noise());
 
-    /* Make a special sound */
-    case TERM_XTRA_SOUND:
-      return (Term_xtra_win_sound(v));
+        /* Make a special sound */
+        case TERM_XTRA_SOUND:
+            return (Term_xtra_win_sound(v));
 
-    /* Process random events */
-    case TERM_XTRA_BORED:
-      return (Term_xtra_win_event(0));
+        /* Process random events */
+        case TERM_XTRA_BORED:
+            return (Term_xtra_win_event(0));
 
-    /* Process an event */
-    case TERM_XTRA_EVENT:
-      return (Term_xtra_win_event(v));
+        /* Process an event */
+        case TERM_XTRA_EVENT:
+            return (Term_xtra_win_event(v));
 
-    /* Flush all events */      
-    case TERM_XTRA_FLUSH:
-      return (Term_xtra_win_flush());
+        /* Flush all events */
+        case TERM_XTRA_FLUSH:
+            return (Term_xtra_win_flush());
 
-    /* Clear the screen */
-    case TERM_XTRA_CLEAR:
-      return (Term_xtra_win_clear());
+        /* Clear the screen */
+        case TERM_XTRA_CLEAR:
+            return (Term_xtra_win_clear());
 
-    /* React to global changes */
-    case TERM_XTRA_REACT:
-      return (Term_xtra_win_react());
-  }
+        /* React to global changes */
+        case TERM_XTRA_REACT:
+            return (Term_xtra_win_react());
+    }
 
-  /* Oops */
-  return 1;
+    /* Oops */
+    return 1;
 }
 
 
@@ -1629,20 +1757,15 @@ static errr Term_wipe_win(int x, int y, int n)
     HDC  hdc;
     RECT rc;
 
-    int w = n;
-    int h = 1;
+    int w, h;
 
-    /* Handle scroll bars */
-    y -= td->scroll_vpos;
-    if (y > td->vis_rows) return (0);
-    if (y < 0) { h += y; y = 0; }
-    h = min(h, td->vis_rows - y);
+    /* Verify */
+    if (y >= td->vis_rows) return (0);
+    if (x >= td->vis_cols) return (0);
 
-    /* Handle scroll bars */
-    x -= td->scroll_hpos;
-    if (x > td->vis_cols) return (0);
-    if (x < 0) { w += x; x = 0; }
-    w = min(w, td->vis_cols - x);
+    /* Truncate */
+    h = min(1, td->vis_rows - y);
+    w = min(n, td->vis_cols - x);
 
     /* Rectangle to erase in client coords */
     rc.left   = x * td->font_wid + td->size_ow1;
@@ -1664,8 +1787,6 @@ static errr Term_wipe_win(int x, int y, int n)
 /*
  * Low level graphics (Assumes valid input).
  * Draw a "cursor" at (x,y), using a "yellow box".
- *
- * XXX XXX XXX Do we really need scrolling windows?
  */
 static errr Term_curs_win(int x, int y)
 {
@@ -1674,13 +1795,9 @@ static errr Term_curs_win(int x, int y)
     RECT   rc;
     HDC    hdc;
 
-    /* Handle scroll bars */
-    y -= td->scroll_vpos;
-    if ((y < 0) || (y > td->vis_rows)) return (0);
-
-    /* Handle scroll bars */
-    x -= td->scroll_hpos;
-    if ((x < 0) || (x > td->vis_cols)) return (0);
+    /* Verify */
+    if (y >= td->vis_rows) return (0);
+    if (x >= td->vis_cols) return (0);
 
     /* Frame the grid */
     rc.left   = x * td->font_wid + td->size_ow1;
@@ -1696,7 +1813,6 @@ static errr Term_curs_win(int x, int y)
     /* Success */
     return 0;
 }
-
 
 
 /*
@@ -1716,57 +1832,99 @@ static errr Term_pict_win(int x, int y, byte a, char c)
 {
     term_data *td = (term_data*)(Term->data);
 
-    RECT rc;
-    HDC  hdc;
-    HDC hdcMem, hdcSrc;
-    HBITMAP hbmSrcOld, hbmMemOld, hbmMem;
-    int  scr_x, scr_y;
-    int  w, h, row, col;
+#ifdef USE_GRAPHICS
 
+    HDC  hdc;
+    HDC hdcSrc;
+    HBITMAP hbmSrcOld;
+    int row, col;
+    int x1, y1, w1, h1;
+    int x2, y2, w2, h2;
 
     /* Paranoia -- handle weird requests */
-    if ((td != &screen) || (!use_graphics)) {
-
-        /* Just erase this grid */
+    if (!use_graphics)
+    {
+        /* First, erase the grid */
         return (Term_wipe_win(x, y, 1));
     }
 
+#ifndef FULL_GRAPHICS
+    /* Paranoia -- handle weird requests */
+    if (td != &screen)
+    {
+        /* First, erase the grid */
+        return (Term_wipe_win(x, y, 1));
+    }
+#endif
 
-    /* Handle scroll bars */
-    y -= td->scroll_vpos;
-    if ((y < 0) || (y >= td->vis_rows)) return (0);
-
-    /* Handle scroll bars */
-    x -= td->scroll_hpos;
-    if ((x < 0) || (x >= td->vis_cols)) return (0);
-
-    /* Location */
-    scr_x = x * td->font_wid + td->size_ow1;
-    scr_y = y * td->font_hgt + td->size_oh1;
-
-    /* Size */
-    w = td->font_wid;
-    h = td->font_hgt;
-
-    /* Info */
-    hdc = GetDC(td->w);
-    hdcSrc = CreateCompatibleDC(hdc);
-    hbmSrcOld = SelectObject(hdcSrc, infGraph.hBitmap);
+    /* Verify */
+    if (x >= td->vis_cols) return (0);
+    if (y >= td->vis_rows) return (0);
 
     /* Extract picture info */
     row = (a & 0x7F);
     col = (c & 0x7F);
 
-    /* Draw the picture */
-    BitBlt(hdc, scr_x, scr_y, w, h, hdcSrc,
-           col * infGraph.CellWidth,
-           row * infGraph.CellHeight,
-           SRCCOPY);
+    /* Size of bitmap cell */
+    w1 = td->infGraph.CellWidth;
+    h1 = td->infGraph.CellHeight;
+
+    /* Location of bitmap cell */
+    x1 = col * w1;
+    y1 = row * w1;
+
+    /* Size of window cell */
+    w2 = td->font_wid;
+    h2 = td->font_hgt;
+
+    /* Location of window cell */
+    x2 = x * w2 + td->size_ow1;
+    y2 = y * h2 + td->size_oh1;
+
+    /* Info */
+    hdc = GetDC(td->w);
+
+    /* Handle small bitmaps */
+    if ((w1 < w2) || (h1 < h2))
+    {
+        RECT rc;
+
+        /* Erasure rectangle */
+        rc.left   = x2;
+        rc.right  = x2 + w2;
+        rc.top    = y2;
+        rc.bottom = y2 + h2;
+
+        /* Erase the rectangle */
+        SetBkColor(hdc, RGB(0,0,0));
+        SelectObject(hdc, td->font_id);
+        ExtTextOut(hdc, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL);
+
+        /* Center bitmaps */
+        x2 += (w2 - w1) >> 1;
+        y2 += (h2 - h1) >> 1;
+    }
+
+    /* More info */
+    hdcSrc = CreateCompatibleDC(hdc);
+    hbmSrcOld = SelectObject(hdcSrc, td->infGraph.hBitmap);
+
+    /* Copy the picture from the bitmap to the window */
+    BitBlt(hdc, x2, y2, w1, h1, hdcSrc, x1, y1, SRCCOPY);
 
     /* Release */
     SelectObject(hdcSrc, hbmSrcOld);
     DeleteDC(hdcSrc);
+
+    /* Release */
     ReleaseDC(td->w, hdc);
+
+#else
+
+    /* Just erase this grid */
+    return (Term_wipe_win(x, y, 1));
+
+#endif
 
     /* Success */
     return 0;
@@ -1780,30 +1938,23 @@ static errr Term_pict_win(int x, int y, byte a, char c)
  * All "graphic" data is handled by "Term_pict_win()", above.
  *
  * XXX XXX XXX Note that this function assumes the font is monospaced.
+ *
+ * XXX XXX XXX One would think there is a more efficient method for
+ * telling a window what color it should be using to draw with, but
+ * perhaps simply changing it every time is not too inefficient.
  */
 static errr Term_text_win(int x, int y, int n, byte a, const char *s)
 {
     term_data *td = (term_data*)(Term->data);
     RECT rc;
     HDC  hdc;
-    int  w, h;
-    int  scr_x, scr_y;
 
 
-    /* Handle scroll bars */
-    y -= td->scroll_vpos;
-    if ((y < 0) || (y >= (int)td->vis_rows)) return 0;
+    /* Verify */
+    if (y >= td->vis_rows) return 0;
+    if (x >= td->vis_cols) return (0);
 
-    /* Handle scroll bars */
-    x -= td->scroll_hpos;
-    if ((x >= (int)td->vis_cols)) return (0);
-    if (x < 0)
-    {
-        if (n <= -x) return 0;
-        s += -x;
-        n -= -x;
-        x = 0;
-    }
+    /* Truncate */
     n = min(n, td->vis_cols - x);
     if (n <= 0) return 0;
 
@@ -1813,18 +1964,30 @@ static errr Term_text_win(int x, int y, int n, byte a, const char *s)
     rc.top    = y * td->font_hgt + td->size_oh1;
     rc.bottom = rc.top + td->font_hgt;
 
-    /* Draw the string */
+    /* Acquire DC */
     hdc = GetDC(td->w);
+
+    /* Background color */
     SetBkColor(hdc, RGB(0,0,0));
-    if (colors16) {
+
+    /* Foreground color */
+    if (colors16)
+    {
         SetTextColor(hdc, PALETTEINDEX(win_pal[a&0x0F]));
     }
-    else {
+    else
+    {
         SetTextColor(hdc, win_clr[a&0x0F]);
     }
+
+    /* Use the font */
     SelectObject(hdc, td->font_id);
+
+    /* Dump the text */
     ExtTextOut(hdc, rc.left, rc.top, ETO_OPAQUE | ETO_CLIPPED, &rc,
                s, n, NULL);
+
+    /* Release DC */
     ReleaseDC(td->w, hdc);
 
     /* Success */
@@ -1875,235 +2038,285 @@ static void term_data_link(term_data *td)
 
 
 /*
- * Read the preference file, Create the windows.
+ * Create the windows
+ *
+ * First, instantiate the "default" values, then read the "ini_file"
+ * to over-ride selected values, then create the windows, and fonts.
+ *
+ * XXX XXX XXX Need to work on the default window positions
  *
  * Must use SW_SHOW not SW_SHOWNA, since on 256 color display
  * must make active to realize the palette. (?)
  */
 static void init_windows(void)
 {
-  term_data *td;
-
-  MSG        msg;
+    term_data *td;
 
 
-  /* Main window */
-  td = &screen;
-  WIPE(td, term_data);
-  td->s = "Angband";
-  td->type_1 = FALSE;
-  td->keys = 1024;
-  td->rows = 24;
-  td->cols = 80;
-  td->visible = TRUE;
-  td->resizing = FALSE;
-  td->size_ow1 = 2;
-  td->size_ow2 = 2;
-  td->size_oh1 = 2;
-  td->size_oh2 = 2;
+    /* Main window */
+    td = &screen;
+    WIPE(td, term_data);
+    td->s = "Angband";
+    td->keys = 1024;
+    td->rows = 24;
+    td->cols = 80;
+    td->vis_rows = 24;
+    td->vis_cols = 80;
+    td->visible = TRUE;
+    td->size_ow1 = 2;
+    td->size_ow2 = 2;
+    td->size_oh1 = 2;
+    td->size_oh2 = 2;
+    td->pos_x = 0;
+    td->pos_y = 0;
 
 #ifdef GRAPHIC_MIRROR
-  /* Mirror window */
-  td = &mirror;
-  WIPE(td, term_data);
-  td->s = "Mirror";
-  td->type_1 = TRUE;
-  td->keys = 16;
-  td->rows = 24;
-  td->cols = 80;
-  td->visible = TRUE;
-  td->resizing = FALSE;
-  td->size_ow1 = 1;
-  td->size_ow2 = 1;
-  td->size_oh1 = 1;
-  td->size_oh2 = 1;
+    /* Mirror window */
+    td = &mirror;
+    WIPE(td, term_data);
+    td->s = "Mirror";
+    td->keys = 16;
+    td->rows = 24;
+    td->cols = 80;
+    td->vis_rows = 24;
+    td->vis_cols = 80;
+    td->visible = TRUE;
+    td->size_ow1 = 1;
+    td->size_ow2 = 1;
+    td->size_oh1 = 1;
+    td->size_oh2 = 1;
+    td->pos_x = 0;
+    td->pos_y = 0;
 #endif
 
 #ifdef GRAPHIC_RECALL
-  /* Recall window */
-  td = &recall;
-  WIPE(td, term_data);
-  td->s = "Recall";
-  td->type_1 = TRUE;
-  td->keys = 16;
-  td->rows = 24;
-  td->cols = 80;
-  td->visible = TRUE;
-  td->resizing = FALSE;
-  td->size_ow1 = 1;
-  td->size_ow2 = 1;
-  td->size_oh1 = 1;
-  td->size_oh2 = 1;
+    /* Recall window */
+    td = &recall;
+    WIPE(td, term_data);
+    td->s = "Recall";
+    td->keys = 16;
+    td->rows = 24;
+    td->cols = 80;
+    td->vis_rows = 24;
+    td->vis_cols = 80;
+    td->visible = TRUE;
+    td->size_ow1 = 1;
+    td->size_ow2 = 1;
+    td->size_oh1 = 1;
+    td->size_oh2 = 1;
+    td->pos_x = 0;
+    td->pos_y = 0;
 #endif
 
 #ifdef GRAPHIC_CHOICE
-  /* Choice window */
-  td = &choice;
-  WIPE(td, term_data);
-  td->s = "Choice";
-  td->type_1 = TRUE;
-  td->keys = 16;
-  td->rows = 24;
-  td->cols = 80;
-  td->visible = TRUE;
-  td->resizing = FALSE;
-  td->size_ow1 = 1;
-  td->size_ow2 = 1;
-  td->size_oh1 = 1;
-  td->size_oh2 = 1;
+    /* Choice window */
+    td = &choice;
+    WIPE(td, term_data);
+    td->s = "Choice";
+    td->keys = 16;
+    td->rows = 24;
+    td->cols = 80;
+    td->vis_rows = 24;
+    td->vis_cols = 80;
+    td->visible = TRUE;
+    td->size_ow1 = 1;
+    td->size_ow2 = 1;
+    td->size_oh1 = 1;
+    td->size_oh2 = 1;
+    td->pos_x = 0;
+    td->pos_y = 0;
 #endif
 
-  /* Load .INI preferences */
-  load_prefs();
+    /* Load .INI preferences */
+    load_prefs();
 
 
-  /* Need these before term_getsize gets called */
-  screen.dwStyle = (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | 
-                    WS_MINIMIZEBOX | WS_VISIBLE);
+    /* Need these before term_getsize gets called */
+    screen.dwStyle = (WS_OVERLAPPED | WS_THICKFRAME | WS_SYSMENU |
+                      WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CAPTION |
+                      WS_VISIBLE);
+    screen.dwExStyle = 0;
 
-  /* Resizable screen */
-  if (screen_resizable)
-  {
-    screen.dwStyle |= (WS_THICKFRAME | WS_VSCROLL | WS_HSCROLL | 
-                       WS_MAXIMIZEBOX);
-  }
-
-  screen.dwExStyle = 0;
-
-  term_force_font(&screen, screen.want_file);
-  string_free(screen.want_file);
-
+    /* Force a usable font */
+    if (term_force_font(&screen, screen.font_want))
+    {
+        (void)term_force_font(&screen, "8X13.FON");
+    }
 
 #ifdef GRAPHIC_MIRROR
-  /* Mirror window */
-  td_ptr = &mirror;
-#ifdef USE_ITSYBITSY
-  td_ptr->dwStyle = (IBS_VERTCAPTION | WS_MINIMIZEBOX | WS_MAXIMIZEBOX
-                     WS_OVERLAPPED | WS_THICKFRAME | WS_VSCROLL | WS_SYSMENU);
-  td_ptr->dwExStyle = 0;
-#else
-  td_ptr->dwStyle = (WS_OVERLAPPED | WS_THICKFRAME | WS_VSCROLL | WS_SYSMENU);
-  td_ptr->dwExStyle = (WS_EX_TOOLWINDOW);
-#endif
-  term_force_font(&mirror, mirror.want_file);
-  string_free(mirror.want_file);
+    /* Mirror window */
+    td = &mirror;
+    td->dwStyle = (WS_OVERLAPPED | WS_THICKFRAME | WS_SYSMENU);
+    td->dwExStyle = (WS_EX_TOOLWINDOW);
+    if (term_force_font(&mirror, mirror.font_want))
+    {
+        (void)term_force_font(&mirror, "8X13.FON");
+    }
 #endif
 
 
 #ifdef GRAPHIC_RECALL
-  /* Recall window */
-  td_ptr = &recall;
-#ifdef USE_ITSYBITSY
-  td_ptr->dwStyle = (IBS_VERTCAPTION | WS_MINIMIZEBOX | WS_MAXIMIZEBOX
-                     WS_OVERLAPPED | WS_THICKFRAME | WS_VSCROLL | WS_SYSMENU);
-  td_ptr->dwExStyle = 0;
-#else
-  td_ptr->dwStyle = (WS_OVERLAPPED | WS_THICKFRAME | WS_VSCROLL | WS_SYSMENU);
-  td_ptr->dwExStyle = (WS_EX_TOOLWINDOW);
-#endif
-  term_force_font(&recall, recall.want_file);
-  string_free(recall.want_file);
+    /* Recall window */
+    td = &recall;
+    td->dwStyle = (WS_OVERLAPPED | WS_THICKFRAME | WS_SYSMENU);
+    td->dwExStyle = (WS_EX_TOOLWINDOW);
+    if (term_force_font(&recall, recall.font_want))
+    {
+        (void)term_force_font(&recall, "8X13.FON");
+    }
 #endif
 
 
 #ifdef GRAPHIC_CHOICE
-  /* Choice window */
-  td_ptr = &choice;
-#ifdef USE_ITSYBITSY
-  td_ptr->dwStyle = (IBS_VERTCAPTION | WS_MINIMIZEBOX | WS_MAXIMIZEBOX
-                     WS_OVERLAPPED | WS_THICKFRAME | WS_VSCROLL | WS_SYSMENU);
-  td_ptr->dwExStyle = 0;
-#else
-  td_ptr->dwStyle = (WS_OVERLAPPED | WS_THICKFRAME | WS_VSCROLL | WS_SYSMENU);
-  td_ptr->dwExStyle = (WS_EX_TOOLWINDOW);
-#endif
-  term_force_font(&choice, choice.want_file);
-  string_free(choice.want_file);
+    /* Choice window */
+    td = &choice;
+    td->dwStyle = (WS_OVERLAPPED | WS_THICKFRAME | WS_SYSMENU);
+    td->dwExStyle = (WS_EX_TOOLWINDOW);
+    if (term_force_font(&choice, choice.font_want))
+    {
+        (void)term_force_font(&choice, "8X13.FON");
+    }
 #endif
 
 
-  /* Create a "brush" for drawing the "cursor" */
-  hbrYellow = CreateSolidBrush(win_clr[TERM_YELLOW]);
-
-
-  /* Screen window */
-  td_ptr = &screen;
-  td_ptr->w = CreateWindowEx(td_ptr->dwExStyle, AppName,
-                             td_ptr->s, td_ptr->dwStyle,
-                             td_ptr->pos_x, td_ptr->pos_y,
-                             td_ptr->size_wid, td_ptr->size_hgt,
-                             HWND_DESKTOP, NULL, hInstance, NULL);
-  if (!td_ptr->w) quit("Failed to create Angband window");
-  term_data_link(&screen);
-  term_screen = &screen.t;
+    /* Screen window */
+    td_ptr = &screen;
+    td_ptr->w = CreateWindowEx(td_ptr->dwExStyle, AppName,
+                               td_ptr->s, td_ptr->dwStyle,
+                               td_ptr->pos_x, td_ptr->pos_y,
+                               td_ptr->size_wid, td_ptr->size_hgt,
+                               HWND_DESKTOP, NULL, hInstance, NULL);
+    if (!td_ptr->w) quit("Failed to create Angband window");
+    td_ptr = NULL;
+    term_data_link(&screen);
+    term_screen = &screen.t;
 
 
 #ifdef GRAPHIC_MIRROR
-  /* Mirror window */
-  td_ptr = &mirror;
-  td_ptr->w = CreateWindowEx(td_ptr->dwExStyle, AngList,
-                             td_ptr->s, td_ptr->dwStyle,
-                             td_ptr->pos_x, td_ptr->pos_y,
-                             td_ptr->size_wid, td_ptr->size_hgt,
-                             HWND_DESKTOP, NULL, hInstance, NULL);
-  if (!td_ptr->w) quit("Failed to create mirror window");
-#ifdef USE_ITSYBITSY
-  if (td_ptr->cap_size) ibSetCaptionSize(td_ptr->w, td_ptr->cap_size);
-#endif
-  if (td_ptr->visible) ShowWindow(td_ptr->w, SW_SHOW);
-  term_data_link(&mirror);
-  term_mirror = &mirror.t;
+    /* Mirror window */
+    td_ptr = &mirror;
+    td_ptr->w = CreateWindowEx(td_ptr->dwExStyle, AngList,
+                               td_ptr->s, td_ptr->dwStyle,
+                               td_ptr->pos_x, td_ptr->pos_y,
+                               td_ptr->size_wid, td_ptr->size_hgt,
+                               HWND_DESKTOP, NULL, hInstance, NULL);
+    if (!td_ptr->w) quit("Failed to create mirror window");
+    if (td_ptr->visible) ShowWindow(td_ptr->w, SW_SHOW);
+    td_ptr = NULL;
+    term_data_link(&mirror);
+    term_mirror = &mirror.t;
 #endif
 
 
 #ifdef GRAPHIC_RECALL
-  /* Recall window */
-  td_ptr = &recall;
-  td_ptr->w = CreateWindowEx(td_ptr->dwExStyle, AngList,
-                             td_ptr->s, td_ptr->dwStyle,
-                             td_ptr->pos_x, td_ptr->pos_y,
-                             td_ptr->size_wid, td_ptr->size_hgt,
-                             HWND_DESKTOP, NULL, hInstance, NULL);
-  if (!td_ptr->w) quit("Failed to create recall window");
-#ifdef USE_ITSYBITSY
-  if (td_ptr->cap_size) ibSetCaptionSize(td_ptr->w, td_ptr->cap_size);
-#endif
-  if (td_ptr->visible) ShowWindow(td_ptr->w, SW_SHOW);
-  term_data_link(&recall);
-  term_recall = &recall.t;
+    /* Recall window */
+    td_ptr = &recall;
+    td_ptr->w = CreateWindowEx(td_ptr->dwExStyle, AngList,
+                               td_ptr->s, td_ptr->dwStyle,
+                               td_ptr->pos_x, td_ptr->pos_y,
+                               td_ptr->size_wid, td_ptr->size_hgt,
+                               HWND_DESKTOP, NULL, hInstance, NULL);
+    if (!td_ptr->w) quit("Failed to create recall window");
+    if (td_ptr->visible) ShowWindow(td_ptr->w, SW_SHOW);
+    td_ptr = NULL;
+    term_data_link(&recall);
+    term_recall = &recall.t;
 #endif
 
 
 #ifdef GRAPHIC_CHOICE
-  /* Choice window */
-  td_ptr = &choice;
-  td_ptr->w = CreateWindowEx(td_ptr->dwExStyle, AngList,
-                             td_ptr->s, td_ptr->dwStyle,
-                             td_ptr->pos_x, td_ptr->pos_y,
-                             td_ptr->size_wid, td_ptr->size_hgt,
-                             HWND_DESKTOP, NULL, hInstance, NULL);
-  if (!td_ptr->w) quit("Failed to create choice window");
-#ifdef USE_ITSYBITSY
-  if (td_ptr->cap_size) ibSetCaptionSize(td_ptr->w, td_ptr->cap_size);
-#endif
-  if (td_ptr->visible) ShowWindow(td_ptr->w, SW_SHOW);
-  term_data_link(&choice);
-  term_choice = &choice.t;
+    /* Choice window */
+    td_ptr = &choice;
+    td_ptr->w = CreateWindowEx(td_ptr->dwExStyle, AngList,
+                               td_ptr->s, td_ptr->dwStyle,
+                               td_ptr->pos_x, td_ptr->pos_y,
+                               td_ptr->size_wid, td_ptr->size_hgt,
+                               HWND_DESKTOP, NULL, hInstance, NULL);
+    if (!td_ptr->w) quit("Failed to create choice window");
+    if (td_ptr->visible) ShowWindow(td_ptr->w, SW_SHOW);
+    td_ptr = NULL;
+    term_data_link(&choice);
+    term_choice = &choice.t;
 #endif
 
 
-  /* Screen window */
-  td_ptr = &screen;
+    /* Activate the screen window */
+    SetActiveWindow(screen.w);
 
-  /* Activate the screen window */
-  SetActiveWindow(screen.w);
-
-  /* Bring screen.w back to top */
-  SetWindowPos(screen.w, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+    /* Bring screen.w back to top */
+    SetWindowPos(screen.w, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
 
-  /* Process pending messages */
-  (void)Term_xtra_win_flush();
+#ifdef USE_GRAPHICS
+
+    /* Handle "graphics" mode */
+    if (use_graphics)
+    {
+        /* Force the "requested" bitmap XXX XXX XXX */
+        if (term_force_graf(&screen, screen.graf_want))
+        {
+            /* XXX XXX XXX Force the "standard" font */
+            (void)term_force_font(&screen, "8X13.FON");
+
+            /* XXX XXX XXX Force the "standard" bitmap */
+            (void)term_force_graf(&screen, "8X13.BMP");
+        }
+
+#ifdef FULL_GRAPHICS
+
+#ifdef GRAPHIC_MIRROR
+        /* Force the "requested" bitmap XXX XXX XXX */
+        if (term_force_graf(&mirror, mirror.graf_want))
+        {
+            /* XXX XXX XXX Force the "standard" font */
+            (void)term_force_font(&mirror, "8X13.FON");
+
+            /* XXX XXX XXX Force the "standard" bitmap */
+            (void)term_force_graf(&mirror, "8X13.BMP");
+        }
+#endif /* GRAPHIC_MIRROR */
+
+#ifdef GRAPHIC_RECALL
+        /* Force the "requested" bitmap XXX XXX XXX */
+        if (term_force_graf(&recall, recall.graf_want))
+        {
+            /* XXX XXX XXX Force the "standard" font */
+            (void)term_force_font(&recall, "8X13.FON");
+
+            /* XXX XXX XXX Force the "standard" bitmap */
+            (void)term_force_graf(&recall, "8X13.BMP");
+        }
+#endif /* GRAPHIC_RECALL */
+
+#ifdef GRAPHIC_CHOICE
+        /* Force the "requested" bitmap XXX XXX XXX */
+        if (term_force_graf(&choice, choice.graf_want))
+        {
+            /* XXX XXX XXX Force the "standard" font */
+            (void)term_force_font(&choice, "8X13.FON");
+
+            /* XXX XXX XXX Force the "standard" bitmap */
+            (void)term_force_graf(&choice, "8X13.BMP");
+        }
+#endif /* GRAPHIC_CHOICE */
+
+#endif /* FULL_GRAPHICS */
+
+    }
+
+#endif
+
+
+    /* New palette XXX XXX XXX */
+    new_palette();
+
+
+    /* Create a "brush" for drawing the "cursor" */
+    hbrYellow = CreateSolidBrush(win_clr[TERM_YELLOW]);
+
+
+    /* Process pending messages */
+    (void)Term_xtra_win_flush();
 }
 
 
@@ -2129,12 +2342,12 @@ void delay(int x)
     /* Wait for it */
     while (GetTickCount() < t)
     {
-      /* Handle messages */
-      if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-      {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-      }
+        /* Handle messages */
+        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
     }
 
 #endif /* WIN32 */
@@ -2147,10 +2360,10 @@ void delay(int x)
  */
 static void disable_start(void)
 {
-  HMENU hm = GetMenu(screen.w);
+    HMENU hm = GetMenu(screen.w);
 
-  EnableMenuItem(hm, IDM_FILE_NEW, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
-  EnableMenuItem(hm, IDM_FILE_OPEN, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+    EnableMenuItem(hm, IDM_FILE_NEW, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+    EnableMenuItem(hm, IDM_FILE_OPEN, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 }
 
 
@@ -2164,73 +2377,70 @@ static void disable_start(void)
  */
 static void setup_menus(void)
 {
-  HMENU hm = GetMenu(screen.w);
+    HMENU hm = GetMenu(screen.w);
 
-  /* Hack -- extract the "can I save" flag */
-  save_enabled = character_generated;
+    /* Save player */
+    EnableMenuItem(hm, IDM_FILE_SAVE,
+                   MF_BYCOMMAND | (character_generated ? MF_ENABLED : MF_DISABLED | MF_GRAYED));
 
-  if (save_enabled)
-  {
-    EnableMenuItem(hm, IDM_FILE_SAVE, MF_BYCOMMAND | MF_ENABLED);
-    EnableMenuItem(hm, IDM_FILE_EXIT, MF_BYCOMMAND | MF_ENABLED);
-  }
-  else
-  {
-    EnableMenuItem(hm, IDM_FILE_SAVE, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
-    EnableMenuItem(hm, IDM_FILE_EXIT, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
-  }
+    /* Exit with save */
+    EnableMenuItem(hm, IDM_FILE_EXIT,
+                   MF_BYCOMMAND | (character_generated ? MF_ENABLED : MF_DISABLED | MF_GRAYED));
 
 #ifdef GRAPHIC_MIRROR
-  /* Options/Font/Mirror window */
-  EnableMenuItem(hm, IDM_OPTIONS_FONT_MIRROR, MF_BYCOMMAND |
-      (mirror.visible ? MF_ENABLED : MF_DISABLED | MF_GRAYED));
+    /* Options/Font/Mirror window */
+    EnableMenuItem(hm, IDM_OPTIONS_FONT_MIRROR,
+                   MF_BYCOMMAND | (mirror.visible ? MF_ENABLED : MF_DISABLED | MF_GRAYED));
 #endif
 
 #ifdef GRAPHIC_RECALL
-  /* Options/Font/Recall window */
-  EnableMenuItem(hm, IDM_OPTIONS_FONT_RECALL, MF_BYCOMMAND |
-      (recall.visible ? MF_ENABLED : MF_DISABLED | MF_GRAYED));
+    /* Options/Font/Recall window */
+    EnableMenuItem(hm, IDM_OPTIONS_FONT_RECALL,
+                   MF_BYCOMMAND | (recall.visible ? MF_ENABLED : MF_DISABLED | MF_GRAYED));
 #endif
 
 #ifdef GRAPHIC_CHOICE
-  /* Options/Font/Choice window */
-  EnableMenuItem(hm, IDM_OPTIONS_FONT_CHOICE, MF_BYCOMMAND |
-      (choice.visible ? MF_ENABLED : MF_DISABLED | MF_GRAYED));
+    /* Options/Font/Choice window */
+    EnableMenuItem(hm, IDM_OPTIONS_FONT_CHOICE,
+                   MF_BYCOMMAND | (choice.visible ? MF_ENABLED : MF_DISABLED | MF_GRAYED));
 #endif
 
 #ifdef GRAPHIC_MIRROR
-  /* Item "Mirror Window" */
-  CheckMenuItem(hm, IDM_OPTIONS_MIRROR, MF_BYCOMMAND |
-      (mirror.visible ? MF_CHECKED : MF_UNCHECKED));
+    /* Item "Mirror Window" */
+    CheckMenuItem(hm, IDM_OPTIONS_MIRROR,
+                  MF_BYCOMMAND | (mirror.visible ? MF_CHECKED : MF_UNCHECKED));
 #endif
 
 #ifdef GRAPHIC_RECALL
-  /* Item "Recall Window" */
-  CheckMenuItem(hm, IDM_OPTIONS_RECALL, MF_BYCOMMAND |
-      (recall.visible ? MF_CHECKED : MF_UNCHECKED));
+    /* Item "Recall Window" */
+    CheckMenuItem(hm, IDM_OPTIONS_RECALL,
+                  MF_BYCOMMAND | (recall.visible ? MF_CHECKED : MF_UNCHECKED));
 #endif
 
 #ifdef GRAPHIC_CHOICE
-  /* Item "Choice Window" */
-  CheckMenuItem(hm, IDM_OPTIONS_CHOICE, MF_BYCOMMAND |
-      (choice.visible ? MF_CHECKED : MF_UNCHECKED));
+    /* Item "Choice Window" */
+    CheckMenuItem(hm, IDM_OPTIONS_CHOICE,
+                  MF_BYCOMMAND | (choice.visible ? MF_CHECKED : MF_UNCHECKED));
 #endif
 
-  /* Item "Main window resizable" */
-  CheckMenuItem(hm, IDM_OPTIONS_RESIZABLE, MF_BYCOMMAND |
-      (screen_resizable ? MF_CHECKED : MF_UNCHECKED));
+    /* Item "Graphics" */
+    CheckMenuItem(hm, IDM_OPTIONS_GRAPHICS,
+                  MF_BYCOMMAND | (use_graphics ? MF_CHECKED : MF_UNCHECKED));
 
-  /* Item "Graphics" */
-  CheckMenuItem(hm, IDM_OPTIONS_GRAPHICS, MF_BYCOMMAND |
-      (use_graphics ? MF_CHECKED : MF_UNCHECKED));
+    /* Item "Sound" */
+    CheckMenuItem(hm, IDM_OPTIONS_SOUND,
+                  MF_BYCOMMAND | (use_sound ? MF_CHECKED : MF_UNCHECKED));
 
-  /* Item "Sound" */
-  CheckMenuItem(hm, IDM_OPTIONS_SOUND, MF_BYCOMMAND |
-      (use_sound ? MF_CHECKED : MF_UNCHECKED));
+#ifdef BEN_HACK 
+    /* Item "Colors 16" */
+    EnableMenuItem(hm, IDM_OPTIONS_UNUSED,
+                  MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+#endif
 
 #ifndef ALLOW_SCRSAVER
-  /* Item "Run as Screensaver" */
-  EnableMenuItem(hm, IDM_OPTIONS_SAVER, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+    /* Item "Run as Screensaver" */
+    EnableMenuItem(hm, IDM_OPTIONS_SAVER,
+                   MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 #endif
 
 }
@@ -2241,22 +2451,24 @@ static void setup_menus(void)
  */
 static void check_for_save_file(LPSTR cmd_line)
 {
-  char *p;
+    char *p;
 
-  /* isolate first argument in command line */
-  p = strchr(cmd_line, ' ');
-  if (p) *p = '\0';
+    /* isolate first argument in command line */
+    p = strchr(cmd_line, ' ');
+    if (p) *p = '\0';
 
-  if (strlen(cmd_line) == 0) return;
+    if (strlen(cmd_line) == 0) return;
 
-  sprintf(savefile, "%s\\%s", ANGBAND_DIR_SAVE, cmd_line);
-  validate_file(savefile);
+    strcpy(savefile, ANGBAND_DIR_SAVE);
+    strcat(savefile, cmd_line);
 
-  game_in_progress = TRUE;
-  disable_start();
+    validate_file(savefile);
 
-  /* Hook into "play_game()" */
-  play_game(FALSE);
+    game_in_progress = TRUE;
+    disable_start();
+
+    /* Hook into "play_game()" */
+    play_game(FALSE);
 }
 
 
@@ -2265,905 +2477,818 @@ static void check_for_save_file(LPSTR cmd_line)
  */
 static void process_menus(WORD wCmd)
 {
-  OPENFILENAME ofn;
+    OPENFILENAME ofn;
 
-  /* Analyze */
-  switch (wCmd)
-  {
-    /* New game */
-    case IDM_FILE_NEW:
+    /* Analyze */
+    switch (wCmd)
     {
-      if (!initialized)
-      {
-        MessageBox(screen.w, "You cannot do that yet...",
-           "Warning", MB_ICONEXCLAMATION | MB_OK);
-      }
-      else if (game_in_progress)
-      {
-        MessageBox(screen.w,
-           "You can't start a new game while you're still playing!",
-           "Warning", MB_ICONEXCLAMATION | MB_OK);
-      }
-      else
-      {
-        game_in_progress = TRUE;
-        disable_start();
-        Term_flush();
-        play_game(TRUE);
-        quit(NULL);
-      }
-      break;
-    }
-
-    /* Open game */    
-    case IDM_FILE_OPEN:
-    {
-      if (!initialized)
-      {
-        MessageBox(screen.w, "You cannot do that yet...",
-           "Warning", MB_ICONEXCLAMATION | MB_OK);
-      }
-      else if (game_in_progress)
-      {
-        MessageBox(screen.w,
-           "You can't open a new game while you're still playing!",
-           "Warning", MB_ICONEXCLAMATION | MB_OK);
-      }
-      else
-      {
-        memset(&ofn, 0, sizeof(ofn));
-        ofn.lStructSize = sizeof(ofn);
-        ofn.hwndOwner = screen.w;
-        ofn.lpstrFilter = "Save Files (*.)\0*\0";
-        ofn.nFilterIndex = 1;
-        ofn.lpstrFile = savefile;
-        ofn.nMaxFile = 1024;
-        ofn.lpstrInitialDir = ANGBAND_DIR_SAVE;
-        ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
-
-        if (GetOpenFileName(&ofn))
+        /* New game */
+        case IDM_FILE_NEW:
         {
-          /* Load 'savefile' */
-          validate_file(savefile);
-          game_in_progress = TRUE;
-          disable_start();
-          Term_flush();
-          play_game(FALSE);
-          quit(NULL);
+            if (!initialized)
+            {
+                MessageBox(screen.w, "You cannot do that yet...",
+                     "Warning", MB_ICONEXCLAMATION | MB_OK);
+            }
+            else if (game_in_progress)
+            {
+                MessageBox(screen.w,
+                     "You can't start a new game while you're still playing!",
+                     "Warning", MB_ICONEXCLAMATION | MB_OK);
+            }
+            else
+            {
+                game_in_progress = TRUE;
+                disable_start();
+                Term_flush();
+                play_game(TRUE);
+                quit(NULL);
+            }
+            break;
         }
-      }
-      break;
-    }
 
-    /* Save game */
-    case IDM_FILE_SAVE:
-    {
-      if (!game_in_progress)
-      {
-        MessageBox(screen.w, "No game in progress.",
-                   "Warning", MB_ICONEXCLAMATION | MB_OK);
-      }
-      else
-      {
-        /* Save the game */
-        do_cmd_save_game();
-      }
-      break;
-    }
+        /* Open game */
+        case IDM_FILE_OPEN:
+        {
+            if (!initialized)
+            {
+                MessageBox(screen.w, "You cannot do that yet...",
+                     "Warning", MB_ICONEXCLAMATION | MB_OK);
+            }
+            else if (game_in_progress)
+            {
+                MessageBox(screen.w,
+                     "You can't open a new game while you're still playing!",
+                     "Warning", MB_ICONEXCLAMATION | MB_OK);
+            }
+            else
+            {
+                memset(&ofn, 0, sizeof(ofn));
+                ofn.lStructSize = sizeof(ofn);
+                ofn.hwndOwner = screen.w;
+                ofn.lpstrFilter = "Save Files (*.)\0*\0";
+                ofn.nFilterIndex = 1;
+                ofn.lpstrFile = savefile;
+                ofn.nMaxFile = 1024;
+                ofn.lpstrInitialDir = ANGBAND_DIR_SAVE;
+                ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 
-    /* Save and Exit */
-    case IDM_FILE_EXIT:
-    {
-      if (game_in_progress && save_enabled)
-      {
-        /* Hack -- Forget messages */
-        msg_flag = FALSE;
+                if (GetOpenFileName(&ofn))
+                {
+                    /* Load 'savefile' */
+                    validate_file(savefile);
+                    game_in_progress = TRUE;
+                    disable_start();
+                    Term_flush();
+                    play_game(FALSE);
+                    quit(NULL);
+                }
+            }
+            break;
+        }
 
-        /* Save the game */
-        do_cmd_save_game();
-      }
-      quit(NULL);
-      break;
-    }
+        /* Save game */
+        case IDM_FILE_SAVE:
+        {
+            if (!game_in_progress)
+            {
+                MessageBox(screen.w, "No game in progress.",
+                             "Warning", MB_ICONEXCLAMATION | MB_OK);
+            }
+            else
+            {
+                /* Save the game */
+                do_cmd_save_game();
+            }
+            break;
+        }
 
-    /* Quit (no save) */
-    case IDM_FILE_QUIT:
-    {
-      save_enabled = character_generated;
+        /* Save and Exit */
+        case IDM_FILE_EXIT:
+        {
+            if (game_in_progress && character_generated)
+            {
+                /* Hack -- Forget messages */
+                msg_flag = FALSE;
 
-      if (game_in_progress && save_enabled)
-      {
-        if (IDCANCEL == MessageBox(screen.w,
-           "Your character will be not saved!",
-           "Warning", MB_ICONEXCLAMATION | MB_OKCANCEL)) break;
-      }
-      quit(NULL);
-      break;
-    }
+                /* Save the game */
+                do_cmd_save_game();
+            }
+            quit(NULL);
+            break;
+        }
 
-    /* Font XXX XXX XXX */
-    case IDM_OPTIONS_FONT_ANGBAND:
-    {
-      if (use_graphics)
-      {
-        term_change_bitmap(&screen);
-      }
-      else
-      {
-        term_change_font(&screen);
-      }
-      break;
-    }
+        /* Quit (no save) */
+        case IDM_FILE_QUIT:
+        {
+            if (game_in_progress && character_generated)
+            {
+                if (IDCANCEL == MessageBox(screen.w,
+                     "Your character will be not saved!",
+                     "Warning", MB_ICONEXCLAMATION | MB_OKCANCEL)) break;
+            }
+            quit(NULL);
+            break;
+        }
+
+        case IDM_OPTIONS_FONT_ANGBAND:
+        {
+
+#ifdef USE_GRAPHICS
+            /* XXX XXX XXX */
+            if (use_graphics)
+            {
+                term_change_bitmap(&screen);
+                break;
+            }
+#endif
+
+            term_change_font(&screen);
+            break;
+        }
 
 #ifdef GRAPHIC_MIRROR
-    /* XXX XXX XXX */
-    case IDM_OPTIONS_FONT_MIRROR:
-    {
-      term_change_font(&mirror);
-      break;
-    }
+        case IDM_OPTIONS_FONT_MIRROR:
+        {
+            term_change_font(&mirror);
+            break;
+        }
 #endif
 
 #ifdef GRAPHIC_RECALL
-    /* XXX XXX XXX */
-    case IDM_OPTIONS_FONT_RECALL:
-    {
-      term_change_font(&recall);
-      break;
-    }
+        case IDM_OPTIONS_FONT_RECALL:
+        {
+            term_change_font(&recall);
+            break;
+        }
 #endif
 
 #ifdef GRAPHIC_CHOICE
-    /* XXX XXX XXX */
-    case IDM_OPTIONS_FONT_CHOICE:
-    {
-      term_change_font(&choice);
-      break;
-    }
+        case IDM_OPTIONS_FONT_CHOICE:
+        {
+            term_change_font(&choice);
+            break;
+        }
 #endif
 
 #ifdef GRAPHIC_MIRROR
-    /* Mirror visibility */
-    case IDM_OPTIONS_MIRROR:
-    {
-      if (!mirror.visible)
-      {
-        mirror.visible = TRUE;
-        ShowWindow(mirror.w, SW_SHOW);
-        term_data_redraw(&mirror);
-      }
-      else
-      {
-        mirror.visible = FALSE;
-        ShowWindow(mirror.w, SW_HIDE);
-      }
-      break;
-    }
+        /* Mirror visibility */
+        case IDM_OPTIONS_MIRROR:
+        {
+            if (!mirror.visible)
+            {
+                mirror.visible = TRUE;
+                ShowWindow(mirror.w, SW_SHOW);
+                term_data_redraw(&mirror);
+            }
+            else
+            {
+                mirror.visible = FALSE;
+                ShowWindow(mirror.w, SW_HIDE);
+            }
+            break;
+        }
 #endif
 
 #ifdef GRAPHIC_RECALL
-    /* Recall visibility */
-    case IDM_OPTIONS_RECALL:
-    {
-      if (!recall.visible)
-      {
-        recall.visible = TRUE;
-        ShowWindow(recall.w, SW_SHOW);
-        term_data_redraw(&recall);
-      }
-      else
-      {
-        recall.visible = FALSE;
-        ShowWindow(recall.w, SW_HIDE);
-      }
-      break;
-    }
+        /* Recall visibility */
+        case IDM_OPTIONS_RECALL:
+        {
+            if (!recall.visible)
+            {
+                recall.visible = TRUE;
+                ShowWindow(recall.w, SW_SHOW);
+                term_data_redraw(&recall);
+            }
+            else
+            {
+                recall.visible = FALSE;
+                ShowWindow(recall.w, SW_HIDE);
+            }
+            break;
+        }
 #endif
 
 #ifdef GRAPHIC_CHOICE
-    /* Choice visibility */
-    case IDM_OPTIONS_CHOICE:
-    {
-      if (!choice.visible)
-      {
-        choice.visible = TRUE;
-        ShowWindow(choice.w, SW_SHOW);
-        term_data_redraw(&choice);
-      }
-      else
-      {
-        choice.visible = FALSE;
-        ShowWindow(choice.w, SW_HIDE);
-      }
-      break;
-    }
+        /* Choice visibility */
+        case IDM_OPTIONS_CHOICE:
+        {
+            if (!choice.visible)
+            {
+                choice.visible = TRUE;
+                ShowWindow(choice.w, SW_SHOW);
+                term_data_redraw(&choice);
+            }
+            else
+            {
+                choice.visible = FALSE;
+                ShowWindow(choice.w, SW_HIDE);
+            }
+            break;
+        }
 #endif
 
-    /* Hack -- toggle "resizable" of main screen */
-    case IDM_OPTIONS_RESIZABLE:
-    {
-      DWORD dw;
+        /* Hack -- unused */
+        case IDM_OPTIONS_UNUSED:
+        {
+            /* XXX XXX XXX */
+            break;
+        }
 
-      /* Check current setting */
-      dw = GetWindowLong(screen.w, GWL_STYLE);
+        case IDM_OPTIONS_GRAPHICS:
+        {
+            char buf[1024];
 
-      /* Make it resizable */
-      if (!screen_resizable)
-      {
-        screen_resizable = TRUE;
-        screen.dwStyle = dw | (WS_THICKFRAME | WS_VSCROLL | WS_HSCROLL | WS_MAXIMIZEBOX);
-        SetWindowLong(screen.w, GWL_STYLE, screen.dwStyle);
-      }
+            /* XXX XXX XXX */
+            Term_activate(term_screen);
 
-      /* Make it non-resizable */
-      else
-      {
-        screen_resizable = FALSE;
-        screen.dwStyle = dw & ~(WS_THICKFRAME | WS_VSCROLL | WS_HSCROLL | WS_MAXIMIZEBOX);
-        SetWindowLong(screen.w, GWL_STYLE, screen.dwStyle);
-        screen.vis_rows = screen.rows;
-        screen.vis_cols = screen.cols;
-        screen.scroll_vpos = 0;
-        screen.scroll_hpos = 0;
-      }
+            /* Reset the visuals */
+            reset_visuals();
 
-      term_getsize(&screen);
-      term_window_resize(&screen);
+            /* Toggle "graphics" */
+            use_graphics = !use_graphics;
 
-      break;
-    }
+            /* Access the "graphic" mappings */
+            sprintf(buf, "%s-%s.prf", (use_graphics ? "graf" : "font"), ANGBAND_SYS);
 
-    case IDM_OPTIONS_GRAPHICS:
-    {
-      char buf[1024];
+            /* Load the file */
+            process_pref_file(buf);
 
-      /* Reset the visuals */
-      reset_visuals();
+#ifdef USE_GRAPHICS
 
-      /* Use graphics */
-      if (!use_graphics)
-      {
-        /* Turn on graphics */
-        use_graphics = TRUE;
-        
-        /* Access the "graphic" mappings */
-        sprintf(buf, "graf-%s.prf", ANGBAND_SYS);
+            /* Use graphics */
+            if (use_graphics)
+            {
+                /* Try to use the current font */
+                if (term_force_graf(&screen, screen.font_file))
+                {
+                    /* XXX XXX XXX Force a "usable" font */
+                    (void)term_force_font(&screen, "8X13.FON");
 
-        /* Load the file */
-        process_pref_file(buf);
+                    /* XXX XXX XXX Force a "usable" graf */
+                    (void)term_force_graf(&screen, "8X13.BMP");
+                }
 
-        /* XXX XXX XXX Force a "usable" font */
-        term_force_font(&screen, "10x20.fon");
+#ifdef FULL_GRAPHICS
 
-        /* XXX XXX XXX Force the current font */
-        /* term_force_font(&screen, screen.font_file); */
-      }
+#ifdef GRAPHIC_MIRROR
+                /* Try to use the current font */
+                if (term_force_graf(&mirror, mirror.font_file))
+                {
+                    /* XXX XXX XXX Force a "usable" font */
+                    (void)term_force_font(&mirror, "8X13.FON");
 
-      /* Use text */
-      else
-      {
-        /* Turn off graphics */
-        use_graphics = FALSE;
+                    /* XXX XXX XXX Force a "usable" graf */
+                    (void)term_force_graf(&mirror, "8X13.BMP");
+                }
+#endif /* GRAPHIC_MIRROR */
 
-        /* Access the "textual" mappings */
-        sprintf(buf, "font-%s.prf", ANGBAND_SYS);
+#ifdef GRAPHIC_RECALL
+                /* Try to use the current font */
+                if (term_force_graf(&recall, recall.font_file))
+                {
+                    /* XXX XXX XXX Force a "usable" font */
+                    (void)term_force_font(&recall, "8X13.FON");
 
-        /* Load the file */
-        process_pref_file(buf);
-      }
+                    /* XXX XXX XXX Force a "usable" graf */
+                    (void)term_force_graf(&recall, "8X13.BMP");
+                }
+#endif /* GRAPHIC_RECALL */
 
-      /* React to changes */
-      Term_xtra_win_react();
+#ifdef GRAPHIC_CHOICE
+                /* Try to use the current font */
+                if (term_force_graf(&choice, choice.font_file))
+                {
+                    /* XXX XXX XXX Force a "usable" font */
+                    (void)term_force_font(&choice, "8X13.FON");
 
-      /* Hack -- Force redraw */
-      Term_key_push(KTRL('R'));
+                    /* XXX XXX XXX Force a "usable" graf */
+                    (void)term_force_graf(&choice, "8X13.BMP");
+                }
+#endif /* GRAPHIC_CHOICE */
 
-      break;
-    }
+#endif
 
-    case IDM_OPTIONS_SOUND:
-    {
-      use_sound = !use_sound;
-      break;
-    }
+            }
+
+#endif
+
+            /* React to changes */
+            Term_xtra_win_react();
+
+            /* Hack -- Force redraw */
+            Term_key_push(KTRL('R'));
+
+            break;
+        }
+
+        case IDM_OPTIONS_SOUND:
+        {
+            use_sound = !use_sound;
+            break;
+        }
 
 #ifdef ALLOW_SCRSAVER
-    case IDM_OPTIONS_SAVER:
-    {
-      hwndSaver = CreateWindowEx(WS_EX_TOPMOST, "WindowsScreenSaverClass", "Borg",
-        WS_POPUP | WS_MAXIMIZE | WS_VISIBLE,
-        0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN),
-        NULL, NULL, hInstance, NULL);
-      if (!hwndSaver)
-      {
-        MessageBox(screen.w, "Failed to create saver window", NULL, MB_OK);
-      }
-      break;
-    }
+        case IDM_OPTIONS_SAVER:
+        {
+            hwndSaver = CreateWindowEx(WS_EX_TOPMOST, "WindowsScreenSaverClass", "Borg",
+                WS_POPUP | WS_MAXIMIZE | WS_VISIBLE,
+                0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN),
+                NULL, NULL, hInstance, NULL);
+            if (!hwndSaver)
+            {
+                MessageBox(screen.w, "Failed to create saver window", NULL, MB_OK);
+            }
+            break;
+        }
 #endif
 
-    case IDM_HELP_GENERAL:
-    {
-      char buf[256];
-      char tmp[256];
-      strcpy(tmp, ANGBAND_DIR_XTRA);
-      strcat(tmp, "help\\");
-      strcat(tmp, "angband.hlp");
-      sprintf(buf, "winhelp.exe %s", tmp);
-      WinExec(buf, SW_NORMAL);
-      break;
-    }
+        case IDM_HELP_GENERAL:
+        {
+            char buf[256];
+            char tmp[256];
+            strcpy(tmp, ANGBAND_DIR_XTRA);
+            strcat(tmp, "help\\");
+            strcat(tmp, "angband.hlp");
+            sprintf(buf, "winhelp.exe %s", tmp);
+            WinExec(buf, SW_NORMAL);
+            break;
+        }
 
-    case IDM_HELP_SPOILERS:
-    {
-      char buf[256];
-      char tmp[256];
-      strcpy(tmp, ANGBAND_DIR_XTRA);
-      strcat(tmp, "help\\");
-      strcat(tmp, "spoilers.hlp");
-      sprintf(buf, "winhelp.exe %s", tmp);
-      WinExec(buf, SW_NORMAL);
-      break;
+        case IDM_HELP_SPOILERS:
+        {
+            char buf[256];
+            char tmp[256];
+            strcpy(tmp, ANGBAND_DIR_XTRA);
+            strcat(tmp, "help\\");
+            strcat(tmp, "spoilers.hlp");
+            sprintf(buf, "winhelp.exe %s", tmp);
+            WinExec(buf, SW_NORMAL);
+            break;
+        }
     }
-  }
 }
 
 
-/*
- * Hack -- process a scrollbar
- *
- * note that SB_TOP == SB_LEFT, SB_BOTTOM == SB_RIGHT etc.
- */
-static int process_scrollbar(HWND hWnd, WPARAM wParam, LPARAM lParam, int fnBar)
-{
-  term_data  *td;
-  uint       *scroll_pos;
-  int         rows_cols, vis_rows_cols;
 
-  td = (term_data *)GetWindowLong(hWnd, 0);
-
-  switch (fnBar)
-  {
-    case SB_VERT:
-    {
-      scroll_pos = &(td->scroll_vpos);
-      rows_cols = td->rows;
-      vis_rows_cols = td->vis_rows;
-      break;
-    }
-    case SB_HORZ:
-    {
-      scroll_pos = &(td->scroll_hpos);
-      rows_cols = td->cols;
-      vis_rows_cols = td->vis_cols;
-      break;
-    }
-    default:
-    {
-      return 1;
-    }
-  }
-
-  switch (wParam)
-  {
-    case SB_TOP:
-    {
-      *scroll_pos = 0;
-      break;
-    }
-
-    case SB_BOTTOM:
-    {
-      *scroll_pos = rows_cols - vis_rows_cols;
-      break;
-    }
-
-    case SB_LINEUP:
-    {
-      if (*scroll_pos > 0) (*scroll_pos)--;
-      break;
-    }
-
-    case SB_LINEDOWN:
-    {
-      if (*scroll_pos < rows_cols - vis_rows_cols) (*scroll_pos)++;
-      break;
-    }
-
-    case SB_PAGEUP:
-    {
-      *scroll_pos = max((int)(*scroll_pos) - vis_rows_cols, 0);
-      break;
-    }
-
-    case SB_PAGEDOWN:
-    {
-      *scroll_pos = min((int)(*scroll_pos) + vis_rows_cols, rows_cols - vis_rows_cols);
-      break;
-    }
-
-    case SB_THUMBPOSITION:
-    {
-      *scroll_pos = max(min(LOWORD(lParam), rows_cols - vis_rows_cols), 0);
-      break;
-    }
-
-    default:
-    {
-      return 1;
-    }
-  }
-
-  SetScrollPos(hWnd, fnBar, *scroll_pos, TRUE);
-
-  InvalidateRect(hWnd, NULL, TRUE);
-
-  return 0;
-}
-
+#ifdef BEN_HACK
+LRESULT FAR PASCAL _export AngbandWndProc(HWND hWnd, UINT uMsg,
+  WPARAM wParam, LPARAM lParam);
+#endif
 
 LRESULT FAR PASCAL _export AngbandWndProc(HWND hWnd, UINT uMsg,
   WPARAM wParam, LPARAM lParam)
 {
-  PAINTSTRUCT     ps;
-  HDC             hdc;
-  term_data      *td;
-  MINMAXINFO FAR *lpmmi;
-  RECT            rc;
-  int             i;
-  HPALETTE        hOldPal;
+    PAINTSTRUCT     ps;
+    HDC             hdc;
+    term_data      *td;
+    MINMAXINFO FAR *lpmmi;
+    RECT            rc;
+    int             i;
 
-  switch (uMsg)
-  {
-    /* XXX XXX XXX */
-    case WM_NCCREATE:
+
+    /* Acquire proper "term_data" info */
+    td = (term_data *)GetWindowLong(hWnd, 0);
+
+    /* Handle message */
+    switch (uMsg)
     {
-      if (td_ptr == &screen)
-      {
-        SetWindowLong(hWnd, 0, (LONG)(td_ptr));
-      }
-      return DefWindowProc(hWnd, uMsg, wParam, lParam);
-    }
+        /* XXX XXX XXX */
+        case WM_NCCREATE:
+        {
+            SetWindowLong(hWnd, 0, (LONG)(td_ptr));
+            break;
+        }
 
-    /* XXX XXX XXX */
-    case WM_CREATE:
-    {
-      if (screen_resizable)
-      {
-        td = (term_data *)GetWindowLong(hWnd, 0);
-        SetScrollRange(hWnd, SB_VERT, 0, max(td->rows - td->vis_rows, 1), FALSE);
-        SetScrollRange(hWnd, SB_HORZ, 0, max(td->cols - td->vis_cols, 1), FALSE);
-        return 0;
-      }
-      else
-      {
-        return DefWindowProc(hWnd, uMsg, wParam, lParam);
-      }
-    }
+        /* XXX XXX XXX */
+        case WM_CREATE:
+        {
+            return 0;
+        }
 
-    case WM_GETMINMAXINFO:
-    {
-      lpmmi = (MINMAXINFO FAR *)lParam;
-      td = (term_data *)GetWindowLong(hWnd, 0);
-      if (!td) return 1;  /* this message was sent before WM_NCCREATE */
+        case WM_GETMINMAXINFO:
+        {
+            lpmmi = (MINMAXINFO FAR *)lParam;
 
-      /* minimum window size is 15x3, otherwise have problems with */
-      /* menu line wrapping to two lines */
-      rc.left = rc.top = 0;
-      rc.right = rc.left + 15 * td->font_wid + td->size_ow1 + td->size_ow2;
-      rc.bottom = rc.top + 3 * td->font_hgt + td->size_oh1 + td->size_oh2 + 1;
-      if (screen_resizable)
-      {
-        rc.right  += GetSystemMetrics(SM_CXVSCROLL) - 1;
-        rc.bottom += GetSystemMetrics(SM_CYHSCROLL) - 1;
-      }
-      AdjustWindowRectEx(&rc, td->dwStyle, TRUE, td->dwExStyle);
-      lpmmi->ptMinTrackSize.x = rc.right - rc.left;
-      lpmmi->ptMinTrackSize.y = rc.bottom - rc.top;
+            if (!td) return 1;  /* this message was sent before WM_NCCREATE */
 
-      /* maximum window size is td->cols x td->rows */
-      rc.left = rc.top = 0;
-      rc.right = rc.left + td->cols * td->font_wid + td->size_ow1 + td->size_ow2;
-      rc.bottom = rc.top + td->rows * td->font_hgt + td->size_oh1 + td->size_oh2 + 1;
-      if (screen_resizable)
-      {
-        rc.right  += GetSystemMetrics(SM_CXVSCROLL) - 1;
-        rc.bottom += GetSystemMetrics(SM_CYHSCROLL) - 1;
-      }
-      AdjustWindowRectEx(&rc, td->dwStyle, TRUE, td->dwExStyle);
-      lpmmi->ptMaxSize.x      = rc.right - rc.left;
-      lpmmi->ptMaxSize.y      = rc.bottom - rc.top;
-      lpmmi->ptMaxTrackSize.x = rc.right - rc.left;
-      lpmmi->ptMaxTrackSize.y = rc.bottom - rc.top;
+            /* Minimum window size is 15x3 */
+            rc.left = rc.top = 0;
+            rc.right = rc.left + 15 * td->font_wid + td->size_ow1 + td->size_ow2;
+            rc.bottom = rc.top + 3 * td->font_hgt + td->size_oh1 + td->size_oh2 + 1;
 
-      return 0;
-    }
+            /* Adjust */
+            AdjustWindowRectEx(&rc, td->dwStyle, TRUE, td->dwExStyle);
 
-    case WM_PAINT:
-    {
-      td = (term_data *)GetWindowLong(hWnd, 0);
-      BeginPaint(hWnd, &ps);
-      if (td) term_data_redraw(td);
-      EndPaint(hWnd, &ps);
-      ValidateRect(hWnd, NULL);   /* why needed ?? */
-      return 0;
-    }
+            /* Save minimum size */
+            lpmmi->ptMinTrackSize.x = rc.right - rc.left;
+            lpmmi->ptMinTrackSize.y = rc.bottom - rc.top;
 
-    case WM_VSCROLL:
-    {
-      return process_scrollbar(hWnd, wParam, lParam, SB_VERT);
-    }
+            /* Maximum window size is td->cols x td->rows */
+            rc.left = rc.top = 0;
+            rc.right = rc.left + td->cols * td->font_wid + td->size_ow1 + td->size_ow2;
+            rc.bottom = rc.top + td->rows * td->font_hgt + td->size_oh1 + td->size_oh2;
 
-    case WM_HSCROLL:
-    {
-      return process_scrollbar(hWnd, wParam, lParam, SB_HORZ);
-    }
+            /* Paranoia */
+            rc.right  += (td->font_wid - 1);
+            rc.bottom += (td->font_hgt - 1);
 
-    case WM_SYSKEYDOWN:
-    case WM_KEYDOWN:
-    {
-      BYTE KeyState = 0x00;
-      bool enhanced = FALSE;
-      bool mc = FALSE;
-      bool ms = FALSE;
-      bool ma = FALSE;
-      
-      /* Extract the modifiers */
-      if (GetKeyState(VK_CONTROL) & 0x8000) mc = TRUE;
-      if (GetKeyState(VK_SHIFT)   & 0x8000) ms = TRUE;
-      if (GetKeyState(VK_MENU)    & 0x8000) ma = TRUE;
+            /* Adjust */
+            AdjustWindowRectEx(&rc, td->dwStyle, TRUE, td->dwExStyle);
 
-      /* Check for non-normal keys */
-      if ((wParam >= VK_PRIOR) && (wParam <= VK_DOWN)) enhanced = TRUE;
-      if ((wParam >= VK_F1) && (wParam <= VK_F12)) enhanced = TRUE;
-      if ((wParam == VK_INSERT) || (wParam == VK_DELETE)) enhanced = TRUE;
+            /* Save maximum size */
+            lpmmi->ptMaxSize.x      = rc.right - rc.left;
+            lpmmi->ptMaxSize.y      = rc.bottom - rc.top;
 
-      /* XXX XXX XXX */
-      if (enhanced)
-      {
-        /* Begin the macro trigger */
-        Term_keypress(31);
+            /* Save maximum size */
+            lpmmi->ptMaxTrackSize.x = rc.right - rc.left;
+            lpmmi->ptMaxTrackSize.y = rc.bottom - rc.top;
 
-        /* Send the modifiers */
-        if (mc) Term_keypress('C');
-        if (ms) Term_keypress('S');
-        if (ma) Term_keypress('A');
+            return 0;
+        }
 
-        /* Extract "scan code" from bits 16..23 of lParam */
-        i = LOBYTE(HIWORD(lParam));
+        case WM_PAINT:
+        {
+            BeginPaint(hWnd, &ps);
+            if (td) term_data_redraw(td);
+            EndPaint(hWnd, &ps);
+            ValidateRect(hWnd, NULL);   /* why needed ?? */
+            return 0;
+        }
 
-        /* Introduce the scan code */
-        Term_keypress('x');
-        
-        /* Encode the hexidecimal scan code */
-        Term_keypress(hexsym[i/16]);
-        Term_keypress(hexsym[i%16]);
+        case WM_SYSKEYDOWN:
+        case WM_KEYDOWN:
+        {
+            BYTE KeyState = 0x00;
+            bool enhanced = FALSE;
+            bool mc = FALSE;
+            bool ms = FALSE;
+            bool ma = FALSE;
 
-        /* End the macro trigger */
-        Term_keypress(13);
+            /* Extract the modifiers */
+            if (GetKeyState(VK_CONTROL) & 0x8000) mc = TRUE;
+            if (GetKeyState(VK_SHIFT)   & 0x8000) ms = TRUE;
+            if (GetKeyState(VK_MENU)    & 0x8000) ma = TRUE;
 
-        return 0;
-      }
+            /* Check for non-normal keys */
+            if ((wParam >= VK_PRIOR) && (wParam <= VK_DOWN)) enhanced = TRUE;
+            if ((wParam >= VK_F1) && (wParam <= VK_F12)) enhanced = TRUE;
+            if ((wParam == VK_INSERT) || (wParam == VK_DELETE)) enhanced = TRUE;
 
-      return DefWindowProc(hWnd, uMsg, wParam, lParam);
-    }
+            /* XXX XXX XXX */
+            if (enhanced)
+            {
+                /* Begin the macro trigger */
+                Term_keypress(31);
 
-    case WM_CHAR:
-    {
-      Term_keypress(wParam);
-      return 0;
-    }
+                /* Send the modifiers */
+                if (mc) Term_keypress('C');
+                if (ms) Term_keypress('S');
+                if (ma) Term_keypress('A');
 
-    case WM_INITMENU:
-    {
-      setup_menus();
-      return 0;
-    }
+                /* Extract "scan code" from bits 16..23 of lParam */
+                i = LOBYTE(HIWORD(lParam));
 
-    case WM_CLOSE:
-    case WM_QUIT:
-    {
-      quit(NULL);
-      return 0;
-    }
+                /* Introduce the scan code */
+                Term_keypress('x');
 
-    case WM_COMMAND:
-    {
-      process_menus(LOWORD(wParam));
-      return 0;
-    }
+                /* Encode the hexidecimal scan code */
+                Term_keypress(hexsym[i/16]);
+                Term_keypress(hexsym[i%16]);
 
-    case WM_SIZE:
-    {
-      td = (term_data *)GetWindowLong(hWnd, 0);
-      if (!td) return 1;    /* this message was sent before WM_NCCREATE */
-      if (!td->w) return 1; /* it was sent from inside CreateWindowEx */
-      if (td->resizing) return 1; /* was sent from WM_SIZE */
+                /* End the macro trigger */
+                Term_keypress(13);
 
-      switch (wParam)
-      {
-        case SIZE_MINIMIZED:
+                return 0;
+            }
+
+            break;
+        }
+
+        case WM_CHAR:
+        {
+            Term_keypress(wParam);
+            return 0;
+        }
+
+        case WM_INITMENU:
+        {
+            setup_menus();
+            return 0;
+        }
+
+        case WM_CLOSE:
+        case WM_QUIT:
+        {
+            quit(NULL);
+            return 0;
+        }
+
+        case WM_COMMAND:
+        {
+            process_menus(LOWORD(wParam));
+            return 0;
+        }
+
+        case WM_SIZE:
+        {
+            if (!td) return 1;    /* this message was sent before WM_NCCREATE */
+            if (!td->w) return 1; /* it was sent from inside CreateWindowEx */
+            if (td->size_hack) return 1; /* was sent from WM_SIZE */
+
+            switch (wParam)
+            {
+                case SIZE_MINIMIZED:
+                {
+
 #ifdef GRAPHIC_MIRROR
-          if (mirror.visible) ShowWindow(mirror.w, SW_HIDE);
+                    if (mirror.visible) ShowWindow(mirror.w, SW_HIDE);
 #endif
 #ifdef GRAPHIC_RECALL
-          if (recall.visible) ShowWindow(recall.w, SW_HIDE);
+                    if (recall.visible) ShowWindow(recall.w, SW_HIDE);
 #endif
 #ifdef GRAPHIC_CHOICE
-          if (choice.visible) ShowWindow(choice.w, SW_HIDE);
+                    if (choice.visible) ShowWindow(choice.w, SW_HIDE);
 #endif
-          return 0;
 
-        case SIZE_MAXIMIZED:
-          td->resizing = TRUE;
-          td->vis_cols = td->cols;
-          td->vis_rows = td->rows;
-          /* fall through!!! */
+                    return 0;
+                }
 
-        case SIZE_RESTORED:
-          if (screen_resizable)
-          {
-            td->resizing = TRUE;
-            td->vis_cols = (LOWORD(lParam) - td->size_ow1 - td->size_ow2) / td->font_wid;
-            td->vis_cols = min(td->vis_cols, td->cols);
-            td->vis_rows = (HIWORD(lParam) - td->size_oh1 - td->size_oh2) / td->font_hgt;
-            td->vis_rows = min(td->vis_rows, td->rows);
-            td->scroll_vpos = 0;
-            td->scroll_hpos = 0;
-            SetScrollRange(hWnd, SB_VERT, 0, max(td->rows - td->vis_rows, 1), FALSE);
-            SetScrollRange(hWnd, SB_HORZ, 0, max(td->cols - td->vis_cols, 1), FALSE);
-            term_getsize(td);
-            MoveWindow(hWnd, td->pos_x, td->pos_y, td->size_wid, td->size_hgt, TRUE);
-          }
+                case SIZE_MAXIMIZED:
+                {
+                    /* fall through XXX XXX XXX */
+                }
+
+                case SIZE_RESTORED:
+                {
+                    td->size_hack = TRUE;
+                    td->vis_cols = (LOWORD(lParam) - td->size_ow1 - td->size_ow2) / td->font_wid;
+                    td->vis_rows = (HIWORD(lParam) - td->size_oh1 - td->size_oh2) / td->font_hgt;
+                    if (td->vis_cols > td->cols) td->vis_cols = td->cols;
+                    if (td->vis_rows > td->rows) td->vis_rows = td->rows;
+                    term_getsize(td);
+                    MoveWindow(hWnd, td->pos_x, td->pos_y, td->size_wid, td->size_hgt, TRUE);
+                    td->size_hack = FALSE;
+
 #ifdef GRAPHIC_MIRROR
-          if (mirror.visible) ShowWindow(mirror.w, SW_SHOWNOACTIVATE);
+                    if (mirror.visible) ShowWindow(mirror.w, SW_SHOWNOACTIVATE);
 #endif
 #ifdef GRAPHIC_RECALL
-          if (recall.visible) ShowWindow(recall.w, SW_SHOWNOACTIVATE);
+                    if (recall.visible) ShowWindow(recall.w, SW_SHOWNOACTIVATE);
 #endif
 #ifdef GRAPHIC_CHOICE
-          if (choice.visible) ShowWindow(choice.w, SW_SHOWNOACTIVATE);
+                    if (choice.visible) ShowWindow(choice.w, SW_SHOWNOACTIVATE);
 #endif
-          td->resizing = FALSE;
-          return 0;
 
-        default:
-           return DefWindowProc(hWnd, uMsg, wParam, lParam);
-      }
-    }
+                    return 0;
+                }
+            }
+            break;
+        }
 
-    case WM_PALETTECHANGED:
-    {
-      /* ignore if palette change caused by itself */
-      if ((HWND)wParam == hWnd) return FALSE;
-      /* otherwise, fall through!!! */
-    }
+        case WM_PALETTECHANGED:
+        {
+            /* ignore if palette change caused by itself */
+            if ((HWND)wParam == hWnd) return FALSE;
+            /* otherwise, fall through!!! */
+        }
 
-    case WM_QUERYNEWPALETTE:
-    {
-      if (!paletted) return FALSE;
-      hdc = GetDC(hWnd);
-      SelectPalette(hdc, hPal, FALSE);
-      i = RealizePalette(hdc);
-      /* if any palette entries changed, repaint the window. */
-      if (i) InvalidateRect(hWnd, NULL, TRUE);
-      ReleaseDC(hWnd, hdc);
-      return FALSE;
-    }
+        case WM_QUERYNEWPALETTE:
+        {
+            if (!paletted) return FALSE;
+            hdc = GetDC(hWnd);
+            SelectPalette(hdc, hPal, FALSE);
+            i = RealizePalette(hdc);
+            /* if any palette entries changed, repaint the window. */
+            if (i) InvalidateRect(hWnd, NULL, TRUE);
+            ReleaseDC(hWnd, hdc);
+            return FALSE;
+        }
 
-    case WM_ACTIVATE:
-    {
-      if (wParam && !HIWORD(lParam))
-      {
+        case WM_ACTIVATE:
+        {
+            if (wParam && !HIWORD(lParam))
+            {
+
 #ifdef GRAPHIC_MIRROR
-        SetWindowPos(mirror.w, hWnd, 0, 0, 0, 0,
-                     SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+                SetWindowPos(mirror.w, hWnd, 0, 0, 0, 0,
+                             SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
 #endif
 #ifdef GRAPHIC_RECALL
-        SetWindowPos(recall.w, hWnd, 0, 0, 0, 0,
-                     SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+                SetWindowPos(recall.w, hWnd, 0, 0, 0, 0,
+                             SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
 #endif
 #ifdef GRAPHIC_CHOICE
-        SetWindowPos(choice.w, hWnd, 0, 0, 0, 0,
-                     SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+                SetWindowPos(choice.w, hWnd, 0, 0, 0, 0,
+                             SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
 #endif
-        SetFocus(hWnd);
-        return 0;
-      }
-      /* fall through */
+                SetFocus(hWnd);
+                return 0;
+            }
+            break;
+        }
     }
 
-    default:
-    {
-      return DefWindowProc(hWnd, uMsg, wParam, lParam);
-    }
-  }
+
+    /* Oops */
+    return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
 
+#ifdef BEN_HACK
+LRESULT FAR PASCAL _export AngbandListProc(HWND hWnd, UINT uMsg,
+    WPARAM wParam, LPARAM lParam);
+#endif
 
 LRESULT FAR PASCAL _export AngbandListProc(HWND hWnd, UINT uMsg,
-  WPARAM wParam, LPARAM lParam)
+    WPARAM wParam, LPARAM lParam)
 {
-  term_data      *td;
-  MINMAXINFO FAR *lpmmi;
-  RECT            rc;
-  PAINTSTRUCT     ps;
-  HDC             hdc;
-  int             i;
+    term_data      *td;
+    MINMAXINFO FAR *lpmmi;
+    RECT            rc;
+    PAINTSTRUCT     ps;
+    HDC             hdc;
+    int             i;
 
-  switch (uMsg)
-  {
-    /* XXX XXX XXX */
-    case WM_NCCREATE:
+
+    /* Acquire proper "term_data" info */
+    td = (term_data *)GetWindowLong(hWnd, 0);
+
+    /* Process message */
+    switch (uMsg)
     {
-      if (td_ptr != &screen)
-      {
-        SetWindowLong(hWnd, 0, (LONG)(td_ptr));
-      }
-#ifdef USE_ITSYBITSY
-      return ibDefWindowProc(hWnd, uMsg, wParam, lParam);
-#else
-      return DefWindowProc(hWnd, uMsg, wParam, lParam);
-#endif
-    }
-
-    /* XXX XXX XXX */
-    case WM_CREATE:
-    {
-      td = (term_data *)GetWindowLong(hWnd, 0);
-      SetScrollRange(hWnd, SB_VERT, 0, td->rows - td->vis_rows, FALSE);
-      return 0;
-    }
-
-    case WM_GETMINMAXINFO:
-    {
-      lpmmi = (MINMAXINFO FAR *)lParam;
-      td = (term_data *)GetWindowLong(hWnd, 0);
-      if (!td) return 1;  /* this message was sent before WM_NCCREATE */
-
-      rc.left = rc.top = 0;
-      rc.right = rc.left + 5 * td->font_wid + td->size_ow1 + td->size_ow2 +
-                 GetSystemMetrics(SM_CXVSCROLL);
-      rc.bottom = rc.top + 3 * td->font_hgt + td->size_oh1 + td->size_oh2;
-#ifdef USE_ITSYBITSY
-      rc.bottom += 1;
-      ibAdjustWindowRect(&rc, td->dwStyle, FALSE, td->cap_size);
-#else
-      rc.right += 1;
-      rc.bottom -= 1;
-      AdjustWindowRectEx(&rc, td->dwStyle, FALSE, td->dwExStyle);
-#endif
-      lpmmi->ptMinTrackSize.x = rc.right - rc.left;
-      lpmmi->ptMinTrackSize.y = rc.bottom - rc.top;
-
-      /* maximum window size is td->cols x td->rows */
-      rc.left = rc.top = 0;
-      rc.right = rc.left + td->cols * td->font_wid + td->size_ow1 + td->size_ow2 +
-                 GetSystemMetrics(SM_CXVSCROLL);
-      rc.bottom = rc.top + td->rows * td->font_hgt + td->size_oh1 + td->size_oh2;
-#ifdef USE_ITSYBITSY
-      rc.bottom += 1;
-      ibAdjustWindowRect(&rc, td->dwStyle, FALSE, td->cap_size);
-#else
-      rc.right += 1;
-      rc.bottom -= 1;
-      AdjustWindowRectEx(&rc, td->dwStyle, FALSE, td->dwExStyle);
-#endif
-      lpmmi->ptMaxTrackSize.x = rc.right - rc.left;
-      lpmmi->ptMaxTrackSize.y = rc.bottom - rc.top;
-
-      return 0;
-    }
-
-    case WM_SIZE:
-    {
-      td = (term_data *)GetWindowLong(hWnd, 0);
-      if (!td) return 1;    /* this message was sent before WM_NCCREATE */
-      if (!td->w) return 1; /* it was sent from inside CreateWindowEx */
-      if (td->resizing) return 1; /* was sent from inside WM_SIZE */
-      td->resizing = TRUE;
-      td->vis_cols = (LOWORD(lParam) - td->size_ow1 - td->size_ow2) / td->font_wid;
-      td->vis_rows = (HIWORD(lParam) - td->size_oh1 - td->size_oh2) / td->font_hgt;
-      td->scroll_vpos = 0;
-      td->scroll_hpos = 0;
-      SetScrollRange(hWnd, SB_VERT, 0, td->rows - td->vis_rows, FALSE);
-      term_getsize(td);
-      MoveWindow(hWnd, td->pos_x, td->pos_y, td->size_wid, td->size_hgt, TRUE);
-      td->resizing = FALSE;
-      return 0;
-    }
-
-    case WM_PAINT:
-    {
-      td = (term_data *)GetWindowLong(hWnd, 0);
-      BeginPaint(hWnd, &ps);
-      if (td) term_data_redraw(td);
-      EndPaint(hWnd, &ps);
-      return 0;
-    }
-
-    case WM_VSCROLL:
-    {
-      return process_scrollbar(hWnd, wParam, lParam, SB_VERT);
-    }
-
-    case WM_PALETTECHANGED:
-    {
-      /* ignore if palette change caused by itself */
-      if ((HWND)wParam == hWnd) return FALSE;
-      /* otherwise, fall through!!! */
-    }
-
-    case WM_QUERYNEWPALETTE:
-    {
-      if (!paletted) return FALSE;
-      hdc = GetDC(hWnd);
-      SelectPalette(hdc, hPal, FALSE);
-      i = RealizePalette(hdc);
-      /* if any palette entries changed, repaint the window. */
-      if (i) InvalidateRect(hWnd, NULL, TRUE);
-      ReleaseDC(hWnd, hdc);
-      return FALSE;
-    }
-
-#ifdef USE_ITSYBITSY
-    case WM_SYSCOMMAND:
-    {
-      switch (wParam)
-      {
-        case SC_MINIMIZE:
-          td = (term_data *)GetWindowLong(hWnd, 0);
-          td->cap_size = max(ibGetCaptionSize(hWnd) - 1, 0);
-          ibSetCaptionSize(hWnd, td->cap_size);
-          SendMessage(hWnd, WM_NCPAINT, 0, 0);
-          return 0;
-        case SC_MAXIMIZE:
-          td = (term_data *)GetWindowLong(hWnd, 0);
-          td->cap_size = min(ibGetCaptionSize(hWnd) + 1, 127);
-          ibSetCaptionSize(hWnd, td->cap_size);
-          SendMessage(hWnd, WM_NCPAINT, 0, 0);
-          return 0;
-        default:
-          return ibDefWindowProc(hWnd, uMsg, wParam, lParam);
-      }
-    }
-#endif
-
-    case WM_NCLBUTTONDOWN:
-    {
-      if (wParam == HTSYSMENU)
-      {
-        td = (term_data *)GetWindowLong(hWnd, 0);
-
-        /* Hide "type_1" windows */
-        if (td->type_1)
+        /* XXX XXX XXX */
+        case WM_NCCREATE:
         {
-          if (td->visible)
-          {
-            td->visible = FALSE;
-            ShowWindow(td->w, SW_HIDE);
-          }
+            SetWindowLong(hWnd, 0, (LONG)(td_ptr));
+            break;
         }
 
-        return 0;
-      }
+        /* XXX XXX XXX */
+        case WM_CREATE:
+        {
+            return 0;
+        }
 
-      /* fall through */
+        case WM_GETMINMAXINFO:
+        {
+            if (!td) return 1;  /* this message was sent before WM_NCCREATE */
+
+            lpmmi = (MINMAXINFO FAR *)lParam;
+
+            /* Minimum size */
+            rc.left = rc.top = 0;
+            rc.right = rc.left + 5 * td->font_wid + td->size_ow1 + td->size_ow2;
+            rc.bottom = rc.top + 3 * td->font_hgt + td->size_oh1 + td->size_oh2;
+
+            /* Adjust */
+            AdjustWindowRectEx(&rc, td->dwStyle, TRUE, td->dwExStyle);
+
+            /* Save the minimum size */
+            lpmmi->ptMinTrackSize.x = rc.right - rc.left;
+            lpmmi->ptMinTrackSize.y = rc.bottom - rc.top;
+
+            /* Maximum window size is td->cols x td->rows */
+            rc.left = rc.top = 0;
+            rc.right = rc.left + td->cols * td->font_wid + td->size_ow1 + td->size_ow2;
+            rc.bottom = rc.top + td->rows * td->font_hgt + td->size_oh1 + td->size_oh2;
+
+            /* Paranoia */
+            rc.right += (td->font_wid - 1);
+            rc.bottom += (td->font_hgt - 1);
+
+            /* Adjust */
+            AdjustWindowRectEx(&rc, td->dwStyle, TRUE, td->dwExStyle);
+
+            /* Save maximum size */
+            lpmmi->ptMaxSize.x      = rc.right - rc.left;
+            lpmmi->ptMaxSize.y      = rc.bottom - rc.top;
+
+            /* Save the maximum size */
+            lpmmi->ptMaxTrackSize.x = rc.right - rc.left;
+            lpmmi->ptMaxTrackSize.y = rc.bottom - rc.top;
+
+            return 0;
+        }
+
+        case WM_SIZE:
+        {
+            if (!td) return 1;    /* this message was sent before WM_NCCREATE */
+            if (!td->w) return 1; /* it was sent from inside CreateWindowEx */
+            if (td->size_hack) return 1; /* was sent from inside WM_SIZE */
+            td->size_hack = TRUE;
+            td->vis_cols = (LOWORD(lParam) - td->size_ow1 - td->size_ow2) / td->font_wid;
+            td->vis_rows = (HIWORD(lParam) - td->size_oh1 - td->size_oh2) / td->font_hgt;
+            if (td->vis_cols > td->cols) td->vis_cols = td->cols;
+            if (td->vis_rows > td->rows) td->vis_rows = td->rows;
+            term_getsize(td);
+            MoveWindow(hWnd, td->pos_x, td->pos_y, td->size_wid, td->size_hgt, TRUE);
+            td->size_hack = FALSE;
+            return 0;
+        }
+
+        case WM_PAINT:
+        {
+            BeginPaint(hWnd, &ps);
+            if (td) term_data_redraw(td);
+            EndPaint(hWnd, &ps);
+            return 0;
+        }
+
+        case WM_SYSKEYDOWN:
+        case WM_KEYDOWN:
+        {
+            BYTE KeyState = 0x00;
+            bool enhanced = FALSE;
+            bool mc = FALSE;
+            bool ms = FALSE;
+            bool ma = FALSE;
+
+            /* Extract the modifiers */
+            if (GetKeyState(VK_CONTROL) & 0x8000) mc = TRUE;
+            if (GetKeyState(VK_SHIFT)   & 0x8000) ms = TRUE;
+            if (GetKeyState(VK_MENU)    & 0x8000) ma = TRUE;
+
+            /* Check for non-normal keys */
+            if ((wParam >= VK_PRIOR) && (wParam <= VK_DOWN)) enhanced = TRUE;
+            if ((wParam >= VK_F1) && (wParam <= VK_F12)) enhanced = TRUE;
+            if ((wParam == VK_INSERT) || (wParam == VK_DELETE)) enhanced = TRUE;
+
+            /* XXX XXX XXX */
+            if (enhanced)
+            {
+                /* Begin the macro trigger */
+                Term_keypress(31);
+
+                /* Send the modifiers */
+                if (mc) Term_keypress('C');
+                if (ms) Term_keypress('S');
+                if (ma) Term_keypress('A');
+
+                /* Extract "scan code" from bits 16..23 of lParam */
+                i = LOBYTE(HIWORD(lParam));
+
+                /* Introduce the scan code */
+                Term_keypress('x');
+
+                /* Encode the hexidecimal scan code */
+                Term_keypress(hexsym[i/16]);
+                Term_keypress(hexsym[i%16]);
+
+                /* End the macro trigger */
+                Term_keypress(13);
+
+                return 0;
+            }
+
+            break;
+        }
+
+        case WM_CHAR:
+        {
+            Term_keypress(wParam);
+            return 0;
+        }
+
+        case WM_PALETTECHANGED:
+        {
+            /* ignore if palette change caused by itself */
+            if ((HWND)wParam == hWnd) return FALSE;
+            /* otherwise, fall through!!! */
+        }
+
+        case WM_QUERYNEWPALETTE:
+        {
+            if (!paletted) return 0;
+            hdc = GetDC(hWnd);
+            SelectPalette(hdc, hPal, FALSE);
+            i = RealizePalette(hdc);
+            /* if any palette entries changed, repaint the window. */
+            if (i) InvalidateRect(hWnd, NULL, TRUE);
+            ReleaseDC(hWnd, hdc);
+            return 0;
+        }
+
+        case WM_NCLBUTTONDOWN:
+        {
+            if (wParam == HTSYSMENU)
+            {
+                /* Hide sub-windows */
+                if (td != &screen)
+                {
+                    if (td->visible)
+                    {
+                        td->visible = FALSE;
+                        ShowWindow(td->w, SW_HIDE);
+                    }
+                }
+                return 0;
+            }
+            break;
+        }
     }
 
-    default:
-    {
-#ifdef USE_ITSYBITSY
-      return ibDefWindowProc(hWnd, uMsg, wParam, lParam);
-#else
-      return DefWindowProc(hWnd, uMsg, wParam, lParam);
-#endif
-    }
-  }
-  
-  /* Oops */
-  return (0);
+    return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
 
@@ -3172,86 +3297,91 @@ LRESULT FAR PASCAL _export AngbandListProc(HWND hWnd, UINT uMsg,
 #define MOUSE_SENS 40
 
 LRESULT FAR PASCAL _export AngbandSaverProc(HWND hWnd, UINT uMsg,
-  WPARAM wParam, LPARAM lParam)
+    WPARAM wParam, LPARAM lParam)
 {
-  static WORD xMouse = 0xFFFF;
-  static WORD yMouse = 0xFFFF;
-  int dx, dy;
+    static int iMouse = 0;
+    static WORD xMouse = 0;
+    static WORD yMouse = 0;
 
-  switch (uMsg)
-  {
-    /* XXX XXX XXX */
-    case WM_NCCREATE:
-    {
-      if (td_ptr == &screen)
-      {
-        SetWindowLong(hWnd, 0, (LONG)(td_ptr));
-      }
-      return DefWindowProc(hWnd, uMsg, wParam, lParam);
-    }
+    int dx, dy;
 
-    case WM_SETCURSOR:
+    term_data *td;
+
+
+    /* Acquire proper "term_data" info */
+    td = (term_data *)GetWindowLong(hWnd, 0);
+
+    /* Process */
+    switch (uMsg)
     {
-      SetCursor(NULL);
-      return 0;
-    }
+        /* XXX XXX XXX */
+        case WM_NCCREATE:
+        {
+            SetWindowLong(hWnd, 0, (LONG)(td_ptr));
+            break;
+        }
+
+        case WM_SETCURSOR:
+        {
+            SetCursor(NULL);
+            return 0;
+        }
 
 #if 0
-    case WM_ACTIVATE:
-    {
-      if (LOWORD(wParam) == WA_INACTIVE)
-      {
-        return DefWindowProc(hWnd, uMsg, wParam, lParam);
-      }
+        case WM_ACTIVATE:
+        {
+            if (LOWORD(wParam) == WA_INACTIVE) break;
 
-      /* else fall through */
-    }
+            /* else fall through */
+        }
 #endif
 
-    case WM_LBUTTONDOWN:
-    case WM_MBUTTONDOWN:
-    case WM_RBUTTONDOWN:
-    case WM_KEYDOWN:
-    {
-      SendMessage(hWnd, WM_CLOSE, 0, 0);
-      return 0;
+        case WM_LBUTTONDOWN:
+        case WM_MBUTTONDOWN:
+        case WM_RBUTTONDOWN:
+        case WM_KEYDOWN:
+        {
+            SendMessage(hWnd, WM_CLOSE, 0, 0);
+            return 0;
+        }
+
+        case WM_MOUSEMOVE:
+        {
+            if (iMouse)
+            {
+                dx = LOWORD(lParam) - xMouse;
+                dy = HIWORD(lParam) - yMouse;
+
+                if (dx < 0) dx = -dx;
+                if (dy < 0) dy = -dy;
+
+                if ((dx > MOUSE_SENS) || (dy > MOUSE_SENS))
+                {
+                    SendMessage(hWnd, WM_CLOSE, 0, 0);
+                }
+            }
+
+            iMouse = 1;
+            xMouse = LOWORD(lParam);
+            yMouse = HIWORD(lParam);
+            return 0;
+        }
+
+        case WM_CLOSE:
+        {
+            DestroyWindow(hWnd);
+            return 0;
+        }
     }
 
-    case WM_MOUSEMOVE:
-    {
-      if (xMouse == 0xFFFF || yMouse == 0xFFFF)
-      {
-        xMouse = LOWORD(lParam);
-        yMouse = HIWORD(lParam);
-        return 0;
-      }
-      dx = LOWORD(lParam) - xMouse;
-      if (dx < 0) dx = -dx;
-      dy = HIWORD(lParam) - yMouse;
-      if (dy < 0) dy = -dy;
-      if (dx > MOUSE_SENS || dy > MOUSE_SENS)
-      {
-        SendMessage(hWnd, WM_CLOSE, 0, 0);
-      }
-      xMouse = LOWORD(lParam);
-      yMouse = HIWORD(lParam);
-      return 0;
-    }
-
-    case WM_CLOSE:
-    {
-      DestroyWindow(hWnd);
-      return 0;
-    }
-
-    default:
-    {
-      return DefWindowProc(hWnd, uMsg, wParam, lParam);
-    }
-  }
+    /* Oops */
+    return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
 #endif
+
+
+
 
 
 /*** Temporary Hooks ***/
@@ -3262,8 +3392,8 @@ LRESULT FAR PASCAL _export AngbandSaverProc(HWND hWnd, UINT uMsg,
  */
 static void hack_plog(cptr str)
 {
-  /* Give a warning */
-  if (str) MessageBox(NULL, str, "Warning", MB_OK);
+    /* Give a warning */
+    if (str) MessageBox(NULL, str, "Warning", MB_OK);
 }
 
 
@@ -3272,17 +3402,17 @@ static void hack_plog(cptr str)
  */
 static void hack_quit(cptr str)
 {
-  /* Give a warning */
-  if (str) MessageBox(NULL, str, "Error", MB_OK | MB_ICONSTOP);
+    /* Give a warning */
+    if (str) MessageBox(NULL, str, "Error", MB_OK | MB_ICONSTOP);
 
-  /* Unregister the classes */
-  UnregisterClass(AppName, hInstance);
+    /* Unregister the classes */
+    UnregisterClass(AppName, hInstance);
 
-  /* Destroy the icon */
-  if (hIcon) DestroyIcon(hIcon);
+    /* Destroy the icon */
+    if (hIcon) DestroyIcon(hIcon);
 
-  /* Exit */
-  exit (0);
+    /* Exit */
+    exit (0);
 }
 
 
@@ -3291,11 +3421,11 @@ static void hack_quit(cptr str)
  */
 static void hack_core(cptr str)
 {
-  /* Give a warning */
-  if (str) MessageBox(NULL, str, "Error", MB_OK | MB_ICONSTOP);
+    /* Give a warning */
+    if (str) MessageBox(NULL, str, "Error", MB_OK | MB_ICONSTOP);
 
-  /* Quit */
-  quit (NULL);
+    /* Quit */
+    quit (NULL);
 }
 
 
@@ -3307,8 +3437,8 @@ static void hack_core(cptr str)
  */
 static void hook_plog(cptr str)
 {
-  /* Warning */
-  if (str) MessageBox(screen.w, str, "Warning", MB_OK);
+    /* Warning */
+    if (str) MessageBox(screen.w, str, "Warning", MB_OK);
 }
 
 
@@ -3320,120 +3450,59 @@ static void hook_plog(cptr str)
  */
 static void hook_quit(cptr str)
 {
-  /* Give a warning */
-  if (str) MessageBox(screen.w, str, "Error", MB_OK | MB_ICONSTOP);
-
-  /* Save the preferences */
-  save_prefs();
+    /* Give a warning */
+    if (str) MessageBox(screen.w, str, "Error", MB_OK | MB_ICONSTOP);
 
 
-  /*** Destroy the windows ***/
+    /* Save the preferences */
+    save_prefs();
+
 
 #ifdef GRAPHIC_CHOICE
-  DestroyWindow(choice.w);
-  choice.w = 0;
+    term_force_font(&choice, NULL);
+    if (choice.font_want) string_free(choice.font_want);
+    if (choice.graf_want) string_free(choice.graf_want);
+    if (choice.w) DestroyWindow(choice.w);
+    choice.w = 0;
 #endif
 
 #ifdef GRAPHIC_RECALL
-  DestroyWindow(recall.w);
-  recall.w = 0;
+    term_force_font(&recall, NULL);
+    if (recall.font_want) string_free(recall.font_want);
+    if (recall.graf_want) string_free(recall.graf_want);
+    if (recall.w) DestroyWindow(recall.w);
+    recall.w = 0;
 #endif
 
 #ifdef GRAPHIC_MIRROR
-  DestroyWindow(mirror.w);
-  mirror.w = 0;
+    term_force_font(&mirror, NULL);
+    if (mirror.font_want) string_free(mirror.font_want);
+    if (mirror.graf_want) string_free(mirror.graf_want);
+    if (mirror.w) DestroyWindow(mirror.w);
+    mirror.w = 0;
 #endif
 
-  DestroyWindow(screen.w);
-  screen.w = 0;
-
-
-  /*** Free some stuff ***/
-
-  DeleteObject(hbrYellow);
-
-  if (hPal) DeleteObject(hPal);
-
-  if (infGraph.hDIB) GlobalFree(infGraph.hDIB);
-  if (infGraph.hPalette) DeleteObject(infGraph.hPalette);
-  if (infGraph.hBitmap) DeleteObject(infGraph.hBitmap);
-
-
-  /*** Free some fonts ***/
-  
-  if (screen.font_id)
-  {
-    DeleteObject(screen.font_id);
-  }
-
-#ifdef GRAPHIC_MIRROR
-  if (mirror.font_id)
-  {
-    DeleteObject(mirror.font_id);
-  }
+#ifdef USE_GRAPHICS
+    term_force_graf(&screen, NULL);
 #endif
-
-#ifdef GRAPHIC_RECALL
-  if (recall.font_id)
-  {
-    DeleteObject(recall.font_id);
-  }
-#endif
-
-#ifdef GRAPHIC_CHOICE
-  if (choice.font_id)
-  {
-    DeleteObject(choice.font_id);
-  }
-#endif
+    term_force_font(&screen, NULL);
+    if (screen.font_want) string_free(screen.font_want);
+    if (screen.graf_want) string_free(screen.graf_want);
+    if (screen.w) DestroyWindow(screen.w);
+    screen.w = 0;
 
 
-  /*** Free some font resources XXX XXX XXX ***/
+    /*** Free some other stuff ***/
 
-  /* RemoveFontResource(screen.font_file); */
+    DeleteObject(hbrYellow);
 
+    if (hPal) DeleteObject(hPal);
 
-  /*** Free some stuff ***/
-  
-  if (screen.font_file) string_free(screen.font_file);
+    UnregisterClass(AppName, hInstance);
 
-#ifdef GRAPHIC_MIRROR
-  if (mirror.font_file) string_free(mirror.font_file);
-#endif
-  
-#ifdef GRAPHIC_RECALL
-  if (recall.font_file) string_free(recall.font_file);
-#endif
+    if (hIcon) DestroyIcon(hIcon);
 
-#ifdef GRAPHIC_CHOICE
-  if (choice.font_file) string_free(choice.font_file);
-#endif
-
-
-  /*** Free some stuff ***/
-  
-  if (screen.graf_file) string_free(screen.graf_file);
-
-#ifdef GRAPHIC_MIRROR
-  if (mirror.graf_file) string_free(mirror.graf_file);
-#endif
-  
-#ifdef GRAPHIC_RECALL
-  if (recall.graf_file) string_free(recall.graf_file);
-#endif
-
-#ifdef GRAPHIC_CHOICE
-  if (choice.graf_file) string_free(choice.graf_file);
-#endif
-
-
-  /*** Free some other stuff ***/
-
-  UnregisterClass(AppName, hInstance);
-
-  if (hIcon) DestroyIcon(hIcon);
-
-  exit(0);
+    exit(0);
 }
 
 
@@ -3442,18 +3511,18 @@ static void hook_quit(cptr str)
  */
 static void hook_core(cptr str)
 {
-  /* Message */
-  if (str) MessageBox(screen.w, str, "Error", MB_OK);
+    /* Message */
+    if (str) MessageBox(screen.w, str, "Error", MB_OK);
 
-  /* Another message */
-  MessageBox(screen.w, "I will now attempt to save and quit.",
-             "Fatal error", MB_OK | MB_ICONSTOP);
+    /* Another message */
+    MessageBox(screen.w, "I will now attempt to save and quit.",
+               "Fatal error", MB_OK | MB_ICONSTOP);
 
-  /* Save the player XXX XXX XXX */
-  save_player();
+    /* Save the player XXX XXX XXX */
+    save_player();
 
-  /* Quit */
-  quit(NULL);
+    /* Quit */
+    quit(NULL);
 }
 
 
@@ -3467,161 +3536,224 @@ static void hook_core(cptr str)
  */
 static void init_stuff(void)
 {
-  int   i;
+    int   i;
 
-  char path[1024];
+    char path[1024];
 
-  /* Hack -- access "ANGBAND.INI" */
-  GetModuleFileName(hInstance, path, 512);
-  strcpy(path + strlen(path) - 4, ".INI");
 
-  /* Save "ANGBAND.INI" */
-  ini_file = string_make(path);
+    /* Hack -- access "ANGBAND.INI" */
+    GetModuleFileName(hInstance, path, 512);
+    strcpy(path + strlen(path) - 4, ".INI");
 
-  /* Validate "ANGBAND.INI" */
-  validate_file(ini_file);
+    /* Save "ANGBAND.INI" */
+    ini_file = string_make(path);
 
-  /* XXX XXX XXX */
-  GetPrivateProfileString("Angband", "LibPath", "c:\\angband\\lib",
-                          path, 1000, ini_file);
+    /* Validate "ANGBAND.INI" */
+    validate_file(ini_file);
 
-  /* Analyze the path */
-  i = strlen(path);
 
-  /* Require a path */
-  if (!i) quit("LibPath shouldn't be empty in ANGBAND.INI");
+    /* XXX XXX XXX */
+    GetPrivateProfileString("Angband", "LibPath", "c:\\angband\\lib",
+                            path, 1000, ini_file);
 
-  /* Nuke terminal backslash */
-  if (path[i-1] != '\\')
-  {
-    path[i++] = '\\';
-    path[i] = '\0';
-  }
+    /* Analyze the path */
+    i = strlen(path);
 
-  /* Validate the path */
-  validate_dir(path);
+    /* Require a path */
+    if (!i) quit("LibPath shouldn't be empty in ANGBAND.INI");
 
-  /* Init the file paths */  
-  init_file_paths(path);
+    /* Nuke terminal backslash */
+    if (path[i-1] != '\\')
+    {
+        path[i++] = '\\';
+        path[i] = '\0';
+    }
 
-  /* Hack -- Validate the paths */
-  validate_dir(ANGBAND_DIR_APEX);
-  validate_dir(ANGBAND_DIR_BONE);
-  validate_dir(ANGBAND_DIR_DATA);
-  validate_dir(ANGBAND_DIR_EDIT);
-  validate_dir(ANGBAND_DIR_FILE);
-  validate_dir(ANGBAND_DIR_HELP);
-  validate_dir(ANGBAND_DIR_INFO);
-  validate_dir(ANGBAND_DIR_SAVE);
-  validate_dir(ANGBAND_DIR_USER);
-  validate_dir(ANGBAND_DIR_XTRA);
+    /* Validate the path */
+    validate_dir(path);
+
+
+    /* Init the file paths */
+    init_file_paths(path);
+
+#if 0
+    /* Mega-Hack XXX XXX XXX */
+    if (!check_dir(ANGBAND_DIR_APEX))
+    {
+        mkdir(ANGBAND_DIR_APEX);
+    }
+#endif
+
+    /* Hack -- Validate the paths */
+    validate_dir(ANGBAND_DIR_APEX);
+    validate_dir(ANGBAND_DIR_BONE);
+    validate_dir(ANGBAND_DIR_DATA);
+    validate_dir(ANGBAND_DIR_EDIT);
+    validate_dir(ANGBAND_DIR_FILE);
+    validate_dir(ANGBAND_DIR_HELP);
+    validate_dir(ANGBAND_DIR_INFO);
+    validate_dir(ANGBAND_DIR_SAVE);
+    validate_dir(ANGBAND_DIR_USER);
+    validate_dir(ANGBAND_DIR_XTRA);
+
+
+    /* Validate the "font" directory */
+    strcpy(path, ANGBAND_DIR_XTRA);
+    strcat(path, "font\\");
+    validate_dir(path);
+
+#ifdef USE_GRAPHICS
+    /* Validate the "graf" directory */
+    strcpy(path, ANGBAND_DIR_XTRA);
+    strcat(path, "graf\\");
+    validate_dir(path);
+#endif
+
+#ifdef USE_SOUND
+    /* Validate the "sound" directory */
+    strcpy(path, ANGBAND_DIR_XTRA);
+    strcat(path, "sound\\");
+    validate_dir(path);
+#endif
+
+
+    /* Hack -- Validate the basic font */
+    strcpy(path, ANGBAND_DIR_XTRA);
+    strcat(path, "font\\8X13.FON");
+    validate_file(path);
+
+#ifdef USE_GRAPHICS
+    /* Hack -- Validate the basic graf */
+    strcpy(path, ANGBAND_DIR_XTRA);
+    strcat(path, "graf\\8X13.BMP");
+    validate_file(path);
+#endif
+
+
+    /* Hack -- Validate the "news.txt" file */
+    strcpy(path, ANGBAND_DIR_FILE);
+    strcat(path, "news.txt");
+    validate_file(path);
 }
 
 
-#pragma argsused
 int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
   LPSTR lpCmdLine, int nCmdShow)
 {
-  WNDCLASS wc;
-  HDC      hdc;
-  MSG      msg;
+    int i;
 
-  hInstance = hInst;  /* save in a global var */
+    WNDCLASS wc;
+    HDC      hdc;
+    MSG      msg;
 
-  if (hPrevInst == NULL)
-  {
-    wc.style         = CS_CLASSDC;
-    wc.lpfnWndProc   = AngbandWndProc;
-    wc.cbClsExtra    = 0;
-    wc.cbWndExtra    = 4; /* one long pointer to term_data */
-    wc.hInstance     = hInst;
-    wc.hIcon         = hIcon = LoadIcon(hInst, AppName);
-    wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
-    wc.hbrBackground = GetStockObject(BLACK_BRUSH);
-    wc.lpszMenuName  = AppName;
-    wc.lpszClassName = AppName;
+    hInstance = hInst;  /* save in a global var */
 
-    if (!RegisterClass(&wc)) exit(1);
+    if (hPrevInst == NULL)
+    {
+        wc.style         = CS_CLASSDC;
+        wc.lpfnWndProc   = AngbandWndProc;
+        wc.cbClsExtra    = 0;
+        wc.cbWndExtra    = 4; /* one long pointer to term_data */
+        wc.hInstance     = hInst;
+        wc.hIcon         = hIcon = LoadIcon(hInst, AppName);
+        wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
+        wc.hbrBackground = GetStockObject(BLACK_BRUSH);
+        wc.lpszMenuName  = AppName;
+        wc.lpszClassName = AppName;
 
-    wc.lpfnWndProc   = AngbandListProc;
-    wc.lpszMenuName  = NULL;
-    wc.lpszClassName = AngList;
+        if (!RegisterClass(&wc)) exit(1);
 
-    if (!RegisterClass(&wc)) exit(2);
+        wc.lpfnWndProc   = AngbandListProc;
+        wc.lpszMenuName  = NULL;
+        wc.lpszClassName = AngList;
+
+        if (!RegisterClass(&wc)) exit(2);
 
 #ifdef ALLOW_SCRSAVER
 
-    wc.style          = CS_VREDRAW | CS_HREDRAW | CS_SAVEBITS | CS_DBLCLKS;
-    wc.lpfnWndProc    = AngbandSaverProc;
-    wc.hCursor        = NULL;
+        wc.style          = CS_VREDRAW | CS_HREDRAW | CS_SAVEBITS | CS_DBLCLKS;
+        wc.lpfnWndProc    = AngbandSaverProc;
+        wc.hCursor        = NULL;
 #if 0
-    wc.hIcon          = LoadIcon(hInst, MAKEINTATOM(ID_APP));
+        wc.hIcon          = LoadIcon(hInst, MAKEINTATOM(ID_APP));
 #endif
-    wc.lpszMenuName   = NULL;
-    wc.lpszClassName  = "WindowsScreenSaverClass";
+        wc.lpszMenuName   = NULL;
+        wc.lpszClassName  = "WindowsScreenSaverClass";
 
-    if (!RegisterClass(&wc)) exit(3);
+        if (!RegisterClass(&wc)) exit(3);
 
 #endif
 
-  }
+    }
 
-  /* Temporary hooks */
-  plog_aux = hack_plog;
-  quit_aux = hack_quit;
-  core_aux = hack_core;
+    /* Temporary hooks */
+    plog_aux = hack_plog;
+    quit_aux = hack_quit;
+    core_aux = hack_core;
 
-  /* Prepare the filepaths */
-  init_stuff();
+    /* Prepare the filepaths */
+    init_stuff();
 
-  /* Determine if display is 16/256/true color */
-  hdc = GetDC(NULL);
-  colors16 = (GetDeviceCaps(hdc, BITSPIXEL) == 4);
-  paletted = ((GetDeviceCaps(hdc, RASTERCAPS) & RC_PALETTE) ? TRUE : FALSE);
-  ReleaseDC(NULL, hdc);
+    /* Determine if display is 16/256/true color */
+    hdc = GetDC(NULL);
+    colors16 = (GetDeviceCaps(hdc, BITSPIXEL) == 4);
+    paletted = ((GetDeviceCaps(hdc, RASTERCAPS) & RC_PALETTE) ? TRUE : FALSE);
+    ReleaseDC(NULL, hdc);
 
-  /* Prepare the windows */
-  init_windows();
+    /* Initialize "color_table" */
+    for (i = 0; i < 16; i++)
+    {
+        /* Save the "complex" codes */
+        color_table[i][1] = GetRValue(win_clr[i]);
+        color_table[i][2] = GetGValue(win_clr[i]);
+        color_table[i][3] = GetBValue(win_clr[i]);
 
-  /* Activate hooks */
-  plog_aux = hook_plog;
-  quit_aux = hook_quit;
-  core_aux = hook_core;
+        /* Save the "simple" code */
+        color_table[i][0] = win_pal[i];
+    }
 
-  /* Display the "news" message */
-  show_news();
+    /* Prepare the windows */
+    init_windows();
 
-  /* Allocate and Initialize various arrays */
-  init_some_arrays();
+    /* Activate hooks */
+    plog_aux = hook_plog;
+    quit_aux = hook_quit;
+    core_aux = hook_core;
 
-  /* Hack -- assume wizard permissions */
-  can_be_wizard = TRUE;
+    /* Display the "news" message */
+    show_news();
 
-  /* Set the system suffix */
-  ANGBAND_SYS = "win";
+    /* Allocate and Initialize various arrays */
+    init_some_arrays();
 
-  /* We are now initialized */
-  initialized = TRUE;
+    /* Hack -- assume wizard permissions */
+    can_be_wizard = TRUE;
 
-  /* Did the user double click on a save file? */
-  check_for_save_file(lpCmdLine);
+    /* Set the system suffix */
+    ANGBAND_SYS = "win";
 
-  /* Prompt the user */
-  prt("[Choose 'New' or 'Open' from the 'File' menu]", 23, 17);
-  Term_fresh();
+    /* We are now initialized */
+    initialized = TRUE;
 
-  /* Process messages forever */
-  while (GetMessage(&msg, NULL, 0, 0))
-  {
-    TranslateMessage(&msg);
-    DispatchMessage(&msg);
-  }
+    /* Did the user double click on a save file? */
+    check_for_save_file(lpCmdLine);
 
-  /* Paranoia */
-  quit(NULL);
+    /* Prompt the user */
+    prt("[Choose 'New' or 'Open' from the 'File' menu]", 23, 17);
+    Term_fresh();
 
-  /* Paranoia */
-  return (0);
+    /* Process messages forever */
+    while (GetMessage(&msg, NULL, 0, 0))
+    {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+
+    /* Paranoia */
+    quit(NULL);
+
+    /* Paranoia */
+    return (0);
 }
 
 #endif /* _Windows */

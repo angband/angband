@@ -39,12 +39,12 @@
  * clearing of many variables at once.
  *
  * Certain data is saved in multiple places for efficient access, currently,
- * this includes the tval/sval/weight fields in "inven_type", various fields
+ * this includes the tval/sval/weight fields in "object_type", various fields
  * in "header_type", and the "m_idx" and "i_idx" fields in "cave_type".  All
  * of these could be removed, but this would, in general, slow down the game
  * and increase the complexity of the code.
  */
- 
+
 
 
 
@@ -128,9 +128,9 @@ struct feature_type {
  * Only "aware" and "tried" are saved in the savefile
  */
 
-typedef struct inven_kind inven_kind;
+typedef struct object_kind object_kind;
 
-struct inven_kind {
+struct object_kind {
 
     u16b name;			/* Name (offset)		*/
     u16b text;			/* Text (offset)		*/
@@ -271,7 +271,7 @@ struct ego_item_type {
  *	- Damage Dice
  *	- Damage Sides
  */
- 
+
 typedef struct monster_blow monster_blow;
 
 struct monster_blow {
@@ -323,10 +323,10 @@ struct monster_race {
     s32b mexp;			/* Exp value for kill		*/
 
     s16b extra;			/* Unused (for now)		*/
-  
+
     byte freq_inate;		/* Inate spell frequency	*/
     byte freq_spell;		/* Other spell frequency	*/
-  
+
     u32b flags1;		/* Flags 1 (general)		*/
     u32b flags2;		/* Flags 2 (abilities)		*/
     u32b flags3;		/* Flags 3 (race/resist)	*/
@@ -414,7 +414,7 @@ struct vault_type {
  * to a max size of 256 by 256.  In partcular, locations are often
  * saved as bytes, limiting each coordinate to the 0-255 range.
  *
- * The "m_idx" and "i_idx" fields are very interesting.  There are
+ * The "i_idx" and "m_idx" fields are very interesting.  There are
  * many places in the code where we need quick access to the actual
  * monster or object(s) in a given cave grid.  The easiest way to
  * do this is to simply keep the index of the monster and object
@@ -429,9 +429,13 @@ typedef struct cave_type cave_type;
 
 struct cave_type {
 
-  s16b m_idx;		/* Monster index (in m_list) or zero	*/
-  
+  byte fdat;		/* Hack -- cave flags */
+
+  byte ftyp;		/* Hack -- feature type */
+
   s16b i_idx;		/* Item index (in i_list) or zero	*/
+
+  s16b m_idx;		/* Monster index (in m_list) or zero	*/
 
 #ifdef MONSTER_FLOW
 
@@ -440,7 +444,6 @@ struct cave_type {
 
 #endif
 
-  u16b feat;		/* Flags -- use the "CAVE_*" constants	*/
 };
 
 
@@ -459,9 +462,9 @@ struct cave_type {
  * the artifact and ego-item indexes, and the two "xtra" fields.
  */
 
-typedef struct inven_type inven_type;
+typedef struct object_type object_type;
 
-struct inven_type {
+struct object_type {
 
   s16b k_idx;			/* Kind index (zero if "dead")	*/
 
@@ -481,7 +484,7 @@ struct inven_type {
 
   byte name1;			/* Artifact type, if any	*/
   byte name2;			/* Ego-Item type, if any	*/
-  
+
   byte xtra1;			/* Extra info type		*/
   byte xtra2;			/* Extra info index		*/
 
@@ -608,12 +611,12 @@ struct option_type {
     bool	*o_var;
 
     byte	o_norm;
-    
+
     byte	o_page;
 
     byte	o_set;
     byte	o_bit;
-    
+
     cptr	o_text;
     cptr	o_desc;
 };
@@ -688,7 +691,7 @@ struct store_type {
 
   byte owner;			/* Owner index			*/
   byte extra;			/* Unused for now		*/
-  
+
   s16b insult_cur;		/* Insult counter		*/
 
   s16b good_buy;		/* Number of "good" buys	*/
@@ -697,14 +700,14 @@ struct store_type {
   s32b store_open;		/* Closed until this turn	*/
 
   s32b store_wrap;		/* Unused for now		*/
-  
+
   s16b table_num;		/* Table -- Number of entries	*/
   s16b table_size;		/* Table -- Total Size of Array	*/
   s16b *table;			/* Table -- Legal item kinds	*/
-  
+
   s16b stock_num;		/* Stock -- Number of entries	*/
   s16b stock_size;		/* Stock -- Total Size of Array	*/
-  inven_type *stock;		/* Stock -- Actual stock items	*/
+  object_type *stock;		/* Stock -- Actual stock items	*/
 };
 
 
@@ -739,10 +742,10 @@ struct player_magic {
 
   s16b spell_book;		/* Tval of spell books (if any)	*/
   s16b spell_xtra;		/* Something for later		*/
-  
+
   s16b spell_stat;		/* Stat for spells (if any) 	*/
   s16b spell_type;		/* Spell type (mage/priest)	*/
-  
+
   s16b spell_first;		/* Level of first spell		*/
   s16b spell_weight;		/* Weight that hurts spells	*/
 
@@ -754,7 +757,7 @@ struct player_magic {
 /*
  * Player racial info
  */
- 
+
 typedef struct player_race player_race;
 
 struct player_race {
@@ -782,7 +785,7 @@ struct player_race {
   byte m_m_ht;			/* mod height (males)		*/
   byte m_b_wt;			/* base weight (males)		*/
   byte m_m_wt;			/* mod weight (males)		*/
-  
+
   byte f_b_ht;			/* base height (females)	*/
   byte f_m_ht;			/* mod height (females)	 	*/
   byte f_b_wt;			/* base weight (females)	*/
@@ -945,13 +948,14 @@ struct player_type {
   bool heavy_wield;		/* Heavy weapon			*/
   bool heavy_shoot;		/* Heavy shooter		*/
   bool icky_wield;		/* Icky weapon			*/
-  
+
   s16b cur_lite;		/* Radius of lite (if any)	*/
 
 
+  u32b notice;			/* Special Updates (bit flags)	*/
+
   u32b update;			/* Pending Updates (bit flags)	*/
   u32b redraw;			/* Desired Redraws (bit flags)	*/
-
 
   s16b stat_use[6];		/* Current modified stats	*/
   s16b stat_top[6];		/* Maximal modified stats	*/
@@ -959,51 +963,52 @@ struct player_type {
   s16b stat_add[6];		/* Modifiers to stat values	*/
   s16b stat_ind[6];		/* Indexes into stat tables	*/
 
-  byte immune_acid;		/* Immunity to acid		*/
-  byte immune_elec;		/* Immunity to lightning	*/
-  byte immune_fire;		/* Immunity to fire		*/
-  byte immune_cold;		/* Immunity to cold		*/
+  bool immune_acid;		/* Immunity to acid		*/
+  bool immune_elec;		/* Immunity to lightning	*/
+  bool immune_fire;		/* Immunity to fire		*/
+  bool immune_cold;		/* Immunity to cold		*/
 
-  byte resist_acid;		/* Resist acid		*/
-  byte resist_elec;		/* Resist lightning	*/
-  byte resist_fire;		/* Resist fire		*/
-  byte resist_cold;		/* Resist cold		*/
-  byte resist_pois;		/* Resist poison	*/
+  bool resist_acid;		/* Resist acid		*/
+  bool resist_elec;		/* Resist lightning	*/
+  bool resist_fire;		/* Resist fire		*/
+  bool resist_cold;		/* Resist cold		*/
+  bool resist_pois;		/* Resist poison	*/
 
-  byte resist_conf;		/* Resist confusion	*/
-  byte resist_sound;		/* Resist sound		*/
-  byte resist_lite;		/* Resist light		*/
-  byte resist_dark;		/* Resist darkness	*/
-  byte resist_chaos;		/* Resist chaos		*/
-  byte resist_disen;		/* Resist disenchant	*/
-  byte resist_shard;		/* Resist shards	*/
-  byte resist_nexus;		/* Resist nexus		*/
-  byte resist_blind;		/* Resist blindness	*/
-  byte resist_neth;		/* Resist nether	*/
-  byte resist_fear;		/* Resist fear		*/
+  bool resist_conf;		/* Resist confusion	*/
+  bool resist_sound;		/* Resist sound		*/
+  bool resist_lite;		/* Resist light		*/
+  bool resist_dark;		/* Resist darkness	*/
+  bool resist_chaos;		/* Resist chaos		*/
+  bool resist_disen;		/* Resist disenchant	*/
+  bool resist_shard;		/* Resist shards	*/
+  bool resist_nexus;		/* Resist nexus		*/
+  bool resist_blind;		/* Resist blindness	*/
+  bool resist_neth;		/* Resist nether	*/
+  bool resist_fear;		/* Resist fear		*/
 
-  byte sustain_str;		/* Keep strength	*/
-  byte sustain_int;		/* Keep intelligence	*/
-  byte sustain_wis;		/* Keep wisdom		*/
-  byte sustain_dex;		/* Keep dexterity	*/
-  byte sustain_con;		/* Keep constitution	*/
-  byte sustain_chr;		/* Keep charisma	*/
+  bool sustain_str;		/* Keep strength	*/
+  bool sustain_int;		/* Keep intelligence	*/
+  bool sustain_wis;		/* Keep wisdom		*/
+  bool sustain_dex;		/* Keep dexterity	*/
+  bool sustain_con;		/* Keep constitution	*/
+  bool sustain_chr;		/* Keep charisma	*/
 
-  byte aggravate;		/* Aggravate monsters	*/
-  byte teleport;		/* Random teleporting	*/
+  bool aggravate;		/* Aggravate monsters	*/
+  bool teleport;		/* Random teleporting	*/
 
-  byte exp_drain;		/* Experience draining	*/
+  bool exp_drain;		/* Experience draining	*/
 
-  byte ffall;			/* No damage falling	*/
-  byte lite;			/* Permanent light	*/
-  byte free_act;		/* Never paralyzed	*/
-  byte see_inv;			/* Can see invisible	*/
-  byte regenerate;		/* Regenerate hit pts	*/
-  byte hold_life;		/* Resist life draining	*/
-  byte telepathy;		/* Telepathy		*/
-  byte slow_digest;		/* Slower digestion	*/
-  byte bless_blade;		/* Blessed blade	*/
-  byte xtra_might;		/* Extra might bow	*/
+  bool ffall;			/* No damage falling	*/
+  bool lite;			/* Permanent light	*/
+  bool free_act;		/* Never paralyzed	*/
+  bool see_inv;			/* Can see invisible	*/
+  bool regenerate;		/* Regenerate hit pts	*/
+  bool hold_life;		/* Resist life draining	*/
+  bool telepathy;		/* Telepathy		*/
+  bool slow_digest;		/* Slower digestion	*/
+  bool bless_blade;		/* Blessed blade	*/
+  bool xtra_might;		/* Extra might bow	*/
+  bool impact;			/* Earthquake blows	*/
 
   s16b dis_to_h;		/* Known bonus to hit	*/
   s16b dis_to_d;		/* Known bonus to dam	*/

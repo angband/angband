@@ -38,19 +38,18 @@ s16b ddy_ddd[9] = { 1, -1, 0, 0, 1, 1, -1, -1, 0 };
  * Global array for converting numbers to uppercase hecidecimal digit
  * This array can also be used to convert a number to an octal digit
  */
-char hexsym[16] = {
+char hexsym[16] =
+{
     '0', '1', '2', '3', '4', '5', '6', '7',
     '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
 };
 
 
-
-
-
 /*
  * Stat Table (INT/WIS) -- Number of half-spells per level
  */
-byte adj_mag_study[] = {
+byte adj_mag_study[] =
+{
     0	/* 3 */,
     0	/* 4 */,
     0	/* 5 */,
@@ -95,7 +94,8 @@ byte adj_mag_study[] = {
 /*
  * Stat Table (INT/WIS) -- extra half-mana-points per level
  */
-byte adj_mag_mana[] = {
+byte adj_mag_mana[] =
+{
     0	/* 3 */,
     0	/* 4 */,
     0	/* 5 */,
@@ -140,7 +140,8 @@ byte adj_mag_mana[] = {
 /*
  * Stat Table (INT/WIS) -- Minimum failure rate (percentage)
  */
-byte adj_mag_fail[] = {
+byte adj_mag_fail[] =
+{
     99	/* 3 */,
     99	/* 4 */,
     99	/* 5 */,
@@ -185,7 +186,8 @@ byte adj_mag_fail[] = {
 /*
  * Stat Table (INT/WIS) -- Various things
  */
-byte adj_mag_stat[] = {
+byte adj_mag_stat[] =
+{
     0	/* 3 */,
     0	/* 4 */,
     0	/* 5 */,
@@ -230,7 +232,8 @@ byte adj_mag_stat[] = {
 /*
  * Stat Table (CHR) -- payment percentages
  */
-byte adj_chr_gold[] = {
+byte adj_chr_gold[] =
+{
     130	/* 3 */,
     125	/* 4 */,
     122	/* 5 */,
@@ -275,7 +278,8 @@ byte adj_chr_gold[] = {
 /*
  * Stat Table (INT) -- Magic devices
  */
-byte adj_int_dev[] = {
+byte adj_int_dev[] =
+{
     0	/* 3 */,
     0	/* 4 */,
     0	/* 5 */,
@@ -320,7 +324,8 @@ byte adj_int_dev[] = {
 /*
  * Stat Table (WIS) -- Saving throw
  */
-byte adj_wis_sav[] = {
+byte adj_wis_sav[] =
+{
     0	/* 3 */,
     0	/* 4 */,
     0	/* 5 */,
@@ -365,7 +370,8 @@ byte adj_wis_sav[] = {
 /*
  * Stat Table (DEX) -- disarming
  */
-byte adj_dex_dis[] = {
+byte adj_dex_dis[] =
+{
     0	/* 3 */,
     0	/* 4 */,
     0	/* 5 */,
@@ -410,7 +416,8 @@ byte adj_dex_dis[] = {
 /*
  * Stat Table (INT) -- disarming
  */
-byte adj_int_dis[] = {
+byte adj_int_dis[] =
+{
     0	/* 3 */,
     0	/* 4 */,
     0	/* 5 */,
@@ -455,7 +462,8 @@ byte adj_int_dis[] = {
 /*
  * Stat Table (DEX) -- bonus to ac (plus 128)
  */
-byte adj_dex_ta[] = {
+byte adj_dex_ta[] =
+{
     128 + -4	/* 3 */,
     128 + -3	/* 4 */,
     128 + -2	/* 5 */,
@@ -500,7 +508,8 @@ byte adj_dex_ta[] = {
 /*
  * Stat Table (STR) -- bonus to dam (plus 128)
  */
-byte adj_str_td[] = {
+byte adj_str_td[] =
+{
     128 + -2	/* 3 */,
     128 + -2	/* 4 */,
     128 + -1	/* 5 */,
@@ -545,7 +554,8 @@ byte adj_str_td[] = {
 /*
  * Stat Table (DEX) -- bonus to hit (plus 128)
  */
-byte adj_dex_th[] = {
+byte adj_dex_th[] =
+{
     128 + -3	/* 3 */,
     128 + -2	/* 4 */,
     128 + -2	/* 5 */,
@@ -590,7 +600,8 @@ byte adj_dex_th[] = {
 /*
  * Stat Table (STR) -- bonus to hit (plus 128)
  */
-byte adj_str_th[] = {
+byte adj_str_th[] =
+{
     128 + -3	/* 3 */,
     128 + -2	/* 4 */,
     128 + -1	/* 5 */,
@@ -635,7 +646,8 @@ byte adj_str_th[] = {
 /*
  * Stat Table (STR) -- weight limit in deca-pounds
  */
-byte adj_str_wgt[] = {
+byte adj_str_wgt[] =
+{
      5	/* 3 */,
      6	/* 4 */,
      7	/* 5 */,
@@ -680,7 +692,8 @@ byte adj_str_wgt[] = {
 /*
  * Stat Table (STR) -- weapon weight limit in pounds
  */
-byte adj_str_hold[] = {
+byte adj_str_hold[] =
+{
      4	/* 3 */,
      5	/* 4 */,
      6	/* 5 */,
@@ -725,7 +738,8 @@ byte adj_str_hold[] = {
 /*
  * Stat Table (STR) -- digging value
  */
-byte adj_str_dig[] = {
+byte adj_str_dig[] =
+{
       0	/* 3 */,
       0	/* 4 */,
       1	/* 5 */,
@@ -770,7 +784,8 @@ byte adj_str_dig[] = {
 /*
  * Stat Table (STR) -- help index into the "blow" table
  */
-byte adj_str_blow[] = {
+byte adj_str_blow[] =
+{
       3	/* 3 */,
       4	/* 4 */,
       5	/* 5 */,
@@ -815,7 +830,8 @@ byte adj_str_blow[] = {
 /*
  * Stat Table (DEX) -- index into the "blow" table
  */
-byte adj_dex_blow[] = {
+byte adj_dex_blow[] =
+{
     0	/* 3 */,
     0	/* 4 */,
     0	/* 5 */,
@@ -860,7 +876,8 @@ byte adj_dex_blow[] = {
 /*
  * Stat Table (DEX) -- chance of avoiding "theft" and "falling"
  */
-byte adj_dex_safe[] = {
+byte adj_dex_safe[] =
+{
     0	/* 3 */,
     1	/* 4 */,
     2	/* 5 */,
@@ -905,7 +922,8 @@ byte adj_dex_safe[] = {
 /*
  * Stat Table (CON) -- base regeneration rate
  */
-byte adj_con_fix[] = {
+byte adj_con_fix[] =
+{
     0	/* 3 */,
     0	/* 4 */,
     0	/* 5 */,
@@ -950,7 +968,8 @@ byte adj_con_fix[] = {
 /*
  * Stat Table (CON) -- extra half-hitpoints per level (plus 128)
  */
-byte adj_con_mhp[] = {
+byte adj_con_mhp[] =
+{
     128 + -5	/* 3 */,
     128 + -3	/* 4 */,
     128 + -2	/* 5 */,
@@ -1019,22 +1038,23 @@ byte adj_con_mhp[] = {
  * The player gets "blows_table[P][D]" blows/round, as shown below,
  * up to a maximum of "num" blows/round, plus any "bonus" blows/round.
  */
-byte blows_table[12][12] = {
+byte blows_table[12][12] =
+{
 
-/* P/D		   0,   1,   2,   3,   4,   5,   6,   7,   8,   9,  10,  11+ */
+/* P/D         0,   1,   2,   3,   4,   5,   6,   7,   8,   9,  10,  11+ */
 
-/* 0  */	{  1,   1,   1,   1,   1,   1,   2,   2,   2,   2,   2,   3 },
-/* 1  */	{  1,   1,   1,   1,   2,   2,   3,   3,   3,   4,   4,   4 },
-/* 2  */	{  1,   1,   2,   2,   3,   3,   4,   4,   4,   5,   5,   5 },
-/* 3  */	{  1,   2,   2,   3,   3,   4,   4,   4,   5,   5,   5,   5 },
-/* 4  */	{  1,   2,   2,   3,   3,   4,   4,   5,   5,   5,   5,   5 },
-/* 5  */	{  2,   2,   3,   3,   4,   4,   5,   5,   5,   5,   5,   6 },
-/* 6  */	{  2,   2,   3,   3,   4,   4,   5,   5,   5,   5,   5,   6 },
-/* 7  */	{  2,   3,   3,   4,   4,   4,   5,   5,   5,   5,   5,   6 },
-/* 8  */	{  3,   3,   3,   4,   4,   4,   5,   5,   5,   5,   6,   6 },
-/* 9  */	{  3,   3,   4,   4,   4,   4,   5,   5,   5,   5,   6,   6 },
-/* 10 */	{  3,   3,   4,   4,   4,   4,   5,   5,   5,   6,   6,   6 },
-/* 11+ */	{  3,   3,   4,   4,   4,   4,   5,   5,   6,   6,   6,   6 },
+/* 0  */    {  1,   1,   1,   1,   1,   1,   2,   2,   2,   2,   2,   3 },
+/* 1  */    {  1,   1,   1,   1,   2,   2,   3,   3,   3,   4,   4,   4 },
+/* 2  */    {  1,   1,   2,   2,   3,   3,   4,   4,   4,   5,   5,   5 },
+/* 3  */    {  1,   2,   2,   3,   3,   4,   4,   4,   5,   5,   5,   5 },
+/* 4  */    {  1,   2,   2,   3,   3,   4,   4,   5,   5,   5,   5,   5 },
+/* 5  */    {  2,   2,   3,   3,   4,   4,   5,   5,   5,   5,   5,   6 },
+/* 6  */    {  2,   2,   3,   3,   4,   4,   5,   5,   5,   5,   5,   6 },
+/* 7  */    {  2,   3,   3,   4,   4,   4,   5,   5,   5,   5,   5,   6 },
+/* 8  */    {  3,   3,   3,   4,   4,   4,   5,   5,   5,   5,   6,   6 },
+/* 9  */    {  3,   3,   4,   4,   4,   4,   5,   5,   5,   5,   6,   6 },
+/* 10 */    {  3,   3,   4,   4,   4,   4,   5,   5,   5,   6,   6,   6 },
+/* 11+ */   {  3,   3,   4,   4,   4,   4,   5,   5,   6,   6,   6,   6 },
 
 };
 
@@ -1047,21 +1067,22 @@ byte blows_table[12][12] = {
  * Note that this table used a different indexing scheme to determine "P"
  */
 
-byte old_blows_table[11][12] = {
+byte old_blows_table[11][12] =
+{
 
-/* P/D		   3,  10, /01, /50, /90,/100,/101,/110,/120,/130,/140,/150 */
+/* P/D         3,  10, /01, /50, /90,/100,/101,/110,/120,/130,/140,/150 */
 
-/* 0+ */	{  1,   1,   1,   1,   1,   1,   2,   2,   2,   2,   2,   3},
-/* 2+ */	{  1,   1,   1,   1,   2,   2,   3,   3,   3,   3,   3,   4},
-/* 3+ */	{  1,   1,   1,   2,   2,   3,   4,   4,   4,   4,   4,   5},
-/* 4+ */	{  1,   1,   2,   2,   3,   3,   4,   4,   4,   5,   5,   5},
-/* 6+ */	{  1,   2,   2,   3,   3,   4,   4,   4,   5,   5,   5,   5},
-/* 8+ */	{  1,   2,   2,   3,   4,   4,   4,   5,   5,   5,   5,   5},
-/* 10+ */	{  2,   2,   3,   3,   4,   4,   5,   5,   5,   5,   5,   6},
-/* 13+ */	{  2,   3,   3,   3,   4,   4,   5,   5,   5,   5,   5,   6},
-/* 15+ */	{  3,   3,   3,   4,   4,   4,   5,   5,   5,   5,   6,   6},
-/* 18+ */	{  3,   3,   3,   4,   4,   4,   5,   5,   5,   5,   6,   6},
-/* 20+ */	{  3,   3,   4,   4,   4,   4,   5,   5,   5,   6,   6,   6}
+/* 0+ */    {  1,   1,   1,   1,   1,   1,   2,   2,   2,   2,   2,   3},
+/* 2+ */    {  1,   1,   1,   1,   2,   2,   3,   3,   3,   3,   3,   4},
+/* 3+ */    {  1,   1,   1,   2,   2,   3,   4,   4,   4,   4,   4,   5},
+/* 4+ */    {  1,   1,   2,   2,   3,   3,   4,   4,   4,   5,   5,   5},
+/* 6+ */    {  1,   2,   2,   3,   3,   4,   4,   4,   5,   5,   5,   5},
+/* 8+ */    {  1,   2,   2,   3,   4,   4,   4,   5,   5,   5,   5,   5},
+/* 10+ */   {  2,   2,   3,   3,   4,   4,   5,   5,   5,   5,   5,   6},
+/* 13+ */   {  2,   3,   3,   3,   4,   4,   5,   5,   5,   5,   5,   6},
+/* 15+ */   {  3,   3,   3,   4,   4,   4,   5,   5,   5,   5,   6,   6},
+/* 18+ */   {  3,   3,   3,   4,   4,   4,   5,   5,   5,   5,   6,   6},
+/* 20+ */   {  3,   3,   4,   4,   4,   4,   5,   5,   5,   6,   6,   6}
 
 };
 
@@ -1073,7 +1094,8 @@ byte old_blows_table[11][12] = {
  * Store owners (exactly four "possible" owners per store, chosen randomly)
  * { name, purse, max greed, min greed, haggle_per, tolerance, race, unused }
  */
-owner_type owners[MAX_STORES][MAX_OWNERS] = {
+owner_type owners[MAX_STORES][MAX_OWNERS] =
+{
   {
     /* General store */
     { "Bilbo the Friendly",	200,	170,  108,   5,  15,  RACE_HOBBIT},
@@ -1157,7 +1179,8 @@ owner_type owners[MAX_STORES][MAX_OWNERS] = {
  * the (compiled out) small random energy boost code.  It may
  * also tend to cause more "clumping" at high speeds.
  */
-byte extract_energy[200] = {
+byte extract_energy[200] =
+{
 /* Slow */     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
 /* Slow */     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
 /* Slow */     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
@@ -1189,7 +1212,8 @@ byte extract_energy[200] = {
 /*
  * Base experience levels, may be adjusted up for race and/or class
  */
-s32b player_exp[PY_MAX_LEVEL] = {
+s32b player_exp[PY_MAX_LEVEL] =
+{
         10,		25,		45,		70,
         100,		140,		200,		280,
         380,		500,		650,		850,
@@ -1215,129 +1239,129 @@ s32b player_exp[PY_MAX_LEVEL] = {
  *    Age (Base, Mod),
  *    Male (Hgt, Wgt),
  *    Female (Hgt, Wgt)
- *    infra, 
+ *    infra,
  *    class-choices
  */
-player_race race_info[MAX_RACES] = {
-
+player_race race_info[MAX_RACES] =
+{
     {
-      "Human",
-      {  0,  0,  0,  0,  0,  0 },
-      0,  0,  0,  0,  0,  10,  0,  0,
-      10,  100,
-      14,  6,
-      72,  6,180, 25,
-      66,  4,150, 20,
-      0, 
-      0x3F
+        "Human",
+        {  0,  0,  0,  0,  0,  0 },
+        0,  0,  0,  0,  0,  10,  0,  0,
+        10,  100,
+        14,  6,
+        72,  6,180, 25,
+        66,  4,150, 20,
+        0,
+        0x3F
     },
 
     {
-      "Half-Elf",
-      { -1,  1,  0,  1, -1,  1 },
-      2,  3,  3,  1, 6,  11, -1,  5,
-      9,  110,
-      24, 16,
-      66,  6,130, 15,
-      62,  6,100, 10,
-      2, 
-      0x3F
+        "Half-Elf",
+        { -1,  1,  0,  1, -1,  1 },
+        2,  3,  3,  1, 6,  11, -1,  5,
+        9,  110,
+        24, 16,
+        66,  6,130, 15,
+        62,  6,100, 10,
+        2,
+        0x3F
     },
 
     {
-      "Elf",
-      { -1,  2,  1,  1, -2,  1 },
-      5,  6,  6,  1, 8,  12, -5, 15,
-      8,  120,
-      75, 75,
-      60,  4,100,  6,
-      54,  4, 80,  6,
-      3, 
-      0x1F
+        "Elf",
+        { -1,  2,  1,  1, -2,  1 },
+        5,  6,  6,  1, 8,  12, -5, 15,
+        8,  120,
+        75, 75,
+        60,  4,100,  6,
+        54,  4, 80,  6,
+        3,
+        0x1F
     },
 
     {
-      "Hobbit",
-      { -2,  2,  1,  3,  2,  1 },
-      15, 18, 18, 4, 12,  15,-10, 20,
-      7,  110,
-      21, 12,
-      36,  3, 60,  3,
-      33,  3, 50,  3,
-      4, 
-      0x0B
+        "Hobbit",
+        { -2,  2,  1,  3,  2,  1 },
+        15, 18, 18, 4, 12,  15,-10, 20,
+        7,  110,
+        21, 12,
+        36,  3, 60,  3,
+        33,  3, 50,  3,
+        4,
+        0x0B
     },
 
     {
-      "Gnome",
-      { -1,  2,  0,  2,  1, -2 },
-      10, 12, 12,  3, 6,  13, -8, 12,
-      8,  125,
-      50, 40,
-      42,  3, 90,  6,
-      39,  3, 75,  3,
-      4, 
-      0x0F
+        "Gnome",
+        { -1,  2,  0,  2,  1, -2 },
+        10, 12, 12,  3, 6,  13, -8, 12,
+        8,  125,
+        50, 40,
+        42,  3, 90,  6,
+        39,  3, 75,  3,
+        4,
+        0x0F
     },
 
     {
-      "Dwarf",
-      {  2, -3,  2, -2,  2, -3 },
-      2,  9,  9,  -1,  7,  10, 15,  0,
-      11,  120,
-      35, 15,
-      48,  3,150, 10,
-      46,  3, 120, 10,
-      5, 
-      0x05
+        "Dwarf",
+        {  2, -3,  2, -2,  2, -3 },
+        2,  9,  9,  -1,  7,  10, 15,  0,
+        11,  120,
+        35, 15,
+        48,  3,150, 10,
+        46,  3, 120, 10,
+        5,
+        0x05
     },
 
     {
-      "Half-Orc",
-      {  2, -1,  0,  0,  1, -4 },
-      -3, -3, -3,  -1,  0, 7, 12, -5,
-      10,  110,
-      11,  4,
-      66,  1,150,  5,
-      62,  1,120,  5,
-      3, 
-      0x0D
+        "Half-Orc",
+        {  2, -1,  0,  0,  1, -4 },
+        -3, -3, -3,  -1,  0, 7, 12, -5,
+        10,  110,
+        11,  4,
+        66,  1,150,  5,
+        62,  1,120,  5,
+        3,
+        0x0D
     },
 
     {
-      "Half-Troll",
-      { 4, -4, -2, -4,  3, -6 },
-      -5, -8, -8, -2,  -1, 5, 20,-10,
-      12,  120,
-      20, 10,
-      96, 10,250, 50,
-      84,  8,225, 40,
-      3, 
-      0x05
+        "Half-Troll",
+        { 4, -4, -2, -4,  3, -6 },
+        -5, -8, -8, -2,  -1, 5, 20,-10,
+        12,  120,
+        20, 10,
+        96, 10,250, 50,
+        84,  8,225, 40,
+        3,
+        0x05
     },
 
     {
-      "Dunadan",
-      {  1,  2,  2,  2,  3,  2 },
-      4,  5,  5,  2, 3, 13, 15, 10,
-      10,  180,
-      50, 20,
-      82, 5, 190, 20,
-      78,  6, 180, 15,
-      0, 
-      0x3F
+        "Dunadan",
+        {  1,  2,  2,  2,  3,  2 },
+        4,  5,  5,  2, 3, 13, 15, 10,
+        10,  180,
+        50, 20,
+        82, 5, 190, 20,
+        78,  6, 180, 15,
+        0,
+        0x3F
     },
 
     {
-      "High-Elf",
-      {  1,  3, -1,  3,  1,  5 },
-      4,  20, 20,  3,  3, 14, 10, 25,
-      10,  200,
-      100, 30,
-      90,10, 190, 20,
-      82, 10, 180, 15,
-      4, 
-      0x1F
+        "High-Elf",
+        {  1,  3, -1,  3,  1,  5 },
+        4,  20, 20,  3,  3, 14, 10, 25,
+        10,  200,
+        100, 30,
+        90,10, 190, 20,
+        82, 10, 180, 15,
+        4,
+        0x1F
     }
 };
 
@@ -1351,54 +1375,54 @@ player_race race_info[MAX_RACES] = {
  *   x_dis, x_dev, x_sav, x_stl, x_srh, x_fos, x_thn, x_thb,
  *   HD, Exp
  */
-player_class class_info[MAX_CLASS] = {
-
+player_class class_info[MAX_CLASS] =
+{
     {
-      "Warrior",
-      { 5,-2,-2, 2, 2,-1},
-      25, 18, 18, 1,  14, 2, 70, 55,
-      10, 7,  10, 0,  0,  0,  45, 45,
-      9,  0
+        "Warrior",
+        { 5,-2,-2, 2, 2,-1},
+        25, 18, 18, 1,  14, 2, 70, 55,
+        10, 7,  10, 0,  0,  0,  45, 45,
+        9,  0
     },
 
     {
-      "Mage",
-      {-5, 3, 0, 1,-2, 1},
-      30, 36, 30, 2,  16, 20, 34, 20,
-      7,  13, 9,  0,  0,  0,  15, 15,
-      0, 30
+        "Mage",
+        {-5, 3, 0, 1,-2, 1},
+        30, 36, 30, 2,  16, 20, 34, 20,
+        7,  13, 9,  0,  0,  0,  15, 15,
+        0, 30
     },
 
     {
-      "Priest",
-      {-1,-3, 3,-1, 0, 2},
-      25, 30, 32, 2,  16, 8, 48, 35,
-      7,  10, 12, 0,  0,  0, 20, 20,
-      2, 20
+        "Priest",
+        {-1,-3, 3,-1, 0, 2},
+        25, 30, 32, 2,  16, 8, 48, 35,
+        7,  10, 12, 0,  0,  0, 20, 20,
+        2, 20
     },
 
     {
-      "Rogue",
-      { 2, 1,-2, 3, 1,-1},
-      45, 32, 28, 5, 32, 24, 60, 66,
-      15, 10, 10, 0,  0,  0, 40, 30,
-      6, 25
+        "Rogue",
+        { 2, 1,-2, 3, 1,-1},
+        45, 32, 28, 5, 32, 24, 60, 66,
+        15, 10, 10, 0,  0,  0, 40, 30,
+        6, 25
     },
 
     {
-      "Ranger",
-      { 2, 2, 0, 1, 1, 1},
-      30, 32, 28, 3,  24, 16, 56, 72,
-      8,  10, 10, 0,  0,  0,  30, 45,
-      4, 30
+        "Ranger",
+        { 2, 2, 0, 1, 1, 1},
+        30, 32, 28, 3,  24, 16, 56, 72,
+        8,  10, 10, 0,  0,  0,  30, 45,
+        4, 30
     },
 
     {
-      "Paladin",
-      { 3,-3, 1, 0, 2, 2},
-      20, 24, 25, 1,  12, 2, 68, 40,
-      7,  10, 11, 0,  0,  0,  35, 30,
-      6, 35
+        "Paladin",
+        { 3,-3, 1, 0, 2, 2},
+        20, 24, 25, 1,  12, 2, 68, 40,
+        7,  10, 11, 0,  0,  0,  35, 30,
+        6, 35
     }
 };
 
@@ -1423,8 +1447,8 @@ player_class class_info[MAX_CLASS] = {
  *
  *   Array of { Lev, Mana, Fail, Exp/Lev }
  */
-player_magic magic_info[MAX_CLASS] = {
-
+player_magic magic_info[MAX_CLASS] =
+{
     {
         /*** Warrior ***/
 
@@ -1961,214 +1985,214 @@ player_magic magic_info[MAX_CLASS] = {
 /*
  * Spells in each book (mage spells then priest spells)
  */
-u32b spell_flags[2][9][2] = {
+u32b spell_flags[2][9][2] =
+{
+    {
+        /*** Mage spell books ***/
+        { 0x000001ff, 0x00000000 },
+        { 0x0003fe00, 0x00000000 },
+        { 0x03fc0000, 0x00000000 },
+        { 0xfc000000, 0x00000001 },
+        { 0x00000000, 0x003e0000 },
+        { 0x00000000, 0x0000003e },
+        { 0x00000000, 0x0001f000 },
+        { 0x00000000, 0x07c00000 },
+        { 0x00000000, 0x00000fc0 }
+    },
 
-  {
-    /*** Mage spell books ***/
-    { 0x000001ff, 0x00000000 },
-    { 0x0003fe00, 0x00000000 },
-    { 0x03fc0000, 0x00000000 },
-    { 0xfc000000, 0x00000001 },
-    { 0x00000000, 0x003e0000 },
-    { 0x00000000, 0x0000003e },
-    { 0x00000000, 0x0001f000 },
-    { 0x00000000, 0x07c00000 },
-    { 0x00000000, 0x00000fc0 }
-  },
-
-  {
-    /*** Priest spell books ***/
-    { 0x000000ff, 0x00000000 },
-    { 0x0000ff00, 0x00000000 },
-    { 0x01ff0000, 0x00000000 },
-    { 0x7e000000, 0x00000000 },
-    { 0x00000000, 0x03f00000 },
-    { 0x80000000, 0x0000000f },
-    { 0x00000000, 0x000001f0 },
-    { 0x00000000, 0x000fc000 },
-    { 0x00000000, 0x00003e00 }
-  }
+    {
+        /*** Priest spell books ***/
+        { 0x000000ff, 0x00000000 },
+        { 0x0000ff00, 0x00000000 },
+        { 0x01ff0000, 0x00000000 },
+        { 0x7e000000, 0x00000000 },
+        { 0x00000000, 0x03f00000 },
+        { 0x80000000, 0x0000000f },
+        { 0x00000000, 0x000001f0 },
+        { 0x00000000, 0x000fc000 },
+        { 0x00000000, 0x00003e00 }
+    }
 };
 
 
 /*
  * Names of the spells (mage spells then priest spells)
  */
-cptr spell_names[2][64] = {
-
-  {
+cptr spell_names[2][64] =
+{
     /*** Mage Spells ***/
 
-      /* Magic for Beginners (sval 0) */
-    "Magic Missile",
-    "Detect Monsters",
-    "Phase Door",
-    "Light Area",
-    "Treasure Detection",
-    "Cure Light Wounds",
-    "Object Detection",
-    "Find Hidden Traps/Doors",
-    "Stinking Cloud",
+    {
+        /* Magic for Beginners (sval 0) */
+        "Magic Missile",
+        "Detect Monsters",
+        "Phase Door",
+        "Light Area",
+        "Treasure Detection",
+        "Cure Light Wounds",
+        "Object Detection",
+        "Find Hidden Traps/Doors",
+        "Stinking Cloud",
 
-      /* Conjurings and Tricks (sval 1) */
-    "Confuse Monster",
-    "Lightning Bolt",
-    "Trap/Door Destruction",
-    "Sleep I",
-    "Cure Poison",
-    "Teleport Self",
-    "Spear of Light",
-    "Frost Bolt",
-    "Turn Stone to Mud",
+        /* Conjurings and Tricks (sval 1) */
+        "Confuse Monster",
+        "Lightning Bolt",
+        "Trap/Door Destruction",
+        "Sleep I",
+        "Cure Poison",
+        "Teleport Self",
+        "Spear of Light",
+        "Frost Bolt",
+        "Turn Stone to Mud",
 
-      /* Incantations and Illusions (sval 2) */
-    "Satisfy Hunger",
-    "Recharge Item I",
-    "Sleep II",
-    "Polymorph Other",
-    "Identify",
-    "Sleep III",
-    "Fire Bolt",
-    "Slow Monster",
+        /* Incantations and Illusions (sval 2) */
+        "Satisfy Hunger",
+        "Recharge Item I",
+        "Sleep II",
+        "Polymorph Other",
+        "Identify",
+        "Sleep III",
+        "Fire Bolt",
+        "Slow Monster",
 
-      /* Sorcery and Evocations (sval 3) */
-    "Frost Ball",
-    "Recharge Item II",
-    "Teleport Other",
-    "Haste Self",
-    "Fire Ball",
-    "Word of Destruction",
-    "Genocide",
+        /* Sorcery and Evocations (sval 3) */
+        "Frost Ball",
+        "Recharge Item II",
+        "Teleport Other",
+        "Haste Self",
+        "Fire Ball",
+        "Word of Destruction",
+        "Genocide",
 
-      /* Mordenkainen's Escapes (sval 5) */
-    "Door Creation",
-    "Stair Creation",
-    "Teleport Level",
-    "Earthquake",
-    "Word of Recall",
+        /* Mordenkainen's Escapes (sval 5) */
+        "Door Creation",
+        "Stair Creation",
+        "Teleport Level",
+        "Earthquake",
+        "Word of Recall",
 
-      /* Raal's Tome of Destruction (sval 8) */
-    "Acid Bolt",
-    "Cloud Kill",
-    "Acid Ball",
-    "Ice Storm",
-    "Meteor Swarm",
-    "Mana Storm",
+        /* Raal's Tome of Destruction (sval 8) */
+        "Acid Bolt",
+        "Cloud Kill",
+        "Acid Ball",
+        "Ice Storm",
+        "Meteor Swarm",
+        "Mana Storm",
 
-      /* Kelek's Grimoire of Power (sval 6) */
-    "Detect Evil",
-    "Detect Enchantment",
-    "Recharge Item III",
-    "Genocide",
-    "Mass Genocide",
+        /* Kelek's Grimoire of Power (sval 6) */
+        "Detect Evil",
+        "Detect Enchantment",
+        "Recharge Item III",
+        "Genocide",
+        "Mass Genocide",
 
-      /* Resistance of Scarabtarices (sval 4) */
-    "Resist Fire",
-    "Resist Cold",
-    "Resist Acid",
-    "Resist Poison",
-    "Resistance",
+        /* Resistance of Scarabtarices (sval 4) */
+        "Resist Fire",
+        "Resist Cold",
+        "Resist Acid",
+        "Resist Poison",
+        "Resistance",
 
-      /* Tenser's transformations... (sval 7) */
-    "Heroism",
-    "Shield",
-    "Berserker",
-    "Essence of Speed",
-    "Globe of Invulnerability",
+        /* Tenser's transformations... (sval 7) */
+        "Heroism",
+        "Shield",
+        "Berserker",
+        "Essence of Speed",
+        "Globe of Invulnerability",
 
-    "(blank)",
-    "(blank)",
-    "(blank)",
-    "(blank)",
-    "(blank)"
-  },
+        "(blank)",
+        "(blank)",
+        "(blank)",
+        "(blank)",
+        "(blank)"
+    },
 
 
-  {
     /*** Priest Spells ***/
 
-      /* Beginners Handbook (sval 0) */
-    "Detect Evil",
-    "Cure Light Wounds",
-    "Bless",
-    "Remove Fear",
-    "Call Light",
-    "Find Traps",
-    "Detect Doors/Stairs",
-    "Slow Poison",
+    {
+        /* Beginners Handbook (sval 0) */
+        "Detect Evil",
+        "Cure Light Wounds",
+        "Bless",
+        "Remove Fear",
+        "Call Light",
+        "Find Traps",
+        "Detect Doors/Stairs",
+        "Slow Poison",
 
-      /* Words of Wisdom (sval 1) */
-    "Scare Monster",
-    "Portal",
-    "Cure Serious Wounds",
-    "Chant",
-    "Sanctuary",
-    "Satisfy Hunger",
-    "Remove Curse",
-    "Resist Heat and Cold",
+        /* Words of Wisdom (sval 1) */
+        "Scare Monster",
+        "Portal",
+        "Cure Serious Wounds",
+        "Chant",
+        "Sanctuary",
+        "Satisfy Hunger",
+        "Remove Curse",
+        "Resist Heat and Cold",
 
-      /* Chants and Blessings (sval 2) */
-    "Neutralize Poison",
-    "Orb of Draining",
-    "Cure Critical Wounds",
-    "Sense Invisible",
-    "Protection from Evil",
-    "Earthquake",
-    "Sense Surroundings",
-    "Cure Mortal Wounds",
-    "Turn Undead",
+        /* Chants and Blessings (sval 2) */
+        "Neutralize Poison",
+        "Orb of Draining",
+        "Cure Critical Wounds",
+        "Sense Invisible",
+        "Protection from Evil",
+        "Earthquake",
+        "Sense Surroundings",
+        "Cure Mortal Wounds",
+        "Turn Undead",
 
-      /* Exorcism and Dispelling (sval 3) */
-    "Prayer",
-    "Dispel Undead",
-    "Heal",
-    "Dispel Evil",
-    "Glyph of Warding",
-    "Holy Word",
+        /* Exorcism and Dispelling (sval 3) */
+        "Prayer",
+        "Dispel Undead",
+        "Heal",
+        "Dispel Evil",
+        "Glyph of Warding",
+        "Holy Word",
 
-      /* Godly Insights... (sval 5) */
-    "Detect Monsters",
-    "Detection",
-    "Perception",
-    "Probing",
-    "Clairvoyance",
+        /* Godly Insights... (sval 5) */
+        "Detect Monsters",
+        "Detection",
+        "Perception",
+        "Probing",
+        "Clairvoyance",
 
-      /* Purifications and Healing (sval 6) */
-    "Cure Serious Wounds",
-    "Cure Mortal Wounds",
-    "Healing",
-    "Restoration",
-    "Remembrance",
+        /* Purifications and Healing (sval 6) */
+        "Cure Serious Wounds",
+        "Cure Mortal Wounds",
+        "Healing",
+        "Restoration",
+        "Remembrance",
 
-      /* Wrath of God (sval 8) */
-    "Dispel Undead",
-    "Dispel Evil",
-    "Banishment",
-    "Word of Destruction",
-    "Annihilation",
+        /* Wrath of God (sval 8) */
+        "Dispel Undead",
+        "Dispel Evil",
+        "Banishment",
+        "Word of Destruction",
+        "Annihilation",
 
-      /* Holy Infusions (sval 7) */
-    "Unbarring Ways",
-    "Recharging",
-    "Dispel Curse",
-    "Enchant Weapon",
-    "Enchant Armour",
-    "Elemental Brand",
+        /* Holy Infusions (sval 7) */
+        "Unbarring Ways",
+        "Recharging",
+        "Dispel Curse",
+        "Enchant Weapon",
+        "Enchant Armour",
+        "Elemental Brand",
 
-      /* Ethereal openings (sval 4) */
-    "Blink",
-    "Teleport Self",
-    "Teleport Other",
-    "Teleport Level",
-    "Word of Recall",
-    "Alter Reality",
+        /* Ethereal openings (sval 4) */
+        "Blink",
+        "Teleport Self",
+        "Teleport Other",
+        "Teleport Level",
+        "Word of Recall",
+        "Alter Reality",
 
-    "(blank)",
-    "(blank)",
-    "(blank)",
-    "(blank)",
-    "(blank)"
-  }
+        "(blank)",
+        "(blank)",
+        "(blank)",
+        "(blank)",
+        "(blank)"
+    }
 };
 
 
@@ -2180,7 +2204,8 @@ cptr spell_names[2][64] = {
  * The "pval" of a chest determines the quality of its treasure
  * Note that disarming a trap on a chest also removes the lock.
  */
-byte chest_traps[64] = {
+byte chest_traps[64] =
+{
     0,					/* 0 == empty */
     (CHEST_POISON),
     (CHEST_LOSE_STR),
@@ -2254,88 +2279,99 @@ byte chest_traps[64] = {
 
 
 
-#ifdef ALLOW_TITLES
-
 /*
- * Class titles for different levels
+ * Class titles for the player.
+ *
+ * The player gets a new title every five levels, so each class
+ * needs only ten titles total.
  */
-cptr player_title[MAX_CLASS][PY_MAX_LEVEL] = {
+cptr player_title[MAX_CLASS][PY_MAX_LEVEL/5] =
+{
+    /* Warrior */
+    {
+        "Rookie",
+        "Soldier",
+        "Mercenary",
+        "Veteran",
+        "Swordsman",
+        "Champion",
+        "Hero",
+        "Baron",
+        "Duke",
+        "Lord",
+    },
 
-        /* Warrior */
-{"Rookie","Private","Soldier","Mercenary","Veteran(1st)","Veteran(2nd)",
-"Veteran(3rd)","Warrior(1st)","Warrior(2nd)","Warrior(3rd)","Warrior(4th)",
-"Swordsman-1","Swordsman-2","Swordsman-3","Hero","Swashbuckler","Myrmidon",
-"Champion-1","Champion-2","Champion-3","Superhero","Knight","Superior Knt",
-"Gallant Knt","Knt Errant","Guardian Knt","Baron","Duke","Lord (1st)",
-"Lord (2nd)","Lord (3rd)","Lord (4th)","Lord (5th)","Lord (6th)","Lord (7th)",
-"Lord (8th)","Lord (9th)","Lord (10th)","Lord (11th)","Lord (12th)",
-"Lord (13th)","Lord (14th)","Lord (15th)","Lord (16th)","Lord (17th)",
-"Lord (18th)","Lord (19th)","Lord Gallant","Lord Keeper","Lord Noble"},
+    /* Mage */
+    {
+        "Novice",
+        "Apprentice",
+        "Trickster",
+        "Illusionist",
+        "Spellbinder",
+        "Evoker",
+        "Conjurer",
+        "Warlock",
+        "Sorcerer",
+        "Mage Lord",
+    },
 
-        /* Mage */
-{"Novice","Apprentice","Trickster-1","Trickster-2","Trickster-3","Cabalist-1",
-"Cabalist-2","Cabalist-3","Visionist","Phantasmist","Shadowist","Spellbinder",
-"Illusionist","Evoker (1st)","Evoker (2nd)","Evoker (3rd)","Evoker (4th)",
-"Conjurer","Theurgist","Thaumaturge","Magician","Enchanter","Warlock",
-"Sorcerer","Necromancer","Mage (1st)","Mage (2nd)","Mage (3rd)","Mage (4th)",
-"Mage (5th)","Wizard (1st)","Wizard (2nd)","Wizard (3rd)","Wizard (4th)",
-"Wizard (5th)","Wizard (6th)","Wizard (7th)","Wizard (8th)","Wizard (9th)",
-"Wizard (10th)","Wizard (11th)","Wizard (12th)","Wizard (13th)",
-"Wizard (14th)","Wizard (15th)","Wizard (16th)","Wizard (17th)",
-"Wizard (18th)","Wizard (19th)","Wizard Lord"},
+    /* Priest */
+    {
+        "Believer",
+        "Acolyte",
+        "Adept",
+        "Curate",
+        "Canon",
+        "Lama",
+        "Patriarch",
+        "Priest",
+        "High Priest",
+        "Priest Lord",
+    },
 
-        /* Priests */
-{"Believer","Acolyte(1st)","Acolyte(2nd)","Acolyte(3rd)","Adept (1st)",
-"Adept (2nd)","Adept (3rd)","Priest (1st)","Priest (2nd)","Priest (3rd)",
-"Priest (4th)","Priest (5th)","Priest (6th)","Priest (7th)","Priest (8th)",
-"Priest (9th)","Curate (1st)","Curate (2nd)","Curate (3rd)","Curate (4th)",
-"Curate (5th)","Curate (6th)","Curate (7th)","Curate (8th)","Curate (9th)",
-"Canon (1st)","Canon (2nd)","Canon (3rd)","Canon (4th)","Canon (5th)",
-"Canon (6th)","Canon (7th)","Canon (8th)","Canon (9th)",
-"Low Lama","Lama-1","Lama-2","Lama-3","Lama-4","Lama-5","Lama-6","Lama-7",
-"Lama-8","Lama-9","High Lama","Great Lama","Patriarch",
-"High Priest","Great Priest","Noble Priest"},
+    /* Rogues */
+    {
+        "Vagabond",
+        "Cutpurse",
+        "Robber",
+        "Burglar",
+        "Filcher",
+        "Sharper",
+        "Low Thief",
+        "High Thief",
+        "Master Thief",
+        "Assassin",
+    },
 
-        /* Rogues */
-{"Vagabond","Footpad","Cutpurse","Robber","Burglar","Filcher","Sharper",
-"Magsman","Common Rogue","Rogue (1st)","Rogue (2nd)","Rogue (3rd)",
-"Rogue (4th)","Rogue (5th)","Rogue (6th)","Rogue (7th)","Rogue (8th)",
-"Rogue (9th)","Master Rogue","Expert Rogue","Senior Rogue","Chief Rogue",
-"Prime Rogue","Low Thief","Thief (1st)","Thief (2nd)","Thief (3rd)",
-"Thief (4th)","Thief (5th)","Thief (6th)","Thief (7th)","Thief (8th)",
-"Thief (9th)","Thief (10th)","Thief (11th)","Thief (12th)","Thief (13th)",
-"Thief (14th)","Thief (15th)","Thief (16th)","Thief (17th)","Thief (18th)",
-"Thief (19th)","High Thief","Master Thief","Executioner","Low Assassin",
-"Assassin","High Assassin","Guildsmaster"},
+    /* Rangers */
+    {
+        "Runner",
+        "Strider",
+        "Scout",
+        "Courser",
+        "Tracker",
+        "Guide",
+        "Pathfinder",
+        "Low Ranger",
+        "High Ranger",
+        "Ranger Lord",
+    },
 
-        /* Rangers */
-{"Runner (1st)","Runner (2nd)","Runner (3rd)","Strider (1st)","Strider (2nd)",
-"Strider (3rd)","Scout (1st)","Scout (2nd)","Scout (3rd)","Scout (4th)",
-"Scout (5th)","Courser (1st)","Courser (2nd)","Courser (3rd)","Courser (4th)",
-"Courser (5th)","Tracker (1st)","Tracker (2nd)","Tracker (3rd)",
-"Tracker (4th)","Tracker (5th)","Tracker (6th)","Tracker (7th)",
-"Tracker (8th)","Tracker (9th)","Guide (1st)","Guide (2nd)","Guide (3rd)",
-"Guide (4th)","Guide (5th)","Guide (6th)","Guide (7th)","Guide (8th)",
-"Guide (9th)","Guide (10th)","Guide (11th)","Guide (12th)","Guide (13th)",
-"Guide (14th)","Guide (15th)",
-"Pathfinder-1","Pathfinder-2","Pathfinder-3","Pathfinder-4","Pathfinder-5",
-"Pathfinder-6","Pathfinder-7","Ranger","High Ranger","Ranger Lord"},
-
-        /* Paladins */
-{"Gallant","Keeper (1st)","Keeper (2nd)","Keeper (3rd)","Keeper (4th)",
-"Keeper (5th)","Keeper (6th)","Keeper (7th)","Keeper (8th)","Keeper (9th)",
-"Protector-1","Protector-2","Protector-3","Protector-4","Protector-5",
-"Protector-6","Protector-7","Protector-8","Defender-1","Defender-2",
-"Defender-3","Defender-4","Defender-5","Defender-6","Defender-7","Defender-8",
-"Warder (1st)","Warder (2nd)","Warder (3rd)","Warder (4th)","Warder (5th)",
-"Warder (6th)","Warder (7th)","Warder (8th)","Warder (9th)","Warder (10th)",
-"Warder (11th)","Warder (12th)","Warder (13th)","Warder (14th)",
-"Warder (15th)","Warder (16th)","Warder (17th)","Warder (18th)",
-"Warder (19th)","Guardian","Chevalier","Justiciar","Paladin","High Lord"}
-
+    /* Paladins */
+    {
+        "Gallant",
+        "Keeper",
+        "Protector",
+        "Defender",
+        "Warder",
+        "Knight",
+        "Guardian",
+        "Low Paladin",
+        "High Paladin",
+        "Paladin Lord",
+    }
 };
 
-#endif
 
 
 /*
@@ -2409,7 +2445,7 @@ cptr stat_names_reduced[6] = {
  * Bit pairs not used in savefiles:
  *
  *	Set 1: 9, 16-19, 21-23, 26-31
- *	Set 2: 2-7, 25, 31
+ *	Set 2: 4-7, 25, 31
  *	Set 3: 12
  *	Set 4: 8-15, 28-31
  *
@@ -2440,19 +2476,13 @@ option_type options[] = {
       "always_pickup",		"Pick things up by default" },
 
     { &always_throw,		TRUE,	1,	1, 3,
-      "always_throw",		"Accept all throw commands" },
+      "always_throw",		"Unused option (for now)" },
 
     { &always_repeat,		TRUE,	1,	1, 4,
       "always_repeat",		"Repeat obvious commands" },
 
-    { &plain_descriptions,	TRUE,	1,	3, 23,
-      "plain_descriptions",	"Plain object descriptions" },
-
     { &depth_in_feet,		FALSE,	1,	1, 14,
       "depth_in_feet",		"Show dungeon level in feet" },
-
-    { &equippy_chars,		FALSE,	1,	1, 12,
-      "equippy_chars",		"Display Equippy Characters" },
 
     { &show_health_bar,		FALSE,	1,	3, 19,
       "show_health_bar",	"Display Monster Health Bar" },
@@ -2496,12 +2526,6 @@ option_type options[] = {
     { &disturb_other,		TRUE,	2,	2, 10,
       "disturb_other",		"Disturb whenever various things happen" },
 
-    { &filch_message,		FALSE,	2,	2, 20,
-      "filch_message",		"Flush messages before every new message" },
-
-    { &filch_disturb,		FALSE,	2,	2, 21,
-      "filch_disturb",		"Flush messages before every disturbance" },
-      
     { &alert_hitpoint,		FALSE,	2,	2, 22,
       "alert_hitpoint",		"Alert user to critical hitpoints" },
 
@@ -2535,12 +2559,6 @@ option_type options[] = {
     { &stack_force_costs,	FALSE,	3,	3, 27,
       "stack_force_costs",	"Over-ride discounts when stacking" },
 
-    { &auto_combine_pack,	TRUE,	3,	3, 28,
-      "auto_combine_pack",	"Automatically combine items in the pack" },
-
-    { &auto_reorder_pack,	TRUE,	3,	3, 29,
-      "auto_reorder_pack",	"Automatically reorder items in the pack" },
-
     { &no_haggle_flag,		FALSE,	3,	3, 16,
       "no_haggle_flag",		"Disable haggling in stores" },
 
@@ -2558,10 +2576,10 @@ option_type options[] = {
 
     { &scum_always,		FALSE,	4,	3, 30,
       "scum_always",		"Auto-scum for good levels (always)" },
-      
+
     { &scum_sometimes,		FALSE,	4,	3, 31,
       "scum_sometimes",		"Auto-scum for good levels (sometimes)" },
-      
+
     { &dungeon_align,		TRUE,	4,	3, 0,
       "dungeon_align",		"Generate dungeons with aligned rooms" },
 
@@ -2592,14 +2610,14 @@ option_type options[] = {
     { &view_reduce_lite,	FALSE,	5,	3, 3,
       "view_reduce_lite",	"Reduce lite-radius when running" },
 
-    { &view_reduce_lite_town,	FALSE,	5,	2, 15,
-      "view_reduce_lite_town",	"Reduce lite-radius when running (in town)" },
+    { &view_reduce_view,	FALSE,	5,	2, 15,
+      "view_reduce_view",	"Reduce view-radius in town" },
 
     { &optimize_display,	FALSE,	5,	4, 18,
-      "optimize_display",	"Optimize various things (visual display)" },
+      "optimize_display",	"Optimize visual display" },
 
     { &optimize_various,	FALSE,	5,	4, 19,
-      "optimize_various",	"Optimize various things (message recall)" },
+      "optimize_various",	"Optimize message recall" },
 
     { &flush_failure,		TRUE,	5,	2, 27,
       "flush_failure",		"Flush input on various failures" },
@@ -2634,8 +2652,14 @@ option_type options[] = {
 
     /*** Special ***/
 
+    { &use_mirror_debug,	FALSE,	6,	2, 2,
+      "use_mirror_debug",	"Show debug messages in mirror window" },
+
+    { &use_mirror_around,	FALSE,	6,	2, 3,
+      "use_mirror_around",	"Show overhead map in mirror window" },
+
     { &use_mirror_recent,	FALSE,	6,	4, 4,
-      "use_mirror_recent",	"Recall monster races in mirror window" },
+      "use_mirror_recent",	"Show monster info in mirror window" },
 
     { &use_mirror_normal,	FALSE,	6,	4, 5,
       "use_mirror_normal",	"Show inven/equip in mirror window" },
@@ -2647,7 +2671,7 @@ option_type options[] = {
       "use_mirror_spells",	"Show spell choices in mirror window" },
 
     { &use_recall_recent,	TRUE,	6,	4, 20,
-      "use_recall_recent",	"Recall monster races in recall window" },
+      "use_recall_recent",	"Show monster info in recall window" },
 
     { &use_choice_normal,	TRUE,	6,	4, 21,
       "use_choice_normal",	"Show inven/equip in choice window" },
