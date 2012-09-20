@@ -138,9 +138,8 @@ bool make_attack_normal(int m_idx)
 	bool		blinked;
 
 
-
 	/* Not allowed to attack */
-	if (r_ptr->flags1 & RF1_NEVER_BLOW) return (FALSE);
+	if (r_ptr->flags1 & (RF1_NEVER_BLOW)) return (FALSE);
 
 
 	/* Total armor */
@@ -234,12 +233,15 @@ bool make_attack_normal(int m_idx)
 
 			/* Hack -- Apply "protection from evil" */
 			if ((p_ptr->protevil > 0) &&
-			    (r_ptr->flags3 & RF3_EVIL) &&
+			    (r_ptr->flags3 & (RF3_EVIL)) &&
 			    (p_ptr->lev >= rlev) &&
 			    ((rand_int(100) + p_ptr->lev) > 50))
 			{
 				/* Remember the Evil-ness */
-				if (m_ptr->ml) r_ptr->r_flags3 |= RF3_EVIL;
+				if (m_ptr->ml)
+				{
+					r_ptr->r_flags3 |= (RF3_EVIL);
+				}
 
 				/* Message */
 				msg_format("%^s is repelled.", m_name);
@@ -497,6 +499,9 @@ bool make_attack_normal(int m_idx)
 						/* Obtain the item */
 						o_ptr = &inventory[i];
 
+						/* Skip non-objects */
+						if (!o_ptr->k_idx) continue;
+
 						/* Drain charged wands/staffs */
 						if (((o_ptr->tval == TV_STAFF) ||
 						     (o_ptr->tval == TV_WAND)) &&
@@ -523,7 +528,7 @@ bool make_attack_normal(int m_idx)
 							p_ptr->notice |= (PN_COMBINE | PN_REORDER);
 
 							/* Window stuff */
-							p_ptr->window |= (PW_INVEN | PW_EQUIP);
+							p_ptr->window |= (PW_INVEN);
 
 							/* Done */
 							break;
@@ -621,10 +626,10 @@ bool make_attack_normal(int m_idx)
 						/* Obtain the item */
 						o_ptr = &inventory[i];
 
-						/* Accept real items */
+						/* Skip non-objects */
 						if (!o_ptr->k_idx) continue;
 
-						/* Don't steal artifacts  -CFT */
+						/* Skip artifacts */
 						if (artifact_p(o_ptr)) continue;
 
 						/* Get a description */
@@ -635,6 +640,42 @@ bool make_attack_normal(int m_idx)
 						           ((o_ptr->number > 1) ? "One of y" : "Y"),
 						           o_name, index_to_label(i));
 
+						/* Option */
+						if (testing_carry)
+						{
+							s16b o_idx;
+
+							/* Make an object */
+							o_idx = o_pop();
+
+							/* Success */
+							if (o_idx)
+							{
+								object_type *j_ptr;
+
+								/* Get new object */
+								j_ptr = &o_list[o_idx];
+
+								/* Copy object */
+								object_copy(j_ptr, o_ptr);
+
+								/* Modify number */
+								j_ptr->number = 1;
+
+								/* Forget mark */
+								j_ptr->marked = FALSE;
+
+								/* Memorize monster */
+								j_ptr->held_m_idx = m_idx;
+
+								/* Build stack */
+								j_ptr->next_o_idx = m_ptr->hold_o_idx;
+
+								/* Build stack */
+								m_ptr->hold_o_idx = o_idx;
+							}
+						}	
+						
 						/* Steal the items */
 						inven_item_increase(i, -1);
 						inven_item_optimize(i);
@@ -666,10 +707,10 @@ bool make_attack_normal(int m_idx)
 						/* Get the item */
 						o_ptr = &inventory[i];
 
-						/* Accept real items */
+						/* Skip non-objects */
 						if (!o_ptr->k_idx) continue;
 
-						/* Only eat food */
+						/* Skip non-food objects */
 						if (o_ptr->tval != TV_FOOD) continue;
 
 						/* Get a description */
@@ -717,7 +758,7 @@ bool make_attack_normal(int m_idx)
 						}
 
 						/* Window stuff */
-						p_ptr->window |= (PW_INVEN | PW_EQUIP);
+						p_ptr->window |= (PW_EQUIP);
 					}
 
 					break;
@@ -1234,7 +1275,10 @@ bool make_attack_normal(int m_idx)
 
 
 	/* Always notice cause of death */
-	if (death && (r_ptr->r_deaths < MAX_SHORT)) r_ptr->r_deaths++;
+	if (death && (r_ptr->r_deaths < MAX_SHORT))
+	{
+		r_ptr->r_deaths++;
+	}
 
 
 	/* Assume we attacked */

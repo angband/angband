@@ -2267,7 +2267,7 @@ errr init_r_info_txt(FILE *fp, char *buf)
 	++r_head->text_size;
 
 
-	/* XXX XXX XXX XXX The ghost is unused */
+	/* XXX XXX XXX The ghost is unused */
 
 	/* Mega-Hack -- acquire "ghost" */
 	r_ptr = &r_info[MAX_R_IDX-1];

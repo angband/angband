@@ -426,11 +426,19 @@ struct vault_type
  * many places in the code where we need quick access to the actual
  * monster or object(s) in a given cave grid.  The easiest way to
  * do this is to simply keep the index of the monster and object
- * (if any) with the grid, but takes a lot of memory.  Several other
- * methods come to mind, but they all seem rather complicated.
+ * (if any) with the grid, but this takes 198*66*4 bytes of memory.
+ * Several other methods come to mind, which require only half this
+ * amound of memory, but they all seem rather complicated, and would
+ * probably add enough code that the savings would be lost.  So for
+ * these reasons, we simply store an index into the "o_list" and
+ * "m_list" arrays, using "zero" when no monster/object is present.
  *
- * Note the special fields for the simple "monster flow" code,
- * and for the "tracking" code.
+ * Note that "o_idx" is the index of the top object in a stack of
+ * objects, using the "next_o_idx" field of objects (see below) to
+ * create the singly linked list of objects.  If "o_idx" is zero
+ * then there are no objects in the grid.
+ *
+ * Note the special fields for the "MONSTER_FLOW" code.
  */
 
 typedef struct cave_type cave_type;
@@ -441,9 +449,9 @@ struct cave_type
 
 	byte feat;		/* Hack -- feature type */
 
-	s16b o_idx;		/* Item index (in o_list) or zero */
+	s16b o_idx;		/* Object in this grid */
 
-	s16b m_idx;		/* Monster index (in m_list) or zero */
+	s16b m_idx;		/* Monster in this grid */
 
 #ifdef MONSTER_FLOW
 
@@ -457,17 +465,31 @@ struct cave_type
 
 
 /*
- * Structure for an object. (32 bytes)
+ * Object information, for a specific object.
  *
  * Note that a "discount" on an item is permanent and never goes away.
  *
  * Note that inscriptions are now handled via the "quark_str()" function
  * applied to the "note" field, which will return NULL if "note" is zero.
  *
- * Note that "object" records are "copied" on a fairly regular basis.
+ * Note that "object" records are "copied" on a fairly regular basis,
+ * and care must be taken when handling such objects.
  *
  * Note that "object flags" must now be derived from the object kind,
  * the artifact and ego-item indexes, and the two "xtra" fields.
+ *
+ * Each cave grid points to one (or zero) objects via the "o_idx"
+ * field (above).  Each object then points to one (or zero) objects
+ * via the "next_o_idx" field, forming a singly linked list, which
+ * in game terms, represents a "stack" of objects in the same grid.
+ *
+ * Each monster points to one (or zero) objects via the "hold_o_idx"
+ * field (below).  Each object then points to one (or zero) objects
+ * via the "next_o_idx" field, forming a singly linked list, which
+ * in game terms, represents a pile of objects held by the monster.
+ *
+ * The "held_m_idx" field is used to indicate which monster, if any,
+ * is holding the object.  Objects being held have "ix=0" and "iy=0".
  */
 
 typedef struct object_type object_type;
@@ -511,6 +533,10 @@ struct object_type
 	byte marked;		/* Object is marked */
 
 	u16b note;			/* Inscription index */
+	
+	s16b next_o_idx;	/* Next object in stack (if any) */
+
+	s16b held_m_idx;	/* Monster holding us (if any) */
 };
 
 
@@ -519,6 +545,9 @@ struct object_type
  * Monster information, for a specific monster.
  *
  * Note: fy, fx constrain dungeon size to 256x256
+ *
+ * The "hold_o_idx" field points to the first object of a stack
+ * of objects (if any) being carried by the monster (see above).
  */
 
 typedef struct monster_type monster_type;
@@ -544,8 +573,11 @@ struct monster_type
 
 	byte cdis;			/* Current dis from player */
 
-	bool los;			/* Monster is "in sight" */
+	byte mflag;			/* Extra monster flags */
+
 	bool ml;			/* Monster is "visible" */
+
+	s16b hold_o_idx;	/* Object being held (if any) */
 
 #ifdef WDT_TRACK_OPTIONS
 
@@ -760,6 +792,20 @@ struct player_magic
 
 
 /*
+ * Player sex info
+ */
+
+typedef struct player_sex player_sex;
+
+struct player_sex
+{
+	cptr title;			/* Type of sex */
+	
+	cptr winner;		/* Name of winner */
+};
+
+
+/*
  * Player racial info
  */
 
@@ -858,9 +904,9 @@ typedef struct player_type player_type;
 
 struct player_type
 {
+	byte psex;			/* Sex index */
 	byte prace;			/* Race index */
 	byte pclass;		/* Class index */
-	byte male;			/* Sex of character */
 	byte oops;			/* Unused */
 
 	byte hitdie;		/* Hit dice (sides) */

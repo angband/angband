@@ -15,148 +15,6 @@
 
 
 
-/*
- * Move an item from equipment list to pack
- * Note that only one item at a time can be wielded per slot.
- * Note that taking off an item when "full" will cause that item
- * to fall to the ground.
- */
-static void inven_takeoff(int item, int amt)
-{
-	int			posn;
-
-	object_type		*o_ptr;
-	object_type		tmp_obj;
-
-	cptr		act;
-
-	char		o_name[80];
-
-
-	/* Get the item to take off */
-	o_ptr = &inventory[item];
-
-	/* Paranoia */
-	if (amt <= 0) return;
-
-	/* Verify */
-	if (amt > o_ptr->number) amt = o_ptr->number;
-
-	/* Make a copy to carry */
-	tmp_obj = *o_ptr;
-	tmp_obj.number = amt;
-
-	/* What are we "doing" with the object */
-	if (amt < o_ptr->number)
-	{
-		act = "Took off";
-	}
-	else if (item == INVEN_WIELD)
-	{
-		act = "Was wielding";
-	}
-	else if (item == INVEN_BOW)
-	{
-		act = "Was shooting with";
-	}
-	else if (item == INVEN_LITE)
-	{
-		act = "Light source was";
-	}
-	else
-	{
-		act = "Was wearing";
-	}
-
-	/* Carry the object, saving the slot it went in */
-	posn = inven_carry(&tmp_obj);
-
-	/* Describe the result */
-	object_desc(o_name, o_ptr, TRUE, 3);
-
-	/* Message */
-	msg_format("%^s %s (%c).", act, o_name, index_to_label(posn));
-
-	/* Delete (part of) it */
-	inven_item_increase(item, -amt);
-	inven_item_optimize(item);
-}
-
-
-
-
-/*
- * Drops (some of) an item from inventory to "near" the current location
- */
-static void inven_drop(int item, int amt)
-{
-	object_type		*o_ptr;
-	object_type		 tmp_obj;
-
-	cptr		act;
-
-	char		o_name[80];
-
-
-	/* Access the slot to be dropped */
-	o_ptr = &inventory[item];
-
-	/* Error check */
-	if (amt <= 0) return;
-
-	/* Not too many */
-	if (amt > o_ptr->number) amt = o_ptr->number;
-
-	/* Nothing done? */
-	if (amt <= 0) return;
-
-	/* Make a "fake" object */
-	tmp_obj = *o_ptr;
-	tmp_obj.number = amt;
-
-	/* What are we "doing" with the object */
-	if (amt < o_ptr->number)
-	{
-		act = "Dropped";
-	}
-	else if (item == INVEN_WIELD)
-	{
-		act = "Was wielding";
-	}
-	else if (item == INVEN_BOW)
-	{
-		act = "Was shooting with";
-	}
-	else if (item == INVEN_LITE)
-	{
-		act = "Light source was";
-	}
-	else if (item >= INVEN_WIELD)
-	{
-		act = "Was wearing";
-	}
-	else
-	{
-		act = "Dropped";
-	}
-
-	/* Message */
-	object_desc(o_name, &tmp_obj, TRUE, 3);
-
-	/* Message */
-	msg_format("%^s %s (%c).", act, o_name, index_to_label(item));
-
-	/* Drop it (carefully) near the player */
-	drop_near(&tmp_obj, 0, py, px);
-
-	/* Decrease the item, optimize. */
-	inven_item_increase(item, -amt);
-	inven_item_describe(item);
-	inven_item_optimize(item);
-}
-
-
-
 
 
 /*
@@ -288,7 +146,10 @@ static bool item_tester_hook_wear(object_type *o_ptr)
 void do_cmd_wield(void)
 {
 	int item, slot;
-	object_type tmp_obj;
+
+	object_type forge;
+	object_type *q_ptr;
+
 	object_type *o_ptr;
 
 	cptr act;
@@ -336,22 +197,18 @@ void do_cmd_wield(void)
 		return;
 	}
 
-	/* Verify potential overflow */
-	if ((inven_cnt >= INVEN_PACK) &&
-	    ((item < 0) || (o_ptr->number > 1)))
-	{
-		/* Verify with the player */
-		if (other_query_flag &&
-		    !get_check("Your pack may overflow.  Continue? ")) return;
-	}
-
 
 	/* Take a turn */
 	energy_use = 100;
 
-	/* Get a copy of the object to wield */
-	tmp_obj = *o_ptr;
-	tmp_obj.number = 1;
+	/* Get local object */
+	q_ptr = &forge;
+
+	/* Obtain local object */
+	object_copy(q_ptr, o_ptr);
+
+	/* Modify quantity */
+	q_ptr->number = 1;
 
 	/* Decrease the item (from the pack) */
 	if (item >= 0)
@@ -370,16 +227,18 @@ void do_cmd_wield(void)
 	/* Access the wield slot */
 	o_ptr = &inventory[slot];
 
-	/* Take off the "entire" item if one is there */
-	if (inventory[slot].k_idx) inven_takeoff(slot, 255);
-
-	/*** Could make procedure "inven_wield()" ***/
+	/* Take off existing item */
+	if (o_ptr->k_idx)
+	{
+		/* Take off existing item */
+		(void)inven_takeoff(slot, 255);
+	}
 
 	/* Wear the new stuff */
-	*o_ptr = tmp_obj;
+	object_copy(o_ptr, q_ptr);
 
 	/* Increase the weight */
-	total_weight += o_ptr->weight;
+	total_weight += q_ptr->weight;
 
 	/* Increment the equip counter by hand */
 	equip_cnt++;
@@ -406,7 +265,7 @@ void do_cmd_wield(void)
 	object_desc(o_name, o_ptr, TRUE, 3);
 
 	/* Message */
-	msg_format("%^s %s (%c).", act, o_name, index_to_label(slot));
+	msg_format("%s %s (%c).", act, o_name, index_to_label(slot));
 
 	/* Cursed! */
 	if (cursed_p(o_ptr))
@@ -415,7 +274,7 @@ void do_cmd_wield(void)
 		msg_print("Oops! It feels deathly cold!");
 
 		/* Note the curse */
-		o_ptr->ident |= ID_SENSE;
+		o_ptr->ident |= (IDENT_SENSE);
 	}
 
 	/* Recalculate bonuses */
@@ -441,15 +300,6 @@ void do_cmd_takeoff(void)
 	int item;
 
 	object_type *o_ptr;
-
-
-	/* Verify potential overflow */
-	if (inven_cnt >= INVEN_PACK)
-	{
-		/* Verify with the player */
-		if (other_query_flag &&
-		    !get_check("Your pack may overflow.  Continue? ")) return;
-	}
 
 
 	/* Get an item (from equip) */
@@ -487,7 +337,7 @@ void do_cmd_takeoff(void)
 	energy_use = 50;
 
 	/* Take off the item */
-	inven_takeoff(item, 255);
+	(void)inven_takeoff(item, 255);
 }
 
 
@@ -499,6 +349,8 @@ void do_cmd_drop(void)
 	int item, amt = 1;
 
 	object_type *o_ptr;
+
+	cave_type *c_ptr = &cave[py][px];
 
 
 	/* Get an item (from equip or inven) */
@@ -521,7 +373,7 @@ void do_cmd_drop(void)
 	}
 
 
-	/* Cannot remove cursed items */
+	/* Hack -- Cannot remove cursed items */
 	if ((item >= INVEN_WIELD) && cursed_p(o_ptr))
 	{
 		/* Oops */
@@ -540,15 +392,6 @@ void do_cmd_drop(void)
 
 		/* Allow user abort */
 		if (amt <= 0) return;
-	}
-
-
-	/* Mega-Hack -- verify "dangerous" drops */
-	if (cave[py][px].o_idx)
-	{
-		/* XXX XXX Verify with the player */
-		if (other_query_flag &&
-		    !get_check("The item may disappear.  Continue? ")) return;
 	}
 
 
@@ -619,8 +462,8 @@ void do_cmd_destroy(void)
 	object_desc(o_name, o_ptr, TRUE, 3);
 	o_ptr->number = old_number;
 
-	/* Verify if needed */
-	if (!force || other_query_flag)
+	/* Verify unless quantity given */
+	if (!force)
 	{
 		/* Make a verification */
 		sprintf(out_val, "Really destroy %s? ", o_name);
@@ -645,7 +488,7 @@ void do_cmd_destroy(void)
 		o_ptr->note = quark_add(feel);
 
 		/* We have "felt" it (again) */
-		o_ptr->ident |= (ID_SENSE);
+		o_ptr->ident |= (IDENT_SENSE);
 
 		/* Combine the pack */
 		p_ptr->notice |= (PN_COMBINE);
@@ -711,7 +554,7 @@ void do_cmd_observe(void)
 
 
 	/* Require full knowledge */
-	if (!(o_ptr->ident & ID_MENTAL))
+	if (!(o_ptr->ident & (IDENT_MENTAL)))
 	{
 		msg_print("You have no special knowledge about that item.");
 		return;
@@ -1080,11 +923,13 @@ void do_cmd_refill(void)
  */
 void do_cmd_target(void)
 {
-	/* Set the target */
-	if (target_set())
+	/* Target set */
+	if (target_set(TARGET_KILL))
 	{
 		msg_print("Target Selected.");
 	}
+
+	/* Target aborted */
 	else
 	{
 		msg_print("Target Aborted.");
@@ -1093,404 +938,17 @@ void do_cmd_target(void)
 
 
 
-
-
 /*
- * Examine a grid, return a keypress (normally space or escape).
- *
- * Assume the player is not blind or hallucinating.
- *
- * Note that if a monster is in the grid, we update both the monster
- * recall info and the health bar info to track that monster.
- *
- * XXX XXX XXX We should allow the use of a "set target" command.
- *
- * XXX XXX XXX Note new terrain features for 2.8.0, and note that
- * eventually, we may allow objects and terrain features in the
- * same grid, or multiple objects per grid.
- *
- * We may assume that the grid is supposed to be "interesting".
- */
-static int do_cmd_look_aux(int y, int x)
-{
-	cave_type		*c_ptr = &cave[y][x];
-
-	object_type		*o_ptr = &o_list[c_ptr->o_idx];
-	monster_type	*m_ptr = &m_list[c_ptr->m_idx];
-	monster_race	*r_ptr = &r_info[m_ptr->r_idx];
-
-	cptr		s1 = "You see ", s2 = "";
-
-	bool		prep = FALSE;
-
-	int			feat;
-
-	int			query = ' ';
-
-	char		m_name[80];
-	char		o_name[80];
-
-	char		out_val[160];
-
-
-	/* Feature (apply "mimic") */
-	feat = f_info[c_ptr->feat].mimic;
-
-	/* Hack -- under the player */
-	if ((y == py) && (x == px))
-	{
-		/* Description */
-		s1 = "You are on ";
-	}
-
-	/* Normal */
-	else
-	{
-		/* Hack -- Unknown terrain cannot be seen */
-		if (!(c_ptr->info & CAVE_MARK)) feat = FEAT_NONE;	
-	}
-
-
-	/* Actual monsters */
-	if (c_ptr->m_idx && m_ptr->ml)
-	{
-		/* Get the monster name ("a kobold") */
-		monster_desc(m_name, m_ptr, 0x08);
-
-		/* Hack -- track this monster race */
-		recent_track(m_ptr->r_idx);
-
-		/* Hack -- health bar for this monster */
-		health_track(c_ptr->m_idx);
-
-		/* Hack -- handle stuff */
-		handle_stuff();
-
-		/* Describe, and prompt for recall */
-		sprintf(out_val, "%s%s%s (%s) [(r)ecall]",
-		        s1, s2, m_name, look_mon_desc(c_ptr->m_idx));
-		prt(out_val, 0, 0);
-
-		/* Get a command */
-		move_cursor_relative(y, x);
-		query = inkey();
-
-		/* Recall as needed */
-		while (query == 'r')
-		{
-			/* Recall */
-			Term_save();
-			screen_roff(m_ptr->r_idx);
-			Term_addstr(-1, TERM_WHITE, "  --pause--");
-			query = inkey();
-			Term_load();
-
-			/* Continue if desired */
-			if (query != ' ') return (query);
-
-			/* Get a new command */
-			move_cursor_relative(y, x);
-			query = inkey();
-		}
-
-		/* Continue if allowed */
-		if (query != ' ') return (query);
-
-		/* Change the intro */
-		s1 = "It is ";
-
-		/* Hack -- take account of gender */
-		if (r_ptr->flags1 & RF1_FEMALE) s1 = "She is ";
-		else if (r_ptr->flags1 & RF1_MALE) s1 = "He is ";
-
-		/* Use a preposition with objects */
-		s2 = "on ";
-
-		/* Use a preposition with terrain */
-		prep = TRUE;
-
-		/* Ignore boring terrain */
-		if (feat <= FEAT_INVIS) feat = FEAT_NONE;
-	}
-
-
-	/* Actual items */
-	if (c_ptr->o_idx && o_ptr->marked)
-	{
-		/* Obtain an object description */
-		object_desc(o_name, o_ptr, TRUE, 3);
-
-		/* Describe the object */
-		sprintf(out_val, "%s%s%s.  --pause--", s1, s2, o_name);
-		prt(out_val, 0, 0);
-		move_cursor_relative(y, x);
-		query = inkey();
-
-		/* Use "space" to advance */
-		if (query != ' ') return (query);
-
-		/* Change the intro */
-		s1 = "It is ";
-
-		/* Plurals */
-		if (o_ptr->number > 1) s1 = "They are ";
-
-		/* Use a preposition with terrain */
-		prep = TRUE;
-
-		/* Ignore boring terrain */
-		if (feat <= FEAT_INVIS) feat = FEAT_NONE;
-	}
-
-
-	/* Interesting terrain */
-	if (feat != FEAT_NONE)
-	{
-		cptr p1 = "";
-
-		cptr p2 = "a ";
-
-		cptr name = f_name + f_info[feat].name;
-
-		/* Pick a prefix */
-		if (prep) p2 = ((feat >= FEAT_DOOR_HEAD) ? "in " : "on ");
-
-		/* Note leading vowel */
-		if (is_a_vowel(name[0])) p2 = "an ";
-
-		/* Hack -- special description for store doors */
-		if ((feat >= FEAT_SHOP_HEAD) && (feat <= FEAT_SHOP_TAIL))
-		{
-			p2 = "the entrance to the ";
-		}
-
-		/* Display a message */
-		sprintf(out_val, "%s%s%s%s.  --pause--", s1, p1, p2, name);
-		prt(out_val, 0, 0);
-		move_cursor_relative(y, x);
-		query = inkey();
-
-		/* Continue if allowed */
-		if (query != ' ') return (query);
-	}
-
-
-	/* Keep going */
-	return (query);
-}
-
-
-
-
-/*
- * Hack -- determine if a given location is "interesting"
- */
-static bool do_cmd_look_accept(int y, int x)
-{
-	cave_type *c_ptr;
-
-
-	/* Player grid is always interesting */
-	if ((y == py) && (x == px)) return (TRUE);
-
-
-	/* Examine the grid */
-	c_ptr = &cave[y][x];
-
-	/* Visible monsters */
-	if (c_ptr->m_idx)
-	{
-		monster_type *m_ptr = &m_list[c_ptr->m_idx];
-
-		/* Visible monsters */
-		if (m_ptr->ml) return (TRUE);
-	}
-
-	/* Objects */
-	if (c_ptr->o_idx)
-	{
-		object_type *o_ptr = &o_list[c_ptr->o_idx];
-
-		/* Memorized object */
-		if (o_ptr->marked) return (TRUE);
-	}
-
-	/* Interesting memorized features */
-	if (c_ptr->info & CAVE_MARK)
-	{
-		/* Notice glyphs */
-		if (c_ptr->feat == FEAT_GLYPH) return (TRUE);
-
-		/* Notice doors */
-		if (c_ptr->feat == FEAT_OPEN) return (TRUE);
-		if (c_ptr->feat == FEAT_BROKEN) return (TRUE);
-
-		/* Notice stairs */
-		if (c_ptr->feat == FEAT_LESS) return (TRUE);
-		if (c_ptr->feat == FEAT_MORE) return (TRUE);
-
-		/* Notice shops */
-		if ((c_ptr->feat >= FEAT_SHOP_HEAD) &&
-		    (c_ptr->feat <= FEAT_SHOP_TAIL)) return (TRUE);
-
-		/* Notice traps */
-		if ((c_ptr->feat >= FEAT_TRAP_HEAD) &&
-		    (c_ptr->feat <= FEAT_TRAP_TAIL)) return (TRUE);
-
-		/* Notice doors */
-		if ((c_ptr->feat >= FEAT_DOOR_HEAD) &&
-		    (c_ptr->feat <= FEAT_DOOR_TAIL)) return (TRUE);
-
-		/* Notice rubble */
-		if (c_ptr->feat == FEAT_RUBBLE) return (TRUE);
-
-		/* Notice veins with treasure */
-		if (c_ptr->feat == FEAT_MAGMA_K) return (TRUE);
-		if (c_ptr->feat == FEAT_QUARTZ_K) return (TRUE);
-	}
-
-	/* Nope */
-	return (FALSE);
-}
-
-
-
-/*
- * A new "look" command, similar to the "target" command.
- *
- * The "player grid" is always included in the "look" array, so
- * that this command will normally never "fail".
- *
- * XXX XXX XXX Allow "target" inside the "look" command (?)
+ * Look command
  */
 void do_cmd_look(void)
 {
-	int		y, x, i, d, m;
-
-	bool	done = FALSE;
-
-	char	query;
-
-
-	/* Blind */
-	if (p_ptr->blind)
+	/* Look around */
+	if (target_set(TARGET_LOOK))
 	{
-		msg_print("You can't see a damn thing!");
-		return;
+		msg_print("Target Selected.");
 	}
-
-	/* Hallucinating */
-	if (p_ptr->image)
-	{
-		msg_print("You can't believe what you are seeing!");
-		return;
-	}
-
-
-	/* Reset "temp" array */
-	temp_n = 0;
-
-	/* Scan the current panel */
-	for (y = panel_row_min; y <= panel_row_max; y++)
-	{
-		for (x = panel_col_min; x <= panel_col_max; x++)
-		{
-			/* Require line of sight, unless "look" is "expanded" */
-			if (!expand_look && !player_has_los_bold(y, x)) continue;
-
-			/* Require interesting contents */
-			if (!do_cmd_look_accept(y, x)) continue;
-
-			/* Save the location */
-			temp_x[temp_n] = x;
-			temp_y[temp_n] = y;
-			temp_n++;
-		}
-	}
-
-	/* Paranoia */
-	if (!temp_n)
-	{
-		msg_print("You see nothing special.");
-		return;
-	}
-
-
-	/* Set the sort hooks */
-	ang_sort_comp = ang_sort_comp_distance;
-	ang_sort_swap = ang_sort_swap_distance;
-
-	/* Sort the positions */
-	ang_sort(temp_x, temp_y, temp_n);
-
-
-	/* Start near the player */
-	m = 0;
-
-	/* Interact */
-	while (!done)
-	{
-		/* Describe and Prompt */
-		query = do_cmd_look_aux(temp_y[m], temp_x[m]);
-
-		/* Assume no "direction" */
-		d = 0;
-
-		/* Analyze (non "recall") command */
-		switch (query)
-		{
-			case ESCAPE:
-			case 'q':
-			{
-				done = TRUE;
-				break;
-			}
-
-			case '*':
-			case '+':
-			case ' ':
-			{
-				if (++m == temp_n)
-				{
-					m = 0;
-					if (!expand_list) done = TRUE;
-				}
-				break;
-			}
-
-			case '-':
-			{
-				if (m-- == 0)
-				{
-					m = temp_n - 1;
-					if (!expand_list) done = TRUE;
-				}
-				break;
-			}
-
-			default:
-			{
-				d = keymap_dirs[query & 0x7F];
-				if (!d) bell();
-				break;
-			}
-		}
-
-		/* Motion */
-		if (d)
-		{
-			/* Find a new grid if possible */
-			i = target_pick(temp_y[m], temp_x[m], ddy[d], ddx[d]);
-
-			/* Use that grid */
-			if (i >= 0) m = i;
-		}
-	}
-
-	/* Clear the prompt */
-	prt("", 0, 0);
 }
-
 
 
 
@@ -1841,7 +1299,7 @@ static void roff_top(int r_idx)
 	Term_gotoxy(0, 0);
 
 	/* A title (use "The" for non-uniques) */
-	if (!(r_ptr->flags1 & RF1_UNIQUE))
+	if (!(r_ptr->flags1 & (RF1_UNIQUE)))
 	{
 		Term_addstr(-1, TERM_WHITE, "The ");
 	}
@@ -1936,10 +1394,10 @@ void do_cmd_query_symbol(void)
 		if (!cheat_know && !r_ptr->r_sights) continue;
 
 		/* Require non-unique monsters if needed */
-		if (norm && (r_ptr->flags1 & RF1_UNIQUE)) continue;
+		if (norm && (r_ptr->flags1 & (RF1_UNIQUE))) continue;
 
 		/* Require unique monsters if needed */
-		if (uniq && !(r_ptr->flags1 & RF1_UNIQUE)) continue;
+		if (uniq && !(r_ptr->flags1 & (RF1_UNIQUE))) continue;
 
 		/* Collect "appropriate" monsters */
 		if (all || (r_ptr->d_char == sym)) who[n++] = i;
@@ -1999,7 +1457,7 @@ void do_cmd_query_symbol(void)
 		r_idx = who[i];
 
 		/* Hack -- Auto-recall */
-		recent_track(r_idx);
+		monster_race_track(r_idx);
 
 		/* Hack -- Handle stuff */
 		handle_stuff();

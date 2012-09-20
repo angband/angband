@@ -7,9 +7,8 @@ plus a variety of optional or required arguments.  You may choose how the
 two standard "keysets", the "original" keyset or the "roguelike" keyset.
 
     The original keyset is very similar to the "underlying" command set,
-with a few additions (the ability to use the numeric "directions" to "walk",
-the "5" key to "stay still", and the "w" key to "wear/wield" equipment, and
-the "t" key to "take off" equipment).  The roguelike keyset provides similar
+with a few additions (such as the ability to use the numeric "directions" to
+"walk" or the "5" key to "stay still").  The roguelike keyset provides similar
 additions, and also allows the use of the h/j/k/l/y/u/b/n keys to "walk" (or,
 in combination with the shift or control keys, to run or tunnel), which thus
 requires a variety of key mappings to allow access to the underlying commands
@@ -118,7 +117,7 @@ that you can always, for example, use "\" + "." + "6", to specify "run east".
  ]  (unused)                            ^N  (unused)
  -  Walk (flip pickup)                  ^O  (unused)
  _  Enter store                         ^P  Show previous messages
- +  Dig tunnel                          ^Q  (unused)
+ +  Alter grid                          ^Q  (unused)
  =  Set options                         ^R  Redraw the screen
  ;  Walk (with pickup)                  ^S  Save and don't quit
  :  Take notes                          ^T  (unused)
@@ -178,10 +177,10 @@ that you can always, for example, use "\" + "." + "6", to specify "run east".
  ]  (unused)                            ^N  (tunnel - south east)
  -  Walk (flip pickup)                  ^O  (unused)
  _  Enter store                         ^P  Show previous messages
- +  Dig tunnel                          ^Q  (unused)
+ +  Alter grid                          ^Q  (unused)
  =  Set options                         ^R  Redraw the screen
  ;  Walk (with pickup)                  ^S  Save and don't quit
- :  Take notes                          ^T  (unused)
+ :  Take notes                          ^T  Dig a Tunnel
  '  (unused)                            ^U  (tunnel - north east)
  "  Enter a user pref command           ^V  Examine current target
  ,  Run                                 ^W  (special - wizard mode)
@@ -256,8 +255,8 @@ ESCAPE which are always ignored as commands in case you type the command
 just after the count expires.
 
         You can tell Angband to automatically use a repeat count of 99
-with commands you normally want to repeat (open, disarm, tunnel, bash)
-by setting the "always_repeat" option.
+with commands you normally want to repeat (open, disarm, tunnel, bash,
+alter, etc) by setting the "always_repeat" option.
  
  
 ===  Selection of Objects ===
@@ -562,21 +561,6 @@ Run (.) or Run (,)
         keys (roguelike keyset), or shift plus the "original" direction keys
         on the keypad (both keysets, some machines) to run in a direction.
 
-Tunnel (+)
-        Tunneling or mining is a very useful art.  There are many kinds of
-        rock, with varying hardness, including permanent rock (permanent),
-        granite (very hard), quartz veins (hard), magma veins (soft), and
-        rubble (very soft).  Quartz and Magma veins may be displayed in a
-        special way, and may sometimes contain treasure, in which case they
-        will be displayed in a different way.  Rubble sometimes covers an
-        object.  It is hard to tunnel unless you are wielding a heavy weapon
-        or a shovel or a pick.  Tunneling ability increases with strength
-        and weapon weight.  This command can take a count and requires
-        a direction.  You may also use control plus the the "roguelike"
-        direction keys (roguelike keyset), or control plus the "original"
-        direction keypad keys (both keysets, some machines) to tunnel in a
-        direction.  You may also use the "T" key (original keyset).
-
 Go up staircase (<)
         Climbs up an up staircase you are standing on.  There is always at
         least one staircase going up on every level except for the town
@@ -644,7 +628,19 @@ Toggle search mode (S) or Toggle search mode (#)
         are disturbed.  You may also turn off search mode by entering the
         Search Mode command again.
 
----  Door, Chest, Trap, and Bash Commands ---
+---  Alter Commands ---
+
+Tunnel (T) or Tunnel (^T)
+        Tunneling or mining is a very useful art.  There are many kinds of
+        rock, with varying hardness, including permanent rock (permanent),
+        granite (very hard), quartz veins (hard), magma veins (soft), and
+        rubble (very soft).  Quartz and Magma veins may be displayed in a
+        special way, and may sometimes contain treasure, in which case they
+        will be displayed in a different way.  Rubble sometimes covers an
+        object.  It is hard to tunnel unless you are wielding a heavy weapon
+        or a shovel or a pick.  Tunneling ability increases with strength
+        and weapon weight.  This command can take a count, requires a
+        direction, and is affected by the "always_repeat" option.
 
 Open a door or chest (o)
         To open an object such as a door or chest, you must use this
@@ -652,13 +648,14 @@ Open a door or chest (o)
         lock based on your disarming ability.  If you open a trapped chest
         without disarming the traps first, the trap will be set off.  Some
         doors will be jammed shut and may have to be forced open.  You may
-        need several tries to open a door or chest.  Open can take a count
-        and requires a direction.
+        need several tries to open a door or chest.  Open can take a count,
+        requires a direction, and is affected by the "always_repeat" option.
 
 Close a door (c)
         Non-intelligent and some other creatures cannot open doors, so
         shutting doors can be quite valuable.  Broken doors cannot be closed.
-        Bashing a door open may break it. Close requires a direction.
+        Bashing a door open may break it. Close can take a count, requires a
+        direction, and is affected by the "always_repeat" option.
 
 Jam a door (j) or Spike a door (S)
         Many monsters can simply open closed doors, and can eventually
@@ -666,7 +663,7 @@ Jam a door (j) or Spike a door (S)
         to jam a door shut with iron spikes.  Each spike used on the door
         will make it harder to bash down the door, up to a certain limit.
         Smaller monsters are less able to bash down doors.  In order to
-        use this command, you must be carrying iron spikes.  This command
+        use this command, you must be carrying iron spikes.  Jam or Spike
         requires a direction.
 
 Bash a door (B) or Force a door (f)
@@ -676,15 +673,26 @@ Bash a door (B) or Force a door (f)
         jammed closed with spikes can only be opened by bashing, and all
         closed doors can be bashed open if desired.  Bashing a door open
         may permanently break it so that it can never be closed.  Bash or
-        Force can take a count, requires a direction, and is repeated 99
-        times if "Repeat obvious commands" is turned on.  Any count will
-        be reset if you are thrown off-balance.
+        Force can take a count, requires a direction, and is affected by
+        the "always_repeat" option.
 
 Disarm a trap or chest (D)
         You can attempt to disarm traps on the floor or on chests.  If you
         fail, there is a chance that you will blunder and set it off.  You
         can only disarm a trap after you have found it (usually with the
-        Search command).  Disarm can take a count and requires a direction.
+        Search command).  Disarm can take a count, requires a direction,
+        and is affected by the "always_repeat" option.
+
+Alter (+)
+        This special command allows the use of a single keypress to select
+        any of the "obvious" commands above (attack, tunnel, bash, open,
+        disarm, close), and, by using macros or keymaps, to combine this
+        keypress with directions.  In general, this allows the use of the
+        "control" key plus the appropriate "direction" key (including the
+        roguelike direction keys in roguelike mode) as a kind of generic
+        "alter the terrain feature of an adjacent grid" command.  Alter
+        can take a count, requires a direction, and is affected by the
+        "always_repeat" option.
 
 ---  Spell and Prayer Commands ---
 

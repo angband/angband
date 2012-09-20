@@ -59,7 +59,9 @@
  *
  * Hack -- first we free all the strings, since this is known
  * to succeed even if the strings have not been allocated yet,
- * as long as the variables start out as "NULL".
+ * as long as the variables start out as "NULL".  This allows
+ * this function to be called multiple times, for example, to
+ * try several base "path" values until a good one is found.
  */
 void init_file_paths(char *path)
 {
@@ -197,169 +199,6 @@ void init_file_paths(char *path)
 #endif /* NeXT */
 
 }
-
-
-
-/*
- * Hack -- Explain a broken "lib" folder and quit (see below).
- *
- * XXX XXX XXX This function is "messy" because various things
- * may or may not be initialized, but the "plog()" and "quit()"
- * functions are "supposed" to work under any conditions.
- */
-static void show_news_aux(cptr why)
-{
-	/* Why */
-	plog(why);
-
-	/* Explain */
-	plog("The 'lib' directory is probably missing or broken.");
-
-	/* More details */
-	plog("Perhaps the archive was not extracted correctly.");
-
-	/* Explain */
-	plog("See the 'README' file for more information.");
-
-	/* Quit with error */
-	quit("Fatal Error.");
-}
-
-
-/*
- * Hack -- verify some files, and display the "news.txt" file
- *
- * This function is often called before "init_some_arrays()",
- * but after the "term.c" package has been initialized, so
- * be aware that many functions will not be "usable" yet.
- *
- * Note that this function attempts to verify the "news" file,
- * and the game aborts (cleanly) on failure.
- *
- * Note that this function attempts to verify (or create) the
- * "high score" file, and the game aborts (cleanly) on failure.
- *
- * Note that one of the most common "extraction" errors involves
- * failing to extract all sub-directories (even empty ones), such
- * as by failing to use the "-d" option of "pkunzip", or failing
- * to use the "save empty directories" option with "Compact Pro".
- * This error will often be caught by the "high score" creation
- * code below, since the "lib/apex" directory, being empty in the
- * standard distributions, is most likely to be "lost", making it
- * impossible to create the high score file.
- */
-void show_news(void)
-{
-	int		fd = -1;
-
-	int		mode = 0644;
-
-	FILE        *fp;
-
-	char	buf[1024];
-
-
-	/*** Verify the "news" file ***/
-
-	/* Build the filename */
-	path_build(buf, 1024, ANGBAND_DIR_FILE, "news.txt");
-
-	/* Attempt to open the file */
-	fd = fd_open(buf, O_RDONLY);
-
-	/* Failure */
-	if (fd < 0)
-	{
-		char why[1024];
-
-		/* Message */
-		sprintf(why, "Cannot access the '%s' file!", buf);
-
-		/* Crash and burn */
-		show_news_aux(why);
-	}
-
-	/* Close it */
-	(void)fd_close(fd);
-
-
-	/*** Display the "news" file ***/
-
-	/* Clear screen */
-	Term_clear();
-
-	/* Build the filename */
-	path_build(buf, 1024, ANGBAND_DIR_FILE, "news.txt");
-
-	/* Open the News file */
-	fp = my_fopen(buf, "r");
-
-	/* Dump */
-	if (fp)
-	{
-		int i = 0;
-
-		/* Dump the file to the screen */
-		while (0 == my_fgets(fp, buf, 1024))
-		{
-			/* Display and advance */
-			Term_putstr(0, i++, -1, TERM_WHITE, buf);
-		}
-
-		/* Close */
-		my_fclose(fp);
-	}
-
-	/* Flush it */
-	Term_fresh();
-
-
-	/*** Verify (or create) the "high score" file ***/
-
-	/* Build the filename */
-	path_build(buf, 1024, ANGBAND_DIR_APEX, "scores.raw");
-
-	/* Attempt to open the high score file */
-	fd = fd_open(buf, O_RDONLY);
-
-	/* Failure */
-	if (fd < 0)
-	{
-		/* File type is "DATA" */
-		FILE_TYPE(FILE_TYPE_DATA);
-
-		/* Create a new high score file */
-		fd = fd_make(buf, mode);
-
-		/* Failure */
-		if (fd < 0)
-		{
-			char why[1024];
-
-			/* Message */
-			sprintf(why, "Cannot create the '%s' file!", buf);
-
-			/* Crash and burn */
-			show_news_aux(why);
-		}
-	}
-
-	/* Close it */
-	(void)fd_close(fd);
-}
-
-
-
-/*
- * Hack -- take notes on line 23
- */
-static void note(cptr str)
-{
-	Term_erase(0, 23, 255);
-	Term_putstr(20, 23, -1, TERM_WHITE, str);
-	Term_fresh();
-}
-
 
 
 
@@ -2554,7 +2393,76 @@ static errr init_alloc(void)
 
 
 /*
- * Initialize various Angband variables and arrays.
+ * Hack -- take notes on line 23
+ */
+static void note(cptr str)
+{
+	Term_erase(0, 23, 255);
+	Term_putstr(20, 23, -1, TERM_WHITE, str);
+	Term_fresh();
+}
+
+
+
+/*
+ * Hack -- Explain a broken "lib" folder and quit (see below).
+ *
+ * XXX XXX XXX This function is "messy" because various things
+ * may or may not be initialized, but the "plog()" and "quit()"
+ * functions are "supposed" to work under any conditions.
+ */
+static void init_angband_aux(cptr why)
+{
+	/* Why */
+	plog(why);
+
+	/* Explain */
+	plog("The 'lib' directory is probably missing or broken.");
+
+	/* More details */
+	plog("Perhaps the archive was not extracted correctly.");
+
+	/* Explain */
+	plog("See the 'README' file for more information.");
+
+	/* Quit with error */
+	quit("Fatal Error.");
+}
+
+
+/*
+ * Hack -- main Angband initialization entry point
+ *
+ * Verify some files, display the "news.txt" file, create
+ * the high score file, initialize all internal arrays, and
+ * load the basic "user pref files".
+ *
+ * Be very careful to keep track of the order in which things
+ * are initialized, in particular, the only thing *known* to
+ * be available when this function is called is the "z-term.c"
+ * package, and that may not be fully initialized until the
+ * end of this function, when the default "user pref files"
+ * are loaded and "Term_xtra(TERM_XTRA_REACT,0)" is called.
+ *
+ * Note that this function attempts to verify the "news" file,
+ * and the game aborts (cleanly) on failure, since without the
+ * "news" file, it is likely that the "lib" folder has not been
+ * correctly located.  Otherwise, the news file is displayed for
+ * the user.
+ *
+ * Note that this function attempts to verify (or create) the
+ * "high score" file, and the game aborts (cleanly) on failure,
+ * since one of the most common "extraction" failures involves
+ * failing to extract all sub-directories (even empty ones), such
+ * as by failing to use the "-d" option of "pkunzip", or failing
+ * to use the "save empty directories" option with "Compact Pro".
+ * This error will often be caught by the "high score" creation
+ * code below, since the "lib/apex" directory, being empty in the
+ * standard distributions, is most likely to be "lost", making it
+ * impossible to create the high score file.
+ *
+ * Note that various things are initialized by this function,
+ * including everything that was once done by "init_some_arrays".
  *
  * This initialization involves the parsing of special files
  * in the "lib/data" and sometimes the "lib/edit" directories.
@@ -2562,9 +2470,115 @@ static errr init_alloc(void)
  * Note that the "template" files are initialized first, since they
  * often contain errors.  This means that macros and message recall
  * and things like that are not available until after they are done.
+ *
+ * We load the default "user pref files" here in case any "color"
+ * changes are needed before character creation.
+ *
+ * Note that the "graf-xxx.prf" file must be loaded separately,
+ * if needed, in the first (?) pass through "TERM_XTRA_REACT".
  */
-void init_some_arrays(void)
+void init_angband(void)
 {
+	int fd = -1;
+
+	int mode = 0644;
+
+	FILE *fp;
+
+	char buf[1024];
+
+
+	/*** Verify the "news" file ***/
+
+	/* Build the filename */
+	path_build(buf, 1024, ANGBAND_DIR_FILE, "news.txt");
+
+	/* Attempt to open the file */
+	fd = fd_open(buf, O_RDONLY);
+
+	/* Failure */
+	if (fd < 0)
+	{
+		char why[1024];
+
+		/* Message */
+		sprintf(why, "Cannot access the '%s' file!", buf);
+
+		/* Crash and burn */
+		init_angband_aux(why);
+	}
+
+	/* Close it */
+	(void)fd_close(fd);
+
+
+	/*** Display the "news" file ***/
+
+	/* Clear screen */
+	Term_clear();
+
+	/* Build the filename */
+	path_build(buf, 1024, ANGBAND_DIR_FILE, "news.txt");
+
+	/* Open the News file */
+	fp = my_fopen(buf, "r");
+
+	/* Dump */
+	if (fp)
+	{
+		int i = 0;
+
+		/* Dump the file to the screen */
+		while (0 == my_fgets(fp, buf, 1024))
+		{
+			/* Display and advance */
+			Term_putstr(0, i++, -1, TERM_WHITE, buf);
+		}
+
+		/* Close */
+		my_fclose(fp);
+	}
+
+	/* Flush it */
+	Term_fresh();
+
+
+	/*** Verify (or create) the "high score" file ***/
+
+	/* Build the filename */
+	path_build(buf, 1024, ANGBAND_DIR_APEX, "scores.raw");
+
+	/* Attempt to open the high score file */
+	fd = fd_open(buf, O_RDONLY);
+
+	/* Failure */
+	if (fd < 0)
+	{
+		/* File type is "DATA" */
+		FILE_TYPE(FILE_TYPE_DATA);
+
+		/* Create a new high score file */
+		fd = fd_make(buf, mode);
+
+		/* Failure */
+		if (fd < 0)
+		{
+			char why[1024];
+
+			/* Message */
+			sprintf(why, "Cannot create the '%s' file!", buf);
+
+			/* Crash and burn */
+			init_angband_aux(why);
+		}
+	}
+
+	/* Close it */
+	(void)fd_close(fd);
+
+
+	/*** Initialize some arrays ***/
+
 	/* Initialize feature info */
 	note("[Initializing arrays... (features)]");
 	if (init_f_info()) quit("Cannot initialize features");
@@ -2597,8 +2611,39 @@ void init_some_arrays(void)
 	note("[Initializing arrays... (alloc)]");
 	if (init_alloc()) quit("Cannot initialize alloc stuff");
 
-	/* Hack -- all done */
-	note("[Initializing arrays... done]");
+
+	/*** Load default user pref files ***/
+
+	/* Initialize feature info */
+	note("[Initializing user pref files...]");
+
+	/* Access the "basic" pref file */
+	strcpy(buf, "pref.prf");
+
+	/* Process that file */
+	process_pref_file(buf);
+
+	/* Access the "user" pref file */
+	sprintf(buf, "user.prf");
+
+	/* Process that file */
+	process_pref_file(buf);
+
+	/* Access the "basic" system pref file */
+	sprintf(buf, "pref-%s.prf", ANGBAND_SYS);
+
+	/* Process that file */
+	process_pref_file(buf);
+
+	/* Access the "user" system pref file */
+	sprintf(buf, "user-%s.prf", ANGBAND_SYS);
+
+	/* Process that file */
+	process_pref_file(buf);
+
+	/* Done */
+	note("[Initialization complete]");
 }
+
 
 

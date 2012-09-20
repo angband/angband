@@ -420,9 +420,9 @@ static int Term_xtra_ibm_react(void)
 		for (i = 0; i < 16; i++)
 		{
 			/* Extract desired values */
-			rv = color_table[i][1] >> 2;
-			gv = color_table[i][2] >> 2;
-			bv = color_table[i][3] >> 2;
+			rv = angband_color_table[i][1] >> 2;
+			gv = angband_color_table[i][2] >> 2;
+			bv = angband_color_table[i][3] >> 2;
 
 			/* Extract a full color code */
 			code = ((rv) | (gv << 8) | (bv << 16));
@@ -449,7 +449,7 @@ static int Term_xtra_ibm_react(void)
 		for (i = 0; i < 16; i++)
 		{
 			/* Simply accept the desired colors */
-			ibm_color_simple[i] = color_table[i][0];
+			ibm_color_simple[i] = angband_color_table[i][0];
 		}
 	}
 
@@ -821,10 +821,12 @@ static errr Term_wipe_ibm(int x, int y, int n)
  * Place some text on the screen using an attribute
  *
  * The given parameters are "valid".  Be careful with "a".
- * The string "s" is null terminated, and has length "n".
+ *
+ * The string "cp" has length "n" and is NOT null-terminated.
  */
-static errr Term_text_ibm(int x, int y, int n, byte a, cptr s)
+static errr Term_text_ibm(int x, int y, int n, byte a, const char *cp)
 {
+	register int i;
 	register byte attr;
 	register byte *dest;
 
@@ -845,14 +847,14 @@ static errr Term_text_ibm(int x, int y, int n, byte a, cptr s)
 
 #ifdef USE_CONIO
 
-	/* Set the attribute */
-	textattr(attr);
-
 	/* Place the cursor */
 	gotoxy(x+1, y+1);
 
+	/* Set the attribute */
+	textattr(attr);
+
 	/* Dump the text */
-	for (; *s; s++) putch(*s);
+	for (i = 0; i < n; i++) putch(cp[i]);
 
 #else /* USE_CONIO */
 
@@ -860,9 +862,85 @@ static errr Term_text_ibm(int x, int y, int n, byte a, cptr s)
 	dest = VirtualScreen + (((cols * y) + x) << 1);
 
 	/* Save the data */
-	while (*s)
+	for (i = 0; i < n; i++)
 	{
-		*dest++ = *s++;
+		/* Apply */
+		*dest++ = cp[i];
+		*dest++ = attr;
+	}
+
+#endif /* USE_CONIO */
+
+	/* Success */
+	return (0);
+}
+
+
+/*
+ * Place some attr/char pairs on the screen
+ *
+ * The given parameters are "valid".
+ */
+static errr Term_pict_ibm(int x, int y, int n, const byte *ap, const char *cp)
+{
+	register int i;
+	register byte attr;
+	register byte *dest;
+
+
+#ifdef USE_CONIO
+
+	/* Place the cursor */
+	gotoxy(x+1, y+1);
+
+	/* Dump the text */
+	for (i = 0; i < n; i++)
+	{
+		/* Handle "complex" color */
+		if (use_color_complex)
+		{
+			/* Extract a color index */
+			attr = (ap[i] & 0x0F);
+		}
+
+		/* Handle "simple" color */
+		else
+		{
+			/* Extract a color value */
+			attr = ibm_color_simple[ap[i] & 0x0F];
+		}
+
+		/* Set the attribute */
+		textattr(attr);
+
+		/* Dump the char */
+		putch(cp[i]);
+	}
+
+#else /* USE_CONIO */
+
+	/* Access the virtual (or physical) screen */
+	dest = VirtualScreen + (((cols * y) + x) << 1);
+
+	/* Save the data */
+	for (i = 0; i < n; i++)
+	{
+		/* Handle "complex" color */
+		if (use_color_complex)
+		{
+			/* Extract a color index */
+			attr = (ap[i] & 0x0F);
+		}
+
+		/* Handle "simple" color */
+		else
+		{
+			/* Extract a color value */
+			attr = ibm_color_simple[ap[i] & 0x0F];
+		}
+
+		/* Apply */
+		*dest++ = cp[i];
 		*dest++ = attr;
 	}
 
@@ -1115,7 +1193,6 @@ errr init_ibm(void)
 	int i;
 	int mode;
 	int rv, gv, bv;
-	bool want_graphics;
 
 	term *t = &term_screen_body;
 
@@ -1177,16 +1254,10 @@ errr init_ibm(void)
 		activate_color_complex();
 	}
 
-	/* Graphics request */
-	want_graphics = use_graphics;
-
-	/* No graphics */
-	use_graphics = FALSE;
-
 #ifdef USE_GRAPHICS
 
 	/* Try to activate bitmap graphics */
-	if (want_graphics && use_color_complex)
+	if (arg_graphics && use_color_complex)
 	{
 		FILE *f;
 
@@ -1232,10 +1303,10 @@ errr init_ibm(void)
 		bv = ((ibm_color_complex[i] >> 16) & 0xFF);
 
 		/* Save the "complex" codes */
-		color_table[i][0] = ibm_color_simple[i];
-		color_table[i][1] = ((rv << 2) | (rv >> 4));
-		color_table[i][2] = ((gv << 2) | (gv >> 4));
-		color_table[i][3] = ((bv << 2) | (bv >> 4));
+		angband_color_table[i][0] = ibm_color_simple[i];
+		angband_color_table[i][1] = ((rv << 2) | (rv >> 4));
+		angband_color_table[i][2] = ((gv << 2) | (gv >> 4));
+		angband_color_table[i][3] = ((bv << 2) | (bv >> 4));
 	}
 
 
@@ -1286,6 +1357,13 @@ errr init_ibm(void)
 	/* Initialize the term */
 	term_init(t, 80, 24, 256);
 
+#ifndef USE_CONIO
+
+	/* Always use "Term_pict()" */
+	t->always_pict = TRUE;
+
+#endif /* USE_CONIO */
+
 	/* Prepare the init/nuke hooks */
 	t->init_hook = Term_init_ibm;
 	t->nuke_hook = Term_nuke_ibm;
@@ -1295,6 +1373,7 @@ errr init_ibm(void)
 	t->curs_hook = Term_curs_ibm;
 	t->wipe_hook = Term_wipe_ibm;
 	t->text_hook = Term_text_ibm;
+	t->pict_hook = Term_pict_ibm;
 
 	/* Save it */
 	term_screen = t;

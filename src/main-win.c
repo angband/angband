@@ -33,7 +33,7 @@
  * clear of the current window, and redraw the borders and other things.
  *
  * XXX XXX XXX
- * The "use_graphics" option should affect ALL of the windows, not just
+ * The "arg_graphics" option should affect ALL of the windows, not just
  * the main "screen" window.  The "FULL_GRAPHICS" option is supposed to
  * enable this behavior, but it will load one bitmap file for each of
  * the windows, which may take a lot of memory, especially since with
@@ -66,6 +66,7 @@
  * XXX XXX XXX
  * Remove the old "FontFile" entries from the "*.ini" file, and remove
  * the entire section about "sounds", after renaming a few sound files.
+ * In fact, the whole "sound" concept has changed...
  */
 
 
@@ -82,13 +83,6 @@
 # ifndef WIN32
 #  define WIN32
 # endif
-#endif
-
-/*
- * XXX XXX XXX Hack -- broken sound libraries
- */
-#ifdef BEN_HACK
-# undef USE_SOUND
 #endif
 
 
@@ -336,7 +330,7 @@ struct _term_data
 
 
 /*
- * Maximum number of windows XXX XXX XXX XXX
+ * Maximum number of windows XXX XXX XXX
  */
 #define MAX_TERM_DATA 8
 
@@ -741,10 +735,10 @@ static void save_prefs(void)
 {
 	char       buf[32];
 
-	strcpy(buf, use_graphics ? "1" : "0");
+	strcpy(buf, arg_graphics ? "1" : "0");
 	WritePrivateProfileString("Angband", "Graphics", buf, ini_file);
 
-	strcpy(buf, use_sound ? "1" : "0");
+	strcpy(buf, arg_sound ? "1" : "0");
 	WritePrivateProfileString("Angband", "Sound", buf, ini_file);
 
 	save_prefs_aux(&data[0], "Main window");
@@ -835,11 +829,11 @@ static void load_prefs(void)
 {
 	int i;
 
-	/* Extract the "use_graphics" flag */
-	use_graphics = (GetPrivateProfileInt("Angband", "Graphics", 0, ini_file) != 0);
+	/* Extract the "arg_graphics" flag */
+	arg_graphics = (GetPrivateProfileInt("Angband", "Graphics", 0, ini_file) != 0);
 
-	/* Extract the "use_sound" flag */
-	use_sound = (GetPrivateProfileInt("Angband", "Sound", 0, ini_file) != 0);
+	/* Extract the "arg_sound" flag */
+	arg_sound = (GetPrivateProfileInt("Angband", "Sound", 0, ini_file) != 0);
 
 	/* Load window prefs */
 	load_prefs_aux(&data[0], "Main window");
@@ -1413,11 +1407,6 @@ static errr Term_xtra_win_react(void)
 {
 	int i;
 
-	static old_use_graphics = FALSE;
-
-
-	/* XXX XXX XXX Check "color_table[]" */
-
 
 	/* Simple color */
 	if (colors16)
@@ -1426,7 +1415,7 @@ static errr Term_xtra_win_react(void)
 		for (i = 0; i < 16; i++)
 		{
 			/* Simply accept the desired colors */
-			win_pal[i] = color_table[i][0];
+			win_pal[i] = angband_color_table[i][0];
 		}
 	}
 
@@ -1443,9 +1432,9 @@ static errr Term_xtra_win_react(void)
 		for (i = 0; i < 16; i++)
 		{
 			/* Extract desired values */
-			rv = color_table[i][1];
-			gv = color_table[i][2];
-			bv = color_table[i][3];
+			rv = angband_color_table[i][1];
+			gv = angband_color_table[i][2];
+			bv = angband_color_table[i][3];
 
 			/* Extract a full color code */
 			code = PALETTERGB(rv, gv, bv);
@@ -1466,20 +1455,68 @@ static errr Term_xtra_win_react(void)
 	}
 
 
-#ifdef USE_GRAPHICS
+#ifdef USE_SOUND
 
-	/* XXX XXX XXX Check "use_graphics" */
-	if (use_graphics && !old_use_graphics)
+	/* Handle "arg_sound" */
+	if (use_sound != arg_sound)
 	{
-		/* Hack -- set the player picture */
-		r_info[0].x_attr = 0x87;
-		r_info[0].x_char = 0x80 | (10 * p_ptr->pclass + p_ptr->prace);
+		/* Change setting */
+		use_sound = arg_sound;
 	}
 
-	/* Remember */
-	old_use_graphics = use_graphics;
-
 #endif
+
+
+#ifdef USE_GRAPHICS
+
+	/* Handle "arg_graphics" */
+	if (use_graphics != arg_graphics)
+	{
+		/* Change setting */
+		use_graphics = arg_graphics;
+
+		/* Reset visuals */
+		reset_visuals();
+
+		/* Activate graphics */
+		if (use_graphics)
+		{
+			/* Hack -- set the player picture */
+			r_info[0].x_attr = 0x87;
+			r_info[0].x_char = 0x80 | (10 * p_ptr->pclass + p_ptr->prace);
+
+			/* Force the "requested" bitmap XXX XXX XXX */
+			if (term_force_graf(&data[0], data[0].graf_want))
+			{
+				/* XXX XXX XXX Force the "standard" font */
+				(void)term_force_font(&data[0], "8X13.FON");
+
+				/* XXX XXX XXX Force the "standard" bitmap */
+				(void)term_force_graf(&data[0], "8X13.BMP");
+			}
+
+#ifdef FULL_GRAPHICS
+
+			/* Windows */
+			for (i = 1; i < MAX_TERM_DATA; i++)
+			{
+				/* Force the "requested" bitmap XXX XXX XXX */
+				if (term_force_graf(&data[i], data[i].graf_want))
+				{
+					/* XXX XXX XXX Force the "standard" font */
+					(void)term_force_font(&data[i], "8X13.FON");
+
+					/* XXX XXX XXX Force the "standard" bitmap */
+					(void)term_force_graf(&data[i], "8X13.BMP");
+				}
+			}
+
+#endif /* FULL_GRAPHICS */
+
+		}
+	}
+
+#endif /* USE_GRAPHICS */
 
 
 	/* Clean up windows */
@@ -1722,6 +1759,33 @@ static errr Term_xtra_win(int n, int v)
 
 /*
  * Low level graphics (Assumes valid input).
+ * Draw a "cursor" at (x,y), using a "yellow box".
+ */
+static errr Term_curs_win(int x, int y)
+{
+	term_data *td = (term_data*)(Term->data);
+
+	RECT   rc;
+	HDC    hdc;
+
+	/* Frame the grid */
+	rc.left   = x * td->font_wid + td->size_ow1;
+	rc.right  = rc.left + td->font_wid;
+	rc.top    = y * td->font_hgt + td->size_oh1;
+	rc.bottom = rc.top + td->font_hgt;
+
+	/* Cursor is done as a yellow "box" */
+	hdc = GetDC(data[0].w);
+	FrameRect(hdc, &rc, hbrYellow);
+	ReleaseDC(data[0].w, hdc);
+
+	/* Success */
+	return 0;
+}
+
+
+/*
+ * Low level graphics (Assumes valid input).
  *
  * Erase a "block" of "n" characters starting at (x,y).
  */
@@ -1750,155 +1814,16 @@ static errr Term_wipe_win(int x, int y, int n)
 
 
 /*
- * Low level graphics (Assumes valid input).
- * Draw a "cursor" at (x,y), using a "yellow box".
- */
-static errr Term_curs_win(int x, int y)
-{
-	term_data *td = (term_data*)(Term->data);
-
-	RECT   rc;
-	HDC    hdc;
-
-	/* Frame the grid */
-	rc.left   = x * td->font_wid + td->size_ow1;
-	rc.right  = rc.left + td->font_wid;
-	rc.top    = y * td->font_hgt + td->size_oh1;
-	rc.bottom = rc.top + td->font_hgt;
-
-	/* Cursor is done as a yellow "box" */
-	hdc = GetDC(data[0].w);
-	FrameRect(hdc, &rc, hbrYellow);
-	ReleaseDC(data[0].w, hdc);
-
-	/* Success */
-	return 0;
-}
-
-
-/*
- * Low level graphics.  Assumes valid input.
- * Draw a "special" attr/char at the given location.
- *
- * XXX XXX XXX We use the "Term_pict_win()" function for "graphic" data,
- * which are encoded by setting the "high-bits" of both the "attr" and
- * the "char" data.  We use the "attr" to represent the "row" of the main
- * bitmap, and the "char" to represent the "col" of the main bitmap.  The
- * use of this function is induced by the "higher_pict" flag.
- *
- * If we are called for anything but the "screen" window, or if the global
- * "use_graphics" flag is off, we simply "wipe" the given grid.
- */
-static errr Term_pict_win(int x, int y, byte a, char c)
-{
-	term_data *td = (term_data*)(Term->data);
-
-#ifdef USE_GRAPHICS
-
-	HDC  hdc;
-	HDC hdcSrc;
-	HBITMAP hbmSrcOld;
-	int row, col;
-	int x1, y1, w1, h1;
-	int x2, y2, w2, h2;
-
-	/* Paranoia -- handle weird requests */
-	if (!use_graphics)
-	{
-		/* First, erase the grid */
-		return (Term_wipe_win(x, y, 1));
-	}
-
-#ifndef FULL_GRAPHICS
-	/* Paranoia -- handle weird requests */
-	if (td != &data[0])
-	{
-		/* First, erase the grid */
-		return (Term_wipe_win(x, y, 1));
-	}
-#endif
-
-	/* Extract picture info */
-	row = (a & 0x7F);
-	col = (c & 0x7F);
-
-	/* Size of bitmap cell */
-	w1 = td->infGraph.CellWidth;
-	h1 = td->infGraph.CellHeight;
-
-	/* Location of bitmap cell */
-	x1 = col * w1;
-	y1 = row * h1;
-
-	/* Size of window cell */
-	w2 = td->font_wid;
-	h2 = td->font_hgt;
-
-	/* Location of window cell */
-	x2 = x * w2 + td->size_ow1;
-	y2 = y * h2 + td->size_oh1;
-
-	/* Info */
-	hdc = GetDC(td->w);
-
-	/* Handle small bitmaps */
-	if ((w1 < w2) || (h1 < h2))
-	{
-		RECT rc;
-
-		/* Erasure rectangle */
-		rc.left   = x2;
-		rc.right  = x2 + w2;
-		rc.top    = y2;
-		rc.bottom = y2 + h2;
-
-		/* Erase the rectangle */
-		SetBkColor(hdc, RGB(0, 0, 0));
-		SelectObject(hdc, td->font_id);
-		ExtTextOut(hdc, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL);
-
-		/* Center bitmaps */
-		x2 += (w2 - w1) >> 1;
-		y2 += (h2 - h1) >> 1;
-	}
-
-	/* More info */
-	hdcSrc = CreateCompatibleDC(hdc);
-	hbmSrcOld = SelectObject(hdcSrc, td->infGraph.hBitmap);
-
-	/* Copy the picture from the bitmap to the window */
-	BitBlt(hdc, x2, y2, w1, h1, hdcSrc, x1, y1, SRCCOPY);
-
-	/* Release */
-	SelectObject(hdcSrc, hbmSrcOld);
-	DeleteDC(hdcSrc);
-
-	/* Release */
-	ReleaseDC(td->w, hdc);
-
-#else
-
-	/* Just erase this grid */
-	return (Term_wipe_win(x, y, 1));
-
-#endif
-
-	/* Success */
-	return 0;
-}
-
-
-/*
  * Low level graphics.  Assumes valid input.
  * Draw several ("n") chars, with an attr, at a given location.
  *
- * All "graphic" data is handled by "Term_pict_win()", above.
+ * All "graphic" data is handled by "Term_pict_win()", below.
  *
- * XXX XXX XXX Note that this function assumes the font is monospaced.
+ * Note that this function assumes the font is monospaced. XXX XXX XXX
  *
- * XXX XXX XXX One would think there is a more efficient method for
- * telling a window what color it should be using to draw with, but
- * perhaps simply changing it every time is not too inefficient.
+ * One would think there is a more efficient method for telling a window
+ * what color it should be using to draw with, but perhaps simply changing
+ * it every time is not too inefficient.  XXX XXX XXX
  */
 static errr Term_text_win(int x, int y, int n, byte a, const char *s)
 {
@@ -1944,6 +1869,136 @@ static errr Term_text_win(int x, int y, int n, byte a, const char *s)
 }
 
 
+/*
+ * Low level graphics.  Assumes valid input.
+ * Draw an array of "special" attr/char at the given location.
+ *
+ * We use the "Term_pict_win()" function for "graphic" data, which are
+ * encoded by setting the "high-bits" of both the "attr" and the "char"
+ * data.  We use the "attr" to represent the "row" of the main bitmap,
+ * and the "char" to represent the "col" of the main bitmap.  The use
+ * of this function is induced by the "higher_pict" flag.
+ *
+ * If we are called for anything but the "screen" window, or if the
+ * global "use_graphics" flag is off, we simply "wipe" the given grid.
+ *
+ * This file should probably be updated to use the files from the Amiga
+ * and Macintosh versions, but I am not a Windows programmer yet...
+ */
+static errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp)
+{
+	term_data *td = (term_data*)(Term->data);
+
+#ifdef USE_GRAPHICS
+
+	HDC  hdc;
+	HDC hdcSrc;
+	HBITMAP hbmSrcOld;
+	int i;
+	int row, col;
+	int x0, y0;
+	int x1, y1, w1, h1;
+	int x2, y2, w2, h2;
+
+	/* Paranoia */
+	if (!use_graphics)
+	{
+		/* Erase the grids */
+		return (Term_wipe_win(x, y, n));
+	}
+
+#ifndef FULL_GRAPHICS
+
+	/* Paranoia */
+	if (td != &data[0])
+	{
+		/* Erase the grids */
+		return (Term_wipe_win(x, y, n));
+	}
+
+#endif
+
+	/* Size of bitmap cell */
+	w1 = td->infGraph.CellWidth;
+	h1 = td->infGraph.CellHeight;
+
+	/* Size of window cell */
+	w2 = td->font_wid;
+	h2 = td->font_hgt;
+
+	/* Location of window cell */
+	x0 = x * w2 + td->size_ow1;
+	y0 = y * h2 + td->size_oh1;
+
+	/* Info */
+	hdc = GetDC(td->w);
+
+	/* More info */
+	hdcSrc = CreateCompatibleDC(hdc);
+	hbmSrcOld = SelectObject(hdcSrc, td->infGraph.hBitmap);
+
+	/* Draw attr/char pairs */
+	for (i = 0; i < n; i++, x0 += w2)
+	{
+		byta a = ap[i];
+		char c = cp[i];
+
+		/* Hack XXX XXX XXX */
+		row = (a & 0x7F) % 17;
+		col = (c & 0x7F) % 64;
+
+		/* Location of bitmap cell */
+		x1 = col * w1;
+		y1 = row * h1;
+
+		/* Location of screen image */
+		x2 = x0;
+		y2 = y0;
+
+		/* Handle small bitmaps */
+		if ((w1 < w2) || (h1 < h2))
+		{
+			RECT rc;
+
+			/* Erasure rectangle */
+			rc.left   = x2;
+			rc.right  = x2 + w2;
+			rc.top    = y2;
+			rc.bottom = y2 + h2;
+
+			/* Erase the rectangle */
+			SetBkColor(hdc, RGB(0, 0, 0));
+			SelectObject(hdc, td->font_id);
+			ExtTextOut(hdc, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL);
+
+			/* Center bitmaps */
+			x2 += (w2 - w1) >> 1;
+			y2 += (h2 - h1) >> 1;
+		}
+
+		/* Copy the picture from the bitmap to the window */
+		BitBlt(hdc, x2, y2, w1, h1, hdcSrc, x1, y1, SRCCOPY);
+	}
+
+	/* Release */
+	SelectObject(hdcSrc, hbmSrcOld);
+	DeleteDC(hdcSrc);
+
+	/* Release */
+	ReleaseDC(td->w, hdc);
+
+#else
+
+	/* Just erase this grid */
+	return (Term_wipe_win(x, y, n));
+
+#endif
+
+	/* Success */
+	return 0;
+}
+
+
 /*** Other routines ***/
 
 
@@ -1976,10 +2031,10 @@ static void term_data_link(term_data *td)
 	/* Prepare the template hooks */
 	t->user_hook = Term_user_win;
 	t->xtra_hook = Term_xtra_win;
-	t->wipe_hook = Term_wipe_win;
 	t->curs_hook = Term_curs_win;
-	t->pict_hook = Term_pict_win;
+	t->wipe_hook = Term_wipe_win;
 	t->text_hook = Term_text_win;
+	t->pict_hook = Term_pict_win;
 
 	/* Remember where we came from */
 	t->data = (vptr)(td);
@@ -2007,7 +2062,7 @@ static void init_windows(void)
 	/* Main window */
 	td = &data[0];
 	WIPE(td, term_data);
-	td->s = "Angband 2.7.9v6";
+	td->s = "Angband 2.8.1";
 	td->keys = 1024;
 	td->rows = 24;
 	td->cols = 80;
@@ -2025,7 +2080,7 @@ static void init_windows(void)
 		/* Mirror window */
 		td = &data[i];
 		WIPE(td, term_data);
-		td->s = ang_term_name[i];
+		td->s = angband_term_name[i];
 		td->keys = 16;
 		td->rows = 24;
 		td->cols = 80;
@@ -2077,7 +2132,7 @@ static void init_windows(void)
 	if (!td_ptr->w) quit("Failed to create Angband window");
 	td_ptr = NULL;
 	term_data_link(&data[0]);
-	ang_term[0] = &data[0].t;
+	angband_term[0] = &data[0].t;
 
 	/* Windows */
 	for (i = 1; i < MAX_TERM_DATA; i++)
@@ -2097,7 +2152,7 @@ static void init_windows(void)
 		}
 		td_ptr = NULL;
 		term_data_link(&data[i]);
-		ang_term[i] = &data[i].t;
+		angband_term[i] = &data[i].t;
 	}
 
 
@@ -2106,44 +2161,6 @@ static void init_windows(void)
 
 	/* Bring main screen back to top */
 	SetWindowPos(data[0].w, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-
-
-#ifdef USE_GRAPHICS
-
-	/* Handle "graphics" mode */
-	if (use_graphics)
-	{
-		/* Force the "requested" bitmap XXX XXX XXX */
-		if (term_force_graf(&data[0], data[0].graf_want))
-		{
-			/* XXX XXX XXX Force the "standard" font */
-			(void)term_force_font(&data[0], "8X13.FON");
-
-			/* XXX XXX XXX Force the "standard" bitmap */
-			(void)term_force_graf(&data[0], "8X13.BMP");
-		}
-
-#ifdef FULL_GRAPHICS
-
-		/* Windows */
-		for (i = 1; i < MAX_TERM_DATA; i++)
-		{
-			/* Force the "requested" bitmap XXX XXX XXX */
-			if (term_force_graf(&data[i], data[i].graf_want))
-			{
-				/* XXX XXX XXX Force the "standard" font */
-				(void)term_force_font(&data[i], "8X13.FON");
-
-				/* XXX XXX XXX Force the "standard" bitmap */
-				(void)term_force_graf(&data[i], "8X13.BMP");
-			}
-		}
-
-#endif /* FULL_GRAPHICS */
-
-	}
-
-#endif
 
 
 	/* New palette XXX XXX XXX */
@@ -2212,11 +2229,11 @@ static void setup_menus(void)
 
 	/* Item "Graphics" */
 	CheckMenuItem(hm, IDM_OPTIONS_GRAPHICS,
-	              MF_BYCOMMAND | (use_graphics ? MF_CHECKED : MF_UNCHECKED));
+	              MF_BYCOMMAND | (arg_graphics ? MF_CHECKED : MF_UNCHECKED));
 
 	/* Item "Sound" */
 	CheckMenuItem(hm, IDM_OPTIONS_SOUND,
-	              MF_BYCOMMAND | (use_sound ? MF_CHECKED : MF_UNCHECKED));
+	              MF_BYCOMMAND | (arg_sound ? MF_CHECKED : MF_UNCHECKED));
 
 #ifdef BEN_HACK 
 	/* Item "Colors 16" */
@@ -2468,59 +2485,8 @@ static void process_menus(WORD wCmd)
 
 		case IDM_OPTIONS_GRAPHICS:
 		{
-			char buf[1024];
-
-			/* XXX XXX XXX */
-			Term_activate(term_screen);
-
-			/* Reset the visuals */
-			reset_visuals();
-
-			/* Toggle "graphics" */
-			use_graphics = !use_graphics;
-
-			/* Access the "graphic" mappings */
-			sprintf(buf, "%s-%s.prf", (use_graphics ? "graf" : "font"), ANGBAND_SYS);
-
-			/* Load the file */
-			process_pref_file(buf);
-
-#ifdef USE_GRAPHICS
-
-			/* Use graphics */
-			if (use_graphics)
-			{
-				/* Try to use the current font */
-				if (term_force_graf(&data[0], data[0].font_file))
-				{
-					/* XXX XXX XXX Force a "usable" font */
-					(void)term_force_font(&data[0], "8X13.FON");
-
-					/* XXX XXX XXX Force a "usable" graf */
-					(void)term_force_graf(&data[0], "8X13.BMP");
-				}
-
-#ifdef FULL_GRAPHICS
-
-				/* Windows */
-				for (i = 1; i < MAX_TERM_DATA; i++)
-				{
-					/* Try to use the current font */
-					if (term_force_graf(&data[i], data[i].font_file))
-					{
-						/* XXX XXX XXX Force a "usable" font */
-						(void)term_force_font(&data[i], "8X13.FON");
-
-						/* XXX XXX XXX Force a "usable" graf */
-						(void)term_force_graf(&data[i], "8X13.BMP");
-					}
-				}
-
-#endif
-
-			}
-
-#endif
+			/* Toggle "arg_graphics" */
+			arg_graphics = !arg_graphics;
 
 			/* React to changes */
 			Term_xtra_win_react();
@@ -2533,7 +2499,12 @@ static void process_menus(WORD wCmd)
 
 		case IDM_OPTIONS_SOUND:
 		{
-			use_sound = !use_sound;
+			/* Toggle "arg_sound" */
+			arg_sound = !arg_sound;
+
+			/* Hack -- Force redraw */
+			Term_key_push(KTRL('R'));
+
 			break;
 		}
 
@@ -3472,17 +3443,11 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 	quit_aux = hook_quit;
 	core_aux = hook_core;
 
-	/* Display the "news" message */
-	show_news();
-
-	/* Allocate and Initialize various arrays */
-	init_some_arrays();
-
-	/* Hack -- assume wizard permissions */
-	can_be_wizard = TRUE;
-
 	/* Set the system suffix */
 	ANGBAND_SYS = "win";
+
+	/* Initialize */
+	init_angband();
 
 	/* We are now initialized */
 	initialized = TRUE;

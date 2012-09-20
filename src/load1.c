@@ -99,7 +99,8 @@ static bool older_than(byte x, byte y, byte z)
 
 
 /*
- * Show information on the screen, one line at a time.
+ * Hack -- Show information on the screen, one line at a time.
+ *
  * Avoid the top two lines, to avoid interference with "msg_print()".
  */
 static void note(cptr msg)
@@ -156,8 +157,7 @@ static bool wearable_p(object_type *o_ptr)
 
 
 /*
- * The following functions are used to load the basic building blocks
- * of savefiles.  They also maintain the "checksum" info for 2.7.0+
+ * These functions load the basic building blocks of savefiles.
  */
 
 static byte sf_get(void)
@@ -170,10 +170,7 @@ static byte sf_get(void)
 	xor_byte = c;
 
 	/* Hack */
-	if (feof(fff))
-	{
-		v = 0;
-	}
+	if (feof(fff)) v = 0;
 
 	/* Return the value */
 	return (v);
@@ -245,11 +242,10 @@ static void rd_string(char *str, int max)
  */
 static void strip_bytes(int n)
 {
-	int i;
 	byte tmp8u;
 
 	/* Strip the bytes */
-	for (i = 0; i < n; i++) rd_byte(&tmp8u);
+	while (n--) rd_byte(&tmp8u);
 }
 
 
@@ -319,190 +315,720 @@ static s16b convert_slot(int old)
  * only 128 artifacts in the new system.  If this changes, the array below
  * should be modified to contain "u16b" entries instead of "byte" entries.
  */
-static byte convert_old_names[] =
+static byte convert_old_names[180] =
 {
-	0				/* 0 = SN_NULL */,
-	EGO_RESISTANCE		/* 1 = SN_R (XXX) */,
-	EGO_RESIST_ACID		/* 2 = SN_RA (XXX) */,
-	EGO_RESIST_FIRE		/* 3 = SN_RF (XXX) */,
-	EGO_RESIST_COLD		/* 4 = SN_RC (XXX) */,
-	EGO_RESIST_ELEC		/* 5 = SN_RL (XXX) */,
-	EGO_HA			/* 6 = SN_HA */,
-	EGO_DF			/* 7 = SN_DF */,
-	EGO_SLAY_ANIMAL		/* 8 = SN_SA */,
-	EGO_SLAY_DRAGON		/* 9 = SN_SD */,
-	EGO_SLAY_EVIL		/* 10 = SN_SE */,
-	EGO_SLAY_UNDEAD		/* 11 = SN_SU */,
-	EGO_BRAND_FIRE		/* 12 = SN_FT */,
-	EGO_BRAND_COLD		/* 13 = SN_FB */,
-	EGO_FREE_ACTION		/* 14 = SN_FREE_ACTION (XXX) */,
-	EGO_SLAYING			/* 15 = SN_SLAYING (XXX) */,
-	EGO_CLUMSINESS		/* 16 = SN_CLUMSINESS */,
-	EGO_WEAKNESS		/* 17 = SN_WEAKNESS */,
-	EGO_SLOW_DESCENT		/* 18 = SN_SLOW_DESCENT */,
-	EGO_SPEED			/* 19 = SN_SPEED */,
-	EGO_STEALTH			/* 20 = SN_STEALTH (XXX) */,
-	EGO_SLOWNESS		/* 21 = SN_SLOWNESS */,
-	EGO_NOISE			/* 22 = SN_NOISE */,
-	EGO_ANNOYANCE		/* 23 = SN_GREAT_MASS */,
-	EGO_INTELLIGENCE		/* 24 = SN_INTELLIGENCE */,
-	EGO_WISDOM			/* 25 = SN_WISDOM */,
-	EGO_INFRAVISION		/* 26 = SN_INFRAVISION */,
-	EGO_MIGHT			/* 27 = SN_MIGHT (XXX) */,
-	EGO_LORDLINESS		/* 28 = SN_LORDLINESS */,
-	EGO_MAGI			/* 29 = SN_MAGI (XXX) */,
-	EGO_BEAUTY			/* 30 = SN_BEAUTY */,
-	EGO_SEEING			/* 31 = SN_SEEING */,
-	EGO_REGENERATION		/* 32 = SN_REGENERATION */,
-	EGO_STUPIDITY		/* 33 = SN_STUPIDITY */,
-	EGO_NAIVETY			/* 34 = SN_DULLNESS */,
-	0				/* 35 = SN_BLINDNESS */,
-	0				/* 36 = SN_TIMIDNESS */,
-	0				/* 37 = SN_TELEPORTATION */,
-	EGO_UGLINESS		/* 38 = SN_UGLINESS */,
-	EGO_PROTECTION		/* 39 = SN_PROTECTION */,
-	EGO_IRRITATION		/* 40 = SN_IRRITATION */,
-	EGO_VULNERABILITY		/* 41 = SN_VULNERABILITY */,
-	EGO_ENVELOPING		/* 42 = SN_ENVELOPING */,
-	EGO_BRAND_FIRE		/* 43 = SN_FIRE (XXX) */,
-	EGO_HURT_EVIL		/* 44 = SN_SLAY_EVIL (XXX) */,
-	EGO_HURT_DRAGON		/* 45 = SN_DRAGON_SLAYING (XXX) */,
-	0				/* 46 = SN_EMPTY */,
-	0				/* 47 = SN_LOCKED */,
-	0				/* 48 = SN_POISON_NEEDLE */,
-	0				/* 49 = SN_GAS_TRAP */,
-	0				/* 50 = SN_EXPLOSION_DEVICE */,
-	0				/* 51 = SN_SUMMONING_RUNES */,
-	0				/* 52 = SN_MULTIPLE_TRAPS */,
-	0				/* 53 = SN_DISARMED */,
-	0				/* 54 = SN_UNLOCKED */,
-	EGO_HURT_ANIMAL		/* 55 = SN_SLAY_ANIMAL (XXX) */,
-	ART_GROND + MAX_E_IDX		/* 56 = SN_GROND */,
-	ART_RINGIL + MAX_E_IDX	/* 57 = SN_RINGIL */,
-	ART_AEGLOS + MAX_E_IDX	/* 58 = SN_AEGLOS */,
-	ART_ARUNRUTH + MAX_E_IDX	/* 59 = SN_ARUNRUTH */,
-	ART_MORMEGIL + MAX_E_IDX	/* 60 = SN_MORMEGIL */,
-	EGO_MORGUL			/* 61 = SN_MORGUL */,
-	ART_ANGRIST + MAX_E_IDX	/* 62 = SN_ANGRIST */,
-	ART_GURTHANG + MAX_E_IDX	/* 63 = SN_GURTHANG */,
-	ART_CALRIS + MAX_E_IDX	/* 64 = SN_CALRIS */,
-	EGO_ACCURACY		/* 65 = SN_ACCURACY */,
-	ART_ANDURIL + MAX_E_IDX	/* 66 = SN_ANDURIL */,
-	EGO_SLAY_ORC		/* 67 = SN_SO */,
-	EGO_POWER			/* 68 = SN_POWER */,
-	ART_DURIN + MAX_E_IDX	/* 69 = SN_DURIN */,
-	ART_AULE + MAX_E_IDX	/* 70 = SN_AULE */,
-	EGO_WEST			/* 71 = SN_WEST */,
-	EGO_BLESS_BLADE		/* 72 = SN_BLESS_BLADE */,
-	EGO_SLAY_DEMON		/* 73 = SN_SDEM */,
-	EGO_SLAY_TROLL		/* 74 = SN_ST */,
-	ART_BLOODSPIKE + MAX_E_IDX	/* 75 = SN_BLOODSPIKE */,
-	ART_THUNDERFIST + MAX_E_IDX	/* 76 = SN_THUNDERFIST */,
-	EGO_WOUNDING		/* 77 = SN_WOUNDING */,
-	ART_ORCRIST + MAX_E_IDX	/* 78 = SN_ORCRIST */,
-	ART_GLAMDRING + MAX_E_IDX	/* 79 = SN_GLAMDRING */,
-	ART_STING + MAX_E_IDX	/* 80 = SN_STING */,
-	EGO_LITE			/* 81 = SN_LITE */,
-	EGO_AGILITY			/* 82 = SN_AGILITY */,
-	EGO_BACKBITING		/* 83 = SN_BACKBITING */,
-	ART_DOOMCALLER + MAX_E_IDX	/* 84 = SN_DOOMCALLER */,
-	EGO_SLAY_GIANT		/* 85 = SN_SG */,
-	EGO_TELEPATHY		/* 86 = SN_TELEPATHY */,
-	0				/* 87 = SN_DRAGONKIND */,
-	0				/* 88 = SN_NENYA */,
-	0				/* 89 = SN_NARYA */,
-	0				/* 90 = SN_VILYA */,
-	EGO_AMAN			/* 91 = SN_AMAN */,
-	ART_BELEGENNON + MAX_E_IDX	/* 92 = SN_BELEGENNON */,
-	ART_FEANOR + MAX_E_IDX	/* 93 = SN_FEANOR */,
-	ART_ANARION + MAX_E_IDX	/* 94 = SN_ANARION */,
-	ART_ISILDUR + MAX_E_IDX	/* 95 = SN_ISILDUR */,
-	ART_FINGOLFIN + MAX_E_IDX	/* 96 = SN_FINGOLFIN */,
-	EGO_ELVENKIND		/* 97 = SN_ELVENKIND (XXX) */,
-	ART_SOULKEEPER + MAX_E_IDX	/* 98 = SN_SOULKEEPER */,
-	ART_DOR + MAX_E_IDX		/* 99 = SN_DOR_LOMIN */,
-	ART_MORGOTH + MAX_E_IDX	/* 100 = SN_MORGOTH */,
-	ART_BELTHRONDING + MAX_E_IDX	/* 101 = SN_BELTHRONDING */,
-	ART_DAL + MAX_E_IDX		/* 102 = SN_DAL */,
-	ART_PAURHACH + MAX_E_IDX	/* 103 = SN_PAURHACH */,
-	ART_PAURNIMMEN + MAX_E_IDX	/* 104 = SN_PAURNIMMEN */,
-	ART_PAURAEGEN + MAX_E_IDX	/* 105 = SN_PAURAEGEN */,
-	ART_CAMMITHRIM + MAX_E_IDX	/* 106 = SN_CAMMITHRIM */,
-	ART_CAMBELEG + MAX_E_IDX	/* 107 = SN_CAMBELEG */,
-	ART_HOLHENNETH + MAX_E_IDX	/* 108 = SN_HOLHENNETH */,
-	ART_PAURNEN + MAX_E_IDX	/* 109 = SN_PAURNEN */,
-	ART_AEGLIN + MAX_E_IDX	/* 110 = SN_AEGLIN */,
-	ART_CAMLOST + MAX_E_IDX	/* 111 = SN_CAMLOST */,
-	ART_NIMLOTH + MAX_E_IDX	/* 112 = SN_NIMLOTH */,
-	ART_NAR + MAX_E_IDX		/* 113 = SN_NAR */,
-	ART_BERUTHIEL + MAX_E_IDX	/* 114 = SN_BERUTHIEL */,
-	ART_GORLIM + MAX_E_IDX	/* 115 = SN_GORLIM */,
-	ART_NARTHANC + MAX_E_IDX	/* 116 = SN_NARTHANC */,
-	ART_NIMTHANC + MAX_E_IDX	/* 117 = SN_NIMTHANC */,
-	ART_DETHANC + MAX_E_IDX	/* 118 = SN_DETHANC */,
-	ART_GILETTAR + MAX_E_IDX	/* 119 = SN_GILETTAR */,
-	ART_RILIA + MAX_E_IDX	/* 120 = SN_RILIA */,
-	ART_BELANGIL + MAX_E_IDX	/* 121 = SN_BELANGIL */,
-	ART_BALLI + MAX_E_IDX	/* 122 = SN_BALLI */,
-	ART_LOTHARANG + MAX_E_IDX	/* 123 = SN_LOTHARANG */,
-	ART_FIRESTAR + MAX_E_IDX	/* 124 = SN_FIRESTAR */,
-	ART_ERIRIL + MAX_E_IDX	/* 125 = SN_ERIRIL */,
-	ART_CUBRAGOL + MAX_E_IDX	/* 126 = SN_CUBRAGOL */,
-	ART_BARD + MAX_E_IDX	/* 127 = SN_BARD */,
-	ART_COLLUIN + MAX_E_IDX	/* 128 = SN_COLLUIN */,
-	ART_HOLCOLLETH + MAX_E_IDX	/* 129 = SN_HOLCOLLETH */,
-	ART_TOTILA + MAX_E_IDX	/* 130 = SN_TOTILA */,
-	ART_PAIN + MAX_E_IDX	/* 131 = SN_PAIN */,
-	ART_ELVAGIL + MAX_E_IDX	/* 132 = SN_ELVAGIL */,
-	ART_AGLARANG + MAX_E_IDX	/* 133 = SN_AGLARANG */,
-	ART_ROHIRRIM + MAX_E_IDX	/* 134 = SN_ROHIRRIM */,
-	ART_EORLINGAS + MAX_E_IDX	/* 135 = SN_EORLINGAS */,
-	ART_BARUKKHELED + MAX_E_IDX	/* 136 = SN_BARUKKHELED */,
-	ART_WRATH + MAX_E_IDX	/* 137 = SN_WRATH */,
-	ART_HARADEKKET + MAX_E_IDX	/* 138 = SN_HARADEKKET */,
-	ART_MUNDWINE + MAX_E_IDX	/* 139 = SN_MUNDWINE */,
-	ART_GONDRICAM + MAX_E_IDX	/* 140 = SN_GONDRICAM */,
-	ART_ZARCUTHRA + MAX_E_IDX	/* 141 = SN_ZARCUTHRA */,
-	ART_CARETH + MAX_E_IDX	/* 142 = SN_CARETH */,
-	ART_FORASGIL + MAX_E_IDX	/* 143 = SN_FORASGIL */,
-	ART_CRISDURIAN + MAX_E_IDX	/* 144 = SN_CRISDURIAN */,
-	ART_COLANNON + MAX_E_IDX	/* 145 = SN_COLANNON */,
-	ART_HITHLOMIR + MAX_E_IDX	/* 146 = SN_HITHLOMIR */,
-	ART_THALKETTOTH + MAX_E_IDX	/* 147 = SN_THALKETTOTH */,
-	ART_ARVEDUI + MAX_E_IDX	/* 148 = SN_ARVEDUI */,
-	ART_THRANDUIL + MAX_E_IDX	/* 149 = SN_THRANDUIL */,
-	ART_THENGEL + MAX_E_IDX	/* 150 = SN_THENGEL */,
-	ART_HAMMERHAND + MAX_E_IDX	/* 151 = SN_HAMMERHAND */,
-	ART_CELEGORM + MAX_E_IDX	/* 152 = SN_CELEGORM */,
-	ART_THROR + MAX_E_IDX	/* 153 = SN_THROR */,
-	ART_MAEDHROS + MAX_E_IDX	/* 154 = SN_MAEDHROS */,
-	ART_OLORIN + MAX_E_IDX	/* 155 = SN_OLORIN */,
-	ART_ANGUIREL + MAX_E_IDX	/* 156 = SN_ANGUIREL */,
-	ART_THORIN + MAX_E_IDX	/* 157 = SN_THORIN */,
-	ART_CELEBORN + MAX_E_IDX	/* 158 = SN_CELEBORN */,
-	ART_OROME + MAX_E_IDX	/* 159 = SN_OROME */,
-	ART_EONWE + MAX_E_IDX	/* 160 = SN_EONWE */,
-	ART_GONDOR + MAX_E_IDX	/* 161 = SN_GONDOR */,
-	ART_THEODEN + MAX_E_IDX	/* 162 = SN_THEODEN */,
-	ART_THINGOL + MAX_E_IDX	/* 163 = SN_THINGOL */,
-	ART_THORONGIL + MAX_E_IDX	/* 164 = SN_THORONGIL */,
-	ART_LUTHIEN + MAX_E_IDX	/* 165 = SN_LUTHIEN */,
-	ART_TUOR + MAX_E_IDX	/* 166 = SN_TUOR */,
-	ART_ULMO + MAX_E_IDX	/* 167 = SN_ULMO */,
-	ART_OSONDIR + MAX_E_IDX	/* 168 = SN_OSONDIR */,
-	ART_TURMIL + MAX_E_IDX	/* 169 = SN_TURMIL */,
-	ART_CASPANION + MAX_E_IDX	/* 170 = SN_CASPANION */,
-	ART_TIL + MAX_E_IDX		/* 171 = SN_TIL */,
-	ART_DEATHWREAKER + MAX_E_IDX	/* 172 = SN_DEATHWREAKER */,
-	ART_AVAVIR + MAX_E_IDX	/* 173 = SN_AVAVIR */,
-	ART_TARATOL + MAX_E_IDX	/* 174 = SN_TARATOL */,
-	ART_RAZORBACK + MAX_E_IDX	/* 175 = SN_RAZORBACK */,
-	ART_BLADETURNER + MAX_E_IDX	/* 176 = SN_BLADETURNER */,
-	0				/* 177 = SN_SHATTERED */,
-	0				/* 178 = SN_BLASTED */,
-	EGO_ATTACKS			/* 179 = SN_ATTACKS */,
+	0,						/* 0 = SN_NULL */
+	EGO_RESISTANCE,			/* 1 = SN_R (XXX) */
+	EGO_RESIST_ACID,		/* 2 = SN_RA (XXX) */
+	EGO_RESIST_FIRE,		/* 3 = SN_RF (XXX) */
+	EGO_RESIST_COLD,		/* 4 = SN_RC (XXX) */
+	EGO_RESIST_ELEC,		/* 5 = SN_RL (XXX) */
+	EGO_HA,					/* 6 = SN_HA */
+	EGO_DF,					/* 7 = SN_DF */
+	EGO_SLAY_ANIMAL,		/* 8 = SN_SA */
+	EGO_SLAY_DRAGON,		/* 9 = SN_SD */
+	EGO_SLAY_EVIL,			/* 10 = SN_SE */
+	EGO_SLAY_UNDEAD,		/* 11 = SN_SU */
+	EGO_BRAND_FIRE,			/* 12 = SN_FT */
+	EGO_BRAND_COLD,			/* 13 = SN_FB */
+	EGO_FREE_ACTION,		/* 14 = SN_FREE_ACTION (XXX) */
+	EGO_SLAYING,			/* 15 = SN_SLAYING (XXX) */
+	EGO_CLUMSINESS,			/* 16 = SN_CLUMSINESS */
+	EGO_WEAKNESS,			/* 17 = SN_WEAKNESS */
+	EGO_SLOW_DESCENT,		/* 18 = SN_SLOW_DESCENT */
+	EGO_SPEED,				/* 19 = SN_SPEED */
+	EGO_STEALTH,			/* 20 = SN_STEALTH (XXX) */
+	EGO_SLOWNESS,			/* 21 = SN_SLOWNESS */
+	EGO_NOISE,				/* 22 = SN_NOISE */
+	EGO_ANNOYANCE,			/* 23 = SN_GREAT_MASS */
+	EGO_INTELLIGENCE,		/* 24 = SN_INTELLIGENCE */
+	EGO_WISDOM,				/* 25 = SN_WISDOM */
+	EGO_INFRAVISION,		/* 26 = SN_INFRAVISION */
+	EGO_MIGHT,				/* 27 = SN_MIGHT (XXX) */
+	EGO_LORDLINESS,			/* 28 = SN_LORDLINESS */
+	EGO_MAGI,				/* 29 = SN_MAGI (XXX) */
+	EGO_BEAUTY,				/* 30 = SN_BEAUTY */
+	EGO_SEEING,				/* 31 = SN_SEEING */
+	EGO_REGENERATION,		/* 32 = SN_REGENERATION */
+	EGO_STUPIDITY,			/* 33 = SN_STUPIDITY */
+	EGO_NAIVETY,			/* 34 = SN_DULLNESS */
+	0,						/* 35 = SN_BLINDNESS */
+	0,						/* 36 = SN_TIMIDNESS */
+	0,						/* 37 = SN_TELEPORTATION */
+	EGO_UGLINESS,			/* 38 = SN_UGLINESS */
+	EGO_PROTECTION,			/* 39 = SN_PROTECTION */
+	EGO_IRRITATION,			/* 40 = SN_IRRITATION */
+	EGO_VULNERABILITY,		/* 41 = SN_VULNERABILITY */
+	EGO_ENVELOPING,			/* 42 = SN_ENVELOPING */
+	EGO_BRAND_FIRE,			/* 43 = SN_FIRE (XXX) */
+	EGO_HURT_EVIL,			/* 44 = SN_SLAY_EVIL (XXX) */
+	EGO_HURT_DRAGON,		/* 45 = SN_DRAGON_SLAYING (XXX) */
+	0,						/* 46 = SN_EMPTY */
+	0,						/* 47 = SN_LOCKED */
+	0,						/* 48 = SN_POISON_NEEDLE */
+	0,						/* 49 = SN_GAS_TRAP */
+	0,						/* 50 = SN_EXPLOSION_DEVICE */
+	0,						/* 51 = SN_SUMMONING_RUNES */
+	0,						/* 52 = SN_MULTIPLE_TRAPS */
+	0,						/* 53 = SN_DISARMED */
+	0,						/* 54 = SN_UNLOCKED */
+	EGO_HURT_ANIMAL,		/* 55 = SN_SLAY_ANIMAL (XXX) */
+	ART_GROND + 128,		/* 56 = SN_GROND */
+	ART_RINGIL + 128,		/* 57 = SN_RINGIL */
+	ART_AEGLOS + 128,		/* 58 = SN_AEGLOS */
+	ART_ARUNRUTH + 128,		/* 59 = SN_ARUNRUTH */
+	ART_MORMEGIL + 128,		/* 60 = SN_MORMEGIL */
+	EGO_MORGUL,				/* 61 = SN_MORGUL */
+	ART_ANGRIST + 128,		/* 62 = SN_ANGRIST */
+	ART_GURTHANG + 128,		/* 63 = SN_GURTHANG */
+	ART_CALRIS + 128,		/* 64 = SN_CALRIS */
+	EGO_ACCURACY,			/* 65 = SN_ACCURACY */
+	ART_ANDURIL + 128,		/* 66 = SN_ANDURIL */
+	EGO_SLAY_ORC,			/* 67 = SN_SO */
+	EGO_POWER,				/* 68 = SN_POWER */
+	ART_DURIN + 128,		/* 69 = SN_DURIN */
+	ART_AULE + 128,			/* 70 = SN_AULE */
+	EGO_WEST,				/* 71 = SN_WEST */
+	EGO_BLESS_BLADE,		/* 72 = SN_BLESS_BLADE */
+	EGO_SLAY_DEMON,			/* 73 = SN_SDEM */
+	EGO_SLAY_TROLL,			/* 74 = SN_ST */
+	ART_BLOODSPIKE + 128,	/* 75 = SN_BLOODSPIKE */
+	ART_THUNDERFIST + 128,	/* 76 = SN_THUNDERFIST */
+	EGO_WOUNDING,			/* 77 = SN_WOUNDING */
+	ART_ORCRIST + 128,		/* 78 = SN_ORCRIST */
+	ART_GLAMDRING + 128,	/* 79 = SN_GLAMDRING */
+	ART_STING + 128,		/* 80 = SN_STING */
+	EGO_LITE,				/* 81 = SN_LITE */
+	EGO_AGILITY,			/* 82 = SN_AGILITY */
+	EGO_BACKBITING,			/* 83 = SN_BACKBITING */
+	ART_DOOMCALLER + 128,	/* 84 = SN_DOOMCALLER */
+	EGO_SLAY_GIANT,			/* 85 = SN_SG */
+	EGO_TELEPATHY,			/* 86 = SN_TELEPATHY */
+	0,						/* 87 = SN_DRAGONKIND */
+	0,						/* 88 = SN_NENYA */
+	0,						/* 89 = SN_NARYA */
+	0,						/* 90 = SN_VILYA */
+	EGO_AMAN,				/* 91 = SN_AMAN */
+	ART_BELEGENNON + 128,	/* 92 = SN_BELEGENNON */
+	ART_FEANOR + 128,		/* 93 = SN_FEANOR */
+	ART_ANARION + 128,		/* 94 = SN_ANARION */
+	ART_ISILDUR + 128,		/* 95 = SN_ISILDUR */
+	ART_FINGOLFIN + 128,	/* 96 = SN_FINGOLFIN */
+	EGO_ELVENKIND,			/* 97 = SN_ELVENKIND (XXX) */
+	ART_SOULKEEPER + 128,	/* 98 = SN_SOULKEEPER */
+	ART_DOR + 128,			/* 99 = SN_DOR_LOMIN */
+	ART_MORGOTH + 128,		/* 100 = SN_MORGOTH */
+	ART_BELTHRONDING + 128,	/* 101 = SN_BELTHRONDING */
+	ART_DAL + 128,			/* 102 = SN_DAL */
+	ART_PAURHACH + 128,		/* 103 = SN_PAURHACH */
+	ART_PAURNIMMEN + 128,	/* 104 = SN_PAURNIMMEN */
+	ART_PAURAEGEN + 128,	/* 105 = SN_PAURAEGEN */
+	ART_CAMMITHRIM + 128,	/* 106 = SN_CAMMITHRIM */
+	ART_CAMBELEG + 128,		/* 107 = SN_CAMBELEG */
+	ART_HOLHENNETH + 128,	/* 108 = SN_HOLHENNETH */
+	ART_PAURNEN + 128,		/* 109 = SN_PAURNEN */
+	ART_AEGLIN + 128,		/* 110 = SN_AEGLIN */
+	ART_CAMLOST + 128,		/* 111 = SN_CAMLOST */
+	ART_NIMLOTH + 128,		/* 112 = SN_NIMLOTH */
+	ART_NAR + 128,			/* 113 = SN_NAR */
+	ART_BERUTHIEL + 128,	/* 114 = SN_BERUTHIEL */
+	ART_GORLIM + 128,		/* 115 = SN_GORLIM */
+	ART_NARTHANC + 128,		/* 116 = SN_NARTHANC */
+	ART_NIMTHANC + 128,		/* 117 = SN_NIMTHANC */
+	ART_DETHANC + 128,		/* 118 = SN_DETHANC */
+	ART_GILETTAR + 128,		/* 119 = SN_GILETTAR */
+	ART_RILIA + 128,		/* 120 = SN_RILIA */
+	ART_BELANGIL + 128,		/* 121 = SN_BELANGIL */
+	ART_BALLI + 128,		/* 122 = SN_BALLI */
+	ART_LOTHARANG + 128,	/* 123 = SN_LOTHARANG */
+	ART_FIRESTAR + 128,		/* 124 = SN_FIRESTAR */
+	ART_ERIRIL + 128,		/* 125 = SN_ERIRIL */
+	ART_CUBRAGOL + 128,		/* 126 = SN_CUBRAGOL */
+	ART_BARD + 128,			/* 127 = SN_BARD */
+	ART_COLLUIN + 128,		/* 128 = SN_COLLUIN */
+	ART_HOLCOLLETH + 128,	/* 129 = SN_HOLCOLLETH */
+	ART_TOTILA + 128,		/* 130 = SN_TOTILA */
+	ART_PAIN + 128,			/* 131 = SN_PAIN */
+	ART_ELVAGIL + 128,		/* 132 = SN_ELVAGIL */
+	ART_AGLARANG + 128,		/* 133 = SN_AGLARANG */
+	ART_ROHIRRIM + 128,		/* 134 = SN_ROHIRRIM */
+	ART_EORLINGAS + 128,	/* 135 = SN_EORLINGAS */
+	ART_BARUKKHELED + 128,	/* 136 = SN_BARUKKHELED */
+	ART_WRATH + 128,		/* 137 = SN_WRATH */
+	ART_HARADEKKET + 128,	/* 138 = SN_HARADEKKET */
+	ART_MUNDWINE + 128,		/* 139 = SN_MUNDWINE */
+	ART_GONDRICAM + 128,	/* 140 = SN_GONDRICAM */
+	ART_ZARCUTHRA + 128,	/* 141 = SN_ZARCUTHRA */
+	ART_CARETH + 128,		/* 142 = SN_CARETH */
+	ART_FORASGIL + 128,		/* 143 = SN_FORASGIL */
+	ART_CRISDURIAN + 128,	/* 144 = SN_CRISDURIAN */
+	ART_COLANNON + 128,		/* 145 = SN_COLANNON */
+	ART_HITHLOMIR + 128,	/* 146 = SN_HITHLOMIR */
+	ART_THALKETTOTH + 128,	/* 147 = SN_THALKETTOTH */
+	ART_ARVEDUI + 128,		/* 148 = SN_ARVEDUI */
+	ART_THRANDUIL + 128,	/* 149 = SN_THRANDUIL */
+	ART_THENGEL + 128,		/* 150 = SN_THENGEL */
+	ART_HAMMERHAND + 128,	/* 151 = SN_HAMMERHAND */
+	ART_CELEGORM + 128,		/* 152 = SN_CELEGORM */
+	ART_THROR + 128,		/* 153 = SN_THROR */
+	ART_MAEDHROS + 128,		/* 154 = SN_MAEDHROS */
+	ART_OLORIN + 128,		/* 155 = SN_OLORIN */
+	ART_ANGUIREL + 128,		/* 156 = SN_ANGUIREL */
+	ART_THORIN + 128,		/* 157 = SN_THORIN */
+	ART_CELEBORN + 128,		/* 158 = SN_CELEBORN */
+	ART_OROME + 128,		/* 159 = SN_OROME */
+	ART_EONWE + 128,		/* 160 = SN_EONWE */
+	ART_GONDOR + 128,		/* 161 = SN_GONDOR */
+	ART_THEODEN + 128,		/* 162 = SN_THEODEN */
+	ART_THINGOL + 128,		/* 163 = SN_THINGOL */
+	ART_THORONGIL + 128,	/* 164 = SN_THORONGIL */
+	ART_LUTHIEN + 128,		/* 165 = SN_LUTHIEN */
+	ART_TUOR + 128,			/* 166 = SN_TUOR */
+	ART_ULMO + 128,			/* 167 = SN_ULMO */
+	ART_OSONDIR + 128,		/* 168 = SN_OSONDIR */
+	ART_TURMIL + 128,		/* 169 = SN_TURMIL */
+	ART_CASPANION + 128,	/* 170 = SN_CASPANION */
+	ART_TIL + 128,			/* 171 = SN_TIL */
+	ART_DEATHWREAKER + 128,	/* 172 = SN_DEATHWREAKER */
+	ART_AVAVIR + 128,		/* 173 = SN_AVAVIR */
+	ART_TARATOL + 128,		/* 174 = SN_TARATOL */
+	ART_RAZORBACK + 128,	/* 175 = SN_RAZORBACK */
+	ART_BLADETURNER + 128,	/* 176 = SN_BLADETURNER */
+	0,						/* 177 = SN_SHATTERED */
+	0,						/* 178 = SN_BLASTED */
+	EGO_ATTACKS				/* 179 = SN_ATTACKS */
 };
 
+
+/*
+ * Convert old kinds into normal kinds
+ *
+ * XXX XXX XXX Note hard-coded use of object kind indexes.
+ */
+static s16b convert_old_kinds_normal[501] =
+{
+	15,			/* Move: Mushroom of poison */
+	1,			/* a Mushroom of Blindness */
+	2,			/* a Mushroom of Paranoia */
+	3,			/* a Mushroom of Confusion */
+	4,			/* a Mushroom of Hallucination */
+	5,			/* a Mushroom of Cure Poison */
+	6,			/* a Mushroom of Cure Blindness */
+	7,			/* a Mushroom of Cure Paranoia */
+	8,			/* a Mushroom of Cure Confusion */
+	9,			/* a Mushroom of Weakness */
+	10,			/* a Mushroom of Unhealth */
+	11,			/* a Mushroom of Restore Constitution */
+	12,			/* a Mushroom of Restoring */
+	12,			/* Move: Mushrooms of restoring (extra) */
+	12,			/* Move: Mushrooms of restoring (extra) */
+	15,			/* a Mushroom of Poison */
+	15,			/* Move: Hairy Mold of poison */
+	17,			/* a Mushroom of Paralysis */
+	18,			/* a Mushroom of Restore Strength */
+	19,			/* a Mushroom of Disease */
+	20,			/* a Mushroom of Cure Serious Wounds */
+	21,			/* a Ration of Food */
+	21,			/* Move: Ration of Food (extra) */
+	21,			/* Move: Ration of Food (extra) */
+	24,			/* a Slime Mold */
+	25,			/* a Piece of Elvish Waybread */
+	25,			/* Move: Piece of Elvish Waybread (extra) */
+	25,			/* Move: Piece of Elvish Waybread (extra) */
+	38,			/* Move: Main Gauche */
+	43,			/* Move: Dagger */
+	30,			/* a Broken Dagger */
+	31,			/* a Bastard Sword */
+	32,			/* a Scimitar */
+	33,			/* a Tulwar */
+	34,			/* a Broad Sword */
+	34,			/* Move: Broad-sword */
+	36,			/* a Blade of Chaos */
+	37,			/* a Two-Handed Sword */
+	37,			/* Move: Two-Handed Sword */
+	39,			/* a Cutlass */
+	40,			/* an Executioner's Sword */
+	41,			/* a Katana */
+	42,			/* a Long Sword */
+	42,			/* Move: Long sword */
+	44,			/* a Rapier */
+	45,			/* a Sabre */
+	46,			/* a Small Sword */
+	47,			/* a Broken Sword */
+	48,			/* a Ball-and-Chain */
+	49,			/* a Whip */
+	50,			/* a Flail */
+	51,			/* a Two-Handed Flail */
+	52,			/* a Morning Star */
+	53,			/* a Mace */
+	54,			/* a Quarterstaff */
+	55,			/* a War Hammer */
+	56,			/* a Lead-Filled Mace */
+	57,			/* a Mace of Disruption */
+	62,			/* Move: Awl-Pike */
+	59,			/* a Beaked Axe */
+	60,			/* a Glaive */
+	61,			/* a Halberd */
+	58,			/* Move: Lucern Hammer */
+	63,			/* a Pike */
+	64,			/* a Spear */
+	65,			/* a Trident */
+	66,			/* a Lance */
+	67,			/* a Great Axe */
+	68,			/* a Battle Axe */
+	69,			/* a Lochaber Axe */
+	70,			/* a Broad Axe */
+	71,			/* a Scythe */
+	72,			/* a Scythe of Slicing */
+	73,			/* a Short Bow */
+	74,			/* a Long Bow */
+	75,			/* a Light Crossbow */
+	76,			/* a Heavy Crossbow */
+	77,			/* a Sling */
+	78,			/* an Arrow */
+	79,			/* a Seeker Arrow */
+	80,			/* a Bolt */
+	81,			/* a Seeker Bolt */
+	82,			/* a Rounded Pebble */
+	83,			/* an Iron Shot */
+	345,		/* Move: Spike */
+	347,		/* Move: Lantern */
+	346,		/* Move: Torch */
+	88,			/* Move: Orcish Pick */
+	89,			/* Move: Dwarven Pick */
+	85,			/* Move: Gnomish Shovel */
+	86,			/* Move: Dwarven shovel */
+	91,			/* a Pair of Soft Leather Boots */
+	92,			/* a Pair of Hard Leather Boots */
+	93,			/* a Pair of Metal Shod Boots */
+	94,			/* a Hard Leather Cap */
+	95,			/* a Metal Cap */
+	96,			/* an Iron Helm */
+	97,			/* a Steel Helm */
+	98,			/* an Iron Crown */
+	99,			/* a Golden Crown */
+	100,		/* a Jewel Encrusted Crown */
+	101,		/* a Robe */
+	101,		/* Move: Robe */
+	103,		/* Soft Leather Armour */
+	104,		/* Soft Studded Leather */
+	105,		/* Hard Leather Armour */
+	106,		/* Hard Studded Leather */
+	107,		/* Leather Scale Mail */
+	108,		/* Metal Scale Mail */
+	109,		/* Chain Mail */
+	110,		/* Rusty Chain Mail */
+	111,		/* Augmented Chain Mail */
+	112,		/* Bar Chain Mail */
+	113,		/* Metal Brigandine Armour */
+	114,		/* Partial Plate Armour */
+	115,		/* Metal Lamellar Armour */
+	116,		/* Full Plate Armour */
+	117,		/* Ribbed Plate Armour */
+	118,		/* Adamantite Plate Mail */
+	119,		/* Mithril Plate Mail */
+	120,		/* Mithril Chain Mail */
+	121,		/* Double Chain Mail */
+	122,		/* a Shield of Deflection */
+	123,		/* a Cloak */
+	124,		/* a Shadow Cloak */
+	125,		/* a Set of Leather Gloves */
+	126,		/* a Set of Gauntlets */
+	127,		/* a Set of Cesti */
+	128,		/* a Small Leather Shield */
+	129,		/* a Large Leather Shield */
+	130,		/* a Small Metal Shield */
+	131,		/* a Large Metal Shield */
+	132,		/* a Ring of Strength */
+	133,		/* a Ring of Dexterity */
+	134,		/* a Ring of Constitution */
+	135,		/* a Ring of Intelligence */
+	136,		/* a Ring of Speed */
+	137,		/* a Ring of Searching */
+	138,		/* a Ring of Teleportation */
+	139,		/* a Ring of Slow Digestion */
+	140,		/* a Ring of Resist Fire */
+	141,		/* a Ring of Resist Cold */
+	142,		/* a Ring of Feather Falling */
+	143,		/* a Ring of Poison Resistance */
+	78,			/* Move: Arrow */
+	145,		/* a Ring of Weakness */
+	146,		/* a Ring of Flames */
+	147,		/* a Ring of Acid */
+	148,		/* a Ring of Ice */
+	149,		/* a Ring of Woe */
+	150,		/* a Ring of Stupidity */
+	151,		/* a Ring of Damage */
+	152,		/* a Ring of Accuracy */
+	153,		/* a Ring of Protection */
+	154,		/* a Ring of Aggravate Monster */
+	155,		/* a Ring of See Invisible */
+	156,		/* a Ring of Sustain Strength */
+	157,		/* a Ring of Sustain Intelligence */
+	158,		/* a Ring of Sustain Wisdom */
+	159,		/* a Ring of Sustain Constitution */
+	160,		/* a Ring of Sustain Dexterity */
+	161,		/* a Ring of Sustain Charisma */
+	162,		/* a Ring of Slaying */
+	163,		/* an Amulet of Wisdom */
+	164,		/* an Amulet of Charisma */
+	165,		/* an Amulet of Searching */
+	166,		/* an Amulet of Teleportation */
+	167,		/* an Amulet of Slow Digestion */
+	168,		/* an Amulet of Resist Acid */
+	169,		/* an Amulet of Adornment */
+	80,			/* Move: Bolt */
+	171,		/* an Amulet of the Magi */
+	172,		/* an Amulet of DOOM */
+	173,		/* a Scroll of Enchant Weapon To-Hit */
+	174,		/* a Scroll of Enchant Weapon To-Dam */
+	175,		/* a Scroll of Enchant Armor */
+	176,		/* a Scroll of Identify */
+	176,		/* Move: Scroll of Identify (extra) */
+	176,		/* Move: Scroll of Identify (extra) */
+	176,		/* Move: Scroll of Identify (extra) */
+	180,		/* a Scroll of Remove Curse */
+	181,		/* a Scroll of Light */
+	181,		/* Move: Scroll of Light (extra) */
+	181,		/* Move: Scroll of Light (extra) */
+	184,		/* a Scroll of Summon Monster */
+	185,		/* a Scroll of Phase Door */
+	186,		/* a Scroll of Teleportation */
+	187,		/* a Scroll of Teleport Level */
+	188,		/* a Scroll of Monster Confusion */
+	189,		/* a Scroll of Magic Mapping */
+	190,		/* a Scroll of Rune of Protection */
+	190,		/* Move: Scroll of Rune of Protection */
+	192,		/* a Scroll of Treasure Detection */
+	193,		/* a Scroll of Object Detection */
+	194,		/* a Scroll of Trap Detection */
+	194,		/* Move: Scroll of Trap Detection (extra) */
+	352,		/* Move: Rod of Trap Location (Hack!) */
+	197,		/* a Scroll of Door/Stair Location */
+	197,		/* Move: Scroll of Door/Stair Location (extra) */
+	197,		/* Move: Scroll of Door/Stair Location (extra) */
+	200,		/* a Scroll of Mass Genocide */
+	201,		/* a Scroll of Detect Invisible */
+	202,		/* a Scroll of Aggravate Monster */
+	203,		/* a Scroll of Trap Creation */
+	204,		/* a Scroll of Trap/Door Destruction */
+	214,		/* Move: Scroll of *Enchant Armor* */
+	206,		/* a Scroll of Recharging */
+	207,		/* a Scroll of Genocide */
+	208,		/* a Scroll of Darkness */
+	209,		/* a Scroll of Protection from Evil */
+	210,		/* a Scroll of Satisfy Hunger */
+	211,		/* a Scroll of Dispel Undead */
+	212,		/* a Scroll of *Enchant Weapon* */
+	213,		/* a Scroll of Curse Weapon */
+	214,		/* a Scroll of *Enchant Armor* */
+	215,		/* a Scroll of Curse Armor */
+	216,		/* a Scroll of Summon Undead */
+	217,		/* a Scroll of Blessing */
+	218,		/* a Scroll of Holy Chant */
+	219,		/* a Scroll of Holy Prayer */
+	220,		/* a Scroll of Word of Recall */
+	221,		/* a Scroll of *Destruction* */
+	222,		/* a Potion of Slime Mold Juice */
+	223,		/* a Potion of Apple Juice */
+	224,		/* a Potion of Water */
+	225,		/* a Potion of Strength */
+	226,		/* a Potion of Weakness */
+	227,		/* a Potion of Restore Strength */
+	228,		/* a Potion of Intelligence */
+	229,		/* a Potion of Stupidity */
+	230,		/* a Potion of Restore Intelligence */
+	231,		/* a Potion of Wisdom */
+	232,		/* a Potion of Naivety */
+	233,		/* a Potion of Restore Wisdom */
+	234,		/* a Potion of Charisma */
+	235,		/* a Potion of Ugliness */
+	236,		/* a Potion of Restore Charisma */
+	237,		/* a Potion of Cure Light Wounds */
+	237,		/* Move: Potion of Cure Light Wounds (extra) */
+	237,		/* Move: Potion of Cure Light Wounds (extra) */
+	240,		/* a Potion of Cure Serious Wounds */
+	241,		/* a Potion of Cure Critical Wounds */
+	242,		/* a Potion of Healing */
+	243,		/* a Potion of Constitution */
+	244,		/* a Potion of Experience */
+	245,		/* a Potion of Sleep */
+	246,		/* a Potion of Blindness */
+	247,		/* a Potion of Confusion */
+	248,		/* a Potion of Poison */
+	249,		/* a Potion of Speed */
+	250,		/* a Potion of Slowness */
+	251,		/* a Potion of Dexterity */
+	252,		/* a Potion of Restore Dexterity */
+	253,		/* a Potion of Restore Constitution */
+	254,		/* a Potion of Lose Memories */
+	255,		/* a Potion of Salt Water */
+	249,		/* Move: Potion of Speed (extra) */
+	257,		/* a Potion of Heroism */
+	258,		/* a Potion of Berserk Strength */
+	259,		/* a Potion of Boldness */
+	260,		/* a Potion of Restore Life Levels */
+	261,		/* a Potion of Resist Heat */
+	262,		/* a Potion of Resist Cold */
+	263,		/* a Potion of Detect Invisible */
+	264,		/* a Potion of Slow Poison */
+	265,		/* a Potion of Neutralize Poison */
+	266,		/* a Potion of Restore Mana */
+	267,		/* a Potion of Infra-vision */
+	348,		/* Move: Flask of oil */
+	269,		/* a Wand of Light */
+	270,		/* a Wand of Lightning Bolts */
+	271,		/* a Wand of Frost Bolts */
+	272,		/* a Wand of Fire Bolts */
+	273,		/* a Wand of Stone to Mud */
+	274,		/* a Wand of Polymorph */
+	275,		/* a Wand of Heal Monster */
+	276,		/* a Wand of Haste Monster */
+	277,		/* a Wand of Slow Monster */
+	278,		/* a Wand of Confuse Monster */
+	279,		/* a Wand of Sleep Monster */
+	280,		/* a Wand of Drain Life */
+	281,		/* a Wand of Trap/Door Destruction */
+	282,		/* a Wand of Magic Missile */
+	283,		/* a Wand of Clone Monster */
+	283,		/* Move: Wand of Clone Monster */
+	285,		/* a Wand of Teleport Other */
+	286,		/* a Wand of Disarming */
+	287,		/* a Wand of Lightning Balls */
+	288,		/* a Wand of Cold Balls */
+	289,		/* a Wand of Fire Balls */
+	290,		/* a Wand of Stinking Cloud */
+	291,		/* a Wand of Acid Balls */
+	292,		/* a Wand of Wonder */
+	306,		/* Move: Staff of Light */
+	294,		/* a Wand of Acid Bolts */
+	295,		/* a Wand of Dragon's Flame */
+	296,		/* a Wand of Dragon's Frost */
+	297,		/* a Wand of Dragon's Breath */
+	298,		/* a Wand of Annihilation */
+	316,		/* Move: Staff of Door/Stair Location */
+	300,		/* a Staff of Trap Location */
+	301,		/* a Staff of Treasure Location */
+	302,		/* a Staff of Object Location */
+	303,		/* a Staff of Teleportation */
+	304,		/* a Staff of Earthquakes */
+	305,		/* a Staff of Summoning */
+	305,		/* Move: Staff of Summoning (extra) */
+	307,		/* a Staff of *Destruction* */
+	308,		/* a Staff of Starlight */
+	309,		/* a Staff of Haste Monsters */
+	310,		/* a Staff of Slow Monsters */
+	311,		/* a Staff of Sleep Monsters */
+	312,		/* a Staff of Cure Light Wounds */
+	313,		/* a Staff of Detect Invisible */
+	314,		/* a Staff of Speed */
+	315,		/* a Staff of Slowness */
+	307,		/* Move: Staff of *Destruction* */
+	317,		/* a Staff of Remove Curse */
+	318,		/* a Staff of Detect Evil */
+	319,		/* a Staff of Curing */
+	320,		/* a Staff of Dispel Evil */
+	322,		/* Move: Staff of Darkness */
+	322,		/* a Staff of Darkness */
+	323,		/* a Staff of Genocide */
+	324,		/* a Staff of Power */
+	325,		/* a Staff of the Magi */
+	326,		/* a Staff of Perception */
+	327,		/* a Staff of Holiness */
+	328,		/* a Staff of Enlightenment */
+	329,		/* a Staff of Healing */
+	330,		/* a Book of Magic Spells [Magic for Beginners] */
+	331,		/* a Book of Magic Spells [Conjurings and Tricks] */
+	332,		/* a Book of Magic Spells [Incantations and Illusions] */
+	333,		/* a Book of Magic Spells [Sorcery and Evocations] */
+	334,		/* a Holy Book of Prayers [Beginners Handbook] */
+	335,		/* a Holy Book of Prayers [Words of Wisdom] */
+	336,		/* a Holy Book of Prayers [Chants and Blessings] */
+	337,		/* a Holy Book of Prayers [Exorcism and Dispelling] */
+	344,		/* Move: Chests become ruined chests */
+	344,		/* Move: Chests become ruined chests */
+	344,		/* Move: Chests become ruined chests */
+	344,		/* Move: Chests become ruined chests */
+	344,		/* Move: Chests become ruined chests */
+	344,		/* Move: Chests become ruined chests */
+	394,		/* Move: Junk and Skeletons */
+	393,		/* Move: Junk and Skeletons */
+	102,		/* Move: Filthy Rag */
+	349,		/* Move: Junk and Skeletons */
+	389,		/* Move: Junk and Skeletons */
+	395,		/* Move: Junk and Skeletons */
+	396,		/* Move: Junk and Skeletons */
+	397,		/* Move: Junk and Skeletons */
+	398,		/* Move: Junk and Skeletons */
+	391,		/* Move: Junk and Skeletons */
+	392,		/* Move: Junk and Skeletons */
+	390,		/* Move: Junk and Skeletons */
+	356,		/* a Rod of Light */
+	357,		/* a Rod of Lightning Bolts */
+	358,		/* a Rod of Frost Bolts */
+	359,		/* a Rod of Fire Bolts */
+	360,		/* a Rod of Polymorph */
+	361,		/* a Rod of Slow Monster */
+	362,		/* a Rod of Sleep Monster */
+	363,		/* a Rod of Drain Life */
+	364,		/* a Rod of Teleport Other */
+	365,		/* a Rod of Disarming */
+	366,		/* a Rod of Lightning Balls */
+	367,		/* a Rod of Cold Balls */
+	368,		/* a Rod of Fire Balls */
+	369,		/* a Rod of Acid Balls */
+	370,		/* a Rod of Acid Bolts */
+	371,		/* a Rod of Enlightenment */
+	372,		/* a Rod of Perception */
+	373,		/* a Rod of Curing */
+	374,		/* a Rod of Healing */
+	375,		/* a Rod of Detection */
+	376,		/* a Rod of Restoration */
+	377,		/* a Rod of Speed */
+	191,		/* Move: Scroll of *Remove Curse* */
+	379,		/* a Book of Magic Spells [Resistance of Scarabtarices] */
+	380,		/* a Book of Magic Spells [Mordenkainen's Escapes] */
+	381,		/* a Book of Magic Spells [Kelek's Grimoire of Power] */
+	382,		/* a Book of Magic Spells [Tenser's Transformations] */
+	383,		/* a Book of Magic Spells [Raal's Tome of Destruction] */
+	384,		/* a Holy Book of Prayers [Ethereal Openings] */
+	385,		/* a Holy Book of Prayers [Godly Insights] */
+	386,		/* a Holy Book of Prayers [Purifications and Healing] */
+	387,		/* a Holy Book of Prayers [Holy Infusions] */
+	388,		/* a Holy Book of Prayers [Wrath of God] */
+	401,		/* Move: Blue Dragon Scale Mail */
+	402,		/* Move: White Dragon Scale Mail */
+	400,		/* Move: Black Dragon Scale Mail */
+	404,		/* Move: Green Dragon Scale Mail */
+	403,		/* Move: Red Dragon Scale Mail */
+	405,		/* Move: Multi-Hued Dragon Scale Mail */
+	43,			/* Move: Daggers (ancient artifacts?) */
+	43,			/* Move: Daggers (ancient artifacts?) */
+	43,			/* Move: Daggers (ancient artifacts?) */
+	35,			/* Move: Short Sword */
+	422,		/* Move: Potion of *Enlightenment* */
+	417,		/* Move: Potion of Detonations */
+	415,		/* Move: Potion of Death */
+	420,		/* Move: Potion of Life */
+	418,		/* Move: Potion of Augmentation */
+	416,		/* Move: Potion of Ruination */
+	355,		/* Move: Rod of Illumination */
+	353,		/* Move: Rod of Probing */
+	321,		/* Move: Staff of Probing */
+	408,		/* Move: Bronze Dragon Scale Mail */
+	409,		/* Move: Gold Dragon Scale Mail */
+	354,		/* Move: Rod of Recall */
+	123,		/* Move: Cloak (extra) */
+	198,		/* Move: Scroll of Acquirement */
+	199,		/* Move: Scroll of *Acquirement* */
+	144,		/* Move: Ring of Free Action */
+	410,		/* Move: Chaos Dragon Scale Mail */
+	407,		/* Move: Law Dragon Scale Mail */
+	411,		/* Move: Balance Dragon Scale Mail */
+	406,		/* Move: Shining Dragon Scale Mail */
+	412,		/* Move: Power Dragon Scale Mail */
+	256,		/* Move: Potion of Enlightenment */
+	421,		/* Move: Potion of Self Knowledge */
+	419,		/* Move: Postion of *Healing* */
+	21,			/* Move: Food ration (extra) */
+	22,			/* Move: Hard Biscuit */
+	23,			/* Move: Strip of Beef Jerky */
+	26,			/* Move: Pint of Fine Ale */
+	27,			/* Move: Pint of Fine Wine */
+	87,			/* Move: Pick */
+	84,			/* Move: Shovel */
+	176,		/* Move: Scrolls of Identify (store) */
+	181,		/* Move: Scrolls of Light (store) */
+	185,		/* Move: Scrolls of Phase Door (store) */
+	189,		/* Move: Scrolls of Mapping (store) */
+	192,		/* Move: Scrolls of Treasure Detection (store) */
+	193,		/* Move: Scrolls of Object Detection (store) */
+	201,		/* Move: Scrolls of Detect Invisible (store) */
+	217,		/* Move: Scrolls of Blessing (store) */
+	220,		/* Move: Scrolls of Word of Recall (store) */
+	237,		/* Move: Potions of Cure Light Wounds (store) */
+	257,		/* Move: Potions of Heroism (store) */
+	259,		/* Move: Potions of Boldness (store) */
+	264,		/* Move: Potions of Slow Poison (store) */
+	347,		/* Move: Lantern (store) */
+	346,		/* Move: Torches (store) */
+	348,		/* Move: Flasks of Oil (store) */
+	446,		/* Hack: TERRAIN */
+	447,		/* Hack: TERRAIN */
+	448,		/* Hack: TERRAIN */
+	449,		/* Hack: TERRAIN */
+	450,		/* Hack: TERRAIN */
+	451,		/* Hack: TERRAIN */
+	452,		/* Hack: TERRAIN */
+	453,		/* Hack: TERRAIN */
+	454,		/* Hack: TERRAIN */
+	455,		/* Hack: TERRAIN */
+	456,		/* Hack: TERRAIN */
+	457,		/* Hack: TERRAIN */
+	458,		/* Hack: TERRAIN */
+	0,			/* Move: Traps -- delete them all */
+	0,			/* Move: Traps -- delete them all */
+	0,			/* Move: Traps -- delete them all */
+	0,			/* Move: Traps -- delete them all */
+	0,			/* Move: Traps -- delete them all */
+	0,			/* Move: Traps -- delete them all */
+	0,			/* Move: Traps -- delete them all */
+	0,			/* Move: Traps -- delete them all */
+	0,			/* Move: Traps -- delete them all */
+	0,			/* Move: Traps -- delete them all */
+	0,			/* Move: Traps -- delete them all */
+	0,			/* Move: Traps -- delete them all */
+	0,			/* Move: Traps -- delete them all */
+	0,			/* Move: Traps -- delete them all */
+	0,			/* Move: Traps -- delete them all */
+	0,			/* Move: Traps -- delete them all */
+	0,			/* Move: Traps -- delete them all */
+	0,			/* Move: Traps -- delete them all */
+	445,		/* Move: Rubble */
+	21,			/* Move: Mush -> Food Ration */
+	459,		/* Move: Glyph of Warding */
+	480,		/* copper */
+	481,		/* copper */
+	482,		/* copper */
+	483,		/* silver */
+	484,		/* silver */
+	485,		/* silver */
+	486,		/* garnets */
+	487,		/* garnets */
+	488,		/* gold */
+	489,		/* gold */
+	490,		/* gold */
+	491,		/* opals */
+	492,		/* sapphires */
+	493,		/* rubies */
+	494,		/* diamonds */
+	495,		/* emeralds */
+	496,		/* mithril */
+	497,		/* adamantite */
+	0,			/* Move: Nothing -- delete it */
+	344,		/* Move: Ruined Chest */
+	0			/* Move: Broken object -- delete it */
+};
+
+
+/*
+ * Convert old kinds (501-512) into special artifacts
+ */
+static s16b convert_old_kinds_special[12] =
+{
+	ART_NARYA,		/* Old 501 */
+	ART_NENYA,		/* Old 502 */
+	ART_VILYA,		/* Old 503 */
+	ART_POWER,		/* Old 504 */
+	ART_GALADRIEL,	/* Old 505 */
+	ART_INGWE,		/* Old 506 */
+	ART_CARLAMMAS,	/* Old 507 */
+	ART_ELENDIL,	/* Old 508 */
+	ART_THRAIN,		/* Old 509 */
+	ART_TULKAS,		/* Old 510 */
+	ART_DWARVES,	/* Old 511 */
+	ART_BARAHIR		/* Old 512 */
+};
 
 
 
@@ -513,6 +1039,8 @@ static errr rd_item_old(object_type *o_ptr)
 {
 	byte old_ident;
 	byte old_names;
+
+	s16b old_k_idx;
 
 	s16b old_pval;
 
@@ -528,13 +1056,13 @@ static errr rd_item_old(object_type *o_ptr)
 	/* Hack -- wipe */
 	WIPE(o_ptr, object_type);
 
-	/* Index (translated below) */
-	rd_s16b(&o_ptr->k_idx);
+	/* Old kind index */
+	rd_s16b(&old_k_idx);
 
-	/* Ego/Art index */
+	/* Old Ego/Art index */
 	rd_byte(&old_names);
 
-	/* Inscription */
+	/* Old inscription */
 	rd_string(old_note, 128);
 
 	/* Save the inscription */
@@ -543,10 +1071,10 @@ static errr rd_item_old(object_type *o_ptr)
 	/* Ignore "f1", "tval", "tchar" */
 	strip_bytes(6);
 
-	/* Pval */
+	/* Old pval */
 	rd_s16b(&old_pval);
 
-	/* Cost */
+	/* Old cost */
 	rd_s32b(&old_cost);
 
 	/* Ignore "sval" */
@@ -568,419 +1096,72 @@ static errr rd_item_old(object_type *o_ptr)
 	/* Bonuses */
 	rd_s16b(&o_ptr->to_a);
 
-	/* Ignore "dd", "ds", level */
+	/* Ignore "dd", "ds", "level" */
 	strip_bytes(3);
 
-	/* Special flags (see below) */
+	/* Old special flags */
 	rd_byte(&old_ident);
 
 	/* Ignore "f2", "timeout" */
 	strip_bytes(6);
 
-	/* Old "color" data */
+	/* Ignore "color" data */
 	if (arg_colour) strip_bytes(1);
 
 
-	/* XXX XXX XXX Note use of object indexes */
-	/* Consider a simple array (size 513 or so) */
-
-	/* Patch the object indexes */
-	switch (o_ptr->k_idx)
+	/* Paranoia */
+	if ((old_k_idx < 0) || (old_k_idx >= 513) ||
+	    (old_names < 0) || (old_names >= 180))
 	{
-		/* Mushroom of poison */
-		case 0: o_ptr->k_idx = 15; break;
-
-		/* Mushrooms of restoring (extra) */
-		case 13: o_ptr->k_idx = 12; break;
-		case 14: o_ptr->k_idx = 12; break;
-
-		/* Hairy Mold of poison */
-		case 16: o_ptr->k_idx = 15; break;
-
-		/* Ration of Food (extra) */
-		case 22: o_ptr->k_idx = 21; break;
-		case 23: o_ptr->k_idx = 21; break;
-
-		/* Piece of Elvish Waybread (extra) */
-		case 26: o_ptr->k_idx = 25; break;
-		case 27: o_ptr->k_idx = 25; break;
-
-		/* Main Gauche */
-		case 28: o_ptr->k_idx = 38; break;
-
-		/* Dagger */
-		case 29: o_ptr->k_idx = 43; break;
-
-		/* Broad-sword */
-		case 35: o_ptr->k_idx = 34; break;
-
-		/* Two-Handed Sword */
-		case 38: o_ptr->k_idx = 37; break;
-
-		/* Long sword */
-		case 43: o_ptr->k_idx = 42; break;
-
-		/* Awl-Pike */
-		case 58: o_ptr->k_idx = 62; break;
-
-		/* Lucern Hammer */
-		case 62: o_ptr->k_idx = 58; break;
-
-		/* Spike */
-		case 84: o_ptr->k_idx = 345; break;
-
-		/* Lantern */
-		case 85: o_ptr->k_idx = 347; break;
-
-		/* Torch */
-		case 86: o_ptr->k_idx = 346; break;
-
-		/* Orcish Pick */
-		case 87: o_ptr->k_idx = 88; break;
-
-		/* Dwarven Pick */
-		case 88: o_ptr->k_idx = 89; break;
-
-		/* Gnomish Shovel */
-		case 89: o_ptr->k_idx = 85; break;
-
-		/* Dwarven shovel */
-		case 90: o_ptr->k_idx = 86; break;
-
-		/* Robe */
-		case 102: o_ptr->k_idx = 101; break;
-
-		/* Arrow */
-		case 144: o_ptr->k_idx = 78; break;
-
-		/* Bolt */
-		case 170: o_ptr->k_idx = 80; break;
-
-		/* Scroll of Identify (extras) */
-		case 177: o_ptr->k_idx = 176; break;
-		case 178: o_ptr->k_idx = 176; break;
-		case 179: o_ptr->k_idx = 176; break;
-
-		/* Scroll of Light (extras) */
-		case 182: o_ptr->k_idx = 181; break;
-		case 183: o_ptr->k_idx = 181; break;
-
-		/* Scroll of Rune of Protection */
-		case 191: o_ptr->k_idx = 190; break;
-
-		/* Scroll of Trap Detection (extra) */
-		case 195: o_ptr->k_idx = 194; break;
-
-		/* Rod of Trap Location (Hack!) */
-		case 196: o_ptr->k_idx = 352; break;
-
-		/* Scroll of Door/Stair Location (extra) */
-		case 198: o_ptr->k_idx = 197; break;
-		case 199: o_ptr->k_idx = 197; break;
-
-		/* Scroll of *Enchant Armor* */
-		case 205: o_ptr->k_idx = 214; break;
-
-		/* Potion of Cure Light Wounds (extra) */
-		case 238: o_ptr->k_idx = 237; break;
-		case 239: o_ptr->k_idx = 237; break;
-
-		/* Potion of Speed (extra) */
-		case 256: o_ptr->k_idx = 249; break;
-
-		/* Flask of oil */
-		case 268: o_ptr->k_idx = 348; break;
-
-		/* Wand of Clone Monster */
-		case 284: o_ptr->k_idx = 283; break;
-
-		/* Staff of Light */
-		case 293: o_ptr->k_idx = 306; break;
-
-		/* Staff of Door/Stair Location */
-		case 299: o_ptr->k_idx = 316; break;
-
-		/* Staff of Summoning (extra?) */
-		case 306: o_ptr->k_idx = 305; break;
-
-		/* Staff of *Destruction* */
-		case 316: o_ptr->k_idx = 307; break;
-
-		/* Staff of Darkness (extra?) */
-		case 321: o_ptr->k_idx = 322; break;
-
-		/* Chests become ruined chests */
-		case 338: o_ptr->k_idx = 344; break;
-		case 339: o_ptr->k_idx = 344; break;
-		case 340: o_ptr->k_idx = 344; break;
-		case 341: o_ptr->k_idx = 344; break;
-		case 342: o_ptr->k_idx = 344; break;
-		case 343: o_ptr->k_idx = 344; break;
-
-		/* Junk and Skeletons */
-		case 344: o_ptr->k_idx = 394; break;
-		case 345: o_ptr->k_idx = 393; break;
-
-		/* Filthy Rag */
-		case 346: o_ptr->k_idx = 102; break;
-
-		/* Junk and Skeletons */
-		case 347: o_ptr->k_idx = 349; break;
-		case 348: o_ptr->k_idx = 389; break;
-		case 349: o_ptr->k_idx = 395; break;
-		case 350: o_ptr->k_idx = 396; break;
-		case 351: o_ptr->k_idx = 397; break;
-		case 352: o_ptr->k_idx = 398; break;
-		case 353: o_ptr->k_idx = 391; break;
-		case 354: o_ptr->k_idx = 392; break;
-		case 355: o_ptr->k_idx = 390; break;
-
-		/* Scroll of *Remove Curse* */
-		case 378: o_ptr->k_idx = 191; break;
-
-		/* Blue Dragon Scale Mail */
-		case 389: o_ptr->k_idx = 401; break;
-
-		/* White Dragon Scale Mail */
-		case 390: o_ptr->k_idx = 402; break;
-
-		/* Black Dragon Scale Mail */
-		case 391: o_ptr->k_idx = 400; break;
-
-		/* Green Dragon Scale Mail */
-		case 392: o_ptr->k_idx = 404; break;
-
-		/* Red Dragon Scale Mail */
-		case 393: o_ptr->k_idx = 403; break;
-
-		/* Multi-Hued Dragon Scale Mail */
-		case 394: o_ptr->k_idx = 405; break;
-
-		/* Daggers (ancient artifacts?) */
-		case 395: o_ptr->k_idx = 43; break;
-		case 396: o_ptr->k_idx = 43; break;
-		case 397: o_ptr->k_idx = 43; break;
-
-		/* Short Sword */
-		case 398: o_ptr->k_idx = 35; break;
-
-		/* Potion of *Enlightenment* */
-		case 399: o_ptr->k_idx = 422; break;
-
-		/* Potion of Detonations */
-		case 400: o_ptr->k_idx = 417; break;
-
-		/* Potion of Death */
-		case 401: o_ptr->k_idx = 415; break;
-
-		/* Potion of Life */
-		case 402: o_ptr->k_idx = 420; break;
-
-		/* Potion of Augmentation */
-		case 403: o_ptr->k_idx = 418; break;
-
-		/* Potion of Ruination */
-		case 404: o_ptr->k_idx = 416; break;
-
-		/* Rod of Illumination */
-		case 405: o_ptr->k_idx = 355; break;
-
-		/* Rod of Probing */
-		case 406: o_ptr->k_idx = 353; break;
-
-		/* Staff of Probing */
-		case 407: o_ptr->k_idx = 321; break;
-
-		/* Bronze Dragon Scale Mail */
-		case 408: o_ptr->k_idx = 408; break;
-
-		/* Gold Dragon Scale Mail */
-		case 409: o_ptr->k_idx = 409; break;
-
-		/* Rod of Recall */
-		case 410: o_ptr->k_idx = 354; break;
-
-		/* Cloak (extra) */
-		case 411: o_ptr->k_idx = 123; break;
-
-		/* Scroll of Acquirement */
-		case 412: o_ptr->k_idx = 198; break;
-
-		/* Scroll of *Acquirement* */
-		case 413: o_ptr->k_idx = 199; break;
-
-		/* Ring of Free Action */
-		case 414: o_ptr->k_idx = 144; break;
-
-		/* Chaos Dragon Scale Mail */
-		case 415: o_ptr->k_idx = 410; break;
-
-		/* Law Dragon Scale Mail */
-		case 416: o_ptr->k_idx = 407; break;
-
-		/* Balance Dragon Scale Mail */
-		case 417: o_ptr->k_idx = 411; break;
-
-		/* Shining Dragon Scale Mail */
-		case 418: o_ptr->k_idx = 406; break;
-
-		/* Power Dragon Scale Mail */
-		case 419: o_ptr->k_idx = 412; break;
-
-		/* Potion of Enlightenment */
-		case 420: o_ptr->k_idx = 256; break;
-
-		/* Potion of Self Knowledge */
-		case 421: o_ptr->k_idx = 421; break;
-
-		/* Postion of *Healing* */
-		case 422: o_ptr->k_idx = 419; break;
-
-		/* Food ration (extra) */
-		case 423: o_ptr->k_idx = 21; break;
-
-		/* Hard Biscuit */
-		case 424: o_ptr->k_idx = 22; break;
-
-		/* Strip of Beef Jerky */
-		case 425: o_ptr->k_idx = 23; break;
-
-		/* Pint of Fine Ale */
-		case 426: o_ptr->k_idx = 26; break;
-
-		/* Pint of Fine Wine */
-		case 427: o_ptr->k_idx = 27; break;
-
-		/* Pick */
-		case 428: o_ptr->k_idx = 87; break;
-
-		/* Shovel */
-		case 429: o_ptr->k_idx = 84; break;
-
-		/* Scrolls of Identify (store) */
-		/* Scrolls of Light (store) */
-		/* Scrolls of Phase Door (store) */
-		/* Scrolls of Mapping (store) */
-		/* Scrolls of Treasure Detection (store) */
-		/* Scrolls of Object Detection (store) */
-		/* Scrolls of Detect Invisible (store) */
-		/* Scrolls of Blessing (store) */
-		/* Scrolls of Word of Recall (store) */
-		case 430: o_ptr->k_idx = 176; break;
-		case 431: o_ptr->k_idx = 181; break;
-		case 432: o_ptr->k_idx = 185; break;
-		case 433: o_ptr->k_idx = 189; break;
-		case 434: o_ptr->k_idx = 192; break;
-		case 435: o_ptr->k_idx = 193; break;
-		case 436: o_ptr->k_idx = 201; break;
-		case 437: o_ptr->k_idx = 217; break;
-		case 438: o_ptr->k_idx = 220; break;
-
-		/* Potions of Cure Light Wounds (store) */
-		/* Potions of Heroism (store) */
-		/* Potions of Boldness (store) */
-		/* Potions of Slow Poison (store) */
-		case 439: o_ptr->k_idx = 237; break;
-		case 440: o_ptr->k_idx = 257; break;
-		case 441: o_ptr->k_idx = 259; break;
-		case 442: o_ptr->k_idx = 264; break;
-
-		/* Lantern (store) */
-		case 443: o_ptr->k_idx = 347; break;
-
-		/* Torches (store) */
-		case 444: o_ptr->k_idx = 346; break;
-
-		/* Flasks of Oil (store) */
-		case 445: o_ptr->k_idx = 348; break;
-
-		/* Traps -- delete them all */
-		case 459: o_ptr->k_idx = 0; break;
-		case 460: o_ptr->k_idx = 0; break;
-		case 461: o_ptr->k_idx = 0; break;
-		case 462: o_ptr->k_idx = 0; break;
-		case 463: o_ptr->k_idx = 0; break;
-		case 464: o_ptr->k_idx = 0; break;
-		case 465: o_ptr->k_idx = 0; break;
-		case 466: o_ptr->k_idx = 0; break;
-		case 467: o_ptr->k_idx = 0; break;
-		case 468: o_ptr->k_idx = 0; break;
-		case 469: o_ptr->k_idx = 0; break;
-		case 470: o_ptr->k_idx = 0; break;
-		case 471: o_ptr->k_idx = 0; break;
-		case 472: o_ptr->k_idx = 0; break;
-		case 473: o_ptr->k_idx = 0; break;
-		case 474: o_ptr->k_idx = 0; break;
-		case 475: o_ptr->k_idx = 0; break;
-		case 476: o_ptr->k_idx = 0; break;
-
-		/* Rubble */
-		case 477: o_ptr->k_idx = 445; break;
-
-		/* Mush -> Food Ration */
-		case 478: o_ptr->k_idx = 21; break;
-
-		/* Glyph of Warding */
-		case 479: o_ptr->k_idx = 459; break;
-
-		/* Nothing -- delete it */
-		case 498: o_ptr->k_idx = 0; break;
-
-		/* Ruined Chest */
-		case 499: o_ptr->k_idx = 344; break;
-
-		/* Broken object -- delete it */
-		case 500: o_ptr->k_idx = 0; break;
-
-		/* Hack -- Special objects (see below) */
-		case 501: o_ptr->name1 = ART_NARYA; break;
-		case 502: o_ptr->name1 = ART_NENYA; break;
-		case 503: o_ptr->name1 = ART_VILYA; break;
-		case 504: o_ptr->name1 = ART_POWER; break;
-		case 505: o_ptr->name1 = ART_GALADRIEL; break;
-		case 506: o_ptr->name1 = ART_INGWE; break;
-		case 507: o_ptr->name1 = ART_CARLAMMAS; break;
-		case 508: o_ptr->name1 = ART_ELENDIL; break;
-		case 509: o_ptr->name1 = ART_THRAIN; break;
-		case 510: o_ptr->name1 = ART_TULKAS; break;
-		case 511: o_ptr->name1 = ART_DWARVES; break;
-		case 512: o_ptr->name1 = ART_BARAHIR; break;
+		note("Illegal object!");
+		return (1);
 	}
 
-
-	/* Artifact Names Dominate Ego-Item Names */
-	if (o_ptr->name1)
+	/* Normal objects */
+	if (old_k_idx < 501)
 	{
-		artifact_type *a_ptr = &a_info[o_ptr->name1];
+		/* Convert */
+		o_ptr->k_idx = convert_old_kinds_normal[old_k_idx];
+
+		/* Mega-Hack -- handle "dungeon objects" later */
+		if ((o_ptr->k_idx >= 445) && (o_ptr->k_idx <= 479)) return (0);
+	}
+
+	/* Special objects */
+	else
+	{
+		artifact_type *a_ptr;
+		
+		/* Convert */
+		o_ptr->name1 = convert_old_kinds_special[old_k_idx - 501];
+
+		/* Artifact */
+		a_ptr = &a_info[o_ptr->name1];
 
 		/* Lookup the real "kind" */
 		o_ptr->k_idx = lookup_kind(a_ptr->tval, a_ptr->sval);
+		
+		/* Ignore old_names */
+		old_names = 0;
 	}
 
-	/* Parse the Old Special Names */
-	else if (old_names)
+
+	/* Analyze the old "special name" */
+	old_names = convert_old_names[old_names];
+
+	/* It is an artifact */
+	if (old_names >= 128)
 	{
-		/* Analyze the old "special name" */
-		old_names = convert_old_names[old_names];
-
-		/* It is an artifact */
-		if (old_names >= MAX_E_IDX)
-		{
-			/* Extract the artifact index */
-			o_ptr->name1 = (old_names - MAX_E_IDX);
-		}
-
-		/* It is an ego-item */
-		else if (old_names > 0)
-		{
-			/* Extract the ego-item index */
-			o_ptr->name2 = (old_names);
-		}
+		/* Extract the artifact index */
+		o_ptr->name1 = (old_names - MAX_E_IDX);
 	}
 
-
-	/* Mega-Hack -- handle "dungeon objects" later */
-	if ((o_ptr->k_idx >= 445) && (o_ptr->k_idx <= 479)) return (0);
+	/* It is an ego-item (or a normal item) */
+	else
+	{
+		/* Extract the ego-item index */
+		o_ptr->name2 = (old_names);
+	}
 
 
 	/*** Analyze the item ***/
@@ -993,10 +1174,10 @@ static errr rd_item_old(object_type *o_ptr)
 	o_ptr->sval = k_ptr->sval;
 
 	/* Hack -- notice "broken" items */
-	if (k_ptr->cost <= 0) o_ptr->ident |= ID_BROKEN;
+	if (k_ptr->cost <= 0) o_ptr->ident |= (IDENT_BROKEN);
 
 	/* Hack -- assume "cursed" items */
-	if (k_ptr->flags3 & TR3_CURSED) o_ptr->ident |= ID_CURSED;
+	if (k_ptr->flags3 & (TR3_CURSED)) o_ptr->ident |= (IDENT_CURSED);
 
 
 	/*** Hack -- repair ego-item names ***/
@@ -1101,16 +1282,16 @@ static errr rd_item_old(object_type *o_ptr)
 	if (old_ident & 0x08) k_ptr->aware = TRUE;
 
 	/* Convert "store-bought" to "known" */
-	if (old_ident & 0x10) o_ptr->ident |= ID_KNOWN;
+	if (old_ident & 0x10) o_ptr->ident |= (IDENT_KNOWN);
 
 	/* Convert "identified" to "known" */
-	if (old_ident & 0x08) o_ptr->ident |= ID_KNOWN;
+	if (old_ident & 0x08) o_ptr->ident |= (IDENT_KNOWN);
 
 	/* Convert "ID_DAMD" to "ID_SENSE" */
-	if (old_ident & 0x02) o_ptr->ident |= ID_SENSE;
+	if (old_ident & 0x02) o_ptr->ident |= (IDENT_SENSE);
 
 	/* Convert "ID_FELT" to "ID_SENSE" */
-	if (old_ident & 0x01) o_ptr->ident |= ID_SENSE;
+	if (old_ident & 0x01) o_ptr->ident |= (IDENT_SENSE);
 
 
 	/*** Acquire standard values ***/
@@ -1161,21 +1342,21 @@ static errr rd_item_old(object_type *o_ptr)
 	if ((o_ptr->tval == TV_RING) || (o_ptr->tval == TV_AMULET))
 	{
 		/* Hack -- Adapt to the new "speed" code */
-		if (f1 & TR1_SPEED)
+		if (f1 & (TR1_SPEED))
 		{
 			/* Paranoia -- only expand small bonuses */
 			if (old_pval < 3) old_pval = old_pval * 10;
 		}
 
 		/* Hack -- Adapt to the new "searching" code */
-		if (f1 & TR1_SEARCH)
+		if (f1 & (TR1_SEARCH))
 		{
 			/* Paranoia -- only reduce large bonuses */
 			old_pval = (old_pval + 4) / 5;
 		}
 
 		/* Hack -- Useful pval codes */
-		if (f1 & TR1_PVAL_MASK)
+		if (f1 & (TR1_PVAL_MASK))
 		{
 			/* Require a pval code */
 			o_ptr->pval = (old_pval ? old_pval : 1);
@@ -1195,7 +1376,7 @@ static errr rd_item_old(object_type *o_ptr)
 		artifact_type *a_ptr = &a_info[o_ptr->name1];
 
 		/* Acquire "broken" code */
-		if (!a_ptr->cost) o_ptr->ident |= ID_BROKEN;
+		if (!a_ptr->cost) o_ptr->ident |= (IDENT_BROKEN);
 
 		/* Acquire artifact pval */
 		o_ptr->pval = a_ptr->pval;
@@ -1209,7 +1390,7 @@ static errr rd_item_old(object_type *o_ptr)
 		o_ptr->weight = a_ptr->weight;
 
 		/* Assume current "curse" */
-		if (a_ptr->flags3 & TR3_CURSED) o_ptr->ident |= ID_CURSED;
+		if (a_ptr->flags3 & (TR3_CURSED)) o_ptr->ident |= (IDENT_CURSED);
 	}
 
 	/* Update ego-items */
@@ -1218,31 +1399,31 @@ static errr rd_item_old(object_type *o_ptr)
 		ego_item_type *e_ptr = &e_info[o_ptr->name2];
 
 		/* Acquire "broken" code */
-		if (!e_ptr->cost) o_ptr->ident |= ID_BROKEN;
+		if (!e_ptr->cost) o_ptr->ident |= (IDENT_BROKEN);
 
 		/* Hack -- Adapt to the new "speed" code */
-		if (f1 & TR1_SPEED)
+		if (f1 & (TR1_SPEED))
 		{
 			/* Paranoia -- only expand small bonuses */
 			if (old_pval < 3) old_pval = old_pval * 10;
 		}
 
 		/* Hack -- Adapt to the new "searching" code */
-		if (f1 & TR1_SEARCH)
+		if (f1 & (TR1_SEARCH))
 		{
 			/* Paranoia -- only reduce large bonuses */
 			old_pval = (old_pval + 4) / 5;
 		}
 
 		/* Hack -- Useful pval codes */
-		if (f1 & TR1_PVAL_MASK)
+		if (f1 & (TR1_PVAL_MASK))
 		{
 			/* Require a pval code */
 			o_ptr->pval = (old_pval ? old_pval : 1);
 		}
 
 		/* Assume current "curse" */
-		if (e_ptr->flags3 & TR3_CURSED) o_ptr->ident |= ID_CURSED;
+		if (e_ptr->flags3 & (TR3_CURSED)) o_ptr->ident |= (IDENT_CURSED);
 	}
 
 
@@ -1254,7 +1435,9 @@ static errr rd_item_old(object_type *o_ptr)
 /*
  * Read the old lore
  *
- * Hack -- Assume all kills were by the player.
+ * Hack -- Assume all kills were by the player
+ *
+ * Hack -- The "max_num" field is extracted later
  */
 static void rd_lore_old(int r_idx)
 {
@@ -1272,8 +1455,6 @@ static void rd_lore_old(int r_idx)
 
 	/* Guess at "sights" */
 	r_ptr->r_sights = MAX(r_ptr->r_pkills, r_ptr->r_deaths);
-
-	/* XXX XXX Remember to "extract" max_num somewhere below */
 }
 
 
@@ -1310,21 +1491,30 @@ static errr rd_store_old(int n)
 	for (j = 0; j < num; j++)
 	{
 		object_type forge;
+		object_type *q_ptr;
 
 		/* Strip the old "fixed cost" */
 		strip_bytes(4);
 
+		/* Get local object */
+		q_ptr = &forge;
+
+		/* Wipe the object */
+		object_wipe(q_ptr);
+
 		/* Load the item */
-		rd_item_old(&forge);
+		rd_item_old(q_ptr);
 
 		/* Forget the inscription */
-		forge.note = 0;
+		q_ptr->note = 0;
 
 		/* Save "valid" items */
 		if (st_ptr->stock_num < STORE_INVEN_MAX)
 		{
+			int k = st_ptr->stock_num++;
+
 			/* Add that item to the store */
-			st_ptr->stock[st_ptr->stock_num++] = forge;
+			object_copy(&st_ptr->stock[k], q_ptr);
 		}
 	}
 
@@ -1509,7 +1699,7 @@ static void rd_extra_old(void)
 
 	rd_string(player_name, 32);
 
-	rd_byte(&p_ptr->male);
+	rd_byte(&p_ptr->psex);
 	rd_s32b(&p_ptr->au);
 	rd_s32b(&p_ptr->max_exp);
 	rd_s32b(&p_ptr->exp);
@@ -1533,6 +1723,12 @@ static void rd_extra_old(void)
 	rd_u16b(&p_ptr->csp_frac);
 	rd_s16b(&p_ptr->chp);
 	rd_u16b(&p_ptr->chp_frac);
+
+	/* Repair maximum player level XXX XXX XXX */
+	if (p_ptr->max_plv < p_ptr->lev) p_ptr->max_plv = p_ptr->lev;
+
+	/* Repair maximum dungeon level */
+	if (p_ptr->max_dlv < 0) p_ptr->max_dlv = 1;
 
 	/* Read the history */
 	for (i = 0; i < 4; i++)
@@ -1667,30 +1863,30 @@ static void rd_messages_old(void)
  * In 2.7.6 (?), the grid flags changed completely
  */
 
-#define NULL_WALL	0	/* Temp value for "generate.c" */
+#define NULL_WALL		0	/* Temp value for "generate.c" */
 
-#define ROOM_FLOOR	1	/* Floor, in a room */
-#define VAULT_FLOOR	3	/* Floor, in a vault */
-#define CORR_FLOOR	5	/* Floor, in a corridor */
+#define ROOM_FLOOR		1	/* Floor, in a room */
+#define VAULT_FLOOR		3	/* Floor, in a vault */
+#define CORR_FLOOR		5	/* Floor, in a corridor */
 
-#define MIN_WALL	8	/* Hack -- minimum "wall" fval */
+#define MIN_WALL		8	/* Hack -- minimum "wall" fval */
 
-#define TMP1_WALL	8
-#define TMP2_WALL	9
+#define TMP1_WALL		8
+#define TMP2_WALL		9
 
 #define GRANITE_WALL	12	/* Granite */
-#define QUARTZ_WALL	13	/* Quartz */
-#define MAGMA_WALL	14	/* Magma */
+#define QUARTZ_WALL		13	/* Quartz */
+#define MAGMA_WALL		14	/* Magma */
 #define BOUNDARY_WALL	15	/* Permanent */
 
 
 /*
  * Old cave "info" flags
  */
-#define OLD_CAVE_LR	0x01	/* Grid is part of a room */
-#define OLD_CAVE_FM	0x02	/* Grid is "field marked" */
-#define OLD_CAVE_PL	0x04	/* Grid is perma-lit */
-#define OLD_CAVE_TL	0x08	/* Grid is torch-lit */
+#define OLD_CAVE_LR		0x01	/* Grid is part of a room */
+#define OLD_CAVE_FM		0x02	/* Grid is "field marked" */
+#define OLD_CAVE_PL		0x04	/* Grid is perma-lit */
+#define OLD_CAVE_TL		0x08	/* Grid is torch-lit */
 #define OLD_CAVE_INIT	0x10	/* Grid has been "initialized" */
 #define OLD_CAVE_SEEN	0x20	/* Grid is "being processed" */
 #define OLD_CAVE_VIEW	0x40	/* Grid is currently "viewable" */
@@ -1699,7 +1895,7 @@ static void rd_messages_old(void)
 
 
 /*
- * Old method
+ * Read a pre-2.7.0 dungeon
  *
  * All sorts of information is lost from pre-2.7.0 savefiles,
  * because they were not saved in a very intelligent manner.
@@ -1708,6 +1904,10 @@ static void rd_messages_old(void)
  * at least to simulate the presence of such information.
  *
  * XXX XXX XXX Prevent old "terrain" objects in inventory.
+ *
+ * XXX XXX XXX Only 512 objects may appear in old savefiles.
+ *
+ * XXX XXX XXX Only 1024 monsters may appear in old savefiles.
  */
 static errr rd_dungeon_old(void)
 {
@@ -1740,6 +1940,20 @@ static errr rd_dungeon_old(void)
 	if ((dun_level < 0) || (dun_level > MAX_DEPTH))
 	{
 		note("Illegal dungeon level!");
+		return (1);
+	}
+
+	/* Paranoia */
+	if ((cur_wid != 66) && (cur_wid != 198))
+	{
+		note("Illegal dungeon width!");
+		return (1);
+	}
+
+	/* Paranoia */
+	if ((cur_hgt != 22) && (cur_wid != 66))
+	{
+		note("Illegal dungeon height!");
 		return (1);
 	}
 
@@ -1779,8 +1993,11 @@ static errr rd_dungeon_old(void)
 	}
 
 
-	/* Clear the object indexes */
-	for (i = 0; i < 512; i++) ix[i] = iy[i] = 0;
+	/* Clear location data */
+	for (i = 0; i < 512; i++)
+	{
+		ix[i] = iy[i] = 0;
+	}
 
 	/* Read the object indexes */
 	while (1)
@@ -1845,20 +2062,20 @@ static errr rd_dungeon_old(void)
 			c_ptr->feat = FEAT_NONE;
 
 			/* Extract the old "info" flags */
-			if ((tmp8u >> 4) & 0x1) c_ptr->info |= CAVE_ROOM;
-			if ((tmp8u >> 5) & 0x1) c_ptr->info |= CAVE_MARK;
-			if ((tmp8u >> 6) & 0x1) c_ptr->info |= CAVE_GLOW;
+			if ((tmp8u >> 4) & 0x1) c_ptr->info |= (CAVE_ROOM);
+			if ((tmp8u >> 5) & 0x1) c_ptr->info |= (CAVE_MARK);
+			if ((tmp8u >> 6) & 0x1) c_ptr->info |= (CAVE_GLOW);
 
 			/* Hack -- process old style "light" */
-			if (c_ptr->info & CAVE_GLOW)
+			if (c_ptr->info & (CAVE_GLOW))
 			{
-				c_ptr->info |= CAVE_MARK;
+				c_ptr->info |= (CAVE_MARK);
 			}
 
 			/* Mega-Hack -- light all walls */
 			else if ((tmp8u & 0xF) >= 12)
 			{
-				c_ptr->info |= CAVE_GLOW;
+				c_ptr->info |= (CAVE_GLOW);
 			}
 
 			/* Process the "floor type" */
@@ -1867,27 +2084,27 @@ static errr rd_dungeon_old(void)
 				/* Lite Room Floor */
 				case 2:
 				{
-					c_ptr->info |= CAVE_GLOW;
+					c_ptr->info |= (CAVE_GLOW);
 				}
 
 				/* Dark Room Floor */
 				case 1:
 				{
-					c_ptr->info |= CAVE_ROOM;
+					c_ptr->info |= (CAVE_ROOM);
 					break;
 				}
 
 				/* Lite Vault Floor */
 				case 4:
 				{
-					c_ptr->info |= CAVE_GLOW;
+					c_ptr->info |= (CAVE_GLOW);
 				}
 
 				/* Dark Vault Floor */
 				case 3:
 				{
-					c_ptr->info |= CAVE_ROOM;
-					c_ptr->info |= CAVE_ICKY;
+					c_ptr->info |= (CAVE_ROOM);
+					c_ptr->info |= (CAVE_ICKY);
 					break;
 				}
 
@@ -1957,46 +2174,48 @@ static errr rd_dungeon_old(void)
 	{
 		int o_idx;
 
+		object_type forge;
+		object_type *q_ptr;
+
 		object_type *o_ptr;
 
-		object_type forge;
 
+		/* Get local object */
+		q_ptr = &forge;
 
-		/* Point at it */
-		o_ptr = &forge;
+		/* Wipe the object */
+		object_wipe(q_ptr);
 
 		/* Read the item */
-		rd_item_old(o_ptr);
+		rd_item_old(q_ptr);
+
+
+		/* Skip dead objects */
+		if (!q_ptr->k_idx) continue;
+
 
 		/* Save the location */
-		o_ptr->iy = iy[i];
-		o_ptr->ix = ix[i];
-
+		q_ptr->iy = iy[i];
+		q_ptr->ix = ix[i];
 
 		/* Invalid cave location */
-		if ((o_ptr->ix >= cur_wid) || (o_ptr->iy >= cur_hgt))
+		if ((q_ptr->ix >= cur_wid) || (q_ptr->iy >= cur_hgt))
 		{
 			note("Illegal object location!!!");
 			return (72);
 		}
 
 		/* Access grid */
-		c_ptr = &cave[o_ptr->iy][o_ptr->ix];
-
-		/* Something already there */
-		if (c_ptr->o_idx) continue;
-
-		/* Skip dead objects */
-		if (!o_ptr->k_idx) continue;
+		c_ptr = &cave[q_ptr->iy][q_ptr->ix];
 
 
 		/* Hack -- convert old "dungeon" objects */
-		if ((o_ptr->k_idx >= 445) && (o_ptr->k_idx <= 479))
+		if ((q_ptr->k_idx >= 445) && (q_ptr->k_idx <= 479))
 		{
 			int feat = 0;
 
 			/* Analyze the "dungeon objects" */
-			switch (o_ptr->k_idx)
+			switch (q_ptr->k_idx)
 			{
 				/* Rubble */
 				case 445:
@@ -2113,7 +2332,7 @@ static errr rd_dungeon_old(void)
 
 
 		/* Hack -- treasure in walls */
-		if (o_ptr->tval == TV_GOLD)
+		if (q_ptr->tval == TV_GOLD)
 		{
 			/* Quartz or Magma with treasure */
 			if ((c_ptr->feat == FEAT_QUARTZ) ||
@@ -2128,6 +2347,14 @@ static errr rd_dungeon_old(void)
 		}
 
 
+		/* Paranoia */
+		if (c_ptr->o_idx)
+		{
+			note("Multiple objects per grid!");
+			return (153);
+		}
+
+
 		/* Get a new record */
 		o_idx = o_pop();
 
@@ -2138,13 +2365,16 @@ static errr rd_dungeon_old(void)
 			return (152);
 		}
 
-		/* Acquire place */
+		/* Acquire cave object */
 		o_ptr = &o_list[o_idx];
 
 		/* Copy the item */
-		(*o_ptr) = forge;
+		object_copy(o_ptr, q_ptr);
 
-		/* Mark the location */
+		/* Build a stack */
+		o_ptr->next_o_idx = c_ptr->o_idx;
+
+		/* Place the object */
 		c_ptr->o_idx = o_idx;
 	}
 
@@ -2164,36 +2394,37 @@ static errr rd_dungeon_old(void)
 	{
 		int m_idx;
 
+		monster_type forge;
+		monster_type *q_ptr;
+
 		monster_type *m_ptr;
 		monster_race *r_ptr;
 
-		monster_type forge;
 
-
-		/* Forge */
-		m_ptr = &forge;
+		/* Get local monster */
+		q_ptr = &forge;
 
 		/* Hack -- wipe */
-		WIPE(m_ptr, monster_type);
+		WIPE(q_ptr, monster_type);
 
 		/* Read the current hitpoints */
-		rd_s16b(&m_ptr->hp);
+		rd_s16b(&q_ptr->hp);
 
 		/* Strip max hitpoints */
 		if (!older_than(2, 6, 0)) strip_bytes(2);
 
 		/* Current sleep counter */
-		rd_s16b(&m_ptr->csleep);
+		rd_s16b(&q_ptr->csleep);
 
 		/* Strip speed */
 		strip_bytes(2);
 
 		/* Read race */
-		rd_s16b(&m_ptr->r_idx);
+		rd_s16b(&q_ptr->r_idx);
 
 		/* Read location */
-		rd_byte(&m_ptr->fy);
-		rd_byte(&m_ptr->fx);
+		rd_byte(&q_ptr->fy);
+		rd_byte(&q_ptr->fx);
 
 		/* Strip confusion, etc */
 		strip_bytes(4);
@@ -2206,7 +2437,7 @@ static errr rd_dungeon_old(void)
 
 
 		/* Invalid cave location */
-		if ((m_ptr->fx >= cur_wid) || (m_ptr->fy >= cur_hgt))
+		if ((q_ptr->fx >= cur_wid) || (q_ptr->fy >= cur_hgt))
 		{
 			note("Illegal monster location!!!");
 			return (71);
@@ -2214,29 +2445,29 @@ static errr rd_dungeon_old(void)
 
 
 		/* Access grid */
-		c_ptr = &cave[m_ptr->fy][m_ptr->fx];
+		c_ptr = &cave[q_ptr->fy][q_ptr->fx];
 
 		/* Hack -- Ignore "double" monsters */
 		if (c_ptr->m_idx) continue;
 
 		/* Hack -- ignore "broken" monsters */
-		if (m_ptr->r_idx <= 0) continue;
+		if (q_ptr->r_idx <= 0) continue;
 
 		/* Hack -- ignore "player ghosts" */
-		if (m_ptr->r_idx >= MAX_R_IDX-1) continue;
+		if (q_ptr->r_idx >= MAX_R_IDX-1) continue;
 
 
 		/* Access the race */
-		r_ptr = &r_info[m_ptr->r_idx];
+		r_ptr = &r_info[q_ptr->r_idx];
 
 		/* Hack -- recalculate speed */
-		m_ptr->mspeed = r_ptr->speed;
+		q_ptr->mspeed = r_ptr->speed;
 
 		/* Hack -- fake energy */
-		m_ptr->energy = i % 100;
+		q_ptr->energy = i % 100;
 
 		/* Hack -- maximal hitpoints */
-		m_ptr->maxhp = r_ptr->hdice * r_ptr->hside;
+		q_ptr->maxhp = r_ptr->hdice * r_ptr->hside;
 
 
 		/* Get a new record */
@@ -2252,13 +2483,13 @@ static errr rd_dungeon_old(void)
 		/* Acquire place */
 		m_ptr = &m_list[m_idx];
 
-		/* Copy the item */
-		(*m_ptr) = forge;
+		/* Copy the monster */
+		COPY(m_ptr, q_ptr, monster_type);
 
 		/* Mark the location */
 		c_ptr->m_idx = m_idx;
 
-		/* Count XXX XXX XXX */
+		/* Count racial occurances */
 		r_ptr->cur_num++;
 	}
 
@@ -2276,7 +2507,7 @@ static errr rd_dungeon_old(void)
 	}
 
 
-	/* Read the dungeon */
+	/* The dungeon is ready */
 	character_dungeon = TRUE;
 
 
@@ -2291,9 +2522,8 @@ static errr rd_dungeon_old(void)
 
 
 /*
- * Read an old savefile
+ * Read pre-2.7.0 options
  */
-
 static void rd_options_old(void)
 {
 	u32b tmp32u;
@@ -2320,7 +2550,9 @@ static errr rd_inventory_old(void)
 	int i, n;
 	int slot = 0;
 	s16b ictr;
+
 	object_type forge;
+	object_type *q_ptr;
 
 	/* No weight */
 	total_weight = 0;
@@ -2333,7 +2565,7 @@ static errr rd_inventory_old(void)
 	rd_s16b(&ictr);
 
 	/* Verify */
-	if (ictr > INVEN_PACK)
+	if (ictr >= INVEN_PACK)
 	{
 		note("Too many items in the inventory!");
 		return (15);
@@ -2342,20 +2574,26 @@ static errr rd_inventory_old(void)
 	/* Normal pack items */
 	for (i = 0; i < ictr; i++)
 	{
+		/* Get local object */
+		q_ptr = &forge;
+
+		/* Wipe the object */
+		object_wipe(q_ptr);
+
 		/* Read the item */
-		rd_item_old(&forge);
+		rd_item_old(q_ptr);
 
 		/* Assume aware */
-		object_aware(&forge);
+		object_aware(q_ptr);
 
 		/* Get the next slot */
 		n = slot++;
 
-		/* Structure copy */
-		inventory[n] = forge;
+		/* Copy the object */
+		object_copy(&inventory[n], q_ptr);
 
 		/* Add the weight */
-		total_weight += (forge.number * forge.weight);
+		total_weight += (q_ptr->number * q_ptr->weight);
 
 		/* One more item */
 		inven_cnt++;
@@ -2364,23 +2602,29 @@ static errr rd_inventory_old(void)
 	/* Old "normal" equipment */
 	for (i = OLD_INVEN_WIELD; i < OLD_INVEN_AUX; i++)
 	{
+		/* Get local object */
+		q_ptr = &forge;
+
+		/* Wipe the object */
+		object_wipe(q_ptr);
+
 		/* Read the item */
-		rd_item_old(&forge);
+		rd_item_old(q_ptr);
 
 		/* Assume aware */
-		object_aware(&forge);
+		object_aware(q_ptr);
 
 		/* Skip "empty" slots */
-		if (!forge.tval) continue;
+		if (!q_ptr->tval) continue;
 
 		/* Hack -- convert old slot numbers */
 		n = convert_slot(i);
 
-		/* Structure copy */
-		inventory[n] = forge;
+		/* Copy the object */
+		object_copy(&inventory[n], q_ptr);
 
 		/* Add the weight */
-		total_weight += (forge.number * forge.weight);
+		total_weight += (q_ptr->number * q_ptr->weight);
 
 		/* One more item */
 		equip_cnt++;
@@ -2389,23 +2633,29 @@ static errr rd_inventory_old(void)
 	/* Old "aux" item */
 	for (i = OLD_INVEN_AUX; i <= OLD_INVEN_AUX; i++)
 	{
+		/* Get local object */
+		q_ptr = &forge;
+
+		/* Wipe the object */
+		object_wipe(q_ptr);
+
 		/* Read the item */
-		rd_item_old(&forge);
+		rd_item_old(q_ptr);
 
 		/* Assume aware */
-		object_aware(&forge);
+		object_aware(q_ptr);
 
 		/* Skip "empty" slots */
-		if (!forge.tval) continue;
+		if (!q_ptr->tval) continue;
 
 		/* Get the next slot */
 		n = slot++;
 
-		/* Structure copy */
-		inventory[n] = forge;
+		/* Copy the object */
+		object_copy(&inventory[n], q_ptr);
 
 		/* Add the weight */
-		total_weight += (forge.number * forge.weight);
+		total_weight += (q_ptr->number * q_ptr->weight);
 
 		/* One more item */
 		inven_cnt++;
@@ -2516,7 +2766,7 @@ static errr rd_savefile_old_aux(void)
 		r_ptr->max_num = 100;
 
 		/* Only one unique monster */
-		if (r_ptr->flags1 & RF1_UNIQUE) r_ptr->max_num = 1;
+		if (r_ptr->flags1 & (RF1_UNIQUE)) r_ptr->max_num = 1;
 
 		/* Hack -- No ghosts */
 		if (i == MAX_R_IDX-1) r_ptr->max_num = 0;
@@ -2553,7 +2803,7 @@ static errr rd_savefile_old_aux(void)
 		rd_lore_old(tmp16u);
 
 		/* Hack -- Prevent fake kills */
-		if (r_ptr->flags1 & RF1_UNIQUE)
+		if (r_ptr->flags1 & (RF1_UNIQUE))
 		{
 			/* Hack -- Note living uniques */
 			if (r_ptr->max_num != 0) r_ptr->r_pkills = 0;
@@ -2571,11 +2821,16 @@ static errr rd_savefile_old_aux(void)
 	note("Loaded extra information");
 
 
-	/* XXX XXX Initialize the race/class */
+	/* XXX XXX XXX Important!!! */
+
+	/* Initialize the sex */
+	sp_ptr = &sex_info[p_ptr->psex];
+
+	/* Initialize the race/class */
 	rp_ptr = &race_info[p_ptr->prace];
 	cp_ptr = &class_info[p_ptr->pclass];
 
-	/* XXX XXX Important -- Initialize the magic */
+	/* Initialize the magic */
 	mp_ptr = &magic_info[p_ptr->pclass];
 
 
@@ -2584,7 +2839,7 @@ static errr rd_savefile_old_aux(void)
 	{
 		object_kind *k_ptr = &k_info[i];
 
-		/* XXX XXX Hack -- learn about "obvious" items */
+		/* Hack -- learn about "obvious" items */
 		if (k_ptr->level < p_ptr->max_dlv) k_ptr->aware = TRUE;
 	}
 
@@ -2593,7 +2848,7 @@ static errr rd_savefile_old_aux(void)
 	rd_inventory_old();
 
 
-	/* Read spell info */
+	/* Read spell flags */
 	rd_u32b(&spell_learned1);
 	rd_u32b(&spell_worked1);
 	rd_u32b(&spell_forgotten1);
@@ -2601,6 +2856,7 @@ static errr rd_savefile_old_aux(void)
 	rd_u32b(&spell_worked2);
 	rd_u32b(&spell_forgotten2);
 
+	/* Read spell order */
 	for (i = 0; i < 64; i++)
 	{
 		rd_byte(&spell_order[i]);
@@ -2616,13 +2872,6 @@ static errr rd_savefile_old_aux(void)
 	rd_u32b(&seed_flavor);
 	rd_u32b(&seed_town);
 
-	/* Paranoia */
-	if (!seed_flavor && !seed_town)
-	{
-		note("Illegal random seeds!");
-		return (1);
-	}
-
 	/* Old messages */
 	rd_messages_old();
 
@@ -2634,7 +2883,7 @@ static errr rd_savefile_old_aux(void)
 	/* Read the player_hp array */
 	for (i = 0; i < 50; i++) rd_s16b(&player_hp[i]);
 
-	/* Hack -- Version 2.6.2 did silly things */
+	/* Strip silly hitpoint information */
 	if (!older_than(2, 6, 2)) strip_bytes(98);
 
 	note("Loaded some more information");
@@ -2691,10 +2940,10 @@ static errr rd_savefile_old_aux(void)
 	r_info[MAX_R_IDX-3].r_pkills = 0;
 
 
-	/* Add a special quest XXX XXX XXX */
+	/* Add first quest XXX XXX XXX */
 	q_list[0].level = 99;
 
-	/* Add a second quest XXX XXX XXX */
+	/* Add second quest XXX XXX XXX */
 	q_list[1].level = 100;
 
 	/* Reset third quest XXX XXX XXX */

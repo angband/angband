@@ -33,11 +33,11 @@
 
 
 /*
- * Current version number of Angband: 2.8.0
+ * Current version number of Angband: 2.8.1
  */
 #define VERSION_MAJOR	2
 #define VERSION_MINOR	8
-#define VERSION_PATCH	0
+#define VERSION_PATCH	1
 
 /*
  * This value is not currently used
@@ -80,6 +80,11 @@
  * Total number of owners per store (see "store.c", etc)
  */
 #define MAX_OWNERS	4
+
+/*
+ * Maximum number of player "sex" types (see "table.c", etc)
+ */
+#define MAX_SEXES            2
 
 /*
  * Maximum number of player "race" types (see "table.c", etc)
@@ -353,6 +358,12 @@
 #define A_DEX	3
 #define A_CON	4
 #define A_CHR	5
+
+/*
+ * Player sex constants (hard-coded by save-files, arrays, etc)
+ */
+#define SEX_FEMALE		0
+#define SEX_MALE		1
 
 /*
  * Player race constants (hard-coded by save-files, arrays, etc)
@@ -1378,6 +1389,19 @@
 #define ENCH_TODAM   0x02
 #define ENCH_TOAC    0x04
 
+/*
+ * Bit flags for the "target_set" function XXX XXX XXX
+ *
+ *	KILL: Target monsters
+ *	LOOK: Describe grid fully
+ *	XTRA: Currently unused flag
+ *	GRID: Select from all grids
+ */
+#define TARGET_KILL		0x01
+#define TARGET_LOOK		0x02
+#define TARGET_XTRA		0x04
+#define TARGET_GRID		0x08
+
 
 /*
  * Some bit-flags for the "smart" field
@@ -1648,16 +1672,28 @@
 
 
 /*
- * Special "Item Flags"
+ * Special Object Flags
  */
-#define ID_SENSE	0x01	/* Item has been "sensed" */
-#define ID_FIXED	0x02	/* Item has been "haggled" */
-#define ID_EMPTY	0x04	/* Item charges are known */
-#define ID_KNOWN	0x08	/* Item abilities are known */
-#define ID_RUMOUR	0x10	/* Item background is known */
-#define ID_MENTAL	0x20	/* Item information is known */
-#define ID_CURSED	0x40	/* Item is temporarily cursed */
-#define ID_BROKEN	0x80	/* Item is permanently worthless */
+#define IDENT_SENSE		0x01	/* Item has been "sensed" */
+#define IDENT_FIXED		0x02	/* Item has been "haggled" */
+#define IDENT_EMPTY		0x04	/* Item charges are known */
+#define IDENT_KNOWN		0x08	/* Item abilities are known */
+#define IDENT_RUMOUR	0x10	/* Item background is known */
+#define IDENT_MENTAL	0x20	/* Item information is known */
+#define IDENT_CURSED	0x40	/* Item is temporarily cursed */
+#define IDENT_BROKEN	0x80	/* Item is permanently worthless */
+
+
+
+/*
+ * Special Monster Flags (all temporary)
+ */
+#define MFLAG_VIEW	0x01	/* Monster is in line of sight */
+/* xxx */
+#define MFLAG_BORN	0x10	/* Monster is still being born */
+#define MFLAG_NICE	0x20	/* Monster is still being nice */
+#define MFLAG_SHOW	0x40	/* Monster is recently memorized */
+#define MFLAG_MARK	0x80	/* Monster is currently memorized */
 
 
 
@@ -2107,12 +2143,9 @@
 
 
 /*
- * Hack -- Old-style names
+ * Hack -- The main "screen"
  */
-#define term_screen	(ang_term[0])
-#define term_mirror	(ang_term[1])
-#define term_recall	(ang_term[2])
-#define term_choice	(ang_term[3])
+#define term_screen	(angband_term[0])
 
 
 /*
@@ -2134,7 +2167,7 @@
  * Test Two -- Check for "Easy Know" + "Aware"
  */
 #define object_known_p(T) \
-    (((T)->ident & ID_KNOWN) || \
+    (((T)->ident & (IDENT_KNOWN)) || \
      (k_info[(T)->k_idx].easy_know && k_info[(T)->k_idx].aware))
 
 
@@ -2178,13 +2211,13 @@
  * Broken items.
  */
 #define broken_p(T) \
-        ((T)->ident & ID_BROKEN)
+        ((T)->ident & (IDENT_BROKEN))
 
 /*
  * Cursed items.
  */
 #define cursed_p(T) \
-        ((T)->ident & ID_CURSED)
+        ((T)->ident & (IDENT_CURSED))
 
 
 
@@ -2276,26 +2309,6 @@
 
 
 /*
- * Is a given location "valid" for placing things?
- *
- * Permanent grids are never "valid" (see above).
- *
- * Hack -- a grid with an artifact in it is never valid.
- *
- * This function is often "combined" with "cave_floor_bold(Y,X)"
- * or one of the other similar macros above.
- *
- * Line 1 -- forbid perma-grids
- * Line 2-3 -- forbid grids containing artifacts
- */
-#define cave_valid_bold(Y,X) \
-    (!cave_perma_bold(Y,X) && \
-     (!cave[Y][X].o_idx || \
-      !artifact_p(&o_list[cave[Y][X].o_idx])))
-
-
-
-/*
  * Grid based version of "cave_floor_bold()"
  */
 #define cave_floor_grid(C) \
@@ -2338,15 +2351,6 @@
       ((C)->feat <= FEAT_SHOP_TAIL)))
 
 
-/*
- * Grid based version of "cave_valid_bold()"
- */
-#define cave_valid_grid(C) \
-    (!cave_perma_grid(C) && \
-     (!(C)->o_idx || \
-      !artifact_p(&o_list[(C)->o_idx])))
-
-
 
 /*
  * Determine if a "legal" grid is within "los" of the player
@@ -2354,7 +2358,7 @@
  * Note the use of comparison to zero to force a "boolean" result
  */
 #define player_has_los_bold(Y,X) \
-    ((cave[Y][X].info & CAVE_VIEW) != 0)
+    ((cave[Y][X].info & (CAVE_VIEW)) != 0)
 
 
 
@@ -2405,18 +2409,35 @@ extern int PlayerUID;
  *
  * Some "sound" constants for "Term_xtra(TERM_XTRA_SOUND, val)"
  */
-#define SOUND_HIT	1
-#define SOUND_MISS	2
-#define SOUND_FLEE	3
-#define SOUND_DROP	4
-#define SOUND_KILL	5
-#define SOUND_LEVEL	6
-#define SOUND_DEATH	7
+#define SOUND_HIT	    1
+#define SOUND_MISS	    2
+#define SOUND_FLEE	    3
+#define SOUND_DROP	    4
+#define SOUND_KILL	    5
+#define SOUND_LEVEL	    6
+#define SOUND_DEATH	    7
+#define SOUND_STUDY     8
+#define SOUND_TELEPORT  9
+#define SOUND_SHOOT     10
+#define SOUND_QUAFF     11
+#define SOUND_ZAP       12
+#define SOUND_WALK      13
+#define SOUND_TPOTHER   14
+#define SOUND_HITWALL   15
+#define SOUND_EAT       16
+#define SOUND_STORE1    17
+#define SOUND_STORE2    18
+#define SOUND_STORE3    19
+#define SOUND_STORE4    20
+#define SOUND_DIG       21
+#define SOUND_OPENDOOR  22
+#define SOUND_SHUTDOOR  23
+#define SOUND_TPLEVEL   24
 
 /*
  * Mega-Hack -- maximum known sounds
  */
-#define SOUND_MAX	8
+#define SOUND_MAX 25
 
 
 /*** Hack ***/

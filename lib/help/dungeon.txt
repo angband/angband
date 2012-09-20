@@ -16,15 +16,15 @@ picked up such as treasure, weapons, magical devices, etc; and creatures
 which may or may not move about the dungeon, but are mostly harmful to your
 character's well being.
 
-Some symbols can be in more than one category.  Also note that treasure may
-be embedded in a wall, and the wall must be removed before the treasure can
-be picked up.
+Some symbols are used to represent more than one type of entity, and some
+symbols are used to represent entities in more than one category.  The "@"
+symbol (by default) is used to represent the character.
 
 It will not be necessary to remember all of the symbols and their meanings.
 The "slash" command ("/") will identify any character appearing on your map
 (see "commands.txt").
 
-Note that you can use a "pref" file to change any of these symbols to
+Note that you can use a "user pref file" to change any of these symbols to
 something you are more comfortable with.
    
  
@@ -33,7 +33,7 @@ something you are more comfortable with.
   .   A floor space                   1   Entrance to General Store
   .   A trap (hidden)                 2   Entrance to Armoury
   ^   A trap (known)                  3   Entrance to Weapon Smith
-  ;   A loose floor stone             4   Entrance to Temple
+  ;   A glyph of warding              4   Entrance to Temple
   '   An open door                    5   Entrance to Alchemy Shop
   '   A broken door                   6   Entrance to Magic Shop
   <   A staircase up                  7   Entrance to the Black Market
@@ -58,9 +58,8 @@ something you are more comfortable with.
   =   A ring                          (   Soft armour
   "   An amulet                       [   Hard armour
   $   Gold or gems                    ]   Misc. armour
-  ~   Junk, Skeletons, etc            )   A shield
-  ~   Lites, Tools, Chests, etc
- 
+  ~   Lites, Tools, Chests, etc       )   A shield
+  ~   Junk, Sticks, Skeletons, etc    &   (unused)
  
  
                              Monsters
@@ -75,10 +74,10 @@ something you are more comfortable with.
             g   Golem               G   Ghost
             h   Humanoids           H   Hybrid
             i   Icky-Thing          I   Insect
-            j   Jelly               J   (unused)
+            j   Jelly               J   Snake
             k   Kobold              K   Killer Beetle
             l   Giant Louse         L   Lich
-            m   Mold                M   Mummy
+            m   Mold                M   Multi-Headed Hydra
             n   Naga                N   (unused)
             o   Orc                 O   Ogre
             p   Human               P   Giant Human(oid)
@@ -88,17 +87,17 @@ something you are more comfortable with.
             t   Townsperson         T   Troll
             u   Minor demon         U   Major demon
             v   Vortex              V   Vampire
-            w   Worm or Worm Mass   W   Wight/Wraith.
+            w   Worm or Worm Mass   W   Wight/Wraith
             x   (unused)            X   Xorn/Xaren
             y   Yeek                Y   Yeti
-            z   Zombie              Z   Zephyr Hound
+            z   Zombie/Mummy        Z   Zephyr Hound
 
 
 
 === The Town Level ===
 
 The town level is where you will begin your adventure.  The town consists of
-eight buildings each with an entrance, some townspeople, and a wall which
+eight buildings (each with an entrance), some townspeople, and a wall which
 surrounds the town.  The first time you are in town it will be daytime, but
 note that the sun rises and falls (rather instantly) as time passes.
 
@@ -121,16 +120,10 @@ experience is awarded for killing the town inhabitants, though you may
 acquire treasure.
 
 
-=== Supplies ===
-
-Your character will begin his adventure with some supplies already on him.
-Use the "Inventory" command ("i") to check what these supplies are.  It may
-be necessary to buy other supplies before continuing into the dungeon,
-however, so be sure to enter each of the stores to see what they have for
-sale.
-
-
 === Town Buildings ===
+
+Your character will begin his adventure with some basic supplies, and some
+extra gold with which to purchase more supplies at the town stores.
 
 You may enter any open store and barter with the owner for items you can
 afford.  When bartering, you enter prices you will pay (or accept) for some
@@ -158,7 +151,9 @@ for any one item, and the store inventory, listed along with tentative
 prices, which will become "fixed" (at the "final offer") should you ever
 manage to haggle a store owner down to his final offer.
 
-You will also see an (incomplete) list of available commands.
+You will also see an (incomplete) list of available commands.  Note that
+many of the commands which work in the dungeon work in the stores as well,
+but some do not, especially those which involve "using" objects.
 
 Stores do not always have everything in stock.  As the game progresses,
 they may get new items so check from time to time.  Also, if you sell them
@@ -166,7 +161,9 @@ an item, it may get sold to a customer while you are adventuring, so don't
 always expect to be able to get back everything you have sold.  Note that
 the inventory of a store will not change while you are in town, even if you
 save the game and return.  You must spend time in the dungeon if you wish
-the store owner to clear out his stock and acquire new items.
+the store owner to clear out his stock and acquire new items.  If you have
+a lot of spare gold, you can purchase every item in a store, which will
+induce the store owner to bring out new stock, and perhaps even retire.
 
 Store owners will not buy harmful or useless items.  If an object is
 unidentified, they will pay you some base price for it.  Once they have
@@ -174,7 +171,6 @@ bought it they will immediately identify the object.  If it is a good object,
 they will add it to their inventory.  If it was a bad bargain, they simply
 throw the item away.  In any case, you may receive some knowledge of the
 item if another is encountered.
-
 
 The General Store ("1")
      The General Store sells foods, drinks, some clothing, torches, lamps,

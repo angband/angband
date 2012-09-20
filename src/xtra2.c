@@ -1783,104 +1783,163 @@ static int get_coin_type(monster_race *r_ptr)
  * Note that only the player can induce "monster_death()" on Uniques.
  * Thus (for now) all Quest monsters should be Uniques.
  *
- * Note that in a few, very rare, circumstances, killing Morgoth
- * may result in the Iron Crown of Morgoth crushing the Lead-Filled
- * Mace "Grond", since the Iron Crown is more important.
+ * Note that monsters can now carry objects, and when a monster dies,
+ * it drops all of its objects, which may disappear in crowded rooms.
  */
 void monster_death(int m_idx)
 {
-	int			i, j, y, x, ny, nx;
+	int i, j, y, x, ny, nx;
 
-	int			dump_item = 0;
-	int			dump_gold = 0;
+	int dump_item = 0;
+	int dump_gold = 0;
 
-	int			number = 0;
-	int			total = 0;
+	int number = 0;
+	int total = 0;
 
-	cave_type		*c_ptr;
+	s16b this_o_idx, next_o_idx = 0;
 
-	monster_type	*m_ptr = &m_list[m_idx];
+	monster_type *m_ptr = &m_list[m_idx];
 
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
-	bool visible = (m_ptr->ml || (r_ptr->flags1 & RF1_UNIQUE));
+	bool visible = (m_ptr->ml || (r_ptr->flags1 & (RF1_UNIQUE)));
 
-	bool good = (r_ptr->flags1 & RF1_DROP_GOOD) ? TRUE : FALSE;
-	bool great = (r_ptr->flags1 & RF1_DROP_GREAT) ? TRUE : FALSE;
+	bool good = (r_ptr->flags1 & (RF1_DROP_GOOD)) ? TRUE : FALSE;
+	bool great = (r_ptr->flags1 & (RF1_DROP_GREAT)) ? TRUE : FALSE;
 
-	bool do_gold = (!(r_ptr->flags1 & RF1_ONLY_ITEM));
-	bool do_item = (!(r_ptr->flags1 & RF1_ONLY_GOLD));
+	bool do_gold = (!(r_ptr->flags1 & (RF1_ONLY_ITEM)));
+	bool do_item = (!(r_ptr->flags1 & (RF1_ONLY_GOLD)));
 
 	int force_coin = get_coin_type(r_ptr);
+
+	object_type forge;
+	object_type *q_ptr;
 
 
 	/* Get the location */
 	y = m_ptr->fy;
 	x = m_ptr->fx;
 
+
+	/* Drop objects being carried */
+	for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx)
+	{
+		object_type *o_ptr;
+		
+		/* Acquire object */
+		o_ptr = &o_list[this_o_idx];
+
+		/* Acquire next object */
+		next_o_idx = o_ptr->next_o_idx;
+
+		/* Paranoia */
+		o_ptr->held_m_idx = 0;
+
+		/* Get local object */
+		q_ptr = &forge;
+
+		/* Copy the object */
+		object_copy(q_ptr, o_ptr);
+
+		/* Delete the object */
+		delete_object_idx(this_o_idx);
+
+		/* Drop it */
+		drop_near(q_ptr, -1, y, x);
+	}
+
+	/* Forget objects */
+	m_ptr->hold_o_idx = 0;
+
+
+	/* Mega-Hack -- drop "winner" treasures */
+	if (r_ptr->flags1 & (RF1_DROP_CHOSEN))
+	{
+		/* Get local object */
+		q_ptr = &forge;
+
+		/* Mega-Hack -- Prepare to make "Grond" */
+		object_prep(q_ptr, lookup_kind(TV_HAFTED, SV_GROND));
+
+		/* Mega-Hack -- Mark this item as "Grond" */
+		q_ptr->name1 = ART_GROND;
+
+		/* Mega-Hack -- Actually create "Grond" */
+		apply_magic(q_ptr, -1, TRUE, TRUE, TRUE);
+
+		/* Drop it in the dungeon */
+		drop_near(q_ptr, -1, y, x);
+
+
+		/* Get local object */
+		q_ptr = &forge;
+
+		/* Mega-Hack -- Prepare to make "Morgoth" */
+		object_prep(q_ptr, lookup_kind(TV_CROWN, SV_MORGOTH));
+
+		/* Mega-Hack -- Mark this item as "Morgoth" */
+		q_ptr->name1 = ART_MORGOTH;
+
+		/* Mega-Hack -- Actually create "Morgoth" */
+		apply_magic(q_ptr, -1, TRUE, TRUE, TRUE);
+
+		/* Drop it in the dungeon */
+		drop_near(q_ptr, -1, y, x);
+	}
+
+
 	/* Determine how much we can drop */
-	if ((r_ptr->flags1 & RF1_DROP_60) && (rand_int(100) < 60)) number++;
-	if ((r_ptr->flags1 & RF1_DROP_90) && (rand_int(100) < 90)) number++;
-	if (r_ptr->flags1 & RF1_DROP_1D2) number += damroll(1, 2);
-	if (r_ptr->flags1 & RF1_DROP_2D2) number += damroll(2, 2);
-	if (r_ptr->flags1 & RF1_DROP_3D2) number += damroll(3, 2);
-	if (r_ptr->flags1 & RF1_DROP_4D2) number += damroll(4, 2);
+	if ((r_ptr->flags1 & (RF1_DROP_60)) && (rand_int(100) < 60)) number++;
+	if ((r_ptr->flags1 & (RF1_DROP_90)) && (rand_int(100) < 90)) number++;
+	if (r_ptr->flags1 & (RF1_DROP_1D2)) number += damroll(1, 2);
+	if (r_ptr->flags1 & (RF1_DROP_2D2)) number += damroll(2, 2);
+	if (r_ptr->flags1 & (RF1_DROP_3D2)) number += damroll(3, 2);
+	if (r_ptr->flags1 & (RF1_DROP_4D2)) number += damroll(4, 2);
+
+	/* Hack -- handle creeping coins */
+	coin_type = force_coin;
+
+	/* Average dungeon and monster levels */
+	object_level = (dun_level + r_ptr->level) / 2;
 
 	/* Drop some objects */
 	for (j = 0; j < number; j++)
 	{
-		/* Try 20 times per item, increasing range */
-		for (i = 0; i < 20; ++i)
+		/* Get local object */
+		q_ptr = &forge;
+
+		/* Wipe the object */
+		object_wipe(q_ptr);
+
+		/* Make Gold */
+		if (do_gold && (!do_item || (rand_int(100) < 50)))
 		{
-			int d = (i + 14) / 15;
+			/* Make some gold */
+			if (!make_gold(q_ptr)) continue;
 
-			/* Pick a "correct" location */
-			scatter(&ny, &nx, y, x, d, 0);
-
-			/* Must be "clean" floor grid */
-			if (!cave_clean_bold(ny, nx)) continue;
-
-			/* Hack -- handle creeping coins */
-			coin_type = force_coin;
-
-			/* Average dungeon and monster levels */
-			object_level = (dun_level + r_ptr->level) / 2;
-
-			/* Place Gold */
-			if (do_gold && (!do_item || (rand_int(100) < 50)))
-			{
-				place_gold(ny, nx);
-				if (player_can_see_bold(ny, nx)) dump_gold++;
-			}
-
-			/* Place Object */
-			else
-			{
-				place_object(ny, nx, good, great);
-				if (player_can_see_bold(ny, nx)) dump_item++;
-			}
-
-			/* Reset the object level */
-			object_level = dun_level;
-
-			/* Reset "coin" type */
-			coin_type = 0;
-
-			/* Notice */
-			note_spot(ny, nx);
-
-			/* Display */
-			lite_spot(ny, nx);
-
-			/* Under the player */
-			if ((ny == py) && (nx == px))
-			{
-				msg_print("You feel something roll beneath your feet.");
-			}
-
-			break;
+			/* XXX XXX XXX */
+			dump_gold++;
 		}
+
+		/* Make Object */
+		else
+		{
+			/* Make an object */
+			if (!make_object(q_ptr, good, great)) continue;
+
+			/* XXX XXX XXX */
+			dump_item++;
+		}
+
+		/* Drop it in the dungeon */
+		drop_near(q_ptr, -1, y, x);
 	}
+
+	/* Reset the object level */
+	object_level = dun_level;
+
+	/* Reset "coin" type */
+	coin_type = 0;
 
 
 	/* Take note of any dropped treasure */
@@ -1891,42 +1950,8 @@ void monster_death(int m_idx)
 	}
 
 
-	/* Mega-Hack -- drop "winner" treasures */
-	if (r_ptr->flags1 & RF1_DROP_CHOSEN)
-	{
-		/* Hack -- an "object holder" */
-		object_type prize;
-
-
-		/* Mega-Hack -- Prepare to make "Grond" */
-		invcopy(&prize, lookup_kind(TV_HAFTED, SV_GROND));
-
-		/* Mega-Hack -- Mark this item as "Grond" */
-		prize.name1 = ART_GROND;
-
-		/* Mega-Hack -- Actually create "Grond" */
-		apply_magic(&prize, -1, TRUE, TRUE, TRUE);
-
-		/* Drop it in the dungeon */
-		drop_near(&prize, -1, y, x);
-
-
-		/* Mega-Hack -- Prepare to make "Morgoth" */
-		invcopy(&prize, lookup_kind(TV_CROWN, SV_MORGOTH));
-
-		/* Mega-Hack -- Mark this item as "Morgoth" */
-		prize.name1 = ART_MORGOTH;
-
-		/* Mega-Hack -- Actually create "Morgoth" */
-		apply_magic(&prize, -1, TRUE, TRUE, TRUE);
-
-		/* Drop it in the dungeon */
-		drop_near(&prize, -1, y, x);
-	}
-
-
 	/* Only process "Quest Monsters" */
-	if (!(r_ptr->flags1 & RF1_QUESTOR)) return;
+	if (!(r_ptr->flags1 & (RF1_QUESTOR))) return;
 
 
 	/* Hack -- Mark quests as complete */
@@ -1955,23 +1980,14 @@ void monster_death(int m_idx)
 			y = ny; x = nx;
 		}
 
-		/* Delete any old object XXX XXX XXX */
+		/* XXX XXX XXX */
 		delete_object(y, x);
 
 		/* Explain the stairway */
 		msg_print("A magical stairway appears...");
 
-		/* Access the grid */
-		c_ptr = &cave[y][x];
-
 		/* Create stairs down */
-		c_ptr->feat = FEAT_MORE;
-
-		/* Note the spot */
-		note_spot(y, x);
-
-		/* Draw the spot */
-		lite_spot(y, x);
+		cave_set_feat(y, x, FEAT_MORE);
 
 		/* Remember to update everything */
 		p_ptr->update |= (PU_VIEW | PU_LITE | PU_FLOW | PU_MONSTERS);
@@ -2032,7 +2048,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 
 	monster_race	*r_ptr = &r_info[m_ptr->r_idx];
 
-	s32b		new_exp, new_exp_frac;
+	s32b		div, new_exp, new_exp_frac;
 
 
 	/* Redraw (later) if needed */
@@ -2069,9 +2085,9 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 		}
 
 		/* Death by Physical attack -- non-living monster */
-		else if ((r_ptr->flags3 & RF3_DEMON) ||
-		         (r_ptr->flags3 & RF3_UNDEAD) ||
-		         (r_ptr->flags2 & RF2_STUPID) ||
+		else if ((r_ptr->flags3 & (RF3_DEMON)) ||
+		         (r_ptr->flags3 & (RF3_UNDEAD)) ||
+		         (r_ptr->flags2 & (RF2_STUPID)) ||
 		         (strchr("Evg", r_ptr->d_char)))
 		{
 			msg_format("You have destroyed %s.", m_name);
@@ -2083,10 +2099,15 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 			msg_format("You have slain %s.", m_name);
 		}
 
-		/* Give some experience */
-		new_exp = ((long)r_ptr->mexp * r_ptr->level) / p_ptr->lev;
-		new_exp_frac = ((((long)r_ptr->mexp * r_ptr->level) % p_ptr->lev)
-		                * 0x10000L / p_ptr->lev) + p_ptr->exp_frac;
+		/* Maximum player level */
+		div = p_ptr->max_plv;
+
+		/* Give some experience for the kill */
+		new_exp = ((long)r_ptr->mexp * r_ptr->level) / div;
+
+		/* Handle fractional experience */
+		new_exp_frac = ((((long)r_ptr->mexp * r_ptr->level) % div)
+		                * 0x10000L / div) + p_ptr->exp_frac;
 
 		/* Keep track of experience */
 		if (new_exp_frac >= 0x10000L)
@@ -2106,10 +2127,10 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 		monster_death(m_idx);
 
 		/* When the player kills a Unique, it stays dead */
-		if (r_ptr->flags1 & RF1_UNIQUE) r_ptr->max_num = 0;
+		if (r_ptr->flags1 & (RF1_UNIQUE)) r_ptr->max_num = 0;
 
 		/* Recall even invisible uniques or winners */
-		if (m_ptr->ml || (r_ptr->flags1 & RF1_UNIQUE))
+		if (m_ptr->ml || (r_ptr->flags1 & (RF1_UNIQUE)))
 		{
 			/* Count kills this life */
 			if (r_ptr->r_pkills < MAX_SHORT) r_ptr->r_pkills++;
@@ -2118,7 +2139,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 			if (r_ptr->r_tkills < MAX_SHORT) r_ptr->r_tkills++;
 
 			/* Hack -- Auto-recall */
-			recent_track(m_ptr->r_idx);
+			monster_race_track(m_ptr->r_idx);
 		}
 
 		/* Delete the monster */
@@ -2158,7 +2179,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 	}
 
 	/* Sometimes a monster gets scared by damage */
-	if (!m_ptr->monfear && !(r_ptr->flags3 & RF3_NO_FEAR))
+	if (!m_ptr->monfear && !(r_ptr->flags3 & (RF3_NO_FEAR)))
 	{
 		int		percentage;
 
@@ -2183,6 +2204,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 	}
 
 #endif
+
 
 	/* Not dead yet */
 	return (FALSE);
@@ -2276,8 +2298,8 @@ cptr look_mon_desc(int m_idx)
 
 
 	/* Determine if the monster is "living" (vs "undead") */
-	if (r_ptr->flags3 & RF3_UNDEAD) living = FALSE;
-	if (r_ptr->flags3 & RF3_DEMON) living = FALSE;
+	if (r_ptr->flags3 & (RF3_UNDEAD)) living = FALSE;
+	if (r_ptr->flags3 & (RF3_DEMON)) living = FALSE;
 	if (strchr("Egv", r_ptr->d_char)) living = FALSE;
 
 
@@ -2377,64 +2399,6 @@ void ang_sort(vptr u, vptr v, int n)
 
 
 
-/*
- * Sorting hook -- comp function -- by "distance to player"
- *
- * We use "u" and "v" to point to arrays of "x" and "y" positions,
- * and sort the arrays by double-distance to the player.
- */
-bool ang_sort_comp_distance(vptr u, vptr v, int a, int b)
-{
-	byte *x = (byte*)(u);
-	byte *y = (byte*)(v);
-
-	int da, db, kx, ky;
-
-	/* Absolute distance components */
-	kx = x[a]; kx -= px; kx = ABS(kx);
-	ky = y[a]; ky -= py; ky = ABS(ky);
-
-	/* Approximate Double Distance to the first point */
-	da = ((kx > ky) ? (kx + kx + ky) : (ky + ky + kx));
-
-	/* Absolute distance components */
-	kx = x[b]; kx -= px; kx = ABS(kx);
-	ky = y[b]; ky -= py; ky = ABS(ky);
-
-	/* Approximate Double Distance to the first point */
-	db = ((kx > ky) ? (kx + kx + ky) : (ky + ky + kx));
-
-	/* Compare the distances */
-	return (da <= db);
-}
-
-
-/*
- * Sorting hook -- swap function -- by "distance to player"
- *
- * We use "u" and "v" to point to arrays of "x" and "y" positions,
- * and sort the arrays by distance to the player.
- */
-void ang_sort_swap_distance(vptr u, vptr v, int a, int b)
-{
-	byte *x = (byte*)(u);
-	byte *y = (byte*)(v);
-
-	byte temp;
-
-	/* Swap "x" */
-	temp = x[a];
-	x[a] = x[b];
-	x[b] = temp;
-
-	/* Swap "y" */
-	temp = y[a];
-	y[a] = y[b];
-	y[b] = temp;
-}
-
-
-
 
 
 /*** Targetting Code ***/
@@ -2458,6 +2422,9 @@ bool target_able(int m_idx)
 {
 	monster_type *m_ptr = &m_list[m_idx];
 
+	/* Monster must be alive */
+	if (!m_ptr->r_idx) return (FALSE);
+
 	/* Monster must be visible */
 	if (!m_ptr->ml) return (FALSE);
 
@@ -2468,7 +2435,7 @@ bool target_able(int m_idx)
 	if (p_ptr->image) return (FALSE);
 
 	/* XXX XXX XXX Hack -- Never target trappers */
-	/* if (CLEAR_ATTR && CLEAR_CHAR) return (FALSE); */
+	/* if (CLEAR_ATTR && (CLEAR_CHAR)) return (FALSE); */
 
 	/* Assume okay */
 	return (TRUE);
@@ -2511,9 +2478,67 @@ bool target_okay(void)
 
 
 /*
+ * Sorting hook -- comp function -- by "distance to player"
+ *
+ * We use "u" and "v" to point to arrays of "x" and "y" positions,
+ * and sort the arrays by double-distance to the player.
+ */
+static bool ang_sort_comp_distance(vptr u, vptr v, int a, int b)
+{
+	byte *x = (byte*)(u);
+	byte *y = (byte*)(v);
+
+	int da, db, kx, ky;
+
+	/* Absolute distance components */
+	kx = x[a]; kx -= px; kx = ABS(kx);
+	ky = y[a]; ky -= py; ky = ABS(ky);
+
+	/* Approximate Double Distance to the first point */
+	da = ((kx > ky) ? (kx + kx + ky) : (ky + ky + kx));
+
+	/* Absolute distance components */
+	kx = x[b]; kx -= px; kx = ABS(kx);
+	ky = y[b]; ky -= py; ky = ABS(ky);
+
+	/* Approximate Double Distance to the first point */
+	db = ((kx > ky) ? (kx + kx + ky) : (ky + ky + kx));
+
+	/* Compare the distances */
+	return (da <= db);
+}
+
+
+/*
+ * Sorting hook -- swap function -- by "distance to player"
+ *
+ * We use "u" and "v" to point to arrays of "x" and "y" positions,
+ * and sort the arrays by distance to the player.
+ */
+static void ang_sort_swap_distance(vptr u, vptr v, int a, int b)
+{
+	byte *x = (byte*)(u);
+	byte *y = (byte*)(v);
+
+	byte temp;
+
+	/* Swap "x" */
+	temp = x[a];
+	x[a] = x[b];
+	x[b] = temp;
+
+	/* Swap "y" */
+	temp = y[a];
+	y[a] = y[b];
+	y[b] = temp;
+}
+
+
+
+/*
  * Hack -- help "select" a location (see below)
  */
-s16b target_pick(int y1, int x1, int dy, int dx)
+static s16b target_pick(int y1, int x1, int dy, int dx)
 {
 	int i, v;
 
@@ -2563,24 +2588,486 @@ s16b target_pick(int y1, int x1, int dy, int dx)
 
 
 /*
- * Set a new target.  This code can be called from "get_aim_dir()"
+ * Hack -- determine if a given location is "interesting"
+ */
+static bool target_set_accept(int y, int x)
+{
+	cave_type *c_ptr;
+
+	s16b this_o_idx, next_o_idx = 0;
+
+
+	/* Player grid is always interesting */
+	if ((y == py) && (x == px)) return (TRUE);
+
+
+	/* Handle hallucination */
+	if (p_ptr->image) return (FALSE);
+
+
+	/* Examine the grid */
+	c_ptr = &cave[y][x];
+
+	/* Visible monsters */
+	if (c_ptr->m_idx)
+	{
+		monster_type *m_ptr = &m_list[c_ptr->m_idx];
+
+		/* Visible monsters */
+		if (m_ptr->ml) return (TRUE);
+	}
+
+	/* Scan all objects in the grid */
+	for (this_o_idx = c_ptr->o_idx; this_o_idx; this_o_idx = next_o_idx)
+	{
+		object_type *o_ptr;
+		
+		/* Acquire object */
+		o_ptr = &o_list[this_o_idx];
+
+		/* Acquire next object */
+		next_o_idx = o_ptr->next_o_idx;
+
+		/* Memorized object */
+		if (o_ptr->marked) return (TRUE);
+	}
+
+	/* Interesting memorized features */
+	if (c_ptr->info & (CAVE_MARK))
+	{
+		/* Notice glyphs */
+		if (c_ptr->feat == FEAT_GLYPH) return (TRUE);
+
+		/* Notice doors */
+		if (c_ptr->feat == FEAT_OPEN) return (TRUE);
+		if (c_ptr->feat == FEAT_BROKEN) return (TRUE);
+
+		/* Notice stairs */
+		if (c_ptr->feat == FEAT_LESS) return (TRUE);
+		if (c_ptr->feat == FEAT_MORE) return (TRUE);
+
+		/* Notice shops */
+		if ((c_ptr->feat >= FEAT_SHOP_HEAD) &&
+		    (c_ptr->feat <= FEAT_SHOP_TAIL)) return (TRUE);
+
+		/* Notice traps */
+		if ((c_ptr->feat >= FEAT_TRAP_HEAD) &&
+		    (c_ptr->feat <= FEAT_TRAP_TAIL)) return (TRUE);
+
+		/* Notice doors */
+		if ((c_ptr->feat >= FEAT_DOOR_HEAD) &&
+		    (c_ptr->feat <= FEAT_DOOR_TAIL)) return (TRUE);
+
+		/* Notice rubble */
+		if (c_ptr->feat == FEAT_RUBBLE) return (TRUE);
+
+		/* Notice veins with treasure */
+		if (c_ptr->feat == FEAT_MAGMA_K) return (TRUE);
+		if (c_ptr->feat == FEAT_QUARTZ_K) return (TRUE);
+	}
+
+	/* Nope */
+	return (FALSE);
+}
+
+
+/*
+ * Prepare the "temp" array for "target_set"
  *
- * The target must be on the current panel.  Consider the use of
+ * Return the number of target_able monsters in the set.
+ */
+static void target_set_prepare(int mode)
+{
+	int y, x;
+
+	/* Reset "temp" array */
+	temp_n = 0;
+
+	/* Scan the current panel */
+	for (y = panel_row_min; y <= panel_row_max; y++)
+	{
+		for (x = panel_col_min; x <= panel_col_max; x++)
+		{
+			cave_type *c_ptr = &cave[y][x];
+
+			/* Require line of sight, unless "look" is "expanded" */
+			if (!expand_look && !player_has_los_bold(y, x)) continue;
+
+			/* Require "interesting" contents */
+			if (!target_set_accept(y, x)) continue;
+
+			/* Require target_able monsters for "TARGET_KILL" */
+			if ((mode & (TARGET_KILL)) && !target_able(c_ptr->m_idx)) continue;
+
+			/* Save the location */
+			temp_x[temp_n] = x;
+			temp_y[temp_n] = y;
+			temp_n++;
+		}
+	}
+
+	/* Set the sort hooks */
+	ang_sort_comp = ang_sort_comp_distance;
+	ang_sort_swap = ang_sort_swap_distance;
+
+	/* Sort the positions */
+	ang_sort(temp_x, temp_y, temp_n);
+}
+
+
+/*
+ * Examine a grid, return a keypress.
+ *
+ * The "mode" argument contains the "TARGET_LOOK" bit flag, which
+ * indicates that the "space" key should scan through the contents
+ * of the grid, instead of simply returning immediately.  This lets
+ * the "look" command get complete information, without making the
+ * "target" command annoying.
+ *
+ * The "info" argument contains the "commands" which should be shown
+ * inside the "[xxx]" text.  This string must never be empty, or grids
+ * containing monsters will be displayed with an extra comma.
+ *
+ * Note that if a monster is in the grid, we update both the monster
+ * recall info and the health bar info to track that monster.
+ *
+ * Eventually, we may allow multiple objects per grid, or objects
+ * and terrain features in the same grid. XXX XXX XXX
+ *
+ * This function must handle blindness/hallucination.
+ */
+static int target_set_aux(int y, int x, int mode, cptr info)
+{
+	cave_type *c_ptr = &cave[y][x];
+
+	s16b this_o_idx, next_o_idx = 0;
+
+	cptr s1, s2, s3;
+
+	bool boring;
+
+	int feat;
+
+	int query;
+
+	char out_val[160];
+
+
+	/* Repeat forever */
+	while (1)
+	{
+		/* Paranoia */
+		query = ' ';
+
+		/* Assume boring */
+		boring = TRUE;
+
+		/* Default */
+		s1 = "You see ";
+		s2 = "";
+		s3 = "";
+
+		/* Hack -- under the player */
+		if ((y == py) && (x == px))
+		{
+			/* Description */
+			s1 = "You are ";
+			
+			/* Preposition */
+			s2 = "on ";
+		}
+
+
+		/* Hack -- hallucination */
+		if (p_ptr->image)
+		{
+			cptr name = "something strange";
+
+			/* Display a message */
+			sprintf(out_val, "%s%s%s%s [%s]", s1, s2, s3, name, info);
+			prt(out_val, 0, 0);
+			move_cursor_relative(y, x);
+			query = inkey();
+
+			/* Stop on everything but "return" */
+			if ((query != '\r') && (query != '\n')) break;
+			
+			/* Repeat forever */
+			continue;
+		}
+
+
+		/* Actual monsters */
+		if (c_ptr->m_idx)
+		{
+			monster_type *m_ptr = &m_list[c_ptr->m_idx];
+			monster_race *r_ptr = &r_info[m_ptr->r_idx];
+
+			/* Visible */
+			if (m_ptr->ml)
+			{
+				bool recall = FALSE;
+
+				char m_name[80];
+
+				/* Not boring */
+				boring = FALSE;
+
+				/* Get the monster name ("a kobold") */
+				monster_desc(m_name, m_ptr, 0x08);
+
+				/* Hack -- track this monster race */
+				monster_race_track(m_ptr->r_idx);
+
+				/* Hack -- health bar for this monster */
+				health_track(c_ptr->m_idx);
+
+				/* Hack -- handle stuff */
+				handle_stuff();
+
+				/* Interact */
+				while (1)
+				{
+					/* Recall */
+					if (recall)
+					{
+						/* Save */
+						Term_save();
+
+						/* Recall on screen */
+						screen_roff(m_ptr->r_idx);
+
+						/* Hack -- Complete the prompt (again) */
+						Term_addstr(-1, TERM_WHITE, format("  [r,%s]", info));
+					
+						/* Command */
+						query = inkey();
+
+						/* Restore */
+						Term_load();
+					}
+
+					/* Normal */
+					else
+					{
+						/* Describe, and prompt for recall */
+						sprintf(out_val, "%s%s%s%s (%s) [r,%s]",
+						        s1, s2, s3, m_name, look_mon_desc(c_ptr->m_idx), info);
+						prt(out_val, 0, 0);
+
+						/* Place cursor */
+						move_cursor_relative(y, x);
+					
+						/* Command */
+						query = inkey();
+					}
+
+					/* Normal commands */
+					if (query != 'r') break;
+
+					/* Toggle recall */
+					recall = !recall;
+				}
+
+				/* Always stop at "normal" keys */
+				if ((query != '\r') && (query != '\n') && (query != ' ')) break;
+
+				/* Sometimes stop at "space" key */
+				if ((query == ' ') && !(mode & (TARGET_LOOK))) break;
+
+				/* Change the intro */
+				s1 = "It is ";
+
+				/* Hack -- take account of gender */
+				if (r_ptr->flags1 & (RF1_FEMALE)) s1 = "She is ";
+				else if (r_ptr->flags1 & (RF1_MALE)) s1 = "He is ";
+
+				/* Use a preposition */
+				s2 = "carrying ";
+
+				/* Scan all objects being carried */
+				for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx)
+				{
+					char o_name[80];
+
+					object_type *o_ptr;
+				
+					/* Acquire object */
+					o_ptr = &o_list[this_o_idx];
+
+					/* Acquire next object */
+					next_o_idx = o_ptr->next_o_idx;
+
+					/* Obtain an object description */
+					object_desc(o_name, o_ptr, TRUE, 3);
+
+					/* Describe the object */
+					sprintf(out_val, "%s%s%s%s [%s]", s1, s2, s3, o_name, info);
+					prt(out_val, 0, 0);
+					move_cursor_relative(y, x);
+					query = inkey();
+
+					/* Always stop at "normal" keys */
+					if ((query != '\r') && (query != '\n') && (query != ' ')) break;
+
+					/* Sometimes stop at "space" key */
+					if ((query == ' ') && !(mode & (TARGET_LOOK))) break;
+
+					/* Change the intro */
+					s2 = "also carrying ";
+				}
+
+				/* Double break */
+				if (this_o_idx) break;
+
+				/* Use a preposition */
+				s2 = "on ";
+			}
+		}
+
+
+		/* Scan all objects in the grid */
+		for (this_o_idx = c_ptr->o_idx; this_o_idx; this_o_idx = next_o_idx)
+		{
+			object_type *o_ptr;
+		
+			/* Acquire object */
+			o_ptr = &o_list[this_o_idx];
+
+			/* Acquire next object */
+			next_o_idx = o_ptr->next_o_idx;
+
+			/* Describe it */
+			if (o_ptr->marked)
+			{
+				char o_name[80];
+
+				/* Not boring */
+				boring = FALSE;
+
+				/* Obtain an object description */
+				object_desc(o_name, o_ptr, TRUE, 3);
+
+				/* Describe the object */
+				sprintf(out_val, "%s%s%s%s [%s]", s1, s2, s3, o_name, info);
+				prt(out_val, 0, 0);
+				move_cursor_relative(y, x);
+				query = inkey();
+
+				/* Always stop at "normal" keys */
+				if ((query != '\r') && (query != '\n') && (query != ' ')) break;
+
+				/* Sometimes stop at "space" key */
+				if ((query == ' ') && !(mode & (TARGET_LOOK))) break;
+
+				/* Change the intro */
+				s1 = "It is ";
+
+				/* Plurals */
+				if (o_ptr->number != 1) s1 = "They are ";
+
+				/* Preposition */
+				s2 = "on ";
+			}
+		}
+
+		/* Double break */
+		if (this_o_idx) break;
+
+
+		/* Feature (apply "mimic") */
+		feat = f_info[c_ptr->feat].mimic;
+
+		/* Require knowledge about grid, or ability to see grid */
+		if (!(c_ptr->info & (CAVE_MARK)) && !player_can_see_bold(y,x))
+		{
+			/* Forget feature */
+			feat = FEAT_NONE;
+		}
+
+		/* Terrain feature if needed */
+		if (boring || (feat > FEAT_INVIS))
+		{
+			cptr name = f_name + f_info[feat].name;
+
+			/* Hack -- handle unknown grids */
+			if (feat == FEAT_NONE) name = "unknown grid";
+
+			/* Pick a prefix */
+			if (*s2 && (feat >= FEAT_DOOR_HEAD)) s2 = "in ";
+
+			/* Pick proper indefinite article */
+			s3 = (is_a_vowel(name[0])) ? "an " : "a ";
+
+			/* Hack -- special introduction for store doors */
+			if ((feat >= FEAT_SHOP_HEAD) && (feat <= FEAT_SHOP_TAIL))
+			{
+				s3 = "the entrance to the ";
+			}
+
+			/* Display a message */
+			sprintf(out_val, "%s%s%s%s [%s]", s1, s2, s3, name, info);
+			prt(out_val, 0, 0);
+			move_cursor_relative(y, x);
+			query = inkey();
+			
+			/* Always stop at "normal" keys */
+			if ((query != '\r') && (query != '\n') && (query != ' ')) break;
+		}
+			
+		/* Stop on everything but "return" */
+		if ((query != '\r') && (query != '\n')) break;
+	}
+
+	/* Keep going */
+	return (query);
+}
+
+
+
+
+/*
+ * Handle "target" and "look".
+ *
+ * Note that this code can be called from "get_aim_dir()".
+ *
+ * All locations must be on the current panel.  Consider the use of
  * "panel_bounds()" to allow "off-panel" targets, perhaps by using
  * some form of "scrolling" the map around the cursor.  XXX XXX XXX
- *
  * That is, consider the possibility of "auto-scrolling" the screen
  * while the cursor moves around.  This may require changes in the
- * "update_mon()" code to allow "visibility" even if off panel.
+ * "update_mon()" code to allow "visibility" even if off panel, and
+ * may require dynamic recalculation of the "temp" grid set.
  *
- * Hack -- targetting an "outer border grid" may be dangerous,
- * so this is not currently allowed.
+ * Hack -- targetting/observing an "outer border grid" may induce
+ * problems, so this is not currently allowed.
  *
- * You can now use the direction keys to move among legal monsters,
- * just like the new "look" function allows the use of direction
- * keys to move amongst interesting locations.
+ * The player can use the direction keys to move among "interesting"
+ * grids in a heuristic manner, or the "space", "+", and "-" keys to
+ * move through the "interesting" grids in a sequential manner, or
+ * can enter "location" mode, and use the direction keys to move one
+ * grid at a time in any direction.  The "t" (set target) command will
+ * only target a monster (as opposed to a location) if the monster is
+ * target_able and the "interesting" mode is being used.
+ *
+ * The current grid is described using the "look" method above, and
+ * a new command may be entered at any time, but note that if the
+ * "TARGET_LOOK" bit flag is set (or if we are in "location" mode,
+ * where "space" has no obvious meaning) then "space" will scan
+ * through the description of the current grid until done, instead
+ * of immediately jumping to the next "interesting" grid.  This
+ * allows the "target" command to retain its old semantics.
+ *
+ * The "*", "+", and "-" keys may always be used to jump immediately
+ * to the next (or previous) interesting grid, in the proper mode.
+ *
+ * The "return" key may always be used to scan through a complete
+ * grid description (forever).
+ *
+ * This command will cancel any old target, even if used from
+ * inside the "look" command.
  */
-bool target_set(void)
+bool target_set(int mode)
 {
 	int		i, d, m;
 
@@ -2593,48 +3080,21 @@ bool target_set(void)
 
 	char	query;
 
-	char	out_val[160];
-
+	char	info[80];
+	
 	cave_type		*c_ptr;
 
-	monster_type	*m_ptr;
-	monster_race	*r_ptr;
 
-
-	/* Go ahead and turn off target mode */
+	/* Cancel target */
 	target_who = 0;
 
-	/* Turn off health tracking */
-	health_track(0);
+
+	/* Cancel tracking */
+	/* health_track(0); */
 
 
-	/* Reset "temp" array */
-	temp_n = 0;
-
-	/* Collect "target-able" monsters */
-	for (i = 1; i < m_max; i++)
-	{
-		monster_type *m_ptr = &m_list[i];
-
-		/* Skip "dead" monsters */
-		if (!m_ptr->r_idx) continue;
-
-		/* Ignore "unreasonable" monsters */
-		if (!target_able(i)) continue;
-
-		/* Save this monster index */
-		temp_x[temp_n] = m_ptr->fx;
-		temp_y[temp_n] = m_ptr->fy;
-		temp_n++;
-	}
-
-	/* Set the sort hooks */
-	ang_sort_comp = ang_sort_comp_distance;
-	ang_sort_swap = ang_sort_swap_distance;
-
-	/* Sort the positions */
-	ang_sort(temp_x, temp_y, temp_n);
-
+	/* Prepare the "temp" array */
+	target_set_prepare(mode);
 
 	/* Start near the player */
 	m = 0;
@@ -2642,58 +3102,32 @@ bool target_set(void)
 	/* Interact */
 	while (!done)
 	{
-		/* Target monsters */
+		/* Interesting grids */
 		if (flag && temp_n)
 		{
 			y = temp_y[m];
 			x = temp_x[m];
 
+			/* Access */
 			c_ptr = &cave[y][x];
 
-			m_ptr = &m_list[c_ptr->m_idx];
-			r_ptr = &r_info[m_ptr->r_idx];
-
-			/* Hack -- Track that monster race */
-			recent_track(m_ptr->r_idx);
-
-			/* Hack -- Track that monster */
-			health_track(c_ptr->m_idx);
-
-			/* Hack -- handle stuff */
-			handle_stuff();
-
-			/* Describe, prompt for recall */
-			sprintf(out_val,
-			        "%s (%s) [<dir>, +, -, t, p, o, r, q] ",
-			        (r_name + r_ptr->name),
-			        look_mon_desc(c_ptr->m_idx));
-			prt(out_val, 0, 0);
-
-			/* Get a command */
-			move_cursor_relative(y, x);
-			query = inkey();
-
-			/* Optional recall */
-			while (query == 'r')
+			/* Allow target */
+			if (target_able(c_ptr->m_idx))
 			{
-				/* Recall on screen */
-				Term_save();
-				screen_roff(m_ptr->r_idx);
-				Term_addstr(-1, TERM_WHITE, "  --pause--");
-				query = inkey();
-				Term_load();
-
-				/* Hack -- ask again */
-				if (query == ' ')
-				{
-					/* Get a new command */
-					move_cursor_relative(y, x);
-					query = inkey();
-				}
+				strcpy(info, "q,t,p,o,+,-,<dir>");
 			}
 
-			/* Hack -- cancel tracking */
-			health_track(0);
+			/* Dis-allow target */
+			else
+			{
+				strcpy(info, "q,p,o,+,-,<dir>");
+			}
+
+			/* Describe and Prompt */
+			query = target_set_aux(y, x, mode, info);
+
+			/* Cancel tracking */
+			/* health_track(0); */
 
 			/* Assume no "direction" */
 			d = 0;
@@ -2713,17 +3147,24 @@ bool target_set(void)
 				case '5':
 				case '0':
 				{
-					health_track(c_ptr->m_idx);
-					target_who = c_ptr->m_idx;
-					target_row = y;
-					target_col = x;
-					done = TRUE;
+					if (target_able(c_ptr->m_idx))
+					{
+						health_track(c_ptr->m_idx);
+						target_who = c_ptr->m_idx;
+						target_row = y;
+						target_col = x;
+						done = TRUE;
+					}
+					else
+					{
+						bell();
+					}
 					break;
 				}
 
-				case '+':
-				case '*':
 				case ' ':
+				case '*':
+				case '+':
 				{
 					if (++m == temp_n)
 					{
@@ -2774,22 +3215,25 @@ bool target_set(void)
 				/* Find a new monster */
 				i = target_pick(temp_y[m], temp_x[m], ddy[d], ddx[d]);
 
-				/* Use that monster */
+				/* Use that grid */
 				if (i >= 0) m = i;
 			}
 		}
 
-		/* Target locations */
+		/* Arbitrary grids */
 		else
 		{
-			/* Now try a location */
-			prt("Select a target. [<dir>, t, p, o, m, q] ", 0, 0);
+			/* Access */
+			c_ptr = &cave[y][x];
 
-			/* Light up the current location */
-			move_cursor_relative(y, x);
+			/* Default prompt */
+			strcpy(info, "q,t,p,m,+,-,<dir>");
 
-			/* Get a command, and convert it to standard form */
-			query = inkey();
+			/* Describe and Prompt (enable "TARGET_LOOK") */
+			query = target_set_aux(y, x, mode | TARGET_LOOK, info);
+
+			/* Cancel tracking */
+			/* health_track(0); */
 
 			/* Assume no direction */
 			d = 0;
@@ -2804,7 +3248,6 @@ bool target_set(void)
 					break;
 				}
 
-				case 'T':
 				case 't':
 				case '.':
 				case '5':
@@ -2814,6 +3257,14 @@ bool target_set(void)
 					target_row = y;
 					target_col = x;
 					done = TRUE;
+					break;
+				}
+
+				case ' ':
+				case '*':
+				case '+':
+				case '-':
+				{
 					break;
 				}
 
@@ -2865,7 +3316,7 @@ bool target_set(void)
 	/* Clear the top line */
 	prt("", 0, 0);
 
-	/* Failure */
+	/* Failure to set target */
 	if (!target_who) return (FALSE);
 
 	/* Success */
@@ -2893,6 +3344,9 @@ bool get_aim_dir(int *dp)
 
 	cptr	p;
 
+
+	/* Initialize */
+	(*dp) = 0;
 
 	/* Global direction */
 	dir = command_dir;
@@ -2933,7 +3387,7 @@ bool get_aim_dir(int *dp)
 			/* Set new target */
 			case '*':
 			{
-				if (target_set()) dir = 5;
+				if (target_set(TARGET_KILL)) dir = 5;
 				break;
 			}
 
@@ -2951,9 +3405,6 @@ bool get_aim_dir(int *dp)
 		if (!dir) bell();
 	}
 
-	/* Save the direction */
-	*dp = dir;
-
 	/* No direction */
 	if (!dir) return (FALSE);
 
@@ -2963,12 +3414,20 @@ bool get_aim_dir(int *dp)
 	/* Check for confusion */
 	if (p_ptr->confused)
 	{
+		/* XXX XXX XXX */
+		/* Random direction */
+		dir = ddd[rand_int(8)];
+	}
+
+	/* Notice confusion */
+	if (command_dir != dir)
+	{
 		/* Warn the user */
 		msg_print("You are confused.");
-
-		/* Hack -- Random direction */
-		*dp = ddd[rand_int(8)];
 	}
+
+	/* Save direction */
+	(*dp) = dir;
 
 	/* A "valid" direction was entered */
 	return (TRUE);
@@ -2981,7 +3440,13 @@ bool get_aim_dir(int *dp)
  * and place it into "command_dir", unless we already have one.
  *
  * This function should be used for all "repeatable" commands, such as
- * run, walk, open, close, bash, disarm, spike, tunnel, etc.
+ * run, walk, open, close, bash, disarm, spike, tunnel, etc, as well
+ * as all commands which must reference a grid adjacent to the player,
+ * and which may not reference the grid under the player.  Note that,
+ * for example, it is no longer possible to "disarm" or "open" chests
+ * in the same grid as the player.
+ *
+ * Direction "5" is illegal and will (cleanly) abort the command.
  *
  * This function tracks and uses the "global direction", and uses
  * that as the "desired direction", to which "confusion" is applied.
@@ -2990,6 +3455,9 @@ bool get_rep_dir(int *dp)
 {
 	int dir;
 
+
+	/* Initialize */
+	(*dp) = 0;
 
 	/* Global direction */
 	dir = command_dir;
@@ -3009,30 +3477,37 @@ bool get_rep_dir(int *dp)
 		if (!dir) bell();
 	}
 
-	/* Keep the given direction */
-	*dp = dir;
+	/* Prevent weirdness */
+	if (dir == 5) dir = 0;
 
 	/* Aborted */
 	if (!dir) return (FALSE);
 
-	/* Save the direction */
+	/* Save desired direction */
 	command_dir = dir;
 
 	/* Apply "confusion" */
 	if (p_ptr->confused)
 	{
-		/* Warn the user XXX XXX XXX */
-		/* msg_print("You are confused."); */
-
 		/* Standard confusion */
 		if (rand_int(100) < 75)
 		{
 			/* Random direction */
-			*dp = ddd[rand_int(8)];
+			dir = ddd[rand_int(8)];
 		}
 	}
+	
+	/* Notice confusion */
+	if (command_dir != dir)
+	{
+		/* Warn the user */
+		msg_print("You are confused.");
+	}
 
-	/* A "valid" direction was entered */
+	/* Save direction */
+	(*dp) = dir;
+
+	/* Success */
 	return (TRUE);
 }
 

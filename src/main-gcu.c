@@ -750,6 +750,14 @@ static errr Term_wipe_gcu(int x, int y, int n)
  */
 static errr Term_text_gcu(int x, int y, int n, byte a, cptr s)
 {
+	int i;
+
+	char text[81];
+
+	/* Obtain a copy of the text */
+	for (i = 0; i < n; i++) text[i] = s[i];
+	text[n] = 0;
+
 	/* Move the cursor and dump the string */
 	move(y, x);
 
@@ -759,7 +767,7 @@ static errr Term_text_gcu(int x, int y, int n, byte a, cptr s)
 #endif
 
 	/* Add the text */
-	addstr(s);
+	addstr(text);
 
 	/* Success */
 	return (0);

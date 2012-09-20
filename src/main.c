@@ -1,5 +1,9 @@
 /* File: main.c */
 
+int dlopen() {}
+int dlsym() {}
+int dlclose() {}
+
 /* Purpose: initialization, main() function and main loop */
 
 /*
@@ -22,57 +26,6 @@
 #if !defined(MACINTOSH) && !defined(WINDOWS) && !defined(ACORN)
 
 
-#ifdef SET_UID
-
-/*
- * Check "wizard permissions"
- */
-static bool is_wizard(int uid)
-{
-	FILE	*fp;
-
-	bool	allow = FALSE;
-
-	char	buf[1024];
-
-
-	/* Build the filename */
-	path_build(buf, 1024, ANGBAND_DIR_FILE, "wizards.txt");
-
-	/* Open the wizard file */
-	fp = my_fopen(buf, "r");
-
-	/* No file, allow everyone */
-	if (!fp) return (TRUE);
-
-	/* Scan the wizard file */
-	while (0 == my_fgets(fp, buf, 1024))
-	{
-		int test;
-
-		/* Skip comments and blank lines */
-		if (!buf[0] || (buf[0] == '#')) continue;
-
-		/* Look for valid entries */
-		if (sscanf(buf, "%d", &test) != 1) continue;
-
-		/* Look for matching entries */
-		if (test == uid) allow = TRUE;
-
-		/* Done */
-		if (allow) break;
-	}
-
-	/* Close the file */
-	my_fclose(fp);
-
-	/* Result */
-	return (allow);
-}
-
-#endif
-
-
 /*
  * A hook for "quit()".
  *
@@ -86,10 +39,10 @@ static void quit_hook(cptr s)
 	for (j = 8 - 1; j >= 0; j--)
 	{
 		/* Unused */
-		if (!ang_term[j]) continue;
+		if (!angband_term[j]) continue;
 
 		/* Nuke it */
-		term_nuke(ang_term[j]);
+		term_nuke(angband_term[j]);
 	}
 }
 
@@ -251,13 +204,7 @@ int main(int argc, char *argv[])
 #endif
 
 
-	/* Assume "Wizard" permission */
-	can_be_wizard = TRUE;
-
 #ifdef SET_UID
-
-	/* Check for "Wizard" permission */
-	can_be_wizard = is_wizard(player_uid);
 
 	/* Initialize the "time" checker */
 	if (check_time_init() || check_time())
@@ -288,100 +235,113 @@ int main(int argc, char *argv[])
 		{
 			case 'c':
 			case 'C':
-			ANGBAND_DIR_USER = &argv[0][2];
-			break;
+			{
+				ANGBAND_DIR_USER = &argv[0][2];
+				break;
+			}
 
 #ifndef VERIFY_SAVEFILE
 			case 'd':
 			case 'D':
-			ANGBAND_DIR_SAVE = &argv[0][2];
-			break;
+			{
+				ANGBAND_DIR_SAVE = &argv[0][2];
+				break;
+			}
 #endif
 
 			case 'i':
 			case 'I':
-			ANGBAND_DIR_INFO = &argv[0][2];
-			break;
+			{
+				ANGBAND_DIR_INFO = &argv[0][2];
+				break;
+			}
 
 			case 'N':
 			case 'n':
-			new_game = TRUE;
-			break;
-
-			case 'R':
-			case 'r':
-			arg_force_roguelike = TRUE;
-			break;
-
-			case 'O':
-			case 'o':
-			arg_force_original = TRUE;
-			break;
-
-			case 'V':
-			case 'v':
-			use_sound = TRUE;
-			break;
-
-			case 'G':
-			case 'g':
-			use_graphics = TRUE;
-			break;
-
-			case 'S':
-			case 's':
-			show_score = atoi(&argv[0][2]);
-			if (show_score <= 0) show_score = 10;
-			break;
+			{
+				new_game = TRUE;
+				break;
+			}
 
 			case 'F':
 			case 'f':
-			arg_fiddle = TRUE;
-			break;
-
-#ifdef SET_UID
-			case 'P':
-			case 'p':
-			if (can_be_wizard)
 			{
-				player_uid = atoi(&argv[0][2]);
-				user_name(player_name, player_uid);
+				arg_fiddle = TRUE;
+				break;
 			}
-			break;
-#endif
 
 			case 'W':
 			case 'w':
-			if (can_be_wizard) arg_wizard = TRUE;
-			break;
+			{
+				arg_wizard = TRUE;
+				break;
+			}
+
+			case 'V':
+			case 'v':
+			{
+				arg_sound = TRUE;
+				break;
+			}
+
+			case 'G':
+			case 'g':
+			{
+				arg_graphics = TRUE;
+				break;
+			}
+
+			case 'R':
+			case 'r':
+			{
+				arg_force_roguelike = TRUE;
+				break;
+			}
+
+			case 'O':
+			case 'o':
+			{
+				arg_force_original = TRUE;
+				break;
+			}
 
 			case 'u':
 			case 'U':
-			if (!argv[0][2]) goto usage;
-			strcpy(player_name, &argv[0][2]);
-			break;
+			{
+				if (!argv[0][2]) goto usage;
+				strcpy(player_name, &argv[0][2]);
+				break;
+			}
+
+			case 'S':
+			case 's':
+			{
+				show_score = atoi(&argv[0][2]);
+				if (show_score <= 0) show_score = 10;
+				break;
+			}
 
 			default:
 			usage:
+			{
+				/* Dump usage information */
+				puts("Usage: angband [options]");
+				puts("  -n       Start a new character");
+				puts("  -f       Request fiddle mode");
+				puts("  -w       Request wizard mode");
+				puts("  -v       Request sound mode");
+				puts("  -g       Request graphics mode");
+				puts("  -o       Request original keyset");
+				puts("  -r       Request rogue-like keyset");
+				puts("  -u<name> Play with your <name> savefile");
+				puts("  -s<num>  Show <num> high scores (or top 10).");
+				puts("  -c<path> Look for pref files in the directory <path>");
+				puts("  -d<path> Look for save files in the directory <path>");
+				puts("  -i<path> Look for info files in the directory <path>");
 
-			/* Note -- the Term is NOT initialized */
-			puts("Usage: angband [options]");
-			puts("  -n       Start a new character");
-			puts("  -o       Use the original keyset");
-			puts("  -r       Use the rogue-like keyset");
-			puts("  -v       Activate the use_sound flag");
-			puts("  -g       Activate the use_graphics flag");
-			puts("  -f       Activate 'fiddle' mode");
-			puts("  -w       Activate 'wizard' mode");
-			puts("  -p<uid>  Play with the <uid> userid");
-			puts("  -u<name> Play with your <name> savefile");
-			puts("  -s<num>  Show <num> high scores (or top 10).");
-			puts("  -c<path> Look for pref files in the directory <path>");
-			puts("  -d<path> Look for save files in the directory <path>");
-			puts("  -i<path> Look for info files in the directory <path>");
-
-			/* Actually abort the process */
-			quit(NULL);
+				/* Actually abort the process */
+				quit(NULL);
+			}
 		}
 	}
 
@@ -521,11 +481,8 @@ int main(int argc, char *argv[])
 	/* Catch nasty signals */
 	signals_init();
 
-	/* Display the 'news' file */
-	show_news();
-
-	/* Initialize the arrays */
-	init_some_arrays();
+	/* Initialize */
+	init_angband();
 
 	/* Wait for response */
 	pause_line(23);

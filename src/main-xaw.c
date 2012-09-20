@@ -26,21 +26,6 @@
 #endif /* __MAKEDEPEND__ */
 
 
-/*
- * OPTION: Allow the use of a "Recall Window", if supported
- */
-#define GRAPHIC_RECALL
-
-/*
- * OPTION: Allow the use of a "Choice Window", if supported
- */
-#define GRAPHIC_CHOICE
-
-/*
- * OPTION: Allow the use of a "Mirror Window", if supported
- */
-#define GRAPHIC_MIRROR
-
 
 /*****************************************************
  *
@@ -768,6 +753,22 @@ static XFontStruct *getFont(AngbandWidget widget,
   ((unsigned)(keysym) >= 0xFF00)
 
 
+
+/*
+ * Maximum number of windows XXX XXX XXX XXX
+ */
+#define MAX_TERM_DATA 8
+
+/*
+ * Number of fallback resources per window
+ */
+#define TERM_FALLBACKS 6
+
+/*
+ * Number of windows with special fallback resources
+ */
+#define SPECIAL_FALLBACKS 3
+
 /*
  * Forward declare
  */
@@ -783,74 +784,57 @@ struct term_data
 	AngbandWidget widget;
 };
 
-
-
 /*
- * The main screen
+ * An array of term_data's
  */
+static term_data data[MAX_TERM_DATA];
 
-static term_data screen;
-
-static Arg angbandArgs[] =
+char *termNames[MAX_TERM_DATA] =
 {
+    "angband",
+    "mirror",
+    "recall",
+    "choice",
+    "term-4",
+    "term-5",
+    "term-6",
+    "term-7"
+};
+
+Arg specialArgs[TERM_FALLBACKS][SPECIAL_FALLBACKS] =
+{
+    /* The main screen */
+    {
 	{ XtNstartRows,    24},
 	{ XtNstartColumns, 80},
 	{ XtNminRows,      24},
 	{ XtNminColumns,   80},
 	{ XtNmaxRows,      24},
 	{ XtNmaxColumns,   80}
-};
+    },
 
-
-#ifdef GRAPHIC_MIRROR
-
-/*
- * The mirror window
- */
-
-static term_data mirror;
-
-Arg mirrorArgs[] =
-{
+    /* The "mirror" window */
+    {
 	{ XtNstartRows,    24},
 	{ XtNstartColumns, 80},
 	{ XtNminRows,      1},
 	{ XtNminColumns,   1},
 	{ XtNmaxRows,      24},
 	{ XtNmaxColumns,   80}
-};
+    },
 
-#endif /* GRAPHIC_MIRROR */
-
-#ifdef GRAPHIC_RECALL
-
-/*
- * The "recall" window
- */
-
-static term_data recall;
-
-Arg recallArgs[] =
-{
+    /* The "recall" window */
+    {
 	{ XtNstartRows,    8},
 	{ XtNstartColumns, 80},
 	{ XtNminRows,      1},
 	{ XtNminColumns,   1},
 	{ XtNmaxRows,      24},
 	{ XtNmaxColumns,   80}
+    }
 };
 
-#endif /* GRAPHIC_RECALL */
-
-#ifdef GRAPHIC_CHOICE
-
-/*
- * The "choice" window
- */
-
-static term_data choice;
-
-Arg choiceArgs[] =
+Arg defaultArgs[TERM_FALLBACKS] =
 {
 	{ XtNstartRows,    24},
 	{ XtNstartColumns, 80},
@@ -859,9 +843,6 @@ Arg choiceArgs[] =
 	{ XtNmaxRows,      24},
 	{ XtNmaxColumns,   80}
 };
-
-#endif /* GRAPHIC_CHOICE */
-
 
 
 /*
@@ -882,6 +863,14 @@ static String fallback[] =
 	"Angband.recall.title:                Recall",
 	"Angband.choice.iconName:             Choice",
 	"Angband.choice.title:                Choice",
+	"Angband.term-4.iconName:	      Term 4",
+	"Angband.term-4.title:		      Term 4",
+	"Angband.term-5.iconName:	      Term 5",
+	"Angband.term-5.title:		      Term 5",
+	"Angband.term-6.iconName:	      Term 6",
+	"Angband.term-6.title:		      Term 6",
+	"Angband.term-7.iconName:	      Term 7",
+	"Angband.term-7.title:		      Term 7",
 	NULL
 };
 
@@ -1056,17 +1045,19 @@ errr CheckEvent(bool wait)
  */
 static errr Term_xtra_xaw(int n, int v)
 {
+	int i;
+
 	/* Handle a subset of the legal requests */
 	switch (n)
 	{
 		/* Make a noise */
 		case TERM_XTRA_NOISE:
-		XBell(XtDisplay((Widget)screen.widget), 100);
+		XBell(XtDisplay((Widget)data[0].widget), 100);
 		return (0);
 
 		/* Flush the output */
 		case TERM_XTRA_FRESH:
-		XFlush(XtDisplay((Widget)screen.widget));
+		XFlush(XtDisplay((Widget)data[0].widget));
 		/* Nonblock event-check so the flushed events can be showed */
 		CheckEvent(FALSE);
 		return (0);
@@ -1091,41 +1082,11 @@ static errr Term_xtra_xaw(int n, int v)
 
 		/* Clear the window */
 		case TERM_XTRA_CLEAR:
-
-		/* Screen */
-		if (Term == &screen.t)
-		{
-			XClearWindow(XtDisplay((Widget)screen.widget),
-			             XtWindow((Widget)screen.widget));
+		for (i=0; i<MAX_TERM_DATA; i++) {
+		    if (Term == &data[i].t)
+			XClearWindow(XtDisplay((Widget)data[i].widget),
+			             XtWindow((Widget)data[i].widget));
 		}
-
-#ifdef GRAPHIC_MIRROR
-		/* Mirror */
-		if (Term == &mirror.t)
-		{
-			XClearWindow(XtDisplay((Widget)mirror.widget),
-			             XtWindow((Widget)mirror.widget));
-		}
-#endif /* GRAPHIC_MIRROR */
-
-#ifdef GRAPHIC_RECALL
-		/* Recall */
-		if (Term == &recall.t)
-		{
-			XClearWindow(XtDisplay((Widget)recall.widget),
-			             XtWindow((Widget)recall.widget));
-		}
-#endif /* GRAPHIC_RECALL */
-
-#ifdef GRAPHIC_CHOICE
-		/* Choice */
-		if (Term == &choice.t)
-		{
-			XClearWindow(XtDisplay((Widget)choice.widget),
-			             XtWindow((Widget)choice.widget));
-		}
-#endif /* GRAPHIC_CHOICE */
-
 		return (0);
 	}
 
@@ -1261,7 +1222,7 @@ static errr term_data_init(term_data *td, Widget topLevel,
  */
 errr init_xaw(void)
 {
-	int argc;
+	int argc, i;
 	char *argv[2];
 	Widget topLevel;
 	Display *dpy;
@@ -1296,37 +1257,19 @@ errr init_xaw(void)
 	topLevel = XtAppInitialize (&appcon, "Angband", NULL, 0, &argc, argv,
 	                            fallback, NULL, 0);
 
-	/* Initialize the main window */
-	term_data_init (&screen, topLevel, 1024, "angband",
-	                angbandArgs, XtNumber(angbandArgs));
-	term_screen = Term;
-
-#ifdef GRAPHIC_MIRROR
-	/* Initialize the mirror window */
-	term_data_init (&mirror, topLevel, 16, "mirror",
-	                mirrorArgs, XtNumber(mirrorArgs));
-	term_mirror = Term;
-#endif /* GRAPHIC_MIRROR */
-
-#ifdef GRAPHIC_RECALL
-	/* Initialize the recall window */
-	term_data_init (&recall, topLevel, 16, "recall",
-	                recallArgs, XtNumber(recallArgs));
-	term_recall = Term;
-#endif /* GRAPHIC_RECALL */
-
-#ifdef GRAPHIC_CHOICE
-	/* Initialize the choice window */
-	term_data_init (&choice, topLevel, 16, "choice",
-	                choiceArgs, XtNumber(choiceArgs));
-	term_choice = Term;
-#endif /* GRAPHIC_CHOICE */
+	/* Initialize the windows */
+	for (i=0; i<MAX_TERM_DATA; i++) {
+	    term_data_init (&data[i], topLevel, 1024, termNames[i],
+			    i<SPECIAL_FALLBACKS ? specialArgs[i] : defaultArgs,
+			    TERM_FALLBACKS);
+	    angband_term[i] = Term;
+	}
 
 	/* Activate the "Angband" window screen */
-	Term_activate(&screen.t);
+	Term_activate(&data[0].t);
 
 	/* Raise the "Angband" window */
-	term_raise(screen);
+	term_raise(data[0]);
 
 	/* Success */
 	return (0);

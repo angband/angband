@@ -973,9 +973,6 @@ void angbandThread(void *arg)
 	/* Get the file paths */
 	init_stuff();
 
-	/* Assume "Wizard" permission */
-	can_be_wizard = TRUE;
-
 	if (!emx_options((char**)&ANGBAND_DIR_USER,
 	                 (char**)&ANGBAND_DIR_SAVE,
 	                 (char**)&ANGBAND_DIR_INFO,

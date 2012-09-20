@@ -1317,16 +1317,37 @@ s32b player_exp[PY_MAX_LEVEL] =
 
 
 /*
- * Player Race Information:
- *    Title,
- *    {STR,INT,WIS,DEX,CON,CHR},
- *    r_dis, r_dev, r_sav, r_stl, r_srh, r_fos, r_thn, r_thb,
- *    hitdie, exp base,
- *    Age (Base, Mod),
- *    Male (Hgt, Wgt),
- *    Female (Hgt, Wgt)
- *    infra,
- *    class-choices
+ * Player Sexes
+ *
+ *	Title,
+ *	Winner
+ */
+player_sex sex_info[MAX_SEXES] =
+{
+	{
+		"Female",
+		"Queen"
+	},
+	
+	{
+		"Male",
+		"King"
+	}
+};
+
+
+/*
+ * Player Races
+ *
+ *	Title,
+ *	{STR,INT,WIS,DEX,CON,CHR},
+ *	r_dis, r_dev, r_sav, r_stl, r_srh, r_fos, r_thn, r_thb,
+ *	hitdie, exp base,
+ *	Age (Base, Mod),
+ *	Male (Hgt, Wgt),
+ *	Female (Hgt, Wgt)
+ *	infra,
+ *	class-choices
  */
 player_race race_info[MAX_RACES] =
 {
@@ -1453,13 +1474,13 @@ player_race race_info[MAX_RACES] =
 
 
 /*
- * Player Classes.
+ * Player Classes
  *
- *   Title,
- *   {STR,INT,WIS,DEX,CON,CHR},
- *   c_dis, c_dev, c_sav, c_stl, c_srh, c_fos, c_thn, c_thb,
- *   x_dis, x_dev, x_sav, x_stl, x_srh, x_fos, x_thn, x_thb,
- *   HD, Exp
+ *	Title,
+ *	{STR,INT,WIS,DEX,CON,CHR},
+ *	c_dis, c_dev, c_sav, c_stl, c_srh, c_fos, c_thn, c_thb,
+ *	x_dis, x_dev, x_sav, x_stl, x_srh, x_fos, x_thn, x_thb,
+ *	HD, Exp
  */
 player_class class_info[MAX_CLASS] =
 {
@@ -2485,23 +2506,6 @@ cptr color_names[16] =
 
 
 /*
- * Hack -- the "basic" sound names (see "SOUND_xxx")
- */
-cptr sound_names[SOUND_MAX] =
-{
-	"",
-	"hit",
-	"miss",
-	"flee",
-	"drop",
-	"kill",
-	"level",
-	"death",
-};
-
-
-
-/*
  * Abbreviations of healthy stats
  */
 cptr stat_names[6] =
@@ -2515,22 +2519,6 @@ cptr stat_names[6] =
 cptr stat_names_reduced[6] =
 {
 	"Str: ", "Int: ", "Wis: ", "Dex: ", "Con: ", "Chr: "
-};
-
-
-/*
- * Standard window names
- */
-cptr ang_term_name[8] =
-{
-	"Angband",
-	"Mirror",
-	"Recall",
-	"Choice",
-	"Term-4",
-	"Term-5",
-	"Term-6",
-	"Term-7"
 };
 
 
@@ -2789,6 +2777,15 @@ option_type option_info[] =
 
 	{ &view_special_lite,	FALSE,	4,	1, 31,
 	"view_special_lite",	"Use special colors for floor grids (slow)" },
+
+
+	/*** Testing ***/
+
+	{ &testing_stack,		FALSE,	255, 7, 30,
+	"testing_stack",		"Testing -- allow objects to stack on floor" },
+
+	{ &testing_carry,		FALSE,	255, 7, 31,
+	"testing_carry",		"Testing -- allow monsters to carry objects" },
 
 
 	/*** End of Table ***/

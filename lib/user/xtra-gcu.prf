@@ -1,0 +1,34 @@
+# File: xtra-gcu.prf
+
+# Rename this file to "pref-gcu.prf" to allow the VT100 cursor keys
+# to be recognized by Angband.  This will also make the "escape" key
+# take a few seconds to recognize, so you may want to use the "`" key
+# instead, or make a macro from escape+escape to escape.
+
+### VT100 Keypad ###
+
+# Special keypad keys (delete, insert)
+A:.
+P:\e[3~
+A:0
+P:\e[2~
+
+# Numerical keypad keys (map to appropriate number)
+A:1
+P:\e[4~
+A:2
+P:\e[B
+A:3
+P:\e[6~
+A:4
+P:\e[D
+A:5
+P:\e[G
+A:6
+P:\e[C
+A:7
+P:\e[1~
+A:8
+P:\e[A
+A:9
+P:\e[5~

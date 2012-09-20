@@ -120,9 +120,9 @@ struct term_win
  *
  *	- Hook for drawing some blank spaces
  *
- *	- Hook for drawing a special character
+ *	- Hook for drawing a string of chars using an attr
  *
- *	- Hook for drawing a string of characters
+ *	- Hook for drawing a sequence of special attr/char pairs
  */
 
 typedef struct term term;
@@ -180,9 +180,9 @@ struct term
 
 	errr (*wipe_hook)(int x, int y, int n);
 
-	errr (*pict_hook)(int x, int y, byte a, char c);
-
 	errr (*text_hook)(int x, int y, int n, byte a, cptr s);
+
+	errr (*pict_hook)(int x, int y, int n, const byte *ap, const char *cp);
 };
 
 

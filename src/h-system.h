@@ -32,13 +32,14 @@
 
 # include <sys/types.h>
 
-# if defined(Pyramid) || defined(NeXT) || defined(sun) || \
-     defined(NCR3K) || defined(linux) || defined(ibm032) || \
-     defined(__osf__) || defined(ISC) || defined(SGI)
+# if defined(Pyramid) || defined(NeXT) || defined(SUNOS) || \
+     defined(NCR3K) || defined(SUNOS) || defined(ibm032) || \
+     defined(__osf__) || defined(ISC) || defined(SGI) || \
+     defined(linux)
 #  include <sys/time.h>
 # endif
 
-# if !defined(sgi) && !defined(ultrix)
+# if !defined(SGI) && !defined(ULTRIX)
 #  include <sys/timeb.h>
 # endif
 

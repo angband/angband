@@ -115,8 +115,8 @@ CC = gcc
 # including "USE_GETCH" and "USE_CURS_SET".  Note that "config.h" will
 # attempt to "guess" at many of these flags based on your system.
 #
-CFLAGS = -Wall -O1 -pipe -g -D"USE_X11" -D"USE_GCU"
-LIBS = -lX11 -lcurses -ltermcap
+#CFLAGS = -Wall -O1 -pipe -g -D"USE_X11" -D"USE_GCU"
+#LIBS = -lX11 -lcurses -ltermcap
 
 
 ##
@@ -215,16 +215,16 @@ LIBS = -lX11 -lcurses -ltermcap
 # Hack -- "install" as the base target
 #
 
-install: angband
-	cp angband ..
+install: testing
+	cp testing ..
 
 
 #
 # Build the "Angband" program
 #
 
-angband: $(OBJS)
-	$(CC) $(CFLAGS) -o angband $(OBJS) $(LDFLAGS) $(LIBS)
+testing: $(OBJS)
+	$(CC) $(CFLAGS) -o testing $(OBJS) $(LDFLAGS) $(LIBS)
 
 
 #

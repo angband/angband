@@ -20,6 +20,10 @@
  * This command performs various low level updates, clears all the "extra"
  * windows, does a total redraw of the main window, and requests all of the
  * interesting updates and redraws that I can think of.
+ *
+ * This command is also used to "instantiate" the results of the user
+ * selecting various things, such as graphics mode, so it must call
+ * the "TERM_XTRA_REACT" hook before redrawing the windows.
  */
 void do_cmd_redraw(void)
 {
@@ -72,10 +76,10 @@ void do_cmd_redraw(void)
 	for (j = 0; j < 8; j++)
 	{
 		/* Dead window */
-		if (!ang_term[j]) continue;
+		if (!angband_term[j]) continue;
 
 		/* Activate */
-		Term_activate(ang_term[j]);
+		Term_activate(angband_term[j]);
 
 		/* Redraw */
 		Term_redraw();
@@ -96,9 +100,7 @@ void do_cmd_change_name(void)
 {
 	char	c;
 
-	bool	flag;
-
-	bool	history = FALSE;
+	int		mode = 0;
 
 	char	tmp[160];
 
@@ -109,64 +111,51 @@ void do_cmd_change_name(void)
 	/* Save the screen */
 	Term_save();
 
-	/* Get command */
-	for (flag = FALSE; !flag; )
+	/* Forever */
+	while (1)
 	{
 		/* Display the player */
-		display_player(history);
+		display_player(mode);
 
 		/* Prompt */
-		prt("['C' to change name, 'F' to dump file, 'H' for history, or ESCAPE]", 21, 2);
+		Term_putstr(2, 23, -1, TERM_WHITE,
+			"['c' to change name, 'f' to file, 'h' to change mode, or ESC]");
 
 		/* Query */
 		c = inkey();
 
-		/* Handle */
-		switch (c)
+		/* Exit */
+		if (c == ESCAPE) break;
+
+		/* Change name */
+		if (c == 'c')
 		{
-			case 'C':
-			case 'c':
-			{
-				get_name();
-				flag = TRUE;
-				break;
-			}
+			get_name();
+		}
 
-			case 'F':
-			case 'f':
+		/* File dump */
+		else if (c == 'f')
+		{
+			sprintf(tmp, "%s.txt", player_base);
+			if (get_string("File name: ", tmp, 80))
 			{
-				sprintf(tmp, "%s.txt", player_base);
-				if (get_string("File name: ", tmp, 80))
+				if (tmp[0] && (tmp[0] != ' '))
 				{
-					if (tmp[0] && (tmp[0] != ' '))
-					{
-						file_character(tmp, FALSE);
-					}
+					file_character(tmp, FALSE);
 				}
-				break;
 			}
+		}
 
-			case 'H':
-			case 'h':
-			{
-				history = !history;
-				break;
-			}
+		/* Toggle mode */
+		else if (c == 'h')
+		{
+			mode++;
+		}
 
-			case ESCAPE:
-			case ' ':
-			case '\n':
-			case '\r':
-			{
-				flag = TRUE;
-				break;
-			}
-
-			default:
-			{
-				bell();
-				break;
-			}
+		/* Oops */
+		else
+		{
+			bell();
 		}
 
 		/* Flush messages */
@@ -210,8 +199,15 @@ void do_cmd_messages(void)
 {
 	int i, j, k, n, q;
 
-	char shower[80] = "";
-	char finder[80] = "";
+	char shower[80];
+	char finder[80];
+
+
+	/* Wipe finder */
+	strcpy(finder, "");
+
+	/* Wipe shower */
+	strcpy(shower, "");
 
 
 	/* Total messages */
@@ -239,18 +235,31 @@ void do_cmd_messages(void)
 		/* Dump up to 20 lines of messages */
 		for (j = 0; (j < 20) && (i + j < n); j++)
 		{
-			byte a = TERM_WHITE;
-
-			cptr str = message_str(i+j);
+			cptr msg = message_str(i+j);
 
 			/* Apply horizontal scroll */
-			str = (strlen(str) >= q) ? (str + q) : "";
-
-			/* Handle "shower" */
-			if (shower[0] && strstr(str, shower)) a = TERM_YELLOW;
+			msg = (strlen(msg) >= q) ? (msg + q) : "";
 
 			/* Dump the messages, bottom to top */
-			Term_putstr(0, 21-j, -1, a, str);
+			Term_putstr(0, 21-j, -1, TERM_WHITE, msg);
+
+			/* Hilite "shower" */
+			if (shower[0])
+			{
+				cptr str = msg;
+
+				/* Display matches */
+				while ((str = strstr(str, shower)) != NULL)
+				{
+					int len = strlen(shower);
+
+					/* Display the match */
+					Term_putstr(str-msg, 21-j, len, TERM_YELLOW, shower);
+
+					/* Advance */
+					str += len;
+				}
+			}
 		}
 
 		/* Display header XXX XXX XXX */
@@ -313,13 +322,16 @@ void do_cmd_messages(void)
 			/* Get a "finder" string, or continue */
 			if (!askfor_aux(finder, 80)) continue;
 
+			/* Show it */
+			strcpy(shower, finder);
+
 			/* Scan messages */
 			for (z = i + 1; z < n; z++)
 			{
-				cptr str = message_str(z);
+				cptr msg = message_str(z);
 
-				/* Handle "shower" */
-				if (strstr(str, finder))
+				/* Search for it */
+				if (strstr(msg, finder))
 				{
 					/* New location */
 					i = z;
@@ -660,7 +672,7 @@ static void do_cmd_options_win(void)
 		{
 			byte a = TERM_WHITE;
 
-			cptr s = ang_term_name[j];
+			cptr s = angband_term_name[j];
 
 			/* Use color */
 			if (use_color && (j == x)) a = TERM_L_BLUE;
@@ -773,13 +785,13 @@ static void do_cmd_options_win(void)
 		term *old = Term;
 
 		/* Dead window */
-		if (!ang_term[j]) continue;
+		if (!angband_term[j]) continue;
 
 		/* Ignore non-changes */
 		if (window_flag[j] == old_flag[j]) continue;
 
 		/* Activate */
-		Term_activate(ang_term[j]);
+		Term_activate(angband_term[j]);
 
 		/* Erase */
 		Term_clear();
@@ -828,18 +840,21 @@ void do_cmd_options(void)
 		prt("(3) Game-Play Options", 6, 5);
 		prt("(4) Efficiency Options", 7, 5);
 
+		/* Testing */
+		prt("(T) Testing options", 9, 5);
+
 		/* Cheating */
-		if (can_be_wizard) prt("(C) Cheating Options", 8, 5);
+		prt("(C) Cheating Options", 10, 5);
 
 		/* Window flags */
-		prt("(W) Window flags", 9, 5);
+		prt("(W) Window flags", 12, 5);
 
 		/* Special choices */
-		prt("(D) Base Delay Factor", 11, 5);
-		prt("(H) Hitpoint Warning", 12, 5);
+		prt("(D) Base Delay Factor", 14, 5);
+		prt("(H) Hitpoint Warning", 15, 5);
 
 		/* Prompt */
-		prt("Command: ", 14, 0);
+		prt("Command: ", 18, 0);
 
 		/* Get command */
 		k = inkey();
@@ -847,92 +862,118 @@ void do_cmd_options(void)
 		/* Exit */
 		if (k == ESCAPE) break;
 
-		/* General Options */
-		if (k == '1')
+		/* Analyze */
+		switch (k)
 		{
-			/* Process the general options */
-			do_cmd_options_aux(1, "User Interface Options");
-		}
-
-		/* Disturbance Options */
-		else if (k == '2')
-		{
-			/* Process the running options */
-			do_cmd_options_aux(2, "Disturbance Options");
-		}
-
-		/* Inventory Options */
-		else if (k == '3')
-		{
-			/* Process the running options */
-			do_cmd_options_aux(3, "Game-Play Options");
-		}
-
-		/* Efficiency Options */
-		else if (k == '4')
-		{
-			/* Process the efficiency options */
-			do_cmd_options_aux(4, "Efficiency Options");
-		}
-
-		/* Cheating Options XXX XXX XXX */
-		else if ((k == 'C') && can_be_wizard)
-		{
-			/* Process the cheating options */
-			do_cmd_options_cheat("Cheaters never win");
-		}
-
-		/* Window flags */
-		else if (k == 'W')
-		{
-			/* Spawn */
-			do_cmd_options_win();
-		}
-
-		/* Hack -- Delay Speed */
-		else if (k == 'D')
-		{
-			/* Prompt */
-			prt("Command: Base Delay Factor", 14, 0);
-
-			/* Get a new value */
-			while (1)
+			/* General Options */
+			case '1':
 			{
-				int msec = delay_factor * delay_factor * delay_factor;
-				prt(format("Current base delay factor: %d (%d msec)",
-				           delay_factor, msec), 18, 0);
-				prt("Delay Factor (0-9 or ESC to accept): ", 16, 0);
-				k = inkey();
-				if (k == ESCAPE) break;
-				if (isdigit(k)) delay_factor = D2I(k);
-				else bell();
+				/* Process the general options */
+				do_cmd_options_aux(1, "User Interface Options");
+				break;
 			}
-		}
 
-		/* Hack -- hitpoint warning factor */
-		else if (k == 'H')
-		{
-			/* Prompt */
-			prt("Command: Hitpoint Warning", 14, 0);
-
-			/* Get a new value */
-			while (1)
+			/* Disturbance Options */
+			case '2':
 			{
-				prt(format("Current hitpoint warning: %d0%%",
-				           hitpoint_warn), 18, 0);
-				prt("Hitpoint Warning (0-9 or ESC to accept): ", 16, 0);
-				k = inkey();
-				if (k == ESCAPE) break;
-				if (isdigit(k)) hitpoint_warn = D2I(k);
-				else bell();
+				/* Spawn */
+				do_cmd_options_aux(2, "Disturbance Options");
+				break;
 			}
-		}
 
-		/* Unknown option */
-		else
-		{
-			/* Oops */
-			bell();
+			/* Inventory Options */
+			case '3':
+			{
+				/* Spawn */
+				do_cmd_options_aux(3, "Game-Play Options");
+				break;
+			}
+
+			/* Efficiency Options */
+			case '4':
+			{
+				/* Spawn */
+				do_cmd_options_aux(4, "Efficiency Options");
+				break;
+			}
+
+			/* Testing Options */
+			case 'T':
+			{
+				/* Spawn */
+				do_cmd_options_aux(255, "Testing Options");
+				break;
+			}
+
+			/* Cheating Options */
+			case 'C':
+			{
+				/* Spawn */
+				do_cmd_options_cheat("Cheaters never win");
+				break;
+			}
+
+			/* Window flags */
+			case 'W':
+			case 'w':
+			{
+				/* Spawn */
+				do_cmd_options_win();
+				break;
+			}
+
+			/* Hack -- Delay Speed */
+			case 'D':
+			case 'd':
+			{
+				/* Prompt */
+				prt("Command: Base Delay Factor", 18, 0);
+
+				/* Get a new value */
+				while (1)
+				{
+					int msec = delay_factor * delay_factor * delay_factor;
+					prt(format("Current base delay factor: %d (%d msec)",
+					           delay_factor, msec), 22, 0);
+					prt("Delay Factor (0-9 or ESC to accept): ", 20, 0);
+					k = inkey();
+					if (k == ESCAPE) break;
+					if (isdigit(k)) delay_factor = D2I(k);
+					else bell();
+				}
+
+				break;
+			}
+
+			/* Hack -- hitpoint warning factor */
+			case 'H':
+			case 'h':
+			{
+				/* Prompt */
+				prt("Command: Hitpoint Warning", 18, 0);
+
+				/* Get a new value */
+				while (1)
+				{
+					prt(format("Current hitpoint warning: %d0%%",
+					           hitpoint_warn), 22, 0);
+					prt("Hitpoint Warning (0-9 or ESC to accept): ", 20, 0);
+					k = inkey();
+					if (k == ESCAPE) break;
+					if (isdigit(k)) hitpoint_warn = D2I(k);
+					else bell();
+				}
+
+				break;
+			}
+
+			/* Unknown option */
+			default:
+			{
+				/* Oops */
+				bell();
+				break;
+			}
 		}
 
 		/* Flush messages */
@@ -1948,10 +1989,10 @@ void do_cmd_colors(void)
 			/* Dump colors */
 			for (i = 0; i < 256; i++)
 			{
-				int kv = color_table[i][0];
-				int rv = color_table[i][1];
-				int gv = color_table[i][2];
-				int bv = color_table[i][3];
+				int kv = angband_color_table[i][0];
+				int rv = angband_color_table[i][1];
+				int gv = angband_color_table[i][2];
+				int bv = angband_color_table[i][3];
 
 				cptr name = "unknown";
 
@@ -2015,8 +2056,10 @@ void do_cmd_colors(void)
 				/* Label the Current values */
 				Term_putstr(5, 12, -1, TERM_WHITE,
 				            format("K = 0x%02x / R,G,B = 0x%02x,0x%02x,0x%02x",
-				                   color_table[a][0], color_table[a][1],
-				                   color_table[a][2], color_table[a][3]));
+				                   angband_color_table[a][0],
+				                   angband_color_table[a][1],
+				                   angband_color_table[a][2],
+				                   angband_color_table[a][3]));
 
 				/* Prompt */
 				Term_putstr(0, 14, -1, TERM_WHITE,
@@ -2031,14 +2074,14 @@ void do_cmd_colors(void)
 				/* Analyze */
 				if (i == 'n') a = (byte)(a + 1);
 				if (i == 'N') a = (byte)(a - 1);
-				if (i == 'k') color_table[a][0] = (byte)(color_table[a][0] + 1);
-				if (i == 'K') color_table[a][0] = (byte)(color_table[a][0] - 1);
-				if (i == 'r') color_table[a][1] = (byte)(color_table[a][1] + 1);
-				if (i == 'R') color_table[a][1] = (byte)(color_table[a][1] - 1);
-				if (i == 'g') color_table[a][2] = (byte)(color_table[a][2] + 1);
-				if (i == 'G') color_table[a][2] = (byte)(color_table[a][2] - 1);
-				if (i == 'b') color_table[a][3] = (byte)(color_table[a][3] + 1);
-				if (i == 'B') color_table[a][3] = (byte)(color_table[a][3] - 1);
+				if (i == 'k') angband_color_table[a][0] = (byte)(angband_color_table[a][0] + 1);
+				if (i == 'K') angband_color_table[a][0] = (byte)(angband_color_table[a][0] - 1);
+				if (i == 'r') angband_color_table[a][1] = (byte)(angband_color_table[a][1] + 1);
+				if (i == 'R') angband_color_table[a][1] = (byte)(angband_color_table[a][1] - 1);
+				if (i == 'g') angband_color_table[a][2] = (byte)(angband_color_table[a][2] + 1);
+				if (i == 'G') angband_color_table[a][2] = (byte)(angband_color_table[a][2] - 1);
+				if (i == 'b') angband_color_table[a][3] = (byte)(angband_color_table[a][3] + 1);
+				if (i == 'B') angband_color_table[a][3] = (byte)(angband_color_table[a][3] - 1);
 
 				/* Hack -- react to changes */
 				Term_xtra(TERM_XTRA_REACT, 0);
@@ -2414,10 +2457,18 @@ void do_cmd_check_artifacts(void)
 		{
 			cave_type *c_ptr = &cave[y][x];
 
-			/* Process objects */
-			if (c_ptr->o_idx)
+			s16b this_o_idx, next_o_idx = 0;
+
+			/* Scan all objects in the grid */
+			for (this_o_idx = c_ptr->o_idx; this_o_idx; this_o_idx = next_o_idx)
 			{
-				object_type *o_ptr = &o_list[c_ptr->o_idx];
+				object_type *o_ptr;
+			
+				/* Acquire object */
+				o_ptr = &o_list[this_o_idx];
+
+				/* Acquire next object */
+				next_o_idx = o_ptr->next_o_idx;
 
 				/* Ignore non-artifacts */
 				if (!artifact_p(o_ptr)) continue;
@@ -2431,8 +2482,8 @@ void do_cmd_check_artifacts(void)
 		}
 	}
 
-	/* Check the inventory */
-	for (i = 0; i < INVEN_PACK; i++)
+	/* Check the inventory and equipment */
+	for (i = 0; i < INVEN_TOTAL; i++)
 	{
 		object_type *o_ptr = &inventory[i];
 
@@ -2467,15 +2518,19 @@ void do_cmd_check_artifacts(void)
 		if (z)
 		{
 			object_type forge;
+			object_type *q_ptr;
 
-			/* Create the object */
-			invcopy(&forge, z);
+			/* Get local object */
+			q_ptr = &forge;
 
-			/* Create the artifact */
-			forge.name1 = k;
+			/* Create fake object */
+			object_prep(q_ptr, z);
+
+			/* Make it an artifact */
+			q_ptr->name1 = k;
 
 			/* Describe the artifact */
-			object_desc_store(base_name, &forge, FALSE, 0);
+			object_desc_store(base_name, q_ptr, FALSE, 0);
 		}
 
 		/* Hack -- Build the artifact name */
@@ -2519,7 +2574,7 @@ void do_cmd_check_uniques(void)
 		monster_race *r_ptr = &r_info[k];
 
 		/* Only print Uniques */
-		if (r_ptr->flags1 & RF1_UNIQUE)
+		if (r_ptr->flags1 & (RF1_UNIQUE))
 		{
 			bool dead = (r_ptr->max_num == 0);
 

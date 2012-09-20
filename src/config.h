@@ -114,10 +114,10 @@
 
 
 /*
- * This "fix" is from "Yoshiaki KASAHARA <kasahara@csce.kyushu-u.ac.jp>"
- * It prevents problems on (non-Solaris) Suns using "SAFE_SETUID".
+ * Prevent problems on (non-Solaris) Suns using "SAFE_SETUID".
+ * The SAFE_SETUID code is weird, use it at your own risk...
  */
-#if defined(sun) && !defined(SOLARIS)
+#if defined(SUNOS) && !defined(SOLARIS)
 # undef SAFE_SETUID_POSIX
 #endif
 
@@ -294,7 +294,6 @@
 
 
 
-
 /*
  * OPTION: Allow use of the "flow_by_smell" and "flow_by_sound"
  * software options, which enable "monster flowing".
@@ -455,13 +454,6 @@
  */
 #define CAPITALIZE_USER_NAME
 
-
-
-/*
- * OPTION: Shimmer Multi-Hued monsters/objects
- */
-#define SHIMMER_MONSTERS
-#define SHIMMER_OBJECTS
 
 
 /*

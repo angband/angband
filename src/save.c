@@ -380,11 +380,16 @@ static errr wr_savefile(void)
 	/* Write the inventory */
 	for (i = 0; i < INVEN_TOTAL; i++)
 	{
-		if (inventory[i].k_idx)
-		{
-			wr_u16b(i);
-			wr_item(&inventory[i]);
-		}
+		object_type *o_ptr = &inventory[i];
+
+		/* Skip non-objects */
+		if (!o_ptr->k_idx) continue;
+
+		/* Dump index */
+		wr_u16b(i);
+
+		/* Dump object */
+		wr_item(o_ptr);
 	}
 
 	/* Add a sentinel */
@@ -678,6 +683,7 @@ static void wr_item(object_type *o_ptr)
 {
 	wr_s16b(o_ptr->k_idx);
 
+	/* Location */
 	wr_byte(o_ptr->iy);
 	wr_byte(o_ptr->ix);
 
@@ -704,12 +710,15 @@ static void wr_item(object_type *o_ptr)
 
 	wr_byte(o_ptr->marked);
 
+	/* Old flags */
 	wr_u32b(0L);
 	wr_u32b(0L);
 	wr_u32b(0L);
 
-	wr_u16b(0);
+	/* Held by monster index */
+	wr_s16b(o_ptr->held_m_idx);
 
+	/* Extra information */
 	wr_byte(o_ptr->xtra1);
 	wr_byte(o_ptr->xtra2);
 
@@ -993,7 +1002,7 @@ static void wr_extra(void)
 	/* Race/Class/Gender/Spells */
 	wr_byte(p_ptr->prace);
 	wr_byte(p_ptr->pclass);
-	wr_byte(p_ptr->male);
+	wr_byte(p_ptr->psex);
 	wr_byte(0);	/* oops */
 
 	wr_byte(p_ptr->hitdie);
@@ -1109,601 +1118,6 @@ static void wr_extra(void)
 	/* Current turn */
 	wr_s32b(turn);
 }
-
-
-#if 0
-
-/*
- * Mega-Hack -- Initialize a fake object from a terrain feature
- *
- * This function picks random traps for invisible traps, losing
- * invisible trap doors, and converts embedded gold into copper
- * worth 50 gold pieces.  Locked and Jammed doors get a decent
- * guess at the lock/jam value.
- *
- * XXX XXX XXX This function helps make a fake "2.7.9" savefile.
- */
-static bool wr_dungeon_aux(object_type *o_ptr, int y, int x)
-{
-	int feat;
-
-	bool invis = FALSE;
-
-	cave_type *c_ptr = &cave[y][x];
-
-
-	/* Paranoia */
-	if (!c_ptr->feat) return (FALSE);
-
-	/* Skip empty floors */
-	if (c_ptr->feat == FEAT_FLOOR) return (FALSE);
-
-	/* Skip empty magma/quartz */
-	if (c_ptr->feat == FEAT_MAGMA) return (FALSE);
-	if (c_ptr->feat == FEAT_QUARTZ) return (FALSE);
-
-	/* Skip walls */
-	if (c_ptr->feat >= FEAT_WALL_EXTRA) return (FALSE);
-
-	/* Wipe the object */
-	WIPE(o_ptr, object_type);
-
-	/* A single object */
-	o_ptr->number = 1;
-
-	/* Hack -- worthless */
-	o_ptr->ident |= ID_BROKEN;
-
-	/* Save the actual feature */
-	feat = (c_ptr->feat);
-
-	/* Mega-Hack -- invisible traps */
-	if (c_ptr->feat == FEAT_INVIS)
-	{
-		/* Make invisible */
-		invis = TRUE;
-
-		/* XXX XXX XXX Hack -- random trap */
-		c_ptr->feat = FEAT_TRAP_HEAD + randint(15);
-	}
-
-	/* Analyze the terrain feature */
-	switch (c_ptr->feat)
-	{
-		/* Invisible trap */
-		case FEAT_INVIS:
-		{
-			/* See above */
-			break;
-		}
-
-		/* Glyph of warding */
-		case FEAT_GLYPH:
-		{
-			o_ptr->k_idx = 459;
-			o_ptr->tval = 102;
-			o_ptr->sval = 63;
-			break;
-		}
-
-		/* Open door */
-		case FEAT_OPEN:
-		{
-			o_ptr->k_idx = 446;
-			o_ptr->tval = 104;
-			break;
-		}
-
-		/* Broken door */
-		case FEAT_BROKEN:
-		{
-			o_ptr->k_idx = 446;
-			o_ptr->tval = 104;
-			o_ptr->pval = 1;
-			break;
-		}
-
-		/* Up stairs */
-		case FEAT_LESS:
-		{
-			o_ptr->k_idx = 449;
-			o_ptr->tval = 107;
-			break;
-		}
-
-		/* Down stairs */
-		case FEAT_MORE:
-		{
-			o_ptr->k_idx = 450;
-			o_ptr->tval = 108;
-			break;
-		}
-
-		/* Shops */
-		case FEAT_SHOP_HEAD + 0x00:
-		case FEAT_SHOP_HEAD + 0x01:
-		case FEAT_SHOP_HEAD + 0x02:
-		case FEAT_SHOP_HEAD + 0x03:
-		case FEAT_SHOP_HEAD + 0x04:
-		case FEAT_SHOP_HEAD + 0x05:
-		case FEAT_SHOP_HEAD + 0x06:
-		case FEAT_SHOP_HEAD + 0x07:
-		{
-			o_ptr->k_idx = 451 + (c_ptr->feat - FEAT_SHOP_HEAD);
-			o_ptr->tval = 110;
-			o_ptr->sval = 1 + (c_ptr->feat - FEAT_SHOP_HEAD);
-			break;
-		}
-
-		/* Visible trap -- trap door */
-		case FEAT_TRAP_HEAD + 0x00:
-		{
-			o_ptr->k_idx = 462;
-			o_ptr->tval = 102;
-			o_ptr->sval = 2;
-			o_ptr->pval = 20;
-			break;
-		}
-
-		/* Visible trap -- pit */
-		case FEAT_TRAP_HEAD + 0x01:
-		{
-			o_ptr->k_idx = 460;
-			o_ptr->tval = 102;
-			o_ptr->sval = 0;
-			o_ptr->pval = 1;
-			break;
-		}
-
-		/* Visible trap -- spiked pit */
-		case FEAT_TRAP_HEAD + 0x02:
-		{
-			o_ptr->k_idx = 461;
-			o_ptr->tval = 102;
-			o_ptr->sval = 1;
-			o_ptr->pval = 10;
-			break;
-		}
-
-		/* Visible trap -- poison pit -> spiked pit */
-		case FEAT_TRAP_HEAD + 0x03:
-		{
-			o_ptr->k_idx = 461;
-			o_ptr->tval = 102;
-			o_ptr->sval = 1;
-			o_ptr->pval = 10;
-			break;
-		}
-
-		/* Visible trap -- rune -- summon */
-		case FEAT_TRAP_HEAD + 0x04:
-		{
-			o_ptr->k_idx = 469;
-			o_ptr->tval = 102;
-			o_ptr->sval = 15;
-			o_ptr->pval = 5;
-			break;
-		}
-
-		/* Visible trap -- rune -- teleport */
-		case FEAT_TRAP_HEAD + 0x05:
-		{
-			o_ptr->k_idx = 466;
-			o_ptr->tval = 102;
-			o_ptr->sval = 14;
-			o_ptr->pval = 5;
-			break;
-		}
-
-		/* Visible trap -- spot -- fire */
-		case FEAT_TRAP_HEAD + 0x06:
-		{
-			o_ptr->k_idx = 470;
-			o_ptr->tval = 102;
-			o_ptr->sval = 12;
-			o_ptr->pval = 10;
-			break;
-		}
-
-		/* Visible trap -- spot -- acid */
-		case FEAT_TRAP_HEAD + 0x07:
-		{
-			o_ptr->k_idx = 471;
-			o_ptr->tval = 102;
-			o_ptr->sval = 13;
-			o_ptr->pval = 10;
-			break;
-		}
-
-		/* Visible trap -- dart -- slow */
-		case FEAT_TRAP_HEAD + 0x08:
-		{
-			o_ptr->k_idx = 475;
-			o_ptr->tval = 102;
-			o_ptr->sval = 4;
-			o_ptr->pval = 5;
-			break;
-		}
-
-		/* Visible trap -- dart -- str */
-		case FEAT_TRAP_HEAD + 0x09:
-		{
-			o_ptr->k_idx = 465;
-			o_ptr->tval = 102;
-			o_ptr->sval = 6;
-			o_ptr->pval = 5;
-			break;
-		}
-
-		/* Visible trap -- dart -- dex */
-		case FEAT_TRAP_HEAD + 0x0A:
-		{
-			o_ptr->k_idx = 468;
-			o_ptr->tval = 102;
-			o_ptr->sval = 5;
-			o_ptr->pval = 5;
-			break;
-		}
-
-		/* Visible trap -- dart -- con */
-		case FEAT_TRAP_HEAD + 0x0B:
-		{
-			o_ptr->k_idx = 476;
-			o_ptr->tval = 102;
-			o_ptr->sval = 7;
-			o_ptr->pval = 5;
-			break;
-		}
-
-		/* Visible trap -- gas -- blind */
-		case FEAT_TRAP_HEAD + 0x0C:
-		{
-			o_ptr->k_idx = 473;
-			o_ptr->tval = 102;
-			o_ptr->sval = 9;
-			o_ptr->pval = 10;
-			break;
-		}
-
-		/* Visible trap -- gas -- confuse */
-		case FEAT_TRAP_HEAD + 0x0D:
-		{
-			o_ptr->k_idx = 474;
-			o_ptr->tval = 102;
-			o_ptr->sval = 10;
-			o_ptr->pval = 10;
-			break;
-		}
-
-		/* Visible trap -- gas -- poison */
-		case FEAT_TRAP_HEAD + 0x0E:
-		{
-			o_ptr->k_idx = 472;
-			o_ptr->tval = 102;
-			o_ptr->sval = 8;
-			o_ptr->pval = 10;
-			break;
-		}
-
-		/* Visible trap -- gas -- sleep */
-		case FEAT_TRAP_HEAD + 0x0F:
-		{
-			o_ptr->k_idx = 463;
-			o_ptr->tval = 102;
-			o_ptr->sval = 11;
-			o_ptr->pval = 10;
-			break;
-		}
-
-		/* Doors -- locked */
-		case FEAT_DOOR_HEAD + 0x00:
-		case FEAT_DOOR_HEAD + 0x01:
-		case FEAT_DOOR_HEAD + 0x02:
-		case FEAT_DOOR_HEAD + 0x03:
-		case FEAT_DOOR_HEAD + 0x04:
-		case FEAT_DOOR_HEAD + 0x05:
-		case FEAT_DOOR_HEAD + 0x06:
-		case FEAT_DOOR_HEAD + 0x07:
-		{
-			o_ptr->k_idx = 447;
-			o_ptr->tval = 118;
-			o_ptr->pval = ((int)(c_ptr->feat - FEAT_DOOR_HEAD)) * 2;
-			break;
-		}
-
-		/* Doors -- jammed */
-		case FEAT_DOOR_HEAD + 0x08 + 0x00:
-		case FEAT_DOOR_HEAD + 0x08 + 0x01:
-		case FEAT_DOOR_HEAD + 0x08 + 0x02:
-		case FEAT_DOOR_HEAD + 0x08 + 0x03:
-		case FEAT_DOOR_HEAD + 0x08 + 0x04:
-		case FEAT_DOOR_HEAD + 0x08 + 0x05:
-		case FEAT_DOOR_HEAD + 0x08 + 0x06:
-		case FEAT_DOOR_HEAD + 0x08 + 0x07:
-		{
-			o_ptr->k_idx = 447;
-			o_ptr->tval = 118;
-			o_ptr->pval = -1 - ((int)(c_ptr->feat - (FEAT_DOOR_HEAD + 0x08))) * 2;
-			break;
-		}
-
-		/* Secret doors */
-		case FEAT_SECRET:
-		{
-			o_ptr->k_idx = 448;
-			o_ptr->tval = 117;
-			break;
-		}
-
-		/* Rubble */
-		case FEAT_RUBBLE:
-		{
-			o_ptr->k_idx = 445;
-			o_ptr->tval = 119;
-			break;
-		}
-
-		/* Hack -- Vein + treasure */
-		case FEAT_MAGMA_H:
-		case FEAT_QUARTZ_H:
-		case FEAT_MAGMA_K:
-		case FEAT_QUARTZ_K:
-		{
-			o_ptr->k_idx = 480;
-			o_ptr->tval = 100;
-			o_ptr->sval = 1;
-			o_ptr->pval = 50;
-			break;
-		}
-	}
-
-	/* Hack -- invisible traps */
-	if (invis) o_ptr->tval = 101;
-
-	/* Restore the feature */
-	c_ptr->feat = feat;
-
-	/* Paranoia -- Nothing made */
-	if (!o_ptr->k_idx) return (FALSE);
-
-	/* Set the position */
-	o_ptr->iy = y;
-	o_ptr->ix = x;
-
-	/* Success */
-	return (TRUE);
-}
-
-
-
-/*
- * New "cave grid" flags -- saved in savefile
- */
-#define OLD_GRID_W_01	0x0001	/* Wall type (bit 1) */
-#define OLD_GRID_W_02	0x0002	/* Wall type (bit 2) */
-#define OLD_GRID_PERM	0x0004	/* Wall type is permanent */
-#define OLD_GRID_QQQQ	0x0008	/* Unused */
-#define OLD_GRID_MARK	0x0010	/* Grid is memorized */
-#define OLD_GRID_GLOW	0x0020	/* Grid is illuminated */
-#define OLD_GRID_ROOM	0x0040	/* Grid is part of a room */
-#define OLD_GRID_ICKY	0x0080	/* Grid is anti-teleport */
-
-/*
- * Masks for the new grid types
- */
-#define OLD_GRID_WALL_MASK	0x0003	/* Wall type */
-
-/*
- * Legal results of OLD_GRID_WALL_MASK
- */
-#define OLD_GRID_WALL_NONE		0x0000	/* No wall */
-#define OLD_GRID_WALL_MAGMA		0x0001	/* Magma vein */
-#define OLD_GRID_WALL_QUARTZ	0x0002	/* Quartz vein */
-#define OLD_GRID_WALL_GRANITE	0x0003	/* Granite wall */
-
-
-/*
- * Write the current dungeon
- *
- * XXX XXX XXX Mega-Hack -- convert new "terrain feature" info back
- * into standard Angband 2.7.9 savefile format using "fake" objects,
- * so that I can use the new "terrain features" even though the new
- * savefile format is not ready yet.
- */
-static void wr_dungeon(void)
-{
-	int i, j, y, x;
-	byte count, prev_char;
-	byte tmp8u;
-
-	object_type forge;
-
-	cave_type *c_ptr;
-
-	object_type *o_ptr;
-
-
-	/* Dungeon specific info follows */
-	wr_u16b(dun_level);
-	wr_u16b(num_repro);
-	wr_u16b(py);
-	wr_u16b(px);
-	wr_u16b(cur_hgt);
-	wr_u16b(cur_wid);
-	wr_u16b(max_panel_rows);
-	wr_u16b(max_panel_cols);
-
-
-	/*** Simple "Run-Length-Encoding" of cave ***/
-
-	/* Note that this will induce two wasted bytes */
-	count = 0;
-	prev_char = 0;
-
-	/* Dump the cave */
-	for (y = 0; y < cur_hgt; y++)
-	{
-		for (x = 0; x < cur_wid; x++)
-		{
-			/* Get the cave */
-			c_ptr = &cave[y][x];
-
-			/* Start with nothing */
-			tmp8u = 0;
-
-			/* The old "vault" flag */
-			if (c_ptr->info & CAVE_ICKY) tmp8u |= OLD_GRID_ICKY;
-
-			/* The old "room" flag */
-			if (c_ptr->info & CAVE_ROOM) tmp8u |= OLD_GRID_ROOM;
-
-			/* The old "glow" flag */
-			if (c_ptr->info & CAVE_GLOW) tmp8u |= OLD_GRID_GLOW;
-
-			/* The old "mark" flag */
-			if (c_ptr->info & CAVE_MARK) tmp8u |= OLD_GRID_MARK;
-
-			/* Convert the terrain type */
-			switch (c_ptr->feat)
-			{
-				case FEAT_LESS:
-				case FEAT_MORE:
-				{
-					tmp8u |= OLD_GRID_PERM;
-					break;
-				}
-
-				case FEAT_SHOP_HEAD + 0x00:
-				case FEAT_SHOP_HEAD + 0x01:
-				case FEAT_SHOP_HEAD + 0x02:
-				case FEAT_SHOP_HEAD + 0x03:
-				case FEAT_SHOP_HEAD + 0x04:
-				case FEAT_SHOP_HEAD + 0x05:
-				case FEAT_SHOP_HEAD + 0x06:
-				case FEAT_SHOP_HEAD + 0x07:
-				{
-					tmp8u |= OLD_GRID_PERM;
-					break;
-				}
-
-				case FEAT_MAGMA:
-				case FEAT_MAGMA_H:
-				case FEAT_MAGMA_K:
-				{
-					tmp8u |= OLD_GRID_WALL_MAGMA;
-					break;
-				}
-
-				case FEAT_QUARTZ:
-				case FEAT_QUARTZ_H:
-				case FEAT_QUARTZ_K:
-				{
-					tmp8u |= OLD_GRID_WALL_QUARTZ;
-					break;
-				}
-
-				case FEAT_WALL_EXTRA:
-				case FEAT_WALL_INNER:
-				case FEAT_WALL_OUTER:
-				case FEAT_WALL_SOLID:
-				{
-					tmp8u |= OLD_GRID_WALL_GRANITE;
-					break;
-				}
-
-				case FEAT_PERM_EXTRA:
-				case FEAT_PERM_INNER:
-				case FEAT_PERM_OUTER:
-				case FEAT_PERM_SOLID:
-				{
-					tmp8u |= OLD_GRID_WALL_GRANITE;
-					tmp8u |= OLD_GRID_PERM;
-					break;
-				}
-			}
-
-			/* If the run is broken, or too full, flush it */
-			if ((tmp8u != prev_char) || (count == MAX_UCHAR))
-			{
-				wr_byte((byte)count);
-				wr_byte((byte)prev_char);
-				prev_char = tmp8u;
-				count = 1;
-			}
-
-			/* Continue the run */
-			else
-			{
-				count++;
-			}
-		}
-	}
-
-	/* Flush the data (if any) */
-	if (count)
-	{
-		wr_byte((byte)count);
-		wr_byte((byte)prev_char);
-	}
-
-
-	/* Compact the objects */
-	compact_objects(0);
-
-
-	/* Nothing yet */
-	j = 0;
-
-	/* Point at the object */
-	o_ptr = &forge;
-
-	/* Fake objects */
-	for (y = 0; y < cur_hgt; y++)
-	{
-		for (x = 0; x < cur_wid; x++)
-		{
-			/* Count "fake objects" */
-			if (wr_dungeon_aux(o_ptr, y, x)) j++;
-		}
-	}
-
-	/* Total objects */
-	wr_u16b(o_max + j);
-
-	/* Dump the "real" items */
-	for (i = 1; i < o_max; i++)
-	{
-		o_ptr = &o_list[i];
-		wr_item(o_ptr);
-	}
-
-	/* Point at the object */
-	o_ptr = &forge;
-
-	/* Fake objects */
-	for (y = 0; y < cur_hgt; y++)
-	{
-		for (x = 0; x < cur_wid; x++)
-		{
-			/* Dump the "fake objects" */
-			if (wr_dungeon_aux(o_ptr, y, x)) wr_item(o_ptr);
-		}
-	}
-
-
-	/* Compact the monsters */
-	compact_monsters(0);
-
-	/* Dump the "real" monsters */
-	wr_u16b(m_max);
-	for (i = 1; i < m_max; i++)
-	{
-		monster_type *m_ptr = &m_list[i];
-		wr_monster(m_ptr);
-	}
-}
-
-#endif
 
 
 
@@ -2010,11 +1424,16 @@ static bool wr_savefile_new(void)
 	/* Write the inventory */
 	for (i = 0; i < INVEN_TOTAL; i++)
 	{
-		if (inventory[i].k_idx)
-		{
-			wr_u16b(i);
-			wr_item(&inventory[i]);
-		}
+		object_type *o_ptr = &inventory[i];
+
+		/* Skip non-objects */
+		if (!o_ptr->k_idx) continue;
+
+		/* Dump index */
+		wr_u16b(i);
+
+		/* Dump object */
+		wr_item(o_ptr);
 	}
 
 	/* Add a sentinel */

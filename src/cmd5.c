@@ -15,401 +15,6 @@
 
 
 /*
- * XXX XXX XXX XXX
- */
-extern void display_spell_list(void);
-
-/*
- * Hack -- Display all known spells in a window
- *
- * XXX XXX XXX Need to analyze size of the window.
- *
- * XXX XXX XXX Need more color coding.
- */
-void display_spell_list(void)
-{
-	int			i, j;
-	int			y, x;
-
-	int			m[9];
-
-	magic_type	*s_ptr;
-
-	char		name[80];
-
-	char		out_val[160];
-
-
-	/* Erase window */
-	clear_from(0);
-
-	/* Warriors are illiterate */
-	if (!mp_ptr->spell_book) return;
-
-	/* Scan books */
-	for (j = 0; j < 9; j++)
-	{
-		int n = 0;
-
-		/* Reset vertical */
-		m[j] = 0;
-
-		/* Vertical location */
-		y = (j < 3) ? 0 : (m[j - 3] + 2);
-
-		/* Horizontal location */
-		x = 27 * (j % 3);
-
-		/* Scan spells */
-		for (i = 0; i < 64; i++)
-		{
-			/* Check for spell */
-			if ((i < 32) ?
-			    (spell_flags[mp_ptr->spell_type][j][0] & (1L << i)) :
-			    (spell_flags[mp_ptr->spell_type][j][1] & (1L << (i - 32))))
-			{
-				byte a = TERM_WHITE;
-
-				/* Access the spell */
-				s_ptr = &mp_ptr->info[i];
-
-				/* Default name */
-				strcpy(name, spell_names[mp_ptr->spell_type][i]);
-
-				/* Illegible */
-				if (s_ptr->slevel >= 99)
-				{
-					/* Illegible */
-					strcpy(name, "(illegible)");
-
-					/* Unusable */
-					a = TERM_L_DARK;
-				}
-
-				/* Forgotten */
-				else if ((i < 32) ?
-				         ((spell_forgotten1 & (1L << i))) :
-				         ((spell_forgotten2 & (1L << (i - 32)))))
-				{
-					/* Forgotten */
-					a = TERM_ORANGE;
-				}
-
-				/* Unknown */
-				else if (!((i < 32) ?
-				           (spell_learned1 & (1L << i)) :
-				           (spell_learned2 & (1L << (i - 32)))))
-				{
-					/* Unknown */
-					a = TERM_RED;
-				}
-
-				/* Untried */
-				else if (!((i < 32) ?
-				           (spell_worked1 & (1L << i)) :
-				           (spell_worked2 & (1L << (i - 32)))))
-				{
-					/* Untried */
-					a = TERM_YELLOW;
-				}
-
-				/* Dump the spell --(-- */
-				sprintf(out_val, "%c/%c) %-20.20s",
-		        		I2A(j), I2A(n), name);
-
-				/* Track maximum */
-				m[j] = y + n;
-
-				/* Dump onto the window */
-				Term_putstr(x, m[j], -1, a, out_val);
-
-				/* Next */
-				n++;
-			}
-		}
-	}
-}
-
-
-
-/*
- * Returns spell chance of failure for spell		-RAK-
- */
-static s16b spell_chance(int spell)
-{
-	int		chance, minfail;
-
-	magic_type	*s_ptr;
-
-
-	/* Paranoia -- must be literate */
-	if (!mp_ptr->spell_book) return (100);
-
-	/* Access the spell */
-	s_ptr = &mp_ptr->info[spell];
-
-	/* Extract the base spell failure rate */
-	chance = s_ptr->sfail;
-
-	/* Reduce failure rate by "effective" level adjustment */
-	chance -= 3 * (p_ptr->lev - s_ptr->slevel);
-
-	/* Reduce failure rate by INT/WIS adjustment */
-	chance -= 3 * (adj_mag_stat[p_ptr->stat_ind[mp_ptr->spell_stat]] - 1);
-
-	/* Not enough mana to cast */
-	if (s_ptr->smana > p_ptr->csp)
-	{
-		chance += 5 * (s_ptr->smana - p_ptr->csp);
-	}
-
-	/* Extract the minimum failure rate */
-	minfail = adj_mag_fail[p_ptr->stat_ind[mp_ptr->spell_stat]];
-
-	/* Non mage/priest characters never get too good */
-	if ((p_ptr->pclass != 1) && (p_ptr->pclass != 2))
-	{
-		if (minfail < 5) minfail = 5;
-	}
-
-	/* Hack -- Priest prayer penalty for "edged" weapons  -DGK */
-	if ((p_ptr->pclass == 2) && (p_ptr->icky_wield)) chance += 25;
-
-	/* Minimum failure rate */
-	if (chance < minfail) chance = minfail;
-
-	/* Stunning makes spells harder */
-	if (p_ptr->stun > 50) chance += 25;
-	else if (p_ptr->stun) chance += 15;
-
-	/* Always a 5 percent chance of working */
-	if (chance > 95) chance = 95;
-
-	/* Return the chance */
-	return (chance);
-}
-
-
-
-/*
- * Determine if a spell is "okay" for the player to cast or study
- * The spell must be legible, not forgotten, and also, to cast,
- * it must be known, and to study, it must not be known.
- */
-static bool spell_okay(int j, bool known)
-{
-	magic_type *s_ptr;
-
-	/* Access the spell */
-	s_ptr = &mp_ptr->info[j];
-
-	/* Spell is illegal */
-	if (s_ptr->slevel > p_ptr->lev) return (FALSE);
-
-	/* Spell is forgotten */
-	if ((j < 32) ?
-	    (spell_forgotten1 & (1L << j)) :
-	    (spell_forgotten2 & (1L << (j - 32))))
-	{
-		/* Never okay */
-		return (FALSE);
-	}
-
-	/* Spell is learned */
-	if ((j < 32) ?
-	    (spell_learned1 & (1L << j)) :
-	    (spell_learned2 & (1L << (j - 32))))
-	{
-		/* Okay to cast, not to study */
-		return (known);
-	}
-
-	/* Okay to study, not to cast */
-	return (!known);
-}
-
-
-
-/*
- * Extra information on a spell		-DRS-
- *
- * We can use up to 14 characters of the buffer 'p'
- *
- * The strings in this function were extracted from the code in the
- * functions "do_cmd_cast()" and "do_cmd_pray()" and may be dated.
- */
-static void spell_info(char *p, int j)
-{
-	/* Default */
-	strcpy(p, "");
-
-#ifdef DRS_SHOW_SPELL_INFO
-
-	/* Mage spells */
-	if (mp_ptr->spell_book == TV_MAGIC_BOOK)
-	{
-		int plev = p_ptr->lev;
-
-		/* Analyze the spell */
-		switch (j)
-		{
-			case 0: sprintf(p, " dam %dd4", 3+((plev-1)/5)); break;
-			case 2: strcpy(p, " range 10"); break;
-			case 5: strcpy(p, " heal 2d8"); break;
-			case 8: sprintf(p, " dam %d", 10 + (plev / 2)); break;
-			case 10: sprintf(p, " dam %dd8", (3+((plev-5)/4))); break;
-			case 14: sprintf(p, " range %d", plev * 10); break;
-			case 15: strcpy(p, " dam 6d8"); break;
-			case 16: sprintf(p, " dam %dd8", (5+((plev-5)/4))); break;
-			case 24: sprintf(p, " dam %dd8", (8+((plev-5)/4))); break;
-			case 26: sprintf(p, " dam %d", 30 + plev); break;
-			case 29: sprintf(p, " dur %d+d20", plev); break;
-			case 30: sprintf(p, " dam %d", 55 + plev); break;
-			case 38: sprintf(p, " dam %dd8", (6+((plev-5)/4))); break;
-			case 39: sprintf(p, " dam %d", 40 + plev/2); break;
-			case 40: sprintf(p, " dam %d", 40 + plev); break;
-			case 41: sprintf(p, " dam %d", 70 + plev); break;
-			case 42: sprintf(p, " dam %d", 65 + plev); break;
-			case 43: sprintf(p, " dam %d", 300 + plev*2); break;
-			case 49: strcpy(p, " dur 20+d20"); break;
-			case 50: strcpy(p, " dur 20+d20"); break;
-			case 51: strcpy(p, " dur 20+d20"); break;
-			case 52: strcpy(p, " dur 20+d20"); break;
-			case 53: strcpy(p, " dur 20+d20"); break;
-			case 54: strcpy(p, " dur 25+d25"); break;
-			case 55: strcpy(p, " dur 30+d20"); break;
-			case 56: strcpy(p, " dur 25+d25"); break;
-			case 57: sprintf(p, " dur %d+d25", 30+plev); break;
-			case 58: strcpy(p, " dur 6+d8"); break;
-		}
-	}
-
-	/* Priest spells */
-	if (mp_ptr->spell_book == TV_PRAYER_BOOK)
-	{
-		int plev = p_ptr->lev;
-
-		/* See below */
-		int orb = (plev / ((p_ptr->pclass == 2) ? 2 : 4));
-
-		/* Analyze the spell */
-		switch (j)
-		{
-			case 1: strcpy(p, " heal 2d10"); break;
-			case 2: strcpy(p, " dur 12+d12"); break;
-			case 9: sprintf(p, " range %d", 3*plev); break;
-			case 10: strcpy(p, " heal 4d10"); break;
-			case 11: strcpy(p, " dur 24+d24"); break;
-			case 15: strcpy(p, " dur 10+d10"); break;
-			case 17: sprintf(p, " %d+3d6", plev + orb); break;
-			case 18: strcpy(p, " heal 6d10"); break;
-			case 19: strcpy(p, " dur 24+d24"); break;
-			case 20: sprintf(p, " dur %d+d25", 3*plev); break;
-			case 23: strcpy(p, " heal 8d10"); break;
-			case 25: strcpy(p, " dur 48+d48"); break;
-			case 26: sprintf(p, " dam d%d", 3*plev); break;
-			case 27: strcpy(p, " heal 300"); break;
-			case 28: sprintf(p, " dam d%d", 3*plev); break;
-			case 30: strcpy(p, " heal 1000"); break;
-			case 36: strcpy(p, " heal 4d10"); break;
-			case 37: strcpy(p, " heal 8d10"); break;
-			case 38: strcpy(p, " heal 2000"); break;
-			case 41: sprintf(p, " dam d%d", 4*plev); break;
-			case 42: sprintf(p, " dam d%d", 4*plev); break;
-			case 45: strcpy(p, " dam 200"); break;
-			case 52: strcpy(p, " range 10"); break;
-			case 53: sprintf(p, " range %d", 8*plev); break;
-		}
-	}
-
-#endif
-
-}
-
-
-/*
- * Print a list of spells (for browsing or casting)
- */
-static void print_spells(byte *spell, int num)
-{
-	int			i, j, col;
-
-	magic_type		*s_ptr;
-
-	cptr		comment;
-
-	char		info[80];
-
-	char		out_val[160];
-
-
-	/* Print column */
-	col = 20;
-
-	/* Title the list */
-	prt("", 1, col);
-	put_str("Name", 1, col + 5);
-	put_str("Lv Mana Fail", 1, col + 35);
-
-	/* Dump the spells */
-	for (i = 0; i < num; i++)
-	{
-		/* Access the spell */
-		j = spell[i];
-
-		/* Access the spell */
-		s_ptr = &mp_ptr->info[j];
-
-		/* Skip illegible spells */
-		if (s_ptr->slevel >= 99)
-		{
-			sprintf(out_val, "  %c) %-30s", I2A(i), "(illegible)");
-			prt(out_val, 2 + i, col);
-			continue;
-		}
-
-		/* XXX XXX Could label spells above the players level */
-
-		/* Get extra info */
-		spell_info(info, j);
-
-		/* Use that info */
-		comment = info;
-
-		/* Analyze the spell */
-		if ((j < 32) ?
-		    ((spell_forgotten1 & (1L << j))) :
-		    ((spell_forgotten2 & (1L << (j - 32)))))
-		{
-			comment = " forgotten";
-		}
-		else if (!((j < 32) ?
-		           (spell_learned1 & (1L << j)) :
-		           (spell_learned2 & (1L << (j - 32)))))
-		{
-			comment = " unknown";
-		}
-		else if (!((j < 32) ?
-		           (spell_worked1 & (1L << j)) :
-		           (spell_worked2 & (1L << (j - 32)))))
-		{
-			comment = " untried";
-		}
-
-		/* Dump the spell --(-- */
-		sprintf(out_val, "  %c) %-30s%2d %4d %3d%%%s",
-		        I2A(i), spell_names[mp_ptr->spell_type][j],
-		        s_ptr->slevel, s_ptr->smana, spell_chance(j), comment);
-		prt(out_val, 2 + i, col);
-	}
-
-	/* Clear the bottom line */
-	prt("", 2 + i, col);
-}
-
-
-
-/*
  * Allow user to choose a spell/prayer from the given book.
  *
  * If a valid spell is chosen, saves it in '*sn' and returns TRUE
@@ -421,14 +26,17 @@ static void print_spells(byte *spell, int num)
  */
 static int get_spell(int *sn, cptr prompt, int sval, bool known)
 {
-	int			i, j = -1;
+	int			i;
 
-	byte		spell[64], num = 0;
+	int			spell = -1;
+	int			num = 0;
+
+	byte		spells[64];
 
 	bool		flag, redraw, okay, ask;
 	char		choice;
 
-	magic_type		*s_ptr;
+	magic_type	*s_ptr;
 
 	char		out_val[160];
 
@@ -436,15 +44,15 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
 
 
 	/* Extract spells */
-	for (i = 0; i < 64; i++)
+	for (spell = 0; spell < 64; spell++)
 	{
 		/* Check for this spell */
-		if ((i < 32) ?
-		    (spell_flags[mp_ptr->spell_type][sval][0] & (1L << i)) :
-		    (spell_flags[mp_ptr->spell_type][sval][1] & (1L << (i - 32))))
+		if ((spell < 32) ?
+		    (spell_flags[mp_ptr->spell_type][sval][0] & (1L << spell)) :
+		    (spell_flags[mp_ptr->spell_type][sval][1] & (1L << (spell - 32))))
 		{
 			/* Collect this spell */
-			spell[num++] = i;
+			spells[num++] = spell;
 		}
 	}
 
@@ -459,7 +67,7 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
 	for (i = 0; i < num; i++)
 	{
 		/* Look for "okay" spells */
-		if (spell_okay(spell[i], known)) okay = TRUE;
+		if (spell_okay(spells[i], known)) okay = TRUE;
 	}
 
 	/* No "okay" spells */
@@ -507,7 +115,7 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
 				Term_save();
 
 				/* Display a list of spells */
-				print_spells(spell, num);
+				print_spells(spells, num, 1, 20);
 			}
 
 			/* Hide the list */
@@ -542,10 +150,10 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
 		}
 
 		/* Save the spell index */
-		j = spell[i];
+		spell = spells[i];
 
 		/* Require "okay" spells */
-		if (!spell_okay(j, known))
+		if (!spell_okay(spell, known))
 		{
 			bell();
 			msg_format("You may not %s that %s.", prompt, p);
@@ -558,12 +166,12 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
 			char tmp_val[160];
 
 			/* Access the spell */
-			s_ptr = &mp_ptr->info[j];
+			s_ptr = &mp_ptr->info[spell];
 
 			/* Prompt */
 			strnfmt(tmp_val, 78, "%^s %s (%d mana, %d%% fail)? ",
-			        prompt, spell_names[mp_ptr->spell_type][j],
-			        s_ptr->smana, spell_chance(j));
+			        prompt, spell_names[mp_ptr->spell_type][spell],
+			        s_ptr->smana, spell_chance(spell));
 
 			/* Belay that order */
 			if (!get_check(tmp_val)) continue;
@@ -593,7 +201,7 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
 	if (!flag) return (FALSE);
 
 	/* Save the choice */
-	(*sn) = j;
+	(*sn) = spell;
 
 	/* Success */
 	return (TRUE);
@@ -606,12 +214,18 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
  * Peruse the spells/prayers in a Book
  *
  * Note that *all* spells in the book are listed
+ *
+ * Note that browsing is allowed while confused or blind,
+ * and in the dark, primarily to allow browsing in stores.
  */
 void do_cmd_browse(void)
 {
-	int			i, item, sval;
+	int			item, sval;
 
-	byte		spell[64], num = 0;
+	int			spell = -1;
+	int			num = 0;
+
+	byte		spells[64];
 
 	object_type		*o_ptr;
 
@@ -622,6 +236,8 @@ void do_cmd_browse(void)
 		msg_print("You cannot read books!");
 		return;
 	}
+
+#if 0
 
 	/* No lite */
 	if (p_ptr->blind || no_lite())
@@ -637,6 +253,7 @@ void do_cmd_browse(void)
 		return;
 	}
 
+#endif
 
 	/* Restrict choices to "useful" books */
 	item_tester_tval = mp_ptr->spell_book;
@@ -664,16 +281,23 @@ void do_cmd_browse(void)
 	sval = o_ptr->sval;
 
 
+	/* Track the object kind */
+	object_kind_track(o_ptr->k_idx);
+
+	/* Hack -- Handle stuff */
+	handle_stuff();
+
+
 	/* Extract spells */
-	for (i = 0; i < 64; i++)
+	for (spell = 0; spell < 64; spell++)
 	{
 		/* Check for this spell */
-		if ((i < 32) ?
-		    (spell_flags[mp_ptr->spell_type][sval][0] & (1L << i)) :
-		    (spell_flags[mp_ptr->spell_type][sval][1] & (1L << (i - 32))))
+		if ((spell < 32) ?
+		    (spell_flags[mp_ptr->spell_type][sval][0] & (1L << spell)) :
+		    (spell_flags[mp_ptr->spell_type][sval][1] & (1L << (spell - 32))))
 		{
 			/* Collect this spell */
-			spell[num++] = i;
+			spells[num++] = spell;
 		}
 	}
 
@@ -682,7 +306,7 @@ void do_cmd_browse(void)
 	Term_save();
 
 	/* Display the spells */
-	print_spells(spell, num);
+	print_spells(spells, num, 1, 20);
 
 	/* Clear the top line */
 	prt("", 0, 0);
@@ -707,7 +331,7 @@ void do_cmd_study(void)
 {
 	int			i, item, sval;
 
-	int			j = -1;
+	int			spell = -1;
 
 	cptr p = ((mp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
@@ -765,11 +389,18 @@ void do_cmd_study(void)
 	sval = o_ptr->sval;
 
 
+	/* Track the object kind */
+	object_kind_track(o_ptr->k_idx);
+
+	/* Hack -- Handle stuff */
+	handle_stuff();
+
+
 	/* Mage -- Learn a selected spell */
 	if (mp_ptr->spell_book == TV_MAGIC_BOOK)
 	{
 		/* Ask for a spell, allow cancel */
-		if (!get_spell(&j, "study", sval, FALSE) && (j == -1)) return;
+		if (!get_spell(&spell, "study", sval, FALSE) && (spell == -1)) return;
 	}
 
 	/* Priest -- Learn a random prayer */
@@ -777,28 +408,33 @@ void do_cmd_study(void)
 	{
 		int k = 0;
 
+		int gift = -1;
+
 		/* Extract spells */
-		for (i = 0; i < 64; i++)
+		for (spell = 0; spell < 64; spell++)
 		{
 			/* Check spells in the book */
-			if ((i < 32) ?
-			    (spell_flags[mp_ptr->spell_type][sval][0] & (1L << i)) :
-			    (spell_flags[mp_ptr->spell_type][sval][1] & (1L << (i - 32))))
+			if ((spell < 32) ?
+			    (spell_flags[mp_ptr->spell_type][sval][0] & (1L << spell)) :
+			    (spell_flags[mp_ptr->spell_type][sval][1] & (1L << (spell - 32))))
 			{
 				/* Skip non "okay" prayers */
-				if (!spell_okay(i, FALSE)) continue;
+				if (!spell_okay(spell, FALSE)) continue;
 
 				/* Hack -- Prepare the randomizer */
 				k++;
 
 				/* Hack -- Apply the randomizer */
-				if (rand_int(k) == 0) j = i;
+				if (rand_int(k) == 0) gift = spell;
 			}
 		}
+
+		/* Accept gift */
+		spell = gift;
 	}
 
 	/* Nothing to study */
-	if (j < 0)
+	if (spell < 0)
 	{
 		/* Message */
 		msg_format("You cannot learn any %ss in that book.", p);
@@ -812,13 +448,13 @@ void do_cmd_study(void)
 	energy_use = 100;
 
 	/* Learn the spell */
-	if (j < 32)
+	if (spell < 32)
 	{
-		spell_learned1 |= (1L << j);
+		spell_learned1 |= (1L << spell);
 	}
 	else
 	{
-		spell_learned2 |= (1L << (j - 32));
+		spell_learned2 |= (1L << (spell - 32));
 	}
 
 	/* Find the next open entry in "spell_order[]" */
@@ -829,19 +465,25 @@ void do_cmd_study(void)
 	}
 
 	/* Add the spell to the known list */
-	spell_order[i++] = j;
+	spell_order[i++] = spell;
 
 	/* Mention the result */
 	msg_format("You have learned the %s of %s.",
-	           p, spell_names[mp_ptr->spell_type][j]);
+	           p, spell_names[mp_ptr->spell_type][spell]);
+
+	/* Sound */
+	sound(SOUND_STUDY);
 
 	/* One less spell available */
 	p_ptr->new_spells--;
 
-	/* Report on remaining prayers */
+	/* Message if needed */
 	if (p_ptr->new_spells)
 	{
-		msg_format("You can learn %d more %ss.", p_ptr->new_spells, p);
+		/* Message */
+		msg_format("You can learn %d more %s%s.",
+		           p_ptr->new_spells, p,
+		           (p_ptr->new_spells != 1) ? "s" : "");
 	}
 
 	/* Save the new_spells value */
@@ -858,7 +500,7 @@ void do_cmd_study(void)
  */
 void do_cmd_cast(void)
 {
-	int			item, sval, j, dir;
+	int			item, sval, spell, dir;
 	int			chance, beam;
 	int			plev = p_ptr->lev;
 
@@ -915,16 +557,23 @@ void do_cmd_cast(void)
 	sval = o_ptr->sval;
 
 
+	/* Track the object kind */
+	object_kind_track(o_ptr->k_idx);
+
+	/* Hack -- Handle stuff */
+	handle_stuff();
+
+
 	/* Ask for a spell */
-	if (!get_spell(&j, "cast", sval, TRUE))
+	if (!get_spell(&spell, "cast", sval, TRUE))
 	{
-		if (j == -2) msg_print("You don't know any spells in that book.");
+		if (spell == -2) msg_print("You don't know any spells in that book.");
 		return;
 	}
 
 
 	/* Access the spell */
-	s_ptr = &mp_ptr->info[j];
+	s_ptr = &mp_ptr->info[spell];
 
 
 	/* Verify "dangerous" spells */
@@ -939,7 +588,7 @@ void do_cmd_cast(void)
 
 
 	/* Spell failure chance */
-	chance = spell_chance(j);
+	chance = spell_chance(spell);
 
 	/* Failed spell */
 	if (rand_int(100) < chance)
@@ -955,7 +604,7 @@ void do_cmd_cast(void)
 		beam = ((p_ptr->pclass == 1) ? plev : (plev / 2));
 
 		/* Spells.  */
-		switch (j)
+		switch (spell)
 		{
 			case 0:
 			{
@@ -967,7 +616,7 @@ void do_cmd_cast(void)
 
 			case 1:
 			{
-				(void)detect_monsters();
+				(void)detect_monsters_normal();
 				break;
 			}
 
@@ -986,6 +635,7 @@ void do_cmd_cast(void)
 			case 4:
 			{
 				(void)detect_treasure();
+				(void)detect_objects_gold();
 				break;
 			}
 
@@ -998,14 +648,15 @@ void do_cmd_cast(void)
 
 			case 6:
 			{
-				(void)detect_object();
+				(void)detect_objects_normal();
 				break;
 			}
 
 			case 7:
 			{
-				(void)detect_sdoor();
-				(void)detect_trap();
+				(void)detect_traps();
+				(void)detect_doors();
+				(void)detect_stairs();
 				break;
 			}
 
@@ -1275,13 +926,13 @@ void do_cmd_cast(void)
 
 			case 44:
 			{
-				(void)detect_evil();
+				(void)detect_monsters_evil();
 				break;
 			}
 
 			case 45:
 			{
-				(void)detect_magic();
+				(void)detect_objects_magic();
 				break;
 			}
 
@@ -1380,20 +1031,20 @@ void do_cmd_cast(void)
 		}
 
 		/* A spell was cast */
-		if (!((j < 32) ?
-		      (spell_worked1 & (1L << j)) :
-		      (spell_worked2 & (1L << (j - 32)))))
+		if (!((spell < 32) ?
+		      (spell_worked1 & (1L << spell)) :
+		      (spell_worked2 & (1L << (spell - 32)))))
 		{
 			int e = s_ptr->sexp;
 
 			/* The spell worked */
-			if (j < 32)
+			if (spell < 32)
 			{
-				spell_worked1 |= (1L << j);
+				spell_worked1 |= (1L << spell);
 			}
 			else
 			{
-				spell_worked2 |= (1L << (j - 32));
+				spell_worked2 |= (1L << (spell - 32));
 			}
 
 			/* Gain experience */
@@ -1498,7 +1149,7 @@ static void brand_weapon(void)
  */
 void do_cmd_pray(void)
 {
-	int item, sval, j, dir, chance;
+	int item, sval, spell, dir, chance;
 	int plev = p_ptr->lev;
 
 	object_type	*o_ptr;
@@ -1554,16 +1205,23 @@ void do_cmd_pray(void)
 	sval = o_ptr->sval;
 
 
+	/* Track the object kind */
+	object_kind_track(o_ptr->k_idx);
+
+	/* Hack -- Handle stuff */
+	handle_stuff();
+
+
 	/* Choose a spell */
-	if (!get_spell(&j, "recite", sval, TRUE))
+	if (!get_spell(&spell, "recite", sval, TRUE))
 	{
-		if (j == -2) msg_print("You don't know any prayers in that book.");
+		if (spell == -2) msg_print("You don't know any prayers in that book.");
 		return;
 	}
 
 
 	/* Access the spell */
-	s_ptr = &mp_ptr->info[j];
+	s_ptr = &mp_ptr->info[spell];
 
 
 	/* Verify "dangerous" prayers */
@@ -1578,7 +1236,7 @@ void do_cmd_pray(void)
 
 
 	/* Spell failure chance */
-	chance = spell_chance(j);
+	chance = spell_chance(spell);
 
 	/* Check for failure */
 	if (rand_int(100) < chance)
@@ -1590,11 +1248,11 @@ void do_cmd_pray(void)
 	/* Success */
 	else
 	{
-		switch (j)
+		switch (spell)
 		{
 			case 0:
 			{
-				(void)detect_evil();
+				(void)detect_monsters_evil();
 				break;
 			}
 
@@ -1625,13 +1283,14 @@ void do_cmd_pray(void)
 
 			case 5:
 			{
-				(void)detect_trap();
+				(void)detect_traps();
 				break;
 			}
 
 			case 6:
 			{
-				(void)detect_sdoor();
+				(void)detect_doors();
+				(void)detect_stairs();
 				break;
 			}
 
@@ -1798,13 +1457,13 @@ void do_cmd_pray(void)
 
 			case 31:
 			{
-				(void)detect_monsters();
+				(void)detect_monsters_normal();
 				break;
 			}
 
 			case 32:
 			{
-				(void)detection();
+				(void)detect_all();
 				break;
 			}
 
@@ -1985,20 +1644,20 @@ void do_cmd_pray(void)
 		}
 
 		/* A prayer was prayed */
-		if (!((j < 32) ?
-		      (spell_worked1 & (1L << j)) :
-		      (spell_worked2 & (1L << (j - 32)))))
+		if (!((spell < 32) ?
+		      (spell_worked1 & (1L << spell)) :
+		      (spell_worked2 & (1L << (spell - 32)))))
 		{
 			int e = s_ptr->sexp;
 
 			/* The spell worked */
-			if (j < 32)
+			if (spell < 32)
 			{
-				spell_worked1 |= (1L << j);
+				spell_worked1 |= (1L << spell);
 			}
 			else
 			{
-				spell_worked2 |= (1L << (j - 32));
+				spell_worked2 |= (1L << (spell - 32));
 			}
 
 			/* Gain experience */

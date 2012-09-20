@@ -227,7 +227,7 @@ static void sense_inventory(void)
 		if (!okay) continue;
 
 		/* We know about it already, do not tell us again */
-		if (o_ptr->ident & ID_SENSE) continue;
+		if (o_ptr->ident & (IDENT_SENSE)) continue;
 
 		/* It is fully known, no information needed */
 		if (object_known_p(o_ptr)) continue;
@@ -264,7 +264,7 @@ static void sense_inventory(void)
 		}
 
 		/* We have "felt" it */
-		o_ptr->ident |= (ID_SENSE);
+		o_ptr->ident |= (IDENT_SENSE);
 
 		/* Inscribe it textually */
 		if (!o_ptr->note) o_ptr->note = quark_add(feel);
@@ -405,7 +405,7 @@ static void regen_monsters(void)
 			if (!frac) frac = 1;
 
 			/* Hack -- Some monsters regenerate quickly */
-			if (r_ptr->flags2 & RF2_REGENERATE) frac *= 2;
+			if (r_ptr->flags2 & (RF2_REGENERATE)) frac *= 2;
 
 			/* Hack -- Regenerate */
 			m_ptr->hp += frac;
@@ -502,10 +502,10 @@ static void process_world(void)
 						c_ptr = &cave[y][x];
 
 						/* Assume lit */
-						c_ptr->info |= CAVE_GLOW;
+						c_ptr->info |= (CAVE_GLOW);
 
 						/* Hack -- Memorize lit grids if allowed */
-						if (view_perma_grids) c_ptr->info |= CAVE_MARK;
+						if (view_perma_grids) c_ptr->info |= (CAVE_MARK);
 
 						/* Hack -- Notice spot */
 						note_spot(y, x);
@@ -652,6 +652,9 @@ static void process_world(void)
 
 			/* Slow digestion takes less food */
 			if (p_ptr->slow_digest) i -= 10;
+
+			/* Minimal digestion */
+			if (i < 1) i = 1;
 
 			/* Digest some food */
 			(void)set_food(p_ptr->food - i);
@@ -915,7 +918,7 @@ static void process_world(void)
 			if ((o_ptr->pval < 100) || (!(o_ptr->pval % 100)))
 			{
 				/* Window stuff */
-				p_ptr->window |= (PW_INVEN | PW_EQUIP);
+				p_ptr->window |= (PW_EQUIP);
 			}
 
 			/* Hack -- Special treatment when blind */
@@ -958,11 +961,8 @@ static void process_world(void)
 		}
 	}
 
-	/* Note changes */
-	j = 0;
-
 	/* Process equipment */
-	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
+	for (j = 0, i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 	{
 		/* Get the object */
 		o_ptr = &inventory[i];
@@ -981,10 +981,20 @@ static void process_world(void)
 		}
 	}
 
+	/* Notice changes */
+	if (j)
+	{
+		/* Window stuff */
+		p_ptr->window |= (PW_EQUIP);
+	}
+
 	/* Recharge rods */
-	for (i = 0; i < INVEN_PACK; i++)
+	for (j = 0, i = 0; i < INVEN_PACK; i++)
 	{
 		o_ptr = &inventory[i];
+
+		/* Skip non-objects */
+		if (!o_ptr->k_idx) continue;
 
 		/* Examine all charging rods */
 		if ((o_ptr->tval == TV_ROD) && (o_ptr->pval))
@@ -1004,14 +1014,37 @@ static void process_world(void)
 		p_ptr->notice |= (PN_COMBINE);
 
 		/* Window stuff */
-		p_ptr->window |= (PW_INVEN | PW_EQUIP);
+		p_ptr->window |= (PW_INVEN);
 	}
 
 	/* Feel the inventory */
 	sense_inventory();
 
 
+	/*** Process Objects ***/
+
+	/* Process objects */
+	for (i = 1; i < o_max; i++)
+	{
+		/* Access object */
+		o_ptr = &o_list[i];
+
+		/* Skip dead objects */
+		if (!o_ptr->k_idx) continue;
+
+		/* Recharge rods on the ground */
+		if ((o_ptr->tval == TV_ROD) && (o_ptr->pval)) o_ptr->pval--;
+	}
+
+
 	/*** Involuntary Movement ***/
+
+	/* Mega-Hack -- Random teleportation XXX XXX XXX */
+	if ((p_ptr->teleport) && (rand_int(100) < 1))
+	{
+		/* Teleport player */
+		teleport_player(40);
+	}
 
 	/* Delayed Word-of-Recall */
 	if (p_ptr->word_recall)
@@ -1036,9 +1069,12 @@ static void process_world(void)
 			{
 				msg_print("You feel yourself yanked downwards!");
 				dun_level = p_ptr->max_dlv;
-				if (!dun_level) dun_level = 1;
+				if (dun_level < 1) dun_level = 1;
 				new_level_flag = TRUE;
 			}
+			
+			/* Sound */
+			sound(SOUND_TPLEVEL);
 		}
 	}
 }
@@ -1050,9 +1086,6 @@ static void process_world(void)
  */
 static bool enter_wizard_mode(void)
 {
-	/* No permission */
-	if (!can_be_wizard) return (FALSE);
-
 	/* Ask first time */
 	if (!(noscore & 0x0002))
 	{
@@ -1083,9 +1116,6 @@ static bool enter_wizard_mode(void)
  */
 static bool enter_debug_mode(void)
 {
-	/* No permission */
-	if (!can_be_wizard) return (FALSE);
-
 	/* Ask first time */
 	if (!(noscore & 0x0008))
 	{
@@ -1109,9 +1139,9 @@ static bool enter_debug_mode(void)
 }
 
 /*
- * Hack -- Declare the Wizard Routines
+ * Hack -- Declare the Debug Routines
  */
-extern int do_cmd_wizard(void);
+extern void do_cmd_debug(void);
 
 #endif
 
@@ -1123,9 +1153,6 @@ extern int do_cmd_wizard(void);
  */
 static bool enter_borg_mode(void)
 {
-	/* No permission */
-	if (!can_be_wizard) return (FALSE);
-
 	/* Ask first time */
 	if (!(noscore & 0x0010))
 	{
@@ -1217,7 +1244,7 @@ static void process_command(void)
 			/* Enter debug mode */
 			if (enter_debug_mode())
 			{
-				do_cmd_wizard();
+				do_cmd_debug();
 			}
 			break;
 		}
@@ -1307,8 +1334,15 @@ static void process_command(void)
 
 			/*** Standard "Movement" Commands ***/
 
-			/* Dig a tunnel */
+			/* Alter a grid */
 		case '+':
+		{
+			do_cmd_alter();
+			break;
+		}
+
+			/* Dig a tunnel */
+		case 'T':
 		{
 			do_cmd_tunnel();
 			break;
@@ -1763,13 +1797,17 @@ static void process_command(void)
 
 /*
  * Process the player
+ *
+ * Notice the annoying code to handle "pack overflow", which
+ * must come first just in case somebody manages to corrupt
+ * the savefiles by clever use of menu commands or something.
  */
 static void process_player(void)
 {
-	int			i;
+	int i;
 
-	object_type		*o_ptr;
 
+	/*** Apply energy ***/
 
 	/* Give the player some energy */
 	p_ptr->energy += extract_energy[p_ptr->pspeed];
@@ -1778,23 +1816,13 @@ static void process_player(void)
 	if (p_ptr->energy < 100) return;
 
 
-	/*** Handle Resting ***/
+	/*** Check for interupts ***/
 
-	/* Check "Resting" status */
-	if (resting)
+	/* Complete resting */
+	if (resting < 0)
 	{
-		/* +n -> rest for n turns */
-		if (resting > 0)
-		{
-			/* Reduce rest count */
-			resting--;
-
-			/* Redraw the state */
-			p_ptr->redraw |= (PR_STATE);
-		}
-
-		/* -1 -> rest until HP/mana restored */
-		else if (resting == -1)
+		/* Basic resting */
+		if (resting == -1)
 		{
 			/* Stop resting */
 			if ((p_ptr->chp == p_ptr->mhp) &&
@@ -1804,8 +1832,7 @@ static void process_player(void)
 			}
 		}
 
-		/* -2 -> like -1, plus blind/conf/fear/stun/slow/stone/halluc/recall */
-		/* Note: stop (via "disturb") as soon as blind or recall is done */
+		/* Complete resting */
 		else if (resting == -2)
 		{
 			/* Stop resting */
@@ -1821,10 +1848,6 @@ static void process_player(void)
 			}
 		}
 	}
-
-
-
-	/*** Handle actual user input ***/
 
 	/* Handle "abort" */
 	if (!avoid_abort)
@@ -1851,17 +1874,7 @@ static void process_player(void)
 	}
 
 
-	/* Hack -- constant hallucination */
-	if (p_ptr->image) p_ptr->redraw |= (PR_MAP);
-
-
-	/* Mega-Hack -- Random teleportation XXX XXX XXX */
-	if ((p_ptr->teleport) && (rand_int(100) < 1))
-	{
-		/* Teleport player */
-		teleport_player(40);
-	}
-
+	/*** Handle actual user input ***/
 
 	/* Repeat until out of energy */
 	while (p_ptr->energy >= 100)
@@ -1886,6 +1899,52 @@ static void process_player(void)
 		if (fresh_before) Term_fresh();
 
 
+		/* Hack -- Pack Overflow */
+		if (inventory[INVEN_PACK].k_idx)
+		{
+			int item = INVEN_PACK;
+
+			char o_name[80];
+
+			object_type *o_ptr;
+
+			/* Access the slot to be dropped */
+			o_ptr = &inventory[item];
+
+			/* Disturbing */
+			disturb(0, 0);
+
+			/* Warning */
+			msg_print("Your pack overflows!");
+
+			/* Describe */
+			object_desc(o_name, o_ptr, TRUE, 3);
+
+			/* Message */
+			msg_format("You drop %s (%c).", o_name, index_to_label(item));
+
+			/* Drop it (carefully) near the player */
+			drop_near(o_ptr, 0, py, px);
+
+			/* Modify, Describe, Optimize */
+			inven_item_increase(item, -255);
+			inven_item_describe(item);
+			inven_item_optimize(item);
+				
+			/* Notice stuff (if needed) */
+			if (p_ptr->notice) notice_stuff();
+
+			/* Update stuff (if needed) */
+			if (p_ptr->update) update_stuff();
+
+			/* Redraw stuff (if needed) */
+			if (p_ptr->redraw) redraw_stuff();
+
+			/* Redraw stuff (if needed) */
+			if (p_ptr->window) window_stuff();
+		}
+
+
 		/* Hack -- cancel "lurking browse mode" */
 		if (!command_new) command_see = FALSE;
 
@@ -1894,16 +1953,31 @@ static void process_player(void)
 		energy_use = 0;
 
 
-		/* Hack -- Resting */
-		if ((resting) ||
-		    (p_ptr->paralyzed) ||
-		    (p_ptr->stun >= 100))
+		/* Paralyzed or Knocked Out */
+		if ((p_ptr->paralyzed) || (p_ptr->stun >= 100))
 		{
 			/* Take a turn */
 			energy_use = 100;
 		}
 
-		/* Hack -- Running */
+		/* Resting */
+		else if (resting)
+		{
+			/* Timed rest */
+			if (resting > 0)
+			{
+				/* Reduce rest count */
+				resting--;
+
+				/* Redraw the state */
+				p_ptr->redraw |= (PR_STATE);
+			}
+
+			/* Take a turn */
+			energy_use = 100;
+		}
+
+		/* Running */
 		else if (running)
 		{
 			/* Take a step */
@@ -1946,49 +2020,108 @@ static void process_player(void)
 		}
 
 
-		/* Notice stuff */
-		if (p_ptr->notice) notice_stuff();
+		/*** Clean up ***/
 
-		/* XXX XXX XXX Pack Overflow */
-		if (inventory[INVEN_PACK].k_idx)
+		/* Significant */
+		if (energy_use)
 		{
-			int		amt;
+			/* Use some energy */
+			p_ptr->energy -= energy_use;
 
-			char	o_name[80];
+
+			/* Hack -- constant hallucination */
+			if (p_ptr->image) p_ptr->redraw |= (PR_MAP);
 
 
-			/* Choose an item to spill */
-			i = INVEN_PACK;
+			/* Shimmer monsters if needed */
+			if (!avoid_other && shimmer_monsters)
+			{
+				/* Clear the flag */
+				shimmer_monsters = FALSE;
 
-			/* Access the slot to be dropped */
-			o_ptr = &inventory[i];
+				/* Shimmer multi-hued monsters */
+				for (i = 1; i < m_max; i++)
+				{
+					monster_type *m_ptr;
+					monster_race *r_ptr;
 
-			/* Drop all of that item */
-			amt = o_ptr->number;
+					/* Access monster */
+					m_ptr = &m_list[i];
 
-			/* Disturbing */
-			disturb(0, 0);
+					/* Skip dead monsters */
+					if (!m_ptr->r_idx) continue;
 
-			/* Warning */
-			msg_print("Your pack overflows!");
+					/* Access the monster race */
+					r_ptr = &r_info[m_ptr->r_idx];
 
-			/* Describe */
-			object_desc(o_name, o_ptr, TRUE, 3);
+					/* Skip non-multi-hued monsters */
+					if (!(r_ptr->flags1 & (RF1_ATTR_MULTI))) continue;
 
-			/* Message */
-			msg_format("You drop %s.", o_name);
+					/* Reset the flag */
+					shimmer_monsters = TRUE;
 
-			/* Drop it (carefully) near the player */
-			drop_near(o_ptr, 0, py, px);
+					/* Redraw regardless */
+					lite_spot(m_ptr->fy, m_ptr->fx);
+				}
+			}
 
-			/* Decrease the item, optimize. */
-			inven_item_increase(i, -amt);
-			inven_item_optimize(i);
+
+			/* Handle monster detection */
+			if (repair_monsters)
+			{
+				/* Reset the flag */
+				repair_monsters = FALSE;
+
+				/* Rotate detection flags */
+				for (i = 1; i < m_max; i++)
+				{
+					monster_type *m_ptr;
+
+					/* Access monster */
+					m_ptr = &m_list[i];
+
+					/* Skip dead monsters */
+					if (!m_ptr->r_idx) continue;
+
+					/* Nice monsters get mean */
+					if (m_ptr->mflag & (MFLAG_NICE))
+					{
+						/* Nice monsters get mean */
+						m_ptr->mflag &= ~(MFLAG_NICE);
+					}
+
+					/* Handle memorized monsters */
+					if (m_ptr->mflag & (MFLAG_MARK))
+					{
+						/* Maintain detection */
+						if (m_ptr->mflag & (MFLAG_SHOW))
+						{
+							/* Forget flag */
+							m_ptr->mflag &= ~(MFLAG_SHOW);
+							
+							/* Still need repairs */
+							repair_monsters = TRUE;
+						}
+
+						/* Remove detection */
+						else
+						{
+							/* Forget flag */
+							m_ptr->mflag &= ~(MFLAG_MARK);
+
+							/* Assume invisible */
+							m_ptr->ml = FALSE;
+
+							/* Update the monster */
+							update_mon(i, FALSE);
+
+							/* Redraw regardless */
+							lite_spot(m_ptr->fy, m_ptr->fx);
+						}
+					}
+				}
+			}
 		}
-
-
-		/* Use some energy, if required */
-		if (energy_use) p_ptr->energy -= energy_use;
 
 
 		/* Hack -- notice death or departure */
@@ -2025,12 +2158,26 @@ static void dungeon(void)
 	health_track(0);
 
 
+	/* Check visual effects */
+	shimmer_monsters = TRUE;
+	shimmer_objects = TRUE;
+	repair_monsters = TRUE;
+	repair_objects = TRUE;
+
+
 	/* Disturb */
 	disturb(1, 0);
 
 
-	/* Remember deepest dungeon level visited */
-	if (dun_level > (unsigned)(p_ptr->max_dlv))
+	/* Track maximum player level */
+	if (p_ptr->max_plv < p_ptr->lev)
+	{
+		p_ptr->max_plv = p_ptr->lev;
+	}
+
+
+	/* Track maximum dungeon level */
+	if (p_ptr->max_dlv < dun_level)
 	{
 		p_ptr->max_dlv = dun_level;
 	}
@@ -2051,22 +2198,17 @@ static void dungeon(void)
 		/* Place a stairway */
 		if (cave_valid_bold(py, px))
 		{
-			cave_type *c_ptr;
-
-			/* Delete the old object */
+			/* XXX XXX XXX */
 			delete_object(py, px);
-
-			/* Access the cave grid */
-			c_ptr = &cave[py][px];
 
 			/* Make stairs */
 			if (create_down_stair)
 			{
-				c_ptr->feat = FEAT_MORE;
+				cave_set_feat(py, px, FEAT_MORE);
 			}
 			else
 			{
-				c_ptr->feat = FEAT_LESS;
+				cave_set_feat(py, px, FEAT_LESS);
 			}
 		}
 
@@ -2179,11 +2321,18 @@ static void dungeon(void)
 	/* Main loop */
 	while (TRUE)
 	{
-		/* Hack -- Compact the object list occasionally */
-		if (o_top + 16 > MAX_O_IDX) compact_objects(32);
-
 		/* Hack -- Compact the monster list occasionally */
-		if (m_top + 32 > MAX_M_IDX) compact_monsters(64);
+		if (m_cnt + 32 > MAX_M_IDX) compact_monsters(64);
+
+		/* Hack -- Compress the monster list occasionally */
+		if (m_cnt + 32 < m_max) compact_monsters(0);
+
+
+		/* Hack -- Compact the object list occasionally */
+		if (o_cnt + 32 > MAX_O_IDX) compact_objects(64);
+
+		/* Hack -- Compress the object list occasionally */
+		if (o_cnt + 32 < o_max) compact_objects(0);
 
 
 		/* Process the player */
@@ -2236,31 +2385,6 @@ static void dungeon(void)
 		if (!alive || death || new_level_flag) break;
 
 
-		/* Process all of the objects */
-		process_objects();
-
-		/* Notice stuff */
-		if (p_ptr->notice) notice_stuff();
-
-		/* Update stuff */
-		if (p_ptr->update) update_stuff();
-
-		/* Redraw stuff */
-		if (p_ptr->redraw) redraw_stuff();
-
-		/* Window stuff */
-		if (p_ptr->window) window_stuff();
-
-		/* Hack -- Hilite the player */
-		move_cursor_relative(py, px);
-
-		/* Optional fresh */
-		if (fresh_after) Term_fresh();
-
-		/* Hack -- Notice death or departure */
-		if (!alive || death || new_level_flag) break;
-
-
 		/* Process the world */
 		process_world();
 
@@ -2289,76 +2413,17 @@ static void dungeon(void)
 		/* Count game turns */
 		turn++;
 	}
-
-
-
-	/* Notice stuff */
-	if (p_ptr->notice) notice_stuff();
-
-	/* Update stuff */
-	if (p_ptr->update) update_stuff();
-
-	/* Redraw stuff */
-	if (p_ptr->redraw) redraw_stuff();
-
-
-	/* Cancel the target */
-	target_who = 0;
-
-	/* Cancel the health bar */
-	health_track(0);
-
-
-	/* Forget the old lite */
-	forget_lite();
-
-	/* Forget the old view */
-	forget_view();
 }
 
 
 
 
 /*
- * Load the various "user pref files"
+ * Load some "user pref files"
  */
 static void load_all_pref_files(void)
 {
 	char buf[1024];
-
-
-	/* Access the "basic" pref file */
-	strcpy(buf, "pref.prf");
-
-	/* Process that file */
-	process_pref_file(buf);
-
-	/* Access the "user" pref file */
-	sprintf(buf, "user.prf");
-
-	/* Process that file */
-	process_pref_file(buf);
-
-
-
-	/* Access the "basic" system pref file */
-	sprintf(buf, "pref-%s.prf", ANGBAND_SYS);
-
-	/* Process that file */
-	process_pref_file(buf);
-
-	/* Access the "visual" system pref file (if any) */
-	sprintf(buf, "%s-%s.prf", (use_graphics ? "graf" : "font"), ANGBAND_SYS);
-
-	/* Process that file */
-	process_pref_file(buf);
-
-	/* Access the "user" system pref file */
-	sprintf(buf, "user-%s.prf", ANGBAND_SYS);
-
-	/* Process that file */
-	process_pref_file(buf);
-
 
 	/* Access the "race" pref file */
 	sprintf(buf, "%s.prf", rp_ptr->title);
@@ -2413,7 +2478,7 @@ void play_game(bool new_game)
 		/* Make new player */
 		new_game = TRUE;
 
-		/* Create a new dungeon */
+		/* The dungeon is not ready */
 		character_dungeon = FALSE;
 	}
 
@@ -2474,7 +2539,7 @@ void play_game(bool new_game)
 	/* Roll new character */
 	if (new_game)
 	{
-		/* Ignore the dungeon */
+		/* The dungeon is not ready */
 		character_dungeon = FALSE;
 
 		/* Start in town */
@@ -2536,7 +2601,7 @@ void play_game(bool new_game)
 	Term_xtra(TERM_XTRA_REACT, 0);
 
 
-	/* Make a level if necessary */
+	/* Generate a dungeon level if needed */
 	if (!character_dungeon) generate_cave();
 
 
@@ -2554,18 +2619,48 @@ void play_game(bool new_game)
 	/* Hack -- Enforce "delayed death" */
 	if (p_ptr->chp < 0) death = TRUE;
 
-	/* Loop till dead */
+	/* Process */
 	while (TRUE)
 	{
 		/* Process the level */
 		dungeon();
 
+
+		/* Notice stuff */
+		if (p_ptr->notice) notice_stuff();
+
+		/* Update stuff */
+		if (p_ptr->update) update_stuff();
+
+		/* Redraw stuff */
+		if (p_ptr->redraw) redraw_stuff();
+
+		/* Window stuff */
+		if (p_ptr->window) window_stuff();
+
+
+		/* Cancel the target */
+		target_who = 0;
+
+		/* Cancel the health bar */
+		health_track(0);
+
+
+		/* Forget the lite */
+		forget_lite();
+
+		/* Forget the view */
+		forget_view();
+
+
 		/* Handle "quit and save" */
 		if (!alive && !death) break;
+
 
 		/* Erase the old cave */
 		wipe_o_list();
 		wipe_m_list();
+
 
 		/* XXX XXX XXX */
 		msg_print(NULL);

@@ -269,25 +269,41 @@ static void purchase_analyze(s32b price, s32b value, s32b guess)
 	/* Item was worthless, but we bought it */
 	if ((value <= 0) && (price > value))
 	{
+		/* Comment */
 		msg_print(comment_7a[rand_int(MAX_COMMENT_7A)]);
+
+		/* Sound */
+		sound(SOUND_STORE1);
 	}
 
 	/* Item was cheaper than we thought, and we paid more than necessary */
 	else if ((value < guess) && (price > value))
 	{
+		/* Comment */
 		msg_print(comment_7b[rand_int(MAX_COMMENT_7B)]);
+
+		/* Sound */
+		sound(SOUND_STORE2);
 	}
 
 	/* Item was a good bargain, and we got away with it */
 	else if ((value > guess) && (value < (4 * guess)) && (price < value))
 	{
+		/* Comment */
 		msg_print(comment_7c[rand_int(MAX_COMMENT_7C)]);
+
+		/* Sound */
+		sound(SOUND_STORE3);
 	}
 
 	/* Item was a great bargain, and we got away with it */
 	else if ((value > guess) && (price < value))
 	{
+		/* Comment */
 		msg_print(comment_7d[rand_int(MAX_COMMENT_7D)]);
+
+		/* Sound */
+		sound(SOUND_STORE4);
 	}
 }
 
@@ -1044,7 +1060,7 @@ static void store_item_optimize(int item)
 	}
 
 	/* Nuke the final slot */
-	invwipe(&st_ptr->stock[j]);
+	object_wipe(&st_ptr->stock[j]);
 }
 
 
@@ -1122,9 +1138,10 @@ static void store_delete(void)
  */
 static void store_create(void)
 {
-	int			i, tries, level;
-	object_type		tmp_obj;
-	object_type		*o_ptr = &tmp_obj;
+	int i, tries, level;
+
+	object_type forge;
+	object_type *q_ptr;
 
 
 	/* Paranoia -- no room left */
@@ -1158,52 +1175,55 @@ static void store_create(void)
 		}
 
 
+		/* Get local object */
+		q_ptr = &forge;
+
 		/* Create a new object of the chosen kind */
-		invcopy(o_ptr, i);
+		object_prep(q_ptr, i);
 
 		/* Apply some "low-level" magic (no artifacts) */
-		apply_magic(o_ptr, level, FALSE, FALSE, FALSE);
+		apply_magic(q_ptr, level, FALSE, FALSE, FALSE);
 
 		/* Hack -- Charge lite's */
-		if (o_ptr->tval == TV_LITE)
+		if (q_ptr->tval == TV_LITE)
 		{
-			if (o_ptr->sval == SV_LITE_TORCH) o_ptr->pval = FUEL_TORCH / 2;
-			if (o_ptr->sval == SV_LITE_LANTERN) o_ptr->pval = FUEL_LAMP / 2;
+			if (q_ptr->sval == SV_LITE_TORCH) q_ptr->pval = FUEL_TORCH / 2;
+			if (q_ptr->sval == SV_LITE_LANTERN) q_ptr->pval = FUEL_LAMP / 2;
 		}
 
 
 		/* The item is "known" */
-		object_known(o_ptr);
+		object_known(q_ptr);
 
 		/* Mega-Hack -- no chests in stores */
-		if (o_ptr->tval == TV_CHEST) continue;
+		if (q_ptr->tval == TV_CHEST) continue;
 
 		/* Prune the black market */
 		if (store_num == 6)
 		{
 			/* Hack -- No "crappy" items */
-			if (black_market_crap(o_ptr)) continue;
+			if (black_market_crap(q_ptr)) continue;
 
 			/* Hack -- No "cheap" items */
-			if (object_value(o_ptr) < 10) continue;
+			if (object_value(q_ptr) < 10) continue;
 
 			/* No "worthless" items */
-			/* if (object_value(o_ptr) <= 0) continue; */
+			/* if (object_value(q_ptr) <= 0) continue; */
 		}
 
 		/* Prune normal stores */
 		else
 		{
 			/* No "worthless" items */
-			if (object_value(o_ptr) <= 0) continue;
+			if (object_value(q_ptr) <= 0) continue;
 		}
 
 
 		/* Mass produce and/or Apply discount */
-		mass_produce(o_ptr);
+		mass_produce(q_ptr);
 
 		/* Attempt to carry the (known) item */
-		(void)store_carry(o_ptr);
+		(void)store_carry(q_ptr);
 
 		/* Definitely done */
 		break;
@@ -1340,7 +1360,7 @@ static void display_entry(int pos)
 		}
 
 		/* Display a "fixed" cost */
-		if (o_ptr->ident & ID_FIXED)
+		if (o_ptr->ident & (IDENT_FIXED))
 		{
 			/* Extract the "minimum" price */
 			x = price_item(o_ptr, ot_ptr->min_inflate, FALSE);
@@ -1627,15 +1647,12 @@ static int get_haggle(cptr pmt, s32b *poffer, s32b price, int final)
 	char		out_val[160];
 
 
-	/* Paranoia XXX XXX XXX */
-	msg_print(NULL);
-
-
 	/* Clear old increment if necessary */
 	if (!allow_inc) last_inc = 0L;
 
-	/* Final offer, or no increment */
-	if (final || !allow_inc || !last_inc)
+
+	/* Final offer */
+	if (final)
 	{
 		sprintf(buf, "%s [accept] ", pmt);
 	}
@@ -1647,10 +1664,21 @@ static int get_haggle(cptr pmt, s32b *poffer, s32b price, int final)
 	}
 
 	/* Old (positive) increment, and not final */
-	else
+	else if (last_inc > 0)
 	{
 		sprintf(buf, "%s [+%ld] ", pmt, (long)(ABS(last_inc)));
 	}
+
+	/* Normal haggle */
+	else
+	{
+		sprintf(buf, "%s ", pmt);
+	}
+	
+
+	/* Paranoia XXX XXX XXX */
+	msg_print(NULL);
+
 
 	/* Ask until done */
 	while (TRUE)
@@ -1658,59 +1686,63 @@ static int get_haggle(cptr pmt, s32b *poffer, s32b price, int final)
 		/* Default */
 		strcpy(out_val, "");
 
-		/* Ask the user */
+		/* Ask the user for a response */
 		if (!get_string(buf, out_val, 32)) return (FALSE);
 
 		/* Skip leading spaces */
 		for (p = out_val; *p == ' '; p++) /* loop */;
 
-		/* Return accepts default */
+		/* Empty response */
 		if (*p == '\0')
 		{
 			/* Accept current price */
-			if (final || !allow_inc || !last_inc)
+			if (final)
 			{
 				*poffer = price;
 				last_inc = 0L;
+				break;
 			}
 
-			/* Use previous increment again */
-			else
+			/* Use previous increment */
+			if (allow_inc && last_inc)
 			{
 				*poffer += last_inc;
-			}
-
-			/* Done */
-			break;
-		}
-
-		/* Extract a number */
-		i = atol(p);
-
-		/* Handle "incremental" number */
-		if ((*p == '+' || *p == '-'))
-		{
-			/* Allow increments */
-			if (allow_inc)
-			{
-				/* Use the given "increment" */
-				*poffer += i;
-				last_inc = i;
 				break;
 			}
 		}
 
-		/* Handle normal number */
+		/* Normal response */
 		else
 		{
-			/* Use the given "number" */
-			*poffer = i;
-			last_inc = 0L;
-			break;
+			/* Extract a number */
+			i = atol(p);
+
+			/* Handle "incremental" number */
+			if ((*p == '+' || *p == '-'))
+			{
+				/* Allow increments */
+				if (allow_inc)
+				{
+					/* Use the given "increment" */
+					*poffer += i;
+					last_inc = i;
+					break;
+				}
+			}
+
+			/* Handle normal number */
+			else
+			{
+				/* Use the given "number" */
+				*poffer = i;
+				last_inc = 0L;
+				break;
+			}
 		}
 
 		/* Warning */
 		msg_print("Invalid response.");
+		msg_print(NULL);
 	}
 
 	/* Success */
@@ -1814,8 +1846,6 @@ static bool purchase_haggle(object_type *o_ptr, s32b *price)
 	cur_ask *= o_ptr->number;
 	final_ask *= o_ptr->number;
 
-
-	/* XXX XXX XXX Display commands */
 
 	/* Haggle parameters */
 	min_per = ot_ptr->haggle_per;
@@ -2135,17 +2165,19 @@ static bool sell_haggle(object_type *o_ptr, s32b *price)
  */
 static void store_purchase(void)
 {
-	int			i, amt, choice;
-	int			item, item_new;
+	int i, amt, choice;
+	int item, item_new;
 
-	s32b		price, best;
+	s32b price, best;
 
-	object_type		sell_obj;
-	object_type		*o_ptr;
+	object_type forge;
+	object_type *j_ptr;
 
-	char		o_name[80];
+	object_type *o_ptr;
 
-	char		out_val[160];
+	char o_name[80];
+
+	char out_val[160];
 
 
 	/* Empty? */
@@ -2185,25 +2217,30 @@ static void store_purchase(void)
 	/* Assume the player wants just one of them */
 	amt = 1;
 
-	/* Hack -- get a "sample" object */
-	sell_obj = *o_ptr;
-	sell_obj.number = amt;
+	/* Get local object */
+	j_ptr = &forge;
+	
+	/* Get a copy of the object */
+	object_copy(j_ptr, o_ptr);
+
+	/* Modify quantity */
+	j_ptr->number = amt;
 
 	/* Hack -- require room in pack */
-	if (!inven_carry_okay(&sell_obj))
+	if (!inven_carry_okay(j_ptr))
 	{
 		msg_print("You cannot carry that many different items.");
 		return;
 	}
 
 	/* Determine the "best" price (per item) */
-	best = price_item(&sell_obj, ot_ptr->min_inflate, FALSE);
+	best = price_item(j_ptr, ot_ptr->min_inflate, FALSE);
 
 	/* Find out how many the player wants */
 	if (o_ptr->number > 1)
 	{
 		/* Hack -- note cost of "fixed" items */
-		if ((store_num != 7) && (o_ptr->ident & ID_FIXED))
+		if ((store_num != 7) && (o_ptr->ident & (IDENT_FIXED)))
 		{
 			msg_format("That costs %ld gold per item.", (long)(best));
 		}
@@ -2215,12 +2252,17 @@ static void store_purchase(void)
 		if (amt <= 0) return;
 	}
 
-	/* Create the object to be sold (structure copy) */
-	sell_obj = *o_ptr;
-	sell_obj.number = amt;
+	/* Get local object */
+	j_ptr = &forge;
+	
+	/* Get desired object */
+	object_copy(j_ptr, o_ptr);
+
+	/* Modify quantity */
+	j_ptr->number = amt;
 
 	/* Hack -- require room in pack */
-	if (!inven_carry_okay(&sell_obj))
+	if (!inven_carry_okay(j_ptr))
 	{
 		msg_print("You cannot carry that many items.");
 		return;
@@ -2230,27 +2272,27 @@ static void store_purchase(void)
 	if (store_num != 7)
 	{
 		/* Fixed price, quick buy */
-		if (o_ptr->ident & ID_FIXED)
+		if (o_ptr->ident & (IDENT_FIXED))
 		{
 			/* Assume accept */
 			choice = 0;
 
 			/* Go directly to the "best" deal */
-			price = (best * sell_obj.number);
+			price = (best * j_ptr->number);
 		}
 
 		/* Haggle for it */
 		else
 		{
 			/* Describe the object (fully) */
-			object_desc_store(o_name, &sell_obj, TRUE, 3);
+			object_desc_store(o_name, j_ptr, TRUE, 3);
 
 			/* Message */
 			msg_format("Buying %s (%c).", o_name, I2A(item));
 			msg_print(NULL);
 
 			/* Haggle for a final price */
-			choice = purchase_haggle(&sell_obj, &price);
+			choice = purchase_haggle(j_ptr, &price);
 
 			/* Hack -- Got kicked out */
 			if (st_ptr->store_open >= turn) return;
@@ -2261,7 +2303,7 @@ static void store_purchase(void)
 		if (choice == 0)
 		{
 			/* Fix the item price (if "correctly" haggled) */
-			if (price == (best * sell_obj.number)) o_ptr->ident |= ID_FIXED;
+			if (price == (best * j_ptr->number)) o_ptr->ident |= (IDENT_FIXED);
 
 			/* Player can afford it */
 			if (p_ptr->au >= price)
@@ -2279,19 +2321,22 @@ static void store_purchase(void)
 				store_prt_gold();
 
 				/* Hack -- buying an item makes you aware of it */
-				object_aware(&sell_obj);
+				object_aware(j_ptr);
 
 				/* Hack -- clear the "fixed" flag from the item */
-				sell_obj.ident &= ~ID_FIXED;
+				j_ptr->ident &= ~(IDENT_FIXED);
 
 				/* Describe the transaction */
-				object_desc(o_name, &sell_obj, TRUE, 3);
+				object_desc(o_name, j_ptr, TRUE, 3);
 
 				/* Message */
 				msg_format("You bought %s for %ld gold.", o_name, (long)price);
 
-				/* Let the player carry it (as if he picked it up) */
-				item_new = inven_carry(&sell_obj);
+				/* Erase the inscription */
+				j_ptr->note = 0;
+
+				/* Give it to the player */
+				item_new = inven_carry(j_ptr, FALSE);
 
 				/* Describe the final result */
 				object_desc(o_name, &inventory[item_new], TRUE, 3);
@@ -2374,8 +2419,8 @@ static void store_purchase(void)
 	/* Home is much easier */
 	else
 	{
-		/* Carry the item */
-		item_new = inven_carry(&sell_obj);
+		/* Give it to the player */
+		item_new = inven_carry(j_ptr, FALSE);
 
 		/* Describe just the result */
 		object_desc(o_name, &inventory[item_new], TRUE, 3);
@@ -2424,18 +2469,20 @@ static void store_purchase(void)
  */
 static void store_sell(void)
 {
-	int			choice;
-	int			item, item_pos;
-	int			amt;
+	int choice;
+	int item, item_pos;
+	int amt;
 
-	s32b		price, value, dummy;
+	s32b price, value, dummy;
 
-	object_type		sold_obj;
-	object_type		*o_ptr;
+	object_type forge;
+	object_type *q_ptr;
 
-	cptr		pmt = "Sell which item? ";
+	object_type *o_ptr;
 
-	char		o_name[80];
+	cptr pmt = "Sell which item? ";
+
+	char o_name[80];
 
 
 	/* Prepare a prompt */
@@ -2464,6 +2511,17 @@ static void store_sell(void)
 	}
 
 
+	/* Hack -- Cannot remove cursed items */
+	if ((item >= INVEN_WIELD) && cursed_p(o_ptr))
+	{
+		/* Oops */
+		msg_print("Hmmm, it seems to be cursed.");
+
+		/* Nope */
+		return;
+	}
+
+
 	/* Assume one item */
 	amt = 1;
 
@@ -2477,32 +2535,23 @@ static void store_sell(void)
 		if (amt <= 0) return;
 	}
 
-#if 0
+	/* Get local object */
+	q_ptr = &forge;
+	
+	/* Get a copy of the object */
+	object_copy(q_ptr, o_ptr);
 
-	/* Not gonna happen XXX inscribe */
-	if ((item >= INVEN_WIELD) && cursed_p(o_ptr))
-	{
-		/* Oops */
-		msg_print("Hmmm, it seems to be cursed.");
-
-		/* Stop */
-		return;
-	}
-
-#endif
-
-	/* Create the object to be sold (structure copy) */
-	sold_obj = *o_ptr;
-	sold_obj.number = amt;
+	/* Modify quantity */
+	q_ptr->number = amt;
 
 	/* Get a full description */
-	object_desc(o_name, &sold_obj, TRUE, 3);
+	object_desc(o_name, q_ptr, TRUE, 3);
 
 	/* Remove any inscription for stores */
-	if (store_num != 7) sold_obj.note = 0;
+	if (store_num != 7) q_ptr->note = 0;
 
 	/* Is there room in the store (or the home?) */
-	if (!store_check_num(&sold_obj))
+	if (!store_check_num(q_ptr))
 	{
 		if (store_num == 7) msg_print("Your home is full.");
 		else msg_print("I have not the room in my store to keep it.");
@@ -2518,7 +2567,7 @@ static void store_sell(void)
 		msg_print(NULL);
 
 		/* Haggle for it */
-		choice = sell_haggle(&sold_obj, &price);
+		choice = sell_haggle(q_ptr, &price);
 
 		/* Kicked out */
 		if (st_ptr->store_open >= turn) return;
@@ -2538,16 +2587,11 @@ static void store_sell(void)
 			/* Update the display */
 			store_prt_gold();
 
-			/* Get the inventory item */
-			o_ptr = &inventory[item];
-
 			/* Get the "apparent" value */
-			dummy = object_value(&sold_obj) * sold_obj.number;
+			dummy = object_value(q_ptr) * q_ptr->number;
 
-			/* Become "aware" of the item */
+			/* Identify original item */
 			object_aware(o_ptr);
-
-			/* Know the item fully */
 			object_known(o_ptr);
 
 			/* Combine / Reorder the pack (later) */
@@ -2556,15 +2600,20 @@ static void store_sell(void)
 			/* Window stuff */
 			p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER);
 
-			/* Re-Create the now-identified object that was sold */
-			sold_obj = *o_ptr;
-			sold_obj.number = amt;
+			/* Get local object */
+			q_ptr = &forge;
+	
+			/* Get a copy of the object */
+			object_copy(q_ptr, o_ptr);
+
+			/* Modify quantity */
+			q_ptr->number = amt;
 
 			/* Get the "actual" value */
-			value = object_value(&sold_obj) * sold_obj.number;
+			value = object_value(q_ptr) * q_ptr->number;
 
 			/* Get the description all over again */
-			object_desc(o_name, &sold_obj, TRUE, 3);
+			object_desc(o_name, q_ptr, TRUE, 3);
 
 			/* Describe the result (in message buffer) */
 			msg_format("You sold %s for %ld gold.", o_name, (long)price);
@@ -2581,7 +2630,7 @@ static void store_sell(void)
 			handle_stuff();
 
 			/* The store gets that (known) item */
-			item_pos = store_carry(&sold_obj);
+			item_pos = store_carry(q_ptr);
 
 			/* Re-display if item is now in store */
 			if (item_pos >= 0)
@@ -2596,7 +2645,7 @@ static void store_sell(void)
 	else
 	{
 		/* Describe */
-		msg_format("You drop %s.", o_name);
+		msg_format("You drop %s (%c).", o_name, index_to_label(item));
 
 		/* Take it from the players inventory */
 		inven_item_increase(item, -amt);
@@ -2606,8 +2655,8 @@ static void store_sell(void)
 		/* Handle stuff */
 		handle_stuff();
 
-		/* Let the store (home) carry it */
-		item_pos = home_carry(&sold_obj);
+		/* Let the home carry it */
+		item_pos = home_carry(q_ptr);
 
 		/* Update store display */
 		if (item_pos >= 0)
@@ -2970,6 +3019,13 @@ void do_cmd_store(void)
 	}
 
 
+	/* Forget the lite */
+	forget_lite();
+
+	/* Forget the view */
+	forget_view();
+	
+
 	/* Hack -- Character is in "icky" mode */
 	character_icky = TRUE;
 
@@ -3057,23 +3113,25 @@ void do_cmd_store(void)
 		/* XXX XXX XXX Pack Overflow */
 		if (inventory[INVEN_PACK].k_idx)
 		{
+			int item = INVEN_PACK;			
+
+			object_type *o_ptr = &inventory[item];
+
 			/* Hack -- Flee from the store */
 			if (store_num != 7)
 			{
 				/* Message */
 				msg_print("Your pack is so full that you flee the store...");
-				msg_print(NULL);
 
 				/* Leave */
 				leave_store = TRUE;
 			}
 
 			/* Hack -- Flee from the home */
-			else if (!store_check_num(&inventory[INVEN_PACK]))
+			else if (!store_check_num(o_ptr))
 			{
 				/* Message */
 				msg_print("Your pack is so full that you flee your home...");
-				msg_print(NULL);
 
 				/* Leave */
 				leave_store = TRUE;
@@ -3084,33 +3142,37 @@ void do_cmd_store(void)
 			{
 				int item_pos;
 
-				object_type sold_obj;
+				object_type forge;
+				object_type *q_ptr;
 
 				char o_name[80];
 
 
-				/* Grab a copy of the item */
-				sold_obj = inventory[INVEN_PACK];
-
 				/* Give a message */
 				msg_print("Your pack overflows!");
 
+				/* Get local object */
+				q_ptr = &forge;
+	
+				/* Grab a copy of the item */
+				object_copy(q_ptr, o_ptr);
+
 				/* Describe it */
-				object_desc(o_name, &sold_obj, TRUE, 3);
+				object_desc(o_name, q_ptr, TRUE, 3);
 
 				/* Message */
-				msg_format("You drop %s.", o_name);
+				msg_format("You drop %s (%c).", o_name, index_to_label(item));
 
 				/* Remove it from the players inventory */
-				inven_item_increase(INVEN_PACK, -999);
-				inven_item_describe(INVEN_PACK);
-				inven_item_optimize(INVEN_PACK);
+				inven_item_increase(item, -255);
+				inven_item_describe(item);
+				inven_item_optimize(item);
 
 				/* Handle stuff */
 				handle_stuff();
 
-				/* Let the store (home) carry it */
-				item_pos = home_carry(&sold_obj);
+				/* Let the home carry it */
+				item_pos = home_carry(q_ptr);
 
 				/* Redraw the home */
 				if (item_pos >= 0)
@@ -3142,14 +3204,22 @@ void do_cmd_store(void)
 
 	/* Hack -- Cancel "see" mode */
 	command_see = FALSE;
+	
+
+	/* Flush messages XXX XXX XXX */
+	msg_print(NULL);
 
 
-	/* Update stuff */
+	/* Clear the screen */
+	Term_clear();
+
+
+	/* Update everything */
 	p_ptr->update |= (PU_VIEW | PU_LITE);
 	p_ptr->update |= (PU_MONSTERS);
 
-	/* Redraw stuff */
-	p_ptr->redraw |= (PR_WIPE | PR_BASIC | PR_EXTRA);
+	/* Redraw entire screen */
+	p_ptr->redraw |= (PR_BASIC | PR_EXTRA);
 
 	/* Redraw map */
 	p_ptr->redraw |= (PR_MAP);
@@ -3207,7 +3277,7 @@ void store_shuffle(int which)
 		o_ptr->discount = 50;
 
 		/* Hack -- Items are no longer "fixed price" */
-		o_ptr->ident &= ~ID_FIXED;
+		o_ptr->ident &= ~(IDENT_FIXED);
 
 		/* Mega-Hack -- Note that the item is "on sale" */
 		o_ptr->note = quark_add("on sale");
@@ -3339,7 +3409,7 @@ void store_init(int which)
 	/* Clear any old items */
 	for (k = 0; k < st_ptr->stock_size; k++)
 	{
-		invwipe(&st_ptr->stock[k]);
+		object_wipe(&st_ptr->stock[k]);
 	}
 }
 

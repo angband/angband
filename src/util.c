@@ -62,7 +62,7 @@ int stricmp(cptr a, cptr b)
  *
  * Fake "usleep()" function grabbed from the inl netrek server -cba
  */
-static int usleep(huge microSeconds)
+int usleep(huge usecs)
 {
 	struct timeval      Timer;
 
@@ -80,12 +80,12 @@ static int usleep(huge microSeconds)
 
 
 	/* Paranoia -- No excessive sleeping */
-	if (microSeconds > 4000000L) core("Illegal usleep() call");
+	if (usecs > 4000000L) core("Illegal usleep() call");
 
 
 	/* Wait for it */
-	Timer.tv_sec = (microSeconds / 1000000L);
-	Timer.tv_usec = (microSeconds % 1000000L);
+	Timer.tv_sec = (usecs / 1000000L);
+	Timer.tv_usec = (usecs % 1000000L);
 
 	/* Wait for it */
 	if (select(nfds, no_fds, no_fds, no_fds, &Timer) < 0)
@@ -113,6 +113,7 @@ extern struct passwd *getpwnam();
  */
 void user_name(char *buf, int id)
 {
+#if 0
 	struct passwd *pw;
 
 	/* Look up the user name */
@@ -128,6 +129,7 @@ void user_name(char *buf, int id)
 
 		return;
 	}
+#endif
 
 	/* Oops.  Hack -- default to "PLAYER" */
 	strcpy(buf, "PLAYER");
@@ -488,8 +490,10 @@ extern long lseek(int, long, int);
  * The Macintosh is a little bit brain-dead sometimes
  */
 #ifdef MACINTOSH
-# define open(N,F,M) open((char*)(N),F)
-# define write(F,B,S) write(F,(char*)(B),S)
+# define open(N,F,M) \
+	((M), open((char*)(N),F))
+# define write(F,B,S) \
+	write(F,(char*)(B),S)
 #endif /* MACINTOSH */
 
 
@@ -638,6 +642,8 @@ errr fd_lock(int fd, int what)
 
 # ifdef USG
 
+#  if defined(F_ULOCK) && defined(F_LOCK)
+
 	/* Un-Lock */
 	if (what == F_UNLCK)
 	{
@@ -652,7 +658,11 @@ errr fd_lock(int fd, int what)
 		if (lockf(fd, F_LOCK, 0) != 0) return (1);
 	}
 
-#else
+#  endif
+
+# else
+
+#  if defined(LOCK_UN) && defined(LOCK_EX)
 
 	/* Un-Lock */
 	if (what == F_UNLCK)
@@ -667,6 +677,8 @@ errr fd_lock(int fd, int what)
 		/* Lock the score file */
 		if (flock(fd, LOCK_EX) != 0) return (1);
 	}
+
+#  endif
 
 # endif
 
@@ -712,7 +724,7 @@ errr fd_chop(int fd, huge n)
 	/* Verify the fd */
 	if (fd < 0) return (-1);
 
-#if defined(sun) || defined(ultrix) || defined(NeXT)
+#if defined(SUNOS) || defined(ULTRIX) || defined(NeXT)
 	/* Truncate */
 	ftruncate(fd, n);
 #endif
@@ -1149,7 +1161,7 @@ static char roguelike_commands(char command)
 		case 'K': hack_dir = 8; return ('.');
 		case 'U': hack_dir = 9; return ('.');
 
-		/* Tunnelling (control + rogue keys) */
+		/* Altering (control + rogue keys) */
 		case KTRL('B'): hack_dir = 1; return ('+');
 		case KTRL('J'): hack_dir = 2; return ('+');
 		case KTRL('N'): hack_dir = 3; return ('+');
@@ -1161,6 +1173,9 @@ static char roguelike_commands(char command)
 
 		/* Hack -- White-space */
 		case KTRL('M'): return ('\r');
+
+		/* Allow use of the "tunnel" command */
+		case KTRL('T'): return ('T');
 
 		/* Allow use of the "destroy" command */
 		case KTRL('D'): return ('k');
@@ -1228,9 +1243,12 @@ static char roguelike_commands(char command)
 
 /*
  * Convert an "Original" keypress into an "Angband" keypress
+ *
  * Pass direction information back via "hack_dir".
  *
- * Note that "Original" and "Angband" are very similar.
+ * Note that the "Original" keyset adds only a few commands to
+ * the "Angband" keyset, most importantly, the ability to use
+ * pure directions as "walk" commands.
  */
 static char original_commands(char command)
 {
@@ -1240,12 +1258,6 @@ static char original_commands(char command)
 		/* Hack -- White space */
 		case KTRL('J'): return ('\r');
 		case KTRL('M'): return ('\r');
-
-		/* Tunnel */
-		case 'T': return ('+');
-
-		/* Run */
-		case '.': return ('.');
 
 		/* Stay still (fake direction) */
 		case ',': hack_dir = 5; return (',');
@@ -1398,10 +1410,10 @@ void macro_add(cptr pat, cptr act, bool cmd_flag)
 
 
 	/* Hack -- Note the "trigger" char */
-	macro__use[(byte)(pat[0])] |= MACRO_USE_STD;
+	macro__use[(byte)(pat[0])] |= (MACRO_USE_STD);
 
 	/* Hack -- Note the "trigger" char of command macros */
-	if (cmd_flag) macro__use[(byte)(pat[0])] |= MACRO_USE_CMD;
+	if (cmd_flag) macro__use[(byte)(pat[0])] |= (MACRO_USE_CMD);
 }
 
 
@@ -1529,12 +1541,15 @@ void bell(void)
 
 
 /*
- * Mega-Hack -- Make a (relevant?) sound
+ * Hack -- Make a (relevant?) sound
  */
 void sound(int val)
 {
+	/* No sound */
+	if (!use_sound) return;
+
 	/* Make a sound (if allowed) */
-	if (use_sound) Term_xtra(TERM_XTRA_SOUND, val);
+	Term_xtra(TERM_XTRA_SOUND, val);
 }
 
 
@@ -1778,8 +1793,6 @@ char inkey(void)
 
 	int w = 0;
 
-	int skipping = FALSE;
-
 
 	/* Hack -- handle delayed "flush()" */
 	if (flush_later)
@@ -1819,12 +1832,12 @@ char inkey(void)
 	/* Get a (non-zero) keypress */
 	for (ch = 0; !ch; )
 	{
-		/* Nothing ready, not waiting, and not doing "inkey_base" */
-		if (!inkey_base && inkey_scan && (0 != Term_inkey(&ch, FALSE, FALSE))) break;
+		/* Nothing ready, not waiting, and not doing "inkey_base", all done */
+		if (!inkey_base && inkey_scan && (0 != Term_inkey(&kk, FALSE, FALSE))) break;
 
 
 		/* Hack -- flush output once when no key ready */
-		if (!done && (0 != Term_inkey(&ch, FALSE, FALSE)))
+		if (!done && (0 != Term_inkey(&kk, FALSE, FALSE)))
 		{
 			/* Hack -- activate proper term */
 			Term_activate(old);
@@ -1849,29 +1862,27 @@ char inkey(void)
 		/* Hack */
 		if (inkey_base)
 		{
-			char xh;
-
 			/* Check for keypress, optional wait */
-			(void)Term_inkey(&xh, !inkey_scan, TRUE);
+			(void)Term_inkey(&kk, !inkey_scan, TRUE);
 
 			/* Key ready */
-			if (xh)
+			if (kk)
 			{
 				/* Reset delay */
 				w = 0;
 
 				/* Mega-Hack */
-				if (xh == 28)
+				if (kk == 28)
 				{
-					/* Toggle "skipping" */
-					skipping = !skipping;
+					/* Toggle "strip_chars" */
+					strip_chars = !strip_chars;
 				}
 
 				/* Use normal keys */
-				else if (!skipping)
+				else if (!strip_chars)
 				{
 					/* Use it */
-					ch = xh;
+					ch = kk;
 				}
 			}
 
@@ -3173,8 +3184,8 @@ void request_command(bool shopping)
 	/* Hack -- Auto-repeat certain commands */
 	if (always_repeat && (command_arg <= 0))
 	{
-		/* Bash, Disarm, Open, Tunnel get 99 attempts */
-		if (strchr("BDo+", command_cmd)) command_arg = 99;
+		/* Hack -- Tunnel, Bash, Disarm, Open, Close, Alter */
+		if (strchr("TBDoc+", command_cmd)) command_arg = 99;
 	}
 
 
@@ -3202,6 +3213,9 @@ void request_command(bool shopping)
 		cptr s;
 
 		object_type *o_ptr = &inventory[i];
+
+		/* Skip non-objects */
+		if (!o_ptr->k_idx) continue;
 
 		/* No inscription */
 		if (!o_ptr->note) continue;

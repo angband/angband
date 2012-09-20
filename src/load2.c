@@ -6,34 +6,27 @@
 
 
 /*
- * This file is responsible for loading all "2.7.X" savefiles
+ * This file loads savefiles from Angband 2.7.X and 2.8.X
  *
- * Note that 2.7.0 - 2.7.2 savefiles are obsolete and will not work.
+ * Ancient savefiles (pre-2.7.0) are loaded by another file.
+ *
+ * Note that Angband 2.7.0 through 2.7.3 are now officially obsolete,
+ * and savefiles from those versions may not be successfully converted.
  *
  * We attempt to prevent corrupt savefiles from inducing memory errors.
- *
- * Note that Angband 2.7.9 encodes "terrain features" in the savefile
- * using the old 2.7.8 method.  Angband 2.8.0 will use the same method
- * to read pre-2.8.0 savefiles, but will use a new method to save them,
- * which will only affect "save.c".
- *
- * Note that Angband 2.8.0 will use a VERY different savefile method,
- * which will use "blocks" of information which can be ignored or parsed,
- * and which will not use a silly "protection" scheme on the savefiles,
- * but which may still use some form of "checksums" to prevent the use
- * of "corrupt" savefiles, which might cause nasty weirdness.
  *
  * Note that this file should not use the random number generator, the
  * object flavors, the visual attr/char mappings, or anything else which
  * is initialized *after* or *during* the "load character" function.
  *
- * We should also make the "cheating" options official flags, and
- * move the "byte" options to a different part of the code, perhaps
- * with a few more (for variety).
+ * This file assumes that the monster/object records are initialized
+ * to zero, and the race/kind tables have been loaded correctly.  The
+ * order of object stacks is currently not saved in the savefiles, but
+ * the "next" pointers are saved, so all necessary knowledge is present.
  *
- * Implement simple "savefile extenders" using some form of "sized"
- * chunks of bytes, with a {size,type,data} format, so everyone can
- * know the size, interested people can know the type, and the actual
+ * We should implement simple "savefile extenders" using some form of
+ * "sized" chunks of bytes, with a {size,type,data} format, so everyone
+ * can know the size, interested people can know the type, and the actual
  * data is available to the parsing routines that acknowledge the type.
  *
  * Consider changing the "globe of invulnerability" code so that it
@@ -94,8 +87,9 @@ static bool older_than(byte x, byte y, byte z)
 
 
 /*
- * Show information on the screen, one line at a time.
- * Start at line 2, and wrap, if needed, back to line 2.
+ * Hack -- Show information on the screen, one line at a time.
+ *
+ * Avoid the top two lines, to avoid interference with "msg_print()".
  */
 static void note(cptr msg)
 {
@@ -234,11 +228,10 @@ static void rd_string(char *str, int max)
  */
 static void strip_bytes(int n)
 {
-	int i;
 	byte tmp8u;
 
 	/* Strip the bytes */
-	for (i = 0; i < n; i++) rd_byte(&tmp8u);
+	while (n--) rd_byte(&tmp8u);
 }
 
 
@@ -255,7 +248,7 @@ static byte convert_owner[24] =
 
 
 /*
- * Old inventory slot values (pre-2.7.3)
+ * Old pre-2.7.4 inventory slot values
  */
 #define OLD_INVEN_WIELD     22
 #define OLD_INVEN_HEAD      23
@@ -271,7 +264,7 @@ static byte convert_owner[24] =
 #define OLD_INVEN_AUX       33
 
 /*
- * Analyze pre-2.7.3 inventory slots
+ * Analyze pre-2.7.4 inventory slots
  */
 static s16b convert_slot(int old)
 {
@@ -303,149 +296,143 @@ static s16b convert_slot(int old)
 
 
 /*
- * Hack -- convert 2.7.X ego-item indexes into 2.7.9 ego-item indexes
+ * Hack -- convert pre-2.7.8 ego-item indexes
  */
-
 static byte convert_ego_item[128] =
 {
-	0				/* 0 */,
-	EGO_RESISTANCE		/* 1 = EGO_RESIST (XXX) */,
-	EGO_RESIST_ACID		/* 2 = EGO_RESIST_A (XXX) */,
-	EGO_RESIST_FIRE		/* 3 = EGO_RESIST_F (XXX) */,
-	EGO_RESIST_COLD		/* 4 = EGO_RESIST_C (XXX) */,
-	EGO_RESIST_ELEC		/* 5 = EGO_RESIST_E (XXX) */,
-	EGO_HA			/* 6 = EGO_HA */,
-	EGO_DF			/* 7 = EGO_DF */,
-	EGO_SLAY_ANIMAL		/* 8 = EGO_SLAY_ANIMAL */,
-	EGO_SLAY_DRAGON		/* 9 = EGO_SLAY_DRAGON */,
-	EGO_SLAY_EVIL		/* 10 = EGO_SLAY_EVIL (XXX) */,
-	EGO_SLAY_UNDEAD		/* 11 = EGO_SLAY_UNDEAD (XXX) */,
-	EGO_BRAND_FIRE		/* 12 = EGO_FT */,
-	EGO_BRAND_COLD		/* 13 = EGO_FB */,
-	EGO_FREE_ACTION		/* 14 = EGO_FREE_ACTION (XXX) */,
-	EGO_SLAYING			/* 15 = EGO_SLAYING */,
-	0				/* 16 */,
-	0				/* 17 */,
-	EGO_SLOW_DESCENT		/* 18 = EGO_SLOW_DESCENT */,
-	EGO_SPEED			/* 19 = EGO_SPEED */,
-	EGO_STEALTH			/* 20 = EGO_STEALTH (XXX) */,
-	0				/* 21 */,
-	0				/* 22 */,
-	0				/* 23 */,
-	EGO_INTELLIGENCE		/* 24 = EGO_INTELLIGENCE */,
-	EGO_WISDOM			/* 25 = EGO_WISDOM */,
-	EGO_INFRAVISION		/* 26 = EGO_INFRAVISION */,
-	EGO_MIGHT			/* 27 = EGO_MIGHT */,
-	EGO_LORDLINESS		/* 28 = EGO_LORDLINESS */,
-	EGO_MAGI			/* 29 = EGO_MAGI (XXX) */,
-	EGO_BEAUTY			/* 30 = EGO_BEAUTY */,
-	EGO_SEEING			/* 31 = EGO_SEEING (XXX) */,
-	EGO_REGENERATION		/* 32 = EGO_REGENERATION */,
-	0				/* 33 */,
-	0				/* 34 */,
-	0				/* 35 */,
-	0				/* 36 */,
-	0				/* 37 */,
-	EGO_PERMANENCE		/* 38 = EGO_ROBE_MAGI */,
-	EGO_PROTECTION		/* 39 = EGO_PROTECTION */,
-	0				/* 40 */,
-	0				/* 41 */,
-	0				/* 42 */,
-	EGO_BRAND_FIRE		/* 43 = EGO_FIRE (XXX) */,
-	EGO_HURT_EVIL		/* 44 = EGO_AMMO_EVIL */,
-	EGO_HURT_DRAGON		/* 45 = EGO_AMMO_DRAGON */,
-	0				/* 46 */,
-	0				/* 47 */,
-	0				/* 48 */,
-	0				/* 49 */,
-	EGO_FLAME			/* 50 = EGO_AMMO_FIRE */,
-	0				/* 51 */,	/* oops */
-	EGO_FROST			/* 52 = EGO_AMMO_SLAYING */,
-	0				/* 53 */,
-	0				/* 54 */,
-	EGO_HURT_ANIMAL		/* 55 = EGO_AMMO_ANIMAL */,
-	0				/* 56 */,
-	0				/* 57 */,
-	0				/* 58 */,
-	0				/* 59 */,
-	EGO_EXTRA_MIGHT		/* 60 = EGO_EXTRA_MIGHT */,
-	EGO_EXTRA_SHOTS		/* 61 = EGO_EXTRA_SHOTS */,
-	0				/* 62 */,
-	0				/* 63 */,
-	EGO_VELOCITY		/* 64 = EGO_VELOCITY */,
-	EGO_ACCURACY		/* 65 = EGO_ACCURACY */,
-	0				/* 66 */,
-	EGO_SLAY_ORC		/* 67 = EGO_SLAY_ORC */,
-	EGO_POWER			/* 68 = EGO_POWER */,
-	0				/* 69 */,
-	0				/* 70 */,
-	EGO_WEST			/* 71 = EGO_WEST */,
-	EGO_BLESS_BLADE		/* 72 = EGO_BLESS_BLADE */,
-	EGO_SLAY_DEMON		/* 73 = EGO_SLAY_DEMON */,
-	EGO_SLAY_TROLL		/* 74 = EGO_SLAY_TROLL */,
-	0				/* 75 */,
-	0				/* 76 */,
-	EGO_WOUNDING		/* 77 = EGO_AMMO_WOUNDING */,
-	0				/* 78 */,
-	0				/* 79 */,
-	0				/* 80 */,
-	EGO_LITE			/* 81 = EGO_LITE */,
-	EGO_AGILITY			/* 82 = EGO_AGILITY */,
-	0				/* 83 */,
-	0				/* 84 */,
-	EGO_SLAY_GIANT		/* 85 = EGO_SLAY_GIANT */,
-	EGO_TELEPATHY		/* 86 = EGO_TELEPATHY */,
-	EGO_ELVENKIND		/* 87 = EGO_ELVENKIND (XXX) */,
-	0				/* 88 */,
-	0				/* 89 */,
-	EGO_ATTACKS			/* 90 = EGO_ATTACKS */,
-	EGO_AMAN			/* 91 = EGO_AMAN */,
-	0				/* 92 */,
-	0				/* 93 */,
-	0				/* 94 */,
-	0				/* 95 */,
-	0				/* 96 */,
-	0				/* 97 */,
-	0				/* 98 */,
-	0				/* 99 */,
-	0				/* 100 */,
-	0				/* 101 */,
-	0				/* 102 */,
-	0				/* 103 */,
-	EGO_WEAKNESS		/* 104 = EGO_WEAKNESS */,
-	EGO_STUPIDITY		/* 105 = EGO_STUPIDITY */,
-	EGO_NAIVETY			/* 106 = EGO_DULLNESS */,
-	EGO_SICKLINESS		/* 107 = EGO_SICKLINESS */,
-	EGO_CLUMSINESS		/* 108 = EGO_CLUMSINESS */,
-	EGO_UGLINESS		/* 109 = EGO_UGLINESS */,
-	EGO_TELEPORTATION		/* 110 = EGO_TELEPORTATION */,
-	0				/* 111 */,
-	EGO_IRRITATION		/* 112 = EGO_IRRITATION */,
-	EGO_VULNERABILITY		/* 113 = EGO_VULNERABILITY */,
-	EGO_ENVELOPING		/* 114 = EGO_ENVELOPING */,
-	0				/* 115 */,
-	EGO_SLOWNESS		/* 116 = EGO_SLOWNESS */,
-	EGO_NOISE			/* 117 = EGO_NOISE */,
-	EGO_ANNOYANCE		/* 118 = EGO_GREAT_MASS */,
-	0				/* 119 */,
-	EGO_BACKBITING		/* 120 = EGO_BACKBITING */,
-	0				/* 121 */,
-	0				/* 122 */,
-	0				/* 123 */,
-	EGO_MORGUL			/* 124 = EGO_MORGUL */,
-	0				/* 125 */,
-	EGO_SHATTERED		/* 126 = EGO_SHATTERED */,
+	0,					/* 0 */
+	EGO_RESISTANCE,		/* 1 = EGO_RESIST (XXX) */
+	EGO_RESIST_ACID,	/* 2 = EGO_RESIST_A (XXX) */
+	EGO_RESIST_FIRE,	/* 3 = EGO_RESIST_F (XXX) */
+	EGO_RESIST_COLD,	/* 4 = EGO_RESIST_C (XXX) */
+	EGO_RESIST_ELEC,	/* 5 = EGO_RESIST_E (XXX) */
+	EGO_HA,				/* 6 = EGO_HA */
+	EGO_DF,				/* 7 = EGO_DF */
+	EGO_SLAY_ANIMAL,	/* 8 = EGO_SLAY_ANIMAL */
+	EGO_SLAY_DRAGON,	/* 9 = EGO_SLAY_DRAGON */
+	EGO_SLAY_EVIL,		/* 10 = EGO_SLAY_EVIL (XXX) */
+	EGO_SLAY_UNDEAD,	/* 11 = EGO_SLAY_UNDEAD (XXX) */
+	EGO_BRAND_FIRE,		/* 12 = EGO_FT */
+	EGO_BRAND_COLD,		/* 13 = EGO_FB */
+	EGO_FREE_ACTION,	/* 14 = EGO_FREE_ACTION (XXX) */
+	EGO_SLAYING,		/* 15 = EGO_SLAYING */
+	0,					/* 16 */
+	0,					/* 17 */
+	EGO_SLOW_DESCENT,	/* 18 = EGO_SLOW_DESCENT */
+	EGO_SPEED,			/* 19 = EGO_SPEED */
+	EGO_STEALTH,		/* 20 = EGO_STEALTH (XXX) */
+	0,					/* 21 */
+	0,					/* 22 */
+	0,					/* 23 */
+	EGO_INTELLIGENCE,	/* 24 = EGO_INTELLIGENCE */
+	EGO_WISDOM,			/* 25 = EGO_WISDOM */
+	EGO_INFRAVISION,	/* 26 = EGO_INFRAVISION */
+	EGO_MIGHT,			/* 27 = EGO_MIGHT */
+	EGO_LORDLINESS,		/* 28 = EGO_LORDLINESS */
+	EGO_MAGI,			/* 29 = EGO_MAGI (XXX) */
+	EGO_BEAUTY,			/* 30 = EGO_BEAUTY */
+	EGO_SEEING,			/* 31 = EGO_SEEING (XXX) */
+	EGO_REGENERATION,	/* 32 = EGO_REGENERATION */
+	0,					/* 33 */
+	0,					/* 34 */
+	0,					/* 35 */
+	0,					/* 36 */
+	0,					/* 37 */
+	EGO_PERMANENCE,		/* 38 = EGO_ROBE_MAGI */
+	EGO_PROTECTION,		/* 39 = EGO_PROTECTION */
+	0,					/* 40 */
+	0,					/* 41 */
+	0,					/* 42 */
+	EGO_BRAND_FIRE,		/* 43 = EGO_FIRE (XXX) */
+	EGO_HURT_EVIL,		/* 44 = EGO_AMMO_EVIL */
+	EGO_HURT_DRAGON,	/* 45 = EGO_AMMO_DRAGON */
+	0,					/* 46 */
+	0,					/* 47 */
+	0,					/* 48 */
+	0,					/* 49 */
+	EGO_FLAME,			/* 50 = EGO_AMMO_FIRE */
+	0,					/* 51 */	/* oops */
+	EGO_FROST,			/* 52 = EGO_AMMO_SLAYING */
+	0,					/* 53 */
+	0,					/* 54 */
+	EGO_HURT_ANIMAL,	/* 55 = EGO_AMMO_ANIMAL */
+	0,					/* 56 */
+	0,					/* 57 */
+	0,					/* 58 */
+	0,					/* 59 */
+	EGO_EXTRA_MIGHT,	/* 60 = EGO_EXTRA_MIGHT */
+	EGO_EXTRA_SHOTS,	/* 61 = EGO_EXTRA_SHOTS */
+	0,					/* 62 */
+	0,					/* 63 */
+	EGO_VELOCITY,		/* 64 = EGO_VELOCITY */
+	EGO_ACCURACY,		/* 65 = EGO_ACCURACY */
+	0,					/* 66 */
+	EGO_SLAY_ORC,		/* 67 = EGO_SLAY_ORC */
+	EGO_POWER,			/* 68 = EGO_POWER */
+	0,					/* 69 */
+	0,					/* 70 */
+	EGO_WEST,			/* 71 = EGO_WEST */
+	EGO_BLESS_BLADE,	/* 72 = EGO_BLESS_BLADE */
+	EGO_SLAY_DEMON,		/* 73 = EGO_SLAY_DEMON */
+	EGO_SLAY_TROLL,		/* 74 = EGO_SLAY_TROLL */
+	0,					/* 75 */
+	0,					/* 76 */
+	EGO_WOUNDING,		/* 77 = EGO_AMMO_WOUNDING */
+	0,					/* 78 */
+	0,					/* 79 */
+	0,					/* 80 */
+	EGO_LITE,			/* 81 = EGO_LITE */
+	EGO_AGILITY,		/* 82 = EGO_AGILITY */
+	0,					/* 83 */
+	0,					/* 84 */
+	EGO_SLAY_GIANT,		/* 85 = EGO_SLAY_GIANT */
+	EGO_TELEPATHY,		/* 86 = EGO_TELEPATHY */
+	EGO_ELVENKIND,		/* 87 = EGO_ELVENKIND (XXX) */
+	0,					/* 88 */
+	0,					/* 89 */
+	EGO_ATTACKS,		/* 90 = EGO_ATTACKS */
+	EGO_AMAN,			/* 91 = EGO_AMAN */
+	0,					/* 92 */
+	0,					/* 93 */
+	0,					/* 94 */
+	0,					/* 95 */
+	0,					/* 96 */
+	0,					/* 97 */
+	0,					/* 98 */
+	0,					/* 99 */
+	0,					/* 100 */
+	0,					/* 101 */
+	0,					/* 102 */
+	0,					/* 103 */
+	EGO_WEAKNESS,		/* 104 = EGO_WEAKNESS */
+	EGO_STUPIDITY,		/* 105 = EGO_STUPIDITY */
+	EGO_NAIVETY,		/* 106 = EGO_DULLNESS */
+	EGO_SICKLINESS,		/* 107 = EGO_SICKLINESS */
+	EGO_CLUMSINESS,		/* 108 = EGO_CLUMSINESS */
+	EGO_UGLINESS,		/* 109 = EGO_UGLINESS */
+	EGO_TELEPORTATION,	/* 110 = EGO_TELEPORTATION */
+	0,					/* 111 */
+	EGO_IRRITATION,		/* 112 = EGO_IRRITATION */
+	EGO_VULNERABILITY,	/* 113 = EGO_VULNERABILITY */
+	EGO_ENVELOPING,		/* 114 = EGO_ENVELOPING */
+	0,					/* 115 */
+	EGO_SLOWNESS,		/* 116 = EGO_SLOWNESS */
+	EGO_NOISE,			/* 117 = EGO_NOISE */
+	EGO_ANNOYANCE,		/* 118 = EGO_GREAT_MASS */
+	0,					/* 119 */
+	EGO_BACKBITING,		/* 120 = EGO_BACKBITING */
+	0,					/* 121 */
+	0,					/* 122 */
+	0,					/* 123 */
+	EGO_MORGUL,			/* 124 = EGO_MORGUL */
+	0,					/* 125 */
+	EGO_SHATTERED,		/* 126 = EGO_SHATTERED */
 	EGO_BLASTED			/* 127 = EGO_BLASTED (XXX) */
 };
 
 
 /*
- * Read an item (2.7.0 or later)
- *
- * Note that savefiles from 2.7.0 and 2.7.1 are obsolete.
- *
- * Note that pre-2.7.9 savefiles (from Angband 2.5.1 onward anyway)
- * can be read using the code above.
+ * Read an object
  *
  * This function attempts to "repair" old savefiles, and to extract
  * the most up to date values for various object fields.
@@ -470,15 +457,10 @@ static void rd_item(object_type *o_ptr)
 
 	u32b f1, f2, f3;
 
-	u16b tmp16u;
-
 	object_kind *k_ptr;
 
-	char note[128];
+	char buf[128];
 
-
-	/* Hack -- wipe */
-	WIPE(o_ptr, object_type);
 
 	/* Kind */
 	rd_s16b(&o_ptr->k_idx);
@@ -548,18 +530,29 @@ static void rd_item(object_type *o_ptr)
 	/* Old flags */
 	strip_bytes(12);
 
-	/* Unused */
-	rd_u16b(&tmp16u);
+	/* Old version */
+	if (older_than(2,8,0))
+	{
+		/* Old something */
+		strip_bytes(2);
+	}
+	
+	/* New version */
+	else
+	{
+		/* Monster holding object */
+		rd_s16b(&o_ptr->held_m_idx);
+	}
 
 	/* Special powers */
 	rd_byte(&o_ptr->xtra1);
 	rd_byte(&o_ptr->xtra2);
 
 	/* Inscription */
-	rd_string(note, 128);
+	rd_string(buf, 128);
 
 	/* Save the inscription */
-	if (note[0]) o_ptr->note = quark_add(note);
+	if (buf[0]) o_ptr->note = quark_add(buf);
 
 
 	/* Mega-Hack -- handle "dungeon objects" later */
@@ -575,7 +568,7 @@ static void rd_item(object_type *o_ptr)
 
 
 	/* Hack -- notice "broken" items */
-	if (k_ptr->cost <= 0) o_ptr->ident |= ID_BROKEN;
+	if (k_ptr->cost <= 0) o_ptr->ident |= (IDENT_BROKEN);
 
 
 	/* Hack -- the "gold" values changed in 2.7.8 */
@@ -719,7 +712,7 @@ static void rd_item(object_type *o_ptr)
 	if (older_than(2, 7, 6))
 	{
 		/* Reduce the "pval" bonus on "search" */
-		if (f1 & TR1_SEARCH)
+		if (f1 & (TR1_SEARCH))
 		{
 			/* Paranoia -- do not lose any search bonuses */
 			o_ptr->pval = (o_ptr->pval + 4) / 5;
@@ -761,7 +754,7 @@ static void rd_item(object_type *o_ptr)
 	o_ptr->weight = k_ptr->weight;
 
 	/* Hack -- extract the "broken" flag */
-	if (!o_ptr->pval < 0) o_ptr->ident |= ID_BROKEN;
+	if (!o_ptr->pval < 0) o_ptr->ident |= (IDENT_BROKEN);
 
 
 	/* Artifacts */
@@ -784,13 +777,13 @@ static void rd_item(object_type *o_ptr)
 		o_ptr->weight = a_ptr->weight;
 
 		/* Hack -- extract the "broken" flag */
-		if (!a_ptr->cost) o_ptr->ident |= ID_BROKEN;
+		if (!a_ptr->cost) o_ptr->ident |= (IDENT_BROKEN);
 
 		/* Hack -- assume "curse" */
 		if (older_than(2, 7, 9))
 		{
 			/* Hack -- assume cursed */
-			if (a_ptr->flags3 & TR3_CURSED) o_ptr->ident |= ID_CURSED;
+			if (a_ptr->flags3 & (TR3_CURSED)) o_ptr->ident |= (IDENT_CURSED);
 		}
 	}
 
@@ -810,13 +803,13 @@ static void rd_item(object_type *o_ptr)
 		}
 
 		/* Hack -- extract the "broken" flag */
-		if (!e_ptr->cost) o_ptr->ident |= ID_BROKEN;
+		if (!e_ptr->cost) o_ptr->ident |= (IDENT_BROKEN);
 
 		/* Hack -- assume "curse" */
 		if (older_than(2, 7, 9))
 		{
 			/* Hack -- assume cursed */
-			if (e_ptr->flags3 & TR3_CURSED) o_ptr->ident |= ID_CURSED;
+			if (e_ptr->flags3 & (TR3_CURSED)) o_ptr->ident |= (IDENT_CURSED);
 		}
 	}
 
@@ -825,10 +818,10 @@ static void rd_item(object_type *o_ptr)
 	if (older_than(2, 7, 9))
 	{
 		/* Hack -- assume cursed */
-		if (k_ptr->flags3 & TR3_CURSED) o_ptr->ident |= ID_CURSED;
+		if (k_ptr->flags3 & (TR3_CURSED)) o_ptr->ident |= (IDENT_CURSED);
 
 		/* Hack -- apply "uncursed" incription */
-		if (streq(note, "uncursed")) o_ptr->ident &= ~ID_CURSED;
+		if (streq(buf, "uncursed")) o_ptr->ident &= ~(IDENT_CURSED);
 	}
 }
 
@@ -841,9 +834,6 @@ static void rd_item(object_type *o_ptr)
 static void rd_monster(monster_type *m_ptr)
 {
 	byte tmp8u;
-
-	/* Hack -- wipe */
-	WIPE(m_ptr, monster_type);
 
 	/* Read the monster race */
 	rd_s16b(&m_ptr->r_idx);
@@ -1004,15 +994,24 @@ static errr rd_store(int n)
 	for (j = 0; j < num; j++)
 	{
 		object_type forge;
+		object_type *q_ptr;
+
+		/* Get local object */
+		q_ptr = &forge;
+
+		/* Wipe the object */
+		object_wipe(q_ptr);
 
 		/* Read the item */
-		rd_item(&forge);
+		rd_item(q_ptr);
 
 		/* Acquire valid items */
 		if (st_ptr->stock_num < STORE_INVEN_MAX)
 		{
+			int k = st_ptr->stock_num++;
+
 			/* Acquire the item */
-			st_ptr->stock[st_ptr->stock_num++] = forge;
+			object_copy(&st_ptr->stock[k], q_ptr);
 		}
 	}
 
@@ -1023,7 +1022,7 @@ static errr rd_store(int n)
 
 
 /*
- * Read RNG state
+ * Read RNG state (added in 2.8.0)
  */
 static void rd_randomizer(void)
 {
@@ -1053,7 +1052,7 @@ static void rd_randomizer(void)
 
 
 /*
- * Read options (ignore pre-2.8.0 options)
+ * Read options (ignore most pre-2.8.0 options)
  *
  * Note that the normal options are now stored as a set of 256 bit flags,
  * plus a set of 256 bit masks to indicate which bit flags were defined
@@ -1078,7 +1077,7 @@ static void rd_options(void)
 
 	/*** Oops ***/
 
-	/* Oops */
+	/* Ignore old options */
 	strip_bytes(16);
 
 
@@ -1106,7 +1105,7 @@ static void rd_options(void)
 	cheat_know = (c & 0x1000) ? TRUE : FALSE;
 	cheat_live = (c & 0x2000) ? TRUE : FALSE;
 
-	/* Handle old savefiles */
+	/* Pre-2.8.0 savefiles are done */
 	if (older_than(2, 8, 0)) return;
 
 
@@ -1223,9 +1222,8 @@ static void rd_ghost(void)
 
 
 /*
- * Read/Write the "extra" information
+ * Read the "extra" information
  */
-
 static void rd_extra(void)
 {
 	int i;
@@ -1244,7 +1242,7 @@ static void rd_extra(void)
 	/* Class/Race/Gender/Spells */
 	rd_byte(&p_ptr->prace);
 	rd_byte(&p_ptr->pclass);
-	rd_byte(&p_ptr->male);
+	rd_byte(&p_ptr->psex);
 	rd_byte(&tmp8u);	/* oops */
 
 	/* Special Race/Class info */
@@ -1280,6 +1278,12 @@ static void rd_extra(void)
 
 	rd_s16b(&p_ptr->max_plv);
 	rd_s16b(&p_ptr->max_dlv);
+
+	/* Repair maximum player level XXX XXX XXX */
+	if (p_ptr->max_plv < p_ptr->lev) p_ptr->max_plv = p_ptr->lev;
+
+	/* Repair maximum dungeon level */
+	if (p_ptr->max_dlv < 0) p_ptr->max_dlv = 1;
 
 	/* More info */
 	strip_bytes(8);
@@ -1384,6 +1388,7 @@ static errr rd_inventory(void)
 	int slot = 0;
 
 	object_type forge;
+	object_type *q_ptr;
 
 	/* No weight */
 	total_weight = 0;
@@ -1403,11 +1408,17 @@ static errr rd_inventory(void)
 		/* Nope, we reached the end */
 		if (n == 0xFFFF) break;
 
+		/* Get local object */
+		q_ptr = &forge;
+
+		/* Wipe the object */
+		object_wipe(q_ptr);
+
 		/* Read the item */
-		rd_item(&forge);
+		rd_item(q_ptr);
 
 		/* Hack -- verify item */
-		if (!forge.k_idx) return (53);
+		if (!q_ptr->k_idx) return (53);
 
 		/* Hack -- convert old slot numbers */
 		if (older_than(2, 7, 4)) n = convert_slot(n);
@@ -1415,11 +1426,11 @@ static errr rd_inventory(void)
 		/* Wield equipment */
 		if (n >= INVEN_WIELD)
 		{
-			/* Structure copy */
-			inventory[n] = forge;
+			/* Copy object */
+			object_copy(&inventory[n], q_ptr);
 
 			/* Add the weight */
-			total_weight += (forge.number * forge.weight);
+			total_weight += (q_ptr->number * q_ptr->weight);
 
 			/* One more item */
 			equip_cnt++;
@@ -1441,11 +1452,11 @@ static errr rd_inventory(void)
 			/* Get a slot */
 			n = slot++;
 
-			/* Structure copy */
-			inventory[n] = forge;
+			/* Copy object */
+			object_copy(&inventory[n], q_ptr);
 
 			/* Add the weight */
-			total_weight += (forge.number * forge.weight);
+			total_weight += (q_ptr->number * q_ptr->weight);
 
 			/* One more item */
 			inven_cnt++;
@@ -1468,7 +1479,7 @@ static void rd_messages(void)
 
 	s16b num;
 
-	/* Hack -- old method used circular queue */
+	/* Total */
 	rd_s16b(&num);
 
 	/* Read the messages */
@@ -1485,7 +1496,7 @@ static void rd_messages(void)
 
 
 /*
- * New "cave grid" flags -- saved in savefile
+ * Old "cave grid" flags -- saved in savefile
  */
 #define OLD_GRID_W_01	0x0001	/* Wall type (bit 1) */
 #define OLD_GRID_W_02	0x0002	/* Wall type (bit 2) */
@@ -1511,16 +1522,11 @@ static void rd_messages(void)
 
 
 /*
- * Read the dungeon (new method)
- *
- * XXX XXX XXX Angband 2.8.0 will totally change the dungeon info
+ * Read pre-2.8.0 dungeon info
  *
  * XXX XXX XXX Try to be more flexible about "too many monsters"
  *
- * XXX XXX XXX Mega-Hack -- attempt to convert pre-2.8.0 savefile
- * format into 2.8.0 internal format, by extracting the new cave
- * grid terrain feature flags.  Note that we may have to move the
- * terrain feature extractors into the "rd_item()" function.
+ * Convert the old terrain objects into the new terrain features.
  */
 static errr rd_dungeon_aux(void)
 {
@@ -1576,20 +1582,20 @@ static errr rd_dungeon_aux(void)
 			if (older_than(2, 7, 5))
 			{
 				/* Extract the old "info" flags */
-				if ((tmp8u >> 4) & 0x1) c_ptr->info |= CAVE_ROOM;
-				if ((tmp8u >> 5) & 0x1) c_ptr->info |= CAVE_MARK;
-				if ((tmp8u >> 6) & 0x1) c_ptr->info |= CAVE_GLOW;
+				if ((tmp8u >> 4) & 0x1) c_ptr->info |= (CAVE_ROOM);
+				if ((tmp8u >> 5) & 0x1) c_ptr->info |= (CAVE_MARK);
+				if ((tmp8u >> 6) & 0x1) c_ptr->info |= (CAVE_GLOW);
 
 				/* Hack -- process old style "light" */
-				if (c_ptr->info & CAVE_GLOW)
+				if (c_ptr->info & (CAVE_GLOW))
 				{
-					c_ptr->info |= CAVE_MARK;
+					c_ptr->info |= (CAVE_MARK);
 				}
 
 				/* Mega-Hack -- light all walls */
 				else if ((tmp8u & 0x0F) >= 12)
 				{
-					c_ptr->info |= CAVE_GLOW;
+					c_ptr->info |= (CAVE_GLOW);
 				}
 
 				/* Process the "floor type" */
@@ -1598,27 +1604,27 @@ static errr rd_dungeon_aux(void)
 					/* Lite Room Floor */
 					case 2:
 					{
-						c_ptr->info |= CAVE_GLOW;
+						c_ptr->info |= (CAVE_GLOW);
 					}
 
 					/* Dark Room Floor */
 					case 1:
 					{
-						c_ptr->info |= CAVE_ROOM;
+						c_ptr->info |= (CAVE_ROOM);
 						break;
 					}
 
 					/* Lite Vault Floor */
 					case 4:
 					{
-						c_ptr->info |= CAVE_GLOW;
+						c_ptr->info |= (CAVE_GLOW);
 					}
 
 					/* Dark Vault Floor */
 					case 3:
 					{
-						c_ptr->info |= CAVE_ROOM;
-						c_ptr->info |= CAVE_ICKY;
+						c_ptr->info |= (CAVE_ROOM);
+						c_ptr->info |= (CAVE_ICKY);
 						break;
 					}
 
@@ -1662,30 +1668,30 @@ static errr rd_dungeon_aux(void)
 			else
 			{
 				/* The old "vault" flag */
-				if (tmp8u & OLD_GRID_ICKY) c_ptr->info |= CAVE_ICKY;
+				if (tmp8u & (OLD_GRID_ICKY)) c_ptr->info |= (CAVE_ICKY);
 
 				/* The old "room" flag */
-				if (tmp8u & OLD_GRID_ROOM) c_ptr->info |= CAVE_ROOM;
+				if (tmp8u & (OLD_GRID_ROOM)) c_ptr->info |= (CAVE_ROOM);
 
 				/* The old "glow" flag */
-				if (tmp8u & OLD_GRID_GLOW) c_ptr->info |= CAVE_GLOW;
+				if (tmp8u & (OLD_GRID_GLOW)) c_ptr->info |= (CAVE_GLOW);
 
 				/* The old "mark" flag */
-				if (tmp8u & OLD_GRID_MARK) c_ptr->info |= CAVE_MARK;
+				if (tmp8u & (OLD_GRID_MARK)) c_ptr->info |= (CAVE_MARK);
 
 				/* The old "wall" flags -- granite wall */
-				if ((tmp8u & OLD_GRID_WALL_MASK) ==
+				if ((tmp8u & (OLD_GRID_WALL_MASK)) ==
 				    OLD_GRID_WALL_GRANITE)
 				{
 					/* Permanent wall (assume "solid") XXX XXX XXX */
-					if (tmp8u & OLD_GRID_PERM) c_ptr->feat = FEAT_PERM_SOLID;
+					if (tmp8u & (OLD_GRID_PERM)) c_ptr->feat = FEAT_PERM_SOLID;
 
 					/* Normal wall (assume "basic") XXX XXX XXX */
 					else c_ptr->feat = FEAT_WALL_EXTRA;
 				}
 
 				/* The old "wall" flags -- quartz vein */
-				else if ((tmp8u & OLD_GRID_WALL_MASK) ==
+				else if ((tmp8u & (OLD_GRID_WALL_MASK)) ==
 				         OLD_GRID_WALL_QUARTZ)
 				{
 					/* Assume no treasure */
@@ -1693,7 +1699,7 @@ static errr rd_dungeon_aux(void)
 				}
 
 				/* The old "wall" flags -- magma vein */
-				else if ((tmp8u & OLD_GRID_WALL_MASK) ==
+				else if ((tmp8u & (OLD_GRID_WALL_MASK)) ==
 				         OLD_GRID_WALL_MAGMA)
 				{
 					/* Assume no treasure */
@@ -1733,35 +1739,38 @@ static errr rd_dungeon_aux(void)
 		int o_idx;
 
 		object_type forge;
+		object_type *q_ptr;
 
 
-		/* Point at it */
-		o_ptr = &forge;
+		/* Get local object */
+		q_ptr = &forge;
+
+		/* Wipe the object */
+		object_wipe(q_ptr);
 
 		/* Read the item */
-		rd_item(o_ptr);
+		rd_item(q_ptr);
+
+		/* Skip dead objects */
+		if (!q_ptr->k_idx) continue;
 
 
 		/* Access the item location */
-		c_ptr = &cave[o_ptr->iy][o_ptr->ix];
-
-
-		/* Skip dead objects */
-		if (!o_ptr->k_idx) continue;
+		c_ptr = &cave[q_ptr->iy][q_ptr->ix];
 
 
 		/* Hack -- convert old "dungeon" objects */
-		if ((o_ptr->k_idx >= 445) && (o_ptr->k_idx <= 479))
+		if ((q_ptr->k_idx >= 445) && (q_ptr->k_idx <= 479))
 		{
 			int k = 0;
 
 			bool invis = FALSE;
 
 			/* Hack -- catch "invisible traps" */
-			if (o_ptr->tval == 101) invis = TRUE;
+			if (q_ptr->tval == 101) invis = TRUE;
 
 			/* Analyze the "dungeon objects" */
-			switch (o_ptr->k_idx)
+			switch (q_ptr->k_idx)
 			{
 				/* Rubble */
 				case 445:
@@ -1774,7 +1783,7 @@ static errr rd_dungeon_aux(void)
 				case 446:
 				{
 					/* Broken door */
-					if (o_ptr->pval)
+					if (q_ptr->pval)
 					{
 						k = FEAT_BROKEN;
 					}
@@ -1792,9 +1801,9 @@ static errr rd_dungeon_aux(void)
 				case 447:
 				{
 					/* Jammed door */
-					if (o_ptr->pval < 0)
+					if (q_ptr->pval < 0)
 					{
-						k = (0 - o_ptr->pval) / 2;
+						k = (0 - q_ptr->pval) / 2;
 						if (k > 7) k = 7;
 						k = FEAT_DOOR_HEAD + 0x08 + k;
 					}
@@ -1802,7 +1811,7 @@ static errr rd_dungeon_aux(void)
 					/* Locked door */
 					else
 					{
-						k = o_ptr->pval / 2;
+						k = q_ptr->pval / 2;
 						if (k > 7) k = 7;
 						k = FEAT_DOOR_HEAD + k;
 					}
@@ -2033,7 +2042,7 @@ static errr rd_dungeon_aux(void)
 
 
 		/* Hack -- treasure in walls */
-		if (o_ptr->tval == TV_GOLD)
+		if (q_ptr->tval == TV_GOLD)
 		{
 			/* Quartz + treasure */
 			if ((c_ptr->feat == FEAT_QUARTZ) ||
@@ -2045,6 +2054,14 @@ static errr rd_dungeon_aux(void)
 				/* Done */
 				continue;
 			}
+		}
+
+
+		/* Paranoia */
+		if (c_ptr->o_idx)
+		{
+			note("Multiple objects per grid!");
+			return (153);
 		}
 
 
@@ -2062,9 +2079,9 @@ static errr rd_dungeon_aux(void)
 		o_ptr = &o_list[o_idx];
 
 		/* Copy the item */
-		(*o_ptr) = forge;
+		object_copy(o_ptr, q_ptr);
 
-		/* Mark the location */
+		/* Place the object */
 		c_ptr->o_idx = o_idx;
 	}
 
@@ -2087,31 +2104,35 @@ static errr rd_dungeon_aux(void)
 	{
 		int m_idx;
 
+		monster_type forge;
+		monster_type *q_ptr;
+
 		monster_type *m_ptr;
 		monster_race *r_ptr;
 
-		monster_type forge;
 
+		/* Get local monster */
+		q_ptr = &forge;
 
-		/* Forge */
-		m_ptr = &forge;
-
+		/* Clear the monster */
+		WIPE(q_ptr, monster_type);
+		
 		/* Read the monster */
-		rd_monster(m_ptr);
+		rd_monster(q_ptr);
 
 
 		/* Access grid */
-		c_ptr = &cave[m_ptr->fy][m_ptr->fx];
+		c_ptr = &cave[q_ptr->fy][q_ptr->fx];
 
 		/* Access race */
-		r_ptr = &r_info[m_ptr->r_idx];
+		r_ptr = &r_info[q_ptr->r_idx];
 
 
 		/* Hack -- ignore "broken" monsters */
-		if (m_ptr->r_idx <= 0) continue;
+		if (q_ptr->r_idx <= 0) continue;
 
 		/* Hack -- ignore "player ghosts" */
-		if (m_ptr->r_idx >= MAX_R_IDX-1) continue;
+		if (q_ptr->r_idx >= MAX_R_IDX-1) continue;
 
 
 		/* Get a new record */
@@ -2127,8 +2148,8 @@ static errr rd_dungeon_aux(void)
 		/* Acquire place */
 		m_ptr = &m_list[m_idx];
 
-		/* Copy the item */
-		(*m_ptr) = forge;
+		/* Copy the monster */
+		COPY(m_ptr, q_ptr, monster_type);
 
 		/* Mark the location */
 		c_ptr->m_idx = m_idx;
@@ -2151,7 +2172,7 @@ static errr rd_dungeon_aux(void)
 	}
 
 
-	/* Read the dungeon */
+	/* The dungeon is ready */
 	character_dungeon = TRUE;
 
 
@@ -2305,11 +2326,35 @@ static errr rd_dungeon(void)
 		rd_item(o_ptr);
 
 
-		/* Access the item location */
-		c_ptr = &cave[o_ptr->iy][o_ptr->ix];
+		/* XXX XXX XXX XXX XXX */
 
-		/* Mark the location */
-		c_ptr->o_idx = o_idx;
+		/* Monster */
+		if (o_ptr->held_m_idx)
+		{
+			monster_type *m_ptr;
+
+			/* Monster */
+			m_ptr = &m_list[o_ptr->held_m_idx];
+
+			/* Build a stack */
+			o_ptr->next_o_idx = m_ptr->hold_o_idx;
+
+			/* Place the object */
+			m_ptr->hold_o_idx = o_idx;
+		}
+		
+		/* Dungeon */
+		else
+		{
+			/* Access the item location */
+			c_ptr = &cave[o_ptr->iy][o_ptr->ix];
+
+			/* Build a stack */
+			o_ptr->next_o_idx = c_ptr->o_idx;
+
+			/* Place the object */
+			c_ptr->o_idx = o_idx;
+		}
 	}
 
 
@@ -2346,7 +2391,7 @@ static errr rd_dungeon(void)
 		}
 
 
-		/* Acquire place */
+		/* Acquire monster */
 		m_ptr = &m_list[m_idx];
 
 		/* Read the monster */
@@ -2370,7 +2415,7 @@ static errr rd_dungeon(void)
 
 	/*** Success ***/
 
-	/* Read the dungeon */
+	/* The dungeon is ready */
 	character_dungeon = TRUE;
 
 	/* Success */
@@ -2381,9 +2426,6 @@ static errr rd_dungeon(void)
 
 /*
  * Actually read the savefile
- *
- * Angband 2.8.0 will completely replace this code, see "save.c",
- * though this code will be kept to read pre-2.8.0 savefiles.
  */
 static errr rd_savefile_new_aux(void)
 {
@@ -2494,7 +2536,7 @@ static errr rd_savefile_new_aux(void)
 			}
 
 			/* Hack -- handle uniques */
-			if (r_ptr->flags1 & RF1_UNIQUE)
+			if (r_ptr->flags1 & (RF1_UNIQUE))
 			{
 				/* Assume no kills */
 				r_ptr->r_pkills = 0;
@@ -2598,11 +2640,14 @@ static errr rd_savefile_new_aux(void)
 	}
 
 
+	/* Important -- Initialize the sex */
+	sp_ptr = &sex_info[p_ptr->psex];
+
 	/* Important -- Initialize the race/class */
 	rp_ptr = &race_info[p_ptr->prace];
 	cp_ptr = &class_info[p_ptr->pclass];
 
-	/* Important -- Choose the magic info */
+	/* Important -- Initialize the magic */
 	mp_ptr = &magic_info[p_ptr->pclass];
 
 
@@ -2696,9 +2741,6 @@ static errr rd_savefile_new_aux(void)
 
 /*
  * Actually read the savefile
- *
- * Angband 2.8.0 will completely replace this code, see "save.c",
- * though this code will be kept to read pre-2.8.0 savefiles.
  */
 errr rd_savefile_new(void)
 {

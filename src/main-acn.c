@@ -1804,20 +1804,14 @@ int main(int argc, char *argv[])
 	/* Catch nasty signals */
 	signals_init();
 
-	/* Display the 'news' file */
-	show_news();
-
-	/* Initialize the arrays */
-	init_some_arrays();
-
 	/* No name (yet) */
 	strcpy(player_name, "");
 
-	/* Hack -- assume wizard permissions */
-	can_be_wizard = TRUE;
-
 	/* Hack -- Use the "pref-acn.prf" file */
 	ANGBAND_SYS = "acn";
+
+	/* Initialize */
+	init_angband();
 
 	initialised=1;
 

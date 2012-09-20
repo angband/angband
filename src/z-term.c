@@ -14,8 +14,9 @@
  * "graphic" environments, such as the Macintosh or Unix/X11.
  *
  * Each "window" works like a standard "dumb terminal", that is, it
- * can display colored textual symbols, plus an optional cursor, and
- * it can be used to get keypress events from the user.
+ * can display a two dimensional array of grids containing colored
+ * textual symbols, plus an optional cursor, and it can be used to
+ * get keypress events from the user.
  *
  * In fact, this package can simply be used, if desired, to support
  * programs which will look the same on a dumb terminal as they do
@@ -43,9 +44,8 @@
  *   the "color" of a "blank" is rarely important
  *   moving the "cursor" is relatively cheap
  *   use a "software" cursor (only moves when requested)
- *   drawing new symbols does not erase old symbols
- *   drawing characters may or may not first erase behind them
- *   drawing a character on the cursor will clear the cursor
+ *   drawing characters normally will not erase old ones
+ *   drawing a character on the cursor often erases it
  *   may have fast routines for "clear a region"
  *   the bottom right corner is usually not special
  *
@@ -57,6 +57,7 @@
  *   moving the "cursor" may be expensive
  *   use a "hardware" cursor (moves during screen updates)
  *   drawing new symbols automatically erases old ones
+ *   characters may only be drawn at the cursor location
  *   drawing a character on the cursor will move the cursor
  *   may have fast routines for "clear entire window"
  *   may have fast routines for "clear to end of line"
@@ -72,42 +73,22 @@
  * then it can use the various "term" structures without worrying
  * about the underlying platform.
  *
- * The game "Angband" uses a set of files called "main-xxx.c", for
- * various "xxx" suffixes.  Most of these contain a function called
- * "init_xxx()", that will prepare the underlying visual system for
- * use with Angband, and then create one or more "term" structures,
- * using flags and hooks appropriate to the given platform, so that
- * the "main()" function can call one (or more) of the "init_xxx()"
- * functions, as appropriate, to prepare the required "term_screen"
- * (and the optional "term_mirror", "term_choice", "term_recall")
- * pointers to "term" structures.  Other "main-xxx.c" systems contain
- * their own "main()" function which, in addition to doing everything
- * needed to initialize the actual program, also does everything that
- * the normal "init_xxx()" functions would do.
- *
  *
  * This package allows each "grid" in each window to hold an attr/char
  * pair, with each ranging from 0 to 255, and makes very few assumptions
  * about the meaning of any attr/char values.  Normally, we assume that
  * "attr 0" is "black", with the semantics that "black" text should be
- * sent to "Term_wipe()" instead of "Term_text()", but this behavior is
- * disabled if either the "always_pict" or the "always_text" flags are
- * set.  Normally, we assume that "char 0" is "illegal", since placing
- * a "char 0" in the middle of a string "terminates" the string, and
- * this behavior cannot be easily disabled.  Finally, we use a special
- * attr/char pair, defaulting to "attr 0" and "char 32", also known as
- * "black space", when we "erase" or "clear" any window, but this pair
- * can be redefined to any pair, including the standard "white space",
- * or the bizarre "emptiness" ("attr 0" and "char 0"), which is the
- * only way to place "char 0" codes in the "window" arrays.
+ * sent to "Term_wipe()" instead of "Term_text()", but this sematics is
+ * modified if either the "always_pict" or the "always_text" flags are
+ * set.  We assume that "char 0" is "dangerous", since placing such a
+ * "char" in the middle of a string "terminates" the string, and usually
+ * we prevent its use.
  *
- * The game "Angband" defines, in addition to "attr 0", all of the
- * attr codes from 1 to 15, using definitions in "defines.h", and
- * thus the "main-xxx.c" files used by Angband must handle these
- * attr values correctly.  Also, they must handle all other attr
- * values, though they may do so in any way they wish.  Many of
- * the "main-xxx.c" files use "white space" ("attr 1" / "char 32")
- * to "erase" or "clear" any window, for efficiency.
+ * Finally, we use a special attr/char pair, defaulting to "attr 0" and
+ * "char 32", also known as "black space", when we "erase" or "clear"
+ * any window, but this pair can be redefined to any pair, including
+ * the standard "white space", or the bizarre "emptiness" ("attr 0"
+ * and "char 0"), as long as various obscure restrictions are met.
  *
  *
  * This package provides several functions which allow a program to
@@ -166,6 +147,12 @@
  * to be called once for each half of the string, instead of once for the
  * whole string, which, on some machines, may be non-optimal behavior.
  *
+ * The new formalism includes a "displayed" screen image (old) which
+ * is actually seen by the user, a "requested" screen image (scr)
+ * which is being prepared for display, a "memorized" screen image
+ * (mem) which is used to save and restore screen images, and a
+ * "temporary" screen image (tmp) which is currently unused.
+ *
  *
  * Several "flags" are available in each "term" to allow the underlying
  * visual system (which initializes the "term" structure) to "optimize"
@@ -189,23 +176,82 @@
  *   Term->nuke_hook = Nuke the term
  *   Term->user_hook = Perform user actions
  *   Term->xtra_hook = Perform extra actions
- *   Term->wipe_hook = Draw some blank spaces
  *   Term->curs_hook = Draw (or Move) the cursor
- *   Term->pict_hook = Draw a picture in the window
+ *   Term->wipe_hook = Draw some blank spaces
  *   Term->text_hook = Draw some text in the window
+ *   Term->pict_hook = Draw some attr/chars in the window
  *
- * The "Term_user()" and "Term_xtra()" functions provide access to
- * the first two of these hooks for the main program, but note that
- * the behavior of "Term_xtra()" is not always defined when called
- * from outside this file, and the behavior of "Term_user()" is only
- * defined by the application.
+ * The "Term->user_hook" hook provides a simple hook to an implementation
+ * defined function, with application defined semantics.  It is available
+ * to the program via the "Term_user()" function.
+ *
+ * The "Term->xtra_hook" hook provides a variety of different functions,
+ * based on the first parameter (which should be taken from the various
+ * TERM_XTRA_* defines) and the second parameter (which may make sense
+ * only for some first parameters).  It is available to the program via
+ * the "Term_xtra()" function, though some first parameters are only
+ * "legal" when called from inside this package.
+ *
+ * The "Term->curs_hook" hook provides this package with a simple way
+ * to "move" or "draw" the cursor to the grid "x,y", depending on the
+ * setting of the "soft_cursor" flag.  Note that the cursor is never
+ * redrawn if "nothing" has happened to the screen (even temporarily).
+ * This hook is required.
+ *
+ * The "Term->wipe_hook" hook provides this package with a simple way
+ * to "erase", starting at "x,y", the next "n" grids.  This hook assumes
+ * that the input is valid.  This hook is required, unless the setting
+ * of the "always_pict" or "always_text" flags makes it optional.
+ *
+ * The "Term->text_hook" hook provides this package with a simple way
+ * to "draw", starting at "x,y", the "n" chars contained in "cp", using
+ * the attr "a".  This hook assumes that the input is valid, and that
+ * "n" is between 1 and 256 inclusive, but it should NOT assume that 
+ * the contents of "cp" are null-terminated.  This hook is required,
+ * unless the setting of the "always_pict" flag makes it optional.
+ *
+ * The "Term->pict_hook" hook provides this package with a simple way
+ * to "draw", starting at "x,y", the "n" attr/char pairs contained in
+ * the arrays "ap" and "cp".  This hook assumes that the input is valid,
+ * and that "n" is between 1 and 256 inclusive, but it should NOT assume
+ * that the contents of "cp" are null-terminated.  This hook is optional,
+ * unless the setting of the "always_pict" or "higher_pict" flags make
+ * it required.  Note that recently, this hook was changed from taking
+ * a byte "a" and a char "c" to taking a length "n", an array of bytes
+ * "ap" and an array of chars "cp".  Old implementations of this hook
+ * should now iterate over all "n" attr/char pairs.
  *
  *
- * The new formalism includes a "displayed" screen image (old) which
- * is actually seen by the user, a "requested" screen image (scr)
- * which is being prepared for display, a "memorized" screen image
- * (mem) which is used to save and restore screen images, and a
- * "temporary" screen image (tmp) which is currently unused.
+ * The game "Angband" uses a set of files called "main-xxx.c", for
+ * various "xxx" suffixes.  Most of these contain a function called
+ * "init_xxx()", that will prepare the underlying visual system for
+ * use with Angband, and then create one or more "term" structures,
+ * using flags and hooks appropriate to the given platform, so that
+ * the "main()" function can call one (or more) of the "init_xxx()"
+ * functions, as appropriate, to prepare the required "term" structs
+ * (one for each desired sub-window), and these "init_xxx()" functions
+ * are called from a centralized "main()" function in "main.c".  Other
+ * "main-xxx.c" systems contain their own "main()" function which, in
+ * addition to doing everything needed to initialize the actual program,
+ * also does everything that the normal "init_xxx()" functions would do.
+ *
+ * The game "Angband" defines, in addition to "attr 0", all of the
+ * attr codes from 1 to 15, using definitions in "defines.h", and
+ * thus the "main-xxx.c" files used by Angband must handle these
+ * attr values correctly.  Also, they must handle all other attr
+ * values, though they may do so in any way they wish, for example,
+ * by always taking every attr code mod 16.  Many of the "main-xxx.c"
+ * files use "white space" ("attr 1" / "char 32") to "erase" or "clear"
+ * any window, for efficiency.
+ *
+ * The game "Angband" uses the "Term_user" hook to allow any of the
+ * "main-xxx.c" files to interact with the user, by calling this hook
+ * whenever the user presses the "!" key when the game is waiting for
+ * a new command.  This could be used, for example, to provide "unix
+ * shell commands" to the Unix versions of the game.
+ *
+ * See "main-xxx.c" for a simple skeleton file which can be used to
+ * create a "visual system" for a new platform when porting Angband.
  */
 
 
@@ -394,24 +440,26 @@ static void QueueAttrChars(int x, int y, int n, byte a, cptr s)
 
 
 /*
- * Perform the "user action" of type "n".
+ * Execute the "Term->user_hook" hook, if available (see above).
  */
 errr Term_user(int n)
 {
+	/* Verify the hook */
 	if (!Term->user_hook) return (-1);
+	
+	/* Call the hook */
 	return ((*Term->user_hook)(n));
 }
 
 /*
- * Perform the "extra action" of type "n" with value "v".
- * Valid actions are defined as the "TERM_XTRA_*" constants.
- * Invalid and non-handled actions should return an error code.
- * This function is available for external usage, though some
- * parameters may not make sense unless called from "term.c".
+ * Execute the "Term->xtra_hook" hook, if available (see above).
  */
 errr Term_xtra(int n, int v)
 {
+	/* Verify the hook */
 	if (!Term->xtra_hook) return (-1);
+
+	/* Call the hook */
 	return ((*Term->xtra_hook)(n, v));
 }
 
@@ -421,12 +469,11 @@ errr Term_xtra(int n, int v)
 
 
 /*
- * Hack -- fake hook for "Term_curs()"
- * Place a "cursor" at "(x,y)".
+ * Hack -- fake hook for "Term_curs()" (see above)
  */
 static errr Term_curs_hack(int x, int y)
 {
-	/* XXX XXX XXX */
+	/* Compiler silliness */
 	if (x || y) return (-2);
 
 	/* Oops */
@@ -434,12 +481,11 @@ static errr Term_curs_hack(int x, int y)
 }
 
 /*
- * Hack -- fake hook for "Term_wipe()"
- * Erase "n" characters starting at "(x,y)"
+ * Hack -- fake hook for "Term_wipe()" (see above)
  */
 static errr Term_wipe_hack(int x, int y, int n)
 {
-	/* XXX XXX XXX */
+	/* Compiler silliness */
 	if (x || y || n) return (-2);
 
 	/* Oops */
@@ -447,26 +493,24 @@ static errr Term_wipe_hack(int x, int y, int n)
 }
 
 /*
- * Hack -- fake hook for "Term_pict()"
- * Draw a "special" attr/char pair at "(x,y)".
+ * Hack -- fake hook for "Term_text()" (see above)
  */
-static errr Term_pict_hack(int x, int y, byte a, char c)
+static errr Term_text_hack(int x, int y, int n, byte a, const char *cp)
 {
-	/* XXX XXX XXX */
-	if (x || y || a || c) return (-2);
+	/* Compiler silliness */
+	if (x || y || n || a || cp) return (-2);
 
 	/* Oops */
 	return (-1);
 }
 
 /*
- * Hack -- fake hook for "Term_text()"
- * Draw "n" chars from the string "s" using attr "a", at location "(x,y)".
+ * Hack -- fake hook for "Term_pict()" (see above)
  */
-static errr Term_text_hack(int x, int y, int n, byte a, cptr s)
+static errr Term_pict_hack(int x, int y, int n, const byte *ap, const char *cp)
 {
-	/* XXX XXX XXX */
-	if (x || y || n || a || s) return (-2);
+	/* Compiler silliness */
+	if (x || y || n || ap || cp) return (-2);
 
 	/* Oops */
 	return (-1);
@@ -478,576 +522,9 @@ static errr Term_text_hack(int x, int y, int n, byte a, cptr s)
 
 
 /*
- * Flush a row of the current window using "Term_text()"
+ * Flush a row of the current window (see "Term_fresh")
  *
- * Method: collect similar adjacent entries into stripes
- *
- * This routine currently "skips" any locations which "appear"
- * to already contain the desired contents.  This may or may
- * not be the best method, especially when the desired content
- * fits nicely into a "strip" currently under construction...
- *
- * Currently, this function skips right over any characters which
- * are already present on the window.  I imagine that it would be
- * more efficient to NOT skip such characters ALL the time, but
- * only when "useful".
- *
- * Might be better to go ahead and queue them while allowed, but
- * keep a count of the "trailing skipables", then, when time to
- * flush, or when a "non skippable" is found, force a flush if
- * there are too many skippables.  Hmmm...
- *
- * Perhaps an "initialization" stage, where the "text" (and "attr")
- * buffers are "filled" with information, converting "blanks" into
- * a convenient representation, and marking "skips" with "zero chars",
- * and then some "processing" is done to determine which chars to skip.
- *
- * Currently, this function is optimal for systems which prefer to
- * "print a char + move a char + print a char" to "print three chars",
- * and for applications that do a lot of "detailed" color printing.
- *
- * Note that, in QueueAttrChar(s), total "non-changes" are "pre-skipped".
- * But this routine must also handle situations in which the contents of
- * a location are changed, but then changed back to the original value,
- * and situations in which two locations in the same row are changed,
- * but the locations between them are unchanged.
- *
- * Note that "trailing spaces" are assumed to have the color of the
- * text that is currently being used, which in some cases allows the
- * spaces to be drawn somewhat efficiently.
- *
- * Note that special versions of this function (see below) are used if
- * either the "Term->always_pict" or "Term->higher_pict" flags are set.
- *
- * Normally, the "Term_wipe()" function is used only to display "blanks"
- * that were induced by "Term_clear()" or "Term_erase()", and then only
- * if the "attr_blank" and "char_blank" fields have not been redefined
- * to use "white space" instead of the default "black space".  Also,
- * the "Term_wipe()" function is used to display "black" text, though
- * why anyone would draw "black" text is beyond me.  Note that the
- * "Term->always_text" flag will disable the use of the "Term_wipe()"
- * function hook entirely.
- */
-static void Term_fresh_row_text_wipe(int y)
-{
-	int x;
-
-	byte *old_aa = Term->old->a[y];
-	char *old_cc = Term->old->c[y];
-
-	byte *scr_aa = Term->scr->a[y];
-	char *scr_cc = Term->scr->c[y];
-
-	/* No chars "pending" in "text" */
-	int n = 0;
-
-	/* Pending text starts in the first column */
-	int fx = 0;
-
-	/* Pending text color is "blank" */
-	int fa = Term->attr_blank;
-
-	/* The "old" data */
-	int oa, oc;
-
-	/* The "new" data */
-	int na, nc;
-
-	/* Max width is 255 */
-	char text[256];
-
-
-	/* Scan the columns marked as "modified" */
-	for (x = Term->x1[y]; x <= Term->x2[y]; x++)
-	{
-		/* See what is currently here */
-		oa = old_aa[x];
-		oc = old_cc[x];
-
-		/* Save and remember the new contents */
-		na = old_aa[x] = scr_aa[x];
-		nc = old_cc[x] = scr_cc[x];
-
-		/* Notice unchanged areas */
-		if ((na == oa) && (nc == oc))
-		{
-			/* Flush as needed (see above) */
-			if (n)
-			{
-				/* Terminate the thread */
-				text[n] = '\0';
-
-				/* Draw the pending chars */
-				if (fa)
-				{
-					(void)((*Term->text_hook)(fx, y, n, fa, text));
-				}
-
-				/* Hack -- Erase "leading" spaces */
-				else
-				{
-					(void)((*Term->wipe_hook)(fx, y, n));
-				}
-
-				/* Forget the pending thread */
-				n = 0;
-			}
-
-			/* Skip */
-			continue;
-		}
-
-		/* Notice new color */
-		if (fa != na)
-		{
-			/* Flush as needed (see above) */
-			if (n)
-			{
-				/* Terminate the thread */
-				text[n] = '\0';
-
-				/* Draw the pending chars */
-				if (fa)
-				{
-					(void)((*Term->text_hook)(fx, y, n, fa, text));
-				}
-
-				/* Hack -- Erase "leading" spaces */
-				else
-				{
-					(void)((*Term->wipe_hook)(fx, y, n));
-				}
-
-				/* Forget the pending thread */
-				n = 0;
-			}
-
-			/* Save the new color */
-			fa = na;
-		}
-
-		/* Start a new thread, if needed */
-		if (!n) fx = x;
-
-		/* Expand the current thread */
-		text[n++] = nc;
-	}
-
-	/* Flush the pending thread, if any */
-	if (n)
-	{
-		/* Terminate the thread */
-		text[n] = '\0';
-
-		/* Draw the pending chars */
-		if (fa)
-		{
-			(void)((*Term->text_hook)(fx, y, n, fa, text));
-		}
-
-		/* Hack -- Erase fully blank lines */
-		else
-		{
-			(void)((*Term->wipe_hook)(fx, y, n));
-		}
-	}
-}
-
-
-/*
- * Like "Term_fresh_row_text_wipe" but always use "Term_text()"
- * instead of "Term_wipe()" even for "black" (invisible) text.
- */
-static void Term_fresh_row_text_text(int y)
-{
-	int x;
-
-	byte *old_aa = Term->old->a[y];
-	char *old_cc = Term->old->c[y];
-
-	byte *scr_aa = Term->scr->a[y];
-	char *scr_cc = Term->scr->c[y];
-
-	/* No chars "pending" in "text" */
-	int n = 0;
-
-	/* Pending text starts in the first column */
-	int fx = 0;
-
-	/* Pending text color is "blank" */
-	int fa = Term->attr_blank;
-
-	/* The "old" data */
-	int oa, oc;
-
-	/* The "new" data */
-	int na, nc;
-
-	/* Max width is 255 */
-	char text[256];
-
-
-	/* Scan the columns marked as "modified" */
-	for (x = Term->x1[y]; x <= Term->x2[y]; x++)
-	{
-		/* See what is currently here */
-		oa = old_aa[x];
-		oc = old_cc[x];
-
-		/* Save and remember the new contents */
-		na = old_aa[x] = scr_aa[x];
-		nc = old_cc[x] = scr_cc[x];
-
-		/* Notice unchanged areas */
-		if ((na == oa) && (nc == oc))
-		{
-			/* Flush as needed (see above) */
-			if (n)
-			{
-				/* Terminate the thread */
-				text[n] = '\0';
-
-				/* Draw the pending chars */
-				(void)((*Term->text_hook)(fx, y, n, fa, text));
-
-				/* Forget the pending thread */
-				n = 0;
-			}
-
-			/* Skip */
-			continue;
-		}
-
-		/* Notice new color */
-		if (fa != na)
-		{
-			/* Flush as needed (see above) */
-			if (n)
-			{
-				/* Terminate the thread */
-				text[n] = '\0';
-
-				/* Draw the pending chars */
-				(void)((*Term->text_hook)(fx, y, n, fa, text));
-
-				/* Forget the pending thread */
-				n = 0;
-			}
-
-			/* Save the new color */
-			fa = na;
-		}
-
-		/* Start a new thread, if needed */
-		if (!n) fx = x;
-
-		/* Expand the current thread */
-		text[n++] = nc;
-	}
-
-	/* Flush the pending thread, if any */
-	if (n)
-	{
-		/* Terminate the thread */
-		text[n] = '\0';
-
-		/* Draw the pending chars */
-		(void)((*Term->text_hook)(fx, y, n, fa, text));
-	}
-}
-
-
-/*
- * As above, but use "Term_pict()" instead of "Term_text()" for
- * any attr/char pairs with the high-bits set.
- */
-static void Term_fresh_row_both_wipe(int y)
-{
-	int x;
-
-	byte *old_aa = Term->old->a[y];
-	char *old_cc = Term->old->c[y];
-
-	byte *scr_aa = Term->scr->a[y];
-	char *scr_cc = Term->scr->c[y];
-
-	/* No chars "pending" in "text" */
-	int n = 0;
-
-	/* Pending text starts in the first column */
-	int fx = 0;
-
-	/* Pending text color is "blank" */
-	int fa = Term->attr_blank;
-
-	/* The "old" data */
-	int oa, oc;
-
-	/* The "new" data */
-	int na, nc;
-
-	/* Max width is 255 */
-	char text[256];
-
-
-	/* Scan the columns marked as "modified" */
-	for (x = Term->x1[y]; x <= Term->x2[y]; x++)
-	{
-		/* See what is currently here */
-		oa = old_aa[x];
-		oc = old_cc[x];
-
-		/* Save and remember the new contents */
-		na = old_aa[x] = scr_aa[x];
-		nc = old_cc[x] = scr_cc[x];
-
-		/* Notice unchanged areas */
-		if ((na == oa) && (nc == oc))
-		{
-			/* Flush as needed (see above) */
-			if (n)
-			{
-				/* Terminate the thread */
-				text[n] = '\0';
-
-				/* Draw the pending chars */
-				if (fa)
-				{
-					(void)((*Term->text_hook)(fx, y, n, fa, text));
-				}
-
-				/* Hack -- Erase "leading" spaces */
-				else
-				{
-					(void)((*Term->wipe_hook)(fx, y, n));
-				}
-
-				/* Forget the pending thread */
-				n = 0;
-			}
-
-			/* Skip */
-			continue;
-		}
-
-		/* Use "Term_pict" for "special" data */
-		if ((na & 0x80) && (nc & 0x80))
-		{
-			/* Flush as needed (see above) */
-			if (n)
-			{
-				/* Terminate the thread */
-				text[n] = '\0';
-
-				/* Draw the pending chars */
-				if (fa)
-				{
-					(void)((*Term->text_hook)(fx, y, n, fa, text));
-				}
-
-				/* Hack -- Erase "leading" spaces */
-				else
-				{
-					(void)((*Term->wipe_hook)(fx, y, n));
-				}
-
-				/* Forget the pending thread */
-				n = 0;
-			}
-
-			/* Display this special character */
-			(void)((*Term->pict_hook)(x, y, na, nc));
-
-			/* Skip */
-			continue;
-		}
-
-		/* Notice new color */
-		if (fa != na)
-		{
-			/* Flush as needed (see above) */
-			if (n)
-			{
-				/* Terminate the thread */
-				text[n] = '\0';
-
-				/* Draw the pending chars */
-				if (fa)
-				{
-					(void)((*Term->text_hook)(fx, y, n, fa, text));
-				}
-
-				/* Hack -- Erase "leading" spaces */
-				else
-				{
-					(void)((*Term->wipe_hook)(fx, y, n));
-				}
-
-				/* Forget the pending thread */
-				n = 0;
-			}
-
-			/* Save the new color */
-			fa = na;
-		}
-
-		/* Start a new thread, if needed */
-		if (!n) fx = x;
-
-		/* Expand the current thread */
-		text[n++] = nc;
-	}
-
-	/* Flush the pending thread, if any */
-	if (n)
-	{
-		/* Terminate the thread */
-		text[n] = '\0';
-
-		/* Draw the pending chars */
-		if (fa)
-		{
-			(void)((*Term->text_hook)(fx, y, n, fa, text));
-		}
-
-		/* Hack -- Erase fully blank lines */
-		else
-		{
-			(void)((*Term->wipe_hook)(fx, y, n));
-		}
-	}
-}
-
-
-/*
- * Like "Term_fresh_row_both_wipe()", but always use "Term_text()"
- * instead of "Term_wipe()", even for "black" (invisible) text.
- */
-static void Term_fresh_row_both_text(int y)
-{
-	int x;
-
-	byte *old_aa = Term->old->a[y];
-	char *old_cc = Term->old->c[y];
-
-	byte *scr_aa = Term->scr->a[y];
-	char *scr_cc = Term->scr->c[y];
-
-	/* No chars "pending" in "text" */
-	int n = 0;
-
-	/* Pending text starts in the first column */
-	int fx = 0;
-
-	/* Pending text color is "blank" */
-	int fa = Term->attr_blank;
-
-	/* The "old" data */
-	int oa, oc;
-
-	/* The "new" data */
-	int na, nc;
-
-	/* Max width is 255 */
-	char text[256];
-
-
-	/* Scan the columns marked as "modified" */
-	for (x = Term->x1[y]; x <= Term->x2[y]; x++)
-	{
-		/* See what is currently here */
-		oa = old_aa[x];
-		oc = old_cc[x];
-
-		/* Save and remember the new contents */
-		na = old_aa[x] = scr_aa[x];
-		nc = old_cc[x] = scr_cc[x];
-
-		/* Notice unchanged areas */
-		if ((na == oa) && (nc == oc))
-		{
-			/* Flush as needed (see above) */
-			if (n)
-			{
-				/* Terminate the thread */
-				text[n] = '\0';
-
-				/* Draw the pending chars */
-				(void)((*Term->text_hook)(fx, y, n, fa, text));
-
-				/* Forget the pending thread */
-				n = 0;
-			}
-
-			/* Skip */
-			continue;
-		}
-
-		/* Use "Term_pict" for "special" data */
-		if ((na & 0x80) && (nc & 0x80))
-		{
-			/* Flush as needed (see above) */
-			if (n)
-			{
-				/* Terminate the thread */
-				text[n] = '\0';
-
-				/* Draw the pending chars */
-				(void)((*Term->text_hook)(fx, y, n, fa, text));
-
-				/* Forget the pending thread */
-				n = 0;
-			}
-
-			/* Display this special character */
-			(void)((*Term->pict_hook)(x, y, na, nc));
-
-			/* Skip */
-			continue;
-		}
-
-		/* Notice new color */
-		if (fa != na)
-		{
-			/* Flush as needed (see above) */
-			if (n)
-			{
-				/* Terminate the thread */
-				text[n] = '\0';
-
-				/* Draw the pending chars */
-				(void)((*Term->text_hook)(fx, y, n, fa, text));
-
-				/* Forget the pending thread */
-				n = 0;
-			}
-
-			/* Save the new color */
-			fa = na;
-		}
-
-		/* Start a new thread, if needed */
-		if (!n) fx = x;
-
-		/* Expand the current thread */
-		text[n++] = nc;
-	}
-
-	/* Flush the pending thread, if any */
-	if (n)
-	{
-		/* Terminate the thread */
-		text[n] = '\0';
-
-		/* Draw the pending chars */
-		(void)((*Term->text_hook)(fx, y, n, fa, text));
-	}
-}
-
-
-/*
- * Like "Term_fresh_row_text_wipe()", but use "Term_pict()" instead
- * of "Term_text()" or "Term_wipe()" for all "changed" data
+ * Display text using "Term_pict()"
  */
 static void Term_fresh_row_pict(int y)
 {
@@ -1059,11 +536,17 @@ static void Term_fresh_row_pict(int y)
 	byte *scr_aa = Term->scr->a[y];
 	char *scr_cc = Term->scr->c[y];
 
-	/* The "old" data */
-	int oa, oc;
+	/* Pending length */
+	int fn = 0;
 
-	/* The "new" data */
-	int na, nc;
+	/* Pending start */
+	int fx = 0;
+
+	byte oa;
+	char oc;
+
+	byte na;
+	char nc;
 
 
 	/* Scan the columns marked as "modified" */
@@ -1073,15 +556,319 @@ static void Term_fresh_row_pict(int y)
 		oa = old_aa[x];
 		oc = old_cc[x];
 
-		/* Save and remember the new contents */
-		na = old_aa[x] = scr_aa[x];
-		nc = old_cc[x] = scr_cc[x];
+		/* See what is desired there */
+		na = scr_aa[x];
+		nc = scr_cc[x];
 
-		/* Ignore unchanged areas */
-		if ((na == oa) && (nc == oc)) continue;
+		/* Handle unchanged grids */
+		if ((na == oa) && (nc == oc))
+		{
+			/* Flush */
+			if (fn)
+			{
+				/* Draw pending attr/char pairs */
+				(void)((*Term->pict_hook)(fx, y, fn,
+				       &scr_aa[fx], &scr_cc[fx]));
 
-		/* Display this special character */
-		(void)((*Term->pict_hook)(x, y, na, nc));
+				/* Forget */
+				fn = 0;
+			}
+
+			/* Skip */
+			continue;
+		}
+
+		/* Save new contents */
+		old_aa[x] = na;
+		old_cc[x] = nc;
+
+		/* Restart and Advance */
+		if (fn++ == 0) fx = x;
+	}
+
+	/* Flush */
+	if (fn)
+	{
+		/* Draw pending attr/char pairs */
+		(void)((*Term->pict_hook)(fx, y, fn,
+		       &scr_aa[fx], &scr_cc[fx]));
+	}
+}
+
+
+
+/*
+ * Flush a row of the current window (see "Term_fresh")
+ *
+ * Display text using "Term_text()" and "Term_wipe()",
+ * but use "Term_pict()" for high-bit attr/char pairs
+ */
+static void Term_fresh_row_both(int y)
+{
+	int x;
+
+	byte *old_aa = Term->old->a[y];
+	char *old_cc = Term->old->c[y];
+
+	byte *scr_aa = Term->scr->a[y];
+	char *scr_cc = Term->scr->c[y];
+
+	/* The "always_text" flag */
+	int always_text = Term->always_text;
+
+	/* Pending length */
+	int fn = 0;
+
+	/* Pending start */
+	int fx = 0;
+
+	/* Pending attr */
+	byte fa = Term->attr_blank;
+
+	byte oa;
+	char oc;
+
+	byte na;
+	char nc;
+
+
+	/* Scan the columns marked as "modified" */
+	for (x = Term->x1[y]; x <= Term->x2[y]; x++)
+	{
+		/* See what is currently here */
+		oa = old_aa[x];
+		oc = old_cc[x];
+
+		/* See what is desired there */
+		na = scr_aa[x];
+		nc = scr_cc[x];
+
+		/* Handle unchanged grids */
+		if ((na == oa) && (nc == oc))
+		{
+			/* Flush */
+			if (fn)
+			{
+				/* Draw pending chars (normal) */
+				if (fa || always_text)
+				{
+					(void)((*Term->text_hook)(fx, y, fn, fa, &scr_cc[fx]));
+				}
+
+				/* Draw pending chars (black) */
+				else
+				{
+					(void)((*Term->wipe_hook)(fx, y, fn));
+				}
+
+				/* Forget */
+				fn = 0;
+			}
+
+			/* Skip */
+			continue;
+		}
+
+		/* Save new contents */
+		old_aa[x] = na;
+		old_cc[x] = nc;
+
+		/* Handle high-bit attr/chars */
+		if ((na & 0x80) && (nc & 0x80))
+		{
+			/* Flush */
+			if (fn)
+			{
+				/* Draw pending chars (normal) */
+				if (fa || always_text)
+				{
+					(void)((*Term->text_hook)(fx, y, fn, fa, &scr_cc[fx]));
+				}
+
+				/* Draw pending chars (black) */
+				else
+				{
+					(void)((*Term->wipe_hook)(fx, y, fn));
+				}
+
+				/* Forget */
+				fn = 0;
+			}
+
+			/* Hack -- Draw the special attr/char pair */
+			(void)((*Term->pict_hook)(fx, y, 1, &na, &nc));
+
+			/* Skip */
+			continue;
+		}
+
+		/* Notice new color */
+		if (fa != na)
+		{
+			/* Flush */
+			if (fn)
+			{
+				/* Draw the pending chars */
+				if (fa || always_text)
+				{
+					(void)((*Term->text_hook)(fx, y, fn, fa, &scr_cc[fx]));
+				}
+
+				/* Hack -- Erase "leading" spaces */
+				else
+				{
+					(void)((*Term->wipe_hook)(fx, y, fn));
+				}
+
+				/* Forget */
+				fn = 0;
+			}
+
+			/* Save the new color */
+			fa = na;
+		}
+		
+		/* Restart and Advance */
+		if (fn++ == 0) fx = x;
+	}
+
+	/* Flush */
+	if (fn)
+	{
+		/* Draw pending chars (normal) */
+		if (fa || always_text)
+		{
+			(void)((*Term->text_hook)(fx, y, fn, fa, &scr_cc[fx]));
+		}
+
+		/* Draw pending chars (black) */
+		else
+		{
+			(void)((*Term->wipe_hook)(fx, y, fn));
+		}
+	}
+}
+
+
+/*
+ * Flush a row of the current window (see "Term_fresh")
+ *
+ * Display text using "Term_text()" and "Term_wipe()"
+ */
+static void Term_fresh_row_text(int y)
+{
+	int x;
+
+	byte *old_aa = Term->old->a[y];
+	char *old_cc = Term->old->c[y];
+
+	byte *scr_aa = Term->scr->a[y];
+	char *scr_cc = Term->scr->c[y];
+
+	/* The "always_text" flag */
+	int always_text = Term->always_text;
+
+	/* Pending length */
+	int fn = 0;
+
+	/* Pending start */
+	int fx = 0;
+
+	/* Pending attr */
+	byte fa = Term->attr_blank;
+
+	byte oa;
+	char oc;
+
+	byte na;
+	char nc;
+
+
+	/* Scan the columns marked as "modified" */
+	for (x = Term->x1[y]; x <= Term->x2[y]; x++)
+	{
+		/* See what is currently here */
+		oa = old_aa[x];
+		oc = old_cc[x];
+
+		/* See what is desired there */
+		na = scr_aa[x];
+		nc = scr_cc[x];
+
+		/* Handle unchanged grids */
+		if ((na == oa) && (nc == oc))
+		{
+			/* Flush */
+			if (fn)
+			{
+				/* Draw pending chars (normal) */
+				if (fa || always_text)
+				{
+					(void)((*Term->text_hook)(fx, y, fn, fa, &scr_cc[fx]));
+				}
+
+				/* Draw pending chars (black) */
+				else
+				{
+					(void)((*Term->wipe_hook)(fx, y, fn));
+				}
+
+				/* Forget */
+				fn = 0;
+			}
+
+			/* Skip */
+			continue;
+		}
+
+		/* Save new contents */
+		old_aa[x] = na;
+		old_cc[x] = nc;
+
+		/* Notice new color */
+		if (fa != na)
+		{
+			/* Flush */
+			if (fn)
+			{
+				/* Draw the pending chars */
+				if (fa || always_text)
+				{
+					(void)((*Term->text_hook)(fx, y, fn, fa, &scr_cc[fx]));
+				}
+
+				/* Hack -- Erase "leading" spaces */
+				else
+				{
+					(void)((*Term->wipe_hook)(fx, y, fn));
+				}
+
+				/* Forget */
+				fn = 0;
+			}
+
+			/* Save the new color */
+			fa = na;
+		}
+		
+		/* Restart and Advance */
+		if (fn++ == 0) fx = x;
+	}
+
+	/* Flush */
+	if (fn)
+	{
+		/* Draw pending chars (normal) */
+		if (fa || always_text)
+		{
+			(void)((*Term->text_hook)(fx, y, fn, fa, &scr_cc[fx]));
+		}
+
+		/* Draw pending chars (black) */
+		else
+		{
+			(void)((*Term->wipe_hook)(fx, y, fn));
+		}
 	}
 }
 
@@ -1092,17 +879,92 @@ static void Term_fresh_row_pict(int y)
 /*
  * Actually perform all requested changes to the window
  *
+ * If aboslutely nothing has changed, not even temporarily, or if the
+ * current "Term" is not mapped, then this function will return 1 and
+ * do absolutely nothing.
+ *
+ * Note that when "soft_cursor" is true, we erase the cursor (if needed)
+ * whenever anything has changed, and redraw it (if needed) after all of
+ * the screen updates are complete.  This will induce a small amount of
+ * "cursor flicker" but only when the screen has been updated.  If the
+ * screen is updated and then restored, you may still get this flicker.
+ *
+ * When "soft_cursor" is not true, we make the cursor invisible before
+ * doing anything else if it is supposed to be invisible by the time we
+ * are done, and we make it visible after moving it to its final location
+ * after all of the screen updates are complete.
+ *
+ * Note that "Term_xtra(TERM_XTRA_CLEAR,0)" must erase the entire screen,
+ * including the cursor, if needed, and may place the cursor anywhere.
+ *
  * Note that "Term_xtra(TERM_XTRA_FROSH,y)" will be always be called
  * after any row "y" has been "flushed", unless the "Term->never_frosh"
  * flag is set, and "Term_xtra(TERM_XTRA_FRESH,0)" will be called after
  * all of the rows have been "flushed".
  *
- * Note the use of five different functions to handle the actual flush,
- * depending on the various useful settings of the "Term->always_pict",
- * "Term->higher_pict", and "Term->always_text" flags.  This allows a
- * lot of conditional checks against these flags to be removed, and
- * allows us to support these flags without any speed loss.  It is
- * very possible that this degree of optimization is "overkill".
+ * Note the use of three different functions to handle the actual flush,
+ * based on the settings of the "Term->always_pict" and "Term->higher_pict"
+ * flags (see below).
+ *
+ * The three helper functions (above) work by collecting similar adjacent
+ * grids into stripes, and then sending each stripe to "Term->pict_hook",
+ * "Term->text_hook", or "Term->wipe_hook", based on the settings of the
+ * "Term->always_pict" and "Term->higher_pict" flags, which select which
+ * of the helper functions to call to flush each row.
+ *
+ * The helper functions currently "skip" any grids which already contain
+ * the desired contents.  This may or may not be the best method, especially
+ * when the desired content fits nicely into the current stripe.  For example,
+ * it might be better to go ahead and queue them while allowed, but keep a
+ * count of the "trailing skipables", then, when time to flush, or when a
+ * "non skippable" is found, force a flush if there are too many skippables.
+ *
+ * Perhaps an "initialization" stage, where the "text" (and "attr")
+ * buffers are "filled" with information, converting "blanks" into
+ * a convenient representation, and marking "skips" with "zero chars",
+ * and then some "processing" is done to determine which chars to skip.
+ *
+ * Currently, the helper functions are optimal for systems which prefer
+ * to "print a char + move a char + print a char" to "print three chars",
+ * and for applications that do a lot of "detailed" color printing.
+ *
+ * Note that, in QueueAttrChar(s), total "non-changes" are "pre-skipped".
+ * The helper functions must also handle situations in which the contents
+ * of a grid are changed, but then changed back to the original value,
+ * and situations in which two grids in the same row are changed, but
+ * the grids between them are unchanged.
+ *
+ * If the "Term->always_pict" flag is set, then "Term_fresh_row_pict()"
+ * will be used instead of "Term_fresh_row_text()".  This allows all the
+ * modified grids to be collected into stripes of attr/char pairs, which
+ * are then sent to the "Term->pict_hook" hook, which can draw these pairs
+ * in whatever way it would like.
+ *
+ * If the "Term->higher_pict" flag is set, then "Term_fresh_row_both()"
+ * will be used instead of "Term_fresh_row_text()".  This allows all the
+ * "special" attr/char pairs (in which both the attr and char have the
+ * high-bit set) to be sent (one pair at a time) to the "Term->pict_hook"
+ * hook, which can draw these pairs in whatever way it would like.
+ *
+ * Normally, the "Term_wipe()" function is used only to display "blanks"
+ * that were induced by "Term_clear()" or "Term_erase()", and then only
+ * if the "attr_blank" and "char_blank" fields have not been redefined
+ * to use "white space" instead of the default "black space".  Actually,
+ * the "Term_wipe()" function is used to display all "black" text, such
+ * as the default "spaces" created by "Term_clear()" and "Term_erase()".
+ *
+ * Note that the "Term->always_text" flag will disable the use of the
+ * "Term_wipe()" function hook entirely, and force all text, even text
+ * drawn in the color "black", to be explicitly drawn.  This is useful
+ * for machines which implement "Term_wipe()" by just drawing spaces.
+ *
+ * Note that the "Term->always_pict" flag will disable the use of the
+ * "Term_wipe()" function entirely, and force everything, even text
+ * drawn in the attr "black", to be explicitly drawn.
+ *
+ * Note that if no "black" text is ever drawn, and if "attr_blank" is
+ * not "zero", then the "Term_wipe" hook will never be used, even if
+ * the "Term->always_text" flag is not set.
  *
  * This function does nothing unless the "Term" is "mapped", which allows
  * certain systems to optimize the handling of "closed" windows.
@@ -1116,9 +978,6 @@ static void Term_fresh_row_pict(int y)
  * flushing the output, if needed, to avoid a "flickery" refresh.  It
  * would be nice to *always* hide the cursor during the refresh, but
  * this might be expensive (and/or ugly) on some machines.
- *
- * Note that if no "black" text is ever drawn, and if "attr_blank" is
- * not "zero", then the "Term_wipe" hook will never be used.
  *
  * The "Term->icky_corner" flag is used to avoid calling "Term_wipe()"
  * or "Term_pict()" or "Term_text()" on the bottom right corner of the
@@ -1144,79 +1003,24 @@ errr Term_fresh(void)
 	if (!Term->mapped_flag) return (1);
 
 
-	/* Paranoia -- enforce "fake" hooks if needed */
+	/* Trivial Refresh */
+	if ((Term->y1 > Term->y2) &&
+	    (scr->cu == old->cu) &&
+	    (scr->cv == old->cv) &&
+	    (scr->cx == old->cx) &&
+	    (scr->cy == old->cy) &&
+	    !(Term->total_erase))
+	{
+		/* Nothing */
+		return (1);
+	}
+
+
+	/* Paranoia -- use "fake" hooks to prevent core dumps */
 	if (!Term->curs_hook) Term->curs_hook = Term_curs_hack;
 	if (!Term->wipe_hook) Term->wipe_hook = Term_wipe_hack;
-	if (!Term->pict_hook) Term->pict_hook = Term_pict_hack;
 	if (!Term->text_hook) Term->text_hook = Term_text_hack;
-
-
-	/* Cursor update -- Erase old Cursor */
-	if (Term->soft_cursor)
-	{
-		bool okay = FALSE;
-
-		/* Cursor has moved */
-		if (old->cy != scr->cy) okay = TRUE;
-		if (old->cx != scr->cx) okay = TRUE;
-
-		/* Cursor is now offscreen/invisible */
-		if (scr->cu || !scr->cv) okay = TRUE;
-
-		/* Cursor was already offscreen/invisible */
-		if (old->cu || !old->cv) okay = FALSE;
-
-		/* Erase old cursor if it is "wrong" */
-		if (okay)
-		{
-			int tx = old->cx;
-			int ty = old->cy;
-
-			byte *old_aa = old->a[ty];
-			char *old_cc = old->c[ty];
-
-			byte a = old_aa[tx];
-			char c = old_cc[tx];
-
-			/* Hack -- use "Term_pict()" always */
-			if (Term->always_pict)
-			{
-				(void)((*Term->pict_hook)(tx, ty, a, c));
-			}
-
-			/* Hack -- use "Term_pict()" sometimes */
-			else if (Term->higher_pict && (a & 0x80) && (c & 0x80))
-			{
-				(void)((*Term->pict_hook)(tx, ty, a, c));
-			}
-
-			/* Hack -- restore the actual character */
-			else if (a || Term->always_text)
-			{
-				char buf[2];
-				buf[0] = c;
-				buf[1] = '\0';
-				(void)((*Term->text_hook)(tx, ty, 1, a, buf));
-			}
-
-			/* Hack -- erase the grid */
-			else
-			{
-				(void)((*Term->wipe_hook)(tx, ty, 1));
-			}
-		}
-	}
-
-	/* Cursor Update -- Erase old Cursor */
-	else
-	{
-		/* The cursor is useless/invisible, hide it */
-		if (scr->cu || !scr->cv)
-		{
-			/* Make the cursor invisible */
-			Term_xtra(TERM_XTRA_SHAPE, 0);
-		}
-	}
+	if (!Term->pict_hook) Term->pict_hook = Term_pict_hack;
 
 
 	/* Handle "total erase" */
@@ -1228,7 +1032,7 @@ errr Term_fresh(void)
 		/* Physically erase the entire window */
 		Term_xtra(TERM_XTRA_CLEAR, 0);
 
-		/* Hack -- clear all "cursor" data XXX XXX XXX */
+		/* Hack -- clear all "cursor" data */
 		old->cv = old->cu = old->cx = old->cy = 0;
 
 		/* Wipe each row */
@@ -1256,6 +1060,62 @@ errr Term_fresh(void)
 			Term->x1[y] = 0;
 			Term->x2[y] = w - 1;
 		}
+
+		/* Forget "total erase" */
+		Term->total_erase = FALSE;
+	}
+
+
+	/* Cursor update -- Erase old Cursor */
+	if (Term->soft_cursor)
+	{
+		/* Cursor was visible */
+		if (!old->cu && old->cv)
+		{
+			int tx = old->cx;
+			int ty = old->cy;
+
+			byte *old_aa = old->a[ty];
+			char *old_cc = old->c[ty];
+
+			byte a = old_aa[tx];
+			char c = old_cc[tx];
+
+			/* Hack -- use "Term_pict()" always */
+			if (Term->always_pict)
+			{
+				(void)((*Term->pict_hook)(tx, ty, 1, &a, &c));
+			}
+
+			/* Hack -- use "Term_pict()" sometimes */
+			else if (Term->higher_pict && (a & 0x80) && (c & 0x80))
+			{
+				(void)((*Term->pict_hook)(tx, ty, 1, &a, &c));
+			}
+
+			/* Hack -- restore the actual character */
+			else if (a || Term->always_text)
+			{
+				(void)((*Term->text_hook)(tx, ty, 1, a, &c));
+			}
+
+			/* Hack -- erase the grid */
+			else
+			{
+				(void)((*Term->wipe_hook)(tx, ty, 1));
+			}
+		}
+	}
+
+	/* Cursor Update -- Erase old Cursor */
+	else
+	{
+		/* Cursor will be invisible */
+		if (scr->cu || !scr->cv)
+		{
+			/* Make the cursor invisible */
+			Term_xtra(TERM_XTRA_SHAPE, 0);
+		}
 	}
 
 
@@ -1278,17 +1138,31 @@ errr Term_fresh(void)
 		}
 
 
-		/* Always use "Term_pict()" */
-		if (Term->always_pict)
+		/* Scan the "modified" rows */
+		for (y = Term->y1; y <= Term->y2; ++y)
 		{
-			/* Scan the "modified" rows */
-			for (y = Term->y1; y <= Term->y2; ++y)
+			/* Flush each "modified" row */
+			if (Term->x1[y] <= Term->x2[y])
 			{
-				/* Flush each "modified" row */
-				if (Term->x1[y] <= Term->x2[y])
+				/* Always use "Term_pict()" */
+				if (Term->always_pict)
 				{
 					/* Flush the row */
 					Term_fresh_row_pict(y);
+				}
+
+				/* Sometimes use "Term_pict()" */
+				else if (Term->higher_pict)
+				{
+					/* Flush the row */
+					Term_fresh_row_both(y);
+				}
+
+				/* Never use "Term_pict()" */
+				else
+				{
+					/* Flush the row */
+					Term_fresh_row_text(y);
 				}
 
 				/* This row is all done */
@@ -1297,102 +1171,6 @@ errr Term_fresh(void)
 
 				/* Hack -- Flush that row (if allowed) */
 				if (!Term->never_frosh) Term_xtra(TERM_XTRA_FROSH, y);
-			}
-		}
-
-		/* Sometimes use "Term_pict()" */
-		else if (Term->higher_pict)
-		{
-			/* Never use "Term_wipe()" */
-			if (Term->always_text)
-			{
-				/* Scan the "modified" rows */
-				for (y = Term->y1; y <= Term->y2; ++y)
-				{
-					/* Flush each "modified" row */
-					if (Term->x1[y] <= Term->x2[y])
-					{
-						/* Flush the row */
-						Term_fresh_row_both_text(y);
-					}
-
-					/* This row is all done */
-					Term->x1[y] = w;
-					Term->x2[y] = 0;
-
-					/* Hack -- Flush that row (if allowed) */
-					if (!Term->never_frosh) Term_xtra(TERM_XTRA_FROSH, y);
-				}
-			}
-
-			/* Sometimes use "Term_wipe()" */
-			else
-			{
-				/* Scan the "modified" rows */
-				for (y = Term->y1; y <= Term->y2; ++y)
-				{
-					/* Flush each "modified" row */
-					if (Term->x1[y] <= Term->x2[y])
-					{
-						/* Flush the row */
-						Term_fresh_row_both_wipe(y);
-					}
-
-					/* This row is all done */
-					Term->x1[y] = w;
-					Term->x2[y] = 0;
-
-					/* Hack -- Flush that row (if allowed) */
-					if (!Term->never_frosh) Term_xtra(TERM_XTRA_FROSH, y);
-				}
-			}
-		}
-
-		/* Never use "Term_pict()" */
-		else
-		{
-			/* Never use "Term_wipe()" */
-			if (Term->always_text)
-			{
-				/* Scan the "modified" rows */
-				for (y = Term->y1; y <= Term->y2; ++y)
-				{
-					/* Flush each "modified" row */
-					if (Term->x1[y] <= Term->x2[y])
-					{
-						/* Flush the row */
-						Term_fresh_row_text_text(y);
-					}
-
-					/* This row is all done */
-					Term->x1[y] = w;
-					Term->x2[y] = 0;
-
-					/* Hack -- Flush that row (if allowed) */
-					if (!Term->never_frosh) Term_xtra(TERM_XTRA_FROSH, y);
-				}
-			}
-
-			/* Sometimes use "Term_wipe()" */
-			else
-			{
-				/* Scan the "modified" rows */
-				for (y = Term->y1; y <= Term->y2; ++y)
-				{
-					/* Flush each "modified" row */
-					if (Term->x1[y] <= Term->x2[y])
-					{
-						/* Flush the row */
-						Term_fresh_row_text_wipe(y);
-					}
-
-					/* This row is all done */
-					Term->x1[y] = w;
-					Term->x2[y] = 0;
-
-					/* Hack -- Flush that row (if allowed) */
-					if (!Term->never_frosh) Term_xtra(TERM_XTRA_FROSH, y);
-				}
 			}
 		}
 
@@ -1453,10 +1231,6 @@ errr Term_fresh(void)
 	old->cv = scr->cv;
 	old->cx = scr->cx;
 	old->cy = scr->cy;
-
-
-	/* Forget "total erase" */
-	Term->total_erase = FALSE;
 
 
 	/* Actually flush the output */

@@ -9,61 +9,51 @@
  *
  * Some code adapted from "MacAngband 2.6.1" by Keith Randall
  *
- * Maarten Hazewinkel (mmhazewi@cs.ruu.nl) provided the initial support
- * for compilation under the CodeWarrior compiler, including support for
- * compiling on the Power Macintosh.  He has since developed a special
- * "main-mac-cw.c" file and a resource file which create an executable
- * version of Angband using his own favorite interface design choices.
- * His version uses 'MAng' as the file type, calls itself "MacAngband",
- * has special icons (etc), and works on pre-System-7 machines.
+ * Maarten Hazewinkel (mmhazewi@cs.ruu.nl) provided some initial
+ * suggestions for the PowerMac port.
  *
- * Steve Linberg (slinberg@crocker.com) provided code which allows
- * double-clicked savefiles to open correctly on the Power Macintosh
- * (via a skeletal AppleEvent structure), and also proper use of the
- * "FindFolder()" function (see USE_SFL_CODE and USE_FIND_FOLDER).
+ * Steve Linberg (slinberg@crocker.com) provided the code surrounded
+ * by "USE_SFL_CODE".
  *
- * See "term.c" for info on the concept of the "generic terminal"
+ * The graphics code is adapted from an extremely minimal subset of
+ * the code from "Sprite World II", an amazing animation package.
  *
- * Note that, when compiling under Think C 6.0, that this file is the
- * only one that requires "Non-ANSI" extensions to C, in particular,
- * the "Think C Language Extensions" must be on, and the "enums are
- * always ints" must be off, both to allow "Events.h" to compile.
- *
- * This file was seriously updated for Angband 2.7.9, to remove obsolete
- * code, to adapt to some changes in Angband, and to verify compilation
- * under both Think C 6.0 and CodeWarrior 7. -BEN-
+ * See "z-term.c" for info on the concept of the "generic terminal"
  *
  * The preference file is now a text file named "Angband preferences".
  *
- * Note that the "preference" files from "different" versions are now
- * ignored, and the preference file name no longer contains the version,
- * though the version information is contained in the file itself.
+ * Note that the "preference" file is now a simple text file called
+ * "Angband preferences", which contains the versions information, so
+ * that obsolete preference files can be ignored (this may be bad).
  *
- * Note that "init.c", "save-old.c", and "birth.c" should probably be
- * "unloaded" as soon as they have completed execution, to save space.
+ * Note that "init1.c", "init2.c", "load1.c", "load2.c", and "birth.c"
+ * should probably be "unloaded" as soon as they are no longer needed,
+ * to save space, but I do not know how to do this.
  *
- * XXX XXX XXX The first "ClipRect()" call crashes if the user closes
- * all the windows, switches to another application, switches back,
+ * Stange bug -- The first "ClipRect()" call crashes if the user closes
+ * all the windows, switches to another application, switches back, and
  * then re-opens the main window, for example, using "command-a".
+ *
+ * By default, this file assumes that you will be using a 68020 or better
+ * machine, running System 7 and Color Quickdraw.  In fact, the game will
+ * refuse to run unless these features are available.  This allows the use
+ * of a variety of interesting features such as graphics and sound.
+ *
+ * To create a version which can be used on 68000 machines, or on machines
+ * which are not running System 7 or Color Quickdraw, simply activate the
+ * "ANGBAND_LITE_MAC" compilation flag in the proper header file.  This
+ * will disable all "modern" features used in this file, including support
+ * for multiple sub-windows, color, graphics, and sound.
+ *
+ * When compiling with the "ANGBAND_LITE_MAC" flag, the "ANGBAND_LITE"
+ * flag will be automatically defined, which will disable many of the
+ * advanced features of the game itself, reducing the total memory usage.
+ *
+ * If you are never going to use "graphics" (especially if you are not
+ * compiling support for graphics anyway) then you can delete the "pict"
+ * resource with id "1001" with no dangerous side effects.
  */
 
-
-/*
- * The Angband Color Set (0 to 15):
- *   Black, White, Slate, Orange,    Red, Blue, Green, Umber
- *   D-Gray, L-Gray, Violet, Yellow, L-Red, L-Blue, L-Green, L-Umber
- *
- * Colors 8 to 15 are basically "enhanced" versions of Colors 0 to 7.
- *
- * On the Macintosh, we have two possibilities, chosen by the "has_color"
- * variable, which is chosen based on the operating system potential.
- *
- * When true, we have color quickdraw, and we use actual "RGB" values
- * to choose the 16 colors.
- *
- * When false, we assume a monochrome machine, and simply draw everything
- * in white (letting "term.c" convert "black" to "wipe" calls).
- */
 
 /*
  * Important Resources in the resource file:
@@ -85,17 +75,13 @@
  *
  *   ICON 128 = "warning" icon
  *
- *   MBAR 128 = menu bar
+ *   MENU 128 = apple (about, -, ...)
+ *   MENU 129 = File (new, open, close, save, -, exit, quit)
+ *   MENU 130 = Edit (undo, -, cut, copy, paste, clear)
  *
- *   MENU 128 = apple menu (about, -, ...)
- *   MENU 129 = File menu (new, open, close, save, -, exit, quit)
- *   MENU 130 = Edit menu (undo, -, cut, copy, paste, clear)
- *   MENU 131 = Font menu (bold, wide, -, monaco, courier, ...)
- *   MENU 132 = Size menu (9, 10, 11, 12, 13, 14, 15, 16, 17, 18)
- *   MENU 133 = Window menu (Angband, Mirror, Recall, Choice)
- *   MENU 134 = Special menu (use_sound, use_graphics, use_xxx1, use_xxx2,
- *                            arg_fiddle, arg_wizard, arg_xxx1, arg_xxx2)
+ *   PICT 1001 = Graphics tile set
  */
+
 
 /*
  * File name patterns:
@@ -111,13 +97,14 @@
  * "fd_open()" and "my_fopen()" functions in "util.c".  XXX XXX XXX
  */
 
+
 /*
  * Reasons for each header file:
  *
  *   angband.h = Angband header file
  *
  *   Types.h = (included anyway)
- *   GestaltEqu.h = gestalt code
+ *   Gestalt.h = gestalt code
  *   QuickDraw.h = (included anyway)
  *   OSUtils.h = (included anyway)
  *   Files.h = file code
@@ -136,17 +123,19 @@
  *   Controls.h = button code
  *   SegLoad.h = ExitToShell(), AppFile, etc
  *   Memory.h = SetApplLimit(), NewPtr(), etc
+ *   QDOffscreen.h = GWorld code
+ *   Sound.h = Sound code
  *
  * For backwards compatibility:
- *   GestaltEqu.h simply includes Gestalt.h
- *   Desk.h simply includes ???, Devices.h, Events.h
+ *   Use GestaltEqu.h instead of Gestalt.h
+ *   Add Desk.h to include simply includes Menus.h, Devices.h, Events.h
  */
 
 
 #include "angband.h"
 
 #include <Types.h>
-#include <GestaltEqu.h>
+#include <Gestalt.h>
 #include <QuickDraw.h>
 #include <Files.h>
 #include <Fonts.h>
@@ -157,65 +146,102 @@
 #include <StandardFile.h>
 #include <DiskInit.h>
 #include <ToolUtils.h>
-#include <Desk.h>
 #include <Devices.h>
 #include <Events.h>
 #include <Resources.h>
 #include <Controls.h>
 #include <SegLoad.h>
 #include <Memory.h>
+#include <QDOffscreen.h>
+#include <Sound.h>
 
 
 /*
- * Select some special code for compilation, this will work under
- * CodeWarrior 7, and Think C 8.0, and perhaps others as well.
+ * Use "malloc()" instead of "NewPtr()"
  */
+/* #define USE_MALLOC */
 
-#if defined(__MWERKS__)
+
+#if defined(powerc) || defined(__powerc)
 
 /*
- * Use the special "AppleEventHandler" code
+ * Disable "LITE" version
+ */
+# undef ANGBAND_LITE_MAC
+
+#endif
+
+
+#ifdef ANGBAND_LITE_MAC
+
+/*
+ * Maximum number of windows
+ */
+# define MAX_TERM_DATA 1
+
+#else /* ANGBAND_LITE_MAC */
+
+/*
+ * Maximum number of windows
+ */
+# define MAX_TERM_DATA 8
+
+/*
+ * Activate some special code
  */
 # define USE_SFL_CODE
 
-/*
- * Attempt to use the "FindFolder()" function
- */
-# define USE_FIND_FOLDER
-
-#endif
+#endif /* ANGBAND_LITE_MAC */
 
 
 
 #ifdef USE_SFL_CODE
 
 /*
- * Include the "apple event" header files
+ * Include the necessary header files
  */
-
 #include <AppleEvents.h>
-
 #include <EPPC.h>
-
-/*
- * Apple Even Flag -- open savefile
- */
-Boolean open_when_ready = FALSE;
-
-/*
- * Apple Event Flag -- open savefile
- */
-Boolean quit_when_ready = FALSE;
+#include <Folders.h>
 
 #endif
 
 
-#ifdef USE_FIND_FOLDER
+#if 0
 
 /*
- * Include the "Folders.h" header file, if necessary
+ * The Angband Color Set (0 to 15):
+ *   Black, White, Slate, Orange,    Red, Blue, Green, Umber
+ *   D-Gray, L-Gray, Violet, Yellow, L-Red, L-Blue, L-Green, L-Umber
+ *
+ * Colors 8 to 15 are basically "enhanced" versions of Colors 0 to 7.
+ *
+ * On the Macintosh, we use color quickdraw, and we use actual "RGB"
+ * values below to choose the 16 colors.
+ *
+ * If we are compiled for ancient machines, we bypass color and simply
+ * draw everything in white (letting "z-term.c" automatically convert
+ * "black" into "wipe" calls).
  */
-#include <Folders.h>
+static RGBColor foo[16] =
+{
+	{0x0000, 0x0000, 0x0000},	/* TERM_DARK */
+	{0xFFFF, 0xFFFF, 0xFFFF},	/* TERM_WHITE */
+	{0x8080, 0x8080, 0x8080},	/* TERM_SLATE */
+	{0xFFFF, 0x8080, 0x0000},	/* TERM_ORANGE */
+	{0xC0C0, 0x0000, 0x0000},	/* TERM_RED */
+	{0x0000, 0x8080, 0x4040},	/* TERM_GREEN */
+	{0x0000, 0x0000, 0xFFFF},	/* TERM_BLUE */
+	{0x8080, 0x4040, 0x0000},	/* TERM_UMBER */
+	{0x4040, 0x4040, 0x4040},	/* TERM_L_DARK */
+	{0xC0C0, 0xC0C0, 0xC0C0},	/* TERM_L_WHITE */
+	{0xFFFF, 0x0000, 0xFFFF},	/* TERM_VIOLET */
+	{0xFFFF, 0xFFFF, 0x0000},	/* TERM_YELLOW */
+	{0xFFFF, 0x0000, 0x0000},	/* TERM_L_RED */
+	{0x0000, 0xFFFF, 0x0000},	/* TERM_L_GREEN */
+	{0x0000, 0xFFFF, 0xFFFF},	/* TERM_L_BLUE */
+	{0xC0C0, 0x8080, 0x4040}	/* TERM_L_UMBER */
+};
 
 #endif
 
@@ -236,15 +262,51 @@ struct term_data
 
 	WindowPtr	w;
 
-	cptr		s;
+#ifdef ANGBAND_LITE_MAC
 
-	bool		oops;
-	bool		fake;
+	/* Nothing */
+
+#else /* ANGBAND_LITE_MAC */
+
+	short padding;
+
+	short pixelDepth;
+
+	GWorldPtr theGWorld;
+
+	GDHandle theGDH;
+
+	GDHandle mainSWGDH;
+
+#endif /* ANGBAND_LITE_MAC */
+
+	Str15		title;
+
+	s16b		oops;
 
 	s16b		keys;
 
+	s16b		last;
+
+	s16b		mapped;
+
 	s16b		rows;
 	s16b		cols;
+
+	s16b		font_id;
+	s16b		font_size;
+	s16b		font_face;
+	s16b		font_mono;
+
+	s16b		font_o_x;
+	s16b		font_o_y;
+	s16b		font_wid;
+	s16b		font_hgt;
+
+	s16b		tile_o_x;
+	s16b		tile_o_y;
+	s16b		tile_wid;
+	s16b		tile_hgt;
 
 	s16b		size_wid;
 	s16b		size_hgt;
@@ -253,16 +315,6 @@ struct term_data
 	s16b		size_oh1;
 	s16b		size_ow2;
 	s16b		size_oh2;
-
-	s16b		mapped;
-	s16b		font_id;
-	s16b		font_size;
-	s16b		font_face;
-
-	s16b		font_wid;
-	s16b		font_hgt;
-	s16b		font_o_x;
-	s16b		font_o_y;
 };
 
 
@@ -282,21 +334,20 @@ static long  app_dir;
 
 
 /*
+ * Delay handling of double-clicked savefiles
+ */
+Boolean open_when_ready = FALSE;
+
+/*
+ * Delay handling of pre-emptive "quit" event
+ */
+Boolean quit_when_ready = FALSE;
+
+
+/*
  * Hack -- game in progress
  */
 static int game_in_progress = 0;
-
-
-/*
- * We can use color quickdraw
- */
-static bool has_color = FALSE;
-
-
-/*
- * We can use System 7 Stuff
- */
-static bool has_seven = FALSE;
 
 
 /*
@@ -305,11 +356,6 @@ static bool has_seven = FALSE;
 static WindowPtr active = NULL;
 
 
-
-/*
- * Maximum number of windows
- */
-#define MAX_TERM_DATA 8
 
 /*
  * An array of term_data's
@@ -326,39 +372,11 @@ static bool initialized = FALSE;
 
 
 /*
- * Actual "RGB" data for color quickdraw
- */
-static RGBColor mac_clr[16] =
-{
-	{0, 0, 0},				/* TERM_DARK */
-	{65535, 65535, 65535},	/* TERM_WHITE */
-	{32768, 32768, 32768},	/* TERM_SLATE */
-	{65535, 32768, 0},		/* TERM_ORANGE */
-	{49152, 0, 0},			/* TERM_RED */
-	{0, 32768, 16384},		/* TERM_GREEN */
-	{0, 0, 65535},			/* TERM_BLUE */
-	{32768, 16384, 0},		/* TERM_UMBER */
-	{16384, 16384, 16384},	/* TERM_L_DARK */
-	{49152, 49152, 49152},	/* TERM_L_WHITE */
-	{65535, 0, 65535},		/* TERM_VIOLET */
-	{65535, 65535, 0},		/* TERM_YELLOW */
-	{65535, 0, 0},			/* TERM_L_RED */
-	{0, 65535, 0},			/* TERM_L_GREEN */
-	{0, 65535, 65535},		/* TERM_L_BLUE */
-	{49152, 32768, 16384}	/* TERM_L_UMBER */
-};
-
-
-
-
-#if defined(__MWERKS__)
-
-/*
  * CodeWarrior uses Universal Procedure Pointers
  */
 static ModalFilterUPP ynfilterUPP;
 
-# ifdef USE_SFL_CODE
+#ifdef USE_SFL_CODE
 
 /*
  * Apple Event Hooks
@@ -367,15 +385,6 @@ AEEventHandlerUPP AEH_Start_UPP;
 AEEventHandlerUPP AEH_Quit_UPP;
 AEEventHandlerUPP AEH_Print_UPP;
 AEEventHandlerUPP AEH_Open_UPP;
-
-# endif
-
-#else
-
-/*
- * Think C 6.0 uses normal functions.
- */
-#define ynfilterUPP ynfilter
 
 #endif
 
@@ -516,7 +525,7 @@ static void ptocstr(StringPtr src)
 }
 
 
-#if defined(USE_SFL_CODE) || defined(USE_FIND_FOLDER)
+#if defined(USE_SFL_CODE)
 
 
 /*
@@ -622,10 +631,205 @@ static void mac_warning(cptr warning)
 
 
 
+/*** Some generic functions ***/
 
 
+#ifdef ANGBAND_LITE_MAC
 
-/*** Hooks for the "term.c" functions ***/
+/*
+ * Hack -- activate a color (0 to 255)
+ */
+#define term_data_color(TD,A) /* Nothing */
+
+#else /* ANGBAND_LITE_MAC */
+
+/*
+ * Hack -- activate a color (0 to 255)
+ */
+static void term_data_color(term_data *td, int a)
+{
+	/* Activate the color */
+	if (td->last != a)
+	{
+		u16b rv, gv, bv;
+
+		RGBColor color;
+
+		/* Extract the R,G,B data */
+		rv = angband_color_table[a][1];
+		gv = angband_color_table[a][2];
+		bv = angband_color_table[a][3];
+
+		/* Set the color */
+		color.red = (rv | (rv << 8));
+		color.green = (gv | (gv << 8));
+		color.blue = (bv | (bv << 8));
+	
+		/* Activate the color */
+		RGBForeColor(&color);
+
+		/* Memorize color */
+		td->last = a;
+	}
+}
+
+#endif /* ANGBAND_LITE_MAC */
+
+
+/*
+ * Hack -- Apply and Verify the "font" info
+ *
+ * This should usually be followed by "term_data_check_size()"
+ */
+static void term_data_check_font(term_data *td)
+{
+	int i;
+
+	FontInfo info;
+
+	WindowPtr old = active;
+
+
+	/* Activate */
+	activate(td->w);
+
+	/* Instantiate font */
+	TextFont(td->font_id);
+	TextSize(td->font_size);
+	TextFace(td->font_face);
+
+	/* Extract the font info */
+	GetFontInfo(&info);
+
+	/* Assume monospaced */
+	td->font_mono = TRUE;
+
+	/* Extract the font sizing values XXX XXX XXX */
+	td->font_wid = CharWidth('@'); /* info.widMax; */
+	td->font_hgt = info.ascent + info.descent;
+	td->font_o_x = 0;
+	td->font_o_y = info.ascent;
+
+	/* Check important characters */
+	for (i = 33; i < 127; i++)
+	{
+		/* Hack -- notice non-mono-space */
+		if (td->font_wid != CharWidth(i)) td->font_mono = FALSE;
+
+		/* Hack -- collect largest width */
+		if (td->font_wid < CharWidth(i)) td->font_wid = CharWidth(i);
+	}
+
+	/* Set default offsets */
+	td->tile_o_x = td->font_o_x;
+	td->tile_o_y = td->font_o_y;
+
+	/* Set default tile size */
+	td->tile_wid = td->font_wid;
+	td->tile_hgt = td->font_hgt;
+
+	/* Re-activate the old window */
+	activate(old);
+}
+
+
+/*
+ * Hack -- Apply and Verify the "size" info
+ */
+static void term_data_check_size(term_data *td)
+{
+	/* Minimal window size */
+	if (td->cols < 1) td->cols = 1;
+	if (td->rows < 1) td->rows = 1;
+
+	/* Minimal tile size */
+	if (td->tile_wid < 4) td->tile_wid = 4;
+	if (td->tile_hgt < 4) td->tile_hgt = 4;
+
+	/* Default tile offsets */
+	td->tile_o_x = (td->tile_wid - td->font_wid) / 2;
+	td->tile_o_y = (td->tile_hgt - td->font_hgt) / 2;
+
+	/* Minimal tile offsets */
+	if (td->tile_o_x < 0) td->tile_o_x = 0;
+	if (td->tile_o_y < 0) td->tile_o_y = 0;
+
+	/* Apply font offsets */
+	td->tile_o_x += td->font_o_x;
+	td->tile_o_y += td->font_o_y;
+
+	/* Calculate full window size */
+	td->size_wid = td->cols * td->tile_wid + td->size_ow1 + td->size_ow2;
+	td->size_hgt = td->rows * td->tile_hgt + td->size_oh1 + td->size_oh2;
+
+	/* Verify the top */
+	if (td->r.top > qd.screenBits.bounds.bottom - td->size_hgt)
+	{
+		td->r.top = qd.screenBits.bounds.bottom - td->size_hgt;
+	}
+
+	/* Verify the top */
+	if (td->r.top < qd.screenBits.bounds.top + 30)
+	{
+		td->r.top = qd.screenBits.bounds.top + 30;
+	}
+
+	/* Verify the left */
+	if (td->r.left > qd.screenBits.bounds.right - td->size_wid)
+	{
+		td->r.left = qd.screenBits.bounds.right - td->size_wid;
+	}
+
+	/* Verify the left */
+	if (td->r.left < qd.screenBits.bounds.left)
+	{
+		td->r.left = qd.screenBits.bounds.left;
+	}
+
+	/* Calculate bottom right corner */
+	td->r.right = td->r.left + td->size_wid;
+	td->r.bottom = td->r.top + td->size_hgt;
+
+	/* Assume no graphics */
+	td->t->always_pict = FALSE;
+
+#ifdef ANGBAND_LITE_MAC
+
+	/* No graphics */
+
+#else /* ANGBAND_LITE_MAC */
+
+	/* Handle graphics */
+	if (use_graphics && (td == &data[0]))
+	{
+		td->t->always_pict = TRUE;
+	}
+
+#endif /* ANGBAND_LITE_MAC */
+
+	/* Fake mono-space */
+	if (!td->font_mono ||
+	    (td->font_wid != td->tile_wid) ||
+	    (td->font_hgt != td->tile_hgt))
+	{
+		/* Handle fake monospace */
+		td->t->always_pict = TRUE;
+	}
+}
+
+
+/*
+ * Hack -- resize a term_data
+ *
+ * This should normally be followed by "term_data_resize()"
+ */
+static void term_data_resize(term_data *td)
+{
+	/* Actually resize the window */
+	SizeWindow(td->w, td->size_wid, td->size_hgt, 0);
+}
+
+
 
 /*
  * Hack -- redraw a term_data
@@ -647,19 +851,6 @@ static void term_data_redraw(term_data *td)
 
 	/* Restore the old term */
 	Term_activate(old);
-}
-
-
-/*
- * Hack -- react to a new size
- */
-static void term_data_resize(term_data *td)
-{
-	/* Actually resize the window */
-	SizeWindow(td->w, td->size_wid, td->size_hgt, 0);
-
-	/* Redraw Contents */
-	term_data_redraw(td);
 
 	/* No need to redraw */
 	ValidRect(&td->w->portRect);
@@ -668,11 +859,232 @@ static void term_data_resize(term_data *td)
 
 
 
+#ifdef ANGBAND_LITE_MAC
+
+/* No graphics */
+
+#else /* ANGBAND_LITE_MAC */
+
+
+/*
+ * Constants
+ */
+
+#define kPictID					1001			/* Graf 'pict' resource */
+
+#define kGrafWidth				8				/* Graf Size (X) */
+#define kGrafHeight				8				/* Graf Size (Y) */
+
+#define kPictCols				32				/* Number of Cols in Pict */
+#define kPictRows				32				/* Number of Rows in Pict */
+
+
+/*
+ * Forward Declare
+ */
+typedef struct FrameRec FrameRec;
+
+/*
+ * Frame
+ *
+ *	- GWorld for the frame image
+ *	- Handle to pix map (saved for unlocking/locking)
+ *	- Pointer to color pix map (valid only while locked)
+ */
+struct FrameRec
+{
+	GWorldPtr 		framePort;
+	PixMapHandle 	framePixHndl;
+	PixMapPtr 		framePix;
+};
+
+
+/*
+ * The global picture data
+ */
+static FrameRec *frameP = NULL;
+
+
+/*
+ * Lock a frame
+ */
+static void BenSWLockFrame(FrameRec *srcFrameP)
+{
+	PixMapHandle 		pixMapH;
+
+	pixMapH = GetGWorldPixMap(srcFrameP->framePort);
+	(void)LockPixels(pixMapH);
+	HLockHi((Handle)pixMapH);
+	srcFrameP->framePixHndl = pixMapH;
+	srcFrameP->framePix = (PixMapPtr)StripAddress(*(Handle)pixMapH);
+}
+
+
+/*
+ * Unlock a frame
+ */
+static void BenSWUnlockFrame(FrameRec *srcFrameP)
+{
+	if (srcFrameP->framePort != NULL)
+	{
+		HUnlock((Handle)srcFrameP->framePixHndl);
+		UnlockPixels(srcFrameP->framePixHndl);
+	}
+
+	srcFrameP->framePix = NULL;
+}
 
 
 
+static OSErr BenSWCreateGWorldFromPict(
+	GWorldPtr *pictGWorld,
+	PicHandle pictH)
+{
+	OSErr err;
+	GWorldPtr saveGWorld;
+	GDHandle saveGDevice;
+	GWorldPtr tempGWorld;
+	Rect pictRect;
+	short depth;
+	GDHandle theGDH;
 
-/*** Function hooks needed by "Term" ***/
+	/* Reset */
+	*pictGWorld = NULL;
+
+	/* Get depth */
+	depth = data[0].pixelDepth;
+
+	/* Get GDH */
+	theGDH = data[0].theGDH;
+
+	/* Obtain size rectangle */
+	pictRect = (**pictH).picFrame;
+	OffsetRect(&pictRect, -pictRect.left, -pictRect.top);
+
+	/* Create a GWorld */
+	err = NewGWorld(&tempGWorld, depth, &pictRect, nil, 
+					theGDH, noNewDevice);
+
+	/* Success */
+	if (err != noErr)
+	{
+		return (err);
+	}
+
+	/* Save pointer */
+	*pictGWorld = tempGWorld;
+
+	/* Save GWorld */
+	GetGWorld(&saveGWorld, &saveGDevice);
+
+	/* Activate */
+	SetGWorld(tempGWorld, nil);
+
+	/* Dump the pict into the GWorld */
+	(void)LockPixels(GetGWorldPixMap(tempGWorld));
+	EraseRect(&pictRect);
+	DrawPicture(pictH, &pictRect);
+	UnlockPixels(GetGWorldPixMap(tempGWorld));
+
+	/* Restore GWorld */
+	SetGWorld(saveGWorld, saveGDevice);
+	
+	/* Success */
+	return (0);
+}
+
+
+/*
+ * Init the global "frameP"
+ */
+static errr globe_init(void)
+{
+	OSErr err;
+	
+	GWorldPtr tempPictGWorldP;
+
+	PicHandle newPictH;
+
+
+	/* Use window XXX XXX XXX */
+	SetPort(data[0].w);
+
+
+	/* Get the pict resource */
+	newPictH = GetPicture(kPictID);
+
+	/* Analyze result */
+	err = (newPictH ? 0 : -1);
+
+	/* Oops */
+	if (err == noErr)
+	{
+		/* Create GWorld */
+		err = BenSWCreateGWorldFromPict(&tempPictGWorldP, newPictH);
+
+		/* Release resource */
+		ReleaseResource((Handle)newPictH);
+
+		/* Error */
+		if (err == noErr)
+		{
+			/* Create the frame */
+			frameP = (FrameRec*)NewPtrClear((Size)sizeof(FrameRec));
+
+			/* Analyze result */
+			err = (frameP ? 0 : -1);
+
+			/* Oops */
+			if (err == noErr)
+			{
+				/* Save GWorld */
+				frameP->framePort = tempPictGWorldP;
+
+				/* Lock it */
+				BenSWLockFrame(frameP);
+			}
+		}
+	}
+
+	/* Result */
+	return (err);
+}
+
+
+/*
+ * Nuke the global "frameP"
+ */
+static errr globe_nuke(void)
+{
+	/* Dispose */
+	if (frameP)
+	{
+		/* Unlock */
+		BenSWUnlockFrame(frameP);
+
+		/* Dispose of the GWorld */
+		DisposeGWorld(frameP->framePort);
+
+		/* Dispose of the memory */
+		DisposePtr((Ptr)frameP);
+
+		/* Forget */
+		frameP = NULL;
+	}
+
+	/* Flush events */	
+	FlushEvents(everyEvent, 0);
+
+	/* Success */
+	return (0);
+}
+
+
+#endif /* ANGBAND_LITE_MAC */
+
+
+
+/*** Support for the "z-term.c" package ***/
 
 
 /*
@@ -687,55 +1099,86 @@ static void Term_init_mac(term *t)
 {
 	term_data *td = (term_data*)(t->data);
 
-	Str255 title;
+	static RGBColor black = {0x0000,0x0000,0x0000};
+	static RGBColor white = {0xFFFF,0xFFFF,0xFFFF};
 
-	/* Extract the title */
-	strcpy((char*)(title+1), td->s);
-	title[0] = strlen(td->s);
+#ifdef ANGBAND_LITE_MAC
 
 	/* Make the window */
-	if (has_color)
-	{
-		td->w = NewCWindow(0, &td->r, title, td->mapped, documentProc, (WindowPtr)-1, 1, 0L);
-	}
-	else
-	{
-		td->w = NewWindow(0, &td->r, title, td->mapped, documentProc, (WindowPtr)-1, 1, 0L);
-	}
+	td->w = NewWindow(0, &td->r, td->title, 0, noGrowDocProc, (WindowPtr)-1, 1, 0L);
+
+#else /* ANGBAND_LITE_MAC */
+
+	/* Make the window */
+	td->w = NewCWindow(0, &td->r, td->title, 0, documentProc, (WindowPtr)-1, 1, 0L);
+
+#endif /* ANGBAND_LITE_MAC */
 
 	/* Activate the window */
 	activate(td->w);
 
-	/* Hack -- set "mapped" flag */
-	t->mapped_flag = td->mapped;
-
 	/* Erase behind words */
 	TextMode(srcCopy);
 
-	/* Activate the font */
-	TextFont(td->font_id);
-	TextSize(td->font_size);
-	TextFace(td->font_face);
+	/* Apply and Verify */
+	term_data_check_font(td);
+	term_data_check_size(td);
 
+	/* Resize the window */
+	term_data_resize(td);
 
-	/* Prepare the colors (real colors) */
-	if (has_color)
-	{
-		RGBBackColor(&mac_clr[TERM_DARK]);
-		RGBForeColor(&mac_clr[TERM_WHITE]);
-	}
+#ifdef ANGBAND_LITE_MAC
 
 	/* Prepare the colors (base colors) */
-	else
+	BackColor(blackColor);
+	ForeColor(whiteColor);
+
+#else /* ANGBAND_LITE_MAC */
+
+	/* Prepare the colors (real colors) */
+	RGBBackColor(&black);
+	RGBForeColor(&white);
+
+	/* Block */
 	{
-		BackColor(blackColor);
-		ForeColor(whiteColor);
+		Rect tempRect;
+		Rect globalRect;
+		GDHandle mainGDH;
+		GDHandle currentGDH;
+		GWorldPtr windowGWorld;
+		PixMapHandle basePixMap;
+
+		/* Obtain the rect */
+		tempRect = td->w->portRect;
+
+		/* Obtain the global rect */	
+		globalRect = tempRect;
+		LocalToGlobal((Point*)&globalRect.top);
+		LocalToGlobal((Point*)&globalRect.bottom);
+
+		/* Obtain the proper GDH */
+		mainGDH = GetMaxDevice(&globalRect);
+
+		/* Extract GWorld and GDH */
+		GetGWorld(&windowGWorld, &currentGDH);
+
+		/* Obtain base pixmap */
+		basePixMap = (**mainGDH).gdPMap;
+
+		/* Save pixel depth */
+		td->pixelDepth = (**basePixMap).pixelSize;
+
+		/* Save Window GWorld */
+		td->theGWorld = windowGWorld;
+
+		/* Save Window GDH */
+		td->theGDH = currentGDH;
+
+		/* Save main GDH */
+		td->mainSWGDH = mainGDH;
 	}
 
-
-	/* Activate the color if needed */
-	if (has_color) RGBForeColor(&mac_clr[TERM_WHITE]);
-
+#endif /* ANGBAND_LITE_MAC */
 
 	/* Clip to the window */
 	ClipRect(&td->w->portRect);
@@ -745,6 +1188,15 @@ static void Term_init_mac(term *t)
 
 	/* Invalidate the window */
 	InvalRect(&td->w->portRect);
+
+	/* Display the window if needed */
+	if (td->mapped) ShowWindow(td->w);
+
+	/* Hack -- set "mapped" flag */
+	t->mapped_flag = td->mapped;
+
+	/* Forget color */
+	td->last = -1;
 }
 
 
@@ -763,31 +1215,67 @@ static void Term_nuke_mac(term *t)
 
 
 /*
+ * Unused
+ */
+static errr Term_user_mac(int n)
+{
+
+#pragma unused (n)
+
+	/* Success */
+	return (0);
+}
+
+
+
+/*
  * React to changes
  */
 static errr Term_xtra_mac_react(void)
 {
-	int i;
+	term_data *td = (term_data*)(Term->data);
 
-	/* Check colors */
-	if (has_color)
+
+	/* Reset color */
+	td->last = -1;
+
+#ifdef ANGBAND_LITE_MAC
+
+	/* Nothing */
+	
+#else /* ANGBAND_LITE_MAC */
+
+	/* Handle sound */
+	if (use_sound != arg_sound)
 	{
-		u16b rv, gv, bv;
-
-		/* Grab "color_table" */
-		for (i = 0; i < 16; i++)
-		{
-			/* Extract the R,G,B data */
-			rv = color_table[i][1];
-			gv = color_table[i][2];
-			bv = color_table[i][3];
-
-			/* Save the new R,G,B values */
-			mac_clr[i].red = (rv | (rv << 8));
-			mac_clr[i].green = (gv | (gv << 8));
-			mac_clr[i].blue = (bv | (bv << 8));
-		}
+		/* Apply request */
+		use_sound = arg_sound;
 	}
+
+	/* Handle graphics */
+	if ((td == &data[0]) && (use_graphics != arg_graphics))
+	{
+		/* Initialize graphics */
+		if (!use_graphics && !frameP && (globe_init() != 0))
+		{
+			plog("Cannot initialize graphics!");
+			arg_graphics = FALSE;
+		}
+
+		/* Apply request */
+		use_graphics = arg_graphics;
+
+		/* Apply and Verify */
+		term_data_check_size(td);
+
+		/* Resize the window */
+		term_data_resize(td);
+
+		/* Reset visuals */
+		reset_visuals();
+	}
+
+#endif /* ANGBAND_LITE_MAC */
 
 	/* Success */
 	return (0);
@@ -815,6 +1303,60 @@ static errr Term_xtra_mac(int n, int v)
 			/* Success */
 			return (0);
 		}
+
+#ifdef ANGBAND_LITE_MAC
+
+		/* Nothing */
+
+#else /* ANGBAND_LITE_MAC */
+
+		/* Make a sound */
+		case TERM_XTRA_SOUND:
+		{
+			Handle handle;
+
+			Str255 sound;
+
+#if 0
+			short oldResFile;
+			short newResFile;
+
+			/* Open the resource file */
+			oldResFile = CurResFile();
+			newResFile = OpenResFile(sound);
+
+			/* Close the resource file */
+			CloseResFile(newResFile);
+			UseResFile(oldResFile);
+#endif
+
+			/* Get the proper sound name */
+			sprintf((char*)sound + 1, "%.16s.wav", angband_sound_name[v]);
+			sound[0] = strlen((char*)sound + 1);
+
+			/* Obtain resource XXX XXX XXX */
+			handle = GetNamedResource('snd ', sound);
+
+			/* Oops */
+			if (handle)
+			{
+				/* Load and Lock */
+				LoadResource(handle);
+				HLock(handle);
+
+				/* Play sound (wait for completion) */
+				SndPlay(nil, (SndListHandle)handle, false);
+
+				/* Unlock and release */
+				HUnlock(handle);
+				ReleaseResource(handle);
+			}
+
+			/* Success */
+			return (0);
+		}
+
+#endif /* ANGBAND_LITE_MAC */
 
 		/* Process random events */
 		case TERM_XTRA_BORED:
@@ -865,8 +1407,8 @@ static errr Term_xtra_mac(int n, int v)
 			/* Erase the window */
 			EraseRect(&td->w->portRect);
 
-			/* Activate the color if needed */
-			if (has_color) RGBForeColor(&mac_clr[TERM_WHITE]);
+			/* Set the color */
+			term_data_color(td, TERM_WHITE);
 
 			/* Frame the window in white */
 			MoveTo(0, 0);
@@ -927,14 +1469,14 @@ static errr Term_curs_mac(int x, int y)
 
 	term_data *td = (term_data*)(Term->data);
 
-	/* Activate the color if needed */
-	if (has_color) RGBForeColor(&mac_clr[TERM_YELLOW]);
+	/* Set the color */
+	term_data_color(td, TERM_YELLOW);
 
 	/* Frame the grid */
-	r.left = x * td->font_wid + td->size_ow1;
-	r.right = r.left + td->font_wid;
-	r.top = y * td->font_hgt + td->size_oh1;
-	r.bottom = r.top + td->font_hgt;
+	r.left = x * td->tile_wid + td->size_ow1;
+	r.right = r.left + td->tile_wid;
+	r.top = y * td->tile_hgt + td->size_oh1;
+	r.bottom = r.top + td->tile_hgt;
 	FrameRect(&r);
 
 	/* Success */
@@ -954,10 +1496,10 @@ static errr Term_wipe_mac(int x, int y, int n)
 	term_data *td = (term_data*)(Term->data);
 
 	/* Erase the block of characters */
-	r.left = x * td->font_wid + td->size_ow1;
-	r.right = r.left + n * td->font_wid;
-	r.top = y * td->font_hgt + td->size_oh1;
-	r.bottom = r.top + td->font_hgt;
+	r.left = x * td->tile_wid + td->size_ow1;
+	r.right = r.left + n * td->tile_wid;
+	r.top = y * td->tile_hgt + td->size_oh1;
+	r.bottom = r.top + td->tile_hgt;
 	EraseRect(&r);
 
 	/* Success */
@@ -969,30 +1511,134 @@ static errr Term_wipe_mac(int x, int y, int n)
  * Low level graphics.  Assumes valid input.
  *
  * Draw several ("n") chars, with an attr, at a given location.
- *
- * Hack -- attempt to allow non-mono-spaced fonts at low expense.
  */
-static errr Term_text_mac(int x, int y, int n, byte a, cptr s)
+static errr Term_text_mac(int x, int y, int n, byte a, const char *cp)
 {
 	int xp, yp;
 
 	term_data *td = (term_data*)(Term->data);
 
-	/* Activate the color if needed */
-	if (has_color) RGBForeColor(&mac_clr[a & 0x0F]);
+	/* Set the color */
+	term_data_color(td, (a & 0x0F));
 
 	/* Starting pixel */
-	xp = x * td->font_wid + td->font_o_x + td->size_ow1;
-	yp = y * td->font_hgt + td->font_o_y + td->size_oh1;
+	xp = x * td->tile_wid + td->tile_o_x + td->size_ow1;
+	yp = y * td->tile_hgt + td->tile_o_y + td->size_oh1;
 
 	/* Move to the correct location */
 	MoveTo(xp, yp);
 
 	/* Draw the character */
-	if (n == 1) DrawChar(*s);
+	if (n == 1) DrawChar(*cp);
 
 	/* Draw the string */
-	else DrawText(s, 0, n);
+	else DrawText(cp, 0, n);
+
+	/* Success */
+	return (0);
+}
+
+
+/*
+ * Low level graphics (Assumes valid input)
+ *
+ * Erase "n" characters starting at (x,y)
+ */
+static errr Term_pict_mac(int x, int y, int n, const byte *ap, const char *cp)
+{
+	int i;
+
+	Rect r2;
+
+	term_data *td = (term_data*)(Term->data);
+
+
+	/* Destination rectangle */
+	r2.left = x * td->tile_wid + td->size_ow1;
+	r2.right = r2.left + td->tile_wid;
+	r2.top = y * td->tile_hgt + td->size_oh1;
+	r2.bottom = r2.top + td->tile_hgt;
+
+	/* Scan the input */
+	for (i = 0; i < n; i++)
+	{
+		bool done = FALSE;
+
+		byte a = ap[i];
+		char c = cp[i];
+
+#ifdef ANGBAND_LITE_MAC
+
+		/* Nothing */
+
+#else /* ANGBAND_LITE_MAC */
+
+		/* Graphics -- if Available and Needed */
+		if (use_graphics && (td == &data[0]) &&
+		    ((byte)a & 0x80) && ((byte)c & 0x80))
+		{
+			int col, row;
+
+			Rect r1;
+
+			/* Row and Col */
+			row = ((byte)a & 0x7F) % kPictRows;
+			col = ((byte)c & 0x7F) % kPictCols;
+
+			/* Source rectangle */
+			r1.left = col * kGrafWidth;
+			r1.top = row * kGrafHeight;
+			r1.right = r1.left + kGrafWidth;
+			r1.bottom = r1.top + kGrafHeight;
+
+			/* Hardwire CopyBits */
+			BackColor(whiteColor);
+			ForeColor(blackColor);
+
+			/* Draw the picture */
+			CopyBits((BitMap*)frameP->framePix,
+					 &(td->w->portBits),
+					 &r1, &r2, srcCopy, NULL);
+
+			/* Restore colors */
+			BackColor(blackColor);
+			ForeColor(whiteColor);
+
+			/* Forget color */
+			td->last = -1;
+
+			/* Done */
+			done = TRUE;
+		}
+
+#endif /* ANGBAND_LITE_MAC */
+
+		/* Normal */
+		if (!done)
+		{
+			int xp, yp;
+
+			/* Erase */
+			EraseRect(&r2);
+
+			/* Set the color */
+			term_data_color(td, (a & 0x0F));
+
+			/* Starting pixel */
+			xp = r2.left + td->tile_o_x;
+			yp = r2.top + td->tile_o_y;
+
+			/* Move to the correct location */
+			MoveTo(xp, yp);
+
+			/* Draw the character */
+			DrawChar(c);
+		}
+
+		/* Advance */
+		r2.left += td->tile_wid;
+		r2.right += td->tile_wid;
+	}
 
 	/* Success */
 	return (0);
@@ -1010,6 +1656,12 @@ static void term_data_link(int i)
 	term *old = Term;
 
 	term_data *td = &data[i];
+
+	/* Only once */
+	if (td->t) return;
+
+	/* Require mapped */
+	if (!td->mapped) return;
 
 	/* Allocate */
 	MAKE(td->t, term);
@@ -1029,10 +1681,12 @@ static void term_data_link(int i)
 	td->t->nuke_hook = Term_nuke_mac;
 
 	/* Prepare the function hooks */
+	td->t->user_hook = Term_user_mac;
 	td->t->xtra_hook = Term_xtra_mac;
-	td->t->curs_hook = Term_curs_mac;
 	td->t->wipe_hook = Term_wipe_mac;
+	td->t->curs_hook = Term_curs_mac;
 	td->t->text_hook = Term_text_mac;
+	td->t->pict_hook = Term_pict_mac;
 
 	/* Link the local structure */
 	td->t->data = (vptr)(td);
@@ -1041,15 +1695,11 @@ static void term_data_link(int i)
 	Term_activate(td->t);
 
 	/* Global pointer */
-	ang_term[i] = td->t;
+	angband_term[i] = td->t;
 
 	/* Activate old */
 	Term_activate(old);
 }
-
-
-
-
 
 
 
@@ -1096,103 +1746,6 @@ static void SetupAppDir(void)
 	}
 }
 
-
-
-
-/*
- * Hack -- Extract the "font sizing" information
- */
-static void term_data_check_font(term_data *td)
-{
-	Rect r;
-	WindowPtr tmpw;
-	FontInfo info;
-
-	WindowPtr old = active;
-
-	/* Fake window */
-	r.left = r.right = r.top = r.bottom = 0;
-	tmpw = NewWindow(0, &r, "\p", false, documentProc, 0, 0, 0);
-
-	/* Activate the "fake" window */
-	activate(tmpw);
-
-	/* Prepare the font */
-	TextFont(td->font_id);
-	TextSize(td->font_size);
-	TextFace(td->font_face);
-
-	/* Extract the font info */
-	GetFontInfo(&info);
-
-	/* Extract the font sizing values XXX XXX XXX */
-	td->font_wid = CharWidth('@'); /* info.widMax; */
-	td->font_hgt = info.ascent + info.descent;
-	td->font_o_x = 0;
-	td->font_o_y = info.ascent;
-
-	/* Assume mono-spaced */
-	td->fake = FALSE;
-
-	/* Hack -- notice non-mono-space */
-	if (CharWidth('i') != td->font_wid) td->fake = TRUE;
-	if (CharWidth('1') != td->font_wid) td->fake = TRUE;
-
-	/* Mega-Hack -- no width at all */
-	if (td->font_wid < 1) td->fake = TRUE;
-
-	/* Mega-Hack -- enforce some width */
-	if (td->font_wid < 1) td->font_wid = 8;
-
-	/* Destroy the old window */
-	DisposeWindow(tmpw);
-
-	/* Re-activate the old window */
-	activate(old);
-}
-
-
-/*
- * Extract the "window sizing" information
- */
-static void term_data_check_size(term_data *td)
-{
-	/* Minimal size */
-	if (td->cols < 1) td->cols = 1;
-	if (td->rows < 1) td->rows = 1;
-
-	/* Calculate full window size */
-	td->size_wid = td->cols * td->font_wid + td->size_ow1 + td->size_ow2;
-	td->size_hgt = td->rows * td->font_hgt + td->size_oh1 + td->size_oh2;
-
-	/* Verify the top */
-	if (td->r.top > qd.screenBits.bounds.bottom - td->size_hgt)
-	{
-		td->r.top = qd.screenBits.bounds.bottom - td->size_hgt;
-	}
-
-	/* Verify the top */
-	if (td->r.top < qd.screenBits.bounds.top + 30)
-	{
-		td->r.top = qd.screenBits.bounds.top + 30;
-	}
-
-	/* Verify the left */
-	if (td->r.left > qd.screenBits.bounds.right - td->size_wid)
-	{
-		td->r.left = qd.screenBits.bounds.right - td->size_wid;
-	}
-
-	/* Verify the left */
-	if (td->r.left < qd.screenBits.bounds.left)
-	{
-		td->r.left = qd.screenBits.bounds.left;
-	}
-
-	/* Calculate bottom right corner */
-	td->r.right = td->r.left + td->size_wid;
-	td->r.bottom = td->r.top + td->size_hgt;
-}
 
 
 
@@ -1337,8 +1890,8 @@ static void term_data_hack(term_data *td)
 	/* Wipe it */
 	WIPE(td, term_data);
 
-	/* Default name */
-	td->s = "Window";
+	/* No color */
+	td->last = -1;
 
 	/* Default borders */
 	td->size_ow1 = 2;
@@ -1395,14 +1948,30 @@ static void init_windows(void)
 	/* Initialize (backwards) */
 	for (i = MAX_TERM_DATA - 1; i >= 0; i--)
 	{
+		int n;
+
+		cptr s;
+
 		/* Obtain */
 		td = &data[i];
 
 		/* Defaults */
 		term_data_hack(td);
 
-		/* Title it */
-		td->s = ang_term_name[i];
+		/* Obtain title */
+		s = angband_term_name[i];
+
+		/* Get length */
+		n = strlen(s);
+
+		/* Maximal length */
+		if (n > 15) n = 15;
+
+		/* Copy the title */
+		strncpy((char*)(td->title) + 1, s, n);
+
+		/* Save the length */
+		td->title[0] = n;
 
 		/* Tile the windows */
 		td->r.left += (b * 30);
@@ -1421,10 +1990,10 @@ static void init_windows(void)
 	/* Assume failure */
 	fff = NULL;
 
-#ifdef USE_FIND_FOLDER
+#ifdef USE_SFL_CODE
 
-	/* System 7 */
-	if (has_seven)
+	/* Block */
+	if (TRUE)
 	{
 		OSErr	err;
 		short	vref;
@@ -1455,7 +2024,7 @@ static void init_windows(void)
 		}
 	}
 
-#endif /* FIND_FOLDER */
+#endif /* USE_SFL_CODE */
 
 	/* Oops */
 	if (oops)
@@ -1500,18 +2069,6 @@ static void init_windows(void)
 	/* Link (backwards, for stacking order) */
 	for (i = MAX_TERM_DATA - 1; i >= 0; i--)
 	{
-		td = &data[i];
-
-		/* Check the font */
-		term_data_check_font(td);
-
-		/* Check the size */
-		term_data_check_size(td);
-
-		/* Require mapped */
-		if (!td->mapped) continue;
-
-		/* Link the term */
 		term_data_link(i);
 	}
 
@@ -1547,10 +2104,10 @@ static void save_pref_file(void)
 #endif
 
 
-#ifdef USE_FIND_FOLDER
+#ifdef USE_SFL_CODE
 
-	/* System 7 */
-	if (has_seven)
+	/* Block */
+	if (TRUE)
 	{
 		OSErr	err;
 		short	vref;
@@ -1581,7 +2138,7 @@ static void save_pref_file(void)
 		}
 	}
 
-#endif /* FIND_FOLDER */
+#endif /* USE_SFL_CODE */
 
 	/* Oops */
 	if (oops)
@@ -1612,106 +2169,6 @@ static void save_pref_file(void)
 	}
 }
 
-
-
-/*
- * Set up the menus
- *
- * Font menu creation from "Maarten Hazewinkel"
- */
-static void init_menubar(void)
-{
-	int i, n;
-	Rect r;
-	WindowPtr tmpw;
-
-	MenuHandle menu;
-
-	/* Show the "watch" cursor */
-	/* SetCursor(*(GetCursor(watchCursor))); */
-
-	/* Get the menubar from the resource file */
-	SetMenuBar(GetNewMBar(128));
-
-	/* Get the "apple" menu */
-	menu = GetMenu(128);
-
-	/* Oops */
-	if (!menu) quit(NULL);
-
-	/* Add the DA's to the "apple" menu */
-	AddResMenu(menu, 'DRVR');
-
-	/* Insert the "apple" menu as the first menu */
-	InsertMenu(menu, 129);
-
-	/* Get the "Font" menu */
-	menu = GetMenu(131);
-
-	/* Oops */
-	if (!menu) quit(NULL);
-
-	/* Add the fonts to the menu */
-	AddResMenu(menu, 'FONT');
-
-	/* Fake window */
-	r.left = r.right = r.top = r.bottom = 0;
-
-	/* Make the fake window */
-	tmpw = NewWindow(0, &r, "\p", false, documentProc, 0, 0, 0);
-
-	/* Activate the "fake" window */
-	SetPort(tmpw);
-
-	/* Default mode */
-	TextMode(0);
-
-	/* Default size */
-	TextSize(12);
-
-	/* Size of menu */
-	n = CountMItems(menu);
-
-	/* Scan the menu */
-	for (i = n; i >= 4; i--)
-	{
-		Str255 tmpName;
-		short fontNum;
-
-		/* Acquire the font name XXX XXX XXX */
-		/* GetMenuItemText(menu, i, tmpName); */
-		GetItem(menu, i, tmpName);
-
-		/* Acquire the font index */
-		GetFNum(tmpName, &fontNum);
-
-		/* Apply the font index */
-		TextFont(fontNum);
-
-		/* Remove non-mono-spaced fonts */
-		if ((CharWidth('i') != CharWidth('W')) || (CharWidth('W') == 0))
-		{
-			/* Delete the menu item XXX XXX XXX */
-			/* DeleteMenuItem(menu, i); */
-			DelMenuItem(menu, i);
-		}
-	}
-
-	/* Destroy the old window */
-	DisposeWindow(tmpw);
-
-	/* Hack -- look cute XXX XXX */
-	/* SetItemStyle(menu, 1, bold); */
-
-	/* Hack -- look cute XXX XXX */
-	/* SetItemStyle(menu, 2, extend); */
-
-	/* Update the menu bar */
-	DrawMenuBar();
-
-	/* Reset the cursor */
-	/* SetCursor(&qd.arrow); */
-}
 
 
 /*
@@ -1746,7 +2203,7 @@ static pascal Boolean ynfilter(DialogPtr dialog, EventRecord *event, short *ip)
 
 			/* Blink button for 1/10 second */
 			HiliteControl(control, 1);
-			Term_xtra(TERM_XTRA_DELAY, 100);
+			Term_xtra_mac(TERM_XTRA_DELAY, 100);
 			HiliteControl(control, 0);
 
 			/* Result */
@@ -1881,23 +2338,274 @@ static void do_menu_file_open(bool all)
 }
 
 
+/*
+ * Handle the "open_when_ready" flag
+ */
+static void handle_open_when_ready(void)
+{
+	/* Check the flag XXX XXX XXX make a function for this */
+	if (open_when_ready && initialized && !game_in_progress)
+	{
+		/* Forget */
+		open_when_ready = FALSE;
+
+		/* Game is in progress */
+		game_in_progress = 1;
+
+		/* Wait for it */
+		pause_line(23);
+
+		/* Flush input */
+		flush();
+
+		/* Play a game */
+		play_game(FALSE);
+
+		/* Quit */
+		quit(NULL);
+	}
+}
+
+
+
+/*
+ * Initialize the menus
+ *
+ * Verify menus 128, 129, 130
+ * Create menus 131, 132, 133, 134
+ *
+ * The standard menus are:
+ *
+ *   Apple (128) =   { About, -, ... }
+ *   File (129) =    { New,Open,Import,Close,Save,-,Exit,Quit }
+ *   Edit (130) =    { Cut, Copy, Paste, Clear }   (?)
+ *   Font (131) =    { Bold, Extend, -, Monaco, ..., -, ... }
+ *   Size (132) =    { ... }
+ *   Window (133) =  { Angband, Mirror, Recall, Choice,
+ *                     Term-4, Term-5, Term-6, Term-7 }
+ *   Special (134) = { arg_sound, arg_graphics, -,
+ *                     arg_fiddle, arg_wizard }
+ */
+static void init_menubar(void)
+{
+	int i, n;
+
+	Rect r;
+
+	WindowPtr tmpw;
+
+	MenuHandle m;
+
+
+	/* Get the "apple" menu */
+	m = GetMenu(128);
+
+	/* Insert the menu */
+	InsertMenu(m, 0);
+
+	/* Add the DA's to the "apple" menu */
+	AddResMenu(m, 'DRVR');
+
+
+	/* Get the "File" menu */
+	m = GetMenu(129);
+
+	/* Insert the menu */
+	InsertMenu(m, 0);
+
+
+	/* Get the "Edit" menu */
+	m = GetMenu(130);
+
+	/* Insert the menu */
+	InsertMenu(m, 0);
+
+
+	/* Make the "Font" menu */
+	m = NewMenu(131, "\pFont");
+
+	/* Insert the menu */
+	InsertMenu(m, 0);
+
+	/* Add "bold" */
+	AppendMenu(m, "\pBold");
+
+	/* Add "wide" */
+	AppendMenu(m, "\pWide");
+
+	/* Add a separator */
+	AppendMenu(m, "\p-");
+
+	/* Fake window */
+	r.left = r.right = r.top = r.bottom = 0;
+
+	/* Make the fake window */
+	tmpw = NewWindow(0, &r, "\p", false, documentProc, 0, 0, 0);
+
+	/* Activate the "fake" window */
+	SetPort(tmpw);
+
+	/* Default mode */
+	TextMode(0);
+
+	/* Default size */
+	TextSize(12);
+
+	/* Add the fonts to the menu */
+	AddResMenu(m, 'FONT');
+
+	/* Size of menu */
+	n = CountMItems(m);
+
+	/* Scan the menu */
+	for (i = n; i >= 4; i--)
+	{
+		Str255 tmpName;
+		short fontNum;
+
+		/* Acquire the font name */
+		/* GetMenuItemText(m, i, tmpName); */
+		GetItem(m, i, tmpName);
+
+		/* Acquire the font index */
+		GetFNum(tmpName, &fontNum);
+
+		/* Apply the font index */
+		TextFont(fontNum);
+
+		/* Remove non-mono-spaced fonts */
+		if ((CharWidth('i') != CharWidth('W')) || (CharWidth('W') == 0))
+		{
+			/* Delete the menu item XXX XXX XXX */
+			/* DeleteMenuItem(m, i); */
+			DelMenuItem(m, i);
+		}
+	}
+
+	/* Destroy the old window */
+	DisposeWindow(tmpw);
+
+	/* Add a separator */
+	AppendMenu(m, "\p-");
+
+	/* Add the fonts to the menu */
+	AddResMenu(m, 'FONT');
+
+
+	/* Make the "Size" menu */
+	m = NewMenu(132, "\pSize");
+
+	/* Insert the menu */
+	InsertMenu(m, 0);
+
+	/* Add some sizes (stagger choices) */
+	for (i = 8; i <= 32; i += ((i / 16) + 1))
+	{
+		Str15 buf;
+		
+		/* Textual size */
+		sprintf((char*)buf + 1, "%d", i);
+		buf[0] = strlen((char*)buf + 1);
+
+		/* Add the item */
+		AppendMenu(m, buf);
+	}
+
+
+	/* Make the "Windows" menu */
+	m = NewMenu(133, "\pWindows");
+
+	/* Insert the menu */
+	InsertMenu(m, 0);
+
+	/* Default choices */
+	for (i = 0; i < MAX_TERM_DATA; i++)
+	{
+		Str15 buf;
+		
+		/* Describe the item */
+		sprintf((char*)buf + 1, "%.15s", angband_term_name[i]);
+		buf[0] = strlen((char*)buf + 1);
+
+		/* Add the item */
+		AppendMenu(m, buf);
+
+		/* Command-Key shortcuts */
+		if (i < 8) SetItemCmd(m, i + 1, '0' + i);
+	}
+
+
+	/* Make the "Special" menu */
+	m = NewMenu(134, "\pSpecial");
+
+	/* Insert the menu */
+	InsertMenu(m, 0);
+
+	/* Append the choices */
+	AppendMenu(m, "\parg_sound");
+	AppendMenu(m, "\parg_graphics");
+	AppendMenu(m, "\p-");
+	AppendMenu(m, "\parg_fiddle");
+	AppendMenu(m, "\parg_wizard");
+
+
+	/* Make the "TileWidth" menu */
+	m = NewMenu(135, "\pTileWidth");
+
+	/* Insert the menu */
+	InsertMenu(m, 0);
+
+	/* Add some sizes */
+	for (i = 4; i <= 32; i++)
+	{
+		Str15 buf;
+		
+		/* Textual size */
+		sprintf((char*)buf + 1, "%d", i);
+		buf[0] = strlen((char*)buf + 1);
+
+		/* Append item */
+		AppendMenu(m, buf);
+	}
+
+
+	/* Make the "TileHeight" menu */
+	m = NewMenu(136, "\pTileHeight");
+
+	/* Insert the menu */
+	InsertMenu(m, 255);
+
+	/* Add some sizes */
+	for (i = 4; i <= 32; i++)
+	{
+		Str15 buf;
+
+		/* Textual size */
+		sprintf((char*)buf + 1, "%d", i);
+		buf[0] = strlen((char*)buf + 1);
+
+		/* Append item */
+		AppendMenu(m, buf);
+	}
+
+
+	/* Update the menu bar */
+	DrawMenuBar();
+}
+
 
 /*
  * Prepare the menus
- *   File (129) = { New,Open,Import,Close,Save,-,Exit,Quit }
- *   Edit (130) = { Cut, Copy, Paste, Clear }   (?)
- *   Font (131) = { Bold, Extend, -, Monaco, Courier, ... }
- *   Size (132) = { 9, 10, ..., 18 }
- *   Window (133) = { Angband, Mirror, Recall, Choice }
- *   Special (134) = { use_sound, use_graphics, use_xxx1, use_xxx2,
- *                     arg_fiddle, arg_wizard, arg_xxx1, arg_xxx2 }
  */
 static void setup_menus(void)
 {
-	int i;
-	MenuHandle m;
-	short fnum, fsize;
+	int i, n;
+
+	short value;
+
 	Str255 s;
+
+	MenuHandle m;
 
 	term_data *td = NULL;
 
@@ -1916,11 +2624,15 @@ static void setup_menus(void)
 	/* File menu */
 	m = GetMHandle(129);
 
-	/* Nothing is legal */
-	for (i = 1; i <= CountMItems(m); i++)
+	/* Get menu size */
+	n = CountMItems(m);
+
+	/* Reset menu */
+	for (i = 1; i <= n; i++)
 	{
-		/* Disable everything */
+		/* Reset */
 		DisableItem(m, i);
+		CheckItem(m, i, FALSE);
 	}
 
 	/* Enable "new"/"open..."/"import..." */
@@ -1954,11 +2666,15 @@ static void setup_menus(void)
 	/* Edit menu */
 	m = GetMHandle(130);
 
-	/* Nothing is legal */
-	for (i = 1; i <= CountMItems(m); i++)
+	/* Get menu size */
+	n = CountMItems(m);
+
+	/* Reset menu */
+	for (i = 1; i <= n; i++)
 	{
-		/* Disable everything */
+		/* Reset */
 		DisableItem(m, i);
+		CheckItem(m, i, FALSE);
 	}
 
 	/* Enable "edit" options if "needed" */
@@ -1975,15 +2691,22 @@ static void setup_menus(void)
 	/* Font menu */
 	m = GetMHandle(131);
 
-	/* Nothing is legal (or checked) */
-	for (i = 1; i <= CountMItems(m); i++)
-	{
-		/* Disable everything */
-		DisableItem(m, i);
+	/* Get menu size */
+	n = CountMItems(m);
 
-		/* Un-Check everything */
+	/* Reset menu */
+	for (i = 1; i <= n; i++)
+	{
+		/* Reset */
+		DisableItem(m, i);
 		CheckItem(m, i, FALSE);
 	}
+
+	/* Hack -- look cute XXX XXX */
+	/* SetItemStyle(m, 1, bold); */
+
+	/* Hack -- look cute XXX XXX */
+	/* SetItemStyle(m, 2, extend); */
 
 	/* Active window */
 	if (td)
@@ -2000,8 +2723,8 @@ static void setup_menus(void)
 		/* Check the appropriate "wide-ness" */
 		if (td->font_face & extend) CheckItem(m, 2, TRUE);
 
-		/* Check the appropriate "Font" for the current window */
-		for (i = 4; i <= CountMItems(m); i++)
+		/* Analyze fonts */
+		for (i = 4; i <= n; i++)
 		{
 			/* Enable it */
 			EnableItem(m, i);
@@ -2009,10 +2732,10 @@ static void setup_menus(void)
 			/* Analyze font */
 			/* GetMenuItemText(m,i,s); */
 			GetItem(m, i, s);
-			GetFNum(s, &fnum);
+			GetFNum(s, &value);
 
 			/* Check active font */
-			if (td->font_id == fnum) CheckItem(m, i, TRUE);
+			if (td->font_id == value) CheckItem(m, i, TRUE);
 		}
 	}
 
@@ -2020,33 +2743,34 @@ static void setup_menus(void)
 	/* Size menu */
 	m = GetMHandle(132);
 
-	/* Nothing is legal (or checked) */
-	for (i = 1; i <= CountMItems(m); i++)
-	{
-		/* Disable everything */
-		DisableItem(m, i);
+	/* Get menu size */
+	n = CountMItems(m);
 
-		/* Un-Check everything */
+	/* Reset menu */
+	for (i = 1; i <= n; i++)
+	{
+		/* Reset */
+		DisableItem(m, i);
 		CheckItem(m, i, FALSE);
 	}
-
+	
 	/* Active window */
 	if (td)
 	{
-		/* Process the "size" options */
-		for (i=1; i<=CountMItems(m); i++)
+		/* Analyze sizes */
+		for (i = 1; i <= n; i++)
 		{
 			/* Analyze size */
 			/* GetMenuItemText(m,i,s); */
 			GetItem(m, i, s);
 			s[s[0]+1] = '\0';
-			fsize = atoi((char*)(s+1));
+			value = atoi((char*)(s+1));
 
 			/* Enable the "real" sizes */
-			if (RealFont(td->font_id, fsize)) EnableItem(m, i);
+			if (RealFont(td->font_id, value)) EnableItem(m, i);
 
 			/* Check the current size */
-			if (td->font_size == fsize) CheckItem(m, i, TRUE);
+			if (td->font_size == value) CheckItem(m, i, TRUE);
 		}
 	}
 
@@ -2054,47 +2778,127 @@ static void setup_menus(void)
 	/* Windows menu */
 	m = GetMHandle(133);
 
-	/* Check windows */
-	for (i = 0; i < MAX_TERM_DATA; i++)
+	/* Get menu size */
+	n = CountMItems(m);
+
+	/* Check active windows */
+	for (i = 1; i <= n; i++)
 	{
 		/* Check if needed */
-		CheckItem(m, i + 1, data[i].mapped);
+		CheckItem(m, i, data[i-1].mapped);
 	}
 
 
 	/* Special menu */
 	m = GetMHandle(134);
 
-	/* Item "use_sound" */
-	CheckItem(m, 1, use_sound);
+	/* Get menu size */
+	n = CountMItems(m);
 
-	/* Item "use_graphics" */
-	CheckItem(m, 2, use_graphics);
+	/* Reset menu */
+	for (i = 1; i <= n; i++)
+	{
+		/* Reset */
+		DisableItem(m, i);
+		CheckItem(m, i, FALSE);
+	}
 
-	/* Item "use_xxx1" */
-	DisableItem(m, 3);
+	/* Item "arg_sound" */
+	EnableItem(m, 1);
+	CheckItem(m, 1, arg_sound);
 
-	/* Item "use_xxx2" */
-	DisableItem(m, 4);
+	/* Item "arg_graphics" */
+	EnableItem(m, 2);
+	CheckItem(m, 2, arg_graphics);
 
 	/* Item "arg_fiddle" */
-	CheckItem(m, 5, arg_fiddle);
+	EnableItem(m, 4);
+	CheckItem(m, 4, arg_fiddle);
 
 	/* Item "arg_wizard" */
-	CheckItem(m, 6, arg_wizard);
+	EnableItem(m, 5);
+	CheckItem(m, 5, arg_wizard);
 
-	/* Item "arg_xxx1" */
-	DisableItem(m, 7);
+	/* Item "Hack" */
+	/* EnableItem(m, 9); */
 
-	/* Item "arg_xxx2" */
-	DisableItem(m, 8);
+
+	/* TileWidth menu */
+	m = GetMHandle(135);
+
+	/* Get menu size */
+	n = CountMItems(m);
+
+	/* Reset menu */
+	for (i = 1; i <= n; i++)
+	{
+		/* Reset */
+		DisableItem(m, i);
+		CheckItem(m, i, FALSE);
+	}
+
+	/* Active window */
+	if (td)
+	{
+		/* Analyze sizes */
+		for (i = 1; i <= n; i++)
+		{
+			/* Analyze size */
+			/* GetMenuItemText(m,i,s); */
+			GetItem(m, i, s);
+			s[s[0]+1] = '\0';
+			value = atoi((char*)(s+1));
+
+			/* Enable */
+			EnableItem(m, i);
+
+			/* Check the current size */
+			if (td->tile_wid == value) CheckItem(m, i, TRUE);
+		}
+	}
+
+
+	/* TileHeight menu */
+	m = GetMHandle(136);
+
+	/* Get menu size */
+	n = CountMItems(m);
+
+	/* Reset menu */
+	for (i = 1; i <= n; i++)
+	{
+		/* Reset */
+		DisableItem(m, i);
+		CheckItem(m, i, FALSE);
+	}
+
+	/* Active window */
+	if (td)
+	{
+		/* Analyze sizes */
+		for (i = 1; i <= n; i++)
+		{
+			/* Analyze size */
+			/* GetMenuItemText(m,i,s); */
+			GetItem(m, i, s);
+			s[s[0]+1] = '\0';
+			value = atoi((char*)(s+1));
+
+			/* Enable */
+			EnableItem(m, i);
+
+			/* Check the current size */
+			if (td->tile_hgt == value) CheckItem(m, i, TRUE);
+		}
+	}
 }
 
 
 /*
  * Process a menu selection (see above)
  *
- * Hack -- assume that invalid menu selections are disabled above
+ * Hack -- assume that invalid menu selections are disabled above,
+ * which I have been informed may not be reliable.  XXX XXX XXX
  */
 static void menu(long mc)
 {
@@ -2130,7 +2934,7 @@ static void menu(long mc)
 	/* Branch on the menu */
 	switch (menuid)
 	{
-		/* Apple Menu {About,-,...} */
+		/* Apple Menu */
 		case 128:
 		{
 			/* About Angband... */
@@ -2158,30 +2962,34 @@ static void menu(long mc)
 			break;
 		}
 
-		/* File Menu {New,Open,Import,Close,Save,-,Exit,Quit} */
+		/* File Menu */
 		case 129:
 		{
 			switch (selection)
 			{
-				case 1:		/* New */
+				/* New */
+				case 1:
 				{
 					do_menu_file_new();
 					break;
 				}
 
-				case 2:		/* Open... */
+				/* Open... */
+				case 2:
 				{
 					do_menu_file_open(FALSE);
 					break;
 				}
 
-				case 3:		/* Import... */
+				/* Import... */
+				case 3:
 				{
 					do_menu_file_open(TRUE);
 					break;
 				}
 
-				case 4:		/* Close */
+				/* Close */
+				case 4:
 				{
 					/* No window */
 					if (!td) break;
@@ -2198,7 +3006,8 @@ static void menu(long mc)
 					break;
 				}
 
-				case 5:		/* Save */
+				/* Save */
+				case 5:
 				{
 					/* Hack -- Forget messages */
 					msg_flag = FALSE;
@@ -2209,7 +3018,8 @@ static void menu(long mc)
 					break;
 				}
 
-				case 7:		/* Exit (without save) */
+				/* Exit (without save) */
+				case 7:
 				{
 					/* Allow user to cancel "dangerous" exit */
 					if (game_in_progress && character_generated)
@@ -2236,7 +3046,8 @@ static void menu(long mc)
 					break;
 				}
 
-				case 8:		/* Quit (with save) */
+				/* Quit (with save) */
+				case 8:
 				{
 					/* Save the game (if necessary) */
 					if (game_in_progress && character_generated)
@@ -2256,14 +3067,14 @@ static void menu(long mc)
 			break;
 		}
 
-		/* Edit menu {Undo,-,Cut,Copy,Paste,Clear} */
+		/* Edit menu */
 		case 130:
 		{
 			/* Unused */
 			break;
 		}
 
-		/* Font menu {Bold,Extend,-,...} */
+		/* Font menu */
 		case 131:
 		{
 			/* Require a window */
@@ -2288,15 +3099,13 @@ static void menu(long mc)
 					td->font_face |= bold;
 				}
 
-				/* Instantiate the new text face */
-				TextFace(td->font_face);
-
-				/* Resize */
+				/* Apply and Verify */
 				term_data_check_font(td);
 				term_data_check_size(td);
 
-				/* Resize the window */
+				/* Resize and Redraw */
 				term_data_resize(td);
+				term_data_redraw(td);
 
 				break;
 			}
@@ -2314,15 +3123,13 @@ static void menu(long mc)
 					td->font_face |= extend;
 				}
 
-				/* Instantiate the new text face */
-				TextFace(td->font_face);
-
-				/* Resize */
+				/* Apply and Verify */
 				term_data_check_font(td);
 				term_data_check_size(td);
 
-				/* Resize the window */
+				/* Resize and Redraw */
 				term_data_resize(td);
+				term_data_redraw(td);
 
 				break;
 			}
@@ -2335,13 +3142,14 @@ static void menu(long mc)
 			/* Save the new font id */
 			td->font_id = fid;
 
-			/* current size is bad for new font */
+			/* Current size is bad for new font */
 			if (!RealFont(td->font_id, td->font_size))
 			{
-				/* find good size */
-				for (i=1; i<=18; i++)
+				/* Find similar size */
+				for (i = 1; i <= 32; i++)
 				{
-					if (td->font_size - i >= 9)
+					/* Adjust smaller */
+					if (td->font_size - i >= 8)
 					{
 						if (RealFont(td->font_id, td->font_size - i))
 						{
@@ -2349,7 +3157,9 @@ static void menu(long mc)
 							break;
 						}
 					}
-					if (td->font_size + i <= 18)
+
+					/* Adjust larger */
+					if (td->font_size + i <= 128)
 					{
 						if (RealFont(td->font_id, td->font_size + i))
 						{
@@ -2358,22 +3168,15 @@ static void menu(long mc)
 						}
 					}
 				}
-
-				/* Default size if can't find a good size */
-				if (i==19) td->font_size = 9;
 			}
 
-			/* Instantiate new properties */
-			TextFont(td->font_id);
-			TextSize(td->font_size);
-			TextFace(td->font_face);
-
-			/* Adapt to the new size */
+			/* Apply and Verify */
 			term_data_check_font(td);
 			term_data_check_size(td);
 
-			/* Resize the window */
+			/* Resize and Redraw */
 			term_data_resize(td);
+			term_data_redraw(td);
 
 			/* Restore the window */
 			activate(old_win);
@@ -2381,7 +3184,7 @@ static void menu(long mc)
 			break;
 		}
 
-		/* Size menu {...} */
+		/* Size menu */
 		case 132:
 		{
 			if (!td) break;
@@ -2397,15 +3200,13 @@ static void menu(long mc)
 			s[s[0]+1]=0;
 			td->font_size = atoi((char*)(s+1));
 
-			/* Instantiate the new size */
-			TextSize(td->font_size);
-
-			/* React to the font */
+			/* Apply and Verify */
 			term_data_check_font(td);
 			term_data_check_size(td);
 
-			/* Resize the window */
+			/* Resize and Redraw */
 			term_data_resize(td);
+			term_data_redraw(td);
 
 			/* Restore */
 			activate(old_win);
@@ -2413,7 +3214,7 @@ static void menu(long mc)
 			break;
 		}
 
-		/* Window menu {Angband,Mirror,Recall,Choice,etc} */
+		/* Window menu */
 		case 133:
 		{
 			/* Parse */
@@ -2425,28 +3226,17 @@ static void menu(long mc)
 			/* Obtain the window */
 			td = &data[i];
 
-			/* Allocate */
-			if (!td->t)
-			{
-				/* Mapped */
-				td->mapped = TRUE;
+			/* Mapped */
+			td->mapped = TRUE;
 
-				/* Link */	
-				term_data_link(i);
-			}
+			/* Link */	
+			term_data_link(i);
 
-			/* Show */
-			else
-			{
-				/* Mapped */
-				td->mapped = TRUE;
+			/* Mapped (?) */
+			td->t->mapped_flag = TRUE;
 
-				/* Mapped */
-				td->t->mapped_flag = TRUE;
-
-				/* Show the window */
-				ShowWindow(td->w);
-			}
+			/* Show the window */
+			ShowWindow(td->w);
 
 			/* Bring to the front */
 			SelectWindow(td->w);
@@ -2454,35 +3244,103 @@ static void menu(long mc)
 			break;
 		}
 
-		/* Special menu {u_s, u_g, u_1, u_2, a_f, a_w, a_1, a_2} */
+		/* Special menu */
 		case 134:
 		{
 			switch (selection)
 			{
 				case 1:
 				{
-					use_sound = !use_sound;
+					/* Toggle arg_sound */
+					arg_sound = !arg_sound;
+
+					/* React to changes */
+					Term_xtra(TERM_XTRA_REACT, 0);
+
 					break;
 				}
 
 				case 2:
 				{
-					use_graphics = !use_graphics;
+					/* Toggle arg_graphics */
+					arg_graphics = !arg_graphics;
+
+					/* Hack -- Force redraw */
+					Term_key_push(KTRL('R'));
+
 					break;
 				}
 
-				case 5:
+				case 4:
 				{
 					arg_fiddle = !arg_fiddle;
 					break;
 				}
 
-				case 6:
+				case 5:
 				{
 					arg_wizard = !arg_wizard;
 					break;
 				}
 			}
+
+			break;
+		}
+
+		/* TileWidth menu */
+		case 135:
+		{
+			if (!td) break;
+
+			/* Save old */
+			old_win = active;
+
+			/* Activate */
+			activate(td->w);
+
+			/* GetMenuItemText(GetMHandle(135), selection, s); */
+			GetItem(GetMHandle(135), selection, s);
+			s[s[0]+1]=0;
+			td->tile_wid = atoi((char*)(s+1));
+
+			/* Apply and Verify */
+			term_data_check_size(td);
+
+			/* Resize and Redraw */
+			term_data_resize(td);
+			term_data_redraw(td);
+
+			/* Restore */
+			activate(old_win);
+
+			break;
+		}
+
+		/* TileHeight menu */
+		case 136:
+		{
+			if (!td) break;
+
+			/* Save old */
+			old_win = active;
+
+			/* Activate */
+			activate(td->w);
+
+			/* GetMenuItemText(GetMHandle(136), selection, s); */
+			GetItem(GetMHandle(136), selection, s);
+			s[s[0]+1]=0;
+			td->tile_hgt = atoi((char*)(s+1));
+
+			/* Apply and Verify */
+			term_data_check_size(td);
+
+			/* Resize and Redraw */
+			term_data_resize(td);
+			term_data_redraw(td);
+
+			/* Restore */
+			activate(old_win);
 
 			break;
 		}
@@ -2574,6 +3432,8 @@ static pascal OSErr AEH_Print(const AppleEvent *theAppleEvent,
 static pascal OSErr AEH_Open(AppleEvent *theAppleEvent,
                              AppleEvent* reply, long handlerRefCon)
 {
+#pragma unused(reply, handlerRefCon)
+
 	FSSpec		myFSS;
 	AEDescList	docList;
 	OSErr		err;
@@ -2626,113 +3486,7 @@ static pascal OSErr AEH_Open(AppleEvent *theAppleEvent,
 }
 
 
-/*
- * This function will allow us to process "open" apple events received before
- * we have completed our initialization process.  Personally, I tend to have
- * the opposite problem, in that the apple event is received even later.
- */
-static void check_for_save_file(void)
-{
-	/* Check the flag */
-	if (open_when_ready)
-	{
-		/* Forget */
-		open_when_ready = FALSE;
-
-		/* Game is in progress */
-		game_in_progress = 1;
-
-		/* Wait for it */
-		pause_line(23);
-
-		/* Flush input */
-		flush();
-
-		/* Play a game */
-		play_game(FALSE);
-
-		/* Quit */
-		quit(NULL);
-	}
-}
-
-
-#else
-
-
-/*
- * Check for "open via double click on a savefile"
- *
- * For some reason, this function seems to function correctly
- * with Think C 6.0 but not with CodeWarrior 7.  In the latter
- * case, the CountAppFiles() function loads bizarre values.
- */
-static void check_for_save_file(void)
-{
-	int i;
-	short message, n;
-	AppFile fileinfo;
-	OSErr err;
-	short vrefnum;
-	long drefnum, junk;
-
-	/* Access startup info */
-	CountAppFiles(&message, &n);
-
-	/* Only open files */
-	if (message != appOpen) n = 0;
-
-	/* Scan for a savefile */
-	for (i = 1; i <= n; i++)
-	{
-		/* Access the file */
-		GetAppFiles(i, &fileinfo);
-
-		/* Only handle savefiles */
-		if (fileinfo.fType != 'SAVE') continue;
-
-		/* Look at the file */
-		err = GetWDInfo(fileinfo.vRefNum, &vrefnum, &drefnum, &junk);
-
-		/* Load it and play */
-		if (err == noErr)
-		{
-			/* Load "savefile" */
-			refnum_to_name(savefile, drefnum, vrefnum, (char*)fileinfo.fName);
-
-			/* Game is in progress */
-			game_in_progress = 1;
-
-			/* Wait for it */
-			pause_line(23);
-
-			/* Flush input */
-			flush();
-
-			/* Play a game */
-			play_game(FALSE);
-
-			/* Quit */
-			quit(NULL);
-		}
-
-		/* Oops */
-		else
-		{
-			/* Warning */
-			mac_warning("Could not open save file");
-		}
-
-		/* Stop looking */
-		break;
-	}
-
-	/* Forget the files */
-	for (i = 1; i <= n; i++) ClrAppFiles(i);
-}
-
 #endif
-
 
 
 
@@ -2919,7 +3673,6 @@ static bool CheckEvents(bool wait)
 			/* Hide the mouse pointer */
 			ObscureCursor();
 
-
 			/* Normal key -> simple keypress */
 			if (ck < 64)
 			{
@@ -3027,7 +3780,7 @@ static bool CheckEvents(bool wait)
 					/* Restore */
 					activate(old_win);
 
-					/* Check size */
+					/* Apply and Verify */
 					term_data_check_size(td);
 
 					break;
@@ -3064,10 +3817,10 @@ static bool CheckEvents(bool wait)
 					if (!td) break;
 
 					/* Fake rectangle */
-					r.left = 20 * td->font_wid + td->size_ow1;
-					r.right = 80 * td->font_wid + td->size_ow1 + td->size_ow2 + 1;
-					r.top = 1 * td->font_hgt + td->size_oh1;
-					r.bottom = 24 * td->font_hgt + td->size_oh1 + td->size_oh2 + 1;
+					r.left = 20 * td->tile_wid + td->size_ow1;
+					r.right = 80 * td->tile_wid + td->size_ow1 + td->size_ow2 + 1;
+					r.top = 1 * td->tile_hgt + td->size_oh1;
+					r.bottom = 24 * td->tile_hgt + td->size_oh1 + td->size_oh2 + 1;
 
 					/* Grow the rectangle */
 					newsize = GrowWindow(w, event.where, &r);
@@ -3080,10 +3833,10 @@ static bool CheckEvents(bool wait)
 					x = LoWord(newsize) - td->size_ow1 - td->size_ow2;
 
 					/* Extract a "close" approximation */
-					td->rows = y / td->font_hgt;
-					td->cols = x / td->font_wid;
+					td->rows = y / td->tile_hgt;
+					td->cols = x / td->tile_wid;
 
-					/* React to the new size */
+					/* Apply and Verify */
 					term_data_check_size(td);
 
 					/* Activate */
@@ -3092,8 +3845,9 @@ static bool CheckEvents(bool wait)
 					/* Hack -- Resize the term */
 					Term_resize(td->cols, td->rows);
 
-					/* Resize the window */
+					/* Resize and Redraw */
 					term_data_resize(td);
+					term_data_redraw(td);
 
 					/* Restore */
 					Term_activate(old);
@@ -3166,7 +3920,7 @@ static bool CheckEvents(bool wait)
 				plog("Error in Apple Event Handler!");
 			}
 
-			/* Hack -- handle "quit" event */
+			/* Handle "quit_when_ready" */
 			if (quit_when_ready)
 			{
 				/* Forget */
@@ -3179,27 +3933,8 @@ static bool CheckEvents(bool wait)
 				HiliteMenu(0);
 			}
 
-			/* Check the flag XXX XXX XXX make a function for this */
-			if (open_when_ready && initialized && !game_in_progress)
-			{
-				/* Forget */
-				open_when_ready = FALSE;
-
-				/* Game is in progress */
-				game_in_progress = 1;
-
-				/* Wait for it */
-				pause_line(23);
-
-				/* Flush input */
-				flush();
-
-				/* Play a game */
-				play_game(FALSE);
-
-				/* Quit */
-				quit(NULL);
-			}
+			/* Handle "open_when_ready" */
+			handle_open_when_ready();
 
 			break;
 		}
@@ -3230,10 +3965,20 @@ static vptr lifeboat = NULL;
  */
 static errr hook_rnfree(vptr v, huge size)
 {
+
 #pragma unused (size)
+
+#ifdef USE_MALLOC
+
+	/* Alternative method */
+	free(v);
+
+#else
 
 	/* Dispose */
 	DisposePtr(v);
+
+#endif
 
 	/* Success */
 	return (0);
@@ -3244,8 +3989,19 @@ static errr hook_rnfree(vptr v, huge size)
  */
 static vptr hook_ralloc(huge size)
 {
+
+#ifdef USE_MALLOC
+
+	/* Make a new pointer */
+	return (malloc(size));
+
+#else
+
 	/* Make a new pointer */
 	return (NewPtr(size));
+
+#endif
+
 }
 
 /*
@@ -3253,6 +4009,7 @@ static vptr hook_ralloc(huge size)
  */
 static vptr hook_rpanic(huge size)
 {
+
 #pragma unused (size)
 
 	vptr mem = NULL;
@@ -3438,8 +4195,8 @@ static void init_stuff(void)
  */
 void main(void)
 {
-	int i;
-
+	EventRecord tempEvent;
+	int numberOfMasters = 10;
 
 	/* Increase stack space by 64K */
 	SetApplLimit(GetApplLimit() - 65536L);
@@ -3447,22 +4204,56 @@ void main(void)
 	/* Stretch out the heap to full size */
 	MaxApplZone();
 
+	/* Get more Masters */
+	while (numberOfMasters--) MoreMasters();
+
 	/* Set up the Macintosh */
 	InitGraf(&qd.thePort);
 	InitFonts();
 	InitWindows();
 	InitMenus();
 	/* TEInit(); */
-	InitDialogs(0);
+	InitDialogs(NULL);
 	InitCursor();
 
+	/* Flush events */
+	FlushEvents(everyEvent, 0);
 
-#if defined(powerc) || defined(__powerc)
+	/* Flush events some more (?) */
+	(void)EventAvail(everyEvent, &tempEvent);
+	(void)EventAvail(everyEvent, &tempEvent);
+	(void)EventAvail(everyEvent, &tempEvent);
 
-	/* Assume many things */
-	has_seven = has_color = TRUE;
 
-#else
+#ifdef ANGBAND_LITE_MAC
+
+	/* Nothing */
+
+#else /* ANGBAND_LITE_MAC */
+
+# if defined(powerc) || defined(__powerc)
+
+	/* Assume System 7 */
+	
+	/* Assume Color Quickdraw */
+
+# else
+
+	/* Block */
+	if (TRUE)
+	{
+		OSErr err;
+		long versionNumber;
+
+		/* Check the Gestalt */
+		err = Gestalt(gestaltSystemVersion, &versionNumber);
+
+		/* Check the version */
+		if ((err != noErr) || (versionNumber < 0x0700))
+		{
+			quit("You must have System 7 to use this program.");
+		}
+	}
 
 	/* Block */
 	if (TRUE)
@@ -3470,52 +4261,58 @@ void main(void)
 		SysEnvRec env;
 
 		/* Check the environs */
-		if (SysEnvirons(1, &env) == noErr)
+		if (SysEnvirons(1, &env) != noErr)
 		{
-			/* Check for Color Quickdraw */
-			if (env.hasColorQD) has_color = TRUE;
+			quit("The SysEnvirons call failed!");
+		}
 
-			/* Check for System Seven Stuff */
-			if (env.systemVersion >= 0x0700) has_seven = TRUE;
+		/* Check for System Seven Stuff */
+		if (env.systemVersion < 0x0700)
+		{
+			quit("You must have System 7 to use this program.");
+		}
+
+		/* Check for Color Quickdraw */
+		if (!env.hasColorQD)
+		{
+			quit("You must have Color Quickdraw to use this program.");
 		}
 	}
 
-#endif
+# endif
+
+#endif /* ANGBAND_LITE_MAC */
 
 
 #ifdef USE_SFL_CODE
 
-	/* System 7 */
-	if (has_seven)
-	{
-		/* Obtain a "Universal Procedure Pointer" */
-		AEH_Start_UPP = NewAEEventHandlerProc(AEH_Start);
+	/* Obtain a "Universal Procedure Pointer" */
+	AEH_Start_UPP = NewAEEventHandlerProc(AEH_Start);
 
-		/* Install the hook (ignore error codes) */
-		AEInstallEventHandler(kCoreEventClass, kAEOpenApplication, AEH_Start_UPP,
-		                      0L, FALSE);
+	/* Install the hook (ignore error codes) */
+	AEInstallEventHandler(kCoreEventClass, kAEOpenApplication, AEH_Start_UPP,
+	                      0L, FALSE);
 
-		/* Obtain a "Universal Procedure Pointer" */
-		AEH_Quit_UPP = NewAEEventHandlerProc(AEH_Quit);
+	/* Obtain a "Universal Procedure Pointer" */
+	AEH_Quit_UPP = NewAEEventHandlerProc(AEH_Quit);
 
-		/* Install the hook (ignore error codes) */
-		AEInstallEventHandler(kCoreEventClass, kAEQuitApplication, AEH_Quit_UPP,
-		                      0L, FALSE);
+	/* Install the hook (ignore error codes) */
+	AEInstallEventHandler(kCoreEventClass, kAEQuitApplication, AEH_Quit_UPP,
+	                      0L, FALSE);
 
-		/* Obtain a "Universal Procedure Pointer" */
-		AEH_Print_UPP = NewAEEventHandlerProc(AEH_Print);
+	/* Obtain a "Universal Procedure Pointer" */
+	AEH_Print_UPP = NewAEEventHandlerProc(AEH_Print);
 
-		/* Install the hook (ignore error codes) */
-		AEInstallEventHandler(kCoreEventClass, kAEPrintDocuments, AEH_Print_UPP,
-		                      0L, FALSE);
+	/* Install the hook (ignore error codes) */
+	AEInstallEventHandler(kCoreEventClass, kAEPrintDocuments, AEH_Print_UPP,
+	                      0L, FALSE);
 
-		/* Obtain a "Universal Procedure Pointer" */
-		AEH_Open_UPP = NewAEEventHandlerProc(AEH_Open);
+	/* Obtain a "Universal Procedure Pointer" */
+	AEH_Open_UPP = NewAEEventHandlerProc(AEH_Open);
 
-		/* Install the hook (ignore error codes) */
-		AEInstallEventHandler(kCoreEventClass, kAEOpenDocuments, AEH_Open_UPP,
-		                      0L, FALSE);
-	}
+	/* Install the hook (ignore error codes) */
+	AEInstallEventHandler(kCoreEventClass, kAEOpenDocuments, AEH_Open_UPP,
+	                      0L, FALSE);
 
 #endif
 
@@ -3554,44 +4351,35 @@ void main(void)
 	core_aux = hook_core;
 
 
+
+	/* Show the "watch" cursor */
+	SetCursor(*(GetCursor(watchCursor)));
+
 	/* Prepare the menubar */
 	init_menubar();
 
 	/* Prepare the windows */
 	init_windows();
 
-
 	/* Hack -- process all events */
 	while (CheckEvents(TRUE)) /* loop */;
 
+	/* Reset the cursor */
+	SetCursor(&qd.arrow);
 
-	/* Hack -- extract the "color_table" data */
-	for (i = 0; i < 16; i++)
-	{
-		/* Extract the R,G,B values */
-		color_table[i][1] = (mac_clr[i].red >> 8);
-		color_table[i][2] = (mac_clr[i].green >> 8);
-		color_table[i][3] = (mac_clr[i].blue >> 8);
-	}
-
-
-	/* Initialize some stuff */
-	init_stuff();
-
-	/* Display the "news" screen */
-	show_news();
-
-	/* Initialize some arrays */
-	init_some_arrays();
-
-	/* Hack -- assume wizard permissions */
-	can_be_wizard = TRUE;
-
-	/* Hack -- Use the "pref-mac.prf" file */
-	ANGBAND_SYS = "mac";
 
 	/* Mega-Hack -- Allocate a "lifeboat" */
 	lifeboat = NewPtr(16384);
+
+	/* Note the "system" */
+	ANGBAND_SYS = "mac";
+
+
+	/* Initialize */
+	init_stuff();
+
+	/* Initialize */
+	init_angband();
 
 
 	/* Hack -- process all events */
@@ -3602,8 +4390,8 @@ void main(void)
 	initialized = TRUE;
 
 
-	/* Check for double-clicked save file */
-	check_for_save_file();
+	/* Handle "open_when_ready" */
+	handle_open_when_ready();
 
 
 	/* Prompt the user */

@@ -135,6 +135,12 @@ static void prt_stat(int stat)
 		cnv_stat(p_ptr->stat_use[stat], tmp);
 		c_put_str(TERM_L_GREEN, tmp, ROW_STAT + stat, COL_STAT + 6);
 	}
+
+	/* Indicate natural maximum */
+	if (p_ptr->stat_max[stat] == 18+100)
+	{
+		put_str("!", ROW_STAT + stat, 3);
+	}
 }
 
 
@@ -156,7 +162,7 @@ static void prt_title(void)
 	/* Winner */
 	else if (total_winner || (p_ptr->lev > PY_MAX_LEVEL))
 	{
-		p = (p_ptr->male ? "**KING**" : "**QUEEN**");
+		p = "***WINNER***";
 	}
 
 	/* Normal */
@@ -843,7 +849,6 @@ static void prt_frame_extra(void)
 }
 
 
-
 /*
  * Hack -- display inventory in sub-windows
  */
@@ -857,13 +862,13 @@ static void fix_inven(void)
 		term *old = Term;
 
 		/* No window */
-		if (!ang_term[j]) continue;
+		if (!angband_term[j]) continue;
 
 		/* No relevant flags */
-		if (!(window_flag[j] & PW_INVEN)) continue;
+		if (!(window_flag[j] & (PW_INVEN))) continue;
 
 		/* Activate */
-		Term_activate(ang_term[j]);
+		Term_activate(angband_term[j]);
 
 		/* Display inventory */
 		display_inven();
@@ -891,13 +896,13 @@ static void fix_equip(void)
 		term *old = Term;
 
 		/* No window */
-		if (!ang_term[j]) continue;
+		if (!angband_term[j]) continue;
 
 		/* No relevant flags */
-		if (!(window_flag[j] & PW_EQUIP)) continue;
+		if (!(window_flag[j] & (PW_EQUIP))) continue;
 
 		/* Activate */
-		Term_activate(ang_term[j]);
+		Term_activate(angband_term[j]);
 
 		/* Display equipment */
 		display_equip();
@@ -929,13 +934,13 @@ static void fix_spell(void)
 		term *old = Term;
 
 		/* No window */
-		if (!ang_term[j]) continue;
+		if (!angband_term[j]) continue;
 
 		/* No relevant flags */
-		if (!(window_flag[j] & PW_SPELL)) continue;
+		if (!(window_flag[j] & (PW_SPELL))) continue;
 
 		/* Activate */
-		Term_activate(ang_term[j]);
+		Term_activate(angband_term[j]);
 
 		/* Display spell list */
 		display_spell_list();
@@ -962,16 +967,16 @@ static void fix_player(void)
 		term *old = Term;
 
 		/* No window */
-		if (!ang_term[j]) continue;
+		if (!angband_term[j]) continue;
 
 		/* No relevant flags */
-		if (!(window_flag[j] & PW_PLAYER)) continue;
+		if (!(window_flag[j] & (PW_PLAYER))) continue;
 
 		/* Activate */
-		Term_activate(ang_term[j]);
+		Term_activate(angband_term[j]);
 
 		/* Display player */
-		display_player(FALSE);
+		display_player(0);
 
 		/* Fresh */
 		Term_fresh();
@@ -1000,13 +1005,13 @@ static void fix_message(void)
 		term *old = Term;
 
 		/* No window */
-		if (!ang_term[j]) continue;
+		if (!angband_term[j]) continue;
 
 		/* No relevant flags */
-		if (!(window_flag[j] & PW_MESSAGE)) continue;
+		if (!(window_flag[j] & (PW_MESSAGE))) continue;
 
 		/* Activate */
-		Term_activate(ang_term[j]);
+		Term_activate(angband_term[j]);
 
 		/* Get size */
 		Term_get_size(&w, &h);
@@ -1050,13 +1055,13 @@ static void fix_overhead(void)
 		term *old = Term;
 
 		/* No window */
-		if (!ang_term[j]) continue;
+		if (!angband_term[j]) continue;
 
 		/* No relevant flags */
-		if (!(window_flag[j] & PW_OVERHEAD)) continue;
+		if (!(window_flag[j] & (PW_OVERHEAD))) continue;
 
 		/* Activate */
-		Term_activate(ang_term[j]);
+		Term_activate(angband_term[j]);
 
 		/* Redraw map */
 		display_map(&cy, &cx);
@@ -1083,16 +1088,49 @@ static void fix_monster(void)
 		term *old = Term;
 
 		/* No window */
-		if (!ang_term[j]) continue;
+		if (!angband_term[j]) continue;
 
 		/* No relevant flags */
-		if (!(window_flag[j] & PW_MONSTER)) continue;
+		if (!(window_flag[j] & (PW_MONSTER))) continue;
 
 		/* Activate */
-		Term_activate(ang_term[j]);
+		Term_activate(angband_term[j]);
 
-		/* Display monster info */
-		if (recent_idx) display_roff(recent_idx);
+		/* Display monster race info */
+		if (monster_race_idx) display_roff(monster_race_idx);
+
+		/* Fresh */
+		Term_fresh();
+
+		/* Restore */
+		Term_activate(old);
+	}
+}
+
+
+/*
+ * Hack -- display object recall in sub-windows
+ */
+static void fix_object(void)
+{
+	int j;
+
+	/* Scan windows */
+	for (j = 0; j < 8; j++)
+	{
+		term *old = Term;
+
+		/* No window */
+		if (!angband_term[j]) continue;
+
+		/* No relevant flags */
+		if (!(window_flag[j] & (PW_OBJECT))) continue;
+
+		/* Activate */
+		Term_activate(angband_term[j]);
+
+		/* Display monster race info */
+		if (object_kind_idx) display_koff(object_kind_idx);
 
 		/* Fresh */
 		Term_fresh();
@@ -1346,25 +1384,24 @@ static void calc_spells(void)
 	/* Cannot learn more spells than exist */
 	if (p_ptr->new_spells > k) p_ptr->new_spells = k;
 
-	/* Learn new spells */
-	if (p_ptr->new_spells && !p_ptr->old_spells)
+	/* Spell count changed */
+	if (p_ptr->old_spells != p_ptr->new_spells)
 	{
-		/* Message */
-		msg_format("You can learn some new %ss now.", p);
+		/* Message if needed */
+		if (p_ptr->new_spells)
+		{
+			/* Message */
+			msg_format("You can learn %d more %s%s.",
+			           p_ptr->new_spells, p,
+			           (p_ptr->new_spells != 1) ? "s" : "");
+		}
 
-		/* Display "study state" later */
+		/* Save the new_spells value */
+		p_ptr->old_spells = p_ptr->new_spells;
+
+		/* Redraw Study Status */
 		p_ptr->redraw |= (PR_STUDY);
 	}
-
-	/* No more spells */
-	else if (!p_ptr->new_spells && p_ptr->old_spells)
-	{
-		/* Display "study state" later */
-		p_ptr->redraw |= (PR_STUDY);
-	}
-
-	/* Save the new_spells value */
-	p_ptr->old_spells = p_ptr->new_spells;
 }
 
 
@@ -1376,7 +1413,7 @@ static void calc_spells(void)
  */
 static void calc_mana(void)
 {
-	int		new_mana, levels, cur_wgt, max_wgt;
+	int		msp, levels, cur_wgt, max_wgt;
 
 	object_type	*o_ptr;
 
@@ -1392,10 +1429,10 @@ static void calc_mana(void)
 	if (levels < 0) levels = 0;
 
 	/* Extract total mana */
-	new_mana = adj_mag_mana[p_ptr->stat_ind[mp_ptr->spell_stat]] * levels / 2;
+	msp = adj_mag_mana[p_ptr->stat_ind[mp_ptr->spell_stat]] * levels / 2;
 
 	/* Hack -- usually add one mana */
-	if (new_mana) new_mana++;
+	if (msp) msp++;
 
 
 	/* Only mages are affected */
@@ -1414,14 +1451,14 @@ static void calc_mana(void)
 
 		/* Normal gloves hurt mage-type spells */
 		if (o_ptr->k_idx &&
-		    !(f2 & TR2_FREE_ACT) &&
-		    !((f1 & TR1_DEX) && (o_ptr->pval > 0)))
+		    !(f2 & (TR2_FREE_ACT)) &&
+		    !((f1 & (TR1_DEX)) && (o_ptr->pval > 0)))
 		{
 			/* Encumbered */
 			p_ptr->cumber_glove = TRUE;
 
 			/* Reduce mana */
-			new_mana = (3 * new_mana) / 4;
+			msp = (3 * msp) / 4;
 		}
 	}
 
@@ -1448,19 +1485,33 @@ static void calc_mana(void)
 		p_ptr->cumber_armor = TRUE;
 
 		/* Reduce mana */
-		new_mana -= ((cur_wgt - max_wgt) / 10);
+		msp -= ((cur_wgt - max_wgt) / 10);
 	}
 
 
 	/* Mana can never be negative */
-	if (new_mana < 0) new_mana = 0;
+	if (msp < 0) msp = 0;
 
 
 	/* Maximum mana has changed */
-	if (p_ptr->msp != new_mana)
+	if (p_ptr->msp != msp)
 	{
+
+#if 1
+
+		/* XXX XXX XXX New mana maintenance */
+
+		/* Enforce maximum */
+		if (p_ptr->csp >= msp)
+		{
+			p_ptr->csp = msp;
+			p_ptr->csp_frac = 0;
+		}
+
+#else
+
 		/* Player has no mana now */
-		if (!new_mana)
+		if (!msp)
 		{
 			/* No mana left */
 			p_ptr->csp = 0;
@@ -1471,7 +1522,7 @@ static void calc_mana(void)
 		else if (!p_ptr->msp)
 		{
 			/* Reset mana */
-			p_ptr->csp = new_mana;
+			p_ptr->csp = msp;
 			p_ptr->csp_frac = 0;
 		}
 
@@ -1483,15 +1534,17 @@ static void calc_mana(void)
 			/* change current mana proportionately to change of max mana, */
 			/* divide first to avoid overflow, little loss of accuracy */
 			value = ((((long)p_ptr->csp << 16) + p_ptr->csp_frac) /
-			         p_ptr->msp * new_mana);
+			         p_ptr->msp * msp);
 
 			/* Extract mana components */
 			p_ptr->csp = (value >> 16);
 			p_ptr->csp_frac = (value & 0xFFFF);
 		}
 
+#endif
+
 		/* Save new mana */
-		p_ptr->msp = new_mana;
+		p_ptr->msp = msp;
 
 		/* Display mana later */
 		p_ptr->redraw |= (PR_MANA);
@@ -1564,8 +1617,22 @@ static void calc_hitpoints(void)
 	if (p_ptr->shero) mhp += 30;
 
 	/* New maximum hitpoints */
-	if (mhp != p_ptr->mhp)
+	if (p_ptr->mhp != mhp)
 	{
+
+#if 1
+
+		/* XXX XXX XXX New hitpoint maintenance */
+
+		/* Enforce maximum */
+		if (p_ptr->chp >= mhp)
+		{
+			p_ptr->chp = mhp;
+			p_ptr->chp_frac = 0;
+		}
+
+#else
+
 		s32b value;
 
 		/* change current hit points proportionately to change of mhp */
@@ -1574,6 +1641,8 @@ static void calc_hitpoints(void)
 		value = value * mhp;
 		p_ptr->chp = (value >> 16);
 		p_ptr->chp_frac = (value & 0xFFFF);
+
+#endif
 
 		/* Save the new max-hitpoints */
 		p_ptr->mhp = mhp;
@@ -1864,92 +1933,92 @@ static void calc_bonuses(void)
 	{
 		o_ptr = &inventory[i];
 
-		/* Skip missing items */
+		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;
 
 		/* Extract the item flags */
 		object_flags(o_ptr, &f1, &f2, &f3);
 
 		/* Affect stats */
-		if (f1 & TR1_STR) p_ptr->stat_add[A_STR] += o_ptr->pval;
-		if (f1 & TR1_INT) p_ptr->stat_add[A_INT] += o_ptr->pval;
-		if (f1 & TR1_WIS) p_ptr->stat_add[A_WIS] += o_ptr->pval;
-		if (f1 & TR1_DEX) p_ptr->stat_add[A_DEX] += o_ptr->pval;
-		if (f1 & TR1_CON) p_ptr->stat_add[A_CON] += o_ptr->pval;
-		if (f1 & TR1_CHR) p_ptr->stat_add[A_CHR] += o_ptr->pval;
+		if (f1 & (TR1_STR)) p_ptr->stat_add[A_STR] += o_ptr->pval;
+		if (f1 & (TR1_INT)) p_ptr->stat_add[A_INT] += o_ptr->pval;
+		if (f1 & (TR1_WIS)) p_ptr->stat_add[A_WIS] += o_ptr->pval;
+		if (f1 & (TR1_DEX)) p_ptr->stat_add[A_DEX] += o_ptr->pval;
+		if (f1 & (TR1_CON)) p_ptr->stat_add[A_CON] += o_ptr->pval;
+		if (f1 & (TR1_CHR)) p_ptr->stat_add[A_CHR] += o_ptr->pval;
 
 		/* Affect stealth */
-		if (f1 & TR1_STEALTH) p_ptr->skill_stl += o_ptr->pval;
+		if (f1 & (TR1_STEALTH)) p_ptr->skill_stl += o_ptr->pval;
 
 		/* Affect searching ability (factor of five) */
-		if (f1 & TR1_SEARCH) p_ptr->skill_srh += (o_ptr->pval * 5);
+		if (f1 & (TR1_SEARCH)) p_ptr->skill_srh += (o_ptr->pval * 5);
 
 		/* Affect searching frequency (factor of five) */
-		if (f1 & TR1_SEARCH) p_ptr->skill_fos += (o_ptr->pval * 5);
+		if (f1 & (TR1_SEARCH)) p_ptr->skill_fos += (o_ptr->pval * 5);
 
 		/* Affect infravision */
-		if (f1 & TR1_INFRA) p_ptr->see_infra += o_ptr->pval;
+		if (f1 & (TR1_INFRA)) p_ptr->see_infra += o_ptr->pval;
 
 		/* Affect digging (factor of 20) */
-		if (f1 & TR1_TUNNEL) p_ptr->skill_dig += (o_ptr->pval * 20);
+		if (f1 & (TR1_TUNNEL)) p_ptr->skill_dig += (o_ptr->pval * 20);
 
 		/* Affect speed */
-		if (f1 & TR1_SPEED) p_ptr->pspeed += o_ptr->pval;
+		if (f1 & (TR1_SPEED)) p_ptr->pspeed += o_ptr->pval;
 
 		/* Affect blows */
-		if (f1 & TR1_BLOWS) extra_blows += o_ptr->pval;
+		if (f1 & (TR1_BLOWS)) extra_blows += o_ptr->pval;
 
 		/* Hack -- cause earthquakes */
-		if (f1 & TR1_IMPACT) p_ptr->impact = TRUE;
+		if (f1 & (TR1_IMPACT)) p_ptr->impact = TRUE;
 
 		/* Boost shots */
-		if (f3 & TR3_XTRA_SHOTS) extra_shots++;
+		if (f3 & (TR3_XTRA_SHOTS)) extra_shots++;
 
 		/* Various flags */
-		if (f3 & TR3_AGGRAVATE) p_ptr->aggravate = TRUE;
-		if (f3 & TR3_TELEPORT) p_ptr->teleport = TRUE;
-		if (f3 & TR3_DRAIN_EXP) p_ptr->exp_drain = TRUE;
-		if (f3 & TR3_BLESSED) p_ptr->bless_blade = TRUE;
-		if (f3 & TR3_XTRA_MIGHT) p_ptr->xtra_might = TRUE;
-		if (f3 & TR3_SLOW_DIGEST) p_ptr->slow_digest = TRUE;
-		if (f3 & TR3_REGEN) p_ptr->regenerate = TRUE;
-		if (f3 & TR3_TELEPATHY) p_ptr->telepathy = TRUE;
-		if (f3 & TR3_LITE) p_ptr->lite = TRUE;
-		if (f3 & TR3_SEE_INVIS) p_ptr->see_inv = TRUE;
-		if (f3 & TR3_FEATHER) p_ptr->ffall = TRUE;
-		if (f2 & TR2_FREE_ACT) p_ptr->free_act = TRUE;
-		if (f2 & TR2_HOLD_LIFE) p_ptr->hold_life = TRUE;
+		if (f3 & (TR3_AGGRAVATE)) p_ptr->aggravate = TRUE;
+		if (f3 & (TR3_TELEPORT)) p_ptr->teleport = TRUE;
+		if (f3 & (TR3_DRAIN_EXP)) p_ptr->exp_drain = TRUE;
+		if (f3 & (TR3_BLESSED)) p_ptr->bless_blade = TRUE;
+		if (f3 & (TR3_XTRA_MIGHT)) p_ptr->xtra_might = TRUE;
+		if (f3 & (TR3_SLOW_DIGEST)) p_ptr->slow_digest = TRUE;
+		if (f3 & (TR3_REGEN)) p_ptr->regenerate = TRUE;
+		if (f3 & (TR3_TELEPATHY)) p_ptr->telepathy = TRUE;
+		if (f3 & (TR3_LITE)) p_ptr->lite = TRUE;
+		if (f3 & (TR3_SEE_INVIS)) p_ptr->see_inv = TRUE;
+		if (f3 & (TR3_FEATHER)) p_ptr->ffall = TRUE;
+		if (f2 & (TR2_FREE_ACT)) p_ptr->free_act = TRUE;
+		if (f2 & (TR2_HOLD_LIFE)) p_ptr->hold_life = TRUE;
 
 		/* Immunity flags */
-		if (f2 & TR2_IM_FIRE) p_ptr->immune_fire = TRUE;
-		if (f2 & TR2_IM_ACID) p_ptr->immune_acid = TRUE;
-		if (f2 & TR2_IM_COLD) p_ptr->immune_cold = TRUE;
-		if (f2 & TR2_IM_ELEC) p_ptr->immune_elec = TRUE;
+		if (f2 & (TR2_IM_FIRE)) p_ptr->immune_fire = TRUE;
+		if (f2 & (TR2_IM_ACID)) p_ptr->immune_acid = TRUE;
+		if (f2 & (TR2_IM_COLD)) p_ptr->immune_cold = TRUE;
+		if (f2 & (TR2_IM_ELEC)) p_ptr->immune_elec = TRUE;
 
 		/* Resistance flags */
-		if (f2 & TR2_RES_ACID) p_ptr->resist_acid = TRUE;
-		if (f2 & TR2_RES_ELEC) p_ptr->resist_elec = TRUE;
-		if (f2 & TR2_RES_FIRE) p_ptr->resist_fire = TRUE;
-		if (f2 & TR2_RES_COLD) p_ptr->resist_cold = TRUE;
-		if (f2 & TR2_RES_POIS) p_ptr->resist_pois = TRUE;
-		if (f2 & TR2_RES_CONF) p_ptr->resist_conf = TRUE;
-		if (f2 & TR2_RES_SOUND) p_ptr->resist_sound = TRUE;
-		if (f2 & TR2_RES_LITE) p_ptr->resist_lite = TRUE;
-		if (f2 & TR2_RES_DARK) p_ptr->resist_dark = TRUE;
-		if (f2 & TR2_RES_CHAOS) p_ptr->resist_chaos = TRUE;
-		if (f2 & TR2_RES_DISEN) p_ptr->resist_disen = TRUE;
-		if (f2 & TR2_RES_SHARDS) p_ptr->resist_shard = TRUE;
-		if (f2 & TR2_RES_NEXUS) p_ptr->resist_nexus = TRUE;
-		if (f2 & TR2_RES_BLIND) p_ptr->resist_blind = TRUE;
-		if (f2 & TR2_RES_NETHER) p_ptr->resist_neth = TRUE;
+		if (f2 & (TR2_RES_ACID)) p_ptr->resist_acid = TRUE;
+		if (f2 & (TR2_RES_ELEC)) p_ptr->resist_elec = TRUE;
+		if (f2 & (TR2_RES_FIRE)) p_ptr->resist_fire = TRUE;
+		if (f2 & (TR2_RES_COLD)) p_ptr->resist_cold = TRUE;
+		if (f2 & (TR2_RES_POIS)) p_ptr->resist_pois = TRUE;
+		if (f2 & (TR2_RES_CONF)) p_ptr->resist_conf = TRUE;
+		if (f2 & (TR2_RES_SOUND)) p_ptr->resist_sound = TRUE;
+		if (f2 & (TR2_RES_LITE)) p_ptr->resist_lite = TRUE;
+		if (f2 & (TR2_RES_DARK)) p_ptr->resist_dark = TRUE;
+		if (f2 & (TR2_RES_CHAOS)) p_ptr->resist_chaos = TRUE;
+		if (f2 & (TR2_RES_DISEN)) p_ptr->resist_disen = TRUE;
+		if (f2 & (TR2_RES_SHARDS)) p_ptr->resist_shard = TRUE;
+		if (f2 & (TR2_RES_NEXUS)) p_ptr->resist_nexus = TRUE;
+		if (f2 & (TR2_RES_BLIND)) p_ptr->resist_blind = TRUE;
+		if (f2 & (TR2_RES_NETHER)) p_ptr->resist_neth = TRUE;
 
 		/* Sustain flags */
-		if (f2 & TR2_SUST_STR) p_ptr->sustain_str = TRUE;
-		if (f2 & TR2_SUST_INT) p_ptr->sustain_int = TRUE;
-		if (f2 & TR2_SUST_WIS) p_ptr->sustain_wis = TRUE;
-		if (f2 & TR2_SUST_DEX) p_ptr->sustain_dex = TRUE;
-		if (f2 & TR2_SUST_CON) p_ptr->sustain_con = TRUE;
-		if (f2 & TR2_SUST_CHR) p_ptr->sustain_chr = TRUE;
+		if (f2 & (TR2_SUST_STR)) p_ptr->sustain_str = TRUE;
+		if (f2 & (TR2_SUST_INT)) p_ptr->sustain_int = TRUE;
+		if (f2 & (TR2_SUST_WIS)) p_ptr->sustain_wis = TRUE;
+		if (f2 & (TR2_SUST_DEX)) p_ptr->sustain_dex = TRUE;
+		if (f2 & (TR2_SUST_CON)) p_ptr->sustain_con = TRUE;
+		if (f2 & (TR2_SUST_CHR)) p_ptr->sustain_chr = TRUE;
 
 		/* Modify the base armor class */
 		p_ptr->ac += o_ptr->ac;
@@ -2517,14 +2586,14 @@ void notice_stuff(void)
 
 
 	/* Combine the pack */
-	if (p_ptr->notice & PN_COMBINE)
+	if (p_ptr->notice & (PN_COMBINE))
 	{
 		p_ptr->notice &= ~(PN_COMBINE);
 		combine_pack();
 	}
 
 	/* Reorder the pack */
-	if (p_ptr->notice & PN_REORDER)
+	if (p_ptr->notice & (PN_REORDER))
 	{
 		p_ptr->notice &= ~(PN_REORDER);
 		reorder_pack();
@@ -2541,31 +2610,31 @@ void update_stuff(void)
 	if (!p_ptr->update) return;
 
 
-	if (p_ptr->update & PU_BONUS)
+	if (p_ptr->update & (PU_BONUS))
 	{
 		p_ptr->update &= ~(PU_BONUS);
 		calc_bonuses();
 	}
 
-	if (p_ptr->update & PU_TORCH)
+	if (p_ptr->update & (PU_TORCH))
 	{
 		p_ptr->update &= ~(PU_TORCH);
 		calc_torch();
 	}
 
-	if (p_ptr->update & PU_HP)
+	if (p_ptr->update & (PU_HP))
 	{
 		p_ptr->update &= ~(PU_HP);
 		calc_hitpoints();
 	}
 
-	if (p_ptr->update & PU_MANA)
+	if (p_ptr->update & (PU_MANA))
 	{
 		p_ptr->update &= ~(PU_MANA);
 		calc_mana();
 	}
 
-	if (p_ptr->update & PU_SPELLS)
+	if (p_ptr->update & (PU_SPELLS))
 	{
 		p_ptr->update &= ~(PU_SPELLS);
 		calc_spells();
@@ -2580,47 +2649,47 @@ void update_stuff(void)
 	if (character_icky) return;
 
 
-	if (p_ptr->update & PU_UN_LITE)
+	if (p_ptr->update & (PU_UN_LITE))
 	{
 		p_ptr->update &= ~(PU_UN_LITE);
 		forget_lite();
 	}
 
-	if (p_ptr->update & PU_UN_VIEW)
+	if (p_ptr->update & (PU_UN_VIEW))
 	{
 		p_ptr->update &= ~(PU_UN_VIEW);
 		forget_view();
 	}
 
 
-	if (p_ptr->update & PU_VIEW)
+	if (p_ptr->update & (PU_VIEW))
 	{
 		p_ptr->update &= ~(PU_VIEW);
 		update_view();
 	}
 
-	if (p_ptr->update & PU_LITE)
+	if (p_ptr->update & (PU_LITE))
 	{
 		p_ptr->update &= ~(PU_LITE);
 		update_lite();
 	}
 
 
-	if (p_ptr->update & PU_FLOW)
+	if (p_ptr->update & (PU_FLOW))
 	{
 		p_ptr->update &= ~(PU_FLOW);
 		update_flow();
 	}
 
 
-	if (p_ptr->update & PU_DISTANCE)
+	if (p_ptr->update & (PU_DISTANCE))
 	{
 		p_ptr->update &= ~(PU_DISTANCE);
 		p_ptr->update &= ~(PU_MONSTERS);
 		update_monsters(TRUE);
 	}
 
-	if (p_ptr->update & PU_MONSTERS)
+	if (p_ptr->update & (PU_MONSTERS))
 	{
 		p_ptr->update &= ~(PU_MONSTERS);
 		update_monsters(FALSE);
@@ -2647,22 +2716,22 @@ void redraw_stuff(void)
 
 
 	/* Hack -- clear the screen */
-	if (p_ptr->redraw & PR_WIPE)
+	if (p_ptr->redraw & (PR_WIPE))
 	{
-		p_ptr->redraw &= ~PR_WIPE;
+		p_ptr->redraw &= ~(PR_WIPE);
 		msg_print(NULL);
 		Term_clear();
 	}
 
 
-	if (p_ptr->redraw & PR_MAP)
+	if (p_ptr->redraw & (PR_MAP))
 	{
 		p_ptr->redraw &= ~(PR_MAP);
 		prt_map();
 	}
 
 
-	if (p_ptr->redraw & PR_BASIC)
+	if (p_ptr->redraw & (PR_BASIC))
 	{
 		p_ptr->redraw &= ~(PR_BASIC);
 		p_ptr->redraw &= ~(PR_MISC | PR_TITLE | PR_STATS);
@@ -2672,32 +2741,32 @@ void redraw_stuff(void)
 		prt_frame_basic();
 	}
 
-	if (p_ptr->redraw & PR_MISC)
+	if (p_ptr->redraw & (PR_MISC))
 	{
 		p_ptr->redraw &= ~(PR_MISC);
 		prt_field(rp_ptr->title, ROW_RACE, COL_RACE);
 		prt_field(cp_ptr->title, ROW_CLASS, COL_CLASS);
 	}
 
-	if (p_ptr->redraw & PR_TITLE)
+	if (p_ptr->redraw & (PR_TITLE))
 	{
 		p_ptr->redraw &= ~(PR_TITLE);
 		prt_title();
 	}
 
-	if (p_ptr->redraw & PR_LEV)
+	if (p_ptr->redraw & (PR_LEV))
 	{
 		p_ptr->redraw &= ~(PR_LEV);
 		prt_level();
 	}
 
-	if (p_ptr->redraw & PR_EXP)
+	if (p_ptr->redraw & (PR_EXP))
 	{
 		p_ptr->redraw &= ~(PR_EXP);
 		prt_exp();
 	}
 
-	if (p_ptr->redraw & PR_STATS)
+	if (p_ptr->redraw & (PR_STATS))
 	{
 		p_ptr->redraw &= ~(PR_STATS);
 		prt_stat(A_STR);
@@ -2708,44 +2777,44 @@ void redraw_stuff(void)
 		prt_stat(A_CHR);
 	}
 
-	if (p_ptr->redraw & PR_ARMOR)
+	if (p_ptr->redraw & (PR_ARMOR))
 	{
 		p_ptr->redraw &= ~(PR_ARMOR);
 		prt_ac();
 	}
 
-	if (p_ptr->redraw & PR_HP)
+	if (p_ptr->redraw & (PR_HP))
 	{
 		p_ptr->redraw &= ~(PR_HP);
 		prt_hp();
 	}
 
-	if (p_ptr->redraw & PR_MANA)
+	if (p_ptr->redraw & (PR_MANA))
 	{
 		p_ptr->redraw &= ~(PR_MANA);
 		prt_sp();
 	}
 
-	if (p_ptr->redraw & PR_GOLD)
+	if (p_ptr->redraw & (PR_GOLD))
 	{
 		p_ptr->redraw &= ~(PR_GOLD);
 		prt_gold();
 	}
 
-	if (p_ptr->redraw & PR_DEPTH)
+	if (p_ptr->redraw & (PR_DEPTH))
 	{
 		p_ptr->redraw &= ~(PR_DEPTH);
 		prt_depth();
 	}
 
-	if (p_ptr->redraw & PR_HEALTH)
+	if (p_ptr->redraw & (PR_HEALTH))
 	{
 		p_ptr->redraw &= ~(PR_HEALTH);
 		health_redraw();
 	}
 
 
-	if (p_ptr->redraw & PR_EXTRA)
+	if (p_ptr->redraw & (PR_EXTRA))
 	{
 		p_ptr->redraw &= ~(PR_EXTRA);
 		p_ptr->redraw &= ~(PR_CUT | PR_STUN);
@@ -2756,61 +2825,61 @@ void redraw_stuff(void)
 		prt_frame_extra();
 	}
 
-	if (p_ptr->redraw & PR_CUT)
+	if (p_ptr->redraw & (PR_CUT))
 	{
 		p_ptr->redraw &= ~(PR_CUT);
 		prt_cut();
 	}
 
-	if (p_ptr->redraw & PR_STUN)
+	if (p_ptr->redraw & (PR_STUN))
 	{
 		p_ptr->redraw &= ~(PR_STUN);
 		prt_stun();
 	}
 
-	if (p_ptr->redraw & PR_HUNGER)
+	if (p_ptr->redraw & (PR_HUNGER))
 	{
 		p_ptr->redraw &= ~(PR_HUNGER);
 		prt_hunger();
 	}
 
-	if (p_ptr->redraw & PR_BLIND)
+	if (p_ptr->redraw & (PR_BLIND))
 	{
 		p_ptr->redraw &= ~(PR_BLIND);
 		prt_blind();
 	}
 
-	if (p_ptr->redraw & PR_CONFUSED)
+	if (p_ptr->redraw & (PR_CONFUSED))
 	{
 		p_ptr->redraw &= ~(PR_CONFUSED);
 		prt_confused();
 	}
 
-	if (p_ptr->redraw & PR_AFRAID)
+	if (p_ptr->redraw & (PR_AFRAID))
 	{
 		p_ptr->redraw &= ~(PR_AFRAID);
 		prt_afraid();
 	}
 
-	if (p_ptr->redraw & PR_POISONED)
+	if (p_ptr->redraw & (PR_POISONED))
 	{
 		p_ptr->redraw &= ~(PR_POISONED);
 		prt_poisoned();
 	}
 
-	if (p_ptr->redraw & PR_STATE)
+	if (p_ptr->redraw & (PR_STATE))
 	{
 		p_ptr->redraw &= ~(PR_STATE);
 		prt_state();
 	}
 
-	if (p_ptr->redraw & PR_SPEED)
+	if (p_ptr->redraw & (PR_SPEED))
 	{
 		p_ptr->redraw &= ~(PR_SPEED);
 		prt_speed();
 	}
 
-	if (p_ptr->redraw & PR_STUDY)
+	if (p_ptr->redraw & (PR_STUDY))
 	{
 		p_ptr->redraw &= ~(PR_STUDY);
 		prt_study();
@@ -2823,56 +2892,82 @@ void redraw_stuff(void)
  */
 void window_stuff(void)
 {
-	/* Window stuff */
+	int j;
+	
+	u32b mask = 0L;
+
+
+	/* Nothing to do */
 	if (!p_ptr->window) return;
 
+	/* Scan windows */
+	for (j = 0; j < 8; j++)
+	{
+		/* Save usable flags */
+		if (angband_term[j]) mask |= window_flag[j];
+	}
+
+	/* Apply usable flags */
+	p_ptr->window &= mask;
+
+	/* Nothing to do */
+	if (!p_ptr->window) return;
+
+
 	/* Display inventory */
-	if (p_ptr->window & PW_INVEN)
+	if (p_ptr->window & (PW_INVEN))
 	{
 		p_ptr->window &= ~(PW_INVEN);
 		fix_inven();
 	}
 
 	/* Display equipment */
-	if (p_ptr->window & PW_EQUIP)
+	if (p_ptr->window & (PW_EQUIP))
 	{
 		p_ptr->window &= ~(PW_EQUIP);
 		fix_equip();
 	}
 
 	/* Display spell list */
-	if (p_ptr->window & PW_SPELL)
+	if (p_ptr->window & (PW_SPELL))
 	{
 		p_ptr->window &= ~(PW_SPELL);
 		fix_spell();
 	}
 
 	/* Display player */
-	if (p_ptr->window & PW_PLAYER)
+	if (p_ptr->window & (PW_PLAYER))
 	{
 		p_ptr->window &= ~(PW_PLAYER);
 		fix_player();
 	}
 
 	/* Display overhead view */
-	if (p_ptr->window & PW_MESSAGE)
+	if (p_ptr->window & (PW_MESSAGE))
 	{
 		p_ptr->window &= ~(PW_MESSAGE);
 		fix_message();
 	}
 
 	/* Display overhead view */
-	if (p_ptr->window & PW_OVERHEAD)
+	if (p_ptr->window & (PW_OVERHEAD))
 	{
 		p_ptr->window &= ~(PW_OVERHEAD);
 		fix_overhead();
 	}
 
 	/* Display monster recall */
-	if (p_ptr->window & PW_MONSTER)
+	if (p_ptr->window & (PW_MONSTER))
 	{
 		p_ptr->window &= ~(PW_MONSTER);
 		fix_monster();
+	}
+
+	/* Display object recall */
+	if (p_ptr->window & (PW_OBJECT))
+	{
+		p_ptr->window &= ~(PW_OBJECT);
+		fix_object();
 	}
 }
 
