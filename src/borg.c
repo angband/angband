@@ -18,14 +18,6 @@
 
 
 
-/*
- * Hack -- make sure we have a good "ANSI" definition for "CTRL()"
- */
-#undef CTRL
-#define CTRL(C) ((C)&037)
-
-
-
 
 /*
  * Some variables
@@ -184,8 +176,12 @@ const char b1 = '[', b2 = ']';
 errr borg_what_text(int x, int y, int n, byte *a, char *s)
 {
     int i;
+
     byte t_a;
     char t_c;
+
+    byte *aa;
+    char *cc;
 
     /* Max length to scan for */
     int m = ABS(n);
@@ -193,10 +189,13 @@ errr borg_what_text(int x, int y, int n, byte *a, char *s)
     /* Hack -- Do not run off the screen */
     if (x + m > 80) m = 80 - x;
 
+    /* Direct access XXX XXX */
+    aa = &(Term->old->a[y][x]);
+    cc = &(Term->old->c[y][x]);
 
-    /* Direct access to the screen */
-    t_a = Term->scr->a[y][x];
-    t_c = Term->scr->c[y][x];
+    /* Access */
+    t_a = aa[0];
+    t_c = cc[0];
 
     /* Mega-Hack */
     if (!t_c) t_c = ' ';
@@ -208,8 +207,8 @@ errr borg_what_text(int x, int y, int n, byte *a, char *s)
     for (i = 0; i < m; i++) {
 
         /* Direct access to the screen */
-        t_a = Term->scr->a[y][x+i];
-        t_c = Term->scr->c[y][x+i];
+        t_a = aa[i];
+        t_c = cc[i];
 
         /* Mega-Hack */
         if (!t_c) t_c = ' ';
@@ -244,19 +243,26 @@ errr borg_what_text(int x, int y, int n, byte *a, char *s)
 errr borg_what_text_hack(int x, int y, int n, byte *a, char *s)
 {
     int i;
+
     byte t_a;
     char t_c;
 
+    byte *aa;
+    char *cc;
+    
     /* Max length to scan for */
     int m = ABS(n);
 
     /* Hack -- Do not run off the screen */
     if (x + m > 80) m = 80 - x;
 
+    /* Direct access XXX XXX */
+    aa = &(Term->old->a[y][x]);
+    cc = &(Term->old->c[y][x]);
 
-    /* Direct access to the screen */
-    t_a = Term->scr->a[y][x];
-    t_c = Term->scr->c[y][x];
+    /* Access */
+    t_a = aa[0];
+    t_c = cc[0];
 
     /* Mega-Hack */
     if (!t_c) t_c = ' ';
@@ -267,9 +273,9 @@ errr borg_what_text_hack(int x, int y, int n, byte *a, char *s)
     /* Scan for the rest */
     for (i = 0; i < m; i++) {
 
-        /* Direct access to the screen */
-        t_a = Term->scr->a[y][x+i];
-        t_c = Term->scr->c[y][x+i];
+        /* Access */
+        t_a = aa[i];
+        t_c = cc[i];
 
         /* Mega-Hack */
         if (!t_c) t_c = ' ';
@@ -324,6 +330,8 @@ void borg_note(cptr what)
 
 #ifdef BORG_NOTE_ROWS
 
+#ifdef GRAPHIC_MIRROR
+
     /* Use the "mirror" window */
     if (term_mirror) {
 
@@ -350,6 +358,8 @@ void borg_note(cptr what)
         /* Use correct window */
         Term_activate(term_screen);
     }
+
+#endif
 
 #endif
 
@@ -798,7 +808,6 @@ void borg_update_frame(void)
 }
 
 
-
 /*
  * Initialize the "borg.c" file
  */
@@ -807,9 +816,6 @@ void borg_init(void)
     /* Allocate the "keypress queue" */
     C_MAKE(auto_key_queue, KEY_SIZE, char);
 }
-
-
-
 
 
 #else

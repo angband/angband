@@ -148,25 +148,25 @@ void init_file_paths(char *path)
 
 #ifdef NeXT
 
-    /* Block */
+    /* Allow "fat binary" usage with NeXT */
     if (TRUE) {
 
         cptr next = "";
 
 # if defined(m68k)
-        next = "m68k."
+        next = "m68k.";
 # endif
 
 # if defined(i386)
-        next = "i386."
+        next = "i386.";
 # endif
 
 # if defined(sparc)
-        next = "sparc."
+        next = "sparc.";
 # endif
 
 # if defined(hppa)
-        next = "hppa."
+        next = "hppa.";
 # endif
 
         /* Forget the old path name */
@@ -177,13 +177,46 @@ void init_file_paths(char *path)
         ANGBAND_DIR_DATA = string_make(path);
     }
 
-#endif
+#endif /* NeXT */
+
+#ifdef VM
+
+    /* Allow "flat directory" usage with VM/ESA */
+    if (TRUE) {
+
+        /* Forget the old path names */
+        string_free(ANGBAND_DIR_APEX);
+        string_free(ANGBAND_DIR_BONE);
+        string_free(ANGBAND_DIR_DATA);
+        string_free(ANGBAND_DIR_EDIT);
+        string_free(ANGBAND_DIR_FILE);
+        string_free(ANGBAND_DIR_HELP);
+        string_free(ANGBAND_DIR_INFO);
+        string_free(ANGBAND_DIR_SAVE);
+        string_free(ANGBAND_DIR_USER);
+        string_free(ANGBAND_DIR_XTRA);
+
+        /* Use "blank" path names */
+        ANGBAND_DIR_APEX = string_make("");
+        ANGBAND_DIR_BONE = string_make("");
+        ANGBAND_DIR_DATA = string_make("");
+        ANGBAND_DIR_EDIT = string_make("");
+        ANGBAND_DIR_FILE = string_make("");
+        ANGBAND_DIR_HELP = string_make("");
+        ANGBAND_DIR_INFO = string_make("");
+        ANGBAND_DIR_SAVE = string_make("");
+        ANGBAND_DIR_USER = string_make("");
+        ANGBAND_DIR_XTRA = string_make("");
+    }
+
+#endif /* VM */
 
 
     /*** Verify the "news" file ***/
 
-    /* Hack -- attempt to access the "news" file */
-    sprintf(path, "%s%s", ANGBAND_DIR_FILE, "news.txt");
+    /* Access the "news.txt" file */
+    strcpy(path, ANGBAND_DIR_FILE);
+    strcat(path, "news.txt");
 
     /* Attempt to open the file */
     fd = fd_open(path, O_RDONLY, 0);
@@ -207,8 +240,9 @@ void init_file_paths(char *path)
 
     /*** Verify (or create) the "high score" file ***/
 
-    /* Hack -- attempt to access the "high scores" file */
-    sprintf(path, "%s%s", ANGBAND_DIR_APEX, "scores.raw");
+    /* Access the high score file */
+    strcpy(path, ANGBAND_DIR_APEX);
+    strcat(path, "scores.raw");
 
     /* Attempt to open the high score file */
     fd = fd_open(path, O_RDONLY | O_BINARY, 0);
@@ -588,7 +622,7 @@ static cptr r_info_flags6[] = {
     "S_ANT",
     "S_SPIDER",
     "S_HOUND",
-    "S_REPTILE",
+    "S_HYDRA",
     "S_ANGEL",
     "S_DEMON",
     "S_UNDEAD",
@@ -2472,7 +2506,7 @@ static errr init_r_info_txt(FILE *fp, char *buf)
     ++r_head->text_size;
 
 
-    /* XXX XXX XXX XXX XXX */
+    /* XXX XXX XXX XXX */
 
     /* Mega-Hack -- acquire "ghost" */
     r_ptr = &r_info[MAX_R_IDX-1];
@@ -2551,21 +2585,26 @@ static errr init_f_info_raw(int fd)
     /* Allocate the "f_info" array */
     C_MAKE(f_info, f_head->info_num, feature_type);
 
-    /* Allocate the "k_name" array */
-    C_MAKE(f_name, f_head->name_size, char);
-
-    /* Allocate the "k_text" array */
-    C_MAKE(f_text, f_head->text_size, char);
-
-
     /* Read the "f_info" array */
     fd_read(fd, (char*)(f_info), f_head->info_size);
+
+
+    /* Allocate the "f_name" array */
+    C_MAKE(f_name, f_head->name_size, char);
 
     /* Read the "f_name" array */
     fd_read(fd, (char*)(f_name), f_head->name_size);
 
+
+#ifndef DELAY_LOAD_F_TEXT
+
+    /* Allocate the "f_text" array */
+    C_MAKE(f_text, f_head->text_size, char);
+
     /* Read the "f_text" array */
     fd_read(fd, (char*)(f_text), f_head->text_size);
+
+#endif
 
 
     /* Success */
@@ -2618,8 +2657,9 @@ static errr init_f_info(void)
 
     /*** Load the binary image file ***/
 
-    /* Construct the name of the "raw" file */
-    sprintf(buf, "%s%s", ANGBAND_DIR_DATA, "f_info.raw");
+    /* Access the "f_info.raw" file */
+    strcpy(buf, ANGBAND_DIR_DATA);
+    strcat(buf, "f_info.raw");
 
     /* Attempt to open the "raw" file */
     fd = fd_open(buf, O_RDONLY | O_BINARY, 0);
@@ -2658,8 +2698,9 @@ static errr init_f_info(void)
 
     /*** Load the ascii template file ***/
 
-    /* Access the "k_info.txt" file */
-    sprintf(buf, "%s%s", ANGBAND_DIR_EDIT, "f_info.txt");
+    /* Access the "f_info.txt" file */
+    strcpy(buf, ANGBAND_DIR_EDIT);
+    strcat(buf, "f_info.txt");
 
     /* Open the file */
     fp = my_fopen(buf, "r");
@@ -2699,8 +2740,9 @@ static errr init_f_info(void)
     _ftype = 'DATA';
 #endif
 
-    /* Construct the name of the raw file */
-    sprintf(buf, "%s%s", ANGBAND_DIR_DATA, "f_info.raw");
+    /* Access the "f_info.raw" file */
+    strcpy(buf, ANGBAND_DIR_DATA);
+    strcat(buf, "f_info.raw");
 
     /* Attempt to create the raw file */
     fd = fd_open(buf, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, mode);
@@ -2743,8 +2785,9 @@ static errr init_f_info(void)
 
     /*** Load the binary image file ***/
 
-    /* Construct the name of the "raw" file */
-    sprintf(buf, "%s%s", ANGBAND_DIR_DATA, "f_info.raw");
+    /* Access the "f_info.raw" file */
+    strcpy(buf, ANGBAND_DIR_DATA);
+    strcat(buf, "f_info.raw");
 
     /* Attempt to open the "raw" file */
     fd = fd_open(buf, O_RDONLY | O_BINARY, 0);
@@ -2800,21 +2843,26 @@ static errr init_k_info_raw(int fd)
     /* Allocate the "k_info" array */
     C_MAKE(k_info, k_head->info_num, inven_kind);
 
-    /* Allocate the "k_name" array */
-    C_MAKE(k_name, k_head->name_size, char);
-
-    /* Allocate the "k_text" array */
-    C_MAKE(k_text, k_head->text_size, char);
-
-
     /* Read the "k_info" array */
     fd_read(fd, (char*)(k_info), k_head->info_size);
+
+
+    /* Allocate the "k_name" array */
+    C_MAKE(k_name, k_head->name_size, char);
 
     /* Read the "k_name" array */
     fd_read(fd, (char*)(k_name), k_head->name_size);
 
+
+#ifndef DELAY_LOAD_K_TEXT
+
+    /* Allocate the "k_text" array */
+    C_MAKE(k_text, k_head->text_size, char);
+
     /* Read the "k_text" array */
     fd_read(fd, (char*)(k_text), k_head->text_size);
+
+#endif
 
 
     /* Success */
@@ -2867,8 +2915,9 @@ static errr init_k_info(void)
 
     /*** Load the binary image file ***/
 
-    /* Construct the name of the "raw" file */
-    sprintf(buf, "%s%s", ANGBAND_DIR_DATA, "k_info.raw");
+    /* Access the "k_info.raw" file */
+    strcpy(buf, ANGBAND_DIR_DATA);
+    strcat(buf, "k_info.raw");
 
     /* Attempt to open the "raw" file */
     fd = fd_open(buf, O_RDONLY | O_BINARY, 0);
@@ -2908,7 +2957,8 @@ static errr init_k_info(void)
     /*** Load the ascii template file ***/
 
     /* Access the "k_info.txt" file */
-    sprintf(buf, "%s%s", ANGBAND_DIR_EDIT, "k_info.txt");
+    strcpy(buf, ANGBAND_DIR_EDIT);
+    strcat(buf, "k_info.txt");
 
     /* Open the file */
     fp = my_fopen(buf, "r");
@@ -2948,8 +2998,9 @@ static errr init_k_info(void)
     _ftype = 'DATA';
 #endif
 
-    /* Construct the name of the raw file */
-    sprintf(buf, "%s%s", ANGBAND_DIR_DATA, "k_info.raw");
+    /* Access the "k_info.raw" file */
+    strcpy(buf, ANGBAND_DIR_DATA);
+    strcat(buf, "k_info.raw");
 
     /* Attempt to create the raw file */
     fd = fd_open(buf, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, mode);
@@ -2992,8 +3043,9 @@ static errr init_k_info(void)
 
     /*** Load the binary image file ***/
 
-    /* Construct the name of the "raw" file */
-    sprintf(buf, "%s%s", ANGBAND_DIR_DATA, "k_info.raw");
+    /* Access the "k_info.raw" file */
+    strcpy(buf, ANGBAND_DIR_DATA);
+    strcat(buf, "k_info.raw");
 
     /* Attempt to open the "raw" file */
     fd = fd_open(buf, O_RDONLY | O_BINARY, 0);
@@ -3049,21 +3101,26 @@ static errr init_a_info_raw(int fd)
     /* Allocate the "a_info" array */
     C_MAKE(a_info, a_head->info_num, artifact_type);
 
-    /* Allocate the "a_name" array */
-    C_MAKE(a_name, a_head->name_size, char);
-
-    /* Allocate the "a_text" array */
-    C_MAKE(a_text, a_head->text_size, char);
-
-
     /* Read the "a_info" array */
     fd_read(fd, (char*)(a_info), a_head->info_size);
+
+
+    /* Allocate the "a_name" array */
+    C_MAKE(a_name, a_head->name_size, char);
 
     /* Read the "a_name" array */
     fd_read(fd, (char*)(a_name), a_head->name_size);
 
+
+#ifndef DELAY_LOAD_A_TEXT
+
+    /* Allocate the "a_text" array */
+    C_MAKE(a_text, a_head->text_size, char);
+
     /* Read the "a_text" array */
     fd_read(fd, (char*)(a_text), a_head->text_size);
+
+#endif
 
 
     /* Success */
@@ -3116,8 +3173,9 @@ static errr init_a_info(void)
 
     /*** Load the binary image file ***/
 
-    /* Construct the name of the "raw" file */
-    sprintf(buf, "%s%s", ANGBAND_DIR_DATA, "a_info.raw");
+    /* Access the "a_info.raw" file */
+    strcpy(buf, ANGBAND_DIR_DATA);
+    strcat(buf, "a_info.raw");
 
     /* Attempt to open the "raw" file */
     fd = fd_open(buf, O_RDONLY | O_BINARY, 0);
@@ -3157,7 +3215,8 @@ static errr init_a_info(void)
     /*** Load the ascii template file ***/
 
     /* Access the "a_info.txt" file */
-    sprintf(buf, "%s%s", ANGBAND_DIR_EDIT, "a_info.txt");
+    strcpy(buf, ANGBAND_DIR_EDIT);
+    strcat(buf, "a_info.txt");
 
     /* Open the file */
     fp = my_fopen(buf, "r");
@@ -3197,8 +3256,9 @@ static errr init_a_info(void)
     _ftype = 'DATA';
 #endif
 
-    /* Construct the name of the raw file */
-    sprintf(buf, "%s%s", ANGBAND_DIR_DATA, "a_info.raw");
+    /* Access the "a_info.raw" file */
+    strcpy(buf, ANGBAND_DIR_DATA);
+    strcat(buf, "a_info.raw");
 
     /* Attempt to create the raw file */
     fd = fd_open(buf, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, mode);
@@ -3241,8 +3301,9 @@ static errr init_a_info(void)
 
     /*** Load the binary image file ***/
 
-    /* Construct the name of the "raw" file */
-    sprintf(buf, "%s%s", ANGBAND_DIR_DATA, "a_info.raw");
+    /* Access the "a_info.raw" file */
+    strcpy(buf, ANGBAND_DIR_DATA);
+    strcat(buf, "a_info.raw");
 
     /* Attempt to open the "raw" file */
     fd = fd_open(buf, O_RDONLY | O_BINARY, 0);
@@ -3298,21 +3359,26 @@ static errr init_e_info_raw(int fd)
     /* Allocate the "e_info" array */
     C_MAKE(e_info, e_head->info_num, ego_item_type);
 
-    /* Allocate the "e_name" array */
-    C_MAKE(e_name, e_head->name_size, char);
-
-    /* Allocate the "e_text" array */
-    C_MAKE(e_text, e_head->text_size, char);
-
-
     /* Read the "e_info" array */
     fd_read(fd, (char*)(e_info), e_head->info_size);
+
+
+    /* Allocate the "e_name" array */
+    C_MAKE(e_name, e_head->name_size, char);
 
     /* Read the "e_name" array */
     fd_read(fd, (char*)(e_name), e_head->name_size);
 
+
+#ifndef DELAY_LOAD_E_TEXT
+
+    /* Allocate the "e_text" array */
+    C_MAKE(e_text, e_head->text_size, char);
+
     /* Read the "e_text" array */
     fd_read(fd, (char*)(e_text), e_head->text_size);
+
+#endif
 
 
     /* Success */
@@ -3365,8 +3431,9 @@ static errr init_e_info(void)
 
     /*** Load the binary image file ***/
 
-    /* Construct the name of the "raw" file */
-    sprintf(buf, "%s%s", ANGBAND_DIR_DATA, "e_info.raw");
+    /* Access the "e_info.raw" file */
+    strcpy(buf, ANGBAND_DIR_DATA);
+    strcat(buf, "e_info.raw");
 
     /* Attempt to open the "raw" file */
     fd = fd_open(buf, O_RDONLY | O_BINARY, 0);
@@ -3406,7 +3473,8 @@ static errr init_e_info(void)
     /*** Load the ascii template file ***/
 
     /* Access the "e_info.txt" file */
-    sprintf(buf, "%s%s", ANGBAND_DIR_EDIT, "e_info.txt");
+    strcpy(buf, ANGBAND_DIR_EDIT);
+    strcat(buf, "e_info.txt");
 
     /* Open the file */
     fp = my_fopen(buf, "r");
@@ -3446,8 +3514,9 @@ static errr init_e_info(void)
     _ftype = 'DATA';
 #endif
 
-    /* Construct the name of the raw file */
-    sprintf(buf, "%s%s", ANGBAND_DIR_DATA, "e_info.raw");
+    /* Access the "e_info.raw" file */
+    strcpy(buf, ANGBAND_DIR_DATA);
+    strcat(buf, "e_info.raw");
 
     /* Attempt to create the raw file */
     fd = fd_open(buf, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, mode);
@@ -3490,8 +3559,9 @@ static errr init_e_info(void)
 
     /*** Load the binary image file ***/
 
-    /* Construct the name of the "raw" file */
-    sprintf(buf, "%s%s", ANGBAND_DIR_DATA, "e_info.raw");
+    /* Access the "e_info.raw" file */
+    strcpy(buf, ANGBAND_DIR_DATA);
+    strcat(buf, "e_info.raw");
 
     /* Attempt to open the "raw" file */
     fd = fd_open(buf, O_RDONLY | O_BINARY, 0);
@@ -3546,21 +3616,26 @@ static errr init_r_info_raw(int fd)
     /* Allocate the "r_info" array */
     C_MAKE(r_info, r_head->info_num, monster_race);
 
-    /* Allocate the "r_name" array */
-    C_MAKE(r_name, r_head->name_size, char);
-
-    /* Allocate the "r_text" array */
-    C_MAKE(r_text, r_head->text_size, char);
-
-
     /* Read the "r_info" array */
     fd_read(fd, (char*)(r_info), r_head->info_size);
+
+
+    /* Allocate the "r_name" array */
+    C_MAKE(r_name, r_head->name_size, char);
 
     /* Read the "r_name" array */
     fd_read(fd, (char*)(r_name), r_head->name_size);
 
+
+#ifndef DELAY_LOAD_R_TEXT
+
+    /* Allocate the "r_text" array */
+    C_MAKE(r_text, r_head->text_size, char);
+
     /* Read the "r_text" array */
     fd_read(fd, (char*)(r_text), r_head->text_size);
+
+#endif
 
 
     /* Success */
@@ -3613,8 +3688,9 @@ static errr init_r_info(void)
 
     /*** Load the binary image file ***/
 
-    /* Construct the name of the "raw" file */
-    sprintf(buf, "%s%s", ANGBAND_DIR_DATA, "r_info.raw");
+    /* Access the "r_info.raw" file */
+    strcpy(buf, ANGBAND_DIR_DATA);
+    strcat(buf, "r_info.raw");
 
     /* Attempt to open the "raw" file */
     fd = fd_open(buf, O_RDONLY | O_BINARY, 0);
@@ -3654,7 +3730,8 @@ static errr init_r_info(void)
     /*** Load the ascii template file ***/
 
     /* Access the "r_info.txt" file */
-    sprintf(buf, "%s%s", ANGBAND_DIR_EDIT, "r_info.txt");
+    strcpy(buf, ANGBAND_DIR_EDIT);
+    strcat(buf, "r_info.txt");
 
     /* Open the file */
     fp = my_fopen(buf, "r");
@@ -3694,8 +3771,9 @@ static errr init_r_info(void)
     _ftype = 'DATA';
 #endif
 
-    /* Construct the name of the raw file */
-    sprintf(buf, "%s%s", ANGBAND_DIR_DATA, "r_info.raw");
+    /* Access the "r_info.raw" file */
+    strcpy(buf, ANGBAND_DIR_DATA);
+    strcat(buf, "r_info.raw");
 
     /* Attempt to create the raw file */
     fd = fd_open(buf, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, mode);
@@ -3738,8 +3816,9 @@ static errr init_r_info(void)
 
     /*** Load the binary image file ***/
 
-    /* Construct the name of the "raw" file */
-    sprintf(buf, "%s%s", ANGBAND_DIR_DATA, "r_info.raw");
+    /* Access the "r_info.raw" file */
+    strcpy(buf, ANGBAND_DIR_DATA);
+    strcat(buf, "r_info.raw");
 
     /* Attempt to open the "raw" file */
     fd = fd_open(buf, O_RDONLY | O_BINARY, 0);
@@ -3795,22 +3874,26 @@ static errr init_v_info_raw(int fd)
     /* Allocate the "v_info" array */
     C_MAKE(v_info, v_head->info_num, vault_type);
 
-    /* Allocate the "k_name" array */
-    C_MAKE(v_name, v_head->name_size, char);
-
-    /* Allocate the "k_text" array */
-    C_MAKE(v_text, v_head->text_size, char);
-
-
     /* Read the "v_info" array */
     fd_read(fd, (char*)(v_info), v_head->info_size);
+
+
+    /* Allocate the "v_name" array */
+    C_MAKE(v_name, v_head->name_size, char);
 
     /* Read the "v_name" array */
     fd_read(fd, (char*)(v_name), v_head->name_size);
 
+
+#ifndef DELAY_LOAD_V_TEXT
+
+    /* Allocate the "v_text" array */
+    C_MAKE(v_text, v_head->text_size, char);
+
     /* Read the "v_text" array */
     fd_read(fd, (char*)(v_text), v_head->text_size);
 
+#endif
 
     /* Success */
     return (0);
@@ -3862,8 +3945,9 @@ static errr init_v_info(void)
 
     /*** Load the binary image file ***/
 
-    /* Construct the name of the "raw" file */
-    sprintf(buf, "%s%s", ANGBAND_DIR_DATA, "v_info.raw");
+    /* Access the "v_info.raw" file */
+    strcpy(buf, ANGBAND_DIR_DATA);
+    strcat(buf, "v_info.raw");
 
     /* Attempt to open the "raw" file */
     fd = fd_open(buf, O_RDONLY | O_BINARY, 0);
@@ -3903,7 +3987,8 @@ static errr init_v_info(void)
     /*** Load the ascii template file ***/
 
     /* Access the "v_info.txt" file */
-    sprintf(buf, "%s%s", ANGBAND_DIR_EDIT, "v_info.txt");
+    strcpy(buf, ANGBAND_DIR_EDIT);
+    strcat(buf, "v_info.txt");
 
     /* Open the file */
     fp = my_fopen(buf, "r");
@@ -3943,8 +4028,9 @@ static errr init_v_info(void)
     _ftype = 'DATA';
 #endif
 
-    /* Construct the name of the raw file */
-    sprintf(buf, "%s%s", ANGBAND_DIR_DATA, "v_info.raw");
+    /* Access the "v_info.raw" file */
+    strcpy(buf, ANGBAND_DIR_DATA);
+    strcat(buf, "v_info.raw");
 
     /* Attempt to create the raw file */
     fd = fd_open(buf, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, mode);
@@ -3987,8 +4073,9 @@ static errr init_v_info(void)
 
     /*** Load the binary image file ***/
 
-    /* Construct the name of the "raw" file */
-    sprintf(buf, "%s%s", ANGBAND_DIR_DATA, "v_info.raw");
+    /* Access the "v_info.raw" file */
+    strcpy(buf, ANGBAND_DIR_DATA);
+    strcat(buf, "v_info.raw");
 
     /* Attempt to open the "raw" file */
     fd = fd_open(buf, O_RDONLY | O_BINARY, 0);
@@ -4275,15 +4362,18 @@ static errr init_other(void)
 
     /*** Prepare the various "bizarre" arrays ***/
 
-    /* Macro's */
+    /* Macro variables */
     C_MAKE(macro__pat, MACRO_MAX, cptr);
     C_MAKE(macro__act, MACRO_MAX, cptr);
     C_MAKE(macro__cmd, MACRO_MAX, bool);
 
-    /* Quark's */
+    /* Macro action buffer */
+    C_MAKE(macro__buf, 1024, char);
+
+    /* Quark variables */
     C_MAKE(quark__str, QUARK_MAX, cptr);
 
-    /* Message's */
+    /* Message variables */
     C_MAKE(message__ptr, MESSAGE_MAX, u16b);
     C_MAKE(message__buf, MESSAGE_BUF, char);
 
@@ -4327,8 +4417,10 @@ static errr init_other(void)
     }
 
     /* Combine the "alloc_kind_index" entries */
-    for (i = 1; i < MAX_DEPTH; i++) alloc_kind_index[i] += alloc_kind_index[i-1];
-
+    for (i = 1; i < MAX_DEPTH; i++) {
+        alloc_kind_index[i] += alloc_kind_index[i-1];
+    }
+    
     /* Allocate the table */
     C_MAKE(alloc_kind_table, alloc_kind_size, kind_entry);
 

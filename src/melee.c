@@ -157,7 +157,6 @@ static void update_smart_learn(int m_idx, int what)
 
       case DRS_CONF:
         if (p_ptr->resist_conf) m_ptr->smart |= SM_RES_CONF;
-        if (p_ptr->resist_chaos) m_ptr->smart |= SM_RES_CHAOS;
         break;
 
       case DRS_CHAOS:
@@ -804,15 +803,18 @@ bool make_attack_normal(int m_idx)
 
               case RBE_POISON:
 
-                /* Obvious */
-                obvious = TRUE;
-
+                /* Take some damage */
                 take_hit(damage, ddesc);
-                if (add_poisoned(randint(rlev) + 5)) {
-                    msg_print("You feel very sick.");
-                }
-                else {
-                    msg_print("The poison has no effect.");
+
+                /* Take "poison" effect */
+                if (!(p_ptr->resist_pois ||
+                      p_ptr->oppose_pois ||
+                      p_ptr->immune_pois)) {
+
+                    if (set_poisoned(p_ptr->poisoned + randint(rlev) + 5)) {
+                        msg_print("You feel very sick.");
+                        obvious = TRUE;
+                    }
                 }
 
                 /* Learn about the player */
@@ -822,11 +824,11 @@ bool make_attack_normal(int m_idx)
 
               case RBE_UN_BONUS:
 
+                /* Take some damage */
+                take_hit(damage, ddesc);
+
                 /* Allow complete resist */
                 if (!p_ptr->resist_disen) {
-
-                    /* Take some damage */
-                    take_hit(damage, ddesc);
 
                     /* Apply disenchantment */
                     if (apply_disenchant(0)) obvious = TRUE;
@@ -838,6 +840,9 @@ bool make_attack_normal(int m_idx)
                 break;
 
               case RBE_UN_POWER:
+
+                /* Take some damage */
+                take_hit(damage, ddesc);
 
                 /* Find an item */
                 for (k = 0; k < 10; k++) {
@@ -870,6 +875,9 @@ bool make_attack_normal(int m_idx)
                         m_ptr->hp += j * i_ptr->pval * i_ptr->number;
                         if (m_ptr->hp > m_ptr->maxhp) m_ptr->hp = m_ptr->maxhp;
 
+                        /* Redraw (later) if needed */
+                        if (health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
+
                         /* Done */
                         break;
                     }
@@ -879,12 +887,16 @@ bool make_attack_normal(int m_idx)
 
               case RBE_EAT_GOLD:
 
+                /* Take some damage */
+                take_hit(damage, ddesc);
+
                 /* Obvious */
                 obvious = TRUE;
 
-                /* Saving throw (unless paralyzed) based on dexterity and level */
-                if (!p_ptr->paralysis &&
-                    (rand_int(100) < adj_dex_safe[p_ptr->stat_ind[A_DEX]] + p_ptr->lev)) {
+                /* Saving throw (unless paralyzed) based on dex and level */
+                if (!p_ptr->paralyzed &&
+                    (rand_int(100) < (adj_dex_safe[p_ptr->stat_ind[A_DEX]] +
+                                      p_ptr->lev))) {
 
                     /* Saving throw message */
                     msg_print("You quickly protect your money pouch!");
@@ -898,7 +910,7 @@ bool make_attack_normal(int m_idx)
 
                     gold = (p_ptr->au / 10) + randint(25);
                     if (gold < 2) gold = 2;
-                    if (gold > 5000) gold = 2000 + randint(1000) + (p_ptr->au / 20);
+                    if (gold > 5000) gold = (p_ptr->au / 20) + randint(3000);
                     if (gold > p_ptr->au) gold = p_ptr->au;
                     p_ptr->au -= gold;
                     if (gold <= 0) {
@@ -920,9 +932,13 @@ bool make_attack_normal(int m_idx)
 
               case RBE_EAT_ITEM:
 
-                /* Saving throw (unless paralyzed) based on dexterity and level */
-                if (!p_ptr->paralysis &&
-                    (rand_int(100) < adj_dex_safe[p_ptr->stat_ind[A_DEX]] + p_ptr->lev)) {
+                /* Take some damage */
+                take_hit(damage, ddesc);
+
+                /* Saving throw (unless paralyzed) based on dex and level */
+                if (!p_ptr->paralyzed &&
+                    (rand_int(100) < (adj_dex_safe[p_ptr->stat_ind[A_DEX]] +
+                                      p_ptr->lev))) {
 
                     /* Saving throw message */
                     msg_print("You grab hold of your backpack!");
@@ -981,6 +997,9 @@ bool make_attack_normal(int m_idx)
 
               case RBE_EAT_FOOD:
 
+                /* Take some damage */
+                take_hit(damage, ddesc);
+
                 /* Steal some food */
                 for (k = 0; k < 10; k++) {
 
@@ -1022,6 +1041,9 @@ bool make_attack_normal(int m_idx)
 
               case RBE_EAT_LITE:
 
+                /* Take some damage */
+                take_hit(damage, ddesc);
+
                 /* Access the lite */
                 i_ptr = &inventory[INVEN_LITE];
 
@@ -1049,7 +1071,10 @@ bool make_attack_normal(int m_idx)
                 /* Obvious */
                 obvious = TRUE;
 
+                /* Message */
                 msg_print("You are covered in acid!");
+
+                /* Special damage */
                 acid_dam(damage, ddesc);
 
                 /* Learn about the player */
@@ -1062,7 +1087,10 @@ bool make_attack_normal(int m_idx)
                 /* Obvious */
                 obvious = TRUE;
 
+                /* Message */
                 msg_print("You are struck by electricity!");
+
+                /* Special damage */
                 elec_dam(damage, ddesc);
 
                 /* Learn about the player */
@@ -1075,7 +1103,10 @@ bool make_attack_normal(int m_idx)
                 /* Obvious */
                 obvious = TRUE;
 
+                /* Message */
                 msg_print("You are enveloped in flames!");
+
+                /* Special damage */
                 fire_dam(damage, ddesc);
 
                 /* Learn about the player */
@@ -1088,7 +1119,10 @@ bool make_attack_normal(int m_idx)
                 /* Obvious */
                 obvious = TRUE;
 
+                /* Message */
                 msg_print("You are covered with frost!");
+
+                /* Special damage */
                 cold_dam(damage, ddesc);
 
                 /* Learn about the player */
@@ -1098,18 +1132,16 @@ bool make_attack_normal(int m_idx)
 
               case RBE_BLIND:
 
+                /* Take damage */
                 take_hit(damage, ddesc);
 
-                /* Initial blindness */
-                if (!p_ptr->blind) {
-                    if (add_blind(5 + randint(rlev))) {
+                /* Increase "blind" */
+                if (!p_ptr->resist_blind) {
+                    if (set_blind(p_ptr->blind + 10 + randint(rlev))) {
                         msg_print("Your eyes begin to sting.");
                         obvious = TRUE;
                     }
                 }
-
-                /* Base blindness */
-                add_blind(5);
 
                 /* Learn about the player */
                 update_smart_learn(m_idx, DRS_BLIND);
@@ -1118,18 +1150,16 @@ bool make_attack_normal(int m_idx)
 
               case RBE_CONFUSE:
 
+                /* Take damage */
                 take_hit(damage, ddesc);
 
-                /* Initial confusion */
-                if (!p_ptr->confused) {
-                    if (add_confused(randint(rlev))) {
+                /* Increase "confused" */
+                if (!p_ptr->resist_conf) {
+                    if (set_confused(p_ptr->confused + 3 + randint(rlev))) {
                         msg_print("You feel confused.");
                         obvious = TRUE;
                     }
                 }
-
-                /* Base confusion */
-                add_confused(3);
 
                 /* Learn about the player */
                 update_smart_learn(m_idx, DRS_CONF);
@@ -1138,20 +1168,23 @@ bool make_attack_normal(int m_idx)
 
               case RBE_TERRIFY:
 
-                /* Obvious */
-                obvious = TRUE;
-
+                /* Take damage */
                 take_hit(damage, ddesc);
-                if ((rand_int(100) < p_ptr->skill_sav) || p_ptr->resist_fear) {
+
+                /* Increase "afraid" */
+                if (p_ptr->resist_fear) {
                     msg_print("You stand your ground!");
+                    obvious = TRUE;
                 }
-                else if (!p_ptr->fear) {
-                    msg_print("You are suddenly afraid!");
-                    add_fear(3 + randint(rlev));
+                else if (rand_int(100) < p_ptr->skill_sav) {
+                    msg_print("You stand your ground!");
+                    obvious = TRUE;
                 }
                 else {
-                    add_fear(3);
-                    obvious = FALSE;
+                    if (set_afraid(p_ptr->afraid + 3 + randint(rlev))) {
+                        msg_print("You are suddenly afraid!");
+                        obvious = TRUE;
+                    }
                 }
 
                 /* Learn about the player */
@@ -1161,18 +1194,23 @@ bool make_attack_normal(int m_idx)
 
               case RBE_PARALYZE:
 
+                /* Take damage */
                 take_hit(damage, ddesc);
+                
+                /* Increase "paralyzed" */
                 if (p_ptr->free_act) {
-                    msg_print("You are unaffected.");
+                    msg_print("You are unaffected!");
+                    obvious = TRUE;
                 }
                 else if (rand_int(100) < p_ptr->skill_sav) {
                     msg_print("You resist the effects!");
                     obvious = TRUE;
                 }
-                else if (!p_ptr->paralysis) {
-                    msg_print("You are paralysed.");
-                    add_paralysis(3 + randint(rlev));
-                    obvious = TRUE;
+                else {
+                    if (set_paralyzed(p_ptr->paralyzed + 3 + randint(rlev))) {
+                        msg_print("You are paralyzed!");
+                        obvious = TRUE;
+                    }
                 }
 
                 /* Learn about the player */
@@ -1182,97 +1220,76 @@ bool make_attack_normal(int m_idx)
 
               case RBE_LOSE_STR:
 
-                /* Obvious */
-                obvious = TRUE;
-
                 /* Damage (physical) */
                 take_hit(damage, ddesc);
 
                 /* Damage (stat) */
-                (void)do_dec_stat(A_STR);
+                if (do_dec_stat(A_STR)) obvious = TRUE;
 
                 break;
 
               case RBE_LOSE_INT:
 
-                /* Obvious */
-                obvious = TRUE;
-
                 /* Damage (physical) */
                 take_hit(damage, ddesc);
 
                 /* Damage (stat) */
-                (void)do_dec_stat(A_INT);
+                if (do_dec_stat(A_INT)) obvious = TRUE;
 
                 break;
 
               case RBE_LOSE_WIS:
 
-                /* Obvious */
-                obvious = TRUE;
-
                 /* Damage (physical) */
                 take_hit(damage, ddesc);
 
                 /* Damage (stat) */
-                (void)do_dec_stat(A_WIS);
+                if (do_dec_stat(A_WIS)) obvious = TRUE;
 
                 break;
 
               case RBE_LOSE_DEX:
 
-                /* Obvious */
-                obvious = TRUE;
-
                 /* Damage (physical) */
                 take_hit(damage, ddesc);
 
                 /* Damage (stat) */
-                (void)do_dec_stat(A_DEX);
+                if (do_dec_stat(A_DEX)) obvious = TRUE;
 
                 break;
 
               case RBE_LOSE_CON:
 
-                /* Obvious */
-                obvious = TRUE;
-
                 /* Damage (physical) */
                 take_hit(damage, ddesc);
 
                 /* Damage (stat) */
-                (void)do_dec_stat(A_CON);
+                if (do_dec_stat(A_CON)) obvious = TRUE;
 
                 break;
 
               case RBE_LOSE_CHR:
 
-                /* Obvious */
-                obvious = TRUE;
-
                 /* Damage (physical) */
                 take_hit(damage, ddesc);
 
                 /* Damage (stat) */
-                (void)do_dec_stat(A_CHR);
+                if (do_dec_stat(A_CHR)) obvious = TRUE;
 
                 break;
 
               case RBE_LOSE_ALL:
 
-                /* Obvious */
-                obvious = TRUE;
-
                 /* Damage (physical) */
                 take_hit(damage, ddesc);
 
                 /* Damage (stats) */
-                (void)do_dec_stat(A_STR);
-                (void)do_dec_stat(A_DEX);
-                (void)do_dec_stat(A_CON);
-                (void)do_dec_stat(A_INT);
-                (void)do_dec_stat(A_WIS);
-                (void)do_dec_stat(A_CHR);
+                if (do_dec_stat(A_STR)) obvious = TRUE;
+                if (do_dec_stat(A_DEX)) obvious = TRUE;
+                if (do_dec_stat(A_CON)) obvious = TRUE;
+                if (do_dec_stat(A_INT)) obvious = TRUE;
+                if (do_dec_stat(A_WIS)) obvious = TRUE;
+                if (do_dec_stat(A_CHR)) obvious = TRUE;
 
                 break;
 
@@ -1297,7 +1314,9 @@ bool make_attack_normal(int m_idx)
                 /* Obvious */
                 obvious = TRUE;
 
+                /* Take damage */
                 take_hit(damage, ddesc);
+                
                 if (p_ptr->hold_life && (rand_int(100) < 95)) {
                     msg_print("You keep hold of your life force!");
                 }
@@ -1319,7 +1338,9 @@ bool make_attack_normal(int m_idx)
                 /* Obvious */
                 obvious = TRUE;
 
+                /* Take damage */
                 take_hit(damage, ddesc);
+
                 if (p_ptr->hold_life && (rand_int(100) < 90)) {
                     msg_print("You keep hold of your life force!");
                 }
@@ -1341,7 +1362,9 @@ bool make_attack_normal(int m_idx)
                 /* Obvious */
                 obvious = TRUE;
 
+                /* Take damage */
                 take_hit(damage, ddesc);
+
                 if (p_ptr->hold_life && (rand_int(100) < 75)) {
                     msg_print("You keep hold of your life force!");
                 }
@@ -1363,7 +1386,9 @@ bool make_attack_normal(int m_idx)
                 /* Obvious */
                 obvious = TRUE;
 
+                /* Take damage */
                 take_hit(damage, ddesc);
+
                 if (p_ptr->hold_life && (rand_int(100) < 50)) {
                     msg_print("You keep hold of your life force!");
                 }
@@ -2063,6 +2088,9 @@ bool make_attack_spell(int m_idx)
                 m_ptr->hp += (6 * r1);
                 if (m_ptr->hp > m_ptr->maxhp) m_ptr->hp = m_ptr->maxhp;
 
+                /* Redraw (later) if needed */
+                if (health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
+
                 /* Special message */
                 if (seen) {
                     msg_format("%^s appears healthier.", m_name);
@@ -2083,17 +2111,12 @@ bool make_attack_spell(int m_idx)
         }
 
         if (rand_int(100) < p_ptr->skill_sav) {
-            msg_print("You resist the effects.");
+            msg_print("You resist the effects!");
         }
         else {
             msg_print("Your mind is blasted by psionic energy.");
-            if ((!p_ptr->resist_conf) && (!p_ptr->resist_chaos)) {
-                if (p_ptr->confused) {
-                    add_confused(2);
-                }
-                else {
-                    add_confused(rand_int(5) + 4);
-                }
+            if (!p_ptr->resist_conf) {
+                (void)set_confused(p_ptr->confused + rand_int(4) + 4);
             }
             take_hit(damroll(8, 8), ddesc);
         }
@@ -2109,35 +2132,21 @@ bool make_attack_spell(int m_idx)
             msg_format("%^s looks deep into your eyes.", m_name);
         }
         if (rand_int(100) < p_ptr->skill_sav) {
-            msg_print("You resist the effects.");
+            msg_print("You resist the effects!");
         }
         else {
             msg_print("Your mind is blasted by psionic energy.");
             take_hit(damroll(12, 15), ddesc);
-            if (p_ptr->confused) {
-                add_confused(2);
+            if (!p_ptr->resist_blind) {
+                (void)set_blind(p_ptr->blind + 8 + rand_int(8));
             }
-            else {
-                add_confused(rand_int(5) + 4);
+            if (!p_ptr->resist_conf) {
+                (void)set_confused(p_ptr->confused + rand_int(4) + 4);
             }
-            if (p_ptr->paralysis) {
-                add_paralysis(2);
+            if (!p_ptr->free_act) {
+                (void)set_paralyzed(p_ptr->paralyzed + rand_int(4) + 4);
             }
-            else {
-                add_paralysis(rand_int(5) + 4);
-            }
-            if (p_ptr->slow) {
-                add_slow(2);
-            }
-            else {
-                add_slow(rand_int(5) + 4);
-            }
-            if (p_ptr->blind) {
-                add_blind(6);
-            }
-            else {
-                add_blind(13 + rand_int(3));
-            }
+            (void)set_slow(p_ptr->slow + rand_int(4) + 4);
         }
         break;
 
@@ -2147,7 +2156,7 @@ bool make_attack_spell(int m_idx)
         if (blind) msg_format("%^s mumbles.", m_name);
         else msg_format("%^s points at you and curses.", m_name);
         if (rand_int(100) < p_ptr->skill_sav) {
-            msg_print("You resist the effects of the spell.");
+            msg_print("You resist the effects!");
         }
         else {
             take_hit(damroll(3, 8), ddesc);
@@ -2160,7 +2169,7 @@ bool make_attack_spell(int m_idx)
         if (blind) msg_format("%^s mumbles.", m_name);
         else msg_format("%^s points at you and curses horribly.", m_name);
         if (rand_int(100) < p_ptr->skill_sav) {
-            msg_print("You resist the effects of the spell.");
+            msg_print("You resist the effects!");
         }
         else {
             take_hit(damroll(8, 8), ddesc);
@@ -2173,7 +2182,7 @@ bool make_attack_spell(int m_idx)
         if (blind) msg_format("%^s mumbles loudly.", m_name);
         else msg_format("%^s points at you, incanting terribly!", m_name);
         if (rand_int(100) < p_ptr->skill_sav) {
-            msg_print("You resist the effects of the spell.");
+            msg_print("You resist the effects!");
         }
         else {
             take_hit(damroll(10, 15), ddesc);
@@ -2186,7 +2195,7 @@ bool make_attack_spell(int m_idx)
         if (blind) msg_format("%^s screams the word 'DIE!'", m_name);
         else msg_format("%^s points at you, screaming the word DIE!", m_name);
         if (rand_int(100) < p_ptr->skill_sav) {
-            msg_print("You resist the effects of the spell.");
+            msg_print("You resist the effects!");
         }
         else {
             msg_print("You start to bleed!");
@@ -2290,15 +2299,14 @@ bool make_attack_spell(int m_idx)
         disturb(1, 0);
         if (blind) msg_format("%^s mumbles, and you hear scary noises.", m_name);
         else msg_format("%^s casts a fearful illusion.", m_name);
-        if ((rand_int(100) < p_ptr->skill_sav) ||
-            (p_ptr->resist_fear)) {
+        if (p_ptr->resist_fear) {
             msg_print("You refuse to be frightened.");
         }
-        else if (p_ptr->fear) {
-            add_fear(2);
+        else if (rand_int(100) < p_ptr->skill_sav) {
+            msg_print("You refuse to be frightened.");
         }
         else {
-            add_fear(rand_int(5) + 4);
+            (void)set_afraid(p_ptr->afraid + rand_int(4) + 4);
         }
         update_smart_learn(m_idx, DRS_FEAR);
         break;
@@ -2306,22 +2314,16 @@ bool make_attack_spell(int m_idx)
       case 128+28:    /* RF5_BLIND */
         if (!direct) break;
         disturb(1, 0);
-        if (blind) msg_format("%^s mumbles, and your eyes burn even more.", m_name);
+        if (blind) msg_format("%^s mumbles.", m_name);
         else msg_format("%^s casts a spell, burning your eyes!", m_name);
-        if ((rand_int(100) < p_ptr->skill_sav) ||
-            (p_ptr->resist_blind)) {
-            if (blind) {
-                msg_print("But the extra burning quickly fades away.");
-            }
-            else {
-                msg_print("You blink and your vision clears.");
-            }
+        if (p_ptr->resist_blind) {
+            msg_print("You are unaffected!");
         }
-        else if (p_ptr->blind) {
-            add_blind(6);
+        else if (rand_int(100) < p_ptr->skill_sav) {
+            msg_print("You resist the effects!");
         }
         else {
-            add_blind(13 + rand_int(3));
+            (void)set_blind(12 + rand_int(4));
         }
         update_smart_learn(m_idx, DRS_BLIND);
         break;
@@ -2331,16 +2333,14 @@ bool make_attack_spell(int m_idx)
         disturb(1, 0);
         if (blind) msg_format("%^s mumbles, and you hear puzzling noises.", m_name);
         else msg_format("%^s creates a mesmerising illusion.", m_name);
-        if ((rand_int(100) < p_ptr->skill_sav) ||
-            (p_ptr->resist_conf) ||
-            (p_ptr->resist_chaos)) {
+        if (p_ptr->resist_conf) {
             msg_print("You disbelieve the feeble spell.");
         }
-        else if (p_ptr->confused) {
-            add_confused(2);
+        else if (rand_int(100) < p_ptr->skill_sav) {
+            msg_print("You disbelieve the feeble spell.");
         }
         else {
-            add_confused(rand_int(5) + 4);
+            (void)set_confused(p_ptr->confused + rand_int(4) + 4);
         }
         update_smart_learn(m_idx, DRS_CONF);
         break;
@@ -2350,16 +2350,13 @@ bool make_attack_spell(int m_idx)
         disturb(1, 0);
         msg_format("%^s drains power from your muscles!", m_name);
         if (p_ptr->free_act) {
-            msg_print("You are unaffected.");
+            msg_print("You are unaffected!");
         }
         else if (rand_int(100) < p_ptr->skill_sav) {
-            msg_print("Your body resists the spell.");
-        }
-        else if (p_ptr->slow) {
-            add_slow(2);
+            msg_print("You resist the effects!");
         }
         else {
-            add_slow(rand_int(5) + 5);
+            (void)set_slow(p_ptr->slow + rand_int(4) + 4);
         }
         update_smart_learn(m_idx, DRS_FREE);
         break;
@@ -2370,16 +2367,13 @@ bool make_attack_spell(int m_idx)
         if (blind) msg_format("%^s mumbles.", m_name);
         else msg_format("%^s stares deep into your eyes!", m_name);
         if (p_ptr->free_act) {
-            msg_print("You are unaffected.");
+            msg_print("You are unaffected!");
         }
         else if (rand_int(100) < p_ptr->skill_sav) {
             msg_format("You resist the effects!");
         }
-        else if (p_ptr->paralysis) {
-            add_paralysis(2);
-        }
         else {
-            add_paralysis(rand_int(5) + 5);
+            (void)set_paralyzed(p_ptr->paralyzed + rand_int(4) + 4);
         }
         update_smart_learn(m_idx, DRS_FREE);
         break;
@@ -2454,6 +2448,9 @@ bool make_attack_spell(int m_idx)
             }
         }
 
+        /* Redraw (later) if needed */
+        if (health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
+
         /* Cancel fear */
         if (m_ptr->monfear) {
 
@@ -2510,10 +2507,11 @@ bool make_attack_spell(int m_idx)
         disturb(1, 0);
         if (blind) msg_format("%^s mumbles strangely.", m_name);
         else msg_format("%^s gestures at your feet.", m_name);
-        if (p_ptr->resist_nexus ||
-            (rand_int(100) < p_ptr->skill_sav) ||
-            rand_int(3)) {
-            msg_print("You keep your feet firmly on the ground.");
+        if (p_ptr->resist_nexus) {
+            msg_print("You are unaffected!");
+        }
+        else if (rand_int(100) < p_ptr->skill_sav) {
+            msg_print("You resist the effects!");
         }
         else {
             tele_level();
@@ -2545,9 +2543,8 @@ bool make_attack_spell(int m_idx)
         disturb(1, 0);
         msg_format("%^s tries to blank your mind.", m_name);
 
-        if ((rand_int(100) < p_ptr->skill_sav) ||
-            (rand_int(100) < 50)) {
-            msg_print("You resist the spell.");
+        if (rand_int(100) < p_ptr->skill_sav) {
+            msg_print("You resist the effects!");
         }
         else if (lose_all_info()) {
             msg_print("Your memories fade away.");
@@ -2613,12 +2610,12 @@ bool make_attack_spell(int m_idx)
         if (blind && count) msg_print("You hear many things appear nearby.");
         break;
 
-      case 160+23:    /* RF6_S_REPTILE */
+      case 160+23:    /* RF6_S_HYDRA */
         disturb(1, 0);
         if (blind) msg_format("%^s mumbles.", m_name);
-        else msg_format("%^s magically summons reptiles.", m_name);
+        else msg_format("%^s magically summons hydras.", m_name);
         for (k = 0; k < 6; k++) {
-            count += summon_specific(y, x, rlev, SUMMON_REPTILE);
+            count += summon_specific(y, x, rlev, SUMMON_HYDRA);
         }
         if (blind && count) msg_print("You hear many things appear nearby.");
         break;

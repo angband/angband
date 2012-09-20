@@ -69,19 +69,6 @@ void delete_object_idx(int i_idx)
     cave_type *c_ptr = &cave[y][x];
 
 
-    /* XXX XXX XXX XXX */
-
-    /* Hack -- Forget the grid */
-    if (c_ptr->feat & CAVE_MARK) {
-
-        /* Forget the grid */
-        c_ptr->feat &= ~CAVE_MARK;
-
-        /* Hack -- Notice spot */
-        note_spot(y, x);
-    }
-
-
     /* Wipe the object */
     WIPE(i_ptr, inven_type);
 
@@ -686,7 +673,8 @@ static s32b item_value_real(inven_type *i_ptr)
         /* Done */
         break;
 
-      /* Weapons */
+      /* Bows/Weapons */
+      case TV_BOW:
       case TV_DIGGING:
       case TV_HAFTED:
       case TV_SWORD:
@@ -698,17 +686,10 @@ static s32b item_value_real(inven_type *i_ptr)
         /* Factor in the bonuses */
         value += ((i_ptr->to_h + i_ptr->to_d + i_ptr->to_a) * 100L);
 
-        /* Done */
-        break;
-
-      /* Bows */
-      case TV_BOW:
-
-        /* Hack -- negative hit/damage bonuses */
-        if (i_ptr->to_h + i_ptr->to_d < 0) return (0L);
-
-        /* Factor in the bonuses */
-        value += ((i_ptr->to_h + i_ptr->to_d + i_ptr->to_a) * 100L);
+        /* Hack -- Factor in extra damage dice */
+        if ((i_ptr->dd > k_ptr->dd) && (i_ptr->ds == k_ptr->ds)) {
+            value += (i_ptr->dd - k_ptr->dd) * i_ptr->ds * 100L;
+        }
 
         /* Done */
         break;
@@ -723,6 +704,11 @@ static s32b item_value_real(inven_type *i_ptr)
 
         /* Factor in the bonuses */
         value += ((i_ptr->to_h + i_ptr->to_d) * 5L);
+
+        /* Hack -- Factor in extra damage dice */
+        if ((i_ptr->dd > k_ptr->dd) && (i_ptr->ds == k_ptr->ds)) {
+            value += (i_ptr->dd - k_ptr->dd) * i_ptr->ds * 5L;
+        }
 
         /* Done */
         break;
@@ -2977,8 +2963,6 @@ void place_object(int y, int x, bool good, bool great)
         c_ptr = &cave[y][x];
         c_ptr->i_idx = i_idx;
 
-        /* XXX XXX XXX Memorize? */
-
         /* Notice "okay" out-of-depth objects (unless already noticed) */
         if (!cursed_p(i_ptr) && !broken_p(i_ptr) &&
             (rating == old) && (k_info[i_ptr->k_idx].level > dun_level)) {
@@ -2988,13 +2972,6 @@ void place_object(int y, int x, bool good, bool great)
 
             /* Cheat -- peek at items */
             if (cheat_peek) inven_mention(i_ptr);
-        }
-
-        /* Under the player */
-        if ((y == py) && (x == px)) {
-
-            /* Message */
-            msg_print ("You feel something roll beneath your feet.");
         }
     }
 }
@@ -3026,8 +3003,18 @@ void acquirement(int y1, int x1, int num, bool great)
             /* Place a good (or great) object */
             place_object(y, x, TRUE, great);
 
-            /* Draw the item */
+            /* Notice */
+            note_spot(y, x);
+            
+            /* Redraw */
             lite_spot(y, x);
+
+            /* Under the player */
+            if ((y == py) && (x == px)) {
+
+                /* Message */
+                msg_print ("You feel something roll beneath your feet.");
+            }
 
             /* Placement accomplished */
             break;
@@ -3079,7 +3066,7 @@ void place_trap(int y, int x)
 
 
 /*
- * XXX XXX XXX XXX XXX
+ * XXX XXX XXX XXX Do not use these hard-coded values.
  */
 #define OBJ_GOLD_LIST	480	/* First "gold" entry */
 #define MAX_GOLD	18	/* Number of "gold" entries */
@@ -3141,11 +3128,6 @@ void place_gold(int y, int x)
 
         /* Determine how much the treasure is "worth" */
         i_ptr->pval = (base + (8L * randint(base)) + randint(8));
-
-        /* Under the player */
-        if ((y == py) && (x == px)) {
-            msg_print("You feel something roll beneath your feet.");
-        }
     }
 }
 

@@ -59,10 +59,10 @@
  */
 #define BORG_WALL	0x01	/* Grid is a wall */
 #define BORG_OKAY	0x02	/* Grid is lit on this panel */
-#define BORG_KNOW	0x04	/* Grid is of known danger */
-#define BORG_ICKY	0x08	/* Grid is dangerous (avoid it) */
-#define BORG_SEEN	0x10	/* Grid is in a special array (unused) */
-#define BORG_LITE	0x20	/* Grid is lit by torches (unused) */
+/* xxx */
+/* xxx */
+/* xxx */
+/* xxx */
 #define BORG_VIEW	0x40	/* Grid is in view of the player */
 #define BORG_XTRA	0x80	/* Grid is easily in view of the player */
 
@@ -245,8 +245,6 @@ struct auto_data {
  */
 
 extern auto_grid **auto_grids;		/* Current "grid list" */
-
-extern auto_data *auto_data_hard;	/* Constant "hard" data */
 
 extern auto_data *auto_data_flow;	/* Current "flow" data */
 

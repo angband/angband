@@ -46,10 +46,10 @@ bool is_a_vowel(int ch)
 int index_to_label(int i)
 {
     /* Indexes for "inven" are easy */
-    if (i < INVEN_WIELD) return ('a' + i);
+    if (i < INVEN_WIELD) return (I2A(i));
 
-    /* Equipment always has a "constant" location */
-    return ('a' + (i - INVEN_WIELD));
+    /* Indexes for "equip" are offset */
+    return (I2A(i - INVEN_WIELD));
 }
 
 
@@ -59,7 +59,7 @@ int index_to_label(int i)
  */
 int label_to_inven(int c)
 {
-    int i = c - 'a';
+    int i = A2I(c);
 
     /* Verify the index */
     if ((i < 0) || (i > INVEN_PACK)) return (-1);
@@ -78,7 +78,7 @@ int label_to_inven(int c)
  */
 int label_to_equip(int c)
 {
-    int i = INVEN_WIELD + (c - 'a');
+    int i = INVEN_WIELD + A2I(c);
 
     /* Speed -- Ignore silly labels */
     if ((i < INVEN_WIELD) || (i >= INVEN_TOTAL)) return (-1);
@@ -254,7 +254,7 @@ cptr describe_use(int i)
  * Also, the tag "@xn" will work as well, where "n" is a tag-char,
  * and "x" is the "current" command_cmd code.
  */
-static int get_tag(int *com_val, char tag)
+static int get_tag(int *cp, char tag)
 {
     int i;
     cptr s;
@@ -281,7 +281,7 @@ static int get_tag(int *com_val, char tag)
             if (s[1] == tag) {
 
                 /* Save the actual inventory ID */
-                *com_val = i;
+                *cp = i;
 
                 /* Success */
                 return (TRUE);
@@ -291,7 +291,7 @@ static int get_tag(int *com_val, char tag)
             if ((s[1] == command_cmd) && (s[2] == tag)) {
 
                 /* Save the actual inventory ID */
-                *com_val = i;
+                *cp = i;
 
                 /* Success */
                 return (TRUE);
@@ -747,11 +747,15 @@ bool item_tester_okay(inven_type *i_ptr)
     if (i_ptr->tval == TV_GOLD) return (FALSE);
 
     /* Check the tval */
-    if (item_tester_tval && (!(item_tester_tval == i_ptr->tval))) return (FALSE);
+    if (item_tester_tval) {
+        if (!(item_tester_tval == i_ptr->tval)) return (FALSE);
+    }
 
     /* Check the hook */
-    if (item_tester_hook && (!(*item_tester_hook)(i_ptr))) return (FALSE);
-
+    if (item_tester_hook) {
+        if (!(*item_tester_hook)(i_ptr)) return (FALSE);
+    }
+    
     /* Assume okay */
     return (TRUE);
 }
@@ -1023,8 +1027,8 @@ void show_inven(void)
         }
     }
 
-    /* Erase the final line */
-    prt("", j + 1, col ? col - 2 : col);
+    /* Make a "shadow" below the list (only if needed) */
+    if (j && (j < 23)) prt("", j + 1, col ? col - 2 : col);
 
     /* Save the new column */
     command_gap = col;
@@ -1148,8 +1152,8 @@ void show_equip(void)
         }
     }
 
-    /* Make a shadow below the list (if possible) */
-    prt("", j+1, col);
+    /* Make a "shadow" below the list (only if needed) */
+    if (j && (j < 23)) prt("", j + 1, col ? col - 2 : col);
 
     /* Save the new column */
     command_gap = col;
@@ -1201,7 +1205,7 @@ static bool get_item_allow(int i)
         if ((s[1] == command_cmd) || (s[1] == '*')) {
 
             /* Verify the choice */
-            if (!verify("Really Try", i)) return (FALSE);
+            if (!verify("Really try", i)) return (FALSE);
         }
 
         /* Find another '!' */
@@ -1249,11 +1253,11 @@ static bool get_item_okay(int i)
  * use of "capital" letters will "examine" an inventory/equipment item,
  * and prompt for its use.
  *
- * If a legal item is selected, we save it in "com_val" and return TRUE.
- * If this "legal" item is on the floor, we use a "com_val" equal to zero
+ * If a legal item is selected, we save it in "cp" and return TRUE.
+ * If this "legal" item is on the floor, we use a "cp" equal to zero
  * minus the dungeon index of the item on the floor.
  *
- * Otherwise, we return FALSE, and set "com_val" to:
+ * Otherwise, we return FALSE, and set "cp" to:
  *   -1 for "User hit space/escape"
  *   -2 for "No legal items to choose"
  *
@@ -1276,7 +1280,7 @@ static bool get_item_okay(int i)
  *
  * Note that "Term_save()" / "Term_load()" blocks must not overlap.
  */
-bool get_item(int *com_val, cptr pmt, bool equip, bool inven, bool floor)
+bool get_item(int *cp, cptr pmt, bool equip, bool inven, bool floor)
 {
     char        n1, n2, which = ' ';
 
@@ -1296,7 +1300,7 @@ bool get_item(int *com_val, cptr pmt, bool equip, bool inven, bool floor)
     item = FALSE;
 
     /* Default to "no item" (see above) */
-    *com_val = -1;
+    *cp = -1;
 
 
     /* Paranoia */
@@ -1346,7 +1350,7 @@ bool get_item(int *com_val, cptr pmt, bool equip, bool inven, bool floor)
         command_see = FALSE;
 
         /* Hack -- Nothing to choose */
-        *com_val = -2;
+        *cp = -2;
         
         /* Done */
         done = TRUE;
@@ -1384,6 +1388,8 @@ bool get_item(int *com_val, cptr pmt, bool equip, bool inven, bool floor)
     msg_print(NULL);
 
 
+#ifdef GRAPHIC_CHOICE
+
     /* Save "term_choice" */
     if (term_choice && use_choice_choose) {
 
@@ -1396,6 +1402,10 @@ bool get_item(int *com_val, cptr pmt, bool equip, bool inven, bool floor)
         /* Re-activate the main screen */
         Term_activate(term_screen);
     }
+
+#endif
+
+#ifdef GRAPHIC_MIRROR
 
     /* Save "term_mirror" */
     if (term_mirror && use_mirror_choose) {
@@ -1410,6 +1420,7 @@ bool get_item(int *com_val, cptr pmt, bool equip, bool inven, bool floor)
         Term_activate(term_screen);
     }
 
+#endif
 
     /* Hack -- start out in "display" mode */
     if (command_see) Term_save();
@@ -1421,12 +1432,7 @@ bool get_item(int *com_val, cptr pmt, bool equip, bool inven, bool floor)
         /* Inventory screen */
         if (!command_wrk) {
 
-            /* Extract the legal requests */
-            n1 = 'a' + i1;
-            n2 = 'a' + i2;
-
-            /* Redraw if needed */
-            if (command_see) show_inven();
+#ifdef GRAPHIC_CHOICE
 
             /* Display choices in "term_choice" */
             if (term_choice && use_choice_choose) {
@@ -1441,6 +1447,10 @@ bool get_item(int *com_val, cptr pmt, bool equip, bool inven, bool floor)
                 Term_activate(term_screen);
             }
 
+#endif
+
+#ifdef GRAPHIC_CHOICE
+
             /* Display choices in "term_mirror" */
             if (term_mirror && use_mirror_choose) {
 
@@ -1453,17 +1463,21 @@ bool get_item(int *com_val, cptr pmt, bool equip, bool inven, bool floor)
                 /* Re-activate the main screen */
                 Term_activate(term_screen);
             }
+
+#endif
+
+            /* Extract the legal requests */
+            n1 = I2A(i1);
+            n2 = I2A(i2);
+
+            /* Redraw if needed */
+            if (command_see) show_inven();
         }
 
         /* Equipment screen */
         else {
 
-            /* Extract the legal requests */
-            n1 = 'a' + e1 - INVEN_WIELD;
-            n2 = 'a' + e2 - INVEN_WIELD;
-
-            /* Redraw if needed */
-            if (command_see) show_equip();
+#ifdef GRAPHIC_CHOICE
 
             /* Display choices in "term_choice" */
             if (term_choice && use_choice_choose) {
@@ -1478,6 +1492,10 @@ bool get_item(int *com_val, cptr pmt, bool equip, bool inven, bool floor)
                 Term_activate(term_screen);
             }
 
+#endif
+
+#ifdef GRAPHIC_MIRROR
+
             /* Display choices in "term_mirror" */
             if (term_mirror && use_mirror_choose) {
 
@@ -1490,6 +1508,15 @@ bool get_item(int *com_val, cptr pmt, bool equip, bool inven, bool floor)
                 /* Re-activate the main screen */
                 Term_activate(term_screen);
             }
+
+#endif
+
+            /* Extract the legal requests */
+            n1 = I2A(e1 - INVEN_WIELD);
+            n2 = I2A(e2 - INVEN_WIELD);
+
+            /* Redraw if needed */
+            if (command_see) show_equip();
         }
 
         /* Viewing inventory */    
@@ -1582,15 +1609,16 @@ bool get_item(int *com_val, cptr pmt, bool equip, bool inven, bool floor)
 
           case '/':
 
-            /* Hack -- no "changing pages" allowed */
+            /* Verify legality */
             if (!inven || !equip) {
                 bell();
                 break;
             }
 
-            /* Hack -- Erase old info */
+            /* Fix screen */
             if (command_see) {
-                for (k = n1 - 'a'; k <= n2 - 'a'; k++) prt("", k+1, 0);
+                Term_load();
+                Term_save();
             }
 
             /* Switch inven/equip */
@@ -1603,7 +1631,7 @@ bool get_item(int *com_val, cptr pmt, bool equip, bool inven, bool floor)
 
             /* Use floor item */
             if (floor_item) {
-                (*com_val) = 0 - floor_item;
+                (*cp) = 0 - floor_item;
                 item = TRUE;
                 done = TRUE;
             }
@@ -1642,7 +1670,7 @@ bool get_item(int *com_val, cptr pmt, bool equip, bool inven, bool floor)
             }
 
             /* Use that item */
-            (*com_val) = k;
+            (*cp) = k;
             item = TRUE;
             done = TRUE;
             break;
@@ -1673,7 +1701,7 @@ bool get_item(int *com_val, cptr pmt, bool equip, bool inven, bool floor)
             }
 
             /* Accept that choice */
-            (*com_val) = k;
+            (*cp) = k;
             item = TRUE;
             done = TRUE;
             break;
@@ -1713,7 +1741,7 @@ bool get_item(int *com_val, cptr pmt, bool equip, bool inven, bool floor)
             }
 
             /* Accept that choice */
-            (*com_val) = k;
+            (*cp) = k;
             item = TRUE;
             done = TRUE;
             break;
@@ -1727,6 +1755,8 @@ bool get_item(int *com_val, cptr pmt, bool equip, bool inven, bool floor)
     /* Hack -- Cancel "display" */
     command_see = FALSE;
 
+
+#ifdef GRAPHIC_MIRROR
 
     /* Restore "term_mirror" */
     if (term_mirror && use_mirror_choose) {
@@ -1744,6 +1774,10 @@ bool get_item(int *com_val, cptr pmt, bool equip, bool inven, bool floor)
         Term_activate(term_screen);
     }
 
+#endif
+
+#ifdef GRAPHIC_CHOICE
+
     /* Restore "term_choice" */
     if (term_choice && use_choice_choose) {
 
@@ -1759,6 +1793,8 @@ bool get_item(int *com_val, cptr pmt, bool equip, bool inven, bool floor)
         /* Re-activate the main screen */
         Term_activate(term_screen);
     }
+
+#endif
 
 
     /* Mega-Hack -- Redraw the choice window */

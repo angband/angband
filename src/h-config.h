@@ -135,7 +135,7 @@
  */
 #if !defined(MACINTOSH) && !defined(WINDOWS) && \
     !defined(MSDOS) && !defined(__EMX__) && \
-    !defined(AMIGA) && !defined(ACORN)
+    !defined(AMIGA) && !defined(ACORN) && !defined(VM)
 # define SET_UID
 #endif
 
@@ -163,6 +163,8 @@
  * for various other systems.  Note that any system that uses the
  * "period" as a separator (i.e. ACORN) will have to pretend that
  * it uses the slash, and do its own mapping of period <-> slash.
+ * Note that the VM system uses a "flat" directory, and thus uses
+ * the empty string for "PATH_SEP".
  */
 #undef PATH_SEP
 #define PATH_SEP "/"
@@ -185,6 +187,10 @@
 #ifdef __GO32__
 # undef PATH_SEP
 # define PATH_SEP "/"
+#endif
+#ifdef VM
+# undef PATH_SEP
+# define PATH_SEP ""
 #endif
 
 

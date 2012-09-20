@@ -19,9 +19,9 @@
 
 
 /*
- * Hack -- whatever I need at the moment	-BEN-
+ * Hack -- quick debugging hook
  */
-static void do_cmd_wiz_hack_ben(int arg)
+static void do_cmd_wiz_hack_ben(void)
 {
     msg_print("Hi.");
 }
@@ -411,6 +411,8 @@ static void strip_name(char *buf, int k_idx)
 
 /*
  * Hack -- title for each column
+ *
+ * XXX XXX XXX This will not work with "EBCDIC", I would think.
  */
 static char head[3] = { 'a', 'A', '0' };
 
@@ -432,7 +434,7 @@ static int wiz_create_itemtype(void)
     cptr                 tval_desc;
     char                 ch;
 
-    int			 option[60];
+    int			 choice[60];
 
     char		buf[160];
 
@@ -496,7 +498,7 @@ static int wiz_create_itemtype(void)
             prt(format("[%c] %s", ch, buf), row, col);
 
             /* Remember the object index */
-            option[num++] = i;
+            choice[num++] = i;
         }
     }
 
@@ -516,7 +518,7 @@ static int wiz_create_itemtype(void)
     if ((num < 0) || (num >= max_num)) return (0);
 
     /* And return successful */
-    return (option[num]);
+    return (choice[num]);
 }
 
 
@@ -623,8 +625,8 @@ static void wiz_reroll_item(inven_type *i_ptr)
         *i_ptr = mod_item;
 
         /* Update stuff */
-        p_ptr->update |= PU_BONUS;
-        p_ptr->redraw |= PR_CHOOSE;
+        p_ptr->update |= (PU_BONUS);
+        p_ptr->redraw |= (PR_CHOOSE);
     }
 }
 
@@ -656,6 +658,7 @@ static void wiz_statistics(inven_type *i_ptr)
     inven_type  test_item;
     inven_type	*j_ptr = &test_item;
     
+    cptr q = "Rolls: %ld, Matches: %ld, Better: %ld, Worse: %ld, Other: %ld";
 
     /* Hack -- find a clean grid */
     while (TRUE) {
@@ -733,8 +736,7 @@ static void wiz_statistics(inven_type *i_ptr)
                 }
 
                 /* Dump the stats */
-                prt(format("Rolls: %ld, Matches: %ld, Better: %ld, Worse: %ld, Other: %ld",
-                           i, matches, better, worse, other), 0, 0);
+                prt(format(q, i, matches, better, worse, other), 0, 0);
                 Term_fresh();
             }
 
@@ -787,8 +789,7 @@ static void wiz_statistics(inven_type *i_ptr)
         }
 
         /* Final dump */
-        msg_format("Rolls: %ld, Matches: %ld, Better: %ld, Worse: %ld, Other: %ld",
-                   i, matches, better, worse, other);
+        msg_format(q, i, matches, better, worse, other);
         msg_print(NULL);
     }
 
@@ -978,7 +979,7 @@ static void wiz_create_item()
     wizard = TRUE;
 
     /* Drop the object from heaven */
-    drop_near(&forge, 0, py, px);
+    drop_near(&forge, -1, py, px);
 
     /* All done */
     msg_print("Allocated.");
@@ -1012,24 +1013,21 @@ static void do_cmd_wiz_cure_all()
     p_ptr->csp = p_ptr->msp;
     p_ptr->csp_frac = 0;
 
-    /* Cure various things */
-    p_ptr->poisoned = 0;
-    p_ptr->blind = 0;
-    p_ptr->confused = 0;
-    p_ptr->fear = 0;
+    /* Cure stuff */
+    (void)set_blind(0);
+    (void)set_confused(0);
+    (void)set_poisoned(0);
+    (void)set_afraid(0);
+    (void)set_image(0);
+    (void)set_cut(0);
+    (void)set_stun(0);
+    (void)set_slow(0);
 
     /* No longer hungry */
     p_ptr->food = PY_FOOD_MAX - 1;
 
-    /* No longer slow */
-    p_ptr->slow = 0;
-
-    /* Cure hallucination */
-    p_ptr->image = 0;
-
-    /* Cure cuts/stun */
-    p_ptr->cut = 0;
-    p_ptr->stun = 0;
+    /* Update map */
+    p_ptr->update |= (PU_NOTE | PU_VIEW | PU_LITE);
 
     /* Update everything */
     p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
@@ -1392,7 +1390,7 @@ int do_wiz_command(void)
 
         /* Hack -- whatever I desire */
         case '_':
-            do_cmd_wiz_hack_ben(command_arg);
+            do_cmd_wiz_hack_ben();
             break;
 
         /* Not a Wizard Command */

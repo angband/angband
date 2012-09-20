@@ -29,7 +29,7 @@ static cptr look_mon_desc(int m_idx)
     /* Determine if the monster is "living" (vs "undead") */
     if (r_ptr->flags3 & RF3_UNDEAD) living = FALSE;
     if (r_ptr->flags3 & RF3_DEMON) living = FALSE;
-    if (strchr("EgvX", r_ptr->r_char)) living = FALSE;
+    if (strchr("Egv", r_ptr->r_char)) living = FALSE;
 
 
     /* Healthy monsters */
@@ -102,19 +102,15 @@ static int do_cmd_look_aux(int y, int x)
     if ((y == py) && (x == px)) s1 = "You are on ";
 
 
-    /* Convert secret doors to walls */
+    /* Hack -- Convert secret doors to walls */
     if (f == 0x30) f = 0x38;
 
-    /* Ignore invisible traps */
+    /* Hack -- Convert invisible traps to floors */
     if (f == 0x02) f = 0x01;
 
 
-    /* Hack -- Invisible monsters */
-    if (!m_ptr->ml) m_ptr = &m_list[0];
-
-
     /* Actual monsters */
-    if (m_ptr->r_idx) {
+    if (c_ptr->m_idx && m_ptr->ml) {
 
         /* Get the monster name ("a kobold") */
         monster_desc(m_name, m_ptr, 0x08);
@@ -176,12 +172,8 @@ static int do_cmd_look_aux(int y, int x)
     }
 
 
-    /* Skip "dark" grids */
-    if (!test_lite_bold(y, x)) return (query);
-
-
     /* Actual items */
-    if (i_ptr->k_idx) {
+    if (c_ptr->i_idx && i_ptr->marked) {
 
         /* Obtain an object description */
         objdes(i_name, i_ptr, TRUE, 3);
@@ -209,8 +201,8 @@ static int do_cmd_look_aux(int y, int x)
     }
 
 
-    /* Describe terrain */
-    if (f) {
+    /* Describe terrain (if memorized) */
+    if (f && (c_ptr->feat & CAVE_MARK)) {
 
         cptr p1 = "";
 
@@ -236,6 +228,7 @@ static int do_cmd_look_aux(int y, int x)
         /* Continue if allowed */
         if (query != ' ') return (query);
     }
+
 
     /* Keep going */
     return (query);
@@ -263,16 +256,16 @@ static bool do_cmd_look_accept(int y, int x)
         if (m_ptr->ml) return (TRUE);
     }
 
-    /* Visible objects */
+    /* Objects */
     if (c_ptr->i_idx) {
 
-        /* inven_type *i_ptr = &i_list[c_ptr->i_idx]; */
-
-        /* Visible objects */
-        if (test_lite_bold(y, x)) return (TRUE);
+        inven_type *i_ptr = &i_list[c_ptr->i_idx];
+        
+        /* Memorized object */
+        if (i_ptr->marked) return (TRUE);
     }
 
-    /* Interesting features */
+    /* Memorized features (no floors) */
     if (c_ptr->feat & CAVE_MARK) {
 
         /* Ignore floors and invisible traps */
@@ -299,6 +292,57 @@ static bool do_cmd_look_accept(int y, int x)
     
     /* Nope */
     return (FALSE);
+}
+
+
+
+
+/*
+ * Sorting hook -- comp function -- see below
+ *
+ * We use "u" and "v" to point to arrays of "x" and "y" positions,
+ * and sort the arrays by distance to the player.
+ */
+static bool ang_sort_comp_hook(vptr u, vptr v, int a, int b)
+{
+    byte *x = (byte*)(u);
+    byte *y = (byte*)(v);
+
+    int da, db;
+
+    /* Distance to first point */
+    da = distance(px, py, x[a], y[a]);
+        
+    /* Distance to second point */
+    db = distance(px, py, x[b], y[b]);
+
+    /* Compare the distances */
+    return (da <= db);
+}
+
+
+/*
+ * Sorting hook -- swap function -- see below
+ *
+ * We use "u" and "v" to point to arrays of "x" and "y" positions,
+ * and sort the arrays by distance to the player.
+ */
+static void ang_sort_swap_hook(vptr u, vptr v, int a, int b)
+{
+    byte *x = (byte*)(u);
+    byte *y = (byte*)(v);
+
+    byte temp;
+    
+    /* Swap "x" */
+    temp = x[a];
+    x[a] = x[b];
+    x[b] = temp;
+    
+    /* Swap "y" */
+    temp = y[a];
+    y[a] = y[b];
+    y[b] = temp;
 }
 
 
@@ -354,6 +398,14 @@ void do_cmd_look(void)
         msg_print("You see nothing special.");
         return;
     }
+
+
+    /* Set the sort hooks */
+    ang_sort_comp = ang_sort_comp_hook;
+    ang_sort_swap = ang_sort_swap_hook;
+    
+    /* Sort the positions */
+    ang_sort(temp_x, temp_y, temp_n);
     
 
     /* Start on (or near) the player */
@@ -589,8 +641,16 @@ static void chest_death(int y, int x, inven_type *i_ptr)
                 /* No longer opening a chest */
                 opening_chest = FALSE;
 
-                /* Actually display the object's grid */
+                /* Notice it */
+                note_spot(ny, nx);
+                
+                /* Display it */
                 lite_spot(ny, nx);
+
+                /* Under the player */
+                if ((ny == py) && (nx == px)) {
+                    msg_print("You feel something roll beneath your feet.");
+                }
 
                 /* Successful placement */
                 break;
@@ -643,28 +703,29 @@ static void chest_trap(int y, int x, inven_type *i_ptr)
     /* Poison */
     if (trap & CHEST_POISON) {
         msg_print("A puff of green gas surrounds you!");
-        if (add_poisoned(10 + randint(20))) {
-            msg_print("You are poisoned!");
-        }
-        else {
-            msg_print("You are unaffected.");
+        if (!(p_ptr->resist_pois ||
+              p_ptr->oppose_pois ||
+              p_ptr->immune_pois)) {
+            if (set_poisoned(p_ptr->poisoned + 10 + randint(20))) {
+                msg_print("You are poisoned!");
+            }
         }
     }
 
     /* Paralyze */
     if (trap & CHEST_PARALYZE) {
         msg_print("A puff of yellow gas surrounds you!");
-        if (add_paralysis(10 + randint(20))) {
-            msg_print("You choke and pass out.");
-        }
-        else {
-            msg_print("You are unaffected.");
+        if (!p_ptr->free_act) {
+            if (set_paralyzed(p_ptr->paralyzed + 10 + randint(20))) {
+                msg_print("You choke and pass out.");
+            }
         }
     }
 
     /* Summon monsters */
     if (trap & CHEST_SUMMON) {
         int num = 2 + randint(3);
+        msg_print("You are enveloped in a cloud of smoke!");
         for (i = 0; i < num; i++) {
             (void)summon_specific(y, x, dun_level, 0);
         }
@@ -1072,6 +1133,9 @@ void do_cmd_tunnel()
                         /* Place some gold */
                         place_gold(y, x);
 
+                        /* Notice it */
+                        note_spot(y, x);
+                        
                         /* Display it */
                         lite_spot(y, x);
 
@@ -1116,11 +1180,14 @@ void do_cmd_tunnel()
                     /* Hack -- place an object */
                     if (rand_int(100) < 10) {
                         place_object(y, x, FALSE, FALSE);
-                        if (test_lite_bold(y, x)) {
+                        if (player_can_see_bold(y, x)) {
                              msg_print("You have found something!");
                         }
                     }
 
+                    /* Notice */
+                    note_spot(y, x);
+                    
                     /* Display */
                     lite_spot(y, x);
                 }
@@ -1265,6 +1332,8 @@ void do_cmd_disarm()
         /* Disarm a trap */
         else {
 
+            cptr name = (f_name + f_info[c_ptr->feat & 0x3F].name);
+            
             /* Take a turn */
             energy_use = 100;
             
@@ -1275,7 +1344,8 @@ void do_cmd_disarm()
             if (p_ptr->blind || no_lite()) i = i / 10;
             if (p_ptr->confused || p_ptr->image) i = i / 10;
 
-            /* XXX XXX XXX XXX XXX */
+            /* XXX XXX XXX XXX */
+
             /* Extract trap "power" */
             power = 5;
             
@@ -1289,13 +1359,22 @@ void do_cmd_disarm()
             if (rand_int(100) < j) {
             
                 /* Message */
-                msg_print("You have disarmed the trap.");
+                msg_format("You have disarmed the %s.", name);
 
                 /* Reward */
                 gain_exp(power);
 
                 /* Remove the trap */
                 c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x01);
+                
+                /* Forget the "field mark" */
+                c_ptr->feat &= ~CAVE_MARK;
+
+                /* Notice */
+                note_spot(y, x);
+
+                /* Redisplay the grid */
+                lite_spot(y, x);
                 
                 /* move the player onto the trap grid */
                 move_player(dir, FALSE);
@@ -1308,7 +1387,7 @@ void do_cmd_disarm()
                 if (flush_failure) flush();
 
                 /* Message */
-                msg_print("You failed to disarm the trap.");
+                msg_format("You failed to disarm the %s.", name);
 
                 /* We may keep trying */
                 more = TRUE;
@@ -1318,7 +1397,7 @@ void do_cmd_disarm()
             else {
 
                 /* Message */
-                msg_print("You set off the trap!");
+                msg_format("You set off the %s!", name);
 
                 /* Move the player onto the trap */
                 move_player(dir, FALSE);
@@ -1455,8 +1534,8 @@ void do_cmd_bash()
                 /* Message */
                 msg_print("You are off-balance.");
 
-                /* Hack -- Bypass "free action" */
-                p_ptr->paralysis = 2 + rand_int(2);
+                /* Hack -- Lose balance ala paralysis */
+                (void)set_paralyzed(p_ptr->paralyzed + 2 + rand_int(2));
             }
         }
     }
@@ -1670,11 +1749,8 @@ void do_cmd_rest(void)
     /* Prompt for time if needed */
     if (command_arg <= 0) {
 
-        /* Assume no rest */
-        command_arg = 0;
-
         /* Ask the question (perhaps a "prompt" routine would be good) */
-        prt("Rest for how long? ('*' for HP/mana, '&' as needed): ", 0, 0);
+        prt("Rest for how long? ('*' for HP/SP, '&' as needed): ", 0, 0);
 
         /* Default to "until done" */
         strcpy(out_val, "&");
@@ -1688,7 +1764,7 @@ void do_cmd_rest(void)
             else if (out_val[0] == '&') {
                 command_arg = (-2);
             }
-            else if (out_val[0]) {
+            else {
                 command_arg = atoi(out_val);
                 if (command_arg < 0) command_arg = 0;
             }

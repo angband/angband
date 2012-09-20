@@ -264,7 +264,7 @@ static void roff_aux(int r_idx)
     /* Cheat -- Know everything */
     if (cheat_know) {
 
-        /* XXX XXX XXX XXX XXX */
+        /* XXX XXX XXX */
 
         /* Save the "old" memory */
         save_mem = *r_ptr;
@@ -444,6 +444,8 @@ static void roff_aux(int r_idx)
     }
 
 
+#ifndef DELAY_LOAD_R_TEXT
+
     /* Descriptions */
     if (recall_show_desc) {
 
@@ -451,6 +453,8 @@ static void roff_aux(int r_idx)
         roff(r_text + r_ptr->text);
         roff("  ");
     }
+
+#endif
 
 
     /* Nothing yet */
@@ -581,8 +585,8 @@ static void roff_aux(int r_idx)
 
             /* calculate the fractional exp part scaled by 100, */
             /* must use long arithmetic to avoid overflow  */
-            j = ((((long)r_ptr->mexp * r_ptr->level % p_ptr->lev) * (long)1000 /
-                 p_ptr->lev + 5) / 10);
+            j = ((((long)r_ptr->mexp * r_ptr->level % p_ptr->lev) *
+                   (long)1000 / p_ptr->lev + 5) / 10);
 
             /* Mention the experience */
             roff(format(" is worth %ld.%02ld point%s",
@@ -763,7 +767,7 @@ static void roff_aux(int r_idx)
     if (flags6 & RF6_S_ANT)		vp[vn++] = "summon ants";
     if (flags6 & RF6_S_SPIDER)		vp[vn++] = "summon spiders";
     if (flags6 & RF6_S_HOUND)		vp[vn++] = "summon hounds";
-    if (flags6 & RF6_S_REPTILE)		vp[vn++] = "summon reptiles";
+    if (flags6 & RF6_S_HYDRA)		vp[vn++] = "summon hydras";
     if (flags6 & RF6_S_ANGEL)		vp[vn++] = "summon an angel";
     if (flags6 & RF6_S_DEMON)		vp[vn++] = "summon a demon";
     if (flags6 & RF6_S_UNDEAD)		vp[vn++] = "summon an undead";
@@ -1476,7 +1480,7 @@ static cptr ident_info[] = {
     "A:Angel",
     "B:Bird",
     "C:Canine",
-    "D:Ancient Dragon (or Wyrm)",
+    "D:Ancient Dragon/Wyrm",
     "E:Elemental",
     "F:Dragon Fly",
     "G:Ghost",
@@ -1485,20 +1489,20 @@ static cptr ident_info[] = {
         /* "J:unused", */
     "K:Killer Beetle",
     "L:Lich",
-    "M:Mummy",
+    "M:Multi-Headed Reptile",
         /* "N:unused", */
     "O:Ogre",
-    "P:Giant humanoid",
+    "P:Giant Humanoid",
     "Q:Quylthulg (Pulsing Flesh Mound)",
-    "R:Reptile (or Amphibian)",
-    "S:Spider (or Scorpion or Tick)",
+    "R:Reptile/Amphibian",
+    "S:Spider/Scorpion/Tick",
     "T:Troll",
     "U:Major Demon",
     "V:Vampire",
-    "W:Wight/Wraith",
-    "X:Xorn/Xaren",
+    "W:Wight/Wraith/etc",
+    "X:Xorn/Xaren/etc",
     "Y:Yeti",
-    "Z:Zephyr hound (Elemental hound)",
+    "Z:Zephyr Hound",
     "[:Hard armor",
     "\\:A hafted weapon (mace/whip/etc)",
     "]:Misc. armor",
@@ -1525,19 +1529,113 @@ static cptr ident_info[] = {
     "r:Rodent",
     "s:Skeleton",
     "t:Townsperson",
-    "u:Minor demon",
+    "u:Minor Demon",
     "v:Vortex",
-    "w:Worm (or worm mass)",
+    "w:Worm/Worm-Mass",
         /* "x:unused", */
     "y:Yeek",
-    "z:Zombie",
-    "{:A missile (Arrow/bolt/bullet)",
+    "z:Zombie/Mummy",
+    "{:A missile (arrow/bolt/shot)",
     "|:An edged weapon (sword/dagger/etc)",
-    "}:A launcher (Bow/crossbow/sling)",
+    "}:A launcher (bow/crossbow/sling)",
     "~:A tool (or miscellaneous item)",
     NULL
 };
 
+
+
+/*
+ * Sorting hook -- Comp function -- see below
+ *
+ * We use "u" to point to array of monster indexes,
+ * and "v" to select the type of sorting to perform on "u".
+ */
+static bool ang_sort_comp_hook(vptr u, vptr v, int a, int b)
+{
+    u16b *who = (u16b*)(u);
+
+    u16b *why = (u16b*)(v);
+
+    int w1 = who[a];
+    int w2 = who[b];
+
+    int z1, z2;
+
+
+    /* Sort by player kills */
+    if (*why >= 4) {
+
+        /* Extract player kills */
+        z1 = r_info[w1].r_pkills;
+        z2 = r_info[w2].r_pkills;
+
+        /* Compare player kills */
+        if (z1 < z2) return (TRUE);
+        if (z1 > z2) return (FALSE);
+    }
+
+
+    /* Sort by total kills */
+    if (*why >= 3) {
+    
+        /* Extract total kills */
+        z1 = r_info[w1].r_tkills;
+        z2 = r_info[w2].r_tkills;
+
+        /* Compare total kills */
+        if (z1 < z2) return (TRUE);
+        if (z1 > z2) return (FALSE);
+    }
+
+
+    /* Sort by monster level */
+    if (*why >= 2) {
+
+        /* Extract levels */
+        z1 = r_info[w1].level;
+        z2 = r_info[w2].level;
+
+        /* Compare levels */
+        if (z1 < z2) return (TRUE);
+        if (z1 > z2) return (FALSE);
+    }
+
+
+    /* Sort by monster experience */
+    if (*why >= 1) {
+
+        /* Extract experience */
+        z1 = r_info[w1].mexp;
+        z2 = r_info[w2].mexp;
+
+        /* Compare experience */
+        if (z1 < z2) return (TRUE);
+        if (z1 > z2) return (FALSE);
+    }
+
+
+    /* Compare indexes */
+    return (w1 <= w2);
+}
+
+
+/*
+ * Sorting hook -- Swap function -- see below
+ *
+ * We use "u" to point to array of monster indexes,
+ * and "v" to select the type of sorting to perform.
+ */
+static void ang_sort_swap_hook(vptr u, vptr v, int a, int b)
+{
+    u16b *who = (u16b*)(u);
+
+    u16b holder;
+
+    /* Swap */
+    holder = who[a];
+    who[a] = who[b];
+    who[b] = holder;
+}
 
 
 /*
@@ -1547,10 +1645,12 @@ static cptr ident_info[] = {
  *   ^A (all monsters)
  *   ^U (all unique monsters)
  *   ^N (all non-unique monsters)
+ *
+ * The responses may be sorted in several ways, see below.
  */
 void do_cmd_query_symbol(void)
 {
-    int		i, j, n;
+    int		i, n, r_idx;
     char	sym, query;
     char	buf[128];
 
@@ -1558,9 +1658,9 @@ void do_cmd_query_symbol(void)
     bool	uniq = FALSE;
     bool	norm = FALSE;
 
-    bool	kills = FALSE;
-    bool	level = FALSE;
+    bool	recall = FALSE;
 
+    u16b	why = 0;
     u16b	who[MAX_R_IDX];
 
 
@@ -1596,8 +1696,8 @@ void do_cmd_query_symbol(void)
     prt(buf, 0, 0);
 
 
-    /* Find the set of matching monsters */
-    for (n = 0, i = MAX_R_IDX-1; i > 0; i--) {
+    /* Collect matching non-ghost monsters */
+    for (n = 0, i = 1; i < MAX_R_IDX-1; i++) {
 
         monster_race *r_ptr = &r_info[i];
 
@@ -1624,14 +1724,13 @@ void do_cmd_query_symbol(void)
 
     /* Sort by kills (and level) */
     if (query == 'k') {
-        level = TRUE;
-        kills = TRUE;
+        why = 4;
         query = 'y';
     }
 
     /* Sort by level */
     if (query == 'p') {
-        level = TRUE;
+        why = 2;
         query = 'y';
     }
 
@@ -1639,49 +1738,29 @@ void do_cmd_query_symbol(void)
     if (query != 'y') return;
 
 
-    /* Hack -- bubble-sort by level (then experience) */
-    if (level) {
-        for (i = 0; i < n - 1; i++) {
-            for (j = 0; j < n - 1; j++) {
-                int i1 = j;
-                int i2 = j + 1;
-                int l1 = r_info[who[i1]].level;
-                int l2 = r_info[who[i2]].level;
-                int e1 = r_info[who[i1]].mexp;
-                int e2 = r_info[who[i2]].mexp;
-                if ((l1 < l2) || ((l1 == l2) && (e1 < e2))) {
-                    int tmp = who[i1];
-                    who[i1] = who[i2];
-                    who[i2] = tmp;
-                }
-            }
-        }
+    /* Sort if needed */
+    if (why) {
+    
+        /* Select the sort method */
+        ang_sort_comp = ang_sort_comp_hook;
+        ang_sort_swap = ang_sort_swap_hook;
+        
+        /* Sort the array */
+        ang_sort(who, &why, n);
     }
 
-    /* Hack -- bubble-sort by pkills (or kills) */
-    if (kills) {
-        for (i = 0; i < n - 1; i++) {
-            for (j = 0; j < n - 1; j++) {
-                int i1 = j;
-                int i2 = j + 1;
-                int x1 = r_info[who[i1]].r_pkills;
-                int x2 = r_info[who[i2]].r_pkills;
-                int k1 = r_info[who[i1]].r_tkills;
-                int k2 = r_info[who[i2]].r_tkills;
-                if ((x1 < x2) || (!x1 && !x2 && (k1 < k2))) {
-                    int tmp = who[i1];
-                    who[i1] = who[i2];
-                    who[i2] = tmp;
-                }
-            }
-        }
-    }
 
+    /* Start at the end */
+    i = n - 1;
 
     /* Scan the monster memory. */
-    for (i = 0; i < n; i++) {
+    while ((0 <= i) && (i <= n - 1)) {
 
-        int r_idx = who[i];
+        /* Validate index */
+        for (i = i % n; i < 0; i += n) ;
+
+        /* Extract a race */
+        r_idx = who[i];
 
         /* Hack -- Auto-recall */
         recent_track(r_idx);
@@ -1695,25 +1774,44 @@ void do_cmd_query_symbol(void)
         /* Hack -- Complete the prompt */
         Term_addstr(-1, TERM_WHITE, " [(r)ecall, ESC]");
 
-        /* Get a command */
-        query = inkey();
-
-        /* Recall as needed */
-        while (query == 'r') {
-
+        /* Interact */
+        while (1) {
+        
             /* Recall */
-            Term_save();
-            screen_roff(who[i]);
-            Term_addstr(-1, TERM_WHITE, "  --pause--");
+            if (recall) {
+
+                /* Save the screen */
+                Term_save();
+
+                /* Recall on screen */
+                screen_roff(who[i]);
+
+                /* Hack -- Complete the prompt (again) */
+                Term_addstr(-1, TERM_WHITE, " [(r)ecall, ESC]");
+            }
+            
+            /* Command */
             query = inkey();
-            Term_load();
+
+            /* Unrecall */
+            if (recall) {
+
+                /* Restore */
+                Term_load();
+            }
+
+            /* Normal commands */
+            if (query != 'r') break;
+
+            /* Toggle recall */
+            recall = !recall;
         }
 
         /* Stop scanning */
         if (query == ESCAPE) break;
 
-        /* Back up one entry */
-        if (query == '-') i = (i > 0) ? (i - 2) : (n - 2);
+        /* Move to the "next" or "prev" monster */
+        i = i + ((query == '-') ? 1 : -1);
     }
 
 

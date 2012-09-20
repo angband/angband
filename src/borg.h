@@ -11,6 +11,7 @@
 
 #ifdef ALLOW_BORG
 
+
 /*
  * This file provides support for "borg.c".
  */
@@ -22,6 +23,13 @@
  * Also specify the number of "rolling rows" to use
  */
 #define BORG_NOTE_ROWS		12
+
+
+
+/*
+ * Size of Keypress buffer
+ */
+#define KEY_SIZE 8192
 
 
 
@@ -161,21 +169,6 @@ extern FILE *auto_fff;		/* Log file */
  */
 
 extern const char p1, p2, c1, c2, b1, b2;
-
-#if 0
-extern const char p1 = '(', p2 = ')';
-extern const char c1 = '{', c2 = '}';
-extern const char b1 = '[', b2 = ']';
-#endif
-
-
-
-
-/*
- * Size of Keypress buffer
- */
-#define KEY_SIZE 8192
-
 
 
 /*

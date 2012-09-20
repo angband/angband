@@ -298,23 +298,23 @@ auto_magic auto_magics[9][9];	/* Spell info, by book/what */
 /*
  * Constant "item description parsers" (singles)
  */
-static int auto_size_single;		/* Number of "singles" */
-static s16b *auto_what_single;		/* Kind indexes for "singles" */
-static cptr *auto_text_single;		/* Textual prefixes for "singles" */
+static int auto_single_size;		/* Number of "singles" */
+static s16b *auto_single_what;		/* Kind indexes for "singles" */
+static cptr *auto_single_text;		/* Textual prefixes for "singles" */
 
 /*
  * Constant "item description parsers" (plurals)
  */
-static int auto_size_plural;		/* Number of "plurals" */
-static s16b *auto_what_plural;		/* Kind index for "plurals" */
-static cptr *auto_text_plural;		/* Textual prefixes for "plurals" */
+static int auto_plural_size;		/* Number of "plurals" */
+static s16b *auto_plural_what;		/* Kind index for "plurals" */
+static cptr *auto_plural_text;		/* Textual prefixes for "plurals" */
 
 /*
  * Constant "item description parsers" (suffixes)
  */
-static int auto_size_artego;		/* Number of "artegos" */
-static s16b *auto_what_artego;		/* Indexes for "artegos" */
-static cptr *auto_text_artego;		/* Textual prefixes for "artegos" */
+static int auto_artego_size;		/* Number of "artegos" */
+static s16b *auto_artego_what;		/* Indexes for "artegos" */
+static cptr *auto_artego_text;		/* Textual prefixes for "artegos" */
 
 
 
@@ -528,7 +528,8 @@ static s32b borg_item_value_known(auto_item *item)
 
             break;
 
-        /* Weapons */
+        /* Bows/Weapons */
+        case TV_BOW:
         case TV_DIGGING:
         case TV_HAFTED:
         case TV_SWORD:
@@ -540,16 +541,10 @@ static s32b borg_item_value_known(auto_item *item)
             /* Factor in the bonuses */
             value += ((item->to_h + item->to_d + item->to_a) * 100L);
 
-            break;
-
-        /* Bows */
-        case TV_BOW:
-
-            /* Hack -- negative hit/damage bonuses */
-            if (item->to_h + item->to_d < 0) return (0L);
-
-            /* Factor in the bonuses */
-            value += ((item->to_h + item->to_d + item->to_a) * 100L);
+            /* Hack -- Factor in extra damage dice */
+            if ((item->dd > k_ptr->dd) && (item->ds == k_ptr->ds)) {
+                value += (item->dd - k_ptr->dd) * item->ds * 200L;
+            }
 
             break;
 
@@ -563,6 +558,11 @@ static s32b borg_item_value_known(auto_item *item)
 
             /* Factor in the bonuses */
             value += ((item->to_h + item->to_d) * 5L);
+
+            /* Hack -- Factor in extra damage dice */
+            if ((item->dd > k_ptr->dd) && (item->ds == k_ptr->ds)) {
+                value += (item->dd - k_ptr->dd) * item->ds * 5L;
+            }
 
             break;
     }
@@ -779,86 +779,86 @@ void borg_item_analyze(auto_item *item, cptr desc)
     if (item->iqty == 1) {
 
         /* Start the search */
-        m = 0; n = auto_size_single;
+        m = 0; n = auto_single_size;
 
         /* Simple binary search */
-        while (m < n - 4) {
+        while (m < n - 1) {
 
             /* Pick a "middle" entry */
             i = (m + n) / 2;
 
-            /* Found a new minimum */
-            if (strcmp(tail, auto_text_single[i]) < 0) {
+            /* Search to the right (or here) */
+            if (strcmp(auto_single_text[i], tail) <= 0) {
                 m = i;
             }
 
-            /* Found a new maximum */
+            /* Search to the left */
             else {
                 n = i;
             }
         }
 
         /* Search for a prefix */
-        for (i = m; i < auto_size_single; i++) {
+        for (i = m; i >= 0; i--) {
 
             /* Check for proper prefix */
-            if (prefix(tail, auto_text_single[i])) break;
+            if (prefix(tail, auto_single_text[i])) break;
         }
 
         /* Oops.  Bizarre item. */
-        if (i >= auto_size_single) {
+        if (i < 0) {
             borg_oops("bizarre object");
             return;
         }
 
         /* Save the item kind */
-        item->kind = auto_what_single[i];
+        item->kind = auto_single_what[i];
 
         /* Skip past the base name */
-        tail += strlen(auto_text_single[i]);
+        tail += strlen(auto_single_text[i]);
     }
 
     /* Check plural items */
     else {
 
         /* Start the search */
-        m = 0; n = auto_size_plural;
+        m = 0; n = auto_plural_size;
 
         /* Simple binary search */
-        while (m < n - 4) {
+        while (m < n - 1) {
 
             /* Pick a "middle" entry */
             i = (m + n) / 2;
 
-            /* Found a new minimum */
-            if (strcmp(tail, auto_text_plural[i]) < 0) {
+            /* Search to the right (or here) */
+            if (strcmp(auto_plural_text[i], tail) <= 0) {
                 m = i;
             }
 
-            /* Found a new maximum */
+            /* Search to the left */
             else {
                 n = i;
             }
         }
 
         /* Search for a prefix */
-        for (i = m; i < auto_size_plural; i++) {
+        for (i = m; i >= 0; i--) {
 
             /* Check for proper prefix */
-            if (prefix(tail, auto_text_plural[i])) break;
+            if (prefix(tail, auto_plural_text[i])) break;
         }
 
         /* Oops.  Bizarre item. */
-        if (i >= auto_size_plural) {
+        if (i < 0) {
             borg_oops("bizarre object");
             return;
         }
 
         /* Save the item kind */
-        item->kind = auto_what_plural[i];
+        item->kind = auto_plural_what[i];
 
         /* Skip past the base name */
-        tail += strlen(auto_text_plural[i]);
+        tail += strlen(auto_plural_text[i]);
     }
 
 
@@ -978,50 +978,53 @@ void borg_item_analyze(auto_item *item, cptr desc)
             if (tail[0] != ' ') break;
 
             /* Start the search */
-            m = 0; n = auto_size_artego;
+            m = 0; n = auto_artego_size;
 
-            /* XXX XXX Binary search */
-            while (m < n - 4) {
+            /* Binary search */
+            while (m < n - 1) {
 
                 /* Pick a "middle" entry */
                 i = (m + n) / 2;
 
-                /* Found a new minimum */
-                if (strcmp(tail, auto_text_artego[i]) < 0) {
+                /* Search to the right (or here) */
+                if (strcmp(auto_artego_text[i], tail) <= 0) {
                     m = i;
                 }
 
-                /* Found a new maximum */
+                /* Search to the left */
                 else {
                     n = i;
                 }
             }
 
-            /* XXX XXX Search for a prefix */
-            for (i = m; i < m + 12; i++) {
+            /* Search for a prefix */
+            for (i = m; i >= 0; i--) {
 
                 /* Check for proper prefix */
-                if (prefix(tail, auto_text_artego[i])) {
+                if (prefix(tail, auto_artego_text[i])) {
 
                     /* Paranoia -- Item is known */
                     item->able = TRUE;
 
                     /* Save the artifact name */
-                    if (auto_what_artego[i] > 0) {
-                        item->name1 = auto_what_artego[i];
+                    if (auto_artego_what[i] < 256) {
+                        item->name1 = auto_artego_what[i];
                     }
 
                     /* Save the ego-item name */
                     else {
-                        item->name2 = 0 - auto_what_artego[i];
+                        item->name2 = auto_artego_what[i] - 256;
                     }
 
                     /* Skip the space and the ego-item name */
-                    tail += strlen(auto_text_artego[i]);
+                    tail += strlen(auto_artego_text[i]);
 
                     /* Done */
                     break;
                 }
+
+                /* Hack -- limit the search */
+                if (i < m - 12) break;
             }
 
             /* Hack -- handle Lite's */
@@ -1185,7 +1188,7 @@ void borg_item_analyze(auto_item *item, cptr desc)
 
                 /* Negative armor bonus */
                 else if (sscanf(tail, "[-%d]", &ta) == 1) {
-                    item->to_a = ta;
+                    item->to_a = -ta;
                     item->able = TRUE;
                 }
 
@@ -1350,7 +1353,7 @@ void borg_send_inscribe(int i, cptr str)
     if (i < INVEN_WIELD) {
 
         /* Choose the item */
-        borg_keypress('a' + i);
+        borg_keypress(I2A(i));
     }
 
     /* Choose from equipment */
@@ -1360,7 +1363,7 @@ void borg_send_inscribe(int i, cptr str)
         if (auto_items[0].iqty) borg_keypress('/');
 
         /* Choose the item */
-        borg_keypress('a' + i - INVEN_WIELD);
+        borg_keypress(I2A(i - INVEN_WIELD));
     }
 
     /* Send the label */
@@ -1470,7 +1473,7 @@ bool borg_refuel_torch(void)
 
     /* Perform the action */
     borg_keypress('F');
-    borg_keypress('a' + i);
+    borg_keypress(I2A(i));
 
     /* Success */
     return (TRUE);
@@ -1495,7 +1498,7 @@ bool borg_refuel_lantern(void)
 
     /* Perform the action */
     borg_keypress('F');
-    borg_keypress('a' + i);
+    borg_keypress(I2A(i));
 
     /* Success */
     return (TRUE);
@@ -1522,7 +1525,7 @@ bool borg_eat_food(int sval)
 
     /* Perform the action */
     borg_keypress('E');
-    borg_keypress('a' + i);
+    borg_keypress(I2A(i));
 
     /* Success */
     return (TRUE);
@@ -1547,7 +1550,7 @@ bool borg_quaff_potion(int sval)
 
     /* Perform the action */
     borg_keypress('q');
-    borg_keypress('a' + i);
+    borg_keypress(I2A(i));
 
     /* Success */
     return (TRUE);
@@ -1575,7 +1578,7 @@ bool borg_read_scroll(int sval)
 
     /* Perform the action */
     borg_keypress('r');
-    borg_keypress('a' + i);
+    borg_keypress(I2A(i));
 
     /* Success */
     return (TRUE);
@@ -1603,7 +1606,7 @@ bool borg_zap_rod(int sval)
 
     /* Perform the action */
     borg_keypress('z');
-    borg_keypress('a' + i);
+    borg_keypress(I2A(i));
 
     /* Success */
     return (TRUE);
@@ -1631,7 +1634,7 @@ bool borg_aim_wand(int sval)
 
     /* Perform the action */
     borg_keypress('a');
-    borg_keypress('a' + i);
+    borg_keypress(I2A(i));
 
     /* Success */
     return (TRUE);
@@ -1659,7 +1662,7 @@ bool borg_use_staff(int sval)
 
     /* Perform the action */
     borg_keypress('u');
-    borg_keypress('a' + i);
+    borg_keypress(I2A(i));
 
     /* Success */
     return (TRUE);
@@ -1759,8 +1762,8 @@ bool borg_spell(int book, int what)
 
     /* Cast a spell */
     borg_keypress('m');
-    borg_keypress('a' + i);
-    borg_keypress('a' + what);
+    borg_keypress(I2A(i));
+    borg_keypress(I2A(what));
 
     /* Success */
     return (TRUE);
@@ -1802,8 +1805,8 @@ bool borg_spell_safe(int book, int what)
 
     /* Cast a spell */
     borg_keypress('m');
-    borg_keypress('a' + i);
-    borg_keypress('a' + what);
+    borg_keypress(I2A(i));
+    borg_keypress(I2A(what));
 
     /* Success */
     return (TRUE);
@@ -1874,8 +1877,8 @@ bool borg_prayer(int book, int what)
 
     /* Pray a prayer */
     borg_keypress('p');
-    borg_keypress('a' + i);
-    borg_keypress('a' + what);
+    borg_keypress(I2A(i));
+    borg_keypress(I2A(what));
 
     /* Success */
     return (TRUE);
@@ -1916,8 +1919,8 @@ bool borg_prayer_safe(int book, int what)
 
     /* Pray a prayer */
     borg_keypress('p');
-    borg_keypress('a' + i);
-    borg_keypress('a' + what);
+    borg_keypress(I2A(i));
+    borg_keypress(I2A(what));
 
     /* Success */
     return (TRUE);
@@ -1958,10 +1961,10 @@ bool borg_study_spell(int book, int what)
     borg_keypress('G');
 
     /* Specify the book */
-    borg_keypress('a' + i);
+    borg_keypress(I2A(i));
 
     /* Specify the spell */
-    borg_keypress('a' + what);
+    borg_keypress(I2A(what));
 
     /* Success */
     return (TRUE);
@@ -2002,10 +2005,10 @@ bool borg_study_prayer(int book, int what)
     borg_keypress('G');
 
     /* Specify the book */
-    borg_keypress('a' + i);
+    borg_keypress(I2A(i));
 
     /* Specify the prayer (not!) */
-    /* borg_keypress('a' + what); */
+    /* borg_keypress(I2A(what)); */
 
     /* Success */
     return (TRUE);
@@ -2142,7 +2145,7 @@ void borg_parse_equip(void)
 
         /* Look for first prefix */
         if ((0 == borg_what_text_hack(col, 1, 3, &t_a, buf)) &&
-            (buf[0] == 'a') && (buf[1] == p2) && (buf[2] == ' ')) {
+            (buf[0] == I2A(0)) && (buf[1] == p2) && (buf[2] == ' ')) {
 
             break;
         }
@@ -2157,7 +2160,7 @@ void borg_parse_equip(void)
         /* Attempt to get some text */
         if (!done &&
             (0 == borg_what_text_hack(col, row+1, 3, &t_a, buf)) &&
-            (buf[0] == 'a' + row) && (buf[1] == p2) && (buf[2] == ' ') &&
+            (buf[0] == I2A(row)) && (buf[1] == p2) && (buf[2] == ' ') &&
             (0 == borg_what_text(col+19, row+1, -80, &t_a, buf)) &&
             (buf[0] && (buf[0] != ' '))) {
 
@@ -2215,7 +2218,7 @@ void borg_parse_inven(void)
 
         /* Look for first prefix */
         if ((0 == borg_what_text_hack(col, 1, 3, &t_a, buf)) &&
-            (buf[0] == 'a') && (buf[1] == p2) && (buf[2] == ' ')) {
+            (buf[0] == I2A(0)) && (buf[1] == p2) && (buf[2] == ' ')) {
 
             break;
         }
@@ -2230,7 +2233,7 @@ void borg_parse_inven(void)
         /* Attempt to get some text */
         if (!done &&
             (0 == borg_what_text_hack(col, row+1, 3, &t_a, buf)) &&
-            (buf[0] == 'a' + row) && (buf[1] == p2) && (buf[2] == ' ') &&
+            (buf[0] == I2A(row)) && (buf[1] == p2) && (buf[2] == ' ') &&
             (0 == borg_what_text(col+3, row+1, -80, &t_a, buf)) &&
             (buf[0] && (buf[0] != ' '))) {
 
@@ -2501,6 +2504,59 @@ void prepare_race_class_info(void)
 
 
 
+/*
+ * Sorting hook -- comp function -- see below
+ *
+ * We use "u" to point to an array of strings, and "v" to point to
+ * an array of indexes, and we sort them together by the strings.
+ */
+static bool ang_sort_comp_hook(vptr u, vptr v, int a, int b)
+{
+    cptr *text = (cptr*)(u);
+    s16b *what = (s16b*)(v);
+
+    int cmp;
+    
+    /* Compare the two strings */
+    cmp = (strcmp(text[a], text[b]));
+    
+    /* Strictly less */
+    if (cmp < 0) return (TRUE);
+    
+    /* Strictly more */
+    if (cmp > 0) return (FALSE);
+    
+    /* Enforce "stable" sort */
+    return (what[a] <= what[b]);
+}
+
+
+/*
+ * Sorting hook -- swap function -- see below
+ *
+ * We use "u" to point to an array of strings, and "v" to point to
+ * an array of indexes, and we sort them together by the strings.
+ */
+static void ang_sort_swap_hook(vptr u, vptr v, int a, int b)
+{
+    cptr *text = (cptr*)(u);
+    s16b *what = (s16b*)(v);
+
+    cptr texttmp;
+    s16b whattmp;
+    
+    /* Swap "text" */
+    texttmp = text[a];
+    text[a] = text[b];
+    text[b] = texttmp;
+
+    /* Swap "what" */
+    whattmp = what[a];
+    what[a] = what[b];
+    what[b] = whattmp;
+}
+
+
 
 /*
  * Init "borg-obj.c".
@@ -2527,11 +2583,11 @@ void prepare_race_class_info(void)
  */
 void borg_obj_init(void)
 {
-    int i, j, k, n;
+    int i, k, n;
 
     int size;
 
-    sint what[512];
+    s16b what[512];
     cptr text[512];
 
     char buf[256];
@@ -2552,7 +2608,7 @@ void borg_obj_init(void)
     size = 0;
 
     /* Analyze some "item kinds" */
-    for (k = 0; k < MAX_K_IDX; k++) {
+    for (k = 1; k < MAX_K_IDX; k++) {
 
         inven_type hack;
 
@@ -2581,43 +2637,23 @@ void borg_obj_init(void)
         size++;
     }
 
-    /* Sort entries (in reverse order) by text */
-    for (i = 0; i < size - 1; i++) {
-        for (j = 0; j < size - 1; j++) {
+    /* Set the sort hooks */
+    ang_sort_comp = ang_sort_comp_hook;
+    ang_sort_swap = ang_sort_swap_hook;
 
-            int i1 = j;
-            int i2 = j + 1;
-
-            s16b k1 = what[i1];
-            s16b k2 = what[i2];
-
-            cptr t1 = text[i1];
-            cptr t2 = text[i2];
-
-            /* Enforce (reverse) order */
-            if (strcmp(t1, t2) < 0) {
-
-                /* Swap "kind" */
-                what[i1] = k2;
-                what[i2] = k1;
-
-                /* Swap "text" */
-                text[i1] = t2;
-                text[i2] = t1;
-            }
-        }
-    }
+    /* Sort */
+    ang_sort(text, what, size);
 
     /* Save the size */
-    auto_size_plural = size;
+    auto_plural_size = size;
 
     /* Allocate the "item parsing arrays" (plurals) */
-    C_MAKE(auto_what_plural, auto_size_plural, s16b);
-    C_MAKE(auto_text_plural, auto_size_plural, cptr);
+    C_MAKE(auto_plural_text, auto_plural_size, cptr);
+    C_MAKE(auto_plural_what, auto_plural_size, s16b);
 
     /* Save the entries */
-    for (i = 0; i < size; i++) auto_text_plural[i] = text[i];
-    for (i = 0; i < size; i++) auto_what_plural[i] = what[i];
+    for (i = 0; i < size; i++) auto_plural_text[i] = text[i];
+    for (i = 0; i < size; i++) auto_plural_what[i] = what[i];
 
 
     /*** Singular Object Templates ***/
@@ -2626,7 +2662,7 @@ void borg_obj_init(void)
     size = 0;
 
     /* Analyze some "item kinds" */
-    for (k = 0; k < MAX_K_IDX; k++) {
+    for (k = 1; k < MAX_K_IDX; k++) {
 
         inven_type hack;
 
@@ -2695,43 +2731,23 @@ void borg_obj_init(void)
         size++;
     }
 
-    /* Sort entries (in reverse order) by text */
-    for (i = 0; i < size - 1; i++) {
-        for (j = 0; j < size - 1; j++) {
+    /* Set the sort hooks */
+    ang_sort_comp = ang_sort_comp_hook;
+    ang_sort_swap = ang_sort_swap_hook;
 
-            int i1 = j;
-            int i2 = j + 1;
-
-            s16b k1 = what[i1];
-            s16b k2 = what[i2];
-
-            cptr t1 = text[i1];
-            cptr t2 = text[i2];
-
-            /* Enforce (reverse) order */
-            if (strcmp(t1, t2) < 0) {
-
-                /* Swap "kind" */
-                what[i1] = k2;
-                what[i2] = k1;
-
-                /* Swap "text" */
-                text[i1] = t2;
-                text[i2] = t1;
-            }
-        }
-    }
+    /* Sort */
+    ang_sort(text, what, size);
 
     /* Save the size */
-    auto_size_single = size;
+    auto_single_size = size;
 
     /* Allocate the "item parsing arrays" (plurals) */
-    C_MAKE(auto_what_single, auto_size_single, s16b);
-    C_MAKE(auto_text_single, auto_size_single, cptr);
+    C_MAKE(auto_single_text, auto_single_size, cptr);
+    C_MAKE(auto_single_what, auto_single_size, s16b);
 
     /* Save the entries */
-    for (i = 0; i < size; i++) auto_text_single[i] = text[i];
-    for (i = 0; i < size; i++) auto_what_single[i] = what[i];
+    for (i = 0; i < size; i++) auto_single_text[i] = text[i];
+    for (i = 0; i < size; i++) auto_single_what[i] = what[i];
 
 
     /*** Artifact and Ego-Item Parsers ***/
@@ -2769,47 +2785,27 @@ void borg_obj_init(void)
 
         /* Save an entry */
         text[size] = string_make(buf);
-        what[size] = 0 - k;
+        what[size] = k + 256;
         size++;
     }
 
-    /* Sort entries (in reverse order) by text */
-    for (i = 0; i < size - 1; i++) {
-        for (j = 0; j < size - 1; j++) {
+    /* Set the sort hooks */
+    ang_sort_comp = ang_sort_comp_hook;
+    ang_sort_swap = ang_sort_swap_hook;
 
-            int i1 = j;
-            int i2 = j + 1;
-
-            s16b k1 = what[i1];
-            s16b k2 = what[i2];
-
-            cptr t1 = text[i1];
-            cptr t2 = text[i2];
-
-            /* Enforce (reverse) order */
-            if (strcmp(t1, t2) < 0) {
-
-                /* Swap "kind" */
-                what[i1] = k2;
-                what[i2] = k1;
-
-                /* Swap "text" */
-                text[i1] = t2;
-                text[i2] = t1;
-            }
-        }
-    }
+    /* Sort */
+    ang_sort(text, what, size);
 
     /* Save the size */
-    auto_size_artego = size;
+    auto_artego_size = size;
 
     /* Allocate the "item parsing arrays" (plurals) */
-    C_MAKE(auto_what_artego, auto_size_artego, s16b);
-    C_MAKE(auto_text_artego, auto_size_artego, cptr);
+    C_MAKE(auto_artego_text, auto_artego_size, cptr);
+    C_MAKE(auto_artego_what, auto_artego_size, s16b);
 
     /* Save the entries */
-    for (i = 0; i < size; i++) auto_text_artego[i] = text[i];
-    for (i = 0; i < size; i++) auto_what_artego[i] = what[i];
+    for (i = 0; i < size; i++) auto_artego_text[i] = text[i];
+    for (i = 0; i < size; i++) auto_artego_what[i] = what[i];
 }
 
 

@@ -146,7 +146,9 @@ static void wr_item(inven_type *i_ptr)
     wr_byte(i_ptr->dd);
     wr_byte(i_ptr->ds);
 
-    wr_s16b(i_ptr->ident);
+    wr_byte(i_ptr->ident);
+
+    wr_byte(i_ptr->marked);
 
     wr_u32b(0L);
     wr_u32b(0L);
@@ -471,7 +473,7 @@ static void wr_extra()
 
     wr_s16b(0);		/* old "rest" */
     wr_s16b(p_ptr->blind);
-    wr_s16b(p_ptr->paralysis);
+    wr_s16b(p_ptr->paralyzed);
     wr_s16b(p_ptr->confused);
     wr_s16b(p_ptr->food);
     wr_s16b(p_ptr->food_digested);
@@ -479,7 +481,7 @@ static void wr_extra()
     wr_s16b(p_ptr->energy);
     wr_s16b(p_ptr->fast);
     wr_s16b(p_ptr->slow);
-    wr_s16b(p_ptr->fear);
+    wr_s16b(p_ptr->afraid);
     wr_s16b(p_ptr->cut);
     wr_s16b(p_ptr->stun);
     wr_s16b(p_ptr->poisoned);
@@ -1328,6 +1330,12 @@ bool save_player()
     strcpy(safe, savefile);
     strcat(safe, ".new");
 
+#ifdef VM
+    /* Hack -- support "flat directory" usage on VM/ESA */
+    strcpy(safe, savefile);
+    strcat(safe, "n");
+#endif /* VM */
+
     /* Remove it */
     remove(safe);
 
@@ -1339,6 +1347,12 @@ bool save_player()
         /* Old savefile */
         strcpy(temp, savefile);
         strcat(temp, ".old");
+
+#ifdef VM
+        /* Hack -- support "flat directory" usage on VM/ESA */
+        strcpy(temp, savefile);
+        strcat(temp, "o");
+#endif /* VM */
 
         /* Remove it */
         remove(temp);

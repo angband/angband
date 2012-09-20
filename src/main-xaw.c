@@ -698,6 +698,7 @@ struct term_data {
 static term_data screen;
 static term_data recall;
 static term_data choice;
+static term_data mirror;
 
 /*
  * The application context
@@ -714,6 +715,8 @@ static String fallback[] = {
     "Angband.recall.title:                Recall",
     "Angband.choice.iconName:             Choice",
     "Angband.choice.title:                Choice",
+    "Angband.mirror.iconName:             Mirror",
+    "Angband.mirror.title:                Mirror",
     NULL
 };
 
@@ -737,6 +740,14 @@ Arg recallArgs[] = {
     { XtNmaxColumns,   80}
 };
 Arg choiceArgs[] = {
+    { XtNstartRows,    24},
+    { XtNstartColumns, 80},
+    { XtNminRows,      1},
+    { XtNminColumns,   1},
+    { XtNmaxRows,      24},
+    { XtNmaxColumns,   80}
+};
+Arg mirrorArgs[] = {
     { XtNstartRows,    24},
     { XtNstartColumns, 80},
     { XtNminRows,      1},
@@ -937,7 +948,19 @@ static errr Term_xtra_xaw(int n, int v)
         
         /* Clear the screen XXX XXX XXX */    
         case TERM_XTRA_CLEAR:
-            XClearWindow(XtDisplay((Widget)screen.widget), XtWindow(widget));
+			if ( Term == &screen.t )
+				XClearWindow(XtDisplay((Widget)screen.widget),
+							 XtWindow((Widget)screen.widget));
+			if ( Term == &recall.t )
+				XClearWindow(XtDisplay((Widget)recall.widget),
+							 XtWindow((Widget)recall.widget));
+			if ( Term == &choice.t )
+				XClearWindow(XtDisplay((Widget)choice.widget),
+							 XtWindow((Widget)choice.widget));
+			if ( Term == &mirror.t )
+				XClearWindow(XtDisplay((Widget)mirror.widget),
+							 XtWindow((Widget)mirror.widget));
+			return(0);
     }
 
     /* Unknown */
@@ -1046,14 +1069,14 @@ static errr term_data_init(term_data *td, Widget topLevel,
     XtAddCallback((Widget)td->widget, XtNredrawCallback,
 		  react_redraw, td);
 
-    /* Activate (important) */
-    Term_activate(t);
-
     /* Realize the widget */
     XtRealizeWidget(parent);
-
+ 
     /* Make it visible */
     XtPopup(parent, XtGrabNone);
+ 
+    /* Activate (important) */
+    Term_activate(t);
 
     return 0;
 }
@@ -1118,6 +1141,11 @@ errr init_xaw(void)
     term_data_init (&choice, topLevel, 16, "choice",
 		    choiceArgs, XtNumber(choiceArgs));
     term_choice = Term;
+
+    /* Initialize the mirror window */
+    term_data_init (&mirror, topLevel, 16, "mirror",
+		    mirrorArgs, XtNumber(mirrorArgs));
+    term_mirror = Term;
 
     /* Activate the "Angband" window screen */
     Term_activate(&screen.t);

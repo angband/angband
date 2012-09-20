@@ -27,6 +27,7 @@
  *   But be careful with the "free space" routine, wear stuff first.
  *   Make sure nothing is "destroyed" if we do not do them every turn.
  *   Consider some special routines in stores (and in the home).
+ *   XXX XXX XXX Some "uniques" (The Learnean Hydra, etc) use "The".
  *
  * Note that we assume that any item with quantity zero does not exist,
  * thus, when simulating possible worlds, we do not actually have to
@@ -35,6 +36,11 @@
  * Hack -- We should perhaps consider wearing "harmless" items into empty
  * slots when in the dungeon, to allow rings/amulets to be brought back up
  * to town to be sold.
+ *
+ * We should take account of possible combinations of equipment.  This may
+ * be a potentially expensive computation, but could be done occasionally.
+ * It is important to use a "state-less" formula to allow the exchange to
+ * be spread over multiple turns.
  *
  * Hack -- We should attempt to only collect non-discounted items, at least
  * for the "expensive" slots, such as books, since we do not want to lose
@@ -68,7 +74,9 @@
  * down to a deeper level, then he will get stuck in a possibly infinite
  * "fleeing" loop.  We should also attempt to allow "fleeing" to a location
  * which may be safe for the short term, to allow the Borg to rest.  Also,
- * fleeing from fast spell-casters is probably not a very smart idea.
+ * fleeing from fast spell-casters is probably not a very smart idea.  Also,
+ * fleeing from fast monsters in general is rather stupid.  Watching the Borg
+ * flee from an Ochre Jelly is a good example of this stupidity.  XXX XXX XXX
  */
 
 
@@ -80,7 +88,6 @@
 auto_item *safe_items;		/* Safety "inventory" */
 
 auto_shop *safe_shops;		/* Safety "shops" */
-
 
 
 /*
@@ -104,16 +111,44 @@ static s16b value_feeling[] = {
 
 
 
+
 /*
- * Hack -- make sure we have a good "ANSI" definition for "CTRL()"
+ * The "notice" functions examine various aspects of the player inventory,
+ * the player equipment, or the home contents, and extract various numerical
+ * quantities based on those aspects, adjusting them for various "abilities",
+ * such as the ability to cast certain spells, etc.
+ *
+ * The "power" functions use the numerical quantities described above, and
+ * use them to do two different things:  (1) rank the "value" of having
+ * various abilities relative to the possible "money" reward of carrying
+ * sellable items instead, and (2) rank the value of various abilities
+ * relative to each other, which is used to determine what to wear/buy,
+ * and in what order to wear/buy those items.
+ *
+ * These functions use some very heuristic values, by the way...
+ *
+ * We should probably take account of things like possible enchanting
+ * (especially when in town), and items which may be found soon.
+ *
+ * We consider several things:
+ *   (1) the actual "power" of the current weapon and bow
+ *   (2) the various "flags" imparted by the equipment
+ *   (3) the various abilities imparted by the equipment
+ *   (4) the penalties induced by heavy armor or gloves or edged weapons
+ *   (5) the abilities required to enter the "max_depth" dungeon level
+ *   (6) the various abilities of some useful inventory items
+ *
+ * Note the use of special "item counters" for evaluating the value of
+ * a collection of items of the given type.  Basically, the first item
+ * of the given type is always the most valuable, with subsequent items
+ * being worth less, until the "limit" is reached, after which point any
+ * extra items are only worth as much as they can be sold for.
  */
-#undef CTRL
-#define CTRL(C) ((C)&037)
-
-
-
+ 
+ 
+ 
 /*
- * Helper function -- notice the equipment
+ * Helper function -- notice the player equipment
  */
 static void borg_notice_aux1(void)
 {
@@ -253,29 +288,29 @@ static void borg_notice_aux1(void)
 
 
     /* Elf */
-    if (auto_race == 2) my_resist_lite = TRUE;
+    if (auto_race == RACE_ELF) my_resist_lite = TRUE;
 
     /* Hobbit */
-    if (auto_race == 3) my_sustain_dex = TRUE;
+    if (auto_race == RACE_HOBBIT) my_sustain_dex = TRUE;
 
     /* Gnome */
-    if (auto_race == 4) my_free_act = TRUE;
+    if (auto_race == RACE_GNOME) my_free_act = TRUE;
 
     /* Dwarf */
-    if (auto_race == 5) my_resist_blind = TRUE;
+    if (auto_race == RACE_DWARF) my_resist_blind = TRUE;
 
     /* Half-Orc */
-    if (auto_race == 6) my_resist_dark = TRUE;
+    if (auto_race == RACE_HALF_ORC) my_resist_dark = TRUE;
 
     /* Half-Troll */
-    if (auto_race == 7) my_sustain_str = TRUE;
+    if (auto_race == RACE_HALF_TROLL) my_sustain_str = TRUE;
 
     /* Dunadan */
-    if (auto_race == 8) my_sustain_con = TRUE;
+    if (auto_race == RACE_DUNADAN) my_sustain_con = TRUE;
 
     /* High Elf */
-    if (auto_race == 9) my_resist_lite = TRUE;
-    if (auto_race == 9) my_see_inv = TRUE;
+    if (auto_race == RACE_HIGH_ELF) my_resist_lite = TRUE;
+    if (auto_race == RACE_HIGH_ELF) my_see_inv = TRUE;
 
 
     /* Scan the usable inventory */
@@ -381,6 +416,9 @@ static void borg_notice_aux1(void)
         my_to_hit += item->to_h;
         my_to_dam += item->to_d;
     }
+
+    /* Hack -- Chaos / Confusion */
+    if (my_resist_chaos) my_resist_conf = TRUE;
 
 
     /* Update "stats" */
@@ -725,7 +763,7 @@ static void borg_notice_aux1(void)
 
 
 /*
- * Helper function -- notice the inventory
+ * Helper function -- notice the player inventory
  */
 static void borg_notice_aux2(void)
 {
@@ -970,6 +1008,7 @@ static void borg_notice_aux2(void)
                     case SV_STAFF_IDENTIFY:
                         amt_ident += item->iqty * item->pval;
                         break;
+                        
                     case SV_STAFF_TELEPORTATION:
                         amt_teleport += item->iqty * item->pval;
                         break;
@@ -1061,7 +1100,7 @@ static void borg_notice_aux2(void)
 
 
 /*
- * Helper function -- notice the home
+ * Helper function -- notice the contents of the home
  */
 static void borg_notice_aux3(void)
 {
@@ -1117,10 +1156,10 @@ static void borg_notice_aux3(void)
 
     /*** Process the inventory ***/
 
-    /* Scan the inventory */
-    for (i = 0; i < INVEN_PACK; i++) {
+    /* Scan the home */
+    for (i = 0; i < 24; i++) {
 
-        item = &auto_items[i];
+        item = &shop->ware[i];
 
         /* Skip empty items */
         if (!item->iqty) continue;
@@ -1266,6 +1305,7 @@ static void borg_notice_aux3(void)
                     case SV_STAFF_IDENTIFY:
                         num_ident += item->iqty * item->pval;
                         break;
+                        
                     case SV_STAFF_TELEPORTATION:
                         num_teleport += item->iqty * item->pval;
                         break;
@@ -1339,6 +1379,9 @@ static void borg_notice(void)
     
     /* Notice the inventory */
     borg_notice_aux2();
+    
+    /* Notice the home */
+    /* borg_notice_aux3(); */
 }
 
 
@@ -1556,7 +1599,7 @@ static s32b borg_power_aux1(void)
     }
 
     /* Hack -- most edged weapons hurt magic for priests */
-    if (auto_class == 2) {
+    if (auto_class == CLASS_PRIEST) {
 
         item = &auto_items[INVEN_WIELD];
 
@@ -1577,21 +1620,6 @@ static s32b borg_power_aux1(void)
 
 /*
  * Helper function -- calculate power of inventory
- *
- * Note that "power" is not the "same" as "money", but we pretend that
- * they are, by placing a 50000 cap on the "money" value of any item,
- * and then making sure to reward all "essential" flags and properties
- * by at least 50000 (minus any actual "money" value).
- *
- * XXX XXX XXX We should verify that we never do anything "stupid",
- * such as destroy a rod of trap detection to make room for something
- * "expensive", such as dragon scale mail.
- *
- * This function actually does two things, it ranks the "value" of having
- * various abilities relative to the possible "money" reward of carrying
- * sellable items instead, and it ranks the value of various abilities
- * relative to each other, which is used to determine what to wear/buy,
- * and in what order to wear/buy those items.
  */
 static s32b borg_power_aux2(void)
 {
@@ -1756,31 +1784,31 @@ static s32b borg_power_aux3(void)
     /*** Basic abilities ***/
 
     /* Collect fuel */
-    for (k = 0; k < 50 && k < num_fuel; k++) value += 1000L - k * 10L;
+    for (k = 0; k < 50 && k < num_fuel; k++) value += 1000L - k*10L;
 
     /* Collect food */
-    for (k = 0; k < 50 && k < num_food; k++) value += 800L - k * 10L;
+    for (k = 0; k < 50 && k < num_food; k++) value += 800L - k*10L;
 
     /* Collect ident */
-    for (k = 0; k < 20 && k < num_ident; k++) value += 200L - k * 10L;
+    for (k = 0; k < 20 && k < num_ident; k++) value += 200L - k*10L;
 
     /* Collect recall */
-    for (k = 0; k < 10 && k < num_recall; k++) value += 300L - k * 10L;
+    for (k = 0; k < 10 && k < num_recall; k++) value += 300L - k*10L;
 
     /* Collect escape */
-    for (k = 0; k < 10 && k < num_escape; k++) value += 200L - k * 10L;
+    for (k = 0; k < 10 && k < num_escape; k++) value += 200L - k*10L;
 
     /* Collect teleport */
-    for (k = 0; k < 10 && k < num_teleport; k++) value += 200L - k * 10L;
+    for (k = 0; k < 10 && k < num_teleport; k++) value += 200L - k*10L;
 
 
     /*** Healing ***/
 
     /* Collect cure critical */
-    for (k = 0; k < 10 && k < num_cure_critical; k++) value += 150L - k * 10L;
+    for (k = 0; k < 10 && k < num_cure_critical; k++) value += 150L - k*10L;
     
     /* Collect cure serious */
-    for (k = 0; k < 10 && k < num_cure_serious; k++) value += 140L - k * 10L;
+    for (k = 0; k < 10 && k < num_cure_serious; k++) value += 140L - k*10L;
 
 
     /*** Missiles ***/
@@ -1792,7 +1820,7 @@ static s32b borg_power_aux3(void)
     /*** Various ***/
     
     /* Hack -- Collect restore life levels */
-    for (k = 0; k < 5 && k < num_fix_exp; k++) value += 500L - k * 10L;
+    for (k = 0; k < 5 && k < num_fix_exp; k++) value += 500L - k*10L;
 
 
     /*** Enchantment ***/
@@ -1810,10 +1838,17 @@ static s32b borg_power_aux3(void)
     /*** Hack -- books ***/
 
     /* Reward books */
-    for (book = 0; book < 9; book++) {
+    for (book = 0; book < 4; book++) {
 
-        /* Collect up to 10 copies of each book */
-        for (k = 0; k < 10 && k < num_book[book]; k++) value += 1000L - k * 100L;
+        /* Collect up to 5 copies of each normal book */
+        for (k = 0; k < 5 && k < num_book[book]; k++) value += 1000L - k*100L;
+    }
+
+    /* Reward books */
+    for (book = 4; book < 9; book++) {
+
+        /* Collect up to 2 copies of each special book */
+        for (k = 0; k < 2 && k < num_book[book]; k++) value += 1000L - k*100L;
     }
 
     
@@ -1822,28 +1857,8 @@ static s32b borg_power_aux3(void)
 }
 
 
-
 /*
  * Calculate the "power" of the Borg
- *
- * This function uses some very heuristic values, by the way...
- *
- * We should probably take account of things like possible enchanting
- * (especially when in town), and the deepest explored level.
- *
- * We consider several things:
- *   (1) the actual "power" of the current weapon and bow
- *   (2) the various "flags" imparted by the equipment
- *   (3) the various abilities imparted by the equipment
- *   (4) the penalties induced by heavy armor or gloves or edged weapons
- *   (5) the abilities required to enter the "destination" level
- *   (6) a heuristic bonus for various useful inventory items
- *
- * Note the use of special "item counters" for evaluating the value of
- * a collection of items of the given type.  Basically, the first item
- * of the given type is always the most valuable, with subsequent items
- * being worth less, until the "limit" is reached, after which point any
- * extra items are only worth as much as they can be sold for.
  */
 static s32b borg_power(void)
 {
@@ -1854,6 +1869,9 @@ static s32b borg_power(void)
     
     /* Process the inventory */
     value += borg_power_aux2();
+    
+    /* Process the home */
+    /* value += borg_power_aux3(); */
 
     /* Return the value */
     return (value);
@@ -1891,227 +1909,45 @@ static s32b borg_power(void)
  * item might be a blessed, or something.
  *
  * Currently, only characters who do not get "average" feelings are allowed
- * to decide that something is "icky", others must wait for an "average" feeling.
+ * to decide that something is "icky", others must wait for an "average"
+ * feeling.
  */
 static bool borg_item_icky(auto_item *item)
 {
     /* Mega-Hack -- allow "icky" items */
-    if ((auto_class != 2) && (auto_class != 4) && (auto_class != 1)) return (FALSE);
+    if ((auto_class != CLASS_PRIEST) &&
+        (auto_class != CLASS_RANGER) &&
+        (auto_class != CLASS_MAGE)) return (FALSE);
             
+    /* Broken dagger/sword, Filthy rag */
+    if (((item->tval == TV_SWORD) && (item->sval == SV_BROKEN_DAGGER)) ||
+        ((item->tval == TV_SWORD) && (item->sval == SV_BROKEN_SWORD)) ||
+        ((item->tval == TV_SOFT_ARMOR) && (item->sval == SV_FILTHY_RAG))) {
+        return (TRUE);
+    }
+
+    /* Dagger, Sling */
+    if (((item->tval == TV_SWORD) && (item->sval == SV_DAGGER)) ||
+        ((item->tval == TV_BOW) && (item->sval == SV_SLING))) {
+        return (TRUE);
+    }
+        
+    /* Cloak, Robe */
+    if (((item->tval == TV_CLOAK) && (item->sval == SV_CLOAK)) ||
+        ((item->tval == TV_SOFT_ARMOR) && (item->sval == SV_ROBE))) {
+        return (TRUE);
+    }
+
+    /* Leather Gloves */
+    if ((item->tval == TV_GLOVES) &&
+        (item->sval == SV_SET_OF_LEATHER_GLOVES)) {
+        return (TRUE);
+    }
+
     /* Hack -- Diggers */
     if (item->tval == TV_DIGGING) return (TRUE);
 
-    /* Broken dagger/sword */
-    if ((item->tval == TV_SWORD) && (item->sval == SV_BROKEN_DAGGER)) return (TRUE);
-    if ((item->tval == TV_SWORD) && (item->sval == SV_BROKEN_SWORD)) return (TRUE);
-
-    /* Filthy rag */
-    if ((item->tval == TV_SOFT_ARMOR) && (item->sval == SV_FILTHY_RAG)) return (TRUE);
-
-    /* Dagger */
-    if ((item->tval == TV_SWORD) && (item->sval == SV_DAGGER)) return (TRUE);
-
-    /* Sling */
-    if ((item->tval == TV_BOW) && (item->sval == SV_SLING)) return (TRUE);
-
-    /* Leather Gloves */
-    if ((item->tval == TV_GLOVES) && (item->sval == SV_SET_OF_LEATHER_GLOVES)) return (TRUE);
-
-    /* Cloak */
-    if ((item->tval == TV_CLOAK) && (item->sval == SV_CLOAK)) return (TRUE);
-
-    /* Robe */
-    if ((item->tval == TV_SOFT_ARMOR) && (item->sval == SV_ROBE)) return (TRUE);
-
     /* Assume okay */
-    return (FALSE);
-}
-
-
-
-
-/*
- * Determine if an item can be sold in the current store
- *
- * XXX XXX XXX XXX Consider use of "icky" test on items
- */
-static bool borg_good_sell(auto_item *item, int who)
-{
-    /* Hack -- save all artifacts */
-    if (item->name1) {
-
-        /* Save them in the home */
-        if (who == 7) return (TRUE);
-
-        /* Hack -- Never sell them */
-        return (FALSE);
-    }
-
-
-    /* Hack -- never sell worthless items */
-    if (item->value <= 0) return (FALSE);
-
-
-    /* Analyze the type */
-    switch (item->tval) {
-
-        case TV_POTION:
-        case TV_SCROLL:
-        
-            /* Never sell if not "known" and interesting */
-            if (!item->able && (auto_max_depth > 5)) return (FALSE);
-            break;
-
-        case TV_FOOD:
-        case TV_ROD:
-        case TV_WAND:
-        case TV_STAFF:
-        case TV_RING:
-        case TV_AMULET:
-        case TV_LITE:
-
-            /* Never sell if not "known" */
-            if (!item->able) return (FALSE);
-            break;
-
-        case TV_BOW:
-        case TV_DIGGING:
-        case TV_HAFTED:
-        case TV_POLEARM:
-        case TV_SWORD:
-        case TV_BOOTS:
-        case TV_GLOVES:
-        case TV_HELM:
-        case TV_CROWN:
-        case TV_SHIELD:
-        case TV_CLOAK:
-        case TV_SOFT_ARMOR:
-        case TV_HARD_ARMOR:
-        case TV_DRAG_ARMOR:
-
-            /* Only sell "known" (or "average") items (unless "icky") */
-            if (!item->able && !streq(item->note, "{average}") &&
-                !borg_item_icky(item)) return (FALSE);
-
-            break;
-    }
-
-
-    /* Switch on the store */
-    switch (who + 1) {
-
-      /* General Store */
-      case 1:
-
-        /* Analyze the type */
-        switch (item->tval) {
-          case TV_DIGGING:
-          case TV_CLOAK:
-          case TV_FOOD:
-          case TV_FLASK:
-          case TV_LITE:
-          case TV_SPIKE:
-            return (TRUE);
-        }
-        break;
-
-      /* Armoury */
-      case 2:
-
-        /* Analyze the type */
-        switch (item->tval) {
-          case TV_BOOTS:
-          case TV_GLOVES:
-#if 0
-          case TV_CLOAK:
-#endif
-          case TV_HELM:
-          case TV_CROWN:
-          case TV_SHIELD:
-          case TV_SOFT_ARMOR:
-          case TV_HARD_ARMOR:
-          case TV_DRAG_ARMOR:
-            return (TRUE);
-        }
-        break;
-
-      /* Weapon Shop */
-      case 3:
-
-        /* Analyze the type */
-        switch (item->tval) {
-          case TV_SHOT:
-          case TV_BOLT:
-          case TV_ARROW:
-          case TV_BOW:
-#if 0
-          case TV_DIGGING:
-          case TV_HAFTED:
-#endif
-          case TV_POLEARM:
-          case TV_SWORD:
-            return (TRUE);
-        }
-        break;
-
-      /* Temple */
-      case 4:
-
-        /* Analyze the type */
-        switch (item->tval) {
-          case TV_HAFTED:
-#if 0
-          case TV_SCROLL:
-          case TV_POTION:
-#endif
-          case TV_PRAYER_BOOK:
-            return (TRUE);
-        }
-        break;
-
-      /* Alchemist */
-      case 5:
-
-        /* Analyze the type */
-        switch (item->tval) {
-          case TV_SCROLL:
-          case TV_POTION:
-            return (TRUE);
-        }
-        break;
-
-      /* Magic Shop */
-      case 6:
-
-        /* Analyze the type */
-        switch (item->tval) {
-          case TV_MAGIC_BOOK:
-          case TV_AMULET:
-          case TV_RING:
-#if 0
-          case TV_SCROLL:
-          case TV_POTION:
-#endif
-          case TV_STAFF:
-          case TV_WAND:
-          case TV_ROD:
-            return (TRUE);
-        }
-        break;
-
-
-      /* Black Market */
-      case 7:
-
-        /* Analyze the type */
-        switch (item->tval) {
-          case TV_CHEST:
-            return (TRUE);
-        }
-        break;
-    }
-
-    /* Assume not */
     return (FALSE);
 }
 
@@ -2578,7 +2414,7 @@ static bool borg_enchant_to_a(void)
         borg_keypress('/');
 
         /* Choose that item */
-        borg_keypress('a' + b - INVEN_WIELD);
+        borg_keypress(I2A(b - INVEN_WIELD));
 
         /* Success */
         return (TRUE);
@@ -2632,7 +2468,7 @@ static bool borg_enchant_to_h(void)
         borg_keypress('/');
 
         /* Choose that item */
-        borg_keypress('a' + b - INVEN_WIELD);
+        borg_keypress(I2A(b - INVEN_WIELD));
 
         /* Success */
         return (TRUE);
@@ -2684,7 +2520,7 @@ static bool borg_enchant_to_d(void)
         borg_keypress('/');
 
         /* Choose that item */
-        borg_keypress('a' + b - INVEN_WIELD);
+        borg_keypress(I2A(b - INVEN_WIELD));
 
         /* Success */
         return (TRUE);
@@ -2804,7 +2640,7 @@ static bool borg_destroy(int i)
 
     /* Destroy that item */
     borg_keypress('k');
-    borg_keypress('a' + i);
+    borg_keypress(I2A(i));
 
     /* Hack -- destroy a single item */
     if (item->iqty > 1) borg_keypress('\n');
@@ -3478,14 +3314,14 @@ static bool borg_test_stuff(void)
                 borg_keypress('/');
 
                 /* Select the item */
-                borg_keypress('a' + b_i - INVEN_WIELD);
+                borg_keypress(I2A(b_i - INVEN_WIELD));
             }
 
             /* Inventory */            
             else {
 
                 /* Select the item */
-                borg_keypress('a' + b_i);
+                borg_keypress(I2A(b_i));
             }
             
             /* Success */
@@ -3518,10 +3354,6 @@ static bool borg_swap_rings(void)
     
     s32b v, v1, v2;
 
-
-    /* Must have two rings */
-    if (!auto_items[INVEN_LEFT].iqty) return (FALSE);
-    if (!auto_items[INVEN_RIGHT].iqty) return (FALSE);
 
     /* Look for an empty slot */
     for (hole = 0; hole < INVEN_PACK; hole++) {
@@ -3617,12 +3449,16 @@ static bool borg_swap_rings(void)
         borg_note("# Taking off both rings.");
 
         /* Take off "tight"/"right" ring */
-        borg_keypress('t');
-        borg_keypress('a' + INVEN_RIGHT - INVEN_WIELD);
-
+        if (auto_items[INVEN_RIGHT].iqty) {
+            borg_keypress('t');
+            borg_keypress(I2A(INVEN_RIGHT - INVEN_WIELD));
+        }
+        
         /* Take off "loose"/"left" ring */
-        borg_keypress('t');
-        borg_keypress('a' + INVEN_LEFT - INVEN_WIELD);
+        if (auto_items[INVEN_LEFT].iqty) {
+            borg_keypress('t');
+            borg_keypress(I2A(INVEN_LEFT - INVEN_WIELD));
+        }
 
         /* Success */
         return (TRUE);
@@ -3714,7 +3550,7 @@ static bool borg_takeoff_stuff(void)
 
         /* Take off item */
         borg_keypress('t');
-        borg_keypress('a' + b_i - INVEN_WIELD);
+        borg_keypress(I2A(b_i - INVEN_WIELD));
 
         /* Success */
         return (TRUE);
@@ -3724,6 +3560,240 @@ static bool borg_takeoff_stuff(void)
     return (FALSE);
 }
 
+
+
+
+/*
+ * Helper function (see below)
+ */
+static void borg_best_stuff_aux(int n, byte *test, byte *best, s32b *vp)
+{
+    int i;
+    
+    int slot;
+
+
+    /* All done */
+    if (n >= 12) {
+
+        s32b p;
+
+        /* Examine */
+        borg_notice();
+
+        /* Evaluate */
+        p = borg_power();
+
+        /* Track best */
+        if (p > *vp) {
+
+            /* Save the results */
+            for (i = 0; i < n; i++) best[i] = test[i];
+
+            /* Use it */
+            *vp = p;
+        }
+
+        /* Success */
+        return;
+    }
+
+
+    /* Extract the slot XXX XXX XXX */
+    slot = INVEN_WIELD + n;
+
+
+    /* Note the attempt */
+    test[n] = slot;
+
+    /* Evaluate the default item */
+    borg_best_stuff_aux(n + 1, test, best, vp);
+
+
+    /* Try other possible objects */
+    for (i = 0; i < INVEN_PACK; i++) {
+
+        auto_item *item = &auto_items[i];
+
+        /* Skip empty items */
+        if (!item->iqty) continue;
+        
+        /* Require "aware" */
+        if (!item->kind) continue;
+        
+        /* Require "known" (or average) */
+        if (!item->able && !streq(item->note, "{average}")) continue;
+
+        /* Hack -- ignore "worthless" items */
+        if (!item->value) continue;
+
+
+        /* Make sure it goes in this slot */
+        if (slot != borg_wield_slot(item)) continue;
+
+        /* Take off old item */
+        COPY(&auto_items[i], &safe_items[slot], auto_item);
+
+        /* Wear the new item */
+        COPY(&auto_items[slot], &safe_items[i], auto_item);
+
+        /* Note the attempt */
+        test[n] = i;
+
+        /* Evaluate the possible item */
+        borg_best_stuff_aux(n + 1, test, best, vp);
+
+        /* Restore equipment */
+        COPY(&auto_items[slot], &safe_items[slot], auto_item);
+
+        /* Restore inventory */
+        COPY(&auto_items[i], &safe_items[i], auto_item);
+    }
+}
+
+
+
+/*
+ * Attempt to instantiate the *best* possible equipment.
+ */
+static bool borg_best_stuff(void)
+{
+    int k;
+
+    int hole;
+    int slot;
+
+    s32b value;
+
+    int i, b_i = -1;
+    s32b p, b_p = 0L;
+
+    byte test[12];
+    byte best[12];
+    
+    auto_item *item;
+
+
+    /* Look for an empty slot */
+    for (hole = 0; hole < INVEN_PACK; hole++) {
+    
+        item = &auto_items[hole];
+        
+        /* Found an empty slot */
+        if (!item->iqty) break;
+    }
+    
+    /* No empty slots */
+    if (hole == INVEN_PACK) return (FALSE);
+
+
+    /* Hack -- Initialize */
+    for (k = 0; k < 12; k++) best[k] = 255;
+
+    /* Hack -- Copy all the slots */
+    for (i = 0; i < INVEN_TOTAL; i++) {
+
+        /* Save the item */
+        COPY(&safe_items[i], &auto_items[i], auto_item);
+    }
+        
+
+    /* Examine the inventory */
+    borg_notice();
+
+    /* Evaluate the inventory */
+    value = borg_power();
+
+    /* Determine the best possible equipment */
+    (void)borg_best_stuff_aux(0, test, best, &value);
+
+
+    /* Find "easiest" step */
+    for (k = 0; k < 12; k++) {
+
+        /* Get choice */
+        i = best[k];
+        
+        /* Ignore non-changes */
+        if (i >= INVEN_WIELD) continue;
+
+        /* Access the item */
+        item = &auto_items[i];
+
+        /* Access the slot */
+        slot = borg_wield_slot(item);
+
+        /* Save the old item */
+        COPY(&safe_items[slot], &auto_items[slot], auto_item);
+
+        /* Save the new item */
+        COPY(&safe_items[i], &auto_items[i], auto_item);
+
+        /* Save the hole */
+        COPY(&safe_items[hole], &auto_items[hole], auto_item);
+
+        /* Take off old item */
+        COPY(&auto_items[hole], &safe_items[slot], auto_item);
+
+        /* Wear new item */
+        COPY(&auto_items[slot], &safe_items[i], auto_item);
+
+        /* Only a single item */
+        auto_items[slot].iqty = 1;
+
+        /* Reduce the inventory quantity by one */
+        auto_items[i].iqty--;
+        
+        /* Examine the inventory */
+        borg_notice();
+                
+        /* Evaluate the inventory */
+        p = borg_power();
+
+        /* Restore the old item */
+        COPY(&auto_items[slot], &safe_items[slot], auto_item);
+
+        /* Restore the new item */
+        COPY(&auto_items[i], &safe_items[i], auto_item);
+
+        /* Restore the hole */
+        COPY(&auto_items[hole], &safe_items[hole], auto_item);
+
+        /* Ignore "bad" swaps */
+        if ((b_i >= 0) && (p < b_p)) continue;
+
+        /* Maintain the "best" */
+        b_i = i; b_p = p;
+    }
+
+    /* Restore bonuses */
+    borg_notice();
+                
+    /* Evaluate the inventory */
+    p = borg_power();
+
+
+    /* Start changing */
+    if (b_i >= 0) {
+
+        /* Get the item */
+        auto_item *item = &auto_items[b_i];
+
+        /* Log */
+        borg_note(format("# Besting %s.", item->desc));
+
+        /* Wear it */
+        borg_keypress('w');
+        borg_keypress(I2A(b_i));
+
+        /* Did something */
+        return (TRUE);
+    }
+    
+
+    /* Nope */
+    return (FALSE);
+}
 
 
 
@@ -3789,6 +3859,9 @@ static bool borg_wear_stuff(void)
         
         /* Require "known" (or average) */
         if (!item->able && !streq(item->note, "{average}")) continue;
+
+        /* Hack -- ignore "worthless" items */
+        if (!item->value) continue;
 
 
         /* Where does it go */
@@ -3862,7 +3935,7 @@ static bool borg_wear_stuff(void)
 
         /* Wear it */
         borg_keypress('w');
-        borg_keypress('a' + b_i);
+        borg_keypress(I2A(b_i));
 
         /* Did something */
         return (TRUE);
@@ -4347,18 +4420,6 @@ static bool borg_leave_level(bool bored)
     /* Bored and in town, go down */
     if (bored && !auto_depth) {
 
-        /* Mega-Hack -- Recall into dungeon to find max depth */
-        if (!auto_max_depth &&
-            (amt_recall > 4) &&
-            borg_recall()) {
-
-            /* Note */
-            borg_note("# Recalling into dungeon (for info)...");
-
-            /* Give it a shot */
-            return (TRUE);
-        }
-
         /* Mega-Hack -- Recall into dungeon */
         if (auto_max_depth && (auto_max_depth >= 5) &&
             (amt_recall > 4) &&
@@ -4434,14 +4495,296 @@ static bool borg_leave_level(bool bored)
 
 
 
+/*
+ * Determine if an item can be sold in the given store
+ *
+ * XXX XXX XXX XXX Consider use of "icky" test on items
+ */
+static bool borg_good_sell(auto_item *item, int who)
+{
+    /* Never sell worthless items */
+    if (item->value <= 0) return (FALSE);
+
+    /* Analyze the type */
+    switch (item->tval) {
+
+        case TV_POTION:
+        case TV_SCROLL:
+        
+            /* Never sell if not "known" and interesting */
+            if (!item->able && (auto_max_depth > 5)) return (FALSE);
+            break;
+
+        case TV_FOOD:
+        case TV_ROD:
+        case TV_WAND:
+        case TV_STAFF:
+        case TV_RING:
+        case TV_AMULET:
+        case TV_LITE:
+
+            /* Never sell if not "known" */
+            if (!item->able) return (FALSE);
+            break;
+
+        case TV_BOW:
+        case TV_DIGGING:
+        case TV_HAFTED:
+        case TV_POLEARM:
+        case TV_SWORD:
+        case TV_BOOTS:
+        case TV_GLOVES:
+        case TV_HELM:
+        case TV_CROWN:
+        case TV_SHIELD:
+        case TV_CLOAK:
+        case TV_SOFT_ARMOR:
+        case TV_HARD_ARMOR:
+        case TV_DRAG_ARMOR:
+
+            /* Only sell "known" (or "average") items (unless "icky") */
+            if (!item->able && !streq(item->note, "{average}") &&
+                !borg_item_icky(item)) return (FALSE);
+
+            break;
+    }
+
+
+    /* Switch on the store */
+    switch (who + 1) {
+
+      /* General Store */
+      case 1:
+
+        /* Analyze the type */
+        switch (item->tval) {
+          case TV_DIGGING:
+          case TV_CLOAK:
+          case TV_FOOD:
+          case TV_FLASK:
+          case TV_LITE:
+          case TV_SPIKE:
+            return (TRUE);
+        }
+        break;
+
+      /* Armoury */
+      case 2:
+
+        /* Analyze the type */
+        switch (item->tval) {
+          case TV_BOOTS:
+          case TV_GLOVES:
+#if 0
+          case TV_CLOAK:
+#endif
+          case TV_HELM:
+          case TV_CROWN:
+          case TV_SHIELD:
+          case TV_SOFT_ARMOR:
+          case TV_HARD_ARMOR:
+          case TV_DRAG_ARMOR:
+            return (TRUE);
+        }
+        break;
+
+      /* Weapon Shop */
+      case 3:
+
+        /* Analyze the type */
+        switch (item->tval) {
+          case TV_SHOT:
+          case TV_BOLT:
+          case TV_ARROW:
+          case TV_BOW:
+#if 0
+          case TV_DIGGING:
+          case TV_HAFTED:
+#endif
+          case TV_POLEARM:
+          case TV_SWORD:
+            return (TRUE);
+        }
+        break;
+
+      /* Temple */
+      case 4:
+
+        /* Analyze the type */
+        switch (item->tval) {
+          case TV_HAFTED:
+#if 0
+          case TV_SCROLL:
+          case TV_POTION:
+#endif
+          case TV_PRAYER_BOOK:
+            return (TRUE);
+        }
+        break;
+
+      /* Alchemist */
+      case 5:
+
+        /* Analyze the type */
+        switch (item->tval) {
+          case TV_SCROLL:
+          case TV_POTION:
+            return (TRUE);
+        }
+        break;
+
+      /* Magic Shop */
+      case 6:
+
+        /* Analyze the type */
+        switch (item->tval) {
+          case TV_MAGIC_BOOK:
+          case TV_AMULET:
+          case TV_RING:
+#if 0
+          case TV_SCROLL:
+          case TV_POTION:
+#endif
+          case TV_STAFF:
+          case TV_WAND:
+          case TV_ROD:
+            return (TRUE);
+        }
+        break;
+
+
+      /* Black Market */
+      case 7:
+
+        /* Analyze the type */
+        switch (item->tval) {
+          case TV_CHEST:
+            return (TRUE);
+        }
+        break;
+    }
+
+    /* Assume not */
+    return (FALSE);
+}
+
+
+
+/*
+ * Hack -- find something to sell to the home
+ */
+static bool borg_think_home_sell_aux(void)
+{
+    int icky = 23;
+
+    int i, b_i = -1;
+    s32b p, b_p = 0L;
+    s32b s, b_s = 0L;
+
+
+    /* Hack -- the home is full */
+    if (auto_shops[7].ware[icky].iqty) return (FALSE);
+
+
+    /* Examine the player */
+    borg_notice();
+
+    /* Evaluate the player */
+    b_p = borg_power();
+
+
+    /* Examine the home */
+    borg_notice_aux3();
+
+    /* Evaluate the home */
+    b_s = borg_power_aux3();
+
+
+    /* Save the store hole */
+    COPY(&safe_shops[7].ware[icky], &auto_shops[7].ware[icky], auto_item);
+
+    /* Sell stuff */
+    for (i = 0; i < INVEN_PACK; i++) {
+
+        auto_item *item = &auto_items[i];
+
+        /* Skip empty items */
+        if (!item->iqty) continue;
+
+        /* Save the item */
+        COPY(&safe_items[i], &auto_items[i], auto_item);
+
+        /* Give the item to the shop */
+        COPY(&auto_shops[7].ware[icky], &safe_items[i], auto_item);
+
+        /* Give a single item */
+        auto_shops[7].ware[icky].iqty = 1;
+
+        /* Lose a single item */
+        auto_items[i].iqty--;
+
+        /* Examine the inventory */
+        borg_notice();
+
+        /* Evaluate the inventory */
+        p = borg_power();
+
+        /* Restore the item */
+        COPY(&auto_items[i], &safe_items[i], auto_item);
+
+        /* Ignore "bad" sales */
+        if (p < b_p) continue;
+
+        /* Examine the home */
+        borg_notice_aux3();
+
+        /* Evaluate the home */
+        s = borg_power_aux3();
+
+        /* Ignore "silly" sales (except artifacts) XXX XXX XXX */
+        if ((p == b_p) && (s <= b_s) && !item->name1) continue;
+
+        /* Maintain the "best" */
+        b_i = i; b_p = p; b_s = s;
+    }
+
+    /* Restore the store hole */
+    COPY(&auto_shops[7].ware[icky], &safe_shops[7].ware[icky], auto_item);
+    
+    /* Examine the player */
+    borg_notice();
+
+    /* Evaluate the player */
+    p = borg_power();
+
+    /* Examine the home */
+    borg_notice_aux3();
+
+    /* Evaluate the home */
+    s = borg_power_aux3();
+
+    /* Stockpile */
+    if (b_i >= 0) {
+
+        /* Visit the home */
+        goal_shop = 7;
+
+        /* Sell that item */
+        goal_item = b_i;
+
+        /* Success */
+        return (TRUE);
+    }
+
+    /* Assume not */
+    return (FALSE);
+}
+
 
 /*
  * Hack -- find something to sell in a shop
- *
- * Note that we do not have to "improve" our status, only stay
- * the same, since "selling" is inherently a good thing to do.
  */
-static bool borg_think_store_sell_aux(void)
+static bool borg_think_shop_sell_aux(void)
 {
     int icky = 23;
 
@@ -4451,8 +4794,15 @@ static bool borg_think_store_sell_aux(void)
     s32b c, b_c = 0L;
     
 
-    /* Check each store */
-    for (k = 0; k < 8; k++) {
+    /* Examine the inventory */
+    borg_notice();
+
+    /* Evaluate */
+    b_p = borg_power();
+
+
+    /* Check each shop */
+    for (k = 0; k < 7; k++) {
 
         /* XXX XXX XXX Hack -- skip "full" shops */
         if (auto_shops[k].ware[icky].iqty) continue;
@@ -4467,6 +4817,9 @@ static bool borg_think_store_sell_aux(void)
 
             /* Skip empty items */
             if (!item->iqty) continue;
+
+            /* Hack -- never sell artifacts */
+            if (item->name1) continue;
 
             /* Skip "bad" sales */
             if (!borg_good_sell(item, k)) continue;
@@ -4493,13 +4846,13 @@ static bool borg_think_store_sell_aux(void)
             COPY(&auto_items[i], &safe_items[i], auto_item);
 
             /* Ignore "bad" sales */
-            if ((b_i >= 0) && (p < b_p)) continue;
+            if (p < b_p) continue;
 
             /* Extract the "price" */
             c = ((item->value < 30000L) ? item->value : 30000L);
 
-            /* Track the most "expensive" item */
-            if ((b_i >= 0) && (p == b_p) && (c < b_c)) continue;
+            /* Ignore "cheaper" items */
+            if ((p == b_p) && (c <= b_c)) continue;
 
             /* Maintain the "best" */
             b_k = k; b_i = i; b_p = p; b_c = c;
@@ -4516,10 +4869,12 @@ static bool borg_think_store_sell_aux(void)
     p = borg_power();
 
     /* Sell something (if useless) */
-    if ((b_k >= 0) && (b_p >= p)) {
+    if ((b_k >= 0) && (b_i >= 0)) {
 
-        /* Hack -- save this goal */
+        /* Visit that shop */
         goal_shop = b_k;
+
+        /* Sell that item */
         goal_item = b_i;
 
         /* Success */
@@ -4533,16 +4888,9 @@ static bool borg_think_store_sell_aux(void)
 
 
 /*
- * Hack -- find something to purchase in a shop
- *
- * Note that we assume a "default" best thing which is worth
- * nothing (b_p = 0L) but which is free (b_c = 0L).  This allows
- * us to ignore "worthless" items in shops (not free).
- *
- * Basically, we see how much better the world would be if we
- * were to buy each item and either wear it or carry it around.
+ * Hack -- find something to purchase from the shops
  */
-static bool borg_think_store_buy_aux(void)
+static bool borg_think_shop_buy_aux(void)
 {
     int hole;
     int slot;
@@ -4566,10 +4914,17 @@ static bool borg_think_store_buy_aux(void)
     if (hole == INVEN_PACK) return (FALSE);
 
 
-    /* Check each store */
-    for (k = 0; k < 8; k++) {
+    /* Examine the inventory */
+    borg_notice();
+    
+    /* Extract the "power" */
+    b_p = borg_power();
 
-        /* Buy stuff */
+
+    /* Check the shops */
+    for (k = 0; k < 7; k++) {
+
+        /* Scan the wares */
         for (n = 0; n < 24; n++) {
 
             auto_item *item = &auto_shops[k].ware[n];
@@ -4645,11 +5000,11 @@ static bool borg_think_store_buy_aux(void)
             /* Penalize the cost of expensive items */
             if (c > auto_gold / 10) p -= c;
             
-            /* Track the "best" of the items */
-            if ((b_k >= 0) && (p < b_p)) continue;
+            /* Ignore "bad" purchases */
+            if (p < b_p) continue;
 
-            /* Track the "cheapest" of those items */
-            if ((b_k >= 0) && (p == b_p) && (c > b_c)) continue;
+            /* Ignore "expensive" purchases */
+            if ((p == b_p) && (c >= b_c)) continue;
 
             /* Save the item and cost */
             b_k = k; b_n = n; b_p = p; b_c = c;
@@ -4663,10 +5018,142 @@ static bool borg_think_store_buy_aux(void)
     p = borg_power();
 
     /* Buy something */
-    if ((b_k >= 0) && (b_p > p)) {
+    if ((b_k >= 0) && (b_n >= 0)) {
 
-        /* Hack -- save this goal */
+        /* Visit that shop */
         goal_shop = b_k;
+
+        /* Buy that item */
+        goal_ware = b_n;
+
+        /* Success */
+        return (TRUE);
+    }
+
+    /* Nope */
+    return (FALSE);
+}
+
+
+/*
+ * Hack -- find something to purchase from the home
+ */
+static bool borg_think_home_buy_aux(void)
+{
+    int hole;
+    int slot;
+
+    int n, b_n = -1;
+    s32b p, b_p = 0L;
+
+
+    /* Look for an empty slot */
+    for (hole = 0; hole < INVEN_PACK; hole++) {
+    
+        auto_item *item = &auto_items[hole];
+        
+        /* Found an empty slot */
+        if (!item->iqty) break;
+    }
+    
+    /* No empty slots */
+    if (hole == INVEN_PACK) return (FALSE);
+
+
+    /* Examine the inventory */
+    borg_notice();
+    
+    /* Extract the "power" */
+    b_p = borg_power();
+
+
+    /* Scan the home */
+    for (n = 0; n < 24; n++) {
+
+        auto_item *item = &auto_shops[7].ware[n];
+
+        /* Skip empty items */
+        if (!item->iqty) continue;
+
+        /* Save shop item */
+        COPY(&safe_shops[7].ware[n], &auto_shops[7].ware[n], auto_item);
+
+        /* Save hole */
+        COPY(&safe_items[hole], &auto_items[hole], auto_item);
+
+        /* Remove one item from shop */
+        auto_shops[7].ware[n].iqty--;
+
+        /* Obtain "slot" */
+        slot = borg_wield_slot(item);
+
+        /* Consider new equipment */
+        if (slot >= 0) {
+
+            /* Save old item */
+            COPY(&safe_items[slot], &auto_items[slot], auto_item);
+                
+            /* Move equipment into inventory */
+            COPY(&auto_items[hole], &safe_items[slot], auto_item);
+
+            /* Move new item into equipment */
+            COPY(&auto_items[slot], &safe_shops[7].ware[n], auto_item);
+
+            /* Only a single item */
+            auto_items[slot].iqty = 1;
+
+            /* Examine the inventory */
+            borg_notice();
+                
+            /* Evaluate the inventory */
+            p = borg_power();
+
+            /* Restore old item */
+            COPY(&auto_items[slot], &safe_items[slot], auto_item);
+        }
+
+        /* Consider new inventory */
+        else {
+
+            /* Move new item into inventory */
+            COPY(&auto_items[hole], &safe_shops[7].ware[n], auto_item);
+
+            /* Only a single item */
+            auto_items[hole].iqty = 1;
+
+            /* Examine the inventory */
+            borg_notice();
+                
+            /* Evaluate the equipment */
+            p = borg_power();
+        }
+
+        /* Restore hole */
+        COPY(&auto_items[hole], &safe_items[hole], auto_item);
+                
+        /* Restore shop item */
+        COPY(&auto_shops[7].ware[n], &safe_shops[7].ware[n], auto_item);
+
+        /* Ignore "silly" purchases */
+        if (p <= b_p) continue;
+
+        /* Save the item and cost */
+        b_n = n; b_p = p;
+    }
+
+    /* Examine the inventory */
+    borg_notice();
+    
+    /* Extract the "power" */
+    p = borg_power();
+
+    /* Buy something */
+    if ((b_n >= 0) && (b_p > p)) {
+
+        /* Go to the home */
+        goal_shop = 7;
+
+        /* Buy that item */
         goal_ware = b_n;
 
         /* Success */
@@ -4682,9 +5169,31 @@ static bool borg_think_store_buy_aux(void)
 
 
 /*
- * Choose a shop to visit in the town.
+ * Choose a shop to visit.
  *
- * Then visit relevant shops to sell stuff or buy stuff.
+ * (1) Sell items to the home (for later use)
+ *     We stockpile items which may be useful later
+ *
+ * (2) Sell items to the shops (for money)
+ *     We sell anything we do not actually need
+ *
+ * (3) Buy items from the shops (for the player)
+ *     We buy things that we actually need
+ *
+ * (4) Buy items from the home (for the player)
+ *     We buy things that we actually need
+ *
+ * (5) Buy items from the shops (for stockpile) XXX XXX XXX
+ *     We buy things we may need later
+ *
+ * (6) Buy items from the home (for random use) XXX XXX XXX
+ *     We attempt to remove items which are no longer useful
+ *
+ * The basic principle is that we should always act to improve our
+ * "status", and we should sometimes act to "maintain" our status,
+ * especially if there is a monetary reward.  But first we should
+ * attempt to use the home as a "stockpile", even though that is
+ * not worth any money, since it may save us money eventually.
  */
 static bool borg_choose_shop(void)
 {
@@ -4694,8 +5203,7 @@ static bool borg_choose_shop(void)
     /* Must be in town */
     if (auto_depth) return (FALSE);
 
-
-    /* Hack -- require knowledge */
+    /* Must have complete information */
     for (i = 0; i < 8; i++) {
 
         auto_shop *shop = &auto_shops[i];
@@ -4709,8 +5217,20 @@ static bool borg_choose_shop(void)
     goal_shop = goal_ware = goal_item = -1;
 
 
-    /* Hack -- Go sell something at a shop */
-    if (borg_think_store_sell_aux()) {
+    /* Step 1 -- Sell items to the home */
+    if (borg_think_home_sell_aux()) {
+
+        /* Message */
+        borg_note(format("# Selling '%s' to the home",
+                         auto_items[goal_item].desc));
+
+        /* Success */
+        return (TRUE);
+    }
+
+
+    /* Step 2 -- Sell items to the shops */
+    if (borg_think_shop_sell_aux()) {
 
         /* Message */
         borg_note(format("# Selling '%s' at '%s'",
@@ -4722,13 +5242,25 @@ static bool borg_choose_shop(void)
     }
 
 
-    /* Hack -- Go buy something at a shop */
-    if (borg_think_store_buy_aux()) {
+    /* Step 3 -- Buy items from the shops */
+    if (borg_think_shop_buy_aux()) {
 
         /* Message */
         borg_note(format("# Buying '%s' at '%s'",
                          auto_shops[goal_shop].ware[goal_ware].desc,
                          (f_name + f_info[0x08+goal_shop].name)));
+
+        /* Success */
+        return (TRUE);
+    }
+
+
+    /* Step 4 -- Buy items from the home */
+    if (borg_think_home_buy_aux()) {
+
+        /* Message */
+        borg_note(format("# Buying '%s' from the home",
+                         auto_shops[goal_shop].ware[goal_ware].desc));
 
         /* Success */
         return (TRUE);
@@ -5258,7 +5790,7 @@ bool borg_think_dungeon(void)
 /*
  * Sell items to the current shop, if desired
  */
-static bool borg_think_store_sell(void)
+static bool borg_think_shop_sell(void)
 {
     /* Sell something if requested */
     if ((goal_shop == shop_num) && (goal_item >= 0)) {
@@ -5274,7 +5806,7 @@ static bool borg_think_store_sell(void)
         borg_keypress('s');
 
         /* Buy the desired item */
-        borg_keypress('a' + goal_item);
+        borg_keypress(I2A(goal_item));
 
         /* Hack -- Sell a single item */
         if (item->iqty > 1) borg_keypress('\n');
@@ -5300,7 +5832,7 @@ static bool borg_think_store_sell(void)
 /*
  * Buy items from the current shop, if desired
  */
-static bool borg_think_store_buy(void)
+static bool borg_think_shop_buy(void)
 {
     /* Buy something if requested */
     if ((goal_shop == shop_num) && (goal_ware >= 0)) {
@@ -5319,7 +5851,7 @@ static bool borg_think_store_buy(void)
         borg_keypress('p');
 
         /* Buy the desired item */
-        borg_keypress('a' + (goal_ware % 12));
+        borg_keypress(I2A(goal_ware % 12));
 
         /* Hack -- Buy a single item */
         if (item->iqty > 1) borg_keypress('\n');
@@ -5349,7 +5881,10 @@ bool borg_think_store(void)
 {
     /* Examine the inventory */
     borg_notice();
-    
+
+    /* Hack -- best stuff */
+    if (borg_best_stuff()) return (TRUE);
+
     /* Wear things */
     if (borg_wear_stuff()) return (TRUE);
 
@@ -5363,10 +5898,10 @@ bool borg_think_store(void)
     if (borg_choose_shop()) {
 
         /* Try to sell stuff */
-        if (borg_think_store_sell()) return (TRUE);
+        if (borg_think_shop_sell()) return (TRUE);
 
         /* Try to buy stuff */
-        if (borg_think_store_buy()) return (TRUE);
+        if (borg_think_shop_buy()) return (TRUE);
     }
 
     /* Stamp the shop with a time stamp */

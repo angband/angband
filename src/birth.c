@@ -420,7 +420,7 @@ static void choose_race(void)
     for (j = 0; j < MAX_RACES; j++) {
         p_ptr->prace = j;
         rp_ptr = &race_info[p_ptr->prace];
-        (void)sprintf(out_val, "%c) %s", j + 'a', rp_ptr->title);
+        (void)sprintf(out_val, "%c) %s", I2A(j), rp_ptr->title);
         put_str(out_val, m, l);
         l += 15;
         if (l > 70) {
@@ -433,7 +433,7 @@ static void choose_race(void)
         put_str("Choose a race (? for Help, Q to Quit): ", 20, 2);
         c = inkey();
         if (c == 'Q') quit(NULL);
-        j = c - 'a';
+        j = A2I(c);
         if ((j < MAX_RACES) && (j >= 0)) {
             p_ptr->prace = j;
             rp_ptr = &race_info[p_ptr->prace];
@@ -482,7 +482,7 @@ static void choose_class()
 
             p_ptr->pclass = j;
             cp_ptr = &class_info[p_ptr->pclass];
-            sprintf(out_val, "%c) %s", k + 'a', cp_ptr->title);
+            sprintf(out_val, "%c) %s", I2A(k), cp_ptr->title);
             put_str(out_val, m, l);
             cl[k++] = j;
             l += 15;
@@ -498,7 +498,7 @@ static void choose_class()
         put_str("Choose a class (? for Help, Q to Quit): ", 20, 2);
         c = inkey();
         if (c == 'Q') quit(NULL);
-        j = c - 'a';
+        j = A2I(c);
         if ((j < k) && (j >= 0)) {
             p_ptr->pclass = cl[j];
             cp_ptr = &class_info[p_ptr->pclass];
@@ -758,6 +758,9 @@ static void get_history(void)
         case RACE_HALF_TROLL:
             chart = 22;
             break;
+            
+        default:
+            chart = 0;
     }
 
 

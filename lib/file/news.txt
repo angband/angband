@@ -1,5 +1,5 @@
                         ***********************
-                        **  Angband 2.7.9v2  **
+                        **  Angband 2.7.9v3  **
                         ***********************
 
          Based on Moria:    Copyright (c) 1985 Robert Alan Koeneke
@@ -13,8 +13,8 @@
 
        Curses/X11 Versions: Ben Harrison, Torbj|rn Lindgren
 
- Angband 2.7.9v2 is available for Unix, X11, Macintosh, IBM, Windows, etc.
+ Angband 2.7.9v3 is available for Unix, X11, Macintosh, IBM, Windows, etc.
  Be sure to read the online help, especially "general.txt" and "version.txt".
 
- Visit the Angband Home Page at "http://www.voicenet.com/~benh/angband.html".
- Please send all comments, bug reports, and patches, to "benh@voicenet.com".
+ Visit the Angband Home Page at "http://www.voicenet.com/~benh/Angband/".
+ Send all comments, bug reports, patches, etc, to "benh@voicenet.com".

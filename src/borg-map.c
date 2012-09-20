@@ -43,11 +43,20 @@
 
 auto_grid **auto_grids;		/* The grids */
 
-auto_data *auto_data_hard;	/* Constant "hard" data */
-
 auto_data *auto_data_flow;	/* Current "flow" data */
 
 auto_data *auto_data_cost;	/* Current "cost" data */
+
+
+/*
+ * Some local variables
+ */
+
+auto_data *auto_data_hard;	/* Constant "hard" data */
+
+auto_data *auto_data_know;	/* Current "know" flags */
+
+auto_data *auto_data_icky;	/* Current "icky" flags */
 
 
 /*
@@ -1668,12 +1677,19 @@ void borg_forget_map(void)
     }	
 
 
-    /* Prepare "auto_data_cost" */
+    /* Reset "auto_data_cost" */
     COPY(auto_data_cost, auto_data_hard, auto_data);
 
-    /* Prepare "auto_data_flow" */
+    /* Reset "auto_data_flow" */
     COPY(auto_data_flow, auto_data_hard, auto_data);
 
+
+    /* Clear "auto_data_know" */
+    WIPE(auto_data_know, auto_data);
+    
+    /* Clear "auto_data_icky" */
+    WIPE(auto_data_icky, auto_data);
+    
 
     /* Forget the view */
     borg_forget_view();
@@ -1696,6 +1712,8 @@ void borg_forget_map(void)
  * has changed.  Actually, a "borg_map_wipe()" would be better...
  *
  * Hack -- The player grid contents are always "unknown"
+ *
+ * XXX XXX Hack -- note the fast direct access to the screen.
  */
 void borg_update_map(void)
 {
@@ -1707,6 +1725,9 @@ void borg_update_map(void)
 
     byte a;
     char c;
+
+    byte *aa;
+    char *cc;
 
     static int o_w_x, o_w_y;
     static int o_c_x, o_c_y;
@@ -1731,12 +1752,17 @@ void borg_update_map(void)
 
     /* Analyze the current (66x22 grid) map sector */
     for (dy = 0; dy < SCREEN_HGT; dy++) {
+    
+        /* Direct access XXX XXX */
+        aa = &(Term->old->a[dy+1][13]);
+        cc = &(Term->old->c[dy+1][13]);
+        
+        /* Scan the row */
         for (dx = 0; dx < SCREEN_WID; dx++) {
 
-
-            /* Direct access to the screen */
-            a = Term->scr->a[dy+1][dx+13];
-            c = Term->scr->c[dy+1][dx+13];
+            /* Access */
+            a = *aa++;
+            c = *cc++;
 
             /* Mega-Hack */
             if (!c) c = ' ';
@@ -1781,14 +1807,16 @@ void borg_update_map(void)
 
 
             /* Hack -- Walls, Seams, Doors, Rubble, Hidden */
-            if ((c == '#') || (c == '%') || (c == '+') || (c == ':') || (c == '*')) {
+            if ((c == '#') || (c == '%') || 
+                (c == '+') || (c == ':') || (c == '*')) {
 
                 /* We are a wall */
                 ag->info |= BORG_WALL;
             }
 
             /* Hack -- Floors, Doors, Stairs */
-            else if ((c == '.') || (c == '\'') || (c == '<') || (c == '>')) {
+            else if ((c == '.') || (c == '\'') || 
+                     (c == '<') || (c == '>')) {
 
                 /* We are not a wall */
                 ag->info &= ~BORG_WALL;
@@ -1995,25 +2023,18 @@ int borg_goto_dir(int x1, int y1, int x2, int y2)
  */
 void borg_flow_clear(void)
 {
-    int x, y;
-
     /* Reset the "cost" fields */
     COPY(auto_data_cost, auto_data_hard, auto_data);
 
     /* Wipe costs and danger */
     if (auto_danger_wipe) {
-    
-        /* Check the entire dungeon */
-        for (y = 1; y < AUTO_MAX_Y - 1; y++) {
-            for (x = 1; x < AUTO_MAX_X - 1; x++) {
 
-                auto_grid *ag = grid(x,y);
-
-                /* Clear danger flags */
-                ag->info &= ~(BORG_KNOW | BORG_ICKY);
-            }
-        }
-
+        /* Wipe the "know" flags */
+        WIPE(auto_data_know, auto_data);
+            
+        /* Wipe the "icky" flags */
+        WIPE(auto_data_icky, auto_data);
+            
         /* Wipe complete */
         auto_danger_wipe = FALSE;
     }
@@ -2101,19 +2122,19 @@ void borg_flow_spread(bool optimize)
             if (ag->info & BORG_WALL) continue;
 
             /* Ignore "icky" grids */
-            if (ag->info & BORG_ICKY) continue;
+            if (auto_data_icky->data[y][x]) continue;
 
             /* Check danger if needed */
-            if (!(ag->info & BORG_KNOW)) {
+            if (!auto_data_know->data[y][x]) {
 
                 /* Assume Known */
-                ag->info |= BORG_KNOW;
+                auto_data_know->data[y][x] = TRUE;
 
                 /* Check the danger */
                 if (auto_danger_hook && ((*auto_danger_hook)(x,y))) {
 
                     /* Mark as icky */
-                    ag->info |= BORG_ICKY;
+                    auto_data_icky->data[y][x] = TRUE;
 
                     /* Ignore this grid */
                     continue;
@@ -2282,15 +2303,20 @@ void borg_map_init(void)
 
     /*** Grid data ***/
     
-    /* Make the "hard" data */
-    MAKE(auto_data_hard, auto_data);
-    
     /* Make the "flow" data */
     MAKE(auto_data_flow, auto_data);
     
     /* Make the "cost" data */
     MAKE(auto_data_cost, auto_data);
 
+    /* Make the "know" flags */
+    MAKE(auto_data_know, auto_data);
+
+    /* Make the "icky" flags */
+    MAKE(auto_data_icky, auto_data);
+
+    /* Make the "hard" data */
+    MAKE(auto_data_hard, auto_data);
 
     /* Prepare "auto_data_hard" */
     for (y = 0; y < AUTO_MAX_Y; y++) {

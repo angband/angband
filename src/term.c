@@ -338,16 +338,6 @@ errr Term_xtra(int n, int v)
 }
 
 /*
- * Erase "n" grids starting at "(x,y)".
- * The input is assumed to be "valid".
- */
-static errr Term_wipe(int x, int y, int n)
-{
-    if (!Term->wipe_hook) return (-1);
-    return ((*Term->wipe_hook)(x, y, n));
-}
-
-/*
  * Place a "cursor" at "(x,y)".
  * The input is assumed to be "valid".
  */
@@ -355,6 +345,16 @@ static errr Term_curs(int x, int y)
 {
     if (!Term->curs_hook) return (-1);
     return ((*Term->curs_hook)(x, y));
+}
+
+/*
+ * Erase "n" grids starting at "(x,y)".
+ * The input is assumed to be "valid".
+ */
+static errr Term_wipe(int x, int y, int n)
+{
+    if (!Term->wipe_hook) return (-1);
+    return ((*Term->wipe_hook)(x, y, n));
 }
 
 /*

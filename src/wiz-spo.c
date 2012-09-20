@@ -28,7 +28,7 @@ static cptr attr_to_text(byte a)
         case TERM_BLUE:    return ("Blue");
         case TERM_UMBER:   return ("Umber");
         case TERM_L_DARK:  return ("L.Dark");
-        case TERM_L_WHITE: return ("L.White");
+        case TERM_L_WHITE: return ("L.Slate");
         case TERM_VIOLET:  return ("Violet");
         case TERM_YELLOW:  return ("Yellow");
         case TERM_L_RED:   return ("L.Red");
@@ -212,14 +212,22 @@ static void spoil_obj_desc(cptr fname)
 
     u16b who[200];
 
-    char buf[160];
+    char buf[1024];
 
     char wgt[80];
     char dam[80];
 
 
+    /* Access the spoiler file */
+    strcpy(buf, ANGBAND_DIR_USER);
+    strcat(buf, fname);
+
+#if defined(MACINTOSH) && !defined(applec)
+    _ftype = 'TEXT';
+#endif
+
     /* Open the file */
-    fff = my_fopen(fname, "w");
+    fff = my_fopen(buf, "w");
 
     /* Oops */
     if (!fff) {
@@ -235,7 +243,8 @@ static void spoil_obj_desc(cptr fname)
     fprintf(fff, "%-45s     %8s%7s%5s%9s\n",
             "Description", "Dam/AC", "Wgt", "Lev", "Cost");
     fprintf(fff, "%-45s     %8s%7s%5s%9s\n",
-            "----------------------------------------", "------", "---", "---", "----");
+            "----------------------------------------",
+            "------", "---", "---", "----");
 
     /* List the artifacts by tval */
     for (i = 0; TRUE; i++) {
@@ -720,12 +729,14 @@ static void analyze_pval (inven_type *i_ptr, pval_info_type *p_ptr) {
     /* Are any stats affected? */
     else if (f1 & all_stats)  {
         affects_list = spoiler_flag_aux(f1, stat_flags_desc,
-                                        affects_list, N_ELEMENTS(stat_flags_desc));
+                                        affects_list,
+                                        N_ELEMENTS(stat_flags_desc));
     }
 
     /* And now the "rest" */
     affects_list = spoiler_flag_aux(f1, pval_flags1_desc,
-                                    affects_list, N_ELEMENTS(pval_flags1_desc));
+                                    affects_list,
+                                    N_ELEMENTS(pval_flags1_desc));
 
     /* Terminate the description list */
     *affects_list = NULL;
@@ -812,7 +823,8 @@ static void analyze_sustains (inven_type *i_ptr, cptr *sustain_list) {
     /* Should we bother? */
     else if ((f2 & all_sustains)) {
         sustain_list = spoiler_flag_aux(f2, sustain_flags_desc,
-                                        sustain_list, N_ELEMENTS(sustain_flags_desc));
+                                        sustain_list,
+                                        N_ELEMENTS(sustain_flags_desc));
     }
 
     /* Terminate the description list */
@@ -1142,11 +1154,24 @@ static bool forge_artifact(int name1, inven_type *i_ptr) {
 static void spoil_artifact(cptr fname)
 {
     int i, j;
+
     inven_type forge;
+
     obj_desc_list artifact;
 
+    char buf[1024];
+
+
+    /* Access the spoiler file */
+    strcpy(buf, ANGBAND_DIR_USER);
+    strcat(buf, fname);
+
+#if defined(MACINTOSH) && !defined(applec)
+    _ftype = 'TEXT';
+#endif
+
     /* Open the file */
-    fff = my_fopen(fname, "w");
+    fff = my_fopen(buf, "w");
 
     /* Oops */
     if (!fff) {
@@ -1209,6 +1234,8 @@ static void spoil_mon_desc(cptr fname)
 
     s16b who[MAX_R_IDX];
 
+    char buf[1024];
+
     char nam[80];
     char lev[80];
     char rar[80];
@@ -1218,10 +1245,18 @@ static void spoil_mon_desc(cptr fname)
     char exp[80];
 
 
-    /* Open the file */
-    fff = my_fopen(fname, "w");
+    /* Access the spoiler file */
+    strcpy(buf, ANGBAND_DIR_USER);
+    strcat(buf, fname);
 
-    /* Test the file */
+#if defined(MACINTOSH) && !defined(applec)
+    _ftype = 'TEXT';
+#endif
+
+    /* Open the file */
+    fff = my_fopen(buf, "w");
+
+    /* Oops */
     if (!fff) {
         msg_print("Cannot create spoiler file.");
         return;
@@ -1242,8 +1277,10 @@ static void spoil_mon_desc(cptr fname)
     /* Scan the monsters (except the ghost) */
     for (i = 1; i < MAX_R_IDX - 1; i++) {
 
+        monster_race *r_ptr = &r_info[i];
+
         /* Use that monster */
-        who[n++] = i;
+        if (r_ptr->name) who[n++] = i;
     }
 
 
@@ -1402,21 +1439,31 @@ static void spoil_out(cptr str)
  */
 static void spoil_mon_info(cptr fname)
 {
-  char buf[160];
-  int msex, vn, i, j, k, n;
-  bool breath, magic, sin;
-  cptr p, q;
-  cptr vp[64];
-  u32b flags1, flags2, flags3, flags4, flags5, flags6;
+    char buf[1024];
+    int msex, vn, i, j, k, n;
+    bool breath, magic, sin;
+    cptr p, q;
+    cptr vp[64];
+    u32b flags1, flags2, flags3, flags4, flags5, flags6;
 
-  /* Open the file */
-  fff = my_fopen(fname, "w");
 
-  /* Oops */
-  if (!fff) {
-    msg_print("Cannot create spoiler file.");
-    return;
-  }
+    /* Access the spoiler file */
+    strcpy(buf, ANGBAND_DIR_USER);
+    strcat(buf, fname);
+
+#if defined(MACINTOSH) && !defined(applec)
+    _ftype = 'TEXT';
+#endif
+
+    /* Open the file */
+    fff = my_fopen(buf, "w");
+
+    /* Oops */
+    if (!fff) {
+        msg_print("Cannot create spoiler file.");
+        return;
+    }
+
 
   /* Dump the header */
   sprintf(buf, "Monster Spoilers for Angband Version %d.%d.%d\n",
@@ -1696,7 +1743,7 @@ static void spoil_mon_info(cptr fname)
     if (flags6 & RF6_S_ANT)             vp[vn++] = "summon ants";
     if (flags6 & RF6_S_SPIDER)          vp[vn++] = "summon spiders";
     if (flags6 & RF6_S_HOUND)           vp[vn++] = "summon hounds";
-    if (flags6 & RF6_S_REPTILE)         vp[vn++] = "summon reptiles";
+    if (flags6 & RF6_S_HYDRA)           vp[vn++] = "summon hydras";
     if (flags6 & RF6_S_ANGEL)           vp[vn++] = "summon an angel";
     if (flags6 & RF6_S_DEMON)           vp[vn++] = "summon a demon";
     if (flags6 & RF6_S_UNDEAD)          vp[vn++] = "summon an undead";
@@ -1725,7 +1772,8 @@ static void spoil_mon_info(cptr fname)
     }
 
     if (breath || magic) {
-      sprintf(buf, "; 1 time in %d.  ", 200 / (r_ptr->freq_inate + r_ptr->freq_spell));
+      sprintf(buf, "; 1 time in %d.  ",
+              200 / (r_ptr->freq_inate + r_ptr->freq_spell));
       spoil_out(buf);
     }
 
@@ -1918,7 +1966,9 @@ static void spoil_mon_info(cptr fname)
       }
       if (i > 1) spoil_out("s");
 
-      if (flags1 & RF1_DROP_CHOSEN) spoil_out(", in addition to chosen objects");
+      if (flags1 & RF1_DROP_CHOSEN) {
+          spoil_out(", in addition to chosen objects");
+      }
 
       spoil_out(".  ");
     }
@@ -2024,7 +2074,8 @@ static void spoil_mon_info(cptr fname)
             if (r_ptr->blow[j].d_side == 1)
               sprintf(buf, " %d", r_ptr->blow[j].d_dice);
             else
-              sprintf(buf, " %dd%d", r_ptr->blow[j].d_dice, r_ptr->blow[j].d_side);
+              sprintf(buf, " %dd%d",
+                      r_ptr->blow[j].d_dice, r_ptr->blow[j].d_side);
             spoil_out(buf);
           }
         }
@@ -2096,7 +2147,7 @@ void do_cmd_spoilers(void)
         prt("(4) Full Monster Info (mon-info.spo)", 8, 5);
 
         /* Prompt */
-        prt("Selection: ", 12, 0);
+        prt("Command: ", 12, 0);
 
         /* Get a choice */
         i = inkey();

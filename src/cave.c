@@ -465,7 +465,7 @@ static void image_object(byte *ap, char *cp)
 
         /* Access the kind */
         inven_kind *k_ptr = &k_info[k];
-                
+
         /* Use the attr/char */
         (*ap) = k_ptr->x_attr;
         (*cp) = k_ptr->x_char;
@@ -499,31 +499,43 @@ static void image_random(byte *ap, char *cp)
  *
  * Note that monsters can have some "special" flags, including "ATTR_MULTI",
  * which means their color changes, and "ATTR_CLEAR", which means they take
- * the color of whatever is under them.  Technically, the "special" flags
- * "CHAR_CLEAR" and "CHAR_MULTI" are supposed to indicate that a monster
- * cannot be targetted, and looks strange when examined, but neither of
- * these fields are currently used.
+ * the color of whatever is under them, and "CHAR_CLEAR", which means that
+ * they take the symbol of whatever is under them.  Technically, the flag
+ * "CHAR_MULTI" is supposed to indicate that a monster looks strange when
+ * examined, but this flag is currently ignored.
  *
  * Currently, we do nothing with multi-hued objects.  We should probably
  * just add a flag to wearable object, or even to all objects, now that
  * everyone can use the same flags.  Then the "SHIMMER_OBJECT" code can
- * be used to request occasional "redraw" of those objects.
+ * be used to request occasional "redraw" of those objects. It will be
+ * very hard to associate flags with the "flavored" objects, so maybe
+ * they will never be "multi-hued".
  *
- * Note the use of the "fake objects" to help draw the "player", "floor"
- * "walls", "mineral veins", "invisible traps", and "secret doors".
+ * Note the effects of hallucination.  Objects always appear as random
+ * objects, monsters as random monsters, and normal grids occasionally
+ * appear as random monsters or objects.
  *
- * Special colors (used for floors, walls, quartz):
+ * Special colors (used for floors and invisible traps):
  *   Option "view_yellow_lite" draws "torch radius" in yellow
  *   Option "view_bright_lite" draws "unseen grids" dimmer.
  *
- * Note the effects of hallucination.
+ * Note the use of the new "terrain feature" information.  Note that the
+ * assumption that all interesting "objects" and "terrain features" are
+ * memorized allows extremely optimized processing below.  Note the use
+ * of separate flags on objects to mark them as memorized allows a grid
+ * to have memorized "terrain" without granting knowledge of any object
+ * which may appear in that grid.
  *
- * Note the use of the new "terrain feature" visual information
+ * Note that eventually we may use the "&" symbol for embedded treasure,
+ * and use the "*" symbol to indicate multiple objects, though this will
+ * have to wait for Angband 2.8.0 or later.
  *
- * XXX XXX XXX XXX XXX But note the hard coded index values
- *
- * Hack -- note that "loose rocks" are displayed as "glyph of warding",
- * but they should probably be converted into "poison pits" or some such
+ * Note the efficient code used to determine if a "floor" grid is
+ * "memorized" or "viewable" by the player, where the test for the
+ * grid being "viewable" is based on the facts that (1) the grid
+ * must be "lit" (torch-lit or perma-lit), (2) the grid must be in
+ * line of sight, and (3) the player must not be blind, and uses the
+ * assumption that all torch-lit grids are in line of sight.
  */
 static void map_info(int y, int x, byte *ap, char *cp)
 {
@@ -646,6 +658,35 @@ static void map_info(int y, int x, byte *ap, char *cp)
     }
 
 
+    /* Objects */
+    if (c_ptr->i_idx) {
+
+        /* Get the actual item, if any */
+        inven_type *i_ptr = &i_list[c_ptr->i_idx];
+
+        /* Memorized objects */
+        if (i_ptr->marked) {
+
+            /* Hack -- Handle hallucination on "normal" objects */
+            if (p_ptr->image) {
+        
+                /* Hallucinate */
+                image_object(ap, cp);
+
+                /* Done */
+                return;
+            }
+
+            /* Extract an attr/char */
+            (*cp) = inven_char(i_ptr);
+            (*ap) = inven_attr(i_ptr);
+
+            /* Done */
+            return;
+        }
+    }
+
+
     /* Hack -- rare random hallucination (except outer walls) */
     if (p_ptr->image && (!rand_int(256)) && in_bounds(y,x)) {
 
@@ -657,72 +698,81 @@ static void map_info(int y, int x, byte *ap, char *cp)
     }
 
 
-    /* Non-memorized grids */
-    if (!(c_ptr->feat & CAVE_MARK)) {
-
-        /* Non-illuminated grids are "unknown" */
-        if (!player_can_see_bold(y, x)) {
-        
-            /* Done */
-            return;
-        }
-    }
-
-    /* Objects */
-    if (c_ptr->i_idx) {
-
-        /* Get the actual item, if any */
-        inven_type *i_ptr = &i_list[c_ptr->i_idx];
-
-        /* Hack -- Handle hallucination on "normal" objects */
-        if (p_ptr->image) {
-        
-            /* Hallucinate */
-            image_object(ap, cp);
-
-            /* Done */
-            return;
-        }
-
-        /* Extract an attr/char */
-        (*cp) = inven_char(i_ptr);
-        (*ap) = inven_attr(i_ptr);
-    }
-
     /* Handle terrain */
-    else {
+    if (TRUE) {
 
         int f = (c_ptr->feat & 0x3F);
+    
+        /* Interesting terrain feature */
+        if (f > 0x02) {
 
-        /* Extract an attr/char */
-        (*cp) = f_info[f].z_char;
-        (*ap) = f_info[f].z_attr;
+            /* Memorized terrain */
+            if (c_ptr->feat & CAVE_MARK) {
+
+                /* Extract an attr/char */
+                (*cp) = f_info[f].z_char;
+                (*ap) = f_info[f].z_attr;
+            }
+        }
+    
+        /* Boring terrain feature */
+        else {
+
+            /* Efficiency -- Viewable floor */
+            if ((c_ptr->feat & CAVE_MARK) ||
+                (((c_ptr->feat & CAVE_LITE) ||
+                  ((c_ptr->feat & CAVE_GLOW) &&
+                   (c_ptr->feat & CAVE_VIEW))) &&
+                 (!p_ptr->blind))) {
+
+                /* Extract an attr/char */
+                (*cp) = f_info[f].z_char;
+                (*ap) = f_info[f].z_attr;
 
 #ifdef USE_COLOR
 
-        /* Allow "shadows" on some kinds of terrain (if allowed) */
-        if (use_color && !use_graphics &&
-            ((f <= 0x02) || (f >= 0x30))) {
+                /* Mega-Hack -- handle "shadows" */
+                if (use_color && !use_graphics) {
 
-            /* Option -- Draw "torch lite" in "yellow" */
-            if (view_yellow_lite &&
-                (c_ptr->feat & CAVE_LITE) && !p_ptr->blind) {
+                    /* Hack -- handle "blindness" */
+                    if (p_ptr->blind) {
 
-                /* Yellow from the torch */
-                (*ap) = TERM_YELLOW;
-            }
+                        /* Option -- Darken "blind" grids */
+                        if (view_bright_lite) {
 
-            /* Option -- Darken "non-viewable" grids */
-            else if (view_bright_lite &&
-                     (!player_can_see_bold(y, x))) {
+                            /* Use "gray" */
+                            (*ap) = TERM_SLATE;
+                        }
+                    }
 
-                /* Gray (dim) from lack of light */
-                (*ap) = TERM_SLATE;
-            }
-        }
+                    /* Handle "torch-lit" grids */                    
+                    else if (c_ptr->feat & CAVE_LITE) {
+                    
+                        /* Option -- Yellow "torch lite" */
+                        if (view_yellow_lite) {
+
+                            /* Use "yellow" */
+                            (*ap) = TERM_YELLOW;
+                        }
+                    }
+
+                    /* Handle "un-view-able" grids */
+                    else if (!((c_ptr->feat & CAVE_GLOW) &&
+                               (c_ptr->feat & CAVE_VIEW))) {
+
+                        /* Option -- Darken "unseen" grids */
+                        if (view_bright_lite) {
+
+                            /* Use "gray" */
+                            (*ap) = TERM_SLATE;
+                        }
+                    }
+                }
 
 #endif
 
+            }
+        }
     }
 }
 
@@ -774,51 +824,72 @@ void print_rel(char c, byte a, int y, int x)
 
 
 /*
- * Memorize the given spot if it is "interesting"
+ * Memorize the given grid (or object) if it is "interesting"
  *
  * This function should only be called on "legal" grids.
  *
- * Currently, this function is only called by "update_lite()",
- * "update_view()", and the two functions that illuminate cave
- * grids, "lite_room()" and "project_i()".
+ * This function should be called every time the "memorization" of
+ * a grid (or the object in a grid) is called into question.
  *
  * XXX XXX XXX Note that two of the "options" have been removed,
  * view_wall_grids and view_xtra_grids, and now you are forced
  * to memorize all "terrain features" except floors and invisible
- * traps.
+ * traps, which you may optionally memorize in various situations.
+ *
+ * This function is slightly non-optimal, since it memorizes objects
+ * and terrain features separately, though both are dependant on the
+ * "player_can_see_bold()" macro.
  */
 void note_spot(int y, int x)
 {
     cave_type *c_ptr = &cave[y][x];
 
-    /* Only need to memorize a grid once */
-    if (c_ptr->feat & CAVE_MARK) return;
 
-    /* Hack -- Only memorize grids that can be seen */
-    if (!player_can_see_bold(y, x)) return;
-
-    /* Hack -- memorize all "objects" */
+    /* Hack -- memorize objects */
     if (c_ptr->i_idx) {
-        c_ptr->feat |= CAVE_MARK;
-        return;
-    }
     
-    /* Hack -- memorize all interesting "terrain features" */
-    if ((c_ptr->feat & 0x3F) > 0x02) {
-        c_ptr->feat |= CAVE_MARK;
-        return;
+        inven_type *i_ptr = &i_list[c_ptr->i_idx];
+
+        /* Only memorize once */
+        if (!(i_ptr->marked)) {
+
+            /* Memorize visible objects */
+            if (player_can_see_bold(y, x)) {
+
+                /* Memorize */
+                i_ptr->marked = TRUE;
+            }
+        }
     }
 
-    /* Option -- memorize all perma-lit floors */
-    if (view_perma_grids && (c_ptr->feat & CAVE_GLOW)) {
-        c_ptr->feat |= CAVE_MARK;
-        return;
-    }
 
-    /* Option -- memorize all torch-lit floors */
-    if (view_torch_grids && (c_ptr->feat & CAVE_LITE)) {
-        c_ptr->feat |= CAVE_MARK;
-        return;
+    /* Hack -- memorize grids */
+    if (!(c_ptr->feat & CAVE_MARK)) {
+
+        /* Memorize visible grids */
+        if (player_can_see_bold(y, x)) {
+
+            /* Memorize all interesting "terrain features" */
+            if ((c_ptr->feat & 0x3F) > 0x02) {
+
+                /* Memorize */
+                c_ptr->feat |= CAVE_MARK;
+            }
+
+            /* Option -- memorize all perma-lit floors */
+            else if (view_perma_grids && (c_ptr->feat & CAVE_GLOW)) {
+
+                /* Memorize */
+                c_ptr->feat |= CAVE_MARK;
+            }
+
+            /* Option -- memorize all torch-lit floors */
+            else if (view_torch_grids && (c_ptr->feat & CAVE_LITE)) {
+
+                /* Memorize */
+                c_ptr->feat |= CAVE_MARK;
+            }
+        }
     }
 }
 
@@ -946,10 +1017,14 @@ void prt_map(void)
  * grids, even if marked as "perma lit", are only illuminated if they touch
  * a grid which is not a wall and is marked both "CAVE_GLOW" and "CAVE_VIEW".
  *
- * To simplify various things, a grid may be marked as "CAVE_MARK" which means
- * that even if the player cannot "see" the grid, he "knows" what is there.
- * This is used to "remember" walls/doors/stairs/floors/objects, and to
- * implement most of the "detection" spells.
+ * To simplify various things, a grid may be marked as "CAVE_MARK", meaning
+ * that even if the player cannot "see" the grid, he "knows" the terrain in
+ * that grid.  This is used to "remember" walls/doors/stairs/floors when they
+ * are "seen" or "detected", and also to "memorize" floors, after "wiz_lite()",
+ * or when one of the "memorize floor grids" options induces memorization.
+ *
+ * Objects are "memorized" in a different way, using a special "marked" flag
+ * on the object itself, which is set when an object is observed or detected.
  *
  * A grid may be marked as "CAVE_ROOM" which means that it is part of a "room",
  * and should be illuminated by "lite room" and "darkness" spells.  It may also
@@ -964,8 +1039,8 @@ void prt_map(void)
  * during "lite_room()" / "unlite_room()", and for calculating monster flow.
  *
  * The "view_perma_grids" allows the player to "memorize" every perma-lit grid
- * which is observed, and the "view_torch_grids" allows the player to "memorize"
- * every torch-lit grid.  The player will automatically memorize important walls,
+ * which is observed, and the "view_torch_grids" allows the player to memorize
+ * every torch-lit grid.  The player will always memorize important walls,
  * doors, stairs, and other terrain features, as well as any "detected" grids.
  *
  * Note that the new "update_view()" method allows, among other things, a room
@@ -975,9 +1050,8 @@ void prt_map(void)
  * floor grids which are actually in line of sight.
  *
  * And my favorite "plus" is that you can now use a special option to draw the
- * walls/floors in the "viewable region" brightly (actually, to draw the *other*
- * grids dimly), providing a "pretty" effect as the player runs around.  This is
- * not recommended for slow machines, as it is one of the more abusive routines.
+ * "floors" in the "viewable region" brightly (actually, to draw the *other*
+ * grids dimly), providing a "pretty" effect as the player runs around.
  */
 
 
@@ -1093,8 +1167,8 @@ static void cave_temp_room_unlite(void)
         /* Darken the grid */
         c_ptr->feat &= ~CAVE_GLOW;
 
-        /* XXX XXX XXX Hack -- Forget "boring" grids */
-        if (((c_ptr->feat & 0x3F) <= 0x02) && !c_ptr->i_idx) {
+        /* Hack -- Forget "boring" grids */
+        if ((c_ptr->feat & 0x3F) <= 0x02) {
 
             /* Forget the grid */
             c_ptr->feat &= ~CAVE_MARK;
@@ -1427,8 +1501,8 @@ void update_lite(void)
  * even terminate early when they hit walls.  I need to find a quick way
  * to "terminate" the other scans.
  *
- * Note that in the worst case (a big empty area with maybe 5% scattered walls),
- * each of the 1500 or so nearby grids is checked once, with most of them getting
+ * Note that in the worst case (a big empty area with say 5% scattered walls),
+ * each of the 1500 or so nearby grids is checked once, most of them getting
  * an "instant" rating, and only a small portion requiring a call to "los()".
  * Note that the "town" provides a "pretty bad" case.
  *
@@ -1441,11 +1515,13 @@ void update_lite(void)
  * commands, and several forms of running, plus all commands executed near
  * large groups of monsters, are strictly more efficient with "update_view()"
  * that with the old "compute los() on demand" method.  So it is important to
- * optimize the "running" case.  One way to do this is to use one of the options
- * to reduce the view range when running.  This provides a gradual reduction of
- * the view range from 20 to 10 and then instantly back up to 20 when the player
- * stops running for whatever reason.  This is useful in town.  Actually, the
- * algorithm is pretty efficient, and may not need any more optimizations.
+ * optimize the "running" case.  One way to do this is to use one of the
+ * options that reduce the view range when running.  This provides a gradual
+ * reduction of the view range from 20 to 10 and then instantly back up to 20
+ * when the player stops running for whatever reason.  This is useful in town,
+ * for which a special reduction option is available.
+ *
+ * Actually, the algorithm is pretty efficient at this point...
  */
 
 
@@ -1458,22 +1534,23 @@ void update_lite(void)
  * Note that door/wall changes are only relavant when the door/wall itself is
  * in the "view" region.
  *
- * The algorithm seems to only call "los()" from zero to ten times, usually only
- * when coming down a corridor into a room, or standing in a room, just misaligned
- * with a corridor.  So if, say, there are five "nearby" monsters, we will be
- * reducing the calls to "los()".
+ * The algorithm seems to only call "los()" from zero to ten times, usually
+ * only when coming down a corridor into a room, or standing in a room, just
+ * misaligned with a corridor.  So if, say, there are five "nearby" monsters,
+ * we will be reducing the calls to "los()".
  *
- * I am thinking in terms of an algorithm that "walks" from the central point out
- * to the maximal "distance", at each point, determining the "view" code (above).
- * Note that for each grid not on a major axis or diagonal, the "view" code depends
- * on the "floor_grid_bold()" and "view" of exactly two other grids (the one along
- * the nearest diagonal, and the one next to that one, see "update_view_aux()"...).
+ * I am thinking in terms of an algorithm that "walks" from the central point
+ * out to the maximal "distance", at each point, determining the "view" code
+ * (above).  For each grid not on a major axis or diagonal, the "view" code
+ * depends on the "floor_grid_bold()" and "view" of exactly two other grids
+ * (the one along the nearest diagonal, and the one next to that one, see
+ * "update_view_aux()"...).
  *
- * Notice that we "memorize" the viewable space array, so that at the cost of
- * under 3000 bytes, we reduce the time taken by "forget_view()" to one assignment
- * for each grid actually in the "viewable space".  And for another 3000 bytes,
- * we prevent "erase + redraw" ineffiencies via the "seen" set.  These bytes are
- * also used by other routines, thus amortizing the cost.
+ * We "memorize" the viewable space array, so that at the cost of under 3000
+ * bytes, we reduce the time taken by "forget_view()" to one assignment for
+ * each grid actually in the "viewable space".  And for another 3000 bytes,
+ * we prevent "erase + redraw" ineffiencies via the "seen" set.  These bytes
+ * are also used by other routines, thus amortizing the cost.
  *
  * A similar thing is done for "forget_lite()" in which case the savings are
  * much less, but save us from doing bizarre maintenance checking.
@@ -2489,13 +2566,13 @@ void map_area(void)
             if ((c_ptr->feat & 0x3F) < 0x30) {
 
                 /* Memorize landmarks */
-                if ((c_ptr->feat & 0x3F) >= 0x03) {
+                if ((c_ptr->feat & 0x3F) > 0x02) {
 
                     /* Memorize the object */
                     c_ptr->feat |= CAVE_MARK;
                 }
 
-                /* Field-Mark the "true" walls */
+                /* Memorize "useful" walls */
                 for (i = 0; i < 8; i++) {
 
                     c_ptr = &cave[y+ddy_ddd[i]][x+ddx_ddd[i]];
@@ -2519,19 +2596,32 @@ void map_area(void)
 
 /*
  * Light up the dungeon.
+ *
+ * XXX XXX XXX Hack -- This function is basically a hack.
  */
 void wiz_lite(void)
 {
-    cave_type *c_ptr;
-    int        yy, xx, y, x;
+    int		yy, xx, y, x;
 
+    cave_type	*c_ptr;
+
+    
     /* Perma-light all open space and adjacent walls */
     for (y = 1; y < cur_hgt-1; y++) {
         for (x = 1; x < cur_wid-1; x++) {
 
             /* Access the grid */
             c_ptr = &cave[y][x];
-            
+
+            /* XXX XXX XXX Memorize all objects */
+            if (c_ptr->i_idx) {
+
+                inven_type *i_ptr = &i_list[c_ptr->i_idx];
+
+                /* Memorize */
+                i_ptr->marked = TRUE;
+            }
+                                    
             /* Process all non-walls */
             if ((c_ptr->feat & 0x3F) < 0x30) {
 
@@ -2542,8 +2632,16 @@ void wiz_lite(void)
                         /* Get the grid */
                         c_ptr = &cave[yy][xx];
 
-                        /* Perma-lite and memorize the grid */
-                        c_ptr->feat |= (CAVE_GLOW | CAVE_MARK);
+                        /* Perma-lite the grid */
+                        c_ptr->feat |= (CAVE_GLOW);
+                        
+                        /* XXX XXX XXX Hack -- memorize landmarks */
+                        if ((c_ptr->feat & 0x3F) > 0x02) {
+                            c_ptr->feat |= CAVE_MARK;
+                        }
+                        
+                        /* XXX XXX XXX Hack -- memorize if requested */
+                        if (view_perma_grids) c_ptr->feat |= CAVE_MARK;
                     }
                 }
             }
@@ -2565,12 +2663,24 @@ void wiz_dark(void)
 {
     int        y, x;
 
+
     /* Forget every grid */
     for (y = 0; y < cur_hgt; y++) {
         for (x = 0; x < cur_wid; x++) {
 
-            /* Forget the grid */
-            cave[y][x].feat &= ~CAVE_MARK;
+            cave_type *c_ptr = &cave[y][x];
+            
+            /* Process the grid */
+            c_ptr->feat &= ~CAVE_MARK;
+
+            /* Forget the object */
+            if (c_ptr->i_idx) {
+            
+                inven_type *i_ptr = &i_list[c_ptr->i_idx];
+    
+                /* Forget the object */        
+                i_ptr->marked = FALSE;
+            }
         }
     }
 
@@ -2603,39 +2713,39 @@ void wiz_dark(void)
 #define MAP_WID (MAX_WID / RATIO)
 
 /*
- * Hack -- priority array
+ * Hack -- priority array (see below)
  */
 static byte priority_table[][2] = {
 
-    /* Stairs */
-    { 0x06, 25 },
-    { 0x07, 25 },
+    /* Floors */
+    { 0x01, 5 },
 
-    /* Hidden gold */
-    { 0x37, 19 },
-    { 0x36, 19 },
+    /* Walls */
+    { 0x30, 10 },
 
-    /* Closed doors */
-    { 0x20, 17 },
+    /* Quartz */
+    { 0x33, 11 },
+
+    /* Magma */
+    { 0x32, 12 },
+
+    /* Rubble */
+    { 0x31, 13 },
 
     /* Open doors */
     { 0x05, 15 },
     { 0x04, 15 },
 
-    /* Rubble */
-    { 0x31, 13 },
+    /* Closed doors */
+    { 0x20, 17 },
 
-    /* Magma */
-    { 0x32, 12 },
+    /* Hidden gold */
+    { 0x37, 19 },
+    { 0x36, 19 },
 
-    /* Quartz */
-    { 0x33, 11 },
-
-    /* Walls */
-    { 0x30, 10 },
-
-    /* Floors */
-    { 0x01, 5 },
+    /* Stairs */
+    { 0x06, 25 },
+    { 0x07, 25 },
 
     /* End */
     { 0, 0 }
@@ -2645,15 +2755,12 @@ static byte priority_table[][2] = {
 /*
  * Hack -- a priority function
  */
-static int priority(byte a, char c)
+static byte priority(byte a, char c)
 {
-    int i;
+    byte i;
     
     /* Nothing */
     if (c == ' ') return (1);
-    
-    /* Player XXX XXX XXX */
-    if (c == '@') return (30);
 
     /* Scan the table */
     for (i = 0; priority_table[i][0]; i++) {
@@ -2665,6 +2772,9 @@ static int priority(byte a, char c)
         if ((c == f_info[p1].z_char) && (a == f_info[p1].z_attr)) return (p2);
     }
     
+    /* Player XXX XXX XXX */
+    if (c == '@') return (30);
+    
     /* Default */
     return (20);
 }
@@ -2675,6 +2785,10 @@ static int priority(byte a, char c)
  *
  * Note that we must cancel the "lighting" options during this
  * function or the "priority()" code will not work correctly.
+ *
+ * Note the use of a specialized "priority" function to allow this
+ * function to work with any graphic attr/char mappings, and the
+ * attempts to optimize this function where possible.
  */
 void do_cmd_view_map(void)
 {
@@ -2683,11 +2797,19 @@ void do_cmd_view_map(void)
     byte ta;
     char tc;
 
+    byte tp;
+
+    byte ma[MAP_HGT + 2][MAP_WID + 2];
+    char mc[MAP_HGT + 2][MAP_WID + 2];
+
+    byte mp[MAP_HGT + 2][MAP_WID + 2];
+
     bool old_view_yellow_lite = view_yellow_lite;
     bool old_view_bright_lite = view_bright_lite;
     
-    char mc[MAP_HGT + 2][MAP_WID + 2];
-    char ma[MAP_HGT + 2][MAP_WID + 2];
+
+    /* Paranoia */
+    msg_print(NULL);
 
 
     /* Hack -- Cancel the options */
@@ -2695,11 +2817,29 @@ void do_cmd_view_map(void)
     view_bright_lite = FALSE;
 
 
+    /* Enter "icky" mode */
+    character_icky = TRUE;
+
+    /* Save the screen */
+    Term_save();
+
+    /* Note */
+    prt("Please wait...", 0, 0);
+    
+    /* Flush */
+    Term_fresh();
+
+    
     /* Clear the chars and attributes */
     for (y = 0; y < MAP_HGT+2; ++y) {
         for (x = 0; x < MAP_WID+2; ++x) {
+        
+            /* Nothing here */
             ma[y][x] = TERM_WHITE;
             mc[y][x] = ' ';
+
+            /* No priority */
+            mp[y][x] = 0;
         }
     }
 
@@ -2714,13 +2854,22 @@ void do_cmd_view_map(void)
             /* Extract the current attr/char at that map location */
             map_info(j, i, &ta, &tc);
 
-            /* If this thing is more important, save it instead */
-            if (priority(ma[y][x], mc[y][x]) < priority(ta, tc)) {
+            /* Extract the priority of that attr/char */
+            tp = priority(ta, tc);
+            
+            /* Save "best" */
+            if (mp[y][x] < tp) {
+
+                /* Save data */
                 ma[y][x] = ta;
                 mc[y][x] = tc;
+
+                /* Save priority */
+                mp[y][x] = tp;
             }
         }
     }
+
 
     /* Corners */
     x = MAP_WID + 1;
@@ -2735,15 +2884,6 @@ void do_cmd_view_map(void)
     /* Draw the vertical edges */
     for (y = 1; y <= MAP_HGT; y++) mc[y][0] = mc[y][x] = '|';
 
-
-    /* Paranoia */
-    msg_print(NULL);
-
-    /* Enter "icky" mode */
-    character_icky = TRUE;
-
-    /* Save the screen */
-    Term_save();
 
     /* Clear the screen */
     Term_clear();
@@ -2779,7 +2919,7 @@ void do_cmd_view_map(void)
     /* Wait for it */
     put_str("Hit any key to continue", 23, 23);
 
-    /* Hilite the player */
+    /* Hack -- Hilite the player */
     move_cursor(py / RATIO + 1, px / RATIO + 1);
 
     /* Get any key */

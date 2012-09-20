@@ -382,7 +382,7 @@ X:24:20
 W:0:0:0:5000
 C:0:0:0:3
 F:WIS | 
-F:SEE_INVIS | BLESSED
+F:BLESSED
 
 # 67 (unused)
 

@@ -95,34 +95,6 @@
 #define FALSE	0
 
 
-/*
- * Hack -- Simple Emacs-like Control-cursor keys
- */
-
-#define CURSOR_UP	('P' - '@')
-#define CURSOR_DN	('N' - '@')
-#define CURSOR_LT	('B' - '@')
-#define CURSOR_RT	('F' - '@')
-
-#define CURSOR_HOME	('A' - '@')
-#define CURSOR_END	('E' - '@')
-
-#define CURSOR_BS	('H' - '@')
-#define CURSOR_DEL	('D' - '@')
-
-#define CURSOR_KILL	('K' - '@')
-
-
-/*
- * Ascii equivelents to standard keys
- */
-
-#define CURSOR_SPC	' '
-#define CURSOR_TAB	'\t'
-#define CURSOR_RET	'\n'
-#define CURSOR_ESC	'\033'
-
-
 
 /**** Assertions and Preventions ****/
 
@@ -182,6 +154,23 @@
  */
 #undef SGN
 #define SGN(a)		(((a) < 0)   ? (-1) : ((a) != 0))
+
+
+/*
+ * Hack -- allow use of "ASCII" and "EBCDIC" for "indexes"
+ * The "index" values must be lowercase letters (or digits).
+ */
+#ifdef VM
+#  define A2I(X)    alphatoindex(X)
+#  define I2A(X)    indextoalpha(X)
+#  define D2I(X)    ((X) - '0')
+#  define I2D(X)    ((X) + '0')
+#else
+#  define A2I(X)    ((X) - 'a')
+#  define I2A(X)    ((X) + 'a')
+#  define D2I(X)    ((X) - '0')
+#  define I2D(X)    ((X) + '0')
+#endif
 
 
 #endif

@@ -651,9 +651,8 @@ static void process_world(void)
                         /* Get the cave grid */
                         c_ptr = &cave[y][x];
 
-                        /* Hack -- Skip most "features" */
-                        if (((c_ptr->feat & 0x3F) <= 0x02) &&
-                            !(c_ptr->i_idx)) {
+                        /* Hack -- darken "boring" features */
+                        if ((c_ptr->feat & 0x3F) <= 0x02) {
 
                             /* Forget the grid */
                             c_ptr->feat &= ~(CAVE_GLOW | CAVE_MARK);
@@ -856,14 +855,14 @@ static void process_world(void)
         if (p_ptr->food < PY_FOOD_FAINT) {
 
             /* Faint occasionally */
-            if (rand_int(100) < 10) {
+            if (!p_ptr->paralyzed && (rand_int(100) < 10)) {
 
                 /* Message */
                 msg_print("You faint from the lack of food.");
                 disturb(1, 0);
 
-                /* Hack -- Bypass "free action" */
-                p_ptr->paralysis = 1 + rand_int(5);
+                /* Hack -- faint (bypass free action) */
+                (void)set_paralyzed(p_ptr->paralyzed + 1 + rand_int(5));
             }
         }
     }
@@ -897,102 +896,102 @@ static void process_world(void)
 
     /* Hack -- Hallucinating */
     if (p_ptr->image) {
-        p_ptr->image--;
+        (void)set_image(p_ptr->image - 1);
     }
 
     /* Blindness */
     if (p_ptr->blind) {
-        p_ptr->blind--;
+        (void)set_blind(p_ptr->blind - 1);
     }
 
     /* Times see-invisible */
     if (p_ptr->tim_invis) {
-        p_ptr->tim_invis--;
+        (void)set_tim_invis(p_ptr->tim_invis - 1);
     }
 
     /* Timed infra-vision */
     if (p_ptr->tim_infra) {
-        p_ptr->tim_infra--;
+        (void)set_tim_infra(p_ptr->tim_infra - 1);
     }
 
     /* Paralysis */
-    if (p_ptr->paralysis) {
-        p_ptr->paralysis--;
+    if (p_ptr->paralyzed) {
+        (void)set_paralyzed(p_ptr->paralyzed - 1);
     }
 
     /* Confusion */
     if (p_ptr->confused) {
-        p_ptr->confused--;
+        (void)set_confused(p_ptr->confused - 1);
     }
 
     /* Afraid */
-    if (p_ptr->fear) {
-        p_ptr->fear--;
+    if (p_ptr->afraid) {
+        (void)set_afraid(p_ptr->afraid - 1);
     }
 
     /* Fast */
     if (p_ptr->fast) {
-        p_ptr->fast--;
+        (void)set_fast(p_ptr->fast - 1);
     }
 
     /* Slow */
     if (p_ptr->slow) {
-        p_ptr->slow--;
+        (void)set_slow(p_ptr->slow - 1);
     }
 
     /* Protection from evil */
     if (p_ptr->protevil) {
-        p_ptr->protevil--;
+        (void)set_protevil(p_ptr->protevil - 1);
     }
 
     /* Invulnerability */
     if (p_ptr->invuln) {
-        p_ptr->invuln--;
+        (void)set_invuln(p_ptr->invuln - 1);
     }
 
     /* Heroism */
     if (p_ptr->hero) {
-        p_ptr->hero--;
+        (void)set_hero(p_ptr->hero - 1);
     }
 
     /* Super Heroism */
     if (p_ptr->shero) {
-        p_ptr->shero--;
+        (void)set_shero(p_ptr->shero - 1);
     }
 
     /* Blessed */
     if (p_ptr->blessed) {
-        p_ptr->blessed--;
+        (void)set_blessed(p_ptr->blessed - 1);
     }
 
     /* Shield */
     if (p_ptr->shield) {
-        p_ptr->shield--;
+        (void)set_shield(p_ptr->shield - 1);
     }
 
     /* Oppose Acid */
     if (p_ptr->oppose_acid) {
-        p_ptr->oppose_acid--;
+        (void)set_oppose_acid(p_ptr->oppose_acid - 1);
     }
 
     /* Oppose Lightning */
     if (p_ptr->oppose_elec) {
-        p_ptr->oppose_elec--;
+        (void)set_oppose_elec(p_ptr->oppose_elec - 1);
     }
 
     /* Oppose Fire */
     if (p_ptr->oppose_fire) {
-        p_ptr->oppose_fire--;
+        (void)set_oppose_fire(p_ptr->oppose_fire - 1);
     }
 
     /* Oppose Cold */
     if (p_ptr->oppose_cold) {
-        p_ptr->oppose_cold--;
+        (void)set_oppose_cold(p_ptr->oppose_cold - 1);
     }
 
     /* Oppose Poison */
     if (p_ptr->oppose_pois) {
-        p_ptr->oppose_pois--;
+        (void)set_oppose_pois(p_ptr->oppose_pois - 1);
     }
 
 
@@ -1003,12 +1002,7 @@ static void process_world(void)
 
         int adjust = (adj_con_fix[p_ptr->stat_ind[A_CON]] / 2 + 1);
 
-        if (p_ptr->poisoned > adjust) {
-            p_ptr->poisoned -= adjust;
-        }
-        else {
-            p_ptr->poisoned = 0;
-        }
+        (void)set_poisoned(p_ptr->poisoned - adjust);
     }
 
     /* Stun */
@@ -1016,12 +1010,7 @@ static void process_world(void)
 
         int adjust = (adj_con_fix[p_ptr->stat_ind[A_CON]] / 2 + 1);
 
-        if (p_ptr->stun > adjust) {
-            p_ptr->stun -= adjust;
-        }
-        else {
-            p_ptr->stun = 0;
-        }
+        (void)set_stun(p_ptr->stun - adjust);
     }
 
     /* Cut */
@@ -1029,16 +1018,11 @@ static void process_world(void)
 
         int adjust = (adj_con_fix[p_ptr->stat_ind[A_CON]] + 1);
 
-        /* Mortal wound (no healing!) */
+        /* Hack -- Truly "mortal" wound */
         if (p_ptr->cut > 1000) adjust = 0;
 
         /* Apply some healing */
-        if (p_ptr->cut > adjust) {
-            p_ptr->cut -= adjust;
-        }
-        else {
-            p_ptr->cut = 0;
-        }
+        (void)set_cut(p_ptr->cut - adjust);
     }
 
 
@@ -1234,8 +1218,9 @@ static void process_player()
             if ((p_ptr->chp == p_ptr->mhp) &&
                 (p_ptr->csp == p_ptr->msp) &&
                 !p_ptr->blind && !p_ptr->confused &&
-                !p_ptr->fear && !p_ptr->stun &&
-                !p_ptr->slow && !p_ptr->paralysis &&
+                !p_ptr->poisoned && !p_ptr->afraid &&
+                !p_ptr->stun && !p_ptr->cut &&
+                !p_ptr->slow && !p_ptr->paralyzed &&
                 !p_ptr->image && !p_ptr->word_recall) {
 
                 disturb(0, 0);
@@ -1295,6 +1280,9 @@ static void process_player()
         if (p_ptr->image) p_ptr->redraw |= (PR_MAP);
 
 
+        /* Handle stuff */
+        handle_stuff();
+
         /* Notice stuff */
         notice_stuff();
 
@@ -1318,7 +1306,7 @@ static void process_player()
 
         /* Hack -- Resting */
         if ((resting) ||
-            (p_ptr->paralysis) ||
+            (p_ptr->paralyzed) ||
             (p_ptr->stun >= 100)) {
 
             /* Take a turn */
@@ -1398,6 +1386,10 @@ static void process_player()
 
     /* Hack -- Process Teleportation */
     if (teleport_flag) handle_teleport();
+
+
+    /* Handle stuff */
+    handle_stuff();
 
     /* Notice stuff (one last time) */
     notice_stuff();
@@ -1523,14 +1515,18 @@ static void dungeon(void)
     Term_fresh();
 
 
+    /* Hack -- Combine pack */
+    p_ptr->update |= (PU_COMBINE | PU_REORDER);
+
     /* Notice stuff */
     notice_stuff();
 
-    /* Combine pack */
-    p_ptr->update |= (PU_COMBINE | PU_REORDER);
-
     /* Handle stuff */
     handle_stuff();
+
+    /* Refresh */
+    Term_fresh();
+
 
     /* Announce (or repeat) the feeling */
     if (dun_level) do_cmd_feeling();

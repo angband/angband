@@ -323,7 +323,8 @@ static termPipe term_screen_body,
  * Note that this file does *NOT* currently extract modifiers
  * (such as Control and Shift).  See "main-ibm.c" for a method.
  *
- * XXX XXX XXX XXX The "key handling" really needs to be fixed...
+ * XXX XXX XXX XXX The "key handling" really needs to be fixed.
+ * See "main-ibm.c" for more information about "macro encoding".
  */
 static errr CheckEvents(int returnImmediately)
 {

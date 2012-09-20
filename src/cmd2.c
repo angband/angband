@@ -149,13 +149,13 @@ void monster_death(int m_idx)
             /* Place Gold */
             if (do_gold && (!do_item || (rand_int(100) < 50))) {
                 place_gold(ny, nx);
-                if (test_lite_bold(ny, nx)) dump_gold++;
+                if (player_can_see_bold(ny, nx)) dump_gold++;
             }
 
             /* Place Object */
             else {
                 place_object(ny, nx, good, great);
-                if (test_lite_bold(ny, nx)) dump_item++;
+                if (player_can_see_bold(ny, nx)) dump_item++;
             }
 
             /* Reset the object level */
@@ -164,8 +164,16 @@ void monster_death(int m_idx)
             /* Reset "coin" type */
             coin_type = 0;
 
-            /* Actually display the object's grid */
+            /* Notice */
+            note_spot(ny, nx);
+            
+            /* Display */
             lite_spot(ny, nx);
+
+            /* Under the player */
+            if ((ny == py) && (nx == px)) {
+                msg_print("You feel something roll beneath your feet.");
+            }
 
             break;
         }
@@ -351,7 +359,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
         else if ((r_ptr->flags3 & RF3_DEMON) ||
                  (r_ptr->flags3 & RF3_UNDEAD) ||
                  (r_ptr->flags2 & RF2_STUPID) ||
-                 (strchr("EvgX", r_ptr->r_char))) {
+                 (strchr("Evg", r_ptr->r_char))) {
             msg_format("You have destroyed %s.", m_name);
         }
 
@@ -557,6 +565,12 @@ static int critical_shot(int weight, int plus, int dam)
  * This function takes a parameter "chance".  This is the percentage
  * chance that the item will "disappear" instead of drop.  If the object
  * has been thrown, then this is the chance of disappearance on contact.
+ *
+ * Hack -- this function uses "chance" to determine if it should produce
+ * some form of "description" of the drop event (under the player).
+ *
+ * This function should probably be broken up into a function to determine
+ * a "drop location", and several functions to actually "drop" an object.
  *
  * XXX XXX XXX Consider allowing objects to combine on the ground.
  */
@@ -1078,7 +1092,7 @@ void py_attack(int y, int x)
 
 
     /* Handle player fear */
-    if (p_ptr->fear) {
+    if (p_ptr->afraid) {
 
         /* Message */
         msg_format("You are too afraid to attack %s!", m_name);
@@ -1306,6 +1320,55 @@ bool target_okay()
 
 
 
+/*
+ * Sorting hook -- comp function -- see below
+ *
+ * We use "u" and "v" to point to arrays of "x" and "y" positions,
+ * and sort the arrays by distance to the player.
+ */
+static bool ang_sort_comp_hook(vptr u, vptr v, int a, int b)
+{
+    byte *x = (byte*)(u);
+    byte *y = (byte*)(v);
+
+    int da, db;
+
+    /* Distance to first point */
+    da = distance(px, py, x[a], y[a]);
+        
+    /* Distance to second point */
+    db = distance(px, py, x[b], y[b]);
+
+    /* Compare the distances */
+    return (da <= db);
+}
+
+
+/*
+ * Sorting hook -- swap function -- see below
+ *
+ * We use "u" and "v" to point to arrays of "x" and "y" positions,
+ * and sort the arrays by distance to the player.
+ */
+static void ang_sort_swap_hook(vptr u, vptr v, int a, int b)
+{
+    byte *x = (byte*)(u);
+    byte *y = (byte*)(v);
+
+    byte temp;
+    
+    /* Swap "x" */
+    temp = x[a];
+    x[a] = x[b];
+    x[b] = temp;
+    
+    /* Swap "y" */
+    temp = y[a];
+    y[a] = y[b];
+    y[b] = temp;
+}
+
+
 
 
 /*
@@ -1425,6 +1488,14 @@ bool target_set()
         temp_n++;
     }
 
+    /* Set the sort hooks */
+    ang_sort_comp = ang_sort_comp_hook;
+    ang_sort_swap = ang_sort_swap_hook;
+    
+    /* Sort the positions */
+    ang_sort(temp_x, temp_y, temp_n);
+
+    
     /* Choose "closest" monster */
     m = target_pick(py, px, 0, 0);
 
@@ -2243,7 +2314,7 @@ static void hit_trap(void)
 
                 else {
                     dam = dam * 2;
-                    add_poisoned(randint(dam));
+                    (void)set_poisoned(p_ptr->poisoned + randint(dam));
                 }
             }
 
@@ -2256,6 +2327,9 @@ static void hit_trap(void)
       case 0x14:
         msg_print("You are enveloped in a cloud of smoke!");
         c_ptr->feat = ((c_ptr->feat & ~0x3F) | 0x01);
+        c_ptr->feat &= ~CAVE_MARK;
+        note_spot(py,px);
+        lite_spot(py,px);
         num = 2 + randint(3);
         for (i = 0; i < num; i++) {
             (void)summon_specific(py, px, dun_level, 0);
@@ -2285,7 +2359,7 @@ static void hit_trap(void)
             msg_print("A small dart hits you!");
             dam = damroll(1,4);
             take_hit(dam, name);
-            add_slow(rand_int(20) + 10);
+            (void)set_slow(p_ptr->slow + rand_int(20) + 20);
         }
         else {
             msg_print("A small dart barely misses you.");
@@ -2330,26 +2404,32 @@ static void hit_trap(void)
 
       case 0x1C:
         msg_print("A black gas surrounds you!");
-        add_blind(rand_int(50) + 25);
+        if (!p_ptr->resist_blind) {
+            (void)set_blind(p_ptr->blind + rand_int(50) + 25);
+        }
         break;
 
       case 0x1D:
         msg_print("A gas of scintillating colors surrounds you!");
-        add_confused(rand_int(20) + 10);
+        if (!p_ptr->resist_conf) {
+            (void)set_confused(p_ptr->confused + rand_int(20) + 10);
+        }
         break;
 
       case 0x1E:
         msg_print("A pungent green gas surrounds you!");
-        add_poisoned(rand_int(20) + 10);
+        if (!p_ptr->resist_pois &&
+            !p_ptr->oppose_pois &&
+            !p_ptr->immune_pois) {
+            (void)set_poisoned(p_ptr->poisoned + rand_int(20) + 10);
+        }
         break;
 
       case 0x1F:
         msg_print("A strange white mist surrounds you!");
-        add_paralysis(rand_int(10) + 5);
-        break;
-
-      default:
-        msg_print("Oops. Undefined trap.");
+        if (!p_ptr->free_act) {
+            (void)set_paralyzed(p_ptr->paralyzed + rand_int(10) + 5);
+        }
         break;
     }
 }
@@ -2474,7 +2554,8 @@ void move_player(int dir, int do_pickup)
 
 
         /* Spontaneous Searching */
-        if ((p_ptr->skill_fos >= 50) || (0 == rand_int(50 - p_ptr->skill_fos))) {
+        if ((p_ptr->skill_fos >= 50) ||
+            (0 == rand_int(50 - p_ptr->skill_fos))) {
             search();
         }
 
@@ -2523,6 +2604,21 @@ void move_player(int dir, int do_pickup)
 
 
 /*
+ * Determine if a player "knows" about a grid
+ *
+ * Line 1 -- player has memorized the grid
+ * Line 2 -- player can see the grid
+ *
+ * XXX XXX XXX This function may be "incorrect"
+ *
+ * The "running algorythm" needs to be verified and optimized.
+ */
+#define test_lite_bold(Y,X) \
+    ((cave[Y][X].feat & CAVE_MARK) || \
+     (player_can_see_bold(Y,X)))
+
+
+/*
  * Hack -- Do we see a wall?  Used in running.		-CJS-
  */
 static int see_wall(int dir, int y, int x)
@@ -2531,14 +2627,14 @@ static int see_wall(int dir, int y, int x)
     y += ddy[dir];
     x += ddx[dir];
 
-    /* Illegal grids are blank */
+    /* XXX XXX XXX Illegal grids are blank */
     if (!in_bounds2(y, x)) return (FALSE);
 
-    /* Secret doors, veins, and walls are "walls" */
+    /* Only Secret doors, veins, and walls are "walls" */
     if ((cave[y][x].feat & 0x3F) < 0x30) return (FALSE);
 
-    /* Unknown grids are blank, and thus not walls */
-    if (!test_lite_bold(y, x)) return (FALSE);
+    /* XXX XXX XXX Only memorized walls count */
+    if (!(cave[y][x].feat & CAVE_MARK)) return (FALSE);
 
     /* Default */
     return (TRUE);
@@ -2553,10 +2649,10 @@ static int see_nothing(int dir, int y, int x)
     y += ddy[dir];
     x += ddx[dir];
 
-    /* Illegal grid are blank */
+    /* XXX XXX XXX Illegal grid are blank */
     if (!in_bounds2(y, x)) return (TRUE);
 
-    /* Unknown grids are blank */
+    /* XXX XXX XXX Unknown grids are blank */
     if (!test_lite_bold(y, x)) return (TRUE);
 
     /* Default */
@@ -2736,12 +2832,10 @@ static void area_affect(void)
     int			prev_dir, new_dir, check_dir = 0;
     
     int			row, col;
-    int			i, f, max, inv;
+    int			i, max, inv;
     int			option, option2;
 
     cave_type		*c_ptr;
-    monster_type	*m_ptr;
-    inven_type		*i_ptr;
 
 
     /* No options yet */
@@ -2765,17 +2859,30 @@ static void area_affect(void)
         col = px + ddx[new_dir];
 
         c_ptr = &cave[row][col];
+
         
-        m_ptr = &m_list[c_ptr->m_idx];
-
-        i_ptr = &i_list[c_ptr->i_idx];
-
-
         /* Visible monsters abort running */
-        if (c_ptr->m_idx && m_ptr->ml) {
-            disturb(0,0);
-            return;
+        if (c_ptr->m_idx) {
+        
+            monster_type *m_ptr = &m_list[c_ptr->m_idx];
+            
+            if (m_ptr->ml) {
+                disturb(0,0);
+                return;
+            }
         }
+
+        /* Visible objects abort running */
+        if (c_ptr->i_idx) {
+        
+            inven_type *i_ptr = &i_list[c_ptr->i_idx];
+
+            if (i_ptr->marked) {
+                disturb(0,0);
+                return;
+            }
+        }
+
 
         /* Assume the new grid cannot be seen */
         inv = TRUE;
@@ -2783,15 +2890,7 @@ static void area_affect(void)
         /* Can we "see" (or "remember") the adjacent grid? */
         if (test_lite_bold(row, col)) {
 
-            /* Objects abort running */
-            if (i_ptr->k_idx) {
-
-                disturb(0,0);
-                return;
-            }
-
-            /* Hack -- look at the feature */
-            f = (c_ptr->feat & 0x3F);
+            int f = (c_ptr->feat & 0x3F);
             
             /* Hack -- ignore floors */
             if (f == 0x01) f = 0;
@@ -2888,6 +2987,8 @@ static void area_affect(void)
             row = py + ddy[new_dir];
             col = px + ddx[new_dir];
 
+            /* XXX XXX XXX */
+            
             /* Unknown grid or floor */
             if (!test_lite_bold(row, col) || floor_grid_bold(row, col)) {
 
@@ -3474,7 +3575,7 @@ void do_cmd_fire(void)
                 if ((r_ptr->flags3 & RF3_DEMON) ||
                     (r_ptr->flags3 & RF3_UNDEAD) ||
                     (r_ptr->flags2 & RF2_STUPID) ||
-                    (strchr("EvgX", r_ptr->r_char))) {
+                    (strchr("Evg", r_ptr->r_char))) {
 
                     /* Special note at death */
                     note_dies = " is destroyed.";
@@ -3519,7 +3620,8 @@ void do_cmd_fire(void)
 
                 /* Complex message */
                 if (wizard) {
-                    msg_format("You do %d (out of %d) damage.", tdam, m_ptr->hp);
+                    msg_format("You do %d (out of %d) damage.",
+                               tdam, m_ptr->hp);
                 }
 
                 /* Hit the monster, check for death */
@@ -3826,7 +3928,7 @@ void do_cmd_throw(void)
                 if ((r_ptr->flags3 & RF3_DEMON) ||
                     (r_ptr->flags3 & RF3_UNDEAD) ||
                     (r_ptr->flags2 & RF2_STUPID) ||
-                    (strchr("EvgX", r_ptr->r_char))) {
+                    (strchr("Evg", r_ptr->r_char))) {
 
                     /* Special note at death */
                     note_dies = " is destroyed.";
@@ -3863,15 +3965,16 @@ void do_cmd_throw(void)
                 }
 
                 /* Apply special damage XXX XXX XXX */
-                tdam = tot_dam_aux(&throw_obj, tdam, m_ptr);
-                tdam = critical_shot(throw_obj.weight, throw_obj.to_h, tdam);
+                tdam = tot_dam_aux(i_ptr, tdam, m_ptr);
+                tdam = critical_shot(i_ptr->weight, i_ptr->to_h, tdam);
 
                 /* No negative damage */
                 if (tdam < 0) tdam = 0;
 
                 /* Complex message */
                 if (wizard) {
-                    msg_format("You do %d (out of %d) damage.", tdam, m_ptr->hp);
+                    msg_format("You do %d (out of %d) damage.",
+                               tdam, m_ptr->hp);
                 }
 
                 /* Hit the monster, check for death */
@@ -3909,7 +4012,7 @@ void do_cmd_throw(void)
     }
 
     /* Chance of breakage */
-    j = breakage_chance(&throw_obj);
+    j = breakage_chance(i_ptr);
 
     /* Double the chance if we hit a monster */
     if (hit_body) j = j * 2;
@@ -3918,7 +4021,7 @@ void do_cmd_throw(void)
     if (j > 100) j = 100;
 
     /* Drop (or break) near that location */
-    drop_near(&throw_obj, j, y, x);
+    drop_near(i_ptr, j, y, x);
 }
 
 

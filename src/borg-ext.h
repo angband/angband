@@ -159,6 +159,8 @@ extern bool panic_death;		/* Panic before Death */
 
 extern bool panic_stuff;		/* Panic before Junking Stuff */
 
+extern bool panic_power;		/* Assume monsters get constant spells */
+
 
 
 /*

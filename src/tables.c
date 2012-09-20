@@ -1219,14 +1219,14 @@ owner_type owners[MAX_STORES][MAX_OWNERS] = {
     /* Armoury */
     { "Kon-Dar the Ugly",	5000,	210,  115,   5,   7,  RACE_HALF_ORC},
     { "Darg-Low the Grim",	10000,	190,  111,   4,   9,  RACE_HUMAN},
-    { "Decado the Handsome",	25000,  200,  112,   4,   0,  RACE_DUNADAN},
+    { "Decado the Handsome",	25000,  200,  112,   4,  10,  RACE_DUNADAN},
     { "Mauglin the Grumpy",	30000,	200,  112,   4,   5,  RACE_DWARF},
   },
   {
     /* Weapon Smith */
-    { "Ithyl-Mak the Beastly",	5000,	210,  115,   6,   8,  RACE_HALF_TROLL},
-    { "Arndal Beast-Slayer",	10000,	185,  110,   5,   8,  RACE_HALF_ELF},
-    { "Tarl Beast-Master",	25000,	190,  115,   5,   8,  RACE_HOBBIT},
+    { "Ithyl-Mak the Beastly",	5000,	210,  115,   6,   6,  RACE_HALF_TROLL},
+    { "Arndal Beast-Slayer",	10000,	185,  110,   5,   9,  RACE_HALF_ELF},
+    { "Tarl Beast-Master",	25000,	190,  115,   5,   7,  RACE_HOBBIT},
     { "Oglign Dragon-Slayer",	30000,	195,  112,   4,   8,  RACE_DWARF},
   },
   {

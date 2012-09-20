@@ -391,6 +391,11 @@ cptr *macro__act;
  */
 bool *macro__cmd;
 
+/*
+ * Current macro action [1024]
+ */
+char *macro__buf;
+
 
 /*
  * The number of quarks
@@ -686,6 +691,19 @@ u16b Rand_place;
  * Current "state" table for the "complex" RNG
  */
 u32b Rand_state[RAND_DEG];
+
+
+
+/*
+ * Current "comp" function for ang_sort()
+ */
+bool (*ang_sort_comp)(vptr u, vptr v, int a, int b);
+
+
+/*
+ * Current "swap" function for ang_sort()
+ */
+void (*ang_sort_swap)(vptr u, vptr v, int a, int b);
 
 
 

@@ -15,119 +15,6 @@
 
 
 
-/*
- * Hack -- apply a hacked "projection()" to all viewable monsters
- */
-static bool project_hack(int typ, int dam)
-{
-    int		i;
-    bool	obvious = FALSE;
-
-    /* Affect all (nearby) monsters */
-    for (i = 1; i < m_max; i++) {
-
-        monster_type *m_ptr = &m_list[i];
-
-        int y = m_ptr->fy;
-        int x = m_ptr->fx;
-
-        /* Paranoia -- Skip dead monsters */
-        if (!m_ptr->r_idx) continue;
-
-        /* Require line of sight */
-        if (!player_has_los_bold(y, x)) continue;
-
-        /* Hack -- apply the effect to the monster in that grid */
-        if (project_m(1, 0, y, x, dam, typ, 0)) obvious = TRUE;
-    }
-
-    /* Result */
-    return (obvious);
-}
-
-
-/*
- * Hack -- apply a "projection()" in a direction (or at the target)
- */
-static bool project_hook(int typ, int dir, int dam, int flg)
-{
-    int tx, ty;
-
-    /* Pass through the target if needed */
-    flg |= (PROJECT_THRU);
-
-    /* Use the given direction */
-    tx = px + ddx[dir];
-    ty = py + ddy[dir];
-
-    /* Use an actual "target" */
-    if ((dir == 5) && target_okay()) {
-        tx = target_col;
-        ty = target_row;
-    }
-
-    /* Analyze the "dir" and the "target", do NOT explode */
-    return (project(0, 0, ty, tx, dam, typ, flg));
-}
-
-/*
- * Cast a bolt spell
- */
-bool fire_bolt(int typ, int dir, int dam)
-{
-    int flg = PROJECT_STOP;
-    return (project_hook(typ, dir, dam, flg));
-}
-
-/*
- * Cast a beam spell
- */
-bool fire_beam(int typ, int dir, int dam)
-{
-    /* Go until we have to stop, do "beam" damage to everyone */
-    /* Also, affect all grids (NOT objects) we pass through */
-    int flg = PROJECT_BEAM | PROJECT_GRID;
-    return (project_hook(typ, dir, dam, flg));
-}
-
-/*
- * Cast a ball spell
- */
-bool fire_ball(int typ, int dir, int dam, int rad)
-{
-    int tx, ty;
-
-    int flg = PROJECT_GRID | PROJECT_ITEM | PROJECT_STOP;
-
-    /* Use the given direction */
-    tx = px + 99 * ddx[dir];
-    ty = py + 99 * ddy[dir];
-
-    /* Use an actual "target" */
-    if ((dir == 5) && target_okay()) {
-        flg &= ~PROJECT_STOP;
-        tx = target_col;
-        ty = target_row;
-    }
-
-    /* Analyze the "dir" and the "target".  Hurt items on floor. */
-    return (project(0, rad, ty, tx, dam, typ, flg));
-}
-
-/*
- * Cast a bolt spell, or rarely, a beam spell
- */
-bool fire_bolt_or_beam(int prob, int typ, int dir, int dam)
-{
-    if (rand_int(100) < prob) {
-        return (fire_beam(typ, dir, dam));
-    }
-    else {
-        return (fire_bolt(typ, dir, dam));
-    }
-}
-
-
 
 
 /*
@@ -460,19 +347,6 @@ bool hp_player(int num)
 }
 
 
-
-
-/*
- * Increase "protection from evil" counter
- */
-bool protect_evil()
-{
-    bool res = FALSE;
-    if (!p_ptr->protevil) res = TRUE;
-    p_ptr->protevil += randint(25) + 3 * p_ptr->lev;
-    if (p_ptr->protevil > 30000) p_ptr->protevil = 30000;
-    return (res);
-}
 
 
 /*
@@ -945,6 +819,9 @@ void identify_pack(void)
 }
 
 
+
+
+
 /*
  * Add to the players food time				-RAK-	
  *
@@ -1003,126 +880,6 @@ void add_food(int num)
 
 
 
-/*
- * Increase "Timed Infravision"
- */
-bool add_tim_infra(int amount)
-{
-    if (p_ptr->tim_infra < 30000) p_ptr->tim_infra += amount;
-    return (TRUE);
-}
-
-/*
- * Increase "Timed See-Invisible"
- */
-bool add_tim_invis(int amount)
-{
-    if (p_ptr->tim_invis < 30000) p_ptr->tim_invis += amount;
-    return (TRUE);
-}
-
-/*
- * Increase "Timed Bless"
- */
-bool add_bless(int amount)
-{
-    if (p_ptr->blessed < 30000) p_ptr->blessed += amount;
-    return (TRUE);
-}
-
-/*
- * Increase "Timed Shield"
- */
-bool add_shield(int amount)
-{
-    if (p_ptr->shield < 30000) p_ptr->shield += amount;
-    return (TRUE);
-}
-
-/*
- * Increase "Timed Slowness"
- */
-bool add_slow(int amount)
-{
-    if (p_ptr->slow < 30000) p_ptr->slow += amount;
-    return (TRUE);
-}
-
-/*
- * Increase "Timed Speed"
- */
-bool add_fast(int amount)
-{
-    if (p_ptr->fast < 30000) p_ptr->fast += amount;
-    return (TRUE);
-}
-
-/*
- * Increase "Timed Blindness" (if allowed)
- */
-bool add_blind(int amount)
-{
-    if (p_ptr->resist_blind) return (FALSE);
-    if (p_ptr->blind < 30000) p_ptr->blind += amount;
-    return (TRUE);
-}
-
-/*
- * Increase "Timed Hallucination" (if allowed)
- */
-bool add_image(int amount)
-{
-    if (p_ptr->image < 30000) p_ptr->image += amount;
-    return (TRUE);
-}
-
-/*
- * Increase "Timed Poison" (if allowed)
- */
-bool add_poisoned(int amount)
-{
-    if (p_ptr->immune_pois) return (FALSE);
-    if (p_ptr->resist_pois) return (FALSE);
-    if (p_ptr->oppose_pois) return (FALSE);
-    if (p_ptr->poisoned < 30000) p_ptr->poisoned += amount;
-    return (TRUE);
-}
-
-/*
- * Increase "Timed Confusion" (if allowed)
- */
-bool add_confused(int amount)
-{
-    if (p_ptr->resist_conf) return (FALSE);
-    if (p_ptr->resist_chaos) return (FALSE);
-    if (p_ptr->confused < 30000) p_ptr->confused += amount;
-    return (TRUE);
-}
-
-/*
- * Increase "Timed Fear" (if allowed)
- */
-bool add_fear(int amount)
-{
-    if (p_ptr->hero || p_ptr->shero) return (FALSE);
-    if (p_ptr->resist_fear) return (FALSE);
-    if (p_ptr->fear < 30000) p_ptr->fear += amount;
-    return (TRUE);
-}
-
-/*
- * Increase "Timed Paralysis" (if allowed)
- */
-bool add_paralysis(int amount)
-{
-    if (p_ptr->free_act) return (FALSE);
-    if (p_ptr->paralysis < 30000) p_ptr->paralysis += amount;
-    return (TRUE);
-}
-
-
-
-
 
 /*
  * Used by the "enchant" function (chance of failure)
@@ -1167,7 +924,7 @@ void message_pain(int m_idx, int dam)
     percentage = (int)(tmp);
 
 
-    /* Jelly's and Mold's and Quthl's */
+    /* Jelly's, Mold's, Vortex's, Quthl's */
     if (strchr("jmvQ", r_ptr->r_char)) {
 
         if (percentage > 95)
@@ -1206,7 +963,7 @@ void message_pain(int m_idx, int dam)
     }
 
     /* One type of monsters (ignore,squeal,shriek) */
-    else if (strchr("KcaUqRXbFJlrsSt", r_ptr->r_char)) {
+    else if (strchr("FIKMRSXabclqrst", r_ptr->r_char)) {
 
         if (percentage > 95)
             msg_format("%^s ignores the attack.", m_name);
@@ -1395,7 +1152,7 @@ void self_knowledge()
     if (p_ptr->confused) {
         info[i++] = "You are confused.";
     }
-    if (p_ptr->fear) {
+    if (p_ptr->afraid) {
         info[i++] = "You are terrified.";
     }
     if (p_ptr->cut) {
@@ -1631,7 +1388,7 @@ void self_knowledge()
 
         /* Hack */
         if (f1 & TR1_IMPACT) {
-            info[i++] = "The unbelievable impact of your weapon can cause earthquakes.";
+            info[i++] = "The impact of your weapon can cause earthquakes.";
         }
 
         /* Special "Attack Bonuses" */
@@ -1795,27 +1552,36 @@ bool detect_treasure(void)
 {
     int		y, x;
     bool	detect = FALSE;
+
     cave_type	*c_ptr;
+
+    inven_type	*i_ptr;
+    
 
     /* Scan the current panel */
     for (y = panel_row_min; y <= panel_row_max; y++) {
         for (x = panel_col_min; x <= panel_col_max; x++) {
 
-            /* Access the grid */
             c_ptr = &cave[y][x];
 
+            i_ptr = &i_list[c_ptr->i_idx];
+            
             /* Magma/Quartz + Known Gold */
             if (((c_ptr->feat & 0x3F) == 0x36) ||
                 ((c_ptr->feat & 0x3F) == 0x37)) {
 
                 /* Notice detected gold */
-                if (!test_lite_bold(y, x)) detect = TRUE;
+                if (!(c_ptr->feat & CAVE_MARK)) {
+                
+                    /* Detect */
+                    detect = TRUE;
 
-                /* Hack -- memorize the feature */
-                c_ptr->feat |= CAVE_MARK;
+                    /* Hack -- memorize the feature */
+                    c_ptr->feat |= CAVE_MARK;
 
-                /* Redraw */
-                lite_spot(y, x);
+                    /* Redraw */
+                    lite_spot(y, x);
+                }
             }
 
 #if 0
@@ -1839,16 +1605,20 @@ bool detect_treasure(void)
 #endif
 
             /* Notice gold */
-            if (i_list[c_ptr->i_idx].tval == TV_GOLD) {
+            if (i_ptr->tval == TV_GOLD) {
 
                 /* Notice new items */
-                if (!test_lite_bold(y, x)) detect = TRUE;
+                if (!(i_ptr->marked)) {
+                
+                    /* Detect */
+                    detect = TRUE;
 
-                /* Hack -- memorize the item */
-                c_ptr->feat |= CAVE_MARK;
+                    /* Hack -- memorize the item */
+                    i_ptr->marked = TRUE;
 
-                /* Redraw */
-                lite_spot(y, x);
+                    /* Redraw */
+                    lite_spot(y, x);
+                }
             }
         }
     }
@@ -1861,8 +1631,9 @@ bool detect_treasure(void)
 /*
  * Detect magic items.
  *
- * This will light up all spaces with "magic" items, including potions, scrolls,
- * books, rods, wands, staves, amulets, rings, artifacts, and "enchanted" items.
+ * This will light up all spaces with "magic" items, including artifacts,
+ * ego-items, potions, scrolls, books, rods, wands, staves, amulets, rings,
+ * and "enchanted" items of the "good" variety.
  *
  * It can probably be argued that this function is now too powerful.
  */
@@ -1890,7 +1661,7 @@ bool detect_magic()
             tv = i_ptr->tval;
 
             /* Artifacts, misc magic items, or enchanted wearables */
-            if (artifact_p(i_ptr) ||
+            if (artifact_p(i_ptr) || ego_item_p(i_ptr) ||
                 (tv == TV_AMULET) || (tv == TV_RING) ||
                 (tv == TV_STAFF) || (tv == TV_WAND) || (tv == TV_ROD) ||
                 (tv == TV_SCROLL) || (tv == TV_POTION) ||
@@ -1898,13 +1669,17 @@ bool detect_magic()
                 ((i_ptr->to_a > 0) || (i_ptr->to_h + i_ptr->to_d > 0))) {
 
                 /* Note new items */
-                if (!test_lite_bold(i, j)) detect = TRUE;
+                if (!(i_ptr->marked)) {
+                
+                    /* Detect */
+                    detect = TRUE;
 
-                /* Hack -- memorize the item */
-                c_ptr->feat |= CAVE_MARK;
+                    /* Memorize the item */
+                    i_ptr->marked = TRUE;
 
-                /* Redraw */
-                lite_spot(i, j);
+                    /* Redraw */
+                    lite_spot(i, j);
+                }
             }
         }
     }
@@ -2137,27 +1912,37 @@ bool detect_object(void)
     int		i, j;
     bool	detect = FALSE;
 
+    cave_type	*c_ptr;
+
+    inven_type	*i_ptr;
+
+
     /* Scan the current panel */
     for (i = panel_row_min; i <= panel_row_max; i++) {
         for (j = panel_col_min; j <= panel_col_max; j++) {
 
-            /* Access the grid */
-            cave_type *c_ptr = &cave[i][j];
+            c_ptr = &cave[i][j];
 
+            i_ptr = &i_list[c_ptr->i_idx];
+            
             /* Nothing here */
             if (!(c_ptr->i_idx)) continue;
 
 	    /* Do not detect "gold" */
-            if (i_list[c_ptr->i_idx].tval == TV_GOLD) continue;
+            if (i_ptr->tval == TV_GOLD) continue;
 
             /* Note new objects */
-            if (!test_lite_bold(i,j)) detect = TRUE;
+            if (!(i_ptr->marked)) {
 
-            /* Hack -- memorize it */
-            c_ptr->feat |= CAVE_MARK;
+                /* Detect */            
+                detect = TRUE;
 
-            /* Redraw */
-            lite_spot(i, j);
+                /* Hack -- memorize it */
+                i_ptr->marked = TRUE;
+
+                /* Redraw */
+                lite_spot(i, j);
+            }
         }
     }
 
@@ -2167,6 +1952,8 @@ bool detect_object(void)
 
 /*
  * Locates and displays traps on current panel		-RAK-	
+ *
+ * XXX XXX XXX Hack -- this function also detects traps on chests.
  */
 bool detect_trap(void)
 {
@@ -2181,10 +1968,10 @@ bool detect_trap(void)
     for (i = panel_row_min; i <= panel_row_max; i++) {
         for (j = panel_col_min; j <= panel_col_max; j++) {
 
-            /* Access the grid and object */
+            /* Access the grid */
             c_ptr = &cave[i][j];
 
-	    /* Get the object */
+	    /* Access the object */
             i_ptr = &i_list[c_ptr->i_idx];
 
             /* Detect invisible traps */
@@ -3348,192 +3135,6 @@ bool recharge(int num)
 
 
 
-/*
- * Some of the old functions
- */
-
-
-bool lite_line(int dir)
-{
-    return (fire_beam(GF_LITE_WEAK, dir, damroll(6, 8)));
-}
-
-bool drain_life(int dir, int dam)
-{
-    int flg = PROJECT_STOP;
-    return (project_hook(GF_OLD_DRAIN, dir, dam, flg));
-}
-
-bool wall_to_mud(int dir)
-{
-    int flg = PROJECT_BEAM | PROJECT_GRID | PROJECT_ITEM;
-    return (project_hook(GF_KILL_WALL, dir, 20 + randint(30), flg));
-}
-
-bool destroy_door(int dir)
-{
-    int flg = PROJECT_BEAM | PROJECT_GRID | PROJECT_ITEM;
-    return (project_hook(GF_KILL_DOOR, dir, 0, flg));
-}
-
-bool disarm_trap(int dir)
-{
-    int flg = PROJECT_BEAM | PROJECT_GRID | PROJECT_ITEM;
-    return (project_hook(GF_KILL_TRAP, dir, 0, flg));
-}
-
-bool heal_monster(int dir)
-{
-    int flg = PROJECT_STOP;
-    return (project_hook(GF_OLD_HEAL, dir, damroll(4, 6), flg));
-}
-
-bool speed_monster(int dir)
-{
-    int flg = PROJECT_STOP;
-    return (project_hook(GF_OLD_SPEED, dir, p_ptr->lev, flg));
-}
-
-bool slow_monster(int dir)
-{
-    int flg = PROJECT_STOP;
-    return (project_hook(GF_OLD_SLOW, dir, p_ptr->lev, flg));
-}
-
-bool sleep_monster(int dir)
-{
-    int flg = PROJECT_STOP;
-    return (project_hook(GF_OLD_SLEEP, dir, p_ptr->lev, flg));
-}
-
-bool confuse_monster(int dir, int plev)
-{
-    int flg = PROJECT_STOP;
-    return (project_hook(GF_OLD_CONF, dir, plev, flg));
-}
-
-bool fear_monster(int dir, int plev)
-{
-    int flg = PROJECT_STOP;
-    return (project_hook(GF_OLD_SCARE, dir, plev, flg));
-}
-
-bool poly_monster(int dir)
-{
-    int flg = PROJECT_BEAM;
-    return (project_hook(GF_OLD_POLY, dir, p_ptr->lev, flg));
-}
-
-bool clone_monster(int dir)
-{
-    int flg = PROJECT_STOP;
-    return (project_hook(GF_OLD_CLONE, dir, 0, flg));
-}
-
-bool teleport_monster(int dir)
-{
-    int flg = PROJECT_BEAM;
-    return (project_hook(GF_OLD_TPORT, dir, MAX_SIGHT * 5, flg));
-}
-
-
-
-/*
- * Hooks -- affect adjacent grids (radius 1 ball attack)
- */
-
-bool door_creation()
-{
-    int flg = PROJECT_GRID | PROJECT_ITEM | PROJECT_HIDE;
-    return (project(0, 1, py, px, 0, GF_MAKE_DOOR, flg));
-}
-
-bool trap_creation()
-{
-    int flg = PROJECT_GRID | PROJECT_ITEM | PROJECT_HIDE;
-    return (project(0, 1, py, px, 0, GF_MAKE_TRAP, flg));
-}
-
-bool destroy_doors_touch()
-{
-    int flg = PROJECT_GRID | PROJECT_ITEM | PROJECT_HIDE;
-    return (project(0, 1, py, px, 0, GF_KILL_DOOR, flg));
-}
-
-bool sleep_monsters_touch(void)
-{
-    int flg = PROJECT_HIDE;
-    return (project(0, 1, py, px, p_ptr->lev, GF_OLD_SLEEP, flg));
-}
-
-
-
-/*
- * Hooks -- affect all nearby monsters
- */
-
-bool speed_monsters(void)
-{
-    return (project_hack(GF_OLD_SPEED, p_ptr->lev));
-}
-
-bool slow_monsters(void)
-{
-    return (project_hack(GF_OLD_SLOW, p_ptr->lev));
-}
-
-bool sleep_monsters(void)
-{
-    return (project_hack(GF_OLD_SLEEP, p_ptr->lev));
-}
-
-
-
-
-/*
- * Hack -- call light around the player
- */
-bool lite_area(int dam, int rad)
-{
-    /* Hack -- Message */
-    if (!p_ptr->blind) {
-        msg_print("You are surrounded by a white light.");
-    }
-
-    /* Hook into the "project()" function */
-    (void)project(0, rad, py, px, dam, GF_LITE_WEAK, PROJECT_GRID);
-
-    /* Lite up the room */
-    lite_room(py, px);
-
-    /* Assume seen */
-    return (TRUE);
-}
-
-
-/*
- * Hack -- call darkness around the player
- */
-bool unlite_area(int dam, int rad)
-{
-    /* Hack -- Message */
-    if (!p_ptr->blind) {
-        msg_print("Darkness surrounds you.");
-    }
-
-    /* Hook into the "project()" function */
-    (void)project(0, rad, py, px, dam, GF_DARK_WEAK, PROJECT_GRID);
-
-    /* Lite up the room */
-    unlite_room(py, px);
-
-    /* Assume seen */
-    return (TRUE);
-}
-
-
-
-
 
 
 
@@ -3598,9 +3199,6 @@ void destroy_area(int y1, int x1, int r, bool full)
                 /* Delete the object (if any) */
                 delete_object(y, x);
 
-                /* Access the grid */
-                c_ptr = &cave[y][x];
-
                 /* Wall (or floor) type */
                 t = rand_int(200);
 
@@ -3646,7 +3244,7 @@ void destroy_area(int y1, int x1, int r, bool full)
         if (!p_ptr->resist_blind && !p_ptr->resist_lite) {
 
             /* Become blind */
-            add_blind(10 + randint(10));
+            set_blind(p_ptr->blind + 10 + randint(10));
         }
     }
     
@@ -3734,11 +3332,11 @@ void earthquake(int cy, int cx, int r)
             /* Skip most grids */
             if (rand_int(100) < 85) continue;
 
-            /* Hack -- Take note of player damage */
-            if ((yy == py) && (xx == px)) hurt = TRUE;
-
             /* Damage this grid */
             map[16+yy-cy][16+xx-cx] = TRUE;
+
+            /* Hack -- Take note of player damage */
+            if ((yy == py) && (xx == px)) hurt = TRUE;
         }
     }
 
@@ -3754,6 +3352,9 @@ void earthquake(int cy, int cx, int r)
 
             /* Skip non-empty grids */
             if (!empty_grid_bold(y, x)) continue;
+
+            /* Important -- Skip "quake" grids */
+            if (map[16+y-cy][16+x-cx]) continue;
 
             /* Count "safe" grids */
             sn++;
@@ -3784,9 +3385,6 @@ void earthquake(int cy, int cx, int r)
             /* Message and damage */
             msg_print("You are severely crushed!");
             damage = 300;
-
-            /* Important -- no wall on player */
-            map[16+py-cy][16+px-cx] = FALSE;
         }
 
         /* Destroy the grid, and push the player to safety */
@@ -3827,6 +3425,9 @@ void earthquake(int cy, int cx, int r)
             /* Check for new panel */
             verify_panel();
         }
+
+        /* Important -- no wall on player */
+        map[16+py-cy][16+px-cx] = FALSE;
 
         /* Take some damage */
         if (damage) take_hit(damage, "an earthquake");
@@ -3974,9 +3575,6 @@ void earthquake(int cy, int cx, int r)
 
                 /* Delete any object that is still there */
                 delete_object(yy, xx);
-
-                /* Access the grid */
-                c_ptr = &cave[y][x];
 
                 /* Wall (or floor) type */
                 t = (floor ? rand_int(100) : 200);

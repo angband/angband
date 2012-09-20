@@ -1311,7 +1311,7 @@ static void display_entry(int pos)
     i = (pos % 12);
 
     /* Label it, clear the line --(-- */
-    (void)sprintf(out_val, "%c) ", 'a' + i);
+    (void)sprintf(out_val, "%c) ", I2A(i));
     prt(out_val, i+6, 0);
 
     /* Describe an item in the home */
@@ -1499,10 +1499,10 @@ static void display_store(void)
 
         /* Label the asking price (in stores) */
         put_str("Price", 5, 72);
-
-        /* Display the current gold */
-        store_prt_gold();
     }
+
+    /* Display the current gold */
+    store_prt_gold();
 
     /* Draw in the inventory */
     display_inventory();
@@ -1528,17 +1528,22 @@ static int get_stock(int *com_val, cptr pmt, int i, int j)
 
     /* Build the prompt */
     (void)sprintf(out_val, "(Items %c-%c, ESC to exit) %s",
-                  i + 'a', j + 'a', pmt);
+                  I2A(i), I2A(j), pmt);
 
     /* Ask until done */
     while (TRUE) {
 
+        int k;
+        
         /* Escape */
         if (!get_com(out_val, &command)) break;
 
+        /* Convert */
+        k = A2I(command);
+        
         /* Legal responses */
-        if (command >= i+'a' && command <= j+'a') {
-            *com_val = command - 'a';
+        if ((k >= i) && (k <= j)) {
+            *com_val = k;
             break;
         }
 
@@ -2138,8 +2143,12 @@ static void store_purchase(void)
     if (i > 12) i = 12;
 
     /* Prompt */
-    sprintf(out_val, "Which item %s? ",
-            (store_num == 7) ? "do you want to take" : "are you interested in");
+    if (store_num == 7) {        
+        sprintf(out_val, "Which item do you want to take? ");
+    }
+    else {
+        sprintf(out_val, "Which item are you interested in? ");
+    }
 
     /* Get the item number to be bought */
     if (!get_stock(&item, out_val, 0, i-1)) return;
@@ -2211,7 +2220,8 @@ static void store_purchase(void)
             objdes_store(i_name, &sell_obj, TRUE, 3);
 
             /* Message */
-            msg_format("Buying %s (%c).", i_name, item + 'a');
+            msg_format("Buying %s (%c).", i_name, I2A(item));
+            msg_print(NULL);
 
             /* Haggle for a final price */
             choice = purchase_haggle(&sell_obj, &price);
@@ -2230,7 +2240,7 @@ static void store_purchase(void)
             /* Player can afford it */
             if (p_ptr->au >= price) {
 
-                /* Thanks! */
+                /* Say "okay" */
                 say_comment_1();
 
                 /* Be happy */
@@ -2238,6 +2248,8 @@ static void store_purchase(void)
 
                 /* Spend the money */
                 p_ptr->au -= price;
+
+                /* Update the display */
                 store_prt_gold();
 
                 /* Note how many slots the store used to have */
@@ -2266,7 +2278,8 @@ static void store_purchase(void)
                 objdes(i_name, &inventory[item_new], TRUE, 3);
 
                 /* Message */
-                msg_format("You have %s (%c).", i_name, index_to_label(item_new));
+                msg_format("You have %s (%c).",
+                           i_name, index_to_label(item_new));
 
                 /* Recalculate bonuses */
                 p_ptr->update |= (PU_BONUS);
@@ -2433,6 +2446,7 @@ static void store_sell(void)
 
         /* Describe the transaction */
         msg_format("Selling %s (%c).", i_name, index_to_label(item));
+        msg_print(NULL);
 
         /* Haggle for it */
         choice = sell_haggle(&sold_obj, &price);
@@ -2443,11 +2457,16 @@ static void store_sell(void)
         /* Sold... */
         if (choice == 0) {
 
+            /* Say "okay" */
             say_comment_1();
+
+            /* Be happy */
             decrease_insults();
 
             /* Get some money */
             p_ptr->au += price;
+
+            /* Update the display */
             store_prt_gold();
 
             /* Get the inventory item */
@@ -2716,10 +2735,10 @@ static void store_process_command(void)
             do_cmd_note(); break;	
 
         case '@':
-            do_cmd_macro(FALSE); break;
+            (void)Term_user(0); break;
 
         case '!':
-            do_cmd_macro(TRUE); break;
+            do_cmd_macro(); break;
 
         case '&':
             do_cmd_keymap(); break;
@@ -2732,6 +2751,9 @@ static void store_process_command(void)
 
         case '}':
             do_cmd_uninscribe(); break;
+
+        case CTRL('O'):
+            prt(format("> %s", message_str(0)), 0, 0); break;
 
         case CTRL('P'):
             do_cmd_messages(); break;
@@ -2753,13 +2775,13 @@ static void store_process_command(void)
 
 #ifndef ANGBAND_LITE
 
-        /* Dump screen */
+        /* Load a "screen dump" */
         case '(':
-            do_cmd_dump(FALSE); break;
+            do_cmd_load_screen(); break;
 
-        /* Dump screen (with colors) */
+        /* Save a "screen dump" */
         case ')':
-            do_cmd_dump(TRUE); break;
+            do_cmd_save_screen(); break;
 
 #endif
 

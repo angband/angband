@@ -183,7 +183,7 @@ static void print_spells(byte *spell, int num)
 
         /* Skip illegible spells */
         if (s_ptr->slevel >= 99) {
-            sprintf(out_val, "  %c) %-30s", 'a' + i, "(illegible)");
+            sprintf(out_val, "  %c) %-30s", I2A(i), "(illegible)");
             prt(out_val, 2 + i, col);
             continue;
         }
@@ -218,7 +218,7 @@ static void print_spells(byte *spell, int num)
 
         /* Dump the spell --(-- */
         sprintf(out_val, "  %c) %-30s%2d %4d %3d%%%s",
-                'a' + i, spell_names[mp_ptr->spell_type][j],
+                I2A(i), spell_names[mp_ptr->spell_type][j],
                 s_ptr->slevel, s_ptr->smana, spell_chance(j), comment);
         prt(out_val, 2 + i, col);
     }
@@ -270,7 +270,7 @@ static void display_spells(byte *spell, int num)
         /* Skip illegible spells */
         if (s_ptr->slevel >= 99) {
             /* --(-- */
-            sprintf(out_val, "%c) %-30s", 'a' + i, "(illegible)");
+            sprintf(out_val, "%c) %-30s", I2A(i), "(illegible)");
             Term_putstr(0, i, -1, TERM_WHITE, out_val);
             continue;
         }
@@ -303,7 +303,7 @@ static void display_spells(byte *spell, int num)
 
         /* Dump the spell --(-- */
         sprintf(out_val, "%c) %-30s%2d %4d %3d%%%s",
-                'a' + i, spell_names[mp_ptr->spell_type][j],
+                I2A(i), spell_names[mp_ptr->spell_type][j],
                 s_ptr->slevel, s_ptr->smana, spell_chance(j), comment);
         Term_putstr(0, i, -1, TERM_WHITE, out_val);
     }
@@ -384,6 +384,8 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
     redraw = FALSE;
 
 
+#ifdef GRAPHIC_CHOICE
+
     /* Use the "choice" window */
     if (term_choice && use_choice_spells) {
 
@@ -400,10 +402,32 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
         Term_activate(term_screen);
     }
 
+#endif
+
+#ifdef GRAPHIC_MIRROR
+
+    /* Use the "mirror" window */
+    if (term_mirror && use_mirror_spells) {
+
+        /* Activate the mirror window */
+        Term_activate(term_mirror);
+
+        /* Save the contents */
+        Term_save();
+
+        /* Display the choices */
+        display_spells(spell, num);
+
+        /* Activate the screen window */
+        Term_activate(term_screen);
+    }
+
+#endif
+
 
     /* Build a prompt (accept all spells) */
     strnfmt(out_val, 78, "(%^ss %c-%c, *=List, ESC=exit) %^s which %s? ",
-            p, 'a', 'a' + num - 1, prompt, p);
+            p, I2A(0), I2A(num - 1), prompt, p);
 
     /* Get a spell from the user */
     while (!flag && get_com(out_val, &choice)) {
@@ -414,16 +438,26 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
             /* Show the list */
             if (!redraw) {
 
+                /* Show list */
+                redraw = TRUE;
+
                 /* Save the screen */
                 Term_save();
-
-                /* Remember to fix it */
-                redraw = TRUE;
 
                 /* Display a list of spells */
                 print_spells(spell, num);
             }
 
+            /* Hide the list */
+            else {
+
+                /* Hide list */
+                redraw = FALSE;
+
+                /* Restore the screen */
+                Term_load();
+            }
+            
             /* Ask again */
             continue;
         }
@@ -432,8 +466,11 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
         /* Note verify */
         ask = (isupper(choice));
 
+        /* Lowercase */
+        if (ask) choice = tolower(choice);
+        
         /* Extract request */
-        i = ask ? (choice - 'A') : (choice - 'a');
+        i = A2I(choice);
 
         /* Totally Illegal */
         if ((i < 0) || (i >= num)) {
@@ -477,6 +514,28 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
     if (redraw) Term_load();
 
 
+#ifdef GRAPHIC_MIRROR
+
+    /* Restore the "mirror" window */
+    if (term_mirror && use_mirror_spells) {
+
+        /* Activate the mirror window */
+        Term_activate(term_mirror);
+
+        /* Restore the term */
+        Term_load();
+
+        /* Flush the window */
+        Term_fresh();
+
+        /* Activate the screen window */
+        Term_activate(term_screen);
+    }
+
+#endif
+
+#ifdef GRAPHIC_CHOICE
+
     /* Restore the "choice" window */
     if (term_choice && use_choice_spells) {
 
@@ -492,6 +551,8 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
         /* Activate the screen window */
         Term_activate(term_screen);
     }
+
+#endif
 
     
     /* Abort if needed */
@@ -854,12 +915,7 @@ void do_cmd_cast(void)
 
           case 5:
             (void)hp_player(damroll(2, 8));
-            if (p_ptr->cut > 15) {
-                p_ptr->cut -= 15;
-            }
-            else {
-                p_ptr->cut = 0;
-            }
+            (void)set_cut(p_ptr->cut - 15);
             break;
 
           case 6:
@@ -898,7 +954,7 @@ void do_cmd_cast(void)
             break;
 
           case 13:
-            p_ptr->poisoned = 0;
+            (void)set_poisoned(0);
             break;
 
           case 14:
@@ -976,10 +1032,10 @@ void do_cmd_cast(void)
 
           case 29:
             if (!p_ptr->fast) {
-                add_fast(randint(20) + plev);
+                set_fast(randint(20) + plev);
             }
             else {
-                add_fast(randint(5));
+                set_fast(p_ptr->fast + randint(5));
             }
             break;
 
@@ -1081,55 +1137,56 @@ void do_cmd_cast(void)
             break;
 
           case 49:
-            p_ptr->oppose_fire += randint(20) + 20;
+            (void)set_oppose_fire(p_ptr->oppose_fire + randint(20) + 20);
             break;
 
           case 50:
-            p_ptr->oppose_cold += randint(20) + 20;
+            (void)set_oppose_cold(p_ptr->oppose_cold + randint(20) + 20);
             break;
 
           case 51:
-            p_ptr->oppose_acid += randint(20) + 20;
+            (void)set_oppose_acid(p_ptr->oppose_acid + randint(20) + 20);
             break;
 
           case 52:
-            p_ptr->oppose_pois += randint(20) + 20;
+            (void)set_oppose_pois(p_ptr->oppose_pois + randint(20) + 20);
             break;
 
           case 53:
-            p_ptr->oppose_fire += randint(20) + 20;
-            p_ptr->oppose_cold += randint(20) + 20;
-            p_ptr->oppose_elec += randint(20) + 20;
-            p_ptr->oppose_pois += randint(20) + 20;
-            p_ptr->oppose_acid += randint(20) + 20;
+            (void)set_oppose_acid(p_ptr->oppose_acid + randint(20) + 20);
+            (void)set_oppose_elec(p_ptr->oppose_elec + randint(20) + 20);
+            (void)set_oppose_fire(p_ptr->oppose_fire + randint(20) + 20);
+            (void)set_oppose_cold(p_ptr->oppose_cold + randint(20) + 20);
+            (void)set_oppose_pois(p_ptr->oppose_pois + randint(20) + 20);
             break;
 
           case 54:
-            hp_player(10);	/* XXX */
-            p_ptr->hero += randint(25) + 25;
+            (void)hp_player(10);	/* XXX */
+            (void)set_afraid(0);
+            (void)set_hero(p_ptr->hero + randint(25) + 25);
             break;
 
           case 55:
-            p_ptr->shield += randint(20) + 30;
-            msg_print("A mystic shield forms around your body!");
+            (void)set_shield(p_ptr->shield + randint(20) + 30);
             break;
 
           case 56:
-            hp_player(30);	/* XXX */
-            p_ptr->shero += randint(25) + 25;
+            (void)hp_player(30);	/* XXX */
+            (void)set_afraid(0);
+            (void)set_shero(p_ptr->shero + randint(25) + 25);
             break;
 
           case 57:
             if (!p_ptr->fast) {
-                add_fast(randint(30) + 30 + plev);
+                (void)set_fast(randint(30) + 30 + plev);
             }
             else {
-                add_fast(randint(10));
+                (void)set_fast(p_ptr->fast + randint(10));
             }
             break;
 
           case 58:
-            p_ptr->invuln += randint(8) + 8;
+            (void)set_invuln(p_ptr->invuln + randint(8) + 8);
             break;
 
           default:
@@ -1179,7 +1236,7 @@ void do_cmd_cast(void)
         msg_print("You faint from the effort!");
 
         /* Hack -- Bypass free action */
-        p_ptr->paralysis = randint(5 * oops + 1);
+        (void)set_paralyzed(p_ptr->paralyzed + randint(5 * oops + 1));
 
         /* Damage CON (possibly permanently) */
         if (rand_int(100) < 50) {
@@ -1342,20 +1399,15 @@ void do_cmd_pray(void)
 
           case 1:
             (void)hp_player(damroll(2, 10));
-            if (p_ptr->cut > 10) {
-                p_ptr->cut -= 10;
-            }
-            else {
-                p_ptr->cut = 0;
-            }
+            (void)set_cut(p_ptr->cut - 10);
             break;
 
           case 2:
-            (void)add_bless(randint(12) + 12);
+            (void)set_blessed(p_ptr->blessed + randint(12) + 12);
             break;
 
           case 3:
-            p_ptr->fear = 0;
+            (void)set_afraid(0);
             break;
 
           case 4:
@@ -1371,10 +1423,7 @@ void do_cmd_pray(void)
             break;
 
           case 7:
-            if (p_ptr->poisoned) {
-                msg_print("The effect of the poison has been reduced.");
-                p_ptr->poisoned = (p_ptr->poisoned + 1) / 2;
-            }
+            (void)set_poisoned(p_ptr->poisoned / 2);
             break;
 
           case 8:
@@ -1389,16 +1438,11 @@ void do_cmd_pray(void)
 
           case 10:
             (void)hp_player(damroll(4, 10));
-            if (p_ptr->cut > 40) {
-                p_ptr->cut = (p_ptr->cut / 2) - 20;
-            }
-            else {
-                p_ptr->cut = 0;
-            }
+            (void)set_cut((p_ptr->cut / 2) - 20);
             break;
 
           case 11:
-            add_bless(randint(24) + 24);
+            (void)set_blessed(p_ptr->blessed + randint(24) + 24);
             break;
 
           case 12:
@@ -1414,12 +1458,12 @@ void do_cmd_pray(void)
             break;
 
           case 15:
-            p_ptr->oppose_fire += randint(10) + 10;
-            p_ptr->oppose_cold += randint(10) + 10;
+            (void)set_oppose_fire(p_ptr->oppose_fire + randint(10) + 10);
+            (void)set_oppose_cold(p_ptr->oppose_cold + randint(10) + 10);
             break;
 
           case 16:
-            p_ptr->poisoned = 0;
+            (void)set_poisoned(0);
             break;
 
           case 17:
@@ -1432,15 +1476,15 @@ void do_cmd_pray(void)
 
           case 18:
             (void)hp_player(damroll(6, 10));
-            p_ptr->cut = 0;
+            (void)set_cut(0);
             break;
 
           case 19:
-            add_tim_invis(randint(24) + 24);
+            (void)set_tim_invis(p_ptr->tim_invis + randint(24) + 24);
             break;
 
           case 20:
-            (void)protect_evil();
+            (void)set_protevil(p_ptr->protevil + randint(25) + 3 * p_ptr->lev);
             break;
 
           case 21:
@@ -1453,8 +1497,8 @@ void do_cmd_pray(void)
 
           case 23:
             (void)hp_player(damroll(8, 10));
-            p_ptr->cut = 0;
-            p_ptr->stun = 0;
+            (void)set_cut(0);
+            (void)set_stun(0);
             break;
 
           case 24:
@@ -1462,7 +1506,7 @@ void do_cmd_pray(void)
             break;
 
           case 25:
-            add_bless(randint(48) + 48);
+            (void)set_blessed(p_ptr->blessed + randint(48) + 48);
             break;
 
           case 26:
@@ -1471,8 +1515,8 @@ void do_cmd_pray(void)
 
           case 27:
             (void)hp_player(300);
-            p_ptr->stun = 0;
-            p_ptr->cut = 0;
+            (void)set_stun(0);
+            (void)set_cut(0);
             break;
 
           case 28:
@@ -1486,10 +1530,10 @@ void do_cmd_pray(void)
           case 30:
             (void)dispel_evil(plev * 4);
             (void)hp_player(1000);
-            p_ptr->fear = 0;
-            p_ptr->poisoned = 0;
-            p_ptr->stun = 0;
-            p_ptr->cut = 0;
+            (void)set_afraid(0);
+            (void)set_poisoned(0);
+            (void)set_stun(0);
+            (void)set_cut(0);
             break;
 
           case 31:
@@ -1514,19 +1558,19 @@ void do_cmd_pray(void)
 
           case 36:
             (void)hp_player(damroll(4, 10));
-            p_ptr->cut = 0;
+            (void)set_cut(0);
             break;
 
           case 37:
             (void)hp_player(damroll(8, 10));
-            p_ptr->cut = 0;
-            p_ptr->stun = 0;
+            (void)set_stun(0);
+            (void)set_cut(0);
             break;
 
           case 38:
             (void)hp_player(2000);
-            p_ptr->stun = 0;
-            p_ptr->cut = 0;
+            (void)set_stun(0);
+            (void)set_cut(0);
             break;
 
           case 39:
@@ -1671,7 +1715,7 @@ void do_cmd_pray(void)
         msg_print("You faint from the effort!");
 
         /* Hack -- Bypass free action */
-        p_ptr->paralysis = randint(5 * oops + 1);
+        (void)set_paralyzed(p_ptr->paralyzed + randint(5 * oops + 1));
 
         /* Damage CON (possibly permanently) */
         if (rand_int(100) < 50) {

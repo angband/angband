@@ -183,36 +183,36 @@ F:SHOW_MODS
 
 N:31:& Bastard Sword~
 I:|:W:23:21:0
-W:14:0:140:350
-A:14/1
+W:15:0:140:350
+A:15/1
 P:0:3d4:0:0:0
 F:SHOW_MODS
 
 N:32:& Scimitar~
 I:|:W:23:18:0
-W:8:0:130:250
-A:8/1
+W:10:0:130:250
+A:10/1
 P:0:2d5:0:0:0
 F:SHOW_MODS
 
 N:33:& Tulwar~
 I:|:W:23:15:0
-W:6:0:100:200
-A:6/1
+W:5:0:100:200
+A:5/1
 P:0:2d4:0:0:0
 F:SHOW_MODS
 
 N:34:& Broad Sword~
 I:|:W:23:16:0
-W:9:0:150:255
-A:9/1:15/1
+W:10:0:150:255
+A:10/1:15/1
 P:0:2d5:0:0:0
 F:SHOW_MODS
 
 N:35:& Short Sword~
 I:|:W:23:10:0
-W:6:0:80:90
-A:6/1
+W:5:0:80:90
+A:5/1
 P:0:1d7:0:0:0
 F:SHOW_MODS
 
@@ -232,15 +232,15 @@ F:SHOW_MODS
 
 N:38:& Main Gauche~
 I:|:W:23:5:0
-W:2:0:30:25
-A:2/1
+W:3:0:30:25
+A:3/1
 P:0:1d5:0:0:0
 F:SHOW_MODS
 
 N:39:& Cutlass~
 I:|:W:23:12:0
-W:7:0:110:85
-A:7/1
+W:5:0:110:85
+A:5/1
 P:0:1d7:0:0:0
 F:SHOW_MODS
 
@@ -253,15 +253,15 @@ F:SHOW_MODS
 
 N:41:& Katana~
 I:|:W:23:20:0
-W:18:0:120:400
-A:18/1
+W:20:0:120:400
+A:20/1
 P:0:3d4:0:0:0
 F:SHOW_MODS
 
 N:42:& Long Sword~
 I:|:W:23:17:0
-W:12:0:130:300
-A:12/1:20/1
+W:10:0:130:300
+A:10/1:20/1
 P:0:2d5:0:0:0
 F:SHOW_MODS
 
@@ -274,8 +274,8 @@ F:SHOW_MODS
 
 N:44:& Rapier~
 I:|:W:23:7:0
-W:4:0:40:42
-A:4/1
+W:5:0:40:42
+A:5/1
 P:0:1d6:0:0:0
 F:SHOW_MODS
 
@@ -318,8 +318,8 @@ F:SHOW_MODS
 
 N:50:& Flail~
 I:\:D:21:13:0
-W:12:0:150:353
-A:12/1
+W:10:0:150:353
+A:10/1
 P:0:2d6:0:0:0
 F:SHOW_MODS
 
@@ -339,15 +339,15 @@ F:SHOW_MODS
 
 N:53:& Mace~
 I:\:D:21:5:0
-W:6:0:120:130
-A:6/1
+W:5:0:120:130
+A:5/1
 P:0:2d4:0:0:0
 F:SHOW_MODS
 
 N:54:& Quarterstaff~
 I:\:U:21:3:0
-W:8:0:150:200
-A:8/1
+W:10:0:150:200
+A:10/1
 P:0:1d9:0:0:0
 F:SHOW_MODS
 
@@ -374,8 +374,8 @@ F:SLAY_UNDEAD | SHOW_MODS
 
 N:58:& Lucerne Hammer~
 I:\:B:21:10:0
-W:11:0:120:376
-A:11/1
+W:10:0:120:376
+A:10/1
 P:0:2d5:0:0:0
 F:SHOW_MODS
 
@@ -404,8 +404,8 @@ F:SHOW_MODS
 
 N:62:& Awl-Pike~
 I:/:s:22:4:0
-W:8:0:160:340
-A:8/1
+W:10:0:160:340
+A:10/1
 P:0:1d8:0:0:0
 F:SHOW_MODS
 
@@ -425,8 +425,8 @@ F:SHOW_MODS
 
 N:65:& Trident~
 I:/:y:22:5:0
-W:8:0:70:120
-A:8/1
+W:5:0:70:120
+A:5/1
 P:0:1d8:0:0:0
 F:SHOW_MODS
 
@@ -446,8 +446,8 @@ F:SHOW_MODS
 
 N:68:& Battle Axe~
 I:/:s:22:22:0
-W:13:0:170:334
-A:13/1
+W:15:0:170:334
+A:15/1
 P:0:2d8:0:0:0
 F:SHOW_MODS
 
@@ -460,8 +460,8 @@ F:SHOW_MODS
 
 N:70:& Broad Axe~
 I:/:s:22:11:0
-W:17:0:160:304
-A:17/1
+W:15:0:160:304
+A:15/1
 P:0:2d6:0:0:0
 F:SHOW_MODS
 
@@ -517,8 +517,8 @@ F:SHOW_MODS
 
 N:78:& Arrow~
 I:{:U:17:1:0
-W:2:0:2:1
-A:2/1:15/1
+W:3:0:2:1
+A:3/1:15/1
 P:0:1d4:0:0:0
 F:SHOW_MODS
 
@@ -531,8 +531,8 @@ F:SHOW_MODS
 
 N:80:& Bolt~
 I:{:s:18:1:0
-W:2:0:3:2
-A:2/1:25/1
+W:3:0:3:2
+A:3/1:25/1
 P:0:1d5:0:0:0
 F:SHOW_MODS
 
@@ -609,14 +609,14 @@ F:SHOW_MODS | TUNNEL
 
 N:91:& Pair~ of Soft Leather Boots
 I:]:U:30:2:0
-W:4:0:20:7
-A:4/1
+W:3:0:20:7
+A:3/1
 P:2:1d1:0:0:0
 
 N:92:& Pair~ of Hard Leather Boots
 I:]:U:30:3:0
-W:6:0:40:12
-A:6/1
+W:5:0:40:12
+A:5/1
 P:3:1d1:0:0:0
 
 N:93:& Pair~ of Metal Shod Boots
@@ -627,14 +627,14 @@ P:6:1d1:0:0:0
 
 N:94:& Hard Leather Cap~
 I:]:u:32:2:0
-W:4:0:15:12
-A:4/1
+W:3:0:15:12
+A:3/1
 P:2:0d0:0:0:0
 
 N:95:& Metal Cap~
 I:]:s:32:3:0
-W:7:0:20:30
-A:7/1
+W:10:0:20:30
+A:10/1
 P:3:1d1:0:0:0
 
 N:96:& Iron Helm~
@@ -683,8 +683,8 @@ P:1:0d0:0:0:-1
 
 N:103:Soft Leather Armour~
 I:(:U:36:4:0
-W:2:0:80:18
-A:2/1
+W:3:0:80:18
+A:3/1
 P:4:0d0:0:0:0
 
 N:104:Soft Studded Leather~
@@ -834,8 +834,8 @@ P:1:0d0:0:0:0
 
 N:126:& Set~ of Gauntlets
 I:]:U:31:2:0
-W:12:0:25:35
-A:12/1
+W:10:0:25:35
+A:10/1
 P:2:1d1:0:0:0
 
 N:127:& Set~ of Cesti
@@ -924,14 +924,14 @@ F:SLOW_DIGEST | EASY_KNOW
 
 N:140:Resist Fire
 I:=:d:45:8:0
-W:15:0:2:250
-A:15/1
+W:10:0:2:250
+A:10/1
 F:RES_FIRE | IGNORE_FIRE | EASY_KNOW
 
 N:141:Resist Cold
 I:=:d:45:9:0
-W:15:0:2:250
-A:15/1
+W:10:0:2:250
+A:10/1
 F:RES_COLD | IGNORE_COLD | EASY_KNOW
 
 N:142:Feather Falling
@@ -1160,7 +1160,7 @@ A:10/1
 N:181:Light
 I:?:d:70:24:0
 W:0:0:5:15
-A:0/1:3/1:7/1
+A:0/1:3/1:10/1
 
 ## XXX 182 XXX ##
 
@@ -1219,7 +1219,7 @@ A:0/1
 N:194:Trap Detection
 I:?:d:70:28:0
 W:5:0:5:35
-A:5/1:8/1
+A:5/1:10/1
 
 ## XXX 195 XXX ##
 
@@ -1387,8 +1387,8 @@ P:0:1d1:0:0:0
 
 N:228:Intelligence
 I:!:d:75:49:0
-W:32:0:4:8000
-A:32/1
+W:30:0:4:8000
+A:30/1
 P:0:1d1:0:0:0
 
 N:229:Stupidity
@@ -1405,8 +1405,8 @@ P:0:1d1:0:0:0
 
 N:231:Wisdom
 I:!:d:75:50:0
-W:32:0:4:8000
-A:32/1
+W:30:0:4:8000
+A:30/1
 P:0:1d1:0:0:0
 
 N:232:Naivety
@@ -1442,7 +1442,7 @@ P:0:1d1:0:0:0
 N:237:Cure Light Wounds
 I:!:d:75:34:50
 W:0:0:4:15
-A:0/1:1/1:2/1
+A:0/1:1/1:3/1
 P:0:1d1:0:0:0
 
 N:238:Clumsiness
@@ -1632,8 +1632,8 @@ P:0:1d1:0:0:0
 
 N:269:Light
 I:-:d:65:7:0
-W:2:0:10:200
-A:2/1
+W:3:0:10:200
+A:3/1
 P:0:1d1:0:0:0
 
 N:270:Lightning Bolts
@@ -1668,14 +1668,14 @@ P:0:1d1:0:0:0
 
 N:275:Heal Monster
 I:-:d:65:0:0
-W:2:0:10:0
-A:2/1
+W:3:0:10:0
+A:3/1
 P:0:1d1:0:0:0
 
 N:276:Haste Monster
 I:-:d:65:1:0
-W:2:0:10:0
-A:2/1
+W:3:0:10:0
+A:3/1
 P:0:1d1:0:0:0
 
 N:277:Slow Monster
@@ -1710,8 +1710,8 @@ P:0:1d1:0:0:0
 
 N:282:Magic Missile
 I:-:d:65:15:0
-W:2:0:10:200
-A:2/1
+W:3:0:10:200
+A:3/1
 P:0:1d1:0:0:0
 
 N:283:Clone Monster
@@ -1774,9 +1774,10 @@ F:IGNORE_ACID
 
 N:292:Wonder
 I:-:d:65:24:0
-W:2:0:10:250
-A:2/1
+W:3:0:10:250
+A:3/1
 P:0:1d1:0:0:0
+F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
 ## XXX 293 XXX ##
 
@@ -2111,8 +2112,8 @@ F:EASY_KNOW
 
 N:347:& Brass Lantern~
 I:~:U:39:1:7500
-W:2:0:50:35
-A:2/1
+W:3:0:50:35
+A:3/1
 P:0:1d1:0:0:0
 F:EASY_KNOW | IGNORE_FIRE
 
@@ -2441,12 +2442,8 @@ P:0:1d2:0:0:0
 
 ##### Dragon Scale Mail #####
 
-# Note that Dragon Scale and Hard Armor are DIFFERENT now
-# Note also that NOT all Dragon Scale will give the Player "Resist Acid",
-# Note that NO Dragon Scale will be destroyed by Acid/Cold/Fire/Elec.
-
 N:400:Black Dragon Scale Mail~
-I:[:D:38:1:0
+I:[:s:38:1:0
 W:60:0:200:30000
 A:60/8
 P:30:2d4:-2:0:10
@@ -2494,7 +2491,7 @@ F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_POIS
 F:ACTIVATE | IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
 N:406:Shining Dragon Scale Mail~
-I:[:y:38:10:0
+I:[:o:38:10:0
 W:65:0:200:60000
 A:65/16
 P:30:2d4:-2:0:10
@@ -2534,7 +2531,7 @@ F:RES_CHAOS | RES_DISEN |
 F:ACTIVATE | IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
 N:411:Balance Dragon Scale Mail~
-I:[:U:38:20:0
+I:[:v:38:20:0
 W:90:0:200:100000
 A:90/16
 P:30:2d4:-2:0:10
@@ -2713,7 +2710,7 @@ W:1:0:0:80
 N:498:& Mighty Hammer~
 I:\:D:21:50:0
 W:15:0:200:1000
-P:0:3d4:0:0:0
+P:0:3d9:0:0:0
 F:SHOW_MODS | INSTA_ART
 
 N:499:& Massive Iron Crown~

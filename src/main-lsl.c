@@ -108,7 +108,7 @@ void *read_bmp_file ()
   bmap = NULL;
   pal = NULL;
   
-  sprintf (path, "%s/8x13.bmp", ANGBAND_DIR_DATA);
+  sprintf (path, "%s/8x13.bmp", ANGBAND_DIR_XTRA);
   infile = fopen(path, "r");
   
   buf=(unsigned char *) malloc (54);
@@ -427,7 +427,7 @@ void initfont () {
   /* Use an 8x12 font.  The graphic symbols are 8x13, so much hackage is
    * necessary to avoid problems from this.  Anyone have a bitmapped 8x13
    * font file laying around that they could send me? |-> */
-  sprintf (path, "%s/8x12alt.psf", ANGBAND_DIR_DATA);
+  sprintf (path, "%s/8x12alt.psf", ANGBAND_DIR_XTRA);
   if (!(fontfile = fopen(path,"r"))) {
     printf ("Error: could not open font file.  Aborting....\n");
     exit(1);

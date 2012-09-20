@@ -1,9 +1,10 @@
-This is the README file for Angband 2.7.9 (v2) (1/7/96)
+This is the README file for Angband 2.7.9 (v3) (1/7/96)
 
-Angband 2.7.9v2 is a "bug-fix" version, fixing some bugs in Angband 2.7.9v1
-(including the "Macintosh Save Bug", the "Throw SEGV Bug", the "Bash Air Bug",
-and the "Destroy Traps Bug"), updating some of the on-line help files and some
-of the visual modules, and making the game even faster on some machines.
+Angband 2.7.9v3 is a "bug-fix" version, fixing some bugs in Angband 2.7.9v2,
+and providing a few new useful features, and, as always, optimizing stuff.
+
+See the Official Angband Home Page "http://www.voicenet.com/~benh/Angband/"
+for more information about exactly what has changed recently.
 
 
 === General information ===
@@ -20,7 +21,7 @@ Linux (X11/Curses), Acorn, Amiga, various IBM machines, and many others...
 See Makefile, h-config.h, and config.h for details on compiling.
 See "Makefile.xxx" and "main-xxx.c" for various supported systems.
 
-Visit the Angband Home Page ("http://www.voicenet.com/~benh/angband.html"),
+Visit the Angband Home Page ("http://www.voicenet.com/~benh/Angband/"),
 and browse through the Angband newsgroup ("rec.games.roguelike.angband").
 
 Send bug reports, suggestions, etc, to Ben Harrison ("benh@voicenet.com").
@@ -48,6 +49,9 @@ brain damaged, and may default to the incorrect folder for opening
 savefiles.  Make sure you keep all your savefiles in the proper place,
 and if you load a savefile from the wrong place, note that the game
 may decide to re-save your savefile in the proper place when you quit.
+
+The Windows version is currently broken, but you may obtain the broken
+pieces from the ftp site in the "/angband/Windows" directory.
 
 
 === Upgrading from older versions or other platforms ===

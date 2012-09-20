@@ -89,9 +89,12 @@ struct term_win {
  *
  *	- Hook for user actions
  *	- Hook for extra actions
+ *
  *	- Hook for placing the cursor
- *	- Hook for drawing a special picture
+ *
  *	- Hook for drawing some blank spaces
+ *
+ *	- Hook for drawing a special picture
  *	- Hook for drawing a string of characters
  */
 
@@ -124,9 +127,10 @@ struct term {
     errr (*user_hook)(int n);
     errr (*xtra_hook)(int n, int v);
 
+    errr (*curs_hook)(int x, int y);
+    
     errr (*wipe_hook)(int x, int y, int n);
 
-    errr (*curs_hook)(int x, int y);
     errr (*pict_hook)(int x, int y, int p);
     errr (*text_hook)(int x, int y, int n, byte a, cptr s);
 };

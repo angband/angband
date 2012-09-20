@@ -1771,8 +1771,9 @@ static void init_menubar()
         Str255 tmpName;
         short fontNum;
 
-        /* Acquire the font name */
-        GetMenuItemText(menu, i, tmpName);
+        /* Acquire the font name XXX XXX XXX */
+        /* GetMenuItemText(menu, i, tmpName); */
+        GetItem(menu, i, tmpName);
 
         /* Acquire the font index */
         GetFNum(tmpName, &fontNum);
@@ -1783,7 +1784,9 @@ static void init_menubar()
         /* Remove non-mono-spaced fonts */
         if ((CharWidth('i') != CharWidth('W')) || (CharWidth('W') == 0))
         {
-            DeleteMenuItem(menu, i);
+            /* Delete the menu item XXX XXX XXX */
+            /* DeleteMenuItem(menu, i); */
+            DelMenuItem(menu, i);
         }
     }
 
@@ -2088,6 +2091,7 @@ static void setup_menus()
             EnableItem(m, i);
 
             /* Analyze font */
+            /* GetMenuItemText(m,i,s); */
             GetItem(m,i,s);
             GetFNum(s,&fnum);
  
@@ -2117,6 +2121,7 @@ static void setup_menus()
         for (i=1; i<=CountMItems(m); i++)
         {
             /* Analyze size */
+            /* GetMenuItemText(m,i,s); */
             GetItem(m,i,s);
             s[s[0]+1] = '\0';
             fsize = atoi((char*)(s+1));
@@ -2204,6 +2209,7 @@ static void menu(long mc)
             }
 
             /* Desk accessory */
+            /* GetMenuItemText(GetMHandle(128),selection,s); */
             GetItem(GetMHandle(128),selection,s);
             OpenDeskAcc(s);
             break;
@@ -2411,6 +2417,7 @@ static void menu(long mc)
             }
 
             /* Get a new font name */
+            /* GetMenuItemText(GetMHandle(131), selection, s); */
             GetItem(GetMHandle(131), selection, s);
             GetFNum(s, &fid);
 
@@ -2474,6 +2481,7 @@ static void menu(long mc)
             /* Activate */
             activate(td->w);
 
+            /* GetMenuItemText(GetMHandle(132), selection, s); */
             GetItem(GetMHandle(132),selection,s);
             s[s[0]+1]=0;
             td->font_size = atoi((char*)(s+1));
@@ -3045,7 +3053,7 @@ static bool CheckEvents(bool wait)
                 case inDrag:
 
                     r = qd.screenBits.bounds;
-                    r.top += GetMBarHeight(); /* 20 */
+                    r.top += 20; /* GetMBarHeight() XXX XXX XXX */
                     InsetRect(&r,4,4);
                     DragWindow(w,event.where,&r);
                     break;

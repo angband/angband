@@ -99,44 +99,56 @@ void do_cmd_eat_food(void)
     switch (i_ptr->sval) {
 
         case SV_FOOD_POISON:
-            if (add_poisoned(rand_int(10) + 10)) {
-                msg_print("You are poisoned!");
-                ident = TRUE;
+            if (!(p_ptr->resist_pois ||
+                  p_ptr->oppose_pois ||
+                  p_ptr->immune_pois)) {
+                if (set_poisoned(p_ptr->poisoned + rand_int(10) + 10)) {
+                    msg_print("You are poisoned!");
+                    ident = TRUE;
+                }
             }
             break;
 
         case SV_FOOD_BLINDNESS:
-            if (add_blind(rand_int(200) + 200)) {
-                msg_print("A veil of darkness surrounds you.");
-                ident = TRUE;
+            if (!p_ptr->resist_blind) {
+                if (set_blind(p_ptr->blind + rand_int(200) + 200)) {
+                    msg_print("A veil of darkness surrounds you.");
+                    ident = TRUE;
+                }
             }
             break;
 
         case SV_FOOD_PARANOIA:
-            if (add_fear(rand_int(10) + 10)) {
-                msg_print("You feel terrified!");
-                ident = TRUE;
+            if (!p_ptr->resist_fear) {
+                if (set_afraid(p_ptr->afraid + rand_int(10) + 10)) {
+                    msg_print("You feel terrified!");
+                    ident = TRUE;
+                }
             }
             break;
 
         case SV_FOOD_CONFUSION:
-            if (add_confused(rand_int(10) + 10)) {
-                msg_print("You feel drugged.");
-                ident = TRUE;
+            if (!p_ptr->resist_conf) {
+                if (set_confused(p_ptr->confused + rand_int(10) + 10)) {
+                    msg_print("You feel drugged.");
+                    ident = TRUE;
+                }
             }
             break;
 
         case SV_FOOD_HALLUCINATION:
-            if (add_image(rand_int(250) + 250)) {
+            if (set_image(p_ptr->image + rand_int(250) + 250)) {
                 msg_print("You feel drugged.");
                 ident = TRUE;
             }
             break;
 
         case SV_FOOD_PARALYSIS:
-            if (add_paralysis(rand_int(10) + 10)) {
-                msg_print("You are paralyzed!");
-                ident = TRUE;
+            if (!p_ptr->free_act) {
+                if (set_paralyzed(p_ptr->paralyzed + rand_int(10) + 10)) {
+                    msg_print("You are paralyzed!");
+                    ident = TRUE;
+                }
             }
             break;
 
@@ -177,31 +189,19 @@ void do_cmd_eat_food(void)
             break;
 
         case SV_FOOD_CURE_POISON:
-            if (p_ptr->poisoned) {
-                p_ptr->poisoned = 0;
-                ident = TRUE;
-            }
+            if (set_poisoned(0)) ident = TRUE;
             break;
 
         case SV_FOOD_CURE_BLINDNESS:
-            if (p_ptr->blind) {
-                p_ptr->blind = 0;
-                ident = TRUE;
-            }
+            if (set_blind(0)) ident = TRUE;
             break;
 
         case SV_FOOD_CURE_PARANOIA:
-            if (p_ptr->fear) {
-                p_ptr->fear = 0;
-                ident = TRUE;
-            }
+            if (set_afraid(0)) ident = TRUE;
             break;
 
         case SV_FOOD_CURE_CONFUSION:
-            if (p_ptr->confused) {
-                p_ptr->confused = 0;
-                ident = TRUE;
-            }
+            if (set_confused(0)) ident = TRUE;
             break;
 
         case SV_FOOD_CURE_SERIOUS:
@@ -236,7 +236,7 @@ void do_cmd_eat_food(void)
 
         case SV_FOOD_WAYBREAD:
             msg_print("That tastes good.");
-            p_ptr->poisoned = 0;
+            (void)set_poisoned(0);
             (void)hp_player(damroll(4, 8));
             ident = TRUE;
             break;
@@ -296,7 +296,7 @@ void do_cmd_eat_food(void)
  */
 void do_cmd_quaff_potion(void)
 {
-    int		item, ident, old;
+    int		item, ident;
 
     inven_type	*i_ptr;
 
@@ -338,32 +338,32 @@ void do_cmd_quaff_potion(void)
             break;
 
         case SV_POTION_SLOWNESS:
-            old = p_ptr->slow;
-            if (add_slow(randint(25) + 15)) {
-                if (!old) ident = TRUE;
-            }
+            if (set_slow(p_ptr->slow + randint(25) + 15)) ident = TRUE;
             break;
 
         case SV_POTION_SALT_WATER:
             msg_print("The potion makes you vomit!");
             if (p_ptr->food > 150) p_ptr->food = 150;
-            p_ptr->poisoned = 0;
-            p_ptr->paralysis += 4;
+            (void)set_poisoned(0);
+            (void)set_paralyzed(p_ptr->paralyzed + 4);
             p_ptr->update |= (PU_BONUS);
             ident = TRUE;
             break;
 
         case SV_POTION_POISON:
-            if (add_poisoned(rand_int(15) + 10)) {
-                msg_print("You feel very sick.");
-                ident = TRUE;
+            if (!(p_ptr->resist_pois ||
+                  p_ptr->oppose_pois ||
+                  p_ptr->immune_pois)) {
+                if (set_poisoned(p_ptr->poisoned + rand_int(15) + 10)) {
+                    msg_print("You feel very sick.");
+                    ident = TRUE;
+                }
             }
             break;
 
         case SV_POTION_BLINDNESS:
-            old = p_ptr->blind;
-            if (add_blind(rand_int(100) + 100)) {
-                if (!old) {
+            if (!p_ptr->resist_blind) {
+                if (set_blind(p_ptr->blind + rand_int(100) + 100)) {
                     msg_print("You are covered by a veil of darkness.");
                     ident = TRUE;
                 }
@@ -371,9 +371,8 @@ void do_cmd_quaff_potion(void)
             break;
 
         case SV_POTION_CONFUSION:
-            old = p_ptr->confused;
-            if (add_confused(rand_int(20) + 15)) {
-                if (!old) {
+            if (!p_ptr->resist_conf) {
+                if (set_confused(p_ptr->confused + rand_int(20) + 15)) {
                     msg_print("You mind becomes clouded and hazy.");
                     ident = TRUE;
                 }
@@ -381,9 +380,8 @@ void do_cmd_quaff_potion(void)
             break;
 
         case SV_POTION_SLEEP:
-            old = p_ptr->paralysis;
-            if (add_paralysis(rand_int(4) + 4)) {
-                if (!old) {
+            if (!p_ptr->free_act) {
+                if (set_paralyzed(p_ptr->paralyzed + rand_int(4) + 4)) {
                     msg_print("You fall asleep.");
                     ident = TRUE;
                 }
@@ -452,194 +450,112 @@ void do_cmd_quaff_potion(void)
             break;
 
         case SV_POTION_INFRAVISION:
-            old = p_ptr->tim_infra;
-            if (add_tim_infra(100 + randint(100))) {
-                if (!old) {
-                    msg_print("Your eyes begin to tingle.");
-                    ident = TRUE;
-                }
+            if (set_tim_infra(p_ptr->tim_infra + 100 + randint(100))) {
+                msg_print("Your eyes begin to tingle.");
+                ident = TRUE;
             }
             break;
 
         case SV_POTION_DETECT_INVIS:
-            old = p_ptr->tim_invis;
-            if (add_tim_invis(12 + randint(12))) {
-                if (!old) {
-                    msg_print("Your eyes feel very sensitive.");
-                    ident = TRUE;
-                }
+            if (set_tim_invis(p_ptr->tim_invis + 12 + randint(12))) {
+                msg_print("Your eyes feel very sensitive.");
+                ident = TRUE;
             }
             break;
 
         case SV_POTION_SLOW_POISON:
-            if (p_ptr->poisoned) {
-                msg_print("The effect of the poison has been reduced.");
-                p_ptr->poisoned = (p_ptr->poisoned + 1) / 2;
-                ident = TRUE;
-            }
+            if (set_poisoned(p_ptr->poisoned / 2)) ident = TRUE;
             break;
 
         case SV_POTION_CURE_POISON:
-            if (p_ptr->poisoned) {
-                p_ptr->poisoned = 0;
-                ident = TRUE;
-            }
+            if (set_poisoned(0)) ident = TRUE;
             break;
 
         case SV_POTION_BOLDNESS:
-            if (p_ptr->fear) {
-                p_ptr->fear = 0;
-                ident = TRUE;
-            }
+            if (set_afraid(0)) ident = TRUE;
             break;
 
         case SV_POTION_SPEED:
             if (!p_ptr->fast) {
-                add_fast(randint(25) + 15);
-                ident = TRUE;
+                if (set_fast(randint(25) + 15)) ident = TRUE;
+            }
+            else {
+                (void)set_fast(p_ptr->fast + 5);
             }
             break;
 
         case SV_POTION_RESIST_HEAT:
-            if (!p_ptr->oppose_fire) ident = TRUE;
-            p_ptr->oppose_fire += randint(10) + 10;
+            (void)set_oppose_fire(p_ptr->oppose_fire + randint(10) + 10);
+            ident = TRUE;
             break;
 
         case SV_POTION_RESIST_COLD:
-            if (!p_ptr->oppose_cold) ident = TRUE;
-            p_ptr->oppose_cold += randint(10) + 10;
+            (void)set_oppose_cold(p_ptr->oppose_cold + randint(10) + 10);
+            ident = TRUE;
             break;
 
         case SV_POTION_HEROISM:
             if (hp_player(10)) ident = TRUE;	/* XXX */
-            if (p_ptr->hero == 0) ident = TRUE;
-            p_ptr->hero += randint(25) + 25;
+            if (set_afraid(0)) ident = TRUE;
+            if (set_hero(p_ptr->hero + randint(25) + 25)) ident = TRUE;
             break;
 
         case SV_POTION_BESERK_STRENGTH:
             if (hp_player(30)) ident = TRUE;	/* XXX */
-            if (p_ptr->shero == 0) ident = TRUE;
-            p_ptr->shero += randint(25) + 25;
+            if (set_afraid(0)) ident = TRUE;
+            if (set_shero(p_ptr->shero + randint(25) + 25)) ident = TRUE;
             break;
 
         case SV_POTION_CURE_LIGHT:
             if (hp_player(damroll(2, 8))) ident = TRUE;
-            if (p_ptr->blind) {
-                p_ptr->blind = 0;
-                ident = TRUE;
-            }
-            if (p_ptr->cut > 10) {
-                p_ptr->cut -= 10;
-                ident = TRUE;
-            }
-            else if (p_ptr->cut) {
-                p_ptr->cut = 0;
-                ident = TRUE;
-            }
+            if (set_blind(0)) ident = TRUE;
+            if (set_cut(p_ptr->cut - 10)) ident = TRUE;
             break;
 
         case SV_POTION_CURE_SERIOUS:
             if (hp_player(damroll(4, 8))) ident = TRUE;
-            if (p_ptr->blind) {
-                p_ptr->blind = 0;
-                ident = TRUE;
-            }
-            if (p_ptr->confused) {
-                p_ptr->confused = 0;
-                ident = TRUE;
-            }
-            if (p_ptr->cut > 100) {
-                p_ptr->cut = (p_ptr->cut / 2) - 50;
-                ident = TRUE;
-            }
-            else if (p_ptr->cut) {
-                p_ptr->cut = 0;
-                ident = TRUE;
-            }
+            if (set_blind(0)) ident = TRUE;
+            if (set_confused(0)) ident = TRUE;
+            if (set_cut((p_ptr->cut / 2) - 50)) ident = TRUE;
             break;
 
         case SV_POTION_CURE_CRITICAL:
             if (hp_player(damroll(6, 8))) ident = TRUE;
-            if (p_ptr->blind) {
-                p_ptr->blind = 0;
-                ident = TRUE;
-            }
-            if (p_ptr->confused) {
-                p_ptr->confused = 0;
-                ident = TRUE;
-            }
-            if (p_ptr->poisoned) {
-                p_ptr->poisoned = 0;
-                ident = TRUE;
-            }
-            if (p_ptr->cut) {
-                p_ptr->cut = 0;
-                ident = TRUE;
-            }
-            if (p_ptr->stun) {
-                p_ptr->stun = 0;
-                ident = TRUE;
-            }
+            if (set_blind(0)) ident = TRUE;
+            if (set_confused(0)) ident = TRUE;
+            if (set_poisoned(0)) ident = TRUE;
+            if (set_stun(0)) ident = TRUE;
+            if (set_cut(0)) ident = TRUE;
             break;
 
         case SV_POTION_HEALING:
             if (hp_player(300)) ident = TRUE;
-            if (p_ptr->blind) {
-                p_ptr->blind = 0;
-                ident = TRUE;
-            }
-            if (p_ptr->confused) {
-                p_ptr->confused = 0;
-                ident = TRUE;
-            }
-            if (p_ptr->poisoned) {
-                p_ptr->poisoned = 0;
-                ident = TRUE;
-            }
-            if (p_ptr->cut) {
-                p_ptr->cut = 0;
-                ident = TRUE;
-            }
-            if (p_ptr->stun) {
-                p_ptr->stun = 0;
-                ident = TRUE;
-            }
+            if (set_blind(0)) ident = TRUE;
+            if (set_confused(0)) ident = TRUE;
+            if (set_poisoned(0)) ident = TRUE;
+            if (set_stun(0)) ident = TRUE;
+            if (set_cut(0)) ident = TRUE;
             break;
 
         case SV_POTION_STAR_HEALING:
             if (hp_player(1200)) ident = TRUE;
-            if (p_ptr->blind) {
-                p_ptr->blind = 0;
-                ident = TRUE;
-            }
-            if (p_ptr->confused) {
-                p_ptr->confused = 0;
-                ident = TRUE;
-            }
-            if (p_ptr->poisoned) {
-                p_ptr->poisoned = 0;
-                ident = TRUE;
-            }
-            if (p_ptr->cut) {
-                p_ptr->cut = 0;
-                ident = TRUE;
-            }
-            if (p_ptr->stun) {
-                p_ptr->stun = 0;
-                ident = TRUE;
-            }
+            if (set_blind(0)) ident = TRUE;
+            if (set_confused(0)) ident = TRUE;
+            if (set_poisoned(0)) ident = TRUE;
+            if (set_stun(0)) ident = TRUE;
+            if (set_cut(0)) ident = TRUE;
             break;
 
         case SV_POTION_LIFE:
             msg_print("You feel life flow through your body!");
             restore_level();
             hp_player(5000);
-            p_ptr->poisoned = 0;
-            p_ptr->blind = 0;
-            p_ptr->confused = 0;
-            p_ptr->image = 0;
-            p_ptr->cut = 0;
-            p_ptr->stun = 0;
+            (void)set_poisoned(0);
+            (void)set_blind(0);
+            (void)set_confused(0);
+            (void)set_image(0);
+            (void)set_stun(0);
+            (void)set_cut(0);
             (void)do_res_stat(A_STR);
             (void)do_res_stat(A_CON);
             (void)do_res_stat(A_DEX);
@@ -987,7 +903,9 @@ void do_cmd_read_scroll(void)
 
         case SV_SCROLL_DARKNESS:
             if (unlite_area(10, 3)) ident = TRUE;
-            add_blind(3 + randint(5));
+            if (!p_ptr->resist_blind) {
+                set_blind(p_ptr->blind + 3 + randint(5));
+            }
             break;
 
         case SV_SCROLL_AGGRAVATE_MONSTER:
@@ -1148,18 +1066,15 @@ void do_cmd_read_scroll(void)
             break;
 
         case SV_SCROLL_BLESSING:
-            add_bless(randint(12) + 6);
-            ident = TRUE;
+            if (set_blessed(p_ptr->blessed + randint(12) + 6)) ident = TRUE;
             break;
 
         case SV_SCROLL_HOLY_CHANT:
-            add_bless(randint(24) + 12);
-            ident = TRUE;
+            if (set_blessed(p_ptr->blessed + randint(24) + 12)) ident = TRUE;
             break;
 
         case SV_SCROLL_HOLY_PRAYER:
-            add_bless(randint(48) + 24);
-            ident = TRUE;
+            if (set_blessed(p_ptr->blessed + randint(48) + 24)) ident = TRUE;
             break;
 
         case SV_SCROLL_MONSTER_CONFUSION:
@@ -1171,7 +1086,8 @@ void do_cmd_read_scroll(void)
             break;
 
         case SV_SCROLL_PROTECTION_FROM_EVIL:
-            if (protect_evil()) ident = TRUE;
+            k = 3 * p_ptr->lev;
+            if (set_protevil(p_ptr->protevil + randint(25) + k)) ident = TRUE;
             break;
 
         case SV_SCROLL_RUNE_OF_PROTECTION:
@@ -1271,7 +1187,7 @@ void do_cmd_read_scroll(void)
  */
 void do_cmd_use_staff(void)
 {
-    int			item, ident, chance, k, lev, old;
+    int			item, ident, chance, k, lev;
 
     inven_type		*i_ptr;
 
@@ -1358,13 +1274,13 @@ void do_cmd_use_staff(void)
 
       case SV_STAFF_DARKNESS:
         if (unlite_area(10, 3)) ident = TRUE;
+        if (!p_ptr->resist_blind) {
+            (void)set_blind(p_ptr->blind + 3 + randint(5));
+        }
         break;
 
       case SV_STAFF_SLOWNESS:
-        old = p_ptr->slow;
-        if (add_slow(randint(30) + 15)) {
-            if (!old) ident = TRUE;
-        }
+        if (set_slow(p_ptr->slow + randint(30) + 15)) ident = TRUE;
         break;
 
       case SV_STAFF_HASTE_MONSTERS:
@@ -1393,7 +1309,7 @@ void do_cmd_use_staff(void)
       case SV_STAFF_REMOVE_CURSE:
         if (remove_curse()) {
             if (!p_ptr->blind) {
-                msg_print("The staff glows blue for a moment..");
+                msg_print("The staff glows blue for a moment...");
             }
             ident = TRUE;
         }
@@ -1401,7 +1317,7 @@ void do_cmd_use_staff(void)
 
       case SV_STAFF_STARLITE:
         if (!p_ptr->blind) {
-            msg_print("The end of the staff bursts into a blue shimmering light.");
+            msg_print("The end of the staff glows brightly...");
         }
         for (k = 0; k < 8; k++) lite_line(ddd[k]);
         ident = TRUE;
@@ -1445,38 +1361,17 @@ void do_cmd_use_staff(void)
         break;
 
       case SV_STAFF_CURING:
-        if (p_ptr->blind) {
-            p_ptr->blind = 0;
-            ident = TRUE;
-        }
-        if (p_ptr->poisoned) {
-            p_ptr->poisoned = 0;
-            ident = TRUE;
-        }
-        if (p_ptr->confused) {
-            p_ptr->confused = 0;
-            ident = TRUE;
-        }
-        if (p_ptr->cut) {
-            p_ptr->cut = 0;
-            ident = TRUE;
-        }
-        if (p_ptr->stun) {
-            p_ptr->stun = 0;
-            ident = TRUE;
-        }
+        if (set_blind(0)) ident = TRUE;
+        if (set_poisoned(0)) ident = TRUE;
+        if (set_confused(0)) ident = TRUE;
+        if (set_cut(0)) ident = TRUE;
+        if (set_stun(0)) ident = TRUE;
         break;
 
       case SV_STAFF_HEALING:
         if (hp_player(300)) ident = TRUE;
-        if (p_ptr->cut) {
-            p_ptr->cut = 0;
-            ident = TRUE;
-        }
-        if (p_ptr->stun) {
-            p_ptr->stun = 0;
-            ident = TRUE;
-        }
+        if (set_stun(0)) ident = TRUE;
+        if (set_cut(0)) ident = TRUE;
         break;
 
       case SV_STAFF_THE_MAGI:
@@ -1500,8 +1395,10 @@ void do_cmd_use_staff(void)
 
       case SV_STAFF_SPEED:
         if (!p_ptr->fast) {
-            add_fast(randint(30) + 15);
-            ident = TRUE;
+            if (set_fast(randint(30) + 15)) ident = TRUE;
+        }
+        else {
+            (void)set_fast(p_ptr->fast + 5);
         }
         break;
 
@@ -1519,14 +1416,14 @@ void do_cmd_use_staff(void)
         break;
 
       case SV_STAFF_HOLINESS:
-        dispel_evil(120);
-        protect_evil();
-        p_ptr->poisoned = 0;
-        p_ptr->fear = 0;
-        hp_player(50);
-        p_ptr->cut = 0;
-        p_ptr->stun = 0;
-        ident = TRUE;
+        if (dispel_evil(120)) ident = TRUE;
+        k = 3 * p_ptr->lev;
+        if (set_protevil(p_ptr->protevil + randint(25) + k)) ident = TRUE;
+        if (set_poisoned(0)) ident = TRUE;
+        if (set_afraid(0)) ident = TRUE;
+        if (hp_player(50)) ident = TRUE;
+        if (set_stun(0)) ident = TRUE;
+        if (set_cut(0)) ident = TRUE;
         break;
 
       case SV_STAFF_GENOCIDE:
@@ -2071,39 +1968,18 @@ void do_cmd_zap_rod(void)
         break;
 
       case SV_ROD_CURING:
-        if (p_ptr->blind) {
-            p_ptr->blind = 0;
-            ident = TRUE;
-        }
-        if (p_ptr->poisoned) {
-            p_ptr->poisoned = 0;
-            ident = TRUE;
-        }
-        if (p_ptr->confused) {
-            p_ptr->confused = 0;
-            ident = TRUE;
-        }
-        if (p_ptr->cut) {
-            p_ptr->cut = 0;
-            ident = TRUE;
-        }
-        if (p_ptr->stun) {
-            p_ptr->stun = 0;
-            ident = TRUE;
-        }
+        if (set_blind(0)) ident = TRUE;
+        if (set_poisoned(0)) ident = TRUE;
+        if (set_confused(0)) ident = TRUE;
+        if (set_stun(0)) ident = TRUE;
+        if (set_cut(0)) ident = TRUE;
         i_ptr->pval = 999;
         break;
 
       case SV_ROD_HEALING:
         if (hp_player(500)) ident = TRUE;
-        if (p_ptr->cut) {
-            p_ptr->cut = 0;
-            ident = TRUE;
-        }
-        if (p_ptr->stun) {
-            p_ptr->stun = 0;
-            ident = TRUE;
-        }
+        if (set_stun(0)) ident = TRUE;
+        if (set_cut(0)) ident = TRUE;
         i_ptr->pval = 999;
         break;
 
@@ -2120,8 +1996,10 @@ void do_cmd_zap_rod(void)
 
       case SV_ROD_SPEED:
         if (!p_ptr->fast) {
-            add_fast(randint(30) + 15);
-            ident = TRUE;
+            if (set_fast(randint(30) + 15)) ident = TRUE;
+        }
+        else {
+            (void)set_fast(p_ptr->fast + 5);
         }
         i_ptr->pval = 99;
         break;
@@ -2357,7 +2235,7 @@ static void ring_of_power(int dir)
  */
 void do_cmd_activate(void)
 {
-    int         item, i, a, dir, lev, chance;
+    int         item, i, k, a, dir, lev, chance;
 
     inven_type  *i_ptr;
 
@@ -2466,8 +2344,8 @@ void do_cmd_activate(void)
 
             case ART_DAL:
                 msg_print("You feel energy flow through your feet...");
-                p_ptr->fear = 0;
-                p_ptr->poisoned = 0;
+                (void)set_afraid(0);
+                (void)set_poisoned(0);
                 i_ptr->timeout = 5;
                 break;
 
@@ -2494,7 +2372,10 @@ void do_cmd_activate(void)
 
             case ART_FEANOR:
                 if (!p_ptr->fast) {
-                    add_fast(randint(20) + 20);
+                    (void)set_fast(randint(20) + 20);
+                }
+                else {
+                    (void)set_fast(p_ptr->fast + 5);
                 }
                 i_ptr->timeout = 200;
                 break;
@@ -2533,7 +2414,10 @@ void do_cmd_activate(void)
 
             case ART_TARATOL:
                 if (!p_ptr->fast) {
-                    add_fast(randint(20) + 20);
+                    (void)set_fast(randint(20) + 20);
+                }
+                else {
+                    (void)set_fast(p_ptr->fast + 5);
                 }
                 i_ptr->timeout = rand_int(100) + 100;
                 break;
@@ -2559,12 +2443,7 @@ void do_cmd_activate(void)
             case ART_LOTHARANG:
                 msg_print("Your battle axe radiates deep purple...");
                 hp_player(damroll(4, 8));
-                if (p_ptr->cut > 100) {
-                    p_ptr->cut = (p_ptr->cut / 2) - 50;
-                }
-                else {
-                    p_ptr->cut = 0;
-                }
+                (void)set_cut((p_ptr->cut / 2) - 50);
                 i_ptr->timeout = rand_int(3) + 3;
                 break;
 
@@ -2617,8 +2496,8 @@ void do_cmd_activate(void)
             case ART_SOULKEEPER:
                 msg_print("Your armor glows a bright white...");
                 msg_print("You feel much better...");
-                hp_player(1000);
-                p_ptr->cut = 0;
+                (void)hp_player(1000);
+                (void)set_cut(0);
                 i_ptr->timeout = 888;
                 break;
 
@@ -2648,11 +2527,11 @@ void do_cmd_activate(void)
             case ART_COLLUIN:
                 msg_print("Your cloak glows many colours...");
                 msg_print("You feel you can resist anything.");
-                p_ptr->oppose_fire += randint(20) + 20;
-                p_ptr->oppose_cold += randint(20) + 20;
-                p_ptr->oppose_elec += randint(20) + 20;
-                p_ptr->oppose_pois += randint(20) + 20;
-                p_ptr->oppose_acid += randint(20) + 20;
+                (void)set_oppose_acid(p_ptr->oppose_acid + randint(20) + 20);
+                (void)set_oppose_elec(p_ptr->oppose_elec + randint(20) + 20);
+                (void)set_oppose_fire(p_ptr->oppose_fire + randint(20) + 20);
+                (void)set_oppose_cold(p_ptr->oppose_cold + randint(20) + 20);
+                (void)set_oppose_pois(p_ptr->oppose_pois + randint(20) + 20);
                 i_ptr->timeout = 111;
                 break;
 
@@ -2731,8 +2610,8 @@ void do_cmd_activate(void)
 
             case ART_GONDOR:
                 msg_print("You feel a warm tingling inside...");
-                hp_player(500);
-                p_ptr->cut = 0;
+                (void)hp_player(500);
+                (void)set_cut(0);
                 i_ptr->timeout = 500;
                 break;
 
@@ -2746,14 +2625,15 @@ void do_cmd_activate(void)
                 msg_print("Your armor glows many colours...");
                 msg_print("You enter a berserk rage...");
                 msg_print("You feel you can resist anything...");
-                hp_player(30);	/* XXX */
-                p_ptr->shero += randint(50) + 50;
-                add_bless(randint(50) + 50);
-                p_ptr->oppose_fire += randint(50) + 50;
-                p_ptr->oppose_cold += randint(50) + 50;
-                p_ptr->oppose_elec += randint(50) + 50;
-                p_ptr->oppose_acid += randint(50) + 50;
-                p_ptr->oppose_pois += randint(50) + 50;
+                (void)hp_player(30);	/* XXX */
+                (void)set_afraid(0);
+                (void)set_shero(p_ptr->shero + randint(50) + 50);
+                (void)set_blessed(p_ptr->blessed + randint(50) + 50);
+                (void)set_oppose_acid(p_ptr->oppose_acid + randint(50) + 50);
+                (void)set_oppose_elec(p_ptr->oppose_elec + randint(50) + 50);
+                (void)set_oppose_fire(p_ptr->oppose_fire + randint(50) + 50);
+                (void)set_oppose_cold(p_ptr->oppose_cold + randint(50) + 50);
+                (void)set_oppose_pois(p_ptr->oppose_pois + randint(50) + 50);
                 i_ptr->timeout = 400;
                 break;
 
@@ -2788,7 +2668,8 @@ void do_cmd_activate(void)
             case ART_CARLAMMAS:
                 msg_print("The amulet lets out a shrill wail...");
                 msg_print("You feel somewhat safer...");
-                protect_evil();
+                k = 3 * p_ptr->lev;
+                (void)set_protevil(p_ptr->protevil + randint(25) + k);
                 i_ptr->timeout = rand_int(225) + 225;
                 break;
 
@@ -2796,7 +2677,10 @@ void do_cmd_activate(void)
             case ART_TULKAS:
                 msg_print("The ring glows brightly...");
                 if (!p_ptr->fast) {
-                    add_fast(randint(75) + 75);
+                    (void)set_fast(randint(75) + 75);
+                }
+                else {
+                    (void)set_fast(p_ptr->fast + 5);
                 }
                 i_ptr->timeout = rand_int(150) + 150;
                 break;
@@ -2912,7 +2796,8 @@ void do_cmd_activate(void)
                 chance = rand_int(2);
                 msg_format("You breathe %s.",
                            ((chance == 1 ? "chaos" : "disenchantment")));
-                fire_ball((chance == 1 ? GF_CHAOS : GF_DISENCHANT), dir, 220, 2);
+                fire_ball((chance == 1 ? GF_CHAOS : GF_DISENCHANT),
+                          dir, 220, 2);
                 i_ptr->timeout = rand_int(300) + 300;
                 break;
 
@@ -2920,7 +2805,8 @@ void do_cmd_activate(void)
                 chance = rand_int(2);
                 msg_format("You breathe %s.",
                            ((chance == 1 ? "sound" : "shards")));
-                fire_ball((chance == 1 ? GF_SOUND : GF_SHARDS), dir, 230, 2);
+                fire_ball((chance == 1 ? GF_SOUND : GF_SHARDS),
+                          dir, 230, 2);
                 i_ptr->timeout = rand_int(300) + 300;
                 break;
 

@@ -338,12 +338,11 @@ static errr Term_xtra_xxx(int n, int v)
             /* This action is used when the term window changes "activation" */
             /* either by becoming inactive ("v" is FALSE) or active ("v" is */
             /* TRUE).  This action is optional but often does things like */
-            /* activates the proper font or drawing mode for the newly active */
+            /* activates the proper font / drawing mode for the newly active */
             /* term window.  This action should NOT change which window has */
-            /* the "focus" or which window is "raised" or anything like that. */
-            /* This action is completely optional if all the other things which */
-            /* depend on what term is active explicitly check to be sure the */
-            /* proper term is activated interally first. */
+            /* the "focus", which window is "raised", or anything like that. */
+            /* This action is optional if all the other things which depend */
+            /* on what term is active handle activation themself. */
             
             return (0);
     }

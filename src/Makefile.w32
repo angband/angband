@@ -1,0 +1,64 @@
+# File: Makefile.w32
+# For Microsoft Visual C++ 4.0 Win32
+#
+# To compile debug   :   nmake -f makefile.w32
+# To compile nodebug :   nmake -f makefile.w32 nodebug=1
+#
+
+#define TARGETOS = both
+!include <win32.mak>
+
+all: angband.exe
+
+# Define project specific macros
+cflags = $(cflags) -DWINDOWS
+extralibs = winmm.lib
+
+PROJ_SRCS = \
+  main-w32.c itsybits.c readdib.c\
+  signals.c util.c io.c files.c melee.c \
+  effects.c dungeon.c store.c \
+  cmd1.c cmd2.c cmd3.c cmd4.c cmd5.c cmd6.c \
+  misc.c monster.c mon-desc.c object.c obj-desc.c \
+  spells1.c spells2.c cave.c tables.c variable.c \
+  term.c z-util.c z-virt.c z-form.c\
+  generate.c save.c save-old.c birth.c init.c
+
+PROJ_OBJS = \
+  main-w32.obj itsybits.obj readdib.obj\
+  signals.obj util.obj io.obj files.obj melee.obj \
+  effects.obj dungeon.obj store.obj \
+  cmd1.obj cmd2.obj cmd3.obj cmd4.obj cmd5.obj cmd6.obj \
+  misc.obj monster.obj mon-desc.obj object.obj obj-desc.obj \
+  spells1.obj spells2.obj cave.obj tables.obj variable.obj \
+  term.obj z-util.obj z-virt.obj z-form.obj\
+  generate.obj save.obj save-old.obj birth.obj init.obj
+
+default: angband.exe
+
+clean:
+	del *.obj
+	del *.map
+	del angband.exe
+
+install:
+	copy angband.exe ..
+
+.c.obj:
+  $(cc) $(cdebug) $(cflags) $(cvars) $*.c
+
+itsybits.obj: ext-w32\itsybits.c ext-w32\itsybits.h
+	$(cc) $(cdebug) $(cflags) $(cvars) ext-w32\itsybits.c
+
+readdib.obj: ext-w32\readdib.c ext-w32\readdib.h
+	$(cc) $(cdebug) $(cflags) $(cvars) ext-w32\readdib.c
+
+
+# Build rule for resource file
+angband.res: ext-w32\angband.rc
+    $(rc) $(rcflags) $(rcvars) /fo ext-w32\angband.res ext-w32\angband.rc
+
+# Build rule for EXE
+angband.exe: $(PROJ_OBJS) ext-w32\angband.res
+    $(link) $(linkdebug) $(guilflags) $(extralibs) \
+    $(PROJ_OBJS) ext-w32\angband.res $(guilibs) -out:angband.exe $(MAPFILE)

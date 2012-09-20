@@ -1386,42 +1386,6 @@
 #define SM_IMM_MANA	0x80000000
 
 
-/*
- * Bit flags for the "p_ptr->notice" variable
- */
-#define PN_HUNGRY	0x00000001L
-#define PN_WEAK		0x00000002L
-#define PN_BLIND	0x00000004L
-#define PN_CONFUSED	0x00000008L
-#define PN_FEAR		0x00000010L
-#define PN_POISONED	0x00000020L
-#define PN_FAST		0x00000040L
-#define PN_SLOW		0x00000080L
-#define PN_PARALYSED	0x00000100L
-#define PN_IMAGE	0x00000200L
-#define PN_TIM_INVIS	0x00000400L
-#define PN_TIM_INFRA	0x00000800L
-#define PN_HERO		0x00001000L
-#define PN_SHERO	0x00002000L
-#define PN_BLESSED	0x00004000L
-#define PN_INVULN	0x00008000L
-#define PN_SHIELD	0x00010000L
-#define PN_PROTECT	0x00020000L
-#define PN_TELEPATH	0x00040000L
-/* xxx */
-/* xxx */
-/* xxx */
-/* xxx */
-/* xxx */
-#define PN_OPP_ACID	0x01000000L
-#define PN_OPP_ELEC	0x02000000L
-#define PN_OPP_FIRE	0x04000000L
-#define PN_OPP_COLD	0x08000000L
-#define PN_OPP_POIS	0x10000000L
-/* xxx */
-/* xxx */
-/* xxx */
-
 
 /*
  * Bit flags for the "p_ptr->update" variable
@@ -1489,7 +1453,7 @@
 #define SUMMON_ANT		11
 #define SUMMON_SPIDER		12
 #define SUMMON_HOUND		13
-#define SUMMON_REPTILE		14
+#define SUMMON_HYDRA		14
 #define SUMMON_ANGEL		15
 #define SUMMON_DEMON		16
 #define SUMMON_UNDEAD		17
@@ -1642,11 +1606,11 @@
  * Note that "flags3" contains everything else -- including the three "CURSED"
  * flags, and the "BLESSED" flag, several "item display" parameters, some new
  * flags for powerful Bows, and flags which affect the player in a "general"
- * way (LITE, TELEPATHY, SEE_INVIS, SLOW_DIGEST, REGEN), including the "general"
- * curses (TELEPORT, AGGRAVATE, EXP_DRAIN).  It also contains four new flags
- * called "ITEM_IGNORE_XXX" which lets an item specify that it can not be
- * affected by various forms of destruction.  This is NOT as powerful as
- * actually granting resistance to the wearer.  Also "FEATHER" floating.
+ * way (LITE, TELEPATHY, SEE_INVIS, SLOW_DIGEST, REGEN, FEATHER), including
+ * all the "general" curses (TELEPORT, AGGRAVATE, EXP_DRAIN).  It also has
+ * four new flags called "ITEM_IGNORE_XXX" which lets an item specify that
+ * it can not be affected by various forms of destruction.  This is NOT as
+ * powerful as actually granting resistance/immunity to the wearer.
  */
 
 #define TR1_STR			0x00000001L	/* STR += "pval" */
@@ -2034,10 +1998,10 @@
 #define RF6_XXX8		0x00020000	/* Summon (?) */
 #define RF6_S_MONSTER		0x00040000	/* Summon Monster */
 #define RF6_S_MONSTERS		0x00080000	/* Summon Monsters */
-#define RF6_S_ANT		0x00100000	/* Summon Ant */
-#define RF6_S_SPIDER		0x00200000	/* Summon Spider */
-#define RF6_S_HOUND		0x00400000	/* Summon Hound */
-#define RF6_S_REPTILE		0x00800000	/* Summon Reptile */
+#define RF6_S_ANT		0x00100000	/* Summon Ants */
+#define RF6_S_SPIDER		0x00200000	/* Summon Spiders */
+#define RF6_S_HOUND		0x00400000	/* Summon Hounds */
+#define RF6_S_HYDRA		0x00800000	/* Summon Hydras */
 #define RF6_S_ANGEL		0x01000000	/* Summon Angel */
 #define RF6_S_DEMON		0x02000000	/* Summon Demon */
 #define RF6_S_UNDEAD		0x04000000	/* Summon Undead */
@@ -2063,7 +2027,7 @@
    (RF6_BLINK |  RF6_TPORT | RF6_TELE_LEVEL | RF6_TELE_AWAY | \
     RF6_HEAL | RF6_HASTE | RF6_TRAPS | \
     RF6_S_MONSTER | RF6_S_MONSTERS | \
-    RF6_S_ANT | RF6_S_SPIDER | RF6_S_HOUND | RF6_S_REPTILE | \
+    RF6_S_ANT | RF6_S_SPIDER | RF6_S_HOUND | RF6_S_HYDRA | \
     RF6_S_ANGEL | RF6_S_DRAGON | RF6_S_UNDEAD | RF6_S_DEMON | \
     RF6_S_HI_DRAGON | RF6_S_HI_UNDEAD | RF6_S_WRAITH | RF6_S_UNIQUE)
 
@@ -2146,17 +2110,6 @@
 #define player_has_los_bold(Y,X) \
     ((cave[Y][X].feat & CAVE_VIEW) != 0)
 
-
-
-/*
- * Determine if a player "knows" about a grid
- *
- * Line 1 -- player has memorized the grid
- * Line 2 -- player can see the grid
- */
-#define test_lite_bold(Y,X) \
-    ((cave[Y][X].feat & CAVE_MARK) || \
-     (player_can_see_bold(Y,X)))
 
 
 
@@ -2379,6 +2332,11 @@
 #define SOUND_KILL	5
 #define SOUND_LEVEL	6
 #define SOUND_DEATH	7
+
+/*
+ * Mega-Hack -- maximum known sounds
+ */
+#define SOUND_MAX	8
 
 
 /*** Hack ***/

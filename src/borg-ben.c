@@ -24,7 +24,7 @@
 /*
  * This file implements the "Ben Borg", an "Automatic Angband Player".
  *
- * This version of the "Ben Borg" is designed for use with Angband 2.7.9.
+ * This version of the "Ben Borg" is designed for use with Angband 2.7.9v3.
  *
  * The "Ben Borg" can (easily?) be adapted to create your very own "Borg",
  * using your own favorite strategies, and/or heuristic values.
@@ -33,29 +33,29 @@
  * and with the "borg-ben.c", "borg-aux.c", "borg-ext.c", "borg-map.c",
  * "borg-obj.c", and "borg.c" files linked into the executable.
  *
- * This usually requires the modification of the "Makefile" or "project".
- *
  * Note that you can only use the Borg if your character has been marked
  * as a "Borg User".  You can do this, if necessary, by responding "y"
  * when asked if you really want to use the Borg.  This will (probably)
- * result in your character being illegible for the high score list.
+ * result in your character being inelligible for the high score list.
  *
  * The "borg_ben()" function, called when the user hits "^Z", allows the
  * user to interact with the Borg.  You do so by typing "Borg Commands",
  * including 'z' to resume (or start running), or 'K' to show monsters,
- * or 'A' to show avoidances, or 'd' to toggle "panic_death", or 'f' to
+ * or 'A' to show avoidances, or 'd' to toggle "demo mode", or 'f' to
  * open/shut the "log file", etc.  See "borg_ben()" for complete details.
  *
  * The first time you enter a Borg command, the Borg is initialized.  This
- * consists of three major steps, and requires at least 400K of free memory.
+ * consists of three major steps, and requires at least 400K of free memory,
+ * if the memory is not available, the game may abort.
  *
  * (1) The "Term_xtra()" hook is stolen, allowing the Borg to interupt
  * whenever the game asks for a keypress, and to supply its own keypresses
- * as if it was the player.
+ * as if it was the player.  This is a total hack.
  *
  * (2) Some important "state" information is extracted, including the level
  * and race/class of the player, which are needed for initialization of some
- * of the modules.
+ * of the modules.  Also, some "historical" information (killed uniques,
+ * maximum dungeon depth, etc) is "stolen" from the game.
  *
  * (3) Various modules are initialized, including "borg-aux.c" (high level
  * control), "borg-ext.c" (low level control), "borg-obj.c" (item analysis),
@@ -87,23 +87,22 @@
  * "Term_xtra(TERM_XTRA_EVENT, FALSE)", to prevent "keypress sneaking",
  * and calls to "Term_xtra(TERM_XTRA_NOISE, *)" to prevent "noisy" bugs,
  * and calls to "Term_xtra(TERM_XTRA_FLUSH, *)" to simulate actual flushing.
+ * The rest of the "Term_xtra()" calls are passed through.
  *
  * Note that if properly designed, the Ben Borg could be run as an external
  * process, which would actually examine the screen (or pseudo-terminal),
  * and send keypresses directly to the keyboard (or pseudo-terminal).  Thus
  * it should never access any "game variables", unless it is able to extract
- * those variables for itself by code duplication or complex interactions.
+ * those variables for itself by code duplication or complex interactions,
+ * or, in certain situations, if those variables are not actually "required".
  *
  * Currently, the Ben Borg is a few steps away from being able to be run as
  * an external process, primarily in the "low level" details, such as knowing
  * when the game is ready for a keypress.  Also, the Ben Borg assumes that a
  * character has already been rolled, and maintains no state between saves,
- * which often produces annoying side effects at startup, such as selling
- * off rings of free action, or wasting a few scrolls of recall.
- */
-
-
-/*
+ * which is partially offset by "cheating" to "acquire" the maximum dungeon
+ * depth, without which equipment analysis will be faulty.
+ *
  * The "theory" behind the Borg is that is should be able to run as a
  * separate process, playing Angband in a window just like a human, that
  * is, examining the screen for information, and sending keypresses to
@@ -141,10 +140,7 @@
  * used, primarily in "borg-ben.c", for example.
  *
  * Note that any "user input" will be ignored, and will cancel the Borg.
- */
- 
- 
-/*
+ *
  * Note that the "c_t" parameter bears a close resemblance to the number of
  * "player turns" that have gone by.  Except that occasionally, the Borg will
  * do something that he *thinks* will take time but which actually does not
@@ -160,11 +156,14 @@
  * "effective" use of at least a few spells/prayers, and is not "broken"
  * by low strength, blind-ness, hallucination, etc.  This does not, however,
  * mean that he plays all classes equally well, especially since he is so
- * dependant on a high strength for so many things.
+ * dependant on a high strength for so many things.  The "demo" mode is useful
+ * for many classes (especially Mage) since it allows the Borg to "die" a few
+ * times, without being penalized.
  *
  * The Borg assumes that the "p_ptr->maximize" flag is off, and that the
  * "p_ptr->preserve" flag is on, since he cannot actually set those flags.
  * If the "p_ptr->maximize" flag is on, the Borg may not work correctly.
+ * If the "p_ptr->preserve" flag is off, the Borg may miss artifacts.
  */
  
 
@@ -185,7 +184,7 @@
  *   Use the non-optimal stairs if stuck on a level
  *   Use "flow" code for all tasks for consistency
  *   Use the "danger" code to avoid potential death
- *   Handle "Mace of Disruption" and "Scythe of Slicing"
+ *   Handle "Mace of Disruption", "Scythe of Slicing", etc
  *   Learn spells, and use them when appropriate
  *   Remember that studying prayers is slightly random
  *   Do not try to read scrolls when blind or confused
@@ -194,13 +193,14 @@
  *   Attempt to remove fear and poison when possible
  *   Analyze potential equipment in proper context
  *   Priests should avoid edged weapons (spell failure)
- *   Mages should almost never wear gloves (lose Mana)
- *   Spell casters need to watch armor weight (vs Mana)
+ *   Mages should avoid most gloves (lose mana)
+ *   Non-warriors should avoid heavy armor (lose mana)
  *   Swap rings in shops to allow use of "tight" ring slot
+ *   Remove items which do not contribute to total fitness
  *   Wear/Remove/Sell/Buy items in most optimal order
  *   Notice "failure" when using rods/staffs/artifacts
  *   Notice "failure" when attempting spells/prayers
- *   Attempt to correctly track objects and monsters
+ *   Attempt to correctly track terrain, objects, monsters
  *   Take account of "clear" and "multi-hued" monsters
  *   Take account of "flavored" (randomly colored) objects
  *   Handle similar objects/monsters (mushrooms, coins)
@@ -211,6 +211,7 @@
  *   Parse messages to correct incorrect assumptions
  *   Search for secret doors if stuck on a level (spastic)
  *   React intelligently to changes in the wall structure
+ *   Do not recalculate "flow" information unless required
  *   Collect monsters/objects left behind or seen from afar
  *   Try to avoid danger (both actively and passively)
  *   Keep in mind that word of recall is a delayed action
@@ -218,7 +219,6 @@
  *   Be VERY careful not to access illegal locations!
  *   Do not rest next to dangerous (or immobile) monsters
  *   Recall into dungeon if prepared for resulting depth
- *   Recall into dungeon if max depth is unknown (ick!)
  *   Do not attempt to destroy cursed ("terrible") artifacts
  *   Attempted destruction will yield "terrible" inscription
  *   Use "maximum" level and depth to prevent "thrashing"
@@ -234,7 +234,6 @@
  *   Appearance of "similar" monsters (jackals + grip)
  *   Trappers and other monsters that look like floors
  *   Mimics, which look like potions, scrolls, or rings
- *   Mimics, which are three monsters with the same name
  *   Management of discounted spell-books and other items
  *   Hallucination (induces fake objects and monsters)
  *   Special screens (including tombstone) with no "walls"
@@ -252,7 +251,9 @@
  *   Note -- nutrition can come from food, scrolls, or spells
  *   Note -- recall can come from scrolls, rods, or spells
  *   Note -- identify can come from scrolls, rods, staffs, or spells
- *   Beware of firing missiles at "object" thought to be "monster"
+ *   Beware of firing missiles at an "object" thought to be a "monster"
+ *   Take account of "combinations" of possible equipment
+ *   Stockpile items in the Home, and use those stockpiles
  *
  * We need to handle "loading" saved games:
  *   The "max_depth" value is lost if loaded in the town
@@ -589,8 +590,8 @@ static void borg_think(void)
         /* Extract the current gold (unless in home) */
         if (0 == borg_what_text(68, 19, -9, &t_a, buf)) {
 
-            /* Ignore this "field" in the home */
-            if (shop_num != 7) auto_gold = atol(buf);
+            /* Save the gold, if valid */
+            if (buf[0]) auto_gold = atol(buf);
         }
 
         /* Parse the store (or home) inventory */
@@ -607,18 +608,21 @@ static void borg_think(void)
 
             /* Verify "intro" to the item */
             if ((0 == borg_what_text(0, i + 6, 3, &t_a, buf)) &&
-                (buf[0] == 'a' + i) && (buf[1] == p2) && (buf[2] == ' ')) {
+                (buf[0] == I2A(i)) && (buf[1] == p2) && (buf[2] == ' ')) {
 
                 /* Extract the item description */
-                if (0 != borg_what_text(3, i + 6, -65, &t_a, desc)) desc[0] = '\0';
+                if (0 != borg_what_text(3, i + 6, -65, &t_a, desc)) {
+                    desc[0] = '\0';
+                }
 
-                /* XXX Make sure trailing spaces get stripped */
+                /* XXX XXX Make sure trailing spaces get stripped */
 
-                /* Extract the item cost */
-                if (0 != borg_what_text(68, i + 6, -9, &t_a, cost)) cost[0] = '\0';
-
-                /* Hack -- forget the cost in the home */
-                if (shop_num == 7) cost[0] = '\0';
+                /* Extract the item cost in stores */
+                if (shop_num != 7) {
+                    if (0 != borg_what_text(68, i + 6, -9, &t_a, cost)) {
+                        cost[0] = '\0';
+                    }
+                }
             }
 
             /* Extract actual index */
@@ -750,7 +754,7 @@ static void borg_think(void)
 
     /* Check for "browse" mode */
     if ((0 == borg_what_text(COL_SPELL, ROW_SPELL, -12, &t_a, buf)) &&
-        (streq(buf,"Lv Mana Fail"))) {
+        (streq(buf, "Lv Mana Fail"))) {
 
         /* Parse the "spell" screen */
         borg_parse_spell(do_spell_aux);
@@ -778,7 +782,7 @@ static void borg_think(void)
             borg_keypress('b');
 
             /* Pick the next book */
-            borg_keypress('a' + i);
+            borg_keypress(I2A(i));
         }
 
         /* Otherwise, advance */
@@ -990,7 +994,7 @@ static cptr suffix_spell[] = {
     " magically summons ants.",			/* RF6_S_ANT */
     " magically summons spiders.",		/* RF6_S_SPIDER */
     " magically summons hounds.",		/* RF6_S_HOUND */
-    " magically summons reptiles.",		/* RF6_S_REPTILE */
+    " magically summons hydras.",		/* RF6_S_HYDRA */
     " magically summons an angel!",		/* RF6_S_ANGEL */
     " magically summons a hellish adversary!",	/* RF6_S_DEMON */
     " magically summons an undead adversary!",	/* RF6_S_UNDEAD */
@@ -1005,7 +1009,7 @@ static cptr suffix_spell[] = {
 
 
 #if 0
-    /* XXX XXX XXX XXX */
+    /* XXX XXX XXX */
     msg_format("%^s looks healthier.", m_name);
     msg_format("%^s looks REALLY healthy!", m_name);
 #endif
@@ -1498,8 +1502,6 @@ static errr Term_xtra_borg(int n, int v)
 
 
 
-
-
 /*
  * Hack -- interact with the "Ben Borg".
  */
@@ -1640,6 +1642,12 @@ void borg_ben(void)
             panic_stuff = !panic_stuff;
             msg_format("Borg -- panic_stuff is now %d.", panic_stuff);
         }
+
+        /* Command: toggle "panic_power" */
+        else if (cmd == 'p') {
+            panic_power = !panic_power;
+            msg_format("Borg -- panic_power is now %d.", panic_power);
+        }
     }
 
 
@@ -1657,7 +1665,7 @@ void borg_ben(void)
         /* Hack -- drop permissions */
         safe_setuid_drop();
 
-        /* Get the name and open the log file */
+        /* XXX XXX XXX Get the name and open the log file */
         if (askfor(buf, 70)) auto_fff = my_fopen(buf, "w");
 
         /* Hack -- grab permissions */
@@ -1665,46 +1673,6 @@ void borg_ben(void)
 
         /* Failure */
         if (!auto_fff) msg_print("Cannot open that file.");
-    }
-
-
-    /* Command: Show "avoidance" grids */
-    else if (cmd == 'A') {
-
-        int x, y, k = 0;
-
-        int w_y = panel_row * (SCREEN_HGT / 2);
-        int w_x = panel_col * (SCREEN_WID / 2);
-
-        /* Examine all the rooms */
-        for (y = w_y; y < w_y + SCREEN_HGT; y++) {
-            for (x = w_x; x < w_x + SCREEN_WID; x++) {
-
-                byte a = TERM_RED;
-                char c = '*';
-
-                auto_grid *ag = grid(x,y);
-
-                /* Skip non-avoid grids */
-                if (!(ag->info & BORG_ICKY)) continue;
-
-                /* Unknown grids */
-                if (ag->o_c == ' ') c = '?';
-
-                /* Display the avoidance */
-                print_rel(c, a, y, x);
-
-                /* Count */
-                k++;
-           }
-       }
-
-       /* Message */
-       msg_format("There are at least %d dangerous grids nearby.", k);
-       msg_print(NULL);
-       
-       /* Redraw */
-       do_cmd_redraw();
     }
 
 
@@ -1919,8 +1887,11 @@ void borg_ben(void)
                 /* Count them */
                 tg++;
 
+                /* No rooms yet */
+                n = 0;
+
                 /* Count the rooms this grid is in */
-                for (n = 0, ar = room(1,x,y); ar && (n<7); ar = room(0,0,0)) n++;
+                for (ar = room(1,x,y); ar && (n<7); ar = room(0,0,0)) n++;
 
                 /* Hack -- Mention some locations */
                 if ((n > 1) && !cc[n]) {

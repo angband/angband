@@ -7,6 +7,19 @@
 
 
 
+#ifdef VM
+
+/*
+ * Version of "delay()" for VM
+ */
+void delay(int t)
+{
+    /* Do nothing */
+}
+
+#endif /* VM */
+
+
 #ifdef AMIGA
 
 /*
@@ -17,8 +30,7 @@ void delay(int t)
     if (t >= 20) Delay(t / 20);
 }
 
-#endif	/* AMIGA */
-
+#endif /* AMIGA */
 
 
 #ifdef __EMX__
@@ -31,7 +43,7 @@ void delay(int t)
     _sleep2(t);
 }
 
-#endif	/* __EMX__ */
+#endif /* __EMX__ */
 
 
 
@@ -171,7 +183,7 @@ void user_name(char *buf, int id)
     strcpy(buf, "PLAYER");
 }
 
-#endif
+#endif /* SET_UID */
 
 
 #ifdef ACORN

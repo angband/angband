@@ -5,7 +5,6 @@
 /*
  * Author: Kevin Bracey (kevin@iota.co.uk)
  *
- * Warning -- this file may not be up to date for Angband 2.7.9v2
  */
 
 /* Check compiler flag */
@@ -26,8 +25,7 @@
  *
  */
 
-/*#define V278*/
-#define VERSION "2.7.9 Release 1 (19-Dec-95)"
+#define VERSION "2.7.9v2 (08-Jan-96)"
 
 /* Hack to prevent types clash from OSLib */
 typedef unsigned int bits;
@@ -101,15 +99,13 @@ typedef struct
     term t;
     toolbox_o window;
     wimp_w wimp;
-    char display[24][80];
     char olddisp[24][80];
-    char colour[24][80];
     char oldcol[24][80];
+    byte froshed[24];
     int curs_vis;
     int curs_x, curs_y;
     int ocx, ocy;
     os_box changed;
-    int topline;   /* How much of the top line has changed - optimisation */
 } term_data;
 
 /* Files opened using open(2) - make sure they're closed on exit */
@@ -149,37 +145,8 @@ static int colour_being_altered;
 /* Colour of cursor (displayed as a box) */
 #define TERM_CURSOR 16
 
-#ifdef V278
-  #define TERM_DARK TERM_BLACK
-#endif
-
 typedef os_PALETTE(17) angband_pal;
 
-#ifdef V278
-/* Palette taken from main-xaw.c */
-static const angband_pal default_palette =
-{
-  {
-    0x00000000,   /* TERM_BLACK */
-    0xffffff00,   /* TERM_WHITE */
-    0xa6a6a600,   /* TERM_GRAY */
-    0x0263ff00,   /* TERM_ORANGE */
-    0x0808ca00,   /* TERM_RED */
-    0x188e0000,   /* TERM_GREEN */
-    0xe3000000,   /* TERM_BLUE */
-    0x07408100,   /* TERM_UMBER */
-    0x6b6b6b00,   /* TERM_D_GRAY */
-    0xd6d6d600,   /* TERM_L_GRAY */
-    0xc2005100,   /* TERM_VIOLET */
-    0x05f1fd00,   /* TERM_YELLOW */
-    0x5992ff00,   /* TERM_L_RED */
-    0x17cf2600,   /* TERM_L_GREEN */
-    0xf2b20200,   /* TERM_L_BLUE */
-    0x488bb200,   /* TERM_L_UMBER */
-    0x00ffff00    /* TERM_CURSOR */
-  }
-};
-#else
 /* This is the palette as defined in term.h, with gamma
    correction of 1.3 (it seems to look OK) */
 static const angband_pal default_palette =
@@ -204,7 +171,6 @@ static const angband_pal default_palette =
     0x00ffff00    /* TERM_CURSOR */
   }
 };
-#endif
 
 static angband_pal palette;
 
@@ -258,9 +224,7 @@ static toolbox_block id_block;
 static term_data recall;
 static term_data choice;
 static term_data screen;
-#ifndef V278
 static term_data mirror;
-#endif
 
 /* Forward references */
 static int palette_handler(wimp_message *message, void *handle);
@@ -269,6 +233,7 @@ static void refresh_windows(void);
 static errr init_acn(void);
 static const char *translate_name(const char *path);
 static void savechoices(void);
+static void refresh_window(term_data *t);
 
 
 
@@ -492,6 +457,9 @@ static errr Term_xtra_acn_check(int v)
 
     if (buf > 0 && have_caret || (t=os_read_monotonic_time())-last_poll >= 10)
     {
+        /* If buf > 0, probably didn't set t in the line above */
+        if (buf > 0)
+            t=os_read_monotonic_time();
         last_poll=t;
         event_get_mask(&mask);
         event_set_mask(mask &~ wimp_MASK_NULL);
@@ -520,42 +488,37 @@ static errr Term_xtra_acn_event(int v)
     return 0;
 }
 
-static void cursor(int on)
+static void cursor(term *t, int on)
 {
-    if (screen.curs_vis != on && screen.ocx == -1)
+    term_data *td=(term_data *) t;
+
+    if (td->curs_vis != on && td->ocx == -1)
     {
-        screen.ocx=screen.curs_x;
-        screen.ocy=screen.curs_y;
+        td->ocx=td->curs_x;
+        td->ocy=td->curs_y;
     }
-    screen.curs_vis=on;
-    update_window(&screen, screen.curs_x, screen.curs_y,
-                           screen.curs_x+1, screen.curs_y+1);
+    td->curs_vis=on;
+    update_window(td, td->curs_x, td->curs_y,
+                      td->curs_x+1, td->curs_y+1);
+    td->froshed[td->curs_y]=1;
 }
 
 errr Term_xtra_acn(int n, int v)
 {
-    int i;
-    
+    term_data *t;
+
     switch (n)
     {
-      #ifdef V278
-      case TERM_XTRA_CHECK:
-        return Term_xtra_acn_check(v);
-
-      case TERM_XTRA_EVENT:
-        return Term_xtra_acn_event(v);
-      #else
       case TERM_XTRA_CLEAR:
-        for (i = 0; i < 24; i++) memset(t->display[i], ' ', 80);
-        update_window(t, x, y, x+n, y+1);
-        return (0);
-        
+        t=(term_data *) Term;
+        update_window(t, 0, 0, t->t.scr->w, t->t.scr->h);
+        return 0;
+
       case TERM_XTRA_EVENT:
         if (v)
             return Term_xtra_acn_event(v);
         else
             return Term_xtra_acn_check(v);
-      #endif
 
       case TERM_XTRA_FLUSH:
         if (have_caret)
@@ -563,15 +526,21 @@ errr Term_xtra_acn(int n, int v)
         return 0;
 
       case TERM_XTRA_FRESH:
-        refresh_windows();
+        refresh_window((term_data *) Term);
+        /*refresh_windows();*/
+        return 0;
+
+      case TERM_XTRA_FROSH:
+        t=(term_data *) Term;
+        t->froshed[v]=1;
         return 0;
 
       case TERM_XTRA_INVIS:
-        cursor(0);
+        cursor(Term, 0);
         return 0;
 
       case TERM_XTRA_BEVIS:
-        cursor(1);
+        cursor(Term, 1);
         return 0;
 
       case TERM_XTRA_NOISE:
@@ -583,17 +552,22 @@ errr Term_xtra_acn(int n, int v)
     }
 }
 
-static errr Term_curs_acn(int x, int y, term_data *t)
+static errr Term_curs_acn(int x, int y)
 {
+    term_data *t = (term_data *) Term;
     int oldx = t->curs_x;
     int oldy = t->curs_y;
 
     t->curs_x = x;
     t->curs_y = y;
 
+    if (!t->curs_vis)
+    	return 0;
+
     if ((x != oldx || y != oldy))
     {
         update_window(t, oldx, oldy, oldx+1, oldy+1);
+        t->froshed[oldy]=1;
 
         if (t->ocx == -1)
         {
@@ -603,34 +577,21 @@ static errr Term_curs_acn(int x, int y, term_data *t)
     }
 
     update_window(t, t->curs_x, t->curs_y, t->curs_x+1, t->curs_y+1);
+    t->froshed[t->curs_y]=1;
 
     return 0;
 }
 
-errr Term_wipe_acn(int x, int y, int n, term_data *t)
+errr Term_wipe_acn(int x, int y, int n)
 {
-    int i;
-
-    memset(t->display[y]+x, ' ', n);
-
-    update_window(t, x, y, x+n, y+1);
+    update_window((term_data *) Term, x, y, x+n, y+1);
 
     return 0;
 }
 
-static errr Term_text_acn(int x, int y, int n, byte a, cptr s, term_data *t)
+static errr Term_text_acn(int x, int y, int n, byte a, cptr s)
 {
-    int i;
-    /* Little fiddle to improve compiled code */
-    char *p = t->display[y]+x;
-
-    /* Must be careful to ensure that we only store valid chars (Angband allows
-       the player to choose any value for characters and colours!) */
-    for (i=0; i<n; i++)
-        p[i] = s[i] >= 32 && s[i] != 127 ? s[i] : ' ';
-    memset(t->colour[y]+x, a & 0x0F, n);
-
-    update_window(t, x, y, x+n, y+1);
+    update_window((term_data *) Term, x, y, x+n, y+1);
 
     return 0;
 }
@@ -640,63 +601,13 @@ void Term_init_acn(term *t)
     term_data *term=(term_data *)t;
 
     term->ocx=-1;
-    term->topline=0;
     term->changed.x0=256;
     term->changed.y0=256;
     term->changed.x1=0;
     term->changed.y1=0;
-    memset(term->display, ' ', sizeof(term->display));
     memset(term->olddisp, ' ', sizeof(term->olddisp));
-    memset(term->colour, TERM_WHITE, sizeof(term->colour));
     memset(term->oldcol, TERM_WHITE, sizeof(term->oldcol));
 }
-
-errr Term_curs_acn_screen(int x, int y)
-{
-    return Term_curs_acn(x, y, &screen);
-}
-
-static errr Term_text_acn_screen(int x, int y, int n, byte a, cptr s)
-{
-    return Term_text_acn(x, y, n, a, s, &screen);
-}
-
-static errr Term_wipe_acn_screen(int x, int y, int n)
-{
-    return Term_wipe_acn(x, y, n &screen);
-}
-
-static errr Term_text_acn_recall(int x, int y, int n, byte a, cptr s)
-{
-    return Term_text_acn(x, y, n, a, s, &recall);
-}
-
-static errr Term_wipe_acn_recall(int x, int y, int n)
-{
-    return Term_wipe_acn(x, y, n, &recall);
-}
-
-static errr Term_text_acn_choice(int x, int y, int n, byte a, cptr s)
-{
-    return Term_text_acn(x, y, n, a, s, &choice);
-}
-
-static errr Term_wipe_acn_choice(int x, int y, int n)
-{
-    return Term_wipe_acn(x, y, n, &choice);
-}
-
-#ifndef V278
-static errr Term_text_acn_mirror(int x, int y, int n, byte a, cptr s)
-{
-    return Term_text_acn(x, y, n, a, s, &mirror);
-}
-
-static errr Term_wipe_acn_mirror(int x, int y, int n)
-{
-    return Term_wipe_acn(x, y, n, &mirror);
-}
-#endif
 
 
 /*************************************************************
@@ -735,12 +646,8 @@ static int dataload_handler(wimp_message *message, void *handle)
 
     game_in_progress=1;
     flush();
-    #ifdef V278
-    play_game_mac(FALSE);
-    #else
     play_game(FALSE);
     quit(NULL);
-    #endif
 
     return 1;
 }
@@ -994,9 +901,7 @@ static int colbox_handler(bits event_code, toolbox_action *event,
     update_window(&screen, 0, 0, 80, 24);
     update_window(&choice, 0, 0, 80, 24);
     update_window(&recall, 0, 0, 80, 24);
-    #ifndef V278
     update_window(&mirror, 0, 0, 80, 24);
-    #endif
 
     /* Force the over-clever refresh routine to actually replot
        all characters */
@@ -1006,18 +911,14 @@ static int colbox_handler(bits event_code, toolbox_action *event,
         memset(screen.olddisp, 0, sizeof screen.olddisp);
         memset(choice.olddisp, 0, sizeof choice.olddisp);
         memset(recall.olddisp, 0, sizeof recall.olddisp);
-        #ifndef V278
         memset(mirror.olddisp, 0, sizeof mirror.olddisp);
-        #endif
     }
     else
     {
         memset(screen.oldcol, 0, sizeof screen.oldcol);
         memset(choice.oldcol, 0, sizeof choice.oldcol);
         memset(recall.oldcol, 0, sizeof recall.oldcol);
-        #ifndef V278
         memset(mirror.oldcol, 0, sizeof mirror.oldcol);
-        #endif
     }
 
     refresh_windows();
@@ -1035,18 +936,14 @@ static int defaultcols_handler(bits event_code, toolbox_action *event,
     update_window(&screen, 0, 0, 80, 24);
     update_window(&choice, 0, 0, 80, 24);
     update_window(&recall, 0, 0, 80, 24);
-    #ifndef V278
     update_window(&mirror, 0, 0, 80, 24);
-    #endif
 
     /* Force the over-clever refresh routine to actually replot
        all characters */
     memset(screen.olddisp, 0, sizeof screen.olddisp);
     memset(choice.olddisp, 0, sizeof choice.olddisp);
     memset(recall.olddisp, 0, sizeof recall.olddisp);
-    #ifndef V278
     memset(mirror.olddisp, 0, sizeof mirror.olddisp);
-    #endif
 
     refresh_windows();
 
@@ -1086,10 +983,8 @@ static int iconbar_handler(bits event_code, toolbox_action *event,
         window_to_front(recall.wimp);
     if (term_choice)
         window_to_front(choice.wimp);
-    #ifndef V278
     if (term_mirror)
         window_to_front(mirror.wimp);
-    #endif
 
     window_to_front(screen.wimp);
     grabcaret();
@@ -1122,9 +1017,7 @@ static int showwindowsmenu_handler(bits event_code, toolbox_action *event,
     menu_set_tick(NONE, id->this_obj, menu_Angband, 1);
     menu_set_tick(NONE, id->this_obj, menu_Recall, term_recall != 0);
     menu_set_tick(NONE, id->this_obj, menu_Choice, term_choice != 0);
-    #ifndef V278
     menu_set_tick(NONE, id->this_obj, menu_Mirror, term_mirror != 0);
-    #endif
 
     return 1;
 }
@@ -1143,17 +1036,13 @@ static int coloursmenu_handler(bits event_code, toolbox_action *event,
         update_window(&screen, 0, 0, 80, 24);
         update_window(&choice, 0, 0, 80, 24);
         update_window(&recall, 0, 0, 80, 24);
-        #ifndef V278
         update_window(&mirror, 0, 0, 80, 24);
-        #endif
         /* Force the over-clever refresh routine to actually replot
            all characters */
         memset(screen.oldcol, 0, sizeof screen.oldcol);
         memset(choice.oldcol, 0, sizeof choice.oldcol);
         memset(recall.oldcol, 0, sizeof recall.oldcol);
-        #ifndef V278
         memset(mirror.oldcol, 0, sizeof mirror.oldcol);
-        #endif
         refresh_windows();
         return 1;
     }
@@ -1186,10 +1075,8 @@ static int suppwin_handler(bits event_code, toolbox_action *event,
             term_recall=&t->t;
         else if (t==&choice)
             term_choice=&t->t;
-        #ifndef V278
         else if (t==&mirror)
             term_mirror=&t->t;
-        #endif
         else if (t==&screen)
         {
             if (term_recall)
@@ -1204,17 +1091,13 @@ static int suppwin_handler(bits event_code, toolbox_action *event,
             term_recall=0;
         else if (t==&choice)
             term_choice=0;
-        #ifndef V278
         else if (t==&mirror)
             term_mirror=0;
-        #endif
         else if (t==&screen)
         {
             window_hide(recall.wimp);
             window_hide(choice.wimp);
-            #ifndef V278
             window_hide(mirror.wimp);
-            #endif
         }
         break;
     }
@@ -1323,12 +1206,8 @@ static int new_handler(bits event_code, toolbox_action *event,
 
     game_in_progress=1;
     flush();
-    #ifdef V278
-    play_game_mac(TRUE);
-    #else
     play_game(TRUE);
     quit(NULL);
-    #endif
 
     return 1;
 }
@@ -1492,6 +1371,9 @@ static void do_redraw(wimp_draw *redraw, int more, term_data *t, int blank)
     int nodither = solid_colours || ncolours > 255;
     static char olddef[10]={23,135};
     const static char blockdef[10]={23,135,255,255,255,255,255,255,255,255};
+    char **ch=t->t.scr->c;
+    byte **a=t->t.scr->a;
+    char buf[80];
 
     /* Hackery - define character 135 (not normally defined) as a solid block */
     osword_read_char_definition((osword_char_definition_block *)(olddef+1));
@@ -1527,11 +1409,17 @@ static void do_redraw(wimp_draw *redraw, int more, term_data *t, int blank)
 
             for (y=y0; y<=y1; y++)
             {
-                for (x=x0; x<=x1;)
+                if (!t->froshed[y])
+                    continue;
+
+    	    	for (x=x0; x<=x1; x++)
+    	    	    buf[x]=ch[y][x] >= ' ' ? ch[y][x] : ' ';
+
+                for (x=x0; x<=x1; )
                 {
                     /* Skip past any chars that haven't changed at all*/
-                    while (t->display[y][x] == t->olddisp[y][x] &&
-                           t->colour[y][x] == t->oldcol[y][x] && x<=x1)
+                    while (buf[x] == t->olddisp[y][x] &&
+                           a[y][x] == t->oldcol[y][x] && x<=x1)
                         x++;
 
                     if (x>x1)
@@ -1541,7 +1429,7 @@ static void do_redraw(wimp_draw *redraw, int more, term_data *t, int blank)
 
                     /* Blank any newly blanked characters */
                     ox=x;
-                    while (t->display[y][x] == ' ' && t->olddisp[y][x] != ' ')
+                    while (buf[x] == ' ' && t->olddisp[y][x] != ' ')
                         x++;
 
                     if (x>ox)
@@ -1552,37 +1440,37 @@ static void do_redraw(wimp_draw *redraw, int more, term_data *t, int blank)
                     }
 
                     /* Change the drawing colour if necessary */
-                    if (t->colour[y][x] != c)
+                    if (a[y][x] != c)
                     {
-                        c=t->colour[y][x];
+                        c=a[y][x];
                         if (nodither)
-                            os_set_colour(NONE, coltable[c]);
+                            os_set_colour(NONE, coltable[c&0x0F]);
                         else
-                            colourtrans_set_gcol(palette.entries[c], colourtrans_USE_ECFS,
+                            colourtrans_set_gcol(palette.entries[c&0x0F], colourtrans_USE_ECFS,
                                                 os_ACTION_OVERWRITE, 0);
                     }
 
                     /* Find how many characters have only changed colour */
                     while (x<=x1 &&
-                           t->display[y][x] == t->olddisp[y][x] &&
-                           t->colour[y][x] == c && t->oldcol[y][x] != c)
+                           buf[x] == t->olddisp[y][x] &&
+                           a[y][x] == c && t->oldcol[y][x] != c)
                         x++;
 
                     if (x>ox)
                     {
                         os_plot(os_MOVE_TO, ox*16+rx, 767-y*32+ry);
-                        os_writen(t->display[y]+ox, x-ox);
+                        os_writen(buf+ox, x-ox);
                         continue;
                     }
 
                     /* Now do characters that have actually changed symbol */
-                    while (t->display[y][x] != t->olddisp[y][x] &&
-                           t->colour[y][x] == c && x<=x1)
+                    while (buf[x] != t->olddisp[y][x] &&
+                           a[y][x] == c && x<=x1)
                         x++;
 
                     os_plot(os_MOVE_TO, x*16+rx-1, 767-y*32+ry-31);
                     os_plot(os_PLOT_BG_BY | os_PLOT_RECTANGLE, -(16*(x-ox)-1), +31);
-                    os_writen(t->display[y]+ox, x-ox);
+                    os_writen(buf+ox, x-ox);
                 }
             }
         }
@@ -1605,21 +1493,24 @@ static void do_redraw(wimp_draw *redraw, int more, term_data *t, int blank)
             {
                 os_plot(os_MOVE_TO, x0*16+rx, 767-y*32+ry);
 
-                for (x=x0; x<=x1;)
+    	    	for (x=x0; x<=x1; x++)
+    	    	    buf[x]=ch[y][x] >= ' ' ? ch[y][x] : ' ';
+
+                for (x=x0; x<=x1; )
                 {
-                    c=t->colour[y][x];
+                    c=a[y][x];
                     if (nodither)
-                        os_set_colour(NONE, coltable[c]);
+                        os_set_colour(NONE, coltable[c&0x0F]);
                     else
-                        colourtrans_set_gcol(palette.entries[c], colourtrans_USE_ECFS,
+                        colourtrans_set_gcol(palette.entries[c&0x0F], colourtrans_USE_ECFS,
                                              os_ACTION_OVERWRITE, 0);
 
                     ox=x;
-                    while (x<=x1 && (t->display[y][x] == ' ' || t->colour[y][x] == c))
+                    while (x<=x1 && (buf[x] == ' ' || a[y][x] == c))
                         x++;
 
                     if (ox!=x)
-                        os_writen(t->display[y]+ox, x-ox);
+                        os_writen(buf+ox, x-ox);
                 }
             }
         }
@@ -1662,14 +1553,6 @@ static int redraw_handler(int event_code, wimp_block *event, toolbox_block *id, 
 
 static void update_window(term_data *t, int x0, int y0, int x1, int y1)
 {
-    if (t==&screen && y0==0 && y1==1)
-    {
-        /* It's a status line update - cache this separately */
-        if (x1>t->topline)
-            t->topline=x1;
-        return;
-    }
-
     if (x0<t->changed.x0)
         t->changed.x0=x0;
     if (x1>t->changed.x1)
@@ -1684,27 +1567,12 @@ static void update_window(term_data *t, int x0, int y0, int x1, int y1)
 static void refresh_window(term_data *t)
 {
     wimp_draw redraw;
-    int more;
+    int more, i;
 
     if (t->ocx >= 0)
         t->olddisp[t->ocy][t->ocx]=0;
 
     t->ocx=-1;
-
-    if (t==&screen && t->topline > 0)
-    {
-        redraw.w=t->wimp;
-        redraw.box.x0=0;
-        redraw.box.x1=t->topline*16;
-        redraw.box.y0=768-32;
-        redraw.box.y1=768;
-        more=wimp_update_window(&redraw);
-        do_redraw(&redraw, more, t, TRUE);
-
-        memcpy(t->olddisp[0], t->display[0], t->topline);
-        memcpy(t->oldcol[0], t->colour[0], t->topline);
-        t->topline=0;
-    }
 
     if (t->changed.x1 <= t->changed.x0 || t->changed.y1 <= t->changed.y0)
         return;
@@ -1723,8 +1591,14 @@ static void refresh_window(term_data *t)
     t->changed.y0=256;
     t->changed.x1=0;
     t->changed.y1=0;
-    memcpy(t->olddisp, t->display, sizeof(t->olddisp));
-    memcpy(t->oldcol, t->colour, sizeof(t->oldcol));
+
+    for (i=0; i<24; i++)
+    {
+    	memcpy(t->olddisp[i], t->t.scr->c[i], 80);
+    	memcpy(t->oldcol[i], t->t.scr->a[i], 80);
+    }
+
+    memset(t->froshed, 0, sizeof t->froshed);
 }
 
 static void refresh_windows(void)
@@ -1732,9 +1606,7 @@ static void refresh_windows(void)
     refresh_window(&screen);
     refresh_window(&recall);
     refresh_window(&choice);
-    #ifndef V278
     refresh_window(&mirror);
-    #endif
 }
 
 /*************************************************************
@@ -1871,15 +1743,11 @@ static void final_acn(void)
 
 static void init_stuff(void)
 {
-#ifdef V278
-    get_file_paths();
-#else
     char buf[1024];
 
     strcpy(buf, "Angband:");
 
     init_file_paths(buf);
-#endif
 }
 
 
@@ -1897,9 +1765,6 @@ int main(int argc, char *argv[])
     /* Get the file paths */
     init_stuff();
 
-    /* Open the "scorefile" (with full permissions) */
-    /*init_scorefile();*/
-
     /* Initialise the Toolbox, and load user preferences */
     init_acn();
 
@@ -1912,7 +1777,6 @@ int main(int argc, char *argv[])
     /* Initialize the arrays */
     init_some_arrays();
 
-#ifndef V278
     /* No name (yet) */
     strcpy(player_name, "");
 
@@ -1921,7 +1785,6 @@ int main(int argc, char *argv[])
 
     /* Hack -- Use the "pref-acn.prf" file */
     ANGBAND_SYS = "acn";
-#endif
 
     initialised=1;
 
@@ -1938,12 +1801,8 @@ int main(int argc, char *argv[])
         game_in_progress=1;
         pause_line(23);
         flush();
-        #ifdef V278
-        play_game_mac(FALSE);
-        #else
         play_game(FALSE);
         quit(NULL);
-        #endif
     }
 
     for (;;)
@@ -1952,6 +1811,27 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+static void term_data_link(term_data *td, int keys)
+{
+    term *t= &td->t;
+
+    term_init(t, 80, 24, keys);
+
+    t->soft_cursor = FALSE;
+    t->scan_events = FALSE;
+    t->dark_blanks = TRUE;
+
+    t->init_hook = Term_init_acn;
+
+    t->xtra_hook = Term_xtra_acn;
+    t->wipe_hook = Term_wipe_acn;
+    t->curs_hook = Term_curs_acn;
+    t->text_hook = Term_text_acn;
+
+    t->data = (vptr) td;
+
+    Term_activate(t);
+}
 
 
 static errr init_acn(void)
@@ -2010,10 +1890,8 @@ static errr init_acn(void)
     choice.wimp=window_get_wimp_handle(NONE, choice.window);
     screen.window=toolbox_create_object(NONE, (toolbox_id)"Screen");
     screen.wimp=window_get_wimp_handle(NONE, screen.window);
-    #ifndef V278
     mirror.window=toolbox_create_object(NONE, (toolbox_id)"Mirror");
     mirror.wimp=window_get_wimp_handle(NONE, mirror.window);
-    #endif
 
     palette=default_palette;
 
@@ -2060,11 +1938,9 @@ static errr init_acn(void)
     if (!r)
         r=event_register_toolbox_handler(event_ANY, action_OpenAngband,
                                                     openwindow_handler, &screen);
-    #ifndef V278
     if (!r)
         r=event_register_toolbox_handler(event_ANY, action_OpenMirror,
                                                     openwindow_handler, &mirror);
-    #endif
     if (!r)
         r=event_register_toolbox_handler(event_ANY, action_DefaultCols,
                                                     defaultcols_handler, 0);
@@ -2095,11 +1971,9 @@ static errr init_acn(void)
     if (!r)
         r=event_register_toolbox_handler(choice.window, action_WINDOW_ABOUT_TO_BE_SHOWN,
                                          suppwin_handler, &choice);
-    #ifndef V278
     if (!r)
         r=event_register_toolbox_handler(mirror.window, action_WINDOW_ABOUT_TO_BE_SHOWN,
                                          suppwin_handler, &mirror);
-    #endif
     if (!r)
         r=event_register_toolbox_handler(screen.window, action_WINDOW_ABOUT_TO_BE_SHOWN,
                                          suppwin_handler, &screen);
@@ -2109,11 +1983,9 @@ static errr init_acn(void)
     if (!r)
         r=event_register_toolbox_handler(choice.window, action_WINDOW_DIALOGUE_COMPLETED,
                                          suppwin_handler, &choice);
-    #ifndef V278
     if (!r)
         r=event_register_toolbox_handler(mirror.window, action_WINDOW_DIALOGUE_COMPLETED,
                                          suppwin_handler, &mirror);
-    #endif
     if (!r)
         r=event_register_toolbox_handler(screen.window, action_WINDOW_DIALOGUE_COMPLETED,
                                          suppwin_handler, &screen);
@@ -2132,11 +2004,9 @@ static errr init_acn(void)
     if (!r)
         r=event_register_wimp_handler(recall.window, wimp_REDRAW_WINDOW_REQUEST,
                                                      redraw_handler, &recall);
-    #ifndef V278
     if (!r)
         r=event_register_wimp_handler(mirror.window, wimp_REDRAW_WINDOW_REQUEST,
                                                      redraw_handler, &mirror);
-    #endif
     if (!r)
         r=event_register_wimp_handler(screen.window, wimp_GAIN_CARET,
                                                      caret_handler, 0);
@@ -2148,52 +2018,11 @@ static errr init_acn(void)
 
     atexit(final_acn);
 
-    e=term_init(&screen.t, 80, 24, 16);
-    if (e)
-        return e;
+    term_data_link(&screen, 256);
 
-    screen.t.xtra_hook = Term_xtra_acn;
-    screen.t.curs_hook = Term_curs_acn_screen;
-    screen.t.wipe_hook = Term_wipe_acn_screen;
-    screen.t.text_hook = Term_text_acn_screen;
-    screen.t.init_hook = Term_init_acn;
-    screen.t.soft_cursor = FALSE;
-    screen.t.scan_events = FALSE;
-    screen.t.dark_blanks = TRUE;
-
-    e=term_init(&choice.t, 80, 24, 16);
-    if (!e)
-        e=term_init(&recall.t, 80, 24, 16);
-    #ifndef V278
-    if (!e)
-        e=term_init(&mirror.t, 80, 24, 16);
-    #endif
-
-    if (e)
-        return e;
-
-    choice.t.text_hook = Term_text_acn_choice;
-    choice.t.wipe_hook = Term_wipe_acn_choice;
-    choice.t.init_hook = Term_init_acn;
-
-    recall.t.text_hook = Term_text_acn_recall;
-    recall.t.wipe_hook = Term_wipe_acn_recall;
-    recall.t.init_hook = Term_init_acn;
-
-    #ifndef V278
-    mirror.t.text_hook = Term_text_acn_mirror;
-    mirror.t.wipe_hook = Term_wipe_acn_mirror;
-    mirror.t.init_hook = Term_init_acn;
-    #endif
-
-    if (!e)
-        e=Term_activate(&choice.t);
-    if (!e)
-        e=Term_activate(&recall.t);
-    #ifndef V278
-    if (!e)
-        e=Term_activate(&mirror.t);
-    #endif
+    term_data_link(&choice, 16);
+    term_data_link(&recall, 16);
+    term_data_link(&mirror, 16);
 
     if (toolbox_get_object_info(NONE, choice.window) & toolbox_INFO_SHOWING)
         term_choice=&choice.t;
@@ -2201,10 +2030,8 @@ static errr init_acn(void)
     if (toolbox_get_object_info(NONE, recall.window) & toolbox_INFO_SHOWING)
         term_recall=&recall.t;
 
-    #ifndef V278
     if (toolbox_get_object_info(NONE, mirror.window) & toolbox_INFO_SHOWING)
         term_mirror=&mirror.t;
-    #endif
 
     /* Check initial palette */
     palette_handler(0, 0);

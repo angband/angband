@@ -750,9 +750,6 @@ static errr Term_wipe_gcu(int x, int y, int n)
         while (n-- > 0) addch(' ');
     }
 
-    /* Hack -- Fix the cursor */
-    move(y,x);
-
     /* Success */
     return (0);
 }

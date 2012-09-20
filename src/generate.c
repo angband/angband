@@ -1652,7 +1652,7 @@ static bool vault_aux_animal(int r_idx)
     monster_race *r_ptr = &r_info[r_idx];
 
     /* Require animal (basic) */
-    if (!strchr("BCFIRSYZabceflqr", r_ptr->r_char)) return (FALSE);
+    if (!strchr("BCFIKMRSYZabceflqrw", r_ptr->r_char)) return (FALSE);
 
     /* Hack -- Skip unique monsters */
     if (r_ptr->flags1 & RF1_UNIQUE) return (FALSE);

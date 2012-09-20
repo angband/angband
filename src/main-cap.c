@@ -698,7 +698,7 @@ static void keymap_game_prepare(void)
     game_ltchars.t_werasc = (char)-1;
     game_ltchars.t_lnextc = (char)-1;
 
-    /* XXX XXX XXX XXX XXX Verify this before use */
+    /* XXX XXX XXX XXX Verify this before use */
     /* Hack -- Turn off "echo" and "canonical" mode */
     /* game_termios.c_lflag &= ~(ECHO | ICANON); */
     game_ttyb.flag &= ~(ECHO | ICANON);
@@ -832,27 +832,24 @@ static errr Term_wipe_cap(int x, int y, int n)
 {
     int dx;
 
+    /* Place the cursor */
+    Term_curs_cap(x, y);
+
     /* Wipe to end of line */
-    if (w >= 80)
+    if (x + n >= 80)
     {
-        Term_curs_cap(x, y);
         do_ce();
     }
 
     /* Wipe region */
     else
     {
-        Term_curs_cap(x, y);
-
         for (dx = 0; dx < n; ++dx)
         {
             putc(' ', stdout);
             curx++;
         }
     }
-
-    /* Hack -- Fix the cursor */
-    Term_curs_cap(x, y);
 
     /* Success */
     return (0);

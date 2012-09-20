@@ -70,6 +70,31 @@ bool enter_wiz_mode(void)
 }
 
 
+/*
+ * XXX XXX XXX Move this function
+ */
+static void do_cmd_pref_one(void)
+{
+    char buf[80];
+
+    /* Wipe it */
+    strcpy(buf, "");
+
+    /* Prompt */
+    prt("Pref: ", 0, 0);
+
+    /* Ask */
+    if (askfor_aux(buf, 80)) {
+
+        /* Process XXX XXX XXX */
+        (void)process_pref_file_aux(buf);
+    }
+
+    /* Clear */
+    prt("", 0, 0);
+}
+
+
 
 /*
  * Parse and execute the current command
@@ -369,13 +394,13 @@ void process_command(void)
 
         /*** System Commands ***/
 
-        /* Define macro */
+        /* User interface */
         case '@':
-            do_cmd_macro(FALSE); break;
+            (void)Term_user(0); break;
 
         /* Define command macro */
         case '!':
-            do_cmd_macro(TRUE); break;
+            do_cmd_macro(); break;
 
         /* Define keymap */
         case '&':
@@ -388,6 +413,10 @@ void process_command(void)
         /* Manage preference files */
         case '%':
             do_cmd_prefs(); break;
+
+        /* Single line from a pref file */
+        case '"':
+            do_cmd_pref_one(); break;
 
 
         /*** Misc Commands ***/
@@ -403,6 +432,10 @@ void process_command(void)
         /* Repeat level feeling */
         case CTRL('F'):
             do_cmd_feeling(); break;
+
+        /* Show previous message */
+        case CTRL('O'):
+            prt(format("> %s", message_str(0)), 0, 0); break;
 
         /* Show previous messages */
         case CTRL('P'):
@@ -436,13 +469,13 @@ void process_command(void)
 
 #ifndef ANGBAND_LITE
 
-        /* Dump screen */
+        /* Load "screen dump" */
         case '(':
-            do_cmd_dump(FALSE); break;
+            do_cmd_load_screen(); break;
 
-        /* Dump screen (with colors) */
+        /* Save "screen dump" */
         case ')':
-            do_cmd_dump(TRUE); break;
+            do_cmd_save_screen(); break;
 
 #endif
 
@@ -501,41 +534,6 @@ static int command_takes_rep(char c)
         case 'g': /* Stay still */
         case 's': /* Search */
 
-            return TRUE;
-    }
-
-    /* Assume no count allowed */
-    return (FALSE);
-}
-
-
-
-/*
- * Check whether this command will accept an argument.
- *
- * Such commands allow the use of the "repeat" formalism, but they
- * do not "repeat", and instead apply special parsing to the "count".
- *
- * These commands are supplied an "extra" argument in the global variable
- * "command_arg".  It is (currently) always an integer from 0 to 9999.
- *
- * Note -- this routine applies ONLY to "Angband Commands".
- */
-static int command_takes_arg(char c)
-{
-    /* Examine the command */
-    switch (c) {
-
-        /* Hack -- Resting */
-        case 'R': /* Rest */
-            return TRUE;
-
-        /* Hack -- Borg Commands */
-        case CTRL('Z'):
-            return TRUE;
-
-        /* Hack -- Wizard Commands */
-        case CTRL('A'):
             return TRUE;
     }
 
@@ -604,6 +602,7 @@ void request_command(void)
 
     /* Hack -- auto-commands */
     if (command_new) {
+        msg_print(NULL);
         prt("", 0, 0);
         cmd = command_new;
         command_new = 0;
@@ -619,7 +618,7 @@ void request_command(void)
     }
 
 
-    /* Special command -- Get a "count" for another command */
+    /* Command Count */
     if (cmd == '0') {
 
         /* Begin the input */
@@ -632,24 +631,37 @@ void request_command(void)
             cmd = inkey();
 
             /* Simple editing */
-            if (cmd == DELETE || cmd == CTRL('H')) {
+            if ((cmd == DELETE) || (cmd == CTRL('H'))) {
+
+                /* Delete a digit */
                 i = i / 10;
+
+                /* Show current count */
                 prt(format("Repeat count: %d", i), 0, 0);
             }
 
             /* Actual numeric data */
             else if (cmd >= '0' && cmd <= '9') {
 
-                /* Allow counts up to 9999 */
-                if (i > 999) {
+                /* Stop count at 9999 */
+                if (i >= 1000) {
+
+                    /* Warn */
                     bell();
+
+                    /* Limit */
+                    i = 9999;
                 }
 
-                /* Incorporate that digit */
+                /* Increase count */
                 else {
+
+                    /* Incorporate that digit */
                     i = i * 10 + cmd - '0';
-                    prt(format("Repeat count: %d", i), 0, 0);
                 }
+
+                /* Show current count */
+                prt(format("Repeat count: %d", i), 0, 0);
             }
 
             /* Exit on "unusable" input */
@@ -658,14 +670,20 @@ void request_command(void)
             }
         }
 
-        /* Let a "non-count" default to 99 repetitions */
+        /* Handle "zero" */
         if (i == 0) {
+
+            /* Default to 99 */
             i = 99;
+
+            /* Show current count */
             prt(format("Repeat count: %d", i), 0, 0);
         }
 
         /* Hack -- white-space means "enter command now" */
         if ((cmd == ' ') || (cmd == '\n') || (cmd == '\r')) {
+        
+            /* Get a real command */
             (void)(get_com("Command: ", &cmd));
         }
     }
@@ -723,7 +741,7 @@ void request_command(void)
     /* Make sure a "Count" is legal for this command */
     if ((i > 0) && (command_cmd != ESCAPE)) {
 
-        /* Commands that can be repeated */
+        /* Some commands can be "repeated" */
         if (command_takes_rep(command_cmd)) {
 
             /* Save the count (this time counts) */
@@ -736,21 +754,11 @@ void request_command(void)
             handle_stuff();
         }
 
-        /* Commands that take arguments */
-        else if (command_takes_arg(command_cmd)) {
+        /* The rest may take an "argument" */
+        else {
 
             /* Save the argument */
             command_arg = i;
-        }
-
-        /* Invalid combination */
-        else {
-
-            /* Abort gracefully */
-            msg_print("Invalid command with a count.");
-
-            /* Forget the command */
-            command_cmd = ESCAPE;
         }
     }
 

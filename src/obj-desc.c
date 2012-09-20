@@ -694,12 +694,13 @@ static byte object_k_char(int i)
 
 /*
  * Reset the "visual" lists
+ *
+ * This is useful for switching on/off the "use_graphics" flag.
  */
 void reset_visuals(void)
 {
     int i;
 
-    /* XXX XXX XXX XXX XXX */
     /* Extract some info about terrain features */
     for (i = 0; i < 64; i++) {
 
@@ -708,16 +709,6 @@ void reset_visuals(void)
         /* Assume we will use the underlying values */
         f_ptr->z_attr = f_ptr->f_attr;
         f_ptr->z_char = f_ptr->f_char;
-    }
-    
-    /* Extract attr/chars for equippy items (by tval) */
-    for (i = 0; i < 128; i++) {
-
-        /* Extract a default attr */
-        tval_to_attr[i] = default_tval_to_attr(i);
-
-        /* Extract a default char */
-        tval_to_char[i] = default_tval_to_char(i);
     }
 
     /* Extract some info about objects */
@@ -744,6 +735,16 @@ void reset_visuals(void)
 
         /* Extract the "underlying" char */
         r_info[i].l_char = r_info[i].r_char;
+    }
+    
+    /* Extract attr/chars for equippy items (by tval) */
+    for (i = 0; i < 128; i++) {
+
+        /* Extract a default attr */
+        tval_to_attr[i] = default_tval_to_attr(i);
+
+        /* Extract a default char */
+        tval_to_char[i] = default_tval_to_char(i);
     }
 }
 

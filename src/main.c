@@ -37,7 +37,8 @@ static bool is_wizard(int uid)
 
 
     /* Access the "wizards.txt" file */
-    sprintf(buf, "%s%s", ANGBAND_DIR_FILE, "wizards.txt");
+    strcpy(buf, ANGBAND_DIR_FILE);
+    strcat(buf, "wizards.txt");
 
     /* Open the wizard file */
     fp = my_fopen(buf, "r");
@@ -96,15 +97,15 @@ __near long __stack = 32768L;
 
 
 /*
- * Set the stack size (see main-286.c")
+ * Set the stack size and overlay buffer (see main-286.c")
+ *
+ * XXX XXX XXX Note that "<dos.h>" redefines "delay()".
  */
 #ifdef USE_286
-# define delay delay_hack
 # include <dos.h>
-# undef delay
 extern unsigned _stklen = 32768U;
+extern unsigned _ovrbuffer = 0x1500;
 #endif
-
 
 /*
  * Initialize and verify the file paths, and the score file.
@@ -118,18 +119,21 @@ extern unsigned _stklen = 32768U;
  * these two things works...
  *
  * We must ensure that the path ends with "PATH_SEP" if needed.
+ *
+ * Note that the "path" must be "Angband:" for the Amiga, and it
+ * is ignored for "VM/ESA", so I just combined the two.
  */
 static void init_stuff(void)
 {
     char path[1024];
 
 
-#if defined(AMIGA)
+#if defined(AMIGA) || defined(VM)
 
     /* Hack -- prepare "path" */
     strcpy(path, "Angband:");
 
-#else
+#else /* AMIGA / VM */
 
     cptr tail;
     
@@ -142,7 +146,7 @@ static void init_stuff(void)
     /* Hack -- Add a path separator (only if needed) */
     if (!suffix(path, PATH_SEP)) strcat(path, PATH_SEP);
 
-#endif
+#endif /* AMIGA / VM */
 
     /* Initialize */
     init_file_paths(path);
@@ -167,6 +171,15 @@ int main(int argc, char *argv[])
 
     /* Save the "program name" */
     argv0 = argv[0];
+
+
+#ifdef USE_286
+    /* Attempt to use XMS (or EMS) memory for swap space */
+    if (_OvrInitExt(0L, 0L))
+    {
+       _OvrInitEms(0,0,64);
+    }
+#endif
 
 
 #ifdef SET_UID
@@ -332,7 +345,7 @@ int main(int argc, char *argv[])
             puts("  o       Use the original command set");
             puts("  r       Use the rogue-like command set");
             puts("  u<name> Play with your <name> savefile");
-            puts("  s<num>  Show high scores.  Show <num> scores, or first 10");
+            puts("  s<num>  Show <num> high scores (or top 10).");
             puts("");
 
             /* XXX XXX XXX Command line option setters? */

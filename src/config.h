@@ -238,6 +238,43 @@
 
 
 /*
+ * OPTION: Delay the loading of the "f_text" array until it is actually
+ * needed, saving ~1K, since "feature" descriptions are unused.
+ */
+#define DELAY_LOAD_F_TEXT
+
+/*
+ * OPTION: Delay the loading of the "k_text" array until it is actually
+ * needed, saving ~1K, since "object" descriptions are unused.
+ */
+#define DELAY_LOAD_K_TEXT
+
+/*
+ * OPTION: Delay the loading of the "a_text" array until it is actually
+ * needed, saving ~1K, since "artifact" descriptions are unused.
+ */
+#define DELAY_LOAD_A_TEXT
+
+/*
+ * OPTION: Delay the loading of the "e_text" array until it is actually
+ * needed, saving ~1K, since "ego-item" descriptions are unused.
+ */
+#define DELAY_LOAD_E_TEXT
+
+/*
+ * OPTION: Delay the loading of the "r_text" array until it is actually
+ * needed, saving ~60K, but "simplifying" the "monster" descriptions.
+ */
+/* #define DELAY_LOAD_R_TEXT */
+
+/*
+ * OPTION: Delay the loading of the "v_text" array until it is actually
+ * needed, saving ~1K, but "destroying" the "vault" generation.
+ */
+/* #define DELAY_LOAD_V_TEXT */
+
+
+/*
  * OPTION: Handle signals
  */
 #define HANDLE_SIGNALS
@@ -451,6 +488,7 @@
  * OPTION: Default fonts (when using X11)
  */
 #define DEFAULT_X11_FONT_SCREEN		DEFAULT_X11_FONT
+#define DEFAULT_X11_FONT_MIRROR		DEFAULT_X11_FONT
 #define DEFAULT_X11_FONT_RECALL		DEFAULT_X11_FONT
 #define DEFAULT_X11_FONT_CHOICE		DEFAULT_X11_FONT
 
@@ -473,6 +511,25 @@
 
 
 /*
+ * Hack -- Save ~60K for DOS-286 version
+ */
+#ifdef USE_286
+# undef DELAY_LOAD_R_TEXT
+# define DELAY_LOAD_R_TEXT
+#endif
+
+/*
+ * Hack -- React to the "USE_286" flag
+ */
+#ifdef USE_286
+# undef GRAPHIC_RECALL
+# undef GRAPHIC_CHOICE
+# undef GRAPHIC_MIRROR
+# define ANGBAND_LITE
+#endif
+
+
+/*
  * OPTION: Attempt to minimize the size of the game
  */
 /* #define ANGBAND_LITE */
@@ -489,9 +546,5 @@
 # undef ALLOW_WIZARD
 # undef ALLOW_SPOILERS
 # undef ALLOW_TITLES
-# undef GRAPHIC_RECALL
-# undef GRAPHIC_CHOICE
-# undef GRAPHIC_MIRROR
 #endif
-
 

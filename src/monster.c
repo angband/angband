@@ -420,7 +420,8 @@ s16b get_mon_num(int level)
 
 
         /* Hack -- "unique" monsters must be "unique" */
-        if ((r_ptr->flags1 & RF1_UNIQUE) && (r_ptr->cur_num >= r_ptr->max_num)) {
+        if ((r_ptr->flags1 & RF1_UNIQUE) &&
+            (r_ptr->cur_num >= r_ptr->max_num)) {
             continue;
         } 
 
@@ -749,8 +750,7 @@ void update_mon(int m_idx, bool dist)
     /* The monster is on the current "panel" */
     if (panel_contains(fy, fx)) {
 
-        /* Get the monster race (to check flags) */
-        monster_race *r_ptr = &r_info[m_ptr->r_idx];
+        cave_type *c_ptr = &cave[fy][fx];
 
         /* Telepathy can see all "nearby" monsters with "minds" */
         if (p_ptr->telepathy && (m_ptr->cdis <= MAX_SIGHT)) {
@@ -784,14 +784,13 @@ void update_mon(int m_idx, bool dist)
         }
 
         /* Normal line of sight, and player is not blind */
-        if (player_has_los_bold(fy, fx) && (!p_ptr->blind)) {
+        if ((c_ptr->feat & CAVE_VIEW) && (!p_ptr->blind)) {
 
             /* Remember line of sight */
             do_viewable = TRUE;
 
-            /* Infravision is able to see "nearby" monsters */
-            if (p_ptr->see_infra &&
-                (m_ptr->cdis <= (unsigned)(p_ptr->see_infra))) {
+            /* Use "infravision" */
+            if (m_ptr->cdis <= (byte)(p_ptr->see_infra)) {
 
                 /* Infravision only works on "warm" creatures */
                 /* Below, we will need to know that infravision failed */
@@ -801,8 +800,8 @@ void update_mon(int m_idx, bool dist)
                 if (!do_cold_blood) flag = TRUE;
             }
 
-            /* Check for "illumination" of the monster grid */
-            if (player_can_see_bold(fy, fx)) {
+            /* Use "illumination" */
+            if (c_ptr->feat & (CAVE_LITE | CAVE_GLOW)) {
 
                 /* Take note of invisibility */
                 if (r_ptr->flags2 & RF2_INVISIBLE) do_invisible = TRUE;
@@ -907,7 +906,7 @@ void update_monsters(bool dist)
  * This routine refuses to place out-of-depth "FORCE_DEPTH" monsters.
  *
  * XXX XXX XXX Use special "here" and "dead" flags for unique monsters,
- * remove old "cur_num" and "max_num" fields.  XXX XXX XXX XXX
+ * remove old "cur_num" and "max_num" fields.
  *
  * XXX XXX XXX Actually, do something similar for artifacts, to simplify
  * the "preserve" mode, and to make the "what artifacts" flag more useful.
@@ -1459,8 +1458,8 @@ static void set_ghost(cptr pn)
       case 6:
       case 7:
         sprintf(name, "%s, the Mummy", gb_name);
-        r_ptr->r_char = 'M';
-        r_ptr->r_attr = TERM_SLATE;
+        r_ptr->r_char = 'z';
+        r_ptr->r_attr = TERM_WHITE;
         r_ptr->flags1 |= (RF1_DROP_1D2);
         r_ptr->flags2 |= (RF2_OPEN_DOOR | RF2_BASH_DOOR);
         r_ptr->flags3 |= (RF3_IM_COLD);
@@ -1710,7 +1709,7 @@ bool alloc_ghost(void)
     if (randint((dun_level / 2) + 11) < 14) return (FALSE);
 
 
-    /* Choose a bones file */
+    /* XXX XXX XXX Choose a bones file */
     sprintf(tmp, "%sbone.%03d", ANGBAND_DIR_BONE, dun_level);
 
     /* Open the bones file */
@@ -1899,8 +1898,8 @@ static bool summon_specific_okay(int r_idx)
                     !(r_ptr->flags1 & RF1_UNIQUE));
             break;
 
-        case SUMMON_REPTILE:
-            okay = ((r_ptr->r_char == 'R') &&
+        case SUMMON_HYDRA:
+            okay = ((r_ptr->r_char == 'M') &&
                     !(r_ptr->flags1 & RF1_UNIQUE));
             break;
 
@@ -2859,7 +2858,7 @@ static void process_monster(int m_idx)
                 else if ((c_ptr->feat & 0x3F) < 0x28) {
 
 #if 0
-                    /* XXX XXX XXX XXX XXX Old test (pval 10 to 20) */
+                    /* XXX XXX XXX XXX Old test (pval 10 to 20) */
                     if (randint((m_ptr->hp + 1) * (50 + i_ptr->pval)) <
                         40 * (m_ptr->hp - 10 - i_ptr->pval))
 #endif
@@ -2880,7 +2879,7 @@ static void process_monster(int m_idx)
             if (may_bash && (r_ptr->flags2 & RF2_BASH_DOOR)) {
 
 #if 0
-                /* XXX XXX XXX XXX XXX Old test (pval 10 to 20) */
+                /* XXX XXX XXX XXX Old test (pval 10 to 20) */
                 if (randint((m_ptr->hp + 1) * (50 + i_ptr->pval)) <
                     40 * (m_ptr->hp - 10 - i_ptr->pval))
 #endif
@@ -2938,7 +2937,7 @@ static void process_monster(int m_idx)
             if (randint(BREAK_GLYPH) < r_ptr->level) {
 
                 /* Describe observable breakage */
-                if (player_can_see_bold(ny, nx)) {
+                if (c_ptr->feat & CAVE_MARK) {
                     msg_print("The rune of protection is broken!");
                 }
 
@@ -3125,7 +3124,7 @@ static void process_monster(int m_idx)
                         if (m_ptr->ml && player_has_los_bold(ny, nx)) {
 
                             /* Dump a message */
-                            msg_format("%^s tries to pick up %s, but stops suddenly!",
+                            msg_format("%^s tries to pick up %s, but fails.",
                                        m_name, i_name);
                         }
                     }

@@ -1498,12 +1498,36 @@ struct term_data {
 
 
 /*
- * The three term_data's
+ * The main screen
  */
 static term_data screen;
+
+#ifdef GRAPHIC_MIRROR
+
+/*
+ * The (optional) "mirror" window
+ */
+static term_data mirror;
+
+#endif
+
+#ifdef GRAPHIC_RECALL
+
+/*
+ * The (optional) "recall" window
+ */
 static term_data recall;
+
+#endif
+
+#ifdef GRAPHIC_CHOICE
+
+/*
+ * The (optional) "choice" window
+ */
 static term_data choice;
 
+#endif
 
 
 
@@ -1753,6 +1777,26 @@ static errr CheckEvent(bool wait)
   }
 
 
+#ifdef GRAPHIC_MIRROR
+
+  /* Mirror window, inner window */
+  else if (xev->xany.window == mirror.inner->win)
+  {
+    td = &screen;
+    iwin = td->inner;
+  }
+
+  /* Mirror window, outer window */
+  else if (xev->xany.window == mirror.outer->win)
+  {
+    td = &screen;
+    iwin = td->outer;
+  }
+
+#endif
+
+#ifdef GRAPHIC_RECALL
+
   /* Recall window, inner window */
   else if (xev->xany.window == recall.inner->win)
   {
@@ -1767,6 +1811,9 @@ static errr CheckEvent(bool wait)
     iwin = td->outer;
   }
 
+#endif
+
+#ifdef GRAPHIC_CHOICE
 
   /* Choice window, inner window */
   else if (xev->xany.window == choice.inner->win)
@@ -1781,6 +1828,8 @@ static errr CheckEvent(bool wait)
     td = &choice;
     iwin = td->outer;
   }
+
+#endif
 
 
   /* Unknown window */
@@ -2218,6 +2267,25 @@ errr init_x11(void)
   term_screen = Term;
 
 
+#ifdef GRAPHIC_MIRROR
+
+  /* Check environment for "mirror" font */
+  fnt_name = getenv("ANGBAND_X11_FONT_MIRROR");
+
+  /* Check environment for "base" font */
+  if (!fnt_name) fnt_name = getenv("ANGBAND_X11_FONT");
+
+  /* No environment variables, use the default */
+  if (!fnt_name) fnt_name = DEFAULT_X11_FONT_MIRROR;
+
+  /* Initialize the recall window */
+  term_data_init(&mirror, FALSE, "Mirror", fnt_name);
+  term_recall = Term;
+
+#endif
+
+#ifdef GRAPHIC_RECALL
+
   /* Check environment for "recall" font */
   fnt_name = getenv("ANGBAND_X11_FONT_RECALL");
 
@@ -2231,6 +2299,9 @@ errr init_x11(void)
   term_data_init(&recall, FALSE, "Recall", fnt_name);
   term_recall = Term;
 
+#endif
+
+#ifdef GRAPHIC_CHOICE
 
   /* Check environment for "choice" font */
   fnt_name = getenv("ANGBAND_X11_FONT_CHOICE");
@@ -2244,6 +2315,8 @@ errr init_x11(void)
   /* Initialize the choice window */
   term_data_init(&choice, FALSE, "Choice", fnt_name);
   term_choice = Term;
+
+#endif
 
 
   /* Activate the "Angband" window screen */

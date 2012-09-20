@@ -99,7 +99,7 @@ I:.:w
 # 0x03 --> glyph of warding
 
 N:3:glyph of warding
-I:^:y
+I:;:y
 
 # 0x04 --> open door
 
@@ -164,7 +164,7 @@ I:8:y
 # 0x10 --> visible trap -- trap door
 
 N:16:trap door
-I:^:s
+I:^:w
 
 # 0x11 --> visible trap -- open pit
 
@@ -334,7 +334,7 @@ I:::w
 # 0x32 --> magma vein
 
 N:50:magma vein
-I:%:w
+I:%:s
 
 # 0x33 --> quartz vein
 
@@ -344,7 +344,7 @@ I:%:w
 # 0x34 --> magma vein + treasure
 
 N:52:magma vein
-I:%:w
+I:%:s
 
 # 0x35 --> quartz vein + treasure
 
@@ -354,12 +354,12 @@ I:%:w
 # 0x36 --> magma vein + known treasure
 
 N:54:magma vein with treasure
-I:*:w
+I:*:o
 
 # 0x37 --> quartz vein + known treasure
 
 N:55:quartz vein with treasure
-I:*:w
+I:*:o
 
 # 0x38 --> granite wall -- basic
 

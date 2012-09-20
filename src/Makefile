@@ -243,64 +243,66 @@ depend:
 
 
 #
-# Basic header files
+# Hack -- some file dependencies
 #
 
-#h-basic.h: h-define.h h-type.h h-system.h h-config.h
+HDRS = \
+  h-basic.h \
+  h-define.h h-type.h h-system.h h-config.h
 
-#angband.h: config.h defines.h types.h externs.h \
-#angband.h: term.h z-util.h z-virt.h z-form.h h-basic.h
+INCS = \
+  angband.h \
+  config.h defines.h types.h externs.h \
+  term.h z-util.h z-virt.h z-form.h $(HDRS)
 
 
-# DO NOT DELETE THIS LINE -- make depend depends on it.
-
-birth.o: birth.c angband.h
-borg-aux.o: borg-aux.c angband.h borg-aux.h borg-ext.h
+birth.o: birth.c $(INCS)
+borg-aux.o: borg-aux.c $(INCS) borg-aux.h borg-ext.h
 borg-aux.o: borg-obj.h borg-map.h borg.h
-borg-ben.o: borg-ben.c angband.h borg-ben.h borg-aux.h borg-ext.h
+borg-ben.o: borg-ben.c $(INCS) borg-ben.h borg-aux.h borg-ext.h
 borg-ben.o: borg-obj.h borg-map.h borg.h
-borg-ext.o: borg-ext.c angband.h borg-ext.h
+borg-ext.o: borg-ext.c $(INCS) borg-ext.h
 borg-ext.o: borg-obj.h borg-map.h borg.h
-borg-obj.o: borg-obj.c angband.h borg-obj.h borg.h
-borg-map.o: borg-map.c angband.h borg-map.h borg.h
-borg.o: borg.c angband.h borg.h
-cave.o: cave.c angband.h
-cmd1.o: cmd1.c angband.h
-cmd2.o: cmd2.c angband.h
-cmd3.o: cmd3.c angband.h
-cmd4.o: cmd4.c angband.h
-cmd5.o: cmd5.c angband.h
-cmd6.o: cmd6.c angband.h
-dungeon.o: dungeon.c angband.h
-effects.o: effects.c angband.h
-files.o: files.c angband.h
-generate.o: generate.c angband.h
-init.o: init.c angband.h
-io.o: io.c angband.h
-main-cap.o: main-cap.c angband.h
-main-gcu.o: main-gcu.c angband.h
-main-x11.o: main-x11.c angband.h
-main-xaw.o: main-xaw.c angband.h
-main.o: main.c angband.h
-melee.o: melee.c angband.h
-misc.o: misc.c angband.h
-mon-desc.o: mon-desc.c angband.h
-monster.o: monster.c angband.h
-obj-desc.o: obj-desc.c angband.h
-object.o: object.c angband.h
-save-old.o: save-old.c angband.h
-save.o: save.c angband.h
-signals.o: signals.c angband.h
-spells1.o: spells1.c angband.h
-spells2.o: spells2.c angband.h
-store.o: store.c angband.h
-tables.o: tables.c angband.h
-term.o: term.c h-basic.h term.h z-virt.h
-util.o: util.c angband.h
-variable.o: variable.c angband.h
-wiz-spo.o: wiz-spo.c angband.h
-wizard.o: wizard.c angband.h
-z-form.o: z-form.c h-basic.h z-form.h z-util.h z-virt.h
-z-util.o: z-util.c h-basic.h z-util.h
-z-virt.o: z-virt.c h-basic.h z-virt.h z-util.h
+borg-obj.o: borg-obj.c $(INCS) borg-obj.h borg.h
+borg-map.o: borg-map.c $(INCS) borg-map.h borg.h
+borg.o: borg.c $(INCS) borg.h
+cave.o: cave.c $(INCS)
+cmd1.o: cmd1.c $(INCS)
+cmd2.o: cmd2.c $(INCS)
+cmd3.o: cmd3.c $(INCS)
+cmd4.o: cmd4.c $(INCS)
+cmd5.o: cmd5.c $(INCS)
+cmd6.o: cmd6.c $(INCS)
+dungeon.o: dungeon.c $(INCS)
+effects.o: effects.c $(INCS)
+files.o: files.c $(INCS)
+generate.o: generate.c $(INCS)
+init.o: init.c $(INCS)
+io.o: io.c $(INCS)
+main-cap.o: main-cap.c $(INCS)
+main-gcu.o: main-gcu.c $(INCS)
+main-x11.o: main-x11.c $(INCS)
+main-xaw.o: main-xaw.c $(INCS)
+main.o: main.c $(INCS)
+melee.o: melee.c $(INCS)
+misc.o: misc.c $(INCS)
+mon-desc.o: mon-desc.c $(INCS)
+monster.o: monster.c $(INCS)
+obj-desc.o: obj-desc.c $(INCS)
+object.o: object.c $(INCS)
+save-old.o: save-old.c $(INCS)
+save.o: save.c $(INCS)
+signals.o: signals.c $(INCS)
+spells1.o: spells1.c $(INCS)
+spells2.o: spells2.c $(INCS)
+store.o: store.c $(INCS)
+tables.o: tables.c $(INCS)
+term.o: term.c $(HDRS) term.h z-virt.h
+util.o: util.c $(INCS)
+variable.o: variable.c $(INCS)
+wiz-spo.o: wiz-spo.c $(INCS)
+wizard.o: wizard.c $(INCS)
+z-form.o: z-form.c $(HDRS) z-form.h z-util.h z-virt.h
+z-util.o: z-util.c $(HDRS) z-util.h
+z-virt.o: z-virt.c $(HDRS) z-virt.h z-util.h
 

@@ -99,6 +99,8 @@ bool panic_death;		/* Panic before Death */
 
 bool panic_stuff;		/* Panic before Junking Stuff */
 
+bool panic_power;		/* Assume monsters get constant spells */
+
 
 /*
  * Some estimated state variables
@@ -383,6 +385,22 @@ static s16b *auto_race_count;
  
 static s16b *auto_race_death;
 
+
+/*
+ * Hack -- help identify "unique" monster names
+ */
+
+static int auto_unique_size;		/* Number of uniques */
+static s16b *auto_unique_what;		/* Indexes of uniques */
+static cptr *auto_unique_text;		/* Names of uniques */
+
+/*
+ * Hack -- help identify "normal" monster names
+ */
+
+static int auto_normal_size;		/* Number of normals */
+static s16b *auto_normal_what;		/* Indexes of normals */
+static cptr *auto_normal_text;		/* Names of normals */
 
 
 
@@ -1009,19 +1027,17 @@ static bool observe_take_move(int x, int y, int d)
 /*
  * Attempt to guess what type of monster is at the given location.
  *
- * This routine should rarely, if ever, return "zero", except maybe
- * when asked to identify, say, a wall, or some such item.
+ * If we are unable to think of any monster that could be at the
+ * given location, we will assume the monster is a player ghost.
+ * This is a total hack, but may prevent crashes.
  *
  * The guess can be improved by the judicious use of a specialized
  * "attr/char" mapping, especially for unique monsters.  Currently,
  * the Borg does not stoop to such redefinitions.
  *
- * Note that we cheat by directly accessing the attr/char tables.
- * This is a big cheat when we access the player ghost info.
- *
- * We may or may not correctly identify player ghosts, but if we do,
- * we are probably cheating in some way.  Perhaps we should reserve
- * the player ghost response for "unknown" monsters or something.
+ * We will probably fail to identify "trapper" and "lurker" monsters,
+ * since they look like whatever they are standing on.  Now we will
+ * probably just assume they are player ghosts.  XXX XXX XXX
  *
  * Note that "town" monsters may only appear in town, and in "town",
  * only "town" monsters may appear, unless we summon or polymorph
@@ -1043,6 +1059,8 @@ static bool observe_take_move(int x, int y, int d)
  * been seen on this level a lot.
  *
  * The actual rewards and penalties probably need some tweaking.
+ *
+ * Hack -- try not to choose "unique" monsters, or we will flee a lot.
  */
 static int borg_guess_race(int x, int y)
 {
@@ -1072,8 +1090,8 @@ static int borg_guess_race(int x, int y)
             /* Hack -- Dead uniques stay dead */
             if (auto_race_death[i] > 0) continue;
             
-            /* Hack -- reward uniques */
-            s = s + 5;
+            /* Hack -- handle "panic_power" */
+            s = s + (panic_power ? 5 : -10);
         }
 
 
@@ -1103,8 +1121,7 @@ static int borg_guess_race(int x, int y)
         if (ag->o_c != r_ptr->l_char) continue;
 
         /* Clear or multi-hued monsters */
-        if ((r_ptr->flags1 & RF1_ATTR_MULTI) ||
-            (r_ptr->flags1 & RF1_ATTR_CLEAR)) {
+        if (r_ptr->flags1 & (RF1_ATTR_MULTI | RF1_ATTR_CLEAR)) {
 
             /* Hack -- penalize "weird" monsters */
             s = s - 20;
@@ -1139,75 +1156,124 @@ static int borg_guess_race(int x, int y)
         b_i = i; b_s = s;
     }
 
-    /* Result */
-    return (b_i);
+    /* Success */
+    if (b_i) return (b_i);
+
+
+    /* Message */
+    borg_note("# Assuming player ghost (?)");
+
+    /* Assume player ghost */
+    return (MAX_R_IDX - 1);
 }
 
 
 /*
- * Convert a monster name into a race index
+ * Attempt to convert a monster name into a race index
  *
- * We are given a parameter which tells us if the monster is a unique
- * monster, so we can optimize the search for monster names.
+ * First we check for all possible "unique" monsters, including
+ * ones we have killed, and even if the monster name is "prefixed"
+ * (as in "The Tarrasque" and "The Lernean Hydra").  This is overly
+ * paranoid.  Use a binary search.  XXX XXX XXX
  *
- * We attempt to choose the monster most "likely" to be present on
- * this level, by a simple "out-of-depth" heuristic.
+ * Otherwise, we attempt to match monsters named "The xxx" to the
+ * most "likely" non-unique monster, taking into account various
+ * heuristic measures.
  *
- * This routine should only return zero if something is buggy, for
- * example, if we attempt to parse messages about the shop-keeper.
+ * If we cannot find a "possible" match, we assume the monster is
+ * a plater ghost, which is a hack, but may prevent crashes.
+ *
+ * Note the use of a binary search which is guaranteed to either
+ * find the *last* matching entry, or fail, and point to an entry
+ * which would follow the matching entry if there was one, unless
+ * the matching entry would follow all the existing entries, in
+ * which case it will find the final entry in the list.  Thus, we
+ * can search *backwards* from the result of the search, and know
+ * that we will access all of the matching entries.
  */
-static int borg_guess_race_name(cptr who, bool unique)
+static int borg_guess_race_name(cptr who)
 {
-    int i, s;
-
-    int b_i = 0, b_s = 0;
+    int k, m, n;
     
+    int i, b_i = 0;
+    int s, b_s = 0;
     
-    /* Hack -- find a unique */
-    if (unique) {
+    monster_race *r_ptr;
 
-        /* Hack -- Find the highest "acceptable" monster */
-        for (i = 1; i < MAX_R_IDX-1; i++) {
 
-            monster_race *r_ptr = &r_info[i];
+    /* Start the search */
+    m = 0; n = auto_unique_size;
 
-            /* Skip non-monsters */
-            if (!r_ptr->name) continue;
+    /* Binary search */
+    while (m < n - 1) {
 
-            /* Skip non-unique monsters */
-            if (!(r_ptr->flags1 & RF1_UNIQUE)) continue;
-        
-            /* Hack -- Dead uniques stay dead */
-            if (auto_race_death[i] > 0) continue;
+        /* Pick a "middle" entry */
+        i = (m + n) / 2;
 
-            /* Check the name */
-            if (!streq(who, (r_name + r_ptr->name))) continue;
-
-            /* Use this monster */
-            return (i);
+        /* Search to the right (or here) */
+        if (strcmp(auto_unique_text[i], who) <= 0) {
+             m = i;
         }
 
+        /* Search to the left */
+        else {
+             n = i;
+        }
+    }
+
+    /* Check for equality */
+    if (streq(who, auto_unique_text[m])) {
+
+        /* Use this monster */
+        return (auto_unique_what[m]);
+    }
+
+
+    /* Assume player ghost */
+    if (!prefix(who, "The ")) {
+    
         /* Abort */
-        borg_oops("unknown monster");
+        borg_note("# Assuming a player ghost (?)");
         
         /* Oops */
-        return (0);
+        return (MAX_R_IDX-1);
     }
-    
-   
-    /* Hack -- Find the highest "acceptable" monster */
-    for (i = 1; i < MAX_R_IDX-1; i++) {
 
-        monster_race *r_ptr = &r_info[i];
+    /* Skip the prefix */
+    who += 4;
 
-        /* Skip non-monsters */
-        if (!r_ptr->name) continue;
 
-        /* Skip unique monsters */
-        if (r_ptr->flags1 & RF1_UNIQUE) continue;
+    /* Start the search */
+    m = 0; n = auto_normal_size;
+
+    /* Binary search */
+    while (m < n - 1) {
+
+        /* Pick a "middle" entry */
+        i = (m + n) / 2;
+
+        /* Search to the right (or here) */
+        if (strcmp(auto_normal_text[i], who) <= 0) {
+             m = i;
+        }
+
+        /* Search to the left */
+        else {
+             n = i;
+        }
+    }
+
+    /* Scan possible "normal" monsters */
+    for (k = m; k >= 0; k--) {
+
+        /* Stop when done */
+        if (!streq(who, auto_normal_text[k])) break;
+
+        /* Extract the monster */
+        i = auto_normal_what[k];
         
-        /* Check the name */
-        if (!streq(who, (r_name + r_ptr->name))) continue;
+        /* Access the monster */
+        r_ptr = &r_info[i];
 
         /* Basic score */
         s = 1000;
@@ -1225,8 +1291,12 @@ static int borg_guess_race_name(cptr who, bool unique)
     /* Success */
     if (b_i) return (b_i);
     
+
     /* Oops */
-    return (0);
+    borg_note("# Assuming a player ghost (?)");
+
+    /* Oops */
+    return (MAX_R_IDX-1);
 }
 
 
@@ -1413,7 +1483,7 @@ static bool observe_kill_diff(int x, int y)
     r_idx = borg_guess_race(x, y);
 
     /* Oops */
-    if (!r_idx) return (FALSE);
+    /* if (!r_idx) return (FALSE); */
 
     /* Create a new monster */
     i = borg_new_kill(r_idx, x, y);
@@ -1439,6 +1509,8 @@ static bool observe_kill_move(int x, int y, int d)
 
     auto_kill *kill;
 
+    monster_race *r_ptr;
+
     auto_grid *ag = grid(x, y);
 
 
@@ -1453,12 +1525,14 @@ static bool observe_kill_move(int x, int y, int d)
         /* Skip assigned monsters */
         if (kill->when == c_t) continue;
 
+        /* Access the monster race */
+        r_ptr = &r_info[kill->r_idx];
+        
         /* Require matching char */
         if (ag->o_c != kill->o_c) continue;
 
         /* Require matching attr (usually) */
-        if (!((r_info[kill->r_idx].flags1 & RF1_ATTR_MULTI) ||
-              (r_info[kill->r_idx].flags1 & RF1_ATTR_CLEAR))) {
+        if (!(r_ptr->flags1 & (RF1_ATTR_MULTI | RF1_ATTR_CLEAR))) {
 
             /* Require matching attr */
             if (ag->o_a != kill->o_a) continue;
@@ -1490,7 +1564,7 @@ static bool observe_kill_move(int x, int y, int d)
             
             /* Note */
             borg_note(format("# Tracking a monster '%s' (%d) at (%d,%d) from (%d,%d)",
-                             (r_name + r_info[kill->r_idx].name), kill->r_idx,
+                             (r_name + r_ptr->name), kill->r_idx,
                              kill->x, kill->y, ox, oy));
 
             /* Recalculate danger */
@@ -1559,16 +1633,8 @@ static bool borg_nearby_kill(cptr who, bool dead)
     }
 
 
-    /* Analyze a normal "race" */
-    if (prefix(who, "The ")) {
-        who += 4;
-        r_idx = borg_guess_race_name(who, FALSE);
-    }
-
-    /* Analyze a unique "race" */
-    else {
-        r_idx = borg_guess_race_name(who, TRUE);
-    }
+    /* Guess the monster race */
+    r_idx = borg_guess_race_name(who);
 
     /* Note */
     borg_note(format("# There is a%s monster '%s' (%d) near (%d,%d)",
@@ -1577,7 +1643,8 @@ static bool borg_nearby_kill(cptr who, bool dead)
                      x, y));
 
     /* Hack -- ignore "weird" monsters */
-    if (!r_idx) return (FALSE);
+    /* if (!r_idx) return (FALSE); */
+
 
     /* Hack -- count racial appearances */
     if (auto_race_count[r_idx] < MAX_SHORT) auto_race_count[r_idx]++;
@@ -1609,8 +1676,7 @@ static bool borg_nearby_kill(cptr who, bool dead)
         if (take->o_c != r_ptr->l_char) continue;
 
         /* Verify attr (unless clear or multi-hued) */
-        if (!((r_ptr->flags1 & RF1_ATTR_MULTI) ||
-              (r_ptr->flags1 & RF1_ATTR_CLEAR))) {
+        if (!(r_ptr->flags1 & (RF1_ATTR_MULTI | RF1_ATTR_CLEAR))) {
 
             /* Verify attr */
             if (take->o_a != r_ptr->l_attr) continue;
@@ -1680,8 +1746,7 @@ static bool borg_nearby_kill(cptr who, bool dead)
         if (kill->o_c != r_ptr->l_char) continue;
 
         /* Verify attr (unless clear or multi-hued) */
-        if (!((r_ptr->flags1 & RF1_ATTR_MULTI) ||
-              (r_ptr->flags1 & RF1_ATTR_CLEAR))) {
+        if (!(r_ptr->flags1 & (RF1_ATTR_MULTI | RF1_ATTR_CLEAR))) {
 
             /* Verify attr */
             if (kill->o_a != r_ptr->l_attr) continue;
@@ -1833,16 +1898,8 @@ static bool borg_verify_kill(cptr who, bool dead)
     }
 
 
-    /* Analyze a normal "race" */
-    if (prefix(who, "The ")) {
-        who += 4;
-        r_idx = borg_guess_race_name(who, FALSE);
-    }
-
-    /* Analyze a unique "race" */
-    else {
-        r_idx = borg_guess_race_name(who, TRUE);
-    }
+    /* Determine the monster race */
+    r_idx = borg_guess_race_name(who);
 
     /* Note */
     borg_note(format("# There is a%s '%s' (%d) at (%d,%d)",
@@ -1851,7 +1908,8 @@ static bool borg_verify_kill(cptr who, bool dead)
                      r_idx, x, y));
 
     /* Hack -- ignore "weird" monsters */
-    if (!r_idx) return (FALSE);
+    /* if (!r_idx) return (FALSE); */
+
     
     /* Hack -- count racial appearances */
     if (auto_race_count[r_idx] < MAX_SHORT) auto_race_count[r_idx]++;
@@ -1947,8 +2005,7 @@ static bool borg_verify_kill(cptr who, bool dead)
         if (take->o_c != r_ptr->l_char) continue;
 
         /* Verify attr (unless clear or multi-hued) */
-        if (!((r_ptr->flags1 & RF1_ATTR_MULTI) ||
-              (r_ptr->flags1 & RF1_ATTR_CLEAR))) {
+        if (!(r_ptr->flags1 & (RF1_ATTR_MULTI | RF1_ATTR_CLEAR))) {
 
             /* Verify attr */
             if (take->o_a != r_ptr->l_attr) continue;
@@ -2421,10 +2478,10 @@ void borg_update(void)
 
 #endif
 
-            /* XXX XXX XXX XXX XXX */
+            /* XXX XXX XXX Can we ignore this? */
 
             /* Viewable changes kill goals */
-            if (ag->info & BORG_VIEW) goal = 0;
+            /* if (ag->info & BORG_VIEW) goal = 0; */
         }
     }	
     
@@ -3610,7 +3667,7 @@ static int borg_danger_aux2(int x, int y, int i)
             p += (lev) * 20;
             break;
 
-          case 160+23:    /* RF6_S_REPTILE */
+          case 160+23:    /* RF6_S_HYDRA */
             p += (lev) * 20;
             break;
 
@@ -3651,8 +3708,8 @@ static int borg_danger_aux2(int x, int y, int i)
         if (p > n) n = p;
     }
 
-    /* Assume full spell usage, no movement */
-    n *= m;
+    /* Hack -- be paranoid */
+    if (panic_power) n *= m;
 
     /* Danger */
     return (n);
@@ -3993,6 +4050,7 @@ bool borg_caution(void)
 
 
     /* XXX XXX XXX XXX */
+
     /* Somewhere "useful" to flee */
     if ((b_i >= 0) && (p > b_k + (b_k / 4))) {
 
@@ -4159,7 +4217,7 @@ static bool borg_fire_missile(void)
         borg_note("# Firing standard missile");
 
         borg_keypress('f');
-        borg_keypress('a' + n);
+        borg_keypress(I2A(n));
 
         return (TRUE);
     }
@@ -4543,11 +4601,13 @@ static bool borg_play_step(int x2, int y2)
     /* We have arrived */
     if ((c_x == x2) && (c_y == y2)) return (FALSE);
 
+
     /* Get a direction */
     dir = borg_goto_dir(c_x, c_y, x2, y2);
 
     /* We are confused */
     if ((dir == 0) || (dir == 5)) return (FALSE);
+
 
     /* Obtain the destination */
     x = c_x + ddx[dir];
@@ -4611,53 +4671,9 @@ static bool borg_play_step(int x2, int y2)
     }
 
 
-    /* Rubble -- Tunnel */
-    if (ag->o_c == ':') {
-
-        /* Mega-Hack -- prevent infinite loops */
-        if (rand_int(100) < 10) return (FALSE);
-
-        /* Hack -- cancel wall */
-        ag->info &= ~BORG_WALL;
-
-        /* Tunnel */
-        borg_note("# Digging rubble");
-        borg_keypress('0');
-        borg_keypress('9');
-        borg_keypress('9');
-        borg_keypress('T');
-        borg_keypress('0' + dir);
-        return (TRUE);
-    }
-
-    /* Walls and Seams -- Tunnel or Melt (or give up) */
-    if ((ag->o_c == '#') || (ag->o_c == '%')) {
-
-        /* Mega-Hack -- prevent infinite loops */
-        if (rand_int(100) < 10) return (FALSE);
-
-        /* Hack -- cancel wall */
-        ag->info &= ~BORG_WALL;
-
-        /* Hack -- allow "stone to mud" */
-        if (borg_spell(1,8)) {
-            borg_note("# Melting a wall");
-            borg_keypress('0' + dir);
-            return (TRUE);
-        }
-
-        /* Tunnel */
-        borg_note("# Digging a wall");
-        borg_keypress('0');
-        borg_keypress('9');
-        borg_keypress('9');
-        borg_keypress('T');
-        borg_keypress('0' + dir);
-        return (TRUE);
-    }
-
-    /* Hidden objects -- Tunnel or Melt */
-    if (ag->o_c == '*') {
+    /* Rubble, Treasure, Seams, Walls -- Tunnel or Melt */
+    if ((ag->o_c == ':') || (ag->o_c == '*') ||
+        (ag->o_c == '#') || (ag->o_c == '%')) {
 
         /* Mega-Hack -- prevent infinite loops */
         if (rand_int(100) < 10) return (FALSE);
@@ -4667,13 +4683,13 @@ static bool borg_play_step(int x2, int y2)
 
         /* Mega-Hack -- allow "stone to mud" */
         if (borg_spell(1,8)) {
-            borg_note("# Melting a wall for embedded object");
+            borg_note("# Melting a wall/etc");
             borg_keypress('0' + dir);
             return (TRUE);
         }
 
         /* Tunnel */
-        borg_note("# Digging for embedded object");
+        borg_note("# Digging through wall/etc");
         borg_keypress('0');
         borg_keypress('9');
         borg_keypress('9');
@@ -4824,11 +4840,14 @@ static bool borg_flow_commit(cptr who, int why)
  */
 bool borg_play_old_goal(void)
 {
+    int x, y;
+        
+    auto_grid *ag;
+
+
     /* Flow towards the goal */
     if (goal) {
 
-        int x, y;
-        
         int b_n = 0;
                 
         int i, b_i = 0;
@@ -4845,6 +4864,13 @@ bool borg_play_old_goal(void)
             x = c_x + ddx_ddd[i];
             y = c_y + ddy_ddd[i];
 
+            /* Access the grid */
+            ag = grid(x, y);
+            
+            /* Skip known walls */
+            if (ag->o_c == '#') continue;
+            if (ag->o_c == '%') continue;
+            
             /* Flow cost at that grid */
             here = auto_data_flow->data[y][x];
 
@@ -5749,6 +5775,58 @@ bool borg_flow_spastic(bool bored)
 
 
 
+/*
+ * Sorting hook -- comp function -- see below
+ *
+ * We use "u" to point to an array of strings, and "v" to point to
+ * an array of indexes, and we sort them together by the strings.
+ */
+static bool ang_sort_comp_hook(vptr u, vptr v, int a, int b)
+{
+    cptr *text = (cptr*)(u);
+    s16b *what = (s16b*)(v);
+
+    int cmp;
+    
+    /* Compare the two strings */
+    cmp = (strcmp(text[a], text[b]));
+    
+    /* Strictly less */
+    if (cmp < 0) return (TRUE);
+    
+    /* Strictly more */
+    if (cmp > 0) return (FALSE);
+    
+    /* Enforce "stable" sort */
+    return (what[a] <= what[b]);
+}
+
+
+/*
+ * Sorting hook -- swap function -- see below
+ *
+ * We use "u" to point to an array of strings, and "v" to point to
+ * an array of indexes, and we sort them together by the strings.
+ */
+static void ang_sort_swap_hook(vptr u, vptr v, int a, int b)
+{
+    cptr *text = (cptr*)(u);
+    s16b *what = (s16b*)(v);
+
+    cptr texttmp;
+    s16b whattmp;
+    
+    /* Swap "text" */
+    texttmp = text[a];
+    text[a] = text[b];
+    text[b] = texttmp;
+
+    /* Swap "what" */
+    whattmp = what[a];
+    what[a] = what[b];
+    what[b] = whattmp;
+}
+
 
 
 /*
@@ -5761,6 +5839,11 @@ void borg_ext_init(void)
     byte t_a;
 
     char buf[80];
+
+    int size;
+    
+    s16b what[512];
+    cptr text[512];
 
 
     /*** Hack -- assign the "danger" hook ***/
@@ -5965,6 +6048,109 @@ void borg_ext_init(void)
 
     /* Count racial deaths */
     C_MAKE(auto_race_death, MAX_R_IDX, s16b);
+
+
+    /*** Parse "unique" monster names ***/
+    
+    /* Start over */
+    size = 0;
+    
+    /* Collect "unique" monsters */
+    for (i = 1; i < MAX_R_IDX-1; i++) {
+
+        monster_race *r_ptr = &r_info[i];
+
+        /* Skip non-monsters */
+        if (!r_ptr->name) continue;
+
+        /* Skip non-unique monsters */
+        if (!(r_ptr->flags1 & RF1_UNIQUE)) continue;
+
+        /* Use it */
+        text[size] = r_name + r_ptr->name;
+        what[size] = i;
+        size++;
+    }
+
+    /* Set the sort hooks */
+    ang_sort_comp = ang_sort_comp_hook;
+    ang_sort_swap = ang_sort_swap_hook;
+
+    /* Sort */
+    ang_sort(text, what, size);
+
+    /* Save the size */
+    auto_unique_size = size;
+
+    /* Allocate the arrays */
+    C_MAKE(auto_unique_text, auto_unique_size, cptr);
+    C_MAKE(auto_unique_what, auto_unique_size, s16b);
+
+    /* Save the entries */
+    for (i = 0; i < size; i++) auto_unique_text[i] = text[i];
+    for (i = 0; i < size; i++) auto_unique_what[i] = what[i];
+
+
+    /*** Parse "normal" monster names ***/
+    
+    /* Start over */
+    size = 0;
+    
+    /* Collect "normal" monsters */
+    for (i = 1; i < MAX_R_IDX-1; i++) {
+
+        monster_race *r_ptr = &r_info[i];
+
+        /* Skip non-monsters */
+        if (!r_ptr->name) continue;
+
+        /* Skip unique monsters */
+        if (r_ptr->flags1 & RF1_UNIQUE) continue;
+
+        /* Use it */
+        text[size] = r_name + r_ptr->name;
+        what[size] = i;
+        size++;
+    }
+
+    /* Set the sort hooks */
+    ang_sort_comp = ang_sort_comp_hook;
+    ang_sort_swap = ang_sort_swap_hook;
+
+    /* Sort */
+    ang_sort(text, what, size);
+
+    /* Save the size */
+    auto_normal_size = size;
+
+    /* Allocate the arrays */
+    C_MAKE(auto_normal_text, auto_normal_size, cptr);
+    C_MAKE(auto_normal_what, auto_normal_size, s16b);
+
+    /* Save the entries */
+    for (i = 0; i < size; i++) auto_normal_text[i] = text[i];
+    for (i = 0; i < size; i++) auto_normal_what[i] = what[i];
+
+
+    /*** XXX XXX XXX Hack -- Cheat ***/
+    
+    /* Hack -- Extract dead uniques */
+    for (i = 1; i < MAX_R_IDX-1; i++) {
+
+        monster_race *r_ptr = &r_info[i];
+
+        /* Skip non-monsters */
+        if (!r_ptr->name) continue;
+
+        /* Skip non-uniques */
+        if (!(r_ptr->flags1 & RF1_UNIQUE)) continue;
+
+        /* Mega-Hack -- Access "dead unique" list */
+        if (r_ptr->max_num == 0) auto_race_death[i] = 1;
+    }
+    
+    /* Hack -- Access max depth */
+    auto_max_depth = p_ptr->max_dlv;
 }
 
 

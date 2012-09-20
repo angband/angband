@@ -495,7 +495,9 @@ struct inven_type {
 
   s16b timeout;			/* Timeout Counter		*/
 
-  u16b ident;			/* General flags 		*/
+  byte ident;			/* Special flags 		*/
+
+  byte marked;			/* Object is marked		*/
 
   u16b note;			/* Inscription index		*/
 };
@@ -890,9 +892,9 @@ struct player_type {
   s16b fast;			/* Timed -- Fast		*/
   s16b slow;			/* Timed -- Slow		*/
   s16b blind;			/* Timed -- Blindness		*/
-  s16b paralysis;		/* Timed -- Paralysis		*/
+  s16b paralyzed;		/* Timed -- Paralysis		*/
   s16b confused;		/* Timed -- Confusion		*/
-  s16b fear;			/* Timed -- Fear		*/
+  s16b afraid;			/* Timed -- Fear		*/
   s16b image;			/* Timed -- Hallucination	*/
   s16b poisoned;		/* Timed -- Poisoned		*/
   s16b cut;			/* Timed -- Cut			*/
@@ -935,9 +937,6 @@ struct player_type {
   s16b old_lite;		/* Old radius of lite (if any)	*/
   s16b old_view;		/* Old radius of view (if any)	*/
 
-  s16b old_cut;			/* Old value of "cut"		*/
-  s16b old_stun;		/* Old value of "stun"		*/
-  
   s16b old_food_aux;		/* Old value of food		*/
 
 

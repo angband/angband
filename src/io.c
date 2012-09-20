@@ -12,7 +12,7 @@
 
 
 /*
- * XXX XXX XXX XXX XXX Important note about "colors"
+ * XXX XXX XXX Important note about "colors" XXX XXX XXX
  *
  * The "TERM_*" color definitions list the "composition" of each
  * "Angband color" in terms of "quarters" of each of the three color
@@ -45,6 +45,15 @@
  *
  * Note that some machines (i.e. most IBM machines) are limited to a
  * hard-coded set of colors, and so the information above is useless.
+ *
+ * Also, some machines are limited to a pre-determined set of colors,
+ * for example, the IBM can only display 16 colors, and only 14 of
+ * those colors resemble colors used by Angband, and then only when
+ * you ignore the fact that "Slate" and "cyan" are not really matches,
+ * so on the IBM, we use "orange" for both "Umber", and "Light Umber"
+ * in addition to the obvious "Orange", since by combining all of the
+ * "indeterminate" colors into a single color, the rest of the colors
+ * are left with "meaningful" values.
  */
 
 
@@ -77,7 +86,7 @@ void move_cursor(int row, int col)
  */
 static char octify(uint i)
 {
-    if (i < 8) return ('0' + i);
+    if (i < 8) return (I2D(i));
     return ('0');
 }
 
@@ -86,8 +95,8 @@ static char octify(uint i)
  */
 static char hexify(uint i)
 {
-    if (i < 10) return ('0' + i);
-    if (i < 16) return ('A' + i - 10);
+    if (i < 10) return (I2D(i));
+    if (i < 16) return (toupper(I2A(i - 10)));
     return ('0');
 }
 
@@ -97,7 +106,7 @@ static char hexify(uint i)
  */
 static int deoct(char c)
 {
-    return (c - '0');
+    return (D2I(c));
 }
 
 /*
@@ -105,7 +114,10 @@ static int deoct(char c)
  */
 static int dehex(char c)
 {
-    return ((c>='a') ? (10+c-'a') : (c>='A') ? (10+c-'A') : (c-'0'));
+    if (isdigit(c)) return (D2I(c));
+    if (islower(c)) return (A2I(c));
+    if (isupper(c)) return (A2I(tolower(c)));
+    return (0);
 }
 
 
@@ -544,65 +556,6 @@ static byte macro__use[256];
 
 
 /*
- * Hack -- append all current macros to the given file
- */
-errr macro_dump(cptr fname)
-{
-    int i;
-    FILE *fff;
-    char tmp[1024];
-
-#if defined(MACINTOSH) && !defined(applec)
-    /* Global -- "text file" */
-    _ftype = 'TEXT';
-#endif
-
-    /* Append to the file */
-    fff = my_fopen(fname, "a");
-
-    /* Failure */
-    if (!fff) return (-1);
-
-    /* Start dumping */
-    fprintf(fff, "\n\n# Automatic macro dump\n\n");
-
-    /* Dump them */
-    for (i = 0; i < macro__num; i++) {
-
-        /* Start the macro */
-        fprintf(fff, "# Macro '%d'\n\n", i);
-
-        /* Extract the action */
-        ascii_to_text(tmp, macro__act[i]);
-
-        /* Dump the macro */
-        fprintf(fff, "A:%s\n", tmp);
-
-        /* Extract the action */
-        ascii_to_text(tmp, macro__pat[i]);
-
-        /* Dump command macros */
-        if (macro__cmd[i]) fprintf(fff, "C:%s\n", tmp);
-
-        /* Dump normal macros */
-        else fprintf(fff, "P:%s\n", tmp);
-
-        /* End the macro */
-        fprintf(fff, "\n\n");		
-    }
-
-    /* Start dumping */
-    fprintf(fff, "\n\n\n\n");
-
-    /* Close */
-    my_fclose(fff);
-
-    /* Success */
-    return (0);
-}
-
-
-/*
  * Hack -- add a macro definition (or redefinition).
  *
  * If "cmd_flag" is set then this macro is only active when
@@ -614,8 +567,10 @@ void macro_add(cptr pat, cptr act, bool cmd_flag)
 {
     int n;
 
+
     /* Paranoia -- require data */
     if (!pat || !act) return;
+
 
     /* Look for a re-usable slot */
     for (n = 0; n < macro__num; n++) {
@@ -1281,6 +1236,9 @@ cptr quark_str(s16b i)
  * by the fact that both the array of indexes, and the buffer itself,
  * are both treated as "circular arrays" for efficiency purposes, but
  * the strings may not be "broken" across the ends of the array.
+ *
+ * The "message_add()" function is rather "complex", because it must be
+ * extremely efficient, both in space and time, for use with the Borg.
  */
 
 
@@ -1358,10 +1316,10 @@ void message_add(cptr str)
     /*** Step 2 -- Attempt to optimize ***/
 
     /* Limit number of messages to check */
-    k = message_num() / 2;
+    k = message_num() / 4;
 
     /* Limit number of messages to check */
-    if (k > MESSAGE_MAX / 10) k = MESSAGE_MAX / 10;
+    if (k > MESSAGE_MAX / 32) k = MESSAGE_MAX / 32;
 
     /* Check the last few messages (if any to count) */
     for (i = message__next; k; k--) {
@@ -1945,12 +1903,32 @@ bool get_com(cptr prompt, char *command)
 
 /*
  * Request a "quantity" from the user
+ *
+ * Hack -- allow "command_arg" to specify a quantity
  */
 s16b get_quantity(cptr prompt, int max)
 {
-    int amt = 1;
+    int amt;
 
     char out_val[80];
+
+
+    /* Use "command_arg" */
+    if (command_arg) {
+
+        /* Extract a number */
+        amt = command_arg;
+
+        /* Clear "command_arg" */
+        command_arg = 0;
+
+        /* Enforce the maximum */
+        if (amt > max) amt = max;
+
+        /* Use it */
+        return (amt);
+    }
+
 
     /* Build a prompt if needed */
     if (!prompt) {
@@ -1965,6 +1943,10 @@ s16b get_quantity(cptr prompt, int max)
     /* Prompt for the quantity */
     prt(prompt, 0, 0);
 
+
+    /* Default to one */
+    amt = 1;
+    
     /* Build the default */
     sprintf(out_val, "%d", amt);
 

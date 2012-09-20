@@ -108,7 +108,7 @@ void safe_setuid_grab(void)
  * Note that <dir> must be a direction (a number from 1 to 9) or zero.
  *
  * Parse another file (recursively):
- *   %:<filename>		<-- see next function
+ *   %:<filename>		<-- see below
  *
  * Specify the attr/char values for "monsters":
  *   R:<num>:<a>/<c>		<-- attr/char by race index
@@ -117,7 +117,10 @@ void safe_setuid_grab(void)
  * Specify the attr/char values for "objects":
  *   K:<num>:<a>/<c>		<-- attr/char by kind index
  *   I:<a>/<c>:<a>/<c>		<-- attr/char by kind attr/char
- *   T:<tv>,<sv>:<a>/<c>	<-- attr/char by kind tval/sval
+ *
+ * Specify the attr/char values for terrain features:
+ *   F:<f>:<a>/<c>		<-- attr/char by feat index
+ *   G:<a>/<c>:<a>/<c>		<-- attr/char by feat attr/char
  *
  * Specify the attr/char values for unaware "objects":
  *   U:<tv>:<a>/<c>		<-- attr/char by kind tval
@@ -125,37 +128,243 @@ void safe_setuid_grab(void)
  * Specify the attr/char values for inventory "objects":
  *   E:<tv>:<a>/<c>		<-- attr/char by kind tval
  *
- * Specify the attr/char values for terrain features:
- *   F:<f>:<a>/<c>		<-- attr/char by feature index
- *
- * Specify macros and command-macros:
+ * Create a macro action:
  *   A:<str>			<-- macro action (encoded)
- *   P:<str>			<-- macro pattern (encoded)
- *   C:<str>			<-- command macro pattern (encoded)
  *
- * Specify keyset mappings:
+ * Create a normal macro:
+ *   P:<str>			<-- macro trigger (encoded)
+ *
+ * Create a command macro:
+ *   C:<str>			<-- macro trigger (encoded)
+ *
+ * Create a keyset mapping:
  *   S:<key>:<key>:<dir>	<-- keyset mapping
  *
- * Specify option settings:
- *   X:<str>			<-- Set an option to NO/OFF/FALSE
- *   Y:<str>			<-- Set an option to YES/ON/TRUE
+ * Turn an option off:
+ *   X:<str>			<-- option name
+ *
+ * Turn an option on:
+ *   Y:<str>			<-- option name
  */
-static errr process_pref_file_aux(cptr name)
+errr process_pref_file_aux(cptr buf)
 {
-    int i, n, i1, i2, n1, n2;
+    int i, m1, m2, n1, n2;
 
+
+    /* Skip "empty" lines */
+    if (!buf[0]) return (0);
+
+    /* Skip "blank" lines */
+    if (isspace(buf[0])) return (0);
+
+    /* Skip comments */
+    if (buf[0] == '#') return (0);
+
+
+    /* The line better have a colon and such */
+    if (buf[1] != ':') return (1);
+
+
+    /* Process "%:<fname>" */
+    if (buf[0] == '%') {
+
+        /* Attempt to Process the given file */
+        return (process_pref_file(buf + 2));
+    }
+
+
+    /* Process "R:<num>:<a>/<c>" */
+    if (buf[0] == 'R') {
+        if (sscanf(buf, "R:%d:%d/%d", &i, &n1, &n2) == 3) {
+            monster_race *r_ptr = &r_info[i];
+            if (n1) r_ptr->l_attr = n1;
+            if (n2) r_ptr->l_char = n2;
+            return (0);
+        }
+    }
+
+    /* Process "M:<a>/<c>:<a>/<c>" */
+    else if (buf[0] == 'M') {
+        if (sscanf(buf, "M:%d/%d:%d/%d", &m1, &m2, &n1, &n2) == 4) {
+            for (i = 1; i < MAX_R_IDX; i++) {
+                monster_race *r_ptr = &r_info[i];
+                if ((!m1 || r_ptr->r_attr == m1) &&
+                    (!m2 || r_ptr->r_char == m2)) {
+                    if (n1) r_ptr->l_attr = n1;
+                    if (n2) r_ptr->l_char = n2;
+                }
+            }
+            return (0);
+        }
+    }
+
+
+    /* Process "K:<num>:<a>/<c>" */
+    else if (buf[0] == 'K') {
+        if (sscanf(buf, "K:%d:%d/%d", &i, &n1, &n2) == 3) {
+            inven_kind *k_ptr = &k_info[i];
+            if (n1) k_ptr->x_attr = n1;
+            if (n2) k_ptr->x_char = n2;
+            return (0);
+        }
+    }
+
+    /* Process "I:<a>/<c>:<a>/<c>" */
+    else if (buf[0] == 'I') {
+        if (sscanf(buf, "I:%d/%d:%d/%d", &m1, &m2, &n1, &n2) == 4) {
+            for (i = 0; i < MAX_K_IDX; i++) {
+                inven_kind *k_ptr = &k_info[i];
+                if ((!m1 || k_ptr->k_attr == m1) &&
+                    (!m2 || k_ptr->k_char == m2)) {
+                    if (n1) k_ptr->x_attr = n1;
+                    if (n2) k_ptr->x_char = n2;
+                }
+            }
+            return (0);
+        }
+    }
+
+
+    /* Process "F:<f>:<a>/<c>" -- attr/char for terrain features */
+    else if (buf[0] == 'F') {
+        if (sscanf(buf, "F:%d:%d/%d", &i, &n1, &n2) == 3) {
+            feature_type *f_ptr = &f_info[i];
+            if (n1) f_ptr->z_attr = n1;
+            if (n2) f_ptr->z_char = n2;
+            return (0);
+        }
+    }
+
+    /* Process "G:<a>/<c>:<a>/<c>" */
+    else if (buf[0] == 'G') {
+        if (sscanf(buf, "G:%d/%d:%d/%d", &m1, &m2, &n1, &n2) == 4) {
+            for (i = 0; i < MAX_F_IDX; i++) {
+                feature_type *f_ptr = &f_info[i];
+                if ((!m1 || f_ptr->f_attr == m1) &&
+                    (!m2 || f_ptr->f_char == m2)) {
+                    if (n1) f_ptr->z_attr = n1;
+                    if (n2) f_ptr->z_char = n2;
+                }
+            }
+            return (0);
+        }
+    }
+
+
+    /* Process "U:<tv>:<a>/<c>" -- attr/char for unaware items */
+    else if (buf[0] == 'U') {
+        if (sscanf(buf, "U:%d:%d/%d", &m1, &n1, &n2) == 3) {
+            for (i = 0; i < MAX_K_IDX; i++) {
+                inven_kind *k_ptr = &k_info[i];
+                if (k_ptr->tval == m1) {
+                    if (n1) k_ptr->i_attr = n1;
+                    if (n2) k_ptr->i_char = n2;
+                }
+            }
+            return (0);
+        }
+    }
+
+
+    /* Process "E:<tv>:<a>/<c>" -- attr/char for equippy chars */
+    else if (buf[0] == 'E') {
+        if (sscanf(buf, "E:%d:%d/%d", &m1, &n1, &n2) == 3) {
+            if (n1) tval_to_attr[m1] = n1;
+            if (n2) tval_to_char[m1] = n2;
+            return (0);
+        }
+    }
+
+
+    /* Process "A:<str>" -- save an "action" for later */
+    else if (buf[0] == 'A') {
+        text_to_ascii(macro__buf, buf+2);
+        return (0);
+    }
+
+    /* Process "P:<str>" -- create normal macro */
+    else if (buf[0] == 'P') {
+        char tmp[1024];
+        text_to_ascii(tmp, buf+2);
+        macro_add(tmp, macro__buf, FALSE);
+        return (0);
+    }
+
+    /* Process "C:<str>" -- create command macro */
+    else if (buf[0] == 'C') {
+        char tmp[1024];
+        text_to_ascii(tmp, buf+2);
+        macro_add(tmp, macro__buf, TRUE);
+        return (0);
+    }
+
+
+    /* Process "S:<key>:<key>:<dir>" -- keymap */
+    else if (buf[0] == 'S') {
+        if (sscanf(buf, "S:%d:%d:%d", &m1, &n1, &n2) == 3) {
+            if ((m1 < 0) || (m1 > 255)) return (1);
+            if ((n1 < 0) || (n1 > 255)) n1 = 0;
+            if ((n2 < 1) || (n2 > 9) || (n2 == 5)) n2 = 0;
+            keymap_cmds[m1] = n1;
+            keymap_dirs[m1] = n2;
+            return (0);
+        }
+    }
+
+
+    /* Process "X:<str>" -- turn option off */
+    else if (buf[0] == 'X') {
+        for (i = 0; options[i].o_desc; i++) {
+            if (options[i].o_var &&
+                options[i].o_text &&
+                (options[i].o_page <= 8) &&
+                streq(options[i].o_text, buf + 2)) {
+                (*options[i].o_var) = FALSE;
+                return (0);
+            }
+        }
+        return (1);
+    }
+
+    /* Process "Y:<str>" -- turn option on */
+    else if (buf[0] == 'Y') {
+        for (i = 0; options[i].o_desc; i++) {
+            if (options[i].o_var &&
+                options[i].o_text &&
+                (options[i].o_page <= 8) &&
+                streq(options[i].o_text, buf + 2)) {
+                (*options[i].o_var) = TRUE;
+                return (0);
+            }
+        }
+        return (1);
+    }
+
+
+    /* Failure */
+    return (1);
+}
+
+
+/*
+ * Process the "user pref file" with the given name
+ *
+ * See the function above for a list of legal "commands".
+ */
+errr process_pref_file(cptr name)
+{
+    int i;
+    
     FILE *fp;
 
-    /* Current input line */
     char buf[1024];
 
-    /* Current macro data */
-    char pat[1024] = "";
-    char act[1024] = "";
 
+    /* Look in the "user" directory */
+    sprintf(buf, "%s%s", ANGBAND_DIR_USER, name);
 
     /* Open the file */
-    fp = my_fopen(name, "r");
+    fp = my_fopen(buf, "r");
 
     /* Catch errors */
     if (!fp) return (-1);
@@ -163,11 +372,8 @@ static errr process_pref_file_aux(cptr name)
     /* Process the file */
     while (1) {
 
-        /* Read a line from the file, stop when done */
+        /* Read lines from the file */
         if (!fgets(buf, 1024, fp)) break;
-
-        /* Skip comments */
-        if (buf[0] == '#') continue;
 
         /* See how long the input is */
         i = strlen(buf);
@@ -175,192 +381,11 @@ static errr process_pref_file_aux(cptr name)
         /* Strip the final newline (and spaces) */
         while (i && isspace(buf[i-1])) buf[--i] = '\0';
 
-        /* Skip blank lines */
-        if (!buf[0]) continue;
+        /* Process the line */
+        if (process_pref_file_aux(buf)) {
 
-        /* The line better have a colon and such */
-        if (buf[1] != ':') {
-            msg_format("Bad command <%s> in file <%s>.", buf, name);
-            continue;
-        }
-
-        /* Process "%:<fname>" */
-        if (buf[0] == '%') {
-
-            /* Attempt to Process the given file */
-            (void)process_pref_file(buf + 2);
-        }
-
-        /* Process "R:<num>:<a>/<c>" */
-        else if (buf[0] == 'R') {
-            monster_race *r_ptr;
-            if (sscanf(buf, "R:%d:%d/%d", &i, &n1, &n2) != 3) {
-                msg_format("Bad command <%s> in file <%s>.", buf, name);
-                continue;
-            }
-            r_ptr = &r_info[i];
-            if (n1) r_ptr->l_attr = n1;
-            if (n2) r_ptr->l_char = n2;
-        }
-
-        /* Process "M:<a>/<c>:<a>/<c>" */
-        else if (buf[0] == 'M') {
-            if (sscanf(buf, "M:%d/%d:%d/%d", &i1, &i2, &n1, &n2) != 4) {
-                msg_format("Bad command <%s> in file <%s>.", buf, name);
-                continue;
-            }
-            for (i = 1; i < MAX_R_IDX; i++) {
-                monster_race *r_ptr = &r_info[i];
-                if ((!i1 || r_ptr->r_attr == i1) &&
-                    (!i2 || r_ptr->r_char == i2)) {
-                    if (n1) r_ptr->l_attr = n1;
-                    if (n2) r_ptr->l_char = n2;
-                }
-            }
-        }
-
-        /* Process "K:<num>:<a>/<c>" */
-        else if (buf[0] == 'K') {
-            if (sscanf(buf, "K:%d:%d/%d", &i, &n1, &n2) != 3) {
-                msg_format("Bad command <%s> in file <%s>.", buf, name);
-                continue;
-            }
-            if (n1) k_info[i].x_attr = n1;
-            if (n2) k_info[i].x_char = n2;
-        }
-
-        /* Process "I:<a>/<c>:<a>/<c>" */
-        else if (buf[0] == 'I') {
-            if (sscanf(buf, "I:%d/%d:%d/%d", &i1, &i2, &n1, &n2) != 4) {
-                msg_format("Bad command <%s> in file <%s>.", buf, name);
-                continue;
-            }
-            for (i = 0; i < MAX_K_IDX; i++) {
-                if ((!i1 || k_info[i].k_attr == i1) &&
-                    (!i2 || k_info[i].k_char == i2)) {
-                    if (n1) k_info[i].x_attr = n1;
-                    if (n2) k_info[i].x_char = n2;
-                }
-            }
-        }
-
-        /* Process "T:<tv>,<sv>:<a>/<c>" */
-        else if (buf[0] == 'T') {
-            if (sscanf(buf, "T:%d,%d:%d/%d", &i1, &i2, &n1, &n2) != 4) {
-                msg_format("Bad command <%s> in file <%s>.", buf, name);
-                continue;
-            }
-            for (i = 0; i < MAX_K_IDX; i++) {
-                if ((!i1 || k_info[i].tval == i1) &&
-                    (!i2 || k_info[i].sval == i2)) {
-                    if (n1) k_info[i].x_attr = n1;
-                    if (n2) k_info[i].x_char = n2;
-                }
-            }
-        }
-
-        /* Process "U:<tv>:<a>/<c>" -- attr/char for unaware items */
-        else if (buf[0] == 'U') {
-            if (sscanf(buf, "U:%d:%d/%d", &i1, &n1, &n2) != 3) {
-                msg_format("Bad command <%s> in file <%s>.", buf, name);
-                continue;
-            }
-            for (i = 0; i < MAX_K_IDX; i++) {
-                if (!i1 || (k_info[i].tval == i1)) {
-                    if (n1) k_info[i].i_attr = n1;
-                    if (n2) k_info[i].i_char = n2;
-                }
-            }
-        }
-
-        /* Process "E:<tv>:<a>/<c>" -- attr/char for equippy chars */
-        else if (buf[0] == 'E') {
-            if (sscanf(buf, "E:%d:%d/%d", &i1, &n1, &n2) != 3) {
-                msg_format("Bad command <%s> in file <%s>.", buf, name);
-                continue;
-            }
-            if (n1) tval_to_attr[i1] = n1;
-            if (n2) tval_to_char[i1] = n2;
-        }
-
-        /* Process "F:<f>:<a>/<c>" -- attr/char for terrain features */
-        else if (buf[0] == 'F') {
-            if (sscanf(buf, "F:%d:%d/%d", &i1, &n1, &n2) != 3) {
-                msg_format("Bad command <%s> in file <%s>.", buf, name);
-                continue;
-            }
-            if (n1) f_info[i1].z_attr = n1;
-            if (n2) f_info[i1].z_char = n2;
-        }
-
-        /* Process "A:<str>" -- save an "action" for later */
-        else if (buf[0] == 'A') {
-            text_to_ascii(act, buf+2);
-        }
-
-        /* Process "P:<str>" -- normal-macro trigger */
-        else if (buf[0] == 'P') {
-            text_to_ascii(pat, buf+2);
-            macro_add(pat, act, FALSE);
-        }
-
-        /* Process "C:<str>" -- command-macro trigger */
-        else if (buf[0] == 'C') {
-            text_to_ascii(pat, buf+2);
-            macro_add(pat, act, TRUE);
-        }
-
-        /* Process "S:<key>:<key>:<dir>" -- keymap */
-        else if (buf[0] == 'S') {
-            if (sscanf(buf, "S:%d:%d:%d", &i1, &n1, &n2) != 3) {
-                msg_format("Bad command <%s> in file <%s>.", buf, name);
-                continue;
-            }
-            if ((i1 < 0) || (i1 > 255)) continue;
-            if ((n1 < 0) || (n1 > 255)) n1 = 0;
-            if ((n2 < 1) || (n2 > 9) || (n2 == 5)) n2 = 0;
-            keymap_cmds[i1] = n1;
-            keymap_dirs[i1] = n2;
-        }
-
-        /* Process "X:<str>" -- turn option off */
-        else if (buf[0] == 'X') {
-            for (n = 0, i = 0; options[i].o_desc; i++) {
-                if (options[i].o_var &&
-                    options[i].o_text &&
-                    streq(options[i].o_text, buf + 2)) {
-                    (*options[i].o_var) = FALSE;
-                    n = i;
-                    break;
-                }
-            }
-            if (!n) {
-                msg_format("Unknown option <%s> in file <%s>.", buf, name);
-                continue;
-            }
-        }
-
-        /* Process "Y:<str>" -- turn option on */
-        else if (buf[0] == 'Y') {
-            for (n = 0, i = 0; options[i].o_desc; i++) {
-                if (options[i].o_var &&
-                    options[i].o_text &&
-                    streq(options[i].o_text, buf + 2)) {
-                    (*options[i].o_var) = TRUE;
-                    n = i;
-                    break;
-                }
-            }
-            if (!n) {
-                msg_format("Unknown option <%s> in file <%s>.", buf, name);
-                continue;
-            }
-        }
-
-        /* Illegal command */
-        else {
-            msg_format("Unknown command <%s> in file <%s>.", buf, name);
-            continue;
+            /* Useful error message */
+            msg_format("Error in '%s' parsing '%s'.", buf, name);
         }
     }
 
@@ -368,7 +393,7 @@ static errr process_pref_file_aux(cptr name)
     my_fclose(fp);
 
 
-    /* Hack -- note use of "cheat" options */
+    /* Mega-Hack -- note use of "cheat" options */
     if (cheat_peek) noscore |= 0x0100;
     if (cheat_hear) noscore |= 0x0200;
     if (cheat_room) noscore |= 0x0400;
@@ -379,28 +404,6 @@ static errr process_pref_file_aux(cptr name)
 
     /* Success */
     return (0);
-}
-
-
-/*
- * Find a pref file with the given name and process it
- * Looks in the current directory, and the "USER" directories
- */
-errr process_pref_file(cptr name)
-{
-    char tmp[1024];
-
-    /* XXX XXX XXX Hack -- Try the given file */
-    if (0 == process_pref_file_aux(name)) return (0);
-
-    /* Look in the "user" directory */
-    sprintf(tmp, "%s%s", ANGBAND_DIR_USER, name);
-
-    /* Attempt to process that file */
-    if (0 == process_pref_file_aux(tmp)) return (0);
-
-    /* Oh well */
-    return (1);
 }
 
 
@@ -474,8 +477,9 @@ errr check_time_init(void)
     char	buf[1024];
 
 
-    /* Access the "hours" file */
-    sprintf(buf, "%s%s", ANGBAND_DIR_FILE, "time.txt");
+    /* Access the "time" file */
+    strcpy(buf, ANGBAND_DIR_FILE);
+    strcat(buf, "time.txt");
 
     /* Open the file */
     fp = my_fopen(buf, "r");
@@ -601,7 +605,8 @@ errr check_load_init(void)
 
 
     /* Access the "load" file */
-    sprintf(buf, "%s%s", ANGBAND_DIR_FILE, "load.txt");
+    strcpy(buf, ANGBAND_DIR_FILE);
+    strcat(buf, "load.txt");
 
     /* Open the "load" file */
     fp = my_fopen(buf, "r");
@@ -630,7 +635,8 @@ errr check_load_init(void)
         if (sscanf(buf, "%s%d", temphost, &value) != 2) continue;
 
         /* Skip other hosts */
-        if (!streq(temphost,thishost) && !streq(temphost,"localhost")) continue;
+        if (!streq(temphost,thishost) &&
+            !streq(temphost,"localhost")) continue;
 
         /* Use that value */
         check_load_value = value;
@@ -663,8 +669,9 @@ void show_news(void)
     char	buf[1024];
 
 
-    /* Construct the name of the "news" file */
-    sprintf(buf, "%s%s", ANGBAND_DIR_FILE, "news.txt");
+    /* Access the "news" file */
+    strcpy(buf, ANGBAND_DIR_FILE);
+    strcat(buf, "news.txt");
 
     /* Open the News file */
     fp = my_fopen(buf, "r");
@@ -742,8 +749,9 @@ static bool do_cmd_help_aux(cptr name, int line)
     for (i = 0; i < 10; i++) hook[i][0] = '\0';
 
 
-    /* Build the standard file name */
-    sprintf(path, "%s%s", ANGBAND_DIR_HELP, name);
+    /* Access the "help" file */
+    strcpy(path, ANGBAND_DIR_HELP);
+    strcat(path, name);
 
     /* Open the file */
     fff = my_fopen(path, "r");
@@ -751,8 +759,9 @@ static bool do_cmd_help_aux(cptr name, int line)
     /* Hack -- try the alternative directory */
     if (!fff) {
 
-        /* Build the alternate file name */
-        sprintf(path, "%s%s", ANGBAND_DIR_INFO, name);
+        /* Access the "info" file */
+        strcpy(path, ANGBAND_DIR_INFO);
+        strcat(path, name);
 
         /* Open the file */
         fff = my_fopen(path, "r");
@@ -1096,11 +1105,15 @@ errr file_character(cptr name)
 
     char		i_name[80];
 
-    char		buf[160];
+    char		buf[1024];
 
 
     /* Drop priv's */
     safe_setuid_drop();
+
+    /* Access the help file */
+    strcpy(buf, ANGBAND_DIR_USER);
+    strcat(buf, name);
 
 #if defined(MACINTOSH) && !defined(applec)
     /* Global -- "text file" */
@@ -1108,7 +1121,7 @@ errr file_character(cptr name)
 #endif
 
     /* Check for existing file */
-    fd = fd_open(name, O_RDONLY, 0);
+    fd = fd_open(buf, O_RDONLY, 0);
     
     /* Existing file */
     if (fd >= 0) {
@@ -1119,14 +1132,14 @@ errr file_character(cptr name)
         (void)fd_close(fd);
 
         /* Build query */
-        (void)sprintf(out_val, "Replace existing file %s? ", name);
+        (void)sprintf(out_val, "Replace existing file %s? ", buf);
 
         /* Ask */
         if (get_check(out_val)) fd = -1;
     }
 
     /* Open the non-existing file */
-    if (fd < 0) fp = my_fopen(name, "w");
+    if (fd < 0) fp = my_fopen(buf, "w");
 
     /* Grab priv's */
     safe_setuid_grab();
@@ -1136,7 +1149,7 @@ errr file_character(cptr name)
     if (!fp) {
 
         /* Message */
-        msg_format("Cannot open file '%s'.", name);
+        msg_format("Cannot open file '%s'.", buf);
         msg_print(NULL);
 
         /* Error */
@@ -1291,9 +1304,10 @@ errr file_character(cptr name)
         for (i = 0; i < st_ptr->stock_num; i++) {
             if (i == 12) fprintf(fp, "\n");
             objdes(i_name, &st_ptr->stock[i], TRUE, 3);
-            fprintf(fp, "%c%s %s\n", (i%12)+'a', paren, i_name);
+            fprintf(fp, "%c%s %s\n", I2A(i%12), paren, i_name);
         }
     }
+
 
     /* Terminate it */
     fprintf(fp, "\n");
@@ -1338,7 +1352,7 @@ void process_player_name(bool sf)
         if (iscntrl(player_name[i])) {
 
             /* Illegal characters */
-            quit_fmt("The name '%s' contains control characters!", player_name);
+            quit_fmt("The name '%s' contains control chars!", player_name);
         }
     }
 
@@ -1407,6 +1421,12 @@ void process_player_name(bool sf)
         (void)sprintf(savefile, "%s%s",
                         ANGBAND_DIR_SAVE, player_base);
 #endif
+
+#ifdef VM
+        /* Hack -- support "flat directory" usage on VM/ESA */
+        (void)sprintf(savefile, "%s%s.sv",
+                        ANGBAND_DIR_SAVE, player_base);
+#endif /* VM */
 
     }
 }
@@ -1503,9 +1523,7 @@ static void make_bones(void)
         /* Ignore people who die in town */
         if (dun_level) {
 
-            /* XXX XXX Perhaps the player's level should be taken into account */
-
-            /* Get the proper "Bones File" name */
+            /* XXX XXX XXX Get the proper "Bones File" name */
             sprintf(str, "%sbone.%03d", ANGBAND_DIR_BONE, dun_level);
 
             /* Attempt to open the bones file */
@@ -1544,7 +1562,8 @@ static void make_bones(void)
 /*
  * Silly string (unbalanced) representing the "grass"
  */
-static cptr grass = "________)/\\\\_)_/___(\\/___(//_\\)/_\\//__\\\\(/_|_)_______";
+static cptr grass =
+    "________)/\\\\_)_/___(\\/___(//_\\)/_\\//__\\\\(/_|_)_______";
 
 /*
  * Prints the gravestone of the character  -RAK-
@@ -1759,7 +1778,7 @@ static void show_info(void)
 
                 i_ptr = &st_ptr->stock[i];
 
-                sprintf(tmp_val, "%c) ", 'a'+j);
+                sprintf(tmp_val, "%c) ", I2A(j));
                 prt(tmp_val, j+2, 4);
 
                 objdes(i_name, i_ptr, TRUE, 3);
@@ -2059,7 +2078,8 @@ static void display_scores_aux(int from, int to, int note, high_score *score)
             c_put_str(attr, out_val, n*4 + 3, 0);
 
             /* And still another line of info */
-            sprintf(out_val, "               (User %s, Date %s, Gold %s, Turn %s).",
+            sprintf(out_val,
+                    "               (User %s, Date %s, Gold %s, Turn %s).",
                     user, when, gold, aged);
             c_put_str(attr, out_val, n*4 + 4, 0);
         }
@@ -2086,8 +2106,9 @@ void display_scores(int from, int to)
 {
     char buf[1024];
 
-    /* Extract the name of the High Score File */
-    sprintf(buf, "%s%s", ANGBAND_DIR_APEX, "scores.raw");
+    /* Access the high score file */
+    strcpy(buf, ANGBAND_DIR_APEX);
+    strcat(buf, "scores.raw");
 
     /* Open the binary high score file, for reading */
     highscore_fd = fd_open(buf, O_RDONLY | O_BINARY, 0);
@@ -2415,8 +2436,9 @@ void close_game(void)
     character_icky = TRUE;
 
 
-    /* Extract the name of the High Score File */
-    sprintf(buf, "%s%s", ANGBAND_DIR_APEX, "scores.raw");
+    /* Access the high score file */
+    strcpy(buf, ANGBAND_DIR_APEX);
+    strcat(buf, "scores.raw");
 
     /* Open the binary high score file, for reading/writing */
     highscore_fd = fd_open(buf, O_RDWR | O_BINARY, 0);
