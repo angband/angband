@@ -1,6 +1,11 @@
-   Most bugs in Angband have been fixed now, these are the ones that may turn
-up, but have a habit of not doing so when you're trying to test them in wiz
-mode!
+        There is a redisplay bug that I haven't tracked down quite yet
+involving the edges of the maps not being drawn; redisplay using CTRL-R or use
+the 'M' command.
+
+All of the other known bugs that I've heard about or run into have been fixed.
+You may believe this as far as you want to, however. :-)
+
+Here's the previous list:
 
 	Angband is based on Umoria 5.2.1 so any changes made in the conversion
 to Umoria 5.5 may still be in Angband... this includes the invisible
@@ -20,7 +25,3 @@ on 0 hp, so they die the next round.
 	Sometimes when an object is to clear in the shops, the shopkeeper
 still asks for the full price, not 10% of it like he should do. This may only
 occur for stackable objects.
-
-	Please mail any other bugs/fixes to smarsh@dcs.warwick.ac.uk.
-
-

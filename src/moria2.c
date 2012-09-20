@@ -22,19 +22,18 @@
 #include <strings.h>
 #endif
 
-
 #if defined(LINT_ARGS)
 static int look_ray(int, int, int);
 static int look_see(int, int, int *);
 static void hit_trap(int, int);
-static void carry(int, int, int);
-static int summon_object(int, int, int, int);
+static int summon_object(int, int, int, int, int32u);
 static void py_attack(int, int);
 static void chest_trap(int, int);
 static void inven_throw(int, struct inven_type *);
-static void facts(struct inven_type *, int *, int *, int *, int *);
+static void facts(struct inven_type *, int *, int *, int *, int *, int *);
 static void drop_throw(int, int, struct inven_type *);
 static void py_bash(int, int);
+static char *look_mon_desc(int);
 #else
 static int look_ray();
 static int look_see();
@@ -62,8 +61,7 @@ int y, x;
       msg_print("You fell into a pit!");
       if (py.flags.ffall)
 	msg_print("You gently float down.");
-      else
-      {
+      else {
 	objdes(tmp, t_ptr, TRUE);
 	take_hit(dam, tmp);
       }
@@ -90,15 +88,33 @@ int y, x;
       place_trap(y, x, 0);
       break;
     case 4: /* Trap door*/
-      msg_print("You fell through a trap door!");
-      new_level_flag = TRUE;
-      dun_level++;
-      if (py.flags.ffall)
-	msg_print("You gently float down.");
-      else
-      {
-	objdes(tmp, t_ptr, TRUE);
-	take_hit(dam, tmp);
+      if (!is_quest(dun_level)){ /* that would be too easy... -CFT */
+	  msg_print("You fell through a trap door!");
+	  new_level_flag = TRUE;
+	  dun_level++;
+	  if (py.flags.ffall)
+	      msg_print("You gently float down.");
+	  else
+	  {
+	      objdes(tmp, t_ptr, TRUE);
+	      take_hit(dam, tmp);
+	  }
+	  msg_print(NULL); /* make sure can see the message before new level */
+      } /* end normal */
+      else { /* it's a quest level, can't let them fall through */
+	  msg_print("You fall into a spiked pit!");
+	  if (py.flags.ffall)
+	      msg_print("You gently float down.");
+	  else {
+	      dam = (dam * 3) / 2; /* do a little extra damage for spikes */
+	      if (randint(3) == 1) {
+		  msg_print("The spikes are poisoned!");
+		  if (!(py.flags.poison_im || py.flags.poison_resist ||
+			py.flags.resist_poison))
+		      dam *= 2; /* more damage from poison!  :-)  -CFT */
+		  else msg_print("You are unaffected by the poison.");
+	      }
+	  } /* no ffall */
       }
       break;
     case 5: /* Sleep gas*/
@@ -138,6 +154,8 @@ int y, x;
     case 8: /* Teleport*/
       teleport_flag = TRUE;
       msg_print("You hit a teleport trap!");
+      /* Light up the teleport trap, before we teleport away.  */
+      move_light (y, x, y, x);
       break;
     case 9: /* Rockfall*/
       take_hit(dam, "a falling rock");
@@ -146,8 +164,8 @@ int y, x;
       msg_print("You are hit by falling rock.");
       break;
     case 10: /* Corrode gas*/
-      corrode_gas("corrosion gas");
       msg_print("A strange red gas surrounds you.");
+      corrode_gas("corrosion gas");
       break;
     case 11: /* Summon mon*/
       (void) delete_object(y, x);	/* Rune disappears.    */
@@ -160,12 +178,12 @@ int y, x;
 	}
       break;
     case 12: /* Fire trap*/
-      fire_dam(dam, "a fire trap");
       msg_print("You are enveloped in flames!");
+      fire_dam(dam, "a fire trap");
       break;
     case 13: /* Acid trap*/
-      acid_dam(dam, "an acid trap");
       msg_print("You are splashed with acid!");
+      acid_dam(dam, "an acid trap");
       break;
     case 14: /* Poison gas*/
       if (!(py.flags.poison_im || py.flags.poison_resist ||
@@ -219,29 +237,9 @@ int y, x;
       break;
 
       /* Town level traps are special,	the stores.	*/
-    case 101: /* General    */
-      enter_store(0);
-      break;
-    case 102: /* Armory	    */
-      enter_store(1);
-      break;
-    case 103: /* Weaponsmith*/
-      enter_store(2);
-      break;
-    case 104: /* Temple	    */
-      enter_store(3);
-      break;
-    case 105: /* Alchemy    */
-      enter_store(4);
-      break;
-    case 106: /* Magic-User */
-      enter_store(5);
-      break;
-    case 107: /* Healers */
-      enter_store(6);
-      break;
-    case 108: /* Home */
-      enter_store(7);
+    case 101: case 102: case 103: case 104: case 105: case 106:
+    case 107: case 108:
+      enter_store(t_ptr->subval-101);
       break;
 
     default:
@@ -265,6 +263,7 @@ int *sn, *sc;
   int spell[63], result, first_spell;
   register spell_type *s_ptr;
 
+  if (!py.misc.pclass) return 0; /* if a warrior, abort as if by ESC -CFT */
   result = -1;
   i = 0;
   j1 = inventory[item_val].flags;
@@ -299,7 +298,7 @@ int *sn, *sc;
       result = get_spell(spell, i, sn, sc, prompt, first_spell);
       if (result && magic_spell[py.misc.pclass-1][*sn].smana > py.misc.cmana)
 	{
-	  if (py.misc.pclass)
+	  if (class[py.misc.pclass].spell == MAGE)
 	    result = get_check("You summon your limited strength to cast this one! Confirm?");
 	  else
 	    result = get_check("The gods may think you presumptuous for this! Confirm?");
@@ -342,9 +341,9 @@ int pickup;
 	}
       else
 	{
-	  if (inven_check_num(i_ptr))	   /* Too many objects?	    */
+	  if (pickup && inven_check_num(i_ptr))	   /* Too many objects?	    */
 	    {			    /* Okay,  pick it up      */
-	      if (pickup)
+ 	      if (carry_query_flag)
 		{
 		  objdes(tmp_str, i_ptr, TRUE);
 		  /* change the period to a question mark */
@@ -364,8 +363,7 @@ int pickup;
 		  pickup = get_check(out_val);
 		}
 	      /* Attempt to pick up an object.	       */
-	      if (pickup)
-		{
+	      if (pickup) {
 		  locn = inven_carry(i_ptr);
 		  objdes(tmp_str, &inventory[locn], TRUE);
 		  (void) sprintf(out_val, "You have %s (%c)",tmp_str,locn+'a');
@@ -373,7 +371,7 @@ int pickup;
 		  (void) delete_object(y, x);
 		}
 	    }
-	  else
+	  else if (pickup) /* only if was trying to pick it up... -CFT */
 	    {
 	      objdes(tmp_str, i_ptr, TRUE);
 	      (void) sprintf(out_val, "You can't carry %s", tmp_str);
@@ -381,7 +379,7 @@ int pickup;
 	    }
 	}
     }
-  /* OPPS!				   */
+  /* OOPS!				   */
   else if (i == TV_INVIS_TRAP || i == TV_VIS_TRAP || i == TV_STORE_DOOR)
     hit_trap(y, x);
 }
@@ -409,6 +407,7 @@ void delete_monster(j)
 {
   register monster_type *m_ptr;
 
+  if (j < 2) return; /* trouble? abort! -CFT */
   m_ptr = &m_list[j]; 
   if (c_list[m_ptr->mptr].cdefense & UNIQUE)
     check_unique(m_ptr);
@@ -440,6 +439,7 @@ void fix1_delete_monster(j)
 {
   register monster_type *m_ptr;
 
+  if (j < 2) return; /* trouble? abort! -CFT */
   m_ptr = &m_list[j];
   if (c_list[m_ptr->mptr].cdefense & UNIQUE)
     check_unique(m_ptr);
@@ -461,6 +461,7 @@ int j;
 {
   register monster_type *m_ptr;
 
+  if (j < 2) return; /* trouble? abort! -CFT */
   m_ptr = &m_list[j]; /* Fixed from a c_list ptr to a m_list ptr. -CFT */
   if (c_list[m_ptr->mptr].cdefense & UNIQUE)
     check_unique(m_ptr);
@@ -570,8 +571,8 @@ int32u win;
   int32u holder;	/* avoid a compiler bug */
 #endif
 
-  if (win) {
-    register int i, j, k;
+  if (win & CM_WIN) {           /* MORGOTH */
+    register j, k;
     register cave_type *c_ptr;
     int crown=FALSE, grond=FALSE;
 
@@ -597,7 +598,7 @@ int32u win;
 	    t_ptr->name2 |= SN_MORGOTH;
 	    t_ptr->p1 = 125;
 	    t_ptr->ident |= ID_SHOW_P1;
-	    t_ptr->cost = 10000000;
+	    t_ptr->cost = 10000000L;
 	    if (cave[j][k].cptr == 1)
 	      msg_print ("You feel something roll beneath your feet.");
 	  } else {
@@ -622,7 +623,7 @@ int32u win;
 		    TR_IMPACT|TR_TELEPATHY|TR_ARTIFACT);
 	    t_ptr->p1    = -1;
 	    t_ptr->toac    = 10;
-	    t_ptr->cost  = 500000;
+	    t_ptr->cost  = 500000L;
 	    GROND = 1;
 	    if (cave[j][k].cptr == 1)
 	      msg_print ("You feel something roll beneath your feet.");
@@ -738,7 +739,7 @@ int32u win;
 /* Decreases monsters hit points and deletes monster if needed.	*/
 /* (Picking on my babies.)			       -RAK-   */
 int mon_take_hit(monptr, dam)
-int monptr, dam;
+     int monptr, dam;
 {
   register int32u i;
   int found=FALSE;
@@ -748,38 +749,47 @@ int monptr, dam;
   register creature_type *c_ptr;
   int m_take_hit;
   int32u tmp;
+  int percentage;
+  char m_name[80];
+  vtype out_val;
 
   m_ptr = &m_list[monptr];
   m_ptr->hp -= dam;
   m_ptr->csleep = 0;
+  c_ptr=&c_list[m_ptr->mptr];
+
   if (m_ptr->hp < 0)
     {
-      if (m_ptr->mptr == (MAX_CREATURES - 1)) {
-	char tmp[100];
+    if (m_ptr->mptr == (MAX_CREATURES - 1)) {
+      char temp[100];
 
-	if (!dun_level) {
-	  sprintf(tmp, "%s%d", ANGBAND_BONES, c_list[m_ptr->mptr].level);
-	} else {
-	  sprintf(tmp, "%s%d", ANGBAND_BONES, dun_level);
-	}
-	unlink(tmp);
+      if (!dun_level) {
+	sprintf(temp, "%s%d", ANGBAND_BONES, c_list[m_ptr->mptr].level);
+      } else {
+	sprintf(temp, "%s%d", ANGBAND_BONES, dun_level);
       }
-      if (c_list[m_ptr->mptr].cdefense & QUESTOR) {
-	for (i=0; i<DEFINED_QUESTS; i++) {
-	  if (quests[i]==dun_level) {
-	    quests[i]=0;
-	    found=TRUE;
-	    break;
-	  }
+      unlink(temp);
+    }
+    if (c_list[m_ptr->mptr].cdefense & QUESTOR) {
+      for (i=0; i<DEFINED_QUESTS; i++) { /* search for monster's lv, not... */
+	if (quests[i]==c_list[m_ptr->mptr].level) { /* ...cur lv. -CFT */
+	  quests[i]=0;
+	  found=TRUE;
+	  break;
 	}
-	if (found) {
-	  cave_type *c_ptr;
+      }
+      if (found) {
+	if (dun_level != c_list[m_ptr->mptr].level) { /* just mesg */
+	  msg_print("Well done!!  Now continue onward towards Morgoth.");
+	}
+	else { /* stairs and mesg */
+	  cave_type *ca_ptr;
 	  int cur_pos;
 
-	  c_ptr = &cave[m_ptr->fy][m_ptr->fx];
-          if (c_ptr->tptr != 0) { /* don't overwrite artifact -CFT */
-            int8u ty = m_ptr->fy, tx = m_ptr->fx, ny, nx;
-  
+	  ca_ptr = &cave[m_ptr->fy][m_ptr->fx];
+	  if (ca_ptr->tptr != 0) { /* don't overwrite artifact -CFT */
+	    int ty = m_ptr->fy, tx = m_ptr->fx, ny, nx;
+	    
             while ((cave[ty][tx].tptr != 0) &&
                    (t_list[cave[ty][tx].tptr].tval >= TV_MIN_WEAR) &&
                    (t_list[cave[ty][tx].tptr].tval <= TV_MAX_WEAR) &&
@@ -787,68 +797,106 @@ int monptr, dam;
               do {
                 ny = ty + (int8u)randint(3) -2; /* pick new possible spot */
                 nx = tx + (int8u)randint(3) -2;
-                } while (cave[ny][nx].fval > MAX_OPEN_SPACE);
+	      } while (!in_bounds(ny, nx) ||
+		       (cave[ny][nx].fval > MAX_OPEN_SPACE));
               ty = ny; /* this is a new spot, not in a wall/door/etc */
               tx = nx;
-              } /* ok, to exit this, [ty][tx] must not be artifact -CFT */
+	    } /* ok, to exit this, [ty][tx] must not be artifact -CFT */
             if (cave[ty][tx].tptr != 0) /* so we can delete it -CFT */
               (void) delete_object(ty,tx);
-              c_ptr = &cave[ty][tx]; /* put stairway here... */
-            }
+	    ca_ptr = &cave[ty][tx]; /* put stairway here... */
+	  }
 	  cur_pos = popt();
-	  c_ptr->tptr = cur_pos;
+	  ca_ptr->tptr = cur_pos;
 	  invcopy(&t_list[cur_pos], OBJ_DOWN_STAIR);
 	  msg_print("Well done!! Go for it!");
 	  msg_print("A magical stairway appears...");
-	}
-      }
-      i = monster_death((int)m_ptr->fy, (int)m_ptr->fx,
-			c_list[m_ptr->mptr].cmove,
-			(c_list[m_ptr->mptr].cdefense & (SPECIAL|GOOD)),
-			(c_list[m_ptr->mptr].cmove & WINNER));
-      if ((py.flags.blind < 1 && m_ptr->ml)
-	  || (c_list[m_ptr->mptr].cmove & CM_WIN))
-	{
-	  tmp = (c_recall[m_ptr->mptr].r_cmove & CM_TREASURE) >> CM_TR_SHIFT;
-	  if (tmp > ((i & CM_TREASURE) >> CM_TR_SHIFT))
-	    i = (i & ~CM_TREASURE) | (tmp << CM_TR_SHIFT);
-	  c_recall[m_ptr->mptr].r_cmove =
-	    (c_recall[m_ptr->mptr].r_cmove & ~CM_TREASURE) | i;
-	  if (c_recall[m_ptr->mptr].r_kills < MAX_SHORT)
-	    c_recall[m_ptr->mptr].r_kills++;
-	}
-      c_ptr = &c_list[m_ptr->mptr];
-      p_ptr = &py.misc;
-
-      if (c_ptr->cdefense & UNIQUE) {
-	u_list[m_ptr->mptr].exist = 0;
-	u_list[m_ptr->mptr].dead = 1;
-      }
-      new_exp = ((long)c_ptr->mexp * c_ptr->level) / p_ptr->lev;
-      new_exp_frac = ((((long)c_ptr->mexp * c_ptr->level) % p_ptr->lev)
-	* 0x10000L / p_ptr->lev) + p_ptr->exp_frac;
-      if (new_exp_frac >= 0x10000L)
-	{
-	  new_exp++;
-	  p_ptr->exp_frac = new_exp_frac - 0x10000L;
-	}
-      else
-	p_ptr->exp_frac = new_exp_frac;
-
-      p_ptr->exp += new_exp;
-      /* can't call prt_experience() here, as that would result in "new level"
-	 message appearing before "monster dies" message */
-      m_take_hit = m_ptr->mptr;
-      /* in case this is called from within creatures(), this is a
-	 horrible hack, the m_list/creatures() code needs to be
-	 rewritten */
-      if (hack_monptr < monptr)
-	delete_monster(monptr);
-      else
-	fix1_delete_monster(monptr);
+	} /* if-else for stairway */
+      } /* if found */
+    } /* if quest monster */
+    i = monster_death((int)m_ptr->fy, (int)m_ptr->fx,
+		      c_list[m_ptr->mptr].cmove,
+		      (c_list[m_ptr->mptr].cdefense & (SPECIAL|GOOD)),
+		      (c_list[m_ptr->mptr].cmove & WINNER));
+    if ((py.flags.blind < 1 && m_ptr->ml)
+	|| (c_list[m_ptr->mptr].cmove & CM_WIN))
+    {
+      tmp = (c_recall[m_ptr->mptr].r_cmove & CM_TREASURE) >> CM_TR_SHIFT;
+      if (tmp > ((i & CM_TREASURE) >> CM_TR_SHIFT))
+	i = (i & ~CM_TREASURE) | (tmp << CM_TR_SHIFT);
+      c_recall[m_ptr->mptr].r_cmove =
+	(c_recall[m_ptr->mptr].r_cmove & ~CM_TREASURE) | i;
+      if (c_recall[m_ptr->mptr].r_kills < MAX_SHORT)
+	c_recall[m_ptr->mptr].r_kills++;
     }
+    c_ptr = &c_list[m_ptr->mptr];
+    p_ptr = &py.misc;
+
+    if (c_ptr->cdefense & UNIQUE) {
+      u_list[m_ptr->mptr].exist = 0;
+      u_list[m_ptr->mptr].dead = 1;
+    }
+    new_exp = ((long)c_ptr->mexp * c_ptr->level) / p_ptr->lev;
+    new_exp_frac = ((((long)c_ptr->mexp * c_ptr->level) % p_ptr->lev)
+		    * 0x10000L / p_ptr->lev) + p_ptr->exp_frac;
+    if (new_exp_frac >= 0x10000L)
+    {
+      new_exp++;
+      p_ptr->exp_frac = new_exp_frac - 0x10000L;
+    }
+    else
+      p_ptr->exp_frac = new_exp_frac;
+
+    p_ptr->exp += new_exp;
+    /* can't call prt_experience() here, as that would result in "new level"
+       message appearing before "monster dies" message */
+    m_take_hit = m_ptr->mptr;
+    /* in case this is called from within creatures(), this is a
+       horrible hack, the m_list/creatures() code needs to be
+       rewritten */
+    if (hack_monptr < monptr)
+      delete_monster(monptr);
+    else
+      fix1_delete_monster(monptr);
+  }
+  else  /* don't print 'flees in terror' for every monster that gets killed -CWS */
+      if (m_ptr->hp < 0) return (m_take_hit);
   else
+  {
+    if (m_ptr->maxhp <= 0)  /* Then fix it! -DGK */
+      m_ptr->maxhp = 1;
+    percentage=(m_ptr->hp * 100L)/(m_ptr->maxhp);
+
+    if (!(m_ptr->monfear) && !(c_ptr->cmove & CM_ATTACK_ONLY) &&
+	((percentage<=10 && randint(10)<=percentage)||(dam>=m_ptr->hp)))
+      /* Run if at 10% or less of max hit points, or got hit for half its
+	 current hit points -DGK */
+    {
+      if (m_ptr->ml && los(char_row, char_col, m_ptr->fy, m_ptr->fx))
+      {
+	monster_name(m_name, m_ptr, c_ptr);
+	sprintf(out_val,"%s flees in terror!", m_name);
+	msg_print(out_val);
+      }
+      m_ptr->monfear = randint(10)+ ((dam>=m_ptr->hp && percentage>7)?
+				     20:(11-percentage)*5 );
+    }
+    else if (m_ptr->monfear)
+    {
+      m_ptr->monfear -= randint(dam);
+      if (m_ptr->monfear <= 0)
+      {
+	m_ptr->monfear = 0;
+	if (m_ptr->ml)
+	{
+	  monster_name(m_name, m_ptr, c_ptr);
+	  sprintf(out_val,"%s recovers its courage.", m_name);
+	  msg_print(out_val);
+	}
+      }
+    }
     m_take_hit = -1;
+  }
   return(m_take_hit);
 }
 
@@ -936,17 +984,22 @@ int y, x;
 		  (void) sprintf(out_val, "%s appears confused.", m_name);
 		  m_list[crptr].confused = TRUE;
 		}
+	      if ((out_val[0] >= 'a') && (out_val[0] <= 'z'))
+	        out_val[0] -= 32; /* upcase, because starts sentence -CFT */
 	      msg_print(out_val);
 	      if (m_list[crptr].ml && randint(4) == 1)
 		c_recall[monptr].r_cdefense |=
 		  c_list[monptr].cdefense & CHARM_SLEEP;
 	    }
 
+	  if (k<0) k = 0; /* no neg damage! */
+
 	  /* See if we done it in.				 */
 	  if (mon_take_hit(crptr, k) >= 0)
 	    {
               if ((c_list[monptr].cdefense & DEMON) ||
-                  (c_list[monptr].cdefense & UNDEAD))
+                  (c_list[monptr].cdefense & UNDEAD) ||
+		  (c_list[monptr].cchar=='E' || c_list[monptr].cchar=='g'))
 	        (void) sprintf(out_val, "You have destroyed %s.", m_name);
               else
 	        (void) sprintf(out_val, "You have slain %s.", m_name);
@@ -1032,27 +1085,50 @@ int dir, do_pickup;
 		  (search_flag))
 		search(char_row, char_col, py.misc.srh);
 	      /* A room of light should be lit.	     */
-	      if (c_ptr->fval == LIGHT_FLOOR)
+	      if ((c_ptr->fval == LIGHT_FLOOR) ||
+		  (c_ptr->fval == NT_LIGHT_FLOOR))
 		{
 		  if (!c_ptr->pl && !py.flags.blind)
 		    light_room(char_row, char_col);
 		}
 	      /* In doorway of light-room?	       */
 	      else if (c_ptr->lr && (py.flags.blind < 1))
-		for (i = (char_row - 1); i <= (char_row + 1); i++)
-		  for (j = (char_col - 1); j <= (char_col + 1); j++)
-		    {
-		      d_ptr = &cave[i][j];
-		      if ((d_ptr->fval == LIGHT_FLOOR) && (!d_ptr->pl))
-			light_room(i, j);
-		    }
+		{ int8u lit = FALSE; /* only call light_room once... -CFT */
+		  for (i = (char_row - 1); !lit && i <= (char_row + 1); i++)
+		    for (j = (char_col - 1); !lit && j <= (char_col + 1); j++)
+		      {
+		        d_ptr = &cave[i][j];
+		        if (((d_ptr->fval == LIGHT_FLOOR) ||
+			     (d_ptr->fval == NT_LIGHT_FLOOR)) &&
+			    (!d_ptr->pl)) {
+			/* move light 1st, or corridor may be perm lit */
+			  move_light(old_row, old_col, char_row, char_col);
+			  light_room(char_row, char_col);
+			  lit = TRUE; /* okay, we can stop now... -CFT */
+			  }
+		      }
+		}
 	      /* Move the light source		       */
 	      move_light(old_row, old_col, char_row, char_col);
 	      /* An object is beneath him.	     */
 	      if (c_ptr->tptr != 0)
 		{
-		  if (!prompt_carry_flag)
-		    carry(char_row, char_col, do_pickup);
+		  i = t_list[c_ptr->tptr].tval;
+		  if (i == TV_INVIS_TRAP || i == TV_VIS_TRAP
+		      || i == TV_STORE_DOOR || !prompt_carry_flag
+		      || i == TV_GOLD)
+		      carry(char_row, char_col, do_pickup);
+		  else
+		      if (prompt_carry_flag && i!= TV_OPEN_DOOR
+			  && i!= TV_UP_STAIR && i!= TV_DOWN_STAIR)
+		      {
+			  inven_type *i_ptr;
+			  bigvtype tmp_str,tmp2_str;
+			  i_ptr=&t_list[cave[char_row][char_col].tptr];
+			  objdes(tmp_str,i_ptr,TRUE);
+			  sprintf(tmp2_str,"You see %s",tmp_str);
+			  msg_print(tmp2_str);
+		      }
 		  /* if stepped on falling rock trap, and space contains
 		     rubble, then step back into a clear area */
 		  if (t_list[c_ptr->tptr].tval == TV_RUBBLE)
@@ -1415,6 +1491,27 @@ int dir;
   /* strength, and type of tool used			   */
   tabil = py.stats.use_stat[A_STR];
   i_ptr = &inventory[INVEN_WIELD];
+
+  /* Don't let the player tunnel somewhere illegal, this is necessary to
+     prevent the player from getting a free attack by trying to tunnel
+     somewhere where it has no effect.  */
+  if (c_ptr->fval < MIN_CAVE_WALL
+      && (c_ptr->tptr == 0 || (t_list[c_ptr->tptr].tval != TV_RUBBLE
+			       && t_list[c_ptr->tptr].tval != TV_SECRET_DOOR)))
+    {
+      if (c_ptr->tptr == 0)
+	{
+	  msg_print ("Tunnel through what?  Empty air?!?");
+	  free_turn_flag = TRUE;
+	}
+      else
+	{
+	  msg_print("You can't tunnel through that.");
+	  free_turn_flag = TRUE;
+	}
+      return;
+    }
+
   if (c_ptr->cptr > 1)
     {
       m_ptr = &m_list[c_ptr->cptr];
@@ -1445,6 +1542,13 @@ int dir;
 	    + i_ptr->todam;
 	  /* divide by two so that digging without shovel isn't too easy */
 	  tabil >>= 1;
+	}
+
+      if (weapon_heavy)
+	{
+	  tabil += (py.stats.use_stat[A_STR] * 15) - i_ptr->weight;
+	  if (tabil < 0)
+	    tabil = 0;
 	}
 
       /* Regular walls; Granite, magma intrusion, quartz vein  */
@@ -1859,7 +1963,7 @@ int y, from, to;
      sight. If 'to' is	greater than 1, we do not really look at
      stuff along the direct line of sight, but we do have to see
      what is opaque for the purposes of obscuring other objects. */
-  if (y == 0 && to > 1 || y == x && from < GRADF*2)
+  if (y == 0 && to > 1 || (y == x && from < GRADF*2))
     gl_noquery = TRUE;
   else
     gl_noquery = FALSE;
@@ -1908,7 +2012,7 @@ static int look_see(x, y, transparent)
 register int x, y;
 int *transparent;
 {
-  char *dstring, *string, query;
+  char *dstring, *string, query='a';
   register cave_type *c_ptr;
   register int j;
   bigvtype out_val, tmp_str;
@@ -1938,10 +2042,11 @@ int *transparent;
   if (gl_rock == 0 && c_ptr->cptr > 1 && m_list[c_ptr->cptr].ml)
     {
       j = m_list[c_ptr->cptr].mptr;
-      (void) sprintf(out_val, "%s %s %s. [(r)ecall]",
+      (void) sprintf(out_val, "%s %s %s (%s). [(r)ecall]",
 		     dstring,
 		     is_a_vowel( c_list[j].name[0] ) ? "an" : "a",
-		     c_list[j].name);
+		     c_list[j].name,
+		     look_mon_desc(c_ptr->cptr));
       dstring = "It is on";
       prt(out_val, 0, 0);
       move_cursor_relative(y, x);
@@ -2031,11 +2136,12 @@ inven_type *t_ptr;
 
 /* Obtain the hit and damage bonuses and the maximum distance for a
    thrown missile. */
-static void facts(i_ptr, tbth, tpth, tdam, tdis)
+static void facts(i_ptr, tbth, tpth, tdam, tdis, thits)
 register inven_type *i_ptr;
-int *tbth, *tpth, *tdam, *tdis;
+int *tbth, *tpth, *tdam, *tdis, *thits;
 {
   register int tmp_weight;
+  int tmp_tohit;                /* Just a dummy -EAM */
 
   if (i_ptr->weight < 1)
     tmp_weight = 1;
@@ -2054,14 +2160,18 @@ int *tbth, *tpth, *tdam, *tdis;
   *tdis = (((py.stats.use_stat[A_STR]+20)*10)/tmp_weight);
   if (*tdis > 10)  *tdis = 10;
 
+  /* EAM - Default to single shot or throw
+     but rangers do better with any kind of bow */
+  *thits = 1;
+
   /* multiply damage bonuses instead of adding, when have proper
      missile/weapon combo, this makes them much more useful */
 
   /* Using Bows,  slings,  or crossbows	*/
   if (inventory[INVEN_WIELD].tval == TV_BOW)
-    switch(inventory[INVEN_WIELD].p1)
+    switch(inventory[INVEN_WIELD].subval)
       {
-      case 1:
+      case 20:
 	if (i_ptr->tval == TV_SLING_AMMO) /* Sling and ammo */
 	  {
 	    *tbth = py.misc.bthb;
@@ -2071,7 +2181,7 @@ int *tbth, *tpth, *tdam, *tdis;
 	    *tdis = 20;
 	  }
 	break;
-      case 2:
+      case 1:
 	if (i_ptr->tval == TV_ARROW)      /* Short Bow and Arrow	*/
 	  {
 	    *tbth = py.misc.bthb;
@@ -2079,9 +2189,12 @@ int *tbth, *tpth, *tdam, *tdis;
 	    *tdam += inventory[INVEN_WIELD].todam;
 	    *tdam = *tdam * 2;
 	    *tdis = 25;
+	    if (py.misc.pclass == 4)
+	     *thits = attack_blows( (int)inventory[INVEN_WIELD].weight,
+				    &tmp_tohit );
 	  }
 	break;
-      case 3:
+      case 2:
 	if (i_ptr->tval == TV_ARROW)      /* Long Bow and Arrow	*/
 	  {
 	    *tbth = py.misc.bthb;
@@ -2089,8 +2202,12 @@ int *tbth, *tpth, *tdam, *tdis;
 	    *tdam += inventory[INVEN_WIELD].todam;
 	    *tdam = *tdam * 3;
 	    *tdis = 30;
+	    if (py.misc.pclass == 4)
+	     *thits = attack_blows( (int)inventory[INVEN_WIELD].weight,
+				    &tmp_tohit );
 	  }
 	break;
+#if 0
       case 4:
 	if (i_ptr->tval == TV_ARROW)      /* Composite Bow and Arrow*/
 	  {
@@ -2099,9 +2216,13 @@ int *tbth, *tpth, *tdam, *tdis;
 	    *tdam += inventory[INVEN_WIELD].todam;
 	    *tdam = *tdam * 4;
 	    *tdis = 35;
+	    if (py.misc.pclass == 4)
+	     *thits = attack_blows( (int)inventory[INVEN_WIELD].weight,
+				    &tmp_tohit );
 	  }
 	break;
-      case 5:
+#endif /* 0 */
+      case 10:
 	if (i_ptr->tval == TV_BOLT)      /* Light Crossbow and Bolt*/
 	  {
 	    *tbth = py.misc.bthb;
@@ -2111,7 +2232,7 @@ int *tbth, *tpth, *tdam, *tdis;
 	    *tdis = 25;
 	  }
 	break;
-      case 6:
+      case 11:
 	if (i_ptr->tval == TV_BOLT)      /* Heavy Crossbow and Bolt*/
 	  {
 	    *tbth = py.misc.bthb;
@@ -2138,7 +2259,7 @@ inven_type *t_ptr;
   i = y;
   j = x;
   k = 0;
-  if (randint(10) > 1)
+  if (randint(10) > 1 || t_ptr->flags2 & TR_ARTIFACT) /* no artifact arrows yet*/
     {
       do
 	{
@@ -2157,6 +2278,44 @@ inven_type *t_ptr;
 	}
       while ((!flag) && (k <= 9));
     }
+
+  if (!flag && t_ptr->flags2 & TR_ARTIFACT)
+   {
+    flag = FALSE;
+    i = y;
+    j = x;
+    k = 0;
+    do
+     {
+      if (in_bounds(i, j))
+       {
+	c_ptr = &cave[i][j];
+	if (c_ptr->fval <= MAX_OPEN_SPACE &&
+	   !(     ((t_list[c_ptr->tptr].tval >= TV_MIN_WEAR) &&
+		   (t_list[c_ptr->tptr].tval <= TV_MAX_WEAR) &&
+		   (t_list[c_ptr->tptr].flags2 & TR_ARTIFACT))
+	     || (t_list[c_ptr->tptr].tval == TV_UP_STAIR)
+	     || (t_list[c_ptr->tptr].tval == TV_DOWN_STAIR)
+	     || (t_list[c_ptr->tptr].tval == TV_STORE_DOOR)))
+	 flag = TRUE;
+       }
+      if (!flag)
+       {
+	int newi, newj;
+	do
+         {
+	  newi = i + randint(3) - 2;
+	  newj = j + randint(3) - 2;
+	 } while (!in_bounds(newi, newj) ||
+	   (cave[newi][newj].fval > MAX_OPEN_SPACE));
+	i=newi;
+	j=newj;
+	k++;
+       }
+     } while ((!flag) && (k <= 50));
+    if (flag && (cave[i][j].tptr != 0))
+      (void) delete_object(i, j);
+   }
   if (flag)
     {
       cur_pos = popt();
@@ -2176,11 +2335,13 @@ inven_type *t_ptr;
 /* Note: Flasks of oil do fire damage				 */
 /* Note: Extra damage and chance of hitting when missiles are used*/
 /*	 with correct weapon.  I.E.  wield bow and throw arrow.	 */
+/* Note: Some characters will now get multiple shots per turn -EAM */
 void throw_object()
 {
   int item_val, tbth, tpth, tdam, tdis;
   int y, x, oldy, oldx, cur_dis, dir;
   int flag, visible;
+  int thits, max_shots;
   bigvtype out_val, tmp_str;
   inven_type throw_obj;
   register cave_type *c_ptr;
@@ -2189,129 +2350,169 @@ void throw_object()
   char tchar;
 
   if (inven_ctr == 0)
-    {
-      msg_print("But you are not carrying anything.");
-      free_turn_flag = TRUE;
-    }
+  {
+    msg_print("But you are not carrying anything.");
+    free_turn_flag = TRUE;
+  }
   else if (get_item(&item_val, "Fire/Throw which one?", 0, inven_ctr-1, 0))
+  {
+    if (get_dir(NULL, &dir))
     {
-      if (get_dir(NULL, &dir))
+      desc_remain(item_val);
+      if (py.flags.confused > 0)
+      {
+	msg_print("You are confused.");
+	do
 	{
-	  desc_remain(item_val);
-	  if (py.flags.confused > 0)
-	    {
-	      msg_print("You are confused.");
-	      do
-		{
-		  dir = randint(9);
-		}
-	      while (dir == 5);
-	    }
-	  inven_throw(item_val, &throw_obj);
-	  facts(&throw_obj, &tbth, &tpth, &tdam, &tdis);
-	  tchar = throw_obj.tchar;
-	  flag = FALSE;
-	  y = char_row;
-	  x = char_col;
-	  oldy = char_row;
-	  oldx = char_col;
-	  cur_dis = 0;
-	  do
-	    {
-	      (void) mmove(dir, &y, &x);
-	      cur_dis++;
-	      lite_spot(oldy, oldx);
-	      if (cur_dis > tdis)  flag = TRUE;
-	      c_ptr = &cave[y][x];
-	      if ((c_ptr->fval <= MAX_OPEN_SPACE) && (!flag))
-		{
-		  if (c_ptr->cptr > 1)
-		    {
-		      flag = TRUE;
-		      m_ptr = &m_list[c_ptr->cptr];
-		      tbth = tbth - cur_dis;
-		      /* if monster not lit, make it much more difficult to
-			 hit, subtract off most bonuses, and reduce bthb
-			 depending on distance */
-		      if (!m_ptr->ml)
-			tbth = (tbth / (cur_dis+2))
-			  - (py.misc.lev *
-			     class_level_adj[py.misc.pclass][CLA_BTHB] / 2)
-			    - (tpth * (BTH_PLUS_ADJ-1));
-		      if (test_hit(tbth, (int)py.misc.lev, tpth,
-				   (int)c_list[m_ptr->mptr].ac, CLA_BTHB))
-			{
-			  i = m_ptr->mptr;
-			  objdes(tmp_str, &throw_obj, FALSE);
-			  /* Does the player know what he's fighting?	   */
-			  if (!m_ptr->ml)
-			    {
-			      (void) sprintf(out_val,
-			   "The %s finds a mark.", tmp_str);
-			      visible = FALSE;
-			    }
-			  else
-			    {
-			      (void) sprintf(out_val, "The %s hits the %s.",
-					     tmp_str, c_list[i].name);
-			      visible = TRUE;
-			    }
-			  msg_print(out_val);
-			  tdam = tot_dam(&throw_obj, tdam, i);
-			  tdam = critical_blow((int)throw_obj.weight,
-					       tpth, tdam, CLA_BTHB);
-			  i = mon_take_hit((int)c_ptr->cptr, tdam);
-                          if (i<0) {
-                            char buf[100];
-			    extern char *pain_message();
-
-			    if (visible)
-			      (void) sprintf(buf,
-			       pain_message((int)c_ptr->cptr, (int)tdam),
-					   c_list[m_ptr->mptr].name);
-			    else
-			      (void) sprintf(buf,
-				pain_message((int)c_ptr->cptr, (int)tdam),
-					   "It");
-			    msg_print(buf);
-			  }
-			  if (i >= 0)
-			    {
-			      if (!visible)
-				msg_print("You have killed something!");
-			      else
-				{
-			  (void) sprintf(out_val,"You have killed the %s.",
-						 c_list[i].name);
-				  msg_print(out_val);
-				}
-			      prt_experience();
-			    }
-			}
-		      else
-			drop_throw(oldy, oldx, &throw_obj);
-		    }
-		  else
-		    {	/* do not test c_ptr->fm here */
-		      if (panel_contains(y, x) && (py.flags.blind < 1)
-			  && (c_ptr->tl || c_ptr->pl))
-			{
-			  print(tchar, y, x);
-			  put_qio(); /* show object moving */
-			}
-		    }
-		}
-	      else
-		{
-		  flag = TRUE;
-		  drop_throw(oldy, oldx, &throw_obj);
-		}
-	      oldy = y;
-	      oldx = x;
-	    }
-	  while (!flag);
+	  dir = randint(9);
 	}
-    }
+	while (dir == 5);
+      }
+      max_shots = inventory[item_val].number;
+      inven_throw(item_val, &throw_obj);
+      facts(&throw_obj, &tbth, &tpth, &tdam, &tdis, &thits);
+      if (thits > max_shots) thits = max_shots;
+      tchar = throw_obj.tchar;
+      /* EAM Start loop over multiple shots */
+      while (thits-- > 0)
+      {
+	if (inventory[INVEN_WIELD].subval==12) tpth-=10;
+	flag = FALSE;
+	y = char_row;
+	x = char_col;
+	oldy = char_row;
+	oldx = char_col;
+	cur_dis = 0;
+	do
+	{
+	  (void) mmove(dir, &y, &x);
+	  cur_dis++;
+	  lite_spot(oldy, oldx);
+	  if (cur_dis > tdis)  flag = TRUE;
+	  c_ptr = &cave[y][x];
+	  if ((c_ptr->fval <= MAX_OPEN_SPACE) && (!flag))
+	  {
+	    if (c_ptr->cptr > 1)
+	    {
+	      flag = TRUE;
+	      m_ptr = &m_list[c_ptr->cptr];
+	      tbth = tbth - cur_dis;
+	      /* if monster not lit, make it much more difficult to
+		 hit, subtract off most bonuses, and reduce bthb
+		 depending on distance */
+	      if (!m_ptr->ml)
+		tbth = (tbth / (cur_dis+2))
+		  - (py.misc.lev *
+		     class_level_adj[py.misc.pclass][CLA_BTHB] / 2)
+		    - (tpth * (BTH_PLUS_ADJ-1));
+	      if (test_hit(tbth, (int)py.misc.lev, tpth,
+			   (int)c_list[m_ptr->mptr].ac, CLA_BTHB))
+	      {
+		i = m_ptr->mptr;
+		objdes(tmp_str, &throw_obj, FALSE);
+		/* Does the player know what he's fighting?	   */
+		if (!m_ptr->ml)
+		{
+		  (void) sprintf(out_val,
+				 "The %s finds a mark.", tmp_str);
+		  visible = FALSE;
+		}
+		else
+		{
+		  if (c_list[i].cdefense & UNIQUE)
+		    (void) sprintf(out_val, "The %s hits %s.",
+				   tmp_str, c_list[i].name);
+		  else
+		    (void) sprintf(out_val, "The %s hits the %s.",
+				   tmp_str, c_list[i].name);
+		  visible = TRUE;
+		}
+		msg_print(out_val);
+		tdam = tot_dam(&throw_obj, tdam, i);
+		tdam = critical_blow((int)throw_obj.weight,
+				     tpth, tdam, CLA_BTHB);
+		if (tdam < 0) tdam = 0;
+		i = mon_take_hit((int)c_ptr->cptr, tdam);
+		if (i<0) {
+		  char buf[100];
+		  extern char *pain_message();
+
+		  if (visible)
+		    (void) sprintf(buf,
+				   pain_message((int)c_ptr->cptr, (int)tdam),
+				   c_list[m_ptr->mptr].name);
+		  else
+		    (void) sprintf(buf,
+				   pain_message((int)c_ptr->cptr, (int)tdam),
+				   "It");
+		  msg_print(buf);
+		}
+		if (i >= 0)
+		{
+		  if (!visible)
+		    msg_print("You have killed something!");
+		  else
+		  {
+		    if (c_list[i].cdefense & UNIQUE)
+		      (void) sprintf(out_val, "You have killed %s.",
+				     c_list[i].name);
+		    else
+		      (void) sprintf(out_val,"You have killed the %s.",
+				     c_list[i].name);
+		    msg_print(out_val);
+		  }
+		  prt_experience();
+		}
+	      }
+	      else
+		drop_throw(oldy, oldx, &throw_obj);
+	    }
+	    else
+	    {	/* do not test c_ptr->fm here */
+	      if (panel_contains(y, x) && (py.flags.blind < 1)
+		  && (c_ptr->tl || c_ptr->pl))
+	      {
+		print(tchar, y, x);
+		put_qio(); /* show object moving */
+#ifdef MSDOS
+		delay(115/delay_spd); /* milliseconds */
+#else
+		usleep(115000/delay_spd); /* useconds */
+#endif
+	      }
+	    }
+	  }
+	  else
+	  {
+	    flag = TRUE;
+	    drop_throw(oldy, oldx, &throw_obj);
+	  }
+	  oldy = y;
+	  oldx = x;
+	}
+	while (!flag);
+	if (thits>0)
+	{			/* triple crossbow check -- not really needed */
+	  if (inventory[INVEN_WIELD].subval!=12)
+	  {
+	    (void)sprintf(out_val,"Keep shooting?");
+	    if (get_check(out_val))
+	    {
+	      desc_remain(item_val);
+	      inven_throw(item_val, &throw_obj);
+	    }
+	    else
+	      thits = 0;
+	  }
+	  else
+	  {
+	    desc_remain(item_val);
+	    inven_throw(item_val, &throw_obj);
+	  }
+	}
+      }
+    } /* EAM end loop over multiple shots */
+  }
 }
 
 
@@ -2354,11 +2555,14 @@ int y, x;
 			      + py.stats.use_stat[A_STR]), 0, k, CLA_BTH);
       k += py.misc.wt/60 + 3;
 
+      if (k<0) k = 0; /* no neg damage! */
+
       /* See if we done it in.				     */
       if (mon_take_hit(monster, k) >= 0)
 	{
           if ((c_list[m_ptr->mptr].cdefense & DEMON) ||
-              (c_list[m_ptr->mptr].cdefense & DEMON))
+              (c_list[m_ptr->mptr].cdefense & UNDEAD) ||
+	      (c_list[m_ptr->mptr].cchar=='E'||c_list[m_ptr->mptr].cchar=='g') )
 	    (void) sprintf(out_val, "You have destroyed %s.", m_name);
           else
 	    (void) sprintf(out_val, "You have slain %s.", m_name);
@@ -2422,21 +2626,29 @@ int y, x;
    non-secret door. */
 void bash()
 {
-  int y, x, dir, tmp, no_bash;
+  int y, x, dir, tmp;
   register cave_type *c_ptr;
   register inven_type *t_ptr;
 
   y = char_row;
   x = char_col;
   if (get_dir(NULL, &dir))
-    {
-      no_bash = FALSE;
+  {
+      if (py.flags.confused > 0)
+	{
+	  msg_print("You are confused.");
+	  do
+	    {
+	      dir = randint(9);
+	    }
+	  while (dir == 5);
+	}
       (void) mmove(dir, &y, &x);
       c_ptr = &cave[y][x];
       if (c_ptr->cptr > 1)
 	{
 	  if (py.flags.afraid > 0)
-	    msg_print("You are afraid!");
+	    msg_print("You are too afraid!");
 	  else
 	    py_bash(y, x);
 	}
@@ -2452,7 +2664,7 @@ void bash()
 		{
 		  msg_print("The door crashes open!");
 		  invcopy(&t_list[c_ptr->tptr], OBJ_OPEN_DOOR);
-		  t_ptr->p1 = randint(2) - 1; /* 50% chance of breaking door */
+		  t_ptr->p1 = 1 - randint(2); /* 50% chance of breaking door */
 		  c_ptr->fval = CORR_FLOOR;
 		  if (py.flags.confused == 0)
 		    move_char(dir, FALSE);
@@ -2471,8 +2683,7 @@ void bash()
 	    {
 	      if (randint(10) == 1)
 		{
-		  msg_print("You have destroyed the chest.");
-		  msg_print("and its contents!");
+		  msg_print("You have destroyed the chest and its contents!");
 		  t_ptr->index = OBJ_RUINED_CHEST;
 		  t_ptr->flags = 0;
 		}
@@ -2485,15 +2696,92 @@ void bash()
 		count_msg_print("The chest holds firm.");
 	    }
 	  else
-	    no_bash = TRUE;
-	}
+	      /* Can't give free turn, or else player could try directions
+		 until he found invisible creature */
+	      msg_print("You bash it, but nothing interesting happens.");
+      }
       else
-	no_bash = TRUE;
+      {
+	  if (c_ptr->fval < MIN_CAVE_WALL)
+	      msg_print("You bash at empty space.");
+	  else
+	      /* same message for wall as for secret door */
+	      msg_print("You bash it, but nothing interesting happens.");
+      }
+  }
+}
 
-      if (no_bash)
-	{
-	  msg_print("I do not see anything you can bash there.");
-	  free_turn_flag = TRUE;
-	}
+static char *look_mon_desc(int mnum){
+  monster_type *m = &m_list[mnum];
+  int32 thp, tmax, perc;
+  int8u living = !((c_list[m->mptr].cdefense & (UNDEAD | DEMON))||
+		  c_list[m->mptr].cchar =='E'||c_list[m->mptr].cchar=='g');
+  
+  if (m->maxhp == 0){ /* then we're just going to fix it! -CFT */
+    if ((c_list[m->mptr].cdefense & MAX_HP) || be_nasty)
+      m->maxhp = max_hp(c_list[m->mptr].hd);
+    else
+      m->maxhp = pdamroll(c_list[m->mptr].hd);
     }
+  if (m->hp > m->maxhp)
+    m->hp = m->maxhp;
+
+ if ((m->maxhp == 0) || (m->hp >= m->maxhp)) /* shouldn't ever need > -CFT */
+   return (living ? "unhurt" : "undamaged");
+ thp = (int32)m->hp;
+ tmax = (int32)m->maxhp;
+ perc = (thp * 100L) / tmax;
+ if (perc > 60)
+   return (living ? "somewhat wounded" : "somewhat damaged");
+ if (perc > 25)
+   return (living ? "wounded" : "damaged");
+ if (perc > 10)
+   return (living ? "badly wounded" : "badly damaged");
+ return (living ? "almost dead" : "almost destroyed");
+}
+
+void mmove2( y, x, sourcey, sourcex, desty, destx)
+register int *y, *x;
+int sourcey, sourcex, desty, destx;
+{
+  int d_y,d_x,k,dist,max_dist,min_dist,shift;
+
+  d_y =(*y<sourcey) ? sourcey-*y : *y-sourcey;
+  d_x =(*x<sourcex) ? sourcex-*x : *x-sourcex;
+  dist    =(d_y>d_x) ? d_y : d_x;
+  dist++;
+  d_y =(desty<sourcey) ? sourcey-desty:desty-sourcey;
+  d_x =(destx<sourcex) ? sourcex-destx:destx-sourcex;
+  if (d_y>d_x)
+  {
+    max_dist=d_y;
+    min_dist=d_x;
+}
+  else
+  {
+    max_dist=d_x;
+   min_dist=d_y;
+}
+  for(k=0,shift=max_dist>>1;k<dist;k++,shift-=min_dist)
+    shift = (shift>0) ? shift : shift+max_dist;
+  if (shift<0) shift = 0;
+
+  if (d_y>d_x)
+  {
+    d_y = (desty<sourcey) ? *y-1:*y+1;
+    if (shift)
+      d_x = *x;
+    else
+      d_x = (destx<sourcex) ? *x-1:*x+1;
+}
+  else
+  {
+    d_x = (destx<sourcex) ? *x-1:*x+1;
+    if (shift)
+      d_y = *y;
+    else
+      d_y = (desty<sourcey) ? *y-1:*y+1;
+}
+  *y=d_y;
+  *x=d_x;
 }

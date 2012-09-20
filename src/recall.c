@@ -12,7 +12,11 @@
 #include "types.h"
 #include "externs.h"
 
-static void roff();
+#include <stdio.h>
+
+#ifdef LINT_ARGS
+static void roff(char *);
+#endif
 
 static char *desc_atype[] = {
   "do something undefined",
@@ -134,12 +138,12 @@ static char *desc_spell[] = {
   "haste itself",
   "fire missiles",
   "cast plasma bolts",
-  "mass summoning",
+  "summon many creatures",
   "cast nether bolts",
   "cast ice bolts",
   "cast darkness",
   "cause amnesia",
-  "mind searing",
+  "sear your mind",
   "cast stinking clouds",
   "teleport its preys level",
   "cast water bolts",
@@ -156,7 +160,7 @@ static char *desc_spell[] = {
   "gravity",
   "darkness",
   "plasma",           /* end */
-  "fires arrows",
+  "fire arrows",
   "summon Ringwraiths",
   "cast darkness storms",
   "cast mana storms",
@@ -224,11 +228,11 @@ int mon_num;
   vtype temp;
   register recall_type *mp;
   register creature_type *cp;
-  register int i, k;
+  register int32u i, k; /* changed from int, to avoid PC's 16bit ints -CFT */
   int32u j;
   int mspeed;
   int32u rcmove, rspells, rspells2, rspells3;
-  int32u rcdefense;
+  int32u rcdefense; /* this was int16u, but c_recall[] uses int32u -CFT */
   recall_type save_mem;
   int breath=FALSE, magic=FALSE;
 
@@ -277,16 +281,23 @@ int mon_num;
        (void) sprintf(temp, "It has slain %d of your ancestors", mp->r_deaths);
         roff(temp);
         if (u_list[mon_num].dead) { /* but we've also killed it */
-        roff(", but you have avenged them!");
+        sprintf(temp, ", but you have avenged %s! ",
+		plural(mp->r_deaths, "him", "them"));
+	roff(temp);
+        }
+      else {
+        sprintf(temp, ", who %s unavenged. ",
+		plural(mp->r_deaths, "remains", "remain"));
+	roff(temp);
           }
-        }        
+      }
       else if (u_list[mon_num].dead) { /* we killed it w/o dying... yet! */
         roff("You have slain this foe.");
         }
       }      
     else if (mp->r_deaths) { /* not unique.... */
     (void) sprintf(temp,
-                   "%d of ancestors %s",
+                   "%d of your ancestors %s",
                    mp->r_deaths, plural(mp->r_deaths, "has", "have") );
       roff(temp);
       roff(" been killed by this creature, and ");
@@ -303,12 +314,12 @@ int mon_num;
       (void) sprintf(temp, "At least %d of these creatures %s",
                      mp->r_kills, plural(mp->r_kills, "has", "have") );
       roff(temp);
-      roff(" been killed by your ancestors.");
+      roff(" been killed by you and your ancestors.");
     }
      else roff("No battles to the death are recalled.");
   /* Immediately obvious. */
   for (k=0; k<MAX_CREATURES; k++) {
-    if (!strcmp(desc_list[k].name, cp->name)) {
+    if (!stricmp(desc_list[k].name, cp->name)) {
       if (strlen(desc_list[k].desc) != 0) {
 	roff(" ");
 	roff(desc_list[k].desc);
@@ -418,7 +429,7 @@ int mon_num;
       j = (((long)cp->mexp * cp->level % py.misc.lev) * (long)1000 /
 	   py.misc.lev+5) / 10;
 
-      (void) sprintf(temp, " is worth %d.%02ld point%s", i,
+      (void) sprintf(temp, " is worth %lu.%02lu point%s", i,
 		     j, (i == 1 && j == 0 ? "" : "s"));
       roff(temp);
 
@@ -434,7 +445,7 @@ int mon_num;
       i = py.misc.lev;
       if ((i == 8) || (i == 11) || (i == 18)) q = "n";
       else				q = "";
-      (void) sprintf(temp, " for a%s %d%s level character.", q, i, p);
+      (void) sprintf(temp, " for a%s %lu%s level character.", q, i, p);
       roff(temp);
       if (cp->cdefense & GROUP)
 	roff(" It usually appears in groups.");
@@ -542,7 +553,7 @@ int mon_num;
   }
   if (breath || magic) {
     if ((mp->r_spells & CS_FREQ) > 5) { /* Could offset by level */
-      (void) sprintf(temp, "; 1 time in %ld", cp->spells & CS_FREQ);
+      (void) sprintf(temp, "; 1 time in %lu", cp->spells & CS_FREQ);
       roff(temp);
     }
     roff(".");
@@ -692,7 +703,7 @@ int mon_num;
 	roff(" one or two");
       else
 	{
-	  (void) sprintf(temp, " up to %ld", j);
+	  (void) sprintf(temp, " up to %lu", j);
 	  roff(temp);
 	}
       if (rcmove & CM_CARRY_OBJ)

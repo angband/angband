@@ -8,9 +8,10 @@
 
 /* Person to bother if something goes wrong. */
 /* Recompile files.c and misc2.c if these change. */
-#define WIZARD	"Sean"
+#define WIZARD	"root"
 /* wizard password and wizard uid no longer used */
 
+#define rnd random
 
 /* files used by moria, set these to valid pathnames */
 
@@ -31,8 +32,9 @@
 #define ANGBAND_WIZ       LIBDIR"/files/wizards"
 #define ANGBAND_SAV       LIBDIR"/save"
 
-/*#define ANNOY 142*/
-/* #define SET_UID */
+#define SET_UID		/* define on multi-user systems */
+#undef CHECKHOURS	/* define if checking the 'hours' file */
+#undef HAGGLE		/* define to enable haggling at stores */
 
 /* this sets the default user interface */
 /* to use the original key bindings (keypad for movement) set ROGUE_LIKE
@@ -135,13 +137,3 @@ extern int PlayerUID;
 #define getuid() PlayerUID
 #define geteuid() PlayerUID
 #endif
-
-
-
-
-
-
-
-
-
-

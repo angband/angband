@@ -101,6 +101,7 @@ typedef struct monster_type
   int8u ml;
   int8u stunned;
   int8u confused;
+  int8u monfear;         /* Run away! Run away! -DGK */
 } monster_type;
 
 typedef struct treasure_type
@@ -280,6 +281,7 @@ typedef struct player_type
       int8u nexus_resist;	/* Resist nexus	       */
       int8u blindness_resist;	/* Resist blindness    */
       int8u nether_resist;      /* Resist nether       */
+      int8u fear_resist;        /* Resist fear         */
     } flags;
 } player_type;
 
@@ -288,7 +290,7 @@ typedef struct spell_type
   int8u slevel;
   int8u smana;
   int8u sfail;
-  int8u sexp;	/* 1/4 of exp gained for learning spell */
+  int16u sexp;	/* 1/4 of exp gained for learning spell */
 } spell_type;
 
 typedef struct race_type

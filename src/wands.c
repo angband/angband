@@ -54,6 +54,8 @@ void aim()
 	    + (class_level_adj[m_ptr->pclass][CLA_DEVICE] * m_ptr->lev / 3);
 	  if (py.flags.confused > 0)
 	    chance = chance / 2;
+	  if ((chance < USE_DEVICE) && (randint(USE_DEVICE - chance + 1) == 1))
+	    chance = USE_DEVICE; /* Give everyone a slight chance */
 	  if (chance <= 0)  chance = 1;
 	  if (randint(chance) < USE_DEVICE)
 	    msg_print("You failed to use the wand properly.");
@@ -75,13 +77,13 @@ void aim()
 		      done_effect = 1;
 		      break;
 		    case WD_DRG_FIRE:
-		      fire_ball(GF_FIRE,dir,k,l,100,
+		      fire_ball(GF_FIRE,dir,k,l,100, 3,
 				        "huge ball of Fire");
 		      ident = TRUE;
 		      done_effect = 1;
 		      break;
 		    case WD_DRG_FRST:
-		      fire_ball(GF_FROST,dir,k,l,80,
+		      fire_ball(GF_FROST,dir,k,l,80, 3,
 				        "huge ball of Frost");
 		      ident = TRUE;
 		      done_effect = 1;
@@ -89,19 +91,19 @@ void aim()
 		    case WD_DRG_BREA:
 		      switch(randint(5)) {
 		      case 1:
-			fire_ball(GF_FIRE,dir,k,l,100,
+			fire_ball(GF_FIRE,dir,k,l,100, 3,
 				"huge ball of Fire"); break;
 		      case 2:
-			fire_ball(GF_FROST,dir,k,l,80,
+			fire_ball(GF_FROST,dir,k,l,80, 3,
 				"huge ball of Frost"); break;
 		      case 3:
-			fire_ball(GF_ACID,dir,k,l,90,
+			fire_ball(GF_ACID,dir,k,l,90, 3,
 				"huge ball of Acid"); break;
 		      case 4:
-			fire_ball(GF_LIGHTNING,dir,k,l,70,
+			fire_ball(GF_LIGHTNING,dir,k,l,70, 3,
 				"huge ball of Lightning"); break;
 		      default:
-			fire_ball(GF_POISON_GAS,dir,k,l,70,
+			fire_ball(GF_POISON_GAS,dir,k,l,70, 3,
 				"huge ball of Gas"); break;
 		      }
                       ident = TRUE;
@@ -151,7 +153,7 @@ void aim()
 		      done_effect = 1;
 		      break;
 		    case WD_CONF_MN:
-		      ident = confuse_monster(dir, k, l);
+		      ident = confuse_monster(dir, k, l, 10);
 		      done_effect = 1;
 		      break;
 		    case WD_SLEE_MN:
@@ -163,7 +165,8 @@ void aim()
 		      done_effect = 1;
 		      break;
 		    case WD_ANHIL:
-		      ident = drain_life(dir, k, l, 125);
+		      fire_bolt(GF_HOLY_ORB,dir,k,l,100,"Holy Bolt");
+		      ident = TRUE;
 		      done_effect = 1;
 		      break;
         	    case WD_TR_DEST:
@@ -176,8 +179,8 @@ void aim()
 		      ident = TRUE;
 		      done_effect = 1;
 		      break;
-		    case WD_NOT_USED: /* No longer used (wonder??) */
-		      ident = build_wall(dir, k, l);
+		    case WD_FEAR_MN: /* Fear Monster */
+		      ident = fear_monster(dir, k, l, 10);
 		      done_effect = 1;
 		      break;
 		    case WD_CLONE:
@@ -193,27 +196,27 @@ void aim()
 		      done_effect = 1;
 		      break;
 		    case WD_LT_BALL:
-		      fire_ball(GF_LIGHTNING, dir, k, l, 32, "Lightning Ball");
+		      fire_ball(GF_LIGHTNING, dir, k, l, 32, 2, "Lightning Ball");
 		      ident = TRUE;
 		      done_effect = 1;
 		      break;
 		    case WD_CD_BALL:
-		      fire_ball(GF_FROST, dir, k, l, 48, "Cold Ball");
+		      fire_ball(GF_FROST, dir, k, l, 48, 2, "Cold Ball");
 		      ident = TRUE;
 		      done_effect = 1;
 		      break;
 		    case WD_FR_BALL:
-		      fire_ball(GF_FIRE, dir, k, l, 72, spell_names[30]);
+		      fire_ball(GF_FIRE, dir, k, l, 72, 2, "Fire Ball");
 		      ident = TRUE;
 		      done_effect = 1;
 		      break;
 		    case WD_ST_CLD:
-		      fire_ball(GF_POISON_GAS, dir, k, l, 12, spell_names[8]);
+		      fire_ball(GF_POISON_GAS, dir, k, l, 12, 2, "Poison Gas");
 		      ident = TRUE;
 		      done_effect = 1;
 		      break;
 		    case WD_AC_BALL:
-		      fire_ball(GF_ACID, dir, k, l, 60, "Acid Ball");
+		      fire_ball(GF_ACID, dir, k, l, 60, 2, "Acid Ball");
 		      ident = TRUE;
 		      done_effect = 1;
 		      break;

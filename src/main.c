@@ -101,18 +101,20 @@ void perror();
 void exit();
 #endif
 
-
-static void char_inven_init();
-static void init_m_level();
-static void init_t_level();
+static int d_check(char *);
+static void init_m_level(void);
+static void init_t_level(void);
+static void char_inven_init(void);
 
 #if (COST_ADJ != 100)
 static void price_adjust();
 #endif
-
+int light_rad=0;
+int unfelt=TRUE;
+int be_nasty=FALSE;
+int rating=0;
 int peek=FALSE;
 int player_uid;
-int be_nasty=FALSE;
 int quests[MAX_QUESTS];
 creature_type ghost;
 
@@ -144,32 +146,39 @@ char *argv[];
 {
   int32u seed;
   int generate, i;
-  int result, FIDDLE=FALSE;
+  int result=FALSE, FIDDLE=FALSE;
   FILE *fp;
   int new_game = FALSE;
   int force_rogue_like = FALSE;
-  int force_keys_to, FORGET;
+  int force_keys_to = FALSE, FORGET;
   char temphost[10], thishost[10], discard[80];
   char string[80];
   struct rlimit rlp;
 
+#ifndef MSDOS
   /* Disable core dumps */
-
   getrlimit(RLIMIT_CORE,&rlp);
   rlp.rlim_cur=0;
   setrlimit(RLIMIT_CORE,&rlp);
+#endif
 
   /* default command set defined in config.h file */
   rogue_like_commands = ROGUE_LIKE;
 
   strcpy(py.misc.name, "\0");
 
+#ifndef MSDOS
 #ifndef SET_UID
   (void) umask(0);
+#endif
 #endif
 
 #ifdef SECURE
   Authenticate();
+#endif
+
+#ifdef MSDOS /* -CFT */
+  msdos_init(); /* set up some screen stuff + get cnf file */
 #endif
 
   /* call this routine to grab a file pointer to the highscore file */
@@ -181,11 +190,16 @@ char *argv[];
 
   init_files();
 
-  if ((player_uid = getuid())<= 0) {
+#ifndef MSDOS
+  if ((player_uid = getuid()) < 0) {
     perror("Can't set permissions correctly!  Getuid call failed.\n");
     exit(0);
   }
   user_name(py.misc.name, player_uid);
+#else
+  user_name(py.misc.name);
+#endif
+
 #ifdef SET_UID
   if (setuid(geteuid()) != 0) {
     perror("Can't set permissions correctly!  Setuid call failed.\n");
@@ -197,9 +211,12 @@ char *argv[];
   if (player_uid == ANNOY)
     be_nasty=TRUE;
   else
-#endif
     be_nasty=FALSE;
+#else
+  be_nasty=FALSE;
+#endif
 
+#ifndef MSDOS
   (void)gethostname(thishost, sizeof thishost);	/* get host */
   if ((fp=fopen(ANGBAND_LOAD, "r")) == NULL) {
     perror("Can't get load-check.\n");
@@ -216,10 +233,7 @@ char *argv[];
   } while (strcmp(temphost,thishost)); /* Until we've found ourselves */
 
   fclose(fp);
-
-  /* catch those nasty signals */
-  /* must come after init_curses as some of the signal handlers use curses */
-  init_signals();
+#endif
 
   seed = 0; /* let wizard specify rng seed */
   /* check for user interface option */
@@ -275,8 +289,10 @@ char *argv[];
 	to_be_wizard = TRUE;
       else
 	goto usage;
+#ifndef MSDOS
       if (isdigit((int)argv[0][2]))
 	player_uid = atoi(&argv[0][2]);
+#endif
       break;
     case 'u':
     case 'U':
@@ -290,15 +306,54 @@ char *argv[];
       break;
     default:
     usage:
-      if (is_wizard(player_uid))
+      if (is_wizard(player_uid)) {
+#ifdef MSDOS
+	puts("Usage: angband [-afnorw] [-s<num>] [-d<num>] <file>");
+#else
 	puts("Usage: angband [-afnor] [-s<num>] [-u<name>] [-w<uid>] [-d<num>]");
-      else
+#endif
+	puts("  a       Activate \"peek\" mode");
+	puts("  d<num>  Delete high score number <num>");
+	puts("  f       Enter \"fiddle\" mode");
+	puts("  n       Start a new character");
+	puts("  o       Use original command set");
+	puts("  r       Use the \"rogue-like\" command set");
+	puts("  s<num>  Show high scores.  Show <num> scores, or first 10");
+#ifdef MSDOS
+	puts("  w       Start in wizard mode");
+	puts(" <file>   Play with savefile named <file>");
+#else
+	puts("  w<num>  Start in wizard mode, as uid number <num>");
+	puts("  u<name> Play with character named <name>");
+#endif
+	puts("Each option must be listed separately (ie '-r -n', not '-rn')");
+      }
+      else {
+#ifdef MSDOS
+	puts("Usage: angband [-nor] [-s<num>] <file>");
+#else
 	puts("Usage: angband [-nor] [-s<num>] [-u<name>]");
+#endif
+	puts("  n       Start a new character");
+	puts("  o       Use original command set");
+	puts("  r       Use the \"rogue-like\" command set");
+	puts("  s<num>  Show high scores.  Show <num> scores, or first 10");
+#ifdef MSDOS
+	puts(" <file>   Play with savefile named <file>");
+#else
+	puts("  u<name> Play with character named <name>");
+#endif
+	puts("Each option must be listed separately (ie '-r -n', not '-rn')");
+      }
       exit(1);
     }
 
   /* use curses */
   init_curses();
+
+  /* catch those nasty signals */
+  /* must come after init_curses as some of the signal handlers use curses */
+  init_signals();
 
   /* Check operating hours			*/
   /* If not wizard  No_Control_Y	       */
@@ -312,6 +367,7 @@ char *argv[];
 #endif
 
   /* Grab a random seed from the clock		*/
+  (void) initstate(((getpid() << 1) * (time(NULL) >> 3)),malloc(256),256);
   init_seeds(seed);
 
   /* Init monster and treasure levels for allocate */
@@ -328,7 +384,6 @@ char *argv[];
 #endif
 
   (void) sprintf(savefile, "%s/%d%s", ANGBAND_SAV, player_uid, py.misc.name);
-
 
 /* This restoration of a saved character may get ONLY the monster memory. In
    this case, get_char returns false. It may also resurrect a dead character
@@ -627,7 +682,7 @@ static void price_adjust()
 }
 #endif
 
-d_check(a)
+static int d_check(a)
   char *a;
 {
   while (*a)
@@ -635,22 +690,5 @@ d_check(a)
       msg_print("Yuch! No control characters, Thankyou!");
       exit_game();
     } else a++;
+  return (0);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

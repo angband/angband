@@ -50,8 +50,8 @@ void ident_char()
       case '3': prt("3 - Entrance to Weaponsmith.", 0, 0); break;
       case '4': prt("4 - Entrance to Temple.", 0, 0); break;
       case '5': prt("5 - Entrance to Alchemy shop.", 0, 0); break;
-      case '6': prt("6 - Entrance to Magic-Users store.", 0, 0); break;
-      case '7': prt("7 - Entrance to the Healers.", 0, 0); break;
+      case '6': prt("6 - Entrance to Magic store.", 0, 0); break;
+      case '7': prt("7 - Entrance to Black Market.", 0, 0); break;
       case '8': prt("8 - Entrance to your home.", 0, 0); break;
 	/* case '9': prt("9 - Not used.", 0, 0);  break;*/
       case ':': prt(": - Rubble.", 0, 0); break;
@@ -100,7 +100,7 @@ void ident_char()
       case 'e': prt("e - Floating Eye.", 0, 0); break;
       case 'f': prt("f - Felines", 0, 0); break;
       case 'g': prt("g - Golem.", 0, 0); break;
-      case 'h': prt("h - Demi-humans.", 0, 0); break; 
+      case 'h': prt("h - Humanoid (Dwarf, Elf, Halfling).", 0, 0); break; 
       case 'i': prt("i - Icky Thing.", 0, 0); break;
       case 'j': prt("j - Jelly.", 0, 0); break;
       case 'k': prt("k - Kobold.", 0, 0); break;
@@ -128,8 +128,16 @@ void ident_char()
 
   /* Allow access to monster memory. -CJS- */
   n = 0;
+#ifdef MSDOS
+  if (command == '.' || command == '#')
+   command = (command=='.'?floorsym:wallsym);
+#endif
   for (i = MAX_CREATURES-1; i >= 0; i--)
+#ifdef MSDOS
     if ((c_list[i].cchar == command) && bool_roff_recall (i))
+#else
+    if ((c_list[i].cchar == command) && bool_roff_recall (i))
+#endif
       {
 	if (n == 0)
 	  {

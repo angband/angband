@@ -1,4 +1,4 @@
-/* misc1.c: misc utility and initialization code, magic objects code
+/* Misc1.c: misc utility and initialization code, magic objects code
 
    Copyright (c) 1989 James E. Wilson, Robert A. Koeneke
 
@@ -57,8 +57,8 @@ typedef struct statstime {
 } statstime;
 
 #if defined(LINT_ARGS)
-static void compact_monsters(void);
 static void compact_objects(void);
+static int test_place(int, int);
 #endif
 
 #if !defined(ATARIST_MWC) && !defined(MAC)
@@ -72,21 +72,21 @@ extern int rating;
 void init_seeds(seed)
 int32u seed;
 {
-  register int32u clock;
+  register int32u c;
 
   if (seed == 0)
-    clock = time((long *)0);
+    c = time((long *)0);
   else
-    clock = seed;
-  randes_seed = (unsigned int)clock;
+    c = seed;
+  randes_seed = (unsigned int)c;
 
-  clock += 8762;
-  town_seed = (unsigned int)clock;
+  c += 8762;
+  town_seed = (unsigned int)c;
 
-  clock += 113452L;
-  set_rnd_seed(clock);
+  c += 113452L;
+  set_rnd_seed(c);
   /* make it a little more random */
-  for (clock = randint(100); clock != 0; clock--)
+  for (c = randint(100); c != 0; c--)
     (void) rnd();
 }
 
@@ -114,12 +114,12 @@ void reset_seed()
 /* Check the day-time strings to see if open		-RAK-	*/
 int check_time()
 {
-  long clock;
+  long c;
   register struct tm *tp;
   struct statstime st;
 
-  clock = time((long *)0);
-  tp = localtime(&clock);
+  c = time((long *)0);
+  tp = localtime(&c);
   if (days[tp->tm_wday][tp->tm_hour+4] != 'X') {
     return FALSE;
   } else {
@@ -653,7 +653,7 @@ void prt_map()
 /* Compact monsters					-RAK-	*/
 /* Return TRUE if any monsters were deleted, FALSE if could not delete any
    monsters. */
-static int compact_monsters()
+int compact_monsters()
 {
   register int i;
   int cur_dis, delete_any;
@@ -669,11 +669,15 @@ static int compact_monsters()
 	{
 	  mon_ptr = &m_list[i];
 	  if ((cur_dis < mon_ptr->cdis) && (randint(3) == 1))
-	    {
+	  {
+	      /* Don't compact Melkor! */
+	      if (c_list[mon_ptr->mptr].cmove & CM_WIN)
+		  /* do nothing */
+		  ;
 	      /* in case this is called from within creatures(), this is a
 		 horrible hack, the m_list/creatures() code needs to be
 		 rewritten */
-	      if (hack_monptr < i)
+	      else if (hack_monptr < i)
 		{
 		  delete_monster(i);
 		  delete_any = TRUE;
@@ -702,16 +706,29 @@ void add_food(num)
 int num;
 {
   register struct flags *p_ptr;
+  register int extra, penalty;
 
   p_ptr = &py.flags;
   if (p_ptr->food < 0)	p_ptr->food = 0;
   p_ptr->food += num;
-  if (num>0 && p_ptr->food<=0) p_ptr->food = 32000;
+  if (num>0 && p_ptr->food<=0) p_ptr->food = 32000; /* overflow check */
   if (p_ptr->food > PLAYER_FOOD_MAX)
     {
       msg_print("You are bloated from overeating.");
-      p_ptr->slow += (p_ptr->food - PLAYER_FOOD_MAX) / 50;
-      p_ptr->food = PLAYER_FOOD_MAX + p_ptr->slow;
+
+      /* Calculate how much of num is responsible for the bloating.
+	 Give the player food credit for 1/50, and slow him for that many
+	 turns also.  */
+      extra = p_ptr->food - PLAYER_FOOD_MAX;
+      if (extra > num)
+	extra = num;
+      penalty = extra / 50;
+
+      p_ptr->slow += penalty;
+      if (extra == num)
+	  p_ptr->food = p_ptr->food - num + penalty;
+      else
+	  p_ptr->food = PLAYER_FOOD_MAX + penalty;
     }
   else if (p_ptr->food > PLAYER_FOOD_FULL)
     msg_print("You are full.");
@@ -722,7 +739,8 @@ int num;
 int popm()
 {
   if (mfptr == MAX_MALLOC)
-    compact_monsters();
+      if (!compact_monsters())
+	  return (-1);
   return (mfptr++);
 }
 
@@ -736,13 +754,19 @@ int8u *array;
 
 
 /* Places a monster at given location			-RAK-	*/
-void place_monster(y, x, z, slp)
+int place_monster(y, x, z, slp)
 register int y, x, z;
 int slp;
 {
-  register int cur_pos;
+  register int cur_pos, j;
   register monster_type *mon_ptr;
   char buf[100];
+
+  if ( (z<0) || (z >= MAX_CREATURES) )
+      return FALSE; /* another paranoia check -CFT */
+  
+  if (!in_bounds(y,x))
+      return FALSE; /* YA paranoia check -CFT */
 
   if (c_list[z].cdefense & UNIQUE) {
     if (u_list[z].exist) {
@@ -750,17 +774,21 @@ int slp;
 	(void) sprintf(buf, "Tried to create %s but exists.", c_list[z].name);
 	msg_print(buf);
       }
-      return;
+      return FALSE;
     }
     if (u_list[z].dead) {
       if (wizard) {
 	(void) sprintf(buf, "Tried to create %s but dead.", c_list[z].name);
 	msg_print(buf);
       }
-      return;
+      return FALSE;
     }
     u_list[z].exist = 1;
   }
+
+  cur_pos = popm(); /* from um55, paranoia error check... */
+  if (cur_pos == -1)
+      return FALSE;
 
   if ((wizard || peek) && (c_list[z].cdefense & UNIQUE))
     msg_print(c_list[z].name);
@@ -771,23 +799,16 @@ int slp;
     if (c_list[z].cdefense & UNIQUE)
       rating += (c_list[z].level-dun_level)/2;
   }
-  cur_pos = popm();
   mon_ptr = &m_list[cur_pos];
   mon_ptr->fy = y;
   mon_ptr->fx = x;
   mon_ptr->mptr = z;
-  if ((z<0)||(z>=MAX_CREATURES)) {
-      char *wibble;
-      wibble=NULL;
-      msg_print("FOUL UP IN PLACE_MONSTER");
-      *wibble=3;
-  }
   if ((c_list[z].cdefense & MAX_HP) || be_nasty)
     mon_ptr->hp = max_hp(c_list[z].hd);
   else
     mon_ptr->hp = pdamroll(c_list[z].hd);
   mon_ptr->maxhp=mon_ptr->hp;
-  mon_ptr->cspeed = c_list[z].speed - 10 + py.flags.speed;
+  mon_ptr->cspeed = c_list[z].speed - 10;
   mon_ptr->stunned = 0;
   mon_ptr->cdis = distance(char_row, char_col,y,x);
   mon_ptr->ml = FALSE;
@@ -797,22 +818,61 @@ int slp;
       if (c_list[z].sleep == 0)
 	mon_ptr->csleep = 0;
       else
-	mon_ptr->csleep = (c_list[z].sleep * 2) +
+	mon_ptr->csleep = ((int) c_list[z].sleep * 2) +
 	  randint((int)c_list[z].sleep*10);
     }
   else
     mon_ptr->csleep = 0;
+  update_mon(cur_pos); /* light up the monster if we can see it... -CFT */
+	/*Unique kobolds, Liches, orcs, Ogres,
+		 skeletons, Trolls, yeeks, and &demons -DGK*/
+  if (c_list[z].cdefense & UNIQUE)
+   {
+    register char ch;
+    int8u flag;
+    ch=c_list[z].cchar;
+    flag=((ch=='k')||(ch=='s')||(ch=='y')||(ch=='&'));
+    if (flag||(ch=='L')||(ch=='o')||(ch=='O')||(ch=='T'))
+     {
+     mon_ptr->csleep = 0;
+     for(j=MAX_CREATURES;j>0;j--)
+      if ((c_list[j].cchar==ch)&&(c_list[j].level<=c_list[z].level)
+	  &&(!(c_list[j].cdefense & UNIQUE)))
+       {
+	register int newx, newy, count=0;
+	do
+	 {
+	  newx=x+randint(9)-5;
+	  newy=y+randint(9)-5;
+	 } while ((!test_place(newy,newx) || !los(y,x,newy,newx))
+		   && (++count<50));
+	if (test_place(newy,newx))
+	 {
+	  if ((c_list[j].cdefense & GROUP)||flag)
+	    place_group(newy,newx,j,slp);
+	   else
+	    place_monster(newy,newx,j,0);
+	 }
+       }
+     }
+   }
+  return TRUE;
 }
 
 /* Places a monster at given location			-RAK-	*/
-void place_win_monster()
+int place_win_monster()
 {
   register int y, x, cur_pos;
   register monster_type *mon_ptr;
 
-  if (wizard || peek) msg_print("Placing win monster");
   if (!total_winner) {
     cur_pos = popm();
+    /* paranoia error check, from um55 -CFT */
+    if (cur_pos == -1)
+      return FALSE;
+      
+    if (wizard || peek) msg_print("Placing win monster");
+
     mon_ptr = &m_list[cur_pos];
     do {
       y = randint(cur_height-2);
@@ -828,13 +888,13 @@ void place_win_monster()
       mon_ptr->hp = max_hp(c_list[mon_ptr->mptr].hd);
     else
       mon_ptr->hp = pdamroll(c_list[mon_ptr->mptr].hd);
-    /* the c_list speed value is 10 greater, so that it can be a int8u */
-    mon_ptr->cspeed = c_list[mon_ptr->mptr].speed - 10 + py.flags.speed;
+    mon_ptr->cspeed = c_list[mon_ptr->mptr].speed - 10;
     mon_ptr->stunned = 0;
     mon_ptr->cdis = distance(char_row, char_col,y,x);
     cave[y][x].cptr = cur_pos;
     mon_ptr->csleep = 0;
   }
+  return TRUE;
 }
 
 static char *cap(str)
@@ -850,9 +910,9 @@ void set_ghost(g, name, r, c, l)
   char *name;
   int r, c, l;
 {
-  char tmp[100];
   char race[20];
   char class[20];
+  int i;
 
   switch (r) {
   case 0:
@@ -908,9 +968,19 @@ void set_ghost(g, name, r, c, l)
   if (!dun_level) {
     sprintf(g->name, "%s, the %s %s", cap(name), cap(race), cap(class));
     g->cmove |= (THRO_DR|MV_ATT_NORM|CARRY_OBJ|HAS_90|HAS_60|GOOD);
-    if (g->level>10) g->cmove |= (HAS_1D2);
-    if (g->level>18) g->cmove |= (HAS_2D2);
-    if (g->level>23) g->cmove |= (HAS_4D2);
+    if (l>10) g->cmove |= (HAS_1D2);
+    if (l>18) g->cmove |= (HAS_2D2);
+    if (l>23) g->cmove |= (HAS_4D2);
+    if (l>40) { g->cmove |= (SPECIAL); g->cmove &= (~HAS_4D2); }
+    for (i=0;i<=(l/5);i++) /* Add some random resists -DGK */
+     switch (randint(13))
+      {
+       case 1:  case 2:  case 3:  g->cdefense |= (IM_FIRE);
+       case 4:  case 5:  case 6:  g->cdefense |= (IM_ACID);
+       case 7:  case 8:  case 9:  g->cdefense |= (IM_FROST);
+       case 10: case 11: case 12: g->cdefense |= (IM_LIGHTNING);
+       case 13: g->cdefense |= (IM_POISON);
+      }
     switch (c) {
     case 0: /* Warrior */
       g->spells = NONE8;
@@ -957,6 +1027,7 @@ void set_ghost(g, name, r, c, l)
       if (l>35) g->spells |= MANA_DRAIN;
       break;
     }
+
     g->cdefense |= (CHARM_SLEEP|EVIL);
     if (r==6)
       g->cdefense |= ORC;
@@ -998,9 +1069,9 @@ void set_ghost(g, name, r, c, l)
   case 2:
   case 3:
     sprintf(g->name, "%s, the Skeleton %s", name, race);
-    g->cmove |= (THRO_DR|MV_ATT_NORM|CARRY_OBJ|HAS_90);
+    g->cmove |= (THRO_DR|MV_ATT_NORM|CARRY_OBJ|HAS_90|GOOD);
     g->spells |= (NONE8);
-    g->cdefense |= (CHARM_SLEEP|UNDEAD|EVIL|IM_FROST|NO_INFRA);
+    g->cdefense |= (IM_POISON|CHARM_SLEEP|UNDEAD|EVIL|IM_FROST|NO_INFRA);
     if (r==6)
       g->cdefense |= ORC;
     else if (r==7)
@@ -1017,9 +1088,10 @@ void set_ghost(g, name, r, c, l)
   case 4:
   case 5:
     sprintf(g->name, "%s, the %s zombie", name, cap(race));
-    g->cmove |= (THRO_DR|MV_ATT_NORM|CARRY_OBJ|HAS_60|HAS_90);
+    g->cmove |= (THRO_DR|MV_ATT_NORM|CARRY_OBJ|HAS_60|HAS_90|GOOD);
     g->spells |= (NONE8);
-    g->cdefense |= (CHARM_SLEEP|UNDEAD|EVIL|IM_FROST|NO_INFRA);
+    g->cdefense |= (IM_POISON|CHARM_SLEEP|UNDEAD|EVIL|NO_INFRA);
+
     if (r==6)
       g->cdefense |= ORC;
     else if (r==7)
@@ -1027,7 +1099,7 @@ void set_ghost(g, name, r, c, l)
     g->ac = 30;
     g->speed = 11;
     g->cchar = 'z';
-    g->hd[1] = 2;
+    g->hd[1] *= 2;
     g->damage[0] = 8;
     g->damage[1] = 0;
     g->damage[2] = 0;
@@ -1035,13 +1107,13 @@ void set_ghost(g, name, r, c, l)
     break;
   case 6:
     sprintf(g->name, "%s, the Poltergeist", name);
-    g->cmove |= (MV_INVIS|MV_ATT_NORM|CARRY_OBJ|HAS_1D2|MV_75|THRO_WALL);
+    g->cmove|=(MV_INVIS|MV_ATT_NORM|CARRY_OBJ|
+	       GOOD|HAS_1D2|MV_75|THRO_WALL);
     g->spells |= (NONE8);
-    g->cdefense |= (CHARM_SLEEP|UNDEAD|EVIL|IM_FROST|NO_INFRA);
+    g->cdefense |= (IM_POISON|CHARM_SLEEP|UNDEAD|EVIL|IM_FROST|NO_INFRA);
     g->ac = 20;
     g->speed = 13;
     g->cchar = 'G';
-    g->hd[1] = 1;
     g->damage[0] = 5;
     g->damage[1] = 5;
     g->damage[2] = 93;
@@ -1051,9 +1123,9 @@ void set_ghost(g, name, r, c, l)
   case 7:
   case 8:
     sprintf(g->name, "%s, the Mummified %s", name, cap(race));
-    g->cmove |= (MV_ATT_NORM|CARRY_OBJ|HAS_1D2);
+    g->cmove |= (MV_ATT_NORM|CARRY_OBJ|HAS_1D2|GOOD);
     g->spells |= (NONE8);
-    g->cdefense |= (CHARM_SLEEP|UNDEAD|EVIL|IM_FROST|NO_INFRA);
+    g->cdefense |= (CHARM_SLEEP|UNDEAD|EVIL|IM_POISON|NO_INFRA);
     if (r==6)
       g->cdefense |= ORC;
     else if (r==7)
@@ -1061,7 +1133,7 @@ void set_ghost(g, name, r, c, l)
     g->ac = 35;
     g->speed = 11;
     g->cchar = 'M';
-    g->hd[1] = 2;
+    g->hd[1] *= 2;
     g->damage[0] = 16;
     g->damage[1] = 16;
     g->damage[2] = 16;
@@ -1072,13 +1144,13 @@ void set_ghost(g, name, r, c, l)
   case 10:
     sprintf(g->name, "%s%s spirit", name, (name[strlen(name)-1]=='s')?
 	    "'":"'s");
-    g->cmove |= (MV_INVIS|THRO_WALL|MV_ATT_NORM|CARRY_OBJ|HAS_1D2);
+    g->cmove |= (MV_INVIS|THRO_WALL|MV_ATT_NORM|CARRY_OBJ|HAS_1D2|GOOD);
     g->spells |= (NONE8);
-    g->cdefense |= (CHARM_SLEEP|UNDEAD|EVIL|IM_FROST|NO_INFRA);
+    g->cdefense |= (CHARM_SLEEP|UNDEAD|EVIL|IM_POISON|IM_FROST|NO_INFRA);
     g->ac = 20;
     g->speed = 11;
     g->cchar = 'G';
-    g->hd[1] = 2;
+    g->hd[1] *= 2;
     g->damage[0] = 19;
     g->damage[1] = 185;
     g->damage[2] = 99;
@@ -1088,13 +1160,13 @@ void set_ghost(g, name, r, c, l)
   case 11:
     sprintf(g->name, "%s%s ghost", name, (name[strlen(name)-1]=='s')?
 	    "'":"'s");
-    g->cmove |= (MV_INVIS|THRO_WALL|MV_ATT_NORM|CARRY_OBJ|HAS_1D2);
+    g->cmove |= (MV_INVIS|THRO_WALL|MV_ATT_NORM|CARRY_OBJ|HAS_1D2|GOOD);
     g->spells |= (0xFL|HOLD_PERSON|MANA_DRAIN|BLINDNESS);
-    g->cdefense |= (CHARM_SLEEP|UNDEAD|EVIL|IM_FROST|NO_INFRA);
+    g->cdefense |= (CHARM_SLEEP|UNDEAD|EVIL|IM_POISON|IM_FROST|NO_INFRA);
     g->ac = 40;
     g->speed = 12;
     g->cchar = 'G';
-    g->hd[1] = 2;
+    g->hd[1] *= 2;
     g->damage[0] = 99;
     g->damage[1] = 99;
     g->damage[2] = 192;
@@ -1103,13 +1175,13 @@ void set_ghost(g, name, r, c, l)
     break;
   case 12:
     sprintf(g->name, "%s, the Vampire", name);
-    g->cmove |= (THRO_DR|MV_ATT_NORM|CARRY_OBJ|HAS_2D2);
+    g->cmove |= (THRO_DR|MV_ATT_NORM|CARRY_OBJ|HAS_2D2|GOOD);
     g->spells |= (0x8L|HOLD_PERSON|FEAR|TELE_TO|CAUSE_SERIOUS);
-    g->cdefense |= (CHARM_SLEEP|UNDEAD|EVIL|IM_FROST|NO_INFRA|HURT_LIGHT);
+    g->cdefense |= (CHARM_SLEEP|UNDEAD|EVIL|IM_POISON|NO_INFRA|HURT_LIGHT);
     g->ac = 40;
     g->speed = 11;
     g->cchar = 'V';
-    g->hd[1] = 3;
+    g->hd[1] *= 3;
     g->damage[0] = 20;
     g->damage[1] = 20;
     g->damage[2] = 190;
@@ -1119,14 +1191,15 @@ void set_ghost(g, name, r, c, l)
   case 13:
     sprintf(g->name, "%s%s Wraith", name, (name[strlen(name)-1]=='s')?
 	    "'":"'s");
-    g->cmove |= (THRO_DR|MV_ATT_NORM|CARRY_OBJ|HAS_4D2|HAS_2D2);
+    g->cmove |= (THRO_DR|MV_ATT_NORM|CARRY_OBJ|HAS_4D2|HAS_2D2|GOOD);
     g->spells |= (0x7L|HOLD_PERSON|FEAR|BLINDNESS|CAUSE_CRIT);
     g->spells2 |= (NETHER_BOLT);
-    g->cdefense |= (CHARM_SLEEP|UNDEAD|EVIL|IM_FROST|NO_INFRA|HURT_LIGHT);
+    g->cdefense |= (CHARM_SLEEP|UNDEAD|EVIL|IM_POISON|IM_FROST|NO_INFRA|
+		    HURT_LIGHT);
     g->ac = 60;
     g->speed = 12;
     g->cchar = 'W';
-    g->hd[1] = 3;
+    g->hd[1] *= 3;
     g->damage[0] = 20;
     g->damage[1] = 20;
     g->damage[2] = 190;
@@ -1135,14 +1208,15 @@ void set_ghost(g, name, r, c, l)
     break;
   case 14:
     sprintf(g->name, "%s, the Vampire Lord", name);
-    g->cmove |= (THRO_DR|MV_ATT_NORM|CARRY_OBJ|HAS_2D2);
+    g->cmove |= (THRO_DR|MV_ATT_NORM|CARRY_OBJ|HAS_1D2|SPECIAL);
     g->spells |= (0x8L|HOLD_PERSON|FEAR|TELE_TO|CAUSE_CRIT);
     g->spells2 |= (NETHER_BOLT);
-    g->cdefense |= (CHARM_SLEEP|UNDEAD|EVIL|IM_FROST|NO_INFRA|HURT_LIGHT);
+    g->cdefense |= (CHARM_SLEEP|UNDEAD|EVIL|IM_POISON|NO_INFRA|HURT_LIGHT);
     g->ac = 80;
     g->speed = 11;
     g->cchar = 'V';
-    g->hd[1] = 5;
+    g->hd[1] *= 2;
+    g->hd[0] = (g->hd[0] * 5)/2;
     g->damage[0] = 20;
     g->damage[1] = 20;
     g->damage[2] = 20;
@@ -1152,13 +1226,13 @@ void set_ghost(g, name, r, c, l)
   case 15:
      sprintf(g->name, "%s%s ghost", name, (name[strlen(name)-1]=='s')?
 	    "'":"'s");
-    g->cmove |= (MV_INVIS|THRO_WALL|MV_ATT_NORM|CARRY_OBJ|HAS_4D2|HAS_2D2);
+    g->cmove |= (MV_INVIS|THRO_WALL|MV_ATT_NORM|CARRY_OBJ|HAS_2D2|SPECIAL);
     g->spells |= (0x5L|HOLD_PERSON|MANA_DRAIN|BLINDNESS|CONFUSION);
-    g->cdefense |= (CHARM_SLEEP|UNDEAD|EVIL|IM_FROST|NO_INFRA);
+    g->cdefense |= (CHARM_SLEEP|UNDEAD|EVIL|IM_FROST|IM_POISON|NO_INFRA);
     g->ac = 90;
     g->speed = 13;
     g->cchar = 'G';
-    g->hd[1] = 3;
+    g->hd[1] *= 3;
     g->damage[0] = 99;
     g->damage[1] = 99;
     g->damage[2] = 192;
@@ -1167,7 +1241,7 @@ void set_ghost(g, name, r, c, l)
     break;
   case 17:
     sprintf(g->name, "%s, the Lich", name);
-    g->cmove |= (THRO_DR|MV_ATT_NORM|CARRY_OBJ|HAS_4D2|HAS_2D2|HAS_1D2);
+    g->cmove |= (THRO_DR|MV_ATT_NORM|CARRY_OBJ|HAS_2D2|HAS_1D2|SPECIAL);
     g->spells |= (0x3L|FEAR|CAUSE_CRIT|TELE_TO|BLINK|S_UNDEAD|FIRE_BALL|
 		  FROST_BALL|HOLD_PERSON|MANA_DRAIN|BLINDNESS|CONFUSION|TELE);
     g->spells2 |= (BRAIN_SMASH|RAZOR);
@@ -1176,7 +1250,8 @@ void set_ghost(g, name, r, c, l)
     g->ac = 120;
     g->speed = 12;
     g->cchar = 'L';
-    g->hd[1] = 6;
+    g->hd[1] *= 3;
+    g->hd[0] *= 2;
     g->damage[0] = 181;
     g->damage[1] = 201;
     g->damage[2] = 214;
@@ -1187,14 +1262,17 @@ void set_ghost(g, name, r, c, l)
   default:
     sprintf(g->name, "%s%s ghost", name, (name[strlen(name)-1]=='s')?
 	    "'":"'s");
-    g->cmove |= (MV_INVIS|THRO_WALL|MV_ATT_NORM|CARRY_OBJ|HAS_4D2|HAS_2D2);
+    g->cmove |= (MV_INVIS|THRO_WALL|MV_ATT_NORM|CARRY_OBJ|
+		 HAS_1D2|HAS_2D2|SPECIAL);
     g->spells |= (0x2L|HOLD_PERSON|MANA_DRAIN|BLINDNESS|CONFUSION|TELE_TO);
     g->spells2 |= (NETHER_BOLT|NETHER_BALL|BRAIN_SMASH|TELE_LEV);
-    g->cdefense |= (CHARM_SLEEP|UNDEAD|EVIL|IM_FROST|NO_INFRA|INTELLIGENT);
+    g->cdefense |= (CHARM_SLEEP|UNDEAD|EVIL|IM_POISON|IM_FROST|NO_INFRA|
+		    INTELLIGENT);
     g->ac = 130;
     g->speed = 13;
     g->cchar = 'G';
-    g->hd[1] = 5;
+    g->hd[1] *= 2;
+    g->hd[0] = (g->hd[0] * 5)/2;
     g->damage[0] = 99;
     g->damage[1] = 99;
     g->damage[2] = 192;
@@ -1213,7 +1291,7 @@ int place_ghost()
   creature_type *ghost = &c_list[MAX_CREATURES-1];
   char tmp[100];
   char name[100];
-  int i, level;
+  int i, j, level;
   int race;
   int cl;
 
@@ -1229,9 +1307,14 @@ int place_ghost()
 	  msg_print("Town:Failed to scan in info properly!");
 	return 0;
       }
-      ghost->hd[0] = i;
-      ghost->hd[1] = 1;
       fclose(fp);
+      j = 1;
+      if (i > 255){ /* avoid wrap-around of int8u hitdice, by factoring */
+      	j = i / 32;
+        i = 32;
+        }
+      ghost->hd[0] = i; /* set_ghost may adj for race/class/lv */
+      ghost->hd[1] = j;
       level = py.misc.lev;
     } else {
       return 0;
@@ -1250,8 +1333,13 @@ int place_ghost()
 	  return 0;
 	}
 	fclose(fp);
-	ghost->hd[0] = i;
-	ghost->hd[1] = 1;
+        j = 1;
+        if (i > 255){ /* avoid wrap-around of int8u hitdice, by factoring */
+       	  j = i / 32;
+          i = 32;
+          }
+        ghost->hd[0] = i; /* set_ghost may adj for race/class/lv */
+        ghost->hd[1] = j;
 	level = dun_level;
       } else {
 	return 0;
@@ -1274,9 +1362,9 @@ int place_ghost()
   mon_ptr->fy = y;
   mon_ptr->fx = x;
   mon_ptr->mptr = (MAX_CREATURES-1);
-  mon_ptr->hp = i*ghost->hd[1];
+  mon_ptr->hp = (int16)ghost->hd[0] * (int16)ghost->hd[1];
   /* the c_list speed value is 10 greater, so that it can be a int8u */
-  mon_ptr->cspeed = c_list[mon_ptr->mptr].speed - 10 + py.flags.speed;
+  mon_ptr->cspeed = c_list[mon_ptr->mptr].speed - 10;
   mon_ptr->stunned = 0;
   mon_ptr->cdis = distance(char_row, char_col,y,x);
   cave[y][x].cptr = cur_pos;
@@ -1304,7 +1392,8 @@ int level;
 	level = MAX_MONS_LEVEL;
       if (randint (MON_NASTY) == 1)
 	{
-	  i = randnor (0, 4);
+	    i = level/4+1;	/* be a little more civilized about monster depths */
+	    if (i>4) i=4;	/* for the first levels -CWS */
 	  level = level + abs(i) + 1;
 	  if (level > MAX_MONS_LEVEL)
 	    level = MAX_MONS_LEVEL;
@@ -1369,7 +1458,7 @@ int test_place(y,x)
 int y,x;
 {
   if (cave[y][x].fval >= MIN_CLOSED_SPACE || (cave[y][x].cptr != 0) ||
-      y<0 || x<0 || y>(cur_height-2) || x>(cur_width-2) ||
+      !in_bounds(y,x) ||
       (y==char_row && x==char_col))
     return 0;
   return 1;
@@ -1378,11 +1467,55 @@ int y,x;
 void place_group(y,x,mon,slp)
   int y,x,mon,slp;
 {
-  int old;
+  int old = rating; /* prevent level rating from skyrocketing if they are
+  			out of depth... */
+  int extra = 0;
 
-  old = rating;
+  if (c_list[mon].level > dun_level)
+    extra = -randint(c_list[mon].level - dun_level ); /* reduce size of group
+    							if out-of-depth */
+  else if (c_list[mon].level < dun_level) /* if monster is deeper than normal,
+  					then travel in bigger packs -CFT */
+    extra = randint(dun_level-c_list[mon].level);
 
-  switch (randint(13)) {
+  if (extra > 12) extra = 12; /* put an upper bounds on it... -CFT */
+  switch (randint(13)+extra) {
+  case 25:
+    if (test_place(y,x-3)) place_monster(y,x-3,mon,0);
+    rating = old;
+  case 24:
+    if (test_place(y,x+3)) place_monster(y,x+3,mon,0);
+    rating = old;
+  case 23:
+    if (test_place(y-3,x)) place_monster(y-3,x,mon,0);
+    rating = old;
+  case 22:
+    if (test_place(y+3,x)) place_monster(y+3,x,mon,0);
+    rating = old;
+  case 21:
+    if (test_place(y-2,x+1)) place_monster(y-2,x+1,mon,0);
+    rating = old;
+  case 20:
+    if (test_place(y+2,x-1)) place_monster(y+2,x-1,mon,0);
+    rating = old;
+  case 19:
+    if (test_place(y+2,x+1)) place_monster(y+2,x+1,mon,0);
+    rating = old;
+  case 18:
+    if (test_place(y-2,x-1)) place_monster(y-2,x-1,mon,0);
+    rating = old;
+  case 17:
+    if (test_place(y+1,x+2)) place_monster(y+1,x+2,mon,0);
+    rating = old;
+  case 16:
+    if (test_place(y-1,x-2)) place_monster(y-1,x-2,mon,0);
+    rating = old;
+  case 15:
+    if (test_place(y+1,x-2)) place_monster(y+1,x-2,mon,0);
+    rating = old;
+  case 14:
+    if (test_place(y-1,x+2)) place_monster(y-1,x+2,mon,0);
+    rating = old;
   case 13:
     if (test_place(y,x-2)) place_monster(y,x-2,mon,0);
     rating = old;
@@ -1420,6 +1553,7 @@ void place_group(y,x,mon,slp)
     if (test_place(y-1,x)) place_monster(y-1,x,mon,0);
     rating = old;
   case 1:
+  default:  /* just in case I screwed up -CFT */
     if (test_place(y,x)) place_monster(y,x,mon,0);
   }
 }
@@ -1431,7 +1565,7 @@ int num, dis;
 int slp;
 {
   register int y, x, i;
-  int k, mon;
+  int mon;
 
   for (i = 0; i < num; i++)
     {
@@ -1445,6 +1579,26 @@ int slp;
       do {
 	mon = get_mons_num(dun_level);
       } while (randint(c_list[mon].rarity)>1);
+
+      /* to give the player a sporting chance, any monster that appears in
+      	 line-of-sight and can cast spells or breathe, should be asleep.
+	  This is an extension of Um55's sleeping dragon code... */
+      if (((c_list[mon].spells & (CAUSE_LIGHT|CAUSE_SERIOUS|HOLD_PERSON|
+      				  BLINDNESS|CONFUSION|FEAR|SLOW|BREATH_L|
+      				  BREATH_G|BREATH_A|BREATH_FR|BREATH_FI|
+      				  FIRE_BOLT|FROST_BOLT|ACID_BOLT|MAG_MISS|
+      				  CAUSE_CRIT|FIRE_BALL|FROST_BALL|MANA_BOLT))
+      	  || (c_list[mon].spells2 & (BREATH_CH|BREATH_SH|BREATH_SD|BREATH_CO|
+      	  			  BREATH_DI|BREATH_LD|LIGHT_BOLT|LIGHT_BALL|
+      	  			  ACID_BALL|TRAP_CREATE|RAZOR|MIND_BLAST|
+      	  			  MISSILE|PLASMA_BOLT|NETHER_BOLT|ICE_BOLT|
+      	  			  FORGET|BRAIN_SMASH|ST_CLOUD|TELE_LEV|
+      	  			  WATER_BOLT|WATER_BALL|NETHER_BALL|BREATH_NE))
+      	  || (c_list[mon].spells3 & (BREATH_WA|BREATH_SL|BREATH_LT|BREATH_TI|
+      	  			  BREATH_GR|BREATH_DA|BREATH_PL|ARROW|
+      	  			  DARK_STORM|MANA_STORM)))
+      	 && (los(y,x, char_row, char_col)))
+      	 slp = TRUE;
 
       if (!(c_list[mon].cdefense & GROUP))
 	place_monster(y, x, mon, slp);
@@ -1664,7 +1818,7 @@ int *y, *x;
          else
 	   {
 	      m++;
-              if (m > 1)
+              if (m > l)
 		ctr = 20;
               else
                 ctr++;
@@ -1720,7 +1874,7 @@ int *y, *x;
 	 else
 	   {
 	     m++;
-	     if (m > 1)
+	     if (m > l)
 	       ctr = 20;
 	     else
 	       ctr++;
@@ -1759,7 +1913,6 @@ int *y, *x;
   register int i, j, k;
   int l, m, ctr, summon;
   register cave_type *cave_ptr;
-  char buf[20];
 
   i = 0;
   summon = FALSE;
@@ -1771,9 +1924,6 @@ int *y, *x;
       do
 	{
           if (c_list[m].cchar == 'S' && !(c_list[m].cdefense & UNIQUE))
-	     /*   &&
-	    (sscanf(c_list[m].name,"%*s %*s %s",buf)?
-	     strcasecmp(buf,"scorpion"):TRUE)) */
 	    {
 	      ctr = 20;
 	      l	 = 0;
@@ -1883,7 +2033,7 @@ int *y, *x;
 	 else
 	   {
 	      m++;
-	      if (m > 1)
+	      if (m > l)
 		ctr = 20;
 	      else
 		ctr++;
@@ -1939,7 +2089,7 @@ int *y, *x;
 	  else
 	    {
 	      m++;
-	      if (m > 1)
+	      if (m > l)
 	        ctr = 20;
 	      else
 	        ctr++;
@@ -1995,7 +2145,7 @@ int *y, *x;
 	  else
 	    {
 	      m++;
-	      if (m > 1)
+	      if (m > l)
 	        ctr = 20;
 	      else
 	        ctr++;
@@ -2052,7 +2202,7 @@ int *y, *x;
 	   else
 	     {
 	       m++;
-	       if (m > 1)
+	       if (m > l)
 		 ctr = 20;
 	       else
 		 ctr++;
@@ -2108,7 +2258,7 @@ int *y, *x;
 	  else
 	    {
 	      m++;
-	      if (m > 1)
+	      if (m > l)
 		ctr = 20;
 	      else
 		ctr++;
@@ -2215,7 +2365,7 @@ int *y, *x;
 }
 
 /* If too many objects on floor level, delete some of them */
-static void compact_objects()
+void compact_objects()
 {
   register int i, j;
   int ctr, cur_dis, chance;
@@ -2285,9 +2435,10 @@ int popt()
 /* Pushs a record back onto free space list		-RAK-	*/
 /* Delete_object() should always be called instead, unless the object in
    question is not in the dungeon, e.g. in store1.c and files.c */
-void pusht(x)
-register int8u x;
+void pusht(my_x)
+int my_x;
 {
+  int16 x = (int16) my_x;
   register int i, j;
 
   if (x != tcptr - 1)
@@ -2323,7 +2474,8 @@ int base, max_std, level;
   register int x, stand_dev, tmp;
 
   stand_dev = (OBJ_STD_ADJ * level / 100) + OBJ_STD_MIN;
-  if (stand_dev > max_std)
+  /* check for level > max_std to check for overflow... */
+  if (stand_dev > max_std || level > max_std)
     stand_dev = max_std;
   /* abs may be a macro, don't call it with randnor as a parameter */
   tmp = randnor(0, stand_dev);
@@ -2341,7 +2493,7 @@ inven_type *t_ptr;
 
   if (be_nasty) return 0;
   name = object_list[t_ptr->index].name;
-  if (!strcmp("& Longsword", name)) {
+  if (!stricmp("& Longsword", name)) {
     switch (randint(15)) {
     case 1:
       if (RINGIL) return 0;
@@ -2357,7 +2509,7 @@ inven_type *t_ptr;
       t_ptr->flags2|= (TR_SLAY_DEMON|TR_SLAY_TROLL|TR_LIGHT|TR_ACTIVATE
 		      |TR_RES_LT|TR_ARTIFACT);
       t_ptr->p1    = 1;
-      t_ptr->cost  = 300000;
+      t_ptr->cost  = 300000L;
       RINGIL = 1;
       return 1;
     case 2:
@@ -2374,7 +2526,7 @@ inven_type *t_ptr;
       t_ptr->flags2|= (TR_SLAY_TROLL|TR_ACTIVATE|TR_SLAY_ORC|TR_ARTIFACT);
       t_ptr->p1    = 4;
       t_ptr->toac    = 5;
-      t_ptr->cost  = 80000;
+      t_ptr->cost  = 80000L;
       ANDURIL = 1;
       return 1;
     case 5:
@@ -2389,10 +2541,10 @@ inven_type *t_ptr;
       t_ptr->todam = 12;
       t_ptr->flags = (TR_SEE_INVIS|TR_SLAY_EVIL|TR_FREE_ACT|TR_RES_LIGHT
 			|TR_STR|TR_CON);
-      t_ptr->flags2 = (TR_LIGHTNING|TR_LIGHT|TR_SLAY_DEMON|TR_RES_LT
-		       |TR_ARTIFACT);
+      t_ptr->flags2 |= (TR_ARTIFACT|
+		TR_LIGHTNING|TR_LIGHT|TR_SLAY_DEMON|TR_RES_LT);
       t_ptr->p1 = 2;
-      t_ptr->cost = 40000;
+      t_ptr->cost = 40000L;
       ANGUIREL = 1;
       return 1;
     default:
@@ -2405,12 +2557,12 @@ inven_type *t_ptr;
       t_ptr->flags |= (TR_SEE_INVIS|TR_CHR|TR_DEX|TR_STEALTH|TR_FFALL);
       t_ptr->flags2|= (TR_SLAY_TROLL|TR_SLAY_ORC|TR_ARTIFACT);
       t_ptr->p1    = 2;
-      t_ptr->cost  = 30000;
+      t_ptr->cost  = 30000L;
       ELVAGIL = 1;
       return 1;
     }
   }
-  else if (!strcmp("& Two-Handed Sword", name)) {
+  else if (!stricmp("& Two-Handed Sword", name)) {
     switch (randint(8)) {
     case 1:
     case 2:
@@ -2422,9 +2574,9 @@ inven_type *t_ptr;
       t_ptr->todam = 17;
       t_ptr->flags = (TR_REGEN|TR_SLAY_X_DRAGON|TR_STR|
 		      TR_FREE_ACT|TR_SLOW_DIGEST);
-      t_ptr->flags2= (TR_ARTIFACT|TR_SLAY_TROLL);
+      t_ptr->flags2 |= (TR_SLAY_TROLL|TR_ARTIFACT);
       t_ptr->p1    = 2;
-      t_ptr->cost  = 100000;
+      t_ptr->cost  = 100000L;
       GURTHANG= 1;
       return 1;
     case 3:
@@ -2438,12 +2590,12 @@ inven_type *t_ptr;
       t_ptr->flags = (TR_SLAY_X_DRAGON|TR_STR|TR_SLAY_EVIL|TR_SLAY_ANIMAL|
 		      TR_SLAY_UNDEAD|TR_AGGRAVATE|TR_CHR|TR_FLAME_TONGUE|
 		      TR_RES_FIRE|TR_FREE_ACT|TR_INFRA);
-      t_ptr->flags2 = (TR_SLAY_TROLL|TR_SLAY_ORC|TR_SLAY_GIANT|TR_SLAY_DEMON
-		      |TR_RES_CHAOS|TR_ARTIFACT);
+      t_ptr->flags2 |= (TR_ARTIFACT|TR_SLAY_TROLL|TR_SLAY_ORC|TR_SLAY_GIANT
+			|TR_SLAY_DEMON|TR_RES_CHAOS);
       t_ptr->p1 = 4;
       t_ptr->damage[0] = 6;
       t_ptr->damage[1] = 4;
-      t_ptr->cost = 200000;
+      t_ptr->cost = 200000L;
       ZARCUTHRA = 1;
       return 1;
     default:
@@ -2457,12 +2609,12 @@ inven_type *t_ptr;
       t_ptr->flags2 |= (TR_ARTIFACT);
       t_ptr->p1    = -1;
       t_ptr->toac  = -50;
-      t_ptr->cost  = 10000;
+      t_ptr->cost  = 10000L;
       MORMEGIL = 1;
       return 1;
     }
   }
-  else if (!strcmp("& Broadsword", name)) {
+  else if (!stricmp("& Broadsword", name)) {
     switch (randint(12)) {
     case 1:
     case 2:
@@ -2475,9 +2627,9 @@ inven_type *t_ptr;
       t_ptr->damage[0] = 3;
       t_ptr->flags = (TR_FFALL|TR_DEX|
           	      TR_FREE_ACT|TR_SLOW_DIGEST);
-      t_ptr->flags2= (TR_SLAY_DEMON|TR_SLAY_ORC|TR_ACTIVATE|TR_ARTIFACT);
+      t_ptr->flags2 |= (TR_SLAY_DEMON|TR_SLAY_ORC|TR_ACTIVATE|TR_ARTIFACT);
       t_ptr->p1    = 4;
-      t_ptr->cost  = 50000;
+      t_ptr->cost  = 50000L;
       ARUNRUTH = 1;
       return 1;
     case 3:
@@ -2492,8 +2644,9 @@ inven_type *t_ptr;
       t_ptr->todam = 15;
       t_ptr->flags = (TR_SLAY_EVIL|TR_SLOW_DIGEST|TR_SEARCH|TR_FLAME_TONGUE|
 		      TR_RES_FIRE);
-      t_ptr->flags2 = (TR_SLAY_ORC|TR_LIGHT|TR_RES_LT|TR_ARTIFACT);
-      t_ptr->cost  = 40000;
+      t_ptr->flags2 |= (TR_ARTIFACT|TR_SLAY_ORC|TR_LIGHT|TR_RES_LT);
+      t_ptr->p1    = 3;
+      t_ptr->cost  = 40000L;
       GLAMDRING = 1;
       return 1;
     case 7:
@@ -2504,8 +2657,9 @@ inven_type *t_ptr;
       t_ptr->tohit = 12;
       t_ptr->todam = 16;
       t_ptr->flags = (TR_SLOW_DIGEST|TR_SEARCH|TR_RES_LIGHT);
-      t_ptr->flags2 = (TR_SLAY_ORC|TR_LIGHT|TR_LIGHTNING|TR_ARTIFACT);
-      t_ptr->cost  = 45000;
+      t_ptr->flags2 |= (TR_ARTIFACT|TR_SLAY_ORC|TR_LIGHT|TR_LIGHTNING);
+      t_ptr->p1    = 4;
+      t_ptr->cost  = 45000L;
       AEGLIN = 1;
       return 1;
     default:
@@ -2517,14 +2671,14 @@ inven_type *t_ptr;
       t_ptr->todam = 15;
       t_ptr->flags = (TR_SLAY_EVIL|TR_SLOW_DIGEST|TR_STEALTH|TR_FROST_BRAND|
 		      TR_RES_COLD);
-      t_ptr->flags2 = (TR_SLAY_ORC|TR_LIGHT|TR_ARTIFACT);
+      t_ptr->flags2 |= (TR_ARTIFACT|TR_SLAY_ORC|TR_LIGHT);
       t_ptr->p1    = 3;
-      t_ptr->cost  = 40000;
+      t_ptr->cost  = 40000L;
       ORCRIST = 1;
       return 1;
     }
   }
-  else if (!strcmp("& Bastard Sword", name)) {
+  else if (!stricmp("& Bastard Sword", name)) {
     if (CALRIS) return 0;
     if (wizard || peek) msg_print("Calris");
     else good_item_flag = TRUE;
@@ -2535,13 +2689,13 @@ inven_type *t_ptr;
     t_ptr->damage[1] = 7;
     t_ptr->flags = (TR_SLAY_X_DRAGON|TR_CON|TR_AGGRAVATE|
 		    TR_CURSED|TR_SLAY_EVIL);
-    t_ptr->flags2= (TR_SLAY_DEMON|TR_SLAY_TROLL|TR_RES_DISENCHANT|TR_ARTIFACT);
+    t_ptr->flags2 |= (TR_SLAY_DEMON|TR_SLAY_TROLL|TR_RES_DISENCHANT|TR_ARTIFACT);
     t_ptr->p1    = 5;
-    t_ptr->cost  = 100000;
+    t_ptr->cost  = 100000L;
     CALRIS = 1;
     return 1;
   }
-  else if (!strcmp("& Main Gauche", name)) {
+  else if (!stricmp("& Main Gauche", name)) {
     if (randint(4)>1) return 0;
     if (MAEDHROS) return 0;
     if (wizard || peek) msg_print("Maedhros");
@@ -2552,13 +2706,13 @@ inven_type *t_ptr;
     t_ptr->damage[0] = 2;
     t_ptr->damage[1] = 6;
     t_ptr->flags = (TR_DEX|TR_INT|TR_FREE_ACT|TR_SEE_INVIS);
-    t_ptr->flags2 = (TR_SLAY_GIANT|TR_SLAY_TROLL|TR_ARTIFACT);
+    t_ptr->flags2 |= (TR_ARTIFACT|TR_SLAY_GIANT|TR_SLAY_TROLL);
     t_ptr->p1 = 3;
-    t_ptr->cost = 20000;
+    t_ptr->cost = 20000L;
     MAEDHROS = 1;
     return 1;
   }
-  else if (!strcmp("& Glaive", name)) {
+  else if (!stricmp("& Glaive", name)) {
     if (randint(3)>1) return 0;
     if (PAIN) return 0;
     if (wizard || peek) msg_print("Pain!");
@@ -2569,11 +2723,11 @@ inven_type *t_ptr;
     t_ptr->damage[0] = 10;
     t_ptr->damage[1] = 6;
     t_ptr->flags2 |= (TR_ARTIFACT);
-    t_ptr->cost  = 50000;
+    t_ptr->cost  = 50000L;
     PAIN = 1;
     return 1;
   }
-  else if (!strcmp("& Halberd", name)) {
+  else if (!stricmp("& Halberd", name)) {
     if (OSONDIR) return 0;
     if (wizard || peek) msg_print("Osondir");
     else good_item_flag = TRUE;
@@ -2582,13 +2736,13 @@ inven_type *t_ptr;
     t_ptr->todam = 9;
     t_ptr->flags = (TR_FLAME_TONGUE|TR_SLAY_UNDEAD|TR_RES_FIRE|TR_SEE_INVIS|
 				TR_FFALL|TR_CHR);
-    t_ptr->flags2 = (TR_RES_SOUND|TR_SLAY_GIANT|TR_ARTIFACT);
+    t_ptr->flags2 |= (TR_ARTIFACT|TR_RES_SOUND|TR_SLAY_GIANT);
     t_ptr->p1 = 3;
-    t_ptr->cost = 22000;
+    t_ptr->cost = 22000L;
     OSONDIR = 1;
     return 1;
   }
-  else if (!strcmp("& Lucerne Hammer", name)) {
+  else if (!stricmp("& Lucerne Hammer", name)) {
     if (randint(2)>1) return 0;
     if (TURMIL) return 0;
     if (wizard || peek) msg_print("Turmil");
@@ -2597,14 +2751,14 @@ inven_type *t_ptr;
     t_ptr->tohit = 10;
     t_ptr->todam = 6;
     t_ptr->flags = (TR_WIS|TR_REGEN|TR_FROST_BRAND|TR_RES_COLD|TR_INFRA);
-    t_ptr->flags2 = (TR_SLAY_ORC|TR_LIGHT|TR_ACTIVATE|TR_RES_LT|TR_ARTIFACT);
+    t_ptr->flags2 |= (TR_ARTIFACT|TR_SLAY_ORC|TR_LIGHT|TR_ACTIVATE|TR_RES_LT);
     t_ptr->p1 = 4;
-    t_ptr->cost = 30000;
+    t_ptr->cost = 30000L;
     t_ptr->toac = 8;
     TURMIL = 1;
     return 1;
   }
-  else if (!strcmp("& Pike", name)) {
+  else if (!stricmp("& Pike", name)) {
     if (randint(2)>1) return 0;
     if (TIL) return 0;
     if (wizard || peek) msg_print("Til-i-arc");
@@ -2615,13 +2769,13 @@ inven_type *t_ptr;
     t_ptr->toac = 10;
     t_ptr->flags = (TR_FROST_BRAND|TR_FLAME_TONGUE|TR_RES_FIRE|TR_RES_COLD|
 			TR_SLOW_DIGEST|TR_INT|TR_SUST_STAT);
-    t_ptr->flags2 = (TR_SLAY_DEMON|TR_SLAY_GIANT|TR_SLAY_TROLL|TR_ARTIFACT);
+    t_ptr->flags2 |= (TR_ARTIFACT|TR_SLAY_DEMON|TR_SLAY_GIANT|TR_SLAY_TROLL);
     t_ptr->p1 = 2;
-    t_ptr->cost = 32000;
+    t_ptr->cost = 32000L;
     TIL = 1;
     return 1;
   }
-  else if (!strcmp("& Mace of Disruption", name)) {
+  else if (!stricmp("& Mace of Disruption", name)) {
     if (randint(5)>1) return 0;
     if (DEATHWREAKER) return 0;
     if (wizard || peek) msg_print("Deathwreaker");
@@ -2631,15 +2785,15 @@ inven_type *t_ptr;
     t_ptr->todam = 18;
     t_ptr->damage[1] = 12;
     t_ptr->flags = (TR_STR|TR_FLAME_TONGUE|TR_SLAY_EVIL|TR_SLAY_DRAGON|
-		    TR_SLAY_ANIMAL|TR_TUNNEL|TR_AGGRAVATE);
-    t_ptr->flags2 = (TR_IM_FIRE|TR_RES_CHAOS|TR_RES_DISENCHANT|TR_RES_DARK
-		     |TR_ARTIFACT);
+		    TR_SLAY_ANIMAL|TR_TUNNEL|TR_AGGRAVATE|TR_RES_FIRE);
+    t_ptr->flags2 |= (TR_ARTIFACT|TR_IM_FIRE|TR_RES_CHAOS
+		|TR_RES_DISENCHANT|TR_RES_DARK);
     t_ptr->p1 = 6;
-    t_ptr->cost = 400000;
+    t_ptr->cost = 400000L;
     DEATHWREAKER = 1;
     return 1;
   }
-  else if (!strcmp("& Scythe", name)) {
+  else if (!stricmp("& Scythe", name)) {
     if (AVAVIR) return 0;
     if (wizard || peek) msg_print("Avavir");
     else good_item_flag = TRUE;
@@ -2649,13 +2803,13 @@ inven_type *t_ptr;
     t_ptr->toac = 10;
     t_ptr->flags = (TR_DEX|TR_CHR|TR_FREE_ACT|TR_RES_FIRE|TR_RES_COLD|
 		    TR_SEE_INVIS|TR_FLAME_TONGUE|TR_FROST_BRAND);
-    t_ptr->flags2 = (TR_LIGHT|TR_ACTIVATE|TR_RES_LT|TR_ARTIFACT);
+    t_ptr->flags2 |= (TR_ARTIFACT|TR_LIGHT|TR_ACTIVATE|TR_RES_LT);
     t_ptr->p1 = 3;
-    t_ptr->cost = 18000;
+    t_ptr->cost = 18000L;
     AVAVIR = 1;
     return 1;
   }
-  else if (!strcmp("& Mace", name)) {
+  else if (!stricmp("& Mace", name)) {
     if (randint(2)>1) return 0;
     if (TARATOL) return 0;
     if (wizard || peek) msg_print("Taratol");
@@ -2666,12 +2820,12 @@ inven_type *t_ptr;
     t_ptr->weight = 200;
     t_ptr->damage[1] = 7;
     t_ptr->flags = (TR_SLAY_X_DRAGON|TR_RES_LIGHT);
-    t_ptr->flags2 = (TR_LIGHTNING|TR_ACTIVATE|TR_RES_DARK|TR_ARTIFACT);
-    t_ptr->cost = 20000;
+    t_ptr->flags2 |= (TR_ARTIFACT|TR_LIGHTNING|TR_ACTIVATE|TR_RES_DARK);
+    t_ptr->cost = 20000L;
     TARATOL = 1;
     return 1;
   }
-  else if (!strcmp("& Lance", name)) {
+  else if (!stricmp("& Lance", name)) {
     if (randint(3)>1) return 0;
     if (EORLINGAS) return 0;
     if (wizard || peek) msg_print("Eorlingas");
@@ -2684,11 +2838,11 @@ inven_type *t_ptr;
     t_ptr->flags2 |= (TR_SLAY_TROLL|TR_SLAY_ORC|TR_ARTIFACT);
     t_ptr->p1 = 2;
     t_ptr->damage[1] = 12;
-    t_ptr->cost  = 55000;
+    t_ptr->cost  = 55000L;
     EORLINGAS = 1;
     return 1;
   }
-  else if (!strcmp("& Broad Axe", name)) {
+  else if (!stricmp("& Broad Axe", name)) {
     if (BARUKKHELED) return 0;
     if (wizard || peek) msg_print("Barukkheled");
     else good_item_flag = TRUE;
@@ -2698,11 +2852,11 @@ inven_type *t_ptr;
     t_ptr->flags |= (TR_SEE_INVIS|TR_SLAY_EVIL|TR_CON);
     t_ptr->flags2 |= (TR_SLAY_ORC|TR_SLAY_TROLL|TR_SLAY_GIANT|TR_ARTIFACT);
     t_ptr->p1 = 3;
-    t_ptr->cost  = 50000;
+    t_ptr->cost  = 50000L;
     BARUKKHELED = 1;
     return 1;
   }
-  else if (!strcmp("& Trident", name)) {
+  else if (!stricmp("& Trident", name)) {
     switch (randint(3)) {
     case 1:
     case 2:
@@ -2718,9 +2872,9 @@ inven_type *t_ptr;
       t_ptr->damage[1] = 9;
       t_ptr->flags |= (TR_SEE_INVIS|TR_SLAY_EVIL|TR_STR|TR_DEX|
 				TR_SLAY_UNDEAD);
-      t_ptr->flags2 |= (TR_RES_DARK|TR_RES_LT|TR_ARTIFACT);
+      t_ptr->flags2 |= (TR_RES_DARK|TR_RES_LT|TR_ARTIFACT|TR_BLESS_BLADE);
       t_ptr->p1 = 2;
-      t_ptr->cost  = 90000;
+      t_ptr->cost  = 90000L;
       WRATH = 1;
       return 1;
     case 3:
@@ -2734,16 +2888,16 @@ inven_type *t_ptr;
       t_ptr->damage[0] = 4;
       t_ptr->damage[1] = 10;
       t_ptr->flags = (TR_SEE_INVIS|TR_FREE_ACT|TR_DEX|TR_REGEN|TR_SLOW_DIGEST
-			|TR_SLAY_ANIMAL|TR_SLAY_DRAGON);
-      t_ptr->flags2= (TR_IM_ACID|TR_HOLD_LIFE|TR_ACTIVATE|TR_RES_NETHER
-		      |TR_ARTIFACT);
+			|TR_SLAY_ANIMAL|TR_SLAY_DRAGON|TR_RES_ACID);
+      t_ptr->flags2 |= (TR_IM_ACID|TR_HOLD_LIFE|TR_ACTIVATE
+		|TR_RES_NETHER|TR_ARTIFACT|TR_BLESS_BLADE);
       t_ptr->p1 = 4;
-      t_ptr->cost = 120000;
+      t_ptr->cost = 120000L;
       ULMO = 1;
       return 1;
     }
   }
-  else if (!strcmp("& Scimitar", name)) {
+  else if (!stricmp("& Scimitar", name)) {
     if (HARADEKKET) return 0;
     if (wizard || peek) msg_print("Haradekket");
     else good_item_flag = TRUE;
@@ -2752,13 +2906,13 @@ inven_type *t_ptr;
     t_ptr->todam = 11;
     t_ptr->flags |= (TR_SEE_INVIS|TR_SLAY_EVIL|TR_DEX|TR_SLAY_UNDEAD
 		     |TR_SLAY_ANIMAL);
-    t_ptr->flags2 |= (TR_ARTIFACT);
+    t_ptr->flags2 |= (TR_ARTIFACT|TR_ATTACK_SPD);
     t_ptr->p1 = 2;
-    t_ptr->cost  = 20000;
+    t_ptr->cost  = 30000L;
     HARADEKKET = 1;
     return 1;
   }
-  else if (!strcmp("& Lochaber Axe", name)) {
+  else if (!stricmp("& Lochaber Axe", name)) {
     if (MUNDWINE) return 0;
     if (wizard || peek) msg_print("Mundwine");
     else good_item_flag = TRUE;
@@ -2768,11 +2922,11 @@ inven_type *t_ptr;
     t_ptr->flags |= (TR_SLAY_EVIL|TR_RES_FIRE|TR_RES_COLD
 		     |TR_RES_LIGHT|TR_RES_ACID);
     t_ptr->flags2 |= (TR_ARTIFACT);
-    t_ptr->cost  = 30000;
+    t_ptr->cost  = 30000L;
     MUNDWINE= 1;
     return 1;
   }
-  else if (!strcmp("& Cutlass", name)) {
+  else if (!stricmp("& Cutlass", name)) {
     if (GONDRICAM) return 0;
     if (wizard || peek) msg_print("Gondricam");
     else good_item_flag = TRUE;
@@ -2784,11 +2938,11 @@ inven_type *t_ptr;
     t_ptr->flags2 |= (TR_ARTIFACT);
     t_ptr->p1 = 3;
     t_ptr->ident |= ID_SHOW_P1;
-    t_ptr->cost  = 28000;
+    t_ptr->cost  = 28000L;
     GONDRICAM = 1;
     return 1;
   }
-  else if (!strcmp("& Sabre", name)) {
+  else if (!stricmp("& Sabre", name)) {
     if (CARETH) return 0;
     if (wizard || peek) msg_print("Careth Asdriag");
     else good_item_flag = TRUE;
@@ -2796,12 +2950,14 @@ inven_type *t_ptr;
     t_ptr->tohit = 6;
     t_ptr->todam = 8;
     t_ptr->flags |= (TR_SLAY_DRAGON|TR_SLAY_ANIMAL);
-    t_ptr->flags2 |= (TR_SLAY_GIANT|TR_SLAY_ORC|TR_SLAY_TROLL|TR_ARTIFACT);
-    t_ptr->cost  = 20000;
+    t_ptr->flags2 |= (TR_SLAY_GIANT|TR_SLAY_ORC|TR_SLAY_TROLL|TR_ARTIFACT|
+		      TR_ATTACK_SPD);
+    t_ptr->p1 = 1;
+    t_ptr->cost  = 25000L;
     CARETH = 1;
     return 1;
   }
-  else if (!strcmp("& Rapier", name)) {
+  else if (!stricmp("& Rapier", name)) {
     if (FORASGIL) return 0;
     if (wizard || peek) msg_print("Forasgil");
     else good_item_flag = TRUE;
@@ -2810,11 +2966,11 @@ inven_type *t_ptr;
     t_ptr->todam = 19;
     t_ptr->flags |= (TR_RES_COLD|TR_FROST_BRAND|TR_SLAY_ANIMAL);
     t_ptr->flags2 |= (TR_LIGHT|TR_RES_LT|TR_ARTIFACT);
-    t_ptr->cost  = 15000;
+    t_ptr->cost  = 15000L;
     FORASGIL = 1;
     return 1;
   }
-  else if (!strcmp("& Executioner's Sword", name)) {
+  else if (!stricmp("& Executioner's Sword", name)) {
     if (randint(2)>1) return 0;
     if (CRISDURIAN) return 0;
     if (wizard || peek) msg_print("Crisdurian");
@@ -2824,11 +2980,11 @@ inven_type *t_ptr;
     t_ptr->todam = 19;
     t_ptr->flags |= (TR_SEE_INVIS|TR_SLAY_EVIL|TR_SLAY_UNDEAD|TR_SLAY_DRAGON);
     t_ptr->flags2 |= (TR_SLAY_GIANT|TR_SLAY_ORC|TR_SLAY_TROLL|TR_ARTIFACT);
-    t_ptr->cost  = 100000;
+    t_ptr->cost  = 100000L;
     CRISDURIAN = 1;
     return 1;
   }
-  else if (!strcmp("& Flail", name)) {
+  else if (!stricmp("& Flail", name)) {
     if (TOTILA) return 0;
     if (wizard || peek) msg_print("Totila");
     else good_item_flag = TRUE;
@@ -2837,14 +2993,14 @@ inven_type *t_ptr;
     t_ptr->todam = 8;
     t_ptr->damage[1] = 9;
     t_ptr->flags = (TR_STEALTH|TR_RES_FIRE|TR_FLAME_TONGUE|TR_SLAY_EVIL);
-    t_ptr->flags2 = (TR_ACTIVATE|TR_RES_CONF|TR_ARTIFACT);
+    t_ptr->flags2 |= (TR_ARTIFACT|TR_ACTIVATE|TR_RES_CONF);
     t_ptr->p1    = 2;
     t_ptr->ident |= ID_SHOW_P1;
-    t_ptr->cost  = 55000;
+    t_ptr->cost  = 55000L;
     TOTILA = 1;
     return 1;
   }
-  else if (!strcmp("& Short sword", name)) {
+  else if (!stricmp("& Short sword", name)) {
     if (GILETTAR) return 0;
     if (wizard || peek) msg_print("Gilettar");
     else good_item_flag = TRUE;
@@ -2852,12 +3008,13 @@ inven_type *t_ptr;
     t_ptr->tohit = 3;
     t_ptr->todam = 7;
     t_ptr->flags = (TR_REGEN|TR_SLOW_DIGEST|TR_SLAY_ANIMAL);
-    t_ptr->flags2 |= (TR_ARTIFACT);
-    t_ptr->cost  = 10000;
+    t_ptr->flags2 |= (TR_ARTIFACT|TR_ATTACK_SPD);
+    t_ptr->p1 = 2;
+    t_ptr->cost  = 15000L;
     GILETTAR = 1;
     return 1;
   }
-  else if (!strcmp("& Katana", name)) {
+  else if (!stricmp("& Katana", name)) {
     if (randint(3)>1) return 0;
     if (AGLARANG) return 0;
     if (wizard || peek) msg_print("Aglarang");
@@ -2871,11 +3028,11 @@ inven_type *t_ptr;
     t_ptr->flags = (TR_DEX|TR_SUST_STAT);
     t_ptr->flags2 |= (TR_ARTIFACT);
     t_ptr->p1    = 5;
-    t_ptr->cost  = 40000;
+    t_ptr->cost  = 40000L;
     AGLARANG = 1;
     return 1;
   }
-  else if (!strcmp("& Spear", name)) {
+  else if (!stricmp("& Spear", name)) {
     switch (randint(6)) {
     case 1:
       if (AEGLOS) return 0;
@@ -2888,10 +3045,11 @@ inven_type *t_ptr;
       t_ptr->damage[1] = 20;
       t_ptr->flags = (TR_WIS|TR_FROST_BRAND|
 		      TR_RES_COLD|TR_FREE_ACT|TR_SLOW_DIGEST);
-      t_ptr->flags2= (TR_SLAY_TROLL|TR_SLAY_ORC|TR_ACTIVATE|TR_ARTIFACT);
+      t_ptr->flags2 |= (TR_SLAY_TROLL|TR_SLAY_ORC|TR_ACTIVATE|TR_ARTIFACT|
+			TR_BLESS_BLADE);
       t_ptr->toac  = 5;
       t_ptr->p1    = 4;
-      t_ptr->cost  = 140000;
+      t_ptr->cost  = 140000L;
       AEGLOS = 1;
       return 1;
     case 2:
@@ -2905,9 +3063,9 @@ inven_type *t_ptr;
       t_ptr->tohit = 11;
       t_ptr->todam = 13;
       t_ptr->flags = (TR_FROST_BRAND|TR_RES_COLD|TR_SLAY_UNDEAD|TR_STEALTH);
-      t_ptr->flags2 = (TR_ARTIFACT);
+      t_ptr->flags2 |= (TR_ARTIFACT);
       t_ptr->p1    = 3;
-      t_ptr->cost  = 30000;
+      t_ptr->cost  = 30000L;
       NIMLOTH = 1;
       return 1;
     case 6:
@@ -2919,15 +3077,15 @@ inven_type *t_ptr;
       t_ptr->todam = 15;
       t_ptr->flags = (TR_FLAME_TONGUE|TR_SEE_INVIS|TR_SEARCH|TR_INT|
 		      TR_RES_FIRE|TR_FFALL|TR_INFRA);
-      t_ptr->flags2= (TR_ACTIVATE|TR_LIGHT|TR_SLAY_GIANT|TR_RES_LT
-		      |TR_ARTIFACT);
+      t_ptr->flags2 |= (TR_ACTIVATE|TR_LIGHT|TR_SLAY_GIANT|TR_RES_LT
+		|TR_ARTIFACT|TR_BLESS_BLADE);
       t_ptr->p1 = 4;
-      t_ptr->cost = 60000;
+      t_ptr->cost = 60000L;
       OROME = 1;
       return 1;
     }
   }
-  else if (!strcmp("& Dagger", name)) {
+  else if (!stricmp("& Dagger", name)) {
     switch (randint(11)) {
     case 1:
       if (ANGRIST) return 0;
@@ -2940,10 +3098,10 @@ inven_type *t_ptr;
       t_ptr->damage[1] = 5;
       t_ptr->flags = (TR_DEX|TR_SLAY_EVIL|TR_SUST_STAT|
 		      TR_FREE_ACT);
-      t_ptr->flags2= (TR_SLAY_TROLL|TR_SLAY_ORC|TR_RES_DARK|TR_ARTIFACT);
+      t_ptr->flags2 |= (TR_SLAY_TROLL|TR_SLAY_ORC|TR_RES_DARK|TR_ARTIFACT);
       t_ptr->toac  = 5;
       t_ptr->p1    = 4;
-      t_ptr->cost  = 100000;
+      t_ptr->cost  = 100000L;
       ANGRIST = 1;
       return 1;
     case 2:
@@ -2955,7 +3113,7 @@ inven_type *t_ptr;
       t_ptr->tohit = 4;
       t_ptr->todam = 6;
       t_ptr->flags = (TR_FLAME_TONGUE|TR_RES_FIRE);
-      t_ptr->flags2= (TR_ACTIVATE|TR_ARTIFACT);
+      t_ptr->flags2 |= (TR_ACTIVATE|TR_ARTIFACT);
       t_ptr->cost  = 12000;
       NARTHANC = 1;
       return 1;
@@ -2968,8 +3126,8 @@ inven_type *t_ptr;
       t_ptr->tohit = 4;
       t_ptr->todam = 6;
       t_ptr->flags = (TR_FROST_BRAND|TR_RES_COLD);
-      t_ptr->flags2= (TR_ACTIVATE|TR_ARTIFACT);
-      t_ptr->cost  = 11000;
+      t_ptr->flags2 |= (TR_ACTIVATE|TR_ARTIFACT);
+      t_ptr->cost  = 11000L;
       NIMTHANC = 1;
       return 1;
     case 6:
@@ -2981,8 +3139,8 @@ inven_type *t_ptr;
       t_ptr->tohit = 4;
       t_ptr->todam = 6;
       t_ptr->flags = (TR_RES_LIGHT);
-      t_ptr->flags2= (TR_ACTIVATE|TR_LIGHTNING|TR_ARTIFACT);
-      t_ptr->cost  = 13000;
+      t_ptr->flags2 |= (TR_ACTIVATE|TR_LIGHTNING|TR_ARTIFACT);
+      t_ptr->cost  = 13000L;
       DETHANC = 1;
       return 1;
     case 8:
@@ -2995,8 +3153,9 @@ inven_type *t_ptr;
       t_ptr->todam = 3;
       t_ptr->damage[0] = 2;
       t_ptr->damage[1] = 4;
-      t_ptr->flags2= (TR_ACTIVATE|TR_RES_DISENCHANT|TR_ARTIFACT);
-      t_ptr->cost  = 15000;
+      t_ptr->flags = TR_POISON;
+      t_ptr->flags2 |= (TR_ACTIVATE|TR_RES_DISENCHANT|TR_ARTIFACT);
+      t_ptr->cost  = 15000L;
       RILIA = 1;
       return 1;
     case 10:
@@ -3011,13 +3170,13 @@ inven_type *t_ptr;
       t_ptr->damage[1] = 2;
       t_ptr->flags = (TR_FROST_BRAND|TR_RES_COLD|TR_REGEN|TR_SLOW_DIGEST|
 		      TR_DEX|TR_SEE_INVIS);
-      t_ptr->flags2= (TR_ACTIVATE|TR_ARTIFACT);
+      t_ptr->flags2 |= (TR_ACTIVATE|TR_ARTIFACT);
       t_ptr->p1    = 2;
-      t_ptr->cost  = 40000;
+      t_ptr->cost  = 40000L;
       BELANGIL = 1;
       return 1;
     }
-  } else if (!strcmp("& Small sword", name)) {
+  } else if (!stricmp("& Small sword", name)) {
     if (STING) return 0;
     if (wizard || peek) msg_print("Sting");
     else good_item_flag = TRUE;
@@ -3025,12 +3184,13 @@ inven_type *t_ptr;
     t_ptr->tohit = 7;
     t_ptr->todam = 8;
     t_ptr->flags = (TR_SEE_INVIS|TR_DEX);
-    t_ptr->flags2 = (TR_SLAY_ORC|TR_LIGHT|TR_RES_LT|TR_ARTIFACT);
+    t_ptr->flags2 |= (TR_ARTIFACT|TR_SLAY_ORC|TR_LIGHT|TR_RES_LT|
+		      TR_ATTACK_SPD);
     t_ptr->p1    = 2;
-    t_ptr->cost  = 12000;
+    t_ptr->cost  = 22000L;
     STING = 1;
     return 1;
-  } else if (!strcmp("& Great Axe", name)) {
+  } else if (!stricmp("& Great Axe", name)) {
       switch (randint(2)) {
       case 1:
         if (randint(6)>1) return 0;
@@ -3043,10 +3203,10 @@ inven_type *t_ptr;
         t_ptr->toac  = 15;
         t_ptr->flags = (TR_SLAY_X_DRAGON|TR_CON|TR_FREE_ACT|
                 	    TR_RES_FIRE|TR_RES_ACID);
-        t_ptr->flags2= (TR_SLAY_DEMON|TR_SLAY_TROLL|TR_SLAY_ORC|TR_RES_DARK
+        t_ptr->flags2 |= (TR_SLAY_DEMON|TR_SLAY_TROLL|TR_SLAY_ORC|TR_RES_DARK
 			|TR_RES_LT|TR_RES_CHAOS|TR_ARTIFACT);
         t_ptr->p1    = 3;
-        t_ptr->cost  = 150000;
+        t_ptr->cost  = 150000L;
         DURIN = 1;
         return 1;
       case 2:
@@ -3059,14 +3219,15 @@ inven_type *t_ptr;
 	t_ptr->todam = 18;
 	t_ptr->toac  = 8;
         t_ptr->flags = (TR_STATS|TR_SLAY_EVIL|TR_SLAY_UNDEAD|TR_FROST_BRAND|
-				TR_FREE_ACT|TR_SEE_INVIS);
-	t_ptr->flags2= (TR_IM_COLD|TR_SLAY_ORC|TR_ACTIVATE|TR_ARTIFACT);
+				TR_FREE_ACT|TR_SEE_INVIS|TR_RES_COLD);
+	t_ptr->flags2 |= (TR_IM_COLD|TR_SLAY_ORC|TR_ACTIVATE|TR_ARTIFACT|
+			  TR_BLESS_BLADE);
 	t_ptr->p1    = 2;
-        t_ptr->cost  = 200000;
+        t_ptr->cost  = 200000L;
 	EONWE = 1;
         return 1;
       }
-  } else if (!strcmp("& Battle Axe", name)) {
+  } else if (!stricmp("& Battle Axe", name)) {
     switch (randint(2)) {
     case 1:
       if (BALLI) return 0;
@@ -3081,10 +3242,10 @@ inven_type *t_ptr;
       t_ptr->flags = (TR_FFALL|TR_RES_LIGHT|TR_SEE_INVIS|TR_STR|TR_CON
 		      |TR_FREE_ACT|TR_RES_COLD|TR_RES_ACID
 		      |TR_RES_FIRE|TR_REGEN|TR_STEALTH);
-      t_ptr->flags2= (TR_SLAY_DEMON|TR_SLAY_TROLL|TR_SLAY_ORC|TR_RES_BLIND
+      t_ptr->flags2 |= (TR_SLAY_DEMON|TR_SLAY_TROLL|TR_SLAY_ORC|TR_RES_BLIND
 		      |TR_ARTIFACT);
       t_ptr->p1    = 3;
-      t_ptr->cost  = 90000;
+      t_ptr->cost  = 90000L;
       BALLI = 1;
       return 1;
     case 2:
@@ -3095,13 +3256,13 @@ inven_type *t_ptr;
       t_ptr->tohit = 4;
       t_ptr->todam = 3;
       t_ptr->flags = (TR_STR|TR_DEX);
-      t_ptr->flags2= (TR_ACTIVATE|TR_SLAY_TROLL|TR_SLAY_ORC|TR_ARTIFACT);
+      t_ptr->flags2 |= (TR_ACTIVATE|TR_SLAY_TROLL|TR_SLAY_ORC|TR_ARTIFACT);
       t_ptr->p1    = 1;
-      t_ptr->cost  = 21000;
+      t_ptr->cost  = 21000L;
       LOTHARANG = 1;
       return 1;
     }
-  } else if (!strcmp("& War Hammer", name)) {
+  } else if (!stricmp("& War Hammer", name)) {
     if (randint(10)>1) return 0;
     if (AULE) return 0;
     if (wizard || peek) msg_print("Aule");
@@ -3115,12 +3276,12 @@ inven_type *t_ptr;
     t_ptr->flags = (TR_SLAY_X_DRAGON|TR_SLAY_EVIL|TR_SLAY_UNDEAD|
 		    TR_RES_FIRE|TR_RES_ACID|TR_RES_COLD|TR_RES_LIGHT|
 		    TR_FREE_ACT|TR_SEE_INVIS|TR_WIS);
-    t_ptr->flags2 = (TR_SLAY_DEMON|TR_LIGHTNING|TR_RES_NEXUS|TR_ARTIFACT);
+    t_ptr->flags2 |= (TR_ARTIFACT|TR_SLAY_DEMON|TR_LIGHTNING|TR_RES_NEXUS);
     t_ptr->p1 = 4;
-    t_ptr->cost = 250000;
+    t_ptr->cost = 250000L;
     AULE = 1;
     return 1;
-  } else if (!strcmp("& Beaked Axe", name)) {
+  } else if (!stricmp("& Beaked Axe", name)) {
     if (randint(2)>1) return 0;
     if (THEODEN) return 0;
     if (wizard || peek) msg_print("Theoden");
@@ -3129,12 +3290,12 @@ inven_type *t_ptr;
     t_ptr->tohit = 8;
     t_ptr->todam = 10;
     t_ptr->flags = (TR_WIS|TR_CON|TR_SEARCH|TR_SLOW_DIGEST|TR_SLAY_DRAGON);
-    t_ptr->flags2= (TR_TELEPATHY|TR_ACTIVATE|TR_ARTIFACT);
+    t_ptr->flags2 |= (TR_TELEPATHY|TR_ACTIVATE|TR_ARTIFACT);
     t_ptr->p1 = 3;
-    t_ptr->cost = 40000;
+    t_ptr->cost = 40000L;
     THEODEN = 1;
     return 1;
-  } else if (!strcmp("& Two-Handed Great Flail", name)) {
+  } else if (!stricmp("& Two-Handed Great Flail", name)) {
     if (randint(5)>1) return 0;
     if (THUNDERFIST) return 0;
     if (wizard || peek) msg_print("Thunderfist");
@@ -3144,13 +3305,13 @@ inven_type *t_ptr;
     t_ptr->todam = 18;
     t_ptr->flags = (TR_SLAY_ANIMAL|TR_STR|TR_FLAME_TONGUE|
 		    TR_RES_FIRE|TR_RES_LIGHT);
-    t_ptr->flags2 = (TR_SLAY_TROLL|TR_SLAY_ORC|TR_LIGHTNING|TR_RES_DARK
-		     |TR_ARTIFACT);
+    t_ptr->flags2 |= (TR_ARTIFACT|TR_SLAY_TROLL|TR_SLAY_ORC
+		      |TR_LIGHTNING|TR_RES_DARK);
     t_ptr->p1 = 4;
-    t_ptr->cost = 160000;
+    t_ptr->cost = 160000L;
     THUNDERFIST = 1;
     return 1;
-  } else if (!strcmp("& Morningstar", name)) {
+  } else if (!stricmp("& Morningstar", name)) {
     switch (randint(2)) {
     case 1:
       if (randint(2)>1) return 0;
@@ -3161,9 +3322,9 @@ inven_type *t_ptr;
       t_ptr->tohit = 8;
       t_ptr->todam = 22;
       t_ptr->flags = (TR_SLAY_ANIMAL|TR_STR|TR_SEE_INVIS);
-      t_ptr->flags2 = (TR_SLAY_TROLL|TR_SLAY_ORC|TR_RES_NEXUS|TR_ARTIFACT);
+      t_ptr->flags2 |= (TR_ARTIFACT|TR_SLAY_TROLL|TR_SLAY_ORC|TR_RES_NEXUS);
       t_ptr->p1 = 4;
-      t_ptr->cost = 30000;
+      t_ptr->cost = 30000L;
       BLOODSPIKE = 1;
       return 1;
     case 2:
@@ -3174,13 +3335,13 @@ inven_type *t_ptr;
       t_ptr->tohit = 5;
       t_ptr->todam = 7;
       t_ptr->flags = (TR_FLAME_TONGUE|TR_RES_FIRE);
-      t_ptr->flags2 = (TR_ACTIVATE|TR_ARTIFACT);
+      t_ptr->flags2 |= (TR_ACTIVATE|TR_ARTIFACT);
       t_ptr->toac = 2;
-      t_ptr->cost = 35000;
+      t_ptr->cost = 35000L;
       FIRESTAR = 1;
       return 1;
     }
-  } else if (!strcmp("& Blade of Chaos", name)) {
+  } else if (!stricmp("& Blade of Chaos", name)) {
     if (DOOMCALLER) return 0;
     if (randint(3)>1) return 0;
     if (wizard || peek) msg_print("Doomcaller");
@@ -3192,12 +3353,12 @@ inven_type *t_ptr;
 		    TR_FROST_BRAND|TR_SLAY_EVIL|TR_FREE_ACT|TR_SEE_INVIS|
 		    TR_RES_FIRE|TR_RES_COLD|TR_RES_LIGHT|TR_RES_ACID|
 		    TR_AGGRAVATE);
-    t_ptr->flags2 = (TR_SLAY_TROLL|TR_SLAY_ORC|TR_TELEPATHY|TR_ARTIFACT);
+    t_ptr->flags2 |= (TR_SLAY_TROLL|TR_SLAY_ORC|TR_TELEPATHY|TR_ARTIFACT);
     t_ptr->p1 = -5;
-    t_ptr->cost = 200000;
+    t_ptr->cost = 200000L;
     DOOMCALLER = 1;
     return 1;
-  } else if (!strcmp("& Quarterstaff", name)) {
+  } else if (!stricmp("& Quarterstaff", name)) {
     switch (randint(7)) {
     case 1:
     case 2:
@@ -3212,7 +3373,7 @@ inven_type *t_ptr;
       t_ptr->flags2 |= (TR_ARTIFACT);
       t_ptr->p1 = 3;
       t_ptr->ident |= ID_SHOW_P1;
-      t_ptr->cost = 70000;
+      t_ptr->cost = 70000L;
       NAR = 1;
       return 1;
     case 4:
@@ -3225,9 +3386,9 @@ inven_type *t_ptr;
       t_ptr->tohit = 3;
       t_ptr->todam = 5;
       t_ptr->flags = (TR_SLAY_EVIL|TR_SEE_INVIS|TR_INT|TR_WIS);
-      t_ptr->flags2 = (TR_LIGHT|TR_ACTIVATE|TR_RES_LT|TR_ARTIFACT);
+      t_ptr->flags2 |= (TR_LIGHT|TR_ACTIVATE|TR_RES_LT|TR_ARTIFACT);
       t_ptr->p1 = 4;
-      t_ptr->cost = 20000;
+      t_ptr->cost = 20000L;
       ERIRIL = 1;
       return 1;
     case 7:
@@ -3242,10 +3403,10 @@ inven_type *t_ptr;
       t_ptr->damage[1] = 10;
       t_ptr->flags = (TR_SLAY_EVIL|TR_SEE_INVIS|TR_WIS|TR_INT|TR_CHR
 			|TR_FLAME_TONGUE|TR_RES_FIRE);
-      t_ptr->flags2 = (TR_HOLD_LIFE|TR_SLAY_ORC|TR_SLAY_TROLL|TR_ACTIVATE|
-		       TR_RES_NETHER|TR_ARTIFACT);
+      t_ptr->flags2 |= (TR_ARTIFACT|TR_HOLD_LIFE|TR_SLAY_ORC|TR_SLAY_TROLL
+		|TR_ACTIVATE|TR_RES_NETHER);
       t_ptr->p1 = 4;
-      t_ptr->cost = 130000;
+      t_ptr->cost = 130000L;
       OLORIN = 1;
       return 1;
     }
@@ -3257,7 +3418,7 @@ int unique_armour(t_ptr)
 inven_type *t_ptr;
 {
   char *name;
-
+  
   if (be_nasty) return 0;
   name = object_list[t_ptr->index].name;
   if (!strncmp("Adamantite", name, 10)) {
@@ -3268,14 +3429,15 @@ inven_type *t_ptr;
     t_ptr->flags |= (TR_RES_ACID|TR_RES_COLD);
     t_ptr->flags2 |= (TR_HOLD_LIFE|TR_ACTIVATE|TR_RES_CHAOS|TR_RES_DARK|
 		      TR_RES_NEXUS|TR_RES_NETHER|TR_ARTIFACT);
-    t_ptr->name2 |= SN_SOULKEEPER;
+    t_ptr->name2 = SN_SOULKEEPER;
     t_ptr->toac += 20;
-    t_ptr->cost = 300000;
+    t_ptr->cost = 300000L;
     SOULKEEPER = 1;
     return 1;
   }/* etc.....*/
   else if (!strncmp("Multi-Hued", name, 10)) {
     if (RAZORBACK) return 0;
+    if (randint(3)>1) return 0;
     if (wizard || peek) msg_print("Razorback");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_RES_FIRE|TR_RES_COLD|TR_RES_ACID|TR_POISON|TR_RES_LIGHT
@@ -3285,10 +3447,10 @@ inven_type *t_ptr;
     t_ptr->toac += 25;
     t_ptr->p1 = -2;
     t_ptr->weight = 400;
-    t_ptr->ac = 40;
+    t_ptr->ac = 30;
     t_ptr->tohit = -3;
-    t_ptr->cost = 400000;
-    t_ptr->name2 |= RAZORBACK;
+    t_ptr->cost = 400000L;
+    t_ptr->name2 = SN_RAZORBACK;
     RAZORBACK = 1;
     return 1;
   }
@@ -3300,46 +3462,47 @@ inven_type *t_ptr;
 		     |TR_DEX|TR_SEARCH|TR_REGEN);
     t_ptr->flags2 |= (TR_HOLD_LIFE|TR_RES_CONF|TR_RES_SOUND|TR_RES_LT
 		     |TR_RES_DARK|TR_RES_CHAOS|TR_RES_DISENCHANT|TR_ARTIFACT
-		     |TR_RES_SHARDS|TR_RES_BLIND|TR_RES_NEXUS|TR_RES_NETHER);
+		     |TR_RES_SHARDS|TR_RES_BLIND|TR_RES_NEXUS|TR_RES_NETHER
+		      |TR_ACTIVATE);
     t_ptr->toac += 35;
     t_ptr->p1 = -3;
     t_ptr->ac = 50;
     t_ptr->tohit = -4;
     t_ptr->weight = 500;
-    t_ptr->cost = 500000;
-    t_ptr->name2 |= BLADETURNER;
+    t_ptr->cost = 500000L;
+    t_ptr->name2 = SN_BLADETURNER;
     BLADETURNER = 1;
     return 1;
   }
-  else if (!strcmp("& Pair of Hard Leather Boots", name)) {
+  else if (!stricmp("& Pair of Hard Leather Boots", name)) {
     if (FEANOR) return 0;
     if (randint(5)>1) return 0;
     if (wizard || peek) msg_print("Feanor");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_RES_ACID|TR_SPEED|TR_STEALTH);
     t_ptr->flags2 |= (TR_ACTIVATE|TR_RES_NEXUS|TR_ARTIFACT);
-    t_ptr->name2 |= SN_FEANOR;
+    t_ptr->name2 = SN_FEANOR;
     t_ptr->p1 = 1;
     t_ptr->toac += 20;
-    t_ptr->cost = 130000;
+    t_ptr->cost = 130000L;
     FEANOR = 1;
     return 1;
   }
-  else if (!strcmp("& Pair of Soft Leather Boots", name)) {
+  else if (!stricmp("& Pair of Soft Leather Boots", name)) {
     if (DAL) return 0;
     if (wizard || peek) msg_print("Dal-i-thalion");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_FREE_ACT|TR_DEX|TR_SUST_STAT|TR_RES_ACID);
-    t_ptr->flags2 |= (TR_ACTIVATE|TR_ARTIFACT);
-    t_ptr->name2 |= SN_DAL;
+    t_ptr->flags2 |= (TR_ACTIVATE|TR_ARTIFACT|TR_RES_NETHER|TR_RES_CHAOS);
+    t_ptr->name2 = SN_DAL;
     t_ptr->p1 = 5;
     t_ptr->ident |= ID_SHOW_P1;
     t_ptr->toac += 15;
-    t_ptr->cost = 40000;
+    t_ptr->cost = 40000L;
     DAL = 1;
     return 1;
   }
-  else if (!strcmp("& Small Metal Shield", name)) {
+  else if (!stricmp("& Small Metal Shield", name)) {
     if (THORIN) return 0;
     if (randint(2)>1) return 0;
     if (wizard || peek) msg_print("Thorin");
@@ -3347,43 +3510,45 @@ inven_type *t_ptr;
     t_ptr->flags |= (TR_CON|TR_FREE_ACT|TR_STR|
 				TR_RES_ACID|TR_SEARCH);
     t_ptr->flags2 |= (TR_RES_SOUND|TR_RES_CHAOS|TR_ARTIFACT|TR_IM_ACID);
-    t_ptr->name2 |= SN_THORIN;
+    t_ptr->name2 = SN_THORIN;
     t_ptr->tohit = 0;
     t_ptr->p1 = 4;
     t_ptr->toac += 25;
-    t_ptr->cost = 60000;
+    t_ptr->cost = 60000L;
     THORIN = 1;
     return 1;
   }
-  else if (!strcmp("Full Plate Armour", name)) {
+  else if (!stricmp("Full Plate Armour", name)) {
     if (ISILDUR) return 0;
     if (wizard || peek) msg_print("Isildur");
     else good_item_flag = TRUE;
+    t_ptr->weight = 300;
     t_ptr->flags |= (TR_RES_ACID|TR_RES_FIRE|TR_RES_COLD|TR_RES_LIGHT);
-    t_ptr->flags2 |= (TR_RES_SOUND|TR_ARTIFACT);
-    t_ptr->name2 |= SN_ISILDUR;
+    t_ptr->flags2 |= (TR_RES_SOUND|TR_ARTIFACT|TR_RES_NEXUS);
+    t_ptr->name2 = SN_ISILDUR;
     t_ptr->tohit = 0;
     t_ptr->toac += 25;
-    t_ptr->cost = 40000;
+    t_ptr->cost = 40000L;
     ISILDUR = 1;
     return 1;
   }
-  else if (!strcmp("Metal Brigandine Armour", name)) {
+  else if (!stricmp("Metal Brigandine Armour", name)) {
     if (ROHAN) return 0;
     if (wizard || peek) msg_print("Rohan");
     else good_item_flag = TRUE;
+    t_ptr->weight = 200;
     t_ptr->flags |= (TR_RES_ACID|TR_RES_FIRE|TR_RES_COLD|TR_RES_LIGHT|
 			TR_STR|TR_DEX);
     t_ptr->flags2 |= (TR_RES_SOUND|TR_RES_CONF|TR_ARTIFACT);
-    t_ptr->name2 |= SN_ROHAN;
+    t_ptr->name2 = SN_ROHAN;
     t_ptr->tohit = 0;
     t_ptr->p1 = 2;
     t_ptr->toac += 15;
-    t_ptr->cost = 30000;
+    t_ptr->cost = 30000L;
     ROHAN = 1;
     return 1;
   }
-  else if (!strcmp("& Large Metal Shield", name)) {
+  else if (!stricmp("& Large Metal Shield", name)) {
     if (ANARION) return 0;
     if (randint(3)>1) return 0;
     else good_item_flag = TRUE;
@@ -3391,45 +3556,45 @@ inven_type *t_ptr;
     t_ptr->flags |= (TR_RES_ACID|TR_RES_FIRE|TR_RES_COLD|TR_RES_LIGHT|
 		     TR_SUST_STAT);
     t_ptr->flags2 |= (TR_ARTIFACT);
-    t_ptr->name2 |= SN_ANARION;
+    t_ptr->name2 = SN_ANARION;
     t_ptr->p1 = 10;
     t_ptr->tohit = 0;
     t_ptr->toac += 20;
-    t_ptr->cost = 160000;
+    t_ptr->cost = 160000L;
     ANARION = 1;
     return 1;
   }
-  else if (!strcmp("& Set of Cestus", name)) {
+  else if (!stricmp("& Set of Cesti", name)) {
     if (FINGOLFIN) return 0;
     if (randint(3)>1) return 0;
     if (wizard || peek) msg_print("Fingolfin");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_RES_ACID|TR_DEX|TR_FREE_ACT);
     t_ptr->flags2 |= (TR_ACTIVATE|TR_ARTIFACT);
-    t_ptr->name2 |= SN_FINGOLFIN;
+    t_ptr->name2 = SN_FINGOLFIN;
     t_ptr->ident |= ID_SHOW_HITDAM;
     t_ptr->p1 = 4;
     t_ptr->tohit = 10;
     t_ptr->todam = 10;
     t_ptr->toac += 20;
-    t_ptr->cost = 110000;
+    t_ptr->cost = 110000L;
     FINGOLFIN = 1;
     return 1;
   }
-  else if (!strcmp("& Set of Leather Gloves", name)) {
+  else if (!stricmp("& Set of Leather Gloves", name)) {
     if (randint(3)==1) {
       if (CAMBELEG) return 0;
       if (wizard || peek) msg_print("Cambeleg");
       else good_item_flag = TRUE;
       t_ptr->flags |= (TR_STR|TR_CON|TR_FREE_ACT);
       t_ptr->flags2 |= (TR_ARTIFACT);
-      t_ptr->name2 |= SN_CAMBELEG;
+      t_ptr->name2 = SN_CAMBELEG;
       t_ptr->ident |= ID_SHOW_HITDAM;
       t_ptr->p1 = 2;
       t_ptr->tohit = 8;
       t_ptr->todam = 8;
       t_ptr->toac += 15;
-      t_ptr->cost = 36000;
+      t_ptr->cost = 36000L;
       CAMBELEG = 1;
       return 1;
     } else {
@@ -3438,15 +3603,15 @@ inven_type *t_ptr;
       else good_item_flag = TRUE;
       t_ptr->flags |= (TR_SUST_STAT);
       t_ptr->flags2 |= (TR_ACTIVATE|TR_LIGHT|TR_RES_LT|TR_ARTIFACT);
-      t_ptr->name2 |= SN_CAMMITHRIM;
+      t_ptr->name2 = SN_CAMMITHRIM;
       t_ptr->p1 = 5;
       t_ptr->toac += 10;
-      t_ptr->cost = 30000;
+      t_ptr->cost = 30000L;
       CAMMITHRIM = 1;
       return 1;
     }
   }
-  else if (!strcmp("& Set of Gauntlets", name)) {
+  else if (!stricmp("& Set of Gauntlets", name)) {
     switch (randint(6)) {
     case 1:
       if (PAURHACH) return 0;
@@ -3454,9 +3619,9 @@ inven_type *t_ptr;
       else good_item_flag = TRUE;
       t_ptr->flags |= TR_RES_FIRE;
       t_ptr->flags2 |= (TR_ACTIVATE|TR_ARTIFACT);
-      t_ptr->name2 |= SN_PAURHACH;
+      t_ptr->name2 = SN_PAURHACH;
       t_ptr->toac += 15;
-      t_ptr->cost = 15000;
+      t_ptr->cost = 15000L;
       PAURHACH = 1;
       return 1;
     case 2:
@@ -3465,9 +3630,9 @@ inven_type *t_ptr;
       else good_item_flag = TRUE;
       t_ptr->flags |= TR_RES_COLD;
       t_ptr->flags2 |= (TR_ACTIVATE|TR_ARTIFACT);
-      t_ptr->name2 |= SN_PAURNIMMEN;
+      t_ptr->name2 = SN_PAURNIMMEN;
       t_ptr->toac += 15;
-      t_ptr->cost = 13000;
+      t_ptr->cost = 13000L;
       PAURNIMMEN = 1;
       return 1;
     case 3:
@@ -3476,9 +3641,9 @@ inven_type *t_ptr;
       else good_item_flag = TRUE;
       t_ptr->flags |= TR_RES_LIGHT;
       t_ptr->flags2 |= (TR_ACTIVATE|TR_ARTIFACT);
-      t_ptr->name2 |= SN_PAURAEGEN;
+      t_ptr->name2 = SN_PAURAEGEN;
       t_ptr->toac += 15;
-      t_ptr->cost = 11000;
+      t_ptr->cost = 11000L;
       PAURAEGEN = 1;
       return 1;
     case 4:
@@ -3487,9 +3652,9 @@ inven_type *t_ptr;
       else good_item_flag = TRUE;
       t_ptr->flags |= TR_RES_ACID;
       t_ptr->flags2 |= (TR_ACTIVATE|TR_ARTIFACT);
-      t_ptr->name2 |= SN_PAURNEN;
+      t_ptr->name2 = SN_PAURNEN;
       t_ptr->toac += 15;
-      t_ptr->cost = 12000;
+      t_ptr->cost = 12000L;
       PAURNEN = 1;
       return 1;
     default:
@@ -3498,166 +3663,169 @@ inven_type *t_ptr;
       else good_item_flag = TRUE;
       t_ptr->flags |= (TR_STR|TR_DEX|TR_AGGRAVATE|TR_CURSED);
       t_ptr->flags2 |= (TR_ARTIFACT);
-      t_ptr->name2 |= SN_CAMLOST;
+      t_ptr->name2 = SN_CAMLOST;
       t_ptr->p1 = -5;
       t_ptr->tohit = -11;
       t_ptr->todam = -12;
       t_ptr->ident |=(ID_SHOW_HITDAM|ID_SHOW_P1);
-      t_ptr->cost = 0;
+      t_ptr->cost = 0L;
       CAMLOST = 1;
       return 1;
     }
   }
-  else if (!strcmp("Mithril Chain Mail", name)) {
+  else if (!stricmp("Mithril Chain Mail", name)) {
     if (BELEGENNON) return 0;
     if (wizard || peek) msg_print("Belegennon");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_RES_ACID|TR_RES_FIRE|TR_RES_COLD|TR_RES_LIGHT|
 		     TR_STEALTH);
     t_ptr->flags2 |= (TR_ACTIVATE|TR_ARTIFACT);
-    t_ptr->name2 |= SN_BELEGENNON;
+    t_ptr->name2 = SN_BELEGENNON;
     t_ptr->p1 = 4;
     t_ptr->ident |= ID_SHOW_P1;
     t_ptr->toac += 20;
-    t_ptr->cost = 105000;
+    t_ptr->cost = 105000L;
     BELEGENNON = 1;
     return 1;
   }
-  else if (!strcmp("Mithril Plate Mail", name)) {
+  else if (!stricmp("Mithril Plate Mail", name)) {
     if (CELEBORN) return 0;
     if (wizard || peek) msg_print("Celeborn");
     else good_item_flag = TRUE;
+    t_ptr->weight = 250;
     t_ptr->flags |= (TR_RES_ACID|TR_RES_FIRE|TR_RES_COLD|TR_RES_LIGHT|
 		     TR_STR|TR_CHR);
     t_ptr->flags2 |= (TR_ACTIVATE|TR_RES_DISENCHANT|TR_RES_DARK|TR_ARTIFACT);
-    t_ptr->name2 |= SN_CELEBORN;
+    t_ptr->name2 = SN_CELEBORN;
     t_ptr->p1 = 4;
     t_ptr->toac += 25;
-    t_ptr->cost = 150000;
+    t_ptr->cost = 150000L;
     CELEBORN = 1;
     return 1;
   }
-  else if (!strcmp("Augmented Chain Mail", name)) {
+  else if (!stricmp("Augmented Chain Mail", name)) {
     if (randint(3)>1) return 0;
     if (CASPANION) return 0;
     if (wizard || peek) msg_print("Caspanion");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_RES_ACID|TR_POISON|TR_CON|TR_WIS|TR_INT);
     t_ptr->flags2 |= (TR_RES_CONF|TR_ACTIVATE|TR_ARTIFACT);
-    t_ptr->name2 |= SN_CASPANION;
+    t_ptr->name2 = SN_CASPANION;
     t_ptr->p1 = 3;
     t_ptr->toac += 20;
-    t_ptr->cost = 40000;
+    t_ptr->cost = 40000L;
     CASPANION = 1;
     return 1;
   }
-  else if (!strcmp("Soft Leather Armour", name)) {
+  else if (!stricmp("Soft Leather Armour", name)) {
     if (HITHLOMIR) return 0;
     if (wizard || peek) msg_print("Hithlomir");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_RES_ACID|TR_RES_FIRE|TR_RES_COLD|TR_RES_LIGHT|
 		     TR_STEALTH);
-    t_ptr->flags2 |= (TR_ARTIFACT);
-    t_ptr->name2 |= SN_HITHLOMIR;
+    t_ptr->flags2 |= (TR_ARTIFACT|TR_RES_DARK);
+    t_ptr->name2 = SN_HITHLOMIR;
     t_ptr->p1 = 4;
     t_ptr->toac += 20;
     t_ptr->ident |= ID_SHOW_P1;
-    t_ptr->cost = 45000;
+    t_ptr->cost = 45000L;
     HITHLOMIR = 1;
     return 1;
   }
-  else if (!strcmp("Leather Scale Mail", name)) {
+  else if (!stricmp("Leather Scale Mail", name)) {
     if (THALKETTOTH) return 0;
     if (wizard || peek) msg_print("Thalkettoth");
     else good_item_flag = TRUE;
+    t_ptr->weight = 60;
     t_ptr->flags |= (TR_RES_ACID|TR_DEX);
-    t_ptr->flags2 |= (TR_ARTIFACT);
-    t_ptr->name2 |= SN_THALKETTOTH;
+    t_ptr->flags2 |= (TR_ARTIFACT|TR_RES_SHARDS);
+    t_ptr->name2 = SN_THALKETTOTH;
     t_ptr->toac += 25;
     t_ptr->p1 = 3;
-    t_ptr->cost = 25000;
+    t_ptr->cost = 25000L;
     THALKETTOTH = 1;
     return 1;
   }
-  else if (!strcmp("Chain Mail", name)) {
+  else if (!stricmp("Chain Mail", name)) {
     if (ARVEDUI) return 0;
     if (wizard || peek) msg_print("Arvedui");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_RES_ACID|TR_RES_FIRE|TR_RES_COLD|TR_RES_LIGHT|
 		     TR_STR|TR_CHR);
-    t_ptr->flags2 |= (TR_ARTIFACT);
-    t_ptr->name2 |= SN_ARVEDUI;
+    t_ptr->flags2 |= (TR_ARTIFACT|TR_RES_NEXUS|TR_RES_SHARDS);
+    t_ptr->name2 = SN_ARVEDUI;
     t_ptr->p1 = 2;
     t_ptr->toac += 15;
-    t_ptr->cost = 32000;
+    t_ptr->cost = 32000L;
     ARVEDUI = 1;
     return 1;
   }
-  else if (!strcmp("& Hard Leather Cap", name)) {
+  else if (!stricmp("& Hard Leather Cap", name)) {
     if (THRANDUIL) return 0;
     if (wizard || peek) msg_print("Thranduil");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_RES_ACID|TR_INT|TR_WIS);
     t_ptr->flags2 |= (TR_TELEPATHY|TR_RES_BLIND|TR_ARTIFACT);
-    t_ptr->name2 |= SN_THRANDUIL;
+    t_ptr->name2 = SN_THRANDUIL;
     t_ptr->p1 = 2;
     t_ptr->toac += 10;
-    t_ptr->cost = 50000;
+    t_ptr->cost = 50000L;
     THRANDUIL = 1;
     return 1;
   }
-  else if (!strcmp("& Metal Cap", name)) {
+  else if (!stricmp("& Metal Cap", name)) {
     if (THENGEL) return 0;
     if (wizard || peek) msg_print("Thengel");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_RES_ACID|TR_WIS|TR_CHR);
     t_ptr->flags2 |= (TR_ARTIFACT);
-    t_ptr->name2 |= SN_THENGEL;
+    t_ptr->name2 = SN_THENGEL;
     t_ptr->p1 = 3;
     t_ptr->toac += 12;
-    t_ptr->cost = 22000;
+    t_ptr->cost = 22000L;
     THENGEL = 1;
     return 1;
   }
-  else if (!strcmp("& Steel Helm", name)) {
+  else if (!stricmp("& Steel Helm", name)) {
     if (HAMMERHAND) return 0;
     if (wizard || peek) msg_print("Hammerhand");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_STR|TR_CON|TR_DEX|TR_RES_ACID);
-    t_ptr->flags2 |= (TR_ARTIFACT);
-    t_ptr->name2 |= SN_HAMMERHAND;
+    t_ptr->flags2 |= (TR_ARTIFACT|TR_RES_NEXUS);
+    t_ptr->name2 = SN_HAMMERHAND;
     t_ptr->p1 = 3;
     t_ptr->toac += 20;
-    t_ptr->cost = 45000;
+    t_ptr->cost = 45000L;
     HAMMERHAND = 1;
     return 1;
   }
-  else if (!strcmp("& Large Leather Shield", name)) {
+  else if (!stricmp("& Large Leather Shield", name)) {
     if (CELEFARN) return 0;
     if (wizard || peek) msg_print("Celefarn");
     else good_item_flag = TRUE;
+    t_ptr->weight = 60;
     t_ptr->flags |= (TR_RES_ACID|TR_RES_FIRE|TR_RES_COLD|TR_RES_LIGHT);
     t_ptr->flags2 |= (TR_RES_LT|TR_RES_DARK|TR_ARTIFACT);
-    t_ptr->name2 |= SN_CELEFARN;
+    t_ptr->name2 = SN_CELEFARN;
     t_ptr->toac += 20;
-    t_ptr->cost = 12000;
+    t_ptr->cost = 12000L;
     CELEFARN = 1;
     return 1;
   }
-  else if (!strcmp("& Pair of Metal Shod Boots", name)) {
+  else if (!stricmp("& Pair of Metal Shod Boots", name)) {
     if (THROR) return 0;
     if (wizard || peek) msg_print("Thror");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_CON|TR_STR|TR_RES_ACID);
     t_ptr->flags2 |= (TR_ARTIFACT);
-    t_ptr->name2 |= SN_THROR;
+    t_ptr->name2 = SN_THROR;
     t_ptr->p1 = 3;
     t_ptr->toac += 20;
-    t_ptr->cost = 12000;
+    t_ptr->cost = 12000L;
     THROR = 1;
     return 1;
   }
-  else if (!strcmp("& Iron Helm", name)) {
+  else if (!stricmp("& Iron Helm", name)) {
     if (randint(6)==1) {
       if (DOR_LOMIN) return 0;
       if (wizard || peek) msg_print("Dor-Lomin");
@@ -3666,10 +3834,10 @@ inven_type *t_ptr;
 		       TR_CON|TR_DEX|TR_STR|TR_SEE_INVIS);
       t_ptr->flags2 |= (TR_TELEPATHY|TR_LIGHT|TR_RES_LT|TR_RES_BLIND
 			|TR_ARTIFACT);
-      t_ptr->name2 |= SN_DOR_LOMIN;
+      t_ptr->name2 = SN_DOR_LOMIN;
       t_ptr->p1 = 4;
       t_ptr->toac += 20;
-      t_ptr->cost = 300000;
+      t_ptr->cost = 300000L;
       DOR_LOMIN = 1;
       return 1;
     } else if (randint(2)==1) {
@@ -3678,11 +3846,11 @@ inven_type *t_ptr;
       else good_item_flag = TRUE;
       t_ptr->flags |= (TR_INT|TR_WIS|TR_SEE_INVIS|TR_SEARCH|TR_RES_ACID);
       t_ptr->flags2 |= (TR_ACTIVATE|TR_RES_BLIND|TR_ARTIFACT);
-      t_ptr->name2 |= SN_HOLHENNETH;
+      t_ptr->name2 = SN_HOLHENNETH;
       t_ptr->ident |= ID_SHOW_P1;
       t_ptr->p1 = 2;
       t_ptr->toac += 10;
-      t_ptr->cost = 100000;
+      t_ptr->cost = 100000L;
       HOLHENNETH = 1;
       return 1;
     } else {
@@ -3692,16 +3860,16 @@ inven_type *t_ptr;
       t_ptr->flags |= (TR_INT|TR_WIS|TR_SEE_INVIS|TR_SEARCH|TR_CURSED
 		       |TR_AGGRAVATE);
       t_ptr->flags2 |= (TR_ARTIFACT);
-      t_ptr->name2 |= SN_GORLIM;
+      t_ptr->name2 = SN_GORLIM;
       t_ptr->ident |= ID_SHOW_P1;
       t_ptr->p1 = -125;
       t_ptr->toac += 10;
-      t_ptr->cost = 0;
+      t_ptr->cost = 0L;
       GORLIM = 1;
       return 1;
     }
   }
-  else if (!strcmp("& Golden Crown", name)) {
+  else if (!stricmp("& Golden Crown", name)) {
     if (randint(3)>1) return 0;
     if (GONDOR) return 0;
     if (wizard || peek) msg_print("Gondor");
@@ -3713,36 +3881,55 @@ inven_type *t_ptr;
     t_ptr->p1 = 3;
     t_ptr->ident = ID_SHOW_P1;
     t_ptr->toac += 15;
-    t_ptr->cost = 100000;
+    t_ptr->cost = 100000L;
     GONDOR = 1;
     return 1;
   }
-  else if (!strcmp("& Iron Crown", name)) {
+  else if (!stricmp("& Iron Crown", name)) {
     if (BERUTHIEL) return 0;
     if (wizard || peek) msg_print("Beruthiel");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_STR|TR_DEX|TR_CON|
 		TR_RES_ACID|TR_SEE_INVIS|TR_FREE_ACT|TR_CURSED);
     t_ptr->flags2 |= (TR_TELEPATHY|TR_ARTIFACT);
-    t_ptr->name2 |= SN_BERUTHIEL;
+    t_ptr->name2 = SN_BERUTHIEL;
     t_ptr->p1 = -125;
     t_ptr->ident |= ID_SHOW_P1;
     t_ptr->toac += 20;
-    t_ptr->cost = 10000;
+    t_ptr->cost = 10000L;
     BERUTHIEL = 1;
     return 1;
   }
   return 0;
 }
 
+void give_1_hi_resist(t)    /* JLS: gives one of the "new" resistances to */
+                            /* item t - used of Robes of Magi, Elvenkind */
+register inven_type *t;
+{
+    switch (randint(10))
+    {
+      case 1: t->flags2 |= TR_RES_CONF; break;
+      case 2: t->flags2 |= TR_RES_SOUND; break;
+      case 3: t->flags2 |= TR_RES_LT; break;
+      case 4: t->flags2 |= TR_RES_DARK; break;
+      case 5: t->flags2 |= TR_RES_CHAOS; break;
+      case 6: t->flags2 |= TR_RES_DISENCHANT; break;
+      case 7: t->flags2 |= TR_RES_SHARDS; break;
+      case 8: t->flags2 |= TR_RES_NEXUS; break;
+      case 9: t->flags2 |= TR_RES_BLIND; break;
+      case 10: t->flags2 |= TR_RES_NETHER; break;
+    }
+}
+	
 /* Chance of treasure having magic abilities		-RAK-	*/
 /* Chance increases with each dungeon level			 */
 void magic_treasure(x, level, good, not_unique)
 int x, level, good, not_unique;
 {
   register inven_type *t_ptr;
-  register int chance, special, cursed, i;
-  int tmp;
+  register int32u chance, special, cursed, i;
+  int32u tmp;
 
   chance = OBJ_BASE_MAGIC + level;
   if (chance > OBJ_BASE_MAX)
@@ -3763,12 +3950,27 @@ int x, level, good, not_unique;
       if ((t_ptr->index>=389 && t_ptr->index<=394)
       || (t_ptr->index>=408 && t_ptr->index<=409)
       || (t_ptr->index>=415 && t_ptr->index<=419)) {
-	  t_ptr->toac += m_bonus(1, 30, level);
-	}
+	  
+	int8u artifact = FALSE;
+
+	t_ptr->toac += m_bonus(1, 30, level);  /* all DSM are enchanted, I
+	  					    guess -CFT */
+	rating += 30;
+	if ( (magik(chance) && magik(special)) || (good==666) ) {
+	  t_ptr->toac += randint(10); /* even better... */
+	  if ((randint(3)==1 || good==666) && !not_unique
+		 && unique_armour(t_ptr))  /* ...but is it an artifact? */
+	    artifact = TRUE;
+	  }
+	if (!artifact) { /* assume cost&mesg done if it was an artifact */
+	  if (wizard || peek) msg_print("Dragon Scale Mail");
+	  t_ptr->cost += ((int32)t_ptr->toac * 500L);
+	  }
+	} /* end if is a DSM */
       else if (magik(chance)||good)
-	{
+      {
 	  t_ptr->toac += m_bonus(1, 30, level);
-	  if (!strcmp(object_list[t_ptr->index].name, "& Robe") &&
+	  if (!stricmp(object_list[t_ptr->index].name, "& Robe") &&
 	      ((magik(special) && randint(30)==1)
 	       ||(good==666 && magik(special))))
 	    {
@@ -3777,17 +3979,11 @@ int x, level, good, not_unique;
 	    if (wizard || peek) msg_print("Robe of the Magi");
 	    rating += 30;
 	    t_ptr->flags2 |= TR_HOLD_LIFE;
+	    give_1_hi_resist(t_ptr);  /* JLS */
 	    t_ptr->p1 = 10;
 	    t_ptr->toac += 10+randint(5);
 	    t_ptr->name2 = SN_MAGI;
-	    t_ptr->cost = 10000 + (t_ptr->toac * 100);
-	  } else if ((t_ptr->index>=389 && t_ptr->index<=394)
-		 || (t_ptr->index>=408 && t_ptr->index<=409)
-   		 || (t_ptr->index>=415 && t_ptr->index<=419)) {
-	      if (wizard || peek) msg_print("Dragon Scale Mail");
-	      rating += 30;
-	      t_ptr->toac += randint(10);
-	      t_ptr->cost += (t_ptr->toac * 500);
+	    t_ptr->cost = 10000L + (t_ptr->toac * 100);
 	    }
 	  else if (magik(special)||good==666)
 	    switch(randint(9))
@@ -3800,18 +3996,19 @@ int x, level, good, not_unique;
 		if (randint(3)==1) {
 		  if (peek) msg_print("Elvenkind");
 		  rating += 25;
+		  give_1_hi_resist(t_ptr); /* JLS */
 		  t_ptr->flags |= TR_STEALTH;
 		  t_ptr->ident |= ID_SHOW_P1;
 		  t_ptr->p1 = randint(3);
 		  t_ptr->name2 = SN_ELVENKIND;
 		  t_ptr->toac += 15;
-		  t_ptr->cost += 15000;
+		  t_ptr->cost += 15000L;
 		} else {
 		  if (peek) msg_print("Resist");
 		  rating += 20;
 		  t_ptr->name2 = SN_R;
 		  t_ptr->toac += 8;
-		  t_ptr->cost += 12500;
+		  t_ptr->cost += 12500L;
 		}
 		break;
 	      case 2:	 /* Resist Acid	  */
@@ -3825,7 +4022,7 @@ int x, level, good, not_unique;
 		rating += 15;
 		t_ptr->flags |= TR_RES_ACID;
 		t_ptr->name2 = SN_RA;
-		t_ptr->cost += 1000;
+		t_ptr->cost += 1000L;
 		break;
 	      case 3: case 4:	 /* Resist Fire	  */
 		if ((randint(3)==1 || good==666) && !not_unique &&
@@ -3834,7 +4031,7 @@ int x, level, good, not_unique;
 		rating += 17;
 		t_ptr->flags |= TR_RES_FIRE;
 		t_ptr->name2 = SN_RF;
-		t_ptr->cost += 600;
+		t_ptr->cost += 600L;
 		break;
 	      case 5: case 6:	/* Resist Cold	 */
 		if ((randint(3)==1 || good==666) && !not_unique &&
@@ -3843,7 +4040,7 @@ int x, level, good, not_unique;
 		rating += 16;
 		t_ptr->flags |= TR_RES_COLD;
 		t_ptr->name2 = SN_RC;
-		t_ptr->cost += 600;
+		t_ptr->cost += 600L;
 		break;
 	      case 7: case 8: case 9:  /* Resist Lightning*/
 		if ((randint(3)==1 || good==666) && !not_unique &&
@@ -3852,14 +4049,14 @@ int x, level, good, not_unique;
 		rating += 15;
 		t_ptr->flags |= TR_RES_LIGHT;
 		t_ptr->name2 = SN_RL;
-		t_ptr->cost += 500;
+		t_ptr->cost += 500L;
 		break;
 	      }
 	}
       else if (magik(cursed))
 	{
 	  t_ptr->toac -= m_bonus(1, 40, level);
-	  t_ptr->cost = 0;
+	  t_ptr->cost = 0L;
 	  t_ptr->flags |= TR_CURSED;
 	}
       break;
@@ -3875,34 +4072,26 @@ int x, level, good, not_unique;
 	     before change to treasure distribution, this helps keep same
 	     number of ego weapons same as before, see also missiles */
 	  if (magik(3*special/2)||good==666) { /* was 2 */
-	    if (!strcmp("& Whip", object_list[t_ptr->index].name)) {
+	    if (!stricmp("& Whip", object_list[t_ptr->index].name)
+		&& randint(2) == 1) {
 		if (peek) msg_print("Whip of Fire");
-		rating += 20;
+		rating += 15;
 		t_ptr->name2 = SN_FIRE;
 		t_ptr->flags |=TR_FLAME_TONGUE;
-		if (randint(10)==1)
-		  t_ptr->damage[0]=2;
+		if (randint(10)==1) {
+		    t_ptr->damage[0]=2;
+		    rating+=10;
+		    t_ptr->cost+=1000;
+		    if (peek) msg_print("Whip of Fire - 2d6");
+                }
+		else if (peek) msg_print("Whip of Fire");
+		t_ptr->damage[0]=2;
 		t_ptr->tohit += 5;
 		t_ptr->todam += 5;
 	      }
 	    else {
-	      switch(randint(27)) /* was 16 */
+	      switch(randint(30)) /* was 16 */
 		{
-		case 27: /* of Westernesse */
-		  if (((randint(2) == 1) || (good == 666)) && !not_unique &&
-		      unique_weapon(t_ptr)) break;
-		  if (peek) msg_print("Westernesse");
-		  rating += 30;
-		  t_ptr->flags |= (TR_SEE_INVIS|TR_SLAY_EVIL|TR_SLAY_ORC|
-				   TR_SLAY_UNDEAD|TR_DEX|TR_CON|TR_STR|
-				   TR_FREE_ACT);
-		  t_ptr->tohit += randint(5)+3;
-		  t_ptr->todam += randint(5)+3;
-		  t_ptr->p1 = 1;
-		  t_ptr->cost += 15000;
-		  t_ptr->cost *= 2;
-		  t_ptr->name2 = SN_WEST;
-		  break;
 		case 1:	/* Holy Avenger	 */
 		  if (((randint(2) == 1) || (good == 666)) && !not_unique &&
 		      unique_weapon(t_ptr)) break;
@@ -3910,7 +4099,7 @@ int x, level, good, not_unique;
 		  rating += 26;
 		  t_ptr->flags |= (TR_SEE_INVIS|TR_SUST_STAT|TR_SLAY_UNDEAD|
 				   TR_SLAY_EVIL|TR_STR);
-		  t_ptr->flags2 |= TR_SLAY_DEMON;
+		  t_ptr->flags2 |= (TR_SLAY_DEMON|TR_BLESS_BLADE);
 		  t_ptr->tohit += 5;
 		  t_ptr->todam += 5;
 		  t_ptr->toac  += randint(4);
@@ -3919,7 +4108,7 @@ int x, level, good, not_unique;
 		  t_ptr->p1    = randint(4);
 		  t_ptr->name2 = SN_HA;
 		  t_ptr->cost += t_ptr->p1*500;
-		  t_ptr->cost += 10000;
+		  t_ptr->cost += 10000L;
 		  t_ptr->cost *= 2;
 		  break;
 		case 2:	/* Defender	 */
@@ -3937,7 +4126,7 @@ int x, level, good, not_unique;
 		  /* the value in p1 is used for stealth */
 		  t_ptr->p1    = randint(3);
 		  t_ptr->cost += t_ptr->p1*500;
-		  t_ptr->cost += 7500;
+		  t_ptr->cost += 7500L;
 		  t_ptr->cost *= 2;
 		  break;
 		case 3: case 4:   /* Flame Tongue  */
@@ -3949,7 +4138,7 @@ int x, level, good, not_unique;
 		  t_ptr->tohit += 2;
 		  t_ptr->todam += 3;
 		  t_ptr->name2 = SN_FT;
-		  t_ptr->cost += 3000;
+		  t_ptr->cost += 3000L;
 		  break;
 		case 5: case 6:   /* Frost Brand   */
 		  if (((randint(2) == 1) || (good == 666)) && !not_unique &&
@@ -3960,7 +4149,7 @@ int x, level, good, not_unique;
 		  t_ptr->tohit+=2;
 		  t_ptr->todam+=2;
 		  t_ptr->name2 = SN_FB;
-		  t_ptr->cost += 2200;
+		  t_ptr->cost += 2200L;
 		  break;
 		case 7: case 8:	 /* Slay Animal  */
 		  t_ptr->flags |= TR_SLAY_ANIMAL;
@@ -3969,7 +4158,7 @@ int x, level, good, not_unique;
 		  t_ptr->tohit += 3;
 		  t_ptr->todam += 3;
 		  t_ptr->name2 = SN_SA;
-		  t_ptr->cost += 2000;
+		  t_ptr->cost += 2000L;
 		  break;
 		case 9: case 10:	/* Slay Dragon	 */
 		  t_ptr->flags |= TR_SLAY_DRAGON;
@@ -3978,25 +4167,27 @@ int x, level, good, not_unique;
 		  t_ptr->tohit += 3;
 		  t_ptr->todam += 3;
 		  t_ptr->name2 = SN_SD;
-		  t_ptr->cost += 4000;
+		  t_ptr->cost += 4000L;
 		  break;
 		case 11: case 12:	/* Slay Evil   */
 		  t_ptr->flags |= TR_SLAY_EVIL;
+		  t_ptr->flags2 |= (TR_BLESS_BLADE);
 		  if (peek) msg_print("Slay Evil");
 		  rating += 18;
 		  t_ptr->tohit += 3;
 		  t_ptr->todam += 3;
 		  t_ptr->name2 = SN_SE;
-		  t_ptr->cost += 4000;
+		  t_ptr->cost += 4000L;
 		  break;
 		case 13: case 14:	 /* Slay Undead	  */
 		  t_ptr->flags |= (TR_SEE_INVIS|TR_SLAY_UNDEAD);
+ 		  t_ptr->flags2 |= (TR_HOLD_LIFE);
 		  if (peek) msg_print("Slay Undead");
 		  rating += 18;
 		  t_ptr->tohit += 2;
 		  t_ptr->todam += 2;
 		  t_ptr->name2 = SN_SU;
-		  t_ptr->cost += 3000;
+		  t_ptr->cost += 3000L;
 		  break;
 		case 15: case 16: case 17: /* Slay Orc */
 		  t_ptr->flags2 |= TR_SLAY_ORC;
@@ -4005,7 +4196,7 @@ int x, level, good, not_unique;
 		  t_ptr->tohit+=2;
 		  t_ptr->todam+=2;
 		  t_ptr->name2 = SN_SO;
-		  t_ptr->cost += 1200;
+		  t_ptr->cost += 1200L;
 		  break;
 		case 18: case 19: case 20: /* Slay Troll */
 		  t_ptr->flags2 |= TR_SLAY_TROLL;
@@ -4014,7 +4205,7 @@ int x, level, good, not_unique;
 		  t_ptr->tohit+=2;
 		  t_ptr->todam+=2;
 		  t_ptr->name2 = SN_ST;
-		  t_ptr->cost += 1200;
+		  t_ptr->cost += 1200L;
 		  break;
 	        case 21: case 22: case 23:
 		  t_ptr->flags2 |= TR_SLAY_GIANT;
@@ -4023,7 +4214,7 @@ int x, level, good, not_unique;
 		  t_ptr->tohit+=2;
 		  t_ptr->todam+=2;
 		  t_ptr->name2 = SN_SG;
-		  t_ptr->cost += 1200;
+		  t_ptr->cost += 1200L;
 		  break;
 		case 24: case 25: case 26:
 		  t_ptr->flags2 |= TR_SLAY_DEMON;
@@ -4032,9 +4223,59 @@ int x, level, good, not_unique;
 		  t_ptr->tohit+=2;
 		  t_ptr->todam+=2;
 		  t_ptr->name2 = SN_SDEM;
-		  t_ptr->cost += 1200;
+		  t_ptr->cost += 1200L;
 		  break;
-		}
+		case 27: /* of Westernesse */
+		  if (((randint(2) == 1) || (good == 666)) && !not_unique &&
+		      unique_weapon(t_ptr)) break;
+		  if (peek) msg_print("Westernesse");
+		  rating += 30;
+		  t_ptr->flags |= (TR_SEE_INVIS|TR_SLAY_EVIL|
+				   TR_SLAY_UNDEAD|TR_DEX|TR_CON|TR_STR|
+				   TR_FREE_ACT);
+		  t_ptr->flags2 |= TR_SLAY_ORC;
+		  t_ptr->tohit += randint(5)+3;
+		  t_ptr->todam += randint(5)+3;
+		  t_ptr->p1 = 1;
+		  t_ptr->cost += 15000L;
+		  t_ptr->cost *= 2;
+		  t_ptr->name2 = SN_WEST;
+		  break;
+		case 28: case 29: /* Blessed Blade -DGK*/
+		  if ((t_ptr->tval!=TV_SWORD)&&(t_ptr->tval!=TV_POLEARM))
+		   break;
+		  if (peek) msg_print("Blessed Blade");
+		  rating += 20;
+		  t_ptr->flags = TR_WIS;
+		  t_ptr->flags2 = TR_BLESS_BLADE;
+		  t_ptr->tohit += 3;
+		  t_ptr->todam += 3;
+		  t_ptr->p1    = randint(3);
+		  t_ptr->name2 = SN_BLESS_BLADE;
+		  t_ptr->ident |= ID_SHOW_P1;
+		  t_ptr->cost += t_ptr->p1*1000;
+		  t_ptr->cost += 3000L;
+		  break;
+		case 30: /* of Speed -DGK */
+		  if (((randint(2) == 1) || (good == 666)) && !not_unique &&
+		      unique_weapon(t_ptr)) break;
+		  if (wizard||peek) msg_print("Weapon of Speed");
+		  rating+=20;
+		  t_ptr->tohit+=randint(5);
+		  t_ptr->todam+=randint(3);
+		  t_ptr->flags2 = TR_ATTACK_SPD;
+		  if (t_ptr->weight <= 80)
+		    t_ptr->p1 = randint(3);
+		   else if (t_ptr->weight <= 130)
+		    t_ptr->p1 = randint(2);
+		   else
+		    t_ptr->p1 = 1;
+		  t_ptr->name2 = SN_SPEED;
+		  t_ptr->ident |= ID_SHOW_P1;
+		  t_ptr->cost += (t_ptr->p1*2000);
+		  t_ptr->cost *= 2;
+		  break;
+	      }
 	    }
 	  }
 	} else if (magik(cursed)) {
@@ -4049,10 +4290,9 @@ int x, level, good, not_unique;
 	      t_ptr->toac  = -10;
 	      t_ptr->weight += 100;
 	    }
-	    t_ptr->cost = 0;
+	    t_ptr->cost = 0L;
 	  }
 	  break;
-
 	case TV_BOW:
 	  /* always show tohit/todam values if identified */
 	  t_ptr->ident |= ID_SHOW_HITDAM;
@@ -4062,7 +4302,7 @@ int x, level, good, not_unique;
 	    switch (randint(15)) {
 	    case 1:
 	      if (((randint(3)==1)||(good==666)) && !not_unique &&
-		  !strcmp(object_list[t_ptr->index].name, "& Long Bow")) {
+		  !stricmp(object_list[t_ptr->index].name, "& Long Bow")) {
 		    switch (randint(2)) {
 		    case 1:
 		      if (BELEG) break;
@@ -4072,28 +4312,29 @@ int x, level, good, not_unique;
 		      t_ptr->todam += 22;
 		      t_ptr->p1 = 3;
 		      t_ptr->flags |= (TR_STEALTH|TR_DEX);
-		      t_ptr->flags2 |= (TR_ARTIFACT);
+		      t_ptr->flags2 |= (TR_ARTIFACT|TR_RES_DISENCHANT);
 		      t_ptr->ident |= ID_SHOW_P1;
-		      t_ptr->cost = 25000;
+		      t_ptr->cost = 35000L;
 		      BELEG = 1;
 		      break;
 		    case 2:
 		      if (BARD) break;
 		      if (wizard || peek) msg_print("Bard");
+ 		      else good_item_flag = TRUE;
 		      t_ptr->name2 = SN_BARD;
 		      t_ptr->tohit += 17;
 		      t_ptr->todam += 19;
 		      t_ptr->p1 = 3;
 		      t_ptr->flags |= (TR_FREE_ACT|TR_DEX);
 		      t_ptr->flags2 |= (TR_ARTIFACT);
-		      t_ptr->cost = 20000;
+		      t_ptr->cost = 20000L;
 		      BARD = 1;
 		      break;
 		    }
 		    break;
-	      }
+		}
 	      if (((randint(5)==1)||(good==666)) && !not_unique &&
-		  !strcmp(object_list[t_ptr->index].name, "& Light Crossbow"))
+		  !stricmp(object_list[t_ptr->index].name, "& Light Crossbow"))
 		{
 		  if (CUBRAGOL) break;
 		  if (wizard || peek) msg_print("Cubragol");
@@ -4104,17 +4345,21 @@ int x, level, good, not_unique;
 		  t_ptr->flags |= (TR_SPEED|TR_RES_FIRE);
 		  t_ptr->flags2 |= (TR_ACTIVATE|TR_ARTIFACT);
 		  t_ptr->ident |= ID_SHOW_P1;
-		  t_ptr->cost = 38000;
+		  t_ptr->cost = 38000L;
 		  CUBRAGOL = 1;
 		  break;
-		}
+	      }
+	      break;
+	    case 2: case 3: case 4: case 5:
+	    case 6: case 7: case 8:
 	      t_ptr->name2 = SN_MIGHT;
 	      if (peek) msg_print("Bow of Might");
 	      rating += 11;
 	      t_ptr->tohit += 7;
 	      t_ptr->todam += 13;
 	      break;
-	    case 2:
+	    case 9: case 10: case 11:
+	    case 12: case 13: case 14: case 15:
 	      t_ptr->name2 = SN_ACCURACY;
 	      rating += 11;
 	      if (peek) msg_print("Accuracy");
@@ -4127,7 +4372,7 @@ int x, level, good, not_unique;
 	    t_ptr->tohit -= m_bonus(1, 50, level);
 	    t_ptr->todam -= m_bonus(1, 30, level); /* add damage. -CJS- */
 	    t_ptr->flags |= TR_CURSED;
-	    t_ptr->cost = 0;
+	    t_ptr->cost = 0L;
 	  }
 	  break;
 
@@ -4142,7 +4387,7 @@ int x, level, good, not_unique;
 	      {
 		/* a cursed digging tool */
 		t_ptr->p1 = -m_bonus(1, 30, level);
-		t_ptr->cost = 0;
+		t_ptr->cost = 0L;
 		t_ptr->flags |= TR_CURSED;
 	      }
 	  }
@@ -4152,13 +4397,18 @@ int x, level, good, not_unique;
 	  if (magik(chance)||good) {
 	    t_ptr->toac += m_bonus(1, 20, level);
 	    if ((((randint(2) == 1) && magik(5*special/2)) || (good == 666)) &&
-		!strcmp(object_list[t_ptr->index].name,
+		!stricmp(object_list[t_ptr->index].name,
 			"& Set of Leather of Gloves") &&
 		!not_unique && unique_armour(t_ptr)) ;
 	    else if ((((randint(4) == 1) && magik(special)) || (good == 666))
-		     && !strcmp(object_list[t_ptr->index].name,
+		     && !stricmp(object_list[t_ptr->index].name,
 				"& Set of Gauntlets") &&
 		     !not_unique && unique_armour(t_ptr)) ;
+	    else if ((((randint(5) == 1) && magik(special)) || (good == 666))
+		     && !stricmp(object_list[t_ptr->index].name,
+				"& Set of Cesti") &&
+		     !not_unique && unique_armour(t_ptr)) ;
+				/* don't forget cesti -CFT */
 	    else if (magik(special)||(good==666)) {
               switch(randint(10)) {
 	      case 1: case 2: case 3:
@@ -4166,7 +4416,7 @@ int x, level, good, not_unique;
 		rating += 11;
 		t_ptr->flags |= TR_FREE_ACT;
 		t_ptr->name2 = SN_FREE_ACTION;
-		t_ptr->cost += 1000;
+		t_ptr->cost += 1000L;
 		break;
 	      case 4: case 5: case 6:
 		t_ptr->ident |= ID_SHOW_HITDAM;
@@ -4233,14 +4483,7 @@ int x, level, good, not_unique;
 	      if (magik(special)||(good==666))
 		{
 		  tmp = randint(12);
-		  if (tmp > 5)
-		    {
-		      t_ptr->flags |= TR_FFALL;
-		      rating += 7;
-		      t_ptr->name2 = SN_SLOW_DESCENT;
-		      t_ptr->cost += 250;
-		    }
-		  else if (tmp == 1)
+		  if (tmp == 1)
 		    {
 		      if (!((randint(2) == 1) && !not_unique
 			    && unique_armour(t_ptr))) {
@@ -4250,22 +4493,51 @@ int x, level, good, not_unique;
 			rating += 30;
 			t_ptr->ident |= ID_SHOW_P1;
 			t_ptr->p1 = 1;
-			t_ptr->cost += 1000000;
+			t_ptr->cost += 300000L;
 		      }
 		    }
-		  else /* 2 - 5 */
-		    {
-		      if (strcmp("& Pair of Metal Shod Boots",
-				 object_list[t_ptr->index].name))
-			{
-			  t_ptr->flags |= TR_STEALTH;
-			  rating += 16;
-			  t_ptr->ident |= ID_SHOW_P1;
-			  t_ptr->p1 = randint(3);
-			  t_ptr->name2 = SN_STEALTH;
-			  t_ptr->cost += 500;
-			}
-		    }
+		  else if (stricmp("& Pair of Metal Shod Boots",
+				 object_list[t_ptr->index].name)) /* not metal */
+		    if (tmp > 6)
+		      {
+		        t_ptr->flags |= TR_FFALL;
+		        rating += 7;
+		        t_ptr->name2 = SN_SLOW_DESCENT;
+		        t_ptr->cost += 250;
+		      }
+		    else if (tmp < 5)
+		      {
+			t_ptr->flags |= TR_STEALTH;
+			rating += 16;
+			t_ptr->ident |= ID_SHOW_P1;
+			t_ptr->p1 = randint(3);
+			t_ptr->name2 = SN_STEALTH;
+			t_ptr->cost += 500;
+		      }
+		    else /* 5,6 */
+		      {
+		      	t_ptr->flags |= TR_FREE_ACT;
+		      	rating += 15;
+			t_ptr->name2 = SN_FREE_ACTION;
+			t_ptr->cost += 500;
+			t_ptr->cost *= 2;
+		      }
+		  else /* is metal boots, different odds since no stealth */
+		    if (tmp < 5)
+		      {
+		      	t_ptr->flags |= TR_FREE_ACT;
+		      	rating += 15;
+			t_ptr->name2 = SN_FREE_ACTION;
+			t_ptr->cost += 500;
+			t_ptr->cost *= 2;
+		      }
+		    else /* tmp > 4 */
+		      {
+		        t_ptr->flags |= TR_FFALL;
+		        rating += 7;
+		        t_ptr->name2 = SN_SLOW_DESCENT;
+		        t_ptr->cost += 250;
+		      }
 		}
 	    }
 	  else if (magik(cursed))
@@ -4308,7 +4580,7 @@ int x, level, good, not_unique;
 		{
 		  if (t_ptr->subval < 6)
 		    {
-		      tmp = randint(12);
+		      tmp = randint(14);
 		      if (tmp < 3)
 			{
 			  if (!((randint(2) == 1) && !not_unique &&
@@ -4352,10 +4624,22 @@ int x, level, good, not_unique;
 			  if (!((randint(2) == 1) && !not_unique &&
 				unique_armour(t_ptr))) {
 			    if (peek) msg_print("Light");
-			    t_ptr->flags2 |= TR_LIGHT;
+			    t_ptr->flags2 |= (TR_RES_LT|TR_LIGHT);
 			    rating += 6;
 			    t_ptr->name2 = SN_LIGHT;
 			    t_ptr->cost += 500;
+			  }
+			}
+		      else if (tmp < 14)
+			{
+			  if (!((randint(2)==1) && !not_unique &&
+				unique_armour(t_ptr))) {
+			    if (peek) msg_print("Helm of Seeing");
+			    t_ptr->flags |= TR_SEE_INVIS;
+			    t_ptr->flags2 |= TR_RES_BLIND;
+			    rating += 8;
+			    t_ptr->name2 = SN_SEEING;
+			    t_ptr->cost += 1000;
 			  }
 			}
 		      else
@@ -4366,7 +4650,7 @@ int x, level, good, not_unique;
 			    rating += 20;
 			    t_ptr->flags2 |= TR_TELEPATHY;
 			    t_ptr->name2 = SN_TELEPATHY;
-			    t_ptr->cost += 50000;
+			    t_ptr->cost += 50000L;
 			  }
 			}
 		    }
@@ -4506,9 +4790,15 @@ int x, level, good, not_unique;
 	      if (peek) msg_print("Ring of Speed");
 	      rating += 35;
 	      if (randint(888)==1)
-		t_ptr->p1 = 2;
+		{t_ptr->p1 = 2;
+		 rating+=40;
+		 if (wizard||peek) msg_print("Ring of Speed (+2)");
+		 t_ptr->cost *= 3;
+		}
 	      else
-		t_ptr->p1 = 1;
+		{t_ptr->p1 = 1;
+		 if (wizard||peek) msg_print("Ring of Speed");
+		}
 	    }
 	    break;
 	  case 5:
@@ -4520,6 +4810,30 @@ int x, level, good, not_unique;
 		t_ptr->flags |= TR_CURSED;
 		t_ptr->cost = -t_ptr->cost;
 	      }
+	    break;
+	  case 12:    /* Extra Attacks -DGK */
+	    if (magik(cursed))
+	      {
+		t_ptr->p1 = -randint(3);
+		t_ptr->flags |= TR_CURSED;
+		t_ptr->cost = -t_ptr->cost;
+	      }
+	    else {
+	      if (peek) msg_print("Ring of Extra Attacks");
+	      rating += 20;
+	      if (randint(5)==1)
+		{t_ptr->p1 = 2;
+		 rating+=5;
+		 t_ptr->cost *= 2;
+		}
+	      else
+		t_ptr->p1 = 1;
+	    }
+	    break;
+	  case 14: case 15: case 16:  /* Flames, Acid, Ice */
+	    t_ptr->toac += m_bonus(1, 20, level);
+	    t_ptr->toac += 7 + randint(7);
+	    t_ptr->cost += t_ptr->toac*100;
 	    break;
 	  case 19:     /* Increase damage	      */
 	    t_ptr->todam += m_bonus(1, 20, level);
@@ -4625,71 +4939,72 @@ int x, level, good, not_unique;
 	    }
 	  break;
 
-	case TV_WAND:
-	  switch(t_ptr->subval)
-	    {
-        case 0:	   t_ptr->p1 = randint(10) +	 6; break;
-	case 1:	   t_ptr->p1 = randint(8)  +	 6; break;
-	case 2:	   t_ptr->p1 = randint(5)  +	 6; break;
-	case 3:	   t_ptr->p1 = randint(8)  +	 6; break;
-	case 4:	   t_ptr->p1 = randint(4)  +	 3; break;
-	case 5:	   t_ptr->p1 = randint(8)  +	 6; break;
-	case 6:	   t_ptr->p1 = randint(20) +    12; break;
-	case 7:	   t_ptr->p1 = randint(20) +    12; break;
-	case 8:	   t_ptr->p1 = randint(10) +	 6; break;
-	case 9:	   t_ptr->p1 = randint(12) +	  6; break;
-	case 10:   t_ptr->p1 = randint(10) +    12; break;
-	case 11:   t_ptr->p1 = randint(3)  +	 3; break;
-	case 12:   t_ptr->p1 = randint(8)  +	 6; break;
-	case 13:   t_ptr->p1 = randint(10) +	 6; break;
-	case 14:   t_ptr->p1 = randint(5)  +	 3; break;
-	case 15:   t_ptr->p1 = randint(5)  +	 3; break;
-	case 16:   t_ptr->p1 = randint(5)  +	 6; break;
-	case 17:   t_ptr->p1 = randint(5)  +	 4; break;
-	case 18:   t_ptr->p1 = randint(8)  +	 4; break;
-	case 19:   t_ptr->p1 = randint(6)  +	 2; break;
-	case 20:   t_ptr->p1 = randint(4)  +	 2; break;
-	case 21:   t_ptr->p1 = randint(8)  +	 6; break;
-	case 22:   t_ptr->p1 = randint(5)  +	 2; break;
-	case 23:   t_ptr->p1 = randint(12) +    12; break;
-	case 24:   t_ptr->p1 = randint(3)  +     1; break;
-	case 25:   t_ptr->p1 = randint(3)  +     1; break;
-	case 26:   t_ptr->p1 = randint(3)  +     1; break;
-	case 27:   t_ptr->p1 = randint(2)  +     1; break;
-	case 28:   t_ptr->p1 = randint(8)  +     6; break;
-	default:
-	  break;
-	}
-      break;
 
-    case TV_STAFF:
-      switch(t_ptr->subval)
-	{
-	case 0:	  t_ptr->p1 = randint(20) +	 12; break;
-	case 1:	  t_ptr->p1 = randint(8)  +	 6; break;
-	case 2:	  t_ptr->p1 = randint(5)  +	 6; break;
-	case 3:	  t_ptr->p1 = randint(20) +	 12; break;
-	case 4:	  t_ptr->p1 = randint(15) +	 6; break;
-	case 5:	  t_ptr->p1 = randint(4)  +	 5; break;
-	case 6:	  t_ptr->p1 = randint(5)  +	 3; break;
-	case 7:	  t_ptr->p1 = randint(3)  +	 1;
-	  	  t_ptr->level = 10;
-	  	  break;
-	case 8:	  t_ptr->p1 = randint(3)  +	 1; break;
-	case 9:	  t_ptr->p1 = randint(5)  +	 6; break;
-	case 10:   t_ptr->p1 = randint(10) +	 12; break;
-	case 11:   t_ptr->p1 = randint(5)  +	 6; break;
-	case 12:   t_ptr->p1 = randint(5)  +	 6; break;
-	case 13:   t_ptr->p1 = randint(5)  +	 6; break;
-	case 14:   t_ptr->p1 = randint(10) +	 12; break;
-	case 15:   t_ptr->p1 = randint(3)  +	 4; break;
-	case 16:   t_ptr->p1 = randint(5)  +	 6; break;
-	case 17:   t_ptr->p1 = randint(5)  +	 6; break;
-	case 18:   t_ptr->p1 = randint(3)  +	 4; break;
-	case 19:   t_ptr->p1 = randint(10) +	 12; break;
-	case 20:   t_ptr->p1 = randint(3)  +	 4; break;
-	case 21:   t_ptr->p1 = randint(3)  +	 4; break;
-	case 22:   t_ptr->p1 = randint(10) + 6;
+        case TV_WAND:
+ 	  switch(t_ptr->subval)
+ 	    {
+        case 0:	   t_ptr->p1 = randint(10) +	 6; break;
+ 	case 1:	   t_ptr->p1 = randint(8)  +	 6; break;
+ 	case 2:	   t_ptr->p1 = randint(5)  +	 6; break;
+ 	case 3:	   t_ptr->p1 = randint(8)  +	 6; break;
+ 	case 4:	   t_ptr->p1 = randint(4)  +	 3; break;
+ 	case 5:	   t_ptr->p1 = randint(8)  +	 6; break;
+ 	case 6:	   t_ptr->p1 = randint(20) +    12; break;
+ 	case 7:	   t_ptr->p1 = randint(20) +    12; break;
+ 	case 8:	   t_ptr->p1 = randint(10) +	 6; break;
+ 	case 9:	   t_ptr->p1 = randint(12) +	  6; break;
+ 	case 10:   t_ptr->p1 = randint(10) +    12; break;
+ 	case 11:   t_ptr->p1 = randint(3)  +	 3; break;
+ 	case 12:   t_ptr->p1 = randint(8)  +	 6; break;
+ 	case 13:   t_ptr->p1 = randint(10) +	 6; break;
+ 	case 14:   t_ptr->p1 = randint(5)  +	 3; break;
+ 	case 15:   t_ptr->p1 = randint(5)  +	 3; break;
+ 	case 16:   t_ptr->p1 = randint(5)  +	 6; break;
+ 	case 17:   t_ptr->p1 = randint(5)  +	 4; break;
+ 	case 18:   t_ptr->p1 = randint(8)  +	 4; break;
+ 	case 19:   t_ptr->p1 = randint(6)  +	 2; break;
+ 	case 20:   t_ptr->p1 = randint(4)  +	 2; break;
+ 	case 21:   t_ptr->p1 = randint(8)  +	 6; break;
+ 	case 22:   t_ptr->p1 = randint(5)  +	 2; break;
+ 	case 23:   t_ptr->p1 = randint(12) +    12; break;
+ 	case 24:   t_ptr->p1 = randint(3)  +     1; break;
+ 	case 25:   t_ptr->p1 = randint(3)  +     1; break;
+ 	case 26:   t_ptr->p1 = randint(3)  +     1; break;
+ 	case 27:   t_ptr->p1 = randint(2)  +     1; break;
+ 	case 28:   t_ptr->p1 = randint(8)  +     6; break;
+ 	default:
+ 	  break;
+ 	}
+       break;
+ 
+     case TV_STAFF:
+       switch(t_ptr->subval)
+  	{
+ 	case 0:	  t_ptr->p1 = randint(20) +	 12; break;
+ 	case 1:	  t_ptr->p1 = randint(8)  +	 6; break;
+ 	case 2:	  t_ptr->p1 = randint(5)  +	 6; break;
+ 	case 3:	  t_ptr->p1 = randint(20) +	 12; break;
+ 	case 4:	  t_ptr->p1 = randint(15) +	 6; break;
+ 	case 5:	  t_ptr->p1 = randint(4)  +	 5; break;
+ 	case 6:	  t_ptr->p1 = randint(5)  +	 3; break;
+ 	case 7:	  t_ptr->p1 = randint(3)  +	 1;
+ 	  	  t_ptr->level = 10;
+ 	  	  break;
+ 	case 8:	  t_ptr->p1 = randint(3)  +	 1; break;
+ 	case 9:	  t_ptr->p1 = randint(5)  +	 6; break;
+ 	case 10:   t_ptr->p1 = randint(10) +	 12; break;
+ 	case 11:   t_ptr->p1 = randint(5)  +	 6; break;
+ 	case 12:   t_ptr->p1 = randint(5)  +	 6; break;
+ 	case 13:   t_ptr->p1 = randint(5)  +	 6; break;
+ 	case 14:   t_ptr->p1 = randint(10) +	 12; break;
+ 	case 15:   t_ptr->p1 = randint(3)  +	 4; break;
+ 	case 16:   t_ptr->p1 = randint(5)  +	 6; break;
+ 	case 17:   t_ptr->p1 = randint(5)  +	 6; break;
+ 	case 18:   t_ptr->p1 = randint(3)  +	 4; break;
+ 	case 19:   t_ptr->p1 = randint(10) +	 12; break;
+ 	case 20:   t_ptr->p1 = randint(3)  +	 4; break;
+ 	case 21:   t_ptr->p1 = randint(3)  +	 4; break;
+        case 22:   t_ptr->p1 = randint(10) + 6;
 	  	   t_ptr->level = 5;
 	  	   break;
 	case 23:   t_ptr->p1 = randint(2)  +	1; break;
@@ -4711,7 +5026,7 @@ int x, level, good, not_unique;
 	  if (magik(special)||(good==666))
 	      {
 		  if (!not_unique &&
-		      !strcmp(object_list[t_ptr->index].name, "& Cloak")
+		      !stricmp(object_list[t_ptr->index].name, "& Cloak")
 		      && randint(10)==1) {
 		      switch (randint(9)) {
 		      case 1:
@@ -4724,7 +5039,7 @@ int x, level, good, not_unique;
 			  t_ptr->flags |= (TR_RES_FIRE|TR_RES_COLD|
 					   TR_RES_LIGHT|TR_RES_ACID);
 			  t_ptr->flags2 |= (TR_ACTIVATE|TR_ARTIFACT);
-			  t_ptr->cost = 10000;
+			  t_ptr->cost = 10000L;
 			  made_art_cloak=1;
 			  COLLUIN = 1;
 			  break;
@@ -4740,7 +5055,7 @@ int x, level, good, not_unique;
 					   TR_RES_ACID);
 			  t_ptr->flags2 |= (TR_ACTIVATE|TR_ARTIFACT);
 			  t_ptr->ident |= ID_SHOW_P1;
-			  t_ptr->cost = 13000;
+			  t_ptr->cost = 13000L;
 			  made_art_cloak=1;
 			  HOLCOLLETH = 1;
 			  break;
@@ -4754,7 +5069,7 @@ int x, level, good, not_unique;
 				    TR_RES_ACID|TR_RES_COLD|TR_FREE_ACT);
 			  t_ptr->flags2 = (TR_ACTIVATE|TR_ARTIFACT);
 			  t_ptr->p1 = 3;
-			  t_ptr->cost = 35000;
+			  t_ptr->cost = 35000L;
 			  made_art_cloak=1;
 			  THINGOL = 1;
                           break;
@@ -4768,7 +5083,7 @@ int x, level, good, not_unique;
 			  t_ptr->flags = (TR_SEE_INVIS|TR_FREE_ACT|
 					  TR_RES_ACID);
 			  t_ptr->flags2 |= (TR_ARTIFACT);
-			  t_ptr->cost = 8000;
+			  t_ptr->cost = 8000L;
 			  made_art_cloak=1;
 			  THORONGIL = 1;
 			  break;
@@ -4783,14 +5098,14 @@ int x, level, good, not_unique;
 			  t_ptr->flags2 |= (TR_ACTIVATE|TR_ARTIFACT);
 			  t_ptr->p1 = 3;
 			  t_ptr->ident |= ID_SHOW_P1;
-			  t_ptr->cost = 11000;
+			  t_ptr->cost = 11000L;
 			  made_art_cloak=1;
 			  COLANNON = 1;
 			  break;
 		      }
 
 		} else if (!not_unique &&
-			   !strcmp(object_list[t_ptr->index].name,
+			   !stricmp(object_list[t_ptr->index].name,
 			    "& Shadow Cloak")
 			   && randint(20)==1) {
 			   switch (randint(2)) {
@@ -4804,7 +5119,7 @@ int x, level, good, not_unique;
 					TR_INT|TR_WIS|TR_CHR|TR_RES_ACID);
 			     t_ptr->flags2 = (TR_ACTIVATE|TR_ARTIFACT);
 			     t_ptr->p1 = 2;
-			     t_ptr->cost = 45000;
+			     t_ptr->cost = 45000L;
 			     made_art_cloak = 1;
 			     LUTHIEN = 1;
 			     break;
@@ -4814,12 +5129,12 @@ int x, level, good, not_unique;
 			     else good_item_flag = TRUE;
 			     t_ptr->name2 = SN_TUOR;
 			     t_ptr->toac += 12;
-			     t_ptr->flags = (TR_STEALTH|TR_IM_ACID|
+			     t_ptr->flags = (TR_STEALTH|
 					TR_FREE_ACT|TR_SEE_INVIS|TR_RES_ACID);
-			     t_ptr->flags2 |= (TR_ARTIFACT);
+			     t_ptr->flags2 |= (TR_IM_ACID|TR_ARTIFACT);
 			     t_ptr->p1 = 4;
 			     t_ptr->ident = ID_SHOW_P1;
-			     t_ptr->cost = 35000;
+			     t_ptr->cost = 35000L;
 			     made_art_cloak = 1;
 			     TUOR = 1;
 			     break;
@@ -4831,7 +5146,7 @@ int x, level, good, not_unique;
 			      t_ptr->name2 = SN_PROTECTION;
 			      t_ptr->toac += m_bonus(2, 40, level);
 			      t_ptr->toac += (5 + randint(3));
-			      t_ptr->cost += 250;
+			      t_ptr->cost += 250L;
 			      rating += 8;
 			  }
 		      else if (randint(10) < 10)
@@ -4956,7 +5271,7 @@ int x, level, good, not_unique;
 		    t_ptr->cost += 20;
 		    rating += 5;
 		    break;
-		  case 4: case 5:
+		  case 4:
 		    t_ptr->flags |= TR_FLAME_TONGUE;
 		    t_ptr->tohit += 2;
 		    t_ptr->todam += 4;
@@ -4964,6 +5279,14 @@ int x, level, good, not_unique;
 		    t_ptr->cost += 25;
 		    rating += 6;
 		    break;
+		  case 5:
+		    t_ptr->flags |= TR_FROST_BRAND;
+		    t_ptr->tohit += 2;
+		    t_ptr->todam += 4;
+ 		    t_ptr->name2 = SN_FB;
+ 		    t_ptr->cost += 25;
+ 		    rating += 6;
+ 		    break;
 		  case 6: case 7:
 		    t_ptr->flags |= TR_SLAY_EVIL;
 		    t_ptr->tohit += 3;
@@ -5004,7 +5327,7 @@ int x, level, good, not_unique;
 	      t_ptr->flags |= TR_CURSED;
 	      t_ptr->cost = 0;
 	      if (randint(5)==1) {
-		t_ptr->name2 |= SN_BACKBITING;
+		t_ptr->name2 = SN_BACKBITING;
 		t_ptr->tohit -= 20;
 		t_ptr->todam -= 20;
 	      }
@@ -5063,34 +5386,47 @@ static struct opt_desc { char *o_prompt; int *o_var; } options[] = {
   { "Running: stop when map sector changes",	&find_bound },
   { "Running: run through open doors",		&find_ignore_doors },
   { "(g)et-key to pickup objects",		&prompt_carry_flag },
+  { "Ask before pickup?",       		&carry_query_flag },
   { "Rogue like commands",			&rogue_like_commands },
   { "Show weights in inventory",		&show_weight_flag },
   { "Highlight and notice mineral seams",	&highlight_seams },
-  { 0, 0 } };
+  { "Low hitpoint warning",     		&hitpoint_warn },
+  { "Delay speed",                              &delay_spd },
+  { (char *) 0, (int *) 0 } };
 
 
 /* Set or unset various boolean options.		-CJS- */
 void set_options()
 {
-  register int i, max;
+  register int i, max, ch;
   vtype string;
 
   prt("  ESC when finished, y/n to set options, <return> or - to move cursor",
 		0, 0);
   for (max = 0; options[max].o_prompt != 0; max++)
     {
-      (void) sprintf(string, "%-38s: %s", options[max].o_prompt,
-		     (*options[max].o_var ? "yes" : "no "));
-      prt(string, max+1, 0);
+	if (options[max].o_var == &hitpoint_warn)
+	    (void) sprintf(string, "%-38s: %d0%% ", options[max].o_prompt,
+			   *options[max].o_var);
+	else if (options[max].o_var == &delay_spd)
+	    (void) sprintf(string, "%-38s: %d ", options[max].o_prompt,
+			   *options[max].o_var);
+	else
+	    (void) sprintf(string, "%-38s: %s ", options[max].o_prompt,
+			   (*options[max].o_var ? "yes" : "no "));
+	prt(string, max+1, 0);
     }
   erase_line(max+1, 0);
   i = 0;
   for(;;)
     {
       move_cursor(i+1, 40);
-      switch(inkey())
+      ch = inkey();
+      switch(ch)
 	{
 	case ESCAPE:
+	  draw_cave();
+	  creatures(FALSE);  /* draw monsters */
 	  return;
 	case '-':
 	  if (i > 0)
@@ -5108,22 +5444,60 @@ void set_options()
 	  break;
 	case 'y':
 	case 'Y':
-	  put_buffer("yes", i+1, 40);
-	  *options[i].o_var = TRUE;
-	  if (i+1 < max)
-	    i++;
+ 	  if ((options[i].o_var == &hitpoint_warn) ||
+	      (options[i].o_var == &delay_spd))
+	      bell();
 	  else
-	    i = 0;
+	  {
+	      put_buffer("yes ", i+1, 40);
+	      *options[i].o_var = TRUE;
+	      if (i+1 < max)
+		  i++;
+	      else
+		  i = 0;
+	  }
 	  break;
 	case 'n':
 	case 'N':
-	  put_buffer("no ", i+1, 40);
-	  *options[i].o_var = FALSE;
-	  if (i+1 < max)
-	    i++;
+ 	  if (options[i].o_var == &delay_spd)
+ 	    bell();
+	  else if (options[i].o_var == &hitpoint_warn) {
+	      put_buffer("00%", i+1, 40);
+	      *options[i].o_var = 0;
+	  }
 	  else
-	    i = 0;
-	  break;
+	  {
+	      put_buffer("no  ", i+1, 40);
+	      *options[i].o_var = FALSE;
+	      if (i+1 < max)
+		  i++;
+	      else
+		  i = 0;
+	  }
+ 	  break;
+ 	case '1': case '2': case '3': case '4': case '5':
+ 	case '6': case '7': case '8': case '9': case '0':
+ 	  if ((options[i].o_var != &delay_spd) &&
+	      (options[i].o_var != &hitpoint_warn))
+	      bell();
+	  else
+	  {
+	      if (ch=='0')
+		  ch = 10;
+ 	      else
+		  ch = ch - '0';
+	      *options[i].o_var = ch;
+	      if (options[i].o_var == &hitpoint_warn)
+		  sprintf(string, "%d0%%  ", ch);
+	      else
+		  sprintf(string, "%d   ", ch);
+	      put_buffer(string, i+1, 40);
+	      if (i+1 < max)
+		  i++;
+	      else
+		  i = 0;
+	  }
+  	  break;
 	default:
 	  bell();
 	  break;

@@ -98,7 +98,7 @@ creature_type c_list[MAX_CREATURES] = {
 
 {"Farmer Maggot"            ,(MV_ATT_NORM|CARRY_OBJ|HAS_90),(NONE8)
                             ,(UNIQUE|MAX_HP|CHARM_SLEEP|GOOD),(NONE8),(NONE8)
-			    ,0,3,40,10,11,'p',{25,15},{283,283,0,0},0,4},
+			    ,0,3,40,10,11,'h',{25,15},{283,283,0,0},0,4},
 
 {"Blubbering idiot"	    ,(MV_ATT_NORM|MV_20|THRO_DR|PICK_UP)
 			    ,(NONE8),(NONE8),(NONE8),(NONE8)
@@ -133,7 +133,7 @@ creature_type c_list[MAX_CREATURES] = {
 {"Aimless looking merchant" ,(CARRY_GOLD|HAS_60|
 			      MV_ATT_NORM|MV_40|THRO_DR|PICK_UP)
 			    ,(NONE8),(NONE8),(NONE8),(NONE8)
-			    ,0,1000,10,1,11,'p',{3,3},{2,0,0,0},0,1},
+			    ,0,255,10,1,11,'p',{3,3},{2,0,0,0},0,1},
 
 {"Mean looking mercenary"   ,(CARRY_GOLD|CARRY_OBJ|HAS_90|
 			      MV_ATT_NORM|MV_40|THRO_DR|PICK_UP)
@@ -145,10 +145,12 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(NONE8),(NONE8),(NONE8),(NONE8)
 			    ,0,250,10,30,11,'p',{7,8},{15,0,0,0},0,1},
 
-{"Grey mold"		   ,(MV_ONLY_ATT),(NONE8),(CHARM_SLEEP|ANIMAL),(NONE8)
+{"Grey mold"		   ,(MV_ONLY_ATT),(NONE8),(IM_POISON|CHARM_SLEEP|
+						   ANIMAL),(NONE8)
 			   ,(NONE8),3,0,2,1,11,'m',{1,2},{3,3,0,0},1,1},
 
-{"Grey mushroom patch"	   ,(MV_ONLY_ATT),(NONE8),(CHARM_SLEEP|ANIMAL),(NONE8)
+{"Grey mushroom patch"	   ,(MV_ONLY_ATT),(NONE8),(IM_POISON|CHARM_SLEEP|
+						   ANIMAL),(NONE8)
 			   ,(NONE8),1,0,2,1,11,',',{1,2},{91,0,0,0},1,1},
 
 {"Giant yellow centipede"   ,(MV_ATT_NORM),(NONE8),(ANIMAL),(NONE8),(NONE8)
@@ -177,12 +179,12 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,2,99,4,30,11,'R',{3,6},{24,0,0,0},1,1},
 
 {"Small kobold"		    ,(CARRY_OBJ|CARRY_GOLD|HAS_60|
-			     THRO_DR|MV_ATT_NORM),(NONE8),(EVIL)
+			     THRO_DR|MV_ATT_NORM),(NONE8),(EVIL|IM_POISON)
 			    ,(NONE8),(NONE8)
 			    ,5,10,20,16,11,'k',{2,7},{4,0,0,0},1,1},
 
 {"Kobold"		    ,(CARRY_OBJ|CARRY_GOLD|HAS_60|
-			     THRO_DR|MV_ATT_NORM),(NONE8),(EVIL)
+			     THRO_DR|MV_ATT_NORM),(NONE8),(EVIL|IM_POISON)
 			    ,(NONE8),(NONE8)
 			    ,5,10,20,16,11,'k',{3,7},{5,0,0,0},1,1},
 
@@ -208,8 +210,8 @@ creature_type c_list[MAX_CREATURES] = {
 {"Fruit bat"		    ,(MV_ATT_NORM),(NONE8),(ANIMAL),(NONE8),(NONE8)
 			    ,1,10,20,3,12,'b',{1,6},{24,0,0,0},1,1},
 
-{"Shrieker mushroom patch"  ,(MV_ONLY_ATT),(NONE8),(CHARM_SLEEP|ANIMAL)
-			    ,(NONE8),(NONE8)
+{"Shrieker mushroom patch"  ,(MV_ONLY_ATT),(NONE8)
+                            ,(IM_POISON|CHARM_SLEEP|ANIMAL),(NONE8),(NONE8)
 			    ,1,0,2,1,11,',',{1,1},{203,0,0,0},2,1},
 
 {"Blubbering icky thing"    ,(CARRY_GOLD|CARRY_OBJ|HAS_90|
@@ -225,7 +227,7 @@ creature_type c_list[MAX_CREATURES] = {
 			      MV_ATT_NORM),(NONE8),(NONE8),(NONE8),(NONE8)
 			    ,6,5,20,16,11,'p',{9,4},{6,5,0,0},2,1},
 
-{"Novice rogue"		    ,(CARRY_OBJ|CARRY_GOLD|HAS_60|THRO_DR|
+{"Novice rogue"		    ,(CARRY_OBJ|CARRY_GOLD|HAS_60|THRO_DR|PICK_UP|
 			      MV_ATT_NORM),(NONE8),(EVIL),(NONE8),(NONE8)
 			    ,6,5,20,12,11,'p',{8,4},{5,148,0,0},2,1},
 
@@ -239,7 +241,8 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(NONE8),(NONE8),(NONE8)
 			    ,7,5,20,6,11,'p',{6,4},{3,0,0,0},2,1},
 
-{"Yellow mushroom patch"   ,(MV_ONLY_ATT),(NONE8),(CHARM_SLEEP|ANIMAL),(NONE8)
+{"Yellow mushroom patch"   ,(MV_ONLY_ATT),(NONE8)
+                           ,(CHARM_SLEEP|ANIMAL|IM_POISON),(NONE8)
 			   ,(NONE8),2,0,2,1,11,',',{1,1},{100,0,0,0},2,1},
 
 {"White jelly"		    ,(MV_ONLY_ATT),(NONE8)
@@ -287,17 +290,18 @@ creature_type c_list[MAX_CREATURES] = {
 {"Smeagol"		    ,(HAS_1D2|CARRY_GOLD|HAS_60|THRO_DR|MV_75|
 			      MV_ATT_NORM|MV_INVIS),(NONE8),(EVIL|UNIQUE)
 			    ,(NONE8),(NONE8)
-			    ,16,5,20,12,13,'p',{11,4},{3,148,0,0},3,2},
+			    ,16,5,20,12,13,'h',{11,4},{3,148,0,0},3,2},
 
-{"Green ooze"		    ,(HAS_90|CARRY_GOLD|CARRY_OBJ|MV_75|
-			      MV_ATT_NORM),(NONE8),(ANIMAL),(NONE8),(NONE8)
+{"Green ooze"		    ,(HAS_90|CARRY_GOLD|CARRY_OBJ|MV_75|MV_ATT_NORM)
+                            ,(NONE8),(CHARM_SLEEP|ANIMAL|IM_ACID|IM_POISON)
+			    ,(NONE8),(NONE8)
 			    ,4,80,8,16,12,'j',{3,4},{140,0,0,0},3,2},
 
 {"Poltergeist"		    ,(CARRY_OBJ|CARRY_GOLD|HAS_60|HAS_90|PICK_UP|
 			     MV_INVIS|THRO_WALL|MV_40|MV_75|
-			     MV_ATT_NORM),(BLINK|0xFL)
-			    ,(CHARM_SLEEP|HURT_LIGHT|EVIL|NO_INFRA|UNDEAD)
-			    ,(NONE8),(NONE8)
+			     MV_ATT_NORM),(BLINK|0xFL),(CHARM_SLEEP|
+			     HURT_LIGHT|EVIL|NO_INFRA|UNDEAD|IM_FROST|
+			     IM_POISON),(NONE8),(NONE8)
 			    ,8,10,8,15,13,'G',{2,5},{93,0,0,0},3,1},
 
 {"Metallic blue centipede"  ,(MV_40|MV_ATT_NORM),(NONE8),(ANIMAL),(NONE8)
@@ -323,15 +327,16 @@ creature_type c_list[MAX_CREATURES] = {
 			     (CHARM_SLEEP|ANIMAL|HURT_LIGHT|IM_POISON),(NONE8)
 			    ,(NONE8),12,99,2,1,12,'j',{10,8},{169,0,0,0},3,1},
 
-{"Scruffy looking hobbit"   ,(CARRY_GOLD|CARRY_OBJ|HAS_60|THRO_DR|
+{"Scruffy looking hobbit"   ,(CARRY_GOLD|CARRY_OBJ|HAS_60|THRO_DR|PICK_UP|
 			      MV_ATT_NORM),(NONE8),(EVIL),(NONE8),(NONE8)
 			    ,4,10,16,8,11,'h',{3,5},{3,148,0,0},3,1},
 
 {"Giant white ant"	    ,(MV_ATT_NORM),(NONE8),(ANIMAL),(NONE8),(NONE8)
 			    ,7,80,8,16,11,'a',{3,6},{27,0,0,0},3,1},
 
-{"Yellow mold"		   ,(MV_ONLY_ATT),(NONE8),(CHARM_SLEEP|ANIMAL),(NONE8)
-			   ,(NONE8),9,99,2,10,11,'m',{8,8},{3,0,0,0},3,1},
+{"Yellow mold"		   ,(MV_ONLY_ATT),(NONE8),(IM_POISON|CHARM_SLEEP|
+			   ANIMAL),(NONE8),(NONE8)
+			   ,9,99,2,10,11,'m',{8,8},{3,0,0,0},3,1},
 
 {"Metallic red centipede"   ,(MV_ATT_NORM|MV_20),(NONE8),(ANIMAL),(NONE8)
 			    ,(NONE8),12,20,8,9,12,'c',{4,8},{69,0,0,0},3,1},
@@ -351,7 +356,7 @@ creature_type c_list[MAX_CREATURES] = {
 {"Cave lizard"		    ,(MV_ATT_NORM),(NONE8),(ANIMAL),(NONE8),(NONE8)
 			    ,8,80,8,16,11,'R',{3,6},{28,0,0,0},4,1},
 
-{"Novice Ranger"	    ,(CARRY_OBJ|CARRY_GOLD|HAS_60|THRO_DR|
+{"Novice ranger"	    ,(CARRY_OBJ|CARRY_GOLD|HAS_60|THRO_DR|
 			      MV_ATT_NORM),(0x9L|MAG_MISS)
 			    ,(NONE8),(NONE8),(NONE8)
 			    ,18,5,20,6,11,'p',{6,8},{4,4,0,0},4,1},
@@ -1399,12 +1404,12 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(NONE8)
 			    ,250,0,30,30,11,'Z',{25,10},{37,37,58,58},27,3},
 
-{"Ogre magi"		,(CARRY_GOLD|CARRY_OBJ|HAS_1D2|THRO_DR|MV_ATT_NORM)
+{"Ogre mage"		,(CARRY_GOLD|CARRY_OBJ|HAS_1D2|THRO_DR|MV_ATT_NORM)
 			    ,(0x4L|HOLD_PERSON|FROST_BALL|MONSTER)
 			    ,(EVIL|GIANT),(HEAL|TRAP_CREATE),(NONE8)
 			  ,300,30,20,40,11,'O',{30,12},{20,20,20,20},27,2},
 
-{"Lokkak, the Ogre Chieftan",(MV_ATT_NORM|CARRY_OBJ|HAS_2D2|THRO_DR)
+{"Lokkak, the Ogre Chieftain",(MV_ATT_NORM|CARRY_OBJ|HAS_2D2|THRO_DR)
 			    ,(NONE8),(GIANT|EVIL|IM_POISON|MAX_HP|GOOD|UNIQUE)
 			    ,(NONE8),(NONE8)
 			,1500,20,20,100,12,'O',{90,16},{235,235,235,0},27,2},
@@ -1838,7 +1843,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(EVIL|IM_ACID|DRAGON|MAX_HP),(NONE8),(NONE8)
 			    ,620,50,20,60,11,'d',{32,8},{53,53,29,0},35,1},
 
-{"Mumakil"		    ,(MV_ATT_NORM),(NONE8),(ANIMAL),(NONE8),(NONE8)
+{"Mumak"		    ,(MV_ATT_NORM),(NONE8),(ANIMAL),(NONE8),(NONE8)
 			 ,2100,100,20,55,11,'q',{90,10},{227,227,233,0},35,3},
 
 {"Giant red ant lion"	    ,(MV_ATT_NORM|THRO_CREAT),(NONE8)
@@ -1958,7 +1963,7 @@ creature_type c_list[MAX_CREATURES] = {
 			     UNIQUE),(SUMMON),(NONE8)
 		       ,1200,10,25,100,12,'p',{50,35},{235,235,20,20},36,2},
 
-{"Demonist"		    ,(MV_ATT_NORM|THRO_DR|CARRY_OBJ|HAS_1D2)
+{"Demonologist"		    ,(MV_ATT_NORM|THRO_DR|CARRY_OBJ|HAS_1D2)
 			    ,(0x2L|TELE|HOLD_PERSON|
 			     S_DEMON),(EVIL|MAX_HP|INTELLIGENT)
 			    ,(NONE8),(NONE8)
@@ -2125,7 +2130,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(NETHER_BOLT|MIND_BLAST|DARKNESS),(NONE8)
 			    ,1700,10,20,55,12,'W',{60,8},{10,10,202,0},39,2},
 
-{"Eldrakyn"		    ,(MV_ATT_NORM|PICK_UP|THRO_DR|HAS_60|
+{"Eldrak"		    ,(MV_ATT_NORM|PICK_UP|THRO_DR|HAS_60|
 			      CARRY_OBJ|CARRY_GOLD),(NONE8)
 			    ,(TROLL|EVIL|IM_POISON|MAX_HP|CHARM_SLEEP)
 			    ,(NONE8),(NONE8)
@@ -2396,7 +2401,7 @@ creature_type c_list[MAX_CREATURES] = {
 			     IM_POISON),(NETHER_BOLT),(NONE8)
 			    ,600,10,20,30,12,'G',{25,20},{235,235,80,0},43,1},
 
-{"Mumakil"		    ,(MV_ATT_NORM),(NONE8),(ANIMAL|GROUP)
+{"Mumak"		    ,(MV_ATT_NORM),(NONE8),(ANIMAL|GROUP)
 			    ,(NONE8),(NONE8)
 			 ,2100,100,20,55,11,'q',{90,10},{227,227,233,0},43,2},
 
@@ -2717,7 +2722,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(NONE8),(NONE8)
 			,23000,40,40,170,12,'D',{90,60},{57,57,271,277},55,2},
 
-{"Dragonic Quylthulg"	     ,(MV_INVIS)
+{"Draconic Quylthulg"	     ,(MV_INVIS)
 			    ,(0x2L|S_DRAGON|BLINK|TELE),(MAX_HP|ANIMAL|EVIL|
 			     CHARM_SLEEP),(NONE8),(NONE8)
 			    ,5500,0,20,1,12,'Q',{90,8},{0,0,0,0},55,3},
@@ -2821,7 +2826,7 @@ creature_type c_list[MAX_CREATURES] = {
 			      MV_ATT_NORM),(0x3L|FEAR|BLINDNESS|CONFUSION|
 			     S_DRAGON),(DRAGON|CHARM_SLEEP|MAX_HP|GOOD)
 			    ,(BREATH_SH|BREATH_SD),(NONE8)
-		      ,29000,400,40,170,12,'D',{70,65},{273,273,274,280},67,2},
+		      ,29000,255,40,170,12,'D',{70,65},{273,273,274,280},67,2},
 
 {"Great Wyrm of Balance"    ,(HAS_1D2|HAS_4D2|HAS_2D2|CARRY_OBJ|HAS_90|HAS_60|
 			      MV_ATT_NORM),(0x3L|FEAR|BLINDNESS|S_DRAGON
@@ -2829,7 +2834,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(DRAGON|CHARM_SLEEP|MAX_HP|GOOD)
 			    ,(BREATH_SH|BREATH_SD|BREATH_CH|BREATH_DI),
 			     (S_ANCIENTD)
-		      ,31000,400,40,170,12,'D',{70,70},{273,273,274,280},67,4},
+		      ,31000,255,40,170,12,'D',{70,70},{273,273,274,280},67,4},
 
 {"Tselakus, the Dreadlord" ,(MV_ATT_NORM|HAS_4D2|CARRY_OBJ|HAS_2D2|
 			   THRO_WALL|MV_INVIS|HAS_1D2)
@@ -2861,7 +2866,7 @@ creature_type c_list[MAX_CREATURES] = {
 			  ANIMAL|MAX_HP|EVIL),(SUMMON),(S_GUNDEAD|S_ANCIENTD)
 		       ,12000,0,20,1,12,'Q',{100,20},{0,0,0,0},71,3},
 
-{"Greater Dragonic Quylthulg" ,(MV_INVIS)
+{"Greater Draconic Quylthulg" ,(MV_INVIS)
 			    ,(0x2L|BLINK|TELE_TO),(ANIMAL|EVIL|MAX_HP|
 			     CHARM_SLEEP) ,(NONE8),(S_ANCIENTD)
 			,10500,0,20,1,12,'Q',{100,14},{0,0,0,0},71,3},
@@ -2913,12 +2918,12 @@ creature_type c_list[MAX_CREATURES] = {
 			     |INTELLIGENT|IM_FROST|IM_FIRE|IM_LIGHTNING),
 			     (TRAP_CREATE|WATER_BALL|PLASMA_BOLT|NETHER_BALL)
 			    ,(MANA_STORM|DARK_STORM)
-		    ,38000,10,60,100,13,'p',{700,10},{230,230,214,214},78,3},
+		    ,38000,10,60,100,13,'p',{10,100},{230,230,214,214},78,3},
 
 {"The Emperor Quylthulg"    ,(MV_INVIS|CARRY_OBJ|HAS_4D2)
 			    ,(0x2L),(ANIMAL|EVIL|MAX_HP|UNIQUE|CHARM_SLEEP)
 			    ,(BRAIN_SMASH),(S_GUNDEAD|S_ANCIENTD)
-		     ,20000,0,30,1,13,'Q',{500,10},{0,0,0,0},78,3},
+		     ,20000,0,30,1,13,'Q',{50,100},{0,0,0,0},78,3},
 
 {"Qlzqqlzuup, the Lord of Flesh", (MV_INVIS|CARRY_OBJ|HAS_4D2)
                             ,(0x1L|S_UNDEAD|S_DEMON|S_DRAGON|MONSTER)
@@ -2926,7 +2931,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(SUMMON|S_ANGEL|S_SPIDER|S_HOUND)
 			    ,(S_REPTILE|S_ANT|S_GUNDEAD|S_ANCIENTD|S_UNIQUE|
 			      S_WRAITH)
-		      ,20000,0,30,1,13,'Q',{500,10},{0,0,0,0},78,3},
+		      ,20000,0,30,1,13,'Q',{50,100},{0,0,0,0},78,3},
 
 {"Murazor, the Witch-King of Angmar",
                        (HAS_4D2|HAS_2D2|CARRY_OBJ|HAS_1D2|THRO_DR|MV_ATT_NORM)

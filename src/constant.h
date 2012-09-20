@@ -72,6 +72,10 @@
 #define DUN_STR_QC	 40   /*was 40 1/x chance of treasure per quartz */
 #define DUN_UNUSUAL	 200  /*was 300 Level/x chance of unusual room	 */
 
+/* Special level constants    - DGK */
+#define DUN_DEST         15   /* 1/x chance of having a destroyed level */
+#define SPEC_DEST        2
+
 /* Store constants						*/
 #define MAX_OWNERS	 24   /* Number of owners to choose from       */
 #define MAX_STORES	 8    /* Number of different stores	       */
@@ -82,7 +86,7 @@
 #define STORE_TURN_AROUND 9   /* Amount of buying and selling normally */
 #define COST_ADJ	 100  /* Adjust prices for buying and selling  */
 
-#define MAX_QUESTS         4
+#define MAX_QUESTS         4  /* only 1 defined anyway --CFT */
 #define DEFINED_QUESTS     1
 #define SAURON_QUEST       0
 #define Q_PLANE           -1
@@ -124,7 +128,7 @@
 #define MAX_GOLD       18     /* Number of different types of gold     */
 /* with MAX_TALLOC 150, it is possible to get compacting objects during
    level generation, although it is extremely rare */
-#define MAX_TALLOC     2000    /* Max objects per level		       */
+#define MAX_TALLOC     500    /* Max objects per level		       */
 #define MIN_TRIX	1     /* Minimum t_list index used		*/
 #define TREAS_ROOM_ALLOC  9   /* Amount of objects for rooms	       */
 #define TREAS_ANY_ALLOC	  3   /* Amount of objects for corridors       */
@@ -177,7 +181,7 @@
 #define MAX_MUSH       21     /* Used with mushrooms   */
 #define MAX_WOODS      32     /* Used with staffs      */
 #define MAX_METALS     32     /* Used with wands & rods*/
-#define MAX_ROCKS      39     /* Used with rings       */
+#define MAX_ROCKS      42     /* Used with rings       */
 #define MAX_AMULETS    16     /* Used with amulets     */
 #define MAX_TITLES     41     /* Used with scrolls     */
 #define MAX_SYLLABLES  158    /* Used with scrolls     */
@@ -200,7 +204,7 @@
 #define PLAYER_REGEN_HPBASE  1442  /* Min amount hp regen*2^16		 */
 #define PLAYER_REGEN_MNBASE  524   /* Min amount mana regen*2^16	 */
 #define PLAYER_WEIGHT_CAP 130 /* "#"*(1/10 pounds) per strength point  */
-#define PLAYER_EXIT_PAUSE 2   /* Pause time before player can re-roll  */
+#define PLAYER_EXIT_PAUSE 1   /* Pause time before player can re-roll  */
 
 /* class level adjustment constants */
 #define CLA_BTH		0
@@ -391,7 +395,10 @@
 #define TR_RES_NEXUS	0x00400000L
 #define TR_RES_BLIND	0x00800000L
 #define TR_RES_NETHER   0x01000000L
-#define TR_ARTIFACT     0x02000000L
+#define TR_ARTIFACT	0x02000000L /* means "is an artifact" -CFT */
+#define TR_BLESS_BLADE  0x04000000L /* priests use w/o penalty -DGK*/
+#define TR_ATTACK_SPD   0x08000000L /* extra attacks/round -DGK */
+#define TR_RES_FEAR     0x10000000L
 
 /* definitions for chests */
 #define CH_LOCKED	0x00000001L
@@ -403,14 +410,14 @@
 #define CH_SUMMON	0x00000100L
 
 /* definitions for creatures, cmove field */
-#define CM_ALL_MV_FLAGS	0x0000003BL
+#define CM_ALL_MV_FLAGS	0x0000001FL
 #define CM_ATTACK_ONLY	0x00000001L
 #define CM_MOVE_NORMAL	0x00000002L
 
-#define CM_RANDOM_MOVE	0x00000038L
-#define CM_20_RANDOM	0x00000008L
-#define CM_40_RANDOM	0x00000010L
-#define CM_75_RANDOM	0x00000020L
+#define CM_RANDOM_MOVE	0x0000001CL
+#define CM_20_RANDOM	0x00000004L
+#define CM_40_RANDOM	0x00000008L
+#define CM_75_RANDOM	0x00000010L
 
 #define CM_SPECIAL	0x003F0000L
 #define CM_INVISIBLE	0x00010000L
@@ -581,7 +588,7 @@
 #define SN_DURIN                69
 #define SN_AULE                 70
 #define SN_WEST                 71
-#define SN_DOR                  72
+#define SN_BLESS_BLADE          72
 #define SN_SDEM                 73
 #define SN_ST                   74
 #define SN_BLOODSPIKE           75
@@ -685,14 +692,17 @@
 #define SN_AVAVIR	       173
 #define SN_TARATOL	       174
 #define SN_RAZORBACK	       175
-#define SN_BLADETURNER	       176
-#define SN_ARRAY_SIZE	       177 /* must be at end of this list */
+#define SN_BLADETURNER         176
+#define SN_SHATTERED           177
+#define SN_BLASTED             178
+#define SN_ARRAY_SIZE	       179 /* must be at end of this list */
 
 /* defines for treasure type values (tval) */
 #define TV_NEVER	-1 /* used by find_range() for non-search */
 #define TV_NOTHING	0
 #define TV_MISC		1
 #define TV_CHEST	2
+#define TV_SPIKE	3
 /* min tval for wearable items, all items between TV_MIN_WEAR and TV_MAX_WEAR
    use the same flag bits, see the TR_* defines */
 #define TV_MIN_WEAR	10
@@ -702,7 +712,6 @@
 #define TV_SLING_AMMO	10
 #define TV_BOLT		11
 #define TV_ARROW	12
-#define TV_SPIKE	13
 #define TV_LIGHT	15
 #define TV_BOW		20
 #define TV_HAFTED	21
@@ -763,6 +772,25 @@
 #define GF_FROST	4
 #define GF_FIRE		5
 #define GF_HOLY_ORB	6
+#define GF_ARROW	7
+#define GF_PLASMA	8
+#define GF_NETHER	9
+#define GF_WATER	10
+#define GF_CHAOS	11
+#define GF_SHARDS	12
+#define GF_SOUND	13
+#define GF_CONFUSION	14
+#define GF_DISENCHANT	15
+#define GF_NEXUS	16
+#define GF_FORCE	17
+#define GF_INERTIA	18
+#define GF_LIGHT	19
+#define GF_DARK		20
+#define GF_TIME		21
+#define GF_GRAVITY	22
+#define GF_MANA		23
+#define GF_METEOR	24
+#define GF_ICE		25
 
 #define WD_LT	        1L
 #define WD_LT_BLTS	2L
@@ -778,7 +806,7 @@
 #define WD_DRAIN	12L
 #define WD_TR_DEST	13L
 #define WD_MAG_MIS	14L
-#define WD_NOT_USED	15L
+#define WD_FEAR_MN	15L
 #define WD_CLONE	16L
 #define WD_TELE		17L
 #define WD_DISARM	18L
@@ -825,6 +853,8 @@
 #define RD_ILLUME	29L
 #define RD_PROBE        30L
 #define RD_RECALL	31L
+#define RD_TRAP_LOC	32L
+#define RD_MK_WALL      33L
 
 #define ST_LIGHT 	1L
 #define ST_DR_LC        2L

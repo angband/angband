@@ -165,10 +165,4 @@ void log_game(game)
 
     /* Dunno what would be best to do if we get error - so ignore it :-) */
     write(fd,buff,strlen(buff));
-
-    /* Quick kludge - open seems to chgrp GAME_LOG back to fun if this program
-     * is ran under uid fun.
-     */
-    if (uid == 1078)
-	chown(GAME_LOG,1078,130);
 }

@@ -100,10 +100,10 @@ static void date(day)
 char *day;
 {
   register char *tmp;
-  long clock;
+  long c;
 
-  clock = time((long *) 0);
-  tmp = ctime(&clock);
+  c = time((long *) 0);
+  tmp = ctime(&c);
   tmp[10] = '\0';
   (void) strcpy(day, tmp);
 }
@@ -149,11 +149,11 @@ void display_scores(from, to)
   }
 
   while (0 < read(fd, (char *)&score, sizeof(high_scores))) {
-    (void) sprintf(hugebuffer, "%3d) %-7ld %s the %s %s (Level %d)",
+    (void) sprintf(hugebuffer, "%3d) %-7ld %s the %s %s (Level %d), played by %s",
 		   i/2+1,
 		   score.points, score.name,
 		   race[score.prace].trace, class[score.pclass].title,
-		   (int)score.lev);
+		   (int)score.lev, getpwuid(score.uid)->pw_name);
     strncpy(list[i],hugebuffer,127);
     (void) sprintf(hugebuffer, "\t Killed by %s on Dungeon Level %d.",
 		   score.died_from, score.dun_level);
@@ -178,8 +178,6 @@ void display_scores(from, to)
       put_buffer(list[j], l+2, 0);
     k+=20;
     if (!look_line(23)) {
-      register int i;
-
       /* What happens upon dying.				-RAK-	 */
       msg_print(NULL);
       clear_screen();
@@ -222,7 +220,11 @@ static void print_tomb()
     sprintf(str, "%s%d", ANGBAND_BONES, dun_level);
     if ((fp = fopen(str, "r")) == NULL && (dun_level>1)) {
       if ((fp = fopen(str, "w")) != NULL) {
+#ifdef SET_UID
+	(void) fchmod(fileno(fp), 0644);
+#else
 	(void) fchmod(fileno(fp), 0666);
+#endif
 	fprintf(fp, "%s\n%d\n%d\n%d", 
 		py.misc.name, py.misc.mhp, py.misc.prace, py.misc.pclass);
 	fclose(fp);
@@ -307,6 +309,7 @@ static void print_tomb()
 	  clear_screen ();
 	  msg_print ("You are using:");
 	  (void) show_equip (TRUE, 0);
+	  msg_print (NULL);
 	  msg_print ("You are carrying:");
 	  clear_from (1);
 	  (void) show_inven (0, inven_ctr-1, TRUE, 0, 0);
@@ -329,7 +332,6 @@ static int top_twenty()
 {
   register int i, j, k;
   high_scores scores[MAX_SAVE_HISCORES], myscore;
-  char *tmp;
 
   clear_screen();
 
@@ -362,7 +364,7 @@ static int top_twenty()
   myscore.max_lev = py.misc.max_dlv;
   myscore.mhp = py.misc.mhp;
   myscore.chp = py.misc.chp;
-  myscore.uid = -1;
+  myscore.uid = player_uid;
   /* First character of sex, lower case */
   myscore.sex = py.misc.male;
   myscore.prace = py.misc.prace;
@@ -423,15 +425,15 @@ static int top_twenty()
   } else if (j>(i-10)) {
     display_scores(i-10, i);
   } else display_scores(j-5, j+5);
+  return (0);
 }
 
 /* Enters a players name on the hi-score table     SM	 */
-delete_entry(which)
+void delete_entry(which)
   int which;
 {
-  register int i, j, k;
+  register int i;
   high_scores scores[MAX_SAVE_HISCORES];
-  char *tmp;
 
   if (0 != flock(highscore_fd, LOCK_EX)) {
     perror("Error gaining lock for score file");

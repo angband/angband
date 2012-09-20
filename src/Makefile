@@ -1,16 +1,25 @@
+# This will get rewritten a little to make it GNU Make portable for the
+# final release.  Until then, there are some rough edges...sorry.  -CWS
+
 # SRCDIR is the directory containing the sources
 # BINDIR is the directory where the angband binary while be put
 # LIBDIR is where the other files (score, news, hours) will be put
 # OBJDIR is where the object files will be put
 
-THISDIR = /home/staff/greyhelm/games/angband
+SRCDIR = .
+OBJDIR = .
+LIBDIR = /User/games/lib/angband
+BINDIR = /User/games/bin
+PROGRAM = angband
 
-SRCDIR = $(THISDIR)/src
-OBJDIR = $(THISDIR)/obj
-LIBDIR = $(THISDIR)/lib
-BINDIR = $(THISDIR)/bin
+#COPT = -g -Wall -Wshadow -Wcast-align -O1 -DLINT_ARGS
+COPT = -O
 
-CFLAGS = -g -fwritable-strings -DLIBDIR=\"$(LIBDIR)\" 
+# Note that any reasonably modern compiler does better when you *don't* use
+# "register".  I've hacked it out here because I don't want to change every arg
+# list in the game.  You might want to undo this if your compiler sucks.
+
+CFLAGS = $(COPT) -fwritable-strings -DLIBDIR=\"$(LIBDIR)\" -Dregister=\"\"
 CC = gcc
 
 SOURCES = main.c misc1.c misc2.c store1.c files.c io.c create.c desc.c\
@@ -27,11 +36,6 @@ OBJECTS = main.o misc1.o misc2.o store1.o files.o io.o create.o desc.o\
 	treasure.o variable.o rnd.o recall.o unix.o undef.o\
 	player.o tables.o describe_mon.o rods.o
 
-SRCS = $(SOURCES:%.c=$(SRCDIR)/%.c)
-
-
-OBJS = $(OBJECTS:%.o=$(OBJDIR)/%.o)
-
 LIBFILES = hours news origcmds.hlp owizcmds.hlp roglcmds.hlp rwizcmds.hlp \
 	scores version.hlp welcome.hlp
 
@@ -42,16 +46,19 @@ all:	angband
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	$(CC) $(CFLAGS) -c $(SRCDIR)/$*.c -o $@
 
-angband: $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -o $(BINDIR)/angband -lcurses -ltermcap -lrpcsvc
-	@chgrp games $(BINDIR)/$(PROGRAM)
-	@chmod a+x  $(BINDIR)/$(PROGRAM)
-	@chmod 4770 $(BINDIR)/$(PROGRAM)
+angband: $(OBJECTS)
+	$(CC) $(CFLAGS) $(OBJECTS) -o angband -lcurses -ltermcap -lrpcsvc
+
+install:	angband
+	cp angband $(BINDIR)/$(PROGRAM)
+	chown games.bin $(BINDIR)/$(PROGRAM)
+	chmod 4511 $(BINDIR)/$(PROGRAM)
 
 clean:;
-	rm -f $(OBJDIR)/*.o $(BINDIR)/core $(OBJDIR)/core ./core
+	rm -f $(OBJDIR)/*.o $(BINDIR)/core $(OBJDIR)/core ./core angband
 
 spotless: clean
+	rm -f angband
 	rm -f $(BINDIR)/angband
 
 depend:

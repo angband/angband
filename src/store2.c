@@ -381,8 +381,10 @@ int store_num;
   haggle = FALSE;
   if (increase_insults(store_num))
     haggle = TRUE;
-  else
+  else {
     prt_comment5();
+    msg_print(NULL); /* force display of insult... */
+    }
   return(haggle);
 }
 
@@ -399,12 +401,12 @@ static int get_haggle(comment, new_offer, num_offer, price, final)
   char buf[100];
   register int flag, clen;
   register char *p;
-  static int32 last_inc=0;
+  static int32 last_inc=0L;
   int inc=FALSE;
 
   flag = TRUE;
   if (last_inc && !final)
-    (void) sprintf(buf, "%s [%c%d] ", comment, (last_inc<0)? '-' : '+', 
+    (void) sprintf(buf, "%s [%c%ld] ", comment, (last_inc<0)? '-' : '+', 
 		   (last_inc<0)? -last_inc : last_inc);
   else
     (void) sprintf(buf, "%s [accept] ", comment);
@@ -528,7 +530,9 @@ inven_type *item;
   /* go right to final price if player has bargained well */
   if (noneedtobargain(store_num, final_ask))
     {
+#ifdef HAGGLE
       msg_print("After a long bargaining session, you agree upon the price.");
+#endif /* HAGGLE */
       cur_ask = min_sell;
     }
 
@@ -629,7 +633,7 @@ int32 *price;
 inven_type *item;
 {
   int32 max_sell, max_buy, min_buy;
-  int32 cost, cur_ask, final_ask, min_offer;
+  int32 cost, cur_ask, final_ask = 0, min_offer;
   int32 last_offer, new_offer;
   int32 max_gold;
   int32 x1, x2, x3;
@@ -647,7 +651,6 @@ inven_type *item;
   final_flag = 0;
   s_ptr = &store[store_num];
   cost = item_value(item);
-  if (store_num==6) cost/=4;
   if (cost < 1)
     {
       sell = 3;
@@ -693,7 +696,9 @@ inven_type *item;
 	  /* go right to final price if player has bargained well */
           if (noneedtobargain(store_num, final_ask))
 	    {
+#ifdef HAGGLE
        msg_print("After a long bargaining session, you agree upon the price.");
+#endif /* HAGGLE */
               cur_ask = final_ask;
             }
 	}
@@ -938,10 +943,17 @@ int store_num, *cur_top;
   int32 price;
   bigvtype out_val, tmp_str;
   inven_type sold_obj;
-  register int sell, choice;
+  register int sell, choice, test;
 
   sell = FALSE;
-  if (get_item(&item_val,"Which one? ",0,inven_ctr-1,(store_buy[store_num])))
+  for (item_val=0, test=FALSE; (!test && (item_val<inven_ctr)); item_val++)
+    test = (*store_buy[store_num])(inventory[item_val].tval);
+  if (inven_ctr < 1)
+    msg_print("You aren't carrying anything.");
+  else if (!test)
+    msg_print("You have nothing that I want.");
+  else if (get_item(&item_val,"Which one? ",0,
+           inven_ctr-1,(store_buy[store_num])))
     {
       take_one_item(&sold_obj, &inventory[item_val]);
       objdes(tmp_str, &sold_obj, TRUE);
@@ -988,7 +1000,7 @@ int store_num, *cur_top;
 		      msg_print("You bastard!");
 		      break;
 		    case 3:
-		      msg_print("You here sobs coming from the back of the store...");
+		      msg_print("You hear sobs coming from the back of the store...");
 		      break;
 		    case 4:
 		      msg_print("Arrgghh!!!!");
@@ -1009,7 +1021,7 @@ int store_num, *cur_top;
 		  } else if (real> (4*cost)) {
 		    switch (randint(4)) {
 		    case 1:
-		      msg_print("You here someone jumping for joy!");
+		      msg_print("You hear someone jumping for joy!");
 		      break;
 		    case 2:
 		      msg_print("Yipee!");

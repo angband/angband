@@ -12,9 +12,8 @@ void init_files()
 {
 }
 
-_new_log()
+int _new_log()
 {
   log_index = 0;
   return 1;
 }
-

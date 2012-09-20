@@ -9,6 +9,7 @@
 #include "constant.h"
 #include "config.h"
 #include "types.h"
+#include "externs.h"
 
 int set_room(element)
 register int element;
@@ -54,6 +55,7 @@ int set_corrodes(inven_type *e) /* changed -CFT */
   return(FALSE);
 }
 
+
 int set_flammable(inven_type *e) /* changed -CFT */
 {
     int element = e->tval;
@@ -67,8 +69,14 @@ int set_flammable(inven_type *e) /* changed -CFT */
         || (e->flags2 & TR_IM_FIRE)) /* used differently in potions/etc */
           return(FALSE);
         return(TRUE);
-    case TV_STAFF: case TV_SCROLL1: case TV_SCROLL2:
+    case TV_STAFF: case TV_SCROLL1: case TV_SCROLL2: case TV_FLASK:
+    case TV_MAGIC_BOOK: case TV_PRAYER_BOOK:
       return(TRUE);
+    case TV_LIGHT:
+      if (e->subval >= 192) /* only torches... -CFT */
+	return(TRUE);
+      else
+	return(FALSE);
     }
   return(FALSE);
 }
@@ -77,11 +85,55 @@ int set_flammable(inven_type *e) /* changed -CFT */
 int set_frost_destroy(inven_type *e) /* changed -CFT */
 {
   int element = e->tval;
+
   if ((element == TV_POTION1) || (element == TV_POTION2)
       || (element == TV_FLASK))
     return(TRUE);
   return(FALSE);
 }
+
+
+int set_meteor_destroy(inven_type *e) /* added -DGK */
+{
+ int8u fi,fo;
+
+ fi=set_fire_destroy(e);
+ fo=set_frost_destroy(e);
+ return(fi|fo);
+}
+
+
+int set_mana_destroy(inven_type *e) /* added -DGK */
+{           /*destroy everything but artifacts*/
+ int element = e->tval;
+
+ if ((element>=TV_MIN_ENCHANT)&&(element<=TV_MAX_WEAR)&&
+     (e->flags2 & TR_ARTIFACT))
+    return(FALSE);
+ return(TRUE);
+}
+
+
+int set_holy_destroy(inven_type *e) /* added -DGK */
+{
+ int element = e->tval;
+
+ if ((element>=TV_MIN_ENCHANT)&&(element<=TV_MAX_WEAR)&&
+     (e->flags & TR_CURSED)&&(!(e->flags2 & TR_ARTIFACT)))
+    return(TRUE);
+ return(FALSE);
+}
+
+
+int set_plasma_destroy(inven_type *e) /* added -DGK */
+{
+ int8u fi,li;
+
+ fi=set_fire_destroy(e);
+ li=set_lightning_destroy(e);
+ return(fi|li);
+}
+
 
 int set_acid_affect(inven_type *e) /* changed -CFT */
 {
@@ -103,6 +155,7 @@ int set_acid_affect(inven_type *e) /* changed -CFT */
   return(FALSE);
 }
 
+
 int set_lightning_destroy(inven_type *e) /* changed -CFT */
 {
     int element = e->tval;
@@ -115,7 +168,7 @@ int set_lightning_destroy(inven_type *e) /* changed -CFT */
         || (e->flags2 & TR_IM_LIGHT)) /* used differently in potions/etc */
           return(FALSE);
         return(TRUE);
-     case TV_WAND: case TV_ROD:
+     case TV_WAND:
         return(TRUE);
       }
     return(FALSE);
@@ -127,6 +180,7 @@ int set_null(inven_type *e)
 {
   return(FALSE);
 }
+
 
 int set_acid_destroy(inven_type *e) /* changed -CFT */
 {
@@ -149,6 +203,7 @@ int set_acid_destroy(inven_type *e) /* changed -CFT */
   return(FALSE);
 }
 
+
 int set_fire_destroy(inven_type *e) /* changed -CFT */
 {
     int element = e->tval;
@@ -164,8 +219,13 @@ int set_fire_destroy(inven_type *e) /* changed -CFT */
         return(TRUE);
     case TV_STAFF: case TV_SCROLL1: case TV_SCROLL2: case TV_POTION1:
     case TV_POTION2: case TV_FLASK: case TV_FOOD: case TV_OPEN_DOOR:
-    case TV_CLOSED_DOOR:
+    case TV_CLOSED_DOOR: case TV_MAGIC_BOOK: case TV_PRAYER_BOOK:
       return(TRUE);
+    case TV_LIGHT:
+      if (e->subval >= 192) /* only torches... -CFT */
+	  return(TRUE);
+      else
+	  return(FALSE);
     }
   return(FALSE);
 }

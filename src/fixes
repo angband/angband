@@ -1,0 +1,54 @@
+Here are the modifications thrown in:
+
+new lighting
+fixed potion identification
+fixed missing attack for 'kicks you' (mystics)
+resist fear instrinsic added
+monster fear
+added autoroller from PC code
+(*) CFT's new speed code
+(*) mana penalty for armour based on weight (doesn't seem to change much), and
+       gloves of free action/dexterity don't cause the additional mana penalty
+print amount of gold stolen
+print object stolen
+artifacts likely to resist enchantment/disenchantment & other attacks
+monsters can pick up things (but not 'X' getting Slay 'X' weapons, etc)
+if blind then messages change - serious updating
+   -- also redo 2ndary effects, this was a pain in the butt
+fix up earthquake effects to not destroy artifacts & some other things
+the names of the Phial, Star, & Arkenstone change if not identified
+fixed up naming code a little, also renamed monster descriptions & fixed
+   miscellaneous spelling errors whenever I ran across them
+can check what artifacts have been generated while not wizard
+   -- for convenience only, if you don't like, don't use....
+add y/n to word of recall spells...
+fireball effects now have differing radii
+giant pits added
+vastly more sanity checking in level generation
+more sanity checking in compact_monsters & create/summon monsters...
+more uniques have appropriate escorts
+destroyed levels added
+player ghost/save bug fixed
+be a little nicer about out-of-depth monsters on the early levels....
+...and added moria 5.5 'sleeping dragon' code
+fixed up the artifacts a little (like being frost brand and not RC, etc)
+   added TR_BLESS_BLADE & TR_ATTACK_SPEED)  Ringil is still +1 speed, though.
+   added another resistance to one or two items ala Fangband
+(*) Defenders & Slay Evil weapons are BLESS_BLADE, Slay Undead are HOLD_LIFE.
+prayer penalty for priests not using blessed edged weapons
+cleaned up the display a little
+hopefully reset stats correctly when gaining or losing....
+better messages when an item gets destroyed
+minimum weight for multiple attack calc reduced from 5 to 3
+prevented free bashing from detecting an invisible monster
+added pseudo-probing when you look at the monster...
+fixed the "you seem to be missing a book" message
+fixed *enlightment* potion
+revamped enchantment code
+scrolls of aquirement and *aquirement* auto-indentify themselves when used
+rods immune to lightning
+can't create up staircases on town level
+add delay timing code so that bolts, etc can be seen
+dispelling things in sight prints their names and not it/and the converse
+tweaked self knowledge messages for clarity
+

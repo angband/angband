@@ -8,7 +8,10 @@
 
 #include <stdio.h>
 #include <errno.h>
+
+#ifndef MSDOS
 #include <sys/param.h>
+#endif
 
 #include "constant.h"
 #include "config.h"
@@ -52,7 +55,7 @@ void exit();
  *  so we don't have multiple people trying to write to it at the same time.
  *  Craig Norborg (doc)		Mon Aug 10 16:41:59 EST 1987
  */
-init_scorefile()
+void init_scorefile()
 {
 #ifdef SET_UID
   if (1 > (highscore_fd = open(ANGBAND_TOP, O_RDWR | O_CREAT, 0644)))
@@ -106,6 +109,7 @@ void read_times()
       exit(1);
     }
 
+#ifdef CHECKHOURS
   /* Check the hours, if closed	then exit. */
   if (!check_time())
     {
@@ -119,6 +123,7 @@ void read_times()
 	}
       exit_game();
     }
+#endif /* CHECKHOURS */
 
   /* Print the introduction message, news, etc.		 */
   if ((file1 = fopen(ANGBAND_MOR, "r")) != NULL)
@@ -302,7 +307,7 @@ void print_objects()
 		  } else {
 		    invcopy(&t_list[j],
 			    sorted_objects[get_obj_num(level, FALSE)]);
-		    magic_treasure(j, level, TRUE, FALSE);
+		    magic_treasure(j, level, 0, FALSE);
 		    i_ptr = &t_list[j];
 		    store_bought(i_ptr);
 		    if (i_ptr->flags & TR_CURSED)
@@ -311,7 +316,7 @@ void print_objects()
 		  }
 		  (void) fprintf(file1, "%d %s\n", i_ptr->level, tmp_str);
 		}
-	      pusht((int8u)j);
+	      pusht((int16) j);
 	      (void) fclose(file1);
 	      prt("Completed.", 0, 0);
 	    }
@@ -343,7 +348,7 @@ char *filename1;
   if (fd < 0 && errno == EEXIST)
     {
       (void) sprintf(out_val, "Replace existing file %s?", filename1);
-      if (get_check(out_val))
+      if (get_Yn(out_val))
 	fd = open(filename1, O_WRONLY, 0644);
     }
   if (fd >= 0)
@@ -364,21 +369,21 @@ char *filename1;
       blank = " ";
       (void) fprintf(file1, "%c\n\n", CTRL('L'));
       (void) fprintf(file1, " Name%9s %-23s", colon, py.misc.name);
-      (void) fprintf(file1, " Age%11s %6d", colon, (int)py.misc.age);
+      (void) fprintf(file1, "Age%11s %6d ", colon, (int)py.misc.age);
       cnv_stat(py.stats.use_stat[A_STR], prt1);
       (void) fprintf(file1, "   STR : %s\n", prt1);
       (void) fprintf(file1, " Race%9s %-23s", colon,race[py.misc.prace].trace);
-      (void) fprintf(file1, " Height%8s %6d", colon, (int)py.misc.ht);
+      (void) fprintf(file1, "Height%8s %6d ", colon, (int)py.misc.ht);
       cnv_stat(py.stats.use_stat[A_INT], prt1);
       (void) fprintf(file1, "   INT : %s\n", prt1);
       (void) fprintf(file1, " Sex%10s %-23s", colon,
 		     (py.misc.male ? "Male" : "Female"));
-      (void) fprintf(file1, " Weight%8s %6d", colon, (int)py.misc.wt);
+      (void) fprintf(file1, "Weight%8s %6d ", colon, (int)py.misc.wt);
       cnv_stat(py.stats.use_stat[A_WIS], prt1);
       (void) fprintf(file1, "   WIS : %s\n", prt1);
       (void) fprintf(file1, " Class%8s %-23s", colon,
 		     class[py.misc.pclass].title);
-      (void) fprintf(file1, " Social Class : %6d", py.misc.sc);
+      (void) fprintf(file1, "Social Class : %6d ", py.misc.sc);
       cnv_stat(py.stats.use_stat[A_DEX], prt1);
       (void) fprintf(file1, "   DEX : %s\n", prt1);
       (void) fprintf(file1, " Title%8s %-23s", colon, title_string());
@@ -389,19 +394,25 @@ char *filename1;
       (void) fprintf(file1, "%26s", blank);
       cnv_stat(py.stats.use_stat[A_CHR], prt1);
       (void) fprintf(file1, "   CHR : %s\n\n", prt1);
-
+      
       (void) fprintf(file1, " + To Hit    : %6d", py.misc.dis_th);
-      (void) fprintf(file1, "%8sLevel      : %6d", blank, (int)py.misc.lev);
-      (void) fprintf(file1, "    Max Hit Points : %6d\n", py.misc.mhp);
+      (void) fprintf(file1, "%7sLevel      :%9d", blank, (int)py.misc.lev);
+      (void) fprintf(file1, "   Max Hit Points : %6d\n", py.misc.mhp);
       (void) fprintf(file1, " + To Damage : %6d", py.misc.dis_td);
-      (void) fprintf(file1, "%8sExperience : %6ld", blank, py.misc.exp);
-      (void) fprintf(file1, "    Cur Hit Points : %6d\n", py.misc.chp);
+      (void) fprintf(file1, "%7sExperience :%9ld", blank, py.misc.exp);
+      (void) fprintf(file1, "   Cur Hit Points : %6d\n", py.misc.chp);
       (void) fprintf(file1, " + To AC     : %6d", py.misc.dis_tac);
-      (void) fprintf(file1, "%8sGold%8s %6ld", blank, colon, py.misc.au);
-      (void) fprintf(file1, "    Max Mana%8s %6d\n", colon, py.misc.mana);
+      (void) fprintf(file1, "%7sMax Exp    :%9ld", blank, py.misc.max_exp);
+      (void) fprintf(file1, "   Max Mana%8s %6d\n", colon, py.misc.mana);
       (void) fprintf(file1, "   Total AC  : %6d", py.misc.dis_ac);
-      (void) fprintf(file1, "%27s", blank);
-      (void) fprintf(file1, "    Cur Mana%8s %6d\n\n", colon, py.misc.cmana);
+      if (py.misc.lev>=MAX_PLAYER_LEVEL)
+	  (void) fprintf(file1, "%7sExp to Adv.:%9s", blank, "****");
+      else
+	  (void) fprintf(file1, "%7sExp to Adv.:%9ld", blank,
+			 (int32)(player_exp[py.misc.lev-1] *
+				 py.misc.expfact/100));
+      (void) fprintf(file1, "   Cur Mana%8s %6d\n", colon, py.misc.cmana);
+      (void) fprintf(file1, "%28sGold%8s%9ld\n", blank, colon, py.misc.au);
 
       p_ptr = &py.misc;
       xbth = p_ptr->bth + p_ptr->ptohit * BTH_PLUS_ADJ

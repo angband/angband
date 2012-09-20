@@ -6,11 +6,27 @@
    not for profit purposes provided that this copyright and statement are
    included in all such copies. */
 
+/* Note that you'll be happer if you have a case-insensitive string
+   comparision routine on your system.  I'd imagine that a lot of subtle
+   things will go wrong without one.  Define stricmp to something appropriate,
+   and send me mail about what that is and what system you have so that this
+   can get adjusted correctly on all systems. -CWS */
+
+#if defined (NeXT)
+#define stricmp strcasecmp
+#endif
+
+#define get_Yn get_check
+
+#include <stdio.h>
+
 /* many systems don't define these anywhere */
 #if defined(USG) || defined(DGUX) || defined(atarist)
 extern int sprintf();
 #else
+#if !(defined(MSDOS) || defined(NeXT))
 extern char *sprintf();
+#endif
 #endif
 
 #ifndef MSDOS
@@ -36,11 +52,14 @@ extern int find_cut;			/* Cut corners on a run */
 extern int find_examine;		/* Check corners on a run */
 extern int find_prself;			/* Print yourself on a run (slower) */
 extern int find_bound;			/* Stop run when the map shifts */
-extern int prompt_carry_flag;		/* Prompt to pick something up */
+extern int prompt_carry_flag;		/* auto-pickupobjects */
 extern int show_weight_flag;		/* Display weights in inventory */
 extern int highlight_seams;		/* Highlight magma and quartz */
 extern int find_ignore_doors;		/* Run through open doors */
-
+extern int delay_spd;                   /* 1-10 for delays */
+extern int hitpoint_warn;		/* Low hitpoint warning */
+extern int peek;                        /* should we display additional msgs */
+extern int carry_query_flag;            /* ask whether to pick something up */
 /* Unique artifact weapon flags */
 extern int GROND, RINGIL, AEGLOS, ARUNRUTH, MORMEGIL, ANGRIST, GURTHANG,
   CALRIS, ANDURIL, STING, ORCRIST, GLAMDRING, DURIN, AULE, THUNDERFIST,
@@ -65,16 +84,18 @@ extern struct unique_mon u_list[MAX_CREATURES];
 
 extern int quests[MAX_QUESTS];
 
-
 /* global flags */
+extern int unfelt;
+extern int in_store_flag;       /* flag so equippy chars work right -DGK */
 extern int good_item_flag;      /* True if an artifact has been created... */
 extern int LOAD;
-extern int new_level_flag;	  /* Next level when true  */
-extern int search_flag;	      /* Player is searching   */
+extern int new_level_flag;	/* Next level when true  */
+extern int search_flag;	        /* Player is searching   */
 extern int teleport_flag;	/* Handle teleport traps  */
 extern int eof_flag;		/* Used to handle eof/HANGUP */
-extern int player_light;      /* Player carrying light */
-extern int find_flag;	/* Used in MORIA	      */
+extern int player_light;        /* Player carrying light */
+extern int light_rad;           /* Light radius */
+extern int find_flag;        	/* Used in MORIA	      */
 extern int free_turn_flag;	/* Used in MORIA	      */
 extern int weapon_heavy;	/* Flag if the weapon too heavy -CJS- */
 extern int pack_heavy;		/* Flag if the pack too heavy -CJS- */
@@ -84,15 +105,16 @@ extern int be_nasty;
 
 extern int character_generated;	 /* don't save score until char gen finished */
 extern int character_saved;	 /* prevents save on kill after save_char() */
-extern int highscore_fd;	/* High score file descriptor */
-extern int command_count;	/* Repetition of commands. -CJS- */
-extern int default_dir;		/* Use last direction in repeated commands */
-extern int16 noscore;		/* Don't score this game. -CJS- */
-extern int32u randes_seed;    /* For encoding colors */
-extern int32u town_seed;	    /* Seed for town genera*/
-extern int16 dun_level;	/* Cur dungeon level   */
-extern int16 missile_ctr;	/* Counter for missiles */
-extern int msg_flag;	/* Set with first msg  */
+extern bigvtype feeling;         /* level feeling */
+extern int highscore_fd;	 /* High score file descriptor */
+extern int command_count;	 /* Repetition of commands. -CJS- */
+extern int default_dir;		 /* Use last direction in repeated commands */
+extern int16 noscore;		 /* Don't score this game. -CJS- */
+extern int32u randes_seed;       /* For encoding colors */
+extern int32u town_seed;	 /* Seed for town genera*/
+extern int16 dun_level;          /* Cur dungeon level   */
+extern int16 missile_ctr;	 /* Counter for missiles */
+extern int msg_flag;	         /* Set with first msg  */
 extern vtype old_msg[MAX_SAVE_MSG];	/* Last messages -CJS- */
 extern int16 last_msg;			/* Where in the array is the last */
 extern int death;	/* True if died	      */
@@ -157,6 +179,8 @@ extern int32u spell_worked2;	/* Bit field for spells tried -CJS- */
 extern int32u spell_forgotten;	/* Bit field for spells forgotten -JEW- */
 extern int32u spell_forgotten2;	/* Bit field for spells forgotten -JEW- */
 extern int8u spell_order[64];	/* remember order that spells are learned in */
+extern int32u spellmasks[MAX_CLASS][2]; /* used to check if player knows all
+					   spells knowable to him -CFT */
 extern int16u player_init[MAX_CLASS][5];
 extern int16 total_winner;
 
@@ -264,42 +288,50 @@ void create_character(void);
 
 /* creature.c */
 void update_mon(int);
-int movement_rate(int16);
+int movement_rate(int);
 int multiply_monster(int, int, int, int);
 void creatures(int);
 
 /* death.c */
 void exit_game(void);
+void display_scores(int, int);
+void delete_entry(int);
 
 /* desc.c */
-int is_a_vowel(char);
+int is_a_vowel(int);
 void magic_init(void);
-void known1(char *);
+void known1(inven_type *);
 int known1_p(inven_type *);
-void known2(char *);
-int known2_p*(inven_type *);
+void known2(inven_type *);
+int known2_p(inven_type *);
 void clear_known2(inven_type *);
 void clear_empty(inven_type *);
 void store_bought(inven_type *);
 int store_bought_p(inven_type *);
 void sample(struct inven_type *);
 void identify(int *);
-void unmagic_name(char *);
+void unmagic_name(inven_type *);
 void objdes(char *, struct inven_type *, int);
 void scribe_object(void);
-void add_inscribe(char *, char *);
-void inscribe(char *, char *);
+void add_inscribe(inven_type *, int);
+void inscribe(inven_type *, char *);
 void invcopy(inven_type *, int);
 void desc_charges(int);
 void desc_remain(int);
+int16 object_offset(inven_type *);
 
 /* dungeon.c */
 void dungeon(void);
+int is_quest(int);
+void rerate(void);
+int ruin_stat(int);
 
 /* eat.c */
 void eat(void);
 
 /* files.c */
+void init_scorefile(void);
+void init_files(void);
 void read_times(void);
 void helpfile(char *);
 void print_objects(void);
@@ -331,7 +363,7 @@ void flush(void);
 void erase_line(int, int);
 void clear_screen(void);
 void clear_from(int);
-void print(char, int, int);
+void print(int, int, int);
 void move_cursor_relative(int, int);
 void count_msg_print(char *);
 void prt(char *, int, int);
@@ -369,36 +401,53 @@ int distance(int, int, int, int);
 int next_to_wall(int, int);
 int next_to_corr(int, int);
 int damroll(int, int);
-int pdamroll(char *);
+int pdamroll(int8u *);
 int los(int, int, int, int);
 unsigned char loc_symbol(int, int);
 int test_light(int, int);
 void prt_map(void);
 void add_food(int);
 int popm(void);
-int max_hp(char *);
-void place_monster(int, int, int, int);
-void place_win_monster(void);
+int max_hp(int8u *);
+int place_monster(int, int, int, int);
+int place_win_monster(void);
+void place_group(int, int, int, int);
 int get_mons_num(int);
 void alloc_monster(int, int, int);
 int summon_monster(int * ,int *, int);
 int summon_undead(int *, int *);
+int summon_demon(int, int *, int *);
+int summon_dragon(int *, int *);
+int summon_wraith(int *, int *);
+int summon_reptile(int *, int *);
+int summon_spider(int *, int *);
+int summon_angel(int *, int *);
+int summon_ant(int *, int *);
+int summon_unique(int *, int *);
+int summon_jabberwock(int *, int *);
+int summon_gundead(int *, int *);
+int summon_ancientd(int *, int *);
+int summon_hound(int *, int *);
+int summon_jelly(int *, int *);
 int popt(void);
-void pusht(int8u);
+void pusht(int);
 int magik(int);
 int m_bonus(int, int, int);
-void magic_treasure(int, int);
+void magic_treasure(int, int, int, int);
 void set_options(void);
+int compact_monsters(void);
+int next_to_walls(int, int);
+int get_nmons_num(int);
 
 /* misc2.c */
 void place_trap(int, int, int);
 void place_rubble(int, int);
 void place_gold(int, int);
-int get_obj_num(int);
+int get_obj_num(int,int);
 void place_object(int, int);
 void alloc_object(int (*)(), int, int);
 void random_object(int, int, int);
-void cnv_stat(int16u, char *);
+void cnv_stat(int, char *);
 void prt_stat(int);
 void prt_field(char *, int, int);
 int stat_adj(int);
@@ -422,7 +471,7 @@ void prt_state(void);
 void prt_speed(void);
 void prt_study(void);
 void prt_winner(void);
-int16u modify_stat(int, int16);
+int16u modify_stat(int, int);
 void set_use_stat(int);
 int inc_stat(int);
 int dec_stat(int);
@@ -448,7 +497,7 @@ void take_one_item(struct inven_type *, struct inven_type *);
 void inven_drop(int, int);
 int inven_damage(int (*)(), int);
 int weight_limit(void);
-int inven_check_num(void);
+int inven_check_num(inven_type *);
 int inven_check_weight(struct inven_type *);
 void check_strength(void);
 int inven_carry(struct inven_type *);
@@ -471,6 +520,13 @@ int player_saves(void);
 int find_range(int, int, int *, int *);
 void teleport(int);
 void check_view(void);
+void place_special(int, int, int32u);
+int place_ghost(void);
+void prt_cut(void);
+void prt_stun(void);
+void special_random_object(int, int, int);
+void cut_player(int);
+void stun_player(int);
 
 /* monsters.c */
 
@@ -478,13 +534,13 @@ void check_view(void);
 void change_speed(int);
 void py_bonuses(struct inven_type *, int);
 void calc_bonuses(void);
-int show_inven(int, int, int, int);
+int show_inven(int, int, int, int, int ());
 char *describe_use(int);
 int show_equip(int, int);
 void takeoff(int, int);
 int verify(char *, int);
-void inven_command(char);
-int get_item(int *, char *, int, int);
+void inven_command(int);
+int get_item(int *, char *, int, int, int ());
 int no_light(void);
 int get_dir(char *, int *);
 int get_alldir(char *, int *);
@@ -501,7 +557,7 @@ int test_hit(int, int, int, int, int);
 void take_hit(int, char *);
 void change_trap(int, int);
 void search(int, int, int);
-void find_init(void);
+void find_init(int);
 void find_run(void);
 void end_find(void);
 void area_affect(int, int, int);
@@ -519,7 +575,7 @@ void delete_monster(int);
 void fix1_delete_monster(int);
 void fix2_delete_monster(int);
 int delete_object(int, int);
-int32u monster_death(int, int, int32u);
+int32u monster_death(int, int, int32u, int32u, int32u);
 int mon_take_hit(int, int);
 void move_char(int, int);
 void openobject(void);
@@ -530,6 +586,10 @@ void disarm_trap(void);
 void look(void);
 void throw_object(void);
 void bash(void);
+void delete_unique(void);
+void carry(int, int, int);
+void check_unique(monster_type *);
+void mmove2(int *, int *, int, int, int, int);
 
 #ifdef MSDOS
 /* ms_misc.c */
@@ -566,6 +626,9 @@ int32u get_rnd_seed(void);
 void set_rnd_seed(int32u);
 int32 rnd(void);
 
+/* rods.c */
+void activate_rod(void);
+
 /* save.c */
 #ifdef MAC
 int save_char(int);
@@ -590,6 +653,10 @@ int set_lightning_destroy(inven_type *);
 int set_null(inven_type *);
 int set_acid_destroy(inven_type *);
 int set_fire_destroy(inven_type *);
+int set_plasma_destroy(inven_type *);
+int set_meteor_destroy(inven_type *);
+int set_holy_destroy(inven_type *);
+int set_mana_destroy(inven_type *);
 int general_store(int);
 int armory(int);
 int weaponsmith(int);
@@ -617,7 +684,7 @@ int detect_object(void);
 int detect_trap(void);
 int detect_sdoor(void);
 int detect_invisible(void);
-int light_area(int, int);
+int light_area(int, int, int, int);
 int unlight_area(int, int);
 void map_area(void);
 int ident_spell(void);
@@ -626,18 +693,20 @@ int trap_creation(void);
 int door_creation(void);
 int td_destroy(void);
 int detect_monsters(void);
+void mon_light_dam(int, int, int);
 void light_line(int, int, int);
+void frost_line(int, int, int, int);
 void starlite(int, int);
 int disarm_all(int, int, int);
 void get_flags(int, int32u *, int32u *, int (**)());
 void fire_bolt(int, int, int, int, int, char *);
-void fire_ball(int, int, int, int, int, char *);
+void fire_ball(int, int, int, int, int, int, char *);
 void breath(int, int, int, int, char *, int);
 int recharge(int);
 int hp_monster(int, int, int, int);
-int drain_life(int, int, int);
+int drain_life(int, int, int, int);
 int speed_monster(int, int, int, int);
-int confuse_monster(int, int, int);
+int confuse_monster(int, int, int, int);
 int sleep_monster(int, int, int);
 int wall_to_mud(int, int, int);
 int td_destroy2(int, int, int);
@@ -647,8 +716,8 @@ int clone_monster(int, int, int);
 void teleport_away(int, int);
 void teleport_to(int, int);
 int teleport_monster(int, int, int);
-int mass_genocide(void);
-int genocide(void);
+int mass_genocide(int);
+int genocide(int);
 int speed_monsters(int);
 int sleep_monsters2(void);
 int mass_poly(void);
@@ -675,9 +744,22 @@ int slow_poison(void);
 void bless(int);
 void detect_inv2(int);
 void destroy_area(int, int);
-int enchant(int16 *);
+int enchant(int16 *, int);
+void elemental_brand(void);
 int remove_curse(void);
 int restore_level(void);
+void self_knowledge(void);
+int probing(void);
+int detection(void);
+void starball(int,int);
+void bolt(int, int, int, int, char *, monster_type *, int);
+int lose_all_info(void);
+void tele_level(void);
+void identify_pack(void);
+int fear_monster(int, int, int, int);
+int banish_creature(int32u, int);
+int remove_all_curse(void);
+void darken_room(int, int);
 
 /* staffs.c */
 void use(void);
@@ -685,7 +767,7 @@ void use(void);
 /* store1.c */
 int32 item_value(struct inven_type *);
 int32 sell_price(int, int32 *, int32 *, struct inven_type *);
-int store_check_num(int);
+int store_check_num(inven_type *, int);
 void store_carry(int, int *, struct inven_type *);
 void store_destroy(int, int, int);
 void store_init(void);
@@ -706,7 +788,7 @@ int check_input(int);
 #if 0
 int system_cmd(char *);
 #endif
-void user_name(char *);
+void user_name(char *, int);
 int tilde(char *, char *);
 FILE *tfopen(char *, char *);
 int topen(char *, int, int);
@@ -718,10 +800,11 @@ int topen(char *, int, int);
 void aim(void);
 
 /* wizard.c */
-void wizard_light(void);
+void wizard_light(int);
 void change_character(void);
 void wizard_create(void);
 void artifact_check(void);
+int is_wizard(int);
 
 #else
 
@@ -834,9 +917,10 @@ void prt_map();
 void add_food();
 int popm();
 int max_hp();
-void place_monster();
-void place_win_monster();
+int place_monster();
+int place_win_monster();
 int get_mons_num();
+void place_group();
 void alloc_monster();
 int summon_monster();
 int summon_undead();

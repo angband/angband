@@ -12,7 +12,7 @@
 #include "externs.h"
 
 int door_creation();
-int detect_enchantment();
+int detect_magic();
 int stair_creation();
 
 /* Throw a magic spell					-RAK-	*/
@@ -22,7 +22,6 @@ void cast()
   int choice, chance, result;
   register struct flags *f_ptr;
   register struct misc *p_ptr;
-  register inven_type *i_ptr;
   register spell_type *m_ptr;
 
   free_turn_flag = TRUE;
@@ -48,7 +47,7 @@ void cast()
 	  m_ptr = &magic_spell[py.misc.pclass-1][choice];
 	  free_turn_flag = FALSE;
 
-	  if (randint(100) < chance)
+	  if (randint(100) <= chance) /* changed -CFT */
 	    msg_print("You failed to get the spell off!");
 	  else
 	    {
@@ -58,7 +57,7 @@ void cast()
 		case 1:
 		  if (get_dir(NULL, &dir))
 		    fire_bolt(GF_MAGIC_MISSILE, dir, char_row, char_col,
-			      damroll(2, 6), spell_names[0]);
+			      damroll(2+((py.misc.lev-1)/4), 6), spell_names[0]);
 		  break;
 		case 2:
 		  (void) detect_monsters();
@@ -67,7 +66,8 @@ void cast()
 		  teleport(10);
 		  break;
 		case 4:
-		  (void) light_area(char_row, char_col);
+		  (void) light_area(char_row, char_col,
+			  damroll(2,(py.misc.lev/2)),(py.misc.lev/10)+1);
 		  break;
 		case 5: /* treasure detection */
 		  (void) detect_treasure();
@@ -90,12 +90,12 @@ void cast()
 		case 9:
 		  if (get_dir(NULL, &dir))
 		    fire_ball(GF_POISON_GAS, dir, char_row, char_col,
-			      10+(py.misc.lev/2),
+			      10+(py.misc.lev/2), 2,
 			      spell_names[8]);
 		  break;
 		case 10:
 		  if (get_dir(NULL, &dir))
-		    (void) confuse_monster(dir, char_row, char_col);
+		    (void) confuse_monster(dir, char_row, char_col, py.misc.lev);
 		  break;
 		case 11:
 		  if (get_dir(NULL, &dir))
@@ -164,7 +164,7 @@ void cast()
 		case 27:
 		  if (get_dir(NULL, &dir))
 		    fire_ball(GF_FROST, dir, char_row, char_col,
-			      30+(py.misc.lev),
+			      30+(py.misc.lev), 2,
 			      spell_names[26]);
 		  break;
 		case 28:
@@ -184,7 +184,7 @@ void cast()
 		case 31:
 		  if (get_dir(NULL, &dir))
 		    fire_ball(GF_FIRE, dir, char_row, char_col
-			      ,55+(py.misc.lev),
+			      ,55+(py.misc.lev), 2,
 			      spell_names[30]);
 		  break;
 		case 32:
@@ -206,9 +206,14 @@ void cast()
 		  earthquake();
 		  break;
 		case 38: /* Word of Recall */
-		  if (py.flags.word_recall == 0)
-		    py.flags.word_recall = 25 + randint(30);
-		  msg_print("The air about you becomes charged.");
+		  if (py.flags.word_recall == 0) {
+		      py.flags.word_recall = 15 + randint(20);
+		      msg_print("The air about you becomes charged...");
+		  }
+		  else {
+		      py.flags.word_recall = 0;
+		      msg_print("A tension leaves the air around you...");
+		  }
 		  break;
 		case 39: /* Acid Bolt */
 		  if (get_dir(NULL, &dir))
@@ -219,37 +224,37 @@ void cast()
 		case 40: /* Cloud kill */
 		  if (get_dir(NULL, &dir))
 		    fire_ball(GF_POISON_GAS, dir, char_row, char_col,
-			      40+(py.misc.lev/2),
+			      20+(py.misc.lev/2), 3,
 			      "Deadly Cloud");
 		  break;
 		case 41: /* Acid Ball */
 		  if (get_dir(NULL, &dir))
 		    fire_ball(GF_ACID, dir, char_row, char_col,
-			      40+(py.misc.lev),
+			      40+(py.misc.lev), 2,
 			      "Acid Ball");
 		  break;
 		case 42: /* Ice Storm */
 		  if (get_dir(NULL, &dir))
 		    fire_ball(GF_FROST, dir, char_row, char_col,
-			      70+(py.misc.lev),
+			      70+(py.misc.lev), 3,
 			      "Ice Storm");
 		  break;
 		case 43: /* Meteor Swarm */
 		  if (get_dir(NULL, &dir))
-		    fire_ball(GF_MAGIC_MISSILE, dir, char_row, char_col,
-			      65+(py.misc.lev),
+		    fire_ball(GF_METEOR, dir, char_row, char_col,
+			      65+(py.misc.lev), 3,
 			      "Meteor Swarm");
 		  break;
 		case 44: /* Hellfire */
 		  if (get_dir(NULL, &dir))
-		    fire_ball(GF_HOLY_ORB, dir, char_row, char_col, 300,
+		    fire_ball(GF_HOLY_ORB, dir, char_row, char_col, 300, 2,
 			      "Hellfire");
 		  break;
                 case 45: /*Detect Evil */
                   (void) detect_evil();
                   break;
                 case 46: /* Detect Enchantment */
-                  (void) detect_enchantment();
+                  (void) detect_magic();
                   break;
                 case 47:
                   recharge(100);
@@ -299,7 +304,7 @@ void cast()
 		    py.flags.fast += randint(5);
 		  break;
                 case 59:
-                  py.flags.invuln += randint(8)+6;
+                  py.flags.invuln += randint(8)+8;
                   break;
 		default:
 		  break;

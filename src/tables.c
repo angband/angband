@@ -194,7 +194,8 @@ char *rocks[MAX_ROCKS] = {
   "Granite","Jade","Jasper","Lapis Lazuli","Malachite","Marble","Moonstone",
   "Onyx","Opal","Pearl","Quartz","Quartzite","Rhodonite","Ruby","Sapphire",
   "Tiger Eye","Topaz","Turquoise","Zircon","Platinum","Bronze",
-  "Gold","Obsidian","Silver","Tortoise Shell","Mithril"
+  "Gold","Obsidian","Silver","Tortoise Shell","Mithril",
+  "Jet","Engagement","Adamantite"
 };
 
 char *amulets[MAX_AMULETS] = {

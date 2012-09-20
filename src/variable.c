@@ -60,6 +60,11 @@ int prompt_carry_flag = FALSE;
 int show_weight_flag = FALSE;
 int highlight_seams = FALSE;
 int find_ignore_doors = FALSE;
+int hitpoint_warn = 1;
+bigvtype feeling;
+int carry_query_flag = TRUE;
+int delay_spd = 10;
+
 
 char doing_inven = FALSE;	/* Track inventory commands. -CJS- */
 int screen_change = FALSE;	/* Track screen updates for inven_commands. */

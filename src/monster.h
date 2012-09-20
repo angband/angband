@@ -1,23 +1,23 @@
-#define NONE8       	0x00000000
-#define MV_ONLY_ATT    	0x00000001
-#define MV_ATT_NORM 	0x00000002
-#define MV_20		0x00000004
-#define MV_40		0x00000008
-#define MV_75		0x00000010
-#define MV_INVIS	0x00010000
-#define THRO_DR		0x00020000
-#define THRO_WALL	0x00040000
-#define THRO_CREAT	0x00080000
-#define PICK_UP		0x00100000
-#define MULTIPLY        0x00200000
-#define CARRY_OBJ   	0x01000000
-#define CARRY_GOLD	0x02000000
-#define HAS_60		0x04000000
-#define HAS_90		0x08000000
-#define HAS_1D2		0x10000000
-#define HAS_2D2		0x20000000
-#define HAS_4D2		0x40000000
-#define WINNER		0x80000000
+#define NONE8       	0x00000000L
+#define MV_ONLY_ATT    	0x00000001L
+#define MV_ATT_NORM 	0x00000002L
+#define MV_20		0x00000004L
+#define MV_40		0x00000008L
+#define MV_75		0x00000010L
+#define MV_INVIS	0x00010000L
+#define THRO_DR		0x00020000L
+#define THRO_WALL	0x00040000L
+#define THRO_CREAT	0x00080000L
+#define PICK_UP		0x00100000L
+#define MULTIPLY        0x00200000L
+#define CARRY_OBJ   	0x01000000L
+#define CARRY_GOLD	0x02000000L
+#define HAS_60		0x04000000L
+#define HAS_90		0x08000000L
+#define HAS_1D2		0x10000000L
+#define HAS_2D2		0x20000000L
+#define HAS_4D2		0x40000000L
+#define WINNER		0x80000000L
 
 #define BLINK		0x000010L
 #define TELE		0x000020L
@@ -100,29 +100,29 @@
 #define S_GUNDEAD    0x00004000L /* Summon greater undead */
 #define S_ANCIENTD   0x00008000L /* Summon ancient dragon */
 
-#define ANIMAL		0x00000001
-#define EVIL		0x00000002
-#define ORC		0x00000004
-#define UNDEAD		0x00000008
-#define DRAGON		0x00000010
-#define DEMON		0x00000020
-#define HURT_LIGHT	0x00000040
-#define	HURT_ROCK	0x00000080
-#define CHARM_SLEEP	0x00000100
-#define NO_INFRA	0x00000200
-#define MAX_HP		0x00000400
-#define IM_FROST	0x00000800
-#define IM_FIRE		0x00001000
-#define IM_LIGHTNING	0x00002000
-#define IM_POISON	0x00004000
-#define IM_ACID		0x00008000
-#define TROLL		0x00010000
-#define GIANT		0x00020000
-#define SPECIAL         0x00040000
-#define GROUP           0x00080000
-#define GOOD            0x00100000
-#define BREAK_WALL      0x00200000
-#define DESTRUCT        0x00400000
-#define QUESTOR         0x00800000 /* killing it completes a quest */
-#define INTELLIGENT     0x01000000 /* casts spells intelligently */
-#define UNIQUE          0x80000000 /* unique monster */
+#define ANIMAL		0x00000001L
+#define EVIL		0x00000002L
+#define ORC		0x00000004L
+#define UNDEAD		0x00000008L
+#define DRAGON		0x00000010L
+#define DEMON		0x00000020L
+#define HURT_LIGHT	0x00000040L
+#define	HURT_ROCK	0x00000080L
+#define CHARM_SLEEP	0x00000100L
+#define NO_INFRA	0x00000200L
+#define MAX_HP		0x00000400L
+#define IM_FROST	0x00000800L
+#define IM_FIRE		0x00001000L
+#define IM_LIGHTNING	0x00002000L
+#define IM_POISON	0x00004000L
+#define IM_ACID		0x00008000L
+#define TROLL		0x00010000L
+#define GIANT		0x00020000L
+#define SPECIAL         0x00040000L
+#define GROUP           0x00080000L
+#define GOOD            0x00100000L
+#define BREAK_WALL      0x00200000L
+#define DESTRUCT        0x00400000L
+#define QUESTOR         0x00800000L /* killing it completes a quest */
+#define INTELLIGENT     0x01000000L /* casts spells intelligently */
+#define UNIQUE          0x80000000L /* unique monster */

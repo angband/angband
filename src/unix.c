@@ -53,13 +53,11 @@ typedef struct { int stuff; } fpvmach;
 #endif
 #endif
 
-#include <pwd.h>
+/* #include <pwd.h> */
 #include <sys/errno.h>
 
-#ifdef USG
 struct passwd *getpwuid();
 struct passwd *getpwnam();
-#endif
 
 #if defined(SYS_V) && defined(lint)
 struct screen { int dumb; };

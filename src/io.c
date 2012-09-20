@@ -201,6 +201,7 @@ int suspend()
   (void) ioctl(0, TIOCSETC, (char *)&cbuf);
   (void) ioctl(0, TIOCSLTC, (char *)&lcbuf);
   (void) ioctl(0, TIOCLSET, (char *)&lbuf);
+  (void) touchwin(curscr);
   (void) wrefresh(curscr);
   cbreak();
   noecho();
@@ -828,7 +829,9 @@ void clear_screen()
 {
   if (msg_flag)
     msg_print(NULL);
+  touchwin(stdscr);
   (void) clear();
+  refresh();
 }
 #endif
 
@@ -1319,7 +1322,7 @@ void screen_map()
   int8u map[MAX_WIDTH / RATIO + 1];
   int8u tmp;
   int priority[256];
-  int row, orow, col, myrow, mycol = 0;
+  int row, orow, col, myrow = 0, mycol = 0;
 #ifndef MAC
   char prntscrnbuf[80];
 #endif
@@ -1332,9 +1335,11 @@ void screen_map()
 #ifdef MSDOS
   priority[wallsym] = -5;
   priority[floorsym] = -10;
+  priority['±'] = -1;
 #else
   priority['#'] = -5;
   priority['.'] = -10;
+  priority['x'] = -1;
 #endif
   priority['\''] = -3;
   priority[' '] = -15;
@@ -1371,7 +1376,8 @@ void screen_map()
 	      /* can not use mvprintw() on ibmpc, because PC-Curses is horribly
 		 written, and mvprintw() causes the fp emulation library to be
 		 linked with PC-Moria, makes the program 10K bigger */
-	      (void) sprintf(prntscrnbuf,"%c%s%c",CH(VE), map, CH(VE));
+	      (void) sprintf(prntscrnbuf,"%c%s%c",
+			     CH(VE), map, CH(VE));
 	      use_value2 mvaddstr(orow+1, 0, prntscrnbuf);
 #endif
 	    }
@@ -1400,7 +1406,8 @@ void screen_map()
       DWriteScreenString(map);
       DWriteScreenCharAttr(CH(VE), ATTR_NORMAL);
 #else
-      (void) sprintf(prntscrnbuf,"%c%s%c",CH(VE), map, CH(VE));
+      (void) sprintf(prntscrnbuf,"%c%s%c",
+		     CH(VE), map, CH(VE));
       use_value2 mvaddstr(orow+1, 0, prntscrnbuf);
 #endif
     }

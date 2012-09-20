@@ -48,7 +48,7 @@ void pray()
 
 	  if (py.flags.stun>50) chance+=25;
 	  else if (py.flags.stun>0) chance+=15;
-	  if (randint(100) < chance)
+	  if (randint(100) <= chance) /* changed -CFT */
 	    msg_print("You lost your concentration!");
 	  else
 	    {
@@ -63,7 +63,7 @@ void pray()
 		  if (py.flags.cut>0) {
 		    py.flags.cut-=10;
 		    if (py.flags.cut<0) py.flags.cut=0;
-		    msg_print("You wounds heal.");
+		    msg_print("Your wounds heal.");
 		  }
 		  break;
 		case 3:
@@ -73,7 +73,8 @@ void pray()
 		  (void) remove_fear();
 		  break;
 		case 5:
-		  (void) light_area(char_row, char_col);
+		  (void) light_area(char_row, char_col,
+			  damroll(2,(py.misc.lev/2)),(py.misc.lev/10)+1);
 		  break;
 		case 6:
 		  (void) detect_trap();
@@ -86,7 +87,7 @@ void pray()
 		  break;
 		case 9:
 		  if (get_dir(NULL, &dir))
-		    (void) confuse_monster(dir, char_row, char_col);
+		    (void) fear_monster(dir, char_row, char_col, py.misc.lev);
 		  break;
 		case 10:
 		  teleport((int)(py.misc.lev*3));
@@ -96,7 +97,7 @@ void pray()
 		  if (py.flags.cut>0) {
 		    py.flags.cut=(py.flags.cut/2)-20;
 		    if (py.flags.cut<0) py.flags.cut=0;
-		    msg_print("You wounds heal.");
+		    msg_print("Your wounds heal.");
 		  }
 		  break;
 		case 12:
@@ -109,21 +110,6 @@ void pray()
 		  create_food();
 		  break;
 		case 15:
-      	  /* this old code allows priests to uncurse the One Ring.  It looks
-         wrong to me.  Why not just call remove_curse()??  In case this really
-         was what was meant, I've left it here. -CFT 
-		  for (i = 0; i < INVEN_ARRAY_SIZE; i++)
-		    {
-		      i_ptr = &inventory[i]; */
-		      /* only clear flag for items that are wielded or worn */
-		  /*    if (i_ptr->tval >= TV_MIN_WEAR
-			  && i_ptr->tval <= TV_MAX_WEAR)
-			if (!(i_ptr->name2 & SN_MORGUL) &&
-			    !(i_ptr->name2 & SN_MORMEGIL) &&
-			    !(i_ptr->name2 & SN_CALRIS))
-			  i_ptr->flags &= ~TR_CURSED;
-		    }
-		  break; */
 		  remove_curse(); /* -CFT */
 		  break;
 		case 16:
@@ -137,14 +123,14 @@ void pray()
 		case 18:
 		  if (get_dir(NULL, &dir))
 		    fire_ball(GF_HOLY_ORB, dir, char_row, char_col,
-			      (int)(damroll(3,6)+py.misc.lev),
+			      (int)(damroll(3,6)+py.misc.lev), 2,
 			      "Black Sphere");
 		  break;
 		case 19:
 		  (void) hp_player(damroll(8, 4));
 		  if (py.flags.cut>0) {
 		    py.flags.cut=0;
-		    msg_print("You wounds heal.");
+		    msg_print("Your wounds heal.");
 		  }
 		  break;
 		case 20:
@@ -163,7 +149,7 @@ void pray()
 		  (void) hp_player(damroll(16, 4));
 		  if (py.flags.cut>0) {
 		    py.flags.cut=0;
-		    msg_print("You wounds heal.");
+		    msg_print("Your wounds heal.");
 		  }
 		  break;
 		case 25:
@@ -186,7 +172,7 @@ void pray()
 		      py.misc.ptodam+=5;
 		    }
 		    py.flags.stun=0;
-		    msg_print("You're head stops stinging.");
+		    msg_print("Your head stops stinging.");
 		  }
 		  if (py.flags.cut>0) {
 		    py.flags.cut=0;
@@ -213,7 +199,7 @@ void pray()
 		      py.misc.ptodam+=5;
 		    }
 		    py.flags.stun=0;
-		    msg_print("You're head stops stinging.");
+		    msg_print("Your head stops stinging.");
 		  }
 		  if (py.flags.cut>0) {
 		    py.flags.cut=0;
@@ -239,14 +225,14 @@ void pray()
 		  (void) hp_player(damroll(8, 4));
 		  if (py.flags.cut>0) {
 		    py.flags.cut=0;
-		    msg_print("You wounds heal.");
+		    msg_print("Your wounds heal.");
 		  }
 		  break;
 		case 38:
 		  (void) hp_player(damroll(16, 4));
 		  if (py.flags.cut>0) {
 		    py.flags.cut=0;
-		    msg_print("You wounds heal.");
+		    msg_print("Your wounds heal.");
 		  }
 		  break;
 		case 39:
@@ -260,7 +246,7 @@ void pray()
 		      py.misc.ptodam+=5;
 		    }
 		    py.flags.stun=0;
-		    msg_print("You're head stops stinging.");
+		    msg_print("Your head stops stinging.");
 		  }
 		  if (py.flags.cut>0) {
 		    py.flags.cut=0;
@@ -318,23 +304,37 @@ void pray()
 		      char tmp_str[100], out_val[100];
 
 		      objdes(tmp_str, i_ptr, FALSE);
-		      sprintf(out_val, "Your %s glows brightly!", tmp_str);
-		      msg_print(out_val);
-		      flag = FALSE;
-		      for (k = 0; k < randint(4); k++)
-			if (enchant(&i_ptr->tohit))
-			  flag = TRUE;
-		      for (k = 0; k < randint(4); k++)
-			if (enchant(&i_ptr->todam))
-			  flag = TRUE;
-		      if (flag)
-			{
-			  i_ptr->flags &= ~TR_CURSED;
-			  calc_bonuses ();
-			}
-		      else
-			msg_print("The enchantment fails.");
-		    }
+		      if ((i_ptr->flags2 & TR_ARTIFACT)&&randint(2)==1) /*DGK*/
+		      {sprintf(out_val, "Your %s resists enchantment!",
+			       tmp_str);
+		       msg_print(out_val);
+                      }
+                      else
+			{int maxench;
+			 sprintf(out_val, "Your %s glows brightly!", tmp_str);
+			 msg_print(out_val);
+			 flag = FALSE;
+			 for (k = 0; k < randint(4); k++)
+			  if (enchant(&i_ptr->tohit,10))
+			   flag = TRUE;
+			 for (k = 0; k < randint(4); k++)
+			  {
+			   if ((i_ptr->tval >= TV_HAFTED)&&
+			       (i_ptr->tval <= TV_DIGGING))
+			     maxench = i_ptr->damage[0] * i_ptr->damage[1];
+			    else /* Bows' and arrows' enchantments should not
+				  be limited by their low base damages */
+			     maxench = 10;
+			   if (enchant(&i_ptr->todam, maxench))
+			    flag = TRUE;
+			  }
+                        if (flag)
+                            calc_bonuses ();
+           /* used to clear TR_CURSED; should remain set -DGK- */
+                        else
+                          msg_print("The enchantment fails.");
+                       } /* DGK */
+                    }
 		  break;
 		case 51: /* enchant armor */
 		  if (1) {
@@ -375,18 +375,23 @@ void pray()
 			char out_val[100], tmp_str[100];
 
 			i_ptr = &inventory[l];
-			objdes(tmp_str, i_ptr, FALSE);
-			sprintf(out_val, "Your %s glows faintly!", tmp_str);
-			msg_print(out_val);
-			if (enchant(&i_ptr->toac))
-			  {
-			    i_ptr->flags &= ~TR_CURSED;
-			    calc_bonuses ();
-			  }
-			else
-			  msg_print("The enchantment fails.");
-		      }
-		  }
+			objdes(tmp_str, i_ptr, FALSE); /*DGK*/
+                       if ((i_ptr->flags2 & TR_ARTIFACT)&&randint(2)==1)
+                         {sprintf(out_val, "Your %s resists enchantment!",
+                                  tmp_str);
+                          msg_print(out_val);
+                          }
+                        else
+                        {sprintf(out_val, "Your %s glows faintly!", tmp_str);
+                         msg_print(out_val);
+                         if (enchant(&i_ptr->toac,10))
+                             calc_bonuses ();
+           /* used to clear TR_CURSED; should remain set -DGK- */
+                         else
+                           msg_print("The enchantment fails.");
+                        }  /* DGK */
+                      }
+                  }
 		  break;
 		case 52: /* Elemental brand */
 		  i_ptr = &inventory[INVEN_WIELD];
@@ -412,7 +417,7 @@ void pray()
 		      msg_print(out_val);
 		      i_ptr->tohit+=3+randint(3);
 		      i_ptr->todam+=3+randint(3);
-		      i_ptr->flags &= ~TR_CURSED;
+/*		      i_ptr->flags &= ~TR_CURSED; */
 		      calc_bonuses ();
 		    } else {
 		      msg_print("The Branding fails.");
@@ -432,9 +437,14 @@ void pray()
 		  (void) tele_level();
 		  break;
 		case 57: /* word of recall */
-		  if (py.flags.word_recall == 0)
-		    py.flags.word_recall = 25 + randint(30);
-		  msg_print("The air about you becomes charged.");
+		  if (py.flags.word_recall == 0) {
+		      py.flags.word_recall = 15 + randint(20);
+		      msg_print("The air about you becomes charged...");
+		  }
+		  else {
+		      py.flags.word_recall = 0;
+		      msg_print("A tension leaves the air around you...");
+		  }
 		  break;
 		case 58: /* alter reality */
 		  new_level_flag = TRUE;

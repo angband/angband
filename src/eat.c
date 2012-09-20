@@ -59,10 +59,13 @@ void eat()
 	      }
 	      break;
 	    case 3:
-	      f_ptr = &py.flags;
-	      f_ptr->afraid += randint(10) + i_ptr->level;
-	      msg_print("You feel terrified!");
-	      ident = TRUE;
+	      if (!py.flags.fear_resist)
+	      {
+		  f_ptr = &py.flags;
+		  f_ptr->afraid += randint(10) + i_ptr->level;
+		  msg_print("You feel terrified!");
+		  ident = TRUE;
+	      }
 	      break;
 	    case 4:
 	      f_ptr = &py.flags;

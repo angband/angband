@@ -79,10 +79,13 @@ int32u seedval;
   /* set seed to value between 1 and m-1 */
 
   rnd_seed = (seedval % (RNG_M - 1)) + 1;
+  srandom(rnd_seed);
 }
 
 /* returns a pseudo-random number from set 1, 2, ..., RNG_M - 1 */
-int32 rnd ()
+#define rnd random
+
+int32 rnd_unused ()
 {
   register long low, high, test;
 

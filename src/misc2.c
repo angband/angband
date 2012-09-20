@@ -44,7 +44,6 @@ static char *stat_names[] = { "STR: ", "INT: ", "WIS: ",
 #define BLANK_LENGTH	24
 static char blank_string[] = "                        ";
 
-extern int peek;
 extern int rating;
 char *malloc();
 
@@ -54,6 +53,17 @@ int y, x, subval;
 {
   register int cur_pos;
 
+  if (!in_bounds(y,x)) return; /* abort! -CFT */
+  if (cave[y][x].tptr != 0) 
+      if ((t_list[cave[y][x].tptr].tval == TV_STORE_DOOR) ||
+	  (t_list[cave[y][x].tptr].tval == TV_UP_STAIR) ||
+	  (t_list[cave[y][x].tptr].tval == TV_DOWN_STAIR) ||
+	  ((t_list[cave[y][x].tptr].tval >= TV_MIN_WEAR) &&
+	   (t_list[cave[y][x].tptr].tval <= TV_MAX_WEAR) &&
+	   (t_list[cave[y][x].tptr].flags2 & TR_ARTIFACT)))
+	  return; /* don't replace stairs, stores, artifacts */
+      else
+	  delete_object(y,x);
   cur_pos = popt();
   cave[y][x].tptr  = cur_pos;
   invcopy(&t_list[cur_pos], OBJ_TRAP_LIST + subval);
@@ -67,6 +77,17 @@ int y, x;
   register int cur_pos;
   register cave_type *cave_ptr;
 
+  if (!in_bounds(y,x)) return; /* abort! -CFT */
+  if (cave[y][x].tptr != 0) 
+      if ((t_list[cave[y][x].tptr].tval == TV_STORE_DOOR) ||
+	  (t_list[cave[y][x].tptr].tval == TV_UP_STAIR) ||
+	  (t_list[cave[y][x].tptr].tval == TV_DOWN_STAIR) ||
+	  ((t_list[cave[y][x].tptr].tval >= TV_MIN_WEAR) &&
+	   (t_list[cave[y][x].tptr].tval <= TV_MAX_WEAR) &&
+	   (t_list[cave[y][x].tptr].flags2 & TR_ARTIFACT)))
+	  return; /* don't replace stairs, stores, artifacts */
+      else
+	  delete_object(y,x);
   cur_pos = popt();
   cave_ptr = &cave[y][x];
   cave_ptr->tptr = cur_pos;
@@ -82,6 +103,17 @@ int y, x;
   register int i, cur_pos;
   register inven_type *t_ptr;
 
+  if (!in_bounds(y,x)) return; /* abort! -CFT */
+  if (cave[y][x].tptr != 0) 
+      if ((t_list[cave[y][x].tptr].tval == TV_STORE_DOOR) ||
+	  (t_list[cave[y][x].tptr].tval == TV_UP_STAIR) ||
+	  (t_list[cave[y][x].tptr].tval == TV_DOWN_STAIR) ||
+	  ((t_list[cave[y][x].tptr].tval >= TV_MIN_WEAR) &&
+	   (t_list[cave[y][x].tptr].tval <= TV_MAX_WEAR) &&
+	   (t_list[cave[y][x].tptr].flags2 & TR_ARTIFACT)))
+	  return; /* don't replace stairs, stores, artifacts */
+      else
+	  delete_object(y,x);
   cur_pos = popt();
   i = ((randint(dun_level+2)+2) / 2) - 1;
   if (randint(OBJ_GREAT) == 1)
@@ -141,8 +173,9 @@ int level, good;
 	      i = randint(t_level[j]-t_level[j-1]) - 1 + t_level[j-1];
 	  }
       }
-  } while ((object_list[sorted_objects[i]].rare?
-	   (randint(object_list[sorted_objects[i]].rare)-1) : 0) && !good);
+  } while (((object_list[sorted_objects[i]].rare?
+	   (randint(object_list[sorted_objects[i]].rare)-1) : 0) && !good)
+	   || (object_list[sorted_objects[i]].rare == 255));
   return(i);
 }
 
@@ -154,6 +187,19 @@ int special_place_object(y, x)
   register int cur_pos, tmp;
   char str[100];
   int done=0;
+
+  if (!in_bounds(y,x)) return 0; /* abort! -CFT */
+  if (cave[y][x].tptr != 0) 
+      if ((t_list[cave[y][x].tptr].tval == TV_STORE_DOOR) ||
+	  (t_list[cave[y][x].tptr].tval == TV_UP_STAIR) ||
+	  (t_list[cave[y][x].tptr].tval == TV_DOWN_STAIR) ||
+	  ((t_list[cave[y][x].tptr].tval >= TV_MIN_WEAR) &&
+	   (t_list[cave[y][x].tptr].tval <= TV_MAX_WEAR) &&
+	   (t_list[cave[y][x].tptr].flags2 & TR_ARTIFACT)))
+	  return 0; /* don't replace stairs, stores, artifacts */
+      else
+	  delete_object(y,x);
+  str[0]=0;
 
  again:
   if (done>20) return 0;
@@ -309,6 +355,19 @@ void place_object(y, x)
 int y, x;
 {
   register int cur_pos, tmp;
+  register inven_type *t_ptr;
+
+  if (!in_bounds(y,x)) return; /* abort! -CFT */
+  if (cave[y][x].tptr != 0) 
+      if ((t_list[cave[y][x].tptr].tval == TV_STORE_DOOR) ||
+	  (t_list[cave[y][x].tptr].tval == TV_UP_STAIR) ||
+	  (t_list[cave[y][x].tptr].tval == TV_DOWN_STAIR) ||
+	  ((t_list[cave[y][x].tptr].tval >= TV_MIN_WEAR) &&
+	   (t_list[cave[y][x].tptr].tval <= TV_MAX_WEAR) &&
+	   (t_list[cave[y][x].tptr].flags2 & TR_ARTIFACT)))
+	  return; /* don't replace stairs, stores, artifacts */
+      else
+	  delete_object(y,x);
 
   if (randint(MAX_OBJECTS)>SPECIAL_OBJ && randint(10)==1)
     if (special_place_object(y,x)==(-1))
@@ -316,19 +375,20 @@ int y, x;
   cur_pos = popt();
   cave[y][x].tptr = cur_pos;
   tmp = get_obj_num(dun_level, FALSE);
-  invcopy(&t_list[cur_pos], sorted_objects[tmp]);
+  t_ptr = &t_list[cur_pos];
+  invcopy(t_ptr, sorted_objects[tmp]);
   magic_treasure(cur_pos, dun_level, FALSE, 0);
   if (object_list[sorted_objects[tmp]].level > dun_level)
     rating += object_list[sorted_objects[tmp]].level - dun_level;
   if (peek) {
     if (object_list[sorted_objects[tmp]].level > dun_level) {
       char buf[200];
-      int8u tmp;
+      int8u t;
 
-      tmp=t_list[cur_pos].ident;
-      t_list[cur_pos].ident |= ID_STOREBOUGHT;
-      objdes(buf, &t_list[cur_pos], TRUE);
-      t_list[cur_pos].ident = tmp;
+      t=t_ptr->ident;
+      t_ptr->ident |= ID_STOREBOUGHT;
+      objdes(buf, t_ptr, TRUE);
+      t_ptr->ident = t;
       msg_print(buf);
     }
   }
@@ -342,37 +402,61 @@ int y, x;
 int32u good;
 {
   register int cur_pos, tmp;
+  int tv, is_good = FALSE;
+
+  if (!in_bounds(y,x)) return; /* abort! -CFT */
+  if (cave[y][x].tptr != 0) 
+      if ((t_list[cave[y][x].tptr].tval == TV_STORE_DOOR) ||
+	  (t_list[cave[y][x].tptr].tval == TV_UP_STAIR) ||
+	  (t_list[cave[y][x].tptr].tval == TV_DOWN_STAIR) ||
+	  ((t_list[cave[y][x].tptr].tval >= TV_MIN_WEAR) &&
+	   (t_list[cave[y][x].tptr].tval <= TV_MAX_WEAR) &&
+	   (t_list[cave[y][x].tptr].flags2 & TR_ARTIFACT)))
+	  return; /* don't replace stairs, stores, artifacts */
+      else
+	  delete_object(y,x);
 
   if (randint(10)==1)
     if (special_place_object(y,x)==(-1)) return;
   cur_pos = popt();
   cave[y][x].tptr = cur_pos;
   do {
-    tmp = get_obj_num((dun_level+10), TRUE);
-  } while (object_list[sorted_objects[tmp]].tval != TV_SOFT_ARMOR &&
-	   object_list[sorted_objects[tmp]].tval != TV_HELM &&
-	   object_list[sorted_objects[tmp]].tval != TV_SHIELD &&
-	   object_list[sorted_objects[tmp]].tval != TV_CLOAK &&
-	   object_list[sorted_objects[tmp]].tval != TV_HAFTED &&
-	   object_list[sorted_objects[tmp]].tval != TV_SWORD &&
-	   object_list[sorted_objects[tmp]].tval != TV_POLEARM &&
-	   object_list[sorted_objects[tmp]].tval != TV_BOW &&
-	   object_list[sorted_objects[tmp]].tval != TV_BOLT &&
-	   object_list[sorted_objects[tmp]].tval != TV_ARROW &&
-	   object_list[sorted_objects[tmp]].tval != TV_HARD_ARMOR &&
-	   object_list[sorted_objects[tmp]].tval != TV_BOOTS &&
-	   object_list[sorted_objects[tmp]].tval != TV_GLOVES);
+      tmp = get_obj_num((dun_level+10), TRUE);
+    tv = object_list[sorted_objects[tmp]].tval;
+    if ((tv == TV_HELM) || (tv == TV_SHIELD) ||
+	(tv == TV_CLOAK) || (tv == TV_HAFTED) || (tv == TV_POLEARM) ||
+	(tv == TV_BOW) || (tv == TV_BOLT) || (tv == TV_ARROW) ||
+	(tv == TV_BOOTS) || (tv == TV_GLOVES))
+      is_good = TRUE;
+    if ((tv == TV_SWORD) &&
+	strncmp("& Broken", object_list[sorted_objects[tmp]].name, 8))
+      is_good = TRUE; /* broken swords/daggers are NOT good! -CFT */
+    if ((tv == TV_HARD_ARMOR) &&
+	strncmp("Rusty", object_list[sorted_objects[tmp]].name, 5))
+      is_good = TRUE; /* rusty chainmail is NOT good! -CFT */
+    if ((tv == TV_SOFT_ARMOR) &&
+	stricmp("some filthy rags", object_list[sorted_objects[tmp]].name))
+      is_good = TRUE; /* nor are rags! -CFT */
+    if ((tv == TV_MAGIC_BOOK) &&  /* if book, good must be one of the deeper,
+    					special must be Raal's */
+	(object_list[sorted_objects[tmp]].subval > ((good & SPECIAL)?71:67)))
+      is_good = TRUE;
+    if ((tv == TV_PRAYER_BOOK) &&  /* if book, good must be one of the deeper,
+    					special must be Wrath of God */
+	(object_list[sorted_objects[tmp]].subval > ((good & SPECIAL)?71:67)))
+      is_good = TRUE;
+  } while (!is_good);
   invcopy(&t_list[cur_pos], sorted_objects[tmp]);
   magic_treasure(cur_pos, dun_level, (good & SPECIAL)?666:1,0);
   if (peek) {
     if (object_list[sorted_objects[tmp]].level > dun_level) {
       char buf[200];
-      int8u tmp;
+      int8u t;
 
-      tmp=t_list[cur_pos].ident;
+      t=t_list[cur_pos].ident;
       t_list[cur_pos].ident |= ID_STOREBOUGHT;
       objdes(buf, &t_list[cur_pos], TRUE);
-      t_list[cur_pos].ident = tmp;
+      t_list[cur_pos].ident = t;
       msg_print(buf);
     }
   }
@@ -421,9 +505,11 @@ int y, x, num;
     {
       i = 0;
       do
-	{
+      {
+	do {
 	  j = y - 3 + randint(5);
 	  k = x - 4 + randint(7);
+        } while (!in_bounds(j,k));
 	  cave_ptr = &cave[j][k];
 	  if ((cave_ptr->fval <= MAX_CAVE_FLOOR) && (cave_ptr->tptr == 0))
 	    {
@@ -474,10 +560,11 @@ int y, x, num;
 }
 
 /* Converts stat num into string			-RAK-	*/
-void cnv_stat(stat, out_val)
-int16u stat;
+void cnv_stat(my_stat, out_val)
+int my_stat;
 char *out_val;
 {
+  register int16u stat = my_stat;
   register int part1, part2;
 
   if (stat > 18)
@@ -485,7 +572,7 @@ char *out_val;
       part1 = 18;
       part2 = stat - 18;
       if (part2 >= 220)
-	(void) sprintf(out_val, "%2d/*** ", part1, part2);
+	(void) sprintf(out_val, "%2d/*** ", part1);
       else if (part2 >= 100)
 	(void) sprintf(out_val, "%2d/%03d ", part1, part2);
       else
@@ -526,7 +613,7 @@ int row, column;
 {
   vtype out_val;
 
-  (void) sprintf(out_val, "%s:%8ld", header, num);
+  (void) sprintf(out_val, "%s%9ld", header, num);
   put_buffer(out_val, row, column);
 }
 
@@ -537,7 +624,7 @@ int num, row, column;
 {
   vtype out_val;
 
-  (void) sprintf(out_val, "%s:  %6d", header, num);
+  (void) sprintf(out_val, "%s   %6d", header, num);
   put_buffer(out_val, row, column);
 }
 
@@ -548,7 +635,7 @@ int row, column;
 {
   vtype out_val;
 
-  (void) sprintf(out_val, "%6ld", num);
+  (void) sprintf(out_val, "%9ld", num);
   put_buffer(out_val, row, column);
 }
 
@@ -760,7 +847,7 @@ void prt_pac()
 /* Prints current gold					-RAK-	*/
 void prt_gold()
 {
-  prt_long(py.misc.au, 19, STAT_COLUMN+6);
+  prt_long(py.misc.au, 19, STAT_COLUMN+3);
 }
 
 
@@ -845,6 +932,8 @@ void prt_state()
 	(void) sprintf (tmp, "Rest %-5d", py.flags.rest);
       else if (py.flags.rest==-1)
 	(void) sprintf (tmp, "Rest *****");
+      else if (py.flags.rest==-2)
+	(void) sprintf (tmp, "Rest &&&&&");
       put_buffer (tmp, 23, 38);
     }
   else if (command_count > 0)
@@ -894,10 +983,10 @@ void prt_speed ()
 void prt_study()
 {
   py.flags.status &= ~PY_STUDY;
-  if (py.flags.new_spells == 0)
-    put_buffer ("     ", 23, 64);
-  else
+  if (py.flags.new_spells != 0)
     put_buffer ("Study", 23, 64);
+  else
+    put_buffer ("     ", 23, 64);
 }
 
 void cut_player(c)
@@ -1010,7 +1099,7 @@ void prt_winner()
 
 int16u modify_stat (stat, amount)
 int stat;
-int16 amount;
+int amount;
 {
   register int loop, i;
   register int16u tmp_stat;
@@ -1074,6 +1163,7 @@ register int stat;
 {
   register int tmp_stat, gain;
 
+  res_stat(stat);
   tmp_stat = py.stats.cur_stat[stat];
   if (tmp_stat < 118) {
     if (tmp_stat < 18)
@@ -1307,6 +1397,7 @@ void prt_stat_block()
   prt_num ("MNA", m_ptr->cmana,	 14, STAT_COLUMN);
   prt_num ("MHP", m_ptr->mhp,	       15, STAT_COLUMN);
   prt_num ("CHP", m_ptr->chp,	 16, STAT_COLUMN);
+  prt_chp(); /* this will overwrite hp, in color, if needed. -CFT */
   prt_num ("AC ", m_ptr->dis_ac,      18, STAT_COLUMN);
   prt_lnum("AU ", m_ptr->au,	       19, STAT_COLUMN);
   prt_winner();
@@ -1401,7 +1492,11 @@ int x, y;
       case  5:			 return("Good");
       case 6:			 return("Very Good");
       case 7: case 8:		 return("Excellent");
-      default:			 return("Superb");
+      case 9: case 10: case 11: case 12:
+				 return("Superb");
+      case 13: case 14:	case 15: case 16:
+				 return("Heroic");
+      default:			 return("Godly");
       }
 }
 
@@ -1412,10 +1507,10 @@ void put_misc1()
   register struct misc *m_ptr;
 
   m_ptr = &py.misc;
-  prt_num("Age          ", (int)m_ptr->age, 2, 38);
-  prt_num("Height       ", (int)m_ptr->ht, 3, 38);
-  prt_num("Weight       ", (int)m_ptr->wt, 4, 38);
-  prt_num("Social Class ", (int)m_ptr->sc, 5, 38);
+  prt_num("Age          ", (int)m_ptr->age, 2, 32);
+  prt_num("Height       ", (int)m_ptr->ht, 3, 32);
+  prt_num("Weight       ", (int)m_ptr->wt, 4, 32);
+  prt_num("Social Class ", (int)m_ptr->sc, 5, 32);
 }
 
 
@@ -1425,13 +1520,19 @@ void put_misc2()
   register struct misc *m_ptr;
 
   m_ptr = &py.misc;
-  prt_num("Level      ", (int)m_ptr->lev, 9, 29);
-  prt_lnum("Experience ", m_ptr->exp, 10, 29);
-  prt_lnum("Max Exp    ", m_ptr->max_exp, 11, 29);
-  prt_lnum("Exp to Adv.", ((m_ptr->lev>=MAX_PLAYER_LEVEL)?0L
-	                  :(int32)(player_exp[m_ptr->lev-1] *
-				   m_ptr->expfact/100)), 12, 29);
-  prt_lnum("Gold       ", m_ptr->au, 13, 29);
+  prt_num("Level      ", (int)m_ptr->lev, 9, 28);
+  prt_lnum("Experience ", m_ptr->exp, 10, 28);
+  prt_lnum("Max Exp    ", m_ptr->max_exp, 11, 28);
+  if (m_ptr->lev >= MAX_PLAYER_LEVEL) {
+    char buf[40]; /* for this to look right, the following should be spaced the
+    			same as in the prt_lnum code... -CFT */
+    sprintf(buf, "%s%9s", "Exp to Adv.", "****");
+    put_buffer(buf, 12, 28);
+    }
+  else
+    prt_lnum("Exp to Adv.", (int32)(player_exp[m_ptr->lev-1] *
+				   m_ptr->expfact/100), 12, 28);
+  prt_lnum("Gold       ", m_ptr->au, 13, 28);
   prt_num("Max Hit Points ", m_ptr->mhp, 9, 52);
   prt_num("Cur Hit Points ", m_ptr->chp, 10, 52);
   prt_num("Max Mana       ", m_ptr->mana, 11, 52);
@@ -1446,7 +1547,7 @@ void put_misc3()
   vtype xinfra;
   register struct misc *p_ptr;
 
-  clear_from(13);
+  clear_from(14);
   p_ptr = &py.misc;
   xbth	= p_ptr->bth + p_ptr->ptohit*BTH_PLUS_ADJ
     + (class_level_adj[p_ptr->pclass][CLA_BTH] * p_ptr->lev);
@@ -1621,10 +1722,10 @@ register int item_val, drop_all;
   vtype prt2;
   bigvtype prt1;
 
+  i_ptr = &inventory[item_val];
   if (cave[char_row][char_col].tptr != 0)
     (void) delete_object(char_row, char_col);
   i = popt ();
-  i_ptr = &inventory[item_val];
   t_list[i] = *i_ptr;
   cave[char_row][char_col].tptr = i;
 
@@ -1659,15 +1760,30 @@ register int item_val, drop_all;
 
 /* Destroys a type of item on a given percent chance	-RAK-	*/
 int inven_damage(typ, perc)
+#ifdef MSDOS
+int (*typ)(inven_type *);
+#else
 int (*typ)();
+#endif
 register int perc;
 {
   register int i, j;
-
+  vtype tmp_str, out_val;
+  
   j = 0;
   for (i = 0; i < inven_ctr; i++)
     if ((*typ)(&inventory[i]) && (randint(100) < perc))
       {
+	objdes(tmp_str, &inventory[i], FALSE);
+	sprintf(out_val, "%sour %s (%c) %s destroyed!",
+		  	((inventory[i].subval <= ITEM_SINGLE_STACK_MAX) &&
+		  	 (inventory[i].number > 1)) /* stacked single items */
+			  ? "One of y" : "Y",
+			tmp_str, i+'a',
+			((inventory[i].subval > ITEM_SINGLE_STACK_MAX) &&
+			 (inventory[i].number > 1)) /* stacked group items */
+			 ? "were":"was");
+        msg_print (out_val);
 	inven_destroy(i);
 	j++;
       }
@@ -1678,11 +1794,12 @@ register int perc;
 /* Computes current weight limit			-RAK-	*/
 int weight_limit()
 {
-  register int weight_cap;
+  register int32 weight_cap;
 
-  weight_cap = py.stats.use_stat[A_STR] * PLAYER_WEIGHT_CAP + py.misc.wt;
-  if (weight_cap > 3000)  weight_cap = 3000;
-  return(weight_cap);
+  weight_cap = (long)py.stats.use_stat[A_STR] * (long)PLAYER_WEIGHT_CAP
+	+ (long)py.misc.wt;
+  if (weight_cap > 3000L)  weight_cap = 3000L;
+  return((int)weight_cap);
 }
 
 
@@ -1769,7 +1886,8 @@ void check_strength()
     }
   py.flags.status &= ~PY_STR_WGT;
   if (py.misc.pclass==2 && !notlike) {
-    if (i_ptr->tval==TV_SWORD || i_ptr->tval==TV_POLEARM) {
+    if ((i_ptr->tval==TV_SWORD || i_ptr->tval==TV_POLEARM)
+	&& ((i_ptr->flags2 & TR_BLESS_BLADE)==0)) {
       notlike=TRUE;
       msg_print("You do not feel comfortable with your weapon.");
     }
@@ -1803,7 +1921,8 @@ register inven_type *i_ptr;
 	  t_ptr->number += i_ptr->number;
 	  break;
 	}
-      else if (typ > t_ptr->tval)
+      else if ((typ > t_ptr->tval) ||
+	       ((typ == t_ptr->tval) && (subt <= t_ptr->subval)))
 	{
 	  for (i = inven_ctr - 1; i >= locn; i--)
 	    inventory[i+1] = inventory[i];
@@ -1852,12 +1971,18 @@ int spell;
      case 15: case 16: minfail = 1; break; /* /171 - /200 */
      default: minfail = 0; break; /* > 18/200 */
    }   
-   if ((minfail < 5) && (py.misc.pclass != 1) && (py.misc.pclass != 2))
-     minfail = 5; /* only mages/priests can get best chances... */
+  if ((minfail < 5) && (py.misc.pclass != 1) && (py.misc.pclass != 2))
+      minfail = 5; /* only mages/priests can get best chances... */
+  if (py.misc.pclass==2)  /* Big prayer penalty for edged weapons -DGK */
+  {
+      register inven_type *i_ptr = &inventory[INVEN_WIELD];
+      if ((i_ptr->tval==TV_SWORD)||(i_ptr->tval==TV_POLEARM))
+	  if ((i_ptr->flags2 & TR_BLESS_BLADE)==0) chance+=25;
+  }
   if (chance > 95)
-    chance = 95;
+      chance = 95;
   else if (chance < minfail)
-    chance = minfail;
+      chance = minfail;
   return chance;
 }
 
@@ -2133,7 +2258,8 @@ int stat;
 	  /* determine which spells player can learn */
 	  /* must check all spells here, in gain_spell() we actually check
 	     if the books are present */
-	  spell_flag = 0x7FFFFFFFL & ~spell_learned;
+	/* only bother with spells learnable by class -CFT */
+	  spell_flag = spellmasks[py.misc.pclass][0] & ~spell_learned;
 	  mask = 0x1;
 	  i = 0;
 	  for (j = 0, mask = 0x1; spell_flag; mask <<= 1, j++)
@@ -2143,13 +2269,14 @@ int stat;
 		if (msp_ptr[j].slevel <= p_ptr->lev)
 		  i++;
 	      }
-	  spell_flag = 0x7FFFFFFFL & ~spell_learned2;
+	/* only bother with spells learnable by class -CFT */
+	  spell_flag = spellmasks[py.misc.pclass][1] & ~spell_learned2;
 	  mask = 0x1;
 	  for (j = 0, mask = 0x1; spell_flag; mask <<= 1, j++)
 	    if (spell_flag & mask)
 	      {
 		spell_flag &= ~mask;
-		if (msp_ptr[j].slevel <= p_ptr->lev)
+		if (msp_ptr[j+32].slevel <= p_ptr->lev)
 		  i++;
 	      }
 
@@ -2196,10 +2323,8 @@ int stat;
        new_spells = 0; /* we've forgotten, so we shouldn't be learning any... */
 }
 
-  if (new_spells != py.flags.new_spells)
-    {
-      if (new_spells > 0 && py.flags.new_spells == 0)
-	{
+  if (new_spells != py.flags.new_spells) {
+    if (new_spells > 0 && py.flags.new_spells == 0) {
 	  (void) sprintf(tmp_str, "You can learn some new %ss now.", p);
 	  msg_print(tmp_str);
 	}
@@ -2217,11 +2342,15 @@ void gain_spells()
   int stat, diff_spells, new_spells;
   int spells[63], offset, last_known;
   register int i, j;
-  register int32u spell_flag, spell_flag2, mask;
+  register int32u spell_flag = 0, spell_flag2 = 0, mask;
   vtype tmp_str;
   struct misc *p_ptr;
   register spell_type *msp_ptr;
 
+  if (!py.misc.pclass) {
+    msg_print("A warrior learn magic???  HA!");
+    return;
+  }
   i = 0;
   if (py.flags.blind > 0)
     msg_print("You can't see to read your spell book!");
@@ -2358,6 +2487,9 @@ int stat;
   register int new_mana, levels;
   register struct misc *p_ptr;
   register int32 value;
+  register int i;
+  register inven_type *i_ptr;
+  int amrwgt, maxwgt;
 
   p_ptr = &py.misc;
   if (spell_learned != 0 || spell_learned2 != 0)
@@ -2385,12 +2517,48 @@ int stat;
       if (new_mana > 0)
 	new_mana++;
       if ((inventory[INVEN_HANDS].tval != TV_NOTHING) &&
-	  (py.misc.pclass==1 || py.misc.pclass==3 || py.misc.pclass==4)) {
-	new_mana=(3*new_mana)/4;
+	  !((inventory[INVEN_HANDS].flags & TR_FREE_ACT)||
+	    ((inventory[INVEN_HANDS].flags & TR_DEX) &&
+	     (inventory[INVEN_HANDS].p1 > 0))) /* gauntlets of dex (or free
+						  action - DGK) can hardly
+						  interfere w/ spellcasting!
+						  But cursed ones can! -CFT */
+	  && (py.misc.pclass==1 || py.misc.pclass==3 || py.misc.pclass==4)) {
+	  new_mana=(3*new_mana)/4;
       }
-      if (py.misc.pac>35) {
-	new_mana-=(py.misc.pac-35);
+      /* Start of **NEW ENCUMBRANCE CALCULATION**    -DGK- */
+      amrwgt = 0;
+      for (i=INVEN_WIELD; i < INVEN_ARRAY_SIZE; i++) {
+	  i_ptr=&inventory[i];
+	  switch(i) {
+	    case INVEN_HEAD: case INVEN_BODY: case INVEN_ARM: case INVEN_HANDS:
+	    case INVEN_FEET: case INVEN_OUTER: amrwgt+= i_ptr->weight;
+	  }
       }
+      switch (py.misc.pclass) {
+	case 1: maxwgt=300; break;
+	case 2: maxwgt=350; break;
+	case 3: maxwgt=350; break;
+	case 4: maxwgt=400; break;
+	case 5: maxwgt=400; break;
+	default: maxwgt=0;
+      }
+      if (amrwgt > maxwgt)
+	  new_mana -=((amrwgt - maxwgt) / 10);
+      /* end of new mana calc */
+
+      /* if low int/wis, gloves, and lots of heavy armor, new_mana could
+         be negative.  This would be very unlikely, except when int/wis
+         was high enough to compensate for armor, but was severly drained
+         by an annoying monster.  Since the following code blindly assumes
+         that new_mana is >= 0, we must do the work and return here. -CFT */
+      if (new_mana < 1) {
+      	p_ptr->cmana = p_ptr->cmana_frac = p_ptr->mana = 0;
+      	py.flags.status |= PY_MANA;
+	return; /* now return before we reach code that assumes new_mana is
+		   positive.... */
+        }
+
       /* mana can be zero when creating character */
       if (p_ptr->mana != new_mana)
 	{
@@ -2426,7 +2594,9 @@ int stat;
 /* Increases hit points and level			-RAK-	*/
 static void gain_level()
 {
+#if 0
   register int32 dif_exp, need_exp;
+#endif
   vtype out_val;
   register struct misc *p_ptr;
   register class_type *c_ptr;
@@ -2437,6 +2607,8 @@ static void gain_level()
   msg_print(out_val);
   calc_hitpoints();
 
+#if 0 /* This is silly.  If a player works hard and gets lucky, he
+	deserves every ounce of exp...  -CFT */
   need_exp = player_exp[p_ptr->lev-1] * p_ptr->expfact / 100;
   if (p_ptr->exp > need_exp)
     {
@@ -2444,6 +2616,7 @@ static void gain_level()
       dif_exp = p_ptr->exp - need_exp;
       p_ptr->exp = need_exp + (dif_exp / 2);
     }
+#endif
   prt_level();
   prt_title();
   c_ptr = &class[p_ptr->pclass];
@@ -2497,7 +2670,7 @@ void calc_hitpoints()
   if (py.flags.status & PY_HERO)
     hitpoints += 10;
   if (py.flags.status & PY_SHERO)
-    hitpoints += 20;
+    hitpoints += 30;
 
   /* mhp can equal zero while character is being created */
   if ((hitpoints != p_ptr->mhp) && (p_ptr->mhp != 0))
@@ -2584,8 +2757,8 @@ int show_sign;
   while (flag);
   if (string)
     {
-      (void) strncpy(str1, object_str, (int)(string - object_str));
-      str1[(int)(string - object_str)] = '\0';
+      (void) strncpy(str1, object_str, string - object_str);
+      str1[string - object_str] = '\0';
       (void) strcpy(str2, string + mlen);
       if ((number >= 0) && (show_sign))
 	(void) sprintf(object_str, "%s+%d%s", str1, number, str2);
@@ -2624,8 +2797,8 @@ int show_sign;
   while (flag);
   if (string)
     {
-      (void) strncpy(str1, object_str, string - object_str);
-      str1[string - object_str] = '\0';
+      (void) strncpy(str1, object_str, (int)(string - object_str));
+      str1[(int)(string - object_str)] = '\0';
       (void) strcpy(str2, string + mlen);
       if ((number >= 0) && (show_sign))
 	(void) sprintf(object_str, "%s+%ld%s", str1, number, str2);
@@ -2645,7 +2818,7 @@ int enter_wiz_mode()
   if (!noscore)
     {
       msg_print("Wizard mode is for debugging and experimenting.");
-      answer = get_check(
+      answer = get_Yn(
 	"The game will not be scored if you enter wizard mode. Are you sure?");
     }
   if (noscore || answer)
@@ -2688,7 +2861,7 @@ int *wtohit;
       else if (d < 158)	 dex_index = 9;
       else if (d < 168)	 dex_index = 10;
       else dex_index = 11;
-      adj_weight = ((s*10) / ((weight<50)? 50 : weight));
+      adj_weight = ((s*10) / ((weight<30)? 30 : weight));
       if      (adj_weight < 2)	str_index = 0;
       else if (adj_weight < 3)	str_index = 1;
       else if (adj_weight < 4)	str_index = 2;
@@ -2700,7 +2873,15 @@ int *wtohit;
       else if (adj_weight < 18)	str_index = 8;
       else if (adj_weight < 20)	str_index = 9;
       else			str_index = 10;
-      return (int)blows_table[str_index][dex_index];
+      s=0;
+      for (d=INVEN_WIELD;d<INVEN_AUX;d++)
+       if (inventory[d].flags2 & TR_ATTACK_SPD)
+	s+=inventory[d].p1;
+      if (py.misc.pclass==1)   /* Mage attack penalty */
+	d = ((((int)blows_table[str_index][dex_index]+1)/2)+s);
+       else
+	d = ((int)blows_table[str_index][dex_index]+s);
+      return ((d<1)?1:d);
     }
 }
 
@@ -2848,7 +3029,7 @@ int mmove(dir, y, x)
 int dir;
 register int *y, *x;
 {
-  register int new_row, new_col;
+  register int new_row = 0, new_col = 0;
   int bool;
 
   switch(dir)
@@ -3033,7 +3214,7 @@ void add_inscribe(i_ptr, type)
 inven_type *i_ptr;
 int8u type;
 {
-  i_ptr->ident |= type;
+  i_ptr->ident |= (int8u) type;
 }
 
 /* Replace any existing comment in an object description with a new one. CJS*/

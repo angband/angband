@@ -19,6 +19,8 @@
 #include <strings.h>
 #endif
 
+static void special_offer(inven_type *);
+
 #if defined(LINT_ARGS)
 static void insert_store(int, int, int32, struct inven_type *);
 static void store_create(int);
@@ -27,7 +29,7 @@ static void insert_store();
 static void store_create();
 #endif
 
-extern int is_home;
+extern int8u is_home;
 
 /* Returns the value for any given object		-RAK-	*/
 int32 item_value(i_ptr)
@@ -63,7 +65,8 @@ register inven_type *i_ptr;
 	    value = i_ptr->cost+i_ptr->toac*100;
 	}
     }
-  else if ((i_ptr->tval >= TV_SLING_AMMO) && (i_ptr->tval <= TV_SPIKE))
+  else if (((i_ptr->tval >= TV_SLING_AMMO) && (i_ptr->tval <= TV_ARROW))
+  		|| (i_ptr->tval == TV_SPIKE))
     {	/* Ammo			*/
       if (!known2_p(i_ptr))
 	value = object_list[i_ptr->index].cost;
@@ -162,7 +165,7 @@ inven_type *item;
       *max_sell = i * owners[s_ptr->owner].max_inflate / 100;
       *min_sell = i * owners[s_ptr->owner].min_inflate / 100;
       if (snum==6) *max_sell*=2, *min_sell*=2;
-      if (min_sell > max_sell)	min_sell = max_sell;
+      if (*min_sell > *max_sell) *min_sell = *max_sell;
       return(i);
     }
   else
@@ -195,6 +198,20 @@ int store_num;
 	    && (t_ptr->subval < ITEM_GROUP_MIN
 		|| (i_ptr->p1 == t_ptr->p1)))
 	  store_check = TRUE;
+      }
+  /* But, wait.  If at home, don't let player drop 25th item, or he will
+     lose it. -CFT */
+  if (is_home && (t_ptr->subval >= ITEM_SINGLE_STACK_MIN))
+    for (i = 0; i < s_ptr->store_ctr; i++)
+      {
+	i_ptr = &s_ptr->store_inven[i].sitem;
+	/* note: items with subval of gte ITEM_SINGLE_STACK_MAX only stack
+	   if their subvals match */
+	if (i_ptr->tval == t_ptr->tval && i_ptr->subval == t_ptr->subval
+	    && ((int)i_ptr->number + (int)t_ptr->number > 24)
+	    && (t_ptr->subval < ITEM_GROUP_MIN
+		|| (i_ptr->p1 == t_ptr->p1)))
+	  store_check = FALSE;
       }
   return(store_check);
 }
@@ -266,7 +283,9 @@ inven_type *t_ptr;
 		  flag = TRUE;
 		}
 	    }
-	  else if (typ > i_ptr->tval)
+	  else if (((typ == i_ptr->tval) && (subt < i_ptr->tval)
+			 && (object_offset(t_ptr) == -1))
+			|| (typ > i_ptr->tval))
 	    {		/* Insert into list		*/
 	      insert_store(store_num, item_val, icost, t_ptr);
 	      flag = TRUE;
@@ -402,10 +421,10 @@ int store_num;
       }	
     }
   while (tries <= 3);
-  pusht((int8u)cur_pos);
+  pusht(cur_pos);
 }
 
-int special_offer(i_ptr) 
+static void special_offer(i_ptr) 
   inven_type *i_ptr;
 {
   if (randint(30)==1) {
@@ -462,6 +481,7 @@ int noneedtobargain(store_num, minprice)
 int store_num;
 int32 minprice;
 {
+#ifdef HAGGLE
   register int flagnoneed;
   register store_type *s_ptr;
 
@@ -471,6 +491,9 @@ int32 minprice;
 		    (minprice < 5000)));
 
   return (flagnoneed);
+#else
+  return (TRUE);
+#endif /* HAGGLE */
 }
 
 

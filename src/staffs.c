@@ -42,6 +42,8 @@ void use()
 	+ (class_level_adj[m_ptr->pclass][CLA_DEVICE] * m_ptr->lev / 3);
       if (py.flags.confused > 0)
 	chance = chance / 2;
+      if ((chance < USE_DEVICE) && (randint(USE_DEVICE - chance + 1) == 1))
+	chance = USE_DEVICE; /* Give everyone a slight chance */
       if (chance <= 0)	chance = 1;
       if (randint(chance) < USE_DEVICE)
 	msg_print("You failed to use the staff properly.");
@@ -63,7 +65,7 @@ void use()
 	      }
 	      py.flags.stun=0;
 	      ident = TRUE;
-	      msg_print("You're head stops stinging.");
+	      msg_print("Your head stops stinging.");
 	    }
 	    if (py.flags.cut>0) {
 	      py.flags.cut=0;
@@ -99,7 +101,7 @@ void use()
 	      }
 	      py.flags.stun=0;
 	      ident = TRUE;
-	      msg_print("You're head stops stinging.");
+	      msg_print("Your head stops stinging.");
 	    }
 	    if (py.flags.cut>0) {
 	      py.flags.cut=0;
@@ -129,7 +131,7 @@ void use()
 	    ident = TRUE;
 	    break;
           case ST_LIGHT:
-	    ident = light_area(char_row, char_col);
+	    ident = light_area(char_row, char_col, damroll(2, 10), 2);
 	    break;
 	  case ST_DR_LC:
 	    ident = detect_sdoor();
@@ -218,7 +220,7 @@ void use()
 		py.misc.ptodam+=5;
 	      }
 	      py.flags.stun=0;
-	      msg_print("You're head stops stinging.");
+	      msg_print("Your head stops stinging.");
 	    } else if (py.flags.cut>0) {
 	      py.flags.cut=0;
 	      msg_print("You feel better.");

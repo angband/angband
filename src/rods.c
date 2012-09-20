@@ -20,7 +20,7 @@
 #include <strings.h>
 #endif
 
-int direction(dir)
+static int direction(dir)
   int *dir;
 {
   if (get_dir(NULL, dir)) {
@@ -58,6 +58,8 @@ void activate_rod()
       + (class_level_adj[m_ptr->pclass][CLA_DEVICE] * m_ptr->lev / 3);
     if (py.flags.confused > 0)
       chance = chance / 2;
+    if ((chance < USE_DEVICE) && (randint(USE_DEVICE - chance + 1) == 1))
+      chance = USE_DEVICE; /* Give everyone a slight chance */
     if (chance <= 0)  chance = 1;
     if (randint(chance) < USE_DEVICE)
       msg_print("You failed to use the rod properly.");
@@ -74,7 +76,7 @@ void activate_rod()
 	i_ptr->timeout=9;
 	break;
       case RD_ILLUME:
-	light_area(k,l);
+	light_area(k,l, damroll(2,8),2);
 	ident=TRUE;
 	i_ptr->timeout=30;
 	break;
@@ -137,25 +139,25 @@ void activate_rod()
 	break;
       case RD_LT_BALL:
 	if (!direction(&dir)) goto no_charge;
-	fire_ball(GF_LIGHTNING, dir, k, l, 32, "Lightning Ball");
+	fire_ball(GF_LIGHTNING, dir, k, l, 32, 2, "Lightning Ball");
 	ident = TRUE;
 	i_ptr->timeout=23;
 	break;
       case RD_CD_BALL:
 	if (!direction(&dir)) goto no_charge;
-	fire_ball(GF_FROST, dir, k, l, 48, "Cold Ball");
+	fire_ball(GF_FROST, dir, k, l, 48, 2, "Cold Ball");
 	ident = TRUE;
 	i_ptr->timeout=25;
 	break;
       case RD_FR_BALL:
 	if (!direction(&dir)) goto no_charge;
-	fire_ball(GF_FIRE, dir, k, l, 72, spell_names[30]);
+	fire_ball(GF_FIRE, dir, k, l, 72, 2, "Fire Ball");
 	ident = TRUE;
 	i_ptr->timeout=30;
 	break;
       case RD_AC_BALL:
 	if (!direction(&dir)) goto no_charge;
-	fire_ball(GF_ACID, dir, k, l, 60, "Acid Ball");
+	fire_ball(GF_ACID, dir, k, l, 60, 2, "Acid Ball");
 	ident = TRUE;
 	i_ptr->timeout=27;
 	break;
@@ -183,7 +185,7 @@ void activate_rod()
 	  }
 	  py.flags.stun=0;
 	  ident = TRUE;
-	  msg_print("You're head stops stinging.");
+	  msg_print("Your head stops stinging.");
 	} else if (py.flags.cut>0) {
 	  py.flags.cut=0;
 	  ident = TRUE;
@@ -203,7 +205,7 @@ void activate_rod()
 	  }
 	  py.flags.stun=0;
 	  ident = TRUE;
-	  msg_print("You're head stops stinging.");
+	  msg_print("Your head stops stinging.");
 	}
 	if (py.flags.cut>0) {
 	  py.flags.cut=0;
@@ -213,9 +215,14 @@ void activate_rod()
 	i_ptr->timeout=888;
 	break;
       case RD_RECALL:
-	if (py.flags.word_recall == 0)
-          py.flags.word_recall = 25 + randint(30);
-        msg_print("The air about you becomes charged.");
+	if (py.flags.word_recall == 0) {
+	    py.flags.word_recall = 15 + randint(20);
+	    msg_print("The air about you becomes charged...");
+	}
+	else {
+	    py.flags.word_recall = 0;
+	    msg_print("A tension leaves the air around you...");
+	}
 	ident = TRUE;
 	i_ptr->timeout=60;
         break;
@@ -241,6 +248,17 @@ void activate_rod()
 	py.flags.fast += randint(30) + 15;
 	i_ptr->timeout=99;
 	break;
+#if 0
+      case RD_TRAP_LOC:
+	if (detect_trap()) ident = TRUE;
+        i_ptr->timeout=99; /* fairly long timeout because rod so low lv -CFT */
+	break;
+      case RD_MK_WALL:    /* JLS */
+        if (!direction(&dir)) goto no_charge;
+        ident = build_wall(dir, k, l);
+        i_ptr->timeout=999;  /* don't want people to abuse this -JLS */
+        break;
+#endif
       default:
 	msg_print("Internal error in rods() ");
 	break;

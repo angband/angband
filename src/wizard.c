@@ -51,7 +51,7 @@ void artifact_check()
 {
   FILE *file1;
   vtype filename;
-  {
+
     prt("Checking for artifacts that have been seen... ", 0, 0);
     prt("File name: ", 0, 0);
     if (get_string(filename, 0, 11, 64))
@@ -174,13 +174,14 @@ void artifact_check()
 	    if (THRAIN) fprintf(file1, "The Arkenstone of Thrain\n");
 	    if (RAZORBACK) fprintf(file1, "Razorback\n");
 	    if (BLADETURNER) fprintf(file1, "Bladeturner\n");
+	    (void) fclose(file1);
+	    prt("Done...", 0, 0);
           }
-	(void) fclose(file1);
-	prt("Done...", 0, 0);
+	else
+	  prt("File could not be opened.", 0, 0);
       }
-    else
-      prt("File could not be opened.", 0, 0);
-  }
+      else
+	prt("File could not be opened.", 0, 0);
 }
 
 /* Light up the dungeon					-RAK-	*/
@@ -464,16 +465,15 @@ void change_character()
 void wizard_create()
 {
   register int tmp_val;
-  int flag, i, j, k;
+  int i, j, k;
   int32 tmp_lval;
   char tmp_str[100];
   register inven_type *i_ptr;
   treasure_type t_type, *t_ptr;
   inven_type forge;
   register cave_type *c_ptr;
-  char pattern[4];
   char ch;
-  int more = FALSE, where;
+  int more = FALSE;
 
   t_ptr = &t_type;
   i_ptr = &forge;
@@ -908,6 +908,9 @@ void wizard_create()
 
 
   save_screen();
+  if ((i_ptr->tval <= TV_MAX_WEAR) && (i_ptr->tval >= TV_MIN_WEAR)) {
+    /* only then bother with TR_* flags, since otherwise they are
+	meaningless... -CFT */
 
   if ((i_ptr->tval==TV_SWORD) ||
       (i_ptr->tval==TV_HAFTED) ||
@@ -1080,15 +1083,16 @@ void wizard_create()
   if (get_com("Give off Light? [yn]: ", &ch)) {
     if (ch=='y'||ch=='Y') i_ptr->flags2 |= TR_LIGHT;
   } else if (ch=='\033') goto end;
+  if (get_com("Activatable Item? [yn]: ", &ch)) {
+    if (ch=='y'||ch=='Y') i_ptr->flags2 |= TR_ACTIVATE;
+  } else if (ch=='\033') goto end;
   if (get_com("Is it an Artifact? [yn]: ", &ch)) {
     if (ch=='y'||ch=='Y') i_ptr->flags2 |= TR_ARTIFACT;
-  } else if (ch=='\033') goto end;
-  if (get_com("Active Artifact? [yn]: ", &ch)) {
-    if (ch=='y'||ch=='Y') i_ptr->flags2 |= TR_ACTIVATE;
   } else if (ch=='\033') goto end;
   if (get_com("Cursed? [yn]: ", &ch)) {
     if (ch=='y'||ch=='Y') i_ptr->flags |= TR_CURSED;
   } else if (ch=='\033') goto end;
+  } /* end if TV_MAX_WEAR >= i_ptr->tval >= TV_MIN_WEAR -CFT */
 
   prt("Cost : ", 0, 0);
   if (!get_string(tmp_str, 0, 9, 8)) {restore_screen();return;}

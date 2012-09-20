@@ -88,7 +88,7 @@ static int signal_count = 0;
 
 /*ARGSUSED*/
 #ifndef USG
-static int signal_handler(sig, code, scp)
+static void signal_handler(sig, code, scp)
 int sig, code;
 struct sigcontext *scp;
 {
@@ -99,7 +99,7 @@ struct sigcontext *scp;
 #ifdef __TURBOC__
 static void signal_handler(sig)
 #else
-static int signal_handler(sig)
+static void signal_handler(sig)
 #endif
 int sig;
 {
@@ -124,8 +124,8 @@ int sig;
 	(void) signal(sig, SIG_IGN);		/* Can't quit after death. */
       else if (!character_saved && character_generated)
 	{
-	  if ((!total_winner)?(!get_check("Really commit *Suicide*?"))
-                          :(!get_check("Do you want to retire?")))
+	  if ((!total_winner)?(!get_Yn("Really commit *Suicide*?"))
+                          :(!get_Yn("Do you want to retire?")))
 	    {
 	      if (turn > 0)
 		disturb(1, 0);

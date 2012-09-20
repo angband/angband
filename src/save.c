@@ -91,15 +91,15 @@ static char *basename(a)
 static void wr_unique(item)
 register struct unique_mon *item;
 {
-  wr_long((int32)item->exist);
-  wr_long((int32)item->dead);
+  wr_long((int32u)item->exist);
+  wr_long((int32u)item->dead);
 }
 
 static void rd_unique(item)
 register struct unique_mon *item;
 {
-  rd_long((int32)&item->exist);
-  rd_long((int32)&item->dead);
+  rd_long((int32u *)&item->exist);
+  rd_long((int32u *)&item->dead);
 }
 
 
@@ -112,6 +112,9 @@ static int sv_write()
   register cave_type *c_ptr;
   register recall_type *r_ptr;
   struct stats *s_ptr;
+#ifdef MSDOS
+  inven_type *t_ptr;
+#endif
   register struct flags *f_ptr;
   store_type *st_ptr;
   struct misc *m_ptr;
@@ -141,6 +144,14 @@ static int sv_write()
     l |= 128;
   if (find_ignore_doors)
     l |= 256;
+/*   if (no_haggle_flag)
+    l |= 0x200L; */
+  if (!carry_query_flag)
+    l |= 0x400L;
+  if (unfelt)
+    l |= 0x0001000L;
+  l |= ((delay_spd & 0xf) << 13);
+  l |= ((hitpoint_warn & 0xf) << 17);
   if (death)
     l |= 0x80000000L;	/* Sign bit */
   wr_long(GROND);
@@ -557,7 +568,21 @@ static int sv_write()
   wr_long((int32u)c_list[MAX_CREATURES - 1].cmove);
   wr_long((int32u)c_list[MAX_CREATURES - 1].spells);
   wr_long((int32u)c_list[MAX_CREATURES - 1].cdefense);
-  wr_short((int16u)c_list[MAX_CREATURES - 1].mexp);
+  {  int16u temp;  /* fix player ghost's exp bug.  The mexp field is
+       			  really an int32u, but the savefile was writing/
+      			  reading an int16u.  Since I don't want to change
+      			  the savefile format, this insures that the low
+      			  bits of mexp are written (No ghost should be
+      			  worth more than 64K (Melkor is only worth 60k!),
+			  but we check anyway).  Using temp insures that
+			  the low bits are all written, and works perfectly
+			  with a similar fix when loading a character. -CFT */
+    if (c_list[MAX_CREATURES-1].mexp > (int32u)0xff00)
+      temp = (int16u)0xff00;
+    else
+      temp = (int16u)c_list[MAX_CREATURES-1].mexp;
+    wr_short((int16u)temp);
+  }
   wr_byte((int8u)c_list[MAX_CREATURES - 1].sleep);
   wr_byte((int8u)c_list[MAX_CREATURES - 1].aaf);
   wr_byte((int8u)c_list[MAX_CREATURES - 1].ac);
@@ -574,8 +599,6 @@ static int sv_write()
 
 int save_char()
 {
-  int i;
-  int fd;
   vtype temp;
   char *tmp2;
 
@@ -604,7 +627,7 @@ int _save_char(fnam)
 char *fnam;
 {
   vtype temp;
-  register int ok, fd;
+  int ok, fd;
   int8u char_tmp;
 
   if (log_index < 0)
@@ -639,9 +662,9 @@ char *fnam;
   if (fd >= 0)
     {
       (void) close(fd);
-#endif /* ATARIST_MWC */
+#endif /* !ATARIST_MWC */
       /* GCC for atari st defines atarist */
-#if defined(atarist) || defined(ATARIST_MWC)
+#if defined(atarist) || defined(ATARIST_MWC) || defined(MSDOS)
       fileptr = fopen(savefile, "wb");
 #else
       fileptr = fopen(savefile, "w");
@@ -676,9 +699,10 @@ char *fnam;
 	(void) unlink(fnam);
       signals();
       if (fd >= 0)
-	(void) sprintf(temp, "Error writing to savefile", fnam);
+	(void) sprintf(temp, "Error writing to savefile");
       else
-	(void) sprintf(temp, "Can't create new savefile", fnam);
+/* here? */
+	(void) sprintf(temp, "Can't create new savefile");
       msg_print(temp);
       return FALSE;
     }
@@ -713,6 +737,7 @@ int *generate;
   int8u char_tmp, ychar, xchar, count;
   int8u version_maj, version_min, patch_level;
 
+  free_turn_flag = TRUE;/* So a feeling isn't generated upon reloading -DGK*/
   nosignals();
   *generate = TRUE;
   fd = -1;
@@ -726,7 +751,7 @@ int *generate;
 
   clear_screen();
 
-  (void) sprintf(temp, "Restoring Character.", savefile);
+  (void) sprintf(temp, "Restoring Character.");
   put_buffer(temp, 23, 0);
   sleep(1);
 
@@ -736,7 +761,7 @@ int *generate;
   /* Allow restoring a file belonging to someone else - if we can delete it. */
   /* Hence first try to read without doing a chmod. */
 
-  else if ((fd = open(savefile, O_RDONLY)) < 0)
+  else if ((fd = open(savefile, O_RDONLY, 0)) < 0)
     msg_print("Can't open file for reading.");
   else
     {
@@ -970,6 +995,22 @@ int *generate;
 	find_ignore_doors = TRUE;
       else
 	find_ignore_doors = FALSE;
+/*    if (l & 0x200L)
+        no_haggle_flag = TRUE;
+      else
+        no_haggle_flag = FALSE;
+*/
+      if (l & 0x400L)
+        carry_query_flag = FALSE;
+      else
+        carry_query_flag = TRUE;
+      if (l & 0x1000L)
+        unfelt = TRUE;
+      else
+        unfelt = FALSE;
+      delay_spd = ((l >> 13) & 0xf);
+      hitpoint_warn = ((l >> 17) & 0xf);
+
       if (to_be_wizard && (l & 0x80000000L)
 	  && get_check("Resurrect a dead character?"))
 	l &= ~0x80000000L;
@@ -1179,11 +1220,28 @@ int *generate;
 		  py.misc.chp_frac = 0;
 		}
 	      /* don't let him starve to death immediately */
-	      if (py.flags.food < 100)
-		py.flags.food = 10000;
-	      /* don't let him die of poison again immediately */
-	      if (py.flags.poisoned > 1)
-		py.flags.poisoned = 1;
+	      if (py.flags.food < 5000)
+		py.flags.food = 5000;
+	      cure_poison();
+	      cure_blindness();
+	      cure_confusion();
+	      remove_fear();
+	      if (py.flags.image > 0)
+		py.flags.image = 0;
+	      if (py.flags.cut > 0)
+		py.flags.cut = 0;
+	      if (py.flags.stun>0) {
+	        if (py.flags.stun>50) {
+		  py.misc.ptohit+=20;
+		  py.misc.ptodam+=20;
+	        } else {
+		  py.misc.ptohit+=5;
+		  py.misc.ptodam+=5;
+	        }
+	        py.flags.stun=0;
+	      }
+	      if (py.flags.word_recall > 0)
+	        py.flags.word_recall = 0;
 	      dun_level = 0; /* Resurrect on the town level. */
 	      character_generated = 1;
 	      /* set noscore to indicate a resurrection, and don't enter
@@ -1229,8 +1287,11 @@ int *generate;
 	  rd_byte(&xchar);
 	  rd_byte(&char_tmp);
 	  if (xchar > MAX_WIDTH || ychar > MAX_HEIGHT) {
-            prt("Error in creature pointer info", 11, 0);
-	    goto error;
+	    vtype temp;
+	    sprintf(temp,
+		"Error in creature ptr info: x=%x, y=%x, char_tmp=%x",
+		xchar, ychar, char_tmp);
+            prt(temp, 11, 0);
 	  }
 	  cave[ychar][xchar].cptr = char_tmp;
 	  rd_byte(&char_tmp);
@@ -1302,11 +1363,21 @@ int *generate;
 
       /* Restore ghost names & stats etc... */
       c_list[MAX_CREATURES - 1].name[0]='A';
-      rd_bytes((char *)(c_list[MAX_CREATURES - 1].name), 100);
+      rd_bytes((int8u *)(c_list[MAX_CREATURES - 1].name), 100);
       rd_long((int32u *)&(c_list[MAX_CREATURES - 1].cmove));
       rd_long((int32u *)&(c_list[MAX_CREATURES - 1].spells));
       rd_long((int32u *)&(c_list[MAX_CREATURES - 1].cdefense));
-      rd_short((int16u *)&(c_list[MAX_CREATURES - 1].mexp));
+      {  int16u temp;  /* fix player ghost's exp bug.  The mexp field is
+      			  really an int32u, but the savefile was writing/
+      			  reading an int16u.  Since I don't want to change
+      			  the savefile format, this insures that the mexp
+      			  field is loaded, and that the "high bits" of
+      			  mexp do not contain garbage values which could
+      			  mean that player ghost are worth millions of
+			  exp. -CFT */
+        rd_short((int16u *)&temp);
+        c_list[MAX_CREATURES-1].mexp = (int32u)temp;
+      }
       rd_byte((int8u *)&(c_list[MAX_CREATURES - 1].sleep));
       rd_byte((int8u *)&(c_list[MAX_CREATURES - 1].aaf));
       rd_byte((int8u *)&(c_list[MAX_CREATURES - 1].ac));
