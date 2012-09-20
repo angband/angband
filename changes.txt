@@ -1,3 +1,50 @@
+Changes in Angband 3.0.5:
+- Summoned creatures appear near the caster now instead of near the
+  player.
+- Made rods of detection invulnerable to electric attacks.
+- Restored the old behavior of the Glyph of Warding to protect against
+  direct melee attacks when standing on it.
+- Rods can no longer be drained by monsters.
+- The minor vault "Interlock" had switched height and width definitions,
+  causing it to be created in a chaotic state. (Werner Baer)
+- Spells that prompt the user for an item (identify, enchantment,
+  recharging) or an monster letter (banishment) no longer use mana if
+  canceled.
+- The order of mage spells in the books in the non-Lua version is now
+  the same as in the Lua version.
+- Give energy to monsters and the player at the end of the game turn
+  instead of at the start.  This prevents various odd effects when
+  loading a saved game. (reported by Phil)
+- The activation descriptions for rings were missing with Lua scripting
+  turned off. (Jeff Greene)
+- The SHATTER (earthquake) attack of monsters can cause the player to be
+  pushed into another position.  Processing of the remaining blows of
+  the monster should stop in that case. Otherwise the player could get
+  hit "through a wall" that was created by the earthquake. (Jeff Greene)
+- Removed the autoroller delay.
+- Cleaned up the paragraph handling in the object descriptions.
+  (Hallvard B Furuseth)
+- "It cannot be harmed by acid and fire" should be "... acid *or* fire".
+  (Hallvard B Furuseth)
+- Piles of wands, staves, and rods can be used from the ground without
+  picking them up first.
+- Fixed a problem in the Unix/Linux makefiles.  The POSIX standard
+  doesn't allow a dot instead of a colon as separator for the chown
+  parameters.
+- Removed an accidental use of floating point code that prevented
+  Angband from running on old machines without an FPU.
+- Removed unnecessary event handlers that negativly affected performance.
+- The "pseudo graphics" used by the (n)curses version didn't support
+  terrain lightning correctly.
+- The window resize control was sometimes overwritten with a black tile
+  in the OS X version.
+- Removed the warning message about missing preferences from the OS X
+  version.  The first thing a new player sees after starting Angband
+  shouldn't be a "scary" message.
+- Added a Windows helpfile created by Jordan Hobbs.
+- Added project files for building Angband with MS Visual C++ 7.1.
+  (Tasha Jessup)
+
 Changes in Angband 3.0.4:
 - Made the water vortex immune to water-based attacks.
 - Chaos resistance protects against confusion by chaos based attacks.

@@ -574,7 +574,6 @@ static void player_outfit(void)
 #define BIRTH_SUCCESS             0
 #define BIRTH_RESTART            -1
 #define BIRTH_BACK               -2
-#define BIRTH_INVALID_CHOICE     -3
 
 
 /* Locations of the tables on the screen */
@@ -816,8 +815,6 @@ static int get_player_choice(birth_menu *choices, int num, int def,
 		/* If choice is off screen, move it to the top */
 		if ((cur < top) || (cur > top + hgt)) top = cur;
 	}
-
-	return (BIRTH_INVALID_CHOICE);
 }
 
 
@@ -1215,13 +1212,13 @@ static bool player_birth_aux_2(void)
 		for (i = 0; i < A_MAX; i++)
 		{
 			/* Display cost */
-			sprintf(buf, "%4d", birth_stat_costs[stats[i] - 10]);
+			strnfmt(buf, sizeof(buf), "%4d", birth_stat_costs[stats[i] - 10]);
 			put_str(buf, row + i, col + 32);
 		}
 
 
 		/* Prompt XXX XXX XXX */
-		sprintf(buf, "Total Cost %2d/48.  Use 2/8 to move, 4/6 to modify, 'Enter' to accept.", cost);
+		strnfmt(buf, sizeof(buf), "Total Cost %2d/48.  Use 2/8 to move, 4/6 to modify, 'Enter' to accept.", cost);
 		prt(buf, 0, 0);
 
 		/* Place cursor just after cost of current stat */
@@ -1274,10 +1271,6 @@ static bool player_birth_aux_2(void)
  * Helper function for 'player_birth()'.
  *
  * This function handles "auto-rolling" and "random-rolling".
- *
- * The delay may be reduced, but is recommended to keep players
- * from continuously rolling up characters, which can be VERY
- * expensive CPU wise.  And it cuts down on player stupidity.
  */
 static bool player_birth_aux_3(void)
 {
@@ -1349,13 +1342,13 @@ static bool player_birth_aux_3(void)
 			/* Above 18 */
 			if (m > 18)
 			{
-				sprintf(inp, "(Max of 18/%02d):", (m - 18));
+				strnfmt(inp, sizeof(inp), "(Max of 18/%02d):", (m - 18));
 			}
 
 			/* From 3 to 18 */
 			else
 			{
-				sprintf(inp, "(Max of %2d):", m);
+				strnfmt(inp, sizeof(inp), "(Max of %2d):", m);
 			}
 
 			/* Prepare a prompt */
@@ -1501,7 +1494,7 @@ static bool player_birth_aux_3(void)
 						{
 							int p = 1000L * stat_match[i] / auto_round;
 							byte attr = (p < 100) ? TERM_YELLOW : TERM_L_GREEN;
-							sprintf(buf, "%3d.%d%%", p/10, p%10);
+							strnfmt(buf, sizeof(buf), "%3d.%d%%", p/10, p%10);
 							c_put_str(attr, buf, 3+i, col+13);
 						}
 
@@ -1517,9 +1510,6 @@ static bool player_birth_aux_3(void)
 
 					/* Make sure they see everything */
 					Term_fresh();
-
-					/* Delay 1/10 second */
-					if (flag) Term_xtra(TERM_XTRA_DELAY, 100);
 
 					/* Do not wait for a key */
 					inkey_scan = TRUE;

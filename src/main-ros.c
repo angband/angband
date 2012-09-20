@@ -5934,7 +5934,7 @@ static void bored()
 
 	time(&ct);
 	lt = localtime(&ct);
-	l = strftime(ts, 80, "%c %Z", lt);
+	l = strftime(ts, sizeof(ts), "%c %Z", lt);
 
 	/* Hack: disable force_mono around printing the time */
 	ofm = force_mono;

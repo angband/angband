@@ -183,8 +183,7 @@ SPELL_IDENTIFY = add_magic_spell
 {
 	name = "Identify",
 	effect = function()
-			ident_spell()
-			return true
+			return ident_spell()
 		end,
 }
 
@@ -759,8 +758,7 @@ SPELL_RECHARGE_ITEM_I = add_magic_spell
 {
 	name = "Lesser Recharging",
 	effect = function()
-			recharge(2 + player.lev / 5)
-			return true
+			return recharge(2 + player.lev / 5)
 		end,
 }
 
@@ -768,8 +766,7 @@ SPELL_ENCHANT_ARMOR = add_magic_spell
 {
 	name = "Enchant Armor",
 	effect = function()
-			enchant_spell(0, 0, rand_int(3) + player.lev / 20)
-			return true
+			return enchant_spell(0, 0, rand_int(3) + player.lev / 20)
 		end,
 }
 
@@ -777,9 +774,8 @@ SPELL_ENCHANT_WEAPON = add_magic_spell
 {
 	name = "Enchant Weapon",
 	effect = function()
-			enchant_spell(rand_int(4) + player.lev / 20,
-			              rand_int(4) + player.lev / 20, 0)
-			return true
+			return enchant_spell(rand_int(4) + player.lev / 20,
+			                     rand_int(4) + player.lev / 20, 0)
 		end,
 }
 
@@ -788,8 +784,7 @@ SPELL_RECHARGE_ITEM_II = add_magic_spell
 {
 	name = "Greater Recharging",
 	effect = function()
-			recharge(50 + player.lev)
-			return true
+			return recharge(50 + player.lev)
 		end,
 }
 
@@ -798,8 +793,7 @@ SPELL_ELEMENTAL_BRAND = add_magic_spell
 	name = "Elemental Brand",
 	effect = function()
 			-- ToDo: poison brand for rogues
-			brand_ammo()
-			return true
+			return brand_ammo()
 		end,
 }
 
@@ -867,8 +861,7 @@ SPELL_BANISHMENT = add_magic_spell
 {
 	name = "Banishment",
 	effect = function()
-			banishment()
-			return true
+			return banishment()
 		end,
 }
 
@@ -1420,8 +1413,7 @@ PRAYER_PERCEPTION = add_prayer
 {
 	name = "Perception",
 	effect = function()
-			ident_spell()
-			return true
+			return ident_spell()
 		end,
 }
 
@@ -1579,8 +1571,7 @@ PRAYER_RECHARGING = add_prayer
 {
 	name = "Recharging",
 	effect = function()
-			recharge(15)
-			return true
+			return recharge(15)
 		end,
 }
 
@@ -1597,8 +1588,7 @@ PRAYER_ENCHANT_WEAPON = add_prayer
 {
 	name = "Enchant Weapon",
 	effect = function()
-			enchant_spell(rand_int(4) + 1, rand_int(4) + 1, 0)
-			return true
+			return enchant_spell(rand_int(4) + 1, rand_int(4) + 1, 0)
 		end,
 }
 
@@ -1606,8 +1596,7 @@ PRAYER_ENCHANT_ARMOUR = add_prayer
 {
 	name = "Enchant Armour",
 	effect = function()
-			enchant_spell(0, 0, rand_int(3) + 2)
-			return true
+			return enchant_spell(0, 0, rand_int(3) + 2)
 		end,
 }
 

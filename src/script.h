@@ -47,8 +47,6 @@ extern void start_game_hook(void);
 extern void enter_level_hook(void);
 extern void leave_level_hook(void);
 extern void player_turn_hook(void);
-extern void game_turn_hook(void);
-extern void process_world_hook(void);
 extern bool process_command_hook(int command);
 extern bool generate_level_hook(int level);
 extern bool projection_hit_player(int who, int dam, int typ);

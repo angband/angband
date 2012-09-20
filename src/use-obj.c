@@ -2648,6 +2648,38 @@ void describe_item_activation(const object_type *o_ptr)
 		return;
 	}
 
+	/* Ring activations */
+	if (o_ptr->tval == TV_RING)
+	{
+		/* Branch on the sub-type */
+		switch (o_ptr->sval)
+		{
+			case SV_RING_ACID:
+			{
+				text_out("acid resistance (20+d20 turns) and acid ball (70) every 50+d50 turns");
+				break;
+			}
+			case SV_RING_FLAMES:
+			{
+				text_out("fire resistance (20+d20 turns) and fire ball (80) every 50+d50 turns");
+				break;
+			}
+			case SV_RING_ICE:
+			{
+				text_out("cold resistance (20+d20 turns) and cold ball (75) every 50+d50 turns");
+				break;
+			}
+
+			case SV_RING_LIGHTNING:
+			{
+				text_out("electricity resistance (20+d20 turns) and electricity ball (85) every 50+d50 turns");
+				break;
+			}
+		}
+
+		return;
+	}
+
 	/* Require dragon scale mail */
 	if (o_ptr->tval != TV_DRAG_ARMOR) return;
 

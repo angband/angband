@@ -13,6 +13,13 @@
 
 #ifndef USE_SCRIPT
 
+
+/*
+ * Maximum number of spells per realm
+ */
+#define BOOKS_PER_REALM 10
+
+
 #define SPELL_MAGIC_MISSILE             0
 #define SPELL_DETECT_MONSTERS           1
 #define SPELL_PHASE_DOOR                2
@@ -155,207 +162,249 @@
 #define PRAYER_ALTER_REALITY           57
 
 
-#define BOOK1(x) (((x) < 0) ? 0 : (x) < 32 ? (1L << (x)) : 0)
-#define BOOK2(x) (((x) < 0) ? 0 : (x) < 32 ? 0 : (1L << ((x) % 32)))
-
-#define BOOK(a, b, c, d, e, f, g, h, i) \
-{ \
-	(BOOK1(a) | BOOK1(b) | BOOK1(c) | BOOK1(d) | BOOK1(e) | \
-	 BOOK1(f) | BOOK1(g) | BOOK1(h) | BOOK1(i)), \
-	(BOOK2(a) | BOOK2(b) | BOOK2(c) | BOOK2(d) | BOOK2(e) | \
-	 BOOK2(f) | BOOK2(g) | BOOK2(h) | BOOK2(i)) \
-}
-
-
 /*
  * Spells in each book (mage spells then priest spells)
  */
-static const u32b spell_flags[2][10][2] =
+static const s16b spell_list[2][BOOKS_PER_REALM][SPELLS_PER_BOOK] =
 {
+	/* Mage spells */
 	{
-	/* Magic for Beginners */
-	BOOK(SPELL_MAGIC_MISSILE,
-	     SPELL_DETECT_MONSTERS,
-	     SPELL_PHASE_DOOR,
-	     SPELL_LIGHT_AREA,
-	     SPELL_TREASURE_DETECTION,
-	     SPELL_CURE_LIGHT_WOUNDS,
-	     SPELL_OBJECT_DETECTION,
-	     SPELL_FIND_TRAPS_DOORS,
-	     SPELL_STINKING_CLOUD),
+		/* Magic for Beginners */
+		{
+			SPELL_MAGIC_MISSILE,
+			SPELL_DETECT_MONSTERS,
+			SPELL_PHASE_DOOR,
+			SPELL_LIGHT_AREA,
+			SPELL_TREASURE_DETECTION,
+			SPELL_CURE_LIGHT_WOUNDS,
+			SPELL_OBJECT_DETECTION,
+			SPELL_FIND_TRAPS_DOORS,
+			SPELL_STINKING_CLOUD,
+		},
 
-	/* Conjurings and Tricks */
-	BOOK(SPELL_CONFUSE_MONSTER,
-	     SPELL_LIGHTNING_BOLT,
-	     SPELL_TRAP_DOOR_DESTRUCTION,
-	     SPELL_CURE_POISON,
-	     SPELL_SLEEP_MONSTER,
-	     SPELL_TELEPORT_SELF,
-	     SPELL_SPEAR_OF_LIGHT,
-	     SPELL_FROST_BOLT,
-	     SPELL_WONDER),
+		/* Conjurings and Tricks */
+		{
+			SPELL_CONFUSE_MONSTER,
+			SPELL_LIGHTNING_BOLT,
+			SPELL_TRAP_DOOR_DESTRUCTION,
+			SPELL_CURE_POISON,
+			SPELL_SLEEP_MONSTER,
+			SPELL_TELEPORT_SELF,
+			SPELL_SPEAR_OF_LIGHT,
+			SPELL_FROST_BOLT,
+			SPELL_WONDER,
+		},
 
-	/* Incantations and Illusions */
-	BOOK(SPELL_SATISFY_HUNGER,
-	     SPELL_RECHARGE_ITEM_I,
-	     SPELL_TURN_STONE_TO_MUD,
-	     SPELL_FIRE_BOLT,
-	     SPELL_POLYMORPH_OTHER,
-	     SPELL_IDENTIFY,
-	     SPELL_DETECT_INVISIBLE,
-	     SPELL_ACID_BOLT,
-	     SPELL_SLOW_MONSTER),
+		/* Incantations and Illusions */
+		{
+			SPELL_SATISFY_HUNGER,
+			SPELL_RECHARGE_ITEM_I,
+			SPELL_TURN_STONE_TO_MUD,
+			SPELL_FIRE_BOLT,
+			SPELL_POLYMORPH_OTHER,
+			SPELL_IDENTIFY,
+			SPELL_DETECT_INVISIBLE,
+			SPELL_ACID_BOLT,
+			SPELL_SLOW_MONSTER,
+		},
 
-	/* Sorcery and Evocations */
-	BOOK(SPELL_FROST_BALL,
-	     SPELL_TELEPORT_OTHER,
-	     SPELL_HASTE_SELF,
-	     SPELL_MASS_SLEEP,
-	     SPELL_FIRE_BALL,
-	     SPELL_DETECT_ENCHANTMENT,
-	     -1,
-	     -1,
-	     -1),
+		/* Sorcery and Evocations */
+		{
+			SPELL_FROST_BALL,
+			SPELL_TELEPORT_OTHER,
+			SPELL_HASTE_SELF,
+			SPELL_MASS_SLEEP,
+			SPELL_FIRE_BALL,
+			SPELL_DETECT_ENCHANTMENT,
+			-1,
+			-1,
+			-1,
+		},
 
-	/* Resistances of Scarabtarices */
-	BOOK(SPELL_RESIST_COLD,
-	     SPELL_RESIST_FIRE,
-	     SPELL_RESIST_POISON,
-	     SPELL_RESISTANCE,
-	     SPELL_SHIELD,
-	     -1,
-	     -1,
-	     -1,
-	     -1),
+		/* Resistances of Scarabtarices */
+		{
+			SPELL_RESIST_COLD,
+			SPELL_RESIST_FIRE,
+			SPELL_RESIST_POISON,
+			SPELL_RESISTANCE,
+			SPELL_SHIELD,
+			-1,
+			-1,
+			-1,
+			-1,
+		},
 
-	/* Raal's Tome of Destruction */
-	BOOK(SPELL_SHOCK_WAVE,
-	     SPELL_EXPLOSION,
-	     SPELL_CLOUD_KILL,
-	     SPELL_ACID_BALL,
-	     SPELL_ICE_STORM,
-	     SPELL_METEOR_SWARM,
-	     SPELL_RIFT,
-	     -1,
-	     -1),
+		/* Raal's Tome of Destruction */
+		{
+			SPELL_SHOCK_WAVE,
+			SPELL_EXPLOSION,
+			SPELL_CLOUD_KILL,
+			SPELL_ACID_BALL,
+			SPELL_ICE_STORM,
+			SPELL_METEOR_SWARM,
+			SPELL_RIFT,
+			-1,
+			-1,
+		},
 
-	/* Mordenkainen's Escapes */
-	BOOK(SPELL_DOOR_CREATION,
-	     SPELL_STAIR_CREATION,
-	     SPELL_TELEPORT_LEVEL,
-	     SPELL_WORD_OF_RECALL,
-	     SPELL_RUNE_OF_PROTECTION,
-	     -1,
-	     -1,
-	     -1,
-	     -1),
+		/* Mordenkainen's Escapes */
+		{
+			SPELL_DOOR_CREATION,
+			SPELL_STAIR_CREATION,
+			SPELL_TELEPORT_LEVEL,
+			SPELL_WORD_OF_RECALL,
+			SPELL_RUNE_OF_PROTECTION,
+			-1,
+			-1,
+			-1,
+			-1,
+		},
 
-	/* Tenser's transformations */
-	BOOK(SPELL_HEROISM,
-	     SPELL_BERSERKER,
-	     SPELL_ENCHANT_ARMOR,
-	     SPELL_ENCHANT_WEAPON,
-	     SPELL_RECHARGE_ITEM_II,
-	     SPELL_ELEMENTAL_BRAND,
-	     -1,
-	     -1,
-	     -1),
+		/* Tenser's transformations */
+		{
+			SPELL_HEROISM,
+			SPELL_BERSERKER,
+			SPELL_ENCHANT_ARMOR,
+			SPELL_ENCHANT_WEAPON,
+			SPELL_RECHARGE_ITEM_II,
+			SPELL_ELEMENTAL_BRAND,
+			-1,
+			-1,
+			-1,
+		},
 
-	/* Kelek's Grimoire of Power */
-	BOOK(SPELL_EARTHQUAKE,
-	     SPELL_BEDLAM,
-	     SPELL_REND_SOUL,
-	     SPELL_BANISHMENT,
-	     SPELL_WORD_OF_DESTRUCTION,
-	     SPELL_MASS_BANISHMENT,
-	     SPELL_CHAOS_STRIKE,
-	     SPELL_MANA_STORM,
-	     -1),
+		/* Kelek's Grimoire of Power */
+		{
+			SPELL_EARTHQUAKE,
+			SPELL_BEDLAM,
+			SPELL_REND_SOUL,
+			SPELL_BANISHMENT,
+			SPELL_WORD_OF_DESTRUCTION,
+			SPELL_MASS_BANISHMENT,
+			SPELL_CHAOS_STRIKE,
+			SPELL_MANA_STORM,
+			-1,
+		},
 	},
 
+	/* Priest spells */
 	{
-		/*** Priest spell books ***/
-		BOOK(PRAYER_DETECT_EVIL,
-			 PRAYER_CURE_LIGHT_WOUNDS,
-			 PRAYER_BLESS,
-			 PRAYER_REMOVE_FEAR,
-			 PRAYER_CALL_LIGHT,
-			 PRAYER_FIND_TRAPS,
-			 PRAYER_DETECT_DOORS_STAIRS,
-			 PRAYER_SLOW_POISON,
-			 -1),
-		BOOK(PRAYER_SCARE_MONSTER,
-			 PRAYER_PORTAL,
-			 PRAYER_CURE_SERIOUS_WOUNDS,
-			 PRAYER_CHANT,
-			 PRAYER_SANCTUARY,
-			 PRAYER_SATISFY_HUNGER,
-			 PRAYER_REMOVE_CURSE,
-			 PRAYER_RESIST_HEAT_COLD,
-			 -1),
-		BOOK(PRAYER_NEUTRALIZE_POISON,
-			 PRAYER_ORB_OF_DRAINING,
-			 PRAYER_CURE_CRITICAL_WOUNDS,
-			 PRAYER_SENSE_INVISIBLE,
-			 PRAYER_PROTECTION_FROM_EVIL,
-			 PRAYER_EARTHQUAKE,
-			 PRAYER_SENSE_SURROUNDINGS,
-			 PRAYER_CURE_MORTAL_WOUNDS,
-			 PRAYER_TURN_UNDEAD),
-		BOOK(PRAYER_PRAYER,
-			 PRAYER_DISPEL_UNDEAD,
-			 PRAYER_HEAL,
-			 PRAYER_DISPEL_EVIL,
-			 PRAYER_GLYPH_OF_WARDING,
-			 PRAYER_HOLY_WORD,
-			 -1,
-			 -1,
-			 -1),
-		BOOK(PRAYER_BLINK,
-			 PRAYER_TELEPORT_SELF,
-			 PRAYER_TELEPORT_OTHER,
-			 PRAYER_TELEPORT_LEVEL,
-			 PRAYER_WORD_OF_RECALL,
-			 PRAYER_ALTER_REALITY,
-			 -1,
-			 -1,
-			 -1),
-		BOOK(PRAYER_DETECT_MONSTERS,
-			 PRAYER_DETECTION,
-			 PRAYER_PERCEPTION,
-			 PRAYER_PROBING,
-			 PRAYER_CLAIRVOYANCE,
-			 -1,
-			 -1,
-			 -1,
-			 -1),
-		BOOK(PRAYER_CURE_SERIOUS_WOUNDS2,
-			 PRAYER_CURE_MORTAL_WOUNDS2,
-			 PRAYER_HEALING,
-			 PRAYER_RESTORATION,
-			 PRAYER_REMEMBRANCE,
-			 -1,
-			 -1,
-			 -1,
-			 -1),
-		BOOK(PRAYER_UNBARRING_WAYS,
-			 PRAYER_RECHARGING,
-			 PRAYER_DISPEL_CURSE,
-			 PRAYER_ENCHANT_WEAPON,
-			 PRAYER_ENCHANT_ARMOUR,
-			 PRAYER_ELEMENTAL_BRAND,
-			 -1,
-			 -1,
-			 -1),
-		BOOK(PRAYER_DISPEL_UNDEAD2,
-			 PRAYER_DISPEL_EVIL2,
-			 PRAYER_BANISH_EVIL,
-			 PRAYER_WORD_OF_DESTRUCTION,
-			 PRAYER_ANNIHILATION,
-			 -1,
-			 -1,
-			 -1,
-			 -1)
+		/* Beginners Handbook */
+		{
+			PRAYER_DETECT_EVIL,
+			PRAYER_CURE_LIGHT_WOUNDS,
+			PRAYER_BLESS,
+			PRAYER_REMOVE_FEAR,
+			PRAYER_CALL_LIGHT,
+			PRAYER_FIND_TRAPS,
+			PRAYER_DETECT_DOORS_STAIRS,
+			PRAYER_SLOW_POISON,
+			-1,
+		},
+
+		/* Words of Wisdom */
+		{
+			PRAYER_SCARE_MONSTER,
+			PRAYER_PORTAL,
+			PRAYER_CURE_SERIOUS_WOUNDS,
+			PRAYER_CHANT,
+			PRAYER_SANCTUARY,
+			PRAYER_SATISFY_HUNGER,
+			PRAYER_REMOVE_CURSE,
+			PRAYER_RESIST_HEAT_COLD,
+			-1,
+		},
+
+		/* Chants and Blessings */
+		{
+			PRAYER_NEUTRALIZE_POISON,
+			PRAYER_ORB_OF_DRAINING,
+			PRAYER_CURE_CRITICAL_WOUNDS,
+			PRAYER_SENSE_INVISIBLE,
+			PRAYER_PROTECTION_FROM_EVIL,
+			PRAYER_EARTHQUAKE,
+			PRAYER_SENSE_SURROUNDINGS,
+			PRAYER_CURE_MORTAL_WOUNDS,
+			PRAYER_TURN_UNDEAD,
+		},
+
+		/* Exorcism and Dispelling */
+		{
+			PRAYER_PRAYER,
+			PRAYER_DISPEL_UNDEAD,
+			PRAYER_HEAL,
+			PRAYER_DISPEL_EVIL,
+			PRAYER_GLYPH_OF_WARDING,
+			PRAYER_HOLY_WORD,
+			-1,
+			-1,
+			-1,
+		},
+
+		/* Ethereal openings */
+		{
+			PRAYER_BLINK,
+			PRAYER_TELEPORT_SELF,
+			PRAYER_TELEPORT_OTHER,
+			PRAYER_TELEPORT_LEVEL,
+			PRAYER_WORD_OF_RECALL,
+			PRAYER_ALTER_REALITY,
+			-1,
+			-1,
+			-1,
+		},
+
+		/* Godly Insights */
+		{
+			PRAYER_DETECT_MONSTERS,
+			PRAYER_DETECTION,
+			PRAYER_PERCEPTION,
+			PRAYER_PROBING,
+			PRAYER_CLAIRVOYANCE,
+			-1,
+			-1,
+			-1,
+			-1,
+		},
+
+		/* Purifications and Healing */
+		{
+			PRAYER_CURE_SERIOUS_WOUNDS2,
+			PRAYER_CURE_MORTAL_WOUNDS2,
+			PRAYER_HEALING,
+			PRAYER_RESTORATION,
+			PRAYER_REMEMBRANCE,
+			-1,
+			-1,
+			-1,
+			-1,
+		},
+
+		/* Holy Infusions */
+		{
+			PRAYER_UNBARRING_WAYS,
+			PRAYER_RECHARGING,
+			PRAYER_DISPEL_CURSE,
+			PRAYER_ENCHANT_WEAPON,
+			PRAYER_ENCHANT_ARMOUR,
+			PRAYER_ELEMENTAL_BRAND,
+			-1,
+			-1,
+			-1,
+		},
+
+		/* Wrath of God */
+		{
+			PRAYER_DISPEL_UNDEAD2,
+			PRAYER_DISPEL_EVIL2,
+			PRAYER_BANISH_EVIL,
+			PRAYER_WORD_OF_DESTRUCTION,
+			PRAYER_ANNIHILATION,
+			-1,
+			-1,
+			-1,
+			-1,
+		}
 	}
 };
 
@@ -534,6 +583,9 @@ int get_spell_index(const object_type *o_ptr, int index)
 
 	int spell_type;
 
+	/* Check bounds */
+	if ((index < 0) || (index >= SPELLS_PER_BOOK)) return (-1);
+	if ((sval < 0) || (sval >= BOOKS_PER_REALM)) return (-1);
 
 	/* Mage or priest spells? */
 	if (cp_ptr->spell_book == TV_MAGIC_BOOK)
@@ -541,23 +593,7 @@ int get_spell_index(const object_type *o_ptr, int index)
 	else
 		spell_type = 1;
 
-	/* Extract spells */
-	for (spell = 0; spell < PY_MAX_SPELLS; spell++)
-	{
-		/* Check for this spell */
-		if ((spell < 32) ?
-		    (spell_flags[spell_type][sval][0] & (1L << spell)) :
-		    (spell_flags[spell_type][sval][1] & (1L << (spell - 32))))
-		{
-			/* Found it */
-			if (index == num) return (spell);
-
-			num++;
-		}
-	}
-
-	/* No spell */
-	return (-1);
+	return spell_list[spell_type][sval][index];
 }
 
 
@@ -980,8 +1016,7 @@ static bool cast_mage_spell(int spell)
 
 		case SPELL_RECHARGE_ITEM_I:
 		{
-			(void)recharge(2 + plev / 5);
-			break;
+			return recharge(2 + plev / 5);
 		}
 
 		case SPELL_WONDER: /* wonder */
@@ -1000,8 +1035,7 @@ static bool cast_mage_spell(int spell)
 
 		case SPELL_IDENTIFY:
 		{
-			(void)ident_spell();
-			break;
+			return ident_spell();
 		}
 
 		case SPELL_MASS_SLEEP:
@@ -1034,8 +1068,7 @@ static bool cast_mage_spell(int spell)
 
 		case SPELL_RECHARGE_ITEM_II: /* greater recharging */
 		{
-			recharge(50 + plev);
-			break;
+			return recharge(50 + plev);
 		}
 
 		case SPELL_TELEPORT_OTHER:
@@ -1067,7 +1100,7 @@ static bool cast_mage_spell(int spell)
 
 		case SPELL_BANISHMENT:
 		{
-			(void)banishment();
+			return banishment();
 			break;
 		}
 
@@ -1188,8 +1221,7 @@ static bool cast_mage_spell(int spell)
 
 		case SPELL_ELEMENTAL_BRAND: /* elemental brand */
 		{
-			(void)brand_ammo();
-			break;
+			return brand_ammo();
 		}
 
 		case SPELL_RESIST_POISON:
@@ -1273,15 +1305,13 @@ static bool cast_mage_spell(int spell)
 
 		case SPELL_ENCHANT_ARMOR: /* enchant armor */
 		{
-			(void)enchant_spell(0, 0, rand_int(3) + plev / 20);
-			break;
+			return enchant_spell(0, 0, rand_int(3) + plev / 20);
 		}
 
 		case SPELL_ENCHANT_WEAPON: /* enchant weapon */
 		{
-			(void)enchant_spell(rand_int(4) + plev / 20,
-			                    rand_int(4) + plev / 20, 0);
-			break;
+			return enchant_spell(rand_int(4) + plev / 20,
+			                     rand_int(4) + plev / 20, 0);
 		}
 	}
 
@@ -1520,8 +1550,7 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_PERCEPTION:
 		{
-			(void)ident_spell();
-			break;
+			return ident_spell();
 		}
 
 		case PRAYER_PROBING:
@@ -1618,8 +1647,7 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_RECHARGING:
 		{
-			(void)recharge(15);
-			break;
+			return recharge(15);
 		}
 
 		case PRAYER_DISPEL_CURSE:
@@ -1630,14 +1658,12 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_ENCHANT_WEAPON:
 		{
-			(void)enchant_spell(rand_int(4) + 1, rand_int(4) + 1, 0);
-			break;
+			return enchant_spell(rand_int(4) + 1, rand_int(4) + 1, 0);
 		}
 
 		case PRAYER_ENCHANT_ARMOUR:
 		{
-			(void)enchant_spell(0, 0, rand_int(3) + 2);
-			break;
+			return enchant_spell(0, 0, rand_int(3) + 2);
 		}
 
 		case PRAYER_ELEMENTAL_BRAND:

@@ -474,18 +474,6 @@ void player_turn_hook(void)
 }
 
 
-void game_turn_hook(void)
-{
-	call_hook("game_turn", "", "");
-}
-
-
-void process_world_hook(void)
-{
-	call_hook("process_world", "", "");
-}
-
-
 bool process_command_hook(int command)
 {
 	int result = 0;

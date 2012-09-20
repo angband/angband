@@ -15,7 +15,7 @@ endif
 
 install-data-hook:
 if SET_GID
-	chown -R root.@GAMEGROUP@ "$(DESTDIR)$(angbanddir)"
+	chown -R root:@GAMEGROUP@ "$(DESTDIR)$(angbanddir)"
 	chmod -R 070 "$(DESTDIR)$(angbanddir)"
 endif
 

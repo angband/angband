@@ -242,7 +242,7 @@ uninstall-am: uninstall-angbandDATA uninstall-info-am
 
 
 install-data-hook:
-@SET_GID_TRUE@	chown -R root.@GAMEGROUP@ "$(DESTDIR)$(angbanddir)"
+@SET_GID_TRUE@	chown -R root:@GAMEGROUP@ "$(DESTDIR)$(angbanddir)"
 @SET_GID_TRUE@	chmod -R 070 "$(DESTDIR)$(angbanddir)"
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

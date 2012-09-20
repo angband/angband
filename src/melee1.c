@@ -157,6 +157,7 @@ bool make_attack_normal(int m_idx)
 	{
 		bool visible = FALSE;
 		bool obvious = FALSE;
+		bool do_break = FALSE;
 
 		int power = 0;
 		int damage = 0;
@@ -509,19 +510,6 @@ bool make_attack_normal(int m_idx)
 
 								/* Uncharge */
 								o_ptr->pval = 0;
-							}
-						}
-
-						/* Drain rods */
-						else if (o_ptr->tval == TV_ROD)
-						{
-							/* (Partially) charged rods */
-							if (o_ptr->timeout < o_ptr->pval)
-							{
-								drained = (o_ptr->pval - o_ptr->timeout) / 30;
-
-								/* Uncharge */
-								o_ptr->timeout = o_ptr->pval;
 							}
 						}
 
@@ -1033,7 +1021,18 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Radius 8 earthquake centered at the monster */
-					if (damage > 23) earthquake(m_ptr->fy, m_ptr->fx, 8);
+					if (damage > 23)
+					{
+						int px_old = p_ptr->px;
+						int py_old = p_ptr->py;
+						
+						earthquake(m_ptr->fy, m_ptr->fx, 8);
+
+						/* Stop the blows if the player is pushed away */
+						if ((px_old != p_ptr->px) ||
+						    (py_old != p_ptr->py))
+						    do_break = TRUE;
+					}
 
 					break;
 				}
@@ -1293,6 +1292,9 @@ bool make_attack_normal(int m_idx)
 				}
 			}
 		}
+
+		/* Skip the other blows if necessary */
+		if (do_break) break;
 	}
 
 

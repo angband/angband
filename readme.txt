@@ -1,7 +1,7 @@
 
 
               **************************************************
-              **   Angband 3.0.4   **   The Pits of Angband   **
+              **   Angband 3.0.5   **   The Pits of Angband   **
               **************************************************
 
            Based on Moria:   Copyright (c) 1985 Robert Alan Koeneke
@@ -24,7 +24,7 @@
 
 === General Info ===
 
-This is the README file for Angband 3.0.4.
+This is the README file for Angband 3.0.5.
 
 Angband is a "graphical" dungeon adventure game using textual characters
 to represent the walls and floors of a dungeon and the inhabitants therein,

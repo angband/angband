@@ -247,7 +247,7 @@ void display_koff(int k_idx)
 
 
 		/* Extract spells */
-		for (i = 0; i < 9; i++)
+		for (i = 0; i < SPELLS_PER_BOOK; i++)
 		{
 			spell = get_spell_index(i_ptr, i);
 
@@ -315,7 +315,7 @@ static int get_spell(const object_type *o_ptr, cptr prompt, bool known)
 #endif /* ALLOW_REPEAT */
 
 	/* Extract spells */
-	for (i = 0; i < 9; i++)
+	for (i = 0; i < SPELLS_PER_BOOK; i++)
 	{
 		spell = get_spell_index(o_ptr, i);
 
@@ -468,7 +468,7 @@ void do_cmd_browse_aux(const object_type *o_ptr)
 	handle_stuff();
 
 	/* Extract spells */
-	for (i = 0; i < 9; i++)
+	for (i = 0; i < SPELLS_PER_BOOK; i++)
 	{
 		spell = get_spell_index(o_ptr, i);
 
@@ -656,7 +656,7 @@ void do_cmd_study(void)
 		int gift = -1;
 
 		/* Extract spells */
-		for (i = 0; i < 9; i++)
+		for (i = 0; i < SPELLS_PER_BOOK; i++)
 		{
 			spell = get_spell_index(o_ptr, i);
 

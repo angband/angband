@@ -3125,7 +3125,7 @@ static void do_cmd_knowledge_uniques(void)
 	my_fclose(fff);
 
 	/* Construct header line */
-	sprintf(header, "Uniques: %d known, %d killed", n, killed);
+	strnfmt(header, sizeof(header), "Uniques: %d known, %d killed", n, killed);
 
 	/* Display the file contents */
 	show_file(file_name, header, 0, 0);

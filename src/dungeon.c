@@ -545,8 +545,6 @@ static void process_world(void)
 	/* Every 10 game turns */
 	if (turn % 10) return;
 
-	/* Event -- process world */
-	process_world_hook();
 
 	/*** Check the Time and Load ***/
 
@@ -679,14 +677,12 @@ static void process_world(void)
 
 	/*** Damage over Time ***/
 
-#ifndef USE_SCRIPT
 	/* Take damage from poison */
 	if (p_ptr->poisoned)
 	{
 		/* Take damage */
 		take_hit(1, "poison");
 	}
-#endif /* USE_SCRIPT */
 
 	/* Take damage from cuts */
 	if (p_ptr->cut)
@@ -948,7 +944,6 @@ static void process_world(void)
 
 	/*** Poison and Stun and Cut ***/
 
-#ifndef USE_SCRIPT
 	/* Poison */
 	if (p_ptr->poisoned)
 	{
@@ -957,7 +952,6 @@ static void process_world(void)
 		/* Apply some healing */
 		(void)set_poisoned(p_ptr->poisoned - adjust);
 	}
-#endif /* USE_SCRIPT */
 
 	/* Stun */
 	if (p_ptr->stun)
@@ -2481,27 +2475,6 @@ static void dungeon(void)
 		if (o_cnt + 32 < o_max) compact_objects(0);
 
 
-		/*** Apply energy ***/
-
-		/* Give the player some energy */
-		p_ptr->energy += extract_energy[p_ptr->pspeed];
-
-		/* Give energy to all monsters */
-		for (i = mon_max - 1; i >= 1; i--)
-		{
-			/* Access the monster */
-			m_ptr = &mon_list[i];
-
-			/* Ignore "dead" monsters */
-			if (!m_ptr->r_idx) continue;
-
-			/* Give this monster some energy */
-			m_ptr->energy += extract_energy[m_ptr->mspeed];
-		}
-
-		/* Event -- game turn */
-		game_turn_hook();
-
 		/* Can the player move? */
 		while ((p_ptr->energy >= 100) && !p_ptr->leaving)
 		{
@@ -2588,6 +2561,24 @@ static void dungeon(void)
 		if (p_ptr->leaving) break;
 
 
+		/*** Apply energy ***/
+
+		/* Give the player some energy */
+		p_ptr->energy += extract_energy[p_ptr->pspeed];
+
+		/* Give energy to all monsters */
+		for (i = mon_max - 1; i >= 1; i--)
+		{
+			/* Access the monster */
+			m_ptr = &mon_list[i];
+
+			/* Ignore "dead" monsters */
+			if (!m_ptr->r_idx) continue;
+
+			/* Give this monster some energy */
+			m_ptr->energy += extract_energy[m_ptr->mspeed];
+		}
+
 		/* Count game turns */
 		turn++;
 	}
@@ -2607,7 +2598,7 @@ static void process_some_user_pref_files(void)
 	(void)process_pref_file("user.prf");
 
 	/* Get the "PLAYER.prf" filename */
-	sprintf(buf, "%s.prf", op_ptr->base_name);
+	(void)strnfmt(buf, sizeof(buf), "%s.prf", op_ptr->base_name);
 
 	/* Process the "PLAYER.prf" file */
 	(void)process_pref_file(buf);

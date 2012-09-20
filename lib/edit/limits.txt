@@ -11,7 +11,7 @@
 
 # Version stamp (required)
 
-V:3.0.4
+V:3.0.5
 
 
 # Maximum number of feature types

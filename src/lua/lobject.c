@@ -1,5 +1,5 @@
 /*
-** $Id: lobject.c,v 1.2 2003/08/10 11:43:30 rr9 Exp $
+** $Id: lobject.c,v 1.3 2004/05/22 10:57:34 rr9 Exp $
 ** Some generic functions over Lua objects
 ** See Copyright Notice in lua.h
 */
@@ -23,7 +23,7 @@
 
 /* function to convert a string to a lua_Number */
 #ifndef lua_str2number
-#define lua_str2number(s,p)     strtod((s), (p))
+#define lua_str2number(s,p)     strtol((s), (p), 0)
 #endif
 
 

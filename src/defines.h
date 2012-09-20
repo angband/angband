@@ -47,7 +47,7 @@
 /*
  * Current version string
  */
-#define VERSION_STRING	"3.0.4"
+#define VERSION_STRING	"3.0.5"
 
 
 /*
@@ -55,7 +55,7 @@
  */
 #define VERSION_MAJOR	3
 #define VERSION_MINOR	0
-#define VERSION_PATCH	4
+#define VERSION_PATCH	5
 #define VERSION_EXTRA	0
 
 
@@ -372,6 +372,11 @@
  * Maximum number of players spells
  */
 #define PY_MAX_SPELLS 64
+
+/*
+ * Number of spells per book
+ */
+#define SPELLS_PER_BOOK 9
 
 
 /*
@@ -3002,6 +3007,7 @@
 #define GRAPHICS_ORIGINAL       1
 #define GRAPHICS_ADAM_BOLT      2
 #define GRAPHICS_DAVID_GERVAIS  3
+#define GRAPHICS_PSEUDO         4
 
 
 /*

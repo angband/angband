@@ -3217,6 +3217,12 @@ static void term_data_link(int i)
 	/* Use a "software" cursor */
 	td->t->soft_cursor = TRUE;
 
+	/*
+	 * HACK - We have an "icky" lower right corner, since
+	 * the window resize control is placed there
+	 */
+	td->t->icky_corner = TRUE;
+
 	/* Erase with "white space" */
 	td->t->attr_blank = TERM_WHITE;
 	td->t->char_blank = ' ';
@@ -3551,8 +3557,10 @@ static void cf_load_prefs()
 	/* Any of the above failed */
 	if (!ok)
 	{
+#if 0
 		/* This may be the first run */
 		mac_warning("Preferences are not found.");
+#endif /* 0 */
 
 		/* Ignore the rest */
 		return;

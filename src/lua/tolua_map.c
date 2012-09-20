@@ -3,7 +3,7 @@
 ** Written by Waldemar Celes
 ** TeCGraf/PUC-Rio
 ** Apr 2003
-** $Id: tolua_map.c,v 1.1 2003/08/10 11:43:31 rr9 Exp $
+** $Id: tolua_map.c,v 1.2 2004/05/14 20:03:03 rr9 Exp $
 */
 
 /* This code is free software; you can redistribute it and/or modify it. 
@@ -19,7 +19,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
 
 /* Create metatable

@@ -404,6 +404,9 @@ static u16b image_random(void)
  */
 bool feat_supports_lighting(int feat)
 {
+	/* Pseudo graphics don't support lighting */
+	if (use_graphics == GRAPHICS_PSEUDO) return FALSE;
+
 	if ((use_graphics != GRAPHICS_DAVID_GERVAIS) &&
 	    (feat >= FEAT_TRAP_HEAD) && (feat <= FEAT_TRAP_TAIL))
 	{
@@ -446,6 +449,7 @@ static void special_lighting_floor(byte *a, char *c, int info)
 			switch (use_graphics)
 			{
 				case GRAPHICS_NONE:
+				case GRAPHICS_PSEUDO:
 					/* Use "yellow" */
 					if (*a == TERM_WHITE) *a = TERM_YELLOW;
 					break;
@@ -466,6 +470,7 @@ static void special_lighting_floor(byte *a, char *c, int info)
 		switch (use_graphics)
 		{
 			case GRAPHICS_NONE:
+			case GRAPHICS_PSEUDO:
 				/* Use "dark gray" */
 				if (*a == TERM_WHITE) *a = TERM_L_DARK;
 				break;
@@ -482,6 +487,7 @@ static void special_lighting_floor(byte *a, char *c, int info)
 		switch (use_graphics)
 		{
 			case GRAPHICS_NONE:
+			case GRAPHICS_PSEUDO:
 				/* Use "gray" */
 				if (*a == TERM_WHITE) *a = TERM_SLATE;
 				break;
@@ -508,6 +514,7 @@ static void special_lighting_wall(byte *a, char *c, int feat, int info)
 		switch (use_graphics)
 		{
 			case GRAPHICS_NONE:
+			case GRAPHICS_PSEUDO:
 				/* Use "dark gray" */
 				if (*a == TERM_WHITE) *a = TERM_L_DARK;
 				break;
@@ -524,6 +531,7 @@ static void special_lighting_wall(byte *a, char *c, int feat, int info)
 		switch (use_graphics)
 		{
 			case GRAPHICS_NONE:
+			case GRAPHICS_PSEUDO:
 				/* Use "gray" */
 				if (*a == TERM_WHITE) *a = TERM_SLATE;
 				break;

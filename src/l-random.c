@@ -1,6 +1,6 @@
 /*
 ** Lua binding: random
-** Generated automatically by tolua 5.0a on Fri Feb 27 21:42:04 2004.
+** Generated automatically by tolua 5.0a on Sun May 23 19:11:35 2004.
 */
 
 #ifndef __cplusplus

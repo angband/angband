@@ -3,7 +3,7 @@
 #
 # This file is used by Angband (when it was compiled using "main-gcu.c")
 # to specify simple attr/char remappings using the special Curses "ACS"
-# chracters.
+# characters.
 #
 
 #

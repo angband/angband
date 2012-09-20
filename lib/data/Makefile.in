@@ -257,7 +257,7 @@ install-data-hook:
 @SET_GID_TRUE@	  touch "$(DESTDIR)$(angbanddir)/shop_own.raw" && \
 @SET_GID_TRUE@	  touch "$(DESTDIR)$(angbanddir)/terrain.raw" && \
 @SET_GID_TRUE@	  touch "$(DESTDIR)$(angbanddir)/vault.raw" && \
-@SET_GID_TRUE@	  chown -R root.@GAMEGROUP@ "$(DESTDIR)$(angbanddir)" && \
+@SET_GID_TRUE@	  chown -R root:@GAMEGROUP@ "$(DESTDIR)$(angbanddir)" && \
 @SET_GID_TRUE@	  chmod -R g+w "$(DESTDIR)$(angbanddir)" ;\
 @SET_GID_TRUE@	fi
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

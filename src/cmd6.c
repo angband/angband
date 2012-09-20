@@ -379,15 +379,6 @@ void do_cmd_use_staff(void)
 		o_ptr = &o_list[0 - item];
 	}
 
-
-	/* Mega-Hack -- refuse to use a pile from the ground */
-	if ((item < 0) && (o_ptr->number > 1))
-	{
-		msg_print("You must first pick up the staffs.");
-		return;
-	}
-
-
 	/* Take a turn */
 	p_ptr->energy_use = 100;
 
@@ -529,15 +520,6 @@ void do_cmd_aim_wand(void)
 		o_ptr = &o_list[0 - item];
 	}
 
-
-	/* Mega-Hack -- refuse to aim a pile from the ground */
-	if ((item < 0) && (o_ptr->number > 1))
-	{
-		msg_print("You must first pick up the wands.");
-		return;
-	}
-
-
 	/* Aim the wand */
 	if (!use_object(o_ptr, &ident)) return;
 
@@ -616,14 +598,6 @@ void do_cmd_zap_rod(void)
 	else
 	{
 		o_ptr = &o_list[0 - item];
-	}
-
-
-	/* Mega-Hack -- refuse to zap a pile from the ground */
-	if ((item < 0) && (o_ptr->number > 1))
-	{
-		msg_print("You must first pick up the rods.");
-		return;
 	}
 
 	/* Zap the rod */

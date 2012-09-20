@@ -16,7 +16,7 @@ endif
 install-data-hook:
 if SET_GID
 	touch "$(DESTDIR)$(angbanddir)/scores.raw"
-	chown -R root.@GAMEGROUP@ "$(DESTDIR)$(angbanddir)"
+	chown -R root:@GAMEGROUP@ "$(DESTDIR)$(angbanddir)"
 	chmod -R g+w "$(DESTDIR)$(angbanddir)"
 endif
 

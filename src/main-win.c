@@ -266,14 +266,7 @@
 #endif /* USE_SOUND */
 
 #include <commdlg.h>
-
-/*
- * HTML-Help requires htmlhelp.h and htmlhelp.lib from Microsoft's
- * HTML Workshop < msdn.microsoft.com/workshop/author/htmlhelp/ >.
- */
-#ifdef HTML_HELP
-#include <htmlhelp.h>
-#endif /* HTML_HELP */
+#include <shellapi.h>
 
 /*
  * Include the support for loading bitmaps
@@ -3315,19 +3308,7 @@ static void display_help(cptr filename)
 
 	if (check_file(tmp))
 	{
-#ifdef HTML_HELP
-
-		HtmlHelp(data[0].w, tmp, HH_DISPLAY_TOPIC, 0);
-
-#else /* HTML_HELP */
-
-		char buf[1024];
-
-		sprintf(buf, "winhelp.exe %s", tmp);
-		WinExec(buf, SW_NORMAL);
-
-#endif /* HTML_HELP */
-
+		ShellExecute(data[0].w, "open", tmp, NULL, NULL, SW_SHOWNORMAL);
 	}
 	else
 	{

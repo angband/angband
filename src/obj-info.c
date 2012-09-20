@@ -11,40 +11,59 @@
 #include "angband.h"
 
 
+/* TRUE if a paragraph break should be output before next p_text_out() */
+static bool new_paragraph = FALSE;
+
+
+static void p_text_out(cptr str)
+{
+	if (new_paragraph)
+	{
+		text_out("\n\n   ");
+		new_paragraph = FALSE;
+	}
+
+	text_out(str);
+}
+
+
 static void output_list(cptr list[], int n)
 {
 	int i;
 
+	char *conjunction = "and ";
+	if (n < 0)
+	{
+		n = -n;
+		conjunction = "or ";
+	}
+
 	for (i = 0; i < n; i++)
 	{
-		text_out(list[i]);
-
-		if (i < (n - 2))
+		if (i != 0)
 		{
-			text_out(", ");
+			p_text_out((i == 1 && i == n - 1) ? " " : ", ");
+			if (i == n - 1)
+				p_text_out(conjunction);
 		}
-		else if (i < (n - 1))
-		{
-			if (n > 2) text_out(",");
 
-			text_out(" and ");
-		}
+		p_text_out(list[i]);
 	}
 }
 
 
 static void output_desc_list(cptr intro, cptr list[], int n)
 {
-	if (n > 0)
+	if (n != 0)
 	{
 		/* Output intro */
-		text_out(intro);
+		p_text_out(intro);
 
 		/* Output list */
 		output_list(list, n);
 
 		/* Output end */
-		text_out(".  ");
+		p_text_out(".  ");
 	}
 }
 
@@ -75,18 +94,18 @@ static bool describe_stats(const object_type *o_ptr, u32b f1)
 	/* Shorten to "all stats", if appropriate. */
 	if (cnt == A_MAX)
 	{
-		text_out(format("It %s all your stats", (o_ptr->pval > 0 ? "increases" : "decreases")));
+		p_text_out(format("It %s all your stats", (o_ptr->pval > 0 ? "increases" : "decreases")));
 	}
 	else
 	{
-		text_out(format("It %s your ", (o_ptr->pval > 0 ? "increases" : "decreases")));
+		p_text_out(format("It %s your ", (o_ptr->pval > 0 ? "increases" : "decreases")));
 
 		/* Output list */
 		output_list(descs, cnt);
 	}
 
 	/* Output end */
-	text_out(format(" by %i.  ", pval));
+	p_text_out(format(" by %i.  ", pval));
 
 	/* We found something */
 	return (TRUE);
@@ -116,13 +135,13 @@ static bool describe_secondary(const object_type *o_ptr, u32b f1)
 	if (!cnt) return (FALSE);
 
 	/* Start */
-	text_out(format("It %s your ", (o_ptr->pval > 0 ? "increases" : "decreases")));
+	p_text_out(format("It %s your ", (o_ptr->pval > 0 ? "increases" : "decreases")));
 
 	/* Output list */
 	output_list(descs, cnt);
 
 	/* Output end */
-	text_out(format(" by %i.  ", pval));
+	p_text_out(format(" by %i.  ", pval));
 
 	/* We found something */
 	return (TRUE);
@@ -170,26 +189,26 @@ static bool describe_slay(const object_type *o_ptr, u32b f1)
 	if (slcnt)
 	{
 		/* Output intro */
-		text_out("It slays ");
+		p_text_out("It slays ");
 
 		/* Output list */
 		output_list(slays, slcnt);
 
 		/* Output end (if needed) */
-		if (!excnt) text_out(".  ");
+		if (!excnt) p_text_out(".  ");
 	}
 
 	if (excnt)
 	{
 		/* Output intro */
-		if (slcnt) text_out(", and it is especially deadly against ");
-		else text_out("It is especially deadly against ");
+		if (slcnt) p_text_out(", and is especially deadly against ");
+		else p_text_out("It is especially deadly against ");
 
 		/* Output list */
 		output_list(execs, excnt);
 
 		/* Output end */
-		text_out(".  ");
+		p_text_out(".  ");
 	}
 
 	/* We are done here */
@@ -312,9 +331,9 @@ static bool describe_ignores(const object_type *o_ptr, u32b f3)
 
 	/* Describe ignores */
 	if (n == 4)
-		text_out("It cannot be harmed by the elements.  ");
+		p_text_out("It cannot be harmed by the elements.  ");
 	else
-		output_desc_list("It cannot be harmed by ", list, n);
+		output_desc_list("It cannot be harmed by ", list, -n);
 
 	return ((n > 0) ? TRUE : FALSE);
 }
@@ -341,7 +360,7 @@ static bool describe_sustains(const object_type *o_ptr, u32b f2)
 
 	/* Describe immunities */
 	if (n == A_MAX)
-		text_out("It sustains all your stats.  ");
+		p_text_out("It sustains all your stats.  ");
 	else
 		output_desc_list("It sustains your ", list, n);
 
@@ -398,26 +417,26 @@ static bool describe_misc_magic(const object_type *o_ptr, u32b f3)
 	if (gc)
 	{
 		/* Output intro */
-		text_out("It grants you ");
+		p_text_out("It grants you ");
 
 		/* Output list */
 		output_list(good, gc);
 
 		/* Output end (if needed) */
-		if (!bc) text_out(".  ");
+		if (!bc) p_text_out(".  ");
 	}
 
 	if (bc)
 	{
 		/* Output intro */
-		if (gc) text_out(", but it also ");
-		else text_out("It ");
+		if (gc) p_text_out(", but it also ");
+		else p_text_out("It ");
 
 		/* Output list */
 		output_list(bad, bc);
 
 		/* Output end */
-		text_out(".  ");
+		p_text_out(".  ");
 	}
 
 	/* Set "something" */
@@ -436,9 +455,9 @@ static bool describe_activation(const object_type *o_ptr, u32b f3)
 	/* Check for the activation flag */
 	if (f3 & TR3_ACTIVATE)
 	{
-		text_out("It activates for ");
+		p_text_out("It activates for ");
 		describe_item_activation(o_ptr);
-		text_out(".  ");
+		p_text_out(".  ");
 
 		return (TRUE);
 	}
@@ -476,10 +495,10 @@ bool object_info_out(const object_type *o_ptr)
 	    ((o_ptr->xtra1) || artifact_p(o_ptr)))
 	{
 		/* Hack -- Put this in a separate paragraph if screen dump */
-		if (something && text_out_hook == text_out_to_screen)
-			text_out("\n\n   ");
+		if (text_out_hook == text_out_to_screen)
+			new_paragraph = TRUE;
 
-		text_out("It might have hidden powers.");
+		p_text_out("It might have hidden powers.");
 		something = TRUE;
 	}
 
@@ -506,7 +525,7 @@ static bool screen_out_head(const object_type *o_ptr)
 	object_desc(o_name, name_size, o_ptr, TRUE, 3);
 
 	/* Print, in colour */
-	text_out_c(TERM_YELLOW, format("%^s\n\n   ", o_name));
+	text_out_c(TERM_YELLOW, format("%^s", o_name));
 
 	/* Free up the memory */
 	FREE(o_name);
@@ -515,8 +534,8 @@ static bool screen_out_head(const object_type *o_ptr)
 	if (!adult_rand_artifacts && o_ptr->name1 &&
 	    object_known_p(o_ptr) && a_info[o_ptr->name1].text)
 	{
-		text_out(a_text + a_info[o_ptr->name1].text);
-		text_out("\n\n   ");
+		p_text_out("\n\n   ");
+		p_text_out(a_text + a_info[o_ptr->name1].text);
 		has_description = TRUE;
 	}
 
@@ -525,16 +544,16 @@ static bool screen_out_head(const object_type *o_ptr)
 	{
 		if (k_info[o_ptr->k_idx].text)
 		{
-			text_out(k_text + k_info[o_ptr->k_idx].text);
-			text_out("\n\n   ");
+			p_text_out("\n\n   ");
+			p_text_out(k_text + k_info[o_ptr->k_idx].text);
 			has_description = TRUE;
 		}
 
 		/* Display an additional ego-item description */
 		if (o_ptr->name2 && object_known_p(o_ptr) && e_info[o_ptr->name2].text)
 		{
-			text_out(e_text + e_info[o_ptr->name2].text);
-			text_out("\n\n   ");
+			p_text_out("\n\n   ");
+			p_text_out(e_text + e_info[o_ptr->name2].text);
 			has_description = TRUE;
 		}
 	}
@@ -561,34 +580,16 @@ void object_info_screen(const object_type *o_ptr)
 	object_info_out_flags = object_flags_known;
 
 	/* Dump the info */
+	new_paragraph = TRUE;
 	has_info = object_info_out(o_ptr);
+	new_paragraph = FALSE;
 
 	if (!object_known_p(o_ptr))
-	{
-		if (has_info)
-			text_out("\n\n   ");
-		text_out("This item has not been identified.");
-		has_info = TRUE;
-	}
+		p_text_out("\n\n   This item has not been identified.");
 	else if (!has_description && !has_info)
-	{
-		text_out("This item does not seem to possess any special abilities.");
-	}
+		p_text_out("\n\n   This item does not seem to possess any special abilities.");
 
-	/* Descriptions end with "\n\n   ", other info does not */
-	if (has_description && !has_info)
-	{
-		/* Back up over the "   " at the beginning of the line */
-		int x, y;
-		Term_locate(&x, &y);
-		Term_gotoxy(0, y);
-	}
-	else
-	{
-		text_out("\n\n");
-	}
-
-	text_out_c(TERM_L_BLUE, "[Press any key to continue]\n");
+	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
 
 	/* Wait for input */
 	(void)inkey();

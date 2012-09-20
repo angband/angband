@@ -262,3 +262,48 @@ l-misc.c: lua/tolua l-misc.pkg
 
 l-spell.c: lua/tolua l-spell.pkg
 	lua/tolua -n spell -o l-spell.c l-spell.pkg
+
+
+PACKAGE_NAME = Angband-305
+
+dist: install install-tiles
+	mkdir disttemp
+	mkdir disttemp/Docs
+	mkdir disttemp/lib
+	mkdir disttemp/lib/apex
+	mkdir disttemp/lib/bone
+	mkdir disttemp/lib/data
+	mkdir disttemp/lib/edit
+	mkdir disttemp/lib/file
+	mkdir disttemp/lib/help
+	mkdir disttemp/lib/info
+	mkdir disttemp/lib/pref
+	mkdir disttemp/lib/save
+	mkdir disttemp/lib/script
+	mkdir disttemp/lib/user
+	mkdir disttemp/lib/xtra
+
+	cp ../readme.txt disttemp/Docs
+	cp ../changes.txt disttemp/Docs
+	cp ../Authors disttemp/Docs/Authors.txt
+	cp ../Copying disttemp/Docs/Copying.txt
+	cp ../Thanks disttemp/Docs/Thanks.txt
+
+	cp ../lib/edit/*.txt disttemp/lib/edit
+
+	cp ../lib/file/*.txt disttemp/lib/file
+
+	cp ../lib/help/*.txt disttemp/lib/help
+	cp ../lib/help/*.hlp disttemp/lib/help
+
+	cp ../lib/pref/*.prf disttemp/lib/pref
+
+	cp ../lib/script/*.lua disttemp/lib/script
+
+	cp -R -p "$(APPBNDL)" disttemp
+	$(REZ) $(RFLAGS) -o disttemp/$(APPNAME)/Contents/Resources/angband.rsrc $(RESSRCS)
+	$(SETFILE) -a B disttemp/$(APPNAME)
+
+	hdiutil create -fs HFS+ -volname $(PACKAGE_NAME) -srcfolder disttemp "$(PACKAGE_NAME)-osx.dmg"
+
+	rm -rf disttemp

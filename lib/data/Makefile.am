@@ -31,7 +31,7 @@ if SET_GID
 	  touch "$(DESTDIR)$(angbanddir)/shop_own.raw" && \
 	  touch "$(DESTDIR)$(angbanddir)/terrain.raw" && \
 	  touch "$(DESTDIR)$(angbanddir)/vault.raw" && \
-	  chown -R root.@GAMEGROUP@ "$(DESTDIR)$(angbanddir)" && \
+	  chown -R root:@GAMEGROUP@ "$(DESTDIR)$(angbanddir)" && \
 	  chmod -R g+w "$(DESTDIR)$(angbanddir)" ;\
 	fi
 endif

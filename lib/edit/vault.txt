@@ -46,7 +46,7 @@
 
 # Version stamp (required)
 
-V:3.0.4
+V:3.0.5
 
 
 ### Simple Vaults (type 7) -- maximum size 44x22 ###
@@ -755,7 +755,7 @@ D:%%%%%
 
 
 N:37:Lesser vault ("Interlock")
-X:7:10:17:12
+X:7:10:12:17
 D:%%%%%%%%%%%%%%%%%
 D:%......^^^......%
 D:%.######+######.%

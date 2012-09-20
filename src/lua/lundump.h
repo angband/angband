@@ -1,5 +1,5 @@
 /*
-** $Id: lundump.h,v 1.2 2003/08/10 11:43:30 rr9 Exp $
+** $Id: lundump.h,v 1.3 2004/05/13 17:48:03 rr9 Exp $
 ** load pre-compiled Lua chunks
 ** See Copyright Notice in lua.h
 */
@@ -27,8 +27,7 @@ void luaU_print (const Proto* Main);
 #define	VERSION		0x50		/* last format change was in 5.0 */
 #define	VERSION0	0x50		/* last major  change was in 5.0 */
 
-/* a multiple of PI for testing native format */
-/* multiplying by 1E7 gives non-trivial integer values */
-#define	TEST_NUMBER	((lua_Number)3.14159265358979323846E7)
+
+#define	TEST_NUMBER	3
 
 #endif

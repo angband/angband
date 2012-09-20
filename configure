@@ -1573,7 +1573,7 @@ fi
 
 # Define the identity of the package.
  PACKAGE=angband
- VERSION=3.0.4
+ VERSION=3.0.5
 
 
 cat >>confdefs.h <<_ACEOF

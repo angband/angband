@@ -1016,10 +1016,14 @@ errr init_gcu(int argc, char **argv)
 
 #ifdef USE_GRAPHICS
 
-	/* Set graphics flag */
-	use_graphics = arg_graphics;
+	/* Set graphics */
+	if (arg_graphics)
+	{
+		use_graphics = GRAPHICS_PSEUDO;
+		ANGBAND_GRAF = "pseudo";
+	}
 
-#endif
+#endif /* USE_GRAPHICS */
 
 #ifdef A_COLOR
 

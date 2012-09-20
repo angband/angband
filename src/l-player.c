@@ -1,6 +1,6 @@
 /*
 ** Lua binding: player
-** Generated automatically by tolua 5.0a on Fri Feb 27 21:42:00 2004.
+** Generated automatically by tolua 5.0a on Sun May 23 19:11:30 2004.
 */
 
 #ifndef __cplusplus

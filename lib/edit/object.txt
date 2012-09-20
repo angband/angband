@@ -69,7 +69,7 @@
 
 # Version stamp (required)
 
-V:3.0.4
+V:3.0.5
 
 
 ##### Non-kind (contains the "pile" picture) #####
@@ -3343,7 +3343,7 @@ I:66:6:99
 W:30:0:15:5000
 A:30/8
 P:0:1d1:0:0:0
-F:EASY_KNOW
+F:EASY_KNOW | IGNORE_ELEC
 D:It detects all treasure, objects, secret doors, stairs, traps, and
 D: monsters in the immediate area.
 

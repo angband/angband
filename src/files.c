@@ -1327,17 +1327,18 @@ static void display_player_xtra_info(void)
 
 	/* Maximum depth */
 	Term_putstr(col, 14, -1, TERM_WHITE, "MaxDepth");
+
 	if (!p_ptr->max_depth)
 	{
-		strcpy(depths, "Town");
+		my_strcpy(depths, "Town", sizeof(depths));
 	}
 	else if (depth_in_feet)
 	{
-		sprintf(depths, "%d ft", p_ptr->max_depth * 50);
+		strnfmt(depths, sizeof(depths), "%d ft", p_ptr->max_depth * 50);
 	}
 	else
 	{
-		sprintf(depths, "Lev %d", p_ptr->max_depth);
+		strnfmt(depths, sizeof(depths), "Lev %d", p_ptr->max_depth);
 	}
 
 	Term_putstr(col+8, 14, -1, TERM_L_GREEN,
@@ -1351,7 +1352,7 @@ static void display_player_xtra_info(void)
 
 
 	/* Burden */
-	sprintf(buf, "%ld.%ld lbs",
+	strnfmt(buf, sizeof(buf), "%ld.%ld lbs",
 	        p_ptr->total_weight / 10L,
 	        p_ptr->total_weight % 10L);
 	Term_putstr(col, 17, -1, TERM_WHITE, "Burden");
@@ -1368,7 +1369,7 @@ static void display_player_xtra_info(void)
 	plus = p_ptr->dis_to_a;
 
 	/* Total Armor */
-	sprintf(buf, "[%d,%+d]", base, plus);
+	strnfmt(buf, sizeof(buf), "[%d,%+d]", base, plus);
 	Term_putstr(col, 10, -1, TERM_WHITE, "Armor");
 	Term_putstr(col+5, 10, -1, TERM_L_BLUE, format("%13s", buf));
 
@@ -1378,7 +1379,7 @@ static void display_player_xtra_info(void)
 	dam = p_ptr->dis_to_d;
 
 	/* Basic fighting */
-	sprintf(buf, "(%+d,%+d)", hit, dam);
+	strnfmt(buf, sizeof(buf), "(%+d,%+d)", hit, dam);
 	Term_putstr(col, 11, -1, TERM_WHITE, "Fight");
 	Term_putstr(col+5, 11, -1, TERM_L_BLUE, format("%13s", buf));
 
@@ -1395,7 +1396,7 @@ static void display_player_xtra_info(void)
 	if (object_known_p(o_ptr)) dam += o_ptr->to_d;
 
 	/* Melee attacks */
-	sprintf(buf, "(%+d,%+d)", hit, dam);
+	strnfmt(buf, sizeof(buf), "(%+d,%+d)", hit, dam);
 	Term_putstr(col, 12, -1, TERM_WHITE, "Melee");
 	Term_putstr(col+5, 12, -1, TERM_L_BLUE, format("%13s", buf));
 
@@ -1412,25 +1413,25 @@ static void display_player_xtra_info(void)
 	if (object_known_p(o_ptr)) dam += o_ptr->to_d;
 
 	/* Range attacks */
-	sprintf(buf, "(%+d,%+d)", hit, dam);
+	strnfmt(buf, sizeof(buf), "(%+d,%+d)", hit, dam);
 	Term_putstr(col, 13, -1, TERM_WHITE, "Shoot");
 	Term_putstr(col+5, 13, -1, TERM_L_BLUE, format("%13s", buf));
 
 
 	/* Blows */
-	sprintf(buf, "%d/turn", p_ptr->num_blow);
+	strnfmt(buf, sizeof(buf), "%d/turn", p_ptr->num_blow);
 	Term_putstr(col, 14, -1, TERM_WHITE, "Blows");
 	Term_putstr(col+5, 14, -1, TERM_L_BLUE, format("%13s", buf));
 
 
 	/* Shots */
-	sprintf(buf, "%d/turn", p_ptr->num_fire);
+	strnfmt(buf, sizeof(buf), "%d/turn", p_ptr->num_fire);
 	Term_putstr(col, 15, -1, TERM_WHITE, "Shots");
 	Term_putstr(col+5, 15, -1, TERM_L_BLUE, format("%13s", buf));
 
 
 	/* Infra */
-	sprintf(buf, "%d ft", p_ptr->see_infra * 10);
+	strnfmt(buf, sizeof(buf), "%d ft", p_ptr->see_infra * 10);
 	Term_putstr(col, 17, -1, TERM_WHITE, "Infra");
 	Term_putstr(col+5, 17, -1, TERM_L_BLUE, format("%13s", buf));
 
@@ -1800,13 +1801,13 @@ static void display_player_misc_info(void)
 
 	/* Hit Points */
 	put_str("HP", 7, 1);
-	sprintf(buf, "%d/%d", p_ptr->chp, p_ptr->mhp);
+	strnfmt(buf, sizeof(buf), "%d/%d", p_ptr->chp, p_ptr->mhp);
 	c_put_str(TERM_L_BLUE, buf, 7, 8);
 
 
 	/* Spell Points */
 	put_str("SP", 8, 1);
-	sprintf(buf, "%d/%d", p_ptr->csp, p_ptr->msp);
+	strnfmt(buf, sizeof(buf), "%d/%d", p_ptr->csp, p_ptr->msp);
 	c_put_str(TERM_L_BLUE, buf, 8, 8);
 }
 
@@ -1862,15 +1863,15 @@ static void display_player_stat_info(void)
 		c_put_str(TERM_L_GREEN, buf, row+i, col+5);
 
 		/* Race Bonus */
-		sprintf(buf, "%+3d", rp_ptr->r_adj[i]);
+		strnfmt(buf, sizeof(buf), "%+3d", rp_ptr->r_adj[i]);
 		c_put_str(TERM_L_BLUE, buf, row+i, col+12);
 
 		/* Class Bonus */
-		sprintf(buf, "%+3d", cp_ptr->c_adj[i]);
+		strnfmt(buf, sizeof(buf), "%+3d", cp_ptr->c_adj[i]);
 		c_put_str(TERM_L_BLUE, buf, row+i, col+16);
 
 		/* Equipment Bonus */
-		sprintf(buf, "%+3d", p_ptr->stat_add[i]);
+		strnfmt(buf, sizeof(buf), "%+3d", p_ptr->stat_add[i]);
 		c_put_str(TERM_L_BLUE, buf, row+i, col+20);
 
 		/* Resulting "modified" maximum value */
@@ -3189,19 +3190,19 @@ static void print_tomb(void)
 	center_string(buf, sizeof(buf), c_name + cp_ptr->name);
 	put_str(buf, 10, 11);
 
-	sprintf(tmp, "Level: %d", (int)p_ptr->lev);
+	strnfmt(tmp, sizeof(tmp), "Level: %d", (int)p_ptr->lev);
 	center_string(buf, sizeof(buf), tmp);
 	put_str(buf, 11, 11);
 
-	sprintf(tmp, "Exp: %ld", (long)p_ptr->exp);
+	strnfmt(tmp, sizeof(tmp), "Exp: %ld", (long)p_ptr->exp);
 	center_string(buf, sizeof(buf), tmp);
 	put_str(buf, 12, 11);
 
-	sprintf(tmp, "AU: %ld", (long)p_ptr->au);
+	strnfmt(tmp, sizeof(tmp), "AU: %ld", (long)p_ptr->au);
 	center_string(buf, sizeof(buf), tmp);
 	put_str(buf, 13, 11);
 
-	sprintf(tmp, "Killed on Level %d", p_ptr->depth);
+	strnfmt(tmp, sizeof(tmp), "Killed on Level %d", p_ptr->depth);
 	center_string(buf, sizeof(buf), tmp);
 	put_str(buf, 14, 11);
 
@@ -3210,7 +3211,7 @@ static void print_tomb(void)
 	put_str(buf, 15, 11);
 
 
-	sprintf(tmp, "%-.24s", ctime(&death_time));
+	strnfmt(tmp, sizeof(tmp), "%-.24s", ctime(&death_time));
 	center_string(buf, sizeof(buf), tmp);
 	put_str(buf, 17, 11);
 }
@@ -3335,7 +3336,7 @@ static void show_info(void)
 				o_ptr = &st_ptr->stock[i];
 
 				/* Print header, clear line */
-				sprintf(tmp_val, "%c) ", I2A(j));
+				strnfmt(tmp_val, sizeof(tmp_val), "%c) ", I2A(j));
 				prt(tmp_val, j+2, 4);
 
 				/* Get the object description */
@@ -3566,7 +3567,7 @@ static void display_scores_aux(int from, int to, int note, high_score *score)
 		/* Indicate non-top scores */
 		if (k > 0)
 		{
-			sprintf(tmp_val, "(from position %d)", place);
+			strnfmt(tmp_val, sizeof(tmp_val), "(from position %d)", place);
 			put_str(tmp_val, 0, 40);
 		}
 
@@ -3619,7 +3620,8 @@ static void display_scores_aux(int from, int to, int note, high_score *score)
 			/* Clean up standard encoded form of "when" */
 			if ((*when == '@') && strlen(when) == 9)
 			{
-				sprintf(tmp_val, "%.4s-%.2s-%.2s",
+				strnfmt(tmp_val, sizeof(tmp_val),
+				        "%.4s-%.2s-%.2s",
 				        when + 1, when + 5, when + 7);
 				when = tmp_val;
 			}
@@ -3808,37 +3810,37 @@ static errr enter_score(void)
 	strnfmt(the_score.what, sizeof(the_score.what), "%s", VERSION_STRING);
 
 	/* Calculate and save the points */
-	sprintf(the_score.pts, "%9lu", (long)total_points());
+	strnfmt(the_score.pts, sizeof(the_score.pts), "%9lu", (long)total_points());
 	the_score.pts[9] = '\0';
 
 	/* Save the current gold */
-	sprintf(the_score.gold, "%9lu", (long)p_ptr->au);
+	strnfmt(the_score.gold, sizeof(the_score.gold), "%9lu", (long)p_ptr->au);
 	the_score.gold[9] = '\0';
 
 	/* Save the current turn */
-	sprintf(the_score.turns, "%9lu", (long)turn);
+	strnfmt(the_score.turns, sizeof(the_score.turns), "%9lu", (long)turn);
 	the_score.turns[9] = '\0';
 
 	/* Save the date in standard encoded form (9 chars) */
-	strftime(the_score.day, 10, "@%Y%m%d", localtime(&death_time));
+	strftime(the_score.day, sizeof(the_score.day), "@%Y%m%d", localtime(&death_time));
 
 	/* Save the player name (15 chars) */
-	sprintf(the_score.who, "%-.15s", op_ptr->full_name);
+	strnfmt(the_score.who, sizeof(the_score.who), "%-.15s", op_ptr->full_name);
 
 	/* Save the player info XXX XXX XXX */
-	sprintf(the_score.uid, "%7u", player_uid);
-	sprintf(the_score.sex, "%c", (p_ptr->psex ? 'm' : 'f'));
-	sprintf(the_score.p_r, "%2d", p_ptr->prace);
-	sprintf(the_score.p_c, "%2d", p_ptr->pclass);
+	strnfmt(the_score.uid, sizeof(the_score.uid), "%7u", player_uid);
+	strnfmt(the_score.sex, sizeof(the_score.sex), "%c", (p_ptr->psex ? 'm' : 'f'));
+	strnfmt(the_score.p_r, sizeof(the_score.p_r), "%2d", p_ptr->prace);
+	strnfmt(the_score.p_c, sizeof(the_score.p_c), "%2d", p_ptr->pclass);
 
 	/* Save the level and such */
-	sprintf(the_score.cur_lev, "%3d", p_ptr->lev);
-	sprintf(the_score.cur_dun, "%3d", p_ptr->depth);
-	sprintf(the_score.max_lev, "%3d", p_ptr->max_lev);
-	sprintf(the_score.max_dun, "%3d", p_ptr->max_depth);
+	strnfmt(the_score.cur_lev, sizeof(the_score.cur_lev), "%3d", p_ptr->lev);
+	strnfmt(the_score.cur_dun, sizeof(the_score.cur_dun), "%3d", p_ptr->depth);
+	strnfmt(the_score.max_lev, sizeof(the_score.max_lev), "%3d", p_ptr->max_lev);
+	strnfmt(the_score.max_dun, sizeof(the_score.max_dun), "%3d", p_ptr->max_depth);
 
 	/* Save the cause of death (31 chars) */
-	sprintf(the_score.how, "%-.31s", p_ptr->died_from);
+	strnfmt(the_score.how, sizeof(the_score.how), "%-.31s", p_ptr->died_from);
 
 	/* Grab permissions */
 	safe_setuid_grab();
