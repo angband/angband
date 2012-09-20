@@ -1,0 +1,43 @@
+# File: Bosk.prf
+
+# This is an extra preference file for Bosk the Priest
+
+
+
+
+# Option-KP0 -- hack -- orb of draining
+
+A:\e\epcb
+P:^_O18\r
+
+
+# Option-Keypad -- Directed orb of draining
+
+A:\e\epcb1
+P:^_O19\r
+
+A:\e\epcb2
+P:^_O20\r
+
+A:\e\epcb3
+P:^_O21\r
+
+A:\e\epcb4
+P:^_O22\r
+
+A:\e\epcb5
+P:^_O23\r
+
+A:\e\epcb6
+P:^_O24\r
+
+A:\e\epcb7
+P:^_O25\r
+
+A:\e\epcb8
+P:^_O27\r
+
+A:\e\epcb9
+P:^_O28\r
+
+

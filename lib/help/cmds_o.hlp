@@ -1,0 +1,65 @@
+                          Original Command Summary
+             (@ is optional count, ~ is direction, ESC aborts)
+
+  a   Aim and fire a wand                 A     Activate an artifact
+  b   Browse a book                     @ B ~   Force door or bash monster
+  c ~ Close a door                        C     Full character description
+  d   Drop an item                      @ D ~   Disarm a trap
+  e   Equipment list                      E     Eat some food
+  f   Fire or throw an item               F     Fill your lamp with oil
+@ g   Stay still and get item on floor    G     Gain new spells
+  i   Inventory list                      L     Locate player on map
+@ j ~ Jam a door shut with spikes         M     Full dungeon map
+  l ~ Look in a given direction         @ R     Rest for a period
+  m   Cast a spell                        S     Toggle search mode
+@ o ~ Open a door or chest              @ T ~   Dig a tunnel
+  p   Pray a prayer                       V     Version information
+  q   Quaff a potion                    CTRL-E  Toggle choice window
+  r   Read a scroll                     CTRL-F  Repeat level feeling
+@ s   Search for traps or doors         CTRL-K  Commit suicide and quit
+  t   Take off equipment                CTRL-P  Show previous messages
+  u   Use a staff                       CTRL-R  Redraw the screen
+  w   Wear or wield something           CTRL-S  Save and don't quit
+  x   Examine current target            CTRL-X  Save and quit
+  z   Zap a rod                           =     Set options
+  {   Inscribe an object                  ~     Check artifacts
+  }   Uninscribe an object                |     Check uniques
+  <   Go up staircase                     %     Manage preference files
+  >   Go down staircase                   :     Comment messages
+@ - ~ Move with inverted pickup           @     Define macro
+  . ~ Run                                 !     Define command macro
+  *   Target monster or location          &     Change keymap
+  ?   Help                                /     Identify symbol
+
+                7  8  9
+Directions:     4     6         5 stays stationary for one move
+                1  2  3
+
+
+        To give a count to a command, type '0' followed by the count and
+then the command.  A count of 0 or no count is considered a count of 99.
+Only the commands marked with a @ above can take a count, and the command
+repitition will be stopped by the same things that stop a rest or a run.
+In particular, pressing any key will stop the repitition.  To give a count
+to a movement command, press space after the number and you will be
+prompted for the command.  Repeated searches or tunnels will end when they
+succeed, or if you are attacked.
+
+        If you enter a symbol for a monster for the / (identify character)
+command, you will be asked if you want to recall details.  If you answer
+yes, descriptions of all the monsters with that symbol that you have
+encountered will be shown.  ESCAPE stops the recall at any point.
+        
+        Any command which requires a control sequence may be entered as
+'^' and then the appropriate letter.  Press ESCAPE to abort any command
+(including look) at any point.
+
+        Some commands will prompt for a spell or an inventory item.
+Selection is by an alphabetic character.  If you enter a capital letter, a
+description will be printed and you will be given a chance to abort.
+Entering a number selects the item (if any) engraved with @n where n is
+the number.
+
+-- 
+Russ Allbery (rra@cs.stanford.edu)                            Angband 2.7.6
+        Based on the old Manual by Alexander Cutler and Andy Astrand

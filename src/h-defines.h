@@ -18,13 +18,25 @@
 #endif /* NULL */
 
 
-/* Hack */
+/*
+ * Hack -- force definition
+ */
 #ifndef O_BINARY
 # define O_BINARY 0x00
 #endif
 
+/*
+ * Hack -- force definition
+ */
+#ifndef L_SET
+# define L_SET 0
+#endif
 
-/* Some standard typed NULL pointers */
+
+
+/*
+ * Some standard typed NULL pointers
+ */
 
 #define C_NULL	((cptr)NULL)
 #define V_NULL	((vptr)NULL)

@@ -423,13 +423,13 @@ static errr Term_xtra_gcu_level(int v)
     {
         if (!active) return (1);
 
-	/* Go to normal keymap mode */
-	keymap_norm();
+        /* Go to normal keymap mode */
+        keymap_norm();
 
-	/* Restore modes */
-	nocbreak();
-	echo();
-	nl();
+        /* Restore modes */
+        nocbreak();
+        echo();
+        nl();
 
         /* Hack -- make sure the cursor is visible */
         Term_xtra(TERM_XTRA_BEVIS, -999);
@@ -458,22 +458,22 @@ static errr Term_xtra_gcu_level(int v)
     /* Resume */
     else if (v == TERM_LEVEL_HARD_OPEN)
     {
-	if (active) return (1);
+        if (active) return (1);
 
-	/* Refresh */
-	(void)touchwin(curscr);
-	(void)wrefresh(curscr);
+        /* Refresh */
+        /* (void)touchwin(curscr); */
+        /* (void)wrefresh(curscr); */
 
-	/* Restore the settings */
-	cbreak();
-	noecho();
-	nonl();
+        /* Restore the settings */
+        cbreak();
+        noecho();
+        nonl();
 
-	/* Go to angband keymap mode */
-	keymap_game();
+        /* Go to angband keymap mode */
+        keymap_game();
 
-	/* Now we are active */
-	active = TRUE;
+        /* Now we are active */
+        active = TRUE;
     }
 
     /* Success */
@@ -521,8 +521,13 @@ static void Term_nuke_gcu(term *t)
     /* Flush the curses buffer */
     (void)refresh();
 
+#ifdef SPECIAL_BSD
+    /* This moves curses to bottom right corner */
+    mvcur(curscr->cury, curscr->curx, LINES - 1, 0);
+#else
     /* This moves curses to bottom right corner */
     mvcur(curscr->_cury, curscr->_curx, LINES - 1, 0);
+#endif
 
     /* Exit curses */
     endwin();
@@ -549,8 +554,14 @@ static errr Term_xtra_gcu_check(int v)
 {
     int i;
 
+    /* Do not wait next time */
+    nodelay(stdscr, TRUE);
+
     /* Check for keypresses */
     i = getch();
+
+    /* Wait for it */
+    nodelay(stdscr, FALSE);
 
     /* Semi-Hack -- None ready */
     if (i == ERR) return (1);
@@ -569,16 +580,16 @@ static errr Term_xtra_gcu_check(int v)
  */
 static errr Term_xtra_gcu_event(int v)
 {
-    int i;
+    int i, k;
 
-    /* Wait for it */
+    /* Paranoia -- Wait for it */
     nodelay(stdscr, FALSE);
 
     /* Get a keypress */
     i = getch();
 
-    /* Do not wait next time */
-    nodelay(stdscr, TRUE);
+    /* Hack -- allow graceful "suspend" */
+    for (k = 0; (k < 10) && (i == ERR); k++) i = getch();
 
     /* Semi-Hack -- handle broken input */
     if (i == ERR) exit_game_panic();
@@ -600,7 +611,7 @@ static errr Term_xtra_gcu_check(int v)
 {
     int i, arg;
     char buf[2];
-    
+
     /* Get the current flags for stdin */
     arg = fcntl(0, F_GETFL, 0);
 
@@ -639,7 +650,7 @@ static errr Term_xtra_gcu_event(int v)
     i = read(0, buf, 1);
 
     /* Hack -- Handle "errors" */
-    if ((i <= 0) && (errno != EINTR)) exit_game_panic(); 
+    if ((i <= 0) && (errno != EINTR)) exit_game_panic();
 
     /* Enqueue valid keypresses */
     if ((i == 1) && (buf[0])) Term_keypress(buf[0]);
@@ -660,30 +671,30 @@ static errr Term_xtra_gcu(int n, int v)
     /* Analyze the request */
     switch (n)
     {
-	/* Make a noise */
-	case TERM_XTRA_NOISE: (void)write(1, "\007", 1); return (0);
+        /* Make a noise */
+        case TERM_XTRA_NOISE: (void)write(1, "\007", 1); return (0);
 
-	/* Flush the Curses buffer */
-	case TERM_XTRA_FLUSH: (void)refresh(); return (0);
+        /* Flush the Curses buffer */
+        case TERM_XTRA_FLUSH: (void)refresh(); return (0);
 
 #ifdef USE_CURS_SET
 
-	/* Make the cursor invisible */
-	case TERM_XTRA_INVIS: curs_set(0); return (0);
+        /* Make the cursor invisible */
+        case TERM_XTRA_INVIS: curs_set(0); return (0);
 
-	/* Make the cursor visible */
-	case TERM_XTRA_BEVIS: curs_set(1); return (0);
+        /* Make the cursor visible */
+        case TERM_XTRA_BEVIS: curs_set(1); return (0);
 
 #endif
 
-	/* Suspend/Resume curses */
-	case TERM_XTRA_LEVEL: return (Term_xtra_gcu_level(v));
+        /* Suspend/Resume curses */
+        case TERM_XTRA_LEVEL: return (Term_xtra_gcu_level(v));
 
-	/* Check for event */
-	case TERM_XTRA_CHECK: return (Term_xtra_gcu_check(v));
+        /* Check for event */
+        case TERM_XTRA_CHECK: return (Term_xtra_gcu_check(v));
 
-	/* Wait for event */
-	case TERM_XTRA_EVENT: return (Term_xtra_gcu_event(v));
+        /* Wait for event */
+        case TERM_XTRA_EVENT: return (Term_xtra_gcu_event(v));
     }
 
     return (1);
@@ -713,32 +724,32 @@ static errr Term_wipe_gcu(int x, int y, int w, int h)
 
     if (!x && !y && (w >= 80) && (h >= 24))
     {
-	touchwin(stdscr);
-	(void)clear();
+        touchwin(stdscr);
+        (void)clear();
     }
 
     else if (!x && (h >= 24) && (w >= 80))
     {
-	move(y,x);
-	clrtobot();
+        move(y,x);
+        clrtobot();
     }
 
     else if (w >= 80)
     {
-	for (dy = 0; dy < h; ++dy)
-	{
-	    move(y+dy,x);
-	    clrtoeol();
-	}
+        for (dy = 0; dy < h; ++dy)
+        {
+            move(y+dy,x);
+            clrtoeol();
+        }
     }
 
     else
     {
-	for (dy = 0; dy < h; ++dy)
-	{
-	    move(y+dy,x);
-	    for (dx = 0; dx < w; ++dx) addch(' ');
-	}
+        for (dy = 0; dy < h; ++dy)
+        {
+            move(y+dy,x);
+            for (dx = 0; dx < w; ++dx) addch(' ');
+        }
     }
 
     /* Hack -- Fix the cursor */
@@ -796,7 +807,7 @@ errr init_gcu(void)
     int i, y, x, err;
 
     term *t = &term_screen_body;
-    
+
 
     /* Extract the normal keymap */
     keymap_norm_prepare();
@@ -819,9 +830,9 @@ errr init_gcu(void)
     (void)move(0, 0);
     for (i = 1; i < 10; i++)
     {
-	(void)addch('\t');
-	getyx(stdscr, y, x);
-	if (y != 0 || x != i * 8) quit("curses needs a tab-stop of eight");
+        (void)addch('\t');
+        getyx(stdscr, y, x);
+        if (y != 0 || x != i * 8) quit("curses needs a tab-stop of eight");
     }
 
 
@@ -829,27 +840,17 @@ errr init_gcu(void)
 
     /*** Init the Color-pairs and set up a translation table ***/
 
-    /* All code conditional on "A_COLOR" comes originally */
-    /* from the Ncurses support file ("main-ncu.c") written by */
-    /* "wiebelt@mathematik.hu-berlin.de" (Bernd "Bernardo" Wiebelt) */
-
     /* Now let's go for a little bit of color! */
     err = (start_color() == ERR);
 
-#if defined(SGI) || defined(linux)
     /* Do we have color, and enough color, available? */
     can_use_color = (!err && has_colors() &&
-		     (COLORS >= 8) && (COLOR_PAIRS >= 8));
-#else
-    /* Do we have color, and enough color, available? */
-    can_use_color = (!err && has_colors &&
-		     (COLORS >= 8) && (COLOR_PAIRS >= 8));
-#endif
+                     (COLORS >= 8) && (COLOR_PAIRS >= 8));
 
     /* Only do this if we can use it */
     if (can_use_color) {
 
-	/* Color-pair 0 is *always* WHITE on BLACK */
+        /* Color-pair 0 is *always* WHITE on BLACK */
 
         /* Prepare the color pairs */
         init_pair (1, COLOR_RED,     COLOR_BLACK);
@@ -918,7 +919,7 @@ errr init_gcu(void)
 
     /* Save the term */
     term_screen = t;
-    
+
     /* Activate it */
     Term_activate(term_screen);
 

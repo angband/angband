@@ -62,22 +62,22 @@ static int curs_end=0;
  */
 static int colors[16]=
 {
-    F_BLACK,			/* Black */
-    F_WHITE|INTENSITY,		/* White */
-    F_CYAN,			/* XXX Gray */
-    F_RED|INTENSITY,		/* Orange */
-    F_RED,			/* Red */
-    F_GREEN,			/* Green */
-    F_BLUE,			/* Blue */
-    F_BROWN,			/* Brown */
-    F_BLACK|INTENSITY,		/* XXX Dark-grey */
-    F_CYAN|INTENSITY,		/* XXX Light gray */
-    F_MAGENTA,			/* Purple */
-    F_BROWN|INTENSITY,		/* Yellow */
-    F_RED|INTENSITY,		/* Light Red */
-    F_GREEN|INTENSITY,		/* Light Green */
-    F_BLUE|INTENSITY,		/* Light Blue */
-    F_BROWN|INTENSITY		/* Light brown */
+    F_BLACK,                    /* Black */
+    F_WHITE|INTENSITY,          /* White */
+    F_WHITE,                    /* XXX Gray */
+    F_RED|INTENSITY,            /* Orange */
+    F_RED,                      /* Red */
+    F_GREEN,                    /* Green */
+    F_BLUE,                     /* Blue */
+    F_BROWN,                    /* Brown */
+    F_BLACK|INTENSITY,          /* Dark-grey */
+    F_WHITE,                    /* XXX Light gray */
+    F_MAGENTA,                  /* Purple */
+    F_YELLOW|INTENSITY,         /* Yellow */
+    F_RED|INTENSITY,            /* Light Red */
+    F_GREEN|INTENSITY,          /* Light Green */
+    F_BLUE|INTENSITY,           /* Light Blue */
+    F_BROWN|INTENSITY           /* Light brown */
 };
 
 
@@ -107,6 +107,9 @@ static term term_screen_body;
  *  call to _read_kbd() will return the extended scan code.
  *
  * See "main-ibm.c" for a "better" use of "macro sequences".
+ *
+ * Note that this file does *NOT* currently extract modifiers
+ * (such as Control and Shift).  See "main-ibm.c" for a method.
  */
 static errr CheckEvents(int returnImmediately)
 {
@@ -115,20 +118,20 @@ static errr CheckEvents(int returnImmediately)
     /* Keyboard polling is BAD for multitasking systems */
     if (returnImmediately)
     {
-	/* Check for a keypress (no waiting) */
-	k = _read_kbd(0,0,0);
+        /* Check for a keypress (no waiting) */
+        k = _read_kbd(0,0,0);
 
-	/* Nothing ready */
-	if (k < 0) return (1);
+        /* Nothing ready */
+        if (k < 0) return (1);
     }
 
     /* Wait for a keypress */
     else
     {
-	/* Wait for a keypress */
-	k = _read_kbd(0,1,0);
+        /* Wait for a keypress */
+        k = _read_kbd(0,1,0);
     }
-    
+
     /* Get an extended scan code */
     if (!k) ke = _read_kbd(0,1,0);
 
@@ -136,15 +139,15 @@ static errr CheckEvents(int returnImmediately)
     /* Mega-Hack -- Convert Arrow keys into directions */
     switch (ke)
     {
-	case K_LEFT:     ka = '4'; break;
-	case K_RIGHT:    ka = '6'; break;
-	case K_UP:       ka = '8'; break;
-	case K_DOWN:     ka = '2'; break;
-	case K_HOME:     ka = '7'; break;
-	case K_PAGEUP:   ka = '9'; break;
-	case K_PAGEDOWN: ka = '3'; break;
-	case K_END:      ka = '1'; break;
-	case K_CENTER:   ka = '5'; break;
+        case K_LEFT:     ka = '4'; break;
+        case K_RIGHT:    ka = '6'; break;
+        case K_UP:       ka = '8'; break;
+        case K_DOWN:     ka = '2'; break;
+        case K_HOME:     ka = '7'; break;
+        case K_PAGEUP:   ka = '9'; break;
+        case K_PAGEDOWN: ka = '3'; break;
+        case K_END:      ka = '1'; break;
+        case K_CENTER:   ka = '5'; break;
     }
 
 
@@ -157,19 +160,19 @@ static errr CheckEvents(int returnImmediately)
         /* Send the "numerical direction" */
         Term_keypress(ka);
 
-	/* Success */
-	return (0);
+        /* Success */
+        return (0);
     }
 
 
     /* Hack -- normal keypresses */
     if (k)
     {
-	/* Enqueue the key */
-	Term_keypress(k);
+        /* Enqueue the key */
+        Term_keypress(k);
 
-	/* Success */
-	return (0);
+        /* Success */
+        return (0);
     }
 
 
@@ -184,26 +187,26 @@ static errr CheckEvents(int returnImmediately)
     /* Hack --  end the macro sequence */
     Term_keypress(13);
 
-    
+
     /* Success */
     return (0);
 }
 
 
-/* 
+/*
  * Do a special thing (beep, flush, etc)
  */
 static errr Term_xtra_emx(int n, int v)
 {
     switch (n)
     {
-	case TERM_XTRA_NOISE: putchar(7); return (0);
-	case TERM_XTRA_INVIS: v_hidecursor(); return (0);
-	case TERM_XTRA_BEVIS: v_ctype(curs_start,curs_end); return (0);
-	case TERM_XTRA_CHECK: return (CheckEvents(TRUE));
-	case TERM_XTRA_EVENT: return (CheckEvents(FALSE));
+        case TERM_XTRA_NOISE: putchar(7); return (0);
+        case TERM_XTRA_INVIS: v_hidecursor(); return (0);
+        case TERM_XTRA_BEVIS: v_ctype(curs_start,curs_end); return (0);
+        case TERM_XTRA_CHECK: return (CheckEvents(TRUE));
+        case TERM_XTRA_EVENT: return (CheckEvents(FALSE));
     }
-    
+
     return (1);
 }
 
@@ -230,8 +233,8 @@ static errr Term_wipe_emx(int x, int y, int w, int h)
     /* Put spaces one row at a time */
     for (t=y; t<y+h; t++)
     {
-	v_gotoxy(x,t);
-	v_putn(' ',w);
+        v_gotoxy(x,t);
+        v_putn(' ',w);
     }
 
     return (0);
@@ -298,10 +301,10 @@ errr init_emx(void)
     term *t = &term_screen_body;
 
 
-    /* Initialize the term */
-    term_init(t, 80, 24, 64);
+    /* Initialize the term -- big key buffer */
+    term_init(t, 80, 24, 1024);
 
-    /* Special hooks */    
+    /* Special hooks */
     t->init_hook = Term_init_emx;
     t->nuke_hook = Term_nuke_emx;
 
@@ -313,10 +316,10 @@ errr init_emx(void)
 
     /* Save it */
     term_screen = t;
-    
+
     /* Activate it */
     Term_activate(t);
-    
+
     /* Success */
     return (0);
 }

@@ -1,6 +1,6 @@
 /* File: term.c */
 
-/* Purpose: generic, efficient, modular, terminal routines */
+/* Purpose: generic, efficient, modular, terminal routines -BEN- */
 
 #include "term.h"
 
@@ -8,6 +8,10 @@
 
 
 /*
+ * This file provides a generic interface to one or more "windows"
+ * of textual information.  This includes the case of a single
+ * "window" such as that provided by a dumb terminal.
+ *
  * Some ideas may have been adapted from MacAngband 2.6.1
  *
  * Note that there is a rather large difference between the newer
@@ -33,14 +37,15 @@
  *   printing characters erases the previous contents
  *   may have "fast" routines for "clear to end of line"
  *   may have "fast" routines for "clear entire screen"
- *   
+ *
  *
  * Note that currently, the colors are "semi-hard-coded", that is,
  * while the "term.c" package assumes only that "color zero" is
  * the "background color", but the packages that supply our "support"
  * probably make very distinct assumptions about them.  So the
  * "defines" in "term.h" can be ignored, as long as the "support"
- * files are told how to display each color.
+ * files are told how to display each color (except color zero).
+ * It is also a good idea to reserve color "one" for white.
  *
  * Note that we reserve the "zero char" for later developement,
  * and that we assume that "ascii 32" is to be used as the "space",
@@ -52,16 +57,33 @@
  * exported, allowing users to create various "user defined"
  * routines, such as "scrolling packages".  These routines would
  * not tie in the the "terminal capabilities", but they would
- * be completely portable...  We should add a "TERM_COLOR" define
- * to remove all the "color" code from the system (to save space).
+ * be completely portable...
+ *
+ * Currently, the "Term_fresh()" routine performs the *minimum*
+ * number of physical updates (via Term_wipe() and Term_text()),
+ * making use of the fact that the "color" of a "blank" is not
+ * important, and by remembering the current contents of the
+ * window.  Unfortunately, this may be slightly non-optimal in
+ * some cases, in particular, those in which, say, a string of
+ * ten characters needs to be written, but the fifth character
+ * is already on the screen.  Currently, this will cause the
+ * "Term_text()" routine to be called once for each half of the
+ * string, instead of once for the whole string.  It seems that
+ * it should be possible to notice at least this situation, which
+ * seems pretty common.
  *
  * We should teach "Term_fresh()" to be a little bit "smarter".
  * In particular, it might help to "pre-process" things like
  * "clear to the end of the line" and such.  Or maybe this could
- * be done by the "Term_text()" procedures themselves...
+ * be done by the "Term_text()" procedures themselves...  One easy
+ * addition would be to have the "term_win" maintain, in addition
+ * to the range of changed columns, a range of "erased" columns.
+ * Then the EraseScreen() function could be slightly more selective.
  *
  * Be VERY careful about printing in the bottom right hand corner
  * of the screen, as it may induce "scrolling" on older machines.
+ * We should perhaps consider an option to refuse to flush changes
+ * to such a location.  Or assume that the Term_text() hook checks.
  *
  * Note that we must receive (significant) external support, from
  * a file such as "main-mac.c" or "main-x11.c" or "main-cur.c".  This
@@ -72,9 +94,17 @@
  *   Term_wipe() = Erase (part of) the screen
  *   Term_text() = Place some text on the screen
  *
+ * Currently, these four functions are "exported", but perhaps we should
+ * restrict them to purely internal use, and perhaps even make macros.
+ *
  * We provide, among other things, the functions Term_keypress()
  * to "react" to keypress events, and Term_redraw() to redraw the
  * entire screen, plus "Term_resize()" to note a new size.
+ *
+ * The current screen image always contains exactly what the user
+ * requested, but the system optimizes the actual physical updates
+ * to just those which actually *look* different on the screen.
+ * In particular, the "color" of a "blank" is not important.
  */
 
 
@@ -104,34 +134,47 @@ term *Term = NULL;
 
 /*
  * Completely "erase" a "term_win".  Mark as "changed".
+ *
  * Note that the "cursor visibility" is turned off,
  * and the cursor is moved to the top left corner.
  */
 errr term_win_wipe(term_win *t)
 {
-    int y, x;
+    int i, y, m;
+
+    byte *aa;
+    char *cc;
+
+    /* XXX Note the "wipe" */
+    t->erase = TRUE;
 
     /* Cursor to the top left, and invisible */
     t->cv = t->cu = t->cx = t->cy = 0;
 
-    /* Scan every row */
+    /* Note the max size */
+    m = t->h * t->w;
+
+    /* Wipe every entry */
+    for (aa = t->va, cc = t->vc, i = 0; i < m; i++)
+    {
+        *aa++ = 0;
+        *cc++ = ' ';
+    }
+
+    /* Mark every row as changed */
     for (y = 0; y < t->h; y++)
     {
-	/* Wipe this row */
-	for (x = 0; x < t->w; x++)
-	{
-	    tw_a(t,x,y) = 0;
-	    tw_c(t,x,y) = ' ';
-	}
-
-	/* This row has changed */
-	t->x1[y] = 0;
-	t->x2[y] = t->w - 1;
+        /* This row has changed */
+        t->x1[y] = 0;
+        t->x2[y] = t->w - 1;
     }
 
     /* Every row has changed */
     t->y1 = 0;
     t->y2 = t->h - 1;
+
+    /* Allow full wipe */
+    t->erase = TRUE;
 
     /* Success */
     return (0);
@@ -147,17 +190,24 @@ errr term_win_load(term_win *t, term_win *s)
 {
     int y, x;
 
+    /* Compute Overlap */
     int w = MIN(t->w, s->w);
     int h = MIN(t->h, s->h);
-    
+
     /* Copy all the data from "s" into "t" */
     for (y = 0; y < h; y++)
     {
-	for (x = 0; x < w; x++)
-	{
-	    tw_a(t,x,y) = tw_a(s,x,y);
-	    tw_c(t,x,y) = tw_c(s,x,y);
-	}
+        byte *src_aa = s->a[y];
+        char *src_cc = s->c[y];
+
+        byte *tgt_aa = t->a[y];
+        char *tgt_cc = t->c[y];
+
+        for (x = 0; x < w; x++)
+        {
+            tgt_aa[x] = src_aa[x];
+            tgt_cc[x] = src_cc[x];
+        }
     }
 
     /* Load the "cursor state" */
@@ -177,8 +227,8 @@ errr term_win_load(term_win *t, term_win *s)
     /* Every col of every row may have changed */
     for (y = 0; y < h; y++)
     {
-	t->x1[y] = 0;
-	if (t->x2[y] < w - 1) t->x2[y] = w - 1;
+        t->x1[y] = 0;
+        if (t->x2[y] < w - 1) t->x2[y] = w - 1;
     }
 
     /* Success */
@@ -192,7 +242,7 @@ errr term_win_load(term_win *t, term_win *s)
 static errr term_win_resize(term_win *tw, int w, int h)
 {
     term_win hack;
-    
+
     /* Ignore non-changes */
     if ((tw->w == w) && (tw->h == h)) return (1);
 
@@ -203,8 +253,8 @@ static errr term_win_resize(term_win *tw, int w, int h)
     term_win_init(tw, w, h);
 
     /* Recopy the contents */
-    term_win_load(tw, &hack);    
-    
+    term_win_load(tw, &hack);
+
     /* Hack -- nuke the copy of our old contents */
     term_win_nuke(&hack);
 
@@ -218,12 +268,18 @@ static errr term_win_resize(term_win *tw, int w, int h)
  */
 errr term_win_nuke(term_win *t)
 {
-    /* Free the arrays */
-    C_KILL(t->a, t->w * t->h, byte);
-    C_KILL(t->c, t->w * t->h, char);
-    C_KILL(t->x1, t->w, byte);
-    C_KILL(t->x2, t->w, byte);
-    
+    /* Free the max-change arrays */
+    C_KILL(t->x1, t->h, byte);
+    C_KILL(t->x2, t->h, byte);
+
+    /* Free the screen access arrays */
+    C_KILL(t->a, t->h, byte*);
+    C_KILL(t->c, t->h, char*);
+
+    /* Free the screen arrays */
+    C_KILL(t->va, t->h * t->w, byte);
+    C_KILL(t->vc, t->h * t->w, char);
+
     return (0);
 }
 
@@ -233,20 +289,30 @@ errr term_win_nuke(term_win *t)
  */
 errr term_win_init(term_win *t, int w, int h)
 {
+    int y;
+
     /* Save the size */
     t->w = w;
     t->h = h;
 
-    /* Allocate the main arrays */
-    C_MAKE(t->a, w*h, byte);
-    C_MAKE(t->c, w*h, char);
+    /* XXX Make the "max used col" array */
+    /* C_MAKE(t->rm, h, byte); */
 
-    /* Allocate the change arrays */
-    C_MAKE(t->x1, w, byte);
-    C_MAKE(t->x2, w, byte);
+    /* Make the max-change arrays */
+    C_MAKE(t->x1, t->h, byte);
+    C_MAKE(t->x2, t->h, byte);
 
-    /* XXX Allocate the "max used col" array */
-    /* C_MAKE(t->rm, w, byte); */
+    /* Make the screen access arrays */
+    C_MAKE(t->a, t->h, byte*);
+    C_MAKE(t->c, t->h, char*);
+
+    /* Make the screen arrays */
+    C_MAKE(t->va, t->h * t->w, byte);
+    C_MAKE(t->vc, t->h * t->w, char);
+
+    /* Prepare the screen access arrays */
+    for (y = 0; y < t->h; y++) t->a[y] = t->va + t->w * y;
+    for (y = 0; y < t->h; y++) t->c[y] = t->vc + t->w * y;
 
     /* Wipe it */
     term_win_wipe(t);
@@ -292,6 +358,7 @@ errr Term_wipe(int x, int y, int w, int h)
 /*
  * Draw "n" chars from the string "s" using attr "a", at location "(x,y)"
  * The input is assumed to be "valid".  The length is assumed to be positive.
+ * Note that the input is *not* assumed to be terminated.  This is a shame.
  */
 errr Term_text(int x, int y, int n, byte a, cptr s)
 {
@@ -339,17 +406,32 @@ errr Term_text(int x, int y, int n, byte a, cptr s)
  * The old method pre-extracted "spaces" into a "efficient" form of
  * "erasing", but for various reasons, we will simply "print" them, and
  * let the "Term_text()" procedure handle "space extraction".
+ *
  * Note especially the frequency of "trailing spaces" in the text which
  * is sent to "Term_text()".  Combined with trailing spaces already on
  * the screen, it should be possible to "optimize" screen clearing.  We
  * will need a new field "max column used" per row.
  *
  * Hack -- we do NOT terminate the threads, since "Term_text()" must be
- * able to handle "non-terminated" text.
+ * able to handle "non-terminated" text.  This is an important requirement
+ * for the "Term_text()" procedure, since if the implementation requires
+ * that the string be terminated, then it will have to maintain a local
+ * buffer and build its own copy of the string.  That can mean a lot of
+ * memory movement for duplicate results.  Consider terminating the string.
+ * Especially if people are asked not to use "Term_text()" externally.
  */
 static void FlushOutputRow(int y)
 {
-    register int x;
+    int x;
+
+    term_win *old = Term->old;
+    term_win *scr = Term->scr;
+
+    byte *old_aa = old->a[y];
+    char *old_cc = old->c[y];
+
+    byte *scr_aa = scr->a[y];
+    char *scr_cc = scr->c[y];
 
     /* No chars "pending" in "text" */
     int n = 0;
@@ -369,97 +451,112 @@ static void FlushOutputRow(int y)
 
 
     /* Scan the columns marked as "modified" */
-    for (x = Term->scr->x1[y]; x <= Term->scr->x2[y]; x++)
+    for (x = scr->x1[y]; x <= scr->x2[y]; x++)
     {
-	/* See what SEEMS TO BE there */
-	oa = tw_a(Term->old,x,y);
-	oc = tw_c(Term->old,x,y);
+        /* See what is currently here */
+        oa = old_aa[x];
+        oc = old_cc[x];
 
-	/* See what SHOULD BE there */
-	na = tw_a(Term->scr,x,y);
-	nc = tw_c(Term->scr,x,y);
+        /* Save and remember the new contents */
+        na = old_aa[x] = scr_aa[x];
+        nc = old_cc[x] = scr_cc[x];
 
-	/* Save the "actual" info mentally */
-	tw_a(Term->old,x,y) = na;
-	tw_c(Term->old,x,y) = nc;
+        /* Hack -- optimize "blanks" */
+        if (!oa) oa = fa, oc = ' ';
+        else if (oc == ' ') oa = fa;
+        if (!na) na = fa, nc = ' ';
+        else if (nc == ' ') na = fa;
 
-	/* Hack -- color "bleeds" into holes */
-	if (BLANK(oa,oc)) oa = fa, oc = ' ';
-	if (BLANK(na,nc)) na = fa, nc = ' ';
+        /* Hack -- optimize unchanged areas */
+        can_skip = ((na == oa) && (nc == oc));
 
-	/* Note if no "visual changes" have occured */
-	can_skip = ((na == oa) && (nc == oc));
+        /* Flush as needed (see above) */
+        if (n && (can_skip || (fa != na)))
+        {
+            /* Draw the pending chars */
+            if (fa) Term_text(fx, y, n, fa, text);
 
-	/* Flush as needed (see above) */
-	if (n && (can_skip || (fa != na)))
-	{
-	    /* Draw the pending chars (if not spaces) */
-	    if (fa) Term_text(fx, y, n, fa, text);
+            /* Hack -- Erase "leading" spaces */
+            else Term_wipe(fx, y, n, 1);
 
-	    /* Erase behind the characters */
-	    else Term_wipe(fx, y, n, 1);
+            /* Forget the pending thread */
+            n = 0;
+        }
 
-	    /* Forget the pending thread */
-	    n = 0;
-	}
+        /* Skip unchanged areas */
+        if (can_skip) continue;
 
-	/* Skip all grids which still "look like" they used to */
-	if (can_skip) continue;
+        /* Start a new thread, if needed */
+        if (!n) fx = x, fa = na;
 
-	/* Start a new thread, if needed */
-	if (!n) fx = x, fa = na;
-
-	/* Expand the current thread */
-	text[n++] = nc;
+        /* Expand the current thread */
+        text[n++] = nc;
     }
 
-    /* Flush any leftover threads */
+    /* Flush the pending thread, if any */
     if (n)
     {
-	/* Draw the pending chars (unless invisible) */
-	if (fa) Term_text(fx, y, n, fa, text);
+        /* Draw the pending chars */
+        if (fa) Term_text(fx, y, n, fa, text);
 
-	/* Otherwise just Erase them */
-	else Term_wipe(fx, y, n, 1);
+        /* Hack -- Erase fully blank lines */
+        else Term_wipe(fx, y, n, 1);
     }
 
     /* This row is all done */
-    Term->scr->x1[y] = Term->scr->w;
-    Term->scr->x2[y] = 0;
+    scr->x1[y] = scr->w;
+    scr->x2[y] = 0;
 }
 
 
 
 /*
- * Check to see if the old cursor will get erased by FlushOutputRow()'s
+ * Will the old cursor will get erased by FlushOutput()?
+ * This function is only called if "soft_cursor" is set
+ * This lets us avoid redrawing the cursor when possible
  */
 static void FlushOutputHack()
 {
     int cx, cy, oa, oc, na, nc;
 
+    term_win *old = Term->old;
+    term_win *scr = Term->scr;
+
+    byte *old_aa;
+    char *old_cc;
+
+    byte *scr_aa;
+    char *scr_cc;
+
     /* Cursor was offscreen, ignore it */
-    if (Term->old->cu) return;
+    if (old->cu) return;
 
     /* Cursor was invisible, ignore it */
-    if (!Term->old->cv) return;
+    if (!old->cv) return;
 
     /* Extract the cursor location */
-    cy = Term->old->cy;
-    cx = Term->old->cx;
+    cy = old->cy;
+    cx = old->cx;
 
     /* Cursor row was unaffected, ignore it */
-    if ((Term->scr->y1 > cy) || (Term->scr->y2 < cy)) return;
+    if ((scr->y1 > cy) || (scr->y2 < cy)) return;
 
     /* Cursor column in the Cursor row was unaffected, ignore it */
-    if ((Term->scr->x1[cy] > cx) || (Term->scr->x2[cy] < cx)) return;
+    if ((scr->x1[cy] > cx) || (scr->x2[cy] < cx)) return;
 
-    /* Access the Term->old contents */
-    oa = tw_a(Term->old,cx,cy);
-    oc = tw_c(Term->old,cx,cy);
+    old_aa = old->a[cy];
+    old_cc = old->c[cy];
+
+    scr_aa = scr->a[cy];
+    scr_cc = scr->c[cy];
+
+    /* Access the old contents */
+    oa = old_aa[cx];
+    oc = old_cc[cx];
 
     /* Access the new contents */
-    na = tw_a(Term->scr,cx,cy);
-    nc = tw_c(Term->scr,cx,cy);
+    na = scr_aa[cx];
+    nc = scr_cc[cx];
 
     /* If the contents are the same, cursor may be skipped */
     if ((oa == na) && (oc == nc)) return;
@@ -468,7 +565,7 @@ static void FlushOutputHack()
     if (BLANK(oa,oc) && BLANK(na,nc)) return;
 
     /* Hack -- The cursor will be erased, pretend it was invisible */
-    Term->old->cv = 0;
+    old->cv = 0;
 }
 
 
@@ -480,97 +577,103 @@ static void FlushOutput()
 {
     int y;
 
+    term_win *old = Term->old;
+    term_win *scr = Term->scr;
+
 
     /* Speed -- Pre-check for "cursor erase" */
     if (Term->soft_cursor) FlushOutputHack();
 
 
     /* Update the "modified rows" */
-    for (y = Term->scr->y1; y <= Term->scr->y2; ++y) FlushOutputRow(y);
+    for (y = scr->y1; y <= scr->y2; ++y) FlushOutputRow(y);
 
     /* No rows are invalid */
-    Term->scr->y1 = Term->scr->h;
-    Term->scr->y2 = 0;
+    scr->y1 = scr->h;
+    scr->y2 = 0;
 
 
     /* Cursor update -- Graphics machines */
     if (Term->soft_cursor)
     {
-	/* XXX Note -- there may be a slight "flicker" of the cursor */
-	/* at redraws, if annoying, just surround this whole block with */
-	/* a huge "did something about the cursor change" conditional */
+        /* Erase the cursor (if it WAS visible) */
+        if (!old->cu && old->cv)
+        {
+            int x = old->cx;
+            int y = old->cy;
 
-	/* Erase the cursor (if it WAS visible) */
-	if (!Term->old->cu && Term->old->cv)
-	{
-	    /* Note that "Term->old" and "new" are the same now */
-	    int x = Term->old->cx;
-	    int y = Term->old->cy;
-	    byte a = tw_a(Term->old, x, y);
-	    char c =  tw_c(Term->old, x, y);
-	    char buf[2];
+            byte *old_aa = old->a[y];
+            char *old_cc = old->c[y];
 
-	    /* Hack -- process spaces */
-	    if (BLANK(a,c)) a = 0, c = ' ';
+            byte a = old_aa[x];
+            char c = old_cc[x];
 
-	    /* Hack -- build a two-char string */
-	    buf[0] = c;
+            char buf[2];
 
-	    /* Restore the actual character (unless invisible) */
-	    if (a) Term_text(x, y, 1, a, buf);
+            /* Hack -- process spaces */
+            if (BLANK(a,c)) a = 0, c = ' ';
 
-	    /* Simply Erase the grid */
-	    else Term_wipe(x, y, 1, 1);
-	}
+            /* Hack -- build a two-char string */
+            buf[0] = c;
 
-	/* Redraw the cursor itself (if it IS visible) */
-	if (!Term->scr->cu && Term->scr->cv)
-	{
-	    /* Hack -- call the cursor display routine */
-	    Term_curs(Term->scr->cx, Term->scr->cy, 1);
-	}
+            /* Restore the actual character (unless invisible) */
+            if (a) Term_text(x, y, 1, a, buf);
+
+            /* Simply Erase the grid */
+            else Term_wipe(x, y, 1, 1);
+        }
+
+        /* Redraw the cursor itself (if it IS visible) */
+        if (!scr->cu && scr->cv)
+        {
+            /* XXX It is not always necessary to redraw the cursor */
+            /* One can often tell that the cursor has not "changed" */
+
+            /* Hack -- call the cursor display routine */
+            Term_curs(scr->cx, scr->cy, 1);
+        }
     }
 
     /* Cursor Update -- Hardware Cursor */
     else
-    {    
-	/* The cursor is "Useless", attempt to "hide" it */
-	if (Term->scr->cu)
-	{
-	    /* Put the cursor NEAR where it belongs */
-	    Term_curs(80, Term->scr->cy, 1);
+    {
+        /* Hack -- The cursor is "Useless", attempt to "hide" it */
+        if (scr->cu)
+        {
+            /* Hack -- Put the cursor NEAR where it belongs */
+            Term_curs(scr->w - 1, scr->cy, 1);
 
-	    /* Cursor invisible if possible */
-	    Term_xtra(TERM_XTRA_INVIS, -999);
-	}
+            /* Cursor invisible if possible */
+            Term_xtra(TERM_XTRA_INVIS, -999);
+        }
 
-	/* The cursor is "invisible", attempt to hide it */
-	else if (!Term->scr->cv)
-	{
-	    /* Put the cursor where it belongs anyway */
-	    Term_curs(Term->scr->cx, Term->scr->cy, 1);
+        /* The cursor is "invisible", attempt to hide it */
+        else if (!scr->cv)
+        {
+            /* Paranoia -- Put the cursor where it belongs */
+            Term_curs(scr->cx, scr->cy, 1);
 
-	    /* Cursor invisible if possible */
-	    Term_xtra(TERM_XTRA_INVIS, -999);
-	}
+            /* Cursor invisible if possible */
+            Term_xtra(TERM_XTRA_INVIS, -999);
+        }
 
-	/* The cursor must be "visible", put it where it belongs */
-	else
-	{
-	    /* Put the cursor where it belongs */
-	    Term_curs(Term->scr->cx, Term->scr->cy, 1);
+        /* The cursor must be "visible", put it where it belongs */
+        else
+        {
+            /* Put the cursor where it belongs */
+            Term_curs(scr->cx, scr->cy, 1);
 
-	    /* Make sure we are visible */
-	    Term_xtra(TERM_XTRA_BEVIS, -999);
-	}
+            /* Make sure we are visible */
+            Term_xtra(TERM_XTRA_BEVIS, -999);
+        }
     }
 
 
     /* Save the "cursor state" */
-    Term->old->cu = Term->scr->cu;
-    Term->old->cv = Term->scr->cv;
-    Term->old->cx = Term->scr->cx;
-    Term->old->cy = Term->scr->cy;
+    old->cu = scr->cu;
+    old->cv = scr->cv;
+    old->cx = scr->cx;
+    old->cy = scr->cy;
 }
 
 
@@ -582,26 +685,31 @@ static void FlushOutput()
  */
 static void QueueAttrChar(int x, int y, int na, int nc)
 {
-    int oa = tw_a(Term->scr,x,y);
-    int oc = tw_c(Term->scr,x,y);
+    term_win *scr = Term->scr;
+
+    byte *scr_aa = scr->a[y];
+    char *scr_cc = scr->c[y];
+
+    int oa = scr_aa[x];
+    int oc = scr_cc[x];
 
     /* Hack -- Ignore "non-changes" */
     if ((oa == na) && (oc == nc)) return;
 
     /* Save the "literal" information */
-    tw_a(Term->scr,x,y) = na;
-    tw_c(Term->scr,x,y) = nc;
+    scr_aa[x] = na;
+    scr_cc[x] = nc;
 
     /* Hack -- ignore "double blanks" */
     if (BLANK(na,nc) && BLANK(oa,oc)) return;
 
     /* Check for new min/max row info */
-    if (y < Term->scr->y1) Term->scr->y1 = y;
-    if (y > Term->scr->y2) Term->scr->y2 = y;
+    if (y < scr->y1) scr->y1 = y;
+    if (y > scr->y2) scr->y2 = y;
 
     /* Check for new min/max col info for this row */
-    if (x < Term->scr->x1[y]) Term->scr->x1[y] = x;
-    if (x > Term->scr->x2[y]) Term->scr->x2[y] = x;
+    if (x < scr->x1[y]) scr->x1[y] = x;
+    if (x > scr->x2[y]) scr->x2[y] = x;
 }
 
 
@@ -615,43 +723,48 @@ static void QueueAttrChar(int x, int y, int na, int nc)
  */
 static void QueueAttrChars(int x, int y, int n, byte a, cptr s)
 {
-    register int i, x1 = -1, x2;
+    int i, x1 = -1, x2 = -1;
 
-    /* Avoid icky "unsigned" issues */
+    term_win *scr = Term->scr;
+
+    byte *scr_aa = scr->a[y];
+    char *scr_cc = scr->c[y];
+
+    /* Hack -- Avoid icky "unsigned" issues */
     int na = a;
     int nc = *s;
 
     /* Analyze the new chars */
     for (i = 0; (i < n) && nc; x++, i++, nc = s[i])
     {
-	int oa = tw_a(Term->scr,x,y);
-	int oc = tw_c(Term->scr,x,y);
+        int oa = scr_aa[x];
+        int oc = scr_cc[x];
 
-	/* Hack -- Ignore "non-changes" */
-	if ((oa == na) && (oc == nc)) continue;
+        /* Hack -- Ignore "non-changes" */
+        if ((oa == na) && (oc == nc)) continue;
 
-	/* Save the "literal" information */
-	tw_a(Term->scr,x,y) = na;
-	tw_c(Term->scr,x,y) = nc;
+        /* Save the "literal" information */
+        scr_aa[x] = na;
+        scr_cc[x] = nc;
 
-	/* Hack -- ignore "double blanks" */
-	if (BLANK(na,nc) && BLANK(oa,oc)) continue;
+        /* Hack -- ignore "double blanks" */
+        if (BLANK(na,nc) && BLANK(oa,oc)) continue;
 
-	/* Note the "range" of screen updates */
-	if (x1 < 0) x1 = x;
-	x2 = x;
+        /* Note the "range" of screen updates */
+        if (x1 < 0) x1 = x;
+        x2 = x;
     }
 
     /* Expand the "change area" as needed */
     if (x1 >= 0)
     {
-	/* Check for new min/max row info */
-	if (y < Term->scr->y1) Term->scr->y1 = y;
-	if (y > Term->scr->y2) Term->scr->y2 = y;
+        /* Check for new min/max row info */
+        if (y < scr->y1) scr->y1 = y;
+        if (y > scr->y2) scr->y2 = y;
 
-	/* Check for new min/max col info in this row */
-	if (x1 < Term->scr->x1[y]) Term->scr->x1[y] = x1;
-	if (x2 > Term->scr->x2[y]) Term->scr->x2[y] = x2;
+        /* Check for new min/max col info in this row */
+        if (x1 < scr->x1[y]) scr->x1[y] = x1;
+        if (x2 > scr->x2[y]) scr->x2[y] = x2;
     }
 }
 
@@ -660,11 +773,13 @@ static void QueueAttrChars(int x, int y, int n, byte a, cptr s)
 /*
  * Erase part of the screen (given top left, and size)
  * Note that these changes are NOT flushed immediately
- * This function is only used below.
+ * Assume valid input.  Used only internally.
  */
 static void EraseScreen(int ex, int ey, int ew, int eh)
 {
-    register int x, y;
+    int x, y;
+
+    term_win *scr = Term->scr;
 
     /* Drop "black spaces" everywhere */
     int na = 0;
@@ -675,54 +790,59 @@ static void EraseScreen(int ex, int ey, int ew, int eh)
     if (eh <= 0) return;
 
     /* Paranoia -- nothing visible */
-    if (ex >= Term->scr->w) return;
-    if (ey >= Term->scr->h) return;
+    if (ex >= scr->w) return;
+    if (ey >= scr->h) return;
 
     /* Force legal location */
     if (ex < 0) ex = 0;
     if (ey < 0) ey = 0;
 
     /* Force legal size */
-    if (ex + ew > Term->scr->w) ew = Term->scr->w - ex;
-    if (ey + eh > Term->scr->h) eh = Term->scr->h - ey;
+    if (ex + ew > scr->w) ew = scr->w - ex;
+    if (ey + eh > scr->h) eh = scr->h - ey;
 
     /* Scan every row */
     for (y = ey; y < ey + eh; y++)
     {
-	register int x1 = -1, x2;
+        int x1 = -1, x2 = -1;
 
-	/* Scan every column */
-	for (x = ex; x < ex + ew; x++)
-	{
-	    int oa = tw_a(Term->scr,x,y);
-	    int oc = tw_c(Term->scr,x,y);
+        byte *scr_aa = scr->a[y];
+        char *scr_cc = scr->c[y];
 
-	    /* Hack -- Ignore "non-changes" */
-	    if ((oa == na) && (oc == nc)) continue;
+        /* Scan every column */
+        for (x = ex; x < ex + ew; x++)
+        {
+            int oa = scr_aa[x];
+            int oc = scr_cc[x];
 
-	    /* Save the "literal" information */
-	    tw_a(Term->scr,x,y) = na;
-	    tw_c(Term->scr,x,y) = nc;
+            /* Hack -- Ignore "non-changes" */
+            if ((oa == na) && (oc == nc)) continue;
 
-	    /* Hack -- ignore "double blanks" */
-	    if (BLANK(na,nc) && BLANK(oa,oc)) continue;
+            /* Save the "literal" information */
+            scr_aa[x] = na;
+            scr_cc[x] = nc;
 
-	    /* Note the "range" of screen updates */
-	    if (x1 < 0) x1 = x;
-	    x2 = x;
-	}
+            /* Hack -- ignore "double blanks" */
+            if (BLANK(na,nc) && BLANK(oa,oc)) continue;
 
-	/* Expand the "change area" as needed */
-	if (x1 >= 0)
-	{
-	    /* Check for new min/max row info */
-	    if (y < Term->scr->y1) Term->scr->y1 = y;
-	    if (y > Term->scr->y2) Term->scr->y2 = y;
+            /* Track minumum changed column */
+            if (x1 < 0) x1 = x;
 
-	    /* Check for new min/max col info in this row */
-	    if (x1 < Term->scr->x1[y]) Term->scr->x1[y] = x1;
-	    if (x2 > Term->scr->x2[y]) Term->scr->x2[y] = x2;
-	}
+            /* Track maximum changed column */
+            x2 = x;
+        }
+
+        /* Expand the "change area" as needed */
+        if (x1 >= 0)
+        {
+            /* Check for new min/max row info */
+            if (y < scr->y1) scr->y1 = y;
+            if (y > scr->y2) scr->y2 = y;
+
+            /* Check for new min/max col info in this row */
+            if (x1 < scr->x1[y]) scr->x1[y] = x1;
+            if (x2 > scr->x2[y]) scr->x2[y] = x2;
+        }
     }
 }
 
@@ -755,14 +875,16 @@ errr Term_erase(int x1, int y1, int x2, int y2)
  */
 errr Term_clear()
 {
+    term_win *scr = Term->scr;
+
     /* Hack -- Save the cursor visibility */
-    bool cv = Term->scr->cv;
+    bool cv = scr->cv;
 
     /* Wipe the screen mentally */
-    term_win_wipe(Term->scr);
+    term_win_wipe(scr);
 
     /* Hack -- Restore the cursor visibility */
-    Term->scr->cv = cv;
+    scr->cv = cv;
 
     /* Success */
     return (0);
@@ -781,25 +903,28 @@ errr Term_redraw()
 {
     int y;
 
-    /* Mark the Term->old screen as empty */
-    term_win_wipe(Term->old);
+    term_win *old = Term->old;
+    term_win *scr = Term->scr;
+
+    /* Mark the old screen as empty */
+    term_win_wipe(old);
 
     /* Physically erase the whole screen */
-    Term_wipe(0, 0, Term->old->w, Term->old->h);
+    Term_wipe(0, 0, old->w, old->h);
 
     /* Hack -- mark every row as invalid */
-    Term->scr->y1 = 0;
-    Term->scr->y2 = Term->scr->h - 1;
+    scr->y1 = 0;
+    scr->y2 = scr->h - 1;
 
     /* Hack -- mark every column of every row as invalid */
-    for (y = 0; y < Term->scr->h; y++)
+    for (y = 0; y < scr->h; y++)
     {
-	Term->scr->x1[y] = 0;
-	Term->scr->x2[y] = Term->scr->w - 1;
+        scr->x1[y] = 0;
+        scr->x2[y] = scr->w - 1;
     }
 
-    /* And then "flush" the real screen */
-    FlushOutput();
+    /* Hack -- refresh */
+    Term_fresh();
 
     /* Success */
     return (0);
@@ -818,6 +943,8 @@ errr Term_redraw()
  */
 errr Term_save(void)
 {
+    term_win *scr = Term->scr;
+
     term_win *mem;
 
     /* Get the next memory entry */
@@ -826,19 +953,19 @@ errr Term_save(void)
     /* Hack -- allocate memory screens as needed */
     if (!mem->w || !mem->h)
     {
-	/* Efficiency -- Initialize "mem" as needed */	
-	term_win_init(mem, Term->scr->w, Term->scr->h);
+        /* Efficiency -- Initialize "mem" as needed */	
+        term_win_init(mem, scr->w, scr->h);
     }
 
     /* Hack -- react to changing window sizes */
-    if (mem->w != Term->scr->w || mem->h != Term->scr->h)
+    if (mem->w != scr->w || mem->h != scr->h)
     {
-	/* Resize to the desired size */
-	term_win_resize(mem, Term->scr->w, Term->scr->h);
+        /* Resize to the desired size */
+        term_win_resize(mem, scr->w, scr->h);
     }
 
     /* Save the current screen data */
-    term_win_load(mem, Term->scr);
+    term_win_load(mem, scr);
 
     /* Advance the depth pointer */
     mem_depth++;
@@ -858,6 +985,8 @@ errr Term_save(void)
  */
 errr Term_load(void)
 {
+    term_win *scr = Term->scr;
+
     term_win *mem;
 
     /* Hack -- Handle "errors" (see above) */
@@ -870,7 +999,7 @@ errr Term_load(void)
     mem = &mem_array[mem_depth];
 
     /* Restore the saved info */
-    term_win_load(Term->scr, mem);
+    term_win_load(scr, mem);
 
     /* Success */
     return (0);
@@ -928,13 +1057,16 @@ errr Term_update()
  */
 errr Term_resize(int w, int h)
 {
+    term_win *old = Term->old;
+    term_win *scr = Term->scr;
+
     errr res = 0;
-    
+
     /* Resize the "current" term_win */
-    if (term_win_resize(Term->old, w, h)) res += 1;
-    
+    if (term_win_resize(old, w, h)) res += 1;
+
     /* Make a new "desired" term_win */
-    if (term_win_resize(Term->scr, w, h)) res += 2;
+    if (term_win_resize(scr, w, h)) res += 2;
 
     /* Success */
     return (res);
@@ -948,11 +1080,13 @@ errr Term_resize(int w, int h)
  */
 errr Term_show_cursor()
 {
+    term_win *scr = Term->scr;
+
     /* Already visible */
-    if (Term->scr->cv) return (1);
+    if (scr->cv) return (1);
 
     /* Remember "visible" */
-    Term->scr->cv = 1;
+    scr->cv = 1;
 
     /* Success */
     return (0);
@@ -964,11 +1098,13 @@ errr Term_show_cursor()
  */
 errr Term_hide_cursor()
 {
+    term_win *scr = Term->scr;
+
     /* Already hidden */
-    if (!Term->scr->cv) return (1);
+    if (!scr->cv) return (1);
 
     /* Remember "invisible" */
-    Term->scr->cv = 0;
+    scr->cv = 0;
 
     /* Success */
     return (0);
@@ -981,16 +1117,18 @@ errr Term_hide_cursor()
  */
 errr Term_gotoxy(int x, int y)
 {
-    /* Verify */
-    if ((x < 0) || (x >= Term->scr->w)) return (-1);
-    if ((y < 0) || (y >= Term->scr->h)) return (-1);
+    term_win *scr = Term->scr;
 
-    /* Remember the cursor */    
-    Term->scr->cx = x;
-    Term->scr->cy = y;
+    /* Verify */
+    if ((x < 0) || (x >= scr->w)) return (-1);
+    if ((y < 0) || (y >= scr->h)) return (-1);
+
+    /* Remember the cursor */
+    scr->cx = x;
+    scr->cy = y;
 
     /* The cursor is not useless */
-    Term->scr->cu = 0;
+    scr->cu = 0;
 
     /* Success */
     return (0);
@@ -1002,12 +1140,14 @@ errr Term_gotoxy(int x, int y)
  */
 errr Term_locate(int *x, int *y)
 {
+    term_win *scr = Term->scr;
+
     /* Access the cursor */
-    (*x) = Term->scr->cx;
-    (*y) = Term->scr->cy;
+    (*x) = scr->cx;
+    (*y) = scr->cy;
 
     /* Warn about "useless" cursor */
-    if (Term->scr->cu) return (1);
+    if (scr->cu) return (1);
 
     /* Success */
     return (0);
@@ -1021,6 +1161,12 @@ errr Term_locate(int *x, int *y)
  */
 errr Term_draw(int x, int y, byte a, char c)
 {
+    term_win *scr = Term->scr;
+
+    /* Verify location */
+    if ((x < 0) || (x >= scr->w)) return (-1);
+    if ((y < 0) || (y >= scr->h)) return (-1);
+
     /* Queue it for later */
     QueueAttrChar(x, y, a, c);
 
@@ -1036,13 +1182,15 @@ errr Term_draw(int x, int y, byte a, char c)
  */
 errr Term_what(int x, int y, byte *a, char *c)
 {
+    term_win *scr = Term->scr;
+
     /* Verify location */
-    if ((x < 0) || (x >= Term->scr->w)) return (-1);
-    if ((y < 0) || (y >= Term->scr->h)) return (-1);
+    if ((x < 0) || (x >= scr->w)) return (-1);
+    if ((y < 0) || (y >= scr->h)) return (-1);
 
     /* Direct access */
-    (*a) = tw_a(Term->scr,x,y);
-    (*c) = tw_c(Term->scr,x,y);
+    (*a) = scr->a[y][x];
+    (*c) = scr->c[y][x];
 
     /* Success */
     return (0);
@@ -1054,24 +1202,26 @@ errr Term_what(int x, int y, byte *a, char *c)
  */
 errr Term_addch(byte a, char c)
 {
+    term_win *scr = Term->scr;
+
     /* Cannot use "Useless" cursor */
-    if (Term->scr->cu) return (-1);
+    if (scr->cu) return (-1);
 
     /* Add the attr/char to the queue */
-    QueueAttrChar(Term->scr->cx, Term->scr->cy, a, c);
+    QueueAttrChar(scr->cx, scr->cy, a, c);
 
     /* Advance the cursor */
-    Term->scr->cx++;
+    scr->cx++;
 
     /* Success */
-    if (Term->scr->cx < Term->scr->w) return (0);
+    if (scr->cx < scr->w) return (0);
 
     /* XXX Could handle "wrap" here, such as in: */
-    /* if (Term->scr->cx >= Term->scr->w) Term->scr->cx = 0, Term->scr->cy++; */
-    /* if (Term->scr->cy >= Term->scr->h) Term->scr->cy = 0; */
+    /* if (scr->cx >= scr->w) scr->cx = 0, scr->cy++; */
+    /* if (scr->cy >= scr->h) scr->cy = 0; */
 
     /* Note "Useless" cursor */
-    Term->scr->cu = 1;
+    scr->cu = 1;
 
     /* Note "Useless" cursor */
     return (1);
@@ -1087,10 +1237,12 @@ errr Term_addch(byte a, char c)
  */
 errr Term_addstr(int n, byte a, cptr s)
 {
+    term_win *scr = Term->scr;
+
     errr res = 0;
 
     /* Cannot use "Useless" cursor */
-    if (Term->scr->cu) return (-1);
+    if (scr->cu) return (-1);
 
     /* Calculate the length if needed */
     if (n < 0) n = strlen(s);
@@ -1099,16 +1251,16 @@ errr Term_addstr(int n, byte a, cptr s)
     if (!n) return (-2);
 
     /* Notice, and deal with, running out of room */
-    if (Term->scr->cx + n >= Term->scr->w) res = n = Term->scr->w - Term->scr->cx;
+    if (scr->cx + n >= scr->w) res = n = scr->w - scr->cx;
 
     /* Add all those chars to the queue */
-    QueueAttrChars(Term->scr->cx, Term->scr->cy, n, a, s);
+    QueueAttrChars(scr->cx, scr->cy, n, a, s);
 
     /* Advance the cursor */
-    Term->scr->cx += n;
+    scr->cx += n;
 
     /* Hack -- Notice "Useless" cursor */
-    if (res) Term->scr->cu = 1;
+    if (res) scr->cu = 1;
 
     /* Success (usually) */
     return (res);
@@ -1166,9 +1318,6 @@ errr Term_flush()
     /* Forget all keypresses */
     Term->key_head = Term->key_tail = 0;
 
-    /* Forget any pending macro */
-    Term->key_macro = NULL;
-    
     /* Success */
     return (0);
 }
@@ -1192,8 +1341,10 @@ errr Term_keypress(int k)
     /* Success (unless overflow) */
     if (Term->key_head != Term->key_tail) return (0);
 
+#if 0
     /* Hack -- Forget the oldest key */
     if (++Term->key_tail == Term->key_size) Term->key_tail = 0;
+#endif
 
     /* Problem */
     return (1);
@@ -1217,8 +1368,10 @@ errr Term_key_push(int k)
     /* Success (unless overflow) */
     if (Term->key_head != Term->key_tail) return (0);
 
-    /* Hack -- Forget the most recent key */
-    if (Term->key_head-- == 0) Term->key_head = Term->key_size;
+#if 0
+    /* Hack -- Forget the oldest key */
+    if (++Term->key_tail == Term->key_size) Term->key_tail = 0;
+#endif
 
     /* Problem */
     return (1);
@@ -1238,14 +1391,11 @@ int Term_kbhit()
     /* Hack -- check for events (once) */
     if (Term->scan_events) Term_xtra(TERM_XTRA_CHECK, -999);
 
-    /* Semi-Hack -- Handle pending macros (do not advance) */
-    if (Term->key_macro && Term->key_macro[0]) return (*Term->key_macro);
-    
     /* Flush the event queue if necessary */
     if (Term->key_head == Term->key_tail) {
-	while (0 == Term_xtra(TERM_XTRA_CHECK, -999));
+        while (0 == Term_xtra(TERM_XTRA_CHECK, -999));
     }
-    
+
     /* If no key is ready, none was hit, return "nothing" */
     if (Term->key_head == Term->key_tail) return (0);
 
@@ -1268,12 +1418,9 @@ int Term_inkey()
     /* Hack -- check for events (once) */
     if (Term->scan_events) Term_xtra(TERM_XTRA_CHECK, -999);
 
-    /* Semi-Hack -- Handle pending macros (and advance) */
-    if (Term->key_macro && Term->key_macro[0]) return (*Term->key_macro++);
-    
     /* Wait for a keypress */
     while (Term->key_head == Term->key_tail) Term_xtra(TERM_XTRA_EVENT, -999);
-    
+
     /* Extract the next real keypress, advance the queue */
     i = Term->key_queue[Term->key_tail++];
 
@@ -1300,16 +1447,16 @@ errr Term_activate(term *t)
 {
     /* Already done */
     if (Term == t) return (1);
-    
+
     /* Deactivate the old Term */
     if (Term) Term_xtra(TERM_XTRA_LEVEL, TERM_LEVEL_SOFT_SHUT);
 
     /* Hack -- Call the special "init" hook */
     if (!t->initialized) {
-	if (t->init_hook) (*t->init_hook)(t);
-	t->initialized = TRUE;
+        if (t->init_hook) (*t->init_hook)(t);
+        t->initialized = TRUE;
     }
-    
+
     /* Remember the Term */
     Term = t;
 
@@ -1329,8 +1476,8 @@ errr term_nuke(term *t)
 {
     /* Hack -- Call the special "nuke" hook */
     if (t->initialized) {
-	if (t->nuke_hook) (*t->nuke_hook)(t);
-	t->initialized = FALSE;
+        if (t->nuke_hook) (*t->nuke_hook)(t);
+        t->initialized = FALSE;
     }
 
     /* Free the arrays */
@@ -1351,7 +1498,7 @@ errr term_init(term *t, int w, int h, int k)
 {
     /* Hack -- clear the term */
     WIPE(t, term);
-    
+
     /* Initialize the default "physical" screen */
     MAKE(t->old, term_win);
     term_win_init(t->old, w, h);

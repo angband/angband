@@ -1,76 +1,49 @@
 /* File: borg.c */
 
-/* Purpose: an "automatic" player */
+/* Purpose: an "automatic" player -BEN- */
 
 #include "angband.h"
 
 
+
 #ifdef AUTO_PLAY
 
+#include "borg.h"
+
+
 /*
- * Following is a "little project" for school
+ * See "borg.h" for general information.
  *
- * A special command (see "command.c") is used to start, observe,
- * and modify the Borg.  This key defaults to "Control-Z".
+ * This file provides general support for various "Borg" files.
  *
- * We allow the "auto-player" to "know" only what is visible on
- * the screen (using the "term.c" screen access functions).  Thus,
- * the "auto-player" could be written as a separate process which
- * runs Angband in a pseudo-terminal and "examines" the "screen".
- * Also, it hooks into "term.c" to send keypresses when requested.
+ * Currently, this includes general routines involving dungeon grids,
+ * dungeon rooms, the "flow" code, and extracting information from the
+ * "dungeon" part of the screen, including determining which grids are
+ * in line of sight.  See below.
  *
- * I should probably have a "special" mode for being "blind".
+ * Also, we include a routine that attempts to "parse" object descriptions.
+ * Currently, it does pretty well, though sometimes it stores a solitary
+ * "tohit" or "todam" bonus as a "pval" (i.e. rings of accuracy/damage).
+ * It seems to parse all artifacts and ego-items correctly.  But note
+ * that we may fail on items with "excessively" long descriptions, where
+ * "excessively" means 75 characters, or 60 characters in equip or shop.
  *
- * We "notice" when the "level" changes and re-initialize.
+ * Note that the dungeon is assumed smaller than 256 by 256, and thus the
+ * total number of possible rooms is assume smaller than 256*256.  In fact,
+ * it is assumed to be smaller than 256*256-N, where N is the maximum number
+ * of rooms that any one grid can belong to.  Since the dungeon is actually
+ * only 200 by 70, we are fine.
  *
- * Must be careful of:
- *   Gold (or objects) embedded in walls (need to tunnel)
- *   Objects with 's' or ',' symbols (look like monsters)
- *   Traps must be disarmed, Doors must be opened
- *   Stores must be "exited" once "entered"
- *   Doors may be stuck (need to bash)
- *   Must discard junk before trying to pick up more junk
- *   Must be very careful not to run out of food/light
- *   Monsters may be inside walls (need to tunnel)
- *
- * Should be careful of:
- *   Heavy objects may induce infinite looping
- *   If wounded, must run away from monsters, then rest
- *   If we pick up a cursed artifact, we are fucked :-)
- *   Darkness is "ignored" after the first encounter
- *   Try to use a shovel/pick to help with tunnelling
- *
- *
- * Memory usage (300K total, largest chunk 42K):
- *   Rooms: (200*70/8)*24 = 42K
- *   Each row of Grids: 200*16 = 3K, thus 70*3K = 210K total.
- *   Inventory: 34*132 = 5K
- *   Shop: 24*132 = 3K
- *
- * Currently, the auto-player "cheats" in a few situations.  Oops.
- *
- * The "big" cheat is that we "build" an inventory listing without
- * parsing the screen.  We mainly do this because the auto-player
- * is never executed "inside" the inventory mode.
- *
- * Cheats "required" by implementation:
- *   Direct use of "current screen image" / "keypress queue"
- *   Knowledge of when we are being asked for a keypress.
- *   The "space" character can only be used for "darkness".
- *
- * Cheats that could be "overcome" with complex routines:
- *   Direct use of "char_row/char_col" (could acquire via "L" command)
- *   Direct construction of "inven/equip" lists (could do a screen parse)
- *   Direct access to the "current options" and changing them
- *
- * Cheats that could be avoided by duplicating code:
- *   Direct access to the "current viewable space" array (hmm...)
- *   Direct access to the "properties" of the object kinds.
+ * Currently, we reset the "BORG_WALL" flag every time we view the grid.
+ * But often, if we see a "monster" in a wall, the wall is still there.
+ * So perhaps we should not clear the "WALL" code if we see a "monster".
+ * This would require knowledge about "monster" symbols, however.
  */
- 
- 
+
+
+
 /*
- * Problem rooms (see "build_room()" algorithm):
+ * Possibly problematic rooms (see "borg_build_room()"):
  *
  *   #########
  *   ##.....##		Currently this room is parsed as two
@@ -107,236 +80,290 @@
  * Note that #2 seems to allow for the "nicest" treatment of corridors.
  *
  * Note that a room is NEVER built including "unknown" grids.
- */
-
-
-/*
- * Big cheat -- access the "viewable space" array
- */
-
-extern int auto_cheat_get_view_n(void);
-extern byte *auto_cheat_get_view_x(void);
-extern byte *auto_cheat_get_view_y(void);
-
-
-
-
-#define GOAL_GOTO	11
-#define GOAL_TAKE	21
-#define GOAL_KILL	31
-#define GOAL_FLOW	91
-
-#define STATE_START	1	/* Analyze "dungeon" screen */
-#define STATE_INVEN	2	/* Analyze "inventory" screen */
-#define STATE_EQUIP	3	/* Analyze "equipment" screen */
-#define STATE_STORE	10	/* Analyze "store" screens */
-#define STATE_THINK	20	/* Actually choose an action */
-
-/*
- * Maximum possible dungeon size
- */
-#define AUTO_MAX_X	MAX_WIDTH
-#define AUTO_MAX_Y	MAX_HEIGHT
-
-/*
- * Maximum number of rooms (could be too small)
- */
-#define AUTO_ROOMS	((AUTO_MAX_X * AUTO_MAX_Y) / 8)
-
-
-/*
- * Forward declare
- */
-typedef struct _auto_room auto_room;
-typedef struct _auto_grid auto_grid;
-typedef struct _auto_item auto_item;
-
-
-/*
- * A room in the dungeon.  24 bytes.
- */
-struct _auto_room {
-
-  u16b self;		/* Hack -- self index */
-  u16b free;		/* Hack -- next free room */
-  
-  u32b when;		/* When last visited (if ever) */
-
-  byte x1, y1;		/* Upper left corner */
-  byte x2, y2;		/* Bottom right corner */
-
-  u16b flow;		/* Flow cost */
-  byte x, y;		/* Flow location */
-  
-  auto_room *prev;	/* Prev room (in flow) */
-  auto_room *next;	/* Next room (in flow) */
-};
-
-
-/*
- * A grid in the dungeon.  8 bytes.
  *
- * A room index of "zero" means that the grid is not in any room yet
- * A room index N such that 0<N<MAX_ROOMS refers to a single room
- * A room index MAX_ROOMS+N means the grid is inside "N" different rooms
- */
-struct _auto_grid {
-
-  byte o_a;		/* Attribute when last seen */
-  char o_c;		/* Character when last seen */
-
-  byte f_a;		/* Floor attribute (if known) */
-  char f_c;		/* Floor character (if known) */
-
-  u16b room;		/* Room index, see above */
-
-  u16b info;		/* Some info (unused?) */
-};
-
-
-
-/*
- * A structure holding information about an object in the inventory
+ * Also note that corridors are handled by a special routine, and rooms
+ * are only constructed out of at least a 2x2 block of grids.  Corridors
+ * are never allowed to overlap any other rooms.
  *
- * The "iqty" is zero if the object is "missing"
- * The "tval" is zero if the object is "bizarre" (or missing)
- * The "kind" is zero if the object is "unaware" (or bizarre, etc)
- * The "able" is zero if the object is "unknown" (or unaware, etc)
+ * See the "CROSS_ROOM" compile-time define which determine whether the
+ * Borg is allowed to generate "crossing" rooms.  This option allows for
+ * "better" room generation, but at the cost of efficiency.
  *
- * Note that the "Special Objects" should be the only "bizarre" objects.
- * Although certain artifacts and ego weapons may match as well.
+ * See the "CROSS_ROOM" define in "borg.h"
  */
-struct _auto_item {
-
-  char desc[80];	/* Actual Description		*/
-
-  char note[20];	/* Inscription, if any		*/
-  char cost[20];	/* Cost, if in a store		*/
-  
-  u16b kind;		/* Kind index			*/
-  
-  byte iqty;		/* Number of items		*/
-  bool able;		/* True if item is identified	*/
-
-  byte tval;		/* Item type			*/
-  byte sval;		/* Item sub-type		*/
-  s16b pval;		/* Item extra-info		*/
-  
-  bool done;		/* Item has been examined	*/
-  bool junk;		/* Item should be trashed 	*/
-  bool wear;		/* Item should be worn/removed	*/
-  bool cash;		/* Item should be bought/sold	*/
-};
 
 
+bool auto_ready = FALSE;	/* Initialized */
 
-static int ready = FALSE;	/* Initialized */
+bool auto_active = FALSE;	/* Actually active */
 
-static int state = 0;		/* Current "state" */
+int auto_room_max = 0;		/* First totally free room */
 
-static int state_store = 0;	/* Store symbol, if any */
+int c_x = 0;			/* Player location (X) */
+int c_y = 0;			/* Player location (Y) */
 
-static int goal = 0;		/* Current "goal" */
+int w_x = 0;			/* Current panel offset (X) */
+int w_y = 0;			/* Current panel offset (Y) */
 
-static int goal_level = 0;	/* If non-zero, level to chase */
+auto_grid **auto_grids;		/* Current "grid list" */
 
-static s32b greed = 10L;	/* Minimal greed */
+auto_room *auto_rooms;		/* Current "room list" */
 
-static u32b c_t;		/* Current time */
-static int c_x, c_y;		/* Current location */
+auto_item *auto_items;		/* Current "inventory" */
 
-static int g_x, g_y;		/* Goal location */
-static byte g_a;		/* Goal attr */
-static char g_c;		/* Goal char */
+auto_shop *auto_shops;		/* Current "shops" */
 
-static int o_x, o_y;		/* Location when goal began */
-static u32b o_t;		/* Time when goal began */
+auto_room *auto_room_head;	/* &auto_rooms[0] */
 
-static int auto_room_max;	/* No rooms yet */
+auto_room *auto_room_tail;	/* &auto_rooms[AUTO_MAX_ROOMS-1] */
 
-static bool do_heal = FALSE;
-static bool do_food = FALSE;
-static bool do_lite = FALSE;
-static bool do_torch = FALSE;
-static bool do_flask = FALSE;
+auto_grid *pg = NULL;		/* Player grid */
 
-static bool cheat_inven = TRUE;
-static bool cheat_equip = TRUE;
-
-static u32b auto_began = 0L;	/* When this level began */
-
-static char auto_level[16];	/* Current "level" info */
-
-static char auto_gold[16];	/* Current "gold" info */
-
-static auto_grid *pg;		/* Player grid */
-
-static auto_grid **auto_grids;	/* Current "grid list" */
-
-static auto_room *auto_rooms;	/* Current "room list" */
-
-static auto_item *auto_items;	/* Current "inventory" */
-
-static auto_item *auto_wares;	/* Current "store inventory" */
 
 
 /*
- * Constant "item description parsers"
+ * Maintain a set of grids marked as "BORG_VIEW"
  */
-
-static u16b i_size;		/* Number of entries */
-static u16b *i_kind;		/* Kind index per entry */
-static cptr *i_single;		/* Textual prefix for singles */
-static cptr *i_plural;		/* Textual prefix for plurals */
+u16b view_n = 0;
+byte *view_y;
+byte *view_x;
 
 
 /*
- * Constant "information" variables
+ * Maintain a set of grids marked as "BORG_SEEN"
  */
+u16b seen_n = 0;
+byte *seen_y;
+byte *seen_x;
 
-static int dx[10] = {0, -1, 0, 1, -1, 0, 1, -1, 0, 1};
-static int dy[10] = {0, 1, 1, 1, 0, 0, 0, -1, -1, -1};
-static int dd[9] =  {2, 8, 6, 4, 3, 1, 9, 7, 5};
 
-static cptr auto_str_take = "^+:;$*?!_-\\|/\"=~{([])},s";
-static cptr auto_str_kill = "ABCDEFGHIJKLMNOPQRSTUVWZYZabcdefghijklmnopqrtuvwxyz&";
 
+/*
+ * Constant "item description parsers" (singles)
+ */
+static int auto_size_single;		/* Number of "singles" */
+static s16b *auto_what_single;		/* Kind indexes for "singles" */
+static cptr *auto_text_single;		/* Textual prefixes for "singles" */
+
+/*
+ * Constant "item description parsers" (plurals)
+ */
+static int auto_size_plural;		/* Number of "plurals" */
+static s16b *auto_what_plural;		/* Kind index for "plurals" */
+static cptr *auto_text_plural;		/* Textual prefixes for "plurals" */
+
+/*
+ * Constant "item description parsers" (suffixes)
+ */
+static int auto_size_artego;		/* Number of "artegos" */
+static s16b *auto_what_artego;		/* Indexes for "artegos" */
+static cptr *auto_text_artego;		/* Textual prefixes for "artegos" */
+
+
+/*
+ * Log file
+ */
+FILE *auto_fff = NULL;		/* Log file */
 
 
 
 
 /*
- * Size of Keypress buffer
+ * Query the "attr/chars" at a given location on the screen
+ * We return "TRUE" only if a string of some form existed
+ * Note that the string must be done in a single attribute.
+ * We will not grab more than "ABS(n)" characters for the string.
+ * If "n" is "positive", we will grab exactly "n" chars, or fail.
+ * If "n" is "negative", we will grab until the attribute changes.
+ * Note that "a" points to a single "attr", "s" to a string of "chars".
+ *
+ * Assume that the given location is actually on the screen!
  */
-#define KEY_SIZE 1024
+errr borg_what_text(int x, int y, int n, byte *a, char *s)
+{
+    int i;
+    byte t_a;
+    char t_c;
+
+    /* Max length to scan for */
+    int m = ABS(n);
+
+    /* Hack -- Do not run off the screen */
+    if (x + m > 80) m = 80 - x;
+
+
+    /* Direct access to the screen */
+    t_a = Term->scr->a[y][x];
+    t_c = Term->scr->c[y][x];
+
+    /* Save the attribute */
+    (*a) = t_a;
+
+    /* Scan for the rest */
+    for (i = 0; i < m; i++) {
+
+        /* Direct access to the screen */
+        t_a = Term->scr->a[y][x+i];
+        t_c = Term->scr->c[y][x+i];
+
+        /* Verify the "attribute" (or stop) */
+        if (t_a != (*a)) break;
+
+        /* Save the first character */
+        s[i] = t_c;
+    }
+
+    /* Terminate the string */
+    s[i] = '\0';
+
+    /* Too short */
+    if ((n > 0) && (i != n)) return (1);
+
+    /* Success */
+    return (0);
+}
+
+
+/*
+ * As above, but automatically convert all "blank" characters into
+ * spaces of the appropriate "attr".  This includes leading blanks.
+ *
+ * Note that we do NOT strip final spaces, so this function will
+ * very often read characters all the way to the end of the line.
+ *
+ * Assume that the given location is actually on the screen!
+ */
+errr borg_what_text_hack(int x, int y, int n, byte *a, char *s)
+{
+    int i;
+    byte t_a;
+    char t_c;
+
+    /* Max length to scan for */
+    int m = ABS(n);
+
+    /* Hack -- Do not run off the screen */
+    if (x + m > 80) m = 80 - x;
+
+
+    /* Direct access to the screen */
+    t_a = Term->scr->a[y][x];
+    t_c = Term->scr->c[y][x];
+
+    /* Save the attribute */
+    (*a) = t_a;
+
+    /* Scan for the rest */
+    for (i = 0; i < m; i++) {
+
+        /* Direct access to the screen */
+        t_a = Term->scr->a[y][x+i];
+        t_c = Term->scr->c[y][x+i];
+
+        /* Hack -- Save the first usable attribute */
+        if (!(*a)) (*a) = t_a;
+
+        /* Hack -- Convert all "blanks" */
+        if (t_c == ' ') t_a = (*a);
+
+        /* Verify the "attribute" (or stop) */
+        if (t_a != (*a)) break;
+
+        /* Save the first character */
+        s[i] = t_c;
+    }
+
+    /* Terminate the string */
+    s[i] = '\0';
+
+    /* Too short */
+    if ((n > 0) && (i != n)) return (1);
+
+    /* Success */
+    return (0);
+}
+
+
+
+
+/*
+ * Hack -- Dump info to a log file
+ */
+void borg_info(cptr what)
+{
+    /* Dump a log file message */
+    if (auto_fff) fprintf(auto_fff, "%s\n", what);
+}
+
+
+
+/*
+ * Hack -- Display (and save) a note to the user
+ */
+void borg_note(cptr what)
+{
+    /* Log the message */
+    borg_info(what);
+
+    /* Add to the message recall */
+    message_new(what, -1);
+
+    /* Do not use the recall window unless allowed */
+    if (!use_recall_win || !term_recall) return;
+
+    /* Hack -- dump the message in the recall window */
+    Term_activate(term_recall);
+    Term_clear();
+    Term_putstr(0,0,-1,TERM_WHITE,what);
+    Term_fresh();
+    Term_activate(term_screen);
+}
+
+
+/*
+ * Hack -- Stop processing on errors
+ */
+void borg_oops(cptr what)
+{
+    /* No longer active */
+    auto_active = 0;
+
+    /* Give a warning */
+    borg_note(format("The BORG has broken (%s).", what));
+}
+
+
 
 /*
  * A Queue of keypresses to be sent
  */
-static char key_queue[KEY_SIZE];
-static int key_head = 0;
-static int key_tail = 0;
+char auto_key_queue[KEY_SIZE];
+s16b auto_key_head = 0;
+s16b auto_key_tail = 0;
 
 
 /*
  * Add a keypress to the "queue" (fake event)
  */
-static errr Borg_keypress(int k)
+errr borg_keypress(int k)
 {
     /* Hack -- Refuse to enqueue "nul" */
     if (!k) return (-1);
 
+    /* Hack -- store the keypress */
+    if (auto_fff) borg_info(format("Key: '%c'", k));
+
     /* Store the char, advance the queue */
-    key_queue[key_head++] = k;
+    auto_key_queue[auto_key_head++] = k;
 
     /* Circular queue, handle wrap */
-    if (key_head == KEY_SIZE) key_head = 0;
+    if (auto_key_head == KEY_SIZE) auto_key_head = 0;
 
     /* Hack -- Catch overflow (forget oldest) */
-    if (key_head == key_tail) core("Borg overflowed keypress buffer");
+    if (auto_key_head == auto_key_tail) borg_oops("Overflow!");
 
     /* Hack -- Overflow may induce circular queue */
-    if (key_tail == KEY_SIZE) key_tail = 0;
+    if (auto_key_tail == KEY_SIZE) auto_key_tail = 0;
 
     /* Success */
     return (0);
@@ -346,18 +373,18 @@ static errr Borg_keypress(int k)
 /*
  * Get the next Borg keypress
  */
-static int Borg_inkey(void)
+char borg_inkey(void)
 {
     int i;
 
     /* Nothing ready */
-    if (key_head == key_tail) return (0);
-        
+    if (auto_key_head == auto_key_tail) return (0);
+
     /* Extract the keypress, advance the queue */
-    i = key_queue[key_tail++];
+    i = auto_key_queue[auto_key_tail++];
 
     /* Circular queue requires wrap-around */
-    if (key_tail == KEY_SIZE) key_tail = 0;
+    if (auto_key_tail == KEY_SIZE) auto_key_tail = 0;
 
     /* Return the key */
     return (i);
@@ -365,71 +392,18 @@ static int Borg_inkey(void)
 
 
 
-
 /*
- * Hack -- Put some information on the screen at a later time
+ * Get the next Borg keypress
  */
-static void auto_tell(cptr what)
+void borg_flush(void)
 {
-    cptr s;
+    /* Hack -- store the keypress */
+    borg_info("Flushing key-buffer.");
 
-    /* Hack -- self note */
-    Borg_keypress(':');
-    for (s = what; *s; s++) Borg_keypress(*s);
-    Borg_keypress('\n');
+    /* Simply forget old keys */
+    auto_key_tail = auto_key_head;
 }
 
-
-/*
- * Hack -- Put some information in the recall window
- */
-static void auto_note(cptr what)
-{
-    if (!use_recall_win || !term_recall) return;
-
-    Term_activate(term_recall);
-    
-    Term_clear();
-    Term_putstr(0,0,-1,TERM_WHITE,what);
-    Term_fresh();
-
-    Term_activate(term_screen);
-}
-
-
-/*
- * Hack -- Stop processing on errors
- */
-static void auto_oops(cptr what)
-{
-    /* Forget the state */
-    state = 0;
-
-    /* Give a warning */
-    auto_note(format("The BORG has broken (%s).", what));
-}
-
-
-/*
- * Convert a "map location" into an "auto_grid"
- */
-static auto_grid *grid(int x, int y)
-{
-    return (&auto_grids[y][x]);
-}
-
-
-/*
- * Determine if a room contains a location
- */
-static bool auto_room_contains(auto_room *ar, int x, int y)
-{
-    if (x < ar->x1) return (FALSE);
-    if (x > ar->x2) return (FALSE);
-    if (y < ar->y1) return (FALSE);
-    if (y > ar->y2) return (FALSE);
-    return (TRUE);
-}
 
 
 /*
@@ -438,40 +412,54 @@ static bool auto_room_contains(auto_room *ar, int x, int y)
  * We should probably build a "list" of "used rooms", where the "tail"
  * of that list is all the "crossed rooms", and also keep a pointer to
  * that tail for "fast" access to the "crossed rooms" set.
+ *
+ * This function is necessary because some grids (though not many)
+ * can be contained in multiple rooms, because we allow "crossing"
+ * rooms.  The Borg uses crossing rooms not only for actual "cross"
+ * and "overlap" rooms in the dungeon, but also weird double width
+ * corridors, the corners of "ragged edge" rooms, and various regions
+ * in the town.  Actually, the worst "offenders" come from the town...
+ *
+ * Note that this function should be valid even if rooms are destroyed
+ * inside a single "search" through the room list.  This is because
+ * only the "first" call to this function checks the "room" field.
  */
-static auto_room *room(bool go, int gx, int gy)
+auto_room *room(bool go, int gx, int gy)
 {
     static int x = 0, y = 0, i = 0;
 
     /* We just got a new grid */
     if (go) {
 
-	auto_grid *ag = grid(gx, gy);
-	
-	/* Default to no rooms */
-	i = auto_room_max;
-	
-	/* Paranoia -- no rooms */
-	if (!ag->room) return (NULL);
-	
-	/* Efficiency -- Single room */
-	if (ag->room < AUTO_ROOMS) return (&auto_rooms[ag->room]);
+        auto_grid *ag = grid(gx,gy);
 
-	/* Scan through multiple rooms */
-	x = gx, y = gy, i = 0;
+        /* Default to no rooms */
+        i = AUTO_ROOMS;
+
+        /* Paranoia -- no rooms */
+        if (!ag->room) return (NULL);
+
+        /* Efficiency -- Single room */
+        if (ag->room < AUTO_ROOMS) return (&auto_rooms[ag->room]);
+
+        /* Scan through multiple rooms */
+        x = gx; y = gy; i = 0;
     }
 
     /* Look for a room */
     for (i++; i < auto_room_max; i++) {
 
-	/* Access the room */
-	auto_room *ar = &auto_rooms[i];
-	
-	/* Skip "dead" rooms */
-	if (!ar->when) continue;
-	
-	/* If the room contains it, use it */
-	if (auto_room_contains(ar, x, y)) return (ar);
+        /* Access the room */
+        auto_room *ar = &auto_rooms[i];
+
+        /* Skip "free" rooms */
+        if (ar->free) continue;
+
+        /* If the room contains it, use it */
+        if ((x >= ar->x1) && (x <= ar->x2) &&
+            (y >= ar->y1) && (y <= ar->y2)) {
+            return (ar);
+        }
     }
 
     /* Default */
@@ -482,54 +470,198 @@ static auto_room *room(bool go, int gx, int gy)
 
 
 
+
 /*
- * Query the "attr/chars" at a given location on the screen
- * We return "TRUE" only if a string of some form existed
- * Note that the string must be done in a single attribute.
- * Normally, the string must be "n" characters long.
- * If "n" is "negative", we will grab until the attribute changes.
- * Note that "a" points to a single "attr", "s" to a string of "chars".
+ * Mega-Hack -- clean up the "free room" list
+ * First, destroy some of the "fake" rooms
+ * Then, attempt to compress the list
  */
-static errr Term_what_text(int x, int y, int n, byte *a, char *s)
+bool borg_free_room_update(void)
 {
-    int i;
-    byte t_a;
-    char t_c;
+    int x, y, n = 0;
 
-    /* Max length to scan for */
-    int m = ABS(n);
-    
-    /* Hack -- Pre-terminate the string */
-    s[0] = '\0';
-    
-    /* Check the first character, make sure it exists */
-    if (Term_what(x, y, &t_a, &t_c)) return (-1);
+    auto_grid *ag;
+    auto_room *ar;
 
-    /* Save the attribute */
-    (*a) = t_a;
-    
-    /* Scan for it */
-    for (i = 0; i < m; i++) {
 
-	/* Ask for the screen contents */
-	if (Term_what(x+i, y, &t_a, &t_c)) return (-2);
+    /* Scan the dungeon */
+    for (y = 0; y < AUTO_MAX_Y; y++) {
+        for (x = 0; x < AUTO_MAX_X; x++) {
 
-	/* Hack -- negative "n" stops at attribute change */
-	if ((n < 0) && (t_a != (*a))) break;
-	
-	/* Verify the "attribute" */
-	if (t_a != (*a)) return (-3);
-		
-	/* Save the character */
-	s[i] = t_c;
+            /* Extract the "grid" */
+            ag = grid(x, y);
+
+            /* Skip "real" grids */
+            if (ag->o_c != ' ') continue;
+
+            /* Skip "viewed" grids */
+            if (ag->info & BORG_VIEW) continue;
+
+            /* Only process "roomed" grids */
+            if (!ag->room) continue;
+
+            /* Paranoia -- skip cross rooms */
+            if (ag->room >= AUTO_ROOMS) continue;
+
+            /* Get the (solitary) room */
+            ar = &auto_rooms[ag->room];
+
+            /* Paranoia -- Skip "big" rooms */
+            if ((ar->x1 < x) || (ar->x2 > x)) continue;
+            if ((ar->y1 < y) || (ar->y2 > y)) continue;
+
+            /* That room is now "gone" */
+            ar->when = 0L;
+            ar->cost = 0;
+            ar->x1 = ar->x2 = ar->x = 0;
+            ar->y1 = ar->y2 = ar->y = 0;
+            ar->prev = ar->next = 0;
+
+            /* Add it to the "free list" */
+            auto_rooms[ag->room].free = auto_rooms[0].free;
+
+            /* Drop the room into the "free list" */
+            auto_rooms[0].free = ag->room;
+
+            /* No room here */
+            ag->room = 0;
+
+            /* Count changes */
+            n++;
+        }
     }
 
-    /* Terminate the string */
-    s[i] = '\0';
-    
-    /* Success */
-    return (0);
+    /* Nothing done */
+    if (!n) return (FALSE);
+
+
+    /* Message */
+    borg_note(format("Destroyed %d fake rooms.", n));
+
+    /* Rooms destroyed */
+    return (TRUE);
 }
+
+
+
+/*
+ * Mega-Hack -- purge the "free room" list
+ * Could be a little more "clever", I suppose
+ * For example, first nuke all rooms not in view
+ */
+static bool borg_free_room_purge(void)
+{
+    int x, y, n;
+
+
+    /* Purge every room */
+    for (n = 1; n < auto_room_max; n++) {
+
+        auto_room *ar = &auto_rooms[n];
+
+        /* That room is now "gone" */
+        ar->when = 0L;
+        ar->cost = 0;
+        ar->x1 = ar->x2 = ar->x = 0;
+        ar->y1 = ar->y2 = ar->y = 0;
+        ar->prev = ar->next = 0;
+
+        /* Reset the "free list" */
+        ar->free = n + 1;
+    }
+
+    /* Reset the free list */
+    auto_room_head->free = 1;
+
+    /* Maximum room index */
+    auto_room_max = 1;
+
+
+    /* Scan the dungeon */
+    for (y = 0; y < AUTO_MAX_Y; y++) {
+        for (x = 0; x < AUTO_MAX_X; x++) {
+
+            /* Extract the "grid" */
+            auto_grid *ag = grid(x, y);
+
+            /* No room here */
+            ag->room = 0;
+        }
+    }
+
+
+    /* Message */
+    borg_note(format("Purged all %d rooms.", n));
+
+    /* Rooms destroyed */
+    return (TRUE);
+}
+
+
+
+/*
+ * Grab a room from the free list and return it
+ */
+auto_room *borg_free_room(void)
+{
+    int i;
+
+    auto_room *ar;
+
+
+    /* Running out of free rooms */
+    if (auto_room_head->free == auto_room_tail->self) {
+
+        /* Message */
+        borg_note("Updating room list!");
+
+        /* Try to free some rooms */
+        if (!borg_free_room_update()) {
+
+            /* Oops */
+            borg_note("Purging room list!");
+
+            /* Try to free some rooms */
+            if (!borg_free_room_purge()) {
+
+                /* Oops */
+                borg_oops("Broken room list!");
+
+                /* Hack -- Attempt to prevent core dumps */
+                return (&auto_rooms[1]);
+            }
+        }
+    }
+
+
+    /* Acquire a "free" room */
+    i = auto_room_head->free;
+
+    /* Access the new room */
+    ar = &auto_rooms[i];
+
+    /* Remove the room from the free list */
+    auto_room_head->free = ar->free;
+
+    /* Take note of new "maximum" room index */
+    if (auto_room_max < i + 1) auto_room_max = i + 1;
+
+    /* The new room is not free */
+    ar->free = 0;
+
+    /* Paranoia */
+    ar->when = 0L;
+    ar->cost = 0;
+    ar->x1 = ar->x1 = ar->x = 0;
+    ar->y1 = ar->y2 = ar->y = 0;
+    ar->prev = ar->next = 0;
+
+    /* Return the room */
+    return (ar);
+}
+
+
+
 
 
 /*
@@ -539,27 +671,27 @@ static errr Term_what_text(int x, int y, int n, byte *a, char *s)
  * Note that a "1x1" grid (or "diagonal" grid) is a "snake".
  * A "snake" grid cannot touch "unknown" grids.
  */
-static bool auto_build_snake(int x, int y)
+static bool borg_build_snake(int x, int y)
 {
     auto_grid *ag, *ag1, *ag2;
 
     /* Access the center */
-    ag = grid(x, y);
+    ag = grid(x,y);
 
     /* Central grid cannot be unknown */
     if (ag->o_c == ' ') return (FALSE);
-    
+
     /* Central grid must be a non-wall */
-    if (strchr("#%", ag->o_c)) return (FALSE);
-    
+    if (ag->info & BORG_WALL) return (FALSE);
+
     /* South/North blockage induces a snake */
-    ag1 = grid(x, y+1), ag2 = grid(x, y-1);
-    if (strchr("#%", ag1->o_c) && strchr("#%", ag2->o_c)) return (TRUE);
-    
+    ag1 = grid(x,y+1); ag2 = grid(x,y-1);
+    if ((ag1->info & BORG_WALL) && (ag2->info & BORG_WALL)) return (TRUE);
+
     /* East/West blockage induces a snake */
-    ag1 = grid(x+1, y), ag2 = grid(x-1, y);
-    if (strchr("#%", ag1->o_c) && strchr("#%", ag2->o_c)) return (TRUE);
-    
+    ag1 = grid(x+1,y); ag2 = grid(x-1,y);
+    if ((ag1->info & BORG_WALL) && (ag2->info & BORG_WALL)) return (TRUE);
+
     /* No good */
     return (FALSE);
 }
@@ -568,27 +700,41 @@ static bool auto_build_snake(int x, int y)
 
 /*
  * Determine if the given "box" in the world is fully made of "floor"
+ * Currently, we refuse to accept "unknown" grids as "floor" grids
  */
-static bool auto_build_room_floor(int x1, int y1, int x2, int y2)
+static bool borg_build_room_floor(int x1, int y1, int x2, int y2)
 {
     int x, y;
-    
-    /* Check for "easy expand" */
+
+    /* Check for "floors" */
     for (y = y1; y <= y2; y++) {
-	for (x = x1; x <= x2; x++) {
-	
-	    /* Access that grid */
-	    auto_grid *ag = grid(x, y);
-	    
-	    /* Refuse to accept unknown grids */
-	    if (ag->o_c == ' ') return (FALSE);
+        for (x = x1; x <= x2; x++) {
 
-	    /* Refuse to accept walls/seams/doors */
-	    if (strchr("#%+'", ag->o_c)) return (FALSE);
+            auto_room *ar;
 
-	    /* XXX Hack -- Require floors (or stairs) */
-	    if (!strchr(".<>", ag->o_c)) return (FALSE);
-	}
+            /* Access that grid */
+            auto_grid *ag = grid(x,y);
+
+            /* Refuse to accept walls */
+            if (ag->info & BORG_WALL) return (FALSE);
+
+            /* Refuse to accept unknown grids */
+            if (ag->o_c == ' ') return (FALSE);
+
+            /* Mega-Hack -- Refuse to accept stores */
+            if (isdigit(ag->o_c)) return (FALSE);
+
+#ifndef CROSS_ROOMS
+
+            /* Hack -- Do not "cross" other (large) rooms */
+            for (ar = room(1,x,y); ar; ar = room(0,0,0)) {
+                if (ar->x1 != ar->x2) return (FALSE);
+                if (ar->y1 != ar->y2) return (FALSE);
+            }
+
+#endif
+
+        }
     }
 
     /* Must be okay */
@@ -599,20 +745,20 @@ static bool auto_build_room_floor(int x1, int y1, int x2, int y2)
 /*
  * Determine if the given "box" in the world is fully "known"
  */
-static bool auto_build_room_known(int x1, int y1, int x2, int y2)
+static bool borg_build_room_known(int x1, int y1, int x2, int y2)
 {
     int x, y;
-    
+
     /* Check for "unknown" grids */
     for (y = y1; y <= y2; y++) {
-	for (x = x1; x <= x2; x++) {
-	
-	    /* Access that grid */
-	    auto_grid *ag = grid(x, y);
-	    
-	    /* Refuse to accept unknown grids */
-	    if (ag->o_c == ' ') return (FALSE);
-	}
+        for (x = x1; x <= x2; x++) {
+
+            /* Access that grid */
+            auto_grid *ag = grid(x,y);
+
+            /* Refuse to accept unknown grids */
+            if (ag->o_c == ' ') return (FALSE);
+        }
     }
 
     /* Must be okay */
@@ -624,12 +770,9 @@ static bool auto_build_room_known(int x1, int y1, int x2, int y2)
 
 /*
  * Attempt to build a "bigger" room for the given location
- *
- * We use a "free list" to simplify "room allocation".
- *
- * We return TRUE if a "new" room was created.
+ * Return TRUE if a "new" room was created, else FALSE
  */
-static bool auto_build_room(int x, int y)
+bool borg_build_room(int x, int y)
 {
     uint i, j;
 
@@ -638,490 +781,545 @@ static bool auto_build_room(int x, int y)
     auto_grid *ag;
     auto_room *ar;
 
+    bool change = FALSE;
+
 
     /* Attempt to expand a 3x3 room */
-    if (auto_build_room_floor(x-1, y-1, x+1, y+1)) {
-	x1 = x - 1, y1 = y - 1, x2 = x + 1, y2 = y + 1;
+    if (borg_build_room_floor(x-1, y-1, x+1, y+1)) {
+        x1 = x - 1; y1 = y - 1; x2 = x + 1; y2 = y + 1;
     }
-    
+
     /* Or attempt to expand a 3x2 room (south) */
-    else if (auto_build_room_floor(x-1, y, x+1, y+1)) {
-	x1 = x - 1, y1 = y, x2 = x + 1, y2 = y + 1;
+    else if (borg_build_room_floor(x-1, y, x+1, y+1)) {
+        x1 = x - 1; y1 = y; x2 = x + 1; y2 = y + 1;
     }
-    
+
     /* Or attempt to expand a 3x2 room (north) */
-    else if (auto_build_room_floor(x-1, y-1, x+1, y)) {
-	x1 = x - 1, y1 = y - 1, x2 = x + 1, y2 = y;
+    else if (borg_build_room_floor(x-1, y-1, x+1, y)) {
+        x1 = x - 1; y1 = y - 1; x2 = x + 1; y2 = y;
     }
-        
+
     /* Or attempt to expand a 2x3 room (east) */
-    else if (auto_build_room_floor(x, y-1, x+1, y+1)) {
-	x1 = x, y1 = y - 1, x2 = x + 1, y2 = y + 1;
+    else if (borg_build_room_floor(x, y-1, x+1, y+1)) {
+        x1 = x; y1 = y - 1; x2 = x + 1; y2 = y + 1;
     }
-    
+
     /* Or attempt to expand a 2x3 room (west) */
-    else if (auto_build_room_floor(x-1, y-1, x, y+1)) {
-	x1 = x - 1, y1 = y - 1, x2 = x, y2 = y + 1;
+    else if (borg_build_room_floor(x-1, y-1, x, y+1)) {
+        x1 = x - 1; y1 = y - 1; x2 = x; y2 = y + 1;
     }
-    
+
     /* Or attempt to expand a 2x2 room (south east) */
-    else if (auto_build_room_floor(x, y, x+1, y+1)) {
-	x1 = x, y1 = y, x2 = x + 1, y2 = y + 1;
+    else if (borg_build_room_floor(x, y, x+1, y+1)) {
+        x1 = x; y1 = y; x2 = x + 1; y2 = y + 1;
     }
-    
+
     /* Or attempt to expand a 2x2 room (south west) */
-    else if (auto_build_room_floor(x-1, y, x, y+1)) {
-	x1 = x - 1, y1 = y, x2 = x, y2 = y + 1;
+    else if (borg_build_room_floor(x-1, y, x, y+1)) {
+        x1 = x - 1; y1 = y; x2 = x; y2 = y + 1;
     }
-    
+
     /* Or attempt to expand a 2x2 room (north east) */
-    else if (auto_build_room_floor(x, y-1, x+1, y)) {
-	x1 = x, y1 = y - 1, x2 = x + 1, y2 = y;
+    else if (borg_build_room_floor(x, y-1, x+1, y)) {
+        x1 = x; y1 = y - 1; x2 = x + 1; y2 = y;
     }
-    
+
     /* Or attempt to expand a 2x2 room (north west) */
-    else if (auto_build_room_floor(x-1, y-1, x, y)) {
-	x1 = x - 1, y1 = y - 1, x2 = x, y2 = y;
+    else if (borg_build_room_floor(x-1, y-1, x, y)) {
+        x1 = x - 1; y1 = y - 1; x2 = x; y2 = y;
     }
 
     /* Hack -- only "snake" grids can grow corridors */
-    else if (!auto_build_snake(x, y)) {
-	x1 = x, y1 = y, x2 = x, y2 = y;
+    else if (!borg_build_snake(x, y)) {
+        x1 = x; y1 = y; x2 = x; y2 = y;
     }
-    
+
     /* Or attempt to extend a corridor (south) */
-    else if (auto_build_snake(x, y+1)) {
-	x1 = x, y1 = y, x2 = x, y2 = y + 1;
+    else if (borg_build_snake(x, y+1)) {
+        x1 = x; y1 = y; x2 = x; y2 = y + 1;
     }
 
     /* Or attempt to extend a corridor (north) */
-    else if (auto_build_snake(x, y-1)) {
-	x1 = x, y1 = y - 1, x2 = x, y2 = y;
+    else if (borg_build_snake(x, y-1)) {
+        x1 = x; y1 = y - 1; x2 = x; y2 = y;
     }
 
     /* Or attempt to extend a corridor (east) */
-    else if (auto_build_snake(x+1, y)) {
-	x1 = x, y1 = y, x2 = x + 1, y2 = y;
+    else if (borg_build_snake(x+1, y)) {
+        x1 = x; y1 = y; x2 = x + 1; y2 = y;
     }
 
     /* Or attempt to extend a corridor (west) */
-    else if (auto_build_snake(x-1, y)) {
-	x1 = x - 1, y1 = y, x2 = x, y2 = y;
+    else if (borg_build_snake(x-1, y)) {
+        x1 = x - 1; y1 = y; x2 = x; y2 = y;
     }
 
 
-    /* Default to 1x1 grid -- see below */
+    /* Default to 1x1 grid */
     else {
-	x1 = x, y1 = y, x2 = x, y2 = y;
+        x1 = x; y1 = y; x2 = x; y2 = y;
     }
-    
-    
-    /* Hack -- Single grid rooms are never exciting */
+
+
+    /* Hack -- Single grid (1x1) rooms are boring */
     if ((x1 == x2) && (y1 == y2)) return (FALSE);
-    
+
 
     /* Expand a north/south corridor */
     if (x1 == x2) {
 
-	/* Grow south/north */
-	while (auto_build_snake(x, y2+1)) y2++;
-	while (auto_build_snake(x, y1-1)) y1--;
+        /* Grow south/north */
+        while (borg_build_snake(x, y2+1)) y2++;
+        while (borg_build_snake(x, y1-1)) y1--;
     }
-    
+
     /* Expand a east/west corridor */
     else if (y1 == y2) {
 
-	/* Grow east/west */
-	while (auto_build_snake(x2+1, y)) x2++;
-	while (auto_build_snake(x1-1, y)) x1--;
+        /* Grow east/west */
+        while (borg_build_snake(x2+1, y)) x2++;
+        while (borg_build_snake(x1-1, y)) x1--;
     }
 
     /* Expand a rectangle -- try south/north first */
-    else if (randint(2) == 1) {
+    else if (rand_int(2) == 0) {
 
-	/* Grow south/north */
-	while (auto_build_room_floor(x1, y2+1, x2, y2+1)) y2++;
-	while (auto_build_room_floor(x1, y1-1, x2, y1-1)) y1--;
+        /* Grow south/north */
+        while (borg_build_room_floor(x1, y2+1, x2, y2+1)) y2++;
+        while (borg_build_room_floor(x1, y1-1, x2, y1-1)) y1--;
 
-	/* Grow east/west */
-	while (auto_build_room_floor(x2+1, y1, x2+1, y2)) x2++;
-	while (auto_build_room_floor(x1-1, y1, x1-1, y2)) x1--;
+        /* Grow east/west */
+        while (borg_build_room_floor(x2+1, y1, x2+1, y2)) x2++;
+        while (borg_build_room_floor(x1-1, y1, x1-1, y2)) x1--;
     }
 
     /* Expand a rectangle -- try east/west first */
     else {
 
-	/* Grow east/west */
-	while (auto_build_room_floor(x2+1, y1, x2+1, y2)) x2++;
-	while (auto_build_room_floor(x1-1, y1, x1-1, y2)) x1--;
+        /* Grow east/west */
+        while (borg_build_room_floor(x2+1, y1, x2+1, y2)) x2++;
+        while (borg_build_room_floor(x1-1, y1, x1-1, y2)) x1--;
 
-	/* Grow south/north */
-	while (auto_build_room_floor(x1, y2+1, x2, y2+1)) y2++;
-	while (auto_build_room_floor(x1, y1-1, x2, y1-1)) y1--;
+        /* Grow south/north */
+        while (borg_build_room_floor(x1, y2+1, x2, y2+1)) y2++;
+        while (borg_build_room_floor(x1, y1-1, x2, y1-1)) y1--;
     }
 
 
-    /* XXX Hack -- refuse to build rooms touching unknowns */
-    if (!auto_build_room_known(x1-1, y2+1, x2+1, y2+1)) return (FALSE);
-    if (!auto_build_room_known(x1-1, y1-1, x2+1, y1-1)) return (FALSE);
-    if (!auto_build_room_known(x2+1, y1-1, x2+1, y2+1)) return (FALSE);
-    if (!auto_build_room_known(x1-1, y1-1, x1-1, y2+1)) return (FALSE);
+    /* Hack -- refuse to build rooms touching unknowns */
+    if (!borg_build_room_known(x1-1, y2+1, x2+1, y2+1)) return (FALSE);
+    if (!borg_build_room_known(x1-1, y1-1, x2+1, y1-1)) return (FALSE);
+    if (!borg_build_room_known(x2+1, y1-1, x2+1, y2+1)) return (FALSE);
+    if (!borg_build_room_known(x1-1, y1-1, x1-1, y2+1)) return (FALSE);
 
 
     /* Make sure this room does not exist and is not contained */
     for (ar = room(1,x,y); ar; ar = room(0,0,0)) {
 
-	/* Never make a room "inside" another room */
-	if ((ar->x1 <= x1) && (x2 <= ar->x2) &&
-	    (ar->y1 <= y1) && (y2 <= ar->y2)) return (FALSE);
+        /* Never make a room "inside" another room */
+        if ((ar->x1 <= x1) && (x2 <= ar->x2) &&
+            (ar->y1 <= y1) && (y2 <= ar->y2)) {
+
+            /* The room already exists */
+            return (FALSE);
+        }
     }
 
 
     /* Message */
-    auto_note(format("Building a room from %d,%d to %d,%d", x1, y1, x2, y2));
-    
-    
-    /* Acquire a "free" room */
-    i = auto_rooms[0].free;
-    auto_rooms[0].free = auto_rooms[i].free;
-    auto_rooms[i].free = 0;
-    
-    /* Paranoia */
-    if (!i) core("Borg ran out of free rooms");
-    
-    /* Take note of new "maximums" */
-    if (i + 1 > auto_room_max) auto_room_max = i + 1;
-    
-    /* Access the new room */
-    ar = &auto_rooms[i];
-	
+    borg_note(format("Room (%d,%d to %d,%d)", x1, y1, x2, y2));
+
+    /* XXX XXX XXX Hack -- clean up the "free room" list first */
+    /* borg_free_room_update(); */
+
+    /* Access a free room */
+    ar = borg_free_room();
+
     /* Initialize the new room */
-    ar->x1 = x1;
-    ar->x2 = x2;
-    ar->y1 = y1;
-    ar->y2 = y2;
+    ar->x = ar->x1 = x1; ar->x2 = x2;
+    ar->y = ar->y1 = y1; ar->y2 = y2;
 
-    /* Paranoia */
-    ar->when = c_t;
+    /* Save the room index */
+    i = ar->self;
 
-    /* Forget the flow */
-    ar->flow = 0;
-    ar->x = ar->y = 0;
-    ar->prev = ar->next = NULL;
-    
     /* Absorb old rooms */
     for (j = 1; j < auto_room_max; j++) {
 
-	/* Skip the "current" room! */
-	if (i == j) continue;
-	
-	/* Get the room */
-	ar = &auto_rooms[j];
-	
-	/* Skip "free" rooms */
-	if (!ar->when) continue;
+        /* Skip the "current" room! */
+        if (i == j) continue;
 
-	/* Skip non-contained rooms */
-	if ((ar->x1 < x1) || (ar->y1 < y1)) continue;
-	if ((x2 < ar->x2) || (y2 < ar->y2)) continue;
+        /* Get the room */
+        ar = &auto_rooms[j];
 
-	/* Scan the "contained" room */
-	for (y = ar->y1; y <= ar->y2; y++) {
-	    for (x = ar->x1; x <= ar->x2; x++) {
-	
-		/* Get the "contained" grid */
-		ag = grid(x, y);
+        /* Skip "free" rooms */
+        if (ar->free) continue;
 
-		/* Normal grids "lose" their parents. */
-		if (ag->room < AUTO_ROOMS) ag->room = 0;
+        /* Skip non-contained rooms */
+        if ((ar->x1 < x1) || (ar->y1 < y1)) continue;
+        if ((x2 < ar->x2) || (y2 < ar->y2)) continue;
 
-		/* Cross-rooms lose one parent */
-		if (ag->room > AUTO_ROOMS) ag->room--;
-	    }
-	}
+        /* Scan the "contained" room */
+        for (y = ar->y1; y <= ar->y2; y++) {
+            for (x = ar->x1; x <= ar->x2; x++) {
 
-	/* That room is now "gone" */
-	ar->when = 0L;
-	ar->x1 = ar->x2 = ar->y1 = ar->y2 = 0;
-	ar->prev = ar->next = NULL;
-	
-	/* Add it to the "free list" */
-	auto_rooms[j].free = auto_rooms[0].free;
-	auto_rooms[0].free = j;
+                /* Get the "contained" grid */
+                ag = grid(x,y);
+
+                /* Normal grids "lose" their parents. */
+                if (ag->room < AUTO_ROOMS) ag->room = 0;
+
+                /* Cross-rooms lose one parent */
+                if (ag->room > AUTO_ROOMS) ag->room--;
+            }
+        }
+
+        /* That room is now "gone" */
+        ar->when = 0L;
+        ar->cost = 0;
+        ar->x1 = ar->x2 = ar->x = 0;
+        ar->y1 = ar->y2 = ar->y = 0;
+        ar->prev = ar->next = 0;
+
+        /* Add it to the "free list" */
+        auto_rooms[j].free = auto_rooms[0].free;
+        auto_rooms[0].free = j;
     }
 
 
     /* Access the new room */
     ar = &auto_rooms[i];
-    
+
     /* Scan the grids contained in the new room */
     for (y = ar->y1; y <= ar->y2; y++) {
-	for (x = ar->x1; x <= ar->x2; x++) {
-	
-	    /* Get the "contained" grid */
-	    ag = grid(x, y);
+        for (x = ar->x1; x <= ar->x2; x++) {
 
-	    /* Steal "absorbed" grids */
-	    if (ag->room == AUTO_ROOMS) ag->room = i;
-	    
-	    /* Steal "fresh" grids */
-	    if (ag->room == 0) ag->room = i;
+            /* Get the "contained" grid */
+            ag = grid(x,y);
 
-	    /* Skip grids owned by this room */
-	    if (ag->room == i) continue;
-	    
-	    /* Normal grids become "cross-grids" */
-	    if (ag->room < AUTO_ROOMS) ag->room = AUTO_ROOMS + 1;
-	    
-	    /* All cross-grids now have another parent */
-	    ag->room++;
-	}
+            /* Steal "absorbed" grids */
+            if (ag->room == AUTO_ROOMS) ag->room = ar->self;
+
+            /* Steal "fresh" grids */
+            if (ag->room == 0) ag->room = ar->self;
+
+            /* Skip grids owned by this room */
+            if (ag->room == i) continue;
+
+            /* Normal grids become "cross-grids" (one parent) */
+            if (ag->room < AUTO_ROOMS) ag->room = AUTO_ROOMS + 1;
+
+            /* All cross-grids now have another parent */
+            ag->room++;
+        }
     }
 
-    /* The room set has changed */
-    return (TRUE);
-}
+    /* Changed */
+    change = TRUE;
 
+    /* Changed */
+    return (change);
+}
 
 
 
 /*
- * Prepare to think -- "dungeon screen"
+ * Destroy all rooms containing the given location
  */
-static bool auto_prepare_start(void)
+bool borg_clear_room(int x, int y)
 {
-    int i, x, y;
-    
+    uint xx, yy;
+
     auto_grid *ag;
     auto_room *ar;
 
-    byte t_a;
-
-    char buf[128];
-
-    /* Massive cheat */
-    int view_n = auto_cheat_get_view_n();
-    byte *view_x = auto_cheat_get_view_x();
-    byte *view_y = auto_cheat_get_view_y();
-    
+    bool res = FALSE;
 
 
-    /* Increase the "time" */
-    c_t++;
-    
-    /* Cheat -- Load the current location */
-    c_y = char_row;
-    c_x = char_col;
+    /* Absorb old rooms */
+    for (ar = room(1,x,y); ar; ar = room(0,0,0)) {
 
+        /* Note significant changes */
+        if (ar->cost < 999) res = TRUE;
 
-    /* Clear all the "state flags" */
-    do_heal = do_food = do_lite = do_torch = do_flask = FALSE;
-    
+        /* Scan the "contained" room */
+        for (yy = ar->y1; yy <= ar->y2; yy++) {
+            for (xx = ar->x1; xx <= ar->x2; xx++) {
 
-    /* Check for damage -- use the "hitpoint warning" option */
-    if (0 == Term_what_text(6, 15, -6, &t_a, buf)) {
-	if (t_a == TERM_RED) do_heal = TRUE;
+                /* Get the "contained" grid */
+                ag = grid(xx,yy);
+
+                /* Normal grids "lose" their parents. */
+                if (ag->room < AUTO_ROOMS) ag->room = 0;
+
+                /* Cross-rooms lose one parent */
+                if (ag->room > AUTO_ROOMS) ag->room--;
+            }
+        }
+
+        /* That room is now "gone" */
+        ar->when = 0L;
+        ar->cost = 0;
+        ar->x1 = ar->x2 = ar->x = 0;
+        ar->y1 = ar->y2 = ar->y = 0;
+        ar->prev = ar->next = 0;
+
+        /* Add the room to the "free list" */
+        auto_rooms[ar->self].free = auto_rooms[0].free;
+
+        /* Add the room to the "free list" */
+        auto_rooms[0].free = ar->self;
     }
 
 
-    /* Check for hunger */
-    if (0 == Term_what_text(0, 23, 4, &t_a, buf)) {
-        if (streq(buf, "Hung")) do_food = TRUE;
-        if (streq(buf, "Weak")) do_food = TRUE;
-        if (streq(buf, "Fain")) do_food = TRUE;
-    }
-
-    /* Note when we get hungry */
-    if (do_food) auto_note("I am hungry.");    
-    
-
-    /* Extract the "current level" or abort */
-    if (Term_what_text(70, 23, -7, &t_a, buf)) {
-	auto_oops("No level");
-	return (TRUE);
-    }
-    
-
-    /* Verify the level */
-    if (strcmp(buf, auto_level)) {
-
-	/* Restart the clock */
-	c_t = 10000L;
-
-	/* Start a new level */
-	auto_began = c_t;
-
-	/* No stairs yet */
-	goal_level = 0;
-	
-	/* No "real" rooms yet */
-	auto_room_max = 0;
-
-	/* Clean up the rooms */
-	for (i = 0; i < AUTO_ROOMS; i++) {
-
-	    /* Access the room */
-	    ar = &auto_rooms[i];
-
-	    /* Never seen it */
-	    ar->when = 0L;
-
-	    /* Paranoia -- No location yet */
-	    ar->x1 = ar->x2 = ar->y1 = ar->y2 = 0;
-	    
-	    /* Not in the queue */
-	    ar->next = ar->prev = NULL;
-	    
-	    /* No flow */
-	    ar->flow = 0;
-	    
-	    /* Paranoia -- Visit the corner */
-	    ar->x = ar->y = 0;
-
-	    /* Hack -- Prepare the "free list" index */
-	    ar->free = i + 1;
-	}
-
-	/* Hack -- run out of free space */
-	auto_rooms[AUTO_ROOMS-1].free = 0;
-	
-	/* Clean up the grids */
-	for (y = 0; y < AUTO_MAX_Y; y++) {
-	    for (x = 0; x < AUTO_MAX_X; x++) {
-
-		/* Access the grid */
-		ag = grid(x, y);
-
-		/* No room yet */
-		ag->room = 0;
-
-		/* Black means unknown */
-		ag->o_a = 0;
-
-		/* Space means unseen */
-		ag->o_c = ' ';
-	    }
-	}
-
-	/* No goal yet */
-	goal = 0;
-	
-	/* Save the new level */
-	strcpy(auto_level, buf);
-    }
-
-
-    /* Forget about the player */
-    pg = NULL;
-    
-    /* Cheat -- Analyze the "viewable" part of the screen */
-    for (i = 0; i < view_n; i++) {
-
-	/* White means dark */
-	byte a = TERM_WHITE;
-
-	/* Space means unseen */
-	char c = ' ';
-	
-	/* Access the "view grid" */
-	int x = view_x[i];
-	int y = view_y[i];
-
-	/* On screen, look at the "onscreen map" */
-	if (panel_contains(y, x)) {
-
-	    /* Examine the "screen" */
-	    Term_what(x - panel_col_prt, y - panel_row_prt, &a, &c);
-	}
-
-	/* Notice the player */
-	if (c == '@') {
-
-	    /* XXX The player is at (x,y) on the screen */
-	    /* XXX But the screen may be "scrolled" a bit */
-	    
-	    /* Get the player's grid */
-	    pg = grid(c_x, c_y);
-
-	    /* Treat the grid as "unseen" */
-	    c = ' ';
-	}
-	
-	/* Ignore "blank" information */
-	if (!a || (c == ' ')) continue;
-
-	/* Hack -- Assume all floors and walls are white */
-	if (strchr("#%.", c)) a = TERM_WHITE;
-	
-	/* Get the auto_grid */
-	ag = grid(x, y);
-
-	/* Save the "screen info" */
-	ag->o_a = a, ag->o_c = c;
-    }
-    
-    /* Paranoia -- make sure we exist */
-    if (!pg) {
-	auto_oops("Player missing!");
-	return (TRUE);
-    }    
-
-
-    /* Make sure every visited grid has a room */
-    if (!pg->room) {
-
-	/* Acquire a "free" room */
-	i = auto_rooms[0].free;
-	auto_rooms[0].free = auto_rooms[i].free;
-	auto_rooms[i].free = 0;
-
-	/* Paranoia */
-	if (!i) core("Borg ran out of free rooms");
-	
-	/* Take note of new "maximums" */
-	if (i + 1 > auto_room_max) auto_room_max = i + 1;
-	
-	/* Access the new room */
-	ar = &auto_rooms[i];
-	
-	/* Initialize the room */
-	ar->flow = 0;	
-	ar->x1 = ar->x2 = ar->x = c_x;
-	ar->y1 = ar->y2 = ar->y = c_y;
-
-	/* Saw this room */
-	ar->when = c_t;
-
-	/* Save the room */
-	pg->room = i;
-    }
-    
-    
-    /* Occasionally, try to build better rooms */
-    if (auto_build_room(c_x, c_y)) {
-
-	/* Note that the room builder can kill "flow" goals */
-	if (goal == GOAL_FLOW) goal = 0;
-    }
-    
-    
-    /* Mark all the "containing rooms" as visited. */
-    for (ar = room(1,c_x,c_y); ar; ar = room(0,0,0)) ar->when = c_t;
-
-
-    /* XXX XXX Hack -- must cheat */
-    cheat_inven = cheat_equip = TRUE;
-
-
-    /* Send the "inventory" command */
-    if (!cheat_inven) Borg_keypress('i');
-    
-    /* Enter next state */
-    state = STATE_INVEN;
-
-    /* All done */
-    return (TRUE);
+    /* Result */
+    return (res);
 }
+
+
+
+/*
+ * Determine if a missile shot from (x1,y1) to (x2,y2) will arrive
+ * at the final destination, assuming no monster gets in the way.
+ * Hack -- we refuse to assume that unknown grids are floors
+ * Adapted from "projectable()" in "spells1.c".
+ */
+bool borg_projectable(int x1, int y1, int x2, int y2)
+{
+    int dist, y, x;
+    auto_grid *ag;
+
+    /* Start at the initial location */
+    y = y1; x = x1;
+
+    /* Simulate the spell/missile path */
+    for (dist = 0; dist < MAX_RANGE; dist++) {
+
+        /* Get the grid */
+        ag = grid(x,y);
+
+        /* Never pass through walls */
+        if (dist && (ag->info & BORG_WALL)) break;
+
+        /* Hack -- assume unknown grids are walls */
+        if (ag->o_c == ' ') break;
+
+        /* Check for arrival at "final target" */
+        if ((x == x2) && (y == y2)) return (TRUE);
+
+        /* Calculate the new location */
+        mmove2(&y, &x, y1, x1, y2, x2);
+    }
+
+    /* Assume obstruction */
+    return (FALSE);
+}
+
+
+/*
+ * Version of "los()" for the Borg.
+ */
+bool borg_los(int x1, int y1, int x2, int y2)
+{
+    int p_x, p_y, d_x, d_y, a_x, a_y;
+
+
+    /* Extract the offset */
+    d_y = y2 - y1;
+    d_x = x2 - x1;
+
+    /* Extract the absolute offset */
+    a_y = ABS(d_y);
+    a_x = ABS(d_x);
+
+
+    /* Handle adjacent (or identical) grids */
+    if ((a_x < 2) && (a_y < 2)) return (TRUE);
+
+
+    /* Directly South/North */
+    if (!d_x) {
+
+        int p_y;
+
+        /* South -- check for walls */
+        if (d_y > 0) {
+            for (p_y = y1 + 1; p_y < y2; p_y++) {
+                if (grid(x1,p_y)->info & BORG_WALL) return FALSE;
+            }
+        }
+
+        /* North -- check for walls */
+        else {
+            for (p_y = y1 - 1; p_y > y2; p_y--) {
+                if (grid(x1,p_y)->info & BORG_WALL) return FALSE;
+            }
+        }
+
+        /* Assume los */
+        return TRUE;
+    }
+
+    /* Directly East/West */
+    if (!d_y) {
+
+        int p_x;
+
+        /* East -- check for walls */
+        if (d_x > 0) {
+            for (p_x = x1 + 1; p_x < x2; p_x++) {
+                if (grid(p_x,y1)->info & BORG_WALL) return FALSE;
+            }
+        }
+
+        /* West -- check for walls */
+        else {
+            for (p_x = x1 - 1; p_x > x2; p_x--) {
+                if (grid(p_x,y1)->info & BORG_WALL) return FALSE;
+            }
+        }
+
+        /* Assume los */
+        return TRUE;
+    }
+
+
+    /* Handle Knightlike shapes -CWS */
+    if (a_x == 1) {
+        if (d_y == 2) {
+            if (!(grid(x1,y1+1)->info & BORG_WALL)) return TRUE;
+        }
+        else if (d_y == (-2)) {
+            if (!(grid(x1,y1-1)->info & BORG_WALL)) return TRUE;
+        }
+    }
+    else if (a_y == 1) {
+        if (d_x == 2) {
+            if (!(grid(x1+1,y1)->info & BORG_WALL)) return TRUE;
+        }
+        else if (d_x == (-2)) {
+            if (!(grid(x1-1,y1)->info & BORG_WALL)) return TRUE;
+        }
+    }
+
+
+/*
+ * Now, we've eliminated all the degenerate cases. In the computations below,
+ * dy (or dx) and m are multiplied by a scale factor, scale = abs(d_x *
+ * d_y * 2), so that we can use integer arithmetic.
+ */
+
+    {
+        int        scale,	/* a scale factor		 */
+                            scale2;	/* above scale factor / 2	 */
+
+        int		    xSign,	/* sign of d_x		 */
+                            ySign,	/* sign of d_y		 */
+                            m;		/* slope or 1/slope of LOS	 */
+
+        scale2 = (a_x * a_y);
+        scale = scale2 << 1;	/* (scale2 * 2) */
+
+        xSign = (d_x < 0) ? -1 : 1;
+        ySign = (d_y < 0) ? -1 : 1;
+
+
+        /* Travel from one end of the line to the other, */
+        /* oriented along the longer axis. */
+
+        if (a_x >= a_y) {
+
+            int        dy;  /* "fractional" y position	 */
+
+        /*
+         * We start at the border between the first and second tiles, where
+         * the y offset = .5 * slope.  Remember the scale factor.  We have:
+         *
+         * m = d_y / d_x * 2 * (d_y * d_x) = 2 * d_y * d_y.
+         */
+
+            dy = a_y * a_y;
+            m = dy << 1;	/* (dy * 2) */
+            p_x = x1 + xSign;
+
+            /* Consider the special case where slope == 1. */
+            if (dy == scale2) {
+                p_y = y1 + ySign;
+                dy -= scale;
+            }
+            else {
+                p_y = y1;
+            }
+
+            /* Note (below) the case (dy == scale2), where */
+            /* the LOS exactly meets the corner of a tile. */
+            while (x2 - p_x) {
+                if (grid(p_x,p_y)->info & BORG_WALL) return FALSE;
+                dy += m;
+                if (dy < scale2) {
+                    p_x += xSign;
+                }
+                else if (dy > scale2) {
+                    p_y += ySign;
+                    if (grid(p_x,p_y)->info & BORG_WALL) return FALSE;
+                    dy -= scale;
+                    p_x += xSign;
+                }
+                else {
+                    p_y += ySign;
+                    dy -= scale;
+                    p_x += xSign;
+                }
+            }
+            return TRUE;
+        }
+
+        else {
+
+            int        dx;	/* "fractional" x position	 */
+
+            dx = a_x * a_x;
+            m = dx << 1;	/* (dx * 2) */
+
+            p_y = y1 + ySign;
+            if (dx == scale2) {
+                p_x = x1 + xSign;
+                dx -= scale;
+            }
+            else {
+                p_x = x1;
+            }
+
+            /* Note (below) the case (dx == scale2), where */
+            /* the LOS exactly meets the corner of a tile. */
+            while (y2 - p_y) {
+                if (grid(p_x,p_y)->info & BORG_WALL) return FALSE;
+                dx += m;
+                if (dx < scale2) {
+                    p_y += ySign;
+                }
+                else if (dx > scale2) {
+                    p_x += xSign;
+                    if (grid(p_x,p_y)->info & BORG_WALL) return FALSE;
+                    dx -= scale;
+                    p_y += ySign;
+                }
+                else {
+                    p_x += xSign;
+                    dx -= scale;
+                    p_y += ySign;
+                }
+            }
+        }
+    }
+
+    /* Assume los */
+    return TRUE;
+}
+
+
+
+
+
 
 
 /*
@@ -1161,17 +1359,17 @@ static bool obvious_kind(int kind)
 {
     /* Analyze the "tval" */
     switch (k_list[kind].tval) {
-	case TV_MAGIC_BOOK:
-	case TV_PRAYER_BOOK:
-	case TV_FLASK:
-	case TV_FOOD:
-	case TV_POTION:
-	case TV_SCROLL:
-	case TV_SPIKE:
-	case TV_SKELETON:
-	case TV_BOTTLE:
-	case TV_JUNK:
-	    return (TRUE);
+        case TV_MAGIC_BOOK:
+        case TV_PRAYER_BOOK:
+        case TV_FLASK:
+        case TV_FOOD:
+        case TV_POTION:
+        case TV_SCROLL:
+        case TV_SPIKE:
+        case TV_SKELETON:
+        case TV_BOTTLE:
+        case TV_JUNK:
+            return (TRUE);
     }
 
     /* Nope */
@@ -1181,54 +1379,55 @@ static bool obvious_kind(int kind)
 
 
 /*
- * Given a weapon/armor, find the slot it will be wielded into
+ * Return the slot that items of the given type are wielded into
+ *
+ * Note that "rings" are now automatically wielded into the left hand
  *
  * Returns "-1" if the item cannot (or should not) be wielded
- *
- * Note that "Bows" really are not proper weapons at all...
  */
-static int wield_slot(int tval)
+int borg_wield_slot(auto_item *item)
 {
     /* Slot for equipment */
-    switch (tval) {
+    switch (item->tval) {
 
-	case TV_DRAG_ARMOR:
-	case TV_HARD_ARMOR:
-	case TV_SOFT_ARMOR:
-	    return (INVEN_BODY);
+        case TV_DRAG_ARMOR:
+        case TV_HARD_ARMOR:
+        case TV_SOFT_ARMOR:
+            return (INVEN_BODY);
 
-	case TV_CLOAK:
-	    return (INVEN_OUTER);
+        case TV_CLOAK:
+            return (INVEN_OUTER);
 
-	case TV_SHIELD:
-	    return (INVEN_ARM);
+        case TV_SHIELD:
+            return (INVEN_ARM);
 
-	case TV_HELM:
-	    return (INVEN_HEAD);
+        case TV_CROWN:
+        case TV_HELM:
+            return (INVEN_HEAD);
 
-	case TV_GLOVES:
-	    return (INVEN_HANDS);
+        case TV_GLOVES:
+            return (INVEN_HANDS);
 
-	case TV_BOOTS:
-	    return (INVEN_FEET);
+        case TV_BOOTS:
+            return (INVEN_FEET);
 
-	case TV_SWORD:
-	case TV_POLEARM:
-	case TV_HAFTED:
-	case TV_DIGGING:
-	    return (INVEN_WIELD);
+        case TV_SWORD:
+        case TV_POLEARM:
+        case TV_HAFTED:
+        case TV_DIGGING:
+            return (INVEN_WIELD);
 
-	case TV_BOW:
-	    return (INVEN_BOW);
+        case TV_BOW:
+            return (INVEN_BOW);
 
-	case TV_RING:
-	    return (-1);
-	    
-	case TV_AMULET:
-	    return (-1);
-	    
-	case TV_LITE:
-	    return (INVEN_LITE);
+        case TV_RING:
+            return (INVEN_LEFT);
+
+        case TV_AMULET:
+            return (INVEN_NECK);
+
+        case TV_LITE:
+            return (INVEN_LITE);
     }
 
     /* No slot available */
@@ -1239,1362 +1438,925 @@ static int wield_slot(int tval)
 
 
 /*
- * Analyze a (clean) auto_item based on a description
+ * Analyze an auto_item based on a description and cost
+ *
+ * We do a simple binary search on the arrays of object base names,
+ * relying on the fact that they are sorted in reverse order, and on
+ * the fact that efficiency is only important when the parse succeeds
+ * (which it always does), and on some facts about "prefixes".
+ *
+ * Note that we will fail if the "description" was "partial", though
+ * we will correctly handle a description with a "partial inscription",
+ * so the actual item description must exceed 75 chars for us to fail,
+ * though we will only get 60 characters if the item is in the equipment
+ * or in a shop, and the "long" description items tend to get worn.  :-)
  */
-static void auto_item_analyze(auto_item *item, cptr desc, cptr cost)
+void borg_item_analyze(auto_item *item, cptr desc, cptr cost)
 {
-    int i;
+    int i, j, m, n;
 
-    cptr base;
-    
     char *scan;
     char *tail;
-    
+
     char temp[128];
 
+    char c1 = '{'; /* c2 = '}' */
     char p1 = '(', p2 = ')';
     char b1 = '[', b2 = ']';
 
-    
+
     /* Wipe it */
     WIPE(item, auto_item);
-	
+
+
     /* Save the item description */
     strcpy(item->desc, desc);
 
-    /* Save the item cost */
-    strcpy(item->cost, cost);
+    /* Extract the item cost */
+    item->cost = atol(cost);
 
-    /* Empty items are done */
+
+    /* Advance to the "inscription" or end of string */
+    for (scan = item->desc; *scan && *scan != c1; scan++);
+
+    /* Save a pointer to the inscription */
+    item->note = scan;
+
+
+    /* Do not process empty items */
     if (!desc[0]) return;
-
-    /* Save the full description */
-    strcpy(item->desc, desc);
 
 
     /* Assume singular */
     item->iqty = 1;
-    
-    /* Notice various "prefixes" */
-    if (prefix(desc, "The ")) desc += 4;
-    else if (prefix(desc, "an ")) desc += 3;
-    else if (prefix(desc, "a ")) desc += 2;
-    else if (prefix(desc, "1 ")) desc += 2;
+
+    /* Notice prefix "a " */
+    if ((desc[0] == 'a') && (desc[1] == ' ')) {
+
+        /* Skip "a " */
+        desc += 2;
+    }
+
+    /* Notice prefix "a " */
+    else if ((desc[0] == 'a') && (desc[1] == 'n') && (desc[2] == ' ')) {
+
+        /* Skip "an " */
+        desc += 3;
+    }
+
+    /* Notice prefix "The " */
+    else if ((desc[0] == 'T') && (desc[1] == 'h') &&
+             (desc[2] == 'e') && (desc[3] == ' ')) {
+
+        /* Skip "The " */
+        desc += 4;
+    }
 
     /* Notice "numerical" prefixes */
     else if (isdigit(desc[0])) {
-	cptr s = strchr(desc, ' ');
-	if (!s) return;
-	item->iqty = atoi(desc);
-	desc = s + 1;
+
+        cptr s;
+
+        /* Find the first space */
+        for (s = desc; *s && (*s != ' '); s++);
+
+        /* Paranoia -- Catch sillyness */
+        if (*s != ' ') return;
+
+        /* Extract a quantity */
+        item->iqty = atoi(desc);
+
+        /* Skip the quantity and space */
+        desc = s + 1;
     }
 
-    /* Extract and remove the inscription */
-    strcpy(temp, desc);
-    scan = strchr(temp, '{' /* --}-- */);
-    if (scan) strcpy(item->note, scan);
-    if (scan && (scan[-1] == ' ')) scan[-1] = '\0';
 
+    /* Paranoia -- catch "broken" descriptions */
+    if (!desc[0]) return;
+
+    /* Obtain a copy of the description */
+    strcpy(temp, desc);
+
+    /* Advance to the "inscription" or end of string */
+    for (scan = temp; *scan && (*scan != c1); scan++);
+
+    /* Nuke the space before the inscription */
+    if ((scan[0] == c1) && (scan[-1] == ' ')) *--scan = '\0';
+
+    /* Note that "scan" points at the "tail" of "temp" */
 
     /* Hack -- non-aware, singular, flavored items */
     if (item->iqty == 1) {
-	if (prefix(temp, "Scroll titled ")) item->tval = TV_SCROLL;
-	else if (strstr(temp, " Potion")) item->tval = TV_POTION;
-	else if (suffix(temp, " Hairy Mold")) item->tval = TV_FOOD;
-	else if (suffix(temp, " Mushroom")) item->tval = TV_FOOD;
-	else if (suffix(temp, " Amulet")) item->tval = TV_AMULET;
-	else if (suffix(temp, " Ring")) item->tval = TV_RING;
-	else if (suffix(temp, " Staff")) item->tval = TV_STAFF;
-	else if (suffix(temp, " Wand")) item->tval = TV_WAND;
-	else if (suffix(temp, " Rod")) item->tval = TV_ROD;
+        if (prefix(temp, "Scroll titled ")) item->tval = TV_SCROLL;
+        else if (streq(scan-7, " Potion")) item->tval = TV_POTION;
+        else if (streq(scan-6, " Staff")) item->tval = TV_STAFF;
+        else if (streq(scan-5, " Wand")) item->tval = TV_WAND;
+        else if (streq(scan-4, " Rod")) item->tval = TV_ROD;
+        else if (streq(scan-5, " Ring")) item->tval = TV_RING;
+        else if (streq(scan-7, " Amulet")) item->tval = TV_AMULET;
+        else if (streq(scan-9, " Mushroom")) item->tval = TV_FOOD;
+        else if (streq(scan-11, " Hairy Mold")) item->tval = TV_FOOD;
     }
 
     /* Hack -- non-aware, plural, flavored items */
     else {
-	if (prefix(temp, "Scrolls titled ")) item->tval = TV_SCROLL;
-	else if (strstr(temp, " Potions")) item->tval = TV_POTION;
-	else if (suffix(temp, " Hairy Molds")) item->tval = TV_FOOD;
-	else if (suffix(temp, " Mushrooms")) item->tval = TV_FOOD;
-	else if (suffix(temp, " Amulets")) item->tval = TV_AMULET;
-	else if (suffix(temp, " Rings")) item->tval = TV_RING;
-	else if (suffix(temp, " Staffs")) item->tval = TV_STAFF;
-	else if (suffix(temp, " Wands")) item->tval = TV_WAND;
-	else if (suffix(temp, " Rods")) item->tval = TV_ROD;
+        if (prefix(temp, "Scrolls titled ")) item->tval = TV_SCROLL;
+        else if (streq(scan-8, " Potions")) item->tval = TV_POTION;
+        else if (streq(scan-7, " Staffs")) item->tval = TV_STAFF;
+        else if (streq(scan-6, " Wands")) item->tval = TV_WAND;
+        else if (streq(scan-5, " Rods")) item->tval = TV_ROD;
+        else if (streq(scan-6, " Rings")) item->tval = TV_RING;
+        else if (streq(scan-8, " Amulets")) item->tval = TV_AMULET;
+        else if (streq(scan-10, " Mushrooms")) item->tval = TV_FOOD;
+        else if (streq(scan-12, " Hairy Molds")) item->tval = TV_FOOD;
     }
 
     /* Accept non-aware flavored objects */
     if (item->tval) return;
-    
 
-    /* Check all the item templates */
-    for (i = 0; i < i_size; i++) {
 
-	/* Extract the "base" string */
-	base = (item->iqty == 1) ? i_single[i] : i_plural[i];
+    /* Start at the beginning */
+    tail = temp;
 
-	/* Check for the proper prefix */
-	if (prefix(temp, base)) break;
+    /* Check singular items */
+    if (item->iqty == 1) {
+
+        /* Start the search */
+        m = 0; n = auto_size_single;
+
+        /* Simple binary search */
+        while (m < n - 4) {
+
+            /* Pick a "middle" entry */
+            i = (m + n) / 2;
+
+            /* Found a new minimum */
+            if (strcmp(tail, auto_text_single[i]) < 0) {
+                m = i;
+            }
+
+            /* Found a new maximum */
+            else {
+                n = i;
+            }
+        }
+
+        /* Search for a prefix */
+        for (i = m; i < auto_size_single; i++) {
+
+            /* Check for proper prefix */
+            if (prefix(tail, auto_text_single[i])) break;
+        }
+
+        /* Oops.  Bizarre item. */
+        if (i >= auto_size_single) {
+            borg_oops("Bizarre object!");
+            return;
+        }
+
+        /* Save the item kind */
+        item->kind = auto_what_single[i];
+
+        /* Skip past the base name */
+        tail += strlen(auto_text_single[i]);
     }
 
-    /* Oops.  Bizarre item. */
-    if (i >= i_size) return;
-    
-    
-    /* Save the item kind */
-    item->kind = i_kind[i];
+    /* Check plural items */
+    else {
 
-    /* Advance to the "tail", skip spaces */
-    tail = temp + strlen(base);
-    while (*tail == ' ') tail++;
+        /* Start the search */
+        m = 0; n = auto_size_plural;
+
+        /* Simple binary search */
+        while (m < n - 4) {
+
+            /* Pick a "middle" entry */
+            i = (m + n) / 2;
+
+            /* Found a new minimum */
+            if (strcmp(tail, auto_text_plural[i]) < 0) {
+                m = i;
+            }
+
+            /* Found a new maximum */
+            else {
+                n = i;
+            }
+        }
+
+        /* Search for a prefix */
+        for (i = m; i < auto_size_plural; i++) {
+
+            /* Check for proper prefix */
+            if (prefix(tail, auto_text_plural[i])) break;
+        }
+
+        /* Oops.  Bizarre item. */
+        if (i >= auto_size_plural) {
+            borg_oops("Bizarre object!");
+            return;
+        }
+
+        /* Save the item kind */
+        item->kind = auto_what_plural[i];
+
+        /* Skip past the base name */
+        tail += strlen(auto_text_plural[i]);
+    }
+
 
     /* Extract some info */
     item->tval = k_list[item->kind].tval;
     item->sval = k_list[item->kind].sval;
-    
 
-    /* Hack -- Chests are too complicated */
-    if (item->tval == TV_CHEST) return;
-    
 
-    /* Hack -- Some kinds of objects are always obvious */
-    if (obvious_kind(item->kind)) {
-	item->able = TRUE;
-	return;
-    }
-    
-    /* Hack -- Examine Wands/Staffs for charges */
-    if ((item->tval == TV_WAND) || (item->tval == TV_STAFF)) {
-	i = extract_charges(tail);
-	if (i >= 0) item->able = TRUE;
-	if (item->able) item->pval = i;
-	return;
-    }
+    /* Hack -- check for ego-items and artifacts */
+    if ((tail[0] == ' ') &&
+        (item->tval >= TV_MIN_WEAR) && (item->tval <= TV_MAX_WEAR)) {
 
-    /* Hack -- Examine Rods for charging */
-    if (item->tval == TV_ROD) {
-	item->able = TRUE;
-	if (streq(tail, "(charging)")) item->pval = 999;
-    }
+        /* Start the search */
+        m = 0; n = auto_size_artego;
 
-    /* Hack -- Examine Rings/Amulets */
-    if ((item->tval == TV_RING) || (item->tval == TV_AMULET)) {
-    
-	/* Some amulets have no extra information */
-	if (k_list[item->kind].flags3 & TR3_EASY_KNOW) {
-	    item->able = TRUE;
-	}
+        /* XXX XXX XXX Binary search */
+        while (m < n - 4) {
 
-	/* Others need a "pval" in parentheses */
-        else if (tail[0] == p1) {
-	    item->able = TRUE;
-	    item->pval = atoi(tail + 1);
+            /* Pick a "middle" entry */
+            i = (m + n) / 2;
+
+            /* Found a new minimum */
+            if (strcmp(tail, auto_text_artego[i]) < 0) {
+                m = i;
+            }
+
+            /* Found a new maximum */
+            else {
+                n = i;
+            }
         }
 
+        /* XXX XXX XXX Search for a prefix */
+        for (i = m; i < m + 12; i++) {
+
+            /* Check for proper prefix */
+            if (prefix(tail, auto_text_artego[i])) {
+
+                /* Paranoia -- Item is known */
+                item->able = TRUE;
+
+                /* Save the artifact name */
+                if (auto_what_artego[i] > 0) {
+                    item->name1 = auto_what_artego[i];
+                }
+
+                /* Save the ego-item name */
+                else {
+                    item->name2 = 0 - auto_what_artego[i];
+                }
+
+                /* Skip the space and the ego-item name */
+                tail += strlen(auto_text_artego[i]);
+
+                /* Done */
+                break;
+            }
+        }
+
+
+        /* Hack -- examine ego-items */
+        if (item->name2) {
+
+            /* XXX XXX Hack -- fix weird "missiles" */
+            if ((item->tval == TV_BOLT) ||
+                (item->tval == TV_ARROW) ||
+                (item->tval == TV_SHOT)) {
+
+                /* Fix missile ego-items */
+                if (item->name2 == EGO_FIRE) {
+                    item->name2 = EGO_AMMO_FIRE;
+                }
+                else if (item->name2 == EGO_SLAYING) {
+                    item->name2 = EGO_AMMO_SLAYING;
+                }
+                else if (item->name2 == EGO_SLAY_EVIL) {
+                    item->name2 = EGO_AMMO_EVIL;
+                }
+            }
+
+            /* XXX XXX Hack -- fix weird "robes" */
+            if ((item->tval == TV_SOFT_ARMOR) &&
+                (item->sval == SV_ROBE)) {
+
+                /* Fix "robes of the magi" */
+                if (item->name2 == EGO_MAGI) {
+                    item->name2 = EGO_ROBE_MAGI;
+                }
+            }
+        }
+
+
+        /* Hack -- examine artifacts */
+        if (item->name1) {
+
+            /* XXX XXX Hack -- fix "weird" artifacts */
+            if ((item->tval != v_list[item->name1].tval) ||
+                (item->sval != v_list[item->name1].sval)) {
+
+                /* Find the correct "kind" */
+                for (j = 0; j < MAX_K_IDX; j++) {
+
+                    /* Found the correct "kind" */
+                    if ((k_list[j].tval == v_list[item->name1].tval) &&
+                        (k_list[j].sval == v_list[item->name1].sval)) {
+
+                        /* Save the kind */
+                        item->kind = j;
+
+                        /* Save the tval/sval */
+                        item->tval = k_list[j].tval;
+                        item->sval = k_list[j].sval;
+
+                        /* Stop looking */
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+
+    /* Mega-Hack -- skip spaces */
+    while (tail[0] == ' ') tail++;
+
+
+    /* XXX XXX Hack -- Chests are too complicated */
+    if (item->tval == TV_CHEST) {
         return;
     }
 
+
+    /* Hack -- Some kinds of objects are always obvious */
+    if (obvious_kind(item->kind)) {
+        item->able = TRUE;
+        return;
+    }
+
+    /* Hack -- Examine Wands/Staffs for charges */
+    if ((item->tval == TV_WAND) || (item->tval == TV_STAFF)) {
+        i = extract_charges(tail);
+        if (i >= 0) item->able = TRUE;
+        if (item->able) item->pval = i;
+        return;
+    }
+
+    /* Mega-Hack -- Examine Rods for charging */
+    if (item->tval == TV_ROD) {
+
+        /* Rods are always known (if aware) */
+        item->able = TRUE;
+
+        /* Mega-Hack -- fake "charges" */
+        item->pval = 1;
+
+        /* Mega-Hack -- "charging" means no "charges" */
+        if (streq(tail, "(charging)")) item->pval = 0;
+    }
+
+
     /* Hack -- Extract Lites for Light */
     if (item->tval == TV_LITE) {
-	i = extract_fuel(tail);
-	if (i >= 0) item->able = TRUE;
-	if (item->able) item->pval = i;
-	return;
+
+        /* Fuels yields known (and fuel) */
+        i = extract_fuel(tail);
+        if (i >= 0) item->pval = i;
+        if (i >= 0) item->able = TRUE;
+
+        /* Hack -- Artifacts have infinite fuel */
+        if (item->name1) item->pval = 29999;
+        if (item->name1) item->able = TRUE;
+
+        /* Done */
+        return;
     }
 
 
-    /* Must have a suffix */
-    if (!tail[0]) return;
-	
-    /* Get the slot */
-    i = wield_slot(item->tval);
-    
     /* Wearable stuff */
-    if (i >= 0) {
-
-	bool done = FALSE;
-	
-	int d1 = 0, d2 = 0, ac = 0, th = 0, td = 0, ta = 0;
-	
-
-	/* XXX Check for artifact/ego items */
-	/* XXX In particular "(Blessed)", "(Defender)", etc */
-	/* XXX Note that "(Defender)" and such use parentheses */
-
-
-	/* Parse the "damage" string for weapons */
-	if ((tail[0] == p1) && (i == INVEN_WIELD)) {
-	
-	    /* First extract the damage string */
-	    for (scan = tail; *scan != p2; scan++); scan++;
-
-	    /* Notice "end of string" */
-	    if (scan[0] != ' ') done = TRUE;
-
-	    /* Terminate the string and advance */
-	    *scan++ = '\0';
-
-	    /* Parse the damage string, or stop XXX */
-	    if (sscanf(tail, "(%dd%d)", &d1, &d2) != 2) return;
-
-	    /* No extra information means not identified */
-	    if (done) return;
-
-	    /* Start on the damage bonus string */
-	    tail = scan;
-	}
-	
-	/* Parse the "damage" string for bows */
-	else if ((tail[0] == p1) && (i == INVEN_BOW)) {
-	
-	    /* First extract the damage string */
-	    for (scan = tail; *scan != p2; scan++); scan++;
-
-	    /* Notice "end of string" */
-	    if (scan[0] != ' ') done = TRUE;
-
-	    /* Terminate the string and advance */
-	    *scan++ = '\0';
-
-	    /* Parse the damage string, or stop XXX */
-	    if (sscanf(tail, "(x%d)", &d1) != 2) return;
-
-	    /* No extra information means not identified */
-	    if (done) return;
-
-	    /* Start on the damage bonus string */
-	    tail = scan;
-	}
-	
-
-	/* Parse the "bonus" string */
-	if (tail[0] == p1) {
-	
-	    /* XXX Extract the extra info */
-	    for (scan = tail; *scan != p2; scan++); scan++;
-
-	    /* Notice "end of string" */
-	    if (scan[0] != ' ') done = TRUE;
-
-	    /* Terminate the damage, advance */
-	    *scan++ = '\0';
-
-	    /* Parse the "bonuses" -- XXX Guess at weird ones */
-	    if ((sscanf(tail, "(%d,%d)", &th, &td) != 2) &&
-	        (sscanf(tail, "(%d)", &th) != 1)) return;
-
-	    /* Known (bonuses) */
-	    item->able = TRUE;
-
-	    /* Nothing left */
-	    if (done) return;
-
-	    /* Then look for "armor" values */
-	    tail = scan;
-	}
-	
-
-	/* Parse the "bonus" string */
-	if (tail[0] == b1) {
-	
-	    /* XXX Extract the extra info */
-	    for (scan = tail; *scan != b2; scan++); scan++;
-
-	    /* Notice "end of string" */
-	    if (scan[0] != ' ') done = TRUE;
-
-	    /* Terminate the armor string, advance */
-	    *scan++ = '\0';
-
-	    /* Parse the armor, and bonus */
-	    if (sscanf(tail, "[%d,%d]", &ac, &ta) == 2) {
-		item->able = TRUE;
-	    }
-	    else if (sscanf(tail, "[%d]", &ac) != 1) {
-	        return;
-	    }
-	
-	    /* Nothing left */
-	    if (done) return;
-	}
-	
-
-	/* Parse the "pval" string */
-	if (tail[0] == p1) {
-
-	    /* Assume identified */
-	    item->able = TRUE;
-	    
-	    /* Grab it */
-	    item->pval = atoi(tail + 1);
-	}
-    }
-}
-
-
-
-
-/*
- * Check the inventory for the quantity of objects of the given type
- */
-static int auto_count_items(int tval, int sval)
-{
-    int i, k = 0;
-    
-    for (i = 0; i < INVEN_PACK; i++) {
-	auto_item *item = &auto_items[i];
-	if ((tval >= 0) && (item->tval != tval)) continue;
-	if ((sval >= 0) && (item->sval != sval)) continue;
-	k += item->iqty;
-    }
-    
-    return (k);
-}
-
- 
-
-
-/*
- * Send a command to inscribe item number "i" with the inscription "str".
- */
-static void auto_send_inscribe(int i, cptr str)
-{
-    cptr s;
-    
-    /* The "inscribe" command */
-    char draw = '{'; /* --}-- */
-
-    /* Label it */
-    Borg_keypress(draw);
-
-    /* Hack -- allow "equipment" labelling */
-    if (i >= INVEN_WIELD) {
-	Borg_keypress('/');
-	i -= INVEN_WIELD;
-    }
-
-    /* Choose the item */
-    Borg_keypress('a' + i);
-
-    /* Send the label */
-    for (s = str; *s; s++) Borg_keypress(*s);
-
-    /* End the inscription */
-    Borg_keypress('\n');
-}
-
-
-
-
-/*
- * Determine if an item can be sold in the current store
- */
-static bool auto_good_sell(auto_item *item)
-{
-    int tval = item->tval;
-
-    /* Switch on the store */
-    switch (state_store) {
-
-      /* General Store */
-      case 1:
-
-	/* Analyze the type */
-	switch (tval) {
-	  case TV_DIGGING:
-	  case TV_CLOAK:
-	  case TV_FOOD:
-	  case TV_FLASK:
-	  case TV_LITE:
-	  case TV_SPIKE:
-	    return (TRUE);
-	  default:
-	    return (FALSE);
-	}
-
-      /* Armoury */
-      case 2:
-
-	/* Analyze the type */
-	switch (tval) {
-	  case TV_BOOTS:
-	  case TV_GLOVES:
-	  case TV_HELM:
-	  case TV_SHIELD:
-	  case TV_SOFT_ARMOR:
-	  case TV_HARD_ARMOR:
-	  case TV_DRAG_ARMOR:
-	    return (TRUE);
-	  default:
-	    return (FALSE);
-	}
-
-      /* Weapon Shop */
-      case 3:
-
-	/* Analyze the type */
-	switch (tval) {
-	  case TV_SHOT:
-	  case TV_BOLT:
-	  case TV_ARROW:
-	  case TV_BOW:
-	  case TV_HAFTED:
-	  case TV_POLEARM:
-	  case TV_SWORD:
-	    return (TRUE);
-	  default:
-	    return (FALSE);
-	}
-
-      /* Temple */
-      case 4:
-
-	/* Analyze the type */
-	switch (tval) {
-	  case TV_HAFTED:
-	  case TV_SCROLL:
-	  case TV_POTION:
-	  case TV_PRAYER_BOOK:
-	    return (TRUE);
-	  default:
-	    return (FALSE);
-	}
-
-      /* Alchemist */
-      case 5:
-
-	/* Analyze the type */
-	switch (tval) {
-	  case TV_SCROLL:
-	  case TV_POTION:
-	    return (TRUE);
-	  default:
-	    return (FALSE);
-	}
-
-      /* Magic Shop */
-      case 6:
-
-	/* Analyze the type */
-	switch (tval) {
-	  case TV_AMULET:
-	  case TV_RING:
-	  case TV_STAFF:
-	  case TV_WAND:
-	  case TV_SCROLL:
-	  case TV_POTION:
-	  case TV_MAGIC_BOOK:
-	  case TV_ROD:
-	    return (TRUE);
-	  default:
-	    return (FALSE);
-	}
-    }
-
-    /* XXX */
-    return (FALSE);
-}
-
-
-
-/*
- * Determine if an item should be bought from a store
- */
-static bool auto_good_buy(auto_item *ware)
-{
-    int slot = -1;
-    auto_item *worn = NULL;
-
-
-    /* Determine where the item would be worn */
-    slot = wield_slot(ware->tval);
-
-    /* Extract the item currently in that slot */
-    if (slot >= 0) worn = &auto_items[slot];
-
-    /* Hack -- notice empty slots */
-    if (!worn->iqty) worn = NULL;
-    
-
-    /* Food */
-    if (ware->tval == TV_FOOD) {
-
-	/* Only buy "normal" food */
-	if (ware->sval < SV_FOOD_MIN_FOOD) return (FALSE);
-	
-	/* Always have at least 50 food */
-	if (auto_count_items(TV_FOOD, -1) >= 50) return (FALSE);
-
-	/* Hack -- always buy food */
-	return (TRUE);
-    }
-    
-    /* Flasks */
-    else if (ware->tval == TV_FLASK) {
-
-	/* Never buy more than 50 flasks */
-	if (auto_count_items(TV_FLASK, -1) >= 50) return (FALSE);
-	
-	/* Hack -- examine the lite */
-	worn = &auto_items[INVEN_LITE];
-	if (!worn->iqty) worn = NULL;
-	
-	/* Hack -- buy flasks for lanterns */
-	if (worn && (worn->sval == SV_LITE_LANTERN)) return (TRUE);
-	
-	/* Never buy random flasks */
-	return (FALSE);
-    }
-
-#if 0
-    /* Scrolls */
-    else if (ware->tval == TV_SCROLL) {
-
-	/* Only buy scrolls of identify */
-	if (ware->sval != TV_SCROLL_IDENTIFY) return (FALSE);
-	
-	/* Never buy more than 50 scrolls */
-	if (auto_count_items(ware->tval, ware->sval) >= 50) return (FALSE);
-
-	/* Hack -- buy it */
-	return (TRUE);
-    }
-#endif
-    
-    /* Process Torches */
-    else if ((ware->tval == TV_LITE) && (ware->sval == SV_LITE_TORCH)) {
-
-	/* Never buy more than 20 torches */
-	if (auto_count_items(TV_LITE, SV_LITE_TORCH) >= 20) return (FALSE);
-
-	/* Hack -- Torches are defeated by lanterns with fuel */
-	if (worn && (worn->sval == SV_LITE_LANTERN)) {
-	    if (auto_count_items(TV_FLASK, -1) >= 10) return (FALSE);
-	}
-	
-	/* Hack -- always buy torches */
-	return (TRUE);
-    }
-
-    /* Process Lanterns */
-    else if ((ware->tval == TV_LITE) && (ware->sval == SV_LITE_LANTERN)) {
-
-	/* Never buy a lantern when wielding one already */
-	if (worn && (worn->sval == SV_LITE_LANTERN)) return (FALSE);
-
-	/* Never buy more than 1 lantern */
-	if (auto_count_items(TV_LITE, SV_LITE_LANTERN) >= 1) return (FALSE);
-
-	/* Hack -- always buy a lantern */
-	return (TRUE);
-    }
-
-    /* Process equipment */
-    else if (slot >= 0) {
-
-	/* Prefer "expensive" equipment */
-        if (!worn || (k_list[ware->kind].cost > k_list[worn->kind].cost)) {
-
-	    /* Hack -- Buy it */
-	    return (TRUE);	
-	}
-    }
-
-    /* Assume useless */
-    return (FALSE);
-}
-
-
-/*
- * Examine changed items in the inventory
- */
-static void auto_notice(void)
-{
-    int i, slot;
-    
-    /* Analyze the inventory */
-    for (i = 0; i < INVEN_PACK; i++) {
-
-	auto_item *item = &auto_items[i];
-	auto_item *worn = NULL;
-
-
-	/* Skip "empty"/"bizarre" items */
-	if (!item->iqty || !item->tval) continue;
-
-	/* Skip items we have already examined */
-	if (item->done) continue;
-
-	/* This item has been examined */
-	item->done = TRUE;
-	
-	/* Clear the flags */
-	item->wear = item->cash = item->junk = FALSE;
-
-	
-	/* See what slot that item could go in */
-	slot = wield_slot(item->tval);
-		
-	/* Extract the item currently in that slot */
-	if (slot >= 0) worn = &auto_items[slot];
-
-	/* Hack -- ignore empty slots */
-	if (!worn->iqty) worn = NULL;
-	
-
-	/* Mark "junk" as needing to be thrown away */
-	if ((suffix(item->desc, " {junk}")) ||
-	    (suffix(item->desc, " {cursed}")) ||
-	    (item->tval <= TV_SPIKE) ||
-	    (item->kind && !k_list[item->kind].cost)) {
-
-	    /* This is junk */
-	    item->junk = TRUE;
-
-	    continue;
-	}
-
-	/* Process potions/scrolls */
-	if ((item->tval == TV_SCROLL) ||
-	    (item->tval == TV_POTION)) {
-
-	    /* Destroy known crap */
-	    if (item->kind && (k_list[item->kind].cost < greed)) {
-		item->junk = TRUE;
-	    }
-
-	    /* Sell the rest */
-	    else {
-		item->cash = TRUE;
-	    }
-
-	    continue;
-	}
-
-	/* Process rings/amulets */
-	if ((item->tval == TV_RING) ||
-	    (item->tval == TV_AMULET)) {
-
-	    /* Destroy known crap */
-	    if (item->kind && (k_list[item->kind].cost < greed)) {
-		item->junk = TRUE;
-	    }
-
-	    /* Sell the rest */
-	    else {
-		item->cash = TRUE;
-	    }
-
-	    continue;
-	}
-
-	/* Process rings/amulets */
-	if ((item->tval == TV_ROD) ||
-	    (item->tval == TV_WAND) ||
-	    (item->tval == TV_STAFF)) {
-
-	    /* Destroy known crap */
-	    if (item->kind && (k_list[item->kind].cost < greed)) {
-		item->junk = TRUE;
-	    }
-
-	    /* Sell the rest */
-	    else {
-		item->cash = TRUE;
-	    }
-
-	    continue;
-	}
-
-
-	/* Ignore unaware items */
-	if (!item->kind) continue;
-
-
-	/* Process Lite's */
-	if (item->tval == TV_LITE) {
-
-	    /* Hack -- never wear "empty" Lites */
-	    if (!item->pval) continue;
-	    
-	    /* Always replace empty lites */
-	    if (!worn || !worn->pval) {
-		item->wear = TRUE;
-	    }
-	    
-	    /* Prefer lanterns to torches */
-	    else if (k_list[item->kind].cost > k_list[worn->kind].cost) {
-		item->wear = TRUE;
-	    }
-
-	    /* Notice "junky" torches */
-	    else if (item->sval == SV_LITE_TORCH) {
-
-		/* Never keep more than 20 torches */
-		if (auto_count_items(TV_LITE, SV_LITE_TORCH) > 20) {
-		    item->cash = TRUE;
-		}
-
-		/* Lantern plus fuel pre-empts torches */
-		else if (worn->sval == SV_LITE_LANTERN) {
-		    if (auto_count_items(TV_FLASK, -1) > 10) {
-			item->cash = TRUE;
-		    }
-		}
-	    }
-	    	    
-	    /* Notice "extra" lanterns */
-	    else if (item->sval == SV_LITE_LANTERN) {
-
-		/* Already wielding a lantern */
-		if (worn->sval == SV_LITE_LANTERN) {
-		    item->cash = TRUE;
-		}
-
-		/* Already carrying a lantern */
-		if (auto_count_items(TV_LITE, SV_LITE_LANTERN) > 1) {
-		    item->cash = TRUE;
-		}
-	    }
-	    	    
-	    continue;
-	}
-
-	
-	/* Ignore unwearable items */
-	if (slot < 0) continue;
-	
-	/* Known (or average) items can be worn */
-	if (item->able || suffix(item->desc, " {average}")) {
-
-	    /* Compare to the current item, wear it if better */
-	    if (k_list[item->kind].cost > k_list[worn->kind].cost) {
-		item->wear = TRUE;
-	    }
-
-	    /* Throw away "junk" */
-	    else if (k_list[item->kind].cost < greed) {
-		item->junk = TRUE;
-	    }
-
-	    /* Otherwise sell it */	    
-	    else {
-		item->cash = TRUE;
-	    }
-	    
-	    continue;
-	}
+    if ((item->tval >= TV_MIN_WEAR) && (item->tval <= TV_MAX_WEAR)) {
+
+        bool done = FALSE;
+
+        int d1 = 0, d2 = 0, ac = 0, th = 0, td = 0, ta = 0;
+
+
+        /* Hack -- examine the "easy know" flag */
+        if (k_list[item->kind].flags3 & TR3_EASY_KNOW) {
+            item->able = TRUE;
+        }
+
+
+        /* Must have a suffix */
+        if (!tail[0]) return;
+
+
+        /* Parse "weapon-style" damage strings */
+        if ((tail[0] == p1) &&
+            ((item->tval == TV_HAFTED) ||	
+             (item->tval == TV_POLEARM) ||	
+             (item->tval == TV_SWORD) ||	
+             (item->tval == TV_DIGGING) ||	
+             (item->tval == TV_BOLT) ||	
+             (item->tval == TV_ARROW) ||	
+             (item->tval == TV_SHOT))) {
+
+            /* First extract the damage string */
+            for (scan = tail; *scan != p2; scan++); scan++;
+
+            /* Hack -- Notice "end of string" */
+            if (scan[0] != ' ') done = TRUE;
+
+            /* Terminate the string and advance */
+            *scan++ = '\0';
+
+            /* Parse the damage string, or stop XXX */
+            if (sscanf(tail, "(%dd%d)", &d1, &d2) != 2) return;
+
+            /* Save the values */
+            item->dd = d1; item->ds = d2;
+
+            /* No extra information means not identified */
+            if (done) return;
+
+            /* Skip the "damage" info */
+            tail = scan;
+        }
+
+        /* Parse the "damage" string for bows */
+        else if ((tail[0] == p1) &&
+                 (item->tval == TV_BOW)) {
+
+            /* First extract the damage string */
+            for (scan = tail; *scan != p2; scan++); scan++;
+
+            /* Hack -- Notice "end of string" */
+            if (scan[0] != ' ') done = TRUE;
+
+            /* Terminate the string and advance */
+            *scan++ = '\0';
+
+            /* Parse the multiplier string, or stop */
+            if (sscanf(tail, "(x%d)", &d1) != 1) return;
+
+            /* Hack -- save it in "damage dice" */
+            item->dd = d1;
+
+            /* No extra information means not identified */
+            if (done) return;
+
+            /* Skip the "damage" info */
+            tail = scan;
+        }
+
+
+        /* Parse the "bonus" string */
+        if (tail[0] == p1) {
+
+            /* Extract the extra info */
+            for (scan = tail; *scan != p2; scan++); scan++;
+
+            /* Hack -- Notice "end of string" */
+            if (scan[0] != ' ') done = TRUE;
+
+            /* Terminate the damage, advance */
+            *scan++ = '\0';
+
+            /* Parse standard "bonuses" */
+            if (sscanf(tail, "(%d,%d)", &th, &td) == 2) {
+                item->to_h = th; item->to_d = td;
+                item->able = TRUE;
+            }
+
+            /* XXX XXX Hack -- assume non-final bonuses are "to_hit" */
+            else if (!done && sscanf(tail, "(%d)", &th) == 1) {
+                item->to_h = th;
+                item->able = TRUE;
+            }
+
+            /* XXX XXX Hack -- assume final bonuses are "pval" codes */
+            else if (done) {
+                item->pval = atoi(tail + 1);
+                item->able = TRUE;
+            }
+
+            /* Oops */
+            else {
+                return;
+            }
+
+            /* Nothing left */
+            if (done) return;
+
+            /* Skip the "damage bonus" info */
+            tail = scan;
+        }
+
+
+        /* Parse the "bonus" string */
+        if (tail[0] == b1) {
+
+            /* Extract the extra info */
+            for (scan = tail; *scan != b2; scan++); scan++;
+
+            /* Hack -- Notice "end of string" */
+            if (scan[0] != ' ') done = TRUE;
+
+            /* Terminate the armor string, advance */
+            *scan++ = '\0';
+
+            /* Parse the armor, and bonus */
+            if (sscanf(tail, "[%d,%d]", &ac, &ta) == 2) {
+                item->ac = ac;
+                item->to_a = ta;
+                item->able = TRUE;
+            }
+
+            /* Negative armor bonus */
+            else if (sscanf(tail, "[-%d]", &ta) == 1) {
+                item->to_a = ta;
+                item->able = TRUE;
+            }
+
+            /* Positive armor bonus */
+            else if (sscanf(tail, "[+%d]", &ta) == 1) {
+                item->to_a = ta;
+                item->able = TRUE;
+            }
+
+            /* Just base armor */
+            else if (sscanf(tail, "[%d]", &ac) == 1) {
+                item->ac = ac;
+            }
+
+            /* Oops */
+            else {
+                return;
+            }
+
+            /* Nothing left */
+            if (done) return;
+
+            /* Skip the "armor" data */
+            tail = scan;
+        }
+
+
+        /* Parse the final "pval" string, if any */
+        if (tail[0] == p1) {
+
+            /* Assume identified */
+            item->able = TRUE;
+
+            /* Grab it */
+            item->pval = atoi(tail + 1);
+        }
     }
 }
 
 
 
 /*
- * Destroy everything we know we don't want
+ * This function "guesses" at the "value" of non-aware items
  */
-static bool auto_throw_junk(void)
+static s32b borg_item_value_base(auto_item *item)
 {
-    int i;
+    /* Aware items can assume template cost */
+    if (item->kind) return (k_list[item->kind].cost);
 
-    /* Throw away "junk" */
-    for (i = 0; i < INVEN_PACK; i++) {
+    /* Unknown food is cheap */
+    if (item->tval == TV_FOOD) return (1L);
 
-	/* Skip "unknown" items */
-	if (auto_items[i].junk) {
+    /* Unknown Scrolls are cheap */
+    if (item->tval == TV_SCROLL) return (20L);
 
-	    /* Throw it at a monster or myself */
-	    Borg_keypress('f');
-	    Borg_keypress('a' + i);
-	    Borg_keypress('*');
-	    Borg_keypress('t');
+    /* Unknown Potions are cheap */
+    if (item->tval == TV_POTION) return (20L);
 
-	    /* Did something */
-	    return (TRUE);
-	}
-    }
+    /* Unknown Rings are cheap */
+    if (item->tval == TV_RING) return (45L);
 
+    /* Unknown Amulets are cheap */
+    if (item->tval == TV_AMULET) return (45L);
 
-    /* Nothing to destroy */
-    return (FALSE);
+    /* Unknown Wands are Cheap */
+    if (item->tval == TV_WAND) return (50L);
+
+    /* Unknown Staffs are Cheap */
+    if (item->tval == TV_STAFF) return (70L);
+
+    /* Unknown Rods are Cheap */
+    if (item->tval == TV_ROD) return (75L);
+
+    /* Hack -- Oops */
+    return (0L);
 }
 
-    
-
-/*
- * Make sure we have at least one free inventory slot
- * Return TRUE if an action was performed.
- */
-static bool auto_free_space(void)
-{
-    int i;
-    
-    u32b limit = 10L;
-
-
-    /* Throw junk until done */
-    while (auto_items[21].iqty) {
-
-	int k = 0;
-	
-	/* Try for junk first */
-	if (auto_throw_junk()) return (TRUE);
-
-
-	/* Prevent infinite loops */
-	for (i = 0; i < INVEN_PACK; i++) {
-	    auto_item *item = &auto_items[i];
-	    if (item->cash) k++;
-	}
-	
-	/* Hack -- Crash if confused */
-	if (!k) {
-	    auto_oops("Too much stuff!");
-	    return (TRUE);
-	}
-
-
-	/* Mark items as junk */
-	for (i = 0; i < INVEN_PACK; i++) {
-
-	    u32b cost;
-	
-	    auto_item *item = &auto_items[i];
-	
-	    /* Examine "sell" items */
-	    if (!item->cash) continue;
-
-	    /* Unknowns are worth 200 gold */
-	    if (!item->kind) cost = rand_range(100,300);
-	
-	    /* Extract the XXX base cost */
-	    else cost = k_list[item->kind].cost;
-
-	    /* Multiply by the quantity */
-	    cost *= item->iqty;
-	    
-	    /* Save expensive items */
-	    if (cost > limit) continue;
-
-	    /* Debug */
-	    auto_note(format("Junking %ld gold", cost));
-	    
-	    /* Mark it as junk */
-	    item->junk = TRUE;
-	}
-
-	/* Increase the limit */
-	limit *= 2;
-    }
-
-
-    /* Success */
-    return (FALSE);
-}
-
-    
 
 
 /*
- * Maintain a "useful" inventory
+ * Hack -- bonus "cost" of (non-worthless) ego-items
  */
-static bool auto_wear_stuff(void)
-{
-    int i;
-        
+s32b auto_ego_item_cost[EGO_MIN_WORTHLESS] = {
 
-    /* Look at the "lite" slot */    
-    i = INVEN_LITE;
-
-    /* Check the current "light source" */
-    if (!auto_items[i].iqty) {
-	do_lite = TRUE;
-    }
-    else if (auto_items[i].sval == SV_LITE_TORCH) {
-	if (auto_items[i].pval < 1000) do_torch = TRUE;
-	if (auto_items[i].pval < 1) do_lite = TRUE;
-    }
-    else if (auto_items[i].sval == SV_LITE_LANTERN) {
-	if (auto_items[i].pval < 5000) do_flask = TRUE;
-	if (auto_items[i].pval < 1) do_lite = TRUE;
-    }
-
-
-    /* Refuel a torch */
-    if (do_torch) {
-
-	/* Try to wield some other lite */
-	for (i = 0; i < INVEN_PACK; i++) {
-	    if ((auto_items[i].tval == TV_LITE) &&
-		(auto_items[i].sval == SV_LITE_LANTERN)) {
-		Borg_keypress('w');
-		Borg_keypress('a' + i);
-		return (TRUE);
-	    }
-	}
-
-	/* Scan the inventory -- note "empties" are gone */
-	for (i = 0; i < INVEN_PACK; i++) {
-	    if ((auto_items[i].tval == TV_LITE) &&
-		(auto_items[i].sval == SV_LITE_TORCH)) {
-		Borg_keypress('F');
-		return (TRUE);
-	    }
-	}
-    }
-
-
-    /* Refuel a lantern */
-    if (do_flask) {
-
-	/* Scan the inventory */
-	for (i = 0; i < INVEN_PACK; i++) {
-	    if (auto_items[i].tval == TV_FLASK) {
-		Borg_keypress('F');
-		return (TRUE);
-	    }
-	}
-    }
-
-
-    /* Get a new lite */
-    if (do_lite) {
-
-	/* Scan the inventory looking for (non-empty) lanterns */
-	for (i = 0; i < INVEN_PACK; i++) {
-	    if ((auto_items[i].tval == TV_LITE) &&
-		(auto_items[i].sval == SV_LITE_LANTERN)) {
-		Borg_keypress('w');
-		Borg_keypress('a' + i);
-		return (TRUE);
-	    }
-	}
-
-	/* Scan the inventory looking for (non-empty) torches */
-	for (i = 0; i < INVEN_PACK; i++) {
-	    if ((auto_items[i].tval == TV_LITE) &&
-		(auto_items[i].sval == SV_LITE_TORCH)) {
-		Borg_keypress('w');
-		Borg_keypress('a' + i);
-		return (TRUE);
-	    }
-	}
-    }
-
-
-    /* Wear stuff (top down) */
-    for (i = 0; i < INVEN_PACK; i++) {
-
-	/* Skip "unknown" items */
-	if (auto_items[i].wear) {
-
-	    /* Wear it */
-	    Borg_keypress('w');
-	    Borg_keypress('a' + i);
-
-	    /* Did something */
-	    return (TRUE);
-	}
-    }
-
-
-    /* Nothing to do */
-    return (FALSE);
-}
+    0L		/* NULL */,
+    12500L	/* "of Resistance" */,
+    1000L	/* "of Resist Acid" */,
+    600L	/* "of Resist Fire" */,
+    600L	/* "of Resist Cold" */,
+    500L	/* "of Resist Lightning" */,
+    20000L	/* "(Holy Avenger)" */,
+    15000L	/* "(Defender)" */,
+    2000L	/* "of Animal Slaying" */,	/* weapon */
+    4000L	/* "of Dragon Slaying" */,	/* weapon */
+    4000L	/* "of Slay Evil" */,		/* XXX - weapon */
+    3000L	/* "of Slay Undead" */,		/* XXX - weapon */
+    3000L	/* "of Flame" */,
+    2500L	/* "of Frost" */,
+    1000L	/* "of Free Action" */,
+    1500L	/* "of Slaying" */,
+    0L		/* NULL */,
+    0L		/* NULL */,
+    250L	/* "of Slow Descent" */,
+    200000L	/* "of Speed" */,		/* XXX */
+    500L	/* "of Stealth" */,
+    0L		/* NULL */,
+    0L		/* NULL */,
+    0L		/* NULL */,
+    500L	/* "of Intelligence" */,
+    500L	/* "of Wisdom" */,
+    500L	/* "of Infra-Vision" */,
+    2000L	/* "of Might" */,
+    2000L	/* "of Lordliness" */,
+    7500L	/* "of the Magi" */,
+    1000L	/* "of Beauty" */,
+    1000L	/* "of Seeing" */,		/* XXX */
+    1500L	/* "of Regeneration" */,
+    0L		/* NULL */,
+    0L		/* NULL */,
+    0L		/* NULL */,
+    0L		/* NULL */,
+    0L		/* NULL */,
+    30000L	/* "of the Magi" */,		/* robe (new) */
+    250L	/* "of Protection" */,		/* cloak */
+    0L		/* NULL */,
+    0L		/* NULL */,
+    0L		/* NULL */,
+    2000L	/* "of Fire" */,
+    25L		/* "of Slay Evil" */,		/* ammo */
+    35L		/* "of Slay Dragon" */,		/* ammo */
+    0L		/* NULL */,
+    0L		/* NULL */,
+    0L		/* NULL */,
+    0L		/* NULL */,
+    25L		/* "of Fire" */,		/* ammo (new) */
+    0L		/* NULL */,
+    45L		/* "of Slaying" */,		/* ammo (new) */
+    0L		/* NULL */,
+    0L		/* NULL */,
+    30L		/* "of Slay Animal" */,		/* ammo */
+    0L		/* NULL */,
+    0L		/* NULL */,
+    0L		/* NULL */,
+    0L		/* NULL */,
+    10000L	/* "of Extra Might" */,		/* launcher */
+    10000L	/* "of Extra Shots" */,		/* launcher */
+    0L		/* NULL */,
+    0L		/* NULL */,
+    1000L	/* "of Velocity" */,		/* launcher (new) */
+    1000L	/* "of Accuracy" */,		/* launcher */
+    0L		/* NULL */,
+    1200L	/* "of Orc Slaying" */,		/* weapon */
+    2500L	/* "of Power" */,		/* gloves */
+    0L		/* NULL */,
+    0L		/* NULL */,			
+    20000L	/* "of Westernesse" */,		/* XXX */
+    5000L	/* "(Blessed)" */,
+    1200L	/* "of Demon Slaying" */,	/* weapon */
+    1200L	/* "of Troll Slaying" */,	/* weapon */
+    0L		/* NULL */,			
+    0L		/* NULL */,
+    30L		/* "of Wounding" */,		/* ammo */
+    0L		/* NULL */,
+    0L		/* NULL */,
+    0L		/* NULL */,
+    500L	/* "of Light" */,
+    1000L	/* "of Agility" */,
+    0L		/* NULL */,
+    0L		/* NULL */,
+    1200L	/* "of Giant Slaying" */,	/* weapon */
+    50000L	/* "of Telepathy" */,
+    15000L	/* "of Elvenkind" */,
+    0L		/* NULL */,
+    0L		/* NULL */,
+    10000L	/* "of Extra Attacks" */,
+    4000L	/* "of Aman" */,
+    0L		/* NULL */,
+    0L		/* NULL */,
+    0L		/* NULL */,
+    0L		/* NULL */,
+};
 
 
 
 
 /*
- * Analyze the "inventory" screen
+ * Determine the base price of a known item (see below)
  */
-static bool auto_prepare_inven(void)
+static s32b borg_item_value_known(auto_item *item)
 {
-    int i, notice = FALSE;
-    
-    char buf[256];
+    s32b value;
 
-    bool done = FALSE;
-    
-    
-    /* Extract the inventory */
-    for (i = 0; i < INVEN_PACK; i++) {
 
-	/* Default to "nothing" */
-	buf[0] = '\0';
+    /* Extract the base value */
+    value = k_list[item->kind].cost;
 
-	/* Cheat -- extract the inventory directly */
-	if (cheat_inven) {
+    /* Known worthless items are worthless */
+    if (value <= 0L) return (0L);
 
-	    /* Extract a real item */
-	    if (inventory[i].tval) {
-		objdes(buf, &inventory[i], TRUE);
-		buf[75] = '\0';
-	    }
-	}
 
-	/* Actually parse the screen */
-	else if (!done) {
+    /* Hack -- use artifact base costs */
+    if (item->name1) value = v_list[item->name1].cost;
 
-	    /* XXX Not implemented -- see store parser */
-	    /* XXX Be sure to strip any trailing spaces */
-	}
+    /* Known worthless items are worthless */
+    if (value <= 0L) return (0L);
 
-	/* Ignore "unchanged" items */
-	if (streq(buf, auto_items[i].desc)) continue;
-	
-	/* Hack -- remember to "notice" everything */
-	notice = TRUE;
-	
-	/* Analyze the item (no price) */
-	auto_item_analyze(&auto_items[i], buf, "");
+
+    /* Hack -- catch worthless ego-items */
+    if (item->name2 >= EGO_MIN_WORTHLESS) return (0L);
+
+    /* Mega-Hack -- guess at ego-item bonus cost */
+    if (item->name2) value += auto_ego_item_cost[item->name2];
+
+
+    /* Wands/Staffs -- pay extra for charges */
+    if ((item->tval == TV_WAND) ||
+        (item->tval == TV_STAFF)) {
+
+        /* Reward charges */
+        value += ((value / 20) * item->pval);
     }
 
-    /* When the inventory changes, make sure to recheck everything */
-    if (notice) {
-	for (i = 0; i < INVEN_TOTAL; i++) auto_items[i].done = FALSE;
+    /* Rings/Amulets -- pay extra for bonuses */
+    else if ((item->tval == TV_RING) ||
+             (item->tval == TV_AMULET)) {
+
+        /* Reward bonuses */
+        value += ((item->to_h + item->to_d) * 100L);
+        value += ((item->to_a + item->pval) * 100L);
+
+        /* XXX XXX Ring of Speed */
     }
-    
-    /* Show the "equipment screen" */
-    if (!cheat_equip) Borg_keypress('e');
 
-    /* Prepare to parse the equipment */
-    state = STATE_EQUIP;
+    /* Armour -- pay extra for armor bonuses */
+    else if ((item->tval == TV_BOOTS) ||
+             (item->tval == TV_GLOVES) ||
+             (item->tval == TV_CLOAK) ||
+             (item->tval == TV_HELM) ||
+             (item->tval == TV_CROWN) ||
+             (item->tval == TV_SHIELD) ||
+             (item->tval == TV_SOFT_ARMOR) ||
+             (item->tval == TV_HARD_ARMOR) ||
+             (item->tval == TV_DRAG_ARMOR)) {
 
-    /* Done */
-    return (TRUE);
+        /* Hack -- negative armor bonus */
+        if (item->to_a < 0) return (0L);
+
+        /* Reward bonuses */
+        value += ((item->to_h + item->to_d) * 100L);
+        value += ((item->to_a + item->pval) * 100L);
+    }
+
+    /* Weapons -- pay extra for all three bonuses */
+    else if ((item->tval == TV_DIGGING) ||
+             (item->tval == TV_HAFTED) ||
+             (item->tval == TV_SWORD) ||
+             (item->tval == TV_POLEARM)) {
+
+        /* Allow negatives to be overcome */
+        if (item->to_h + item->to_d < 0) return (0L);
+
+        /* Reward bonuses */
+        value += ((item->to_h + item->to_d) * 100L);
+        value += ((item->to_a + item->pval) * 100L);
+    }
+
+    /* Bows -- pay extra for all three bonuses */
+    else if (item->tval == TV_BOW) {
+
+        /* Allow negatives to be overcome */
+        if (item->to_h + item->to_d < 0) return (0L);
+
+        /* Reward bonuses */
+        value += ((item->to_h + item->to_d) * 100L);
+        value += ((item->to_a + item->pval) * 100L);
+    }
+
+    /* Ammo -- pay extra for all three bonuses.  Hack -- 1/20 normal weapons */
+    else if ((item->tval == TV_SHOT) ||
+             (item->tval == TV_ARROW) ||
+             (item->tval == TV_BOLT)) {
+
+        /* Allow negatives to be overcome */
+        if (item->to_h + item->to_d < 0) return (0L);
+
+        /* Reward bonuses */
+        value += ((item->to_h + item->to_d) * 100L);
+    }
+
+
+    /* Return the value */
+    return (value);
 }
 
 
 /*
- * Analyze the "equipment" screen
+ * Determine the approximate "price" of one instance of an item
+ * Adapted from "store.c:item_value()" and "object.c:apply_magic()".
+ *
+ * This routine is used to determine how much gold the Borg would get
+ * for selling an item, ignoring "charisma" related issues, and the
+ * maximum purchase limits of the various shop-keepers.
+ *
+ * This function correctly handles artifacts and ego-items, though
+ * it will (slightly) undervalue a few ego-items.  This function will
+ * not "sufficiently" reward rings/boots of speed, though they are
+ * already worth much, much more than any other objects.
+ *
+ * This function correctly handles "cursed" items, and attempts to
+ * apply relevant "discounts" if known.
+ *
+ * This function is remarkably accurate, considering the complexity...
  */
-static bool auto_prepare_equip(void)
+s32b borg_item_value(auto_item *item)
 {
-    int i, notice = FALSE;
-    
-    char buf[160];
+    s32b value;
 
-    /* Extract the inventory */
-    for (i = INVEN_WIELD; i < INVEN_TOTAL; i++) {
+    int discount = 0;
 
-	/* Default to "nothing" */
-	buf[0] = '\0';
 
-	/* Cheat -- extract the inventory directly */
-	if (cheat_equip) {
+    /* Non-aware items */
+    if (item->kind && item->able) {
 
-	    /* Extract a real item */
-	    if (inventory[i].tval) {
-		objdes(buf, &inventory[i], TRUE);
-		buf[75] = '\0';
-	    }
-	}
-
-	/* Actually parse the screen */
-	else {
-
-	    /* XXX Not implemented */
-	    /* XXX Be sure to strip trailing spaces */
-
-	    /* Use the nice "show_empty_slots" flag */
-	    if (streq(buf, "(nothing)")) strcpy(buf, "");
-	}
-
-	/* Ignore "unchanged" items */
-	if (streq(buf, auto_items[i].desc)) continue;
-
-	/* Remember to re-examine everything */
-	notice = TRUE;
-	
-	/* Analyze the item (no price) */
-	auto_item_analyze(&auto_items[i], buf, "");
+        /* Process various fields */
+        value = borg_item_value_known(item);
     }
-    
-    /* When the inventory changes, make sure to recheck everything */
-    if (notice) {
-	for (i = 0; i < INVEN_TOTAL; i++) auto_items[i].done = FALSE;
+
+    /* Known items */
+    else {
+
+        /* Do what "store.c" does */
+        value = borg_item_value_base(item);
     }
-    
-    /* Leave the "equipment screen" */
-    if (!cheat_inven || !cheat_equip) Borg_keypress(ESCAPE);
 
-    /* Enter the "think" state */
-    state = STATE_THINK;
+    /* Worthless items */
+    if (value <= 0L) return (0L);
 
-    /* Hack -- go to the "store" state instead */
-    if (state_store) state = STATE_STORE;
 
-    /* Success */
-    return (TRUE);
+    /* Parse various "inscriptions" */
+    if (item->note[0]) {
+
+        /* Cursed indicators */
+        if (streq(item->note, "{cursed}")) return (0L);
+        if (streq(item->note, "{terrible}")) return (0L);
+        if (streq(item->note, "{worthless}")) return (0L);
+
+        /* Ignore certain feelings */
+        /* "{average}" */
+        /* "{blessed}" */
+        /* "{good}" */
+        /* "{excellent}" */
+        /* "{special}" */
+
+        /* Ignore special inscriptions */
+        /* "{empty}", "{tried}" */
+
+        /* Special "discount" */
+        if (streq(item->note, "{on sale}")) discount = 50;
+
+        /* Standard "discounts" */
+        else if (streq(item->note, "{25% off}")) discount = 25;
+        else if (streq(item->note, "{50% off}")) discount = 50;
+        else if (streq(item->note, "{75% off}")) discount = 75;
+        else if (streq(item->note, "{90% off}")) discount = 90;
+    }
+
+
+    /* Apply "discount" if any */
+    if (discount) value -= value * discount / 100;
+
+
+    /* Return the value */
+    return (value);
 }
 
 
-
-
-
-/*
- * Analyze a "store" screen
- */
-static bool auto_prepare_store(void)
-{
-    int i;
-
-    byte t_a;
-
-    cptr s;
-    
-    char what[32];
-
-    char desc[80];
-    char cost[10];
-    
-    char buf[256];
-
-    /* Multiple pages? */
-    int more = 0;
-
-    /* Current page */
-    int page = 0;
-
-    /* Hack -- make sure both pages are seen */
-    static int browse = TRUE;
-    
-    /* What store did I *think* I was in */
-    static int old_store = 0;
-
-    /* How many pages did I *think* there were */
-    static int old_more = 0;
-
-
-    /* Extract the "store" name (or "Home") */
-    if (Term_what_text(50, 3, -20, &t_a, what)) what[0] = '\0';
-    if (!what[0]) strcpy(what, "Home");
-
-    /* React to new stores */
-    if (old_store != state_store) {
-
-	/* Clear all the items */
-	for (i = 0; i < 24; i++) {
-
-	    /* XXX Wipe the ware */
-	    WIPE(&auto_wares[i], auto_item);
-	}
-	
-	/* Save the store */
-	old_store = state_store;
-    }
-        
-    
-    /* Extract the "page", if any */
-    if ((0 == Term_what_text(20, 5, 8, &t_a, buf)) &&
-	(prefix(buf, "(Page "))) /* --)-- */ {
-
-	/* Take note of the page */
-	more = 1, page = (buf[6] - '0') - 1;
-    }
-
-    /* React to disappearing pages */
-    if (old_more != more) {
-
-	/* Clear the second page */
-	for (i = 12; i < 24; i++) {
-
-	    /* XXX Wipe the ware */
-	    WIPE(&auto_wares[i], auto_item);
-	}
-	
-	/* Save the new one */
-	old_more = more;
-    }
-    
-
-    /* Extract the current gold (unless in home) */
-    if (0 == Term_what_text(68, 19, -9, &t_a, buf)) {
-
-	/* Ignore this field in the home */
-	if (state_store != 8) strcpy(auto_gold, buf);
-    }
-
-
-    /* Note */
-    auto_note(format("In store %s (%d), page %d/%d, with %s gold",
-		     what, state_store, page+1, more+1, auto_gold));
-
-
-    /* Parse the store (or home) inventory */
-    for (i = 0; i < 12; i++) {
-
-	char /* p1 = '(', */ p2 = ')';
-
-	/* Default to "empty" */
-	desc[0] = '\0';
-	cost[0] = '\0';
-	
-	/* Verify "intro" to the item */
-	if ((0 == Term_what_text(0, i + 6, 3, &t_a, buf)) &&
-	    (buf[0] == 'a' + i) && (buf[1] == p2) && (buf[2] == ' ')) {
-
-	    /* Extract the item description */
-	    if (Term_what_text(3, i + 6, -65, &t_a, desc)) desc[0] = '\0';
-
-	    /* XXX Make sure trailing spaces get stripped (?) */
-	    	
-	    /* Extract the item cost */
-	    if (Term_what_text(68, i + 6, -9, &t_a, cost)) cost[0] = '\0';
-
-	    /* Hack -- forget the cost in the home */
-	    if (state_store == 8) cost[0] = '\0';
-	}
-
-	/* Ignore "unchanged" descriptions */
-	if (streq(desc, auto_wares[page*12+i].desc)) continue;
-
-	/* Analyze it (including the cost) */
-	auto_item_analyze(&auto_wares[page*12+i], desc, cost);
-    }
-
-
-    /* Hack -- browse as needed */
-    if (more && browse) {
-	Borg_keypress(' ');
-	browse = FALSE;
-	return (TRUE);
-    }
-
-    /* Hack -- must browse later */
-    browse = TRUE;
-    
-
-    /* Examine the inventory */
-    auto_notice();
-    
-    /* Wear things */
-    if (auto_wear_stuff()) {
-
-	/* Send the "inventory" command */
-	if (!cheat_inven) Borg_keypress('i');
-
-	/* Prepare to parse */
-	state = STATE_INVEN;
-
-	/* Success */
-	return (TRUE);
-    }
-
-    
-    /* Sell stuff */
-    for (i = 0; i < INVEN_PACK; i++) {
-
-	auto_item *item = &auto_items[i];
-
-	/* XXX Hack -- notice "full" store */
-	if (auto_wares[23].iqty) break;
-	
-	/* Item must be marked as sellable */
-	if (!item->iqty) continue;
-	if (!item->cash) continue;
-
-	/* Do not try to make "bad" sales */
-	if (!auto_good_sell(item)) continue;
-
-	/* Note */
-	auto_note(format("Selling %s to the %s", item->desc, what));
-
-	/* Hack -- sell it */
-	Borg_keypress('s');
-	
-	/* Sell that item */
-	Borg_keypress('a' + i);
-
-	/* XXX XXX Hack -- ignore inscriptions */
-	if (strcmp(item->note, "")) Borg_keypress('y');
-
-	/* Hack -- Sell a single item */
-	if (item->iqty > 1) Borg_keypress('\n');
-
-	/* Accept the price, skip the messages */
-	Borg_keypress('\n');
-	Borg_keypress('\n');
-	Borg_keypress('\n');
-	Borg_keypress('\n');
-	Borg_keypress('\n');
-	Borg_keypress('\n');
-	Borg_keypress('\n');
-
-	/* Send the "inventory" command */
-	if (!cheat_inven) Borg_keypress('i');
-
-	/* Prepare to parse */
-	state = STATE_INVEN;
-
-	/* Success */
-	return (TRUE);
-    }
-
-    /* Buy stuff */
-    for (i = 0; i < 24; i++) {
-
-	auto_item *ware = &auto_wares[i];
-
-	/* Notice end of shop inventory */
-	if (!ware->iqty) break;
-	
-	/* XXX Hack -- notice "full" inventory */
-	if (auto_items[21].iqty) break;
-
-	/* We must have enough cash */
-	if (strcmp(auto_gold, ware->cost) < 0) continue;
-
-	/* Only buy useful stuff */
-	if (!auto_good_buy(ware)) continue;
-
-	/* Note */
-	auto_note(format("Buying %s from the %s", ware->desc, what));
-
-        /* Hack -- wrong page */
-        if ((i / 12) != page) Borg_keypress(' ');
-        
-	/* Buy an item */
-	Borg_keypress('p');
-
-	/* Buy the desired item */
-	Borg_keypress('a' + (i % 12));
-
-	/* Buy a single item */
-	if (ware->iqty > 1) Borg_keypress('\n');
-
-	/* Skip the messages */
-	Borg_keypress('\n');
-	Borg_keypress('\n');
-	Borg_keypress('\n');
-	Borg_keypress('\n');
-	Borg_keypress('\n');
-	Borg_keypress('\n');
-	Borg_keypress('\n');
-
-	/* Send the "inventory" command */
-	if (!cheat_inven) Borg_keypress('i');
-	
-	/* Prepare to parse */
-	state = STATE_INVEN;
-
-	/* Success */
-	return (TRUE);
-    }
-    
-    
-
-    /* Leave the store */
-    Borg_keypress(ESCAPE);
-
-    /* Forget that we are in a store */
-    state_store = 0;
-    
-    /* Prepare to start over */
-    state = STATE_START;
-
-    /* Done */
-    return (TRUE);
-}
 
 
 
@@ -2603,20 +2365,41 @@ static bool auto_prepare_store(void)
 /*
  * Is a grid "okay" for us to run into
  *
- * This routine is ONLY called by "auto_goto_dir()".
+ * This routine is ONLY called by "borg_goto_dir()", and then only
+ * if the destination grid is not adjacent to the player.
  */
-static bool auto_okay_grid(int x, int y)
+static bool borg_okay_grid(int x, int y)
 {
     auto_grid *ag = grid(x, y);
-    
-    /* Try not to walk into walls (but do so if commanded) */
-    if (strchr("#%", ag->o_c)) return (FALSE);
-    
-    /* Try not to walk into stores (but do so if commanded) */
-    if (strchr("12345678", ag->o_c)) return (FALSE);
-    
-    /* Avoid monsters unless in "killing" mode (or commanded) */
-    if ((goal != GOAL_KILL) && strchr(auto_str_kill, ag->o_c)) return (FALSE);
+
+    /* Avoid unknown grids */
+    if (ag->o_c == ' ') return (FALSE);
+
+#if 0
+    /* Floors are okay */
+    if (ag->o_c == '.') return (TRUE);
+
+    /* Hack -- Open doors are okay */
+    if (ag->o_c == '\'') return (TRUE);
+
+    /* Hack -- Stairs are okay */
+    if (ag->o_c == '<') return (TRUE);
+    if (ag->o_c == '>') return (TRUE);
+
+    /* Assume not okay */
+    return (FALSE);
+#endif
+
+#if 0
+    /* Avoid walls/seams/doors/rubble */
+    if (strchr("#%+:", ag->o_c)) return (FALSE);
+
+    /* Avoid normal "monsters" */
+    if (isalpha(ag->o_c) || (ag->o_c == '&')) return (FALSE);
+
+    /* Avoid Hack -- Prefer not to walk into stores */
+    if (isdigit(ag->o_c)) return (FALSE);
+#endif
 
     /* Assume okay */
     return (TRUE);
@@ -2627,7 +2410,7 @@ static bool auto_okay_grid(int x, int y)
  * Given a "source" and "target" locations, extract a "direction",
  * which will move one step from the "source" towards the "target".
  */
-static int auto_extract_dir(int x1, int y1, int x2, int y2)
+static int borg_extract_dir(int x1, int y1, int x2, int y2)
 {
     /* Stay still */
     if ((y1 == y2) && (x1 == x2)) return (5);
@@ -2654,318 +2437,136 @@ static int auto_extract_dir(int x1, int y1, int x2, int y2)
  * which will move one step from the "source" towards the "target".
  * Attempt to avoid walls if possible.  Return "0" if none.
  */
-static int auto_goto_dir(int x1, int y1, int x2, int y2)
+int borg_goto_dir(int x1, int y1, int x2, int y2)
 {
     int d;
-    
+
 
     /* Special case -- next to (or on) the goal */
     if ((ABS(y2-y1) <= 1) && (ABS(x2-x1) <= 1)) {
-	return (auto_extract_dir(x1, y1, x2, y2));
+        return (borg_extract_dir(x1, y1, x2, y2));
     }
 
-    
+
     /* Try to do the "horizontal" */
     if (ABS(y2 - y1) < ABS(x2 - x1)) {
-	d = auto_extract_dir(x1, y1, x2, y1);
-	if (auto_okay_grid(x1 + dx[d], y1 + dy[d])) return (d);
+        d = borg_extract_dir(x1, y1, x2, y1);
+        if (borg_okay_grid(x1 + ddx[d], y1 + ddy[d])) return (d);
     }
-    
+
     /* Try to do the "vertical" */
     if (ABS(y2 - y1) > ABS(x2 - x1)) {
-	d = auto_extract_dir(x1, y1, x1, y2);
-	if (auto_okay_grid(x1 + dx[d], y1 + dy[d])) return (d);
+        d = borg_extract_dir(x1, y1, x1, y2);
+        if (borg_okay_grid(x1 + ddx[d], y1 + ddy[d])) return (d);
     }
-    
+
 
     /* Try to walk "directly" there */
-    d = auto_extract_dir(x1, y1, x2, y2);
-    
+    d = borg_extract_dir(x1, y1, x2, y2);
+
     /* Check for walls */
-    if (auto_okay_grid(x1 + dx[d], y1 + dy[d])) return (d);
-    
-    
+    if (borg_okay_grid(x1 + ddx[d], y1 + ddy[d])) return (d);
+
+
     /* Try the "vertical" instead (includes "diagonal") */
     if (ABS(y2 - y1) <= ABS(x2 - x1)) {
-	d = auto_extract_dir(x1, y1, x1, y2);
-	if (auto_okay_grid(x1 + dx[d], y1 + dy[d])) return (d);
+        d = borg_extract_dir(x1, y1, x1, y2);
+        if (borg_okay_grid(x1 + ddx[d], y1 + ddy[d])) return (d);
     }
 
     /* Try the "horizontal" instead (includes "diagonal") */
     if (ABS(y2 - y1) >= ABS(x2 - x1)) {
-	d = auto_extract_dir(x1, y1, x2, y1);
-	if (auto_okay_grid(x1 + dx[d], y1 + dy[d])) return (d);
+        d = borg_extract_dir(x1, y1, x2, y1);
+        if (borg_okay_grid(x1 + ddx[d], y1 + ddy[d])) return (d);
     }
-    
-    
+
+
     /* Hack -- directly "vertical", try "shaking" */
     if (x2 == x1) {
-    
-	/* Shake to the east */
-	d = auto_extract_dir(x1, y1, x1+1, y2);
-	if (auto_okay_grid(x1 + dx[d], y1 + dy[d])) return (d);
-    
-	/* Shake to the west */
-	d = auto_extract_dir(x1, y1, x1-1, y2);
-	if (auto_okay_grid(x1 + dx[d], y1 + dy[d])) return (d);
+
+        /* Shake to the east */
+        d = borg_extract_dir(x1, y1, x1+1, y2);
+        if (borg_okay_grid(x1 + ddx[d], y1 + ddy[d])) return (d);
+
+        /* Shake to the west */
+        d = borg_extract_dir(x1, y1, x1-1, y2);
+        if (borg_okay_grid(x1 + ddx[d], y1 + ddy[d])) return (d);
     }
-    
+
     /* Hack -- directly "horizontal", try "shaking" */
     if (y2 == y1) {
-    
-	/* Shake to the south */
-	d = auto_extract_dir(x1, y1, x2, y1+1);
-	if (auto_okay_grid(x1 + dx[d], y1 + dy[d])) return (d);
-    
-	/* Shake to the north */
-	d = auto_extract_dir(x1, y1, x2, y1-1);
-	if (auto_okay_grid(x1 + dx[d], y1 + dy[d])) return (d);
-    }
-    
 
-    /* Hack -- Surrounded by walls.  Dig through them. */
-    d = auto_extract_dir(x1, y1, x2, y2);
-    
+        /* Shake to the south */
+        d = borg_extract_dir(x1, y1, x2, y1+1);
+        if (borg_okay_grid(x1 + ddx[d], y1 + ddy[d])) return (d);
+
+        /* Shake to the north */
+        d = borg_extract_dir(x1, y1, x2, y1-1);
+        if (borg_okay_grid(x1 + ddx[d], y1 + ddy[d])) return (d);
+    }
+
+
+    /* Hack -- Surrounded by obstacles. */
+    d = borg_extract_dir(x1, y1, x2, y2);
+
     /* Let the calling routine check the result */
     return (d);
 }
 
 
-/*
- * Process a "goto" goal, return "TRUE" if goal is still okay.
- */
-static bool auto_play_step(int x, int y)
-{
-    auto_grid *ag;
-    
-    int dir;
-
-
-    /* We have arrived */
-    if ((c_x == x) && (c_y == y)) return (FALSE);
-    
-    /* Get a direction (may be a wall there) */
-    dir = auto_goto_dir(c_x, c_y, x, y);
-
-
-    /* Access the grid we are stepping on */
-    ag = grid(c_x + dx[dir], c_y + dy[dir]);
-
-    /* Must "disarm" traps */
-    if (ag->o_c == '^') {
-	Borg_keypress('#');
-        Borg_keypress('D');
-    }
-
-    /* Must "open" (or "bash") doors */
-    else if (ag->o_c == '+') {
-	Borg_keypress('#');
-        if (randint(10) == 1) Borg_keypress('B');
-        else if (ag->o_c == '+') Borg_keypress('o');
-    }
-
-    /* Tunnel through rubble */
-    else if (strchr(":", ag->o_c)) {
-	Borg_keypress('#');
-        Borg_keypress('T');
-    }
-
-    /* Tunnel through walls/seams */
-    /* Hack -- eventually, give up */
-    else if (strchr("#%", ag->o_c)) {
-	if (randint(5) == 1) goal = 0;
-	Borg_keypress('#');
-        Borg_keypress('T');
-    }
-
-    /* XXX Hack -- Occasionally, tunnel for gold */
-    else if (strchr("$*", ag->o_c) && (randint(10) == 1)) {
-	Borg_keypress('#');
-        Borg_keypress('T');
-    }
-    
-    /* XXX XXX Hack -- Occasionally, tunnel for objects */
-    else if (strchr(auto_str_take, ag->o_c) && (randint(20) == 1)) {
-	Borg_keypress('#');
-        Borg_keypress('T');
-    }
-    
-    /* XXX XXX Hack -- Occasionally, tunnel into monsters */
-    else if (strchr(auto_str_kill, ag->o_c) && (randint(30) == 1)) {
-	Borg_keypress('#');
-        Borg_keypress('T');
-    }
-    
-    /* Walk in that direction */
-    Borg_keypress('0' + dir);
-    
-    /* Sometimes prepare to enter a "store" */
-    if (strchr("12345678", ag->o_c)) {
-	state_store = (ag->o_c - '0');
-        state = STATE_STORE;
-    }
-    
-    /* Hack -- prepare to take stairs if desired */
-    if ((ag->o_c == '<') && (goal_level < 0)) Borg_keypress('<');
-    if ((ag->o_c == '>') && (goal_level > 0)) Borg_keypress('>');
-    
-    /* Did something */
-    return (TRUE);
-}
-
 
 /*
- * Attempt to fire at the given location
+ * Hack -- compute the "cost" of the given grid
  */
-static bool auto_play_fire(int x2, int y2)
+int borg_flow_cost(int x, int y)
 {
-    int i, x1 = c_x, y1 = c_y;
-
-    auto_grid *ag;
-    
-    /* Only a one in five chance */
-    if (randint(5) != 1) return (FALSE);
-    
-    /* Must be "on screen" */
-    if (!panel_contains(y2, x2)) return (FALSE);
-    
-    /* Must not be adjacent */
-    if (distance(x1, y1, x2, y2) <= 1) return (FALSE);
-    
-    /* Hack -- do not "fire" at mushrooms/skeletons */
-    ag = grid(x2, y2);
-    if (ag->o_c == ',') return (FALSE);
-    if (ag->o_c == 's') return (FALSE);
-    
-    /* Find an arrow or something */
-    for (i = 0; i < INVEN_PACK; i++) {
-	if (auto_items[i].tval == TV_BOLT) break;
-	if (auto_items[i].tval == TV_ARROW) break;
-	if (auto_items[i].tval == TV_SHOT) break;
-    }
-
-    /* Nothing to fire */
-    if (i == INVEN_PACK) return (FALSE);
-
-    /* Fire! */
-    Borg_keypress('f');
-    Borg_keypress('a' + i);
-
-    /* Target the location */
-    Borg_keypress('*');
-    Borg_keypress('l');
-    
-    /* Start at the player */
-    x1 = c_x, y1 = c_y;
-    
-    /* Move to the location */
-    for ( ; y1 < y2; y1++) Borg_keypress('2');
-    for ( ; y1 > y2; y1--) Borg_keypress('8');
-    for ( ; x1 < x2; x1++) Borg_keypress('6');
-    for ( ; x1 > x2; x1--) Borg_keypress('4');
-
-    /* Select the target */
-    Borg_keypress('t');
-    
-    /* Success */
-    return (TRUE);
-}
-
-
-/*
- * Process the current goal
- *
- * Note that "goto", "take", and "kill" are "identical".
- *
- * Return TRUE if this goal is still "okay".
- * Otherwise, cancel the goal and return FALSE.
- */
-static bool auto_play_old_goal(void)
-{
-    auto_grid *ag;
     auto_room *ar;
-    
-    /* Process "KILL" goals */
-    if (goal == GOAL_KILL) {
 
-	/* Get the goal grid */
-	ag = grid(g_x, g_y);
-    
-	/* Verify match, attempt a step */
-	if ((ag->o_a == g_a) && (ag->o_c == g_c)) {
+    int cost, best = 999;
 
-	    /* Try shooting */
-	    if (auto_play_fire(g_x, g_y)) return (TRUE);
-	    
-	    /* Try walking */
-	    if (auto_play_step(g_x, g_y)) return (TRUE);
-	}
+    /* Scan all the rooms holding this room */
+    for (ar = room(1,x,y); ar; ar = room(0,0,0)) {
+
+        int dx = ar->x - x;
+        int dy = ar->y - y;
+
+        int ax = ABS(dx);
+        int ay = ABS(dy);
+
+        /* Calculate the cost */
+        cost = ar->cost + MAX(ax, ay);
+
+        /* Calculate the cost */
+        if (cost >= best) continue;
+
+        /* Save the best cost */
+        best = cost;
     }
 
-    /* Process "GOTO" goals */
-    else if (goal == GOAL_GOTO) {
-
-	/* Get the goal grid */
-	ag = grid(g_x, g_y);
-    
-	/* Verify match, attempt a step */
-	if ((ag->o_a == g_a) && (ag->o_c == g_c) &&
-	    auto_play_step(g_x, g_y)) return (TRUE);
-    }
-
-    /* Process "TAKE" goals */
-    else if (goal == GOAL_TAKE) {
-
-	/* Get the goal grid */
-	ag = grid(g_x, g_y);
-    
-	/* Verify match, attempt a step */
-	if ((ag->o_a == g_a) && (ag->o_c == g_c) &&
-	    auto_play_step(g_x, g_y)) return (TRUE);
-    }
-
-    /* Process "FLOW" goals */
-    else if (goal == GOAL_FLOW) {
-
-	int x = c_x, y = c_y, cost = MAX_SHORT;
-
-	/* Scan all the rooms we are in */
-	for (ar = room(1,c_x,c_y); ar; ar = room(0,0,0)) {
-	    if (ar->flow >= cost) continue;
-	    x = ar->x, y = ar->y, cost = ar->flow;
-	}
-	
-	/* Try to take a "step", or cancel the goal */
-	if ((cost < MAX_SHORT) && (auto_play_step(x, y))) return (TRUE);
-    }
-    
-
-    /* Cancel the goal */
-    goal = 0;
-
-    /* Nothing to do */
-    return (FALSE);
+    /* Return the cost */
+    return (best);
 }
 
 
 
+
+
 /*
- * Some "fake" sentinel nodes for the queue
+ * Hack -- maximum flow cost
  */
-static auto_room auto_flow_head;
-static auto_room auto_flow_tail;
+static int auto_flow_max = 999;
+
 
 
 /*
  * Determine if the queue is empty
  */
-static bool auto_flow_empty(void)
+static bool borg_flow_empty(void)
 {
-    /* Semi-Hack -- Test for Empty Queue. */
-    if (auto_flow_head.next == &auto_flow_tail) return (TRUE);
-    if (auto_flow_tail.prev == &auto_flow_head) return (TRUE);
+    /* Test for Empty Queue. */
+    if (auto_room_head->next == auto_room_tail->self) return (TRUE);
 
-    /* Must have entries */
+    /* Must not be empty */
     return (FALSE);
 }
 
@@ -2974,51 +2575,89 @@ static bool auto_flow_empty(void)
 /*
  * Dequeue from the "priority queue" of "auto_flow" records
  */
-static auto_room *auto_flow_dequeue(void)
+static auto_room *borg_flow_dequeue(void)
 {
-    auto_room *ar;
+    auto_room *prev = auto_room_head;
+    auto_room *this = &auto_rooms[prev->next];
+    auto_room *next = &auto_rooms[this->next];
 
-    /* Hack -- check for empty */
-    if (auto_flow_empty()) return (NULL);
-        
-    /* Access the first node in the queue */
-    ar = auto_flow_head.next;
-    
+    /* Oops -- The queue is empty */
+    if (this == next) return (NULL);
+
     /* Dequeue the entry */
-    ar->next->prev = ar->prev;
-    ar->prev->next = ar->next;
-    
-    /* Forget the links */
-    ar->next = ar->prev = NULL;
-    
+    prev->next = next->self;
+    next->prev = prev->self;
+
+    /* No longer in the queue */
+    this->next = this->prev = 0;
+
     /* Return the room */
-    return (ar);
+    return (this);
 }
 
 
 /*
  * Enqueue into the "priority queue" of "auto_flow" records
  */
-static void auto_flow_enqueue(auto_room *ar)
+static void borg_flow_enqueue(auto_room *ar)
 {
-    auto_room *node;
+    auto_room *prev = auto_room_head;
+    auto_room *next = &auto_rooms[prev->next];
 
-    /* Start at the sentinel head */
-    node = &auto_flow_head;
-    
-    /* Hack -- Find a good location in the queue */
-    while (ar->flow >= node->next->flow) node = node->next;
+    /* Find a "good" location in the queue */
+    while (ar->cost >= next->cost) {
+        prev = next;
+        next = &auto_rooms[prev->next];
+    }
 
     /* Tell the node */
-    ar->prev = node;
-    ar->next = node->next;
+    ar->prev = prev->self;
+    ar->next = next->self;
 
     /* Tell the queue */
-    ar->prev->next = ar;
-    ar->next->prev = ar;
+    prev->next = ar->self;
+    next->prev = ar->self;
 }
 
- 
+
+/*
+ * Enqueue a fresh starting grid
+ */
+void borg_flow_enqueue_grid(int x, int y)
+{
+    auto_room *ar;
+
+    /* Scan all the rooms that hold it */
+    for (ar = room(1,x,y); ar; ar = room(0,0,0)) {
+
+        /* New room */
+        if (ar->cost) {
+
+            /* Mark rooms as "cheap" */
+            ar->cost = 0;
+
+            /* Save the location */
+            ar->x = x; ar->y = y;
+
+            /* Enqueue the room */
+            borg_flow_enqueue(ar);
+        }
+
+        /* Old room, better location */
+        else {
+
+            int new = double_distance(c_y, c_x, y, x);
+            int old = double_distance(c_y, c_x, ar->y, ar->x);
+
+            /* Use the "closest" grid */
+            if (new < old) {
+                ar->x = x; ar->y = y;
+            }
+        }
+    }
+}
+
+
 
 /*
  * Aux function -- Given a room "ar1" and a location (x,y) along the
@@ -3027,62 +2666,81 @@ static void auto_flow_enqueue(auto_room *ar)
  *
  * Looks like we have to make sure that crossing rooms do not attempt
  * to recurse back on themselves or anything weird.
- *
- * Note that we assume that the "direction" is not a "diagonal".
  */
-static void auto_flow_spread_aux(auto_room *ar1, int x, int y, int d)
+static void borg_flow_spread_aux(auto_room *ar1, int x, int y, int d)
 {
-    int flow;
+    int cost;
 
-    int x2 = x + dx[d];
-    int y2 = y + dy[d];
-        
+    int dx = ar1->x - x;
+    int dy = ar1->y - y;
+
+    int ax = ABS(dx);
+    int ay = ABS(dy);
+
+    int x2 = x + ddx[d];
+    int y2 = y + ddy[d];
+
     auto_grid *ag;
     auto_room *ar;
-    
+
+
     /* Look to the given direction */
     ag = grid(x2, y2);
 
-    /* Ignore unknown grids, walls, seams, and unroomed grids */
-    if (ag->o_c == ' ') return;
-    if (strchr("#%", ag->o_c)) return;
+    /* Ignore walls */
+    if (ag->info & BORG_WALL) return;
+
+    /* Ignore unroomed grids */
     if (!ag->room) return;
-    
-    /* Extract the "cost" between the two points */
-    flow = ar1->flow + distance(x, y, ar1->x, ar1->y);
-    flow = flow + ABS(dx[d]) + ABS(dy[d]);
-    
+
+    /* Extract the "approximate" travel cost XXX XXX */
+    /* Could use "ABS(ddx[d]) + ABS(ddy[d])" instead of "1" */
+    cost = ar1->cost + MAX(ax, ay) + 1;
+
+    /* Efficiency -- do not enqueue "deep" flows */
+    if (cost > auto_flow_max) return;
+
     /* Now find every room containing that grid */
     for (ar = room(1,x2,y2); ar; ar = room(0,0,0)) {
 
-	/* Paranoia -- Skip grids that contain the destination */
-	/* if (auto_room_contains(ar, x, y)) continue; */
-	
-	/* Do not "lose" previous gains */
-	if (flow >= ar->flow) continue;
+#if 0
+        /* Paranoia -- Skip rooms that contain the destination */
+        if ((ar->x1 <= x) && (x <= ar->x2) &&
+            (ar->y1 <= y) && (y <= ar->y2)) {
 
-	/* Save the "destination" location */
-	ar->x = x, ar->y = y;
+            borg_note("Overlap");
+            continue;
+        }
+#endif
 
-	/* Save the new "cheaper" cost */
-	ar->flow = flow;
+        /* Do not "lose" previous gains */
+        if (cost >= ar->cost) continue;
 
-	/* Hack -- Handle "upgrades" */
-	if (ar->prev) {
+        /* Save the "destination" location */
+        ar->x = x; ar->y = y;
 
-	    /* Hack -- may not have to change anything */
-	    if (ar->prev->flow <= ar->flow) continue;
-	    
-	    /* Dequeue the entry */
-	    ar->next->prev = ar->prev;
-	    ar->prev->next = ar->next;
-    
-	    /* Forget the links */
-	    ar->next = ar->prev = NULL;
-	}
+        /* Save the new "cheaper" cost */
+        ar->cost = cost;
 
-	/* Enqueue the room */
-	auto_flow_enqueue(ar);
+        /* Mega-Hack -- Handle "upgrades" */
+        if (ar->next) {
+
+            auto_room *prev = &auto_rooms[ar->prev];
+            auto_room *next = &auto_rooms[ar->next];
+
+            /* Efficiency -- no change needed */
+            if (prev->cost <= ar->cost) continue;
+
+            /* Dequeue the entry */
+            prev->next = next->self;
+            next->prev = prev->self;
+
+            /* No longer in the queue */
+            ar->next = ar->prev = 0;
+        }
+
+        /* Enqueue the room */
+        borg_flow_enqueue(ar);
     }
 }
 
@@ -3091,70 +2749,85 @@ static void auto_flow_spread_aux(auto_room *ar1, int x, int y, int d)
  * Spread the "flow", assuming some rooms have been enqueued.
  *
  * We assume that the "flow" fields of all the rooms have been
- * initialized via "auto_flow_clear()", and that then the "flow"
- * fields of the rooms in the queue were set to "zero" (or any
- * other number) before being enqueued.
+ * initialized via "borg_flow_clear()", and that then the "flow"
+ * fields of the rooms in the queue were set to "zero" before
+ * being enqueued (see below).
  *
- * We also assume that none of the icky grids have the "prev"
- * or "next" pointers set to anything.
+ * We assume that none of the icky grids have the "prev" or "next"
+ * pointers set to anything, which is a pretty safe assumption.
  */
-static void auto_flow_spread(void)
+void borg_flow_spread(bool optimize)
 {
     int x, y;
 
     auto_room *ar;
 
 
+    /* Hack -- Reset the max depth */
+    auto_flow_max = 999;
+
     /* Keep going until the queue is empty */
-    while (!auto_flow_empty()) {
+    while (!borg_flow_empty()) {
 
-	/* Dequeue the next room */	
-	ar = auto_flow_dequeue();
+        /* Dequeue the next room */	
+        ar = borg_flow_dequeue();
 
-	/* Scan the south/north edges */
-	for (x = ar->x1; x <= ar->x2; x++) {
-		
-	    /* South edge */
-	    y = ar->y2;
-	
-	    /* Look to the south */
-	    auto_flow_spread_aux(ar, x, y, 2);
+        /* Scan the south/north edges */
+        for (x = ar->x1; x <= ar->x2; x++) {
 
-	    /* North edge */
-	    y = ar->y1;
-	
-	    /* Look to the north */
-	    auto_flow_spread_aux(ar, x, y, 8);
-	}
-	
-	/* Scan the east/west edges */
-	for (y = ar->y1; y <= ar->y2; y++) {
-		
-	    /* East edge */
-	    x = ar->x2;
-	
-	    /* Look to the east */
-	    auto_flow_spread_aux(ar, x, y, 6);
+            /* South edge */
+            y = ar->y2;
 
-	    /* West edge */
-	    x = ar->x1;
-	
-	    /* Look to the west */
-	    auto_flow_spread_aux(ar, x, y, 4);
-	}
+            /* Look to the south */
+            borg_flow_spread_aux(ar, x, y, 2);
 
-	
-	/* Look along the South-East corner */
-	auto_flow_spread_aux(ar, ar->x2, ar->y2, 3);
-	
-	/* Look along the South-West corner */
-	auto_flow_spread_aux(ar, ar->x1, ar->y2, 1);
-	
-	/* Look along the North-East corner */
-	auto_flow_spread_aux(ar, ar->x2, ar->y1, 9);
-	
-	/* Look along the North-West corner */
-	auto_flow_spread_aux(ar, ar->x1, ar->y1, 7);
+            /* North edge */
+            y = ar->y1;
+
+            /* Look to the north */
+            borg_flow_spread_aux(ar, x, y, 8);
+        }
+
+        /* Scan the east/west edges */
+        for (y = ar->y1; y <= ar->y2; y++) {
+
+            /* East edge */
+            x = ar->x2;
+
+            /* Look to the east */
+            borg_flow_spread_aux(ar, x, y, 6);
+
+            /* West edge */
+            x = ar->x1;
+
+            /* Look to the west */
+            borg_flow_spread_aux(ar, x, y, 4);
+        }
+
+
+        /* Look along the South-East corner */
+        borg_flow_spread_aux(ar, ar->x2, ar->y2, 3);
+
+        /* Look along the South-West corner */
+        borg_flow_spread_aux(ar, ar->x1, ar->y2, 1);
+
+        /* Look along the North-East corner */
+        borg_flow_spread_aux(ar, ar->x2, ar->y1, 9);
+
+        /* Look along the North-West corner */
+        borg_flow_spread_aux(ar, ar->x1, ar->y1, 7);
+
+
+        /* Optimize if requested */
+        if (optimize) {
+
+            /* Efficiency -- maintain maximum necessary depth */
+            for (ar = room(1,c_x,c_y); ar; ar = room(0,0,0)) {
+
+                /* Maintain maximum depth */
+                if (ar->cost < auto_flow_max) auto_flow_max = ar->cost;
+            }
+        }
     }
 }
 
@@ -3162,1202 +2835,1148 @@ static void auto_flow_spread(void)
 /*
  * Reset the "flow codes" of all "real" rooms to a large number
  */
-static void auto_flow_clear(void)
+void borg_flow_clear(void)
 {
     int i;
-    
+
     /* Reset the cost of all the (real) rooms */
-    for (i = 0; i < auto_room_max; i++) {
+    for (i = 1; i < auto_room_max; i++) {
 
-	/* Get the room */
-	auto_room *ar = &auto_rooms[i];
+        /* Get the room */
+        auto_room *ar = &auto_rooms[i];
 
-	/* Skip "dead" rooms */	
-	if (!ar->when) continue;
-	
-	/* Initialize the "flow" */
-	ar->flow = MAX_SHORT;
+        /* Skip "dead" rooms */	
+        if (ar->free) continue;
 
-	/* Paranoia -- clear the pointers */
-	ar->next = ar->prev = NULL;
+        /* Initialize the "flow" */
+        ar->cost = 999;
+
+        /* Clear the pointers */
+        ar->next = ar->prev = 0;
     }
+}
+
+
+/*
+ * Do a "reverse" flow from the player outwards
+ */
+void borg_flow_reverse(void)
+{
+    /* Clear the flow codes */
+    borg_flow_clear();
+
+    /* Enqueue the player's grid */
+    borg_flow_enqueue_grid(c_x, c_y);
+
+    /* Spread, but do NOT optimize */
+    borg_flow_spread(FALSE);
+}
+
+
+
+
+
+
+
+
+/*
+ * Set the "view" flag of the given cave grid
+ * Never call this function when the "view" array is full.
+ * Never call this function with an "illegal" location.
+ */
+static void borg_cave_view(int x, int y)
+{
+    auto_grid *ag = grid(x,y);
+
+    /* Can only be set once */
+    if (ag->info & BORG_VIEW) return;
+
+    /* Set the flag */
+    ag->info |= BORG_VIEW;
+
+    /* Add to queue */
+    view_y[view_n] = y;
+    view_x[view_n] = x;
+    view_n++;
 }
 
 
 
 /*
- * Do a "reverse" flow -- find unreachable rooms
+ * Update the view (see "cave.c")
  */
-static void auto_flow_reverse()
+static bool borg_update_view_aux(int y, int x, int y1, int x1, int y2, int x2)
 {
-    auto_room *ar;
+    bool f1, f2, v1, v2, z1, z2, wall;
+
+    auto_grid *ag = grid(x,y);
+
+    auto_grid *ag1 = grid(x1,y1);
+    auto_grid *ag2 = grid(x2,y2);
 
 
-    /* Clear the flow codes */
-    auto_flow_clear();
-    
-    /* Enqueue the player's rooms */
-    for (ar = room(1,c_x,c_y); ar; ar = room(0,0,0)) {
-
-	/* Mark rooms as "cheap" */
-	ar->flow = 0;
-	
-	/* Save the player's location */
-	ar->x = c_x, ar->y = c_y;
-		
-	/* Enqueue the room */
-	auto_flow_enqueue(ar);
-    }
-    
-    /* Attempt to spread, or fail */
-    auto_flow_spread();
-}
+    /* Examine the given grid */
+    wall = (ag->info & BORG_WALL);
 
 
-/*
- * Prepare to "flow" towards "interesting" things
- */
-static bool auto_flow_symbols(cptr what)
-{
-    int x, y, n = 0;
+    /* Check the walls */
+    f1 = (!(ag1->info & BORG_WALL));
+    f2 = (!(ag2->info & BORG_WALL));
 
-    auto_grid *ag;
-    auto_room *ar;
-        
-
-    /* Clear the flow codes */
-    auto_flow_clear();
+    /* Totally blocked by physical walls */
+    if (!f1 && !f2) return (TRUE);
 
 
-    /* Examine every legal grid */
-    for (y = 1; y < AUTO_MAX_Y-1; y++) {
-	for (x = 1; x < AUTO_MAX_X-1; x++) {
+    /* Check the visibility */
+    v1 = (f1 && (ag1->info & BORG_VIEW));
+    v2 = (f2 && (ag2->info & BORG_VIEW));
 
-	    /* Get the grid */
-	    ag = grid(x, y);
-
-	    /* Skip current location */
-	    if (pg == ag) continue;
-	    
-	    /* Ignore unknown (and unroomed) grids */
-	    if ((ag->o_c == ' ') || !ag->room) continue;
-	    
-	    /* Require symbols from the given string */
-	    if (!strchr(what, ag->o_c)) continue;
-
-	    /* Scan all the rooms that hold it */
-	    for (ar = room(1,x,y); ar; ar = room(0,0,0)) {
-
-	    	/* Skip rooms we already added */
-		if (!ar->flow) continue;
-			    
-		/* Mark rooms as "cheap" */
-		ar->flow = 0;
-	
-		/* Save the location */
-		ar->x = x, ar->y = y;
-		
-		/* Enqueue the room */
-		auto_flow_enqueue(ar);
-
-		/* Count the rooms */
-		n++;
-	    }
-	}
-    }
-    
-    /* Nothing to spread */
-    if (!n) return (FALSE);
-    
-    /* Spread the flow */
-    auto_flow_spread();
-
-    /* Hmmm -- we may not be able to get to the grids */
-    for (ar = room(1,c_x,c_y); ar; ar = room(0,0,0)) {
-
-	/* See if we can flow there */
-	if (ar->flow < MAX_SHORT) {
-	
-	    /* Note */
-	    auto_note(format("Flowing toward '%s' symbols, at cost %d", what, ar->flow));
-    
-	    /* Set the "goal" */
-	    goal = GOAL_FLOW;
-
-	    /* Success */
-	    return (TRUE);
-	}
-    }
-    
-    /* Oops.  We must be stuck */
-    return (FALSE);
-}
+    /* Totally blocked by "unviewable neighbors" */
+    if (!v1 && !v2) return (TRUE);
 
 
+    /* Check the "ease" of visibility */
+    z1 = (v1 && (ag1->info & BORG_XTRA));
+    z2 = (v2 && (ag2->info & BORG_XTRA));
 
-/*
- * Prepare to "flow" towards "interesting" things
- */
-static bool auto_flow_explore(void)
-{
-    int x, y, d, i, n = 0;
+    /* Hack -- "easy" plus "easy" yields "easy" */
+    if (z1 && z2) {
 
-    auto_room *ar;
-    
-    auto_grid *ag, *ag1;
-    
-
-    /* Clear the flow codes */
-    auto_flow_clear();
-
-
-    /* Examine every known grid */
-    for (y = 1; y < AUTO_MAX_Y-1; y++) {
-	for (x = 1; x < AUTO_MAX_X-1; x++) {
-
-	    /* Get the grid */
-	    ag = grid(x, y);
-
-	    /* Skip unknown/unroomed grids, plus walls/seams */			
-	    if ((ag->o_c == ' ') || !ag->room) continue;			
-	    if (strchr("#%", ag->o_c)) continue;
-	    		    
-	    /* Examine the four IMPORTANT neighbors */
-	    for (i = 0; i < 4; i++) {
-
-		/* Extract the next direction */
-		d = dd[i];
-		    
-		/* Get the grid */
-		ag1 = grid(x+dx[d], y+dy[d]);
-
-		/* Note that walls/seams are boring */
-		if (strchr("#%", ag1->o_c)) continue;
-		
-		/* Skip "known", "roomed" grids */
-		if ((ag1->o_c != ' ') && ag1->room) continue;
-
-		/* Scan all the rooms that hold the "known" grid */
-		for (ar = room(1,x,y); ar; ar = room(0,0,0)) {
-
-		    /* Paranoia -- skip dead rooms */
-		    if (!ar->when) continue;
-		    
-		    /* Hack -- skip rooms we already added */
-		    if (ar->flow < MAX_SHORT) continue;
-		    
-		    /* Mark rooms as "cheap" */
-		    ar->flow = 0;
-		
-		    /* Save the location */
-		    ar->x = x, ar->y = y;
-	    
-		    /* Enqueue the room */
-		    auto_flow_enqueue(ar);
-		    
-		    /* Count the rooms */
-		    n++;
-		}
-
-		/* And then stop */
-		break;
-	    }
-	}
-    }
-    
-    /* Nothing to spread */
-    if (!n) return (FALSE);
-    
-    /* Spread the flow */
-    auto_flow_spread();
-
-    /* Hmmm -- we may not be able to get to the grids */
-    for (ar = room(1,c_x,c_y); ar; ar = room(0,0,0)) {
-
-	/* See if we can flow there */
-	if (ar->flow < MAX_SHORT) {
-	
-	    /* Note */
-	    auto_note(format("Exploring, at cost %d", ar->flow));
-        
-	    /* Set the "goal" */
-	    goal = GOAL_FLOW;
-
-	    /* Success */
-	    return (TRUE);
-	}
-    }
-    
-    /* Oops.  We must be stuck */
-    return (FALSE);
-}
-
-
-/*
- * Prepare to "flow" towards "old" rooms.
- */
-static bool auto_flow_revisit(void)
-{
-    int x, y, i;
-
-    auto_room *ar;
-    
-    int r_n = -1;
-    u32b r_age = 0L;
-
-    u32b age;
-
-
-    /* Hack -- first find the reachable spaces */
-    auto_flow_reverse();
-     
-    
-    /* Re-visit "old" rooms */
-    for (i = 0; i < auto_room_max; i++) {
-
-	/* Access the "room" */
-	ar = &auto_rooms[i];
-
- 	/* Skip "dead" rooms */
-	if (!ar->when) continue;
-
-	/* Skip "unreachable" rooms */
-	if (ar->flow == MAX_SHORT) continue;
-	
-	/* Reward "age" and "distance" and "luck" */
-	age = (c_t - ar->when) + (ar->flow / 2);
-	
-	/* Skip "recent" rooms */
-	if ((r_n >= 0) && (age < r_age)) continue;
-	
-	/* Save the index, and the age */
-	r_n = i, r_age = age;
+        ag->info |= BORG_XTRA;
+        borg_cave_view(x,y);
+        return (wall);
     }
 
-    /* Clear the flow codes */
-    auto_flow_clear();
+    /* Hack -- primary "easy" yields "viewed" */
+    if (z1) {
 
-    /* Hack -- No rooms to visit */
-    if (r_n < 0) return (FALSE);
-    
-    /* Get the room */
-    ar = &auto_rooms[r_n];
-
-    /* Visit a random grid of that room */
-    x = ar->x = rand_range(ar->x1, ar->x2);
-    y = ar->y = rand_range(ar->y1, ar->y2);
-
-    /* Mark the room as "cheap" */
-    ar->flow = 0;
-
-    /* Enqueue the room */
-    auto_flow_enqueue(ar);
-    	    
-    /* Spread the flow */
-    auto_flow_spread();
-
-    /* Hmmm -- we may not be able to get to the grids */
-    for (ar = room(1,c_x,c_y); ar; ar = room(0,0,0)) {
-
-	/* See if we can flow there */
-	if (ar->flow < MAX_SHORT) {
-	
-	    /* Note */
-	    auto_note(format("Revisting (%d,%d) with age %ld, at cost %d",
-			     x, y, r_age, ar->flow));
-    
-	    /* Set the "goal" */
-	    goal = GOAL_FLOW;
-
-	    /* Success */
-	    return (TRUE);
-	}
+        borg_cave_view(x,y);
+        return (wall);
     }
 
-    /* Success */
-    return (FALSE);
-}
 
+    /* Hack -- "view" plus "view" yields "view" */
+    if (v1 && v2) {
 
-/*
- * Act spastic, go somewhere silly
- */
-static bool auto_flow_spastic(void)
-{
-    int i, n = 0;
-
-    auto_room *ar;
-    
-
-    int r_n = -1;
-
-
-    /* Hack -- first find the reachable spaces */
-    auto_flow_reverse();
-    
-    /* Pick a "random" room */
-    for (i = 0; i < auto_room_max; i++) {
-
-	/* Access the "room" */
-	ar = &auto_rooms[i];
-
- 	/* Skip "dead" rooms */
-	if (!ar->when) continue;
-
-	/* Skip "unreachable" rooms */
-	if (ar->flow == MAX_SHORT) continue;
-	
-	/* Skip annoying rooms */
-	if ((ar->x1 == ar->x2) || (ar->y1 == ar->y2)) continue;
-	
-	/* Pick a random room */
-	if (!rand_int(++n)) r_n = i;
+        /* ag->info |= BORG_XTRA; */
+        borg_cave_view(x,y);
+        return (wall);
     }
 
-    /* Clear the flow codes */
-    auto_flow_clear();
 
-    /* Hack -- No rooms to visit */
-    if (r_n < 0) return (FALSE);
-    
-    /* Get the room */
-    ar = &auto_rooms[r_n];
+    /* Hack -- the "los()" works poorly on walls */
+    if (wall) {
 
-    /* Visit a random grid along the wall */
-    if (randint(2) == 1) {
-	ar->x = rand_int(2) ? ar->x1 : ar->x2;
-	ar->y = rand_range(ar->y1, ar->y2);
+        borg_cave_view(x,y);
+        return (wall);
     }
-    else {
-	ar->x = rand_range(ar->x1, ar->x2);
-	ar->y = rand_int(2) ? ar->y1 : ar->y2;
+
+
+    /* Hack -- check line of sight */
+    if (borg_los(c_x, c_y, x, y)) {
+
+        borg_cave_view(x,y);
+        return (wall);
     }
-    
-    /* Note */
-    auto_note(format("Spastic twitch towards (%d,%d)", ar->x, ar->y));
-    
-    /* Mark the room as "cheap" */
-    ar->flow = 0;
 
-    /* Enqueue the room */
-    auto_flow_enqueue(ar);
-    	    
-    /* Spread the flow */
-    auto_flow_spread();
 
-    /* Set the "goal" */
-    goal = GOAL_FLOW;
-
-    /* Success */
+    /* Assume no line of sight. */
     return (TRUE);
 }
 
 
 
 /*
- * Perform one "useful" action
- *
- * Return "TRUE" if successful, "FALSE" if failed.
- *
- * Strategy:
- *   Make sure we are happy with our "status" (see above)
- *   Attack and kill visible monsters, if near enough
- *   Open doors, disarm traps, tunnel through rubble
- *   Pick up (or tunnel to) gold and useful objects
- *   Explore "interesting" grids, to expand the map
+ * Update the view, return TRUE if map changed
  */
-static bool auto_prepare_think(void)
+void borg_update_view(void)
 {
-    int view_n = auto_cheat_get_view_n();
-    byte *view_x = auto_cheat_get_view_x();
-    byte *view_y = auto_cheat_get_view_y();
-    
-    int i, x, y, f;
+    int n, m, d, k, y, x;
+
+    int se, sw, ne, nw, es, en, ws, wn;
+
+    int over, full;
+
+
+    /* Start with full vision */
+    full = MAX_SIGHT;
+
+    /* Extract the "octagon" limits */
+    over = full * 3 / 2;
+
+
+    /*** Step 0 -- Begin ***/
+
+    /* Save the old "view" grids for later */
+    for (n = 0; n < view_n; n++) {
+
+        int y = view_y[n];
+        int x = view_x[n];
+
+        auto_grid *ag = grid(x,y);
+
+        /* Mark the grid as not in "view" */
+        ag->info &= ~(BORG_VIEW | BORG_XTRA);
+    }
+
+    /* Start over with the "view" array */
+    view_n = 0;
+
+
+    /*** Step 1 -- adjacent grids ***/
+
+    /* Now start on the player */
+    x = c_x; y = c_y;
+
+    /* Assume the player grid is easily viewable */
+    pg->info |= BORG_XTRA;
+
+    /* Assume the player grid is viewable */
+    borg_cave_view(x,y);
+
+
+    /*** Step 2 -- Major Diagonals ***/
+
+    /* Scan south-east */
+    for (d = 1; d <= full; d++) {
+        grid(x+d,y+d)->info |= BORG_XTRA;
+        borg_cave_view(x+d,y+d);
+        if (grid(x+d,y+d)->info & BORG_WALL) break;
+    }
+
+    /* Scan south-west */
+    for (d = 1; d <= full; d++) {
+        grid(x-d,y+d)->info |= BORG_XTRA;
+        borg_cave_view(x-d,y+d);
+        if (grid(x-d,y+d)->info & BORG_WALL) break;
+    }
+
+    /* Scan north-east */
+    for (d = 1; d <= full; d++) {
+        grid(x+d,y-d)->info |= BORG_XTRA;
+        borg_cave_view(x+d,y-d);
+        if (grid(x+d,y-d)->info & BORG_WALL) break;
+    }
+
+    /* Scan north-west */
+    for (d = 1; d <= full; d++) {
+        grid(x-d,y-d)->info |= BORG_XTRA;
+        borg_cave_view(x-d,y-d);
+        if (grid(x-d,y-d)->info & BORG_WALL) break;
+    }
+
+
+    /*** Step 3 -- major axes ***/
+
+    /* Scan south */
+    for (d = 1; d <= full; d++) {
+        grid(x,y+d)->info |= BORG_XTRA;
+        borg_cave_view(x,y+d);
+        if (grid(x,y+d)->info & BORG_WALL) break;
+    }
+
+    /* Initialize the "south strips" */
+    se = sw = d;
+
+    /* Scan north */
+    for (d = 1; d <= full; d++) {
+        grid(x,y-d)->info |= BORG_XTRA;
+        borg_cave_view(x,y-d);
+        if (grid(x,y-d)->info & BORG_WALL) break;
+    }
+
+    /* Initialize the "north strips" */
+    ne = nw = d;
+
+    /* Scan east */
+    for (d = 1; d <= full; d++) {
+        grid(x+d,y)->info |= BORG_XTRA;
+        borg_cave_view(x+d,y);
+        if (grid(x+d,y)->info & BORG_WALL) break;
+    }
+
+    /* Initialize the "east strips" */
+    es = en = d;
+
+    /* Scan west */
+    for (d = 1; d <= full; d++) {
+        grid(x-d,y)->info |= BORG_XTRA;
+        borg_cave_view(x-d,y);
+        if (grid(x-d,y)->info & BORG_WALL) break;
+    }
+
+    /* Initialize the "west strips" */
+    ws = wn = d;
+
+
+    /*** Step 4 -- Divide each "octant" into "strips" ***/
+
+    /* Now check each "diagonal" (in parallel) */
+    for (n = 1; n <= over / 2; n++) {
+
+        int limit, ypn, ymn, xpn, xmn;
+
+
+        /* Acquire the "bounds" of the maximal circle */
+        limit = over - n - n;
+        if (limit > full - n) limit = full - n;	
+        while ((limit + n + (n>>1)) > full) limit--;
+
+
+        /* Access the four diagonal grids */
+        ypn = y + n;
+        ymn = y - n;
+        xpn = x + n;
+        xmn = x - n;
+
+
+        /* South strip */
+        if (ypn < cur_hgt-1) {
+
+            /* Maximum distance */
+            m = MIN(limit, (cur_hgt-1) - ypn);
+
+            /* East side */
+            if ((xpn <= cur_wid-1) && (n < se)) {
+
+                /* Scan */
+                for (k = n, d = 1; d <= m; d++) {
+
+                    /* Check grid "d" in strip "n", notice "blockage" */
+                    if (borg_update_view_aux(ypn+d,xpn,ypn+d-1,xpn-1,ypn+d-1,xpn)) {
+                        if (n + d >= se) break;
+                    }
+
+                    /* Track most distant "non-blockage" */
+                    else {
+                        k = n + d;
+                    }
+                }
+
+                /* Limit the next strip */
+                se = k + 1;
+            }
+
+            /* West side */
+            if ((xmn >= 0) && (n < sw)) {
+
+                /* Scan */
+                for (k = n, d = 1; d <= m; d++) {
+
+                    /* Check grid "d" in strip "n", notice "blockage" */
+                    if (borg_update_view_aux(ypn+d,xmn,ypn+d-1,xmn+1,ypn+d-1,xmn)) {
+                        if (n + d >= sw) break;
+                    }
+
+                    /* Track most distant "non-blockage" */
+                    else {
+                        k = n + d;
+                    }
+                }
+
+                /* Limit the next strip */
+                sw = k + 1;
+            }
+        }
+
+
+        /* North strip */
+        if (ymn > 0) {
+
+            /* Maximum distance */
+            m = MIN(limit, ymn);
+
+            /* East side */
+            if ((xpn <= cur_wid-1) && (n < ne)) {
+
+                /* Scan */
+                for (k = n, d = 1; d <= m; d++) {
+
+                    /* Check grid "d" in strip "n", notice "blockage" */
+                    if (borg_update_view_aux(ymn-d,xpn,ymn-d+1,xpn-1,ymn-d+1,xpn)) {
+                        if (n + d >= ne) break;
+                    }
+
+                    /* Track most distant "non-blockage" */
+                    else {
+                        k = n + d;
+                    }
+                }
+
+                /* Limit the next strip */
+                ne = k + 1;
+            }
+
+            /* West side */
+            if ((xmn >= 0) && (n < nw)) {
+
+                /* Scan */
+                for (k = n, d = 1; d <= m; d++) {
+
+                    /* Check grid "d" in strip "n", notice "blockage" */
+                    if (borg_update_view_aux(ymn-d,xmn,ymn-d+1,xmn+1,ymn-d+1,xmn)) {
+                        if (n + d >= nw) break;
+                    }
+
+                    /* Track most distant "non-blockage" */
+                    else {
+                        k = n + d;
+                    }
+                }
+
+                /* Limit the next strip */
+                nw = k + 1;
+            }
+        }
+
+
+        /* East strip */
+        if (xpn < cur_wid-1) {
+
+            /* Maximum distance */
+            m = MIN(limit, (cur_wid-1) - xpn);
+
+            /* South side */
+            if ((ypn <= cur_hgt-1) && (n < es)) {
+
+                /* Scan */
+                for (k = n, d = 1; d <= m; d++) {
+
+                    /* Check grid "d" in strip "n", notice "blockage" */
+                    if (borg_update_view_aux(ypn,xpn+d,ypn-1,xpn+d-1,ypn,xpn+d-1)) {
+                        if (n + d >= es) break;
+                    }
+
+                    /* Track most distant "non-blockage" */
+                    else {
+                        k = n + d;
+                    }
+                }
+
+                /* Limit the next strip */
+                es = k + 1;
+            }
+
+            /* North side */
+            if ((ymn >= 0) && (n < en)) {
+
+                /* Scan */
+                for (k = n, d = 1; d <= m; d++) {
+
+                    /* Check grid "d" in strip "n", notice "blockage" */
+                    if (borg_update_view_aux(ymn,xpn+d,ymn+1,xpn+d-1,ymn,xpn+d-1)) {
+                        if (n + d >= en) break;
+                    }
+
+                    /* Track most distant "non-blockage" */
+                    else {
+                        k = n + d;
+                    }
+                }
+
+                /* Limit the next strip */
+                en = k + 1;
+            }
+        }
+
+
+        /* West strip */
+        if (xmn > 0) {
+
+            /* Maximum distance */
+            m = MIN(limit, xmn);
+
+            /* South side */
+            if ((ypn <= cur_hgt-1) && (n < ws)) {
+
+                /* Scan */
+                for (k = n, d = 1; d <= m; d++) {
+
+                    /* Check grid "d" in strip "n", notice "blockage" */
+                    if (borg_update_view_aux(ypn,xmn-d,ypn-1,xmn-d+1,ypn,xmn-d+1)) {
+                        if (n + d >= ws) break;
+                    }
+
+                    /* Track most distant "non-blockage" */
+                    else {
+                        k = n + d;
+                    }
+                }
+
+                /* Limit the next strip */
+                ws = k + 1;
+            }
+
+            /* North side */
+            if ((ymn >= 0) && (n < wn)) {
+
+                /* Scan */
+                for (k = n, d = 1; d <= m; d++) {
+
+                    /* Check grid "d" in strip "n", notice "blockage" */
+                    if (borg_update_view_aux(ymn,xmn-d,ymn+1,xmn-d+1,ymn,xmn-d+1)) {
+                        if (n + d >= wn) break;
+                    }
+
+                    /* Track most distant "non-blockage" */
+                    else {
+                        k = n + d;
+                    }
+                }
+
+                /* Limit the next strip */
+                wn = k + 1;
+            }
+        }
+    }
+}
+
+
+/*
+ * Clear the viewable space
+ */
+void borg_forget_view(void)
+{
+    int i;
+
+    /* None to forget */
+    if (!view_n) return;
+
+    /* Clear them all */
+    for (i = 0; i < view_n; i++) {
+
+        int y = view_y[i];
+        int x = view_x[i];
+
+        /* Forget that the grid is viewable */
+        grid(x,y)->info &= ~BORG_VIEW;
+        grid(x,y)->info &= ~BORG_XTRA;
+    }
+
+    /* None left */
+    view_n = 0;
+}
+
+
+
+
+
+/*
+ * Previous information
+ */
+static int o_w_x, o_w_y;	/* Previous panel */
+static int o_c_x, o_c_y;	/* Previous location */
+static int wiped = FALSE;	/* Arrays are wiped */
+
+
+/*
+ * Update the Borg based on the current "map"
+ * Wipe all arrays if "wipe" is TRUE
+ */
+void borg_forget_map(void)
+{
+    int i, x, y;
+
+    auto_grid *ag;
+    auto_room *ar;
+
+
+    /* Wipe the arrays */
+    if (!wiped) {
+
+        /* Clean up the shops */
+        for (i = 0; i < 8; i++) {
+
+            /* Hack -- not visited */
+            auto_shops[i].visit = 0;
+        }
+
+        /* Clean up the old used rooms */
+        for (i = 1; i < auto_room_max; i++) {
+
+            /* Access the room */
+            ar = &auto_rooms[i];
+
+            /* Place the room in the free room list */
+            ar->free = i + 1;
+
+            /* Remove the room from the priority queue */
+            ar->next = ar->prev = 0;
+
+            /* No flow cost */
+            ar->cost = 0;
+
+            /* No flow location */
+            ar->x = ar->y = 0;
+
+            /* No location */
+            ar->x1 = ar->x2 = ar->y1 = ar->y2 = 0;
+
+            /* Never seen it */
+            ar->when = 0L;
+        }
+
+        /* Reset the free list */
+        auto_room_head->free = 1;
+
+        /* Maximum room index */
+        auto_room_max = 1;
+
+
+        /* Clean up the grids */
+        for (y = 0; y < AUTO_MAX_Y; y++) {
+            for (x = 0; x < AUTO_MAX_X; x++) {
+
+                /* Access the grid */
+                ag = grid(x, y);
+
+                /* No room */
+                ag->room = 0;
+
+                /* Black */
+                ag->o_a = 0;
+
+                /* Unknown */
+                ag->o_c = ' ';
+
+                /* No bit flags */
+                ag->info = 0;
+
+                /* No extra info */
+                ag->xtra = 0;
+            }
+        }
+
+        /* Hack -- mark the edge of the map as walls */
+        for (y = 0; y < AUTO_MAX_Y; y++) {
+
+            /* West edge */
+            grid(0,y)->info |= BORG_WALL;
+
+            /* East edge */
+            grid(AUTO_MAX_X-1,y)->info |= BORG_WALL;
+        }	
+
+        /* Hack -- mark the edge of the map as walls */
+        for (x = 0; x < AUTO_MAX_X; x++) {
+
+            /* West edge */
+            grid(x,0)->info |= BORG_WALL;
+
+            /* East edge */
+            grid(x,AUTO_MAX_Y-1)->info |= BORG_WALL;
+        }	
+
+
+        /* Forget the view */
+        borg_forget_view();
+
+
+        /* Clear the arrays */
+        view_n = seen_n = 0;	
+
+
+        /* Note the wipe */
+        wiped = TRUE;
+    }
+}
+
+
+/*
+ * Update the Borg based on the current "map"
+ * The player grid contents are always "unknown"
+ */
+void borg_update_map(void)
+{
+    int x, y, dx, dy;
 
     auto_grid *ag;
 
-    /* Best "monster" data */
-    int m_f = -1;
-
-    /* Best "object" data */
-    int i_f = -1;
-    
-    /* Best "unknown" data */
-    int u_f = -1;
-    
-
-    /*** Hack -- restart every time ***/
-    
-    /* Assume we will go back to the start state */
-    state = STATE_START;
-
-    /* Hack -- Beware of "near death" */
-    if (do_heal) {
-	auto_oops("near death");
-	return (TRUE);
-    }
-    
-    
-    /*** Analyze the inventory ***/
-    
-
-    /* Eat */
-    if (do_food) {
-
-	auto_note("I am REALLY hungry.");
-	
-	/* Scan the inventory */
-	for (i = 0; i < INVEN_PACK; i++) {
-
-	    /* Skip non-food */
-	    if (auto_items[i].tval != TV_FOOD) continue;
-	    
-	    /* Eat food rations and such */
-	    if (auto_items[i].sval >= SV_FOOD_MIN_FOOD) {
-
-		auto_tell("About to eat...");
-		Borg_keypress('E');
-		Borg_keypress('a' + i);
-		auto_tell("Finished eating...");
-
-		auto_note("I am preparing to eat.");
-	
-		return (TRUE);
-	    }
-	}
-    
-	/* Hack -- Require food! */
-	auto_oops("starving");
-	return (TRUE);
-    }
-    
+    byte a;
+    char c;
 
 
-    /*** Reactive Scan (Monsters, Items, Doors, etc) ***/
-    
-    /* Remember and prefer "current" monster, if useful */
-    if ((goal == GOAL_KILL) && (c_x != g_x) && (c_y != g_y)) {
+    /* Forget old info */
+    if (!wiped) {
 
-	/* Calculate the distance */
-	m_f = distance(c_y, c_x, g_y, g_x);
-    }
+        /* Hack -- Forget the previous (66x22 grid) map sector */
+        for (dy = 0; dy < SCREEN_HGT; dy++) {
+            for (dx = 0; dx < SCREEN_WID; dx++) {
 
-    /* Cheat -- Scan the "viewable space" */
-    for (i = 0; i < view_n; i++) {
+                /* Access the actual location */
+                x = o_w_x + dx;
+                y = o_w_y + dy;
 
-	/* Access the "view grid" */
-	y = view_y[i];
-	x = view_x[i];
+                /* Get the auto_grid */
+                ag = grid(x, y);
 
-	/* Get the auto_grid */
-	ag = grid(x, y);
-
-	/* Hack -- Skip the player */
-	if (ag == pg) continue;
-	
-	/* Notice monsters */
-	if (strchr(auto_str_kill, ag->o_c)) {
-
-	    /* Calculate the distance */
-	    f = distance(c_y, c_x, y, x);
-	
-	    /* Keep track of the "nearest" monster */
-	    if ((m_f < 0) || (f < m_f)) {
-
-		/* Memorize the distance and location */
-		m_f = f, g_x = x, g_y = y;
-
-		/* Memorize the goal contents */
-		g_a = ag->o_a, g_c = ag->o_c;
-
-		/* Reset the "origin" data */
-		o_y = c_y, o_x = c_x, o_t = c_t;
-
-		/* Kill it */
-		goal = GOAL_KILL;
-	    }
-	}
-    }
-
-    /* Chase and Kill the "closest" monster */
-    if (m_f >= 0) return (auto_play_old_goal());
-
-
-    /*** Then verify the inventory ***/
-
-    /* Examine the inventory */
-    auto_notice();
-    
-    /* Always have a free space available */
-    if (auto_free_space()) return (TRUE);
-    
-    /* Attempt to keep the inventory in good shape */
-    if (auto_wear_stuff()) return (TRUE);
-    
-
-    /*** Then try objects ***/
-    
-    /* Remember and prefer "current" object, if useful */
-    if ((goal == GOAL_TAKE) && (c_x != g_x) && (c_y != g_y)) {
-
-	/* Calculate the distance */
-	i_f = distance(c_y, c_x, g_y, g_x);
-    }
-
-    /* Cheat -- Scan the "viewable space" */
-    for (i = 0; i < view_n; i++) {
-
-	/* Access the "view grid" */
-	y = view_y[i];
-	x = view_x[i];
-
-	/* Get the auto_grid */
-	ag = grid(x, y);
-
-	/* Skip the player */
-	if (ag == pg) continue;
-	
-	/* Notice "good" objects, doors, traps, rubble */
-	if (strchr(auto_str_take, ag->o_c)) {
-
-	    /* Calculate the distance */
-	    f = distance(c_y, c_x, y, x);
-	
-	    /* Keep track of the "nearest" door */
-	    if ((i_f < 0) || (f < i_f)) {
-
-		/* Save the distance and location */
-		i_f = f, g_x = x, g_y = y;
-
-		/* Memorize the goal contents */
-		g_a = ag->o_a, g_c = ag->o_c;
-
-		/* Reset the "origin" data */
-		o_y = c_y, o_x = c_x, o_t = c_t;
-
-		/* Take it or Open it */
-		goal = GOAL_TAKE;	
-	    }
-	}
-    }
-
-    /* Grab the "closest" item */
-    if (i_f >= 0) return (auto_play_old_goal());
-        
-
-
-    /*** And then try local exploring ***/
-
-    /* Remember and prefer "current" destination, if useful */
-    if ((goal == GOAL_GOTO) && (c_x != g_x) && (c_y != g_y)) {
-
-	/* Calculate the distance */
-	u_f = distance(c_y, c_x, g_y, g_x);
-    }
-
-    /* Cheat -- Scan the "viewable space" */
-    for (i = 0; i < view_n; i++) {
-
-	/* Access the "view grid" */
-	y = view_y[i];
-	x = view_x[i];
-
-	/* Get the auto_grid */
-	ag = grid(x, y);
-
-	/* Skip the player */
-	if (ag == pg) continue;
-	
-	/* Notice "unknown" grids */
-	if ((ag->o_c == ' ') || (!ag->room && !strchr("#%", ag->o_c))) {
-
-	    /* Calculate the distance */
-	    f = distance(c_y, c_x, y, x);
-	
-	    /* Keep track of the "nearest" one */
-	    if ((u_f < 0) || (f < u_f)) {
-
-		/* Save the distance and location */
-		u_f = f, g_x = x, g_y = y;
-
-		/* Hack -- Memorize the goal "contents" */
-		g_a = ag->o_a, g_c = ag->o_c;
-
-		/* Reset the "origin" data */
-		o_y = c_y, o_x = c_x, o_t = c_t;
-
-		/* Attempt to "go" there */
-		goal = GOAL_GOTO;
-	    }
-	}
-    }
-
-    /* Approach "unknown" grids */
-    if (u_f >= 0) return (auto_play_old_goal());
-    
-
-    /*** More inventory maintenance ***/
-    
-    /* Occasionally clear out all useless items */
-    if (auto_throw_junk()) return (TRUE);
-    
-
-
-    /*** All out of reactive goals ***/
-
-    
-    /* Hack -- perhaps search */
-    if (randint(100) == 1) {
-	Borg_keypress('#');
-	Borg_keypress('5');
-	Borg_keypress('s');
-	return (TRUE);
-    }
-
-    
-    /* Maintain old goals (explore, symbols, spastic, revisit) */
-    if (goal == GOAL_FLOW) return (auto_play_old_goal());
-
-
-    /* Explore */
-    if (auto_flow_explore()) return (auto_play_old_goal());
-
-
-#if 0
-    /* Message */
-    auto_note(format("I have spent %ld turns on this level...",
-    		     (c_t - auto_began)));
-#endif
-    
-
-    /* Get bored eventually, leave the level */
-    if (c_t - auto_began > 2000L) {
-	cptr what;
-	goal_level = -1;
-	if (streq(auto_level, "   Town")) goal_level = 1;
-	if (!auto_items[17].iqty) goal_level = 1;
-	what = (goal_level > 0) ? ">" : "<";
-	if (auto_flow_symbols(what)) return (auto_play_old_goal());
+                /* Clear the "okay" field */
+                ag->info &= ~BORG_OKAY;
+            }
+        }
     }
 
 
-    /* Occasionally, act stupid */
-    if ((c_t - auto_began > 1000L) && (randint(3) == 1)) {
-	if (auto_flow_spastic()) return (auto_play_old_goal());
+    /* Forget the old player grid */
+    pg = NULL;
+
+    /* Analyze the current (66x22 grid) map sector */
+    for (dy = 0; dy < SCREEN_HGT; dy++) {
+        for (dx = 0; dx < SCREEN_WID; dx++) {
+
+
+            /* Direct access to the screen */
+            a = Term->scr->a[dy+1][dx+13];
+            c = Term->scr->c[dy+1][dx+13];
+
+
+            /* Obtain the map location */
+            x = w_x + dx;
+            y = w_y + dy;
+
+            /* Get the auto_grid */
+            ag = grid(x, y);
+
+
+            /* Notice the player */
+            if (c == '@') {
+
+                /* Extract the player grid */
+                c_x = x; c_y = y;
+
+                /* Oops */
+                if (pg) borg_oops("Multiple Players!");
+
+                /* Note the player's grid */
+                pg = ag;
+
+                /* Assume dark */
+                a = 0;
+                c = ' ';
+
+                /* Mega-Hack -- assume initial knowledge */
+                if (pg->o_a == 0) a = TERM_WHITE;
+                if (pg->o_c == ' ') c = '.';
+
+                /* Mega-Hack -- handle bashing and blind-ness */
+                if (pg->info & BORG_WALL) pg->info &= ~BORG_WALL;
+            }
+
+
+            /* Do not process dark grids */
+            if (!a || (c == ' ')) continue;
+
+
+            /* Hack -- undo special "lighting" */
+            if ((c == '.') || (c == '%') || (c == '#')) a = TERM_WHITE;
+
+
+            /* Notice "information" */
+            ag->info |= BORG_OKAY;
+
+            /* Save the info */
+            ag->o_a = a; ag->o_c = c;
+
+
+            /* Notice "walls" (and such) */
+            if ((c == '#') || (c == '%') || (c == '+') || (c == ':')) {
+
+                /* We are a wall */
+                ag->info |= BORG_WALL;
+            }
+
+            /* Clear the "wall" code */
+            else {
+
+                /* We are not a wall */
+                ag->info &= ~BORG_WALL;
+            }
+        }
     }
-    
-    
-    /* Re-visit old rooms */
-    if (auto_flow_revisit()) return (auto_play_old_goal());
 
 
-    /* XXX Hack -- Twitch */
-    Borg_keypress('s');
-    if (randint(5) == 1) Borg_keypress('T');
-    Borg_keypress('0' + randint(9));
-    return (TRUE);
+    /* Save the "old" data */
+    o_w_x = w_x; o_w_y = w_y;
+    o_c_x = c_x; o_c_y = c_y;
+
+
+    /* No longer wiped */
+    wiped = FALSE;
+
+
+    /* Paranoia -- make sure we exist */
+    if (!pg) borg_oops("Player missing!");
 }
 
 
-
-
-
 /*
- * Let the "auto player" enqueue some keypresses
+ * Init the Borg arrays
+ *
+ * Note that the Borg will never find Grond/Morgoth, but we
+ * prepare the item parsers for them anyway.  Actually, the
+ * Borg might get lucky and find some of the special artifacts,
+ * so it is always best to prepare for a situation if it does
+ * not cost any effort.
+ *
+ * Note that all six artifact "Rings" will parse as "kind 506"
+ * (the first artifact ring) and both artifact "Amulets" will
+ * parse as "kind 503" (the first of the two artifact amulets),
+ * but as long as we use the "name1" field (and not the "kind"
+ * or "sval" fields) we should be okay.
+ *
+ * We sort the two arrays of items names in reverse order, so that
+ * we will catch "mace of disruption" before "mace", "Scythe of
+ * Slicing" before "Scythe", and for "Ring of XXX" before "Ring".
+ *
+ * Note that we do not have to parse "plural artifacts" (!)
  */
-static void auto_play_perform(void)
+void borg_init_arrays(void)
 {
-    /* Uses original keypress commands */
-    rogue_like_commands = FALSE;
+    int i, j, k, z, n;
 
-    /* Uses the viewable space array directly */
-    view_pre_compute = TRUE;
+    int size;
 
-    /* Uses color to track monsters and for "damage" sensing */
-    use_color = TRUE;
-
-    /* Hack -- uses hilite to determine state */
-    hilite_player = FALSE;
-
-    /* Auto-player gets confused by auto-repeat */
-    always_repeat = FALSE;
-
-    /* Paranoia -- require explicit acknowledgement */
-    quick_messages = FALSE;
-
-    /* Auto-player gets confused by extra info */
-    plain_descriptions = TRUE;
-
-    /* Buy/Sell without haggling */
-    no_haggle_flag = TRUE;
-
-    /* Cancel stupid messages */
-    always_throw = TRUE;
-    
-
-    /* Loop until something has been done */
-    while (state) {
-
-	/* Handle "stores" when necessary */
-	if ((state == STATE_STORE) && auto_prepare_store()) break;
-
-	/* And then check the dungeon */
-	if ((state == STATE_START) && auto_prepare_start()) break;
-
-	/* And then check the inventory and equipment */
-	if ((state == STATE_INVEN) && auto_prepare_inven()) break;
-	if ((state == STATE_EQUIP) && auto_prepare_equip()) break;
-	
-	/* And then actually think */
-	if ((state == STATE_THINK) && auto_prepare_think()) break;
-    }
-}
-
-
-
-
-
-/*
- * Maintain the "old" hook
- */
-static errr (*Term_xtra_hook_old)(int n, int v) = NULL;
-
-
-/*
- * Our own hook.  Allow thinking when no keys ready.
- */
-static errr Term_xtra_borg(int n, int v)
-{
-    /* Hack -- The Borg pre-empts keypresses */
-    while (state && (n == TERM_XTRA_EVENT)) {
-    
-	int i, x, y;
-	byte t_a;
-	char buf[128];
-
-	errr res = 0;    
-
-	bool visible;
-
-	static inside = 0;
-
-	/* Hack -- pause when main window hidden */
-	if (Term != term_screen) break;
-
-	/* Hack -- pause in wizard mode */
-	if (wizard) break;
-	
-	/* Hack -- no recursion */
-	if (inside) {
-	    Term_keypress(' ');
-	    return (0);
-	}
-	
-	/* Hack -- Extract the cursor visibility */
-	visible = (!Term_hide_cursor());
-	if (visible) Term_show_cursor();
-    
-	/* Hack -- Pass most methods through */
-	res = (*Term_xtra_hook_old)(TERM_XTRA_CHECK, v);
-    
-	/* Hack -- If the cursor is visible... */
-	/* And the cursor is on the top line... */
-	/* And there is text before the cursor... */
-	/* And that text is "-more-", then clear it */
-	if (visible &&
-	    (!Term_locate(&x, &y) && (y == 0) && (x >= 6)) &&
-	    (!Term_what_text(x-6, y, 6, &t_a, buf)) &&
-	    (streq(buf, "-more-"))) {
-
-	    /* Clear the message */
-	    Term_keypress(' ');
-
-	    /* Done */
-	    return (0);
-	}
-
-	/* Check for a Borg keypress */
-	i = Borg_inkey();
-
-	/* Take the next keypress */
-	if (i) {
-
-	    /* Enqueue the keypress */
-	    Term_keypress(i);
-
-	    /* Success */
-	    return (0);
-	}
-	
-	/* Inside */
-	inside++;
-	
-	/* Think */
-	auto_play_perform();
-
-	/* Outside */
-	inside--;
-    }
-
-    /* Hack -- Usually just pass the call through */
-    return ((*Term_xtra_hook_old)(n, v));
-}
-
-
-
-
-/*
- * Initialize the Borg
- */
-void Borg_init(void)
-{
-    int i, k;
+    sint what[512];
+    cptr text[512];
 
     char buf[256];
-	
-
-    /* Only initialize once */
-    if (ready) return;
-
-    /* Message */
-    msg_print("Initializing the Borg...");
-    Term_fresh();
-    
-
-    /*** Input/Output ***/
-        
-    /* Remember the "normal" event scanner */
-    Term_xtra_hook_old = Term->xtra_hook;
-    
-    /* Cheat -- drop a hook into the "event scanner" */
-    Term->xtra_hook = Term_xtra_borg;
 
 
     /*** Dungeon Arrays ***/
-    
+
     /* Make the array of rooms */
     C_MAKE(auto_rooms, AUTO_ROOMS, auto_room);
 
     /* Initialize the rooms */
-    for (i = 0; i < AUTO_ROOMS; i++) auto_rooms[i].self = i;
+    for (i = 0; i < AUTO_ROOMS; i++) {
+
+        /* Save our own index */
+        auto_rooms[i].self = i;
+
+        /* Initialize the "free" list */
+        auto_rooms[i].free = i + 1;
+    }
+
+    /* Save the head/tail of the room array */
+    auto_room_head = &auto_rooms[0];
+    auto_room_tail = &auto_rooms[AUTO_ROOMS-1];
+
+    /* Prepare the "tail" of the free list */
+    auto_room_tail->free = auto_room_tail->self;
+
+    /* Prepare the priority queue head */
+    auto_room_head->cost = 0;
+    auto_room_head->prev = auto_room_head->self;
+    auto_room_head->next = auto_room_tail->self;
+
+    /* Prepare the priority queue tail */
+    auto_room_tail->cost = 30000;
+    auto_room_tail->prev = auto_room_head->self;
+    auto_room_tail->next = auto_room_tail->self;
 
     /* Make the array of grids */
     C_MAKE(auto_grids, AUTO_MAX_Y, auto_grid*);
 
     /* Make each row of grids */
     for (i = 0; i < AUTO_MAX_Y; i++) {
-	C_MAKE(auto_grids[i], AUTO_MAX_X, auto_grid);
+        C_MAKE(auto_grids[i], AUTO_MAX_X, auto_grid);
     }
 
 
-    /*** Flow queue ***/
-    
-    /* The head is always first */
-    auto_flow_head.flow = 0;
+    /*** Make two special arrays ***/
 
-    /* The tail is always last */
-    auto_flow_tail.flow = MAX_SHORT;
-    
-    /* Empty queue */
-    auto_flow_head.next = &auto_flow_tail;
-    auto_flow_tail.prev = &auto_flow_head;
-    
+    /* Hack -- array of "seen" grids */
+    C_MAKE(seen_x, SEEN_MAX, byte);
+    C_MAKE(seen_y, SEEN_MAX, byte);
+
+    /* Hack -- array of "view" grids */
+    C_MAKE(view_x, VIEW_MAX, byte);
+    C_MAKE(view_y, VIEW_MAX, byte);
+
 
     /*** Item/Ware arrays ***/
-    
-    /* Make some item/ware arrays */
+
+    /* Make the inventory array */
     C_MAKE(auto_items, INVEN_TOTAL, auto_item);
-    C_MAKE(auto_wares, 24, auto_item);
+
+    /* Make the stores in the town */
+    C_MAKE(auto_shops, 8, auto_shop);
 
 
-    /*** Item description parsers ***/
-    
-    /* Count the useful "item kinds" */
+    /*** Plural Object Templates ***/
+
+    /* Start with no objects */
+    size = 0;
+
+    /* Analyze some "item kinds" */
     for (k = 0; k < MAX_K_IDX; k++) {
 
-	/* Get the kind */
-	inven_kind *k_ptr = &k_list[k];
-	
-	/* Skip non-items */
-	if (!k_ptr->tval) continue;
-	
-	/* Skip "dungeon terrain" objects */
-	if (k_ptr->tval >= TV_GOLD) continue;
+        inven_type hack;
 
-	/* Skip "special artifacts" (including the Phial) */
-	if (k_ptr->flags3 & TR3_INSTA_ART) continue;
-	
-	/* Count the items */
-	i_size++;
+        /* Get the kind */
+        inven_kind *k_ptr = &k_list[k];
+
+        /* Skip non-items */
+        if (!k_ptr->tval) continue;
+
+        /* Skip "dungeon terrain" objects */
+        if (k_ptr->tval >= TV_GOLD) continue;
+
+        /* Skip "artifacts" */
+        if (k_ptr->flags3 & TR3_INSTA_ART) continue;
+
+        /* Hack -- make an item */
+        invcopy(&hack, k);
+
+        /* Describe a "plural" object */
+        hack.number = 2;
+        objdes_store(buf, &hack, FALSE);
+
+        /* Save an entry */
+        text[size] = string_make(buf);
+        what[size] = k;
+        size++;
     }
 
-    /* Allocate the "item parsing arrays" */
-    C_MAKE(i_kind, i_size, u16b);
-    C_MAKE(i_single, i_size, cptr);
-    C_MAKE(i_plural, i_size, cptr);
-        
-    /* Analyze the "item kinds" -- Hack -- reverse order */
-    for (i = 0, k = MAX_K_IDX-1; k >= 0; k--) {
+    /* Sort entries (in reverse order) by text */
+    for (i = 0; i < size - 1; i++) {
+        for (j = 0; j < size - 1; j++) {
 
-	inven_type hack;
-	
-	/* Get the kind */
-	inven_kind *k_ptr = &k_list[k];
-	
-	/* Skip non-items */
-	if (!k_ptr->tval) continue;
-	
-	/* Skip "dungeon terrain" objects */
-	if (k_ptr->tval >= TV_GOLD) continue;
+            int i1 = j;
+            int i2 = j + 1;
 
-	/* Skip "special artifacts" (including the Phial) */
-	if ((k_ptr->tval >= TV_MIN_WEAR) &&
-	    (k_ptr->tval <= TV_MAX_WEAR) &&
-	    (k_ptr->flags3 & TR3_INSTA_ART)) continue;
-	
-	/* Save the object kind */
-	i_kind[i] = k;
+            s16b k1 = what[i1];
+            s16b k2 = what[i2];
 
-	/* Hack -- make an item */
-	invcopy(&hack, k);
-	
-	/* Hack -- Force "known" */
-	hack.ident |= ID_KNOWN;
+            cptr t1 = text[i1];
+            cptr t2 = text[i2];
 
-	/* Describe a "plural" object */
-	hack.number = 2;
-	objdes(buf, &hack, FALSE);
-	i_plural[i] = string_make(buf);
+            /* Enforce (reverse) order */
+            if (strcmp(t1, t2) < 0) {
 
-	/* Describe a "singular" object */
-	hack.number = 1;
-	objdes(buf, &hack, FALSE);
-	i_single[i] = string_make(buf);
-	
-	/* Advance */
-	i++;
+                /* Swap "kind" */
+                what[i1] = k2;
+                what[i2] = k1;
+
+                /* Swap "text" */
+                text[i1] = t2;
+                text[i2] = t1;
+            }
+        }
     }
-    
-    /* Hack -- Unknown level */
-    strcpy(auto_level, "?x?x?x?x?");
 
-    /* Done initialization */
-    msg_print("done.");
+    /* Save the size */
+    auto_size_plural = size;
 
-    /* Now it is ready */
-    ready = TRUE;
+    /* Allocate the "item parsing arrays" (plurals) */
+    C_MAKE(auto_what_plural, auto_size_plural, s16b);
+    C_MAKE(auto_text_plural, auto_size_plural, cptr);
+
+    /* Save the entries */
+    for (i = 0; i < size; i++) auto_text_plural[i] = text[i];
+    for (i = 0; i < size; i++) auto_what_plural[i] = what[i];
+
+
+    /*** Singular Object Templates ***/
+
+    /* Start with no objects */
+    size = 0;
+
+    /* Analyze some "item kinds" */
+    for (k = 0; k < MAX_K_IDX; k++) {
+
+        inven_type hack;
+
+        /* Get the kind */
+        inven_kind *k_ptr = &k_list[k];
+
+        /* Skip non-items */
+        if (!k_ptr->tval) continue;
+
+        /* Skip "dungeon terrain" objects */
+        if (k_ptr->tval >= TV_GOLD) continue;
+
+        /* Skip "artifacts" */
+        if (k_ptr->flags3 & TR3_INSTA_ART) continue;
+
+        /* Hack -- make an item */
+        invcopy(&hack, k);
+
+        /* Describe a "singular" object */
+        hack.number = 1;
+        objdes_store(buf, &hack, FALSE);
+
+        /* Save an entry */
+        text[size] = string_make(buf);
+        what[size] = k;
+        size++;
+    }
+
+    /* Analyze more "item kinds" (the artifacts) */
+    for (k = 0; k < MAX_K_IDX; k++) {
+
+        inven_type hack;
+
+        /* Get the kind */
+        inven_kind *k_ptr = &k_list[k];
+
+        /* Skip non-items */
+        if (!k_ptr->tval) continue;
+
+        /* Skip "dungeon terrain" objects */
+        if (k_ptr->tval >= TV_GOLD) continue;
+
+        /* Skip "non-artifacts" */
+        if (!(k_ptr->flags3 & TR3_INSTA_ART)) continue;
+
+        /* Hack -- make an item */
+        invcopy(&hack, k);
+
+        /* No length yet */
+        n = 0;
+
+        /* Mega-Hack -- find the artifact index */
+        for (z = 1; z < ART_MAX; z++) {
+
+            /* Save the correct artifact index */
+            if (v_list[z].tval != hack.tval) continue;
+            if (v_list[z].sval != hack.sval) continue;
+
+            /* Save the index */
+            hack.name1 = z;
+
+            /* Extract the "suffix" length */
+            n = strlen(v_list[z].name) + 1;
+
+            /* Done */
+            break;
+        }
+
+        /* Describe a "singular" object */
+        hack.number = 1;
+        objdes_store(buf, &hack, FALSE);
+        buf[strlen(buf) - n] = '\0';
+
+        /* Save an entry */
+        text[size] = string_make(buf);
+        what[size] = k;
+        size++;
+    }
+
+    /* Sort entries (in reverse order) by text */
+    for (i = 0; i < size - 1; i++) {
+        for (j = 0; j < size - 1; j++) {
+
+            int i1 = j;
+            int i2 = j + 1;
+
+            s16b k1 = what[i1];
+            s16b k2 = what[i2];
+
+            cptr t1 = text[i1];
+            cptr t2 = text[i2];
+
+            /* Enforce (reverse) order */
+            if (strcmp(t1, t2) < 0) {
+
+                /* Swap "kind" */
+                what[i1] = k2;
+                what[i2] = k1;
+
+                /* Swap "text" */
+                text[i1] = t2;
+                text[i2] = t1;
+            }
+        }
+    }
+
+    /* Save the size */
+    auto_size_single = size;
+
+    /* Allocate the "item parsing arrays" (plurals) */
+    C_MAKE(auto_what_single, auto_size_single, s16b);
+    C_MAKE(auto_text_single, auto_size_single, cptr);
+
+    /* Save the entries */
+    for (i = 0; i < size; i++) auto_text_single[i] = text[i];
+    for (i = 0; i < size; i++) auto_what_single[i] = what[i];
+
+
+    /*** Artifact and Ego-Item Parsers ***/
+
+    /* No entries yet */
+    size = 0;
+
+    /* Collect the "artifact names" */
+    for (k = 1; k < ART_MAX; k++) {
+
+        /* Skip non-items */
+        if (!v_list[k].name) continue;
+
+        /* Extract a string */
+        sprintf(buf, " %s", v_list[k].name);
+
+        /* Save an entry */
+        text[size] = string_make(buf);
+        what[size] = k;
+        size++;
+    }
+
+    /* Collect the "ego-item names" */
+    for (k = 1; k < EGO_MAX; k++) {
+
+        /* Skip non-items */
+        if (!ego_names[k]) continue;
+
+        /* Extract a string */
+        sprintf(buf, " %s", ego_names[k]);
+
+        /* Save an entry */
+        text[size] = string_make(buf);
+        what[size] = 0 - k;
+        size++;
+    }
+
+    /* Sort entries (in reverse order) by text */
+    for (i = 0; i < size - 1; i++) {
+        for (j = 0; j < size - 1; j++) {
+
+            int i1 = j;
+            int i2 = j + 1;
+
+            s16b k1 = what[i1];
+            s16b k2 = what[i2];
+
+            cptr t1 = text[i1];
+            cptr t2 = text[i2];
+
+            /* Enforce (reverse) order */
+            if (strcmp(t1, t2) < 0) {
+
+                /* Swap "kind" */
+                what[i1] = k2;
+                what[i2] = k1;
+
+                /* Swap "text" */
+                text[i1] = t2;
+                text[i2] = t1;
+            }
+        }
+    }
+
+    /* Save the size */
+    auto_size_artego = size;
+
+    /* Allocate the "item parsing arrays" (plurals) */
+    C_MAKE(auto_what_artego, auto_size_artego, s16b);
+    C_MAKE(auto_text_artego, auto_size_artego, cptr);
+
+    /* Save the entries */
+    for (i = 0; i < size; i++) auto_text_artego[i] = text[i];
+    for (i = 0; i < size; i++) auto_what_artego[i] = what[i];
 }
 
 
-/* 
- * Hack -- interact with the Borg.  Includes "initialization" call.
- */
-void Borg_mode(void)
-{
-    char cmd;
-
-
-    /* Not initialized? */
-    if (!ready) return;
-    
-
-    /* Hack -- Never interupt the "special states" */
-    if (state && (state != STATE_START)) return;
-    
-    /* Clear the state */
-    state = 0;
-    
-    /* Get a special command */    
-    if (!get_com("Borg command: ", &cmd)) return;
-
-    
-    /* Command: Resume */
-    if (cmd == 'r') {
-	wizard = FALSE;
-	state = STATE_START;
-    }
-
-    /* Command: Resume, but Wipe goals */
-    else if (cmd == 'w') {
-	wizard = FALSE;
-	state = STATE_START;
-	goal_level = 0;
-	goal = 0;
-    }
-    
-    /* Command: Restart -- use an "illegal" level */
-    else if (cmd == 'z') {
-	wizard = FALSE;
-	state = STATE_START;
-	goal_level = 0;
-	goal = 0;
-	sprintf(auto_level, "?x?-%ld-?x?", (long)turn);
-    }
-
-
-    /* Command: toggle "cheat" for "inventory" */
-    else if (cmd == 'i') {
-	cheat_inven = !cheat_inven;
-    }
-    
-    /* Command: toggle "cheat" for "equipment" */
-    else if (cmd == 'e') {
-	cheat_equip = !cheat_equip;
-    }
-    
-
-    /* Command: Show all Rooms (Containers) */
-    else if (cmd == 's') {
-
-	int n, k, x, y;
-
-	auto_room *ar;
-
-	/* Examine all the rooms */
-	for (n = 0; n < auto_room_max; n++) {
-
-	    int i = 0;
-	    
-	    /* Access the n'th room */
-	    ar = &auto_rooms[n];
-
-	    /* Skip "dead" rooms */
-	    if (!ar->when) continue;
-
-	    /* Hack -- hilite the room -- count draws */
-	    for (y = ar->y1; y <= ar->y2; y++) {	    
-		for (x = ar->x1; x <= ar->x2; x++) {	    
-		    if (panel_contains(y, x)) i++;
-		    mh_print_rel('*', TERM_RED, 0, y, x);
-		}
-	    }
-
-	    /* Nothing done -- skip this room */
-	    if (!i) continue;
-
-	    /* Describe and wait */
-	    Term_putstr(0, 0, -1, TERM_WHITE,
-	    		format("Room %d (%dx%d). ", n,
-	    		(1 + ar->x2 - ar->x1), (1 + ar->y2 - ar->y1)));
-	    Term_fresh();
-
-	    /* Get a key */
-	    k = Term_inkey();
-	    
-	    /* Hack -- fix the room */
-	    for (y = ar->y1; y <= ar->y2; y++) {	    
-		for (x = ar->x1; x <= ar->x2; x++) {	    
-		    lite_spot(y, x);
-		}
-	    }
-	    
-	    /* Flush the erase */
-	    Term_fresh();
-
-	    /* Leave this loop */
-	    if (k == ESCAPE) break;
-	}
-    }
-
-    /* Command: Rooms (Containers) */
-    else if (cmd == 'c') {
-
-	int n, w, h;
-
-	auto_room *ar;
-
-	int used = 0, n_1x1 = 0, n_1xN = 0, n_Nx1 = 0;
-	int n_2x2 = 0, n_2xN = 0, n_Nx2 = 0, n_NxN = 0;
-	
-	/* Examine all the rooms */
-	for (n = 0; n < AUTO_ROOMS; n++) {
-
-	    /* Access the n'th room */
-	    ar = &auto_rooms[n];
-
-	    /* Skip "dead" rooms */
-	    if (!ar->when) continue;
-	    
-	    /* Count the "used" rooms */
-	    used++;
-
-	    /* Extract the "size" */
-	    w = 1 + ar->x2 - ar->x1;
-	    h = 1 + ar->y2 - ar->y1;
-
-	    /* Count the "singles" */
-	    if ((w == 1) && (h == 1)) n_1x1++;
-	    else if (w == 1) n_1xN++;
-	    else if (h == 1) n_Nx1++;
-	    else if ((w == 2) && (h == 2)) n_2x2++;
-	    else if (w == 2) n_2xN++;
-	    else if (h == 2) n_Nx2++;
-	    else n_NxN++;
-	}
-
-
-	/* Display some info */	
-	msg_print(format("Rooms: %d/%d used.", used, auto_room_max));
-	msg_print(format("Corridors: 1xN (%d), Nx1 (%d)", n_1xN, n_Nx1));
-	msg_print(format("Thickies: 2x2 (%d), 2xN (%d), Nx2 (%d)",
-			 n_2x2, n_2xN, n_Nx2));
-	msg_print(format("Singles: %d.  Normals: %d.", n_1x1, n_NxN));
-	msg_print(NULL);
-    }
-
-    /* Command: Grid Info */
-    else if (cmd == 'g') {
-
-	int x, y, n;
-
-	auto_grid *ag;
-	auto_room *ar;
-
-	int tg = 0;
-	int tr = 0;
-
-	int cc[16];
-	
-	/* Count the crossing factors */
-	cc[0] = cc[1] = cc[2] = cc[3] = cc[4] = cc[5] = cc[6] = cc[7] = cc[8] = 0;
-	
-	/* Total explored grids */
-	for (y = 0; y < AUTO_MAX_Y; y++) {
-	    for (x = 0; x < AUTO_MAX_X; x++) {
-
-		/* Get the grid */
-		ag = grid(x, y);
-
-		/* Skip unknown grids */
-		if (ag->o_c == ' ') continue;
-
-		/* Count them */
-		tg++;
-
-		/* Count the rooms this grid is in */
-		for (n = 0, ar = room(1,x,y); ar && (n<16); ar = room(0,0,0)) n++;
-
-		/* Hack -- Mention some locations */
-		if ((n > 1) && !cc[n]) {
-		    msg_print(format("The grid at %d,%d is in %d rooms.", x, y, n));
-		}
-
-		/* Count them */
-		if (n > 0) tr++;
-		
-		/* Count the number of grids in that many rooms */
-		cc[n]++;
-	    }
-	}
-
-	/* Display some info */	
-	msg_print(format("Grids: %d known, %d in rooms.", tg, tr));
-	msg_print(format("Roomies: %d, %d, %d, %d, %d, %d, %d, %d, %d.",
-			 cc[0], cc[1], cc[2], cc[3], cc[4],
-			 cc[5], cc[6], cc[7], cc[8]));
-	msg_print(NULL);
-    }
-}
 
 
 #endif

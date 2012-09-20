@@ -3,15 +3,15 @@
 /* Purpose: signal handlers */
 
 /*
- * Copyright (c) 1989 James E. Wilson 
+ * Copyright (c) 1989 James E. Wilson
  *
  * This software may be copied and distributed for educational, research, and
  * not for profit purposes provided that this copyright and statement are
- * included in all such copies. 
+ * included in all such copies.
  */
 
 /*
- * This signal package was brought to you by		-JEW- 
+ * This signal package was brought to you by		-JEW-
  * Completely rewritten by				-CJS-
  * Rewritten again by					-BEN-
  * One more time by Jeff Collins (Jan. 1995).
@@ -43,7 +43,7 @@ static void suspend_handler_proc(int sig)
 
 #ifdef SIGSTOP
 
-    /* Flush the term */
+    /* Flush output */
     Term_fresh();
 
     /* Suspend the "Term" */
@@ -99,54 +99,54 @@ static void signal_handler_proc(int sig)
     /* Handle simple interrupt */
     if (simple) {
 
-	/* Only treat real characters specially */
-	if (!death && !character_saved && character_generated) {
+        /* Only treat real characters specially */
+        if (!death && !character_saved && character_generated) {
 
-	    /* Save the screen */
-	    save_screen();
+            /* Save the screen */
+            save_screen();
 
-	    /* Hack -- Allow player to think twice. */
-	    if (!get_check(total_winner ?
-			   "Do you want to retire?" :
-			   "Really commit *Suicide*?")) {
+            /* Hack -- Allow player to think twice. */
+            if (!get_check(total_winner ?
+                           "Do you want to retire?" :
+                           "Really commit *Suicide*?")) {
 
-		/* Restore the screen */
-		restore_screen();
+                /* Restore the screen */
+                restore_screen();
 
-		/* Disturb and clear */
-		Term_fresh();
+                /* Flush pending output */
+                Term_fresh();
 
-		/* Disturb */
-		disturb(1, 0);
+                /* Disturb */
+                disturb(1, 0);
 
-		/* Restore handler for later. */
-		(void)signal(sig, signal_handler);
+                /* Restore handler for later. */
+                (void)signal(sig, signal_handler);
 
-		/* OK. We don't quit. */
-		return;
-	    }
+                /* OK. We don't quit. */
+                return;
+            }
 
-	    /* Restore the screen */
-	    restore_screen();
+            /* Restore the screen */
+            restore_screen();
 
-	    /* Death */
-	    (void)strcpy(died_from, "Interrupting");
-	}
-	else {
-	    (void)strcpy(died_from, "Abortion");
-	}
+            /* Death */
+            (void)strcpy(died_from, "Interrupting");
+        }
+        else {
+            (void)strcpy(died_from, "Abortion");
+        }
 
-	/* Interrupted */
-	prt("Interrupt!", 0, 0);
+        /* Interrupted */
+        prt("Interrupt!", 0, 0);
 
-	/* Suicide */
-	death = TRUE;
+        /* Suicide */
+        death = TRUE;
 
-	/* Save and exit */
-	exit_game();
+        /* Save and exit */
+        exit_game();
 
-	/* Just in case */
-	quit("interrupted");
+        /* Just in case */
+        quit("interrupted");
     }
 
 #endif /* !MACINTOSH */
@@ -157,27 +157,27 @@ static void signal_handler_proc(int sig)
     /* Try to save anyway */
     if (!death && !character_saved && character_generated) {
 
-	/* Try a panic save */
-	panic_save = 1;
-	prt("Your guardian angel is trying to save you.", 22, 0);
-	prt("", 23, 0);
+        /* Try a panic save */
+        panic_save = 1;
+        prt("Your guardian angel is trying to save you.", 22, 0);
+        prt("", 23, 0);
 
-	/* Attempt to save */
-	(void)sprintf(died_from, "(panic save %d)", sig);
-	if (save_player()) quit("panic save succeeded");
+        /* Attempt to save */
+        (void)sprintf(died_from, "(panic save %d)", sig);
+        if (save_player()) quit("panic save succeeded");
 
-	/* Oops */
-	(void)strcpy(died_from, "software bug");
-	death = TRUE;
-	turn = 0;
+        /* Oops */
+        (void)strcpy(died_from, "software bug");
+        death = TRUE;
+        turn = 0;
     }
     else {
-	death = TRUE;
-	prt("There is NO defense!", 22, 0);
-	prt("", 23, 0);
+        death = TRUE;
+        prt("There is NO defense!", 22, 0);
+        prt("", 23, 0);
 
-	/* Low level access -- Quietly save the memory anyway. */
-	(void)_save_player(savefile);
+        /* Low level access -- Quietly save the memory anyway. */
+        (void)_save_player(savefile);
     }
 
     /* Shut down the terminal XXX XXX */

@@ -13,21 +13,21 @@
 
 
 SRCS = \
-  main.c main-gcu.c main-ncu.c main-cur.c main-x11.c xtra-x11.c \
-  signals.c util.c io.c arrays.c save.c save-old.c death.c \
-  generate.c birth.c creature.c effects.c magic.c dungeon.c command.c \
-  misc1.c misc2.c misc3.c misc4.c moria1.c moria2.c moria3.c moria4.c \
-  spells1.c spells2.c cave.c desc.c tables.c variable.c \
-  store.c recall.c wizard.c borg.c \
+  main.c main-gcu.c main-ncu.c main-cur.c main-x11.c main-xaw.c \
+  signals.c util.c io.c init.c save.c save-old.c files.c \
+  generate.c birth.c creature.c melee.c dungeon.c store.c \
+  effects.c cmd1.c cmd2.c cmd3.c cmd4.c cmd5.c cmd6.c \
+  misc.c monster.c mon-desc.c object.c obj-desc.c \
+  spells1.c spells2.c cave.c tables.c variable.c wizard.c \
   term.c random.c z-util.c z-virt.c z-form.c
 
 OBJS = \
-  main.o main-gcu.o main-ncu.o main-cur.o main-x11.o xtra-x11.o \
-  signals.o util.o io.o arrays.o save.o save-old.o death.o \
-  generate.o birth.o creature.o effects.o magic.o dungeon.o command.o \
-  misc1.o misc2.o misc3.o misc4.o moria1.o moria2.o moria3.o moria4.o \
-  spells1.o spells2.o cave.o desc.o tables.o variable.o \
-  store.o recall.o wizard.o borg.o \
+  main.o main-gcu.o main-ncu.o main-cur.o main-x11.o main-xaw.o \
+  signals.o util.o io.o init.o save.o save-old.o files.o \
+  generate.o birth.o creature.o melee.o dungeon.o store.o \
+  effects.o cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
+  misc.o monster.o mon-desc.o object.o obj-desc.o \
+  spells1.o spells2.o cave.o tables.o variable.o wizard.o \
   term.o random.o z-util.o z-virt.o z-form.o
 
 
@@ -91,12 +91,21 @@ LIBS = -lX11 -lcurses -ltermcap
 
 
 ##
+## Use the "Athena Widget Set" and "main-xaw.c" instead of "main-x11.c"
+## But otherwise work the same as the "standard" version (above)
+##
+#CFLAGS = -Wall -g -D"USE_XAW" -D"USE_GCU"
+#LIBS = -lXaw -lXmu -lXt -lX11 -lcurses -ltermcap
+
+
+##
 ## Standard version (see main-x11.c and xtra-x11.c and main-gcu.c)
 ## This one seems to work for Linux 1.1.93 using ncurses-1.8.7.
 ##
 ## This version supports both X11 and "curses" in a single executable
 ##
 ## You may be able to define "USE_GETCH" or "USE_CURS_SET", see "main-gcu.c"
+## I have heard a rumor that "USE_GETCH" is not a good idea on Linux.
 ##
 #CFLAGS = -I/usr/X11R6/include -I/usr/include/ncurses \
 #         -Wall -O2 -fomit-frame-pointer -m486 -D"USE_X11" -D"USE_GCU"
@@ -110,7 +119,7 @@ LIBS = -lX11 -lcurses -ltermcap
 ##
 #CFLAGS = -O2 -fomit-frame-pointer -I/usr/include/ncurses -Wall \
 #         -D"USE_X11" -D"USE_GCU" \
-#         -D"USE_TPOSIX" -D"USE_GETCH" -D"USE_CURS_SET"
+#         -D"USE_TPOSIX" -D"USE_CURS_SET"
 #LIBS = -lX11 -lncurses
 #LDFLAGS = -s
 
@@ -137,6 +146,13 @@ LIBS = -lX11 -lcurses -ltermcap
 ##CFLAGS = -std -O -g3 -Olimit 4000 -D"USE_X11" -D"USE_GCU"
 #CFLAGS = -std -g -D"USE_X11" -D"USE_GCU"
 #LIBS   = -lX11 -lcurses -ltermcap -lrpcsvc
+
+
+##
+## Interactive Unix (ISC) systems
+##
+#CFLAGS = -Wall -g -D"USE_X11" -D"USE_GCU" -D"ISC"
+#LIBS = -lX11 -lcurses -lnsl_s -linet -lcposix
 
 
 ##

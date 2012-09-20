@@ -74,6 +74,9 @@ typedef int errr;
 #if defined(_Windows)
 # define huge huge_hack
 #endif
+#ifdef __WATCOMC__
+# undef huge
+#endif
 
 /*
  * Hack -- The Amiga appears to reserve "byte"

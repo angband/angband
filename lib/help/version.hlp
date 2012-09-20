@@ -1,0 +1,111 @@
+=== Version Info -- Angband 2.7.7 ===
+
+Make sure to read the newsgroup "rec.games.roguelike.angband" if possible.
+
+You are currently playing Angband 2.7.7 (or higher).  Angband 2.7.X began as
+a set of extensive modifications to MacAngband 2.6.1, performed by myself
+(Ben Harrison, benh@linc.cis.upenn.edu) just prior to the departure of the
+previous maintainer, Charles Swiger.  I was thus able to step in as the new
+Angband maintainer, and appear to have been accepted as "official".
+
+The most important modification was a massive "code level cleanup" that made
+all of my other modifications much simpler and safer.  This cleanup was so
+massive that the code is no longer recognizable, for example, via "diff -r".
+
+The second most important modification was the construction of a generic "Term"
+package, which allows Angband to be ported to a new machine with as few as 50
+lines of code.  Angband 2.7.7 thus runs without modification on many machines,
+including Macintosh, PowerMacs, Unix/X11, Unix/Curses, DOS-386, OS2-386,
+Windows, and Amiga.  The only important missing port seems to be DOS-286.
+
+=== Some of the changes from Angband 2.6.1 to Angband 2.7.7 ===
+
+It would be difficult to list all of the changes between Angband 2.6.1 and
+Angband 2.7.7, because many of them were made in passing during the massive
+code level cleanup.  Many of the changes are invisible to the user, but still
+provide increased simplicity and efficiency, and decreased code size, or make
+other more visable changes possible.  For example, the new "project()" code
+that handles all bolts, beams, and balls, the new "update_view()" code that
+simplifies line of sight computation, or the new "generate()" code that builds
+new levels in the dungeon.  Many changes have been made to increase efficiency,
+including the new "process_monsters()" and "update_monsters()" functions, and
+the new "objdes()" and "lite_spot()" routines.  The generic "Term" package
+yielded efficient screen updates, and enabled the simple use of "color".
+
+Some other important changes that come to mind include: macros, pref files,
+redefinable attr/char pairs, inventory tagging, many new runtime options,
+the bow slot, object stacking, recall/choice windows, parsing template files, 
+special lighting effects, intelligent monsters, etc.
+
+For fun, I designed the "Borg", an automatic Angband player.
+
+
+=== Here is some old information about previous versions ===
+
+
+                          VMS Moria Version 4.8
+Version 0.1  : 03/25/83
+Version 1.0  : 05/01/84
+Version 2.0  : 07/10/84
+Version 3.0  : 11/20/84
+Version 4.0  : 01/20/85
+
+Modules :
+     V1.0  Dungeon Generator      - RAK
+           Character Generator    - RAK & JWT
+           Moria Module           - RAK
+           Miscellaneous          - RAK & JWT
+     V2.0  Town Level & Misc      - RAK
+     V3.0  Internal Help & Misc   - RAK
+     V4.0  Source Release Version - RAK
+
+Robert Alan Koeneke               Jimmey Wayne Todd Jr.
+Student/University of Oklahoma    Student/University of Oklahoma
+
+
+
+
+
+                        Umoria Version 5.2 (formerly UNIX Moria)
+Version 4.83 :  5/14/87
+Version 4.85 : 10/26/87
+Version 4.87 :  5/27/88
+Version 5.0  :  11/2/89
+Version 5.2  :   5/9/90
+
+James E. Wilson, U.C. Berkeley
+                 wilson@ernie.Berkeley.EDU
+                 ...!ucbvax!ucbernie!wilson
+
+Other contributors:
+D. G. Kneller         - MSDOS Moria port
+Christopher J. Stuart - recall, options, inventory, and running code
+Curtis McCauley       - Macintosh Moria port
+Stephen A. Jacobs     - Atari ST Moria port
+William Setzer        - object naming code
+David J. Grabiner     - numerous bug reports, and consistency checking
+Dan Bernstein         - UNIX hangup signal fix, many bug fixes
+and many others...
+
+
+
+
+
+
+Copyright (c) 1989 James E. Wilson, Robert A. Keoneke
+  This software may be copied and distributed for educational, research, and
+  not for profit purposes provided that this copyright and statement are
+  included in all such copies.
+
+Umoria Version 5.2, patch level 1
+
+Angband Version 2.0   Alex Cutler, Andy Astrand, Sean Marsh, Geoff Hill, 
+                      Charles Teague.
+
+Angband Version 2.4   :  5/09/93
+
+Angband Version 2.5   : 12/05/93 Charles Swiger.
+
+Angband Version 2.6   :  9/04/94
+
+Angband Version 2.7   :  1/1/95  Ben Harrison

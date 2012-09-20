@@ -1,0 +1,22 @@
+
+                        ***********************
+                        **   Angband 2.7.7   **
+                        ***********************
+
+        Based on Umoria: Copyright (c) 1985 Robert Alan Koeneke
+                         Copyright (c) 1989 James E. Wilson
+
+        Hacked By:          Alex Cutler, Andy Astrand
+        Further Hacks By:   Sean Marsh, Geoff Hill
+        Bug fixes:          Charles Teague, David Kahane
+        Mac/X11 Ports:      Keith Randall, Ben Harrison
+        Recent Maintainer:  Charles Swiger
+        
+        Current Maintainer: Ben Harrison
+        Email Address:      benh@linc.cis.upenn.edu
+        
+This beta version of Angband 2.7.7 can be viewed as a (heavily) modified copy
+of MacAngband 2.6.1.  Thus there are pieces derived from many places, such as
+the "net", PC Angband 1.40, UMoria 5.5, and FAngband.
+
+This version "works" on Macintosh/Unix/Linux/Curses/X11/Windows/IBM/etc.

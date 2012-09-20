@@ -1,0 +1,365 @@
+          === Battle (Chapter 8 from the old Manual) ===
+ 
+  
+          8.  Attacking and Being Attacked
+ 
+          Attacking is simple in Angband. If you move into a  creature, you
+          attack  him.  You can attack from a distance by firing a missile,
+          or by magical means such as aiming a wand.  Creatures  attack  in
+          the  same  way,  if  they  move  into you, they attack you.  Some
+          creatures can also cast spells from a distance,  and  others  can
+          breathe fire or worse on you from a distance.
+ 
+          Creatures moving in walls can not be attacked by wands and  other
+          magic  attacks  normally  stopped  by  walls.   You  can attack a
+          creature in a wall normally though by trying  to  move  into  the
+          wall  space containing the creature.  However, in order to attack
+          an invisible creature in a wall, you must tunnel  into  the  wall
+          containing  the creature.  If you just try to move into the wall,
+          you will bump your head and look quite silly.
+ 
+          If you are wielding a weapon, the damage for the weapon  is  used
+          when  you  hit  a  creature.  Otherwise you get two fist strikes.
+          Very strong creatures can do a lot of damage with their  fists...
+          You  may  have  a primary weapon, and a secondary weapon which is
+          kept on your belt or shoulder for immediate use.  You can  switch
+          between your primary and secondary weapons with the exchange com-
+          mand.  Be sure to wield the proper weapon when fighting.  Hitting
+          a  dragon  over the head with a bow will simply make him mad, and
+          get you killed.
+ 
+          Missile weapons, such as bows,  can  be  wielded,  and  then  the
+          proper  missile,  in  this case an arrow, can be fired across the
+          room into a target.  Missiles can be used without the proper mis-
+          sile  weapon,  but used together they have a greater range and do
+          far more damage.
+ 
+          Hits and misses are determined by ability  to  hit  versus  armor
+          class.   A  hit  is a strike that does some damage; a miss may in
+          fact reach a target, but fails to do any  damage.   Higher  armor
+          classes make it harder to do damage, and so lead to more misses.
+ 
+ 
+          8.1.  Monster Memories.
+ 
+          There are hundreds of different creatures in the mines of  Angband,
+          many  of which look the same on the screen.  The exact species of
+          a creature can be discovered by looking at it.  It is  also  very
+          difficult to keep track of the capabilities of various creatures.
+          Rather than forcing you to keep notes, Angband automatically  keeps
+          track  of  your  experiences with a particular creature.  This is
+          called the monster memory.  You monster memory recalls  the  par-
+          ticular  attacks  of  each creature (whether or not technically a
+          monster) which you have suffered, as well  as  recalling  if  you
+          have  observed  them  to  multiply  or  move erratically, or drop
+          treasure, or many other attributes.
+ 
+          If you have killed enough of a particular creature,  or  suffered
+          enough attacks, recalling the monster memory may also provide you
+          with information not otherwise available, such as a  armor  class
+          or  hit dice.  These are not explained, but may be useful to give
+          the relative danger of each creature.  This memory can be  passed
+          on  to  a new character even after you die, by means of a reduced
+          save file.
+ 
+ 
+          8.2.  Your Weapon
+ 
+          Carrying a weapon in your backpack does you no  good.   You  must
+          wield  a  weapon  before  it can be used in a fight.  A secondary
+          weapon can be kept by wielding it and  then  using  the  exchange
+          command.   A  secondary  weapon is not in use, simply ready to be
+          switched with the current weapon if needed.
+ 
+          Weapons have two main characteristics, their ability to  hit  and
+          their  ability  to  do  damage, expressed as `(+#,+#)'.  A normal
+          weapon would be `(+0,+0)'. Many weapons in Angband  have  magical
+          bonuses  to  hit  and/or do damage.  Some weapons are cursed, and
+          have penalties that hurt the player.  Cursed  weapons  cannot  be
+          unwielded until the curse is lifted.
+ 
+          Angband assumes that your youth in the rough environment near the
+          dungeons has taught you the relative merits of different weapons,
+          and displays as part of their description the damage  dice  which
+          define their capabilities.  The ability to damage is added to the
+          dice roll for that weapon.  The dice used for a given  weapon  is
+          displayed  as `#d#'.  The first number indicates how many dice to
+          roll, and the second indicates how many sides they have.  A "2d6"
+          weapon will give damage from 2 to 12, plus any damage bonus.  The
+          weight of a weapon is also a consideration.   Heavy  weapons  may
+          hit  harder,  but they are also harder to use.  Depending on your
+          strength and the weight of the weapon, you may get  several  hits
+          in one turn.
+ 
+          Missile booster weapons, such as bows, have their characteristics
+          added  to those of the missile used, if the proper weapon/missile
+          combination is used.
+ 
+          Although you receive any magical bonuses an  unidentified  weapon
+          may possess when you wield it, those bonuses will not be added in
+          to the displayed values of to-hit and to-dam  on  your  character
+          sheet.   You must identify the weapon before the displayed values
+          reflect the real values used.
+ 
+          Finally, some rare weapons have  special  abilities.   These  are
+          called  ego  weapons,  and  are feared by great and meek.  An ego
+          sword must be wielded to receive benefit of its abilities.
+ 
+          Special weapons are denoted by the following abbreviations:
+ 
+          (Defender).
+               A magical weapon that actually helps the wielder defend him-
+               self,  thus increasing  his/her armour class, and protecting
+               him/her against damage from fire,  frost,  acid,  lightning,
+               and falls.  This weapon also will increase your stealth, let
+               you see invisible creatures, protect you  from  paralyzation
+               attacks, and help you regenerate hit points and mana faster.
+               As a result of the regeneration ability,  you  will  use  up
+               food faster than normal while wielding such a weapon.
+ 
+          Weapon of Frost.
+               A magical weapon of ice that delivers  a  cold  critical  to
+               creatures  not  immune to  cold. It  will inflict thrice the 
+               normal damage when used against such a creature creature. It
+               also defends you against Cold.
+ 
+          Weapon of Flame.
+               A magical weapon of fire that delivers a  heat  critical  to
+               creatures  not  immune to  fire.  It will inflict thrice the 
+               normal damage when used against such a creature creature. It
+               also defends you against Fire.
+ 
+          Weapon of Westernesse.
+               A Weapon of Westernesse is one of the more powerful weapons.
+               It slays orcs,  increases your strength, dexterity, and con-
+               stitution.   It also  lets you  see invisible  creatures and
+               protects from  paralyzation.  These blades  were made by the
+               Dunedain.
+
+          (Blessed Blade).
+               A  blessed  blade will increase your wisdom.   If  you are a
+               a priest,  wielding a non-blessed  sword or polearm causes a
+               small penalty while attacking.
+
+          (Holy Avenger).
+               A Holy Avenger is one of the more powerful  of  weapons.   A
+               Holy  Avenger  will  increase  your  wisdom and your  armour
+               class.  This weapon will do extra damage when  used  against
+               evil, demonic and undead creatures, and will also  give  you 
+               the ability to see invisible  creatures.   These weapons are
+               more powerful versions of Blessed Blades.
+ 
+          Weapon of Dragon Slaying.
+               A Slay Dragon weapon is a special purpose weapon whose  sole
+               intent  is  to  destroy  dragon-kind.   Therefore, when used
+               against a dragon, the amount of damage done  is three  times
+               the normal amount.
+ 
+          Weapon of Slay Evil.
+               A Slay Evil weapon is a special purpose  weapon  whose  sole
+               intent  is  to destroy all forms of evil.  When used against
+               an evil creature, either alive or undead,  the  damage  done
+               twice the normal  amount.   Some of these  weapons are  also
+               Blessed Blades.
+ 
+          Weapon of Slay Animal.
+               A Slay Animal weapon is a special purpose weapon whose  sole
+               intent is to destroy all the dangerous animals in the world.
+               An animal is any creature natural to the  world.   Therefore
+               an  orc  would not be an animal, but a giant snake would be.
+               This will inflict twice the normal  amount  of  damage  when
+               used against an animal.
+ 
+          Weapon of Slay Undead.
+               A Slay Undead weapon is a special purpose weapon whose  sole
+               intent  is  to  destroy all forms of undead.  This weapon is
+               hated and feared by the intelligent  undead,  for  a  single
+               blow  from  this  weapon will inflict three times the normal
+               amount of damage.  This weapon also gives you the ability to
+               see  invisible creatures, which is especially useful against
+               undead, since many of them are normally invisible.   Some of
+               these weapons have the additional ability to protect against
+               the   life-draining  attacks  that  many  undead   creatures
+               possess.
+ 
+          Weapon of Slay Orc.
+               A Slay Orc weapon does treble  damage  against  anything  of 
+               orcish-kind.  Often these are elvish blades.
+ 
+          Weapon of Slay Troll.
+               A Slay Troll weapon does treble damage against  anything  of 
+               troll-kind.  Often these are elvish blades.
+ 
+          Weapon of Slay Giant.
+               A Slay Giant weapon does treble damage against  anything  of 
+               giant-humanoidal form.
+ 
+          Weapon of Slay Demon.
+               A Slay Demon weapon does treble damage against  anything  of 
+               of Hellish nature such as the Minor and Major Demons.
+ 
+          Whips of Fire.
+               These are one of the balrogs'  favorite  weapons  delivering 
+               heat criticals.
+ 
+          Weapon of Morgul.
+               These blades are so foully cursed with evil, it is  rumored
+               impossible to remove them.  BEWARE!
+ 
+          Apart from these there are some very rare, and well  made  blades
+          in the dungeon with not necessarily any special abilities. These
+          include:
+                  Blades of Chaos (6d5)
+                  Maces of Disruption (4d10)
+                  Scythes of Slicing (8d4)
+ 
+ 
+          8.3   Artifact Weapons -- see "rumors.hlp"
+           
+        
+          8.4.  Body and Shield Bashes
+ 
+          Weight is the primary factor in being able to bash something, but
+          strength plays a role too.  After bashing, a character may be off
+          balance for several rounds depending upon his dexterity.
+ 
+          Doors can be broken down by bashing them.  Once a door is  bashed
+          open, it is forever useless and cannot be closed.
+ 
+          Chests too may be bashed open, but be warned  that  the  careless
+          smashing  of  a  chest  often ruins the contents.  Bashing open a
+          chest will not disarm any traps it may contain,  but  does  allow
+          the strong and ignorant to see what is inside.
+ 
+          Finally, a creature may be bashed.   If  a  shield  is  currently
+          being  worn,  the  bash is a shield bash and will do more damage.
+          In either case, a bash may throw an opponent off  balance  for  a
+          number of rounds, allowing a player to get in a free hit or more.
+          If the player is thrown off balance, his opponent  may  get  free
+          hits on him.  This is a risky attack.
+ 
+ 
+          8.5.  Your Armour Class
+ 
+          Armor class is a number that describes the amount and the quality
+          of armour being worn. Armour class will generally run from  about
+          0 to 150, but could become negative  or  greater  than  150  with
+          rarer armour or by magical means.
+ 
+          The larger your armor class, the more protective it is.  A  nega-
+          tive armour  class  would  actually  help  get  you  hit.  Armour 
+          protects you in three manners. One, it makes you harder to be hit
+          for damage. A hit for no damage is the same as a miss.  Two, good
+          armor will absorb some of the damage that  your  character  would
+          have  taken. An armour class of 30 would absorb 15% of any damage
+          meant for him.  Three, acid damage is  reduced  by  wearing  body
+          armor.   It is obvious that a high armor class is a must for sur-
+          viving the lower levels of Angband.
+ 
+          Each piece of armour has an armour class adjustment, and  magical
+          bonus.  Armour  bought  in  town will have these values displayed
+          with their description. Armour that is found within  the  dungeon
+          must  be  identified  before these values will be displayed.  All
+          armor always has the base armour class displayed,  to  which  the
+          bonus is added.  It is always possible to figure this out anyway,
+          by watching the effect it has on your displayed armour class.
+ 
+          Armor class values are always displayed between a set of brackets
+          as  `[#]' or `[#,+#]'.  The first value is the armor class of the
+          item.  The second number is the magical bonus of the  item  which
+          is only displayed if known, and will always have a sign preceding
+          the value.  There are a few cases where the form `[+#]' is  used,
+          meaning the object has no armor class, only a magical armor bonus
+          if worn.
+ 
+          Some pieces of armor will possess special  abilities  denoted  by
+          the following abbreviations:
+ 
+          of Resist Acid.
+               A character using such an object will take  only  one  third
+               normal  damage  from any acid thrown upon him.  In addition,
+               armor so enchanted will resist the acid's effects and not be
+               damaged by it.
+ 
+          of Resist Cold.
+               A character using a resist cold object will  take  only  one
+               third damage from frost and cold.
+ 
+          of Resist Fire.
+               A character using a resist fire object will  take  only  one
+               third damage from heat and fire.
+ 
+          of Resist Lightning.
+               A character using a resist lightning object will  take  only
+               one third damage from electrical attacks.
+ 
+          of Resistance.
+               A character wearing armor with this ability will have resis-
+               tance  to  Acid,  Cold,  Fire, and Lightning as explained in
+               each part above.
+ 
+          Armour of Elvenkind.
+               Same as Resistance armour, only generally  better  made  and 
+               makes you more stealthy.  They may possess additional resis-
+               tances, as well.
+ 
+          Robes of the Magi.
+               These robes are  designed  especially  for  wizards,  giving
+               Resistance, sustaining all stats and  protecting  from  life
+               level loss.  Like the Armour of Elvenkind,  these Robes also
+               may possess additional resistances.
+ 
+          Dragon Scale Mails.
+               These extremely rare pieces of armour come in many different
+               colours, each protecting you against the  relevent  coloured
+               dragons. Naturally they are all resistant  to  acid  damage.
+               They  also  occasionally  allow  you to breathe  as a dragon 
+               would!
+ 
+ 
+          Crown of Might
+               This is the great crown of the warriors.   The  wearer  will
+               have  an increased strength, dexterity, and constituion, and
+               will also be immune to any foe's attempt to slow or paralyze
+               him or her.
+ 
+          Crown of the Magi
+               This is the great crown of the wizards.    The  wearer  will
+               have  an  increased  intelligence,  and  will  also be given
+               resistance against fire, frost, acid, and lightning.
+ 
+          Crown of Lordliness
+               This is the great crown of the  priests.   The  wearer  will
+               have an increased wisdom and charisma.
+ 
+          Crown of Seeing
+               This is the great crown of the rogues.  The wearer  will  be
+               able  to  see  even  invisible  creatures,  and will have an
+               increased ability to locate traps and secret doors.
+ 
+          Crown of Regeneration
+               This crown will help you regenerate hit points and mana more
+               quickly  than  normal,  allowing  you to fight longer before
+               needing to rest.  You will use of food  faster  than  normal
+               while   wearing  this  crown  because  of  the  regenerative
+               effects.
+ 
+          Crown of Beauty
+               This  crown  looks  impressive,  and  will   increase   your
+               charisma, but is otherwise not useful.
+ 
+          Apart from these there are some very rare, and well  made armours
+          in the dungeon with not necessarily any special abilities. These
+          include:
+                Shields of Deflection [10]
+                Shadow Cloaks [6]
+                Adamantite Plate Mail [40]
+                Mithril Plate Mail [35]
+                Mithril Chain Mail [28]
+          The last three all resist acid due to  the  quality  metals  they 
+          contain.
+          
+ 
+          8.6  Artifact Armours -- see "rumors.hlp"
+ 
+

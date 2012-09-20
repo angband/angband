@@ -13,73 +13,85 @@
 #include "angband.h"
 
 
-#ifdef CHECK_HOURS
-
-/*
- * Operating hours for ANGBAND	-RAK-
- *	 X = Open; . = Closed
- */
-char days[7][29] = {
-	"SUN:XXXXXXXXXXXXXXXXXXXXXXXX",
-	"MON:XXXXXXXX.........XXXXXXX",
-	"TUE:XXXXXXXX.........XXXXXXX",
-	"WED:XXXXXXXX.........XXXXXXX",
-	"THU:XXXXXXXX.........XXXXXXX",
-	"FRI:XXXXXXXX.........XXXXXXX",
-	"SAT:XXXXXXXXXXXXXXXXXXXXXXXX"
-};
-
-#endif
-
-
-
-/*
- * Each player starts out with a few provisions.
- * The OBJ_xxx constants refer to k_list indexes
- */
-
-u16b player_init[MAX_CLASS][3] = {
-
-	/* Warrior */
-    { OBJ_POTION_BERSERK, OBJ_BROAD_SWORD, OBJ_CHAIN_MAIL },
-
-	/* Mage */
-    { OBJ_SPELL_BOOK, OBJ_DAGGER, OBJ_SCROLL_RECALL },
-
-	/* Priest */
-    { OBJ_PRAYER_BOOK, OBJ_MACE, OBJ_POTION_HEALING },
-
-	/* Rogue */
-    { OBJ_SPELL_BOOK, OBJ_SMALL_SWORD, OBJ_SOFT_LEATHER },
-
-	/* Ranger */
-    { OBJ_SPELL_BOOK, OBJ_BROAD_SWORD,  OBJ_LONG_BOW },
-
-	/* Paladin */
-    { OBJ_PRAYER_BOOK, OBJ_BROAD_SWORD, OBJ_ANTI_EVIL }
-};
 
 
 
 
 /*
- * used to calculate the number of blows the player gets in combat
+ * Help calculate the number of blows the player gets in combat
+ *
+ * Entry "blows_table[P][D]" is the number of attacks by a player with
+ * the given "P" and "D" values.  The "D" value comes from "DEX" as shown
+ * below, and the "P" comes from "STR/WGT", as shown below, where WGT is
+ * the weight of the weapon (in pounds), and is always at least three pounds.
+ * Note that non-warrior classes have lower "P" indexes, with mages having a
+ * "P" index only 40% that of a warrior.  Also, other classes have higher
+ * "minimum weapon weights", ranging up to four pounds for mages.  Also, only
+ * a warrior may get six attacks, and a mage can only get four attacks.
  */
 byte blows_table[11][12] = {
-/* STR/W:	   9  18  67  107  117  118  128  138  148  158  168 more : DEX */
-/* <2 */	{  1,  1,  1,   1,   1,   1,   2,   2,   2,   2,   2,   3},
-/* <3 */	{  1,  1,  1,   1,   2,   2,   3,   3,   3,   3,   3,   4},
-/* <4 */    {  1,  1,  1,   2,   2,   3,   4,   4,   4,   4,   4,   5},
-/* <6 */    {  1,  1,  2,   2,   3,   3,   4,   4,   4,   5,   5,   5},
-/* <8 */    {  1,  2,  2,   3,   3,   4,   4,   4,   5,   5,   5,   5},
-/* <10 */   {  1,  2,  2,   3,   4,   4,   4,   5,   5,   5,   5,   5},
-/* <13 */   {  2,  2,  3,   3,   4,   4,   5,   5,   5,   5,   5,   6},
-/* <15 */   {  2,  3,  3,   3,   4,   4,   5,   5,   5,   5,   5,   6},
-/* <18 */   {  3,  3,  3,   4,   4,   4,   5,   5,   5,   5,   6,   6},
-/* <20 */   {  3,  3,  3,   4,   4,   4,   5,   5,   5,   5,   6,   6},
-/* else */  {  3,  3,  4,   4,   4,   4,   5,   5,   5,   6,   6,   6}
+/* P/D		   3+  10+  19+  68+ 108+ 118+ 119+ 128+ 138+ 148+ 158+ 168+ */
+/* <2 */	{  1,   1,   1,   1,   1,   1,   2,   2,   2,   2,   2,   3},
+/* <3 */	{  1,   1,   1,   1,   2,   2,   3,   3,   3,   3,   3,   4},
+/* <4 */	{  1,   1,   1,   2,   2,   3,   4,   4,   4,   4,   4,   5},
+/* <6 */	{  1,   1,   2,   2,   3,   3,   4,   4,   4,   5,   5,   5},
+/* <8 */	{  1,   2,   2,   3,   3,   4,   4,   4,   5,   5,   5,   5},
+/* <10 */	{  1,   2,   2,   3,   4,   4,   4,   5,   5,   5,   5,   5},
+/* <13 */	{  2,   2,   3,   3,   4,   4,   5,   5,   5,   5,   5,   6},
+/* <15 */	{  2,   3,   3,   3,   4,   4,   5,   5,   5,   5,   5,   6},
+/* <18 */	{  3,   3,   3,   4,   4,   4,   5,   5,   5,   5,   6,   6},
+/* <20 */	{  3,   3,   3,   4,   4,   4,   5,   5,   5,   5,   6,   6},
+/* else */	{  3,   3,   4,   4,   4,   4,   5,   5,   5,   6,   6,   6}
 
 };
+
+
+/*
+ * This table allows quick conversion from "speed" to "energy"
+ * The basic function WAS ((S>=110) ? (S-110) : (100 / (120-S)))
+ * Note that table access is *much* quicker than computation.
+ *
+ * Note that the table has been changed at high speeds.  From
+ * "Slow (-40)" to "Fast (+30)" is pretty much unchanged, but
+ * at speeds above "Fast (+30)", one approaches an asymptotic
+ * effective limit of 50 energy per turn.  This means that it
+ * is relatively easy to reach "Fast (+30)" and get about 40
+ * energy per turn, but then speed becomes very "expensive",
+ * and you must get all the way to "Fast (+50)" to reach the
+ * point of getting 45 energy per turn.  After that point,
+ * firthur increases in speed are more or less pointless,
+ * except to balance out heavy inventory.
+ *
+ * Note that currently the fastest monster is "Fast (+30)".
+ *
+ * It should be possible to lower the energy threshhold from
+ * 100 units to 50 units, though this may interact badly with
+ * the (compiled out) small random energy boost code.  It may
+ * also tend to cause more "clumping" at high speeds.
+ */
+byte extract_energy[200] = {
+/* Slow */     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+/* Slow */     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+/* Slow */     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+/* Slow */     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+/* Slow */     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+/* Slow */     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+/* S-50 */     1,  1,  1,  1,  1,  1,  1,  1,  1,  1,
+/* S-40 */     2,  2,  2,  2,  2,  2,  2,  2,  2,  2,
+/* S-30 */     2,  2,  2,  2,  2,  2,  2,  3,  3,  3,
+/* S-20 */     3,  3,  3,  3,  3,  4,  4,  4,  4,  4,
+/* S-10 */     5,  5,  5,  5,  6,  6,  7,  7,  8,  9,
+/* Norm */    10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+/* F+10 */    20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+/* F+20 */    30, 31, 32, 33, 34, 35, 36, 36, 37, 37,
+/* F+30 */    38, 38, 39, 39, 40, 40, 40, 41, 41, 41,
+/* F+40 */    42, 42, 42, 43, 43, 43, 44, 44, 44, 44,
+/* F+50 */    45, 45, 45, 45, 45, 46, 46, 46, 46, 46,
+/* F+60 */    47, 47, 47, 47, 47, 48, 48, 48, 48, 48,
+/* F+70 */    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
+/* Fast */    49, 49, 49, 49, 49, 49, 49, 49, 49, 49,
+};
+
 
 
 /*
@@ -124,195 +136,6 @@ u16b normal_table[NORMAL_TABLE_SIZE] = {
 
 
 
-/*
-		Monster Attack types:
-		1	Normal attack
-		2	Poison Strength
-		3	Confusion attack
-		4	Fear attack
-		5	Fire attack
-		6	Acid attack
-		7	Cold attack
-		8	Lightning attack
-		9	Corrosion attack
-		10	Blindness attack
-		11	Paralysis attack
-		12	Steal Money
-		13	Steal Object
-		14	Poison
-		15	Lose dexterity
-		16	Lose constitution
-		17	Lose intelligence
-		18	Lose wisdom
-		19	Lose experience
-		20	Aggravation
-		21	Disenchant
-		22	Eats food
-		23	Eat light
-		24	Energy drain from pack
-		25      Drain all stats
-		99	Blank
-
-		Attack descriptions:
-		1	hits you.
-		2	bites you.
-		3	claws you.
-		4	stings you.
-		5	touches you.
-		6	kicks you.
-		7	gazes at you.
-		8	breathes on you.
-		9	spits on you.
-		10	makes a horrible wail.
-		11	embraces you.
-		12	crawls on you.
-		13	releases a cloud of spores.
-		14	begs you for money.
-		15	You've been slimed.
-		16	crushes you.
-		17	tramples you.
-		18	drools on you.
-		19	insults you.
-
-		20	butts you.
-		21	charges you.
-		22	engulfs you.
-		23      talks to you about mushrooms and dogs
-
-		99	is repelled.
-
-	Example:  For a creature which bites for 1d6, then stings for
-		  2d4 and loss of dex you would use:
-			{1,2,1,6},{15,4,2,4}
-*/
-
-
-
-/* These should never be created by accident (and probably won't ;-). -CWS */
-
-/* ERROR: attack #35 is no longer used */
-monster_attack a_list[MAX_A_IDX] = {
-/* 0 */	{0, 0, 0, 0},	{1, 1, 1, 2},	{1, 1, 1, 3},	{1, 1, 1, 4},
-	{1, 1, 1, 5},	{1, 1, 1, 6},	{1, 1, 1, 7},	{1, 1, 1, 8},
-	{1, 1, 1, 9},	{1, 1, 1, 10},	{1, 1, 1, 12},	{1, 1, 2, 2},
-	{1, 1, 2, 3},	{1, 1, 2, 4},	{1, 1, 2, 5},	{1, 1, 2, 6},
-	{1, 1, 2, 8},	{1, 1, 3, 4},	{1, 1, 3, 5},	{1, 1, 3, 6},
-/* 20 */{1, 1, 3, 8},	{1, 1, 4, 3},	{1, 1, 4, 6},	{1, 1, 5, 5},
-	{1, 2, 1, 1},	{1, 2, 1, 2},	{1, 2, 1, 3},	{1, 2, 1, 4},
-	{1, 2, 1, 5},	{1, 2, 1, 6},	{1, 2, 1, 7},	{1, 2, 1, 8},
-	{1, 2, 1, 10},	{1, 2, 2, 3},	{1, 2, 2, 4},	{1, 2, 2, 5},
-	{1, 2, 2, 6},	{1, 2, 2, 8},	{1, 2, 2, 10},	{1, 2, 2, 12},
-/* 40 */{1, 2, 2, 14},	{1, 2, 3, 4},	{1, 2, 3, 12},	{1, 2, 4, 4},
-	{1, 2, 4, 5},	{1, 2, 4, 6},	{1, 2, 4, 8},	{1, 2, 5, 4},
-	{1, 2, 5, 8},	{1, 3, 1, 1},	{1, 3, 1, 2},	{1, 3, 1, 3},
-	{1, 3, 1, 4},	{1, 3, 1, 5},	{1, 3, 1, 8},	{1, 3, 1, 9},
-	{1, 3, 1, 10},	{1, 3, 1, 12},	{1, 3, 3, 3},	{1, 4, 1, 2},
-/* 60 */{1, 4, 1, 3},	{1, 4, 1, 4},	{1, 4, 2, 4},	{1, 5, 1, 2},
-	{1, 5, 1, 3},	{1, 5, 1, 4},	{1, 5, 1, 5},	{1, 10, 5, 6},
-	{1, 12, 1, 1},	{1, 12, 1, 2},	{1, 13, 1, 1},	{1, 13, 1, 3},
-	{1, 14, 0, 0},	{1, 16, 1, 4},	{1, 16, 1, 6},	{1, 16, 1, 8},
-	{1, 16, 1, 10},	{1, 16, 2, 8},	{1, 17, 8, 12},	{1, 18, 0, 0},
-/* 80 */{2, 1, 3, 4},	{2, 1, 4, 6},	{2, 2, 1, 4},	{2, 2, 2, 4},
-	{2, 2, 4, 4},	{2, 4, 1, 4},	{2, 4, 1, 7},	{2, 5, 1, 5},
-	{2, 7, 1, 6},	{3, 1, 1, 4},	{3, 5, 1, 8},	{3, 13, 1, 4},
-	{3, 7, 0, 0},	{4, 1, 1, 1},	{4, 1, 1, 4},	{4, 2, 1, 2},
-	{4, 2, 1, 6},	{4, 5, 0, 0},	{4, 7, 0, 0},	{4, 10, 0, 0},
-/*100 */{4, 13, 1, 6},	{5, 1, 2, 6},	{5, 1, 3, 7},	{5, 1, 4, 6},
-	{5, 1, 8, 12},	{5, 2, 1, 3},	{5, 2, 3, 6},	{5, 2, 3, 12},
-	{5, 5, 4, 4},	{5, 9, 3, 7},	{5, 9, 4, 5},	{5, 12, 1, 6},
-	{6, 2, 1, 3},	{6, 2, 2, 8},	{6, 2, 4, 4},	{6, 5, 1, 10},
-	{6, 5, 2, 3},	{6, 8, 1, 5},	{6, 9, 2, 6},	{6, 9, 3, 6},
-/*120 */{7, 1, 3, 6},	{7, 2, 1, 3},	{7, 2, 1, 6},	{7, 2, 3, 6},
-	{7, 2, 3, 10},	{7, 5, 1, 6},	{7, 5, 2, 3},	{7, 5, 2, 6},
-	{7, 5, 4, 4},	{7, 12, 1, 4},	{8, 1, 3, 8},	{8, 2, 1, 3},
-	{8, 2, 2, 6},	{8, 2, 3, 8},	{8, 2, 5, 5},	{8, 5, 5, 4},
-	{9, 5, 1, 2},	{9, 5, 2, 5},	{9, 5, 2, 6},	{9, 8, 2, 4},
-/*140 */{9, 12, 1, 3},	{10, 2, 1, 6},	{10, 4, 1, 1},	{10, 7, 2, 6},
-	{10, 9, 1, 2},	{11, 1, 1, 2},	{11, 7, 0, 0},	{11, 13, 2, 4},
-	{12, 5, 0, 0},	{13, 5, 0, 0},	{13, 19, 0, 0},	{14, 1, 1, 3},
-	{14, 1, 3, 4},	{14, 2, 1, 3},	{14, 2, 1, 4},	{14, 2, 1, 5},
-	{14, 2, 1, 6},	{14, 2, 1, 10},	{14, 2, 2, 4},	{14, 2, 2, 5},
-/*160 */{14, 2, 2, 6},	{14, 2, 3, 4},	{14, 2, 3, 9},	{14, 2, 4, 4},
-	{14, 4, 1, 2},	{14, 4, 1, 4},	{14, 4, 1, 8},	{14, 4, 2, 5},
-	{14, 5, 1, 2},	{14, 5, 1, 3},	{14, 5, 2, 4},	{14, 5, 2, 6},
-	{14, 5, 3, 5},	{14, 12, 1, 2},	{14, 12, 1, 4},	{14, 13, 2, 4},
-	{15, 2, 1, 6},	{15, 2, 3, 6},	{15, 5, 1, 8},	{15, 5, 2, 8},
-/*180 */{15, 5, 2, 10},	{15, 5, 2, 12},	{15, 12, 1, 3},	{16, 13, 1, 2},
-	{17, 3, 1, 10},	{18, 5, 0, 0},	{19, 5, 5, 8},	{19, 5, 12, 8},
-	{19, 5, 14, 8},	{19, 5, 15, 8},	{19, 5, 18, 8},	{19, 5, 20, 8},
-	{19, 5, 22, 8},	{19, 5, 26, 8},	{19, 5, 30, 8},	{19, 5, 32, 8},
-	{19, 5, 34, 8},	{19, 5, 36, 8},	{19, 5, 38, 8},	{19, 5, 42, 8},
-/*200 */{19, 5, 44, 8},	{19, 5, 46, 8},	{19, 5, 52, 8},	{20, 10, 0, 0},
-	{21, 1, 0, 0},	{21, 5, 0, 0},	{21, 5, 1, 6},	{21, 7, 0, 0},
-	{21, 12, 1, 4},	{22, 5, 2, 3},	{22, 12, 0, 0},	{22, 15, 1, 1},
-/*212 */{1, 1, 10, 10},	{23, 5, 1, 3},	{24,  5, 0, 0}, {8,   1, 3, 8},
-	{3,  1, 6, 6},	{4,  7, 4, 4},	{1,   1, 8, 6},	{1,   5, 2, 5},
-	{5,  1, 9,12},
-
-/*221 */{ 4, 7, 2, 4},	{10, 7, 2, 4},	{11, 7, 2, 4},  {19, 7, 20, 8},
-	{17, 7, 2, 6},  {24, 7, 2, 6},  /* Beholder */
-
-/*227 */{ 1,20, 4, 6},  { 1,20, 2, 6},  /* Butts */
-
-/*229 */{ 9, 9, 3, 8},  /* Spit */
-
-/*230 */{21, 1, 6, 8},
-
-/*231 */{12, 1, 4, 4},  {13, 1, 4, 5}, /* Master Rogue */
-
-/*233 */{ 1,21, 4, 4},
-/*234 */{ 3, 2, 2, 2},
-/*235 */{ 1, 1, 6, 6},
-/*236 */{19, 2,52, 8}, /* Bite for xp drain */
-/*237 */{18, 3, 5, 5}, /* Claw to drain Wisdom */
-/*238 */{14, 3, 3, 3}, /* Algroth poisonous claw attack */
-/*239 */{5, 22, 3, 3}, /* Fire */ /* vortices */
-/*240 */{6, 22, 3, 3}, /* Acid */
-/*241 */{7, 22, 3, 3}, /* Cold */
-/*242 */{8, 22, 5, 5}, /* Lightning */
-/*243 */{5, 22, 8, 8}, /* Plasma/fire */ /* vortices */
-/*244 */{1, 22, 5, 5}, /* Hit */ /* vortices */
-/*245 */{25, 1,10,12}, /* Morgoths dex drain attack */
-/*246 */{19, 7,30,20}, /* Eye druj drain */
-/*247 */{11, 2, 4, 4}, /* Skull */
-/*248 */{17, 2, 4, 4}, /* druj */
-/*249 */{18, 2, 4, 4}, /* attacks */
-/*250 */{14, 2, 8, 6}, /* Lernean */
-/*251 */{5,  2, 12, 6}, /* Hydra */
-/*252 */{18, 3, 1, 10}, /* Another drain wisdom attack */
-/*253 */{11, 4, 2, 6}, /* Carrion crawler */
-/*254 */{16, 4, 8, 8}, /* Nightcrawler */
-/*255 */{9,  2,10,10}, /* Nightcrawler */
-/*256 */{21, 1,10,10}, /* Nightwalker */
-/*257 */{21, 1, 7, 7}, /* Nightwalker */
-/*258 */{12, 5, 5, 5}, /* Harowen  */
-/*259 */{13, 5, 5, 5}, /*   the Black Hand */
-/*260 */{10, 1,10, 5}, /* Harowen  */
-/*261 */{14, 1, 8, 5}, /* Harowen  */
-/*262 */{ 1, 1,20,10}, /* Morgoth attacks */
-/*263 */{ 1, 6,20, 2}, /* Mystic kick */
-/*264 */{14, 1,20, 1}, /* Mystic poison */
-/*265 */{11, 1,15, 1}, /* Mystic paralysis */
-/*266 */{ 1, 6,10, 2}, /* Mystic kick */
-/*267 */{11,11, 6, 6}, /* Medusa paralyse */
-/*268 */{ 1,19, 0, 0}, /* Nermal insults */
-/*269 */{ 3, 1,12, 12}, /* Greater titan */
-/*270 */{21, 1,10, 12}, /* Sauron punch */
-/*271 */{ 1, 3, 3, 12}, 
-/*272 */{ 1, 3, 4, 12},
-/*273 */{ 1, 3, 5, 12},
-/*274 */{ 1, 3, 6, 12},
-/*275 */{ 1, 3, 8, 12},
-/*276 */{ 1, 2, 3, 14}, /* New claws and bites for those wimpy dragons! */
-/*277 */{ 1, 2, 4, 14},
-/*278 */{ 1, 2, 5, 14},
-/*279 */{ 1, 2, 6, 14},
-/*280 */{ 1, 2, 8, 14},
-/*281 */{ 1, 2, 10,14},
-/*282 */{ 1,20, 12,13},
-/*283 */{ 1,23,  0, 0},
-/*284 */{ 8, 1, 12,12},
-};
 
 
 /*
@@ -329,10 +152,10 @@ cptr ego_names[EGO_MAX] = {
     "of Resist Lightning",
     "(Holy Avenger)",
     "(Defender)",
-    "of Animal Slaying",
-    "of Dragon Slaying",
-    "of Slay Evil",		/* 10 */
-    "of Slay Undead",
+    "of Animal Slaying",			/* weapon */
+    "of Dragon Slaying",			/* weapon */
+    "of Slay Evil",		/* 10 */	/* weapon */
+    "of Slay Undead",				/* weapon */
     "of Flame",
     "of Frost",
     "of Free Action",
@@ -359,46 +182,46 @@ NULL,
 NULL,				/* 35 */
 NULL,
 NULL,
-NULL,
-    "of Protection",
+    "of the Magi",				/* robe (new) */
+    "of Protection",				/* cloak */
 NULL,				/* 40 */
 NULL,
 NULL,
     "of Fire",
-    "of Slay Evil",
-    "of Dragon Slaying",	/* 45 */
+    "of Slay Evil",				/* ammo */
+    "of Slay Dragon",		/* 45 */	/* ammo */
 NULL,
 NULL,
 NULL,
 NULL,
-NULL,				/* 50 */
+    "of Fire",			/* 50 */	/* ammo (new) */
+NULL,
+    "of Slaying",				/* ammo (new) */
+NULL,
+NULL,
+    "of Slay Animal",		/* 55 */	/* ammo */
 NULL,
 NULL,
 NULL,
 NULL,
-    "of Slay Animal",		/* 55 */
+    "of Extra Might",		/* 60 */	/* launcher */
+    "of Extra Shots",				/* launcher */
 NULL,
 NULL,
+    "of Velocity",				/* launcher (new) */
+    "of Accuracy",		/* 65 */	/* launcher */
 NULL,
-NULL,
-    "of Extra Might",				/* 60 */
-    "of Extra Shots",
-NULL,
-NULL,
-NULL,
-    "of Accuracy",		/* 65 */
-NULL,
-    "of Orc Slaying",
-    "of Power",
+    "of Orc Slaying",				/* weapon */
+    "of Power",					/* gloves */
 NULL,
 NULL,				/* 70 */
     "of Westernesse",
     "(Blessed)",
-    "of Demon Slaying",
-    "of Troll Slaying",		/* 74 */
+    "of Demon Slaying",				/* weapon */
+    "of Troll Slaying",		/* 74 */	/* weapon */
 NULL,				/* 75 */
 NULL,
-    "of Wounding",
+    "of Wounding",				/* ammo */
 NULL,
 NULL,
 NULL,				/* 80 */
@@ -406,7 +229,7 @@ NULL,				/* 80 */
     "of Agility",
 NULL,
 NULL,
-    "of Giant Slaying",		/* 85 */
+    "of Giant Slaying",		/* 85 */	/* weapon */
     "of Telepathy",
     "of Elvenkind",
 NULL,
@@ -451,159 +274,6 @@ NULL,				/* 125 */
     "(Blasted)",		/* 127 */
 };
 
-
-
-
-
-
-/*
- * Class titles for different levels			
- */
-cptr player_title[MAX_CLASS][MAX_PLAYER_LEVEL] = {
-
-	/* Warrior	 */
-{"Rookie","Private","Soldier","Mercenary","Veteran(1st)","Veteran(2nd)",
-"Veteran(3rd)","Warrior(1st)","Warrior(2nd)","Warrior(3rd)","Warrior(4th)",
-"Swordsman-1","Swordsman-2","Swordsman-3","Hero","Swashbuckler","Myrmidon",
-"Champion-1","Champion-2","Champion-3","Superhero","Knight","Superior Knt",
-"Gallant Knt","Knt Errant","Guardian Knt","Baron","Duke","Lord (1st)",
-"Lord (2nd)","Lord (3rd)","Lord (4th)","Lord (5th)","Lord (6th)","Lord (7th)",
-"Lord (8th)","Lord (9th)","Lord (10th)","Lord (11th)","Lord (12th)",
-"Lord (13th)","Lord (14th)","Lord (15th)","Lord (16th)","Lord (17th)",
-"Lord (18th)","Lord (19th)","Lord Gallant","Lord Keeper","Lord Noble"},
-
-	/* Mage		 */
-{"Novice","Apprentice","Trickster-1","Trickster-2","Trickster-3","Cabalist-1",
-"Cabalist-2","Cabalist-3","Visionist","Phantasmist","Shadowist","Spellbinder",
-"Illusionist","Evoker (1st)","Evoker (2nd)","Evoker (3rd)","Evoker (4th)",
-"Conjurer","Theurgist","Thaumaturge","Magician","Enchanter","Warlock",
-"Sorcerer","Necromancer","Mage (1st)","Mage (2nd)","Mage (3rd)","Mage (4th)",
-"Mage (5th)","Wizard (1st)","Wizard (2nd)","Wizard (3rd)","Wizard (4th)",
-"Wizard (5th)","Wizard (6th)","Wizard (7th)","Wizard (8th)","Wizard (9th)",
-"Wizard (10th)","Wizard (11th)","Wizard (12th)","Wizard (13th)",
-"Wizard (14th)","Wizard (15th)","Wizard (16th)","Wizard (17th)",
-"Wizard (18th)","Wizard (19th)","Wizard Lord"},
-
-	/* Priests	 */
-{"Believer","Acolyte(1st)","Acolyte(2nd)","Acolyte(3rd)","Adept (1st)",
-"Adept (2nd)","Adept (3rd)","Priest (1st)","Priest (2nd)","Priest (3rd)",
-"Priest (4th)","Priest (5th)","Priest (6th)","Priest (7th)","Priest (8th)",
-"Priest (9th)","Curate (1st)","Curate (2nd)","Curate (3rd)","Curate (4th)",
-"Curate (5th)","Curate (6th)","Curate (7th)","Curate (8th)","Curate (9th)",
-"Canon (1st)","Canon (2nd)","Canon (3rd)","Canon (4th)","Canon (5th)",
-"Canon (6th)","Canon (7th)","Canon (8th)","Canon (9th)",
-"Low Lama","Lama-1","Lama-2","Lama-3","Lama-4","Lama-5","Lama-6","Lama-7",
-"Lama-8","Lama-9","High Lama","Great Lama","Patriarch",
-"High Priest","Great Priest","Noble Priest"},
-
-	/* Rogues	 */
-{"Vagabond","Footpad","Cutpurse","Robber","Burglar","Filcher","Sharper",
-"Magsman","Common Rogue","Rogue (1st)","Rogue (2nd)","Rogue (3rd)",
-"Rogue (4th)","Rogue (5th)","Rogue (6th)","Rogue (7th)","Rogue (8th)",
-"Rogue (9th)","Master Rogue","Expert Rogue","Senior Rogue","Chief Rogue",
-"Prime Rogue","Low Thief","Thief (1st)","Thief (2nd)","Thief (3rd)",
-"Thief (4th)","Thief (5th)","Thief (6th)","Thief (7th)","Thief (8th)",
-"Thief (9th)","Thief (10th)","Thief (11th)","Thief (12th)","Thief (13th)",
-"Thief (14th)","Thief (15th)","Thief (16th)","Thief (17th)","Thief (18th)",
-"Thief (19th)","High Thief","Master Thief","Executioner","Low Assassin",
-"Assassin","High Assassin","Guildsmaster"},
-
-	/* Rangers	 */
-{"Runner (1st)","Runner (2nd)","Runner (3rd)","Strider (1st)","Strider (2nd)",
-"Strider (3rd)","Scout (1st)","Scout (2nd)","Scout (3rd)","Scout (4th)",
-"Scout (5th)","Courser (1st)","Courser (2nd)","Courser (3rd)","Courser (4th)",
-"Courser (5th)","Tracker (1st)","Tracker (2nd)","Tracker (3rd)",
-"Tracker (4th)","Tracker (5th)","Tracker (6th)","Tracker (7th)",
-"Tracker (8th)","Tracker (9th)","Guide (1st)","Guide (2nd)","Guide (3rd)",
-"Guide (4th)","Guide (5th)","Guide (6th)","Guide (7th)","Guide (8th)",
-"Guide (9th)","Guide (10th)","Guide (11th)","Guide (12th)","Guide (13th)",
-"Guide (14th)","Guide (15th)",
-"Pathfinder-1","Pathfinder-2","Pathfinder-3","Pathfinder-4","Pathfinder-5",
-"Pathfinder-6","Pathfinder-7","Ranger","High Ranger","Ranger Lord"},
-
-	/* Paladins	 */
-{"Gallant","Keeper (1st)","Keeper (2nd)","Keeper (3rd)","Keeper (4th)",
-"Keeper (5th)","Keeper (6th)","Keeper (7th)","Keeper (8th)","Keeper (9th)",
-"Protector-1","Protector-2","Protector-3","Protector-4","Protector-5",
-"Protector-6","Protector-7","Protector-8","Defender-1","Defender-2",
-"Defender-3","Defender-4","Defender-5","Defender-6","Defender-7","Defender-8",
-"Warder (1st)","Warder (2nd)","Warder (3rd)","Warder (4th)","Warder (5th)",
-"Warder (6th)","Warder (7th)","Warder (8th)","Warder (9th)","Warder (10th)",
-"Warder (11th)","Warder (12th)","Warder (13th)","Warder (14th)",
-"Warder (15th)","Warder (16th)","Warder (17th)","Warder (18th)",
-"Warder (19th)","Guardian","Chevalier","Justiciar","Paladin","High Lord"}
-
-};
-
-
-/* Base experience levels, may be adjusted up for race and/or class*/
-u32b player_exp[MAX_PLAYER_LEVEL] = {
-	10,		25,		45,		70,
-	100,		140,		200,		280,
-	380,		500,		650,		850,
-	1100,		1400,		1800,		2300,
-	2900,		3600,		4400,		5400,
-	6800,		8400,		10200,		12500,
-	17500,		25000,		35000L,		50000L,
-	75000L,		100000L,	150000L,	200000L,
-	275000L,	350000L,	450000L,	550000L,
-	700000L,	850000L,	1000000L,	1250000L,
-	1500000L,	1800000L,	2100000L,	2400000L,
-	2700000L,	3000000L,	3500000L,	4000000L,
-	4500000L,	5000000L
-};
-
-
-/*
- * Player Race Information:
- *	STR,INT,WIS,DEX,CON,CHR,
- *	Ages, heights, and weights (male then female)
- *	Racial Bases for: dis,srh,stl,fos,bth,bthb,bsav,hitdie,
- *	infra, exp base, choice-classes
- */
-
-player_race race[MAX_RACES] = {
-   {"Human",	 0,  0,	 0,  0,	 0,  0,
-      14,  6, 72,  6,180, 25, 66,  4,150, 20,
-      0,  0,  0,  0,  0,  0,  0, 10,  0, 100, 0x3F,
-    },
-   {"Half-Elf", -1,  1,	 0,  1, -1,  1,
-      24, 16, 66,  6,130, 15, 62,  6,100, 10,
-      2,  6,  1, -1, -1,  5,  3,  9,  2, 110, 0x3F,
-    },
-   {"Elf",	-1,  2,	 1,  1, -2,  1,
-      75, 75, 60,  4,100,  6, 54,  4, 80,  6,
-      5,  8,  1, -2, -5, 15,  6,  8,  3, 120, 0x1F,
-    },
-   {"Hobbit", -2,  2,	 1,  3,	 2,  1,
-      21, 12, 36,  3, 60,  3, 33,  3, 50,  3,
-      15, 12,  4, -5,-10, 20, 18,  7,  4, 110, 0x0B,
-    },
-   {"Gnome",	-1,  2,	 0,  2,	 1, -2,
-      50, 40, 42,  3, 90,  6, 39,  3, 75,  3,
-      10,  6,  3, -3, -8, 12, 12,  8,  4, 125, 0x0F,
-    },
-   {"Dwarf",	 2, -3,	 2, -2,	 2, -3,
-      35, 15, 48,  3,150, 10, 46,  3,120, 10,
-      2,  7,  -1,  0, 15,  0,  9,  11,  5, 120, 0x05,
-    },
-   {"Half-Orc",	 2, -1,	 0,  0,	 1, -4,
-      11,  4, 66,  1,150,  5, 62,  1,120,  5,
-      -3,  0, -1,  3, 12, -5, -3, 10,  3, 110, 0x0D,
-    },
-   {"Half-Troll",4, -4, -2, -4,	 3, -6,
-      20, 10, 96, 10,255, 50, 84,  8,225, 40,
-      -5, -1, -2,  5, 20,-10, -8, 12,  3, 120, 0x05,
-    },
-   {"Dunadan",  1,  2,  2,  2,  3,  2,
-      50, 20, 82, 5, 190, 20, 78,  6, 180, 15,
-      4,   3,  2, -3, 15, 10,  5, 10,  0, 180, 0x3F,
-    },
-   {"High-Elf",  1,  3, -1,  3,  1,  5,
-     100, 30, 90,10, 190, 20, 82, 10, 180, 15,
-      4,   3,  3, -4, 15, 25, 20, 10,  4, 200, 0x1F,
-    }
- };
 
 
 /*
@@ -778,39 +448,102 @@ player_background background[MAX_BACKGROUND] = {
 
 
 /*
- * Player Classes.
+ * Base experience levels, may be adjusted up for race and/or class
  */
-player_class class[MAX_CLASS] = {
-
-/*	  HP Dis Src Stl Fos bth btb sve S  I  W  D Co Ch  Spell Exp  spl */
-
-{"Warrior",9, 25, 14, 1, 38, 70, 55, 18, 5,-2,-2, 2, 2,-1, NONE,    0, 0},
-{"Mage",   0, 30, 16, 2, 20, 34, 20, 36,-5, 3, 0, 1,-2, 1, MAGE,   30, 1},
-{"Priest", 2, 25, 16, 2, 32, 48, 35, 30,-1,-3, 3,-1, 0, 2, PRIEST, 20, 1},
-{"Rogue",  6, 45, 32, 5, 16, 60, 66, 30, 2, 1,-2, 3, 1,-1, MAGE,   25, 5},
-{"Ranger", 4, 30, 24, 3, 24, 56, 72, 30, 2, 2, 0, 1, 1, 1, MAGE,   30, 3},
-{"Paladin",6, 20, 12, 1, 38, 68, 40, 24, 3,-3, 1, 0, 2, 2, PRIEST, 35, 1}
+s32b player_exp[MAX_PLAYER_LEVEL] = {
+        10,		25,		45,		70,
+        100,		140,		200,		280,
+        380,		500,		650,		850,
+        1100,		1400,		1800,		2300,
+        2900,		3600,		4400,		5400,
+        6800,		8400,		10200,		12500,
+        17500,		25000,		35000L,		50000L,
+        75000L,		100000L,	150000L,	200000L,
+        275000L,	350000L,	450000L,	550000L,
+        700000L,	850000L,	1000000L,	1250000L,
+        1500000L,	1800000L,	2100000L,	2400000L,
+        2700000L,	3000000L,	3500000L,	4000000L,
+        4500000L,	5000000L
 };
-
 
 
 /*
- * making it 16 bits wastes a little space, but saves much
- * signed/unsigned headaches in its use
- * CLA_MISC_HIT is identical to CLA_SAVE, which takes advantage of
- * the fact that the save values are independent of the class
+ * Player Race Information:
+ *	Title, {STR,INT,WIS,DEX,CON,CHR},
+ *	Age (Base, Max), Male (Hgt, Wgt), Female (Hgt, Wgt)
+ *	dis,srh,stl,fos,bth,bthb,bsav
+ *      hitdie, infra, exp base, choice-classes
  */
-s16b class_level_adj[MAX_CLASS][MAX_LEV_ADJ] = {
 
-/*	       bth    bthb   device  disarm   save/misc hit  */
-/* Warrior */ {	4,	4,	2,	2,	3 },
-/* Mage    */ { 2,	2,	4,	2,	3 },
-/* Priest  */ { 2,	2,	4,	3,	3 },
-/* Rogue   */ { 3,	4,	3,	4,	3 },
-/* Ranger  */ { 3,	4,	3,	3,	3 },
-/* Paladin */ { 3,	2,	3,	2,	3 }
-
+player_race race_info[MAX_RACES] = {
+   {"Human",	{  0,  0,  0,  0,  0,  0 },
+      14,  6, 72,  6,180, 25, 66,  4,150, 20,
+      0,  0,  0,  0,  0,  0,  0,
+      10,  0, 100, 0x3F,
+    },
+   {"Half-Elf",	{ -1,  1,  0,  1, -1,  1 },
+      24, 16, 66,  6,130, 15, 62,  6,100, 10,
+      2,  6,  1, -1, -1,  5,  3,
+      9,  2, 110, 0x3F,
+    },
+   {"Elf",	{ -1,  2,  1,  1, -2,  1 },
+      75, 75, 60,  4,100,  6, 54,  4, 80,  6,
+      5,  8,  1, -2, -5, 15,  6,
+      8,  3, 120, 0x1F,
+    },
+   {"Hobbit",	{ -2,  2,  1,  3,  2,  1 },
+      21, 12, 36,  3, 60,  3, 33,  3, 50,  3,
+      15, 12,  4, -5,-10, 20, 18,
+      7,  4, 110, 0x0B,
+    },
+   {"Gnome",	{ -1,  2,  0,  2,  1, -2 },
+      50, 40, 42,  3, 90,  6, 39,  3, 75,  3,
+      10,  6,  3, -3, -8, 12, 12,
+      8,  4, 125, 0x0F,
+    },
+   {"Dwarf",	{  2, -3,  2, -2,  2, -3 },
+      35, 15, 48,  3,150, 10, 46,  3,120, 10,
+      2,  7,  -1,  0, 15,  0,  9,
+      11,  5, 120, 0x05,
+    },
+   {"Half-Orc",	{  2, -1,  0,  0,  1, -4 },
+      11,  4, 66,  1,150,  5, 62,  1,120,  5,
+      -3,  0, -1,  3, 12, -5, -3,
+      10,  3, 110, 0x0D,
+    },
+   {"Half-Troll",	{ 4, -4, -2, -4,  3, -6 },
+      20, 10, 96, 10,255, 50, 84,  8,225, 40,
+      -5, -1, -2,  5, 20,-10, -8,
+      12,  3, 120, 0x05,
+    },
+   {"Dunadan",	{  1,  2,  2,  2,  3,  2 },
+      50, 20, 82, 5, 190, 20, 78,  6, 180, 15,
+      4,   3,  2, -3, 15, 10,  5,
+      10,  0, 180, 0x3F,
+    },
+   {"High-Elf",	{  1,  3, -1,  3,  1,  5 },
+     100, 30, 90,10, 190, 20, 82, 10, 180, 15,
+      4,   3,  3, -4, 10, 25, 20,
+      10,  4, 200, 0x1F,
+    }
 };
+
+
+/*
+ * Player Classes.
+ */
+player_class class_info[MAX_CLASS] = {
+
+/* Title     {S  I  W  D  C  B} HP Exp Dis Src Fos Stl bth btb sve Spell-Info */
+
+{"Warrior", { 5,-2,-2, 2, 2,-1}, 9,  0, 25, 14, 38, 1, 70, 55, 18, A_STR, 99},
+{"Mage",    {-5, 3, 0, 1,-2, 1}, 0, 30, 30, 16, 20, 2, 34, 20, 36, A_INT, 1 },
+{"Priest",  {-1,-3, 3,-1, 0, 2}, 2, 20, 25, 16, 32, 2, 48, 35, 30, A_WIS, 1 },
+{"Rogue",   { 2, 1,-2, 3, 1,-1}, 6, 25, 45, 32, 16, 5, 60, 66, 30, A_INT, 5 },
+{"Ranger",  { 2, 2, 0, 1, 1, 1}, 4, 30, 30, 24, 24, 3, 56, 72, 30, A_INT, 3 },
+{"Paladin", { 3,-3, 1, 0, 2, 2}, 6, 35, 20, 12, 38, 1, 68, 40, 24, A_WIS, 1 }
+};
+
 
 
 /*
@@ -818,7 +551,7 @@ s16b class_level_adj[MAX_CLASS][MAX_LEV_ADJ] = {
  * this means you must always subtract one from the p_ptr->pclass before
  * indexing into magic_spell[].
  */
-spell_type magic_spell[MAX_CLASS-1][63] = {
+spell_type magic_spell[MAX_CLASS-1][64] = {
 
   {
       /*** Mage ***/
@@ -827,9 +560,9 @@ spell_type magic_spell[MAX_CLASS-1][63] = {
      {	1,  1, 23, 0,   1},
      {	1,  2, 24, 0,   1},
      {	1,  2, 26, 0,   1},
-     { 99, 99,  0, 0,   0},
+     { 99,  0,  0, 0,   0},
      {	3,  3, 25, 0,   2},
-     { 99, 99,  0, 0,   0},
+     { 99,  0,  0, 0,   0},
      {	3,  3, 25, 0,   1},
      {	3,  3, 27, 0,   2},
 
@@ -860,45 +593,46 @@ spell_type magic_spell[MAX_CLASS-1][63] = {
      { 33, 21, 80, 0, 125},
      { 37, 25, 95, 0, 200},
 
-     { 7,   7, 20, 0,  50},
-     { 9,  12, 40, 0, 100},
+     {  7,  7, 20, 0,  50},
+     {  9, 12, 40, 0, 100},
      { 15, 17, 60, 0, 110},
      { 20, 18, 60, 0, 120},
      { 25, 25, 75, 0, 120},
 
-     { 10, 6,  50, 0,  30},
-     { 12, 9,  60, 0,  50},
-     { 20, 15, 70, 0, 100},
-     { 27, 25, 75, 0, 200},
-     { 35, 35, 85, 0, 300},
-     { 42, 45, 95, 0,2000},
+     { 10,  6, 50, 0,   30},
+     { 12,  9, 60, 0,   50},
+     { 20, 15, 70, 0,  100},
+     { 27, 25, 75, 0,  200},
+     { 35, 35, 85, 0,  300},
+     { 42, 45, 95, 0, 2000},
 
-     { 5,  5,  50, 0,  10},
+     { 5,  5,  50, 0,   10},
      { 10, 10, 70, 0,  100},
      { 25, 30, 95, 0, 1000},
      { 30, 50, 70, 0,  300},
-     { 40, 50, 80, 0, 1000},
+     { 40, 75, 80, 0, 1000},
 
-     { 4, 5,  50, 0,   100},
-     { 4, 5,  50, 0,   100},
-     { 4, 5,  50, 0,   100},
-     { 8, 10, 75, 0,   200},
-     { 15, 20,  85, 0, 1000},
+     {  4,  5, 50, 0,  100},
+     {  4,  5, 50, 0,  100},
+     {  4,  5, 50, 0,  100},
+     {  8, 10, 75, 0,  200},
+     { 15, 20, 85, 0, 1000},
 
-     { 5, 5,  50, 0,   100},
+     {  5,  5, 50, 0,  100},
      { 10, 12, 75, 0,  300},
      { 15, 20, 80, 0,  800},
      { 22, 30, 50, 0, 2000},
      { 45, 70, 75, 0, 5000},
 
-     { 99, 99,  0, 0,   0},
-     { 99, 99,  0, 0,   0},
-     { 99, 99,  0, 0,   0},
-     { 99, 99,  0, 0,   0}
+     { 99,  0,  0, 0,   0},
+     { 99,  0,  0, 0,   0},
+     { 99,  0,  0, 0,   0},
+     { 99,  0,  0, 0,   0},
+     { 99,  0,  0, 0,   0}
    },
 
    {
-	/*** Priest ***/
+        /*** Priest ***/
 
      {	1,  1, 10, 0,   1},
      {	1,  2, 15, 0,   1},
@@ -927,7 +661,7 @@ spell_type magic_spell[MAX_CLASS-1][63] = {
      { 13, 10, 45, 0,  15},
      { 13, 11, 45, 0,  16},
      { 15, 12, 50, 0,  20},
-     
+
      { 15, 14, 50, 0,  22},
      { 17, 14, 55, 0,  32},
      { 21, 16, 60, 0,  38},
@@ -935,49 +669,50 @@ spell_type magic_spell[MAX_CLASS-1][63] = {
      { 33, 55, 90, 0, 125},
      { 39, 32, 95, 0, 200},
 
-     { 3,  3,  50, 0,   2},
+     {  3,  3, 50, 0,    2},
      { 10, 10, 80, 0,   50},
-     { 20, 20, 80, 0,   100},
-     { 25, 10, 80, 0,  1000},
-     { 35, 50, 80, 0,  2000},
+     { 20, 20, 80, 0,  100},
+     { 25, 10, 80, 0, 1000},
+     { 35, 50, 80, 0, 2000},
 
-     { 15,  5, 50, 0,   100},
-     { 17,  7, 60, 0,   200},
-     { 30, 50, 80, 0,  1000},
-     { 35, 70, 90, 0,  2000},
-     { 35, 70, 90, 0,  3000},
+     { 15,  5, 50, 0,  100},
+     { 17,  7, 60, 0,  200},
+     { 30, 50, 80, 0, 1000},
+     { 35, 70, 90, 0, 2000},
+     { 35, 70, 90, 0, 3000},
 
-     { 15, 7,  70, 0,  100},
+     { 15,  7, 70, 0,  100},
      { 20, 10, 75, 0,  300},
-     { 25, 25, 80, 0,  1500},
-     { 35, 35, 80, 0,  1000},
-     { 45, 60, 75, 0,  4000},
+     { 25, 25, 80, 0, 1500},
+     { 35, 35, 80, 0, 1000},
+     { 45, 60, 75, 0, 4000},
 
-     { 5, 6,  50, 0,   50},
+     {  5,  6, 50, 0,   50},
      { 15, 20, 80, 0,  100},
-     { 25, 40, 80, 0,  1000},
-     { 35, 50, 80, 0,  2000},
-     { 37, 60, 85, 0,  3000},
-     { 45, 95, 85, 0,  6000},
+     { 25, 40, 80, 0, 1000},
+     { 35, 50, 80, 0, 2000},
+     { 37, 60, 85, 0, 3000},
+     { 45, 95, 85, 0, 6000},
 
-     { 3, 3,  50, 0,   5},
-     { 10, 10,  50, 0,  20},
-     { 20, 20,  80, 0,  80},
-     { 30, 40,  75, 0, 1000},
-     { 35, 50,  75, 0, 100},
-     { 40, 60,  75, 0, 3000},
+     {  3,  3, 50, 0,    5},
+     { 10, 10, 50, 0,   20},
+     { 20, 20, 80, 0,   80},
+     { 30, 40, 75, 0, 1000},
+     { 35, 50, 75, 0,  100},
+     { 40, 60, 75, 0, 3000},
 
-     { 99, 99,  0, 0,   0},
-     { 99, 99,  0, 0,   0},
-     { 99, 99,  0, 0,   0},
-     { 99, 99,  0, 0,   0},
-     { 99, 99,  0, 0,   0}
+     { 99,  0,  0, 0,    0},
+     { 99,  0,  0, 0,    0},
+     { 99,  0,  0, 0,    0},
+     { 99,  0,  0, 0,    0},
+     { 99,  0,  0, 0,    0},
+     { 99,  0,  0, 0,    0}
    },
 
    {
-	/*** Rogue ***/
+        /*** Rogue ***/
 
-     { 99, 99,	0, 0,   0},
+     { 99,  0,	0, 0,   0},
      {	5,  1, 50, 0,   1},
      {	7,  2, 55, 0,   1},
      {	9,  3, 60, 0,   2},
@@ -985,84 +720,86 @@ spell_type magic_spell[MAX_CLASS-1][63] = {
      { 11,  4, 65, 0,   2},
      { 12,  4, 65, 0,   3},
      { 13,  5, 70, 0,   3},
-     { 99, 99,	0, 0,   0},
+     { 99,  0,	0, 0,   0},
 
      { 15,  6, 75, 0,   3},
-     { 99, 99,	0, 0,   0},
+     { 99,  0,	0, 0,   0},
      { 17,  7, 80, 0,   4},
      { 19,  8, 85, 0,   5},
      { 21,  9, 90, 0,   6},
      { 22,  9, 50, 0,   7},
      { 23, 10, 95, 0,   7},
-     { 99, 99,	0, 0,   0},
+     { 99,  0,	0, 0,   0},
      { 24, 11, 70, 0,  10},
 
      { 25, 12, 95, 0,  11},
      { 27, 15, 99, 0,  12},
-     { 99, 99,	0, 0,   0},
-     { 99, 99,	0, 0,   0},
+     { 99,  0,	0, 0,   0},
+     { 99,  0,	0, 0,   0},
      { 28, 18, 50, 0,  19},
-     { 99, 99,	0, 0,   0},
-     { 99, 99,	0, 0,   0},
-     { 99, 99,	0, 0,   0},
+     { 99,  0,	0, 0,   0},
+     { 99,  0,	0, 0,   0},
+     { 99,  0,	0, 0,   0},
 
-     { 99, 99,	0, 0,   0},
-     { 99, 99,	0, 0,   0},
-     { 99, 99,	0, 0,   0},
+     { 99,  0,	0, 0,   0},
+     { 30, 20, 99, 0,  50},
+     { 99,  0,	0, 0,   0},
      { 32, 25, 70, 0,  50},
-     { 99, 99,	0, 0,   0},
-     { 99, 99,	0, 0,   0},
-     { 99, 99,	0, 0,   0},
+     { 99,  0,	0, 0,   0},
+     { 99,  0,	0, 0,   0},
+     { 99,  0,	0, 0,   0},
 
-     { 7,   7, 20, 0,  50},
-     { 9,  12, 40, 0, 100},
+     {  7,  7, 20, 0,  50},
+     {  9, 12, 40, 0, 100},
      { 15, 17, 60, 0, 110},
-     { 99, 99,	0, 0,   0},
+     { 99,  0,	0, 0,   0},
      { 30, 35, 75, 0, 120},
 
-     { 13, 16,  50, 0,  30},
-     { 18, 20,  60, 0,  50},
-     { 99, 99,	0, 0,   0},
-     { 99, 99,	0, 0,   0},
-     { 99, 99,	0, 0,   0},
-     { 99, 99,	0, 0,   0},
+     { 13, 16, 50, 0,  30},
+     { 18, 20, 60, 0,  50},
+     { 99,  0,	0, 0,   0},
+     { 99,  0,	0, 0,   0},
+     { 99,  0,	0, 0,   0},
+     { 99,  0,	0, 0,   0},
 
-     { 5,  5,  50, 0,  10},
+     {  5,  5, 50, 0,   10},
      { 10, 10, 70, 0,  100},
      { 35, 40, 95, 0, 1000},
-     { 99, 99,	0, 0,   0},
-     { 99, 99,	0, 0,   0},
+     { 99,  0,	0, 0,    0},
+     { 99,  0,	0, 0,    0},
 
-     { 10, 12,  50, 0,   100},
-     { 10, 12,  50, 0,   100},
-     { 10, 12,  50, 0,   100},
-     { 15, 20,  75, 0,   200},
-     { 25, 30,  85, 0,  1000},
+     { 10, 12, 50, 0,  100},
+     { 10, 12, 50, 0,  100},
+     { 10, 12, 50, 0,  100},
+     { 15, 20, 75, 0,  200},
+     { 25, 30, 85, 0, 1000},
 
-     { 10, 11,  50, 0,   100},
+     { 10, 11, 50, 0,  100},
      { 15, 20, 75, 0,  300},
      { 20, 25, 80, 0,  800},
      { 26, 30, 50, 0, 2000},
-     { 99, 99,  0, 0,   0},
+     { 99,  0,  0, 0,    0},
 
-     { 99, 99,  0, 0,   0},
-     { 99, 99,  0, 0,   0},
-     { 99, 99,  0, 0,   0},
-     { 99, 99,  0, 0,   0}
+     { 99,  0,  0, 0,   0},
+     { 99,  0,  0, 0,   0},
+     { 99,  0,  0, 0,   0},
+     { 99,  0,  0, 0,   0},
+     { 99,  0,  0, 0,   0}
    },
 
    {
-	/*** Ranger ***/
+        /*** Ranger ***/
 
      {	3,  1, 30, 0,   1},
      {	3,  2, 35, 0,   2},
      {	3,  2, 35, 0,   2},
      {	5,  3, 35, 0,   2},
-     { 99, 99,  0, 0,   0},
+     { 99,  0,  0, 0,   0},
      {	5,  3, 40, 0,   2},
-     { 99, 99,  0, 0,   0},
+     { 99,  0,  0, 0,   0},
      {	5,  4, 45, 0,   3},
      {	7,  5, 40, 0,   6},
+
      {	7,  6, 40, 0,   5},
      {	9,  7, 40, 0,   7},
      {	9,  8, 45, 0,   8},
@@ -1072,6 +809,7 @@ spell_type magic_spell[MAX_CLASS-1][63] = {
      { 13, 11, 55, 0,  13},
      { 15, 12, 50, 0,  15},
      { 15, 13, 50, 0,  15},
+
      { 17, 17, 55, 0,  15},
      { 17, 17, 90, 0,  17},
      { 21, 17, 55, 0,  17},
@@ -1080,53 +818,55 @@ spell_type magic_spell[MAX_CLASS-1][63] = {
      { 23, 20, 60, 0,  20},
      { 25, 20, 60, 0,  20},
      { 25, 21, 65, 0,  20},
+
      { 27, 21, 65, 0,  22},
      { 29, 23, 95, 0,  23},
      { 31, 25, 70, 0,  25},
      { 33, 25, 75, 0,  38},
      { 35, 25, 80, 0,  50},
      { 37, 30, 95, 0, 100},
-     { 99, 99,	0, 0,   0},
+     { 99,  0,	0, 0,   0},
 
      { 8,  17, 20, 0,  50},
-     { 19,  22, 40, 0, 100},
+     { 19, 22, 40, 0, 100},
      { 25, 27, 60, 0, 110},
      { 30, 28, 60, 0, 120},
      { 35, 35, 75, 0, 120},
 
-     { 20, 16,  50, 0,  30},
-     { 22, 19,  60, 0,  50},
+     { 20, 16, 50, 0,  30},
+     { 22, 19, 60, 0,  50},
      { 30, 25, 70, 0, 100},
-     { 37, 35, 75, 0, 200},
+     { 33, 35, 75, 0, 200},
      { 35, 45, 85, 0, 300},
-     { 99, 99, 0, 0,    0},
+     { 99,  0, 0,  0,   0},
 
-     { 10,  15,  50, 0,  10},
+     { 10, 15, 50, 0,   10},
      { 15, 20, 70, 0,  100},
      { 35, 60, 95, 0, 1000},
-     { 99, 99, 0, 0,    0},
-     { 99, 99, 0, 0,    0},
+     { 99,  0, 0,  0,    0},
+     { 99,  0, 0,  0,    0},
 
-     { 8, 15,  50, 0,   100},
-     { 8, 15,  50, 0,   100},
-     { 8, 15,  50, 0,   100},
-     { 16, 25, 75, 0,   200},
-     { 25, 40,  85, 0, 1000},
+     { 8, 15,  50, 0,  100},
+     { 8, 15,  50, 0,  100},
+     { 8, 15,  50, 0,  100},
+     { 16, 25, 75, 0,  200},
+     { 25, 40, 85, 0, 1000},
 
-     { 10, 15,  50, 0,   100},
+     { 10, 15, 50, 0,  100},
      { 15, 20, 75, 0,  300},
      { 25, 30, 80, 0,  800},
      { 32, 50, 50, 0, 2000},
-     { 99, 99,  0, 0,   0},
+     { 99,  0,  0, 0,    0},
 
-     { 99, 99,  0, 0,   0},
-     { 99, 99,  0, 0,   0},
-     { 99, 99,  0, 0,   0},
-     { 99, 99,  0, 0,   0}
+     { 99,  0,  0, 0,   0},
+     { 99,  0,  0, 0,   0},
+     { 99,  0,  0, 0,   0},
+     { 99,  0,  0, 0,   0},
+     { 99,  0,  0, 0,   0}
    },
 
    {
-	/*** Paladin ***/
+        /*** Paladin ***/
 
      {	1,  1, 30, 0,   1},
      {	2,  2, 35, 0,   2},
@@ -1160,179 +900,349 @@ spell_type magic_spell[MAX_CLASS-1][63] = {
      { 37, 70, 90, 0,  50},
      { 39, 38, 95, 0, 100},
 
-     { 5,  5,  50, 0,   2},
+     { 5,  5,  50, 0,    2},
      { 15, 15, 80, 0,   50},
-     { 25, 25, 80, 0,   100},
-     { 30, 15, 80, 0,  1000},
-     { 37, 55, 80, 0,  2000},
+     { 25, 25, 80, 0,  100},
+     { 30, 15, 80, 0, 1000},
+     { 37, 55, 80, 0, 2000},
 
-     { 17,  15, 50, 0,   100},
-     { 23,  25, 60, 0,   200},
-     { 35, 60, 80, 0,  1000},
-     { 40, 80, 90, 0,  2000},
-     { 40, 80, 90, 0,  3000},
+     { 17, 15, 50, 0,  100},
+     { 23, 25, 60, 0,  200},
+     { 35, 60, 80, 0, 1000},
+     { 40, 80, 90, 0, 2000},
+     { 40, 80, 90, 0, 3000},
 
-     { 20, 13,  70, 0,  100},
+     { 20, 13, 70, 0,  100},
      { 30, 20, 75, 0,  300},
-     { 30, 35, 80, 0,  1500},
-     { 40, 40, 80, 0,  1000},
-     { 47, 70, 75, 0,  4000},
+     { 30, 35, 80, 0, 1500},
+     { 40, 40, 80, 0, 1000},
+     { 47, 70, 75, 0, 4000},
 
-     { 10, 16,  50, 0,   50},
+     { 10, 16, 50, 0,   50},
      { 25, 30, 80, 0,  100},
-     { 30, 50, 80, 0,  1000},
-     { 40, 70, 80, 0,  2000},
-     { 42, 80, 85, 0,  3000},
-     { 47, 95, 85, 0,  6000},
+     { 30, 50, 80, 0, 1000},
+     { 40, 70, 80, 0, 2000},
+     { 42, 80, 85, 0, 3000},
+     { 47, 95, 85, 0, 6000},
 
-     { 7, 7,  50, 0,   5},
-     { 20, 20,  50, 0,  20},
-     { 25, 25,  80, 0,  80},
-     { 35, 50,  75, 0, 1000},
-     { 40, 60,  75, 0, 100},
-     { 45, 70,  75, 0, 3000},
+     {  7,  7, 50, 0,    5},
+     { 20, 20, 50, 0,   20},
+     { 25, 25, 80, 0,   80},
+     { 35, 50, 75, 0, 1000},
+     { 40, 60, 75, 0,  100},
+     { 45, 70, 75, 0, 3000},
 
-     { 99, 99,  0, 0,   0},
-     { 99, 99,  0, 0,   0},
-     { 99, 99,  0, 0,   0},
-     { 99, 99,  0, 0,   0},
-     { 99, 99,  0, 0,   0}
+     { 99,  0,  0, 0,   0},
+     { 99,  0,  0, 0,   0},
+     { 99,  0,  0, 0,   0},
+     { 99,  0,  0, 0,   0},
+     { 99,  0,  0, 0,   0},
+     { 99,  0,  0, 0,   0}
    }
  };
 
 
-cptr spell_names[127] = {
+/*
+ * Names of the spells (mage spells then priest spells)
+ */
+cptr spell_names[2][64] = {
 
+  {
     /*** Mage Spells ***/
 
-  "Magic Missile",  "Detect Monsters", "Phase Door",  "Light Area",
-  "Treasure Detection", "Cure Light Wounds",  "Object Detection",
-  "Find Hidden Traps/Doors",  "Stinking Cloud",
+    "Magic Missile",
+    "Detect Monsters",
+    "Phase Door",
+    "Light Area",
+    "Treasure Detection",
+    "Cure Light Wounds",
+    "Object Detection",
+    "Find Hidden Traps/Doors",
+    "Stinking Cloud",
 
-  "Confusion", "Lightning Bolt",  "Trap/Door Destruction", "Sleep I",
-  "Cure Poison",  "Teleport Self",  "Spear of Light",  "Frost Bolt",
-  "Turn Stone to Mud",
-  
-  "Satisfy Hunger", "Recharge Item I",  "Sleep II", "Polymorph Other",
-  "Identify",  "Sleep III",  "Fire Bolt",  "Slow Monster",
+    "Confusion",
+    "Lightning Bolt",
+    "Trap/Door Destruction",
+    "Sleep I",
+    "Cure Poison",
+    "Teleport Self",
+    "Spear of Light",
+    "Frost Bolt",
+    "Turn Stone to Mud",
 
-  "Frost Ball", "Recharge Item II", "Teleport Other", "Haste Self",
-  "Fire Ball", "Word of Destruction", "Genocide",
+    "Satisfy Hunger",
+    "Recharge Item I",
+    "Sleep II",
+    "Polymorph Other",
+    "Identify",
+    "Sleep III",
+    "Fire Bolt",
+    "Slow Monster",
 
-    /* Mordenkainen's Escapes */
-  "Door Creation",
-  "Stair Creation",
-  "Teleport Level",
-  "Earthquake",
-  "Word of Recall",
+    "Frost Ball",
+    "Recharge Item II",
+    "Teleport Other",
+    "Haste Self",
+    "Fire Ball",
+    "Word of Destruction",
+    "Genocide",
 
-    /* Raal's Tome of Destruction */
-  "Acid Bolt",
-  "Cloud Kill",
-  "Acid Ball",
-  "Ice Storm",
-  "Meteor Swarm",
-  "Hellfire",
+      /* Mordenkainen's Escapes */
+    "Door Creation",
+    "Stair Creation",
+    "Teleport Level",
+    "Earthquake",
+    "Word of Recall",
 
-    /*Kelek's Grimoire of Power*/
-  "Detect Evil",
-  "Detect Enchantment",
-  "Recharge Item III",
-  "Genocide",
-  "Mass Genocide",
+      /* Raal's Tome of Destruction */
+    "Acid Bolt",
+    "Cloud Kill",
+    "Acid Ball",
+    "Ice Storm",
+    "Meteor Swarm",
+    "Mana Storm",
 
-    /* Resistance of Scarabtarices */
-  "Resist Fire",
-  "Resist Cold",
-  "Resist Acid",
-  "Resist Poison",
-  "Resistance",
+      /*Kelek's Grimoire of Power*/
+    "Detect Evil",
+    "Detect Enchantment",
+    "Recharge Item III",
+    "Genocide",
+    "Mass Genocide",
 
-    /* Tenser's transformations...*/
-  "Heroism",
-  "Shield",
-  "Berserker",
-  "Essence of Speed",
-  "Globe of Invulnerability",
+      /* Resistance of Scarabtarices */
+    "Resist Fire",
+    "Resist Cold",
+    "Resist Acid",
+    "Resist Poison",
+    "Resistance",
 
-  "blank",
-  "blank",
-  "blank",
-  "blank",
+      /* Tenser's transformations...*/
+    "Heroism",
+    "Shield",
+    "Berserker",
+    "Essence of Speed",
+    "Globe of Invulnerability",
+
+    "(blank)",
+    "(blank)",
+    "(blank)",
+    "(blank)",
+    "(blank)"
+  },
 
 
-    /*** Priest Spells (starting at 63) ***/
+  {
+    /*** Priest Spells ***/
 
-  "Detect Evil",  "Cure Light Wounds", "Bless",  "Remove Fear",
-  "Call Light", "Find Traps",  "Detect Doors/Stairs",  "Slow Poison",
-  
-  "Blind Creature", "Portal",  "Cure Medium Wounds",  "Chant",
-  "Sanctuary",  "Satisfy Hunger", "Remove Curse",  "Resist Heat and Cold",
-  
-  "Neutralize Poison", "Orb of Draining",  "Cure Serious Wounds",
-  "Sense Invisible", "Protection from Evil",  "Earthquake",
-  "Sense Surroundings", "Cure Critical Wounds",  "Turn Undead",
-  
-  "Prayer",  "Dispel Undead", "Heal",  "Dispel Evil",
-  "Glyph of Warding", "Holy Word",
+    "Detect Evil",
+    "Cure Light Wounds",
+    "Bless",
+    "Remove Fear",
+    "Call Light",
+    "Find Traps",
+    "Detect Doors/Stairs",
+    "Slow Poison",
 
-    /* Godly Insights... */
-  "Detect Monsters",
-  "Detection",
-  "Perception",
-  "Probing",
-  "Clairvoyance",
+    "Confuse Creature",
+    "Portal",
+    "Cure Medium Wounds",
+    "Chant",
+    "Sanctuary",
+    "Satisfy Hunger",
+    "Remove Curse",
+    "Resist Heat and Cold",
 
-    /* Purifications and Healing */
-  "Cure Serious Wounds",
-  "Cure Critical Wounds",
-  "Healing",
-  "Restoration",
-  "Remembrance",
+    "Neutralize Poison",
+    "Orb of Draining",
+    "Cure Serious Wounds",
+    "Sense Invisible",
+    "Protection from Evil",
+    "Earthquake",
+    "Sense Surroundings",
+    "Cure Critical Wounds",
+    "Turn Undead",
 
-    /* Wrath of God */
-  "Dispel Undead",
-  "Dispel Evil",
-  "Banishment",
-  "Word of Destruction",
-  "Annihilation",
+    "Prayer",
+    "Dispel Undead",
+    "Heal",
+    "Dispel Evil",
+    "Glyph of Warding",
+    "Holy Word",
 
-    /* Holy Infusions */
-  "Unbarring Ways",
-  "Recharging",
-  "Dispel Curse",
-  "Enchant Weapon",
-  "Enchant Armour",
-  "Elemental Brand",
+      /* Godly Insights... */
+    "Detect Monsters",
+    "Detection",
+    "Perception",
+    "Probing",
+    "Clairvoyance",
 
-    /* Ethereal openings */
-  "Blink",
-  "Teleport",
-  "Teleport Away",
-  "Teleport Level",
-  "Word of Recall",
-  "Alter Reality",
+      /* Purifications and Healing */
+    "Cure Serious Wounds",
+    "Cure Critical Wounds",
+    "Healing",
+    "Restoration",
+    "Remembrance",
 
-  "blank",
-  "blank",
-  "blank",
-  "blank",
-  "blank"
+      /* Wrath of God */
+    "Dispel Undead",
+    "Dispel Evil",
+    "Banishment",
+    "Word of Destruction",
+    "Annihilation",
+
+      /* Holy Infusions */
+    "Unbarring Ways",
+    "Recharging",
+    "Dispel Curse",
+    "Enchant Weapon",
+    "Enchant Armour",
+    "Elemental Brand",
+
+      /* Ethereal openings */
+    "Blink",
+    "Teleport",
+    "Teleport Away",
+    "Teleport Level",
+    "Word of Recall",
+    "Alter Reality",
+
+    "(blank)",
+    "(blank)",
+    "(blank)",
+    "(blank)",
+    "(blank)"
+  }
+};
+
+
+
+
+/*
+ * making it 16 bits wastes a little space, but saves much
+ * signed/unsigned headaches in its use
+ * CLA_MISC_HIT is identical to CLA_SAVE, which takes advantage of
+ * the fact that the save values are independent of the class
+ */
+s16b class_level_adj[MAX_CLASS][MAX_LEV_ADJ] = {
+
+/*	       bth    bthb   device  disarm   save/misc hit  */
+/* Warrior */ {	4,	4,	2,	2,	3 },
+/* Mage    */ { 2,	2,	4,	2,	3 },
+/* Priest  */ { 2,	2,	4,	3,	3 },
+/* Rogue   */ { 3,	4,	3,	4,	3 },
+/* Ranger  */ { 3,	4,	3,	3,	3 },
+/* Paladin */ { 3,	2,	3,	2,	3 }
+
 };
 
 
 /*
- * spellmasks[][] is used to control the "you seem to be missing a book"
- * messages, because they look stupid otherwise.
+ * Each player starts out with a few provisions.
+ * The OBJ_xxx constants refer to k_list indexes
  */
-u32b spellmasks[MAX_CLASS][2] = {
-	{ 0x0L, 0x0L },			/* warrior */
-	{ 0xffffffafL, 0x0fffffffL },	/* mage */
-	{ 0xffffffffL, 0x03ffffffL },	/* priest */
-	{ 0x284efafeL, 0x03fe70eeL },	/* rogue */
-	{ 0xffffffafL, 0x03fe77feL },	/* ranger */
-	{ 0xffffffffL, 0x03ffefffL }	/* paladin */
+
+u16b player_init[MAX_CLASS][3] = {
+
+        /* Warrior */
+    { OBJ_POTION_BERSERK, OBJ_BROAD_SWORD, OBJ_CHAIN_MAIL },
+
+        /* Mage */
+    { OBJ_SPELL_BOOK, OBJ_DAGGER, OBJ_SCROLL_RECALL },
+
+        /* Priest */
+    { OBJ_PRAYER_BOOK, OBJ_MACE, OBJ_POTION_HEALING },
+
+        /* Rogue */
+    { OBJ_SPELL_BOOK, OBJ_SMALL_SWORD, OBJ_SOFT_LEATHER },
+
+        /* Ranger */
+    { OBJ_SPELL_BOOK, OBJ_BROAD_SWORD,  OBJ_LONG_BOW },
+
+        /* Paladin */
+    { OBJ_PRAYER_BOOK, OBJ_BROAD_SWORD, OBJ_ANTI_EVIL }
 };
 
+
+
+
+
+/*
+ * Class titles for different levels			
+ */
+cptr player_title[MAX_CLASS][MAX_PLAYER_LEVEL] = {
+
+        /* Warrior	 */
+{"Rookie","Private","Soldier","Mercenary","Veteran(1st)","Veteran(2nd)",
+"Veteran(3rd)","Warrior(1st)","Warrior(2nd)","Warrior(3rd)","Warrior(4th)",
+"Swordsman-1","Swordsman-2","Swordsman-3","Hero","Swashbuckler","Myrmidon",
+"Champion-1","Champion-2","Champion-3","Superhero","Knight","Superior Knt",
+"Gallant Knt","Knt Errant","Guardian Knt","Baron","Duke","Lord (1st)",
+"Lord (2nd)","Lord (3rd)","Lord (4th)","Lord (5th)","Lord (6th)","Lord (7th)",
+"Lord (8th)","Lord (9th)","Lord (10th)","Lord (11th)","Lord (12th)",
+"Lord (13th)","Lord (14th)","Lord (15th)","Lord (16th)","Lord (17th)",
+"Lord (18th)","Lord (19th)","Lord Gallant","Lord Keeper","Lord Noble"},
+
+        /* Mage		 */
+{"Novice","Apprentice","Trickster-1","Trickster-2","Trickster-3","Cabalist-1",
+"Cabalist-2","Cabalist-3","Visionist","Phantasmist","Shadowist","Spellbinder",
+"Illusionist","Evoker (1st)","Evoker (2nd)","Evoker (3rd)","Evoker (4th)",
+"Conjurer","Theurgist","Thaumaturge","Magician","Enchanter","Warlock",
+"Sorcerer","Necromancer","Mage (1st)","Mage (2nd)","Mage (3rd)","Mage (4th)",
+"Mage (5th)","Wizard (1st)","Wizard (2nd)","Wizard (3rd)","Wizard (4th)",
+"Wizard (5th)","Wizard (6th)","Wizard (7th)","Wizard (8th)","Wizard (9th)",
+"Wizard (10th)","Wizard (11th)","Wizard (12th)","Wizard (13th)",
+"Wizard (14th)","Wizard (15th)","Wizard (16th)","Wizard (17th)",
+"Wizard (18th)","Wizard (19th)","Wizard Lord"},
+
+        /* Priests	 */
+{"Believer","Acolyte(1st)","Acolyte(2nd)","Acolyte(3rd)","Adept (1st)",
+"Adept (2nd)","Adept (3rd)","Priest (1st)","Priest (2nd)","Priest (3rd)",
+"Priest (4th)","Priest (5th)","Priest (6th)","Priest (7th)","Priest (8th)",
+"Priest (9th)","Curate (1st)","Curate (2nd)","Curate (3rd)","Curate (4th)",
+"Curate (5th)","Curate (6th)","Curate (7th)","Curate (8th)","Curate (9th)",
+"Canon (1st)","Canon (2nd)","Canon (3rd)","Canon (4th)","Canon (5th)",
+"Canon (6th)","Canon (7th)","Canon (8th)","Canon (9th)",
+"Low Lama","Lama-1","Lama-2","Lama-3","Lama-4","Lama-5","Lama-6","Lama-7",
+"Lama-8","Lama-9","High Lama","Great Lama","Patriarch",
+"High Priest","Great Priest","Noble Priest"},
+
+        /* Rogues	 */
+{"Vagabond","Footpad","Cutpurse","Robber","Burglar","Filcher","Sharper",
+"Magsman","Common Rogue","Rogue (1st)","Rogue (2nd)","Rogue (3rd)",
+"Rogue (4th)","Rogue (5th)","Rogue (6th)","Rogue (7th)","Rogue (8th)",
+"Rogue (9th)","Master Rogue","Expert Rogue","Senior Rogue","Chief Rogue",
+"Prime Rogue","Low Thief","Thief (1st)","Thief (2nd)","Thief (3rd)",
+"Thief (4th)","Thief (5th)","Thief (6th)","Thief (7th)","Thief (8th)",
+"Thief (9th)","Thief (10th)","Thief (11th)","Thief (12th)","Thief (13th)",
+"Thief (14th)","Thief (15th)","Thief (16th)","Thief (17th)","Thief (18th)",
+"Thief (19th)","High Thief","Master Thief","Executioner","Low Assassin",
+"Assassin","High Assassin","Guildsmaster"},
+
+        /* Rangers	 */
+{"Runner (1st)","Runner (2nd)","Runner (3rd)","Strider (1st)","Strider (2nd)",
+"Strider (3rd)","Scout (1st)","Scout (2nd)","Scout (3rd)","Scout (4th)",
+"Scout (5th)","Courser (1st)","Courser (2nd)","Courser (3rd)","Courser (4th)",
+"Courser (5th)","Tracker (1st)","Tracker (2nd)","Tracker (3rd)",
+"Tracker (4th)","Tracker (5th)","Tracker (6th)","Tracker (7th)",
+"Tracker (8th)","Tracker (9th)","Guide (1st)","Guide (2nd)","Guide (3rd)",
+"Guide (4th)","Guide (5th)","Guide (6th)","Guide (7th)","Guide (8th)",
+"Guide (9th)","Guide (10th)","Guide (11th)","Guide (12th)","Guide (13th)",
+"Guide (14th)","Guide (15th)",
+"Pathfinder-1","Pathfinder-2","Pathfinder-3","Pathfinder-4","Pathfinder-5",
+"Pathfinder-6","Pathfinder-7","Ranger","High Ranger","Ranger Lord"},
+
+        /* Paladins	 */
+{"Gallant","Keeper (1st)","Keeper (2nd)","Keeper (3rd)","Keeper (4th)",
+"Keeper (5th)","Keeper (6th)","Keeper (7th)","Keeper (8th)","Keeper (9th)",
+"Protector-1","Protector-2","Protector-3","Protector-4","Protector-5",
+"Protector-6","Protector-7","Protector-8","Defender-1","Defender-2",
+"Defender-3","Defender-4","Defender-5","Defender-6","Defender-7","Defender-8",
+"Warder (1st)","Warder (2nd)","Warder (3rd)","Warder (4th)","Warder (5th)",
+"Warder (6th)","Warder (7th)","Warder (8th)","Warder (9th)","Warder (10th)",
+"Warder (11th)","Warder (12th)","Warder (13th)","Warder (14th)",
+"Warder (15th)","Warder (16th)","Warder (17th)","Warder (18th)",
+"Warder (19th)","Guardian","Chevalier","Justiciar","Paladin","High Lord"}
+
+};
 
 

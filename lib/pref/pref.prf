@@ -1,0 +1,34 @@
+# File: pref.prf
+
+# This is the default "preference" file
+
+# See "files.c" for more info.  Basically, this file contains a series of
+# "commands" that are executed at startup.  Note that this file may include
+# other files recursively via the "%" command.
+
+# The commands that can go here include mostly attr/char redefinitions,
+# for example, you can put commands here to make the walls be drawn in
+# a special symbol, or to use a special color for your inventory items.
+
+# In addition, you can define macros (in an encoded form).  These macros
+# are pretty much system dependant, since that is what determines which
+# keys are available.  See "files.c" for proper formats.
+
+# Note that Angband 2.7.5 allows the user to choose a different directory
+# for both "save" files and "pref" files, so by making your own "pref"
+# directory, with a "pref.prf" file, you can choose your favorite stuff.
+
+# Note that by default, Angband will process "pref.prf", followed by
+# "pref-xxx.prf" (where "xxx" is the suffix of the "visual system" in
+# use, such as "mac", "win", "ibm", "x11", "gcu", etc), followed by
+# special files with the names "Class.prf" and "Name.prf", where "Class"
+# is the player class, and "Name" is the player name.
+
+
+# Command macro -- "X" will now "swap weapons" as long as both weapons are
+# inscribed with {@0}.  For example, inscribe your main weapon as {@1@0}
+# and your digger/secondary weapon as {@2@0} or just {@0}.
+
+A:w0
+C:X
+

@@ -7,11 +7,11 @@
 
 OBJS = \
   main.o main-ibm.o \
-  signals.o util.o io.o arrays.o save.o save-old.o death.o \
-  generate.o birth.o creature.o effects.o magic.o dungeon.o command.o \
-  misc1.o misc2.o misc3.o misc4.o moria1.o moria2.o moria3.o moria4.o \
-  spells1.o spells2.o cave.o desc.o tables.o variable.o \
-  store.o recall.o wizard.o borg.o \
+  signals.o util.o io.o init.o save.o save-old.o files.o \
+  generate.o birth.o creature.o melee.o dungeon.o store.o \
+  effects.o cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
+  misc.o monster.o mon-desc.o object.o obj-desc.o \
+  spells1.o spells2.o cave.o tables.o variable.o wizard.o \
   term.o random.o z-util.o z-virt.o z-form.o
 
 
@@ -21,7 +21,7 @@ LIBS = -lpc
 BINARY = ../angband.bin
 
 .c.o:
-        $(CC) $(CFLAGS) -c $*.c
+	$(CC) $(CFLAGS) -c $*.c
 
-angband.exe: $(OBJS)
-        $(CC) $(CFLAGS)  -o $(BINARY) $(OBJS) $(LIBS)
+$(BINARY): $(OBJS)
+	$(CC) $(CFLAGS)  -o $(BINARY) $(OBJS) $(LIBS)

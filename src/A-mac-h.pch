@@ -1,0 +1,36 @@
+/* File: A-mac-h.pch */
+
+/*
+ * Purpose: Source for the pre-compiled header "A-mac-h"
+ *
+ * This file is used by the CodeWarrior compiler to make "A-mac-h".
+ *
+ * CodeWarrior 68K:
+ * Open the included project file "Angband.µ".
+ * Use the "Make" command to build the application.
+ *
+ * CodeWarrior PPC:
+ * Open the included project file "Angband.PPC.µ".
+ * Use the "Make" command to build the application.
+ *
+ * Building a Fat binary:
+ * Use the CodeWarrior 68K compiler to build a 68K binary.
+ * Open the "Angband.PPC.µ" project with the CodeWarrior PPC compiler.
+ * Remove the resource file Angband.¹.rsrc from the project.
+ * Add the application ("Angband 2.7.5"), just built in the first step,
+ * to the project.
+ * Use the "Make" command to build the Fat Binary application.
+ */
+
+#if defined(__MWERKS__)
+# if defined(powerc) || defined(__powerc)
+#  pragma precompile_target "A-mac-h-PPC"
+# else
+#  pragma precompile_target "A-mac-h-68K"
+# endif
+#endif
+
+#define MACINTOSH
+
+#include "angband.h"
+

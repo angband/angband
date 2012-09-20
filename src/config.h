@@ -18,224 +18,37 @@
  * have to modify any lines not indicated by "OPTION".
  *
  * Note: Also examine the "system" configuration file "h-config.h"
- * and the variable initialization file "variables.c".  If you change
- * anything in "variables.c", you only need to recompile that file.
+ * and the variable initialization file "variable.c".  If you change
+ * anything in "variable.c", you only need to recompile that file.
  *
  * And finally, remember that the "Makefile" will specify some rather
  * important compile time options, like what visual module to use.
  */
 
 
-
 /*
- * OPTION: Person to bother if something goes wrong.
- */
-#define WIZARD	"benh@linc.cis.upenn.edu"
-
-
-/*
- * OPTION: Hack -- Compile in support for "Wizard Commands"
- */
-#define ALLOW_WIZARD
-
-
-/*
- * OPTION: Hack -- Compile in support for "Cyborg" mode
- */
-/* #define AUTO_PLAY */
-
-
-/*
- * OPTION: for the AFS distributed file system, define this to ensure that
- * the program is secure with respect to the setuid code, this prohibits
- * inferior shells, also does not relinquish setuid priviledges at the start,
- * but instead calls the AFS library routines bePlayer(), beGames(),
- * and Authenticate().
- */
-/* #define SECURE */
-
-
-
-
-/*
- * OPTION: Verify savefile Checksums (Angband 2.7.0 and up)
- */
-#define VERIFY_CHECKSUMS
-
-
-/*
- * OPTION: Allow the player to copy save files.  Turning this off
- * may or may not stop players from doing it, though.  In fact, this
- * option is not even referenced on SET_UID machines.
- */
-#define ALLOW_FIDDLING
-
-
-/*
- * OPTION: Allow checking of artifacts (in town)
- */
-#define ALLOW_CHECK_ARTIFACTS
- 
-/*
- * OPTION: Allow checking of dead uniques
- */
-#define ALLOW_CHECK_UNIQUES
-
-/*
- * OPTION: Allow "inventory tagging" via inscriptions
- */
-#define ALLOW_TAGS
-
-/*
- * OPTION: Compile support for simple macro expansion
- */
-#define ALLOW_MACROS
-
-/*
- * OPTION: Compile support for keymap modification
- */
-#define ALLOW_KEYMAP
-
-/*
- * OPTION: Allow characteres to be "auto-rolled"
- */
-#define AUTOROLLER
-
-/*
- * OPTION: Allow locations and monsters to be "targetted"
- */
-#define TARGET
-
-
-/*
- * OPTION: Hack -- allow "proper" memorization of dungeon features
- */
-/* #define NEW_MAP */
-
-
-/*
- * OPTION: Hack -- allow "monster flowing" to the given depth, if any
- */
-#define MONSTER_FLOW
-
-
-/*
- * OPTION: Maximum flow depth when using "MONSTER_FLOW"
- */
-#define MONSTER_FLOW_DEPTH 32
-
-
-/*
- * OPTION: Compile in all necessary color code.  Undefining either of
- * these will result in a decrease in code size and an increase in
- * execution speed.
- */
-#define USE_COLOR		/* Include full support for color terminals */
-#define USE_MULTIHUED		/* Include full "MULTIHUED" support */
-
-
-/*
- * OPTION: Hack -- something for Windows
- */
-#if defined(_Windows)
-# define USE_ITSYBITSY
-#endif
-
-
-/*
- * OPTION: Hack -- "Raybould's Amiga curses" has broken colors (?)
- */
-#if defined(AMIGA)
-# undef USE_COLOR
-#endif
-
-
-/*
- * OPTION: Set the "default" path to the angband "lib" directory.
- * Angband will use this value if it cannot getenv("ANGBAND_PATH").
- * The final slash is optional in either case.  Not used on Macintosh.
- * By default, the system expects the "angband" program to be located
- * in the same directory as the "lib" directory.  This can be changed.
- * Note that the "ANGBAND_PATH" environment variable over-rides this.
- * Note: this value is ignored by Macintosh, Windows, and Amiga, see
- * the file "arrays.c" for details.
- */
-#define DEFAULT_PATH "./lib/"
-
-
-/*
- * OPTION: On multiuser systems, be "nice" when autorolling.
- */
-#ifdef SET_UID
-# define NICE
-#endif
-
-/*
- * OPTION: On multiuser systems, add the "uid" to savefile names
- */
-#ifdef SET_UID
-# define SAVEFILE_USE_UID
-#endif
-
-
-/*
- * OPTION: Attempt to do "quick" array initialization from "binary"
- * files (in the "data" directory).  Be sure to remove these files
- * every time the "monster race" or "object kind" structures are
- * modified.  And never send these files to other platforms.
+ * OPTION: See the Makefile(s), where several options may be declared.
  *
- * This whole concept needs to be optimized some more, it takes too
- * long to initialize on Macintosh / IBM machines...
- */
-#define BINARY_ARRAY_IMAGES
-
-
-/*
- * OPTION: Check the "hours" file
- */
-#undef CHECK_HOURS
-
-/*
- * OPTION: Check the "hours" file (may need the 'rpcsvs' library)
- */
-#undef CHECK_LOAD
-
-
-/*
- * OPTION: For some brain-dead computers with no command line interface,
- * namely Macintosh, there has to be some way of "naming" your savefiles.
- * The current "Macintosh" hack is to make it so whenever the character
- * name changes, the savefile is renamed accordingly.  But on normal
- * machines, once you manage to "load" a savefile, it stays that way.
- * Macintosh is particularly weird because you can load savefiles that
- * are not contained in the "lib:save:" folder, and if you change the
- * player's name, it will then save the savefile elsewhere.
- */
-#if defined(MACINTOSH) || defined(_Windows) || defined(AMIGA)
-# define SAVEFILE_MUTABLE
-#endif
-
-
-/*
- * OPTION: Capitalize the "user_name" (used as the "default" player name)
- */
-#define CAPITALIZE_USER_NAME
-
-
-/*
- * OPTION: See the Makefile, where several options may be declared.
  * These options control the choice of which graphic systems to
  * compile support for, and include "USE_X11", "USE_NCU", "USE_GCU",
  * and the more or less obsolete "USE_CUR".  Note that "USE_NCU"
  * is geared more towards linux/sys-v machines, and "USE_GCU" is
- * geared more towards general case machines.
+ * geared more towards general case machines.  Note that "USE_CAP"
+ * is not usable at this time.
  *
  * Several other such options are available for non-unix machines,
  * in particular, "MACINTOSH", and "USE_IBM", "USE_EMX", "USE_WIN".
  *
- * In addition, "SPECIAL_BSD" can be defined for using certain versions
- * of "BSD" unix that use a slightly odd version of Curses (main-gcu.c).
+ * You may also need to specify the "system", using defines such as
+ * "SOLARIS" (for Solaris), etc, see "h-config.h" for more info.
  */
+
+
+/*
+ * OPTION: define "SPECIAL_BSD" for using certain versions of UNIX
+ * that use the 4.4BSD Lite version of Curses in "main-gcu.c"
+ */
+/* #define SPECIAL_BSD */
 
 
 /*
@@ -276,6 +89,275 @@
 
 
 /*
+ * OPTION: for multi-user machines running the game setuid to some other
+ * user (like 'games') this SAFE_SETUID option allows the program to drop
+ * its privileges when saving files that allow for user specified pathnames.
+ * This lets the game be installed system wide without major security
+ * concerns.  There should not be any side effects on any machines.
+ *
+ * Note: this also handles setgid's properly.
+ *
+ * The "SAFE_SETUID" code is by "Michael H. Price II" <mhp1@Ra.MsState.Edu>
+ */
+#define SAFE_SETUID
+
+
+/*
+ * OPTION: for the AFS distributed file system, define this to ensure that
+ * the program is secure with respect to the setuid code.  This option has
+ * not been tested (to the best of my knowledge).  This option may require
+ * some weird tricks with "player_uid" and such involving "defines".
+ * Note that this option used the AFS library routines Authenticate(),
+ * bePlayer(), beGames() to enforce the proper priviledges.
+ * You may need to turn "SAFE_SETUID" off to use this option.
+ */
+/* #define SECURE */
+
+
+/*
+ * OPTION: Verify savefile Checksums (Angband 2.7.0 and up)
+ * This option can help prevent "corruption" of savefiles, and also
+ * stop intentional modification by amateur users.
+ */
+#define VERIFY_CHECKSUMS
+
+
+/*
+ * OPTION: Forbid the use of "fiddled" savefiles.  As far as I can tell,
+ * a fiddled savefile is one with an internal timestamp different from
+ * the actual timestamp.  Thus, turning this option on forbids one from
+ * copying a savefile to a different name.  Combined with disabling the
+ * ability to save the game without quitting, and with some method of
+ * stopping the user from killing the process at the tombstone screen,
+ * this should prevent the use of backup savefiles.  It may also stop
+ * the use savefiles from other platforms, so be careful.
+ */
+/* #define VERIFY_TIMESTAMP */
+
+
+
+/*
+ * OPTION: Hack -- Compile in support for "Spoiler Generation"
+ */
+/* #define ALLOW_SPOILERS */
+
+/*
+ * OPTION: Hack -- Compile in support for "Wizard Commands"
+ */
+/* #define ALLOW_WIZARD */
+
+/*
+ * OPTION: Hack -- Compile in support for "Cyborg" mode
+ */
+/* #define AUTO_PLAY */
+
+/*
+ * OPTION: Allow checking of artifacts (in town)
+ */
+#define ALLOW_CHECK_ARTIFACTS
+
+/*
+ * OPTION: Allow checking of dead uniques
+ */
+#define ALLOW_CHECK_UNIQUES
+
+/*
+ * OPTION: Allow "inventory tagging" via inscriptions
+ */
+#define ALLOW_TAGS
+
+/*
+ * OPTION: Compile support for simple macro expansion
+ */
+#define ALLOW_MACROS
+
+/*
+ * OPTION: Compile support for keymap modification
+ */
+#define ALLOW_KEYMAP
+
+/*
+ * OPTION: Allow characteres to be "auto-rolled"
+ */
+#define ALLOW_AUTOROLLER
+
+/*
+ * OPTION: Allow locations and monsters to be "targetted"
+ */
+#define ALLOW_TARGET
+
+/*
+ * OPTION: Allow monsters to "flee" when hit hard
+ */
+#define ALLOW_FEAR
+
+/*
+ * OPTION: Allow monsters to "flee" from strong players
+ */
+#define ALLOW_TERROR
+
+
+
+
+/*
+ * Allow "Wizards" to yield "high scores" (see "wizard")
+ */
+/* #define SCORE_WIZARDS */
+
+/*
+ * Allow "Cheaters" to yield "high scores" (see "cheat_xxxx")
+ */
+/* #define SCORE_CHEATERS */
+
+
+
+
+/*
+ * OPTION: Allow use of the "flow_by_smell" and "flow_by_sound"
+ * software options, which enable "monster flowing".
+ */
+#define MONSTER_FLOW
+
+
+/*
+ * OPTION: Maximum flow depth when using "MONSTER_FLOW"
+ */
+#define MONSTER_FLOW_DEPTH 32
+
+
+
+/*
+ * OPTION: Allow use of extended spell info	-DRS-
+ */
+#define DRS_SHOW_SPELL_INFO
+
+/*
+ * OPTION: Allow use of the monster health bar	-DRS-
+ */
+#define DRS_SHOW_HEALTH_BAR
+
+
+/*
+ * OPTION: Enable the "smart_learn" and "smart_cheat" options.
+ * They let monsters make more "intelligent" choices about attacks
+ * (including spell attacks) based on their observations of the
+ * player's reactions to previous attacks.  The "smart_cheat" option
+ * lets the monster know how the player would react to an attack
+ * without actually needing to make the attack.  The "smart_learn"
+ * option requires that a monster make a "failed" attack before
+ * learning that the player is not harmed by that attack.
+ *
+ * This adds about 3K to the memory and about 5K to the executable.
+ */
+#define DRS_SMART_OPTIONS
+
+
+
+/*
+ * OPTION: Enable the "track_follow" and "track_target" options.
+ * They let monsters follow the player's foot-prints, or remember
+ * the player's recent locations.
+ *
+ * This adds about 33K to the memory and 1K to the executable.
+ */
+#define WDT_TRACK_OPTIONS
+
+
+
+/*
+ * OPTION: Compile in all necessary color code.  Undefining either of
+ * these will result in a decrease in code size and an increase in
+ * execution speed, but will totally disable the use of color.
+ */
+#define USE_COLOR		/* Include full support for color terminals */
+#define USE_MULTIHUED		/* Include full "MULTIHUED" support */
+
+
+/*
+ * OPTION: Hack -- something for Windows
+ */
+#if defined(_Windows)
+# define USE_ITSYBITSY
+#endif
+
+
+/*
+ * OPTION: Hack -- "Raybould's Amiga curses" has broken colors (?)
+ */
+#if defined(AMIGA)
+# undef USE_COLOR
+#endif
+
+
+/*
+ * OPTION: Set the "default" path to the angband "lib" directory.
+ *
+ * Note: this value is ignored by Macintosh, Windows, and Amiga, see
+ * the file "init.c" for details.
+ *
+ * Note that the "ANGBAND_PATH" environment variable over-rides this.
+ * Angband will use this value if it cannot getenv("ANGBAND_PATH").
+ * Note that the final slash is optional in any case.
+ *
+ * By default, the system expects the "angband" program to be located
+ * in the same directory as the "lib" directory.  This can be changed.
+ * One common alternative is "/usr/games/lib/angband/".
+ */
+#define DEFAULT_PATH "./lib/"
+
+
+/*
+ * On multiuser systems, add the "uid" to savefile names
+ */
+#ifdef SET_UID
+# define SAVEFILE_USE_UID
+#endif
+
+
+/*
+ * OPTION: Attempt to do "quick" array initialization from "binary"
+ * files (in the "data" directory).  These files are not portable
+ * between platforms, and are regenerated if missing or out of date.
+ */
+#define BINARY_ARRAY_IMAGES
+
+
+/*
+ * OPTION: Check the "time" against "lib/file/hours.txt"
+ */
+/* #define CHECK_TIME */
+
+/*
+ * OPTION: Check the "load" against "lib/file/load.txt"
+ * This may require the 'rpcsvs' library
+ */
+/* #define CHECK_LOAD */
+
+
+/*
+ * OPTION: For some brain-dead computers with no command line interface,
+ * namely Macintosh, there has to be some way of "naming" your savefiles.
+ * The current "Macintosh" hack is to make it so whenever the character
+ * name changes, the savefile is renamed accordingly.  But on normal
+ * machines, once you manage to "load" a savefile, it stays that way.
+ * Macintosh is particularly weird because you can load savefiles that
+ * are not contained in the "lib:save:" folder, and if you change the
+ * player's name, it will then save the savefile elsewhere.  Note that
+ * this also gives a method of "bypassing" the "VERIFY_TIMESTAMP" code.
+ */
+#if defined(MACINTOSH) || defined(_Windows) || defined(AMIGA)
+# define SAVEFILE_MUTABLE
+#endif
+
+
+/*
+ * OPTION: Capitalize the "user_name" (for "default" player name)
+ * This option is only relevant on SET_UID machines.
+ */
+#define CAPITALIZE_USER_NAME
+
+
+/*
  * OPTION: Allow the use of a "Recall Window", if supported
  */
 #define GRAPHIC_RECALL
@@ -287,32 +369,26 @@
 #define GRAPHIC_CHOICE
 
 
-/*
- * OPTION: This is the "Default" font when using X11.
- */
-#define DEFAULT_X11_FONT	"9x15"
 
 
 
 
 /*
- * Prepare to use the "Secure" routines
+ * OPTION: Person to bother if something goes wrong.
  */
-#ifdef SECURE
-  extern int PlayerUID;
-# define getuid() PlayerUID
-# define geteuid() PlayerUID
-#endif
+#define MAINTAINER	"benh@linc.cis.upenn.edu"
 
 
 /*
- * Make sure that "usleep()" works.
- *
- * In general, this is only referenced by "Unix" machines.
+ * OPTION: Default font (when using X11).
  */
-#if !defined(HPUX) && !defined(ultrix) && !defined(SOLARIS) && !defined(SGI)
-# define HAS_USLEEP
-#endif
+#define DEFAULT_X11_FONT		"9x15"
 
+/*
+ * OPTION: Default fonts (when using X11)
+ */
+#define DEFAULT_X11_FONT_SCREEN		DEFAULT_X11_FONT
+#define DEFAULT_X11_FONT_RECALL		DEFAULT_X11_FONT
+#define DEFAULT_X11_FONT_CHOICE		DEFAULT_X11_FONT
 
 

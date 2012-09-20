@@ -21,11 +21,11 @@
 
 /* Allow Certain Conditions 'C' to be ABSOLUTELY ILLEGAL */
 #define PREVENT(C) \
-	if (C) core_fmt("PREVENT(Line %d in file %s)", __LINE__, __FILE__);
+        if (C) core_fmt("PREVENT(Line %d in file %s)", __LINE__, __FILE__);
 
 /* Allow Certain Conditions 'C' to be ABSOLUTELY NECESSARY */
 #define ASSERT(C) \
-	if (!(C)) core_fmt("ASSERT(Line %d in file %s)", __LINE__, __FILE__);
+        if (!(C)) core_fmt("ASSERT(Line %d in file %s)", __LINE__, __FILE__);
 
 #else
 
@@ -94,7 +94,7 @@
 #define flags_off(F,X)		((F)&=(flags_except(X)))
 
 #define flags_toggle(F,X) \
-	((Flags_is_set(F,X)) ? (Flags_off(F,X)) : (Flags_set(F,X)))
+        ((Flags_is_set(F,X)) ? (Flags_off(F,X)) : (Flags_set(F,X)))
 
 #endif
 

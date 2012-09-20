@@ -195,29 +195,29 @@ static void unix_suspend_curses(int go)
     /* Step One */
     if (go)
     {
-	(void)ioctl(0, TIOCGETP, (char *)&tbuf);
-	(void)ioctl(0, TIOCGETC, (char *)&cbuf);
-	(void)ioctl(0, TIOCGLTC, (char *)&lcbuf);
-	(void)ioctl(0, TIOCLGET, (char *)&lbuf);
+        (void)ioctl(0, TIOCGETP, (char *)&tbuf);
+        (void)ioctl(0, TIOCGETC, (char *)&cbuf);
+        (void)ioctl(0, TIOCGLTC, (char *)&lcbuf);
+        (void)ioctl(0, TIOCLGET, (char *)&lbuf);
 
-	unix_restore_curses();
+        unix_restore_curses();
     }
 
     /* Step 2 */
     else
     {
-	curses_on = TRUE;
+        curses_on = TRUE;
 
-	(void)ioctl(0, TIOCSETP, (char *)&tbuf);
-	(void)ioctl(0, TIOCSETC, (char *)&cbuf);
-	(void)ioctl(0, TIOCSLTC, (char *)&lcbuf);
-	(void)ioctl(0, TIOCLSET, (char *)&lbuf);
+        (void)ioctl(0, TIOCSETP, (char *)&tbuf);
+        (void)ioctl(0, TIOCSETC, (char *)&cbuf);
+        (void)ioctl(0, TIOCSLTC, (char *)&lcbuf);
+        (void)ioctl(0, TIOCLSET, (char *)&lbuf);
 
-	(void)touchwin(curscr);
-	(void)wrefresh(curscr);
+        (void)touchwin(curscr);
+        (void)wrefresh(curscr);
 
-	cbreak();
-	noecho();
+        cbreak();
+        noecho();
     }
 
 #endif
@@ -281,7 +281,7 @@ static void moriaterm()
 
 /*
  * disable all of the special characters except the suspend char, interrupt
- * char, and the control flow start/stop characters 
+ * char, and the control flow start/stop characters
  */
 
     (void)ioctl(0, TIOCGLTC, (char *)&lbuf);
@@ -346,32 +346,32 @@ static errr Term_wipe_cur(int x, int y, int w, int h)
 
     if (!x && !y && (w >= 80) && (h >= 24))
     {
-	touchwin(stdscr);
-	(void)clear();
+        touchwin(stdscr);
+        (void)clear();
     }
 
     else if (!x && (h >= 24) && (w >= 80))
     {
-	move(y,x);
-	clrtobot();
+        move(y,x);
+        clrtobot();
     }
 
     else if (w >= 80)
     {
-	for (dy = 0; dy < h; ++dy)
-	{
-	    move(y+dy,x);
-	    clrtoeol();
-	}
+        for (dy = 0; dy < h; ++dy)
+        {
+            move(y+dy,x);
+            clrtoeol();
+        }
     }
 
     else
     {
-	for (dy = 0; dy < h; ++dy)
-	{
-	    move(y+dy,x);
-	    for (dx = 0; dx < w; ++dx) addch(' ');
-	}
+        for (dy = 0; dy < h; ++dy)
+        {
+            move(y+dy,x);
+            for (dx = 0; dx < w; ++dx) addch(' ');
+        }
     }
 
     /* Hack -- Fix the cursor */
@@ -406,12 +406,12 @@ static errr Term_text_cur(int x, int y, int n, byte a, cptr s)
 
 /*
  * Provides for a timeout on input. Does a non-blocking read, consuming the
- * data if any, and then returns 1 if data was read, zero otherwise. 
+ * data if any, and then returns 1 if data was read, zero otherwise.
  *
- * Porting: 
+ * Porting:
  *
  * In systems without the select call, but with a sleep for fractional numbers
- * of seconds, one could sleep for the time and then check for input. 
+ * of seconds, one could sleep for the time and then check for input.
  *
  * In systems which can only sleep for whole number of seconds, you might sleep
  * by writing a lot of nulls to the terminal, and waiting for them to drain,
@@ -505,7 +505,7 @@ static int check_input(int microsec)
 static errr Term_xtra_cur_check(int v)
 {
     int i;
-    
+
     /* Get a keypress */
     i = check_input(0);
 
@@ -549,10 +549,10 @@ static errr Term_xtra_cur_level(int v)
     {
         case TERM_LEVEL_HARD_SHUT: unix_suspend_curses(1); break;
 
-	/* Come back from suspend */
-	case TERM_LEVEL_HARD_OPEN: unix_suspend_curses(0); break;
+        /* Come back from suspend */
+        case TERM_LEVEL_HARD_OPEN: unix_suspend_curses(0); break;
     }
-    
+
     return (0);
 }
 
@@ -565,30 +565,30 @@ static errr Term_xtra_cur(int n, int v)
     /* Analyze the request */
     switch (n)
     {
-	/* Make a noise */
-	case TERM_XTRA_NOISE: (void)write(1, "\007", 1); return (0);
+        /* Make a noise */
+        case TERM_XTRA_NOISE: (void)write(1, "\007", 1); return (0);
 
-	/* Flush the Curses buffer */
-	case TERM_XTRA_FLUSH: (void)refresh(); return (0);
+        /* Flush the Curses buffer */
+        case TERM_XTRA_FLUSH: (void)refresh(); return (0);
 
 #ifdef SYS_V
 
-	/* XXX Make the cursor invisible */
-	case TERM_XTRA_INVIS: curs_set(0); return (0);
+        /* XXX Make the cursor invisible */
+        case TERM_XTRA_INVIS: curs_set(0); return (0);
 
-	/* XXX Make the cursor visible */
-	case TERM_XTRA_BEVIS: curs_set(1); return (0);
+        /* XXX Make the cursor visible */
+        case TERM_XTRA_BEVIS: curs_set(1); return (0);
 
 #endif
 
-	/* Suspend/Resume curses */
-	case TERM_XTRA_LEVEL: return (Term_xtra_cur_level(v));
+        /* Suspend/Resume curses */
+        case TERM_XTRA_LEVEL: return (Term_xtra_cur_level(v));
 
-	/* Check for event */
-	case TERM_XTRA_CHECK: return (Term_xtra_cur_check(v));
+        /* Check for event */
+        case TERM_XTRA_CHECK: return (Term_xtra_cur_check(v));
 
-	/* Wait for event */
-	case TERM_XTRA_EVENT: return (Term_xtra_cur_event(v));
+        /* Wait for event */
+        case TERM_XTRA_EVENT: return (Term_xtra_cur_event(v));
     }
 
     return (1);
@@ -604,7 +604,7 @@ errr init_cur(void)
     int i, y, x, err;
 
     term *t = &term_screen_body;
-    
+
 
 #if defined(VMS) || defined(MSDOS) || \
     defined(ATARIST_MWC) || defined(__MINT__)
@@ -673,13 +673,13 @@ errr init_cur(void)
     {
 
 #ifdef ATARIST_MWC
-	addch('\t');
+        addch('\t');
 #else
-	(void)addch('\t');
+        (void)addch('\t');
 #endif
 
-	getyx(stdscr, y, x);
-	if (y != 0 || x != i * 8) break;
+        getyx(stdscr, y, x);
+        if (y != 0 || x != i * 8) break;
     }
 
     /* Verify tab stops */
@@ -700,7 +700,7 @@ errr init_cur(void)
 
     /* Save the term */
     term_screen = t;
-    
+
     /* Activate it */
     Term_activate(term_screen);
 
@@ -792,51 +792,51 @@ void shell_out()
 
 #ifdef MSDOS			   /* { */
     if ((comspec = getenv("COMSPEC")) == NULL
-	|| spawnl(P_WAIT, comspec, comspec, C_NULL) < 0) {
-	clear_screen();		   /* BOSS key if shell failed */
-	put_str("M:\\> ", 0, 0);
-	do {
-	    key = inkey();
-	} while (key != '!');
+        || spawnl(P_WAIT, comspec, comspec, C_NULL) < 0) {
+        clear_screen();		   /* BOSS key if shell failed */
+        put_str("M:\\> ", 0, 0);
+        do {
+            key = inkey();
+        } while (key != '!');
     }
 #else				   /* MSDOS }{ */
 #ifndef ATARIST_MWC
     val = fork();
     if (val == 0) {
 #endif
-	default_signals();
+        default_signals();
 #ifdef USG
 #if !defined(MSDOS) && !defined(ATARIST_MWC) && !defined(__MINT__)
-	(void)ioctl(0, TCSETA, (char *)&save_termio);
+        (void)ioctl(0, TCSETA, (char *)&save_termio);
 #endif
 #else
 #ifndef VMS
-	(void)ioctl(0, TIOCSLTC, (char *)&save_special_chars);
-	(void)ioctl(0, TIOCSETP, (char *)&save_ttyb);
-	(void)ioctl(0, TIOCSETC, (char *)&save_tchars);
-	(void)ioctl(0, TIOCLSET, (char *)&save_local_chars);
+        (void)ioctl(0, TIOCSLTC, (char *)&save_special_chars);
+        (void)ioctl(0, TIOCSETP, (char *)&save_ttyb);
+        (void)ioctl(0, TIOCSETC, (char *)&save_tchars);
+        (void)ioctl(0, TIOCLSET, (char *)&save_local_chars);
 #endif
 #endif
 
-	if ((str = getenv("SHELL")))
+        if ((str = getenv("SHELL")))
 #ifndef ATARIST_MWC
-	    (void)execl(str, str, C_NULL);
+            (void)execl(str, str, C_NULL);
 #else
-	    system(str);
+            system(str);
 #endif
-	else
+        else
 #ifndef ATARIST_MWC
-	    (void)execl("/bin/sh", "sh", C_NULL);
+            (void)execl("/bin/sh", "sh", C_NULL);
 #endif
-	msg_print("Cannot execute shell.");
+        msg_print("Cannot execute shell.");
 #ifndef ATARIST_MWC
 
-	/* Actually abort everything */
-	quit(NULL);
+        /* Actually abort everything */
+        quit(NULL);
     }
     if (val == -1) {
-	msg_print("Fork failed. Try again.");
-	return;
+        msg_print("Fork failed. Try again.");
+        return;
     }
 #ifdef USG
     (void)wait((int *)(NULL));
@@ -891,7 +891,7 @@ void shell_out()
  * A command for the operating system. Standard library function 'system' is
  * unsafe, as it leaves various file descriptors open. This also is very
  * careful with signals and interrupts, and does rudimentary job control, and
- * puts the terminal back in a standard mode. 
+ * puts the terminal back in a standard mode.
  */
 int system_cmd(cptr p)
 {
@@ -904,64 +904,64 @@ int system_cmd(cptr p)
 
     /* Are we in the control terminal group? */
     if (ioctl(0, TIOCGPGRP, (char *)&pgrp) < 0 || pgrp != getpgrp(0)) {
-	pgrp = (-1);
+        pgrp = (-1);
     }
 
     pid = fork();
     if (pid < 0) {
-	(void)sigsetmask(mask);
+        (void)sigsetmask(mask);
 
     xxx xxx xxx
     /* No longer defined -- see "term.c" */
     moriaterm();		   /* Terminal in moria mode. */
     xxx xxx xxx
 
-	return (-1);
+        return (-1);
     }
     if (pid == 0) {
-	(void)sigsetmask(0);	   /* Interrupts on. */
+        (void)sigsetmask(0);	   /* Interrupts on. */
     /* Transfer control terminal. */
-	if (pgrp >= 0) {
-	    i = getpid();
-	    (void)ioctl(0, TIOCSPGRP, (char *)&i);
-	    (void)setpgrp(i, i);
-	}
-	for (i = 2; i < 30; i++)
-	    (void)close(i);	   /* Close all but standard in and out. */
-	(void)dup2(1, 2);	   /* Make standard error as standard out. */
-	if (p == 0 || *p == 0) {
-	    p = getenv("SHELL");
-	    if (p)
-		execl(p, p, 0);
-	    execl("/bin/sh", "sh", 0);
-	}
-	else {
-	    execl("/bin/sh", "sh", "-c", p, 0);
-	}
+        if (pgrp >= 0) {
+            i = getpid();
+            (void)ioctl(0, TIOCSPGRP, (char *)&i);
+            (void)setpgrp(i, i);
+        }
+        for (i = 2; i < 30; i++)
+            (void)close(i);	   /* Close all but standard in and out. */
+        (void)dup2(1, 2);	   /* Make standard error as standard out. */
+        if (p == 0 || *p == 0) {
+            p = getenv("SHELL");
+            if (p)
+                execl(p, p, 0);
+            execl("/bin/sh", "sh", 0);
+        }
+        else {
+            execl("/bin/sh", "sh", "-c", p, 0);
+        }
 
-	/* Hack (?) */
-	_exit(1);
+        /* Hack (?) */
+        _exit(1);
     }
 
 /* Wait for child termination. */
     for (;;) {
-	i = wait3(&w, WUNTRACED, (struct rusage *) 0);
-	if (i == pid) {
-	    if (WIFSTOPPED(w)) {
-	    /* Stop outselves, if child stops. */
-		(void)kill(getpid(), SIGSTOP);
-	    /* Restore the control terminal, and restart subprocess. */
-		if (pgrp >= 0)
-		    (void)ioctl(0, TIOCSPGRP, (char *)&pid);
-		(void)killpg(pid, SIGCONT);
-	    } else
-		break;
-	}
+        i = wait3(&w, WUNTRACED, (struct rusage *) 0);
+        if (i == pid) {
+            if (WIFSTOPPED(w)) {
+            /* Stop outselves, if child stops. */
+                (void)kill(getpid(), SIGSTOP);
+            /* Restore the control terminal, and restart subprocess. */
+                if (pgrp >= 0)
+                    (void)ioctl(0, TIOCSPGRP, (char *)&pid);
+                (void)killpg(pid, SIGCONT);
+            } else
+                break;
+        }
     }
 
     /* Get the control terminal back. */
     if (pgrp >= 0) {
-	(void)ioctl(0, TIOCSPGRP, (char *)&pgrp);
+        (void)ioctl(0, TIOCSPGRP, (char *)&pgrp);
     }
 
     (void)sigsetmask(mask);	   /* Interrupts on. */

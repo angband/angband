@@ -1,5 +1,7 @@
 /* File: z-form.c */
 
+/* Purpose: Low level text formatting -BEN- */
+
 #include "z-form.h"
 
 #include "z-util.h"
@@ -93,9 +95,9 @@ static vstrnfmt_aux_func vstrnfmt_aux = vstrnfmt_aux_dflt;
  */
 uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
 {
-  register cptr s;
-  register char *a;
-  register uint len = 0;
+  cptr s;
+  char *a;
+  uint len = 0;
 
   int do_long;
 
@@ -162,8 +164,8 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
       /* Hack -- "illegal" format */
       if (!*s || (a > aux + 32))
       {
-	buf[0] = '\0';
-	return (0);
+        buf[0] = '\0';
+        return (0);
       }
 
       /* Save the character */
@@ -172,10 +174,10 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
       /* Hack -- Handle 'star' */
       if (a[-1] == '*')
       {
-	int arg = va_arg(vp, int);
-	a--;
-	sprintf(a, "%d", arg);
-	while (*a++);
+        int arg = va_arg(vp, int);
+        a--;
+        sprintf(a, "%d", arg);
+        while (*a++);
       }
 
       /* Hack -- take note of "long" request */
@@ -187,8 +189,8 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
       /* Hack -- end the collection */
       else if (strchr("dioxXucsfeEgGpv", a[-1]))
       {
-	*a = '\0';
-	break;
+        *a = '\0';
+        break;
       }
     }
 
@@ -214,41 +216,41 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
       /* Simple Character -- standard format */
       case 'c':
       {
-	int arg = va_arg(vp, int);
-	sprintf(tmp, aux, arg);
-	break;
+        int arg = va_arg(vp, int);
+        sprintf(tmp, aux, arg);
+        break;
       }
 
       /* Signed Integers -- standard format */
       case 'd': case 'i':
       {
-	if (do_long)
-	{
-	  long arg = va_arg(vp, long);
-	  sprintf(tmp, aux, arg);
-	}
-	else
-	{
-	  int arg = va_arg(vp, int);
-	  sprintf(tmp, aux, arg);
-	}
-	break;
+        if (do_long)
+        {
+          long arg = va_arg(vp, long);
+          sprintf(tmp, aux, arg);
+        }
+        else
+        {
+          int arg = va_arg(vp, int);
+          sprintf(tmp, aux, arg);
+        }
+        break;
       }
 
       /* Unsigned Integers -- various formats */
       case 'u': case 'o': case 'x': case 'X':
       {
-	if (do_long)
-	{
-	  unsigned long arg = va_arg(vp, unsigned long);
-	  sprintf(tmp, aux, arg);
-	}
-	else
-	{
-	  unsigned int arg = va_arg(vp, unsigned int);
-	  sprintf(tmp, aux, arg);
-	}
-	break;
+        if (do_long)
+        {
+          unsigned long arg = va_arg(vp, unsigned long);
+          sprintf(tmp, aux, arg);
+        }
+        else
+        {
+          unsigned int arg = va_arg(vp, unsigned int);
+          sprintf(tmp, aux, arg);
+        }
+        break;
       }
 
       /* Floating Point -- various formats */
@@ -256,31 +258,31 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
       case 'e': case 'E':
       case 'g': case 'G':
       {
-	double arg = va_arg(vp, double);
-	sprintf(tmp, aux, arg);
-	break;
+        double arg = va_arg(vp, double);
+        sprintf(tmp, aux, arg);
+        break;
       }
 
       /* Pointer -- implementation varies */
       case 'p':
       {
-	vptr arg = va_arg(vp, vptr);
-	sprintf(tmp, aux, arg);
-	break;
+        vptr arg = va_arg(vp, vptr);
+        sprintf(tmp, aux, arg);
+        break;
       }
 
       case 's':
       {
-	cptr arg = va_arg(vp, cptr);
-	if (!arg) arg = "";
-	sprintf(tmp, aux, arg);
-	break;
+        cptr arg = va_arg(vp, cptr);
+        if (!arg) arg = "";
+        sprintf(tmp, aux, arg);
+        break;
       }
 
       default:
       {
-	buf[0] = '\0';
-	return (0);
+        buf[0] = '\0';
+        return (0);
       }
     }
 

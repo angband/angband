@@ -1,5 +1,7 @@
 /* File: z-util.c */
 
+/* Purpose: Low level utilities -BEN- */
+
 #include "z-util.h"
 
 
@@ -127,7 +129,7 @@ bool func_false(void)
  */
 sint long_parse(long *lp, cptr str)
 {
-  register int i, s = 0, n = 0;
+  int i, s = 0, n = 0;
   *lp = 0;
   for (i = 0; str[i] == ' '; ++i);
   if (str[i] == '-') s = -1, i++;
@@ -154,8 +156,8 @@ bool streq(cptr a, cptr b)
  */
 bool suffix(cptr big, cptr small)
 {
-  register int blen = strlen (big);
-  register int slen = strlen (small);
+  int blen = strlen (big);
+  int slen = strlen (small);
 
   /* Degenerate case: 'big' is smaller than 'small' */
   if (slen > blen) return (FALSE);
@@ -170,8 +172,8 @@ bool suffix(cptr big, cptr small)
  */
 bool prefix(cptr big, cptr small)
 {
-  register cptr b = big;
-  register cptr s = small;
+  cptr b = big;
+  cptr s = small;
 
   /* Scan each char of small */
   while (*s)
@@ -185,6 +187,8 @@ bool prefix(cptr big, cptr small)
 }
 
 
+#if 0
+
 #ifndef HAS_STRICMP
 
 /*
@@ -192,22 +196,23 @@ bool prefix(cptr big, cptr small)
  */
 int stricmp(cptr a, cptr b)
 {
-  register cptr s1, s2;
-  register char c1, c2;
+  cptr s1, s2;
+  char z1, z2;
 
   /* Scan the strings */
   for (s1 = a, s2 = b; TRUE; s1++, s2++)
   {
-    c1 = FORCEUPPER(*s1);
-    c2 = FORCEUPPER(*s2);
-    if (c1 < c2) return (-1);
-    if (c1 > c2) return (1);
-    if (!c1) return (0);
+    z1 = FORCEUPPER(*s1);
+    z2 = FORCEUPPER(*s2);
+    if (z1 < z2) return (-1);
+    if (z1 > z2) return (1);
+    if (!z1) return (0);
   }
 }
 
 #endif
 
+#endif
 
 
 /*
@@ -233,7 +238,7 @@ void plog(cptr str)
 /*
  * Redefinable "quit" action
  */
-void (*quit_aux)(cptr) = NULL; 
+void (*quit_aux)(cptr) = NULL;
 
 /*
  * Exit (ala "exit()").  If 'str' is NULL, do "exit(0)".
@@ -264,7 +269,7 @@ void quit(cptr str)
 /*
  * Redefinable "core" action
  */
-void (*core_aux)(cptr) = NULL; 
+void (*core_aux)(cptr) = NULL;
 
 /*
  * Dump a core file, after printing a warning message

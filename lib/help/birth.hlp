@@ -1,0 +1,455 @@
+          === Creating a Character (Chapter 2 from the old Manual) ===
+ 
+          All characters have six main attributes which modify their  basic
+          abilities.   These  six  attributes,  called stats, are strength,
+          intelligence,  wisdom,  dexterity,  constitution,  and  charisma.
+          Stats  may  vary  from a minimum of 3 to a maximum of 18.  At the
+          highest level, stats are further qualified by a number from  zero
+          to  one hundred, so that the highest value is actually 18/100.  A
+          value of 18/100 can be thought of as equivalent to 19, and  18/00
+          (not  actually used) is equivalent to 18. In Angband, it is also
+          possible to increase these stats above 18/100 by magical means! 
+          Because adventurers of interest tend to be better than average 
+          characters,  Angband  stats will  average  about  13,  and  are 
+          further adjusted by race and class.  Some races are just naturally
+          better  at  being  certain classes, as will be shown later.
+ 
+          In addition to the more visible stats, each character has certain
+          abilities  which  are  mainly  determined by his race, class, and
+          level, but are also modified by his  stats.   The  abilities  are
+          fighting,  throwing/bows, saving throw, stealth, disarming, magi-
+          cal devices, perception, searching, and infra-vision.
+ 
+          Characters will be assigned an early history, with  money  and  a
+          social  class  based on that history.  Starting money is assigned
+          based on history, charisma, and somewhat upon the  average  of  a
+          character's  stats.   A  character  with below average stats will
+          receive extra money to help him survive the first adventure.
+ 
+          Each character will also have physical attributes such  as  race,
+          height,  weight, sex, and a physical description.  None of these,
+          except weight, play any part in the game other than to  give  the
+          player a "feeling" for his character.  Weight is used for comput-
+          ing carrying capacity and also for bashing.
+ 
+          Finally, each character is assigned hit  points  based  on  their
+          race,  class,  and constitution.  Spell casters will also receive
+          mana which is expended when casting spells.   Mana  is  based  on
+          Wisdom for Priests and Intelligence for Magi.
+ 
+ 
+          2.1.  Character Stats
+ 
+          Strength
+               Strength is important in fighting with weapons and  hand  to
+               hand  combat.   A  high strength can improve your chances of
+               hitting, and the amount of damage done with each hit.  Char-
+               acters  with  low strengths may receive penalties.  Strength
+               is also useful in tunneling, body and shield bashing, and in
+               carrying heavy items.
+ 
+          Intelligence
+               Intelligence is the prime stat of a mage,  or  magician.   A
+               high  intelligence  increases  a  mage's chances of learning
+               spells, and it also increases the amount of mana a mage has.
+               No spell may be learned by magi  with intelligences under 8.
+               Intelligence also modifies a character's chance of disarming
+               traps, picking locks, and using magic devices.
+ 
+          Wisdom
+               Wisdom is the  prime  stat  of  a  priest.   A  high  wisdom
+               increases the chance of receiving new spells from a priest's
+               deity, and it also increases the amount  of  mana  a  priest
+               has.   No  spell may be learned by priests with wisdom under
+               8.  Wisdom also modifies a character's chance  of  resisting
+               magical spells cast upon his person.
+ 
+          Dexterity
+               Dexterity is a combination of agility and quickness.  A high
+               dexterity  may  allow a character to get multiple blows with
+               lighter weapons, thus greatly increasing his kill power, and
+               may  increase  his  chances  of  hitting with any weapon and
+               dodging blows from enemies.  Dexterity  is  also  useful  in
+               picking locks, disarming traps, and protecting yourself from
+               pick pockets.
+ 
+          Constitution
+               Constitution is a character's ability to  resist  damage  to
+               his  body, and to recover from damage received.  Therefore a
+               character with a high constitution  will  receive  more  hit
+               points, and be more resistant to poisons.
+ 
+          Charisma
+               Charisma represents a character's personality,  as  well  as
+               physical  looks.   A  character  with  a  high charisma will
+               receive better prices from store owners, whereas a character
+               with  a  very  low  charisma  will  be robbed blind.  A high
+               charisma will also mean more starting money for the  charac-
+               ter.
+ 
+ 
+          2.2.  Character Sex
+ 
+          You may choose to be either a male or a female  character.   Only
+          height  and  weight  are  affected  by a character's sex.  Female
+          characters tend to be somewhat smaller  and  lighter  than  their
+          male counterparts.  No adjustments to stats or abilities are made
+          because of the sex of a character.  Female characters  start  out
+          with  slightly more money than male characters to help offset the
+          weight penalty.
+ 
+ 
+          2.3.  Character Abilities
+ 
+          Characters possess nine different abilities which can  help  them
+          to survive.  The starting abilities of a character are based upon
+          race and class.  Abilities may be adjusted by high or low  stats,
+          and may increase with the level of the character.
+ 
+          Fighting
+               Fighting is the ability to hit and do damage with weapons or
+               fists.   Normally  a  character  gets a single blow from any
+               weapon, but if his dexterity and strength are  high  enough,
+               he  may  receive  more blows per round with lighter weapons.
+               Strength and dexterity both modify the  ability  to  hit  an
+               opponent.   This skill increases with the level of the char-
+               acter.
+ 
+          Throwing/Bows
+               Using  ranged  missile  weapons  and  throwing  objects   is
+               included  in this skill.  Different stats apply to different
+               weapons, but this ability may modify the distance an  object
+               is  thrown/fired, the amount of damage done, and the ability
+               to hit a creature.  This skill increases with the  level  of
+               the character.
+ 
+          Saving Throw
+               A Saving Throw is the ability of a character to  resist  the
+               effects  of  a spell cast on him by another person/creature.
+               This does not include spells cast on the player by  his  own
+               stupidity,  such  as  quaffing a nasty potion.  This ability
+               increases with the level of the  character,  but  then  most
+               high  level  creatures  are  better at casting spells, so it
+               tends to even out.  A high wisdom also increases this  abil-
+               ity.
+ 
+          Stealth
+               The ability to move silently about is very useful.   Charac-
+               ters with good stealth can usually surprise their opponents,
+               gaining the first blow.  Also, creatures may fail to  notice
+               a  stealthy  character  entirely, allowing a player to avoid
+               certain fights.  This skill is based entirely upon race  and
+               class, and will never improve unless magically enhanced.
+ 
+          Disarming
+               Disarming is the  ability  to  remove  traps  (safely),  and
+               includes  picking  locks  on  traps and doors.  A successful
+               disarming will gain the character some experience.   A  trap
+               must  be  found  before  it  can be disarmed.  Dexterity and
+               intelligence both modify the ability  to  disarm,  and  this
+               ability increases with the level of the character.
+ 
+          Using Magical Devices
+               Using a magical device such as  a  wand  or  staff  requires
+               experience  and  knowledge.   Spell  users such as magi  and
+               priests are therefore much better at using a magical  device
+               than say a warrior.  This skill is modified by intelligence,
+               and increases with the level of the character.
+ 
+          Perception
+               Perception  is  the  ability  to  notice  something  without
+               actively  seeking it out.  This skill is based entirely upon
+               race and class, and  will  never  improve  unless  magically
+               enhanced.
+ 
+          Searching
+               To search is to actively look for secret doors, floor traps,
+               and  traps on chests.  Rogues are the best at searching, but
+               magi,  rangers, and priests are also good at it.  This skill
+               is  based  entirely  upon  race  and  class,  and will never
+               improve unless magically enhanced.
+ 
+          Infra-vision
+               Infra-vision is the ability to see heat sources. Since  most
+               of  the  dungeon is cool or cold, infra-vision will not allow
+               the player to see walls and objects.  Infra-vision will allow
+               a  character  to see any warm-blooded creatures up to a cer-
+               tain distance.  This ability works equally well with or with
+               out  a  light source.  The majority of Angband's creatures are
+               cold-blooded, and will not be detected unless lit  up  by  a
+               light  source.   All non human races have innate infra-vision
+               ability.  Human can gain infra-vision only if it is magically
+               enhanced.
+ 
+ 
+          2.4.  Choosing A Race
+ 
+          There  are  ten  different races  that  you  can  choose  from   in
+          Angband.   Some races are restricted as to what profession they may
+          be, and each race has its own adjustments to a character's  stats
+          and abilities. Most races also have intrinsic abilities.
+ 
+          Human
+               The human is the base character, all other  races  are  com-
+               pared to them.  Humans can choose any class, and are average
+               at everything.  Humans tend to go up levels faster than  any
+               other  race, because of their shorter life spans.  No racial
+               adjustments or intrinsics occur to characters choosing human.
+ 
+          Half-Elf
+               Half-elves tend to be smarter and faster than a  human,  but
+               not as strong.  Half-elves are slightly better at searching,
+               disarming, perception, stealth, and magic, but they are  not
+               as good at hand weapons.  Half-elves may choose any class.
+               Half-elves do not get any intrinsic abilities.
+ 
+          Elf
+               Elves are better magicians then humans, but not as  good  at
+               fighting.   They  tend  to be smarter and faster than either
+               humans or half-elves, and also have  better  wisdom.   Elves
+               are better at searching, disarming, perception, stealth, and
+               magic, but they are not as good at hand weapons.  Elves  may
+               choose any class except Paladin.  They resist light effects.
+ 
+          Hobbits
+               Hobbits, or Halflings, are very good at bows, throwing,  and
+               have good saving throws.  They also are very good at search-
+               ing, disarming, perception, and stealth; so they make excel-
+               lent  thieves  (but  prefer to be called burglars...).  They
+               will be much weaker than humans, and  no  good  at  bashing.
+               Halflings  have  fair  infra-vision, so they can detect warm
+               creatures at a distance.  Halflings can choose between being
+               a  warrior,  mage,  or rogue.  Hobbits  have their dexterity 
+               sustained.
+ 
+          Gnome
+               Gnomes are smaller than dwarfs, but larger  than  halflings.
+               They,  like  the halflings, live in the earth in burrow-like
+               homes.  Gnomes are practical jokers, so  if  they  can  kill
+               something  in  a  humorous  way, so much the better.  Gnomes
+               make excellent magi,  and  have  very  good  saving  throws.
+               They  are  good  at  searching,  disarming,  perception, and
+               stealth.  They have lower strength than humans so  they  are
+               not  very  good  at fighting with hand weapons.  Gnomes have
+               fair infra-vision, so they can detect warm  creatures  at  a
+               distance.  A gnome may choose between being a warrior, mage,
+               priest, or rogue.  All gnomes have intrinsic free action.
+ 
+          Dwarf
+               Dwarves are the headstrong miners and  fighters  of  legend.
+               Since  dungeons  are  the  natural home of a dwarf, they are
+               excellent choices for a warrior or priest.  Dwarves tend  to
+               be  stronger  and  have higher constitutions, but are slower
+               and less intelligent than humans.  Because they are so head-
+               strong  and  are somewhat wise, they resist spells which are
+               cast on them.  Dwarves also have good  infra-vision  because
+               they  live  underground.   They  do  have  one  big drawback
+               though.  Dwarves are loudmouthed and proud, singing in  loud
+               voices,  arguing with themselves for no good reason, scream-
+               ing out  challenges  at  imagined  foes.   In  other  words,
+               dwarves  have  a  miserable  stealth.  Dwarves can  never be
+               blinded. 
+ 
+          Half-Orc
+               Half-Orcs make excellent warriors, and decent  priests,  but
+               are  terrible  at  magic.   They  are  as  bad as dwarves at
+               stealth, and horrible at searching, disarming,  and  percep-
+               tion.  Half-Orcs are, let's face it, ugly.  They tend to pay
+               more for goods in town.  Half-Orcs do make good priests  and
+               rogues,  for  the  simple reason that Half-Orcs tend to have
+               great constitutions and lots of hit points. Because of their
+               preference  to  living underground to on the  surface, half-
+               orcs resist darkness attacks.
+ 
+          Half-Troll
+               Half-Trolls are incredibly strong, and have the highest  hit
+               points of any character race.  They are also very stupid and
+               slow.  They will make great warriors and iffy priests.  They
+               are  bad  at  searching, disarming, perception, and stealth.
+               They are so ugly that a Half-Orc grimaces in their presence.
+               They also happen to be fun to run... Half-trolls always have
+               their strength sustained.
+ 
+          Dunadan
+               Dunedain are a race of hardy men from the  west, this  elder
+               race surpasses human abilities in  every  field,  especially
+               constitution. However being men of the world, very little is
+               new to them, and experience is very hard to gain...     They
+               can  play  all  classes.  Their  constitution  can  never be 
+               reduced.
+ 
+          High-Elf
+               High-elves are a race of immortal  beings  dating  from  the 
+               beginning of time,  and find experience  extremely  hard  to
+               gain.  They  are  masters  of  skills,  and are  strong  and 
+               intelligent,  although their  wisdom  is  sometimes suspect. 
+               They can play all classes except Paladin.   High-elves begin
+               their lives  able to  see the  unseen,  and  they  cannot be
+               harmed   by  falling small distances.
+ 
+          2.4.1.  Race Versus Skills and Stats
+ 
+          Stat, hit dice, and experience points per level modifications due
+          to race are listed in the following table.
+ 
+                      Str  Int  Wis  Dex  Con  Chr  Hit Dice  Rqd Exp/level
+ 
+          Human        0    0    0    0    0    0      10          +0%
+          Half-Elf    -1   +1    0   +1   -1   +1       9         +10%
+          Elf         -1   +2   +1   +1   -2   +1       8         +20%
+          Hobbit      -2   +2   +1   +3   +2   +1       7         +10%
+          Gnome       -1   +2    0   +2   +1   -2       8         +25%
+          Dwarf       +2   -3   +1   -2   +2   -3      11         +20%
+          Half-Orc    +2   -1    0    0   +1   -4      10         +10%
+          Half-Troll  +4   -4   -2   -4   +3   -6      12         +20%
+          Dunadan     +1   +2   +1   +2   +3   +2      10         +80%
+          High-Elf    +1   +3   -1   +3   +1   +5      10         +80%
+ 
+          Racial abilities as compared to each other, with 1 the lowest, or
+          worst,  and  10 the highest, or best, are listed in the following
+          table.
+ 
+                      Disarm Search Stealth Percep Fight Bows Save Infra
+ 
+           Human         5      5      5       5     5     5    5  None
+           Half-Elf      6      7      7       6     4     6    6  20 feet
+           Elf           8      9      7       7     3     9    7  30 feet
+           Hobbit       10     10     10      10     1    10   10  40 feet
+           Gnome         9      7      9       9     2     8    9  40 feet
+           Dwarf         6      8      3       5     9     5    8  50 feet
+           Half-Orc      3      5      3       2     8     3    3  30 feet
+           Half-Troll    1      1      1       1    10     1    1  30 feet
+           Dunadan       9      8      7       8     7     8    7  None
+           High-Elf      9      8      8       9     7    10   10  40 feet
+ 
+ 
+ 
+          2.5.  Choosing A Class
+ 
+          Once a race has been chosen, you will need to pick a class.  Some
+          classes  will  not be available to certain races, for instance, a
+          Half-Troll cannot become a Paladin.  For the first few adventures
+          it  is  suggested that you run a warrior or rogue.  Spell casting
+          generally requires a more experienced  player  that  is  familiar
+          with survival techniques.
+ 
+          Warrior
+               A Warrior is a hack-and-slash character, who solves most  of
+               his  problems  by cutting them to pieces, but will occasion-
+               ally fall back on the help of a magical device.   His  prime
+               stats  are  Strength  and Constitution, and a good Dexterity
+               can really help at times.  A Warrior will be good at  Fight-
+               ing and Throwing/Bows, but bad at most other skills.
+ 
+          Mage
+               A Mage must live by his wits.  He cannot hope to simply hack
+               his  way  through the dungeon, and so must therefore use his
+               magic to defeat, deceive, confuse, and escape.   A  mage  is
+               not really complete without an assortment of magical devices
+               to use in addition to his spells.  He can master the  higher
+               level  magical  devices far easier than anyone else, and has
+               the best saving throw to resist effects of  spells  cast  at
+               him.   Intelligence  and  Dexterity  are  his primary stats.
+               There is no rule that says  a  mage  cannot  become  a  good
+               fighter, but spells are his true realm.
+ 
+          Priest
+               A Priest is a character of holy devotion.  They explore  the
+               dungeon  only  to destroy the evil that lurks within, and if
+               treasure just happens to fall into  their  packs,  well,  so
+               much  more  to  the  glory of their church!  Priests receive
+               their spells from a deity, and therefore do not choose which
+               spells they will learn.  They are familiar with magical dev-
+               ices, preferring to call them instruments of  god,  but  are
+               not  as good as a mage in their use.  Priests have good sav-
+               ing throws,  and  make  decent  fighters,  preferring  blunt
+               weapons  over  edged  ones.   Wisdom  and  Charisma  are the
+               priest's primary stats.
+ 
+          Rogue
+               A Rogue is a character that prefers to live by his  cunning,
+               but  is capable of fighting his way out of a tight spot.  He
+               is the master of traps and locks, no device being impossible
+               for  him  to  overcome.  A rogue has a high stealth allowing
+               him to sneak around many creatures without having to  fight,
+               or sneak up and get the first blow.  A rogue's perception is
+               higher than any other class, and many times he will notice a
+               trap  or  secret  door  before having to search.  A rogue is
+               better than warriors or paladins with magical  devices,  but
+               still  can  not  rely on their performance.  Rogues can also
+               learn a few spells, but not the  powerful  offensive  spells
+               magi  can use.  A rogue's primary stats are Intelligence and
+               Dexterity.
+ 
+          Ranger
+               A Ranger is a warrior/mage.  He is a good fighter,  and  the
+               best  of  the  classes  with a missile weapon such as a bow.
+               The ranger learns spells much more slowly than a  mage,  but
+               is  capable  of  learning all  but the most powerful spells.
+               Because a ranger is really  a  dual  class  character,  more
+               experience  is  required for him to advance.  A ranger has a
+               good stealth, good perception, good searching, a good saving
+               throw,  and is good with magical devices.  His primary stats
+               are Intelligence and Dexterity.
+ 
+          Paladin
+               A Paladin is a warrior/priest.  He is a very  good  fighter,
+               second  only to the warrior class, but not very good at mis-
+               sile weapons.  He receives prayers at a slower pace then the
+               priest,  but  can even  receive the most  powerful  prayers.
+               Because a paladin is  really  a  dual  class  character,  it
+               requires  more  experience  to advance him.  A paladin lacks
+               much in the way of abilities.  He is poor at  stealth,  per-
+               ception,  searching,  and  magical devices.  He has a decent
+               saving throw due to his divine alliance.  His primary  stats
+               are Strength and Charisma.
+ 
+ 
+          2.5.1.  Race Versus Class
+ 
+                      Warrior   Mage    Priest    Rogue   Ranger   Paladin
+ 
+          Human         Yes      Yes      Yes      Yes      Yes      Yes
+          Half-Elf      Yes      Yes      Yes      Yes      Yes      Yes
+          Elf           Yes      Yes      Yes      Yes      Yes      No
+          Hobbit        Yes      Yes      No       Yes      No       No
+          Gnome         Yes      Yes      Yes      Yes      No       No
+          Dwarf         Yes      No       Yes      No       No       No
+          Half-Orc      Yes      No       Yes      Yes      No       No
+          Half-Troll    Yes      No       Yes      No       No       No
+          Dunadan       Yes      Yes      Yes      Yes      Yes      Yes
+          High-Elf      Yes      Yes      Yes      Yes      Yes      No 
+ 
+ 
+ 
+          2.5.2.  Class Versus Skills
+ 
+          Class abilities as compared to each other, with 1 as the  lowest,
+          or worst, and 10 as the highest, or best are shown in the follow-
+          ing table.
+ 
+                             Save  Stea-        Magic                 Extra
+                  Fight Bows Throw  lth  Disarm Device Percep Search Exp/lev
+ 
+          Warrior  10     6    3     2      4      3      2      2       +0%
+          Mage      2     1   10     5      6     10      8      5      +30%
+          Priest    4     3    6     5      3      8      4      4      +20%
+          Rogue     8     9    7    10     10      6     10     10      +25%
+          Ranger    6    10    8     7      6      7      6      6      +30%
+          Paladin   9     5    4     2      2      4      2      2      +35%
+ 
+          2.5.3.  Class Versus Stats
+ 
+          Each class has bonuses and penalties to particular stats, shown in
+          the following table:
+ 
+                        STR     INT     WIS     DEX     CON     CHA
+ 
+          Warrior       +5      -2      -2      +2      +2      -1
+          Mage          -5      +3       0      +1      -2      +1
+          Priest        -1      -3      +3      -1       0      +2
+          Rogue         +2      +1      -2      +3      +1      -1
+          Ranger        +2      +2       0      +1      +1      +1
+          Paladin       +3      -3      +1       0      +2      +2
+ 
+ 

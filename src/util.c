@@ -3,11 +3,11 @@
 /* Purpose: miscellanous utilities */
 
 /*
- * Copyright (c) 1989 James E. Wilson 
+ * Copyright (c) 1989 James E. Wilson
  *
  * This software may be copied and distributed for educational, research, and
  * not for profit purposes provided that this copyright and statement are
- * included in all such copies. 
+ * included in all such copies.
  */
 
 #include "angband.h"
@@ -18,7 +18,7 @@
 
 /*
  * for those systems that don't have usleep
- * grabbed from the inl netrek server -cba 
+ * grabbed from the inl netrek server -cba
  * I think we include too many files above!
  */
 int usleep(huge microSeconds)
@@ -40,7 +40,7 @@ int usleep(huge microSeconds)
 
     /* Paranoia -- No excessive sleeping */
     if (microSeconds > 4000000L) core("Illegal usleep() call");
-    
+
 
     /* Wait for it */
     Timer.tv_sec = (microSeconds / 1000000L);
@@ -49,10 +49,10 @@ int usleep(huge microSeconds)
     /* Wait for it */
     if (select(nfds, no_fds, no_fds, no_fds, &Timer) < 0) {
 
-	/* Hack -- ignore interrupts */
-	if (errno != EINTR) return -1;
+        /* Hack -- ignore interrupts */
+        if (errno != EINTR) return -1;
     }
-    
+
     /* Success */
     return 0;
 }
@@ -77,9 +77,9 @@ void delay(int t)
 
 #ifdef __EMX__
 
-void delay(int x)
+void delay(int t)
 {
-    _sleep2(x);
+    _sleep2(t);
 }
 
 #else
@@ -89,10 +89,10 @@ void delay(int x)
 /*
  * Unix port for "delay"
  */
-void delay(int x)
+void delay(int t)
 {
     /* Do it in micro-seconds */
-    usleep(1000 * x);
+    usleep(1000 * t);
 }
 
 #endif	/* MSDOS */
@@ -128,8 +128,6 @@ void umask(int x)
 
 #if defined(SET_UID)
 
-#include <pwd.h>
-
 struct passwd      *getpwuid();
 struct passwd      *getpwnam();
 
@@ -143,14 +141,15 @@ void user_name(char *buf, int id)
 
     /* Look up the user name */
     if ((pw = getpwuid(id))) {
-	(void)strcpy(buf, pw->pw_name);
-	buf[16] = '\0';
+        (void)strcpy(buf, pw->pw_name);
+        buf[16] = '\0';
 
 #ifdef CAPITALIZE_USER_NAME
-	if (islower(buf[0])) buf[0] = toupper(buf[0]);
+        /* Hack -- capitalize the user name */
+        if (islower(buf[0])) buf[0] = toupper(buf[0]);
 #endif
 
-	return;
+        return;
     }
 
     /* Oops.  Hack -- default to "PLAYER" */
@@ -169,7 +168,7 @@ void user_name(char *buf, int id)
  */
 static int parse_path(cptr file, char *exp)
 {
-    register cptr	u, s;
+    cptr	u, s;
     struct passwd	*pw;
     char		user[128];
 
@@ -177,7 +176,7 @@ static int parse_path(cptr file, char *exp)
     /* Assume no result */
     exp[0] = '\0';
 
-    /* No file? */    
+    /* No file? */
     if (!file) return (0);
 
     /* No tilde? */
@@ -194,10 +193,10 @@ static int parse_path(cptr file, char *exp)
 
     /* Extract a user name */
     if (s) {
-	register int i;
-	for (i = 0; u < s; ++i) user[i] = *u++;
-	user[i] = '\0';
-	u = user;
+        int i;
+        for (i = 0; u < s; ++i) user[i] = *u++;
+        user[i] = '\0';
+        u = user;
     }
 
     /* Look up the "current" user */
@@ -270,7 +269,7 @@ int my_topen(cptr file, int flags, int mode)
     /* Try to parse the path */
     if (parse_path(file, buf)) file = buf;
 
-#ifdef MACINTOSH    
+#ifdef MACINTOSH
     /* Attempt to open the file anyway */
     /* Macintosh "open()" is brain-dead */
     return (open((char*)(file), flags));

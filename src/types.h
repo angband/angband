@@ -15,73 +15,45 @@
  * This file should ONLY be included by "angband.h"
  */
 
-
 /*
- * some machines will not accept 'signed char' as a type, and some accept it
- * but still treat it like an unsigned character, let's just avoid it,
- * any variable which can ever hold a negative value must be 16 or 32 bits 
+ * Note that "char" may or may not be signed, and that "signed char"
+ * may or may not work on all machines.  So always use "s16b" or "s32b"
+ * for signed values.  Also, note that unsigned values cause math problems
+ * in many cases, so try to only use "u16b" and "u32b" for "bit flags"
  */
-
-
-/*
- * Some simple buffers (overkill)
- */
-
-#define VTYPESIZ    160
-#define BIGVTYPESIZ 300
-
-typedef char vtype[VTYPESIZ];
-typedef char bigvtype[BIGVTYPESIZ];
+ 
 
 
 
 /*
  * Note that fixed length character fields allow pure "structure copy",
- * (which is technically bad anyway), but take up a LOT of space.  The
- * only one left is "inscrip", and it would be nice to remove it.
- *
- * all fields are given the smallest possible type, and all fields are
- * aligned within the structure to their natural size boundary, so that
- * the structures contain no padding and are minimum size.  In theory...
- *
- * Note that bit fields are extremely inefficient, and are thus used
- * only for "cave_type", where they provide a major savings in space.
- * Actually, this is not really true, perhaps we should eliminate them.
+ * (which is technically bad anyway), but take up a LOT of space.  We
+ * should really track down all the structure copies and remove them.
+ * The only one left is "inscrip", and it would be nice to remove it.
  */
+
 
 
 /*
- * Monster attack and damage types
- * Field order fixed by use in tables.c
+ * Monster blow structure
  */
-typedef struct _monster_attack monster_attack;
+ 
+typedef struct _monster_blow monster_blow;
 
-struct _monster_attack {
-    byte attack_type;		    
-    byte attack_desc;
-    byte attack_dice;
-    byte attack_sides;
+struct _monster_blow {
+    byte method;
+    byte effect;
+    byte d_dice;
+    byte d_side;
 };
 
 
 /*
  * Monster "variety" or "race"
  *
- * A major advantage of loading the "m_list" and "k_list" arrays from
- * a text file is that the structures below are no longer hard-coded.
- *
- * However, see the "speed-load" code in "arrays.c", and be sure to
- * wipe the "data" directory if the structures are changed.
- *
  * Note that "name" and "desc" are dynamically allocated.
  *
- * Note that the "gender" info is now encoded into "cflags1", as is
- * information on "multihued-ness" and "transparency".
- *
  * Note that "r_char" and "r_attr" are used for MORE than "visuals".
- *
- * Should attempt to "move" the monster attack info into the race.
- * This would allow the attacks to be much more "varied"...
  */
 
 typedef struct _monster_race monster_race;
@@ -91,28 +63,37 @@ struct _monster_race {
   cptr name;			/* Name				*/
   cptr desc;			/* Desc				*/
 
-  byte level;			/* Level of creature		*/
-  byte rarity;			/* Rarity of creature		*/
-  byte r_attr;			/* Racial "attribute"		*/
+  byte r_attr;			/* Racial "color"		*/
   char r_char;			/* Racial "symbol"		*/
 
-  byte hd[2];			/* Creatures hit die		*/
-  u16b ac;			/* Armour Class			*/
+  byte level;			/* Level of creature		*/
+  byte rarity;			/* Rarity of creature		*/
 
-  u16b sleep;			/* Inactive counter/10		*/
-  byte aaf;			/* Area affect radius		*/
+  byte hdice;			/* Creatures hit dice count	*/
+  byte hside;			/* Creatures hit dice sides	*/
+
+  s16b ac;			/* Armour Class			*/
+
+  s16b sleep;			/* Inactive counter (base)	*/
+  byte aaf;			/* Area affect radius (1-100)	*/
   byte speed;			/* Speed (normally 110)		*/
 
-  u32b mexp;			/* Exp value for kill		*/
+  s32b mexp;			/* Exp value for kill		*/
 
-  u16b damage[4];		/* Type attack and damage	*/
+  byte xtra1;			/* Something 			*/
+  byte xtra2;			/* Something 			*/
+  
+  byte freq_inate;		/* Inate spell frequency	*/
+  byte freq_spell;		/* Other spell frequency	*/
+  
+  u32b rflags1;			/* Flags 1 (general)		*/
+  u32b rflags2;			/* Flags 2 (abilities)		*/
+  u32b rflags3;			/* Flags 3 (race/resist)	*/
+  u32b rflags4;			/* Flags 4 (inate/breath)	*/
+  u32b rflags5;			/* Flags 5 (normal spells)	*/
+  u32b rflags6;			/* Flags 6 (special spells)	*/
 
-  u32b cflags1;		/* Flags 1 (movement)		*/
-  u32b cflags2;		/* Flags 2 (defense)		*/
-
-  u32b spells1;		/* Spell flags 1		*/
-  u32b spells2;		/* Spell flags 2		*/
-  u32b spells3;		/* Spell flags 3		*/
+  monster_blow blow[4];		/* Up to four blows per round	*/
 };
 
 
@@ -132,32 +113,50 @@ struct _monster_race {
  *
  * Note that "max_num" is not retained across "lives".
  * Note that "cur_num" is not retained across "levels".
+ *
+ * Note that several of these fields, related to "recall", can be
+ * scrapped if space becomes an issue, resulting in less "complete"
+ * monster recall (no knowledge of spells, etc).
  */
 
 typedef struct _monster_lore monster_lore;
 
 struct _monster_lore {
 
-    u32b r_cflags1;
-    u32b r_cflags2;
-    u32b r_spells1;
-    u32b r_spells2;
-    u32b r_spells3;
+    s16b sights;		/* Count sightings of this monster */
+    s16b deaths;		/* Count deaths from this monster */
 
-    u16b r_kills;		/* Count player killing monster */
-    u16b r_deaths;		/* Count monster killing player */
+    s16b pkills;		/* Count monsters killed in this life */
+    s16b tkills;		/* Count monsters killed in all lives */
 
-    byte r_attacks[4];
+    byte wake;			/* Number of times woken up (?) */
+    byte ignore;		/* Number of times ignored (?) */
 
-    byte r_wake;		/* Number of times woken up (?) */
-    byte r_ignore;		/* Number of times ignored (?) */
+    byte xtra1;			/* Something */
+    byte xtra2;			/* Something */
 
-    byte r_cast;		/* Total number of spells cast */
-    byte r_drop;		/* Max number of things dropped at once */
+    byte drop_gold;		/* Max number of gold dropped at once */
+    byte drop_item;		/* Max number of item dropped at once */
+
+    byte cast_inate;		/* Max number of inate spells seen */
+    byte cast_spell;		/* Max number of other spells seen */
+
+    byte blows[4];		/* Number of times each blow type was seen */
+
+    u32b flags1;		/* Observed racial flags */
+    u32b flags2;		/* Observed racial flags */
+    u32b flags3;		/* Observed racial flags */
+    u32b flags4;		/* Observed racial flags */
+    u32b flags5;		/* Observed racial flags */
+    u32b flags6;		/* Observed racial flags */
+    
 
     byte max_num;		/* Maximum population allowed per level */
 
-    byte cur_num;		/* Monster population on this level */
+    byte cur_num;		/* Monster population on current level */
+
+    byte l_attr;		/* Desired monster attribute */
+    char l_char;		/* Desired monster character */
 };
 
 
@@ -173,7 +172,7 @@ typedef struct _monster_type monster_type;
 
 struct _monster_type {
 
-  u16b r_idx;			/* Monster race index		*/
+  s16b r_idx;			/* Monster race index		*/
 
   byte fy;			/* Y location on map		*/
   byte fx;			/* X location on map		*/
@@ -185,16 +184,33 @@ struct _monster_type {
 
   byte mspeed;			/* Monster "speed"		*/
   byte energy;			/* Monster "energy"		*/
-  
-  byte stunned;		/* Monster is stunned		*/
+
+  byte stunned;			/* Monster is stunned		*/
   byte confused;		/* Monster is confused		*/
-  byte monfear;		/* Monster is afraid		*/
-  byte unused;			/* Unused, but saved		*/
+  byte monfear;			/* Monster is afraid		*/
+  byte dead;			/* Monster is dead		*/
 
-  u16b cdis;			/* Current dis from player	*/
+  byte cdis;			/* Current dis from player	*/
 
-  bool los;			/* Player to Monster l.o.s.	*/
   bool ml;			/* Monster is "visible"		*/
+
+  byte ty;			/* Y location of target		*/
+  byte tx;			/* X location of target		*/
+
+#ifdef WDT_TRACK_OPTIONS
+
+  s16b t_who;			/* Who are we tracking		*/
+  byte t_dur;			/* How long are we tracking	*/
+  byte t_bit;			/* Four bit flags		*/
+
+#endif
+
+#ifdef DRS_SMART_OPTIONS
+
+  u32b smart;			/* Field for "smart_learn"	*/
+
+#endif
+
 };
 
 
@@ -225,7 +241,11 @@ struct _quest {
 
 
 /*
- * Extra Item "memory" (not very important)
+ * Variable information about a "kind" of object
+ *
+ * The "x_list" array is modified in various places
+ *
+ * Only "aware" and "tried" are saved in the savefile
  */
 
 typedef struct _inven_xtra inven_xtra;
@@ -233,16 +253,34 @@ typedef struct _inven_xtra inven_xtra;
 struct _inven_xtra {
 
     bool aware;		/* The player is "aware" of the item's effects */
+
     bool tried;		/* The player has "tried" one of the items */
+
+    bool has_flavor;	/* This object has a flavor */
+
+    bool easy_know;	/* This object is always known (if aware) */
+
+    byte k_attr;	/* The underlying attr for this object */
+    char k_char;	/* The underlying char for this object */
+
+    byte x_attr;	/* The desired attr for this object */
+    char x_char;	/* The desired char for this object */
+
+#ifdef FAST_OBJDES
+    cptr single;	/* Hack -- singular form */
+    cptr plural;	/* Hack -- plural form */
+#endif
+
 };
 
 
 
 /*
- * The "kind" of an object (or treasure).
+ * Constant information about a "kind" of object
  *
- * Note that "name" is dynamically allocated.
- * Note that "name" must be at the end.
+ * The "k_list" array is initialized in "arrays.c" and never changed
+ *
+ * Note that the "name" field is dynamically allocated.
  */
 
 typedef struct _inven_kind inven_kind;
@@ -269,9 +307,9 @@ struct _inven_kind {
 
   s32b cost;			/* Object "base cost"		*/
 
-  u32b flags1;		/* Flags, set 1			*/
-  u32b flags2;		/* Flags, set 2			*/
-  u32b flags3;		/* Flags, set 3			*/
+  u32b flags1;			/* Flags, set 1			*/
+  u32b flags2;			/* Flags, set 2			*/
+  u32b flags3;			/* Flags, set 3			*/
 
   byte locale[4];		/* Allocation level(s)		*/
   byte chance[4];		/* Allocation chance(s)		*/
@@ -314,7 +352,7 @@ typedef struct _inven_type inven_type;
 
 struct _inven_type {
 
-  u16b k_idx;			/* Kind index (in k_list)	*/
+  s16b k_idx;			/* Kind index (in k_list)	*/
 
   byte iy;			/* Y-position on map, or 0	*/
   byte ix;			/* X-position on map, or 0	*/
@@ -323,7 +361,7 @@ struct _inven_type {
   byte sval;			/* Sub-category number		*/
   s16b pval;			/* Misc. use variable		*/
 
-  s16b timeout;		/* Timeout counter		*/
+  s16b timeout;			/* Timeout counter		*/
   byte name1;			/* Artifact type, if any	*/
   byte name2;			/* Special type, if any		*/
   byte ident;			/* Identification info		*/
@@ -335,14 +373,16 @@ struct _inven_type {
   s16b toac;			/* Plusses to AC		*/
   s16b ac;			/* Normal AC			*/
   byte dd, ds;			/* Damage dice/sides		*/
-  u16b unused;		/* Padding */
+
+  byte unused;			/* Unused field			*/
+  byte discount;		/* Discount (if any)		*/
 
   s32b cost;			/* Cost of item			*/
   s32b scost;			/* Store cost			*/
 
-  u32b flags1;		/* Flags, set 1			*/
-  u32b flags2;		/* Flags, set 2			*/
-  u32b flags3;		/* Flags, set 3			*/
+  u32b flags1;			/* Flags, set 1			*/
+  u32b flags2;			/* Flags, set 2			*/
+  u32b flags3;			/* Flags, set 3			*/
 
   char inscrip[INSCRIP_SIZE];	/* Object inscription		*/
 };
@@ -365,7 +405,7 @@ struct inven_very {
 
   cptr name;			/* Artifact Name		*/
 
-  u16b k_idx;			/* Artifact base kind		*/
+  s16b k_idx;			/* Artifact base kind		*/
 
   byte tval;			/* Artifact type		*/
   byte sval;			/* Artifact sub type		*/
@@ -388,7 +428,7 @@ struct inven_very {
   u32b flags3;		/* Artifact Flags, set 3	*/
 
   u16b padding;			/* Padding			*/
-  
+
   byte cur_num;		/* Number created (0 or 1)	*/
   byte max_num;		/* Unused (should be "1")	*/
 };
@@ -396,10 +436,10 @@ struct inven_very {
 
 
 /*
- * spell name is stored in spell_names[] array
- * at index i if "mage", Or at index i + ??? if "priest"
+ * The "name" of spell 'N' is stored as spell_names[X][N],
+ * where X is 0 for mage-spells and 1 for priest-spells.
  *
- * We should probably change the whole "sexp" method, so that
+ * XXX We should probably change the whole "sexp" method, so that
  * the "spell experience" is taken from slevel, smana, and sfail.
  */
 
@@ -422,49 +462,32 @@ struct _spell_type {
  * to a max size of 256 by 256.  In partcular, locations are often
  * saved as bytes, limiting each coordinate to the 0-255 range.
  *
- * Note that the monster/item indexes must be larger than bytes.
+ * We use a full 16 bits for m_idx and i_idx, but only need about 10.
  *
- * Note that the "info" field replaces the old (inefficient) bit fields:
- *   lr: room should be lit with perm light, walls with
- *        this set should be perm lit after tunneled out
- *   fm: field mark, used for traps/doors/stairs, object is
- *        hidden if fm is FALSE
- *   pl: permanent light, used for walls and lighted rooms
- *   tl: temporary light, used for player's lamp light,etc.
- *
- * To access the old bit fields, do bit operations on "info" using the
- * constants "CAVE_LR", "CAVE_FM", "CAVE_PL", and "CAVE_TL".
- *
- * The new fields in "info" are: "CAVE_INIT" to allow lit rooms to be noticed
- * when first entered, "CAVE_SEEN" for future use, "CAVE_VIEW" to mark a grid
- * as "viewable", and "CAVE_XTRA" for the "update_view()" routine.
- *
- * Note the preparation for a "mental state" of the map, so that, for
- * example, doors and walls do not suddenly "disappear" halfway accross
- * the dungeon.  These are currently usused.
+ * Note the special fields for the simple "monster flow" code.
  */
 
 typedef struct _cave_type cave_type;
 
 struct _cave_type {
 
-  s16b m_idx;		/* Monster index (in m_list) */
-  s16b i_idx;		/* Item index (in i_list) */
-
-  byte fval;		/* Grid type (0-15) */
-
-  byte info;		/* Holds the "CAVE_*" flags */
-
-#ifdef NEW_MAPS
-  char mchar;		/* Hack -- "map memory" */
-  byte mattr;		/* Hack -- "map memory" */
-#endif
+  s16b m_idx;		/* Monster index (in m_list) or zero */
+  s16b i_idx;		/* Item index (in i_list) or zero */
 
 #ifdef MONSTER_FLOW
+
   byte cost;		/* Hack -- cost of flowing */
   byte when;		/* Hack -- when cost was computed */
+
 #endif
 
+#ifdef WDT_TRACK_OPTIONS
+
+  s16b track;		/* Hack -- footprint counter */
+
+#endif
+
+  u16b info;		/* Flags -- use the "GRID_*" constants */
 };
 
 
@@ -489,7 +512,7 @@ struct _owner_type {
 
 
 /*
- * A store.  Now holds some items, which themselves hold their store cost.
+ * A store, including an array of items for sale.
  */
 
 typedef struct _store_type store_type;
@@ -502,8 +525,8 @@ struct _store_type {
   byte owner;
   byte store_ctr;
 
-  u16b good_buy;
-  u16b bad_buy;
+  s16b good_buy;
+  s16b bad_buy;
 
   inven_type store_item[STORE_INVEN_MAX];
 };
@@ -514,17 +537,13 @@ typedef struct _player_race player_race;
 
 struct _player_race {
 
-  cptr trace;			    /* Type of race	    */
+  cptr trace;			/* Type of race */
 
-  s16b str_adj;
-  s16b int_adj;		    
-  s16b wis_adj;
-  s16b dex_adj;
-  s16b con_adj;
-  s16b chr_adj;
+  s16b radj[6];			/* Racial stat bonuses */
 
   byte b_age;			    /* Base age of character	 */
-  byte m_age;			    /* Maximum age of character	 */
+  byte m_age;			    /* Racial age modifier 	 */
+
   byte m_b_ht;			    /* base height for males	 */
   byte m_m_ht;			    /* mod height for males	 */
   byte m_b_wt;			    /* base weight for males	 */
@@ -548,32 +567,36 @@ struct _player_race {
   byte rtclass;			/* Bit field for class types */
 };
 
+
+/*
+ * Player class info
+ *
+ * Hack -- note that we use A_STR/A_INT/A_WIS as the actual values
+ * of "spell_stat" which lets us use the fact that A_STR is zero...
+ * Thus if "p_ptr->spell_stat" is "TRUE" then the player has spells.
+ */
+
 typedef struct _player_class player_class;
 
 struct _player_class {
 
-  cptr title;			    /* type of class		       */
+  cptr title;			/* Type of class		*/
 
-  byte adj_hd;			    /* Adjust hit points	       */
-  byte mdis;			    /* mod disarming traps	       */
-  byte msrh;			    /* modifier to searching	       */
-  byte mstl;			    /* modifier to stealth	       */
-  byte mfos;			    /* modifier to freq-of-search      */
-  byte mbth;			    /* modifier to base to hit	       */
-  byte mbthb;			    /* modifier to base to hit - bows  */
-  byte msav;			    /* Class modifier to save	       */
+  s16b cadj[6];			/* Class stat modifier		*/
 
-  s16b madj_str;		    /* Class modifier for strength     */
-  s16b madj_int;		    /* Class modifier for intelligence */
-  s16b madj_wis;		    /* Class modifier for wisdom       */
-  s16b madj_dex;		    /* Class modifier for dexterity    */
-  s16b madj_con;		    /* Class modifier for constitution */
-  s16b madj_chr;		    /* Class modifier for charisma     */
+  byte adj_hd;			/* Adjust hit points		*/
+  byte m_exp;			/* Class experience factor	*/
 
-  byte spell;			/* class use mage spells		*/
-  byte m_exp;			/* Class experience factor		*/
-  byte first_spell_lev;		/* First level spells usable		*/
-  byte age_adj;			/* age percentage (warrior = 100)	*/
+  byte mdis;			/* mod disarming traps		*/
+  byte msrh;			/* modifier to searching	*/
+  byte mfos;			/* modifier to freq-of-search	*/
+  byte mstl;			/* modifier to stealth		*/
+  byte mbth;			/* modifier to base to hit	*/
+  byte mbthb;			/* modifier to base to hit with bows	*/
+  byte msav;			/* modifier to saving throws	*/
+
+  byte spell_stat;		/* Stat for spells (if any) 	*/
+  byte spell_first;		/* First level spells usable	*/
 };
 
 
@@ -610,6 +633,9 @@ typedef struct _player_type player_type;
 
 struct _player_type {
 
+  byte maximize;		/* Maximal stats affected by race/class */
+  byte preserve;		/* Preserve artifacts, reduce "feelings" */
+
   byte prace;			/* # of race	*/
   byte pclass;			/* # of class	*/
   byte male;			/* Sex of character */
@@ -617,9 +643,9 @@ struct _player_type {
   byte hitdie;			/* Char hit die	*/
   byte expfact;			/* Experience factor	*/
 
-  u16b age;			/* Characters age	*/
-  u16b ht;			/* Height		*/
-  u16b wt;			/* Weight		*/
+  s16b age;			/* Characters age	*/
+  s16b ht;			/* Height		*/
+  s16b wt;			/* Weight		*/
 
   s16b use_stat[6];		/* Current "resulting" stat values */
   s16b max_stat[6];		/* Current "maximal" stat values */
@@ -663,13 +689,15 @@ struct _player_type {
   s16b dis_th;			/* Display +ToHit	*/
   s16b dis_td;			/* Display +ToDam	*/
   s16b dis_ac;			/* Display +ToAC	*/
-  s16b dis_tac;		/* Display +ToTAC	*/
+  s16b dis_tac;			/* Display +ToTAC	*/
 
-  u32b status;		/* Status of player	   */
+  u32b update;			/* Pending Updates	*/
+  u32b notice;			/* Noticed Things	*/
+  u32b redraw;			/* Desired Redraws	*/
 
   s16b pspeed;			/* Current speed	*/
   s16b energy;			/* Current energy	*/
-  
+
   s16b food;			/* Current nutrition	*/
   s16b food_digested;		/* Food per round	*/
 
@@ -721,10 +749,10 @@ struct _player_type {
   byte resist_dark;		/* Resist darkness	*/
   byte resist_chaos;		/* Resist chaos		*/
   byte resist_disen;		/* Resist disenchant	*/
-  byte resist_shards;		/* Resist shards	*/
+  byte resist_shard;		/* Resist shards	*/
   byte resist_nexus;		/* Resist nexus		*/
   byte resist_blind;		/* Resist blindness	*/
-  byte resist_nether;		/* Resist nether	*/
+  byte resist_neth;		/* Resist nether	*/
   byte resist_fear;		/* Resist fear		*/
 
   byte sustain_str;		/* Keep strength	*/

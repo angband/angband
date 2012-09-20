@@ -10,38 +10,42 @@
 /*
  * A term_win is a "window" for a Term
  *
- *  - Window "flags" (unused)
- *
- *	- Window "offset" (unused)
- *
  *	- Window Size (max 256x256)
+ *
+ *	- Flag -- Erase the window at next refresh
+ *	- Flag -- Unused (flush something or other)
  *
  *	- Cursor Useless/Visible codes
  *	- Cursor Location (see "Useless")
  *
- *	- Min/Max modified rows (per screen)
+ *	- Min/Max modified rows (per window)
  *
- *  - Min/Max modified col (per row)
+ *	- Array[h] -- Min/Max modified cols (per row)
  *
- *  - Min/Max column with "useful" info (per row)
+ *	- Array[h] -- Access to the attribute array
+ *	- Array[h] -- Access to the character array
  *
- *	- Attribute array (see "tw_a()")
- *	- Character array (see "tw_c()")
+ *	- Array[h*w] -- Attribute array
+ *	- Array[h*w] -- Character array
+ *
+ * Note that the attr/char pair at (x,y) is a[y][x]/c[y][x]
+ * and that the row of attr/chars at (0,y) is a[y]/c[y]
  *
  * Note that "y1<=y2" iff any changes have occured on the screen.
  * Note that "r1[y]<=r2[y]" iff any changes have occured in row "y".
+ *
  * Note that "blanks" written past "rm[y]" in row "y" are ignored.
+ * That is, they would be if we were actually using this array
  */
 
 typedef struct _term_win term_win;
 
 struct _term_win {
 
-    huge flags;
+    u16b w, h;
 
-    short x, y;
-
-    byte w, h;
+    bool erase;
+    bool flush;
 
     bool cu, cv;
     byte cx, cy;
@@ -51,8 +55,11 @@ struct _term_win {
     byte *x1;
     byte *x2;
 
-    byte *a;
-    char *c;
+    byte **a;
+    char **c;
+
+    byte *va;
+    char *vc;
 };
 
 
@@ -68,8 +75,6 @@ struct _term_win {
  *	- Keypress Queue -- various data
  *
  *	- Keypress Queue -- pending keys
- *
- *	- Keypress Queue -- current macro
  *
  *	- Current screen image
  *
@@ -93,32 +98,28 @@ typedef struct _term term;
 
 struct _term {
 
+    vptr info;
+
+    vptr data;
+
     bool initialized;
     bool soft_cursor;
     bool scan_events;
     bool unused_flag;
 
-    byte key_head;
-    byte key_tail;
-    byte key_xtra;
-    byte key_size;
-    
     char *key_queue;
 
-    cptr key_macro;
+    u16b key_head;
+    u16b key_tail;
+    u16b key_xtra;
+    u16b key_size;
 
     term_win *old;
-
     term_win *scr;
 
-
-    vptr info;
-
-    vptr data;
-    
     void (*init_hook)(term *t);
     void (*nuke_hook)(term *t);
-    
+
     errr (*xtra_hook)(int n, int v);
     errr (*curs_hook)(int x, int y, int z);
     errr (*wipe_hook)(int x, int y, int w, int h);
@@ -177,15 +178,6 @@ struct _term {
 
 
 
-/**** Available Macros ****/
-
-/* Access to the char/attr at a given location */
-/* This can be used for both access AND assignment */
-#define tw_a(W,X,Y) ((W)->a[(W)->w*(Y)+(X)])
-#define tw_c(W,X,Y) ((W)->c[(W)->w*(Y)+(X)])
-
-
-
 /**** Available Variables ****/
 
 extern term *Term;
@@ -193,28 +185,23 @@ extern term *Term;
 
 /**** Available Functions ****/
 
-extern errr term_win_wipe(term_win*);
-extern errr term_win_load(term_win*, term_win*);
-extern errr term_win_nuke(term_win*);
-extern errr term_win_init(term_win*, int, int);
-
+extern errr term_win_wipe(term_win *t);
+extern errr term_win_load(term_win *t, term_win *s);
+extern errr term_win_nuke(term_win *t);
+extern errr term_win_init(term_win *t, int w, int h);
 extern errr Term_xtra(int n, int v);
 extern errr Term_curs(int x, int y, int z);
 extern errr Term_wipe(int x, int y, int w, int h);
 extern errr Term_text(int x, int y, int n, byte a, cptr s);
-
-extern int Term_kbhit(void);
-extern int Term_inkey(void);
-extern errr Term_keypress(int);
-extern errr Term_key_push(int);
-extern errr Term_flush(void);
-extern errr Term_fresh(void);
+extern errr Term_erase(int x1, int y1, int x2, int y2);
+extern errr Term_clear(void);
 extern errr Term_redraw(void);
-extern errr Term_update(void);
-extern errr Term_resize(int,int);
-extern errr Term_bell(void);
 extern errr Term_save(void);
 extern errr Term_load(void);
+extern errr Term_fresh(void);
+extern errr Term_bell(void);
+extern errr Term_update(void);
+extern errr Term_resize(int w, int h);
 extern errr Term_show_cursor(void);
 extern errr Term_hide_cursor(void);
 extern errr Term_gotoxy(int x, int y);
@@ -225,13 +212,14 @@ extern errr Term_addch(byte a, char c);
 extern errr Term_addstr(int n, byte a, cptr s);
 extern errr Term_putch(int x, int y, byte a, char c);
 extern errr Term_putstr(int x, int y, int n, byte a, cptr s);
-extern errr Term_erase(int x1, int y1, int x2, int y2);
-extern errr Term_clear(void);
-
-extern errr Term_activate(term*);
-
-extern errr term_nuke(term*);
-extern errr term_init(term*, int w, int h, int k);
+extern errr Term_flush(void);
+extern errr Term_keypress(int k);
+extern errr Term_key_push(int k);
+extern int Term_kbhit(void);
+extern int Term_inkey(void);
+extern errr Term_activate(term *t);
+extern errr term_nuke(term *t);
+extern errr term_init(term *t, int w, int h, int k);
 
 #endif
 

@@ -1,0 +1,51 @@
+=== General Information ===
+
+The game of Angband is a single player dungeon simulation.  A player
+may choose from a number of races and classes when creating a character,
+and then `run' that character over a period of days, weeks, even months,
+attempting to win the game by defeating Morgoth, the Lord of Darkness,
+who resides far below the surface.
+ 
+The player will begin his adventure on the town level where  he may acquire
+supplies, weapons, armor, and magical devices by bartering with various shop
+owners.  After preparing for his  adventure, the  player can descend into
+the Pits of Angband where fantastic adventures await his coming!
+ 
+You will probably want to browse through the "help files" before beginning
+any serious adventuring...
+
+
+You can obtain the latest source via anonymous ftp from "linc.cis.upenn.edu",
+in the "/pub/angband/Source" directory.  Pre-compiled versions of the game
+are also available, try, for example, "/pub/angband/Macintosh".
+
+The "rec.games.roguelike.angband" newsgroup is a good place for general
+questions about playing the game, as well as discussion about the source.
+
+You can post bug reports there, or send them to "benh@linc.cis.upenn.edu".
+
+It is extremely easy to port Angband to a new system.  If you cannot find
+a version that will compile on your machine, you can make one (in general)
+by writing a single file of about one hundred lines of C code.
+
+There are a variety of commands available, including some new ones to make
+macros of various kinds and to interact with "pref" files, which let you
+modify various aspects of Angband to your liking.  You can find more info
+about available commands via the "commands" sub-topic of "help.hlp".
+
+You can tell Angband to look for "save" and/or "pref" files in a user-
+defined directory, via the "-d" and "-c" command line arguments.  This
+will allow people to play even if they do not have write-acess to the
+Angband "lib/save/" directory, and to supply their own "pref" files, with
+macros and such, even if they can not modify the "lib/pref/" directory.
+
+Some of the help files supplied with this game are not up to date, when
+in doubt, the source or the newsgroup are the place to turn for advice.
+Or attempt to figure it out by experimentation, this is sometimes the most
+fun.  The documentation is very easy to modify and update, so you may want
+to check in to the ftp site occasionally to see if there are any new help
+files for you to acquire.
+
+
+--- Ben ---
+

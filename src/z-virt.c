@@ -1,5 +1,7 @@
 /* File: z-virt.c */
 
+/* Purpose: Memory management routines -BEN- */
+
 #include "z-virt.h"
 
 #include "z-util.h"
@@ -9,8 +11,9 @@
  * Allow debugging messages to track memory usage.
  */
 #ifdef VERBOSE_RALLOC
-static long ralloc_total = 0;
-static long ralloc_block = 0;
+static long virt_make = 0;
+static long virt_kill = 0;
+static long virt_size = 0;
 #endif
 
 
@@ -31,7 +34,7 @@ static long ralloc_block = 0;
  */
 char *memset(char *s, int c, huge n)
 {
-  register char *t;
+  char *t;
   for (t = s; len--; ) *t++ = c;
   return (s);
 }
@@ -49,7 +52,7 @@ errr (*rnfree_aux)(vptr, huge) = NULL;
 /*
  * Free some memory (that was allocated by ralloc).
  */
-errr rnfree (vptr p, huge len)
+errr rnfree(vptr p, huge len)
 {
   /* Easy to free zero bytes */
   if (len == 0) return (0);
@@ -57,16 +60,14 @@ errr rnfree (vptr p, huge len)
 #ifdef VERBOSE_RALLOC
 
   /* Decrease memory count */
-  ralloc_total -= len;
+  virt_kill += len;
 
   /* Message */
-  if (len > ralloc_block)
+  if (len > virt_size)
   {
-    char buf[128];
-
-    sprintf(buf, "rnfree(%ld bytes).  Allocated: %ld bytes",
-	    len, ralloc_total);
-
+    char buf[80];
+    sprintf(buf, "Kill (%ld): %ld - %ld = %ld.",
+            len, virt_make, virt_kill, virt_make - virt_kill);
     plog(buf);
   }
 
@@ -100,7 +101,7 @@ vptr rpanic(huge len)
   static byte lifeboat[RPANIC_LIFEBOAT];
   static huge lifesize = RPANIC_LIFEBOAT;
 
-  /* Hopefully, we have a real "panic" function */  
+  /* Hopefully, we have a real "panic" function */
   if (rpanic_aux) return ((*rpanic_aux)(len));
 
   /* We are probably going to crash anyway */
@@ -135,18 +136,15 @@ vptr ralloc(huge len)
 
 #ifdef VERBOSE_RALLOC
 
-  /* Remember how much memory is allocated */
-  ralloc_total += len;
+  /* Count allocated memory */
+  virt_make += len;
 
-  /* Log if the change was meaningful */
-  if (len > ralloc_block)
+  /* Log important allocations */
+  if (len > virt_size)
   {
-    /* Log a message */
-    char buf[128];
-
-    sprintf(buf, "ralloc(%ld bytes).  Allocated: %ld bytes",
-	    len, ralloc_total);
-
+    char buf[80];
+    sprintf(buf, "Make (%ld): %ld - %ld = %ld.",
+            len, virt_make, virt_kill, virt_make - virt_kill);
     plog(buf);
   }
 
@@ -182,9 +180,9 @@ vptr ralloc(huge len)
  */
 cptr string_make(cptr str)
 {
-  register huge len = 0;
-  register cptr t = str;
-  register char *s, *res;
+  huge len = 0;
+  cptr t = str;
+  char *s, *res;
 
   /* Simple sillyness */
   if (!str) return (str);
@@ -209,7 +207,7 @@ cptr string_make(cptr str)
  */
 errr string_free(cptr str)
 {
-  register huge len = 0;
+  huge len = 0;
 
   /* Succeed on non-strings */
   if (!str) return (0);

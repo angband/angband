@@ -1,318 +1,135 @@
 # File: Makefile.win
 
-
-
 #.autodepend
 
+# change this to suit your taste
 
-
-CC = \apps\bc\bin\bcc.exe
-
+CC = c:\apps\bc\bin\bcc.exe
 CFLAGS = +borlandc.cfg
-
-LINK = \apps\bc\bin\tlink.exe
-
-RC = \apps\bc\bin\rc.exe
-
-LIBDIR = \apps\bc\lib
-
-INCLDIR = \apps\bc\include
-
-
+LINK = c:\apps\bc\bin\tlink.exe
+RC = c:\apps\bc\bin\rc.exe
+LIBDIR = c:\apps\bc\lib
+INCLDIR = c:\apps\bc\include
 
 # shouldn't need to change anything below
-
-
+# (except possibly "/L\apps\bc\bin" in linker flags)
 
 SRCS = \
-
-  arrays.c birth.c cave.c command.c \
-
-  creature.c death.c desc.c dungeon.c \
-
-  effects.c files.c generate.c io.c \
-
-  itsybits.c magic.c main.c main-win.c\
-
-  misc1.c misc2.c misc3.c misc4.c \
-
-  moria1.c moria2.c moria3.c moria4.c \
-
-  random.c recall.c save.c save-old.c signals.c \
-
-  spells1.c spells2.c store.c tables.c term.c \
-
-  util.c variable.c wizard.c \
-
-  z-form.c z-util.c z-virt.c
-
-
+  main.c main-win.c itsybits.c \
+  signals.c util.c io.c init.c save.c save-old.c files.c \
+  generate.c birth.c creature.c melee.c dungeon.c store.c \
+  effects.o cmd1.c cmd2.c cmd3.c cmd4.c cmd5.c cmd6.c \
+  misc.c monster.c mon-desc.c object.c obj-desc.c \
+  spells1.c spells2.c cave.c tables.c variable.c wizard.c \
+  term.c random.c z-util.c z-virt.c z-form.c
 
 OBJS = \
-
-  arrays.obj birth.obj cave.obj command.obj \
-
-  creature.obj death.obj desc.obj dungeon.obj \
-
-  effects.obj files.obj generate.obj io.obj \
-
-  itsybits.obj magic.obj main.obj main-win.obj \
-
-  misc1.obj misc2.obj misc3.obj misc4.obj \
-
-  moria1.obj moria2.obj moria3.obj moria4.obj \
-
-  random.obj recall.obj save.obj save-old.obj signals.obj \
-
-  spells1.obj spells2.obj store.obj tables.obj term.obj \
-
-  util.obj variable.obj wizard.obj \
-
-  z-form.obj z-util.obj z-virt.obj
-
-
+  main.obj main-win.obj itsybits.obj \
+  signals.obj util.obj io.obj init.obj save.obj save-old.obj files.obj \
+  generate.obj birth.obj creature.obj effects.obj dungeon.obj store.obj \
+  cmd1.obj cmd2.obj cmd3.obj cmd4.obj cmd5.obj cmd6.obj \
+  misc.obj monster.obj mon-desc.obj object.obj obj-desc.obj \
+  spells1.obj spells2.obj cave.obj tables.obj variable.obj wizard.obj \
+  term.obj random.obj z-util.obj z-virt.obj z-form.obj
 
 FSS = \
-
-  arrays.fs command.fs creature.fs effects.fs generate.fs misc4.fs \
-
-  moria3.fs spells1.fs spells2.fs store.fs wizard.fs
-
-
+  init.fs cmd3.fs cmd6.fs creature.fs effects.fs generate.fs misc.fs \
+  mon_desc.fs obj_desc.fs spells1.fs spells2.fs store.fs wizard.fs
 
 default: borlandc.cfg farstr.exe angband
 
-
-
 clean:
-
 	del *.obj
-
 	del *.fs
-
 	del *.fsh
-
 	del ..\farstr.exe
-
 	del ..\*.map
-
 	del ..\angband.exe
 
 
-
-
-
-copyold:
-
-	mkdir oldc
-
-    copy arrays.c oldc\arrays.c
-
-	copy command.c oldc\command.c
-
-	copy creature.c oldc\creature.c
-
-	copy effects.c oldc\effects.c
-
-    copy generate.c oldc\generate.c
-
-	copy misc4.c oldc\misc4.c
-
-	copy moria3.c oldc\moria3.c
-
-	copy spells1.c oldc\spells1.c
-
-	copy spells2.c oldc\spells2.c
-
-	copy store.c oldc\store.c
-
-	copy wizard.c oldc\wizard.c
-
-
-
-prepwin: copyold $(FSS)
-
-    move arrays.fs arrays.c
-
-	move command.fs command.c
-
-	move creature.fs creature.c
-
-	move effects.fs effects.c
-
-    move generate.fs generate.c
-
-	move misc4.fs misc4.c
-
-	move moria3.fs moria3.c
-
-	move spells1.fs spells1.c
-
-	move spells2.fs spells2.c
-
-	move store.fs store.c
-
-	move wizard.fs wizard.c
-
-
-
-
-
 borlandc.cfg:
-
 	copy &&|
-
 -I$(INCLDIR)
-
 -L$(LIBDIR)
-
 -3
-
 -ml
-
 -d
-
--Ff=16
-
+-Ff=8
 -f-
-
 -WE
-
--w+
-
+-N-
+-K-
+-w-
 -G
-
 -O2
-
 -D__STDC__=1
-
 -zEDATA_FARSEG
-
 | borlandc.cfg
-
 	copy ..\src-win\*.* .
-
-	copy ..\src-win\angband.ini ..
-
-	copy ..\lib\files\a_list.txt ..\lib\files\a_list_m.txt
-
-	copy ..\lib\files\a_list_w.txt ..\lib\files\a_list.txt
-
-
+	if not exist ..\angband.ini copy ..\src-win\angband.ini ..
 
 .c.fs:
-
 	del $*.fs
-
 	del $*.fsh
-
 	farstr.exe $<
 
-
-
 .c.obj:
-
 	$(CC) -c $(CFLAGS) $<
 
-
-
-farstr.exe: ..\lib\extra\farstr\fsmain.c ..\lib\extra\farstr\fsparse.c
-
+farstr.exe: ..\src-win\farstr\fsmain.c ..\src-win\farstr\fsparse.c
         $(CC) @&&|
-
--mc -f- -I\apps\bc\include;..\lib\extra\farstr -L\apps\bc\lib -efarstr ..\lib\extra\farstr\fsmain.c ..\lib\extra\farstr\fsparse.c
-
+-mc -f- -I\apps\bc\include;..\src-win\farstr -L\apps\bc\lib -efarstr ..\src-win\farstr\fsmain.c ..\src-win\farstr\fsparse.c
 |
 
-
-
-arrays.obj: arrays.fs
-
+init.obj: init.fs
 	$(CC) -c $(CFLAGS) $?
 
-
-
-command.obj: command.fs
-
+cmd3.obj: cmd3.fs
 	$(CC) -c $(CFLAGS) $?
 
-
+cmd6.obj: cmd6.fs
+	$(CC) -c $(CFLAGS) $?
 
 creature.obj: creature.fs
-
 	$(CC) -c $(CFLAGS) $?
-
-
 
 effects.obj: effects.fs
-
 	$(CC) -c $(CFLAGS) $?
-
-
 
 generate.obj: generate.fs
-
 	$(CC) -c $(CFLAGS) $?
 
-
-
-misc4.obj: misc4.fs
-
+misc.obj: misc.fs
 	$(CC) -c $(CFLAGS) $?
 
-
-
-moria3.obj: moria3.fs
-
+mon-desc.obj: mon-desc.fs
 	$(CC) -c $(CFLAGS) $?
 
-
+obj-desc.obj: obj-desc.fs
+	$(CC) -c $(CFLAGS) $?
 
 spells1.obj: spells1.fs
-
 	$(CC) -c $(CFLAGS) $?
-
-
 
 spells2.obj: spells2.fs
-
 	$(CC) -c $(CFLAGS) $?
-
-
 
 store.obj: store.fs
-
 	$(CC) -c $(CFLAGS) $?
-
-
 
 wizard.obj: wizard.fs
-
 	$(CC) -c $(CFLAGS) $?
 
-
-
 angband: $(OBJS) angband.res
-
 	$(LINK) @&&|
-
-/L\apps\bc\lib\ /Twe/P/d/x c0wl arrays birth cave+
-
-command creature death desc dungeon+
-
-effects files generate io itsybits magic main+
-
-main-win misc1 misc2 misc3 misc4 moria1 moria2+
-
-moria3 moria4 random recall save save-old+
-
-signals spells1 spells2 store tables term util+
-
-variable wizard z-form z-util+
-
-z-virt,..\angband.exe,..\angband.map,import cwl,angband.def
-
+/L\apps\bc\lib\ /Twe/P/d/x c0wl main main-win itsybits+
+signals util io init save save-old files+
+generate birth creature effects dungeon store+
+cmd1 cmd2 cmd3 cmd4 cmd5 cmd6+
+misc monster mon-desc object obj-desc+
+spells1 spells2 cave tables variable+
+wizard+
+term random z-util z-virt z-form,+
+..\angband.exe,..\angband.map,import cwl,angband.def
 |
-
 	$(RC) -t -v -31 angband.res ..\angband.exe
-

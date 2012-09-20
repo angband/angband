@@ -72,8 +72,10 @@ extern bool streq(cptr a, cptr b);
 extern bool prefix(cptr big, cptr small);
 extern bool suffix(cptr big, cptr small);
 
+#if 0
 #ifndef HAS_STRICMP
 extern int stricmp(cptr a, cptr b);
+#endif
 #endif
 
 /* Print an error message */

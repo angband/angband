@@ -1,0 +1,66 @@
+# File: Mage.prt
+
+# Extra preference file for Mages
+
+
+
+# F1 -- detect traps/doors
+
+#A:\e\emah\s
+#P:^_58\r
+
+# F2 -- detect monsters
+
+#A:\e\emab
+#P:^_56\r
+
+# F3 -- identify
+
+A:\e\emce
+P:^_35\r
+
+
+# Shift-F13 -- call light
+
+A:\e\emad\e\e
+P:^_S41\r
+
+
+
+
+# Option-KP0 -- Lightning bolt
+
+A:\e\embb
+P:^_O18\r
+
+
+# Option-Keypad -- Directed lightning bolt
+
+A:\e\embb1
+P:^_O19\r
+
+A:\e\embb2
+P:^_O20\r
+
+A:\e\embb3
+P:^_O21\r
+
+A:\e\embb4
+P:^_O22\r
+
+A:\e\embb5
+P:^_O23\r
+
+A:\e\embb6
+P:^_O24\r
+
+A:\e\embb7
+P:^_O25\r
+
+A:\e\embb8
+P:^_O27\r
+
+A:\e\embb9
+P:^_O28\r
+
+

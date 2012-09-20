@@ -36,9 +36,9 @@
 /**** Available functions ****/
 
 extern s32b random(void);
-extern void srandom(u32b);
-extern char *initstate(u32b, char *, int);
-extern char *setstate(char *);
+extern void srandom(u32b x);
+extern char *initstate(u32b seed, char *arg_state, int n);
+extern char *setstate(char *arg_state);
 
 
 #endif
