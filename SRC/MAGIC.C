@@ -51,13 +51,20 @@ void cast()
 	    msg_print("You failed to get the spell off!");
 	  else
 	    {
+	      chance = py.misc.lev/
+			(py.misc.pclass==1 ? 2 : (py.misc.pclass==4 ? 4 : 5))
+			+ stat_adj(A_INT); /* does missile spell do line? -CFT */
 	      /* Spells.  */
 	      switch(choice+1)
 		{
 		case 1:
 		  if (get_dir(NULL, &dir))
-		    fire_bolt(GF_MAGIC_MISSILE, dir, char_row, char_col,
-			      damroll(2, 6), spell_names[0]);
+		    if (randint(100) < (chance-10))
+		      line_spell(GF_MAGIC_MISSILE, dir, char_row, char_col,
+			      damroll(2, 6));
+		    else
+		      fire_bolt(GF_MAGIC_MISSILE, dir, char_row, char_col,
+			      damroll(2, 6));
 		  break;
 		case 2:
 		  (void) detect_monsters();
@@ -89,8 +96,7 @@ void cast()
 		case 9:
 		  if (get_dir(NULL, &dir))
 		    fire_ball(GF_POISON_GAS, dir, char_row, char_col,
-			      10+(py.misc.lev/2),
-			      spell_names[8]);
+			      10+(py.misc.lev/2), 2);
 		  break;
 		case 10:
 		  if (get_dir(NULL, &dir))
@@ -98,9 +104,12 @@ void cast()
 		  break;
 		case 11:
 		  if (get_dir(NULL, &dir))
-		    fire_bolt(GF_LIGHTNING, dir, char_row, char_col,
-			      damroll(3+((py.misc.lev-5)/4),8)
-			      , spell_names[10]);
+		    if (randint(100) < (chance-10))
+		      line_spell(GF_LIGHTNING, dir, char_row, char_col,
+			      damroll(3+((py.misc.lev-5)/4),8));
+		    else
+		      fire_bolt(GF_LIGHTNING, dir, char_row, char_col,
+			      damroll(3+((py.misc.lev-5)/4),8));
 		  break;
 		case 12:
 		  (void) td_destroy();
@@ -123,9 +132,12 @@ void cast()
         	  break;
 		case 17:
 		  if (get_dir(NULL, &dir))
-		    fire_bolt(GF_FROST, dir, char_row, char_col,
-			      damroll(5+((py.misc.lev-5)/4),8),
-			      spell_names[16]);
+		    if (randint(100) < (chance-5))
+		      line_spell(GF_FROST, dir, char_row, char_col,
+			      damroll(5+((py.misc.lev-5)/4),8));
+		    else
+		      fire_bolt(GF_FROST, dir, char_row, char_col,
+			      damroll(5+((py.misc.lev-5)/4),8));
 		  break;
 		case 18:
 		  if (get_dir(NULL, &dir))
@@ -152,9 +164,12 @@ void cast()
 		  break;
 		case 25:
 		  if (get_dir(NULL, &dir))
-		    fire_bolt(GF_FIRE, dir, char_row, char_col,
-			      damroll(8+((py.misc.lev-5)/4),8),
-			      spell_names[24]);
+		    if (randint(100) < chance)
+		      line_spell(GF_FIRE, dir, char_row, char_col,
+			      damroll(8+((py.misc.lev-5)/4),8));
+		    else
+		      fire_bolt(GF_FIRE, dir, char_row, char_col,
+			      damroll(8+((py.misc.lev-5)/4),8));
 		  break;
 		case 26:
 		  if (get_dir(NULL, &dir))
@@ -163,8 +178,7 @@ void cast()
 		case 27:
 		  if (get_dir(NULL, &dir))
 		    fire_ball(GF_FROST, dir, char_row, char_col,
-			      30+(py.misc.lev),
-			      spell_names[26]);
+			      30+(py.misc.lev),2);
 		  break;
 		case 28:
 		  (void) recharge(40);
@@ -183,8 +197,7 @@ void cast()
 		case 31:
 		  if (get_dir(NULL, &dir))
 		    fire_ball(GF_FIRE, dir, char_row, char_col
-			      ,55+(py.misc.lev),
-			      spell_names[30]);
+			      ,55+(py.misc.lev),2);
 		  break;
 		case 32:
 		  destroy_area(char_row, char_col);
@@ -219,27 +232,27 @@ void cast()
 		  break;
 		case 39: /* Acid Bolt */
 		  if (get_dir(NULL, &dir))
-		    fire_bolt(GF_ACID, dir, char_row, char_col,
-			      damroll(6+((py.misc.lev-5)/4), 8)
-			      , "Acid Bolt");
+		    if (randint(100) < (chance-5))
+		      line_spell(GF_ACID, dir, char_row, char_col,
+			      damroll(6+((py.misc.lev-5)/4), 8));
+		    else
+		      fire_bolt(GF_ACID, dir, char_row, char_col,
+			      damroll(6+((py.misc.lev-5)/4), 8));
 		  break;
 		case 40: /* Cloud kill */
 		  if (get_dir(NULL, &dir))
 		    fire_ball(GF_POISON_GAS, dir, char_row, char_col,
-			      40+(py.misc.lev/2),
-			      "Deadly Cloud");
+			      40+(py.misc.lev/2),3);
 		  break;
 		case 41: /* Acid Ball */
 		  if (get_dir(NULL, &dir))
 		    fire_ball(GF_ACID, dir, char_row, char_col,
-			      40+(py.misc.lev),
-			      "Acid Ball");
+			      40+(py.misc.lev),2);
 		  break;
 		case 42: /* Ice Storm */
 		  if (get_dir(NULL, &dir))
 		    fire_ball(GF_FROST, dir, char_row, char_col,
-			      70+(py.misc.lev),
-			      "Ice Storm");
+			      70+(py.misc.lev),3);
 		  break;
 		case 43: /* Meteor Swarm */
 		  if (get_dir(NULL, &dir))
@@ -248,13 +261,11 @@ void cast()
 #else
 		    fire_ball(GF_MAGIC_MISSILE, dir, char_row, char_col,
 #endif
-			      65+(py.misc.lev),
-			      "Meteor Swarm");
+			      65+(py.misc.lev),2);
 		  break;
 		case 44: /* Hellfire */
 		  if (get_dir(NULL, &dir))
-		    fire_ball(GF_HOLY_ORB, dir, char_row, char_col, 300,
-			      "Hellfire");
+		    fire_ball(GF_HOLY_ORB, dir, char_row, char_col, 300, 2);
 		  break;
                 case 45: /*Detect Evil */
                   (void) detect_evil();

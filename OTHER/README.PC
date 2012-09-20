@@ -9,7 +9,8 @@ Angband extracted itself from the archive.
   PC Angband has ALL of the features of Angband, and it runs in color.
 The color code was adapted directly from Justin Anderson's color code for
 Umoria 5.4, to whom I am greatful for permission to use it.
-Also included are many features/bug fixes that have not been incorporated
+
+  Also included are many features/bug fixes that have not been incorporated
 into the Unix Angband (the Unix version has fallen somewhat behind since
 Sean Marsh graduated).  One of these new features is Chris Wilde's
 targetting code from Morgul.  I have as yet been able to reach him to
@@ -19,17 +20,10 @@ copyright, even if I do believe that he will grant me permission to use
 the code once I do get in touch with him.
 
   Angband is a memory hog, and it uses TurboC's overlay system to fit into
-memory.  For the 1.31 release, I've gone back to just 1 executable, with
-the same 128k overlay buffer used by 'angexe13.exe'.  However, I've
-made some optimizations to the overalying of commonly used functions,
-and provided EMS memory support (see the file free-mem.doc for details), so
-it should run quite well with the smaller buffer size.  PC Angband 1.31
-requires only about 505k (517120 bytes, not 505000 bytes) to run.  If you
-have more than 640k of memory on your system, you will probably want to
-provide EMS memory for Angband to use, which will provide a terrific
-increase in performance (see your Dos manuals and the file free-mem.doc
-for more info).  Or you can improve performance using a disk cache, as
-I had suggested for previous Angband releases.
+memory.  For the 1.40 release, a 128k overlay buffer is used, requiring
+about 512k (524,488 bytes) of free memory to run.  If EMS memory is
+available, Angband will use it to speed up overlay swaping.  See
+'free-mem.doc' for more on that.
 
   A quick note about compiling (to save some people some trouble):
 The current PC sources will probably only compile under Turbo C++, version
@@ -39,4 +33,11 @@ it work.  Also, the makefile (as it stands now) links in the tcio package,
 which also uses TC-specific screen functions.  So I don't really recommend
 compiling your own version of angband, unless you have TC++ (or BC++).
 
+--
+Charles F. Teague II  Net:cteague@cs.umb.edu  Real:33 Sidney Ave, Lynn MA 01902
++------------------------------------+-----------------------+----------------+
+| Computers are so powerful because  | "Don't do what I SAY, | 'lush' CS 1993 |
+| they do whatever you tell them to. |  do what I mean!!!!"  | TKE-zm sn 603  |
++------------------------------------+-----------------------+----------------+
+Hi!  I'm a replicating .sig virus!  Join in the fun and copy me into yours!
 

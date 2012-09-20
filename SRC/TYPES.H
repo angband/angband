@@ -364,6 +364,7 @@ typedef struct class_type
   int8u spell;		/* class use mage spells	*/
   int8u m_exp;		/* Class experience factor	*/
   int8u first_spell_lev;/* First level where class can use spells. */
+  int8u age_adj;	/* %age, warrior =100, so diff classes age faster. */
 } class_type;
 
 typedef struct background_type

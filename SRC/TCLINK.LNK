@@ -1,12 +1,12 @@
 main.obj tcio.obj dungeon.obj creature.obj+
-signals.obj ms_misc.obj+
+signals.obj ms_misc.obj random.obj+
 /oCODE store1.obj create.obj desc.obj+
 misc1.obj misc2.obj files.obj+
 moria1.obj moria2.obj player.obj+
 generate.obj sets.obj death.obj eat.obj help.obj magic.obj+
 potions.obj prayer.obj save.obj staffs.obj wands.obj scrolls.obj+
 spells.obj wizard.obj store2.obj monsters.obj treasure.obj+
-vars1.obj vars2.obj rnd.obj recall.obj undef.obj tables.obj+
-rods.obj /o- \tc\lib\c0h,angband.exe,,\tc\lib\ch+
+vars1.obj vars2.obj recall.obj undef.obj tables.obj+
+rods.obj /o- \tc\lib\c0h,..\angband.exe,,\tc\lib\ch+
 \tc\lib\overlay
 

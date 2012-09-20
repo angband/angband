@@ -96,7 +96,7 @@ extern int8u find_cut;			/* Cut corners on a run */
 extern int8u find_examine;		/* Check corners on a run */
 extern int8u find_prself;			/* Print yourself on a run (slower) */
 extern int8u find_bound;			/* Stop run when the map shifts */
-extern int8u prompt_carry_flag;	/* use 'g' to pickup, or try pickup all? */
+extern int8u getkey_flag;	/* use 'g' to pickup, or try pickup all? */
 extern int8u carry_query_flag; 	/* Prompt to pick something up? */
 extern int8u show_weight_flag;		/* Display weights in inventory */
 extern int8u highlight_seams;		/* Highlight magma and quartz */
@@ -113,7 +113,7 @@ extern int find_cut;			/* Cut corners on a run */
 extern int find_examine;		/* Check corners on a run */
 extern int find_prself;			/* Print yourself on a run (slower) */
 extern int find_bound;			/* Stop run when the map shifts */
-extern int prompt_carry_flag;		/* Prompt to pick something up */
+extern int getkey_flag;		/* Prompt to pick something up */
 extern int show_weight_flag;		/* Display weights in inventory */
 extern int highlight_seams;		/* Highlight magma and quartz */
 extern int find_ignore_doors;		/* Run through open doors */
@@ -206,6 +206,9 @@ extern int16 noscore;		/* Don't score this game. -CJS- */
 #endif
 extern int32u randes_seed;    /* For encoding colors */
 extern int32u town_seed;	    /* Seed for town genera*/
+extern char *dummy_state;	/* used for BSD's R.N.Gen. */
+extern char *old_state;		/* ditto */
+
 extern int16 dun_level;	/* Cur dungeon level   */
 extern int16 missile_ctr;	/* Counter for missiles */
 extern int msg_flag;	/* Set with first msg  */
@@ -398,6 +401,9 @@ extern int	ansi, saveprompt;
 extern char	moriatop[], moriasav[];
 #endif
 
+extern int feel_chance; /* used in Shawn Collenburg's new style feelings
+				code */
+
 /* function return values */
 /* only extern functions declared here, static functions declared inside
    the file that defines them */
@@ -425,7 +431,7 @@ void magic_init(void);
 void known1(char *);
 int known1_p(inven_type *);
 void known2(char *);
-int known2_p*(inven_type *);
+int known2_p(inven_type *);
 void clear_known2(inven_type *);
 void clear_empty(inven_type *);
 void store_bought(inven_type *);
@@ -453,6 +459,7 @@ void lite_spot(int, int); /* moved to optimize overlays -CFT */
 int panel_contains(int, int);
 unsigned char loc_symbol(int, int);
 int test_light(int, int);
+int mon_color(int);
 
 /* eat.c */
 void eat(void);
@@ -715,10 +722,12 @@ void pray(void);
 int bool_roff_recall(int);
 int roff_recall(int);
 
-/* rnd.c */
-int32u get_rnd_seed(void);
-void set_rnd_seed(int32u);
-int32 rnd(void);
+/* rnd.c is unused now -CWS */
+/* random.c */
+long bsd_random(void);
+void srandom(unsigned int);
+char *initstate(unsigned int, char *, int);
+char *setstate(char *);
 
 /* save.c */
 #ifdef MAC
@@ -784,8 +793,9 @@ void light_line(int, int, int);
 void starlite(int, int);
 int disarm_all(int, int, int);
 void get_flags(int, int32u *, int32u *, int (**)());
-void fire_bolt(int, int, int, int, int, char *);
-void fire_ball(int, int, int, int, int, char *);
+void fire_bolt(int, int, int, int, int);
+void line_spell(int, int, int, int, int);
+void fire_ball(int, int, int, int, int, int);
 void breath(int, int, int, int, char *, int);
 int recharge(int);
 int hp_monster(int, int, int, int);
@@ -829,7 +839,7 @@ int slow_poison(void);
 void bless(int);
 void detect_inv2(int);
 void destroy_area(int, int);
-int enchant(int16 *);
+int enchant(inven_type *, int, int8u);
 int remove_curse(void);
 int restore_level(void);
 void self_knowledge(void);
@@ -894,6 +904,8 @@ int multiply_monster(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_I
 void exit_game(ARG_VOID);
 void display_scores(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT);
 int delete_entry(ARG_INT);
+void delete_hs_saved(ARG_CHAR_PTR ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA
+			ARG_INT);
 
 /* desc.c */
 int is_a_vowel(ARG_CHAR);
@@ -938,6 +950,7 @@ void lite_spot(ARG_INT ARG_COMMA ARG_INT); /* moved to optimize overlays -CFT */
 int panel_contains(ARG_INT ARG_COMMA ARG_INT);
 unsigned char loc_symbol(ARG_INT ARG_COMMA ARG_INT);
 int test_light(ARG_INT ARG_COMMA ARG_INT);
+int mon_color(ARG_INT);
 
 /* eat.c */
 void eat(ARG_VOID);
@@ -1261,10 +1274,12 @@ void pray(ARG_VOID);
 int bool_roff_recall(ARG_INT);
 int roff_recall(ARG_INT);
 
-/* rnd.c */
-int32u get_rnd_seed(ARG_VOID);
-void set_rnd_seed(ARG_INT32U);
-int32 rnd(ARG_VOID);
+/* rnd.c is unused now -CWS */
+/* random.c */
+long bsd_random(ARG_VOID);
+void srandom(ARG_INT16U);
+char *initstate(ARG_INT16U ARG_COMMA ARG_CHAR_PTR ARG_COMMA ARG_INT16);
+char *setstate(ARG_CHAR_PTR);
 
 /* rods.c */
 void activate_rod(ARG_VOID);
@@ -1332,8 +1347,9 @@ int detect_monsters(ARG_VOID);
 void light_line(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT);
 void starlite(ARG_INT ARG_COMMA ARG_INT);
 int disarm_all(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT);
-void fire_bolt(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_CHAR_PTR);
-void fire_ball(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_CHAR_PTR);
+void fire_bolt(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT);
+void line_spell(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT);
+void fire_ball(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT);
 void breath(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_CHAR_PTR ARG_COMMA ARG_INT);
 int recharge(ARG_INT);
 int hp_monster(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT);
@@ -1377,7 +1393,7 @@ int slow_poison(ARG_VOID);
 void bless(ARG_INT);
 void detect_inv2(ARG_INT);
 void destroy_area(ARG_INT ARG_COMMA ARG_INT);
-int enchant(ARG_INT16_PTR);
+int enchant(ARG_INV_PTR ARG_COMMA ARG_INT ARG_COMMA ARG_INT8U);
 int remove_curse(ARG_VOID);
 int restore_level(ARG_VOID);
 int probing(ARG_VOID);

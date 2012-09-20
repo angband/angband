@@ -1,0 +1,21 @@
+   The source files are in .\src.  .\other contains all the files packaged
+with the executable, except for the 'angband.exe' file.
+
+   To compile, check the makefile, 'makefile.tc', and the linkfile,
+'tclink.lnk', to verify that the paths are set correctly for your system.
+Then cd to the .\src directory, and 'make -fmakefile.tc angband' should
+start the compile.  Any warning messages produced during the compile can
+safely be ignored.  For fastest compiling, it helps to have both a disk
+cache, and EMS/XMS memory available for Turbo C to use.
+
+	Share and Enjoy,
+		Chuck
+--
+Charles F. Teague II  Net:cteague@cs.umb.edu  Real:33 Sidney Ave, Lynn MA 01902
++------------------------------------+-----------------------+----------------+
+| Computers are so powerful because  | "Don't do what I SAY, | 'lush' CS 1993 |
+| they do whatever you tell them to. |  do what I mean!!!!"  | TKE-zm sn 603  |
++------------------------------------+-----------------------+----------------+
+Hi!  I'm a replicating .sig virus!  Join in the fun and copy me into yours!
+
+

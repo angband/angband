@@ -44,8 +44,8 @@
 
 /* number of messages to save in a buffer */
 #define MAX_SAVE_MSG   22   /* How many messages to save -CJS- */
-#define MAX_SAVE_HISCORES 50
 /* How many hiscores to be saved */
+#define MAX_SAVE_HISCORES 100
 
 /* Dungeon size parameters					*/
 #define MAX_HEIGHT  66	    /* Multiple of 11; >= 22 */
@@ -889,6 +889,8 @@
 
 
 #ifdef TC_COLOR
+/* BLUE is 1; if it's 9, then I'm compiling for my monitor which shows blue
+	too dark to see clearly -CFT */
 #define	BLUE 1
 #define GREEN 2 
 #define CYAN 3
@@ -904,5 +906,11 @@
 #define LIGHTMAGENTA 13
 #define YELLOW 14
 #define WHITE 15
+#define MULTI 16
+#define ANY 17
 #endif
 
+/* bit flags used in my revamped enchant() code -CFT */
+#define ENCH_TOHIT   1
+#define ENCH_TODAM   2
+#define ENCH_TOAC    4

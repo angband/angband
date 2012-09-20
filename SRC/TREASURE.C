@@ -544,7 +544,7 @@ treasure_type object_list[MAX_OBJECTS] = {
 #endif
 },
 {"& Seeker Arrow~"		,0x00000000L,	TV_ARROW, '{',	/* 79*/
-    0,	   20, 194,   1,   2,	0,   0,	 0,   0, {4,4}	,  55, 2, 0L
+    0,	   20, 194,   1,   2,	0,   0,	 0,   0, {3,6}	,  55, 2, 0L
 #ifdef TC_COLOR
   ,LIGHTCYAN
 #endif
@@ -556,7 +556,7 @@ treasure_type object_list[MAX_OBJECTS] = {
 #endif
 },
 {"& Seeker Bolt~"		,0x00000000L,	TV_BOLT, '{',	/* 81*/
-    0,	   25, 194,   1,   3,	0,   0,	 0,   0, {4,5}	,  65, 3, 0L
+    0,	   25, 194,   1,   3,	0,   0,	 0,   0, {3,7}	,  65, 3, 0L
 #ifdef TC_COLOR
   ,LIGHTCYAN
 #endif
@@ -831,7 +831,7 @@ treasure_type object_list[MAX_OBJECTS] = {
   ,LIGHTGRAY
 #endif
 },
-{"& Set of Cestus"		,0x00000000L,	TV_GLOVES, ']',	/*127*/
+{"& Set of Cesti"		,0x00000000L,	TV_GLOVES, ']',	/*127*/
     0,	  100,	3,   1,  40,	0,   0,	 5,   0, {1,1}	, 50, 0, 0L
 #ifdef TC_COLOR
   ,WHITE
@@ -2401,13 +2401,13 @@ treasure_type object_list[MAX_OBJECTS] = {
 {"[Wrath of God]"              ,0x00000000L,	TV_PRAYER_BOOK, '?',/*387*/
     0,	100000L,	72,   1,  30,   0,   0,	 0,   0, {1,1}	, 100, 4, 0x0003E00L
 #ifdef TC_COLOR
-  ,WHITE
+  ,BLUE
 #endif
 },
 {"Blue Dragon Scale Mail"        ,0x02100000L,	TV_HARD_ARMOR, '[',/*389*/
     0,	35000L,	17,   1, 200,  -2,   0,	30,   10, {2,4}	, 40, 8, 0x00000800L
 #ifdef TC_COLOR
-  ,LIGHTBLUE
+  ,BLUE
 #endif
 },
 {"White Dragon Scale Mail"       ,0x00300000L,	TV_HARD_ARMOR, '[',/*390*/
@@ -3050,7 +3050,7 @@ treasure_type object_list[MAX_OBJECTS] = {
 {"sapphires"			,0x00000000L, TV_GOLD, '*',
     0,	  20,	13,   1,   0,	0,   0,	 0,   0, {0,0}	  ,  1, 0, 0L
 #ifdef TC_COLOR
-  ,LIGHTBLUE
+  ,BLUE
 #endif
 },
 {"gold"				,0x00000000L, TV_GOLD, '$',
@@ -3227,13 +3227,13 @@ char *special_names[SN_ARRAY_SIZE] = {
 	"'Lotharang'",      "'Firestar'",       "'Eriril'",
 	"'Cubragol'",       "of Bard",              "'Colluin'",
 	"'Holcolleth'",     "'Totila'",         "of Pain",
-	"'Elvagil'",        "'Aglarang'",	"of Rohan",
-	"of the Eorlingas",     "'Barukkheled'",    "of Wrath",
+	"'Elvagil'",        "'Aglarang'",	"of the Rohirrim",
+	"of Eorlingas",     "'Barukkheled'",    "of Wrath",
 	"'Haradekket'",     "'Mundwine'",       "'Gondricam'",
         "'Zarcuthra'",      "'Careth Asdriag'",	"'Forasgil'",
 	"'Crisdurian'",     "'Colannon'",       "'Hithlomir'",
 	"'Thalkettoth'",    "of Arvedui",     	"of Thranduil",
-   	"of Thengel",           "'Hammerhand'",     "of Celefarn",
+   	"of Thengel",           "of Hammerhand",     "of Celegorm",
   	"of Thror",             "of Maedhros",          "of Olorin",
  	"'Anguirel'",       "of Thorin",		"of Celeborn",
 	"of Orome",		"of Eonwe",		"of Gondor",

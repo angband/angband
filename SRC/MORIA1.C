@@ -48,6 +48,9 @@ static int see_nothing(ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT);
 /* Note: When the player is sped up or slowed down, I simply	 */
 /*	 change the speed of all the monsters.	This greatly	 */
 /*	 simplified the logic.				       */
+/* No LONGER!  A change in player speed only affect player's speed.  The
+   new code in movement_rate() allows monsters to have attacks in correct
+   proportions, and still uses only int math -CFT */
 void change_speed(num)
 register int num;
 {
@@ -55,8 +58,6 @@ register int num;
 
   py.flags.speed += num;
   py.flags.status |= PY_SPEED;
-  for (i = mfptr - 1; i >= MIN_MONIX; i--)
-      m_list[i].cspeed += num;
 }
 
 
@@ -85,24 +86,24 @@ register int factor;
     }
   if (TR_STEALTH & t_ptr->flags)
     py.misc.stl += amount;
+  if (TR_INFRA & t_ptr->flags)
+    py.flags.see_infra += amount;
   if (TR_SPEED & t_ptr->flags) {
     if ((t_ptr->tval == TV_RING) &&
 	!stricmp("Speed",
 		object_list[t_ptr->index].name) &&
-	(t_ptr->p1 == 1))
+	(t_ptr->p1 > 0))
       if ((inventory[INVEN_RIGHT].tval == TV_RING) &&
 	  !stricmp("Speed",
 		  object_list[inventory[INVEN_RIGHT].index].name) &&
-	  (inventory[INVEN_RIGHT].p1 == 1) &&
+	  (inventory[INVEN_RIGHT].p1 > 0) &&
 	  (inventory[INVEN_LEFT].tval == TV_RING) &&
 	  !stricmp("Speed",
 		  object_list[inventory[INVEN_LEFT].index].name) &&
-	  (inventory[INVEN_RIGHT].p1 == 1))
+	  (inventory[INVEN_RIGHT].p1 > 0))
 	return;
     change_speed(-amount);
   }
-    if (TR_INFRA & t_ptr->flags)
-      py.flags.see_infra += amount;
 }
 
 /* Recalculate the effect of all the stuff we use.		  -CJS- */
@@ -473,6 +474,7 @@ int (*test)();
 	j++;
       }
     }
+    erase_line(1+j,col);
   return col;
 }
 
@@ -1199,7 +1201,7 @@ char command;
 			      msg_print("Oops! It feels deathly cold!");
 			      add_inscribe(i_ptr, ID_DAMD);
 			      /* To force a cost of 0, even if unidentified. */
-			      i_ptr->cost = -1;
+			      /* i_ptr->cost = -1;  Not! -DGK */
 			    }
 			}
 		    }
@@ -2031,12 +2033,20 @@ char *hit_from;
   if (py.flags.invuln>0 && damage<9000)  damage = 0;
   py.misc.chp -= damage;
   if (py.misc.chp < 0) {
-    if (!death)	{
-      death = TRUE;
-      (void) strcpy(died_from, hit_from);
-      total_winner = FALSE;
+    if ((wizard) && !(get_Yn("Die?"))) {
+      py.misc.chp=py.misc.mhp;
+      death=FALSE;
+      prt_chp();
+      msg_print("OK, so you don't die.");
+      }
+    else {
+      if (!death) {
+        death = TRUE;
+        (void) strcpy(died_from, hit_from);
+        total_winner = FALSE;
+        }
+      new_level_flag = TRUE;
     }
-    new_level_flag = TRUE;
   } else prt_chp();
 }
 
@@ -2643,7 +2653,8 @@ int32u typ_dam;
       i_ptr = &inventory[j];
       switch (typ_dam){
       	case TR_RES_ACID:
-      	  if ((i_ptr->flags & TR_RES_ACID) || (i_ptr->flags2 & TR_IM_ACID))
+      	  if ((i_ptr->flags & TR_RES_ACID) || (i_ptr->flags2 & TR_IM_ACID)
+		|| ((i_ptr->flags2 & TR_ARTIFACT) && (randint(5)>2)))
       	    do_damage = FALSE;
       	  else do_damage = TRUE;
 	  break; 

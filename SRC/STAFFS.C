@@ -38,7 +38,8 @@ void use()
       i_ptr = &inventory[item_val];
       free_turn_flag = FALSE;
       m_ptr = &py.misc;
-      chance = m_ptr->save + stat_adj(A_INT) - (int)i_ptr->level - 5
+      chance = m_ptr->save + stat_adj(A_INT)
+	- (int)(i_ptr->level>50?50:i_ptr->level)
 	+ (class_level_adj[m_ptr->pclass][CLA_DEVICE] * m_ptr->lev / 3);
       if (py.flags.confused > 0)
 	chance = chance / 2;

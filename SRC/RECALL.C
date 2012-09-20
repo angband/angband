@@ -24,10 +24,10 @@ static char *desc_atype[] = {
   "weaken",
   "confuse",
   "terrify",
-  "shoot flames",
+  "burn",
   "shoot acid",
   "freeze",
-  "shoot lightning",
+  "electrify",
   "corrode",
   "blind",
   "paralyse",
@@ -276,11 +276,18 @@ int mon_num;
   /* the CM_WIN property is always known, set it if a win monster */
   rcmove = mp->r_cmove | (CM_WIN & cp->cmove);
   rcdefense = mp->r_cdefense & cp->cdefense;
+#ifdef TC_COLOR
+  if (!no_color_flag && !inven_bw_flag) /* then we'll colorize the name */
+    textcolor(mon_color(cp->color));
+#endif
   if (cp->cdefense & UNIQUE)
     (void) sprintf(temp, "%s:\n", cp->name);
   else
     (void) sprintf(temp, "The %s:\n", cp->name);
   roff(temp);
+#ifdef TC_COLOR
+  textcolor(LIGHTGRAY);
+#endif
   /* Conflict history. */
 /* changed to act better for unique monsters -CFT */
   if (cp->cdefense & UNIQUE) { /* treat unique differently... -CFT */
@@ -733,9 +740,14 @@ int mon_num;
 			    (CM_60_RANDOM|CM_90_RANDOM)))
 	roff (" often");
       roff(" carry");
-      p = " objects";
+      if (cp->cdefense & SPECIAL) /* it'll tell you who has better treasure -CFT */
+        p = (j==1?"n exceptional object":" exceptional objects");
+      else if (cp->cdefense & GOOD)
+        p = (j==1?" good object":" good objects");
+      else
+        p = (j==1?"n object":" objects");
       if (j == 1)
-	p = " an object";
+        roff(" a");
       else if (j == 2)
 	roff(" one or two");
       else

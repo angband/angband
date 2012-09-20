@@ -74,8 +74,11 @@ static void get_stats()
     }
   while (tot <= 42 || tot >= 54);
 
-  for (i = 0; i < 6; i++)
-    py.stats.max_stat[i] = 5 + dice[3*i] + dice[3*i+1] + dice[3*i+2];
+  for (i = 0; i < 6; i++) {
+    py.stats.cur_stat[i] = py.stats.max_stat[i] =
+	5 + dice[3*i] + dice[3*i+1] + dice[3*i+2];
+    py.stats.mod_stat[i] = 0; /* clear this every time we re-roll -CFT */
+    }
 }
 
 
@@ -116,7 +119,34 @@ int16 amount;
 	else if (tmp_stat < 118)
 	  tmp_stat++;
       }
-  py.stats.max_stat[stat] = tmp_stat;
+
+ /* now, adjust stat so that bonuses are "intrinsic" pluses, that will
+    compute to the same value (maybe with a tiny bit of upward rounding)
+    as tmp_stat.  This allows race/class bonuses to affect gain stat
+    potion maxes.. -CFT */
+  if (amount < 1) { /* if negative bonuses, then we can just transfer,
+  			since rolled stats never exceed 17, so nothing
+  			complicated -CFT */
+    py.stats.mod_stat[stat] = amount;
+    tmp_stat -= amount;
+    }
+  else { /* positive bonuses... do some calculation to get the results
+  		as close to tmp_stat as possible... */
+    for(i=0;i<amount;i++){
+      py.stats.mod_stat[stat]++; /* for each "click", we increment mod_stat, */
+      if (tmp_stat > 18) { /* and decrease tmp_stat depending on it's value */
+        if (tmp_stat < 28) tmp_stat = 18; /* so 18/07 goes to 18 when we dec */
+        else tmp_stat -= 10; /* for >= 18/10, we reduce by 10 */
+        }
+      else tmp_stat--; /* for <= 18, just dec by 1 */
+      }
+    }
+  /* Okay, now the combination of mod_stat and max_stat will compute to
+     max_stat, or the next "click" of 10 above it.  There's not much I
+     can do about this inaccuracy... it can't be avoided when the
+     number after the 18/ falls to 0, because of the way stat pluses
+     are handled... -CFT */
+  py.stats.cur_stat[stat] = py.stats.max_stat[stat] = tmp_stat;
 }
 
 static int get_prev_stats() {
@@ -146,6 +176,7 @@ static void get_all_stats ()
 {
   register player_type *p_ptr;
   register race_type *r_ptr;
+  class_type *c_ptr;
   register int j;
 
   prev.str = (int16u)py.stats.max_stat[0];
@@ -156,13 +187,14 @@ static void get_all_stats ()
   prev.chr = (int16u)py.stats.max_stat[5];
   p_ptr = &py;
   r_ptr = &race[p_ptr->misc.prace];
+  c_ptr = &class[p_ptr->misc.pclass];
   get_stats ();
-  change_stat (A_STR, r_ptr->str_adj);
-  change_stat (A_INT, r_ptr->int_adj);
-  change_stat (A_WIS, r_ptr->wis_adj);
-  change_stat (A_DEX, r_ptr->dex_adj);
-  change_stat (A_CON, r_ptr->con_adj);
-  change_stat (A_CHR, r_ptr->chr_adj);
+  change_stat (A_STR, r_ptr->str_adj + c_ptr->madj_str);
+  change_stat (A_INT, r_ptr->int_adj + c_ptr->madj_int);
+  change_stat (A_WIS, r_ptr->wis_adj + c_ptr->madj_wis);
+  change_stat (A_DEX, r_ptr->dex_adj + c_ptr->madj_dex);
+  change_stat (A_CON, r_ptr->con_adj + c_ptr->madj_con);
+  change_stat (A_CHR, r_ptr->chr_adj + c_ptr->madj_chr);
   for (j = 0; j < 6; j++)
     {
       py.stats.cur_stat[j] = py.stats.max_stat[j];
@@ -194,6 +226,7 @@ static void get_auto_stats ()
 {
   register player_type *p_ptr;
   register race_type *r_ptr;
+  class_type *c_ptr;
   register int j;
 
   prev.str = (int16u)py.stats.max_stat[0];
@@ -204,13 +237,14 @@ static void get_auto_stats ()
   prev.chr = (int16u)py.stats.max_stat[5];
   p_ptr = &py;
   r_ptr = &race[p_ptr->misc.prace];
+  c_ptr = &class[p_ptr->misc.pclass];
   get_stats ();
-  change_stat (A_STR, r_ptr->str_adj);
-  change_stat (A_INT, r_ptr->int_adj);
-  change_stat (A_WIS, r_ptr->wis_adj);
-  change_stat (A_DEX, r_ptr->dex_adj);
-  change_stat (A_CON, r_ptr->con_adj);
-  change_stat (A_CHR, r_ptr->chr_adj);
+  change_stat (A_STR, r_ptr->str_adj + c_ptr->madj_str);
+  change_stat (A_INT, r_ptr->int_adj + c_ptr->madj_int);
+  change_stat (A_WIS, r_ptr->wis_adj + c_ptr->madj_wis);
+  change_stat (A_DEX, r_ptr->dex_adj + c_ptr->madj_dex);
+  change_stat (A_CON, r_ptr->con_adj + c_ptr->madj_con);
+  change_stat (A_CHR, r_ptr->chr_adj + c_ptr->madj_chr);
   for (j = 0; j < 6; j++)
     {
       py.stats.cur_stat[j] = py.stats.max_stat[j];
@@ -518,12 +552,6 @@ static void get_class()
 
   c_ptr = &class[py.misc.pclass];
   p_ptr = &py;	
-  change_stat (A_STR, c_ptr->madj_str);
-  change_stat (A_INT, c_ptr->madj_int);
-  change_stat (A_WIS, c_ptr->madj_wis);
-  change_stat (A_DEX, c_ptr->madj_dex);
-  change_stat (A_CON, c_ptr->madj_con);
-  change_stat (A_CHR, c_ptr->madj_chr);
 
   for(i = 0; i < 6; i++)
     {
@@ -554,7 +582,8 @@ static void get_class()
     MAX_PLAYER_LEVEL;
   max_value = (MAX_PLAYER_LEVEL*5 * (m_ptr->hitdie-1))/8 +
     MAX_PLAYER_LEVEL;
-#ifndef MSDOS /* I don't like this -CFT */
+#ifndef MSDOS /* is_wizard() is always true on PCs... and I don't like
+		it anyways -CFT */
   if (is_wizard(player_uid) && !(peek || wizard)) {
     min_value = (MAX_PLAYER_LEVEL * (m_ptr->hitdie-1))/2 +
       MAX_PLAYER_LEVEL;
@@ -737,8 +766,13 @@ void create_character()
   
 #ifdef AUTOROLLER
 /* This auto-roller stolen from a post on rec.games.moria, which I belive
-   was taken from druid moria 5.something.  If this intrudes on someone's
-   copyright, take it out, and someone let me know -CFT */
+   was taken from druid moria 5.something.
+
+   I would like to thank Mike Marcelais (mrmarcel@eos.ncsu.edu) for
+   the autoroller code on which this is based.  He recently
+   claimed the code, and I'm only too happy to give him proper
+   credit... -CFT */
+   
   put_buffer("Do you want to use automatic rolling? (? for Help) ", 20,2);
   do {	/* allow multiple key entry, so they can ask for help and still
   		get back to this menu... -CFT */
@@ -800,12 +834,12 @@ void create_character()
       get_class();
       put_auto_stats();
       auto_round++;
-      } while(((stat[A_STR] > py.stats.cur_stat[A_STR]) ||
-            (stat[A_INT] > py.stats.cur_stat[A_INT]) ||
-  	   (stat[A_DEX] > py.stats.cur_stat[A_DEX]) ||
-  	   (stat[A_CHR] > py.stats.cur_stat[A_CHR]) ||
-  	   (stat[A_CON] > py.stats.cur_stat[A_CON]) ||
-  	   (stat[A_WIS] > py.stats.cur_stat[A_WIS]))
+      } while(((stat[A_STR] > py.stats.use_stat[A_STR]) ||
+            (stat[A_INT] > py.stats.use_stat[A_INT]) ||
+  	   (stat[A_DEX] > py.stats.use_stat[A_DEX]) ||
+  	   (stat[A_CHR] > py.stats.use_stat[A_CHR]) ||
+  	   (stat[A_CON] > py.stats.use_stat[A_CON]) ||
+  	   (stat[A_WIS] > py.stats.use_stat[A_WIS]))
 #if (defined(unix) || defined(ATART_ST))
   	    && (!check_input(1)));
 #elif (defined(MSDOS) || defined(VMS))  /* #if/elif/else rewritten -CFT */

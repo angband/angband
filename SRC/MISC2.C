@@ -87,6 +87,8 @@ int y, x;
   register cave_type *cave_ptr;
 
   if (!in_bounds(y,x)) return; /* abort! -CFT */
+  if (cave[y][x].cptr >= MIN_MONIX)
+    return; /* don't put rubble under monsters, it's annoying -CFT */
   if (cave[y][x].tptr != 0) 
     if ((t_list[cave[y][x].tptr].tval == TV_STORE_DOOR) ||
 	(t_list[cave[y][x].tptr].tval == TV_UP_STAIR) ||
@@ -766,14 +768,14 @@ int con_adj()
     return(0);
   else if (con ==  17)
     return(1);
-  else if (con <  94)
-    return(2);
-  else if (con < 117)
-    return(3);
-  else if (con < 119)
-    return(4);
+  else if (con <  88) 
+    return(2); /* 18 to 18/69 -CFT */
+  else if (con < 108)
+    return(3); /* 18/70 to 18/89 -CFT */
+  else if (con < 118)
+    return(4); /* 18/90 to 18/99 -CFT */
   else if (con < 128)
-    return(5);
+    return(5); /* 18/100 to 18/109 -CFT */
   else if (con < 138)
     return(6);
   else if (con < 158)
@@ -1068,24 +1070,34 @@ void stun_player(s)
       if (t==0) {
         py.misc.ptohit-=20;
         py.misc.ptodam-=20;
+        py.misc.dis_th-=20;
+        py.misc.dis_td-=20;
       } else if (t<=50) {
         py.misc.ptohit-=15;
         py.misc.ptodam-=15;
+        py.misc.dis_th-=15;
+        py.misc.dis_td-=15;
       }
     } else if (s>50) {
       msg_print("You've been heavily stunned.");
       if (t==0) {
         py.misc.ptohit-=20;
         py.misc.ptodam-=20;
+        py.misc.dis_th-=20;
+        py.misc.dis_td-=20;
       } else if (t<=50) {
         py.misc.ptohit-=15;
         py.misc.ptodam-=15;
+        py.misc.dis_th-=15;
+        py.misc.dis_td-=15;
       }
     } else if (s>0) {
       msg_print("You've been stunned.");
       if (t==0) {
         py.misc.ptohit-=5;
         py.misc.ptodam-=5;
+        py.misc.dis_th-=5;
+        py.misc.dis_td-=5;
       }
     }
   }
@@ -1149,7 +1161,6 @@ int16 amount;
     }
   return tmp_stat;
 }
-
 
 /* Set the value of the stat which is actually used.	 -CJS- */
 void set_use_stat(stat)
@@ -1282,10 +1293,10 @@ int tohit_adj()
   else if (stat <  16)	total =	 0;
   else if (stat <  17)	total =	 1;
   else if (stat <  18)	total =	 2;
-  else if (stat <  69)	total =	 3;
-  else if (stat < 118)	total =	 4;
-  else if (stat ==118)	total =	 5;
-  else if (stat < 128)	total =	 6;
+  else if (stat <  69)	total =	 3; 
+  else if (stat < 108)	total =	 4; /* 18/51 to 18/89 -CFT */
+  else if (stat < 118)	total =	 5; /* 18/90 to 18/99 -CFT */
+  else if (stat < 128)	total =	 6; /* 18/100 to 18/109 -CFT */
   else if (stat < 138)	total =	 7;
   else if (stat < 148)	total =	 8;
   else if (stat < 158)	total =	 9;
@@ -1301,11 +1312,11 @@ int tohit_adj()
   else if (stat <   5)	total -= 2;
   else if (stat <   7)	total -= 1;
   else if (stat <  18)	total -= 0;
-  else if (stat <  94)	total += 1;
-  else if (stat < 109)	total += 2;
-  else if (stat < 117)	total += 3;
-  else if (stat < 119)	total += 4;
-  else if (stat < 128)	total += 5;
+  else if (stat <  88)	total += 1; /* 18 to 18/69 -CFT */
+  else if (stat <  98)	total += 2; /* 18/70 to 18/79 -CFT */
+  else if (stat < 108)	total += 3; /* 18/80 to 18/89 -CFT */
+  else if (stat < 118)	total += 4; /* 18/90 to 18/99 -CFT */
+  else if (stat < 128)	total += 5; /* 18/100 to 18/109 -CFT */
   else if (stat < 138)	total += 6;
   else if (stat < 148)	total += 7;
   else if (stat < 158)	total += 8;
@@ -1332,11 +1343,11 @@ int toac_adj()
   else if (stat ==  6)	return(-1);
   else if (stat <  15)	return( 0);
   else if (stat <  18)	return( 1);
-  else if (stat <  59)	return( 2);
-  else if (stat <  94)	return( 3);
-  else if (stat < 117)	return( 4);
-  else if (stat <=118)	return( 5);
-  else if (stat < 128)	return( 6);
+  else if (stat <  58)	return( 2); /* 18 to 18/49 -CFT */
+  else if (stat <  98)	return( 3); /* 18/50 to 18/79 -CFT */
+  else if (stat < 108)	return( 4); /* 18/80 to 18/89 -CFT */
+  else if (stat < 118)	return( 5); /* 18/90 to /99 -CFT */
+  else if (stat < 128)	return( 6); /* /100 to /109 -CFT */
   else if (stat < 138)	return( 7);
   else if (stat < 148)	return( 8);
   else if (stat < 158)	return( 9);
@@ -1364,10 +1375,11 @@ int todis_adj()
   else if (stat <  13)	return( 0);
   else if (stat <  16)	return( 1);
   else if (stat <  18)	return( 2);
-  else if (stat <  59)	return( 4);
-  else if (stat <  94)	return( 5);
-  else if (stat < 117)	return( 6);
-  else                  return( 8);
+  else if (stat <  58)	return( 4); /* 18 to 18/49 -CFT */
+  else if (stat <  88)	return( 5); /* 18/50 to 18/69 -CFT */
+  else if (stat < 108)	return( 6); /* 18/70 to 18/89 -CFT */
+  else if (stat < 118)  return( 7); /* 18/90 to 18/99 -CFT */
+  else                  return( 8); /* 18/100 and over -CFT */
 }
 
 
@@ -1382,11 +1394,11 @@ int todam_adj()
   else if (stat <  16)	return( 0);
   else if (stat <  17)	return( 1);
   else if (stat <  18)	return( 2);
-  else if (stat <  94)	return( 3);
-  else if (stat < 109)	return( 4);
-  else if (stat < 117)	return( 5);
-  else if (stat <=118)	return( 5);
-  else if (stat < 128)	return( 6);
+  else if (stat <  88)	return( 3); /* 18 to 18/69 -CFT */
+  else if (stat <  98)	return( 4); /* 18/70 to 18/79 -CFT */ 
+  else if (stat < 108)	return( 5); /* 18/80 to 18/89 -CFT */
+  else if (stat < 118)	return( 5); /* 18/90 to 18/99 -CFT (note:same as prev range) */
+  else if (stat < 128)	return( 6); /* 18/100 to /109 -CFT */
   else if (stat < 138)	return( 7);
   else if (stat < 148)	return( 8);
   else if (stat < 158)	return( 9);
@@ -1484,7 +1496,7 @@ void put_character()
 void put_stats()
 {
   register struct misc *m_ptr;
-  register int i;
+  register int i, temp;
   vtype buf;
 
   m_ptr = &py.misc;
@@ -1502,7 +1514,12 @@ void put_stats()
 #endif
       if (py.stats.max_stat[i] > py.stats.cur_stat[i])
 	{
-	  cnv_stat (py.stats.max_stat[i], buf);
+	  /* this looks silly, but it happens because modify_stat() only
+	     looks at cur_stat -CFT */
+	  temp = py.stats.cur_stat[i];
+	  py.stats.cur_stat[i] = py.stats.max_stat[i];
+	  cnv_stat (modify_stat(i,py.stats.mod_stat[i]), buf);
+	  py.stats.cur_stat[i] = temp; /* DON'T FORGET! -CFT */
 	  put_buffer (buf, 2+i, 73);
 	}
     }
@@ -1517,16 +1534,21 @@ void put_stats()
 char *likert(x, y)
 int x, y;
 {
+  if ((x/y)<0) return("Very Bad");
   switch((x/y))
     {
-      case -3: case -2: case -1: return("Very Bad");
       case 0: case 1:		 return("Bad");
       case 2:			 return("Poor");
       case 3: case 4:		 return("Fair");
       case  5:			 return("Good");
       case 6:			 return("Very Good");
       case 7: case 8:		 return("Excellent");
-      default:			 return("Superb");
+      case 9: case 10:
+      case 11: case 12:
+      case 13:			 return("Superb");
+      case 14: case 15:
+      case 16:		 return("Heroic");
+      default:		 	 return("Legendary");
       }
 }
 
@@ -1534,16 +1556,20 @@ int x, y;
 static int like_color(x, y)
 int x, y;
 {
+  if ((x/y)<0) return(LIGHTRED);
   switch((x/y))
     {
-      case -3: case -2: case -1:
       case 0: case 1:		 return(LIGHTRED);
       case 2:
       case 3: case 4:
       case  5:			 return(YELLOW);
       case 6:
       case 7: case 8:
-      default:			 return(LIGHTGREEN);
+      case 9: case 10:
+      case 11: case 12:
+      case 13: case 14:		 return(LIGHTGREEN);
+      case 15: case 16:		 return(LIGHTCYAN);
+      default:		 	 return(LIGHTMAGENTA);
       }
 }
 
@@ -1650,25 +1676,25 @@ void put_misc3()
   put_buffer ("(Miscellaneous Abilities)", 15, 25);
   put_buffer ("Fighting    :", 16, 1);
 #ifdef TC_COLOR
-  if (!no_color_flag) textcolor(like_color(xbth, 12));
+  if (!no_color_flag) textcolor(like_color(xbth, 18));
 #endif
-  put_buffer (likert (xbth, 12), 16, 15);
+  put_buffer (likert (xbth, 18), 16, 15);
 #ifdef TC_COLOR
   if (!no_color_flag) textcolor(LIGHTGRAY);
 #endif
   put_buffer ("Bows/Throw  :", 17, 1);
 #ifdef TC_COLOR
-  if (!no_color_flag) textcolor(like_color(xbthb, 12));
+  if (!no_color_flag) textcolor(like_color(xbthb, 18));
 #endif
-  put_buffer (likert (xbthb, 12), 17, 15);
+  put_buffer (likert (xbthb, 18), 17, 15);
 #ifdef TC_COLOR
   if (!no_color_flag) textcolor(LIGHTGRAY);
 #endif
   put_buffer ("Saving Throw:", 18, 1);
 #ifdef TC_COLOR
-  if (!no_color_flag) textcolor(like_color(xsave, 6));
+  if (!no_color_flag) textcolor(like_color(xsave, 7));
 #endif
-  put_buffer (likert (xsave, 6), 18, 15);
+  put_buffer (likert (xsave, 7), 18, 15);
 #ifdef TC_COLOR
   if (!no_color_flag) textcolor(LIGHTGRAY);
 #endif
@@ -1683,17 +1709,17 @@ void put_misc3()
 #endif
   put_buffer ("Disarming   :", 17, 28);
 #ifdef TC_COLOR
-  if (!no_color_flag) textcolor(like_color(xdis, 8));
+  if (!no_color_flag) textcolor(like_color(xdis, 9));
 #endif
-  put_buffer (likert (xdis, 8), 17, 42);
+  put_buffer (likert (xdis, 9), 17, 42);
 #ifdef TC_COLOR
   if (!no_color_flag) textcolor(LIGHTGRAY);
 #endif
   put_buffer ("Magic Device:", 18, 28);
 #ifdef TC_COLOR
-  if (!no_color_flag) textcolor(like_color(xdev, 6));
+  if (!no_color_flag) textcolor(like_color(xdev, 7));
 #endif
-  put_buffer (likert (xdev, 6), 18, 42);
+  put_buffer (likert (xdev, 7), 18, 42);
 #ifdef TC_COLOR
   if (!no_color_flag) textcolor(LIGHTGRAY);
 #endif
@@ -1708,9 +1734,9 @@ void put_misc3()
 #endif
   put_buffer ("Searching   :", 17, 55);
 #ifdef TC_COLOR
-  if (!no_color_flag) textcolor(like_color(xsrh, 6));
+  if (!no_color_flag) textcolor(like_color(xsrh, 3));
 #endif
-  put_buffer (likert (xsrh, 6), 17, 69);
+  put_buffer (likert (xsrh, 3), 17, 69);
 #ifdef TC_COLOR
   if (!no_color_flag) textcolor(LIGHTGRAY);
 #endif
@@ -1909,15 +1935,16 @@ register int perc;
       {
 	objdes(tmp_str, &inventory[i], FALSE);
 	sprintf(out_val, "%sour %s (%c) %s destroyed!",
-		  	((inventory[i].subval <= ITEM_SINGLE_STACK_MAX) &&
-		  	 (inventory[i].number > 1)) /* stacked single items */
+		  	(inventory[i].number > 1) /* stacked items */
 			  ? "One of y" : "Y",
-			tmp_str, i+'a',
-			((inventory[i].subval > ITEM_SINGLE_STACK_MAX) &&
-			 (inventory[i].number > 1)) /* stacked group items */
-			 ? "were":"was");
+			tmp_str, i+'a',"was");
         msg_print (out_val);
-	inven_destroy(i);
+	if (inventory[i].number > 1) { /* this destroys 1 item, so you */
+	  inventory[i].number --;	/* lose only 1 arrow to fire -CFT */
+	  inven_weight -= inventory[i].weight;
+	  py.flags.status |= PY_STR_WGT;
+	  }
+	else inven_destroy(i);
 	j++;
       }
   return(j);
@@ -2784,8 +2811,16 @@ void prt_experience()
   if (p_ptr->lev < MAX_PLAYER_LEVEL)
     {
       while ((player_exp[p_ptr->lev-1] * p_ptr->expfact / 100) <= p_ptr->exp
-	     && p_ptr->lev < MAX_PLAYER_LEVEL)
+	     && p_ptr->lev < MAX_PLAYER_LEVEL){
 	gain_level();
+	if (p_ptr->exp > p_ptr->max_exp) { /* level was actually gained, not
+						restored -CFT */
+	/* this 300 is arbitrary, but it makes human ages work okay,
+	   and I chose the other racial age adjs based on this as well -CFT */
+	  p_ptr->age += randint((int16u)class[p_ptr->pclass].age_adj *
+			(int16u)race[p_ptr->prace].m_age)/300;
+	}
+      }
     }
   if (p_ptr->exp > p_ptr->max_exp)
     p_ptr->max_exp = p_ptr->exp;
@@ -2991,17 +3026,24 @@ int *wtohit;
       *wtohit = 0;
       if      (d <  10)	 dex_index = 0;
       else if (d <  19)	 dex_index = 1;
-      else if (d <  68)	 dex_index = 2;
-      else if (d < 108)	 dex_index = 3;
-      else if (d < 118)	 dex_index = 4;
-      else if (d==118)   dex_index = 5;
-      else if (d < 128)	 dex_index = 6;
+      else if (d <  68)	 dex_index = 2; 
+      else if (d <  98)	 dex_index = 3; /* 18/50 to 18/79 -CFT */
+      else if (d < 108)	 dex_index = 4; /* 18/80 to 18/89 -CFT */
+      else if (d < 118)  dex_index = 5; /* 18/90 to 18/99 -CFT */
+      else if (d < 128)	 dex_index = 6; /* 18/100 to /109 -CFT */
       else if (d < 138)	 dex_index = 7;
       else if (d < 148)	 dex_index = 8;
       else if (d < 158)	 dex_index = 9;
       else if (d < 168)	 dex_index = 10;
       else dex_index = 11;
-      adj_weight = ((s*10) / ((weight<50)? 50 : weight));
+#if 0 /* I'm removing the "5 lbs" restriction, since there are now several
+	stat-based combat disadvantages for mages,priests, etc, and they'll
+	need to use lighter weapons to survive... besides light weapons
+	don't do much damage anyways -CFT */
+      adj_weight = ((s*10) / ((weight<50)? 50 : weight)); 
+#else
+      adj_weight = ((s*10) / weight); 
+#endif
       if      (adj_weight < 2)	str_index = 0;
       else if (adj_weight < 3)	str_index = 1;
       else if (adj_weight < 4)	str_index = 2;
@@ -3272,7 +3314,7 @@ void scribe_object()
 	  else
 	    (void) strcpy(out_val, "Inscription: ");
 	  j = 78 - strlen(tmp_str);
-	  if (j > 24)
+	  if (j > 12)
 	    j = 12;
 	  prt(out_val, 0, 0);
 	  if (get_string(out_val, 0, strlen(out_val), j))

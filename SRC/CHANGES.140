@@ -1,0 +1,791 @@
+creature.c:
+	My "HEY! monster aa (of bb) at [y,x] was in w!" debugging message
+		that helped me clean up the "holes" in the monster list
+		caused by place_monster() calling popm() for a monster index
+		and then not using it, was left in the code.  How silly of
+		me.  And I just released 1.31, last night...
+dungeon.c:
+	in the code for warrior/rogue/paladin pseudo ID, my recently added
+		letter-of-item to the mesg was wrong.  It was using the
+		variable i to decide what letter to show.  However, the
+		value of i that I needed was masked by another variable i
+		declared and used inside the if statement.  Fixed by renaming
+		the inside 'i' to 'j'.
+	also, this message could have been too long.  I've added code to
+		split a long line into 2 lines.
+recall.c:
+	monster memory code changed so that the monster's name will match
+		it's color. multi-hued's will be one of the colors (random).
+dungeon.c:
+	artifact activate now allows capital letters to prompt to see if
+		you mean it, like other item uses.
+	also, the art. activate code now more cleanly handles ESC key, so
+		you should never lose a turn (but don't quote me on that...)
+	also, psuedo-id code changed to only examine "wearable" items for
+		TR_CURSED, since otherwise it says priest book Godly Insights
+		is cursed (because I added 0x80000000 to it recently, to let
+		priest have monster detect).
+spells.c:
+	fire_ball() code changes slightly to allow ball spells to explode
+		at the player's location, if that's where's he's targetting.
+		This might be useful if you were surrounded by lots of weak
+		monsters, like lice, fleas, hummerhorns, etc.  I suppose I
+		should change the bolt code to not fire at all if the player
+		is standing at the target, but the effects of that would be
+		less obvious than a ball exploding around you, so the
+		player might not realize that his spells aren't working
+		because he forgot to turn off targetting (the mmove2() code
+		seems to default to some direction (SE?) if you are standing
+		on the target location, so the bolt will do something, even
+		if it's not "correct").
+store1.c:
+	store_carry() overhauled slightly to make it mimic the inven_carry()
+		code, with the new sort order for items.  This is a trivial
+		change, but it will mean that eventaully (after much cycling
+		of inventories), stores will carry spellbooks in order, etc.
+		I just figured that, if I went to all the trouble to put the
+		working code into inven_carry(), I should put it into store_
+		carry().
+dungeon.c:
+	minor change to special_check and value_check to allow player to
+		notice good digging tools.
+---------------------------------------------------------------------------
+Here my HD died (well, not quite, but it's mortally wounded).  I was able to
+rescue all important data, and I'm now working off of a 1.2 and a 1.44 floppy
+drives.  It's extremely limiting, but I can survive until I can afford a
+new drive.
+---------------------------------------------------------------------------
+death.c:
+	A couple of minor changes: where the code was calling display_scores()
+		to show the 1st ten, it now will display all of the scores.
+		ESC will abort.  And the code should now add saved players
+		into the highscore list, and display it on save.
+death.c, main.c, externs.h:
+	A new function added to death.c 'delete_hs_saved', which is designed
+		to erase any "(saved)" entries for the current player which
+		happen to be in the highscore table.  This avoids the problem
+		of a single living character crowding the highscore table
+		by saving often.  It is called from main, after a saved
+		character is restored.  It checks for "(saved)" and matching
+		name, race, class, and sex.  If all match, then the score in
+		question is considered to be an obsolete score for the
+		player who was just loaded, and it is removed from the high
+		score table.
+	In main.c, using the '-s' option without a number of scores now
+		defaults to showing all the scores, instead of only top 10.
+constant.h:
+	MAX_SAVE_HISCORES from 50 to 100.  Since the highscore code I wrote
+		for the PC (a long time ago) seems to work, and it requires
+		a constant amount of memory, regardless of the size of the
+		table, I figured that I should increase the hiscore table
+		size, because it's now going to be holding all those "(saved)"
+		lines. (Well, not that many "saved" lines, most people will
+		only have 1-3 characters, and I expect that few PCs will be
+		used by more then 4 people.)
+tables.c:
+	black potions are now darkgray instead of lightgray
+generate.c:
+	even better bounds-checking is now done for special pits (since it
+		does things like "x_right -9", it has to be full-sized or
+		not exist at all.  So the pit-causes-special-msg test is
+		now inside build_pit, where the bounds check is, to allow
+		the code to abort out of build_pit, w/o creating a pit,
+		and not artificially set the "special feeling" flag.
+	Also, monster pits are now no-teleport areas, so you won't phase
+		door into a graveyard.
+files.c:
+	file character command will now list objects stored at home.
+spells.c:
+	Disenchantment msg was using the wrong variable.  When I cut'n'
+		pasted the code from the stolen/destroyed mesg, I forgot
+		to change the variable 'i' to 't', which is the variable
+		used in the disenchant code.  Oops.  Fixed -CFT
+ tcio.c:
+	msg_print code changed to try to fit messages on the same line.  The
+		existing code would merge messages if they could both fit
+		completely on the same line.  This builds on that, allowing
+		part of a second message to use the rest of the message line,
+		and then be continued later.  This code also allows for
+		the handling of an extremely long message... it will be
+		displayed piece-by-piece until it is done.  Note: the
+		line-splicing depends on the code being able to find
+		spaces in the message string.  If you've got a 100-character
+		message w/o any spaces, it won't get split, and part of it
+		will be cut off.  This should be nice if you get several
+		swings vs a monster, and 2 msgs don't quite fit on a line...
+		Instead of:
+"You hit the One Eyed Flying Purple People Eater. -more-"
+"You hit the One Eyed Flying Purple People Eater. -more-"
+"You hit the One Eyed Flying Purple People Eater. -more-"
+"You hit the One Eyed Flying Purple People Eater."
+		It would do:
+"You hit the One Eyed Flying Purple People Eater.  You hit the One -more-"
+"Eyed Flying Purple People Eater.  You hit the One Eyed Flying Purple -more-"
+"People Eater.  You hit the One Eyed Flying Purple People Eater."
+		Of course, there is no such monster, and I am pretty sure
+		I have the name incomplete anyways (sorry, the song isn't
+		from my generation).
+moria1.c:
+	code for speed rings changed.  it was oly checking to see if you
+		had +1 speed rings. Now it checks for speed rings with >0
+		pluses, so those +2 rings don't combine with a +1 ring.
+dungeon.c:
+	I think I've got the turn/old_turn code fixed so that you can
+		go into the dungeon the 1st time, without worrying about
+		losing messages.  (How to test it, I wonder?  make a LOT
+		of new characters, until one of them gets a msg at 50'?)
+		You still do have to spend 51+ turns on town before entering
+		the dungeon, or you lose...
+	also, gnomish/dwarvish/orcish picks/shovels will only pseudo-ID as
+		good if they are better than the avg item of this type.
+		Before it was testing for p1 > 0, but since the "fancy"
+		picks/shovels all have base +'s, this was true even for a
+		gnomish shovel +0.
+moria2.c:
+	look code will no longer add a/an for uniques, so it won't say
+		"You see a Ladguf, the Snaga...".
+creature.c:
+	In the monster pickup code, in the code where a monster won't pick
+		up an object that "slays" it, I had an error in my test
+		which prevented some spellbooks, potions and scrolls from
+		being picked up when they should have been.  Thanks to
+		Adam Winer for pointing this out.
+	In the monster-spell code, the damage done by a nether bolt was
+		WAY to little.  I think I either made a typo when I
+		changed how it worked, or copied an existing typo.  The
+		damage was 30+5d5+monlv/4.  It's now 30+5d5+monlv*3/2,
+		which is weaker, but comparable to a nether ball.
+monsters.c:
+	mind flayers are now humanoids 'h' instead of people 'p'.  If
+		hobbits are 'h', then something as different as a mind
+		flayer is definately not a 'p'.
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Here, I decided to split this file (changes.tc) into several files, by
+the update version number for when the changes were made.  The changes.*
+files with the extensions .100, .110, .120, .130, .131, and the current
+changes.140 now do it's job.  If you want all the changes listed in 1
+file, simply concatenate the files, in order by extension. -CFT
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+HERE I GOT MY HARD DRIVE REPLACED!!  OH, JOY!  Now I can load a file in
+less than 2 seconds (it may sound silly, but if you're forced to work
+from floppy drives for several weeks, you'll understand). -CFT
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+spells.c:
+	spell color diff by David Kahane (dgk4@po.CWRU.Edu) added
+moria1.c:
+	immortal wizard-mode characters (like NH's discover mode...) diff
+		by Mike Marcelais (mrmarcel@eos.ncsu.edu) added
+misc2.c:
+	scribe_object(): fixed inscription length bug.  Thanks to David
+		Grabiner for pointing this one out...
+create.c:
+	The author of the autoroller code (which I had grabbed from a
+		post on r.g.m) finally claimed it.  Mike Marcelais
+		(mrmarcel@eos.ncsu.edu) will now be given proper credit
+		for his code, on which Angband's autoroller is heavily
+		based...
+misc1.c:
+	#include of <sys/time.h> #ifdef-ed, since this file is in <time.h>
+		under TC++...
+dungeon.c, moria2.c, vars1.c, externs.h:
+	Shawn Collenburg's feelings code added.  This code gives you
+		a chance of getting a feeling each round (odds depend
+		on what you're doing... resting gives bad odds), until
+		you get one.  This fixes a couple of troubles with the
+		old feelings code: that you wouldn't get a mesg, even
+		if you deserved it, the 1st time you went to 50'; and
+		it doesn't require anything to be saved.  As an added
+		bonus, if you save the game, and reload, you can get
+		another mesg about the current level, which can be nice
+		if it was a long time since you last played, and forgot
+		what the mesg for the level was...  I'm adding this code
+		on a probationary basis:  If it flops, either for 
+		playability, or for acceptence by r.g.r.a, then I'll
+		put the old code back in (well, something like
+		the old conde anyways... hopefully I'll fix some of
+		the bugs...)  I expect it to work well.
+	Ick.  Several troubles have shown up, most releated to saving the
+		game.  Since nothing about the "rating" of the level is
+		saved/restored, the msg is lost if you save before you
+		get the mesg.  And, since it can give you another mesg
+		when it restarts, save/restoring will give you a mesg
+		that says the level is boring, even if it's not.  For
+		now, until I see Shawn's new code, I've changed the code
+		to always give a mesg, as soon as you enter the level.
+		This makes the game WIDE OPEN for stair scumming, but
+		I hope to see Shawns new code before I release this anyways.
+creature.c:
+	periods added to farmer maggot's attacks... 
+misc1.c:
+	get_mons_num() changed to prevent very out-of-depth monsters
+		in the first few dungeon levels.  The original code
+		used a normal distribution with a std dev of 4,
+		which made it not too hard for monsters to be 500' out
+		of depth, and possible for them to be 1000' out of depth.
+		(the game's normal dist. can only go 5 std devs).  I've
+		trimmed it down, so that for 50'-150' the std dev is 1,
+		200'-350' it's 2, 400'-550' it's 3, and it return to the
+		original 4 at 600' and beyond.  Because it returns to
+		normal, it should have no effect at all on game balance,
+		since high level players won't notice any effects.
+	Oh, just a note, when I said it was "not too hard" for a monster
+		to be 500' out of depth...  That's 2.5 * a std dev of
+		4, which gives about a 1% chance (very approximately).
+creature.c, dungeon.c:
+	Now that I've got my improved msg_print() linewrapping working,
+		I've taken out the line-splitting code from the monster
+		don't pick up slay-self items, and from the pseudo ID.
+		If the message is too long, msg_print will handle line
+		wrapping now, so no need to do it elsewhere.
+prayer.c, rods.c, spells.c, magic.c, wands.c, dungeon.c:
+	This is sort of an experimental change.  I want to playtest it
+		and see how well it works out... -CFT
+	fire_ball() and breath() code changed so that player and monsters
+		can have ball spells of bigger radiuses than 2.  For
+		fire_ball, this size must be passed in, so I had to
+		change the source files that call it.  For breath, the
+		size is calculated from the type of monster which breathes...
+		non-dragons or 'd's breath normal 2.  'D's breath 3
+		Also, unique dragons breath 1 step larger than normal, so
+		Kalvax, who's a 'd' breathes 3 instead of 2.  And Scatha,
+		who's a 'D' breaths 4 instead of 3.
+	For player spells:  Holy orb reaches size 3 at 30th level...
+		Mage ball spells are 2, except for cloud kill and ice storm,
+		which are 3.  wands are 2, except for dragon fire/frost/
+		breath wands, which are 3.  DSMs breath 3.  Artifacts
+		that cast balls spells are 2.  If they cast a "huge
+		ball" or a "storm", they are 3.  Each of Razorback's
+		starballs is a 2.
+death.c:
+	Because of my changes that add saved characters into the highscore
+		list, top_twenty will be called after a successful
+		save, and only after a successful save, unless you are
+		a total winner.  This means that top_twenty doesn't
+		have to call save_char() to try to save the monster
+		memory...  It was getting caught in a loop if a non-
+		wizard character quit:  tombstone, inventories, hiscores,
+		save memory, then inside save_char: top_twenty(), then
+		inside top_twenty: save_char()....  I've eliminated
+		the loop by removing calls to save_char from inside top_
+		twenty.  It will be done before top_twenty is called.
+moria2.c:
+	Added checks to throw_object() so that it will ask you if
+		you want to throw an object, unless that object is
+		something that it figures you don't mind throwing
+		away (pebbles, oil, shots, arrows, bolts, cursed items,
+		worthless items, or molds/mushrooms/potions that do damage).
+		For artifacts and ego items, you can only throw them by
+		typing 'Y' when it asks you.  For other items, it still
+		asks you y/n, but you don't need a capital 'y' (I figured
+		that people would want the extra level of paranoia on
+		the artifacts, and on their HA, Westernesse, R, Elvenkind,
+		etc, but that it would be too much of a hassle to constantly
+		need the capital Y if you just wanted to throw a +1 dagger
+		at a dragon to get rid of the dagger.  If people can think
+		of some other categories of what they want to be thrown
+		w/o prompting, or that they want to be sure to be asked
+		about, let me know, and I'll try to code it.
+	Also, the throw code's pain-message was using just the name,
+		with no "The".  This is fine for uniques, but it looks
+		a bit funny to see "Kobald writhes in agony.", instead of
+		"The ...".  So I changed the code to fix this.
+creature.c, misc1.c, moria1.c:
+	Quick brainstorm showed me a simple way to change Angband's speed
+		from Moria's algebraically impossible system, to a
+		proportional system.  change_speed() only affects py.flags.
+		speed, and not every monster's speed.  movement_rate()
+		now considers the players speed and the monster's speed.
+		place_monster(), place_win_monster(), place_ghost(), and
+		mon_cast_spell() have been changed to not use py.flags.speed
+		when setting a monster's speed, or comparing it to the speed
+		in the creature table (for the haste spell).  That's it!
+creature.c:
+	creatures() code changed, so that ESP won't cause monsters to
+		wake up when they normally wouldn't.  This can cause
+		problems if a group of lice, fruit flys, hummerhorns, etc
+		wake up, and you can't get anywhere near them before they
+		multiply out of control...  All I did was add a check for
+		los() with the check for m_ptr->ml.  Thanks to Byron varin
+		(varin@u.washington.edu) for pointing this one out...
+tcio.c:
+	minor chnage to msg_print makes new "paragraphs" of messages start
+		by indenting 3 spaces.  This makes it much easier to
+		locate the past few rounds worth of messages, if you've
+		been getting a lot of multi-line messages.  My improved
+		line-merging made this less clear, but this chnage more
+		than compensates.  It does, however, print messages on
+		screen indented by 3 as well, which will probably look
+		wierd until you get used to it...
+create.c:
+	YA minor change.  When I added race/class bonuses as "intrinsic"
+		stat-bonuses, instead of using the old change_stat() code
+		to adjust your starting stats, the starting stats were
+		more rigid, and could not range as high as before.  Since
+		this didn't seem nice, I hacked it some more, and now
+		my change_stat() code should allow stats for new characters
+		to range as high as before.  In fact, the average stats
+		over 18 will actually be slightly higher, since the
+		minimum increase "per click" is 10, instead of 6.  Since
+		I seriously doubt that anyone will object to slightly
+		better stats, I'm calling it good.
+misc2.c:
+	stun_player() changed... It was not affecting the displayed 
+		+s to hit/damage, so the player didn't notice them.
+		Also, when dungeon restored these values, it got wrong
+		numbers.  Now the correct values are displayed (the
+		correct ones were used anyways, but the display was wrong)
+create.c:
+	Again I've found a bad assumption in my character rolling code...
+		I think I've got it straightened out now.  change_stat()
+		was altered again, and it should now only be called
+		once per stat, with race bonus + class bonus.  It should
+		make the stats fair, and still allow differing stat maxes.
+tables.c:
+	They comments on the table for # player swings/round were wrong...
+		Since I find it convenient to refer to this table, and I
+		assume others do as well, I've corrected the comments.
+misc2.c:
+	attack_blows()...  I'm experimentally removing the "5 lbs"
+		restriction from item weights.  Now people can get
+		multiple swings from the start, by using a light enough
+		weapon...  (Like a whip of fire...)
+moria2.c:
+	move_char() changed, so that if the player is using the 'g'et key
+		to pick up objects, the game will tell him what's on the
+		floor when he steps over an object.  Several people have
+		asked for this, and it was easy to do.  I think it makes
+		playing with the 'g'et key much nicer...  Thanks to
+		<someone> for pointing this one out.
+misc1.c:
+	set_ghost(): The code was allowing attribute bits to accumulate,
+		so player ghosts would have everything that previous
+		ghosts had.  This caused all player ghosts to be confused
+		once you had a poltergiest, and allowed many to wall thru
+		walls when they shouldn't have been able.  I changed this
+		by resetting the spells*, cmove, and cdefense fields.  Also,
+		player ghosts now have MAX_HP, since the code already gives
+		them max hps; now the mon. memory will say this...
+	Also, the code will now differentiate between the ghost of a human/
+		dunedan, and elf/half elf/high elf.  Trivial, but nicer.
+spells.c:
+	poly_monster, mass_ploy, and spell_hit_mon changed to clean up
+		some kludgy code which was my "quick fix" to prevent
+		a polymorphed monster from becoming a unique.  The
+		new code is better, and will probably run faster, and
+		it won't generate spurious messages in Wiz mode.
+moria2.c:
+	my code to make Angband say what's on the floor if you're in
+		get-key mode wasn't quite right... it wasn't describing
+		the objects enough (False instead of true to objdes),
+		and it didn't automatically pick up gold.  Both fixed.
+player.c, prayer.c:
+	Experimental change: find traps and detect doors/stairs combined
+		so I could add Spiritual Hammer as a low level priestly
+		bolt spell.
+misc1.c:
+	magic_treasure() was never enchanting normal cloaks, because of
+		bad logic.  I've changed it, so that cloaks should enchant
+		normally again.
+	also, gloves and gauntlets were checking unique_armor, but not
+		cesti.  Added...
+dungeon.c:
+	Pseudo ID changed slightly again.  before, only good shovels would
+		PsID.  Now, all shovels will, either as {cursed}, {average}
+		or {good}.
+moria2.c:
+	mon_take_hit() changed slightly.  When adding exp pts, it checks to
+		see if exp < max_exp.  If so, it gives 1/5 of the gained
+		exp to max_exp, so that a player drained of exp gets some
+		benefit from killing things, but it's still worth his
+		while to use RLL potions...
+main.c:
+	peek mode is really unfair.  It is no longer reachable, unless the
+		player enters wizard mode on the command line (with the
+		-w switch).  Since is_wizard() is always true for PC
+		players, the old check for is_wizard isn't enough protection.
+death.c:
+	wizard characters didn't leave ghost files, but exwizards did.
+		This has been fixed by adding tests on to_be_wizard and
+		noscore before creating the bones file.
+scrolls.c, prayer.c, dungeon.c:
+	enchant/elemental brand code changed slightly... enchanting an item
+		will not uncurse it, unless you enchant it up to at least +0.
+		And elemental brand refuses to work on a cursed item,
+		because the curse inteferes with the magic (uncurse it
+		first, if you really want to brand it...).
+misc1.c, spells.c:
+	A slightly modified version of John Spetz's elvenkind code has
+		been added.  give_1_hi_resist() added into misc1.c, and
+		magic_treasure changed to call it for robes of Magi and
+		armor of Elvenkind.  My code gives elvenkind a random
+		number of resists, using a normal distribution 1 to 6.
+	And, indent_spell() has been modified to add into the inscription
+		of the object, letters indicating which hi resists have been
+		added to the item...
+player.c:
+	My change that made race/class bonuses into "intrinsic" pluses/
+		minuses to stats seems to work okay.  However, there are
+		a few race/class combinations which will be quite hard...
+		hobbit, elf, 1/2elf, and gnome mages will all have a
+		low max STR.  This isn't so bad... It means that a 50th
+		lv mage won't fight the same as a 50th lv warrior.
+	However, 1/2trolls, who are supposed to be awesome fighters but
+		poor at everything else, have a -4 to DEX.  This means that
+		1/2troll warriors will have a max DEX of 18/80, which will
+		severly hamper their combat abilities.  So, I reduced
+		the 1/2 troll dex penalty from -4 to -2 (so the warrior's
+		+2 will cancel it out).  Dwarves have a -2 penalty, and
+		should have a smaller panalty than 1/2trolls, so I changed
+		the Dw DEX from -2 to -1.  And, I decided to change the
+		elvish DEX from +1 (same as 1/2elves) to +2, making it
+		closer to the high elven +3.
+creature.c:
+	ralph@cs.cmu.edu (Ralph Melton)'s fix for the mystic's kicking attack
+		added.  The kicking attack used to always say "misses you",
+		even if it actually hit you.  Now it will show the proper msg.
+describe.c, monsters.c:
+	Eldrakyn is apparently plural; Eldrak is singular.  Thanks to
+		dmsilev@mit.edu (Daniel Silevitch) for pointing this out.
+dungeon.c:
+	The redraw-screen code I wrote wasn't showing the depth.  What I
+		should have done was call draw_cave() to clear the screen
+		and show everything.  Thanks to David Kahane for pointing
+		this out.  Its fixed now...
+recall.c:
+	The recall code will now tell you which monsters have better than
+		normal treasure. (GOOD and SPECIAL flags)
+moria2.c:
+	exp gained to max when life-level-drained is 1/10 instead of 1/5.
+misc1.c:
+	A slightly modified version of David Kahane (dgk4@po.cwru.edu)'s
+		unique escorts code added to place_monster.  Unique
+		skeletons (Cantoras, the Skeletal Lord) don't get an
+		escort.  k,o,O,L,T,y,I and & do get escorts.
+	Also, David Kahane's "ego whips" diff added.
+	And, I changed the whip of fire loop so that it can make more
+		powerful whips.. whips over 3d6 are very unlikely, though.
+scrolls.c:
+	My enchant-removes-curse-only-when-penalty-gone code worked, but it
+		would say "the spells fails" whenever the item was negative.
+		Oops.  I fixed the messages.
+spells.c,moria1.c:
+	Most of David Kahane's "enchant" diff added.  Remove curse will
+		remove the {cursed} inscription, and cursed items don't
+		have thier value ruined.
+	Note that the artifacts resisting enchantment part has not yet
+		been applied...
+dunegon.c:
+	fingolfin's gloves now shoot mana, not arrows.  So I can work
+		on making novice archers and manticores miss occassionally
+moria2.c:
+	throw object code now moves at same speed as bolt spells, and it
+		should now be in color.  Thanks to David Kahane for both
+		these (quite sensible) ideas.
+treasure.c, misc1.c, dungeon.c:
+	set of cestus -> set of cesti
+player.c, moria2.c, types.h:
+	racial age factor tweaked, so I could add some trivial code to
+		make players age as they gain levels.  And, prt_experience
+		changed to add to players age as a NEW level is gained.
+		It should not add for restored levels...
+	I added a new int8u field to class_type and the class[] table,
+		this age_adj is a percentage of aging for that class,
+		based on warrior aging of 100%.  This way a mage or priest
+		will end up grey bearded, but warriors will only be grizzled
+		vetrans.  Of course, all of this age-related stuff is
+		purely cosmetic anyways...
+misc1.c,spells.c:
+	elvenkind armor/robes of magi can now have resist poison as one
+		of their random "high" resists.
+spells.c:
+	colors for GF_FROST changed from blue/lt blue to lt blue/lt cyan,
+		because blue is way to dark on my monitor
+recall.c, dungeon.c, creature.c, spells.c:
+	Tiamat will now change colors like the rest of the multihued dragons.
+dungeon.c:
+	"wounds" code uses con_adj() to heal cuts; For horrible CONs, this
+		could mean the players cuts get WORSE!  I've changed it to
+		always reduce by at least 1 (except for mortal wounds, which
+		don't heal by themselves)
+misc2.c,tables.c:
+	I've changed the fns con_adj, tohit_adj, todam_adj, todis_adj,
+		toac_adj, and attack_blows to use a slightly smoother
+		progression around 18/100.  Since the 18/100 limit is
+		now adjusted by race/class, it seemed terribly silly for
+		the bonuses to increase so much at 18/100.  Also, for races/
+		classes which could only get to 18/90 w/o magic bonuses, it
+		was terribly unfair to miss out on more than 1 "click" worth
+		of bonuses...  I believe my changes to be balanced, but I
+		will be testing them to see.  None of my changes affect stats
+		below 19 or above 18/100, so things at either end will remain
+		as before.
+moria1.c:
+	show_inven() will now erase an extra line at the end, like show_equip
+		does, so that the inventory doesn't get confused with what's
+		already on the screen.  This was slightly annoying in a store,
+		when you used '*' to see a list of sellable objects...
+creature.c:
+	update_mon() changed again to improve ESP.  My code that made non-
+		spellcasting undead not show up has been replaced.  In the
+		new code, all EMgjz monsters, m except death molds, s except
+		Druj and Cantoras, i except icky things will never show up.
+		And, FKaclt only show up once in a while, since they are
+		nearly mindless, and therefore hard to notice via ESP.
+generate.c:
+	group monsters in "vault"s could cause trouble... This didn't used
+		to be a problem, since the "vault" code calls place_monster
+		to place a single monster, even if it is normally a group
+		monster, however, the new "Escorted Unique" code caused the
+		placement of unique monsters in the generate code.  This
+		could cause trouble if a group monster was placed where a
+		wall, etc is going to be placed soon afterwards.  I avoided
+		this by examining the pattern twice, once to place walls,
+		and once again to place monsters.
+misc1.c:
+	test_place() tweaked slightly to be just slightly more paranoid...
+	also, place_monster() automatically calls test_place before trying
+		to place a monster.  This means that all the calls to test_
+		place in place_group were unnec.  I removed them, and cleaned
+		up some redundant "rating = old;" stmts in place_group.
+	This change and the prev one should reduce further the memory leaks
+		in Angband.
+misc2.c:
+	place_rubble() fixed so that rubble won't ever be placed under a
+		monster.  This should be a tiny bit less annoying for
+		people who cast 5 or 6 firebolts at a mushroom, and can't
+		figure out why it's not dying (the rubble makes the spell
+		code stop before hitting it).
+spells.c:
+	I found some bad logic in door_creation() and create_traps...
+		Artifacts could and would be destroyed.  It should be fixed
+		now...
+misc1.c:
+	slaying/wounding ammo reversed.  wounding adds 1 to dice, slaying
+		doubles them.  also, any good ammo can have increased dice
+		via "while(magik(special)) t_ptr->damage[0]++;".
+main.c:
+	it won;t bother call delete_hs_saved for wizard chars, since they
+		don't ever make it into the hs list anyways....
+creature.c:
+	minor tweeking to ESP: 'w' except Were and Giant Pur act like bugs,
+		'v' act like 'E', and 'S' except for Drider, Shelob, Ungol.
+		act like bugs.
+misc2.c:
+	inven_damage, inven_destroy modified so that only 1 item is lost to
+		fire/acid/etc.  This will make it less frustrating to
+		carry around awesome arrows/bolts, since you won't lose
+		the whole stack in one fell swoop...
+moria2.c, misc1.c, desc.c:
+	changes to make some "bow"s of might do an extra multiple of damage.
+		Also, Curbragol does x4, Bard x4, and Beleg x6.
+creature.c, spells.c:
+	quick change to movement rate makes monsters move out of sync with
+		each other.  This is done by changing movement_rate() from
+		taking m_ptr->cspeed to taking the monster's index in m_list.
+		With this, I can get the speed, and use the index to vary
+		monster movement by including it with the code that "mod"s
+		with the turn count.
+moria2.c:
+	fixed msg code so good hits do "You hit it.  It was a good hit!",
+		instead of "It was a good hit!  You hit it."  Thanks to
+		David Delaney (dbd@martha.utcc.utk.edu) for the fix.
+creature.c:
+	attack desc type 11 (embraces) added to code, this fixes a problem
+		similar to mystic's kick attack...
+moria2.c:
+	throw-check code will no longer require Y for execellent items; y is
+		sufficient protection, esp if I add some kind of shoot cmd.
+spells.c:
+	slightly modified version of JND's better detect enchantment replaced
+		current (useless) detect enchantment code.
+misc2.c:
+	"Heroic" and "Legendary" added beyond "Superb" ratings...
+	numbers passed to likert() tweaked a bit, to make Legendary harder
+misc2.c:
+	Oops!  When I changed inven_destroy to always kill 1 of multiple
+		items, it meant that selling good arrows to the store left
+		you with most of the arrows still.  I restored inven_destroy
+		to it's orig. functionality, and made inven_damage take care
+		of destroying only 1 item.
+spells.c:
+	overhaul of messages shown when a spell is cast at a monster.  It
+		should reduce the amount of messages when ball spells/monster
+		breaths hit many monsters...
+creature.c:
+	guess what?  I found that my speed equation was prone to "clumps"
+		at high speeds (py 4, mon 2 was 0,0,1,1; py 6, mon 2 was
+		0,0,0,0,1,1; py 6, mon 3 was 0,0,0,1,1,1).  So I dreamed up
+		an even better equation, which prevents "clumps".
+monsters.c, tables.c:
+	I had been prejudiced against BLUE because my monitor shows it
+		extremely dark, and it is hard to see.  However, I was reminded
+		that not everyone has this problem, and that I shouldn't let
+		a personal detail interfere with "standard" code, so I've
+		replaced LIGHTBLUE with BLUE in places that deserve it.  I'll
+		just redefine the value of BLUE before compiling for myself.
+misc1.c:
+	ammo code changed: slaying ammo now does +2 dice, instead of *2.
+	also, ammo will very likely be the "correct" type if the player is
+		wielding a missile weapon as weapon/2ndary weapon.
+treasure.c:
+	seeker ammo is now 2d8/2d10 instead of 4d4/4d5.  This makes the
+		extra dice from wounding/slaying quite nice...
+creature.c, spells.c, dungeon.c, recall.c, monsters.c:
+	color code for MHD/Tiamat changed... it now checks the color field
+		for special values MULTI, ANY; instead of checking the name.
+		Monsters that are color MULTI will be one of the basic dragon
+		colors.  Monsters that are ANY be any color.  Both types will
+		change every round, like the old MHD code.
+player.c:
+	after some work, I've adjusted the stat mods for race and class.  The
+		biggest difference in the race adjustments were a reduction in
+		the pluses for Dundain and High Elves, and a strengthening of
+		Half elves (my assumption here: Half elves are the descendants
+		of Luthien (daughter of Melian the Maia) & Beren, and so
+		deserve to be at least as good as normal elves).  As for class
+		mods, not much changed.  Notably, mages/priests/rogues now get
+		+4 to int/wis/dex instead of +3.  I'll include full spoiler
+		info once I'm sure these value aren't going to need to get
+		tweaked...
+misc1.c:
+	place_monster, place_win_monster, and place_ghost did not set the
+		monster's color from the creature list.  This went unnoticed
+		up to now because I was not using the color field in the
+		monster structure until now.  Now the color is copied.  Old
+		monsters will initially change color like crazy, but new
+		monsters will be fine.
+misc1.c, moria2.c, desc.c:
+	Cubragol is x3 again; Beleg is only x5;  These keep missile damage
+		a bit saner...
+misc2.c:
+	drained stat display was showing the max stat w/o the bonuses to the
+		stat.  This rarely caused confusion before, because it only
+		happened when you were wielding items which gave you bonuses
+		to stat.  Now that my new race/class stat max system gives
+		you stat bonuses for your r/c pluses, this would cause more
+		confusion.  So I made it modify the max stat before showing it.
+spells.c, magic.c, prayer.c, dungeon.c, rods.c, externs.h:
+	new spell fn written to allow spells to act in a line, sort of like
+		NH wands (no reflection).  Wands/rods will sometimes do this
+		instead of a simple bolt.  Some artifacts will also use the
+		new code.  Player bolt spells/prayer will sometimes act this
+		way, if the characters INT/WIS is high enough.
+	also, the unused bolt_typ/descrip arg to fire_bolt/fire_ball removed.
+creature.c:
+	CWS's code to reconnect monsters with bad cptr/monptr values added
+		into update_mon(), inside #if 1
+prayer.c:
+	spir. hammer can no longer be a "line-spell".  But it does do extra
+		damage based on your wisdom bonus.  Also, OoD does extra
+		dam for wisdom.
+treasure.c:
+	seeker ammo changed again.  Now 3d6/3d7.
+misc1.c:
+	ammo of slaying reduced to +=10,+=10, instead of 15.
+	monsters which can do spells that appear w/in los of player will
+		now be asleep.  This code was moved from alloc_monster to
+		place_monster, because it was getting overridden when
+		alloc_monster called place_group.
+generate.c:
+	place_[door|stair] fns were all using the same test before placing
+		what they place.  On Chris Tate's (fixer@faxcsl.dcrt.nih.gov)
+		suggestion, the redundant code moved to a static function.
+scrolls.c:
+	genocide/mass gen scrolls will ID when used.
+main.c, misc1.c, dungeon.c, vars1.c, externs.h, makefile.tc:
+	BSD's random number generator from CWS's Angband 2.5 adapted into
+		the code... changed so that the town/description R.N.G. is
+		only a normal RNG, but the main RNG uses 256 bytes of state
+		info, for a very high quality RNG.  Maybe now people won't
+		have to feel cursed by the (old, and not so good) RNG.
+player.c:
+	half elves bonuses reduced slightly.
+spells.c:
+	polymorph is now uniformly less dangerous.  It's NOT safe, but it's
+		not automatically fatal anymore.  redundant code merged into
+		static fn
+treasure.c, misc1.c:
+	Celefarn -> Celegorm.  Also, Res Light & Dark added.
+dungeon.c:
+	since speed not so powerful, it uses less food.
+wands.c, staffs.c, rods.c:
+	rods had code so that no rods was consider harder to use than a 50th
+		lv item.  This meant that high lv rods were easier to use than
+		hi lv staffs/wands.  Now wands max to 42nd lv, staffs at 50th,
+		and rods at 70th.  There is always a minimum chance of success.
+creature.c
+	break_wall monsters will not leave bogus (secret) doors/rubble behind
+		if they tunnel into it.
+treasure.c:
+	of Rohan -> of the Rohirrim (horse lords), of the Eorlingas -> of
+		Eorlingas, (the house of Eorl), 'Hammerhand' -> of Hammerhand
+spells.c:
+	stone to mud & earthquake do more damage, in a more variable way.
+		earthquake will now be round instead of square
+scrolls.c, prayer.c:
+	To uncurse an item by enchanting it is now much harder... you must get
+		it at least to +0, and then you have a chance of breaking
+		the curse each time.
+tcio.c:
+	code stolen from Fangband to turn off cursor when not doing input...
+spells.c:
+	stone to mud can get you an item, just like digging
+misc1.c:
+	helms of light also resist light
+save.c:
+	monster restore fn will now set maxhp.  maxhp was never saved into
+		the savefile, causing the monster heal bug (or at least the
+		main reason for it...).  By setting it here, things should
+		run smoother.  Thanks to CWS & DGK for finding this one!
+spells.c, scrolls.c, dungeon.c, prayer.c, externs.h, constant.h:
+	enchant() fn changed to take 3 arguments; i_ptr, n, and eflag. n is
+		the number of times to enchant, and eflag controls what to
+		enchant.  The new code takes care of artifacts resisting
+		enchantment sometimes, and also checks to see if the spells
+		breaks a curse (now only 25% if >= +0 and success).  This
+		is my way of easing people towards not being able to remove
+		"heavy" curses (Calris, Morgul, etc) with enchant scrolls.
+spells.c:
+	artifacts also resist disenchantment, some of the time.
+spells.c:
+	in my new, hopefully compact, ball-spell messages code, it would say
+		"<mon> dies." for monsters who take more damage than their
+		HPs.  Sensible, right?  Except Unique monsters wont actually
+		die if hit by another monster's spell/breath... They survive
+		with 0 HP until you deliver the fatal blow.  So I had to
+		change the message to reflect this.
+creature.c:
+	if you are blind, when a monster casts a spell it says "mumbles", or
+		some variation.  However, a mon casting heal self would
+		then say "looks much better".  Changed to "sounds" if blind.
+spells.c:
+	my playtesting mods (ie "{DsDk}") to identify spell removed.
+moria2.c:
+	I've adapted some of DGK's code that prevents thrown artifacts from
+		vanishing, so I've loosened my protections on throwing
+		items.  You can now throw PAIN! at a small kobald, just to
+		see the expression on it's face, and not lose it.  But,
+		unless you have great faith, try this with an artifact which
+		is gathering dust in your "trophy case" first...
+	Also, not every arrow/bolt/sword/etc that is thrown will vanish,
+		even if non-artifact and it hits.  Again, this is adapted
+		directly from Fangband... Thanks DGK!
+misc1.c:
+	Playtesting has shown that the code to give random "exotic" resists
+		to elvenkind armor make it far more valuable than many
+		artifact armors.  This has been removed.  After releasing
+		1.4, I will look at the possibility of giving random
+		resists to non-DSM artifact armors, and maybe also to
+		elvenkind/robes of magi.
+monsters.c:
+	undead beholds exps increased, to be more than normal beholders...
+spells.c:
+	unqiue monster spell death msgs fixed one more time...
+monsters.c:
+	Smeagol should not be truly invisible, because he doesn't have the
+		Ring.  So, he must be invisible because of amazing stealth.
+		In this case, a color of dull gray is better than clear-colored.
+---------------------------------------------------------------------------
+Mon 7 Mar 1994 - PC Angband 1.40 released 
+---------------------------------------------------------------------------
+

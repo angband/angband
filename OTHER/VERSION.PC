@@ -163,3 +163,63 @@ Aug 28 1993	Fourth Update (minor update to third update)
 	ball/breath code changed so that items dropped by monsters killed
 	in the blast are unaffected; mirkwood spiders are evil, and a
 	couple of other minor fixes.
+
+Mar 7 1994	Fifth Update (PC Angband version 1.40)
+	   This update include two major changes -- an overhaul of the
+	speed code, to make each successive speed step less important; and
+	a change to the maximum values for characters' basic statistics
+	(aka "stats" -- STR,INT,...).  I have spent considerable time
+	working with these changes, and even though each makes winning
+	slightly easier, I do not believe they unbalance the game.  Note
+	that the max. stats. change is only effective for newly created
+	characters.  Playtesting has shown PC Angband 1.40 requires
+	about 512k (524,488 bytes) of free memory to run.  See
+	'free-mem.doc' for suggestions on freeing up memory.
+
+	   This update also includes: no more "cursed" Godly Insights;
+	saved characters listed in high score table; better bounds checking
+	in dungeon generation (less memory trouble); F)ile character will
+	now list objects in Home; again-improved msg_print code to make
+	messages fit on fewer lines; enchanced colors for spells; immortal
+	Wizard characters ("Die? [Y/n]", like NetHack); fixed attack msgs
+	for Farmer Maggot, mystics, Medusa; FAR fewer out-of-depth monsters
+	in early levels (no more baby MHD at 50'); larger ball-spell radii;
+	artifacts never vanish when thrown! and	throwing items which are not
+	normally thrown will ask (y/n); ESP won't wake monsters faster than
+	normal; no more "5 lbs." minimum weight for weapon attacks; somewhat
+	safer (But Not Safe!) polymorph code; Priest spell Spiritaul Hammer
+	added (low lv,dam missile spell), Find Traps/Door combined; cloaks
+	and cesti enchanted properly; some exp. gained even if below max;
+	somewhat different racial/class stat. bonuses (see 'stats140.doc');
+	now is hard to uncurse items by enchanting them; some Unique monsters
+	are "escorted"; whips can be more than just "of Fire"; artifacts
+	sometimes resist enchantment & disenchantment; ammo is lost an item
+	at a time; ammo doesn't always vanish if hits; better ESP code --
+	mindless monsters don't show up, really dumb ones sometimes do; ammo
+	of Slaying/of Wounding reversed so Slaying is more powerful; bolt
+	spells sometimes fire a beam; BSD's random num. gen. now used; high
+	lv rods no longer easier to use than h.lv. staves; fewer messages in
+	ball spells; and many minor bugfixes/enhancements.
+	
+	NOTE: Because of a minor change to the monster color system,
+	monsters from an older PC Angband version will change colors
+	like crazy.  Also, because of the new speed system, old monsters
+	will be slower than they should be.  All monsters created
+	afterwards will be fine.  Because of the new (better) random number
+	generator, the colors/metals/stones/etc of potions/wands/rings/etc,
+	and the layout of the Town level (including which shopkeepers there
+	are) will be different than before.  These should be the only
+	compatibility-related issues between PC Angband 1.31 and 1.40
+	savefiles (see above for earlier issues).
+
+  That's all for now, folks.  I do still intend to work on Angband, but
+new releases will be slow in coming out. (Unless someone out there invents
+a 36-hour day, and wants to clue me in on the secret...)
+	Chuck
+--
+Charles F. Teague II  Net:cteague@cs.umb.edu  Real:33 Sidney Ave, Lynn MA 01902
++------------------------------------+-----------------------+----------------+
+| Computers are so powerful because  | "Don't do what I SAY, | 'lush' CS 1993 |
+| they do whatever you tell them to. |  do what I mean!!!!"  | TKE-zm sn 603  |
++------------------------------------+-----------------------+----------------+
+Hi!  I'm a replicating .sig virus!  Join in the fun and copy me into yours!

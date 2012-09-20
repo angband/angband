@@ -1,0 +1,615 @@
+constant.h:	  MAX_TALLOC changed from 2000 to 500 to better fit msdos mem limits -CFT
+	MAX_MALLOC changed from 1500 to 400 ditto -CFT
+	MAX_SAVE_HISCORES from 500 to 50 ditto -CFT
+	MAX_QUESTS from 255 to 4 (only 1 defined anyway...) -CFT
+main.c:	  struct rlimit rlp + references ifndef-ed;  Seems like Unix code to
+		limit the size of core dumps; uneeded + undefined on PCs -CFT
+config.h:	  File pathnames changed to direct code.  TC isn't expanding LIBDIR
+		and concatenating the rest properly... CFT
+	Also / to \ conversion in paths... (both these changes inside #ifdefs)
+misc1.c:	  statstime struct ifndef-ed.  It seemed to keep tabs on CPU use/mem use/
+		page faults/etc.  Not Applic for PCs -CFT
+	check_time() fn which used statstime ifndef-ed to not use it.  -CFT
+files.c:	  include of <sys/param.h> now #ifndef-ed so that TC will not try. -CFT
+death.c:	  cast to off_t inside call to lseek() changed to #ifndef BSD4_3, copied
+		 from above in the file.  Looks like a minor change that got
+		only 1/2 done...	-CFT
+	signal(SIGTSTP, SIG_IGN) ifndef-ed out at line 165  -CFT
+	calls to flock() during hi-score saving ifndef-ed out; no flock()
+		(and no reason for it) on msdos... -CFT
+save.c:	  Added conditional definition of t_ptr back into sv_write().  It's
+		used in the PC code.  You folks probably took it out, and
+		never noticed; only needed for PC or atari ST... -CFT
+	Also in get_char, ditto -CFT
+types.h:	  #ifdef MSDOSed types of exist + dead inside of unique_mon struct from
+		int to int8u.  They're just booleans...  No need to
+		use an int.  I only noticed because variable.c gave me
+		"Too much global data" error message...  *sigh*  64k
+		segment sizes are annoying...  -CFT
+save.c:	  #ifdef MSDSOed save/load routines changed so that wr_unique and
+		rd_unique now write/read bytes, not 32bits... CFT
+dungeon.c:	  I'm going thru the source files looking for booleans that I can
+		change from int's to int8u's.  This'll save some memory.
+		I'm only bothering with globals, types, or stuff in good-
+		sized arrays.  Once I'm done, I'll have to go back + change
+		save.c so it r/w the proper data sizes...  Also, I'll fix
+		any extern refs to the variables I change...
+	Anyway, changes from dungeon.c:  (inside #ifdef MSDOS)
+		good_item_flag, create_up_stair, create_down_stair ==> int8u
+main.c:	  peek, be_nasty, all the unique artifact armor + weap flags ==> int8u
+	and quests[] ==> int16 (also in #ifdefs)
+store2.c:	  is_home ==> int8u (also in #ifdefs)
+variable.c
+	weapon_heavy, pack_heavy, NO_SAVE, character_generated,
+		character_saved, death, default_dir, find_flag,
+		wizard, to_be_wizard, rogue_like_commands, free_turn_flag,
+		find_cut, find_examine, find_bound, find_prself, 
+		prompt_carry_flag, show_weight_flag, highlight_seams,
+		find_ignore_doors, doing_inven, screen_change, search_flag,
+		teleport_flag, player_light, eof_flag, light_flag,
+		wait_for_more, closing_flag, new_level_flag  ALL ===> int8u
+		(also in #ifdefs) -CFT
+externs.h:	  variables mentioned above that were changed to int8u changed
+		to extern int8u...
+	ifndef-ed out prototype of sprintf()...  It doesn't match TurboC's,
+		so it didn't work... -CFT
+undef.c:	  Added ifdef-else-endif to not need sys/file.h, since it doesn't
+		seem to come w/ TC.  Also <string.h> included instead of
+		<strings.h>	CFT
+	
+main.c:	  ifndef-ed out gethostname() call and check for load avg.  Unneeded
+		on the PC...  -CFT
+	ifndef-else-endif clause to avoid getuid() call for msdos -CFT
+wizard.c:	  add ifdef MSDOS so that is_wizard always returns true for PC players,
+		so they can enter Wiz mode if they want to... -CFT
+create.c:	  #if-ed out code to give wizards bonus hp's.  I didn't like it.
+		Besides, all PC players are wiz's by is_wizard... -CFT
+dungeon.c:	  grabbed code from Um55 dungeon.c to #ifdef call to check_input()
+		with call to kbhit()...  -CFT
+death.c:	  #ifndef-ed call to fchmod inside print_tomb.  The bones files on
+		a PC will be w/r able; since only 1 user...  -CFT
+	Earlier #ifndef to avoid call to flock() replaced by #ifdef-#else-
+		#endif clause stolen (again) from Um55 src.  It now calls
+		fopen where before it did nothing (Hopefully this will
+		avoid problems later...) -CFT
+dungeon.c:	  Call to random() inside staffs code replaced w/ randint().  I
+		wonder why you folks didn't notice?  Perhaps random() is
+		a std fn on Unix systems?  -CFT
+save.c:	  Call to link(), and some surrounding code #ifndef-ed out.  The
+		code seemed to link a new file name to the savefile +
+		then unlink the old name.  I doubt this would work well
+		on a PC..  -CFT */
+spells.c:	  Calls to usleep() replaced by calls to delay() by ifdef-else-endif
+		clause.  arg is div by 1000, sice delay works in millisecs,
+		not u-secs...  -CFT
+externs.h:	  Added #ifdef-ed prototype of dealy().  I didn't see any reason to
+		#include the entire <dos.h> file jsut for this.  Maybe I'll
+		change my mind later... -CFT
+death.c:	  More changes to the file locking code.  The code I stole from Um55
+		uses FILE * vars for everything; the Angband code uses file
+		desc.'s for everything.  Klugded together by adding local
+		FILE * vars (#ifdef-ed), and using fileno macro to get
+		file desc. from FILE *.  Wish it luck... -CFT 
+config.h:	  Added definition of USING_TCIO, so ms_misc.c will not #include
+		curses.  I'll get back to making Angband work with
+		curses later.  Right now I just want it to compile.  -CFT
+create.c:	  #if 0 out only section of code that uses doubles...  replacement
+		code was taken from above; seems to do the same thing, with
+		integer math.  I'm trying to avoid flt pt math because
+		Angband is too big to run right now... -CFT
+spells.c:	  #if 0 out only section of code that uses doubles...  bolt() code
+		rewritten (by me, not stolen this time.. :-) to use integer
+		math in calculating new positions for angled bolts.  It's
+		based on the idea that you can only draw the bolt as
+		discrete locations, so I only calc discrete locations.  All
+		it decides is whether to change only 1 coordinate, or both
+		coordinates at each step.  All changes are by +/- 1.  When
+		only 1 changed, it moves in the x or y axis.  When both,
+		it moves diagonal.  It should approximate the double code
+		quite well...  -CFT
+constant.c:	  Bug detected!  cave_type.cptr is an int8u, with range 0-255,
+		but it's used in indexing m_list, which had been given
+		a big size.  I've trimmed MAX_MALLOC back to 255... -CFT
+	Also MAX_TALLOC down to 255, and MAX_SAVE_HIGHSCORES down to 35. -CFT
+variable.c:	  Split into two files for MSDOS memory reasons -- cave[][] is most
+		of a 64k segment, so I moved it off to it's own file,
+		vars2.c.
+types.h:	  Changeing MAX_TALLOC to <= 8bits now allows me to change type of
+		cave_type.tptr to int8u.  This will save me 12-15 K on the
+		size of Angband.  Since it's too big to run just now, I'll
+		take the smaller mons/lv limit if it'll help Angband run.
+		(Besides, MAX_MALLOC & MAX_TALLOC of 255 is still more than
+		what they are in the Um55 sources...)  -CFT
+	Also, since fvals used in cave_type.fval only range from 0-15, I'm
+		making it into a 4-bit bitfield.  Combining it with the
+		4 1-bit bitfields, I should be able to get sizeof(cave_type)
+		down to 3.  That should significantly reduce memory usage
+		in vars2.c  Unfortunately, all these type changes mean that
+		I have to do a massive search+replace to add casts in the
+		code. (both type changes inside #ifdef MSDOS)
+config.h:	  Added #define of ANGBAND_DESC to hold file name of external
+		descriptions file.  I'll detail the format in a bit...
+		OK... details:	  	The file has MAX_CREATURES seek pointers,
+		followed by the strings.  Just seek to i*sizeof(long), read
+		the seek ptr, then seek to it, and read your descript.
+EVERYWHERE:	  A lot of constants had L appended to them so TC will treat them as
+		32 bit values.  Also a few misc casts added to avoid
+		warnings. -CFT
+misc2.c:	  Another potential bug.  In teleport(), the test of the while loop
+		checks cave[y][x].tptr == OBJ_OPEN_DOOR.  This is wrong.
+		What is meant is "t_list[cave[y][x].tptr].index ==
+		OBJ_OPEN_DOOR". It has been fixed... -CFT
+dungeon.c:	  YA poss bug, in activate, it was passing inventory[i] to known2_p().
+	What was needed was &(inventory[i]).  Fixed in 3 places... -CFT
+monsters.c:	  Lots of monster exp values had U appended to them, to denote them
+		as unsigned values (even Morgoth only had 60,000.. Is that
+		per level I wonder?) I didn't append L because declared in
+		types.h to be int16u... -CFT
+creature.c:	  Bug in Nether ball code... Wierd placement of parathesis was
+		confusing my compiler-->  was:	    if (py.flags.nether_resist)
+	    breath(GF_MAGIC_MISSILE, char_row, char_col,
+	((34+damroll(10,7)+((c_list[m_ptr->mptr].level)*2)/3), ddesc, monptr));
+		Now is:					Notice extra paren ^^^
+	  if (py.flags.nether_resist)
+	    breath(GF_MAGIC_MISSILE, char_row, char_col,
+	(34+damroll(10,7)+(c_list[m_ptr->mptr].level*2)/3), ddesc, monptr);
+
+	Also, extra parens inserted in creatures(), during the calculation
+		for being noticed...  My compiler bitched -CFT
+potions.c:	  In quaff(), parens added around flag expression test.  It was
+		something like " blahblah | py.flags.someflag>0 | blahblah".
+		Now it is " blahblah | (py.flags.someflag>0) | blahblah".
+spells.c:	  In detect_enchantment(), call to special_check() now uses & of
+		t_list[...], instead of just t_list[...].
+main.c:	  Added if __TURBOC__ -ed external definition of the variable _stklen,
+		to increase the default stacksize...
+	Added #ifdef MSDOS -ed call to msdos_init, which initializes some of
+		the tcio screen procedures, and checks for a angband.cnf file
+		to read in some setting.
+	Added #ifndef MSDOS around call to umask()
+externs.h:	  Added (inside #ifdef MSDOS) prototypes for:  msdos_init().
+	Added prototype for init_scorefile()
+	Added prototype for init_file()
+	"	"	"   user_name()
+externs.h:	  Ugly change:  I'm adding #defined constants to allow me to specify
+		arg types, to give TC the full prototypes.  If __TURBOC__
+		is not defined, these should collapse to nothing. -CFT
+	It's not pretty, but it allows me to add all my full prototypes to
+		stop my compiler from bitching, and still allows anyone
+		who doesn't need full prototypes to use the same set.  I
+		could just cut+paste, and have 2 separate sets of prototypes,
+		1 with and 1 w/o argument defs, but I have a feeling that
+		they'd get out of sync...
+moria1.c:	  added parens around potentially ambigious or expression in
+		inven_command, where it tests which to see if is a letter
+files.c:	  call to magic_treasure() inside print_objects() was missing a couple
+		of new arguments.  Right now, I'm passing 0,FALSE for
+		good,not_special
+dungeon.c:	  Bug in code for ring of power; call to take hit didn't pass descript.
+		string...  fixed -CFT
+death.c:	  YA bug; clear_screen() takes no args, but in 3 diff places it was
+		called as clear_screen(0,0)...  fixed -CFT
+staffs.c:	  genocide (from the staff) called w/o the "spell" parameter.
+		fixed... -CFT
+save.c:	  YA bug.  rd_unique was casting &item->dead to int8u, instead of
+		int8u *.  I probably did this one myself.  Fixed -CFT
+main.c:	  move call to init_signals to AFTER init_curses, like the comment
+		says to do.. -CFT 
+main.c:	  added #ifdef MSDOS code to use a savefile name that dos would like -CFT
+save.c:	  changed save/restore code (inside #ifdefs) to compesate for the types
+		I've changed... -CFT
+ALL:	  I'm adding janderso@vtssi.vt.edu 's color code.  He wrote it for
+		Umoria 5.5, but I'm confident I can get the basics working.
+		Unfortunately, it depends on TurboC's textcolor function,
+		and assumes the tcio.c io package, so I'm not sure how
+		portable it is to other systems...  I'd like to think
+		that it would be relatively easy to write a textcolor
+		function for other MSDOS compilers to make it work -- seems
+		like all you'd need is a switch to call the appropriate
+		code for your system.  With this setup, it might even work
+		under ANSI.SYS color codes.  The hitch might be tcio --
+		I've no idea how restrictive it is... -CFT
+treasure.c:	  janderso's TC_COLOR code detected a problem here (this was a bitch
+		to find...)  Most of the entries don't have a value for
+		field 'flags2', an int32u.  No problem?  Well, not until I
+		add my color data onto the end (inside an #ifdef).  It was
+		using my color data as the flag, and then the color got
+		(by default) init-ed to 0. -CFT
+recall.c:	  preliminary playtesting of my now (apparently) working executable
+		showed that unique monsters always reported "No known
+		battles to the death are recalled."  This was probably
+		done, so that past characters wouldn't affect the message.
+		I've changed the code a bit to check u_list[].dead when
+		dealing with unique monsters.  Now, after killing Farmer
+		Maggot, the mon. memory will report him dead...  (But not
+		for a new character using an old memory). -CFT
+spells.c:	  YA bug.  In pain_message(), the %age of hp is calculated by
+		(100*newhp)/oldhp.  However, it is (very) possible for
+		100*newhp to be > 32,767 (max signed 16 bit value).  For
+		TurboC, ints are 16 bits, so this causes problems.  (Unhurt
+		Iron golum "cries feebly" from 1st magic missle?  Then
+		"shrugs off the attack" after many, many magic missiles?)
+help.c:	  Added case 'h' to ident_char(), so it won't say "not used" about
+		dwarves, elves, hobbits, etc... -CFT
+misc2.c:	  BUG!  Somehow, losing int makes me lose ALL spells, instead of
+		just the extra ones I earned for int > 18/50.  I should
+		lose about 6 or 7, not all 36 that I've learned...
+	Okay, what's happened is that whoever added the 2nd int32u spell
+		fields was a bit lazy, and just cut+pasted a second copy
+		of much of the spell learn/forget code.  Unfortunately, this
+		causes it to do wierd things like shift more than 31 places.
+		Also, in some of the loops, it could have (and DID, that's
+		how I noticed all this...) acted twice, forgetting or
+		remebering 2 spells in a single pass of the loop.  This is
+		bad if the starting value of the loop var (new_spells) is
+		odd, and it is used to test for 0.  What happens is you got
+		values of -7,-5,-3,-1,1,3,... for new_spells when forgetting.
+		Since it wasn't zero when it was testing, it didn't stop
+		until there were no more spells.  I assume an equally bad
+		situation could have happened when remembering spells...
+	I'm fixing this by rewriting some of the code:  Adding in (j-32)
+		when using j as the bit index for the 2nd spell fields;
+		Also, I'm having to re-write most of calc_spells().
+		Hopefully, that'll be all... -CFT
+creatures.c:	  YA BUG!  I was wondering why the monster memory didn't remember a
+		lot of things, including that the monster healed itself.
+		So I looked around in the recall code and it looked ok.
+		Then I tried the mon_cast_spell() code -- it's almost
+		right; for spells above 32, you use the proper variables,
+		but you still shift by (throw_spell -1), instead of
+		(thrown_spell -33) and (thrown_spell -65).
+recall.c:	  I put back in the code to use an external description file, instead
+		of describe_mon.c, since this is used rarely and eats up
+		a lot of space that MSDOS doesn't have to spare.  Even
+		my overlay setup doesn't help; the descriptions are all data,
+		and I can't overlay that...  (Oh, BTW, it's #ifdef-ed) -CFT
+	Also, the file mkdesc.c, compiled and linked into the object file
+		describe_mon.obj, should automagically produce the external
+		description file used -- no need to do it by hand, even
+		if describe_mon.c is changed... -CFT
+creature.c:	  Not quite a bug.  One of the possible result of a Nexus breath was
+		"stat-scambling".  However the code was swaping current, max,
+		AND used stat values.  This causes wierd things to happen if
+		your dex + chr (for example) got swapped when you where
+		wearing/wielding something that gave you a bonus to dex.
+		What should happen is that the current + max get swapped,
+		and then the 'used' value is recalculated by calling
+		set_use_stat().  This part is fixed.  They way it's written,
+		even after my minor fix, there doesn't seem to be anyway to
+		recover your old stat values.  Should there be?  Or is this
+		an incentive to maximize all your stats?  I'd sure hate to
+		be playing a 1/2-Troll priest, and get my Charisma swapped
+		with my Wisdom!  -CFT
+spells.c:	  Changed bolt() from void to int.  Return value of 1 means the
+		bolt hit the player.  Return of 0 means it didn't (probably
+		hit another monster).  Used in creature.c to avoid doing
+		extra effects if the bolt doesn't even hit the player.
+creature.c:	  Changed some code in mon_cast_spell() to check return value from
+		bolt() before doing extra effects (ie, don't drain exps
+		if nether bolt hits another monster).
+creature.c:	  Umber hulks (and probably anyone else who can break walls) did
+		wierd things when they walked through a door.  The floor
+		value was changed, so the game allowed you to walk through
+		the door, but the door was left unchanged.  I've fixed it
+		so that the door is now broken, so that walking though it
+		is normal. -CFT
+prayer.c:	  changed the remove curse spell from in place code which allowed
+		the One Ring to be uncursed to a call to remove_curse(),
+		which doesn't allow that.  In case you really wanted
+		priests to be able to escape the One Ring, the old code
+		is still there, inside a #if 0. -CFT
+treasure.c and desc.c:	  Weird identify bug found!  Some items (Amulet of DOOM, potion of
+		death, etc) that I KNEW I hadn't yet seen were identified
+		when I first saw them (ie, not "blue potion" or "titanium
+		amulet")  The subvals for some of the scrolls and potions
+		cause some collisions (same subval used in both TV_SCROLL1
+		and TV_SCROLL2, or TV_POTION1 and TV_POTION2).  Also, the
+		subval for remove curse scroll is same as subval for
+		*remove curse*, and they're both TV_SCROLL1!  Also, for
+		amulets, the code for object_offset() doesn't differentiate
+		between them.  The amulet of DOOM had the same subval as
+		the rod of disarming, which I had already identified, so
+		it was identified.  What's confusing is that the comment
+		on OBJECT_IDENT_SIZE in constant.h says that object_offset()
+		was rewritten to handle rods...
+constant.h:	  The value of OBJECT_IDENT_SIZE was 1024, but the comment said it
+		was 8*64.  By my math, that's only 512...  Unfortunately,
+		this is used in the savefile, so changing it makes the
+		save files uncompatible.  I'm going to leave it as it is
+		for now, but I thought I should make a note of it. -CFT
+misc1.c:	  Added casts to values in max_hp(), in hope of curing a weird bug.
+		Monsters who heal themselves, even if unhurt, seem to
+		then have 0 hps... To be honest, I'm not sure this is
+		where the problem is... I haven't been able to repeat the
+		problem while playing around in Wiz mode on the old code.
+		But an extra cast can't hurt... -CFT
+recall.c:	  YA dos trouble.  Again it the 16bit int problem...  When showing
+		the experience for Morgoroth (from Wiz mode), he's only
+		worth about 16k for a 39th character -- obviously it's
+		wrapping around 0.  I'm going to take a look and make sure
+		that the experience given also doesn't wrap around 0... -CFT
+	(Exp given was fine -CFT)
+recall.c:	  YA wierd problem found.  In recall code, when printing the "for a
+		15th level character" message, some fancy code was used to
+		choose proper suffix for number and "a" or "an".  Anyway,
+		it wasn't printing properly.  I tracked it down to a
+		"%d" instead of "%ld" in a sprintf call.  I searched
+		through the rest of the source, and I didn't see any other
+		suspicious "%d"s.  Of course, this problem wouldn't happen
+		on machines w/ 32bit ints. -CFT
+death.c:	  I finally figured out why the highscore table was (somethimes) being
+		printed with garbage.  The "hugebuffer" variable really was
+		huge -- 10,000 bytes.  It was overflowing my poor 12k stack.
+		I've trimmed hugebuffer down to 1k, and slightly modified
+		the sprintf()s in display_scores() so that large buffers are
+		no longer neccessary.  In fact, I probably could junk
+		hugebuffer altogether, merely sprintf()ing into the lines[]
+		array, but I wanted to minimize my changes.
+dungeon.c:	  Wizard mode '*' command was unlighting map, not lighting it.  I
+		changed call from wizard_light(FALSE) to wizard_light(TRUE).
+		Seems to have fixed it... -CFT
+	Also, I changed the sub-shell message (in a #ifdef) to let DOS users
+		know that the reason they can't shell out of Angband is not
+		because I don't want to let them, but because there's no
+		free memory for a subshell.
+moria2.c:	  Bug found in fix2_delete_mon().  It was passing a c_list pointer to
+		check_unique(), instead of a m_list ptr. -CFT
+recall.c:	  Minor change to code that checks CM_SPECIAL for various special
+		movements, so put in a check for BREAK_WALL in rcdefense.
+		I wanted to remember that Umber Hulks, Black Reavers, etc
+		are unstoppable... -CFT
+	Tiny bug found... rcdefense was declared as int16u, but c_recall[]
+		used int32u.  I didn't notice until it didn't show any
+		mention of BREAK_WALL (which is in the high end of the
+		longword...) -CFT
+creature.c:	  To make it remember that a monster (Nexus Q's, for example) can
+		teleport you away, I changed a tiny bit of code at the
+		end of mon_cast_spell().  It used to only update c_recall
+		if the monster was lit (basically, if we could see it).  But
+		when we get teleported away, or lv teleported, the monster
+		might no longer be lit.  To avoid this, it will update 
+		c_recall if monster lit, or either of these spells cast.
+moria1.c:	  minor change to inven_command, line 1075 (when I chaged it, it might
+		get pushed up/down...) to change if statement controling
+		"wearing" vs. "wielding" mesg.  It was comparing slot ==
+		INVEN_HEAD.  That didn't seem right, so I made it INVEN_WIELD.
+sets.c:	  set code changed to accept inven_type pointer instead of tval for
+		various "should we destroy this type of object?" set fns.
+		Affected were:  set_corrodes(), set_flammable(),
+		set_frost_destroy(), set_acid_affect(),
+		set_lightning_destroy(), set_acid_destroy(), set_null() and
+		set_fire_destroy().  The idea is that these fns should
+		check to see if the potentially destroyed item resists that
+		type of damage (ie, RA shield in inventory shouldn't be
+		lost by an acid attack), or if it's an artifact.  Now I'm
+		going to go through misc2.c and spells.c to fix up calls
+		to these fns...  -CFT
+misc2.c:	  changed inven_damage() to use new item set fn format.
+spells.c:	  changed get_flags (inside #ifdef MSDOS) to add arg in definition
+		of parameter destroy.
+constant.h:	  TR_ARTIFACT is used to indicate that an object is ACTIVATE-able???
+		This is so blatently counter-intuitive that I'm changing
+		it (well, renaming it, 0x800L in flags2 will still mean
+		activateable) to TR_ACTIVATE.  I'm grabbing 0x2000000L (the
+		next free flag) in flags2 to be TR_ARTIFACT.  This TR_ARTIFACT
+		will mean "this item is an artifact", and will be used, among
+		other ways, to prevent artifacts from being casually picked
+		up/burned/corroded/frozed/zapped/otherwise eliminated.
+	To make this change work, I'm also changing dungeon.c & misc1.c,
+		where they used TR_ARTIFACT.  -CFT
+dungeon.c:	  search + replace of TR_ARTIFACT with TR_ACTIVATE -CFT
+misc1.c:	  search + replace of TR_ARTIFACT with TR_ACTIVATE -CFT
+	afterwards, TR_ARTIFACT or-ed into all artifacts created in file...
+treasure.c:	  artifacts in treasure list have had 0x02000000 (my new TR_ARTIFACT)
+		put into their flags2 value.
+moria2.c:	  For completeness, grond + crown of morgoth both have TR_ARTIFACT
+		or-ed into their flags2 field...
+dungeon.c:	  if statement added into dungeon() code when create_up_stair or
+		create_down_stair processed.  Now it shouldn't overwrite
+		artifacts. -CFT
+spells.c:	  create_doors(), create_traps(), create_stair() changed to check to
+		see if obj on floor is an artifact.  If it is, they don't
+		call delete_object to get rid of it. -CFT
+	minor change: cflag parameter of banish_creature() changed from
+		int to int32u
+externs.h:	  1st parameter of banish_creature now has int32u in prototype..
+	Earlier change of various set functions now reflected in prototypes
+spells.c:	  get_flags() parameter harm_type changed from int * to int32u *.
+		Also calling fns changed to pass &int32u instead of &int.
+externs.h:	  This change also reflected in prototypes..
+store2.h:	  types of a couple haggle variables changed from int to int32, to
+		avoid "conversion may lose sig. digits" warning. -CFT
+misc1.c:	  compact_objects changed so that it will not compact artifacts.
+moria2.c:	  quest stairway placement modified so not to clobber any artifact the
+		monster might have been standing on...  It performs a random
+		walk from monster's location until it finds a spot that
+		is open floor AND doesn't contain an artifact.  If it
+		contains an object, it is deleted, and then the stair is
+		placed there.  The original code seemed flakey, in that
+		it checked for object at monster location, and then, if there
+		was, it would delete from under player's feet before putting
+		the stairway where the monster was...
+spells.c:	  build_wall code changed a bit to avoid burying artifacts.  I
+		rearranged the code so it check to see if there's a monster,
+		handles damage/etc and then looks for possible object to
+		delete.  This allows me to use a continue if the object
+		is an artifact, which skips deletion + placement of the
+		magma block.
+	also earthquake code changed to avoid erasing artifacts; almost
+		the same trick used.
+creature.c:	  creature pick-up code in make_move() changed to not pick up artifacts
+	also shatterquake() altered to not erase artifacts.
+	also steal object code modified to check for artifact before
+		stealing...
+store2.c:	  Ah-HA!  I think I found the last int32/int problem in haggle code
+		that was preventing you from simply hitting return to
+		accept a final offer if > 32k  (note my flag to turn off
+		haggling, otherwise this would never happen).  get_haggle()
+		parameter price was an int, now an int32... -CFT
+	That'll teach me not to speak too soon.  In store_sell(), local
+		vars cost, real were ints.  They're now int32's.  Hopefully
+		this time it's really the last ones... -CFT
+desc.c:	  Ok, I'm going after the ID bug.  Firstly, object_offset() now
+		returns a different value for rods than it does for amulets.
+		(amulets still 1, rods now 7). -CFT
+treasure.c:	  Part 2, now fix up colliding subvals in treasure list:	  	scroll of *remove curse* changed from subval 68 (same subval
+			as normal remove curse) to 76, which was unused.
+		potion of *elightenment* from subval 80 -> 94
+		potion of detonations from sv 81 -> 97
+		potion of death from sv 82 -> 109
+		potion of life from sv 83 -> 110
+		potion of augmentation from sv 84 -> 111
+		potion of ruination from sv 85 -> 112
+		potion of enlightenment from sv 86 -> 113
+		potion of self knowledge from sv 87 -> 114 (still inside
+			comment, this is just a defensive measure)
+	This, together with the previous change, will probably give me a
+		wierd set of id'ed + un-id'ed objects in my current savefile,
+		but it should put this problem to rest... -CFT
+creature.c:	  mon_cast_spell changed (again) so that monsters w/ 0 for max hp
+		have their max hp re-calculated + reset.  If this causes
+		pointer problems, maybe it'll help us figure WHAT is causing
+		maxhp to get zeroed in the 1st place...
+recall.c:	  recall code cleaned up a bit -- minor change in code for natural/
+		undead/evil monsters; was if {} else if {} else if...
+		Now it is just a bunch of ifs, since these qualities are
+		not mutually exclusive...
+	Also, I'm adding slightly faster learning of ac/hp/attack damage
+		for unqiue monsters, since you don't have the chance to
+		kill 200 of them...  (still need to kill more than once,
+		so unless you reuse monster memories, you'll never get this
+		info)
+creature.c:	  The infravision code in update_mon() was screwy... It showed the
+		proper monsters, but it only OR-ed NO_INFRA into mon.
+		memory if the monster didn't have NO_INFRA!  I think this
+		may have been an oversight caused by changing infravision
+		from default off (in Um5.*) to infravision on by default
+		in Angband.  Anyway, now it will only OR NO_INFRA into mon.
+		memory if the monster has NO_INFRA.  (BTW, the reason it
+		didn't cause monsters to be listed as "cold blooded" before
+		is the memory cdefenese is ANDed with the real cdefense, so
+		the mistaken values were eliminated...)
+spells.c:	  BUG! in teleport_to code...  It did no bounds checking on y,x before
+		using cave[y][x].  I had a sudden crash when a blink dog
+		commanded me to return.  The surrounding area was a narrow
+		corridor, all full of blink dogs, and near the top of the
+		screen.  I assume what happened is that dis increased until
+		it tried to use cave[][] with a negative index.  I put in
+		a couple of bounds checks... -CFT
+create.c:	  A couple of minor changes... when calculating player_hp[], it
+		was using MAX_PLAYER_LV*3/8 and MAX_PLAYER_LV*5/8, which
+		don't give very good values.  I've put off the division
+		until the final step, which gives better results (no lost
+		precision in mid-calculation).  Also, in the percent
+		calculations to show wizards how the life rating was,
+		player_hp[MAX_PLAYER_LV-1]*200 is calc-ed, then divided to
+		get the percentage.  For PCs with 16bit ints, this rolls
+		over, so I casted to long in mid calc, then back to int
+		afterwards.
+magic/dungeon.c/moria1.c:	  Fixed mystic shield by changing how it works.  It used to add to
+		player's base ac.  This caused mana troubles because mana
+		is penalized for high base ac (to simulate encumberence).
+		Now it adds to the players magical ac (which seems more
+		reasonable for "mystic shield" anyways...)
+dungeon.c/moria1.c:	  dungeon() code and calc_bonuses() code were inconsistant.  Heroism
+		and S. heroism had apperently been changed in dungeon(),
+		but not in calc_bonuses().  This is fixed.  Also,
+		calc_bonuses() didn't adjust for stun, so a call to it
+		could result in wierd values for +tohit and +todam...  This
+		should be fixed.  Also, the stun code in dungeon() looked
+		bad.  I'm not really sure it was wrong, but it was nasty.
+		So it's been replaced with what I hope is better code.  If
+		I've covered everything, then calling calc_bonuses() when
+		nothing has changed (no spells timed out, no new stuff worn/
+		removed, etc) should give the same values as dungeon() had
+		already calculated.  Mystic shield and stun are turned off
+		in dungeon, but turned on elsewhere (calc_bonuses() and
+		stun_player(), respectively), but they should work.  I'm
+		going to test this bit some tonight.
+	Oh, the changed stun code should eliminate permanent stun effects,
+		which were possible with the old stun code -- if you had
+		a really low (like 3 or 4) constitution.  Now stun is
+		reduced by at least 1 per round.  If this seems to fast
+		to you for people with bad stats, change the 1 in the ?:	  	expression into a ((turn % x) == 0) expression, for some
+		value x.  But I think a character with a 3 con has enough
+		problems, with his minimal hps...
+dungeon.c:	  minor change to transient effects that alter ac (invul, bless, etc).
+		now set PY_ARMOR in py.flags.status to have display updated
+		AFTER all adjustments handled.  Cannot just call prt_pac()
+		because dis_ac isn't adjusted until the end of the trans.
+		effects (mostly because I didn't want to add a whole bunch
+		of py.misc.dis_ac += something; lines....)  Should display
+		correctly now...
+creature.c:	  quick change into attack code in make_attack(), adding flag "blinked"
+		to prevent continued attacks if a monster has blinked away
+		(which may happen after a steal attack).  This wasn't a
+		problem for UMoria, because all monsters that stole had the
+		steal attack as their last attack; but Smeagol, Harowen,
+		and maybe others can have several steal attacks.
+	update_mon() changed to allow infravision to see invisible monsters
+		(only if they show up on infra-red!).  This test moved before
+		the test for player light and see-inv.  The result of this is
+		that lighting a torch doesn't prevent your infravision from
+		working, which is questionable, but using the Phial of
+		Galadrial (which I assume is not a "hot" light source)
+		shouldn't interfere with infravision.  So we let infravis
+		work even with a torch, so that it will work with the Phial
+		and other light sources...
+dungeon.c:	  light code changed to test for perm light.  If true, then
+		it doesn't decrement p1.  This should cure the Arkenstone
+		bugs.  (Note: torches will still be used up, even if wielding
+		Ringil or other light-producing equipment... which is what
+		should happen)
+magic.c / prayer.c:	  cast spell code was using if (randint(100) < chance) to test for
+		failure.  But randint returns 1-100, so if chance was 1,
+		this was if (1-100 < 1), which was never true!  I've changed
+		this from < to <= to make chance of 1 give a 1% failure
+		rate, instead of 0%....
+misc2.c:	  spell_chance() changed to calculate minfail chance based upon your
+		spell stat.  Only mages/priests are allowed to go below
+		5% failure, since they are "pure" spellcasters.  The numbers
+		in the switch are subject to change if I don't like them...
+tables.c:	  store onwers should not have min_inflate over 200, unless they
+		never pay more that 1 gp for items when player sells.  For
+		now, I've changed all black markets from min_inflate of
+		220 to 190.  This means that they will pay about 10% of
+		what the item's worth.
+store2.c:	  cast added into calulation of min_buy in sell_haggle().  Also,
+		I took out the line that divided the price the balck market
+		would pay by 4.  See above chance to learn why...
+monsters.c:	  gave all non-warrior dark elves the power to cast darkness, and all
+		dark elves are now hurt by light (ala Drow).
+spells.c:	  "colorized" the code for detection(), so that monster will show up
+		in color.  I must have missed this before. -CFT
+===========================================================================
+The following changes are after I sent sources to Sean Marsh... (orignally)
+===========================================================================
+death.c:	  Found the frigging hiscore bug!  It wrote the highscore tables in
+		binary mode, but in display_scores(), it read them in
+		the default mode, which is text mode.  So, when it read
+		a CRLF pair, it removed the CR.  This caused the data
+		to get out of alignment with the high_scores structure,
+		so I was getting wierd results...  (The CRLF's were only
+		in the file because they were garbage which happened to
+		be on the stack, which ended up in score.name and
+		score.died_from, after the null character...  This made the
+		problem REAL hard to find, until I started doing hex dumps
+		(to a debugging file) of the data as read, and comparing it
+		to the hex dump of the highscore file...  0a 0d became just
+		0a.  Then I realized what was happening)
+death.c:	  Took out hugebuffer[] from display_scores()...  It now sprintf()s
+		the strings directly into list[][].  The sprintf()s all
+		have field lengths, so they shouldn't overflow the 128 char
+		size of each list[i]. -CFT
+
+spells.c:	  Added TR_CURSED and TR_TUNNEL to self-knowledge code in weapon
+		description.
+misc1.c:	  fixed Shield of Thorin; moved TR_IM_ACID to flags2...  In flags it
+		was granting stealth -- an unusual thing for a dwarven item
+		to do.
+dungeon.c:	  increased the required rating to get "you feel lucky" type message,
+		so that the lesser messages are worthwhile, and the best
+		ones are not to be missed...
+===========================================================================
+Changes above here made it into the initial release of Angband
+===========================================================================

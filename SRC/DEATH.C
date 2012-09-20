@@ -94,7 +94,6 @@ static void date(ARG_CHAR_PTR);
 static long total_points(ARG_VOID);
 static void kingly(ARG_VOID);
 static void print_tomb(ARG_VOID);
-static int top_twenty(ARG_VOID);
 #endif
 
 #ifndef MAC
@@ -208,12 +207,20 @@ void display_scores(from, to, hl_rank)
 	  textcolor(YELLOW); /* make score easy to see */
 #endif	  
         prt(string, ++i, 0);
-	if (score.dun_level)
-          (void) sprintf(string, "    Killed by %s at %ld'.",
+	if (strcmp("(saved)", score.died_from)) { /* if not.. */
+	  if (score.dun_level)
+            (void) sprintf(string, "    Killed by %s at %ld'.",
 		   score.died_from, 50L * (long)score.dun_level);
-	else
-	  (void) sprintf(string, "    Killed by %s in Town.",
+	  else
+	    (void) sprintf(string, "    Killed by %s in Town.",
 	  	score.died_from);
+	  } else { /* was saved... */
+	  if (score.dun_level)
+            (void) sprintf(string, "    Still alive at %ld'.",
+		   50L * (long)score.dun_level);
+	  else
+	    (void) sprintf(string, "    Still alive in Town.");
+	    }	    
         prt(string, ++i, 0);
 #ifdef TC_COLOR
 	if (((hl_rank+1) == rank) && !no_color_flag)
@@ -335,7 +342,8 @@ static void print_tomb()
   register char *p;
   FILE *fp = NULL;
 
-  if (stricmp(died_from, "Interrupting") && !wizard) {
+  if (stricmp(died_from, "Interrupting") && !wizard && !to_be_wizard &&
+	!noscore) {
     sprintf(str, "%s%d", ANGBAND_BONES, dun_level);
     if ((fp = fopen(str, "r")) == NULL && (dun_level>1)) {
       if ((fp = fopen(str, "w")) != NULL) {
@@ -432,6 +440,41 @@ static void print_tomb()
 	  clear_from (1);
 	  (void) show_inven (0, inven_ctr-1, TRUE, 0, 0);
 	  msg_print (NULL);
+	  msg_print ("You have stored at your house:");
+	  clear_from (1);
+	  { /* show home's inventory... */
+	    store_type *s_ptr = &store[7]; /* home */
+	    int i = 0, j = 0;
+	    vtype t1, t2;
+	    
+	    while (i<s_ptr->store_ctr){
+	      j = 0;
+	      sprintf(t2, "(page %d)", (i==0?1:2));
+	      prt(t2, 1, 3);
+	      while ((i<s_ptr->store_ctr) && (j<12)){
+		known1(&s_ptr->store_inven[i].sitem);
+		known2(&s_ptr->store_inven[i].sitem);
+	      	objdes(t1, &s_ptr->store_inven[i].sitem, TRUE);
+		sprintf(t2, "%c) %s", 'a'+j, t1);
+#ifdef TC_COLOR
+		if (!no_color_flag)
+		  textcolor( inven_color(s_ptr->store_inven[i].sitem.tval) );
+#endif
+		prt(t2, j+2, 4); 
+#ifdef TC_COLOR
+		if (!no_color_flag) textcolor( LIGHTGRAY );
+#endif
+		j++;
+		i++;
+	        } /* items 1-12, 13-24 loop */
+	      if (i < s_ptr->store_ctr) { /* if we're done, skip this */
+	        msg_print(NULL);
+	        msg_print("Home inventory:");
+	        clear_from (1);
+	        }
+	      } /* outer while loop */
+	    msg_print(NULL);
+	    } /* scope block of display-home inventory code -CFT */
 	}
     }
 }
@@ -446,7 +489,7 @@ long total_points()
 
 
 /* Enters a players name on a hi-score table...    SM */
-static int top_twenty()
+int top_twenty()
 {
 #ifdef MSDOS /* fix this gluttonous stack usage to avoid stack overflow -CFT */
   register int i, j, not_eof;
@@ -458,25 +501,22 @@ static int top_twenty()
   
   clear_screen();
 
-  if (wizard || to_be_wizard) {
-    display_scores (0, 10, -1);
-    (void) save_char();
+  if (wizard || to_be_wizard || noscore) {
+    display_scores (0, MAX_SAVE_HISCORES, -1);
     restore_term();
     exit(0);
   }
 
   if (!total_winner && !stricmp(died_from, "Interrupting")) {
     msg_print("Score not registered due to interruption.");
-    display_scores (0, 10, -1);
-    (void) save_char();
+    display_scores (0, MAX_SAVE_HISCORES, -1);
     restore_term();
     exit(0);
   }
 
   if (!total_winner && !stricmp(died_from, "Quitting")) {
     msg_print("Score not registered due to quitting.");
-    display_scores (0, 10, -1);
-    (void) save_char();
+    display_scores (0, MAX_SAVE_HISCORES, -1);
     restore_term();
     exit(0);
   }
@@ -595,7 +635,7 @@ static int top_twenty()
   clear_screen();
 
   if (wizard || to_be_wizard) {
-    display_scores (0, 10, -1);
+    display_scores (0, MAX_SAVE_HISCORES, -1);
     (void) save_char();
     restore_term();
     exit(0);
@@ -603,7 +643,7 @@ static int top_twenty()
 
   if (!total_winner && !stricmp(died_from, "Interrupting")) {
     msg_print("Score not registered due to interruption.");
-    display_scores (0, 10, -1);
+    display_scores (0, MAX_SAVE_HISCORES, -1);
     (void) save_char();
     restore_term();
     exit(0);
@@ -611,7 +651,7 @@ static int top_twenty()
 
   if (!total_winner && !stricmp(died_from, "Quitting")) {
     msg_print("Score not registered due to quitting.");
-    display_scores (0, 10, -1);
+    display_scores (0, MAX_SAVE_HISCORES, -1);
     (void) save_char();
     restore_term();
     exit(0);
@@ -901,7 +941,7 @@ void exit_game ()
 {
   register int i;
 #ifdef MSDOS
-  int t;
+  int t=0;
 #endif
   
 #ifdef MAC
@@ -918,24 +958,67 @@ void exit_game ()
       if (total_winner)
 	kingly();
       print_tomb();
-      if (!wizard && !to_be_wizard && !noscore) 
-#ifdef MSDOS
-	t = top_twenty(); /* top_twenty should ret 1 if made hiscore.  if so
-			     it already showed hi-scores -CFT*/
-#else
-	top_twenty();
-#endif
-      else msg_print("Score not registered.");
+      i = log_index;
+      (void) save_char ();		/* Save the memory at least. */
     }
-  i = log_index;
-  (void) save_char ();		/* Save the memory at least. */
-#ifdef MSDOS
-  if (!t) /* then top_twenty() didn't show scores, so we do here... -CFT */
-#else
-  if (i > 0)
-#endif
-    display_scores (0, 10, -1);
   erase_line (23, 0);
   restore_term();
   exit(0);
 }
+
+
+/* delete_hs_saved is designed to get rid of any "(saved)" entries for THIS
+   PLAYER that may be in the highscore table.  It is called from main,
+   after restoring a character (not just a memory, but a character).
+   This function is written for PC systems...  It doesn't even try to lock
+   the highscore table.  If you want to use it on a non-PC system, you'll
+   have to modify it accordingly. -CFT   (I put it here instead of in main.c,
+   to have it near the rest of the high-score code...) */
+void delete_hs_saved(char *name, int pc, int pr, int ps){
+
+  high_scores tscore;
+  FILE *highscore_fp; /* used in opening file instead of locking it */
+  FILE *tfile_fp; /* temp file: when done, it will be renamed to hiscore file */
+  int tfile_fd;
+  char string[80], tfname[16]; /* used in error msgs -CFT */
+  int8u not_eof;
+  
+  if ((highscore_fp = fopen(ANGBAND_TOP, "rb")) == NULL)
+    return; /* no highscore list?  okay, nothing to do then... */
+    
+  highscore_fd = fileno(highscore_fp); /* get fd from fp...  This must
+  					  happen bacause rest of code
+  					  assumes fd, not fp  -CFT */
+
+  tmpnam(tfname); /* get a filename for temp file */
+  if ((tfile_fp = fopen(tfname, "wb")) == NULL)
+    {
+      (void) sprintf (string, "delete_hs_saved:Error opening temp file \"%s\"\n", tfname);
+      perror(string);
+      exit_game();
+    }
+  tfile_fd = fileno(tfile_fp); /* get fd from fp...  This must
+  					  happen bacause rest of code
+  					  assumes fd, not fp  -CFT */
+
+
+/* copy entries, unless they are "(saved)" and for this player -CFT */
+  do { /* copy into tfile */
+    not_eof = (read(highscore_fd, (char *)&tscore, sizeof(high_scores)) > 0);
+    if (not_eof){
+      if ((tscore.sex == ps) && (tscore.prace == pr) &&
+	  (tscore.pclass == pc) && !strcmp(tscore.died_from, "(saved)") &&
+	  !strcmp(tscore.name, name))
+	; /* It's the same as this player, so we don't copy it! -CFT */
+      else
+        write(tfile_fd, (char *)&tscore, sizeof(high_scores));
+      }
+    } while (not_eof);    
+  close(highscore_fd);
+  close(tfile_fd);
+  unlink(ANGBAND_TOP); /* erase old */
+  rename(tfname, ANGBAND_TOP); /* rename tfile to highscore file */
+} /* delete_hs_saved() -CFT */
+
+
+

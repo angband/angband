@@ -5,7 +5,12 @@
    This software may be copied and distributed for educational, research, and
    not for profit purposes provided that this copyright and statement are
    included in all such copies. */
+#ifndef MSDOS /* for TC++, time.h is just <time.h> -CFT */
 #include <sys/time.h>
+#else
+#include <time.h>
+#endif
+
 #define FSCALE (1<<8)
 #ifdef Pyramid
 #include <sys/time.h>
@@ -61,6 +66,8 @@ typedef struct statstime {
 #if defined(LINT_ARGS)
 #else
 static char *cap(ARG_CHAR_PTR);
+static void magic_ammo(ARG_INV_PTR ARG_COMMA ARG_INT ARG_COMMA ARG_INT ARG_COMMA
+			ARG_INT ARG_COMMA ARG_INT ARG_COMMA ARG_INT);
 #endif
 
 #if !defined(ATARIST_MWC) && !defined(MAC)
@@ -74,22 +81,30 @@ extern int rating;
 void init_seeds(seed)
 int32u seed;
 {
-  register int32u clock;
+  char *malloc(size_t);
+  
+  old_state = (char *) malloc(256); /* excellent R.N.G. */
+  dummy_state = (char *) malloc(8); /* so-so R.N.G., but who cares? -CFT */
 
-  if (seed == 0)
-    clock = time((long *)0);
-  else
-    clock = seed;
-  randes_seed = (unsigned int)clock;
+	/* if malloc choked on 264 bytes, we're dead anyways */
+  if (!old_state || !dummy_state) {
+    puts("\nError initializing; unable to malloc space for RNG arrays...\n");
+    exit(2);
+    }  
 
-  clock += 8762;
-  town_seed = (unsigned int)clock;
-
-  clock += 113452L;
-  set_rnd_seed(clock);
-  /* make it a little more random */
-  for (clock = randint(100); clock != 0; clock--)
-    (void) rnd();
+/* is 'unix' a std define for unix system?  I thought UNIX is more common?
+   This may need to be changed.  It's fine for PCs, anyways... -CFT */
+#ifdef unix
+  /* Grab a random seed from the clock & PID... */
+  (void) initstate(time(NULL), dummy_state, 8);
+  (void) initstate(((getpid() << 1) * (time(NULL) >> 3)), old_state, 256);
+#else 
+  /* ...else just grab a random seed from the clock. -CWS */
+  (void) initstate(time(NULL), dummy_state, 8);
+  (void) initstate(bsd_random(), old_state, 256);
+#endif /* unix */
+  town_seed = bsd_random();
+  randes_seed = bsd_random();
 }
 
 /* holds the previous rnd state */
@@ -99,19 +114,15 @@ static int32u old_seed;
 void set_seed(seed)
 int32u seed;
 {
-  old_seed = get_rnd_seed ();
-
-  /* want reproducible state here */
-  set_rnd_seed (seed);
-}
-
+  setstate(dummy_state);
+    srandom((seed % 2147483646L) + 1);  /* necessary to keep the town/desc's */
+} /* the same (legacy from rnd.c) -CWS */
 
 /* restore the normal random generator state */
 void reset_seed()
 {
-  set_rnd_seed (old_seed);
+    (void)setstate(old_state);
 }
-
 
 /* Check the day-time strings to see if open		-RAK-	*/
 int check_time()
@@ -580,18 +591,19 @@ int popm()
 
 
 /* Places a monster at given location			-RAK-	*/
+/* modified with David Kahane's unique escort diff -CFT */
 int place_monster(y, x, z, slp)
 register int y, x, z;
 int slp;
 {
-  register int cur_pos;
+  register int cur_pos,j,ny,nx,count;
   register monster_type *mon_ptr;
   char buf[100];
 
   if ( (z<0) || (z >= MAX_CREATURES) )
     return FALSE; /* another paranoia check -CFT */
 
-  if (!in_bounds(y,x))
+  if (!test_place(y,x))
     return FALSE; /* YA paranoia check -CFT */
     
   if (c_list[z].cdefense & UNIQUE) {
@@ -634,11 +646,13 @@ int slp;
   else
     mon_ptr->hp = pdamroll(c_list[z].hd);
   mon_ptr->maxhp=mon_ptr->hp;
-  mon_ptr->cspeed = c_list[z].speed - 10 + py.flags.speed;
+  mon_ptr->cspeed = c_list[z].speed - 10;
   mon_ptr->stunned = 0;
   mon_ptr->cdis = distance(char_row, char_col,y,x);
   mon_ptr->ml = FALSE;
   cave[y][x].cptr = cur_pos;
+
+      	 
   if (slp)
     {
       if (c_list[z].sleep == 0)
@@ -648,8 +662,55 @@ int slp;
 	  randint((int)c_list[z].sleep*10);
     }
   else
-    mon_ptr->csleep = 0;
+  /* to give the player a sporting chance, any monster that appears in
+  	 line-of-sight and can cast spells or breathe, should be asleep.
+	  This is an extension of Um55's sleeping dragon code... */
+    if (((c_list[z].spells & (CAUSE_LIGHT|CAUSE_SERIOUS|HOLD_PERSON|
+      				  BLINDNESS|CONFUSION|FEAR|SLOW|BREATH_L|
+      				  BREATH_G|BREATH_A|BREATH_FR|BREATH_FI|
+      				  FIRE_BOLT|FROST_BOLT|ACID_BOLT|MAG_MISS|
+      				  CAUSE_CRIT|FIRE_BALL|FROST_BALL|MANA_BOLT))
+    	  || (c_list[z].spells2 & (BREATH_CH|BREATH_SH|BREATH_SD|BREATH_CO|
+      	  			  BREATH_DI|BREATH_LD|LIGHT_BOLT|LIGHT_BALL|
+      	  			  ACID_BALL|TRAP_CREATE|RAZOR|MIND_BLAST|
+      	  			  MISSILE|PLASMA_BOLT|NETHER_BOLT|ICE_BOLT|
+      	  			  FORGET|BRAIN_SMASH|ST_CLOUD|TELE_LEV|
+      	  			  WATER_BOLT|WATER_BALL|NETHER_BALL|BREATH_NE))
+      	  || (c_list[z].spells3 & (BREATH_WA|BREATH_SL|BREATH_LT|BREATH_TI|
+      	  			  BREATH_GR|BREATH_DA|BREATH_PL|ARROW|
+      	  			  DARK_STORM|MANA_STORM)))
+       && (los(y,x, char_row, char_col)))
+      mon_ptr->csleep = randint(4); /* if asleep only to prevent
+					summon-breathe-breathe-breathe-die,
+					then don't sleep long -CFT */
+    else mon_ptr->csleep = 0;
+
+  mon_ptr->color = c_list[z].color; /* don't forget the color -CFT */
   update_mon(cur_pos); /* light up the monster if we can see it... -CFT */
+  /* unique kobalds, liches, orcs, ogres, trolls, yeeks, and demons now
+  	have escorts -DGK  But not skeletons, because that would include
+	druj, making Cantoras amazingly tough -CFT */
+  if (c_list[z].cdefense & UNIQUE){
+    j=c_list[z].cchar;
+    if((j=='k')||(j=='L')||(j=='o')||(j=='O')||(j=='T')||(j=='y')||(j=='I')||
+       (j=='&')){
+      for(cur_pos=MAX_CREATURES-1;cur_pos>=0;cur_pos--)
+        if ((c_list[cur_pos].cchar==j)&&
+	    (c_list[cur_pos].level<=c_list[z].level)&&
+            !(c_list[cur_pos].cdefense & UNIQUE)){
+	  count=0;
+	  do{
+	    ny=y+randint(7)-4;
+	    nx=x+randint(7)-4;
+	    count++;
+	  } while (!test_place(ny,nx) && (count<51));
+	  if ((j=='k')||(j=='y')||(j=='&')||(c_list[cur_pos].cdefense&GROUP))
+	    place_group(ny,nx,cur_pos,slp);
+	  else
+	    place_monster(ny,nx,cur_pos,slp);
+	  }
+       }
+  }
   return TRUE;
 }
 
@@ -683,11 +744,12 @@ int place_win_monster()
     else
       mon_ptr->hp = pdamroll(c_list[mon_ptr->mptr].hd);
     /* the c_list speed value is 10 greater, so that it can be a int8u */
-    mon_ptr->cspeed = c_list[mon_ptr->mptr].speed - 10 + py.flags.speed;
+    mon_ptr->cspeed = c_list[mon_ptr->mptr].speed - 10;
     mon_ptr->stunned = 0;
     mon_ptr->cdis = distance(char_row, char_col,y,x);
     cave[y][x].cptr = cur_pos;
     mon_ptr->csleep = 0;
+    mon_ptr->color = c_list[mon_ptr->mptr].color; /* don't forget the color -CFT */
   }
   return TRUE;
 }
@@ -711,13 +773,13 @@ void set_ghost(g, name, r, c, l)
 
   switch (r) {
   case 0:
-  case 8:
     strcpy(race, "human");
     break;
   case 1:
-  case 2:
-  case 9:
     strcpy(race, "elf");
+    break;
+  case 2:
+    strcpy(race, "half elf");
     break;
   case 3:
     strcpy(race, "hobbit");
@@ -733,6 +795,12 @@ void set_ghost(g, name, r, c, l)
     break;
   case 7:
     strcpy(race, "troll");
+    break;
+  case 8:
+    strcpy(race, "dunedan");
+    break;
+  case 9:
+    strcpy(race, "high elf");
     break;
   }
   switch (c) {
@@ -1072,6 +1140,14 @@ int place_ghost()
   int race;
   int cl;
 
+  /* We must clear bits from old ghosts, or ghosts will accumulate all
+     attributes from past ghosts... -CFT */
+  ghost->cmove = (THRO_DR|MV_ATT_NORM|HAS_60|HAS_90|GOOD|CARRY_OBJ);
+  ghost->spells = ghost->spells2 = ghost->spells3 = 0;
+  ghost->cdefense = (EVIL|CHARM_SLEEP|UNDEAD|UNIQUE|GOOD|MAX_HP|
+  			IM_POISON|IM_FROST|NO_INFRA);
+  for(i=0;i<4;i++) ghost->damage[i] = 0;
+  
   if (!dun_level) {
     FILE *fp;
 
@@ -1139,13 +1215,14 @@ int place_ghost()
   mon_ptr->fy = y;
   mon_ptr->fx = x;
   mon_ptr->mptr = (MAX_CREATURES-1);
-  mon_ptr->hp = (int16)ghost->hd[0] * (int16)ghost->hd[1];
+  mon_ptr->hp = mon_ptr->maxhp = (int16)ghost->hd[0] * (int16)ghost->hd[1];
   /* the c_list speed value is 10 greater, so that it can be a int8u */
-  mon_ptr->cspeed = c_list[mon_ptr->mptr].speed - 10 + py.flags.speed;
+  mon_ptr->cspeed = c_list[mon_ptr->mptr].speed - 10;
   mon_ptr->stunned = 0;
   mon_ptr->cdis = distance(char_row, char_col,y,x);
   cave[y][x].cptr = cur_pos;
   mon_ptr->csleep = 0;
+  mon_ptr->color = c_list[mon_ptr->mptr].color; /* don't forget the color -CFT */
   return 1;
 }
 
@@ -1169,7 +1246,12 @@ int level;
 	level = MAX_MONS_LEVEL;
       if (randint (MON_NASTY) == 1)
 	{
-	  i = randnor (0, 4);
+	  /* this gives (0,1) for 50'-150', (0,2) for 200'-350', (0,3)
+	     for 400'-550', and the original (0,4) for dungeon levels
+	     deeper than 550'.  My intention is to reduce the number
+	     of very out-of-depth monsters that kill off 1st, 2nd, 3rd
+	     level characters. */
+	  i = randnor (0, (dun_level < 12 ? (dun_level / 4 + 1) : 4));
 	  level = level + abs(i) + 1;
 	  if (level > MAX_MONS_LEVEL)
 	    level = MAX_MONS_LEVEL;
@@ -1233,9 +1315,9 @@ int level;
 int test_place(y,x)
 int y,x;
 {
-  if (cave[y][x].fval >= MIN_CLOSED_SPACE || (cave[y][x].cptr != 0) ||
-      !in_bounds(y,x) ||
-      (y==char_row && x==char_col))
+  if (!in_bounds(y,x) || (cave[y][x].fval >= MIN_CLOSED_SPACE) ||
+	(cave[y][x].fval == NULL_WALL) || (cave[y][x].cptr != 0) ||
+	(y==char_row && x==char_col))
     return 0;
   return 1;
 }
@@ -1257,80 +1339,58 @@ void place_group(y,x,mon,slp)
   if (extra > 12) extra = 12; /* put an upper bounds on it... -CFT */
   switch (randint(13)+extra) {
   case 25:
-    if (test_place(y,x-3)) place_monster(y,x-3,mon,0);
-    rating = old;
+    place_monster(y,x-3,mon,0);
   case 24:
-    if (test_place(y,x+3)) place_monster(y,x+3,mon,0);
-    rating = old;
+    place_monster(y,x+3,mon,0);
   case 23:
-    if (test_place(y-3,x)) place_monster(y-3,x,mon,0);
-    rating = old;
+    place_monster(y-3,x,mon,0);
   case 22:
-    if (test_place(y+3,x)) place_monster(y+3,x,mon,0);
-    rating = old;
+    place_monster(y+3,x,mon,0);
   case 21:
-    if (test_place(y-2,x+1)) place_monster(y-2,x+1,mon,0);
-    rating = old;
+    place_monster(y-2,x+1,mon,0);
   case 20:
-    if (test_place(y+2,x-1)) place_monster(y+2,x-1,mon,0);
-    rating = old;
+    place_monster(y+2,x-1,mon,0);
   case 19:
-    if (test_place(y+2,x+1)) place_monster(y+2,x+1,mon,0);
-    rating = old;
+    place_monster(y+2,x+1,mon,0);
   case 18:
-    if (test_place(y-2,x-1)) place_monster(y-2,x-1,mon,0);
-    rating = old;
+    place_monster(y-2,x-1,mon,0);
   case 17:
-    if (test_place(y+1,x+2)) place_monster(y+1,x+2,mon,0);
-    rating = old;
+    place_monster(y+1,x+2,mon,0);
   case 16:
-    if (test_place(y-1,x-2)) place_monster(y-1,x-2,mon,0);
-    rating = old;
+    place_monster(y-1,x-2,mon,0);
   case 15:
-    if (test_place(y+1,x-2)) place_monster(y+1,x-2,mon,0);
-    rating = old;
+    place_monster(y+1,x-2,mon,0);
   case 14:
-    if (test_place(y-1,x+2)) place_monster(y-1,x+2,mon,0);
-    rating = old;
+    place_monster(y-1,x+2,mon,0);
   case 13:
-    if (test_place(y,x-2)) place_monster(y,x-2,mon,0);
-    rating = old;
+    place_monster(y,x-2,mon,0);
   case 12:
-    if (test_place(y,x+2)) place_monster(y,x+2,mon,0);
-    rating = old;
+    place_monster(y,x+2,mon,0);
   case 11:
-    if (test_place(y+2,x)) place_monster(y+2,x,mon,0);
-    rating = old;
+    place_monster(y+2,x,mon,0);
   case 10:
-    if (test_place(y-2,x)) place_monster(y-2,x,mon,0);
-    rating = old;
+    place_monster(y-2,x,mon,0);
   case 9:
-    if (test_place(y+1,x+1)) place_monster(y+1,x+1,mon,0);
-    rating = old;
+    place_monster(y+1,x+1,mon,0);
   case 8:
-    if (test_place(y+1,x-1)) place_monster(y+1,x-1,mon,0);
-    rating = old;
+    place_monster(y+1,x-1,mon,0);
   case 7:
-    if (test_place(y-1,x-1)) place_monster(y-1,x-1,mon,0);
-    rating = old;
+    place_monster(y-1,x-1,mon,0);
   case 6:
-    if (test_place(y-1,x+1)) place_monster(y-1,x+1,mon,0);
-    rating = old;
+    place_monster(y-1,x+1,mon,0);
   case 5:
-    if (test_place(y,x+1)) place_monster(y,x+1,mon,0);
-    rating = old;
+    place_monster(y,x+1,mon,0);
   case 4:
-    if (test_place(y,x-1)) place_monster(y,x-1,mon,0);
-    rating = old;
+    place_monster(y,x-1,mon,0);
   case 3:
-    if (test_place(y+1,x)) place_monster(y+1,x,mon,0);
-    rating = old;
+    place_monster(y+1,x,mon,0);
   case 2:
-    if (test_place(y-1,x)) place_monster(y-1,x,mon,0);
-    rating = old;
+    place_monster(y-1,x,mon,0);
+    rating = old; /* we only need to do this once, since we fall
+			thru to it here anyways -CFT */
   case 1:
   default:  /* just in case I screwed up -CFT */
-    if (test_place(y,x)) place_monster(y,x,mon,0);
+    place_monster(y,x,mon,0);
   }
 }
 
@@ -1356,26 +1416,6 @@ int slp;
 	mon = get_mons_num(dun_level);
       } while (randint(c_list[mon].rarity)>1);
 
-      /* to give the player a sporting chance, any monster that appears in
-      	 line-of-sight and can cast spells or breathe, should be asleep.
-	  This is an extension of Um55's sleeping dragon code... */
-      if (((c_list[mon].spells & (CAUSE_LIGHT|CAUSE_SERIOUS|HOLD_PERSON|
-      				  BLINDNESS|CONFUSION|FEAR|SLOW|BREATH_L|
-      				  BREATH_G|BREATH_A|BREATH_FR|BREATH_FI|
-      				  FIRE_BOLT|FROST_BOLT|ACID_BOLT|MAG_MISS|
-      				  CAUSE_CRIT|FIRE_BALL|FROST_BALL|MANA_BOLT))
-      	  || (c_list[mon].spells2 & (BREATH_CH|BREATH_SH|BREATH_SD|BREATH_CO|
-      	  			  BREATH_DI|BREATH_LD|LIGHT_BOLT|LIGHT_BALL|
-      	  			  ACID_BALL|TRAP_CREATE|RAZOR|MIND_BLAST|
-      	  			  MISSILE|PLASMA_BOLT|NETHER_BOLT|ICE_BOLT|
-      	  			  FORGET|BRAIN_SMASH|ST_CLOUD|TELE_LEV|
-      	  			  WATER_BOLT|WATER_BALL|NETHER_BALL|BREATH_NE))
-      	  || (c_list[mon].spells3 & (BREATH_WA|BREATH_SL|BREATH_LT|BREATH_TI|
-      	  			  BREATH_GR|BREATH_DA|BREATH_PL|ARROW|
-      	  			  DARK_STORM|MANA_STORM)))
-      	 && (los(y,x, char_row, char_col)))
-      	 slp = TRUE;
-      	 
       if (!(c_list[mon].cdefense & GROUP))
 	place_monster(y, x, mon, slp);
       else place_group(y,x,mon,slp);
@@ -3331,7 +3371,7 @@ inven_type *t_ptr;
     ANARION = 1;
     return 1;
   }
-  else if (!stricmp("& Set of Cestus", name)) {
+  else if (!stricmp("& Set of Cesti", name)) {
     if (FINGOLFIN) return 0;
     if (randint(3)>1) return 0;
     if (wizard || peek) msg_print("Fingolfin");
@@ -3566,10 +3606,10 @@ inven_type *t_ptr;
   }
   else if (!stricmp("& Large Leather Shield", name)) {
     if (CELEFARN) return 0;
-    if (wizard || peek) msg_print("Celefarn");
+    if (wizard || peek) msg_print("Celegorm");
     else good_item_flag = TRUE;
     t_ptr->flags |= (TR_RES_ACID|TR_RES_FIRE|TR_RES_COLD|TR_RES_LIGHT);
-    t_ptr->flags2 |= (TR_ARTIFACT);
+    t_ptr->flags2 |= (TR_ARTIFACT|TR_RES_LT|TR_RES_DARK);
     t_ptr->name2 = SN_CELEFARN;
     t_ptr->toac += 20;
     t_ptr->cost = 12000L;
@@ -3667,6 +3707,7 @@ inven_type *t_ptr;
   return 0;
 }
 
+ 
 /* Chance of treasure having magic abilities		-RAK-	*/
 /* Chance increases with each dungeon level			 */
 void magic_treasure(x, level, good, not_unique)
@@ -3820,13 +3861,18 @@ int x, level, good, not_unique;
 	     before change to treasure distribution, this helps keep same
 	     number of ego weapons same as before, see also missiles */
 	  if (magik(3*special/2)||good==666) { /* was 2 */
-	    if (!stricmp("& Whip", object_list[t_ptr->index].name)) {
+	    if (!stricmp("& Whip", object_list[t_ptr->index].name)
+		&& randint(2)==1) {
 		if (peek) msg_print("Whip of Fire");
 		rating += 20;
 		t_ptr->name2 = SN_FIRE;
 		t_ptr->flags |=TR_FLAME_TONGUE;
-		if (randint(10)==1)
-		  t_ptr->damage[0]=2;
+                /* this should allow some WICKED whips -CFT */
+		while (randint(5*(int)t_ptr->damage[0])==1) {
+		  t_ptr->damage[0]++;
+		  t_ptr->cost += 2500;
+		  t_ptr->cost *= 2;
+		  }
 		t_ptr->tohit += 5;
 		t_ptr->todam += 5;
 	      }
@@ -4007,15 +4053,17 @@ int x, level, good, not_unique;
 	    t_ptr->todam += m_bonus(1, 20, level);
 	    if (magik(3*special/2)||good==666)  /* get a special bow? */
 	    switch (randint(15)) {
-	    case 1:
+	    case 1: case 2: case 3:
 	      if (((randint(3)==1)||(good==666)) && !not_unique &&
-		  !stricmp(object_list[t_ptr->index].name, "& Long Bow")) {
-		    switch (randint(2)) {
+		  !stricmp(object_list[t_ptr->index].name, "& Long Bow") &&
+		  (((i=randint(2))==1 && !BELEG) || (i==2 && !BARD))) {
+		    switch (i) {
 		    case 1:
-		      if (BELEG) break;
+		      if (BELEG) break; /* this is reundant, but safe to leave in -CFT */
 		      if (wizard || peek) msg_print("Beleg Cuthalion");
 		      else good_item_flag = TRUE;
 		      t_ptr->name2 = SN_BELEG;
+		      t_ptr->subval = 4; /* make do x6 damage!! -CFT */
 		      t_ptr->tohit += 20;
 		      t_ptr->todam += 22;
 		      t_ptr->p1 = 3;
@@ -4030,6 +4078,7 @@ int x, level, good, not_unique;
 		      if (wizard || peek) msg_print("Bard");
 		      else good_item_flag = TRUE;
 		      t_ptr->name2 = SN_BARD;
+		      t_ptr->subval = 3; /* make do x4 damage! -CFT */
 		      t_ptr->tohit += 17;
 		      t_ptr->todam += 19;
 		      t_ptr->p1 = 3;
@@ -4042,12 +4091,14 @@ int x, level, good, not_unique;
 		    break;
 	      }
 	      if (((randint(5)==1)||(good==666)) && !not_unique &&
-		  !stricmp(object_list[t_ptr->index].name, "& Light Crossbow"))
+		  !stricmp(object_list[t_ptr->index].name, "& Light Crossbow")
+		  && !CUBRAGOL)
 		{
 		  if (CUBRAGOL) break;
 		  if (wizard || peek) msg_print("Cubragol");
 		  else good_item_flag = TRUE;
 		  t_ptr->name2 = SN_CUBRAGOL;
+		  t_ptr->subval = 10;
 		  t_ptr->tohit += 10;
 		  t_ptr->todam += 14;
 		  t_ptr->p1 = 1;
@@ -4060,12 +4111,12 @@ int x, level, good, not_unique;
 		}
 	      t_ptr->name2 = SN_MIGHT;
 	      if (peek) msg_print("Bow of Might");
-	      rating += 11;
+	      rating += 15;
+	      t_ptr->subval++; /* make it do an extra multiple of damage */
 	      t_ptr->tohit += 7;
 	      t_ptr->todam += 13;
 	      break;
-	    case 2: case 3: case 4: case 5:
-	    case 6: case 7: case 8:
+	    case 4: case 5: case 6: case 7: case 8:
 	      t_ptr->name2 = SN_MIGHT;
 	      if (peek) msg_print("Bow of Might");
 	      rating += 11;
@@ -4095,7 +4146,7 @@ int x, level, good, not_unique;
 	  t_ptr->ident |= ID_SHOW_HITDAM;
 	  if (magik(chance)||(good==666)) {
 	    tmp = randint(3);
-	    if (tmp < 3)
+	    if ((tmp < 3) || good == 666) /* special shouldn't be cursed -CFT */
 	      t_ptr->p1 += m_bonus(0, 25, level);
 	    else
 	      {
@@ -4120,8 +4171,8 @@ int x, level, good, not_unique;
 		     !not_unique && unique_armour(t_ptr)) ;
 	    else if ((((randint(5) == 1) && magik(special)) || (good == 666))
 		     && !stricmp(object_list[t_ptr->index].name,
-				"& Set of Cestus") &&
-		     !not_unique && unique_armour(t_ptr)) ; /* don't forget cestus -CFT */
+				"& Set of Cesti") &&
+		     !not_unique && unique_armour(t_ptr)) ; /* don't forget cesti -CFT */
 	    else if (magik(special)||(good==666)) {
               switch(randint(10)) {
 	      case 1: case 2: case 3:
@@ -4337,7 +4388,7 @@ int x, level, good, not_unique;
 			  if (!((randint(2) == 1) && !not_unique &&
 				unique_armour(t_ptr))) {
 			    if (peek) msg_print("Light");
-			    t_ptr->flags2 |= TR_LIGHT;
+			    t_ptr->flags2 |= (TR_RES_LT|TR_LIGHT);
 			    rating += 6;
 			    t_ptr->name2 = SN_LIGHT;
 			    t_ptr->cost += 500;
@@ -4691,8 +4742,9 @@ int x, level, good, not_unique;
 
     case TV_CLOAK:
       if (magik(chance)||good) {
-	  int made_art_cloak;
-	  made_art_cloak=0;
+	  int made_art_cloak = 0;
+
+	  t_ptr->toac += m_bonus(1, 20, level);
 	  if (magik(special)||(good==666))
 	      {
 		  if (!not_unique &&
@@ -4840,10 +4892,6 @@ int x, level, good, not_unique;
 			      rating += 16;
 			  }
 		  }
-		  else
-		      {
-			  t_ptr->toac += m_bonus(1, 20, level);
-		      }
 	      }
       } else if (magik(cursed)) {
 	  tmp = randint(3);
@@ -4918,84 +4966,7 @@ int x, level, good, not_unique;
 	}
       break;
 
-    case TV_SLING_AMMO: case TV_SPIKE:
-    case TV_BOLT: case TV_ARROW:
-      if (t_ptr->tval == TV_SLING_AMMO || t_ptr->tval == TV_BOLT
-	  || t_ptr->tval == TV_ARROW)
-	{
-	  /* always show tohit/todam values if identified */
-	  t_ptr->ident |= ID_SHOW_HITDAM;
-
-	  if (magik(chance)||good)
-	    {
-	      t_ptr->tohit += m_bonus(1, 35, level);
-	      t_ptr->todam += m_bonus(1, 35, level);
-	      /* see comment for weapons */
-	      if (magik(5*special/2)||(good==666))
-		switch(randint(11))
-		  {
-		  case 1: case 2: case 3:
-		    t_ptr->name2 = SN_SLAYING;
-		    t_ptr->tohit += 5;
-		    t_ptr->todam += 5;
-		    t_ptr->cost += 20;
-		    rating += 5;
-		    break;
-		  case 4: case 5:
-		    t_ptr->flags |= TR_FLAME_TONGUE;
-		    t_ptr->tohit += 2;
-		    t_ptr->todam += 4;
-		    t_ptr->name2 = SN_FIRE;
-		    t_ptr->cost += 25;
-		    rating += 6;
-		    break;
-		  case 6: case 7:
-		    t_ptr->flags |= TR_SLAY_EVIL;
-		    t_ptr->tohit += 3;
-		    t_ptr->todam += 3;
-		    t_ptr->name2 = SN_SLAY_EVIL;
-		    t_ptr->cost += 25;
-		    rating += 7;
-		    break;
-		  case 8: case 9:
-		    t_ptr->flags |= TR_SLAY_ANIMAL;
-		    t_ptr->tohit += 2;
-		    t_ptr->todam += 2;
-		    t_ptr->name2 = SN_SLAY_ANIMAL;
-		    t_ptr->cost += 30;
-		    rating += 5;
-		    break;
-		  case 10:
-		    t_ptr->flags |= TR_SLAY_DRAGON;
-		    t_ptr->tohit += 3;
-		    t_ptr->todam += 3;
-		    t_ptr->name2 = SN_DRAGON_SLAYING;
-		    t_ptr->cost += 35;
-		    rating += 9;
-		    break;
-		  case 11:
-		    t_ptr->tohit += 15;
-		    t_ptr->todam += 15;
-		    t_ptr->name2 = SN_WOUNDING;
-		    t_ptr->cost += 100;
-		    rating += 10;
-		    break;
-		  }
-	    }
-	  else if (magik(cursed))
-	    {
-	      t_ptr->tohit -= m_bonus(5, 55, level);
-	      t_ptr->todam -= m_bonus(5, 55, level);
-	      t_ptr->flags |= TR_CURSED;
-	      t_ptr->cost = 0;
-	      if (randint(5)==1) {
-		t_ptr->name2 = SN_BACKBITING;
-		t_ptr->tohit -= 20;
-		t_ptr->todam -= 20;
-	      }
-	    }
-	}
-
+    case TV_SPIKE:
       t_ptr->number = 0;
       for (i = 0; i < 7; i++)
 	t_ptr->number += randint(6);
@@ -5005,7 +4976,10 @@ int x, level, good, not_unique;
 	missile_ctr++;
       t_ptr->p1 = missile_ctr;
       break;
-
+    case TV_BOLT: case TV_ARROW: case TV_SLING_AMMO:
+     /* this fn makes ammo for player's missile weapon more common -CFT */
+      magic_ammo(t_ptr, good, chance, special, cursed, level);
+      break;
     case TV_FOOD:
       /* make sure all food rations have the same level */
       if (t_ptr->subval == 90)
@@ -5047,7 +5021,7 @@ static struct opt_desc { char *o_prompt; int8u *o_var; } options[] = {
   { "Running: print self during run",		&find_prself },
   { "Running: stop when map sector changes",	&find_bound },
   { "Running: run through open doors",		&find_ignore_doors },
-  { "(g)et-key to pickup objects",		&prompt_carry_flag },
+  { "(g)et-key to pickup objects",		&getkey_flag },
   { "Ask before pickup?",			&carry_query_flag },
   { "Rogue like commands",			&rogue_like_commands },
   { "Show weights in inventory",		&show_weight_flag },
@@ -5124,3 +5098,117 @@ void set_options()
 	}
     }
 }
+
+static void magic_ammo(inven_type *t_ptr, int good, int chance,
+			int special, int cursed, int level){
+  register inven_type *i_ptr = NULL;
+  register int i;
+  
+  /* if wielding a bow as main/aux weapon, then ammo will be "right" ammo
+     more often than not of the time -CFT */
+  if (inventory[INVEN_WIELD].tval == TV_BOW) i_ptr=&inventory[INVEN_WIELD];
+  else if (inventory[INVEN_AUX].tval == TV_BOW) i_ptr=&inventory[INVEN_AUX];
+
+  if (i_ptr && (randint(2)==1)){
+    if ((t_ptr->tval == TV_SLING_AMMO) &&
+	(i_ptr->subval >= 20) && (i_ptr->subval <= 21));
+      /* right type, do nothing */
+    else if ((t_ptr->tval == TV_ARROW) &&
+	(i_ptr->subval >= 1) && (i_ptr->subval <= 4));
+      /* right type, do nothing */
+    else if ((t_ptr->tval == TV_BOLT) &&
+	(i_ptr->subval >= 10) && (i_ptr->subval <= 12));
+      /* right type, do nothing */
+    else if ((i_ptr->subval >= 20) && (i_ptr->subval <= 21))
+      invcopy(t_ptr, 83); /* this should be treasure list index of shots -CFT */
+    else if ((i_ptr->subval >= 1) && (i_ptr->subval <= 4))
+      invcopy(t_ptr, 78); /* this should be index of arrows -CFT */
+    else /* xbow */
+      invcopy(t_ptr, 80); /* this should be index of bolts -CFT */
+  }
+
+  t_ptr->number = 0;
+  for (i = 0; i < 7; i++)
+    t_ptr->number += randint(6);
+  if (missile_ctr == MAX_SHORT)
+    missile_ctr = -MAX_SHORT - 1;
+  else
+    missile_ctr++;
+  t_ptr->p1 = missile_ctr;
+
+  /* always show tohit/todam values if identified */
+  t_ptr->ident |= ID_SHOW_HITDAM;
+  if (magik(chance)||good) {
+    t_ptr->tohit += m_bonus(1, 35, level);
+    t_ptr->todam += m_bonus(1, 35, level);
+    /* see comment for weapons */
+    if (magik(5*special/2)||(good==666))
+      switch(randint(11)) {
+	case 1: case 2: case 3:
+	  t_ptr->name2 = SN_WOUNDING; /* swapped with slaying -CFT */
+	  t_ptr->tohit += 5;
+	  t_ptr->todam += 5;
+	  t_ptr->damage[0] ++; /* added -CFT */
+	  t_ptr->cost += 30;
+	  rating += 5;
+	  break;
+	case 4: case 5:
+	  t_ptr->flags |= (TR_FLAME_TONGUE|TR_RES_FIRE); /* RF so won't burn */
+	  t_ptr->tohit += 2;
+	  t_ptr->todam += 4;
+	  t_ptr->name2 = SN_FIRE;
+	  t_ptr->cost += 25;
+	  rating += 6;
+	  break;
+	case 6: case 7:
+	  t_ptr->flags |= TR_SLAY_EVIL;
+	  t_ptr->tohit += 3;
+	  t_ptr->todam += 3;
+	  t_ptr->name2 = SN_SLAY_EVIL;
+	  t_ptr->cost += 25;
+	  rating += 7;
+	  break;
+	case 8: case 9:
+	  t_ptr->flags |= TR_SLAY_ANIMAL;
+	  t_ptr->tohit += 2;
+	  t_ptr->todam += 2;
+	  t_ptr->name2 = SN_SLAY_ANIMAL;
+	  t_ptr->cost += 30;
+	  rating += 5;
+	  break;
+	case 10:
+	  t_ptr->flags |= TR_SLAY_DRAGON;
+	  t_ptr->tohit += 3;
+	  t_ptr->todam += 3;
+	  t_ptr->name2 = SN_DRAGON_SLAYING;
+	  t_ptr->cost += 35;
+	  rating += 9;
+	  break;
+	case 11:
+	  t_ptr->tohit += 10; /* reduced because of dice bonus -CFT */
+	  t_ptr->todam += 10;
+	  t_ptr->name2 = SN_SLAYING; /* swapped w/ wounding -CFT */
+	  t_ptr->damage[0] += 2; /* added -CFT */
+	  t_ptr->cost += 45;
+	  rating += 10;
+	  break;
+	}
+      while (magik(special)) {	/* added -CFT */
+	t_ptr->damage[0]++;
+	t_ptr->cost += t_ptr->damage[0]*5;
+	}
+    }
+  else if (magik(cursed)) {
+    t_ptr->tohit -= m_bonus(5, 55, level);
+    t_ptr->todam -= m_bonus(5, 55, level);
+    t_ptr->flags |= TR_CURSED;
+    t_ptr->cost = 0;
+    if (randint(5)==1) {
+      t_ptr->name2 = SN_BACKBITING;
+      t_ptr->tohit -= 20;
+      t_ptr->todam -= 20;
+      }
+    }
+}
+
+

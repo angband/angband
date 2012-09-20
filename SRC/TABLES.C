@@ -166,10 +166,10 @@ char *colors[MAX_COLORS] = {
 #ifdef TC_COLOR
 int8u tccolors[MAX_COLORS] = {
   GREEN, BROWN, LIGHTCYAN,
-  LIGHTBLUE, LIGHTBLUE, LIGHTBLUE, LIGHTGRAY, BROWN, BROWN, GREEN,
+  LIGHTBLUE, BLUE, LIGHTBLUE, DARKGRAY, BROWN, BROWN, GREEN,
   LIGHTGREEN, LIGHTGRAY, BROWN, LIGHTRED, CYAN, LIGHTBLUE,
   GREEN, RED, YELLOW, GREEN, LIGHTGREEN, LIGHTGRAY,
-  DARKGRAY, LIGHTGRAY, LIGHTBLUE, LIGHTBLUE, LIGHTGREEN, MAGENTA,
+  DARKGRAY, LIGHTGRAY, BLUE, LIGHTBLUE, LIGHTGREEN, MAGENTA,
   LIGHTBLUE, RED, GREEN, MAGENTA, LIGHTGRAY,
   LIGHTRED, LIGHTRED, LIGHTMAGENTA, LIGHTMAGENTA, MAGENTA, MAGENTA,
   LIGHTMAGENTA, RED, LIGHTRED, WHITE, LIGHTGRAY,
@@ -188,7 +188,7 @@ char *mushrooms[MAX_MUSH] = {
 };
 #ifdef TC_COLOR
 int8u tcmushrooms[MAX_MUSH] = {
-  LIGHTBLUE, DARKGRAY, LIGHTGRAY, BROWN, LIGHTBLUE, GREEN, RED,
+  BLUE, DARKGRAY, LIGHTGRAY, BROWN, BLUE, GREEN, RED,
   LIGHTGRAY, BROWN, LIGHTGREEN, LIGHTGRAY, LIGHTBLUE, LIGHTGREEN, LIGHTMAGENTA,
   LIGHTRED, LIGHTGREEN, BROWN, WHITE, LIGHTGRAY, BROWN, BROWN
 };
@@ -244,8 +244,8 @@ int8u tcrocks[MAX_ROCKS] = {
   GREEN, MAGENTA, CYAN, LIGHTBLUE, LIGHTGRAY, RED,
   WHITE, RED, BROWN, WHITE, GREEN, YELLOW, DARKGRAY,
   LIGHTGRAY, LIGHTGREEN, BROWN, LIGHTBLUE, GREEN, LIGHTMAGENTA, LIGHTCYAN,
-  LIGHTRED, DARKGRAY, WHITE, WHITE, WHITE, LIGHTRED, RED, LIGHTBLUE,
-  BROWN, YELLOW, CYAN, LIGHTBLUE, WHITE, BROWN,
+  LIGHTRED, DARKGRAY, WHITE, WHITE, WHITE, LIGHTRED, RED, BLUE,
+  BROWN, YELLOW, CYAN, BLUE, WHITE, BROWN,
   YELLOW, DARKGRAY, WHITE, GREEN, LIGHTCYAN
 };
 #endif
@@ -288,19 +288,19 @@ char *syllables[MAX_SYLLABLES] = {
 #endif
 
 /* used to calculate the number of blows the player gets in combat */
-int8u blows_table[11][12] = {
-/* STR/W:	   9  18  67 107 117 118  128 138 148 158 168 more  : DEX */
-/* <2 */	{  1,  1,  1,  1,  1,  1,   2,  2,  2,  2,  2,   3},
-/* <3 */	{  1,  1,  1,  1,  2,  2,   3,  3,  3,  3,  3,   4},
-/* <4 */	{  1,  1,  1,  2,  2,  3,   4,  4,  4,  4,  4,   5},
-/* <5 */	{  1,  1,  2,  2,  3,  3,   4,  4,  4,  5,  5,   5},
-/* <7 */	{  1,  2,  2,  3,  3,  4,   4,  4,  5,  5,  5,   5},
-/* <9 */	{  1,  2,  2,  3,  4,  4,   4,  5,  5,  5,  5,   5},
-/* <10 */	{  2,  2,  3,  3,  4,  4,   5,  5,  5,  5,  5,   6},
-/* <11 */	{  2,  3,  3,  3,  4,  4,   5,  5,  5,  5,  5,   6},
-/* <12 */	{  3,  3,  3,  4,  4,  4,   5,  5,  5,  5,  6,   6},
-/* <13 */	{  3,  3,  3,  4,  4,  4,   5,  5,  5,  5,  6,   6},
-/* >13 */	{  3,  3,  4,  4,  4,  4,   5,  5,  5,  6,  6,   6}
+int8u blows_table[11][12] = {  /* These comments should now be correct -CFT */
+/* STR/W:     DEX <10 <19 <68  <98 <108 <118 <128 <138 <148 <158 <168 else */
+/* <2 */	{  1,  1,  1,   1,   1,   1,   2,   2,   2,   2,   2,   3},
+/* <3 */	{  1,  1,  1,   1,   2,   2,   3,   3,   3,   3,   3,   4},
+/* <4 */	{  1,  1,  1,   2,   2,   3,   4,   4,   4,   4,   4,   5},
+/* <6 */	{  1,  1,  2,   2,   3,   3,   4,   4,   4,   5,   5,   5},
+/* <8 */	{  1,  2,  2,   3,   3,   4,   4,   4,   5,   5,   5,   5},
+/* <10 */	{  1,  2,  2,   3,   4,   4,   4,   5,   5,   5,   5,   5},
+/* <13 */	{  2,  2,  3,   3,   4,   4,   5,   5,   5,   5,   5,   6},
+/* <15 */	{  2,  3,  3,   3,   4,   4,   5,   5,   5,   5,   5,   6},
+/* <18 */	{  3,  3,  3,   4,   4,   4,   5,   5,   5,   5,   6,   6},
+/* <20 */	{  3,  3,  3,   4,   4,   4,   5,   5,   5,   5,   6,   6},
+/* else */	{  3,  3,  4,   4,   4,   4,   5,   5,   5,   6,   6,   6}
 };
 
 

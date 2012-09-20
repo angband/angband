@@ -384,16 +384,18 @@ int pref;
     case  TV_SPIKE:
       break;
     case  TV_BOW:
-      if (!stricmp("& Light Crossbow", object_list[i_ptr->index].name))	
-	(void) strcpy(damstr, " (x3)");
-      else if (!stricmp("& Heavy Crossbow", object_list[i_ptr->index].name))
-	(void) strcpy(damstr, " (x4)");
-      else if (!stricmp("& Sling", object_list[i_ptr->index].name))
-	(void) strcpy(damstr, " (x2)");
-      else if (!stricmp("& Short Bow", object_list[i_ptr->index].name))
-	(void) strcpy(damstr, " (x2)");
-      else if (!stricmp("& Long Bow", object_list[i_ptr->index].name))
-	(void) strcpy(damstr, " (x3)");
+      switch(i_ptr->subval){ /* whole new code -CFT */
+      	case 20: case 1: /* sling, sh. bow */
+	  strcpy(damstr, " (x2)"); break;
+	case 21: case 2: case 10: /* sling of M, s bow of M, l bow, l xbow */
+	  strcpy(damstr, " (x3)"); break;
+	case 3: case 11: /* l bow of M, l xbow of M, h xbow, BARD, CURBRAGOL */
+	  strcpy(damstr, " (x4)"); break;
+	case 4: case 12: 	/* h xbow of M, BELEG */
+	  strcpy(damstr, " (x5)"); break;
+	default:	/* just in case... */
+	  strcpy(damstr, " (unknown mult.)");
+        }      	
       break;
     case  TV_HAFTED:
     case  TV_POLEARM:

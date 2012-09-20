@@ -153,3 +153,21 @@ Aug 28 1993       Fourth Update (minor update to third update)
         a disk cache.  For ideas on freeing up memory, or for an example
         of how to set up EMS memory, see the file 'free-mem.doc' packaged
         with this update.
+
+Mar 7 1994	Fifth Update (PC Angband version 1.40)
+	   This update contains 2 major changes; an enhanced speed system
+	and a new system for maximum "stats".  The speed system is now
+	proportional to your speed vs the monster's speed, so at higher
+	speeds, each speed step is less important.  The stat system allows
+	the 18/100 maximum to be adjusted for your character's race and
+	class.  The racial and professional adjustments have also been
+	modified.  For details on other changes, see 'whats.new' or
+	'version.pc'.  Self-extracting archives have been uploaded to
+	ftp.cis.ksu.edu as 'angsrc14.exe' and 'angexe14.exe' for source
+	code and pre-compiled executable, respectively.  Playtesting has
+	shown release 1.40 requires about 512k (524,488 bytes) of free
+	memory to run.  As with the 1.31 release, PC Angband 1.40 will
+	use EMS memory, if it is available.
+
+
+

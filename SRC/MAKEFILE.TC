@@ -37,8 +37,8 @@ OBJS = main.obj misc1.obj misc2.obj store1.obj files.obj tcio.obj create.obj des
 	generate.obj sets.obj dungeon.obj creature.obj death.obj eat.obj help.obj magic.obj\
 	potions.obj prayer.obj save.obj staffs.obj wands.obj scrolls.obj spells.obj\
 	wizard.obj store2.obj signals.obj moria1.obj moria2.obj monsters.obj\
-	treasure.obj vars1.obj vars2.obj rnd.obj recall.obj undef.obj\
-	player.obj tables.obj rods.obj ms_misc.obj
+	treasure.obj vars1.obj vars2.obj recall.obj undef.obj\
+	player.obj tables.obj rods.obj ms_misc.obj random.obj
 
 LIBFILES = hours news origcmds.hlp owizcmds.hlp roglcmds.hlp rwizcmds.hlp \
 	scores version.hlp welcome.hlp
@@ -123,7 +123,7 @@ vars1.obj: vars2.c config.h constant.h types.h externs.h monster.h
 	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
 vars2.obj: vars2.c config.h constant.h types.h externs.h monster.h
 	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
-rnd.obj: rnd.c config.h constant.h types.h externs.h monster.h
+random.obj: random.c config.h constant.h types.h externs.h monster.h
 	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
 recall.obj: recall.c config.h constant.h types.h externs.h monster.h
 	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*

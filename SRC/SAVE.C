@@ -31,6 +31,8 @@
 #include <strings.h>
 #endif
 
+#include "monster.h"  /* needed for monster heal bug work-around -CFT */
+
 static int sv_write(ARG_VOID);
 static void wr_byte(ARG_INT8U);
 static void wr_short(ARG_INT16U);
@@ -152,7 +154,7 @@ static int sv_write()
     l |= 4;
   if (find_bound)
     l |= 8;
-  if (prompt_carry_flag)
+  if (getkey_flag)
     l |= 16;
   if (rogue_like_commands)
     l |= 32;
@@ -749,9 +751,24 @@ char *fnam;
       msg_print(temp);
       return FALSE;
     }
-  else
-    character_saved = 1;
+  else { /* successful save, now add char to highscore table, and
+  		show him where he stands... */
+    if (!wizard && !to_be_wizard && !noscore) {
+#ifdef MSDOS
+      int t;
 
+      msg_print(NULL); /* clear msg line's "saving..." note */
+      t = top_twenty();  /* if t==0, then top_twenty didn't show them, */
+      if (!t) display_scores(0, MAX_SAVE_HISCORES, -1); /* so do it here */
+#else
+      msg_print(NULL); /* clear msg line's "saving..." note */
+      top_twenty();
+#endif
+      }
+    else msg_print("Score not registered.");
+
+    character_saved = 1;
+  }
   turn = -1;
   log_index = -1;
 
@@ -1042,9 +1059,9 @@ int *generate;
       else
 	find_bound = FALSE;
       if (l & 16)
-	prompt_carry_flag = TRUE;
+	getkey_flag = TRUE;
       else
-	prompt_carry_flag = FALSE;
+	getkey_flag = FALSE;
       if (l & 32)
 	rogue_like_commands = TRUE;
       else
@@ -1859,4 +1876,12 @@ register monster_type *mon;
 #ifdef TC_COLOR
   rd_byte(&mon->color);
 #endif
+
+ /* monster heal bug mostly cause because max hp never saved!  Set it
+    now to help bandage over it (real cure requires savefile change)
+    Thanks to CWS and DGK for finding this one!   -CFT */
+  if ((c_list[mon->mptr].cdefense & MAX_HP) || be_nasty)
+    mon->maxhp = max_hp(c_list[mon->mptr].hd);
+  else
+    mon->maxhp = pdamroll(c_list[mon->mptr].hd);
 }

@@ -443,7 +443,7 @@ creature_type c_list[MAX_CREATURES] = {
 			     MV_ATT_NORM),(NONE8),(ANIMAL),(NONE8)
 			    ,(NONE8),4,10,18,14,11,'y',{2,6},{4,0,0,0},2,1
 #ifdef TC_COLOR
-  , LIGHTBLUE
+  , BLUE
 #endif
 },
 
@@ -497,7 +497,9 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(NONE8),(NONE8)
 			    ,16,5,20,12,13,'h',{11,4},{3,148,0,0},3,2
 #ifdef TC_COLOR
-  , LIGHTCYAN
+  , LIGHTGRAY  /* he's invis because amazingly stealthy, so make grey
+  		instead of clear-colored (if he was clear, then he should
+  		still have The Ring, which he doesn't) -CFT */
 #endif
 },
 
@@ -650,7 +652,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(NONE8),(NONE8)
 			    ,14,99,2,1,11,'j',{12,8},{125,0,0,0},4,1
 #ifdef TC_COLOR
-  , LIGHTBLUE
+  , BLUE
 #endif
 },
 
@@ -675,7 +677,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(ANIMAL|HURT_LIGHT|IM_FROST|NO_INFRA),(NONE8)
 			    ,(NONE8),5,10,7,12,10,'w',{5,8},{129,0,0,0},4,1
 #ifdef TC_COLOR
-  , LIGHTBLUE
+  , BLUE
 #endif
 },
 
@@ -1321,7 +1323,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(NONE8),(NONE8)
 			    ,45,70,20,30,11,'d',{10,13},{51,51,28,0},11,2
 #ifdef TC_COLOR
-  , LIGHTCYAN
+  , MULTI
 #endif
 },
 
@@ -1549,7 +1551,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(HASTE|LIGHT_BOLT),(NONE8)
 			    ,50,10,20,10,11,'p',{12,12},{13,13,0,0},13,2
 #ifdef TC_COLOR
-  , LIGHTBLUE
+  , BLUE
 #endif
 },
 
@@ -1601,7 +1603,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(ANIMAL|IM_POISON|EVIL),(NONE8),(NONE8)
 			    ,20,20,15,20,10,'i',{10,6},{174,210,3,3},14,4
 #ifdef TC_COLOR
-  , LIGHTBLUE
+  , BLUE
 #endif
 },
 
@@ -1895,7 +1897,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(NONE8),(NONE8)
 			    ,58,40,12,28,12,'E',{9,8},{13,13,0,0},17,1
 #ifdef TC_COLOR
-  , LIGHTBLUE
+  , BLUE
 #endif
 },
 
@@ -2101,7 +2103,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(NONE8)
 			    ,200,0,30,30,11,'Z',{15,8},{113,113,58,58},20,2
 #ifdef TC_COLOR
-  , LIGHTBLUE
+  , BLUE
 #endif
 },
 
@@ -2203,7 +2205,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(IM_ACID|CHARM_SLEEP),(NONE8),(NONE8)
 			    ,100,0,100,30,11,'v',{9,9},{240,0,0,0},21,1
 #ifdef TC_COLOR
-  , LIGHTBLUE
+  , BLUE
 #endif
 },
 
@@ -2681,7 +2683,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(0x8L|HOLD_PERSON|FEAR|BLINDNESS)
 			    ,(EVIL|CHARM_SLEEP|MAX_HP)
 			    ,(MIND_BLAST|BRAIN_SMASH|FORGET),(NONE8)
-			    ,200,10,20,60,11,'p',{18,8},{225,225,0,0},28,1
+			    ,200,10,20,60,11,'h',{18,8},{225,225,0,0},28,1
 #ifdef TC_COLOR
   , MAGENTA
 #endif
@@ -2882,7 +2884,7 @@ creature_type c_list[MAX_CREATURES] = {
 {"Death watch beetle"	    ,(MV_ATT_NORM),(NONE8),(ANIMAL),(NONE8),(NONE8)
 			    ,190,30,16,60,11,'K',{25,12},{47,67,0,0},31,3
 #ifdef TC_COLOR
-  , LIGHTBLUE
+  , BLUE
 #endif
 },
 
@@ -3089,7 +3091,7 @@ creature_type c_list[MAX_CREATURES] = {
 			      MAX_HP|GROUP),(NONE8),(NONE8)
 			    ,420,50,20,50,11,'T',{26,14},{8,8,11,11},33,1
 #ifdef TC_COLOR
-  , LIGHTBLUE
+  , BLUE
 #endif
 },
 
@@ -3122,7 +3124,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(NONE8),(NONE8)
 			    ,325,50,12,40,11,'E',{25,8},{9,9,9,0},33,2
 #ifdef TC_COLOR
-  , LIGHTBLUE
+  , BLUE
 #endif
 },
 
@@ -3405,7 +3407,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(NONE8),(NONE8)
 			    ,1320,50,20,60,11,'d',{40,8},{55,55,38,0},36,1
 #ifdef TC_COLOR
-  , LIGHTCYAN
+  , MULTI
 #endif
 },
 
@@ -3445,7 +3447,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(NONE8),(NONE8)
 			    ,1200,70,20,75,11,'d',{49,8},{54,54,38,0},36,1
 #ifdef TC_COLOR
-  , LIGHTBLUE
+  , BLUE
 #endif
 },
 
@@ -3664,7 +3666,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(NONE8),(NONE8)
 			    ,1700,50,20,65,11,'d',{81,8},{56,56,39,0},38,2
 #ifdef TC_COLOR
-  , LIGHTCYAN
+  , MULTI
 #endif
 },
 
@@ -3711,7 +3713,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(NONE8),(NONE8)
 			    ,1500,80,20,80,12,'D',{88,8},{54,54,37,0},38,1
 #ifdef TC_COLOR
-  , LIGHTBLUE
+  , BLUE
 #endif
 },
 
@@ -3804,7 +3806,7 @@ creature_type c_list[MAX_CREATURES] = {
 #endif
 },
 
-{"Eldrakyn"		    ,(MV_ATT_NORM|PICK_UP|THRO_DR|HAS_60|
+{"Eldrak"		    ,(MV_ATT_NORM|PICK_UP|THRO_DR|HAS_60|
 			      CARRY_OBJ|CARRY_GOLD),(NONE8)
 			    ,(TROLL|EVIL|IM_POISON|MAX_HP|CHARM_SLEEP)
 			    ,(NONE8),(NONE8)
@@ -3819,7 +3821,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(NONE8),(NONE8)
 			    ,1000,30,20,100,11,'T',{50,30},{19,19,19,0},39,3
 #ifdef TC_COLOR
-  , LIGHTBLUE
+  , BLUE
 #endif
 },
 
@@ -3842,7 +3844,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(BREATH_GR)
 		       ,3000,30,20,85,12,'d',{130,10},{56,39,39,39},39,3
 #ifdef TC_COLOR
-  , LIGHTMAGENTA
+  , ANY
 #endif
 },
 
@@ -3974,7 +3976,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(HEAL),(NONE8)
 			    ,1800,10,20,60,12,'p',{40,13},{17,17,18,0},40,2
 #ifdef TC_COLOR
-  , LIGHTBLUE
+  , BLUE
 #endif
 },
 
@@ -4222,7 +4224,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(UNDEAD|EVIL|CHARM_SLEEP|MAX_HP|IM_POISON
 			     |IM_FIRE|IM_LIGHTNING|IM_ACID|IM_FROST|NO_INFRA)
 			    ,(FORGET|MIND_BLAST|RAZOR|BRAIN_SMASH),(NONE8)
-		     ,4000,10,30,100,12,'e',{90,30},{223,224,225,226},42,4
+		     ,6500,10,30,100,12,'e',{90,30},{223,224,225,226},42,4
 #ifdef TC_COLOR
   , WHITE
 #endif
@@ -4256,7 +4258,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(NONE8),(NONE8)
 			  ,13000,70,20,100,12,'D',{52,40},{57,57,42,0},43,1
 #ifdef TC_COLOR
-  , LIGHTCYAN
+  , MULTI
 #endif
 },
 
@@ -4340,7 +4342,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(HEAL|BRAIN_SMASH|RAZOR|SUMMON),(NONE8)
 			,5000,10,20,60,12,'p',{40,20},{17,17,18,0},44,2
 #ifdef TC_COLOR
-  , LIGHTBLUE
+  , BLUE
 #endif
 },
 
@@ -4703,7 +4705,7 @@ creature_type c_list[MAX_CREATURES] = {
 			      |BREATH_DA|BREATH_PL|BREATH_GR)
 		       ,4500,0,100,40,13,'v',{32,20},{242,239,240,241},55,2
 #ifdef TC_COLOR
-  , LIGHTCYAN
+  , ANY
 #endif
 },
 
@@ -4760,7 +4762,7 @@ creature_type c_list[MAX_CREATURES] = {
 			     RAZOR|HEAL|SUMMON|BRAIN_SMASH),(NONE8)
 		     ,20000,10,25,195,13,'h',{100,48},{212,218,218,218},56,2
 #ifdef TC_COLOR
-  , BROWN
+  , BLUE
 #endif
 },
 
@@ -4841,7 +4843,7 @@ creature_type c_list[MAX_CREATURES] = {
 			     ,35000U,0,100,100,12
 			     ,'p',{100,50},{230,230,23,23},60,1
 #ifdef TC_COLOR
-  , WHITE
+  , ANY
 #endif
 },
 
@@ -4939,7 +4941,7 @@ creature_type c_list[MAX_CREATURES] = {
 			      UNIQUE|SPECIAL),(NONE8),(S_ANCIENTD)
 		   ,45000U,70,20,125,13,'D',{100,100},{274,275,275,281},70,4
 #ifdef TC_COLOR
-  , LIGHTCYAN
+  , MULTI
 #endif
 },
 
@@ -4969,7 +4971,7 @@ creature_type c_list[MAX_CREATURES] = {
 			     CHARM_SLEEP) ,(NONE8),(S_ANCIENTD)
 			,10500,0,20,1,12,'Q',{100,14},{0,0,0,0},71,3
 #ifdef TC_COLOR
-  , LIGHTBLUE
+  , MULTI
 #endif
 },
 
@@ -5030,7 +5032,7 @@ creature_type c_list[MAX_CREATURES] = {
 			      BREATH_DA)
 			,10000,0,30,100,12,'Z',{60,30},{39,39,39,58},75,2
 #ifdef TC_COLOR
-  , LIGHTGRAY
+  , ANY
 #endif
 },
 
@@ -5051,7 +5053,7 @@ creature_type c_list[MAX_CREATURES] = {
 			    ,(BRAIN_SMASH),(S_GUNDEAD|S_ANCIENTD)
 		     ,20000,0,30,1,13,'Q',{50,100},{0,0,0,0},78,3
 #ifdef TC_COLOR
-  , LIGHTMAGENTA
+  , ANY
 #endif
 },
 
@@ -5078,7 +5080,7 @@ creature_type c_list[MAX_CREATURES] = {
 			      ,(S_WRAITH|S_ANCIENTD|S_GUNDEAD)
                      ,42000U,10,90,120,13,'W',{120,50},{212,23,199,199},80,3
 #ifdef TC_COLOR
-  , LIGHTBLUE
+  , BLUE
 #endif
 },
 

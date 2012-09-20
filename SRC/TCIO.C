@@ -119,6 +119,7 @@ void put_qio(void){
 }
 
 void restore_term(void){
+  _setcursortype(_NORMALCURSOR);
   fflush(stdout);
   clear_screen();
   msdos_noraw();
@@ -189,6 +190,7 @@ char inkey(void){
 
   command_count=0;
   while(TRUE){
+    _setcursortype(_NORMALCURSOR);
     i=msdos_getch();
     if(i==EOF){
       eof_flag++;
@@ -204,6 +206,7 @@ char inkey(void){
         }
         exit_game();
       }
+    _setcursortype(_NOCURSOR);
     return ESCAPE;
   }
 #if 0 /* this is bizarre.  Why would I want ^R to enter raw mode? -CFT */
@@ -214,6 +217,7 @@ char inkey(void){
   } /* while loop */
   return (CTRL('R'));
 #else /* new code -CFT */
+  _setcursortype(_NOCURSOR);
   return (char)i;
   } /* while loop */
 #endif
@@ -257,14 +261,18 @@ void move_cursor(int row,int col){
   gotoxy(col+1,row+1);
 }
 
-void msg_print(char* str_buff){
-  register int old_len, new_len;
-  int8u combine_messages = FALSE;
-  char in_char;
-  
-  if(msg_flag){
-    old_len=strlen(old_msg[last_msg])+1;
 
+void msg_print(char* str_buff){
+  register int old_len, new_len, t_len, spaces, split_len = 0;
+  char in_char, *split = NULL, *t = str_buff;
+  
+  if(msg_flag)
+    old_len=strlen(old_msg[last_msg]);
+  else {
+    old_len = 0; /* I use it to test for -CFT */
+    gotoxy(1,MSG_LINE+1); /* msg_flag is false, so nothing important here */
+    clreol(); /* clear it to get rid of any clutter that might be here... */
+    }
 /* Multiple messages on one msg line... from Purple X's Moria.  Thanks
    to brianm@soda.berkeley.edu (Brian Markenson) for this.
    Moria 5.5 may already have this, but my version of tcio.c doesn't,
@@ -274,54 +282,118 @@ void msg_print(char* str_buff){
        display them together on the same line.  So we don't flush the old
        message in this case.  */
 
-    if (str_buff)
-      new_len = strlen (str_buff);
-    else
-      new_len = 0;
-    if (!str_buff || (new_len + old_len + 2 >= MSG_LEN)) {
-      /* ensure that the complete -more- message is visible. */
+/* This should be even better... If 2 msgs don't fit on one line, it will
+   split the second one (at a space), putting as much as it can (without
+   splitting a word) on the end of the 1st line.  It also will loop, so
+   that msg_print will be able to handle an extremely long mesg by breaking
+   it up into several lines.  If the code cannot find a space at all, it
+   will give up, and just break the mesg in the middle of a word.  This
+   will cause 1 character to be lost.  But this should never happen, since
+   it would require about 70 letters in a row, w/o a space...  -CFT */
+   
+  if (str_buff) {
+    if (msg_flag)
+      spaces = 2;
+    else { /* if nothing there, don't leave extra spaces, and move to a */
+      spaces = 0;  /* new, blank line to save this mesg. */
+      if (++last_msg>=MAX_SAVE_MSG) last_msg=0; 
+      strcpy(old_msg[last_msg], " "); /* 3 spaces on new mesg lines, this
+      				helps to locate start of long, multi-line
+      				rounds.  A single space here, plus the 2
+				spaces added when merging lines... -CFT */
+      old_len = 1;
+      }
+      
+    new_len = strlen(str_buff);
 
-      if (old_len>MSG_LEN)
-        old_len=MSG_LEN;
-      put_buffer("-more-",MSG_LINE, old_len);
-      wait_for_more=1;
+    while (old_len+new_len+spaces >= MSG_LEN) { /* too long? try to make some fit */
+      if (old_len+spaces < MSG_LEN) { /* more on this line? */
+	t = str_buff;
+	split = NULL;
+	split_len = 0;
+	for(t_len = 0; t_len+old_len+spaces < MSG_LEN; t_len++, t++)
+	  if (*t == ' '){ /* this is a possible place to split */
+	    split = t;	/* the message line -CFT */
+	    split_len = t_len;
+	    }
+
+        if (!split && !old_len)  /* if we looked for MSG_LEN chars, and
+        				couldn't find a space, we'd better
+        				force it to split, to avoid an
+        				infinite loop -CFT */
+          split = str_buff+MSG_LEN -2; /* cut it here, 1 char will be lost */
+          
+	if (split) { /* okay, found a good place to split new line */
+	  if (spaces) { /* we skip spaces if there was no old mesg */
+	    strcat(old_msg[last_msg], "  ");
+	    }
+	  strncat(old_msg[last_msg], str_buff, split_len); /* remember 1st part */
+	  old_msg[last_msg][old_len+spaces+split_len+1] = 0; /* end string */
+	  put_buffer (&old_msg[last_msg][old_len],
+		 MSG_LINE, old_len); /* show 1st part */
+	  str_buff = split+1; /* then point to rest of message */
+	  }
+        } /* okay, now we've fit as much as we can, wait for keypress */
+      
+      t_len = strlen(old_msg[last_msg])+1;
+      if (t_len > MSG_LEN) t_len = MSG_LEN;
+      put_buffer("-more-", MSG_LINE, t_len);
       do{
         in_char=inkey();
         }while((in_char!=' ')&&(in_char!=ESCAPE)&&(in_char!='\n')&&
 	   (in_char!='\r'));
-      wait_for_more=0;
-      }
-    else
-      combine_messages = TRUE;
-  }
-  if (!combine_messages){
-    gotoxy(1,MSG_LINE+1);
-    clreol();
-    }
-  if(str_buff){
-    msg_flag = TRUE;
-    command_count = 0;
 
-    /* If the new message and the old message are short enough, display
-       them on the same line.  */
-      
-    if (combine_messages) {
+      gotoxy(1,MSG_LINE+1); /* clear old mesg... */
+      clreol();
+
+      /* now adjust values for next pass through loop... */
+      if(++last_msg>=MAX_SAVE_MSG) last_msg=0;
+      old_msg[last_msg][0]=0; /* clear it, so we add properly */
+      old_len = spaces = 0; /* no need for extra spaces, we're just
+      				processing the rest of str_buff -CFT */
+      new_len = strlen(str_buff)+1; /* calc new length */
+      }
+
+    /* okay, if old+new mesgs couldn't fit, then old is displayed, and
+    	 only rest of new msg needed to be handled.  If both old+new did
+    	 fit, we must process them here... -CFT */
+
+    if (old_len) { /* then must fit, or would have entered while loop, so
+    			just merge */
       put_buffer("  ", MSG_LINE, old_len); /* added just in case -CFT */
       put_buffer (str_buff, MSG_LINE, old_len + 2);
       strcat (old_msg[last_msg], "  ");
       strcat (old_msg[last_msg], str_buff);
-    }
-    else {
-      put_buffer(str_buff,MSG_LINE,0);
-      if(++last_msg>=MAX_SAVE_MSG)
-      	last_msg=0;
+      }      	
+    else { /* only get here from while loop, with just the rest of str_buff
+    		to output + remember */
+      put_buffer(str_buff, MSG_LINE, 0);
       strncpy(old_msg[last_msg],str_buff,VTYPESIZ);
       old_msg[last_msg][VTYPESIZ-1]='\0';
-      }
+      }       
+    msg_flag = TRUE; /* remember that there's something on the msg line */
+    command_count = 0;
     } /* if str_buff */
-  else
-    msg_flag=FALSE;
+  else { /* msg_print(NULL).... */
+    if (msg_flag) { /* was something on the command line */
+      t_len = strlen(old_msg[last_msg])+1;
+      if (t_len > MSG_LEN) t_len = MSG_LEN;
+      put_buffer("-more-", MSG_LINE, t_len);
+      do{
+        in_char=inkey();
+        }while((in_char!=' ')&&(in_char!=ESCAPE)&&(in_char!='\n')&&
+	   (in_char!='\r'));
+      gotoxy(1,MSG_LINE+1); /* clear old mesg... */
+      clreol();
+      msg_flag = FALSE; /* no message to worry about */
+      }
+    else { /* was nothing there, so no "-more-" needed */
+      gotoxy(1,MSG_LINE+1); /* clear old mesg... */
+      clreol();
+      }
+    } /* msg_print(NULL) */
 }
+
 
 int get_check(char*prompt){
   int res;

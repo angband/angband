@@ -103,6 +103,10 @@ extern unsigned _ovrbuffer = OVLY_BUF_SZ; /* defined by makefile -CFT */
 #endif /* TC_OVERLAY */
 #endif
 
+/* This should be taken out if rating variable is added to savefile,
+  but for now, it allows me to set rating to -1, which prevents
+  messages from garbage values in rating variable.  -CFT */
+extern int rating;
 
 #if defined(ultrix) || defined(USG)
 void perror();
@@ -277,7 +281,14 @@ char *argv[];
     switch (argv[0][1]) {
     case 'A':
     case 'a':
+#ifdef MSDOS
+      if (to_be_wizard)	 /* peek not allowed unless
+      					entering Wiz mode, since is_wizard()
+      					always true on PC, and peek mode
+      					isn't fair for nonWizs to use -CFT */
+#else
       if (is_wizard(player_uid))
+#endif
 	peek=TRUE;
       else goto usage;
       break;
@@ -301,7 +312,7 @@ char *argv[];
       if (isdigit((int)argv[0][2]))
 	display_scores(0, atoi(&argv[0][2]), -1);
       else
-	display_scores(0, 10, -1);
+	display_scores(0, MAX_SAVE_HISCORES, -1);
       exit_game();
     case 'D':
     case 'd':
@@ -310,7 +321,7 @@ char *argv[];
       if (isdigit((int)argv[0][2]))
 	delete_entry(atoi(&argv[0][2]));
       else
-	display_scores(0, 10, -1);
+	display_scores(0, MAX_SAVE_HISCORES, -1);
       exit_game();
     case 'F':
     case 'f':
@@ -354,7 +365,7 @@ char *argv[];
 	puts("  n       Start a new character");
 	puts("  o       Use original command set");
 	puts("  r       Use the \"rogue-like\" command set");
-	puts("  s<num>  Show high scores.  Show <num> scores, or first 10");
+	puts("  s<num>  Show high scores.  Show <num> scores, or all");
 #ifdef MSDOS
 	puts("  w       Start in wizard mode");
 	puts(" <file>   Play with savefile named <file>");
@@ -363,6 +374,10 @@ char *argv[];
 	puts("  u<name> Play with character named <name>");
 #endif
 	puts("Each option must be listed separately (ie '-r -n', not '-rn')");
+#ifdef MSDOS
+        puts("   Note that -a (peek mode) can only be used if you're entering wizard\n"
+             "mode, and -a must come after -w for it to work... -CFT\n");
+#endif
       }
       else {
 #ifdef MSDOS
@@ -373,7 +388,7 @@ char *argv[];
 	puts("  n       Start a new character");
 	puts("  o       Use original command set");
 	puts("  r       Use the \"rogue-like\" command set");
-	puts("  s<num>  Show high scores.  Show <num> scores, or first 10");
+	puts("  s<num>  Show high scores.  Show <num> scores, or all");
 #ifdef MSDOS
 	puts(" <file>   Play with savefile named <file>");
 #else
@@ -451,10 +466,35 @@ char *argv[];
   /* enter wizard mode before showing the character display, but must wait
      until after get_char in case it was just a resurrection */
   if (to_be_wizard)
+#ifdef MSDOS
+    if (!enter_wiz_mode()) {
+      if (result && !generate) { /* living character, who said "no I don't
+      					want to enter wiz mode after all" */
+	to_be_wizard = FALSE; /* clear this, in case save code get
+				confused -CFT */
+        if (!wizard && !noscore) /* skip this if he's already a wizard -CFT */
+	  delete_hs_saved(py.misc.name, py.misc.pclass, py.misc.prace,
+			py.misc.male);
+	strcpy(died_from, "(saved)"); /* set died_from as if we saved */
+	save_char();  /* so we save him, so he isn't dead... */
+        }	
+      exit_game();
+      }
+#else
     if (!enter_wiz_mode())
       exit_game();
-
+#endif
   if ((new_game == FALSE) && result) {
+#ifdef MSDOS /* this function (in death.c) is written for the PC, and won't
+		run w/o a bit of work on non-PC systems -CFT */
+
+/* erase the "(saved)" entry from the highscore list, otherwise it will
+   quickly be filled with entries that are all "(saved)" for the currently
+   successful character, which would be bad... -CFT */
+    if (!wizard && !noscore)
+      delete_hs_saved(py.misc.name, py.misc.pclass, py.misc.prace,
+	py.misc.male);
+#endif    
     change_name();
 
     /* could be restoring a dead character after a signal or HANGUP */
@@ -620,11 +660,17 @@ char *argv[];
 
   magic_init();
 
+/* This should be taken out if rating variable is added to savefile,
+  but for now, it prevents messages from garbage values in rating
+  variable.  -CFT */
+  rating = -1;
+  
   /* Begin the game				*/
   clear_screen();
   prt_stat_block();
   if (generate)
     generate_cave();
+
 
   /* Loop till dead, or exit			*/
   while(!death)

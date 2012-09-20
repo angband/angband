@@ -594,7 +594,7 @@ describe_mon_type desc_list[MAX_CREATURES] = {
   " and piercing eyes. Claws reach out for you and you feel a"
   " presence invade your mind"},
 {"Algroth","A powerful troll form, venom drips from its needlelike claws"},
-{"Eldrakyn","A massive troll, larger and stronger than many men"
+{"Eldrak","A massive troll, larger and stronger than many men"
   " together, and usually a solitary creature"},
 {"Hand druj","A skeletal hand floating in the air, motionless except for"
   " its flexing fingers"},

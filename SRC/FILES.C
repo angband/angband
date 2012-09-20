@@ -451,7 +451,8 @@ char *filename1;
 	(void) fprintf(file1, " %s\n", py.misc.history[i]);
       /* Write out the equipment list.	     */
       j = 0;
-      (void) fprintf(file1, "\n  [Character's Equipment List]\n\n");
+      (void) fprintf(file1, "%c\n\n", CTRL('L'));
+      (void) fprintf(file1, "  [Character's Equipment List]\n\n");
       if (equip_ctr == 0)
 	(void) fprintf(file1, "  Character has no equipment in use.\n");
       else
@@ -493,6 +494,20 @@ char *filename1;
 	    {
 	      objdes(prt2, &inventory[i], TRUE);
 	      (void) fprintf(file1, "%c) %s\n", i+'a', prt2);
+	    }
+	}
+      (void) fprintf(file1, "%c\n\n", CTRL('L'));
+      fprintf(file1, "  [%s%s Home Inventory]\n\n", py.misc.name,
+	(toupper(py.misc.name[strlen(py.misc.name)-1]) == 'S' ? "'" : "'s"));
+      if (store[MAX_STORES-1].store_ctr == 0)
+	(void) fprintf(file1, "  Character has no objects at home.\n");
+      else
+	{
+	  for (i = 0; i < store[MAX_STORES-1].store_ctr; i++)
+	    {
+	      if (i==12) fprintf(file1, "\n"); 	
+	      objdes(prt2, &store[MAX_STORES-1].store_inven[i].sitem, TRUE);
+	      (void) fprintf(file1, "%c) %s\n", (i%12)+'a', prt2);
 	    }
 	}
       (void) fprintf(file1, "%c", CTRL('L'));

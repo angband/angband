@@ -1,0 +1,87 @@
+spells.c:	  changed globe of invul from randint(10)+10 to randint(8)+8 on
+		advice of Sean Marsh.
+	changed "eye" to "eyes" in self knowledge code in blindness resist
+		message...
+	fixed self-knowledge SLAY EVIL.  it was looking at wrong flag
+death.c:	  I've tried to manually apply a diff smarsh sent me that's supposed
+		to stop a bug when quitting and/or (I'm not quite clear which)
+		dying on town level.  This is hard because the diff is
+		apparently based on the Unix sources, which have different
+		line numbers than the PC srcs, since they don't have any
+		#ifdef MSDOS lines...  I believe I've placed it right.
+		Anyway, the basic effect was to init a FILE * to NULL, and
+		then only call fclose() on it if it was no longer NULL.
+spells.c:	  unlight_area changed to return true if darkening a room, to fix
+		ID problem for scrolls of darkness.  Thanks to someone
+		on the net (sorry, I don't remember who) for mentioning this
+		one to me...
+death.c:	  minor change to tombstone code...  added msg_print(NULL); after
+		showing equip list.  This flushs the msg_print buffer to
+		screen.  I think it's unneed for tcio.c implementation,
+		but it's better safe than sorry...
+misc1, main, moria1, vars1, spells, tcio, externs.h:	  Change made to color code:  New option flag "no_color_flag", default
+		to false.  If true, then no calls will be made to TC's
+		textcolor() function.  This should allow people with
+		monochrome monitors to play Angband, with worrying about
+		DARKGRAY monsters/items being shown as a black space on
+		the screen.  Old savefiles are 100% compatible with this.
+		When color is turned off/on, you should probably have it
+		redraw the screen.  Otherwise, it may take a while before
+		everything is correctly colorized or uncolorized.
+	Sorry about any troubles you monochrome people have had.  I hope
+		this will put me back in your good graces. -CFT
+
+generate.c:	  in build_pit(), the code assumed a 32bit rand num gen when deciding
+		if a pit should be considered "special".  Since the PC had
+		only a 16 bit r.n.g, I had to modify the code a bit (inside
+		an #ifdef).  It now uses the square of the dun_level, in
+		stead of the cube, and checks verses a much smaller value.
+		This should roughly approximate the Unix code, for levels
+		30-70, for levels much over 70, the Unix code is less
+		likely to report a pit is special then the new code.  For
+		levels over 180 (sqr root of 32k), this code will wrap around
+		32k, and start considering all pits special again.  Hopefully
+		people going deeper than 100 is rare enough (except wizard
+		mode) that this can be ignored.
+types.h:	  On advice from S. Marsh, I changed the type of sexp in spell_type
+		from int8u to int16u.  int8u just wasn't large enough to
+		hold the exp values for some of the more powerfull spells.
+monsters.c:	  To avoid changing types of hd[] and sleep fields, I modifed HP
+		values for Mouth of Sauron, Emperor Q, and Q, Lord of
+		Flesh.  The old values were {700,10} for MoS, and {500,10}
+		for the other 2.  The new values are {70,100} and {50,100}.
+		These values fit properly into int8u values.  Also, 3
+		monsters had high sleep values -- Aimless looking merchant
+		had 1000, and Great Wyrm of Law and Balance both had 400.
+		Since it was only a couple of monsters, and changing the
+		type of sleep would have meant invalidating people's
+		savefiles, I set all 3 monsters' sleep to 255.
+misc1.c:	  csleep calcuation for monster sleep count changed to include a cast
+		of sleep to int (sleep is an int8u in c_list[]).
+ms_misc.c:	  moved #include <dos.h> and some #defines from the middle of
+		the file to the top.  This seesm to have avoided a
+		redeclaration error.  (don't ask me why)
+death.c:	  Okay, in an effort to reduce the wasteful memory usage of the
+		display_scores() and top_twenty() functions, I've
+		kludged together a new version of each.  I've stolen
+		liberally from the Um5.5 code.  The result is UGLY, and
+		I'm really not proud of it at all, but I want to get this
+		ready now, so I can make the update available before
+		anyone else loses there CMOS settings, or worse, because
+		of a stack overflow causing random data corruption.  (I
+		know of 1 person to whom this has happened to already...)
+	The code for the previous version is intact, inside the #else
+		clause of a #ifdef MSDOS block.  This prevents it from
+		being compiled in on the PC.
+	To be brutally honest, the unix angband highscore code is no
+		prize either...  If anyone wants to do some good for
+		angband, they'll try to adapt some fairly up-to-date and
+		portable Umoria 5.* highscore code.
+potions.c:	  code for several potion effects rearranged from "ident = some_fn();"
+		to "if (some_fn()) ident = TRUE;".  This setup prevents it
+		from clearing ident for potions that cause more than 1
+		effect.  (ie, if cure_poison has set ident, we don't want
+		cure_confusion to clear it...)
+===========================================================================
+Changes above here made it into the updated executable, angexe11.exe.
+===========================================================================

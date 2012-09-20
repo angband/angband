@@ -1,0 +1,97 @@
+Unique Monster (type)			Lvl	HP	Exp	Imm	Spd
+
+Farmer Maggot (p)			0	375	0	-	1
+Grip, Farmer Maggot's dog (C)		2	25	30	-	2
+Fang, Farmer Maggot's dog (C)		2	25	30	-	2
+Smeagol (p)				3	44	16	-	3
+Bullroarer the Hobbit (h)		5	64	90	-	2
+Mughash the Kobold Lord (k)		7	144	100	P	1
+Wormtongue, Agent of Saruman (p)	8	250	150	-	1
+Lagduf, the Snaga (o)			8	192	80	-	1
+Brodda, the Easterling (p)		9	210	100	-	1
+Orfax, Son of Boldor (y)		10	120	80	-	2
+Grishnakh, the Hill orc (o)		10	225	160	P	1
+Golfimbul, the Hill Orc Chief (o)	12	240	230	PCFL	1
+Boldor, King of the Yeeks (y)		13	180	200	-	2
+Ufthak of Cirith Ungol (o)		14	320	200	PC	1
+Ulfast, Son of Ulfang (p)		16	340	200	-	1
+Nar, the Dwarf (h)			17	450	250	PCF	1
+Shagrat, the orc captain (o)		18	400	400	P	1
+Gorbag, the orc captain (o)		18	400	400	P	1
+Bolg, Son of Azog (o)			20	500	800	P	2
+Ugluk, the Uruk-Hai (o)			20	640	550	P	1
+Lugdush, the Uruk-Hai (o)		21	720	550	PCF	1
+Azog, King of the Uruk-Hai (o)		23	900	1111	P	2
+Ibun, Son of Mim (h)			24	825	300	CF	1
+Khim, Son of Mim (h)			24 	825	300	CF	1
+Sangahyando of Umbar (p)		24	800	400	LF	1
+Angamaite of Umbar (p)			24	800	400	LF	1
+Ulwarth, Son of Ulfang (p)		26	880	500	-	1
+Mim, betrayer of Turin (h)		27	1100	1000	CFLPA	2
+Lokkak, the Ogre Chieftan (O)		27	1440	1500	P	2
+Uldor the Accursed (p)			28	1000	600	-	1
+Draebor, the Imp (I)			28	520	750	F	2
+Shelob, Spider of Darkness (S)		32	1200	1200	-	1
+Bert the Stone Troll (T)		33	1100	2000	PC	1
+Bill the Stone Troll (T)		33	1100	2000	PC	1
+Tom the Stone Troll (T)			33	1100	2000	PC	1
+Ulfang the Black (p)			34	1040	1200	-	2
+Rogrog the Black Troll (T)		36	1540	5000	PC	2
+Lorgan, Chief of the Easterlings (p)	36	1750	1200	PCFLA	2
+The Queen Ant (a)			37	1440	1000	-	2
+Castamir the Usurper (p)		38	880	1600	-	2
+Vargo, Tyrant of Fire (E)		38	1500	3000	FP	2
+Waldern, King of Water (E)		39	2000	3250	P	2
+Kavlax the Many-headed (d)		39	1300	3000	CFLA	2
+Uvatha the Horseman (W)			40	1225	7000	CP	2
+Medusa, the Gorgon (n)			40	2400	9000	PFA	2
+Adunaphel the Quiet (W)			41	1225	8000	CP	2
+Akhorahil the Blind (W)			41	1750	12000	CP	2
+Gorlim, Betrayer of Barahir (p)		41	1600	7000	CC*PLA	2
+Ren the Unclean (W)			41	1750	13000	CFP	2
+Ji Indur Dawndeath (W)			43	1750	12000	CFP	2
+Quaker, Master of Earth (E)		43	1800	6000	CFLP	1
+Ariel, Queen of Air (E)			44	2700	8000	CFLPA	3
+Scatha the Worm (D)			44	1800	17000	C	2
+Dwar, Dog Lord of Waw (W)		44	2000	13000	CFP	2
+Smaug the Golden (D)			45	1950	19000	F	2
+Itangast the Fire Drake (D)		47	2250	20000	F	2
+Glaurung, Father of the Dragons (D)	48	2750	25000	F	2
+Muar, the Balrog (&)			50	3000	30000	F	2
+Baphomet the Minotaur Lord (H)		51	3500	18000	PF	3
+Harowen the Black Hand (p)		52	2500	20000	P	4
+Hoarmurath of Dir (W)			52	2500	40000	CP	2
+Khamul the Easterling (W)		53	3500	50000	CPF	2
+The Phoenix (B)				54	3600	40000	FLAP	2
+The Lernean Hydra (R)			55	4300	20000	FP	2
+Thuringwethil (V)			55	4000	23000	CP	3
+Fundin Bluecloak (h)			56	4800	20000	CLAFP	3
+Uriel, Angel of Fire (A)		56	5500	25000	CLAFP	3
+Azriel, Angel of Death (A)		57	6000	30000	CLAFP	3
+Ancalagon the Black (D)			58	7700	30000	FA	2
+Gabriel, the Messenger (A)		59	7700	35000	CLAFP	3
+Saruman of Many Colours (p)		60	5000	35000	CLFP	2
+The Cat Lord (f)			64	4800	30000	CFP	3
+Tselakus, the Dreadlord (G)		68	6700	35000	CP	3
+Tiamat, Celestial Dragon of Evil (D)	70	10000	45000	CPLAF	3
+Vecna, the Emperor Lich (L)		72	4500	30000	CP	3
+Omarax the Eye tyrant (e)		73	6400	16000	P	3
+Ungoliant, the Unlight (S)		75	13000	35000	P	2
+The Mouth of Sauron (p)			78	7000	38000	CPL	3
+The Emperor Quylthulg (Q)		78	5000	20000	-	3
+Qlzqqlzuup, the Lord of Flesh (Q)	78	5000	20000	-	3
+Murazor, the Witch-King of Angmar (W)	80	6000	42000	CP	3
+Pazuzu, Lord of Air (B)			82	5500	30000	CFLAP	4
+Cantoras, the Skeletal Lord (s)		84	6750	45000	CFP	4
+The Tarrasque (R)			84	8075	35000	F	3
+Lungorthin, the Balrog of White Fire (&)85	7600	37000	F	3
+Draugluin, Sire of All Werewolves (C)	87	7000	40000	P	3
+Feagwath the Undead Sorceror (L)	90	6000	45000	FLCP	3
+Carcharoth, the Jaws of Thirst (C)	92	7500	40000	PF	3
+Cerberus, Guardian of Hades (C)		94	10000	40000	F	3
+Gothmog, the High Captain of Balrogs (&)95	8000	43000	FL	3
+Sauron, the Sorcerer (p)		99	10395	50000	FLCP	3
+Morgoth, Lord of Darkness (P)		100	17100	60000	FLCPA	4
+(Player's Ghost) (@)                    100     0       0       PF      1
+
+

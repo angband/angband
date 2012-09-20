@@ -1,4 +1,4 @@
-/* moria2.c: misc code, mainly to handle player commands
+ /* moria2.c: misc code, mainly to handle player commands
 
    Copyright (c) 1989 James E. Wilson, Robert A. Koeneke
 
@@ -438,7 +438,7 @@ void delete_monster(j)
 {
   register monster_type *m_ptr;
 
-  if (j < 2) return; /* trouble? abort! -CFT */
+  if (j < MIN_MONIX) return; /* trouble? abort! -CFT */
   m_ptr = &m_list[j];
   if (c_list[m_ptr->mptr].cdefense & UNIQUE)
     check_unique(m_ptr);
@@ -887,6 +887,9 @@ int monptr, dam;
 	p_ptr->exp_frac = new_exp_frac;
 
       p_ptr->exp += new_exp;
+      if (p_ptr->exp < p_ptr->max_exp) /* If player is drained, let him
+      					  get something.. -CFT */
+	p_ptr->max_exp += new_exp/10; /* 10% is better than nothing -CFT */
       /* can't call prt_experience() here, as that would result in "new level"
 	 message appearing before "monster dies" message */
       m_take_hit = m_ptr->mptr;
@@ -914,6 +917,8 @@ int y, x;
   register inven_type *i_ptr;
   register struct misc *p_ptr;
 
+  feel_chance = 20; /* combat gives good chance of feelings... you're
+  			extra alert to subtle clues? */
   crptr = cave[y][x].cptr;
   monptr = m_list[crptr].mptr;
   m_list[crptr].csleep = 0;
@@ -952,8 +957,10 @@ int y, x;
       if (test_hit(base_tohit, (int)p_ptr->lev, tot_tohit,
 		   (int)c_list[monptr].ac, CLA_BTH))
 	{
-/*	  (void) sprintf(out_val, "You hit %s.", m_name);
-	  msg_print(out_val);  Old message system*/
+	  if (!wizard) {
+	    (void) sprintf(out_val, "You hit %s.", m_name);
+	    msg_print(out_val);
+	    }
 	  if (i_ptr->tval != TV_NOTHING)
 	    {
 	      k = pdamroll(i_ptr->damage);
@@ -965,14 +972,14 @@ int y, x;
 	      k = damroll(1, 1);
 	      k = critical_blow(1, 0, k, CLA_BTH);
 	    }
-	  k += p_ptr->ptodam;
-/* temp new message */
-	  if (wizard) (void) sprintf(out_val,
-          "You hit %s with %d hp, doing %d+%d damage.",
-          m_name, m_list[crptr].hp, (k-p_ptr->ptodam), p_ptr->ptodam);
-	  else (void) sprintf(out_val,"You hit %s.",m_name);
-	  msg_print(out_val);
+	  if (wizard) {
+	    sprintf(out_val,
+              "You hit %s with %d hp, doing %d+%d damage.",
+               m_name, m_list[crptr].hp, k, p_ptr->ptodam);
+	    msg_print(out_val);
+	    }
 
+	  k += p_ptr->ptodam;
 	  if (k<0) k=0;
 
 	  if (py.flags.confuse_monster)
@@ -1046,6 +1053,7 @@ int dir, do_pickup;
   register int i, j;
   register cave_type *c_ptr, *d_ptr;
 
+  feel_chance = 500; /* moderate odds of feeling */
   if (((py.flags.confused>0) || (py.flags.stun>0)) && /*Confused/Stunned?  */
       (randint(4)>1) &&	                              /*75% random movement*/
       (dir != 5))		                 /* Never random if sitting*/
@@ -1116,9 +1124,15 @@ int dir, do_pickup;
 	      if (c_ptr->tptr != 0)
 		{
 		  i = t_list[c_ptr->tptr].tval;
-		  if (i == TV_INVIS_TRAP || i == TV_VIS_TRAP
-		      || i == TV_STORE_DOOR || !prompt_carry_flag)
+		  if (i == TV_INVIS_TRAP || i == TV_VIS_TRAP || i == TV_GOLD
+		      || i == TV_STORE_DOOR || !getkey_flag)
 		    carry(char_row, char_col, do_pickup);
+		  else if (getkey_flag){ /* using 'g'et key -CFT */
+		    vtype t1, t2;
+		    objdes(t1, &t_list[c_ptr->tptr], TRUE);
+		    sprintf(t2, "On the floor: %s", t1);
+		    msg_print(t2);
+		    }
 		  /* if stepped on falling rock trap, and space contains
 		     rubble, then step back into a clear area */
 		  if (t_list[c_ptr->tptr].tval == TV_RUBBLE)
@@ -1428,6 +1442,24 @@ int y, x, t1, t2;
   if (t1 > t2)
     {
       c_ptr = &cave[y][x];
+      if (c_ptr->tptr) { /* secret door or rubble or gold -CFT */
+        if (t_list[c_ptr->tptr].tval == TV_RUBBLE) {
+	  delete_object(y,x); /* blow it away... */
+	  if (randint(10)==1){
+	    place_object(y,x); /* and drop a goodie! */
+            }
+ 	  }
+        else if (t_list[c_ptr->tptr].tval >= TV_MIN_DOORS)
+	  delete_object(y,x); /* no more door... */
+        } /* if object there.... */
+
+      c_ptr->fm = FALSE;
+      if (panel_contains(y, x))
+	if ((c_ptr->tl || c_ptr->pl) && c_ptr->tptr != 0) {
+	  msg_print("You have found something!");
+	  c_ptr->fm = TRUE;
+	  }
+	  
       if (c_ptr->lr)
 	{
 	  /* should become a room space, check to see whether it should be
@@ -1454,10 +1486,6 @@ int y, x, t1, t2;
 	  c_ptr->fval  = CORR_FLOOR;
 	  c_ptr->pl = FALSE;
 	}
-      c_ptr->fm = FALSE;
-      if (panel_contains(y, x))
-	if ((c_ptr->tl || c_ptr->pl) && c_ptr->tptr != 0)
-	  msg_print("You have found something!");
       lite_spot(y, x);
       res = TRUE;
     }
@@ -2044,9 +2072,10 @@ int *transparent;
   if (gl_rock == 0 && c_ptr->cptr > 1 && m_list[c_ptr->cptr].ml)
     {
       j = m_list[c_ptr->cptr].mptr;
-      (void) sprintf(out_val, "%s %s %s (%s). [(r)ecall]",
+      (void) sprintf(out_val, "%s %s%s (%s). [(r)ecall]",
 		     dstring,
-		     is_a_vowel( c_list[j].name[0] ) ? "an" : "a",
+		     ((c_list[j].cdefense & UNIQUE) ? "" :  
+		      (is_a_vowel( c_list[j].name[0] ) ? "an " : "a ")),
 		     c_list[j].name,
 		     look_mon_desc(c_ptr->cptr));
       dstring = "It is on";
@@ -2169,8 +2198,7 @@ int *tbth, *tpth, *tdam, *tdis;
     switch(inventory[INVEN_WIELD].subval)
       {
       case 20:
-	if (i_ptr->tval == TV_SLING_AMMO) /* Sling and ammo */
-	  {
+	if (i_ptr->tval == TV_SLING_AMMO){ /* Sling and ammo */
 	    *tbth = py.misc.bthb;
 	    *tpth += 2 * inventory[INVEN_WIELD].tohit;
 	    *tdam += inventory[INVEN_WIELD].todam;
@@ -2178,9 +2206,17 @@ int *tbth, *tpth, *tdam, *tdis;
 	    *tdis = 20;
 	  }
 	break;
+      case 21:
+	if (i_ptr->tval == TV_SLING_AMMO){ /* Sling of Might and ammo */
+	    *tbth = py.misc.bthb;
+	    *tpth += 2 * inventory[INVEN_WIELD].tohit;
+	    *tdam += inventory[INVEN_WIELD].todam;
+	    *tdam = *tdam * 3;
+	    *tdis = 20;
+	  }
+	break;
       case 1:
-	if (i_ptr->tval == TV_ARROW)      /* Short Bow and Arrow	*/
-	  {
+	if (i_ptr->tval == TV_ARROW){      /* Short Bow and Arrow	*/
 	    *tbth = py.misc.bthb;
 	    *tpth += 2 * inventory[INVEN_WIELD].tohit;
 	    *tdam += inventory[INVEN_WIELD].todam;
@@ -2189,8 +2225,7 @@ int *tbth, *tpth, *tdam, *tdis;
 	  }
 	break;
       case 2:
-	if (i_ptr->tval == TV_ARROW)      /* Long Bow and Arrow	*/
-	  {
+	if (i_ptr->tval == TV_ARROW){	/* L Bow,s bow of M and Arrow */
 	    *tbth = py.misc.bthb;
 	    *tpth += 2 * inventory[INVEN_WIELD].tohit;
 	    *tdam += inventory[INVEN_WIELD].todam;
@@ -2199,8 +2234,7 @@ int *tbth, *tpth, *tdam, *tdis;
 	  }
 	break;
       case 3:
-	if (i_ptr->tval == TV_ARROW)      /* Composite Bow and Arrow*/
-	  {
+	if (i_ptr->tval == TV_ARROW){	/* C Bow, BARD, L bow of M and Arrow*/
 	    *tbth = py.misc.bthb;
 	    *tpth += 2 * inventory[INVEN_WIELD].tohit;
 	    *tdam += inventory[INVEN_WIELD].todam;
@@ -2208,9 +2242,17 @@ int *tbth, *tpth, *tdam, *tdis;
 	    *tdis = 35;
 	  }
 	break;
+      case 4:
+	if (i_ptr->tval == TV_ARROW){	/* C Bow of M, BELEG and Arrow*/
+	    *tbth = py.misc.bthb;
+	    *tpth += 2 * inventory[INVEN_WIELD].tohit;
+	    *tdam += inventory[INVEN_WIELD].todam;
+	    *tdam = *tdam * 5;
+	    *tdis = 35;
+	  }
+	break;
       case 10:
-	if (i_ptr->tval == TV_BOLT)      /* Light Crossbow and Bolt*/
-	  {
+	if (i_ptr->tval == TV_BOLT){	/* Light xbow and Bolt*/
 	    *tbth = py.misc.bthb;
 	    *tpth += 2 * inventory[INVEN_WIELD].tohit;
 	    *tdam += inventory[INVEN_WIELD].todam;
@@ -2219,12 +2261,20 @@ int *tbth, *tpth, *tdam, *tdis;
 	  }
 	break;
       case 11:
-	if (i_ptr->tval == TV_BOLT)      /* Heavy Crossbow and Bolt*/
-	  {
+	if (i_ptr->tval == TV_BOLT){	/* H xbow, L xbow of M and Bolt*/
 	    *tbth = py.misc.bthb;
 	    *tpth += 2 * inventory[INVEN_WIELD].tohit;
 	    *tdam += inventory[INVEN_WIELD].todam;
 	    *tdam = *tdam * 4;
+	    *tdis = 35;
+	  }
+	break;
+      case 12:
+	if (i_ptr->tval == TV_BOLT){	/* H xbow of M and Bolt*/
+	    *tbth = py.misc.bthb;
+	    *tpth += 2 * inventory[INVEN_WIELD].tohit;
+	    *tdam += inventory[INVEN_WIELD].todam;
+	    *tdam = *tdam * 5;
 	    *tdis = 35;
 	  }
 	break;
@@ -2242,21 +2292,15 @@ inven_type *t_ptr;
   register cave_type *c_ptr;
 
   flag = FALSE;
-  i = y;
-  j = x;
-  k = 0;
-  if (randint(10) > 1)
-    {
-      do
-	{
-	  if (in_bounds(i, j))
-	    {
+  i = y;    j = x;    k = 0;
+  if (randint(5) > 1) {
+      do {
+	  if (in_bounds(i, j)) {
 	      c_ptr = &cave[i][j];
 	      if (c_ptr->fval <= MAX_OPEN_SPACE && c_ptr->tptr == 0)
 		flag = TRUE;
 	    }
-	  if (!flag)
-	    {
+	  if (!flag) {
 	      i = y + randint(3) - 2;
 	      j = x + randint(3) - 2;
 	      k++;
@@ -2264,8 +2308,35 @@ inven_type *t_ptr;
 	}
       while ((!flag) && (k <= 9));
     }
+  if (!flag && (t_ptr->tval >= TV_MIN_WEAR) &&
+      (t_ptr->tval <= TV_MAX_WEAR) && (t_ptr->flags2 & TR_ARTIFACT)) {
+    k = 0;  i = y;  j = x;
+    do { /* pick place w/o an object, unless doesn't seem to be one */
+      y = i;  x = j;
+      do { /* pick place in bounds and not in wall */
+        i = y + randint(3) -2;
+        j = x + randint(3) -2;
+      } while (!in_bounds(i,j) || cave[i][j].fval > MAX_OPEN_SPACE);
+      k++;
+      if (!(cur_pos = cave[i][j].tptr) || (k>64))
+        flag = TRUE;
+      if (flag && (((t_list[cur_pos].flags2 & TR_ARTIFACT) &&
+            ((cur_pos = t_list[cur_pos].tval) >= TV_MIN_WEAR) &&
+            (cur_pos <= TV_MAX_WEAR)) ||
+           (cur_pos == TV_STORE_DOOR) ||
+           (cur_pos == TV_UP_STAIR) ||
+           (cur_pos == TV_DOWN_STAIR)))
+       flag = FALSE;  /* the above may seem convoluted, but it basically
+		says: try up to 64 spaces, if an open one, place the
+		item.  If none, clobber the item at 64th, but keep looking
+		if that item is an artifact, store door, or stairs -CFT */
+      if (k>888) flag = TRUE; /* if this many tries, TOO BAD! -CFT */
+    } while (!flag);
+   } /* if not flag and is artifact */
   if (flag)
     {
+      if (cave[i][j].tptr) /* we must have crushed something; waste it -CFT */
+        delete_object(i,j);
       cur_pos = popt();
       cave[i][j].tptr = cur_pos;
       t_list[cur_pos] = *t_ptr;
@@ -2279,6 +2350,28 @@ inven_type *t_ptr;
     }
 }
 
+/* This is another adaptation of DGK's Fangband code to help throw item
+   stay around (like Artifacts!) -CFT */
+static int stays_when_throw(inven_type *i_ptr){
+
+  if ((i_ptr->tval >= TV_MIN_WEAR) && (i_ptr->tval <= TV_MAX_WEAR) &&
+      (i_ptr->flags2 & TR_ARTIFACT))
+    return TRUE;
+
+  /* for non-artifacts, drop_throw() still loses 20% of them... */
+  if ((i_ptr->tval >= TV_BOW) && (i_ptr->tval <= TV_STAFF))
+    return TRUE;
+  switch (i_ptr->tval){
+    case TV_CHEST: case TV_SLING_AMMO: case TV_ROD: case TV_FOOD:
+    case TV_MAGIC_BOOK: case TV_PRAYER_BOOK:
+      return TRUE;
+    case TV_MISC: case TV_SPIKE: case TV_WAND: case TV_BOLT:
+    case TV_ARROW: case TV_LIGHT: case TV_SCROLL1: case TV_SCROLL2:
+      return (randint(2)==1);
+    }
+  return FALSE;
+}
+
 /* Throw an object across the dungeon.		-RAK-	*/
 /* Note: Flasks of oil do fire damage				 */
 /* Note: Extra damage and chance of hitting when missiles are used*/
@@ -2288,6 +2381,8 @@ void throw_object()
   int item_val, tbth, tpth, tdam, tdis;
   int y, x, oldy, oldx, cur_dis, dir;
   int flag, visible;
+  int ok_throw = FALSE;	/* used to prompt user with, so doesn't throw
+  				wrong thing */
   bigvtype out_val, tmp_str;
   inven_type throw_obj;
   register cave_type *c_ptr;
@@ -2301,6 +2396,51 @@ void throw_object()
       free_turn_flag = TRUE;
     }
   else if (get_item(&item_val, "Fire/Throw which one?", 0, inven_ctr-1, 0))
+    {
+      inven_type *t = &inventory[item_val];
+
+      if ((t->tval == TV_FLASK) || (t->tval == TV_SLING_AMMO) ||
+          (t->tval == TV_ARROW) || (t->tval == TV_BOLT) ||
+          (t->tval == TV_SPIKE) || (t->tval == TV_MISC))
+        ok_throw = TRUE;
+      else if (((t->tval == TV_FOOD) || (t->tval == TV_POTION1) ||
+                (t->tval == TV_POTION2)) && known1_p(t) && 
+	/* almost all potions do 1d1 damage when throw.  I want the code
+	   to ask before throwing away potions of DEX, *Healing*, etc.
+	   This also means it will ask before throwing potions of slow
+	   poison, and other low value items that the player is likely to
+	   not care about.  This code will mean that mushrooms/molds of
+	   unhealth, potions of detonations and death are the only
+	   always-throwable food/potions.  (plus known bad ones, in a
+	   later test...) -CFT */
+	       (t->damage[0] > 1) && (t->damage[1] > 1))
+	ok_throw = TRUE; /* if it's a mushroom or potion that does
+				damage when thrown... */
+      else if (!known2_p(t) && (t->ident & ID_DAMD))
+        ok_throw = TRUE;  /* Not IDed, but user knows it's cursed... */
+      else if ((t->tval >= TV_MIN_WEAR) && (t->tval <= TV_MAX_WEAR) &&
+          (t->flags & TR_CURSED) && known2_p(t))
+        ok_throw = TRUE; /* if user wants to throw cursed, let him */
+      else if ((object_list[t->index].cost <= 0) && known1_p(t) &&
+      		!(known2_p(t) && (t->cost > 0)))
+        ok_throw = TRUE;
+      else if ((t->cost <= 0) && known2_p(t))
+        ok_throw = TRUE; /* it's junk, let him throw it */
+      else if ((t->tval >= TV_HAFTED) &&
+	       (t->tval <= TV_DIGGING) && !(t->name2))
+        ok_throw = TRUE; /* non ego/art weapons are okay to just throw, since
+       			they are damaging (Moral of story: wield your weapon
+			if you're worried that you might throw it away!) */
+      else { /* otherwise double-check with user before throwing -CFT */
+	objdes(tmp_str, t, TRUE);
+	tmp_str[strlen(tmp_str)-1] = '?'; /* clobber period */
+	sprintf(out_val, "Really throw %s", tmp_str);
+	ok_throw = get_check(out_val);
+      }
+    } /* if selected an item to throw */
+
+  if (ok_throw) /* can only be true if selected item, and it either looked
+  		   okay, or user said yes... */
     {
       if (get_dir(NULL, &dir))
 	{
@@ -2374,13 +2514,16 @@ void throw_object()
 			  if (tdam < 0) tdam = 0;
 			  i = mon_take_hit((int)c_ptr->cptr, tdam);
                           if (i<0) {
-                            char buf[100];
+                            char buf[100], t[100];
 			    extern char *pain_message();
 
-			    if (visible)
+			    if (visible) {
+			      if (c_list[m_ptr->mptr].cdefense & UNIQUE)
+				strcpy(t, c_list[m_ptr->mptr].name);
+			      else sprintf(t, "The %s", c_list[m_ptr->mptr].name);
 			      (void) sprintf(buf,
-			       pain_message((int)c_ptr->cptr, (int)tdam),
-					   c_list[m_ptr->mptr].name);
+			       pain_message((int)c_ptr->cptr, (int)tdam), t);
+			      } 
 			    else
 			      (void) sprintf(buf,
 				pain_message((int)c_ptr->cptr, (int)tdam),
@@ -2403,6 +2546,9 @@ void throw_object()
 				}
 			      prt_experience();
 			    }
+			  if (stays_when_throw(&throw_obj)) /* should it land on
+			  			floor?  Or else vanish forever? */
+			    drop_throw(oldy, oldx, &throw_obj);
 			}
 		      else
 			drop_throw(oldy, oldx, &throw_obj);
@@ -2412,8 +2558,44 @@ void throw_object()
 		      if (panel_contains(y, x) && (py.flags.blind < 1)
 			  && (c_ptr->tl || c_ptr->pl))
 			{
+#ifdef TC_COLOR
+       if (throw_obj.color != 0) { 
+         if (!no_color_flag) textcolor(throw_obj.color);
+         }
+       else switch(throw_obj.tval){
+       	 case TV_POTION1:
+       	 case TV_POTION2:
+	   if (!no_color_flag) textcolor(tccolors[throw_obj.subval
+					- ITEM_SINGLE_STACK_MIN]);
+	   break;
+	 case TV_WAND:
+	 case TV_ROD:
+	   if (!no_color_flag) textcolor(tcmetals[throw_obj.subval]);
+	   break;
+	 case TV_STAFF:
+	   if (!no_color_flag) textcolor(tcwoods[throw_obj.subval]);
+	   break;
+	 case TV_RING:
+	   if (!no_color_flag) textcolor(tcrocks[throw_obj.subval]);
+	   break;
+	 case TV_AMULET:
+	   if (!no_color_flag) textcolor(tcamulets[throw_obj.subval]);
+	   break;
+	 case TV_FOOD:
+	   if (!no_color_flag) textcolor(tcmushrooms[throw_obj.subval
+	   				- ITEM_SINGLE_STACK_MIN]);
+	   break;
+	 default: if (!no_color_flag) textcolor( randint(15) ); /* should never happen. -CFT */
+       }
+#endif
 			  print(tchar, y, x);
+#ifdef TC_COLOR
+       textcolor(LIGHTGRAY);
+#endif       
 			  put_qio(); /* show object moving */
+#ifdef MSDOS
+			  delay(35); /* slow down, so we can see it -CFT */
+#endif
 			}
 		    }
 		}
@@ -2634,8 +2816,14 @@ void bash()
 static char *look_mon_desc(int mnum){
   monster_type *m = &m_list[mnum];
   int32 thp, tmax, perc;
-  int8u living = !(c_list[m->mptr].cdefense & (UNDEAD | DEMON));
-  
+  int8u living;
+
+  living = (!(c_list[m->mptr].cdefense & (UNDEAD | DEMON)) &&
+	     ((c_list[m->mptr].cchar != 'E') ||
+	      (c_list[m->mptr].cchar != 'g') ||
+	      (c_list[m->mptr].cchar != 'v') ||
+  	      (c_list[m->mptr].cchar != 'X')));
+  	      
   if (m->maxhp == 0){ /* then we're just going to fix it! -CFT */
     if ((c_list[m->mptr].cdefense & MAX_HP) || be_nasty)
       m->maxhp = max_hp(c_list[m->mptr].hd);

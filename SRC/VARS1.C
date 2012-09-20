@@ -51,6 +51,9 @@ int highscore_fd;		/* File descriptor to high score file */
 int LOAD=0;
 int32u randes_seed;		/* for restarting randes_state */
 int32u town_seed;		/* for restarting town_seed */
+char *old_state = NULL;         /* state array initialized by time -CWS */
+char *dummy_state = NULL;       /* dummy state array -CWS */
+
 int16 cur_height,cur_width;	/* Cur dungeon size    */
 int16 dun_level = 0;		/* Cur dungeon level   */
 int16 missile_ctr = 0;		/* Counter for missiles */
@@ -92,7 +95,7 @@ int8u find_cut = TRUE;
 int8u find_examine = TRUE;
 int8u find_bound = FALSE;
 int8u find_prself = FALSE;
-int8u prompt_carry_flag = FALSE;
+int8u getkey_flag = FALSE;
 int8u carry_query_flag = TRUE;
 int8u show_weight_flag = FALSE;
 int8u highlight_seams = FALSE;
@@ -108,7 +111,7 @@ int find_cut = TRUE;
 int find_examine = TRUE;
 int find_bound = FALSE;
 int find_prself = FALSE;
-int prompt_carry_flag = FALSE;
+int getkey_flag = FALSE;
 int show_weight_flag = FALSE;
 int highlight_seams = FALSE;
 int find_ignore_doors = FALSE;
@@ -165,4 +168,7 @@ recall_type *c_recall;
 #else
 recall_type c_recall[MAX_CREATURES];	/* Monster memories */
 #endif
+
+/* global variable for feelings msg control... */
+int feel_chance;
 

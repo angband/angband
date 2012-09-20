@@ -111,46 +111,47 @@ int32u player_exp[MAX_PLAYER_LEVEL] = {
 #ifdef MACGAME
 race_type *race;
 #else
-race_type race[MAX_RACES] = {
-   {"Human",	 0,  0,	 0,  0,	 0,  0,
+race_type race[MAX_RACES] = { /* most stat mods adjusted -CFT */
+   {"Human",	 1,  0,	 0,  1,	 0,  1,
       14,  6, 72,  6,180, 25, 66,  4,150, 20,
       0,  0,  0,  0,  0,  0,  0, 10,  0, 100, 0x3F,
     },
-   {"Half-Elf", -1,  1,	 0,  1, -1,  1,
-      24, 16, 66,  6,130, 15, 62,  6,100, 10,
-      2,  6,  1, -1, -1,  5,  3,  9,  2, 110, 0x3F,
+   {"Half-Elf",  0,  1,	 1,  2,  0,  2,
+      85, 95, 66,  6,130, 15, 62,  6,100, 10,
+      2,  6,  1, -1, -1,  5,  3,  9,  2, 175, 0x3F,
     },
-   {"Elf",	-1,  2,	 1,  1, -2,  1,
+   {"Elf",	 0,  1,	 0,  2, -1,  2,
       75, 75, 60,  4,100,  6, 54,  4, 80,  6,
       5,  8,  1, -2, -5, 15,  6,  8,  3, 120, 0x1F,
     },
-   {"Hobbit", -2,  2,	 1,  3,	 2,  1,
-      21, 12, 36,  3, 60,  3, 33,  3, 50,  3,
-      15, 12,  4, -5,-10, 20, 18,  7,  4, 110, 0x0B,
+   {"Hobbit", -1,  2,	 1,  3,	 1,  1,
+      21, 10, 36,  3, 60,  3, 33,  3, 50,  3, /* age adj to 10 from 12 -CFT */
+      15, 12,  4, -5,-10, 20, 18,  7,  4, 135, 0x0B,
     },
-   {"Gnome",	-1,  2,	 0,  2,	 1, -2,
-      50, 40, 42,  3, 90,  6, 39,  3, 75,  3,
-      10,  6,  3, -3, -8, 12, 12,  8,  4, 125, 0x0F,
+   {"Gnome",	-1,  2,	 0,  2,	-1, -1,
+      50, 18, 42,  3, 90,  6, 39,  3, 75,  3, /* age adj to 18 from 40 -CFT */
+      10,  6,  3, -3, -8, 12, 12,  8,  4, 135, 0x0F,
     },
-   {"Dwarf",	 2, -3,	 1, -2,	 2, -3,
-      35, 15, 48,  3,150, 10, 46,  3,120, 10,
-      2,  7,  -1,  0, 15,  0,  9,  11,  5, 120, 0x05,
+   {"Dwarf",	 2, -1,	 2,  0,	 2, -1,
+      35, 16, 48,  3,150, 10, 46,  3,120, 10, /* age adj to 16 from 15 -CFT */
+      2,  7,  -1,  0, 15,  0,  9,  10,  5, 120, 0x05, /* hdice to d10 -CFT */
     },
-   {"Half-Orc",	 2, -1,	 0,  0,	 1, -4,
+   {"Half-Orc",	 2, -1,	 -1,  0, 2, -4,
       11,  4, 66,  1,150,  5, 62,  1,120,  5,
-      -3,  0, -1,  3, 12, -5, -3, 10,  3, 110, 0x0D,
+      -3,  0, -1,  3, 12, -5, -3, 11,  3, 120, 0x0D, /* hdice to d11 -CFT */
     },
-   {"Half-Troll",4, -4, -2, -4,	 3, -6,
-      20, 10, 96, 10,255, 50, 84,  8,225, 40,
+   {"Half-Troll",4, -3, -3, -1,	 3, -6,  
+      20, 8, 96, 10,255, 50, 84,  8,225, 40, /* age adj to 8 from 10 -CFT */
       -5, -1, -2,  5, 20,-10, -8, 12,  3, 120, 0x05,
     },
-   {"Dunadan",  1,  2,  1,  2,  3,  2,
-      50, 20, 82, 5, 190, 20, 78,  6, 180, 15,
-      4,   3,  2, -3, 15, 10,  5, 10,  0, 180, 0x3F,
+   {"Dunadan",  1,  1,  1,  1,  1,  2,
+      24, 12, 82, 5, 190, 20, 78,  6, 180, 15, /* age adj to 12 from 20,
+      						base to 24 from 50 -CFT */
+      4,   3,  2, -3, 15, 10,  5, 10,  0, 150, 0x3F,
     },
-   {"High-Elf",  1,  3, -1,  3,  1,  5,
-     100, 30, 90,10, 190, 20, 82, 10, 180, 15,
-      4,   3,  3, -4, 15, 25, 20, 10,  4, 200, 0x1F,
+   {"High-Elf",  0,  2, 1,  2,  -1,  4,
+     100, 120, 90,10, 190, 20, 82, 10, 180, 15, /* age adj to 120 from 30 -CFT */
+      4,   3,  3, -4, 15, 25, 20, 10,  4, 175, 0x1F,
     }
  };
 #endif
@@ -292,14 +293,14 @@ background_type background[MAX_BACKGROUND] = {
 #endif
 
 /* Classes.							*/
-class_type class[MAX_CLASS] = {
-/*	  HP Dis Src Stl Fos bth btb sve S  I  W  D Co Ch  Spell Exp  spl */
-{"Warrior",9, 25, 14, 1, 38, 70, 55, 18, 5,-2,-2, 2, 2,-1, NONE,    0, 0},
-{"Mage",   0, 30, 16, 2, 20, 34, 20, 36,-5, 3, 0, 1,-2, 1, MAGE,   30, 1},
-{"Priest", 2, 25, 16, 2, 32, 48, 35, 30,-1,-3, 3,-1, 0, 2, PRIEST, 20, 1},
-{"Rogue",  6, 45, 32, 5, 16, 60, 66, 30, 2, 1,-2, 3, 1,-1, MAGE,   25, 5},
-{"Ranger", 4, 30, 24, 3, 24, 56, 72, 30, 2, 2, 0, 1, 1, 1, MAGE,   30, 3},
-{"Paladin",6, 20, 12, 1, 38, 68, 40, 24, 3,-3, 1, 0, 2, 2, PRIEST, 35, 1}
+class_type class[MAX_CLASS] = { /* stat mods adjusted -CFT */
+/*	  HP Dis Src Stl Fos bth btb sve S  I  W  D Co Ch  Spell Exp  spl age*/
+{"Warrior",9, 25, 14, 1, 38, 70, 55, 18, 5,-2,-2, 2, 3, 0, NONE,    0, 0, 100},
+{"Mage",   0, 30, 16, 2, 20, 34, 20, 36,-4, 4, 0, 0,-2, 1, MAGE,   30, 1, 200},
+{"Priest", 2, 25, 16, 2, 32, 48, 35, 30,-1, 0, 4, 0, 0, 2, PRIEST, 20, 1, 180},
+{"Rogue",  6, 45, 32, 5, 16, 60, 66, 30, 2, 1,-1, 4, 1,-2, MAGE,   25, 5, 115},
+{"Ranger", 4, 30, 24, 3, 24, 56, 72, 30, 1, 2,-1, 2, 1, 1, MAGE,   30, 3, 125},
+{"Paladin",6, 20, 12, 1, 38, 68, 40, 24, 3,-1, 2, 1, 2, 2, PRIEST, 35, 1, 130}
 };
 
 /* making it 16 bits wastes a little space, but saves much signed/unsigned
@@ -412,8 +413,8 @@ spell_type magic_spell[MAX_CLASS-1][63] = {
      {	1,  2, 20,   1},
      {	1,  2, 25,   1},
      {	3,  2, 25,   1},
-     {	3,  3, 27,   2},
-     {	3,  3, 27,   2},
+     {	3,  3, 27,   2}, /* Find traps replaced by spiritual hammer -CFT */
+     {	3,  4, 27,   2}, /* doors/stairs now also does traps -CFT */
      {	3,  3, 28,   3},
      {	5,  4, 29,   4},
      {	5,  4, 30,   5},
@@ -628,8 +629,10 @@ spell_type magic_spell[MAX_CLASS-1][63] = {
      {	3,  3, 35,   3},
      {	5,  3, 35,   5},
      {	5,  4, 35,   5},
-     {	7,  5, 40,   6},
-     {	7,  5, 40,   6},
+
+     {	7,  5, 40,   6}, /* Find traps replaced by spiritual hammer -CFT */
+     {	7,  7, 40,   6}, /* doors/stairs now also does traps -CFT */
+
      {	9,  7, 40,   7},
      {	9,  7, 40,   8},
      {	9,  8, 40,   8},
@@ -751,7 +754,8 @@ char *spell_names[127] = {
   "blank",
   /* Priest Spells, start at index 31 now 63 ~Ludwig */
   "Detect Evil",  "Cure Light Wounds",	"Bless",  "Remove Fear", "Call Light",
-  "Find Traps",	 "Detect Doors/Stairs",	 "Slow Poison",	 "Blind Creature",
+/*   "Find Traps",	 "Detect Doors/Stairs",	 "Slow Poison",	 "Blind Creature",  */
+  "Spiritual Hammer",	 "Detect Doors/Traps",	 "Slow Poison",	 "Blind Creature",
   "Portal",  "Cure Medium Wounds",  "Chant",  "Sanctuary",  "Create Food",
   "Remove Curse",  "Resist Heat and Cold",  "Neutralize Poison",
   "Orb of Draining",  "Cure Serious Wounds",  "Sense Invisible",
@@ -825,7 +829,7 @@ int32u spellmasks[MAX_CLASS][2] = {
 	{ 0x0L, 0x0L },			/* warrior */
 	{ 0x7fffffafL, 0x07ffffffL },	/* mage */
 	{ 0xffffffffL, 0x03ffffffL },	/* priest */
-	{ 0x288afafeL, 0x03fe70eeL },	/* rogue */
+	{ 0x284efafeL, 0x03fe70eeL },	/* rogue */
 	{ 0x7fffffafL, 0x03fe77feL },	/* ranger */
 	{ 0xffffffffL, 0x03ffffffL }	/* paladin (same as priest!?!?) */
 };

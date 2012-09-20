@@ -94,19 +94,7 @@ int y, x;
 #ifdef TC_COLOR
     {
       if (!no_color_flag){
-	if (strstr(c_list[m_list[cave_ptr->cptr].mptr].name, "ulti-") != NULL)
-	  switch( randint(10) ){
-	  case 1: case 2: textcolor(DARKGRAY); break; /* black d's all DARKGRAY */
-	  case 3: case 4: textcolor(LIGHTBLUE); break; /* BLUE doesn't show up good on my screen */
-	  case 5: textcolor(LIGHTGREEN); break;
-	  case 6: textcolor(GREEN); break;
-	  case 7: textcolor(LIGHTRED); break;
-	  case 8: textcolor(RED); break;
-	  case 9: case 10: textcolor(WHITE); break; /* white d's all WHITE */
-	  default: textcolor( randint(15) ); /* should never happen, but... */
-      	  }
-      else
-	textcolor(c_list[m_list[cave_ptr->cptr].mptr].color);
+	textcolor(mon_color(m_list[cave_ptr->cptr].color));
       }
     return c_list[m_list[cave_ptr->cptr].mptr].cchar;
     }
@@ -189,6 +177,27 @@ int y, x;
     }
 }
 
+#ifdef MSDOS
+int mon_color(int c){
+  if ((c >= 1) && (c <= 15))
+    return c;
+  if (c == ANY)
+    return randint(15);
+  if (c == MULTI)
+    switch(randint(10)){
+      case 1: case 2: return DARKGRAY; /* black d's all DARKGRAY */
+      case 3: return LIGHTBLUE;
+      case 4: return BLUE;
+      case 5: return LIGHTGREEN;
+      case 6: return GREEN;
+      case 7: return LIGHTRED;
+      case 8: return RED;
+      case 9: case 10: return WHITE; /* white d's all WHITE */
+      default: return randint(15); /* should never happen, but... */
+    }
+  return randint(15); /* if unknown color, make random -CFT */  
+}
+#endif
 
 /* Tests a spot for light or field mark status		-RAK-	*/
 int test_light(y, x)
@@ -224,7 +233,7 @@ int maxval;
   register int32u randval;
 
   if (maxval<1) return 1;
-  randval = rnd ();
+  randval = bsd_random();
   return ((int)((randval % maxval) + 1));
 }
 
@@ -338,7 +347,7 @@ void dungeon()
   int find_count, i;
   int regen_amount;	    /* Regenerate hp and mana*/
   char command;		/* Last command		 */
-  static long old_turn;
+  int8u unfelt = TRUE; /* did we get a feeling yet? */
   register struct misc *p_ptr;
   register inven_type *i_ptr;
   register struct flags *f_ptr;
@@ -411,9 +420,12 @@ void dungeon()
   /* Print the depth			   */
   prt_depth();
 
-  if ((good_item_flag || rating) &&
-      ((turn-old_turn)>randint(50)) && (old_turn>randint(50)) && dun_level) {
-
+#if 1  /* my temporary fix... (see below) -CFT */
+  if (dun_level && ((rating>=0) || good_item_flag)) {
+    msg_print(NULL);  /* make sure the mesg doesn't get lost */
+#ifdef TC_COLOR
+    if (!no_color_flag) textcolor(YELLOW); /* make easy to see */
+#endif	  
     if (good_item_flag)
       msg_print("You feel there is something special about this level.");
     else if (rating>100)
@@ -430,14 +442,73 @@ void dungeon()
       msg_print("You feel your luck is turning...");
     else if (rating>10)
       msg_print("You like the look of this place.");
-  }
-  old_turn = turn;
-
+    else if (rating>0)
+      msg_print("This level feels pretty normal.");
+    else msg_print("You look around and feel somewhat bored.");
+#ifdef TC_COLOR
+    if (!no_color_flag) textcolor(LIGHTGRAY); /* restore color */
+#endif	  
+    msg_print(NULL);  /* make sure the mesg doesn't get lost */
+    }
+#else /* this was here, but only applies with the below code -CFT */
+  unfelt=TRUE;
+  if ((good_item_flag || (rating >100)))
+    feel_chance = 26-py.misc.lev/2;
+  else
+    feel_chance = (400-rating)/4;
+#endif
+  
   /* Loop until dead,  or new level		*/
   do
     {
       /* Increment turn counter			*/
       turn++;
+
+#if 0  /* At the moment, this code has flaws in it.  So I moved it
+	  back outside the main loop, and make it always appear
+	  when you enter a new level.  This hopefully is only
+	  temporary. -CFT */
+	  
+      /* Move the feeling code into the main do loop. Higher
+         values of feel_chance give worse odds */
+      if ((unfelt) && (!free_turn_flag) && (dun_level) &&
+          (((good_item_flag) && (randint(feel_chance)<3)) ||
+           (randint(feel_chance)==1)))
+        {
+          unfelt = FALSE;
+
+	  msg_print(NULL);  /* make sure the mesg doesn't get lost */
+#ifdef TC_COLOR
+	  if (!no_color_flag) textcolor(YELLOW); /* make easy to see */
+#endif	  
+	  if (good_item_flag)
+	    msg_print("You feel there is something special about this level.");
+	  else if (rating>100)
+	    msg_print("You have a superb feeling about this level.");
+	  else if (rating>80)
+	    msg_print("You have an excellent feeling that your luck is turning...");
+	  else if (rating>60)
+	    msg_print("You have a very good feeling.");
+	  else if (rating>40)
+	    msg_print("You have a good feeling.");
+	  else if (rating>30)
+	    msg_print("You feel strangely lucky.");
+	  else if (rating>20)
+	    msg_print("You feel your luck is turning...");
+	  else if (rating>10)
+	    msg_print("You like the look of this place.");
+          else if (rating>0)
+            msg_print("This level feels pretty normal.");
+          else msg_print("You look around and feel somewhat bored.");
+
+#ifdef TC_COLOR
+	  if (!no_color_flag) textcolor(LIGHTGRAY); /* restore color */
+#endif	  
+	  msg_print(NULL);  /* make sure the mesg doesn't get lost */
+	  }
+	if (unfelt) feel_chance = 1000; /* 1 in 1000 */
+#endif /* -CFT */
+	
 #ifndef MAC
       /* The Mac ignores the game hours file		*/
       /* Check for game hours			       */
@@ -551,8 +622,8 @@ void dungeon()
 	}
       /* Food consumption	*/
       /* Note: Speeded up characters really burn up the food!  */
-      if (f_ptr->speed < 0)
-	f_ptr->food -=	f_ptr->speed*f_ptr->speed;
+      if (f_ptr->speed < 0) /* now summation, not square, since spd less powerful -CFT */
+	f_ptr->food -=	(f_ptr->speed*f_ptr->speed - f_ptr->speed)/2;
       f_ptr->food -= f_ptr->food_digested;
       if (f_ptr->food < 0)
 	{
@@ -642,15 +713,15 @@ void dungeon()
 	  disturb(1,0);
 	} else if (f_ptr->cut>200) {
 	  take_hit(3, "a fatal wound");
-	  f_ptr->cut-=con_adj()+1;
+	  f_ptr->cut-=(con_adj()<0?1:con_adj())+1;
 	  disturb(1,0);
 	} else if (f_ptr->cut>100) {
 	  take_hit(2, "a fatal wound");
-	  f_ptr->cut-=con_adj()+1;
+	  f_ptr->cut-=(con_adj()<0?1:con_adj())+1;
 	  disturb(1,0);
 	} else {
 	  take_hit(1, "a fatal wound");
-	  f_ptr->cut-=con_adj()+1;
+	  f_ptr->cut-=(con_adj()<0?1:con_adj())+1;
 	  disturb(1,0);
 	}
 	prt_cut();
@@ -1171,7 +1242,8 @@ void dungeon()
 	    /* if in inventory, succeed 1 out of 50 times,
 	    if in equipment list, success 1 out of 10 times,
 	    unless your a priest or rogue... */
-	    if ((i_ptr->tval != TV_NOTHING) && special_check(i_ptr) &&
+	    if (((i_ptr->tval >= TV_MIN_WEAR) && (i_ptr->tval <= TV_MAX_WEAR))
+		&& special_check(i_ptr) &&
 		((py.misc.pclass==2 || py.misc.pclass==3)?
 		 (randint(i < 22 ? 5 : 1) == 1)
 		 :
@@ -1246,14 +1318,14 @@ void dungeon()
 	      {
 		extern char *describe_use();
 		char out_val[100], tmp[100], *ptr;
-		int i;
+		int j;
 
 		(void) strcpy(tmp, object_list[i_ptr->index].name);
 
 		ptr = tmp;
-		i=0;
-		while (tmp[i]==' ' || tmp[i]=='&')
-		  ptr=&tmp[++i];
+		j=0;
+		while (tmp[j]==' ' || tmp[j]=='&')
+		  ptr=&tmp[++j];
 
 		(void) strcpy(out_val, ptr);
 
@@ -1706,6 +1778,10 @@ register inven_type *t_ptr;
       return 0;
   if (t_ptr->tohit > 0 || t_ptr->todam > 0 || t_ptr->toac > 0)
     return 1;
+  if ((t_ptr->tval == TV_DIGGING) && /* digging tools will pseudo ID, either
+  					as {good} or {average} -CFT */
+      (t_ptr->flags & TR_TUNNEL))
+    return 1;
   return 0;
 }
 
@@ -1728,8 +1804,13 @@ register inven_type *t_ptr;
     return 0;
   if (t_ptr->flags&TR_CURSED && t_ptr->name2==SN_NULL) return "worthless";
   if (t_ptr->flags&TR_CURSED && t_ptr->name2!=SN_NULL) return "terrible";
+  if ((t_ptr->tval == TV_DIGGING) &&  /* also, good digging tools -CFT */
+      (t_ptr->flags & TR_TUNNEL) &&
+      (t_ptr->p1 > object_list[t_ptr->index].p1)) /* better than normal for this
+      						type of shovel/pick? -CFT */
+    return "good";
   if ((t_ptr->tohit<=0 && t_ptr->todam<=0 && t_ptr->toac<=0) &&
-      t_ptr->name2==SN_NULL)
+      t_ptr->name2==SN_NULL)  /* normal shovels will also reach here -CFT */
     return "average";
   if (t_ptr->name2==SN_NULL)
     return "good";
@@ -1885,9 +1966,8 @@ char com_val;
       if (py.flags.image > 0)
         msg_print("You cannot be sure what is real and what is not!");
       else {
-	clear_screen();
-	prt_stat_block(); /* put the stuff on the side */
-	prt_map(); /* draw cave */
+	draw_cave(); /* thanks to David Kahane (dgk4@po.cwru.edu) for
+			pointing out this better way to do this -CFT */
 	creatures(FALSE);  /* draw monsters */
         }
       free_turn_flag = TRUE;
@@ -1978,6 +2058,7 @@ char com_val;
       free_turn_flag = TRUE;
       break;
     case '.':		/* (.) stay in one place (5) */
+      feel_chance = 10000;
       move_char (5, do_pickup);
       if (command_count > 1)
 	{
@@ -1999,9 +2080,11 @@ char com_val;
       free_turn_flag = TRUE;
       break;
     case 'f':		/* (f)orce		(B)ash */
+      feel_chance = 100;
       bash();
       break;
     case 'A':		/* (A)ctivate		(A)ctivate */
+      feel_chance = 30;
       activate();
       break;
     case 'C':		/* (C)haracter description */
@@ -2011,19 +2094,24 @@ char com_val;
       free_turn_flag = TRUE;
       break;
     case 'D':		/* (D)isarm trap */
+      feel_chance = 100;
       disarm_trap();
       break;
     case 'E':		/* (E)at food */
+      feel_chance = 50;
       eat();
       break;
     case 'F':		/* (F)ill lamp */
+      feel_chance = 50;
       refill_lamp();
       break;
     case 'G':		/* (G)ain magic spells */
+      feel_chance = 30;
       gain_spells();
       break;
     case 'g':		/* (g)et an object... */
-      if (prompt_carry_flag) {
+      feel_chance = 50;
+      if (getkey_flag) {
 	if (cave[char_row][char_col].tptr != 0) /* minor change -CFT */
 	  carry(char_row, char_col, TRUE);
         }
@@ -2093,6 +2181,7 @@ char com_val;
       free_turn_flag = TRUE;
       break;
     case 'R':		/* (R)est a while */
+      feel_chance = 10000;
       rest();
       break;
     case '#':		/* (#) search toggle	(S)earch toggle */
@@ -2103,34 +2192,44 @@ char com_val;
       free_turn_flag = TRUE;
       break;
     case CTRL('B'):		/* (^B) tunnel down left	(T 1) */
+      feel_chance = 10000;
       tunnel(1);
       break;
     case CTRL('M'):		/* cr must be treated same as lf. */
     case CTRL('J'):		/* (^J) tunnel down		(T 2) */
+      feel_chance = 10000;
       tunnel(2);
       break;
     case CTRL('N'):		/* (^N) tunnel down right	(T 3) */
+      feel_chance = 10000;
       tunnel(3);
       break;
     case CTRL('H'):		/* (^H) tunnel left		(T 4) */
+      feel_chance = 10000;
       tunnel(4);
       break;
     case CTRL('L'):		/* (^L) tunnel right		(T 6) */
+      feel_chance = 10000;
       tunnel(6);
       break;
     case CTRL('Y'):		/* (^Y) tunnel up left		(T 7) */
+      feel_chance = 10000;
       tunnel(7);
       break;
     case CTRL('K'):		/* (^K) tunnel up		(T 8) */
+      feel_chance = 10000;
       tunnel(8);
       break;
     case CTRL('U'):		/* (^U) tunnel up right		(T 9) */
+      feel_chance = 10000;
       tunnel(9);
       break;
     case 'z':		/* (z)ap a wand		(a)im a wand */
+      feel_chance = 30;
       aim();
       break;
     case 'a':		/* (a)ctivate a rod	(z)ap a rod */
+      feel_chance = 30;
       activate_rod();
       break;
     case 'M':
@@ -2142,21 +2241,27 @@ char com_val;
       free_turn_flag = TRUE;
       break;
     case 'c':		/* (c)lose an object */
+      feel_chance = 75;
       closeobject();
       break;
     case 'd':		/* (d)rop something */
+      feel_chance = 50;
       inven_command('d');
       break;
     case 'e':		/* (e)quipment list */
+      feel_chance = 100;
       inven_command('e');
       break;
     case 't':		/* (t)hrow something	(f)ire something */
+      feel_chance = 30;
       throw_object();
       break;
     case 'i':		/* (i)nventory list */
+      feel_chance = 100;
       inven_command('i');
       break;
     case 'S':		/* (S)pike a door	(j)am a door */
+      feel_chance = 75;
       jamdoor();
       break;
     case 'x':		/* e(x)amine surrounds	(l)ook about */
@@ -2164,27 +2269,35 @@ char com_val;
       free_turn_flag = TRUE;
       break;
     case 'm':		/* (m)agic spells */
+      feel_chance = 30;
       cast();
       break;
     case 'o':		/* (o)pen something */
+      feel_chance = 30;
       openobject();
       break;
     case 'p':		/* (p)ray */
+      feel_chance = 30;
       pray();
       break;
     case 'q':		/* (q)uaff */
+      feel_chance = 30;
       quaff();
       break;
     case 'r':		/* (r)ead */
+      feel_chance = 30;
       read_scroll();
       break;
     case 's':		/* (s)earch for a turn */
+      feel_chance = 1000;
       search(char_row, char_col, py.misc.srh);
       break;
     case 'T':		/* (T)ake off something	(t)ake off */
+      feel_chance = 100;
       inven_command('t');
       break;
     case 'Z':		/* (Z)ap a staff	(u)se a staff */
+      feel_chance = 30;
       use();
       break;
     case 'V':		/* (V)ersion of game */
@@ -2192,9 +2305,11 @@ char com_val;
       free_turn_flag = TRUE;
       break;
     case 'w':		/* (w)ear or wield */
+      feel_chance = 30;
       inven_command('w');
       break;
     case 'X':		/* e(X)change weapons	e(x)change */
+      feel_chance = 100;
       inven_command('x');
       break;
     default:
@@ -2581,7 +2696,7 @@ register int stat;
 }
 
 static void activate() {
-  int i, a, flag, first, num, j, redraw, dir;
+  int i, a, flag, first, num, j, redraw, dir, test;
   char out_str[200], tmp[200], tmp2[200], choice;
   inven_type *i_ptr;
   struct misc *m_ptr;
@@ -2605,7 +2720,9 @@ static void activate() {
   sprintf(out_str, "Activate which item? (%c-%c, * to list, ESC to exit) ?",
 	  'a', 'a'+(num-1));
   flag=FALSE;
-  while (!flag && get_com(out_str, &choice)) {
+  while (!flag){
+    if (!get_com(out_str, &choice))  /* on escape, get_com returns false: */
+      choice = '\033';	/* so it's set here to ESC.  Wierd huh? -CFT */
     if ((choice=='*') && !redraw) { /* don't save screen again if it's already
     					listed, OW it doesn't clear -CFT */
       save_screen();
@@ -2634,8 +2751,11 @@ static void activate() {
 	continue;
       }
     } else {
-      if (choice>='A' && choice<=('A'+(num-1)))
+      test = FALSE; 
+      if (choice>='A' && choice<=('A'+(num-1))) {
 	choice-='A';
+	test = TRUE; /* test to see if means it... */
+        }
       else if (choice>='a' && choice<=('a'+(num-1)))
 	choice-='a';
       else if (choice=='\033') {
@@ -2657,7 +2777,6 @@ static void activate() {
         }
         
       if (choice>num) continue;
-      flag=TRUE;
       j=0;
       for (i=first; i<(INVEN_ARRAY_SIZE-1); i++) {
 	  if ((inventory[i].flags2 & TR_ACTIVATE) && known2_p(&(inventory[i]))) {
@@ -2665,6 +2784,14 @@ static void activate() {
 	    j++;
 	  }
 	}
+      if ( (test && verify("Activate", i)) || !test)
+        flag = TRUE;
+      else { 
+	flag = TRUE; /* exit loop, he didn't want to try it... */
+	free_turn_flag = TRUE; /* but he didn't do anything either */
+        continue;
+        }
+
       if (inventory[i].timeout>0) {
 	msg_print("It whines, glows and fades...");
 	break;
@@ -2687,8 +2814,7 @@ static void activate() {
 	      msg_print("You are confused.");
 	      do {dir = randint(9);} while (dir == 5);
 	    }
-	    fire_bolt(GF_FIRE, dir, char_row, char_col, damroll(9,8),
-		      "Fire Bolt");
+	    fire_bolt(GF_FIRE, dir, char_row, char_col, damroll(9,8));
 	    inventory[i].timeout=5+randint(10);
 	  }
 	}
@@ -2699,8 +2825,7 @@ static void activate() {
 	      msg_print("You are confused.");
 	      do {dir = randint(9);} while (dir == 5);
 	    }
-	    fire_bolt(GF_FROST, dir, char_row, char_col, damroll(6,8),
-		      "Frost Bolt");
+	    fire_bolt(GF_FROST, dir, char_row, char_col, damroll(6,8));
 	    inventory[i].timeout=4+randint(8);
 	  }
 	}
@@ -2711,8 +2836,7 @@ static void activate() {
 	      msg_print("You are confused.");
 	      do {dir = randint(9);} while (dir == 5);
 	    }
-	    fire_bolt(GF_LIGHTNING, dir, char_row, char_col, damroll(4,8),
-		      "Lightning Bolt");
+	    fire_bolt(GF_LIGHTNING, dir, char_row, char_col, damroll(4,8));
 	    inventory[i].timeout=3+randint(7);
 	  }
 	}
@@ -2723,8 +2847,7 @@ static void activate() {
 	      msg_print("You are confused.");
 	      do {dir = randint(9);} while (dir == 5);
 	    }
-	    fire_ball(GF_POISON_GAS, dir, char_row, char_col, 12,
-		      "Stinking Cloud");
+	    fire_ball(GF_POISON_GAS, dir, char_row, char_col, 12, 2);
 	    inventory[i].timeout=3+randint(3);
 	  }
 	}
@@ -2735,8 +2858,7 @@ static void activate() {
 	      msg_print("You are confused.");
 	      do {dir = randint(9);} while (dir == 5);
 	    }
-	    fire_ball(GF_FROST, dir, char_row, char_col, 48,
-		      "Frost Ball");
+	    fire_ball(GF_FROST, dir, char_row, char_col, 48, 2);
 	    inventory[i].timeout=3+randint(7);
 	  }
 	}
@@ -2758,8 +2880,7 @@ static void activate() {
 	      msg_print("You are confused.");
 	      do {dir = randint(9);} while (dir == 5);
 	    }
-	    fire_ball(GF_FROST, dir, char_row, char_col, 100,
-		      "storm of Ice");
+	    fire_ball(GF_FROST, dir, char_row, char_col, 100, 3);
 	    inventory[i].timeout=300;
 	  }
 	} else if (inventory[i].name2 == SN_ANDURIL) {
@@ -2769,8 +2890,7 @@ static void activate() {
 	      msg_print("You are confused.");
 	      do {dir = randint(9);} while (dir == 5);
 	    }
-	    fire_ball(GF_FIRE, dir, char_row, char_col, 72,
-		      "huge ball of Fire");
+	    fire_ball(GF_FIRE, dir, char_row, char_col, 72, 3);
 	    inventory[i].timeout=400;
 	  }
 	}
@@ -2783,8 +2903,7 @@ static void activate() {
 	      msg_print("You are confused.");
 	      do {dir = randint(9);} while (dir == 5);
 	    }
-	    fire_ball(GF_FIRE, dir, char_row, char_col, 72,
-		      "huge ball of Fire");
+	    fire_ball(GF_FIRE, dir, char_row, char_col, 72, 3);
 	    inventory[i].timeout=100;
 	  }
 	}
@@ -2882,26 +3001,21 @@ static void activate() {
       case (75):
 	if (inventory[i].name2 == SN_CUBRAGOL) {
 	  for (a=0; a<INVEN_WIELD; a++)
-	    if (inventory[a].tval == TV_BOLT)
+	    if ((inventory[a].tval == TV_BOLT) &&
+		!(inventory[a].flags & TR_CURSED)) /* the "taint" of a cursed
+						item inteferes with the
+						branding -CFT */
 	      break;
 	  if (a<INVEN_WIELD && (inventory[a].name2 == SN_NULL)) {
 	    int i,j;
 	    i_ptr = &inventory[a];
 	    msg_print("Your bolts are covered in a fiery shield!");
 	    i_ptr->name2 = SN_FIRE;
-	    i_ptr->flags |= TR_FLAME_TONGUE;
-	    i = 3 + randint(3);
-	    for (j=0; j<i; j++)
-	      enchant(&i_ptr->tohit);
-	    i = 3 + randint(3);
-	    for (j=0; j<i; j++)
-	      enchant(&i_ptr->todam);
+	    i_ptr->flags |= (TR_FLAME_TONGUE|TR_RES_FIRE);
 	    i_ptr->cost+=25;
-	    i_ptr->flags &= ~TR_CURSED;
-	    calc_bonuses ();
-	  } else {
+	    enchant(i_ptr, 3+randint(3), ENCH_TOHIT|ENCH_TODAM);
+	  } else 
 	    msg_print("The fiery enchantment fails.");
-	  }
 	  inventory[i].timeout=999;
 	}
 	break;
@@ -2914,8 +3028,7 @@ static void activate() {
 	      msg_print("You are confused.");
 	      do {dir = randint(9);} while (dir == 5);
 	    }
-	    fire_bolt(GF_FROST, dir, char_row, char_col, damroll(12,8),
-		      "bolt of Frost");
+	    line_spell(GF_FROST, dir, char_row, char_col, damroll(12,8));
 	    inventory[i].timeout=500;
 	  }
 	}
@@ -2928,8 +3041,7 @@ static void activate() {
 	      msg_print("You are confused.");
 	      do {dir = randint(9);} while (dir == 5);
 	    }
-	    fire_ball(GF_FROST, dir, char_row, char_col, 100,
-		      "huge ball of Frost");
+	    fire_ball(GF_FROST, dir, char_row, char_col, 100, 3);
 	    inventory[i].timeout=500;
 	  }
 	} else if (inventory[i].name2 == SN_OROME) {
@@ -3028,8 +3140,7 @@ static void activate() {
 	      msg_print("You are confused.");
 	      do {dir = randint(9);} while (dir == 5);
 	    }
-	    fire_bolt(GF_MAGIC_MISSILE, dir, char_row, char_col, damroll(2,6),
-		      "Magic Missile");
+	    fire_bolt(GF_MAGIC_MISSILE, dir, char_row, char_col, damroll(2,6));
 	    inventory[i].timeout=2;
 	  }
 	}
@@ -3042,8 +3153,10 @@ static void activate() {
 	      msg_print("You are confused.");
 	      do {dir = randint(9);} while (dir == 5);
 	    }
-	    fire_bolt(GF_FIRE, dir, char_row, char_col, damroll(9,8),
-		      "Fire Bolt");
+	    if (randint(4)==1)
+	      line_spell(GF_FIRE, dir, char_row, char_col, damroll(9,8));
+	    else
+	      fire_bolt(GF_FIRE, dir, char_row, char_col, damroll(9,8));
 	    inventory[i].timeout=5+randint(10);
 	  }
 	}
@@ -3054,8 +3167,10 @@ static void activate() {
 	      msg_print("You are confused.");
 	      do {dir = randint(9);} while (dir == 5);
 	    }
-	    fire_bolt(GF_FROST, dir, char_row, char_col, damroll(6,8),
-		      "Frost Bolt");
+	    if (randint(5)==1)
+	      line_spell(GF_FROST, dir, char_row, char_col, damroll(6,8));
+	    else
+	      fire_bolt(GF_FROST, dir, char_row, char_col, damroll(6,8));
 	    inventory[i].timeout=4+randint(8);
 	  }
 	}
@@ -3066,8 +3181,10 @@ static void activate() {
 	      msg_print("You are confused.");
 	      do {dir = randint(9);} while (dir == 5);
 	    }
-	    fire_bolt(GF_LIGHTNING, dir, char_row, char_col, damroll(4,8),
-		      "Lightning Bolt");
+	    if (randint(6)==1)
+	      line_spell(GF_LIGHTNING, dir, char_row, char_col, damroll(4,8));
+	    else
+	      fire_bolt(GF_LIGHTNING, dir, char_row, char_col, damroll(4,8));
 	    inventory[i].timeout=3+randint(7);
 	  }
 	}
@@ -3078,22 +3195,23 @@ static void activate() {
 	      msg_print("You are confused.");
 	      do {dir = randint(9);} while (dir == 5);
 	    }
-	    fire_bolt(GF_ACID, dir, char_row, char_col, damroll(5,8),
-		      "Acid Bolt");
+	    if (randint(5)==1)
+	      line_spell(GF_ACID, dir, char_row, char_col, damroll(5,8));
+	    else
+	      fire_bolt(GF_ACID, dir, char_row, char_col, damroll(5,8));
 	    inventory[i].timeout=4+randint(7);
 	  }
 	}
 	break;
       case (127):
 	if (inventory[i].name2 == SN_FINGOLFIN) {
-	  msg_print("Magical spikes appear on your Cestus...");
+	  msg_print("Magical spikes appear on your Cesti...");
 	  if (get_dir(NULL, &dir)) {
 	    if (py.flags.confused > 0) {
 	      msg_print("You are confused.");
 	      do {dir = randint(9);} while (dir == 5);
 	    }
-	    fire_bolt(GF_ARROW, dir, char_row, char_col, 150,
-		      "set of spikes");
+	    fire_bolt(GF_MANA, dir, char_row, char_col, 150);
 	    inventory[i].timeout=88+randint(88);
 	  }
 	}
@@ -3119,8 +3237,7 @@ static void activate() {
 	    msg_print("You are confused.");
 	    do {dir = randint(9);} while (dir == 5);
 	  }
-	  fire_ball(GF_FIRE, dir, char_row, char_col, 120,
-		    "huge ball of Fire");
+	  fire_ball(GF_FIRE, dir, char_row, char_col, 120, 3);
 	  inventory[i].timeout=222+randint(222);
 	}
 	break;
@@ -3131,8 +3248,7 @@ static void activate() {
 	    msg_print("You are confused.");
 	    do {dir = randint(9);} while (dir == 5);
 	  }
-	  fire_ball(GF_FROST, dir, char_row, char_col, 200,
-		    "huge ball of Frost");
+	  fire_ball(GF_FROST, dir, char_row, char_col, 200, 3);
 	  inventory[i].timeout=222+randint(333);
 	}
 	break;
@@ -3143,8 +3259,7 @@ static void activate() {
 	    msg_print("You are confused.");
 	    do {dir = randint(9);} while (dir == 5);
 	  }
-	  fire_ball(GF_LIGHTNING, dir, char_row, char_col, 250,
-		    "huge ball of Lightning");
+	  fire_ball(GF_LIGHTNING, dir, char_row, char_col, 250, 3);
 	  inventory[i].timeout=222+randint(444);
 	}
 	break;
@@ -3190,8 +3305,7 @@ static void activate() {
 	      msg_print("You are confused.");
 	      do {dir = randint(9);} while (dir == 5);
 	    }
-	    fire_ball(GF_MANA, dir, char_row, char_col, 300,
-		      "huge ball of Raw Mana");
+	    fire_ball(GF_MANA, dir, char_row, char_col, 300, 3);
 	  }
 	  break;
 	default:
@@ -3200,8 +3314,10 @@ static void activate() {
 	      msg_print("You are confused.");
 	      do {dir = randint(9);} while (dir == 5);
 	    }
-	    fire_bolt(GF_MANA, dir, char_row, char_col, 250,
-		      "bolt of Raw Mana");
+	    if (randint(2)==1)
+	      line_spell(GF_MANA, dir, char_row, char_col, 250);
+	    else
+	      fire_bolt(GF_MANA, dir, char_row, char_col, 250);
 	  }
 	}
 	inventory[i].timeout=444+randint(444);
@@ -3213,8 +3329,7 @@ static void activate() {
 	    msg_print("You are confused.");
 	    do {dir = randint(9);} while (dir == 5);
 	  }
-	  fire_ball(GF_LIGHTNING, dir, char_row, char_col, 100,
-		    "huge ball of Lightning");
+	  fire_ball(GF_LIGHTNING, dir, char_row, char_col, 100, 3);
 	  inventory[i].timeout=444+randint(444);
 	}
 	break;
@@ -3225,8 +3340,7 @@ static void activate() {
 	    msg_print("You are confused.");
 	    do {dir = randint(9);} while (dir == 5);
 	  }
-	  fire_ball(GF_FROST, dir, char_row, char_col, 110,
-		    "huge ball of Frost");
+	  fire_ball(GF_FROST, dir, char_row, char_col, 110, 3);
 	  inventory[i].timeout=444+randint(444);
 	}
 	break;
@@ -3237,8 +3351,7 @@ static void activate() {
 	    msg_print("You are confused.");
 	    do {dir = randint(9);} while (dir == 5);
 	  }
-	  fire_ball(GF_ACID, dir, char_row, char_col, 130,
-		    "huge ball of Acid");
+	  fire_ball(GF_ACID, dir, char_row, char_col, 130, 3);
 	  inventory[i].timeout=444+randint(444);
 	}
 	break;
@@ -3249,8 +3362,7 @@ static void activate() {
 	    msg_print("You are confused.");
 	    do {dir = randint(9);} while (dir == 5);
 	  }
-	  fire_ball(GF_POISON_GAS, dir, char_row, char_col, 150,
-		    "huge cloud of Poison Gas");
+	  fire_ball(GF_POISON_GAS, dir, char_row, char_col, 150, 3);
 	  inventory[i].timeout=444+randint(444);
 	}
 	break;
@@ -3261,8 +3373,7 @@ static void activate() {
 	    msg_print("You are confused.");
 	    do {dir = randint(9);} while (dir == 5);
 	  }
-	  fire_ball(GF_FIRE, dir, char_row, char_col, 200,
-		    "huge ball of Fire");
+	  fire_ball(GF_FIRE, dir, char_row, char_col, 200, 3);
 	  inventory[i].timeout=444+randint(444);
 	}
 	break;
@@ -3285,17 +3396,11 @@ static void activate() {
 		      ((choice==3)?"Acid":
 		       ((choice==4)?"Poison Gas":"Fire")))));
 	    msg_print(tmp2);
-	    sprintf(tmp2, "huge %s of %s", ((choice==4)?"cloud":"ball"),
-	            ((choice==1)?"Lightning":
-	             ((choice==2)?"Frost":
-		      ((choice==3)?"Acid":
-		       ((choice==4)?"Poison Gas":"Fire")))));
 	    fire_ball(((choice==1)?GF_LIGHTNING:
 	               ((choice==2)?GF_FROST:
 	                ((choice==3)?GF_ACID:
 	                 ((choice==4)?GF_POISON_GAS:GF_FIRE)))),
-		      dir, char_row, char_col, 250,
-		      tmp2);
+		      dir, char_row, char_col, 250, 3);
 	    inventory[i].timeout=222+randint(222);
 	  }
 	}
@@ -3307,8 +3412,7 @@ static void activate() {
 	    msg_print("You are confused.");
 	    do {dir = randint(9);} while (dir == 5);
 	  }
-	  fire_ball(GF_CONFUSION, dir, char_row, char_col, 120,
-		    "huge blast of Confusion");
+	  fire_ball(GF_CONFUSION, dir, char_row, char_col, 120, 3);
 	  inventory[i].timeout=444+randint(444);
 	}
       break;
@@ -3319,8 +3423,7 @@ static void activate() {
 	    msg_print("You are confused.");
 	    do {dir = randint(9);} while (dir == 5);
 	  }
-	  fire_ball(GF_SOUND, dir, char_row, char_col, 130,
-		    "huge blast of Sound");
+	  fire_ball(GF_SOUND, dir, char_row, char_col, 130, 3);
 	  inventory[i].timeout=444+randint(444);
 	}
       break;
@@ -3334,10 +3437,8 @@ static void activate() {
 	  sprintf(tmp2, "You breathe %s...",
 	          ((choice==1?"Chaos":"Disenchantment")));
 	  msg_print(tmp2);
-	  sprintf(tmp2, "huge ball of %s",
-		  ((choice==1?"Chaos":"Disenchantment")));
 	  fire_ball((choice==1 ? GF_CHAOS : GF_DISENCHANT), dir,
-		char_row, char_col, 220, tmp2);
+		char_row, char_col, 220, 3);
 	  inventory[i].timeout=300+randint(300);
 	}
         break;
@@ -3351,10 +3452,8 @@ static void activate() {
           sprintf(tmp2, "You breathe %s...",
                   ((choice==1?"Sound":"Shards")));
           msg_print(tmp2);
-          sprintf(tmp2, "huge %s of %s", ((choice==1)?"blast":"ball"),
-                  ((choice==1?"Sound":"Shards")));
           fire_ball((choice==1 ? GF_SOUND : GF_SHARDS), dir,
-		char_row, char_col, 230, tmp2);
+		char_row, char_col, 230, 3);
           inventory[i].timeout=300+randint(300);
         }
         break;
@@ -3370,13 +3469,9 @@ static void activate() {
                    ((choice==2)?"Disenchantment":
                     ((choice==3)?"Sound":"Shards"))));
           msg_print(tmp2);
-          sprintf(tmp2, "huge %s of %s", ((choice==3)?"blast":"ball"),
-                  ((choice==1)?"Chaos":
-                   ((choice==2)?"Disenchantment":
-                    ((choice==3)?"Sound":"Shards"))));
           fire_ball(((choice==1) ? GF_CHAOS : ((choice==2) ? GF_DISENCHANT :
 		((choice==3) ? GF_SOUND : GF_SHARDS))), dir,
-		char_row, char_col, 250, tmp2);
+		char_row, char_col, 250, 3);
           inventory[i].timeout=300+randint(300);
         }
         break;
@@ -3390,10 +3485,8 @@ static void activate() {
           sprintf(tmp2, "You breathe %s...",
                   ((choice==1?"Light":"Darkness")));
           msg_print(tmp2);
-          sprintf(tmp2, "huge %s of %s", ((choice==1)?"flash":"sphere"),
-                  ((choice==1?"Light":"Darkness")));
           fire_ball((choice==1 ? GF_LIGHT : GF_DARK), dir,
-		char_row, char_col, 200, tmp2);
+		char_row, char_col, 200, 3);
           inventory[i].timeout=300+randint(300);
         }
         break;
@@ -3417,8 +3510,7 @@ static void activate() {
               msg_print("You are confused.");
               do {dir = randint(9);} while (dir == 5);
             }
-            fire_ball(GF_MAGIC_MISSILE, dir, char_row, char_col, 300,
-                      "massive ball of the Elements");
+            fire_ball(GF_MAGIC_MISSILE, dir, char_row, char_col, 300, 3);
             inventory[i].timeout=300+randint(300);
           }
 	}

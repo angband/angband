@@ -1,0 +1,212 @@
+mkdesc.c:	  This file isn't really part of the sources, but it automates the
+		creation of the mon_desc.dat file.  It had a couple of
+		minor oversights (the 1st monster -- a filthy street urchin
+		-- has it's description clobbered by the final seek pointer.
+		And the description message for the player ghost wasn't being
+		used.
+describe.c:	  Spellings corrected! Lots of "it's" --> "its".  Some better
+		punctuation, to make some of the longer descriptions easier
+		to follow, and a couple of miscelleous corrections.  I'm
+		not claiming it to be perfect yet, but it's much better.
+	A couple more minor mods: magic mushrooms, fruit bats, fruit flys,
+		scruffy little hobbits and smeagol all had their decriptions
+		redone.  Also couplet from L.Carrol's _Jabberwocky_ added
+		in Jabberwock description.
+recall.c:	  Very minor changes in the recall code to fix spacing for unique
+		monsters. (Before, if you had no battles to the death, then
+		the monster description would start with a space...)
+spells.c:	  Pain_message() changed to include test for dam == 0.  If so, it
+		returns "%s is unharmed." without performing any division.
+		If the monsters hp were 0, and the damage was 0, then we
+		could get a div by zero error.  I think this is what
+		happened to the guy who got the "guardian angel" mesg
+		after throwing a food ration at a magic mushroom.
+creatures.c:	  in make_attack(), the code for the "eat light" attack (case 23),
+		has been changed to check for TR_ARTIFACT before reducing
+		p1 of your light source.  This should avoid any troubles
+		with the Arkenstone
+dungeon.c:	  Added check to insure that store doors won't get erased.
+		And a check to prevent up stairs in town.
+spells.c:	  Added check to insure that store doors don't get clobbered, and
+		a check to prevent up stairs from town.  I know these 2
+		are redundant, but who cares?
+dungeon.c:	  Fixed regen_monsters() to check for maxhp of 0 before regenerating.
+		If a monster has maxhp of 0, it is recalculated.  Then
+		monster hit points are regenerated, and then a test is
+		made to see if hp > maxhp.
+moria2.c
+	Fixed code for 'trap door' trap in hit_trap(), so that you cannot
+		fall through a trap door on a quest level.  On a quest
+		level, 'trap door' traps are 'spiked pits', possibly
+		poisoned.
+death.c:	  Added test for !noscore before calling top_twenty().  This prevents
+		players who have been resurected or have been wizards from
+		showing up on the scoreboards.
+moria2.c:	  Added a "poor man's" probing ability to the look command.  It
+		will allow players to get a general indication of how
+		hurt a monster is.  Note that Morgoth has more HPs left
+		at "almost dead" than a filthy street urchin does at
+		"unhurt"... It tells you based on a percentage of maxhps
+		for the creature.
+misc1.c:	  Added a horrible hack to place_monster().  place_monster() will
+		no longer place Sauron, execpt on level 99 (his "quest"
+		level).  This makes the existing quest code work.  The
+		advantage of this is that I can stay compatible with
+		current savefiles.  The disadvantage (other than the
+		blatent ugliness of hardcoding a check for a specific
+		monster on a specific level) is that it's even less
+		flexiable than the current quest code.  Now, to add
+		an new quest, we have to update place_monster() to
+		make sure the quest monster appears on the correct
+		level, as well as adding new quest defines in constant.h
+		and setting some more values in quests[], in main().
+	Yuk.  My alternative approach was to change the type of quests[],
+		from an array of int16 to an array of structs with two
+		fields... qlevel to hold the same info as quests[] does
+		now, AND qmon to hold the index of the "quest" monster.
+		Then the code in mon_take_hit() (with a minor mod) could
+		check to see if we'd killed a quest monster by checking
+		the monster index, not the level, so it wouldn't matter
+		if we killed it out-of-depth.  The problem is that
+		quests[] is written out to the savefile, so changing
+		it means losing compatibility with old savefiles.
+		We could get upwards-compatibility by writing the load/save
+		code to use the version numbers, so that it does the
+		conversion on old savefiles.  But this would require
+		picking a new version number, and a bit of work setting
+		up whatever "proper" conversion was needed, so I don't
+		want to do it yet.  Especially if there might be something
+		else we have to change that affects the savefile... Let's
+		only change the save format once if we can.
+	Also, a note on the current quest code.  At the moment there's
+		only 1 quest, so it doesn't really matter, but if we had
+		2 quest monsters, A and B, and you killed monster A on
+		B's quest level, you would get credit for finishing B's
+		quest, not A's!  This is because the only way it knows
+		which quest to give you credit for is to check the
+		current level vs the quest lv.  That's why my above
+		change would be best...
+create.c:	  Added an "auto-roller" to character creation code.  If you
+		want it in define AUTOROLLER.  If not, don't define it...
+		The autoroller code was taken from rec.games.moria, and
+		I think the post took it from Druid Moria... -CFT
+death.c:	  Minor change to display_scores().  display_scores() now takes
+		a third argument, hl_rank.  hl_rank tells display_scores()
+		which high-score to "highlight".  If hl_rank is negative,
+		of not between from and to, then it will not be used.  Also,
+		currently it is unused except on MSDOS, with TC_COLOR, and
+		with the no_color_flag to FALSE.  The only noticable
+		difference is that the score in question will be displayed
+		in 'YELLOW', to make it easier to see.
+	Also, if TC_COLOR and !no_color_flag, then the "Angband Hall of
+		Fame" line will be displayed in bright white to hightlight
+		it.
+death.c/main.c/externs.h:	  Calls to display_scores() have had 3rd argument added.  In places
+		where the character was added to the highscore list, the
+		character's rank was passed, so his score would be 
+		highlighted.  Otherwise, -1 is passed, so nothing will be
+		highlighted.  Added third parameter in prototype in externs.h
+
+main.c:	  I just #ifndef-ed the call to check_time(), which means that the
+		PC version will no longer check for the "hours" file.
+
+scrolls.c:	  Acquirement and *Aquirement* were not IDed when used.  This is
+		fixed now.  Thanks to brifre1@ac.dal.ca for pointing this
+		out... -CFT
+misc1.c:	  Opps...  When I took out the hour file code, I forgot to fix
+		check_time().  check_time() now always returns TRUE
+		on PC's.
+recall.c:	  minor change to use him/them and remains/remain in recall code,
+		depending on how many dead ancestors... -CFT
+
+misc1.c:	  ARG!  I've died for the last time because a monster (Olfax, son
+		of Bolder) summoned a group of monsters, but only 1
+		was lit up for the 1st round.  So instead of running, I
+		stayed and fought.  This problem fixed by adding a call
+		to update_mon() to the end of place_monster(). update_mon()
+		will properly light up the summoned monsters if we can see
+		them.
+main.c:	  added code to clear any ansi text and background colors that may
+		be leftover from ansi prompts.
+dungeon.c:	  fixed 'g' command to prevent error msgs when picking up
+		nothing.
+moria2.c:	  fixed movement code in move_char() slightly...  It now will call
+		carry() if there is an object, provided at least one
+		of the following are true:	  	* you don't use the 'g' key to get objects
+		* it's a trap (vis/invis)
+		* it's a store
+		This fixes trouble people have had trying to enter a store,
+		and prevents the 'g' key from making you immune to traps.
+death.c:	  minor fix into top_twenty()... It was passing the wrong hl_rank to
+		display_scores() if the new highscore was the last score.
+		(off-by-one error, but it was telling display_scores() to
+		highlight the (x+1)th score of x scores.
+	Also, delete_scores() rewritten (with #ifdefs) so that the fn will
+		compile under MSDOS using my new function.  This function
+		doesn't require the entire highscore file to fit onto
+		the stack (more stack overflow problems, but at least the
+		stack chacking code is in place).  It should work now.
+death.c:	  print_tomb() will now write final character stats out if you give
+		a filename after the tombstone.  I wonder why this wasn't
+		in Angband already?  Maybe Umor5.2 didn't have it?
+describe.c:	  fixed spelling of Khazad-dum in one of the unique orc's description.
+	also slight change to blue icky thing description
+store2.c:	  "You here sobs from back of store" changes to 'hear' in a couple
+		of places
+spells.c:	  bolt() code fixed so that Unique monster never killed by a spell
+		from another monster (can be hurt, but not below 0 hps)
+	breath() code ditto...
+moria2.c:	  quest code fixed sensibly!  Just look for monster's level in
+		quests[] instead of looking for current lv.  Now, even
+		if Sauron is killed at 50', his quest will be marked
+		as done.  The code will just give a mesg if a quest monster
+		is killed out of depth, or a mesg and stairs if its
+		killed at depth.
+misc1.c:	  Horrible klugde to force Sauron at lv 99 removed.  It's no
+		longer needed.  (see above)
+potions.c:	  self_knowledge() added to *enlighenment* potion
+moria2.c:	  throw_object() code changed to prevent "hits the Smeagol" and
+		"You have killed the Smeagol" msgs.  It now checks for
+		UNIQUE and skips the "the".
+create.c:	  change to create_character():  flag previous_exists added to
+		prevent the use of ^P to get a previous roll before
+		there was any such roll.  People have gotten garbage
+		characters, and used this to grab an existing players
+		stats with the '-n' flag.
+creatures.c:	  br_wall() looked like it could have moved the player into a wall
+		or monster, if the player was completely boxed in...  So
+		I extended the scope of the else{} block to only move the
+		player when kill is false.
+	shatter_quake() changed: first to prevent the player from getting
+		experience pts from any monsters killed by Quaker's/
+		Morgoth's attack quake, and second to prevent any
+		uniques from being killed (not from harm, only from death)
+		by the quake.  This change completes the protection uniques
+		enjoy from damage by other monsters, which is good because
+		the unique list and quest list are not handled properly
+		if a unique/quest monster is killed by someone other than
+		the player.
+treasure.c:	  rod of detect traps added.  It appears very early (250 feet), and
+		is fairly easy to use, so warriors should be able to
+		get hold of and make use of one w/o too much trouble.
+		Because it is common at such a shallow depth, it is
+		worth little.  This item wil probably make scrolls and
+		staves of detect traps useless, but it will make warriors
+		much more fun to play.
+	I replaced one of the "scroll of trap detection" objects (#196?)
+		with this rod, so there is a chance that existing savefiles
+		might have some "scrolls of trap location" when transferred,
+		until they settle out of the savefile.
+	Also, relevant changes made to rods.c and constant.h. -CFT
+scrolls.c:	  scrolls of curse weapon/armor fixed so that the player doesn't
+		keep the pluses of the item.
+misc1.c:	  magic_treasure() code changed to insure that special (of Might
+		or of Accuracy) bows from monsters with the special
+		flag, with the possibility of an Artifact.  I think
+		this may have reduced the chances of getting one of
+		these bows, but I really don't know...
+	Also, Bow artifacts didn't set good_item_flag, so no special
+		message ever appeared.
+===========================================================================
+Changes above here made it into the second update, angexe12.exe.
+===========================================================================

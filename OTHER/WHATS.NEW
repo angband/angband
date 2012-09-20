@@ -1,88 +1,198 @@
 Here's what's new in the updates of PC Angband:
 
 ---------------------------------------------------------------------------
-New in first update (angexe11.exe)
+New in the fifth update (PC Angband 1.40; angsrc14.exe and angexe14.exe)
 ---------------------------------------------------------------------------
-  *	A serious stack-overflow problem, which could potentially (but
-	very unlikely) could mess up your CMOS settings (or worse) by
-	currupting data.  To insure that this problem doesn't occur again,
-	this update has stack-checking code compiled in.  This slightly
-	increases the size of the executable, and maginally slows the
-	performance of Angband, but it protects your system from any
-	problems related to stack overflow.  If Angband suddenly exits,
-	with the message "stack overflow", please let me know ASAP so I
-	can look into it.  This fix alone is important enough for you to
-	get the updated executable.
-  *	Monochrome monitors showed dark-gray monsters and items as black
-	spaces.  There is now an option (accessible by the '=' key) to
-	turn off color.
-  *	Scrolls and Staves of Darkness will now be properly IDed when
-	used in a room.
-  *	The Potion of Self Knowledge will now correctly indicate SLAY
-	EVIL.
-  *	Minor change in potions code now means several potions will ID
-	correctly when used.
-  *	HPs for some high-level unique monsters have been fixed.  (It was a
-	"wrap-around" problem with the c_list[] array of monster info).
-  *     Experience gained from high level spells has been fixed.
-  *	Monster pits are no longer always considered "special".  As you
-	get deeper and deeper, monster pits are less likely to give you
-	the "special" message.  This was how the Unix code worked, but a
-	16-bit wrap-around caused all monster pits to be special on the PC
-	version.
+  *	PC Angband 1.40 uses the same overlay size and has the same EMS
+	support as 1.31.  Playtesting has shown that it requires approx.
+	512K (524,288 bytes) to run.  See the file 'free-mem.doc' for some
+	suggestions on freeing up memory/providing EMS memory.
+  *	PC Angband uses my new speed system, making speed 4 (extremely
+	fast) only 1/3 faster than speed 3 (very fast).  Monsters do not
+	move "in sync" with each other, so 1/2 of a group of slow monsters
+	may move one round, and the other half the new round.  No random
+	factor was incorporated (too much complexity for too little gain),
+	so you can still "pillar" monsters if you are fast/patient enough.
+  *	Maximum stats are now 18/100 +/- your race & class bonuses.  So
+	a hobbit mage cannot, even with a lot of potions, become as strong
+	as a half troll warrior.
+  *	Also, the racial/professional stat bonuses have been adjusted...
+	see 'stats140.doc' for new values.
+  *	Living characters are added into the high score list when they
+	are saved.  The score list is shown after you save, showing you
+	where you rank.
+  *	At shallow depths, monsters which are out-of-depth will be only
+	slightly out-of-depth, preventing baby MHDs at 50'.  This gradually
+	fades away, until 600', where everything is back to normal.
+  *	Throw-object code overhauled: 1) Artifacts never vanish when thrown;
+	2) Throwing of objects not normally throw will ask for (y/n);
+	3) Many objects do not always vanish if they hit a monster.
+  *	ESP will no longer wake monsters faster than normal.
+  *	Artifacts sometimes resist disenchantment or acid damage (even
+	those w/o resist dis/acid).  However, they also sometimes resist
+	enchantment as well.
+  *     Enchanting an item will no longer automatically remove any curses
+	on it.  In order to break a curse by enchanting the item, the
+	enchantment must suceed, the item must be at least +0, and then
+	you have a 25% chance.
+  *	Celefarn -> Celegorm; Eldrakyn -> Eldrak; 'Hammerhand' -> of
+	Hammerhand; of Rohan -> of the Rohirrim; of the Eorlingas ->
+	of Eorlingas;
+  *	Enchanced color has been added to magical spell effects.
+  *	Priest spells Find Traps and Detect Doors/Stairs have been combined
+	into a single spell; a new spell, Spiritual Hammer, has been added.
+	It's a low level, low damage, bolt spell that does holy damage.
+  *	Mage bolt spells (and their wand/rod/artifact equivilants) can
+	sometimes shoot a "beam" that strikes all monsters in its path.
+	For player-cast spells, the odds improve with high INT.
+  *	Ancient dragons, and all unique dragons, DSMs, Dragon wands, some
+	artifact can now breathe/cast bigger blasts.  Also, Cloudkill,
+	Ice Storm, and Orb of Draining (at high levels) do bigger blasts.
+  *	Nether bolt damage was far too little, because of a typo.  Fixed.
+  *	When viewing the monster memory, the monster's name will be shown
+	in that monster's color (color-changing monsters' names will be
+	one of the possible colors for that monster).
+  *	Also, monster memory code will now note monsters that give better
+	than normal treasure.
+  *	Mystics' kick-attack, and Medusa's embrace-attack messages fixed.
+  *	Some unique monsters (k,o,y,I,L,O,T,&) have a honor guard of lesser
+	monsters escorting them.
+  *	Detect Enchantment is no longer useless.
+  *	stone-to-mud on rubble can find an object, like digging can.
+  *	Polymorph is no longer so insanely deadly.  The resulting monster
+	should be roughly on par with the polymorphed monster.
+  *     The ESP code is now more sensible about what monsters are mindless
+	(and therefore not detected).  Also, some really dumb monsters
+	(insects, etc) are only detected intermittently.
+  *	Ammo "of Slaying" is no longer less powerful than "of Wounding".
+	Slaying ammo is +2 "dice", Wounding is +1 "die".  Also, there is
+	a slim chance of any enchanted ammo having extra "dice".
+  *	Ammo that is stolen/destroyed will be lost 1 at a time, rather
+	then the whole pile at once.
+  *	Some (quite rare) "of Might" bows will have an extra multiple
+	of damage.
+  *	The annoying "HEY!..." message when a monster is in a wall has been
+	removed (this was an old debugging msg that I forgot to remove).
+  *	Item letters in Pseudo ID/disenchantment are now correct.
+  *	No more cursed "Godly Insights" prayer books.
+  *	Cursed items will not have their value ruined, so you can sell them
+	if you get rid of the minuses (probably not worth it, but...)
+  *	The F)ile character command will include a listing of the objects
+	you have stored in your House.
+  *	'A'ctivate command will no longer cost you a move if you abort.
+  *	The line-wrapping of messages has been enhanced to be able to
+	split a message, fitting part at the end of one line, and
+	continuing it on the next.
+  *	When calculating how many swings you get with your weapon, the
+	code will no longer use a minimum weight of 5 pounds.  This makes
+	extremely light weapons like stilletos, other daggers, and whips
+	quite useful for low level characters.
+  *	When using the 'g'et-key option, walking over an object will give
+	a description of what's on the floor beneath you.
+  *	When your experience has been drained, you can still get 10% of
+	experience towards your max. exps.  It's still worthwhile to
+	have and use RLL potions, but if you have none, you at least
+	get something for killing things.
+  *	Whips are no longer just 'whips of fire'; they can be any of the
+	other weapon types as well.
+  *	High level rods are no longer easier to use than high level staves/
+	wands (rods somewhat harder; wands/staves somewhat easier).
+  *	As your character gains levels, his 'age' will increase, (adjusted
+	by race & class) so you	don't have a 15 year old mage casting
+	Hellfire at Nightwalkers.  (Silly, yes, but so what?)
+  *	The code is no longer prejudiced against dark blue.  (It shows up
+	quite dark on my screen, so I had avoided it.  But I shouldn't
+	be letting my specific hardware affect code that I'm releasing to
+	the general public.)
+  *	New ability descriptions beyond "Superb": "Heroic" and "Legendary".
+  *	The random code has been changed to use BSD's random number
+	generator (a Very Good R.N.G.) from CWS's Angband 2.5 code.
+  *	In Wizard mode, it will ask you if you wish to die, like NetHack's
+	discover mode.
+  *	"peek" mode is now only reachable by adding '-w -a' at the command
+	line, since it's unfair for non-wizard characters.
+
+
 ---------------------------------------------------------------------------
-New in second update (angexe12.exe or angsrc12.exe)
+New in the minor update to 1.3 (angsr131.exe and angex131.exe)
 ---------------------------------------------------------------------------
-  *	The look command now gives you an idea how hurt monsters are. 
-	By looking at a monster, you will get one of the following
-	messages:
-		(normal monsters)	(unliving monsters)
-		unhurt			undamaged
-		somewhat wounded	somewhat damaged
-		wounded			damaged
-		badly wounded		badly damaged
-		almost dead		almost destroyed
-  *	There is now a rod of trap location.  It can be found quite
-	early in the dungeon. (Because of this, it is not worth much).
-	This rod should make warriors more fun to play.  (Note that,
-	when loading a savefile from one of the older versions, a
-	scroll of detect traps may have its description changed to
-	"rod of trap location" or "scroll of trap location".  In either
-	case, it will still act like a scroll, and any new scrolls you
-	find should have the correct description.  If the altered name
-	disturbs you, just drop the scroll(s).)
-  *	Updated desc_mon.dat file included in the archive.  It corrects
-	all of the mispellings, grammer errors, etc. in the monster
-	descriptions.
-  *	The highscore table will no longer record your wizard
-	characters, so you can go into wizard mode and explore without
-	fear of overshadowing your future accomplishments.  Note that
-	wizard characters still accumulate monster memory information
-	on monsters they fight, so if you don't want this info in your
-	later games, erase the memory file before you create your later
-	characters.
-  *	Deletion from the highscore table now works properly.  Now
-	you can remove any clutter from your highscore table, without
-	resorting to the drastic measure of erasing the highscore file.
-  *	An auto-roller has been added (adapted from the auto-roller used
-	in Druid Moria).
-  *	High score display colorized to highlight your score.
-  *	You can now write out your character description to a file from
-	the tombstone.  (This wasn't in the earlier versions for some
-	reason).  Now you can have your character's stats, history, and
-	items recorded for a brag post to rec.games.moria after you
-	kill Morgoth.
-  *	*Enlightenment* potions now provide self-knowledge as well as
-	their other powers.  (After all, what is the key to
-	enlightenment?)
-  *	Lot's of bugs fixed, including: summoned group monsters are all
-	lit properly, no need to use 'g' key to enter a shop, quest
-	code fixed so that killing a quest monster (Sauron) out of depth
-	still completes the quest, no trap doors on (uncompleted) quest
-	levels, Arkenstone will not be harmed by silver jellys, and curse
-	weapon and curse armor scrolls fixed (aren't you glad? :-)
-	For more info on bugs, read the 'changes.tc' file packaged
-	with the source code.
+  *	I've returned to a single executable, using the smaller, 128k
+	overlay buffer.  However, Angband now will detect and use EMS
+	memory for overlay swap space.  If you have EMS memory, Angband
+	will use about 155k of it, and then run quite quickly.  Also,
+	Angband has been optimized somewhat, to make functions that are
+	called often stay in memory.  This should speed things up even
+	if you don't have EMS memory, especially the bolt/ball spell code
+	and some of the display code.
+
+	It is possible, for people without memory over 640k (ie no EMS
+	memory) who were able to free up enough memory to use the 'angmem13'
+	version of the executable, for this new update to run slower than
+	the 'angmem13' executable did.  I expect this to be quite rare,
+	since it is impossible to load Dos "high" without high memory, so
+	is would be much harder to free up the 580k required by 'angmem13'.
+	If this happens to you, and the speed difference is significant,
+	you have 2 options: Either get the source code and compile your
+	own Angband, with whatever size overlay buffer works for you, or
+	email me.  If I get enough requests for it, I will make available
+	a version with the larger overlay buffer.
+  *	As mentioned above, optimizing and EMS memory support should improve
+	the speed of Angband 1.31 over Angband 1.3, especially for spells.
+  *	The inventory sort has been changed again.  But this one is SAFE.
+	Irregardless of what order your items are in, it will find the
+	correct place to stack any stackable item you pick up.  This means
+	that the bug in the inventory sort which causes people's weapon
+	to vanish is fixed.  The only change to the order of the sorting
+	is to sort first by item type, then by item level, and then by
+	item subtype.  This allows Tenser's to sort where it "should"
+	without markedly changing the code, or requiring Tenser's to use
+	a new subtype.
+  *	The bug that caused the game to lock up during Nexus breaths has
+	been found and fixed.
+  *	Minor errors relating to targetting code and ball spells have been
+	fixed.  Also, bugs relating to targetting code and bash/spike door/
+	disarm/open/close commands have been fixed.
+  *	The messages given when items are stolen/detroyed/disenchanted have
+	been improved.
+  *	All "thievish" monsters now pick up objects.  So do Green glutton
+	ghosts.  Giants do not.  Mirkwood spiders are now evil.
+  *	There is now such a thing as a "giant pit".  It's found at the
+	same depth as troll pits.  Giants are, on average, weaker than
+	trolls, but giants are immune to wands/rods of light.
+  *	Exp. pts. display fixed.
+  *	Word of Recall still asks if you mean it, but it will no longer exit
+	if you hit <RET>.  Now only y,Y,n,N or ESC will be accepted.  This
+	should help prevent people from accidently hitting the wrong key
+	and losing their last WoR scroll.
+  *	Door lighting has been fixed, so lighting a room shouldn't flood
+	into another room.
+  *	Rods can be recharged with recharging scrolls/spells.  The rod
+	will never explode, but if the recharge fails, it may take even
+	longer to recharge.  If the recharge is successful, the recharging
+	time of the rod will be lessened.
+  *	Multi-hued dragons will now show up as red/blue/black/etc in detect
+	spells, as well as line of sight.  If you cast twice in a row, odds
+	are that it will be a different color.
+  *	The pseudo-ID of warriors/rogues/paladins will now tell you what
+	letter item was noticed.  The detect magic/cursed ability of other
+	classes still doesn't, because it's supposed to be a less specific
+	ability.
+  *	Dragons who pick up items (are they any?) won't pick up an item
+	if it has XD or SD.  Before they wouldn't pick up a SD item,
+	but would if it had only XD.
+  *	The ball spell code has been changed.  Now your fireballs, and
+	monster's breath weapons will destroy only pre-existing items.
+	Items dropped by monsters killed in the blast are assumed to have
+	been shielded by the corpse of the dying monster.  For example, if
+	2 fire hounds breath at you in a row, and the first breath causes
+	a monster near you to die and drop a scroll, that scroll is safe
+	from the effect of the 1st breath.  However, the second fire breath
+	will destroy the scroll (unless it fell outside the area of effect).
+	This is a bit different from Moria, or precious Angband version, but
+	it means that you don't have to be quite so careful when using fire/
+	frost/acid balls to kill things.
+
+
 ---------------------------------------------------------------------------
 New in the 3rd update (angsrc13.exe and angexe13.exe/angmem13.exe)
 ---------------------------------------------------------------------------
@@ -197,82 +307,91 @@ New in the 3rd update (angsrc13.exe and angexe13.exe/angmem13.exe)
   *	The makefile caused problems (trying to compile Angband as if it
 	were C++ code) when compiling under some newer versions of TC++/
 	BC++ (v3.0 if I remember); this has been fixed.
----------------------------------------------------------------------------
-New in the minor update to 1.3 (angsr131.exe and angex131.exe)
----------------------------------------------------------------------------
-  *	I've returned to a single executable, using the smaller, 128k
-	overlay buffer.  However, Angband now will detect and use EMS
-	memory for overlay swap space.  If you have EMS memory, Angband
-	will use about 155k of it, and then run quite quickly.  Also,
-	Angband has been optimized somewhat, to make functions that are
-	called often stay in memory.  This should speed things up even
-	if you don't have EMS memory, especially the bolt/ball spell code
-	and some of the display code.
 
-	It is possible, for people without memory over 640k (ie no EMS
-	memory) who were able to free up enough memory to use the 'angmem13'
-	version of the executable, for this new update to run slower than
-	the 'angmem13' executable did.  I expect this to be quite rare,
-	since it is impossible to load Dos "high" without high memory, so
-	is would be much harder to free up the 580k required by 'angmem13'.
-	If this happens to you, and the speed difference is significant,
-	you have 2 options: Either get the source code and compile your
-	own Angband, with whatever size overlay buffer works for you, or
-	email me.  If I get enough requests for it, I will make available
-	a version with the larger overlay buffer.
-  *	As mentioned above, optimizing and EMS memory support should improve
-	the speed of Angband 1.31 over Angband 1.3, especially for spells.
-  *	The inventory sort has been changed again.  But this one is SAFE.
-	Irregardless of what order your items are in, it will find the
-	correct place to stack any stackable item you pick up.  This means
-	that the bug in the inventory sort which causes people's weapon
-	to vanish is fixed.  The only change to the order of the sorting
-	is to sort first by item type, then by item level, and then by
-	item subtype.  This allows Tenser's to sort where it "should"
-	without markedly changing the code, or requiring Tenser's to use
-	a new subtype.
-  *	The bug that caused the game to lock up during Nexus breaths has
-	been found and fixed.
-  *	Minor errors relating to targetting code and ball spells have been
-	fixed.  Also, bugs relating to targetting code and bash/spike door/
-	disarm/open/close commands have been fixed.
-  *	The messages given when items are stolen/detroyed/disenchanted have
-	been improved.
-  *	All "thievish" monsters now pick up objects.  So do Green glutton
-	ghosts.  Giants do not.  Mirkwood spiders are now evil.
-  *	There is now such a thing as a "giant pit".  It's found at the
-	same depth as troll pits.  Giants are, on average, weaker than
-	trolls, but giants are immune to wands/rods of light.
-  *	Exp. pts. display fixed.
-  *	Word of Recall still asks if you mean it, but it will no longer exit
-	if you hit <RET>.  Now only y,Y,n,N or ESC will be accepted.  This
-	should help prevent people from accidently hitting the wrong key
-	and losing their last WoR scroll.
-  *	Door lighting has been fixed, so lighting a room shouldn't flood
-	into another room.
-  *	Rods can be recharged with recharging scrolls/spells.  The rod
-	will never explode, but if the recharge fails, it may take even
-	longer to recharge.  If the recharge is successful, the recharging
-	time of the rod will be lessened.
-  *	Multi-hued dragons will now show up as red/blue/black/etc in detect
-	spells, as well as line of sight.  If you cast twice in a row, odds
-	are that it will be a different color.
-  *	The pseudo-ID of warriors/rogues/paladins will now tell you what
-	letter item was noticed.  The detect magic/cursed ability of other
-	classes still doesn't, because it's supposed to be a less specific
-	ability.
-  *	Dragons who pick up items (are they any?) won't pick up an item
-	if it has XD or SD.  Before they wouldn't pick up a SD item,
-	but would if it had only XD.
-  *	The ball spell code has been changed.  Now your fireballs, and
-	monster's breath weapons will destroy only pre-existing items.
-	Items dropped by monsters killed in the blast are assumed to have
-	been shielded by the corpse of the dying monster.  For example, if
-	2 fire hounds breath at you in a row, and the first breath causes
-	a monster near you to die and drop a scroll, that scroll is safe
-	from the effect of the 1st breath.  However, the second fire breath
-	will destroy the scroll (unless it fell outside the area of effect).
-	This is a bit different from Moria, or precious Angband version, but
-	it means that you don't have to be quite so careful when using fire/
-	frost/acid balls to kill things.
+
+---------------------------------------------------------------------------
+New in second update (angexe12.exe or angsrc12.exe)
+---------------------------------------------------------------------------
+  *	The look command now gives you an idea how hurt monsters are. 
+	By looking at a monster, you will get one of the following
+	messages:
+		(normal monsters)	(unliving monsters)
+		unhurt			undamaged
+		somewhat wounded	somewhat damaged
+		wounded			damaged
+		badly wounded		badly damaged
+		almost dead		almost destroyed
+  *	There is now a rod of trap location.  It can be found quite
+	early in the dungeon. (Because of this, it is not worth much).
+	This rod should make warriors more fun to play.  (Note that,
+	when loading a savefile from one of the older versions, a
+	scroll of detect traps may have its description changed to
+	"rod of trap location" or "scroll of trap location".  In either
+	case, it will still act like a scroll, and any new scrolls you
+	find should have the correct description.  If the altered name
+	disturbs you, just drop the scroll(s).)
+  *	Updated desc_mon.dat file included in the archive.  It corrects
+	all of the mispellings, grammer errors, etc. in the monster
+	descriptions.
+  *	The highscore table will no longer record your wizard
+	characters, so you can go into wizard mode and explore without
+	fear of overshadowing your future accomplishments.  Note that
+	wizard characters still accumulate monster memory information
+	on monsters they fight, so if you don't want this info in your
+	later games, erase the memory file before you create your later
+	characters.
+  *	Deletion from the highscore table now works properly.  Now
+	you can remove any clutter from your highscore table, without
+	resorting to the drastic measure of erasing the highscore file.
+  *	An auto-roller has been added (adapted from the auto-roller used
+	in Druid Moria).
+  *	High score display colorized to highlight your score.
+  *	You can now write out your character description to a file from
+	the tombstone.  (This wasn't in the earlier versions for some
+	reason).  Now you can have your character's stats, history, and
+	items recorded for a brag post to rec.games.moria after you
+	kill Morgoth.
+  *	*Enlightenment* potions now provide self-knowledge as well as
+	their other powers.  (After all, what is the key to
+	enlightenment?)
+  *	Lot's of bugs fixed, including: summoned group monsters are all
+	lit properly, no need to use 'g' key to enter a shop, quest
+	code fixed so that killing a quest monster (Sauron) out of depth
+	still completes the quest, no trap doors on (uncompleted) quest
+	levels, Arkenstone will not be harmed by silver jellys, and curse
+	weapon and curse armor scrolls fixed (aren't you glad? :-)
+	For more info on bugs, read the 'changes.tc' file packaged
+	with the source code.
+
+
+---------------------------------------------------------------------------
+New in first update (angexe11.exe)
+---------------------------------------------------------------------------
+  *	A serious stack-overflow problem, which could potentially (but
+	very unlikely) could mess up your CMOS settings (or worse) by
+	currupting data.  To insure that this problem doesn't occur again,
+	this update has stack-checking code compiled in.  This slightly
+	increases the size of the executable, and maginally slows the
+	performance of Angband, but it protects your system from any
+	problems related to stack overflow.  If Angband suddenly exits,
+	with the message "stack overflow", please let me know ASAP so I
+	can look into it.  This fix alone is important enough for you to
+	get the updated executable.
+  *	Monochrome monitors showed dark-gray monsters and items as black
+	spaces.  There is now an option (accessible by the '=' key) to
+	turn off color.
+  *	Scrolls and Staves of Darkness will now be properly IDed when
+	used in a room.
+  *	The Potion of Self Knowledge will now correctly indicate SLAY
+	EVIL.
+  *	Minor change in potions code now means several potions will ID
+	correctly when used.
+  *	HPs for some high-level unique monsters have been fixed.  (It was a
+	"wrap-around" problem with the c_list[] array of monster info).
+  *     Experience gained from high level spells has been fixed.
+  *	Monster pits are no longer always considered "special".  As you
+	get deeper and deeper, monster pits are less likely to give you
+	the "special" message.  This was how the Unix code worked, but a
+	16-bit wrap-around caused all monster pits to be special on the PC
+	version.
 

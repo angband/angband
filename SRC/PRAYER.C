@@ -76,9 +76,12 @@ void pray()
 		  (void) light_area(char_row, char_col);
 		  break;
 		case 6:
-		  (void) detect_trap();
+		  if (get_dir(NULL, &dir))
+		    fire_bolt(GF_HOLY_ORB, dir, char_row, char_col,
+			(int)damroll(3,3)+stat_adj(A_WIS)); /* war hammer does 3d3 -CFT */
 		  break;
 		case 7:
+		  (void) detect_trap();
 		  (void) detect_sdoor();
 		  break;
 		case 8:
@@ -122,8 +125,9 @@ void pray()
 		case 18:
 		  if (get_dir(NULL, &dir))
 		    fire_ball(GF_HOLY_ORB, dir, char_row, char_col,
-			      (int)(damroll(3,6)+py.misc.lev),
-			      "Black Sphere");
+			      (int)(damroll(3,6)+py.misc.lev+
+				(py.misc.pclass==2 ? 2 : 1)*stat_adj(A_WIS)),
+			      (py.misc.lev<30 ? 2 : 3));
 		  break;
 		case 19:
 		  (void) hp_player(damroll(8, 4));
@@ -305,19 +309,7 @@ void pray()
 		      objdes(tmp_str, i_ptr, FALSE);
 		      sprintf(out_val, "Your %s glows brightly!", tmp_str);
 		      msg_print(out_val);
-		      flag = FALSE;
-		      for (k = 0; k < randint(4); k++)
-			if (enchant(&i_ptr->tohit))
-			  flag = TRUE;
-		      for (k = 0; k < randint(4); k++)
-			if (enchant(&i_ptr->todam))
-			  flag = TRUE;
-		      if (flag)
-			{
-			  i_ptr->flags &= ~TR_CURSED;
-			  calc_bonuses ();
-			}
-		      else
+		      if (!enchant(i_ptr, randint(4), ENCH_TOHIT|ENCH_TODAM))
 			msg_print("The enchantment fails.");
 		    }
 		  break;
@@ -363,12 +355,7 @@ void pray()
 			objdes(tmp_str, i_ptr, FALSE);
 			sprintf(out_val, "Your %s glows faintly!", tmp_str);
 			msg_print(out_val);
-			if (enchant(&i_ptr->toac))
-			  {
-			    i_ptr->flags &= ~TR_CURSED;
-			    calc_bonuses ();
-			  }
-			else
+			if (!enchant(i_ptr, randint(3)+1, ENCH_TOAC))
 			  msg_print("The enchantment fails.");
 		      }
 		  }
@@ -376,7 +363,11 @@ void pray()
 		case 52: /* Elemental brand */
 		  i_ptr = &inventory[INVEN_WIELD];
 		  if (i_ptr->tval != TV_NOTHING &&
-		      i_ptr->name2 == SN_NULL)
+		      i_ptr->name2 == SN_NULL &&
+		      !(i_ptr->flags & TR_CURSED)) /* you can't create an
+		      				ego weapon from a cursed
+		      				object... the curse would
+		      				"taint" the magic -CFT */
 		    {
 		      int k, l, hot = randint(2)-1;
 		      char tmp_str[100], out_val[100];
@@ -395,16 +386,7 @@ void pray()
 			i_ptr->flags |= (TR_FROST_BRAND|TR_RES_COLD);
 		      }
 		      msg_print(out_val);
-
-		      k = 3 + randint(3);
-		      for(l=0;l<k;l++)
-			enchant(&i_ptr->tohit);
-		      k = 3 + randint(3);
-		      for(l=0;l<k;l++)
-			enchant(&i_ptr->todam); 
-
-		      i_ptr->flags &= ~TR_CURSED;
-		      calc_bonuses ();
+		      enchant(i_ptr, 3+randint(3), ENCH_TOHIT|ENCH_TODAM);
 		    } else {
 		      msg_print("The Branding fails.");
 		    }

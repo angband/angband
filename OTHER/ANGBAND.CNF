@@ -27,7 +27,7 @@
 # on your PATH.  Copy MORIA.EXE and MORIA.CNF to C:\games.
 #
 # If you use a different path, you must change this line...
-SAVE c:\games\angband\angband.sav;n
+SAVE b:\angband.sav;n
 #SCORE c:\games\colmoria\moria.scr
 
 

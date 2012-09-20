@@ -245,6 +245,29 @@ int treas_chance;
   while (mmove(dir, &y, &x));
 }
 
+/*  Chris Tate (fixer@faxcsl.dcrt.nih.gov) - optimize this code for size!
+    This code performs the common test in all of the place_* functions,
+    and returns c_ptr if we can go ahead and place the object, or NULL
+    if we can't.  */
+static cave_type *test_place_obj(int y, int x) {
+  cave_type *t;
+  int tv;
+  
+  if (!in_bounds(y,x)) return NULL;
+  t = &cave[y][x];
+  tv = t_list[t->tptr].tval;
+  
+  if (t->tptr != 0) 
+    if (((tv <= TV_MAX_WEAR) && (tv >= TV_MIN_WEAR) &&
+         (t_list[t->tptr].flags2 & TR_ARTIFACT)) ||
+        (tv == TV_UP_STAIR) || (tv == TV_DOWN_STAIR) ||
+        (tv == TV_STORE_DOOR))
+      return NULL;
+    else
+      delete_object(y,x); /* waste it, it's not important */
+  return t;
+}
+
 
 static void place_open_door(y, x)
 int y, x;
@@ -252,19 +275,7 @@ int y, x;
   register int cur_pos;
   register cave_type *c_ptr;
 
-  if (!in_bounds(y,x))
-    return; /* abort! -CFT */
-  c_ptr = &cave[y][x];
-  if (c_ptr->tptr != 0) 
-    if (((t_list[c_ptr->tptr].tval <= TV_MAX_WEAR) &&
-         (t_list[c_ptr->tptr].tval >= TV_MIN_WEAR) &&
-         (t_list[c_ptr->tptr].flags2 & TR_ARTIFACT)) ||
-        (t_list[c_ptr->tptr].tval == TV_UP_STAIR) ||
-        (t_list[c_ptr->tptr].tval == TV_DOWN_STAIR) ||
-        (t_list[c_ptr->tptr].tval == TV_STORE_DOOR))
-      return; /* abort! */
-    else
-      delete_object(y,x);
+  if (!(c_ptr = test_place_obj(y,x))) return;
   cur_pos = popt();
   c_ptr->tptr = cur_pos;
   invcopy(&t_list[cur_pos], OBJ_OPEN_DOOR);
@@ -278,19 +289,7 @@ int y, x;
   register int cur_pos;
   register cave_type *c_ptr;
 
-  if (!in_bounds(y,x))
-    return; /* abort! -CFT */
-  c_ptr = &cave[y][x];
-  if (c_ptr->tptr != 0) 
-    if (((t_list[c_ptr->tptr].tval <= TV_MAX_WEAR) &&
-         (t_list[c_ptr->tptr].tval >= TV_MIN_WEAR) &&
-         (t_list[c_ptr->tptr].flags2 & TR_ARTIFACT)) ||
-        (t_list[c_ptr->tptr].tval == TV_UP_STAIR) ||
-        (t_list[c_ptr->tptr].tval == TV_DOWN_STAIR) ||
-        (t_list[c_ptr->tptr].tval == TV_STORE_DOOR))
-      return; /* abort! */
-    else
-      delete_object(y,x);
+  if (!(c_ptr = test_place_obj(y,x))) return;
   cur_pos = popt();
   c_ptr->tptr = cur_pos;
   invcopy(&t_list[cur_pos], OBJ_OPEN_DOOR);
@@ -305,19 +304,7 @@ int y, x;
   register int cur_pos;
   register cave_type *c_ptr;
 
-  if (!in_bounds(y,x))
-    return; /* abort! -CFT */
-  c_ptr = &cave[y][x];
-  if (c_ptr->tptr != 0) 
-    if (((t_list[c_ptr->tptr].tval <= TV_MAX_WEAR) &&
-         (t_list[c_ptr->tptr].tval >= TV_MIN_WEAR) &&
-         (t_list[c_ptr->tptr].flags2 & TR_ARTIFACT)) ||
-        (t_list[c_ptr->tptr].tval == TV_UP_STAIR) ||
-        (t_list[c_ptr->tptr].tval == TV_DOWN_STAIR) ||
-        (t_list[c_ptr->tptr].tval == TV_STORE_DOOR))
-      return; /* abort! */
-    else
-      delete_object(y,x);
+  if (!(c_ptr = test_place_obj(y,x))) return;
   cur_pos = popt();
   c_ptr->tptr = cur_pos;
   invcopy(&t_list[cur_pos], OBJ_CLOSED_DOOR);
@@ -331,19 +318,7 @@ int y, x;
   register int cur_pos;
   register cave_type *c_ptr;
 
-  if (!in_bounds(y,x))
-    return; /* abort! -CFT */
-  c_ptr = &cave[y][x];
-  if (c_ptr->tptr != 0) 
-    if (((t_list[c_ptr->tptr].tval <= TV_MAX_WEAR) &&
-         (t_list[c_ptr->tptr].tval >= TV_MIN_WEAR) &&
-         (t_list[c_ptr->tptr].flags2 & TR_ARTIFACT)) ||
-        (t_list[c_ptr->tptr].tval == TV_UP_STAIR) ||
-        (t_list[c_ptr->tptr].tval == TV_DOWN_STAIR) ||
-        (t_list[c_ptr->tptr].tval == TV_STORE_DOOR))
-      return; /* abort! */
-    else
-      delete_object(y,x);
+  if (!(c_ptr = test_place_obj(y,x))) return;
   cur_pos = popt();
   c_ptr->tptr = cur_pos;
   invcopy(&t_list[cur_pos], OBJ_CLOSED_DOOR);
@@ -358,19 +333,7 @@ int y, x;
   register int cur_pos;
   register cave_type *c_ptr;
 
-  if (!in_bounds(y,x))
-    return; /* abort! -CFT */
-  c_ptr = &cave[y][x];
-  if (c_ptr->tptr != 0) 
-    if (((t_list[c_ptr->tptr].tval <= TV_MAX_WEAR) &&
-         (t_list[c_ptr->tptr].tval >= TV_MIN_WEAR) &&
-         (t_list[c_ptr->tptr].flags2 & TR_ARTIFACT)) ||
-        (t_list[c_ptr->tptr].tval == TV_UP_STAIR) ||
-        (t_list[c_ptr->tptr].tval == TV_DOWN_STAIR) ||
-        (t_list[c_ptr->tptr].tval == TV_STORE_DOOR))
-      return; /* abort! */
-    else
-      delete_object(y,x);
+  if (!(c_ptr = test_place_obj(y,x))) return;
   cur_pos = popt();
   c_ptr->tptr = cur_pos;
   invcopy(&t_list[cur_pos], OBJ_CLOSED_DOOR);
@@ -385,19 +348,7 @@ int y, x;
   register int cur_pos;
   register cave_type *c_ptr;
 
-  if (!in_bounds(y,x))
-    return; /* abort! -CFT */
-  c_ptr = &cave[y][x];
-  if (c_ptr->tptr != 0) 
-    if (((t_list[c_ptr->tptr].tval <= TV_MAX_WEAR) &&
-         (t_list[c_ptr->tptr].tval >= TV_MIN_WEAR) &&
-         (t_list[c_ptr->tptr].flags2 & TR_ARTIFACT)) ||
-        (t_list[c_ptr->tptr].tval == TV_UP_STAIR) ||
-        (t_list[c_ptr->tptr].tval == TV_DOWN_STAIR) ||
-        (t_list[c_ptr->tptr].tval == TV_STORE_DOOR))
-      return; /* abort! */
-    else
-      delete_object(y,x);
+  if (!(c_ptr = test_place_obj(y,x))) return;
   cur_pos = popt();
   c_ptr->tptr = cur_pos;
   invcopy(&t_list[cur_pos], OBJ_SECRET_DOOR);
@@ -440,19 +391,7 @@ int y, x;
   register int cur_pos;
   register cave_type *c_ptr;
 
-  if (!in_bounds(y,x))
-    return; /* abort! -CFT */
-  c_ptr = &cave[y][x];
-  if (c_ptr->tptr != 0) 
-    if (((t_list[c_ptr->tptr].tval <= TV_MAX_WEAR) &&
-         (t_list[c_ptr->tptr].tval >= TV_MIN_WEAR) &&
-         (t_list[c_ptr->tptr].flags2 & TR_ARTIFACT)) ||
-        (t_list[c_ptr->tptr].tval == TV_UP_STAIR) ||
-        (t_list[c_ptr->tptr].tval == TV_DOWN_STAIR) ||
-        (t_list[c_ptr->tptr].tval == TV_STORE_DOOR))
-      return; /* abort! */
-    else
-      delete_object(y,x);
+  if (!(c_ptr = test_place_obj(y,x))) return;
   cur_pos = popt();
   c_ptr->tptr = cur_pos;
   invcopy(&t_list[cur_pos], OBJ_UP_STAIR);
@@ -470,19 +409,7 @@ int y, x;
     place_up_stairs(y, x);
     return;
   }
-  if (!in_bounds(y,x))
-    return; /* abort! -CFT */
-  c_ptr = &cave[y][x];
-  if (c_ptr->tptr != 0) 
-    if (((t_list[c_ptr->tptr].tval <= TV_MAX_WEAR) &&
-         (t_list[c_ptr->tptr].tval >= TV_MIN_WEAR) &&
-         (t_list[c_ptr->tptr].flags2 & TR_ARTIFACT)) ||
-        (t_list[c_ptr->tptr].tval == TV_UP_STAIR) ||
-        (t_list[c_ptr->tptr].tval == TV_DOWN_STAIR) ||
-        (t_list[c_ptr->tptr].tval == TV_STORE_DOOR))
-      return; /* abort! */
-    else
-      delete_object(y,x);
+  if (!(c_ptr = test_place_obj(y,x))) return;
   cur_pos = popt();
   c_ptr->tptr = cur_pos;
   invcopy(&t_list[cur_pos], OBJ_DOWN_STAIR);
@@ -1417,6 +1344,38 @@ int yval,xval;
 	place_secret_door(y1, x1);
 	c_ptr->lr = TRUE;
 	break;
+      case '^':
+	c_ptr->fval = floor;
+	place_trap(y1, x1, randint(MAX_TRAP)-1);
+	c_ptr->lr = TRUE;
+	break;
+      case '&': case '@': case '8': case 'O': case ',':
+        /* do nothing for now... cannot place monster until whole
+           area is built, OW group monsters screw things up by being
+           placed where walls will be placed on top of them -CFT */
+        break;
+      case ' ':
+	break;
+      default:
+	sprintf(buf, "Cockup='%c'", *t);
+	msg_print(buf);
+	break;
+      }
+    }
+  }
+  /* now we go back and place the monsters, hopefully this makes
+	everything happy... -CFT */
+  t = template; /* this avoids memory troubles... see above -CFT */
+  for (y=0; y<height; y++) {
+    for (x=0; x<width; x++) {
+      x1=xval-(width/2)+x;
+      y1=yval-(height/2)+y;
+      c_ptr = &cave[y1][x1];
+      switch (*t++) {
+      case '#': case 'X': case '%': case '*':
+      case '+': case '^': case '.':
+        /* we already placed all of these... -CFT */
+	break;
       case '&': /* Monster */
 	c_ptr->fval = floor;
 	place_monster(y1, x1,
@@ -1447,11 +1406,6 @@ int yval,xval;
 		get_mons_num(dun_level+MON_SUMMON_ADJ+vault), TRUE);
 	if (randint(2)==1)
 	  	place_object(y1, x1);
-	c_ptr->lr = TRUE;
-	break;
-      case '^':
-	c_ptr->fval = floor;
-	place_trap(y1, x1, randint(MAX_TRAP)-1);
 	c_ptr->lr = TRUE;
 	break;
       case ' ':
@@ -1947,7 +1901,7 @@ int yval, xval, type;
   int8u floor;
   register cave_type *c_ptr, *d_ptr;
 
-  floor = DARK_FLOOR;
+  floor = NT_DARK_FLOOR;
   y_height = yval - 4;
   y_depth  = yval + 4;
   x_left   = xval - 11;
@@ -1956,14 +1910,23 @@ int yval, xval, type;
   /* for paranoia's sake: bounds-check!  Memory errors caused by
          accessing cave[][] out-of-bounds are nearly impossible to
          spot!  -CFT */
-  if (y_height < 1) y_height = 1;
-  if (y_depth >= (cur_height-1)) y_depth = cur_height-2;
-  if (x_left < 1) x_left = 1;
-  if (x_right >= (cur_width-1)) x_right = cur_width-2;
+  if ((y_height < 1) || (y_depth >= (cur_height-1)) ||
+      (x_left < 1) || (x_right >= (cur_width-1))) {
+    build_type1(yval,xval); /* type1 is heavily bounds-checked, and considered
+    				safe to use as a fall-back room type -CFT */
+    return;
+    }
+  else { /* moved from build_pit, because don't want it already set if
+  		we abort because of bad position -CFT */
+#ifndef MSDOS
+    if (randint((dun_level*dun_level*dun_level)+1)<25000) good_item_flag = TRUE;
+#else
+    if (randint((dun_level*dun_level+1))<650) good_item_flag = TRUE;
+#endif
+    }    
 
   /* the x dim of rooms tends to be much larger than the y dim, so don't bother
      rewriting the y loop */
-
   for (i = y_height; i <= y_depth; i++)
     {
       c_ptr = &cave[i][x_left];
@@ -2344,11 +2307,6 @@ static void build_pit(yval, xval)
 {
   int tmp;
 
-#ifndef MSDOS
-  if (randint((dun_level*dun_level*dun_level)+1)<25000) good_item_flag = TRUE;
-#else
-  if (randint((dun_level*dun_level+1))<650) good_item_flag = TRUE;
-#endif
   tmp = randint(dun_level>80?80:dun_level);
   rating += 10;
   if (tmp < 10)      special_pit(yval, xval,1); /* jelly */

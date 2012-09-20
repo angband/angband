@@ -1,0 +1,56 @@
+  As part of the changes to PC Angband 1.40, I maximum stat. values are
+adjusted from 18/100 by your race and class adjustments.  To insure
+balance and playability, I had to alter some racial and profession
+adjustments.  Below are the new tables.
+
+
+Racial Stat. Adjustments
+
+  Race		STR	INT	WIS	DEX	CON	CHR
+Human		 +1	---	---	 +1	---	 +1
+Dunadan		 +1	 +1	 +1	 +1	 +1	 +2
+Half Elf	---	 +1	 +1	 +2	---	 +2
+Elf		---	 +1	---	 +2	 -1	 +2
+High Elf	---	 +2	 +1	 +2	 -1	 +4
+Dwarf		 +2	 -1	 +2	---	 +2	 -1
+Hobbit		 -1	 +2	 +1	 +3	 +1	 +1
+Gnome		 -1	 +2	---	 +2	 -1	 -1
+Half Orc	 +2	 -1	 -1	---	 +2	 -4
+Half Troll	 +4	 -3	 -3	 -1	 +3	 -6
+
+======================================================================
+
+
+Professional Stat. Adjustments:
+
+  Class		STR	INT	WIS	DEX	CON	CHR
+Warrior		 +5	 -2	 -2	 +2	 +3	---
+Rogue		 +2	 +1	 -1	 +4	 +1	 -2
+Ranger		 +1	 +2	 -1	 +2	 +1	 +1
+Paladin		 +3	 -1	 +2	 +1	 +2	 +2
+Mage		 -4	 +4	---	---	 -2	 +1
+Priest		 -1	---	 +4	---	---	 +2
+
+======================================================================
+
+  As you can see, the biggest racial changes were to High Elves,
+Half Elves, and Dunadan.  I reduced the High Elven and Dunadan bonuses,
+because they were simply too high now that they affect maximum stats.
+And the Half Elven bonuses were improved, on the basis that Half Elves
+are descended from Beren & Luthien (daughter of Thingol & Melian the
+Maia).  With this heritage, they deserve to be on par with Elves and
+High Elves, not as second-rate elves.
+
+  For the Professional adjustments, the changes were basically that each
+Warriors, Rogues, Mages, and Priests got bigger bonuses to STR, DEX,
+INT, and WIS -- big enough to differentiate them from Rangers and
+Paladins, I believe.
+
+	Chuck
+--
+Charles F. Teague II  Net:cteague@cs.umb.edu  Real:33 Sidney Ave, Lynn MA 01902
++------------------------------------+-----------------------+----------------+
+| Computers are so powerful because  | "Don't do what I SAY, | 'lush' CS 1993 |
+| they do whatever you tell them to. |  do what I mean!!!!"  | TKE-zm sn 603  |
++------------------------------------+-----------------------+----------------+
+Hi!  I'm a replicating .sig virus!  Join in the fun and copy me into yours!

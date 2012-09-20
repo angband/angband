@@ -3,19 +3,19 @@
                          ******************************
             Based on Umoria: Copyright (c) 1985 Robert Alan Koeneke
                        Copyright (c) 1989 James E. Wilson
-                                 PC release 1.31
+                                 PC release 1.40
 
                   Hacked By: Alex Cutler, Andy Astrand
                   Further Hacks By: Sean Marsh, Geoff Hill
                   PC Port and Yet More Hacks By: Charles Teague
                   With TC++ Color Code By: Justin Anderson
+                  Targetting based on code by Chris Wilde (see target.doc)
                   And Miscellaneous Patches By: Lots of Helpful People
 News:
-    *   Priests (and Paladins) need spellbooks to learn spells.
-    *   Angband now has the targetting code from Morgul!  Use '*' to target.
+    *  Priests (and Paladins) need spellbooks to learn spells.
+    *  Angband now has the targetting code from Morgul!  Use '*' to target.
 Bugs:
-    *  As always, I've tried to insure that Angband is free of problems
+    *  As always, I've tried to ensure that Angband is free of problems
        before I release it.  But, to be safe, you should periodically
        make backups of your character, to protect him/her from bugs. -CFT
     *  Probing sometimes completely ignores a monster.
-    *  Sometimes "special offers" in the stores seem to be ignored.

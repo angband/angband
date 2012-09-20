@@ -1,0 +1,522 @@
+WEAPONS
+-------
+ 
+a Longsword named Ringil (4d5) (+22,+25) [+1] Speed
+   Slay Undead, Evil, Demon, Troll; Frost Brand         
+   Resist Cold, Lightning; Regeneration; Free Action
+   See Invis, Slow Digest, Perm. Light
+   Activates for Ice Storm(100) every 300 turns
+ 
+a Longsword named Anduril (2d5) (+10,+15) [+4] STR [+5] AC
+   Slay Evil, Troll, Orc; Flame Tongue
+   Resist Fire; Sustain CON; Free Action
+   See Invis
+   Activates for Fire Ball(72) every 400 turns
+ 
+a Longsword named Anguirel (2d5) (+8,+12) [+2] STR, CON
+   Slay Evil, Demon; Lightning Brand
+   Resist Lightning, Light; Free Action
+   See Invis, Perm. Light
+ 
+a Longsword named Elvagil (2d5) (+2,+7) [+2] DEX, CHR, Stealth
+   Slay Troll, Orc
+   See Invis, Feather Fall
+ 
+a Two-Handed Sword named Gurthang (3d6) (+13,+17) [+2] STR
+   Slay Xdragon, Troll;
+   Regen; Free Action
+   Slow Digest
+ 
+a Two-Handed Sword named Zarcuthra (4d6) (+19,+21) [+4] STR, CHR, Infra
+   Slay Xdragon, Evil, Animal, Undead, Troll, Orc, Giant, Demon; Flame Tongue
+   Resist Fire, Chaos; Free Action
+   Aggravate
+ 
+a Two-Handed Sword named Mormegil (3d6) (-40,-60) [-1] Speed
+   Aggravate, Heavily Cursed
+ 
+a Broadsword named Arunruth (3d5) (+20,+12) [+4] DEX
+   Slay Demon, Orc
+   Free Action
+   Feather Fall, Slow Digest
+   Activates for Frost Bolt(12d8) every 500 turns
+ 
+a Broadsword named Glamdring (2d5) (+10,+15) 
+   Slay Evil, Orc; Flame Tongue
+   Resist Fire, Light;
+   Slow Digest, Perm. Light, Search
+ 
+a Broadsword named Aeglin (2d5) (+12,+16)
+   Slay Orc; Lightning Brand
+   Resist Lightning;
+   Slow Digest, Perm. Light, Search
+ 
+a Broadsword named Orcrist (2d5) (+10,+15) [+3] Stealth
+   Slay Evil, Orc; Frost Brand
+   Resist Cold
+   Slow Digest, Perm. Light
+ 
+a Bastard Sword named Calris (3d7) (-20,+20) [+5] CON
+   Slay Xdragon, Demon, Troll, Evil
+   Resist Disenchant
+   Aggravate, Heavily Cursed
+ 
+a Main Gauche of Maedhros (2d6) (+12,+15) [+3] DEX, INT
+   Slay Giant, Troll
+   Free Action
+   See Invis
+ 
+a Glaive of Pain (10d6) (0,+30)
+ 
+a Halberd named Osondir (3d4) (+6,+9) [+3] CHR
+   Slay Undead, Giant; Flame Tongue
+   Resist Fire, Sound
+   See Invis, Feather Fall
+ 
+a Lucerne Hammer named Turmil (2d5) (+10,+6) [+4] WIS, Infra
+   Slay Orc; Frost Brand
+   Resist Cold, Light; Regeneration
+   Perm. Light
+   Activates for Drain Life(90) every 70 turns
+ 
+a Pike named Til-i-arc (2d5) (+10,+12) [+2] INT [+10] AC 
+   Slay Demon, Giant, Troll; Frost Brand, Flame Tongue
+   Resist Fire, Cold; Sustain INT
+   Slow Digest
+ 
+a Mace of Disruption named Deathwreaker (4d12) (+18,+18) [+6] STR, Tunnel
+   Slay Evil, Dragon, Animal; Flame Tongue
+   Immune Fire, Resist Chaos, Disenchant, Darkness
+   Aggravate
+ 
+a Scythe named Avavir (5d3) (+8,+8) [+3] DEX, CHR [+10] AC
+   Flame Tongue, Frost Brand
+   Resist Fire, Cold, Light; Free Action
+   See Invis, Perm. Light
+   Activates for Word of Recall every 200 turns
+ 
+a Mace named Taratol (2d7) (+12,+12)  20.0 lbs
+   Slay Xdragon, Lightning Brand
+   Resist Lightning, Darkness
+   Activates for Haste Self(15+d30 turns) every 166 turns
+ 
+a Lance of the Eorlingas (2d12) (+3,+21) [+2] DEX  36.0 lbs
+   Slay Evil, Troll, Orc
+   See Invis
+ 
+a Broad Axe named Barukkheled (2d6) (+13,+19) [+3] CON
+   Slay Evil, Orc, Troll, Giant
+   See Invis
+ 
+a Trident of Wrath (3d9) (+16,+18) [+2] STR, DEX  30.0 lbs
+   Slay Evil, Undead
+   Resist Dark, Light
+   See Invis
+ 
+a Trident of Ulmo (4d10) (+15,+19) [+4] DEX
+   Slay Animal, Dragon
+   Immune Acid; Resist Nether; Hold Life; Regeneration; Free Action
+   See Invis, Slow Digest
+   Activates for Teleport Away every 150 turns
+ 
+a Scimitar named Haradekket (2d5) (+9,+11) [+2] DEX
+   Slay Evil, Undead, Animal
+   See Invis
+ 
+a Lochaber Axe named Mundwine (3d8) (+12,+17) 
+   Slay Evil
+   Resist Fire, Cold, Lightning, Acid
+ 
+a Cutlass named Gondricam (1d7) (+10,+11) [+3] DEX, Stealth
+   Resist Fire, Cold, Acid, Lightning; Regeneration
+   See Invis, Feather Fall
+ 
+a Sabre named Careth Asdriag (1d7) (+6,+8) 
+   Slay Dragon, Animal, Giant, Orc, Troll
+ 
+a Rapier named Forasgil (1d7) (+12,+19)
+   Slay Animal; Frost Brand
+   Resist Cold, Light
+   Perm. Light
+ 
+an Executioner's Sword named Crisdurian (4d5) (+18,+19)
+   Slay Evil, Undead, Dragon, Giant, Orc, Troll
+   See Invis
+ 
+a Flail named Totila (2d9) (+6,+8) [+2] Stealth
+   Slay Evil; Flame Tongue
+   Resist Fire, Confusion
+   Activates for Confuse Monster every 15 turns
+ 
+a Short Sword named Gilettar (1d7) (+3,+7)
+   Slay Animal
+   Regen
+   Slow Digest
+ 
+a Katana named Aglarang (6d8) (+0,+0) [+5] DEX  5.0 lbs
+   Sustain DEX
+ 
+a Spear named Aeglos (1d20) (+15,+25) [+4] WIS [+5] AC
+   Slay Troll, Orc; Frost Brand
+   Resist Cold; Free Action
+   Slow Digest
+   Activates for Frost Ball(100) every 500 turns
+ 
+a Spear named Nimloth (1d6) (+11,+13) [+3] Stealth
+   Slay Undead; Frost Brand
+   Resist Cold
+ 
+a Spear named Orome (1d6) (+15,+15) [+4] INT, Infra
+   Slay Giant; Flame Tongue
+   Resist Fire, Light
+   See Invis, Search, Feather Fall, Perm. Light
+   Activates for Stone to Mud(20+d30) every 5 turns
+ 
+a Dagger named Angrist (2d5) (+10,+15) [+4] DEX [+5] AC
+   Slay Evil, Troll, Orc
+   Resist Dark; Sustain CON; Free Action
+ 
+a Dagger named Narthanc (1d4) (+4,+6)
+   Flame Tongue
+   Resist Fire
+   Activates for Fire Bolt(9d8) every 5+d10 turns
+ 
+a Dagger named Nimthanc (1d4) (+4,+6)
+   Frost Brand
+   Resist Cold
+   Activates for Frost Bolt(6d8) every 4+d8 turns
+ 
+a Dagger named Dethanc (1d4) (+4,+6)
+   Lightning Brand
+   Resist Lightning
+   Activates for Lightning Bolt(4d8) every 3+d7 turns
+ 
+a Dagger of Rilia (2d4) (+4,+3)
+   Resist Disenchant
+   Activates for Stinking Cloud(12) every 3+d3 turns
+ 
+a Dagger named Belangil (3d2) (+6,+9) [+2] DEX
+   Frost Brand
+   Resist Cold; Regeneration
+   See Invis, Slow Digest
+   Activates for Frost Ball(48) every 3+d7 turns
+ 
+a Short Sword named Sting (1d6) (+7,+8) [+2] DEX
+   Slay Orc
+   Resist Light
+   See Invis, Perm. Light
+ 
+a Great Axe of Durin (4d4) (+10,+20) [+3] CON [+15] AC
+   Slay Xdragon, Demon, Troll, Orc
+   Resist Fire, Acid, Dark, Light, Chaos; Free Action
+ 
+a Great Axe of Eonwe (2d6) (+15,+10) [+2] All stats [+8] AC
+   Slay Evil, Undead, Orc; Frost Brand
+   Immune Cold; Free Action
+   Activates for Mass Genocide every 1000 turns
+ 
+a Battle Axe of Balli Stonehand (3d6) (+8,+11) [+3] STR, CON, Stealth [+5] AC
+   Slay Demon, Troll, Orc
+   Resist Lightning, Cold, Acid, Fire, Blind; Free Action; Regeneration
+   Feather Fall, See Invis
+ 
+a Battle Axe named Lotharang (2d8) (+4,+3) [+1] STR, DEX
+   Slay Troll, Orc
+   Activates for Cure Medium Wounds(4d7) every 2+d2 turns
+ 
+a War Hammer of Aule (5d5) (+19,+21) [+4] WIS [+5] AC
+   Slay Xdragon, Evil, Undead, Demon; Lightning Brand
+   Resist Fire, Acid, Cold, Lightning, Nexus; Free Action
+   See Invis
+ 
+a Beaked Axe of Theoden (2d6) (+8,+10) [+3] WIS, CON
+   Slay Dragon
+   Search, Slow Digest, ESP
+   Activates for Drain Life(120) every 400 turns
+ 
+a Two-Handed Great Flail named Thunderfist (3d6) (+5,+18) [+4] STR
+   Slay Animal, Troll, Orc; Flame Tongue; Lightning Brand
+   Resist Fire, Lightning, Dark
+ 
+a Morningstar named Bloodspike (2d6) (+8,+22) [+4] STR
+   Slay Animal, Troll, Orc
+   Resist Nexus
+   See Invis
+ 
+a Morningstar named Firestar (2d6) (+5,+7) [+2] AC
+   Flame Tongue
+   Resist Fire
+   Activates for Fire Ball(72) every 100 turns
+ 
+a Blade of Chaos named Doomcaller (6d5) (+18,+28) [-5] CON
+   Slay Animal, Xdragon, Evil, Troll, Orc; Frost Brand
+   Resist Fire, Cold, Lightning, Acid; Free Action
+   See Invis, Aggravate, ESP
+ 
+a Quarterstaff named Nar-i-vagil (1d10) (+10,+20) [+3] INT
+   Slay Animal; Flame Tongue
+   Resist Fire
+ 
+a Quarterstaff named Eriril (1d10) (+3,+5) [+4] INT, WIS
+   Slay Evil
+   Resist Light
+   See Invis, Perm. Light
+   Activates for Identify every 10 turns
+ 
+a Quarterstraff of Olorin (2d10) (+10,+13) [+4] WIS, INT, CHR
+   Slay Evil, Orc, Troll; Flame Tongue
+   Resist Fire, Nether; Hold Life
+   See Invis
+   Activates for Probing every 20 turns
+
+ 
+BODY ARMOR, SHIELDS, BOOTS, GLOVES, HELMS
+----------------------------------------- 
+ 
+Adamantine Plate Mail named Soulkeeper [40,+20]
+   Resist Acid, Cold, Chaos, Dark, Nexus, Nether; Hold Life
+   Activates for Heal(1000) every 888 turns
+ 
+Multi-Hued Dragon Scale Mail named Razorback (-3) [30,+25] 
+    [-2] INT, WIS, Stealth  40.0 lbs
+   Resist Fire, Cold, Acid, Poison, Light; Immune Lightning; Free Action
+   See Invis, Aggravate
+   Activates for a "star ball"(150) every 1000 turns
+ 
+Power Dragon Scale Mail named Bladeturner (-4) [50,+30] [-3] DEX  50.0 lbs
+   Resist Fire, Cold, Acid, Poison, Lightning, Confusion, Sound, Light, Dark,
+    Chaos, Disenchant, Shards, Blind, Nexus, Nether; Hold Life; Regeneration
+   Search
+   Activates for Heroism, Bless, Berserk(50+d50 turns) and Resistance
+    every 400 turns
+ 
+a Pair of Hard Leather Boots of Feanor [3,+20] [+1] Speed, Stealth
+   Resist Acid, Nexus
+   Activates for Haste Self(15+d25 turns) every 200 turns
+ 
+a Pair of Soft Leather Boots named Dal-i-thalion [2,+15] [+5] DEX
+   Resist Acid; Sustain DEX; Free Action
+   Activates for Remove Fear, Cure Poison every 5 turns
+ 
+a Small Metal Shield of Thorin [3,+25] [+4] STR, CON
+   Resist Sound, Chaos; Immune Acid; Free Action
+   Search
+ 
+Full Plate Armour of Isildur [25,+25]
+   Resist Acid, Fire, Cold, Lightning, Sound
+ 
+Metal Brigandine Armor of Rohan [19,+15] [+2] STR, DEX
+   Resist Acid, Fire, Cold, Lightning, Sound, Confusion
+ 
+a Large Metal Shield of Anarion [5,+20]
+   Resist Acid, Fire, Cold, Lightning; Sustain all stats
+
+a Set of Cestus of Fingolfin (+10,+10) [5,+20] [+4] DEX
+   Resist Acid; Free Action
+   Activates for Magic Missile(150) every 88+d88 turns
+ 
+a Set of Leather Gloves named Cambeleg (+8,+8) [1,+15] [+2] STR, CON
+   Free Action
+ 
+a Set of Leather Gloves named Cammithrim [1,+10]
+   Resist Light; Sustain DEX
+   Perm. Light
+   Activates for Magic Missile(2d6) every 2 turns
+ 
+a Set of Gauntlets named Paurhach [2,+15]
+   Resist Fire
+   Activates for Fire Bolt(9d8) every 5+d10 turns
+ 
+a Set of Gauntlets named Paurnimmen [2.+15]
+   Resist Cold
+   Activates for Frost Bolt(6d8) every 4+d8 turns
+ 
+a Set of Gauntlets named Pauraegen [2,+15]
+   Resist Lightning
+   Activates for Lightning Bolt(4d8) every 3+d7 turns
+ 
+a Set of Gauntlets named Paurnen [2,+15]
+   Resist Acid
+   Activates for Acid Bolt(5d8) every 4+d7 turns
+ 
+a Set of Gauntlets named Camlost (-11,-12) [2,+0] [-5] STR, DEX
+   Aggravate, Cursed
+
+Mithril Chain Mail named Belegennon [28,+20] [+4] Stealth
+   Resist Acid, Fire, Cold, Lightning
+   Activates for Phase Door every 2 turns
+ 
+Mithril Plate Mail of Celeborn [35,+25] [+4] STR, CHR
+   Resist Acid, Fire, Cold, Lightning, Disenchant, Dark
+   Activates for Genocide every 500 turns
+ 
+Augmented Chain Mail of Caspanion [16,+20] [+3] CON, WIS, INT
+   Resist Acid, Poison, Confusion
+   Activates for Trap/Door Destruction every 10 turns   
+ 
+Soft Leather Armour named Hithlomir [4,+20] [+4] Stealth
+   Resist Acid, Fire, Cold, Lightning
+ 
+Leather Scale Mail named Thalkettoth [11,+25] [+3] DEX
+   Resist Acid
+ 
+Chain Mail of Arvedui [14,+15] [+2] STR, CHR
+   Resist Acid, Fire, Cold, Lightning
+
+a Hard Leather Cap of Thranduil [2,+10] [+2] INT, WIS
+   Resist Acid, Blind
+   ESP
+ 
+a Metal Cap of Thengel [3,+12] [+3] WIS, CHR
+   Resist Acid
+ 
+a Steel Helm named Hammerhand [6,+20] [+3] STR, CON, DEX
+   Resist Acid
+ 
+a Large Leather Shield of Celefarn [4,+20]
+   Resist Acid, Fire, Cold, Lightning, (Light, Dark on UNIX versions)
+ 
+a Pair of Metal Shod Boots of Thror [6,+20] [+3] CON, STR
+   Resist Acid
+ 
+an Iron Helm of Dor-Lomin [5,+20] [+4] CON, DEX, STR
+   Resist Acid, Fire, Cold, Lightning, Light, Blind
+   See Invis, Perm. Light, ESP
+ 
+an Iron Helm named Holhenneth [5,+10] [+2] INT, WIS, Search
+   Resist Acid, Blind
+   Activates for Detection every 55+d55 turns
+ 
+an Iron Helm of Gorlim [5,+10] [-125] INT, WIS, Search
+   Aggravate, Cursed
+ 
+a Golden Crown of Gondor [0,+15] [+3] STR, CON, WIS
+   Resist Acid, Fire, Light, Blind; Regeneration
+   See Invis, Perm. Light
+   Activates for Heal(500 hp) every 500 turns
+ 
+an Iron Crown of Beruthiel [0,+20] [-125] STR, DEX, CON
+   Resist Acid; Free Action
+   See Invis, ESP, Heavily Cursed
+ 
+
+MISSILE WEAPONS
+---------------
+
+a Long Bow of Beleg Cuthalion (x3) (+20,+22) [+3] DEX, Stealth
+ 
+a Long Bow of Bard (x3) (+17,+19) [+3] DEX
+   Free Action
+ 
+a Light Crossbow named Cubragol (x3) (+10,+14) [+1] Speed /* shoots as sling */
+   Resist Fire
+   Activates to make Bolts of Fire every 999 turns
+ 
+
+CLOAKS
+------
+
+a Cloak named Colluin [1,+15]
+   Resist Fire, Cold, Lightning, Acid
+   Activates for Resistance(20+d20 turns) every 111 turns
+ 
+a Cloak named Holcolleth [1,+4] [+2] INT, WIS, Stealth
+   Resist Acid
+   Activates for Sleep II every 55 turns
+ 
+a Cloak of Thingol [1,+18] [+3] DEX, CHR
+   Resist Fire, Acid, Cold; Free Action
+   Activates for Recharge Item every 70 turns
+ 
+a Cloak of Thorongil [1,+10]
+   Resist Acid; Free Action
+   See Invis
+ 
+a Cloak named Colannon [1,+15] [+3] Stealth
+   Resist Acid
+   Activates for Teleport every 45 turns
+ 
+a Shadow Cloak of Luthien [6,+20] [+2] INT, WIS, CHR
+   Resist Fire, Cold, Acid
+   Activates for Restore Life Levels every 450 turns
+ 
+a Shadow Cloak of Tuor [6,+12] [+4] Stealth
+   (Immune Acid); Free Action /* Bug prevents this from working */
+   See Invis
+ 
+
+LIGHT SOURCES
+-------------
+ 
+The Phial of Galadriel
+   Perm. Light
+   Activates for Call Light every 10+d10 turns
+ 
+The Star of Elendil
+   Perm. Light
+   Activates for Sense Surroundings every 50+d50 turns
+ 
+The Arkenstone of Thrain [+2] WIS, DEX
+   Hold Life
+   See Invis, Perm. Light
+   Activates for Clairvoyance every 100+d100 turns
+
+ 
+AMULETS
+-------
+Amulet of Ingwe [+3] WIS, CHR, Infra
+   Resist Fire, Cold, Acid, Lightning
+   See Invis
+   Activates for Dispel Evil(x5) every 444+d222 turns
+ 
+Amulet of Carlammas [+2] CON
+   Resist Fire
+   Activates for Protection from Evil every 222+d222 turns
+ 
+Amulet(Necklace) of the Dwarves [+3] STR, CON, Infra
+   Free Action; Regeneration
+   See Invis
+
+ 
+RINGS
+-----
+
+a Ring of Barahir [+1] All Stats
+   Resist Poison
+ 
+a Ring of Power named Narya [+1] All Stats
+   Immune Fire; Hold Life; Free Action; Regeneration; Sustain STR
+   See Invis; Slow Digest; Feather Fall
+   Activates for Fire Ball(120) every 222+d222 turns
+ 
+a Ring of Power named Nenya [+2] All Stats
+   Immune Cold; Hold Life; Free Action; Regeneration; Sustain INT
+   See Invis; Slow Digest; Feather Fall
+   Activates for Frost Ball(200) every 222+d333 turns
+   
+a Ring of Power named Vilya [+3] All Stats
+   Immune Lightning; Hold Life; Free Action; Regeneration; Sustain WIS
+   See Invis; Slow Digest; Feather Fall
+   Activates for Lightning Ball(250) every 222+d444 turns
+ 
+a Ring of Tulkas [+4] STR, DEX, CON
+   Activates for Haste Self(50+d50 turns) every 200 turns
+ 
+a Ring of Power (The One Ring) [+5] All Stats
+   Immune Fire, Cold, Acid, Lightning; Free Action; Regeneration
+   See Invis; Slow Digest; Feather Fall
+   Aggravate, Drains XP Constantly, Cannot Take Off (Ultra-Cursed)
+   Activates for Mana Ball/Ruination/Dispel Evil every 444+d444 turns
+
+Other spoilers can be found at ftp.cis.ksu.edu , in pub/Games/Angband/doc.
+
+These include :
+	Tom Swingle's list of item depths
+	Sean Marsh's list of uniques
+	List of initial character generation statistics
+	List of store-related spoilers
+	List of all spells and initial failure rates
+	Detailed descriptions of how stats work, and attacks/round table.
+
+If you have any questions or corrections, please mail me at
+eyhung@soda.berkeley.edu.

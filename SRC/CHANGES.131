@@ -1,0 +1,185 @@
+spells.c:
+	fire_ball() code was screwy, if, while targetted to someone/something
+		that wasn't aimable at the moment, you fired a ball spell,
+		then it would leap over everything until it eventually hit
+		a wall.  Obviously, this is not what you want.  If you can't
+		aim at your target, just explode at the 1st thing you hit.
+		I've fixed this, but I REALLY hate finding these problems
+		within 24 hours of uploading a new update!!!!
+creature.c, misc2.c:
+	another silly mistake... "your whatever was destroyed/stolen"
+		messages were incorrect if a stackable single item (like
+		a potion/scroll/etc) was destroyed.  It described the loss
+		of the whole bunch, even though only 1 was really lost. Fixed.
+moria2.c, dungeon.c:
+	YA oversight.  get_dir needed fixing (as above) for openobject(),
+		closeobject(), disarm_trap(), bash(), and jamdoor().
+spells.c:
+	Okay, I didn't fix the fire_ball() problem last time.  Now, after
+		careful consideration of the possible cases, with the
+		help of my marker board as scratch space, I believe I've
+		got the targetting test to work so that ball spells will
+		skip over monsters every time they're supposed to, and
+		only when they're supposed to.  It's really hairy to look
+		at, so I've commented it in prose. -CFT 
+monsters.c:
+	another flag consistency check: all thief-types now pick up objects.
+	also green glutton ghosts.  And all giants now don't (less than 1/2
+	did, so I removed the pickup flag from them all).
+generate.c:
+	new fn vault_giant() added and changes to vault_nasty() and special_
+		pit(), to add "Giant pits".  Basically they happen at the
+		same depth as troll pits (1 in 3 troll pits will be a giant
+		pit instead).  This is about right, because the giants tend
+		to have less HP than the trolls, but the giants aren't hurt
+		by light wands/rods, and more of them can harm your inventory.
+misc2.c:
+	when I colorized the exp display, I used %d to print the exp value,
+		instead of %ld.  This is fixed.
+externs.h, moria1.c, misc1.c, misc2.c, moria2.c:
+	To improve overlay performance, I moved group functions that always
+		call each other to the same file.  This was a very limited
+		optimization (only 2 fns moved), specializing in the
+		fire_ball(), fire_bolt(), bolt(), breath() functions. Basically,
+		spells should show a drastic speed up.
+	moved were: mmove() from misc2 -> moria2 to be with the rest of the
+		targetting code; and lite_spot() from moria1 -> misc1 to
+		be with the functions it calls.
+main.c:
+	After some time spent with my manuals (Yes, I did finally RTFM!),
+		I've figured out how to make TC's overlays run with
+		EMS memory.  You'll need to have some program that provides
+		EMS memory to use it, of course. (The "generic" program to
+		do this is emm386 (is there an emm286?))  Also, if you
+		have a recent version of DOS, and you're using emm386, be
+		sure that it is not given the 'noems' option.
+player.c:
+	dunedain -> dunadan  Apparently dunedain is plural, and since all
+		other race rames use singular, this makes it consistant.
+scrolls, rods, magic, prayer, dungeon:
+	WoR spells still ask, but now only ESC,y,Y,n,N will be accepted.
+	if player types y,Y then he will be recalled.  OW, no.  But either
+		way he still loses the scroll/charge/spell.  (But at least
+		he won't lose his last scroll by hitting RET...)
+tables.c:
+	indigo potions are now blue...
+misc1.c, dungeon.c:
+	In another optimization attempt, I've moved in_bounds(), randint(),
+		randnor(), damroll(), pdamroll(), and max_hp() out of
+		misc1.c and into dungeon.c.  Since dungeon.c is not overlayed,
+		all of these fns will always be in memory.  This will mean
+		that just slightly more memory is needed to play angband,
+		but I hope these fns are used often enough that this
+		change will prevent a lot of swapping... -CFT
+monsters.c:
+	mirkwood spiders are now evil.
+spells.c:
+	spell_hit_monster() could have divided by zero when setting monster
+		confusion flags.  Fixed.
+generate.c:
+	In an effort to prevent light_room from flooding into different
+		rooms, and from lighting door (esp secret doors) that
+		it shouldn't, I've taken off the "c_ptr->lr = TRUE;" line
+		from the end of all the place_*_door functions.
+moria2.c:
+	carry() code changed to check the pickup flag more carefully.  If
+		you were moving w/o pickup, and your inventory was full,
+		you would have been told "you can't carry", and the code
+		would never have noticed that you didn't WANT to carry it.
+		It should work better now.
+spells.c:
+	recharge() code changed so that rods can now be recharged.  recharging
+		a rod will reduce the amount of time required until it can
+		be used again.  If the rod recharge fails, it will be drained
+		further, not destroyed.  staff/wand recharge still should
+		work normally.
+	spell_hit_monster() changed to skip special effects if the monster's
+		going to die.  Why bother mention that a monster polymorph
+		from a blast of chaos, if it was killed by the blast?
+help.c:
+	'7' from "...The Healer's" to "...the Black Market"
+misc1.c:
+	to help reduce troubles, the test for MHDs in the color code of
+		loc_symbol has been changed to look for "ulti-" instead of
+		"multi-hued" as the substring to match.  This should help
+		people who don't agree with my capitialization preferences.
+spells.c:
+	detection(), detect_monsters(), detect_invis(), detect_evil() all
+		had multi-hued dragon colorizing code from loc_symbol
+		incorporated into the display, so that the color would
+		be what I want for detect spells.
+describe.c:
+	"an drow" -> "a drow"
+dungeon.c:
+	warrior psuedo ID now will tell letter of item learned about.
+misc2.c:
+	Because someone lost their main weapon to the inventory sort code,
+		I've realized how bad the change of assumed sorted order
+		can be.  Since inven_carry() assumed that everything is in
+		order before trying to insert, it could have inserted an
+		obj into a new slot when it should have stacked it with
+		others.  So, I've modified inven_carry (AGAIN!) to use a
+		2-stage process.  First, it looks through the player's
+		entire inventory, looking for a place to stack the object.
+		This prevents the stacking troubles, and agrees with what
+		the inven_check_num() test does.  Then, if it cannot stack
+		the object (either it doesn't stack, or no match was found),
+		it loops again, looking for the place to insert it in the
+		assumed sorted order.  Because a complete test for match is
+		done first, then even if the player's inventory is not in
+		the order it is assumed to be in, nothing bad will happen.
+	Another change:  Because I want Tenser's to sort before only Raals,
+		I've decided to change the sort criteria...  As before, if
+		an item is not always known1_p(), then we sort only by desc
+		tvals.  If it is always known, then it now sorts by incr
+		item level, and then by incr subval.  This may alter people's
+		inventories a little bit, but it will cause no more lost
+		objects, because of the above change.
+creature.c misc2.c:
+	I've (YA) changed the messages given when an item is stolen or
+		destroyed by acid/fire/etc.  Now the messages make it quite
+		clear if one item was lost, or many.  (stackable single
+		items, like potions/scrolls are lost 1 at a time, while
+		group items like arrows are lost a group at a time..)  I sure
+		hope this is the last time I have to change these messages.
+creature.c:
+	dragons will no longer pick up XD weapons (I forgot this one when I
+		did the "monsters don't pick up slay them weapons" bit).
+spells.c:
+	when monsters "stunned" (actually confused, but when done by a stun
+		cloud), the message is "dazed" instead of "confused"
+	teleport_to() was locking up the game!  The test for inbounds()
+		was checking the wrong variables (ny,nx) instead of (y,x)
+	BUT, that wasn't the only cause of "hangups" from Nexus breathes...
+		Because the variable 'm_ptr' was uninitialized if the
+		player was hit before any monster, teleport_to could be
+		call with garbage values to teleport_to.  I've fixed the
+		problem by forcing m_ptr to point to the monster that
+		breathed when processing the player-hit section of code (like
+		the codes assumes it does).  Boy, did this ever S*CK to
+		find... (and it's all my fault, caused during my remaking
+		of bolt/ball spells and mon_cast_spell().... -CFT
+dungeon.c, misc1.c:
+	In hopes of further optimizing the overlay code, I've moved the
+		functions lite_spot, loc_symbol, test_light, and
+		panel_contains from misc1.c to dungeon.c.  Since the code
+		in dungeon.c is not overlayed (by makefile), these functions
+		will now be always available.  I hope this will speed up
+		display time.  The down side of this is that the amount of
+		memory required to run will go up by the size of the object
+		code of these functions... since they are short functions
+		that don't use a lot of string data, I expect this increase
+		in memory requirements to be extremely minor, noticable only
+		in the most borderline cases.
+spells.c:
+	ball spells no longer affect newly dropped items.
+dungeon.c:
+	The One ring will no longer drain a character below 0 exp pts.  This
+		isn't a problem for a character whose likely to find it,
+		but if someone gets ridiculously lucky, and finds it at low
+		level, then it could happen (and then the exp either causes
+		trouble by being negative, or wraps around 4billion... either
+		way it's better to be fixed).
+---------------------------------------------------------------------------
+Aug 28 93	PC Angband 1.31 (a minor bugfix update) released
+---------------------------------------------------------------------------

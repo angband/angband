@@ -74,10 +74,10 @@ discovery...
 	Calris (3d7 bastard sword, initially cursed)
 	Deathwreaker (HEAVY 4d12 mace of disruption)
 	Rilia (2d4 dagger)
-	Celeborn (Mithral Plate)
+	Celeborn (Mithril Plate)
 * Curse Weapon and Curse Armor scrolls CAN DESTROY artifacts.  In PC
   Angband 1.3 or newer (and maybe the other ports as well) artifacts do
-  get a saving throw against this destruction, but it less than 50/50
+  get a saving throw against this destruction, but it's less than 50/50
   that they survive.  In general, it is not a good idea to read unIDed
   scrolls found on "lucky" levels or deep in the dungeon until you know
   which scrolls these two are, unless you aren't using any equipment you
@@ -115,7 +115,7 @@ discovery...
 * There has been many ideas proposed on rec.games.moria for changing
   these feelings, or otherwise making the tactic of simply going up and
   down levels with resting in between unprofitable.  Many of them have
-  either been unfeasable, or would be *nasty* to code.  But many others
+  either been unfeasible, or would be *nasty* to code.  But many others
   have sounded reasonable, and would not be too hard to code.  (I, for
   one, am waiting until a really great idea comes along before I alter
   something so basic about the game as these messages, and how artifacts
@@ -206,7 +206,7 @@ discovery...
   weap_mult is the bonuses granted for the weapon.  hit_mult is the
   multiplier granted from a "good", "excellent", etc hit.  hit_bonus is
   the additional damage granted from a "good", etc hit.  +to-dam is the
-  character's total pluses to damage.
+  character's total plusses to damage.
 
   Note that damage bonuses are not multiplied in.  This means that a
   dagger (1d4), even if it does x5 damage, is not as good as a two-handed
@@ -221,7 +221,7 @@ discovery...
   damage = (base ammo damage "roll" + +to-dam-ammo + +to-dam-"bow")
 	   * "bow"_mult * ammo_mult * hit_mult + hit_bonus
   "bow"_mult is the multiplier with the missile launcher.  ammo_mult is
-  for special ammos -- of Fire, of Dragon Slaying, etc.  hit_mult is the
+  for special ammo -- of Fire, of Dragon Slaying, etc.  hit_mult is the
   multiplier gained from a "good",etc hit.  hit_bonus is the extra
   damage gained from a "good",etc hit.
 
@@ -234,7 +234,7 @@ discovery...
   values reflect the extra to-hit and to-dam bonuses you get for hitting
   a monster over the head with your "bow".  The code uses the correct
   values when you shoot "arrows" with your "bow".
-* Multiplers for various weapon powers are:
+* Multipliers for various weapon powers are:
 	L   -  x5	XD  -  x5	FB  -  x3	FT  -  x3
 	SD  -  x3	SDm -  x3	SU  -  x3	SO  -  x3
 	SG  -  x3	ST  -  x3	SE  -  x2	SA  -  x2
@@ -260,7 +260,7 @@ discovery...
   "excellent hit"	x2 + 10
   "superb hit"		x3 + 15
   "*GREAT* hit"		x3 + 20
-  The odds of getting a special hit are influenced by your pluses to
+  The odds of getting a special hit are influenced by your plusses to
   hit, your combat skill, and the weight of your weapon (Heavier weapons
   are more likely to deliver an extra-hard hit).
 * Priests are penalized for wielding "non-priestly" weapons.  This
@@ -270,7 +270,7 @@ discovery...
   wield a non-priestly weapon.  But this is only -2 to hit and
   damage...  If you find Ringil, WIELD IT!
 * For those who have examined the "blows" table (which tells how many
-  swings you can get, based on your strength, your dex, and the weight
+  swings you can get, based on your strength, your DEX, and the weight
   of your weapon), be warned:  When calculating your STR to weapon
   weight ratio, the code considers any weapon lighter than 5 pounds to
   weigh 5 pounds.  So there is no longer any advantage gained by
@@ -295,7 +295,7 @@ discovery...
   to-hit scrolls to remove Calris's penalty to-hit.
 * A Potion of Life restores lost experience, restores any drained stats,
   cures poison, confusion, blindness, hallucination, removes fear and
-  stuns, heals cuts and fully heals you.  It's a very nice potion to
+  stunning, heals cuts and fully heals you.  It's a very nice potion to
   have around.
 * A staff or rod of Enlightenment acts as the priest spell of sense
   surroundings (basically, it maps one screen, without detecting
@@ -321,7 +321,7 @@ discovery...
   Gold DSM:	RSound  (breathe for 130 hp)
   Chaos DSM:	RDisench, RChaos  (breathe for 220 hp)
   Law DSM:	RShards, RSound  (breathe for 230 hp)
-  Balance DSM:	RDisench, Rchaos, RShards, RSound  (breathe for 250 hp)
+  Balance DSM:	RDisench, RChaos, RShards, RSound  (breathe for 250 hp)
   Shining DSM:	RLight, RDark  (breathe light/dark for 200 hp)
   Power DSM:	RDisench, RChaos, RShards, RLight, RDark, RNexus,
 		RNether, RL, RC, RF, RPoi  (breathe "elements" for 300 hp)
@@ -369,7 +369,7 @@ discovery...
   do this with weapons.  There are some really bad weapons that can
   laugh off your feeble attempts to uncurse!  For mages and rangers
   who have the identify spell and know it well enough to cast fairly
-  often, ID everything you can.  If you've got some really nice Mithral
+  often, ID everything you can.  If you've got some really nice Mithril
   Plate, you don't have to ID things like studded leather armor, but you
   should try to get everything you can.  Besides, you should be on the
   lookout for light armor artifacts, to avoid the mana penalty of heavy
@@ -386,7 +386,7 @@ discovery...
 	'worthless'	cursed item
 	'terrible'	cursed ego item or artifact
 	'average'	uncursed, but nonmagic item, maybe with minuses
-	'good'		item with pluses
+	'good'		item with plusses
 	'excellent'	ego item
 	'special'	artifact
   Warriors notice items most quickly, followed by rogues and then paladins.  

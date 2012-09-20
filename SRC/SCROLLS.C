@@ -64,12 +64,7 @@ void read_scroll()
 		  objdes(tmp_str, i_ptr, FALSE);
 		  (void) sprintf(out_val, "Your %s glows faintly!", tmp_str);
 		  msg_print(out_val);
-		  if (enchant(&i_ptr->tohit))
-		    {
-		      i_ptr->flags &= ~TR_CURSED;
-		      calc_bonuses();
-		    }
-		  else
+		  if (!enchant(i_ptr, 1, ENCH_TOHIT))
 		    msg_print("The enchantment fails.");
 		  ident = TRUE;
 		}
@@ -81,12 +76,7 @@ void read_scroll()
 		  objdes(tmp_str, i_ptr, FALSE);
 		  (void) sprintf(out_val, "Your %s glows faintly!", tmp_str);
 		  msg_print(out_val);
-		  if (enchant(&i_ptr->todam))
-		    {
-		      i_ptr->flags &= ~TR_CURSED;
-		      calc_bonuses ();
-		    }
-		  else
+		  if (!enchant(i_ptr, 1, ENCH_TODAM))
 		    msg_print("The enchantment fails.");
 		  ident = TRUE;
 		}
@@ -128,12 +118,7 @@ void read_scroll()
 		  objdes(tmp_str, i_ptr, FALSE);
 		  (void) sprintf(out_val, "Your %s glows faintly!", tmp_str);
 		  msg_print(out_val);
-		  if (enchant(&i_ptr->toac))
-		    {
-		      i_ptr->flags &= ~TR_CURSED;
-		      calc_bonuses ();
-		    }
-		  else
+		  if (!enchant(i_ptr, 1, ENCH_TOAC))
 		    msg_print("The enchantment fails.");
 		  ident = TRUE;
 		}
@@ -216,7 +201,8 @@ void read_scroll()
 	      break;
 	    case 19:
 	      msg_print("This is a mass genocide scroll.");
-	      ident = mass_genocide(TRUE);
+	      mass_genocide(TRUE);
+	      ident = TRUE;
 	      break;
 	    case 20:
 	      ident = detect_invisible();
@@ -241,7 +227,8 @@ void read_scroll()
 	      break;
 	    case 26:
 	      msg_print("This is a genocide scroll.");
-	      ident = genocide(TRUE);
+	      genocide(TRUE);
+	      ident = TRUE;
 	      break;
 	    case 27:
 	      ident = unlight_area(char_row, char_col);
@@ -267,19 +254,7 @@ void read_scroll()
 		  objdes(tmp_str, i_ptr, FALSE);
 		  (void) sprintf(out_val, "Your %s glows brightly!", tmp_str);
 		  msg_print(out_val);
-		  flag = FALSE;
-		  for (k = 0; k < randint(2); k++)
-		    if (enchant(&i_ptr->tohit))
-		      flag = TRUE;
-		  for (k = 0; k < randint(2); k++)
-		    if (enchant(&i_ptr->todam))
-		      flag = TRUE;
-		  if (flag)
-		    {
-		      i_ptr->flags &= ~TR_CURSED;
-		      calc_bonuses ();
-		    }
-		  else
+		  if (!enchant(i_ptr, randint(3), ENCH_TOHIT|ENCH_TODAM))
 		    msg_print("The enchantment fails.");
 		  ident = TRUE;
 		}
@@ -288,13 +263,16 @@ void read_scroll()
 	      i_ptr = &inventory[INVEN_WIELD];
 	      if (i_ptr->tval != TV_NOTHING)
 		{
-		  objdes(tmp_str, i_ptr, FALSE);
+		  objdes(tmp_str, i_ptr, TRUE);
+		  tmp_str[strlen(tmp_str)-1] = 0; /* remove final '.' -CFT */
 		  if ((i_ptr->flags2 & TR_ARTIFACT) && (randint(7) < 4)){
-		    msg_print("A terrible black aura tries to surround your weapon,");
-		    (void)sprintf(out_val,"but your %s resists the effects!", tmp_str);
+		    (void)sprintf(out_val,
+			"A terrible black aura tries to surround your weapon,"
+			" but your %s resists the effects!", tmp_str);
 		    msg_print(out_val);
 		  } else { /* not artifact or failed save... */
-		    (void)sprintf(out_val, "A terrible black aura blasts your %s!", tmp_str);
+		    (void)sprintf(out_val,
+			"A terrible black aura blasts your %s!", tmp_str);
 		    msg_print(out_val);
 		    py_bonuses(i_ptr, -1); /* take off current bonuses -CFT */
 		    i_ptr->name2 = SN_SHATTERED;
@@ -348,16 +326,7 @@ void read_scroll()
 		  objdes(tmp_str, i_ptr, FALSE);
 		  (void) sprintf(out_val,"Your %s glows brightly!", tmp_str);
 		  msg_print(out_val);
-		  flag = FALSE;
-		  for (k = 0; k < randint(2) + 1; k++)
-		    if (enchant(&i_ptr->toac))
-		      flag = TRUE;
-		  if (flag)
-		    {
-		      i_ptr->flags &= ~TR_CURSED;
-		      calc_bonuses ();
-		    }
-		  else
+		  if (!enchant(i_ptr, randint(3)+1, ENCH_TOAC))
 		    msg_print("The enchantment fails.");
 		  ident = TRUE;
 		}
@@ -399,13 +368,16 @@ void read_scroll()
 	      if (k > 0)
 		{
 		  i_ptr = &inventory[k];
-		  objdes(tmp_str, i_ptr, FALSE);
+		  objdes(tmp_str, i_ptr, TRUE);
+		  tmp_str[strlen(tmp_str)-1] = 0; /* kill final '.' -CFT */
 		  if ((i_ptr->flags2 & TR_ARTIFACT) && (randint(7) < 4)){
-		    msg_print("A terrible black aura tries to surround your");
-		    (void)sprintf(out_val,"%s, but it resists the effects!", tmp_str);
+		    (void)sprintf(out_val,
+			"A terrible black aura tries to surround your "
+			"%s, but it resists the effects!", tmp_str);
 		    msg_print(out_val);
 		  } else { /* not artifact or failed save... */
-		    (void)sprintf(out_val, "A terrible black aura blasts your %s!", tmp_str);
+		    (void)sprintf(out_val,
+			"A terrible black aura blasts your %s!", tmp_str);
 		    msg_print(out_val);
 		    py_bonuses(i_ptr, -1); /* take off current bonuses -CFT */
 		    i_ptr->name2 = SN_BLASTED;
