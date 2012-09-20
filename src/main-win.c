@@ -1240,7 +1240,6 @@ static int new_palette(void)
 	HDC hdc;
 	int i, nEntries;
 	int pLogPalSize;
-	int lppeSize;
 	LPLOGPALETTE pLogPal;
 	LPPALETTEENTRY lppe;
 
@@ -1251,7 +1250,6 @@ static int new_palette(void)
 	if (!paletted) return (TRUE);
 
 	/* No bitmap */
-	lppeSize = 0;
 	lppe = NULL;
 	nEntries = 0;
 
@@ -1263,8 +1261,7 @@ static int new_palette(void)
 	/* Use the bitmap */
 	if (hBmPal)
 	{
-		lppeSize = 256 * sizeof(PALETTEENTRY);
-		lppe = (LPPALETTEENTRY)ralloc(lppeSize);
+		lppe = ralloc(256 * sizeof(PALETTEENTRY));
 		nEntries = GetPaletteEntries(hBmPal, 0, 255, lppe);
 		if ((nEntries == 0) || (nEntries > 220))
 		{
@@ -3108,8 +3105,8 @@ static void check_for_save_file(LPSTR cmd_line)
 	/* Next arg */
 	p = strchr(s, ' ');
 
-	/* Tokenize, advance */
-	if (p) *p++ = '\0';
+	/* Tokenize */
+	if (p) *p = '\0';
 
 	/* Extract filename */
 	strcat(savefile, s);

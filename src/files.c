@@ -2359,7 +2359,8 @@ bool show_file(cptr name, cptr what, int line, int mode)
 	Term_get_size(&wid, &hgt);
 
 	/* Copy the filename */
-	strcpy(filename, name);
+	strncpy(filename, name, sizeof(filename));
+	filename[sizeof(filename)-1] = '\0';
 
 	n = strlen(filename);
 

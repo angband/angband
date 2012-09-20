@@ -204,7 +204,7 @@ function quaff_potion(object)
 	elseif object.sval == SV_POTION_BOLDNESS then
 		if set_afraid(0) then ident = TRUE end
 	elseif object.sval == SV_POTION_SPEED then
-		if player.fast > 0 then
+		if player.fast == 0 then
 			if set_fast(randint(25) + 15) then ident = TRUE end
 		else
 			set_fast(player.fast + 5)
@@ -526,13 +526,13 @@ function use_staff(object)
 		ident = TRUE
 	elseif object.sval == SV_STAFF_REMOVE_CURSE then
 		if remove_curse() then
-			if player.blind > 0 then
+			if player.blind == 0 then
 				msg_print("The staff glows blue for a moment...")
 			end
 			ident = TRUE
 		end
 	elseif object.sval == SV_STAFF_STARLITE then
-		if player.blind > 0 then
+		if player.blind == 0 then
 			msg_print("The end of the staff glows brightly...")
 		end
 
@@ -587,7 +587,7 @@ function use_staff(object)
 	elseif object.sval == SV_STAFF_SLOW_MONSTERS then
 		if slow_monsters() then ident = TRUE end
 	elseif object.sval == SV_STAFF_SPEED then
-		if player.fast > 0 then
+		if player.fast == 0 then
 			if set_fast(randint(30) + 15) then ident = TRUE end
 		else
 			set_fast(player.fast + 5)

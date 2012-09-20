@@ -464,16 +464,11 @@ static int get_spell(const object_type *o_ptr, cptr prompt, bool known)
 
 void do_cmd_browse_aux(const object_type *o_ptr)
 {
-	int sval;
 	int i;
 	int spell;
 	int num = 0;
 
 	byte spells[PY_MAX_SPELLS];
-
-
-	/* Get the item's sval */
-	sval = o_ptr->sval;
 
 
 	/* Track the object kind */
@@ -591,7 +586,7 @@ void do_cmd_browse(void)
  */
 void do_cmd_study(void)
 {
-	int i, item, sval;
+	int i, item;
 
 	int spell = -1;
 
@@ -646,9 +641,6 @@ void do_cmd_study(void)
 	{
 		o_ptr = &o_list[0 - item];
 	}
-
-	/* Get the item's sval */
-	sval = o_ptr->sval;
 
 
 	/* Track the object kind */
@@ -1039,7 +1031,7 @@ void do_cmd_pray(void)
 	else
 	{
 		/* Cast the spell */
-		if (!cast_spell(1, spell)) return;
+		if (!cast_spell(cp_ptr->spell_book, spell)) return;
 
 		/* A prayer was prayed */
 		if (!((spell < 32) ?

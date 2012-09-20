@@ -354,8 +354,7 @@ void do_cmd_use_staff(void)
 	
 	object_type *o_ptr;
 
-	/* Hack -- let staffs of identify get aborted */
-	bool use_charge = TRUE;
+	bool use_charge;
 
 	cptr q, s;
 

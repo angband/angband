@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p4 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -76,9 +76,9 @@ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ./src/autoconf.h
 CONFIG_CLEAN_FILES = 
-DIST_COMMON =  AUTHORS COPYING Makefile.am Makefile.in THANKS TODO \
-acconfig.h acinclude.m4 aclocal.m4 configure configure.in install-sh \
-missing mkinstalldirs src/autoconf.h.in src/stamp-h.in
+DIST_COMMON =  AUTHORS COPYING ChangeLog Makefile.am Makefile.in THANKS \
+TODO acconfig.h acinclude.m4 aclocal.m4 configure configure.in \
+install-sh missing mkinstalldirs src/autoconf.h.in src/stamp-h.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
@@ -97,7 +97,7 @@ Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 $(ACLOCAL_M4):  configure.in  acinclude.m4
 	cd $(srcdir) && $(ACLOCAL)
 
-config.status: $(srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
+config.status: $(srcdir)/configure.in $(CONFIG_STATUS_DEPENDENCIES)
 	$(SHELL) ./config.status --recheck
 $(srcdir)/configure: $(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
 	cd $(srcdir) && $(AUTOCONF)

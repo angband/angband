@@ -1,6 +1,6 @@
 /*
 ** Lua binding: object
-** Generated automatically by tolua 4.0a - angband on Sun Dec  9 19:44:08 2001.
+** Generated automatically by tolua 4.0a - angband on Sun Jan  6 15:39:11 2002.
 */
 
 #include "lua/tolua.h"

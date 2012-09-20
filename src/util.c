@@ -2447,7 +2447,11 @@ static void msg_print_aux(u16b type, cptr msg)
 	char *t;
 	char buf[1024];
 	byte color;
+	int w, h;
 
+
+	/* Obtain the size */
+	(void)Term_get_size(&w, &h);
 
 	/* Hack -- Reset */
 	if (!msg_flag) message_column = 0;
@@ -2456,7 +2460,7 @@ static void msg_print_aux(u16b type, cptr msg)
 	n = (msg ? strlen(msg) : 0);
 
 	/* Hack -- flush when requested or needed */
-	if (message_column && (!msg || ((message_column + n) > 72)))
+	if (message_column && (!msg || ((message_column + n) > (w - 8))))
 	{
 		/* Flush */
 		msg_flush(message_column);
@@ -2496,7 +2500,8 @@ static void msg_print_aux(u16b type, cptr msg)
 
 
 	/* Copy it */
-	strcpy(buf, msg);
+	strncpy(buf, msg, sizeof(buf));
+	buf[sizeof(buf)-1] = '\0';
 
 	/* Analyze the buffer */
 	t = buf;
@@ -2505,17 +2510,17 @@ static void msg_print_aux(u16b type, cptr msg)
 	color = message_type_color(type);
 
 	/* Split message */
-	while (n > 72)
+	while (n > (w - 8))
 	{
 		char oops;
 
 		int check, split;
 
 		/* Default split */
-		split = 72;
+		split = (w - 8);
 
 		/* Find the "best" split point */
-		for (check = 40; check < 72; check++)
+		for (check = (w / 2); check < (w - 8); check++)
 		{
 			/* Found a valid split point */
 			if (t[check] == ' ') split = check;

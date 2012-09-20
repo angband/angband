@@ -382,7 +382,10 @@ static void change_font_event_handler(GtkWidget *widget, gpointer user_data)
 
 static void file_ok_callback(GtkWidget *widget, GtkWidget *file_selector)
 {
-	strcpy(savefile, gtk_file_selection_get_filename(GTK_FILE_SELECTION(file_selector)));
+	char *f = gtk_file_selection_get_filename(GTK_FILE_SELECTION(file_selector));
+
+	strncpy(savefile, f, sizeof(savefile)-1);
+	savefile[sizeof(savefile)-1] = '\0';
 
 	gtk_widget_destroy(file_selector);
 

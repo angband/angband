@@ -404,8 +404,7 @@ static void display_parse_error(cptr filename, errr err, cptr buf)
  * Note that we let each entry have a unique "name" and "text" string,
  * even if the string happens to be empty (everyone has a unique '\0').
  */
-static errr init_info(cptr filename, header *head,
-                      void **info, char **name, char **text)
+static errr init_info(cptr filename, header *head)
 {
 	int fd;
 
@@ -452,16 +451,13 @@ static errr init_info(cptr filename, header *head,
 		/* Allocate the "*_info" array */
 		C_MAKE(head->info_ptr, head->info_size, char);
 
-		/* Hack -- make "fake" arrays */
-		if (name)
+		/* MegaHack -- make "fake" arrays */
+		if (z_info)
+		{
 			C_MAKE(head->name_ptr, z_info->fake_name_size, char);
-
-		if (text)
 			C_MAKE(head->text_ptr, z_info->fake_text_size, char);
+		}
 
-		if (info) (*info) = head->info_ptr;
-		if (name) (*name) = head->name_ptr;
-		if (text) (*text) = head->text_ptr;
 
 		/*** Load the ascii template file ***/
 
@@ -560,12 +556,12 @@ static errr init_info(cptr filename, header *head,
 		/* Free the "*_info" array */
 		KILL(head->info_ptr);
 
-		/* Hack -- Free the "fake" arrays */
-		if (name)
+		/* MegaHack -- Free the "fake" arrays */
+		if (z_info)
+		{
 			KILL(head->name_ptr);
-
-		if (text)
 			KILL(head->text_ptr);
+		}
 
 #endif /* ALLOW_TEMPLATES */
 
@@ -593,10 +589,6 @@ static errr init_info(cptr filename, header *head,
 #ifdef ALLOW_TEMPLATES
 	}
 #endif /* ALLOW_TEMPLATES */
-
-	if (info) (*info) = head->info_ptr;
-	if (name) (*name) = head->name_ptr;
-	if (text) (*text) = head->text_ptr;
 
 	/* Success */
 	return (0);
@@ -627,6 +619,8 @@ static errr free_info(header *head)
  */
 static errr init_z_info(void)
 {
+	errr err;
+
 	/* Init the header */
 	init_header(&z_head, 1, sizeof(maxima));
 
@@ -637,8 +631,12 @@ static errr init_z_info(void)
 
 #endif /* ALLOW_TEMPLATES */
 
-	return init_info("limits", &z_head,
-	                 (void*)&z_info, NULL, NULL);
+	err = init_info("limits", &z_head);
+
+	/* Set the global variables */
+	z_info = z_head.info_ptr;
+
+	return (err);
 }
 
 
@@ -647,6 +645,8 @@ static errr init_z_info(void)
  */
 static errr init_f_info(void)
 {
+	errr err;
+
 	/* Init the header */
 	init_header(&f_head, z_info->f_max, sizeof(feature_type));
 
@@ -657,8 +657,14 @@ static errr init_f_info(void)
 
 #endif /* ALLOW_TEMPLATES */
 
-	return init_info("terrain", &f_head,
-	                 (void*)&f_info, (void*)&f_name, (void*)&f_text);
+	err = init_info("terrain", &f_head);
+
+	/* Set the global variables */
+	f_info = f_head.info_ptr;
+	f_name = f_head.name_ptr;
+	f_text = f_head.text_ptr;
+
+	return (err);
 }
 
 
@@ -668,6 +674,8 @@ static errr init_f_info(void)
  */
 static errr init_k_info(void)
 {
+	errr err;
+
 	/* Init the header */
 	init_header(&k_head, z_info->k_max, sizeof(object_kind));
 
@@ -678,8 +686,14 @@ static errr init_k_info(void)
 
 #endif /* ALLOW_TEMPLATES */
 
-	return init_info("object", &k_head,
-	                 (void*)&k_info, (void*)&k_name, (void*)&k_text);
+	err = init_info("object", &k_head);
+
+	/* Set the global variables */
+	k_info = k_head.info_ptr;
+	k_name = k_head.name_ptr;
+	k_text = k_head.text_ptr;
+
+	return (err);
 }
 
 
@@ -689,6 +703,8 @@ static errr init_k_info(void)
  */
 static errr init_a_info(void)
 {
+	errr err;
+
 	/* Init the header */
 	init_header(&a_head, z_info->a_max, sizeof(artifact_type));
 
@@ -699,8 +715,14 @@ static errr init_a_info(void)
 
 #endif /* ALLOW_TEMPLATES */
 
-	return init_info("artifact", &a_head,
-	                 (void*)&a_info, (void*)&a_name, (void*)&a_text);
+	err = init_info("artifact", &a_head);
+
+	/* Set the global variables */
+	a_info = a_head.info_ptr;
+	a_name = a_head.name_ptr;
+	a_text = a_head.text_ptr;
+
+	return (err);
 }
 
 
@@ -710,6 +732,8 @@ static errr init_a_info(void)
  */
 static errr init_e_info(void)
 {
+	errr err;
+
 	/* Init the header */
 	init_header(&e_head, z_info->e_max, sizeof(ego_item_type));
 
@@ -720,8 +744,14 @@ static errr init_e_info(void)
 
 #endif /* ALLOW_TEMPLATES */
 
-	return init_info("ego_item", &e_head,
-	                 (void*)&e_info, (void*)&e_name, (void*)&e_text);
+	err = init_info("ego_item", &e_head);
+
+	/* Set the global variables */
+	e_info = e_head.info_ptr;
+	e_name = e_head.name_ptr;
+	e_text = e_head.text_ptr;
+
+	return (err);
 }
 
 
@@ -731,6 +761,8 @@ static errr init_e_info(void)
  */
 static errr init_r_info(void)
 {
+	errr err;
+
 	/* Init the header */
 	init_header(&r_head, z_info->r_max, sizeof(monster_race));
 
@@ -741,8 +773,14 @@ static errr init_r_info(void)
 
 #endif /* ALLOW_TEMPLATES */
 
-	return init_info("monster", &r_head,
-	                 (void*)&r_info, (void*)&r_name, (void*)&r_text);
+	err = init_info("monster", &r_head);
+
+	/* Set the global variables */
+	r_info = r_head.info_ptr;
+	r_name = r_head.name_ptr;
+	r_text = r_head.text_ptr;
+
+	return (err);
 }
 
 
@@ -752,6 +790,8 @@ static errr init_r_info(void)
  */
 static errr init_v_info(void)
 {
+	errr err;
+
 	/* Init the header */
 	init_header(&v_head, z_info->v_max, sizeof(vault_type));
 
@@ -762,8 +802,14 @@ static errr init_v_info(void)
 
 #endif /* ALLOW_TEMPLATES */
 
-	return init_info("vault", &v_head,
-	                 (void*)&v_info, (void*)&v_name, (void*)&v_text);
+	err = init_info("vault", &v_head);
+
+	/* Set the global variables */
+	v_info = v_head.info_ptr;
+	v_name = v_head.name_ptr;
+	v_text = v_head.text_ptr;
+
+	return (err);
 }
 
 
@@ -772,6 +818,8 @@ static errr init_v_info(void)
  */
 static errr init_p_info(void)
 {
+	errr err;
+
 	/* Init the header */
 	init_header(&p_head, z_info->p_max, sizeof(player_race));
 
@@ -782,8 +830,14 @@ static errr init_p_info(void)
 
 #endif /* ALLOW_TEMPLATES */
 
-	return init_info("p_race", &p_head,
-	                 (void*)&p_info, (void*)&p_name, (void*)&p_text);
+	err = init_info("p_race", &p_head);
+
+	/* Set the global variables */
+	p_info = p_head.info_ptr;
+	p_name = p_head.name_ptr;
+	p_text = p_head.text_ptr;
+
+	return (err);
 }
 
 
@@ -792,6 +846,8 @@ static errr init_p_info(void)
  */
 static errr init_c_info(void)
 {
+	errr err;
+
 	/* Init the header */
 	init_header(&c_head, z_info->c_max, sizeof(player_class));
 
@@ -802,8 +858,14 @@ static errr init_c_info(void)
 
 #endif /* ALLOW_TEMPLATES */
 
-	return init_info("p_class", &c_head,
-	                 (void*)&c_info, (void*)&c_name, (void*)&c_text);
+	err = init_info("p_class", &c_head);
+
+	/* Set the global variables */
+	c_info = c_head.info_ptr;
+	c_name = c_head.name_ptr;
+	c_text = c_head.text_ptr;
+
+	return (err);
 }
 
 
@@ -813,6 +875,8 @@ static errr init_c_info(void)
  */
 static errr init_h_info(void)
 {
+	errr err;
+
 	/* Init the header */
 	init_header(&h_head, z_info->h_max, sizeof(hist_type));
 
@@ -823,8 +887,13 @@ static errr init_h_info(void)
 
 #endif /* ALLOW_TEMPLATES */
 
-	return init_info("p_hist", &h_head,
-	                 (void*)&h_info, NULL, (void*)&h_text);
+	err = init_info("p_hist", &h_head);
+
+	/* Set the global variables */
+	h_info = h_head.info_ptr;
+	h_text = h_head.text_ptr;
+
+	return (err);
 }
 
 
@@ -834,6 +903,8 @@ static errr init_h_info(void)
  */
 static errr init_b_info(void)
 {
+	errr err;
+
 	/* Init the header */
 	init_header(&b_head, (u16b)(MAX_STORES * z_info->b_max), sizeof(owner_type));
 
@@ -844,8 +915,14 @@ static errr init_b_info(void)
 
 #endif /* ALLOW_TEMPLATES */
 
-	return init_info("shop_own", &b_head,
-	                 (void*)&b_info, (void*)&b_name, (void*)&b_text);
+	err = init_info("shop_own", &b_head);
+
+	/* Set the global variables */
+	b_info = b_head.info_ptr;
+	b_name = b_head.name_ptr;
+	b_text = b_head.text_ptr;
+
+	return (err);
 }
 
 
@@ -855,6 +932,8 @@ static errr init_b_info(void)
  */
 static errr init_g_info(void)
 {
+	errr err;
+
 	/* Init the header */
 	init_header(&g_head, (u16b)(z_info->p_max * z_info->p_max), sizeof(byte));
 
@@ -865,8 +944,14 @@ static errr init_g_info(void)
 
 #endif /* ALLOW_TEMPLATES */
 
-	return init_info("cost_adj", &g_head,
-	                 (void*)&g_info, (void*)&g_name, (void*)&g_text);
+	err = init_info("cost_adj", &g_head);
+
+	/* Set the global variables */
+	g_info = g_head.info_ptr;
+	g_name = g_head.name_ptr;
+	g_text = g_head.text_ptr;
+
+	return (err);
 }
 
 
@@ -875,6 +960,8 @@ static errr init_g_info(void)
  */
 static errr init_flavor_info(void)
 {
+	errr err;
+
 	/* Init the header */
 	init_header(&flavor_head, z_info->flavor_max, sizeof(flavor_type));
 
@@ -885,8 +972,14 @@ static errr init_flavor_info(void)
 
 #endif /* ALLOW_TEMPLATES */
 
-	return init_info("flavor", &flavor_head,
-	                 (void*)&flavor_info, (void*)&flavor_name, (void*)&flavor_text);
+	err = init_info("flavor", &flavor_head);
+
+	/* Set the global variables */
+	flavor_info = flavor_head.info_ptr;
+	flavor_name = flavor_head.name_ptr;
+	flavor_text = flavor_head.text_ptr;
+
+	return (err);
 }
 
 

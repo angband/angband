@@ -3037,9 +3037,6 @@ static bool get_moves(int m_idx, int mm[5])
 		/* Extract the new "pseudo-direction" */
 		y = m_ptr->fy - y2;
 		x = m_ptr->fx - x2;
-
-		/* Done */
-		done = TRUE;
 	}
 
 #endif /* MONSTER_AI */

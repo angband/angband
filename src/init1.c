@@ -718,8 +718,7 @@ static u32b add_name(header *head, cptr buf)
  */
 errr parse_z_info(char *buf, header *head)
 {
-	/* Unused parameter */
-	(void)head;
+	maxima *z_info = head->info_ptr;
 
 	/* Hack - Verify 'M:x:' format */
 	if (buf[0] != 'M') return (PARSE_ERROR_UNDEFINED_DIRECTIVE);
@@ -960,7 +959,7 @@ errr parse_v_info(char *buf, header *head)
 		error_idx = i;
 
 		/* Point at the "info" */
-		v_ptr = &v_info[i];
+		v_ptr = (vault_type*)head->info_ptr + i;
 
 		/* Store the name */
 		if (!(v_ptr->name = add_name(head, s)))
@@ -1052,7 +1051,7 @@ errr parse_f_info(char *buf, header *head)
 		error_idx = i;
 
 		/* Point at the "info" */
-		f_ptr = &f_info[i];
+		f_ptr = (feature_type*)head->info_ptr + i;
 
 		/* Store the name */
 		if (!(f_ptr->name = add_name(head, s)))
@@ -1197,7 +1196,7 @@ errr parse_k_info(char *buf, header *head)
 		error_idx = i;
 
 		/* Point at the "info" */
-		k_ptr = &k_info[i];
+		k_ptr = (object_kind*)head->info_ptr + i;
 
 		/* Store the name */
 		if (!(k_ptr->name = add_name(head, s)))
@@ -1466,7 +1465,7 @@ errr parse_a_info(char *buf, header *head)
 		error_idx = i;
 
 		/* Point at the "info" */
-		a_ptr = &a_info[i];
+		a_ptr = (artifact_type*)head->info_ptr + i;
 
 		/* Store the name */
 		if (!(a_ptr->name = add_name(head, s)))
@@ -1670,7 +1669,7 @@ errr parse_e_info(char *buf, header *head)
 		error_idx = i;
 
 		/* Point at the "info" */
-		e_ptr = &e_info[i];
+		e_ptr = (ego_item_type*)head->info_ptr + i;
 
 		/* Store the name */
 		if (!(e_ptr->name = add_name(head, s)))
@@ -1884,7 +1883,7 @@ errr parse_r_info(char *buf, header *head)
 		error_idx = i;
 
 		/* Point at the "info" */
-		r_ptr = &r_info[i];
+		r_ptr = (monster_race*)head->info_ptr + i;
 
 		/* Store the name */
 		if (!(r_ptr->name = add_name(head, s)))
@@ -2216,7 +2215,7 @@ errr parse_p_info(char *buf, header *head)
 		error_idx = i;
 
 		/* Point at the "info" */
-		pr_ptr = &p_info[i];
+		pr_ptr = (player_race*)head->info_ptr + i;
 
 		/* Store the name */
 		if (!(pr_ptr->name = add_name(head, s)))
@@ -2476,7 +2475,7 @@ errr parse_c_info(char *buf, header *head)
 		error_idx = i;
 
 		/* Point at the "info" */
-		pc_ptr = &c_info[i];
+		pc_ptr = (player_class*)head->info_ptr + i;
 
 		/* Store the name */
 		if (!(pc_ptr->name = add_name(head, s)))
@@ -2784,7 +2783,7 @@ errr parse_h_info(char *buf, header *head)
 		error_idx = i;
 
 		/* Point at the "info" */
-		h_ptr = &h_info[i];
+		h_ptr = (hist_type*)head->info_ptr + i;
 
 		/* Scan for the values */
 		if (4 != sscanf(buf, "N:%d:%d:%d:%d",
@@ -2882,7 +2881,7 @@ errr parse_b_info(char *buf, header *head)
 		error_idx = i;
 
 		/* Point at the "info" */
-		ot_ptr = &b_info[i];
+		ot_ptr = (owner_type*)head->info_ptr + i;
 
 		/* Store the name */
 		if (!(ot_ptr->owner_name = add_name(head, t)))
@@ -2962,7 +2961,7 @@ errr parse_g_info(char *buf, header *head)
 			error_idx = i;
 
 			/* Point at the "info" */
-			g_ptr = &g_info[i];
+			g_ptr = (byte*)head->info_ptr + i;
 
 			/* Find the colon before the subindex */
 			s = strchr(s, ':');
@@ -3026,7 +3025,7 @@ errr parse_flavor_info(char *buf, header *head)
 		error_idx = i;
 
 		/* Point at the "info" */
-		flavor_ptr = &flavor_info[i];
+		flavor_ptr = (flavor_type*)head->info_ptr + i;
 
 		/* Save the tval */
 		flavor_ptr->tval = (byte)tval;

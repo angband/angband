@@ -2831,7 +2831,7 @@ static void do_cmd_knowledge_artifacts(void)
 	}
 
 	/* Free the "okay" array */
-	KILL(okay);
+	FREE(okay);
 
 	/* Close the file */
 	my_fclose(fff);
@@ -2908,7 +2908,7 @@ static void do_cmd_knowledge_uniques(void)
 	}
 
 	/* Free the "who" array */
-	KILL(who);
+	FREE(who);
 
 	/* Close the file */
 	my_fclose(fff);

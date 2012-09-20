@@ -18,7 +18,6 @@ Browser/help commands:
   SPACE advance 1 page     -  back up 1 page     /  search for text
   RET   advance 1 line     =  back up 1 line     &  show (highlight) some text
   +     advance 1/2 page   _  back up 1/2 page   !  toggle case sentitivity
-
 ***** [1] general.txt
 ***** [2] birth.txt
 ***** [3] dungeon.txt
@@ -29,4 +28,3 @@ Browser/help commands:
 ***** [8] version.txt
 ***** [9] spoiler.hlp
 ***** [0] user.hlp
-
