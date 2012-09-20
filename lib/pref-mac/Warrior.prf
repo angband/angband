@@ -1,0 +1,63 @@
+# File: Warrior.prf
+
+
+# F1 -- use a special rod ("@6")
+
+#A:\e\e\\z6
+#P:^_58\r
+
+# F2 -- use a special wand ("@7")
+
+#A:\e\e\\a7
+#P:^_56\r
+
+# F3 -- use a special staff ("@8")
+
+A:\e\e\\u8
+P:^_35\r
+
+# F4 -- read a special scroll ("@9")
+
+#A:\e\e\\r9
+#P:^_54\r
+
+
+
+
+
+# Option-KP0 -- Throw a special item ("@5")
+
+A:\e\e\\f5
+P:^_O18\r
+
+
+# Option-Keypad -- Directed Throw of a special item ("@5")
+
+A:\e\e\\f51
+P:^_O19\r
+
+A:\e\e\\f52
+P:^_O20\r
+
+A:\e\e\\f53
+P:^_O21\r
+
+A:\e\e\\f54
+P:^_O22\r
+
+A:\e\e\\f55
+P:^_O23\r
+
+A:\e\e\\f56
+P:^_O24\r
+
+A:\e\e\\f57
+P:^_O25\r
+
+A:\e\e\\f58
+P:^_O27\r
+
+A:\e\e\\f59
+P:^_O28\r
+
+

@@ -1,11 +1,8 @@
-# File: Bosk.prf
-
-# This is an extra preference file for Bosk the Priest
+# File: Priest.prf
 
 
 
-
-# Option-KP0 -- hack -- orb of draining
+# Option-KP0 -- orb of draining
 
 A:\e\epcb
 P:^_O18\r

@@ -1,0 +1,239 @@
+=== Version Information ===
+
+This file was last updated for Angband 2.7.8.
+
+Make sure to read the newsgroup "rec.games.roguelike.angband" if possible.
+
+Angband 2.7.8 is the result of a lot of work by a lot of people, and as such
+has a rather complicated version history.  Worse yet, this version history
+spans more than ten years (!) time, and multiple platforms.  But some history
+is better than none, so here we go...
+
+
+=== Brief Version History ===
+
+First came "VMS Moria", by Robert Alan Koeneke (1985).
+
+Then came "Umoria" (Unix Moria), by James E. Wilson (1989).
+
+Then came Angband 2.0, and over time, other versions up to Angband 2.4.
+This period was characterized by confusion of various forms, including
+the fact that one of the most common versions was titled "2.4.frog_knows".
+Many people were responsible for these versions, including Alex Cutler,
+Andy Astrand, Sean Marsh, Geoff Hill, Charles Teague, and David Kahane.
+
+Then Charles Swiger (cs4w+@andrew.cmu.edu) attempted to clean up the mess,
+resulting in several versions, starting sometime around November, 1993, with
+Angband 2.5.1 (more or less) and leading up to Angband 2.6.2 in late 1994.
+Several people ported (the primarily Unix/NeXT centered) Angband 2.6.1 to
+other platforms, including Keith Randall, who made a Macintosh port that
+added support for color usage.  It has been mentioned that several of the
+additions in this period derived from the "net", PC Angband 1.40, UMoria 5.5,
+and various "variations" on Angband, such as FAngband.
+
+Finally, I (Ben Harrison) took up the reigns when Charles Swiger left.
+Intending simply to clean up what had become, after ten years, an unholy
+mess, I started from MacAngband 2.6.1, and eventually came out with
+Angband 2.7.0, a very clean (but very buggy) rewrite that, among other
+things, allowed extremely simple porting to multiple platforms, starting
+with Unix and Macintosh, and by the time most of the bugs were cleaned up,
+in Angband 2.7.2, including X11, and various IBM machines.  Angband 2.7.4
+was released to the "ftp.cis.ksu.edu" site, and quickly gained acceptance,
+perhaps helped by the OS2 and Windows and Amiga and Linux ports.  Angband
+2.7.5 and 2.7.6 added important capabilities such as macros and "pref"
+files, and continued to clean up the source.  Finally, Angband 2.7.8 was
+designed to supply another "stable" version that we can all give to our
+friends, with new "help files" and "spoiler files" for the "online help",
+plus a variety of minor tweaks and some new features.
+
+It is very hard to pin down, along the way from 2.6.2 to 2.7.0, and thence
+to 2.7.8, exactly what was added exactly when.  Most of these steps involved
+so many changes as to make "diff files" not very useful, since often the diff
+files were as long as the code itself.  Most of the changes, with the notable
+exception of the creation of the new "main-xxx.c" files for the various new
+platforms, and a few other exceptions generally noted in the source, were
+written by myself, either spontaneously, or, more commonly, as the result of
+a suggestion or comment by an Angband player.  So if you have any problems
+with anything that you do not recognize from older versions, you can blame
+them on me.  And if you like the new features and such, you can send me a
+brief little "thank you" email (to benh@linc.cis.upenn.edu) or something...
+
+
+=== Some of the changes from Angband 2.6.1 to Angband 2.7.8 ===
+
+The most important modification was a massive "code level cleanup" that made
+all of my other modifications much simpler and safer.  This cleanup was so
+massive that in many places the code is no longer recognizable, for example,
+via "diff -r", often because it was rewritten from scratch.
+
+The second most important modification was the construction of a generic "Term"
+package, which allows Angband to be ported to a new machine with as few as 50
+lines of code.  Angband 2.7.8 thus runs without modification on many machines,
+including Macintosh, PowerMac, Unix/X11, Unix/Curses, DOS-386, OS2-386,
+Windows, and Amiga.  The only important missing port seems to be DOS-286,
+but that is almost ready, or so I hear from an anonymous source...
+
+It would be difficult to list all of the changes between Angband 2.6.1 and
+Angband 2.7.8, because many of them were made in passing during the massive
+code level cleanup.  Many of the changes are invisible to the user, but still
+provide increased simplicity and efficiency, and decreased code size, or make
+other more visable changes possible.  For example, the new "project()" code
+that handles all bolts, beams, and balls, the new "update_view()" code that
+simplifies line of sight computation, or the new "generate()" code that builds
+new levels in the dungeon.  Many changes have been made to increase efficiency,
+including the new "process_monsters()" and "update_monsters()" functions, and
+the new "objdes()" and "lite_spot()" routines.  The generic "Term" package
+yielded efficient screen updates, and enabled the efficient use of "color".
+
+But anyway, here are a few things that come to mind, in no particular order,
+and with very little time or effort.  Somehow I managed to put off updating
+this file to the very end, and it will just have to do for now:
+
+    color
+    macros
+    keymaps
+    pref files
+    generic keyset mapping
+    generic artifact array
+    generic spell array
+    inventory tagging
+    inventory restrictions
+    using objects off the floor
+    various new runtime options
+    new inventory commands
+    the bow slot
+    an extra inventory slot
+    refueling torches
+    better monster memory
+    nicer targetting mode
+    object stacking
+    the choice window
+    textual template files
+    binary template images
+    new high score code
+    special lighting effects
+    intelligent monsters
+    new monster flags
+    generic text formatting
+    cleaner store code
+    generic spell projections
+    the destroy command
+    scrolls of *identify*
+    the examine command
+    maximize mode
+    preserve mode
+    new inscription code
+    new message recall code
+    new spell and prayer code
+    massive cleanup of effects code
+    new object allocation routines
+    simple on line help
+    the memorize message command
+    the save game command
+    robust savefile cheat preventers
+    new cheating options
+    the screen dump commands
+    new blindness code
+    new hallucination code
+    optimized object description code
+    new keypress input routines
+    actual object discounts
+    fractional speed
+    assymptotic speed
+    the handle_stuff() routine
+    the notice_stuff() routine
+    run-time price determination
+    new wizard commands
+    the automatic borg
+    actual stat tables
+    launchers of extra shots
+    elemental ignore flags
+    new player ghost creation
+    no more invisible monster bug
+    no more sliding objects
+    new equipment slots
+    new object flags
+    new chest trap code
+    cleaner searching bonuses
+    regularized the ego-item code
+    new monster abilities
+    new monster spell attacks
+    new store owners
+    run-time skill computation
+    player kills vs anscestor kills
+    monster extermination
+    better room illumination code
+    table access through pointers
+    more redefinable constants
+    new screen layout
+
+
+=== Here is some old information about previous versions ===
+
+
+                          VMS Moria Version 4.8
+Version 0.1  : 03/25/83
+Version 1.0  : 05/01/84
+Version 2.0  : 07/10/84
+Version 3.0  : 11/20/84
+Version 4.0  : 01/20/85
+
+Modules :
+     V1.0  Dungeon Generator      - RAK
+           Character Generator    - RAK & JWT
+           Moria Module           - RAK
+           Miscellaneous          - RAK & JWT
+     V2.0  Town Level & Misc      - RAK
+     V3.0  Internal Help & Misc   - RAK
+     V4.0  Source Release Version - RAK
+
+Robert Alan Koeneke               Jimmey Wayne Todd Jr.
+Student/University of Oklahoma    Student/University of Oklahoma
+
+
+
+
+
+                        Umoria Version 5.2 (formerly UNIX Moria)
+Version 4.83 :  5/14/87
+Version 4.85 : 10/26/87
+Version 4.87 :  5/27/88
+Version 5.0  :  11/2/89
+Version 5.2  :   5/9/90
+
+James E. Wilson, U.C. Berkeley
+                 wilson@ernie.Berkeley.EDU
+                 ...!ucbvax!ucbernie!wilson
+
+Other contributors:
+D. G. Kneller         - MSDOS Moria port
+Christopher J. Stuart - recall, options, inventory, and running code
+Curtis McCauley       - Macintosh Moria port
+Stephen A. Jacobs     - Atari ST Moria port
+William Setzer        - object naming code
+David J. Grabiner     - numerous bug reports, and consistency checking
+Dan Bernstein         - UNIX hangup signal fix, many bug fixes
+and many others...
+
+
+
+
+Copyright (c) 1989 James E. Wilson, Robert A. Keoneke
+  This software may be copied and distributed for educational, research, and
+  not for profit purposes provided that this copyright and statement are
+  included in all such copies.
+
+Umoria Version 5.2, patch level 1
+
+Angband Version 2.0   Alex Cutler, Andy Astrand, Sean Marsh, Geoff Hill, 
+                      Charles Teague.
+
+Angband Version 2.4   :  5/09/93
+
+Angband Version 2.5   : 12/05/93 Charles Swiger.
+
+Angband Version 2.6   :  9/04/94
+
+Angband Version 2.7   :  1/1/95  Ben Harrison
+
+

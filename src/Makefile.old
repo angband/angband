@@ -1,0 +1,190 @@
+# File: Makefile.old
+
+# Adapted from the Angband 2.6.2 Makefile for Angband 2.7.8
+
+#############################################################################
+# Please take a look at config.h for *critical* configuration steps needed. #
+# Also look at "h-config.h" (and this "Makefile") for other such steps.     #
+# And note that this "Makefile" is probably very out of date                #
+#############################################################################
+
+####
+# PROGRAM is the name of the program
+
+PROGRAM = angband
+
+####
+# BINDIR is the directory where the angband binary will be installed.
+
+BINDIR = /tmp/angband/bin
+
+
+####
+# Compiler
+####
+# I recommend that you use the GNU Project C Compiler "gcc",
+# if available.  Failing that, try using an ANSI C compiliant compiler,
+# such as "acc" on the Sun SPARC.  Some machines require special compiler
+# flags in order to compile the game.  Consult the flags below.
+####
+
+#CC = cc
+#CC = acc
+#CC = gcc -traditional-cpp
+#CC = gcc -traditional
+CC = gcc
+
+
+####
+# Compiler flags
+####
+#
+# '-O' means optimize.  '-g' is for debugging.
+#
+# If you are using gcc, you may combine both '-O' and '-g'.  Also:
+# '-pipe' uses pipes rather than temporary files (which is faster).
+# '-pg' enables profiling (for coders only).  '-W<something>' provides
+# additional warnings.
+#
+# Remove one of the '#' from the list of compiler flag choices below:
+
+####
+# For old 'cc' compilers
+#CFLAGS = -O
+
+####
+# For HPUX, the compiler flags for 'cc' should be:
+#CFLAGS = -Ae -Dunix -O
+
+####
+# For DEC OSF/1 (Alpha), the compiler flags for 'cc' should be:
+#CFLAGS = -std -O
+
+####
+# For gcc (or NeXT) users only.
+
+####
+# Normal gcc users:
+#CFLAGS = -g -O1 -pipe
+
+####
+# Full optimization:
+#CFLAGS = -O4 -pipe -fomit-frame-pointer
+
+####
+# Developers:
+#CFLAGS = -g -O1 -pipe \
+# -Wall -Wcast-align -Wpointer-arith -Wwrite-strings \
+# -Wcast-align -Waggregate-return
+
+####
+# Profiling:
+#CFLAGS = -g -O1 -pipe -pg -static \
+# -Wall -Wcast-align -Wpointer-arith -Wwrite-strings
+
+
+####
+# Libraries to link from
+####
+# some people might be able to (or even might have to) remove '-lrpcsvc'
+
+LIBS = -lcurses -ltermcap -lrpcsvc
+
+####
+# For Linux systems, this line should look like:
+# LIBS = -lncurses -ltermcap -lbsd
+
+####
+# For NCR System 3000, you'll probably need this:
+# LIBS=-lcurses -ltermcap -lmalloc -L/usr/ucblib -lucb
+
+####
+# For SunOS 5.X (Solaris 2.X), this line should look like:
+# LIBS = -ltermlib -ltermcap -lrpcsvc -lnsl -lucb
+
+####
+# ....unless you don't have the BSD/SunOS 4.x compatibility kit:
+# LIBS = -ltermlib -ltermcap -lrpcsvc -lnsl
+
+
+
+####
+# Common system programs
+####
+# define the appropriate version of these commands if needed
+
+CP    = cp
+CHOWN = chown
+CHMOD = chmod
+DIFF  = diff
+ECHO  = echo
+RM    = rm -f
+STRIP = strip
+TOUCH = touch
+
+##################################
+# End of user configurable stuff #
+##################################
+
+#######
+# define special suffixes & build rules
+
+SUFFIXES = .o .c .h
+
+.c.o:
+	$(CC) $(CFLAGS) -c $*.c
+
+
+####
+# define some global macros
+
+INCS = \
+  angband.h externs.h defines.h types.h config.h \
+  random.h term.h z-form.h z-virt.h z-util.h \
+  h-basic.h h-define.h h-type.h h-system.h h-config.h \
+  
+SRCS = \
+  main.c main-gcu.c main-ncu.c main-cur.c main-x11.c main-xaw.c \
+  signals.c util.c io.c init.c save.c save-old.c files.c \
+  generate.c birth.c melee.c dungeon.c store.c \
+  effects.c cmd1.c cmd2.c cmd3.c cmd4.c cmd5.c cmd6.c \
+  misc.c monster.c mon-desc.c object.c obj-desc.c \
+  spells1.c spells2.c cave.c tables.c variable.c \
+  term.c random.c z-util.c z-virt.c z-form.c
+
+OBJS = \
+  main.o main-gcu.o main-ncu.o main-cur.o main-x11.o main-xaw.o \
+  signals.o util.o io.o init.o save.o save-old.o files.o \
+  generate.o birth.o melee.o dungeon.o store.o \
+  effects.o cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
+  misc.o monster.o mon-desc.o object.o obj-desc.o \
+  spells1.o spells2.o cave.o tables.o variable.o \
+  term.o random.o z-util.o z-virt.o z-form.o
+
+
+####
+# target rules
+
+default: all
+
+all: $(PROGRAM)
+
+$(PROGRAM) : $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) -o $(PROGRAM) $(LIBS)
+
+install:	$(PROGRAM)
+	$(STRIP) $(PROGRAM)
+	$(RM) $(BINDIR)/$(PROGRAM)
+	$(CP) $(PROGRAM) $(BINDIR)/$(PROGRAM)
+	$(CHOWN) games.bin $(BINDIR)/$(PROGRAM)
+	$(CHMOD) 4711 $(BINDIR)/$(PROGRAM)
+
+clean:
+	$(RM) *.o ./core *~ .*~ gmon.*
+
+realclean: clean
+	$(RM) $(PROGRAM)
+
+depend:
+	makedepend $(INCS) $(SRCS)
+

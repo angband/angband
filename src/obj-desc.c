@@ -14,24 +14,12 @@
 
 
 /*
- * There is a new metaphor for "store made objects".  Note that now that
- * Angband uses real physical colors for objects on the floor, once a player
- * knows the physical color of something, and what it does, then he can extract
- * an awareness of its identity.  Thus, we no longer try to "hide" the identity
- * of "store bought items" from the player.  So whenever an item is bought from
- * a store, the player becomes "aware" of its identity (as well as knowing the
- * object fully, via "inven_known()".  But when items are listed in the store, before
- * the player is "aware" of its effect, we do not want the "flavors" to appear.
- * This is accomplished by "objdes_store()" below, which is a hack, oh well.
- */
-
-
-/*
  * XXX XXX Hack -- note that "TERM_MULTI" is now just "TERM_VIOLET"
  * We will have to find a cleaner method for "MULTI_HUED" later.
  * There were only two multi-hued "flavors" (one potion, one food).
  * Plus five multi-hued "base-objects" (3 dragon scales, one blade
- * of chaos, and one something else).
+ * of chaos, and one something else).  See the SHIMMER_OBJECTS code
+ * in "object.c" and the object color extractor in "cave.c".
  */
 #define TERM_MULTI	TERM_VIOLET
 
@@ -39,155 +27,18 @@
 /*
  * Max sizes of the following arrays
  */
-#define MAX_COLORS     57       /* Used with potions      */
-#define MAX_SHROOM     21       /* Used with mushrooms    */
-#define MAX_WOODS      32       /* Used with staffs       */
-#define MAX_METALS     32       /* Used with wands/rods   */
-#define MAX_ROCKS      42       /* Used with rings        */
-#define MAX_AMULETS    16       /* Used with amulets      */
-#define MAX_TITLES     45       /* Used with scrolls      */
-#define MAX_SYLLABLES 158       /* Used with scrolls      */
+#define MAX_ROCKS      42       /* Used with rings (min 38) */
+#define MAX_AMULETS    16       /* Used with amulets (min 13) */
+#define MAX_WOODS      32       /* Used with staffs (min 30) */
+#define MAX_METALS     32       /* Used with wands/rods (min 29/28) */
+#define MAX_COLORS     60       /* Used with potions (min 60) */
+#define MAX_SHROOM     20       /* Used with mushrooms (min 20) */
+#define MAX_TITLES     50       /* Used with scrolls (min 48) */
+#define MAX_SYLLABLES 158       /* Used with scrolls (see below) */
 
 
 /*
- * Color adjectives and colors, for potions.
- * Hack -- The first three are hard-coded for slime mold juice,
- * apple juice, and water, so do not scramble them.
- */
-
-static cptr potion_adj[MAX_COLORS] = {
-    "Icky Green","Light Brown","Clear","Azure","Blue",
-    "Blue Speckled","Black","Brown","Brown Speckled","Bubbling",
-    "Chartreuse","Cloudy","Copper Speckled","Crimson","Cyan",
-    "Dark Blue","Dark Green","Dark Red","Gold Speckled","Green",
-    "Green Speckled","Grey","Grey Speckled","Hazy","Indigo",
-    "Light Blue","Light Green","Magenta","Metallic Blue","Metallic Red",
-    "Metallic Green","Metallic Purple","Misty","Orange","Orange Speckled",
-    "Pink","Pink Speckled","Puce","Purple","Purple Speckled",
-    "Red","Red Speckled","Silver Speckled","Smoky","Tangerine",
-    "Violet","Vermilion","White","Yellow", "Purple Speckled",
-    "Pungent","Clotted Red","Viscous Pink","Oily Yellow","Gloopy Green",
-    "Shimmering","Coagulated Crimson"
-};
-
-static byte potion_col[MAX_COLORS] = {
-    TERM_GREEN,TERM_L_UMBER,TERM_WHITE,TERM_L_BLUE,TERM_BLUE,
-    TERM_BLUE,TERM_D_GRAY,TERM_UMBER,TERM_UMBER,TERM_L_GRAY,
-    TERM_L_GREEN,TERM_WHITE,TERM_L_UMBER,TERM_RED,TERM_L_BLUE,
-    TERM_BLUE,TERM_GREEN,TERM_RED,TERM_YELLOW,TERM_GREEN,
-    TERM_GREEN,TERM_GRAY,TERM_GRAY,TERM_L_GRAY,TERM_VIOLET,
-    TERM_L_BLUE,TERM_L_GREEN,TERM_RED,TERM_BLUE,TERM_RED,
-    TERM_GREEN,TERM_VIOLET,TERM_L_GRAY,TERM_ORANGE,TERM_ORANGE,
-    TERM_L_RED,TERM_L_RED,TERM_VIOLET,TERM_VIOLET,TERM_VIOLET,
-    TERM_RED,TERM_RED,TERM_L_GRAY,TERM_D_GRAY,TERM_ORANGE,
-    TERM_VIOLET,TERM_RED,TERM_WHITE,TERM_YELLOW,TERM_VIOLET,
-    TERM_L_RED,TERM_RED,TERM_L_RED,TERM_YELLOW,TERM_GREEN,
-    TERM_MULTI,TERM_RED
-};
-
-
-/*
- * Color adjectives and colors, for mushrooms and molds
- */
-
-static cptr food_adj[MAX_SHROOM] = {
-    "Blue","Black","Black Spotted","Brown","Dark Blue",
-    "Dark Green","Dark Red","Ecru","Furry","Green",
-    "Grey","Light Blue","Light Green","Plaid","Red",
-    "Slimy","Tan","White","White Spotted","Wooden",
-    "Wrinkled",/*"Yellow","Shaggy","Red Spotted","Pale Blue","Dark Orange"*/
-};
-
-static byte food_col[MAX_SHROOM] = {
-    TERM_BLUE,TERM_D_GRAY,TERM_D_GRAY,TERM_UMBER,TERM_BLUE,
-    TERM_GREEN,TERM_RED,TERM_YELLOW,TERM_L_GRAY,TERM_GREEN,
-    TERM_GRAY,TERM_L_BLUE,TERM_L_GREEN,TERM_MULTI,TERM_RED,
-    TERM_GRAY,TERM_L_UMBER,TERM_WHITE,TERM_WHITE,TERM_UMBER,
-    TERM_UMBER,/*TERM_YELLOW,???,TERM_RED,TERM_L_BLUE,TERM_ORANGE*/
-};
-
-
-/*
- * Wood adjectives and colors, for staffs
- */
-
-static cptr staff_adj[MAX_WOODS] = {
-    "Aspen","Balsa","Banyan","Birch","Cedar",
-    "Cottonwood","Cypress","Dogwood","Elm","Eucalyptus",
-    "Hemlock","Hickory","Ironwood","Locust","Mahogany",
-    "Maple","Mulberry","Oak","Pine","Redwood",
-    "Rosewood","Spruce","Sycamore","Teak","Walnut",
-    "Mistletoe","Hawthorn","Bamboo","Silver","Runed",
-    "Golden","Ashen"/*,"Gnarled","Ivory","Decorative","Willow"*/
-};
-
-static byte staff_col[MAX_WOODS] = {
-    TERM_L_UMBER,TERM_L_UMBER,TERM_L_UMBER,TERM_L_UMBER,TERM_L_UMBER,
-    TERM_L_UMBER,TERM_L_UMBER,TERM_L_UMBER,TERM_L_UMBER,TERM_L_UMBER,
-    TERM_L_UMBER,TERM_L_UMBER,TERM_UMBER,TERM_L_UMBER,TERM_UMBER,
-    TERM_L_UMBER,TERM_L_UMBER,TERM_L_UMBER,TERM_L_UMBER,TERM_RED,
-    TERM_RED,TERM_L_UMBER,TERM_L_UMBER,TERM_L_UMBER,TERM_UMBER,
-    TERM_GREEN,TERM_L_UMBER,TERM_L_UMBER,TERM_L_GRAY,TERM_UMBER,
-    TERM_YELLOW,TERM_GRAY,/*???,???,???,???*/
-};
-
-
-/*
- * Metal adjectives and colors, for wands
- */
-
-static cptr wand_adj[MAX_METALS] = {
-    "Aluminum","Cast Iron","Chromium","Copper","Gold",
-    "Iron","Magnesium","Molybdenum","Nickel","Rusty",
-    "Silver","Steel","Tin","Titanium","Tungsten",
-    "Zirconium","Zinc","Aluminum-Plated","Copper-Plated","Gold-Plated",
-    "Nickel-Plated","Silver-Plated","Steel-Plated","Tin-Plated","Zinc-Plated",
-    "Mithril-Plated","Mithril","Runed","Bronze","Brass",
-    "Platinum","Lead"/*,"Lead-Plated","Ivory","Pewter"*/
-};
-
-static byte wand_col[MAX_METALS] = {
-    TERM_L_BLUE,TERM_D_GRAY,TERM_WHITE,TERM_L_UMBER,TERM_YELLOW,
-    TERM_GRAY,TERM_L_GRAY,TERM_L_GRAY,TERM_L_UMBER,TERM_RED,
-    TERM_L_GRAY,TERM_L_GRAY,TERM_L_GRAY,TERM_WHITE,TERM_WHITE,
-    TERM_L_GRAY,TERM_L_GRAY,TERM_L_BLUE,TERM_L_UMBER,TERM_YELLOW,
-    TERM_L_UMBER,TERM_L_GRAY,TERM_L_GRAY,TERM_L_GRAY,TERM_L_GRAY,
-    TERM_L_BLUE,TERM_L_BLUE,TERM_UMBER,TERM_L_UMBER,TERM_L_UMBER,
-    TERM_WHITE,TERM_GRAY,/*TERM_GRAY,TERM_WHITE,TERM_GRAY*/
-};
-
-
-/*
- * Another copy of the metal adjectives and colors, for rods
- * We do not want rods and wands to be identical, its too easy to "cheat".
- * However, the two arrays start out identical.  They are scrambled later.
- * We could actually copy them directly, but this lets us change the
- * bounds on the arrays, and change the distributions, etc.
- */
-
-static cptr rod_adj[MAX_METALS] = {
-    "Aluminum","Cast Iron","Chromium","Copper","Gold",
-    "Iron","Magnesium","Molybdenum","Nickel","Rusty",
-    "Silver","Steel","Tin","Titanium","Tungsten",
-    "Zirconium","Zinc","Aluminum-Plated","Copper-Plated","Gold-Plated",
-    "Nickel-Plated","Silver-Plated","Steel-Plated","Tin-Plated","Zinc-Plated",
-    "Mithril-Plated","Mithril","Runed","Bronze","Brass",
-    "Platinum","Lead"/*,"Lead-Plated","Ivory","Pewter"*/
-};
-
-static byte rod_col[MAX_METALS] = {
-    TERM_L_BLUE,TERM_D_GRAY,TERM_WHITE,TERM_L_UMBER,TERM_YELLOW,
-    TERM_GRAY,TERM_L_GRAY,TERM_L_GRAY,TERM_L_UMBER,TERM_RED,
-    TERM_L_GRAY,TERM_L_GRAY,TERM_L_GRAY,TERM_WHITE,TERM_WHITE,
-    TERM_L_GRAY,TERM_L_GRAY,TERM_L_BLUE,TERM_L_UMBER,TERM_YELLOW,
-    TERM_L_UMBER,TERM_L_GRAY,TERM_L_GRAY,TERM_L_GRAY,TERM_L_GRAY,
-    TERM_L_BLUE,TERM_L_BLUE,TERM_UMBER,TERM_L_UMBER,TERM_L_UMBER,
-    TERM_WHITE,TERM_GRAY,/*TERM_GRAY,TERM_WHITE,TERM_GRAY*/
-};
-
-
-/*
- * Rock adjectives and colors, for rings
+ * Rings (adjectives and colors)
  */
 
 static cptr ring_adj[MAX_ROCKS] = {
@@ -216,7 +67,7 @@ static byte ring_col[MAX_ROCKS] = {
 
 
 /*
- * Amulet adjectives and colors, for amulets
+ * Amulets (adjectives and colors)
  */
 
 static cptr amulet_adj[MAX_AMULETS] = {
@@ -235,7 +86,123 @@ static byte amulet_col[MAX_AMULETS] = {
 
 
 /*
- * Syllables for scrolls
+ * Staffs (adjectives and colors)
+ */
+
+static cptr staff_adj[MAX_WOODS] = {
+    "Aspen","Balsa","Banyan","Birch","Cedar",
+    "Cottonwood","Cypress","Dogwood","Elm","Eucalyptus",
+    "Hemlock","Hickory","Ironwood","Locust","Mahogany",
+    "Maple","Mulberry","Oak","Pine","Redwood",
+    "Rosewood","Spruce","Sycamore","Teak","Walnut",
+    "Mistletoe","Hawthorn","Bamboo","Silver","Runed",
+    "Golden","Ashen"/*,"Gnarled","Ivory","Willow"*/
+};
+
+static byte staff_col[MAX_WOODS] = {
+    TERM_L_UMBER,TERM_L_UMBER,TERM_L_UMBER,TERM_L_UMBER,TERM_L_UMBER,
+    TERM_L_UMBER,TERM_L_UMBER,TERM_L_UMBER,TERM_L_UMBER,TERM_L_UMBER,
+    TERM_L_UMBER,TERM_L_UMBER,TERM_UMBER,TERM_L_UMBER,TERM_UMBER,
+    TERM_L_UMBER,TERM_L_UMBER,TERM_L_UMBER,TERM_L_UMBER,TERM_RED,
+    TERM_RED,TERM_L_UMBER,TERM_L_UMBER,TERM_L_UMBER,TERM_UMBER,
+    TERM_GREEN,TERM_L_UMBER,TERM_L_UMBER,TERM_L_GRAY,TERM_UMBER,
+    TERM_YELLOW,TERM_GRAY,/*???,???,???*/
+};
+
+
+/*
+ * Wands (adjectives and colors)
+ */
+
+static cptr wand_adj[MAX_METALS] = {
+    "Aluminum","Cast Iron","Chromium","Copper","Gold",
+    "Iron","Magnesium","Molybdenum","Nickel","Rusty",
+    "Silver","Steel","Tin","Titanium","Tungsten",
+    "Zirconium","Zinc","Aluminum-Plated","Copper-Plated","Gold-Plated",
+    "Nickel-Plated","Silver-Plated","Steel-Plated","Tin-Plated","Zinc-Plated",
+    "Mithril-Plated","Mithril","Runed","Bronze","Brass",
+    "Platinum","Lead"/*,"Lead-Plated","Ivory","Pewter"*/
+};
+
+static byte wand_col[MAX_METALS] = {
+    TERM_L_BLUE,TERM_D_GRAY,TERM_WHITE,TERM_L_UMBER,TERM_YELLOW,
+    TERM_GRAY,TERM_L_GRAY,TERM_L_GRAY,TERM_L_UMBER,TERM_RED,
+    TERM_L_GRAY,TERM_L_GRAY,TERM_L_GRAY,TERM_WHITE,TERM_WHITE,
+    TERM_L_GRAY,TERM_L_GRAY,TERM_L_BLUE,TERM_L_UMBER,TERM_YELLOW,
+    TERM_L_UMBER,TERM_L_GRAY,TERM_L_GRAY,TERM_L_GRAY,TERM_L_GRAY,
+    TERM_L_BLUE,TERM_L_BLUE,TERM_UMBER,TERM_L_UMBER,TERM_L_UMBER,
+    TERM_WHITE,TERM_GRAY,/*TERM_GRAY,TERM_WHITE,TERM_GRAY*/
+};
+
+
+/*
+ * Rods (adjectives and colors).
+ * Efficiency -- copied from wand arrays
+ */
+
+static cptr rod_adj[MAX_METALS];
+
+static byte rod_col[MAX_METALS];
+
+
+/*
+ * Mushrooms (adjectives and colors)
+ */
+
+static cptr food_adj[MAX_SHROOM] = {
+    "Blue","Black","Black Spotted","Brown","Dark Blue",
+    "Dark Green","Dark Red","Yellow","Furry","Green",
+    "Grey","Light Blue","Light Green","Violet","Red",
+    "Slimy","Tan","White","White Spotted","Wrinkled",
+};
+
+static byte food_col[MAX_SHROOM] = {
+    TERM_BLUE,TERM_D_GRAY,TERM_D_GRAY,TERM_UMBER,TERM_BLUE,
+    TERM_GREEN,TERM_RED,TERM_YELLOW,TERM_L_GRAY,TERM_GREEN,
+    TERM_GRAY,TERM_L_BLUE,TERM_L_GREEN,TERM_VIOLET,TERM_RED,
+    TERM_GRAY,TERM_L_UMBER,TERM_WHITE,TERM_WHITE,TERM_UMBER
+};
+
+
+/*
+ * Color adjectives and colors, for potions.
+ * Hack -- The first four entries are hard-coded.
+ * (water, apple juice, slime mold juice, something)
+ */
+
+static cptr potion_adj[MAX_COLORS] = {
+    "Clear","Light Brown","Icky Green","Black",
+    "Azure","Blue","Blue Speckled","Black","Brown","Brown Speckled",
+    "Bubbling","Chartreuse","Cloudy","Copper Speckled","Crimson","Cyan",
+    "Dark Blue","Dark Green","Dark Red","Gold Speckled","Green",
+    "Green Speckled","Grey","Grey Speckled","Hazy","Indigo",
+    "Light Blue","Light Green","Magenta","Metallic Blue","Metallic Red",
+    "Metallic Green","Metallic Purple","Misty","Orange","Orange Speckled",
+    "Pink","Pink Speckled","Puce","Purple","Purple Speckled",
+    "Red","Red Speckled","Silver Speckled","Smoky","Tangerine",
+    "Violet","Vermilion","White","Yellow", "Purple Speckled",
+    "Pungent","Clotted Red","Viscous Pink","Oily Yellow","Gloopy Green",
+    "Shimmering","Coagulated Crimson","Yellow Speckled","Gold"
+};
+
+static byte potion_col[MAX_COLORS] = {
+    TERM_WHITE,TERM_L_UMBER,TERM_GREEN,TERM_BLACK,
+    TERM_L_BLUE,TERM_BLUE,TERM_BLUE,TERM_D_GRAY,TERM_UMBER,TERM_UMBER,
+    TERM_L_GRAY,TERM_L_GREEN,TERM_WHITE,TERM_L_UMBER,TERM_RED,TERM_L_BLUE,
+    TERM_BLUE,TERM_GREEN,TERM_RED,TERM_YELLOW,TERM_GREEN,
+    TERM_GREEN,TERM_GRAY,TERM_GRAY,TERM_L_GRAY,TERM_VIOLET,
+    TERM_L_BLUE,TERM_L_GREEN,TERM_RED,TERM_BLUE,TERM_RED,
+    TERM_GREEN,TERM_VIOLET,TERM_L_GRAY,TERM_ORANGE,TERM_ORANGE,
+    TERM_L_RED,TERM_L_RED,TERM_VIOLET,TERM_VIOLET,TERM_VIOLET,
+    TERM_RED,TERM_RED,TERM_L_GRAY,TERM_D_GRAY,TERM_ORANGE,
+    TERM_VIOLET,TERM_RED,TERM_WHITE,TERM_YELLOW,TERM_VIOLET,
+    TERM_L_RED,TERM_RED,TERM_L_RED,TERM_YELLOW,TERM_GREEN,
+    TERM_MULTI,TERM_RED,TERM_YELLOW,TERM_YELLOW
+};
+
+
+/*
+ * Syllables for scrolls (must be 1-4 letters each)
  */
 
 static cptr syllables[MAX_SYLLABLES] = {
@@ -263,11 +230,11 @@ static cptr syllables[MAX_SYLLABLES] = {
 
 
 /*
- * Hold the titles of scrolls, ten characters each
- * Also keep an array of scroll colors, all WHITE for now
+ * Hold the titles of scrolls, 6 to 14 characters each
+ * Also keep an array of scroll colors (always WHITE for now)
  */
 
-static char scroll_adj[MAX_TITLES][10];
+static char scroll_adj[MAX_TITLES][16];
 
 static byte scroll_col[MAX_TITLES];
 
@@ -349,60 +316,11 @@ static bool object_easy_know(int i)
 
 
 /*
- * Extract the "default" attr for each object
- * This function is used only by "flavor_init()"
- */
-static byte object_k_attr(int i)
-{
-    /* Flavored items */
-    if (x_list[i].has_flavor) {
-
-        /* Extract the indexx */
-        int indexx = k_list[i].sval;
-
-        /* Analyze the item */
-        switch (k_list[i].tval) {
-
-            case TV_FOOD:
-                return (food_col[indexx]);
-
-            case TV_POTION:
-                return (potion_col[indexx]);
-
-            case TV_SCROLL:
-                return (scroll_col[indexx]);
-
-            case TV_AMULET:
-                return (amulet_col[indexx]);
-
-            case TV_RING:
-                return (ring_col[indexx]);
-
-            case TV_STAFF:
-                return (staff_col[indexx]);
-
-            case TV_WAND:
-                return (wand_col[indexx]);
-
-            case TV_ROD:
-                return (rod_col[indexx]);
-        }
-    }
-
-    /* Default attr if legal */
-    if (k_list[i].k_attr) return (k_list[i].k_attr);
-
-    /* Default to white */
-    return (TERM_WHITE);
-}
-
-
-/*
  * Hack -- prepare the default object attr codes by tval
  */
-static byte default_tval_to_attr(int i)
+static byte default_tval_to_attr(int tval)
 {
-    switch (i) {
+    switch (tval) {
       case TV_SKELETON:
       case TV_BOTTLE:
       case TV_JUNK:
@@ -465,146 +383,214 @@ static byte default_tval_to_attr(int i)
 
 
 /*
+ * Hack -- prepare the default object char codes by tval
+ */
+static byte default_tval_to_char(int tval)
+{
+    int i;
+    
+    /* Hack -- Guess at "correct" values for tval_to_char[] */
+    for (i = 0; i < MAX_K_IDX; i++) {
+
+        /* Use the first value we find */
+        if (k_list[i].tval == tval) return (k_list[i].k_char);
+    }
+    
+    /* Default to space */
+    return (' ');
+}
+
+
+
+/*
  * Prepare the "x_list" array.
  *
  * The "color"/"metal"/"type" of an item is its "flavor".
- * For the most part, flavors are assigned randomly.
+ * For the most part, flavors are assigned randomly each game.
  *
  * Initialize descriptions for the "colored" objects, including:
- * Food, Scrolls, Potions, Wands, Staffs, Rods, Rings, Amulets.
+ * Rings, Amulets, Staffs, Wands, Rods, Food, Potions, Scrolls.
  *
- * Hack -- make sure they stay the same for each saved game
- * This is accomplished by the use of a saved "random seed"
- * Note that this function does not call any others, so the
- * hack is not such a big deal as in town_gen().
+ * Scroll titles are always between 6 and 14 letters long.  This is
+ * ensured because every title is composed of whole words, where every
+ * word is from 1 to 8 letters long (one or two syllables of 1 to 4
+ * letters each), and that no scroll is finished until it attempts to
+ * grow beyond 14 letters.  The first time this can happen is when the
+ * current title has 6 letters and the new word has 8 letters, which
+ * would result in a 6 letter scroll title.
+ *
+ * Duplicate titles are avoided by requiring that no two scrolls share
+ * the same first three letters (not the most or least efficient method).
+ *
+ * Hack -- make sure everything stays the same for each saved game
+ * This is accomplished by the use of a saved "random seed", as in
+ * "town_gen()".  Since no other functions are called while the special
+ * seed is in effect, so this function is pretty "safe".
+ *
+ * Note that the "hacked seed" provides an RNG with alternating parity!
  */
 void flavor_init(void)
 {
-    int		h, i, j, k;
+    int		i, j;
 
-    byte	tmp2;
+    byte	temp_col;
 
-    cptr	tmp1;
-
-    char	string[160];
+    cptr	temp_adj;
 
 
     /* Hack -- Play games with the R.N.G. */
     set_seed(randes_seed);
 
-    /* The first 3 entries for potions are fixed */
-    /* That is, slime mold juice, apple juice, water */
-    for (i = 3; i < MAX_COLORS; i++) {
-        j = rand_int(MAX_COLORS - 3) + 3;
-        tmp1 = potion_adj[i];
-        potion_adj[i] = potion_adj[j];
-        potion_adj[j] = tmp1;
-        tmp2 = potion_col[i];
-        potion_col[i] = potion_col[j];
-        potion_col[j] = tmp2;
-    }
-
-    /* Woods are used for staffs */
-    for (i = 0; i < MAX_WOODS; i++) {
-        j = rand_int(MAX_WOODS);
-        tmp1 = staff_adj[i];
-        staff_adj[i] = staff_adj[j];
-        staff_adj[j] = tmp1;
-        tmp2 = staff_col[i];
-        staff_col[i] = staff_col[j];
-        staff_col[j] = tmp2;
-    }
-
-    /* Wands are made of metal */
+    /* Efficiency -- Rods/Wands share initial array */
     for (i = 0; i < MAX_METALS; i++) {
-        j = rand_int(MAX_METALS);
-        tmp1 = wand_adj[i];
-        wand_adj[i] = wand_adj[j];
-        wand_adj[j] = tmp1;
-        tmp2 = wand_col[i];
-        wand_col[i] = wand_col[j];
-        wand_col[j] = tmp2;
+        rod_adj[i] = wand_adj[i];
+        rod_col[i] = wand_col[i];
     }
 
-    /* Rocks are used for rings */
+    /* Rings have "ring colors" */
     for (i = 0; i < MAX_ROCKS; i++) {
         j = rand_int(MAX_ROCKS);
-        tmp1 = ring_adj[i];
+        temp_adj = ring_adj[i];
         ring_adj[i] = ring_adj[j];
-        ring_adj[j] = tmp1;
-        tmp2 = ring_col[i];
+        ring_adj[j] = temp_adj;
+        temp_col = ring_col[i];
         ring_col[i] = ring_col[j];
-        ring_col[j] = tmp2;
+        ring_col[j] = temp_col;
     }
 
-    /* Rocks are used for amulets */
+    /* Amulets have "amulet colors" */
     for (i = 0; i < MAX_AMULETS; i++) {
         j = rand_int(MAX_AMULETS);
-        tmp1 = amulet_adj[i];
+        temp_adj = amulet_adj[i];
         amulet_adj[i] = amulet_adj[j];
-        amulet_adj[j] = tmp1;
-        tmp2 = amulet_col[i];
+        amulet_adj[j] = temp_adj;
+        temp_col = amulet_col[i];
         amulet_col[i] = amulet_col[j];
-        amulet_col[j] = tmp2;
+        amulet_col[j] = temp_col;
     }
 
-    /* Hack -- Molds and Mushrooms (not normal foods) have colors */
+    /* Staffs */
+    for (i = 0; i < MAX_WOODS; i++) {
+        j = rand_int(MAX_WOODS);
+        temp_adj = staff_adj[i];
+        staff_adj[i] = staff_adj[j];
+        staff_adj[j] = temp_adj;
+        temp_col = staff_col[i];
+        staff_col[i] = staff_col[j];
+        staff_col[j] = temp_col;
+    }
+
+    /* Wands */
+    for (i = 0; i < MAX_METALS; i++) {
+        j = rand_int(MAX_METALS);
+        temp_adj = wand_adj[i];
+        wand_adj[i] = wand_adj[j];
+        wand_adj[j] = temp_adj;
+        temp_col = wand_col[i];
+        wand_col[i] = wand_col[j];
+        wand_col[j] = temp_col;
+    }
+
+    /* Rods */
+    for (i = 0; i < MAX_METALS; i++) {
+        j = rand_int(MAX_METALS);
+        temp_adj = rod_adj[i];
+        rod_adj[i] = rod_adj[j];
+        rod_adj[j] = temp_adj;
+        temp_col = rod_col[i];
+        rod_col[i] = rod_col[j];
+        rod_col[j] = temp_col;
+    }
+
+    /* Foods (Mushrooms) */
     for (i = 0; i < MAX_SHROOM; i++) {
         j = rand_int(MAX_SHROOM);
-        tmp1 = food_adj[i];
+        temp_adj = food_adj[i];
         food_adj[i] = food_adj[j];
-        food_adj[j] = tmp1;
-        tmp2 = food_col[i];
+        food_adj[j] = temp_adj;
+        temp_col = food_col[i];
         food_col[i] = food_col[j];
-        food_col[j] = tmp2;
+        food_col[j] = temp_col;
     }
 
-    /* Hack -- Scrolls have titles, and are always white */
-    for (h = 0; h < MAX_TITLES; h++) {
-        string[0] = '\0';
+    /* Potions (The first 4 entries for potions are fixed) */
+    for (i = 4; i < MAX_COLORS; i++) {
+        j = rand_int(MAX_COLORS - 4) + 4;
+        temp_adj = potion_adj[i];
+        potion_adj[i] = potion_adj[j];
+        potion_adj[j] = temp_adj;
+        temp_col = potion_col[i];
+        potion_col[i] = potion_col[j];
+        potion_col[j] = temp_col;
+    }
 
-        /* Construct a two or three word title */
-        k = rand_range(2,3);
-        for (i = 0; i < k; i++) {
+    /* Scrolls (random titles, always white) */
+    for (i = 0; i < MAX_TITLES; i++) {
 
-            /* Add a one or two syllable word */
-            for (j = rand_range(1,2); j > 0; j--) {
-                (void)strcat(string, syllables[rand_int(MAX_SYLLABLES)]);
+        bool icky = TRUE;
+        
+        char buf[80];
+
+        /* Get a new title */
+        while (icky) {
+
+            /* Assume not icky */
+            icky = FALSE;
+            
+            /* Start a new title */
+            buf[0] = '\0';
+
+            /* Collect words until done */
+            while (1) {
+            
+                int q, s;
+
+                char tmp[80];
+
+                /* Start a new word */
+                tmp[0] = '\0';
+
+                /* Choose one or two syllables */
+                s = ((rand_int(100) < 33) ? 1 : 2);
+                
+                /* Add a one or two syllable word */
+                for (q = 0; q < s; q++) {
+            
+                    /* Add the syllable */
+                    strcat(tmp, syllables[rand_int(MAX_SYLLABLES)]);
+                }
+
+                /* Stop before getting too long */
+                if (strlen(buf) + 1 + strlen(tmp) > 15) break;
+
+                /* Add a space */
+                strcat(buf, " ");
+
+                /* Add the word */
+                strcat(buf, tmp);
             }
 
-            /* Add a space */
-            if (i < k - 1) {
-                (void)strcat(string, " ");
-            }
-        }
+            /* Check for "duplicate" scroll titles */
+            for (j = 0; j < i; j++) {
 
-        /* Hack -- chop off part of the title */
-        if (string[8] == ' ') {
-            string[8] = '\0';
-        }
-        else if (string[7] == ' ') {
-            string[7] = '\0';
-        }
-        else {
-            string[9] = '\0';
+                /* Ignore "different" prefixes */
+                if (scroll_adj[j][0] != buf[1]) continue;
+                if (scroll_adj[j][1] != buf[2]) continue;
+                if (scroll_adj[j][2] != buf[3]) continue;
+                
+                /* Assume icky */
+                icky = TRUE;
+
+                /* Stop looking */
+                break;
+            }
         }
 
         /* Save the title */
-        (void)strcpy(scroll_adj[h], string);
+        strcpy(scroll_adj[i], buf+1);
 
-        /* Hack -- all scrolls are white */
-        scroll_col[h] = TERM_WHITE;
-    }
-
-    /* Rods are made of metal */
-    for (i = 0; i < MAX_METALS; i++) {
-        j = rand_int(MAX_METALS);
-        tmp1 = rod_adj[i];
-        rod_adj[i] = rod_adj[j];
-        rod_adj[j] = tmp1;
-        tmp2 = rod_col[i];
-        rod_col[i] = rod_col[j];
-        rod_col[j] = tmp2;
+        /* All scrolls are white */
+        scroll_col[i] = TERM_WHITE;
     }
 
     /* Hack -- undo the hack above */
@@ -614,6 +600,9 @@ void flavor_init(void)
     /* Analyze every object */
     for (i = 0; i < MAX_K_IDX; i++) {
 
+        /* Skip non-objects */
+        if (!k_list[i].name) continue;
+        
         /* Check for a "flavor" */
         x_list[i].has_flavor = object_has_flavor(i);
 
@@ -622,33 +611,110 @@ void flavor_init(void)
 
         /* Check for "easily known" */
         x_list[i].easy_know = object_easy_know(i);
+    }
+}
 
-        /* Extract the "underlying" attr */
-        x_list[i].x_attr = x_list[i].k_attr = object_k_attr(i);
 
-        /* Extract the "underlying" char */
-        x_list[i].x_char = x_list[i].k_char = k_list[i].k_char;
+
+
+/*
+ * Extract the "default" attr for each object
+ * This function is used only by "flavor_init()"
+ */
+static byte object_k_attr(int i)
+{
+    /* Flavored items */
+    if (x_list[i].has_flavor) {
+
+        /* Extract the indexx */
+        int indexx = k_list[i].sval;
+
+        /* Analyze the item */
+        switch (k_list[i].tval) {
+
+            case TV_FOOD:
+                return (food_col[indexx]);
+
+            case TV_POTION:
+                return (potion_col[indexx]);
+
+            case TV_SCROLL:
+                return (scroll_col[indexx]);
+
+            case TV_AMULET:
+                return (amulet_col[indexx]);
+
+            case TV_RING:
+                return (ring_col[indexx]);
+
+            case TV_STAFF:
+                return (staff_col[indexx]);
+
+            case TV_WAND:
+                return (wand_col[indexx]);
+
+            case TV_ROD:
+                return (rod_col[indexx]);
+        }
     }
 
-    /* Default attr/chars for object tvals */
+    /* Default attr if legal */
+    if (k_list[i].k_attr) return (k_list[i].k_attr);
+
+    /* Default to white */
+    return (TERM_WHITE);
+}
+
+
+/*
+ * Extract the "default" char for each object
+ * This function is used only by "flavor_init()"
+ */
+static byte object_k_char(int i)
+{
+    return (k_list[i].k_char);
+}
+
+
+/*
+ * Reset the "visual" lists
+ */
+void reset_visuals(void)
+{
+    int i;
+    
+    /* Extract attr/chars for equippy items (by tval) */
     for (i = 0; i < 128; i++) {
 
         /* Extract a default attr */
         tval_to_attr[i] = default_tval_to_attr(i);
 
-        /* Hack -- Assume no char is known */
-        tval_to_char[i] = ' ';
+        /* Extract a default char */
+        tval_to_char[i] = default_tval_to_char(i);
     }
 
-    /* Hack -- Guess at "correct" values for tval_to_char[] */
+    /* Extract some info about objects */
     for (i = 0; i < MAX_K_IDX; i++) {
+    
+        /* Extract the "underlying" attr */
+        x_list[i].k_attr = object_k_attr(i);
 
-        /* Use the first value we find */
-        if (tval_to_char[k_list[i].tval] == ' ') {
+        /* Extract the "underlying" char */
+        x_list[i].k_char = object_k_char(i);
 
-            /* Use that value */
-            tval_to_char[k_list[i].tval] = x_list[i].k_char;
-        }
+        /* Assume we will use the underlying values */
+        x_list[i].x_attr = x_list[i].k_attr;
+        x_list[i].x_char = x_list[i].k_char;
+    }
+
+    /* Extract some info about monsters */
+    for (i = 0; i < MAX_R_IDX; i++) {
+
+        /* Extract the "underlying" attr */
+        l_list[i].l_attr = r_list[i].r_attr;
+
+        /* Extract the "underlying" char */
+        l_list[i].l_char = r_list[i].r_char;
     }
 }
 
@@ -657,374 +723,10 @@ void flavor_init(void)
 
 
 
-/*
- * Known2 is true when the "attributes" of an object are "known".
- * These include tohit, todam, toac, cost, and pval (charges).
- *
- * Note that "knowing" an object gives you everything that an "awareness"
- * gives you, and much more.  In fact, the player is always "aware" of any
- * item of which he has full "knowledge".
- *
- * But having full knowledge of, say, one "wand of wonder", does not, by
- * itself, give you knowledge, or even awareness, of other "wands of wonder".
- * It happens that most "identify" routines (including "buying from a shop")
- * will make the player "aware" of the object as well as fully "know" it.
- *
- * This routine also removes inscriptions generated by "innate feelings".
- */
-void inven_known(inven_type *i_ptr)
-{
-    /* Remove "inscriptions" created when ID_FELT was set */
-    if (i_ptr->ident & ID_FELT) {
 
-        /* Hack -- Remove any inscription we may have made */
-        if ((streq(i_ptr->inscrip, "cursed")) ||
 
-            (streq(i_ptr->inscrip, "terrible")) ||
-            (streq(i_ptr->inscrip, "worthless")) ||
 
-            (streq(i_ptr->inscrip, "blessed")) ||
 
-            (streq(i_ptr->inscrip, "special")) ||
-            (streq(i_ptr->inscrip, "excellent")) ||
-            (streq(i_ptr->inscrip, "good")) ||
-
-            (streq(i_ptr->inscrip, "average"))) {
-
-            /* Forget the inscription */
-            inscribe(i_ptr, "");
-        }
-    }
-
-    /* Hack -- notice cursed items */
-    else if (cursed_p(i_ptr)) {
-
-        /* Put an initial inscription */
-        if (!i_ptr->inscrip[0]) inscribe(i_ptr, "cursed");
-    }
-
-
-    /* Clear the "Felt" info */
-    i_ptr->ident &= ~ID_FELT;
-
-    /* Clear the "Worn" info */
-    i_ptr->ident &= ~ID_WORN;
-
-    /* Clear the "Empty" info */
-    i_ptr->ident &= ~ID_EMPTY;
-
-    /* Now we know all about it */
-    i_ptr->ident |= ID_KNOWN;
-}
-
-
-
-
-
-/*
- * The player is now aware of the effects of the given object.
- */
-void inven_aware(inven_type *i_ptr)
-{
-    /* Fully aware of the effects */
-    x_list[i_ptr->k_idx].aware = TRUE;
-}
-
-
-
-/*
- * Something has been "sampled"
- */
-void inven_tried(inven_type *i_ptr)
-{
-    /* Mark it as tried (even if "aware") */
-    x_list[i_ptr->k_idx].tried = TRUE;
-}
-
-
-
-
-
-#ifdef USE_COLOR
-
-/*
- * Get a legal "multi-hued" color
- * Does NOT include White, Black, or any Grays.
- * Should it include "Brown" and "Light Brown"?
- */
-static byte mh_attr(void)
-{
-    switch (randint(11)) {
-        case 1: return (TERM_RED);
-        case 2: return (TERM_BLUE);
-        case 3: return (TERM_GREEN);
-        case 4: return (TERM_YELLOW);
-        case 5: return (TERM_ORANGE);
-        case 6: return (TERM_VIOLET);
-        case 7: return (TERM_UMBER);
-        case 8: return (TERM_L_RED);
-        case 9: return (TERM_L_BLUE);
-        case 10: return (TERM_L_GREEN);
-        case 11: return (TERM_L_UMBER);
-    }
-
-    return (TERM_WHITE);
-}
-
-#endif
-
-
-
-
-/*
- * Return a color to use for the bolt/ball spells
- */
-byte spell_color(int type)
-{
-
-#ifdef USE_COLOR
-
-    if (!use_color) return (TERM_WHITE);
-
-    switch (type) {
-
-        case GF_MISSILE:
-                return (mh_attr());		/* multihued */
-        case GF_ELEC:
-                return (TERM_YELLOW);
-        case GF_POIS:
-                return (TERM_GREEN);
-        case GF_ACID:
-                return (TERM_GRAY);
-        case GF_COLD:
-                return (TERM_L_BLUE);
-        case GF_FIRE:
-                return (TERM_RED);
-        case GF_HOLY_ORB:
-                return (TERM_D_GRAY);
-        case GF_ARROW:
-                return (TERM_L_UMBER);
-        case GF_PLASMA:
-                return (TERM_RED);
-        case GF_NETHER:
-                return (TERM_VIOLET);
-        case GF_WATER:
-                return (TERM_BLUE);
-        case GF_CHAOS:
-                return (mh_attr());		/* multihued */
-        case GF_SHARDS:
-                return (TERM_L_UMBER);
-        case GF_SOUND:
-                return (TERM_ORANGE);
-        case GF_CONFUSION:
-                return (mh_attr());		/* multihued */
-        case GF_DISENCHANT:
-                return (TERM_VIOLET);
-        case GF_NEXUS:
-                return (TERM_L_RED);
-        case GF_FORCE:
-                return (TERM_WHITE);
-        case GF_INERTIA:
-                return (TERM_L_GRAY);
-        case GF_LITE_WEAK:
-        case GF_LITE:
-                return (TERM_YELLOW);
-        case GF_DARK_WEAK:
-        case GF_DARK:
-                return (TERM_D_GRAY);
-        case GF_TIME:
-                return (TERM_L_BLUE);
-        case GF_GRAVITY:
-                return (TERM_GRAY);
-        case GF_MANA:
-                return (TERM_L_RED);
-        case GF_METEOR:
-                return (TERM_ORANGE);
-        case GF_ICE:
-                return (TERM_L_BLUE);
-    }
-
-#endif
-
-    /* Standard "color" */
-    return (TERM_WHITE);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-/*
- * Helper function.  Compare the "ident" field of two objects.
- * Determine if the "ident" fields of two items "match".
- */
-static bool similar_ident(inven_type *i_ptr, inven_type *j_ptr)
-{
-    /* Food, Potions, Scrolls, and Rods are "simple" objects */
-    if (i_ptr->tval == TV_FOOD) return (1);
-    if (i_ptr->tval == TV_POTION) return (1);
-    if (i_ptr->tval == TV_SCROLL) return (1);
-    if (i_ptr->tval == TV_ROD) return (1);
-
-    /* Require identical "feeling" status */
-    if ((i_ptr->ident & ID_FELT) != (j_ptr->ident & ID_FELT)) return (0);
-
-    /* Require identical "worn" status */
-    if ((i_ptr->ident & ID_WORN) != (j_ptr->ident & ID_WORN)) return (0);
-
-    /* Require identical "emptiness" */
-    if ((i_ptr->ident & ID_EMPTY) != (j_ptr->ident & ID_EMPTY)) return (0);
-
-    /* Allow match if both items are "known" */
-    if (inven_known_p(i_ptr) && inven_known_p(j_ptr)) return (1);
-
-    /* Require identical "knowledge" */
-    if (inven_known_p(i_ptr) != inven_known_p(j_ptr)) return (0);
-
-    /* Hack -- Allow match on unidentified missiles */
-    if (i_ptr->tval == TV_SHOT) return (1);
-    if (i_ptr->tval == TV_BOLT) return (1);
-    if (i_ptr->tval == TV_ARROW) return (1);
-
-    /* Assume no match */
-    return (0);
-}
-
-
-
-
-/*
- * Determine if an item can "absorb" a second item
- *
- * No object can absorb itself.  This prevents object replication.
- *
- * When an object absorbs another, the second object loses all
- * of its attributes (except for "number", which gets added in),
- * so it is important to verify that all important attributes match.
- * But the "costs" are averaged, to allow stacking of discounted items.
- *
- * Note that all "problems" associated with "combining" differently
- * priced objects have been removed by never combining such objects.
- *
- * We allow wands (and staffs) to combine if they are known to have
- * equivalent charges.  They are unstacked as they are used.
- * We allow rods to combine when they are fully charged, and again,
- * we unstack them as they are used (see effects.c).
- *
- * We do not allow chests to combine, it would be annoying.
- *
- * We do NOT allow activatable items (artifacts or dragon scale mail)
- * to stack, to keep the "activation" code clean.  Artifacts may stack,
- * but only with another identical artifact (which does not exist).
- * Ego items may stack as long as they have the same ego-item type.
- */
-int item_similar(inven_type *i_ptr, inven_type *j_ptr)
-{
-    /* Hack -- Identical items cannot be stacked */
-    if (i_ptr == j_ptr) return (0);
-
-    /* Different objects cannot be stacked */
-    if (i_ptr->k_idx != j_ptr->k_idx) return (0);
-
-
-    /* Hack -- refuse weapons/armor if requested */
-    if (!stack_allow_items &&
-        (wearable_p(i_ptr)) &&
-        (i_ptr->tval != TV_LITE) &&
-        (i_ptr->tval != TV_RING) &&
-        (i_ptr->tval != TV_AMULET)) return (0);
-
-    /* Hack -- refuse wands/staffs/rods if requested */
-    if (!stack_allow_wands &&
-        ((i_ptr->tval == TV_STAFF) ||
-         (i_ptr->tval == TV_WAND) ||
-         (i_ptr->tval == TV_ROD))) return (0);
-
-
-    /* Require matching prices */
-    if (i_ptr->cost != j_ptr->cost) return (0);
-
-    /* Hack -- Require matching discounts, unless told not to */
-    if (!stack_force_costs && (i_ptr->discount != j_ptr->discount)) return (0);
-
-
-    /* Require identical "pval" codes */
-    if (i_ptr->pval != j_ptr->pval) return (0);
-
-    /* Require many identical values */
-    if ((i_ptr->tohit     != j_ptr->tohit)     ||
-        (i_ptr->todam     != j_ptr->todam)     ||
-        (i_ptr->toac      != j_ptr->toac)      ||
-        (i_ptr->ac        != j_ptr->ac)        ||
-        (i_ptr->dd        != j_ptr->dd)        ||
-        (i_ptr->ds        != j_ptr->ds)) {
-        return (0);
-    }
-
-    /* Require identical flags */
-    if ((i_ptr->flags1 != j_ptr->flags1) ||
-        (i_ptr->flags2 != j_ptr->flags2) ||
-        (i_ptr->flags3 != j_ptr->flags3)) {
-        return (0);
-    }
-
-
-    /* Both items must be "fully identified" (see above) */
-    if (!similar_ident(i_ptr, j_ptr)) return (0);
-
-
-    /* Require identical "artifact" names */
-    if (i_ptr->name1 != j_ptr->name1) return (0);
-
-    /* Require identical "ego-item" names */
-    if (i_ptr->name2 != j_ptr->name2) return (0);
-
-
-    /* XXX Hack -- never stack "activatable" items */
-    if (wearable_p(i_ptr) && (i_ptr->flags3 & TR3_ACTIVATE)) return (0);
-    if (wearable_p(j_ptr) && (j_ptr->flags3 & TR3_ACTIVATE)) return (0);
-
-
-    /* Hack -- Never stack chests */
-    if (i_ptr->tval == TV_CHEST) return (0);
-
-
-    /* No stack can grow bigger than a certain size */
-    if (i_ptr->number + j_ptr->number >= MAX_STACK_SIZE) return (0);
-
-
-    /* Hack -- never "lose" an inscription */
-    if (i_ptr->inscrip[0] && j_ptr->inscrip[0] &&
-        strcmp(i_ptr->inscrip, j_ptr->inscrip)) return (0);
-
-    /* Hack -- normally require matching "inscriptions" */
-    if (!stack_force_notes &&
-        strcmp(i_ptr->inscrip, j_ptr->inscrip)) return (0);
-
-
-    /* Paranoia -- Different types cannot be stacked */
-    if (i_ptr->tval != j_ptr->tval) return (0);
-
-    /* Paranoia -- Different sub-types cannot be stacked */
-    if (i_ptr->sval != j_ptr->sval) return (0);
-
-    /* Paranoia -- Different weights cannot be stacked */
-    if (i_ptr->weight != j_ptr->weight) return (0);
-
-    /* Paranoia -- Timeout should always be zero (see "TR3_ACTIVATE" above) */
-    if (i_ptr->timeout || j_ptr->timeout) return (0);
-
-
-    /* They match, so they must be similar */
-    return (TRUE);
-}
 
 
 
@@ -1163,25 +865,28 @@ static char *objdes_int(char *t, sint v)
 /*
  * Creates a description of the item "i_ptr", and stores it in "out_val".
  *
- * If "pref" is TRUE, the description is verbose, and has an article
- * (or number, or "no more") prefixed to the description.
+ * One can choose the "verbosity" of the description, including whether
+ * or not the "number" of items should be described, and how much detail
+ * should be used when describing the item.
  *
- * Note that buf must be large enough to hold the longest possible
- * description.  And the descriptions can get pretty long, such as:
- * "no more Maces of Disruption (Defender) (+10,+10) [+5] (+3 to stealth)"
+ * The global option "plain_descriptions" affects the "flavor" detail.
  *
- * Note the use of "objdes_num()" and "objdes_int()" instead of various
- * forms of "sprintf()", which is not very efficient.  Also, the "%+d" code
- * does not work on some machines, though we could always use something like
- * sprintf(buf, "%c%d", POM(val), ABS(val)) for sprintf(buf, "%+d", val).
+ * The given "buf" must be 80 chars long to hold the longest possible
+ * description, which can get pretty long, including incriptions, such as:
+ * "no more Maces of Disruption (Defender) (+10,+10) [+5] (+3 to stealth)".
+ * Note that the inscription will be clipped to keep the total description
+ * under 79 chars (plus a terminator).
+ *
+ * Note the use of "objdes_num()" and "objdes_int()" as hyper-efficient,
+ * portable, versions of some common "sprintf()" commands.
  *
  * Note that "objdes_store()" forces "plain_descriptions" to appear "true",
  * so that the "flavors" of "un-aware" objects are not shown.
  *
- * Note that ALL ego-items (when known) append an "Ego-Item Name", unless
+ * Note that all ego-items (when known) append an "Ego-Item Name", unless
  * the item is also an artifact, which should NEVER happen.
  *
- * Note that ALL artifacts (when known) append an "Artifact Name", so we
+ * Note that all artifacts (when known) append an "Artifact Name", so we
  * have special processing for "Specials" (artifact Lites, Rings, Amulets).
  * The "Specials" never use "modifiers" if they are "known", since they
  * have special "descriptions", such as "The Necklace of the Dwarves".
@@ -1198,8 +903,16 @@ static char *objdes_int(char *t, sint v)
  * at least, those which have no "pluses", such as the three artifact lites.
  *
  * Hack -- Display "The One Ring" as "a Plain Gold Ring" until aware.
+ *
+ * If "pref" then a "numeric" prefix will be pre-pended.
+ *
+ * Mode:
+ *   0 -- The Cloak of Death
+ *   1 -- The Cloak of Death [1,+3]
+ *   2 -- The Cloak of Death [1,+3] (+2 to Stealth)
+ *   3 -- The Cloak of Death [1,+3] (+2 to Stealth) {nifty}
  */
-void objdes(char *buf, inven_type *i_ptr, int pref)
+void objdes(char *buf, inven_type *i_ptr, int pref, int mode)
 {
     cptr		basenm, modstr;
     int			power, indexx;
@@ -1220,7 +933,7 @@ void objdes(char *buf, inven_type *i_ptr, int pref)
     char		b1 = '[', b2 = ']';
     char		c1 = '{', c2 = '}';
 
-    char		tmpstr[160];
+    char		tmp_val[160];
 
 
     /* See if the object is "aware" */
@@ -1292,56 +1005,68 @@ void objdes(char *buf, inven_type *i_ptr, int pref)
       /* Amulets (including a few "Specials") */
       case TV_AMULET:
 
+        /* Known artifacts */
         if (artifact_p(i_ptr) && aware) break;
 
+        /* Color the object */
         modstr = amulet_adj[indexx];
         if (aware) append_name = TRUE;
-
         basenm = plain ? "& Amulet~" : "& # Amulet~";
-
         break;
 
 
       /* Rings (including a few "Specials") */
       case TV_RING:
 
+        /* Known artifacts */
         if (artifact_p(i_ptr) && aware) break;
 
+        /* Color the object */
         modstr = ring_adj[indexx];
         if (aware) append_name = TRUE;
-
-        if (!aware && (i_ptr->sval == SV_RING_POWER)) modstr = "Plain Gold";
-
         basenm = plain ? "& Ring~" : "& # Ring~";
+
+        /* Hack -- The One Ring */
+        if (!aware && (i_ptr->sval == SV_RING_POWER)) modstr = "Plain Gold";
 
         break;
 
 
       case TV_STAFF:
+
+        /* Color the object */
         modstr = staff_adj[indexx];
         if (aware) append_name = TRUE;
         basenm = plain ? "& Staff~" : "& # Staff~";
         break;
 
       case TV_WAND:
+
+        /* Color the object */
         modstr = wand_adj[indexx];
         if (aware) append_name = TRUE;
         basenm = plain ? "& Wand~" : "& # Wand~";
         break;
 
       case TV_ROD:
+
+        /* Color the object */
         modstr = rod_adj[indexx];
         if (aware) append_name = TRUE;
         basenm = plain ? "& Rod~" : "& # Rod~";
         break;
 
       case TV_SCROLL:
+
+        /* Color the object */
         modstr = scroll_adj[indexx];
         if (aware) append_name = TRUE;
         basenm = plain ? "& Scroll~" : "& Scroll~ titled \"#\"";
         break;
 
       case TV_POTION:
+
+        /* Color the object */
         modstr = potion_adj[indexx];
         if (aware) append_name = TRUE;
         basenm = plain ? "& Potion~" : "& # Potion~";
@@ -1352,22 +1077,10 @@ void objdes(char *buf, inven_type *i_ptr, int pref)
         /* Ordinary food is "boring" */
         if (i_ptr->sval >= SV_FOOD_MIN_FOOD) break;
 
-        /* Modifier string */
+        /* Color the object */
         modstr = food_adj[indexx];
         if (aware) append_name = TRUE;
-
-        /* The Molds */
-        if (i_ptr->sval >= SV_FOOD_MIN_MOLD) {
-
-            basenm = plain ? "& Hairy Mold~" : "& # Hairy Mold~";
-        }
-
-        /* The Mushrooms */
-        else {
-
-            basenm = plain ? "& Mushroom~" : "& # Mushroom~";
-        }
-
+        basenm = plain ? "& Mushroom~" : "& # Mushroom~";
         break;
 
 
@@ -1558,68 +1271,68 @@ void objdes(char *buf, inven_type *i_ptr, int pref)
         /* Grab any ego-item name */
         else if (i_ptr->name2) {
             t = objdes_chr(t, ' ');
-            t = objdes_str(t, ego_names[i_ptr->name2]);
+            t = objdes_str(t, ego_item_names[i_ptr->name2]);
         }
     }
 
 
     /* No more details wanted */
-    if (!pref) return;
+    if (mode < 1) return;
 
 
     /* Hack -- Chests must be described in detail */
     if (i_ptr->tval == TV_CHEST) {
 
-        /* Hack -- Empty chests are "obvious" */
-        if (!i_ptr->flags1) {
-            t = objdes_str(t, " (empty)");
-        }
-
         /* Not searched yet */
-        else if (!known) {
-
+        if (!known) {
             /* Nothing */
         }
 
+        /* May be "empty" */
+        else if (!i_ptr->pval) {
+            t = objdes_str(t, " (empty)");
+        }
+
+        /* May be "disarmed" */
+        else if (i_ptr->pval < 0) {
+            if (chest_traps[i_ptr->pval]) {
+                t = objdes_str(t, " (disarmed)");
+            }
+            else {
+                t = objdes_str(t, " (unlocked)");
+            }
+        }
+
         /* Describe the traps, if any */
-        else if (i_ptr->flags2 & CH2_TRAP_MASK) {
+        else {
 
             /* Describe the traps */
-            switch (i_ptr->flags2 & CH2_TRAP_MASK) {
-              case CH2_LOSE_STR:
+            switch (chest_traps[i_ptr->pval]) {
+              case 0:
+                t = objdes_str(t, " (Locked)");
+                break;
+              case CHEST_LOSE_STR:
                 t = objdes_str(t, " (Poison Needle)");
                 break;
-              case CH2_POISON:
+              case CHEST_LOSE_CON:
                 t = objdes_str(t, " (Poison Needle)");
                 break;
-              case CH2_PARALYSED:
+              case CHEST_POISON:
                 t = objdes_str(t, " (Gas Trap)");
                 break;
-              case CH2_EXPLODE:
+              case CHEST_PARALYZE:
+                t = objdes_str(t, " (Gas Trap)");
+                break;
+              case CHEST_EXPLODE:
                 t = objdes_str(t, " (Explosion Device)");
                 break;
-              case CH2_SUMMON:
+              case CHEST_SUMMON:
                 t = objdes_str(t, " (Summoning Runes)");
                 break;
               default:
                 t = objdes_str(t, " (Multiple Traps)");
                 break;
             }
-        }
-
-        /* May be "disarmed" */
-        else if (i_ptr->flags2 & CH2_DISARMED) {
-            t = objdes_str(t, " (disarmed)");
-        }
-
-        /* May be "locked" */
-        else if (i_ptr->flags2 & CH2_LOCKED) {
-            t = objdes_str(t, " (locked)");
-        }
-
-        /* Assume "unlocked" */
-        else {
-            t = objdes_str(t, " (unlocked)");
         }
     }
 
@@ -1665,7 +1378,7 @@ void objdes(char *buf, inven_type *i_ptr, int pref)
       /* Bows get a special "damage string" */
       case TV_BOW:
 
-        /* Hack -- Extract the "base power" */
+        /* Mega-Hack -- Extract the "base power" */
         power = (i_ptr->sval % 10);
 
         /* Apply the "Extra Might" flag */
@@ -1745,6 +1458,10 @@ void objdes(char *buf, inven_type *i_ptr, int pref)
     }
 
 
+    /* No more details wanted */
+    if (mode < 2) return;
+
+
     /* Hack -- Wands and Staffs have charges */
     if (known &&
         ((i_ptr->tval == TV_STAFF) ||
@@ -1801,7 +1518,7 @@ void objdes(char *buf, inven_type *i_ptr, int pref)
         }
 
         /* Attack speed */
-        else if (i_ptr->flags1 & TR1_ATTACK_SPD) {
+        else if (i_ptr->flags1 & TR1_BLOWS) {
 
             /* Add " attack" */
             t = objdes_str(t, " attack");
@@ -1842,52 +1559,57 @@ void objdes(char *buf, inven_type *i_ptr, int pref)
     }
 
 
-    /* Erase tmp_str */
-    tmpstr[0] = '\0';
+    /* No more details wanted */
+    if (mode < 3) return;
+
+
+    /* No inscription yet */
+    tmp_val[0] = '\0';
 
     /* Use the standard inscription if available */
-    if (i_ptr->inscrip[0]) {
-        strcpy(tmpstr, i_ptr->inscrip);
+    if (i_ptr->note) {
+        strcpy(tmp_val, quark_str(i_ptr->note));
+    }
+
+    /* Note "cursed" if the item is known to be cursed */
+    else if (cursed_p(i_ptr) && (known || (i_ptr->ident & ID_SENSE))) {
+        strcpy(tmp_val, "cursed");
     }
 
     /* Mega-Hack -- note empty wands/staffs */
     else if (!known && (i_ptr->ident & ID_EMPTY)) {
-        strcpy(tmpstr, "empty");
+        strcpy(tmp_val, "empty");
     }
-
-    /* Note "cursed" if the item is known (and cursed) */
-    else if (known && cursed_p(i_ptr)) {
-        strcpy(tmpstr, "cursed");
-    }
-
-    /* Note "cursed" if any curse has been felt */
-    else if ((i_ptr->ident & ID_FELT) && (cursed_p(i_ptr))) {
-        strcpy(tmpstr, "cursed");
-    }
-
-#if 0
-    /* Hack -- Note "worn" if the object has been worn */
-    else if (i_ptr->ident & ID_WORN) {
-        strcpy(tmpstr, "tested");
-    }
-#endif
 
     /* Note "tried" if the object has been tested unsuccessfully */
     else if (!aware && x_list[i_ptr->k_idx].tried) {
-        strcpy(tmpstr, "tried");
+        strcpy(tmp_val, "tried");
     }
 
     /* Note the discount, if any */
     else if (i_ptr->discount) {
-        objdes_num(tmpstr, i_ptr->discount);
-        strcat(tmpstr, "% off");
+        objdes_num(tmp_val, i_ptr->discount);
+        strcat(tmp_val, "% off");
     }
 
-    /* Use the inscription, if any */
-    if (tmpstr[0]) {
+    /* Append the inscription, if any */
+    if (tmp_val[0]) {
+
+        int n;
+        
+        /* Hack -- How much so far */
+        n = (t - buf);
+
+        /* Paranoia -- do not be stupid */        
+        if (n > 75) n = 75;
+        
+        /* Hack -- shrink the inscription */
+        tmp_val[75 - n] = '\0';
+        
+        /* Append the inscription */
         t = objdes_chr(t, ' ');
         t = objdes_chr(t, c1);
-        t = objdes_str(t, tmpstr);
+        t = objdes_str(t, tmp_val);
         t = objdes_chr(t, c2);
     }
 }
@@ -1897,7 +1619,7 @@ void objdes(char *buf, inven_type *i_ptr, int pref)
  * Hack -- describe an item currently in a store's inventory
  * This allows an item to *look* like the player is "aware" of it
  */
-void objdes_store(char *buf, inven_type *i_ptr, int mode)
+void objdes_store(char *buf, inven_type *i_ptr, int pref, int mode)
 {
     /* Save the actual "plain_descriptions" flag */
     bool hack_plain = plain_descriptions;
@@ -1920,7 +1642,7 @@ void objdes_store(char *buf, inven_type *i_ptr, int mode)
 
 
     /* Describe the object */
-    objdes(buf, i_ptr, mode);
+    objdes(buf, i_ptr, pref, mode);
 
 
     /* Restore the "plain descriptions" option */
@@ -1932,65 +1654,6 @@ void objdes_store(char *buf, inven_type *i_ptr, int mode)
     /* Clear the known flag */
     if (!hack_known) i_ptr->ident &= ~ID_KNOWN;
 }
-
-
-
-
-/*
- * Clear an item
- */
-void invwipe(inven_type *i_ptr)
-{
-    /* Copy the empty record */
-    (*i_ptr) = i_list[0];
-}
-
-
-/*
- * Make "i_ptr" a "clean" copy of the given "kind" of object
- */
-void invcopy(inven_type *i_ptr, int k_idx)
-{
-    inven_kind *k_ptr = &k_list[k_idx];
-
-    /* Hack -- clear the record */
-    (*i_ptr) = i_list[0];
-    
-    /* Save the kind index */
-    i_ptr->k_idx = k_idx;
-
-    /* Quick access to tval/sval */
-    i_ptr->tval = k_ptr->tval;
-    i_ptr->sval = k_ptr->sval;
-
-    /* Save the default "pval" */
-    i_ptr->pval = k_ptr->pval;
-
-    /* Default number and weight */
-    i_ptr->number = k_ptr->number;
-    i_ptr->weight = k_ptr->weight;
-
-    /* Default magic */
-    i_ptr->tohit = k_ptr->tohit;
-    i_ptr->todam = k_ptr->todam;
-    i_ptr->toac = k_ptr->toac;
-    i_ptr->ac = k_ptr->ac;
-    i_ptr->dd = k_ptr->dd;
-    i_ptr->ds = k_ptr->ds;
-
-    /* Default cost */
-    i_ptr->cost = k_ptr->cost;
-
-    /* Default flags */
-    i_ptr->flags1 = k_ptr->flags1;
-    i_ptr->flags2 = k_ptr->flags2;
-    i_ptr->flags3 = k_ptr->flags3;
-
-    /* Wipe the inscription */
-    inscribe(i_ptr, "");
-}
-
-
 
 
 

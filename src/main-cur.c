@@ -569,7 +569,7 @@ static errr Term_xtra_cur(int n, int v)
         case TERM_XTRA_NOISE: (void)write(1, "\007", 1); return (0);
 
         /* Flush the Curses buffer */
-        case TERM_XTRA_FLUSH: (void)refresh(); return (0);
+        case TERM_XTRA_FRESH: (void)refresh(); return (0);
 
 #ifdef SYS_V
 

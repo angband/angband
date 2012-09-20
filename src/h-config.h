@@ -26,7 +26,7 @@
 /*
  * OPTION: Compile on Windows (automatic)
  */
-/* #define _Windows */
+/* #define WINDOWS */
 
 /*
  * OPTION: Compile on an IBM (automatic)
@@ -85,6 +85,7 @@
 # define SYS_V
 #endif
 
+
 /*
  * Extract the "MSDOS" flag from the compiler
  */
@@ -93,6 +94,28 @@
 #  define MSDOS
 # endif
 #endif
+
+/*
+ * Set up for Win32: not really MSDOS, but this works
+ */
+#ifdef __WIN32__
+# ifndef _Windows
+#  define _Windows
+# endif
+# ifndef MSDOS
+#  define MSDOS
+# endif
+#endif
+
+/*
+ * Set up for Windows
+ */
+#ifdef _Windows
+# ifndef WINDOWS
+#  define WINDOWS
+# endif
+#endif
+
 
 /*
  * OPTION: Define "L64" if a "long" is 64-bits.  See "h-types.h".
@@ -118,7 +141,7 @@
 #undef SET_UID
 #define SET_UID
 #if defined(MACINTOSH) || defined(MSDOS) || defined(AMIGA) || \
-    defined(__MINT__) || defined(__EMX__) || defined(_Windows)
+    defined(__MINT__) || defined(__EMX__) || defined(WINDOWS)
 # undef SET_UID
 #endif
 
@@ -178,6 +201,12 @@
 #  define strchr index
 # endif
 #endif
+
+
+/*
+ * OPTION: Define "HAS_STRICMP" only if "stricmp()" exists.
+ */
+/* #define HAS_STRICMP */
 
 
 /*

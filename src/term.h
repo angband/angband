@@ -3,7 +3,7 @@
 #ifndef INCLUDED_TERM_H
 #define INCLUDED_TERM_H
 
-#include "h-include.h"
+#include "h-basic.h"
 
 
 
@@ -67,10 +67,10 @@ struct _term_win {
 /*
  * An actual "term" structure
  *
- *	- Have we been activated for the first time
+ *	- Have we been activated for the first time?
  *	- Do our support routines use a "software cursor"?
  *	- Should we call the "Event Loop" when "bored"?
- *	- Unused
+ *	- May we ignore the "underlying" color of "spaces"?
  *
  *	- Keypress Queue -- various data
  *
@@ -105,7 +105,7 @@ struct _term {
     bool initialized;
     bool soft_cursor;
     bool scan_events;
-    bool unused_flag;
+    bool dark_blanks;
 
     char *key_queue;
 
@@ -165,16 +165,18 @@ struct _term {
 /* Definitions for "Term_xtra" */
 #define TERM_XTRA_CHECK	11	/* Check for event */
 #define TERM_XTRA_EVENT	12	/* Block until event */
-#define TERM_XTRA_NOISE 21	/* Make a noise */
-#define TERM_XTRA_FLUSH 22	/* Flush output */
-#define TERM_XTRA_INVIS 31	/* Cursor invisible */
-#define TERM_XTRA_BEVIS 32	/* Cursor visible */
-#define TERM_XTRA_REACT 41	/* React to global veriable changes */
-#define TERM_XTRA_LEVEL 91	/* Change the "level" (see above) */
+#define TERM_XTRA_FLUSH 13	/* Flush input (optional) */
+#define TERM_XTRA_FRESH 21	/* Flush output (optional) */
+#define TERM_XTRA_INVIS 31	/* Cursor invisible (optional) */
+#define TERM_XTRA_BEVIS 32	/* Cursor visible (optional) */
+#define TERM_XTRA_REACT 41	/* React to stuff (optional) */
+#define TERM_XTRA_NOISE 51	/* Make a noise (optional) */
+#define TERM_XTRA_SOUND 52	/* Make a sound (optional) */
+#define TERM_XTRA_LEVEL 91	/* Change the "level" (optional) */
 
 /* Max recursion depth of "screen memory" */
 /* Note that unused screens waste only 32 bytes each */
-#define MEM_SIZE 16
+#define MEM_SIZE 8
 
 
 
@@ -190,16 +192,12 @@ extern errr term_win_load(term_win *t, term_win *s);
 extern errr term_win_nuke(term_win *t);
 extern errr term_win_init(term_win *t, int w, int h);
 extern errr Term_xtra(int n, int v);
-extern errr Term_curs(int x, int y, int z);
-extern errr Term_wipe(int x, int y, int w, int h);
-extern errr Term_text(int x, int y, int n, byte a, cptr s);
 extern errr Term_erase(int x1, int y1, int x2, int y2);
 extern errr Term_clear(void);
 extern errr Term_redraw(void);
 extern errr Term_save(void);
 extern errr Term_load(void);
 extern errr Term_fresh(void);
-extern errr Term_bell(void);
 extern errr Term_update(void);
 extern errr Term_resize(int w, int h);
 extern errr Term_show_cursor(void);

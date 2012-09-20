@@ -234,7 +234,7 @@ static errr Term_xtra_ncu(int n, int v)
         case TERM_XTRA_NOISE: (void)write(1, "\007", 1); return (0);
 
         /* Flush the ncurses buffer */
-        case TERM_XTRA_FLUSH: (void)refresh(); return (0);
+        case TERM_XTRA_FRESH: (void)refresh(); return (0);
 
         /* Make the cursor invisible */
         case TERM_XTRA_INVIS: curs_set(0); return (0);
@@ -323,14 +323,6 @@ static errr Term_wipe_ncu(int x, int y, int w, int h)
  */
 static errr Term_text_ncu(int x, int y, int n, byte a, cptr s)
 {
-    int i;
-    char buf[81];
-
-    /* Hack -- force "termination" of the text */
-    if (n > 80) n = 80;
-    for (i = 0; (i < n) && s[i]; ++i) buf[i] = s[i];
-    buf[n]=0;
-
     /* Move the cursor */
     move(y, x);
 
@@ -340,7 +332,7 @@ static errr Term_text_ncu(int x, int y, int n, byte a, cptr s)
 #endif
 
     /* Dump the string */
-    addstr(buf);
+    addstr(s);
 
     /* Success */
     return (0);

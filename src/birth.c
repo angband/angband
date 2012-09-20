@@ -13,11 +13,10 @@
 #include "angband.h"
 
 
-
 /*
- * Hold the data from the previous "roll"
+ * A structure to hold "rolled" information
  */
-static struct {
+typedef struct _birther {
 
     s16b age;
     s16b wt;
@@ -33,9 +32,212 @@ static struct {
 
     char history[4][60];
 
-    player_background bg;
+} birther;
 
-} prev;
+
+
+/*
+ * The last character displayed
+ */
+static birther prev;
+
+
+
+
+/*
+ * Player background information
+ */
+typedef struct _hist_type {
+
+  cptr info;			    /* Textual History			*/
+
+  byte roll;			    /* Frequency of this entry		*/
+  byte chart;			    /* Chart index			*/
+  byte next;			    /* Next chart index			*/
+  byte bonus;			    /* Social Class Bonus + 50		*/
+
+} hist_type;
+
+
+/*
+ * Background information (see below)
+ *
+ * Chart progression by race:
+ *   Human/Dunadan -->  1 -->  2 -->  3 --> 50 --> 51 --> 52 --> 53 --> 0
+ *   Half-Elf      -->  4 -->  1 -->  2 -->  3 --> 50 --> 51 --> 52 --> 53 --> 0
+ *   Elf/High-Elf  -->  7 -->  8 -->  9 --> 54 --> 55 --> 56 --> 0
+ *   Hobbit        --> 10 --> 11 -->  3 --> 50 --> 51 --> 52 --> 53 --> 0
+ *   Gnome         --> 13 --> 14 -->  3 --> 50 --> 51 --> 52 --> 53 --> 0
+ *   Dwarf         --> 16 --> 17 --> 18 --> 57 --> 58 --> 59 --> 60 --> 61 --> 0
+ *   Half-Orc      --> 19 --> 20 -->  2 -->  3 --> 50 --> 51 --> 52 --> 53 --> 0
+ *   Half-Troll    --> 22 --> 23 --> 62 --> 63 --> 64 --> 65 --> 66 --> 0
+ */
+static hist_type bg[MAX_BACKGROUND] = {
+
+{"You are the illegitimate and unacknowledged child ",		 10, 1, 2, 25},
+{"You are the illegitimate but acknowledged child ",		 20, 1, 2, 35},
+{"You are one of several children ",				 95, 1, 2, 45},
+{"You are the first child ",					100, 1, 2, 50},
+
+{"of a Serf.  ",						 40, 2, 3, 65},
+{"of a Yeoman.  ",						 65, 2, 3, 80},
+{"of a Townsman.  ",						 80, 2, 3, 90},
+{"of a Guildsman.  ",						 90, 2, 3,105},
+{"of a Landed Knight.  ",					 96, 2, 3,120},
+{"of a Titled Noble.  ",					 99, 2, 3,130},
+{"of a Royal Blood Line.  ",					100, 2, 3,140},
+
+{"You are the black sheep of the family.  ",			 20, 3,50, 20},
+{"You are a credit to the family.  ",				 80, 3,50, 55},
+{"You are a well liked child.  ",				100, 3,50, 60},
+
+{"Your mother was of the Teleri.  ",				 40, 4, 1, 50},
+{"Your father was of the Teleri.  ",				 75, 4, 1, 55},
+{"Your mother was of the Noldor.  ",			 	 90, 4, 1, 55},
+{"Your father was of the Noldor.  ",			 	 95, 4, 1, 60},
+{"Your mother was of the Vanyar.  ",				 98, 4, 1, 65},
+{"Your father was of the Vanyar.  ",				100, 4, 1, 70},
+
+{"You are one of several children ",				 60, 7, 8, 50},
+{"You are the only child ",					100, 7, 8, 55},
+
+{"of a Teleri ",						 75, 8, 9, 50},
+{"of a Noldor ",						 95, 8, 9, 55},
+{"of a Vanyar ",						100, 8, 9, 60},
+
+{"Ranger.  ",							 40, 9,54, 80},
+{"Archer.  ",							 70, 9,54, 90},
+{"Warrior.  ",							 87, 9,54,110},
+{"Mage.  ",							 95, 9,54,125},
+{"Prince.  ",							 99, 9,54,140},
+{"King.  ",							100, 9,54,145},
+
+{"You are one of several children of a Hobbit ",		 85,10,11, 45},
+{"You are the only child of a Hobbit ",			        100,10,11, 55},
+
+{"Bum.  ",							 20,11, 3, 55},
+{"Tavern Owner.  ",						 30,11, 3, 80},
+{"Miller.  ",							 40,11, 3, 90},
+{"Home Owner.  ",						 50,11, 3,100},
+{"Burglar.  ",							 80,11, 3,110},
+{"Warrior.  ",							 95,11, 3,115},
+{"Mage.  ",							 99,11, 3,125},
+{"Clan Elder.  ",						100,11, 3,140},
+
+{"You are one of several children of a Gnome ",			 85,13,14, 45},
+{"You are the only child of a Gnome ",				100,13,14, 55},
+
+{"Beggar.  ",							 20,14, 3, 55},
+{"Braggart.  ",							 50,14, 3, 70},
+{"Prankster.  ",						 75,14, 3, 85},
+{"Warrior.  ",							 95,14, 3,100},
+{"Mage.  ",							100,14, 3,125},
+
+{"You are one of two children of a Dwarven ",			 25,16,17, 40},
+{"You are the only child of a Dwarven ",			100,16,17, 50},
+
+{"Thief.  ",							 10,17,18, 60},
+{"Prison Guard.  ",						 25,17,18, 75},
+{"Miner.  ",							 75,17,18, 90},
+{"Warrior.  ",							 90,17,18,110},
+{"Priest.  ",							 99,17,18,130},
+{"King.  ",							100,17,18,150},
+
+{"You are the black sheep of the family.  ",			 15,18,57, 10},
+{"You are a credit to the family.  ",				 85,18,57, 50},
+{"You are a well liked child.  ",				100,18,57, 55},
+
+{"Your mother was an Orc, but it is unacknowledged.  ",		 25,19,20, 25},
+{"Your father was an Orc, but it is unacknowledged.  ",		100,19,20, 25},
+
+{"You are the adopted child ",					100,20, 2, 50},
+
+{"Your mother was a Cave-Troll ",				 30,22,23, 20},
+{"Your father was a Cave-Troll ",				 60,22,23, 25},
+{"Your mother was a Hill-Troll ",				 75,22,23, 30},
+{"Your father was a Hill-Troll ",				 90,22,23, 35},
+{"Your mother was a Water-Troll ",				 95,22,23, 40},
+{"Your father was a Water-Troll ",				100,22,23, 45},
+
+{"Cook.  ",							  5,23,62, 60},
+{"Warrior.  ",							 95,23,62, 55},
+{"Shaman.  ",							 99,23,62, 65},
+{"Clan Chief.  ",						100,23,62, 80},
+
+{"You have dark brown eyes, ",					 20,50,51, 50},
+{"You have brown eyes, ",					 60,50,51, 50},
+{"You have hazel eyes, ",					 70,50,51, 50},
+{"You have green eyes, ",					 80,50,51, 50},
+{"You have blue eyes, ",					 90,50,51, 50},
+{"You have blue-gray eyes, ",					100,50,51, 50},
+
+{"straight ",							 70,51,52, 50},
+{"wavy ",							 90,51,52, 50},
+{"curly ",							100,51,52, 50},
+
+{"black hair, ",						 30,52,53, 50},
+{"brown hair, ",						 70,52,53, 50},
+{"auburn hair, ",						 80,52,53, 50},
+{"red hair, ",							 90,52,53, 50},
+{"blond hair, ",						100,52,53, 50},
+
+{"and a very dark complexion.",					 10,53, 0, 50},
+{"and a dark complexion.",					 30,53, 0, 50},
+{"and an average complexion.",					 80,53, 0, 50},
+{"and a fair complexion.",					 90,53, 0, 50},
+{"and a very fair complexion.",					100,53, 0, 50},
+
+{"You have light grey eyes, ",					 85,54,55, 50},
+{"You have light blue eyes, ",					 95,54,55, 50},
+{"You have light green eyes, ",					100,54,55, 50},
+
+{"straight ",							 75,55,56, 50},
+{"wavy ",							100,55,56, 50},
+
+{"black hair, and a fair complexion.",				 75,56, 0, 50},
+{"brown hair, and a fair complexion.",				 85,56, 0, 50},
+{"blond hair, and a fair complexion.",				 95,56, 0, 50},
+{"silver hair, and a fair complexion.",				100,56, 0, 50},
+
+{"You have dark brown eyes, ",					 99,57,58, 50},
+{"You have glowing red eyes, ",					100,57,58, 60},
+
+{"straight ",							 90,58,59, 50},
+{"wavy ",							100,58,59, 50},
+
+{"black hair, ",						 75,59,60, 50},
+{"brown hair, ",						100,59,60, 50},
+
+{"a one foot beard, ",						 25,60,61, 50},
+{"a two foot beard, ",						 60,60,61, 51},
+{"a three foot beard, ",					 90,60,61, 53},
+{"a four foot beard, ",						100,60,61, 55},
+
+{"and a dark complexion.",					100,61, 0, 50},
+
+{"You have slime green eyes, ",					 60,62,63, 50},
+{"You have puke yellow eyes, ",					 85,62,63, 50},
+{"You have blue-bloodshot eyes, ",				 99,62,63, 50},
+{"You have glowing red eyes, ",					100,62,63, 55},
+
+{"dirty ",							 33,63,64, 50},
+{"mangy ",							 66,63,64, 50},
+{"oily ",							100,63,64, 50},
+
+{"sea-weed green hair, ",					 33,64,65, 50},
+{"bright red hair, ",						 66,64,65, 50},
+{"dark purple hair, ",						100,64,65, 50},
+
+{"and green ",							 25,65,66, 50},
+{"and blue ",							 50,65,66, 50},
+{"and white ",							 75,65,66, 50},
+{"and black ",							100,65,66, 50},
+
+{"ulcerous skin.",						 33,66, 0, 50},
+{"scabby skin.",						 66,66, 0, 50},
+{"leprous skin.",						100,66, 0, 50}
+
+};
 
 
 
@@ -48,6 +250,9 @@ static void save_prev_data()
 {
     int i;
 
+
+    /*** Save the current data ***/
+    
     prev.age = p_ptr->age;
 
     prev.wt = p_ptr->wt;
@@ -68,12 +273,6 @@ static void save_prev_data()
     for (i = 0; i < 4; i++) {
         (void)strncpy(prev.history[i], history[i], 60);
     }
-
-    prev.bg.info = background->info;
-    prev.bg.roll = background->roll;
-    prev.bg.chart = background->chart;
-    prev.bg.next = background->next;
-    prev.bg.bonus = background->bonus;
 }
 
 
@@ -84,6 +283,35 @@ static void load_prev_data()
 {
     int        i;
 
+    birther	temp;
+    
+
+    /*** Save the current data ***/
+    
+    temp.age = p_ptr->age;
+
+    temp.wt = p_ptr->wt;
+    temp.ht = p_ptr->ht;
+
+    temp.sc = p_ptr->sc;
+
+    temp.au = p_ptr->au;
+
+    /* Save the stats */
+    for (i = 0; i < 6; i++) {
+        temp.max_stat[i] = p_ptr->max_stat[i];
+        temp.cur_stat[i] = p_ptr->cur_stat[i];
+        temp.mod_stat[i] = p_ptr->mod_stat[i];
+        temp.use_stat[i] = p_ptr->use_stat[i];
+    }
+
+    for (i = 0; i < 4; i++) {
+        (void)strncpy(temp.history[i], history[i], 60);
+    }
+
+
+    /*** Load the previous data ***/
+    
     for (i = 0; i < 6; i++) {
         p_ptr->max_stat[i] = prev.max_stat[i];
         p_ptr->cur_stat[i] = prev.cur_stat[i];
@@ -103,11 +331,29 @@ static void load_prev_data()
         strncpy(history[i], prev.history[i], 60);
     }
 
-    background->info = prev.bg.info;
-    background->roll = prev.bg.roll;
-    background->chart = prev.bg.chart;
-    background->next = prev.bg.next;
-    background->bonus = prev.bg.bonus;
+
+    /*** Save the current data ***/
+    
+    prev.age = temp.age;
+
+    prev.wt = temp.wt;
+    prev.ht = temp.ht;
+
+    prev.sc = temp.sc;
+
+    prev.au = temp.au;
+
+    /* Save the stats */
+    for (i = 0; i < 6; i++) {
+        prev.max_stat[i] = temp.max_stat[i];
+        prev.cur_stat[i] = temp.cur_stat[i];
+        prev.mod_stat[i] = temp.mod_stat[i];
+        prev.use_stat[i] = temp.use_stat[i];
+    }
+
+    for (i = 0; i < 4; i++) {
+        (void)strncpy(prev.history[i], temp.history[i], 60);
+    }
 }
 
 
@@ -159,8 +405,11 @@ static void choose_sex(void)
  */
 static void choose_race(void)
 {
-    int                  j, k, l, m;
-    char                 s, tmp_str[80];
+    int                 j, k, l, m;
+
+    char                s;
+
+    char		out_val[160];
 
     k = 0;
     l = 2;
@@ -171,8 +420,8 @@ static void choose_race(void)
     for (j = 0; j < MAX_RACES; j++) {
         p_ptr->prace = j;
         rp_ptr = &race_info[p_ptr->prace];
-        (void)sprintf(tmp_str, "%c) %s", j + 'a', rp_ptr->trace);
-        put_str(tmp_str, m, l);
+        (void)sprintf(out_val, "%c) %s", j + 'a', rp_ptr->trace);
+        put_str(out_val, m, l);
         l += 15;
         if (l > 70) {
             l = 2;
@@ -211,7 +460,10 @@ static void choose_class()
 {
     int          j, k, l, m;
     int          cl[MAX_CLASS];
-    char         tmp_str[80], s;
+
+    char         s;
+    
+    char	 out_val[160];
 
     /* Clear the display */
     clear_from(20);
@@ -229,8 +481,8 @@ static void choose_class()
         if (rp_ptr->rtclass & (1L << j)) {
             p_ptr->pclass = j;
             cp_ptr = &class_info[p_ptr->pclass];
-            sprintf(tmp_str, "%c) %s", k + 'a', cp_ptr->title);
-            put_str(tmp_str, m, l);
+            sprintf(out_val, "%c) %s", k + 'a', cp_ptr->title);
+            put_str(out_val, m, l);
             cl[k++] = j;
             l += 15;
             if (l > 70) {
@@ -262,6 +514,9 @@ static void choose_class()
             bell();
         }
     }
+
+    /* Important -- Choose the magic info */
+    mp_ptr = &magic_info[p_ptr->pclass];
 }
 
 
@@ -281,10 +536,9 @@ static int adjust_stat(int stat_value, s16b amount, int auto_roll)
 {
     int i;
 
-    /* Negative amounts (unused) */
+    /* Negative amounts */
     if (amount < 0) {
         for (i = 0; i > amount; i--) {
-
             if (p_ptr->maximize && stat_value > 18) {
                 stat_value -= 10;
                 if (stat_value < 18) stat_value = 18;
@@ -314,13 +568,13 @@ static int adjust_stat(int stat_value, s16b amount, int auto_roll)
             else if (p_ptr->maximize) {
                 stat_value += 10;
             }
-            else if (stat_value < 88) {
+            else if (stat_value < 18+70) {
                 stat_value += ((auto_roll ? 15 : randint(15)) + 5);
             }
-            else if (stat_value < 108) {
+            else if (stat_value < 18+90) {
                 stat_value += ((auto_roll ? 6 : randint(6)) + 2);
             }
-            else if (stat_value < 118) {
+            else if (stat_value < 18+100) {
                 stat_value++;
             }
         }
@@ -346,12 +600,11 @@ static void change_stat(int stat, int amount)
 /*
  * Roll for a characters stats
  */
-static void get_all_stats(void)
+static void get_stats(void)
 {
-    int        i, j;
-    int                 min_value, max_value;
+    int		i, j;
 
-    int dice[18];
+    int		dice[18];
 
 
     /* Roll and verify some stats */
@@ -384,7 +637,7 @@ static void get_all_stats(void)
             p_ptr->cur_stat[i] = p_ptr->max_stat[i];
 
             /* Modify the stats for "race" and "class" */
-            p_ptr->mod_stat[i] = rp_ptr->radj[i] + cp_ptr->cadj[i];
+            p_ptr->mod_stat[i] = rp_ptr->radj[i] + cp_ptr->c_adj[i];
 
             /* Apply the racial/class bonuses */
             p_ptr->use_stat[i] = modify_stat(i, p_ptr->mod_stat[i]);
@@ -401,7 +654,7 @@ static void get_all_stats(void)
             change_stat(i, rp_ptr->radj[i]);
 
             /* Modify the stats for "class" */
-            change_stat(i, cp_ptr->cadj[i]);
+            change_stat(i, cp_ptr->c_adj[i]);
 
             /* No bonuses */
             p_ptr->mod_stat[i] = 0;
@@ -413,23 +666,34 @@ static void get_all_stats(void)
             p_ptr->use_stat[i] = p_ptr->max_stat[i];
         }
     }
+}
 
 
+/*
+ * Roll for some info that the auto-roller ignores
+ */
+static void get_extra(void)
+{
+    int		i, j, min_value, max_value;
 
-    /* Experience factor XXX Why here? */
-    p_ptr->expfact = rp_ptr->b_exp + cp_ptr->m_exp;
 
-    /* Hitdice XXX Why here? */
-    p_ptr->hitdie = rp_ptr->bhitdie + cp_ptr->adj_hd;
+    /* Level one (never zero!) */
+    p_ptr->lev = 1;
+
+    /* Experience factor */
+    p_ptr->expfact = rp_ptr->b_exp + cp_ptr->c_exp;
+
+    /* Hitdice */
+    p_ptr->hitdie = rp_ptr->bhitdie + cp_ptr->c_mhp;
 
 
     /* Minimum hitpoints at highest level */
-    min_value = (MAX_PLAYER_LEVEL * (p_ptr->hitdie - 1) * 3) / 8;
-    min_value += MAX_PLAYER_LEVEL;
+    min_value = (PY_MAX_LEVEL * (p_ptr->hitdie - 1) * 3) / 8;
+    min_value += PY_MAX_LEVEL;
 
     /* Maximum hitpoints at highest level */
-    max_value = (MAX_PLAYER_LEVEL * (p_ptr->hitdie - 1) * 5) / 8;
-    max_value += MAX_PLAYER_LEVEL;
+    max_value = (PY_MAX_LEVEL * (p_ptr->hitdie - 1) * 5) / 8;
+    max_value += PY_MAX_LEVEL;
 
     /* Pre-calculate level 1 hitdice */
     player_hp[0] = p_ptr->hitdie;
@@ -438,7 +702,7 @@ static void get_all_stats(void)
     while (TRUE) {
 
         /* Roll the hitpoint values */
-        for (i = 1; i < MAX_PLAYER_LEVEL; i++) {
+        for (i = 1; i < PY_MAX_LEVEL; i++) {
             j = randint((int)p_ptr->hitdie);
             player_hp[i] = player_hp[i-1] + j;
         }
@@ -446,28 +710,213 @@ static void get_all_stats(void)
         /* XXX Could also require acceptable "mid-level" hitpoints */
 
         /* Require "valid" hitpoints at highest level */
-        if (player_hp[MAX_PLAYER_LEVEL-1] < min_value) continue;
-        if (player_hp[MAX_PLAYER_LEVEL-1] > max_value) continue;
+        if (player_hp[PY_MAX_LEVEL-1] < min_value) continue;
+        if (player_hp[PY_MAX_LEVEL-1] > max_value) continue;
 
         /* Acceptable */
         break;
     }
 
 
+    /* Hack -- Prevent crash in "calc_hitpoints()" */
+    p_ptr->mhp = 1;
+    
     /* Hack -- calculate the bonuses and hitpoints */
     p_ptr->update |= (PU_BONUS | PU_HP);
 
-    /* Handle (non-visual) stuff */
-    handle_stuff(FALSE);
+    /* Handle stuff */
+    handle_stuff();
 
-
-    /* Hack -- Reset starting hitpoints */
-    p_ptr->mhp = p_ptr->hitdie + con_adj();
 
     /* Start out fully healed */
     p_ptr->chp = p_ptr->mhp;
     p_ptr->chp_frac = 0;
 }
+
+
+/*
+ * Get the racial history, and social class, using the "history charts".
+ */
+static void get_history(void)
+{
+    int		i, n, chart, roll, social_class;
+
+    char	*s, *t;
+    
+    char	buf[240];
+
+
+
+    /* Clear the previous history strings */
+    for (i = 0; i < 4; i++) history[i][0] = '\0';
+
+
+    /* Clear the history text */
+    buf[0] = '\0';
+
+    /* Initial social class */
+    social_class = randint(4);
+
+    /* Dunadan -- Same as Human */
+    if (p_ptr->prace == 8) {
+        chart = 0 * 3 + 1;
+    }
+
+    /* High Elf -- Same as Elf */
+    else if (p_ptr->prace == 9) {
+        chart = 2 * 3 + 1;
+    }
+
+    /* Normal races -- Start at given chart */
+    else {
+        chart = p_ptr->prace * 3 + 1;
+    }
+
+
+    /* Process the history */
+    while (chart) {
+
+        /* Start over */
+        i = 0;
+        
+        /* Roll for nobility */            
+        roll = randint(100);
+
+        /* Access the proper entry in the table */
+        while ((chart != bg[i].chart) || (roll > bg[i].roll)) i++;
+
+        /* Acquire the textual history */
+        (void)strcat(buf, bg[i].info);
+
+        /* Add in the social class */
+        social_class += (int)(bg[i].bonus) - 50;
+
+        /* Enter the next chart */
+        chart = bg[i].next;
+    }
+
+
+
+    /* Verify social class */
+    if (social_class > 100) social_class = 100;
+    else if (social_class < 1) social_class = 1;
+
+    /* Save the social class */
+    p_ptr->sc = social_class;
+
+
+    /* Skip leading spaces */
+    for (s = buf; *s == ' '; s++);
+    
+    /* Get apparent length */
+    n = strlen(s);
+
+    /* Kill trailing spaces */
+    while ((n > 0) && (s[n-1] == ' ')) s[--n] = '\0';
+
+
+    /* Start at first line */
+    i = 0;
+
+    /* Collect the history */
+    while (TRUE) {
+
+        /* Extract remaining length */
+        n = strlen(s);
+
+        /* All done */
+        if (n < 60) {
+
+            /* Save one line of history */
+            strcpy(history[i++], s);
+
+            /* All done */
+            break;
+        }
+
+        /* Find a reasonable break-point */
+        for (n = 60; ((n > 0) && (s[n-1] != ' ')); n--);
+
+        /* Save next location */
+        t = s + n;
+
+        /* Wipe trailing spaces */
+        while ((n > 0) && (s[n-1] == ' ')) s[--n] = '\0';
+
+        /* Save one line of history */
+        strcpy(history[i++], s);
+
+        /* Start next line */
+        for (s = t; *s == ' '; s++);
+    }
+}
+
+
+/*
+ * Computes character's age, height, and weight
+ */
+static void get_ahw(void)
+{
+    /* Calculate the starting age */
+    p_ptr->age = rp_ptr->b_age + randint(rp_ptr->m_age);
+
+    /* Calculate the height/weight for males */
+    if (p_ptr->male) {
+        p_ptr->ht = randnor(rp_ptr->m_b_ht, rp_ptr->m_m_ht);
+        p_ptr->wt = randnor(rp_ptr->m_b_wt, rp_ptr->m_m_wt);
+    }
+
+    /* Calculate the height/weight for females */
+    else {
+        p_ptr->ht = randnor(rp_ptr->f_b_ht, rp_ptr->f_m_ht);
+        p_ptr->wt = randnor(rp_ptr->f_b_wt, rp_ptr->f_m_wt);
+    }
+}
+
+
+
+
+/*
+ * Hack -- Given an "actual stat value", return a monetary value,
+ * which affects the amount of gold a player has (see below).
+ */
+static int monval(int i)
+{
+    return (5 * (i - 10));
+}
+
+/*
+ * Get the player's starting money
+ */
+static void get_money(void)
+{
+    int        gold;
+
+    /* Social Class is very important */
+    gold = p_ptr->sc * 6 + randint(25) + 325;
+
+    /* Stat adj */
+    gold -= monval(p_ptr->use_stat[A_STR]);
+    gold -= monval(p_ptr->use_stat[A_INT]);
+    gold -= monval(p_ptr->use_stat[A_WIS]);
+    gold -= monval(p_ptr->use_stat[A_CON]);
+    gold -= monval(p_ptr->use_stat[A_DEX]);
+
+    /* Charisma adj */
+    gold += monval(p_ptr->use_stat[A_CHR]);
+
+    /* Minimum 80 gold */
+    if (gold < 80) gold = 80;
+
+    /* She charmed the banker into it! -CJS- */
+    /* She slept with the banker.. :) -GDH-  */
+    if (!p_ptr->male) gold += 50;
+
+    /* Save the gold */
+    p_ptr->au = gold;
+}
+
+
 
 
 #ifdef ALLOW_AUTOROLLER
@@ -537,167 +986,6 @@ static void put_history()
 
 
 /*
- * Get the racial history, determines social class	-RAK-
- * Assumptions:	Each race has init history beginning at
- * (race-1)*3+1.  All history parts are in ascending order
- */
-
-static void get_history(void)
-{
-    int		hist_idx, cur_idx, test_roll, flag;
-    int		start_pos, end_pos, cur_len;
-    int		line_ctr, new_start = 0, social_class;
-
-    char	history_block[240];
-
-    player_background	*bp_ptr;
-
-
-    /* Special race */
-    if (p_ptr->prace == 8) {
-        hist_idx = 1;
-    }
-
-    /* Special race */
-    else if (p_ptr->prace > 8) {
-        hist_idx = 2 * 3 + 1;
-    }
-
-    /* Normal races */
-    else {
-        hist_idx = p_ptr->prace * 3 + 1;
-    }
-
-    history_block[0] = '\0';
-    social_class = randint(4);
-    cur_idx = 0;
-
-    /* Process the history */
-    while (hist_idx >= 1) {
-        for (flag = FALSE; !flag; ) {
-            if (background[cur_idx].chart == hist_idx) {
-                test_roll = randint(100);
-                while (test_roll > background[cur_idx].roll) cur_idx++;
-                bp_ptr = &background[cur_idx];
-                (void)strcat(history_block, bp_ptr->info);
-                social_class += bp_ptr->bonus - 50;
-                if (hist_idx > bp_ptr->next) cur_idx = 0;
-                hist_idx = bp_ptr->next;
-                flag = TRUE;
-            }
-            else {
-                cur_idx++;
-            }
-        }
-    }
-
-    /* clear the previous history strings */
-    for (hist_idx = 0; hist_idx < 4; hist_idx++) {
-        history[hist_idx][0] = '\0';
-    }
-
-    /* Process block of history text for pretty output	 */
-    start_pos = 0;
-    end_pos = strlen(history_block) - 1;
-    line_ctr = 0;
-    flag = FALSE;
-    while (history_block[end_pos] == ' ') end_pos--;
-
-    for (flag = FALSE; !flag; ) {
-        while (history_block[start_pos] == ' ') start_pos++;
-        cur_len = end_pos - start_pos + 1;
-        if (cur_len > 60) {
-            cur_len = 60;
-            while (history_block[start_pos + cur_len - 1] != ' ') cur_len--;
-            new_start = start_pos + cur_len;
-            while (history_block[start_pos + cur_len - 1] == ' ') cur_len--;
-        }
-        else {
-            flag = TRUE;
-        }
-
-        (void)strncpy(history[line_ctr],
-                &history_block[start_pos], cur_len);
-        history[line_ctr][cur_len] = '\0';
-        line_ctr++;
-        start_pos = new_start;
-    }
-
-    /* Verify social class */
-    if (social_class > 100) social_class = 100;
-    else if (social_class < 1) social_class = 1;
-
-    /* Save the social class */
-    p_ptr->sc = social_class;
-}
-
-
-/*
- * Computes character's age, height, and weight
- */
-static void get_ahw(void)
-{
-    /* Calculate the starting age */
-    p_ptr->age = rp_ptr->b_age + randint(rp_ptr->m_age);
-
-    /* Calculate the height/weight for males */
-    if (p_ptr->male) {
-        p_ptr->ht = randnor(rp_ptr->m_b_ht, rp_ptr->m_m_ht);
-        p_ptr->wt = randnor(rp_ptr->m_b_wt, rp_ptr->m_m_wt);
-    }
-
-    /* Calculate the height/weight for females */
-    else {
-        p_ptr->ht = randnor(rp_ptr->f_b_ht, rp_ptr->f_m_ht);
-        p_ptr->wt = randnor(rp_ptr->f_b_wt, rp_ptr->f_m_wt);
-    }
-}
-
-
-
-
-/*
- * Given a stat value, return a monetary value,
- * which affects the amount of gold a player has.
- */
-static int monval(int i)
-{
-    return (5 * (i - 10));
-}
-
-/*
- * Get the player's starting money
- */
-static void get_money(void)
-{
-    int        gold;
-
-    /* Social Class is very important */
-    gold = p_ptr->sc * 6 + randint(25) + 325;
-
-    /* Stat adj */
-    gold -= monval(p_ptr->use_stat[A_STR]);
-    gold -= monval(p_ptr->use_stat[A_INT]);
-    gold -= monval(p_ptr->use_stat[A_WIS]);
-    gold -= monval(p_ptr->use_stat[A_CON]);
-    gold -= monval(p_ptr->use_stat[A_DEX]);
-
-    /* Charisma adj */
-    gold += monval(p_ptr->use_stat[A_CHR]);
-
-    /* Minimum 80 gold */
-    if (gold < 80) gold = 80;
-
-    /* She charmed the banker into it! -CJS- */
-    /* She slept with the banker.. :) -GDH-  */
-    if (!p_ptr->male) gold += 50;
-
-    /* Save the gold */
-    p_ptr->au = gold;
-}
-
-
-/*
  * Clear all the global "character" data
  */
 static void player_wipe()
@@ -757,21 +1045,16 @@ static void player_wipe()
     /* Reset the "tried" and "aware" flags for objects */
     for (i=0; i<MAX_K_IDX; i++) {
 
-        /* Not aware of the effects */
-        x_list[i].aware = FALSE;
-
-        /* Never even tried one */
+        /* Never tried one */
         x_list[i].tried = FALSE;
+
+        /* Not aware of hidden effects */
+        if (x_list[i].has_flavor) x_list[i].aware = FALSE;
     }
 
 
     /* Well fed player */
-    p_ptr->food = 7500;
-    p_ptr->food_digested = 2;
-
-
-    /* Start at level one */
-    p_ptr->lev = 1;
+    p_ptr->food = PY_FOOD_FULL - 1;
 
 
     /* Wipe the spells */
@@ -787,10 +1070,45 @@ static void player_wipe()
     /* Reset the "state" flags */
     panic_save = 0;
     noscore = 0;
+}
 
-    /* Hack -- reset seeds */
-    town_seed = random();
-    randes_seed = random();
+
+
+/*
+ * Init players with some belongings
+ *
+ * Having an item makes the player "aware" of its purpose.
+ */
+static void player_outfit()
+{
+    int		i, tv, sv;
+    inven_type	inven_init;
+    inven_type	*i_ptr = &inven_init;
+
+
+    /* Give the player some food */
+    invcopy(i_ptr, lookup_kind(TV_FOOD, SV_FOOD_RATION));
+    i_ptr->number = rand_range(3,7);
+    inven_aware(i_ptr);
+    inven_known(i_ptr);
+    (void)inven_carry(i_ptr);
+
+    /* Give the player some torches */
+    invcopy(i_ptr, lookup_kind(TV_LITE, SV_LITE_TORCH));
+    i_ptr->number = rand_range(3,7);
+    i_ptr->pval = rand_range(3,7) * 500;
+    inven_known(i_ptr);
+    (void)inven_carry(i_ptr);
+
+    /* Give the player three useful objects */
+    for (i = 0; i < 3; i++) {
+        tv = player_init[p_ptr->pclass][i][0];
+        sv = player_init[p_ptr->pclass][i][1];
+        invcopy(i_ptr, lookup_kind(tv, sv));
+        inven_aware(i_ptr);
+        inven_known(i_ptr);
+        (void)inven_carry(i_ptr);
+    }
 }
 
 
@@ -807,6 +1125,8 @@ static void player_wipe()
  */
 void player_birth()
 {
+    int			i;
+    
     char		c;
 
     bool		prev_ready;
@@ -814,10 +1134,10 @@ void player_birth()
 
 #ifdef ALLOW_AUTOROLLER
 
-    int	i, k, m;
+    int			k, m;
 
-    char		inp[160];
-    char		buf[160];
+    char		inp[80];
+    char		buf[80];
 
 #endif
 
@@ -865,8 +1185,9 @@ start_over:
 
     /* Process help requests until a choice is made */
     while (1) {
-        put_str("Use the Auto-Roller? (? for Help) ", 20, 2);
+        put_str("Use the Auto-Roller? (Y/N/S/?) ", 20, 2);
         c = inkey();
+        if (c == ESCAPE) break;
         if (strchr("ynYN", c)) break;
         if (c == 'S') goto start_over;
         if (c == '?') do_cmd_help("help.hlp");
@@ -888,11 +1209,24 @@ start_over:
             stat_match[i] = 0;
 
             /* Obtain the maximal stat */
-            k = cp_ptr->cadj[i] + rp_ptr->radj[i];
+            k = rp_ptr->radj[i] + cp_ptr->c_adj[i];
             m = adjust_stat(17, k, TRUE);
 
+            /* Extract a textual format */
+            cnv_stat(m, inp);
+            
+            /* Above 18 */
+            if (m > 18) {
+                sprintf(inp, "(Max of 18/%02d):", (m - 18));
+            }
+            
+            /* From 3 to 18 */
+            else {
+                sprintf(inp, "(Max of %2d):", m);
+            }
+
             /* Prepare a prompt */
-            sprintf(buf, "%-12s (Max of %2d): ", stat_name[i], m);
+            sprintf(buf, "%-15s%-20s", stat_name[i], inp);
 
             /* Get a minimum stat */
             while (TRUE) {
@@ -947,17 +1281,21 @@ start_over:
             last_round = auto_round;
 
             /* Re-caption the screen */
+            clear_screen();
             put_character();
             put_stats();
 
             /* Indicate the state */
             put_str("Auto-rolling round #", 21, 2);
             put_str("Hit any key to stop.", 21, 40);
+
+            /* Describe the percentages */
+            put_str("The percentages shown above are not independent!", 23, 2);
         }
 
         /* Otherwise just get a character */
         else {
-            get_all_stats();
+            get_stats();
         }
 
 
@@ -967,7 +1305,7 @@ start_over:
             bool accept = TRUE;
 
             /* Get a new character */
-            get_all_stats();
+            get_stats();
 
             /* Advance the round */
             auto_round++;
@@ -1019,8 +1357,17 @@ start_over:
 
             /* Allow user interuption (occasionally) */
             if (!(auto_round % 10)) {
-                if (Term_kbhit()) {
-                    Term_flush();
+
+                /* Do not wait for a key */
+                inkey_scan = TRUE;
+
+                /* Check for a keypress */
+                if (inkey()) {
+
+                    /* Flush all keys */
+                    flush();
+
+                    /* Stop rolling */
                     break;
                 }
             }
@@ -1032,11 +1379,12 @@ start_over:
 #else
 
         /* No autoroller */
-        get_all_stats();
+        get_stats();
 
 #endif
 
-        /* Calculate stuff */
+        /* Roll for some stuff */
+        get_extra();
         get_history();
         get_ahw();
         get_money();
@@ -1051,8 +1399,8 @@ start_over:
             /* Hack -- calculate the bonuses and hitpoints */
             p_ptr->update |= (PU_BONUS | PU_HP);
 
-            /* Handle (non-visual) stuff */
-            handle_stuff(FALSE);
+            /* Handle stuff */
+            handle_stuff();
 
             /* Display the player */
             display_player();
@@ -1079,7 +1427,6 @@ start_over:
 
             /* Go back to last character with 'P' */
             if (prev_ready && ((c == 'P') || (c == 'p'))) {
-                prev_ready = FALSE;
                 load_prev_data();		
                 continue;
             }
@@ -1103,7 +1450,7 @@ start_over:
         /* Save this for the "previous" character */
         save_prev_data();
 
-        /* Remember that he exists */
+        /* Note that a previous roll exists */
         prev_ready = TRUE;
     }
 
@@ -1125,6 +1472,18 @@ start_over:
 
     /* Hack -- Start over */
     if (c == 'S') goto start_over;
+
+    
+    /* Hack -- outfit the player */
+    player_outfit();
+
+    /* Init the stores */
+    store_init();
+
+    /* Maintain the stores (ten times) */
+    for (i = 0; i < 10; i++) store_maint();
 }
+
+
 
 

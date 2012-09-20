@@ -397,6 +397,119 @@ int no_lite(void)
 
 
 
+/*
+ * Get a legal "multi-hued" color
+ */
+static byte mh_attr(void)
+{
+
+#ifdef USE_COLOR
+
+    /* Assume white */
+    if (!use_color) return (TERM_WHITE);
+
+    /* Anything but black */
+    switch (randint(15)) {
+        case 1: return (TERM_WHITE);
+        case 2: return (TERM_GRAY);
+        case 3: return (TERM_ORANGE);
+        case 4: return (TERM_RED);
+        case 5: return (TERM_GREEN);
+        case 6: return (TERM_BLUE);
+        case 7: return (TERM_UMBER);
+        case 8: return (TERM_D_GRAY);
+        case 9: return (TERM_L_GRAY);
+        case 10: return (TERM_VIOLET);
+        case 11: return (TERM_YELLOW);
+        case 12: return (TERM_L_RED);
+        case 13: return (TERM_L_GREEN);
+        case 14: return (TERM_L_BLUE);
+        case 15: return (TERM_L_UMBER);
+    }
+
+#endif
+
+    /* Assume white */
+    return (TERM_WHITE);
+}
+
+
+
+
+/*
+ * Mega-Hack -- Hallucinatory monster
+ */
+static void image_monster(byte *ap, char *cp)
+{
+    int r;
+    
+    monster_race *r_ptr;
+    monster_lore *l_ptr;
+    
+    /* Hack -- Choose a monster */
+    while (TRUE) {
+        r = rand_int(MAX_R_IDX);
+        r_ptr = &r_list[r];
+        l_ptr = &l_list[r];
+        if (!r_ptr->name) continue;
+        if (r_ptr->rflags1 & RF1_ATTR_CLEAR) continue;
+        if (r_ptr->rflags1 & RF1_CHAR_CLEAR) continue;
+        break;
+    }
+    
+    /* Use the attr/char */
+    (*ap) = l_ptr->l_attr;
+    (*cp) = l_ptr->l_char;
+}
+
+
+/*
+ * Mega-Hack -- Hallucinatory object
+ */
+static void image_object(byte *ap, char *cp)
+{
+    int k;
+    
+    inven_kind *k_ptr;
+    inven_xtra *x_ptr;
+    
+    /* Hack -- Choose an object */
+    while (TRUE) {
+        k = rand_int(MAX_K_IDX);
+        k_ptr = &k_list[k];
+        x_ptr = &x_list[k];
+        if (!k_ptr->name) continue;
+        if (k_ptr->tval > TV_MAX_PICK_UP) continue;
+        break;
+    }
+    
+    /* Use the attr/char */
+    (*ap) = x_ptr->x_attr;
+    (*cp) = x_ptr->x_char;
+}
+
+
+/*
+ * Hack -- Random hallucination
+ */
+static void image_random(byte *ap, char *cp)
+{
+    /* Normally, assume monsters */
+    if (rand_int(100) < 75) {
+        image_monster(ap, cp);
+    }
+    
+    /* Otherwise, assume objects */
+    else {
+        image_object(ap, cp);
+    }
+}
+
+
+
+
+
+
 
 /*
  * Initialize the global variables for the "fake objects"
@@ -408,6 +521,7 @@ static void ii_prepare(void)
     invcopy(&ii_player, OBJ_PLAYER);
 
     invcopy(&ii_floor, OBJ_FLOOR);
+
     invcopy(&ii_granite_wall, OBJ_GRANITE_WALL);
     invcopy(&ii_quartz_vein, OBJ_QUARTZ_VEIN);
     invcopy(&ii_magma_vein, OBJ_MAGMA_VEIN);
@@ -428,8 +542,12 @@ static void ii_prepare(void)
  *
  * Note that we always start with (White,Space) as input
  *
+ * This function is not called for the "player" grid.
+ *
  * Need to handle "MULTI_HUED" property better.  Probably best to
  * use another flag on "wearable objects".  If we can find one.
+ * And then do occasional "scanning" of the monster/object lists.
+ * For now, only monsters can be multi-hued (see "update_mon()").
  *
  * Note the use of the "fake objects" to help draw the "floor" and
  * "walls" and "mineral veins".
@@ -437,6 +555,8 @@ static void ii_prepare(void)
  * Special colors (used for floors, walls, quartz):
  *   Option "view_yellow_lite" draws "torch radius" in yellow
  *   Option "view_bright_lite" draws "hidden grids" dimmer.
+ *
+ * Note the effects of hallucination.
  */
 static void map_info_aux(int y, int x, byte *ap, char *cp)
 {
@@ -452,6 +572,13 @@ static void map_info_aux(int y, int x, byte *ap, char *cp)
 
     /* Get the cave */
     c_ptr = &cave[y][x];
+
+
+    /* Hack -- rare random hallucination (except outer walls) */
+    if (p_ptr->image && (rand_int(100) < 1) && in_bounds(y,x)) {
+        image_random(ap, cp);
+        return;
+    }
 
 
     /* Non-memorized grids */
@@ -480,9 +607,12 @@ static void map_info_aux(int y, int x, byte *ap, char *cp)
         allow = TRUE;
     }
 
-    /* Normal objects */
-    else if (i_ptr->tval) {
-        /* Use the actual object */
+    /* Objects and Dungeon Landmarks */
+    else if (i_ptr->k_idx) {
+        if (p_ptr->image && (i_ptr->tval <= TV_MAX_PICK_UP)) {
+            image_object(ap, cp);
+            return;
+        }
     }
 
     /* Non walls yield "floors" */
@@ -516,11 +646,11 @@ static void map_info_aux(int y, int x, byte *ap, char *cp)
 
 #ifdef USE_COLOR
 
-    /* Fake mono-chrome */
+    /* Force mono-chrome */
     if (!use_color) return;
 
     /* Option -- Draw the "torch-radius" in yellow */
-    if (allow && view_yellow_lite &&
+    if (allow && view_yellow_lite && !p_ptr->blind &&
         (c_ptr->info & GRID_LITE)) {
 
         /* Yellow from the torch */
@@ -547,82 +677,6 @@ static void map_info_aux(int y, int x, byte *ap, char *cp)
 }
 
 
-
-/*
- * Hack -- Hallucination "symbol"
- */
-static char image_char(void)
-{
-    char c;
-    c = rand_range(32,126);
-    return (c);
-}
-
-
-/*
- * Hack -- Get a random "hallucination" attr
- */
-static byte image_attr(void)
-{
-
-#ifdef USE_COLOR
-
-    switch (randint(15)) {
-        case 1: return (TERM_RED);
-        case 2: return (TERM_BLUE);
-        case 3: return (TERM_GREEN);
-        case 4: return (TERM_YELLOW);
-        case 5: return (TERM_ORANGE);
-        case 6: return (TERM_VIOLET);
-        case 7: return (TERM_UMBER);
-        case 8: return (TERM_L_RED);
-        case 9: return (TERM_L_BLUE);
-        case 10: return (TERM_L_GREEN);
-        case 11: return (TERM_L_UMBER);
-        case 12: return (TERM_WHITE);
-        case 13: return (TERM_GRAY);
-        case 14: return (TERM_L_GRAY);
-        case 15: return (TERM_D_GRAY);
-    }
-
-#endif
-
-    return (TERM_WHITE);
-}
-
-
-/*
- * Get a legal "multi-hued" color
- * Does NOT include White, Black, or any Grays.
- * Should it include "Brown" and "Light Brown"?
- */
-static byte mh_attr(void)
-{
-
-#ifdef USE_COLOR
-
-    switch (randint(11)) {
-        case 1: return (TERM_RED);
-        case 2: return (TERM_BLUE);
-        case 3: return (TERM_GREEN);
-        case 4: return (TERM_YELLOW);
-        case 5: return (TERM_ORANGE);
-        case 6: return (TERM_VIOLET);
-        case 7: return (TERM_UMBER);
-        case 8: return (TERM_L_RED);
-        case 9: return (TERM_L_BLUE);
-        case 10: return (TERM_L_GREEN);
-        case 11: return (TERM_L_UMBER);
-    }
-
-#endif
-
-    return (TERM_WHITE);
-}
-
-
-
-
 /*
  * Extract the attr and char of a given MAP location
  *
@@ -633,14 +687,13 @@ static byte mh_attr(void)
  * above (includes "possibly known" floors, walls, and objects).
  *
  * If the object there is Multi-Hued, let it change a lot
- * But in that case, also set "m" to indicate this.
  *
  * Note that monsters can have some "special" flags, including "ATTR_MULTI",
  * which means their color changes, and "ATTR_CLEAR", which means they take
  * the color of whatever is under them, and "CHAR_CLEAR", which means they
  * take the symbol of whatever is under them.  And "CHAR_MULTI" (undefined).
  */
-static void map_info(int y, int x, int *mp, byte *ap, char *cp)
+static void map_info(int y, int x, byte *ap, char *cp)
 {
     cave_type *c_ptr = &cave[y][x];
 
@@ -648,9 +701,6 @@ static void map_info(int y, int x, int *mp, byte *ap, char *cp)
     monster_race *r_ptr = &r_list[m_ptr->r_idx];
     monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
-
-    /* Default to NOT "multihued" */
-    (*mp) = 0;
 
     /* Default to "white" */
     (*ap) = TERM_WHITE;
@@ -675,83 +725,54 @@ static void map_info(int y, int x, int *mp, byte *ap, char *cp)
     }
 
 
-    /* Mega-Hack -- Blind people see nothing (except themselves) */
-    if (p_ptr->blind) return;
-
-
-    /* Hallucination kicks in occasionally */
-    if (p_ptr->image && (0 == rand_int(12))) {
-
-        /* Get a fake char/attr */
-        (*cp) = image_char();
-        (*ap) = image_attr();
-
-        /* All done */
-        return;
-    }
+    /* Examine the "ground" */
+    map_info_aux(y, x, ap, cp);
 
 
     /* Normal, visible monsters "block" the object they are on */
     if ((c_ptr->m_idx > 1) && (m_ptr->ml)) {
 
-        bool done = FALSE;
+        /* Hack -- hallucination */
+        if (p_ptr->image) {
+            image_monster(ap, cp);
+            return;
+        }
 
 #ifdef USE_COLOR
 
         /* Clear monster */
-        if (r_ptr->rflags1 & RF1_ATTR_CLEAR) {
-
-            /* Examine the ground / object */
-            map_info_aux(y, x, ap, cp);
-
-            /* Remember we did it */
-            done = TRUE;
-        }
-
-        /* Normal monster */
-        else {
+        if (!(r_ptr->rflags1 & RF1_ATTR_CLEAR)) {
 
             /* Extract an attribute */
             (*ap) = l_ptr->l_attr;
 
             /* Apply the "multi-hued" flag */
             if (r_ptr->rflags1 & RF1_ATTR_MULTI) {
-                (*mp) = 1;
-                (*ap) = mh_attr();
+
+                /* Graphics cancel multi-hued */
+                if (!use_graphics) (*ap) = mh_attr();
             }
         }
 
 #endif
 
         /* Use the given symbol unless "clear" */
-        if (r_ptr->rflags1 & RF1_CHAR_CLEAR) {
-
-            /* Examine the ground / object */
-            if (!done) map_info_aux(y, x, ap, cp);
-        }
-
-        /* Normal monster */	
-        else {
+        if (!(r_ptr->rflags1 & RF1_CHAR_CLEAR)) {
 
             /* Extract a character */
             (*cp) = l_ptr->l_char;
 
 #if 0
-            /* Apply the "mimic" flag */
-            if (r_ptr->rflags1 & RF1_ATTR_MULTI) {
-                /* XXX XXX */
+            /* XXX XXX Apply the "mimic" flag */
+            if (r_ptr->rflags1 & RF1_CHAR_MULTI) {
+
+                /* Graphics cancel multi-char */
+                if (!use_graphics) (*cp) = mh_char();
             }
 #endif
 
         }
-
-        /* Done */
-        return;
     }
-
-
-    /* Examine the ground / object */
-    map_info_aux(y, x, ap, cp);
 }
 
 
@@ -775,251 +796,29 @@ void move_cursor_relative(int row, int col)
 
 
 
-
-#ifdef USE_COLOR
-#ifdef USE_MULTIHUED
-
 /*
- * Maximum number of Multi-Hued things
+ * Place an attr/char pair at the given map coordinate, if legal.
  */
-#define MH_MAX 100
-
-/*
- * Hack -- A set of "probably" multi-hued screen locations
- * Each has a location (x,y), and a attr (a) and a char (c).
- * Note that each multi-hued object has its own color progression.
- * Currently used only for multi-hued monsters.
- *
- * The "multi-hued" code originates from an idea in MacAngband 2.6.1
- * (thus some code is adapted from Keith Randall).
- */
-static int mh_y[MH_MAX];
-static int mh_x[MH_MAX];
-static byte mh_a[MH_MAX];
-static char mh_c[MH_MAX];
-
-/*
- * Number of locations in the set
- */
-static int mh_n = 0;
-
-
-
-
-/*
- * Forget all the multi-hued info
- * Useful to make sure old data was nuked
- */
-void mh_forget(void)
-{
-    /* Just forget them */
-    mh_n = 0;
-}
-
-
-/*
- * Cycle the multi-hued info, taking note of most changes
- *
- * This routine will miss changes in which the char is "changed"
- * to the same symbol, and just happens to keep the color that
- * was assigned at the most recent "mh_cycle" or "mh_print".
- * Technically, this represents a (minor) problem. XXX XXX XXX
- *
- * I am thinking that it would be much more efficient to ASSUME
- * that all printing is done by mh_print, and so we do NOT have
- * to check the current contents of the screen.  This would be
- * true, if not for the frequent use of, say, clear_screen().
- *
- * In any case, note that currently this function is dependant on
- * a correctly functioning "Term_what()" function.
- *
- * This whole function may be un-necessary, assuming that the only
- * "multi-hued" objects are monsters, or that an object only needs
- * to "shimmer" occasionally.  In any case, a run-time "no shimmer"
- * option would allow optimization of "prt_map()" and "lite_spot()".
- */
-void mh_cycle(void)
-{
-    int i, okay, cx, cy;
-
-    /* If nothing is multihued, skip this function */
-    if (mh_n == 0) return;
-
-    /* Find the cursor */
-    Term_locate(&cx, &cy);
-
-    /* Turn off the cursor */
-    okay = Term_hide_cursor();
-
-    /* Scan the multi-hued set */
-    for (i = 0; i<mh_n; ++i)
-    {
-        int x = mh_x[i];
-        int y = mh_y[i];
-        byte a = mh_a[i];
-        char c = mh_c[i];
-
-        byte sa;
-        char sc;
-
-        /* Get the current screen info at that location */
-        Term_what(x, y, &sa, &sc);
-
-        /* Notice (usually) when somebody else nukes a multi-hued char */
-        if ((sc != c) || (sa != a))
-        {
-            /* One less multi-hued char */
-            mh_n--;
-
-            /* Nuke it, and fill the hole */
-            mh_x[i] = mh_x[mh_n];
-            mh_y[i] = mh_y[mh_n];
-            mh_a[i] = mh_a[mh_n];
-            mh_c[i] = mh_c[mh_n];
-
-            /* Be sure to redo the new one */
-            i--;
-        }
-
-        /* Looks good, change its color */
-        else
-        {
-            /* Choose a new color */
-            a = mh_attr();
-
-            /* Save the new multi-hued data */
-            mh_a[i] = a;
-
-            /* Redisplay the character */
-            Term_draw(x, y, a, c);
-        }
-    }
-
-    /* Find the cursor */
-    Term_gotoxy(cx, cy);
-
-    /* Turn the cursor back on */
-    if (!okay) Term_show_cursor();
-}
-
-
-
-
-/*
- * Display an attr/char on the screen, at the given location
- * If "m" is set, add that screen location to our "shimmer set".
- * Otherwise, be sure to remove it from the same set.
- *
- * Hack -- Handle "Multi-Hued" pseudo-attribute
- * When "m" is set, the attribute should "shimmer" over time,
- * starting from "a", for example, when mh_cycle() is called.
- *
- * Note: when very few multicolored items are visible, this
- * routine is barely slowed down at all.  But each shimmering
- * character adds a LOT of overhead.
- *
- * Much of this can be saved by relying on "mh_cycle()" to
- * catch all cases of "loss of shimmer", but that is risky.
- */
-void mh_print(char c, byte a, int m, int y, int x)
-{
-    int i;
-
-    /* Apply software "mono" */
-    if (!use_color) m = 0, a = TERM_WHITE;
-
-    /* Hack -- look up this location in the multi-hued table */
-    for (i=0; i<mh_n; i++)
-    {
-        /* Found it */
-        if ((x == mh_x[i]) && (y == mh_y[i])) break;
-    }
-
-    /* Handle Multi-Hued requests (unless full) */
-    if (m && (i < MH_MAX))
-    {
-        /* New entry */
-        if (i == mh_n)
-        {
-            /* One more multi-hued */
-            mh_n++;
-
-            /* Save the location */
-            mh_x[i] = x;
-            mh_y[i] = y;
-        }
-
-        /* Save the data */
-        mh_a[i] = a;
-        mh_c[i] = c;
-    }
-
-    /* Handle Non-Multi-Hued requests */
-    else
-    {
-        if (i < mh_n)
-        {
-            /* One less multi-hued char */
-            mh_n--;
-
-            /* Nuke it, and fill the hole */
-            mh_x[i] = mh_x[mh_n];
-            mh_y[i] = mh_y[mh_n];
-            mh_a[i] = mh_a[mh_n];
-            mh_c[i] = mh_c[mh_n];
-        }
-    }
-
-    /* Display it */
-    Term_draw(x, y, a, c);
-}
-
-#else /* USE_MULTIHUED */
-
-void mh_forget(void) {}
-
-void mh_cycle(void) {}
-
-/*
- */
-void mh_print(char c, byte a, int m, int y, int x)
-{
-    /* Run-time color choosing */
-    if (!use_color) a = TERM_WHITE;
-
-    /* Simply place the character using the attribute */
-    Term_draw(x, y, a, c);
-}
-
-#endif /* USE_MULTIHUED */
-
-#else /* USE_COLOR */
-
-void mh_forget(void) {}
-
-void mh_cycle(void) {}
-
-void mh_print(char c, byte a, int m, int y, int x)
-{
-    /* Simply place the character using no attributes */
-    Term_draw(x, y, TERM_WHITE, c);
-}
-
-#endif /* USE_COLOR */
-
-
-
-/*
- * Simply call "mh_print" (above), but account for "panel-relative"
- * locations, and also verify that the given location is "on the map".
- */
-void mh_print_rel(char c, byte a, int m, int y, int x)
+void print_rel(char c, byte a, int y, int x)
 {
     /* Only do "legal" locations */
     if (panel_contains(y, x)) {
 
-        /* Do a "real" call to "mh_print()" */
-        mh_print(c, a, m, y-panel_row_prt, x-panel_col_prt);
+#ifdef USE_COLOR
+
+        /* Run-time color choosing */
+        if (!use_color) a = TERM_WHITE;
+
+        /* Draw the char using the attr */
+        Term_draw(x-panel_col_prt, y-panel_row_prt, a, c);
+
+#else
+
+        /* Draw the char (always white) */
+        Term_draw(x-panel_col_prt, y-panel_row_prt, TERM_WHITE, c);
+
+#endif
+
     }
 }
 
@@ -1087,21 +886,33 @@ static void update_map(int y, int x)
  */
 void lite_spot(int y, int x)
 {
-    int m;
-    byte a;
-    char c;
-
     /* Hack -- Update the map */
     update_map(y, x);
 
     /* Redraw if on screen */
     if (panel_contains(y, x)) {
 
-        /* Examine the contents of that grid */
-        map_info(y, x, &m, &a, &c);
+        byte a;
+        char c;
 
-        /* Efficiency -- immitate "mh_print_rel()" */
-        mh_print(c, a, m, y-panel_row_prt, x-panel_col_prt);
+        /* Examine the contents of that grid */
+        map_info(y, x, &a, &c);
+
+#ifdef USE_COLOR
+
+        /* Force mono-chrome */
+        if (!use_color) a = TERM_WHITE;
+        
+        /* Efficiency -- immitate "print_rel()" */
+        Term_draw(x-panel_col_prt, y-panel_row_prt, a, c);
+
+#else
+
+        /* Efficiency -- immitate "print_rel()" */
+        Term_draw(x-panel_col_prt, y-panel_row_prt, TERM_WHITE, c);
+
+#endif
+
     }
 }
 
@@ -1112,23 +923,16 @@ void lite_spot(int y, int x)
  * Prints the map of the dungeon
  *
  * Note that we contain an "inline" version of "lite_spot()"
- * and "mh_print_rel()", since this function is called a lot.
+ * and "print_rel()", since this function is called a lot.
  */
 void prt_map(void)
 {
     int x, y;
 
-    int m;
-    byte a;
-    char c;
-
     int okay;
 
     /* Hide the cursor */
     okay = Term_hide_cursor();
-
-    /* Forget all the multi-hued stuff (redone below) */
-    mh_forget();
 
     /* Dump the map */
     for (y = panel_row_min; y <= panel_row_max; y++) {
@@ -1139,14 +943,30 @@ void prt_map(void)
         /* Scan the columns of row "y" */
         for (x = panel_col_min; x <= panel_col_max; x++) {
 
+            byte a;
+            char c;
+
             /* Hack -- update the map */
             update_map(y, x);
 
             /* Determine what is there */
-            map_info(y, x, &m, &a, &c);
+            map_info(y, x, &a, &c);
+
+#ifdef USE_COLOR
+
+            /* Force mono-chrome */
+            if (!use_color) a = TERM_WHITE;
+            
+            /* Efficiency -- Redraw that grid of the map */
+            Term_draw(x-panel_col_prt, y-panel_row_prt, a, c);
+
+#else
 
             /* Efficiency -- Redraw that grid of the map */
-            mh_print(c, a, m, y-panel_row_prt, x-panel_col_prt);
+            Term_draw(x-panel_col_prt, y-panel_row_prt, a, c);
+
+#endif
+
         }
     }
 
@@ -1493,6 +1313,7 @@ static void cave_seen_room_unlite(void)
 
 
 
+
 /*
  * Actually erase the entire "lite" array, redrawing every grid
  */
@@ -1547,6 +1368,8 @@ static void cave_lite(int y, int x)
  *
  * This routine may only work after "update_view()" has been called,
  * but since it is only called by "handle_stuff()", we are okay...
+ *
+ * Note that "blindness" does NOT affect "torch lite".  Be careful!
  *
  * We optimize most lites (all non-artifact lites) by using "obvious"
  * facts about the results of "small" lite radius.
@@ -1956,7 +1779,8 @@ static bool update_view_aux(int y, int x, int y1, int x1, int y2, int x2)
  * more than 20 grids away to be viewable.  In particular, in the town, this
  * algorithm thinks that certain grids which are 21 or 22 grids away are
  * actually in line of sight.  This causes problems with "update_mon()".
- * This also happens at the edges of "large" rooms.
+ * This also happens at the edges of "large" rooms.  I think this has been
+ * fixed at very little cost.  The field of view appears circular now...
  *
  * Note the "optimizations" involving the "se","sw","ne","nw","es","en",
  * "ws","wn" variables.  They work like this: While travelling down the
@@ -1988,14 +1812,8 @@ void update_view(void)
     /* Start with full vision */
     full = MAX_SIGHT;
 
-#if 0
-    /* XXX XXX Hack -- reduce view when running */
-    /* Note that "find_flag" is now a "boolean" */
-    if (view_reduce_view && find_flag) {
-        full = full - (find_flag-1);
-        if (full < 10) full = 10;
-    }
-#endif
+    /* Reduce view when running */
+    if (view_reduce_view && find_flag) full /= 2;
 
     /* Extract the "octagon" limits */
     over = full * 3 / 2;
@@ -2476,6 +2294,7 @@ void unlite_room(int y1, int x1)
 
 
 
+
 /*
  * Hack -- provide some "speed" for the "flow" code
  * This entry is the "current index" for the "when" field
@@ -2775,6 +2594,9 @@ void wiz_dark(void)
         }
     }
 
+    /* Update the view and lite */
+    p_ptr->update |= (PU_VIEW | PU_LITE);
+    
     /* Update the monsters */
     p_ptr->update |= (PU_MONSTERS);
     
@@ -2831,7 +2653,7 @@ void screen_map(void)
     byte ta;
     char tc;
 
-    int m, okay;
+    int okay;
 
     char mc[MAP_HGT + 2][MAP_WID + 2];
     char ma[MAP_HGT + 2][MAP_WID + 2];
@@ -2895,7 +2717,7 @@ void screen_map(void)
             y = j / RATIO + 1;
 
             /* Extract the current attr/char at that map location */
-            map_info(j, i, &m, &ta, &tc);
+            map_info(j, i, &ta, &tc);
 
             /* If this thing is more important, save it instead */
             if (priority[(byte)(mc[y][x])] < priority[(byte)(tc)]) {
@@ -2909,6 +2731,10 @@ void screen_map(void)
         }
     }
 
+
+    /* Enter "icky" mode */
+    character_icky = TRUE;
+
     /* Save the screen */
     save_screen();
 
@@ -2920,19 +2746,29 @@ void screen_map(void)
 
     /* Display each map line in order */
     for (y = 0; y < MAP_HGT+2; ++y) {
+
+        /* Start a new line */
         Term_gotoxy(0, y);
+
+        /* Display the line */
         for (x = 0; x < MAP_WID+2; ++x) {
 
             ta = ma[y][x];
             tc = mc[y][x];
 
 #ifdef USE_COLOR
+
+            /* Force mono-chrome */
             if (!use_color) ta = TERM_WHITE;
+
+            /* Add the character */
+            Term_addch(ta, tc);
 #else
-            ta = TERM_WHITE;
+
+            /* Add the character (in white) */
+            Term_addch(TERM_WHITE, tc);
 #endif
 
-            Term_addch(ta, tc);
         }
     }
 
@@ -2950,6 +2786,9 @@ void screen_map(void)
 
     /* Restore the screen */
     restore_screen();
+
+    /* Leave "icky" mode */
+    character_icky = FALSE;
 }
 
 

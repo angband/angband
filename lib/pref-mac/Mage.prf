@@ -1,7 +1,4 @@
-# File: Mage.prt
-
-# Extra preference file for Mages
-
+# File: Mage.prf
 
 
 # F1 -- detect traps/doors
@@ -20,47 +17,41 @@ A:\e\emce
 P:^_35\r
 
 
-# Shift-F13 -- call light
-
-A:\e\emad\e\e
-P:^_S41\r
 
 
+# Option-KP0 -- Magic Missile
 
-
-# Option-KP0 -- Lightning bolt
-
-A:\e\embb
+A:\e\emaa
 P:^_O18\r
 
 
-# Option-Keypad -- Directed lightning bolt
+# Option-Keypad -- Directed Magic Missile
 
-A:\e\embb1
+A:\e\emaa1
 P:^_O19\r
 
-A:\e\embb2
+A:\e\emaa2
 P:^_O20\r
 
-A:\e\embb3
+A:\e\emaa3
 P:^_O21\r
 
-A:\e\embb4
+A:\e\emaa4
 P:^_O22\r
 
-A:\e\embb5
+A:\e\emaa5
 P:^_O23\r
 
-A:\e\embb6
+A:\e\emaa6
 P:^_O24\r
 
-A:\e\embb7
+A:\e\emaa7
 P:^_O25\r
 
-A:\e\embb8
+A:\e\emaa8
 P:^_O27\r
 
-A:\e\embb9
+A:\e\emaa9
 P:^_O28\r
 
 

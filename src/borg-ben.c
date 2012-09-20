@@ -6,32 +6,42 @@
 
 
 
-#ifdef AUTO_PLAY
+#ifdef ALLOW_BORG
 
 #include "borg.h"
 
+#include "borg-map.h"
+
+#include "borg-obj.h"
+
+#include "borg-ext.h"
+
 
 /*
- * See "borg.h" for general information.
+ * This file implements the "Ben Borg", an "Automatic Angband Player".
  *
- * This file provides support for the "Borg", an "automatic" Angband player.
+ * This file requires the "borg-ext.c", "borg-map.c", "borg-obj.c", and
+ * "borg.c" modules, and the "ALLOW_BORG" compilation flag.
  *
- * The initialization routine grabs the "Term_xtra()" hook of the main "Term",
+ * This code, and the related files, can easily be adapted to create your
+ * very own Automatic Angband Player, using your favorite strategies.  Well,
+ * maybe not easily, but it can certainly be done.
+ *
+ * The "borg_ben()" function, which is called when the user hits "^Z", allows
+ * the user to interact with the Borg.  The first thing you must do is use
+ * the '$' command to "initialize" the Borg.  Assuming you are in wizard mode,
+ * this initialization routine grabs the "Term_xtra()" hook of the main "Term",
  * allowing the Borg to notice when the game is asking for keypresses, and to
- * send its own keys to the keypress queue, while still allowing (occasional)
- * keys to be accepted from the user.  The keys from the user should probably
- * be single keycodes, to prevent interlace with the Borg keypresses.  Note
- * that the initialization function is invoked by the special "wizard command"
- * "^A$" which is usually available in wizard mode.
+ * send its own keys to the keypress queue.
  *
- * Once the Borg has been initialized, the user can choose to start
- * the Borg or ask it questions via the "borg_mode() key" ("^Z"), which
- * invokes the "borg_mode()" function, which allows the user to do things
- * to the borg, including restart ("z"), resume ("r"), plus various queries.
+ * Once the Borg has been initialized, the user can use the "borg_ben()"
+ * function to interact with the borg.  The two most useful commands are
+ * probably restart ("z") and resume ("r"), but other commands allow you
+ * to ask the Borg questions, or give him instructions.
  *
- * You may "stop" the Borg by entering wizard mode (using the "^W" command).
- * You should probably make a macro from some key to "\e\e\e\e\e^W", so that
- * you can kill the Borg if it gets stuck in a loop.
+ * While the Borg is running, it will auto-matically intercept any keys from
+ * the user, and will "halt" upon doing so.  Note that this is the only way
+ * to halt the Borg, and will produce a "borg_ben()" message.
  *
  * The Borg is only supposed to "know" what is visible on the screen, which
  * it learns by using the "term.c" screen access function "Term_what()", and
@@ -48,70 +58,83 @@
  * Must be careful of:
  *   Level changing (intentionally or accidentally)
  *   Gold (or objects) embedded in walls (need to tunnel)
+ *   Low strength plus embedded gold yields ignored gold
  *   Objects with ',' or '$' symbols (look like monsters)
- *   Mimic monsters (look like objects) or invisible monsters
+ *   Mimic monsters (look like objects), and invis monsters
  *   Traps (disarm), Doors (open/bash), Rubble (tunnel)
  *   Stores (enter via movement, exit via escape)
- *   Stores (limited commands, such as no "throw" command)
- *   Must discard junk before trying to pick up more junk
- *   Must be very careful not to run out of food/light
- *   Should use "identify" cleverly to obtain knowledge/money
- *   Do not attempt to throw away cursed artifacts (oops)
+ *   Stores (limited commands, such as no "quaff" command)
+ *   Be careful about "destroying" items in quantity
+ *   Discard junk before trying to pick up more junk
+ *   Be very careful not to run out of food/light
+ *   Use "identify" cleverly to obtain knowledge/money
  *   Do not sell junk or cursed/damaged items to any stores
  *   Do not attempt to buy something with insufficient funds
  *   Use the non-optimal stairs if stuck on a level
- *   Make sure that every important grid is in a room
  *   Use "flow" code for all tasks for consistency
  *   Weird objects ("Mace of Disruption"/"Scythe of Slicing")
+ *   Learn spells, and use them when appropriate
+ *   Remember that studying prayers is slightly random
  *   Do not try to read scrolls when blind or confused
+ *   Do not browse/use/learn spells when blind/confused.
  *   Attempt to heal when "confused", "blind", etc
+ *   Attempt to remove fear, if possible, when priest
  *   Occasionally remove both rings (to rearrange them)
  *   Make sure to "wear" items in order of "goodness"
  *   This will allow the "ring removal hack" to work
  *   Notice "failure" when using rod/staff of perceptions
+ *   Notice "failure" when attempting spells/prayers
  *   Do not fire at monsters that may have changed location
  *   Search for secret doors if stuck on a level (spastic)
  *   Earthquake (or destruction) of already mapped grids
  *   Collect monsters/objects left behind or seen from afar
+ *   Fire missiles at magic mushrooms when afraid
+ *   Try not to walk up next to a dangerous monster
+ *   Mages should almost never wear gloves
+ *   Spell casters need to watch armor weight
  *
  * Should be careful of:
- *   Do not throw away cursed artifacts (non-warrior types)
+ *   Technically a room can have no exits, requiring digging
+ *   Hallucination -- can induce fake "player" symbols
+ *   Special screens (including tombstone) with no "walls"
+ *   Try to use a shovel/pick to help with tunnelling
+ *   Do not "destroy" cursed artifacts (non-warrior types)
+ *   If we do destroy a cursed artifact, try and catch it
  *   If wounded, must run away from monsters, then rest
  *   Invisible monsters causing damage while trying to rest
- *   Try to use a shovel/pick to help with tunnelling
  *   Becoming "afraid" (attacking takes a turn for no effect)
  *   Becoming "blind" (map may be no longer valid)
- *   Out of depth player ghosts (in the town)
+ *   Running out of light (sort of like being blind)
  *   Be VERY careful not to access illegal locations!
- *   Extremely long object descriptions (no room for inscriptions)
+ *   Extremely long object descriptions (clipping inscriptions)
  *   In particular, consider artifact dragon scale mail and such
  *   Attempt to actually walk to the end of all corridors
  *   This will allow the "search" routines to work effectively
- *   As a hack, we could only build corridors from touched grids
  *   Attempt to "track" monsters who flee down corridors
- *   We will not fire missiles at magic mushrooms when afraid (!)
- *   Consider using the "x" symbol for obnoxious monsters
  *   When totally surrounded by monsters, try to escape rooms
+ *   Conserve memory space (each grid byte costs about 15K)
+ *   Conserve computation time (especially with the flow code)
  *
- * Memory usage (out of date):
- *   Total: 300K total
- *   Largest chunk: 42K
+ * Consider some heuristics:
+ *   food is not necessary given "satisfy hunger"
+ *   identify is not necessary given the spell
+ *   recall is not necessary given the spell
+ *
+ * Approximate Memory Usage (BORG_GRIDS):
+ *   Inventory: 36*120 = 5K
+ *   Shop Items: 8*24*120 = 24K
+ *
+ * Approximate memory usage (without BORG_ROOMS)
+ *   All rows of Grids: 70*(200*10) = 140K
+ *
+ * Approximate memory usage (with BORG_ROOMS)
  *   Rooms: (200*70/8)*24 = 42K
- *   Each row of Grids: 200*16 = 3K
- *   All rows of Grids: 70*3K = 210K
- *   Inventory: 36*132 = 5K
- *   Shops: 8*24*132 = 24K
+ *   All rows of Grids: 70*(200*6) = 80K
  *
  * Note that there is minimal memory use by static variables compared
  * to the code itself, and compared to allocated memory.
  *
  * Currently, the auto-player "cheats" in a few situations.  Oops.
- *
- * The "big" cheat is that we "build" an inventory listing without
- * parsing the screen.  This is mainly for efficiency, and to prevent
- * constant screen flashing, since we do know how to parse the store.
- *
- * Consider parsing the "choice" window for inventory/equipment.
  *
  * Cheats that are significant, and possibly unavoidable:
  *   Knowledge of when we are being asked for a keypress.
@@ -123,7 +146,7 @@
  *   Direct use of the "current screen image" (parsing screen)
  *   Note that this includes distinguishing white/black spaces
  *
- * Cheats that could be "overcome" trivially:
+ * Cheats that could be "overcome" trivially by ugly code:
  *   Direct modification of the "current options"
  *
  * Cheats that could be avoided by duplicating code:
@@ -131,13 +154,16 @@
  *   Direct access to the "v_list" and "ego_name" arrays
  *
  * Cheats that save a lot of "time", but are "optional":
- *   Direct extraction of "w_x" and "w_y" (cheat_panel)
- *   Direct extraction of inventory/equipment (cheat_inven)
+ *   Direct extraction of "panel" info (cheat_panel)
+ *   Direct extraction of "inven" info (cheat_inven)
+ *   Direct extraction of "equip" info (cheat_equip)
+ *   Direct extraction of "spell" info (cheat_spell)
  *
  * Cheats that the Borg would love:
  *   Unique attr/char codes for every monster and object
  *   Ring of See invisible, Ring of Free Action, Helm of Seeing
  *   Use of "x" for mushroom monsters (magic mushrooms!)
+ *   Immunity to hallucination, blindness, confusion
  *
  * Simple ways to make the Borg more effective:
  *   Choose a male fighter (maximize strength)
@@ -152,52 +178,70 @@
 
 
 
-static int shop_num = 7;	/* Most recent shop index */
-
-static int last_visit = 0;	/* Last purchase visit */
-
-static int goal = 0;		/* Current "goal" */
-
-static int goal_rising = 0;	/* Currently fleeing to town */
-
-static int stair_less;		/* Use the next "up" staircase */
-static int stair_more;		/* Use the next "down" staircase */
-
-static int count_floor;		/* Number of floor grids */
-static int count_less;		/* Number of stairs (up) */
-static int count_more;		/* Number of stairs (down) */
-static int count_kill;		/* Number of monsters */
-static int count_take;		/* Number of objects */
-
-static s32b attention;		/* Attention this level deserves */
-
-static s32b c_t;		/* Current time */
-
-
-static bool cheat_inven = TRUE;	/* Cheat to get "inven/equip" */
-
-static bool cheat_panel = TRUE;	/* Cheat to get "panel" */
-
-static bool panic_death = TRUE;	/* Panic before Death */
-
-static bool panic_stuff = TRUE;	/* Panic before Junking Stuff */
-
-static s32b auto_began = 0L;	/* When this level began */
-
-static s32b auto_shock = 0L;	/* When last "shocked" */
-
-static s32b auto_recall = 0L;	/* When we read word of recall */
-
-
-
-
+/*
+ * Minimum "harmless" food
+ */
+#define SV_FOOD_MIN_OKAY	SV_FOOD_CURE_POISON
 
 
 /*
- * Quick determination if a symbol is in one of those arrays
+ * Some variables
  */
-static bool *auto_is_kill;
-static bool *auto_is_take;
+
+static int goal_shop = -1;	/* Next shop to visit */
+static int goal_item = -1;	/* Next item to buy there */
+
+static int shop_num = 7;	/* Most recent shop index */
+
+static int auto_wearing;	/* Number of "wears" this level */
+
+static int auto_feeling;	/* Number of "turns" to stay here */
+
+
+static s32b when_recall;	/* When we last did "recall" */
+
+static s32b when_phial;		/* When we last used the Phial */
+
+
+static bool ignore_hunger;	/* Can ignore hunger */
+
+
+static int do_add_stat[6];	/* Need to increase the stat */
+
+
+static int max_level;		/* Maximum level */
+static int max_depth;		/* Maximum depth */
+
+
+static int old_depth = -1;	/* Previous depth */
+
+static int old_chp = -1;	/* Previous hit points */
+static int old_csp = -1;	/* Previous spell points */
+
+
+static bool cheat_equip;	/* Cheat for "equip mode" */
+
+static bool cheat_inven;	/* Cheat for "inven mode" */
+
+static bool cheat_spell;	/* Cheat for "browse mode" */
+
+static bool cheat_panel;	/* Cheat for "panel mode" */
+
+
+static bool panic_death;	/* Panic before Death */
+
+static bool panic_stuff;	/* Panic before Junking Stuff */
+
+
+
+static bool do_inven = TRUE;	/* Acquire "inven" info */
+static bool do_equip = TRUE;	/* Acquire "equip" info */
+
+static bool do_spell = TRUE;	/* Acquire "spell" info */
+
+static bool do_panel = TRUE;	/* Acquire "panel" info */
+
+static byte do_spell_aux = 0;	/* Hack -- current book for "do_spell" */
 
 
 
@@ -238,9 +282,6 @@ static int kind_potion_fix_chr = 236;
  * Some kinds -- miscellaneous
  */
 static int kind_potion_fix_exp = 260;
-static int kind_staff_teleport = 303;
-static int kind_staff_identify = 326;
-static int kind_rod_identify = 372;
 
 /*
  * Some kinds -- various enchantment scrolls
@@ -248,18 +289,6 @@ static int kind_rod_identify = 372;
 static int kind_enchant_to_hit = 173;
 static int kind_enchant_to_dam = 174;
 static int kind_enchant_to_ac = 175;
-
-/*
- * Some kinds -- various missiles
- */
-static int kind_missile_shot = 83;
-static int kind_missile_arrow = 78;
-static int kind_missile_bolt = 80;
-
-/*
- * Variable kinds -- preferred missile type
- */
-static int kind_missile = 83;
 
 
 
@@ -274,564 +303,23 @@ static byte kind_have[MAX_K_IDX];
 static byte kind_need[MAX_K_IDX];
 
 
-/*
- * Hack -- scrolls that should always be read if possible
- */
-static int kind_force_scrolls[] = {
-    189,	/* magic mapping */
-    194,	/* trap detection */
-    197,	/* door/stair detection */
-    198,	/* acquirement */
-    199,	/* star-acquirement */
-    209,	/* protection from evil */
-    0
-};
-
-/*
- * Hack -- potions that should always be quaffed if possible
- */
-static int kind_force_potions[] = {
-    225,	/* strength */
-    228,	/* intelligence */
-    231,	/* wisdom */
-    234,	/* charisma */
-    243,	/* constitution */
-    244,	/* experience */
-    251,	/* dexterity */
-    256,	/* enlightenment */
-    418,	/* augmentation */
-    0
-};
-
-
-/*
- * Hack -- scrolls that should be read rather than discarded
- */
-static int kind_allow_scrolls[] = {
-    180,	/* remove curse */
-    181,	/* light */
-    188,	/* monster confusion */
-    189,	/* magic mapping */
-    190,	/* rune of protection */
-    191,	/* star-remove-curse */
-    192,	/* treasure detection */
-    193,	/* object detection */
-    194,	/* trap detection */
-    197,	/* door/stair detection */
-    198,	/* acquirement */
-    199,	/* star-acquirement */
-    201,	/* detect invisible */
-    204,	/* trap/door destruction */
-    209,	/* protection from evil */
-    210,	/* satisfy hunger */
-    211,	/* dispel undead */
-    217,	/* blessing */
-    218,	/* holy chant */
-    219,	/* holy prayer */
-    0
-};
-
-/*
- * Hack -- potions that should be quaffed rather than discarded
- */
-static int kind_allow_potions[] = {
-    222,	/* slime mold juice */
-    223,	/* apple juice */
-    224,	/* water */
-    225,	/* strength */
-    227,	/* restore strength */
-    228,	/* intelligence */
-    230,	/* restore intelligence */
-    231,	/* wisdom */
-    233,	/* restore wisdom */
-    234,	/* charisma */
-    236,	/* restore charisma */
-    237,	/* cure light wounds */
-    240,	/* cure serious wounds */
-    241,	/* cure critical wounds */
-    242,	/* healing */
-    243,	/* constitution */
-    244,	/* experience */
-    249,	/* speed */
-    251,	/* dexterity */
-    252,	/* restore dexterity */
-    253,	/* restore constitution */
-    256,	/* enlightenment */
-    257,	/* heroism */
-    258,	/* beserk strength */
-    259,	/* boldness */
-    260,	/* restore life levels */
-    261,	/* resist fire */
-    262,	/* resist cold */
-    263,	/* detect invisible */
-    264,	/* slow poison */
-    265,	/* neutralize poison */
-    266,	/* restore mana */
-    267,	/* infravision */
-    418,	/* augmentation */
-    419,	/* star-healing */
-    420,	/* life */
-    0
-};
-
-
-/*
- * State variables extracted from the screen
- */
-
-static bool do_weak;
-static bool do_hungry;
-
-static bool do_blind;
-static bool do_afraid;
-static bool do_confused;
-static bool do_poisoned;
-
-static bool do_add_str;
-static bool do_add_int;
-static bool do_add_wis;
-static bool do_add_dex;
-static bool do_add_con;
-static bool do_add_chr;
-
-static bool do_fix_str;
-static bool do_fix_int;
-static bool do_fix_wis;
-static bool do_fix_dex;
-static bool do_fix_con;
-static bool do_fix_chr;
-
-static bool do_fix_exp;
-
-static int auto_level;		/* Current player level */
-
-static int auto_curhp;		/* Current hitpoints */
-static int auto_maxhp;		/* Maximum hitpoints */
-
-static s32b auto_gold;		/* Current "gold" */
-
-static int auto_stat_str;	/* Current strength */
-static int auto_stat_int;	/* Current intelligence */
-static int auto_stat_wis;	/* Current wisdom */
-static int auto_stat_dex;	/* Current dexterity */
-static int auto_stat_con;	/* Current constitution */
-static int auto_stat_chr;	/* Current charisma */
-
-static int auto_depth = -1;	/* Current dungeon "level" */
-
-
 
 
 
 /*
- * Hack -- set the options the way we like them
+ * Hack -- single character constants
  */
-static void borg_play_options(void)
-{
-    /* The Borg uses the original keypress codes */
-    rogue_like_commands = FALSE;
-
-    /* Use color to identify monsters and such */
-    use_color = TRUE;
-
-    /* Pick up items when stepped on */
-    always_pickup = TRUE;
-
-    /* Require explicit target request */
-    use_old_target = FALSE;
-
-    /* Do NOT query "throw" commands */
-    always_throw = TRUE;
-
-    /* Do NOT query "pick up" commands */
-    carry_query_flag = FALSE;
-
-    /* Do NOT query "various" commands */
-    other_query_flag = FALSE;
-
-    /* Require explicit repeat commands */
-    always_repeat = FALSE;
-
-    /* Do not get confused by extra info */
-    plain_descriptions = TRUE;
-
-    /* Maximize space for information */
-    show_inven_weight = FALSE;
-    show_equip_weight = FALSE;
-    show_store_weight = FALSE;
-
-    /* Buy/Sell without haggling */
-    no_haggle_flag = TRUE;
-
-    /* Maximize screen info */
-    fresh_before = TRUE;
-    fresh_after = TRUE;
-
-    /* Read the level directly (not in feet) */
-    depth_in_feet = FALSE;
-
-    /* Use the health bar (later) */
-    show_health_bar = TRUE;
-
-    /* Do not let equippy chars confuse the health bar */
-    equippy_chars = FALSE;
-
-    /* XXX Hack -- notice "command" mode */
-    hilite_player = FALSE;
-
-    /* XXX XXX Mega-Hack -- use "preserve" mode */
-    p_ptr->preserve = TRUE;
-}
-
-
-#if 0
-
-/*
- * Hack -- take a note later
- */
-static void borg_tell(cptr what)
-{
-    cptr s;
-
-    /* Hack -- self note */
-    borg_keypress(':');
-    for (s = what; *s; s++) borg_keypress(*s);
-    borg_keypress('\n');
-}
-
-#endif
+static const char /* p1 = '(', */ p2 = ')';
 
 
 
 /*
- * Count the number of items of the given kind
+ * Hack -- make sure we have a good "ANSI" definition for "CTRL()"
  */
-static bool borg_amount(int k)
-{
-    int i, n = 0;
+#undef CTRL
+#define CTRL(C) ((C)&037)
 
-    /* Scan the pack */
-    for (i = 0; i < INVEN_PACK; i++) {
 
-        auto_item *item = &auto_items[i];
-
-        /* Notice end of inventory */
-        if (!item->iqty) break;
-
-        /* Require that kind */
-        if (item->kind != k) continue;
-
-        /* Count items */
-        n += item->iqty;
-    }
-
-    /* Result */
-    return (n);
-}
-
-
-/*
- * Hack -- perform an action on an item of the given "kind"
- * Hack -- by choosing the "last" pile, we prefer discounted items
- */
-static bool borg_choose(int k)
-{
-    int i, n = -1;
-
-    /* Nothing available */
-    if (kind_have[k] <= 0) return (-1);
-    
-    /* Scan the pack */
-    for (i = 0; i < INVEN_PACK; i++) {
-
-        auto_item *item = &auto_items[i];
-
-        /* Notice end of inventory */
-        if (!item->iqty) break;
-
-        /* Require that kind */
-        if (item->kind != k) continue;
-
-        /* Save the last "best" index (smallest pile) */
-        if ((n < 0) || (item->iqty <= auto_items[n].iqty)) n = i;
-    }
-
-    /* Result */
-    return (n);
-}
-
-
-
-/*
- * Hack -- perform an action on an item of the given "kind"
- */
-static bool borg_action(char c, int k)
-{
-    int i;
-
-    /* Choose a usable item */
-    i = borg_choose(k);
-
-    /* Nothing to use */
-    if (i < 0) return (FALSE);
-
-    /* Hack -- Cannot read when blind/confused */
-    if ((c == 'r') && (do_blind || do_confused)) return (FALSE);
-
-    /* Log the message */
-    if (auto_fff) {
-        borg_info(format("Action '%c' on item %s.", c, auto_items[i].desc));
-    }
-
-    /* Perform the action */
-    borg_keypress(c);
-    borg_keypress('a' + i);
-
-    /* Success */
-    return (TRUE);
-}
-
-
-
-/*
- * Hack -- perform an action on an item of the given "kind"
- * Hack -- only accept items with a non-zero "pval" code
- * Hack -- by choosing the first pile, we prefer "high charges"
- * This tends to result in "piles" of items with equal charges
- * This may also induce occasional "dropping" of items :-)
- */
-static bool borg_choose_pval(int k)
-{
-    int i, n = -1;
-
-    /* Nothing available */
-    if (kind_have[k] <= 0) return (-1);
-    
-    /* Scan the pack */
-    for (i = 0; i < INVEN_PACK; i++) {
-
-        auto_item *item = &auto_items[i];
-
-        /* Notice end of inventory */
-        if (!item->iqty) break;
-
-        /* Require that kind */
-        if (item->kind != k) continue;
-
-        /* Hack -- Require non-zero "pval" */
-        if (item->pval == 0) continue;
-
-        /* Save the first "best" index (smallest pile) */
-        if ((n < 0) || (item->iqty < auto_items[n].iqty)) n = i;
-    }
-
-    /* Result */
-    return (n);
-}
-
-
-
-/*
- * Hack -- perform an action on an item of the given "kind"
- * Hack -- only accept items with a positive "pval"
- */
-static bool borg_action_pval(char c, int k)
-{
-    int i;
-
-    /* Choose a usable item */
-    i = borg_choose_pval(k);
-
-    /* Nothing to use */
-    if (i < 0) return (FALSE);
-
-    /* Hack -- Cannot read when blind/confused */
-    if ((c == 'r') && (do_blind || do_confused)) return (FALSE);
-
-    /* Log the message */
-    if (auto_fff) {
-        borg_info(format("Action '%c' on item %s.", c, auto_items[i].desc));
-    }
-
-    /* Perform the action */
-    borg_keypress(c);
-    borg_keypress('a' + i);
-
-    /* Success */
-    return (TRUE);
-}
-
-
-
-
-/*
- * Decide whether to "inspect" a grid
- * Assume the given grid is NOT a wall
- */
-static bool borg_inspect()
-{
-    int		i, wall = 0, supp = 0, diag = 0;
-
-    char	cc[8];
-
-
-    /* Hack -- Never inspect the town */
-    if (auto_depth == 0) return (FALSE);
-
-    /* Hack -- This grid is fully inspected */
-    if (pg->xtra > 20) return (FALSE);
-
-    /* Tweak -- only search occasionally */
-    if (rand_int(50) != 0) return (FALSE);
-
-
-    /* Examine adjacent grids */
-    for (i = 0; i < 8; i++) {
-
-        /* Extract the location */
-        int xx = c_x + ddx[ddd[i]];
-        int yy = c_y + ddy[ddd[i]];
-
-        /* Obtain the grid */
-        auto_grid *ag = grid(xx, yy);
-
-        /* Require knowledge */
-        if (ag->o_c == ' ') return (FALSE);
-
-        /* Extract the symbol */
-        cc[i] = ag->o_c;
-    }
-
-
-    /* Count possible door locations */
-    for (i = 0; i < 4; i++) if (cc[i] == '#') wall++;
-
-    /* Hack -- no possible doors */
-    if (!wall) return (FALSE);
-
-
-    /* Count supporting evidence for secret doors */
-    for (i = 0; i < 4; i++) {
-        if ((cc[i] == '#') || (cc[i] == '%')) supp++;
-        else if ((cc[i] == '+') || (cc[i] == '\'')) supp++;
-    }
-
-    /* Count supporting evidence for secret doors */
-    for (i = 4; i < 8; i++) {
-        if ((cc[i] == '#') || (cc[i] == '%')) diag++;
-    }
-
-    /* Hack -- Examine "suspicious" walls */
-    if (((diag >= 4) && (supp >= 3)) ||
-        ((diag >= 4) && (rand_int(30) == 0)) ||
-        ((diag >= 2) && (rand_int(900) == 0))) {
-
-        /* Take note */
-        borg_note("Searching...");
-
-        /* Remember the search */
-        if (pg->xtra < 100) pg->xtra += 9;
-
-        /* Search a little */
-        borg_keypress('0');
-        borg_keypress('9');
-        borg_keypress('s');
-
-        /* Success */
-        return (TRUE);
-    }
-
-
-    /* Assume no suspicions */
-    return (FALSE);
-}
-
-
-
-
-
-#if 0
-
-/*
- * Send a command to inscribe item number "i" with the inscription "str".
- */
-static void borg_send_inscribe(int i, cptr str)
-{
-    cptr s;
-
-    /* The "inscribe" command */
-    char c1 = '{', c2 = '}';
-
-    /* Label it */
-    borg_keypress(c1);
-
-    /* Hack -- allow "equipment" labelling */
-    if (i >= INVEN_WIELD) {
-        borg_keypress('/');
-        i -= INVEN_WIELD;
-    }
-
-    /* Choose the item */
-    borg_keypress('a' + i);
-
-    /* Send the label */
-    for (s = str; *s; s++) borg_keypress(*s);
-
-    /* End the inscription */
-    borg_keypress('\n');
-}
-
-#endif
-
-
-
-/*
- * Hack -- determine if an item is "armor"
- */
-static bool borg_item_is_armour(auto_item *item)
-{
-    /* Check for armor */
-    if ((item->tval == TV_DRAG_ARMOR) ||
-        (item->tval == TV_HARD_ARMOR) ||
-        (item->tval == TV_SOFT_ARMOR) ||
-        (item->tval == TV_SHIELD) ||
-        (item->tval == TV_CROWN) ||
-        (item->tval == TV_HELM) ||
-        (item->tval == TV_CLOAK) ||
-        (item->tval == TV_GLOVES) ||
-        (item->tval == TV_BOOTS)) {
-
-        /* Yep */
-        return (TRUE);
-    }
-
-    /* Nope */
-    return (FALSE);
-}
-
-
-/*
- * Hack -- determine if an item is a "weapon"
- */
-static bool borg_item_is_weapon(auto_item *item)
-{
-    /* Check for weapon */
-    if ((item->tval == TV_SWORD) ||
-        (item->tval == TV_HAFTED) ||
-        (item->tval == TV_POLEARM) ||
-        (item->tval == TV_DIGGING) ||
-        (item->tval == TV_BOW) ||
-        (item->tval == TV_BOLT) ||
-        (item->tval == TV_ARROW) ||
-        (item->tval == TV_SHOT)) {
-
-        /* Yep */
-        return (TRUE);
-    }
-
-    /* Nope */
-    return (FALSE);
-}
 
 
 
@@ -846,45 +334,54 @@ static bool borg_item_is_weapon(auto_item *item)
  * We assume that the given item is "aware" and "known" (or "average").
  * We also assume that the given item is "acceptable" (not worthless).
  *
+ * We used to attempt to factor in the effects of "enchanting" the item,
+ * but this was a total hack.  A much better method would be to keep a
+ * "secondary" weapon somewhere, probably in the pack, and enchant it
+ * when possible until we actually have a better item to use.
+ *
+ * Also, the calling function may wish to factor in the "cost" of
+ * the item, to prevent "expensive" upgrades in the black market.
+ *
  * Note -- This is used both for "wearing" items and for "buying" them.
+ *
+ * But the "buying" part is only active for things chosen as necessary
+ * by the "borg_good_buy()" function.
  */
 static s32b item_power(auto_item *item)
 {
     s32b value;
-    s32b awful;
 
-    int to_a = item->to_a;
-    int to_h = item->to_h;
-    int to_d = item->to_d;
-    
     
     /* Mega-Hack -- Never wear unknowns */
     if (!item->kind) return (0L);
 
 
-    /* Hack -- Start with the "value" */
-    awful = 0;
-
-
     /* Armour */
-    if ((item->tval == TV_SHIELD) ||
-        (item->tval == TV_SOFT_ARMOR) ||
-        (item->tval == TV_HARD_ARMOR) ||
-        (item->tval == TV_DRAG_ARMOR) ||
-        (item->tval == TV_BOOTS) ||
-        (item->tval == TV_GLOVES) ||
-        (item->tval == TV_CLOAK) ||
-        (item->tval == TV_CROWN) ||
-        (item->tval == TV_HELM)) {
+    if (borg_item_is_armour(item)) {
 
         /* Hack -- Base value */
-        item->to_a = 8;
         value = borg_item_value(item);
-        /* value -= (item->to_a - to_a) * 50L; */
-        item->to_a = to_a;
 
         /* Reward the total armor */
         value += (item->ac + item->to_a) * 100L;
+
+        /* Hack -- low level spell casters hate heavy armor */
+        if ((mb_ptr->spell_book) && (auto_lev < 20)) {
+
+            /* Mega-Hack -- Reward "armor vs weight", depending on level */
+            value += (10L * item->ac - item->weight) * (20 - auto_lev);
+        }
+        
+        /* Mages hate (most) gloves */
+        if ((mb_ptr->spell_book == TV_MAGIC_BOOK) &&
+            (item->tval == TV_GLOVES) &&
+            (item->name2 != EGO_FREE_ACTION) &&
+            (item->name2 != EGO_AGILITY) &&
+            (!(v_list[item->name1].flags2 & TR2_FREE_ACT))) {
+
+            /* Worthless */
+            value = 0L;
+        }
     }
 
     /* Weapons */
@@ -893,34 +390,40 @@ static s32b item_power(auto_item *item)
              (item->tval == TV_POLEARM) ||
              (item->tval == TV_DIGGING)) {
 
-        /* Base value */
-        item->to_h = 8;
-        item->to_d = 8;
+        int blows = 1;
+        
+        /* Reward blows (unless fucked) */
+        if (auto_wearing < 100) blows = borg_blows(item);
+        
+        /* Hack -- Base value */
         value = borg_item_value(item);
-        /* value -= (item->to_h - to_h) * 25L; */
-        /* value -= (item->to_d - to_d) * 50L; */
-        item->to_h = to_h;
-        item->to_d = to_d;
 
         /* Favor high "max damage" */
-        value += ((item->dd * item->ds) * 200L);
+        value += (blows * ((item->dd * item->ds) * 200L));
 
         /* Favor the bonuses */
         value += (item->to_h * 10L);
         value += (item->to_d * 100L);
+
+        /* Priest weapon penalty for non-blessed edged weapons */
+        /* Note that edged weapons add a 25% prayer penalty! */
+        if ((auto_class == 2) &&
+            ((item->tval == TV_SWORD) || (item->tval == TV_POLEARM)) &&
+            (!(v_list[item->name1].flags3 & TR3_BLESSED))) {
+
+            /* Icky */
+            value = 0L;
+        }
+
+        /* Too heavy */
+        if (adj_str_hold[borg_stat_index(A_STR)] < item->weight) value = 0L;
     }
 
     /* Missile Launchers */
     else if (item->tval == TV_BOW) {
 
         /* Base value */
-        item->to_h = 8;
-        item->to_d = 8;
         value = borg_item_value(item);
-        /* value -= (item->to_h - to_h) * 25L; */
-        /* value -= (item->to_d - to_d) * 50L; */
-        item->to_h = to_h;
-        item->to_d = to_d;
 
         /* Mega-Hack -- Check the sval */
         value += (item->sval * 500L);
@@ -928,6 +431,9 @@ static s32b item_power(auto_item *item)
         /* Check the bonuses */
         value += (item->to_h * 10L);
         value += (item->to_d * 100L);
+
+        /* Too heavy */
+        if (adj_str_hold[borg_stat_index(A_STR)] < item->weight) value = 0L;
     }
 
     /* Rings/Amulets */
@@ -945,17 +451,6 @@ static s32b item_power(auto_item *item)
     }
 
 
-    /* Lite */
-    else if (item->tval == TV_LITE) {
-
-        /* Base value */
-        value = borg_item_value(item);
-
-        /* Hack -- Prefer usable lites */
-        if (item->pval) value += 5000L;
-    }
-
-
     /* Flasks */
     else if (item->tval == TV_FLASK) {
 
@@ -963,7 +458,30 @@ static s32b item_power(auto_item *item)
         value = borg_item_value(item);
 
         /* Buy flasks for lanterns */
-        value += 2000L;
+        if (kind_have[item->kind] < 15) value += 5004000L;
+    }
+
+    /* Lite */
+    else if (item->tval == TV_LITE) {
+
+        /* Base value */
+        value = borg_item_value(item);
+
+        /* Analyze the lite */
+        switch (item->sval) {
+
+            case SV_LITE_GALADRIEL:
+                value += 5009000L;
+                break;
+                
+            case SV_LITE_LANTERN:            
+                value += 5004000L;
+                break;
+
+            case SV_LITE_TORCH:            
+                if (kind_have[item->kind] < 15) value += 5002000L;
+                break;
+        }
     }
 
     /* Food */
@@ -972,9 +490,17 @@ static s32b item_power(auto_item *item)
         /* Base value */
         value = borg_item_value(item);
 
-        /* Buy normal food */
-        if (item->kind == kind_food_ration) value += 50000L;
+        /* Analyze the food */
+        switch (item->sval) {
+
+            case SV_FOOD_RATION:
+
+                if (kind_have[item->kind] < 10) value += 5005000L;
+
+                break;
+        }
     }
+
 
     /* Scrolls */
     else if (item->tval == TV_SCROLL) {
@@ -982,21 +508,106 @@ static s32b item_power(auto_item *item)
         /* Base value */
         value = borg_item_value(item);
 
-        /* Hack -- prefer certain items */
-        if (item->kind == kind_scroll_teleport) value += 3000L;
-        if (item->kind == kind_scroll_identify) value += 6000L;
-        if (item->kind == kind_scroll_recall) value += 9000L;
+        /* Analyze the scroll */
+        switch (item->sval) {
+
+            case SV_SCROLL_PHASE_DOOR:
+                if (kind_have[item->kind] < 5) value += 500L;
+                break;
+                
+            case SV_SCROLL_TELEPORT:
+                if (kind_have[item->kind] < 5) value += 3000L;
+                break;
+                
+            case SV_SCROLL_IDENTIFY:
+                if (kind_have[item->kind] < 15) value += 6000L;
+                break;
+                
+            case SV_SCROLL_WORD_OF_RECALL:
+                if (kind_have[item->kind] < 3) value += 9000L;
+                break;
+        }
     }
 
     /* Potions */
-    else if (item->tval == TV_SCROLL) {
+    else if (item->tval == TV_POTION) {
 
         /* Base value */
         value = borg_item_value(item);
 
-        /* Hack -- prefer certain items */
-        if (item->kind == kind_potion_critical) value += 5000L;
-        if (item->kind == kind_potion_serious) value += 500L;
+        /* Analyze the potion */
+        switch (item->sval) {
+        
+            case SV_POTION_RESTORE_EXP:
+                if (do_fix_exp) value += 500000L;
+                break;
+                
+            case SV_POTION_RES_STR:
+                if (do_fix_stat[A_STR]) value += 10000L;
+                break;
+                
+            case SV_POTION_RES_INT:
+                if (do_fix_stat[A_INT]) value += 10000L;
+                break;
+                
+            case SV_POTION_RES_WIS:
+                if (do_fix_stat[A_WIS]) value += 10000L;
+                break;
+                
+            case SV_POTION_RES_DEX:
+                if (do_fix_stat[A_DEX]) value += 10000L;
+                break;
+                
+            case SV_POTION_RES_CON:
+                if (do_fix_stat[A_CON]) value += 10000L;
+                break;
+                
+            case SV_POTION_RES_CHR:
+                if (do_fix_stat[A_CHR]) value += 10000L;
+                break;
+            
+            case SV_POTION_INC_STR:
+                if (auto_stat[A_STR] < 18+50) value += 200000L;
+                break;
+                
+            case SV_POTION_INC_INT:
+                if (auto_stat[A_INT] < 18+50) value += 200000L;
+                break;
+                
+            case SV_POTION_INC_WIS:
+                if (auto_stat[A_WIS] < 18+50) value += 200000L;
+                break;
+                
+            case SV_POTION_INC_DEX:
+                if (auto_stat[A_DEX] < 18+50) value += 200000L;
+                break;
+                
+            case SV_POTION_INC_CON:
+                if (auto_stat[A_CON] < 18+50) value += 200000L;
+                break;
+                
+            case SV_POTION_INC_CHR:
+                if (auto_stat[A_CHR] < 18+50) value += 200000L;
+                break;
+                
+            case SV_POTION_CURE_SERIOUS:
+                if (kind_have[item->kind] < 5) value += 500L;
+                break;
+                
+            case SV_POTION_CURE_CRITICAL:
+                if (kind_have[item->kind] < 5) value += 5000L;
+                break;
+        }
+    }
+
+    /* Readible books */
+    else if (item->tval == mb_ptr->spell_book) {
+
+        /* Base value */
+        value = borg_item_value(item);
+
+        /* Large bonus for useful books */
+        value += 50000L;
     }
 
     /* Others */
@@ -1050,12 +661,20 @@ static s32b item_worth(auto_item *item)
     if (!item->kind) return (auto_depth * 100 + 50 + value);
 
 
-    /* Hack -- staffs of identify can be used */
-    if (item->kind == kind_staff_identify) value += item->pval * 200L;
-
-    /* Hack -- staffs of teleport can be used */
-    if (item->kind == kind_staff_teleport) value += item->pval * 200L;
-
+    /* Analyze the item */
+    switch (item->tval) {
+    
+        case TV_STAFF:
+        
+            switch (item->sval) {
+            
+                case SV_STAFF_IDENTIFY:
+                case SV_STAFF_TELEPORTATION:
+                    value += item->pval * 200L;
+                    break;
+            }
+    }
+    
 
     /* Return the value */
     return (value);
@@ -1188,8 +807,6 @@ static bool borg_restock()
 {
     auto_item *item = &auto_items[INVEN_LITE];
 
-    /* Running out of food */
-    if (kind_have[kind_food_ration] < 5) return (TRUE);
 
     /* Totally out of light */
     if (item->iqty == 0) return (TRUE);
@@ -1199,6 +816,11 @@ static bool borg_restock()
 
     /* Running out of torches */
     if ((item->kind == kind_torch) && (kind_have[kind_torch] < 5)) return (TRUE);
+
+
+    /* Running out of food */
+    if (kind_have[kind_food_ration] < (ignore_hunger ? 0 : 5)) return (TRUE);
+
 
     /* Assume happy */
     return (FALSE);
@@ -1210,7 +832,7 @@ static bool borg_restock()
  */
 static bool borg_good_buy(auto_item *ware)
 {
-    int i, slot;
+    int slot;
 
     auto_item *worn = NULL;
 
@@ -1230,44 +852,42 @@ static bool borg_good_buy(auto_item *ware)
     if (kind_need[ware->kind]) {
 
         /* Check the pile */
-        if (borg_amount(ware->kind) < kind_need[ware->kind]) {
+        if (kind_have[ware->kind] < kind_need[ware->kind]) {
             return (TRUE);
         }
     }
     
 
-    /* Process Torches */
-    if (ware->kind == kind_torch) {
-
-        /* Never use the black market */
+    /* Process Lites */
+    if (ware->tval == TV_LITE) {
+    
+        /* Never buy from the black market */
         if (shop_num == 6) return (FALSE);
 
         /* Hack -- Artifact lites are the best */
         if (worn->name1) return (FALSE);
 
-        /* Hack -- Torches are defeated by (fueled) lanterns */
-        if (worn->kind == kind_lantern) {
-            if (kind_have[kind_flask] >= 10) return (FALSE);
+        /* Torches */
+        if (ware->sval == SV_LITE_TORCH) {
+
+            /* Hack -- Torches are defeated by (fueled) lanterns */
+            if (worn->kind == kind_lantern) {
+                if (kind_have[kind_flask] >= 10) return (FALSE);
+            }
+
+            /* Always have at least 20 torches */
+            if (kind_have[kind_torch] < 20) return (TRUE);
         }
 
-        /* Always have at least 20 torches */
-        if (kind_have[kind_torch] < 20) return (TRUE);
-    }
+        /* Lanterns */
+        else if (ware->sval == SV_LITE_LANTERN) {
 
-    /* Process Lanterns */
-    else if (ware->kind == kind_lantern) {
+            /* Never buy a lantern when wielding one already */
+            if (worn->kind == kind_lantern) return (FALSE);
 
-        /* Never use the black market */
-        if (shop_num == 6) return (FALSE);
-
-        /* Hack -- Artifact lites are the best */
-        if (worn->name1) return (FALSE);
-
-        /* Never buy a lantern when wielding one already */
-        if (worn->kind == kind_lantern) return (FALSE);
-
-        /* Always buy at least 1 lantern */
-        if (kind_have[kind_lantern] < 1) return (TRUE);
+            /* Always buy at least 1 lantern */
+            if (kind_have[kind_lantern] < 1) return (TRUE);
+        }
     }
 
 
@@ -1280,35 +900,33 @@ static bool borg_good_buy(auto_item *ware)
         if (shop_num == 6) return (FALSE);
 
         /* Never buy expensive missiles */
-        if (ware->cost > 50) return (FALSE);
+        if (ware->cost > 50L) return (FALSE);
 
         /* Never buy incorrect missiles */
-        if (ware->kind != kind_missile) return (FALSE);
+        if (ware->tval != auto_tval_ammo) return (FALSE);
 
         /* Never buy too many missiles */
-        if (kind_have[kind_missile] >= 30) return (FALSE);
+        if (kind_have[ware->kind] >= 30) return (FALSE);
         
         /* Buy missiles */
         return (TRUE);
     }
 
 
-    /* Process amulets and rings */
-    else if ((ware->tval == TV_AMULET) || (ware->tval == TV_RING)) {
-
-        /* XXX XXX XXX Never buy rings/amulets (for now) */
-        return (FALSE);
-    }
-
-
-    /* Process Equipment */
+    /* Rings, Amulets, Weapons, Bows, Armor */
     else if (slot >= 0) {
 
-        /* Always use something */
-        if (!worn->iqty) return (TRUE);
+        s32b new = item_power(ware);
+        s32b old = item_power(worn);
+        
+        /* Always penalize shopping in the black market */
+        if (shop_num == 6) new -= ware->cost;
 
-        /* Hack -- Always buy the best we can afford */
-        if (item_power(ware) > item_power(worn)) return (TRUE);
+        /* Penalize the cost of the new item */
+        if (ware->cost > auto_gold / 10) new -= ware->cost;
+
+        /* Buy better equipment */
+        if (new > old) return (TRUE);
     }
 
 
@@ -1319,14 +937,18 @@ static bool borg_good_buy(auto_item *ware)
 
 /*
  * Hack -- determine what to do with an item
+ *
+ * Note that marking an item for sale may result in that item
+ * being selected for destruction if the pack is full.
+ *
+ * This, if the pack is full, and an item is "necessary", we
+ * will not mark that item for sale.
  */
-static bool borg_notice_aux(auto_item *item)
+static void borg_notice_aux(auto_item *item)
 {
-    int i, slot;
+    int slot;
 
     auto_item *worn = NULL;
-
-    bool res = FALSE;
 
 
     /* Clear the flags */
@@ -1344,7 +966,7 @@ static bool borg_notice_aux(auto_item *item)
         item->cash = FALSE;
 
         /* All done */
-        return (res);
+        return;
     }
 
 
@@ -1354,7 +976,7 @@ static bool borg_notice_aux(auto_item *item)
 
     /* Check the "shopping list" */
     if (kind_need[item->kind]) {
-    
+
         /* Hack -- Do not sell items we "need" */
         if (kind_have[item->kind] <= kind_need[item->kind]) {
             item->cash = FALSE;
@@ -1438,8 +1060,8 @@ static bool borg_notice_aux(auto_item *item)
 
 
     /* Hack -- skip "non-wearables" */
-    if (item->tval < TV_MIN_WEAR) return (res);
-    if (item->tval > TV_MAX_WEAR) return (res);
+    if (item->tval < TV_MIN_WEAR) return;
+    if (item->tval > TV_MAX_WEAR) return;
 
 
     /* See what slot that item could go in */
@@ -1472,7 +1094,7 @@ static bool borg_notice_aux(auto_item *item)
         }
 
         /* All done */
-        return (res);
+        return;
     }
 
 
@@ -1495,7 +1117,7 @@ static bool borg_notice_aux(auto_item *item)
         }
 
         /* All done */
-        return (res);
+        return;
     }
 
 
@@ -1563,30 +1185,22 @@ static bool borg_notice_aux(auto_item *item)
         }
 
         /* All done */
-        return (res);
+        return;
     }
 
 
     /* Identify "good" items */
     if (!item->able &&
         ((streq(item->note, "{good}")) ||
-         (streq(item->note, "{blessed}")) ||
          (streq(item->note, "{excellent}")) ||
+         (streq(item->note, "{terrible}")) ||
          (streq(item->note, "{special}")))) {
 
         /* Test this */
         item->test = TRUE;
 
         /* All done */
-        return (res);
-    }
-
-
-    /* Hack -- Wait for feelings */
-    if (!item->able) {
-
-        /* All done */
-        return (res);
+        return;
     }
 
 
@@ -1596,29 +1210,54 @@ static bool borg_notice_aux(auto_item *item)
         (item->tval == TV_BOLT)) {
 
         /* Sell invalid missiles */
-        if (item->kind != kind_missile) {
+        if (item->tval != auto_tval_ammo) {
             item->cash = TRUE;
         }
 
-        /* Hack -- sell big piles of missiles */
+        /* Hack -- Sell single unidentified missiles */
+        else if ((!item->able) && (item->iqty == 1)) {
+            item->cash = TRUE;
+        }
+        
+        /* Hack -- Sell unidentified missiles in town */
+        else if ((!item->able) && !auto_depth) {
+            item->cash = TRUE;
+        }
+        
+        /* Hack -- Sell large piles */
         else if (item->iqty > 50) {
             item->cash = TRUE;
         }
-
+        
         /* All done */
-        return (res);
+        return;
     }
 
 
-    /* Wear something */
-    if (!worn->iqty) {
+    /* Examine non-identified things */
+    if (!item->able && !streq(item->note, "{average}")) {
 
-        /* Wear it */
-        item->wear = TRUE;
+        /* Mega-Hack -- Mage/Ranger -- identify stuff */
+        if ((auto_class == 1) || (auto_class == 4)) {
+
+            /* Test it eventually */
+            if (rand_int(1000) < auto_lev) item->test = TRUE;
+        }
+        
+        /* Mega-Hack -- Priest -- identify stuff */
+        if (auto_class == 2) {
+
+            /* Test it eventually */
+            if (rand_int(5000) < auto_lev) item->test = TRUE;
+        }
+        
+        /* All done */
+        return;
     }
 
-    /* Wear the "best" equipment */
-    else if (item_power(item) > item_power(worn)) {
+    
+    /* Wear the "best" equipment (unless worthless) */
+    if (item_power(item) > item_power(worn)) {
 
         /* Wear it */
         item->wear = TRUE;
@@ -1630,10 +1269,6 @@ static bool borg_notice_aux(auto_item *item)
         /* Sell it */
         item->cash = TRUE;
     }
-
-
-    /* Success */
-    return (res);
 }
 
 
@@ -1643,7 +1278,7 @@ static bool borg_notice_aux(auto_item *item)
  */
 static void borg_notice(void)
 {
-    int i, k, n;
+    int i, n;
 
 
     /* Assume we have nothing */
@@ -1669,6 +1304,45 @@ static void borg_notice(void)
     }
         
 
+    /* Assume we need food */
+    ignore_hunger = FALSE;
+    
+    /* Mega-Hack -- no need for food */
+    if (borg_spell_okay(2,0) ||
+        borg_prayer_okay(1,5)) {
+        ignore_hunger = TRUE;
+    }
+
+
+    /* Determine which stats need "boosting" */
+    for (i = 0; i < 6; i++) {
+
+        /* Assume maximized */
+        do_add_stat[i] = FALSE;
+
+        /* Probably not maximized if below 18/100 */
+        if (auto_stat[i] < 18+100) do_add_stat[i] = TRUE;
+        
+        /* Probably not maximized if not smoothed */
+        if ((auto_stat[i] - 18) % 10) do_add_stat[i] = TRUE;
+    }
+    
+    
+    /* Collect basic spell books */
+    for (i = 0; i < 4; i++) {
+
+        /* Collect two of every spell-book */
+        if (kind_book[i]) kind_need[kind_book[i]] = 2;
+    }
+    
+    /* Collect extra spell books */
+    for (i = 4; i < 9; i++) {
+
+        /* Collect two of every spell-book */
+        if (kind_book[i]) kind_need[kind_book[i]] = 1;
+    }
+    
+    
     /* Choose a missile type */
     if (TRUE) {
     
@@ -1676,19 +1350,20 @@ static void borg_notice(void)
         auto_item *worn = &auto_items[INVEN_BOW];
 
         /* Default ammo */
-        kind_missile = kind_missile_shot;
+        auto_tval_ammo = 0;
         
-        /* Access the "proper" ammo kind (ignore "seeker" ammo) */
-        if (worn->sval == SV_SHORT_BOW) kind_missile = kind_missile_arrow;
-        if (worn->sval == SV_LONG_BOW)  kind_missile = kind_missile_arrow;
-        if (worn->sval == SV_LIGHT_XBOW) kind_missile = kind_missile_bolt;
-        if (worn->sval == SV_HEAVY_XBOW) kind_missile = kind_missile_bolt;
+        /* Proper ammo */
+        if (worn->sval == SV_SLING) auto_tval_ammo = TV_SHOT;
+        if (worn->sval == SV_SHORT_BOW) auto_tval_ammo = TV_ARROW;
+        if (worn->sval == SV_LONG_BOW)  auto_tval_ammo = TV_ARROW;
+        if (worn->sval == SV_LIGHT_XBOW) auto_tval_ammo = TV_BOLT;
+        if (worn->sval == SV_HEAVY_XBOW) auto_tval_ammo = TV_BOLT;
     }
 
 
     /* Collect food */
-    kind_need[kind_food_ration] = 30;
-    
+    kind_need[kind_food_ration] = (ignore_hunger ? 0 : 30);
+
 
     /* Collect Flasks for lanterns */
     if (auto_items[INVEN_LITE].kind == kind_lantern) {
@@ -1707,34 +1382,57 @@ static void borg_notice(void)
 
 
     /* Collect potions of cure critical wounds */
-    kind_need[kind_potion_critical] = 10;
+    kind_need[kind_potion_critical] = 20;
 
     /* Collect potions of cure serious wounds */
     kind_need[kind_potion_serious] = 10;
 
 
-    /* Desire Stat Potions (if useful) */
-    kind_need[kind_potion_add_str] = (do_add_str) ? 1 : 0;
-    kind_need[kind_potion_add_int] = (do_add_int) ? 1 : 0;
-    kind_need[kind_potion_add_wis] = (do_add_wis) ? 1 : 0;
-    kind_need[kind_potion_add_dex] = (do_add_dex) ? 1 : 0;
-    kind_need[kind_potion_add_con] = (do_add_con) ? 1 : 0;
-    kind_need[kind_potion_add_chr] = (do_add_chr) ? 1 : 0;
+    /* Increase Stats if Possible */
+    if (do_add_stat[A_STR]) {
+        kind_need[kind_potion_add_str] = 1;
+    }
 
-    /* Desire Stat Restoration Potions (if needed) */
-    kind_need[kind_potion_fix_str] = (do_fix_str) ? 1 : 0;
-    kind_need[kind_potion_fix_int] = (do_fix_int) ? 1 : 0;
-    kind_need[kind_potion_fix_wis] = (do_fix_wis) ? 1 : 0;
-    kind_need[kind_potion_fix_dex] = (do_fix_dex) ? 1 : 0;
-    kind_need[kind_potion_fix_con] = (do_fix_con) ? 1 : 0;
-    kind_need[kind_potion_fix_chr] = (do_fix_chr) ? 1 : 0;
+    /* Increase INT if possible */
+    if (do_add_stat[A_INT]) {
+        kind_need[kind_potion_add_int] = 1;
+    }
+
+    /* Increase WIS if possible */
+    if (do_add_stat[A_WIS]) {
+        kind_need[kind_potion_add_wis] = 1;
+    }
+
+    /* Increase DEX if possible */
+    if (do_add_stat[A_DEX]) {
+        kind_need[kind_potion_add_dex] = 1;
+    }
+
+    /* Increase CON if possible */
+    if (do_add_stat[A_CON]) {
+        kind_need[kind_potion_add_con] = 1;
+    }
+
+    /* Increase CHR if possible */
+    if (do_add_stat[A_CHR]) {
+        kind_need[kind_potion_add_chr] = 1;
+    }
 
 
-    /* Desire Experience Restoration Potions (if needed) */
-    kind_need[kind_potion_fix_exp] = (do_fix_exp) ? 1 : 0;
+    /* Restore Stats if needed */
+    if (do_fix_stat[A_STR]) kind_need[kind_potion_fix_str] = 1;
+    if (do_fix_stat[A_INT]) kind_need[kind_potion_fix_int] = 1;
+    if (do_fix_stat[A_WIS]) kind_need[kind_potion_fix_wis] = 1;
+    if (do_fix_stat[A_DEX]) kind_need[kind_potion_fix_dex] = 1;
+    if (do_fix_stat[A_CON]) kind_need[kind_potion_fix_con] = 1;
+    if (do_fix_stat[A_CHR]) kind_need[kind_potion_fix_chr] = 1;
 
 
-    /* Look for equipment that needs enchanting */
+    /* Restore experience if needed */
+    if (do_fix_exp) kind_need[kind_potion_fix_exp] = 1;
+
+
+    /* Hack -- enchant all the equipment */
     for (i = INVEN_WIELD; i <= INVEN_FEET; i++) {
 
         auto_item *item = &auto_items[i];
@@ -1742,39 +1440,24 @@ static void borg_notice(void)
         /* Skip non-items */
         if (!item->iqty) continue;
 
+        /* Skip "unknown" items */
+        if (!item->able) continue;
+        
         /* Enchant all armour */
-        if (borg_item_is_armour(item) && (item->to_a < 10)) {
-            kind_need[kind_enchant_to_ac] += (10 - item->to_a);
+        if (borg_item_is_armour(item) && (item->to_a < 8)) {
+            kind_need[kind_enchant_to_ac] += (8 - item->to_a);
         }
 
         /* Enchant all weapons (to damage) */
-        if (borg_item_is_weapon(item) && (item->to_d < 10)) {
-            kind_need[kind_enchant_to_dam] += (10 - item->to_d);
+        if (borg_item_is_weapon(item) && (item->to_d < 8)) {
+            kind_need[kind_enchant_to_dam] += (8 - item->to_d);
         }
 
         /* Enchant all weapons (to hit) */
-        if (borg_item_is_weapon(item) && (item->to_h < 10)) {
-            kind_need[kind_enchant_to_hit] += (10 - item->to_h);
+        if (borg_item_is_weapon(item) && (item->to_h < 8)) {
+            kind_need[kind_enchant_to_hit] += (8 - item->to_h);
         }
     }
-
-
-
-    /* Mega-Hack -- Assume "average" equals "known" */
-    for (i = 0; i < INVEN_TOTAL; i++) {
-
-        auto_item *item = &auto_items[i];
-
-        /* Skip "empty" items */
-        if (!item->iqty) continue;
-
-        /* Skip "known" items */
-        if (item->able) continue;
-        
-        /* Assume "average" items are "known" */
-        if (streq(item->note, "{average}")) item->able = TRUE;
-    }
-
 
 
     /* Analyze the inventory */
@@ -1786,426 +1469,59 @@ static void borg_notice(void)
         if (!item->iqty) break;
 
         /* Decide what to do with it */
-        (void)borg_notice_aux(item);
+        borg_notice_aux(item);
     }
 }
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*
- * Look at the screen and update the borg
- *
- * Uses the "panel" info (w_x, w_y) obtained earlier
- *
- * Note that the "c_t" variable corresponds *roughly* to player turns,
- * except that resting and "repeated" commands count as a single turn,
- * and "free" moves (including "illegal" moves, such as attempted moves
- * into walls, or tunneling into monsters) are counted as turns.
+ * Read a scroll of recall if not in town and allowed
  */
-static void borg_update()
+static bool borg_recall(void)
 {
-    int n, x, y, dx, dy, lev = auto_depth;
+    /* Attempt to only read recall once per level */
+    if (when_recall + 500 >= c_t) return (FALSE);
 
-    auto_grid *ag;
-    auto_room *ar;
+    /* Try to read a scroll of recall */
+    if (borg_read_scroll(SV_SCROLL_WORD_OF_RECALL)) {
 
-    byte t_a;
+        /* Remember when */
+        when_recall = c_t;
 
-    cptr s;
-
-    char buf[128];
-
-    byte old_attr[SCREEN_HGT][SCREEN_WID];
-    char old_char[SCREEN_HGT][SCREEN_WID];
-
-
-    /* Increase the "time" */
-    c_t++;
-
-
-    /* Clear all the "state flags" */
-    do_weak = do_hungry = FALSE;
-    do_blind = do_confused = do_afraid = do_poisoned = FALSE;
-    do_add_str = do_add_int = do_add_wis = FALSE;
-    do_add_dex = do_add_con = do_add_chr = FALSE;
-    do_fix_str = do_fix_int = do_fix_wis = FALSE;
-    do_fix_dex = do_fix_con = do_fix_chr = FALSE;
-    do_fix_exp = FALSE;
-
-
-    /* Extract current level */
-    if (0 == borg_what_text(6, ROW_LEVEL, -6, &t_a, buf)) {
-        auto_level = atoi(buf);
+        /* Success */
+        return (TRUE);
     }
 
-    /* Extract current hitpoints */
-    if (0 == borg_what_text(6, ROW_CURHP, -6, &t_a, buf)) {
-        auto_curhp = atoi(buf);
-    }
-
-    /* Extract maximum hitpoints */
-    if (0 == borg_what_text(6, ROW_MAXHP, -6, &t_a, buf)) {
-        auto_maxhp = atoi(buf);
-    }
-
-    /* Extract current gold */
-    if (0 == borg_what_text(COL_GOLD, ROW_GOLD, -9, &t_a, buf)) {
-        auto_gold = atol(buf);
-    }
-
-
-
-    /* Check for hunger */
-    if (0 == borg_what_text(COL_HUNGRY, ROW_HUNGRY, 6, &t_a, buf)) {
-        if (streq(buf, "Hungry")) do_hungry = TRUE;
-        if (streq(buf, "Weak  ")) do_weak = TRUE;
-    }
-
-    /* Check for blind */
-    if (0 == borg_what_text(COL_BLIND, ROW_HUNGRY, 5, &t_a, buf)) {
-        if (streq(buf, "Blind")) do_blind = TRUE;
-    }
-
-    /* Check for confused */
-    if (0 == borg_what_text(COL_CONFUSED, ROW_HUNGRY, 8, &t_a, buf)) {
-        if (streq(buf, "Confused")) do_confused = TRUE;
-    }
-
-    /* Check for afraid */
-    if (0 == borg_what_text(COL_AFRAID, ROW_HUNGRY, 6, &t_a, buf)) {
-        if (streq(buf, "Afraid")) do_afraid = TRUE;
-    }
-
-    /* Check for poisoned */
-    if (0 == borg_what_text(COL_POISONED, ROW_HUNGRY, 8, &t_a, buf)) {
-        if (streq(buf, "Poisoned")) do_poisoned = TRUE;
-    }
-
-
-    /* Obtain actual stats */
-    if (0 == borg_what_text(COL_STAT, ROW_STAT+0, 6, &t_a, buf)) {
-        if (buf[5] == '*') auto_stat_str = 18 + 220;
-        else if (buf[2] == '/') auto_stat_str = 18 + atoi(buf+3);
-        else if (buf[3] == '/') auto_stat_str = 18 + atoi(buf+4);
-        else auto_stat_str = atoi(buf);
-    }
-    if (0 == borg_what_text(COL_STAT, ROW_STAT+1, 6, &t_a, buf)) {
-        if (buf[5] == '*') auto_stat_int = 18 + 220;
-        else if (buf[2] == '/') auto_stat_int = 18 + atoi(buf+3);
-        else if (buf[3] == '/') auto_stat_int = 18 + atoi(buf+4);
-        else auto_stat_int = atoi(buf);
-    }
-    if (0 == borg_what_text(COL_STAT, ROW_STAT+2, 6, &t_a, buf)) {
-        if (buf[5] == '*') auto_stat_wis = 18 + 220;
-        else if (buf[2] == '/') auto_stat_wis = 18 + atoi(buf+3);
-        else if (buf[3] == '/') auto_stat_wis = 18 + atoi(buf+4);
-        else auto_stat_wis = atoi(buf);
-    }
-    if (0 == borg_what_text(COL_STAT, ROW_STAT+3, 6, &t_a, buf)) {
-        if (buf[5] == '*') auto_stat_dex = 18 + 220;
-        else if (buf[2] == '/') auto_stat_dex = 18 + atoi(buf+3);
-        else if (buf[3] == '/') auto_stat_dex = 18 + atoi(buf+4);
-        else auto_stat_dex = atoi(buf);
-    }
-    if (0 == borg_what_text(COL_STAT, ROW_STAT+4, 6, &t_a, buf)) {
-        if (buf[5] == '*') auto_stat_con = 18 + 220;
-        else if (buf[2] == '/') auto_stat_con = 18 + atoi(buf+3);
-        else if (buf[3] == '/') auto_stat_con = 18 + atoi(buf+4);
-        else auto_stat_con = atoi(buf);
-    }
-    if (0 == borg_what_text(COL_STAT, ROW_STAT+5, 6, &t_a, buf)) {
-        if (buf[5] == '*') auto_stat_chr = 18 + 220;
-        else if (buf[2] == '/') auto_stat_chr = 18 + atoi(buf+3);
-        else if (buf[3] == '/') auto_stat_chr = 18 + atoi(buf+4);
-        else auto_stat_chr = atoi(buf);
-    }
-
-
-    /* Check for non-maximal stats */
-    if (auto_stat_str < 18+100) do_add_str = TRUE;
-    if (auto_stat_int < 18+100) do_add_int = TRUE;
-    if (auto_stat_wis < 18+100) do_add_wis = TRUE;
-    if (auto_stat_dex < 18+100) do_add_dex = TRUE;
-    if (auto_stat_con < 18+100) do_add_con = TRUE;
-    if (auto_stat_chr < 18+100) do_add_chr = TRUE;
-
-
-    /* Check for drained stats */
-    if (0 == borg_what_text(0, ROW_STAT+0, 3, &t_a, buf)) {
-        if (islower(buf[2])) do_fix_str = TRUE;
-    }
-    if (0 == borg_what_text(0, ROW_STAT+1, 3, &t_a, buf)) {
-        if (islower(buf[2])) do_fix_int = TRUE;
-    }
-    if (0 == borg_what_text(0, ROW_STAT+2, 3, &t_a, buf)) {
-        if (islower(buf[2])) do_fix_wis = TRUE;
-    }
-    if (0 == borg_what_text(0, ROW_STAT+3, 3, &t_a, buf)) {
-        if (islower(buf[2])) do_fix_dex = TRUE;
-    }
-    if (0 == borg_what_text(0, ROW_STAT+4, 3, &t_a, buf)) {
-        if (islower(buf[2])) do_fix_con = TRUE;
-    }
-    if (0 == borg_what_text(0, ROW_STAT+5, 3, &t_a, buf)) {
-        if (islower(buf[2])) do_fix_chr = TRUE;
-    }
-
-    /* Check for drained experience */
-    if (0 == borg_what_text(0, ROW_EXP, 3, &t_a, buf)) {
-        if (islower(buf[2])) do_fix_exp = TRUE;
-    }
-
-
-    /* Extract the "current dungeon level" */
-    if (0 == borg_what_text(70, 23, -7, &t_a, buf)) {
-        for (s = buf; *s && !isdigit(*s); s++);
-        lev = atoi(s);
-    }
-
-
-    /* Notice changes in the level */
-    if (auto_depth != lev) {
-
-        /* Restart the clock */
-        c_t = 10000L;
-
-        /* Start a new level */
-        auto_began = c_t;
-
-        /* Shocking */
-        auto_shock = c_t;
-
-        /* No goal yet */
-        goal = 0;
-
-        /* Do not use any stairs */
-        stair_less = stair_more = FALSE;
-
-        /* Hack -- cannot rise past town */
-        if (!lev) goal_rising = FALSE;
-
-        /* Hack -- town is "boring" */
-        if (!lev) attention = 0L;
-
-        /* No known grids yet */
-        count_floor = count_less = count_more = 0;
-
-        /* Nothing to chase yet */
-        count_kill = count_take = 0;
-
-        /* No word of recall yet */
-        auto_recall = 0L;
-
-        /* Nothing bought yet */
-        last_visit = 0;
-
-        /* Wipe the old "map" arrays */
-        borg_forget_map();
-
-        /* Save the new level */
-        auto_depth = lev;
-
-        /* Hack -- Clear the key buffer */
-        borg_flush();
-
-        /* Hack -- Verify options */
-        borg_play_options();
-    }
-
-
-    /* Memorize the "current" (66x22 grid) map sector */
-    for (dy = 0; dy < SCREEN_HGT; dy++) {
-        for (dx = 0; dx < SCREEN_WID; dx++) {
-
-            /* Obtain the map location */
-            x = w_x + dx;
-            y = w_y + dy;
-
-            /* Get the auto_grid */
-            ag = grid(x, y);
-
-            /* Save the current knowledge */
-            old_attr[dy][dx] = ag->o_a;
-            old_char[dy][dx] = ag->o_c;
-        }
-    }
-
-
-    /* Analyze the map */
-    borg_update_map();
-
-    /* Paranoia -- catch failure */
-    if (!pg || !auto_active) return;
-
-    /* Update the view */
-    borg_update_view();
-
-
-
-    /* Make "fake" rooms for all viewable unknown grids */
-    for (n = 0; n < view_n; n++) {
-
-        /* Access the location */
-        y = view_y[n];
-        x = view_x[n];
-
-        /* Access the grid */
-        ag = grid(x,y);
-
-        /* Skip walls */
-        if (ag->info & BORG_WALL) continue;
-
-        /* Skip "known" grids */
-        if (ag->o_c != ' ') continue;
-
-        /* Make "fake" rooms as needed */
-        if (!ag->room) {
-
-            auto_room *ar;
-
-            /* Get a new room */
-            ar = borg_free_room();
-
-            /* Initialize the room */
-            ar->x = ar->x1 = ar->x2 = x;
-            ar->y = ar->y1 = ar->y2 = y;
-
-            /* Save the room */
-            ag->room = ar->self;
-        }
-    }
-
-
-    /* Analyze the current (66x22 grid) map sector */
-    for (dy = 0; dy < SCREEN_HGT; dy++) {
-        for (dx = 0; dx < SCREEN_WID; dx++) {
-
-            /* Obtain the map location */
-            x = w_x + dx;
-            y = w_y + dy;
-
-            /* Get the auto_grid */
-            ag = grid(x, y);
-
-            /* Skip unknown grids */
-            if (ag->o_c == ' ') continue;
-
-            /* Notice first "knowledge" */
-            if (old_char[dy][dx] == ' ') {
-
-                /* We are shocked */
-                auto_shock = c_t;
-            }
-
-            /* Count certain "changes" */
-            if (ag->o_c != old_char[dy][dx]) {
-
-                /* Lost old "floor" grids */
-                if (old_char[dy][dx] == '.') count_floor--;
-
-                /* Lost old "permanent" landmarks */
-                if (old_char[dy][dx] == '<') count_less--;
-                if (old_char[dy][dx] == '>') count_more--;
-
-                /* Lost old "temporary" info */
-                if (auto_is_kill[(byte)(old_char[dy][dx])]) count_kill--;
-                if (auto_is_take[(byte)(old_char[dy][dx])]) count_take--;
-
-                /* Found new "floor" grids */		
-                if (ag->o_c == '.') count_floor++;
-
-                /* Found new "permanent" landmarks */
-                if (ag->o_c == '<') count_less++;
-                if (ag->o_c == '>') count_more++;
-
-                /* Lost old "temporary" info */
-                if (auto_is_kill[(byte)(ag->o_c)]) count_kill++;
-                if (auto_is_take[(byte)(ag->o_c)]) count_take++;
-            }
-
-
-            /* Clear all "broken" rooms */
-            if ((ag->o_c == '#') || (ag->o_c == '%')) {
-
-                /* Clear all rooms containing walls */
-                if (ag->room) {
-
-                    /* Clear all rooms containing walls */
-                    if (borg_clear_room(x, y)) goal = 0;
-                }
-            }
-
-            /* Create "fake" rooms as needed */
-            else {
-
-                /* Mega-Hack -- super-fake rooms */
-                if (!ag->room) {
-
-                    /* Acquire a new room */
-                    ar = borg_free_room();
-
-                    /* Initialize the room */
-                    ar->x = ar->x1 = ar->x2 = x;
-                    ar->y = ar->y1 = ar->y2 = y;
-
-                    /* Save the room */
-                    ag->room = ar->self;
-                }	
-            }
-
-
-            /* Skip non-viewable grids */
-            if (!(ag->info & BORG_VIEW)) continue;
-
-            /* Hack -- Notice all (viewable) changes */
-            if ((ag->o_c != old_char[dy][dx]) ||
-                (ag->o_a != old_attr[dy][dx])) {
-
-                /* Important -- Cancel goals */
-                goal = 0;
-            }
-        }
-    }	
-
-
-    /* Paranoia -- require a self room */
-    if (!pg->room) {
-
-        /* Acquire a new room */
-        ar = borg_free_room();
-
-        /* Initialize the room */
-        ar->x = ar->x1 = ar->x2 = c_x;
-        ar->y = ar->y1 = ar->y2 = c_y;
-
-        /* Save the room */
-        pg->room = ar->self;
-    }
-
-    /* Build a "bigger" room around the player */
-    if (borg_build_room(c_x, c_y)) goal = 0;
-
-    /* Mark all the "containing rooms" as visited. */
-    for (ar = room(1,c_x,c_y); ar; ar = room(0,0,0)) {
-
-        /* Note the visit */
-        ar->when = c_t;
-    }
-
-    /* Hack -- Count visits to this grid */
-    /* if (pg->visits < 100) pg->visits++; */
+    /* Nothing */
+    return (FALSE);
 }
 
 
+
 /*
- * Attempt to eat something edible
- * Slime Molds and Elvish Waybread
+ * We are starving -- attempt to eat anything edible
  */
 static bool borg_eat_food_any(void)
 {
     int i;
 
-    /* Scan the inventory */
+    /* Scan the inventory for "normal" food */
     for (i = 0; i < INVEN_PACK; i++) {
 
         auto_item *item = &auto_items[i];
@@ -2216,54 +1532,41 @@ static bool borg_eat_food_any(void)
         /* Skip unknown food */
         if (!item->kind) continue;
 
-        /* Skip normal food rations */
-        if (item->kind == kind_food_ration) continue;
+        /* Skip non-food */
+        if (item->tval != TV_FOOD) continue;
+
+        /* Skip "flavored" food */
+        if (item->sval < SV_FOOD_MIN_FOOD) continue;
+
+        /* Eat something of that type */
+        if (borg_action('E', item->kind)) return (TRUE);
+    }
+
+    /* Scan the inventory for "okay" food */
+    for (i = 0; i < INVEN_PACK; i++) {
+
+        auto_item *item = &auto_items[i];
+
+        /* Notice end of inventory */
+        if (!item->iqty) break;
+
+        /* Skip unknown food */
+        if (!item->kind) continue;
 
         /* Skip non-food */
         if (item->tval != TV_FOOD) continue;
 
-        /* Eat "acceptable" food */
-        if (item->sval >= SV_FOOD_MIN_FOOD) {
-
-            /* Eat something of that type */
-            if (borg_action('E', item->kind)) return (TRUE);
-        }
+        /* Skip "icky" food */
+        if (item->sval < SV_FOOD_MIN_OKAY) continue;
+        
+        /* Eat something of that type */
+        if (borg_action('E', item->kind)) return (TRUE);
     }
 
     /* Nothing */
     return (FALSE);
 }
 
-
-
-
-/*
- * Read a scroll of recall if not in town and allowed
- */
-static bool borg_recall(void)
-{
-    /* Not in town */
-    if (auto_depth == 0) return (FALSE);
-
-    /* Only read recall once per level */
-    if (auto_recall) return (FALSE);
-
-    /* Cannot read any scrolls */
-    if (do_blind || do_confused) return (FALSE);
-
-    /* Try to read a scroll of recall */
-    if (borg_action('r', kind_scroll_recall)) {
-
-        /* Remember when */
-        auto_recall = c_t;
-
-        /* Success */
-        return (TRUE);
-    }
-
-    /* Nothing */
-    return (FALSE);
-}
 
 
 
@@ -2279,8 +1582,8 @@ static bool borg_use_things(void)
 
     /* Panic -- avoid possible death */
     if (panic_death &&
-       (auto_curhp < 100) &&
-       (auto_curhp < auto_maxhp / 4)) {
+       (auto_chp < 100) &&
+       (auto_chp < auto_mhp / 4)) {
 
         borg_oops("Almost dead.");
         return (TRUE);
@@ -2288,50 +1591,62 @@ static bool borg_use_things(void)
 
 
     /* Hack -- attempt to escape */
-    if ((auto_curhp < auto_maxhp / 2) && (rand_int(4) == 0)) {
-        if ((kind_have[kind_potion_critical] < 5) && borg_recall()) return (TRUE);
+    if ((auto_chp < auto_mhp / 2) && (rand_int(4) == 0)) {
+        if ((kind_have[kind_potion_critical] < 5) &&
+            auto_depth && borg_recall()) return (TRUE);
     }
 
 
     /* Hack -- heal when wounded */
-    if ((auto_curhp < auto_maxhp / 2) && (rand_int(4) == 0)) {
-        if (borg_action('q', kind_potion_critical)) return (TRUE);
-        if (borg_action('q', kind_potion_serious)) return (TRUE);
+    if ((auto_chp < auto_mhp / 2) && (rand_int(4) == 0)) {
+        if (borg_quaff_potion(SV_POTION_CURE_CRITICAL) ||
+            borg_quaff_potion(SV_POTION_CURE_SERIOUS)) {
+            return (TRUE);
+        }
     }
 
     /* Hack -- heal when blind/confused */
-    if ((do_blind || do_confused) && (rand_int(4) == 0)) {
-        if (borg_action('q', kind_potion_serious)) return (TRUE);
-        if (borg_action('q', kind_potion_critical)) return (TRUE);
+    if ((do_blind || do_confused) && (rand_int(100) < 25)) {
+        if (borg_quaff_potion(SV_POTION_CURE_SERIOUS) ||
+            borg_quaff_potion(SV_POTION_CURE_CRITICAL)) {
+            return (TRUE);
+        }
     }
 
+    /* Hack -- cure fear when afraid */
+    if (do_afraid && (rand_int(100) < 25)) {
+        if (borg_prayer(0,3) ||
+            borg_quaff_potion(SV_POTION_BOLDNESS)) {
+            return (TRUE);
+        }
+    }    
 
     /* Eat or abort */
-    if (do_hungry || do_weak) {
+    if (do_weak) {
 
-        /* Attempt to eat something edible */
-        if (borg_eat_food_any()) return (TRUE);
+        /* Attempt to satisfy hunger */
+        if (borg_action('E', kind_food_ration) ||
+            borg_eat_food_any() ||
+            borg_spell(2,0) ||
+            borg_prayer(1,5)) {
 
-        /* Attempt to eat food rations */
-        if (borg_action('E', kind_food_ration)) return (TRUE);
+            return (TRUE);
+        }
 
+        /* Hack -- Do NOT starve to death */
+        if (panic_death) {
+
+            borg_oops("Starving.");
+            return (TRUE);
+        }
+        
         /* Mega-Hack -- Flee to town for food */
-        if (borg_recall()) return (TRUE);
-    }
-
-    /* Hack -- Do NOT starve to death */
-    if (panic_death && do_weak) {
-
-        borg_oops("Starving.");
-        return (TRUE);
+        if (auto_depth && borg_recall()) return (TRUE);
     }
 
 
     /* Refuel current torch */
     if ((item->kind == kind_torch) && (item->pval < 1000)) {
-
-        /* Try to wield a lantern */
-        if (borg_action('w', kind_lantern)) return (TRUE);
 
         /* Try to refuel the torch */
         if (borg_action('F', kind_torch)) return (TRUE);
@@ -2356,25 +1671,14 @@ static bool borg_use_things(void)
  */
 static bool borg_use_others(void)
 {
-    int i, j, b, a;
-
-    int num_armour = 0, num_weapon = 0;
+    int i;
 
 
     /* Quaff experience restoration potion */
-    if (do_fix_exp && borg_action('q', kind_potion_fix_exp)) return (TRUE);
+    if (do_fix_exp && borg_quaff_potion(SV_POTION_RESTORE_EXP)) return (TRUE);
 
 
-    /* Quaff stat restoration potions */
-    if (do_fix_str && borg_action('q', kind_potion_fix_str)) return (TRUE);
-    if (do_fix_int && borg_action('q', kind_potion_fix_int)) return (TRUE);
-    if (do_fix_wis && borg_action('q', kind_potion_fix_wis)) return (TRUE);
-    if (do_fix_dex && borg_action('q', kind_potion_fix_dex)) return (TRUE);
-    if (do_fix_con && borg_action('q', kind_potion_fix_con)) return (TRUE);
-    if (do_fix_chr && borg_action('q', kind_potion_fix_chr)) return (TRUE);
-
-
-    /* Quaff "useful" potions/scrolls */
+    /* Use some items right away */
     for (i = 0; i < INVEN_PACK; i++) {
 
         auto_item *item = &auto_items[i];
@@ -2382,31 +1686,297 @@ static bool borg_use_others(void)
         /* Notice end of inventory */
         if (!item->iqty) break;
 
-        /* Check list of potions */
-        for (j = 0; kind_force_potions[j]; j++) {
+        /* Process "force" items */
+        switch (item->tval) {
 
-            /* Skip non-matches */
-            if (item->kind != kind_force_potions[j]) continue;
+            case TV_POTION:
 
-            /* Try quaffing each potion */
-            if (borg_action('q', item->kind)) return (TRUE);
-        }
+                /* Check the scroll */
+                switch (item->sval) {
+                
+                    case SV_POTION_ENLIGHTENMENT:
 
-        /* Hack -- check Blind/Confused */
-        if (do_blind || do_confused) continue;
+                        /* Never quaff these in town */
+                        if (!auto_depth) break;
+                        
+                    case SV_POTION_INC_STR:
+                    case SV_POTION_INC_INT:
+                    case SV_POTION_INC_WIS:
+                    case SV_POTION_INC_DEX:
+                    case SV_POTION_INC_CON:
+                    case SV_POTION_INC_CHR:
+                    case SV_POTION_AUGMENTATION:
+                    case SV_POTION_EXPERIENCE:
 
-        /* Check list of potions */
-        for (j = 0; kind_force_scrolls[j]; j++) {
+                        /* Try quaffing the potion */
+                        if (borg_quaff_potion(item->sval)) return (TRUE);
+                }
+                
+                break;
 
-            /* Skip non-matches */
-            if (item->kind != kind_force_scrolls[j]) continue;
+            case TV_SCROLL:
+            
+                /* Hack -- check Blind/Confused */
+                if (do_blind || do_confused) break;
 
-            /* Try reading each scroll */
-            if (borg_action('r', item->kind)) return (TRUE);
+                /* Check the scroll */
+                switch (item->sval) {
+                
+                    case SV_SCROLL_MAPPING:
+                    case SV_SCROLL_DETECT_TRAP:
+                    case SV_SCROLL_DETECT_DOOR:
+                    case SV_SCROLL_ACQUIREMENT:
+                    case SV_SCROLL_STAR_ACQUIREMENT:
+                    case SV_SCROLL_PROTECTION_FROM_EVIL:
+
+                        /* Never read these in town */
+                        if (!auto_depth) break;
+                        
+                        /* Try reading the scroll */
+                        if (borg_read_scroll(item->sval)) return (TRUE);
+                }
+
+                break;
         }
     }
 
 
+    /* Quaff stat restoration potions */
+    if (do_fix_stat[A_STR] && borg_quaff_potion(SV_POTION_RES_STR)) return (TRUE);
+    if (do_fix_stat[A_INT] && borg_quaff_potion(SV_POTION_RES_INT)) return (TRUE);
+    if (do_fix_stat[A_WIS] && borg_quaff_potion(SV_POTION_RES_WIS)) return (TRUE);
+    if (do_fix_stat[A_DEX] && borg_quaff_potion(SV_POTION_RES_DEX)) return (TRUE);
+    if (do_fix_stat[A_CON] && borg_quaff_potion(SV_POTION_RES_CON)) return (TRUE);
+    if (do_fix_stat[A_CHR] && borg_quaff_potion(SV_POTION_RES_CHR)) return (TRUE);
+
+
+    /* Eat food */
+    if (do_hungry) {
+
+        /* Attempt to satisfy hunger */
+        if (borg_spell(2,0) ||
+            borg_prayer(1,5) ||
+            borg_action('E', kind_food_ration)) {
+            
+            return (TRUE);
+        }
+    }
+    
+
+    /* Study spells/prayers */
+    if (borg_study_any_okay()) {
+
+        /* Mages */
+        if (mb_ptr->spell_book == TV_MAGIC_BOOK) {
+        
+            /* Hack -- try for magic missile */
+            if (borg_study_spell(0,0)) return (TRUE);
+        
+            /* Hack -- try for teleport */
+            if (borg_study_spell(1,5)) return (TRUE);
+
+            /* Hack -- try for satisfy hunger */
+            if (borg_study_spell(2,0)) return (TRUE);
+
+            /* Hack -- try for identify */
+            if (borg_study_spell(2,4)) return (TRUE);
+        
+            /* Hack -- try for phase door */
+            if (borg_study_spell(0,2)) return (TRUE);
+
+            /* Hack -- try for call light */
+            if (borg_study_spell(0,3)) return (TRUE);
+        }
+        
+        /* Priests */
+        if (mb_ptr->spell_book == TV_PRAYER_BOOK) {
+
+            /* Hack -- try for perceptions */
+            if (borg_study_prayer(5,2)) return (TRUE);
+
+            /* Hack -- try for portal */
+            if (borg_study_prayer(1,1)) return (TRUE);
+
+            /* Hack -- try for satisfy hunger */
+            if (borg_study_prayer(1,5)) return (TRUE);
+
+            /* Hack -- try for remove fear */
+            if (borg_study_prayer(0,3)) return (TRUE);
+
+            /* Hack -- try for call light */
+            if (borg_study_prayer(0,4)) return (TRUE);
+        }
+
+        /* Attempt to study anything */
+        if (borg_study_any()) return (TRUE);
+    }
+
+
+    /* Nothing to do */
+    return (FALSE);
+}
+
+
+
+
+/*
+ * Hack -- check a location for "dark room"
+ */
+static bool borg_light_room_aux(int x, int y)
+{
+    auto_grid *ag;
+    
+    int x1, y1, x2, y2;
+    
+    /* Illegal location */
+    if (!grid_legal(x,y)) return (FALSE);
+
+    /* Get grid */
+    ag = grid(x,y);
+    
+    /* Location must be dark */
+    if (ag->info & BORG_OKAY) return (FALSE);
+
+    /* Location must be on panel */
+    if (!(ag->info & BORG_HERE)) return (FALSE);
+
+    /* Location must be in view */
+    if (!(ag->info & BORG_VIEW)) return (FALSE);
+
+    /* Build the rectangle */
+    x1 = MIN(c_x, x);
+    x2 = MAX(c_x, x);
+    y1 = MIN(c_y, y);
+    y2 = MAX(c_y, y);
+    
+    /* Scan the rectangle */
+    for (y = y1; y <= y2; y++) {
+        for (x = x1; x <= x2; x++) {
+
+            /* Get grid */
+            ag = grid(x,y);
+    
+            /* Location must not be a wall */
+            if (ag->info & BORG_WALL) return (FALSE);
+        }
+    }
+
+    /* Okay */
+    return (TRUE);
+}
+
+
+/*
+ * Light up the room (if possible and useful)
+ */
+static bool borg_light_room(void)
+{
+    bool okay = FALSE;
+    
+    auto_item *item = &auto_items[INVEN_LITE];
+    
+    
+    /* Never in town */
+    if (!auto_depth) return (FALSE);
+    
+    /* Never when blind or hallucinating */
+    if (do_blind || do_image) return (FALSE);
+     
+    /* Paranoia -- no infinite loops */
+    if (rand_int(100) < 50) return (FALSE);
+
+
+    /* Check for "need light" */
+    if (item->name1) {
+
+        /* Check "Artifact Corners" */
+        if (borg_light_room_aux(c_x + 3, c_y + 2) ||
+            borg_light_room_aux(c_x + 3, c_y - 2) ||
+            borg_light_room_aux(c_x - 3, c_y + 2) ||
+            borg_light_room_aux(c_x - 3, c_y - 2) ||
+            borg_light_room_aux(c_x + 2, c_y + 3) ||
+            borg_light_room_aux(c_x + 2, c_y - 3) ||
+            borg_light_room_aux(c_x - 2, c_y + 3) ||
+            borg_light_room_aux(c_x - 2, c_y - 3)) {
+
+            /* Go for it */
+            okay = TRUE;
+        }
+    }
+    
+    /* Check for "need light" */
+    else {
+
+        /* Check "Lantern Corners" */
+        if (borg_light_room_aux(c_x + 2, c_y + 2) ||
+            borg_light_room_aux(c_x + 2, c_y - 2) ||
+            borg_light_room_aux(c_x - 2, c_y + 2) ||
+            borg_light_room_aux(c_x - 2, c_y - 2)) {
+
+            /* Go for it */
+            okay = TRUE;
+        }
+    }
+    
+
+    /* Not okay */
+    if (!okay) return (FALSE);
+
+
+    /* Mega-Hack -- activate the Phial */
+    if (item->name1 == ART_GALADRIEL) {
+
+        /* Hack -- Allow for recharge */
+        if (when_phial + 50 < c_t) {
+
+            /* Note the time */
+            when_phial = c_t;
+            
+            /* Note */
+            borg_note("Activating the Phial.");
+            
+            /* Activate the light */
+            borg_keypress('A');
+            borg_keypress('f');
+
+            /* Success */
+            return (TRUE);
+        }
+    }
+
+
+    /* Go for it */
+    if (borg_spell(0,3) ||
+        borg_prayer(0,4) ||
+        borg_zap_rod(SV_ROD_ILLUMINATION) ||
+        borg_use_staff(SV_STAFF_LITE) ||
+        borg_read_scroll(SV_SCROLL_LIGHT)) {
+
+        /* Note */
+        borg_note("Illuminating the room.");
+
+        /* Success */
+        return (TRUE);
+    }
+
+
+    /* No light */
+    return (FALSE);
+}
+
+
+
+
+/*
+ * Enchant weapons
+ */
+static bool borg_enchant_1(void)
+{
+    int i, b, a;
+
+    int num_weapon = 0;
+
+    
     /* Hack -- blind/confused -- no scrolls */
     if (do_blind || do_confused) return (FALSE);
 
@@ -2415,15 +1985,17 @@ static bool borg_use_others(void)
     i = 0;
 
     /* Count enchantment scrolls */
-    i += kind_have[kind_enchant_to_ac];
     i += kind_have[kind_enchant_to_hit];
     i += kind_have[kind_enchant_to_dam];
 
+    /* Add in "enchant" spell */
+    /* XXX XXX XXX prayer_okay() */
+    
     /* No enchantment scrolls */
     if (!i) return (FALSE);
 
 
-    /* Mega-Hack -- count armour/weapons in pack (see below) */
+    /* Mega-Hack -- count weapons in pack (see below) */
     for (i = 0; i < INVEN_PACK; i++) {
 
         auto_item *item = &auto_items[i];
@@ -2431,40 +2003,8 @@ static bool borg_use_others(void)
         /* Notice end of inventory */
         if (!item->iqty) break;
 
-        /* Count armour */
-        if (borg_item_is_armour(item)) num_armour++;
-
         /* Count weapons */
         if (borg_item_is_weapon(item)) num_weapon++;
-    }
-
-
-    /* Look for armor that needs enchanting */
-    for (b = 0, a = 99, i = INVEN_BODY; i <= INVEN_FEET; i++) {
-
-        auto_item *item = &auto_items[i];
-
-        /* Skip non-items */
-        if (!item->iqty) continue;
-
-        /* Find the least enchanted item */
-        if (item->to_a > a) continue;
-
-        /* Save the info */
-        b = i; a = item->to_a;
-    }
-
-    /* Enchant that item if "possible" */
-    if (b && (a < 10) && (borg_action('r', kind_enchant_to_ac))) {
-
-        /* Choose from equipment */
-        if (num_armour) borg_keypress('/');
-
-        /* Choose that item */
-        borg_keypress('a' + b - INVEN_WIELD);
-
-        /* Success */
-        return (TRUE);
     }
 
 
@@ -2476,6 +2016,9 @@ static bool borg_use_others(void)
         /* Skip non-items */
         if (!item->iqty) continue;
 
+        /* Skip non-identified items */
+        if (!item->able) continue;
+        
         /* Find the least enchanted item */
         if (item->to_h > a) continue;
 
@@ -2484,7 +2027,7 @@ static bool borg_use_others(void)
     }
 
     /* Enchant that item if "possible" */
-    if (b && (a < 10) && (borg_action('r', kind_enchant_to_hit))) {
+    if (b && (a < 8) && (borg_action('r', kind_enchant_to_hit))) {
 
         /* Choose from equipment */
         if (num_weapon) borg_keypress('/');
@@ -2505,6 +2048,9 @@ static bool borg_use_others(void)
         /* Skip non-items */
         if (!item->iqty) continue;
 
+        /* Skip non-identified items */
+        if (!item->able) continue;
+        
         /* Find the least enchanted item */
         if (item->to_d > a) continue;
 
@@ -2513,7 +2059,7 @@ static bool borg_use_others(void)
     }
 
     /* Enchant that item if "possible" */
-    if (b && (a < 10) && (borg_action('r', kind_enchant_to_dam))) {
+    if (b && (a < 8) && (borg_action('r', kind_enchant_to_dam))) {
 
         /* Choose from equipment */
         if (num_weapon) borg_keypress('/');
@@ -2532,11 +2078,89 @@ static bool borg_use_others(void)
 
 
 /*
+ * Enchant armor
+ */
+static bool borg_enchant_2(void)
+{
+    int i, b, a;
+
+    int num_armour = 0;
+
+    
+    /* Hack -- blind/confused -- no scrolls */
+    if (do_blind || do_confused) return (FALSE);
+
+
+    /* No enchantment scrolls */
+    i = 0;
+
+    /* Count enchantment scrolls */
+    i += kind_have[kind_enchant_to_ac];
+
+    /* Add in "enchant" spell */
+    /* XXX XXX XXX prayer_okay() */
+    
+    /* No enchantment scrolls */
+    if (!i) return (FALSE);
+
+
+    /* Mega-Hack -- count armour/weapons in pack (see below) */
+    for (i = 0; i < INVEN_PACK; i++) {
+
+        auto_item *item = &auto_items[i];
+
+        /* Notice end of inventory */
+        if (!item->iqty) break;
+
+        /* Count armour */
+        if (borg_item_is_armour(item)) num_armour++;
+    }
+
+
+    /* Look for armor that needs enchanting */
+    for (b = 0, a = 99, i = INVEN_BODY; i <= INVEN_FEET; i++) {
+
+        auto_item *item = &auto_items[i];
+
+        /* Skip non-items */
+        if (!item->iqty) continue;
+
+        /* Skip non-identified items */
+        if (!item->able) continue;
+        
+        /* Find the least enchanted item */
+        if (item->to_a > a) continue;
+
+        /* Save the info */
+        b = i; a = item->to_a;
+    }
+
+    /* Enchant that item if "possible" */
+    if (b && (a < 8) && (borg_action('r', kind_enchant_to_ac))) {
+
+        /* Choose from equipment */
+        if (num_armour) borg_keypress('/');
+
+        /* Choose that item */
+        borg_keypress('a' + b - INVEN_WIELD);
+
+        /* Success */
+        return (TRUE);
+    }
+
+
+    /* Nothing to do */
+    return (FALSE);
+}
+
+
+
+/*
  * Destroy everything we know we don't want
  */
-static bool borg_throw_junk(void)
+static bool borg_crush_junk(void)
 {
-    int i, j;
+    int i;
 
 
     /* Quaff harmless "junk" potions/scrolls */
@@ -2550,33 +2174,98 @@ static bool borg_throw_junk(void)
         /* Only "discard" junk */
         if (!item->junk) continue;
 
-        /* Check list of "allowable" potions */
-        for (j = 0; kind_allow_potions[j]; j++) {
+        /* Process "allow" items */
+        switch (item->tval) {
+        
+            case TV_POTION:
 
-            /* Skip non-matches */
-            if (item->kind != kind_allow_potions[j]) continue;
+                /* Check the potion */
+                switch (item->sval) {
+                
+                    case SV_POTION_WATER:
+                    case SV_POTION_APPLE_JUICE:
+                    case SV_POTION_SLIME_MOLD:
+                    case SV_POTION_CURE_LIGHT:
+                    case SV_POTION_CURE_SERIOUS:
+                    case SV_POTION_CURE_CRITICAL:
+                    case SV_POTION_HEALING:
+                    case SV_POTION_STAR_HEALING:
+                    case SV_POTION_LIFE:
+                    case SV_POTION_RES_STR:
+                    case SV_POTION_RES_INT:
+                    case SV_POTION_RES_WIS:
+                    case SV_POTION_RES_DEX:
+                    case SV_POTION_RES_CON:
+                    case SV_POTION_RES_CHR:
+                    case SV_POTION_RESTORE_EXP:
+                    case SV_POTION_RESTORE_MANA:
+                    case SV_POTION_HEROISM:
+                    case SV_POTION_BESERK_STRENGTH:
+                    case SV_POTION_RESIST_HEAT:
+                    case SV_POTION_RESIST_COLD:
+                    case SV_POTION_INFRAVISION:
+                    case SV_POTION_DETECT_INVIS:
+                    case SV_POTION_SLOW_POISON:
+                    case SV_POTION_CURE_POISON:
+                    case SV_POTION_SPEED:
 
-            /* Quaff junk */
-            borg_info(format("Quaffing junk (%s).", item->desc));
+                        /* Try quaffing the potion */
+                        if (borg_quaff_potion(item->sval)) return (TRUE);
+                }
+                
+                break;
 
-            /* Try quaffing each potion */
-            if (borg_action('q', item->kind)) return (TRUE);
-        }
+            case TV_SCROLL:
+            
+                /* Check the scroll */
+                switch (item->sval) {
 
-        /* Hack -- check Blind/Confused */
-        if (do_blind || do_confused) continue;
+                    case SV_SCROLL_REMOVE_CURSE:
+                    case SV_SCROLL_LIGHT:
+                    case SV_SCROLL_MONSTER_CONFUSION:
+                    case SV_SCROLL_RUNE_OF_PROTECTION:
+                    case SV_SCROLL_STAR_REMOVE_CURSE:
+                    case SV_SCROLL_DETECT_GOLD:
+                    case SV_SCROLL_DETECT_ITEM:
+                    case SV_SCROLL_TRAP_DOOR_DESTRUCTION:
+                    case SV_SCROLL_SATISFY_HUNGER:
+                    case SV_SCROLL_DISPEL_UNDEAD:
+                    case SV_SCROLL_BLESSING:
+                    case SV_SCROLL_HOLY_CHANT:
+                    case SV_SCROLL_HOLY_PRAYER:
 
-        /* Check list of "allowable" scrolls */
-        for (j = 0; kind_allow_scrolls[j]; j++) {
+                        /* Try reading the scroll */
+                        if (borg_read_scroll(item->sval)) return (TRUE);
+                }
 
-            /* Skip non-matches */
-            if (item->kind != kind_allow_scrolls[j]) continue;
+                break;
 
-            /* Read junk */
-            borg_info(format("Reading junk (%s).", item->desc));
+            case TV_FOOD:
+            
+                /* Check the scroll */
+                switch (item->sval) {
 
-            /* Try reading each scroll */
-            if (borg_action('r', item->kind)) return (TRUE);
+                    case SV_FOOD_CURE_POISON:
+                    case SV_FOOD_CURE_BLINDNESS:
+                    case SV_FOOD_CURE_PARANOIA:
+                    case SV_FOOD_CURE_CONFUSION:
+                    case SV_FOOD_CURE_SERIOUS:
+                    case SV_FOOD_RESTORE_STR:
+                    case SV_FOOD_RESTORE_CON:
+                    case SV_FOOD_RESTORING:
+                    case SV_FOOD_BISCUIT:
+                    case SV_FOOD_JERKY:
+                    case SV_FOOD_RATION:
+                    case SV_FOOD_SLIME_MOLD:
+                    case SV_FOOD_WAYBREAD:
+                    case SV_FOOD_PINT_OF_ALE:
+                    case SV_FOOD_PINT_OF_WINE:
+
+                        /* Try eating the food (unless Bloated) */
+                        if (!do_full && borg_action('E', item->kind)) return (TRUE);
+                }
+
+                break;
         }
     }
 
@@ -2593,14 +2282,17 @@ static bool borg_throw_junk(void)
         if (item->junk) {
 
             /* Throw away junk */
-            borg_info(format("Trashing junk (%s).", item->desc));
+            borg_note(format("Destroying junk (%s).", item->desc));
 
-            /* Throw it at myself */
-            borg_keypress('f');
+            /* Destroy that item */
+            borg_keypress('k');
             borg_keypress('a' + i);
-            borg_keypress('*');
-            borg_keypress('p');
-            borg_keypress('t');
+
+            /* Hack -- destroy a single item */
+            if (item->iqty > 1) borg_keypress('\n');
+
+            /* Mega-Hack -- verify destruction */
+            borg_keypress('y');
 
             /* Did something */
             return (TRUE);
@@ -2616,33 +2308,38 @@ static bool borg_throw_junk(void)
 
 /*
  * Make sure we have at least one free inventory slot.
- * This will fail if every slot holds "essentials" (food, lite,
- * word of recall, teleport, identify, healing potions, etc) or
- * "holders" (unidentified items).
+ *
+ * Note that we assume that a "full pack" has all slots filled.
+ *
+ * This routine can only "fail" if the "panic_stuff" option is set,
+ * in which case, we will refuse to destroy "unknown" and "essential"
+ * items, even though they might be useless.
  */
 static bool borg_free_space(void)
 {
     int i, k;
 
-    s32b cost, limit = 999999L;
+    s32b cost, limit;
 
-    auto_item *item, *junk;
+    auto_item *junk;
 
 
     /* We have plenty of space */
     if (!auto_items[INVEN_PACK-1].iqty) return (FALSE);
 
 
+    /*** Pass one -- cheapest sellable item ***/
+    
     /* Nothing to junk yet */
     junk = NULL;
 
+    /* Nothing found yet */
+    limit = 999999999L;
+    
     /* Find something to trash */
     for (i = 0; i < INVEN_PACK; i++) {
 
-        item = &auto_items[i];
-
-        /* Stop at end of inventory */
-        if (!item->iqty) break;
+        auto_item *item = &auto_items[i];
 
         /* Skip non-sell items */
         if (!item->cash) continue;
@@ -2662,13 +2359,13 @@ static bool borg_free_space(void)
     if (junk) {
 
         /* Debug */
-        borg_note(format("Junking %ld gold", limit));
+        borg_note(format("Junking %ld gold (sellable item).", limit));
 
         /* Hack -- Mark it as junk */
         junk->junk = TRUE;
 
         /* Try to throw away the junk */
-        if (borg_throw_junk()) return (TRUE);
+        if (borg_crush_junk()) return (TRUE);
     }
 
 
@@ -2676,31 +2373,52 @@ static bool borg_free_space(void)
     if (rand_int(100) != 0) return (FALSE);
 
 
-    /* Mega-Hack -- get very desperate */
+    /*** Pass two -- cheapest "duplicate" item ***/
+    
+    /* Nothing to junk yet */
+    junk = NULL;
+    
+    /* Nothing found yet */
+    limit = 999999999L;
+    
+    /* Find something to trash (pass two) */
     for (i = 0; i < INVEN_PACK; i++) {
 
-        item = &auto_items[i];
-
-        /* Stop at end of inventory */
-        if (!item->iqty) break;
+        auto_item *item = &auto_items[i];
 
         /* Find the smallest pile of these items */
         k = borg_choose(item->kind);
 
-        /* Do not throw away the best (or only) pile */	
+        /* Only destroy "duplicate" piles */
         if (i == k) continue;
 
+        /* Evaluate the slot */
+        cost = item_worth(item) * item->iqty;
+
+        /* Skip expensive items */
+        if (junk && (cost > limit)) continue;
+
+        /* Track cheapest item */
+        junk = item;
+        limit = cost;
+    }
+
+    /* Throw something away */
+    if (junk) {
+
         /* Debug */
-        borg_note(format("Discarding %s!", item->desc));
+        borg_note(format("Junking %ld gold (duplicate item).", limit));
 
         /* Hack -- Mark it as junk */
-        item->junk = TRUE;
+        junk->junk = TRUE;
 
         /* Try to throw away the junk */
-        if (borg_throw_junk()) return (TRUE);	
+        if (borg_crush_junk()) return (TRUE);
     }
 
 
+    /*** Hack -- allow user to help out ***/
+    
     /* Oops */
     if (panic_stuff) {
 
@@ -2709,16 +2427,18 @@ static bool borg_free_space(void)
     }
 
 
+    /*** Pass three -- cheapest "unknown" item ***/
+    
     /* Nothing to junk yet */
     junk = NULL;
 
+    /* Nothing found yet */
+    limit = 999999999L;
+    
     /* Find something to trash */
     for (i = 0; i < INVEN_PACK; i++) {
 
-        item = &auto_items[i];
-
-        /* Stop at end of inventory */
-        if (!item->iqty) break;
+        auto_item *item = &auto_items[i];
 
         /* Hack -- Skip identified items */
         if (item->able) continue;
@@ -2738,17 +2458,55 @@ static bool borg_free_space(void)
     if (junk) {
 
         /* Debug */
-        borg_note(format("Desperately junking %ld+ gold!", limit));
+        borg_note(format("Junking %ld+ gold in panic!", limit));
 
         /* Hack -- Mark it as junk */
         junk->junk = TRUE;
 
         /* Try to throw away the junk */
-        if (borg_throw_junk()) return (TRUE);
+        if (borg_crush_junk()) return (TRUE);
     }
 
 
-    /* Failure */
+    /*** Pass four -- cheapest item ***/
+
+    /* Nothing to junk yet */
+    junk = NULL;
+
+    /* Nothing found yet */
+    limit = 999999999L;
+    
+    /* Find something to trash */
+    for (i = 0; i < INVEN_PACK; i++) {
+
+        auto_item *item = &auto_items[i];
+
+        /* Evaluate the slot */
+        cost = item_worth(item) * item->iqty;
+
+        /* Skip expensive items */
+        if (junk && (cost > limit)) continue;
+
+        /* Track cheapest item */
+        junk = item;
+        limit = cost;
+    }
+
+    /* Throw something away */
+    if (junk) {
+
+        /* Debug */
+        borg_note(format("Junking %ld gold in desperation!", limit));
+
+        /* Hack -- Mark it as junk */
+        junk->junk = TRUE;
+
+        /* Try to throw away the junk */
+        if (borg_crush_junk()) return (TRUE);
+    }
+
+
+    /* Never happens */
     return (FALSE);
 }
 
@@ -2776,7 +2534,7 @@ static int borg_count_sell(void)
         /* Skip "junk" items */
         if (item->junk) continue;
 
-        /* Skip known "cheap" items */
+        /* Skip cheap "known" items */
         if (item->kind && item->cash && item->able) {
 
             /* Guess at the item value */
@@ -2786,7 +2544,7 @@ static int borg_count_sell(void)
             if (worth < greed) continue;
         }
 
-        /* Skip "average" "cheap" items */
+        /* Skip cheap "average" items */
         if (item->kind && item->cash && streq(item->note, "{average}")) {
 
             /* Guess at the item value */
@@ -2821,37 +2579,62 @@ static bool borg_test_stuff(void)
     int i;
 
 
-    /* Look for an item to identify */
-    for (i = 0; i < INVEN_PACK; i++) {
+    /* Look for an item to identify (equipment) */
+    for (i = INVEN_WIELD; i <= INVEN_FEET; i++) {
 
-        /* Notice end of inventory */
-        if (!auto_items[i].iqty) break;
+        auto_item *item = &auto_items[i];
+        
+        /* Skip missing items */
+        if (!item->iqty) continue;
 
-        /* Skip tested items */
-        if (!auto_items[i].test) continue;
+        /* Skip known items */
+        if (item->able) continue;
 
-        /* Use a Rod of Perceptions or a Staff of Perceptions */
-        if (borg_action_pval('z', kind_rod_identify) ||
-            borg_action_pval('u', kind_staff_identify)) {
+        /* Use a Spell/Prayer/Rod/Staff/Scroll of Identify */
+        if (borg_spell(2,4) ||
+            borg_prayer(5,2) ||
+            borg_zap_rod(SV_ROD_IDENTIFY) ||
+            borg_use_staff(SV_STAFF_IDENTIFY) ||
+            borg_read_scroll(SV_SCROLL_IDENTIFY)) {
 
             /* Log -- may be cancelled */
-            borg_info(format("Identifying %s.", auto_items[i].desc));
+            borg_note(format("Identifying %s.", item->desc));
 
+            /* Hack -- Select the equipment */
+            borg_keypress('/');
+            
             /* Identify the item */
-            borg_keypress('a' + i);
+            borg_keypress('a' + i - INVEN_WIELD);
 
             /* Success */
             return (TRUE);
         }
+    }
 
-        /* Blind or confused */
-        if (do_blind || do_confused) return (FALSE);
 
-        /* Attempt to read a scroll of identify */
-        if (borg_action('r', kind_scroll_identify)) {
+    /* Look for an item to identify (inventory) */
+    for (i = 0; i < INVEN_PACK; i++) {
 
-            /* Log */
-            borg_info(format("Identifying %s.", auto_items[i].desc));
+        auto_item *item = &auto_items[i];
+        
+        /* Notice end of inventory */
+        if (!item->iqty) break;
+
+        /* Skip known items */
+        if (item->able) continue;
+        
+        /* Skip tested items */
+        if (!item->test) continue;
+
+        /* Use a Spell/Prayer/Rod/Staff/Scroll of Identify */
+        if (borg_spell(2,4) ||
+            borg_prayer(5,2) ||
+            borg_zap_rod(SV_ROD_IDENTIFY) ||
+            borg_use_staff(SV_STAFF_IDENTIFY) ||
+            borg_read_scroll(SV_SCROLL_IDENTIFY)) {
+
+            /* Log -- may be cancelled */
+            borg_note(format("Identifying %s.", item->desc));
 
             /* Identify the item */
             borg_keypress('a' + i);
@@ -2904,8 +2687,11 @@ static bool borg_wear_stuff(void)
 
         auto_item *item = &auto_items[b_i];
 
+        /* Count the wearings */
+        auto_wearing++;
+        
         /* Log */
-        borg_info(format("Wearing %s.", item->desc));
+        borg_note(format("Wearing %s.", item->desc));
 
         /* Wear it */
         borg_keypress('w');
@@ -2926,1527 +2712,36 @@ static bool borg_wear_stuff(void)
 
 
 
-/*
- * Process a "goto" goal, return "TRUE" if goal is still okay.
- */
-static bool borg_play_step(int x, int y)
-{
-    auto_grid *ag;
-
-    int dir;
-
-
-    /* We have arrived */
-    if ((c_x == x) && (c_y == y)) return (FALSE);
-
-    /* Get a direction (may be a wall there) */
-    dir = borg_goto_dir(c_x, c_y, x, y);
-
-    /* We are confused */
-    if ((dir == 0) || (dir == 5)) return (FALSE);
-
-
-    /* Access the grid we are stepping on */
-    ag = grid(c_x + ddx[dir], c_y + ddy[dir]);
-
-
-    /* Must "disarm" traps */
-    if (ag->o_c == '^') {
-        borg_info("Disarming a trap.");
-        borg_keypress('D');
-    }
-
-    /* Occasionally "bash" doors */
-    else if ((ag->o_c == '+') && (rand_int(10) == 0)) {
-        borg_info("Bashing a door.");
-        borg_keypress('B');
-    }
-
-    /* Must "open" (or "bash") doors */
-    else if (ag->o_c == '+') {
-        borg_info("Opening a door.");
-        borg_keypress('0');
-        borg_keypress('9');
-        borg_keypress('o');
-    }
-
-    /* Tunnel through rubble */
-    else if (ag->o_c == ':') {
-        borg_info("Digging rubble.");
-        borg_keypress('0');
-        borg_keypress('9');
-        borg_keypress('9');
-        borg_keypress('T');
-    }
-
-    /* Mega-Hack -- eventually give up digging walls */
-    else if (((ag->o_c == '#') || (ag->o_c == '%')) && (rand_int(100) == 0)) {
-        return (FALSE);
-    }
-
-    /* Tunnel through walls (or give up) */
-    else if ((ag->o_c == '#') || (ag->o_c == '%')) {
-        borg_info("Digging a wall.");
-        borg_keypress('0');
-        borg_keypress('9');
-        borg_keypress('9');
-        borg_keypress('T');
-    }
-
-    /* XXX Hack -- Occasionally, tunnel for gold */
-    else if (((ag->o_c == '$') || (ag->o_c == '*')) && (rand_int(10) == 0)) {
-        borg_info("Digging for treasure.");
-        borg_keypress('0');
-        borg_keypress('9');
-        borg_keypress('9');
-        borg_keypress('T');
-    }
-
-    /* XXX XXX XXX Hack -- Occasionally, tunnel anyway */
-    else if (rand_int(1000) == 0) {
-        borg_info("Digging for fun.");
-        borg_keypress('0');
-        borg_keypress('9');
-        borg_keypress('9');
-        borg_keypress('T');
-    }
-
-
-    /* Walk (or tunnel or open or bash) in that direction */
-    borg_keypress('0' + dir);
-
-
-    /* Mega-Hack -- prepare to take stairs if desired */
-    if (stair_less && (ag->o_c == '<')) borg_keypress('<');
-    if (stair_more && (ag->o_c == '>')) borg_keypress('>');
-
-
-    /* Did something */
-    return (TRUE);
-}
-
 
 
 /*
- * Choose a missile to fire
- */
-static int borg_choose_missile(void)
-{
-    int i, n = -1;
-
-    /* Scan the pack */
-    for (i = 0; i < INVEN_PACK; i++) {
-
-        auto_item *item = &auto_items[i];
-
-        /* Notice end of inventory */
-        if (!item->iqty) break;
-
-        /* Skip bad missiles */
-        if (item->kind != kind_missile) continue;
-
-        /* Skip un-identified missiles */
-        if (!item->able) continue;
-
-        /* Find the smallest pile */
-        if ((n < 0) || (item->iqty < auto_items[n].iqty)) n = i;
-    }
-
-    /* Use that missile */
-    if (n >= 0) return (n);
-
-
-    /* Use any missile */
-    for (i = 0; i < INVEN_PACK; i++) {
-
-        auto_item *item = &auto_items[i];
-
-        /* Notice end of inventory */
-        if (!item->iqty) break;
-
-        /* Acceptable missiles */
-        if ((item->tval == TV_BOLT) ||
-            (item->tval == TV_ARROW) ||
-            (item->tval == TV_SHOT)) {
-
-            /* Skip un-identified missiles */
-            if (!item->able) continue;
-
-            /* Find the smallest pile */
-            if ((n < 0) || (item->iqty < auto_items[n].iqty)) n = i;
-        }
-    }
-
-    /* Use that missile */
-    if (n >= 0) return (n);
-    
-
-    /* Nothing to fire */
-    return (-1);
-}
-
-
-
-
-/*
- * Take a step towards the current goal location
- * Return TRUE if this goal is still "okay".
- * Otherwise, cancel the goal and return FALSE.
- */
-static bool borg_play_old_goal(void)
-{
-    auto_room *ar;
-
-
-    /* Flow towards the goal */
-    if (goal) {
-
-        int x = c_x, y = c_y, best = 999;
-
-        /* See "borg_flow_cost(c_x, c_y)" */
-        for (ar = room(1,c_x,c_y); ar; ar = room(0,0,0)) {
-
-            int dx = ar->x - c_x;
-            int dy = ar->y - c_y;
-
-            int ax = ABS(dx);
-            int ay = ABS(dy);
-
-            /* Calculate the cost */
-            int cost = ar->cost + MAX(ax, ay);
-
-            /* Skip icky costs */	
-            if (cost >= best) continue;
-
-            /* Note the best so far */
-            x = ar->x; y = ar->y; best = cost;
-        }
-
-        /* Attempt to take one step in the path */
-        if (borg_play_step(x, y)) return (TRUE);
-    }
-
-    /* Cancel goals */
-    goal = 0;
-
-    /* Nothing to do */
-    return (FALSE);
-}
-
-
-
-/*
- * Determine if a grid touches unknown grids
- */
-static bool borg_interesting(int x1, int y1)
-{
-    int i, x, y;
-
-    auto_grid *ag;
-
-    /* Scan all eight neighbors */
-    for (i = 0; i < 8; i++) {
-
-        /* Get the location */
-        x = x1 + ddx[ddd[i]];
-        y = y1 + ddy[ddd[i]];
-
-        /* Get the grid */
-        ag = grid(x, y);
-
-        /* Unknown grids are interesting */	
-        if (ag->o_c == ' ') return (TRUE);
-
-        /* Known walls are boring */
-        if (ag->info & BORG_WALL) continue;
-
-        /* Unroomed grids are interesting */
-        if (!ag->room) return (TRUE);
-    }
-
-    /* Assume not */
-    return (FALSE);
-}
-
-
-
-
-
-
-
-/*
- * Prepare to "flow" towards monsters to "kill"
- */
-static bool borg_flow_kill()
-{
-    int i, x, y;
-
-    auto_grid *ag;
-
-
-    /* Nothing found */
-    seen_n = 0;
-
-    /* Look for something to kill */
-    for (i = 0; i < view_n; i++) {
-
-        /* Access the "view grid" */
-        y = view_y[i];
-        x = view_x[i];
-
-        /* Get the auto_grid */
-        ag = grid(x, y);
-
-        /* Skip the player grid */
-        if (ag == pg) continue;
-
-        /* Skip unknown grids */
-        if (ag->o_c == ' ') continue;
-
-        /* Notice monsters (efficiently) */
-        if (auto_is_kill[(byte)(ag->o_c)]) {
-
-            /* Remember it */
-            if (seen_n < SEEN_MAX) {
-                seen_x[seen_n] = x;
-                seen_y[seen_n] = y;
-                seen_n++;
-            }
-        }
-    }
-
-    /* Nothing to kill */
-    if (!seen_n) return (FALSE);
-
-
-    /* Clear the flow codes */
-    borg_flow_clear();
-
-    /* Look for something to kill */
-    for (i = 0; i < seen_n; i++) {
-
-        /* Enqueue the grid */
-        borg_flow_enqueue_grid(seen_x[i], seen_y[i]);
-    }
-
-    /* Clear the seen array */
-    seen_n = 0;
-
-    /* Spread the flow a little */
-    borg_flow_spread(TRUE);
-
-    /* Extract the "best" cost */
-    i = borg_flow_cost(c_x, c_y);
-
-    /* No good path */
-    if (i >= 999) return (FALSE);
-
-    /* Note */
-    borg_info(format("Flowing toward monsters, at cost %d", i));
-
-    /* Set the "goal" */
-    goal = GOAL_KILL;
-
-    /* Success */
-    return (TRUE);
-}
-
-
-/*
- * Prepare to "flow" towards objects to "take"
- */
-static bool borg_flow_take()
-{
-    int i, x, y;
-
-    auto_grid *ag;
-
-
-    /* Nothing yet */
-    seen_n = 0;
-
-    /* Look for something to take */
-    for (i = 0; i < view_n; i++) {
-
-        /* Access the "view grid" */
-        y = view_y[i];
-        x = view_x[i];
-
-        /* Get the auto_grid */
-        ag = grid(x, y);
-
-        /* Skip the player grid */
-        if (ag == pg) continue;
-
-        /* Skip unknown grids */
-        if (ag->o_c == ' ') continue;
-
-        /* Notice objects (efficiently) */
-        if (auto_is_take[(byte)(ag->o_c)]) {
-
-            /* Remember it */
-            if (seen_n < SEEN_MAX) {
-                seen_x[seen_n] = x;
-                seen_y[seen_n] = y;
-                seen_n++;
-            }
-        }
-    }
-
-    /* Nothing to take */
-    if (!seen_n) return (FALSE);
-
-
-    /* Clear the flow codes */
-    borg_flow_clear();
-
-    /* Look for something to take */
-    for (i = 0; i < seen_n; i++) {
-
-        /* Enqueue the grid */
-        borg_flow_enqueue_grid(seen_x[i], seen_y[i]);
-    }
-
-    /* Clear the seen array */
-    seen_n = 0;
-
-    /* Spread the flow (a little) */
-    borg_flow_spread(TRUE);
-
-    /* Extract the "best" cost */
-    i = borg_flow_cost(c_x, c_y);
-
-    /* No good path */
-    if (i >= 999) return (FALSE);
-
-    /* Note */
-    borg_info(format("Flowing toward objects, at cost %d", i));
-
-    /* Set the "goal" */
-    goal = GOAL_TAKE;
-
-    /* Success */
-    return (TRUE);
-}
-
-
-/*
- * Prepare to "flow" towards "dark" or "unknown" grids
- */
-static bool borg_flow_dark()
-{
-    int i, x, y;
-
-    auto_grid *ag;
-
-
-    /* Nothing yet */
-    seen_n = 0;
-
-    /* Look for something unknown */
-    for (i = 0; i < view_n; i++) {
-
-        /* Access the "view grid" */
-        y = view_y[i];
-        x = view_x[i];
-
-        /* Get the auto_grid */
-        ag = grid(x, y);
-
-        /* Skip the player grid */
-        if (ag == pg) continue;
-
-        /* Skip unknown grids */
-        if (ag->o_c == ' ') continue;
-
-        /* Cannot explore walls */
-        if (ag->info & BORG_WALL) continue;
-
-        /* Notice interesting grids */
-        if (borg_interesting(x, y)) {
-
-            /* Remember it */
-            if (seen_n < SEEN_MAX) {
-                seen_x[seen_n] = x;
-                seen_y[seen_n] = y;
-                seen_n++;
-            }
-        }
-    }
-
-    /* Nothing dark */
-    if (!seen_n) return (FALSE);
-
-
-    /* Clear the flow codes */
-    borg_flow_clear();
-
-    /* Enqueue useful grids */
-    for (i = 0; i < seen_n; i++) {
-
-        /* Enqueue the grid */
-        borg_flow_enqueue_grid(seen_x[i], seen_y[i]);
-    }
-
-    /* Clear the seen array */
-    seen_n = 0;
-
-    /* Spread the flow (a little) */
-    borg_flow_spread(TRUE);
-
-    /* Extract the "best" cost */
-    i = borg_flow_cost(c_x, c_y);
-
-    /* No good path */
-    if (i >= 999) return (FALSE);
-
-    /* Note */
-    borg_info(format("Flowing toward unknown grids, at cost %d", i));
-
-    /* Set the "goal" */
-    goal = GOAL_DARK;
-
-    /* Success */
-    return (TRUE);
-}
-
-
-/*
- * Prepare to "flow" towards "interesting" things
- */
-static bool borg_flow_explore(void)
-{
-    int x, y, i;
-
-    auto_grid *ag;
-
-
-    /* Nothing yet */
-    seen_n = 0;
-
-    /* Examine every legal grid */
-    for (y = 1; y < AUTO_MAX_Y-1; y++) {
-        for (x = 1; x < AUTO_MAX_X-1; x++) {
-
-            /* Get the grid */
-            ag = grid(x, y);
-
-            /* Skip current location */
-            if (pg == ag) continue;
-
-            /* Skip stuff */
-            if (ag->o_c == ' ') continue;
-            if (!ag->room) continue;
-
-            /* Cannot explore walls */
-            if (ag->info & BORG_WALL) continue;
-
-            /* Only examine "interesting" grids */
-            if (!borg_interesting(x, y)) continue;
-
-            /* Remember it */
-            if (seen_n < SEEN_MAX) {
-                seen_x[seen_n] = x;
-                seen_y[seen_n] = y;
-                seen_n++;
-            }
-        }
-    }
-
-    /* Nothing useful */
-    if (!seen_n) return (FALSE);
-
-
-    /* Clear the flow codes */
-    borg_flow_clear();
-
-    /* Enqueue useful grids */
-    for (i = 0; i < seen_n; i++) {
-
-        /* Enqueue the grid */
-        borg_flow_enqueue_grid(seen_x[i], seen_y[i]);
-    }
-
-    /* Clear the seen array */
-    seen_n = 0;
-
-    /* Spread the flow (a little) */
-    borg_flow_spread(TRUE);
-
-    /* Extract the "best" cost */
-    i = borg_flow_cost(c_x, c_y);
-
-    /* No good path */
-    if (i >= 999) return (FALSE);
-
-    /* Note */
-    borg_note(format("Chasing unknowns, at cost %d", i));
-
-    /* Set the "goal" */
-    goal = GOAL_DARK;
-
-    /* Success */
-    return (TRUE);
-}
-
-
-/*
- * Prepare to "flow" towards "old" monsters
- */
-static bool borg_flow_kill_any(void)
-{
-    int i, x, y;
-
-    auto_grid *ag;
-
-
-    /* Efficiency -- Nothing to kill */
-    if (!count_kill) return (FALSE);
-
-
-    /* Nothing yet */
-    seen_n = 0;
-
-    /* Examine every legal grid */
-    for (y = 1; y < AUTO_MAX_Y-1; y++) {
-        for (x = 1; x < AUTO_MAX_X-1; x++) {
-
-            /* Get the grid */
-            ag = grid(x, y);
-
-            /* Skip current location */
-            if (pg == ag) continue;
-
-            /* Skip stuff */
-            if (ag->o_c == ' ') continue;
-            if (!ag->room) continue;
-
-            /* Skip non-monsters (efficiently) */
-            if (!auto_is_kill[(byte)(ag->o_c)]) continue;
-
-            /* Remember it */
-            if (seen_n < SEEN_MAX) {
-                seen_x[seen_n] = x;
-                seen_y[seen_n] = y;
-                seen_n++;
-            }
-        }
-    }
-
-    /* Nothing useful */
-    if (!seen_n) return (FALSE);
-
-
-    /* Clear the flow codes */
-    borg_flow_clear();
-
-    /* Enqueue useful grids */
-    for (i = 0; i < seen_n; i++) {
-
-        /* Enqueue the grid */
-        borg_flow_enqueue_grid(seen_x[i], seen_y[i]);
-    }
-
-    /* Clear the "seen" array */
-    seen_n = 0;
-
-    /* Spread the flow (a little) */
-    borg_flow_spread(TRUE);
-
-    /* Extract the "best" cost */
-    i = borg_flow_cost(c_x, c_y);
-
-    /* No good path */
-    if (i >= 999) return (FALSE);
-
-    /* Note */
-    borg_note(format("Chasing monsters, at cost %d", i));
-
-    /* Set the "goal" */
-    goal = GOAL_KILL;
-
-    /* Success */
-    return (TRUE);
-}
-
-
-/*
- * Prepare to "flow" towards "old" objects
- */
-static bool borg_flow_take_any(void)
-{
-    int i, x, y;
-
-    auto_grid *ag;
-
-
-    /* Efficiency -- Nothing to take */
-    if (!count_take) return (FALSE);
-
-
-    /* Nothing yet */
-    seen_n = 0;
-
-    /* Examine every legal grid */
-    for (y = 1; y < AUTO_MAX_Y-1; y++) {
-        for (x = 1; x < AUTO_MAX_X-1; x++) {
-
-            /* Get the grid */
-            ag = grid(x, y);
-
-            /* Skip current location */
-            if (pg == ag) continue;
-
-            /* Skip stuff */
-            if (ag->o_c == ' ') continue;
-            if (!ag->room) continue;
-
-            /* Skip non-objects (efficiently) */
-            if (!auto_is_take[(byte)(ag->o_c)]) continue;
-
-            /* Remember it */
-            if (seen_n < SEEN_MAX) {
-                seen_x[seen_n] = x;
-                seen_y[seen_n] = y;
-                seen_n++;
-            }
-        }
-    }
-
-    /* Nothing useful */
-    if (!seen_n) return (FALSE);
-
-
-    /* Clear the flow codes */
-    borg_flow_clear();
-
-    /* Enqueue useful grids */
-    for (i = 0; i < seen_n; i++) {
-
-        /* Enqueue the grid */
-        borg_flow_enqueue_grid(seen_x[i], seen_y[i]);
-    }
-
-    /* Clear the "seen" array */
-    seen_n = 0;
-
-    /* Spread the flow (a little) */
-    borg_flow_spread(TRUE);
-
-    /* Extract the "best" cost */
-    i = borg_flow_cost(c_x, c_y);
-
-    /* No good path */
-    if (i >= 999) return (FALSE);
-
-    /* Note */
-    borg_note(format("Chasing objects, at cost %d", i));
-
-    /* Set the "goal" */
-    goal = GOAL_TAKE;
-
-    /* Success */
-    return (TRUE);
-}
-
-
-
-
-
-/*
- * Prepare to "flow" towards "interesting" things
- */
-static bool borg_flow_symbol(char what)
-{
-    int i, x, y;
-
-    auto_grid *ag;
-
-
-    /* Nothing yet */
-    seen_n = 0;
-
-    /* Examine every legal grid */
-    for (y = 1; y < AUTO_MAX_Y-1; y++) {
-        for (x = 1; x < AUTO_MAX_X-1; x++) {
-
-            /* Get the grid */
-            ag = grid(x, y);
-
-            /* Skip current location */
-            if (pg == ag) continue;
-
-            /* Skip stuff */
-            if (ag->o_c == ' ') continue;
-            if (!ag->room) continue;
-
-            /* Skip incorrect symbols */
-            if (ag->o_c != what) continue;
-
-            /* Remember it */
-            if (seen_n < SEEN_MAX) {
-                seen_x[seen_n] = x;
-                seen_y[seen_n] = y;
-                seen_n++;
-            }
-        }
-    }
-
-    /* Nothing useful */
-    if (!seen_n) return (FALSE);
-
-
-    /* Clear the flow codes */
-    borg_flow_clear();
-
-    /* Enqueue useful grids */
-    for (i = 0; i < seen_n; i++) {
-
-        /* Enqueue the grid */
-        borg_flow_enqueue_grid(seen_x[i], seen_y[i]);
-    }
-
-    /* Clear the "seen" array */
-    seen_n = 0;
-
-    /* Spread the flow (a little) */
-    borg_flow_spread(TRUE);
-
-    /* Extract the "best" cost */
-    i = borg_flow_cost(c_x, c_y);
-
-    /* No good path */
-    if (i >= 999) return (FALSE);
-
-    /* Note */
-    borg_note(format("Chasing symbols (%c), at cost %d", what, i));
-
-    /* Set the "goal" */
-    goal = GOAL_XTRA;
-
-    /* Success */
-    return (TRUE);
-}
-
-
-
-
-
-/*
- * Go shopping in the town (do stores in order)
- */
-static bool borg_flow_shop(void)
-{
-    int i, n = -1, v = 99;
-
-    /* Must be in town */
-    if (auto_depth) return (FALSE);
-
-    /* Visit the oldest shop */
-    for (i = 0; i < 8; i++) {
-
-        /* Skip recent shops */
-        if ((n >= 0) && (auto_shops[i].visit >= v)) continue;
-
-        /* Save this shop */
-        n = i; v = auto_shops[i].visit;
-    }
-
-    /* Plenty of visits */
-    if (v >= last_visit + 2) return (FALSE);
-
-    /* Try and visit it */
-    if (borg_flow_symbol('1' + n)) return (TRUE);
-
-    /* Failure */
-    return (FALSE);
-}
-
-
-
-
-/*
- * Walk around the dungeon looking for monsters
- */
-static bool borg_flow_revisit(void)
-{
-    int x, y, i;
-
-    auto_room *ar;
-
-    int r_n = -1;
-    s32b r_age = 0L;
-
-    s32b age;
-
-
-    /* First find the reachable spaces */
-    borg_flow_reverse();
-
-    /* Re-visit "old" rooms */
-    for (i = 1; i < auto_room_max; i++) {
-
-        /* Access the "room" */
-        ar = &auto_rooms[i];
-
-        /* Skip "dead" rooms */
-        if (ar->free) continue;
-
-        /* Skip "unreachable" rooms */
-        if (ar->cost >= 999) continue;
-
-        /* Hack -- skip "boring" rooms */
-        /* if ((ar->x1 == ar->x2) || (ar->y1 == ar->y2)) continue; */
-
-        /* Reward "age" and "distance" and "luck" */
-        age = (c_t - ar->when) + (ar->cost / 2);
-
-        /* Skip "recent" rooms */
-        if ((r_n >= 0) && (age < r_age)) continue;
-
-        /* Save the index, and the age */
-        r_n = i; r_age = age;
-    }
-
-    /* Clear the flow codes */
-    borg_flow_clear();
-
-    /* Hack -- No rooms to visit (!) */
-    if (r_n < 0) return (FALSE);
-
-    /* Get the room */
-    ar = &auto_rooms[r_n];
-
-    /* Visit a random grid of that room */
-    x = rand_range(ar->x1, ar->x2);
-    y = rand_range(ar->y1, ar->y2);
-
-    /* Enqueue the room */
-    borg_flow_enqueue_grid(x, y);
-
-    /* Spread the flow */
-    borg_flow_spread(TRUE);
-
-    /* Extract the "best" cost */
-    i = borg_flow_cost(c_x, c_y);
-
-    /* No good path */
-    if (i >= 999) return (FALSE);
-
-    /* Note */
-    borg_note(format("Revisiting (%d, %d) with age %ld, at cost %d",
-                     x, y, r_age, i));
-
-    /* Set the "goal" */
-    goal = GOAL_XTRA;
-
-    /* Success */
-    return (TRUE);
-}
-
-
-/*
- * Heuristic -- Help locate secret doors (see below)
+ * Help the Borg decide if it should go back to the town
  *
- * Determine the "likelihood" of a secret door touching "(x,y)",
- * which is "d" grids away from the player.
- *
- * Assume grid is legal, non-wall, and reachable.
- * Assume grid neighbors are legal and known.
- */
-static int borg_secrecy(int x, int y, int d)
-{
-    int		i, v;
-    int		wall = 0, supp = 0, diag = 0;
-
-    char	cc[8];
-
-    auto_grid	*ag;
-
-
-    /* No secret doors in town */
-    if (auto_depth == 0) return (0);
-
-
-    /* Get the central grid */
-    ag = grid(x, y);
-
-    /* Tweak -- Limit total searches */
-    if (ag->xtra > 50) return (0);
-
-
-    /* Extract adjacent locations */
-    for (i = 0; i < 8; i++) {
-
-        /* Extract the location */
-        int xx = x + ddx[ddd[i]];
-        int yy = y + ddy[ddd[i]];
-
-        /* Get the grid */
-        cc[i] = grid(xx,yy)->o_c;
-    }
-
-
-    /* Count possible door locations */
-    for (i = 0; i < 4; i++) if (cc[i] == '#') wall++;
-
-    /* No possible secret doors */
-    if (wall <= 0) return (0);
-
-
-    /* Count supporting evidence for secret doors */
-    for (i = 0; i < 4; i++) {
-        if ((cc[i] == '#') || (cc[i] == '%')) supp++;
-        else if ((cc[i] == '+') || (cc[i] == '\'')) supp++;
-    }
-
-    /* Count supporting evidence for secret doors */
-    for (i = 4; i < 8; i++) {
-        if ((cc[i] == '#') || (cc[i] == '%')) diag++;
-    }
-
-
-    /* Tweak -- Reward walls, punish visitation and distance */
-    v = (supp * 300) + (diag * 100) - (ag->xtra * 20) - (d * 1);
-
-    /* Result */
-    return (v);
-}
-
-
-
-/*
- * Search carefully for secret doors and such
- */
-static bool borg_flow_spastic(void)
-{
-    int i, x, y, v;
-    int g_x = c_x, g_y = c_y, g_v = -1;
-
-    int boredom;
-
-    auto_room *ar;
-
-
-    /* Hack -- Tweak -- Determine boredom */
-    boredom = count_floor - 500;
-    if (boredom < 200) boredom = 200;
-    if (boredom > 800) boredom = 800;
-
-    /* Tweak -- Search based on dungeon knowledge */
-    if (c_t - auto_shock < boredom) return (FALSE);
-
-
-    /* Hack -- first find the reachable spaces */
-    borg_flow_reverse();
-
-    /* Scan the entire map */
-    for (y = 1; y < AUTO_MAX_Y-1; y++) {
-        for (x = 1; x < AUTO_MAX_X-1; x++) {
-
-            auto_grid *ag = grid(x, y);
-
-            /* Skip stuff */
-            if (ag->o_c == ' ') continue;
-            if (!ag->room) continue;
-
-            /* Cannot search inside walls */
-            if (ag->info & BORG_WALL) continue;
-
-            /* Scan the rooms */
-            for (ar = room(1,x,y); ar; ar = room(0,0,0)) {
-
-                /* Skip "unreachable" rooms */
-                if (ar->cost >= 999) continue;
-
-                /* Get the "searchability" */
-                v = borg_secrecy(x, y, ar->cost);
-
-                /* The grid is not searchable */
-                if (v <= 0) continue;
-
-                /* Skip non-perfect grids */
-                if ((g_v >= 0) && (v < g_v)) continue;
-
-                /* Save the data */
-                g_v = v; g_x = x; g_y = y;
-            }
-        }
-    }
-
-    /* Clear the flow codes */
-    borg_flow_clear();
-
-    /* Hack -- Nothing found */
-    if (g_v < 0) return (FALSE);
-
-
-    /* We have arrived */
-    if ((c_x == g_x) && (c_y == g_y)) {
-
-        /* Take note */
-        borg_note("Spastic Searching...");
-
-        /* Tweak -- Remember the search */
-        if (pg->xtra < 100) pg->xtra += 9;
-
-        /* Tweak -- Search a little */
-        borg_keypress('0');
-        borg_keypress('9');
-        borg_keypress('s');
-
-        /* Success */
-        return (TRUE);
-    }
-
-
-    /* Enqueue the grid */
-    borg_flow_enqueue_grid(g_x, g_y);
-
-    /* Spread the flow a little */
-    borg_flow_spread(TRUE);
-
-    /* Extract the "best" cost */
-    i = borg_flow_cost(c_x, c_y);
-
-    /* No good path */
-    if (i >= 999) return (FALSE);
-
-    /* Note */
-    borg_note(format("Spastic twitch towards (%d,%d)", g_x, g_y));
-
-    /* Set the "goal" */
-    goal = GOAL_XTRA;
-
-    /* Success */
-    return (TRUE);
-}
-
-
-
-
-
-/*
- * Given a location, attempt to determine what type of monster is
- * at that location.  Use type "0" for "no known monster".
- *
- * This guess can be improved by the judicious use of a specialized
- * "attr/char" mapping, especially for unique monsters.  Note that
- * we cheat by directly accessing the attr/char tables.
- *
- * We will never correctly identify player ghosts
- * We will usually fail to identify multi-hued monsters
- * We will usually fail for very out of depth monsters
- * We will attempt to err on the side of caution
- *
- * We treat the "town" level specially, and unless a player ghost
- * appears in town, our guess will always be correct.
- */
-static int guess_monster(int x, int y)
-{
-    int i;
-
-    auto_grid *ag = grid(x, y);
-
-
-    /* Efficiency */
-    if (ag->o_c == ' ') return (0);
-    if (ag->o_c == '.') return (0);
-    if (ag->o_c == '#') return (0);
-
-
-    /* Special treatment of "town" monsters */
-    if (auto_depth <= 0) {
-
-        /* Hack -- Find the first "acceptable" monster */
-        for (i = 1; i < MAX_R_IDX-1; i++) {
-
-            monster_race *r_ptr = &r_list[i];
-            monster_lore *l_ptr = &l_list[i];
-
-            if (r_ptr->level) break;
-
-            if (ag->o_c != l_ptr->l_char) continue;
-            if (ag->o_a != l_ptr->l_attr) continue;
-
-            return (i);
-        }
-    }
-
-    /* Guess what monster it might be */
-    else {
-
-        /* Hack -- Find the highest "acceptable" monster */
-        for (i = (MAX_R_IDX-1) - 1; i > 0; i--) {
-
-            monster_race *r_ptr = &r_list[i];
-            monster_lore *l_ptr = &l_list[i];
-
-            if (r_ptr->level > auto_depth + 5) continue;
-
-            if (ag->o_c != l_ptr->l_char) continue;
-            if (ag->o_a != l_ptr->l_attr) continue;
-
-            return (i);
-        }
-    }
-
-
-    /* Oops */
-    return (0);
-}
-
-
-/*
- * Count the monsters touching a location
- * Assumes the location is not an outer wall
- */
-static int borg_count_monsters(int x0, int y0)
-{
-    int i, d, x, y, n = 0;
-
-    auto_grid *ag;
-
-    /* Look around */
-    for (i = 0; i < 8; i++) {
-
-        /* Access the grid */
-        d = ddd[i];
-        x = x0 + ddx[d];
-        y = y0 + ddy[d];
-        ag = grid(x, y);
-
-        /* Look for monsters (efficiently) */
-        if (auto_is_kill[(byte)(ag->o_c)]) n++;
-    }
-
-    /* Return the count */
-    return (n);
-}
-
-
-/*
- * Target a location
- */
-static bool borg_target(int x, int y)
-{
-    int x1, y1, x2, y2;
-
-    /* Hack -- Cannot target off-screen location */
-    if ((x < w_x) || (x >= w_x + SCREEN_WID)) return (FALSE);
-    if ((y < w_y) || (y >= w_y + SCREEN_HGT)) return (FALSE);
-
-    /* Log */
-    borg_info("Targetting a location.");
-
-    /* Target the location */
-    borg_keypress('*');
-    borg_keypress('p');
-
-    /* Determine "path" */
-    x1 = c_x; y1 = c_y; x2 = x; y2 = y;
-
-    /* Move to the location */
-    for ( ; y1 < y2; y1++) borg_keypress('2');
-    for ( ; y1 > y2; y1--) borg_keypress('8');
-    for ( ; x1 < x2; x1++) borg_keypress('6');
-    for ( ; x1 > x2; x1--) borg_keypress('4');
-
-    /* Select the target */
-    borg_keypress('t');
-
-    /* Success */
-    return (TRUE);
-}
-
-
-
-/*
- * Attempt to fire at monsters
- */
-static bool borg_play_fire(void)
-{
-    int i, k, r;
-
-    int f_x = c_x, f_y = c_y, f_d = 999;
-
-
-    /* Look for something to kill */
-    for (i = 0; i < view_n; i++) {
-
-        /* Access the "view grid" */
-        int y = view_y[i];
-        int x = view_x[i];
-
-        /* Get the auto_grid */
-        auto_grid *ag = grid(x, y);
-
-        /* Assume no monster */
-        bool kill = FALSE;
-
-        /* Skip the player grid */
-        if (ag == pg) continue;
-
-        /* Skip unknown grids */
-        if (ag->o_c == ' ') continue;
-
-        /* Cannot shoot into walls */
-        if (ag->info & BORG_WALL) continue;
-
-        /* Should not shoot at "dark" grids */
-        if (!(ag->info & BORG_OKAY)) continue;
-
-        /* Notice monsters (efficiently) */
-        if (auto_is_kill[(byte)(ag->o_c)]) kill = TRUE;
-
-        /* XXX XXX XXX Mega-Hack -- hit mushrooms sometimes */
-        if ((ag->o_c == ',') && (rand_int(10) == 0)) kill = TRUE;
-
-        /* Skip non-monsters */
-        if (!kill) continue;
-
-        /* Must have "missile line of sight" */
-        if (!borg_projectable(c_x, c_y, x, y)) continue;
-
-        /* Check distance */
-        k = distance(c_y, c_x, y, x);
-
-        /* Must be within range */
-        if (k > 10) continue;
-
-        /* Must not be adjacent (unless afraid) */
-        if (!do_afraid && (k <= 1)) continue;
-
-        /* Skip far away monsters */
-        if (k > f_d) continue;
-
-        /* Save the distance */
-        f_d = k; f_x = x; f_y = y;
-    }
-
-    /* Hack -- try firing missiles */
-    if (f_d >= 999) return (FALSE);
-
-
-    /* Only a one in five chance (unless afraid) */
-    if (!do_afraid && (rand_int(5) != 0)) return (FALSE);
-
-
-    /* Find a "missile" */
-    i = borg_choose_missile();
-
-    /* Nothing to fire */
-    if (i < 0) return (FALSE);
-
-
-    /* Target the monster (if possible) */
-    if (!borg_target(f_x, f_y)) return (FALSE);
-
-
-    /* Acquire monster type */
-    r = guess_monster(f_x, f_y);
-
-    /* Note */
-    borg_note(format("Launching (%s).", r_list[r].name));
-
-    /* Fire at the target */
-    borg_keypress('f');
-    borg_keypress('a' + i);
-    borg_keypress('t');
-
-
-    /* Success */
-    return (TRUE);
-}
-
-
-
-/*
- * Hack -- be cautious
- */
-static int borg_caution(void)
-{
-    int x, y, i, d, k, o_n, g_n, g_d = -1;
-
-    auto_grid *ag;
-
-
-    /* Look around */
-    o_n = borg_count_monsters(c_x, c_y);
-
-
-    /* Require an adjacent monster */
-    if (o_n < 1) return (FALSE);
-
-    /* XXX XXX XXX Hack -- attempt to teleport to safety */
-    if (auto_curhp < auto_maxhp / 3) {
-
-        /* Read scrolls of teleport (low failure rate) */
-        if (borg_action('r', kind_scroll_teleport)) return (TRUE);
-
-        /* Mega-Hack -- Use (charged) staffs of teleport */
-        if (borg_action_pval('u', kind_staff_teleport)) return (TRUE);
-    }
-
-
-    /* Ignore small numbers of monsters */
-    if (o_n < 2) return (FALSE);
-
-    /* XXX XXX XXX Hack -- attempt to teleport to safety */
-    if (auto_curhp < auto_maxhp / 2) {
-
-        /* Mega-Hack -- Use (charged) staffs of teleport */
-        if (borg_action_pval('u', kind_staff_teleport)) return (TRUE);
-
-        /* Read scrolls of teleport */
-        if (borg_action('r', kind_scroll_teleport)) return (TRUE);
-    }
-
-
-    /* Goal minimum */
-    g_n = o_n;
-
-    /* Attempt to find a better grid */
-    for (i = 0; i < 8; i++) {
-
-        /* Access the grid */
-        d = ddd[i];
-        x = c_x + ddx[d];
-        y = c_y + ddy[d];
-        ag = grid(x, y);
-
-        /* Skip walls (!) */
-        if (ag->info & BORG_WALL) continue;
-        
-        /* Skip unknown grids */
-        if (ag->o_c == ' ') continue;
-
-        /* Skip monsters (efficiently) */
-        if (auto_is_kill[(byte)(ag->o_c)]) continue;
-
-        /* Hack -- Skip traps */
-        if (ag->o_c == '^') continue;
-
-        /* Mega-Hack -- Skip stores */
-        if (isdigit(ag->o_c)) continue;
-
-        /* Count the monsters */
-        k = borg_count_monsters(x, y);
-
-        /* Require fewer monsters */
-        if (k >= g_n) continue;
-
-        /* Save the info */
-        g_n = k; g_d = d;
-    }
-
-    /* Nowhere to run */
-    if (g_d < 0) return (FALSE);
-
-
-    /* Only be cautious occasionally */
-    if (rand_int(3) != 0) return (FALSE);
-
-    /* Note */
-    borg_note(format("Caution (%d > %d).", o_n, g_n));
-
-    /* Hack -- Flee! */
-    borg_keypress('0' + g_d);
-
-    /* Success */
-    return (TRUE);
-}
-
-
-/*
- * Attack monsters (unless afraid)
- */
-static int borg_attack(void)
-{
-    int i, r, n = 0, g_d = -1, g_r = -1;
-
-    /* Check adjacent grids */
-    for (i = 0; i < 8; i++) {
-
-        /* Direction */
-        int d = ddd[i];
-
-        /* Location */
-        int x = c_x + ddx[d];
-        int y = c_y + ddy[d];
-
-        /* Grid */
-        auto_grid *ag = grid(x, y);
-
-        /* Skip non-monsters (efficiently) */
-        if (!auto_is_kill[(byte)(ag->o_c)]) continue;
-
-        /* Count monsters */
-        n++;
-
-        /* Guess the monster */
-        r = guess_monster(x, y);
-
-        /* Mega-Hack -- Use the "hardest" monster */
-        if ((g_d >= 0) && (r < g_r)) continue;
-
-        /* Save the info */
-        g_d = d; g_r = r;
-    }
-
-    /* Nothing to attack */
-    if (!n) return (FALSE);
-
-    /* Do not attack when afraid */
-    if (do_afraid) {
-        borg_note(format("Fearing (%s).", r_list[g_r].name));
-        return (FALSE);
-    }
-
-    /* Mention monster */
-    if (n > 1) borg_note(format("Selecting (%s).", r_list[g_r].name));
-    else borg_note(format("Attacking (%s).", r_list[g_r].name));
-
-    /* Hack -- Attack! */
-    borg_keypress('0' + g_d);
-
-    /* Success */
-    return (TRUE);
-}
-
-
-
-/*
- * Help the Borg decide if it should flee back to town
  * This function analyzes the inventory for "essential" items
  * It could also verify adequate "resistance" and other stuff
  * If "bored" is true then we have fully explored the current level
+ *
  * Proper use of stores requires "waiting" for them to "restock"
  * Note that this "waiting" must be done in the dungeon (level 1)
+ *
+ * Hack -- we also use this function to verify legality of using
+ * word of recall in the town, using the "max_depth" flag (below)
  */
-static bool borg_leave_level_aux(bool bored)
+static bool borg_leave_level_aux(int depth, bool bored)
 {
     auto_item *item = &auto_items[INVEN_LITE];
 
-    /* Consider the appropriate level */
-    int depth = bored ? (auto_depth + 1) : auto_depth;
-
-
-    /*** Stair scumming ***/
-
-    /* Mega-Hack -- give stores a chance to restock */
-    if ((auto_depth <= 1) && !bored) return (FALSE);
 
 
     /*** Essential Items ***/
-
-    /* Require Food Rations */
-    if (kind_have[kind_food_ration] < 10) return (TRUE);
 
     /* Require Lite and/or fuel */
     if (item->iqty == 0) return (TRUE);
     if ((item->kind == kind_torch) && (kind_have[kind_torch] < 10)) return (TRUE);
     if ((item->kind == kind_lantern) && (kind_have[kind_flask] < 10)) return (TRUE);
+
+    /* Require Food Rations (usually) */
+    if (kind_have[kind_food_ration] < (ignore_hunger ? 0 : 10)) return (TRUE);
 
 
     /*** Useful Items ***/
@@ -4461,7 +2756,8 @@ static bool borg_leave_level_aux(bool bored)
     if ((depth >= 5) && bored && (kind_have[kind_scroll_recall] < 4)) return (TRUE);
 
     /* Potions of Cure Serious Wounds */
-    if ((depth >= 2) && (kind_have[kind_potion_serious] < 2)) return (TRUE);
+    if ((depth >= 3) && (kind_have[kind_potion_serious] < 2)) return (TRUE);
+    if ((depth >= 3) && bored && (kind_have[kind_potion_serious] < 5)) return (TRUE);
 
     /* Potions of Cure Critical Wounds */
     if ((depth >= 5) && (kind_have[kind_potion_critical] < 5)) return (TRUE);
@@ -4481,13 +2777,15 @@ static bool borg_leave_level(bool bored)
 {
     int k, g = 0;
 
-
+    int depth = (bored ? (auto_depth+1) : auto_depth);
+    
+    
     /* Cancel stair requests */
     stair_less = stair_more = FALSE;
 
 
-    /* Hack -- already leaving */
-    if (auto_recall) return (FALSE);
+    /* Hack -- already leaving via "recall" */
+    if (when_recall + 100 >= c_t) return (FALSE);
 
 
     /* Count sellable items */
@@ -4495,13 +2793,13 @@ static bool borg_leave_level(bool bored)
 
 
     /* Power-dive */
-    if (auto_depth && (auto_level > auto_depth * 2)) g = 1;
+    if (auto_depth && (auto_lev > auto_depth * 2)) g = 1;
 
     /* Dive when bored */
-    if (auto_depth && bored && (c_t - auto_shock > 1000L)) g = 1;
+    if (auto_depth && bored && (c_t > auto_shock + 1000L)) g = 1;
 
     /* Mega-Hack -- Do not leave a level until "bored" */
-    if (c_t - auto_began < attention) g = 0;
+    if (c_t < auto_began + auto_feeling) g = 0;
 
     /* Do not dive when "full" of items */
     if (g && (k >= 18)) g = 0;
@@ -4511,28 +2809,55 @@ static bool borg_leave_level(bool bored)
 
 
     /* Return to town (immediately) if we are worried */
-    if (borg_leave_level_aux(bored)) goal_rising = TRUE;
-
+    if (borg_leave_level_aux(depth, bored)) goal_rising = TRUE;
+    
     /* Return to town to sell stuff */
     if (bored && (k >= 18)) goal_rising = TRUE;
 
     /* Hack -- return to town to restore experience */
     if (bored && do_fix_exp) goal_rising = TRUE;
 
+    /* Return to town when level drained */
+    if (do_fix_lev) goal_rising = TRUE;
+    
     /* Never rise from town */
-    if (auto_depth == 0) goal_rising = FALSE;
+    if (!auto_depth) goal_rising = FALSE;
 
     /* Return to town */
     if (goal_rising) g = -1;
 
+    /* Mega-Hack -- allow "stair scumming" at 50 feet */
+    if ((auto_depth == 1) && !bored && (c_t < auto_began + 200L)) {
+        if (g < 0) g = 0;
+    }
+
 
     /* Bored and in town, go down */
-    if (bored && (auto_depth == 0)) g = 1;
+    if (bored && !auto_depth) {
+
+        /* Mega-Hack -- Recall into dungeon */
+        if (max_depth && (max_depth >= 5) &&
+            (kind_have[kind_scroll_recall] > 4) &&
+            !borg_leave_level_aux(max_depth, TRUE)) {
+
+            /* Note */
+            borg_note("Considering recall into dungeon...");
+            
+            /* Give it a shot */
+            if (borg_recall()) return (TRUE);
+        }
+            
+        /* Go down */
+        g = 1;
+    }
 
 
     /* Use random stairs when really bored */
     if (auto_depth && bored && (c_t - auto_shock > 3000L)) {
 
+        /* Note */
+        borg_note("Choosing random stairs.");
+        
         /* Use random stairs */
         g = (rand_int(100) < 50) ? -1 : 1;
     }
@@ -4542,19 +2867,20 @@ static bool borg_leave_level(bool bored)
     if (g < 0) {
 
         /* Hack -- use scroll of recall if able */
-        if (goal_rising && (auto_depth > 4) && (kind_have[kind_scroll_recall] > 3)) {
+        if (goal_rising && (auto_depth > 4) &&
+            (kind_have[kind_scroll_recall] > 3)) {
             if (borg_recall()) return (TRUE);
         }
 
         /* Attempt to use stairs */
         if (count_less && borg_flow_symbol('<')) {
-            borg_note("Returning to town.");
+            if (goal_rising) borg_note("Returning to town.");
             stair_less = TRUE;
             if (borg_play_old_goal()) return (TRUE);
         }
 
         /* Cannot find any stairs, try word of recall */
-        if (goal_rising && bored) {
+        if (goal_rising && bored && auto_depth) {
             if (borg_recall()) return (TRUE);
         }
     }
@@ -4580,11 +2906,10 @@ static bool borg_leave_level(bool bored)
 
 
 
-
 /*
- * Buy items from the current store
+ * Hack -- find something to purchase in the stores
  */
-static bool borg_think_store_buy(void)
+static bool borg_think_store_buy_aux(void)
 {
     int k, n;
     s32b p;
@@ -4604,6 +2929,7 @@ static bool borg_think_store_buy(void)
         if (!auto_shops[k].visit) return (FALSE);
     }
 
+
     /* Check each store */
     for (k = 0; k < 8; k++) {
     
@@ -4618,7 +2944,7 @@ static bool borg_think_store_buy(void)
             if (!ware->iqty) break;
 
             /* We must have "sufficient" cash */
-            if (auto_gold < ware->cost * 2) continue;
+            if (auto_gold < ware->cost) continue;
 
             /* Only buy useful stuff */
             if (!borg_good_buy(ware)) continue;
@@ -4634,28 +2960,51 @@ static bool borg_think_store_buy(void)
         }
     }
 
-    /* Buy the "best" item, if any, if in this store */
-    if ((b_n >= 0) && (shop_num == b_k)) {
+
+    /* Nothing to buy */
+    if (b_k < 0) return (FALSE);
+    
+    
+    /* Hack -- save this goal */
+    goal_shop = b_k;
+    goal_item = b_n;
+    
+    /* Success */
+    return (TRUE);
+}
+
+
+
+/*
+ * Buy items from the current store
+ */
+static bool borg_think_store_buy(void)
+{
+    /* See if there is anything good */
+    if (!borg_think_store_buy_aux()) return (FALSE);
+    
+    /* Buy something if possible */
+    if (goal_shop == shop_num) {
 
         auto_shop *shop = &auto_shops[shop_num];
-        auto_item *ware = &shop->ware[b_n];
+        auto_item *ware = &shop->ware[goal_item];
 
         /* Minor Hack -- Go to the correct page */
-        if ((b_n / 12) != auto_shops[shop_num].page) borg_keypress(' ');
+        if ((goal_item / 12) != auto_shops[shop_num].page) borg_keypress(' ');
 
         /* Log */
-        borg_info(format("Buying %s.", auto_shops[shop_num].ware[b_n].desc));
+        borg_note(format("Buying %s.", auto_shops[shop_num].ware[goal_item].desc));
 
         /* Buy an item */
         borg_keypress('p');
 
         /* Buy the desired item */
-        borg_keypress('a' + (b_n % 12));
+        borg_keypress('a' + (goal_item % 12));
 
         /* Hack -- Buy a single item */
         if (ware->iqty > 1) borg_keypress('\n');
 
-        /* Hack -- Accept the price */
+        /* Mega-Hack -- Accept the price */
         borg_keypress('\n');
         borg_keypress('\n');
         borg_keypress('\n');
@@ -4718,7 +3067,7 @@ static bool borg_think_store_sell(void)
         auto_item *item = &auto_items[b_n];
 
         /* Log */
-        borg_info(format("Selling %s.", auto_items[b_n].desc));
+        borg_note(format("Selling %s.", auto_items[b_n].desc));
 
         /* Sell that item */
         borg_keypress('s');
@@ -4751,8 +3100,6 @@ static bool borg_think_store(void)
     int i, n;
 
     byte t_a;
-
-    char /* p1 = '(', */ p2 = ')';
 
     char desc[80];
     char cost[10];
@@ -4867,7 +3214,7 @@ static bool borg_think_store(void)
     browse = TRUE;
 
 
-    /* Complete and Total Hack */
+    /* Mega-Hack */
     if (rand_int(1000) == 0) {
 
         bool done = FALSE;
@@ -4917,6 +3264,137 @@ static bool borg_think_store(void)
 
 
 
+
+
+
+/*
+ * Decide whether to "inspect" a grid
+ * Assume the given grid is NOT a wall
+ */
+static bool borg_inspect(void)
+{
+    int		i, wall = 0, supp = 0, diag = 0;
+
+    char	cc[8];
+
+
+    /* Hack -- Never inspect the town */
+    if (auto_depth == 0) return (FALSE);
+
+    /* Hack -- This grid is fully inspected */
+    if (grid(c_x,c_y)->xtra > 20) return (FALSE);
+
+    /* Tweak -- only search occasionally */
+    if (rand_int(50) != 0) return (FALSE);
+
+
+    /* Examine adjacent grids */
+    for (i = 0; i < 8; i++) {
+
+        /* Extract the location */
+        int xx = c_x + ddx[ddd[i]];
+        int yy = c_y + ddy[ddd[i]];
+
+        /* Obtain the grid */
+        auto_grid *ag = grid(xx, yy);
+
+        /* Require knowledge */
+        if (ag->o_c == ' ') return (FALSE);
+
+        /* Extract the symbol */
+        cc[i] = ag->o_c;
+    }
+
+
+    /* Count possible door locations */
+    for (i = 0; i < 4; i++) if (cc[i] == '#') wall++;
+
+    /* Hack -- no possible doors */
+    if (!wall) return (FALSE);
+
+
+    /* Count supporting evidence for secret doors */
+    for (i = 0; i < 4; i++) {
+        if ((cc[i] == '#') || (cc[i] == '%')) supp++;
+        else if ((cc[i] == '+') || (cc[i] == '\'')) supp++;
+    }
+
+    /* Count supporting evidence for secret doors */
+    for (i = 4; i < 8; i++) {
+        if ((cc[i] == '#') || (cc[i] == '%')) diag++;
+    }
+
+    /* Hack -- Examine "suspicious" walls */
+    if (((diag >= 4) && (supp >= 3)) ||
+        ((diag >= 4) && (rand_int(30) == 0)) ||
+        ((diag >= 2) && (rand_int(900) == 0))) {
+
+        /* Take note */
+        borg_note("Searching...");
+
+        /* Remember the search */
+        if (grid(c_x,c_y)->xtra < 100) grid(c_x,c_y)->xtra += 9;
+
+        /* Search a little */
+        borg_keypress('0');
+        borg_keypress('9');
+        borg_keypress('s');
+
+        /* Success */
+        return (TRUE);
+    }
+
+
+    /* Assume no suspicions */
+    return (FALSE);
+}
+
+
+/*
+ * Go shopping in the town (do stores in order)
+ */
+static bool borg_flow_shop(void)
+{
+    int i, n = -1, v = 99;
+
+    /* Must be in town */
+    if (auto_depth) return (FALSE);
+
+    /* Visit the oldest shop */
+    for (i = 0; i < 8; i++) {
+
+        /* Skip recent shops */
+        if ((n >= 0) && (auto_shops[i].visit >= v)) continue;
+
+        /* Save this shop */
+        n = i; v = auto_shops[i].visit;
+    }
+
+    /* Plenty of visits, time to stop */
+    if (v >= last_visit + 2) return (FALSE);
+
+    /* Hack -- think about buying */
+    if (borg_think_store_buy_aux()) {
+
+        /* Message */
+        borg_note(format("Shopping for '%s' at '%s'.",
+                         auto_shops[goal_shop].ware[goal_item].desc,
+                         k_list[OBJ_STORE_LIST+goal_shop].name));
+
+        /* Prefer that shop */
+        n = goal_shop;
+    }
+
+    /* Try and visit it */
+    if (borg_flow_symbol('1' + n)) return (TRUE);
+    
+    /* Failure */
+    return (FALSE);
+}
+
+
+
+
 /*
  * Perform an action in the dungeon
  *
@@ -4933,14 +3411,56 @@ static bool borg_think_store(void)
  */
 static bool borg_think_dungeon(void)
 {
+    /* Increase the "time" */
+    c_t++;
+
+    /* Analyze the "frame" */
+    borg_update_frame();
+
+    /* Track best level */
+    if (auto_lev > max_level) max_level = auto_lev;
+    if (auto_depth > max_depth) max_depth = auto_depth;
+    
+        
+    /* Hack -- react to new depth */
+    if (old_depth != auto_depth) {
+
+        int i;
+
+        /* Clear "recall stamp" */
+        when_recall = 0L;
+
+        /* Clear "wearing counter" */
+        auto_wearing = 0;
+
+        /* Clear "feeling power" in town */
+        if (!auto_depth) auto_feeling = 0L;
+
+        /* Hack -- clear "shops" */
+        for (i = 0; i < 8; i++) {
+
+            /* No visit yet */
+            auto_shops[i].visit = 0;
+        }
+        
+        /* Wipe the "ext" info */
+        borg_ext_wipe();
+    }
+    
     /* Examine the screen */
     borg_update();
 
+    /* Hack -- notice hallucination */
+    if (do_image) {
+        borg_oops("Hallucinating (?)");
+        return (TRUE);
+    }
+
+
+    /*** Deal with important stuff ***/
+    
     /* Analyze the inventory */
     borg_notice();
-
-    /* Paranoia -- catch death */
-    if (!pg || !auto_active) return (TRUE);
 
     /* Wear things that need to be worn */
     if (borg_wear_stuff()) return (TRUE);
@@ -4949,9 +3469,9 @@ static bool borg_think_dungeon(void)
     if (borg_use_things()) return (TRUE);
 
     /* Flee to the town when low on crucial supplies */
-    if (borg_restock() && borg_recall()) return (TRUE);
+    if (borg_restock() && auto_depth && borg_recall()) return (TRUE);
 
-    /* Flee the level after a long time */
+    /* Hack -- attempt to flee the level after a long time */
     if ((c_t - auto_began > 50000L) && borg_recall()) return (TRUE);
 
 
@@ -4966,25 +3486,26 @@ static bool borg_think_dungeon(void)
     /* Try not to get surrounded by monsters */
     if (borg_caution()) return (TRUE);
 
-    /* Fire at nearby monsters */
-    if (borg_play_fire()) return (TRUE);
-
     /* Attack neighboring monsters */
     if (borg_attack()) return (TRUE);
+
+    /* Fire at nearby monsters */
+    if (borg_play_fire()) return (TRUE);
 
     /* Continue flowing towards monsters */
     if (goal == GOAL_KILL) {
         if (borg_play_old_goal()) return (TRUE);
     }
 
-    /* Apply a tiny amount of chaos */
-    if (rand_int(200) == 0) {
+    /* Hack -- Apply a tiny amount of chaos */
+    if (rand_int(1000) == 0) {
         borg_keypress('0' + randint(9));
         return (TRUE);
     }
 
     /* Rest occasionally if damaged */
-    if ((auto_curhp < auto_maxhp) && (rand_int(10) == 0)) {
+    if (((auto_chp < auto_mhp) || (auto_csp < auto_csp)) &&
+        (rand_int(100) < 50)) {
 
         /* Take note */
         borg_note("Resting...");
@@ -4998,7 +3519,7 @@ static bool borg_think_dungeon(void)
         return (TRUE);
     }
 
-    /* Start a new one */
+    /* Go find a monster */
     if (borg_flow_kill()) {
         if (borg_play_old_goal()) return (TRUE);
     }
@@ -5009,11 +3530,20 @@ static bool borg_think_dungeon(void)
     /* Use other things */
     if (borg_use_others()) return (TRUE);
 
+    /* Illuminate the room */
+    if (borg_light_room()) return (TRUE);
+    
     /* Identify unknown things */
     if (borg_test_stuff()) return (TRUE);
 
+    /* Enchant things */
+    if (borg_enchant_1()) return (TRUE);
+    if (borg_enchant_2()) return (TRUE);
+
+    /* XXX Recharge things */
+    
     /* Throw away junk */
-    if (borg_throw_junk()) return (TRUE);
+    if (borg_crush_junk()) return (TRUE);
 
     /* Acquire free space */
     if (borg_free_space()) return (TRUE);
@@ -5022,7 +3552,7 @@ static bool borg_think_dungeon(void)
     /*** Flow towards objects ***/
 
     /* Hack -- beware of blindness and confusion */
-    if ((do_blind || do_confused) && (rand_int(2) == 0)) {
+    if ((do_blind || do_confused) && (rand_int(100) < 50)) {
 
         /* Take note */
         borg_note("Resting...");
@@ -5042,7 +3572,8 @@ static bool borg_think_dungeon(void)
     }
 
     /* Rest occasionally */
-    if ((auto_curhp < auto_maxhp) && (rand_int(2) == 0)) {
+    if (((auto_chp < auto_mhp) || (auto_csp < auto_msp)) &&
+        (rand_int(100) < 50)) {
 
         /* Take note */
         borg_note("Resting...");
@@ -5140,7 +3671,7 @@ static bool borg_think_dungeon(void)
         borg_note("Searching...");
 
         /* Remember the search */
-        if (pg->xtra < 100) pg->xtra += 9;
+        if (grid(c_x,c_y)->xtra < 100) grid(c_x,c_y)->xtra += 9;
 
         /* Search */
         borg_keypress('0');
@@ -5172,10 +3703,18 @@ static bool borg_think_dungeon(void)
 }
 
 
+
+
+
+
+
+
 /*
  * Think about the world and perform an action
- * Check inventory/equipment once per turn
- * Process "store" modes when necessary
+ *
+ * Check inventory/equipment once per "turn"
+ *
+ * Process "store" and other modes when necessary
  *
  * Note that the non-cheating "inventory" and "equipment" parsers
  * will get confused by a "weird" situation involving an ant ("a")
@@ -5184,183 +3723,99 @@ static bool borg_think_dungeon(void)
  * right of the ant.  This is very rare, but perhaps not completely
  * impossible.  I ignore this situation.  :-)
  */
-static bool borg_think(void)
+static void borg_think(void)
 {
     int i;
 
     byte t_a;
 
-    char /* p1 = '(', */ p2 = ')';
-
     char buf[128];
 
-    static bool do_inven = TRUE;
-    static bool do_equip = TRUE;
 
-    static bool do_panel = TRUE;
-
-
-    /*** Process inventory/equipment ***/
+    /*** Process inventory/equipment and Browse Books ***/
 
     /* Cheat */
-    if (cheat_inven) {
+    if (cheat_equip && do_equip) {
 
-        /* Extract the inventory */
-        for (i = 0; i < INVEN_TOTAL; i++) {
+        /* Only do it once */
+        do_equip = FALSE;
 
-            char buf[256];
+        /* Cheat the "equip" screen */
+        borg_cheat_equip();
+        
+        /* Done */
+        return;
+    }
 
-            /* Default to "nothing" */
-            buf[0] = '\0';
+    /* Cheat */
+    if (cheat_inven && do_inven) {
 
-            /* XXX XXX Extract a real item */
-            if (inventory[i].tval) {
-                objdes(buf, &inventory[i], TRUE);
-                buf[75] = '\0';
-            }
+        /* Only do it once */
+        do_inven = FALSE;
 
-            /* Ignore "unchanged" items */
-            if (streq(buf, auto_items[i].desc)) continue;
-
-            /* Analyze the item (no price) */
-            borg_item_analyze(&auto_items[i], buf, "");
-        }
-
-        /* No need to get the data */
-        do_inven = do_equip = FALSE;
+        /* Cheat the "inven" screen */
+        borg_cheat_inven();
+        
+        /* Done */
+        return;
     }
 
 
-    /* Hack -- Check for "inventory" mode */
+    /* Parse "equip" mode */
     if ((0 == borg_what_text(0, 0, 10, &t_a, buf)) &&
        (streq(buf, "Equipment "))) {
 
-        int row, col;
+        /* Parse the "equip" screen */
+        borg_parse_equip();
 
-        bool done = FALSE;
-
-        /* Find the column */
-        for (col = 0; col < 55; col++) {
-
-            /* Look for first prefix */
-            if ((0 == borg_what_text_hack(col, 1, 3, &t_a, buf)) &&
-                (buf[0] == 'a') && (buf[1] == p2) && (buf[2] == ' ')) {
-
-                break;
-            }
-        }
-
-        /* Extract the inventory */
-        for (i = INVEN_WIELD; i < INVEN_TOTAL; i++) {
-
-            /* Access the row */
-            row = i - INVEN_WIELD;
-
-            /* Attempt to get some text */
-            if (!done &&
-                (0 == borg_what_text_hack(col, row+1, 3, &t_a, buf)) &&
-                (buf[0] == 'a' + row) && (buf[1] == p2) && (buf[2] == ' ') &&
-                (0 == borg_what_text(col+19, row+1, -80, &t_a, buf)) &&
-                (buf[0] && (buf[0] != ' '))) {
-                /* XXX Strip final spaces */
-            }
-
-            /* Default to "nothing" */
-            else {
-                buf[0] = '\0';
-                done = TRUE;
-            }
-
-            /* Use the nice "show_empty_slots" flag */
-            if (streq(buf, "(nothing)")) strcpy(buf, "");
-
-            /* Ignore "unchanged" items */
-            if (streq(buf, auto_items[i].desc)) continue;
-
-            /* Analyze the item (no price) */
-            borg_item_analyze(&auto_items[i], buf, "");
-        }
-
-        /* Hack -- leave this mode */
+        /* Leave this mode */
         borg_keypress(ESCAPE);
 
         /* Done */
-        return (TRUE);
+        return;
     }
 
 
-    /* Hack -- Check for "inventory" mode */
+    /* Parse "inven" mode */
     if ((0 == borg_what_text(0, 0, 10, &t_a, buf)) &&
        (streq(buf, "Inventory "))) {
 
-        int row, col;
+        /* Parse the "inven" screen */
+        borg_parse_inven();
 
-        bool done = FALSE;
-
-        /* Find the column */
-        for (col = 0; col < 55; col++) {
-
-            /* Look for first prefix */
-            if ((0 == borg_what_text_hack(col, 1, 3, &t_a, buf)) &&
-                (buf[0] == 'a') && (buf[1] == p2) && (buf[2] == ' ')) {
-
-                break;
-            }
-        }
-
-        /* Extract the inventory */
-        for (i = 0; i < INVEN_PACK; i++) {
-
-            /* Access the row */
-            row = i;
-
-            /* Attempt to get some text */
-            if (!done &&
-                (0 == borg_what_text_hack(col, row+1, 3, &t_a, buf)) &&
-                (buf[0] == 'a' + row) && (buf[1] == p2) && (buf[2] == ' ') &&
-                (0 == borg_what_text(col+3, row+1, -80, &t_a, buf)) &&
-                (buf[0] && (buf[0] != ' '))) {
-                /* XXX Strip final spaces */
-            }
-
-            /* Default to "nothing" */
-            else {
-                buf[0] = '\0';
-                done = TRUE;
-            }
-
-            /* Use the nice "show_empty_slots" flag */
-            /* if (streq(buf, "(nothing)")) strcpy(buf, ""); */
-
-            /* Ignore "unchanged" items */
-            if (streq(buf, auto_items[i].desc)) continue;
-
-            /* Analyze the item (no price) */
-            borg_item_analyze(&auto_items[i], buf, "");
-        }
-
-        /* Hack -- leave this mode */
+        /* Leave this mode */
         borg_keypress(ESCAPE);
 
         /* Done */
-        return (TRUE);
+        return;
     }
 
 
-    /* Check equipment */
+    /* Check "equip" */
     if (do_equip) {
+
+        /* Only do it once */
         do_equip = FALSE;
+
+        /* Enter "equip" mode */
         borg_keypress('e');
-        return (TRUE);
+
+        /* Done */
+        return;
     }
 
-    /* Check inventory */
+    /* Check "inven" */
     if (do_inven) {
-        do_inven = FALSE;
-        borg_keypress('i');
-        return (TRUE);
-    }
 
+        /* Only do it once */
+        do_inven = FALSE;
+
+        /* Enter "inven" mode */
+        borg_keypress('i');
+
+        /* Done */
+        return;
+    }
 
 
     /*** Handle stores ***/
@@ -5380,7 +3835,7 @@ static bool borg_think(void)
             /* Check the store names */
             for (i = 0; i < 7; i++) {
                 cptr name = k_list[OBJ_STORE_LIST+i].name;
-                if (streq(buf, name)) shop_num = i;
+                if (prefix(buf, name)) shop_num = i;
             }
         }
 
@@ -5390,11 +3845,95 @@ static bool borg_think(void)
                          k_list[OBJ_STORE_LIST+shop_num].name));
 #endif
 
-        /* Hack -- Check inventory/equipment again later */
+        /* Mega-Hack -- Check inventory/equipment again later */
         do_inven = do_equip = TRUE;
 
         /* Process the store */
-        return (borg_think_store());
+        while (auto_active) {
+
+            /* Think */
+            if (borg_think_store()) break;
+        }
+        
+        /* Done */
+        return;
+    }
+
+
+
+    /*** Handle browsing ***/
+    
+    /* Hack -- Warriors never browse */
+    if (auto_class == 0) do_spell = FALSE;
+    
+    /* Hack -- Blind or Confused prevents browsing */
+    if (do_blind || do_confused) do_spell = FALSE;
+
+    /* Hack -- Stop doing spells when done */
+    if (do_spell_aux > 8) do_spell = FALSE;
+
+    /* Cheat */
+    if (cheat_spell && do_spell) {
+
+        /* Look for the book */
+        i = borg_book(do_spell_aux);
+        
+        /* Cheat the "spell" screens (all of them) */
+        if (i >= 0) {
+            
+            /* Cheat that page */
+            borg_cheat_spell(do_spell_aux);
+        }
+            
+        /* Advance to the next book */
+        do_spell_aux++;
+        
+        /* Done */
+        return;
+    }
+
+    /* Check for "browse" mode */
+    if ((0 == borg_what_text(COL_SPELL, ROW_SPELL, -12, &t_a, buf)) &&
+        (streq(buf,"Lv Mana Fail"))) {
+
+        /* Parse the "spell" screen */
+        borg_parse_spell(do_spell_aux);
+
+        /* Leave that mode */
+        borg_keypress(ESCAPE);
+
+        /* Advance to the next book */
+        do_spell_aux++;
+
+        /* Done */
+        return;
+    }
+
+    /* Check "spells" */
+    if (do_spell) {
+
+        /* Look for the book */
+        i = borg_book(do_spell_aux);
+        
+        /* Enter the "spell" screen */
+        if (i >= 0) {
+
+            /* Enter "browse" mode */
+            borg_keypress('b');
+
+            /* Pick the next book */
+            borg_keypress('a' + i);
+        }
+
+        /* Otherwise, advance */
+        else {
+
+            /* Advance to the next book */
+            do_spell_aux++;
+        }
+
+        /* Done */
+        return;
     }
 
 
@@ -5423,25 +3962,40 @@ static bool borg_think(void)
         borg_keypress(ESCAPE);
 
         /* Done */
-        return (TRUE);
+        return;
     }
 
     /* Check equipment */
     if (do_panel) {
+    
+        /* Only do it once */
         do_panel = FALSE;
+
+        /* Enter "panel" mode */
         borg_keypress('L');
-        return (TRUE);
+
+        /* Done */
+        return;
     }
 
 
     /*** Re-activate Tests ***/
 
-    /* Check inventory/equipment again later */
-    do_inven = do_equip = TRUE;
+    /* Check equip again later */
+    do_equip = TRUE;
 
+    /* Check inven again later */
+    do_inven = TRUE;
+
+    /* Check spells again later */
+    do_spell = TRUE;
+    
     /* Check panel again later */
     do_panel = TRUE;
 
+    /* Hack -- Start the books over */
+    do_spell_aux = 0;
+    
 
     /*** Actually Do Something ***/
 
@@ -5451,9 +4005,15 @@ static bool borg_think(void)
         /* Do domething */
         if (borg_think_dungeon()) break;
     }
+        
+    /* Save the depth */
+    old_depth = auto_depth;
 
-    /* Assume success */
-    return (TRUE);
+    /* Save the hit points */
+    old_chp = auto_chp;
+
+    /* Save the spell points */
+    old_csp = auto_csp;
 }
 
 
@@ -5468,8 +4028,12 @@ static bool borg_think(void)
  *
  * Currently, nothing else must be parsed, though some interesting
  * possibilities suggest themselves... :-)
+ *
+ * We should extract the "identity" of monsters, to help over-ride
+ * the default "monster identity" routines in "borg-ext.c".  These
+ * can also be used to notice the presence of invisible monsters.
  */
-static void borg_parse(char *msg)
+static void borg_parse(cptr msg)
 {
     /* Log (if needed) */
     if (auto_fff) borg_info(format("Msg <%s>", msg));
@@ -5478,129 +4042,210 @@ static void borg_parse(char *msg)
     /* Detect various "failures" */
     if (prefix(msg, "You failed ")) {
 
-        /* Mega-Hack -- flush the key-buffer */
+        /* Flush our key-buffer */
         borg_flush();
+        return;
     }
 
- #if 0
+
+    /* Killed somebody */
+    if (prefix(msg, "You have killed ") || prefix(msg, "You have slain ")) {
+
+        /* Note kills */
+        borg_note(msg);
+        return;
+    }
+
 
     /* Hit somebody */
-    else if (prefix(msg, "You hit ")) {
+    if (prefix(msg, "You hit ")) {
 
-        /* XXX Determine identity */
+        /* Ignore teleport trap */
+        if (prefix(msg, "You hit a teleport")) return;
+        
+        /* Note hits */
+        borg_note(msg);
+        return;
     }
 
     /* Miss somebody */
-    else if (prefix(msg, "You miss ")) {
+    if (prefix(msg, "You miss ")) {
 
-        /* XXX Determine identity */
+        /* Note misses */
+        borg_note(msg);
+        return;
     }
 
+
+    /* Something happens to the player */
+    if (suffix(msg, " you.")) {
+
+        /* Ignore arrow traps */
+        if (prefix(msg, "An arrow ")) return;
+
+        /* Ignore dart traps */
+        if (prefix(msg, "A small dart ")) return;
+        
+        /* Ignore darkness */
+        if (suffix(msg, " surrounds you.")) return;
+        
+        /* Ignore gravity */
+        if (suffix(msg, " warps around you.")) return;
+        
+        /* Ignore remove curse */
+        if (suffix(msg, " watching over you.")) return;
+        
+        /* Ignore "stares at" */
+        if (suffix(msg, " stares at you.")) return;
+        
+        /* Ignore "gestures at" */
+        if (suffix(msg, " gestures at you.")) return;
+        
+        /* Ignore shop-keeper */
+        if (suffix(msg, " glares at you.")) return;
+        
+        /* Ignore shop-keeper */
+        if (suffix(msg, " hear you.")) return;
+        
+        /* Miss */
+        if (suffix(msg, " misses you.")) {
+        
+            /* Note misses */
+            borg_note(msg);
+        }
+
+        /* Hit */
+        else {
+
+            /* Note hits */
+            borg_note(msg);
+        }
+        
+        return;
+    }
+
+
+#if 0
     /* Hack -- detect word of recall */
-    else if (prefix(msg, "The air about you becomes charged.")) {
+    if (prefix(msg, "The air about you becomes charged.")) {
 
         /* Note the time */
-        auto_recall = c_t;
+        when_recall = c_t;
+        return;
     }
+#endif
 
     /* Hack -- detect word of recall */
-    else if (prefix(msg, "A tension leaves the air around you.")) {
+    if (prefix(msg, "A tension leaves ")) {
 
         /* Hack -- Oops */
-        auto_recall = 0;
+        when_recall = 0L;
+        return;
     }
 
-    /* Word of recall fizzles out */
-    else if (prefix(msg, "You feel tension leave the air.")) {
+    /* Word of recall fizzles out or is cancelled */
+    if (prefix(msg, "You feel tension leave ")) {
 
         /* Note the time */
-        auto_recall = 0;
+        when_recall = 0L;
+        return;
     }
 
     /* Word of recall kicks in */
-    else if (prefix(msg, "You feel yourself yanked ")) {
+    if (prefix(msg, "You feel yourself yanked ")) {
 
         /* Note the time */
-        auto_recall = 0;
+        when_recall = 0L;
+        return;
     }
 
-#endif
 
     /* Feelings */
-    else if (prefix(msg, "You feel there is something special")) {
+    if (prefix(msg, "You feel there is something special")) {
 
         /* Hang around */
-        attention = 2000L;
+        auto_feeling = 2000L;
+        return;
     }
 
     /* Feelings */
-    else if (prefix(msg, "You have a superb feeling")) {
+    if (prefix(msg, "You have a superb feeling")) {
 
         /* Hang around */
-        attention = 2000L;
+        auto_feeling = 2000L;
+        return;
     }
 
     /* Feelings */
-    else if (prefix(msg, "You have an excellent feeling")) {
+    if (prefix(msg, "You have an excellent feeling")) {
 
         /* Hang around */
-        attention = 1500L;
+        auto_feeling = 1500L;
+        return;
     }
 
     /* Feelings */
-    else if (prefix(msg, "You have a very good feeling")) {
+    if (prefix(msg, "You have a very good feeling")) {
 
         /* Hang around */
-        attention = 1000L;
+        auto_feeling = 1000L;
+        return;
     }
 
     /* Feelings */
-    else if (prefix(msg, "You have a good feeling")) {
+    if (prefix(msg, "You have a good feeling")) {
 
         /* Hang around */
-        attention = 500L;
+        auto_feeling = 500L;
+        return;
     }
 
     /* Feelings */
-    else if (prefix(msg, "You feel strangely lucky")) {
+    if (prefix(msg, "You feel strangely lucky")) {
 
         /* Stair scum */
-        attention = 200L;
+        auto_feeling = 200L;
+        return;
     }
 
     /* Feelings */
-    else if (prefix(msg, "You feel your luck is turning")) {
+    if (prefix(msg, "You feel your luck is turning")) {
 
         /* Stair scum */
-        attention = 200L;
+        auto_feeling = 200L;
+        return;
     }
 
     /* Feelings */
-    else if (prefix(msg, "You like the look of this place")) {
+    if (prefix(msg, "You like the look of this place")) {
 
         /* Stair scum */
-        attention = 200L;
+        auto_feeling = 200L;
+        return;
     }
 
     /* Feelings */
-    else if (prefix(msg, "This level can't be all bad")) {
+    if (prefix(msg, "This level can't be all bad")) {
 
         /* Stair scum */
-        attention = 200L;
+        auto_feeling = 200L;
+        return;
     }
 
     /* Feelings */
-    else if (prefix(msg, "What a boring place")) {
+    if (prefix(msg, "What a boring place")) {
 
         /* Stair scum */
-        attention = 200L;
+        auto_feeling = 200L;
+        return;
     }
 
     /* Feelings */
-    else if (prefix(msg, "Looks like any other level")) {
+    if (prefix(msg, "Looks like any other level")) {
 
         /* Stair scum */
-        attention = 200L;
+        auto_feeling = 200L;
+        return;
     }
 }
 
@@ -5611,175 +4256,12 @@ static void borg_parse(char *msg)
 
 
 /*
- * Maintain the "old" hook
+ * Initialize the "Ben Borg"
  */
-static errr (*Term_xtra_hook_old)(int n, int v) = NULL;
-
-
-/*
- * Our own hook.  Allow thinking when no keys ready.
- */
-static errr Term_xtra_borg(int n, int v)
+static void borg_ben_init(void)
 {
-    /* Hack -- Notice "NOISE" events (errors) */
-    if (n == TERM_XTRA_NOISE) {
+    byte *test;
 
-        /* Hack -- Give a message and stop thinking */
-        if (auto_active) borg_oops("Caught request for noise.");
-    }
-
-    /* Hack -- The Borg pre-empts keypresses */
-    while (auto_active && (n == TERM_XTRA_EVENT)) {
-
-        int i, x, y;
-        byte t_a;
-        char buf[128];
-
-        errr res = 0;
-
-        bool visible;
-
-        static inside = 0;
-
-
-        /* Paranoia -- require main window */
-        if (Term != term_screen) {
-            borg_oops("Bizarre request!");
-            break;
-        }
-
-
-        /* Paranoia -- prevent recursion */
-        if (inside) {
-            borg_oops("Bizarre recursion!");
-            break;
-        }
-
-
-        /* XXX XXX XXX Mega-Hack -- Check the user */
-        res = (*Term_xtra_hook_old)(TERM_XTRA_CHECK, v);
-
-        /* XXX XXX XXX Abort on user keypress (?) */
-        /* if (Term_kbhit()) auto_active = FALSE; */
-
-
-        /* Note that the cursor visibility determines whether the */
-        /* game is asking us for a "command" or for some other key. */
-        /* XXX XXX This requires that "hilite_player" be FALSE. */
-
-
-        /* Hack -- Extract the cursor visibility */
-        visible = (!Term_hide_cursor());
-        if (visible) Term_show_cursor();
-
-
-        /* XXX XXX XXX Mega-Hack -- Catch "-more-" messages */
-        /* If the cursor is visible... */
-        /* And the cursor is on the top line... */
-        /* And there is text before the cursor... */
-        /* And that text is "-more-" */
-        if (visible &&
-            (0 == Term_locate(&x, &y)) && (y == 0) && (x >= 6) &&
-            (0 == borg_what_text(x-6, y, 6, &t_a, buf)) &&
-            (streq(buf, "-more-"))) {
-
-            int col = 0;
-
-            /* Get each message */
-            while ((0 == borg_what_text(col, 0, -80, &t_a, buf)) &&
-                   (t_a == TERM_WHITE) && (buf[0] && (buf[0] != ' '))) {
-
-                /* Advance the column */
-                col += strlen(buf) + 1;
-
-                /* Parse */
-                borg_parse(buf);
-            }
-
-            /* Hack -- Clear the message */
-            Term_keypress(' ');
-
-            /* Done */
-            return (0);
-        }
-
-        /* XXX XXX XXX Mega-Hack -- catch normal messages */
-        /* If the cursor is NOT visible... */
-        /* And there is text on the first line... */
-        if (!visible &&
-            (borg_what_text(0, 0, 1, &t_a, buf) == 0) &&
-            (t_a == TERM_WHITE) && (buf[0] && (buf[0] != ' '))) {
-
-            int col = 0;
-
-            /* Get each message */
-            while ((0 == borg_what_text(col, 0, -80, &t_a, buf)) &&
-                   (t_a == TERM_WHITE) && (buf[0] && (buf[0] != ' '))) {
-
-                /* Advance the column */
-                col += strlen(buf) + 1;
-
-                /* Parse */
-                borg_parse(buf);
-            }
-
-            /* Hack -- Clear the message */
-            Term_keypress(' ');
-
-            /* Done */
-            return (0);
-        }
-
-
-        /* Check for a Borg keypress */
-        i = borg_inkey();
-
-        /* Take the next keypress */
-        if (i) {
-
-            /* Enqueue the keypress */
-            Term_keypress(i);
-
-            /* Success */
-            return (0);
-        }
-
-
-        /* Wizard mode kills the Borg */
-        if (wizard) auto_active = FALSE;
-
-
-        /* Inside */
-        inside++;
-
-        /* Think until done */
-        while (auto_active) {
-
-            /* Actually think */
-            if (borg_think()) break;
-        }
-
-        /* Outside */
-        inside--;
-    }
-
-
-    /* Hack -- Usually just pass the call through */
-    return ((*Term_xtra_hook_old)(n, v));
-}
-
-
-
-
-/*
- * Initialize the Borg
- */
-void borg_init(void)
-{
-    int i;
-
-    /* Only initialize once */
-    if (auto_ready) return;
 
     /* Message */
     msg_print("Initializing the Borg...");
@@ -5787,29 +4269,45 @@ void borg_init(void)
     /* Hack -- flush it */
     Term_fresh();
 
-    /* Remember the "normal" event scanner */
-    Term_xtra_hook_old = Term->xtra_hook;
+    /* Mega-Hack -- verify memory */
+    C_MAKE(test, 400 * 1024L, byte);
+    C_FREE(test, 400 * 1024L, byte);
 
-    /* Cheat -- drop a hook into the "event scanner" */
-    Term->xtra_hook = Term_xtra_borg;
 
-    /* Make some arrays */
-    C_MAKE(auto_is_take, 128, bool);
-    C_MAKE(auto_is_kill, 128, bool);
+    /*** Initialize ***/
 
-    /* Optimize "strchr()" calls */
-    for (i = 0; i < 128; i++) {
+    /* Init "borg-ext.c" */
+    borg_ext_init();
 
-        /* Optimize "strchr(auto_str_take, ag->o_c)" */
-        if (strchr("^+:;$*?!_-\\|/\"=~{([])},", i)) auto_is_take[i] = TRUE;
+    /* Hook in my functions */
+    borg_hook_think = borg_think;
 
-        /* Optimize "strchr(auto_str_kill, ag->o_c)" */
-        else if (isalpha(i) || (i == '&')) auto_is_kill[i] = TRUE;
-    }
+    /* Hook in my functions */
+    borg_hook_parse = borg_parse;
 
-    /* Init the other arrays */
-    borg_init_arrays();
+    /* Turn off the recall window */
+    use_recall_win = FALSE;
 
+
+    /*** Cheat / Panic ***/
+    
+    /* Mega-Hack -- Cheat a lot */
+    cheat_inven = TRUE;
+    cheat_equip = TRUE;
+
+    /* Mega-Hack -- Cheat a lot */
+    cheat_spell = TRUE;
+
+    /* Mega-Hack -- Cheat a lot */
+    cheat_panel = TRUE;
+
+    /* Mega-Hack -- Panic a lot */
+    panic_death = TRUE;
+    panic_stuff = TRUE;
+
+
+    /*** All done ***/
+     
     /* Done initialization */
     msg_print("done.");
 
@@ -5818,23 +4316,49 @@ void borg_init(void)
 }
 
 
+
 /*
- * Hack -- interact with the Borg.  Includes "initialization" call.
+ * Hack -- declare the "borg_ben()" function
  */
-void borg_mode(void)
+extern void borg_ben(void);
+
+
+/*
+ * Hack -- interact with the "Ben Borg".
+ */
+void borg_ben(void)
 {
     char cmd;
 
 
-    /* Not initialized? */
-    if (!auto_ready) return;
+    /* Mega-Hack -- Require wizard mode to initialize */
+    if (!auto_ready && !wizard) {
 
-    /* Currently active? */
-    if (auto_active) return;
+        /* Warning */
+        msg_print("You must be in wizard mode to initialize the Borg.");
 
-
-    /* Get a special command */
+        /* Ignore */
+        return;
+    }
+    
+    
+    /* Get a "Borg command" */
     if (!get_com("Borg command: ", &cmd)) return;
+
+
+    /* Require initialization */
+    if (!auto_ready) {
+
+        /* Allow initialization */
+        if (cmd == '$') borg_ben_init();
+
+        /* Otherwise be annoyed */
+        else msg_print("You must initialize the Borg.");
+
+        /* Done */
+        return;
+    }
+    
 
 
     /* Command: Resume */
@@ -5851,7 +4375,7 @@ void borg_mode(void)
         auto_active = TRUE;
 
         /* Hack -- restart the level */
-        auto_depth = -1;
+        old_depth = -1;
     }
 
 
@@ -5880,31 +4404,39 @@ void borg_mode(void)
     }
 
 
-    /* Command: toggle "cheat" for "inven"/"equip" */
-    else if (cmd == 'i') {
+    /* Command: toggle some "cheat" flags */
+    else if (cmd == CTRL('i')) {
         cheat_inven = !cheat_inven;
-        msg_print(format("Borg -- cheat_inven is now %d.", cheat_inven));
+        msg_format("Borg -- cheat_inven is now %d.", cheat_inven);
     }
-
-    /* Command: toggle "cheat" for "panel" */
-    else if (cmd == 'p') {
+    else if (cmd == CTRL('e')) {
+        cheat_equip = !cheat_equip;
+        msg_format("Borg -- cheat_equip is now %d.", cheat_equip);
+    }
+    else if (cmd == CTRL('s')) {
+        cheat_spell = !cheat_spell;
+        msg_format("Borg -- cheat_spell is now %d.", cheat_spell);
+    }
+    else if (cmd == CTRL('p')) {
         cheat_panel = !cheat_panel;
-        msg_print(format("Borg -- cheat_panel is now %d.", cheat_panel));
+        msg_format("Borg -- cheat_panel is now %d.", cheat_panel);
     }
 
 
     /* Command: toggle "panic_death" */
     else if (cmd == 'd') {
         panic_death = !panic_death;
-        msg_print(format("Borg -- panic_death is now %d.", panic_death));
+        msg_format("Borg -- panic_death is now %d.", panic_death);
     }
 
     /* Command: toggle "panic_stuff" */
     else if (cmd == 'j') {
         panic_stuff = !panic_stuff;
-        msg_print(format("Borg -- panic_stuff is now %d.", panic_stuff));
+        msg_format("Borg -- panic_stuff is now %d.", panic_stuff);
     }
 
+
+#if 0
 
     /* Command: Show all Rooms (Containers) */
     else if (cmd == 's') {
@@ -5934,13 +4466,13 @@ void borg_mode(void)
                             char c = '*';
                             if (grid(xx,yy)->info & BORG_VIEW) a = TERM_YELLOW;
                             if (grid(xx,yy)->o_c == ' ') c = '?';
-                            mh_print_rel(c, a, 0, yy, xx);
+                            print_rel(c, a, yy, xx);
                         }
                     }
 
                     /* Describe and wait */
                     Term_putstr(0, 0, -1, TERM_WHITE,
-                                format("Room %d (%dx%d). ", ar->self,
+                                format("Room %d (%dx%d).", ar->self,
                                 (1 + ar->x2 - ar->x1), (1 + ar->y2 - ar->y1)));
 
                     /* Get a key */
@@ -6007,11 +4539,11 @@ void borg_mode(void)
 
 
         /* Display some info */	
-        msg_print(format("Rooms: %d/%d used.", used, auto_room_max));
-        msg_print(format("Corridors: 1xN (%d), Nx1 (%d)", n_1xN, n_Nx1));
-        msg_print(format("Thickies: 2x2 (%d), 2xN (%d), Nx2 (%d)",
-                         n_2x2, n_2xN, n_Nx2));
-        msg_print(format("Singles: %d.  Normals: %d.", n_1x1, n_NxN));
+        msg_format("Rooms: %d/%d used.", used, auto_room_max);
+        msg_format("Corridors: 1xN (%d), Nx1 (%d)", n_1xN, n_Nx1);
+        msg_format("Thickies: 2x2 (%d), 2xN (%d), Nx2 (%d)",
+                         n_2x2, n_2xN, n_Nx2);
+        msg_format("Singles: %d.  Normals: %d.", n_1x1, n_NxN);
         msg_print(NULL);
     }
 
@@ -6049,7 +4581,7 @@ void borg_mode(void)
 
                 /* Hack -- Mention some locations */
                 if ((n > 1) && !cc[n]) {
-                    msg_print(format("The grid at %d,%d is in %d rooms.", x, y, n));
+                    msg_format("The grid at %d,%d is in %d rooms.", x, y, n);
                 }
 
                 /* Count them */
@@ -6061,13 +4593,22 @@ void borg_mode(void)
         }
 
         /* Display some info */	
-        msg_print(format("Grids: %d known, %d in rooms.", tg, tr));
-        msg_print(format("Roomies: %d, %d, %d, %d, %d, %d, %d, %d.",
-                         cc[0], cc[1], cc[2], cc[3],
-                         cc[4], cc[5], cc[6], cc[7]));
+        msg_format("Grids: %d known, %d in rooms.", tg, tr);
+        msg_format("Roomies: %d, %d, %d, %d, %d, %d, %d, %d.",
+                   cc[0], cc[1], cc[2], cc[3],
+                   cc[4], cc[5], cc[6], cc[7]);
         msg_print(NULL);
     }
 
+#endif
+
+    /* Oops */
+    else {
+
+        /* Message */
+        msg_print("That is not a legal Borg command.");
+    }
+    
 
     /* Mega-Hack -- Activate Borg */
     if (auto_active) {
@@ -6087,15 +4628,14 @@ void borg_mode(void)
         borg_keypress(ESCAPE);
         borg_keypress(ESCAPE);
 
-        /* Start a new level */
-        if (auto_depth < 0) {
-
-            /* Mega-Hack -- ask for a feeling */
-            borg_keypress('^');
-            borg_keypress('F');
-        }
+        /* Mega-Hack -- ask for a feeling */
+        borg_keypress('^');
+        borg_keypress('F');
     }
 }
+
+
+
 
 
 #endif

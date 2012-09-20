@@ -8,11 +8,11 @@ CFLAGS  = /mf /3r /3 /wx /s /oneatx /DUSE_WAT
 
 OBJS = &
     main.obj main-wat.obj signals.obj util.obj io.obj init.obj save.obj &
-    save-old.obj files.obj generate.obj birth.obj creature.obj melee.obj &
+    save-old.obj files.obj generate.obj birth.obj melee.obj &
     dungeon.obj effects.obj store.obj cmd1.obj cmd2.obj cmd3.obj cmd4.obj &
     cmd5.obj cmd6.obj misc.obj monster.obj mon-desc.obj object.obj &
     obj-desc.obj spells1.obj spells2.obj cave.obj tables.obj variable.obj &
-    wizard.obj term.obj random.obj z-util.obj z-virt.obj z-form.obj
+    term.obj random.obj z-util.obj z-virt.obj z-form.obj
 
 # Use whichever of these two you wish...
 angband.exe: $(OBJS) angband.lnk makefile

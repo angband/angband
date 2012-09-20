@@ -927,11 +927,11 @@ static errr Term_xtra_xaw(int n, int v)
     {
 	/* Make a noise */
 	case TERM_XTRA_NOISE:
-	    XBell (XtDisplay((Widget)screen.widget), 100);
+	    XBell(XtDisplay((Widget)screen.widget), 100);
 	    return (0);
 
 	/* Flush the output */
-	case TERM_XTRA_FLUSH:
+	case TERM_XTRA_FRESH:
 	    XFlush(XtDisplay((Widget)screen.widget));
 	    /* Nonblock event-check so the flushed events can be showed */
 	    CheckEvent(TRUE);

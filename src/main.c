@@ -28,7 +28,7 @@ static int force_keyset_arg = FALSE;
 static char buf[1024];
 
 
-#if !defined(MACINTOSH) && !defined(_Windows)
+#if !defined(MACINTOSH) && !defined(WINDOWS)
 
 /*
  * Unix machines need to "check wizard permissions"
@@ -66,34 +66,6 @@ static bool is_wizard(int uid)
 }
 
 
-/*
- * Verify the name
- */
-static bool name_okay(cptr s)
-{
-    cptr a;
-
-    /* Cannot be too long */
-    if (strlen(s) > 15) {
-        plog_fmt("The name '%s' is too long for Angband", s);
-        return (FALSE);
-    }
-
-    /* Cannot contain "icky" characters */
-    for (a = s; *a; a++) {
-
-        /* No control characters */
-        if (iscntrl(*a)) {
-            plog_fmt("The name '%s' contains control characters", s);
-            return (FALSE);
-        }
-    }
-
-    /* Acceptable */
-    return (TRUE);
-}
-
-
 
 /*
  * A hook for "quit()".
@@ -110,6 +82,15 @@ static void quit_hook(cptr s)
     if (term_screen) term_nuke(term_screen);
 }
 
+
+
+/*
+ * Set the stack size for Amiga's
+ */
+#ifdef AMIGA
+# include <dos.h>
+__near long __stack = 100000;
+#endif
 
 
 /*
@@ -191,10 +172,17 @@ int main(int argc, char *argv[])
           case 'C':
             ANGBAND_DIR_PREF = &argv[0][2];
             break;
-            
+
+#ifndef VERIFY_SAVEFILE
           case 'd':
           case 'D':
             ANGBAND_DIR_SAVE = &argv[0][2];
+            break;
+#endif
+
+          case 'i':
+          case 'I':
+            ANGBAND_DIR_INFO = &argv[0][2];
             break;
 
           case 'N':
@@ -262,9 +250,10 @@ int main(int argc, char *argv[])
             puts("");
 
             /* Less common options */
-            puts("Extra options: [-c<path>] [-d<path>]");
+            puts("Extra options: [-c<path>] [-d<path>] [-i<path>]");
             puts("  c<path> Look for pref files in the directory <path>");
             puts("  d<path> Look for save files in the directory <path>");
+            puts("  i<path> Look for info files in the directory <path>");
             puts("");
 
             /* Extra wizard options */
@@ -281,8 +270,10 @@ int main(int argc, char *argv[])
         }
     }
 
-    /* Verify the "player name" */
-    if (!name_okay(player_name)) quit("bad player name");
+
+    /* Process the player name */
+    process_player_name(TRUE);
+
 
 
     /* Drop privs (so X11 will work correctly) */
@@ -384,18 +375,6 @@ int main(int argc, char *argv[])
         quit(NULL);
     }
 
-    /* XXX XXX Verify the "player name" */
-    if (streq(player_name, "")) strcpy(player_name, "PLAYER");
-
-#ifdef SAVEFILE_USE_UID
-    /* Load the savefile name */
-    (void)sprintf(savefile, "%s%s%d%s",
-                  ANGBAND_DIR_SAVE, PATH_SEP, player_uid, player_name);
-#else
-    /* Load the savefile name */
-    (void)sprintf(savefile, "%s%s%s",
-                  ANGBAND_DIR_SAVE, PATH_SEP, player_name);
-#endif
 
     /* catch those nasty signals (assumes "Term_init()") */
     signals_init();
@@ -425,51 +404,20 @@ int main(int argc, char *argv[])
 
 
 
-/*
- * Init players with some belongings
- *
- * Having an item makes the player "aware" of its purpose.
- */
-static void player_outfit()
-{
-    int		i, j;
-    inven_type	inven_init;
-    inven_type	*i_ptr = &inven_init;
-
-
-    /* Give the player some food */
-    invcopy(i_ptr, OBJ_FOOD_RATION);
-    i_ptr->number = rand_range(3,7);
-    inven_aware(i_ptr);
-    inven_known(i_ptr);
-    (void)inven_carry(i_ptr);
-
-    /* Give the player some torches */
-    invcopy(i_ptr, OBJ_TORCH);
-    i_ptr->number = rand_range(3,7);
-    i_ptr->pval = rand_range(3,7) * 500;
-    inven_known(i_ptr);
-    (void)inven_carry(i_ptr);
-
-    /* Give the player three useful objects */
-    for (i = 0; i < 3; i++) {
-        j = player_init[p_ptr->pclass][i];
-        invcopy(i_ptr, j);
-        inven_aware(i_ptr);
-        inven_known(i_ptr);
-        (void)inven_carry(i_ptr);
-    }
-}
-
 
 /*
  * Actually play a game
+ *
+ * Note the global "character_dungeon" which is TRUE when a dungeon has
+ * been built for the player.  If FALSE, then a new level must be generated.
  */
 void play_game()
 {
-    int i;
-    int generate;
     int result = FALSE;
+
+
+    /* Character is "icky" */
+    character_icky = TRUE;
 
 
     /* Hack -- turn off the cursor */
@@ -479,70 +427,76 @@ void play_game()
     init_seeds();
 
 
-    /*
-     * This restoration of a saved character may get ONLY the monster memory.
-     * In this case, load_player returns false. It may also resurrect a dead
-     * character (if you are a wizard). In this case, it returns true, but
-     * also sets the parameter "generate" to true, as it does not recover
-     * any cave details.
-     */
-
-    /* Hack -- restore dead players (Unix) */
+    /* Hack -- restore dead players */
     if (fiddle) {
-        result = load_player(&generate);
+        result = load_player();
         if (result) save_player();
         quit(NULL);
     }
 
     /* If "restore game" requested, attempt to do so */
-    if (!new_game) result = load_player(&generate);
+    if (!new_game) {
+
+        /* Load the player */
+        result = load_player();
+
+        /* Start new file on failure */
+        if (!result) new_game = TRUE;
+        
+        /* Process the player name */
+        process_player_name(FALSE);
+    }
 
     /* Enter wizard mode AFTER "resurrection" (if any) is complete */
     if (to_be_wizard && enter_wiz_mode()) wizard = TRUE;
 
     
-    /* See above */
-    if (!new_game && result) {
+    /* Pick new "seeds" if needed */
+    if (new_game) {
 
-        /* Recalculate some stuff */
-        p_ptr->update |= (PU_BONUS);
-    
-        /* Handle (non-visual) stuff */
-        handle_stuff(FALSE);
-
-        /* Display character, allow name change */
-        change_name();
-
-        /* Hack -- delayed death induced by certain signals */
-        if (p_ptr->chp < 0) death = TRUE;
+        /* Hack -- reset seeds */
+        town_seed = random();
+        randes_seed = random();
     }
-
-    /* Create character */
-    else {
-
-        /* Roll up a new character */
-        player_birth();
-
-        /* Force "level generation" */
-        generate = TRUE;
-
-        /* Give him some stuff */
-        player_outfit();
-
-        /* Init the stores */
-        store_init();
-
-        /* Maintain the stores (ten times) */
-        for (i = 0; i < 10; i++) store_maint();
-    }
-
 
     /* Flavor the objects */
     flavor_init();
 
+    /* Reset the visual mappings */
+    reset_visuals();
+
+    /* Roll up a new character if needed */
+    if (new_game) {
+    
+        /* Roll up a new character */
+        player_birth();
+    }
+    
+    
+    /* Recalculate some stuff */
+    p_ptr->update |= (PU_BONUS);
+
+    /* Redraw the choice window */
+    p_ptr->redraw |= (PR_CHOICE);
+
+    /* Handle stuff */
+    handle_stuff();
+
+    /* Display character (briefly) */
+    display_player();
+
+    /* Flash a message */
+    prt("Please wait...", 0, 0);
+
+    /* Flush the message */
+    Term_fresh();
+
 
     /* Reset "rogue_like_commands" if requested */
     if (force_keyset) rogue_like_commands = force_keyset_arg;
+
+    /* Verify the keymap (before loading preferences!) */
+    keymap_init();
 
 
     /* Access the system "pref" file */
@@ -564,40 +518,32 @@ void play_game()
     process_pref_file(buf);
 
     /* Access the character's "pref" file */
-    sprintf(buf, "%s.prf", player_name);
+    sprintf(buf, "%s.prf", player_base);
 
     /* Attempt to process that file */
     process_pref_file(buf);
 
 
-    /* Begin the game */
-    clear_screen();
+    /* Make the first level (the town) */
+    if (!character_dungeon) {
 
-    /* Show the frame */
-    p_ptr->redraw |= (PR_BLOCK);
-    
-    /* Handle stuff */
-    handle_stuff(TRUE);
-
-    /* Fresh */
-    Term_fresh();
-    
-    /* Generate a new level */
-    if (generate) {
-
-        /* Hack -- Flash a message */
-        prt("Generating a new level...", 10, 20);
-
-        /* Hack -- Flush the message */
-        Term_fresh();
-        
         /* Make a new level */
         generate_cave();
+
+        /* The dungeon is ready */
+        character_dungeon = TRUE;
     }
 
     /* Character is now "complete" */
-    character_generated = 1;
+    character_generated = TRUE;
 
+
+    /* Character is no longer "icky" */
+    character_icky = FALSE;
+    
+    
+    /* Hack -- enforce "delayed death" */
+    if (p_ptr->chp < 0) death = TRUE;
 
     /* Loop till dead */
     while (!death) {
@@ -635,9 +581,9 @@ void play_game_mac(int ng)
     ANGBAND_SYS = "mac";
 #endif
 
-#ifdef _Windows
-    /* Use the "pref-mac.prf" file */
-    ANGBAND_SYS = "win";
+#ifdef WINDOWS
+    /* Choose a "pref-xxx.prf" file */
+    ANGBAND_SYS = (use_graphics ? "gfw" : "txw");
 #endif
 
     /* Play a game */

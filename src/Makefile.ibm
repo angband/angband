@@ -8,10 +8,10 @@
 OBJS = \
   main.o main-ibm.o \
   signals.o util.o io.o init.o save.o save-old.o files.o \
-  generate.o birth.o creature.o melee.o dungeon.o store.o \
+  generate.o birth.o melee.o dungeon.o store.o \
   effects.o cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
   misc.o monster.o mon-desc.o object.o obj-desc.o \
-  spells1.o spells2.o cave.o tables.o variable.o wizard.o \
+  spells1.o spells2.o cave.o tables.o variable.o \
   term.o random.o z-util.o z-virt.o z-form.o
 
 

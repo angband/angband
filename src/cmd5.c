@@ -13,111 +13,6 @@
 #include "angband.h"
 
 
-/*
- * Returns spell chance of failure for spell		-RAK-	
- */
-int spell_chance(int spell)
-{
-    int         chance, minfail;
-    spell_type *s_ptr;
-
-    /* Paranoia -- warriors */
-    if (p_ptr->pclass == 0) return (100);
-
-    /* Access the spell */
-    s_ptr = &magic_spell[p_ptr->pclass-1][spell];
-
-    /* Extract the base spell failure rate */
-    chance = s_ptr->sfail - 3 * (p_ptr->lev - s_ptr->slevel);
-
-    /* Adjust for primary spell stat */
-    chance -= 3 * (stat_adj(cp_ptr->spell_stat) - 1);
-
-    /* Not enough mana to cast */
-    if (s_ptr->smana > p_ptr->cmana) {
-        chance += 5 * (s_ptr->smana - p_ptr->cmana);
-    }
-
-    /* Extract the minimum failure rate */
-    switch (stat_adj(cp_ptr->spell_stat)) {
-      case 0:
-        minfail = 50;
-        break;
-      case 1:
-        minfail = 12;
-        break;			   /* 8-14 stat */
-      case 2:
-        minfail = 8;
-        break;			   /* 15-17 stat */
-      case 3:
-        minfail = 5;
-        break;			   /* 18-18/49 stat */
-      case 4:
-        minfail = 4;
-        break;			   /* 18/50-18/69 */
-      case 5:
-        minfail = 4;
-        break;			   /* 18/70-18/89 */
-      case 6:
-        minfail = 3;
-        break;			   /* 18/90-18/99 */
-      case 7:
-        minfail = 3;
-        break;			   /* 18/100 */
-      case 8:
-      case 9:
-      case 10:
-        minfail = 2;
-        break;			   /* 18/101 - 18/130 */
-      case 11:
-      case 12:
-        minfail = 2;
-        break;			   /* 18/131 - 18/150 */
-      case 13:
-      case 14:
-        minfail = 1;
-        break;			   /* 18/151 - 18/170 */
-      case 15:
-      case 16:
-        minfail = 1;
-        break;			   /* 18/171 - 18/200 */
-      default:
-        minfail = 0;
-        break;			   /* 18/200 - 18/etc */
-    }
-
-    /* Non mage/priest characters never get too good */
-    if ((p_ptr->pclass != 1) && (p_ptr->pclass != 2)) {
-        if (minfail < 5) minfail = 5;
-    }
-
-    /* Big priest prayer penalty for edged weapons  -DGK */
-    /* XXX XXX So, like, switch weapons and then pray? */
-    if (p_ptr->pclass == 2) {
-        inven_type *i_ptr;
-        i_ptr = &inventory[INVEN_WIELD];
-        if ((i_ptr->tval == TV_SWORD) || (i_ptr->tval == TV_POLEARM)) {
-            if (!(i_ptr->flags3 & TR3_BLESSED)) {
-                chance += 25;
-            }
-        }
-    }
-
-    /* Minimum failure rate */
-    if (chance < minfail) chance = minfail;
-
-    /* Stunning makes spells harder */
-    if (p_ptr->stun > 50) chance += 25;
-    else if (p_ptr->stun) chance += 15;
-
-    /* Always a 5 percent chance of working */
-    if (chance > 95) chance = 95;
-
-    /* Return the chance */
-    return (chance);
-}
-
-
 
 /*
  * Determine if a spell is "okay" for the player to cast
@@ -125,32 +20,68 @@ int spell_chance(int spell)
  */
 static bool spell_okay(int j)
 {
-    spell_type *s_ptr;
+    magic_type *s_ptr;
 
     /* Access the spell */
-    s_ptr = &magic_spell[p_ptr->pclass-1][j];
+    s_ptr = &mp_ptr->info[j];
 
     /* Spell is illegal */
     if (s_ptr->slevel > p_ptr->lev) return (FALSE);
 
     /* Spell is forgotten */
-    if (j < 32) {
-        if (spell_forgotten1 & (1L << j)) return (FALSE);
-    }
-    else {
-        if (spell_forgotten2 & (1L << (j - 32))) return (FALSE);
+    if ((j < 32) ?
+        (spell_forgotten1 & (1L << j)) :
+        (spell_forgotten2 & (1L << (j - 32)))) {
+
+        return (FALSE);
     }
 
     /* Spell is learned */
-    if (j < 32) {
-        if (spell_learned1 & (1L << j)) return (TRUE);
-    }
-    else {
-        if (spell_learned2 & (1L << (j - 32))) return (TRUE);
+    if ((j < 32) ?
+        (spell_learned1 & (1L << j)) :
+        (spell_learned2 & (1L << (j - 32)))) {
+
+        return (TRUE);
     }
 
     /* Assume unknown */
     return (FALSE);
+}
+
+
+
+/*
+ * Determine if a spell is "okay" for the player to study
+ * A spell must be legible, learnable, and not learned.
+ */
+static bool spell_okay_study(int j)
+{
+    magic_type *s_ptr;
+
+    /* Access the spell */
+    s_ptr = &mp_ptr->info[j];
+
+    /* Spell is illegible or illegal */
+    if (s_ptr->slevel > p_ptr->lev) return (FALSE);
+
+    /* Spell is forgotten */
+    if ((j < 32) ?
+        (spell_forgotten1 & (1L << j)) :
+        (spell_forgotten2 & (1L << (j - 32)))) {
+
+        return (FALSE);
+    }
+
+    /* Spell is learned */
+    if ((j < 32) ?
+        (spell_learned1 & (1L << j)) :
+        (spell_learned2 & (1L << (j - 32)))) {
+
+        return (FALSE);
+    }
+
+    /* Assume okay */
+    return (TRUE);
 }
 
 
@@ -166,29 +97,29 @@ static void spell_info(char *p, int j)
 #ifdef DRS_SHOW_SPELL_INFO
 
     /* Mage spells */
-    if (cp_ptr->spell_stat == A_INT) {
+    if (mp_ptr->spell_book == TV_MAGIC_BOOK) {
 
-        int lev = p_ptr->lev;
+        int plev = p_ptr->lev;
 
         /* Analyze the spell */
         switch (j) {
-            case 0: sprintf(p, " dam %dd4", 3+((lev-1)/5)); break;
+            case 0: sprintf(p, " dam %dd4", 3+((plev-1)/5)); break;
             case 2: strcpy(p, " range 10"); break;
-            case 5: strcpy(p, " heal 4d4"); break;
-            case 8: sprintf(p, " dam %d", 10 + (lev / 2)); break;
-            case 10: sprintf(p, " dam %dd8", (3+((lev-5)/4))); break;
-            case 14: sprintf(p, " range %d", lev * 10); break;
+            case 5: strcpy(p, " heal 2d8"); break;
+            case 8: sprintf(p, " dam %d", 10 + (plev / 2)); break;
+            case 10: sprintf(p, " dam %dd8", (3+((plev-5)/4))); break;
+            case 14: sprintf(p, " range %d", plev * 10); break;
             case 15: strcpy(p," dam 6d8"); break;
-            case 16: sprintf(p, " dam %dd8", (5+((lev-5)/4))); break;
-            case 24: sprintf(p, " dam %dd8", (8+((lev-5)/4))); break;
-            case 26: sprintf(p, " dam %d", 30 + lev); break;
-            case 29: sprintf(p, " dur %d+d20", lev); break;
-            case 30: sprintf(p, " dam %d", 55 + lev); break;
-            case 38: sprintf(p, " dam %dd8", (6+((lev-5)/4))); break;
-            case 39: sprintf(p, " dam %d", 40 + lev/2); break;
-            case 40: sprintf(p, " dam %d", 40 + lev); break;
-            case 41: sprintf(p, " dam %d", 70 + lev); break;
-            case 42: sprintf(p, " dam %d", 65 + lev); break;
+            case 16: sprintf(p, " dam %dd8", (5+((plev-5)/4))); break;
+            case 24: sprintf(p, " dam %dd8", (8+((plev-5)/4))); break;
+            case 26: sprintf(p, " dam %d", 30 + plev); break;
+            case 29: sprintf(p, " dur %d+d20", plev); break;
+            case 30: sprintf(p, " dam %d", 55 + plev); break;
+            case 38: sprintf(p, " dam %dd8", (6+((plev-5)/4))); break;
+            case 39: sprintf(p, " dam %d", 40 + plev/2); break;
+            case 40: sprintf(p, " dam %d", 40 + plev); break;
+            case 41: sprintf(p, " dam %d", 70 + plev); break;
+            case 42: sprintf(p, " dam %d", 65 + plev); break;
             case 43: strcpy(p, " dam 300"); break;
             case 49: strcpy(p, " dur 20+d20"); break;
             case 50: strcpy(p, " dur 20+d20"); break;
@@ -198,39 +129,40 @@ static void spell_info(char *p, int j)
             case 54: strcpy(p, " dur 25+d25"); break;
             case 55: strcpy(p, " dur 30+d20"); break;
             case 56: strcpy(p, " dur 25+d25"); break;
-            case 57: sprintf(p, " dur %d+d25", 30+lev); break;
+            case 57: sprintf(p, " dur %d+d25", 30+plev); break;
             case 58: strcpy(p, " dur 6+d8"); break;
         }
     }
 
     /* Priest spells */
-    else {
+    if (mp_ptr->spell_book == TV_PRAYER_BOOK) {
 
-        int lev = p_ptr->lev;
+        int plev = p_ptr->lev;
 
-	int orb = ((p_ptr->pclass == 2) ? 2 : 1) * stat_adj(A_WIS);
+        /* See below */
+	int orb = (plev / ((p_ptr->pclass == 2) ? 2 : 4));
 	
         /* Analyze the spell */
         switch (j) {
-            case 1: strcpy(p, " heal 3d3"); break;
-            case 9: sprintf(p, " range %d", 3*lev); break;
-            case 10: strcpy(p, " heal 4d4"); break;
-            case 17: sprintf(p, " %d+3d6", lev + orb); break;
-            case 18: strcpy(p, " heal 8d4"); break;
-            case 20: sprintf(p, " dur %d+d25", 3*lev); break;
-            case 23: strcpy(p, " heal 16d4"); break;
-            case 26: sprintf(p, " dam d%d", 3*lev); break;
-            case 27: strcpy(p, " heal 200"); break;
-            case 28: sprintf(p, " dam d%d", 3*lev); break;
+            case 1: strcpy(p, " heal 2d8"); break;
+            case 9: sprintf(p, " range %d", 3*plev); break;
+            case 10: strcpy(p, " heal 4d8"); break;
+            case 17: sprintf(p, " %d+3d6", plev + orb); break;
+            case 18: strcpy(p, " heal 6d8"); break;
+            case 20: sprintf(p, " dur %d+d25", 3*plev); break;
+            case 23: strcpy(p, " heal 8d8"); break;
+            case 26: sprintf(p, " dam d%d", 3*plev); break;
+            case 27: strcpy(p, " heal 300"); break;
+            case 28: sprintf(p, " dam d%d", 3*plev); break;
             case 30: strcpy(p, " heal 1000"); break;
-            case 36: strcpy(p, " heal 8d4"); break;
-            case 37: strcpy(p, " heal 16d4"); break;
-            case 38: strcpy(p, " heal 1000"); break;
-            case 41: sprintf(p, " dam d%d", 4*lev); break;
-            case 42: sprintf(p, " dam d%d", 4*lev); break;
+            case 36: strcpy(p, " heal 4d8"); break;
+            case 37: strcpy(p, " heal 8d8"); break;
+            case 38: strcpy(p, " heal 2000"); break;
+            case 41: sprintf(p, " dam d%d", 4*plev); break;
+            case 42: sprintf(p, " dam d%d", 4*plev); break;
             case 45: strcpy(p, " dam 200"); break;
             case 52: strcpy(p, " range 10"); break;
-            case 53: sprintf(p, " range %d", 8*lev); break;
+            case 53: sprintf(p, " range %d", 8*plev); break;
         }
     }
 
@@ -244,20 +176,19 @@ static void spell_info(char *p, int j)
  */
 static void print_spells(int *spell, int num)
 {
-    int			i, j, col, index;
+    int			i, j, col;
 
-    spell_type		*s_ptr;
+    magic_type		*s_ptr;
 
     cptr		comment;
 
     char		info[80];
-    char		out_val[80];
+
+    char		out_val[160];
+
 
     /* Print column */
     col = 20;
-
-    /* Index into the spell name table */
-    index = (cp_ptr->spell_stat == A_INT) ? 0 : 1;
 
     /* Title the list */
     prt("", 1, col);
@@ -271,7 +202,7 @@ static void print_spells(int *spell, int num)
         j = spell[i];
 
         /* Access the spell */
-        s_ptr = &magic_spell[p_ptr->pclass-1][j];
+        s_ptr = &mp_ptr->info[j];
 
         /* Skip illegible spells */
         if (s_ptr->slevel >= 99) {
@@ -292,25 +223,25 @@ static void print_spells(int *spell, int num)
         }
 
         /* Analyze the spell */
-        if (j >= 32 ?
-                 ((spell_forgotten2 & (1L << (j - 32)))) :
-                 ((spell_forgotten1 & (1L << j)))) {
+        if ((j < 32) ?
+            ((spell_forgotten1 & (1L << j))) :
+            ((spell_forgotten2 & (1L << (j - 32))))) {
             comment = " forgotten";
         }
-        else if (j >= 32 ?
-                 (!(spell_learned2 & (1L << (j - 32)))) :
-                 (!(spell_learned1 & (1L << j)))) {
+        else if (!((j < 32) ?
+                   (spell_learned1 & (1L << j)) :
+                   (spell_learned2 & (1L << (j - 32))))) {
             comment = " unknown";
         }
-        else if (j >= 32 ?
-                 (!(spell_worked2 & (1L << (j - 32)))) :
-                 (!(spell_worked1 & (1L << j)))) {
+        else if (!((j < 32) ?
+                   (spell_worked1 & (1L << j)) :
+                   (spell_worked2 & (1L << (j - 32))))) {
             comment = " untried";
         }
 
         /* Dump the spell --(-- */
         sprintf(out_val, "  %c) %-30s%2d %4d %3d%%%s",
-                'a' + i, spell_names[index][j],
+                'a' + i, spell_names[mp_ptr->spell_type][j],
                 s_ptr->slevel, s_ptr->smana, spell_chance(j), comment);
         prt(out_val, 2 + i, col);
     }
@@ -328,14 +259,15 @@ static void print_spells(int *spell, int num)
  */
 static void choice_spell(int *spell, int num)
 {
-    int			i, j, index;
+    int			i, j;
 
-    spell_type		*s_ptr;
+    magic_type		*s_ptr;
 
     cptr		comment;
 
     char		info[80];
-    char		out_val[80];
+
+    char		out_val[160];
 
 
     /* In-active */
@@ -348,9 +280,6 @@ static void choice_spell(int *spell, int num)
     /* Clear it */
     Term_clear();
 
-
-    /* Index into the spell name table */
-    index = (cp_ptr->spell_stat == A_INT) ? 0 : 1;
 
 #if 0
     /* Title the list */
@@ -366,7 +295,7 @@ static void choice_spell(int *spell, int num)
         j = spell[i];
 
         /* Access the spell */
-        s_ptr = &magic_spell[p_ptr->pclass-1][j];
+        s_ptr = &mp_ptr->info[j];
 
         /* Skip illegible spells */
         if (s_ptr->slevel >= 99) {
@@ -386,25 +315,25 @@ static void choice_spell(int *spell, int num)
         }
 
         /* Analyze the spell */
-        if (j >= 32 ?
-                 ((spell_forgotten2 & (1L << (j - 32)))) :
-                 ((spell_forgotten1 & (1L << j)))) {
+        if ((j < 32) ?
+            ((spell_forgotten1 & (1L << j))) :
+            ((spell_forgotten2 & (1L << (j - 32))))) {
             comment = " forgotten";
         }
-        else if (j >= 32 ?
-                 (!(spell_learned2 & (1L << (j - 32)))) :
-                 (!(spell_learned1 & (1L << j)))) {
+        else if (!((j < 32) ?
+                   (spell_learned1 & (1L << j)) :
+                   (spell_learned2 & (1L << (j - 32))))) {
             comment = " unknown";
         }
-        else if (j >= 32 ?
-                 (!(spell_worked2 & (1L << (j - 32)))) :
-                 (!(spell_worked1 & (1L << j)))) {
+        else if (!((j < 32) ?
+                   (spell_worked1 & (1L << j)) :
+                   (spell_worked2 & (1L << (j - 32))))) {
             comment = " untried";
         }
 
         /* Dump the spell --(-- */
         sprintf(out_val, "%c) %-30s%2d %4d %3d%%%s",
-                'a' + i, spell_names[index][j],
+                'a' + i, spell_names[mp_ptr->spell_type][j],
                 s_ptr->slevel, s_ptr->smana, spell_chance(j), comment);
         Term_putstr(0, i, -1, TERM_WHITE, out_val);
     }
@@ -419,468 +348,12 @@ static void choice_spell(int *spell, int num)
 
 
 
-/*
- * calculate number of spells player should have,
- * and learn/forget spells until that number is met -JEW-
- *
- * Use "bit_pos()" in this function...
- */
-void calc_spells(int stat)
-{
-    int			i, k, j, index, levels;
-    int			num_allowed, new_spells, num_known;
-
-    u32b		mask, spell_flag;
-
-    spell_type		*s_ptr;
-
-    cptr		p;
-
-    char		tmp_str[80];
-
-
-    index = (cp_ptr->spell_stat == A_INT) ? 0 : 1;
-
-    p = (cp_ptr->spell_stat == A_INT) ? "spell" : "prayer";
-
-
-    /* XXX Hack -- this technically runs in the "wrong" order */
-
-    /* Check to see if know any spells greater than level, eliminate them */
-    for (i = 31; i >= 0; i--) {
-
-        mask = 1L << i;
-
-        if (mask & spell_learned1) {
-            s_ptr = &magic_spell[p_ptr->pclass-1][i];
-            if (s_ptr->slevel > p_ptr->lev) {
-                spell_learned1 &= ~mask;
-                spell_forgotten1 |= mask;
-                (void)sprintf(tmp_str, "You have forgotten the %s of %s.", p,
-                              spell_names[index][i]);
-                msg_print(tmp_str);
-            }
-        }
-
-        if (mask & spell_learned2) {
-            s_ptr = &magic_spell[p_ptr->pclass-1][i+32];
-            if (s_ptr->slevel > p_ptr->lev) {
-                spell_learned2 &= ~mask;
-                spell_forgotten2 |= mask;
-                (void)sprintf(tmp_str, "You have forgotten the %s of %s.", p,
-                              spell_names[index][i + 32]);
-                msg_print(tmp_str);
-            }
-        }
-    }
-
-
-    /* Determine the number of spells allowed */
-    levels = p_ptr->lev - cp_ptr->spell_first + 1;
-    switch (stat_adj(stat)) {
-      case 0:
-        num_allowed = 0;
-        break;
-      case 1:
-      case 2:
-      case 3:
-        num_allowed = 1 * levels;
-        break;
-      case 4:
-      case 5:
-        num_allowed = 3 * levels / 2;
-        break;
-      case 6:
-        num_allowed = 2 * levels;
-        break;
-      default:
-        num_allowed = 5 * levels / 2;
-        break;
-    }
-
-    /* Count the number of spells we know */
-    num_known = 0;
-    for (i = 0; i < 32; i++) {
-        mask = 1L << i;
-        if (mask & spell_learned1) num_known++;
-        if (mask & spell_learned2) num_known++;
-    }
-
-    /* See how many spells we must forget or may learn */
-    new_spells = num_allowed - num_known;
-
-
-    /* We can learn some forgotten spells */
-    if (new_spells > 0) {
-
-        /* Remember spells that were forgetten */
-        for (i = 0; new_spells > 0; i++) {
-
-            /* No spells left to remember */
-            if (i >= 64) break;
-
-            /* Not allowed to remember any more */
-            if (i >= num_allowed) break;
-
-            /* No more forgotten spells to remember */
-            if (!spell_forgotten1 && !spell_forgotten2) break;
-
-            /* Get the (i+1)th spell learned */
-            j = spell_order[i];
-
-            /* Don't process unknown spells... -CFT */
-            if (j == 99) continue;
-
-            /* First set of spells */
-            if (j < 32) {
-                mask = 1L << j;
-                if (mask & spell_forgotten1) {
-                    s_ptr = &magic_spell[p_ptr->pclass-1][j];
-                    if (s_ptr->slevel <= p_ptr->lev) {
-                        spell_forgotten1 &= ~mask;
-                        spell_learned1 |= mask;
-                        new_spells--;
-                        sprintf(tmp_str, "You have remembered the %s of %s.",
-                                p, spell_names[index][j]);
-                        msg_print(tmp_str);
-                    }
-                    else {
-                        /* if was too high lv to remember */
-                        num_allowed++;
-                    }
-                }
-            }
-
-            /* Second set of spells */
-            else {
-                mask = 1L << (j - 32);
-                if (mask & spell_forgotten2) {
-                    s_ptr = &magic_spell[p_ptr->pclass-1][j];
-                    if (s_ptr->slevel <= p_ptr->lev) {
-                        spell_forgotten2 &= ~mask;
-                        spell_learned2 |= mask;
-                        new_spells--;
-                        sprintf(tmp_str, "You have remembered the %s of %s.",
-                                p, spell_names[index][j]);
-                        msg_print(tmp_str);
-                    }
-                    else {
-                        /* if was too high lv to remember */
-                        num_allowed++;
-                    }
-                }
-            }
-        }
-    }
-
-
-    /* Learn some new spells */
-    if (new_spells > 0) {
-
-        /* Count the spells */
-        k = 0;
-
-        /* Count remaining learnable spells */
-        spell_flag = 0xFFFFFFFFL & ~spell_learned1;
-        while (spell_flag) {
-            j = bit_pos(&spell_flag);
-            s_ptr = &magic_spell[p_ptr->pclass-1][j];
-            if (s_ptr->slevel <= p_ptr->lev) k++;
-        }
-
-        /* Count remaining learnable spells */
-        spell_flag = 0xFFFFFFFFL & ~spell_learned2;
-        while (spell_flag) {
-            j = bit_pos(&spell_flag) + 32;
-            s_ptr = &magic_spell[p_ptr->pclass-1][j];
-            if (s_ptr->slevel <= p_ptr->lev) k++;
-        }
-
-        /* Cannot learn more spells than exist */
-        if (new_spells > k) new_spells = k;
-    }
-
-
-    /* Forget spells */
-    if (new_spells < 0) {
-
-        /* Forget spells in the opposite order they were learned */
-        for (i = 63; new_spells < 0; i--) {
-
-            /* Hack -- we might run out of spells to forget */
-            if (!spell_learned1 && !spell_learned2) {
-                new_spells = 0;
-                break;
-            }
-
-            /* Get the (i+1)th spell learned */
-            j = spell_order[i];
-
-            /* don't process unknown spells... -CFT */
-            if (j == 99) continue;
-
-            /* First set of spells */
-            if (j < 32) {
-                mask = 1L << j;
-                if (mask & spell_learned1) {
-                    spell_learned1 &= ~mask;
-                    spell_forgotten1 |= mask;
-                    new_spells++;
-                    sprintf(tmp_str, "You have forgotten the %s of %s.",
-                            p, spell_names[index][j]);
-                    msg_print(tmp_str);
-                }
-            }
-
-            /* Assume second set of spells */
-            else {
-                mask = 1L << (j - 32);
-                if (mask & spell_learned2) {
-                    spell_learned2 &= ~mask;
-                    spell_forgotten2 |= mask;
-                    new_spells++;
-                    sprintf(tmp_str, "You have forgotten the %s of %s.",
-                            p, spell_names[index][j]);
-                    msg_print(tmp_str);
-                }
-            }
-        }
-
-        /* Paranoia -- in case we run out of spells to forget */
-        new_spells = 0;
-    }
-
-
-    /* Take note when "study" changes */
-    if (character_generated && (new_spells != p_ptr->new_spells)) {
-
-        /* Player can learn new spells now */
-        if ((new_spells > 0) && (p_ptr->new_spells == 0)) {
-            (void)sprintf(tmp_str, "You can learn some new %ss now.", p);
-            msg_print(tmp_str);
-        }
-
-        /* Save the new_spells value */
-        p_ptr->new_spells = new_spells;
-
-        /* Display "study state" later */
-        p_ptr->redraw |= PR_STUDY;
-    }
-}
 
 
 /*
- * Gain some mana if you know at least one spell	-RAK-	
- */
-void calc_mana(int stat)
-{
-    int          new_mana, levels;
-    s32b        value;
-    int          i;
-    inven_type  *i_ptr;
-    int                   amrwgt, maxwgt;
-
-    static int cumber_armor = FALSE;
-    static int cumber_glove = FALSE;
-
-    bool old_glove = cumber_glove;
-    bool old_armor = cumber_armor;
-
-    if (spell_learned1 || spell_learned2) {
-        levels = p_ptr->lev - cp_ptr->spell_first + 1;
-        switch (stat_adj(stat)) {
-          case 0:
-            new_mana = 0;
-            break;
-          case 1:
-          case 2:
-            new_mana = 1 * levels;
-            break;
-          case 3:
-            new_mana = 3 * levels / 2;
-            break;
-          case 4:
-            new_mana = 2 * levels;
-            break;
-          case 5:
-            new_mana = 5 * levels / 2;
-            break;
-          case 6:
-            new_mana = 3 * levels;
-            break;
-          case 7:
-            new_mana = 4 * levels;
-            break;
-          case 8:
-            new_mana = 9 * levels / 2;
-            break;
-          case 9:
-            new_mana = 5 * levels;
-            break;
-          case 10:
-            new_mana = 11 * levels / 2;
-            break;
-          case 11:
-            new_mana = 6 * levels;
-            break;
-          case 12:
-            new_mana = 13 * levels / 2;
-            break;
-          case 13:
-            new_mana = 7 * levels;
-            break;
-          case 14:
-            new_mana = 15 * levels / 2;
-            break;
-          default:
-            new_mana = 8 * levels;
-            break;
-        }
-
-        /* increment mana by one, so that first level chars have 2 mana */
-        if (new_mana) new_mana++;
-
-
-        /* Assume player is not encumbered by gloves */
-        cumber_glove = FALSE;
-
-        /* Get the gloves */
-        i_ptr = &inventory[INVEN_HANDS];
-
-        /* good gauntlets of dexterity or free action do not hurt spells */
-        if (i_ptr->tval &&
-            !((i_ptr->flags2 & TR2_FREE_ACT) ||
-              ((i_ptr->flags1 & TR1_DEX) && (i_ptr->pval > 0)))) {
-
-            /* Only mages are affected */
-            if (p_ptr->pclass == 1 ||
-                p_ptr->pclass == 3 ||
-                p_ptr->pclass == 4) {
-
-                cumber_glove = TRUE;
-                new_mana = (3 * new_mana) / 4;
-            }
-        }
-
-        if (cumber_glove && !old_glove) {
-            msg_print("Your covered hands interfere with your spellcasting.");
-        }
-
-        if (old_glove && !cumber_glove) {
-            msg_print("Your hands feel more suitable for spellcasting.");
-        }
-
-
-        /* Assume player not encumbered by armor */
-        cumber_armor = FALSE;
-
-        /* Weigh the armor */
-        amrwgt = 0;
-        for (i = INVEN_WIELD; i < INVEN_TOTAL; i++) {
-            i_ptr = &inventory[i];
-            switch (i) {
-              case INVEN_HEAD:
-              case INVEN_BODY:
-              case INVEN_ARM:
-              case INVEN_HANDS:
-              case INVEN_FEET:
-              case INVEN_OUTER:
-                amrwgt += i_ptr->weight;
-            }
-        }
-
-        /* Determine the weight allowance */
-        switch (p_ptr->pclass) {
-          case 1:
-            maxwgt = 300;
-            break;
-          case 2:
-            maxwgt = 350;
-            break;
-          case 3:
-            maxwgt = 350;
-            break;
-          case 4:
-            maxwgt = 400;
-            break;
-          case 5:
-            maxwgt = 400;
-            break;
-          default:
-            maxwgt = 0;
-        }
-
-        /* Too much armor */
-        if (amrwgt > maxwgt) {
-            cumber_armor = TRUE;
-            new_mana -= ((amrwgt - maxwgt) / 10);
-        }
-
-        if (cumber_armor && !old_armor) {
-            msg_print("The weight of your armor encumbers your movement.");
-        }
-
-        if (old_armor && !cumber_armor) {
-            msg_print("You feel able to move more freely.");
-        }
-
-
-    /*
-     * if low int/wis, gloves, and lots of heavy armor, new_mana could be
-     * negative.  This would be very unlikely, except when int/wis was high
-     * enough to compensate for armor, but was severly drained by an annoying
-     * monster.  Since the following code blindly assumes that new_mana is >=
-     * 0, we must do the work and return here. -CFT
-     */
-
-        /* No mana left */
-        if (new_mana < 1) {
-            p_ptr->cmana = p_ptr->cmana_frac = p_ptr->mana = 0;
-            p_ptr->redraw |= PR_MANA;
-            return;
-        }
-
-        /* mana can be zero when creating character */
-        if (p_ptr->mana != new_mana) {
-
-            if (p_ptr->mana) {
-            /*
-             * change current mana proportionately to change of max mana,
-             * divide first to avoid overflow, little loss of accuracy
-             */
-                value = ((((long)p_ptr->cmana << 16) + p_ptr->cmana_frac) /
-                         p_ptr->mana * new_mana);
-                p_ptr->cmana = (value >> 16);
-                p_ptr->cmana_frac = (value & 0xFFFF);
-            }
-            else {
-                p_ptr->cmana = new_mana;
-                p_ptr->cmana_frac = 0;
-            }
-
-            p_ptr->mana = new_mana;
-
-            /* Display mana later */
-            p_ptr->redraw |= PR_MANA;
-        }
-    }
-
-    else if (p_ptr->mana) {
-        p_ptr->mana = 0;
-        p_ptr->cmana = 0;
-
-        /* Display mana later */
-        p_ptr->redraw |= PR_MANA;
-    }
-}
-
-
-
-
-
-/*
- * Allow user to choose a spell from the given book.
  * Note -- never call this function for warriors!
+ *
+ * Allow user to choose a spell from the given book.
  *
  * If a valid spell is chosen, saves it in '*sn' and returns TRUE
  * If the user hits escape, returns FALSE, and set '*sn' to -1
@@ -888,32 +361,27 @@ void calc_mana(int stat)
  */
 static int cast_spell(cptr prompt, int item_val, int *sn)
 {
-    int			i, use = -1, num, index;
-    int			spell[64];
+    int			i, j = -1;
+    int			spell[64], num = 0;
     bool		flag, redraw, okay, ask;
     char		choice;
-    cptr		q;
     u32b		j1, j2;
     inven_type		*i_ptr;
-    spell_type		*s_ptr;
+    magic_type		*s_ptr;
 
-    char		out_str[160];
-    char		tmp_str[160];
+    char		out_val[160];
 
-
-    /* Index into the spell name table */
-    index = (cp_ptr->spell_stat == A_INT) ? 0 : 1;
+    cptr p = ((mp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
 
     /* Get the spell book */
     i_ptr = &inventory[item_val];
 
     /* Observe spells in that book */
-    j1 = i_ptr->flags1;
-    j2 = i_ptr->flags2;
+    j1 = spell_flags[mp_ptr->spell_type][i_ptr->sval][0];
+    j2 = spell_flags[mp_ptr->spell_type][i_ptr->sval][1];
 
     /* Extract spells */
-    num = 0;
     while (j1) spell[num++] = bit_pos(&j1);
     while (j2) spell[num++] = bit_pos(&j2) + 32;
 
@@ -926,6 +394,8 @@ static int cast_spell(cptr prompt, int item_val, int *sn)
 
     /* Check for known spells */
     for (i = 0; i < num; i++) {
+
+        /* Look for "usable" spells */
         if (spell_okay(spell[i])) okay = TRUE;
     }
 
@@ -943,19 +413,26 @@ static int cast_spell(cptr prompt, int item_val, int *sn)
     redraw = FALSE;
 
 
-    /* Hack -- Update the "choice" window */
-    choice_spell(spell, num);
+    /* Use the "choice" window */
+    if (choice_show_spells) {
+
+        /* Display the choices */
+        choice_spell(spell, num);
+
+        /* Fix the choice window later */
+        p_ptr->redraw |= (PR_CHOICE);
+    }
 
 
     /* Build a prompt (accept all spells) */
-    sprintf(out_str, "(Spells %c-%c, *=List, <ESCAPE>=exit) %s",
+    sprintf(out_val, "(Spells %c-%c, *=List, <ESCAPE>=exit) %s",
             'a', 'a' + num - 1, prompt);
 
     /* Get a spell from the user */
-    while (!flag && get_com(out_str, &choice)) {
+    while (!flag && get_com(out_val, &choice)) {
 
         /* Request redraw */
-        if ((choice == '*') || (choice == '?')) {
+        if ((choice == ' ') || (choice == '*') || (choice == '?')) {
 
             /* only do this drawing once */
             if (!redraw) {
@@ -988,29 +465,29 @@ static int cast_spell(cptr prompt, int item_val, int *sn)
         }
 
         /* Save the spell index */
-        use = spell[i];
+        j = spell[i];
 
         /* Check for illegal spell */
-        if (!spell_okay(use)) {
-            sprintf(tmp_str, "You don't know that %s.",
-                ((cp_ptr->spell_stat == A_INT) ? "spell" : "prayer"));
-            msg_print(tmp_str);
+        if (!spell_okay(j)) {
+            msg_format("You don't know that %s.", p);
             continue;
         }
 
         /* Verify it */
         if (ask) {
 
+            char tmp_val[160];
+            
             /* Access the spell */
-            s_ptr = &magic_spell[p_ptr->pclass-1][use];
+            s_ptr = &mp_ptr->info[j];
 
             /* Prompt */
-            sprintf(tmp_str, "Cast %s (%d mana, %d%% fail)?",
-                    spell_names[index][use], s_ptr->smana,
-                    spell_chance(use));
+            sprintf(tmp_val, "Cast %s (%d mana, %d%% fail)?",
+                    spell_names[mp_ptr->spell_type][j], s_ptr->smana,
+                    spell_chance(j));
 
             /* Belay that order */
-            if (!get_check(tmp_str)) continue;
+            if (!get_check(tmp_val)) continue;
         }
 
         /* Stop the loop */
@@ -1021,34 +498,33 @@ static int cast_spell(cptr prompt, int item_val, int *sn)
     if (redraw) restore_screen();
 
 
-    /* XXX XXX Hack -- update choice window */
-    if (!choice_default) choice_inven(0, inven_ctr - 1);
-    else choice_equip(INVEN_WIELD, INVEN_TOTAL - 1);
-
-
     /* Abort if needed */
     if (!flag) return (FALSE);
 
 
     /* Access the spell */
-    s_ptr = &magic_spell[p_ptr->pclass-1][use];
+    s_ptr = &mp_ptr->info[j];
 
     /* Verify if needed */
-    if (s_ptr->smana > p_ptr->cmana) {
+    if (s_ptr->smana > p_ptr->csp) {
 
-        if (cp_ptr->spell_stat == A_INT) {
+        cptr q;
+
+        /* Allow cancel */
+        if (mp_ptr->spell_book == TV_MAGIC_BOOK) {
             q = "You summon your limited strength to cast this one! Confirm?";
-        }
-        else {
-            q = "The gods may think you presumptuous for this! Confirm?";
+            if (!get_check(q)) return (FALSE);
         }
 
         /* Allow cancel */
-        if (!get_check(q)) return (FALSE);
+        if (mp_ptr->spell_book == TV_PRAYER_BOOK) {
+            q = "The gods may think you presumptuous for this! Confirm?";
+            if (!get_check(q)) return (FALSE);
+        }
     }
 
     /* Save the choice */
-    (*sn) = use;
+    (*sn) = j;
 
     /* Success */
     return (TRUE);
@@ -1064,30 +540,22 @@ static int cast_spell(cptr prompt, int item_val, int *sn)
  */
 void do_cmd_browse(void)
 {
-    int                  i1, i2, num, item_val;
-    int                  spell[64];
+    int			item_val;
+    int			spell[64], num = 0;
     u32b		j1, j2;
     inven_type		*i_ptr;
-
-
-    /* The tval of readible books */
-    int read_tval = 0;
-
-    /* Acquire the type value of the books that the player can read, if any */
-    if (cp_ptr->spell_stat == A_WIS) read_tval = TV_PRAYER_BOOK;
-    else if (cp_ptr->spell_stat == A_INT) read_tval = TV_MAGIC_BOOK;
 
 
     /* This command is free */
     energy_use = 0;
 
-    if (p_ptr->blind || no_lite()) {
-        msg_print("You cannot see!");
+    if (p_ptr->pclass == 0) {
+        msg_print("You cannot read books!");
         return;
     }
 
-    if (p_ptr->pclass == 0) {
-        msg_print("You cannot read books!");
+    if (p_ptr->blind || no_lite()) {
+        msg_print("You cannot see!");
         return;
     }
 
@@ -1096,28 +564,25 @@ void do_cmd_browse(void)
         return;
     }
 
-    if (!find_range(read_tval, &i1, &i2)) {
-        msg_print("You are not carrying any usable books!");
+
+    /* Restrict choices to "useful" books */
+    item_tester_tval = mp_ptr->spell_book;
+    
+    /* Get a book or stop checking */
+    if (!get_item(&item_val, "Browse which Book?", 0, inven_ctr - 1, FALSE)) {
+        if (item_val == -2) msg_print("You have no books that you can read.");
         return;
     }
-
-
-    /* Get a book or stop checking */
-    if (!get_item(&item_val, "Browse which Book?", i1, i2, FALSE)) return;
-
-    /* Cancel auto-see */
-    command_see = FALSE;
 
 
     /* Access the book */
     i_ptr = &inventory[item_val];
 
     /* Obtain all spells in the book */
-    j1 = i_ptr->flags1;
-    j2 = i_ptr->flags2;
+    j1 = spell_flags[mp_ptr->spell_type][i_ptr->sval][0];
+    j2 = spell_flags[mp_ptr->spell_type][i_ptr->sval][1];
 
     /* Build spell list */
-    num = 0;
     while (j1) spell[num++] = bit_pos(&j1);
     while (j2) spell[num++] = bit_pos(&j2) + 32;
 
@@ -1139,37 +604,30 @@ void do_cmd_browse(void)
 
 
 /*
- * gain spells when player wants to		- jw
+ * Study a book to gain some spells.
  */
 void do_cmd_study(void)
 {
-    char                query;
+    int			i, k, j, item_val;
 
-    int                 diff_spells, new_spells;
-    int                 spell[64], index, last_known;
-    int			i, j, ii, jj, num, col;
+    int			spell[64], num = 0;
 
-    u32b		spell_flag1, spell_flag2;
+    int			study = -1;
 
-    spell_type		*s_ptr;
+    char		query;
+        
+    u32b		j1, j2;
 
-    char		buf[160];
-    char		tmp_str[160];
+    inven_type		*i_ptr;
 
-    /* The tval of readible books */
-    int read_tval = 0;
-
-    /* Acquire the type value of the books that the player can read, if any */
-    if (cp_ptr->spell_stat == A_WIS) read_tval = TV_PRAYER_BOOK;
-    else if (cp_ptr->spell_stat == A_INT) read_tval = TV_MAGIC_BOOK;
+    cptr p = ((mp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
 
-    /* Assume free */
+    /* This command is free */
     energy_use = 0;
 
-
     if (p_ptr->pclass == 0) {
-        msg_print("You cannot learn magic!");
+        msg_print("You cannot read books!");
         return;
     }
 
@@ -1183,243 +641,175 @@ void do_cmd_study(void)
         return;
     }
 
-    /* No spells */
     if (!(p_ptr->new_spells)) {
-        sprintf(tmp_str, "You cannot learn any new %ss!",
-                (cp_ptr->spell_stat == A_INT ? "spell" : "prayer"));
-        msg_print(tmp_str);
+        msg_format("You cannot learn any new %ss!", p);
+        return;
     }
 
 
-    /* Count available spells */
-    new_spells = p_ptr->new_spells;
-
-    /* Count change */
-    diff_spells = 0;
-
-
-    /* Index into the spell name table */
-    index = (cp_ptr->spell_stat == A_INT) ? 0 : 1;
-
-    /* Find the next open entry in "spell_order[]" */
-    for (last_known = 0; last_known < 64; last_known++) {
-        if (spell_order[last_known] == 99) break;
+    /* Restrict choices to "useful" books */
+    item_tester_tval = mp_ptr->spell_book;
+    
+    /* Get a book or stop checking */
+    if (!get_item(&item_val, "Study which Book?", 0, inven_ctr - 1, FALSE)) {
+        if (item_val == -2) msg_print("You have no books that you can read.");
+        return;
     }
 
-    /* Determine which spells player can learn */
-    spell_flag1 = 0L;
-    spell_flag2 = 0L;
+    /* Access the book */
+    i_ptr = &inventory[item_val];
 
-    /* Check all books */
-    for (i = 0; i < inven_ctr; i++) {
-        if (inventory[i].tval == read_tval) {
-            spell_flag1 |= inventory[i].flags1;
-            spell_flag2 |= inventory[i].flags2;
-        }
+
+    /* Obtain all spells in the book */
+    j1 = spell_flags[mp_ptr->spell_type][i_ptr->sval][0];
+    j2 = spell_flags[mp_ptr->spell_type][i_ptr->sval][1];
+
+    /* Build spell list */
+    while (j1) spell[num++] = bit_pos(&j1);
+    while (j2) spell[num++] = bit_pos(&j2) + 32;
+
+
+    /* Count "learnable" spells */
+    for (k = i = 0; i < num; i++) {
+
+        /* Count usable spells */
+        if (spell_okay_study(spell[i])) k++;
     }
-
-    /* Clear bits of spells already learned */
-    spell_flag1 &= ~spell_learned1;
-    spell_flag2 &= ~spell_learned2;
-
-    /* Reset */
-    i = 0;
-
-    /* Extract available spells */
-    while (spell_flag1) {
-        j = bit_pos(&spell_flag1);
-        s_ptr = &magic_spell[p_ptr->pclass-1][j];
-        if (s_ptr->slevel <= p_ptr->lev) spell[i++] = j;
-    }
-
-    /* Extract available spells */
-    while (spell_flag2) {
-        j = bit_pos(&spell_flag2) + 32;
-        s_ptr = &magic_spell[p_ptr->pclass-1][j];
-        if (s_ptr->slevel <= p_ptr->lev) spell[i++] = j;
-    }
-
-
-    /* Note missing books */
-    if (new_spells > i) {
-        msg_print("You seem to be missing a book.");
-        diff_spells = new_spells - i;
-        new_spells = i;
-        if (new_spells == 0) return;
+    
+    /* No learnable spells */
+    if (!k) {
+        msg_format("You cannot learn any %ss in that book.", p);
+        return;
     }
 
 
     /* Take a turn */
     energy_use = 0;
 
-
     /* Mage-spells */
-    if (cp_ptr->spell_stat == A_INT) {
+    if (mp_ptr->spell_book == TV_MAGIC_BOOK) {
 
         /* Save the screen */
         save_screen();
 
-        /* Let player choose spells until done */
-        while (new_spells) {
-
-            /* Column */
-            col = 31;
-
-            /* Number of spells */
-            num = (i <= 22) ? i : 22;
-
-            /* Title the list */
-            prt("", 1, col);
-            put_str("Name", 1, col + 5);
-            put_str("Lv Mana Fail", 1, col + 35);
-
-            /* List the spells */
-            for (ii = 0; ii < num; ii++) {
-
-                /* Access the spell */
-                jj = spell[ii];
-
-                /* Access the spell */
-                s_ptr = &magic_spell[p_ptr->pclass-1][jj];
-
-                /* List the spell */
-                (void)sprintf(buf, "  %c) %-30s%2d %4d %3d%%",
-                              'a' + ii, spell_names[index][jj],
-                              s_ptr->slevel, s_ptr->smana, spell_chance(jj));
-                prt(buf, 2 + ii, col);
-            }
-
-
-            /* Prepare a prompt */
-            sprintf(buf, "Learn which spell (%d left)? ", new_spells);
-
+        /* Display the spells */
+        print_spells(spell, num);
+        
+        /* Get a response */
+        while (TRUE) {
+        
             /* Let player choose a spell */
-            if (!get_com(buf, &query)) break;
+            if (!get_com("Study which spell? ", &query)) break;
 
-            /* Analyze request */
-            j = query - 'a';
+            /* Extract request */
+            i = (query - 'a');
 
-            /* Analyze valid answers */
-            if ((j >= 0) && (j < i) && (j < 22)) {
-
-                /* Add the spell */
-                if (spell[j] < 32) {
-                    spell_learned1 |= 1L << spell[j];
-                }
-                else {
-                    spell_learned2 |= 1L << (spell[j] - 32);
-                }
-
-                /* Add the spell to the known list */
-                spell_order[last_known++] = spell[j];
-
-                /* Slide the spells */
-                for (; j <= i - 1; j++) spell[j] = spell[j + 1];
-
-                /* One less spell available */
-                i--;
-
-                /* One less spell to learn */
-                new_spells--;
-
-                /* Clear the last spell */
-                prt("", j + 1, 31);
-
-                /* Try again */
+            /* Totally Illegal */
+            if ((i < 0) || (i >= num)) {
+                bell();
                 continue;
             }
 
-            /* Invalid choice */
-            bell();
+            /* Check for illegal spell */
+            if (!spell_okay_study(spell[i])) {
+                bell();
+                continue;
+            }
+
+            /* Study that spell */
+            study = spell[i];
+
+            /* Done */
+            break;
         }
 
-        /* Restore screen */
+        /* Restore the screen */
         restore_screen();
     }
 
     /* Priest spells */
-    else {
+    if (mp_ptr->spell_book == TV_PRAYER_BOOK) {
 
         /* Learn a single prayer */
-        if (new_spells) {
+        while (TRUE) {
 
             /* Pick a spell to learn */
-            j = rand_int(i);
+            i = rand_int(num);
 
-            /* Learn the spell */
-            if (spell[j] < 32) {
-                spell_learned1 |= 1L << spell[j];
-            }
-            else {
-                spell_learned2 |= 1L << (spell[j] - 32);
-            }
+            /* Check for illegal spell */
+            if (!spell_okay_study(spell[i])) continue;
 
-            /* Memorize the order */
-            spell_order[last_known++] = spell[j];
-
-            /* Mention the result */
-            (void)sprintf(tmp_str,
-                          "You have learned the prayer of %s.",
-                          spell_names[index][spell[j]]);
-            msg_print(tmp_str);
-
-            /* Slide the spells */
-            for (; j <= i - 1; j++) spell[j] = spell[j + 1];
-
-            /* One less spell available */
-            i--;
-
-            /* One less spell to learn */
-            new_spells--;
+            /* Learn it */
+            study = spell[i];
+            
+            /* Done */
+            break;
         }
+    }
+
+    /* Learn a spell */
+    if (study >= 0) {
+ 
+        /* Access the spell */
+        j = study;
+
+        /* Add the spell */
+        if (j < 32) {
+            spell_learned1 |= (1L << j);
+        }
+        else {
+            spell_learned2 |= (1L << (j - 32));
+        }
+
+        /* Find the next open entry in "spell_order[]" */
+        for (i = 0; i < 64; i++) {
+
+            /* Stop at the first empty space */
+            if (spell_order[i] == 99) break;
+        }
+
+        /* Add the spell to the known list */
+        spell_order[i++] = j;
+
+        /* Mention the result */
+        msg_format("You have learned the %s of %s.",
+                   p, spell_names[mp_ptr->spell_type][j]);
+
+        /* One less spell available */
+        p_ptr->new_spells--;
 
         /* Report on remaining prayers */
-        if (new_spells) {
-            sprintf(tmp_str, "You can learn %d more prayer%s.",
-                    new_spells, (new_spells == 1) ? "" : "s");
-            msg_print(tmp_str);
+        if (p_ptr->new_spells) {
+            msg_format("You can learn some more %ss.", p);
         }
-    }
 
-    /* Remember how many spells can be learned */
-    p_ptr->new_spells = new_spells + diff_spells;
+        /* Update the mana */
+        p_ptr->update |= (PU_MANA);
 
-    /* Update the mana */
-    p_ptr->update |= (PU_MANA);
-
-    /* Redraw Study Status */
-    p_ptr->redraw |= PR_STUDY;
-}
-
-
-/*
- * Hack -- fire a bolt, or a beam if lucky
- */
-static void bolt_or_beam(int prob, int typ, int dir, int dam)
-{
-    if (randint(100) < prob) {
-        line_spell(typ, dir, py, px, dam);
-    }
-    else {
-        fire_bolt(typ, dir, py, px, dam);
+        /* Redraw Study Status */
+        p_ptr->redraw |= (PR_STUDY);
     }
 }
+
 
 
 /*
  * Throw a magic spell					-RAK-	
+ *
+ * Note that the "beam" chance is now based on "plev" and not "intelligence".
+ * This will make it less common early in the game and more common later.
  */
 void do_cmd_cast(void)
 {
-    int			i, j, item_val, dir;
-    int			choice, chance;
+    int			item_val, j, dir;
+    int			chance, beam;
     int			plev = p_ptr->lev;
     
-    spell_type   *s_ptr;
+    magic_type   *s_ptr;
 
     energy_use = 0;
 
-    if (cp_ptr->spell_stat != A_INT) {
+    if (mp_ptr->spell_book != TV_MAGIC_BOOK) {
         msg_print("You cannot cast spells!");
         return;
     }
@@ -1434,31 +824,29 @@ void do_cmd_cast(void)
         return;
     }
 
-    if (!find_range(TV_MAGIC_BOOK, &i, &j)) {
-        msg_print("You are not carrying any spell-books!");
+
+    /* Restrict choices to spell books */
+    item_tester_tval = mp_ptr->spell_book;
+    
+    /* Get a spell book */
+    if (!get_item(&item_val, "Use which Spell Book? ", 0, inven_ctr-1, FALSE)) {
+        if (item_val == -2) msg_print("You are not carrying any spell-books!");
         return;
     }
 
 
-    /* Get a spell book */
-    if (!get_item(&item_val, "Use which Spell Book? ", i, j, FALSE)) return;
-
-    /* Cancel auto-see */
-    command_see = FALSE;
-
-
     /* Ask for a spell */
-    if (!cast_spell("Cast which spell?", item_val, &choice)) {
-        if (choice == -2) msg_print("You don't know any spells in that book.");
+    if (!cast_spell("Cast which spell?", item_val, &j)) {
+        if (j == -2) msg_print("You don't know any spells in that book.");
         return;
     }
 
 
     /* Access the spell */
-    s_ptr = &magic_spell[p_ptr->pclass-1][choice];
+    s_ptr = &mp_ptr->info[j];
 
     /* Spell failure chance */
-    chance = spell_chance(choice);
+    chance = spell_chance(j);
 
     /* Failed spell */
     if (rand_int(100) < chance) {
@@ -1469,17 +857,16 @@ void do_cmd_cast(void)
     /* Process spell */
     else {
 
-        /* does missile spell do line? -CFT */
-        chance =  stat_adj(A_INT) + plev /
-                  (p_ptr->pclass == 1 ? 2 : (p_ptr->pclass == 4 ? 4 : 5));
+        /* Hack -- chance of "beam" instead of "bolt" */
+        beam = ((p_ptr->pclass == 1) ? plev : (plev / 2));
 
         /* Spells.  */
-        switch (choice + 1) {
+        switch (j + 1) {
 
           case 1:
             if (!get_dir(NULL, &dir)) return;
-            bolt_or_beam(chance-10, GF_MISSILE, dir,
-                         damroll(3 + ((plev - 1) / 5), 4));
+            fire_bolt_or_beam(beam-10, GF_MISSILE, dir,
+                              damroll(3 + ((plev - 1) / 5), 4));
             break;
 
           case 2:
@@ -1492,8 +879,7 @@ void do_cmd_cast(void)
             break;
 
           case 4:
-            (void)lite_area(py, px,
-                            damroll(2, (plev / 2)), (plev / 10) + 1);
+            (void)lite_area(damroll(2, (plev / 2)), (plev / 10) + 1);
             break;
 
           case 5:	   /* treasure detection */
@@ -1501,15 +887,16 @@ void do_cmd_cast(void)
             break;
 
           case 6:
-            (void)hp_player(damroll(4, 4));
-            if (p_ptr->cut) {
+            (void)hp_player(damroll(2, 8));
+            if (p_ptr->cut > 15) {
                 p_ptr->cut -= 15;
-                if (p_ptr->cut < 0) p_ptr->cut = 0;
-                msg_print("Your wounds heal.");
+            }
+            else {
+                p_ptr->cut = 0;
             }
             break;
 
-          case 7:	   /* object detection */
+          case 7:
             (void)detect_object();
             break;
 
@@ -1520,28 +907,28 @@ void do_cmd_cast(void)
 
           case 9:
             if (!get_dir(NULL, &dir)) return;
-            fire_ball(GF_POIS, dir, py, px,
+            fire_ball(GF_POIS, dir,
                       10 + (plev / 2), 2);
             break;
 
           case 10:
             if (!get_dir(NULL, &dir)) return;
-            (void)confuse_monster(dir, py, px, plev);
+            (void)confuse_monster(dir, plev);
             break;
 
           case 11:
             if (!get_dir(NULL, &dir)) return;
-            bolt_or_beam(chance-10, GF_ELEC, dir,
-                         damroll(3+((plev-5)/4),8));
+            fire_bolt_or_beam(beam-10, GF_ELEC, dir,
+                              damroll(3+((plev-5)/4),8));
             break;
 
           case 12:
-            (void)td_destroy();
+            (void)destroy_doors_touch();
             break;
 
           case 13:
             if (!get_dir(NULL, &dir)) return;
-            (void)sleep_monster(dir, py, px);
+            (void)sleep_monster(dir);
             break;
 
           case 14:
@@ -1556,18 +943,18 @@ void do_cmd_cast(void)
           case 16:
             if (!get_dir(NULL, &dir)) return;
             msg_print("A line of blue shimmering light appears.");
-            lite_line(dir, py, px);
+            lite_line(dir);
             break;
 
           case 17:
             if (!get_dir(NULL, &dir)) return;
-            bolt_or_beam(chance-10, GF_COLD, dir,
-                         damroll(5+((plev-5)/4),8));
+            fire_bolt_or_beam(beam-10, GF_COLD, dir,
+                              damroll(5+((plev-5)/4),8));
             break;
 
           case 18:
             if (!get_dir(NULL, &dir)) return;
-            (void)wall_to_mud(dir, py, px);
+            (void)wall_to_mud(dir);
             break;
 
           case 19:
@@ -1579,12 +966,12 @@ void do_cmd_cast(void)
             break;
 
           case 21:
-            (void)sleep_monsters1(py, px);
+            (void)sleep_monsters_touch();
             break;
 
           case 22:
             if (!get_dir(NULL, &dir)) return;
-            (void)poly_monster(dir, py, px);
+            (void)poly_monster(dir);
             break;
 
           case 23:
@@ -1592,23 +979,23 @@ void do_cmd_cast(void)
             break;
 
           case 24:
-            (void)sleep_monsters2();
+            (void)sleep_monsters();
             break;
 
           case 25:
             if (!get_dir(NULL, &dir)) return;
-            bolt_or_beam(chance, GF_FIRE, dir,
-                         damroll(8+((plev-5)/4),8));
+            fire_bolt_or_beam(beam, GF_FIRE, dir,
+                              damroll(8+((plev-5)/4),8));
             break;
 
           case 26:
             if (!get_dir(NULL, &dir)) return;
-            (void)slow_monster(dir, py, px);
+            (void)slow_monster(dir);
             break;
 
           case 27:
             if (!get_dir(NULL, &dir)) return;
-            fire_ball(GF_COLD, dir, py, px,
+            fire_ball(GF_COLD, dir,
                       30 + (plev), 2);
             break;
 
@@ -1618,26 +1005,26 @@ void do_cmd_cast(void)
 
           case 29:
             if (!get_dir(NULL, &dir)) return;
-            (void)teleport_monster(dir, py, px);
+            (void)teleport_monster(dir);
             break;
 
           case 30:
-            if (p_ptr->fast <= 0) {
-                p_ptr->fast += randint(20) + plev;
+            if (!p_ptr->fast) {
+                add_fast(randint(20) + plev);
             }
             else {
-                p_ptr->fast += randint(5);
+                add_fast(randint(5));
             }
             break;
 
           case 31:
             if (!get_dir(NULL, &dir)) return;
-            fire_ball(GF_FIRE, dir, py, px,
+            fire_ball(GF_FIRE, dir,
                       55 + (plev), 2);
             break;
 
           case 32:
-            destroy_area(py, px);
+            destroy_area(py, px, 15, TRUE);
             break;
 
           case 33:
@@ -1657,7 +1044,7 @@ void do_cmd_cast(void)
             break;
 
           case 37:	   /* Earthquake */
-            earthquake();
+            earthquake(py, px, 10);
             break;
 
           case 38:	   /* Word of Recall */
@@ -1673,37 +1060,37 @@ void do_cmd_cast(void)
 
           case 39:	   /* Acid Bolt */
             if (!get_dir(NULL, &dir)) return;
-            bolt_or_beam(chance-5, GF_ACID, dir,
-                         damroll(6+((plev-5)/4), 8));
+            fire_bolt_or_beam(beam, GF_ACID, dir,
+                              damroll(6+((plev-5)/4), 8));
             break;
 
           case 40:	   /* Cloud kill */
             if (!get_dir(NULL, &dir)) return;
-            fire_ball(GF_POIS, dir, py, px,
+            fire_ball(GF_POIS, dir,
                       20 + (plev / 2), 3);
             break;
 
           case 41:	   /* Acid Ball */
             if (!get_dir(NULL, &dir)) return;
-            fire_ball(GF_ACID, dir, py, px,
+            fire_ball(GF_ACID, dir,
                       40 + (plev), 2);
             break;
 
           case 42:	   /* Ice Storm */
             if (!get_dir(NULL, &dir)) return;
-            fire_ball(GF_COLD, dir, py, px,
+            fire_ball(GF_COLD, dir,
                       70 + (plev), 3);
             break;
 
           case 43:	   /* Meteor Swarm */
             if (!get_dir(NULL, &dir)) return;
-            fire_ball(GF_METEOR, dir, py, px,
+            fire_ball(GF_METEOR, dir,
                       65 + (plev), 3);
             break;
 
           case 44:	   /* Mana Storm */
             if (!get_dir(NULL, &dir)) return;
-            fire_ball(GF_MANA, dir, py, px, 300, 2);
+            fire_ball(GF_MANA, dir, 300, 2);
             break;
 
           case 45:	   /* Detect Evil */
@@ -1766,11 +1153,11 @@ void do_cmd_cast(void)
             break;
 
           case 58:
-            if (p_ptr->fast <= 0) {
-                p_ptr->fast += randint(30) + 30 + plev;
+            if (!p_ptr->fast) {
+                add_fast(randint(30) + 30 + plev);
             }
             else {
-                p_ptr->fast += randint(5);
+                add_fast(randint(10));
             }
             break;
 
@@ -1783,38 +1170,53 @@ void do_cmd_cast(void)
         }
 
         /* A spell was cast */
-        if (choice < 32) {
-            if (!(spell_worked1 & (1L << choice))) {
-                spell_worked1 |= (1L << choice);
-                p_ptr->exp += s_ptr->sexp << 2;
-                check_experience();
+        if (!((j < 32) ?
+              (spell_worked1 & (1L << j)) :
+              (spell_worked2 & (1L << (j - 32))))) {
+
+            int e = s_ptr->sexp;
+
+            /* The spell worked */
+            if (j < 32) {
+                spell_worked1 |= (1L << j);
             }
-        }
-        else {
-            if (!(spell_worked2 & (1L << (choice - 32)))) {
-                 spell_worked2 |= (1L << (choice - 32));
-                p_ptr->exp += s_ptr->sexp << 2;
-                check_experience();
+            else {
+                spell_worked2 |= (1L << (j - 32));
             }
+                
+            /* Gain experience */
+            gain_exp(e * s_ptr->slevel);
         }
     }
 
     /* Take a turn */
     energy_use = 100;
 
-    /* Use some mana */
-    if (s_ptr->smana > p_ptr->cmana) {
+    /* Sufficient mana */
+    if (s_ptr->smana <= p_ptr->csp) {
+
+        /* Use some mana */
+        p_ptr->csp -= s_ptr->smana;
+    }
+    
+    /* Over-exert the player */
+    else {
+    
+        /* No mana left */
+        p_ptr->csp = 0;
+        p_ptr->csp_frac = 0;
+
+        /* Message */
         msg_print("You faint from the effort!");
-        p_ptr->paralysis = randint((int)(5 * (s_ptr->smana - p_ptr->cmana)));
-        p_ptr->cmana = 0;
-        p_ptr->cmana_frac = 0;
+
+        /* Hack -- Bypass free action */
+        p_ptr->paralysis = randint(5 * (int)(s_ptr->smana - p_ptr->csp));
+
+        /* Damage CON (possibly permanently) */
         if (rand_int(3) == 0) {
             msg_print("You have damaged your health!");
             (void)dec_stat(A_CON, 15 + randint(10), (rand_int(3) == 0));
         }
-    }
-    else {
-        p_ptr->cmana -= s_ptr->smana;
     }
 
     /* Update stuff */
@@ -1822,28 +1224,28 @@ void do_cmd_cast(void)
     
     /* Redraw mana */
     p_ptr->redraw |= (PR_MANA);
-    
-    /* Handle stuff */
-    handle_stuff(TRUE);
 }
 
 
 
 /*
  * Pray
+ *
+ * Note that "Holy Orb" damage is now based on "plev" and not "wisdom".
+ * This will make it weaker early in the game and stronger later.
  */
 void do_cmd_pray(void)
 {
-    int i, j, item_val, dir;
-    int choice, chance;
-    spell_type  *s_ptr;
+    int item_val, j, dir, chance;
+
+    magic_type  *s_ptr;
     inven_type   *i_ptr;
 
     int plev = p_ptr->lev;
     
     energy_use = 0;
 
-    if (cp_ptr->spell_stat != A_WIS) {
+    if (mp_ptr->spell_book != TV_PRAYER_BOOK) {
         msg_print("Pray hard enough and your prayers may be answered.");
         return;
     }
@@ -1858,31 +1260,29 @@ void do_cmd_pray(void)
         return;
     }
 
-    if (!find_range(TV_PRAYER_BOOK, &i, &j)) {
-        msg_print("You are not carrying any Holy Books!");
+
+    /* Restrict choices */
+    item_tester_tval = mp_ptr->spell_book;
+    
+    /* Choose a book */
+    if (!get_item(&item_val, "Use which Holy Book? ", 0, inven_ctr - 1, FALSE)) {
+        if (item_val == -2) msg_print("You are not carrying any prayer books!");
         return;
     }
 
 
-    /* Choose a book */
-    if (!get_item(&item_val, "Use which Holy Book? ", i, j, FALSE)) return;
-
-    /* Cancel auto-see */
-    command_see = FALSE;
-
-
     /* Choose a spell */
-    if (!cast_spell("Recite which prayer?", item_val, &choice)) {
-        if (choice == -1) msg_print("You don't know any prayers in that book.");
+    if (!cast_spell("Recite which prayer?", item_val, &j)) {
+        if (j == -2) msg_print("You don't know any prayers in that book.");
         return;
     }
 
 
     /* Access the spell */
-    s_ptr = &magic_spell[p_ptr->pclass-1][choice];
+    s_ptr = &mp_ptr->info[j];
 
     /* Spell failure chance */
-    chance = spell_chance(choice);
+    chance = spell_chance(j);
 
     /* Check for failure */
     if (rand_int(100) < chance) {
@@ -1893,32 +1293,32 @@ void do_cmd_pray(void)
     /* Success */
     else {
 
-        switch (choice + 1) {
+        switch (j + 1) {
 
           case 1:
             (void)detect_evil();
             break;
 
           case 2:
-            (void)hp_player(damroll(3, 3));
-            if (p_ptr->cut) {
+            (void)hp_player(damroll(2, 8));
+            if (p_ptr->cut > 10) {
                 p_ptr->cut -= 10;
-                if (p_ptr->cut < 0) p_ptr->cut = 0;
-                msg_print("Your wounds heal.");
+            }
+            else {
+                p_ptr->cut = 0;
             }
             break;
 
           case 3:
-            bless(randint(12) + 12);
+            (void)add_bless(randint(12) + 12);
             break;
 
           case 4:
-            (void)remove_fear();
+            (void)cure_fear();
             break;
 
           case 5:
-            (void)lite_area(py, px,
-                            damroll(2, (plev / 2)), (plev / 10) + 1);
+            (void)lite_area(damroll(2, (plev / 2)), (plev / 10) + 1);
             break;
 
           case 6:
@@ -1930,12 +1330,15 @@ void do_cmd_pray(void)
             break;
 
           case 8:
-            (void)slow_poison();
+            if (p_ptr->poisoned) {
+                msg_print("The effect of the poison has been reduced.");
+                p_ptr->poisoned = (p_ptr->poisoned + 1) / 2;
+            }
             break;
 
           case 9:
             if (!get_dir(NULL, &dir)) return;
-            (void)fear_monster(dir, py, px, plev);
+            (void)fear_monster(dir, plev);
             break;
 
           case 10:
@@ -1944,20 +1347,21 @@ void do_cmd_pray(void)
             break;
 
           case 11:
-            (void)hp_player(damroll(4, 4));
-            if (p_ptr->cut) {
+            (void)hp_player(damroll(4, 8));
+            if (p_ptr->cut > 40) {
                 p_ptr->cut = (p_ptr->cut / 2) - 20;
-                if (p_ptr->cut < 0) p_ptr->cut = 0;
-                msg_print("Your wounds heal.");
+            }
+            else {
+                p_ptr->cut = 0;
             }
             break;
 
           case 12:
-            bless(randint(24) + 24);
+            add_bless(randint(24) + 24);
             break;
 
           case 13:
-            (void)sleep_monsters1(py, px);
+            (void)sleep_monsters_touch();
             break;
 
           case 14:
@@ -1979,22 +1383,19 @@ void do_cmd_pray(void)
 
           case 18:
             if (!get_dir(NULL, &dir)) return;
-            fire_ball(GF_HOLY_ORB, dir, py, px,
-                      (int)(damroll(3,6) + plev +
-                            ((p_ptr->pclass == 2) ? 2 : 1) * stat_adj(A_WIS)),
+            fire_ball(GF_HOLY_ORB, dir,
+                      (damroll(3,6) + plev +
+                       (plev / ((p_ptr->pclass == 2) ? 2 : 4))),
                       ((plev < 30) ? 2 : 3));
             break;
 
           case 19:
-            (void)hp_player(damroll(8, 4));
-            if (p_ptr->cut) {
-                p_ptr->cut = 0;
-                msg_print("Your wounds heal.");
-            }
+            (void)hp_player(damroll(6, 8));
+            p_ptr->cut = 0;
             break;
 
           case 20:
-            detect_inv2(randint(24) + 24);
+            add_tim_invis(randint(24) + 24);
             break;
 
           case 21:
@@ -2002,7 +1403,7 @@ void do_cmd_pray(void)
             break;
 
           case 22:
-            earthquake();
+            earthquake(py, px, 10);
             break;
 
           case 23:
@@ -2010,11 +1411,9 @@ void do_cmd_pray(void)
             break;
 
           case 24:
-            (void)hp_player(damroll(16, 4));
-            if (p_ptr->cut) {
-                p_ptr->cut = 0;
-                msg_print("Your wounds heal.");
-            }
+            (void)hp_player(damroll(8, 8));
+            p_ptr->cut = 0;
+            p_ptr->stun = 0;
             break;
 
           case 25:
@@ -2022,29 +1421,21 @@ void do_cmd_pray(void)
             break;
 
           case 26:
-            bless(randint(48) + 48);
+            add_bless(randint(48) + 48);
             break;
 
           case 27:
-            /* Dispel (undead) monsters */
-            (void)dispel_monsters((int)(3 * plev), FALSE, TRUE);
+            (void)dispel_undead(plev * 3);
             break;
 
           case 28:
-            (void)hp_player(200);
-            if (p_ptr->stun) {
-                p_ptr->stun = 0;
-                msg_print("Your head stops stinging.");
-            }
-            if (p_ptr->cut) {
-                p_ptr->cut = 0;
-                msg_print("You feel better.");
-            }
+            (void)hp_player(300);
+            p_ptr->stun = 0;
+            p_ptr->cut = 0;
             break;
 
           case 29:
-            /* Dispel (evil) monsters */
-            (void)dispel_monsters((int)(3 * plev), TRUE, FALSE);
+            (void)dispel_evil(plev * 3);
             break;
 
           case 30:
@@ -2052,19 +1443,12 @@ void do_cmd_pray(void)
             break;
 
           case 31:
-            /* Dispel (evil) monsters */
-            (void)dispel_monsters((int)(4 * plev), TRUE, FALSE);
-            (void)remove_fear();
-            (void)cure_poison();
+            (void)dispel_evil(plev * 4);
             (void)hp_player(1000);
-            if (p_ptr->stun) {
-                p_ptr->stun = 0;
-                msg_print("Your head stops stinging.");
-            }
-            if (p_ptr->cut) {
-                p_ptr->cut = 0;
-                msg_print("You feel better.");
-            }
+            (void)cure_fear();
+            (void)cure_poison();
+            p_ptr->stun = 0;
+            p_ptr->cut = 0;
             break;
 
           case 32:
@@ -2088,31 +1472,20 @@ void do_cmd_pray(void)
             break;
 
           case 37:
-            (void)hp_player(damroll(8, 4));
-            if (p_ptr->cut) {
-                p_ptr->cut = 0;
-                msg_print("Your wounds heal.");
-            }
+            (void)hp_player(damroll(4, 8));
+            p_ptr->cut = 0;
             break;
 
           case 38:
-            (void)hp_player(damroll(16, 4));
-            if (p_ptr->cut) {
-                p_ptr->cut = 0;
-                msg_print("Your wounds heal.");
-            }
+            (void)hp_player(damroll(8, 8));
+            p_ptr->cut = 0;
+            p_ptr->stun = 0;
             break;
 
           case 39:
             (void)hp_player(2000);
-            if (p_ptr->stun) {
-                p_ptr->stun = 0;
-                msg_print("Your head stops stinging.");
-            }
-            if (p_ptr->cut) {
-                p_ptr->cut = 0;
-                msg_print("You feel better.");
-            }
+            p_ptr->stun = 0;
+            p_ptr->cut = 0;
             break;
 
           case 40:	   /* restoration */
@@ -2141,13 +1514,11 @@ void do_cmd_pray(void)
             break;
 
           case 42:	   /* dispel undead */
-            /* Dispel (undead) monsters */
-            (void)dispel_monsters((int)(4 * plev), FALSE, TRUE);
+            (void)dispel_undead(plev * 4);
             break;
 
           case 43:	   /* dispel evil */
-            /* Dispel (evil) monsters */
-            (void)dispel_monsters((int)(4 * plev), TRUE, FALSE);
+            (void)dispel_evil(plev * 4);
             break;
 
           case 44:	   /* banishment */
@@ -2157,16 +1528,16 @@ void do_cmd_pray(void)
             break;
 
           case 45:	   /* word of destruction */
-            destroy_area(py, px);
+            destroy_area(py, px, 15, TRUE);
             break;
 
           case 46:	   /* annihilation */
             if (!get_dir(NULL, &dir)) return;
-            drain_life(dir, py, px, 200);
+            drain_life(dir, 200);
             break;
 
           case 47:	   /* unbarring ways */
-            (void)td_destroy();
+            (void)destroy_doors_touch();
             break;
 
           case 48:	   /* recharging */
@@ -2190,41 +1561,34 @@ void do_cmd_pray(void)
 
             i_ptr = &inventory[INVEN_WIELD];
 
-            /* you can not create an ego weapon from a cursed */
-            /* object.  the curse would "taint" the magic -CFT */
-            /* And you can never modify artifacts */
-            /* And you also cannot modify ego-items, or you */
-            /* would "lose" the primary ego-item type */
-            if ((i_ptr->tval) &&
-                (!i_ptr->name1) &&
-                (!i_ptr->name2) &&
-                (!cursed_p(i_ptr))) {
+            /* you can never modify artifacts / ego-items */
+            /* you can never modify broken / cursed items */
+            if ((i_ptr->k_idx) &&
+                (!artifact_p(i_ptr)) && (!ego_item_p(i_ptr)) &&
+                (!broken_p(i_ptr)) && (!cursed_p(i_ptr))) {
 
-                cptr act;
-                char tmp_str[100];
+                cptr act = NULL;
+
+                char i_name[80];
 
                 if (rand_int(2)) {
-                    act = " is covered in a fiery shield!";
+                    act = "is covered in a fiery shield!";
                     i_ptr->name2 = EGO_FT;
                     i_ptr->flags1 |= (TR1_BRAND_FIRE);
                     i_ptr->flags2 |= (TR2_RES_FIRE);
                     i_ptr->flags3 |= (TR3_IGNORE_FIRE);
-                    i_ptr->cost += 3000L;
                 }
                 else {
-                    act = " glows deep, icy blue!";
+                    act = "glows deep, icy blue!";
                     i_ptr->name2 = EGO_FB;
                     i_ptr->flags1 |= (TR1_BRAND_COLD);
                     i_ptr->flags2 |= (TR2_RES_COLD);
                     i_ptr->flags3 |= (TR3_IGNORE_COLD);
-                    i_ptr->cost += 2500L;
                 }
 
-                objdes(tmp_str, i_ptr, FALSE);
+                objdes(i_name, i_ptr, FALSE, 0);
 
-                message("Your ", 0x02);
-                message(tmp_str, 0x02);
-                message(act, 0);
+                msg_format("Your %s %s", i_name, act);
 
                 enchant(i_ptr, rand_int(3) + 4, ENCH_TOHIT|ENCH_TODAM);
             }
@@ -2246,7 +1610,7 @@ void do_cmd_pray(void)
 
           case 55:	   /* teleport away */
             if (!get_dir(NULL, &dir)) return;
-            (void)teleport_monster(dir, py, px);
+            (void)teleport_monster(dir);
             break;
 
           case 56:	   /* teleport level */
@@ -2265,6 +1629,7 @@ void do_cmd_pray(void)
             break;
 
           case 58:	   /* alter reality */
+            msg_print("The world changes!");
             new_level_flag = TRUE;
             break;
 
@@ -2272,39 +1637,54 @@ void do_cmd_pray(void)
             break;
         }
 
-        /* End of prayers.				 */
-        if (choice < 32) {
-            if (!(spell_worked1 & (1L << choice))) {
-                spell_worked1 |= (1L << choice);
-                p_ptr->exp += s_ptr->sexp << 2;
-                check_experience();
+        /* A prayer was prayed */
+        if (!((j < 32) ?
+              (spell_worked1 & (1L << j)) :
+              (spell_worked2 & (1L << (j - 32))))) {
+
+            int e = s_ptr->sexp;
+
+            /* The spell worked */
+            if (j < 32) {
+                spell_worked1 |= (1L << j);
             }
-        }
-        else {
-            if (!(spell_worked2 & (1L << (choice - 32)))) {
-                 spell_worked2 |= (1L << (choice - 32));
-                 p_ptr->exp += s_ptr->sexp << 2;
-                 check_experience();
+            else {
+                spell_worked2 |= (1L << (j - 32));
             }
+                
+            /* Gain experience */
+            gain_exp(e * s_ptr->slevel);
         }
     }
 
     /* Take a turn */
     energy_use = 100;
 
-    /* Reduce mana */
-    if (s_ptr->smana > p_ptr->cmana) {
-        msg_print("You faint from fatigue!");
-        p_ptr->paralysis = randint((int)(5 * (s_ptr->smana - p_ptr->cmana)));
-        p_ptr->cmana = 0;
-        p_ptr->cmana_frac = 0;
+    /* Sufficient mana */
+    if (s_ptr->smana <= p_ptr->csp) {
+
+        /* Use some mana */
+        p_ptr->csp -= s_ptr->smana;
+    }
+    
+    /* Over-exert the player */
+    else {
+    
+        /* No mana left */
+        p_ptr->csp = 0;
+        p_ptr->csp_frac = 0;
+
+        /* Message */
+        msg_print("You faint from the effort!");
+
+        /* Hack -- Bypass free action */
+        p_ptr->paralysis = randint(5 * (int)(s_ptr->smana - p_ptr->csp));
+
+        /* Damage CON (possibly permanently) */
         if (rand_int(3) == 0) {
             msg_print("You have damaged your health!");
             (void)dec_stat(A_CON, 15 + randint(10), (rand_int(3) == 0));
         }
-    }
-    else {
-        p_ptr->cmana -= s_ptr->smana;
     }
 
     /* Update stuff */
@@ -2312,8 +1692,5 @@ void do_cmd_pray(void)
     
     /* Redraw mana */
     p_ptr->redraw |= (PR_MANA);
-        
-    /* Handle stuff */
-    handle_stuff(TRUE);
 }
 

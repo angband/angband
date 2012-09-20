@@ -6,7 +6,36 @@
 #include "angband.h"
 
 #include <go32.h>
+union REGS { /* This is a verbatim copy of the declarations from
+	      * DOS.H; there are several conflicts if I simply include
+	      * the file. */
+  struct {
+    unsigned long ax;
+    unsigned long bx;
+    unsigned long cx;
+    unsigned long dx;
+    unsigned long si;
+    unsigned long di;
+    unsigned long cflag;
+    unsigned long flags;
+  } x;
+  struct {
+    unsigned char al;
+    unsigned char ah;
+    unsigned short upper_ax;
+    unsigned char bl;
+    unsigned char bh;
+    unsigned short upper_bx;
+    unsigned char cl;
+    unsigned char ch;
+    unsigned short upper_cx;
+    unsigned char dl;
+    unsigned char dh;
+    unsigned short upper_dx;
+  } h;
+};
 
+int int86(int ivec, union REGS *in, union REGS *out);
 
 
 /*
@@ -136,12 +165,6 @@ static errr Term_text_ibm(int x, int y, int n, byte a, cptr s)
     register byte attr;
     register byte *dest;
 
-    /* Allow negative length */
-    if (n < 0) n = strlen(s);
-
-    /* Paranoia */
-    if (n > cols - x) n = cols - x;
-
     /* Convert the color */
     attr = ibm_color[a];
 
@@ -268,13 +291,29 @@ static errr Term_wipe_ibm(int x, int y, int w, int h)
  * added to them.
  */
 
+static int saved_cur_high, saved_cur_low;
+
 static errr Term_xtra_ibm(int n, int v)
 {
     int i;
     int key;
+    union REGS r;
 
     /* Analyze the request */
     switch (n) {
+       
+        case TERM_XTRA_BEVIS:
+            r.h.ah = 1;
+       	    r.h.ch = saved_cur_high;
+            r.h.cl = saved_cur_low;
+       	    int86(0x10, &r, &r);
+       	    break;
+
+        case TERM_XTRA_INVIS:
+            r.h.ah = 1;
+            r.x.cx = 0x2000;
+       	    int86(0x10, &r, &r);
+       	    break;
 
         /* Make a noise */
         case TERM_XTRA_NOISE:
@@ -293,10 +332,11 @@ static errr Term_xtra_ibm(int n, int v)
         /* Wait for a single event */
         case TERM_XTRA_EVENT:
 
-           /* Wait for a keypress */
-           key = getxkey();
+            /* Wait for a keypress */
+            key = getxkey();
 
-           if (!(key & 0xFF00)) {
+            /* Normal keys */
+            if (!(key & 0xFF00)) {
 
                 /* Must be a 'normal' key */
                 Term_keypress(key);
@@ -304,7 +344,8 @@ static errr Term_xtra_ibm(int n, int v)
 
             /* Handle "special" keys */
             else {
-                /* recieve the modifiers (shift, etc) */
+
+                /* Recieve the modifiers (shift, etc) */
                 i = bioskey(2);
 
                 /* Hack -- a special "macro introducer" */
@@ -335,6 +376,44 @@ static errr Term_xtra_ibm(int n, int v)
 }
 
 
+
+/*
+ * Init a Term
+ */
+static void Term_init_ibm(term *t)
+{
+    union REGS r;
+ 
+    /* Extract the "normal" cursor */   
+    r.h.ah = 3;
+    r.h.bh = 0;
+    int86(0x10, &r, &r);
+    saved_cur_high = r.h.ch;
+    saved_cur_low = r.h.cl;
+
+    /* Erase the screen */
+    ScreenClear();
+}
+
+
+/*
+ * Nuke a Term
+ */
+static void Term_nuke_ibm(term *t)
+{
+    union REGS r;
+
+    /* Make the cursor visible */
+    r.h.ah = 1;
+    r.h.ch = saved_cur_high;
+    r.h.cl = saved_cur_low;
+    int86(0x10, &r, &r);
+
+    /* Erase the screen */
+    ScreenClear();
+}
+
+
 /*
  * Initialize the IBM "visual module"
  */
@@ -353,13 +432,18 @@ errr init_ibm()
     /* Paranoia -- Already done */
     if (done) return (-1);
 
+
     /* Build a "wiper line" of blank spaces */
     for (i = 0; i < 256; i++) wiper[i] = blank;
+
 
     /* Acquire the size of the screen */
     rows = ScreenRows();
     cols = ScreenCols();
 
+    /* Paranoia -- require minimum size */
+    if (cols < 80) quit("Screen must be 80 columns!");
+    
     /* Make the virtual screen */
     C_MAKE(VirtualScreen, rows * cols * 2, byte);
 
@@ -370,11 +454,13 @@ errr init_ibm()
         bcopy(wiper, (VirtualScreen + ((i*cols) << 1)), (cols << 1));
     }
 
-    /* Erase the screen */
-    ScreenClear();
 
     /* Initialize the term -- very large key buffer */
     term_init(t, cols, rows - 1, 1024);
+
+    /* Prepare the init/nuke hooks */
+    t->init_hook = Term_init_ibm;
+    t->nuke_hook = Term_nuke_ibm;
 
     /* Connect the hooks */
     t->text_hook = Term_text_ibm;

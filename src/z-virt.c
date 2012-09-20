@@ -18,33 +18,6 @@ static long virt_size = 0;
 
 
 /*
- * The "lifeboat" in "rpanic()" can sometimes prevent crashes
- */
-#ifndef RPANIC_LIFEBOAT
-# define RPANIC_LIFEBOAT 256
-#endif
-
-
-
-#ifndef HAS_MEMSET
-
-/*
- * Set the value of each of 'n' bytes starting at 's' to 'c', return 's'
- * If 'n' is negative, you will erase a whole lot of memory.
- */
-char *memset(char *s, int c, huge n)
-{
-  char *t;
-  for (t = s; len--; ) *t++ = c;
-  return (s);
-}
-
-#endif
-
-
-
-
-/*
  * Optional auxiliary "rnfree" function
  */
 errr (*rnfree_aux)(vptr, huge) = NULL;
@@ -92,29 +65,19 @@ vptr (*rpanic_aux)(huge) = NULL;
 /*
  * The system is out of memory, so panic.  If "rpanic_aux" is set,
  * it can be used to free up some memory and do a new "ralloc()",
- * or if not, it can be used to save the state before crashing.
- * If it first unsets "rpanic_aux", then it can revert to the
- * built in rpanic.
+ * or if not, it can be used to save things, clean up, and exit.
+ * By default, this function simply crashes the computer.
  */
 vptr rpanic(huge len)
 {
-  static byte lifeboat[RPANIC_LIFEBOAT];
-  static huge lifesize = RPANIC_LIFEBOAT;
-
   /* Hopefully, we have a real "panic" function */
   if (rpanic_aux) return ((*rpanic_aux)(len));
 
-  /* We are probably going to crash anyway */
-  plog("Running out of memory!!!");
+  /* Attempt to crash before icky things happen */
+  core("Out of Memory!");
 
-  /* Lifeboat is too small! */
-  if (lifesize < len) return (V_NULL);
-
-  /* Hack -- decrease the lifeboat */
-  lifesize -= len;
-
-  /* Hack -- use part of the lifeboat */
-  return (lifeboat + lifesize);
+  /* Paranoia */
+  return (V_NULL);
 }
 
 
@@ -157,19 +120,10 @@ vptr ralloc(huge len)
   else mem = ((vptr)(malloc((size_t)(len))));
 
   /* We were able to acquire memory */
-  if (mem) return (mem);
+  if (!mem) mem = rpanic(len);
 
-  /* If necessary, panic */
-  mem = rpanic(len);
-
-  /* We were able to acquire memory */
-  if (mem) return (mem);
-
-  /* Abort the system */
-  core("OUT OF MEMORY!!!");
-
-  /* Make the compiler happy */
-  return (V_NULL);
+  /* Return the memory, if any */
+  return (mem);
 }
 
 

@@ -95,11 +95,28 @@
  * This lets the game be installed system wide without major security
  * concerns.  There should not be any side effects on any machines.
  *
- * Note: this also handles setgid's properly.
- *
- * The "SAFE_SETUID" code is by "Michael H. Price II" <mhp1@Ra.MsState.Edu>
+ * This will handle "gids" correctly once the permissions are set right.
  */
 #define SAFE_SETUID
+
+
+/*
+ * This flag enables the "POSIX" methods for "SAFE_SETUID".
+ */
+#ifdef _POSIX_SAVED_IDS
+# define SAFE_SETUID_POSIX
+#endif
+
+
+/*
+ * This "fix" is from "Yoshiaki KASAHARA <kasahara@csce.kyushu-u.ac.jp>"
+ * It prevents problems on (non-Solaris) Suns using "SAFE_SETUID".
+ */
+#if defined(sun) && !defined(SOLARIS)
+# undef SAFE_SETUID_POSIX
+#endif
+
+
 
 
 /*
@@ -112,6 +129,8 @@
  * You may need to turn "SAFE_SETUID" off to use this option.
  */
 /* #define SECURE */
+
+
 
 
 /*
@@ -130,16 +149,26 @@
  * ability to save the game without quitting, and with some method of
  * stopping the user from killing the process at the tombstone screen,
  * this should prevent the use of backup savefiles.  It may also stop
- * the use savefiles from other platforms, so be careful.
+ * the use of savefiles from other platforms, so be careful.
  */
 /* #define VERIFY_TIMESTAMP */
 
 
+/*
+ * OPTION: Forbid the "savefile over-write" cheat, in which you simply
+ * run another copy of the game, loading a previously saved savefile,
+ * and let that copy over-write the "dead" savefile later.  This option
+ * either locks the savefile, or creates a fake "xxx.lok" file to prevent
+ * the use of the savefile until the file is deleted.  Not ready yet.
+ */
+/* #define VERIFY_SAVEFILE */
+
+
 
 /*
- * OPTION: Hack -- Compile in support for "Spoiler Generation"
+ * OPTION: Hack -- Compile in support for "Cyborg" mode
  */
-/* #define ALLOW_SPOILERS */
+/* #define ALLOW_BORG */
 
 /*
  * OPTION: Hack -- Compile in support for "Wizard Commands"
@@ -147,9 +176,10 @@
 /* #define ALLOW_WIZARD */
 
 /*
- * OPTION: Hack -- Compile in support for "Cyborg" mode
+ * OPTION: Hack -- Compile in support for "Spoiler Generation"
  */
-/* #define AUTO_PLAY */
+/* #define ALLOW_SPOILERS */
+
 
 /*
  * OPTION: Allow checking of artifacts (in town)
@@ -162,9 +192,14 @@
 #define ALLOW_CHECK_UNIQUES
 
 /*
- * OPTION: Allow "inventory tagging" via inscriptions
+ * OPTION: Allow "inventory tagging" via inscriptions ("@1@0" or "@r4")
  */
 #define ALLOW_TAGS
+
+/*
+ * OPTION: Allow "inventory lockout" via inscriptions ("!f!d" or "!r")
+ */
+#define ALLOW_NOTS
 
 /*
  * OPTION: Compile support for simple macro expansion
@@ -259,24 +294,28 @@
  * the player's recent locations.
  *
  * This adds about 33K to the memory and 1K to the executable.
+ *
+ * This option has caused some trouble in several versions, usually
+ * related to off-screen monster spell casting or frozen monsters.
  */
-#define WDT_TRACK_OPTIONS
+/* #define WDT_TRACK_OPTIONS */
 
 
 
 /*
- * OPTION: Compile in all necessary color code.  Undefining either of
- * these will result in a decrease in code size and an increase in
- * execution speed, but will totally disable the use of color.
+ * OPTION: Allow the use of "color" in various places.  Disabling this
+ * flag will remove some code, and auto-cast all colors to "White".
+ * This will almost certainly speed up the program.  Note that there
+ * is a software level flag as well ("use_color") which is almost as
+ * good at speeding up the code.
  */
 #define USE_COLOR		/* Include full support for color terminals */
-#define USE_MULTIHUED		/* Include full "MULTIHUED" support */
 
 
 /*
  * OPTION: Hack -- something for Windows
  */
-#if defined(_Windows)
+#if defined(WINDOWS)
 # define USE_ITSYBITSY
 #endif
 
@@ -300,8 +339,8 @@
  * Note that the final slash is optional in any case.
  *
  * By default, the system expects the "angband" program to be located
- * in the same directory as the "lib" directory.  This can be changed.
- * One common alternative is "/usr/games/lib/angband/".
+ * in the same directory as the "lib" directory.  This should be changed,
+ * for example, to "/usr/games/lib/angband/" or "/tmp/angband/lib/".
  */
 #define DEFAULT_PATH "./lib/"
 
@@ -345,7 +384,7 @@
  * player's name, it will then save the savefile elsewhere.  Note that
  * this also gives a method of "bypassing" the "VERIFY_TIMESTAMP" code.
  */
-#if defined(MACINTOSH) || defined(_Windows) || defined(AMIGA)
+#if defined(MACINTOSH) || defined(WINDOWS) || defined(AMIGA)
 # define SAVEFILE_MUTABLE
 #endif
 
@@ -370,7 +409,11 @@
 
 
 
-
+/*
+ * OPTION: Shimmer Multi-Hued monsters/objects
+ */
+#define SHIMMER_MONSTERS
+#define SHIMMER_OBJECTS
 
 
 /*
@@ -391,4 +434,20 @@
 #define DEFAULT_X11_FONT_RECALL		DEFAULT_X11_FONT
 #define DEFAULT_X11_FONT_CHOICE		DEFAULT_X11_FONT
 
+
+
+/*
+ * OPTION: Attempt to prevent all "cheating"
+ */
+/* #define VERIFY_HONOR */
+
+
+/*
+ * React to the "VERIFY_HONOR" flag
+ */
+#ifdef VERIFY_HONOR
+# define VERIFY_SAVEFILE
+# define VERIFY_CHECKSUMS
+# define VERIFY_TIMESTAMPS
+#endif
 

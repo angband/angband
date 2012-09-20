@@ -20,13 +20,6 @@ A:\e\emce
 P:^_35\r
 
 
-# Shift-F13 -- call light
-
-A:\e\emad\e\e
-P:^_S41\r
-
-
-
 
 
 # Option-KP0 -- Magic Missile
@@ -35,7 +28,7 @@ A:\e\emaa
 P:^_O18\r
 
 
-# Option-Keypad -- Directed magic missile
+# Option-Keypad -- Directed Magic Missile
 
 A:\e\emaa1
 P:^_O19\r

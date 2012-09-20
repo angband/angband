@@ -21,6 +21,11 @@
  * Using the CodeWarrior compiler, you can compile a native PowerPC
  * of Angband, but note that double-clicking a savefile does not work
  * on the PowerPC version.  See "check_for_save_file()" for more info.
+ *
+ * On August 7, 1995, this file was modified by Steve Linberg
+ * (slinberg@crocker.com) to allow double-clicked savefiles to open
+ * correctly on the PowerPC via a skeletal AppleEvent structure.
+ * New code delineated by "-SFL- BEGIN" & "-SFL- END" in comments.
  */
 
 #include "angband.h"
@@ -46,6 +51,41 @@
 
 /* #include <SegLoad.h> */
 
+
+/*
+ * -SFL- BEGIN
+ *
+ * Include the AppleEvents header file, and declare our AppleEvent open
+ * function prototypes.
+ * 
+ * Note that this is only one of the four "required" apple events, far
+ * from a complete implementation.
+ *
+ * Someday we might want to fix this.
+ *
+ */
+
+#include <AppleEvents.h>
+#include <Folders.h>
+
+#if defined(powerc) || defined(__powerc)
+
+/*
+ * Some routines
+ */
+pascal OSErr angbandODoc (AppleEvent *theAppleEvent, AppleEvent* reply, long handlerRefCon);
+void pstrcat(StringPtr dst, StringPtr src);
+void pstrinsert(StringPtr dst, StringPtr src);
+void PathNameFromDirID(long dirID, short vRefNum, StringPtr fullPathName);
+
+/*
+ * flag for odoc AppleEvent, set by angbandODoc.
+ */
+Boolean opened_with_save = FALSE;
+
+#endif
+
+/* -SFL- END */
 
 
 /*
@@ -228,6 +268,8 @@ FileFilterYDUPP foldersonlyfilterUPP;
 DlgHookYDUPP findlibdialoghookUPP;
 ModalFilterUPP ynfilterUPP;
 
+AEEventHandlerUPP angbandODocUPP;		/* -SFL- */
+
 #else
 
 /*
@@ -251,9 +293,6 @@ ModalFilterUPP ynfilterUPP;
  */
 static void setcolor(int n)
 {
-    /* Hack -- Stop illegal attrs */
-    if ((n < 0) || (n >= 16)) n = TERM_RED;
-
     /* Activate the color */
     if (rgbcolor==2)
     {
@@ -437,6 +476,9 @@ static void Term_xtra_mac_react()
 
         /* Redraw the window */
         term_data_redraw(&recall);
+
+        /* Redraw the window (later) */
+        p_ptr->redraw |= (PR_RECALL);
     }
 
     /* Hide */
@@ -461,6 +503,9 @@ static void Term_xtra_mac_react()
 
         /* Redraw the window */
         term_data_redraw(&choice);
+
+        /* Redraw the window (later) */
+        p_ptr->redraw |= (PR_CHOICE);
     }
 
     /* Hide */
@@ -526,6 +571,9 @@ static void Term_init_mac(term *t)
     /* Activate the window */
     activate(td->w);
 
+    /* Erase behind words */
+    TextMode(srcCopy);
+    
     /* Activate the font */
     TextFont(td->font_id);
     TextSize(td->font_size);
@@ -600,9 +648,6 @@ static errr Term_xtra_mac_check(int v)
     /* Hack -- restore the Term */
     Term_activate(old);
 
-    /* Hack -- check windows */
-    Term_xtra_mac_react();
-
     /* Success */
     return (res);
 }
@@ -623,9 +668,6 @@ static errr Term_xtra_mac_event(int v)
 
     /* Hack -- restore the Term */
     Term_activate(old);
-
-    /* Hack -- check windows */
-    Term_xtra_mac_react();
 
     /* Success */
     return (0);
@@ -724,12 +766,6 @@ static errr Term_text_mac(int x, int y, int n, byte a, cptr s)
 {
     term_data *td = (term_data*)(Term->data);
 
-    /* Hack -- Stop illegal chars */
-    if (a >= 16) a = TERM_RED;
-
-    /* Erase behind the characters */
-    Term_wipe(x, y, n, 1);
-
     /* Activate the color */
     setcolor(a);
 
@@ -740,7 +776,7 @@ static errr Term_text_mac(int x, int y, int n, byte a, cptr s)
     /* Sometimes Just draw a single character */
     if (n == 1) DrawChar(s[0]);
 
-    /* Draw the string (will only work for mono-spaced fonts) */
+    /* Draw the string */
     else DrawText(s, 0, n);
 
     /* Success */
@@ -852,15 +888,8 @@ int mac_file_character()
     short vrefnum;
     long drefnum,longjunk;
 
-    if ((player_name[strlen(player_name)-1]=='s') ||
-        (player_name[strlen(player_name)-1]=='S'))
-    {
-        sprintf((char*)default_name + 1,"%s' description",player_name);
-    }
-    else
-    {
-        sprintf((char*)default_name + 1,"%s's description",player_name);
-    }
+    /* Default file name */
+    sprintf((char*)default_name + 1, "%s's description", player_name);
     default_name[0] = strlen((char*)default_name + 1);
 
     topleft.h=(qd.screenBits.bounds.left+qd.screenBits.bounds.right)/2-344/2;
@@ -1391,6 +1420,20 @@ static void init_windows()
     term_data *td;
 
 
+/*
+ * -SFL- BEGIN
+ *  Variables for processing preferences on powermac.
+ */
+#if defined(powerc) || defined(__powerc)
+    OSErr	err;
+    short	vref;
+    long	dirID;
+    char	foo[128];
+#endif
+
+/* -SFL- END */
+
+
     /* Default to Monaco font */
     GetFNum("\pmonaco", &fid);
 
@@ -1416,7 +1459,7 @@ static void init_windows()
     /* Recall (80x12, top left) */
     td->rows = 12;
     td->cols = 80;
-    td->r.left = 10;
+    td->r.left = 0;
     td->r.top = 40;
     term_data_check_size(td);
 
@@ -1473,6 +1516,39 @@ static void init_windows()
     term_data_check_size(td);
 
 
+
+    /* Assume failure */
+    fff = NULL;
+    
+
+#if defined(powerc) || defined(__powerc)
+
+/*
+ * -SFL- BEGIN
+ * If this is the PowerMac version, find the preferences folder via FindFolder,
+ * available in System 7 & up.  SysEnvirons is obsolete & flaky, and we shouldn't
+ * use it.
+ */
+
+    /* Find the folder */
+    err = FindFolder(kOnSystemDisk, kPreferencesFolderType, kCreateFolder, &vref, &dirID);
+
+    /* Find it if allowed */
+    if (!err)
+    {
+        /* Find it */
+	PathNameFromDirID(dirID, vref, (StringPtr)foo);
+	PtoCstr((StringPtr)foo);
+	strcat(foo, "Angband 2.7.5 Preferences");
+	
+	/* Open the preference file */
+	fff = fopen(foo, "r");
+    }
+
+/* -SFL- END */
+
+#else
+
     /* Attempt to open a preference file */
     SysEnvirons(curSysEnvVers, &env);
     HGetVol(0,&savev,&saved);
@@ -1480,6 +1556,8 @@ static void init_windows()
     fff = fopen(":Preferences:Angband 2.7.5 Preferences", "r");
     if (!fff) fff = fopen(":Angband 2.7.5 Preferences", "r");
     HSetVol(0, savev, saved);
+
+#endif
 
     /* Parse it */
     if (fff)
@@ -1489,6 +1567,11 @@ static void init_windows()
 
         /* Close the file */	
         fclose(fff);
+    }
+    else
+    {
+        /* Warning */
+	mac_warning("Error while attempting to load preferences!");
     }
 
 
@@ -1513,6 +1596,44 @@ static void save_pref_file(void)
 {
     SysEnvRec env;
 
+#if defined(powerc) || defined(__powerc)
+	OSErr	err;
+	short	vref;
+	long	dirID;
+	char	foo[128];
+#endif
+
+
+    /* Assume failure */
+    fff = NULL;
+
+ 
+#if defined(powerc) || defined(__powerc)
+	
+/*
+ * -SFL- BEGIN
+ * If this is the PowerMac version, find the preferences folder via FindFolder,
+ * available in System 7 & up.  SysEnvirons is obsolete & flaky, and we shouldn't
+ * use it.
+ */
+    err = FindFolder(kOnSystemDisk, kPreferencesFolderType, kCreateFolder, &vref, &dirID);
+
+    if (!err)
+    {
+	PathNameFromDirID(dirID, vref, (StringPtr)foo);
+	PtoCstr((StringPtr)foo);
+	strcat(foo, "Angband 2.7.5 Preferences");
+		
+	_ftype = 'TEXT';
+	
+	/* Open the preference file */
+	fff = fopen(foo, "w");
+    }
+
+/* -SFL- END */
+
+#else
+
     SysEnvirons(curSysEnvVers, &env);
     SetVol(0, env.sysVRefNum);
 
@@ -1523,6 +1644,8 @@ static void save_pref_file(void)
     fff = fopen(":Preferences:Angband 2.7.5 Preferences", "w");
     if (!fff) fff = fopen(":Angband 2.7.5 Preferences", "w");
 
+#endif
+
     /* Write prefs if allowed */
     if (fff)
     {
@@ -1531,6 +1654,11 @@ static void save_pref_file(void)
 
         /* Close it */
         fclose(fff);
+    }
+    else
+    {
+        /* Warning */
+        mac_warning("Error while attempting to save preferences!");
     }
 }
 
@@ -1776,6 +1904,8 @@ static void menu(long mc)
 
     term_data *td = NULL;
 
+    term *old = Term;
+
 
     /* Hack -- extract "can I save" flag */
     save_enabled = character_generated;
@@ -1837,7 +1967,7 @@ static void menu(long mc)
                         HiliteMenu(0);
                         game_in_progress=1;
                         disable_start();
-                        Term_flush();
+                        flush();
                         play_game_mac(TRUE);
                         quit(NULL);
                     }
@@ -1902,7 +2032,7 @@ static void menu(long mc)
                             game_in_progress=1;
                             disable_start();
                             HiliteMenu(0);
-                            Term_flush();
+                            flush();
                             play_game_mac(FALSE);
                             quit(NULL);
                         }
@@ -1911,10 +2041,12 @@ static void menu(long mc)
 
                 case 3: /* Close */
 
+                    /* Flip the appropriate switch */
                     if (td == &screen) use_screen_win = 0;
                     if (td == &recall) use_recall_win = 0;
                     if (td == &choice) use_choice_win = 0;
 
+                    /* Mega-Hack -- React to the new settings */
                     Term_xtra_mac_react();
 
                     break;
@@ -1931,30 +2063,18 @@ static void menu(long mc)
                     }
                     else
                     {
-                        Term_fresh();
-
-                        /* The player is not dead */
-                        (void)strcpy(died_from, "(saved)");
-
-                        /* Save the player, note the result */
-                        prt("Saving game...",0,0);
-                        if (save_player()) prt("done.",0,14);
-                        else prt("Save failed.",0,14);
-
-                        /* Forget that the player was saved */
-                        character_saved = 0;
-
-                        /* Hilite the player */
-                        move_cursor_relative(py,px);
-
-                        /* Note that the player is not dead */
-                        (void)strcpy(died_from, "(alive and well)");
+                        /* Forget messages */
+                        msg_flag = FALSE;
+                        
+                        /* Save the game */
+                        do_cmd_save_game();
                     }
 
                     break;
 
                 case 6:		/* Exit */
 
+                    /* Allow user to cancel "dangerous" exit */
                     if (game_in_progress && save_enabled)
                     {
                         alert=(AlertTHndl)GetResource('ALRT',128);
@@ -1971,12 +2091,14 @@ static void menu(long mc)
 
                 case 7:		/* Quit (and save) */
 
+                    /* Save the game (if necessary) */
                     if (game_in_progress && save_enabled)
                     {
-                        /* Save it */
-                        (void)strcpy(died_from, "(saved)");
-                        prt("Saving game...", 0, 0);
-                        if (!save_player()) quit("Save failed!");
+                        /* Forget messages */
+                        msg_flag = FALSE;
+                        
+                        /* Save the game */
+                        do_cmd_save_game();
                     }
 
                     /* Quit */
@@ -2116,10 +2238,10 @@ static void menu(long mc)
             {
                 case 1:		/* Angband window */
 
-                    /* Use the screen window */
+                    /* Flip the switch */
                     use_screen_win = TRUE;
 
-                    /* React */
+                    /* Mega-Hack -- React */
                     Term_xtra_mac_react();
 
                     /* Bring to the front */
@@ -2129,10 +2251,10 @@ static void menu(long mc)
 
                 case 3:		/* Recall window */
 
-                    /* Use the recall window */
+                    /* Flip the switch */
                     use_recall_win = TRUE;
 
-                    /* React */
+                    /* Mega-Hack -- React */
                     Term_xtra_mac_react();
 
                     /* Bring to the front */
@@ -2142,10 +2264,10 @@ static void menu(long mc)
 
                 case 4:		/* Choice window */
 
-                    /* Use the choice window */
+                    /* Flip the switch */
                     use_choice_win = TRUE;
 
-                    /* React */
+                    /* Mega-Hack -- React */
                     Term_xtra_mac_react();
 
                     /* Bring to the front */
@@ -2156,11 +2278,12 @@ static void menu(long mc)
     }
 
 
-    /* Activate the main screen */
-    Term_activate(term_screen);
-
     /* Clean the menu */
     HiliteMenu(0);
+
+
+    /* Hack -- restore the Term */
+    Term_activate(old);
 }
 
 
@@ -2408,10 +2531,12 @@ static bool CheckEvents(bool scanning)
 
                     if (TrackGoAway(w,event.where))
                     {
+                        /* Flip the appropriate switch */
                         if (w == screen.w) use_screen_win = 0;
                         if (w == recall.w) use_recall_win = 0;
                         if (w == choice.w) use_choice_win = 0;
 
+                        /* Mega-Hack -- React */
                         Term_xtra_mac_react();
                     }
                     break;
@@ -2507,6 +2632,28 @@ static bool CheckEvents(bool scanning)
                 }
 
                 break;
+
+
+#if defined(powerc) || defined(__powerc)
+
+/*
+ * -SFL- BEGIN
+ *
+ * On PowerMacs, check for AppleEvents.  The only one we use is
+ * openDoc.  This is how double-clicked savefiles get opened.
+ *
+ * Again, we ignore the result code.
+ *
+ */
+	 
+	 	case kHighLevelEvent:
+			AEProcessAppleEvent(&event);
+			break;
+
+/* -SFL- END */
+
+#endif
+
     }
 
 
@@ -2523,19 +2670,148 @@ static bool CheckEvents(bool scanning)
 #if defined(powerc) || defined(__powerc)
 
 /*
- * Monster hack.
- * Since the CountAppFiles and GetAppFiles functions are not supported
- * on the PowerMacs, chop out this whole function.
- * This means that double-clicking on a savefile will not open that
- * savefile on a PowerMac, but only start up the application.
- * Be sure to mention this in a README file with any distribution of
- * a native MacAngband based on this code.
- * You have been warned!
+ * -SFL- BEGIN
+ *
+ * New code for opening savefiles from the finder on PPC added by
+ * Steve Linberg (slinberg@crocker.com).
+ *
+ * CountAppFiles and GetAppFiles, used to return information about
+ * the selected document files when an application is launched, are
+ * part of the Segment Loader, which is not present in the RISC OS
+ * due to the new memory architecture.  Therefore, the 680x0 method
+ * for opening savefiles upon launch (shown below), while correct for
+ * the 680x0, will not work on a PowerMac.
+ *
+ * The "correct" way to do this is with AppleEvents.  The following
+ * code is modeled on the "Getting Files Selected from the Finder"
+ * snippet from Think Reference 2.0.  (The prior sentence could read
+ * "shamelessly swiped & hacked")
+ *
+ * Note that this is not a complete implementation of AppleEvents,
+ * which should correctly handle launch, opendoc, printdoc, and quit.
+ * Perhaps in a future version we can do this.  This is intended solely
+ * to allow the correct double-click launch of a savefile on PowerMac
+ * versions (lest users on other platforms scoff at us).
  */
+pascal OSErr angbandODoc(AppleEvent *theAppleEvent, AppleEvent* reply, long handlerRefCon)
+{
+    FSSpec		myFSS;
+    AEDescList	docList;
+    OSErr		err;
+    Size		actualSize;
+    AEKeyword	keywd;
+    DescType	returnedType;
+    char		foo[128];
+    FInfo		myFileInfo;
+
+    /* get the direct parameter--a descriptor list--and put it into a docList */
+    err = AEGetParamDesc (theAppleEvent, keyDirectObject, typeAEList, &docList);
+    if (err) return err;
+
+/*
+ * We ignore the validity check, because we trust the FInder, and we only
+ * allow one savefile to be opened, so we ignore the depth of the list.
+ */
+
+    err = AEGetNthPtr(&docList, 1L, typeFSS, &keywd,
+		      &returnedType, (Ptr) &myFSS, sizeof(myFSS), &actualSize);
+    if (err) return err;
+
+    /* Only needed to check savefile type below */
+    err = FSpGetFInfo(&myFSS, &myFileInfo); 
+    if (err)
+    {
+	sprintf(foo, "Arg!  FSpGetFInfo failed with code %d", err);
+	mac_warning (foo);
+	return err;
+    }
+
+    /* user clicked on help file or something: ignore */
+    if (myFileInfo.fdType != 'SAVE') return;
+    
+    PathNameFromDirID(myFSS.parID, myFSS.vRefNum, (StringPtr)savefile);
+    pstrcat((StringPtr)savefile, (StringPtr)&myFSS.name);
+    PtoCstr((StringPtr)savefile);
+
+    /* flag to open savefile after initializing in main(). */
+    opened_with_save = TRUE;
+	
+    err = AEDisposeDesc(&docList);
+
+    return noErr;
+}
+
+/*
+ * The following three routines (pstrcat, pstrinsert, and PathNameFromDirID)
+ * were taken from the Think Reference section called "Getting a Full Pathname"
+ * (under the File Manager section).  We need PathNameFromDirID to get the
+ * full pathname of the opened savefile, making no assumptions about where it
+ * is.
+ *
+ * I had to hack PathNameFromDirID a little for MetroWerks, but it's awfully nice.
+ */ 
+void pstrcat(StringPtr dst, StringPtr src)
+{
+	BlockMove(src + 1, dst + *dst + 1, *src);	/* copy string in */
+	*dst += *src;					/* adjust length byte */
+}
+
+/*
+ * pstrinsert - insert string 'src' at beginning of string 'dst'
+ */
+void pstrinsert(StringPtr dst, StringPtr src)
+{
+	BlockMove(dst + 1, dst + *src + 1, *dst);	/* make room for new string */
+	BlockMove(src + 1, dst + 1, *src);		/* copy new string in */
+	*dst += *src;					/* adjust length byte */
+}
+
+void PathNameFromDirID(long dirID, short vRefNum, StringPtr fullPathName)
+{
+	CInfoPBRec	block;
+	Str255	directoryName;
+	OSErr	err;
+
+	fullPathName[0] = '\0';
+
+	block.dirInfo.ioDrParID = dirID;
+	block.dirInfo.ioNamePtr = directoryName;
+	do {
+		block.dirInfo.ioVRefNum = vRefNum;
+		block.dirInfo.ioFDirIndex = -1;
+		block.dirInfo.ioDrDirID = block.dirInfo.ioDrParID;
+		err = PBGetCatInfo(&block,FALSE);
+		pstrcat(directoryName, (StringPtr)"\p:");
+		pstrinsert(fullPathName, directoryName);
+	} while (block.dirInfo.ioDrDirID != 2);
+}
+
+
+/*
+ * If we opened by double-clicking a savefile, opened_with_save will be set by angbandODoc.
+ * However, it isn't clear exactly when angbandODoc is being called (all we know is that it
+ * is called before angband is intialized), so the following code, which takes a complete
+ * savefile pathname in "savefile" and opens it was extracted and placed into this stub,
+ * which is called after angband is intialized and where it checks for a savefile on the
+ * 680x0 version.  At this point we can open it and it will work.
+ */ 
 static void check_for_save_file()
 {
-    /* XXX XXX XXX */
+    if (opened_with_save)
+    {
+	game_in_progress=1;
+
+	disable_start();
+	
+	/* Wait for it... */
+	pause_line(23);
+	flush();
+	
+	/* Hook into "play_game()" */
+	play_game_mac(FALSE);
+    }
 }
+
 
 #else
 
@@ -2576,7 +2852,7 @@ static void check_for_save_file()
 
             /* Wait for it... */
             pause_line(23);
-            Term_flush();
+            flush();
 
             /* Hook into "play_game()" */
             play_game_mac(FALSE);
@@ -2622,30 +2898,72 @@ static void mac_check_lib_folder()
 
 
 /*
- * See "z-virt.c"
+ * Warning -- emergency lifeboat
  */
+static vptr lifeboat = NULL;
 
+
+/*
+ * Hook to "release" memory
+ */
+static errr hook_rnfree(vptr v, huge size)
+{
+    /* Dispose */
+    DisposePtr(v);
+
+    /* Success */
+    return (0);
+}
+
+/*
+ * Hook to "allocate" memory
+ */
 static vptr hook_ralloc(huge size)
 {
+    /* Make a new pointer */
     return (NewPtr(size));
 }
 
-static errr hook_rnfree(vptr v, huge size)
+/*
+ * Hook to handle "out of memory" errors
+ */
+static vptr hook_rpanic(huge size)
 {
-    DisposePtr(v);
-    return (0);
+    vptr mem = NULL;
+    
+    /* Free the lifeboat */
+    if (lifeboat)
+    {
+        /* Free the lifeboat */
+        DisposePtr(lifeboat);
+        
+        /* Forget the lifeboat */
+        lifeboat = NULL;
+
+        /* Mega-Hack -- Warning */
+        mac_warning("Running out of Memory!\rAbort this process!");
+
+        /* Mega-Hack -- Never leave this function */
+        while (TRUE) CheckEvents(FALSE);
+    }
+    
+    /* Mega-Hack -- Crash */
+    return (NULL);
 }
 
 
 /*
- * See "z-util.c"
+ * Hook to tell the user something important
  */
-
 static void hook_plog(cptr str)
 {
+    /* Warning message */
     mac_warning(str);
 }
 
+/*
+ * Hook to tell the user something, and then quit
+ */
 static void hook_quit(cptr str)
 {
     /* Warning if needed */
@@ -2661,6 +2979,9 @@ static void hook_quit(cptr str)
     ExitToShell();
 }
 
+/*
+ * Hook to tell the user something, and then crash
+ */
 static void hook_core(cptr str)
 {
     /* XXX Use the debugger */
@@ -2701,6 +3022,26 @@ void main(void)
     InitCursor();
 
 
+#if defined(powerc) || defined(__powerc)
+
+/*
+ * -SFL- BEGIN
+ *
+ * If we are compiling PowerMac code, install the openDoc AppleEvent
+ * hook.
+ *
+ * Note that (a) we do not use Gestalt to make sure the AppleEvent Manager
+ * exists, since this is Powermac-only and we assume all PowerMacs have it;
+ * (b) AEInstallEventHandler returns result codes which we ignore, and (c)
+ * we are only installing one of the four "required" AppleEvent hooks.
+ */
+	
+    angbandODocUPP = NewAEEventHandlerProc(angbandODoc);
+    AEInstallEventHandler(kCoreEventClass, kAEOpenDocuments, angbandODocUPP, 0L, FALSE);
+
+#endif
+
+
     /* Find the current application */
     SetupAppDir();
 
@@ -2723,9 +3064,10 @@ void main(void)
 
 
     /* Hook in some "z-virt.c" hooks */
-    ralloc_aux = hook_ralloc;
     rnfree_aux = hook_rnfree;
-
+    ralloc_aux = hook_ralloc;
+    rpanic_aux = hook_rpanic;
+    
     /* Hooks in some "z-util.c" hooks */
     plog_aux = hook_plog;
     quit_aux = hook_quit;
@@ -2757,6 +3099,9 @@ void main(void)
     /* Allocate and Initialize various arrays */
     init_some_arrays();
 
+    /* Allocate a "lifeboat" */
+    lifeboat = NewPtr(16384);
+    
     /* We are now initialized */
     initialized = TRUE;
 
@@ -2769,7 +3114,7 @@ void main(void)
     Term_fresh();
 
     /* Process Events Forever */
-    while (1) CheckEvents(FALSE);
+    while (TRUE) CheckEvents(FALSE);
 }
 
 

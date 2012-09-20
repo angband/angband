@@ -1,0 +1,100 @@
+=== Using the online help ===
+
+You can press Escape at any time to leave the online help.
+
+You can press Question Mark (?) to return to the previous help file.
+
+You can press Space to advance one page, or Return to advance one line.
+If you reach the end of the help file, you will wrap around to the start.
+
+You can press Minus (-) to back up one half page at a time towards the
+start of the help file (this is very inefficient, by the way).
+
+You can press Slash (/) to search for a string.  This is a very primitive
+search, and is case sensitive, but is very useful.  Subsequent uses of the
+Slash command will allow you to search for the same string again.  Note that
+the search does not restart from the beginning of the file.
+
+You can press Pound (#) to go to a specific line (defaults to line zero).
+
+You can press Percent (%) to go to a specific file (defaults to "help.hlp").
+
+
+=== General Information ===
+
+The game of Angband is a single player dungeon simulation.  A player
+may choose from a number of races and classes when creating a character,
+and then "run" that character over a period of days, weeks, even months,
+attempting to win the game by defeating Morgoth, the Lord of Darkness,
+who resides far below the surface.
+
+The player will begin his adventure on the town level where he may acquire
+supplies, weapons, armor, and magical devices by bartering with various shop
+owners.  After preparing for his adventure, the player can descend into
+the Pits of Angband where fantastic adventures await his coming!
+ 
+You will probably want to browse through the "help files", especially the
+one on available commands, before beginning any serious adventuring...
+
+
+
+=== A note from the maintainer ===
+
+Welcome to Angband 2.7.8.
+
+My name is Ben Harrison, and I have been the maintainer of Angband since
+November, 1994, when the previous maintainer, Charles Swiger (who developed
+Angband 2.5.1 through 2.6.2), got a real job.  Starting with Angband 2.7.0,
+and continuing through the current version (2.7.8), I have been responsible
+for a number of major improvements to the basic Angband game, some of them
+obvious to the casual user and others hidden below the surface, but no less
+significant.  The most significant improvement has been a total rewrite of
+large portions of the code, which, after ten years of modifications by various
+people, had begun to resemble, well, a death mold.  Also significant was
+the design of a generic "term.c" package, which has allowed Angband 2.7.X to
+be easily ported to Macintosh, Amiga, X11, Windows, and basically every system
+in existance (except for DOS-286, but this is being worked on).
+
+In addition, I have added lots of new commands, features, and functionalities,
+most of which appear to have been accepted by most people as a good idea (TM).
+
+It is extremely easy to port Angband 2.7.8 to a new system.  If you cannot
+find a version that will compile on your machine, you can usually make one
+by writing a single file of about one hundred lines of C code.
+
+Angband 2.7.8 is intended to be a nice, clean, stable version, so we
+can all give copies to our friends.  But it was necessary to add some
+new features anyway, and hopefully they will have no negative effects.
+
+You can obtain the latest source via anonymous ftp from "ftp.cis.ksu.edu"
+in the "/pub/Games/Angband" directory.  Pre-compiled versions of the game
+are also available, try, for example, "/pub/Games/Angband/Macintosh".
+
+You may freely distribute the game, and its source, though you are bound
+not only by the existing copyright notice from 1984, but also whatever
+restrictions may be present on various other pieces of the code..
+
+You can email compliments, complaints, bug reports, and presents to me
+("benh@linc.cis.upenn.edu"), and you can post interesting experiences,
+public flames, general questions, and code suggestions to the newsgroup
+("rec.games.roguelike.angband").
+
+There are a variety of new commands, some of which are described in the
+"commands.txt" help file.
+
+The basic help files supplied with this game are more or less up to date,
+but when in doubt, the source (or the newsgroup) is the place to turn for
+advice.  Or attempt to figure it out by experimentation, this is sometimes
+the most fun.
+
+The documentation is very easy to modify and update, so you may want to
+check in to the ftp site occasionally to see if there are any new help
+files (or spoiler files) for you to acquire.
+
+I am conducting a survey of who uses this version of Angband, and what they
+think about it.  If you can, send me a brief email with the subject "SURVEY",
+and I will start compiling a list.
+
+Happy adventuring!
+
+--- Ben ---

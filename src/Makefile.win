@@ -1,135 +1,192 @@
 # File: Makefile.win
+# For Borland C++ 4.5 Win16 and Win32
 
-#.autodepend
+.autodepend
 
 # change this to suit your taste
 
-CC = c:\apps\bc\bin\bcc.exe
-CFLAGS = +borlandc.cfg
-LINK = c:\apps\bc\bin\tlink.exe
-RC = c:\apps\bc\bin\rc.exe
-LIBDIR = c:\apps\bc\lib
-INCLDIR = c:\apps\bc\include
+CC = d:\apps\bc45\bin\bcc.exe +bccw16.cfg
+CC32 = d:\apps\bc45\bin\bcc32.exe +bccw32.cfg
+LINK = d:\apps\bc45\bin\tlink.exe
+LINK32 = d:\apps\bc45\bin\tlink32.exe
+RC = d:\apps\bc45\bin\brc.exe
+RC32 = d:\apps\bc45\bin\brc32.exe
+LIBDIR = d:\apps\bc45\lib
+INCLDIR = d:\apps\bc45\include;h:\angband\src-win
 
 # shouldn't need to change anything below
-# (except possibly "/L\apps\bc\bin" in linker flags)
 
 SRCS = \
-  main.c main-win.c itsybits.c \
-  signals.c util.c io.c init.c save.c save-old.c files.c \
-  generate.c birth.c creature.c melee.c dungeon.c store.c \
-  effects.o cmd1.c cmd2.c cmd3.c cmd4.c cmd5.c cmd6.c \
+  main.c main-win.c itsybits.c readdib.c\
+  signals.c util.c io.c files.c melee.c \
+  effects.c dungeon.c store.c \
+  cmd1.c cmd2.c cmd3.c cmd4.c cmd5.c cmd6.c \
   misc.c monster.c mon-desc.c object.c obj-desc.c \
-  spells1.c spells2.c cave.c tables.c variable.c wizard.c \
-  term.c random.c z-util.c z-virt.c z-form.c
+  spells1.c spells2.c cave.c tables.c variable.c \
+  term.c random.c z-util.c z-virt.c z-form.c\
+  generate.c save.c save-old.c birth.c init.c
 
 OBJS = \
-  main.obj main-win.obj itsybits.obj \
-  signals.obj util.obj io.obj init.obj save.obj save-old.obj files.obj \
-  generate.obj birth.obj creature.obj effects.obj dungeon.obj store.obj \
+  main.obj main-win.obj itsybits.obj readdib.obj\
+  signals.obj util.obj io.obj files.obj melee.obj \
+  effects.obj dungeon.obj store.obj \
   cmd1.obj cmd2.obj cmd3.obj cmd4.obj cmd5.obj cmd6.obj \
   misc.obj monster.obj mon-desc.obj object.obj obj-desc.obj \
-  spells1.obj spells2.obj cave.obj tables.obj variable.obj wizard.obj \
-  term.obj random.obj z-util.obj z-virt.obj z-form.obj
+  spells1.obj spells2.obj cave.obj tables.obj variable.obj \
+  term.obj random.obj z-util.obj z-virt.obj z-form.obj\
+  generate.obj save.obj save-old.obj birth.obj init.obj
 
-FSS = \
-  init.fs cmd3.fs cmd6.fs creature.fs effects.fs generate.fs misc.fs \
-  mon_desc.fs obj_desc.fs spells1.fs spells2.fs store.fs wizard.fs
+OBJS32 = \
+  main.o32 main-win.o32 itsybits.o32 readdib.o32\
+  signals.o32 util.o32 io.o32 melee.o32files.o32 \
+  effects.o32 dungeon.o32 store.o32 \
+  cmd1.o32 cmd2.o32 cmd3.o32 cmd4.o32 cmd5.o32 cmd6.o32 \
+  misc.o32 monster.o32 mon-desc.o32 object.o32 obj-desc.o32 \
+  spells1.o32 spells2.o32 cave.o32 tables.o32 variable.o32 \
+  term.o32 random.o32 z-util.o32 z-virt.o32 z-form.o32\
+  generate.o32 save.o32 save-old.o32 birth.o32 init.o32
 
-default: borlandc.cfg farstr.exe angband
+default: bccw16.cfg angband cleanobj bccw32.cfg angband32 cleanobj32
 
 clean:
 	del *.obj
-	del *.fs
-	del *.fsh
-	del ..\farstr.exe
 	del ..\*.map
 	del ..\angband.exe
 
+cleanobj:
+	del *.obj
+	del bccw16.cfg
 
-borlandc.cfg:
+cleanobj32:
+	del *.o32
+	del bccw32.cfg
+
+bccw16.cfg: makefile.win
+	if not exist ..\angband.ini copy ..\src-win\angband.ini ..
 	copy &&|
 -I$(INCLDIR)
 -L$(LIBDIR)
--3
 -ml
--d
--Ff=8
--f-
 -WE
+-x-
+-K
+-y-
+-v-
 -N-
--K-
+-f-
+-3
+-dc
+-Ff=8
+-r
+-b-
+-p-
+-Os
+-Oa
+-OW
+-O
+-d
+-Ob
+-Oe
+-Og
+-Ol
+-Om
+-Ot
+-Op
+-Ov
+-k-
+-Z
 -w-
--G
--O2
+-X
 -D__STDC__=1
--zEDATA_FARSEG
-| borlandc.cfg
-	copy ..\src-win\*.* .
-	if not exist ..\angband.ini copy ..\src-win\angband.ini ..
+| bccw16.cfg
 
-.c.fs:
-	del $*.fs
-	del $*.fsh
-	farstr.exe $<
+bccw32.cfg: makefile.win
+	if not exist h-defines.h copy h-define.h h-defines.h
+	if not exist h-include.h copy h-includ.h h-include.h
+	copy &&|
+-I$(INCLDIR)
+-L$(LIBDIR)
+-WE
+-x-
+-K
+-y-
+-v-
+-N-
+-f-
+-5
+-r
+-b-
+-p-
+-Os
+-Oa
+-OW
+-O
+-d
+-Ob
+-Oe
+-Og
+-Ol
+-Om
+-Ot
+-Op
+-Ov
+-k-
+-Z
+-w-
+-X
+-D__STDC__=1
+| bccw32.cfg
 
 .c.obj:
-	$(CC) -c $(CFLAGS) $<
+	$(CC) -c $<
 
-farstr.exe: ..\src-win\farstr\fsmain.c ..\src-win\farstr\fsparse.c
-        $(CC) @&&|
--mc -f- -I\apps\bc\include;..\src-win\farstr -L\apps\bc\lib -efarstr ..\src-win\farstr\fsmain.c ..\src-win\farstr\fsparse.c
-|
+main-win.obj: ..\src-win\main-win.c ..\src-win\main-win.h
+	$(CC) -c ..\src-win\main-win.c
 
-init.obj: init.fs
-	$(CC) -c $(CFLAGS) $?
+itsybits.obj: ..\src-win\itsybits.c ..\src-win\itsybits.h
+	$(CC) -c ..\src-win\itsybits.c
 
-cmd3.obj: cmd3.fs
-	$(CC) -c $(CFLAGS) $?
+readdib.obj: ..\src-win\readdib.c ..\src-win\readdib.h
+	$(CC) -c ..\src-win\readdib.c
 
-cmd6.obj: cmd6.fs
-	$(CC) -c $(CFLAGS) $?
-
-creature.obj: creature.fs
-	$(CC) -c $(CFLAGS) $?
-
-effects.obj: effects.fs
-	$(CC) -c $(CFLAGS) $?
-
-generate.obj: generate.fs
-	$(CC) -c $(CFLAGS) $?
-
-misc.obj: misc.fs
-	$(CC) -c $(CFLAGS) $?
-
-mon-desc.obj: mon-desc.fs
-	$(CC) -c $(CFLAGS) $?
-
-obj-desc.obj: obj-desc.fs
-	$(CC) -c $(CFLAGS) $?
-
-spells1.obj: spells1.fs
-	$(CC) -c $(CFLAGS) $?
-
-spells2.obj: spells2.fs
-	$(CC) -c $(CFLAGS) $?
-
-store.obj: store.fs
-	$(CC) -c $(CFLAGS) $?
-
-wizard.obj: wizard.fs
-	$(CC) -c $(CFLAGS) $?
-
-angband: $(OBJS) angband.res
-	$(LINK) @&&|
-/L\apps\bc\lib\ /Twe/P/d/x c0wl main main-win itsybits+
-signals util io init save save-old files+
-generate birth creature effects dungeon store+
+angband: $(OBJS) ..\src-win\angband.rc
+	$(LINK) /L$(LIBDIR) @&&|
+-Twe -P -d -x -Gn -Oc -yx4096 +
+c0wl main main-win itsybits readdib+
+signals util io meleefiles+
+effects dungeon store+
 cmd1 cmd2 cmd3 cmd4 cmd5 cmd6+
 misc monster mon-desc object obj-desc+
 spells1 spells2 cave tables variable+
-wizard+
+generate save save-old birth init+
 term random z-util z-virt z-form,+
-..\angband.exe,..\angband.map,import cwl,angband.def
+..\angband.exe,..\angband.map,import cwl,..\src-win\angband.def
 |
-	$(RC) -t -v -31 angband.res ..\angband.exe
+	$(RC) -31 ..\src-win\angband.rc ..\angband.exe
+
+.c.o32:
+	$(CC32) -c -o$@ $<
+
+main-win.o32: ..\src-win\main-win.c ..\src-win\main-win.h
+	$(CC32) -c -omain-win.o32 ..\src-win\main-win.c
+
+itsybits.o32: ..\src-win\itsybits.c ..\src-win\itsybits.h
+	$(CC32) -c -oitsybits.o32 ..\src-win\itsybits.c
+
+readdib.o32: ..\src-win\readdib.c ..\src-win\readdib.h
+	$(CC32) -c -oreaddib.o32 ..\src-win\readdib.c
+
+angband32: $(OBJS32) ..\src-win\angband.rc
+	$(LINK32) /L$(LIBDIR) @&&|
+-aa -B:0x400000 -S:0x100000 -P -x +
+c0w32 main.o32 main-win.o32 itsybits.o32 readdib.o32+
+signals.o32 util.o32 io.o32 melee.o32 files.o32+
+effects.o32 dungeon.o32 store.o32+
+cmd1.o32 cmd2.o32 cmd3.o32 cmd4.o32 cmd5.o32 cmd6.o32+
+misc.o32 monster.o32 mon-desc.o32 object.o32 obj-desc.o32+
+spells1.o32 spells2.o32 cave.o32 tables.o32 variable.o32+
+generate.o32 save.o32 save-old.o32 birth.o32 init.o32 +
+term.o32 random.o32 z-util.o32 z-virt.o32 z-form.o32,+
+..\angband32.exe,..\angband.map,import32 cw32,..\src-win\angband.def
+|
+	$(RC32) -w32 ..\src-win\angband.rc ..\angband32.exe

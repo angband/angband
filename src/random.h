@@ -3,7 +3,7 @@
 #ifndef INCLUDED_RANDOM_H
 #define INCLUDED_RANDOM_H
 
-#include "h-include.h"
+#include "h-basic.h"
 
 /*
  * Header file for the Random Number Generator

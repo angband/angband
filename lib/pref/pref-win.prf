@@ -1,33 +1,8 @@
-# File: pref.prf
+# File: pref-win.prf
 
-# This is the default "preference" file
-
-# See "arrays.c" for more info.  Basically, this file contains a series of
-# "commands" that are executed at startup.  Note that this file may include
-# other files recursively via the "%" command.
-
-# The commands that can go here include mostly attr/char redefinitions,
-# for example, you can put commands here to make the walls be drawn in
-# a special symbol, or to use a special color for your inventory items.
-
-# In addition, you can define macros (in an encoded form).  These macros
-# are pretty much system dependant, since that is what determines which
-# keys are available.  As above, see "arrays.c" for proper formats.
-
-# Note that Angband 2.7.5 allows the user to choose a different directory
-# for both "save" files and "pref" files, so by making your own "pref"
-# directory, with a "pref.prf" file, you can choose your favorite stuff.
-
-# Also, any "pref" file named "Joe.prf" will be loaded for any character
-# whose "name" is "Joe", right after the "pref.prf" file is loaded.
+# This is the Windows "preference" file, 
+# both for text mode and graphics mode
 #--------------------------------------------------------------------------
-
-# Replace '#' by 'solid block'
-I:0/35:0/127
-
-# Replace '.' by 'centered dot'
-I:0/46:0/31
-M:0/46:0/31
 
 # Enhanced keys are mapped as follows in MAIN-WIN.C
 #
@@ -80,58 +55,58 @@ P:^_C083\r
 
 
 # Shift-Ctrl-Keypad -- wield {@0} and tunnel
-A:\e\ew0+1
+A:\e\ew0\\+1
 P:^_SC079\r
-A:\e\ew0+2
+A:\e\ew0\\+2
 P:^_SC080\r
-A:\e\ew0+3
+A:\e\ew0\\+3
 P:^_SC081\r
-A:\e\ew0+4
+A:\e\ew0\\+4
 P:^_SC075\r
-A:\e\ew0+6
+A:\e\ew0\\+6
 P:^_SC077\r
-A:\e\ew0+7
+A:\e\ew0\\+7
 P:^_SC071\r
-A:\e\ew0+8
+A:\e\ew0\\+8
 P:^_SC072\r
-A:\e\ew0+9
+A:\e\ew0\\+9
 P:^_SC073\r
 
 
 # Ctrl-Keypad -- directed tunneling
-A:\e\e+1
+A:\e\e\\+1
 P:^_C079\r
-A:\e\e+2
+A:\e\e\\+2
 P:^_C080\r
-A:\e\e+3
+A:\e\e\\+3
 P:^_C081\r
-A:\e\e+4
+A:\e\e\\+4
 P:^_C075\r
-A:\e\e+6
+A:\e\e\\+6
 P:^_C077\r
-A:\e\e+7
+A:\e\e\\+7
 P:^_C071\r
-A:\e\e+8
+A:\e\e\\+8
 P:^_C072\r
-A:\e\e+9
+A:\e\e\\+9
 P:^_C073\r
 
 
 # Shift-Keypad -- directed running
-A:\e\e.1
+A:\e\e\\.1
 P:^_S079\r
-A:\e\e.2
+A:\e\e\\.2
 P:^_S080\r
-A:\e\e.3
+A:\e\e\\.3
 P:^_S081\r
-A:\e\e.4
+A:\e\e\\.4
 P:^_S075\r
-A:\e\e.6
+A:\e\e\\.6
 P:^_S077\r
-A:\e\e.7
+A:\e\e\\.7
 P:^_S071\r
-A:\e\e.8
+A:\e\e\\.8
 P:^_S072\r
-A:\e\e.9
+A:\e\e\\.9
 P:^_S073\r
 

@@ -1,29 +1,26 @@
 Welcome to the Angband Online Help System.
 
-While examining any "help" screen, you may hit "space" or "return" to advance,
-or "-" to back up, or "escape" to exit, or a number to go to a sub-topic.
+While examining any "help" screen, hit "escape" to exit, "space" or "return" to
+advance, "-" to back up, "/" to search, "?" to go back, or any listed digit.
 
 The most up-to-date source and "help files" may be obtained via anonymous ftp
 from "linc.cis.upenn.edu", in "/pub/angband/Source" and "/pub/angband/Help".
 
 Please choose one of the following topics:
 
-    (1) General Information
-    (2) Creating a Character
-    (3) Exploring the Dungeon
-    (4) Attacking Monsters
-    (5) Available Commands
-    (6) Version Information
-    (7) Rumors (out of date)
-    (8) Manual (out of date)
-    (9) Spoiler files
-    
-***** [1] general.hlp
-***** [2] birth.hlp
-***** [3] dungeon.hlp
-***** [4] battle.hlp
-***** [5] commands.hlp
-***** [6] version.hlp
-***** [7] rumors.hlp
-***** [8] manual.hlp
+    (1) General Information        (general.txt)
+    (2) Creating a Character       (birth.txt)
+    (3) Exploring the Dungeon      (dungeon.txt)
+    (4) Attacking Monsters         (battle.txt)
+    (5) Available Commands         (command.txt)
+    (6) Version Information        (version.txt)
+    (9) Spoiler files and such     (spoiler.hlp)
+
+***** [1] general.txt
+***** [2] birth.txt
+***** [3] dungeon.txt
+***** [4] battle.txt
+***** [5] commands.txt
+***** [6] version.txt
 ***** [9] spoiler.hlp
+***** [0] user.hlp

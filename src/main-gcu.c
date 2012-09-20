@@ -675,7 +675,7 @@ static errr Term_xtra_gcu(int n, int v)
         case TERM_XTRA_NOISE: (void)write(1, "\007", 1); return (0);
 
         /* Flush the Curses buffer */
-        case TERM_XTRA_FLUSH: (void)refresh(); return (0);
+        case TERM_XTRA_FRESH: (void)refresh(); return (0);
 
 #ifdef USE_CURS_SET
 
@@ -766,18 +766,9 @@ static errr Term_wipe_gcu(int x, int y, int w, int h)
 
 /*
  * Place some text on the screen using an attribute
- * Unfortunately, the "attribute" is ignored...
  */
 static errr Term_text_gcu(int x, int y, int n, byte a, cptr s)
 {
-    int i;
-    char buf[81];
-
-    /* Hack -- force "termination" of the text */
-    if (n > 80) n = 80;
-    for (i = 0; (i < n) && s[i]; ++i) buf[i] = s[i];
-    buf[n]=0;
-
     /* Move the cursor and dump the string */
     move(y, x);
 
@@ -787,7 +778,7 @@ static errr Term_text_gcu(int x, int y, int n, byte a, cptr s)
 #endif
 
     /* Add the text */
-    addstr(buf);
+    addstr(s);
 
     /* Success */
     return (0);
@@ -817,8 +808,8 @@ errr init_gcu(void)
     /* Initialize for USG (except Amiga) */
     if (initscr() == NULL) return (-1);
 #else
-    /* Initialize for others (*/
-    if (initscr() == ERR) return (-1);
+    /* Initialize for others (icky!) */
+    if (initscr() == (WINDOW*)ERR) return (-1);
 #endif
 
 
@@ -927,28 +918,6 @@ errr init_gcu(void)
     /* Success */
     return (0);
 }
-
-
-#ifdef AMIGA
-/*
- * Hack -- this function may be needed by the Amiga version
- * It was in a separate file, after an #include "curses.h"
- * so I assume that it can safely be placed here.
- */
-void
-overwrite(WINDOW *from, WINDOW *to)
-{
-    int l;
-
-    for (l = 0; l < LINES; l++) {
-        memmove(to->LnArry[l].Line, from->LnArry[l].Line, COLS);
-        memmove(to->LnArry[l].ATTRS, from->LnArry[l].ATTRS, COLS);
-        to->LnArry[l].StartCol = from->LnArry[l].StartCol;
-        to->LnArry[l].EndCol = from->LnArry[l].EndCol;
-        to->LnArry[l].Touched = TRUE;
-    }
-}
-#endif
 
 
 #endif /* USE_GCU */

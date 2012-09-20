@@ -3,15 +3,14 @@
 #ifndef INCLUDED_Z_UTIL_H
 #define INCLUDED_Z_UTIL_H
 
-#include "h-include.h"
+#include "h-basic.h"
 
 
 /*
- * Extremely basic stuff, like global tmp and constant variables.
- * Also, some useful low level functions like streq() and such.
- * These can all be used as addressable functions.
+ * Extremely basic stuff, like global temp and constant variables.
+ * Also, some very useful low level functions, such as "streq()".
+ * All variables and functions in this file are "addressable".
  */
-
 
 
 /**** Available variables ****/
@@ -72,16 +71,11 @@ extern bool streq(cptr a, cptr b);
 extern bool prefix(cptr big, cptr small);
 extern bool suffix(cptr big, cptr small);
 
-#if 0
-#ifndef HAS_STRICMP
-extern int stricmp(cptr a, cptr b);
-#endif
-#endif
 
 /* Print an error message */
 extern void plog(cptr str);
 
-/* Exit, perhaps with a message */
+/* Exit, with optional message */
 extern void quit(cptr str);
 
 /* Dump core, with optional message */

@@ -81,7 +81,7 @@ static void signal_handler_proc(int sig)
 {
     int simple = FALSE;
 
-#if !defined(MACINTOSH) && !defined(_Windows)
+#if !defined(MACINTOSH) && !defined(WINDOWS)
 
     /* Ignore all second signals */
     (void)signal(sig, SIG_IGN);
@@ -132,7 +132,11 @@ static void signal_handler_proc(int sig)
             /* Death */
             (void)strcpy(died_from, "Interrupting");
         }
+        
+        /* Terminate */
         else {
+
+            /* Mark the savefile */
             (void)strcpy(died_from, "Abortion");
         }
 
@@ -149,45 +153,66 @@ static void signal_handler_proc(int sig)
         quit("interrupted");
     }
 
-#endif /* !MACINTOSH */
+#endif /* !defined(MACINTOSH) && !defined(WINDOWS) */
 
     /* Die. */
     prt("OH NO!!!!!!  A gruesome software bug LEAPS out at you!", 21, 0);
 
-    /* Try to save anyway */
+    /* Panic save */
     if (!death && !character_saved && character_generated) {
 
-        /* Try a panic save */
+        /* Panic Save */
         panic_save = 1;
+
+        /* Message */
         prt("Your guardian angel is trying to save you.", 22, 0);
         prt("", 23, 0);
 
-        /* Attempt to save */
+        /* Panic save */
         (void)sprintf(died_from, "(panic save %d)", sig);
+
+        /* Attempt to save */
         if (save_player()) quit("panic save succeeded");
 
-        /* Oops */
-        (void)strcpy(died_from, "software bug");
+        /* Hack -- Just in case */
+        (void)sprintf(died_from, "(panic save %d failed)", sig);
+
+        /* Hack -- Assume dead */
         death = TRUE;
+
+        /* Hack -- reset turn */
         turn = 0;
     }
+
+    /* Death save */
     else {
+
+        /* Dead Player */
         death = TRUE;
+
+        /* Message */
         prt("There is NO defense!", 22, 0);
         prt("", 23, 0);
 
-        /* Low level access -- Quietly save the memory anyway. */
-        (void)_save_player(savefile);
+        /* Software Bug */
+        (void)strcpy(died_from, "Software Bug");
+
+        /* Hack -- Save the game anyway */
+        (void)save_player();
     }
 
-    /* Shut down the terminal XXX XXX */
-    term_nuke(term_screen);
-
 #ifdef SET_UID
-    /* generate a core dump if necessary */
+
+    /* Hack -- Shut down the term windows */
+    if (term_choice) term_nuke(term_choice);
+    if (term_recall) term_nuke(term_recall);
+    if (term_screen) term_nuke(term_screen);
+
+    /* Hack -- dump core (very messy!) */
     (void)signal(sig, SIG_DFL);
     (void)kill(getpid(), sig);
     (void)sleep(5);
+
 #endif
 
     /* Quit anyway */
@@ -195,17 +220,18 @@ static void signal_handler_proc(int sig)
 }
 
 /*
- * signals_ignore_tstp - Ignore SIGTSTP signals.
+ * Ignore SIGTSTP signals (keyboard suspend)
  */
 void signals_ignore_tstp(void)
 {
 #ifdef SIGTSTP
+    /* Tell "suspend" to be ignored */
     (void)signal(SIGTSTP, SIG_IGN);
 #endif
 }
 
 /*
- * signals_handle_tstp - Handle SIGTSTP (keyboard suspend)
+ * Handle SIGTSTP signals (keyboard suspend)
  */
 void signals_handle_tstp(void)
 {

@@ -25,7 +25,7 @@
  * routines must be explicitly "requested".
  *
  * New machines:
- *   movement" across the screen is relatively cheap
+ *   movement across the screen is relatively cheap
  *   changing "colors" may take a little bit of time
  *   characters must be "erased" from the screen
  *   drawing characters may or may not first erase behind them
@@ -47,11 +47,14 @@
  * files are told how to display each color (except color zero).
  * It is also a good idea to reserve color "one" for white.
  *
- * Note that we reserve the "zero char" for later developement,
- * and that we assume that "ascii 32" is to be used as the "space",
- * or "invisible" character, and that its color does NOT matter.
+ * Note that we reserve the "zero char" for string termination.
+ * Thus the "zero char" can never be drawn on the screen.
+ *
+ * The only "reserved" character is "ascii 32" (the "space").
+ * Also, we assume that the "color" of a "space" does not matter.
  * This will need to be changed if we start supporting "attributes"
- * with "background colors" (ala IBM).
+ * with "background colors" (ala IBM).  When the screen is cleared,
+ * it is cleared to "spaces" with color "zero" (black).
  *
  * Note that we can easily allow the "term_win" structure to be
  * exported, allowing users to create various "user defined"
@@ -83,38 +86,34 @@
  * Be VERY careful about printing in the bottom right hand corner
  * of the screen, as it may induce "scrolling" on older machines.
  * We should perhaps consider an option to refuse to flush changes
- * to such a location.  Or assume that the Term_text() hook checks.
+ * to such a location.  Or assume that the "Term_text()" hook checks.
  *
  * Note that we must receive (significant) external support, from
  * a file such as "main-mac.c" or "main-x11.c" or "main-cur.c".  This
  * support takes the form of four function hooks:
  *
  *   Term_xtra() = Perform various actions
- *   Term_curs() = Draw or Move the cursor
+ *   Term_curs() = Draw (or Move) the cursor
  *   Term_wipe() = Erase (part of) the screen
  *   Term_text() = Place some text on the screen
  *
- * Currently, these four functions are "exported", but perhaps we should
- * restrict them to purely internal use, and perhaps even make macros.
+ * Only "Term_xtra()" is available for external usage.
  *
- * We provide, among other things, the functions Term_keypress()
- * to "react" to keypress events, and Term_redraw() to redraw the
+ * We provide, among other things, the functions "Term_keypress()"
+ * to "react" to keypress events, and "Term_redraw()" to redraw the
  * entire screen, plus "Term_resize()" to note a new size.
  *
  * The current screen image always contains exactly what the user
  * requested, but the system optimizes the actual physical updates
  * to just those which actually *look* different on the screen.
- * In particular, the "color" of a "blank" is not important.
+ *
+ * In particular, the "color" of a "blank" is not important, and all
+ * "black" characters are treated as "blanks".
+ *
+ * Note that some machines CARE about the color of a blank, for example,
+ * on IBM machines, the color of a blank is reflected in the cursor.
  */
 
-
-
-/*
- * A macro to determine if an attr/char pair looks "blank"
- * Note that the "black" attribute is "reserved", and that
- * currently, the "space" character is hard-coded as "blank".
- */
-#define BLANK(A,C)	(((A)==0) || ((C)==' '))
 
 
 
@@ -327,6 +326,9 @@ errr term_win_init(term_win *t, int w, int h)
 /*
  * Perform the "extra action" of type "n" with value "v".
  * Valid actions are defined as the "TERM_XTRA_*" constants.
+ * Invalid and non-handled actions should return an error code.
+ * This function is available for external usage, though some
+ * parameters may not make sense unless called from "term.c".
  */
 errr Term_xtra(int n, int v)
 {
@@ -335,11 +337,10 @@ errr Term_xtra(int n, int v)
 }
 
 /*
- * Draw a "cursor" at "(x,y)".  Later, "z" may mean something.
- * Note that "Term_what(x,y,&a,&c)" will have "usable" results.
+ * Place a "cursor" at "(x,y)", with "visibility" of "z".
  * The input is assumed to be "valid".
  */
-errr Term_curs(int x, int y, int z)
+static errr Term_curs(int x, int y, int z)
 {
     if (!Term->curs_hook) return (-1);
     return ((*Term->curs_hook)(x, y, z));
@@ -349,18 +350,19 @@ errr Term_curs(int x, int y, int z)
  * Erase a "block" of chars starting at "(x,y)", with size "(w,h)"
  * The input is assumed to be "valid".
  */
-errr Term_wipe(int x, int y, int w, int h)
+static errr Term_wipe(int x, int y, int w, int h)
 {
     if (!Term->wipe_hook) return (-1);
     return ((*Term->wipe_hook)(x, y, w, h));
 }
 
 /*
- * Draw "n" chars from the string "s" using attr "a", at location "(x,y)"
- * The input is assumed to be "valid".  The length is assumed to be positive.
- * Note that the input is *not* assumed to be terminated.  This is a shame.
+ * Draw "n" chars from the string "s" using attr "a", at location "(x,y)".
+ * The input is assumed to be "valid", that is, not only is the string
+ * assumed to be terminated, but the "length" is assumed to be correct,
+ * and small enough to fit on the screen at the given location.
  */
-errr Term_text(int x, int y, int n, byte a, cptr s)
+static errr Term_text(int x, int y, int n, byte a, cptr s)
 {
     if (!Term->text_hook) return (-1);
     return ((*Term->text_hook)(x, y, n, a, s));
@@ -401,24 +403,19 @@ errr Term_text(int x, int y, int n, byte a, cptr s)
  * and for applications that do a lot of "detailed" color printing.
  *
  * Note that, in QueueAttrChar(s), total "non-changes" are "pre-skipped".
- * So there are some "screen writes" which never even make it to this function.
+ * So there are some "screen writes" which never even make it here...
  *
  * The old method pre-extracted "spaces" into a "efficient" form of
  * "erasing", but for various reasons, we will simply "print" them, and
  * let the "Term_text()" procedure handle "space extraction".
  *
+ * Note that "trailing spaces" are assumed to have the color of the
+ * text that preceded them.  This is probably a mistake.
+ *
  * Note especially the frequency of "trailing spaces" in the text which
  * is sent to "Term_text()".  Combined with trailing spaces already on
  * the screen, it should be possible to "optimize" screen clearing.  We
  * will need a new field "max column used" per row.
- *
- * Hack -- we do NOT terminate the threads, since "Term_text()" must be
- * able to handle "non-terminated" text.  This is an important requirement
- * for the "Term_text()" procedure, since if the implementation requires
- * that the string be terminated, then it will have to maintain a local
- * buffer and build its own copy of the string.  That can mean a lot of
- * memory movement for duplicate results.  Consider terminating the string.
- * Especially if people are asked not to use "Term_text()" externally.
  */
 static void FlushOutputRow(int y)
 {
@@ -444,8 +441,6 @@ static void FlushOutputRow(int y)
 
     int oa, oc, na, nc;
 
-    bool can_skip;
-
     /* Max width is 255 */
     char text[256];
 
@@ -462,32 +457,63 @@ static void FlushOutputRow(int y)
         nc = old_cc[x] = scr_cc[x];
 
         /* Hack -- optimize "blanks" */
-        if (!oa) oa = fa, oc = ' ';
-        else if (oc == ' ') oa = fa;
-        if (!na) na = fa, nc = ' ';
-        else if (nc == ' ') na = fa;
+        if (Term->dark_blanks) {
 
-        /* Hack -- optimize unchanged areas */
-        can_skip = ((na == oa) && (nc == oc));
+            /* Optimize the old contents */
+            if (oc == ' ') oa = fa;
 
-        /* Flush as needed (see above) */
-        if (n && (can_skip || (fa != na)))
-        {
-            /* Draw the pending chars */
-            if (fa) Term_text(fx, y, n, fa, text);
-
-            /* Hack -- Erase "leading" spaces */
-            else Term_wipe(fx, y, n, 1);
-
-            /* Forget the pending thread */
-            n = 0;
+            /* Optimize the new contents */
+            if (nc == ' ') na = fa;
         }
+        
+        /* Notice unchanged areas */
+        if ((na == oa) && (nc == oc)) {
 
-        /* Skip unchanged areas */
-        if (can_skip) continue;
+            /* Flush as needed (see above) */
+            if (n)
+            {
+                /* Terminate the thread */
+                text[n] = '\0';
+            
+                /* Draw the pending chars */
+                if (fa) Term_text(fx, y, n, fa, text);
 
+                /* Hack -- Erase "leading" spaces */
+                else Term_wipe(fx, y, n, 1);
+
+                /* Forget the pending thread */
+                n = 0;
+            }
+            
+            /* Skip */
+            continue;
+        }
+        
+        /* Notice new color */
+        if (fa != na)
+        {
+            /* Flush as needed (see above) */
+            if (n)
+            {
+                /* Terminate the thread */
+                text[n] = '\0';
+            
+                /* Draw the pending chars */
+                if (fa) Term_text(fx, y, n, fa, text);
+
+                /* Hack -- Erase "leading" spaces */
+                else Term_wipe(fx, y, n, 1);
+
+                /* Forget the pending thread */
+                n = 0;
+            }
+            
+            /* Save the new color */
+            fa = na;
+        }
+         
         /* Start a new thread, if needed */
-        if (!n) fx = x, fa = na;
+        if (!n) fx = x;
 
         /* Expand the current thread */
         text[n++] = nc;
@@ -496,6 +522,9 @@ static void FlushOutputRow(int y)
     /* Flush the pending thread, if any */
     if (n)
     {
+        /* Terminate the thread */
+        text[n] = '\0';
+            
         /* Draw the pending chars */
         if (fa) Term_text(fx, y, n, fa, text);
 
@@ -510,63 +539,6 @@ static void FlushOutputRow(int y)
 
 
 
-/*
- * Will the old cursor will get erased by FlushOutput()?
- * This function is only called if "soft_cursor" is set
- * This lets us avoid redrawing the cursor when possible
- */
-static void FlushOutputHack()
-{
-    int cx, cy, oa, oc, na, nc;
-
-    term_win *old = Term->old;
-    term_win *scr = Term->scr;
-
-    byte *old_aa;
-    char *old_cc;
-
-    byte *scr_aa;
-    char *scr_cc;
-
-    /* Cursor was offscreen, ignore it */
-    if (old->cu) return;
-
-    /* Cursor was invisible, ignore it */
-    if (!old->cv) return;
-
-    /* Extract the cursor location */
-    cy = old->cy;
-    cx = old->cx;
-
-    /* Cursor row was unaffected, ignore it */
-    if ((scr->y1 > cy) || (scr->y2 < cy)) return;
-
-    /* Cursor column in the Cursor row was unaffected, ignore it */
-    if ((scr->x1[cy] > cx) || (scr->x2[cy] < cx)) return;
-
-    old_aa = old->a[cy];
-    old_cc = old->c[cy];
-
-    scr_aa = scr->a[cy];
-    scr_cc = scr->c[cy];
-
-    /* Access the old contents */
-    oa = old_aa[cx];
-    oc = old_cc[cx];
-
-    /* Access the new contents */
-    na = scr_aa[cx];
-    nc = scr_cc[cx];
-
-    /* If the contents are the same, cursor may be skipped */
-    if ((oa == na) && (oc == nc)) return;
-
-    /* If the contents are both "blank", cursor may be skipped */
-    if (BLANK(oa,oc) && BLANK(na,nc)) return;
-
-    /* Hack -- The cursor will be erased, pretend it was invisible */
-    old->cv = 0;
-}
 
 
 /*
@@ -581,23 +553,23 @@ static void FlushOutput()
     term_win *scr = Term->scr;
 
 
-    /* Speed -- Pre-check for "cursor erase" */
-    if (Term->soft_cursor) FlushOutputHack();
-
-
-    /* Update the "modified rows" */
-    for (y = scr->y1; y <= scr->y2; ++y) FlushOutputRow(y);
-
-    /* No rows are invalid */
-    scr->y1 = scr->h;
-    scr->y2 = 0;
-
-
-    /* Cursor update -- Graphics machines */
+    /* Cursor update -- Erase old Cursor */
     if (Term->soft_cursor)
     {
-        /* Erase the cursor (if it WAS visible) */
-        if (!old->cu && old->cv)
+        bool okay = FALSE;        
+
+        /* Cursor has moved */
+        if (old->cy != scr->cy) okay = TRUE;
+        if (old->cx != scr->cx) okay = TRUE;
+
+        /* Cursor is now offscreen/invisible */
+        if (scr->cu || !scr->cv) okay = TRUE;
+    
+        /* Cursor was already offscreen/invisible */
+        if (old->cu || !old->cv) okay = FALSE;
+
+        /* Erase old cursor if it is "wrong" */
+        if (okay)
         {
             int x = old->cx;
             int y = old->cy;
@@ -610,51 +582,63 @@ static void FlushOutput()
 
             char buf[2];
 
-            /* Hack -- process spaces */
-            if (BLANK(a,c)) a = 0, c = ' ';
-
             /* Hack -- build a two-char string */
             buf[0] = c;
 
-            /* Restore the actual character (unless invisible) */
+            /* Restore the actual character */
             if (a) Term_text(x, y, 1, a, buf);
 
             /* Simply Erase the grid */
             else Term_wipe(x, y, 1, 1);
         }
+    }
 
-        /* Redraw the cursor itself (if it IS visible) */
+    /* Cursor Update -- Erase old Cursor */
+    else
+    {
+        /* Hide useless/invisible cursors */
+        if (scr->cu || !scr->cv)
+        {
+            /* Cursor invisible (if possible) */
+            Term_xtra(TERM_XTRA_INVIS, 0);
+        }
+    }
+    
+
+    /* Update the "modified rows" */
+    for (y = scr->y1; y <= scr->y2; ++y) FlushOutputRow(y);
+
+    /* No rows are invalid */
+    scr->y1 = scr->h;
+    scr->y2 = 0;
+
+
+    /* Cursor update -- Show new Cursor */
+    if (Term->soft_cursor)
+    {
+        /* Draw the cursor */
         if (!scr->cu && scr->cv)
         {
-            /* XXX It is not always necessary to redraw the cursor */
-            /* One can often tell that the cursor has not "changed" */
-
-            /* Hack -- call the cursor display routine */
+            /* Call the cursor display routine */
             Term_curs(scr->cx, scr->cy, 1);
         }
     }
 
-    /* Cursor Update -- Hardware Cursor */
+    /* Cursor Update -- Show new Cursor */
     else
     {
         /* Hack -- The cursor is "Useless", attempt to "hide" it */
         if (scr->cu)
         {
-            /* Hack -- Put the cursor NEAR where it belongs */
-            Term_curs(scr->w - 1, scr->cy, 1);
-
-            /* Cursor invisible if possible */
-            Term_xtra(TERM_XTRA_INVIS, -999);
+            /* Paranoia -- Put the cursor NEAR where it belongs */
+            Term_curs(scr->w - 1, scr->cy, 0);
         }
 
         /* The cursor is "invisible", attempt to hide it */
         else if (!scr->cv)
         {
             /* Paranoia -- Put the cursor where it belongs */
-            Term_curs(scr->cx, scr->cy, 1);
-
-            /* Cursor invisible if possible */
-            Term_xtra(TERM_XTRA_INVIS, -999);
+            Term_curs(scr->cx, scr->cy, 0);
         }
 
         /* The cursor must be "visible", put it where it belongs */
@@ -664,7 +648,7 @@ static void FlushOutput()
             Term_curs(scr->cx, scr->cy, 1);
 
             /* Make sure we are visible */
-            Term_xtra(TERM_XTRA_BEVIS, -999);
+            Term_xtra(TERM_XTRA_BEVIS, 1);
         }
     }
 
@@ -701,7 +685,11 @@ static void QueueAttrChar(int x, int y, int na, int nc)
     scr_cc[x] = nc;
 
     /* Hack -- ignore "double blanks" */
-    if (BLANK(na,nc) && BLANK(oa,oc)) return;
+    if (Term->dark_blanks) {
+
+        /* Optimize spaces */
+        if ((nc == ' ') && (oc == ' ')) return;
+    }
 
     /* Check for new min/max row info */
     if (y < scr->y1) scr->y1 = y;
@@ -748,7 +736,11 @@ static void QueueAttrChars(int x, int y, int n, byte a, cptr s)
         scr_cc[x] = nc;
 
         /* Hack -- ignore "double blanks" */
-        if (BLANK(na,nc) && BLANK(oa,oc)) continue;
+        if (Term->dark_blanks) {
+
+            /* Optimize spaces */
+            if ((nc == ' ') && (oc == ' ')) continue;
+        }
 
         /* Note the "range" of screen updates */
         if (x1 < 0) x1 = x;
@@ -772,7 +764,7 @@ static void QueueAttrChars(int x, int y, int n, byte a, cptr s)
 
 /*
  * Erase part of the screen (given top left, and size)
- * Note that these changes are NOT flushed immediately
+ * Note that these changes are NOT flushed immediately.
  * Assume valid input.  Used only internally.
  */
 static void EraseScreen(int ex, int ey, int ew, int eh)
@@ -823,7 +815,11 @@ static void EraseScreen(int ex, int ey, int ew, int eh)
             scr_cc[x] = nc;
 
             /* Hack -- ignore "double blanks" */
-            if (BLANK(na,nc) && BLANK(oa,oc)) continue;
+            if (Term->dark_blanks) {
+            
+                /* Optimize spaces */
+                if ((nc == ' ') && (oc == ' ')) continue;
+            }
 
             /* Track minumum changed column */
             if (x1 < 0) x1 = x;
@@ -897,6 +893,7 @@ errr Term_clear()
 /*
  * High level graphics.
  * Redraw the whole screen.
+ *
  * Hack -- this is probably not the cleanest method.
  */
 errr Term_redraw()
@@ -909,9 +906,6 @@ errr Term_redraw()
     /* Mark the old screen as empty */
     term_win_wipe(old);
 
-    /* Physically erase the whole screen */
-    Term_wipe(0, 0, old->w, old->h);
-
     /* Hack -- mark every row as invalid */
     scr->y1 = 0;
     scr->y2 = scr->h - 1;
@@ -922,6 +916,9 @@ errr Term_redraw()
         scr->x1[y] = 0;
         scr->x2[y] = scr->w - 1;
     }
+
+    /* Physically erase the whole screen */
+    Term_wipe(0, 0, old->w, old->h);
 
     /* Hack -- refresh */
     Term_fresh();
@@ -938,8 +935,8 @@ errr Term_redraw()
  * Save the current screen contents
  * This may or may not be currently "displayed".
  *
- * Note that up to 16 "pending" Term_save()'s are allowed.
- * Note that only the ones that are used take up memory.
+ * Note that up to MEM_SIZE "pending" Term_save()'s are allowed,
+ * and only the ones that are used take up more than 32 bytes each.
  */
 errr Term_save(void)
 {
@@ -1013,30 +1010,15 @@ errr Term_load(void)
  */
 errr Term_fresh()
 {
-    /* Flush the output */
+    /* Send the output */
     FlushOutput();
 
-    /* And flush the graphics */
-    Term_xtra(TERM_XTRA_FLUSH, -999);
+    /* And flush the output (no parameter) */
+    Term_xtra(TERM_XTRA_FRESH, 0);
 
     /* Success */
     return (0);
 }
-
-
-/*
- * Make an "alert sound" on the Term
- * XXX Allow for some form of "visual bell"
- */
-errr Term_bell()
-{
-    /* Make a noise */
-    Term_xtra(TERM_XTRA_NOISE, -999);
-
-    /* Success */
-    return (0);
-}
-
 
 
 
@@ -1053,6 +1035,7 @@ errr Term_update()
 
 /*
  * React to a new physical screen size.
+ *
  * Hack -- not very efficient.
  */
 errr Term_resize(int w, int h)
@@ -1113,6 +1096,7 @@ errr Term_hide_cursor()
 
 /*
  * Place the cursor at a given location
+ *
  * Note -- "illegal" requests do not move the cursor.
  */
 errr Term_gotoxy(int x, int y)
@@ -1155,7 +1139,7 @@ errr Term_locate(int *x, int *y)
 
 
 /*
- * At a given location, draw an attr/char
+ * At a given location, place an attr/char
  * Do not change the cursor position
  * No visual changes until "Term_fresh()".
  */
@@ -1166,6 +1150,9 @@ errr Term_draw(int x, int y, byte a, char c)
     /* Verify location */
     if ((x < 0) || (x >= scr->w)) return (-1);
     if ((y < 0) || (y >= scr->h)) return (-1);
+
+    /* Paranoia -- illegal char */
+    if (!c) return (-2);
 
     /* Queue it for later */
     QueueAttrChar(x, y, a, c);
@@ -1198,7 +1185,7 @@ errr Term_what(int x, int y, byte *a, char *c)
 
 
 /*
- * At the current location, using an attr, add a char
+ * Using the given attr, add the given char at the cursor.
  */
 errr Term_addch(byte a, char c)
 {
@@ -1207,6 +1194,9 @@ errr Term_addch(byte a, char c)
     /* Cannot use "Useless" cursor */
     if (scr->cu) return (-1);
 
+    /* Paranoia -- no illegal chars */
+    if (!c) return (-2);
+    
     /* Add the attr/char to the queue */
     QueueAttrChar(scr->cx, scr->cy, a, c);
 
@@ -1312,7 +1302,10 @@ errr Term_putstr(int x, int y, int n, byte a, cptr s)
  */
 errr Term_flush()
 {
-    /* Flush all pending events */
+    /* Flush the input (no parameter) */
+    Term_xtra(TERM_XTRA_FLUSH, 0);
+    
+    /* Flush all pending events to be sure */
     while (0 == Term_xtra(TERM_XTRA_CHECK, -999));
 
     /* Forget all keypresses */
@@ -1483,6 +1476,9 @@ errr term_nuke(term *t)
     /* Free the arrays */
     term_win_nuke(t->old);
     term_win_nuke(t->scr);
+
+    /* Free the input queue */
+    C_KILL(t->key_queue, t->key_size, char);
 
     /* Success */
     return (0);

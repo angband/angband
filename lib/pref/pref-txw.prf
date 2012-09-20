@@ -1,0 +1,17 @@
+# File: pref-txw.prf
+
+# Include common keyboard macros
+%:pref-win.prf
+
+# These are char remappings for text-mode Windows Angband
+
+# Replace walls ('#') by 'solid blocks'
+I:0/35:0/127
+
+# Replace floors ('.') by 'centered dot'
+I:0/46:0/31
+
+# Replace floor monsters ('.') by 'centered dot'
+# Not necessary, those monsters are "clear" anyway
+# M:0/46:0/31
+

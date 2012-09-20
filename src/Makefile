@@ -1,33 +1,37 @@
 # File: Makefile
 
+# This is not a very "nice" Makefile, but it usually works.
+
 ##
 ## Note that you may have to make modifications below according
 ## to your machine, available libraries, compilation options,
 ## and your "visual module" of choice.  See below...
 ##
-## Note that "main-ibm.c", "main-emx.c", and "main-win.c", all
-## visual module files for IBM-ish computers, have their own
-## Makefiles, see "Makefile.xxx".  And the Macintosh does not
-## use a Makefile, but a Think C 6.0 project file, see elsewhere.
+## Note that "main-ibm.c", "main-emx.c", "main-wat.c", and
+## "main-win.c", all visual module files for IBM-ish computers,
+## have their own Makefiles, see "Makefile.xxx".
 ##
-
+## Note that "main-mac.c", the visual module for the Macintosh,
+## requires a special compiler-specific "project" file instead
+## of a Makefile.
+##
 
 SRCS = \
   main.c main-gcu.c main-ncu.c main-cur.c main-x11.c main-xaw.c \
   signals.c util.c io.c init.c save.c save-old.c files.c \
-  generate.c birth.c creature.c melee.c dungeon.c store.c \
+  generate.c birth.c melee.c dungeon.c store.c \
   effects.c cmd1.c cmd2.c cmd3.c cmd4.c cmd5.c cmd6.c \
   misc.c monster.c mon-desc.c object.c obj-desc.c \
-  spells1.c spells2.c cave.c tables.c variable.c wizard.c \
+  spells1.c spells2.c cave.c tables.c variable.c \
   term.c random.c z-util.c z-virt.c z-form.c
 
 OBJS = \
   main.o main-gcu.o main-ncu.o main-cur.o main-x11.o main-xaw.o \
   signals.o util.o io.o init.o save.o save-old.o files.o \
-  generate.o birth.o creature.o melee.o dungeon.o store.o \
+  generate.o birth.o melee.o dungeon.o store.o \
   effects.o cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
   misc.o monster.o mon-desc.o object.o obj-desc.o \
-  spells1.o spells2.o cave.o tables.o variable.o wizard.o \
+  spells1.o spells2.o cave.o tables.o variable.o \
   term.o random.o z-util.o z-virt.o z-form.o
 
 
@@ -38,8 +42,6 @@ OBJS = \
 ###
 ### No changes are needed to compile a version that will run on both
 ### X11 and Curses, in debugging mode, with maximal warnings.
-###
-### You may want to add flags like "-O1" for optimization.
 ###
 ### To use an "alternative" definition, simply "modify" (or "replace")
 ### the definition below with one that you like.  For example, you can
@@ -69,7 +71,7 @@ CC = gcc
 #
 # You may be able to define "USE_GETCH" or "USE_CURS_SET", see "main-gcu.c"
 #
-CFLAGS = -Wall -g -D"USE_X11" -D"USE_GCU"
+CFLAGS = -Wall -O1 -pipe -g -D"USE_X11" -D"USE_GCU"
 LIBS = -lX11 -lcurses -ltermcap
 
 
@@ -79,14 +81,14 @@ LIBS = -lX11 -lcurses -ltermcap
 ## You may have to add various X11 include/library directories to the
 ## "CFLAGS" line, this will vary according to machine.
 ##
-#CFLAGS = -Wall -g -D"USE_X11"
+#CFLAGS = -Wall -O1 -pipe -g -D"USE_X11"
 #LIBS = -lX11
 
 
 ##
 ## Pure "Curses" version (see main-gcu.c)
 ##
-#CFLAGS = -Wall -g -D"USE_GCU"
+#CFLAGS = -Wall -O1 -pipe -g -D"USE_GCU"
 #LIBS = -lcurses -ltermcap
 
 
@@ -94,7 +96,7 @@ LIBS = -lX11 -lcurses -ltermcap
 ## Use the "Athena Widget Set" and "main-xaw.c" instead of "main-x11.c"
 ## But otherwise work the same as the "standard" version (above)
 ##
-#CFLAGS = -Wall -g -D"USE_XAW" -D"USE_GCU"
+#CFLAGS = -Wall -O1 -pipe -g -D"USE_XAW" -D"USE_GCU"
 #LIBS = -lXaw -lXmu -lXt -lX11 -lcurses -ltermcap
 
 
@@ -127,14 +129,14 @@ LIBS = -lX11 -lcurses -ltermcap
 ##
 ## Solaris with X11 and curses
 ##
-#CFLAGS = -Wall -g -D"USE_X11" -D"USE_GCU" -D"SOLARIS"
+#CFLAGS = -Wall -O1 -pipe -g -D"USE_X11" -D"USE_GCU" -D"SOLARIS"
 #LIBS = -lX11 -lsocket -lcurses
 
 
 ##
 ## SGI Indigo runnig Irix
 ##
-#CFLAGS = -Wall -g -D"USE_X11" -D"USE_GCU" -D"SGI"
+#CFLAGS = -Wall -O1 -pipe -g -D"USE_X11" -D"USE_GCU" -D"SGI"
 #LIBS = -lX11 -lcurses -ltermcap -lsun
 
 
@@ -151,7 +153,7 @@ LIBS = -lX11 -lcurses -ltermcap
 ##
 ## Interactive Unix (ISC) systems
 ##
-#CFLAGS = -Wall -g -D"USE_X11" -D"USE_GCU" -D"ISC"
+#CFLAGS = -Wall -O1 -pipe -g -D"USE_X11" -D"USE_GCU" -D"ISC"
 #LIBS = -lX11 -lcurses -lnsl_s -linet -lcposix
 
 
@@ -162,14 +164,14 @@ LIBS = -lX11 -lcurses -ltermcap
 ##
 ## This version supports both X11 and Ncurses in a single executable
 ##
-#CFLAGS = -Wall -g -D"USE_X11" -D"USE_NCU" -I/usr/include/ncurses
+#CFLAGS = -Wall -O1 -pipe -g -D"USE_X11" -D"USE_NCU" -I/usr/include/ncurses
 #LIBS = -lX11 -lncurses
 
 
 ##
 ## Pure "ncurses" version (see above)
 ##
-#CFLAGS = -Wall -g -D"USE_NCU" -I/usr/include/ncurses
+#CFLAGS = -Wall -O1 -pipe -g -D"USE_NCU" -I/usr/include/ncurses
 #LIBS = -lncurses
 
 

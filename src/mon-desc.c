@@ -77,7 +77,7 @@ static cptr desc_effect[] = {
     "reduce dexterity",
     "reduce constitution",
     "reduce charisma",
-    "reduce all stats"
+    "reduce all stats",
     "???",
     "lower experience (by 10d6+)",
     "lower experience (by 20d6+)",
@@ -88,10 +88,9 @@ static cptr desc_effect[] = {
 
 
 /*
- * Pronoun arrays
+ * Pronoun arrays, by gender.
  */
-static cptr wd_che[3] = { "It", "He", "She" };
-static cptr wd_lhe[3] = { "it", "he", "she" };
+static cptr wd_he[3] = { "it", "he", "she" };
 static cptr wd_his[3] = { "its", "his", "her" };
 
 
@@ -114,27 +113,34 @@ void lore_do_probe(monster_type *m_ptr)
     monster_race *r_ptr = &r_list[m_ptr->r_idx];
     monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
-    /* Mega-Hack -- Memorize all flags */
+    /* Hack -- Memorize some flags */
     l_ptr->flags1 = r_ptr->rflags1;
     l_ptr->flags2 = r_ptr->rflags2;
     l_ptr->flags3 = r_ptr->rflags3;
-    l_ptr->flags4 = r_ptr->rflags4;
-    l_ptr->flags5 = r_ptr->rflags5;
-    l_ptr->flags6 = r_ptr->rflags6;
+
+    /* Redraw the recall window */
+    p_ptr->redraw |= (PR_RECALL);
 }
 
 
 /*
  * Take note that the given monster just dropped some treasure
+ * Note that learning the "GOOD"/"GREAT" flags gives information
+ * about the treasure (even when the monster is killed for the first
+ * time, such as uniques, and the treasure has not been examined yet).
  */
 void lore_treasure(monster_type *m_ptr, int num_item, int num_gold)
 {
-    /* Get the monster lore pointer */
+    monster_race *r_ptr = &r_list[m_ptr->r_idx];
     monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
     /* Note the number of things dropped */
     if (num_item > l_ptr->drop_item) l_ptr->drop_item = num_item;
     if (num_gold > l_ptr->drop_gold) l_ptr->drop_gold = num_gold;
+
+    /* Hack -- memorize the good/great flags */
+    if (r_ptr->rflags1 & RF1_DROP_GOOD) l_ptr->flags1 |= RF1_DROP_GOOD;
+    if (r_ptr->rflags1 & RF1_DROP_GREAT) l_ptr->flags1 |= RF1_DROP_GREAT;
 }
 
 
@@ -211,6 +217,15 @@ static void recall_open(void)
  */
 static void recall_putstr(int x, int y, int n, byte a, cptr s)
 {
+
+#ifdef USE_COLOR
+    /* Sometimes black and white */
+    if (!use_color) a = TERM_WHITE;
+#else
+    /* Always black and white */
+    a = TERM_WHITE;
+#endif
+    
     /* Hack -- use a special window */
     if (use_recall_win && term_recall) {
 
@@ -247,8 +262,14 @@ static void recall_putstr(int x, int y, int n, byte a, cptr s)
 
 
 /*
+ * Max line size
+ */
+#define ROFF_WID 79
+
+
+/*
  * Buffer text, dumping full lines via "recall_putstr()".
- * Very similar to the "message()" function in many ways.
+ *
  * Automatically wraps to the next line when necessary.
  * Also wraps to the next line on any "newline" in "str".
  * There are never more chars buffered than can be printed.
@@ -270,11 +291,6 @@ static void c_roff(byte a, cptr str)
     /* Place to print current line */
     static int roff_row = 0;
 
-#ifdef USE_COLOR
-    if (!use_color) a = TERM_WHITE;
-#else
-    a = TERM_WHITE;
-#endif
 
     /* Special handling for "new sequence" */
     if (!str) {
@@ -302,10 +318,10 @@ static void c_roff(byte a, cptr str)
         if (!isprint(ch)) ch = ' ';
 
         /* We may be "forced" to wrap */
-        if (roff_p >= roff_buf + 80) wrap = 1;
+        if (roff_p >= roff_buf + ROFF_WID) wrap = 1;
 
-        /* Try to avoid "hanging" single letter words */
-        if ((ch == ' ') && (roff_p + 2 >= roff_buf + 80)) wrap = 1;
+        /* Hack -- Try to avoid "hanging" single letter words */
+        if ((ch == ' ') && (roff_p + 2 >= roff_buf + ROFF_WID)) wrap = 1;
 
         /* Handle line-wrap */
         if (wrap) {
@@ -327,7 +343,7 @@ static void c_roff(byte a, cptr str)
             }
 
             /* Dump the line, advance the row */	
-            recall_putstr(0, roff_row++, -1, TERM_WHITE, roff_buf);
+            recall_putstr(0, roff_row++, -1, a, roff_buf);
 
             /* No spaces yet */
             roff_s = NULL;
@@ -451,7 +467,7 @@ int roff_recall(int r_idx)
     
     monster_lore        save_mem;
 
-    char		temp[160];
+    char		out_val[160];
 
 
 
@@ -582,15 +598,15 @@ int roff_recall(int r_idx)
     n_len += strlen(r_ptr->name);
 
     /* Append the "standard" attr/char info */
-    sprintf(temp, " ('%c')", r_ptr->r_char);
-    recall_putstr(n_len, 0, -1, TERM_WHITE, temp);
-    recall_putstr(n_len + 3, 0, 1, r_ptr->r_attr, temp + 3);
+    sprintf(out_val, " ('%c')", r_ptr->r_char);
+    recall_putstr(n_len, 0, -1, TERM_WHITE, out_val);
+    recall_putstr(n_len + 3, 0, 1, r_ptr->r_attr, out_val + 3);
     n_len += 6;
 
     /* Append the "optional" attr/char info */
-    sprintf(temp, "/('%c')", l_ptr->l_char);
-    recall_putstr(n_len, 0, -1, TERM_WHITE, temp);
-    recall_putstr(n_len + 3, 0, 1, l_ptr->l_attr, temp + 3);
+    sprintf(out_val, "/('%c')", l_ptr->l_char);
+    recall_putstr(n_len, 0, -1, TERM_WHITE, out_val);
+    recall_putstr(n_len + 3, 0, 1, l_ptr->l_attr, out_val + 3);
     n_len += 6;
 
     /* End the line */
@@ -618,22 +634,19 @@ int roff_recall(int r_idx)
         if (l_ptr->deaths) {
 
             /* Killed ancestors */
-            sprintf(temp, "%s has slain %d of your ancestors",
-                    wd_che[msex], l_ptr->deaths);
-            roff(temp);
+            roff(format("%^s has slain %d of your ancestors",
+                        wd_he[msex], l_ptr->deaths));
 
             /* But we've also killed it */
             if (dead) {
-                sprintf(temp, ", but you have avenged %s!  ",
-                        plural(l_ptr->deaths, "him", "them"));
-                roff(temp);
+                roff(format(", but you have avenged %s!  ",
+                            plural(l_ptr->deaths, "him", "them")));
             }
 
             /* Unavenged (ever) */
             else {
-                sprintf(temp, ", who %s unavenged.  ",
-                        plural(l_ptr->deaths, "remains", "remain"));
-                roff(temp);
+                roff(format(", who %s unavenged.  ",
+                            plural(l_ptr->deaths, "remains", "remain")));
             }
         }
 
@@ -647,10 +660,8 @@ int roff_recall(int r_idx)
     else if (l_ptr->deaths) {
 
         /* Dead ancestors */
-        sprintf(temp,
-                "%d of your ancestors %s been killed by this creature, ",
-                l_ptr->deaths, plural(l_ptr->deaths, "has", "have"));
-        roff(temp);
+        roff(format("%d of your ancestors %s been killed by this creature, ",
+                    l_ptr->deaths, plural(l_ptr->deaths, "has", "have")));
 
         /* Totally exterminated */
         if ((l_ptr->pkills >= 30000) && (l_ptr->cur_num == 0)) {
@@ -659,26 +670,20 @@ int roff_recall(int r_idx)
 
         /* Some kills this life */
         else if (l_ptr->pkills) {
-            sprintf(temp,
-                    "and you have exterminated at least %d of the creatures.  ",
-                    l_ptr->pkills);
-            roff(temp);
+            roff(format("and you have exterminated at least %d of the creatures.  ",
+                        l_ptr->pkills));
         }
 
         /* Some kills past lives */
         else if (l_ptr->tkills) {
-            sprintf(temp,
-                    "and %s have exterminated at least %d of the creatures.  ",
-                    "your ancestors", l_ptr->tkills);
-            roff(temp);
+            roff(format("and %s have exterminated at least %d of the creatures.  ",
+                        "your ancestors", l_ptr->tkills));
         }
 
         /* No kills */
         else {
-            sprintf(temp,
-                    "and %s is not ever known to have been defeated.  ",
-                    wd_lhe[msex]);
-            roff(temp);
+            roff(format("and %s is not ever known to have been defeated.  ",
+                        wd_he[msex]));
         }
     }
 
@@ -692,18 +697,14 @@ int roff_recall(int r_idx)
 
         /* Killed some this life */
         else if (l_ptr->pkills) {
-            sprintf(temp,
-                    "You have killed at least %d of these creatures.  ",
-                    l_ptr->pkills);
-            roff(temp);
+            roff(format("You have killed at least %d of these creatures.  ",
+                        l_ptr->pkills));
         }
 
         /* Killed some last life */
         else if (l_ptr->tkills) {
-            sprintf(temp,
-                    "Your ancestors have killed at least %d of these creatures.  ",
-                    l_ptr->tkills);
-            roff(temp);
+            roff(format("Your ancestors have killed at least %d of these creatures.  ",
+                        l_ptr->tkills));
         }
 
         /* Killed none */
@@ -730,17 +731,17 @@ int roff_recall(int r_idx)
 
     /* Describe location */
     if (r_ptr->level == 0) {
-        roff(format("%s lives in the town", wd_che[msex]));
+        roff(format("%^s lives in the town", wd_he[msex]));
         old = TRUE;
     }
     else if (l_ptr->tkills) {
         if (depth_in_feet) {
-            roff(format("%s is normally found at depths of %d feet",
-                        wd_che[msex], r_ptr->level * 50));
+            roff(format("%^s is normally found at depths of %d feet",
+                        wd_he[msex], r_ptr->level * 50));
         }
         else {
-            roff(format("%s is normally found on dungeon level %d",
-                        wd_che[msex], r_ptr->level));
+            roff(format("%^s is normally found on dungeon level %d",
+                        wd_he[msex], r_ptr->level));
         }
         old = TRUE;
     }
@@ -754,8 +755,7 @@ int roff_recall(int r_idx)
             roff(", and ");
         }
         else {
-            roff(wd_che[msex]);
-            roff(" ");
+            roff(format("%^s ", wd_he[msex]));
             old = TRUE;
         }
         roff("moves");
@@ -805,13 +805,12 @@ int roff_recall(int r_idx)
             roff(", but ");
         }
         else {
-            roff(wd_che[msex]);
-            roff(" ");
+            roff(format("%^s ", wd_he[msex]));
             old = TRUE;
         }
 
         /* Describe */
-        roff(" does not deign to chase intruders");
+        roff("does not deign to chase intruders");
     }
 
     /* End this sentence */
@@ -854,10 +853,9 @@ int roff_recall(int r_idx)
              p_ptr->lev + 5) / 10);
 
         /* Mention the experience */
-        sprintf(temp, " is worth %ld.%02ld point%s",
-                (long)i, (long)j,
-                (((i == 1) && (j == 0)) ? "" : "s"));
-        roff(temp);
+        roff(format(" is worth %ld.%02ld point%s",
+                    (long)i, (long)j,
+                    (((i == 1) && (j == 0)) ? "" : "s")));
 
         /* Take account of annoying English */
         p = "th";
@@ -873,24 +871,21 @@ int roff_recall(int r_idx)
         if ((i == 8) || (i == 11) || (i == 18)) q = "n";
 
         /* Mention the dependance on the player's level */
-        sprintf(temp, " for a%s %lu%s level character.  ",
-                q, (long)i, p);
-        roff(temp);
+        roff(format(" for a%s %lu%s level character.  ",
+                    q, (long)i, p));
     }
 
 
     /* Describe escorts */
     if ((flags1 & RF1_ESCORT) || (flags1 & RF1_ESCORTS)) {
-        sprintf(temp, "%s usually appears with escorts.  ",
-                wd_che[msex]);
-        roff(temp);
+        roff(format("%^s usually appears with escorts.  ",
+                    wd_he[msex]));
     }
 
     /* Describe friends */
     else if ((flags1 & RF1_FRIEND) || (flags1 & RF1_FRIENDS)) {
-        sprintf(temp, "%s usually appears in groups.  ",
-                wd_che[msex]);
-        roff(temp);
+        roff(format("%^s usually appears in groups.  ",
+                    wd_he[msex]));
     }
 
 
@@ -909,7 +904,7 @@ int roff_recall(int r_idx)
     if (vn) {
 
         /* Intro */
-        roff(wd_che[msex]);
+        roff(format("%^s", wd_he[msex]));
 
         /* Scan */
         for (n = 0; n < vn; n++) {
@@ -962,7 +957,7 @@ int roff_recall(int r_idx)
         breath = TRUE;
         
         /* Intro */
-        roff(wd_che[msex]);
+        roff(format("%^s", wd_he[msex]));
 
         /* Scan */
         for (n = 0; n < vn; n++) {
@@ -1037,9 +1032,9 @@ int roff_recall(int r_idx)
     if (flags6 & RF6_S_HOUND)		vp[vn++] = "summon hounds";
     if (flags6 & RF6_S_REPTILE)		vp[vn++] = "summon reptiles";
     if (flags6 & RF6_S_ANGEL)		vp[vn++] = "summon an angel";
-    if (flags6 & RF6_S_DEMON)		vp[vn++] = "summon demons";
-    if (flags6 & RF6_S_UNDEAD)		vp[vn++] = "summon undead";
-    if (flags6 & RF6_S_DRAGON)		vp[vn++] = "summon dragons";
+    if (flags6 & RF6_S_DEMON)		vp[vn++] = "summon a demon";
+    if (flags6 & RF6_S_UNDEAD)		vp[vn++] = "summon an undead";
+    if (flags6 & RF6_S_DRAGON)		vp[vn++] = "summon a dragon";
     if (flags6 & RF6_S_HI_UNDEAD)	vp[vn++] = "summon Greater Undead";
     if (flags6 & RF6_S_HI_DRAGON)	vp[vn++] = "summon Ancient Dragons";
     if (flags6 & RF6_S_WRAITH)		vp[vn++] = "summon Ring Wraiths";
@@ -1056,8 +1051,7 @@ int roff_recall(int r_idx)
             roff(", and is also");
         }
         else {
-            roff(wd_che[msex]);
-            roff(" is");
+            roff(format("%^s is", wd_he[msex]));
         }
 
         /* Verb Phrase */
@@ -1091,15 +1085,13 @@ int roff_recall(int r_idx)
 
         /* Describe the spell frequency */
         if (m > 100) {
-            (void)sprintf(temp, "; 1 time in %d", 100 / n);
-            roff(temp);
+            roff(format("; 1 time in %d", 100 / n));
         }
 
         /* Guess at the frequency */
         else if (m) {
             n = ((n + 9) / 10) * 10;
-            (void)sprintf(temp, "; about 1 time in %d", 100 / n);
-            roff(temp);
+            roff(format("; about 1 time in %d", 100 / n));
         }
         
         /* End this sentence */
@@ -1110,14 +1102,12 @@ int roff_recall(int r_idx)
     /* Describe monster "toughness" */
     if (know_armour(r_idx)) {
 
-        (void)sprintf(temp, "%s has an armor rating of %d",
-                        wd_che[msex], r_ptr->ac);
-        roff(temp);
+        roff(format("%^s has an armor rating of %d",
+                    wd_he[msex], r_ptr->ac));
         
-        (void)sprintf(temp, " and a%s life rating of %dd%d.  ",
-                      ((flags1 & RF1_FORCE_MAXHP) ? " maximized" : ""),
-                      r_ptr->hdice, r_ptr->hside);
-        roff(temp);
+        roff(format(" and a%s life rating of %dd%d.  ",
+                    ((flags1 & RF1_FORCE_MAXHP) ? " maximized" : ""),
+                    r_ptr->hdice, r_ptr->hside));
     }
 
 
@@ -1137,7 +1127,7 @@ int roff_recall(int r_idx)
     if (vn) {
 
         /* Intro */
-        roff(wd_che[msex]);
+        roff(format("%^s", wd_he[msex]));
 
         /* Scan */
         for (n = 0; n < vn; n++) {
@@ -1158,28 +1148,22 @@ int roff_recall(int r_idx)
 
     /* Describe special abilities. */
     if (flags2 & RF2_INVISIBLE) {
-        roff(wd_che[msex]);
-        roff(" is invisible.  ");
+        roff(format("%^s is invisible.  ", wd_he[msex]));
     }
     if (flags2 & RF2_COLD_BLOOD) {
-        roff(wd_che[msex]);
-        roff(" is cold blooded.  ");
+        roff(format("%^s is cold blooded.  ", wd_he[msex]));
     }
     if (flags2 & RF2_EMPTY_MIND) {
-        roff(wd_che[msex]);
-        roff(" is not detected by telepathy.  ");
+        roff(format("%^s is not detected by telepathy.  ", wd_he[msex]));
     }
     if (flags2 & RF2_WEIRD_MIND) {
-        roff(wd_che[msex]);
-        roff(" is rarely detected by telepathy.  ");
+        roff(format("%^s is rarely detected by telepathy.  ", wd_he[msex]));
     }
     if (flags2 & RF2_MULTIPLY) {
-        roff(wd_che[msex]);
-        roff(" breeds explosively.  ");
+        roff(format("%^s breeds explosively.  ", wd_he[msex]));
     }
     if (flags2 & RF2_REGENERATE) {
-        roff(wd_che[msex]);
-        roff(" regenerates quickly.  ");
+        roff(format("%^s regenerates quickly.  ", wd_he[msex]));
     }
 
 
@@ -1194,7 +1178,7 @@ int roff_recall(int r_idx)
     if (vn) {
 
         /* Intro */
-        roff(wd_che[msex]);
+        roff(format("%^s", wd_he[msex]));
 
         /* Scan */
         for (n = 0; n < vn; n++) {
@@ -1225,7 +1209,7 @@ int roff_recall(int r_idx)
     if (vn) {
 
         /* Intro */
-        roff(wd_che[msex]);
+        roff(format("%^s", wd_he[msex]));
 
         /* Scan */
         for (n = 0; n < vn; n++) {
@@ -1256,7 +1240,7 @@ int roff_recall(int r_idx)
     if (vn) {
 
         /* Intro */
-        roff(wd_che[msex]);
+        roff(format("%^s", wd_he[msex]));
 
         /* Scan */
         for (n = 0; n < vn; n++) {
@@ -1286,7 +1270,7 @@ int roff_recall(int r_idx)
     if (vn) {
 
         /* Intro */
-        roff(wd_che[msex]);
+        roff(format("%^s", wd_he[msex]));
 
         /* Scan */
         for (n = 0; n < vn; n++) {
@@ -1310,43 +1294,44 @@ int roff_recall(int r_idx)
         (l_ptr->ignore == MAX_UCHAR) ||
         ((r_ptr->sleep == 0) && (l_ptr->tkills >= 10))) {
 
-        roff(wd_che[msex]);
+        cptr act = NULL;
+        
         if (r_ptr->sleep > 200) {
-            roff(" prefers to ignore");
+            act = "prefers to ignore";
         }
         else if (r_ptr->sleep > 95) {
-            roff(" pays very little attention to");
+            act = "pays very little attention to";
         }
         else if (r_ptr->sleep > 75) {
-            roff(" pays little attention to");
+            act = "pays little attention to";
         }
         else if (r_ptr->sleep > 45) {
-            roff(" tends to overlook");
+            act = "tends to overlook";
         }
         else if (r_ptr->sleep > 25) {
-            roff(" takes quite a while to see");
+            act = "takes quite a while to see";
         }
         else if (r_ptr->sleep > 10) {
-            roff(" takes a while to see");
+            act = "takes a while to see";
         }
         else if (r_ptr->sleep > 5) {
-            roff(" is fairly observant of");
+            act = "is fairly observant of";
         }
         else if (r_ptr->sleep > 3) {
-            roff(" is observant of");
+            act = "is observant of";
         }
         else if (r_ptr->sleep > 1) {
-            roff(" is very observant of");
+            act = "is very observant of";
         }
         else if (r_ptr->sleep > 0) {
-            roff(" is vigilant for");
+            act = "is vigilant for";
         }
         else {
-            roff(" is ever vigilant for");
+            act = "is ever vigilant for";
         }
-        sprintf(temp, " intruders, which %s may notice from %d feet.  ",
-                wd_lhe[msex], 10 * r_ptr->aaf);
-        roff(temp);
+        
+        roff(format("%^s %s intruders, which %s may notice from %d feet.  ",
+             wd_he[msex], act, wd_he[msex], 10 * r_ptr->aaf));
     }
 
 
@@ -1357,11 +1342,10 @@ int roff_recall(int r_idx)
         sin = FALSE;
         
         /* Intro */        
-        roff(wd_che[msex]);
-        roff(" may carry");
+        roff(format("%^s may carry", wd_he[msex]));
 
-        /* Count total drop */
-        n = l_ptr->drop_gold + l_ptr->drop_item;
+        /* Count maximum drop */
+        n = MAX(l_ptr->drop_gold, l_ptr->drop_item);
 
         /* One drops (may need an "n") */
         if (n == 1) {
@@ -1376,8 +1360,7 @@ int roff_recall(int r_idx)
 
         /* Many drops */
         else {
-            sprintf(temp, " up to %d", n);
-            roff(temp);
+            roff(format(" up to %d", n));
         }
 
 
@@ -1464,8 +1447,7 @@ int roff_recall(int r_idx)
 
         /* Introduce the attack description */
         if (!r) {
-            roff(wd_che[msex]);
-            roff(" can ");
+            roff(format("%^s can ", wd_he[msex]));
         }
         else if (r < n-1) {
             roff(", ");
@@ -1492,8 +1474,7 @@ int roff_recall(int r_idx)
 
                 /* Display the damage */
                 roff(" with damage");
-                (void)sprintf(temp, " %dd%d", d1, d2);
-                roff(temp);
+                roff(format(" %dd%d", d1, d2));
             }
         }
     }
@@ -1505,16 +1486,12 @@ int roff_recall(int r_idx)
 
     /* Notice lack of attacks */
     else if (flags1 & RF1_NEVER_BLOW) {
-        sprintf(temp, "%s has no physical attacks.  ",
-                wd_che[msex]);
-        roff(temp);
+        roff(format("%^s has no physical attacks.  ", wd_he[msex]));
     }
     
     /* Or describe the lack of knowledge */
     else {
-        sprintf(temp, "Nothing is known about %s attack.  ",
-                wd_his[msex]);
-        roff(temp);
+        roff(format("Nothing is known about %s attack.  ", wd_his[msex]));
     }
 
 

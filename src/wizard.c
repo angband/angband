@@ -14,168 +14,6 @@
 
 
 
-/*
- * Verify desire to be a wizard, and do so if verified
- * This routine should only be called if "can_be_wizard"
- */
-int enter_wiz_mode(void)
-{
-    int answer = FALSE;
-
-    /* Already been asked */
-    if (noscore & 0x0002) return (TRUE);
-
-    /* Verify request */
-    msg_print("Wizard mode is for debugging and experimenting.");
-    msg_print("The game will not be scored if you enter wizard mode.");
-    answer = get_check("Are you sure you want to enter wizard mode?");
-
-    /* Never Mind */
-    if (!answer) return (FALSE);
-
-    /* Remember old setting */
-    noscore |= 0x0002;
-
-    /* Make me a wizard */
-    return (TRUE);
-}
-
-
-#ifdef ALLOW_SPOILERS
-
-/*
- * Spoiler file
- */
-static FILE *fff = NULL;
-
-/*
- * Determine the "Activation" if any for an item
- * Return a string, or NULL for "no activation"
- */
-static cptr spoil_activate(inven_type *i_ptr)
-{
-    if (i_ptr->name1 == ART_NARTHANC)
-        return ("fire bolt (9d8) every 8* turns");
-    if (i_ptr->name1 == ART_NIMTHANC)
-        return ("frost bolt (6d8) every 7* turns");
-    if (i_ptr->name1 == ART_DETHANC)
-        return ("lightning bolt (4d8) every 6* turns");
-    if (i_ptr->name1 == ART_RILIA)
-        return ("stinking cloud (12) every 4* turns");
-    if (i_ptr->name1 == ART_BELANGIL)
-        return ("frost ball (48) every 5* turns");
-    if (i_ptr->name1 == ART_DAL)
-        return ("remove fear and cure poison every 5 turns");
-    if (i_ptr->name1 == ART_RINGIL)
-        return ("ice storm (100) every 300 turns");
-    if (i_ptr->name1 == ART_ANDURIL)
-        return ("fire ball (72) every 400 turns");
-    if (i_ptr->name1 == ART_FIRESTAR)
-        return ("large fire ball (72) every 100 turns");
-    if (i_ptr->name1 == ART_FEANOR)
-        return ("haste self (20* turns) every 200 turns");
-    if (i_ptr->name1 == ART_THEODEN)
-        return ("drain life (120) every 400 turns");
-    if (i_ptr->name1 == ART_TURMIL)
-        return ("drain life (90) every 70 turns");
-    if (i_ptr->name1 == ART_CASPANION)
-        return ("door and trap destruction every 10 turns");
-    if (i_ptr->name1 == ART_AVAVIR)
-        return ("recall every 200 turns");
-    if (i_ptr->name1 == ART_TARATOL)
-        return ("haste self (20* turns) every 100* turns");
-    if (i_ptr->name1 == ART_ERIRIL)
-        return ("identify every 10 turns");
-    if (i_ptr->name1 == ART_OLORIN)
-        return ("probing every 20 turns");
-    if (i_ptr->name1 == ART_EONWE)
-        return ("mass genocide every 1000 turns");
-    if (i_ptr->name1 == ART_LOTHARANG)
-        return ("cure wounds (4d7) every 3* turns");
-    if (i_ptr->name1 == ART_CUBRAGOL)
-        return ("fire branding of bolts every 999 turns");
-    if (i_ptr->name1 == ART_ARUNRUTH)
-        return ("frost bolt (12d8) every 500 turns");
-    if (i_ptr->name1 == ART_AEGLOS)
-        return ("ice storm (100) every 500 turns");
-    if (i_ptr->name1 == ART_OROME)
-        return ("stone to mud every 5 turns");
-    if (i_ptr->name1 == ART_SOULKEEPER)
-        return ("heal (1000) every 888 turns");
-    if (i_ptr->name1 == ART_BELEGENNON)
-        return ("phase door every 2 turns");
-    if (i_ptr->name1 == ART_CELEBORN)
-        return ("genocide every 500 turns");
-    if (i_ptr->name1 == ART_LUTHIEN)
-        return ("restore life levels every 450 turns");
-    if (i_ptr->name1 == ART_ULMO)
-        return ("teleport away every 150 turns");
-    if (i_ptr->name1 == ART_COLLUIN)
-        return ("resistance (20* turns) every 111 turns");
-    if (i_ptr->name1 == ART_HOLCOLLETH)
-        return ("Sleep II every 55 turns");
-    if (i_ptr->name1 == ART_THINGOL)
-        return ("recharge item every 70 turns");
-    if (i_ptr->name1 == ART_COLANNON)
-        return ("teleport every 45 turns");
-    if (i_ptr->name1 == ART_TOTILA)
-        return ("confuse monster every 15 turns");
-    if (i_ptr->name1 == ART_CAMMITHRIM)
-        return ("magic missile (2d6) every 2 turns");
-    if (i_ptr->name1 == ART_PAURHACH)
-        return ("fire bolt (9d8) every 8* turns");
-    if (i_ptr->name1 == ART_PAURNIMMEN)
-        return ("frost bolt (6d8) every 7* turns");
-    if (i_ptr->name1 == ART_PAURAEGEN)
-        return ("lightning bolt (4d8) every 6* turns");
-    if (i_ptr->name1 == ART_PAURNEN)
-        return ("acid bolt (5d8) every 5* turns");
-    if (i_ptr->name1 == ART_FINGOLFIN)
-        return ("magical arrow (150) every 90* turns");
-    if (i_ptr->name1 == ART_HOLHENNETH)
-        return ("detection every 55* turns");
-    if (i_ptr->name1 == ART_GONDOR)
-        return ("heal (500) every 500 turns");
-    if (i_ptr->name1 == ART_RAZORBACK)
-        return ("star ball (150) every 1000 turns");
-    if (i_ptr->name1 == ART_BLADETURNER)
-        return ("resistance (and such) every 400 turns");
-    if (i_ptr->name1 == ART_GALADRIEL)
-        return ("illumination every 10* turns");
-    if (i_ptr->name1 == ART_ELENDIL)
-        return ("magic mapping every 50* turns");
-    if (i_ptr->name1 == ART_THRAIN)
-        return ("clairvoyance every 100* turns");
-    if (i_ptr->name1 == ART_INGWE)
-        return ("dispel evil (x5) every 300* turns");
-    if (i_ptr->name1 == ART_CARLAMMAS)
-        return ("protection from evil every 225* turns");
-    if (i_ptr->name1 == ART_TULKAS)
-        return ("haste self (75* turns) every 150* turns");
-    if (i_ptr->name1 == ART_NARYA)
-        return ("large fire ball (120) every 225* turns");
-    if (i_ptr->name1 == ART_NENYA)
-        return ("large frost ball (200) every 325* turns");
-    if (i_ptr->name1 == ART_VILYA)
-        return ("large lightning ball (250) every 425* turns");
-    if (i_ptr->name1 == ART_POWER)
-        return ("bizarre stuff every 450* turns");
-    return (NULL);
-}
-
-
-/*
- * Create Spoiler files
- */
-static void do_cmd_spoilers(void)
-{
-    msg_print("Sorry, this code is not ready yet...");
-}
-
-
-#endif
-
-
 #ifdef ALLOW_WIZARD
 
 
@@ -185,41 +23,7 @@ static void do_cmd_spoilers(void)
  */
 static void hack_ben(int arg)
 {
-    int y, x;
-
-    /* Hack -- light up artifacts */
-    for (y = 0; y < cur_hgt; y++) {
-        for (x = 0; x < cur_wid; x++) {
-            if (artifact_p(&i_list[cave[y][x].i_idx])) {
-                mh_print_rel('*', TERM_RED, 0, y, x);
-            }
-        }
-    }
-}
-
-
-/*
- * Unblock vision (mark monsters as visible)
- */
-static void do_cmd_unblock(int dis)
-{
-    int i;
-
-    /* Process all the monsters */
-    for (i = MIN_M_IDX; i < m_max; i++) {
-
-        monster_type *m_ptr = &m_list[i];	
-
-        /* Paranoia -- Skip dead monsters */
-        if (m_ptr->dead) continue;
-
-        /* Skip "distant" monsters */	
-        if (m_ptr->cdis > dis) continue;
-
-        /* Mark him as visible */
-        m_ptr->ml = TRUE;
-        lite_spot(m_ptr->fy, m_ptr->fx);
-    }
+    msg_print("Hi.");
 }
 
 
@@ -230,130 +34,34 @@ static void do_cmd_unblock(int dis)
 
 
 /*
- * This function is like "get_string()" but accepts "default" answers
- * If the default is NULL, this function just works like "get_string()"
- *
- * Output a default value, and accept it if <RETURN> is the first
- * key pressed. Otherwise get a new response from the user.
+ * Same as "askfor_aux()" but with a position and explicit default.
  */
 static int get_string_default(char *buf, cptr dflt, int row, int col, int len)
 {
-    int i, k, x1, x2;
-    int done;
+    /* Go to the cursor location */
+    Term_gotoxy(col, row);
 
-    /* Paranoia -- check len */
-    if (len < 1) len = 1;
-
-    /* Paranoia -- check column */
-    if ((col < 0) || (col >= 80)) col = 0;
-
-    /* Find the box bounds */
-    x1 = col;
-    x2 = x1 + len - 1;
-    if (x2 >= 80) {
-        len = 80 - x1;
-        x2 = 80 - 1;
-    }
-
-    /* Erase the "answer box" and place the cursor */
-    Term_erase(x1, row, x2, row);
-
-    /* No key was pressed */
-    i = 0;
-
-    /* Handle defaults */
-    if (dflt) {
-
-        /* Paranoia -- verify default */
-        /* if (strlen(dflt) > len)... */
-
-        /* Use the default */
-        strcpy(buf, dflt);
-
-        /* Show the default */
-        Term_putstr(col, row, -1, TERM_YELLOW, dflt);
-
-        /* Put the cursor at the beginning */
-        Term_gotoxy(col, row);
-
-        /* Get the first input key. */
-        i = inkey();
-
-        /* Escape was pressed. Return FALSE */
-        if (i == ESCAPE) return (FALSE);
-
-        /* Return was pressed. Return successful */
-        if (i == '\n' || i == '\r') return (TRUE);
-    }
-
-    /* Assume no answer (yet) */
-    buf[0] = '\0';
-
-    /* Erase the "answer box" and place the cursor */
-    Term_erase(x1, row, x2, row);
-
-    /* Process input */
-    for (k = 0, done = 0; !done; ) {
-
-        /* Get keys after the first one */
-        if (!i) i = inkey();
-
-        /* Analyze the key */
-        switch (i) {
-
-          case ESCAPE:
-            buf[0] = '\0';
-            Term_erase(x1, row, x2, row);
-            return (FALSE);
-
-          case '\n':
-          case '\r':
-            done = TRUE;
-            break;
-
-          case '\010':
-          case DELETE:
-            if (k > 0) {
-                buf[--k] = '\0';
-                Term_erase(x1 + k, row, x2, row);
-            }
-            break;
-
-          default:
-            if ((k < len) && (isprint(i))) {
-                Term_putch(x1 + k, row, TERM_WHITE, i);
-                buf[k++] = i;
-                buf[k] = '\0';
-            }
-            else {
-                bell();
-            }
-            break;
-        }
-
-        /* Get the next key */
-        i = 0;
-    }
-
-    /* Remove trailing blanks */
-    while ((k > 0) && (buf[k-1] == ' ')) k--;
-
-    /* Terminate it */
-    buf[k] = '\0';
-
-    /* Return the result */
-    return (TRUE);
+    /* Start with the default */
+    strcpy(buf, dflt);
+        
+    /* Get some input (or the default) */
+    return (askfor_aux(buf, len));
 }
 
+
 /*
- * Same as "askfor()" but takes a default response
+ * Same as "askfor()" but with an explicit default response.
  */
 static int askfor_default(char *buf, cptr dflt, int len)
 {
-    int x, y;
-    Term_locate(&x, &y);
-    return (get_string_default(buf, dflt, y, x, len));
+    /* Start with the default */
+    strcpy(buf, dflt);
+        
+    /* Get some input (or the default) */
+    return (askfor_aux(buf, len));
 }
+
+
 
 /*
  * Output a long int in binary format.
@@ -385,114 +93,114 @@ static void prt_binary(u32b flags, int row, int col)
  */
 static void change_character()
 {
-    int			tmp_val;
+    int			tmp_int;
 
-    s32b		tmp_lval;
+    long		tmp_long;
 
-    char		tmp_str[160];
+    char		tmp_val[160];
 
 
     prt("(3 - 118) Strength     = ", 0, 0);
-    if (!askfor_default(tmp_str, format("%d", p_ptr->max_stat[A_STR]), 3)) return;
+    if (!askfor_default(tmp_val, format("%d", p_ptr->max_stat[A_STR]), 3)) return;
 
-    tmp_val = atoi(tmp_str);
-    if ((tmp_val > 2) && (tmp_val < 119)) {
-        p_ptr->max_stat[A_STR] = tmp_val;
+    tmp_int = atoi(tmp_val);
+    if ((tmp_int > 2) && (tmp_int < 119)) {
+        p_ptr->max_stat[A_STR] = tmp_int;
         (void)res_stat(A_STR);
     }
 
     prt("(3 - 118) Intelligence = ", 0, 0);
-    if (!askfor_default(tmp_str, format("%d", p_ptr->max_stat[A_INT]), 3)) return;
+    if (!askfor_default(tmp_val, format("%d", p_ptr->max_stat[A_INT]), 3)) return;
 
-    tmp_val = atoi(tmp_str);
-    if ((tmp_val > 2) && (tmp_val < 119)) {
-        p_ptr->max_stat[A_INT] = tmp_val;
+    tmp_int = atoi(tmp_val);
+    if ((tmp_int > 2) && (tmp_int < 119)) {
+        p_ptr->max_stat[A_INT] = tmp_int;
         (void)res_stat(A_INT);
     }
 
     prt("(3 - 118) Wisdom       = ", 0, 0);
-    if (!askfor_default(tmp_str, format("%d", p_ptr->max_stat[A_WIS]), 3)) return;
+    if (!askfor_default(tmp_val, format("%d", p_ptr->max_stat[A_WIS]), 3)) return;
 
-    tmp_val = atoi(tmp_str);
-    if ((tmp_val > 2) && (tmp_val < 119)) {
-        p_ptr->max_stat[A_WIS] = tmp_val;
+    tmp_int = atoi(tmp_val);
+    if ((tmp_int > 2) && (tmp_int < 119)) {
+        p_ptr->max_stat[A_WIS] = tmp_int;
         (void)res_stat(A_WIS);
     }
 
     prt("(3 - 118) Dexterity    = ", 0, 0);
-    if (!askfor_default(tmp_str, format("%d", p_ptr->max_stat[A_DEX]), 3)) return;
+    if (!askfor_default(tmp_val, format("%d", p_ptr->max_stat[A_DEX]), 3)) return;
 
-    tmp_val = atoi(tmp_str);
-    if ((tmp_val > 2) && (tmp_val < 119)) {
-        p_ptr->max_stat[A_DEX] = tmp_val;
+    tmp_int = atoi(tmp_val);
+    if ((tmp_int > 2) && (tmp_int < 119)) {
+        p_ptr->max_stat[A_DEX] = tmp_int;
         (void)res_stat(A_DEX);
     }
 
     prt("(3 - 118) Constitution = ", 0, 0);
-    if (!askfor_default(tmp_str, format("%d", p_ptr->max_stat[A_CON]), 3)) return;
+    if (!askfor_default(tmp_val, format("%d", p_ptr->max_stat[A_CON]), 3)) return;
 
-    tmp_val = atoi(tmp_str);
-    if ((tmp_val > 2) && (tmp_val < 119)) {
-        p_ptr->max_stat[A_CON] = tmp_val;
+    tmp_int = atoi(tmp_val);
+    if ((tmp_int > 2) && (tmp_int < 119)) {
+        p_ptr->max_stat[A_CON] = tmp_int;
         (void)res_stat(A_CON);
     }
 
     prt("(3 - 118) Charisma     = ", 0, 0);
-    if (!askfor_default(tmp_str, format("%d", p_ptr->max_stat[A_CHR]), 3)) return;
+    if (!askfor_default(tmp_val, format("%d", p_ptr->max_stat[A_CHR]), 3)) return;
 
-    tmp_val = atoi(tmp_str);
-    if ((tmp_val > 2) && (tmp_val < 119)) {
-        p_ptr->max_stat[A_CHR] = tmp_val;
+    tmp_int = atoi(tmp_val);
+    if ((tmp_int > 2) && (tmp_int < 119)) {
+        p_ptr->max_stat[A_CHR] = tmp_int;
         (void)res_stat(A_CHR);
     }
 
     prt("(1 - 32767) Max Hit Points = ", 0, 0);
-    if (!askfor_default(tmp_str, format("%d", p_ptr->mhp), 5)) return;
+    if (!askfor_default(tmp_val, format("%d", p_ptr->mhp), 5)) return;
 
-    tmp_val = atoi(tmp_str);
-    if (tmp_str[0] && (tmp_val > 0) && (tmp_val <= MAX_SHORT)) {
-        p_ptr->mhp = tmp_val;
-        p_ptr->chp = tmp_val;
+    tmp_int = atoi(tmp_val);
+    if (tmp_val[0] && (tmp_int > 0) && (tmp_int <= MAX_SHORT)) {
+        p_ptr->mhp = tmp_int;
+        p_ptr->chp = tmp_int;
         p_ptr->chp_frac = 0;
-        p_ptr->redraw |= PR_HP;
+        p_ptr->redraw |= (PR_HP);
     }
 
     prt("(0 - 32767) Max Mana = ", 0, 0);
-    if (!askfor_default(tmp_str, format("%d", p_ptr->mana) ,5)) return;
+    if (!askfor_default(tmp_val, format("%d", p_ptr->msp) ,5)) return;
 
-    tmp_val = atoi(tmp_str);
-    if (tmp_str[0] && (tmp_val >= 0) && (tmp_val <= MAX_SHORT)) {
-        p_ptr->mana = tmp_val;
-        p_ptr->cmana = tmp_val;
-        p_ptr->cmana_frac = 0;
-        p_ptr->redraw |= PR_MANA;
+    tmp_int = atoi(tmp_val);
+    if (tmp_val[0] && (tmp_int >= 0) && (tmp_int <= MAX_SHORT)) {
+        p_ptr->msp = tmp_int;
+        p_ptr->csp = tmp_int;
+        p_ptr->csp_frac = 0;
+        p_ptr->redraw |= (PR_MANA);
     }
 
     prt("Gold = ", 0, 0);
-    if (!askfor_default(tmp_str, format("%ld", p_ptr->au), 7)) return;
+    if (!askfor_default(tmp_val, format("%ld", p_ptr->au), 7)) return;
 
-    tmp_lval = atol(tmp_str);
-    if (tmp_str[0] && (tmp_lval >= 0)) {
-        p_ptr->au = tmp_lval;
-        p_ptr->redraw |= PR_BLOCK;
+    tmp_long = atol(tmp_val);
+    if (tmp_val[0] && (tmp_long >= 0)) {
+        p_ptr->au = tmp_long;
+        p_ptr->redraw |= (PR_GOLD);
     }
 
     prt("Experience = ", 0, 0);
-    if (!askfor_default(tmp_str, format("%ld", p_ptr->max_exp), 7)) return;
+    if (!askfor_default(tmp_val, format("%ld", p_ptr->max_exp), 7)) return;
 
-    tmp_lval = atol(tmp_str);
-    if (tmp_lval > -1 && (*tmp_str != '\0')) {
-        p_ptr->max_exp = tmp_lval;
+    tmp_long = atol(tmp_val);
+    if (tmp_long > -1 && (*tmp_val != '\0')) {
+        p_ptr->max_exp = tmp_long;
         check_experience();
     }
 
-    (void)sprintf(tmp_str, "Current=%d  Weight = ", p_ptr->wt);
+    (void)sprintf(tmp_val, "Current=%d  Weight = ", p_ptr->wt);
     prt("Weight = ", 0, 0);
-    if (!askfor_default(tmp_str, format("%d", p_ptr->wt), 3)) return;
+    if (!askfor_default(tmp_val, format("%d", p_ptr->wt), 3)) return;
 
-    tmp_val = atoi(tmp_str);
-    if (tmp_val > -1 && (*tmp_str != '\0')) {
-        p_ptr->wt = tmp_val;
+    tmp_int = atoi(tmp_val);
+    if (tmp_int > -1 && (*tmp_val != '\0')) {
+        p_ptr->wt = tmp_int;
     }
 }
 
@@ -515,14 +223,12 @@ static void change_character()
  *     display an item's debug-info
  * - wiz_create_itemtype()
  *     specify tval and sval (type and subtype of object)
- * - wiz_modify_item()
+ * - wiz_tweak_item()
  *     specify pval, +AC, +tohit, +todam
  *     Note that the wizard can leave this function anytime,
  *     thus accepting the default-values for the remaining values.
  *     pval comes first now, since it is most important.
- *     This used to be wizard_create_aux2(). Most options are
- *     gone now, since they are obsolete.
- * - wiz_apply_magic()
+ * - wiz_reroll_item()
  *     apply some magic to the item or turn it into an artifact.
  * - wiz_roll_item()
  *     Get some statistics about the rarity of an item:
@@ -537,12 +243,9 @@ static void change_character()
  *
  * And now the high-level functions
  * - wiz_play_item()
- *     show debug info and eventually play with an item,
- *     that is, enter wiz_apply_magic(), wiz_modify_item(),
- *     wiz_reroll_item() or wiz_quantity_item().
+ *     play with an existing object
  * - wiz_create_item()
- *     create a new object, apply some dungeon magic
- *     to it or even try to turn it into an artifact.
+ *     create a new object
  *
  * Note -- You do not have to specify "pval" and other item-properties
  * directly. Just apply magic until you are satisfied with the item.
@@ -567,9 +270,12 @@ static void wiz_display_item(inven_type *i_ptr)
     int 	i, j = 13;
     char        buf[256];
 
+    /* Clear the screen */
     for (i = 1; i <= 23; i++) prt("", i, j - 2);
 
-    objdes_store(buf, i_ptr, TRUE);
+    /* Describe fully */
+    objdes_store(buf, i_ptr, TRUE, 3);
+
     prt(buf, 2, j);
 
     prt(format("kind = %-5d  level = %-4d  tval = %-5d  sval = %-5d",
@@ -584,7 +290,7 @@ static void wiz_display_item(inven_type *i_ptr)
                 i_ptr->pval, i_ptr->toac, i_ptr->tohit, i_ptr->todam), 6, j);
 
     prt(format("name1 = %-4d  name2 = %-4d  cost = %ld",
-                i_ptr->name1, i_ptr->name2, (long)(i_ptr->cost)), 7, j);
+                i_ptr->name1, i_ptr->name2, (long)item_value(i_ptr)), 7, j);
 
     prt(format("ident = %04x  timeout = %-d",
                 i_ptr->ident, i_ptr->timeout), 8, j);
@@ -683,6 +389,26 @@ static tval_desc tvals[] = {
 
 
 /*
+ * Strip an "object name" into a buffer
+ */
+static void strip_name(char *buf, cptr str)
+{
+    char *t;
+    
+    /* Skip past leading characters */
+    while ((*str == ' ') || (*str == '&')) str++;
+
+    /* Copy useful chars */
+    for (t = buf; *str; str++) {
+        if (*str != '~') *t++ = *str;
+    }
+    
+    /* Terminate the new name */
+    *t = '\0';
+}
+
+
+/*
  * Hack -- title for each column
  */
 static char head[3] = { 'a', 'A', '0' };
@@ -707,6 +433,8 @@ static int wiz_create_itemtype(void)
 
     int			 option[60];
 
+    char		buf[160];
+    
 
     /* Clear the screen */
     clear_screen();
@@ -747,15 +475,21 @@ static int wiz_create_itemtype(void)
     /* We have to search the whole itemlist. */
     for (i = num = 0; (num < 60) && (i < MAX_K_IDX); i++) {
 
-        /* Do we have a matching tval? */
+        /* Analyze matching items */
         if (k_list[i].tval == tval) {
 
-            /* Print it */
+            /* Hack -- Skip instant artifacts */
+            if (k_list[i].flags3 & TR3_INSTA_ART) continue;
+
+            /* Prepare it */
             row = 2 + (num % 20);
             col = 30 * (num / 20);
             ch = head[num/20] + (num%20);
-            prt(format("[%c] %s", ch, k_list[i].name), row, col);
-
+            strip_name(buf, k_list[i].name);
+            
+            /* Print it */            
+            prt(format("[%c] %s", ch, buf), row, col);
+            
             /* Remember the object index */
             option[num++] = i;
         }
@@ -790,67 +524,57 @@ static int wiz_create_itemtype(void)
  * ...not much remains. - Bernd -
  *
  */
-static bool wiz_modify_item(inven_type *i_ptr)
+static void wiz_tweak_item(inven_type *i_ptr)
 {
-    int                 tmp_val;
+    char                tmp_val[80];
 
-    char                tmp_str[100];
 
-    bool     	    	changed;
+    /* Hack -- leave artifacts alone */
+    if (artifact_p(i_ptr)) return;
 
-    /*Nothing changed */
-    changed = FALSE;
 
-    /* First the pval-value! This is most important */
     prt("Change 'pval' setting: ", 0, 0);
-    if (!askfor_default(tmp_str, format("%d", i_ptr->pval), 5)) return(changed);
-    tmp_val = atoi(tmp_str);
-    changed = (i_ptr->pval != tmp_val);
-    i_ptr->pval = tmp_val;
+    if (!askfor_default(tmp_val, format("%d", i_ptr->pval), 5)) return;
+    i_ptr->pval = atoi(tmp_val);
     wiz_display_item(i_ptr);
 
     prt("Change AC modifier: ", 0, 0);
-    if (!askfor_default(tmp_str, format("%d", i_ptr->toac), 5)) return(changed);
-    tmp_val = atoi(tmp_str);
-    changed = (i_ptr->toac != tmp_val);
-    i_ptr->toac = tmp_val;
+    if (!askfor_default(tmp_val, format("%d", i_ptr->toac), 5)) return;
+    i_ptr->toac = atoi(tmp_val);
     wiz_display_item(i_ptr);
 
     prt("New to-hit modifier: ", 0, 0);
-    if (!askfor_default(tmp_str, format("%d", i_ptr->tohit), 3)) return(changed);
-    tmp_val = atoi(tmp_str);
-    changed = (i_ptr->tohit != tmp_val);
-    i_ptr->tohit = tmp_val;
+    if (!askfor_default(tmp_val, format("%d", i_ptr->tohit), 3)) return;
+    i_ptr->tohit = atoi(tmp_val);
     wiz_display_item(i_ptr);
 
     prt("New to-dam modifier: ", 0, 0);
-    if (!askfor_default(tmp_str, format("%d", i_ptr->tohit), 3)) return(changed);
-    tmp_val = atoi(tmp_str);
-    changed = (i_ptr->todam != tmp_val);
-    i_ptr->todam = tmp_val;
+    if (!askfor_default(tmp_val, format("%d", i_ptr->tohit), 3)) return;
+    i_ptr->todam = atoi(tmp_val);
     wiz_display_item(i_ptr);
-
-    return(changed);
 }
+
 
 /*
  * Apply magic to an item or turn it into an artifact. -Bernd-
  */
-static bool wiz_apply_magic(inven_type *i_ptr)
+static void wiz_reroll_item(inven_type *i_ptr)
 {
-    int         i;
-
     inven_type  mod_item;
     char        ch;
 
-    bool        applied;
+    bool	changed = FALSE;
+    
 
+    /* Hack -- leave artifacts alone */
+    if (artifact_p(i_ptr)) return;
 
-    /* Nothing applied yet */
-    applied = FALSE;
-
+    
     /* Copy the item to be modified. */
     mod_item = *i_ptr;
+
+    /* Enter "icky" mode */
+    character_icky = TRUE;
 
     /* Main loop. Ask for magification and artifactification */
     while (TRUE) {
@@ -858,54 +582,46 @@ static bool wiz_apply_magic(inven_type *i_ptr)
         /* Display full item debug information */
         wiz_display_item(&mod_item);
 
-        /* Mega-Hack -- Allow multiple artifacts (?) */
-        if (artifact_p(&mod_item)) v_list[mod_item.name1].cur_num = 0;
-
         /* Ask wizard what to do. */
-        if (!get_com("[c]reate, [g]ood, [e]xcellent, [a]rtifact? ", &ch)) {
-            applied = FALSE;
+        if (!get_com("[a]ccept, [n]ormal, [g]ood, [e]xcellent? ", &ch)) {
+            changed = FALSE;
             break;
         }
 
-        /* Create/change it it! */
-        if (ch == 'C' || ch == 'c') {
-            applied = TRUE;
-            *i_ptr = mod_item;
+        /* Create/change it! */
+        if (ch == 'A' || ch == 'a') {
+            changed = TRUE;
             break;
+        }
+
+        /* Apply normal magic, but first clear object */
+        else if (ch == 'n' || ch == 'N') {
+             invcopy(&mod_item, i_ptr->k_idx);
+             apply_magic(&mod_item, dun_level, FALSE, FALSE, FALSE);
         }
 
         /* Apply good magic, but first clear object */
         else if (ch == 'g' || ch == 'g') {
              invcopy(&mod_item, i_ptr->k_idx);
-             apply_magic(&mod_item, dun_level, TRUE, TRUE, FALSE);
+             apply_magic(&mod_item, dun_level, FALSE, TRUE, FALSE);
         }
 
         /* Apply great magic, but first clear object */
         else if (ch == 'e' || ch == 'e') {
              invcopy(&mod_item, i_ptr->k_idx);
-             apply_magic(&mod_item, dun_level, TRUE, TRUE, TRUE);
-        }
-
-        /* Try to turn it into artifact. */
-        else if (ch == 'a' || ch == 'A') {
-
-            /* Try for some time */
-            for (i = 1; i < 1000; i++) {
-                if (make_artifact(&mod_item)) break;
-            }
-
-            if artifact_p(&mod_item) {
-                msg_print(format("Succeded after %d tr%s",
-                                 i, (i == 1) ? "y" : "ies"));
-            }
-            else {
-                msg_print(format("Giving up after %d tries!", i));
-            }
+             apply_magic(&mod_item, dun_level, FALSE, TRUE, TRUE);
         }
     }
 
-    /* Result */
-    return (applied);
+    /* Notice change */
+    if (changed) {
+        *i_ptr = mod_item;
+        p_ptr->update |= PU_BONUS;
+        p_ptr->redraw |= PR_CHOICE;
+    }
+    
+    /* Leave "icky" mode */
+    character_icky = FALSE;
 }
 
 
@@ -941,17 +657,16 @@ static void wiz_more(int x)
 
 
 /*
- * Try to create the item again. Output some statistics.    -Bernd-
+ * Try to create an item again. Output some statistics.    -Bernd-
  *
  * The statistics are correct now. We try to get a clean grid,
- * call place_object() or place_good() on this grid, copy the
- * object to test_item, and then delete() it again.
- * This is done quite a few times.
+ * call place_object() on this grid, copy the object to test_item,
+ * and then delete() it again.  This is done quite a few times.
  */	
-static void wiz_reroll_item(inven_type *i_ptr)
+static void wiz_statistics(inven_type *i_ptr)
 {
     long        i, matches, better, worse, other;
-    int         k, x1, y1;
+    int         x1, y1;
     char        ch;
     char        *quality;
     bool        good, great;
@@ -959,31 +674,20 @@ static void wiz_reroll_item(inven_type *i_ptr)
 
 
     /* Search a clean grid nearby */
-    for (k = 0; k < 50; k++) {
+    while (TRUE) {
 
-        int d = 20;
-
-        /* Pick a location "near" the player */
-        while (1) {
-            y1 = rand_spread(py, d);
-            x1 = rand_spread(px, d);
-            if (in_bounds(y1, x1)) continue;
-            if (distance(py, px, y1, x1) > d) continue;
-            break;
-        }
-
-        /* Must be "clean" floor grid */
+        /* Pick a location */
+        y1 = rand_int(cur_hgt);
+        x1 = rand_int(cur_wid);
+        
+        /* Accept "naked" grids */
         if (naked_grid_bold(y1, x1)) break;
     }
 
-    /* Hack -- Nowhere to use */
-    if (k == 50) return;
-
 
     /* Mega-Hack -- allow multiple artifacts */
-    if (artifact_p(i_ptr)) {
-        v_list[i_ptr->name1].cur_num = 0;
-    }
+    if (artifact_p(i_ptr)) v_list[i_ptr->name1].cur_num = 0;
+
 
     /* Interact */
     while (TRUE) {
@@ -1010,13 +714,14 @@ static void wiz_reroll_item(inven_type *i_ptr)
             quality = "excellent";
         }
         else {
-            message("Ok, no more rolling...", 0);
+            good = FALSE;
+            great = FALSE;
             break;
         }
 
         /* Let us know what we are doing */
-        msg_print(format("Creating a lot of %s items. Base level=%d ",
-                          quality, dun_level));
+        msg_format("Creating a lot of %s items. Base level = %d.",
+                   quality, dun_level);
 
         /* Set counters to zero */
         matches = better = worse = other = 0;
@@ -1024,23 +729,31 @@ static void wiz_reroll_item(inven_type *i_ptr)
         /* Let's rock and roll */
         for (i = 0; i <= TEST_ROLL; i++) {
 
-            /* Output every 100 rolls or if a key was pressed */
-            if ((i < 100) || (i % 100 == 0)) {
-                cptr p;
-                p = "Rolls: %ld, Matches: %ld, Better: %ld, Worse: %ld, Other: %ld";
-                prt(format(p, i, matches, better, worse, other), 0, 0);
-                Term_fresh();
-            }
 
+            /* Do not wait */
+            inkey_scan = TRUE;
+            
             /* Check for break */
-            if (Term_kbhit()) {
-                Term_flush();
+            if (inkey()) {
+
+                /* Flush */
+                flush();
+
+                /* Stop rolling */
                 break;
             }
 
+
+            /* Output every few rolls */
+            if ((i < 100) || (i % 100 == 0)) {
+                prt(format("Rolls: %ld, Matches: %ld, Better: %ld, Worse: %ld, Other: %ld",
+                           i, matches, better, worse, other), 0, 0);
+                Term_fresh();
+            }
+
+
             /* Create an item at determined position */
-            if (good) place_good(y1, x1, great);
-            else place_object(y1, x1);
+            place_object(y1, x1, good, great);
 
             /* Copy its contents to test_item */
             test_item = i_list[cave[y1][x1].i_idx];
@@ -1049,20 +762,12 @@ static void wiz_reroll_item(inven_type *i_ptr)
             delete_object(y1, x1);
 
             /* Mega-Hack -- allow multiple artifacts */
-            if (artifact_p(&test_item)) {
-                v_list[test_item.name1].cur_num = 0;
-            }
+            if (artifact_p(&test_item)) v_list[test_item.name1].cur_num = 0;
+
 
             /* Test for the same tval and sval. */
             if ((i_ptr->tval) != (test_item.tval)) continue;
             if ((i_ptr->sval) != (test_item.sval)) continue;
-
-#if 0
-            /* Test for the same flags */
-            if (i_ptr->flags1 != test_item.flags1) continue;
-            if (i_ptr->flags2 != test_item.flags2) continue;
-            if (i_ptr->flags3 != test_item.flags3) continue;
-#endif
 
             /* Check for match */
             if ((test_item.pval == i_ptr->pval) &&
@@ -1094,59 +799,65 @@ static void wiz_reroll_item(inven_type *i_ptr)
             }
         }
 
+        /* One more dump */
+        prt(format("Rolls: %ld, Matches: %ld, Better: %ld, Worse: %ld, Other: %ld",
+                   i, matches, better, worse, other), 0, 0);
+        Term_fresh();
+
         /* Enough rolling */
         wiz_more(70);
     }
+
 
     /* Hack -- Normally only make a single artifact */
     if (artifact_p(i_ptr)) v_list[i_ptr->name1].cur_num = 1;
 }
 
+
 /*
  * Change the quantity of a the item
  */
-static bool wiz_quantity_item(inven_type *i_ptr)
+static void wiz_quantity_item(inven_type *i_ptr)
 {
-    int         tmp_val;
+    int         tmp_int;
 
-    char        tmp_str[100];
-
-    bool        changed = FALSE;
+    char        tmp_val[100];
 
 
     /* Never duplicate artifacts */
-    if (artifact_p(i_ptr)) return (FALSE);
+    if (artifact_p(i_ptr)) return;
 
+
+    /* Ask for a value */
     prt("Number of items ", 0, 0);
-    askfor_default(tmp_str, format("%d", i_ptr->number), 3);
-    tmp_val = atoi(tmp_str);
+    askfor_default(tmp_val, format("%d", i_ptr->number), 3);
+    tmp_int = atoi(tmp_val);
 
     /* Paranoia -- require legal quantity */
-    if (tmp_val < 1) tmp_val = 1;
-    if (tmp_val > 99) tmp_val = 99;
+    if (tmp_int < 1) tmp_int = 1;
+    if (tmp_int > 99) tmp_int = 99;
 
-    /* Any modifications? */
-    if (tmp_val != i_ptr->number) {
-        changed = TRUE;
-        i_ptr->number = tmp_val;
-    }
-
-    return (changed);
+    /* Accept modifications */
+    i_ptr->number = tmp_int;
 }
+
+
 
 /*
  * Play with an item. Options include:
- * - Apply magic (via wiz_apply_magic)
- * - Redfine properties (via wiz_modify_item)
- * - Output statistics (via wiz_roll_item)
- * - Change the number of items (via wiz_quantity_item)
- * - Verbose description (via identify_fully)
+ *   - Output statistics (via wiz_roll_item)
+ *   - Reroll item (via wiz_reroll_item)
+ *   - Change properties (via wiz_tweak_item)
+ *   - Change the number of items (via wiz_quantity_item)
  */
 static void wiz_play_item(void)
 {
     int      	item_val;
-    inven_type 	*i_ptr, item_backup;
 
+    inven_type 	*i_ptr;
+
+    inven_type	forge;
+    
     char 	ch;
 
     bool 	changed;
@@ -1156,53 +867,71 @@ static void wiz_play_item(void)
 
     /* Get an item to play with (no floor) or abort */
     pmt = "Play with which object? ";
-    if (!get_item(&item_val, pmt, 0, INVEN_TOTAL-1, FALSE)) return;
+    if (!get_item(&item_val, pmt, 0, INVEN_TOTAL-1, FALSE)) {
+        if (item_val == -2) msg_print("You have nothing to play with.");
+        return;
+    }
 
     /* Get the item (if in inven/equip) */
     i_ptr = &inventory[item_val];
 
+    
     /* The item was not changed */
     changed = FALSE;
-
-    /* Back up the item */
-    item_backup = *i_ptr;
 
     /* Save the screen */
     save_screen();
 
+    /* Get a copy of the item */
+    forge = (*i_ptr);
+    
     /* The main loop */
     while (TRUE) {
 
-        /* Show the item (everything about it) */
-        wiz_display_item(i_ptr);
+        /* Display the item */
+        wiz_display_item(&forge);
 
         /* Get choice */
-        pmt = "[c]hange [r]estore [m]agic [t]weak [s]tatistics [q]uantity? ";
-        if (!get_com(pmt, &ch)) break;
-
-        if (ch == 'c' || ch == 'c') break;
-
-        if (ch == 'r' || ch == 'R') {
-            *i_ptr = item_backup;
+        if (!get_com("[a]ccept [s]tatistics [r]eroll [t]weak [q]uantity? ", &ch)) {
             changed = FALSE;
+            break;
         }
 
-        if (ch == 's' || ch == 'S') wiz_reroll_item(i_ptr);
+        if (ch == 'A' || ch == 'a') {
+            changed = TRUE;
+            break;
+        }
 
-        if (ch == 'm' || ch == 'M') changed = wiz_apply_magic(i_ptr);
-        if (ch == 'q' || ch == 'Q') changed = wiz_quantity_item(i_ptr);
-        if (ch == 't' || ch == 'T') changed = wiz_modify_item(i_ptr);
+        if (ch == 's' || ch == 'S') {
+            wiz_statistics(&forge);
+        }
+        
+        if (ch == 'r' || ch == 'r') {
+            wiz_reroll_item(&forge);
+        }
+ 
+        if (ch == 't' || ch == 'T') {
+            wiz_tweak_item(&forge);
+        }
+
+        if (ch == 'q' || ch == 'Q') {
+            wiz_quantity_item(&forge);
+        }
     }
 
     /* Restore the screen */
     restore_screen();
 
-    /* Message */
+    /* Accept change */
     if (changed) {
-        message("Item modified.", 0);
+        msg_print("Changes accepted.");
+        (*i_ptr) = forge;
+        p_ptr->redraw |= (PR_CHOICE);
     }
+
+    /* Ignore change */
     else {
-        message("Item unchanged.", 0);
+        msg_print("Changes ignored.");
     }
 }
 
@@ -1218,14 +947,9 @@ static void wiz_play_item(void)
  */
 static void wiz_create_item()
 {
-    cave_type  	*c_ptr;
-
     inven_type	forge;
 
-    int         i, k_idx;
-
-    /* Check if player is standing on an object. */
-    if (!clean_grid_bold(py, px)) return;
+    int         k_idx;
 
     /* Get type and subtype (tval and sval) of an object */
     save_screen();
@@ -1235,42 +959,19 @@ static void wiz_create_item()
     /* Return if failed */
     if (!k_idx) return;
 
-    /* Hack -- cancel wizard messages */
+    /* Create the item */
+    invcopy(&forge, k_idx);
+
+    /* Apply magic (no messages, no artifacts) */
     wizard = FALSE;
-
-    /* Try 20 times to get a (non-cursed) object */
-    for (i = 0; i < 20; i++) {
-        invcopy(&forge, k_idx);
-        apply_magic(&forge, dun_level, FALSE, FALSE, FALSE);
-        if (!cursed_p(&forge)) break;
-    }
-
-    /* OK, we can restore wizard mode */
+    apply_magic(&forge, dun_level, FALSE, FALSE, FALSE);
     wizard = TRUE;
 
-    /* Save the screen */
-    save_screen();
-    i = wiz_apply_magic(&forge);
-    restore_screen();
-
-    /* Catch errors */
-    if (!i) {
-        message("Not allocated.", 0);
-        return;
-    }
-
-    /* Hack -- Ask for the number of objects */
-    wiz_quantity_item(&forge);
-
-    /* Create the object (finally) */
-    c_ptr = &cave[py][px];
-    c_ptr->i_idx = i_pop();
-    i_list[c_ptr->i_idx] = forge;
-    forge.iy = py;
-    forge.ix = px;
+    /* Drop the object from heaven */
+    drop_near(&forge, 0, py, px);
 
     /* All done */
-    message("Allocated.", 0);
+    msg_print("Allocated.");
 }
 
 
@@ -1279,12 +980,10 @@ static void wiz_create_item()
  */
 static void wizard_cure_all()
 {
+    /* Remove curses */
     (void)remove_all_curse();
-    (void)cure_blindness();
-    (void)cure_confusion();
-    (void)cure_poison();
-    (void)remove_fear();
 
+    /* Restore stats */
     (void)res_stat(A_STR);
     (void)res_stat(A_INT);
     (void)res_stat(A_WIS);
@@ -1292,16 +991,38 @@ static void wizard_cure_all()
     (void)res_stat(A_DEX);
     (void)res_stat(A_CHR);
 
+    /* Restore the level */
     (void)restore_level();
-    (void)hp_player(2000);
 
-    p_ptr->food = PLAYER_FOOD_MAX;
+    /* Heal the player */
+    p_ptr->chp = p_ptr->mhp;
+    p_ptr->chp_frac = 0;
 
-    /* Hack -- do not QUITE cure things, let dungeon() do it */
-    if (p_ptr->slow > 1) p_ptr->slow = 1;
-    if (p_ptr->image > 1) p_ptr->image = 1;
-    if (p_ptr->cut > 1) p_ptr->cut = 1;
-    if (p_ptr->stun > 1) p_ptr->stun = 1;
+    /* Restore mana */
+    p_ptr->csp = p_ptr->msp;
+    p_ptr->csp_frac = 0;
+    
+    /* Cure various things */
+    (void)cure_blindness();
+    (void)cure_confusion();
+    (void)cure_poison();
+    (void)cure_fear();
+
+    /* No longer hungry */
+    p_ptr->food = PY_FOOD_MAX - 1;
+
+    /* No longer slow */
+    p_ptr->slow = 0;
+
+    /* Cure hallucination */
+    p_ptr->image = 0;
+
+    /* Cure cuts/stun */
+    p_ptr->cut = 0;
+    p_ptr->stun = 0;
+
+    /* Update everything */
+    p_ptr->redraw |= (PR_CAVE);
 }
 
 
@@ -1312,7 +1033,7 @@ static void wizard_goto_level(int level)
 {
     int		i;
 
-    char	tmp_str[160];
+    char	tmp_val[160];
 
 
     if (level > 0) {
@@ -1321,16 +1042,16 @@ static void wizard_goto_level(int level)
     else {
         prt("Go to which level (0-500)? ", 0, 0);
         i = (-1);
-        if (get_string_default(tmp_str, format("%d", dun_level), 0, 27, 10)) {
-            i = atoi(tmp_str);
+        if (get_string_default(tmp_val, format("%d", dun_level), 0, 27, 10)) {
+            i = atoi(tmp_val);
         }
     }
 
     if (i > 500) i = 500;
 
     if (i >= 0) {
-        dun_level = i;
-        if (dun_level > 500) dun_level = 500;
+        msg_print("You jump...");
+        dun_level = (i < 500) ? i : 500;
         new_level_flag = TRUE;
     }
 
@@ -1346,17 +1067,17 @@ static void wizard_identify_many()
 {
     int			i, m;
     
-    char		tmp_str[160];
+    char		tmp_val[160];
 
 
     /* Prompt */
     prt("Identify objects up to level (0-200): ", 0, 0);
 
     /* Identify all the objects */
-    if (askfor(tmp_str, 10)) {
+    if (askfor(tmp_val, 10)) {
 
         /* Extract a max level */
-        m = atoi(tmp_str);
+        m = atoi(tmp_val);
 
         /* Scan every object */
         for (i = 0; i < MAX_K_IDX; i++) {
@@ -1379,34 +1100,33 @@ static void wizard_identify_many()
 static void do_cmd_rerate()
 {
     int         min_value, max_value, i, percent;
-    char        buf[50];
 
-    min_value = (MAX_PLAYER_LEVEL * 3 * (p_ptr->hitdie - 1)) / 8 +
-        MAX_PLAYER_LEVEL;
-    max_value = (MAX_PLAYER_LEVEL * 5 * (p_ptr->hitdie - 1)) / 8 +
-        MAX_PLAYER_LEVEL;
+    min_value = (PY_MAX_LEVEL * 3 * (p_ptr->hitdie - 1)) / 8 +
+        PY_MAX_LEVEL;
+    max_value = (PY_MAX_LEVEL * 5 * (p_ptr->hitdie - 1)) / 8 +
+        PY_MAX_LEVEL;
     player_hp[0] = p_ptr->hitdie;
     do {
-        for (i = 1; i < MAX_PLAYER_LEVEL; i++) {
+        for (i = 1; i < PY_MAX_LEVEL; i++) {
             player_hp[i] = randint((int)p_ptr->hitdie);
             player_hp[i] += player_hp[i - 1];
         }
     }
-    while ((player_hp[MAX_PLAYER_LEVEL - 1] < min_value) ||
-           (player_hp[MAX_PLAYER_LEVEL - 1] > max_value));
+    while ((player_hp[PY_MAX_LEVEL - 1] < min_value) ||
+           (player_hp[PY_MAX_LEVEL - 1] > max_value));
 
-    percent = (int)(((long)player_hp[MAX_PLAYER_LEVEL - 1] * 200L) /
-                (p_ptr->hitdie + ((MAX_PLAYER_LEVEL - 1) * p_ptr->hitdie)));
+    percent = (int)(((long)player_hp[PY_MAX_LEVEL - 1] * 200L) /
+                (p_ptr->hitdie + ((PY_MAX_LEVEL - 1) * p_ptr->hitdie)));
 
     /* Update and redraw hitpoints */
     p_ptr->update |= (PU_HP);
     p_ptr->redraw |= (PR_HP);
 
     /* Handle stuff */
-    handle_stuff(TRUE);
+    handle_stuff();
     
-    sprintf(buf, "%d%% Life Rating", percent);
-    msg_print(buf);
+    /* Message */
+    msg_format("Current Life Rating is %d/100.", percent);
 }
 
 
@@ -1429,13 +1149,7 @@ static void do_cmd_summon(int r_idx, int slp)
         int d = 1;
 
         /* Pick a location */
-        while (1) {
-            y = rand_spread(py, d);
-            x = rand_spread(px, d);
-            if (!in_bounds2(py, px)) continue;
-            if (distance(py, px, y, x) > d) continue;
-            if (los(py, px, y, x)) break;
-        }
+        scatter(&y, &x, py, px, d, 0);
 
         /* Require empty grids */
         if (!empty_grid_bold(y, x)) continue;
@@ -1468,7 +1182,7 @@ static void wizard_genocide(void)
         monster_type *m_ptr = &m_list[i];
 
         /* Paranoia -- Skip dead monsters */
-        if (m_ptr->dead) continue;
+        if (!m_ptr->r_idx) continue;
 
         /* Delete nearby monsters */
         if (m_ptr->cdis <= MAX_SIGHT) delete_monster_idx(i);
@@ -1476,6 +1190,13 @@ static void wizard_genocide(void)
 }
 
 
+
+#ifdef ALLOW_SPOILERS
+
+/*
+ * External function
+ */
+extern void do_cmd_spoilers(void);
 
 #endif
 
@@ -1509,16 +1230,6 @@ int do_wiz_command(void)
             break;
 
 
-#ifdef AUTO_PLAY
-
-        /* Initialize the Borg */
-        case '$':
-            borg_init();
-            break;
-
-#endif
-
-
 #ifdef ALLOW_SPOILERS
 
         /* Hack -- Generate Spoilers */
@@ -1527,11 +1238,10 @@ int do_wiz_command(void)
 
 #endif
 
-#ifdef ALLOW_WIZARD
 
         /* Hack -- Help */
         case '?':
-            do_cmd_help("cmds_w.hlp"); break;
+            do_cmd_help("help.hlp"); break;
 
 
         /* Cure all maladies */
@@ -1611,12 +1321,6 @@ int do_wiz_command(void)
             teleport_dist = 100;
             break;
 
-        /* Un-block vision */
-        case 'u':
-            if (command_arg <= 0) command_arg = 1000;
-            do_cmd_unblock(command_arg);
-            break;
-
         /* Very Good Objects */	
         case 'v':
             if (command_arg <= 0) command_arg = 1;
@@ -1629,9 +1333,8 @@ int do_wiz_command(void)
 
         /* Increase Experience */
         case 'x':
-            p_ptr->exp = p_ptr->exp * 2 + 1;
-            if (command_arg) p_ptr->exp = command_arg;
-            check_experience();
+            if (!command_arg) command_arg = p_ptr->exp + 1;
+            gain_exp(command_arg);
             break;
 
         /* Zap Monsters (Genocide) */
@@ -1642,11 +1345,9 @@ int do_wiz_command(void)
         case '_':
             hack_ben(command_arg); break;
 
-#endif
-
         /* Not a Wizard Command */
         default:
-            message ("That is not a valid wizard command.", 0);
+            msg_print("That is not a valid wizard command.");
             return (FALSE);
             break;
     }
@@ -1654,4 +1355,7 @@ int do_wiz_command(void)
     /* Success */
     return (TRUE);
 }
+
+
+#endif
 

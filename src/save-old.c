@@ -13,6 +13,7 @@
 #include "angband.h"
 
 
+
 /*
  * This save package was brought to by		-JWT- and -RAK-
  * and has been completely rewritten for UNIX by	-JEW-
@@ -76,21 +77,18 @@ static bool older_than(byte x, byte y, byte z)
 
 /*
  * Show information on the screen, one line at a time.
- * If "where" is negative, advance "-where" lines from last location.
+ * Avoid the top two lines, to avoid interference with "msg_print()".
  */
-static void note(int where, cptr msg)
+static void note(cptr msg)
 {
-    static int y = 0;
-
-    /* Accept line number, Remember the line */
-    y = (where < 0) ? (y - where) : where;
-
-    /* Attempt to "wrap" if forced to */
-    if (y >= 24) y = 0;
+    static int y = 2;
 
     /* Draw the message */
     prt(msg, y, 0);
 
+    /* Advance one line (wrap if needed) */
+    if (++y >= 24) y = 2;
+    
     /* Flush it */
     Term_fresh();
 }
@@ -173,33 +171,28 @@ static void rd_s32b(s32b *ip)
 static void rd_string(char *str)
 {
     while (1) {
-        byte tmp;
-        rd_byte(&tmp);
-        *str = tmp;
+        byte tmp8u;
+        rd_byte(&tmp8u);
+        *str = tmp8u;
         if (!*str) break;
         str++;
     }
 }
 
 
-
-
-
-
-
-
 /*
- * The old "chest" flags
+ * Hack -- strip some bytes
  */
-#define CHE_EMPTY		1	/* Hack -- see flags1 */
-#define CHE_DISARMED		2	/* Hack -- see below */
-#define CHE_UNLOCKED		3	/* Hack -- see flags2 */
-#define CHE_LOCKED		4	/* Hack -- see flags2 */
-#define CHE_POISON_NEEDLE	11	/* Hack -- see flags2 */
-#define CHE_GAS_TRAP		12	/* Hack -- see flags2 */
-#define CHE_EXPLOSION_DEVICE	13	/* Hack -- see flags2 */
-#define CHE_SUMMONING_RUNES	14	/* Hack -- see flags2 */
-#define CHE_MULTIPLE_TRAPS	15	/* Hack -- see flags2 */
+static void strip_bytes(int n)
+{
+    int i;
+    byte tmp8u;
+
+    /* Strip the bytes */
+    for (i = 0; i < n; i++) rd_byte(&tmp8u);
+}
+
+
 
 
 /*
@@ -255,15 +248,15 @@ static int convert_name2[] = {
     2000+EGO_FIRE		/* 43 = SN_FIRE (XXX or EGO_AMMO_FIRE) */,
     2000+EGO_AMMO_EVIL		/* 44 = SN_SLAY_EVIL */,
     2000+EGO_AMMO_DRAGON	/* 45 = SN_DRAGON_SLAYING */,
-    9000+CHE_EMPTY		/* 46 = SN_EMPTY */,
-    9000+CHE_LOCKED		/* 47 = SN_LOCKED */,
-    9000+CHE_POISON_NEEDLE	/* 48 = SN_POISON_NEEDLE */,
-    9000+CHE_GAS_TRAP		/* 49 = SN_GAS_TRAP */,
-    9000+CHE_EXPLOSION_DEVICE	/* 50 = SN_EXPLOSION_DEVICE */,
-    9000+CHE_SUMMONING_RUNES	/* 51 = SN_SUMMONING_RUNES */,
-    9000+CHE_MULTIPLE_TRAPS	/* 52 = SN_MULTIPLE_TRAPS */,
-    9000+CHE_DISARMED		/* 53 = SN_DISARMED */,
-    9000+CHE_UNLOCKED		/* 54 = SN_UNLOCKED */,
+    0				/* 46 = SN_EMPTY */,
+    0				/* 47 = SN_LOCKED */,
+    0				/* 48 = SN_POISON_NEEDLE */,
+    0				/* 49 = SN_GAS_TRAP */,
+    0				/* 50 = SN_EXPLOSION_DEVICE */,
+    0				/* 51 = SN_SUMMONING_RUNES */,
+    0				/* 52 = SN_MULTIPLE_TRAPS */,
+    0				/* 53 = SN_DISARMED */,
+    0				/* 54 = SN_UNLOCKED */,
     2000+EGO_AMMO_ANIMAL	/* 55 = SN_SLAY_ANIMAL */,
     1000+ART_GROND		/* 56 = SN_GROND */,
     1000+ART_RINGIL		/* 57 = SN_RINGIL */,
@@ -394,19 +387,15 @@ static int convert_name2[] = {
 
 
 /*
- * Convert the old savefile "flags" into the new ones
- * This just converts the flags that are the same, see
- * "rd_item_old()" for total conversion method.
+ * Extract item flags from old savefile "flags" (see below).
  */
-static void repair_item_flags_old(inven_type *i_ptr)
+static void repair_item_flags_old(inven_type *i_ptr, u32b f1, u32b f2)
 {
-    int i = 0;
-    u32b f1 = i_ptr->flags1;
-    u32b f2 = i_ptr->flags2;
+    int p = 0;
 
 
-    /* Wipe the flags */
-    i_ptr->flags1 = i_ptr->flags2 = i_ptr->flags3 = 0L;
+    /* Extract old "TR_SUST_STAT" flag, save it for later */
+    if (f1 & 0x00400000L) p = i_ptr->pval;
 
 
     /*** Old Flag Set #1 ***/
@@ -433,7 +422,7 @@ static void repair_item_flags_old(inven_type *i_ptr)
     if (f1 & 0x00080000L) i_ptr->flags2 |= TR2_RES_FIRE;
     if (f1 & 0x00100000L) i_ptr->flags2 |= TR2_RES_ACID;
     if (f1 & 0x00200000L) i_ptr->flags2 |= TR2_RES_COLD;
-    if (f1 & 0x00400000L) i = i; /* SUST_STAT extracted already */
+    /* (f1 & 0x00400000L) sustain stats */
     if (f1 & 0x00800000L) i_ptr->flags2 |= TR2_FREE_ACT;
     if (f1 & 0x01000000L) i_ptr->flags3 |= TR3_SEE_INVIS;
     if (f1 & 0x02000000L) i_ptr->flags2 |= TR2_RES_ELEC;
@@ -472,10 +461,32 @@ static void repair_item_flags_old(inven_type *i_ptr)
     if (f2 & 0x00400000L) i_ptr->flags2 |= TR2_RES_NEXUS;
     if (f2 & 0x00800000L) i_ptr->flags2 |= TR2_RES_BLIND;
     if (f2 & 0x01000000L) i_ptr->flags2 |= TR2_RES_NETHER;
-    if (f2 & 0x02000000L) i = i; /* Artifact Flag extracted into "name1" */
+    /* (f2 & 0x02000000L) -- artifact flag */
     if (f2 & 0x04000000L) i_ptr->flags3 |= TR3_BLESSED;
-    if (f2 & 0x08000000L) i_ptr->flags1 |= TR1_ATTACK_SPD;
-    if (f2 & 0x10000000L) i = i; /* TR2_RES_FEAR no longer used */
+    if (f2 & 0x08000000L) i_ptr->flags1 |= TR1_BLOWS;
+    /* (f2 & 0x10000000L) -- resist fear */
+
+
+    /* Sustain stats */
+    if (p) {
+
+        /* Sustain some stats */
+        switch (p) {
+
+            /* Sustain one stat */
+            case 1: i_ptr->flags2 |= (TR2_SUST_STR); break;
+            case 2: i_ptr->flags2 |= (TR2_SUST_INT); break;
+            case 3: i_ptr->flags2 |= (TR2_SUST_WIS); break;
+            case 4: i_ptr->flags2 |= (TR2_SUST_DEX); break;
+            case 5: i_ptr->flags2 |= (TR2_SUST_CON); break;
+            case 6: i_ptr->flags2 |= (TR2_SUST_CHR); break;
+
+            /* Sustain all stats */
+            case 10: i_ptr->flags2 |= (TR2_SUST_STR | TR2_SUST_DEX | 
+                                       TR2_SUST_CON | TR2_SUST_INT | 
+                                       TR2_SUST_WIS | TR2_SUST_CHR);
+        }
+    }
 }
 
 
@@ -484,241 +495,357 @@ static void repair_item_flags_old(inven_type *i_ptr)
  */
 static errr rd_item_old(inven_type *i_ptr)
 {
-    byte tmp8u;
     u16b tmp16u;
+ 
+    byte old_ident;
+    byte old_name2;
+    
+    s32b old_cost;
+    
+    u32b f1, f2;
+       
     char note[128];
 
-    bool invis_trap = FALSE;
-
     inven_kind *k_ptr;
+
 
     /* Clear it first */
     invwipe(i_ptr);
 
+    /* Index (translated below) */
     rd_s16b(&i_ptr->k_idx);
-    rd_byte(&i_ptr->name2);
+
+    /* Ego/Art index */
+    rd_byte(&old_name2);
+
+    /* Inscription */
     rd_string(note);
-    inscribe(i_ptr, note);
-    rd_u32b(&i_ptr->flags1);
-    rd_byte(&i_ptr->tval);
 
-    /* Was: i_ptr->tchar */
-    rd_byte(&tmp8u);
+    /* Save the inscription */
+    if (note[0]) i_ptr->note = quark_add(note);
 
+    /* Flags1 (translated below) */
+    rd_u32b(&f1);
+
+    /* Old Tval (ignored) */
+    strip_bytes(1);
+
+    /* Tchar */
+    strip_bytes(1);
+
+    /* Pval */
     rd_s16b(&i_ptr->pval);
-    rd_s32b(&i_ptr->cost);
-    rd_byte(&i_ptr->sval);
+
+    /* Cost */
+    rd_s32b(&old_cost);
+
+    /* Old Sval (ignored) */
+    strip_bytes(1);
+
+    /* Quantity */
     rd_byte(&i_ptr->number);
 
+    /* Weight */
     rd_u16b(&tmp16u);
     i_ptr->weight = tmp16u;
 
+    /* Bonuses */
     rd_s16b(&i_ptr->tohit);
     rd_s16b(&i_ptr->todam);
     rd_s16b(&i_ptr->ac);
     rd_s16b(&i_ptr->toac);
+
+    /* Damage */
     rd_byte(&i_ptr->dd);
     rd_byte(&i_ptr->ds);
 
-    /* Forget old "level" */
-    rd_byte(&tmp8u);
+    /* Level */
+    strip_bytes(1);
 
-    rd_byte(&i_ptr->ident);
-    rd_u32b(&i_ptr->flags2);
+    /* Special flags (translated below) */
+    rd_byte(&old_ident);
 
-    /* Read and forget the old timeout */
-    rd_u16b(&tmp16u);
+    /* Flags2 (translated below) */
+    rd_u32b(&f2);
 
-    /* Clear the timeout */
-    i_ptr->timeout = 0;
+    /* Timeout */
+    strip_bytes(2);
+    
 
-    /* Harmless Hack -- clear scost */
-    i_ptr->scost = 0;
-
-    /* Default to blank "flags3" */
-    i_ptr->flags3 = 0L;
-
-    /* XXX Potions are now a single tval, but use both flags */
-    if (i_ptr->tval == TV_POTION + 1) {
-        i_ptr->tval = TV_POTION;
-        i_ptr->flags2 = i_ptr->flags1;
-        i_ptr->flags1 = 0L;
-    }
-
-    /* XXX Scrolls are now a single tval, but use both flags */
-    if (i_ptr->tval == TV_SCROLL + 1) {
-        i_ptr->tval = TV_SCROLL;
-        i_ptr->flags2 = i_ptr->flags1;
-        i_ptr->flags1 = 0L;
-    }
-
-
-    /* Several objects now have new "locations" */
+    /* Patch the object indexes */
     switch (i_ptr->k_idx) {
 
-        /* Items map to their "base" */
+        /* Mushroom of poison */
         case 0: i_ptr->k_idx = 15; break;
+
+        /* Mushrooms of restoring (extra) */
         case 13: i_ptr->k_idx = 12; break;
         case 14: i_ptr->k_idx = 12; break;
+
+        /* Hairy Mold of poison */
+        case 16: i_ptr->k_idx = 15; break;
+        
+        /* Ration of Food (extra) */
         case 22: i_ptr->k_idx = 21; break;
         case 23: i_ptr->k_idx = 21; break;
+
+        /* Piece of Elvish Waybread (extra) */
         case 26: i_ptr->k_idx = 25; break;
         case 27: i_ptr->k_idx = 25; break;
 
-        /* Cleaning of Edged Blades */
+        /* Main Gauche */
         case 28: i_ptr->k_idx = 38; break;
+
+        /* Dagger */
         case 29: i_ptr->k_idx = 43; break;
 
-        /* Items map to their "base" */
+        /* Broad-sword */
         case 35: i_ptr->k_idx = 34; break;
+
+        /* Two-Handed Sword */
         case 38: i_ptr->k_idx = 37; break;
+
+        /* Long sword */
         case 43: i_ptr->k_idx = 42; break;
 
-        /* Separate Hafted from Polearm */
+        /* Awl-Pike */
         case 58: i_ptr->k_idx = 62; break;
+
+        /* Lucern Hammer */
         case 62: i_ptr->k_idx = 58; break;
 
-        /* Spikes, Lantern, Torches */
+        /* Spike */
         case 84: i_ptr->k_idx = 345; break;
+
+        /* Lantern */
         case 85: i_ptr->k_idx = 347; break;
+
+        /* Torch */
         case 86: i_ptr->k_idx = 346; break;
 
-        /* Dungeon Shovels and Picks */
+        /* Orcish Pick */
         case 87: i_ptr->k_idx = 88; break;
+
+        /* Dwarven Pick */
         case 88: i_ptr->k_idx = 89; break;
+
+        /* Gnomish Shovel */
         case 89: i_ptr->k_idx = 85; break;
+
+        /* Dwarven shovel */
         case 90: i_ptr->k_idx = 86; break;
 
-        /* More items mapping to their "base" */
+        /* Robe */
         case 102: i_ptr->k_idx = 101; break;
+
+        /* Arrow */
         case 144: i_ptr->k_idx = 78; break;
+
+        /* Bolt */
         case 170: i_ptr->k_idx = 80; break;
+
+        /* Scroll of Identify (extras) */
         case 177: i_ptr->k_idx = 176; break;
         case 178: i_ptr->k_idx = 176; break;
         case 179: i_ptr->k_idx = 176; break;
+
+        /* Scroll of Light (extras) */
         case 182: i_ptr->k_idx = 181; break;
         case 183: i_ptr->k_idx = 181; break;
+        
+        /* Scroll of Rune of Protection */
         case 191: i_ptr->k_idx = 190; break;
+
+        /* Scroll of Trap Detection (extra) */
         case 195: i_ptr->k_idx = 194; break;
 
-        /* Random Rod */
+        /* Rod of Trap Location (Hack!) */
         case 196: i_ptr->k_idx = 352; break;
 
-        /* More items linking to "base" */
+        /* Scroll of Door/Stair Location (extra) */
         case 198: i_ptr->k_idx = 197; break;
         case 199: i_ptr->k_idx = 197; break;
+
+        /* Scroll of *Enchant Armor* */
         case 205: i_ptr->k_idx = 214; break;
+
+        /* Potion of Cure Light Wounds (extra) */
         case 238: i_ptr->k_idx = 237; break;
         case 239: i_ptr->k_idx = 237; break;
+
+        /* Potion of Speed (extra) */
         case 256: i_ptr->k_idx = 249; break;
-        case 284: i_ptr->k_idx = 283; break;
 
         /* Flask of oil */
         case 268: i_ptr->k_idx = 348; break;
 
-        /* Random Staff */
+        /* Wand of Clone Monster */
+        case 284: i_ptr->k_idx = 283; break;
+
+        /* Staff of Light */
         case 293: i_ptr->k_idx = 306; break;
 
-        /* Random Staff */
+        /* Staff of Door/Stair Location */
         case 299: i_ptr->k_idx = 316; break;
 
-        /* More items linking to "base" */
+        /* Staff of Summoning (extra?) */
         case 306: i_ptr->k_idx = 305; break;
+
+        /* Staff of *Destruction* */
         case 316: i_ptr->k_idx = 307; break;
+
+        /* Staff of Darkness (extra?) */
         case 321: i_ptr->k_idx = 322; break;
 
-        /* Miscellaneous Junk */
-        case 345: i_ptr->k_idx = 389; break;
-        case 346: i_ptr->k_idx = 390; break;
+        /* Junk and Skeletons */
+        case 344: i_ptr->k_idx = 394; break;
+        case 345: i_ptr->k_idx = 393; break;
 
-        /* Skeletons */
-        case 353: i_ptr->k_idx = 391; break;
-        case 354: i_ptr->k_idx = 392; break;
-        case 347: i_ptr->k_idx = 393; break;
-        case 348: i_ptr->k_idx = 394; break;
+        /* Filthy Rag */
+        case 346: i_ptr->k_idx = 102; break;
+
+        /* Junk and Skeletons */
+        case 347: i_ptr->k_idx = 349; break;
+        case 348: i_ptr->k_idx = 389; break;
         case 349: i_ptr->k_idx = 395; break;
         case 350: i_ptr->k_idx = 396; break;
         case 351: i_ptr->k_idx = 397; break;
         case 352: i_ptr->k_idx = 398; break;
+        case 353: i_ptr->k_idx = 391; break;
+        case 354: i_ptr->k_idx = 392; break;
+        case 355: i_ptr->k_idx = 390; break;
 
-        /* Empty bottle */
-        case 355: i_ptr->k_idx = 349; break;
-
-        /* Random Scroll */
+        /* Scroll of *Remove Curse* */
         case 378: i_ptr->k_idx = 191; break;
 
-        /* Dragon Scale Mail */
+        /* Blue Dragon Scale Mail */
         case 389: i_ptr->k_idx = 401; break;
+
+        /* White Dragon Scale Mail */
         case 390: i_ptr->k_idx = 402; break;
+
+        /* Black Dragon Scale Mail */
         case 391: i_ptr->k_idx = 400; break;
+
+        /* Green Dragon Scale Mail */
         case 392: i_ptr->k_idx = 404; break;
+
+        /* Red Dragon Scale Mail */
         case 393: i_ptr->k_idx = 403; break;
+
+        /* Multi-Hued Dragon Scale Mail */
         case 394: i_ptr->k_idx = 405; break;
 
-        /* Random Daggers */
+        /* Daggers (ancient artifacts?) */
         case 395: i_ptr->k_idx = 43; break;
         case 396: i_ptr->k_idx = 43; break;
         case 397: i_ptr->k_idx = 43; break;
 
-        /* Random Short Sword */
+        /* Short Sword */
         case 398: i_ptr->k_idx = 35; break;
 
-        /* Random leftover potions */
+        /* Potion of *Enlightenment* */
         case 399: i_ptr->k_idx = 422; break;
+
+        /* Potion of Detonations */
         case 400: i_ptr->k_idx = 417; break;
+
+        /* Potion of Death */
         case 401: i_ptr->k_idx = 415; break;
+
+        /* Potion of Life */
         case 402: i_ptr->k_idx = 420; break;
+
+        /* Potion of Augmentation */
         case 403: i_ptr->k_idx = 418; break;
+
+        /* Potion of Ruination */
         case 404: i_ptr->k_idx = 416; break;
 
-        /* Random Rods */
+        /* Rod of Illumination */
         case 405: i_ptr->k_idx = 355; break;
+
+        /* Rod of Probing */
         case 406: i_ptr->k_idx = 353; break;
 
-        /* Random Staff */
+        /* Staff of Probing */
         case 407: i_ptr->k_idx = 321; break;
 
-        /* Dragon Scale Mail */
+        /* Bronze Dragon Scale Mail */
         case 408: i_ptr->k_idx = 408; break;
+
+        /* Gold Dragon Scale Mail */
         case 409: i_ptr->k_idx = 409; break;
 
-        /* Random Rod */
+        /* Rod of Recall */
         case 410: i_ptr->k_idx = 354; break;
 
-        /* Random Cloak */
+        /* Cloak (extra) */
         case 411: i_ptr->k_idx = 123; break;
 
-        /* Random Scrolls */
+        /* Scroll of Acquirement */
         case 412: i_ptr->k_idx = 198; break;
+
+        /* Scroll of *Acquirement* */
         case 413: i_ptr->k_idx = 199; break;
 
-        /* Random Ring */
+        /* Ring of Free Action */
         case 414: i_ptr->k_idx = 144; break;
 
-        /* Dragon Scale Mail */
+        /* Chaos Dragon Scale Mail */
         case 415: i_ptr->k_idx = 410; break;
+
+        /* Law Dragon Scale Mail */
         case 416: i_ptr->k_idx = 407; break;
+
+        /* Balance Dragon Scale Mail */
         case 417: i_ptr->k_idx = 411; break;
+
+        /* Shining Dragon Scale Mail */
         case 418: i_ptr->k_idx = 406; break;
+
+        /* Power Dragon Scale Mail */
         case 419: i_ptr->k_idx = 412; break;
 
-        /* More random potions */
+        /* Potion of Enlightenment */
         case 420: i_ptr->k_idx = 256; break;
+
+        /* Potion of Self Knowledge */
         case 421: i_ptr->k_idx = 421; break;
+
+        /* Postion of *Healing* */
         case 422: i_ptr->k_idx = 419; break;
 
-        /* Store bought food */
+        /* Food ration (extra) */
         case 423: i_ptr->k_idx = 21; break;
+
+        /* Hard Biscuit */
         case 424: i_ptr->k_idx = 22; break;
+
+        /* Strip of Beef Jerky */
         case 425: i_ptr->k_idx = 23; break;
+
+        /* Pint of Fine Ale */
         case 426: i_ptr->k_idx = 26; break;
+
+        /* Pint of Fine Wine */
         case 427: i_ptr->k_idx = 27; break;
 
-        /* Storebought Shovels/Picks */
+        /* Pick */
         case 428: i_ptr->k_idx = 87; break;
+
+        /* Shovel */
         case 429: i_ptr->k_idx = 84; break;
 
-        /* Many old shop items mapped to real items */
+        /* Scrolls of Identify (store) */
+        /* Scrolls of Light (store) */
+        /* Scrolls of Phase Door (store) */
+        /* Scrolls of Mapping (store) */
+        /* Scrolls of Treasure Detection (store) */
+        /* Scrolls of Object Detection (store) */
+        /* Scrolls of Detect Invisible (store) */
+        /* Scrolls of Blessing (store) */
+        /* Scrolls of Word of Recall (store) */
         case 430: i_ptr->k_idx = 176; break;
         case 431: i_ptr->k_idx = 181; break;
         case 432: i_ptr->k_idx = 185; break;
@@ -728,21 +855,38 @@ static errr rd_item_old(inven_type *i_ptr)
         case 436: i_ptr->k_idx = 201; break;
         case 437: i_ptr->k_idx = 217; break;
         case 438: i_ptr->k_idx = 220; break;
+
+        /* Potions of Cure Light Wounds (store) */
+        /* Potions of Heroism (store) */
+        /* Potions of Boldness (store) */
+        /* Potions of Slow Poison (store) */
         case 439: i_ptr->k_idx = 237; break;
         case 440: i_ptr->k_idx = 257; break;
         case 441: i_ptr->k_idx = 259; break;
         case 442: i_ptr->k_idx = 264; break;
 
-        /* Old shop items -- lantern, torch, oil */
+        /* Lantern (store) */
         case 443: i_ptr->k_idx = 347; break;
+
+        /* Torches (store) */
         case 444: i_ptr->k_idx = 346; break;
+
+        /* Flasks of Oil (store) */
         case 445: i_ptr->k_idx = 348; break;
 
-        /* Clean up the traps, the mush, and the rubble */
+        /* Open pit */
         case 459: i_ptr->k_idx = 460; break;
+
+        /* Arrow Trap */
         case 460: i_ptr->k_idx = 477; break;
+
+        /* Rubble */
         case 477: i_ptr->k_idx = 445; break;
+
+        /* Mush -> Food Ration */
         case 478: i_ptr->k_idx = 21; break;
+
+        /* Glyph of Warding */
         case 479: i_ptr->k_idx = 459; break;
 
         /* The old "nothing" object */
@@ -751,64 +895,47 @@ static errr rd_item_old(inven_type *i_ptr)
         /* Ruined Chest */
         case 499: i_ptr->k_idx = 344; break;
 
-        /* Special objects */
-        case 501: i_ptr->k_idx = 508; break;
-        case 502: i_ptr->k_idx = 509; break;
-        case 503: i_ptr->k_idx = 510; break;
-        case 504: i_ptr->k_idx = 511; break;
-        case 505: i_ptr->k_idx = 500; break;
-        case 506: i_ptr->k_idx = 504; break;
-        case 507: i_ptr->k_idx = 503; break;
-        case 508: i_ptr->k_idx = 501; break;
-        case 509: i_ptr->k_idx = 502; break;
-        case 510: i_ptr->k_idx = 507; break;
-        case 511: i_ptr->k_idx = 505; break;
-        case 512: i_ptr->k_idx = 506; break;
+        /* An old "broken" object */
+        case 500: i_ptr->k_idx = 0; break;
+        
+        /* Hack -- Special objects (see below) */
+        case 501: i_ptr->name1 = ART_NARYA; break;
+        case 502: i_ptr->name1 = ART_NENYA; break;
+        case 503: i_ptr->name1 = ART_VILYA; break;
+        case 504: i_ptr->name1 = ART_POWER; break;
+        case 505: i_ptr->name1 = ART_GALADRIEL; break;
+        case 506: i_ptr->name1 = ART_INGWE; break;
+        case 507: i_ptr->name1 = ART_CARLAMMAS; break;
+        case 508: i_ptr->name1 = ART_ELENDIL; break;
+        case 509: i_ptr->name1 = ART_THRAIN; break;
+        case 510: i_ptr->name1 = ART_TULKAS; break;
+        case 511: i_ptr->name1 = ART_DWARVES; break;
+        case 512: i_ptr->name1 = ART_BARAHIR; break;
     }
 
-
-    /* The "Special Objects" now have Artifact Names */
-    switch (i_ptr->k_idx) {
-        case OBJ_GALADRIEL: i_ptr->name1 = ART_GALADRIEL; break;
-        case OBJ_ELENDIL: i_ptr->name1 = ART_ELENDIL; break;
-        case OBJ_THRAIN: i_ptr->name1 = ART_THRAIN; break;
-        case OBJ_CARLAMMAS: i_ptr->name1 = ART_CARLAMMAS; break;
-        case OBJ_INGWE: i_ptr->name1 = ART_INGWE; break;
-        case OBJ_DWARVES: i_ptr->name1 = ART_DWARVES; break;
-        case OBJ_BARAHIR: i_ptr->name1 = ART_BARAHIR; break;
-        case OBJ_TULKAS: i_ptr->name1 = ART_TULKAS; break;
-        case OBJ_NARYA: i_ptr->name1 = ART_NARYA; break;
-        case OBJ_NENYA: i_ptr->name1 = ART_NENYA; break;
-        case OBJ_VILYA: i_ptr->name1 = ART_VILYA; break;
-        case OBJ_POWER: i_ptr->name1 = ART_POWER; break;
-    }
 
     /* Artifact Names Dominate Ego-Item Names */
-    if (i_ptr->name1) i_ptr->name2 = 0;
+    if (i_ptr->name1) {
 
+        inven_very *v_ptr = &v_list[i_ptr->name1];
+        
+        /* Forget the "ego-name" */
+        old_name2 = 0;
 
-    /* The Old Special Names induce Artifact Names */
-    if (i_ptr->name2) {
+        /* Lookup the real "kind" */
+        i_ptr->k_idx = lookup_kind(v_ptr->tval, v_ptr->sval);
+    }
+
+    /* Parse the Old Special Names */
+    if (old_name2) {
 
         int hack;
 
         /* Analyze the old "special name" */
-        hack = convert_name2[i_ptr->name2];
-
-        /* Old "Chest" names */
-        if (hack > 9000) {
-
-            /* Extract a couple meaningful names */
-            if (hack == CHE_DISARMED) {
-                i_ptr->flags2 |= CH2_DISARMED;
-            }
-
-            /* Forget the old name */
-            i_ptr->name2 = 0;
-        }
+        hack = convert_name2[old_name2];
 
         /* It is an ego-item */
-        else if (hack > 2000) {
+        if (hack > 2000) {
 
             /* Move it elsewhere in the table */
             i_ptr->name2 = (hack - 2000);
@@ -819,15 +946,6 @@ static errr rd_item_old(inven_type *i_ptr)
 
             /* Move it into the artifact table */
             i_ptr->name1 = (hack - 1000);
-
-            /* Forget the old name */
-            i_ptr->name2 = 0;
-        }
-
-        /* Oops.  That name no longer exists... */
-        else {
-            message("Ignoring illegal 'name2' field", 0);
-            i_ptr->name2 = 0;
         }
     }
 
@@ -835,45 +953,25 @@ static errr rd_item_old(inven_type *i_ptr)
     /* Access the (possibly new) item template */
     k_ptr = &k_list[i_ptr->k_idx];
 
-    /* Take note if the object was an invisible trap */
-    if (i_ptr->tval == TV_INVIS_TRAP) invis_trap = TRUE;
-
-    /* Hack -- repair "tval" */
+    /* Hack -- repair "tval" and "sval" */
     i_ptr->tval = k_ptr->tval;
-
-    /* Hack -- repair "sval" */
     i_ptr->sval = k_ptr->sval;
 
-    /* XXX Hack -- un-repair invisible traps */
-    if (invis_trap) i_ptr->tval = TV_INVIS_TRAP;
+    /* Hack -- notice "broken" items */
+    if (k_ptr->cost <= 0) i_ptr->ident |= ID_BROKEN;
 
-
-    /* XXX Wands, Staffs, and Rods have no flags */
-    if ((i_ptr->tval == TV_WAND) ||
-        (i_ptr->tval == TV_STAFF) ||
-        (i_ptr->tval == TV_ROD)) {
-        i_ptr->flags1 = i_ptr->flags2 = 0L;
-    }
-
-
-    /* Chests now put the traps in flags2 */
+    
+    /* Chests become empty and worthless */
     if (i_ptr->tval == TV_CHEST) {
 
-        /* Hack -- Notice "traps" */
-        if (i_ptr->flags1 & 0x000001F0L) {
-            i_ptr->flags2 |= CH2_TRAP_MASK;
-            i_ptr->flags1 &= ~0x000001F0L;
-        }
+        /* Empty */
+        i_ptr->pval = 0;
         
-        /* Notice "lock" */
-        if (i_ptr->flags1 & 0x00000001L) {
-            i_ptr->flags2 |= CH2_LOCKED;
-            i_ptr->flags1 &= ~0x00000001L;
-        }
+        /* Worthless */
+        i_ptr->ident |= ID_BROKEN;
     }
 
-
-    /* Forget about missile_ctr */
+    /* Spikes/Missiles have no "missile_ctr" */
     if ((i_ptr->tval == TV_SPIKE) || (i_ptr->tval == TV_SHOT) ||
         (i_ptr->tval == TV_ARROW) || (i_ptr->tval == TV_BOLT)) {
 
@@ -882,187 +980,209 @@ static errr rd_item_old(inven_type *i_ptr)
     }
 
 
-    /* Update Bows (XXX Handle Bows of Extra Might) */
+    /* Bows have no "pval" */
     if (i_ptr->tval == TV_BOW) {
 
         /* Hack -- repair "pval" (ancient "bug") */
         i_ptr->pval = 0;
 
         /* XXX XXX Normal bows of extra might */
+        /* Can only be detected by weird "sval" */
         /* i_ptr->flags3 |= (TR3_XTRA_MIGHT); */
     }
 
 
 
-    /* Repair the "flags" in wearable objects */
+    /* Repair "wearable" objects */
     if (wearable_p(i_ptr)) {
 
-
-        /* Save the "Sustain Stat flags" */
-        u32b sustain2 = 0L;
-
-
-        /* Extract old "TR_SUST_STAT" flag, save it for later */
-        if (i_ptr->flags1 & 0x00400000L) {
-
-            /* Hack -- multi-sustain2 */
-            if (i_ptr->pval == 10) {
-
-                /* Sustain everything */
-                sustain2 |= (TR2_SUST_STR | TR2_SUST_DEX | TR2_SUST_CON |
-                             TR2_SUST_INT | TR2_SUST_WIS | TR2_SUST_CHR);
-
-                /* Forget the bogus pval */
-                i_ptr->pval = 0;
-            }
-
-            /* Give a normal sustain2, keep the pval */
-            switch (i_ptr->pval) {
-                case 1: sustain2 |= (TR2_SUST_STR); break;
-                case 2: sustain2 |= (TR2_SUST_INT); break;
-                case 3: sustain2 |= (TR2_SUST_WIS); break;
-                case 4: sustain2 |= (TR2_SUST_DEX); break;
-                case 5: sustain2 |= (TR2_SUST_CON); break;
-                case 6: sustain2 |= (TR2_SUST_CHR); break;
-            }
-
-            /* Hack -- If the "pval" was "hidden", forget it */
-            if (i_ptr->ident & 0x40) i_ptr->pval = 0;
-        }
-
         /* Completely repair old flags */
-        repair_item_flags_old(i_ptr);
+        repair_item_flags_old(i_ptr, f1, f2);
 
-        /* Drop in the new "Sustain Stat" flags */
-        i_ptr->flags2 |= sustain2;
+        /* Convert "ID_SHOW_HITDAM" to "TR3_SHOW_MODS" */
+        if (old_ident & 0x20) i_ptr->flags3 |= TR3_SHOW_MODS;
+
+        /* Convert "ID_NOSHOW_TYPE" to "TR3_HIDE_TYPE" */
+        if (old_ident & 0x80) i_ptr->flags3 |= TR3_HIDE_TYPE;
+
+        /* Hack -- Inherit "EASY_KNOW" from parent */
+        if (k_ptr->flags3 & TR3_EASY_KNOW) i_ptr->flags3 |= TR3_EASY_KNOW;
     }
 
 
 
     /*** Analyze the old "ident" flags (and friends) ***/
 
-    /* Some of the old "ident" flags only apply to wearable's */
-    if (wearable_p(i_ptr)) {
+    /* Convert "store-bought" to "aware" */
+    if (old_ident & 0x10) x_list[i_ptr->k_idx].aware = TRUE;
 
-        /* Convert "ID_SHOW_HITDAM" to "TR3_SHOW_MODS" */
-        if (i_ptr->ident & 0x20) i_ptr->flags3 |= TR3_SHOW_MODS;
+    /* Convert "store-bought" to "known" */
+    if (old_ident & 0x10) i_ptr->ident |= ID_KNOWN;
+    
+    /* Convert old "ID_DAMD" flag into new "ID_SENSE" method */
+    if (old_ident & 0x02) i_ptr->ident |= ID_SENSE;
 
-        /* Convert "ID_NOSHOW_TYPE" to "TR3_HIDE_TYPE" */
-        if (i_ptr->ident & 0x80) i_ptr->flags3 |= TR3_HIDE_TYPE;
+    /* Convert "ID_FELT" to "ID_SENSE" */
+    if (old_ident & 0x01) i_ptr->ident |= ID_SENSE;
 
-        /* Hack -- Inherit "EASY_KNOW" from parent */
-        if (k_ptr->flags3 & TR3_EASY_KNOW) i_ptr->flags3 |= TR3_EASY_KNOW;
+
+    /*** Non wearable items use standard values ***/
+
+    /* Fix non-wearable items */    
+    if (!wearable_p(i_ptr)) {
+
+        /* Parse "total value" of "gold" */
+        if (i_ptr->tval == TV_GOLD) i_ptr->pval = old_cost;
+
+        /* Acquire normal flags (all zeros) */
+        i_ptr->flags1 = k_ptr->flags1;
+        i_ptr->flags2 = k_ptr->flags2;
+        i_ptr->flags3 = k_ptr->flags3;
+        
+        /* Acquire normal fields (all zero) */
+        i_ptr->ac = k_ptr->ac;
+        i_ptr->tohit = k_ptr->tohit;
+        i_ptr->todam = k_ptr->todam;
+        i_ptr->toac = k_ptr->toac;
+
+        /* Acquire normal fields */
+        i_ptr->dd = k_ptr->dd;
+        i_ptr->ds = k_ptr->ds;
+        i_ptr->weight = k_ptr->weight;
+        
+        /* Success */    
+        return (0);
     }
-
-    /* Forget old "ID_SHOW_HITDAM" flag, if any */
-    i_ptr->ident &= ~0x20;
-
-    /* Forget old "ID_NOSHOW_P1" flag, if any */
-    i_ptr->ident &= ~0x40;
-
-    /* Forget old "ID_HIDE_TYPE" flag, if any */
-    i_ptr->ident &= ~0x80;
-
-    /* Hack -- notice old "storebought" items */
-    if (i_ptr->ident & 0x10) {
-
-        /* Forget old "ID_STOREBOUGHT" flag */
-        i_ptr->ident &= ~0x10;
-
-        /* Bought in a store yields "aware" */
-        x_list[i_ptr->k_idx].aware = TRUE;
-    }
-
-    /* Convert old "ID_DAMD" flag into new "ID_FELT" method */
-    if (i_ptr->ident & 0x02) {
-
-        /* Forget old flag */
-        i_ptr->ident &= ~0x02;
-
-        /* Mark as "felt" (known to be "cursed") */
-        i_ptr->ident |= ID_FELT;
-    }
-
-
+    
+    
     /*** Analyze wearable items some more ***/
 
-    /* Stop processing unless wearable */
-    if (!wearable_p(i_ptr)) return (0);
+    /* Observe current "curse" */
+    if (i_ptr->flags3 & TR3_CURSED) i_ptr->ident |= ID_CURSED;
 
-    /* Dangerous Hack -- update speed */
+    /* Adapt to the new "speed" code */
     if (i_ptr->flags1 & TR1_SPEED) {
-        i_ptr->pval = i_ptr->pval * 10;
+
+        /* Paranoia -- only expand small bonuses */
+        if (i_ptr->pval < 3) i_ptr->pval = i_ptr->pval * 10;
     }
 
-    /* Hack -- Ego-Items of Morgul */
-    if (i_ptr->name2 == EGO_MORGUL) {
-        i_ptr->flags3 |= TR3_HEAVY_CURSE;
+    /* Adapt to the new "searching" code */
+    if (i_ptr->flags1 & TR1_SEARCH) {
+
+        /* Paranoia -- only reduce large bonuses */
+        if (i_ptr->pval >= 5) i_ptr->pval = i_ptr->pval / 5;
     }
 
-    /* Hack -- fix missile labels */
-    if ((i_ptr->tval == TV_BOLT) ||
-        (i_ptr->tval == TV_ARROW) ||
-        (i_ptr->tval == TV_SHOT)) {
-
-        /* Fix certain ego-items */
-        if (i_ptr->name2 == EGO_FIRE) i_ptr->name2 = EGO_AMMO_FIRE;
-        if (i_ptr->name2 == EGO_SLAYING) i_ptr->name2 = EGO_AMMO_SLAYING;
-        if (i_ptr->name2 == EGO_SLAY_EVIL) i_ptr->name2 = EGO_AMMO_EVIL;
-    }
-
-    /* Hack -- fix "robe of the magi" */
-    if ((i_ptr->tval == TV_SOFT_ARMOR) &&
-        (i_ptr->sval == SV_ROBE) &&
-        (i_ptr->name2 == EGO_MAGI)) {
-
-        /* Special ego-item */
-        i_ptr->name2 = EGO_ROBE_MAGI;
-    }
 
     /* Update artifacts */
     if (i_ptr->name1) {
 
-        /* Repair -- Acquire new artifact flags/fields */
-        i_ptr->flags1 = v_list[i_ptr->name1].flags1;
-        i_ptr->flags2 = v_list[i_ptr->name1].flags2;
-        i_ptr->flags3 = v_list[i_ptr->name1].flags3;
-        i_ptr->pval = v_list[i_ptr->name1].pval;
-        i_ptr->ac = v_list[i_ptr->name1].ac;
-        i_ptr->dd = v_list[i_ptr->name1].dd;
-        i_ptr->ds = v_list[i_ptr->name1].ds;
-        i_ptr->weight = v_list[i_ptr->name1].weight;
-        i_ptr->cost = v_list[i_ptr->name1].cost;
+        inven_very *v_ptr = &v_list[i_ptr->name1];
+        
+        /* Acquire artifact flags */
+        i_ptr->flags1 = v_ptr->flags1;
+        i_ptr->flags2 = v_ptr->flags2;
+        i_ptr->flags3 = v_ptr->flags3;
+
+        /* Acquire artifact pval */
+        i_ptr->pval = v_ptr->pval;
+
+        /* Acquire artifact fields */
+        i_ptr->ac = v_ptr->ac;
+        i_ptr->dd = v_ptr->dd;
+        i_ptr->ds = v_ptr->ds;
+        i_ptr->weight = v_ptr->weight;
     }
 
-    /* Update dragon scale mail */
-    else if (i_ptr->tval == TV_DRAG_ARMOR) {
+    /* Update ego-items */
+    else if (i_ptr->name2) {
 
-        /* Repair -- Acquire new artifact flags/fields */
-        i_ptr->flags1 = k_list[i_ptr->k_idx].flags1;
-        i_ptr->flags2 = k_list[i_ptr->k_idx].flags2;
-        i_ptr->flags3 = k_list[i_ptr->k_idx].flags3;
-        i_ptr->pval = k_list[i_ptr->k_idx].pval;
-        i_ptr->ac = k_list[i_ptr->k_idx].ac;
-        i_ptr->dd = k_list[i_ptr->k_idx].dd;
-        i_ptr->ds = k_list[i_ptr->k_idx].ds;
-        i_ptr->weight = k_list[i_ptr->k_idx].weight;
+        /* Hack -- Ego-Items of Morgul */
+        if (i_ptr->name2 == EGO_MORGUL) {
+
+            /* Heavily cursed */
+            i_ptr->flags3 |= TR3_HEAVY_CURSE;
+        }
+
+        /* Hack -- fix some "ego-missiles" */
+        if ((i_ptr->tval == TV_BOLT) ||
+            (i_ptr->tval == TV_ARROW) ||
+            (i_ptr->tval == TV_SHOT)) {
+
+            /* Special ego-items */
+            if (i_ptr->name2 == EGO_FIRE) i_ptr->name2 = EGO_AMMO_FIRE;
+            if (i_ptr->name2 == EGO_SLAYING) i_ptr->name2 = EGO_AMMO_SLAYING;
+            if (i_ptr->name2 == EGO_SLAY_EVIL) i_ptr->name2 = EGO_AMMO_EVIL;
+        }
+
+        /* Hack -- fix some "ego-bows" */
+        if (i_ptr->tval == TV_BOW) {
+
+            /* Special ego-items */
+            if (i_ptr->name2 == EGO_MIGHT) i_ptr->name2 = EGO_VELOCITY;
+        }
+        
+        /* Hack -- fix "robe of the magi" */
+        if ((i_ptr->tval == TV_SOFT_ARMOR) &&
+            (i_ptr->sval == SV_ROBE) &&
+            (i_ptr->name2 == EGO_MAGI)) {
+
+            /* Special ego-item */
+            i_ptr->name2 = EGO_ROBE_MAGI;
+        }
+
+        /* Forget useless "pval" codes */
+        if (!(i_ptr->flags1 & TR1_PVAL_MASK)) i_ptr->pval = 0;
     }
-
-    /* Extract new "ignore" settings */
+    
+    /* Update normal wearable items */
     else {
+    
+        /* Acquire standard flags */
+        i_ptr->flags1 = k_ptr->flags1;
+        i_ptr->flags2 = k_ptr->flags2;
+        i_ptr->flags3 = k_ptr->flags3;
 
-        /* Extract new "ignore" settings from "Resist" */
-        if (i_ptr->flags2 & TR2_RES_ACID) i_ptr->flags3 |= TR3_IGNORE_ACID;
-        if (i_ptr->flags2 & TR2_RES_ELEC) i_ptr->flags3 |= TR3_IGNORE_ELEC;
-        if (i_ptr->flags2 & TR2_RES_FIRE) i_ptr->flags3 |= TR3_IGNORE_FIRE;
-        if (i_ptr->flags2 & TR2_RES_COLD) i_ptr->flags3 |= TR3_IGNORE_COLD;
+        /* Examine Lites */
+        if (i_ptr->tval == TV_LITE) {
 
-        /* Extract new "ignore" settings from "Immune" */
-        if (i_ptr->flags2 & TR2_IM_ACID) i_ptr->flags3 |= TR3_IGNORE_ACID;
-        if (i_ptr->flags2 & TR2_IM_ELEC) i_ptr->flags3 |= TR3_IGNORE_ELEC;
-        if (i_ptr->flags2 & TR2_IM_FIRE) i_ptr->flags3 |= TR3_IGNORE_FIRE;
-        if (i_ptr->flags2 & TR2_IM_COLD) i_ptr->flags3 |= TR3_IGNORE_COLD;
+            /* Hack -- keep old "pval" */
+        }
+        
+        /* Examine Rings/Amulets */
+        else if ((i_ptr->tval == TV_RING) || (i_ptr->tval == TV_AMULET)) {
+
+            /* Forget "useless" pval settings (keep others) */
+            if (!(i_ptr->flags1 & TR1_PVAL_MASK)) i_ptr->pval = 0;
+        }
+
+        /* Examine non lite/amulet/ring items */
+        else {
+
+            /* Acquire standard pval (oops) */
+            i_ptr->pval = k_ptr->pval;
+        }
+
+        /* Acquire standard fields */
+        i_ptr->ac = k_ptr->ac;
+        i_ptr->dd = k_ptr->dd;
+        i_ptr->ds = k_ptr->ds;
+        i_ptr->weight = k_ptr->weight;
     }
+
+
+    /* Extract new "ignore" settings from "Resist" */
+    if (i_ptr->flags2 & TR2_RES_ACID) i_ptr->flags3 |= TR3_IGNORE_ACID;
+    if (i_ptr->flags2 & TR2_RES_ELEC) i_ptr->flags3 |= TR3_IGNORE_ELEC;
+    if (i_ptr->flags2 & TR2_RES_FIRE) i_ptr->flags3 |= TR3_IGNORE_FIRE;
+    if (i_ptr->flags2 & TR2_RES_COLD) i_ptr->flags3 |= TR3_IGNORE_COLD;
+
+    /* Extract new "ignore" settings from "Immune" */
+    if (i_ptr->flags2 & TR2_IM_ACID) i_ptr->flags3 |= TR3_IGNORE_ACID;
+    if (i_ptr->flags2 & TR2_IM_ELEC) i_ptr->flags3 |= TR3_IGNORE_ELEC;
+    if (i_ptr->flags2 & TR2_IM_FIRE) i_ptr->flags3 |= TR3_IGNORE_FIRE;
+    if (i_ptr->flags2 & TR2_IM_COLD) i_ptr->flags3 |= TR3_IGNORE_COLD;
 
 
     /* Success */
@@ -1075,9 +1195,6 @@ static errr rd_item_old(inven_type *i_ptr)
  */
 static void rd_monster_old(monster_type *m_ptr)
 {
-    byte	tmp8u;
-    u16b	tmp16u;
-
     monster_race *r_ptr;
 
 
@@ -1098,21 +1215,11 @@ static void rd_monster_old(monster_type *m_ptr)
     rd_s16b(&m_ptr->csleep);
 
     /* Forget speed */
-    rd_u16b(&tmp16u);
+    strip_bytes(2);
 
     /* Read race */
     rd_s16b(&m_ptr->r_idx);
 
-    /* Hack -- kill "broken" monsters */
-    if ((m_ptr->r_idx <= 0) || (m_ptr->r_idx >= MAX_R_IDX-1)) {
-
-	/* Temporary race */
-        m_ptr->r_idx = 1;
-
-	/* Dead anyway */
-        m_ptr->dead = TRUE;
-    }
-    
     /* Access the race */
     r_ptr = &r_list[m_ptr->r_idx];
 
@@ -1120,32 +1227,27 @@ static void rd_monster_old(monster_type *m_ptr)
     rd_byte(&m_ptr->fy);
     rd_byte(&m_ptr->fx);
 
-    /* Repair broken hit-points */
-    if (m_ptr->maxhp <= 0) {
+    /* Hack -- Repair broken hit-points */
+    if (m_ptr->maxhp <= 0) m_ptr->maxhp = maxroll(r_ptr->hdice, r_ptr->hside);
 
-        /* Repair hitpoints */
-        if (r_ptr->rflags1 & RF1_FORCE_MAXHP) {
-            m_ptr->maxhp = maxroll(r_ptr->hdice, r_ptr->hside);
-        }
-        else {
-            m_ptr->maxhp = damroll(r_ptr->hdice, r_ptr->hside);
-        }
-    }
-
-    /* Confusion and such */
-    rd_byte(&tmp8u);
-    rd_byte(&tmp8u);
-    rd_byte(&tmp8u);
-    rd_byte(&tmp8u);
+    /* Confusion, etc */
+    strip_bytes(4);
 
     /* Fear */
     if (!older_than(2,6,0)) {
-        rd_byte(&tmp8u);
+        strip_bytes(1);
     }
 
     /* Hack -- recalculate speed */
     m_ptr->mspeed = r_ptr->speed;
     m_ptr->energy = rand_int(100);
+
+    /* Hack -- kill "broken" monsters and player ghosts */
+    if ((m_ptr->r_idx <= 0) || (m_ptr->r_idx >= MAX_R_IDX-1)) {
+
+	/* Wipe the record */
+        WIPE(m_ptr, monster_type);
+    }
 }
 
 
@@ -1155,22 +1257,15 @@ static void rd_monster_old(monster_type *m_ptr)
  */
 static void rd_lore_old(monster_lore *l_ptr)
 {
-    byte tmp8u;
-    u32b tmp32u;
-    
-    rd_u32b(&tmp32u);
-    rd_u32b(&tmp32u);
-    rd_u32b(&tmp32u);
-    rd_u32b(&tmp32u);
+    /* Forget old info */
+    strip_bytes(16);
+
+    /* Read kills and deaths */
     rd_s16b(&l_ptr->tkills);
     rd_s16b(&l_ptr->deaths);
-    rd_u32b(&tmp32u);
-    rd_byte(&tmp8u);
-    rd_byte(&tmp8u);
-    rd_byte(&tmp8u);
-    rd_byte(&tmp8u);
-    rd_byte(&tmp8u);
-    rd_byte(&tmp8u);
+
+    /* Forget old info */
+    strip_bytes(10);
 
     /* Guess at "sights" */
     l_ptr->sights = l_ptr->tkills + l_ptr->deaths;
@@ -1179,31 +1274,52 @@ static void rd_lore_old(monster_lore *l_ptr)
 }
 
 
+/*
+ * Owner Conversion -- pre-2.7.8 to 2.7.8
+ * Shop is column, Owner is Row, see "tables.c"
+ */
+static byte convert_owner[24] = {
+    1, 3, 1, 0, 2, 3, 2, 0,
+    0, 1, 3, 1, 0, 1, 1, 0,
+    3, 2, 0, 2, 1, 2, 3, 0
+};
 
 
-static errr rd_store_old(store_type *st_ptr)
+/*
+ * Read an old store
+ */
+static errr rd_store_old(int n)
 {
+    store_type *st_ptr = &store[n];
+
     int j;
 
+    byte own, num;
+
+    /* Read some things */
     rd_s32b(&st_ptr->store_open);
     rd_s16b(&st_ptr->insult_cur);
-    rd_byte(&st_ptr->owner);
-    rd_byte(&st_ptr->store_ctr);
+    rd_byte(&own);
+    rd_byte(&num);
     rd_s16b(&st_ptr->good_buy);
     rd_s16b(&st_ptr->bad_buy);
 
-    /* Too many items */
-    if (st_ptr->store_ctr > STORE_INVEN_MAX) {
-        note(-2, "Too many items in store");
-        return (10);
-    }
+    /* Extract the owner */
+    st_ptr->owner = convert_owner[own];
 
-    /* Read the items (and costs) */
-    for (j = 0; j < st_ptr->store_ctr; j++) {
-        s32b scost;
-        rd_s32b(&scost);
-        rd_item_old(&st_ptr->store_item[j]);
-        st_ptr->store_item[j].scost = scost;
+    /* Read the items */
+    for (j = 0; j < num; j++) {
+
+        inven_type forge;
+        
+        /* Strip the old "fixed cost" */
+        strip_bytes(4);
+
+        /* Read the item */
+        rd_item_old(&forge);
+
+        /* Carry the item */
+        store_acquire(n, &forge);
     }
 
     /* Success */
@@ -1213,127 +1329,137 @@ static errr rd_store_old(store_type *st_ptr)
 
 
 /*
+ * Hack -- array of old artifact index order
+ */
+static byte old_art_order[] = {
+    ART_GROND,
+    ART_RINGIL,
+    ART_AEGLOS,
+    ART_ARUNRUTH,
+    ART_MORMEGIL,
+    ART_ANGRIST,
+    ART_GURTHANG,
+    ART_CALRIS,
+    ART_ANDURIL,
+    ART_STING,
+    ART_ORCRIST,
+    ART_GLAMDRING,
+    ART_DURIN,
+    ART_AULE,
+    ART_THUNDERFIST,
+    ART_BLOODSPIKE,
+    ART_DOOMCALLER,
+    ART_NARTHANC,
+    ART_NIMTHANC,
+    ART_DETHANC,
+    ART_GILETTAR,
+    ART_RILIA,
+    ART_BELANGIL,
+    ART_BALLI,
+    ART_LOTHARANG,
+    ART_FIRESTAR,
+    ART_ERIRIL,
+    ART_CUBRAGOL,
+    ART_BARD,
+    ART_COLLUIN,
+    ART_HOLCOLLETH,
+    ART_TOTILA,
+    ART_PAIN,
+    ART_ELVAGIL,
+    ART_AGLARANG,
+    ART_EORLINGAS,
+    ART_BARUKKHELED,
+    ART_WRATH,
+    ART_HARADEKKET,
+    ART_MUNDWINE,
+    ART_GONDRICAM,
+    ART_ZARCUTHRA,
+    ART_CARETH,
+    ART_FORASGIL,
+    ART_CRISDURIAN,
+    ART_COLANNON,
+    ART_HITHLOMIR,
+    ART_THALKETTOTH,
+    ART_ARVEDUI,
+    ART_THRANDUIL,
+    ART_THENGEL,
+    ART_HAMMERHAND,
+    ART_CELEGORM,
+    ART_THROR,
+    ART_MAEDHROS,
+    ART_OLORIN,
+    ART_ANGUIREL,
+    ART_OROME,
+    ART_EONWE,
+    ART_THEODEN,
+    ART_ULMO,
+    ART_OSONDIR,
+    ART_TURMIL,
+    ART_CASPANION,
+    ART_TIL,
+    ART_DEATHWREAKER,
+    ART_AVAVIR,
+    ART_TARATOL,
+    ART_DOR,
+    ART_NENYA,
+    ART_NARYA,
+    ART_VILYA,
+    ART_BELEGENNON,
+    ART_FEANOR,
+    ART_ISILDUR,
+    ART_SOULKEEPER,
+    ART_FINGOLFIN,
+    ART_ANARION,
+    ART_POWER,
+    ART_GALADRIEL,
+    ART_BELTHRONDING,
+    ART_DAL,
+    ART_PAURHACH,
+    ART_PAURNIMMEN,
+    ART_PAURAEGEN,
+    ART_PAURNEN,
+    ART_CAMMITHRIM,
+    ART_CAMBELEG,
+    ART_INGWE,
+    ART_CARLAMMAS,
+    ART_HOLHENNETH,
+    ART_AEGLIN,
+    ART_CAMLOST,
+    ART_NIMLOTH,
+    ART_NAR,
+    ART_BERUTHIEL,
+    ART_GORLIM,
+    ART_ELENDIL,
+    ART_THORIN,
+    ART_CELEBORN,
+    ART_THRAIN,
+    ART_GONDOR,
+    ART_THINGOL,
+    ART_THORONGIL,
+    ART_LUTHIEN,
+    ART_TUOR,
+    ART_ROHIRRIM,
+    ART_TULKAS,
+    ART_DWARVES,
+    ART_BARAHIR,
+    ART_RAZORBACK,
+    ART_BLADETURNER,
+    0
+};
+
+/*
  * Read the artifacts -- old version
  */
-
 static void rd_artifacts_old()
 {
-    u32b tmp32u;
+    int i;
 
-    v_list[ART_MORGOTH].cur_num = 0;
-
-    rd_u32b(&tmp32u); v_list[ART_GROND].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_RINGIL].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_AEGLOS].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_ARUNRUTH].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_MORMEGIL].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_ANGRIST].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_GURTHANG].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_CALRIS].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_ANDURIL].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_STING].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_ORCRIST].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_GLAMDRING].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_DURIN].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_AULE].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_THUNDERFIST].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_BLOODSPIKE].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_DOOMCALLER].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_NARTHANC].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_NIMTHANC].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_DETHANC].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_GILETTAR].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_RILIA].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_BELANGIL].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_BALLI].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_LOTHARANG].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_FIRESTAR].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_ERIRIL].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_CUBRAGOL].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_BARD].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_COLLUIN].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_HOLCOLLETH].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_TOTILA].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_PAIN].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_ELVAGIL].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_AGLARANG].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_EORLINGAS].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_BARUKKHELED].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_WRATH].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_HARADEKKET].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_MUNDWINE].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_GONDRICAM].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_ZARCUTHRA].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_CARETH].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_FORASGIL].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_CRISDURIAN].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_COLANNON].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_HITHLOMIR].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_THALKETTOTH].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_ARVEDUI].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_THRANDUIL].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_THENGEL].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_HAMMERHAND].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_CELEGORM].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_THROR].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_MAEDHROS].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_OLORIN].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_ANGUIREL].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_OROME].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_EONWE].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_THEODEN].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_ULMO].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_OSONDIR].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_TURMIL].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_CASPANION].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_TIL].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_DEATHWREAKER].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_AVAVIR].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_TARATOL].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_DOR].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_NENYA].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_NARYA].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_VILYA].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_BELEGENNON].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_FEANOR].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_ISILDUR].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_SOULKEEPER].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_FINGOLFIN].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_ANARION].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_POWER].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_GALADRIEL].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_BELTHRONDING].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_DAL].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_PAURHACH].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_PAURNIMMEN].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_PAURAEGEN].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_PAURNEN].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_CAMMITHRIM].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_CAMBELEG].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_INGWE].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_CARLAMMAS].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_HOLHENNETH].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_AEGLIN].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_CAMLOST].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_NIMLOTH].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_NAR].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_BERUTHIEL].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_GORLIM].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_ELENDIL].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_THORIN].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_CELEBORN].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_THRAIN].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_GONDOR].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_THINGOL].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_THORONGIL].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_LUTHIEN].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_TUOR].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_ROHIRRIM].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_TULKAS].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_DWARVES].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_BARAHIR].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_RAZORBACK].cur_num = tmp32u;
-    rd_u32b(&tmp32u); v_list[ART_BLADETURNER].cur_num = tmp32u;
+    /* Read the old artifact existance flags */
+    for (i = 0; old_art_order[i]; i++) {
+        u32b tmp32u;
+        rd_u32b(&tmp32u);
+        if (tmp32u) v_list[old_art_order[i]].cur_num = 1;
+    }
 }
 
 
@@ -1345,43 +1471,13 @@ static void rd_artifacts_old()
  */
 static void rd_ghost_old()
 {
-    int i;
-    char ch;
-    byte tmp8u;
-    u16b tmp16u;
-    u32b tmp32u;
+    /* Strip stuff */
+    strip_bytes(131);
 
-    /* Strip old "name" */
-    for (i = 0; i < 100; i++) rd_char(&ch);
-
-    rd_u32b(&tmp32u);
-    rd_u32b(&tmp32u);
-    rd_u32b(&tmp32u);
-
-    rd_u16b(&tmp16u);
-
-    if (older_than(2,6,0)) {
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
+    /* Strip more stuff */
+    if (!older_than(2,6,0)) {
+        strip_bytes(2);
     }
-    else {
-        rd_u16b(&tmp16u);
-        rd_byte(&tmp8u);
-        rd_u16b(&tmp16u);
-    }
-
-    rd_byte(&tmp8u);
-    rd_byte(&tmp8u);
-    rd_byte(&tmp8u);
-    rd_byte(&tmp8u);
-
-    rd_u16b(&tmp16u);
-    rd_u16b(&tmp16u);
-    rd_u16b(&tmp16u);
-    rd_u16b(&tmp16u);
-
-    rd_u16b(&tmp16u);
 }
 
 
@@ -1392,13 +1488,13 @@ static void rd_ghost_old()
 static void rd_extra_old()
 {
     int i;
-    byte tmp8u;
-    u16b tmp16u;
-    s16b tmp16s;
     s32b tmp32s;
-    u32b tmp32u;
 
+    byte hack_array[12];
+
+        
     rd_string(player_name);
+
     rd_byte(&p_ptr->male);
     rd_s32b(&p_ptr->au);
     rd_s32b(&p_ptr->max_exp);
@@ -1409,71 +1505,57 @@ static void rd_extra_old()
     rd_s16b(&p_ptr->wt);
     rd_s16b(&p_ptr->lev);
     rd_s16b(&p_ptr->max_dlv);
-    rd_s16b(&p_ptr->srh);
-    rd_s16b(&p_ptr->fos);
-    rd_s16b(&p_ptr->bth);
-    rd_s16b(&p_ptr->bthb);
-    rd_s16b(&p_ptr->mana);
+    strip_bytes(8);
+    rd_s16b(&p_ptr->msp);
     rd_s16b(&p_ptr->mhp);
-
-    /* Ignore old bonuses */
-    rd_s16b(&tmp16s);
-    rd_s16b(&tmp16s);
-    rd_s16b(&tmp16s);
-    rd_s16b(&tmp16s);
-
-    /* Ignore old displayed bonuses */
-    rd_s16b(&tmp16s);
-    rd_s16b(&tmp16s);
-    rd_s16b(&tmp16s);
-    rd_s16b(&tmp16s);
-
-    rd_s16b(&p_ptr->disarm);
-    rd_s16b(&p_ptr->save);
+    strip_bytes(20);
     rd_s16b(&p_ptr->sc);
-    rd_s16b(&p_ptr->stl);
+    strip_bytes(2);
     rd_byte(&p_ptr->pclass);
     rd_byte(&p_ptr->prace);
     rd_byte(&p_ptr->hitdie);
     rd_byte(&p_ptr->expfact);
-    rd_s16b(&p_ptr->cmana);
-    rd_u16b(&p_ptr->cmana_frac);
+    rd_s16b(&p_ptr->csp);
+    rd_u16b(&p_ptr->csp_frac);
     rd_s16b(&p_ptr->chp);
     rd_u16b(&p_ptr->chp_frac);
 
+    /* Read the history */
     for (i = 0; i < 4; i++) {
         rd_string(history[i]);
     }
 
-    /* Read the stats */
+    /* Read the "maximum" stats */
     for (i = 0; i < 6; i++) rd_s16b(&p_ptr->max_stat[i]);
+
+    /* Read the "current" stats (assumes no endian shift!!!) */
     if (older_than(2,5,7)) {
-        for (i = 0; i < 6; i++) rd_s16b(&p_ptr->cur_stat[i]);
+        u16b *hack_ptr = (u16b*)(hack_array);
+        for (i = 0; i < 6; i++) rd_u16b(&hack_ptr[i]);
     }
+
+    /* Read the "current" stats (okay) */
     else {
-        for (i = 0; i < 6; i++) {
-            rd_byte(&tmp8u);
-            p_ptr->cur_stat[i] = tmp8u;
-        }
+        for (i = 0; i < 6; i++) rd_byte(&hack_array[i]);
     }
-    for (i = 0; i < 6; i++) rd_s16b(&p_ptr->mod_stat[i]);
-    for (i = 0; i < 6; i++) rd_s16b(&p_ptr->use_stat[i]);
 
-    /* Ignore the old status info */
-    rd_u32b(&tmp32u);
+    /* Extract the "current" stats */
+    for (i = 0; i < 6; i++) p_ptr->cur_stat[i] = hack_array[i];
 
-    /* Read the flags */
+    /* Strip "use_stat" and "mod_stat" */
+    strip_bytes(24);
+
+    /* Read some stuff (ignore some) */
+    strip_bytes(4);
     rd_s16b(&p_ptr->rest);
     rd_s16b(&p_ptr->blind);
     rd_s16b(&p_ptr->paralysis);
     rd_s16b(&p_ptr->confused);
     rd_s16b(&p_ptr->food);
-    rd_s16b(&p_ptr->food_digested);
-    rd_s16b(&p_ptr->protection);
-    rd_u16b(&tmp16u);
+    strip_bytes(6);
     rd_s16b(&p_ptr->fast);
     rd_s16b(&p_ptr->slow);
-    rd_s16b(&p_ptr->afraid);
+    rd_s16b(&p_ptr->fear);
     rd_s16b(&p_ptr->cut);
     rd_s16b(&p_ptr->stun);
     rd_s16b(&p_ptr->poisoned);
@@ -1489,58 +1571,14 @@ static void rd_extra_old()
     rd_s16b(&p_ptr->oppose_acid);
     rd_s16b(&p_ptr->oppose_elec);
     rd_s16b(&p_ptr->oppose_pois);
-    rd_s16b(&p_ptr->detect_inv);
+    rd_s16b(&p_ptr->tim_invis);
     rd_s16b(&p_ptr->word_recall);
     rd_s16b(&p_ptr->see_infra);
     rd_s16b(&p_ptr->tim_infra);
-    rd_byte(&p_ptr->see_inv);
-    rd_byte(&p_ptr->teleport);
-    rd_byte(&p_ptr->free_act);
-    rd_byte(&p_ptr->slow_digest);
-    rd_byte(&p_ptr->aggravate);
-    rd_byte(&p_ptr->resist_fire);
-    rd_byte(&p_ptr->resist_cold);
-    rd_byte(&p_ptr->resist_acid);
-    rd_byte(&p_ptr->regenerate);
-    rd_byte(&p_ptr->resist_elec);
-    rd_byte(&p_ptr->ffall);
-    rd_byte(&p_ptr->sustain_str);
-    rd_byte(&p_ptr->sustain_int);
-    rd_byte(&p_ptr->sustain_wis);
-    rd_byte(&p_ptr->sustain_con);
-    rd_byte(&p_ptr->sustain_dex);
-    rd_byte(&p_ptr->sustain_chr);
-    rd_byte(&p_ptr->confusing);
-    rd_byte(&p_ptr->new_spells);
-    rd_byte(&p_ptr->resist_pois);
-    rd_byte(&p_ptr->hold_life);
-    rd_byte(&p_ptr->telepathy);
-    rd_byte(&p_ptr->immune_fire);
-    rd_byte(&p_ptr->immune_acid);
-    rd_byte(&p_ptr->immune_pois);
-    rd_byte(&p_ptr->immune_cold);
-    rd_byte(&p_ptr->immune_elec);
-    rd_byte(&p_ptr->lite);
-    rd_byte(&p_ptr->resist_conf);
-    rd_byte(&p_ptr->resist_sound);
-    rd_byte(&p_ptr->resist_lite);
-    rd_byte(&p_ptr->resist_dark);
-    rd_byte(&p_ptr->resist_chaos);
-    rd_byte(&p_ptr->resist_disen);
-    rd_byte(&p_ptr->resist_shard);
-    rd_byte(&p_ptr->resist_nexus);
-    rd_byte(&p_ptr->resist_blind);
-    rd_byte(&p_ptr->resist_neth);
+    strip_bytes(40);
 
-    if (older_than(2,6,0)) {
-        p_ptr->resist_fear = 0;	/* sigh */
-    }
-    else {
-        rd_byte(&p_ptr->resist_fear);
-    }
-
-    /* Old "missile_ctr" */
-    rd_u16b(&tmp16u);
+    /* Oops */
+    if (!older_than(2,6,0)) strip_bytes(1);
 
     /* Current turn */
     rd_s32b(&tmp32s);
@@ -1591,9 +1629,10 @@ static void rd_messages_old()
  * More obsolete definitions...
  *
  * Fval definitions: various types of dungeon floors and walls
- * Note that numbers above "15" will cause all kinds of problems.
- * The "savefiles" in particular, will be totally trashed...
+ *
  * In 2.7.3, the "darkness" quality was moved into the "info" flags.
+ *
+ * In 2.7.6 (?) the grid flags changed completely
  */
 
 #define NULL_WALL	0	/* Temp value for "generate.c" */
@@ -1632,13 +1671,12 @@ static void rd_messages_old()
  */
 static errr rd_dungeon_old()
 {
-    int i;
+    int i, y, x;
     byte count;
     byte ychar, xchar;
+    int total_count;
     byte tmp8u;
     u16b tmp16u;
-    s16b mon_tot_mult;
-    int total_count;
     cave_type *c_ptr;
 
 
@@ -1646,7 +1684,7 @@ static errr rd_dungeon_old()
     rd_s16b(&dun_level);
     rd_s16b(&py);
     rd_s16b(&px);
-    rd_s16b(&mon_tot_mult);
+    strip_bytes(2);	/* mon_tot_mult */
     rd_s16b(&cur_hgt);
     rd_s16b(&cur_wid);
     rd_s16b(&max_panel_rows);
@@ -1708,7 +1746,7 @@ static errr rd_dungeon_old()
 
             /* Prevent over-run */
             if (ychar >= MAX_HGT) {
-                note(-2, "Dungeon too big!");
+                note("Dungeon too big!");
                 return (81);
             }
 
@@ -1787,12 +1825,13 @@ static errr rd_dungeon_old()
     /* Read the item count */
     rd_s16b(&i_max);
     if (i_max > MAX_I_IDX) {
-        note(-2, "Too many objects");
+        note("Too many objects");
         return (92);
     }
 
     /* Read the dungeon items */
     for (i = MIN_I_IDX; i < i_max; i++) {
+    
         inven_type *i_ptr = &i_list[i];
 
         /* Read the item */
@@ -1812,7 +1851,7 @@ static errr rd_dungeon_old()
     /* Read the monster count */
     rd_s16b(&m_max);
     if (m_max > MAX_M_IDX) {
-        note(-2, "Too many monsters");
+        note("Too many monsters");
         return (93);
     }
 
@@ -1820,12 +1859,37 @@ static errr rd_dungeon_old()
     for (i = MIN_M_IDX; i < m_max; i++) {
         monster_type *m_ptr = &m_list[i];
         rd_monster_old(m_ptr);
-        cave[m_ptr->fy][m_ptr->fx].m_idx = i;
+        if (m_ptr->r_idx) {
+            cave[m_ptr->fy][m_ptr->fx].m_idx = i;
+        }
     }
 
 
     /* Read the ghost info */
     rd_ghost_old();
+
+
+    /* Check the objects/monsters */
+    for (y = 0; y < cur_hgt; y++) {
+        for (x = 0; x < cur_wid; x++) {
+
+            cave_type *c_ptr = &cave[y][x];
+            inven_type *i_ptr = &i_list[c_ptr->i_idx];
+            monster_type *m_ptr = &m_list[c_ptr->m_idx];
+            monster_lore *l_ptr = &l_list[m_ptr->r_idx];
+
+            /* Objects -- extract location */
+            if (c_ptr->i_idx) {
+                i_ptr->iy = y;
+                i_ptr->ix = x;
+            }
+
+            /* Monsters -- count total population */
+            if (c_ptr->m_idx) {
+                l_ptr->cur_num++;
+            }
+        }
+    }
 
 
     /* Success */
@@ -1844,27 +1908,22 @@ static errr rd_dungeon_old()
 
 static void rd_options_old()
 {
-    u16b tmp16u;
-    u32b l;
+    u32b tmp32u;
 
-    /* "Log Index" (unused) */
-    rd_u16b(&tmp16u);
+    /* Unused */
+    strip_bytes(2);
 
     /* Standard options */
-    rd_u32b(&l);
+    rd_u32b(&tmp32u);
 
     /* Hack -- Extract death */
-    death = (l & 0x80000000) ? TRUE : FALSE;
+    death = (tmp32u & 0x80000000) ? TRUE : FALSE;
 
     /* Hack -- Extract keyset */
-    rogue_like_commands = (l & 0x0020) ? TRUE : FALSE;
+    rogue_like_commands = (tmp32u & 0x0020) ? TRUE : FALSE;
 
     /* Hack -- Unused options */
-    if (!older_than(2,6,0)) {
-        rd_u32b(&l);
-        rd_u32b(&l);
-        rd_u32b(&l);
-    }
+    if (!older_than(2,6,0)) strip_bytes(12);
 }
 
 
@@ -1930,7 +1989,7 @@ static errr rd_inventory_old()
 
     /* Verify */
     if (inven_ctr > INVEN_WIELD) {
-        note(-2, "Unable to read inventory");
+        note("Unable to read inventory");
         return (15);
     }
 
@@ -1986,20 +2045,23 @@ static errr rd_inventory_old()
 }
 
 
+/* 
+ * Read a pre-2.7.0 savefile
+ */
 static errr rd_savefile_old()
 {
     int i;
-    byte tmp8u;
+
     u16b tmp16u;
     u32b tmp32u;
 
 
-    /* XXX Fake the system info */
+    /* XXX XXX Fake the system info (?) */
 
 
     /* Read the artifacts */
     rd_artifacts_old();
-    if (say) note(-1,"Loaded Artifacts");
+    if (say) note("Loaded Artifacts");
 
 
     /* Load the Quests */
@@ -2011,7 +2073,7 @@ static errr rd_savefile_old()
     q_list[2].level = 0;
     rd_u32b(&tmp32u);
     q_list[3].level = 0;
-    if (say) note(-1,"Loaded Quests");
+    if (say) note("Loaded Quests");
 
 
     /* Load the old "Uniques" flags */
@@ -2020,21 +2082,20 @@ static errr rd_savefile_old()
         monster_race *r_ptr = &r_list[i];
         monster_lore *l_ptr = &l_list[i];
 
-        /* Ignore the "exist" info, extracted later */
-        rd_u32b(&tmp32u);
+        strip_bytes(4);
 
         /* Already true, but do it again anyway */
         l_ptr->cur_num = 0;
 
-        /* Hack -- initialize */
+        /* Hack -- initialize max population */
         l_ptr->max_num = 100;
         if (r_ptr->rflags1 & RF1_UNIQUE) l_ptr->max_num = 1;
 
-        /* XXX Hack -- That unique has been killed */
+        /* Hack -- Notice dead uniques */
         rd_u32b(&tmp32u);
         if (tmp32u) l_ptr->max_num = 0;
     }
-    if (say) note(-1,"Loaded Unique Beasts");
+    if (say) note("Loaded Unique Beasts");
 
 
     /* Hack -- assume previous lives */
@@ -2049,7 +2110,7 @@ static errr rd_savefile_old()
 
         /* Incompatible save files */
         if (tmp16u >= MAX_R_IDX) {
-            note(-2,"Too many monsters!");
+            note("Too many monsters!");
             return (21);
         }
 
@@ -2066,21 +2127,35 @@ static errr rd_savefile_old()
             }
         }
     }
-    if (say) note(-1,"Loaded Monster Memory");
+    if (say) note("Loaded Monster Memory");
 
 
     /* Read the old options */
     rd_options_old();
-    if (say) note(-1, "Loaded options");
+    if (say) note("Loaded options");
 
     /* Read the extra stuff */
     rd_extra_old();
-    if (say) note(-1, "Loaded extra information");
+    if (say) note("Loaded extra information");
 
 
     /* XXX XXX Initialize the race/class */
     rp_ptr = &race_info[p_ptr->prace];
     cp_ptr = &class_info[p_ptr->pclass];
+
+    /* XXX XXX Important -- Initialize the magic */
+    mp_ptr = &magic_info[p_ptr->pclass];
+
+
+    /* Fake some "item awareness" */
+    for (i = 0; i < MAX_K_IDX; i++) {
+
+        inven_kind *k_ptr = &k_list[i];
+        inven_xtra *x_ptr = &x_list[i];
+        
+        /* XXX XXX Hack -- learn about "obvious" items */
+        if (k_ptr->level < p_ptr->max_dlv) x_ptr->aware = TRUE;
+    }
 
 
     /* Read the inventory */
@@ -2099,54 +2174,11 @@ static errr rd_savefile_old()
         rd_byte(&spell_order[i]);
     }
 
-    if (say) note(-1, "Read spell information");
+    if (say) note("Read spell information");
 
 
-    /* Hack -- analyze the "object_ident" array. */
-    for (i = 0; i < 1024; i++) {
-
-        int k, tval, sval, tried, aware;
-
-        rd_byte(&tmp8u);
-        if (!tmp8u) continue;
-
-        /* Extract the flags */
-        tried = (tmp8u & 0x01) ? 1 : 0;
-        aware = (tmp8u & 0x02) ? 1 : 0;
-
-        /* Extract the identity */
-        switch (i / 64) {
-            case 0: tval = TV_AMULET; break;
-            case 1: tval = TV_RING; break;
-            case 2: tval = TV_STAFF; break;
-            case 3: tval = TV_WAND; break;
-            case 4: tval = TV_SCROLL; break;
-            case 5: tval = TV_POTION; break;
-            case 6: tval = TV_FOOD; break;
-            case 7: tval = TV_ROD; break;
-            default: tval = 0;
-        }
-
-        /* No type? */
-        if (tval == 0) continue;
-
-        /* Extract the sub-type */
-        sval = i % 64;
-
-        /* Find the object this refers to */
-        for (k = 0; k < MAX_K_IDX; k++) {
-
-            inven_kind *k_ptr = &k_list[k];
-
-            /* Set the object info */
-            if ((tval == k_ptr->tval) &&
-                (sval == k_ptr->sval % 64)) {
-                x_list[k].tried = tried;
-                x_list[k].aware = aware;
-            }
-        }
-    }
-    if (say) note(-1, "Parsed old 'known1' flags");
+    /* Ignore old aware/tried flags */
+    strip_bytes(1024);
 
     /* Old seeds */
     rd_u32b(&randes_seed);
@@ -2164,17 +2196,15 @@ static errr rd_savefile_old()
     for (i = 0; i < 50; i++) rd_s16b(&player_hp[i]);
 
     /* Hack -- Version 2.6.2 did silly things */
-    if (!older_than(2,6,2)) {
-        for (i = 50; i < 99; i++) rd_u16b(&tmp16u);
-    }
+    if (!older_than(2,6,2)) strip_bytes(100);
 
-    if (say) note(-1, "Read some more information.");
+    if (say) note("Read some more information.");
 
 
     /* Read the stores */
     for (i = 0; i < MAX_STORES; i++) {
-        if (rd_store_old(&store[i])) {
-            note(-2,"ERROR reading store");
+        if (rd_store_old(i)) {
+            note("ERROR reading store");
             return (32);
         }
     }
@@ -2186,16 +2216,16 @@ static errr rd_savefile_old()
     /* Read the cause of death, if any */
     rd_string(died_from);
 
-    if (say) note(-1, "All player info restored");
+    if (say) note("All player info restored");
 
 
     /* I'm not dead yet... */
     if (!death) {
 
         /* Dead players have no dungeon */
-        note(-1,"Restoring Dungeon...");
+        note("Restoring Dungeon...");
         if (rd_dungeon_old()) {
-            note(-2, "Error reading dungeon data");
+            note("Error reading dungeon data");
             return (25);
         }
 
@@ -2204,8 +2234,8 @@ static errr rd_savefile_old()
 
             /* Read the stores (again) */
             for (i = 0; i < MAX_STORES; i++) {
-                if (rd_store_old(&store[i])) {
-                    note(-2,"ERROR in STORE_INVEN_MAX");
+                if (rd_store_old(i)) {
+                    note("ERROR in STORE_INVEN_MAX");
                     return (33);
                 }
             }
@@ -2215,7 +2245,6 @@ static errr rd_savefile_old()
         /* Time goes here, too */
         rd_u32b(&sf_when);
     }
-
 
 
     /* Assume success */
@@ -2231,28 +2260,32 @@ static errr rd_savefile_old()
 /*
  * Read an item (2.7.0 or later)
  *
- * The "repairs" for 2.7.0/2.7.1 savefiles are required because
- * a nasty bug in "defines.h" yielded "overlapping flags" with
- * the result that many artifacts and dragon scale mail got weird
- * resistances.  Also, Grond and Morgoth were accidentally created
- * in those versions.  Note that 2.7.0 and 2.7.1 were so beta that
- * it is likely that no savefiles from those versions survive.
+ * Note that savefiles from 2.7.0 and 2.7.1 may be "slightly" broken.
  *
- * Note that various "repairs" may be hidden in this function.
- * These "repairs" fix problems created by bugs in older 2.7.X
- * versions, usually induced explicitly by the user.  For example,
- * some versions let the "enchant armor" spell enchant weapons.
+ * Note that "speed" changed in 2.7.3 and "searching" in 2.7.6 and
+ * "discounts" in 2.7.6, all of which are handled in this function.
  *
- * We always "repair" artifacts to allow the user to benefit from
- * the latest "template" values for those artifacts.  This will also
- * be important to "weaken" artifacts like Cubragol, for example.
+ * Note that various "repairs" are performed by this function,
+ * including some major repairs leading to 2.7.8, in which all
+ * non-wearable items lost their "flags".  This repair also grabs
+ * the "latest" damage dice and costs for various objects.
  */
 static void rd_item(inven_type *i_ptr)
 {
+    byte old_ident;
+    byte old_unused;
+    
+    s32b old_cost;
+    s32b old_scost;
+    
     u32b tmp32u;
+
+    inven_kind *k_ptr;
+
     char note[128];
 
-    bool invis_trap;
+    bool invis_trap = FALSE;
+
 
     invwipe(i_ptr);
 
@@ -2265,118 +2298,169 @@ static void rd_item(inven_type *i_ptr)
     rd_byte(&i_ptr->sval);
     rd_s16b(&i_ptr->pval);
 
-    rd_byte(&i_ptr->name1);
-    rd_byte(&i_ptr->name2);
-    rd_byte(&i_ptr->ident);
-    rd_byte(&i_ptr->number);
-    rd_s16b(&i_ptr->weight);
-    rd_s16b(&i_ptr->timeout);
+    /* Old method */
+    if (older_than(2,7,8)) {
 
-    rd_s16b(&i_ptr->tohit);
-    rd_s16b(&i_ptr->todam);
-    rd_s16b(&i_ptr->toac);
-    rd_s16b(&i_ptr->ac);
-    rd_byte(&i_ptr->dd);
-    rd_byte(&i_ptr->ds);
+        rd_byte(&i_ptr->name1);
+        rd_byte(&i_ptr->name2);
+        rd_byte(&old_ident);
+        rd_byte(&i_ptr->number);
+        rd_s16b(&i_ptr->weight);
+        rd_s16b(&i_ptr->timeout);
 
-    rd_byte(&i_ptr->unused);
-    rd_byte(&i_ptr->discount);
+        rd_s16b(&i_ptr->tohit);
+        rd_s16b(&i_ptr->todam);
+        rd_s16b(&i_ptr->toac);
+        rd_s16b(&i_ptr->ac);
+        rd_byte(&i_ptr->dd);
+        rd_byte(&i_ptr->ds);
 
-    rd_s32b(&i_ptr->cost);
-    rd_s32b(&i_ptr->scost);
+        rd_byte(&old_unused);
+        rd_byte(&i_ptr->discount);
 
+        rd_s32b(&old_cost);
+        rd_s32b(&old_scost);
+
+        i_ptr->ident = old_ident;
+    }
+
+    /* New method */
+    else {
+
+        rd_byte(&i_ptr->discount);
+        rd_byte(&i_ptr->number);
+        rd_s16b(&i_ptr->weight);
+
+        rd_byte(&i_ptr->name1);
+        rd_byte(&i_ptr->name2);
+        rd_s16b(&i_ptr->timeout);
+
+        rd_s16b(&i_ptr->tohit);
+        rd_s16b(&i_ptr->todam);
+        rd_s16b(&i_ptr->toac);
+        rd_s16b(&i_ptr->ac);
+        rd_byte(&i_ptr->dd);
+        rd_byte(&i_ptr->ds);
+
+        rd_u16b(&i_ptr->ident);
+    }
+        
     rd_u32b(&i_ptr->flags1);
     rd_u32b(&i_ptr->flags2);
     rd_u32b(&i_ptr->flags3);
     rd_u32b(&tmp32u);
 
     rd_string(note);
-    inscribe(i_ptr, note);
+
+    /* Save the inscription */
+    if (note[0]) i_ptr->note = quark_add(note);
 
 
-    /* Paranoia -- Obtain tval/sval from k_list */
+    /* Obtain the "kind" template */
+    k_ptr = &k_list[i_ptr->k_idx];
+
+    /* Hack -- preserve invisible traps */
     invis_trap = (i_ptr->tval == TV_INVIS_TRAP);
-    i_ptr->tval = k_list[i_ptr->k_idx].tval;
-    i_ptr->sval = k_list[i_ptr->k_idx].sval;
+
+    /* Obtain tval/sval from k_list */
+    i_ptr->tval = k_ptr->tval;
+    i_ptr->sval = k_ptr->sval;
+
+    /* Hack -- preserve invisible traps */
     if (invis_trap) i_ptr->tval = TV_INVIS_TRAP;
 
 
-    /* Mega-Hack -- the "speed code" changed in 2.7.3 */
+    /* Only repair pre-2.7.8 savefiles */
+    if (!older_than(2,7,8)) return;
+    
+
+    /* Hack -- notice "broken" items */
+    if (k_ptr->cost <= 0) i_ptr->ident |= ID_BROKEN;
+
+
+    /* Parse "gold" */
+    if (i_ptr->tval == TV_GOLD) {
+
+        /* Clear the discount field */
+        i_ptr->discount = 0;
+        
+        /* Extract the value */
+        i_ptr->pval = old_cost;
+        
+        /* Done */
+        return;        
+    }
+    
+    
+    /* Hack -- Parse old "discount" information */
+    if (older_than(2,7,6)) {
+
+        /* Clear the discount field */
+        i_ptr->discount = 0;
+        
+        /* Hack -- Extract discounts on "normal" items */
+        if (old_cost && (old_cost < k_ptr->cost)) {
+
+            /* Catch 90% discount */
+            if (old_cost <= (k_ptr->cost * 10 / 100)) {
+                i_ptr->discount = 90;
+            }
+
+            /* Catch 75% discount */
+            else if (old_cost <= (k_ptr->cost * 25 / 100)) {
+                i_ptr->discount = 75;
+            }
+
+            /* Catch 50% discount */
+            else if (old_cost <= (k_ptr->cost * 50 / 100)) {
+                i_ptr->discount = 50;
+            }
+
+            /* Assume 25% discount */
+            else if (old_cost <= (k_ptr->cost * 75 / 100)) {
+                i_ptr->discount = 25;
+            }
+        }
+    }
+    
+
+    /* Repair non-wearable items */
+    if (!wearable_p(i_ptr)) {
+
+        /* Acquire correct flags (always zero) */
+        i_ptr->flags1 = k_ptr->flags1;
+        i_ptr->flags2 = k_ptr->flags2;
+        i_ptr->flags3 = k_ptr->flags3;
+
+        /* Acquire correct fields (always zero) */
+        i_ptr->tohit = k_ptr->tohit;
+        i_ptr->todam = k_ptr->todam;
+        i_ptr->toac = k_ptr->toac;
+
+        /* Acquire correct fields */
+        i_ptr->ac = k_ptr->ac;
+        i_ptr->dd = k_ptr->dd;
+        i_ptr->ds = k_ptr->ds;
+        i_ptr->weight = k_ptr->weight;
+        
+        /* All done */
+        return;
+    }
+    
+
+    /* Take note of current "curse" */
+    if (i_ptr->flags3 & TR3_CURSED) i_ptr->ident |= ID_CURSED;
+
+
+    /* Hack -- the "speed" bonuses changed in 2.7.3 */
     if (older_than(2,7,3) && (i_ptr->flags1 & TR1_SPEED)) {
 
         /* Paranoia -- do not allow crazy speeds */
         if (i_ptr->pval <= 2) i_ptr->pval = i_ptr->pval * 10;
     }
 
-
-    /* Mega-Hack -- repair problems with 2.7.0 and 2.7.1 */
-    if (older_than(2,7,2)) {
-
-        /* Hack -- Repair books and chests and such */
-        if (!wearable_p(i_ptr)) i_ptr->flags3 = 0L;
-
-        /* Forget the "unused" and "discount" fields */
-        i_ptr->unused = i_ptr->discount = 0;
-
-        /* Hack -- Grond may have been created by accident */
-        if (i_ptr->name1 == ART_GROND) {
-            invcopy(i_ptr, OBJ_LEAD_FILLED_MACE);
-            v_list[i_ptr->name1].cur_num = 0;
-        }
-
-        /* Hack -- Morgoth may have been created by accident */
-        if (i_ptr->name1 == ART_MORGOTH) {
-            invcopy(i_ptr, OBJ_IRON_CROWN);
-            v_list[i_ptr->name1].cur_num = 0;
-        }
-
-        /* Hack -- Repair dragon scale mail */
-        if (i_ptr->tval == TV_DRAG_ARMOR) {
-
-            /* Repair -- Acquire new flags */
-            i_ptr->flags1 = k_list[i_ptr->k_idx].flags1;
-            i_ptr->flags2 = k_list[i_ptr->k_idx].flags2;
-            i_ptr->flags3 = k_list[i_ptr->k_idx].flags3;
-
-            /* Repair -- Acquire new fields */
-            i_ptr->pval = k_list[i_ptr->k_idx].pval;
-            i_ptr->ac = k_list[i_ptr->k_idx].ac;
-            i_ptr->dd = k_list[i_ptr->k_idx].dd;
-            i_ptr->ds = k_list[i_ptr->k_idx].ds;
-            i_ptr->weight = k_list[i_ptr->k_idx].weight;
-        }
-    }
-
-
-    /* Acquire newest artifact fields */
-    if (i_ptr->name1) {
-
-        /* Hack -- Take note of "removed curse" */
-        bool uncurse = (i_ptr->flags3 & TR3_CURSED) ? FALSE : TRUE;
-
-        /* Acquire new artifact flags */
-        i_ptr->flags1 = v_list[i_ptr->name1].flags1;
-        i_ptr->flags2 = v_list[i_ptr->name1].flags2;
-        i_ptr->flags3 = v_list[i_ptr->name1].flags3;
-
-        /* Hack -- Re-apply uncurse */
-        if (uncurse) i_ptr->flags3 &= ~TR3_CURSED;
-        if (uncurse) i_ptr->flags3 &= ~TR3_HEAVY_CURSE;
-
-        /* Acquire new artifact fields */
-        i_ptr->pval = v_list[i_ptr->name1].pval;
-        i_ptr->ac = v_list[i_ptr->name1].ac;
-        i_ptr->dd = v_list[i_ptr->name1].dd;
-        i_ptr->ds = v_list[i_ptr->name1].ds;
-        i_ptr->weight = v_list[i_ptr->name1].weight;
-        i_ptr->cost = v_list[i_ptr->name1].cost;
-    }
-
-
-    /* Check pre-2.7.6 non-artifacts */
-    if (older_than(2,7,6) && !i_ptr->name1) {
-
-        inven_kind *k_ptr = &k_list[i_ptr->k_idx];
+    /* Hack -- the "searching" bonuses changed in 2.7.6 */
+    if (older_than(2,7,6)) {
 
         /* Reduce the "pval" bonus on "search" */
         if (i_ptr->flags1 & TR1_SEARCH) {
@@ -2384,6 +2468,31 @@ static void rd_item(inven_type *i_ptr)
             /* Paranoia -- only reduce large bonuses */
             if (i_ptr->pval >= 5) i_ptr->pval = i_ptr->pval / 5;
         }
+    }
+
+
+    /* Artifacts */
+    if (i_ptr->name1) {
+
+        inven_very *v_ptr = &v_list[i_ptr->name1];
+        
+        /* Acquire new artifact flags */
+        i_ptr->flags1 = v_ptr->flags1;
+        i_ptr->flags2 = v_ptr->flags2;
+        i_ptr->flags3 = v_ptr->flags3;
+
+        /* Acquire new artifact "pval" */
+        i_ptr->pval = v_ptr->pval;
+
+        /* Acquire new artifact fields */
+        i_ptr->ac = v_ptr->ac;
+        i_ptr->dd = v_ptr->dd;
+        i_ptr->ds = v_ptr->ds;
+        i_ptr->weight = v_ptr->weight;
+    }
+
+    /* Ego items */
+    else if (i_ptr->name2) {
 
         /* Hack -- fix missile labels */
         if ((i_ptr->tval == TV_BOLT) ||
@@ -2396,6 +2505,13 @@ static void rd_item(inven_type *i_ptr)
             if (i_ptr->name2 == EGO_SLAY_EVIL) i_ptr->name2 = EGO_AMMO_EVIL;
         }
 
+        /* Hack -- fix some "ego-bows" */
+        if (i_ptr->tval == TV_BOW) {
+
+            /* Special ego-items */
+            if (i_ptr->name2 == EGO_MIGHT) i_ptr->name2 = EGO_VELOCITY;
+        }
+        
         /* Hack -- fix "robe of the magi" */
         if ((i_ptr->tval == TV_SOFT_ARMOR) &&
             (i_ptr->sval == SV_ROBE) &&
@@ -2404,53 +2520,21 @@ static void rd_item(inven_type *i_ptr)
             /* Special ego-item */
             i_ptr->name2 = EGO_ROBE_MAGI;
         }
+    }
 
-        /* Mega-Hack -- Check weapons */
-        if ((i_ptr->tval == TV_SWORD) ||
-            (i_ptr->tval == TV_HAFTED) ||
-            (i_ptr->tval == TV_POLEARM) ||
-            (i_ptr->tval == TV_DIGGING) ||
-            (i_ptr->tval == TV_BOW) ||
-            (i_ptr->tval == TV_BOLT) ||
-            (i_ptr->tval == TV_ARROW) ||
-            (i_ptr->tval == TV_SHOT)) {
+    /* Normal items */
+    else {
+    
+        /* Acquire standard flags */
+        i_ptr->flags1 = k_ptr->flags1;
+        i_ptr->flags2 = k_ptr->flags2;
+        i_ptr->flags3 = k_ptr->flags3;
 
-            /* Mega-Hack -- No positive armor bonus (usually) */
-            if ((i_ptr->name2 != EGO_HA) &&
-                (i_ptr->name2 != EGO_DF) &&
-                (i_ptr->toac > 0)) {
-
-                /* Forget the bonus */
-                i_ptr->toac = 0;
-            }
-        }
-
-        /* Hack -- Extract discounts on normal items */
-        if (i_ptr->cost && (i_ptr->cost < k_ptr->cost)) {
-
-            /* Catch 90% discount */
-            if (i_ptr->cost < (k_ptr->cost * 10 / 100)) {
-                i_ptr->discount = 90;
-            }
-
-            /* Catch 75% discount */
-            else if (i_ptr->cost < (k_ptr->cost * 25 / 100)) {
-                i_ptr->discount = 75;
-            }
-
-            /* Catch 50% discount */
-            else if (i_ptr->cost < (k_ptr->cost * 50 / 100)) {
-                i_ptr->discount = 50;
-            }
-
-            /* Assume 25% discount */
-            else if (i_ptr->cost < (k_ptr->cost * 75 / 100)) {
-                i_ptr->discount = 25;
-            }
-
-            /* Hack -- Restore base price */
-            i_ptr->cost = k_ptr->cost;
-        }
+        /* Acquire standard fields */
+        i_ptr->ac = k_ptr->ac;
+        i_ptr->dd = k_ptr->dd;
+        i_ptr->ds = k_ptr->ds;
+        i_ptr->weight = k_ptr->weight;
     }
 }
 
@@ -2476,7 +2560,7 @@ static void rd_monster(monster_type *m_ptr)
     rd_byte(&m_ptr->stunned);
     rd_byte(&m_ptr->confused);
     rd_byte(&m_ptr->monfear);
-    rd_byte(&m_ptr->dead);
+    rd_byte(&m_ptr->xtra);
 }
 
 
@@ -2490,8 +2574,6 @@ static void rd_monster(monster_type *m_ptr)
 static void rd_lore(monster_lore *l_ptr)
 {
     byte tmp8u;
-    u16b tmp16u;
-    u32b tmp32u;
 
 
     /* Broken versions */
@@ -2500,23 +2582,7 @@ static void rd_lore(monster_lore *l_ptr)
         rd_s16b(&l_ptr->tkills);
         rd_s16b(&l_ptr->deaths);
 
-        rd_u32b(&tmp32u);
-        rd_u32b(&tmp32u);
-        rd_u32b(&tmp32u);
-        rd_u32b(&tmp32u);
-        rd_u32b(&tmp32u);
-
-        rd_u32b(&tmp32u);
-
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-
-        rd_byte(&tmp8u);
+        strip_bytes(31);
 
         rd_byte(&l_ptr->max_num);
 
@@ -2526,18 +2592,14 @@ static void rd_lore(monster_lore *l_ptr)
     /* Pre-2.7.7 */
     else if (older_than(2,7,7)) {
 
-        /* Oops -- Old flags */
-        rd_u32b(&tmp32u);  /* l_ptr->r_spells1 */
-        rd_u32b(&tmp32u);  /* l_ptr->r_spells2 */
-        rd_u32b(&tmp32u);  /* l_ptr->r_spells3 */
-        rd_u32b(&tmp32u);  /* l_ptr->r_cflags1 */
-        rd_u32b(&tmp32u);  /* l_ptr->r_cflags2 */
+        /* Strip old flags */
+        strip_bytes(20);
 
         /* Kills during this life */
         rd_s16b(&l_ptr->pkills);
 
-        /* Oops */
-        rd_u16b(&tmp16u);
+        /* Strip something */
+        strip_bytes(2);
 
         /* Count observations of attacks */
         rd_byte(&l_ptr->blows[0]);
@@ -2549,9 +2611,8 @@ static void rd_lore(monster_lore *l_ptr)
         rd_byte(&l_ptr->wake);
         rd_byte(&l_ptr->ignore);
 
-        /* Oops */
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
+        /* Strip something */
+        strip_bytes(2);
 
         /* Count kills by player */
         rd_s16b(&l_ptr->tkills);
@@ -2562,8 +2623,8 @@ static void rd_lore(monster_lore *l_ptr)
         /* Read the "Racial" monster limit per level */
         rd_byte(&l_ptr->max_num);
 
-        /* Oops */
-        rd_byte(&tmp8u);
+        /* Strip something */
+        strip_bytes(1);
 
         /* Hack -- guess at "sights" */
         l_ptr->sights = l_ptr->tkills + l_ptr->deaths;
@@ -2624,9 +2685,8 @@ static void rd_lore(monster_lore *l_ptr)
 
 
 /*
- * Read/Write the "xtra" info for objects
+ * Read the "xtra" info for objects
  */
-
 static void rd_xtra(inven_xtra *xtra)
 {
     byte tmp8u;
@@ -2639,26 +2699,38 @@ static void rd_xtra(inven_xtra *xtra)
 
 
 
-static errr rd_store(store_type *st_ptr)
+/*
+ * Read a store
+ */
+static errr rd_store(int n)
 {
+    store_type *st_ptr = &store[n];
+
     int j;
 
+    byte own, num;
+   
+    /* Read the basic info */ 
     rd_s32b(&st_ptr->store_open);
     rd_s16b(&st_ptr->insult_cur);
-    rd_byte(&st_ptr->owner);
-    rd_byte(&st_ptr->store_ctr);
+    rd_byte(&own);
+    rd_byte(&num);
     rd_s16b(&st_ptr->good_buy);
     rd_s16b(&st_ptr->bad_buy);
 
-    /* Too many items */
-    if (st_ptr->store_ctr > STORE_INVEN_MAX) {
-        note(-2, "Too many items in store");
-        return (10);
-    }
+    /* Extract the owner (see above) */
+    st_ptr->owner = (older_than(2,7,8) ? convert_owner[own] : own);
 
-    /* Read the items (and costs) */
-    for (j = 0; j < st_ptr->store_ctr; j++) {
-        rd_item(&st_ptr->store_item[j]);
+    /* Read the items */
+    for (j = 0; j < num; j++) {
+
+        inven_type forge;
+
+        /* Read the item */
+        rd_item(&forge);
+
+        /* Acquire the item */
+        store_acquire(n, &forge);
     }
 
     /* Success */
@@ -2675,8 +2747,8 @@ static errr rd_store(store_type *st_ptr)
  */
 static void rd_options(void)
 {
-    byte tmp8u;
-
+    byte b;
+    
     u16b c;
 
     u32b l;
@@ -2684,10 +2756,7 @@ static void rd_options(void)
 
     /* Hack -- ignore options from pre-2.7.6 */
     if (older_than(2,7,6)) {
-        rd_u32b(&l); rd_u32b(&l);
-        rd_u32b(&l); rd_u32b(&l);
-        rd_byte(&tmp8u); rd_byte(&tmp8u);
-        rd_byte(&tmp8u); rd_byte(&tmp8u);
+        strip_bytes(20);
         return;
     }
 
@@ -2709,7 +2778,7 @@ static void rd_options(void)
     notice_seams =         (l & 0x00000400L) ? TRUE : FALSE;
     ring_bell =            (l & 0x00000800L) ? TRUE : FALSE;
     equippy_chars =        (l & 0x00001000L) ? TRUE : FALSE;
-    new_screen_layout =    (l & 0x00002000L) ? TRUE : FALSE;
+    unused_option =        (l & 0x00002000L) ? TRUE : FALSE;
     depth_in_feet =	   (l & 0x00004000L) ? TRUE : FALSE;
     hilite_player =	   (l & 0x00008000L) ? TRUE : FALSE;
 
@@ -2749,7 +2818,7 @@ static void rd_options(void)
     rd_u32b(&l);
 
     dungeon_align =		(l & 0x00000001L) ? TRUE : FALSE;
-    dungeon_other =		(l & 0x00000002L) ? TRUE : FALSE;
+    dungeon_stair =		(l & 0x00000002L) ? TRUE : FALSE;
 
     view_reduce_view =		(l & 0x00000004L) ? TRUE : FALSE;
     view_reduce_lite =		(l & 0x00000008L) ? TRUE : FALSE;
@@ -2799,19 +2868,19 @@ static void rd_options(void)
     recall_show_desc =		(l & 0x00010000L) ? TRUE : FALSE;
     recall_show_kill =		(l & 0x00020000L) ? TRUE : FALSE;
 
-    choice_inven_wgt =		(l & 0x01000000L) ? TRUE : FALSE;
-    choice_equip_wgt =		(l & 0x02000000L) ? TRUE : FALSE;
-    choice_inven_xtra =		(l & 0x04000000L) ? TRUE : FALSE;
-    choice_equip_xtra =		(l & 0x08000000L) ? TRUE : FALSE;
+    choice_show_info =		(l & 0x01000000L) ? TRUE : FALSE;
+    choice_show_weight =	(l & 0x02000000L) ? TRUE : FALSE;
+    choice_show_spells =	(l & 0x04000000L) ? TRUE : FALSE;
+    choice_show_label =		(l & 0x08000000L) ? TRUE : FALSE;
 
 
     /* Read "delay_spd" */
-    rd_byte(&tmp8u);
-    delay_spd = tmp8u;
+    rd_byte(&b);
+    delay_spd = b;
 
     /* Read "hitpoint_warn" */
-    rd_byte(&tmp8u);
-    hitpoint_warn = tmp8u;
+    rd_byte(&b);
+    hitpoint_warn = b;
 
 
     /* Cheating options */
@@ -2840,8 +2909,6 @@ static void rd_ghost()
 {
     int i;
     
-    u32b tmp32u;
-
     monster_race *r_ptr = &r_list[MAX_R_IDX-1];
     monster_lore *l_ptr = &l_list[MAX_R_IDX-1];
 
@@ -2852,20 +2919,8 @@ static void rd_ghost()
         /* Read the old name */
         rd_string(ghost_name);
 
-        /* Ignore old data */
-        rd_u32b(&tmp32u);
-        rd_u32b(&tmp32u);
-        rd_u32b(&tmp32u);
-        rd_u32b(&tmp32u);
-        rd_u32b(&tmp32u);
-        rd_u32b(&tmp32u);
-        rd_u32b(&tmp32u);
-        rd_u32b(&tmp32u);
-        rd_u32b(&tmp32u);
-        rd_u32b(&tmp32u);
-        rd_u32b(&tmp32u);
-        rd_u32b(&tmp32u);
-        rd_u32b(&tmp32u);
+        /* Strip old data */
+        strip_bytes(52);
     }
     
     /* Newer method */
@@ -2894,8 +2949,7 @@ static void rd_ghost()
         rd_s32b(&r_ptr->mexp);
 
         /* Extra */
-        rd_byte(&r_ptr->xtra1);
-        rd_byte(&r_ptr->xtra1);
+        rd_s16b(&r_ptr->extra);
 
         /* Frequency */
         rd_byte(&r_ptr->freq_inate);
@@ -2934,10 +2988,9 @@ static void rd_ghost()
 static void rd_extra()
 {
     int i;
-    byte tmp8u;
-    s16b tmp16s;
-    u32b tmp32u;
 
+    byte tmp8u;
+        
     rd_string(player_name);
 
     rd_string(died_from);
@@ -2961,9 +3014,11 @@ static void rd_extra()
     rd_s16b(&p_ptr->ht);
     rd_s16b(&p_ptr->wt);
 
-    /* Read the stats, Keep it simple */
+    /* Read the stat info */
     for (i = 0; i < 6; i++) rd_s16b(&p_ptr->max_stat[i]);
     for (i = 0; i < 6; i++) rd_s16b(&p_ptr->cur_stat[i]);
+
+    /* Read the "ignored" stat info */
     for (i = 0; i < 6; i++) rd_s16b(&p_ptr->mod_stat[i]);
     for (i = 0; i < 6; i++) rd_s16b(&p_ptr->use_stat[i]);
 
@@ -2979,35 +3034,20 @@ static void rd_extra()
     rd_s16b(&p_ptr->chp);
     rd_u16b(&p_ptr->chp_frac);
 
-    rd_s16b(&p_ptr->mana);
-    rd_s16b(&p_ptr->cmana);
-    rd_u16b(&p_ptr->cmana_frac);
+    rd_s16b(&p_ptr->msp);
+    rd_s16b(&p_ptr->csp);
+    rd_u16b(&p_ptr->csp_frac);
 
     rd_s16b(&p_ptr->max_plv);
     rd_s16b(&p_ptr->max_dlv);
 
     /* More info */
-    rd_s16b(&p_ptr->srh);
-    rd_s16b(&p_ptr->fos);
-    rd_s16b(&p_ptr->disarm);
-    rd_s16b(&p_ptr->save);
+    strip_bytes(8);
     rd_s16b(&p_ptr->sc);
-    rd_s16b(&p_ptr->stl);
+    strip_bytes(2);
     
     /* Ignore old redundant info */
-    if (older_than(2,7,7)) {
-        rd_s16b(&tmp16s);
-        rd_s16b(&tmp16s);
-        rd_s16b(&tmp16s);
-        rd_s16b(&tmp16s);
-        rd_s16b(&tmp16s);
-        rd_s16b(&tmp16s);
-        rd_s16b(&tmp16s);
-        rd_s16b(&tmp16s);
-        rd_s16b(&tmp16s);
-        rd_s16b(&tmp16s);
-        rd_u32b(&tmp32u);
-    }
+    if (older_than(2,7,7)) strip_bytes(24);
     
     /* Read the flags */
     rd_s16b(&p_ptr->rest);
@@ -3016,11 +3056,11 @@ static void rd_extra()
     rd_s16b(&p_ptr->confused);
     rd_s16b(&p_ptr->food);
     rd_s16b(&p_ptr->food_digested);
-    rd_s16b(&p_ptr->protection);
+    strip_bytes(2);	/* Old "protection" */
     rd_s16b(&p_ptr->energy);
     rd_s16b(&p_ptr->fast);
     rd_s16b(&p_ptr->slow);
-    rd_s16b(&p_ptr->afraid);
+    rd_s16b(&p_ptr->fear);
     rd_s16b(&p_ptr->cut);
     rd_s16b(&p_ptr->stun);
     rd_s16b(&p_ptr->poisoned);
@@ -3031,7 +3071,7 @@ static void rd_extra()
     rd_s16b(&p_ptr->shero);
     rd_s16b(&p_ptr->shield);
     rd_s16b(&p_ptr->blessed);
-    rd_s16b(&p_ptr->detect_inv);
+    rd_s16b(&p_ptr->tim_invis);
     rd_s16b(&p_ptr->word_recall);
     rd_s16b(&p_ptr->see_infra);
     rd_s16b(&p_ptr->tim_infra);
@@ -3042,42 +3082,7 @@ static void rd_extra()
     rd_s16b(&p_ptr->oppose_pois);
     
     /* Old redundant flags */
-    if (older_than(2,7,7)) {
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-        rd_byte(&tmp8u);
-    }
+    if (older_than(2,7,7)) strip_bytes(34);
 
     rd_byte(&p_ptr->confusing);
     rd_byte(&tmp8u);	/* oops */
@@ -3089,12 +3094,15 @@ static void rd_extra()
     rd_byte(&tmp8u);
     
     /* Future use */
-    for (i = 0; i < 12; i++) rd_u32b(&tmp32u);
+    for (i = 0; i < 48; i++) rd_byte(&tmp8u);
 
     /* Read the new flags */
-    rd_u32b(&p_ptr->update);
+    rd_u32b(&p_ptr->update);	/* oops */
     rd_u32b(&p_ptr->notice);
-    rd_u32b(&p_ptr->redraw);
+    rd_u32b(&p_ptr->redraw);	/* oops */
+
+    /* Hack -- cancel update/redraw flags */
+    p_ptr->update = p_ptr->redraw = 0L;
 
 
     /* Hack -- the two "special seeds" */
@@ -3134,6 +3142,10 @@ static void rd_extra()
  * that these two features combine when parsing old save-files, in
  * which items from the old "aux" slot are "carried", perhaps into
  * one of the two new "inventory" slots.
+ *
+ * XXX XXX XXX XXX (?)
+ * This function is *supposed* to automatically sort the inventory
+ * into the appropriate locations.  But it does not appear to work.
  */
 static errr rd_inventory()
 {
@@ -3158,7 +3170,7 @@ static errr rd_inventory()
         rd_item(&forge);
 
         /* Hack -- verify item */
-        if (!forge.tval) return (53);
+        if (!forge.k_idx) return (53);
 
         /* Hack -- convert old slot numbers */
         if (older_than(2,7,4)) n = convert_slot(n);
@@ -3277,7 +3289,7 @@ static errr rd_dungeon()
 
             /* Prevent over-run */
             if (ychar >= ymax) {
-                note(-2, "Dungeon too big!");
+                note("Dungeon too big!");
                 return (81);
             }
 
@@ -3381,7 +3393,7 @@ static errr rd_dungeon()
     /* Read the item count */
     rd_s16b(&i_max);
     if (i_max > MAX_I_IDX) {
-        note(-2, "Too many objects");
+        note("Too many objects");
         return (92);
     }
 
@@ -3405,7 +3417,7 @@ static errr rd_dungeon()
     /* Read the monster count */
     rd_s16b(&m_max);
     if (m_max > MAX_M_IDX) {
-        note(-2, "Too many monsters");
+        note("Too many monsters");
         return (93);
     }
 
@@ -3425,15 +3437,16 @@ static errr rd_dungeon()
             rd_monster(m_ptr);
 
 
-            /* Mega-Hack -- eliminate old ghosts */
-            if (m_ptr->r_idx == MAX_R_IDX-1) m_ptr->r_idx = 0;
+            /* Mega-Hack -- eliminate old urchins and ghosts */
+            if ((m_ptr->r_idx <= 0) || (m_ptr->r_idx == MAX_R_IDX-1)) {
 
-            /* Mega-Hack -- Kill "dead" monsters */
-            if (m_ptr->r_idx == 0) m_ptr->dead = TRUE;
+                /* Just kill the monster */
+                WIPE(m_ptr, monster_type);
+            }
 
 
             /* Hack -- fix speed in old versions */
-            if (older_than(2,7,3) && (!m_ptr->dead)) {
+            if (older_than(2,7,3) && (m_ptr->r_idx)) {
 
                 monster_race *r_ptr = &r_list[m_ptr->r_idx];
 
@@ -3445,18 +3458,21 @@ static errr rd_dungeon()
             }
 
 
-            /* Access the location */
-            c_ptr = &cave[m_ptr->fy][m_ptr->fx];
+            /* Process real monsters */
+            if (m_ptr->r_idx) {
+            
+                /* Access the lore */
+                l_ptr = &l_list[m_ptr->r_idx];
 
-            /* Note the location */
-            if (m_ptr->r_idx) c_ptr->m_idx = i;
+                /* Access the location */
+                c_ptr = &cave[m_ptr->fy][m_ptr->fx];
 
+                /* Note the location */
+                c_ptr->m_idx = i;
 
-            /* Access the lore */
-            l_ptr = &l_list[m_ptr->r_idx];
-
-            /* Count the monsters */
-            if (m_ptr->r_idx) l_ptr->cur_num++;
+                /* Count the monsters */
+                l_ptr->cur_num++;
+            }
         }
     }
 
@@ -3474,10 +3490,6 @@ static errr rd_dungeon()
 
             /* Read the monster */
             rd_monster(m_ptr);
-
-
-            /* Mark "weird" monsters as "dead" */
-            if (m_ptr->r_idx == 0) m_ptr->dead = TRUE;
 
 
             /* Access the location */
@@ -3512,6 +3524,10 @@ static errr rd_dungeon()
 
 /*
  * Actually read the savefile
+ *
+ * XXX XXX XXX Several crashes / security problems lurk in this code,
+ * wherever we read an array bound and then read array entries up to
+ * that bound.  We need to do some form of "bounds" checking...
  */
 static errr rd_savefile()
 {
@@ -3521,13 +3537,14 @@ static errr rd_savefile()
     u16b tmp16u;
     u32b tmp32u;
 
+    char buf[128];
+    
+
 #ifdef VERIFY_CHECKSUMS
     u32b n_x_check, n_v_check;
     u32b o_x_check, o_v_check;
 #endif
 
-
-    note(0,"Restoring Memory...");
 
     /* Get the version info */
     xor_byte = 0;
@@ -3540,11 +3557,6 @@ static errr rd_savefile()
     rd_byte(&xor_byte);
 
 
-    /* Clear the checksums */
-    v_check = 0L;
-    x_check = 0L;
-
-
     /* Handle stupidity from Angband 2.4 / 2.5 */
     if ((version_maj == 5) && (version_min == 2)) {
         version_maj = 2;
@@ -3552,25 +3564,34 @@ static errr rd_savefile()
     }
 
 
-    /* Verify the "major version" */
+    /* Build a message */
+    sprintf(buf, "Loading a %d.%d.%d savefile...",
+            version_maj, version_min, patch_level);
+
+    /* Display the message */
+    note(buf);
+
+    
+    /* Clear the checksums */
+    v_check = 0L;
+    x_check = 0L;
+
+
+    /* We cannot load savefiles from Angband 1.0 */
     if (version_maj != CUR_VERSION_MAJ) {
 
-        note(-2,"This savefile is from a different version of Angband.");
+        note("This savefile is from a different version of Angband.");
         return (11);
     }
 
 
-    /* XXX Hack -- We cannot read savefiles more recent than we are */
+    /* We cannot load savefiles from newer versions of Angband */
     if ((version_min > CUR_VERSION_MIN) ||
         (version_min == CUR_VERSION_MIN && patch_level > CUR_PATCH_LEVEL)) {
 
-        note(-2,"This savefile is from a more recent version of Angband.");
+        note("This savefile is from a more recent version of Angband.");
         return (12);
     }
-
-
-    /* Begin Wizard messages */
-    if (say) note(-2,"Loading savefile...");
 
 
     /* Hack -- parse really old savefiles */
@@ -3590,35 +3611,21 @@ static errr rd_savefile()
     rd_u16b(&sf_saves);
 
 
-    /* A "sized" chunk of "unused" space */
+    /* Later use (always zero) */
     rd_u32b(&tmp32u);
 
-    /* Read (and forget) those bytes */
-    for (i = 0; i < tmp32u; i++) rd_byte(&tmp8u);
-
-
-    /* A "sized" list of "strings" */
+    /* Later use (always zero) */
     rd_u32b(&tmp32u);
-
-    /* Read (and forget) those strings */
-    for (i = 0; i < tmp32u; i++) {
-
-        /* Read and forget a string */
-        while (1) {
-            rd_byte(&tmp8u);
-            if (!tmp8u) break;
-        }
-    }
 
 
     /* Then the options */
     rd_options();
-    if (say) note(-1,"Loaded Option Flags");
+    if (say) note("Loaded Option Flags");
 
 
     /* Then the "messages" */
     rd_messages();
-    if (say) note(-1,"Loaded Messages");
+    if (say) note("Loaded Messages");
 
 
     /* Monster Memory */
@@ -3656,13 +3663,13 @@ static errr rd_savefile()
             }
         }
     }
-    if (say) note(-1,"Loaded Monster Memory");
+    if (say) note("Loaded Monster Memory");
 
 
     /* Object Memory */
     rd_u16b(&tmp16u);
     for (i = 0; i < tmp16u; i++) rd_xtra(&x_list[i]);
-    if (say) note(-1,"Loaded Object Memory");
+    if (say) note("Loaded Object Memory");
 
 
     /* Load the Quests */
@@ -3674,7 +3681,7 @@ static errr rd_savefile()
         rd_byte(&tmp8u);
         rd_byte(&tmp8u);
     }
-    if (say) note(-1,"Loaded Quests");
+    if (say) note("Loaded Quests");
 
 
     /* Load the Artifacts */
@@ -3686,7 +3693,7 @@ static errr rd_savefile()
         rd_byte(&tmp8u);
         rd_byte(&tmp8u);
     }
-    if (say) note(-1,"Loaded Artifacts");
+    if (say) note("Loaded Artifacts");
 
 
     /* Mega-Hack -- make sure Grond/Morgoth are available */
@@ -3698,7 +3705,7 @@ static errr rd_savefile()
 
     /* Read the extra stuff */
     rd_extra();
-    if (say) note(-1, "Loaded extra information");
+    if (say) note("Loaded extra information");
 
 
     /* Read the player_hp array */
@@ -3712,6 +3719,9 @@ static errr rd_savefile()
     rp_ptr = &race_info[p_ptr->prace];
     cp_ptr = &class_info[p_ptr->pclass];
 
+    /* Important -- Choose the magic info */
+    mp_ptr = &magic_info[p_ptr->pclass];
+    
 
     /* Read spell info */
     rd_u32b(&spell_learned1);
@@ -3728,7 +3738,7 @@ static errr rd_savefile()
 
     /* Read the inventory */
     if (rd_inventory()) {
-        note(-2, "Unable to read inventory");
+        note("Unable to read inventory");
         return (21);
     }
 
@@ -3736,7 +3746,7 @@ static errr rd_savefile()
     /* Read the stores */
     rd_u16b(&tmp16u);
     for (i = 0; i < tmp16u; i++) {
-        if (rd_store(&store[i])) return (22);
+        if (rd_store(i)) return (22);
     }
 
 
@@ -3744,9 +3754,9 @@ static errr rd_savefile()
     if (!death) {
 
         /* Dead players have no dungeon */
-        note(-1,"Restoring Dungeon...");
+        note("Restoring Dungeon...");
         if (rd_dungeon()) {
-            note(-2, "Error reading dungeon data");
+            note("Error reading dungeon data");
             return (34);
         }
 
@@ -3765,7 +3775,7 @@ static errr rd_savefile()
 
     /* Verify */
     if (o_v_check != n_v_check) {
-        note(-2, "Invalid checksum");
+        note("Invalid checksum");
         return (11);
     }
 
@@ -3779,7 +3789,7 @@ static errr rd_savefile()
 
     /* Verify */
     if (o_x_check != n_x_check) {
-        note(-2, "Invalid encoded checksum");
+        note("Invalid encoded checksum");
         return (11);
     }
 
@@ -3797,20 +3807,23 @@ static errr rd_savefile()
 
 
 /*
- * Version 2.7.0 used an entirely different "savefile" format
+ * Version 2.7.0 introduced an entirely different "savefile" format
  * from older versions such as 2.6.0.
  *
  * Some information from pre-2.7.0 savefiles is "lost", such
  * as some of the "saved messages", and all "ghosts".
  *
  * Most monster memory, and player ghosts, from pre-2.7.7 savefiles
- * is invalid, and is automatically erased for you.
+ * is invalid, and is automatically erased.
+ *
+ * Allow restoring a file belonging to someone else,
+ * but only if we can delete it.
+ * Hence first try to read without doing a chmod.
  */
-int load_player(int *generate)
+bool load_player(void)
 {
-    int		fd, ok;
-
-    char	temp[160];
+    int		fd = -1;
+    bool	ok = FALSE;
 
 
     /* Hack -- allow "debugging" */
@@ -3821,62 +3834,79 @@ int load_player(int *generate)
     if (wiz) say = TRUE;
 
 
-    /* Forbid suspend */
-    signals_ignore_tstp();
+#if !defined(MACINTOSH)
 
-    /* Assume a cave must be generated */
-    *generate = TRUE;
-
-    /* Assume no file (used to catch errors below) */
-    fd = (-1);
-
-
-    /* Hack -- Cannot restore a game while still playing */
-    if (turn) {
-        msg_print("IMPOSSIBLE! Attempt to restore while still alive!");
-        return (FALSE);
-    }
-
-
-
-#ifndef MACINTOSH
-
+    /* Verify the existance of the savefile */
     if (access(savefile, 0) < 0) {
 
-        /* Allow suspend again */
-        signals_handle_tstp();
-
+        /* Give a message */
         msg_print("Savefile does not exist.");
-        return FALSE;
+
+        /* Nothing loaded */
+        return (FALSE);
     }
 
 #endif
 
 
+#ifdef VERIFY_SAVEFILE
+
+    /* Verify savefile usage */
+    if (TRUE) {
+
+        FILE *fkk;
+        
+        char temp[1024];
+        
+        /* Extract name of lock file */    
+        strcpy(temp, savefile);
+        strcat(temp, ".lok");
+        
+        /* Check for lock */
+        fkk = fopen(temp, "r");
+        
+        /* Oops, lock exists */
+        if (fkk) {
+        
+            /* Close the file */
+            fclose(fkk);
+            
+            /* Message */
+            msg_print("Savefile is currently in use.");
+            
+            /* Nothing loaded */
+            return (FALSE);
+        }
+
+        /* Create a lock file */
+        fkk = fopen(temp, "w");
+        
+        /* Dump a line of info */
+        fprintf(fkk, "Lock file for savefile '%s'\n", savefile);
+        
+        /* Close the lock file */
+        fclose(fkk);
+    }
+
+#endif
+
+
+    /* Forbid suspend */
+    signals_ignore_tstp();
+
+
     /* Notify the player */
     clear_screen();
-    (void)sprintf(temp, "Restoring Character.");
-    put_str(temp, 23, 0);
 
-    /* Hack -- let the message get read */
-    delay(1000);
+    /* First note */
+    note("Restoring Character.");
 
-    /* Allow restoring a file belonging to someone else, */
-    /* but only if we can delete it. */
-    /* Hence first try to read without doing a chmod. */
 
     /* Open the BINARY savefile */
     fd = my_topen(savefile, O_RDONLY | O_BINARY, 0);
 
-    /* Catch errors */
-    if (fd < 0) {
-
-        /* Message */
-        msg_print("Can't open file for reading.");
-    }
-
     /* Process file */
-    else {
+    if (fd >= 0) {
 
 #ifdef VERIFY_TIMESTAMP
         struct stat         statbuf;
@@ -3899,14 +3929,13 @@ int load_player(int *generate)
 
         /* The savefile is a binary file */
         fff = my_tfopen(savefile, "rb");
+
+        /* Paranoia */
         if (!fff) goto error;
 
 
         /* Actually read the savefile */
         if (rd_savefile()) goto error;
-
-        /* Hack -- Alive, so no need to make a cave */
-        if (!death) *generate = FALSE;
 
 
 #ifdef VERIFY_TIMESTAMP
@@ -3916,19 +3945,22 @@ int load_player(int *generate)
             /* Hack -- Verify the timestamp */
             if (sf_when > (statbuf.st_ctime + 100) ||
                 sf_when < (statbuf.st_ctime - 100)) {
-                note(-2, "Invalid Timestamp");
+                note("Invalid Timestamp");
                 goto error;
             }
         }
 #endif
 
 
-
         /* Check for errors */
         if (ferror(fff)) {
-            note(-2,"FILE ERROR");
+            note("FILE ERROR");
             goto error;
         }
+
+
+        /* Hack -- notice when the cave is ready */
+        if (!death) character_dungeon = TRUE;
 
 
         /* Process "dead" players */
@@ -3938,7 +3970,7 @@ int load_player(int *generate)
             if (wiz && get_check("Resurrect a dead character?")) {
 
                 /* Revive the player */
-                note(0,"Attempting a resurrection!");
+                note("Attempting a resurrection!");
 
                 /* Not quite dead */
                 if (p_ptr->chp < 0) {
@@ -3946,24 +3978,30 @@ int load_player(int *generate)
                     p_ptr->chp_frac = 0;
                 }
 
-                /* don't let him starve to death immediately */
-                if (p_ptr->food < 5000) p_ptr->food = 5000;
+                /* Clean up food */
+                p_ptr->food = PY_FOOD_FULL - 1;
 
+                /* Cure stuff */
                 cure_poison();
                 cure_blindness();
                 cure_confusion();
-                remove_fear();
+                cure_fear();
 
+                /* Cure hallucination */
                 p_ptr->image = 0;
+
+                /* Cure cuts/stun */
                 p_ptr->cut = 0;
                 p_ptr->stun = 0;
+
+                /* Cancel word of recall */
                 p_ptr->word_recall = 0;
 
-                /* Resurrect on the town level. */
+                /* Hack -- Go back to the town */
                 dun_level = 0;
 
-                /* Set character_generated */
-                character_generated = 1;
+                /* The character exists */
+                character_generated = TRUE;
 
                 /* Remember the resurrection */
                 noscore |= 0x0001;
@@ -3978,7 +4016,7 @@ int load_player(int *generate)
             /* Normal "restoration" */
             else {
 
-                note(0,"Restoring Memory of a departed spirit...");
+                note("Restoring Memory of a departed spirit...");
 
                 /* Count the past lives */
                 sf_lives++;
@@ -3995,9 +4033,11 @@ int load_player(int *generate)
         }
 
 
+        /* Weird error */
         if (!turn) {
 
-            note(-2,"Invalid turn");
+            /* Message */
+            note("Invalid turn!");
 
 error:
 
@@ -4005,28 +4045,32 @@ error:
             ok = FALSE;
         }
 
+        /* Normal load */
         else {
 
-            /* don't overwrite the "killed by" string if character is dead */
+            /* Hack -- do not "hurt" the "killed by" string */
             if (p_ptr->chp >= 0) {
+
+                /* Reset cause of death */
                 (void)strcpy(died_from, "(alive and well)");
             }
 
-            character_generated = 1;
+            /* The character exists */
+            character_generated = TRUE;
         }
 
 closefiles:
 
+        /* Is there a file? */
         if (fff) {
+
+            /* Try to close it */
             if (fclose(fff) < 0) ok = FALSE;
         }
 
-        if (!ok) {
-            msg_print("Error during reading of file.");
-            msg_print(NULL);
-        }
 
-        else {
+        /* Normal load */
+        if (ok) {
 
             /* A character was loaded */
             character_loaded = TRUE;
@@ -4034,86 +4078,43 @@ closefiles:
             /* Allow suspend again */
             signals_handle_tstp();
 
-            /* Only if a full restoration. */
-            if (turn) {
-
-#if 0
-
-                int i, days;
-                u32b age;
-
-                /* rotate store inventory, based on time passed */
-                /* foreach day old (rounded up), call store_maint */
-
-                /* Get the current time */
-                age = time((time_t *)0);
-
-                /* Subtract the save-file time */
-                age = age - sf_when;
-
-                /* Convert age to "real time" in days */
-                days = age / 86400L;
-
-                /* Assume no more than 10 days old */
-                if (days > 10) days = 10;
-
-                /* Rotate the store inventories (once per day) */
-                for (i = 0; i < days; i++) store_maint();
-#endif
-
-                /* Older savefiles do not save location */
-                if (older_than(2,7,0)) {
-
-                    int y, x;
-
-                    /* Check the objects/monsters */
-                    for (y = 0; y < cur_hgt; y++) {
-                        for (x = 0; x < cur_wid; x++) {
-
-                            cave_type *c_ptr = &cave[y][x];
-                            inven_type *i_ptr = &i_list[c_ptr->i_idx];
-                            monster_type *m_ptr = &m_list[c_ptr->m_idx];
-                            monster_lore *l_ptr = &l_list[m_ptr->r_idx];
-
-                            /* Objects -- extract location */
-                            if (c_ptr->i_idx) {
-                                i_ptr->iy = y;
-                                i_ptr->ix = x;
-                            }
-
-                            /* Monsters -- count total population */
-                            if (c_ptr->m_idx) {
-                                l_ptr->cur_num++;
-                            }
-                        }
-                    }
-                }
-            }
-
             /* Give a warning */
             if (version_min != CUR_VERSION_MIN ||
                 patch_level != CUR_PATCH_LEVEL) {
 
-                (void)sprintf(temp,
-                        "Save file from version %d.%d.%d %s game version %d.%d.%d.",
-                              version_maj, version_min, patch_level,
-                              ((version_min == CUR_VERSION_MIN) ?
-                               "accepted for" : "converted for"),
-                              CUR_VERSION_MAJ, CUR_VERSION_MIN, CUR_PATCH_LEVEL);
-                msg_print(temp);
+                msg_format("Save file from version %d.%d.%d %s game version %d.%d.%d.",
+                           version_maj, version_min, patch_level,
+                           ((version_min == CUR_VERSION_MIN) ?
+                            "accepted for" : "converted for"),
+                           CUR_VERSION_MAJ, CUR_VERSION_MIN, CUR_PATCH_LEVEL);
             }
 
             /* Hack -- let the system react to new options */
             Term_xtra(TERM_XTRA_REACT, 0);
 
-            /* Return "a real character was restored" */
-            return (turn ? TRUE : FALSE);
+            /* No living player loaded */
+            if (!turn) return (FALSE);
+            
+            /* Successful load */
+            return (TRUE);
         }
+
+
+        /* Mention errors */
+        msg_print("Error during reading of savefile.");
+        msg_print(NULL);
+    }
+
+    /* No file */
+    else {
+
+        /* Message */
+        msg_print("Can't open file for reading.");
     }
 
 
     /* Oh well... */
-    note(-2,"Please try again without that savefile.");
+    note("Please try again without that savefile.");
 
     /* No game in progress */
     turn = 0;
@@ -4125,7 +4126,7 @@ closefiles:
     quit("unusable savefile");
 
     /* Compiler food */
-    return FALSE;
+    return (FALSE);
 }
 
 

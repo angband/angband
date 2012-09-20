@@ -3,7 +3,7 @@
 #ifndef INCLUDED_Z_VIRT_H
 #define INCLUDED_Z_VIRT_H
 
-#include "h-include.h"
+#include "h-basic.h"
 
 /*
  * Memory management routines.
@@ -59,10 +59,6 @@ extern cptr string_make(cptr str);
 
 /* Free a string allocated with "string_make()" */
 extern errr string_free(cptr str);
-
-#ifndef HAS_MEMSET
-extern char *memset(char*, int, huge);
-#endif
 
 
 

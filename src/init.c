@@ -5,7 +5,6 @@
 #include "angband.h"
 
 
-
 /*
  * Find the paths to all of our important files and directories...
  * Use the ANGBAND_PATH environment var if possible, else use
@@ -39,21 +38,21 @@ void get_file_paths()
 
 #ifdef MACINTOSH
 
-    /* Hack -- special prefix */
+    /* Hack -- prepare for Macintosh */
     strcpy(path, ":lib:");
 
 #else
 
-# ifdef _Windows
+# ifdef WINDOWS
 
-    /* Hack -- The Windows system also uses a special prefix */
-    strcpy(path, get_lib_path());
+    /* Hack -- prepare for Windows */
+    get_lib_path(path);
 
 # else
 
 #  ifdef AMIGA
 
-    /* The Amiga uses a special method */
+    /* Hack -- prepare for Amiga */
     strcpy(path, "Angband:");
 
 #  else
@@ -94,11 +93,26 @@ void get_file_paths()
     ANGBAND_DIR_SAVE = string_make(path);
     strcpy(tail, "pref");
     ANGBAND_DIR_PREF = string_make(path);
+    strcpy(tail, "info");
+    ANGBAND_DIR_INFO = string_make(path);
 
 
     /* Hack -- access the "news" file */
     sprintf(path, "%s%s%s", ANGBAND_DIR_FILE, PATH_SEP, "news.txt");
     ANGBAND_NEWS = string_make(path);
+}
+
+
+
+
+/*
+ * Hack -- take notes on line 23
+ */
+static void note(cptr str)
+{
+    Term_erase(0, 23, 79, 23);
+    Term_putstr(20, 23, -1, TERM_WHITE, str);
+    Term_fresh();
 }
 
 
@@ -109,7 +123,7 @@ void get_file_paths()
 static void gasp()
 {
 
-#if defined(MACINTOSH) || defined(_Windows)
+#if defined(MACINTOSH) || defined(WINDOWS)
 
     /* Don't hog the processor */
     Term_xtra(TERM_XTRA_CHECK, -999);
@@ -132,53 +146,44 @@ static uint string_size(cptr str)
 
 
 /*
- * Grab one flag in a monster_race from a textual string
+ * Grab one (basic) flag in a monster_race from a textual string
+ *
+ * Note the strange "if then else" blocks to prevent memory errors
+ * during compilation.  The speed of this function is irrelevant.
  */
-static errr grab_one_flag(monster_race *r_ptr, cptr what)
+static errr grab_one_basic_flag(monster_race *r_ptr, cptr what)
 {
-    int i;
-    
     u32b flags1 = 0L;
     u32b flags2 = 0L;
     u32b flags3 = 0L;
-    u32b flags4 = 0L;
-    u32b flags5 = 0L;
-    u32b flags6 = 0L;
 
 
-    /* Start checking */
-    if (!what) what = what;
-
-    /* XXX XXX XXX XXX XXX Read spell frequency */
-    else if (1 == sscanf(what, "1_IN_%d", &i)) {
-
-        /* Extract a "frequency" */
-        r_ptr->freq_spell = r_ptr->freq_inate = 100 / i;
-
-        /* Success */
-        return (0);
-    }
-
-    else if (streq(what,"UNIQUE"))		flags1 |= RF1_UNIQUE;
+         if (streq(what,"UNIQUE"))		flags1 |= RF1_UNIQUE;
     else if (streq(what,"QUESTOR"))		flags1 |= RF1_QUESTOR;
+    
     else if (streq(what,"MALE"))		flags1 |= RF1_MALE;
     else if (streq(what,"FEMALE"))		flags1 |= RF1_FEMALE;
+    
     else if (streq(what,"CHAR_CLEAR"))		flags1 |= RF1_CHAR_CLEAR;
     else if (streq(what,"CHAR_MULTI"))		flags1 |= RF1_CHAR_MULTI;
     else if (streq(what,"ATTR_CLEAR"))		flags1 |= RF1_ATTR_CLEAR;
     else if (streq(what,"ATTR_MULTI"))		flags1 |= RF1_ATTR_MULTI;
+    
     else if (streq(what,"FORCE_DEPTH"))		flags1 |= RF1_FORCE_DEPTH;
     else if (streq(what,"FORCE_MAXHP"))		flags1 |= RF1_FORCE_MAXHP;
     else if (streq(what,"FORCE_SLEEP"))		flags1 |= RF1_FORCE_SLEEP;
     else if (streq(what,"FORCE_EXTRA"))		flags1 |= RF1_FORCE_EXTRA;
+    
     else if (streq(what,"FRIEND"))		flags1 |= RF1_FRIEND;
     else if (streq(what,"FRIENDS"))		flags1 |= RF1_FRIENDS;
     else if (streq(what,"ESCORT"))		flags1 |= RF1_ESCORT;
     else if (streq(what,"ESCORTS"))		flags1 |= RF1_ESCORTS;
+    
     else if (streq(what,"NEVER_BLOW"))		flags1 |= RF1_NEVER_BLOW;
     else if (streq(what,"NEVER_MOVE"))		flags1 |= RF1_NEVER_MOVE;
     else if (streq(what,"RAND_25"))		flags1 |= RF1_RAND_25;
     else if (streq(what,"RAND_50"))		flags1 |= RF1_RAND_50;
+    
     else if (streq(what,"ONLY_GOLD"))		flags1 |= RF1_ONLY_GOLD;
     else if (streq(what,"ONLY_ITEM"))		flags1 |= RF1_ONLY_ITEM;
     else if (streq(what,"DROP_60"))		flags1 |= RF1_DROP_60;
@@ -192,7 +197,8 @@ static errr grab_one_flag(monster_race *r_ptr, cptr what)
     else if (streq(what,"DROP_USEFUL"))		flags1 |= RF1_DROP_USEFUL;
     else if (streq(what,"DROP_CHOSEN"))		flags1 |= RF1_DROP_CHOSEN;
 
-    else if (streq(what,"STUPID"))		flags2 |= RF2_STUPID;
+
+         if (streq(what,"STUPID"))		flags2 |= RF2_STUPID;
     else if (streq(what,"SMART"))		flags2 |= RF2_SMART;
     else if (streq(what,"XXX1X2"))		flags2 |= RF2_XXX1X2;
     else if (streq(what,"XXX2X2"))		flags2 |= RF2_XXX2X2;
@@ -200,6 +206,7 @@ static errr grab_one_flag(monster_race *r_ptr, cptr what)
     else if (streq(what,"COLD_BLOOD"))		flags2 |= RF2_COLD_BLOOD;
     else if (streq(what,"EMPTY_MIND"))		flags2 |= RF2_EMPTY_MIND;
     else if (streq(what,"WEIRD_MIND"))		flags2 |= RF2_WEIRD_MIND;
+    
     else if (streq(what,"MULTIPLY"))		flags2 |= RF2_MULTIPLY;
     else if (streq(what,"REGENERATE"))		flags2 |= RF2_REGENERATE;
     else if (streq(what,"XXX3X2"))		flags2 |= RF2_XXX3X2;
@@ -208,6 +215,7 @@ static errr grab_one_flag(monster_race *r_ptr, cptr what)
     else if (streq(what,"XXX5X2"))		flags2 |= RF2_XXX5X2;
     else if (streq(what,"DESTRUCT"))		flags2 |= RF2_DESTRUCT;
     else if (streq(what,"XXX6X2"))		flags2 |= RF2_XXX6X2;
+    
     else if (streq(what,"OPEN_DOOR"))		flags2 |= RF2_OPEN_DOOR;
     else if (streq(what,"BASH_DOOR"))		flags2 |= RF2_BASH_DOOR;
     else if (streq(what,"PASS_WALL"))		flags2 |= RF2_PASS_WALL;
@@ -216,6 +224,7 @@ static errr grab_one_flag(monster_race *r_ptr, cptr what)
     else if (streq(what,"KILL_BODY"))		flags2 |= RF2_KILL_BODY;
     else if (streq(what,"TAKE_ITEM"))		flags2 |= RF2_TAKE_ITEM;
     else if (streq(what,"KILL_ITEM"))		flags2 |= RF2_KILL_ITEM;
+    
     else if (streq(what,"BRAIN_1"))		flags2 |= RF2_BRAIN_1;
     else if (streq(what,"BRAIN_2"))		flags2 |= RF2_BRAIN_2;
     else if (streq(what,"BRAIN_3"))		flags2 |= RF2_BRAIN_3;
@@ -225,7 +234,7 @@ static errr grab_one_flag(monster_race *r_ptr, cptr what)
     else if (streq(what,"BRAIN_7"))		flags2 |= RF2_BRAIN_7;
     else if (streq(what,"BRAIN_8"))		flags2 |= RF2_BRAIN_8;
 
-    else if (streq(what,"ORC"))			flags3 |= RF3_ORC;
+         if (streq(what,"ORC"))			flags3 |= RF3_ORC;
     else if (streq(what,"TROLL"))		flags3 |= RF3_TROLL;
     else if (streq(what,"GIANT"))		flags3 |= RF3_GIANT;
     else if (streq(what,"DRAGON"))		flags3 |= RF3_DRAGON;
@@ -233,14 +242,17 @@ static errr grab_one_flag(monster_race *r_ptr, cptr what)
     else if (streq(what,"UNDEAD"))		flags3 |= RF3_UNDEAD;
     else if (streq(what,"EVIL"))		flags3 |= RF3_EVIL;
     else if (streq(what,"ANIMAL"))		flags3 |= RF3_ANIMAL;
+    
     else if (streq(what,"XXX1X3"))		flags3 |= RF3_XXX1X3;
     else if (streq(what,"XXX2X3"))		flags3 |= RF3_XXX2X3;
     else if (streq(what,"XXX3X3"))		flags3 |= RF3_XXX3X3;
     else if (streq(what,"XXX4X3"))		flags3 |= RF3_XXX4X3;
+    
     else if (streq(what,"HURT_LITE"))		flags3 |= RF3_HURT_LITE;
     else if (streq(what,"HURT_ROCK"))		flags3 |= RF3_HURT_ROCK;
     else if (streq(what,"HURT_FIRE"))		flags3 |= RF3_HURT_FIRE;
     else if (streq(what,"HURT_COLD"))		flags3 |= RF3_HURT_COLD;
+    
     else if (streq(what,"IM_ACID"))		flags3 |= RF3_IM_ACID;
     else if (streq(what,"IM_ELEC"))		flags3 |= RF3_IM_ELEC;
     else if (streq(what,"IM_FIRE"))		flags3 |= RF3_IM_FIRE;
@@ -258,7 +270,49 @@ static errr grab_one_flag(monster_race *r_ptr, cptr what)
     else if (streq(what,"NO_CONF"))		flags3 |= RF3_NO_CONF;
     else if (streq(what,"NO_SLEEP"))		flags3 |= RF3_NO_SLEEP;
 
-    else if (streq(what,"SHRIEK"))		flags4 |= RF4_SHRIEK;
+
+    /* Failure */
+    if (!flags1 && !flags2 && !flags3) return (1);
+
+    /* Apply flags */
+    if (flags1) r_ptr->rflags1 |= flags1;
+    if (flags2) r_ptr->rflags2 |= flags2;
+    if (flags3) r_ptr->rflags3 |= flags3;
+
+    /* Success */
+    return (0);
+}
+
+
+/*
+ * Grab one (spell) flag in a monster_race from a textual string
+ *
+ * Note the strange "if then else" blocks to prevent memory errors
+ * during compilation.  The speed of this function is irrelevant.
+ */
+static errr grab_one_spell_flag(monster_race *r_ptr, cptr what)
+{
+    int i;
+
+    u32b flags4 = 0L;
+    u32b flags5 = 0L;
+    u32b flags6 = 0L;
+
+
+    /* Start checking */
+    if (!what) what = what;
+
+    /* XXX XXX XXX Hack -- Read spell frequency */
+    else if (1 == sscanf(what, "1_IN_%d", &i)) {
+
+        /* Extract a "frequency" */
+        r_ptr->freq_spell = r_ptr->freq_inate = 100 / i;
+
+        /* Success */
+        return (0);
+    }
+
+         if (streq(what,"SHRIEK"))		flags4 |= RF4_SHRIEK;
     else if (streq(what,"XXX2X4"))		flags4 |= RF4_XXX2X4;
     else if (streq(what,"XXX3X4"))		flags4 |= RF4_XXX3X4;
     else if (streq(what,"XXX4X4"))		flags4 |= RF4_XXX4X4;
@@ -291,7 +345,7 @@ static errr grab_one_flag(monster_race *r_ptr, cptr what)
     else if (streq(what,"XXX7X4"))		flags4 |= RF4_XXX7X4;
     else if (streq(what,"XXX8X4"))		flags4 |= RF4_XXX8X4;
  
-    else if (streq(what,"BA_ACID"))		flags5 |= RF5_BA_ACID;
+         if (streq(what,"BA_ACID"))		flags5 |= RF5_BA_ACID;
     else if (streq(what,"BA_ELEC"))		flags5 |= RF5_BA_ELEC;
     else if (streq(what,"BA_FIRE"))		flags5 |= RF5_BA_FIRE;
     else if (streq(what,"BA_COLD"))		flags5 |= RF5_BA_COLD;
@@ -324,7 +378,7 @@ static errr grab_one_flag(monster_race *r_ptr, cptr what)
     else if (streq(what,"SLOW"))		flags5 |= RF5_SLOW;
     else if (streq(what,"HOLD"))		flags5 |= RF5_HOLD;
 
-    else if (streq(what,"HASTE"))		flags6 |= RF6_HASTE;
+         if (streq(what,"HASTE"))		flags6 |= RF6_HASTE;
     else if (streq(what,"XXX1X6"))		flags6 |= RF6_XXX1X6;
     else if (streq(what,"HEAL"))		flags6 |= RF6_HEAL;
     else if (streq(what,"XXX2X6"))		flags6 |= RF6_XXX2X6;
@@ -359,13 +413,9 @@ static errr grab_one_flag(monster_race *r_ptr, cptr what)
 
 
     /* Failure */
-    if (!flags1 && !flags2 && !flags3 &&
-        !flags4 && !flags5 && !flags6) return (1);
+    if (!flags4 && !flags5 && !flags6) return (1);
 
     /* Apply flags */
-    if (flags1) r_ptr->rflags1 |= flags1;
-    if (flags2) r_ptr->rflags2 |= flags2;
-    if (flags3) r_ptr->rflags3 |= flags3;
     if (flags4) r_ptr->rflags4 |= flags4;
     if (flags5) r_ptr->rflags5 |= flags5;
     if (flags6) r_ptr->rflags6 |= flags6;
@@ -483,7 +533,7 @@ static errr analyze_blow(monster_race *r_ptr, int i, cptr s1, cptr s2, cptr s3)
     r_ptr->blow[i].method = method;
     r_ptr->blow[i].effect = effect;
     r_ptr->blow[i].d_dice = d_dice;
-    r_ptr->blow[i].d_dice = d_side;
+    r_ptr->blow[i].d_side = d_side;
 
     /* Success */
     return (0);
@@ -640,13 +690,11 @@ static errr init_r_list_txt(void)
         if (buf[0] == 'I') {
 
             char chr, att;
-            int tmp, spd, hp1, hp2, aaf, ac, slp, rar, lev;
-            long exp;
+            int tmp, spd, hp1, hp2, aaf, ac, slp;
 
             /* Scan for the values */
-            if (11 != sscanf(buf, "I:%c:%c:%d:%dd%d:%d:%d:%d:%d:%d:%ld",
-                &chr, &att, &spd, &hp1, &hp2,
-                &aaf, &ac, &slp, &rar, &lev, &exp)) return (11);
+            if (8 != sscanf(buf, "I:%c:%c:%d:%dd%d:%d:%d:%d",
+                &chr, &att, &spd, &hp1, &hp2, &aaf, &ac, &slp)) return (11);
 
             /* Extract the color */
             tmp = color_char_to_attr(att);
@@ -661,8 +709,25 @@ static errr init_r_list_txt(void)
             r_ptr->aaf = aaf;
             r_ptr->ac = ac;
             r_ptr->sleep = slp;
-            r_ptr->rarity = rar;
+
+            /* Next... */
+            continue;
+        }
+
+        /* Process 'W' for "More Info" (one line only) */
+        if (buf[0] == 'W') {
+
+            int lev, rar, xxx;
+            long exp;
+
+            /* Scan for the values */
+            if (4 != sscanf(buf, "W:%d:%d:%d:%ld",
+                &lev, &rar, &xxx, &exp)) return (11);
+
+            /* Save the values */
             r_ptr->level = lev;
+            r_ptr->rarity = rar;
+            r_ptr->extra = xxx;
             r_ptr->mexp = exp;
 
             /* Next... */
@@ -698,8 +763,8 @@ static errr init_r_list_txt(void)
             continue;
         }
 
-        /* Process 'F' (or 'S') for "Flags" (multiple lines) */
-        if ((buf[0] == 'F') || (buf[0] == 'S')) {
+        /* Process 'F' for "Basic Flags" (multiple lines) */
+        if (buf[0] == 'F') {
 
             /* Parse every entry */
             for (s = buf + 2; *s; ) {
@@ -714,7 +779,33 @@ static errr init_r_list_txt(void)
                 }
 
                 /* Parse this entry */
-                if (0 != grab_one_flag(r_ptr, s)) return (18);
+                if (0 != grab_one_basic_flag(r_ptr, s)) return (18);
+
+                /* Start the next entry */
+                s = t;
+            }
+
+            /* Next... */
+            continue;
+        }
+
+        /* Process 'S' for "Spell Flags" (multiple lines) */
+        if (buf[0] == 'S') {
+
+            /* Parse every entry */
+            for (s = buf + 2; *s; ) {
+
+                /* Find the end of this entry */
+                for (t = s; *t && *t != ' ' && *t != '|'; ++t);
+
+                /* Nuke and skip any dividers */
+                if (*t) {
+                    *t++ = '\0';
+                    while (*t == ' ' || *t == '|') t++;
+                }
+
+                /* Parse this entry */
+                if (0 != grab_one_spell_flag(r_ptr, s)) return (18);
 
                 /* Start the next entry */
                 s = t;
@@ -915,8 +1006,7 @@ static errr init_r_list_raw()
         (tmp[3] != size)) {
 
         /* Hack -- message */
-        msg_print("Ignoring old 'm_list.raw'...");
-        msg_print(NULL);
+        note("Ignoring old file 'lib/file/m_list.raw'...");
 
         /* Close */
         close(fd);
@@ -1011,11 +1101,13 @@ static void init_r_list()
     r_ptr->r_char = 'G';
 
     /* Hack -- Prepare a fake ghost name */
-    strcpy(ghost_name, "Someone's Ghost");
+    strcpy(ghost_name, "Nobody, the Ghost");
 
     /* Hack -- Try to prevent a few "potential" bugs */
     r_ptr->rflags1 |= RF1_UNIQUE;
 
+    /* XXX XXX XXX We should really "recreate" the ghost */
+    
 
 #ifdef BINARY_ARRAY_IMAGES
 
@@ -1034,8 +1126,8 @@ static void init_r_list()
     if (err) {
 
         /* Warning */
-        msg_print(format("Fatal error #%d parsing 'r_list.txt', record %d",
-                         err, error_r_idx));
+        msg_format("Fatal error #%d parsing 'r_list.txt', record %d!",
+                   err, error_r_idx);
         msg_print(NULL);
 
         /* Quit */
@@ -1064,14 +1156,16 @@ static void init_r_list()
 
 /*
  * Grab one flag in a inven_kind from a textual string
+ *
+ * Note the strange "if then else" blocks to prevent memory errors
+ * during compilation.  The speed of this function is irrelevant.
  */
 static bool grab_one_kind_flag(inven_kind *k_ptr, cptr what)
 {
     u32b flags1 = 0L, flags2 = 0L, flags3 = 0L;
 
-    if (!what) what = what;
 
-    else if (streq(what, "STR"))		flags1 |= TR1_STR;
+         if (streq(what, "STR"))		flags1 |= TR1_STR;
     else if (streq(what, "INT"))		flags1 |= TR1_INT;
     else if (streq(what, "WIS"))		flags1 |= TR1_WIS;
     else if (streq(what, "DEX"))		flags1 |= TR1_DEX;
@@ -1079,11 +1173,11 @@ static bool grab_one_kind_flag(inven_kind *k_ptr, cptr what)
     else if (streq(what, "CHR"))		flags1 |= TR1_CHR;
 
     else if (streq(what, "SEARCH"))		flags1 |= TR1_SEARCH;
-    else if (streq(what, "SPEED"))		flags1 |= TR1_SPEED;
     else if (streq(what, "STEALTH"))		flags1 |= TR1_STEALTH;
     else if (streq(what, "TUNNEL"))		flags1 |= TR1_TUNNEL;
     else if (streq(what, "INFRA"))		flags1 |= TR1_INFRA;
-    else if (streq(what, "ATTACK_SPD"))		flags1 |= TR1_ATTACK_SPD;
+    else if (streq(what, "SPEED"))		flags1 |= TR1_SPEED;
+    else if (streq(what, "BLOWS"))		flags1 |= TR1_BLOWS;
 
     else if (streq(what, "KILL_DRAGON"))	flags1 |= TR1_KILL_DRAGON;
     else if (streq(what, "SLAY_DRAGON"))	flags1 |= TR1_SLAY_DRAGON;
@@ -1102,16 +1196,15 @@ static bool grab_one_kind_flag(inven_kind *k_ptr, cptr what)
     else if (streq(what, "SLAY_GIANT"))		flags1 |= TR1_SLAY_GIANT;
     else if (streq(what, "SLAY_ORC"))		flags1 |= TR1_SLAY_ORC;
 
-    else if (streq(what, "FREE_ACT"))		flags2 |= TR2_FREE_ACT;
-    else if (streq(what, "HOLD_LIFE"))		flags2 |= TR2_HOLD_LIFE;
 
+         if (streq(what, "FREE_ACT"))		flags2 |= TR2_FREE_ACT;
+    else if (streq(what, "HOLD_LIFE"))		flags2 |= TR2_HOLD_LIFE;
 
     else if (streq(what, "IM_FIRE"))		flags2 |= TR2_IM_FIRE;
     else if (streq(what, "IM_COLD"))		flags2 |= TR2_IM_COLD;
     else if (streq(what, "IM_ACID"))		flags2 |= TR2_IM_ACID;
     else if (streq(what, "IM_ELEC"))		flags2 |= TR2_IM_ELEC;
     else if (streq(what, "IM_POIS"))		flags2 |= TR2_IM_POIS;
-
 
     else if (streq(what, "RES_ACID"))		flags2 |= TR2_RES_ACID;
     else if (streq(what, "RES_ELEC"))		flags2 |= TR2_RES_ELEC;
@@ -1138,7 +1231,8 @@ static bool grab_one_kind_flag(inven_kind *k_ptr, cptr what)
     else if (streq(what, "SUST_CON"))		flags2 |= TR2_SUST_CON;
     else if (streq(what, "SUST_CHR"))		flags2 |= TR2_SUST_CHR;
 
-    else if (streq(what, "EASY_KNOW"))		flags3 |= TR3_EASY_KNOW;
+
+         if (streq(what, "EASY_KNOW"))		flags3 |= TR3_EASY_KNOW;
     else if (streq(what, "HIDE_TYPE"))		flags3 |= TR3_HIDE_TYPE;
     else if (streq(what, "SHOW_MODS"))		flags3 |= TR3_SHOW_MODS;
     else if (streq(what, "INSTA_ART"))		flags3 |= TR3_INSTA_ART;
@@ -1168,6 +1262,7 @@ static bool grab_one_kind_flag(inven_kind *k_ptr, cptr what)
     else if (streq(what, "CURSED"))		flags3 |= TR3_CURSED;
     else if (streq(what, "HEAVY_CURSE"))	flags3 |= TR3_HEAVY_CURSE;
     else if (streq(what, "PERMA_CURSE"))	flags3 |= TR3_PERMA_CURSE;
+
 
     if (!flags1 && !flags2 && !flags3) return (FALSE);
 
@@ -1209,7 +1304,7 @@ static errr init_k_list_txt()
     char buf[1024];
 
 
-    /* Access the "r_list.txt" file */
+    /* Access the "k_list.txt" file */
     sprintf(buf, "%s%s%s", ANGBAND_DIR_FILE, PATH_SEP, "k_list.txt");
 
     /* Open the file */
@@ -1321,13 +1416,11 @@ static errr init_k_list_txt()
         if (buf[0] == 'I') {
 
             char sym, col;
-            int tmp, tval, sval, pval, num, wgt, lev;
-            long cost;
+            int tmp, tval, sval, pval;
 
             /* Scan for the values */
-            if (9 != sscanf(buf+2, "%c:%c:%d:%d:%d:%d:%d:%d:%ld",
-                &sym, &col, &tval, &sval, &pval,
-                &num, &wgt, &lev, &cost)) return (11);
+            if (5 != sscanf(buf+2, "%c:%c:%d:%d:%d",
+                &sym, &col, &tval, &sval, &pval)) return (11);
 
             /* Extract the color */
             tmp = color_char_to_attr(col);
@@ -1339,11 +1432,26 @@ static errr init_k_list_txt()
             k_ptr->tval = tval;
             k_ptr->sval = sval;
             k_ptr->pval = pval;
-            k_ptr->number = num;
-            k_ptr->weight = wgt;
-            k_ptr->level = lev;
-            k_ptr->cost = cost;
 
+            /* Next... */
+            continue;
+        }
+
+        /* Process 'W' for "More Info" (one line only) */
+        if (buf[0] == 'W') {
+
+            int level, extra, wgt;
+            long cost;
+
+            /* Scan for the values */
+            if (4 != sscanf(buf+2, "%d:%d:%d:%ld",
+                &level, &extra, &wgt, &cost)) return (11);
+
+            /* Save the values */
+            k_ptr->level = level;
+            k_ptr->extra = extra;
+            k_ptr->weight = wgt;
+            k_ptr->cost = cost;
 
             /* Next... */
             continue;
@@ -1402,20 +1510,6 @@ static errr init_k_list_txt()
 
         /* Hack -- Process 'F' for flags */
         if (buf[0] == 'F') {
-
-            huge flags1, flags2, flags3;
-
-            /* XXX XXX Hack -- Scan for "pure" values */
-            /* Note that "huge" may not equal "u32b" */
-            if (3 == sscanf(buf+2, "0x%lx:0x%lx:0x%lx",
-                &flags1, &flags2, &flags3)) {
-
-                k_ptr->flags1 = flags1;
-                k_ptr->flags2 = flags2;
-                k_ptr->flags3 = flags3;
-
-                continue;
-            }
 
             /* Parse every entry textually */
             for (s = buf + 2; *s; ) {
@@ -1580,8 +1674,7 @@ static errr init_k_list_raw()
         (tmp[3] != size)) {
 
         /* Hack -- message */
-        msg_print("Ignoring old 'k_list.raw'...");
-        msg_print(NULL);
+        note("Ignoring old file 'lib/file/k_list.raw'...");
 
         /* Close */
         close(fd);
@@ -1655,8 +1748,8 @@ static void init_k_list()
     if (err) {
 
         /* Warning */
-        msg_print(format("Fatal error #%d parsing 'k_list.txt', record %d",
-                         err, error_k_idx));
+        msg_format("Fatal error #%d parsing 'k_list.txt', record %d!",
+                   err, error_k_idx);
         msg_print(NULL);
 
         /* Quit */
@@ -1685,14 +1778,16 @@ static void init_k_list()
 
 /*
  * Grab one flag in a inven_very from a textual string
+ *
+ * Note the strange "if then else" blocks to prevent memory errors
+ * during compilation.  The speed of this function is irrelevant.
  */
 static bool grab_one_very_flag(inven_very *v_ptr, cptr what)
 {
     u32b flags1 = 0L, flags2 = 0L, flags3 = 0L;
 
-    if (!what) what = what;
 
-    else if (streq(what, "STR"))		flags1 |= TR1_STR;
+         if (streq(what, "STR"))		flags1 |= TR1_STR;
     else if (streq(what, "INT"))		flags1 |= TR1_INT;
     else if (streq(what, "WIS"))		flags1 |= TR1_WIS;
     else if (streq(what, "DEX"))		flags1 |= TR1_DEX;
@@ -1700,11 +1795,11 @@ static bool grab_one_very_flag(inven_very *v_ptr, cptr what)
     else if (streq(what, "CHR"))		flags1 |= TR1_CHR;
 
     else if (streq(what, "SEARCH"))		flags1 |= TR1_SEARCH;
-    else if (streq(what, "SPEED"))		flags1 |= TR1_SPEED;
     else if (streq(what, "STEALTH"))		flags1 |= TR1_STEALTH;
     else if (streq(what, "TUNNEL"))		flags1 |= TR1_TUNNEL;
     else if (streq(what, "INFRA"))		flags1 |= TR1_INFRA;
-    else if (streq(what, "ATTACK_SPD"))		flags1 |= TR1_ATTACK_SPD;
+    else if (streq(what, "SPEED"))		flags1 |= TR1_SPEED;
+    else if (streq(what, "BLOWS"))		flags1 |= TR1_BLOWS;
 
     else if (streq(what, "KILL_DRAGON"))	flags1 |= TR1_KILL_DRAGON;
     else if (streq(what, "SLAY_DRAGON"))	flags1 |= TR1_SLAY_DRAGON;
@@ -1723,16 +1818,15 @@ static bool grab_one_very_flag(inven_very *v_ptr, cptr what)
     else if (streq(what, "SLAY_GIANT"))		flags1 |= TR1_SLAY_GIANT;
     else if (streq(what, "SLAY_ORC"))		flags1 |= TR1_SLAY_ORC;
 
-    else if (streq(what, "FREE_ACT"))		flags2 |= TR2_FREE_ACT;
-    else if (streq(what, "HOLD_LIFE"))		flags2 |= TR2_HOLD_LIFE;
 
+         if (streq(what, "FREE_ACT"))		flags2 |= TR2_FREE_ACT;
+    else if (streq(what, "HOLD_LIFE"))		flags2 |= TR2_HOLD_LIFE;
 
     else if (streq(what, "IM_FIRE"))		flags2 |= TR2_IM_FIRE;
     else if (streq(what, "IM_COLD"))		flags2 |= TR2_IM_COLD;
     else if (streq(what, "IM_ACID"))		flags2 |= TR2_IM_ACID;
     else if (streq(what, "IM_ELEC"))		flags2 |= TR2_IM_ELEC;
     else if (streq(what, "IM_POIS"))		flags2 |= TR2_IM_POIS;
-
 
     else if (streq(what, "RES_ACID"))		flags2 |= TR2_RES_ACID;
     else if (streq(what, "RES_ELEC"))		flags2 |= TR2_RES_ELEC;
@@ -1759,7 +1853,8 @@ static bool grab_one_very_flag(inven_very *v_ptr, cptr what)
     else if (streq(what, "SUST_CON"))		flags2 |= TR2_SUST_CON;
     else if (streq(what, "SUST_CHR"))		flags2 |= TR2_SUST_CHR;
 
-    else if (streq(what, "EASY_KNOW"))		flags3 |= TR3_EASY_KNOW;
+
+         if (streq(what, "EASY_KNOW"))		flags3 |= TR3_EASY_KNOW;
     else if (streq(what, "HIDE_TYPE"))		flags3 |= TR3_HIDE_TYPE;
     else if (streq(what, "SHOW_MODS"))		flags3 |= TR3_SHOW_MODS;
     else if (streq(what, "INSTA_ART"))		flags3 |= TR3_INSTA_ART;
@@ -1791,6 +1886,7 @@ static bool grab_one_very_flag(inven_very *v_ptr, cptr what)
     else if (streq(what, "CURSED"))		flags3 |= TR3_CURSED;
     else if (streq(what, "HEAVY_CURSE"))	flags3 |= TR3_HEAVY_CURSE;
     else if (streq(what, "PERMA_CURSE"))	flags3 |= TR3_PERMA_CURSE;
+
 
     if (!flags1 && !flags2 && !flags3) return (FALSE);
 
@@ -1829,10 +1925,10 @@ static errr init_v_list_txt()
     FILE *fp;
 
     /* General buffer */
-    char buf[160];
+    char buf[1024];
 
 
-    /* Access the "r_list.txt" file */
+    /* Access the "v_list.txt" file */
     sprintf(buf, "%s%s%s", ANGBAND_DIR_FILE, PATH_SEP, "v_list.txt");
 
     /* Open the file */
@@ -1949,24 +2045,36 @@ static errr init_v_list_txt()
         /* Process 'I' for "Info" (one line only) */
         if (buf[0] == 'I') {
 
-            int k_idx, tval, sval, pval, rarity, wgt, lev;
-            long cost;
+            int tval, sval, pval;
 
             /* Scan for the values */
-            if (8 != sscanf(buf+2, "%d:%d:%d:%d:%d:%d:%d:%ld",
-                &k_idx, &tval, &sval, &pval,
-                &rarity, &wgt, &lev, &cost)) return (11);
+            if (3 != sscanf(buf+2, "%d:%d:%d",
+                &tval, &sval, &pval)) return (11);
 
             /* Save the values */
-            v_ptr->k_idx = k_idx;
             v_ptr->tval = tval;
             v_ptr->sval = sval;
             v_ptr->pval = pval;
+
+            /* Next... */
+            continue;
+        }
+
+        /* Process 'W' for "More Info" (one line only) */
+        if (buf[0] == 'W') {
+
+            int level, rarity, wgt;
+            long cost;
+
+            /* Scan for the values */
+            if (4 != sscanf(buf+2, "%d:%d:%d:%ld",
+                &level, &rarity, &wgt, &cost)) return (11);
+
+            /* Save the values */
+            v_ptr->level = level;
             v_ptr->rarity = rarity;
             v_ptr->weight = wgt;
-            v_ptr->level = lev;
             v_ptr->cost = cost;
-
 
             /* Next... */
             continue;
@@ -2159,8 +2267,7 @@ static errr init_v_list_raw()
         (tmp[3] != size)) {
 
         /* Hack -- message */
-        msg_print("Ignoring old 'v_list.raw'...");
-        msg_print(NULL);
+        note("Ignoring old file 'lib/file/v_list.raw'...");
 
         /* Close */
         close(fd);
@@ -2233,8 +2340,8 @@ static void init_v_list()
     if (err) {
 
         /* Warning */
-        msg_print(format("Fatal error #%d parsing 'v_list.txt', record %d",
-                         err, error_v_idx));
+        msg_format("Fatal error #%d parsing 'v_list.txt', record %d!",
+                   err, error_v_idx);
         msg_print(NULL);
 
         /* Quit */
@@ -2258,17 +2365,430 @@ static void init_v_list()
 
 
 
+/*
+ * Objects sold in the stores -- by tval/sval pair.
+ */
+static byte store_choice[MAX_STORES-2][STORE_CHOICES][2] = {
+
+  {
+    /* General Store */
+    { TV_FOOD, SV_FOOD_RATION },
+    { TV_FOOD, SV_FOOD_RATION },
+    { TV_FOOD, SV_FOOD_RATION },
+    { TV_FOOD, SV_FOOD_RATION },
+    { TV_FOOD, SV_FOOD_RATION },
+    { TV_FOOD, SV_FOOD_RATION },
+    { TV_FOOD, SV_FOOD_BISCUIT },
+    { TV_FOOD, SV_FOOD_JERKY },
+    { TV_FOOD, SV_FOOD_PINT_OF_WINE },
+    { TV_FOOD, SV_FOOD_PINT_OF_ALE },
+    { TV_DIGGING, SV_SHOVEL },
+    { TV_DIGGING, SV_PICK },
+    { TV_CLOAK, SV_CLOAK },
+    { TV_CLOAK, SV_CLOAK },
+    { TV_CLOAK, SV_CLOAK },
+    { TV_POTION, SV_POTION_WATER },
+    { TV_POTION, SV_POTION_APPLE_JUICE },
+    { TV_SPIKE, 0 },
+    { TV_SPIKE, 0 },
+    { TV_SPIKE, 0 },
+    { TV_LITE, SV_LITE_TORCH },
+    { TV_LITE, SV_LITE_TORCH },
+    { TV_LITE, SV_LITE_TORCH },
+    { TV_LITE, SV_LITE_TORCH },
+    { TV_LITE, SV_LITE_LANTERN },
+    { TV_FLASK, 0 },
+    { TV_FLASK, 0 },
+    { TV_FLASK, 0 },
+    { TV_FLASK, 0 },
+    { TV_FLASK, 0 }
+  },
+
+  {
+    /* Armoury */
+    { TV_BOOTS, SV_PAIR_OF_SOFT_LEATHER_BOOTS },
+    { TV_BOOTS, SV_PAIR_OF_SOFT_LEATHER_BOOTS },
+    { TV_BOOTS, SV_PAIR_OF_HARD_LEATHER_BOOTS },
+    { TV_HELM, SV_HARD_LEATHER_CAP },
+    { TV_HELM, SV_HARD_LEATHER_CAP },
+    { TV_HELM, SV_METAL_CAP },
+    { TV_HELM, SV_IRON_HELM },
+    { TV_SOFT_ARMOR, SV_ROBE },
+    { TV_SOFT_ARMOR, SV_ROBE },
+    { TV_SOFT_ARMOR, SV_SOFT_LEATHER_ARMOR },
+    { TV_SOFT_ARMOR, SV_SOFT_LEATHER_ARMOR },
+    { TV_SOFT_ARMOR, SV_HARD_LEATHER_ARMOR },
+    { TV_SOFT_ARMOR, SV_HARD_STUDDED_LEATHER },
+    { TV_SOFT_ARMOR, SV_LEATHER_SCALE_MAIL },
+    { TV_SOFT_ARMOR, SV_LEATHER_SCALE_MAIL },
+    { TV_HARD_ARMOR, SV_METAL_SCALE_MAIL },
+    { TV_HARD_ARMOR, SV_CHAIN_MAIL },
+    { TV_HARD_ARMOR, SV_CHAIN_MAIL },
+    { TV_HARD_ARMOR, SV_AUGMENTED_CHAIN_MAIL },
+    { TV_HARD_ARMOR, SV_BAR_CHAIN_MAIL },
+    { TV_HARD_ARMOR, SV_METAL_BRIGANDINE_ARMOUR },
+    { TV_HARD_ARMOR, SV_DOUBLE_CHAIN_MAIL },
+    { TV_GLOVES, SV_SET_OF_LEATHER_GLOVES },
+    { TV_GLOVES, SV_SET_OF_LEATHER_GLOVES },
+    { TV_GLOVES, SV_SET_OF_GAUNTLETS },
+    { TV_SHIELD, SV_SMALL_LEATHER_SHIELD },
+    { TV_SHIELD, SV_SMALL_LEATHER_SHIELD },
+    { TV_SHIELD, SV_LARGE_LEATHER_SHIELD },
+    { TV_SHIELD, SV_SMALL_METAL_SHIELD }
+  },
+
+  {
+    /* Weaponsmith */
+    { TV_SWORD, SV_DAGGER },
+    { TV_SWORD, SV_MAIN_GAUCHE },
+    { TV_SWORD, SV_RAPIER },
+    { TV_SWORD, SV_SMALL_SWORD },
+    { TV_SWORD, SV_SHORT_SWORD },
+    { TV_SWORD, SV_SABRE },
+    { TV_SWORD, SV_CUTLASS },
+    { TV_SWORD, SV_TULWAR },
+    { TV_SWORD, SV_BROAD_SWORD },
+    { TV_SWORD, SV_LONG_SWORD },
+    { TV_SWORD, SV_SCIMITAR },
+    { TV_SWORD, SV_KATANA },
+    { TV_SWORD, SV_BASTARD_SWORD },
+    { TV_POLEARM, SV_SPEAR },
+    { TV_POLEARM, SV_AWL_PIKE },
+    { TV_POLEARM, SV_TRIDENT },
+    { TV_POLEARM, SV_PIKE },
+    { TV_POLEARM, SV_BEAKED_AXE },
+    { TV_POLEARM, SV_BROAD_AXE },
+    { TV_POLEARM, SV_LANCE },
+    { TV_POLEARM, SV_BATTLE_AXE },
+    { TV_HAFTED, SV_WHIP },
+    { TV_BOW, SV_SLING },
+    { TV_BOW, SV_SHORT_BOW },
+    { TV_BOW, SV_LONG_BOW },
+    { TV_BOW, SV_LIGHT_XBOW },
+    { TV_SHOT, SV_AMMO_LIGHT },
+    { TV_SHOT, SV_AMMO_NORMAL },
+    { TV_ARROW, SV_AMMO_NORMAL },
+    { TV_BOLT, SV_AMMO_NORMAL },
+  },
+
+  {
+    /* Temple */
+    { TV_HAFTED, SV_WHIP },
+    { TV_HAFTED, SV_QUARTERSTAFF },
+    { TV_HAFTED, SV_MACE },
+    { TV_HAFTED, SV_BALL_AND_CHAIN },
+    { TV_HAFTED, SV_WAR_HAMMER },
+    { TV_HAFTED, SV_LUCERN_HAMMER },
+    { TV_HAFTED, SV_MORNING_STAR },
+    { TV_HAFTED, SV_FLAIL },
+    { TV_HAFTED, SV_LEAD_FILLED_MACE },
+    { TV_SCROLL, SV_SCROLL_REMOVE_CURSE },
+    { TV_SCROLL, SV_SCROLL_BLESSING },
+    { TV_SCROLL, SV_SCROLL_HOLY_CHANT },
+    { TV_SCROLL, SV_SCROLL_WORD_OF_RECALL },
+    { TV_POTION, SV_POTION_RES_WIS },
+    { TV_POTION, SV_POTION_CURE_LIGHT },
+    { TV_POTION, SV_POTION_CURE_SERIOUS },
+    { TV_POTION, SV_POTION_CURE_CRITICAL },
+    { TV_POTION, SV_POTION_HEROISM },
+    { TV_POTION, SV_POTION_BOLDNESS },
+    { TV_POTION, SV_POTION_RESTORE_EXP },
+    { TV_POTION, SV_POTION_RESIST_HEAT },
+    { TV_POTION, SV_POTION_RESIST_COLD },
+    { TV_PRAYER_BOOK, 0 },
+    { TV_PRAYER_BOOK, 0 },
+    { TV_PRAYER_BOOK, 0 },
+    { TV_PRAYER_BOOK, 1 },
+    { TV_PRAYER_BOOK, 1 },
+    { TV_PRAYER_BOOK, 2 },
+    { TV_PRAYER_BOOK, 2 },
+    { TV_PRAYER_BOOK, 3 }
+  },
+
+  {
+    /* Alchemy shop */
+    { TV_SCROLL, SV_SCROLL_ENCHANT_WEAPON_TO_HIT },
+    { TV_SCROLL, SV_SCROLL_ENCHANT_WEAPON_TO_DAM },
+    { TV_SCROLL, SV_SCROLL_ENCHANT_ARMOR },
+    { TV_SCROLL, SV_SCROLL_IDENTIFY },
+    { TV_SCROLL, SV_SCROLL_IDENTIFY },
+    { TV_SCROLL, SV_SCROLL_IDENTIFY },
+    { TV_SCROLL, SV_SCROLL_IDENTIFY },
+    { TV_SCROLL, SV_SCROLL_LIGHT },
+    { TV_SCROLL, SV_SCROLL_LIGHT },
+    { TV_SCROLL, SV_SCROLL_LIGHT },
+    { TV_SCROLL, SV_SCROLL_PHASE_DOOR },
+    { TV_SCROLL, SV_SCROLL_PHASE_DOOR },
+    { TV_SCROLL, SV_SCROLL_MONSTER_CONFUSION },
+    { TV_SCROLL, SV_SCROLL_MAPPING },
+    { TV_SCROLL, SV_SCROLL_DETECT_GOLD },
+    { TV_SCROLL, SV_SCROLL_DETECT_ITEM },
+    { TV_SCROLL, SV_SCROLL_DETECT_TRAP },
+    { TV_SCROLL, SV_SCROLL_DETECT_DOOR },
+    { TV_SCROLL, SV_SCROLL_DETECT_INVIS },
+    { TV_SCROLL, SV_SCROLL_RECHARGING },
+    { TV_SCROLL, SV_SCROLL_SATISFY_HUNGER },
+    { TV_SCROLL, SV_SCROLL_WORD_OF_RECALL },
+    { TV_SCROLL, SV_SCROLL_WORD_OF_RECALL },
+    { TV_SCROLL, SV_SCROLL_WORD_OF_RECALL },
+    { TV_POTION, SV_POTION_RES_STR },
+    { TV_POTION, SV_POTION_RES_INT },
+    { TV_POTION, SV_POTION_RES_WIS },
+    { TV_POTION, SV_POTION_RES_DEX },
+    { TV_POTION, SV_POTION_RES_CON },
+    { TV_POTION, SV_POTION_RES_CHR }
+  },
+    
+  {
+    /* Magic-User store */
+    { TV_RING, SV_RING_SEARCHING },
+    { TV_RING, SV_RING_FEATHER_FALL },
+    { TV_RING, SV_RING_PROTECTION },
+    { TV_AMULET, SV_AMULET_CHARISMA },
+    { TV_AMULET, SV_AMULET_SLOW_DIGEST },
+    { TV_AMULET, SV_AMULET_RESIST_ACID },
+    { TV_WAND, SV_WAND_SLOW_MONSTER },
+    { TV_WAND, SV_WAND_CONFUSE_MONSTER },
+    { TV_WAND, SV_WAND_SLEEP_MONSTER },
+    { TV_WAND, SV_WAND_MAGIC_MISSILE },
+    { TV_WAND, SV_WAND_STINKING_CLOUD },
+    { TV_WAND, SV_WAND_WONDER },
+    { TV_STAFF, SV_STAFF_LITE },
+    { TV_STAFF, SV_STAFF_MAPPING },
+    { TV_STAFF, SV_STAFF_DETECT_TRAP },
+    { TV_STAFF, SV_STAFF_DETECT_DOOR },
+    { TV_STAFF, SV_STAFF_DETECT_GOLD },
+    { TV_STAFF, SV_STAFF_DETECT_ITEM },
+    { TV_STAFF, SV_STAFF_DETECT_INVIS },
+    { TV_STAFF, SV_STAFF_DETECT_EVIL },
+    { TV_STAFF, SV_STAFF_TELEPORTATION },
+    { TV_STAFF, SV_STAFF_IDENTIFY },
+    { TV_MAGIC_BOOK, 0 },
+    { TV_MAGIC_BOOK, 0 },
+    { TV_MAGIC_BOOK, 0 },
+    { TV_MAGIC_BOOK, 1 },
+    { TV_MAGIC_BOOK, 1 },
+    { TV_MAGIC_BOOK, 2 },
+    { TV_MAGIC_BOOK, 2 },
+    { TV_MAGIC_BOOK, 3 }
+  }
+};
+
+
 
 
 /*
- * Hack -- take notes on line 23
+ * Initialize some other arrays
  */
-static void note(cptr str)
+static void init_other(void)
 {
-    Term_erase(0, 23, 79, 23);
-    Term_putstr(20, 23, -1, TERM_WHITE, str);
-    Term_fresh();
+    int i, j, k;
+
+    inven_kind *k_ptr;
+    monster_race *r_ptr;
+
+    s16b aux[256];
+
+
+
+    /*** Prepare the Object Kind Allocator ***/
+
+    /* Clear the aux array */
+    C_WIPE(&aux, MAX_K_LEV, s16b);
+
+    /* Make the index */
+    C_MAKE(alloc_kind_index, MAX_K_LEV, s16b);
+        
+    /* Scan all of the objects */
+    for (i = 0; i < MAX_K_IDX; i++) {
+
+        /* Get the i'th object */
+        k_ptr = &k_list[i];
+
+        /* Scan all of the locale/chance pairs */
+        for (j = 0; j < 4; j++) {
+
+            /* Count valid pairs */
+            if (k_ptr->chance[j] && (k_ptr->locale[j] < MAX_K_LEV)) {
+
+                /* Count the total entries */
+                alloc_kind_size++;
+
+                /* Count the entries at each level */
+                alloc_kind_index[k_ptr->locale[j]]++;
+            }
+        }
+    }
+
+    /* Combine the "alloc_kind_index" entries */
+    for (i = 1; i < MAX_K_LEV; i++) alloc_kind_index[i] += alloc_kind_index[i-1];
+
+    /* Allocate the table */
+    C_MAKE(alloc_kind_table, alloc_kind_size, kind_entry);
+
+    /* Initialize the table */
+    for (i = 0; i < MAX_K_IDX; i++) {
+
+        /* Get the i'th object */
+        k_ptr = &k_list[i];
+
+        /* Scan all of the locale/chance pairs */
+        for (j = 0; j < 4; j++) {
+
+            /* Count valid pairs */
+            if (k_ptr->chance[j] && (k_ptr->locale[j] < MAX_K_LEV)) {
+
+                int r, x, y, z;
+
+                /* Extract the chance/locale */
+                r = k_ptr->chance[j];
+                x = k_ptr->locale[j];
+
+                /* Skip entries preceding our locale */
+                y = (x > 0) ? alloc_kind_index[x-1] : 0;
+
+                /* Skip previous entries at this locale */
+                z = y + aux[x];
+
+                /* Load the table entry */
+                alloc_kind_table[z].k_idx = i;
+                alloc_kind_table[z].locale = x;
+                alloc_kind_table[z].chance = r;
+
+                /* Another entry complete for this locale */
+                aux[x]++;
+            }
+        }
+    }
+
+    /* Paranoia */
+    if (!alloc_kind_index[0]) quit("No town objects!");
+
+
+    /*** Prepare the Monster Race Allocator ***/
+
+    /* Clear the aux array */
+    C_WIPE(&aux, MAX_R_LEV, s16b);
+
+    /* Allocate and clear the index */
+    C_MAKE(alloc_race_index, MAX_R_LEV, s16b);
+        
+    /* Scan the monsters (not the ghost) */
+    for (i = 1; i < MAX_R_IDX-1; i++) {
+
+        /* Get the i'th race */
+        r_ptr = &r_list[i];
+
+        /* Process "real" monsters */
+        if (r_ptr->rarity && (r_ptr->level < MAX_R_LEV)) {
+
+            /* Count the total entries */
+            alloc_race_size++;
+
+            /* Count the entries at each level */
+            alloc_race_index[r_ptr->level]++;
+        }
+    }
+
+    /* Combine the "alloc_race_index" entries */
+    for (i = 1; i < MAX_R_LEV; i++) alloc_race_index[i] += alloc_race_index[i-1];
+
+    /* Allocate the alloc_race_table */
+    C_MAKE(alloc_race_table, alloc_race_size, race_entry);
+
+    /* Scan the monsters (not the ghost) */
+    for (i = 1; i < MAX_R_IDX-1; i++) {
+
+        /* Get the i'th race */
+        r_ptr = &r_list[i];
+
+        /* Count valid pairs */
+        if (r_ptr->rarity && (r_ptr->level < MAX_R_LEV)) {
+
+            int r, x, y, z;
+
+            /* Extract the level/rarity */
+            x = r_ptr->level;
+            r = r_ptr->rarity;
+
+            /* Skip entries preceding our locale */
+            y = (x > 0) ? alloc_race_index[x-1] : 0;
+
+            /* Skip previous entries at this locale */
+            z = y + aux[x];
+
+            /* Load the table entry */
+            alloc_race_table[z].r_idx = i;
+            alloc_race_table[z].locale = x;
+            alloc_race_table[z].chance = r;
+
+            /* Another entry complete for this locale */
+            aux[x]++;
+        }
+    }
+
+    /* Paranoia */
+    if (!alloc_race_index[0]) quit("No town monsters!");
+
+
+    /*** Prepare the Store Catalog Array ***/
+    
+    /* Scan the stores */
+    for (i = 0; i < MAX_STORES-2; i++) {    
+        
+        /* Scan the choices */
+        for (k = 0; k < STORE_CHOICES; k++) {
+            
+            /* Extract the tval/sval codes */
+            int tv = store_choice[i][k][0];
+            int sv = store_choice[i][k][1];
+            
+            /* Locate that item type */
+            store_choice_kind[i][k] = lookup_kind(tv, sv);
+        }
+    }
+
+
+    /*** Pre-allocate the basic "auto-inscriptions" ***/
+
+    /* The "basic" feelings */
+    (void)quark_add("cursed");
+    (void)quark_add("broken");
+    (void)quark_add("average");
+    (void)quark_add("good");
+
+    /* The "extra" feelings */
+    (void)quark_add("excellent");
+    (void)quark_add("worthless");
+    (void)quark_add("special");
+    (void)quark_add("terrible");
+
+    /* Some extra strings */
+    (void)quark_add("uncursed");
+    (void)quark_add("on sale");
+
+
+    /*** Pre-allocate space for the "format()" buffer ***/
+    
+    /* Hack -- Just call the "format()" function */
+    (void)format("%s (%s).", "Ben Harrison", "benh@linc.cis.upenn.edu");
+
+
+    /*** Pre-allocate space for save/restore screen ***/
+    
+    /* Save the screen */
+    save_screen();
+    
+    /* Save the screen (embedded) */
+    save_screen();
+    
+    /* Restore the screen (embedded) */
+    restore_screen();
+
+    /* Restore the screen */
+    restore_screen();
 }
+
 
 
 /*
@@ -2322,29 +2842,21 @@ void init_some_arrays()
 
 
 
-    /* Initialize r_list from a file of some kind */
-    note("[Initializing arrays... ('r_list')]");
-    init_r_list();
-
     /* Initialize k_list from a file */
-    note("[Initializing arrays... ('k_list')]");
+    note("[Initializing arrays... (objects)]");
     init_k_list();
 
     /* Initialize v_list from a file */
-    note("[Initializing arrays... ('v_list')]");
+    note("[Initializing arrays... (artifacts)]");
     init_v_list();
 
+    /* Initialize r_list from a file of some kind */
+    note("[Initializing arrays... (monsters)]");
+    init_r_list();
 
-    /* Silly note */
-    note("[Initializing arrays...]");
-
-    /* Default attr/chars for monster races */
-    for (i = 0; i < MAX_R_IDX; i++) {
-        monster_race *r_ptr = &r_list[i];
-        monster_lore *l_ptr = &l_list[i];
-        l_ptr->l_attr = r_ptr->r_attr;
-        l_ptr->l_char = r_ptr->r_char;
-    }
+    /* Initialize some other arrays */
+    note("[Initializing arrays... (various)]");
+    init_other();
 
 
     /* Hack -- all done */

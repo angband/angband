@@ -20,9 +20,9 @@
 /*
  * Debugging
  */
+/* #define ALLOW_BORG */
 /* #define ALLOW_WIZARD */
-/* #define AUTO_PLAY */
-
+/* #define ALLOW_SPOILERS */
 
 /*
  * Precompile the header files

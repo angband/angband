@@ -122,6 +122,8 @@
 #endif
 
 
+#include <stdarg.h>
+
 
 #endif
 

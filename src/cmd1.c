@@ -74,17 +74,17 @@ int label_to_inven(int c)
  */
 int label_to_equip(int c)
 {
-    int k = INVEN_WIELD + (c - 'a');
+    int i = INVEN_WIELD + (c - 'a');
 
     /* Speed -- Ignore silly labels */
-    if (k < INVEN_WIELD) return (-1);
-    if (k >= INVEN_TOTAL) return (-1);
+    if (i < INVEN_WIELD) return (-1);
+    if (i >= INVEN_TOTAL) return (-1);
 
     /* Empty slots can never be chosen */
-    if (!inventory[k].tval) return (-1);
+    if (!inventory[i].k_idx) return (-1);
 
     /* Accept it */
-    return (k);
+    return (i);
 }
 
 
@@ -117,8 +117,17 @@ cptr mention_use(int i)
     if (i == INVEN_WIELD) {
         inven_type *i_ptr;
         i_ptr = &inventory[i];
-        if (p_ptr->use_stat[A_STR] * 15 < i_ptr->weight) {
+        if (adj_str_hold[stat_index(A_STR)] < i_ptr->weight) {
             p = "Just lifting";
+        }
+    }
+
+    /* Hack -- Heavy bow */
+    if (i == INVEN_BOW) {
+        inven_type *i_ptr;
+        i_ptr = &inventory[i];
+        if (adj_str_hold[stat_index(A_STR)] < i_ptr->weight) {
+            p = "Just holding";
         }
     }
 
@@ -154,8 +163,17 @@ cptr describe_use(int i)
     if (i == INVEN_WIELD) {
         inven_type *i_ptr;
         i_ptr = &inventory[i];
-        if (p_ptr->use_stat[A_STR] * 15 < i_ptr->weight) {
-            p = "barely lifting";
+        if (adj_str_hold[stat_index(A_STR)] < i_ptr->weight) {
+            p = "just lifting";
+        }
+    }
+
+    /* Hack -- Heavy bow */
+    if (i == INVEN_BOW) {
+        inven_type *i_ptr;
+        i_ptr = &inventory[i];
+        if (adj_str_hold[stat_index(A_STR)] < i_ptr->weight) {
+            p = "just holding";
         }
     }
 
@@ -173,22 +191,28 @@ cptr describe_use(int i)
  * A "tag" is a char "n" appearing as "@n" anywhere in the
  * inscription of an object.
  *
- * Hack -- sometimes the tag "@xn" will work as well, where
- * "n" is a char, and "x" is the "current" command_cmd code.
+ * Also, the tag "@xn" will work as well, where "n" is a tag-char,
+ * and "x" is the "current" command_cmd code.
  */
 int get_tag(int *com_val, char tag)
 {
     int i;
     cptr s;
 
+    
     /* Check every object */
     for (i = 0; i < INVEN_TOTAL; ++i) {
 
+        inven_type *i_ptr = &inventory[i];
+
         /* Skip empty objects */
-        if (!inventory[i].tval) continue;
+        if (!i_ptr->k_idx) continue;
+
+        /* Skip empty inscriptions */
+        if (!i_ptr->note) continue;
 
         /* Find a '@' */
-        s = strchr(inventory[i].inscrip, '@');
+        s = strchr(quark_str(i_ptr->note), '@');
 
         /* Process all tags */
         while (s) {
@@ -231,39 +255,49 @@ int get_tag(int *com_val, char tag)
 
 
 /*
- * Describe number of remaining charges.		-RAK-	
+ * Describe number of remaining charges in an inventory item.
  */
 void inven_item_charges(int item_val)
 {
-    int		rem_num;
-    char	out_val[80];
+    inven_type *i_ptr = &inventory[item_val];
+    
+    /* Require staff/wand */
+    if ((i_ptr->tval != TV_STAFF) && (i_ptr->tval != TV_WAND)) return;
+    
+    /* Require known item */
+    if (!inven_known_p(i_ptr)) return;
 
-    if (inven_known_p(&inventory[item_val])) {
-        rem_num = inventory[item_val].pval;
-        (void)sprintf(out_val, "You have %d charges remaining.", rem_num);
-        msg_print(out_val);
+    /* Multiple charges */
+    if (i_ptr->pval != 1) {
+
+        /* Print a message */
+        msg_format("You have %d charges remaining.", i_ptr->pval);
+    }
+        
+    /* Single charge */
+    else {
+
+        /* Print a message */
+        msg_format("You have %d charge remaining.", i_ptr->pval);
     }
 }
 
 
 /*
  * Describe an inventory item, in terms of its "number"
- * Ex: "You have 5 arrows (+1,+1)." or "You have no more arrows."
+ * Ex: "You have 5 arrows (+1,+1)." or "You have no more arrows {average}."
  */
 void inven_item_describe(int item)
 {
-    inven_type	*i_ptr;
-    char	tmp_str[160];
+    inven_type	*i_ptr = &inventory[item];
 
-    i_ptr = &inventory[item];
-
+    char	i_name[80];
+    
     /* Get a description */
-    objdes(tmp_str, i_ptr, TRUE);
+    objdes(i_name, i_ptr, TRUE, 3);
 
     /* Print a message */
-    message("You have ", 0x02);
-    message(tmp_str, 0x02);
-    message(".", 0);
+    msg_format("You have %s.", i_name);
 }
 
 
@@ -297,8 +331,11 @@ void inven_item_increase(int item, int num)
         i_ptr->number += num;
         inven_weight += num * i_ptr->weight;
 
-        /* Remember to recalculate bonuses */
-        p_ptr->update |= PU_BONUS;
+        /* Recalculate bonuses */
+        p_ptr->update |= (PU_BONUS);
+        
+        /* Redraw the choice window */
+        p_ptr->redraw |= (PR_CHOICE);
     }
 }
 
@@ -316,7 +353,7 @@ void inven_item_optimize(int item)
     i_ptr = &inventory[item];
 
     /* Paranoia -- be sure it exists */
-    if (!i_ptr->tval) return;
+    if (!i_ptr->k_idx) return;
 
     /* Only optimize if empty */
     if (i_ptr->number) return;
@@ -334,6 +371,9 @@ void inven_item_optimize(int item)
 
         /* Paranoia -- erase the empty slot */
         invwipe(&inventory[inven_ctr]);
+
+        /* Mega-Hack -- combine pack afterwards */
+        combine_pack();
     }
 
     /* The item is being wielded */
@@ -345,6 +385,9 @@ void inven_item_optimize(int item)
         /* Paranoia -- erase the empty slot */
         invwipe(&inventory[item]);
     }
+
+    /* Paranoia -- Redraw choice window */
+    p_ptr->redraw |= (PR_CHOICE);
 }
 
 
@@ -362,7 +405,7 @@ void floor_item_increase(int y, int x, int amt)
     inven_type *i_ptr = &i_list[cave[y][x].i_idx];
 
     /* Paranoia -- be sure it exists */
-    if (!i_ptr->tval) return;
+    if (!i_ptr->k_idx) return;
 
     /* Bounds check */
     num = i_ptr->number + amt;
@@ -384,7 +427,7 @@ void floor_item_optimize(int y, int x)
     inven_type *i_ptr = &i_list[cave[y][x].i_idx];
 
     /* Paranoia -- be sure it exists */
-    if (!i_ptr->tval) return;
+    if (!i_ptr->k_idx) return;
 
     /* Optimize if empty */
     if (i_ptr->number == 0) delete_object(y, x);
@@ -429,19 +472,19 @@ int find_range(int tval, int *i1, int *i2)
  */
 int weight_limit(void)
 {
-    s32b weight_cap;
+    int i;
 
     /* Factor in strength */
-    weight_cap = (long)p_ptr->use_stat[A_STR] * (long)PLAYER_WEIGHT_CAP;
+    i = adj_str_wgt[stat_index(A_STR)] * 10;
 
-    /* Hack -- large players can carry more */
-    weight_cap += (long)p_ptr->wt;
-
-    /* Nobody can carry more than 300 pounds */
-    if (weight_cap > 3000L) weight_cap = 3000L;
+    /* Factor in body weight */
+    i = i + p_ptr->wt;
+    
+    /* Maximum weight limit (300 pounds) */
+    if (i > 3000) i = 3000;
 
     /* Return the result */
-    return ((int)weight_cap);
+    return (i);
 }
 
 
@@ -483,14 +526,6 @@ static int inven_carry_aux(inven_type *i_ptr)
     inven_type		*j_ptr;
 
 
-    /* The tval of readible books */
-    int read_tval = 0;
-
-    /* Acquire the type value of the books that the player can read, if any */
-    if (cp_ptr->spell_stat == A_WIS) read_tval = TV_PRAYER_BOOK;
-    else if (cp_ptr->spell_stat == A_INT) read_tval = TV_MAGIC_BOOK;
-
-
     /* Get the "value" of the item */
     i_value = item_value(i_ptr);
 
@@ -501,8 +536,10 @@ static int inven_carry_aux(inven_type *i_ptr)
         j_ptr = &inventory[i];
 
         /* Hack -- readable books always come first */
-        if ((i_ptr->tval == read_tval) && (j_ptr->tval != read_tval)) break;
-        if ((j_ptr->tval == read_tval) && (i_ptr->tval != read_tval)) continue;
+        if ((i_ptr->tval == mp_ptr->spell_book) &&
+            (j_ptr->tval != mp_ptr->spell_book)) break;
+        if ((j_ptr->tval == mp_ptr->spell_book) &&
+            (i_ptr->tval != mp_ptr->spell_book)) continue;
 
         /* Objects sort by decreasing type */
         if (i_ptr->tval > j_ptr->tval) break;
@@ -566,6 +603,13 @@ int inven_carry(inven_type *i_ptr)
     int         slot, i;
 
 
+    /* Redraw choice window (later) */
+    p_ptr->redraw |= (PR_CHOICE);
+
+    /* Recalculate bonuses (later) */
+    p_ptr->update |= (PU_BONUS);
+
+
     /* Check all the items in the pack (attempt to combine) */
     for (slot = 0; slot < inven_ctr; slot++) {
 
@@ -581,14 +625,8 @@ int inven_carry(inven_type *i_ptr)
             /* Hack -- save largest discount */
             j_ptr->discount = MAX(j_ptr->discount, i_ptr->discount);
 
-            /* Hack -- never lose an inscription */
-            if (i_ptr->inscrip[0]) inscribe(j_ptr, i_ptr->inscrip);
-
             /* Increase the weight */
             inven_weight += i_ptr->number * i_ptr->weight;
-
-            /* Remember to recalculate bonuses */
-            p_ptr->update |= PU_BONUS;
 
             /* All done, report where we put it */
             return (slot);
@@ -618,7 +656,7 @@ int inven_carry(inven_type *i_ptr)
     }
     
     /* Structure copy to insert the new item */
-    inventory[slot] = *i_ptr;
+    inventory[slot] = (*i_ptr);
 
     /* Forget the old location */
     inventory[slot].iy = inventory[slot].ix = 0;
@@ -628,9 +666,6 @@ int inven_carry(inven_type *i_ptr)
 
     /* Increase the weight, prepare to redraw */
     inven_weight += i_ptr->number * i_ptr->weight;
-
-    /* Remember to re-calculate bonuses */
-    p_ptr->update |= PU_BONUS;
 
     /* Say where it went */
     return (slot);
@@ -681,9 +716,6 @@ void combine_pack(void)
                 /* Hack -- save largest discount */
                 j_ptr->discount = MAX(i_ptr->discount, j_ptr->discount);
 
-                /* Hack -- maintain the "best" inscription */
-                if (i_ptr->inscrip[0]) inscribe(j_ptr, i_ptr->inscrip);
-
                 /* One object is gone */
                 inven_ctr--;
 
@@ -696,6 +728,9 @@ void combine_pack(void)
 
                 /* Erase the last object */
                 invwipe(&inventory[k]);
+
+                /* Redraw the choice window */
+                p_ptr->redraw |= (PR_CHOICE);
 
 		/* Combine next item */
 		break;
@@ -734,6 +769,9 @@ void combine_pack(void)
 
 	/* Insert the moved item */
 	inventory[j] = temp;
+
+        /* Redraw the choice window */
+        p_ptr->redraw |= (PR_CHOICE);
     }
 
 
@@ -745,16 +783,55 @@ void combine_pack(void)
 
 
 
+/*
+ * Total Hack -- allow all items to be listed (even empty ones)
+ * This is only used by "do_cmd_inven_e()" and is cleared there.
+ */
+bool item_tester_full = FALSE;
+bool item_tester_xtra = FALSE;
 
 
 /*
+ * Here is a "pseudo-hook" used during calls to "get_item()" and
+ * "show_inven()" and "show_equip()", and the choice window routines.
+ */
+byte item_tester_tval = 0;
+byte item_tester_sval = 0;
+
+/*
  * Here is a "hook" used during calls to "get_item()" and
- * "show_inven()" and "show_equip()".
+ * "show_inven()" and "show_equip()", and the choice window routines.
  */
 bool (*item_tester_hook)(inven_type*) = NULL;
 
 
 
+/*
+ * Check an item against the item tester info
+ */
+bool item_tester_okay(inven_type *i_ptr)
+{
+    /* Hack -- allow listing empty slots */
+    if (item_tester_full) return (TRUE);
+    
+    /* Require an item */
+    if (!i_ptr->k_idx) return (FALSE);
+
+    /* Important -- refuse illegal items */
+    if (i_ptr->tval >= TV_MAX_PICK_UP) return (FALSE);
+
+    /* Check the tval */
+    if (item_tester_tval && (!(item_tester_tval == i_ptr->tval))) return (FALSE);    
+
+    /* Check the sval */
+    if (item_tester_sval && (!(item_tester_sval == i_ptr->sval))) return (FALSE);    
+
+    /* Check the hook */
+    if (item_tester_hook && (!(*item_tester_hook)(i_ptr))) return (FALSE);    
+
+    /* Assume okay */
+    return (TRUE);
+}
 
 
 
@@ -768,8 +845,11 @@ void choice_inven(int r1, int r2)
     register	int i, n;
     inven_type *i_ptr;
     byte	attr = TERM_WHITE;
-    char	tmp_val[160];
 
+    char	tmp_val[80];
+
+    char	i_name[80];
+    
 
     /* In-active */
     if (!use_choice_win || !term_choice) return;
@@ -788,8 +868,7 @@ void choice_inven(int r1, int r2)
         tmp_val[0] = tmp_val[1] = tmp_val[2] = ' ';
 
         /* Is this item "acceptable"? */
-        if ((i >= r1) && (i <= r2) &&
-            (!item_tester_hook || (*item_tester_hook)(i_ptr))) {
+        if ((i >= r1) && (i <= r2) && item_tester_okay(i_ptr)) {
 
             /* Prepare an "index" */
             tmp_val[0] = index_to_label(i);
@@ -802,22 +881,22 @@ void choice_inven(int r1, int r2)
         Term_putstr(0, i, 3, TERM_WHITE, tmp_val);
 
         /* Obtain an item description */
-        objdes(tmp_val, i_ptr, TRUE);
+        objdes(i_name, i_ptr, TRUE, 3);
 
         /* Obtain the length of the description */
-        n = strlen(tmp_val);
+        n = strlen(i_name);
 
         /* Get a color */
         if (use_color) attr = tval_to_attr[i_ptr->tval];
 
         /* Display the entry itself */
-        Term_putstr(3, i, n, attr, tmp_val);
+        Term_putstr(3, i, n, attr, i_name);
 
         /* Erase the rest of the line */
         Term_erase(3+n, i, 80, i);
 
         /* Display the weight if needed */
-        if (choice_inven_wgt) {
+        if (choice_show_weight) {
             int wgt = i_ptr->weight * i_ptr->number;
             sprintf(tmp_val, "%3d.%1d lb", wgt / 10, wgt % 10);
             Term_putstr(71, i, -1, TERM_WHITE, tmp_val);
@@ -845,8 +924,11 @@ void choice_equip(int r1, int r2)
     register	int i, n;
     inven_type *i_ptr;
     byte	attr = TERM_WHITE;
-    char	tmp_val[160];
+    
+    char	tmp_val[80];
 
+    char	i_name[80];
+    
 
     /* In-active */
     if (!use_choice_win || !term_choice) return;
@@ -865,8 +947,7 @@ void choice_equip(int r1, int r2)
         tmp_val[0] = tmp_val[1] = tmp_val[2] = ' ';
 
         /* Is this item "acceptable"? */
-        if ((i >= r1) && (i <= r2) && (i_ptr->tval) &&
-            (!item_tester_hook || (*item_tester_hook)(i_ptr))) {
+        if ((i >= r1) && (i <= r2) && item_tester_okay(i_ptr)) {
 
             /* Prepare an "index" */
             tmp_val[0] = index_to_label(i);
@@ -879,30 +960,30 @@ void choice_equip(int r1, int r2)
         Term_putstr(0, i - INVEN_WIELD, 3, TERM_WHITE, tmp_val);
 
         /* Obtain an item description */
-        objdes(tmp_val, i_ptr, TRUE);
+        objdes(i_name, i_ptr, TRUE, 3);
 
         /* Obtain the length of the description */
-        n = strlen(tmp_val);
+        n = strlen(i_name);
 
         /* Get the color */
         if (use_color) attr = tval_to_attr[i_ptr->tval];
 
         /* Display the entry itself */
-        Term_putstr(3, i - INVEN_WIELD, n, attr, tmp_val);
+        Term_putstr(3, i - INVEN_WIELD, n, attr, i_name);
 
         /* Erase the rest of the line */
         Term_erase(3+n, i - INVEN_WIELD, 80, i - INVEN_WIELD);
 
         /* Display the slot description (if needed) */
-        if (choice_equip_xtra) {
+        if (choice_show_label) {
             Term_putstr(61, i - INVEN_WIELD, -1, TERM_WHITE, "<--");
             Term_putstr(65, i - INVEN_WIELD, -1, TERM_WHITE, mention_use(i));
         }
 
         /* Display the weight (if needed) */
-        if (choice_equip_wgt && i_ptr->weight) {
+        if (choice_show_weight && i_ptr->weight) {
             int wgt = i_ptr->weight * i_ptr->number;
-            int col = choice_equip_xtra ? 52 : 71;
+            int col = (choice_show_label ? 52 : 71);
             sprintf(tmp_val, "%3d.%1d lb", wgt / 10, wgt % 10);
             Term_putstr(col, i - INVEN_WIELD, -1, TERM_WHITE, tmp_val);
         }
@@ -944,7 +1025,10 @@ void show_inven(int r1, int r2)
     inven_type	*i_ptr;
 
     int		len, l, lim;
-    char	tmp_val[160];
+
+    char	i_name[80];
+
+    char	tmp_val[80];
 
     int		out_index[23];
     byte	out_color[23];
@@ -967,16 +1051,18 @@ void show_inven(int r1, int r2)
         i_ptr = &inventory[i];
 
         /* Is this item acceptable? */
-        if (item_tester_hook && (!(*item_tester_hook)(i_ptr))) continue;
+        if (!item_tester_okay(i_ptr)) continue;
 
-        /* Describe the object, enforce max length */
-        objdes(tmp_val, i_ptr, TRUE);
-        tmp_val[lim] = '\0';
+        /* Describe the object */
+        objdes(i_name, i_ptr, TRUE, 3);
+
+        /* Hack -- enforce max length */
+        i_name[lim] = '\0';
 
         /* Save the object index, color, and description */
         out_index[k] = i;
         out_color[k] = tval_to_attr[i_ptr->tval];
-        (void)strcpy(out_desc[k], tmp_val);
+        (void)strcpy(out_desc[k], i_name);
 
         /* Find the predicted "line length" */
         l = strlen(out_desc[k]) + 5;
@@ -1045,7 +1131,9 @@ void show_equip(int s1, int s2)
 
     inven_type		*i_ptr;
 
-    char		tmp_val[160];
+    char		tmp_val[80];
+
+    char		i_name[80];
 
     int			out_index[23];
     byte		out_color[23];
@@ -1065,24 +1153,19 @@ void show_equip(int s1, int s2)
 
         i_ptr = &inventory[i];
 
-        /* Sometimes, skip empty equipment slots */
-        if (!i_ptr->tval) {
-            if (item_tester_hook) continue;
-            if (s1 > INVEN_WIELD) continue;
-            if (s2 < INVEN_TOTAL-1) continue;
-        }
-
         /* Is this item acceptable? */
-        if (item_tester_hook && (!(*item_tester_hook)(i_ptr))) continue;
+        if (!item_tester_okay(i_ptr)) continue;
 
-        /* Build a truncated object description */
-        objdes(tmp_val, i_ptr, TRUE);
-        tmp_val[lim] = 0;
+        /* Description */
+        objdes(i_name, i_ptr, TRUE, 3);
+
+        /* Truncate the description */
+        i_name[lim] = 0;
 
         /* Save the color */
         out_index[k] = i;
         out_color[k] = tval_to_attr[i_ptr->tval];
-        (void)strcpy(out_desc[k], tmp_val);
+        (void)strcpy(out_desc[k], i_name);
 
         /* Extract the maximal length (see below) */
         l = strlen(out_desc[k]) + 2 + 3 + 14 + 2;
@@ -1144,6 +1227,64 @@ void show_equip(int s1, int s2)
 
 
 
+/*
+ * Verify the choice of an item.
+ */
+int verify(cptr prompt, int item)
+{
+    char	i_name[80];
+
+    char	out_val[160];
+    
+
+    /* Describe */
+    objdes(i_name, &inventory[item], TRUE, 3);
+
+    /* Prompt */
+    (void)sprintf(out_val, "%s %s? ", prompt, i_name);
+
+    /* Query */
+    return (get_check(out_val));
+}
+
+
+#ifdef ALLOW_NOTS
+
+/*
+ * Hack -- allow user to "prevent" certain choices
+ */
+static bool get_item_refuse(int i)
+{
+    cptr s;
+
+    inven_type *i_ptr = &inventory[i];
+    
+    /* No inscription */
+    if (!i_ptr->note) return (FALSE);
+    
+    /* Find a '!' */
+    s = strchr(quark_str(i_ptr->note), '!');
+
+    /* Process preventions */
+    while (s) {
+
+        /* Check the "restriction" */
+        if ((s[1] == command_cmd) || (s[1] == '*')) {
+
+            /* Verify the choice */
+            if (!verify("Really Try", i)) return (TRUE);
+        }
+        
+        /* Find another '!' */
+        s = strchr(s + 1, '!');
+    }
+
+    /* No prevention */
+    return (FALSE);
+}
+
+#endif
+
 
 
 /*
@@ -1151,11 +1292,14 @@ void show_equip(int s1, int s2)
  */
 static bool get_item_okay(int i)
 {
+    /* Illegal items */
     if ((i < 0) || (i >= INVEN_TOTAL)) return (FALSE);
-    if (!inventory[i].tval) return (FALSE);
-    if (!item_tester_hook) return (TRUE);
-    if ((*item_tester_hook)(&inventory[i])) return (TRUE);
-    return (FALSE);
+
+    /* Verify the item */
+    if (!item_tester_okay(&inventory[i])) return (FALSE);
+
+    /* Assume okay */
+    return (TRUE);
 }
 
 
@@ -1163,21 +1307,42 @@ static bool get_item_okay(int i)
  * Let the user select an item, return its "index"
  *
  * The selected item must fall in a slot between "s1" and "s2", and must
- * satisfy the "item_tester_hook()" function, if that hook is set.
+ * satisfy the "item_tester_hook()" function, if that hook is set, and the
+ * "item_tester_tval/sval", if those values are set.  All "item_tester"
+ * restrictions are cleared before this function returns.
+ *
+ * If the parameter "floor" is TRUE, and the item on the floor below
+ * the player satisfies the requirements of "item_tester_okay()", then
+ * the player may press "-" to indicate "the item on the floor".
  *
  * If a legal item is selected, we save it in "com_val" and return TRUE.
  * If this "legal" item is on the floor, we use a "com_val" of "-1".
  *
- * Otherwise, we set return FALSE, and set "com_val" to:
+ * Otherwise, we return FALSE, and set "com_val" to:
  *   -1 for "User hit space/escape"
  *   -2 for "No legal items to choose"
  *
- * If the parameter "floor" is TRUE, then "-" is a legal response, and
- * indicates "the item on the floor" (com_val of "-1", return TRUE).
+ * Note that "space" is a very important special response.  If we are
+ * not in "browse" mode, then we enter it, and if we are, then this
+ * function is "escaped", and we enter inven/equip mode, as appropriate.
+ * This may cause trouble for any command which does extra processing
+ * after a call to "get_item()" which returns FALSE.
  *
- * Note that "space" is a very important "response" which tells the system
- * to drop into inven/equip mode, as appropriate.  Note that all commands
- * which call "get_item()" must be prepared for this possible result.
+ * Global "command_see" may be set before calling this function to start
+ * out in "browse" mode.  It is cleared before this function returns.
+ * 
+ * Global "command_wrk" is used to choose between inven/equip listings.
+ * If it is TRUE then we are viewing inventory, else equipment.
+ *
+ * Global "command_gap" is used to indent the inven/equip tables, and
+ * to provide some consistancy over time.  It shrinks as needed to hold
+ * the various tables horizontally, and can only be reset by calling this
+ * function with "command_see" being FALSE, or by pressing ESCAPE from
+ * this function, or from the inven/equip viewer functions below.
+ *
+ * Global "command_new" is used to enter "inven"/"equip" mode.  Any key
+ * saved into "command_new" will be used by the "request_command" function
+ * next time it is called.  Note that this key will be "keymapped".
  */
 int get_item(int *com_val, cptr pmt, int s1, int s2, bool floor)
 {
@@ -1225,48 +1390,54 @@ int get_item(int *com_val, cptr pmt, int s1, int s2, bool floor)
     if (allow_inven && (i1 > i2)) allow_inven = FALSE;
     if (allow_equip && (e1 > e2)) allow_equip = FALSE;
 
+    /* Verify the floor item */
+    if (floor && !item_tester_okay(&i_list[cave[py][px].i_idx])) floor = FALSE;
+    
 
-    /* Reset display width */
+    /* Hack -- Reset display width */
     if (!command_see) command_gap = 50;
 
 
     /* Hack -- Start on equipment if requested */
-    if (command_see && !command_xxx && allow_equip) {
-        command_xxx = FALSE;
+    if (command_see && !command_wrk && allow_equip) {
+        command_wrk = FALSE;
     }
 
     /* Use inventory if allowed */
     else if (allow_inven) {
-        command_xxx = TRUE;
+        command_wrk = TRUE;
     }
 
     /* Use equipment */
     else if (allow_equip) {
-        command_xxx = FALSE;
+        command_wrk = FALSE;
     }
 
     /* Use inventory (by default) for floor */
     else if (floor) {
-        command_xxx = TRUE;
+        command_wrk = TRUE;
     }
 
     /* Nothing to choose from */
     else {
 
-        /* Go back to inven/equip mode */
+        /* Hack -- Go back to inven/equip mode */
         if (command_see) {
-            command_new = command_xxx ? 'i' : 'e';
-            command_see = FALSE;
+            command_new = (command_wrk ? 'i' : 'e');
         }
 
-        /* Do not try to select */
+        /* Hack -- Do not try to select */
         done = TRUE;
 
-        /* Nothing to choose */
+        /* Hack -- Nothing to choose */
         *com_val = -2;
     }
 
 
+    /* Hack -- clear old messages */
+    msg_print(NULL);
+    
+    
     /* Hack -- start out in "display" mode */
     if (command_see) save_screen();
 
@@ -1275,7 +1446,7 @@ int get_item(int *com_val, cptr pmt, int s1, int s2, bool floor)
     while (!done) {
 
         /* Inventory screen */
-        if (command_xxx) {
+        if (command_wrk) {
 
             /* Extract the legal requests */
             n1 = 'a' + i1;
@@ -1306,8 +1477,8 @@ int get_item(int *com_val, cptr pmt, int s1, int s2, bool floor)
         if (allow_inven && allow_equip) {
             (void)sprintf(out_val,
                           "(%s: %c-%c, / for %s,%s%s or ESC) %s",
-                          (command_xxx ? "Inven" : "Equip"), n1, n2,
-                          (command_xxx ? "Equip" : "Inven"),
+                          (command_wrk ? "Inven" : "Equip"), n1, n2,
+                          (command_wrk ? "Equip" : "Inven"),
                           (command_see ? "" : " * to see,"),
                           (floor ? " -," : ""), pmt);
         }
@@ -1336,10 +1507,10 @@ int get_item(int *com_val, cptr pmt, int s1, int s2, bool floor)
         /* Get a key */
         which = inkey();
 
-        /* Hack -- handle "return" */
+        /* Handle "return" */
         if ((which == '\n') || (which == '\r')) {
 
-            /* Hack -- Assume "default" response */
+            /* Assume "default" response */
             if (n1 == n2) which = n1;
         }
 
@@ -1348,6 +1519,7 @@ int get_item(int *com_val, cptr pmt, int s1, int s2, bool floor)
 
           /* Cancel */
           case ESCAPE:
+            command_gap = 50;
             done = TRUE;
             break;
 
@@ -1358,7 +1530,7 @@ int get_item(int *com_val, cptr pmt, int s1, int s2, bool floor)
                 command_see = TRUE;
             }
             else {
-                command_new = command_xxx ? 'i' : 'e';
+                command_new = (command_wrk ? 'i' : 'e');
                 done = TRUE;
             }
             break;
@@ -1369,6 +1541,10 @@ int get_item(int *com_val, cptr pmt, int s1, int s2, bool floor)
             if (!command_see) {
                 save_screen();
                 command_see = TRUE;
+            }
+            else {
+                restore_screen();
+                command_see = FALSE;
             }
             break;
 
@@ -1386,7 +1562,7 @@ int get_item(int *com_val, cptr pmt, int s1, int s2, bool floor)
             }
 
             /* Switch "pages" */
-            command_xxx = (command_xxx ? FALSE : TRUE);
+            command_wrk = (command_wrk ? FALSE : TRUE);
 
             /* Need to redraw */
             break;
@@ -1435,6 +1611,18 @@ int get_item(int *com_val, cptr pmt, int s1, int s2, bool floor)
                 break;
             }
 
+#ifdef ALLOW_NOTS
+
+            /* Allow player to "refuse" certain actions */
+            if (get_item_refuse(k)) {
+                which = ESCAPE;
+                energy_use = 0;
+                done = TRUE;
+                break;
+            }
+
+#endif
+
             /* Use that item */
             (*com_val) = k;
             item = TRUE;
@@ -1456,7 +1644,7 @@ int get_item(int *com_val, cptr pmt, int s1, int s2, bool floor)
             }
 
             /* Convert letter to inventory index */
-            if (command_xxx) {
+            if (command_wrk) {
                 k = label_to_inven(which);
             }
 
@@ -1479,6 +1667,18 @@ int get_item(int *com_val, cptr pmt, int s1, int s2, bool floor)
                 break;
             }
 
+#ifdef ALLOW_NOTS
+
+            /* Allow player to "refuse" certain actions */
+            if (get_item_refuse(k)) {
+                which = ESCAPE;
+                energy_use = 0;
+                done = TRUE;
+                break;
+            }
+
+#endif
+
             /* Accept that choice */
             (*com_val) = k;
             item = TRUE;
@@ -1488,694 +1688,26 @@ int get_item(int *com_val, cptr pmt, int s1, int s2, bool floor)
     }
 
 
+    /* Clear the prompt */
+    prt("", 0, 0);
+    
+    /* Redraw the choice window */
+    p_ptr->redraw |= (PR_CHOICE);
+    
     /* Fix the screen if necessary */
     if (command_see) restore_screen();
 
-    /* Cancel "display" on "Escape" */
-    if (which == ESCAPE) command_see = FALSE;
+    /* Cancel "display" */
+    command_see = FALSE;
 
-    /* Forget the tester hook */
+    /* Forget the item_tester restrictions */
+    item_tester_tval = 0;
+    item_tester_sval = 0;
     item_tester_hook = NULL;
-
-    /* Clear messages (?) */
-    msg_print(NULL);
-
-    /* XXX XXX Hack -- update choice window */
-    if (!choice_default) choice_inven(0, inven_ctr - 1);
-    else choice_equip(INVEN_WIELD, INVEN_TOTAL - 1);
 
 
     /* Return TRUE if something was picked */
     return (item);
 }
-
-
-
-
-/*
- * Move an item from equipment list to pack
- * Note that only one item at a time can be wielded per slot.
- * Note that taking off an item when "full" will cause that item
- * to fall to the ground.
- */
-static void inven_takeoff(int item_val, int amt)
-{
-    int			posn;
-
-    inven_type		*i_ptr;
-    inven_type		tmp_obj;
-
-    cptr		act;
-
-    char		out_val[160];
-    char		prt2[160];
-
-
-    /* Get the item to take off */
-    i_ptr = &inventory[item_val];
-
-    /* Paranoia */
-    if (amt <= 0) return;
-
-    /* Verify */
-    if (amt > i_ptr->number) amt = i_ptr->number;
-
-    /* Make a copy to carry */
-    tmp_obj = *i_ptr;
-    tmp_obj.number = amt;
-
-    /* What are we "doing" with the object */
-    if (amt < i_ptr->number) {
-        act = "Took off ";
-    }
-    else if (item_val == INVEN_WIELD) {
-        act = "Was wielding ";
-    }
-    else if (item_val == INVEN_BOW) {
-        act = "Was shooting with ";
-    }
-    else if (item_val == INVEN_LITE) {
-        act = "Light source was ";
-    }
-    else {
-        act = "Was wearing ";
-    }
-
-    /* Carry the object, saving the slot it went in */
-    posn = inven_carry(&tmp_obj);
-
-    /* Describe the result */
-    objdes(prt2, i_ptr, TRUE);
-    (void)sprintf(out_val, "%s%s. (%c)", act, prt2, index_to_label(posn));
-    msg_print(out_val);
-
-    /* Delete (part of) it */
-    inven_item_increase(item_val, -amt);
-    inven_item_optimize(item_val);
-}
-
-
-/*
- * Used to verify if this really is the item we wish to wear or read.
- */
-int verify(cptr prompt, int item)
-{
-    char	out_str[160];
-    char	object[160];
-
-    objdes(object, &inventory[item], TRUE);
-    (void)sprintf(out_str, "%s %s? ", prompt, object);
-    return (get_check(out_str));
-}
-
-
-
-/*
- * Drops (some of) an item from inventory to "near" the current location
- */
-static void inven_drop(int item_val, int amt)
-{
-    inven_type		*i_ptr;
-    inven_type		 tmp_obj;
-
-    cptr act;
-
-    char		prt1[160];
-    char		prt2[160];
-
-
-    /* Access the slot to be dropped */
-    i_ptr = &inventory[item_val];
-
-    /* Error check */
-    if (amt <= 0) return;
-
-    /* Not too many */
-    if (amt > i_ptr->number) amt = i_ptr->number;
-
-    /* Nothing done? */
-    if (amt <= 0) return;
-
-    /* Make a "fake" object */
-    tmp_obj = *i_ptr;
-    tmp_obj.number = amt;
-
-    /* What are we "doing" with the object */
-    if (amt < i_ptr->number) {
-        act = "Dropped ";
-    }
-    else if (item_val == INVEN_WIELD) {
-        act = "Was wielding ";
-    }
-    else if (item_val == INVEN_BOW) {
-        act = "Was shooting with ";
-    }
-    else if (item_val == INVEN_LITE) {
-        act = "Light source was ";
-    }
-    else if (item_val >= INVEN_WIELD) {
-        act = "Was wearing ";
-    }
-    else {
-        act = "Dropped ";
-    }
-
-    /* Message */
-    objdes(prt1, &tmp_obj, TRUE);
-    (void)sprintf(prt2, "%s%s.", act, prt1);
-    msg_print(prt2);
-
-    /* Drop it (carefully) near the player */
-    drop_near(&tmp_obj, 0, py, px);
-
-    /* Decrease the item, optimize. */
-    inven_item_increase(item_val, -amt);
-    inven_item_describe(item_val);
-    inven_item_optimize(item_val);
-}
-
-
-/*
- * Given an item, find a slot to wield it in
- */
-static int wield_slot(inven_type *i_ptr)
-{
-    /* Slot for equipment */
-    switch (i_ptr->tval) {
-
-        case TV_SHOT: case TV_BOLT: case TV_ARROW:
-            return (-1);
-
-        case TV_BOW:
-            return (INVEN_BOW);
-
-        case TV_DIGGING: case TV_HAFTED: case TV_POLEARM: case TV_SWORD:
-            return (INVEN_WIELD);
-
-        case TV_LITE:
-            return (INVEN_LITE);
-
-        case TV_BOOTS:
-            return (INVEN_FEET);
-
-        case TV_GLOVES:
-            return (INVEN_HANDS);
-
-        case TV_CLOAK:
-            return (INVEN_OUTER);
-
-        case TV_CROWN:
-        case TV_HELM:
-            return (INVEN_HEAD);
-
-        case TV_SHIELD:
-            return (INVEN_ARM);
-
-        case TV_DRAG_ARMOR:
-        case TV_HARD_ARMOR:
-        case TV_SOFT_ARMOR:
-            return (INVEN_BODY);
-
-        case TV_AMULET:
-            return (INVEN_NECK);
-
-        case TV_RING:
-
-            /* Use the right hand first */
-            if (!inventory[INVEN_RIGHT].tval) return (INVEN_RIGHT);
-
-            /* And then the left hand */
-            if (!inventory[INVEN_LEFT].tval) return (INVEN_LEFT);
-
-            /* Use the left hand for swapping (by default) */
-            if (!other_query_flag) return (INVEN_LEFT);
-
-            /* Hack -- ask for a hand */
-            while (1) {
-
-                char query;
-                int slot = -1;
-
-                get_com("Put ring on which hand (l/r/L/R)?", &query);
-
-                if (query == ESCAPE) return (-1);
-
-                if (query == 'l') return (INVEN_LEFT);
-                if (query == 'r') return (INVEN_RIGHT);
-
-                if (query == 'L') slot = INVEN_LEFT;
-                if (query == 'R') slot = INVEN_RIGHT;
-
-                if (slot >= 0) {
-                    if (!verify("Replace", slot)) break;
-                    return (slot);
-                }
-
-                bell();
-            }
-
-            /* Hack -- no selection */
-            return (-1);
-    }
-
-    /* Weird request */
-    msg_print("You can't wear/wield that item!");
-
-    /* No slot available */
-    return (-1);
-}
-
-
-
-
-
-/*
- * Hack -- new interface to the "inventory" commands
- *
- * Basically, the "inventory" commands are just normal commands now.
- *
- * Each of the inventory commands, if possible, sets "command_new" in
- * such a way as to enable the command to automatically repeat itself.
- *
- * Unfortunately, the "error" and "status" messages induce screen
- * refresh in between calls to "show_inven()", so we do not have as
- * "nice" of an interface as I would like.  But it is much simpler now.
- */
-
-
-/*
- * Display inventory
- */
-void do_cmd_inven_i(void)
-{
-    char prt1[160];
-
-    /* Free command */
-    energy_use = 0;
-
-    /* Reset display */
-    if (!command_see) command_gap = 50;
-
-    /* Enter "display" mode */
-    command_see = TRUE;
-
-    /* Save the screen */
-    save_screen();
-
-    /* Note that we are in "inventory" mode */
-    command_xxx = TRUE;
-
-    /* Display the inventory */
-    show_inven(0, inven_ctr - 1);
-
-    /* Build a prompt */
-    sprintf(prt1, "Inventory (carrying %d.%d / %d.%d pounds). Command: ",
-                inven_weight / 10, inven_weight % 10,
-                weight_limit() / 10, weight_limit() % 10);
-
-    /* Get a command */
-    prt(prt1, 0, 0);
-    command_new = inkey();
-
-    /* Hack -- "ignore" space */
-    if (command_new == ' ') {
-        command_new = 'i';
-    }
-
-    /* Hack -- Process "Escape" */
-    if (command_new == ESCAPE) {
-        command_see = FALSE;		
-        command_new = 0;
-    }
-
-    /* Restore the screen */
-    restore_screen();
-}
-
-
-/*
- * Display equipment
- */
-void do_cmd_inven_e(void)
-{
-    char prt1[160];
-
-    /* Free command */
-    energy_use = 0;
-
-    /* Reset display */
-    if (!command_see) command_gap = 50;
-
-    /* Enter "display" mode */
-    command_see = TRUE;
-
-    /* Save the screen */
-    save_screen();
-
-    /* Note that we are in "equipment" mode */
-    command_xxx = FALSE;
-
-    /* Display the equipment */
-    show_equip(INVEN_WIELD, INVEN_TOTAL-1);
-
-    /* Build a prompt */
-    sprintf(prt1, "Equipment (carrying %d.%d / %d.%d pounds). Command: ",
-                inven_weight / 10, inven_weight % 10,
-                weight_limit() / 10, weight_limit() % 10);
-
-    /* Get a command */
-    prt(prt1, 0, 0);
-    command_new = inkey();
-
-    /* Hack -- "ignore" space */
-    if (command_new == ' ') {
-        command_new = 'e';
-    }
-
-    /* Hack -- Process "Escape" */
-    if (command_new == ESCAPE) {
-        command_see = FALSE;		
-        command_new = 0;
-    }
-
-    /* Restore the screen */
-    restore_screen();
-}
-
-
-/*
- * The "wearable" tester
- */
-static bool item_tester_hook_wear(inven_type *i_ptr)
-{
-    if (!wearable_p(i_ptr)) return (FALSE);
-    if (i_ptr->tval == TV_BOLT) return (FALSE);
-    if (i_ptr->tval == TV_ARROW) return (FALSE);
-    if (i_ptr->tval == TV_SHOT) return (FALSE);
-    return (TRUE);
-}
-
-
-/*
- * Wield or wear a single item from the pack or floor
- */
-void do_cmd_inven_w(void)
-{
-    int item, slot;
-    bool floor, okay;
-    inven_type tmp_obj;
-    inven_type *i_ptr;
-    cptr location;
-    char prt1[160];
-    char prt2[160];
-
-
-    /* Assume this will be free */
-    energy_use = 0;
-
-
-    /* Access the item on the floor */
-    i_ptr = &i_list[cave[py][px].i_idx];
-
-    /* Check for use of the floor */
-    floor = item_tester_hook_wear(i_ptr);
-
-
-    /* Restrict the choices */
-    item_tester_hook = item_tester_hook_wear;
-
-    /* Get an item to wear or wield (if possible) */
-    if (get_item(&item, "Wear/Wield which item? ", 0, inven_ctr - 1, floor)) {
-
-        /* Assume okay */
-        okay = TRUE;
-
-        /* Access the item */
-        if (item >= 0) i_ptr = &inventory[item];
-
-        /* Check the slot */
-        slot = wield_slot(i_ptr);
-
-        /* No such slot (arrows and such) */
-        if (slot < 0) okay = FALSE;
-
-        /* Prevent wielding into a cursed slot */
-        if (okay && (cursed_p(&inventory[slot]))) {
-
-            objdes(prt1, &inventory[slot], FALSE);
-            message("The ", 0x02);
-            message(prt1, 0x02);
-            message(" you are ", 0x02);
-            message(describe_use(slot), 0x02);
-            message(" appears to be cursed.", 0x04);
-            okay = FALSE;
-        }
-
-        /* XXX XXX XXX Hack -- Verify potential overflow */
-        if (okay && (inven_ctr >= INVEN_PACK) &&
-            ((item < 0) || (i_ptr->number > 1))) {
-
-            /* Verify with the player */
-            if (other_query_flag &&
-                !get_check("Your pack may overflow.  Continue?")) okay = FALSE;
-        }
-
-        /* OK. Wear it. */
-        if (okay) {
-
-            energy_use = 100;
-
-            /* Get a copy of the object to wield */
-            tmp_obj = *i_ptr;
-            tmp_obj.number = 1;
-
-            /* Decrease the item (from the pack) */
-            if (item >= 0) {
-                inven_item_increase(item, -1);
-                inven_item_optimize(item);
-            }
-
-            /* Decrease the item (from the floor) */
-            else {
-                floor_item_increase(py, px, -1);
-                floor_item_optimize(py, px);
-            }
-
-            /* Access the wield slot */
-            i_ptr = &inventory[slot];
-
-            /* Take off the "entire" item if one is there */
-            if (inventory[slot].tval) inven_takeoff(slot, 255);
-
-            /*** Could make procedure "inven_wield()" ***/
-
-            /* Wear the new stuff */
-            *i_ptr = tmp_obj;
-
-            /* Increase the weight */
-            inven_weight += i_ptr->weight;
-
-            /* Increment the equip counter by hand */
-            equip_ctr++;
-
-            /* Where is the item now */
-            if (slot == INVEN_WIELD) {
-                location = "You are wielding";
-            }
-            else if (slot == INVEN_BOW) {
-                location = "You are shooting with";
-            }
-            else if (slot == INVEN_LITE) {
-                location = "Your light source is";
-            }
-            else {
-                location = "You are wearing";
-            }
-
-            /* Describe the result */
-            objdes(prt2, i_ptr, TRUE);
-            (void)sprintf(prt1, "%s %s. (%c)",
-                          location, prt2, index_to_label(slot));
-            msg_print(prt1);
-
-            /* Cursed! */
-            if (cursed_p(i_ptr)) {
-                msg_print("Oops! It feels deathly cold!");
-                i_ptr->ident |= ID_FELT;
-                if (!i_ptr->inscrip[0]) inscribe(i_ptr, "cursed");
-            }
-
-            /* Update stuff */
-            p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
-
-            /* Redraw stuff */
-            p_ptr->redraw |= (PR_EQUIPPY);
-
-            /* Handle stuff */
-            handle_stuff(!in_store_flag);
-        }
-
-        /* Repeat the "wear" command, if displaying choices */
-        if (command_see) command_new = '[';	/* --]-- */
-    }
-
-    /* Hack -- nothing to wield */
-    else if (item == -2) {
-        msg_print("You have nothing you can wear or wield.");
-        if (command_see) command_new = command_xxx ? 'i' : 'e';
-    }
-}
-
-
-/*
- * Take off an item
- */
-void do_cmd_inven_t(void)
-{
-    int item;
-
-    /* Assume this will be free */
-    energy_use = 0;
-
-    /* XXX XXX XXX Hack -- verify potential overflow */
-    if (inven_ctr >= INVEN_PACK) {
-
-        /* Verify with the player */
-        if (other_query_flag &&
-            !get_check("Your pack may overflow.  Continue?")) return;
-    }
-
-    /* Get an item to take off */
-    if (get_item(&item, "Take off which item? ", INVEN_WIELD, INVEN_TOTAL-1, FALSE)) {
-
-        inven_type *i_ptr = &inventory[item];
-
-        /* Not gonna happen */
-        if (cursed_p(i_ptr)) {
-            msg_print("Hmmm, it seems to be cursed.");
-        }
-
-        /* Item selected? */
-        else {
-
-            /* This turn is not free */
-            energy_use = 100;
-
-            /* Take off the "entire" item */
-            inven_takeoff(item, 255);
-
-            /* Update stuff */
-            p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
-            
-            /* Redraw equippy chars */
-            p_ptr->redraw |= (PR_EQUIPPY);
-
-            /* Handle stuff */
-            handle_stuff(!in_store_flag);
-        }
-
-        /* Repeat the "take off" command, if displaying choices --[-- */
-        if (command_see) command_new = ']';
-    }
-
-    /* Nothing to take off */
-    else if (item == -2) {
-        msg_print("You are not wearing anything to take off.");
-        if (command_see) command_new = 'i';
-    }
-}
-
-
-/*
- * Drop an item
- */
-void do_cmd_inven_d(void)
-{
-    int item, amt;
-
-    /* Assume this will be free */
-    energy_use = 0;
-
-    /* Get an item to take off */
-    if (get_item(&item, "Drop which item? ", 0, INVEN_TOTAL-1, FALSE)) {
-
-        /* Get the item */
-        inven_type *i_ptr = &inventory[item];
-
-        /* Assume one item */
-        amt = 1;
-
-        /* Not gonna happen */
-        if ((item >= INVEN_WIELD) && cursed_p(i_ptr)) {
-            msg_print("Hmmm, it seems to be cursed.");
-            item = -1;
-        }
-
-        /* See how many items */
-        if ((item >= 0) && (i_ptr->number > 1)) {
-
-            char prt2[80];
-            char prt1[80];
-
-            /* Get the quantity */
-            sprintf(prt2, "Quantity (1-%d): ", i_ptr->number);
-            prt(prt2, 0, 0);
-            sprintf(prt1, "%d", amt);
-            if (!askfor_aux(prt1, 3)) item = -1;
-
-            /* Parse result */
-            if (item >= 0) {
-            
-                /* Extract a number */
-                amt = atoi(prt1);
-
-                /* A letter means "all" */
-                if (isalpha(prt1[0])) amt = 99;
-
-                /* Keep the entry valid */
-                if (amt > i_ptr->number) amt = i_ptr->number;
-
-                /* Allow bizarre "abort" */
-                if (amt <= 0) item = -1;
-            }
-        }
-
-        /* Mega-Hack -- verify "dangerous" drops */
-        if ((item >= 0) && (cave[py][px].i_idx)) {
-
-            /* XXX XXX Verify with the player */
-            if (other_query_flag &&
-                !get_check("The item may disappear.  Continue?")) item = -1;
-        }
-
-        /* Actually drop */
-        if (item >= 0) {
-
-            /* This turn is not free */
-            energy_use = 100;
-
-            /* Drop (some of) the item */
-            inven_drop(item, amt);
-
-            /* Update stuff */
-            p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
-            
-            /* Redraw equippy chars */
-            p_ptr->redraw |= (PR_EQUIPPY);
-
-            /* Handle stuff */
-            handle_stuff(!in_store_flag);
-        }
-
-        /* Again, if displaying choices */
-        if (command_see) command_new = 'd';
-    }
-
-    /* Nothing to drop */
-    else if (item == -2) {
-        msg_print("You have nothing to drop.");
-    }
-}
-
 
 

@@ -11,11 +11,17 @@
  * See "recall.c"/"moria1.c" for info on the "recall"/"choice" windows.
  */
 
-#include "angband.h"
-#include <stdarg.h>
-#pragma hdrstop
-
 #ifdef _Windows
+
+#define USE_GRAPHICS
+#undef  COLOR_DEBUG
+
+
+/* #include "main-win.h" */
+
+/* Note -- Begin "main-win.h" */
+
+/* main-win.h */
 
 #define IDM_FILE_NEW             101
 #define IDM_FILE_OPEN            102
@@ -27,18 +33,16 @@
 #define IDM_OPTIONS_FONT_CHOICE  203
 #define IDM_OPTIONS_RECALL       212
 #define IDM_OPTIONS_CHOICE       213
+#define IDM_OPTIONS_RESIZABLE    221
+#define IDM_OPTIONS_GRAPHICS     222
 
 /* exclude parts of WINDOWS.H that are not needed */
-//#define NOKERNEL          //KERNEL APIs and definitions
-//#define NOGDI             //GDI APIs and definitions
-//#define NOUSER            //USER APIs and definitions
 #define NOSOUND           //Sound APIs and definitions
 #define NOCOMM            //Comm driver APIs and definitions
 #define NODRIVERS         //Installable driver APIs and definitions
-//#define NOMINMAX          //min() and max() macros
 #define NOLOGERROR        //LogError() and related definitions
 #define NOPROFILER        //Profiler APIs
-#define NOMEMMGR          //Local and global memory management
+//#define NOMEMMGR          //Local and global memory management
 #define NOLFILEIO         //_l* file I/O routines
 #define NOOPENFILE        //OpenFile and related definitions
 #define NORESOURCE        //Resource management
@@ -47,42 +51,33 @@
 #define NOLSTRING         //lstr* string management routines
 #define NODBCS            //Double-byte character set routines
 #define NOKEYBOARDINFO    //Keyboard driver routines
-#define NOGDICAPMASKS     //GDI device capability constants
 #define NOCOLOR           //COLOR_* color values
-//#define NOGDIOBJ          //GDI pens, brushes, fonts
 #define NODRAWTEXT        //DrawText() and related definitions
-//#define NOTEXTMETRIC      //TEXTMETRIC and related APIs
 #define NOSCALABLEFONT    //Truetype scalable font support
-//#define NOBITMAP          //Bitmap support
-//#define NORASTEROPS       //GDI Raster operation definitions
 #define NOMETAFILE        //Metafile support
-//#define NOSYSMETRICS      //GetSystemMetrics() and related SM_* definitions
 #define NOSYSTEMPARAMSINFO //SystemParametersInfo() and SPI_* definitions
-//#define NOMSG             //APIs and definitions that use MSG structure
-//#define NOWINSTYLES       //Window style definitions
-#define NOWINOFFSETS      //Get/SetWindowWord/Long offset definitions
-//#define NOSHOWWINDOW      //ShowWindow and related definitions
 #define NODEFERWINDOWPOS  //DeferWindowPos and related definitions
-//#define NOVIRTUALKEYCODES //VK_* virtual key codes
 #define NOKEYSTATES       //MK_* message key state flags
 #define NOWH              //SetWindowsHook and related WH_* definitions
-//#define NOMENUS           //Menu APIs
-//#define NOSCROLL          //Scrolling APIs and scroll bar control
 #define NOCLIPBOARD       //Clipboard APIs and definitions
 #define NOICONS           //IDI_* icon IDs
-//#define NOMB              //MessageBox and related definitions
-//#define NOSYSCOMMANDS     //WM_SYSCOMMAND SC_* definitions
 #define NOMDI             //MDI support
 #define NOCTLMGR          //Control management and controls
-//#define NOWINMESSAGES     //WM_* window messages
 #define NOHELP            //Help support
 
 
-# define STRICT
-# include <windows.h>
-# include <commdlg.h>
+#define STRICT
+#include <windows.h>
+#include <commdlg.h>
 
-# include "itsybits.h"
+#include "angband.h"
+#include <stdarg.h>
+
+#include "itsybits.h"
+
+#ifdef USE_GRAPHICS
+#include "readdib.h"
+#endif
 
 /* string.h excludes this because __STDC__=1 */
 int stricmp(const char *, const char *);
@@ -108,54 +103,34 @@ struct _term_data {
   cptr     s;
   HWND     w;
   DWORD    dwStyle;
-  int      type;
-  int      keys;
+  uint     type;
+  uint     keys;
 
-  int      rows;
-  int      cols;
-  int      vis_rows;
-  int      vis_cols;
-  int      scroll_vpos;
+  uint     rows;
+  uint     cols;
+  uint     vis_rows;
+  uint     vis_cols;
+  uint     scroll_vpos;
+  uint     scroll_hpos;
 
-  int      pos_x;
-  int      pos_y;
-  int      size_wid;
-  int      size_hgt;
-  int      size_ow1;
-  int      size_oh1;
-  int      size_ow2;
-  int      size_oh2;
+  uint     pos_x;
+  uint     pos_y;
+  uint     size_wid;
+  uint     size_hgt;
+  uint     client_wid;
+  uint     client_hgt;
+  uint     size_ow1;
+  uint     size_oh1;
+  uint     size_ow2;
+  uint     size_oh2;
+  uint     cap_size;
 
-  int      client_wid;
-  int      client_hgt;
-  int      cap_size;
-
-  int      mapped;
+  uint     mapped;
   HFONT    font_id;
   char_ptr font_file;
-  int      font_wid;
-  int      font_hgt;
+  uint     font_wid;
+  uint     font_hgt;
 };
-
-/*
- * Hack -- request screen to be mapped
- */
-static int use_screen_win = TRUE;
-
-/*
- * Hack -- game in progress
- */
-static int game_in_progress = 0;
-
-/*
- * Hack -- game can be saved
- */
-static int save_enabled = 0;
-
-/*
- * Saved instance handle
- */
-static HINSTANCE hInstance = 0;
 
 /*
  * Some information for every "term" window
@@ -163,20 +138,37 @@ static HINSTANCE hInstance = 0;
 term_data screen;
 term_data recall;
 term_data choice;
+#pragma hdrstop
 
 /*
- * Note when "open"/"new" become valid
+ * Various boolean flags
  */
-static bool initialized = FALSE;
+bool game_in_progress  = FALSE;  /* game in progress */
+bool save_enabled      = FALSE;  /* game can be saved */
+bool screen_resizable  = FALSE;  /* main window ("screen") resizable */
+bool use_graphics      = FALSE;  /* use graphical chars */
+bool initialized       = FALSE;  /* note when "open"/"new" become valid */
+bool creating          = 0;      /* Hack: set it to WTY_SCREEN, WTY_RECALL or */
+				 /* WTY_CHOICE so that WM_NCCREATE handler */
+				 /* knows which window is indeed created */
+bool paletted          = FALSE;  /* screen paletted, i.e. 256 colors */
+bool colors16          = FALSE;  /* 16 colors screen, don't use RGB() */
 
-static char_ptr ANGBAND_DIR_FONT = 0;
 
-static HBRUSH hbrYellow   = 0;
-static HBRUSH hbrRed      = 0;
-static HICON  hIcon       = 0;
+/*
+ * Saved instance handle
+ */
+static HINSTANCE hInstance = 0;
+
+static char_ptr ANGBAND_DIR_RSRC = 0;
+
+static HBRUSH   hbrYellow = 0;
+static HBRUSH   hbrRed    = 0;
+static HICON    hIcon     = 0;
+static HPALETTE hPal      = 0;
 
 #ifdef USE_GRAPHICS
-static HBITMAP hbmGraphics= 0;
+static DIBINIT  infGraph = {0, 0, 0, 8, 13};
 #endif
 
 
@@ -184,15 +176,6 @@ static HBITMAP hbmGraphics= 0;
 static cptr     ini_file = NULL;
 
 static cptr AppName = "ANGBAND";
-
-/*
- * Horrible hack: set this flag so that WM_NCCREATE handler
- * knows which window is indeed created
- */
-#define CREATING_SCREEN   0x01
-#define CREATING_RECALL   0x02
-#define CREATING_CHOICE   0x04
-  static int creating_flag = 0;
 
 /*
  * The "term.c" color set:
@@ -212,23 +195,27 @@ static cptr AppName = "ANGBAND";
 #if 1
 /* The colors come from MAIN-X11.C */
 static const COLORREF win_clr[16] = {
-  RGB(0x00, 0x00, 0x00),  /* BLACK 15 */
-  RGB(0xFF, 0xFF, 0xFF),  /* WHITE 0 */
-  RGB(0xD7, 0xD7, 0xD7),  /* GRAY 13 */
-  RGB(0xFF, 0x92, 0x00),  /* ORANGE 2 */
-  RGB(0xFF, 0x00, 0x00),  /* RED 3 */
-  RGB(0x00, 0xCD, 0x00),  /* GREEN 9 */
-  RGB(0x00, 0x00, 0xFE),  /* BLUE 6 */
-  RGB(0xC8, 0x64, 0x00),  /* BROWN 10 */
-  RGB(0xA3, 0xA3, 0xA3),  /* DARKGRAY 14 */
-  RGB(0xEB, 0xEB, 0xEB),  /* LIGHTGRAY 12 */
-  RGB(0xA5, 0x00, 0xFF),  /* PURPLE 5 */
-  RGB(0xFF, 0xFD, 0x00),  /* YELLOW 1 */
-  RGB(0xFF, 0x00, 0xBC),  /* PINK 4 */
-  RGB(0x00, 0xFF, 0x00),  /* LIGHTGREEN 8 */
-  RGB(0x00, 0xC8, 0xFF),  /* LIGHTBLUE 7 */
-  RGB(0xFF, 0xCC, 0x80)   /* LIGHTBROWN 11 */
+  PALETTERGB(0x00, 0x00, 0x00),  /* BLACK 15 */
+  PALETTERGB(0xFF, 0xFF, 0xFF),  /* WHITE 0 */
+  PALETTERGB(0xA0, 0xA0, 0xA0),  /* GRAY 13 */
+  PALETTERGB(0xFF, 0x92, 0x00),  /* ORANGE 2 */
+  PALETTERGB(0xB0, 0x00, 0x00),  /* RED 3 */
+  PALETTERGB(0x00, 0xB0, 0x00),  /* GREEN 9 */
+  PALETTERGB(0x00, 0x00, 0xFF),  /* BLUE 6 */
+  PALETTERGB(0xC8, 0x64, 0x00),  /* UMBER 10 */
+  PALETTERGB(0x70, 0x70, 0x70),  /* DARKGRAY 14 */
+  PALETTERGB(0xD0, 0xD0, 0xD0),  /* LIGHTGRAY 12 */
+  PALETTERGB(0xA5, 0x00, 0xFF),  /* VIOLET 5 */
+  PALETTERGB(0xFF, 0xFD, 0x00),  /* YELLOW 1 */
+  PALETTERGB(0xFF, 0x00, 0xBC),  /* LIGHTRED 4 */
+  PALETTERGB(0x00, 0xFF, 0x00),  /* LIGHTGREEN 8 */
+  PALETTERGB(0x00, 0xC8, 0xFF),  /* LIGHTBLUE 7 */
+  PALETTERGB(0xFF, 0xCC, 0x80)   /* LIGHTUMBER 11 */
 };
+
+/* Palette indices for 16 colors */
+static const BYTE win_pal[16] =
+  {0, 15, 8, 4, 1, 2, 3, 4, 7, 8, 13, 12, 9, 10, 11, 12};
 #else
 /* These were styled after MAIN-MAC.C and are too dark */
 #define TO256(r,g,b) PALETTERGB(r*255/65535L,g*255/65535L,b*255/65535L)
@@ -253,13 +240,21 @@ static const COLORREF win_clr[16] = {
 };
 #endif
 
+/* Note -- End "main-win.h" */
+
+
+
+/*
+ * General utilities
+ */
 static char *extract_file_name(char *s)
 {
   char *p;
 
   for (p = s + strlen(s) - 1; (p >= s)&&(*p != ':')&&(*p != '\\'); p--);
-  return(++p);
+  return ++p;
 }
+
 
 static void _cdecl formatted_quit(char *format, ...)
 {
@@ -272,6 +267,7 @@ static void _cdecl formatted_quit(char *format, ...)
   quit(tmp);
 }
 
+
 static void validate_file(char *s)
 {
   unsigned int attrib;
@@ -279,6 +275,7 @@ static void validate_file(char *s)
   if (_dos_getfileattr(s, &attrib) || (attrib & (FA_DIREC | FA_LABEL)))
     formatted_quit("Cannot find file:\n%s", s);
 }
+
 
 static void validate_dir(char *s)
 {
@@ -315,9 +312,19 @@ static void term_getsize(term_data *td)
 
   /* position not important */
   rc.left = rc.top = 0;
-  rc.right = rc.left + td->client_wid +
-    ((td->type == WTY_SCREEN) ? 0 : GetSystemMetrics(SM_CXVSCROLL) - 1);
+  rc.right = rc.left + td->client_wid;
   rc.bottom = rc.top + td->client_hgt;
+  if (td->type == WTY_SCREEN)
+  {
+    if (screen_resizable)
+    {
+      rc.right  += GetSystemMetrics(SM_CXVSCROLL) - 1;
+      rc.bottom += GetSystemMetrics(SM_CYHSCROLL) - 1;
+    }
+  }
+  else
+    rc.right += GetSystemMetrics(SM_CXVSCROLL) - 1;
+
   if (td->type == WTY_SCREEN)
   {
     AdjustWindowRect(&rc, td->dwStyle, TRUE);
@@ -337,6 +344,7 @@ static void term_getsize(term_data *td)
   td->pos_y = rc.top;
 }
 
+
 /*
  * Write the "preference" data to the .INI file
  */
@@ -345,6 +353,14 @@ static void save_prefs(void)
   char       buf[32];
   RECT       rc;
   term_data *td;
+
+#ifdef USE_GRAPHICS
+  strcpy(buf, use_graphics ? "1" : "0");
+  WritePrivateProfileString("Angband", "Graphics", buf, ini_file);
+#endif
+
+  strcpy(buf, screen_resizable ? "1" : "0");
+  WritePrivateProfileString("Main window", "Resizable", buf, ini_file);
 
   td = &screen;
   if (td->w)
@@ -403,6 +419,7 @@ static void save_prefs(void)
   }
 }
 
+
 /*
  * Load the preferences from the .INI file
  */
@@ -411,7 +428,14 @@ static void load_prefs(void)
   char  buf[128];
   char *p;
 
-  GetPrivateProfileString("Main window", "FontFile", "\\angband\\lib-win\\fonts\\7x13.fon", buf, 128, ini_file);
+#ifdef USE_GRAPHICS
+  use_graphics = GetPrivateProfileInt("Angband", "Graphics", 0, ini_file) != 0;
+#endif
+
+  screen_resizable =
+      GetPrivateProfileInt("Main window", "Resizable", 0, ini_file) != 0;
+  GetPrivateProfileString("Main window", "FontFile",
+		     "\\angband\\lib-win\\rsrc\\7x13.fon", buf, 128, ini_file);
   screen.font_file = (char *)string_make(buf);
   validate_file(screen.font_file);
   screen.vis_cols = GetPrivateProfileInt("Main window", "Columns", 80, ini_file);
@@ -421,38 +445,43 @@ static void load_prefs(void)
 
   use_recall_win = GetPrivateProfileInt("Recall window", "UseRecallWin", 1, ini_file) != 0;
   recall.mapped = use_recall_win;
-  GetPrivateProfileString("Recall window", "FontFile", "\\angband\\lib-win\\fonts\\7x13.fon", buf, 128, ini_file);
+  GetPrivateProfileString("Recall window", "FontFile",
+		     "\\angband\\lib-win\\rsrc\\7x13.fon", buf, 128, ini_file);
   recall.font_file = (char *)string_make(buf);
   validate_file(recall.font_file);
   recall.vis_cols = GetPrivateProfileInt("Recall window", "Columns", 80, ini_file);
   recall.vis_rows = GetPrivateProfileInt("Recall window", "Rows", 8, ini_file);
   recall.pos_x = GetPrivateProfileInt("Recall window", "PositionX", 0, ini_file);
   recall.pos_y = GetPrivateProfileInt("Recall window", "PositionY", 0, ini_file);
-  recall.cap_size = GetPrivateProfileInt("Recall window", "CapSize", 0, ini_file);
+  recall.cap_size = min(
+      GetPrivateProfileInt("Recall window", "CapSize", 0, ini_file),
+      127);
 
   use_choice_win = GetPrivateProfileInt("Choice window", "UseChoiceWin", 0, ini_file) != 0;
   choice.mapped = use_choice_win;
-  GetPrivateProfileString("Choice window", "FontFile", "\\angband\\lib-win\\fonts\\7x13.fon", buf, 128, ini_file);
+  GetPrivateProfileString("Choice window", "FontFile",
+		     "\\angband\\lib-win\\rsrc\\7x13.fon", buf, 128, ini_file);
   choice.font_file = (char *)string_make(buf);
   validate_file(choice.font_file);
   choice.vis_cols = GetPrivateProfileInt("Choice window", "Columns", 80, ini_file);
   choice.vis_rows = GetPrivateProfileInt("Choice window", "Rows", 5, ini_file);
   choice.pos_x = GetPrivateProfileInt("Choice window", "PositionX", 0, ini_file);
   choice.pos_y = GetPrivateProfileInt("Choice window", "PositionY", 0, ini_file);
-  choice.cap_size = GetPrivateProfileInt("Choice window", "CapSize", 0, ini_file);
+  choice.cap_size = min(
+      GetPrivateProfileInt("Choice window", "CapSize", 0, ini_file),
+      127);
 
   strcpy(buf, screen.font_file);
   p = extract_file_name(buf);
   *(--p) = '\0';
-  ANGBAND_DIR_FONT = (char *)string_make(buf);
-  validate_dir(ANGBAND_DIR_FONT);
+  ANGBAND_DIR_RSRC = (char *)string_make(buf);
+  validate_dir(ANGBAND_DIR_RSRC);
 }
 
 
 /*
  *  Loads font file specified in td->font_file, initializes td->font_xxx,
  *  td->size_xxx.
- *  If unsuccessful, sets td->font_file = NULL and loads ANSI_FIXED_FONT
  */
 static void term_load_font(term_data *td)
 {
@@ -487,9 +516,9 @@ static void term_load_font(term_data *td)
   {
     if ((x == 0) || (y == 0)) x = y = 0;
     td->font_id = CreateFont(y, x, 0, 0, FW_DONTCARE, 0, 0, 0,
-               ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-               DEFAULT_QUALITY, FIXED_PITCH | FF_DONTCARE,
-               fontname);
+	       ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+	       DEFAULT_QUALITY, FIXED_PITCH | FF_DONTCARE,
+	       fontname);
   }
   else
     formatted_quit("Font file corrupted:\n%s", td->font_file);
@@ -497,7 +526,45 @@ static void term_load_font(term_data *td)
   term_getsize(td);
 }
 
-void term_window_resize(term_data *td)
+
+#ifdef USE_GRAPHICS
+/*
+ *  Loads BMP corresponding to font specified in filename, inits infGraph.
+ */
+static void term_load_bitmap(char *font)
+{
+  char *p, *q, *s, *d;
+
+  MessageBox(NULL, NULL, font, MB_OK);
+  p = (char *)string_make(font);
+  q = p + strlen(p) - 4;
+  strcpy(q, ".BMP");
+  validate_file(p);
+
+  if (infGraph.hDIB) GlobalFree(infGraph.hDIB);
+  if (infGraph.hPalette) DeleteObject(infGraph.hPalette);
+  if (infGraph.hBitmap) DeleteObject(infGraph.hBitmap);
+
+  if (!ReadDIB(p, &infGraph))
+    formatted_quit("Bitmap corrupted:\n%s", p);
+
+  d = extract_file_name(p);
+
+  infGraph.CellWidth = atoi(d);
+  infGraph.CellHeight = 0;
+  for (s = d; (*s != '\0') && (s < q); s++)
+    if (toupper(*s) == 'X')
+    {
+      infGraph.CellHeight = atoi(s+1);
+      break;
+    }
+
+  string_free(p);
+}
+#endif
+
+
+static void term_window_resize(term_data *td)
 {
   RECT  rc;
   POINT pt;
@@ -525,7 +592,8 @@ void term_window_resize(term_data *td)
   InvalidateRect(td->w, NULL, TRUE);
 }
 
-void term_change_font(term_data *td)
+
+static void term_change_font(term_data *td)
 {
   OPENFILENAME ofn;
   char         tmp[128];
@@ -540,7 +608,7 @@ void term_change_font(term_data *td)
   ofn.nFilterIndex = 1;
   ofn.lpstrFile = tmp;
   ofn.nMaxFile = 128;
-  ofn.lpstrInitialDir = ANGBAND_DIR_FONT;
+  ofn.lpstrInitialDir = ANGBAND_DIR_RSRC;
   ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
   ofn.lpstrDefExt = "fon";
 
@@ -548,8 +616,8 @@ void term_change_font(term_data *td)
   {
     if (td->font_id) DeleteObject(td->font_id);
     if ((td != &screen) && (stricmp(screen.font_file, td->font_file) == 0) ||
-        (td != &recall) && (stricmp(recall.font_file, td->font_file) == 0) ||
-        (td != &choice) && (stricmp(choice.font_file, td->font_file) == 0))
+	(td != &recall) && (stricmp(recall.font_file, td->font_file) == 0) ||
+	(td != &choice) && (stricmp(choice.font_file, td->font_file) == 0))
       ; /* do nothing !! */
     else RemoveFontResource(td->font_file);
     string_free(td->font_file);
@@ -560,39 +628,133 @@ void term_change_font(term_data *td)
 }
 
 
-/*** Hooks for the "term.c" functions ***/
+static void term_change_bitmap(term_data *td)
+{
+  OPENFILENAME ofn;
+  char         tmp[128];
 
+  if (td->font_file)
+  {
+    strcpy(tmp, extract_file_name(td->font_file));
+    strcpy(tmp + strlen(tmp) - 4, ".bmp");
+  }
+  else tmp[0] = '\0';
+
+  memset(&ofn, 0, sizeof(ofn));
+  ofn.lStructSize = sizeof(ofn);
+  ofn.hwndOwner = screen.w;
+  ofn.lpstrFilter = "Bitmap Files (*.bmp)\0*.bmp\0";
+  ofn.nFilterIndex = 1;
+  ofn.lpstrFile = tmp;
+  ofn.nMaxFile = 128;
+  ofn.lpstrInitialDir = ANGBAND_DIR_RSRC;
+  ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+  ofn.lpstrDefExt = "bmp";
+
+  if (GetOpenFileName(&ofn))
+  {
+    term_load_bitmap(tmp);
+
+    if (td->font_id) DeleteObject(td->font_id);
+    if ((td != &screen) && (stricmp(screen.font_file, td->font_file) == 0) ||
+	(td != &recall) && (stricmp(recall.font_file, td->font_file) == 0) ||
+	(td != &choice) && (stricmp(choice.font_file, td->font_file) == 0))
+      ; /* do nothing !! */
+    else RemoveFontResource(td->font_file);
+    string_free(td->font_file);
+    strcpy(tmp + strlen(tmp) - 4, ".fon");
+    td->font_file = (char *)string_make(tmp);
+    term_load_font(td);
+    term_window_resize(td);
+  }
+
+}
+
+
+static void term_force_font(term_data *td, char *font_name)
+{
+  char tmp[128];
+
+  sprintf(tmp, "%s%s%s", ANGBAND_DIR_RSRC, PATH_SEP, font_name);
+  validate_file(tmp);
+
+  if (td->font_id) DeleteObject(td->font_id);
+  if ((td != &screen) && (stricmp(screen.font_file, td->font_file) == 0) ||
+      (td != &recall) && (stricmp(recall.font_file, td->font_file) == 0) ||
+      (td != &choice) && (stricmp(choice.font_file, td->font_file) == 0))
+    ; /* do nothing !! */
+  else RemoveFontResource(td->font_file);
+  string_free(td->font_file);
+  td->font_file = (char *)string_make(tmp);
+  term_load_font(td);
+  term_load_bitmap(td->font_file);
+  term_window_resize(td);
+}
+
+
+/*** Hooks for the "term.c" functions ***/
 /*
  * Hack -- redraw a term_data
  */
 static void term_data_redraw(term_data *td)
 {
-    HPEN hpenOld, hpenLtGray;
-    HDC  hdc = GetDC(td->w);
+    if ((td->type == WTY_SCREEN) && !screen_resizable)
+    {
+      HPEN hpenOld, hpenLtGray;
+      HDC  hdc = GetDC(td->w);
 
-    /* Frame the window in white */
-    hpenLtGray = CreatePen(PS_SOLID, 1, win_clr[TERM_L_GRAY]);
-    hpenOld = SelectObject(hdc, hpenLtGray);
+      /* Frame the window in light_gray */
+      hpenLtGray = CreatePen(PS_SOLID, 1, win_clr[TERM_L_GRAY]);
+      hpenOld = SelectObject(hdc, hpenLtGray);
 
-    MoveTo(hdc, 0, 0);
-    LineTo(hdc, 0, td->client_hgt-1);
-    LineTo(hdc, td->client_wid-1, td->client_hgt-1);
-    LineTo(hdc, td->client_wid-1, 0);
-    LineTo(hdc, 0, 0);
+#ifdef __WIN32__
+      MoveToEx(hdc, 0, 0, NULL);
+#else
+      MoveTo(hdc, 0, 0);
+#endif
+      LineTo(hdc, 0, td->client_hgt-1);
+      LineTo(hdc, td->client_wid-1, td->client_hgt-1);
+      LineTo(hdc, td->client_wid-1, 0);
+      LineTo(hdc, 0, 0);
 
-    SelectObject(hdc, hpenOld);
-    DeleteObject(hpenLtGray);
-    ReleaseDC(td->w, hdc);
+      SelectObject(hdc, hpenOld);
+      DeleteObject(hpenLtGray);
+      ReleaseDC(td->w, hdc);
+    }
 
     /* Redraw the contents */
     Term_redraw();
 }
 
+
+/*** Function hooks needed by "Term" ***/
+/*
+ * Initialize a new Term
+ */
+#pragma argsused
+static void Term_init_win(term *t)
+{
+    /* XXX */
+}
+
+
+/*
+ * Nuke an old Term
+ */
+#pragma argsused
+static void Term_nuke_win(term *t)
+{
+    /* XXX */
+}
+
+
 /*
  * React to changing global options
  */
-static void Term_xtra_win_react(void)
+static errr Term_xtra_win_react(void)
 {
+  DWORD dw;
+
   /* Show */
   if (use_screen_win && !screen.mapped)
   {
@@ -632,27 +794,33 @@ static void Term_xtra_win_react(void)
     choice.mapped = FALSE;
     ShowWindow(choice.w, SW_HIDE);
   }
+
+  /* do something about resizability of main window */
+  dw = GetWindowLong(screen.w, GWL_STYLE);
+  /* Make it resizable */
+  if (screen_resizable && !(dw & WS_THICKFRAME))
+  {
+    screen.dwStyle = dw | WS_THICKFRAME | WS_VSCROLL | WS_HSCROLL | WS_MAXIMIZEBOX;
+    SetWindowLong(screen.w, GWL_STYLE, screen.dwStyle);
+    term_getsize(&screen);
+    term_window_resize(&screen);
+  }
+  /* Make it non-resizable */
+  if (!screen_resizable && (dw & WS_THICKFRAME))
+  {
+    screen.dwStyle = dw & ~WS_THICKFRAME & ~WS_VSCROLL & ~WS_HSCROLL & ~WS_MAXIMIZEBOX;
+    SetWindowLong(screen.w, GWL_STYLE, screen.dwStyle);
+    screen.vis_rows = screen.rows;
+    screen.vis_cols = screen.cols;
+    screen.scroll_vpos = 0;
+    screen.scroll_hpos = 0;
+    term_getsize(&screen);
+    term_window_resize(&screen);
+  }
+
+  return 0;
 }
 
-/*** Function hooks needed by "Term" ***/
-
-/*
- * Initialize a new Term
- */
-#pragma argsused
-static void Term_init_win(term *t)
-{
-    /* XXX */
-}
-
-/*
- * Nuke an old Term
- */
-#pragma argsused
-static void Term_nuke_win(term *t)
-{
-    /* XXX */
-}
 
 /*
  * Scan for events (do not block)
@@ -666,10 +834,10 @@ static errr Term_xtra_win_check(int v)
     {
       TranslateMessage(&msg);
       DispatchMessage(&msg);
-      return (0);
+      return 0;
     }
 
-    return (1);
+    return 1;
 }
 
 
@@ -686,7 +854,7 @@ static errr Term_xtra_win_event(int v)
     DispatchMessage(&msg);
 
     /* Success */
-    return (0);
+    return 0;
 }
 
 
@@ -699,39 +867,35 @@ static errr Term_xtra_win(int n, int v)
     switch (n)
     {
        /* Handle "beep" request */
-        case TERM_XTRA_NOISE: MessageBeep(-1); return(0);
-        case TERM_XTRA_CHECK: return (Term_xtra_win_check(v));
-        case TERM_XTRA_EVENT: return (Term_xtra_win_event(v));
-        case TERM_XTRA_REACT: Term_xtra_win_react(); return (0);
+	case TERM_XTRA_NOISE: MessageBeep(-1); return 0;
+	case TERM_XTRA_CHECK: return Term_xtra_win_check(v);
+	case TERM_XTRA_EVENT: return Term_xtra_win_event(v);
+	case TERM_XTRA_REACT: return Term_xtra_win_react();
     }
     /* Oops */
-    return (1);
+    return 1;
 }
 
 
 /*
  * Low level graphics (Assumes valid input).
  * Draw a "cursor" at (x,y), using a "yellow box".
- * We are allowed to use "Term_grab()" to determine
- * the current screen contents (for inverting, etc).
  */
 #pragma argsused
 static errr Term_curs_win(int x, int y, int z)
 {
     term_data *td = (term_data*)(Term->data);
     RECT   rc;
-    HBRUSH hbr;
     HDC    hdc;
 
     /* No cursor on recall/choice windows */
-    if (td->type != WTY_SCREEN) return(0);
+    if (td->type != WTY_SCREEN) return 0;
 
     /* clip to visible part of window */
+    x -= td->scroll_hpos;
     y -= td->scroll_vpos;
-    if ((x > td->vis_cols) || (y < 0) || (y > td->vis_rows)) return (0);
-
-    /* Cursor is done as a yellow "box" */
-    hbr = hbrYellow;
+    if ((x < 0) || (x > td->vis_cols) || (y < 0) || (y > td->vis_rows))
+	return 0;
 
     /* Frame the grid */
     rc.left   = x * td->font_wid + td->size_ow1;
@@ -740,11 +904,11 @@ static errr Term_curs_win(int x, int y, int z)
     rc.bottom = rc.top + td->font_hgt;
 
     hdc = GetDC(screen.w);
-    FrameRect(hdc, &rc, hbr);
+    FrameRect(hdc, &rc, hbrYellow); /* Cursor is done as a yellow "box" */
     ReleaseDC(screen.w, hdc);
 
     /* Success */
-    return (0);
+    return 0;
 }
 
 
@@ -760,8 +924,10 @@ static errr Term_wipe_win(int x, int y, int w, int h)
     RECT rc;
 
     /* clip to visible part of window */
+    x -= td->scroll_hpos;
     y -= td->scroll_vpos;
-    if ((x > td->vis_cols) || (y > td->vis_rows)) return (0);
+    if ((x > td->vis_cols) || (y > td->vis_rows)) return 0;
+    if (x < 0) { w += x; x = 0; }
     if (y < 0) { h += y; y = 0; }
     w = min(w, td->vis_cols - x);
     h = min(h, td->vis_rows - y);
@@ -779,21 +945,19 @@ static errr Term_wipe_win(int x, int y, int w, int h)
     ReleaseDC(td->w, hdc);
 
     /* Success */
-    return (0);
+    return 0;
 }
 
 
+#ifdef USE_GRAPHICS
 #define BM_COLS  64
-#define CELL_WID  8
-#define CELL_HGT 13
 
-
-static u16b char_to_grfx(char c)
+static u16b char_to_grfx(byte a, byte c)
 {
-    if ((c == 130) || (c == 131) || (c == 163) || (c == 167) || (c == 171) ||
-        (c == 174) || (c == 186) || (c == 188) || (c == 190)) return(c - 128);
-    else return(94);
+    if (c == 32) return 32;  /* spaces sent with any atributes */
+    else return (c + (a-128)*128);
 }
+#endif
 
 
 /*
@@ -815,30 +979,42 @@ static errr Term_text_win(int x, int y, int n, byte a, const char *s)
 #endif
 
     /* clip to visible part of window */
+    x -= td->scroll_hpos;
     y -= td->scroll_vpos;
-    if ((x > td->vis_cols) || (y < 0) || (y > td->vis_rows)) return (0);
+    if ((x >= (int)td->vis_cols) || (y < 0) || (y >= (int)td->vis_rows))
+      return 0;
+
+    if (x < 0)
+    {
+      if (n <= -x) return 0;
+      s += -x;
+      n -= -x;
+      x = 0;
+    }
     n = min(n, td->vis_cols - x);
+    if (n <= 0) return 0;
 
 #ifdef USE_GRAPHICS
-    if (*s <= 127)      /* text output */
+    if ((a <= 127) || !use_graphics)   /* text output */
     {
 #endif
-        /* Stop illegal attributes */
-        if ((a == 0) || (a >= 16)) a = TERM_RED;
+	/* Stop illegal attributes */
+	if ((a == 0) || (a >= 16)) a = TERM_RED;
 
-        rc.left   = x * td->font_wid + td->size_ow1;
-        rc.right  = rc.left + n * td->font_wid;
-        rc.top    = y * td->font_hgt + td->size_oh1;
-        rc.bottom = rc.top + td->font_hgt;
+	rc.left   = x * td->font_wid + td->size_ow1;
+	rc.right  = rc.left + n * td->font_wid;
+	rc.top    = y * td->font_hgt + td->size_oh1;
+	rc.bottom = rc.top + td->font_hgt;
 
-        /* Draw the string (will only work for mono-spaced fonts) */
-        hdc = GetDC(td->w);
-        SetBkColor(hdc, RGB(0,0,0));
-        SetTextColor(hdc, win_clr[a]);
-        SelectObject(hdc, td->font_id);
-        ExtTextOut(hdc, rc.left, rc.top, ETO_OPAQUE | ETO_CLIPPED, &rc,
-                   s, n, NULL);
-        ReleaseDC(td->w, hdc);
+	/* Draw the string (will only work for mono-spaced fonts) */
+	hdc = GetDC(td->w);
+	SetBkColor(hdc, RGB(0,0,0));
+
+	SetTextColor(hdc, colors16 ? PALETTEINDEX(win_pal[a]) : win_clr[a]);
+	SelectObject(hdc, td->font_id);
+	ExtTextOut(hdc, rc.left, rc.top, ETO_OPAQUE | ETO_CLIPPED, &rc,
+		   s, n, NULL);
+	ReleaseDC(td->w, hdc);
 #ifdef USE_GRAPHICS
     }
     else        /* graphics output */
@@ -850,36 +1026,36 @@ static errr Term_text_win(int x, int y, int n, byte a, const char *s)
 
        hdc = GetDC(td->w);
        hdcSrc = CreateCompatibleDC(hdc);
-       hbmSrcOld = SelectObject(hdcSrc, hbmGraphics);
+       hbmSrcOld = SelectObject(hdcSrc, infGraph.hBitmap);
 
        /* Only double-buffer if more than one graphics char */
        if (n == 1)
        {
-           g = char_to_grfx(*s);
-           BitBlt(hdc, scr_x, scr_y, w, h,
-                  hdcSrc, g % BM_COLS * CELL_WID, g / BM_COLS * CELL_HGT,
-                  SRCCOPY);
+	   g = char_to_grfx(a, *s);
+	   BitBlt(hdc, scr_x, scr_y, w, h,
+		  hdcSrc, g % BM_COLS * infGraph.CellWidth,
+		  g / BM_COLS * infGraph.CellHeight, SRCCOPY);
        }
        else
        {
-           hdcMem = CreateCompatibleDC(hdc);
-           hbmMem = CreateCompatibleBitmap(hdc, n * x, h);
-           hbmMemOld = SelectObject(hdcMem, hbmMem);
+	   hdcMem = CreateCompatibleDC(hdc);
+	   hbmMem = CreateCompatibleBitmap(hdc, n * w, h);
+	   hbmMemOld = SelectObject(hdcMem, hbmMem);
 
-           for (i = 0, mem_x = 0; i < n; i++, mem_x += w)
-           {
-               /* Translate to graphics index */
-               g = char_to_grfx(s[i]);
-               BitBlt(hdcMem, mem_x, 0, w, h,
-                      hdcSrc, g % BM_COLS * CELL_WID, g / BM_COLS * CELL_HGT,
-                      SRCCOPY);
-           }
+	   for (i = 0, mem_x = 0; i < n; i++, mem_x += w)
+	   {
+	       /* Translate to graphics index */
+	       g = char_to_grfx(a, s[i]);
+	       BitBlt(hdcMem, mem_x, 0, w, h,
+		      hdcSrc, g % BM_COLS * infGraph.CellWidth,
+		      g / BM_COLS * infGraph.CellHeight, SRCCOPY);
+	   }
 
-           BitBlt(hdc, scr_x, scr_y, n * w, h, hdcMem, 0, 0, SRCCOPY);
+	   BitBlt(hdc, scr_x, scr_y, n * w, h, hdcMem, 0, 0, SRCCOPY);
 
-           hbmMem = SelectObject(hdcMem, hbmMemOld);
-           DeleteObject(hbmMem);
-           DeleteDC(hdcMem);
+	   hbmMem = SelectObject(hdcMem, hbmMemOld);
+	   DeleteObject(hbmMem);
+	   DeleteDC(hdcMem);
        }
 
        SelectObject(hdcSrc, hbmSrcOld);
@@ -889,9 +1065,8 @@ static errr Term_text_win(int x, int y, int n, byte a, const char *s)
 #endif
 
     /* Success */
-    return (0);
+    return 0;
 }
-
 
 
 /*
@@ -912,7 +1087,7 @@ static void term_data_link(term_data *td)
     /* Prepare the init/nuke hooks */
     t->init_hook = Term_init_win;
     t->nuke_hook = Term_nuke_win;
-
+    
     /* Prepare the template hooks */
     t->xtra_hook = Term_xtra_win;
     t->curs_hook = Term_curs_win;
@@ -921,7 +1096,7 @@ static void term_data_link(term_data *td)
 
     /* Remember where we came from */
     t->data = (vptr)(td);
-
+    
     /* Activate it */
     //Term_activate(t);
 }
@@ -937,7 +1112,7 @@ static void init_windows(void)
 
   td = &screen;
   WIPE(td, term_data);
-  td->s = "Angband 2.7.5";
+  td->s = "Angband 2.7.7";
   td->type = WTY_SCREEN;
   td->keys = 1024;
   td->rows = 24;
@@ -979,8 +1154,10 @@ static void init_windows(void)
 
   /* Need these before term_getsize gets called */
   screen.dwStyle =
-    WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX |
-    WS_MAXIMIZEBOX | WS_VISIBLE;
+    WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE;
+  if (screen_resizable)
+    screen.dwStyle |= WS_THICKFRAME | WS_VSCROLL | WS_HSCROLL | WS_MAXIMIZEBOX;
+
   recall.dwStyle =
     IBS_VERTCAPTION | WS_OVERLAPPED | WS_THICKFRAME | WS_VSCROLL |
     WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
@@ -994,38 +1171,36 @@ static void init_windows(void)
   term_load_font(&screen);
   term_load_font(&recall);
   term_load_font(&choice);
+#ifdef USE_GRAPHICS
+  if (use_graphics) term_load_bitmap(screen.font_file);
+#endif
 
   /* create two frequently used brushes (for cursor box) */
   hbrRed    = CreateSolidBrush(win_clr[TERM_RED]);
   hbrYellow = CreateSolidBrush(win_clr[TERM_YELLOW]);
 
-#ifdef USE_GRAPHICS
-  if (!(hbmGraphics = LoadBitmap(hInstance, "GRAPHICS")))
-    quit("LoadBitmap failed!");
-#endif
-
-  creating_flag = CREATING_SCREEN;
+  creating = WTY_SCREEN;
   screen.w = CreateWindow(AppName, screen.s, screen.dwStyle,
     screen.pos_x, screen.pos_y, screen.size_wid, screen.size_hgt,
     HWND_DESKTOP, NULL, hInstance, NULL);
-  creating_flag = 0;
+  creating = 0;
   if (screen.w == 0) quit("Failed to create Angband window");
 
-  creating_flag = CREATING_RECALL;
+  creating = WTY_RECALL;
   recall.w = CreateWindow("AngbandList", recall.s, recall.dwStyle,
     recall.pos_x, recall.pos_y, recall.size_wid, recall.size_hgt,
     HWND_DESKTOP, NULL, hInstance, NULL);
-  creating_flag = 0;
+  creating = 0;
   if (recall.w == 0) quit("Failed to create recall window");
   if (recall.cap_size)
     ibSetCaptionSize(recall.w, recall.cap_size);
   if (use_recall_win) ShowWindow(recall.w, SW_SHOWNA);
 
-  creating_flag = CREATING_CHOICE;
+  creating = WTY_CHOICE;
   choice.w = CreateWindow("AngbandList", choice.s, choice.dwStyle,
     choice.pos_x, choice.pos_y, choice.size_wid, choice.size_hgt,
     HWND_DESKTOP, NULL, hInstance, NULL);
-  creating_flag = 0;
+  creating = 0;
   if (choice.w == 0) quit("Failed to create choice window");
   if (choice.cap_size)
     ibSetCaptionSize(choice.w, choice.cap_size);
@@ -1069,7 +1244,7 @@ void delay(int x)
       if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
       {
         TranslateMessage(&msg);
-        DispatchMessage(&msg);
+	DispatchMessage(&msg);
       }
     }
 }
@@ -1094,6 +1269,7 @@ static void disable_start(void)
   EnableMenuItem(hm, IDM_FILE_NEW, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
   EnableMenuItem(hm, IDM_FILE_OPEN, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 }
+
 
 static void setup_menus(void)
 {
@@ -1128,7 +1304,22 @@ static void setup_menus(void)
   /* Item "Choice Window" */
   CheckMenuItem(hm, IDM_OPTIONS_CHOICE, MF_BYCOMMAND |
       (use_choice_win ? MF_CHECKED : MF_UNCHECKED));
+
+  /* Item "Main window resizable" */
+  CheckMenuItem(hm, IDM_OPTIONS_RESIZABLE, MF_BYCOMMAND |
+      (screen_resizable ? MF_CHECKED : MF_UNCHECKED));
+
+#ifdef USE_GRAPHICS
+  /* Item "Graphics" */
+  CheckMenuItem(hm, IDM_OPTIONS_GRAPHICS, MF_BYCOMMAND |
+      (use_graphics ? MF_CHECKED : MF_UNCHECKED));
+  EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS, MF_BYCOMMAND |
+      (game_in_progress ? MF_ENABLED : MF_DISABLED | MF_GRAYED));
+#else
+  EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+#endif
 }
+
 
 static void check_for_save_file(LPSTR cmd_line)
 {
@@ -1143,7 +1334,7 @@ static void check_for_save_file(LPSTR cmd_line)
   sprintf(savefile, "%s\\%s", ANGBAND_DIR_SAVE, cmd_line);
   validate_file(savefile);
 
-  game_in_progress = 1;
+  game_in_progress = TRUE;
   disable_start();
 
   /* Hook into "play_game()" */
@@ -1151,7 +1342,7 @@ static void check_for_save_file(LPSTR cmd_line)
 }
 
 
-void process_menus(WPARAM wParam)
+static void process_menus(WPARAM wParam)
 {
   OPENFILENAME ofn;
 
@@ -1171,7 +1362,7 @@ void process_menus(WPARAM wParam)
       }
       else
       {
-        game_in_progress=1;
+        game_in_progress = TRUE;
         disable_start();
         Term_flush();
         play_game_mac(TRUE);
@@ -1182,7 +1373,7 @@ void process_menus(WPARAM wParam)
     case IDM_FILE_OPEN: /* open game */
       if (!initialized)
       {
-        MessageBox(screen.w, "You cannot do that yet...",
+	MessageBox(screen.w, "You cannot do that yet...",
            "Warning", MB_ICONEXCLAMATION | MB_OK);
       }
       else if (game_in_progress)
@@ -1196,7 +1387,7 @@ void process_menus(WPARAM wParam)
         memset(&ofn, 0, sizeof(ofn));
         ofn.lStructSize = sizeof(ofn);
         ofn.hwndOwner = screen.w;
-        ofn.lpstrFilter = "Save Files (*.)\0*.\0";
+        ofn.lpstrFilter = "Save Files (*.)\0*\0";
         ofn.nFilterIndex = 1;
         ofn.lpstrFile = savefile;
         ofn.nMaxFile = 1024;
@@ -1207,7 +1398,7 @@ void process_menus(WPARAM wParam)
         {
           /* Load 'savefile' */
           validate_file(savefile);
-          game_in_progress=1;
+          game_in_progress = TRUE;
           disable_start();
           Term_flush();
           play_game_mac(FALSE);
@@ -1230,7 +1421,7 @@ void process_menus(WPARAM wParam)
         /* The player is not dead */
         (void)strcpy(died_from, "(saved)");
 
-        /* Save the player, note the result */
+	/* Save the player, note the result */
         prt("Saving game...", 0, 0);
         if (save_player()) prt("done.", 0, 14);
         else prt("Save failed.", 0, 14);
@@ -1240,7 +1431,7 @@ void process_menus(WPARAM wParam)
         /* Forget that the player was saved */
         character_saved = 0;
 
-        /* Hilite the player */
+	/* Hilite the player */
         move_cursor_relative(py,px);
 
         /* Note that the player is not dead */
@@ -1279,7 +1470,8 @@ void process_menus(WPARAM wParam)
       break;
 
     case IDM_OPTIONS_FONT_ANGBAND:
-      term_change_font(&screen);
+      if (use_graphics) term_change_bitmap(&screen);
+      else term_change_font(&screen);
       break;
 
     case IDM_OPTIONS_FONT_RECALL:
@@ -1299,8 +1491,104 @@ void process_menus(WPARAM wParam)
       use_choice_win = !use_choice_win;
       Term_xtra_win_react();
       break;
+
+    case IDM_OPTIONS_RESIZABLE:
+      screen_resizable = !screen_resizable;
+      Term_xtra_win_react();
+      break;
+
+#ifdef USE_GRAPHICS
+    case IDM_OPTIONS_GRAPHICS:
+    {
+      char buf[120];
+
+      use_graphics = !use_graphics;
+      clear_char_remaps();
+      if (use_graphics)
+      {
+          term_force_font(&screen, "8x13b.fon");
+	  ANGBAND_SYS = "gfw";
+	  //notice_seams = TRUE;
+	  view_yellow_lite = FALSE;
+          view_bright_lite = FALSE;
+      }
+      else
+	  ANGBAND_SYS = "txw";
+      sprintf(buf, "%s%spref-%s.prf", ANGBAND_DIR_PREF, PATH_SEP, ANGBAND_SYS);
+      process_pref_file(buf);
+
+      do_cmd_redraw();
+      move_cursor_relative(py, px);
+      Term_fresh();
+      break;
+    }
+#endif
   }
 }
+
+
+static int process_scrollbar(HWND hWnd, WPARAM wParam, LPARAM lParam, int fnBar)
+{
+  term_data  *td;
+  uint       *scroll_pos;
+  int         rows_cols, vis_rows_cols;
+
+  td = (term_data *)GetWindowLong(hWnd, 0);
+  switch (fnBar)
+  {
+    case SB_VERT:
+      scroll_pos = &(td->scroll_vpos);
+      rows_cols = td->rows;
+      vis_rows_cols = td->vis_rows;
+      break;
+    case SB_HORZ:
+      scroll_pos = &(td->scroll_hpos);
+      rows_cols = td->cols;
+      vis_rows_cols = td->vis_cols;
+      break;
+    default:
+      return 1;
+  }
+
+  switch (wParam)
+  {
+    /* note that SB_TOP == SB_LEFT, SB_BOTTOM == SB_RIGHT etc. */
+    case SB_TOP:
+      *scroll_pos = 0;
+      break;
+
+    case SB_BOTTOM:
+      *scroll_pos = rows_cols - vis_rows_cols;
+      break;
+
+    case SB_LINEUP:
+      if (*scroll_pos > 0) (*scroll_pos)--;
+      break;
+
+    case SB_LINEDOWN:
+      if (*scroll_pos < rows_cols - vis_rows_cols) (*scroll_pos)++;
+      break;
+
+    case SB_PAGEUP:
+      *scroll_pos = max((int)*scroll_pos - vis_rows_cols, 0);
+      break;
+
+    case SB_PAGEDOWN:
+      *scroll_pos = min((int)*scroll_pos + vis_rows_cols, rows_cols - vis_rows_cols);
+      break;
+
+    case SB_THUMBPOSITION:
+      *scroll_pos = max(min(LOWORD(lParam), rows_cols - vis_rows_cols), 0);
+      break;
+
+    default:
+      return 1;
+  }
+  SetScrollPos(hWnd, fnBar, *scroll_pos, TRUE);
+  InvalidateRect(hWnd, NULL, TRUE);
+  return 0;
+}
+
 
 /* arrow keys translation */
 static char TransDir[8] = {'9','3','1','7','4','8','6','2'};
@@ -1309,19 +1597,70 @@ LRESULT FAR PASCAL _export AngbandWndProc(HWND hWnd, UINT uMsg,
   WPARAM wParam, LPARAM lParam)
 {
   PAINTSTRUCT     ps;
+  HDC             hdc;
   term_data      *td;
+  MINMAXINFO FAR *lpmmi;
+  RECT            rc;
   BYTE            KeyState;
   int             i;
 
   switch (uMsg)
   {
     case WM_NCCREATE:
-      if (creating_flag & CREATING_SCREEN)
+      if (creating == WTY_SCREEN)
+        SetWindowLong(hWnd, 0, (LONG)(&screen));
+      return DefWindowProc(hWnd, uMsg, wParam, lParam);
+
+    case WM_CREATE:
+      if (screen_resizable)
       {
-        td = &screen;
-        SetWindowLong(hWnd, 0, (LONG)td);
+        td = (term_data *)GetWindowLong(hWnd, 0);
+        SetScrollRange(hWnd, SB_VERT, 0, max(td->rows - td->vis_rows, 1), FALSE);
+        SetScrollRange(hWnd, SB_HORZ, 0, max(td->cols - td->vis_cols, 1), FALSE);
+        return 0;
       }
-      return(DefWindowProc(hWnd, uMsg, wParam, lParam));
+      else
+        return DefWindowProc(hWnd, uMsg, wParam, lParam);
+
+    case WM_GETMINMAXINFO:
+      lpmmi = (MINMAXINFO FAR *)lParam;
+      td = (term_data *)GetWindowLong(hWnd, 0);
+      if (!td) return 1;  /* this message was sent before WM_NCCREATE */
+
+      /* minimum window size is 15x3, otherwise have problems with */
+      /* menu line wrapping to two lines */
+      rc.left = rc.top = 0;
+      rc.right = rc.left + 15 * td->font_wid + td->size_ow1 + td->size_ow2;
+      rc.bottom = rc.top + 3 * td->font_hgt + td->size_oh1 + td->size_oh2;
+      if (screen_resizable)
+      {
+        rc.right  += GetSystemMetrics(SM_CXVSCROLL) - 1;
+        rc.bottom += GetSystemMetrics(SM_CYHSCROLL) - 1;
+      }
+      AdjustWindowRect(&rc, td->dwStyle, TRUE);
+      /* no idea why this needed */
+      rc.bottom++;
+      lpmmi->ptMinTrackSize.x = rc.right - rc.left;
+      lpmmi->ptMinTrackSize.y = rc.bottom - rc.top;
+
+      /* maximum window size is td->cols x td->rows */
+      rc.left = rc.top = 0;
+      rc.right = rc.left + td->cols * td->font_wid + td->size_ow1 + td->size_ow2;
+      rc.bottom = rc.top + td->rows * td->font_hgt + td->size_oh1 + td->size_oh2;
+      if (screen_resizable)
+      {
+        rc.right  += GetSystemMetrics(SM_CXVSCROLL) - 1;
+        rc.bottom += GetSystemMetrics(SM_CYHSCROLL) - 1;
+      }
+      AdjustWindowRect(&rc, td->dwStyle, TRUE);
+      /* no idea why this needed */
+      rc.bottom++;
+      lpmmi->ptMaxSize.x      = rc.right - rc.left;
+      lpmmi->ptMaxSize.y      = rc.bottom - rc.top;
+      lpmmi->ptMaxTrackSize.x = rc.right - rc.left;
+      lpmmi->ptMaxTrackSize.y = rc.bottom - rc.top;
+
+      return 0;
 
     case WM_PAINT:
       td = (term_data *)GetWindowLong(hWnd, 0);
@@ -1330,7 +1669,14 @@ LRESULT FAR PASCAL _export AngbandWndProc(HWND hWnd, UINT uMsg,
       term_data_redraw(td);
       Term = term_screen;
       EndPaint(hWnd, &ps);
+      ValidateRect(hWnd, NULL);   /* why needed ?? */
       return 0;
+
+    case WM_VSCROLL:
+      return process_scrollbar(hWnd, wParam, lParam, SB_VERT);
+
+    case WM_HSCROLL:
+      return process_scrollbar(hWnd, wParam, lParam, SB_HORZ);
 
     case WM_KEYDOWN:
       KeyState = 0x00;
@@ -1340,7 +1686,7 @@ LRESULT FAR PASCAL _export AngbandWndProc(HWND hWnd, UINT uMsg,
       {
         if (!KeyState)
         {
-          /* map plain keypad or arrow keys to corresp. numbers */
+	  /* map plain keypad or arrow keys to corresp. numbers */
           Term_keypress(TransDir[wParam - VK_PRIOR]);
           return 0;
         }
@@ -1352,7 +1698,7 @@ LRESULT FAR PASCAL _export AngbandWndProc(HWND hWnd, UINT uMsg,
 enhanced:
         /* Hack -- a special "macro introducer" */
         Term_keypress(31);
-
+        
         /* Send the modifiers */
         if (KeyState & 0x01) Term_keypress('S');
         if (KeyState & 0x02) Term_keypress('C');
@@ -1370,7 +1716,7 @@ enhanced:
 
         return 0;
       }
-      else return(DefWindowProc(hWnd, uMsg, wParam, lParam));
+      else return DefWindowProc(hWnd, uMsg, wParam, lParam);
 
     case WM_CHAR:
       Term_keypress(wParam);
@@ -1390,6 +1736,10 @@ enhanced:
       return 0;
 
     case WM_SIZE:
+      td = (term_data *)GetWindowLong(hWnd, 0);
+      if (!td) return 1;    /* this message was sent before WM_NCCREATE */
+      if (!td->w) return 1; /* it was sent from inside CreateWindow */
+
       switch (wParam)
       {
         case SIZE_MINIMIZED:
@@ -1397,29 +1747,67 @@ enhanced:
           if (use_choice_win) ShowWindow(choice.w, SW_HIDE);
           return 0;
 
+        case SIZE_MAXIMIZED:
+          td->vis_cols = td->cols;
+          td->vis_rows = td->rows;
+          /* fall through!!! */
+
         case SIZE_RESTORED:
+          if (screen_resizable)
+          {
+            td->vis_cols = (LOWORD(lParam) - td->size_ow1 - td->size_ow2) / td->font_wid;
+            td->vis_cols = min(td->vis_cols, td->cols);
+            td->vis_rows = (HIWORD(lParam) - td->size_oh1 - td->size_oh2) / td->font_hgt;
+            td->vis_rows = min(td->vis_rows, td->rows);
+            td->scroll_vpos = 0;
+            td->scroll_hpos = 0;
+            SetScrollRange(hWnd, SB_VERT, 0, max(td->rows - td->vis_rows, 1), FALSE);
+            SetScrollRange(hWnd, SB_HORZ, 0, max(td->cols - td->vis_cols, 1), FALSE);
+            term_getsize(td);
+            MoveWindow(hWnd, td->pos_x, td->pos_y, td->size_wid, td->size_hgt, TRUE);
+          }
           if (use_recall_win) ShowWindow(recall.w, SW_SHOWNOACTIVATE);
           if (use_choice_win) ShowWindow(choice.w, SW_SHOWNOACTIVATE);
           return 0;
 
         default:
-          return(DefWindowProc(hWnd, uMsg, wParam, lParam));
+           return DefWindowProc(hWnd, uMsg, wParam, lParam);
       }
+
+    case WM_PALETTECHANGED:
+      if (!paletted)
+	return ibDefWindowProc(hWnd, uMsg, wParam, lParam); /* ignore */
+      /* also ignore if palette change caused by itself */
+      else if ((HWND)wParam == hWnd) return 0;
+
+      /* otherwise, fall through!!! */
+
+    case WM_QUERYNEWPALETTE:
+      if (!paletted)
+	return ibDefWindowProc(hWnd, uMsg, wParam, lParam); /* ignore */
+      hdc = GetDC(hWnd);
+      SelectPalette (hdc, hPal, FALSE);
+      i = RealizePalette(hdc);
+      ReleaseDC(hWnd, hdc);
+
+      /* if any palette entries changed, repaint the window. */
+      if (i > 0) InvalidateRect(hWnd, NULL, TRUE);
+      return i;
 
     case WM_ACTIVATE:
       if (wParam && !HIWORD(lParam))
       {
-        SetWindowPos(recall.w, hWnd, 0, 0, 0, 0, SWP_NOACTIVATE |
-          SWP_NOMOVE | SWP_NOSIZE);
-        SetWindowPos(choice.w, hWnd, 0, 0, 0, 0, SWP_NOACTIVATE |
-          SWP_NOMOVE | SWP_NOSIZE);
-        SetFocus(hWnd);
-        return 0;
+	SetWindowPos(recall.w, hWnd, 0, 0, 0, 0, SWP_NOACTIVATE |
+	  SWP_NOMOVE | SWP_NOSIZE);
+	SetWindowPos(choice.w, hWnd, 0, 0, 0, 0, SWP_NOACTIVATE |
+	  SWP_NOMOVE | SWP_NOSIZE);
+	SetFocus(hWnd);
+	return 0;
       }
-      /* drop through */
+      /* fall through */
 
     default:
-      return(DefWindowProc(hWnd, uMsg, wParam, lParam));
+      return DefWindowProc(hWnd, uMsg, wParam, lParam);
   }
 }
 
@@ -1432,21 +1820,17 @@ LRESULT FAR PASCAL _export AngbandListProc(HWND hWnd, UINT uMsg,
   MINMAXINFO FAR *lpmmi;
   RECT            rc;
   PAINTSTRUCT     ps;
+  HDC             hdc;
+  int             i;
 
   switch (uMsg)
   {
     case WM_NCCREATE:
-      if (creating_flag & CREATING_RECALL)
-      {
-        td = &recall;
-        SetWindowLong(hWnd, 0, (LONG)td);
-      }
-      else if (creating_flag & CREATING_CHOICE)
-      {
-        td = &choice;
-        SetWindowLong(hWnd, 0, (LONG)td);
-      }
-      return(ibDefWindowProc(hWnd, uMsg, wParam, lParam));
+      if (creating == WTY_RECALL)
+	SetWindowLong(hWnd, 0, (LONG)(&recall));
+      else if (creating == WTY_CHOICE)
+	SetWindowLong(hWnd, 0, (LONG)(&choice));
+      return ibDefWindowProc(hWnd, uMsg, wParam, lParam);
 
     case WM_CREATE:
       td = (term_data *)GetWindowLong(hWnd, 0);
@@ -1485,6 +1869,7 @@ LRESULT FAR PASCAL _export AngbandListProc(HWND hWnd, UINT uMsg,
       td->vis_cols = (LOWORD(lParam) - td->size_ow1 - td->size_ow2) / td->font_wid;
       td->vis_rows = (HIWORD(lParam) - td->size_oh1 - td->size_oh2) / td->font_hgt;
       td->scroll_vpos = 0;
+      td->scroll_hpos = 0;
       SetScrollRange(hWnd, SB_VERT, 0, td->rows - td->vis_rows, FALSE);
       term_getsize(td);
       MoveWindow(hWnd, td->pos_x, td->pos_y, td->size_wid, td->size_hgt, TRUE);
@@ -1500,67 +1885,45 @@ LRESULT FAR PASCAL _export AngbandListProc(HWND hWnd, UINT uMsg,
       return 0;
 
     case WM_VSCROLL:
-      td = (term_data *)GetWindowLong(hWnd, 0);
-      switch (wParam)
-      {
-        case SB_TOP:
-          td->scroll_vpos = 0;
-          break;
+      return process_scrollbar(hWnd, wParam, lParam, SB_VERT);
 
-        case SB_BOTTOM:
-          td->scroll_vpos = td->rows - td->vis_rows;
-          break;
+    case WM_PALETTECHANGED:
+      if (!paletted)
+	return ibDefWindowProc(hWnd, uMsg, wParam, lParam); /* ignore */
+      /* also ignore if palette change caused by itself */
+      else if ((HWND)wParam == hWnd) return 0;
 
-        case SB_LINEUP:
-          if (td->scroll_vpos > 0) td->scroll_vpos--;
-          break;
+      /* otherwise, fall through!!! */
 
-        case SB_LINEDOWN:
-          if (td->scroll_vpos < td->rows - td->vis_rows) td->scroll_vpos++;
-          break;
+    case WM_QUERYNEWPALETTE:
+      if (!paletted)
+	return ibDefWindowProc(hWnd, uMsg, wParam, lParam); /* ignore */
+      hdc = GetDC(hWnd);
+      SelectPalette (hdc, hPal, FALSE);
+      i = RealizePalette(hdc);
+      ReleaseDC(hWnd, hdc);
 
-        case SB_PAGEUP:
-          if (td->scroll_vpos - td->vis_rows > 0)
-            td->scroll_vpos -= td->vis_rows;
-          else
-            td->scroll_vpos = 0;
-          break;
-
-        case SB_PAGEDOWN:
-          if (td->scroll_vpos + td->vis_rows < td->rows - td->vis_rows)
-            td->scroll_vpos += td->vis_rows;
-          else
-            td->scroll_vpos = td->rows - td->vis_rows;
-          break;
-
-        case SB_THUMBPOSITION:
-          td->scroll_vpos = max(min(LOWORD(lParam), td->rows - td->vis_rows), 0);
-          break;
-
-        default:
-          return 1;
-      }
-      SetScrollPos(hWnd, SB_VERT, td->scroll_vpos, TRUE);
-      InvalidateRect(hWnd, NULL, TRUE);
-      return 0;
+      /* if any palette entries changed, repaint the window. */
+      if (i > 0) InvalidateRect(hWnd, NULL, TRUE);
+      return i;
 
     case WM_SYSCOMMAND:
       switch (wParam)
       {
         case SC_MINIMIZE:
           td = (term_data *)GetWindowLong(hWnd, 0);
-          td->cap_size = ibGetCaptionSize(hWnd) - 1;
+          td->cap_size = max(ibGetCaptionSize(hWnd) - 1, 0);
           ibSetCaptionSize(hWnd, td->cap_size);
           SendMessage(hWnd, WM_NCPAINT, 0, 0);
           return 0;
         case SC_MAXIMIZE:
           td = (term_data *)GetWindowLong(hWnd, 0);
-          td->cap_size = ibGetCaptionSize(hWnd) + 1;
+          td->cap_size = min(ibGetCaptionSize(hWnd) + 1, 127);
           ibSetCaptionSize(hWnd, td->cap_size);
           SendMessage(hWnd, WM_NCPAINT, 0, 0);
           return 0;
-        default:
-          return(ibDefWindowProc(hWnd, uMsg, wParam, lParam));
+	default:
+          return ibDefWindowProc(hWnd, uMsg, wParam, lParam);
       }
 
     case WM_NCLBUTTONDOWN:
@@ -1575,7 +1938,7 @@ LRESULT FAR PASCAL _export AngbandListProc(HWND hWnd, UINT uMsg,
     /* fall through */
 
     default:
-      return(ibDefWindowProc(hWnd, uMsg, wParam, lParam));
+      return ibDefWindowProc(hWnd, uMsg, wParam, lParam);
   }
 }
 
@@ -1584,47 +1947,45 @@ LRESULT FAR PASCAL _export AngbandListProc(HWND hWnd, UINT uMsg,
  * Reads ANGBAND.INI, gets lib_path, checks for existence,
  * called by get_file_paths @INIT.C
  */
-char *get_lib_path(void)
+void get_lib_path(char *path)
 {
-  char  tmp[128];
   int   i;
 
-  GetPrivateProfileString("Angband", "LibPath", "c:\\angband\\lib", tmp, 128, ini_file);
+  GetPrivateProfileString("Angband", "LibPath", "c:\\angband\\lib", path, 128, ini_file);
 
-  /* subtract \ from the end if present */
-  i = strlen(tmp) - 1;
-  if (i < 0) quit("LibPath shouldn't be empty in ANGBAND.INI");
-  if (tmp[i] == '\\') tmp[i] = '\0';
+  /* subtract \\ from the end if present */
+  if ((i = strlen(path)) == 0)
+      quit("LibPath shouldn't be empty in ANGBAND.INI");
+  if (path[i-1] == '\\') path[i-1] = '\0';
   else i++;
 
-  validate_dir(tmp);
+  validate_dir(path);
 
   /* add \ back */
-  tmp[i] = '\\';
-  tmp[i+1] = '\0';
-
-  return(tmp);
+  path[i-1] = '\\';
+  path[i] = '\0';
 }
 
 
 /*** Some Hooks for various routines ***/
-
 /*
  * See "z-virt.c"
  */
-
 static vptr hook_ralloc(huge size)
 {
-    if (size > 0xFFFF) quit("Tried to malloc more than 64K");
-    return ((vptr)malloc((size_t)size));
+    if (size > 0xFFFF)
+	quit("Tried to malloc more than 64K");
+    return (vptr)malloc((size_t)size);
 }
+
 
 #pragma argsused
 static errr hook_rnfree(vptr v, huge size)
 {
     free(v);
-    return (0);
+    return 0;
 }
+
 
 /*
  * See "z-util.c"
@@ -1634,10 +1995,11 @@ static void hook_plog(cptr str)
     MessageBox(screen.w, str, "Warning", MB_OK);
 }
 
+
 static void hook_quit(cptr str)
 {
     if (str)
-        MessageBox(screen.w, str, "Error", MB_OK | MB_ICONSTOP);
+	MessageBox(screen.w, str, "Error", MB_OK | MB_ICONSTOP);
 
     /* Oh yeah, close the high score list */
     nuke_scorefile();
@@ -1662,8 +2024,11 @@ static void hook_quit(cptr str)
 
     DeleteObject(hbrRed);
     DeleteObject(hbrYellow);
+    if (hPal) DeleteObject(hPal);
 #ifdef USE_GRAPHICS
-    if (hbmGraphics) DeleteObject(hbmGraphics);
+    if (infGraph.hDIB) GlobalFree(infGraph.hDIB);
+    if (infGraph.hPalette) DeleteObject(infGraph.hPalette);
+    if (infGraph.hBitmap) DeleteObject(infGraph.hBitmap);
 #endif
 
     if (screen.font_id) DeleteObject(screen.font_id);
@@ -1691,6 +2056,7 @@ static void hook_quit(cptr str)
     exit(0);
 }
 
+
 static void hook_core(cptr str)
 {
     if (str)
@@ -1702,11 +2068,13 @@ static void hook_core(cptr str)
     quit(NULL);
 }
 
+
 #pragma argsused
 int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
   LPSTR lpCmdLine, int nCmdShow)
 {
   WNDCLASS wc;
+  HDC      hdc;
   MSG      msg;
   char    *tmp;
 
@@ -1766,7 +2134,59 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
   /* Prepare the windows */
   init_windows();
 
-#if 0
+  /* Determine if display is 16/256/true color */
+  hdc = GetDC(NULL);
+  colors16 = GetDeviceCaps(hdc, BITSPIXEL) == 4;
+  paletted =
+    (GetDeviceCaps(hdc, RASTERCAPS) & RC_PALETTE) ? TRUE : FALSE;
+  ReleaseDC(NULL, hdc);
+
+  /* If 256 colors, create/realize palette to use with 16 entries */
+  if (paletted)
+  {
+    int          i;
+    LPLOGPALETTE pLogPal =
+      (LPLOGPALETTE)ralloc(sizeof(LOGPALETTE) + 16*sizeof(PALETTEENTRY));
+
+    pLogPal->palVersion = 0x300;
+    pLogPal->palNumEntries = 16;
+    for (i = 0; i < 16; i++)
+    {
+      pLogPal->palPalEntry[i].peRed = GetRValue(win_clr[i]);
+      pLogPal->palPalEntry[i].peGreen = GetGValue(win_clr[i]);
+      pLogPal->palPalEntry[i].peBlue = GetBValue(win_clr[i]);
+      pLogPal->palPalEntry[i].peFlags = PC_NOCOLLAPSE;
+    }
+    if (!(hPal = CreatePalette((LPLOGPALETTE) pLogPal)))
+      quit("Cannot create palette");
+    rnfree(pLogPal, 1);
+
+    hdc = GetDC(screen.w);
+    SelectPalette(hdc, hPal, 0);
+    i = RealizePalette(hdc);
+    ReleaseDC(screen.w, hdc);
+    if (i == 0) quit("Cannot realize palette");
+
+    hdc = GetDC(recall.w);
+    SelectPalette(hdc, hPal, 0);
+    //i = RealizePalette(hdc);
+    ReleaseDC(recall.w, hdc);
+    //if (i == 0) quit("Cannot realize palette");
+
+    hdc = GetDC(choice.w);
+    SelectPalette(hdc, hPal, 0);
+    //i = RealizePalette(hdc);
+    ReleaseDC(choice.w, hdc);
+    //if (i == 0) quit("Cannot realize palette");
+  }
+
+#ifdef COLOR_DEBUG
+  prt("Screen: ", 1, 1);
+  if (paletted) prt("paletted,", 1, 10);
+  else prt("not paletted,", 1, 10);
+  if (colors16) prt("16 colors", 1, 24);
+  else prt(">16 colors", 1, 24);
+
   /* Debugging hack: check that all colors work */
   c_prt(TERM_BLACK,   "Black",        3, 1);
   c_prt(TERM_WHITE,   "White",        4, 1);
@@ -1784,7 +2204,7 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
   c_prt(TERM_L_GREEN, "Light Green", 16, 1);
   c_prt(TERM_L_BLUE,  "Light Blue",  17, 1);
   c_prt(TERM_L_UMBER, "Light Umber", 18, 1);
-  { int key = inkey();}
+  inkey();
 #endif
 
   /* Get a pointer to the high score file */
@@ -1799,7 +2219,7 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 
   /* We are now initialized */
   initialized = TRUE;
-
+    
   /* Did the user double click on a save file? */
   check_for_save_file(lpCmdLine);
 
