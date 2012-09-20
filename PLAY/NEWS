@@ -1,0 +1,18 @@
+                    ******************************
+                    **  Angband 2.4.Frog-knows  **
+                    ******************************
+        Based on Umoria: Copyright (c) 1985 Robert Alan Koeneke
+                  Copyright (c) 1989 James E. Wilson
+
+                  Hacked By: Alex Cutler, Andy Astrand
+                  Further Hacks By: Sean Marsh, Geoff Hill
+                  PC port by: Charles Teague
+                     With TC color code by: Justin Anderson
+News:
+  Take note:  Priests (and Paladins) now need spellbook to learn spells.
+        This was done to keep the spells in the deeper books special.
+Bugs:
+        "probing" sometimes completely ignores a monster...  This may be
+          related to the "monster heal bug" (which has been patched over,
+          not truly fixed), but I don't know.
+

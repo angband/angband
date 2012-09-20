@@ -1,0 +1,24 @@
+  This is a quick text explaining how I compiled Angband for my PC...
+
+First off, I compiled with TC++ v1.0, using Borland's make, tcc, and tlink
+program.  The makefile I used is makefile.tc, and it is designed to be
+run from within the same directory as the source files.  The object files
+will be created in this directory.  Then the makefile calls tlink, with
+a response file, to create the executable.  The response file I used is
+tclink.lnk, and it currently puts the executable in \games\angband\ as
+angband.exe.  The makefile and response file are set up to use TC++'s
+overlay management facilities, use the huge memory model, and produce
+code that should run on 80*86 machines (unless the overlay package requires
+more...)  For more info, see overlay.tc, makefile.tc, or tclink.lnk.  If
+that doesn't help, and you're desperate, try the source code, changes.tc,
+or email me (address below).
+
+	Good luck, and enjoy...
+--
+Charles F. Teague II  Net:cteague@cs.umb.edu  Real:33 Sidney Ave, Lynn MA 01902
++------------------------------------+-----------------------+----------------+
+| Computers are so powerful because  | "Don't do what I SAY, | 'lush' CS 1993 |
+| they do whatever you tell them to. |  do what I mean!!!!"  | TKE-zm sn 603  |
++------------------------------------+-----------------------+----------------+
+Hi!  I'm a replicating .sig virus!  Join in the fun and copy me into yours!
+

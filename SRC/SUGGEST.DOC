@@ -1,0 +1,66 @@
+Received: from stone (stone.dcs.warwick.ac.uk) by cs.umb.edu with SMTP id AA22449
+  (5.65c/IDA-1.4.4 for <cteague@cs.umb.edu>); Fri, 9 Apr 1993 23:38:53 -0400
+From: Sean Marsh <smarsh@dcs.warwick.ac.uk>
+Message-Id: <19137.199304100337@stone>
+Subject: no subject (file transmission)
+To: cteague@cs.umb.edu
+Date: Sat, 10 Apr 93 4:37:45 BST
+Status: R
+
+   This is file of suggestions for improvements to Angband/ideas that I have
+had but not implemented yet. Hopefully, a lot of these fixes will be added
+sometime in the future.
+
+	Currently, the Chaos, Gold, Bronze, Shimmering, Law, Balance Dragon
+Scale Mails do not work properly - they only do damage of a particular sort to
+creatures at the moment. Ideally, Bronze should confuse creatures in its are,
+Gold should stun etc.
+	Add some more monster pits, particularly Giant pits.
+	Have the no. of turns played printed on the character sheet (converted
+to days gametime perhaps?) and perhaps have particular monsters appearing at
+particular times of the day e.g. undead more at night etc.
+	Have more resists for creatures... chaos, disenchantment, sound,
+confusion etc. and even spell resist. I mean, you can have em, so why not
+them?
+	Add Chris Wilde's targetting code - not sure about upsetting the
+balance too much with this one, but it's an idea.
+	Instead of having to wait until a rod has recharged before being able
+to use it, have a chance of getting it to work before being fully charged, and
+if it fails, destroy the rod.
+	Different types of dungeon level... some with more corridors etc.,
+some with more rooms.
+	Write the quest plane code again, the old code was somehow lost, and
+all I have left are the maps for the elemental and dragon planes. The idea is
+that at certain levels there are particular quests to do before you can
+proceed... the code will take a fair bit of writing though. I am including the
+quest files in the tar.
+	A new spell for mages and/or priests... set recall spell.
+	New weapon to wield... the rod. Then we can have more Tolkien sceptres
+and rods actually in the code and useful.
+	Digging/quiver slots.
+	The priest spell unbarring ways is in the wrong book really... needs
+to be moved as well as adding more mage and priest spells. Priest spell of
+cure poison should come at a lower level - currently mages get it earlier.
+	Add two new flags for creatures... environment (things like cold,
+desert etc.) and a friendly flag... add creatures that don't attack you, maybe
+aid you instead.
+	Perhaps have injuries to characters to give a more authentic feel...
+scars and things to make your character more personal.
+	Shouldn't be able to genocide uniques, or polymorph other creatures
+into uniques.
+	Add efreeti, djinni as high level elementals.
+	Add a command to show (or dump to a file) total numbers of particular
+creatures killed, as well as the total killed.
+	Larger than normal are of effect for powerful ball spells/dragon
+breath.
+	Perhaps have the caster take some damage from ball spells if they are
+cast too close.
+	Let monsters carry specific treasure (only Morgoth does this at the
+moment, with the Iron Crown and Grond)
+	Communication with monsters.
+	Monsters can use items too.
+	Stores in the dungeon.
+	Different kinds of floor.
+
+	Please mail any changes you would like to see to:
+			smarsh@dcs.warwick.ac.uk

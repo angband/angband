@@ -1,0 +1,153 @@
+# Changed to now work from src, .obj files are placed there as well.
+# Linker is called using a response file, as cmd line too long otehrwise...
+#	CFT  (This is for TC, orig makefile should work for Unix)
+
+# BINDIR is the directory where the angband binary while be put
+# SRCDIR is where the source files are
+# LIBDIR is where the other files (score, news, hours) will be put
+# OBJDIR is where the object files will be put
+
+OV1 = -Y -DTC_OVERLAY
+OV2 = -Yo
+CFLAGS1 = -mh -c -O -G- -DUSG -DMSDOS -DTC_COLOR -g0 -w+
+CFLAGS2 = $(OV1)
+MAINFLAGS = -DSTK_LEN_SZ=0x3000 -DOVLY_BUF_SZ=0x3000
+CC = tcc
+
+
+LINKER = tlink
+RESPFILE = tclink.lnk
+
+SOURCES = main.c misc1.c misc2.c store1.c files.c tcio.c create.c desc.c\
+	generate.c sets.c dungeon.c creature.c death.c eat.c help.c magic.c\
+	potions.c prayer.c save.c staffs.c wands.c scrolls.c spells.c\
+	wizard.c store2.c signals.c moria1.c moria2.c monsters.c\
+	treasure.c vars1.c vars2.c rnd.c recall.c undef.c\
+	player.c tables.c rods.c ms_misc.c
+
+OBJS = main.obj misc1.obj misc2.obj store1.obj files.obj tcio.obj create.obj desc.obj\
+	generate.obj sets.obj dungeon.obj creature.obj death.obj eat.obj help.obj magic.obj\
+	potions.obj prayer.obj save.obj staffs.obj wands.obj scrolls.obj spells.obj\
+	wizard.obj store2.obj signals.obj moria1.obj moria2.obj monsters.obj\
+	treasure.obj vars1.obj vars2.obj rnd.obj recall.obj undef.obj\
+	player.obj tables.obj rods.obj ms_misc.obj
+
+LIBFILES = hours news origcmds.hlp owizcmds.hlp roglcmds.hlp rwizcmds.hlp \
+	scores version.hlp welcome.hlp
+
+default:	all
+
+all:	angband
+
+# create.c and spells.c need floating point stuff
+# No longer!  Code re-written to avoid doubles... -CFT
+create.obj: create.c config.h constant.h types.h externs.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d create.c 
+spells.obj: spells.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d spells.c 
+
+#describe.c seems to big to compile if we use -d  -- Too many strings?
+describe.obj: describe.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) describe.c
+
+#Normal compile; no floating pt, with merge duplic...
+#This is an ugly way to do this, but TC's make doesn't seem to allow
+#explicit rules to override implicit rules, so I cannot do the above
+#special cases if I collapse the following mess into a ".c.obj" rule. -CFT
+main.obj: main.c config.h constant.h types.h externs.h monster.h makefile.tc
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(MAINFLAGS) -d $*
+misc1.obj: misc1.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+misc2.obj: misc2.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+store1.obj: store1.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+files.obj: files.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+tcio.obj: tcio.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) -d $*
+desc.obj: desc.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+generate.obj: generate.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+sets.obj: sets.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+dungeon.obj: dungeon.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) -d $*
+creature.obj: creature.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) -d $*
+death.obj: death.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+eat.obj: eat.c   config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+help.obj: help.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+magic.obj: magic.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+potions.obj: potions.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+prayer.obj: prayer.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+save.obj: save.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+staffs.obj: staffs.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+wands.obj: wands.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+scrolls.obj: scrolls.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+wizard.obj: wizard.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+store2.obj: store2.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+signals.obj: signals.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) -d $*
+moria1.obj: moria1.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+moria2.obj: moria2.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+monsters.obj: monsters.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+treasure.obj: treasure.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+vars1.obj: vars2.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+vars2.obj: vars2.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+rnd.obj: rnd.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+recall.obj: recall.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+undef.obj: undef.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+player.obj: player.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+tables.obj: tables.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+rods.obj: rods.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) $(OV2) -d $*
+ms_misc.obj: ms_misc.c config.h constant.h types.h externs.h monster.h
+	$(CC) $(CFLAGS1) $(CFLAGS2) -d $*
+
+angband: $(OBJS)
+	$(LINKER) @$(RESPFILE)
+
+clean:
+	del *.obj
+
+spotless: clean
+	del \games\angband\angband.exe
+
+query:
+	echo "Monsters.c"
+	grep ^{ src\monsters.c > temp-999.fff
+	wc -12 < temp-999.fff
+	echo "Describe_Mon.c"
+	grep ^{ src\describe_mon.c > temp-999.fff
+	wc -12 < temp-999.fff
+	del temp-999.fff
+
+mkdesc: mkdesc.c monsters.obj describe.obj
+  $(CC) -mh -v- -y- -O -G- -a- -DUSG -DMSDOS mkdesc.c monsters.obj describe.obj
+
+

@@ -1,0 +1,38 @@
+Received: from stone (stone.dcs.warwick.ac.uk) by cs.umb.edu with SMTP id AA22444
+  (5.65c/IDA-1.4.4 for <cteague@cs.umb.edu>); Fri, 9 Apr 1993 23:38:46 -0400
+From: Sean Marsh <smarsh@dcs.warwick.ac.uk>
+Message-Id: <19114.199304100337@stone>
+Subject: no subject (file transmission)
+To: cteague@cs.umb.edu
+Date: Sat, 10 Apr 93 4:37:38 BST
+Status: R
+
+   Most bugs in Angband have been fixed now, these are the ones that may turn
+up, but have a habit of not doing so when you're trying to test them in wiz
+mode!
+
+	Angband is based on Umoria 5.2.1 so any changes made in the conversion
+to Umoria 5.5 may still be in Angband... this includes the invisible
+indestructible monster bug, which definitely used to occur but I haven't seen
+for a while now. David Grabiner sent me the changes file from 5.2.1 to 5.5 and
+I couldn't see the difference so I figure it may have been fixed.
+	When creatures have the drop flag SPECIAL, which should only create
+artifacts and excellent items (Animal Slaying, Holy Avenger etc.), often
+normal bows are created... I think bows and/or slings may be being given an
+excellent flag, but not sure.
+	Shadow Cloaks always seem to have a +4 enchantment for some reason.
+	Paladins have been known to lose all their spells around about 29-31
+and the only way to get them back is to go up another level. This may have
+been fixed now.
+	Max HPs for some monsters seems to get set to 0.  This used to
+cause the "monster heal bug", but we've kludged around it by forcing it
+to recalculate max HPs if it finds this when healing.  But we still haven't
+found the underlying problem.
+	Sometimes, Probing (staff/rod/spell) just ignores some monsters,
+as if they didn't exist.
+	Sometimes when an object is to clear in the shops, the shopkeeper
+still asks for the full price, not 10% of it like he should do. This may only
+occur for stackable objects.
+
+	Please mail any other bugs/fixes to smarsh@dcs.warwick.ac.uk.
+

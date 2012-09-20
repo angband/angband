@@ -1,0 +1,78 @@
+# Configuration file for PC MORIA 5.x
+# Also for PC Angband
+#
+# All lines that have the # character as the first character are
+# comment lines.  Blank lines are totally ignored.
+
+
+
+##################################################################
+###                  Configuration                             ###
+##################################################################
+
+# MORIA is very easy to configure.  The biggest problem is that there
+# is not enough room on a single 360K floppy disk to hold the DOS
+# DOS system files, MORIA.EXE (about 340K) and a MORIA save file
+# (about 80K or so).  Below are a few methods for configuring MORIA
+# depending on your disk storage.  Once you decide which method to
+# use, follow the instructions then remove the comment character ('#')
+# from the beginning of the lines that start with 'SAVE' and 'SCORE'.
+# Only remove the '#' from 1 pair of lines.
+
+
+
+#################### 1 hard disk systems #########################
+#
+# Create a C:\games subdirectory on your hard disk and put C:\games
+# on your PATH.  Copy MORIA.EXE and MORIA.CNF to C:\games.
+#
+# If you use a different path, you must change this line...
+SAVE c:\games\angband\angband.sav;n
+#SCORE c:\games\colmoria\moria.scr
+
+
+#################### 2 360K floppy disk systems ##################
+#
+# Format /s a floppy disk and copy MORIA.CNF to it.   Format (no /s)
+# a second floppy disk and copy MORIA.EXE to it.  When you want to play
+# MORIA, put the first diskette in drive A, the second in drive B and
+# type B:MORIA
+#
+#SAVE a:\moria.sav
+#SCORE a:\moria.scr
+
+
+#################### 1 high density floppy disk systems ##########
+#
+# Format /s 1 high-density diskette and copy MORIA.CNF and MORIA.EXE
+# to it.
+#
+#SAVE a:\moria.sav
+#SCORE a:\moria.scr
+
+
+
+
+##################################################################
+###                  Other OPTIONS                             ###
+##################################################################
+
+# These graphics characters are a solid box and a centered dot
+GRAPHICS 177 249
+
+# IBMbios option enables the numeric keypad.  Possibly unusable
+# on a non-IBM clone.
+IBMBIOS
+
+# Rawio makes output somewhat faster and allows ^P (control P) to
+# be used for the "previous message" MORIA command.  Cannot be
+# used on a Dec Rainbow.
+RAWIO
+
+# Being used to LARN and HACK, I prefer the ROGUE-like interface
+KEYBOARD ROGUE
+
+# It is possible to have MORIA output ANSI sequences, rather than
+# use BIOS calls.  This "ANSI" option is required for Dec Rainbows
+# and other computers that are not IBM BIOS compatible.
+#ANSI
