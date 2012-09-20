@@ -1,5 +1,6 @@
 /* File: init2.c */
 
+
 /*
  * Copyright (c) 1997 Ben Harrison
  *
@@ -337,7 +338,7 @@ static errr init_f_info(void)
 	f_head->v_major = VERSION_MAJOR;
 	f_head->v_minor = VERSION_MINOR;
 	f_head->v_patch = VERSION_PATCH;
-	f_head->v_extra = 0;
+	f_head->v_extra = VERSION_EXTRA;
 
 	/* Save the "record" information */
 	f_head->info_num = MAX_F_IDX;
@@ -590,7 +591,7 @@ static errr init_k_info(void)
 	k_head->v_major = VERSION_MAJOR;
 	k_head->v_minor = VERSION_MINOR;
 	k_head->v_patch = VERSION_PATCH;
-	k_head->v_extra = 0;
+	k_head->v_extra = VERSION_EXTRA;
 
 	/* Save the "record" information */
 	k_head->info_num = MAX_K_IDX;
@@ -843,7 +844,7 @@ static errr init_a_info(void)
 	a_head->v_major = VERSION_MAJOR;
 	a_head->v_minor = VERSION_MINOR;
 	a_head->v_patch = VERSION_PATCH;
-	a_head->v_extra = 0;
+	a_head->v_extra = VERSION_EXTRA;
 
 	/* Save the "record" information */
 	a_head->info_num = MAX_A_IDX;
@@ -1096,7 +1097,7 @@ static errr init_e_info(void)
 	e_head->v_major = VERSION_MAJOR;
 	e_head->v_minor = VERSION_MINOR;
 	e_head->v_patch = VERSION_PATCH;
-	e_head->v_extra = 0;
+	e_head->v_extra = VERSION_EXTRA;
 
 	/* Save the "record" information */
 	e_head->info_num = MAX_E_IDX;
@@ -1349,7 +1350,7 @@ static errr init_r_info(void)
 	r_head->v_major = VERSION_MAJOR;
 	r_head->v_minor = VERSION_MINOR;
 	r_head->v_patch = VERSION_PATCH;
-	r_head->v_extra = 0;
+	r_head->v_extra = VERSION_EXTRA;
 
 	/* Save the "record" information */
 	r_head->info_num = MAX_R_IDX;
@@ -1601,7 +1602,7 @@ static errr init_v_info(void)
 	v_head->v_major = VERSION_MAJOR;
 	v_head->v_minor = VERSION_MINOR;
 	v_head->v_patch = VERSION_PATCH;
-	v_head->v_extra = 0;
+	v_head->v_extra = VERSION_EXTRA;
 
 	/* Save the "record" information */
 	v_head->info_num = MAX_V_IDX;
@@ -2104,7 +2105,7 @@ static errr init_other(void)
 	/* Fill in each store */
 	for (i = 0; i < MAX_STORES; i++)
 	{
-		/* Access the store */
+		/* Get the store */
 		store_type *st_ptr = &store[i];
 
 		/* Assume full stock */
@@ -2114,7 +2115,7 @@ static errr init_other(void)
 		C_MAKE(st_ptr->stock, st_ptr->stock_size, object_type);
 
 		/* No table for the black market or home */
-		if ((i == 6) || (i == 7)) continue;
+		if ((i == STORE_B_MARKET) || (i == STORE_HOME)) continue;
 
 		/* Assume full table */
 		st_ptr->table_size = STORE_CHOICES;
@@ -2148,24 +2149,6 @@ static errr init_other(void)
 		}
 	}
 
-
-	/*** Pre-allocate the basic "auto-inscriptions" ***/
-
-	/* The "basic" feelings */
-	(void)quark_add("cursed");
-	(void)quark_add("broken");
-	(void)quark_add("average");
-	(void)quark_add("good");
-
-	/* The "extra" feelings */
-	(void)quark_add("excellent");
-	(void)quark_add("worthless");
-	(void)quark_add("special");
-	(void)quark_add("terrible");
-
-	/* Some extra strings */
-	(void)quark_add("uncursed");
-	(void)quark_add("on sale");
 
 
 	/*** Prepare the options ***/
@@ -2262,7 +2245,7 @@ static errr init_alloc(void)
 	/* Allocate the alloc_kind_table */
 	C_MAKE(alloc_kind_table, alloc_kind_size, alloc_entry);
 
-	/* Access the table entry */
+	/* Get the table entry */
 	table = alloc_kind_table;
 
 	/* Scan the objects */
@@ -2348,7 +2331,7 @@ static errr init_alloc(void)
 	/* Allocate the alloc_race_table */
 	C_MAKE(alloc_race_table, alloc_race_size, alloc_entry);
 
-	/* Access the table entry */
+	/* Get the table entry */
 	table = alloc_race_table;
 
 	/* Scan the monsters (not the ghost) */
@@ -2624,6 +2607,5 @@ void init_angband(void)
 	/* Done */
 	note("[Initialization complete]");
 }
-
 
 

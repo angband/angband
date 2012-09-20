@@ -330,7 +330,7 @@ int main(int argc, char *argv[])
 		quit("The gates to Angband are closed (bad load).");
 	}
 
-	/* Acquire the "user name" as a default player name */
+	/* Get the "user name" as a default player name */
 	user_name(op_ptr->full_name, player_uid);
 
 #endif
@@ -467,7 +467,6 @@ int main(int argc, char *argv[])
 
 	/* Process the player name */
 	process_player_name(TRUE);
-
 
 
 	/* Install "quit" hook */

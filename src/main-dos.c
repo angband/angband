@@ -524,7 +524,7 @@ static errr Term_text_dos(int x, int y, int n, byte a, const char *cp)
 		{
 			/* Build a one character string */
 			text[0] = cp[i];
-	
+
 			/* Dump some text */
 			textout(screen, td->font, text, x1, y1,
 		        	COLOR_OFFSET + (a & 0x0F));
@@ -704,7 +704,7 @@ static void quit_hook(cptr str)
  * GRX font file reader by Mark Wodrich.
  *
  * GRX FNT files consist of the header data (see struct below). If the font
- * is proportional, followed by a table of widths per character (unsigned 
+ * is proportional, followed by a table of widths per character (unsigned
  * shorts). Then, the data for each character follows. 1 bit/pixel is used,
  * with each line of the character stored in contiguous bytes. High bit of
  * first byte is leftmost pixel of line.
@@ -763,7 +763,7 @@ typedef byte *GRX_BITMAP;
 /*
  * ???
  */
-void convert_grx_bitmap(int width, int height, GRX_BITMAP src, GRX_BITMAP dest) 
+void convert_grx_bitmap(int width, int height, GRX_BITMAP src, GRX_BITMAP dest)
 {
 	unsigned short x, y, bytes_per_line;
 	unsigned char bitpos, bitset;
@@ -786,7 +786,7 @@ void convert_grx_bitmap(int width, int height, GRX_BITMAP src, GRX_BITMAP dest)
  * ???
  */
 GRX_BITMAP *load_grx_bmps(PACKFILE *f, FNTfile_header *hdr,
-                          int numchar, unsigned short *wtable) 
+                          int numchar, unsigned short *wtable)
 {
 	int t, width, bmp_size;
 	GRX_BITMAP temp;

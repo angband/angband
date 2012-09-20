@@ -311,7 +311,7 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
 		{
 			int *arg;
 
-			/* Access the next argument */
+			/* Get the next argument */
 			arg = va_arg(vp, int *);
 
 			/* Save the current length */
@@ -415,7 +415,7 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
 				{
 					int arg;
 
-					/* Access the next argument */
+					/* Get the next argument */
 					arg = va_arg(vp, int);
 
 					/* Hack -- append the "length" */
@@ -462,7 +462,7 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
 			{
 				int arg;
 
-				/* Access next argument */
+				/* Get the next argument */
 				arg = va_arg(vp, int);
 
 				/* Format the argument */
@@ -479,7 +479,7 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
 				{
 					long arg;
 
-					/* Access next argument */
+					/* Get the next argument */
 					arg = va_arg(vp, long);
 
 					/* Format the argument */
@@ -489,7 +489,7 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
 				{
 					int arg;
 
-					/* Access next argument */
+					/* Get the next argument */
 					arg = va_arg(vp, int);
 
 					/* Format the argument */
@@ -507,7 +507,7 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
 				{
 					unsigned long arg;
 
-					/* Access next argument */
+					/* Get the next argument */
 					arg = va_arg(vp, unsigned long);
 
 					/* Format the argument */
@@ -517,7 +517,7 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
 				{
 					unsigned int arg;
 
-					/* Access next argument */
+					/* Get the next argument */
 					arg = va_arg(vp, unsigned int);
 
 					/* Format the argument */
@@ -535,7 +535,7 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
 			{
 				double arg;
 
-				/* Access next argument */
+				/* Get the next argument */
 				arg = va_arg(vp, double);
 
 				/* Format the argument */
@@ -550,7 +550,7 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
 			{
 				vptr arg;
 
-				/* Access next argument */
+				/* Get the next argument */
 				arg = va_arg(vp, vptr);
 
 				/* Format the argument */
@@ -565,7 +565,7 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
 			{
 				cptr arg;
 
-				/* Access next argument */
+				/* Get the next argument */
 				arg = va_arg(vp, cptr);
 
 				/* Hack -- convert NULL to EMPTY */
@@ -584,7 +584,7 @@ uint vstrnfmt(char *buf, uint max, cptr fmt, va_list vp)
 			{
 				vptr arg;
 
-				/* Access next argument */
+				/* Get the next argument */
 				arg = va_arg(vp, vptr);
 
 				/* Format the "user data" */

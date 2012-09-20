@@ -31,7 +31,7 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
 
 	byte spells[64];
 
-	int ver;
+	bool verify;
 
 	bool flag, redraw, okay;
 	char choice;
@@ -42,6 +42,20 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
 
 	cptr p = ((mp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
+#ifdef ALLOW_REPEAT
+
+	/* Get the spell, if available */
+	if (repeat_pull(sn))
+	{
+		/* Verify the spell */
+		if (spell_okay(*sn, known))
+		{
+			/* Success */
+			return (TRUE);
+		}
+	}
+
+#endif /* ALLOW_REPEAT */
 
 	/* Extract spells */
 	for (spell = 0; spell < 64; spell++)
@@ -136,7 +150,7 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
 
 
 		/* Note verify */
-		ver = (isupper(choice));
+		verify = (isupper(choice) ? TRUE : FALSE);
 
 		/* Lowercase */
 		choice = tolower(choice);
@@ -163,11 +177,11 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
 		}
 
 		/* Verify it */
-		if (ver)
+		if (verify)
 		{
 			char tmp_val[160];
 
-			/* Access the spell */
+			/* Get the spell */
 			s_ptr = &mp_ptr->info[spell];
 
 			/* Prompt */
@@ -200,6 +214,12 @@ static int get_spell(int *sn, cptr prompt, int sval, bool known)
 
 	/* Save the choice */
 	(*sn) = spell;
+
+#ifdef ALLOW_REPEAT
+
+	repeat_push(*sn);
+
+#endif /* ALLOW_REPEAT */
 
 	/* Success */
 	return (TRUE);
@@ -275,7 +295,7 @@ void do_cmd_browse(void)
 		o_ptr = &o_list[0 - item];
 	}
 
-	/* Access the item's sval */
+	/* Get the item's sval */
 	sval = o_ptr->sval;
 
 
@@ -309,8 +329,8 @@ void do_cmd_browse(void)
 	/* Prompt for a command */
 	put_str("(Browsing) Command: ", 0, 0);
 
-        /* Hack -- Get a new command */
-        p_ptr->command_new = inkey();
+	/* Hack -- Get a new command */
+	p_ptr->command_new = inkey();
 
 	/* Load screen */
 	screen_load();
@@ -388,7 +408,7 @@ void do_cmd_study(void)
 		o_ptr = &o_list[0 - item];
 	}
 
-	/* Access the item's sval */
+	/* Get the item's sval */
 	sval = o_ptr->sval;
 
 
@@ -560,7 +580,7 @@ void do_cmd_cast(void)
 		o_ptr = &o_list[0 - item];
 	}
 
-	/* Access the item's sval */
+	/* Get the item's sval */
 	sval = o_ptr->sval;
 
 
@@ -579,7 +599,7 @@ void do_cmd_cast(void)
 	}
 
 
-	/* Access the spell */
+	/* Get the spell */
 	s_ptr = &mp_ptr->info[spell];
 
 
@@ -608,7 +628,7 @@ void do_cmd_cast(void)
 	else
 	{
 		/* Hack -- chance of "beam" instead of "bolt" */
-		beam = ((p_ptr->pclass == 1) ? plev : (plev / 2));
+		beam = ((p_ptr->pclass == CLASS_MAGE) ? plev : (plev / 2));
 
 		/* Spells.  */
 		switch (spell)
@@ -870,16 +890,7 @@ void do_cmd_cast(void)
 
 			case 37:
 			{
-				if (!p_ptr->word_recall)
-				{
-					p_ptr->word_recall = rand_int(20) + 15;
-					msg_print("The air about you becomes charged...");
-				}
-				else
-				{
-					p_ptr->word_recall = 0;
-					msg_print("A tension leaves the air around you...");
-				}
+				set_recall();
 				break;
 			}
 
@@ -1212,7 +1223,7 @@ void do_cmd_pray(void)
 		o_ptr = &o_list[0 - item];
 	}
 
-	/* Access the item's sval */
+	/* Get the item's sval */
 	sval = o_ptr->sval;
 
 
@@ -1231,7 +1242,7 @@ void do_cmd_pray(void)
 	}
 
 
-	/* Access the spell */
+	/* Get the spell */
 	s_ptr = &mp_ptr->info[spell];
 
 
@@ -1373,7 +1384,7 @@ void do_cmd_pray(void)
 				if (!get_aim_dir(&dir)) return;
 				fire_ball(GF_HOLY_ORB, dir,
 				          (damroll(3, 6) + plev +
-				           (plev / ((p_ptr->pclass == 2) ? 2 : 4))),
+				           (plev / ((p_ptr->pclass == CLASS_PRIEST) ? 2 : 4))),
 				          ((plev < 30) ? 2 : 3));
 				break;
 			}
@@ -1633,16 +1644,7 @@ void do_cmd_pray(void)
 
 			case 56:
 			{
-				if (p_ptr->word_recall == 0)
-				{
-					p_ptr->word_recall = rand_int(20) + 15;
-					msg_print("The air about you becomes charged...");
-				}
-				else
-				{
-					p_ptr->word_recall = 0;
-					msg_print("A tension leaves the air around you...");
-				}
+				set_recall();
 				break;
 			}
 

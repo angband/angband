@@ -16,12 +16,12 @@
 
 # Version stamp (required)
 
-V:2.8.3
+V:2.8.5
 
 
-# 0x00 --> nothing
+# 0x00 --> <darkness>
 
-N:0:nothing
+N:0:<darkness>
 G: :w
 
 

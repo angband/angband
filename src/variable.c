@@ -70,12 +70,16 @@ bool character_saved;		/* The character was just saved to a savefile */
 s16b character_icky;		/* Depth of the game in special mode */
 s16b character_xtra;		/* Depth of the game in startup mode */
 
+u32b seed_randart;		/* Hack -- consistent random artifacts */
+
 u32b seed_flavor;		/* Hack -- consistent object colors */
 u32b seed_town;			/* Hack -- consistent town layout */
 
 s16b num_repro;			/* Current reproducer count */
 s16b object_level;		/* Current object creation level */
 s16b monster_level;		/* Current monster creation level */
+
+char summon_kin_type;		/* Hack -- See summon_specific() */
 
 s32b turn;				/* Current game turn */
 
@@ -110,6 +114,12 @@ s16b o_cnt = 0;			/* Number of live objects */
 
 s16b m_max = 1;			/* Number of allocated monsters */
 s16b m_cnt = 0;			/* Number of live monsters */
+
+
+/*
+ * TRUE if process_command() is a repeated call.
+ */
+bool command_repeating = FALSE;
 
 
 /*

@@ -426,8 +426,8 @@ void search(void)
 					/* Message */
 					msg_print("You have found a secret door.");
 
-					/* Pick a door XXX XXX XXX */
-					cave_set_feat(y, x, FEAT_DOOR_HEAD + 0x00);
+					/* Pick a door */
+					place_closed_door(y, x);
 
 					/* Disturb */
 					disturb(0, 0);
@@ -438,10 +438,10 @@ void search(void)
 				{
 					object_type *o_ptr;
 
-					/* Acquire object */
+					/* Get the object */
 					o_ptr = &o_list[this_o_idx];
 
-					/* Acquire next object */
+					/* Get the next object */
 					next_o_idx = o_ptr->next_o_idx;
 
 					/* Skip non-chests */
@@ -469,12 +469,74 @@ void search(void)
 }
 
 
+/*
+ * Determine if the object can be picked up, and has "=g" in its inscription.
+ */
+static bool auto_pickup_okay(object_type *o_ptr)
+{
+	cptr s;
+
+	/* It can't be carried */
+	if (!inven_carry_okay(o_ptr)) return (FALSE);
+
+	/* No inscription */
+	if (!o_ptr->note) return (FALSE);
+
+	/* Find a '=' */
+	s = strchr(quark_str(o_ptr->note), '=');
+
+	/* Process inscription */
+	while (s)
+	{
+		/* Auto-pickup on "=g" */
+		if (s[1] == 'g') return (TRUE);
+
+		/* Find another '=' */
+		s = strchr(s + 1, '=');
+	}
+
+	/* Don't auto pickup */
+	return (FALSE);
+}
 
 
 /*
- * Make the player carry everything in a grid
+ * Helper routine for py_pickup() and py_pickup_floor().
  *
- * If "pickup" is FALSE then only gold will be picked up
+ * Add the given dungeon object to the character's inventory.
+ *
+ * Delete the object afterwards.
+ */
+static void py_pickup_aux(int o_idx)
+{
+	int slot;
+	
+	char o_name[80];
+	object_type *o_ptr;
+	
+	o_ptr = &o_list[o_idx];
+
+	/* Carry the object */
+	slot = inven_carry(o_ptr);
+
+	/* Get the object again */
+	o_ptr = &inventory[slot];
+
+	/* Describe the object */
+	object_desc(o_name, o_ptr, TRUE, 3);
+
+	/* Message */
+	msg_format("You have %s (%c).", o_name, index_to_label(slot));
+
+	/* Delete the object */
+	delete_object_idx(o_idx);
+}
+
+
+/*
+ * Make the player carry everything in a grid.
+ *
+ * If "pickup" is FALSE then only gold will be picked up.
  */
 void py_pickup(int pickup)
 {
@@ -483,21 +545,30 @@ void py_pickup(int pickup)
 
 	s16b this_o_idx, next_o_idx = 0;
 
+	object_type *o_ptr;
+	
 	char o_name[80];
+
+#ifdef ALLOW_EASY_FLOOR
+
+	int last_o_idx = 0;
+
+	int can_pickup = 0;
+	int not_pickup = 0;
+
+#endif /* ALLOW_EASY_FLOOR */
 
 
 	/* Scan the pile of objects */
 	for (this_o_idx = cave_o_idx[py][px]; this_o_idx; this_o_idx = next_o_idx)
 	{
-		object_type *o_ptr;
-
-		/* Acquire object */
+		/* Get the object */
 		o_ptr = &o_list[this_o_idx];
 
 		/* Describe the object */
 		object_desc(o_name, o_ptr, TRUE, 3);
 
-		/* Acquire next object */
+		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
 
 		/* Hack -- disturb */
@@ -521,62 +592,175 @@ void py_pickup(int pickup)
 
 			/* Delete the gold */
 			delete_object_idx(this_o_idx);
+
+			/* Check the next object */
+			continue;
 		}
 
-		/* Pick up objects */
-		else
+		/* Test for auto-pickup */
+		if (auto_pickup_okay(o_ptr))
 		{
-			/* Describe the object */
-			if (!pickup)
+			/* Pick up the object */
+			py_pickup_aux(this_o_idx);
+			
+			/* Check the next object */
+			continue;
+		}
+
+#ifdef ALLOW_EASY_FLOOR
+
+		/* Easy Floor */
+		if (easy_floor)
+		{
+			/* Pickup if possible */
+			if (pickup && inven_carry_okay(o_ptr))
 			{
+				/* Pick up if allowed */
+				if (!carry_query_flag)
+				{
+					/* Pick up the object */
+					py_pickup_aux(this_o_idx);
+				}
+
+				/* Else count */
+				else
+				{
+					/* Remember */
+					last_o_idx = this_o_idx;
+
+					/* Count */
+					++can_pickup;
+				}
+			}
+
+			/* Else count */
+			else
+			{
+				/* Remember */
+				last_o_idx = this_o_idx;
+
+				/* Count */
+				++not_pickup;
+			}
+
+			/* Check the next object */
+			continue;
+		}
+
+#endif /* ALLOW_EASY_FLOOR */
+
+		/* Describe the object */
+		if (!pickup)
+		{
+			msg_format("You see %s.", o_name);
+			
+			/* Check the next object */
+			continue;
+		}
+
+		/* Note that the pack is too full */
+		if (!inven_carry_okay(o_ptr))
+		{
+			msg_format("You have no room for %s.", o_name);
+			
+			/* Check the next object */
+			continue;
+		}
+
+		/* Query before picking up */
+		if (carry_query_flag)
+		{
+			char out_val[160];
+			sprintf(out_val, "Pick up %s? ", o_name);
+			if (!get_check(out_val)) continue;
+		}
+
+		/* Pick up the object */
+		py_pickup_aux(this_o_idx);
+	}
+
+#ifdef ALLOW_EASY_FLOOR
+
+	/* Easy floor, objects left */
+	if (easy_floor && (can_pickup + not_pickup > 0))
+	{
+		/* Not picking up */
+		if (!pickup)
+		{
+			/* One object */
+			if (not_pickup == 1)
+			{
+				/* Get the object */
+				o_ptr = &o_list[last_o_idx];
+
+				/* Describe the object */
+				object_desc(o_name, o_ptr, TRUE, 3);
+
+				/* Message */
 				msg_format("You see %s.", o_name);
 			}
 
-			/* Note that the pack is too full */
-			else if (!inven_carry_okay(o_ptr))
+			/* Multiple objects */
+			else
 			{
+				/* Message */
+				msg_format("You see a pile of %d objects.", not_pickup);
+			}
+
+			/* Done */
+			return;
+		}
+
+		/* No room */
+		if (!can_pickup)
+		{
+			/* One object */
+			if (not_pickup == 1)
+			{
+				/* Get the object */
+				o_ptr = &o_list[last_o_idx];
+	
+				/* Describe the object */
+				object_desc(o_name, o_ptr, TRUE, 3);
+
+				/* Message */
 				msg_format("You have no room for %s.", o_name);
 			}
 
-			/* Pick up the item (if requested and allowed) */
+			/* Multiple objects */
 			else
 			{
-				int okay = TRUE;
-
-				/* Hack -- query every item */
-				if (carry_query_flag)
-				{
-					char out_val[160];
-					sprintf(out_val, "Pick up %s? ", o_name);
-					okay = get_check(out_val);
-				}
-
-				/* Attempt to pick up an object. */
-				if (okay)
-				{
-					int slot;
-
-					/* Carry the item */
-					slot = inven_carry(o_ptr);
-
-					/* Get the item again */
-					o_ptr = &inventory[slot];
-
-					/* Describe the object */
-					object_desc(o_name, o_ptr, TRUE, 3);
-
-					/* Message */
-					msg_format("You have %s (%c).", o_name, index_to_label(slot));
-
-					/* Delete the object */
-					delete_object_idx(this_o_idx);
-				}
+				/* Message */
+				msg_print("You have no room for any of the objects on the floor.");
 			}
+
+			/* Done */
+			return;
+		}
+
+		/* Pick up objects */
+		while (1)
+		{
+			cptr q, s;
+
+			int item;
+
+			/* Restrict the choices */
+			item_tester_hook = inven_carry_okay;
+
+			/* Get an object*/
+			q = "Get which item? ";
+			s = NULL;
+			if (!get_item(&item, q, s, (USE_FLOOR))) break;
+
+			/* Pick up the object */
+			py_pickup_aux(0 - item);
 		}
 	}
+
+#endif /* ALLOW_EASY_FLOOR */
+
 }
-
-
 
 
 
@@ -897,7 +1081,7 @@ void py_attack(int y, int x)
 	bool do_quake = FALSE;
 
 
-	/* Access the monster */
+	/* Get the monster */
 	m_ptr = &m_list[cave_m_idx[y][x]];
 	r_ptr = &r_info[m_ptr->r_idx];
 
@@ -932,7 +1116,7 @@ void py_attack(int y, int x)
 	}
 
 
-	/* Access the weapon */
+	/* Get the weapon */
 	o_ptr = &inventory[INVEN_WIELD];
 
 	/* Calculate the "attack quality" */
@@ -1056,7 +1240,7 @@ void py_attack(int y, int x)
  * Note that this routine handles monsters in the destination grid,
  * and also handles attempting to move into walls/doors/rubble/etc.
  */
-void move_player(int dir, int do_pickup)
+void move_player(int dir, int jumping)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
@@ -1075,6 +1259,31 @@ void move_player(int dir, int do_pickup)
 		/* Attack */
 		py_attack(y, x);
 	}
+
+#ifdef ALLOW_EASY_ALTER
+
+	/* Optionally alter known traps/doors on (non-jumping) movement */
+	else if (easy_alter && !jumping &&
+	         (cave_info[y][x] & (CAVE_MARK)) &&
+	         (cave_feat[y][x] >= FEAT_TRAP_HEAD) &&
+	         (cave_feat[y][x] <= FEAT_DOOR_TAIL))
+	{
+		/* Not already repeating */
+		if (!p_ptr->command_rep)
+		{
+			/* Hack -- Optional auto-repeat */
+			if (always_repeat && (p_ptr->command_arg <= 0))
+			{
+				/* Repeat 99 times */
+				p_ptr->command_arg = 99;
+			}
+		}
+
+		/* Alter */
+		do_cmd_alter();
+	}
+
+#endif /* ALLOW_EASY_ALTER */
 
 	/* Player can not walk through "walls" */
 	else if (!cave_floor_bold(y, x))
@@ -1164,7 +1373,7 @@ void move_player(int dir, int do_pickup)
 		}
 
 		/* Handle "objects" */
-		py_pickup(do_pickup);
+		py_pickup(jumping != always_pickup);
 
 		/* Handle "store doors" */
 		if ((cave_feat[y][x] >= FEAT_SHOP_HEAD) &&
@@ -1175,6 +1384,9 @@ void move_player(int dir, int do_pickup)
 
 			/* Hack -- Enter store */
 			p_ptr->command_new = '_';
+
+			/* Free turn XXX XXX XXX */
+			p_ptr->energy_use = 0;
 		}
 
 		/* Discover invisible traps */
@@ -1587,10 +1799,10 @@ static bool run_test(void)
 		{
 			object_type *o_ptr;
 
-			/* Acquire object */
+			/* Get the object */
 			o_ptr = &o_list[this_o_idx];
 
-			/* Acquire next object */
+			/* Get the next object */
 			next_o_idx = o_ptr->next_o_idx;
 
 			/* Visible object */
@@ -1934,7 +2146,7 @@ void run_step(int dir)
 	/* Take time */
 	p_ptr->energy_use = 100;
 
-	/* Move the player, using the "pickup" flag */
-	move_player(p_ptr->run_cur_dir, always_pickup);
+	/* Move the player */
+	move_player(p_ptr->run_cur_dir, FALSE);
 }
 

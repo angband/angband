@@ -1169,7 +1169,7 @@ errr macro_add(cptr pat, cptr act)
 	/* Create a new macro */
 	else
 	{
-		/* Acquire a new index */
+		/* Get a new index */
 		n = macro__num++;
 
 		/* Save the pattern */
@@ -1373,7 +1373,7 @@ static char inkey_aux(void)
 	if (Term_key_push(30)) return (0);
 
 
-	/* Access the macro action */
+	/* Get the macro action */
 	act = macro__act[k];
 
 	/* Get the length of the action */
@@ -1538,7 +1538,7 @@ char inkey(void)
 	}
 
 
-	/* Access cursor state */
+	/* Get the cursor state */
 	(void)Term_get_cursor(&v);
 
 	/* Show the cursor if waiting, except sometimes in "command" mode */
@@ -1624,7 +1624,7 @@ char inkey(void)
 
 					/* Excessive delay */
 					if (w >= 100) break;
-		
+
 					/* Delay */
 					Term_xtra(TERM_XTRA_DELAY, w);
 				}
@@ -1798,7 +1798,7 @@ cptr quark_str(s16b i)
 	/* Verify */
 	if ((i < 0) || (i >= quark__num)) i = 0;
 
-	/* Access the quark */
+	/* Get the quark */
 	q = quark__str[i];
 
 	/* Return the quark */
@@ -1885,13 +1885,13 @@ cptr message_str(s16b age)
 	/* Forgotten messages have no text */
 	if ((age < 0) || (age >= message_num())) return ("");
 
-	/* Acquire the "logical" index */
+	/* Get the "logical" index */
 	x = (message__next + MESSAGE_MAX - (age + 1)) % MESSAGE_MAX;
 
 	/* Get the "offset" for the message */
 	o = message__ptr[x];
 
-	/* Access the message text */
+	/* Get the message text */
 	s = &message__buf[o];
 
 	/* Return the message text */
@@ -1969,7 +1969,7 @@ void message_add(cptr str)
 		/* Do not optimize over large distances */
 		if (q >= MESSAGE_BUF / 4) continue;
 
-		/* Access the old string */
+		/* Get the old string */
 		old = &message__buf[o];
 
 		/* Inline 'streq(str, old)' */
@@ -2181,10 +2181,11 @@ static void msg_flush(int x)
 	/* Get an acceptable keypress */
 	while (1)
 	{
-		int cmd = inkey();
+		char ch;
+		ch = inkey();
 		if (quick_messages) break;
-		if ((cmd == ESCAPE) || (cmd == ' ')) break;
-		if ((cmd == '\n') || (cmd == '\r')) break;
+		if ((ch == ESCAPE) || (ch == ' ')) break;
+		if ((ch == '\n') || (ch == '\r')) break;
 		bell("Illegal response to a 'more' prompt!");
 	}
 
@@ -2256,8 +2257,22 @@ void msg_print(cptr msg)
 	if (n > 1000) return;
 
 
-	/* Memorize the message */
+	/* Memorize the message (if legal) */
 	if (character_generated) message_add(msg);
+
+	/* Window stuff */
+	p_ptr->window |= (PW_MESSAGE);
+
+
+	/* Handle "auto_more" */
+	if (auto_more)
+	{
+		/* Force window update */
+		window_stuff();
+
+		/* Done */
+		return;
+	}
 
 
 	/* Copy it */
@@ -2295,9 +2310,6 @@ void msg_print(cptr msg)
 		/* Flush it */
 		msg_flush(split + 1);
 
-		/* Memorize the piece */
-		/* if (character_generated) message_add(t); */
-
 		/* Restore the split character */
 		t[split] = oops;
 
@@ -2308,15 +2320,8 @@ void msg_print(cptr msg)
 		t += split; n -= split;
 	}
 
-
 	/* Display the tail of the message */
 	Term_putstr(p, 0, n, TERM_WHITE, t);
-
-	/* Memorize the tail */
-	/* if (character_generated) message_add(t); */
-
-	/* Window stuff */
-	p_ptr->window |= (PW_MESSAGE);
 
 	/* Remember the message */
 	msg_flag = TRUE;
@@ -2583,23 +2588,29 @@ void clear_from(int row)
 
 /*
  * Get some input at the cursor location.
- * Assume the buffer is initialized to a default string.
+ *
+ * The buffer is assumed to have been initialized to a default string.
  * Note that this string is often "empty" (see below).
- * The default buffer is displayed in yellow until cleared.
- * Pressing RETURN right away accepts the default entry.
+ *
+ * The default buffer is displayed in yellow until cleared, which happens
+ * on the first keypress, unless that keypress is Return.
+ *
  * Normal chars clear the default and append the char.
  * Backspace clears the default or deletes the final char.
- * ESCAPE clears the buffer and the window and returns FALSE.
- * RETURN accepts the current buffer contents and returns TRUE.
- * The buffer must be large enough for 'len+1' characters.
+ * Return accepts the current buffer contents and returns TRUE.
+ * Escape clears the buffer and the window and returns FALSE.
+ *
+ * Note that 'buf' must be able to hold 'len+1' characters, not just 'len'
+ * characters, as might be expected.  That is, 'len' primarily refers to
+ * the input, not the buffer itself.
  */
 bool askfor_aux(char *buf, int len)
 {
 	int y, x;
 
-	int i = 0;
-
 	int k = 0;
+
+	char ch = '\0';
 
 	bool done = FALSE;
 
@@ -2608,24 +2619,23 @@ bool askfor_aux(char *buf, int len)
 	Term_locate(&x, &y);
 
 
-	/* Paranoia -- check len */
-	if (len < 1) len = 1;
+	/* Paranoia */
+	if (len < 0) len = 0;
 
-	/* Paranoia -- check column */
+	/* Paranoia */
 	if ((x < 0) || (x >= 80)) x = 0;
+
 
 	/* Restrict the length */
 	if (x + len > 80) len = 80 - x;
 
-
-	/* Paranoia -- Clip the default entry */
+	/* Truncate the default entry */
 	buf[len] = '\0';
 
 
 	/* Display the default answer */
 	Term_erase(x, y, len);
 	Term_putstr(x, y, -1, TERM_YELLOW, buf);
-
 
 	/* Process input */
 	while (!done)
@@ -2634,10 +2644,10 @@ bool askfor_aux(char *buf, int len)
 		Term_gotoxy(x + k, y);
 
 		/* Get a key */
-		i = inkey();
+		ch = inkey();
 
 		/* Analyze the key */
-		switch (i)
+		switch (ch)
 		{
 			case ESCAPE:
 			{
@@ -2663,9 +2673,9 @@ bool askfor_aux(char *buf, int len)
 
 			default:
 			{
-				if ((k < len) && (isprint(i)))
+				if ((k < len) && (isprint(ch)))
 				{
-					buf[k++] = i;
+					buf[k++] = ch;
 				}
 				else
 				{
@@ -2683,23 +2693,18 @@ bool askfor_aux(char *buf, int len)
 		Term_putstr(x, y, -1, TERM_WHITE, buf);
 	}
 
-	/* Aborted */
-	if (i == ESCAPE) return (FALSE);
-
-	/* Success */
-	return (TRUE);
+	/* Done */
+	return (ch != ESCAPE);
 }
 
 
 /*
- * Get a string from the user
+ * Prompt for a string from the user.
  *
- * The "prompt" should take the form "Prompt: "
+ * The "prompt" should take the form "Prompt: ".
  *
- * Note that the initial contents of the string is used as
- * the default response, so be sure to "clear" it if needed.
- *
- * We clear the input, and return FALSE, on "ESCAPE".
+ * See "askfor_aux" for some notes about "buf" and "len", and about
+ * the return value of this function.
  */
 bool get_string(cptr prompt, char *buf, int len)
 {
@@ -2743,6 +2748,16 @@ s16b get_quantity(cptr prompt, int max)
 		p_ptr->command_arg = 0;
 	}
 
+#ifdef ALLOW_REPEAT
+
+	/* Get the item index */
+	else if ((max != 1) && allow_quantity && repeat_pull(&amt))
+	{
+		/* nothing */
+	}
+
+#endif /* ALLOW_REPEAT */
+
 	/* Prompt if needed */
 	else if ((max != 1) && allow_quantity)
 	{
@@ -2779,6 +2794,12 @@ s16b get_quantity(cptr prompt, int max)
 	/* Enforce the minimum */
 	if (amt < 0) amt = 0;
 
+#ifdef ALLOW_REPEAT
+
+	if (amt) repeat_push(amt);
+
+#endif /* ALLOW_REPEAT */
+
 	/* Return the result */
 	return (amt);
 }
@@ -2793,7 +2814,7 @@ s16b get_quantity(cptr prompt, int max)
  */
 bool get_check(cptr prompt)
 {
-	int i;
+	char ch;
 
 	char buf[80];
 
@@ -2809,10 +2830,10 @@ bool get_check(cptr prompt)
 	/* Get an acceptable answer */
 	while (TRUE)
 	{
-		i = inkey();
+		ch = inkey();
 		if (quick_messages) break;
-		if (i == ESCAPE) break;
-		if (strchr("YyNn", i)) break;
+		if (ch == ESCAPE) break;
+		if (strchr("YyNn", ch)) break;
 		bell("Illegal response to a 'yes/no' question!");
 	}
 
@@ -2820,7 +2841,7 @@ bool get_check(cptr prompt)
 	prt("", 0, 0);
 
 	/* Normal negation */
-	if ((i != 'Y') && (i != 'y')) return (FALSE);
+	if ((ch != 'Y') && (ch != 'y')) return (FALSE);
 
 	/* Success */
 	return (TRUE);
@@ -2836,6 +2857,8 @@ bool get_check(cptr prompt)
  */
 bool get_com(cptr prompt, char *command)
 {
+	char ch;
+
 	/* Paranoia XXX XXX XXX */
 	msg_print(NULL);
 
@@ -2843,16 +2866,16 @@ bool get_com(cptr prompt, char *command)
 	prt(prompt, 0, 0);
 
 	/* Get a key */
-	*command = inkey();
+	ch = inkey();
 
 	/* Clear the prompt */
 	prt("", 0, 0);
 
-	/* Handle "cancel" */
-	if (*command == ESCAPE) return (FALSE);
+	/* Save the command */
+	*command = ch;
 
-	/* Success */
-	return (TRUE);
+	/* Done */
+	return (ch != ESCAPE);
 }
 
 
@@ -2863,10 +2886,10 @@ bool get_com(cptr prompt, char *command)
  */
 void pause_line(int row)
 {
-	int i;
+	char ch;
 	prt("", row, 0);
 	put_str("[Press any key to continue]", row, 23);
-	i = inkey();
+	ch = inkey();
 	prt("", row, 0);
 }
 
@@ -2902,7 +2925,7 @@ void request_command(bool shopping)
 {
 	int i;
 
-	char cmd;
+	char ch;
 
 	int mode;
 
@@ -2942,7 +2965,7 @@ void request_command(bool shopping)
 			msg_print(NULL);
 
 			/* Use auto-command */
-			cmd = p_ptr->command_new;
+			ch = p_ptr->command_new;
 
 			/* Forget it */
 			p_ptr->command_new = 0;
@@ -2958,7 +2981,7 @@ void request_command(bool shopping)
 			inkey_flag = TRUE;
 
 			/* Get a command */
-			cmd = inkey();
+			ch = inkey();
 		}
 
 		/* Clear top line */
@@ -2966,7 +2989,7 @@ void request_command(bool shopping)
 
 
 		/* Command Count */
-		if (cmd == '0')
+		if (ch == '0')
 		{
 			int old_arg = p_ptr->command_arg;
 
@@ -2980,10 +3003,10 @@ void request_command(bool shopping)
 			while (1)
 			{
 				/* Get a new keypress */
-				cmd = inkey();
+				ch = inkey();
 
 				/* Simple editing (delete or backspace) */
-				if ((cmd == 0x7F) || (cmd == KTRL('H')))
+				if ((ch == 0x7F) || (ch == KTRL('H')))
 				{
 					/* Delete a digit */
 					p_ptr->command_arg = p_ptr->command_arg / 10;
@@ -2993,7 +3016,7 @@ void request_command(bool shopping)
 				}
 
 				/* Actual numeric data */
-				else if (cmd >= '0' && cmd <= '9')
+				else if (ch >= '0' && ch <= '9')
 				{
 					/* Stop count at 9999 */
 					if (p_ptr->command_arg >= 1000)
@@ -3009,7 +3032,7 @@ void request_command(bool shopping)
 					else
 					{
 						/* Incorporate that digit */
-						p_ptr->command_arg = p_ptr->command_arg * 10 + D2I(cmd);
+						p_ptr->command_arg = p_ptr->command_arg * 10 + D2I(ch);
 					}
 
 					/* Show current count */
@@ -3044,10 +3067,10 @@ void request_command(bool shopping)
 			}
 
 			/* Hack -- white-space means "enter command now" */
-			if ((cmd == ' ') || (cmd == '\n') || (cmd == '\r'))
+			if ((ch == ' ') || (ch == '\n') || (ch == '\r'))
 			{
 				/* Get a real command */
-				if (!get_com("Command: ", &cmd))
+				if (!get_com("Command: ", &ch))
 				{
 					/* Clear count */
 					p_ptr->command_arg = 0;
@@ -3060,10 +3083,10 @@ void request_command(bool shopping)
 
 
 		/* Allow "keymaps" to be bypassed */
-		if (cmd == '\\')
+		if (ch == '\\')
 		{
 			/* Get a real command */
-			(void)get_com("Command: ", &cmd);
+			(void)get_com("Command: ", &ch);
 
 			/* Hack -- bypass keymaps */
 			if (!inkey_next) inkey_next = "";
@@ -3071,15 +3094,15 @@ void request_command(bool shopping)
 
 
 		/* Allow "control chars" to be entered */
-		if (cmd == '^')
+		if (ch == '^')
 		{
 			/* Get a new command and controlify it */
-			if (get_com("Control: ", &cmd)) cmd = KTRL(cmd);
+			if (get_com("Control: ", &ch)) ch = KTRL(ch);
 		}
 
 
 		/* Look up applicable keymap */
-		act = keymap_act[mode][(byte)(cmd)];
+		act = keymap_act[mode][(byte)(ch)];
 
 		/* Apply keymap if not inside a keymap already */
 		if (act && !inkey_next)
@@ -3096,11 +3119,11 @@ void request_command(bool shopping)
 
 
 		/* Paranoia */
-		if (!cmd) continue;
+		if (ch == '\0') continue;
 
 
 		/* Use command */
-		p_ptr->command_cmd = cmd;
+		p_ptr->command_cmd = ch;
 
 		/* Done */
 		break;
@@ -3149,11 +3172,8 @@ void request_command(bool shopping)
 		/* No inscription */
 		if (!o_ptr->note) continue;
 
-		/* Obtain the inscription */
-		s = quark_str(o_ptr->note);
-
 		/* Find a '^' */
-		s = strchr(s, '^');
+		s = strchr(quark_str(o_ptr->note), '^');
 
 		/* Process preventions */
 		while (s)
@@ -3164,8 +3184,8 @@ void request_command(bool shopping)
 				/* Hack -- Verify command */
 				if (!get_check("Are you sure? "))
 				{
-					/* Hack -- Use space */
-					p_ptr->command_cmd = ' ';
+					/* Hack -- Use "newline" */
+					p_ptr->command_cmd = '\n';
 				}
 			}
 
@@ -3239,8 +3259,8 @@ bool is_a_vowel(int ch)
  * If "insert" is NULL, just remove the first instance of "target"
  * In either case, return TRUE if "target" is found.
  *
- * XXX Could be made more efficient, especially in the
- * case where "insert" is smaller than "target".
+ * Could be made more efficient, especially in the case where "insert"
+ * is smaller than "target".
  */
 static bool insert_str(char *buf, cptr target, cptr insert)
 {
@@ -3290,4 +3310,93 @@ static bool insert_str(char *buf, cptr target, cptr insert)
 #endif
 
 
+#ifdef ALLOW_REPEAT
+
+#define REPEAT_MAX 20
+
+/* Number of chars saved */
+static int repeat__cnt = 0;
+
+/* Current index */
+static int repeat__idx = 0;
+
+/* Saved "stuff" */
+static int repeat__key[REPEAT_MAX];
+
+
+/*
+ * Push data.
+ */
+void repeat_push(int what)
+{
+	/* Too many keys */
+	if (repeat__cnt == REPEAT_MAX) return;
+
+	/* Push the "stuff" */
+	repeat__key[repeat__cnt++] = what;
+
+	/* Prevents us from pulling keys */
+	++repeat__idx;
+}
+
+
+/*
+ * Pull data.
+ */
+bool repeat_pull(int *what)
+{
+	/* All out of keys */
+	if (repeat__idx == repeat__cnt) return (FALSE);
+
+	/* Grab the next key, advance */
+	*what = repeat__key[repeat__idx++];
+
+	/* Success */
+	return (TRUE);
+}
+
+
+/*
+ * Repeat previous command, or begin memorizing new command.
+ */
+void repeat_check(void)
+{
+	int what;
+
+	/* Ignore some commands */
+	if (p_ptr->command_cmd == ESCAPE) return;
+	if (p_ptr->command_cmd == ' ') return;
+	if (p_ptr->command_cmd == '\n') return;
+	if (p_ptr->command_cmd == '\r') return;
+
+	/* Repeat Last Command */
+	if (p_ptr->command_cmd == KTRL('V'))
+	{
+		/* Reset */
+		repeat__idx = 0;
+
+		/* Get the command */
+		if (repeat_pull(&what))
+		{
+			/* Save the command */
+			p_ptr->command_cmd = what;
+		}
+	}
+
+	/* Start saving new command */
+	else
+	{
+		/* Reset */
+		repeat__cnt = 0;
+		repeat__idx = 0;
+
+		/* Get the current command */
+		what = p_ptr->command_cmd;
+
+		/* Save this command */
+		repeat_push(what);
+	}
+}
+
+#endif /* ALLOW_REPEAT */
 

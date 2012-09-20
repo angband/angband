@@ -498,6 +498,8 @@ struct object_type
 
 	u16b note;			/* Inscription index */
 
+	byte inscrip;		/* INSCRIP_XXX constant */
+
 	s16b next_o_idx;	/* Next object in stack (if any) */
 
 	s16b held_m_idx;	/* Monster holding us (if any) */
@@ -539,17 +541,6 @@ struct monster_type
 	bool ml;			/* Monster is "visible" */
 
 	s16b hold_o_idx;	/* Object being held (if any) */
-
-#ifdef WDT_TRACK_OPTIONS
-
-	byte ty;			/* Y location of target */
-	byte tx;			/* X location of target */
-
-	byte t_dur;			/* How long are we tracking */
-
-	byte t_bit;			/* Up to eight bit flags */
-
-#endif
 
 #ifdef DRS_SMART_OPTIONS
 
@@ -717,7 +708,7 @@ struct player_race
 {
 	cptr title;			/* Type of race */
 
-	s16b r_adj[6];		/* Racial stat bonuses */
+	s16b r_adj[A_MAX];	/* Racial stat bonuses */
 
 	s16b r_dis;			/* disarming */
 	s16b r_dev;			/* magic devices */
@@ -757,7 +748,7 @@ struct player_class
 {
 	cptr title;			/* Type of class */
 
-	s16b c_adj[6];		/* Class stat modifier */
+	s16b c_adj[A_MAX];	/* Class stat modifier */
 
 	s16b c_dis;			/* class disarming */
 	s16b c_dev;			/* class magic devices */
@@ -855,8 +846,8 @@ struct player_type
 	s16b csp;			/* Cur mana pts */
 	u16b csp_frac;		/* Cur mana frac (times 2^16) */
 
-	s16b stat_max[6];	/* Current "maximal" stat values */
-	s16b stat_cur[6];	/* Current "natural" stat values */
+	s16b stat_max[A_MAX];	/* Current "maximal" stat values */
+	s16b stat_cur[A_MAX];	/* Current "natural" stat values */
 
 	s16b fast;			/* Timed -- Fast */
 	s16b slow;			/* Timed -- Slow */
@@ -916,7 +907,6 @@ struct player_type
 
 	bool wizard;			/* Player is in wizard mode */
 
-	bool cheat[CHEAT_MAX];	/* Cheating options */
 
 	/*** Temporary fields ***/
 
@@ -996,13 +986,13 @@ struct player_type
 	u32b redraw;		/* Normal Redraws (bit flags) */
 	u32b window;		/* Window Redraws (bit flags) */
 
-	s16b stat_use[6];	/* Current modified stats */
-	s16b stat_top[6];	/* Maximal modified stats */
+	s16b stat_use[A_MAX];	/* Current modified stats */
+	s16b stat_top[A_MAX];	/* Maximal modified stats */
 
 	/*** Extracted fields ***/
 
-	s16b stat_add[6];	/* Equipment stat bonuses */
-	s16b stat_ind[6];	/* Indexes into stat tables */
+	s16b stat_add[A_MAX];	/* Equipment stat bonuses */
+	s16b stat_ind[A_MAX];	/* Indexes into stat tables */
 
 	bool immune_acid;	/* Immunity to acid */
 	bool immune_elec;	/* Immunity to lightning */

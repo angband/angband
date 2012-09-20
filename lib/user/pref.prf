@@ -25,11 +25,11 @@
 
 ##### Original Keyset Mappings #####
 
-# Stay still
+# Stay still (numerical)
 A:,
 C:0:5
 
-# Movement
+# Movement (numerical)
 A:;1
 C:0:1
 A:;2
@@ -47,38 +47,22 @@ C:0:8
 A:;9
 C:0:9
 
-# Hack -- Return
-A:\r
-C:0:^J
-
-# Hack -- Commit suicide
-A:Q
-C:0:^K
-
 # Hack -- Commit suicide
 A:Q
 C:0:^C
 
-# Hack -- swap equipment
+# Hack -- Swap equipment
 A:w0
 C:0:X
 
 
 ##### Roguelike Keyset Mappings #####
 
-# Run
-A:.
-C:1:,
-
-# Stay still
-A:,
-C:1:.
-
-# Stay still
+# Stay still (numerical)
 A:,
 C:1:5
 
-# Movement
+# Movement (numerical)
 A:;1
 C:1:1
 A:;2
@@ -95,6 +79,14 @@ A:;8
 C:1:8
 A:;9
 C:1:9
+
+# Run
+A:.
+C:1:,
+
+# Stay still
+A:,
+C:1:.
 
 # Movement (rogue keys)
 A:;1
@@ -206,7 +198,7 @@ C:1:a
 A:Q
 C:1:^C
 
-# Hack -- swap equipment
+# Hack -- Swap equipment
 A:w0
 C:1:X
 

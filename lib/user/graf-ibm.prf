@@ -1,7 +1,10 @@
 # Graphics definition preference file.
 #
-# Generated automatically by `makepref' by Mike Marcelais
+# Generated automatically by `makepref' by Mike Marcelais, which will
+# need to be updated to use the "S" instead of "U" directives....
 #
+
+
 # Feature Graphic Definitions
 
 # open floor
@@ -1502,29 +1505,32 @@ K:510:0/-109
 K:511:11/-109
 
 
+# The following things should use the "S:<code>:<attr>/<char>" mechanism
+
 # TV_AMULET
-U:40:0/130
+# U:40:0/130
 
 # TV_RING
-U:45:0/147
+# U:45:0/147
 
 # TV_STAFF
-U:55:0/154
+# U:55:0/154
 
 # TV_WAND
-U:65:0/157
+# U:65:0/157
 
 # TV_ROD
-U:66:0/148
+# U:66:0/148
 
 # TV_SCROLL
-U:70:0/149
+# U:70:0/149
 
 # TV_POTION
-U:75:0/146
+# U:75:0/146
 
 # TV_FOOD
-U:80:0/144
+# U:80:0/144
+
 
 # Monster Graphic Definitions
 

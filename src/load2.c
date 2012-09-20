@@ -511,11 +511,13 @@ static void rd_item(object_type *o_ptr)
 	else
 	{
 		rd_byte(&o_ptr->discount);
+
 		rd_byte(&o_ptr->number);
 		rd_s16b(&o_ptr->weight);
 
 		rd_byte(&o_ptr->name1);
 		rd_byte(&o_ptr->name2);
+
 		rd_s16b(&o_ptr->timeout);
 
 		rd_s16b(&o_ptr->to_h);
@@ -554,13 +556,14 @@ static void rd_item(object_type *o_ptr)
 		/* Old special powers */
 		strip_bytes(2);
 	}
-	
+
 	else
 	{
 		/* Special powers */
 		rd_byte(&o_ptr->xtra1);
 		rd_byte(&o_ptr->xtra2);
 	}
+
 
 	/* Inscription */
 	rd_string(buf, 128);
@@ -599,17 +602,17 @@ static void rd_item(object_type *o_ptr)
 	/* Repair non "wearable" items */
 	if (!wearable_p(o_ptr))
 	{
-		/* Acquire correct fields */
+		/* Get the correct fields */
 		o_ptr->to_h = k_ptr->to_h;
 		o_ptr->to_d = k_ptr->to_d;
 		o_ptr->to_a = k_ptr->to_a;
 
-		/* Acquire correct fields */
+		/* Get the correct fields */
 		o_ptr->ac = k_ptr->ac;
 		o_ptr->dd = k_ptr->dd;
 		o_ptr->ds = k_ptr->ds;
 
-		/* Acquire correct weight */
+		/* Get the correct weight */
 		o_ptr->weight = k_ptr->weight;
 
 		/* Paranoia */
@@ -759,12 +762,12 @@ static void rd_item(object_type *o_ptr)
 	}
 
 
-	/* Acquire standard fields */
+	/* Get the standard fields */
 	o_ptr->ac = k_ptr->ac;
 	o_ptr->dd = k_ptr->dd;
 	o_ptr->ds = k_ptr->ds;
 
-	/* Acquire standard weight */
+	/* Get the standard weight */
 	o_ptr->weight = k_ptr->weight;
 
 	/* Hack -- extract the "broken" flag */
@@ -779,15 +782,15 @@ static void rd_item(object_type *o_ptr)
 		/* Obtain the artifact info */
 		a_ptr = &a_info[o_ptr->name1];
 
-		/* Acquire new artifact "pval" */
+		/* Get the new artifact "pval" */
 		o_ptr->pval = a_ptr->pval;
 
-		/* Acquire new artifact fields */
+		/* Get the new artifact fields */
 		o_ptr->ac = a_ptr->ac;
 		o_ptr->dd = a_ptr->dd;
 		o_ptr->ds = a_ptr->ds;
 
-		/* Acquire new artifact weight */
+		/* Get the new artifact weight */
 		o_ptr->weight = a_ptr->weight;
 
 		/* Hack -- extract the "broken" flag */
@@ -1032,12 +1035,12 @@ static errr rd_store(int n)
 			i_ptr->marked = FALSE;
 		}
 
-		/* Acquire valid items */
+		/* Accept any valid items */
 		if (st_ptr->stock_num < STORE_INVEN_MAX)
 		{
 			int k = st_ptr->stock_num++;
 
-			/* Acquire the item */
+			/* Accept the item */
 			object_copy(&st_ptr->stock[k], i_ptr);
 		}
 	}
@@ -1096,7 +1099,7 @@ static void rd_options(void)
 
 	byte b;
 
-	u16b c;
+	u16b tmp16u;
 
 	u32b flag[8];
 	u32b mask[8];
@@ -1118,18 +1121,8 @@ static void rd_options(void)
 	rd_byte(&b);
 	op_ptr->hitpoint_warn = b;
 
-
-	/*** Cheating options ***/
-
-	rd_u16b(&c);
-
-	if (c & 0x0002) p_ptr->wizard = TRUE;
-
-	/* Extract the cheating flags */
-	for (i = 0; i < CHEAT_MAX; ++i)
-	{
-		p_ptr->cheat[i] = (c & (0x0100 << i)) ? TRUE : FALSE;
-	}
+	/* Old cheating options */
+	rd_u16b(&tmp16u);
 
 	/* Pre-2.8.0 savefiles are done */
 	if (older_than(2, 8, 0)) return;
@@ -1249,6 +1242,8 @@ static errr rd_extra(void)
 	byte tmp8u;
 	u16b tmp16u;
 
+	u32b randart_version;
+
 	rd_string(op_ptr->full_name, 32);
 
 	rd_string(p_ptr->died_from, 80);
@@ -1277,8 +1272,8 @@ static errr rd_extra(void)
 	rd_s16b(&p_ptr->wt);
 
 	/* Read the stat info */
-	for (i = 0; i < 6; i++) rd_s16b(&p_ptr->stat_max[i]);
-	for (i = 0; i < 6; i++) rd_s16b(&p_ptr->stat_cur[i]);
+	for (i = 0; i < A_MAX; i++) rd_s16b(&p_ptr->stat_max[i]);
+	for (i = 0; i < A_MAX; i++) rd_s16b(&p_ptr->stat_cur[i]);
 
 	strip_bytes(24);	/* oops */
 
@@ -1354,15 +1349,48 @@ static errr rd_extra(void)
 	rd_byte(&tmp8u);	/* oops */
 	rd_byte(&tmp8u);	/* oops */
 	rd_byte(&p_ptr->searching);
-	rd_byte(&p_ptr->maximize);
-	rd_byte(&p_ptr->preserve);
+	rd_byte(&tmp8u);	/* oops */
+	if (older_than(2, 8, 5)) adult_maximize = tmp8u;
+	rd_byte(&tmp8u);	/* oops */
+	if (older_than(2, 8, 5)) adult_preserve = tmp8u;
 	rd_byte(&tmp8u);
 
 	/* Future use */
-	for (i = 0; i < 48; i++) rd_byte(&tmp8u);
+	for (i = 0; i < 40; i++) rd_byte(&tmp8u);
+
+	/* Read the randart version */
+	rd_u32b(&randart_version);
+
+	/* Read the randart seed */
+	rd_u32b(&seed_randart);
 
 	/* Skip the flags */
 	strip_bytes(12);
+
+	/* Initialize random artifacts */
+	if (adult_rand_artifacts)
+	{
+
+#ifdef GJW_RANDART
+
+		/* Check for incompatible randart version */
+		if (randart_version != RANDART_VERSION)
+		{
+			note(format("Incompatible random artifacts version!"));
+			return (25);
+		}
+
+		/* Initialize randarts */
+		do_randart(seed_randart);
+
+#else /* GJW_RANDART */
+
+		note("Random artifacts are disabled in this binary.");
+		return (25);
+
+#endif /* GJW_RANDART */
+
+	}
 
 
 	/* Hack -- the two "special seeds" */
@@ -2163,7 +2191,6 @@ static errr rd_dungeon_aux(s16b depth, s16b py, s16b px)
 	}
 
 
-
 	/* The dungeon is ready */
 	character_dungeon = TRUE;
 
@@ -2182,6 +2209,14 @@ static errr rd_dungeon_aux(s16b depth, s16b py, s16b px)
  * Note that the size of the dungeon is now hard-coded to
  * DUNGEON_HGT by DUNGEON_WID, and any dungeon with another
  * size will be silently discarded by this routine.
+ *
+ * Note that dungeon objects, including objects held by monsters, are
+ * placed directly into the dungeon, using "object_copy()", which will
+ * copy "iy", "ix", and "held_m_idx", leaving "next_o_idx" blank for
+ * objects held by monsters, since it is not saved in the savefile.
+ *
+ * After loading the monsters, the objects being held by monsters are
+ * linked directly into those monsters.
  */
 static errr rd_dungeon(void)
 {
@@ -2329,8 +2364,11 @@ static errr rd_dungeon(void)
 		object_type *i_ptr;
 		object_type object_type_body;
 
+		s16b o_idx;
+		object_type *o_ptr;
 
-		/* Acquire place */
+
+		/* Get the object */
 		i_ptr = &object_type_body;
 
 		/* Wipe the object */
@@ -2340,26 +2378,33 @@ static errr rd_dungeon(void)
 		rd_item(i_ptr);
 
 
-		/* Monster */
-		if (i_ptr->held_m_idx)
+		/* Make an object */
+		o_idx = o_pop();
+
+		/* Paranoia */
+		if (o_idx != i)
 		{
-			/* Give the object to the monster */
-			if (!monster_carry(i_ptr->held_m_idx, i_ptr))
-			{
-				note(format("Cannot place object %d!", o_max));
-				return (152);
-			}
+			note(format("Cannot place object %d!", i));
+			return (152);
 		}
 
-		/* Dungeon */
-		else
+		/* Get the object */
+		o_ptr = &o_list[o_idx];
+
+		/* Structure Copy */
+		object_copy(o_ptr, i_ptr);
+
+		/* Dungeon floor */
+		if (!i_ptr->held_m_idx)
 		{
-			/* Give the object to the floor */
-			if (!floor_carry(i_ptr->iy, i_ptr->ix, i_ptr))
-			{
-				note(format("Cannot place object %d!", o_max));
-				return (152);
-			}
+			int x = i_ptr->ix;
+			int y = i_ptr->iy;
+
+			/* Link the object to the pile */
+			o_ptr->next_o_idx = cave_o_idx[y][x];
+
+			/* Link the floor to the object */
+			cave_o_idx[y][x] = o_idx;
 		}
 	}
 
@@ -2394,11 +2439,37 @@ static errr rd_dungeon(void)
 
 
 		/* Place monster in dungeon */
-		if (!monster_place(n_ptr->fy, n_ptr->fx, n_ptr))
+		if (monster_place(n_ptr->fy, n_ptr->fx, n_ptr) != i)
 		{
 			note(format("Cannot place monster %d", i));
 			return (162);
 		}
+	}
+
+
+	/*** Holding ***/
+
+	/* Reacquire objects */
+	for (i = 1; i < o_max; ++i)
+	{
+		object_type *o_ptr;
+
+		monster_type *m_ptr;
+
+		/* Get the object */
+		o_ptr = &o_list[i];
+
+		/* Ignore dungeon objects */
+		if (!o_ptr->held_m_idx) continue;
+
+		/* Get the monster */
+		m_ptr = &m_list[o_ptr->held_m_idx];
+
+		/* Link the object to the pile */
+		o_ptr->next_o_idx = m_ptr->hold_o_idx;
+
+		/* Link the monster to the object */
+		m_ptr->hold_o_idx = i;
 	}
 
 
@@ -2508,7 +2579,7 @@ static errr rd_savefile_new_aux(void)
 		/* Read the lore */
 		rd_lore(i);
 
-		/* Access that monster */
+		/* Get the monster race */
 		r_ptr = &r_info[i];
 
 		/* XXX XXX Hack -- repair old savefiles */

@@ -56,10 +56,10 @@ void delete_monster_idx(int i)
 	{
 		object_type *o_ptr;
 
-		/* Acquire object */
+		/* Get the object */
 		o_ptr = &o_list[this_o_idx];
 
-		/* Acquire next object */
+		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
 
 		/* Hack -- efficiency */
@@ -126,10 +126,10 @@ static void compact_monsters_aux(int i1, int i2)
 	{
 		object_type *o_ptr;
 
-		/* Acquire object */
+		/* Get the object */
 		o_ptr = &o_list[this_o_idx];
 
-		/* Acquire next object */
+		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
 
 		/* Reset monster pointer */
@@ -287,7 +287,7 @@ void wipe_m_list(void)
 
 
 /*
- * Acquires and returns the index of a "free" monster.
+ * Get and return the index of a "free" monster.
  *
  * This routine should almost never fail, but it *can* happen.
  */
@@ -299,7 +299,7 @@ s16b m_pop(void)
 	/* Normal allocation */
 	if (m_max < MAX_M_IDX)
 	{
-		/* Access the next hole */
+		/* Get the next hole */
 		i = m_max;
 
 		/* Expand the array */
@@ -318,7 +318,7 @@ s16b m_pop(void)
 	{
 		monster_type *m_ptr;
 
-		/* Acquire monster */
+		/* Get the monster */
 		m_ptr = &m_list[i];
 
 		/* Skip live monsters */
@@ -449,10 +449,10 @@ s16b get_mon_num(int level)
 		/* Hack -- No town monsters in dungeon */
 		if ((level > 0) && (table[i].level <= 0)) continue;
 
-		/* Access the "r_idx" of the chosen monster */
+		/* Get the "r_idx" of the chosen monster */
 		r_idx = table[i].index;
 
-		/* Access the actual race */
+		/* Get the actual race */
 		r_ptr = &r_info[r_idx];
 
 		/* Hack -- "unique" monsters must be "unique" */
@@ -1115,19 +1115,15 @@ s16b monster_carry(int m_idx, object_type *j_ptr)
 	monster_type *m_ptr = &m_list[m_idx];
 
 
-	/* Option -- allow carrying */
-	if (!testing_carry) return (0);
-
-
 	/* Scan objects already being held for combination */
 	for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx)
 	{
 		object_type *o_ptr;
 
-		/* Acquire object */
+		/* Get the object */
 		o_ptr = &o_list[this_o_idx];
 
-		/* Acquire next object */
+		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
 
 		/* Check for combination */
@@ -1162,13 +1158,13 @@ s16b monster_carry(int m_idx, object_type *j_ptr)
 		/* Forget location */
 		o_ptr->iy = o_ptr->ix = 0;
 
-		/* Memorize monster */
+		/* Link the object to the monster */
 		o_ptr->held_m_idx = m_idx;
 
-		/* Build stack */
+		/* Link the object to the pile */
 		o_ptr->next_o_idx = m_ptr->hold_o_idx;
 
-		/* Build stack */
+		/* Link the monster to the object */
 		m_ptr->hold_o_idx = o_idx;
 	}
 
@@ -1315,7 +1311,7 @@ s16b monster_place(int y, int x, monster_type *n_ptr)
 		/* Make a new monster */
 		cave_m_idx[y][x] = m_idx;
 
-		/* Acquire new monster */
+		/* Get the new monster */
 		m_ptr = &m_list[m_idx];
 
 		/* Copy the monster XXX */
@@ -1328,7 +1324,7 @@ s16b monster_place(int y, int x, monster_type *n_ptr)
 		/* Update the monster */
 		update_mon(m_idx, TRUE);
 
-		/* Acquire new race */
+		/* Get the new race */
 		r_ptr = &r_info[m_ptr->r_idx];
 
 		/* Hack -- Notice new multi-hued monsters */
@@ -1947,6 +1943,13 @@ static bool summon_specific_okay(int r_idx)
 			break;
 		}
 
+		case SUMMON_KIN:
+		{
+			okay = ((r_ptr->d_char == summon_kin_type) &&
+			        !(r_ptr->flags1 & (RF1_UNIQUE)));
+			break;
+		}
+
 		case SUMMON_HI_UNDEAD:
 		{
 			okay = ((r_ptr->d_char == 'L') ||
@@ -1958,6 +1961,12 @@ static bool summon_specific_okay(int r_idx)
 		case SUMMON_HI_DRAGON:
 		{
 			okay = (r_ptr->d_char == 'D');
+			break;
+		}
+
+		case SUMMON_HI_DEMON:
+		{
+			okay = (r_ptr->d_char == 'U');
 			break;
 		}
 
@@ -1986,9 +1995,9 @@ static bool summon_specific_okay(int r_idx)
  *
  * We will attempt to place the monster up to 10 times before giving up.
  *
- * Note: SUMMON_UNIQUE and SUMMON_WRAITH (XXX) will summon Unique's
- * Note: SUMMON_HI_UNDEAD and SUMMON_HI_DRAGON may summon Unique's
- * Note: None of the other summon codes will ever summon Unique's.
+ * Note: SUMMON_UNIQUE and SUMMON_WRAITH (XXX) will summon Uniques
+ * Note: SUMMON_HI_UNDEAD and SUMMON_HI_DRAGON may summon Uniques
+ * Note: None of the other summon codes will ever summon Uniques.
  *
  * This function has been changed.  We now take the "monster level"
  * of the summoning monster as a parameter, and use that, along with

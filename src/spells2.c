@@ -129,7 +129,7 @@ bool do_dec_stat(int stat)
 {
 	bool sust = FALSE;
 
-	/* Access the "sustain" */
+	/* Get the "sustain" */
 	switch (stat)
 	{
 		case A_STR: if (p_ptr->sustain_str) sust = TRUE; break;
@@ -271,7 +271,26 @@ static int enchant_table[16] =
 
 
 /*
- * Removes curses from items in inventory
+ * Hack -- Removes curse from an object.
+ */
+static void uncurse_object(object_type *o_ptr)
+{
+	/* Uncurse it */
+	o_ptr->ident &= ~(IDENT_CURSED);
+
+	/* Remove special inscription, if any */
+	if (o_ptr->discount >= INSCRIP_NULL) o_ptr->discount = 0;
+
+	/* Take note if allowed */
+	if (o_ptr->discount == 0) o_ptr->discount = INSCRIP_UNCURSED;
+
+	/* The object has been "sensed" */
+	o_ptr->ident |= (IDENT_SENSE);
+}
+
+
+/*
+ * Removes curses from items in inventory.
  *
  * Note that Items which are "Perma-Cursed" (The One Ring,
  * The Crown of Morgoth) can NEVER be uncursed.
@@ -306,14 +325,8 @@ static int remove_curse_aux(int all)
 		/* Perma-Cursed Items can NEVER be uncursed */
 		if (f3 & (TR3_PERMA_CURSE)) continue;
 
-		/* Uncurse it */
-		o_ptr->ident &= ~(IDENT_CURSED);
-
-		/* Hack -- Assume felt */
-		o_ptr->ident |= (IDENT_SENSE);
-
-		/* Take note */
-		o_ptr->note = quark_add("uncursed");
+		/* Uncurse the object */
+		uncurse_object(o_ptr);
 
 		/* Recalculate the bonuses */
 		p_ptr->update |= (PU_BONUS);
@@ -398,7 +411,7 @@ void self_knowledge(void)
 	cptr info[128];
 
 
-	/* Acquire item flags from equipment */
+	/* Get item flags from equipment */
 	for (k = INVEN_WIELD; k < INVEN_TOTAL; k++)
 	{
 		u32b t1, t2, t3;
@@ -725,7 +738,7 @@ void self_knowledge(void)
 	}
 
 
-	/* Access the current weapon */
+	/* Get the current weapon */
 	o_ptr = &inventory[INVEN_WIELD];
 
 	/* Analyze the weapon */
@@ -869,35 +882,17 @@ bool lose_all_info(void)
 		/* Allow "protection" by the MENTAL flag */
 		if (o_ptr->ident & (IDENT_MENTAL)) continue;
 
-		/* Remove "default inscriptions" */
-		if (o_ptr->note && (o_ptr->ident & (IDENT_SENSE)))
-		{
-			/* Access the inscription */
-			cptr q = quark_str(o_ptr->note);
+		/* Remove special inscription, if any */
+		if (o_ptr->discount >= INSCRIP_NULL) o_ptr->discount = 0;
 
-			/* Hack -- Remove auto-inscriptions */
-			if ((streq(q, "cursed")) ||
-			    (streq(q, "broken")) ||
-			    (streq(q, "good")) ||
-			    (streq(q, "average")) ||
-			    (streq(q, "excellent")) ||
-			    (streq(q, "worthless")) ||
-			    (streq(q, "special")) ||
-			    (streq(q, "terrible")))
-			{
-				/* Forget the inscription */
-				o_ptr->note = 0;
-			}
-		}
-
-		/* Hack -- Clear the "empty" flag */
-		o_ptr->ident &= ~(IDENT_EMPTY);
+		/* Hack -- Clear the "felt" flag */
+		o_ptr->ident &= ~(IDENT_SENSE);
 
 		/* Hack -- Clear the "known" flag */
 		o_ptr->ident &= ~(IDENT_KNOWN);
 
-		/* Hack -- Clear the "felt" flag */
-		o_ptr->ident &= ~(IDENT_SENSE);
+		/* Hack -- Clear the "empty" flag */
+		o_ptr->ident &= ~(IDENT_EMPTY);
 	}
 
 	/* Recalculate bonuses */
@@ -916,6 +911,34 @@ bool lose_all_info(void)
 	return (TRUE);
 }
 
+
+
+/*
+ *  Set word of recall as appropriate
+ */
+void set_recall(void)
+{
+	/* Ironman */
+	if (adult_ironman && !p_ptr->total_winner)
+	{
+		msg_print("Nothing happens.");
+		return;
+	}
+
+	/* Activate recall */
+	if (!p_ptr->word_recall)
+	{
+		p_ptr->word_recall = rand_int(20) + 15;
+		msg_print("The air about you becomes charged...");
+	}
+
+	/* Deactivate recall */
+	else
+	{
+		p_ptr->word_recall = 0;
+		msg_print("A tension leaves the air around you...");
+	}
+}
 
 
 
@@ -987,13 +1010,13 @@ bool detect_doors(void)
 			/* Detect secret doors */
 			if (cave_feat[y][x] == FEAT_SECRET)
 			{
-				/* Pick a door XXX XXX XXX */
-				cave_set_feat(y, x, FEAT_DOOR_HEAD + 0x00);
+				/* Pick a door */
+				place_closed_door(y, x);
 			}
 
 			/* Detect doors */
 			if (((cave_feat[y][x] >= FEAT_DOOR_HEAD) &&
-			     (cave_feat[y][x] <= FEAT_DOOR_HEAD)) ||
+			     (cave_feat[y][x] <= FEAT_DOOR_TAIL)) ||
 			    ((cave_feat[y][x] == FEAT_OPEN) ||
 			     (cave_feat[y][x] == FEAT_BROKEN)))
 			{
@@ -1639,20 +1662,23 @@ bool enchant(object_type *o_ptr, int n, int eflag)
 			else if (o_ptr->to_h > 15) chance = 1000;
 			else chance = enchant_table[o_ptr->to_h];
 
+			/* Attempt to enchant */
 			if ((randint(1000) > chance) && (!a || (rand_int(100) < 50)))
 			{
-				o_ptr->to_h++;
 				res = TRUE;
 
-				/* only when you get it above -1 -CFT */
+				/* Enchant */
+				o_ptr->to_h++;
+
+				/* Break curse */
 				if (cursed_p(o_ptr) &&
 				    (!(f3 & (TR3_PERMA_CURSE))) &&
 				    (o_ptr->to_h >= 0) && (rand_int(100) < 25))
 				{
 					msg_print("The curse is broken!");
-					o_ptr->ident &= ~(IDENT_CURSED);
-					o_ptr->ident |= (IDENT_SENSE);
-					o_ptr->note = quark_add("uncursed");
+
+					/* Uncurse the object */
+					uncurse_object(o_ptr);
 				}
 			}
 		}
@@ -1664,20 +1690,23 @@ bool enchant(object_type *o_ptr, int n, int eflag)
 			else if (o_ptr->to_d > 15) chance = 1000;
 			else chance = enchant_table[o_ptr->to_d];
 
+			/* Attempt to enchant */
 			if ((randint(1000) > chance) && (!a || (rand_int(100) < 50)))
 			{
-				o_ptr->to_d++;
 				res = TRUE;
 
-				/* only when you get it above -1 -CFT */
+				/* Enchant */
+				o_ptr->to_d++;
+
+				/* Break curse */
 				if (cursed_p(o_ptr) &&
 				    (!(f3 & (TR3_PERMA_CURSE))) &&
 				    (o_ptr->to_d >= 0) && (rand_int(100) < 25))
 				{
 					msg_print("The curse is broken!");
-					o_ptr->ident &= ~(IDENT_CURSED);
-					o_ptr->ident |= (IDENT_SENSE);
-					o_ptr->note = quark_add("uncursed");
+
+					/* Uncurse the object */
+					uncurse_object(o_ptr);
 				}
 			}
 		}
@@ -1689,20 +1718,23 @@ bool enchant(object_type *o_ptr, int n, int eflag)
 			else if (o_ptr->to_a > 15) chance = 1000;
 			else chance = enchant_table[o_ptr->to_a];
 
+			/* Attempt to enchant */
 			if ((randint(1000) > chance) && (!a || (rand_int(100) < 50)))
 			{
-				o_ptr->to_a++;
 				res = TRUE;
 
-				/* only when you get it above -1 -CFT */
+				/* Enchant */
+				o_ptr->to_a++;
+
+				/* Break curse */
 				if (cursed_p(o_ptr) &&
 				    (!(f3 & (TR3_PERMA_CURSE))) &&
 				    (o_ptr->to_a >= 0) && (rand_int(100) < 25))
 				{
 					msg_print("The curse is broken!");
-					o_ptr->ident &= ~(IDENT_CURSED);
-					o_ptr->ident |= (IDENT_SENSE);
-					o_ptr->note = quark_add("uncursed");
+
+					/* Uncurse the object */
+					uncurse_object(o_ptr);
 				}
 			}
 		}
@@ -2637,9 +2669,9 @@ void earthquake(int cy, int cx, int r)
 		/* Check around the player */
 		for (i = 0; i < 8; i++)
 		{
-			/* Access the location */
-			y = py + ddy[i];
-			x = px + ddx[i];
+			/* Get the location */
+			y = py + ddy_ddd[i];
+			x = px + ddx_ddd[i];
 
 			/* Skip non-empty grids */
 			if (!cave_empty_bold(y, x)) continue;
@@ -2753,9 +2785,9 @@ void earthquake(int cy, int cx, int r)
 						/* Look for safety */
 						for (i = 0; i < 8; i++)
 						{
-							/* Access the grid */
-							y = yy + ddy[i];
-							x = xx + ddx[i];
+							/* Get the grid */
+							y = yy + ddy_ddd[i];
+							x = xx + ddx_ddd[i];
 
 							/* Skip non-empty grids */
 							if (!cave_empty_bold(y, x)) continue;
@@ -2782,7 +2814,7 @@ void earthquake(int cy, int cx, int r)
 					msg_format("%^s wails out in pain!", m_name);
 
 					/* Take damage from the quake */
-					damage = (sn ? damroll(4, 8) : 200);
+					damage = (sn ? damroll(4, 8) : (m_ptr->hp + 1));
 
 					/* Monster is certainly awake */
 					m_ptr->csleep = 0;
@@ -2971,7 +3003,7 @@ static void cave_temp_room_lite(void)
 				{
 					char m_name[80];
 
-					/* Acquire the monster name */
+					/* Get the monster name */
 					monster_desc(m_name, m_ptr, 0);
 
 					/* Dump a message */
@@ -3428,5 +3460,3 @@ bool sleep_monsters_touch(void)
 	int flg = PROJECT_KILL | PROJECT_HIDE;
 	return (project(-1, 1, py, px, p_ptr->lev, GF_OLD_SLEEP, flg));
 }
-
-

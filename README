@@ -1,7 +1,7 @@
 
 
               **************************************************
-              **   Angband 2.8.3   **   The Pits of Angband   **
+              **   Angband 2.8.5   **   The Pits of Angband   **
               **************************************************
 
            Based on Moria:   Copyright (c) 1985 Robert Alan Koeneke
@@ -11,7 +11,7 @@
                    Alex Cutler, Andy Astrand, Sean Marsh,
                  Geoff Hill, Charles Teague, Charles Swiger
 
-               Angband 2.8.3:  Copyright (c) 1997 Ben Harrison
+            Angband 2.8.5:  Copyright (c) 1995-1999 Ben Harrison
 
          Send comments, bug reports, and patches, to "benh@phial.com"
         Visit the Angband Home Page at "http://www.phial.com/angband/"
@@ -23,7 +23,7 @@
 
 === General Info ===
 
-This is the README file for Angband 2.8.3 (1998-02-09)
+This is the README file for Angband 2.8.5 (1999-09-01)
 
 Angband is a "graphical" dungeon adventure game using textual characters
 to represent the walls and floors of a dungeon and the inhabitants therein,
@@ -31,8 +31,7 @@ in the vein of "rogue", "hack", "nethack", and "moria".
 
 There are some ascii "on line help" files in the "lib/help" directory.
 
-Angband 2.8.3 is a stable official release incorporating all the changes
-and improvements added since the last official release (Angband 2.7.8).
+Angband 2.8.5 is an experimental release, use at your own risk.
 
 See the Official Angband Home Page "http://www.phial.com/angband/" for
 a list (mostly complete) of what has changed in each recent version.

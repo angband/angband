@@ -24,7 +24,7 @@ static cptr wd_his[3] =
  * Pluralizer.  Args(count, singular, plural)
  */
 #define plural(c,s,p) \
-    (((c) == 1) ? (s) : (p))
+	(((c) == 1) ? (s) : (p))
 
 
 
@@ -148,7 +148,7 @@ static void roff_aux(int r_idx)
 #endif
 
 
-	/* Access the race and lore */
+	/* Get the race and lore */
 	r_ptr = &r_info[r_idx];
 
 
@@ -158,7 +158,7 @@ static void roff_aux(int r_idx)
 		/* XXX XXX XXX */
 
 		/* Hack -- save memory */
-		COPY(&save_mem, r_ptr, monster_type);
+		COPY(&save_mem, r_ptr, monster_race);
 
 		/* Hack -- Maximal kills */
 		r_ptr->r_tkills = MAX_SHORT;
@@ -741,8 +741,7 @@ static void roff_aux(int r_idx)
 	if (flags6 & (RF6_TRAPS))		vp[vn++] = "create traps";
 	if (flags6 & (RF6_FORGET))		vp[vn++] = "cause amnesia";
 	if (flags6 & (RF6_XXX6))		vp[vn++] = "do something";
-	if (flags6 & (RF6_XXX7))		vp[vn++] = "do something";
-	if (flags6 & (RF6_XXX8))		vp[vn++] = "do something";
+	if (flags6 & (RF6_S_KIN))		vp[vn++] = "summon similar monsters";
 	if (flags6 & (RF6_S_MONSTER))		vp[vn++] = "summon a monster";
 	if (flags6 & (RF6_S_MONSTERS))	vp[vn++] = "summon monsters";
 	if (flags6 & (RF6_S_ANT))		vp[vn++] = "summon ants";
@@ -755,6 +754,7 @@ static void roff_aux(int r_idx)
 	if (flags6 & (RF6_S_DRAGON))		vp[vn++] = "summon a dragon";
 	if (flags6 & (RF6_S_HI_UNDEAD))	vp[vn++] = "summon Greater Undead";
 	if (flags6 & (RF6_S_HI_DRAGON))	vp[vn++] = "summon Ancient Dragons";
+	if (flags6 & (RF6_S_HI_DEMON))		vp[vn++] = "summon Greater Demons";
 	if (flags6 & (RF6_S_WRAITH))		vp[vn++] = "summon Ring Wraiths";
 	if (flags6 & (RF6_S_UNIQUE))		vp[vn++] = "summon Unique Monsters";
 
@@ -1206,7 +1206,7 @@ static void roff_aux(int r_idx)
 		/* No method yet */
 		p = NULL;
 
-		/* Acquire the method */
+		/* Get the method */
 		switch (method)
 		{
 			case RBM_HIT:	p = "hit"; break;
@@ -1239,7 +1239,7 @@ static void roff_aux(int r_idx)
 		/* Default effect */
 		q = NULL;
 
-		/* Acquire the effect */
+		/* Get the effect */
 		switch (effect)
 		{
 			case RBE_HURT:	q = "attack"; break;
@@ -1350,7 +1350,7 @@ static void roff_aux(int r_idx)
 	if (cheat_know)
 	{
 		/* Hack -- restore memory */
-		COPY(r_ptr, &save_mem, monster_type);
+		COPY(r_ptr, &save_mem, monster_race);
 	}
 }
 
@@ -1369,11 +1369,11 @@ static void roff_top(int r_idx)
 	char c1, c2;
 
 
-	/* Access the chars */
+	/* Get the chars */
 	c1 = r_ptr->d_char;
 	c2 = r_ptr->x_char;
 
-	/* Access the attrs */
+	/* Get the attrs */
 	a1 = r_ptr->d_attr;
 	a2 = r_ptr->x_attr;
 

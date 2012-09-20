@@ -717,7 +717,7 @@ bool make_attack_normal(int m_idx)
 					/* Take damage */
 					take_hit(damage, ddesc);
 
-					/* Access the lite */
+					/* Get the lite */
 					o_ptr = &inventory[INVEN_LITE];
 
 					/* Drain fuel */

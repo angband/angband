@@ -51,7 +51,7 @@
  * Old savefiles must be renamed to follow the new "savefile" naming
  * conventions.  Either rename the savefile to "PLAYER", or start the
  * program with the "-uName" flag.  See "main.c" for details.  The
- * savefiles are stores in "./lib/save" if you forgot the old names...
+ * savefiles are stored in "./lib/save" if you forgot the old names...
  *
  *  Changes
  *  =======
@@ -85,13 +85,20 @@
  *
  *   9.03.96   EK      2.7.9    Adjustable background color (PM)
  *                      v5      Added map window
-
+ *
  *  3 Dec 97   SWD      282     Brought key-handling, macros in sync with DOS.
  *                              Hacked on sub-window code -- it compiles, but
  *                              doesn't link.
  *
  * 23 Jan 98   SWD      282     Hacked more on sub-windows.  Now links, with
  *                              warnings.  Seems to work.
+ *  
+ * 25 May 99   GDL      283     Moved pipe and PM related data into Term struct to avoid
+ *					  term conflicts (redefintion, etc).  Some code cleanup.
+ *
+ * 02 Jun 99   GDL      283     Fixed handling of sub-windows so that they tell server 
+ *					  how big they are, avoiding sub-window display corruption.
+ *
  */
 
 #include <signal.h>
@@ -99,7 +106,10 @@
 #include <stdlib.h>
 #include <sys/kbdscan.h>
 #include <io.h>
+#include <process.h>
 #define INCL_KBD 1
+#define INCL_WINWINDOWMGR
+#define INCL_WINSWITCHLIST
 #include <os2.h>
 #include <sys/video.h>
 
@@ -110,7 +120,6 @@
  * Maximum windows
  */
 #define MAX_TERM_DATA 8
-
 
 /*
  * Keypress input modifier flags (copied from main-ibm.c)
@@ -137,18 +146,23 @@ static errr Term_text_emx(int x, int y, int n, unsigned char a, cptr s);
 static void Term_init_emx(term *t);
 static void Term_nuke_emx(term *t);
 
+/* 
+ * the terms!  kind of useless for client.  Oh well.
+ */
+
+static term emxterm[MAX_TERM_DATA];
+
 #ifndef EMXPM
 
 /*
- * termPipe* is sometimes cast to term* and vice versa,
- * so "term t;" must be the first line
+ * Use the "data" field in the term struct to keep track of the
+ * pipe handle
  */
 
 typedef struct
 {
-	term t;
 	FILE *out;                  /* used by the ..._pipe_emx stuff */
-} termPipe;
+} termData;
 
 /*
  * Communication between server and client
@@ -324,18 +338,12 @@ static errr Term_text_pipe_emx(int x, int y, int n, unsigned char a, cptr s);
 static void Term_init_pipe_emx(term *t);
 static void Term_nuke_pipe_emx(term *t);
 static FILE *initPipe(char *name);
-static void initPipeTerm(termPipe *pipe, char *name, term **term);
+static int initPipeTerm(term *term, char *name);
 
 /*
  * Main initialization function
  */
 errr init_emx(void);
-
-/*
- * The screens
- */
-static termPipe term_screen[MAX_TERM_DATA];
-
 
 /*
  * Check for events -- called by "Term_scan_emx()"
@@ -632,7 +640,7 @@ static errr Term_xtra_emx(int n, int v)
 
 static errr Term_xtra_pipe_emx(int n, int v)
 {
-	termPipe *tp=(termPipe*)Term;
+	termData *tp=(termData *)Term->data;
 
 	switch (n)
 	{
@@ -663,7 +671,7 @@ static errr Term_xtra_pipe_emx(int n, int v)
 
 static errr Term_curs_pipe_emx(int x, int y)
 {
-	termPipe *tp=(termPipe*)Term;
+	termData *tp=(termData *)Term->data;
 
 	if (!tp->out) return -1;
 
@@ -678,7 +686,7 @@ static errr Term_curs_pipe_emx(int x, int y)
 
 static errr Term_wipe_pipe_emx(int x, int y, int n)
 {
-	termPipe *tp=(termPipe*)Term;
+	termData *tp=(termData *)Term->data;
 
 	if (!tp->out) return -1;
 
@@ -694,7 +702,7 @@ static errr Term_wipe_pipe_emx(int x, int y, int n)
 
 static errr Term_text_pipe_emx(int x, int y, int n, unsigned char a, cptr s)
 {
-	termPipe *tp=(termPipe*)Term;
+	termData *tp=(termData *)Term->data;
 
 	if (!tp->out) return -1;
 
@@ -712,7 +720,7 @@ static errr Term_text_pipe_emx(int x, int y, int n, unsigned char a, cptr s)
 
 static void Term_init_pipe_emx(term *t)
 {
-	termPipe *tp=(termPipe*)t;
+	termData *tp=(termData *)t->data;
 
 	if (tp->out)
 	{
@@ -724,27 +732,49 @@ static void Term_init_pipe_emx(term *t)
 
 static void Term_nuke_pipe_emx(term *t)
 {
-	termPipe *tp=(termPipe*)t;
+	termData *tp=(termData *)t->data;
 
 	if (tp->out)
 	{
 		fputc(PIP_NUKE, tp->out); /* Terminate client */
 		fflush(tp->out);
 		fclose(tp->out);         /* Close Pipe */
-		tp->out=NULL;            /* Paranoia */
+  		FREE(t->data, termData); /* free xtra memory for pipe data */
+		t->data=NULL;            /* Paranoia */
 	}
 }
 
-static void initPipeTerm(termPipe *pipe, char *name, term **termTarget)
+static int initPipeTerm(term *t, char *name)
 {
-	term *t;
+   	termData *pipe;
+    	int lineCount = 0;
+     	char linesin[3] = { "00" };
+      size_t bytesin = 0;
 
-	t=(term*)pipe;
-
+	/* get memory for pipe */
+ 	pipe = RNEW(termData);
 	if ((pipe->out=initPipe(name))!=NULL)
 	{
+    		_sleep2(500);		/* sleep a bit */
+    		bytesin = fread(linesin, 2, 1, pipe->out);
+
+      	lineCount = atoi(linesin);
+#if 0
+		printf("%d blocks, string = \"%s\", count=%d, feof=%d, ferror=%d.\n",bytesin,
+  			linesin, lineCount, feof(pipe->out), ferror(pipe->out));
+#endif
+
+		/* sanity check: 0 < lines < 99 */
+  		if (lineCount < 0 || lineCount > 99 || bytesin < 1) {
+       		return 0;
+         		/* the window will be idle */
+        	}
+
+         	/* reset the stream for writing */
+          	fseek(pipe->out, 0, SEEK_CUR);
+
 		/* Initialize the term */
-		term_init(t, 80, 24, 1);
+		term_init(t, 80, lineCount, 1);
 
 		/* Special hooks */
 		t->init_hook = Term_init_pipe_emx;
@@ -756,12 +786,13 @@ static void initPipeTerm(termPipe *pipe, char *name, term **termTarget)
 		t->curs_hook = Term_curs_pipe_emx;
 		t->xtra_hook = Term_xtra_pipe_emx;
 
-		/* Save it */
-		*termTarget = t;
+	  	t->data = pipe;
+ 	  	t->data_flag = TRUE;
 
 		/* Activate it */
 		Term_activate(t);
 	}
+ 	return lineCount;
 }
 
 /*
@@ -772,16 +803,19 @@ errr init_emx(void)
 	int i;
 
 	term *t;
+ 	const char *name;
 
 	/* Initialize the pipe windows */
 	for (i = MAX_TERM_DATA-1; i > 0; --i)
 	{
-		const char *name = angband_term_name[i];
-		initPipeTerm(&term_screen[i], name, &angband_term[i]);
+		name = angband_term_name[i];
+  		/* if client connect successful,  add term to list */
+		if (initPipeTerm(&emxterm[i], name)) 
+  			angband_term[i] = &emxterm[i];
 	}
 
 	/* Initialize main window */
-	t = (term*)(&term_screen[0]);
+	t = &emxterm[0];
 
 	/* Initialize the term -- big key buffer */
 	term_init(t, 80, 24, 1024);
@@ -796,11 +830,11 @@ errr init_emx(void)
 	t->curs_hook = Term_curs_emx;
 	t->xtra_hook = Term_xtra_emx;
 
-	/* Save it */
-	term_screen = t;
-
 	/* Activate it */
 	Term_activate(t);
+
+	/* Assign to angband_term[0] */
+ 	angband_term[0] = t;
 
 	/* Success */
 	return (0);
@@ -812,11 +846,27 @@ static FILE *initPipe(char *name)
 	FILE *fi;
 
 	sprintf(buf, "\\pipe\\angband\\%s", name);   /* Name of pipe */
-	fi=fopen(buf, "wb");                        /* Look for server */
+	fi=fopen(buf, "r+b");                        /* Look for client */
 	return fi;
 }
 
 #else /* __EMX__CLIENT__ */
+
+void moveClientWindow(int x, int y)
+{
+	SWCNTRL sw_info;
+	int emxpid;
+	BOOL rc;
+	HSWITCH swhandle;
+
+	emxpid = getpid();
+	swhandle = WinQuerySwitchHandle(NULLHANDLE, emxpid);
+	if (swhandle != NULLHANDLE) {
+		rc = WinQuerySwitchEntry(swhandle, &sw_info);
+		if (rc == 0)
+ 			WinSetWindowPos(sw_info.hwnd, 0, x, y, 0, 0, SWP_MOVE);
+	}
+}
 
 int main(int argc, char **argv)
 {
@@ -828,34 +878,34 @@ int main(int argc, char **argv)
 	char buf[160];
 	HPIPE pipe;
 	APIRET rc;
-	char *target;
 
 	/* Check command line */
-	if (argc!=2 && argc!=3)
+	if (argc<2 || argc>5 || argc==4)
 	{
-		printf("Usage: %s Term-1|...|Term-7 [number of lines]\n"
+		printf("Usage: %s Term-1|...|Term-7 [number of lines] [x-position y-position]\n"
 		       "Start this before angband.exe\n", argv[0]);
 		exit(1);
 	}
 
-	if (argc==3) lines = atoi(argv[2]);
+	if (argc>2) lines = atoi(argv[2]);
 	if (lines <= 0) lines = 25;
+ 	if (argc==5) {
+     		x=atoi(argv[3]);
+       	y=atoi(argv[4]);
+      }
 
 	printf("Looking for Angband... press ^C to abort\n");
 
-	target=strdup(argv[1]);
-	for (c=0; c<strlen(target); c++) target[c]=tolower(target[c]);
-
-	sprintf(buf, "\\pipe\\angband\\%s", target);
+	sprintf(buf, "\\pipe\\angband\\%s", argv[1]);
 
 	do
 	{
 		rc=DosCreateNPipe((PSZ)buf,          /* Create pipe */
 		                  &pipe,
-		                  NP_ACCESS_INBOUND,
+		                  NP_ACCESS_DUPLEX,
 		                  NP_WAIT|NP_TYPE_BYTE|NP_READMODE_BYTE|1,
-		                  1,                 /* No output buffer */
-		                  1,                 /* No input buffer */
+		                  2,                 /* Output buffer */
+		                  2048,              /* Input buffer */
 		                  -1);
 
 		if (rc)                              /* Pipe not created */
@@ -868,14 +918,14 @@ int main(int argc, char **argv)
 		{
 			rc=DosConnectNPipe(pipe);        /* Wait for angband to connect */
 			if (!rc) break;
-			_sleep2(500);                    /* Sleep for 0.5s  */
+			_sleep2(200);                    /* Sleep for 0.2s  */
 		} while (_read_kbd(0, 0, 0)==-1);      /* Until key pressed */
 
 		if (rc) break;
 
 		h=_imphandle(pipe);                  /* Register handle with io */
 		setmode(h, O_BINARY);                 /* Make it binary */
-		in=fdopen(h, "rb");                   /* Register handle with stdio */
+		in=fdopen(h, "r+b");                  /* Register handle with stdio */
 
 	} while (0);           /* We don't need no stinking exception handling <g> */
 
@@ -889,6 +939,17 @@ int main(int argc, char **argv)
 
 	sprintf(buf, "mode co80,%d", lines);
 	system(buf);
+
+	/* now position it */
+ 	if (argc == 5) 
+		moveClientWindow(x,y);
+
+	/* send screen length - ONLY time we write to this pipe. */
+ 	sprintf(buf,"%02d",lines);
+  	fwrite(buf,2,1,in);
+
+	/* fseek so that we can start reading. */
+ 	fseek(in,0,SEEK_CUR);
 
 	/* Infinite loop */
 	while (!end)
@@ -949,6 +1010,9 @@ int main(int argc, char **argv)
 			case PIP_NUKE:
 			case EOF:
 			default:
+#if 0   			
+			printf("feof=%d ferror=%d.\n",feof(in),ferror(in));
+#endif
 			Term_nuke_emx(NULL);
 			end=1;
 			break;
@@ -985,22 +1049,20 @@ void emx_hidecursor(void *instance);
 void emx_showcursor(void *instance);
 
 /*
- * termWindow* is sometimes cast to term* and vice versa,
- * so "term t;" must be the first line
+ * Type to hold extra data.  Again,  we use termData type (as per pipes)
  */
 
 typedef struct
 {
-	term t;
 	void *instance;                          /* Pointer to window */
-} termWindow;
+} termData;
 
 /*
  * Display a cursor, on top of a given attr/char
  */
 static errr Term_curs_emx(int x, int y)
 {
-	return emx_curs(((termWindow*)Term)->instance, x, y);
+	return emx_curs(((termData *)Term->data)->instance, x, y);
 }
 
 /*
@@ -1008,7 +1070,7 @@ static errr Term_curs_emx(int x, int y)
  */
 static errr Term_wipe_emx(int x, int y, int n)
 {
-	return emx_wipe(((termWindow*)Term)->instance, x, y, n);
+	return emx_wipe(((termData *)Term->data)->instance, x, y, n);
 }
 
 /*
@@ -1016,7 +1078,7 @@ static errr Term_wipe_emx(int x, int y, int n)
  */
 static errr Term_text_emx(int x, int y, int n, unsigned char a, cptr s)
 {
-	return emx_text(((termWindow*)Term)->instance, x, y, n, a, s);
+	return emx_text(((termData *)Term->data)->instance, x, y, n, a, s);
 }
 
 /*
@@ -1024,7 +1086,7 @@ static errr Term_text_emx(int x, int y, int n, unsigned char a, cptr s)
  */
 static void Term_init_emx(term *t)
 {
-	return emx_init(((termWindow*)t)->instance);
+	emx_init(((termData *)t->data)->instance);
 }
 
 /*
@@ -1032,6 +1094,10 @@ static void Term_init_emx(term *t)
  */
 static void Term_nuke_emx(term *t)
 {
+	if (t->data_flag && t->data != NULL) {
+ 		FREE(t->data, termData);
+   		t->data = NULL;
+    	}
 }
 
 /*
@@ -1045,17 +1111,12 @@ static errr CheckEvents(int returnImmediately);
 errr init_emx(void);
 
 /*
- * The screens
- */
-static termWindow term_screen[MAX_TERM_DATA];
-
-/*
  * Check for events -- called by "Term_scan_emx()"
  */
 static errr CheckEvents(int returnImmediately)
 {
 	/* Get key - Macro triggers are generated by emx_read_kbd() */
-	int k=emx_read_kbd(((termWindow*)Term)->instance, returnImmediately?0:1);
+	int k=emx_read_kbd(((termData *)Term->data)->instance, returnImmediately?0:1);
 
 	/* Nothing ready */
 	if (k < 0) return (1);
@@ -1072,7 +1133,7 @@ static errr CheckEvents(int returnImmediately)
  */
 static errr Term_xtra_emx(int n, int v)
 {
-	void *instance=((termWindow*)Term)->instance;
+	void *instance=((termData *)Term->data)->instance;
 
 	switch (n)
 	{
@@ -1110,27 +1171,31 @@ static errr Term_xtra_emx(int n, int v)
 	return (1);
 }
 
-void emx_init_term(termWindow *t, void *main_instance, term **angTerm, int n)
+void emx_init_term(term *t, void *main_instance, int n)
 {
-	term *te=(term*)t;
+   	termData *inst;
+
+	/* get memory for instance */
+ 	inst = RNEW(termData);
+
+	t->data = inst;
+ 	t->data_flag = TRUE;
 
 	/* Initialize window */
-	emx_init_window(&t->instance, main_instance, n);
-
-	*angTerm=te;
+	emx_init_window(t->data, main_instance, n);
 
 	/* Initialize the term -- big key buffer */
-	term_init(te, 80, 24, 1024);
+	term_init(t, 80, 24, 1024);
 
 	/* Special hooks */
-	te->init_hook = Term_init_emx;
-	te->nuke_hook = Term_nuke_emx;
+	t->init_hook = Term_init_emx;
+	t->nuke_hook = Term_nuke_emx;
 
 	/* Add the hooks */
-	te->text_hook = Term_text_emx;
-	te->wipe_hook = Term_wipe_emx;
-	te->curs_hook = Term_curs_emx;
-	te->xtra_hook = Term_xtra_emx;
+	t->text_hook = Term_text_emx;
+	t->wipe_hook = Term_wipe_emx;
+	t->curs_hook = Term_curs_emx;
+	t->xtra_hook = Term_xtra_emx;
 }
 
 /*
@@ -1141,15 +1206,17 @@ errr init_emx(void)
 	int i;
 
 	/* Initialize the windows */
-	emx_init_term(&term_screen[0],  NULL, &angband_term[0], 0);
+	emx_init_term(&emxterm[0],  NULL, 0);
 
 	for (i = 1; i < MAX_TERM_DATA; ++i)
 	{
-		emx_init_term(&term_screen[i], term_screen[0].instance, &angband_term[i], i);
+		emx_init_term(&emxterm[i], emxterm[0].data, i);
 	}
 
 	/* Activate main window */
-	Term_activate(angband_term[0]);
+	Term_activate(&emxterm[0]);
+
+	angband_term[0] = &emxterm[0];
 
 	/* Success */
 	return (0);
@@ -1183,9 +1250,9 @@ static void quit_hook(cptr s)
 		if (angband_term[i])
 		{
 			term_nuke(angband_term[i]);
-			emx_nuke(((termWindow*)angband_term[i])->instance);
+			emx_nuke(angband_term[i]->data);
 		}
-	]
+	}
 
 	/* Shut down window system - doesn't return */
 	emx_endPM(s);

@@ -270,7 +270,7 @@ static XImage *ResizeImage(Display *disp, XImage *Im,
 		{
 			Ty += *dy1;
 			(*py2)++;
-		}      
+		}
 	}
 
 	return Tmp;
@@ -525,7 +525,7 @@ struct AngbandClassRec
 
 
 
-/* 
+/*
  * Hack -- see below
  */
 #define offset(field) XtOffsetOf(AngbandRec, angband.field)

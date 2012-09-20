@@ -66,7 +66,8 @@ extern cptr window_flag_desc[32];
 extern cptr option_text[OPT_MAX];
 extern cptr option_desc[OPT_MAX];
 extern bool option_norm[OPT_MAX];
-extern byte option_page[4][16];
+extern byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
+extern cptr inscrip_text[MAX_INSCRIP];
 
 /* variable.c */
 extern cptr copyright[5];
@@ -94,11 +95,13 @@ extern bool character_loaded;
 extern bool character_saved;
 extern s16b character_icky;
 extern s16b character_xtra;
+extern u32b seed_randart;
 extern u32b seed_flavor;
 extern u32b seed_town;
 extern s16b num_repro;
 extern s16b object_level;
 extern s16b monster_level;
+extern char summon_kin_type;
 extern s32b turn;
 extern s32b old_turn;
 extern bool use_sound;
@@ -220,7 +223,6 @@ extern void (*ang_sort_swap)(vptr u, vptr v, int a, int b);
 extern bool (*get_mon_num_hook)(int r_idx);
 extern bool (*get_obj_num_hook)(int k_idx);
 
-
 /*
  * Automatically generated "function declarations"
  */
@@ -271,7 +273,7 @@ extern void search(void);
 extern void py_pickup(int pickup);
 extern void hit_trap(int y, int x);
 extern void py_attack(int y, int x);
-extern void move_player(int dir, int do_pickup);
+extern void move_player(int dir, int jumping);
 extern void run_step(int dir);
 
 /* cmd2.c */
@@ -445,6 +447,7 @@ extern s16b wield_slot(object_type *o_ptr);
 extern cptr mention_use(int i);
 extern cptr describe_use(int i);
 extern bool item_tester_okay(object_type *o_ptr);
+extern sint scan_floor(int *items, int size, int y, int x, int mode);
 extern void display_inven(void);
 extern void display_equip(void);
 extern void show_inven(void);
@@ -481,6 +484,9 @@ extern void place_object(int y, int x, bool good, bool great);
 extern void place_gold(int y, int x);
 extern void pick_trap(int y, int x);
 extern void place_trap(int y, int x);
+extern void place_secret_door(int y, int x);
+extern void place_closed_door(int y, int x);
+extern void place_random_door(int y, int x);
 extern void inven_item_charges(int item);
 extern void inven_item_describe(int item);
 extern void inven_item_increase(int item, int num);
@@ -535,6 +541,7 @@ extern bool remove_all_curse(void);
 extern bool restore_level(void);
 extern void self_knowledge(void);
 extern bool lose_all_info(void);
+extern void set_recall(void);
 extern bool detect_traps(void);
 extern bool detect_doors(void);
 extern bool detect_stairs(void);
@@ -700,6 +707,7 @@ extern void verify_panel(void);
 extern cptr look_mon_desc(int m_idx);
 extern void ang_sort_aux(vptr u, vptr v, int p, int q);
 extern void ang_sort(vptr u, vptr v, int n);
+extern sint motion_dir(int y1, int x1, int y2, int x2);
 extern sint target_dir(char ch);
 extern bool target_able(int m_idx);
 extern bool target_okay(void);
@@ -746,4 +754,26 @@ extern void user_name(char *buf, int id);
 /* main.c */
 /* extern int main(int argc, char *argv[]); */
 
+#ifdef ALLOW_REPEAT
+
+/* util.c */
+extern void repeat_push(int what);
+extern bool repeat_pull(int *what);
+extern void repeat_check(void);
+
+#endif /* ALLOW_REPEAT */
+
+#ifdef ALLOW_EASY_FLOOR
+
+/* object1.c */
+extern void show_floor(int *floor_list, int floor_num);
+
+#endif /* ALLOW_EASY_FLOOR */
+
+#ifdef GJW_RANDART
+
+/* init3.c */
+extern int do_randart(u32b randart_seed);
+
+#endif /* GJW_RANDART */
 

@@ -103,17 +103,17 @@
 
 # As always, you can enforce any "visual picture" you want with a "pref file".
 
-# Note that monster zero is used for the "player" picture.
+# Note that monster zero contains the "player" picture.
 
 
 # Version stamp (required)
 
-V:2.8.3
+V:2.8.5
 
 
-##### The Player #####
+##### Non-race (contains the "player" picture) #####
 
-N:0:Player
+N:0:<player>
 G:@:w
 
 
@@ -2153,7 +2153,7 @@ F:SMART | OPEN_DOOR | BASH_DOOR |
 F:ANIMAL | EVIL
 S:1_IN_3 | 
 S:HEAL | BLINK | TPORT | BLIND | SLOW | 
-S:S_MONSTER
+S:S_MONSTER | S_KIN
 D:A great yeek, powerful in magic and sorcery, but a yeek all the same.
 
 N:174:Ogre
@@ -4005,7 +4005,7 @@ F:SMART | INVISIBLE | BASH_DOOR |
 F:EVIL | DEMON | IM_FIRE
 S:1_IN_5 | 
 S:BLINK | TPORT | TELE_TO | TELE_AWAY | TELE_LEVEL | BLIND | 
-S:CONF | SCARE
+S:CONF | SCARE | S_KIN
 D:An intensely irritating git of a monster.
 
 N:308:Basilisk
@@ -7075,7 +7075,7 @@ F:HURT_LITE | NO_CONF | NO_SLEEP
 S:1_IN_3 | 
 S:BLIND | HOLD | SCARE | CAUSE_3 | CAUSE_4 | MIND_BLAST | 
 S:BO_COLD | BA_COLD | BA_NETH | 
-S:S_UNDEAD
+S:S_UNDEAD | S_KIN
 D:A Ringwraith powerful in fell sorcery, he yearns for the life he has lost 
 D:for a life of everlasting torment.
 
@@ -7116,7 +7116,7 @@ F:HURT_LITE | NO_CONF | NO_SLEEP
 S:1_IN_2 | 
 S:TELE_LEVEL | BLIND | HOLD | SCARE | CAUSE_3 | CAUSE_4 | BO_MANA | 
 S:BA_FIRE | BA_COLD | BA_NETH | 
-S:S_UNDEAD
+S:S_UNDEAD | S_KIN
 D:A warrior-king of the East.  Khamul is a powerful opponent, his skill in 
 D:combat awesome and his form twisted by evil cunning.
 
@@ -7318,7 +7318,7 @@ F:COLD_BLOOD | OPEN_DOOR | BASH_DOOR | REGENERATE |
 F:EVIL | UNDEAD | IM_COLD | IM_POIS | HURT_LITE | NO_CONF | NO_SLEEP
 S:1_IN_3 | 
 S:BLIND | HOLD | SCARE | CAUSE_3 | CAUSE_4 | DRAIN_MANA | 
-S:BRAIN_SMASH | BA_NETH
+S:BRAIN_SMASH | BA_NETH | S_KIN
 D:Chief messenger between Sauron and Morgoth, she is surely the most deadly 
 D:of her vampire race.  At first she is charming to meet, but her wings and 
 D:eyes give away her true form.
@@ -7439,7 +7439,7 @@ F:EVIL | DRAGON | IM_ACID | IM_FIRE |
 F:NO_CONF | NO_SLEEP
 S:1_IN_2 | 
 S:BLIND | CONF | SCARE | 
-S:BR_ACID | 
+S:BR_ACID | BR_FIRE | 
 S:S_DRAGON | S_HI_DRAGON
 D:'Rushing Jaws' is his name, and death is his game.  No dragon of the brood 
 D:of Glaurung can match him.
@@ -7483,7 +7483,7 @@ F:SMART | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY |
 F:IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS
 S:1_IN_2 | 
 S:TELE_TO | BLIND | BO_MANA | 
-S:S_ANGEL
+S:S_ANGEL | S_KIN
 D:Commanding a legion of angels, Gabriel will destroy you for your sins.  He 
 D:will crush you like the pitiful insignificant being he sees you to be.  
 D:Your very soul will be taken into judgement by his supreme authority as he 
@@ -7671,7 +7671,7 @@ F:IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_3 | 
 S:BLIND | HOLD | CONF | 
 S:BA_DARK | BA_NETH | 
-S:S_WRAITH | S_HI_UNDEAD
+S:S_WRAITH | S_HI_UNDEAD | S_KIN
 D:This huge affront to existence twists and tears at the fabric of space.  A 
 D:master of mighty magic, Tselakus hungers for your tender flesh.  Darkness 
 D:itself recoils from the touch of Tselakus as he leaves a trail of death 
@@ -7731,7 +7731,8 @@ F:INVISIBLE | EMPTY_MIND |
 F:ANIMAL | EVIL | 
 F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_2 | 
-S:S_MONSTER | S_MONSTERS | S_UNDEAD | S_DRAGON | S_HI_UNDEAD | S_HI_DRAGON
+S:S_MONSTER | S_MONSTERS | S_UNDEAD | S_DRAGON | S_HI_UNDEAD |
+S:S_HI_DRAGON | S_HI_DEMON
 D:A pulsating mound of flesh, shining with silver pulses of throbbing light.
 
 N:526:Greater draconic quylthulg
@@ -7800,7 +7801,7 @@ F:EVIL | IM_POIS |
 F:NO_CONF | NO_SLEEP
 S:1_IN_2 | 
 S:BLIND | SLOW | CONF | SCARE | DRAIN_MANA | MIND_BLAST | FORGET | 
-S:DARKNESS | BA_DARK | BO_ACID | BO_FIRE | BO_COLD
+S:DARKNESS | BA_DARK | BO_ACID | BO_FIRE | BO_COLD | S_KIN
 D:A disembodied eye, floating in the air.  His gaze seems to shred your 
 D:soul and his spells crush your will.  He is ancient, his history steeped 
 D:in forgotten evils, his atrocities numerous and sickening.
@@ -7885,7 +7886,7 @@ F:ANIMAL | EVIL |
 F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_2 | 
 S:BRAIN_SMASH | 
-S:S_HI_UNDEAD | S_HI_DRAGON
+S:S_HI_UNDEAD | S_HI_DRAGON | S_HI_DEMON
 D:A huge seething mass of flesh with a rudimentary intelligence, the Emperor 
 D:Quylthulg changes colours in front of your eyes.  Pulsating first one 
 D:colour then the next, it knows only it must bring help to protect itself.
@@ -7903,7 +7904,7 @@ F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_1 | 
 S:S_MONSTER | S_MONSTERS | S_UNDEAD | S_DEMON | S_DRAGON | S_ANGEL | 
 S:S_HYDRA | S_SPIDER | S_ANT | S_HOUND | S_UNIQUE | S_WRAITH | 
-S:S_HI_UNDEAD | S_HI_DRAGON
+S:S_HI_UNDEAD | S_HI_DRAGON | S_HI_DEMON | S_KIN
 D:This disgusting creature squeals and snorts as it writhes on the floor.  
 D:It pulsates with evil.  Its intent is to overwhelm you with monster after 
 D:monster, until it can greedily dine on your remains.
@@ -7925,7 +7926,7 @@ F:IM_COLD | IM_POIS | HURT_LITE | NO_CONF | NO_SLEEP
 S:1_IN_2 | 
 S:TELE_AWAY | BLIND | HOLD | SCARE | CAUSE_3 | BRAIN_SMASH | 
 S:BO_MANA | BA_NETH | 
-S:S_MONSTERS | S_WRAITH | S_HI_UNDEAD | S_HI_DRAGON
+S:S_MONSTERS | S_WRAITH | S_HI_UNDEAD | S_HI_DRAGON | S_HI_DEMON | S_KIN
 D:The Chief of the Ringwraiths.  A fell being of devastating power.  His 
 D:spells are lethal and his combat blows crushingly hard.  He moves at 
 D:speed, and commands legions of evil to do his bidding.  It is said that he 
@@ -7946,7 +7947,7 @@ F:INVISIBLE | OPEN_DOOR | BASH_DOOR |
 F:EVIL | DEMON | IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | 
 F:IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_3 | 
-S:MIND_BLAST | BO_ELEC | BO_MANA | BA_ELEC
+S:MIND_BLAST | BO_ELEC | BO_MANA | BA_ELEC | S_HI_DEMON
 D:A winged humanoid from the Planes of Hell, Pazuzu grins inhumanely at you 
 D:as he decides your fate.
 
@@ -8024,7 +8025,7 @@ F:NO_CONF | NO_SLEEP
 S:1_IN_4 | 
 S:BLIND | CONF | SCARE | 
 S:BR_FIRE | 
-S:S_DEMON | S_HI_UNDEAD
+S:S_DEMON | S_HI_UNDEAD | S_HI_DEMON
 D:A massive form cloaked in flame.  Lungorthin stares balefully at you with 
 D:eyes that smoulder red.  The dungeon floor where he stands is scorched by 
 D:the heat of his body.
@@ -8068,7 +8069,7 @@ F:IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP |
 S:1_IN_3 | 
 S:TPORT | BLIND | SCARE | CAUSE_4 | BRAIN_SMASH | 
 S:BA_MANA | BO_MANA | BA_FIRE | 
-S:S_MONSTERS | S_DEMON | S_HI_UNDEAD
+S:S_MONSTERS | S_DEMON | S_HI_UNDEAD | S_KIN
 D:A stench of corruption and decay surrounds this sorcerer, who has clearly 
 D:risen from the grave to continue his foul plots and schemes.
 
@@ -8131,7 +8132,7 @@ F:IM_FIRE | IM_ELEC | NO_CONF | NO_SLEEP
 S:1_IN_3 | 
 S:BLIND | CONF | SCARE | 
 S:BR_FIRE | 
-S:S_DEMON | S_HI_UNDEAD
+S:S_HI_DEMON | S_HI_UNDEAD
 D:Gothmog is the Chief Balrog in Morgoth's personal guard.  He is renowned 
 D:for slaying Ecthelion the Warder of the Gates and he has never been 
 D:defeated in combat.  With his whip of flame and awesome fiery breath he 
@@ -8160,7 +8161,7 @@ S:TPORT | TELE_LEVEL | BLIND | CONF | SCARE | CAUSE_4 |
 S:BRAIN_SMASH | FORGET | 
 S:BO_ICEE | BO_MANA | BO_PLAS | 
 S:BA_MANA | BA_FIRE | BA_WATE | BA_NETH | BA_DARK | 
-S:S_MONSTERS | S_DEMON | S_HI_UNDEAD | S_HI_DRAGON
+S:S_MONSTERS | S_HI_DEMON | S_HI_UNDEAD | S_HI_DRAGON
 D:He is Morgoth's most powerful servant.  Mighty in spells and enchantments, 
 D:he created the One Ring.  His eyes glow with power and his gaze seeks to 
 D:destroy your soul.  He has many servants, and rarely fights without them.
@@ -8188,7 +8189,8 @@ F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_3 | 
 S:BRAIN_SMASH | 
 S:BA_MANA | BO_MANA | BA_NETH | 
-S:S_MONSTERS | S_UNIQUE | S_WRAITH | S_HI_UNDEAD | S_HI_DRAGON
+S:S_MONSTERS | S_UNIQUE | S_WRAITH | S_HI_UNDEAD | S_HI_DRAGON |
+S:S_HI_DEMON 
 D:He is the Master of the Pits of Angband.  His figure is like a black 
 D:mountain crowned with Lightning.  He rages with everlasting anger, his 
 D:body scarred by Fingolfin's eight mighty wounds.  He can never rest from 

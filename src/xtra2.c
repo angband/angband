@@ -1860,10 +1860,10 @@ void monster_death(int m_idx)
 	{
 		object_type *o_ptr;
 
-		/* Acquire object */
+		/* Get the object */
 		o_ptr = &o_list[this_o_idx];
 
-		/* Acquire next object */
+		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
 
 		/* Paranoia */
@@ -2241,6 +2241,49 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 	return (FALSE);
 }
 
+/*
+ * Handle a request to change the current panel
+ *
+ * Return TRUE if the panel was changed.
+ */
+bool change_panel(int dir)
+{
+	int y = p_ptr->wy + ddy[dir] * PANEL_HGT;
+	int x = p_ptr->wx + ddx[dir] * PANEL_WID;
+
+	/* Verify the row */
+	if (y < 0) y = 0;
+	if (y > DUNGEON_HGT - SCREEN_HGT) y = DUNGEON_HGT - SCREEN_HGT;
+
+	/* Verify the col */
+	if (x < 0) x = 0;
+	if (x > DUNGEON_WID - SCREEN_WID) x = DUNGEON_WID - SCREEN_WID;
+
+	/* Handle "changes" */
+	if ((p_ptr->wy != y) || (p_ptr->wx != x))
+	{
+		/* Update panel */
+		p_ptr->wy = y;
+		p_ptr->wx = x;
+
+		/* Update stuff */
+		p_ptr->update |= (PU_MONSTERS);
+
+		/* Redraw map */
+		p_ptr->redraw |= (PR_MAP);
+
+		/* Handle stuff */
+		handle_stuff();
+
+		/* Success */
+		return TRUE;
+	}
+
+	/* No change */
+	return FALSE;
+}
+
+
 
 
 
@@ -2264,8 +2307,17 @@ void verify_panel(void)
 	/* Initial row */
 	i = p_ptr->wy;
 
+	/* Scroll screen when off-center */
+	if (center_player && (!p_ptr->running || !run_avoid_center) &&
+	    (py != p_ptr->wy + SCREEN_HGT / 2))
+	{
+		i = py - SCREEN_HGT / 2;
+		if (i < 0) i = 0;
+		if (i > DUNGEON_HGT - SCREEN_HGT) i = DUNGEON_HGT - SCREEN_HGT;
+	}
+
 	/* Scroll screen when 2 grids from top/bottom edge */
-	if ((py < p_ptr->wy + 2) || (py >= p_ptr->wy+SCREEN_HGT - 2))
+	else if ((py < p_ptr->wy + 2) || (py >= p_ptr->wy+SCREEN_HGT - 2))
 	{
 		i = ((py - PANEL_HGT / 2) / PANEL_HGT) * PANEL_HGT;
 		if (i < 0) i = 0;
@@ -2289,8 +2341,17 @@ void verify_panel(void)
 	/* Initial col */
 	i = p_ptr->wx;
 
+	/* Scroll screen when off-center */
+	if (center_player && (!p_ptr->running || !run_avoid_center) &&
+	    (px != p_ptr->wx + SCREEN_WID / 2))
+	{
+		i = px - SCREEN_WID / 2;
+		if (i < 0) i = 0;
+		if (i > DUNGEON_WID - SCREEN_WID) i = DUNGEON_WID - SCREEN_WID;
+	}
+
 	/* Scroll screen when 4 grids from left/right edge */
-	if ((px < p_ptr->wx + 4) || (px >= p_ptr->wx+SCREEN_WID - 4))
+	else if ((px < p_ptr->wx + 4) || (px >= p_ptr->wx+SCREEN_WID - 4))
 	{
 		i = ((px - PANEL_WID / 2) / PANEL_WID) * PANEL_WID;
 		if (i < 0) i = 0;
@@ -2315,7 +2376,7 @@ void verify_panel(void)
 	if (scroll)
 	{
 		/* Optional disturb on "panel change" */
-		if (disturb_panel) disturb(0, 0);
+		if (disturb_panel && !center_player) disturb(0, 0);
 
 		/* Redraw map */
 		p_ptr->redraw |= (PR_MAP);
@@ -2447,6 +2508,36 @@ void ang_sort(vptr u, vptr v, int n)
 
 
 /*
+ * Given a "source" and "target" location, extract a "direction",
+ * which will move one step from the "source" towards the "target".
+ *
+ * Note that we use "diagonal" motion whenever possible.
+ *
+ * We return "5" if no motion is needed.
+ */
+sint motion_dir(int y1, int x1, int y2, int x2)
+{
+	/* No movement required */
+	if ((y1 == y2) && (x1 == x2)) return (5);
+
+	/* South or North */
+	if (x1 == x2) return ((y1 < y2) ? 2 : 8);
+
+	/* East or West */
+	if (y1 == y2) return ((x1 < x2) ? 6 : 4);
+
+	/* South-east or South-west */
+	if (y1 < y2) return ((x1 < x2) ? 3 : 1);
+
+	/* North-east or North-west */
+	if (y1 > y2) return ((x1 < x2) ? 9 : 7);
+
+	/* Paranoia */
+	return (5);
+}
+
+
+/*
  * Extract a direction (or zero) from a character
  */
 sint target_dir(char ch)
@@ -2569,7 +2660,7 @@ bool target_okay(void)
 		{
 			monster_type *m_ptr = &m_list[m_idx];
 
-			/* Acquire monster location */
+			/* Get the monster location */
 			p_ptr->target_row = m_ptr->fy;
 			p_ptr->target_col = m_ptr->fx;
 
@@ -2782,10 +2873,10 @@ static bool target_set_interactive_accept(int y, int x)
 	{
 		object_type *o_ptr;
 
-		/* Acquire object */
+		/* Get the object */
 		o_ptr = &o_list[this_o_idx];
 
-		/* Acquire next object */
+		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
 
 		/* Memorized object */
@@ -2909,6 +3000,8 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 
 	bool boring;
 
+	bool floored;
+
 	int feat;
 
 	int query;
@@ -2954,7 +3047,7 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 			query = inkey();
 
 			/* Stop on everything but "return" */
-			if ((query != '\r') && (query != '\n')) break;
+			if ((query != '\n') && (query != '\r')) break;
 
 			/* Repeat forever */
 			continue;
@@ -3033,8 +3126,8 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 					recall = !recall;
 				}
 
-				/* Always stop at "normal" keys */
-				if ((query != '\r') && (query != '\n') && (query != ' ')) break;
+				/* Stop on everything but "return"/"space" */
+				if ((query != '\n') && (query != '\r') && (query != ' ')) break;
 
 				/* Sometimes stop at "space" key */
 				if ((query == ' ') && !(mode & (TARGET_LOOK))) break;
@@ -3046,6 +3139,8 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 				if (r_ptr->flags1 & (RF1_FEMALE)) s1 = "She is ";
 				else if (r_ptr->flags1 & (RF1_MALE)) s1 = "He is ";
 
+#if 1
+
 				/* Use a preposition */
 				s2 = "carrying ";
 
@@ -3056,10 +3151,10 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 
 					object_type *o_ptr;
 
-					/* Acquire object */
+					/* Get the object */
 					o_ptr = &o_list[this_o_idx];
 
-					/* Acquire next object */
+					/* Get the next object */
 					next_o_idx = o_ptr->next_o_idx;
 
 					/* Obtain an object description */
@@ -3071,8 +3166,8 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 					move_cursor_relative(y, x);
 					query = inkey();
 
-					/* Always stop at "normal" keys */
-					if ((query != '\r') && (query != '\n') && (query != ' ')) break;
+					/* Stop on everything but "return"/"space" */
+					if ((query != '\n') && (query != '\r') && (query != ' ')) break;
 
 					/* Sometimes stop at "space" key */
 					if ((query == ' ') && !(mode & (TARGET_LOOK))) break;
@@ -3084,22 +3179,100 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 				/* Double break */
 				if (this_o_idx) break;
 
+#endif
+
 				/* Use a preposition */
 				s2 = "on ";
 			}
 		}
 
 
+		/* Assume not floored */
+		floored = FALSE;
+
+#ifdef ALLOW_EASY_FLOOR
+
+		/* Scan all objects in the grid */
+		if (easy_floor)
+		{
+			int floor_list[24];
+			int floor_num;
+
+			/* Scan for floor objects */
+			floor_num = scan_floor(floor_list, 24, y, x, 0x02);
+
+			/* Actual pile */
+			if (floor_num > 1)
+			{
+				/* Not boring */
+				boring = FALSE;
+
+				/* Floored */
+				floored = TRUE;
+
+				/* Describe */
+				while (1)
+				{
+					/* Describe the pile */
+					sprintf(out_val, "%s%s%sa pile of %d objects [r,%s]",
+						s1, s2, s3, floor_num, info);
+					prt(out_val, 0, 0);
+					move_cursor_relative(y, x);
+					query = inkey();
+
+					/* Display objects */
+					if (query == 'r')
+					{
+						/* Save screen */
+						screen_save();
+
+						/* Display */
+						show_floor(floor_list, floor_num);
+
+						/* Describe the pile */
+						prt(out_val, 0, 0);
+						query = inkey();
+
+						/* Load screen */
+						screen_load();
+
+						/* Continue on 'r' only */
+						if (query == 'r') continue;
+					}
+
+					/* Done */
+					break;
+				}
+
+				/* Stop on everything but "return"/"space" */
+				if ((query != '\n') && (query != '\r') && (query != ' ')) break;
+
+				/* Sometimes stop at "space" key */
+				if ((query == ' ') && !(mode & (TARGET_LOOK))) break;
+
+				/* Change the intro */
+				s1 = "It is ";
+
+				/* Preposition */
+				s2 = "on ";
+			}
+		}
+
+#endif /* ALLOW_EASY_FLOOR */
+
 		/* Scan all objects in the grid */
 		for (this_o_idx = cave_o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
 		{
 			object_type *o_ptr;
 
-			/* Acquire object */
+			/* Get the object */
 			o_ptr = &o_list[this_o_idx];
 
-			/* Acquire next object */
+			/* Get the next object */
 			next_o_idx = o_ptr->next_o_idx;
+
+			/* Skip objects if floored */
+			if (floored) continue;
 
 			/* Describe it */
 			if (o_ptr->marked)
@@ -3118,8 +3291,8 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 				move_cursor_relative(y, x);
 				query = inkey();
 
-				/* Always stop at "normal" keys */
-				if ((query != '\r') && (query != '\n') && (query != ' ')) break;
+				/* Stop on everything but "return"/"space" */
+				if ((query != '\n') && (query != '\r') && (query != ' ')) break;
 
 				/* Sometimes stop at "space" key */
 				if ((query == ' ') && !(mode & (TARGET_LOOK))) break;
@@ -3175,12 +3348,12 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 			move_cursor_relative(y, x);
 			query = inkey();
 
-			/* Always stop at "normal" keys */
-			if ((query != '\r') && (query != '\n') && (query != ' ')) break;
+			/* Stop on everything but "return"/"space" */
+			if ((query != '\n') && (query != '\r') && (query != ' ')) break;
 		}
 
 		/* Stop on everything but "return" */
-		if ((query != '\r') && (query != '\n')) break;
+		if ((query != '\n') && (query != '\r')) break;
 	}
 
 	/* Keep going */
@@ -3234,7 +3407,7 @@ bool target_set_interactive(int mode)
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	int i, d, m;
+	int i, d, m, t, bd;
 
 	int y = py;
 	int x = px;
@@ -3326,13 +3499,36 @@ bool target_set_interactive(int mode)
 
 				case 'p':
 				{
+
+#ifdef ALLOW_SCROLL_TARGET
+
+					if (scroll_target)
+					{
+						/* Recenter the map around the player */
+						verify_panel();
+
+						/* Update stuff */
+						p_ptr->update |= (PU_MONSTERS);
+
+						/* Redraw map */
+						p_ptr->redraw |= (PR_MAP);
+
+						/* Window stuff */
+						p_ptr->window |= (PW_OVERHEAD);
+
+						/* Handle stuff */
+						handle_stuff();
+					}
+
+#endif /* ALLOW_SCROLL_TARGET */
+
 					y = py;
 					x = px;
 				}
 
 				case 'o':
 				{
-					flag = !flag;
+					flag = FALSE;
 					break;
 				}
 
@@ -3344,6 +3540,7 @@ bool target_set_interactive(int mode)
 				case 't':
 				case '5':
 				case '0':
+				case '.':
 				{
 					int m_idx = cave_m_idx[y][x];
 
@@ -3375,8 +3572,91 @@ bool target_set_interactive(int mode)
 			/* Hack -- move around */
 			if (d)
 			{
+
+#ifdef ALLOW_SCROLL_TARGET
+
+				int y2 = p_ptr->wy;
+				int x2 = p_ptr->wx;
+
+#endif /* ALLOW_SCROLL_TARGET */
+
 				/* Find a new monster */
 				i = target_pick(temp_y[m], temp_x[m], ddy[d], ddx[d]);
+
+#ifdef ALLOW_SCROLL_TARGET
+
+				/* Request to target past last interesting grid */
+				while (scroll_target && flag && (i < 0))
+				{
+					/* Note the change */
+					if (change_panel(d))
+					{
+						int v = temp_y[m];
+						int u = temp_x[m];
+
+						/* Recalculate interesting grids */
+						target_set_interactive_prepare(mode);
+
+						/* Look at interesting grids */
+						flag = TRUE;
+
+						/* Find a new monster */
+						i = target_pick(v, u, ddy[d], ddx[d]);
+
+						/* Use that grid */
+						if (i >= 0) m = i;
+					}
+
+					/* Nothing interesting */
+					else
+					{
+						/* Restore previous position */
+						p_ptr->wy = y2;
+						p_ptr->wx = x2;
+
+						/* Update stuff */
+						p_ptr->update |= (PU_MONSTERS);
+
+						/* Redraw map */
+						p_ptr->redraw |= (PR_MAP);
+
+						/* Window stuff */
+						p_ptr->window |= (PW_OVERHEAD);
+
+						/* Handle stuff */
+						handle_stuff();
+
+						/* Recalculate interesting grids */
+						target_set_interactive_prepare(mode);
+
+						/* Look at boring grids */
+						flag = FALSE;
+
+						/* Move */
+						x += ddx[d];
+						y += ddy[d];
+
+						/* Apply the motion */
+						if ((y >= p_ptr->wy + SCREEN_HGT) || (y < p_ptr->wy) ||
+						    (x >= p_ptr->wx + SCREEN_WID) || (x < p_ptr->wx))
+						{
+							if (change_panel(d))
+							{
+								target_set_interactive_prepare(mode);
+							}
+						}
+
+						/* Slide into legality */
+						if (x >= DUNGEON_WID-1) x = DUNGEON_WID - 2;
+						else if (x <= 0) x = 1;
+
+						/* Slide into legality */
+						if (y >= DUNGEON_HGT-1) y = DUNGEON_HGT - 2;
+						else if (y <= 0) y = 1;
+					}
+				}
+
+#endif /* ALLOW_SCROLL_TARGET */
 
 				/* Use that grid */
 				if (i >= 0) m = i;
@@ -3418,6 +3698,29 @@ bool target_set_interactive(int mode)
 
 				case 'p':
 				{
+
+#ifdef ALLOW_SCROLL_TARGET
+
+					if (scroll_target)
+					{
+						/* Recenter the map around the player */
+						verify_panel();
+
+						/* Update stuff */
+						p_ptr->update |= (PU_MONSTERS);
+
+						/* Redraw map */
+						p_ptr->redraw |= (PR_MAP);
+
+						/* Window stuff */
+						p_ptr->window |= (PW_OVERHEAD);
+
+						/* Handle stuff */
+						handle_stuff();
+					}
+
+#endif /* ALLOW_SCROLL_TARGET */
+
 					y = py;
 					x = px;
 				}
@@ -3429,13 +3732,34 @@ bool target_set_interactive(int mode)
 
 				case 'm':
 				{
-					flag = !flag;
+					flag = TRUE;
+
+					m = 0;
+					bd = 999;
+
+					/* Pick a nearby monster */
+					for (i = 0; i < temp_n; i++)
+					{
+						t = distance(y, x, temp_y[i], temp_x[i]);
+
+						/* Pick closest */
+						if (t < bd)
+						{
+							m = i;
+							bd = t;
+						}
+					}
+
+					/* Nothing interesting */
+					if (bd == 999) flag = FALSE;
+
 					break;
 				}
 
 				case 't':
 				case '5':
 				case '0':
+				case '.':
 				{
 					target_set_location(y, x);
 					done = TRUE;
@@ -3461,13 +3785,23 @@ bool target_set_interactive(int mode)
 				x += ddx[d];
 				y += ddy[d];
 
-				/* Slide into legality */
-				if ((x >= DUNGEON_WID-1) || (x >= p_ptr->wx+SCREEN_WID)) x--;
-				else if ((x <= 0) || (x < p_ptr->wx)) x++;
+				/* Apply the motion */
+				if ((y >= p_ptr->wy + SCREEN_HGT) || (y < p_ptr->wy) ||
+				    (x >= p_ptr->wx + SCREEN_WID) || (x < p_ptr->wx))
+				{
+					if (change_panel(d))
+					{
+						target_set_interactive_prepare(mode);
+					}
+				}
 
 				/* Slide into legality */
-				if ((y >= DUNGEON_HGT-1) || (y >= p_ptr->wy+SCREEN_HGT)) y--;
-				else if ((y <= 0) || (y < p_ptr->wy)) y++;
+				if (x >= DUNGEON_WID-1) x = DUNGEON_WID - 2;
+				else if (x <= 0) x = 1;
+
+				/* Slide into legality */
+				if (y >= DUNGEON_HGT-1) y = DUNGEON_HGT - 2;
+				else if (y <= 0) y = 1;
 			}
 		}
 	}
@@ -3477,6 +3811,28 @@ bool target_set_interactive(int mode)
 
 	/* Clear the top line */
 	prt("", 0, 0);
+
+#ifdef ALLOW_SCROLL_TARGET
+
+	if (scroll_target)
+	{
+		/* Recenter the map around the player */
+		verify_panel();
+
+		/* Update stuff */
+		p_ptr->update |= (PU_MONSTERS);
+
+		/* Redraw map */
+		p_ptr->redraw |= (PR_MAP);
+
+		/* Window stuff */
+		p_ptr->window |= (PW_OVERHEAD);
+
+		/* Handle stuff */
+		handle_stuff();
+	}
+
+#endif /* ALLOW_SCROLL_TARGET */
 
 	/* Failure to set target */
 	if (!p_ptr->target_set) return (FALSE);
@@ -3510,6 +3866,18 @@ bool get_aim_dir(int *dp)
 
 	cptr p;
 
+#ifdef ALLOW_REPEAT
+
+	if (repeat_pull(dp))
+	{
+		/* Verify */
+		if (!(*dp == 5 && !target_okay()))
+		{
+			return (TRUE);
+		}
+	}
+
+#endif /* ALLOW_REPEAT */
 
 	/* Initialize */
 	(*dp) = 0;
@@ -3550,6 +3918,7 @@ bool get_aim_dir(int *dp)
 			case 't':
 			case '5':
 			case '0':
+			case '.':
 			{
 				if (target_okay()) dir = 5;
 				break;
@@ -3590,6 +3959,12 @@ bool get_aim_dir(int *dp)
 	/* Save direction */
 	(*dp) = dir;
 
+#ifdef ALLOW_REPEAT
+
+	repeat_push(dir);
+
+#endif /* ALLOW_REPEAT */
+
 	/* A "valid" direction was entered */
 	return (TRUE);
 }
@@ -3619,6 +3994,14 @@ bool get_rep_dir(int *dp)
 
 	cptr p;
 
+#ifdef ALLOW_REPEAT
+
+	if (repeat_pull(dp))
+	{
+		return (TRUE);
+	}
+
+#endif /* ALLOW_REPEAT */
 
 	/* Initialize */
 	(*dp) = 0;
@@ -3650,6 +4033,12 @@ bool get_rep_dir(int *dp)
 
 	/* Save direction */
 	(*dp) = dir;
+
+#ifdef ALLOW_REPEAT
+
+	repeat_push(dir);
+
+#endif /* ALLOW_REPEAT */
 
 	/* Success */
 	return (TRUE);

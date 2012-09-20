@@ -148,7 +148,7 @@ static void do_cmd_wiz_change_aux(void)
 
 
 	/* Query the stats */
-	for (i = 0; i < 6; i++)
+	for (i = 0; i < A_MAX; i++)
 	{
 		/* Prompt */
 		sprintf(ppp, "%s (3-118): ", stat_names[i]);
@@ -188,10 +188,28 @@ static void do_cmd_wiz_change_aux(void)
 
 
 	/* Default */
-	sprintf(tmp_val, "%ld", (long)(p_ptr->max_exp));
+	sprintf(tmp_val, "%ld", (long)(p_ptr->exp));
 
 	/* Query */
 	if (!get_string("Experience: ", tmp_val, 9)) return;
+
+	/* Extract */
+	tmp_long = atol(tmp_val);
+
+	/* Verify */
+	if (tmp_long < 0) tmp_long = 0L;
+
+	/* Save */
+	p_ptr->exp = tmp_long;
+
+	/* Update */
+	check_experience();
+
+	/* Default */
+	sprintf(tmp_val, "%ld", (long)(p_ptr->max_exp));
+
+	/* Query */
+	if (!get_string("Max Exp: ", tmp_val, 9)) return;
 
 	/* Extract */
 	tmp_long = atol(tmp_val);
@@ -417,15 +435,18 @@ static void strip_name(char *buf, int k_idx)
  * Hack -- title for each column
  *
  * This will not work with "EBCDIC", I would think.  XXX XXX XXX
+ *
+ * The third column head overlaps the first after 17 items are
+ * listed.  XXX XXX XXX
  */
 static char head[3] =
 { 'a', 'A', '0' };
 
 
 /*
- * Acquire an object kind for creation (or zero)
+ * Get an object kind for creation (or zero)
  *
- * List up to 50 choices in three columns
+ * List up to 57 choices in three columns
  */
 static int wiz_create_itemtype(void)
 {
@@ -445,7 +466,7 @@ static int wiz_create_itemtype(void)
 	Term_clear();
 
 	/* Print all tval's and their descriptions */
-	for (num = 0; (num < 60) && tvals[num].tval; num++)
+	for (num = 0; (num < 57) && tvals[num].tval; num++)
 	{
 		row = 2 + (num % 20);
 		col = 30 * (num / 20);
@@ -463,7 +484,7 @@ static int wiz_create_itemtype(void)
 	num = -1;
 	if ((ch >= head[0]) && (ch < head[0] + 20)) num = ch - head[0];
 	if ((ch >= head[1]) && (ch < head[1] + 20)) num = ch - head[1] + 20;
-	if ((ch >= head[2]) && (ch < head[2] + 10)) num = ch - head[2] + 40;
+	if ((ch >= head[2]) && (ch < head[2] + 17)) num = ch - head[2] + 40;
 
 	/* Bail out if choice is illegal */
 	if ((num < 0) || (num >= max_num)) return (0);
@@ -479,7 +500,7 @@ static int wiz_create_itemtype(void)
 	Term_clear();
 
 	/* We have to search the whole itemlist. */
-	for (num = 0, i = 1; (num < 60) && (i < MAX_K_IDX); i++)
+	for (num = 0, i = 1; (num < 57) && (i < MAX_K_IDX); i++)
 	{
 		object_kind *k_ptr = &k_info[i];
 
@@ -494,7 +515,7 @@ static int wiz_create_itemtype(void)
 			col = 30 * (num / 20);
 			ch = head[num/20] + (num%20);
 
-			/* Acquire the "name" of object "i" */
+			/* Get the "name" of object "i" */
 			strip_name(buf, i);
 
 			/* Print it */
@@ -515,7 +536,7 @@ static int wiz_create_itemtype(void)
 	num = -1;
 	if ((ch >= head[0]) && (ch < head[0] + 20)) num = ch - head[0];
 	if ((ch >= head[1]) && (ch < head[1] + 20)) num = ch - head[1] + 20;
-	if ((ch >= head[2]) && (ch < head[2] + 10)) num = ch - head[2] + 40;
+	if ((ch >= head[2]) && (ch < head[2] + 17)) num = ch - head[2] + 40;
 
 	/* Bail out if choice is "illegal" */
 	if ((num < 0) || (num >= max_num)) return (0);
@@ -1417,7 +1438,7 @@ void do_cmd_debug(void)
 	/* Analyze the command */
 	switch (cmd)
 	{
-		/* Nothing */
+		/* Ignore */
 		case ESCAPE:
 		case ' ':
 		case '\n':

@@ -1,7 +1,7 @@
 
 
               **************************************************
-              **   Angband 2.8.3   **   The Pits of Angband   **
+              **   Angband 2.8.5   **   The Pits of Angband   **
               **************************************************
 
            Based on Moria:   Copyright (c) 1985 Robert Alan Koeneke
@@ -11,7 +11,7 @@
                    Alex Cutler, Andy Astrand, Sean Marsh,
                  Geoff Hill, Charles Teague, Charles Swiger
 
-               Angband 2.8.3:  Copyright (c) 1997 Ben Harrison
+            Angband 2.8.5:  Copyright (c) 1995-1999 Ben Harrison
 
          Send comments, bug reports, and patches, to "benh@phial.com"
         Visit the Angband Home Page at "http://www.phial.com/angband/"

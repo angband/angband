@@ -127,7 +127,7 @@ can always, for example, use "\" + "." + "6", to specify "run east".
  ;  Walk (with pickup)                  ^S  Save and don't quit
  :  Take notes                          ^T  (unused)
  '  (unused)                            ^U  (unused)
- "  Enter a user pref command           ^V  (unused)
+ "  Enter a user pref command           ^V  Repeat last command
  ,  Stay still (with pickup)            ^W  (special - wizard mode)
  <  Go up staircase                     ^X  Save and quit
  .  Run                                 ^Y  (unused)
@@ -187,7 +187,7 @@ can always, for example, use "\" + "." + "6", to specify "run east".
  ;  Walk (with pickup)                  ^S  Save and don't quit
  :  Take notes                          ^T  Dig a Tunnel
  '  (unused)                            ^U  (alter - north east)
- "  Enter a user pref command           ^V  Examine current target
+ "  Enter a user pref command           ^V  Repeat last command
  ,  Run                                 ^W  (special - wizard mode)
  <  Go up staircase                     ^X  Save and quit
  .  Stay still (with pickup)            ^Y  (alter - north west)

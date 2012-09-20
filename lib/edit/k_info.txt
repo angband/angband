@@ -8,27 +8,21 @@
 # unless you wish to risk possible system crashes and broken savefiles.
 # After modifying this file, delete the "lib/raw/k_info.raw" file.
 
-# Available slots (?):
+# Available slots (possibly out of date):
 #   29, 29, 90, 177, 178, 179, 182, 183, 195, 196, 205,
 #   268, 270, 293, 299, 350, 351, 399, 413, 414, 423-479
 
-# XXX XXX Add some "IGNORE_XXX" flags to Rings, Amulets, etc.
-
-# The old "MULTI_HUED" objects are now "violet", and no other object
-# is violet, so all six violet objects can be made "multi-hued", though
-# this would be a heinous hack.  XXX XXX
-
-# Note that object zero is used for the "stack" picture (unused).
+# Add some "IGNORE_XXX" flags to Rings, Amulets, etc.  XXX XXX
 
 
 # Version stamp (required)
 
-V:2.8.3
+V:2.8.5
 
 
-##### Something special #####
+##### Non-kind (contains the "pile" picture) #####
 
-N:0:something
+N:0:<pile>
 G:&:w
 
 
@@ -258,6 +252,7 @@ I:23:30:0
 W:70:0:180:4000
 A:70/8
 P:0:6d5:0:0:0
+F:RES_CONFU |
 F:RES_CHAOS | SHOW_MODS
 
 N:37:& Two-Handed Sword~
@@ -1085,8 +1080,8 @@ F:FEATHER | EASY_KNOW
 N:143:Poison Resistance
 G:=:d
 I:45:20:0
-W:60:0:2:16000
-A:60/2
+W:40:0:2:16000
+A:40/2
 F:RES_POIS | EASY_KNOW
 
 N:144:Free Action
@@ -2923,6 +2918,7 @@ I:38:18:0
 W:75:0:200:70000
 A:75/16
 P:30:2d4:-2:0:10
+F:RES_CONFU |
 F:RES_CHAOS | RES_DISEN |
 F:ACTIVATE | IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
@@ -2932,6 +2928,7 @@ I:38:20:0
 W:90:0:200:100000
 A:90/16
 P:30:2d4:-2:0:10
+F:RES_CONFU |
 F:RES_SOUND | RES_SHARD | RES_CHAOS | RES_DISEN |
 F:ACTIVATE | IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
@@ -2941,8 +2938,9 @@ I:38:30:0
 W:110:0:200:300000
 A:110/64
 P:40:2d4:-3:0:15
-F:RES_ACID | RES_FIRE | RES_COLD | RES_ELEC | RES_POIS | 
-F:RES_LITE | RES_DARK | RES_NEXUS | RES_NETHR | RES_CHAOS | 
+F:RES_ACID | RES_FIRE | RES_COLD | RES_ELEC | RES_POIS |
+F:RES_CONFU |
+F:RES_LITE | RES_DARK | RES_NEXUS | RES_NETHR | RES_CHAOS |
 F:ACTIVATE | IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
 ## XXX 413 XXX ##

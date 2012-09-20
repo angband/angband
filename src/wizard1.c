@@ -321,7 +321,7 @@ static void spoil_obj_desc(cptr fname)
 			fprintf(fff, "\n\n%s\n\n", group_item[i].name);
 		}
 
-		/* Acquire legal item types */
+		/* Get legal item types */
 		for (k = 1; k < MAX_K_IDX; k++)
 		{
 			object_kind *k_ptr = &k_info[k];
@@ -700,7 +700,7 @@ static cptr *spoiler_flag_aux(const u32b art_flags, const flag_desc *flag_x_ptr,
 
 
 /*
- * Acquire a "basic" description "The Cloak of Death [1,+10]"
+ * Get a "basic" description "The Cloak of Death [1,+10]"
  */
 static void analyze_general (object_type *o_ptr, char *desc_x_ptr)
 {
@@ -1147,7 +1147,7 @@ static bool make_fake_artifact(object_type *o_ptr, int name1)
 	/* Ignore "empty" artifacts */
 	if (!a_ptr->name) return FALSE;
 
-	/* Acquire the "kind" index */
+	/* Get the "kind" index */
 	i = lookup_kind(a_ptr->tval, a_ptr->sval);
 
 	/* Oops */
@@ -1803,8 +1803,8 @@ static void spoil_mon_info(cptr fname)
 		if (flags6 & (RF6_TRAPS))             vp[vn++] = "create traps";
 		if (flags6 & (RF6_FORGET))            vp[vn++] = "cause amnesia";
 		if (flags6 & (RF6_XXX6))            vp[vn++] = "do something";
-		if (flags6 & (RF6_XXX7))            vp[vn++] = "do something";
-		if (flags6 & (RF6_XXX8))            vp[vn++] = "do something";
+		if (flags6 & (RF6_S_KIN))             vp[vn++] = "summon similar monsters";
+		if (flags6 & (RF6_S_HI_DEMON))        vp[vn++] = "summon greater demons";
 		if (flags6 & (RF6_S_MONSTER))         vp[vn++] = "summon a monster";
 		if (flags6 & (RF6_S_MONSTERS))        vp[vn++] = "summon monsters";
 		if (flags6 & (RF6_S_ANT))             vp[vn++] = "summon ants";
@@ -2087,7 +2087,7 @@ static void spoil_mon_info(cptr fname)
 			/* No method yet */
 			p = "???";
 
-			/* Acquire the method */
+			/* Get the method */
 			switch (r_ptr->blow[j].method)
 			{
 				case RBM_HIT:	p = "hit"; break;
@@ -2120,7 +2120,7 @@ static void spoil_mon_info(cptr fname)
 			/* Default effect */
 			q = "???";
 
-			/* Acquire the effect */
+			/* Get the effect */
 			switch (r_ptr->blow[j].effect)
 			{
 				case RBE_HURT:	q = "attack"; break;
@@ -2229,7 +2229,7 @@ extern void do_cmd_spoilers(void);
  */
 void do_cmd_spoilers(void)
 {
-	int i;
+	char ch;
 
 
 	/* Save screen */
@@ -2259,34 +2259,34 @@ void do_cmd_spoilers(void)
 		prt("Command: ", 12, 0);
 
 		/* Get a choice */
-		i = inkey();
+		ch = inkey();
 
 		/* Escape */
-		if (i == ESCAPE)
+		if (ch == ESCAPE)
 		{
 			break;
 		}
 
 		/* Option (1) */
-		else if (i == '1')
+		else if (ch == '1')
 		{
 			spoil_obj_desc("obj-desc.spo");
 		}
 
 		/* Option (2) */
-		else if (i == '2')
+		else if (ch == '2')
 		{
 			spoil_artifact("artifact.spo");
 		}
 
 		/* Option (3) */
-		else if (i == '3')
+		else if (ch == '3')
 		{
 			spoil_mon_desc("mon-desc.spo");
 		}
 
 		/* Option (4) */
-		else if (i == '4')
+		else if (ch == '4')
 		{
 			spoil_mon_info("mon-info.spo");
 		}

@@ -96,7 +96,7 @@ void do_cmd_redraw(void)
  */
 void do_cmd_change_name(void)
 {
-	char c;
+	char ch;
 
 	int mode = 0;
 
@@ -118,35 +118,35 @@ void do_cmd_change_name(void)
 		Term_putstr(2, 23, -1, TERM_WHITE, p);
 
 		/* Query */
-		c = inkey();
+		ch = inkey();
 
 		/* Exit */
-		if (c == ESCAPE) break;
+		if (ch == ESCAPE) break;
 
 		/* Change name */
-		if (c == 'c')
+		if (ch == 'c')
 		{
 			get_name();
 		}
 
 		/* File dump */
-		else if (c == 'f')
+		else if (ch == 'f')
 		{
-			char tmp[81];
+			char ftmp[80];
 
-			sprintf(tmp, "%s.txt", op_ptr->base_name);
+			sprintf(ftmp, "%s.txt", op_ptr->base_name);
 
-			if (get_string("File name: ", tmp, 80))
+			if (get_string("File name: ", ftmp, 80))
 			{
-				if (tmp[0] && (tmp[0] != ' '))
+				if (ftmp[0] && (ftmp[0] != ' '))
 				{
-					file_character(tmp, FALSE);
+					file_character(ftmp, FALSE);
 				}
 			}
 		}
 
 		/* Toggle mode */
-		else if (c == 'h')
+		else if (ch == 'h')
 		{
 			mode = !mode;
 		}
@@ -193,10 +193,12 @@ void do_cmd_message_one(void)
  */
 void do_cmd_messages(void)
 {
-	int i, j, k, n, q;
+	char ch;
 
-	char shower[81];
-	char finder[81];
+	int i, j, n, q;
+
+	char shower[80];
+	char finder[80];
 
 
 	/* Wipe finder */
@@ -263,16 +265,16 @@ void do_cmd_messages(void)
 		prt("[Press 'p' for older, 'n' for newer, ..., or ESCAPE]", 23, 0);
 
 		/* Get a command */
-		k = inkey();
+		ch = inkey();
 
 		/* Exit on Escape */
-		if (k == ESCAPE) break;
+		if (ch == ESCAPE) break;
 
 		/* Hack -- Save the old index */
 		j = i;
 
 		/* Horizontal scroll */
-		if (k == '4')
+		if (ch == '4')
 		{
 			/* Scroll left */
 			q = (q >= 40) ? (q - 40) : 0;
@@ -282,7 +284,7 @@ void do_cmd_messages(void)
 		}
 
 		/* Horizontal scroll */
-		if (k == '6')
+		if (ch == '6')
 		{
 			/* Scroll right */
 			q = q + 40;
@@ -292,7 +294,7 @@ void do_cmd_messages(void)
 		}
 
 		/* Hack -- handle show */
-		if (k == '=')
+		if (ch == '=')
 		{
 			/* Prompt */
 			prt("Show: ", 23, 0);
@@ -305,7 +307,7 @@ void do_cmd_messages(void)
 		}
 
 		/* Hack -- handle find */
-		if (k == '/')
+		if (ch == '/')
 		{
 			int z;
 
@@ -335,43 +337,43 @@ void do_cmd_messages(void)
 			}
 		}
 
-		/* Recall 1 older message */
-		if ((k == '8') || (k == '\n') || (k == '\r'))
-		{
-			/* Go newer if legal */
-			if (i + 1 < n) i += 1;
-		}
-
-		/* Recall 10 older messages */
-		if (k == '+')
-		{
-			/* Go older if legal */
-			if (i + 10 < n) i += 10;
-		}
-
 		/* Recall 20 older messages */
-		if ((k == 'p') || (k == KTRL('P')) || (k == ' '))
+		if ((ch == 'p') || (ch == KTRL('P')) || (ch == ' '))
 		{
 			/* Go older if legal */
 			if (i + 20 < n) i += 20;
 		}
 
+		/* Recall 10 older messages */
+		if (ch == '+')
+		{
+			/* Go older if legal */
+			if (i + 10 < n) i += 10;
+		}
+
+		/* Recall 1 older message */
+		if ((ch == '8') || (ch == '\n') || (ch == '\r'))
+		{
+			/* Go newer if legal */
+			if (i + 1 < n) i += 1;
+		}
+
 		/* Recall 20 newer messages */
-		if ((k == 'n') || (k == KTRL('N')))
+		if ((ch == 'n') || (ch == KTRL('N')))
 		{
 			/* Go newer (if able) */
 			i = (i >= 20) ? (i - 20) : 0;
 		}
 
 		/* Recall 10 newer messages */
-		if (k == '-')
+		if (ch == '-')
 		{
 			/* Go newer (if able) */
 			i = (i >= 10) ? (i - 10) : 0;
 		}
 
 		/* Recall 1 newer messages */
-		if (k == '2')
+		if (ch == '2')
 		{
 			/* Go newer (if able) */
 			i = (i >= 1) ? (i - 1) : 0;
@@ -386,147 +388,62 @@ void do_cmd_messages(void)
 }
 
 
-/*
- * Cheating options -- textual names
- */
-cptr cheating_text[CHEAT_MAX] =
-{
-	"cheat_peek",
-	"cheat_hear",
-	"cheat_room",
-	"cheat_xtra",
-	"cheat_know",
-	"cheat_live"
-};
 
 /*
- * Cheating options -- descriptions
+ * Ask for a "user pref line" and process it
  */
-cptr cheating_desc[CHEAT_MAX] =
+void do_cmd_pref(void)
 {
-	"Peek into object creation",
-	"Peek into monster creation",
-	"Peek into dungeon creation",
-	"Peek into something else",
-	"Know complete monster info",
-	"Allow player to avoid death"
-};
+	char tmp[80];
+
+	/* Default */
+	strcpy(tmp, "");
+
+	/* Ask for a "user pref command" */
+	if (!get_string("Pref: ", tmp, 80)) return;
+
+	/* Process that pref command */
+	(void)process_pref_file_aux(tmp);
+}
 
 
 /*
- * Interact with some options
+ * Ask for a "user pref file" and process it.
+ *
+ * This function should only be used by standard interaction commands,
+ * in which a standard "Command:" prompt is present on the given row.
+ *
+ * Allow absolute file names?  XXX XXX XXX
  */
-static void do_cmd_options_cheat(cptr info)
+static void do_cmd_pref_file_hack(int row)
 {
-	char ch;
+	char ftmp[80];
 
-	int i, k = 0, n = CHEAT_MAX;
+	/* Prompt */
+	prt("Command: Load a user pref file", row, 0);
 
-	char buf[80];
+	/* Prompt */
+	prt("File: ", row + 2, 0);
 
+	/* Default filename */
+	sprintf(ftmp, "%s.prf", op_ptr->base_name);
 
-	/* Clear screen */
-	Term_clear();
+	/* Ask for a file (or cancel) */
+	if (!askfor_aux(ftmp, 80)) return;
 
-	/* Interact with the player */
-	while (TRUE)
+	/* Process the given filename */
+	if (process_pref_file(ftmp))
 	{
-		/* Prompt XXX XXX XXX */
-		sprintf(buf, "%s (RET to advance, y/n to set, ESC to accept) ", info);
-		prt(buf, 0, 0);
-
-		/* Display the options */
-		for (i = 0; i < n; i++)
-		{
-			byte a = TERM_WHITE;
-
-			/* Color current option */
-			if (i == k) a = TERM_L_BLUE;
-
-			/* Display the option text */
-			sprintf(buf, "%-48s: %s  (%s)",
-			        cheating_desc[i],
-			        p_ptr->cheat[i] ? "yes" : "no ",
-			        cheating_text[i]);
-			c_prt(a, buf, i + 2, 0);
-		}
-
-		/* Hilite current option */
-		move_cursor(k + 2, 50);
-
-		/* Get a key */
-		ch = inkey();
-
-		/* Analyze */
-		switch (ch)
-		{
-			case ESCAPE:
-			{
-				return;
-			}
-
-			case '-':
-			case '8':
-			{
-				k = (n + k - 1) % n;
-				break;
-			}
-
-			case ' ':
-			case '\n':
-			case '\r':
-			case '2':
-			{
-				k = (k + 1) % n;
-				break;
-			}
-
-			case 't':
-			case '5':
-			{
-				if (p_ptr->cheat[k])
-				{
-					p_ptr->cheat[k] = FALSE;
-				}
-
-				else
-				{
-					/* Mark player as a cheater */
-					p_ptr->noscore |= (0x0100 << k);
-
-					p_ptr->cheat[k] = TRUE;
-				}
-
-				break;
-			}
-
-			case 'y':
-			case '6':
-			{
-				/* Mark player as a cheater */
-				p_ptr->noscore |= (0x0100 << k);
-
-				p_ptr->cheat[k] = TRUE;
-				k = (k + 1) % n;
-				break;
-			}
-
-			case 'n':
-			case '4':
-			{
-				p_ptr->cheat[k] = FALSE;
-				k = (k + 1) % n;
-				break;
-			}
-
-			default:
-			{
-				bell("Illegal command for cheat options!");
-				break;
-			}
-		}
+		/* Mention failure */
+		msg_format("Failed to load '%s'!", ftmp);
+	}
+	else
+	{
+		/* Mention success */
+		msg_format("Loaded '%s'.", ftmp);
 	}
 }
+
 
 
 /*
@@ -538,13 +455,13 @@ static void do_cmd_options_aux(int page, cptr info)
 
 	int i, k = 0, n = 0;
 
-	int opt[16];
+	int opt[OPT_PAGE_PER];
 
 	char buf[80];
 
 
 	/* Scan the options */
-	for (i = 0; i < 16; i++)
+	for (i = 0; i < OPT_PAGE_PER; i++)
 	{
 		/* Collect options on this "page" */
 		if (option_page[page][i] != 255)
@@ -591,6 +508,16 @@ static void do_cmd_options_aux(int page, cptr info)
 		{
 			case ESCAPE:
 			{
+				/* Hack -- Notice use of any "cheat" options */
+				for (i = OPT_CHEAT; i < OPT_ADULT; i++)
+				{
+					if (op_ptr->opt[i])
+					{
+						/* Set score option */
+						op_ptr->opt[OPT_SCORE + (i - OPT_CHEAT)] = TRUE;
+					}
+				}
+
 				return;
 			}
 
@@ -661,7 +588,6 @@ static void do_cmd_options_win(void)
 	/* Memorize old flags */
 	for (j = 0; j < 8; j++)
 	{
-		/* Acquire current flags */
 		old_flag[j] = op_ptr->window_flag[j];
 	}
 
@@ -800,17 +726,108 @@ static void do_cmd_options_win(void)
 }
 
 
+/*
+ * Write all current options to the given preference file in the
+ * lib/user directory. Modified from KAmband 1.8.
+ */
+static errr option_dump(cptr fname)
+{
+	int i, j;
+
+	FILE *fff;
+
+	char buf[1024];
+
+	/* Build the filename */
+	path_build(buf, 1024, ANGBAND_DIR_USER, fname);
+
+	/* File type is "TEXT" */
+	FILE_TYPE(FILE_TYPE_TEXT);
+
+	/* Append to the file */
+	fff = my_fopen(buf, "w");
+
+	/* Failure */
+	if (!fff) return (-1);
+
+
+	/* Skip some lines */
+	fprintf(fff, "\n\n");
+
+	/* Start dumping */
+	fprintf(fff, "# Automatic option dump\n\n");
+
+	/* Dump options (skip cheat, adult, score) */
+	for (i = 0; i < OPT_CHEAT; i++)
+	{
+		/* Require a real option */
+		if (!option_text[i]) continue;
+
+		/* Comment */
+		fprintf(fff, "# Option '%s'\n", option_desc[i]);
+
+		/* Dump the option */
+		if (op_ptr->opt[i])
+		{
+			fprintf(fff, "Y:%s\n", option_text[i]);
+		}
+		else
+		{
+			fprintf(fff, "X:%s\n", option_text[i]);
+		}
+
+		/* Skip a line */
+		fprintf(fff, "\n");
+	}
+
+	/* Dump window flags */
+	for (i = 1; i < 8; i++)
+	{
+		/* Require a real window */
+		if (!angband_term[i]) continue;
+
+		/* Check each flag */
+		for (j = 0; j < 32; j++)
+		{
+			/* Require a real flag */
+			if (!window_flag_desc[j]) continue;
+
+			/* Comment */
+			fprintf(fff, "# Window '%s', Flag '%s'\n",
+			        angband_term_name[i], window_flag_desc[j]);
+
+			/* Dump the flag */
+			if (op_ptr->window_flag[i] & (1L << j))
+			{
+				fprintf(fff, "W:%d:%d:1\n", i, j);
+			}
+			else
+			{
+				fprintf(fff, "W:%d:%d:0\n", i, j);
+			}
+
+			/* Skip a line */
+			fprintf(fff, "\n");
+		}
+	}
+
+	/* Close */
+	my_fclose(fff);
+
+	/* Success */
+	return (0);
+}
 
 
 /*
  * Set or unset various options.
  *
- * After using this command, a complete redraw is performed,
- * whether or not it is technically required.
+ * After using this command, a complete redraw should be performed,
+ * in case any visual options have been changed.
  */
 void do_cmd_options(void)
 {
-	int k;
+	char ch;
 
 
 	/* Save screen */
@@ -831,130 +848,162 @@ void do_cmd_options(void)
 		prt("(2) Disturbance Options", 5, 5);
 		prt("(3) Game-Play Options", 6, 5);
 		prt("(4) Efficiency Options", 7, 5);
-
-		/* Cheating */
-		prt("(C) Cheating Options", 9, 5);
+		prt("(5) Birth Options", 8, 5);
+		prt("(6) Cheat Options", 9, 5);
 
 		/* Window flags */
 		prt("(W) Window flags", 11, 5);
 
+		/* Load and Append */
+		prt("(L) Load a user pref file", 13, 5);
+		prt("(A) Append options to a file", 14, 5);
+
 		/* Special choices */
-		prt("(D) Base Delay Factor", 13, 5);
-		prt("(H) Hitpoint Warning", 14, 5);
+		prt("(D) Base Delay Factor", 16, 5);
+		prt("(H) Hitpoint Warning", 17, 5);
 
 		/* Prompt */
-		prt("Command: ", 18, 0);
+		prt("Command: ", 19, 0);
 
 		/* Get command */
-		k = inkey();
+		ch = inkey();
 
 		/* Exit */
-		if (k == ESCAPE) break;
+		if (ch == ESCAPE) break;
 
-		/* Analyze */
-		switch (k)
+		/* General Options */
+		else if (ch == '1')
 		{
-			/* General Options */
-			case '1':
+			do_cmd_options_aux(0, "User Interface Options");
+		}
+
+		/* Disturbance Options */
+		else if (ch == '2')
+		{
+			do_cmd_options_aux(1, "Disturbance Options");
+		}
+
+		/* Inventory Options */
+		else if (ch == '3')
+		{
+			do_cmd_options_aux(2, "Game-Play Options");
+		}
+
+		/* Efficiency Options */
+		else if (ch == '4')
+		{
+			do_cmd_options_aux(3, "Efficiency Options");
+		}
+
+		/* Birth Options */
+		else if (ch == '5')
+		{
+			do_cmd_options_aux(4, "Birth Options");
+		}
+
+		/* Cheating Options */
+		else if (ch == '6')
+		{
+			do_cmd_options_aux(5, "Cheat Options");
+		}
+
+		/* Window flags */
+		else if ((ch == 'W') || (ch == 'w'))
+		{
+			do_cmd_options_win();
+		}
+
+		/* Load a user pref file */
+		else if ((ch == 'L') || (ch == 'l'))
+		{
+			/* Ask for and load a user pref file */
+			do_cmd_pref_file_hack(19);
+		}
+
+		/* Append options to a file */
+		else if ((ch == 'A') || (ch == 'a'))
+		{
+			char ftmp[80];
+
+			/* Prompt */
+			prt("Command: Append options to a file", 19, 0);
+
+			/* Prompt */
+			prt("File: ", 21, 0);
+
+			/* Default filename */
+			sprintf(ftmp, "%s.prf", op_ptr->base_name);
+
+			/* Ask for a file */
+			if (!askfor_aux(ftmp, 80)) continue;
+
+			/* Drop priv's */
+			safe_setuid_drop();
+
+			/* Dump the options */
+			if (option_dump(ftmp))
 			{
-				/* Process the general options */
-				do_cmd_options_aux(0, "User Interface Options");
-				break;
+				/* Failure */
+				msg_print("Failed!");
+			}
+			else
+			{
+				/* Success */
+				msg_print("Done.");
 			}
 
-			/* Disturbance Options */
-			case '2':
+			/* Grab priv's */
+			safe_setuid_grab();
+		}
+
+		/* Hack -- Base Delay Factor */
+		else if ((ch == 'D') || (ch == 'd'))
+		{
+			/* Prompt */
+			prt("Command: Base Delay Factor", 19, 0);
+
+			/* Get a new value */
+			while (1)
 			{
-				/* Spawn */
-				do_cmd_options_aux(1, "Disturbance Options");
-				break;
-			}
+				char cx;
+				int msec = op_ptr->delay_factor * op_ptr->delay_factor;
+				prt(format("Current base delay factor: %d (%d msec)",
+				           op_ptr->delay_factor, msec), 22, 0);
+				prt("New base delay factor (0-9 or ESC to accept): ", 21, 0);
 
-			/* Inventory Options */
-			case '3':
+				cx = inkey();
+				if (cx == ESCAPE) break;
+				if (isdigit(cx)) op_ptr->delay_factor = D2I(cx);
+				else bell("Illegal delay factor!");
+			}
+		}
+
+		/* Hack -- hitpoint warning factor */
+		else if ((ch == 'H') || (ch == 'h'))
+		{
+			/* Prompt */
+			prt("Command: Hitpoint Warning", 19, 0);
+
+			/* Get a new value */
+			while (1)
 			{
-				/* Spawn */
-				do_cmd_options_aux(2, "Game-Play Options");
-				break;
+				char cx;
+				prt(format("Current hitpoint warning: %2d%%",
+				           op_ptr->hitpoint_warn * 10), 22, 0);
+				prt("New hitpoint warning (0-9 or ESC to accept): ", 21, 0);
+
+				cx = inkey();
+				if (cx == ESCAPE) break;
+				if (isdigit(cx)) op_ptr->hitpoint_warn = D2I(cx);
+				else bell("Illegal hitpoint warning!");
 			}
+		}
 
-			/* Efficiency Options */
-			case '4':
-			{
-				/* Spawn */
-				do_cmd_options_aux(3, "Efficiency Options");
-				break;
-			}
-
-			/* Cheating Options */
-			case 'C':
-			{
-				/* Spawn */
-				do_cmd_options_cheat("Cheaters never win (seriously!)");
-				break;
-			}
-
-			/* Window flags */
-			case 'W':
-			case 'w':
-			{
-				/* Spawn */
-				do_cmd_options_win();
-				break;
-			}
-
-			/* Hack -- Delay Speed */
-			case 'D':
-			case 'd':
-			{
-				/* Prompt */
-				prt("Command: Base Delay Factor", 18, 0);
-
-				/* Get a new value */
-				while (1)
-				{
-					int msec = op_ptr->delay_factor * op_ptr->delay_factor;
-					prt(format("Current base delay factor: %d (%d msec)",
-					           op_ptr->delay_factor, msec), 22, 0);
-					prt("Delay Factor (0-9 or ESC to accept): ", 20, 0);
-					k = inkey();
-					if (k == ESCAPE) break;
-					if (isdigit(k)) op_ptr->delay_factor = D2I(k);
-					else bell("Illegal delay factor!");
-				}
-
-				break;
-			}
-
-			/* Hack -- hitpoint warning factor */
-			case 'H':
-			case 'h':
-			{
-				/* Prompt */
-				prt("Command: Hitpoint Warning", 18, 0);
-
-				/* Get a new value */
-				while (1)
-				{
-					prt(format("Current hitpoint warning: %2d%%",
-					           op_ptr->hitpoint_warn * 10), 22, 0);
-					prt("Hitpoint Warning (0-9 or ESC to accept): ", 20, 0);
-					k = inkey();
-					if (k == ESCAPE) break;
-					if (isdigit(k)) op_ptr->hitpoint_warn = D2I(k);
-					else bell("Illegal hitpoint warning!");
-				}
-
-				break;
-			}
-
-			/* Unknown option */
-			default:
-			{
-				/* Oops */
-				bell("Illegal command for options!");
-				break;
-			}
+		/* Unknown option */
+		else
+		{
+			/* Oops */
+			bell("Illegal command for options!");
 		}
 
 		/* Flush messages */
@@ -966,26 +1015,6 @@ void do_cmd_options(void)
 	screen_load();
 }
 
-
-
-/*
- * Ask for a "user pref line" and process it
- *
- * XXX XXX XXX Allow absolute file names?
- */
-void do_cmd_pref(void)
-{
-	char tmp[81];
-
-	/* Default */
-	strcpy(tmp, "");
-
-	/* Ask for a "user pref command" */
-	if (!get_string("Pref: ", tmp, 80)) return;
-
-	/* Process that pref command */
-	(void)process_pref_file_aux(tmp);
-}
 
 
 #ifdef ALLOW_MACROS
@@ -1015,7 +1044,7 @@ static errr macro_dump(cptr fname)
 	if (!fff) return (-1);
 
 
-	/* Skip space */
+	/* Skip some lines */
 	fprintf(fff, "\n\n");
 
 	/* Start dumping */
@@ -1027,16 +1056,16 @@ static errr macro_dump(cptr fname)
 		/* Start the macro */
 		fprintf(fff, "# Macro '%d'\n\n", i);
 
-		/* Extract the action */
+		/* Extract the macro action */
 		ascii_to_text(buf, macro__act[i]);
 
-		/* Dump the macro */
+		/* Dump the macro action */
 		fprintf(fff, "A:%s\n", buf);
 
-		/* Extract the action */
+		/* Extract the macro pattern */
 		ascii_to_text(buf, macro__pat[i]);
 
-		/* Dump normal macros */
+		/* Dump the macro pattern */
 		fprintf(fff, "P:%s\n", buf);
 
 		/* End the macro */
@@ -1065,7 +1094,9 @@ static errr macro_dump(cptr fname)
  */
 static void do_cmd_macro_aux(char *buf)
 {
-	int i, n = 0;
+	char ch;
+
+	int n = 0;
 
 	char tmp[1024];
 
@@ -1077,13 +1108,13 @@ static void do_cmd_macro_aux(char *buf)
 	inkey_base = TRUE;
 
 	/* First key */
-	i = inkey();
+	ch = inkey();
 
 	/* Read the pattern */
-	while (i)
+	while (ch != '\0')
 	{
 		/* Save the key */
-		buf[n++] = i;
+		buf[n++] = ch;
 
 		/* Do not process macros */
 		inkey_base = TRUE;
@@ -1092,7 +1123,7 @@ static void do_cmd_macro_aux(char *buf)
 		inkey_scan = TRUE;
 
 		/* Attempt to read a key */
-		i = inkey();
+		ch = inkey();
 	}
 
 	/* Terminate */
@@ -1143,7 +1174,9 @@ static void do_cmd_macro_aux_keymap(char *buf)
 
 
 /*
- * Hack -- append all keymaps to the given file
+ * Hack -- Append all keymaps to the given file.
+ *
+ * Hack -- We only append the keymaps for the "active" mode.
  */
 static errr keymap_dump(cptr fname)
 {
@@ -1151,7 +1184,6 @@ static errr keymap_dump(cptr fname)
 
 	FILE *fff;
 
-	char key[1024];
 	char buf[1024];
 
 	int mode;
@@ -1183,7 +1215,7 @@ static errr keymap_dump(cptr fname)
 	if (!fff) return (-1);
 
 
-	/* Skip space */
+	/* Skip some lines */
 	fprintf(fff, "\n\n");
 
 	/* Start dumping */
@@ -1192,6 +1224,8 @@ static errr keymap_dump(cptr fname)
 	/* Dump them */
 	for (i = 0; i < 256; i++)
 	{
+		char key[2] = "?";
+
 		cptr act;
 
 		/* Loop up the keymap */
@@ -1200,19 +1234,26 @@ static errr keymap_dump(cptr fname)
 		/* Skip empty keymaps */
 		if (!act) continue;
 
-		/* Encode the key */
-		buf[0] = i;
-		buf[1] = '\0';
-		ascii_to_text(key, buf);
-
 		/* Encode the action */
 		ascii_to_text(buf, act);
 
-		/* Dump the macro */
-		fprintf(fff, "M:%d  %2s  %s\n", mode, key, buf);
+		/* Dump the keymap action */
+		fprintf(fff, "A:%s\n", buf);
+
+		/* Convert the key into a string */
+		key[0] = i;
+
+		/* Encode the key */
+		ascii_to_text(buf, key);
+
+		/* Dump the keymap pattern */
+		fprintf(fff, "C:%d:%s\n", mode, buf);
+
+		/* Skip a line */
+		fprintf(fff, "\n");
 	}
 
-	/* Start dumping */
+	/* Skip some lines */
 	fprintf(fff, "\n\n\n");
 
 
@@ -1230,17 +1271,15 @@ static errr keymap_dump(cptr fname)
 /*
  * Interact with "macros"
  *
- * Note that the macro "action" must be defined before the trigger.
- *
  * Could use some helpful instructions on this page.  XXX XXX XXX
  */
 void do_cmd_macros(void)
 {
-	int i;
+	char ch;
 
 	char tmp[1024];
 
-	char buf[1024];
+	char pat[1024];
 
 	int mode;
 
@@ -1280,10 +1319,10 @@ void do_cmd_macros(void)
 		prt("Current action (if any) shown below:", 20, 0);
 
 		/* Analyze the current action */
-		ascii_to_text(buf, macro_buffer);
+		ascii_to_text(tmp, macro_buffer);
 
 		/* Display the current action */
-		prt(buf, 22, 0);
+		prt(tmp, 22, 0);
 
 
 		/* Selections */
@@ -1304,39 +1343,25 @@ void do_cmd_macros(void)
 		prt("Command: ", 16, 0);
 
 		/* Get a command */
-		i = inkey();
+		ch = inkey();
 
 		/* Leave */
-		if (i == ESCAPE) break;
+		if (ch == ESCAPE) break;
 
-		/* Load a 'macro' file */
-		else if (i == '1')
+		/* Load a user pref file */
+		if (ch == '1')
 		{
-			/* Prompt */
-			prt("Command: Load a user pref file", 16, 0);
-
-			/* Prompt */
-			prt("File: ", 18, 0);
-
-			/* Default filename */
-			sprintf(tmp, "%s.prf", op_ptr->base_name);
-
-			/* Ask for a file */
-			if (!askfor_aux(tmp, 80)) continue;
-
-			/* Process the given filename */
-			if (0 != process_pref_file(tmp))
-			{
-				/* Prompt */
-				msg_print("Could not load file!");
-			}
+			/* Ask for and load a user pref file */
+			do_cmd_pref_file_hack(16);
 		}
 
 #ifdef ALLOW_MACROS
 
 		/* Save macros */
-		else if (i == '2')
+		else if (ch == '2')
 		{
+			char ftmp[80];
+
 			/* Prompt */
 			prt("Command: Append macros to a file", 16, 0);
 
@@ -1344,16 +1369,16 @@ void do_cmd_macros(void)
 			prt("File: ", 18, 0);
 
 			/* Default filename */
-			sprintf(tmp, "%s.prf", op_ptr->base_name);
+			sprintf(ftmp, "%s.prf", op_ptr->base_name);
 
 			/* Ask for a file */
-			if (!askfor_aux(tmp, 80)) continue;
+			if (!askfor_aux(ftmp, 80)) continue;
 
 			/* Drop priv's */
 			safe_setuid_drop();
 
 			/* Dump the macros */
-			(void)macro_dump(tmp);
+			(void)macro_dump(ftmp);
 
 			/* Grab priv's */
 			safe_setuid_grab();
@@ -1363,7 +1388,7 @@ void do_cmd_macros(void)
 		}
 
 		/* Query a macro */
-		else if (i == '3')
+		else if (ch == '3')
 		{
 			int k;
 
@@ -1374,10 +1399,10 @@ void do_cmd_macros(void)
 			prt("Trigger: ", 18, 0);
 
 			/* Get a macro trigger */
-			do_cmd_macro_aux(buf);
+			do_cmd_macro_aux(pat);
 
-			/* Acquire action */
-			k = macro_find_exact(buf);
+			/* Get the action */
+			k = macro_find_exact(pat);
 
 			/* Nothing found */
 			if (k < 0)
@@ -1393,10 +1418,10 @@ void do_cmd_macros(void)
 				strcpy(macro_buffer, macro__act[k]);
 
 				/* Analyze the current action */
-				ascii_to_text(buf, macro_buffer);
+				ascii_to_text(tmp, macro_buffer);
 
 				/* Display the current action */
-				prt(buf, 22, 0);
+				prt(tmp, 22, 0);
 
 				/* Prompt */
 				msg_print("Found a macro.");
@@ -1404,7 +1429,7 @@ void do_cmd_macros(void)
 		}
 
 		/* Create a macro */
-		else if (i == '4')
+		else if (ch == '4')
 		{
 			/* Prompt */
 			prt("Command: Create a macro", 16, 0);
@@ -1413,7 +1438,7 @@ void do_cmd_macros(void)
 			prt("Trigger: ", 18, 0);
 
 			/* Get a macro trigger */
-			do_cmd_macro_aux(buf);
+			do_cmd_macro_aux(pat);
 
 			/* Clear */
 			clear_from(20);
@@ -1431,7 +1456,7 @@ void do_cmd_macros(void)
 				text_to_ascii(macro_buffer, tmp);
 
 				/* Link the macro */
-				macro_add(buf, macro_buffer);
+				macro_add(pat, macro_buffer);
 
 				/* Prompt */
 				msg_print("Added a macro.");
@@ -1439,7 +1464,7 @@ void do_cmd_macros(void)
 		}
 
 		/* Remove a macro */
-		else if (i == '5')
+		else if (ch == '5')
 		{
 			/* Prompt */
 			prt("Command: Remove a macro", 16, 0);
@@ -1448,18 +1473,20 @@ void do_cmd_macros(void)
 			prt("Trigger: ", 18, 0);
 
 			/* Get a macro trigger */
-			do_cmd_macro_aux(buf);
+			do_cmd_macro_aux(pat);
 
 			/* Link the macro */
-			macro_add(buf, buf);
+			macro_add(pat, pat);
 
 			/* Prompt */
 			msg_print("Removed a macro.");
 		}
 
 		/* Save keymaps */
-		else if (i == '6')
+		else if (ch == '6')
 		{
+			char ftmp[80];
+
 			/* Prompt */
 			prt("Command: Append keymaps to a file", 16, 0);
 
@@ -1467,16 +1494,16 @@ void do_cmd_macros(void)
 			prt("File: ", 18, 0);
 
 			/* Default filename */
-			sprintf(tmp, "%s.prf", op_ptr->base_name);
+			sprintf(ftmp, "%s.prf", op_ptr->base_name);
 
 			/* Ask for a file */
-			if (!askfor_aux(tmp, 80)) continue;
+			if (!askfor_aux(ftmp, 80)) continue;
 
 			/* Drop priv's */
 			safe_setuid_drop();
 
 			/* Dump the macros */
-			(void)keymap_dump(tmp);
+			(void)keymap_dump(ftmp);
 
 			/* Grab priv's */
 			safe_setuid_grab();
@@ -1486,7 +1513,7 @@ void do_cmd_macros(void)
 		}
 
 		/* Query a keymap */
-		else if (i == '7')
+		else if (ch == '7')
 		{
 			cptr act;
 
@@ -1497,10 +1524,10 @@ void do_cmd_macros(void)
 			prt("Keypress: ", 18, 0);
 
 			/* Get a keymap trigger */
-			do_cmd_macro_aux_keymap(buf);
+			do_cmd_macro_aux_keymap(pat);
 
 			/* Look up the keymap */
-			act = keymap_act[mode][(byte)(buf[0])];
+			act = keymap_act[mode][(byte)(pat[0])];
 
 			/* Nothing found */
 			if (!act)
@@ -1516,10 +1543,10 @@ void do_cmd_macros(void)
 				strcpy(macro_buffer, act);
 
 				/* Analyze the current action */
-				ascii_to_text(buf, macro_buffer);
+				ascii_to_text(tmp, macro_buffer);
 
 				/* Display the current action */
-				prt(buf, 22, 0);
+				prt(tmp, 22, 0);
 
 				/* Prompt */
 				msg_print("Found a keymap.");
@@ -1527,7 +1554,7 @@ void do_cmd_macros(void)
 		}
 
 		/* Create a keymap */
-		else if (i == '8')
+		else if (ch == '8')
 		{
 			/* Prompt */
 			prt("Command: Create a keymap", 16, 0);
@@ -1536,7 +1563,7 @@ void do_cmd_macros(void)
 			prt("Keypress: ", 18, 0);
 
 			/* Get a keymap trigger */
-			do_cmd_macro_aux_keymap(buf);
+			do_cmd_macro_aux_keymap(pat);
 
 			/* Clear */
 			clear_from(20);
@@ -1554,10 +1581,10 @@ void do_cmd_macros(void)
 				text_to_ascii(macro_buffer, tmp);
 
 				/* Free old keymap */
-				string_free(keymap_act[mode][(byte)(buf[0])]);
+				string_free(keymap_act[mode][(byte)(pat[0])]);
 
 				/* Make new keymap */
-				keymap_act[mode][(byte)(buf[0])] = string_make(macro_buffer);
+				keymap_act[mode][(byte)(pat[0])] = string_make(macro_buffer);
 
 				/* Prompt */
 				msg_print("Added a keymap.");
@@ -1565,7 +1592,7 @@ void do_cmd_macros(void)
 		}
 
 		/* Remove a keymap */
-		else if (i == '9')
+		else if (ch == '9')
 		{
 			/* Prompt */
 			prt("Command: Remove a keymap", 16, 0);
@@ -1574,20 +1601,20 @@ void do_cmd_macros(void)
 			prt("Keypress: ", 18, 0);
 
 			/* Get a keymap trigger */
-			do_cmd_macro_aux_keymap(buf);
+			do_cmd_macro_aux_keymap(pat);
 
 			/* Free old keymap */
-			string_free(keymap_act[mode][(byte)(buf[0])]);
+			string_free(keymap_act[mode][(byte)(pat[0])]);
 
 			/* Make new keymap */
-			keymap_act[mode][(byte)(buf[0])] = NULL;
+			keymap_act[mode][(byte)(pat[0])] = NULL;
 
 			/* Prompt */
 			msg_print("Removed a keymap.");
 		}
 
 		/* Enter a new action */
-		else if (i == '0')
+		else if (ch == '0')
 		{
 			/* Prompt */
 			prt("Command: Enter a new action", 16, 0);
@@ -1595,14 +1622,15 @@ void do_cmd_macros(void)
 			/* Go to the correct location */
 			Term_gotoxy(0, 22);
 
-			/* Hack -- limit the value */
-			tmp[80] = '\0';
+			/* Analyze the current action */
+			ascii_to_text(tmp, macro_buffer);
 
 			/* Get an encoded action */
-			if (!askfor_aux(buf, 80)) continue;
-
-			/* Extract an action */
-			text_to_ascii(macro_buffer, buf);
+			if (askfor_aux(tmp, 80))
+			{
+				/* Extract an action */
+				text_to_ascii(macro_buffer, tmp);
+			}
 		}
 
 #endif /* ALLOW_MACROS */
@@ -1630,11 +1658,12 @@ void do_cmd_macros(void)
  */
 void do_cmd_visuals(void)
 {
+	int ch;
+	int cx;
+
 	int i;
 
 	FILE *fff;
-
-	char tmp[160];
 
 	char buf[1024];
 
@@ -1674,35 +1703,25 @@ void do_cmd_visuals(void)
 		prt("Command: ", 15, 0);
 
 		/* Prompt */
-		i = inkey();
+		ch = inkey();
 
 		/* Done */
-		if (i == ESCAPE) break;
+		if (ch == ESCAPE) break;
 
-		/* Load a 'pref' file */
-		else if (i == '1')
+		/* Load a user pref file */
+		if (ch == '1')
 		{
-			/* Prompt */
-			prt("Command: Load a user pref file", 15, 0);
-
-			/* Prompt */
-			prt("File: ", 17, 0);
-
-			/* Default filename */
-			sprintf(tmp, "%s.prf", op_ptr->base_name);
-
-			/* Query */
-			if (!askfor_aux(tmp, 80)) continue;
-
-			/* Process the given filename */
-			(void)process_pref_file(tmp);
+			/* Ask for and load a user pref file */
+			do_cmd_pref_file_hack(15);
 		}
 
 #ifdef ALLOW_VISUALS
 
 		/* Dump monster attr/chars */
-		else if (i == '2')
+		else if (ch == '2')
 		{
+			char ftmp[80];
+
 			/* Prompt */
 			prt("Command: Dump monster attr/chars", 15, 0);
 
@@ -1710,13 +1729,13 @@ void do_cmd_visuals(void)
 			prt("File: ", 17, 0);
 
 			/* Default filename */
-			sprintf(tmp, "%s.prf", op_ptr->base_name);
+			sprintf(ftmp, "%s.prf", op_ptr->base_name);
 
 			/* Get a filename */
-			if (!askfor_aux(tmp, 80)) continue;
+			if (!askfor_aux(ftmp, 80)) continue;
 
 			/* Build the filename */
-			path_build(buf, 1024, ANGBAND_DIR_USER, tmp);
+			path_build(buf, 1024, ANGBAND_DIR_USER, ftmp);
 
 			/* Drop priv's */
 			safe_setuid_drop();
@@ -1730,8 +1749,11 @@ void do_cmd_visuals(void)
 			/* Failure */
 			if (!fff) continue;
 
-			/* Start dumping */
+
+			/* Skip some lines */
 			fprintf(fff, "\n\n");
+
+			/* Start dumping */
 			fprintf(fff, "# Monster attr/char definitions\n\n");
 
 			/* Dump monsters */
@@ -1761,8 +1783,10 @@ void do_cmd_visuals(void)
 		}
 
 		/* Dump object attr/chars */
-		else if (i == '3')
+		else if (ch == '3')
 		{
+			char ftmp[80];
+
 			/* Prompt */
 			prt("Command: Dump object attr/chars", 15, 0);
 
@@ -1770,13 +1794,13 @@ void do_cmd_visuals(void)
 			prt("File: ", 17, 0);
 
 			/* Default filename */
-			sprintf(tmp, "%s.prf", op_ptr->base_name);
+			sprintf(ftmp, "%s.prf", op_ptr->base_name);
 
 			/* Get a filename */
-			if (!askfor_aux(tmp, 80)) continue;
+			if (!askfor_aux(ftmp, 80)) continue;
 
 			/* Build the filename */
-			path_build(buf, 1024, ANGBAND_DIR_USER, tmp);
+			path_build(buf, 1024, ANGBAND_DIR_USER, ftmp);
 
 			/* Drop priv's */
 			safe_setuid_drop();
@@ -1790,8 +1814,11 @@ void do_cmd_visuals(void)
 			/* Failure */
 			if (!fff) continue;
 
-			/* Start dumping */
+
+			/* Skip some lines */
 			fprintf(fff, "\n\n");
+
+			/* Start dumping */
 			fprintf(fff, "# Object attr/char definitions\n\n");
 
 			/* Dump objects */
@@ -1821,8 +1848,10 @@ void do_cmd_visuals(void)
 		}
 
 		/* Dump feature attr/chars */
-		else if (i == '4')
+		else if (ch == '4')
 		{
+			char ftmp[80];
+
 			/* Prompt */
 			prt("Command: Dump feature attr/chars", 15, 0);
 
@@ -1830,13 +1859,13 @@ void do_cmd_visuals(void)
 			prt("File: ", 17, 0);
 
 			/* Default filename */
-			sprintf(tmp, "%s.prf", op_ptr->base_name);
+			sprintf(ftmp, "%s.prf", op_ptr->base_name);
 
 			/* Get a filename */
-			if (!askfor_aux(tmp, 80)) continue;
+			if (!askfor_aux(ftmp, 80)) continue;
 
 			/* Build the filename */
-			path_build(buf, 1024, ANGBAND_DIR_USER, tmp);
+			path_build(buf, 1024, ANGBAND_DIR_USER, ftmp);
 
 			/* Drop priv's */
 			safe_setuid_drop();
@@ -1850,8 +1879,11 @@ void do_cmd_visuals(void)
 			/* Failure */
 			if (!fff) continue;
 
-			/* Start dumping */
+
+			/* Skip some lines */
 			fprintf(fff, "\n\n");
+
+			/* Start dumping */
 			fprintf(fff, "# Feature attr/char definitions\n\n");
 
 			/* Dump features */
@@ -1881,7 +1913,7 @@ void do_cmd_visuals(void)
 		}
 
 		/* Modify monster attr/chars */
-		else if (i == '6')
+		else if (ch == '6')
 		{
 			static int r = 0;
 
@@ -1920,23 +1952,23 @@ void do_cmd_visuals(void)
 				            "Command (n/N/a/A/c/C): ");
 
 				/* Get a command */
-				i = inkey();
+				cx = inkey();
 
 				/* All done */
-				if (i == ESCAPE) break;
+				if (cx == ESCAPE) break;
 
 				/* Analyze */
-				if (i == 'n') r = (r + MAX_R_IDX + 1) % MAX_R_IDX;
-				if (i == 'N') r = (r + MAX_R_IDX - 1) % MAX_R_IDX;
-				if (i == 'a') r_ptr->x_attr = (byte)(ca + 1);
-				if (i == 'A') r_ptr->x_attr = (byte)(ca - 1);
-				if (i == 'c') r_ptr->x_char = (byte)(cc + 1);
-				if (i == 'C') r_ptr->x_char = (byte)(cc - 1);
+				if (cx == 'n') r = (r + MAX_R_IDX + 1) % MAX_R_IDX;
+				if (cx == 'N') r = (r + MAX_R_IDX - 1) % MAX_R_IDX;
+				if (cx == 'a') r_ptr->x_attr = (byte)(ca + 1);
+				if (cx == 'A') r_ptr->x_attr = (byte)(ca - 1);
+				if (cx == 'c') r_ptr->x_char = (byte)(cc + 1);
+				if (cx == 'C') r_ptr->x_char = (byte)(cc - 1);
 			}
 		}
 
 		/* Modify object attr/chars */
-		else if (i == '7')
+		else if (ch == '7')
 		{
 			static int k = 0;
 
@@ -1948,10 +1980,10 @@ void do_cmd_visuals(void)
 			{
 				object_kind *k_ptr = &k_info[k];
 
-				int da = (byte)k_ptr->d_attr;
-				int dc = (byte)k_ptr->d_char;
-				int ca = (byte)k_ptr->x_attr;
-				int cc = (byte)k_ptr->x_char;
+				int da = (byte)(k_ptr->d_attr);
+				int dc = (byte)(k_ptr->d_char);
+				int ca = (byte)(k_ptr->x_attr);
+				int cc = (byte)(k_ptr->x_char);
 
 				/* Label the object */
 				Term_putstr(5, 17, -1, TERM_WHITE,
@@ -1975,23 +2007,23 @@ void do_cmd_visuals(void)
 				            "Command (n/N/a/A/c/C): ");
 
 				/* Get a command */
-				i = inkey();
+				cx = inkey();
 
 				/* All done */
-				if (i == ESCAPE) break;
+				if (cx == ESCAPE) break;
 
 				/* Analyze */
-				if (i == 'n') k = (k + MAX_K_IDX + 1) % MAX_K_IDX;
-				if (i == 'N') k = (k + MAX_K_IDX - 1) % MAX_K_IDX;
-				if (i == 'a') k_info[k].x_attr = (byte)(ca + 1);
-				if (i == 'A') k_info[k].x_attr = (byte)(ca - 1);
-				if (i == 'c') k_info[k].x_char = (byte)(cc + 1);
-				if (i == 'C') k_info[k].x_char = (byte)(cc - 1);
+				if (cx == 'n') k = (k + MAX_K_IDX + 1) % MAX_K_IDX;
+				if (cx == 'N') k = (k + MAX_K_IDX - 1) % MAX_K_IDX;
+				if (cx == 'a') k_info[k].x_attr = (byte)(ca + 1);
+				if (cx == 'A') k_info[k].x_attr = (byte)(ca - 1);
+				if (cx == 'c') k_info[k].x_char = (byte)(cc + 1);
+				if (cx == 'C') k_info[k].x_char = (byte)(cc - 1);
 			}
 		}
 
 		/* Modify feature attr/chars */
-		else if (i == '8')
+		else if (ch == '8')
 		{
 			static int f = 0;
 
@@ -2003,10 +2035,10 @@ void do_cmd_visuals(void)
 			{
 				feature_type *f_ptr = &f_info[f];
 
-				int da = (byte)f_ptr->d_attr;
-				int dc = (byte)f_ptr->d_char;
-				int ca = (byte)f_ptr->x_attr;
-				int cc = (byte)f_ptr->x_char;
+				int da = (byte)(f_ptr->d_attr);
+				int dc = (byte)(f_ptr->d_char);
+				int ca = (byte)(f_ptr->x_attr);
+				int cc = (byte)(f_ptr->x_char);
 
 				/* Label the object */
 				Term_putstr(5, 17, -1, TERM_WHITE,
@@ -2030,25 +2062,25 @@ void do_cmd_visuals(void)
 				            "Command (n/N/a/A/c/C): ");
 
 				/* Get a command */
-				i = inkey();
+				cx = inkey();
 
 				/* All done */
-				if (i == ESCAPE) break;
+				if (cx == ESCAPE) break;
 
 				/* Analyze */
-				if (i == 'n') f = (f + MAX_F_IDX + 1) % MAX_F_IDX;
-				if (i == 'N') f = (f + MAX_F_IDX - 1) % MAX_F_IDX;
-				if (i == 'a') f_info[f].x_attr = (byte)(ca + 1);
-				if (i == 'A') f_info[f].x_attr = (byte)(ca - 1);
-				if (i == 'c') f_info[f].x_char = (byte)(cc + 1);
-				if (i == 'C') f_info[f].x_char = (byte)(cc - 1);
+				if (cx == 'n') f = (f + MAX_F_IDX + 1) % MAX_F_IDX;
+				if (cx == 'N') f = (f + MAX_F_IDX - 1) % MAX_F_IDX;
+				if (cx == 'a') f_info[f].x_attr = (byte)(ca + 1);
+				if (cx == 'A') f_info[f].x_attr = (byte)(ca - 1);
+				if (cx == 'c') f_info[f].x_char = (byte)(cc + 1);
+				if (cx == 'C') f_info[f].x_char = (byte)(cc - 1);
 			}
 		}
 
 #endif
 
 		/* Reset visuals */
-		else if (i == '0')
+		else if (ch == '0')
 		{
 			/* Reset */
 			reset_visuals(TRUE);
@@ -2078,11 +2110,12 @@ void do_cmd_visuals(void)
  */
 void do_cmd_colors(void)
 {
+	int ch;
+	int cx;
+
 	int i;
 
 	FILE *fff;
-
-	char tmp[160];
 
 	char buf[1024];
 
@@ -2115,41 +2148,33 @@ void do_cmd_colors(void)
 		prt("Command: ", 8, 0);
 
 		/* Prompt */
-		i = inkey();
+		ch = inkey();
 
 		/* Done */
-		if (i == ESCAPE) break;
+		if (ch == ESCAPE) break;
 
-		/* Load a 'pref' file */
-		if (i == '1')
+		/* Load a user pref file */
+		if (ch == '1')
 		{
-			/* Prompt */
-			prt("Command: Load a user pref file", 8, 0);
+			/* Ask for and load a user pref file */
+			do_cmd_pref_file_hack(8);
 
-			/* Prompt */
-			prt("File: ", 10, 0);
+			/* Could skip the following if loading cancelled XXX XXX XXX */
 
-			/* Default file */
-			sprintf(tmp, "%s.prf", op_ptr->base_name);
-
-			/* Query */
-			if (!askfor_aux(tmp, 80)) continue;
-
-			/* Process the given filename */
-			(void)process_pref_file(tmp);
-
-			/* Mega-Hack -- react to changes */
+			/* Mega-Hack -- React to color changes */
 			Term_xtra(TERM_XTRA_REACT, 0);
 
-			/* Mega-Hack -- redraw */
+			/* Mega-Hack -- Redraw physical windows */
 			Term_redraw();
 		}
 
 #ifdef ALLOW_COLORS
 
 		/* Dump colors */
-		else if (i == '2')
+		else if (ch == '2')
 		{
+			char ftmp[80];
+
 			/* Prompt */
 			prt("Command: Dump colors", 8, 0);
 
@@ -2157,13 +2182,13 @@ void do_cmd_colors(void)
 			prt("File: ", 10, 0);
 
 			/* Default filename */
-			sprintf(tmp, "%s.prf", op_ptr->base_name);
+			sprintf(ftmp, "%s.prf", op_ptr->base_name);
 
 			/* Get a filename */
-			if (!askfor_aux(tmp, 80)) continue;
+			if (!askfor_aux(ftmp, 80)) continue;
 
 			/* Build the filename */
-			path_build(buf, 1024, ANGBAND_DIR_USER, tmp);
+			path_build(buf, 1024, ANGBAND_DIR_USER, ftmp);
 
 			/* Drop priv's */
 			safe_setuid_drop();
@@ -2177,8 +2202,11 @@ void do_cmd_colors(void)
 			/* Failure */
 			if (!fff) continue;
 
-			/* Start dumping */
+
+			/* Skip some lines */
 			fprintf(fff, "\n\n");
+
+			/* Start dumping */
 			fprintf(fff, "# Color redefinitions\n\n");
 
 			/* Dump colors */
@@ -2216,7 +2244,7 @@ void do_cmd_colors(void)
 		}
 
 		/* Edit colors */
-		else if (i == '3')
+		else if (ch == '3')
 		{
 			static int a = 0;
 
@@ -2261,22 +2289,22 @@ void do_cmd_colors(void)
 				            "Command (n/N/k/K/r/R/g/G/b/B): ");
 
 				/* Get a command */
-				i = inkey();
+				cx = inkey();
 
 				/* All done */
-				if (i == ESCAPE) break;
+				if (cx == ESCAPE) break;
 
 				/* Analyze */
-				if (i == 'n') a = (byte)(a + 1);
-				if (i == 'N') a = (byte)(a - 1);
-				if (i == 'k') angband_color_table[a][0] = (byte)(angband_color_table[a][0] + 1);
-				if (i == 'K') angband_color_table[a][0] = (byte)(angband_color_table[a][0] - 1);
-				if (i == 'r') angband_color_table[a][1] = (byte)(angband_color_table[a][1] + 1);
-				if (i == 'R') angband_color_table[a][1] = (byte)(angband_color_table[a][1] - 1);
-				if (i == 'g') angband_color_table[a][2] = (byte)(angband_color_table[a][2] + 1);
-				if (i == 'G') angband_color_table[a][2] = (byte)(angband_color_table[a][2] - 1);
-				if (i == 'b') angband_color_table[a][3] = (byte)(angband_color_table[a][3] + 1);
-				if (i == 'B') angband_color_table[a][3] = (byte)(angband_color_table[a][3] - 1);
+				if (cx == 'n') a = (byte)(a + 1);
+				if (cx == 'N') a = (byte)(a - 1);
+				if (cx == 'k') angband_color_table[a][0] = (byte)(angband_color_table[a][0] + 1);
+				if (cx == 'K') angband_color_table[a][0] = (byte)(angband_color_table[a][0] - 1);
+				if (cx == 'r') angband_color_table[a][1] = (byte)(angband_color_table[a][1] + 1);
+				if (cx == 'R') angband_color_table[a][1] = (byte)(angband_color_table[a][1] - 1);
+				if (cx == 'g') angband_color_table[a][2] = (byte)(angband_color_table[a][2] + 1);
+				if (cx == 'G') angband_color_table[a][2] = (byte)(angband_color_table[a][2] - 1);
+				if (cx == 'b') angband_color_table[a][3] = (byte)(angband_color_table[a][3] + 1);
+				if (cx == 'B') angband_color_table[a][3] = (byte)(angband_color_table[a][3] - 1);
 
 				/* Hack -- react to changes */
 				Term_xtra(TERM_XTRA_REACT, 0);
@@ -2309,7 +2337,7 @@ void do_cmd_colors(void)
  */
 void do_cmd_note(void)
 {
-	char tmp[81];
+	char tmp[80];
 
 	/* Default */
 	strcpy(tmp, "");
@@ -2640,10 +2668,10 @@ static void do_cmd_knowledge_artifacts(void)
 			{
 				object_type *o_ptr;
 
-				/* Acquire object */
+				/* Get the object */
 				o_ptr = &o_list[this_o_idx];
 
-				/* Acquire next object */
+				/* Get the next object */
 				next_o_idx = o_ptr->next_o_idx;
 
 				/* Ignore non-artifacts */
@@ -2840,7 +2868,7 @@ static void do_cmd_knowledge_objects(void)
  */
 void do_cmd_knowledge(void)
 {
-	int i;
+	char ch;
 
 
 	/* File type is "TEXT" */
@@ -2869,27 +2897,27 @@ void do_cmd_knowledge(void)
 		prt("Command: ", 8, 0);
 
 		/* Prompt */
-		i = inkey();
+		ch = inkey();
 
 		/* Done */
-		if (i == ESCAPE) break;
+		if (ch == ESCAPE) break;
 
 		/* Artifacts */
-		if (i == '1')
+		if (ch == '1')
 		{
 			/* Spawn */
 			do_cmd_knowledge_artifacts();
 		}
 
 		/* Uniques */
-		else if (i == '2')
+		else if (ch == '2')
 		{
 			/* Spawn */
 			do_cmd_knowledge_uniques();
 		}
 
 		/* Objects */
-		else if (i == '3')
+		else if (ch == '3')
 		{
 			/* Spawn */
 			do_cmd_knowledge_objects();

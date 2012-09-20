@@ -273,6 +273,12 @@ void teleport_player_to(int ny, int nx)
  */
 void teleport_player_level(void)
 {
+	if (adult_ironman)
+	{
+		msg_print("Nothing happens.");
+		return;
+	}
+
 	if (!p_ptr->depth)
 	{
 		msg_print("You sink through the floor.");
@@ -1017,7 +1023,7 @@ bool dec_stat(int stat, int amount, int permanent)
 	int cur, max, loss, same, res = FALSE;
 
 
-	/* Acquire current value */
+	/* Get the current value */
 	cur = p_ptr->stat_cur[stat];
 	max = p_ptr->stat_max[stat];
 
@@ -1366,6 +1372,18 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ)
 		/* Destroy Traps (and Locks) */
 		case GF_KILL_TRAP:
 		{
+			/* Reveal secret doors */
+			if (cave_feat[y][x] == FEAT_SECRET)
+			{
+				place_closed_door(y, x);
+
+				/* Check line of sight */
+				if (player_has_los_bold(y, x))
+				{
+					obvious = TRUE;
+				}
+			}
+
 			/* Destroy traps */
 			if ((cave_feat[y][x] == FEAT_INVIS) ||
 			    ((cave_feat[y][x] >= FEAT_TRAP_HEAD) &&
@@ -1385,10 +1403,9 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ)
 				cave_set_feat(y, x, FEAT_FLOOR);
 			}
 
-			/* Secret / Locked doors are found and unlocked */
-			else if ((cave_feat[y][x] == FEAT_SECRET) ||
-			         ((cave_feat[y][x] >= FEAT_DOOR_HEAD + 0x01) &&
-			          (cave_feat[y][x] <= FEAT_DOOR_HEAD + 0x07)))
+			/* Locked doors are unlocked */
+			else if ((cave_feat[y][x] >= FEAT_DOOR_HEAD + 0x01) &&
+			          (cave_feat[y][x] <= FEAT_DOOR_HEAD + 0x07))
 			{
 				/* Unlock the door */
 				cave_set_feat(y, x, FEAT_DOOR_HEAD + 0x00);
@@ -1691,10 +1708,10 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ)
 
 		cptr note_kill = NULL;
 
-		/* Acquire object */
+		/* Get the object */
 		o_ptr = &o_list[this_o_idx];
 
-		/* Acquire next object */
+		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
 
 		/* Extract the flags */
@@ -3560,7 +3577,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 				{
 					msg_print("You're not as powerful as you used to be...");
 
-					for (k = 0; k < 6; k++)
+					for (k = 0; k < A_MAX; k++)
 					{
 						p_ptr->stat_cur[k] = (p_ptr->stat_cur[k] * 3) / 4;
 						if (p_ptr->stat_cur[k] < 3) p_ptr->stat_cur[k] = 3;

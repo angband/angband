@@ -323,10 +323,10 @@ bool cave_valid_bold(int y, int x)
 	{
 		object_type *o_ptr;
 
-		/* Acquire object */
+		/* Get the object */
 		o_ptr = &o_list[this_o_idx];
 
-		/* Acquire next object */
+		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
 
 		/* Forbid artifact grids */
@@ -452,8 +452,8 @@ static u16b image_random(void)
  *
  * Note that the "zero" entry in the feature/object/monster arrays are
  * used to provide "special" attr/char codes, with "monster zero" being
- * used for the player attr/char, "object zero" being used for the "stack"
- * attr/char, and "feature zero" being used for the "nothing" attr/char.
+ * used for the player attr/char, "object zero" being used for the "pile"
+ * attr/char, and "feature zero" being used for the "darkness" attr/char.
  *
  * Note that eventually we may want to use the "&" symbol for embedded
  * treasure, and use the "*" symbol to indicate multiple objects, but
@@ -590,6 +590,7 @@ void map_info(int y, int x, byte *ap, char *cp)
 
 	bool image = p_ptr->image;
 
+	int floor_num = 0;
 
 	/* Monster/Player */
 	m_idx = cave_m_idx[y][x];
@@ -632,6 +633,7 @@ void map_info(int y, int x, byte *ap, char *cp)
 	if (image && (!rand_int(256)) && (feat < FEAT_PERM_SOLID))
 	{
 		int i = image_random();
+
 		a = PICT_A(i);
 		c = PICT_C(i);
 	}
@@ -643,14 +645,14 @@ void map_info(int y, int x, byte *ap, char *cp)
 		if ((info & (CAVE_MARK)) ||
 		    (info & (CAVE_SEEN)))
 		{
-			/* Access floor */
+			/* Get the floor feature */
 			f_ptr = &f_info[FEAT_FLOOR];
-
-			/* Normal char */
-			c = f_ptr->x_char;
 
 			/* Normal attr */
 			a = f_ptr->x_attr;
+
+			/* Normal char */
+			c = f_ptr->x_char;
 
 			/* Special lighting effects */
 			if (view_special_lite && (a == TERM_WHITE))
@@ -692,7 +694,7 @@ void map_info(int y, int x, byte *ap, char *cp)
 		/* Unknown */
 		else
 		{
-			/* Access darkness */
+			/* Get the darkness feature */
 			f_ptr = &f_info[FEAT_NONE];
 
 			/* Normal attr */
@@ -712,14 +714,14 @@ void map_info(int y, int x, byte *ap, char *cp)
 			/* Apply "mimic" field */
 			feat = f_info[feat].mimic;
 
-			/* Access feature */
+			/* Get the feature */
 			f_ptr = &f_info[feat];
-
-			/* Normal char */
-			c = f_ptr->x_char;
 
 			/* Normal attr */
 			a = f_ptr->x_attr;
+
+			/* Normal char */
+			c = f_ptr->x_char;
 
 			/* Special lighting effects (walls only) */
 			if (view_granite_lite && (a == TERM_WHITE) &&
@@ -750,7 +752,7 @@ void map_info(int y, int x, byte *ap, char *cp)
 		/* Unknown */
 		else
 		{
-			/* Access darkness */
+			/* Get the darkness feature */
 			f_ptr = &f_info[FEAT_NONE];
 
 			/* Normal attr */
@@ -767,10 +769,10 @@ void map_info(int y, int x, byte *ap, char *cp)
 	{
 		object_type *o_ptr;
 
-		/* Acquire object */
+		/* Get the object */
 		o_ptr = &o_list[this_o_idx];
 
-		/* Acquire next object */
+		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
 
 		/* Memorized objects */
@@ -780,22 +782,38 @@ void map_info(int y, int x, byte *ap, char *cp)
 			if (image)
 			{
 				int i = image_object();
+
 				a = PICT_A(i);
 				c = PICT_C(i);
+
+				break;
 			}
 
-			/* Normal */
-			else
+			/* Normal attr */
+			a = object_attr(o_ptr);
+
+			/* Normal char */
+			c = object_char(o_ptr);
+
+			/* First marked object */
+			if (!show_piles) break;
+
+			/* Special stack symbol */
+			if (++floor_num > 1)
 			{
-				/* Normal char */
-				c = object_char(o_ptr);
+				object_kind *k_ptr;
+
+				/* Get the "pile" feature */
+				k_ptr = &k_info[0];
 
 				/* Normal attr */
-				a = object_attr(o_ptr);
-			}
+				a = k_ptr->x_attr;
 
-			/* Done */
-			break;
+				/* Normal char */
+				c = k_ptr->x_char;
+
+				break;
+			}
 		}
 	}
 
@@ -823,6 +841,7 @@ void map_info(int y, int x, byte *ap, char *cp)
 			if (image)
 			{
 				int i = image_monster();
+
 				a = PICT_A(i);
 				c = PICT_C(i);
 			}
@@ -830,51 +849,51 @@ void map_info(int y, int x, byte *ap, char *cp)
 			/* Ignore weird codes */
 			else if (avoid_other)
 			{
-				/* Use char */
-				c = dc;
-
 				/* Use attr */
 				a = da;
+
+				/* Use char */
+				c = dc;
 			}
 
 			/* Special attr/char codes */
 			else if ((da & 0x80) && (dc & 0x80))
 			{
-				/* Use char */
-				c = dc;
-
 				/* Use attr */
 				a = da;
+
+				/* Use char */
+				c = dc;
 			}
 
 			/* Multi-hued monster */
 			else if (r_ptr->flags1 & (RF1_ATTR_MULTI))
 			{
-				/* Normal char */
-				c = dc;
-
 				/* Multi-hued attr */
 				a = randint(15);
+
+				/* Normal char */
+				c = dc;
 			}
 
 			/* Normal monster (not "clear" in any way) */
 			else if (!(r_ptr->flags1 & (RF1_ATTR_CLEAR | RF1_CHAR_CLEAR)))
 			{
-				/* Use char */
-				c = dc;
-
 				/* Use attr */
 				a = da;
+
+				/* Use char */
+				c = dc;
 			}
 
 			/* Hack -- Bizarre grid under monster */
 			else if ((a & 0x80) || (c & 0x80))
 			{
-				/* Use char */
-				c = dc;
-
 				/* Use attr */
 				a = da;
+
+				/* Use char */
+				c = dc;
 			}
 
 			/* Normal char, Clear attr, monster */
@@ -1038,7 +1057,7 @@ void note_spot(int y, int x)
 	{
 		object_type *o_ptr = &o_list[this_o_idx];
 
-		/* Acquire next object */
+		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
 
 		/* Memorize objects */
@@ -1230,7 +1249,7 @@ static byte priority(byte a, char c)
 		/* Feature index */
 		p0 = priority_table[i][0];
 
-		/* Access the feature */
+		/* Get the feature */
 		f_ptr = &f_info[p0];
 
 		/* Check character and attribute, accept matches */
@@ -1518,7 +1537,7 @@ void do_cmd_view_map(void)
  * which grids have been "memorized" by the player.  This flag is used by
  * the "map_info()" function to determine if a grid should be displayed.
  * This flag is used in a few other places to determine if the player can
- * "know" about a given grid.  This flag must be very fast. 
+ * "know" about a given grid.  This flag must be very fast.
  *
  * The "CAVE_GLOW" flag is saved in the savefile and is used to determine
  * which grids are "permanently illuminated".  This flag is used by the
@@ -1670,7 +1689,7 @@ void do_cmd_view_map(void)
  * two wall grids which form the "entrance" to the room would not be marked
  * as "CAVE_SEEN", since of the three "touching" grids nearer to the player
  * than each wall grid, only the farthest of these grids is itself marked
- * "CAVE_GLOW". 
+ * "CAVE_GLOW".
  *
  *
  * Here are some pictures of the legal "light source" radius values, in
@@ -1681,7 +1700,7 @@ void do_cmd_view_map(void)
  *
  *       Rad=0     Rad=1      Rad=2        Rad=3
  *      No-Lite  Torch,etc   Lantern     Artifacts
- *    
+ *
  *                                          333
  *                             333         43334
  *                  212       32123       3321233
@@ -2000,12 +2019,12 @@ static void ang_sort_swap_hook_longs(vptr u, vptr v, int a, int b)
 {
 	long *x = (long*)(u);
 
-        long temp;
+	long temp;
 
-        /* Swap */
-        temp = x[a];
-        x[a] = x[b];
-        x[b] = temp;
+	/* Swap */
+	temp = x[a];
+	x[a] = x[b];
+	x[b] = temp;
 }
 
 
@@ -2910,7 +2929,7 @@ void update_flow(void)
 		tx = flow_x[flow_head];
 
 		/* Forget that entry (with wrap) */
-		if (++flow_head == TEMP_MAX) flow_head = 0;
+		if (++flow_head == FLOW_MAX) flow_head = 0;
 
 		/* Child cost */
 		n = cave_cost[ty][tx] + 1;
@@ -3112,7 +3131,7 @@ void wiz_dark(void)
 {
 	int i, y, x;
 
-	
+
 	/* Forget every grid */
 	for (y = 0; y < DUNGEON_HGT; y++)
 	{
@@ -3218,7 +3237,7 @@ void town_illuminate(bool daytime)
 
 					/* Illuminate the grid */
 					cave_info[yy][xx] |= (CAVE_GLOW);
-	
+
 					/* Hack -- Memorize grids */
 					if (view_perma_grids)
 					{
@@ -3708,6 +3727,9 @@ void disturb(int stop_search, int unused_flag)
 	{
 		/* Cancel */
 		p_ptr->running = 0;
+
+ 		/* Check for new panel if appropriate */
+ 		if (center_player && run_avoid_center) verify_panel();
 
 		/* Calculate torch radius */
 		p_ptr->update |= (PU_TORCH);

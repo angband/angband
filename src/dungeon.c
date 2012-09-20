@@ -11,77 +11,74 @@
 #include "angband.h"
 
 
-
-
 /*
  * Return a "feeling" (or NULL) about an item.  Method 1 (Heavy).
  */
-static cptr value_check_aux1(object_type *o_ptr)
+static int value_check_aux1(object_type *o_ptr)
 {
 	/* Artifacts */
 	if (artifact_p(o_ptr))
 	{
 		/* Cursed/Broken */
-		if (cursed_p(o_ptr) || broken_p(o_ptr)) return "terrible";
+		if (cursed_p(o_ptr) || broken_p(o_ptr)) return (INSCRIP_TERRIBLE);
 
 		/* Normal */
-		return "special";
+		return (INSCRIP_SPECIAL);
 	}
 
 	/* Ego-Items */
 	if (ego_item_p(o_ptr))
 	{
 		/* Cursed/Broken */
-		if (cursed_p(o_ptr) || broken_p(o_ptr)) return "worthless";
+		if (cursed_p(o_ptr) || broken_p(o_ptr)) return (INSCRIP_WORTHLESS);
 
 		/* Normal */
-		return "excellent";
+		return (INSCRIP_EXCELLENT);
 	}
 
 	/* Cursed items */
-	if (cursed_p(o_ptr)) return "cursed";
+	if (cursed_p(o_ptr)) return (INSCRIP_CURSED);
 
 	/* Broken items */
-	if (broken_p(o_ptr)) return "broken";
+	if (broken_p(o_ptr)) return (INSCRIP_BROKEN);
 
 	/* Good "armor" bonus */
-	if (o_ptr->to_a > 0) return "good";
+	if (o_ptr->to_a > 0) return (INSCRIP_GOOD);
 
 	/* Good "weapon" bonus */
-	if (o_ptr->to_h + o_ptr->to_d > 0) return "good";
+	if (o_ptr->to_h + o_ptr->to_d > 0) return (INSCRIP_GOOD);
 
 	/* Default to "average" */
-	return "average";
+	return (INSCRIP_AVERAGE);
 }
 
 
 /*
  * Return a "feeling" (or NULL) about an item.  Method 2 (Light).
  */
-static cptr value_check_aux2(object_type *o_ptr)
+static int value_check_aux2(object_type *o_ptr)
 {
 	/* Cursed items (all of them) */
-	if (cursed_p(o_ptr)) return "cursed";
+	if (cursed_p(o_ptr)) return (INSCRIP_CURSED);
 
 	/* Broken items (all of them) */
-	if (broken_p(o_ptr)) return "broken";
+	if (broken_p(o_ptr)) return (INSCRIP_BROKEN);
 
 	/* Artifacts -- except cursed/broken ones */
-	if (artifact_p(o_ptr)) return "good";
+	if (artifact_p(o_ptr)) return (INSCRIP_GOOD);
 
 	/* Ego-Items -- except cursed/broken ones */
-	if (ego_item_p(o_ptr)) return "good";
+	if (ego_item_p(o_ptr)) return (INSCRIP_GOOD);
 
 	/* Good armor bonus */
-	if (o_ptr->to_a > 0) return "good";
+	if (o_ptr->to_a > 0) return (INSCRIP_GOOD);
 
 	/* Good weapon bonuses */
-	if (o_ptr->to_h + o_ptr->to_d > 0) return "good";
+	if (o_ptr->to_h + o_ptr->to_d > 0) return (INSCRIP_GOOD);
 
 	/* No feeling */
-	return (NULL);
+	return (0);
 }
-
 
 
 
@@ -103,7 +100,7 @@ static void sense_inventory(void)
 
 	bool heavy = FALSE;
 
-	cptr feel;
+	int feel;
 
 	object_type *o_ptr;
 
@@ -224,7 +221,10 @@ static void sense_inventory(void)
 		/* Skip non-sense machines */
 		if (!okay) continue;
 
-		/* We know about it already, do not tell us again */
+		/* It already has a discount or special inscription */
+		if (o_ptr->discount > 0) continue;
+
+		/* It has already been sensed, do not sense it again */
 		if (o_ptr->ident & (IDENT_SENSE)) continue;
 
 		/* It is fully known, no information needed */
@@ -250,7 +250,8 @@ static void sense_inventory(void)
 		{
 			msg_format("You feel the %s (%c) you are %s %s %s...",
 			           o_name, index_to_label(i), describe_use(i),
-			           ((o_ptr->number == 1) ? "is" : "are"), feel);
+			           ((o_ptr->number == 1) ? "is" : "are"),
+			           inscrip_text[feel - INSCRIP_NULL]);
 		}
 
 		/* Message (inventory) */
@@ -258,14 +259,16 @@ static void sense_inventory(void)
 		{
 			msg_format("You feel the %s (%c) in your pack %s %s...",
 			           o_name, index_to_label(i),
-			           ((o_ptr->number == 1) ? "is" : "are"), feel);
+			           ((o_ptr->number == 1) ? "is" : "are"),
+			           inscrip_text[feel - INSCRIP_NULL]);
 		}
 
-		/* We have "felt" it */
+		/* Sense the object */
+		o_ptr->discount = feel;
+
+		/* The object has been "sensed" */
 		o_ptr->ident |= (IDENT_SENSE);
 
-		/* Inscribe it textually */
-		if (!o_ptr->note) o_ptr->note = quark_add(feel);
 
 		/* Combine / Reorder the pack (later) */
 		p_ptr->notice |= (PN_COMBINE | PN_REORDER);
@@ -520,8 +523,11 @@ static void process_world(void)
 			if (cheat_xtra) msg_print("Updating Shops...");
 
 			/* Maintain each shop (except home) */
-			for (n = 0; n < MAX_STORES - 1; n++)
+			for (n = 0; n < MAX_STORES; n++)
 			{
+				/* Skip the home */
+				if (n == STORE_HOME) continue;
+
 				/* Maintain */
 				store_maint(n);
 			}
@@ -532,8 +538,15 @@ static void process_world(void)
 				/* Message */
 				if (cheat_xtra) msg_print("Shuffling a Shopkeeper...");
 
-				/* Shuffle a random shop (except home) */
-				store_shuffle(rand_int(MAX_STORES - 1));
+				/* Pick a random shop (except home) */
+				while (1)
+				{
+					n = rand_int(MAX_STORES);
+					if (n != STORE_HOME) break;
+				}
+
+				/* Shuffle it */
+				store_shuffle(n);
 			}
 
 			/* Message */
@@ -982,7 +995,7 @@ static void process_world(void)
 	/* Process objects */
 	for (i = 1; i < o_max; i++)
 	{
-		/* Access object */
+		/* Get the object */
 		o_ptr = &o_list[i];
 
 		/* Skip dead objects */
@@ -1051,7 +1064,7 @@ static void process_world(void)
 static bool enter_wizard_mode(void)
 {
 	/* Ask first time */
-	if (!(p_ptr->noscore & 0x0002))
+	if (verify_special || !(p_ptr->noscore & 0x0002))
 	{
 		/* Mention effects */
 		msg_print("You are about to enter 'wizard' mode for the very first time!");
@@ -1063,10 +1076,10 @@ static bool enter_wizard_mode(void)
 		{
 			return (FALSE);
 		}
-
-		/* Mark savefile */
-		p_ptr->noscore |= 0x0002;
 	}
+
+	/* Mark savefile */
+	p_ptr->noscore |= 0x0002;
 
 	/* Success */
 	return (TRUE);
@@ -1081,10 +1094,8 @@ static bool enter_wizard_mode(void)
  */
 static bool verify_debug_mode(void)
 {
-	static int verify = 1;
-
 	/* Ask first time */
-	if (verify && verify_special)
+	if (verify_special && !(p_ptr->noscore & 0x0008))
 	{
 		/* Mention effects */
 		msg_print("You are about to use the dangerous, unsupported, debug commands!");
@@ -1097,9 +1108,6 @@ static bool verify_debug_mode(void)
 			return (FALSE);
 		}
 	}
-
-	/* Verified */
-	verify = 0;
 
 	/* Mark savefile */
 	p_ptr->noscore |= 0x0008;
@@ -1125,10 +1133,8 @@ extern void do_cmd_debug(void);
  */
 static bool verify_borg_mode(void)
 {
-	static int verify = 1;
-
 	/* Ask first time */
-	if (verify && verify_special)
+	if (verify_special && !(p_ptr->noscore & 0x0010))
 	{
 		/* Mention effects */
 		msg_print("You are about to use the dangerous, unsupported, borg commands!");
@@ -1141,9 +1147,6 @@ static bool verify_borg_mode(void)
 			return (FALSE);
 		}
 	}
-
-	/* Verified */
-	verify = 0;
 
 	/* Mark savefile */
 	p_ptr->noscore |= 0x0010;
@@ -1168,14 +1171,21 @@ extern void do_cmd_borg(void);
  */
 static void process_command(void)
 {
+
+#ifdef ALLOW_REPEAT
+
+	/* Handle repeating the last command */
+	repeat_check();
+
+#endif /* ALLOW_REPEAT */
+
 	/* Parse the command */
 	switch (p_ptr->command_cmd)
 	{
 		/* Ignore */
 		case ESCAPE:
 		case ' ':
-
-		/* Ignore */
+		case '\n':
 		case '\r':
 		{
 			break;
@@ -1787,7 +1797,7 @@ static void process_player_aux(void)
 	{
 		monster_race *r_ptr;
 
-		/* Acquire monster race */
+		/* Get the monster race */
 		r_ptr = &r_info[p_ptr->monster_race_idx];
 
 		/* Check for change of any kind */
@@ -1851,9 +1861,8 @@ static void process_player_aux(void)
  *
  * Note that the code to check for user abort during repeated commands
  * and running and resting can be disabled entirely with an option, and
- * even if not disabled, it will never check during "special" resting
- * (codes -1 and -2), and it will only check during every 16th player
- * turn of "normal" resting.
+ * even if not disabled, it will only check during every 128th game turn
+ * while resting, for efficiency.
  */
 static void process_player(void)
 {
@@ -1908,7 +1917,7 @@ static void process_player(void)
 		/* Check for "player abort" */
 		if (p_ptr->running ||
 		    p_ptr->command_rep ||
-		    (p_ptr->resting && !(p_ptr->resting & 0x0F)))
+		    (p_ptr->resting && !(turn & 0x7F)))
 		{
 			/* Do not wait */
 			inkey_scan = TRUE;
@@ -1963,7 +1972,7 @@ static void process_player(void)
 
 			object_type *o_ptr;
 
-			/* Access the slot to be dropped */
+			/* Get the slot to be dropped */
 			o_ptr = &inventory[item];
 
 			/* Disturbing */
@@ -2042,15 +2051,6 @@ static void process_player(void)
 		/* Repeated command */
 		else if (p_ptr->command_rep)
 		{
-			/* Count this execution */
-			p_ptr->command_rep--;
-
-			/* Redraw the state */
-			p_ptr->redraw |= (PR_STATE);
-
-			/* Redraw stuff */
-			/* redraw_stuff(); */
-
 			/* Hack -- Assume messages were seen */
 			msg_flag = FALSE;
 
@@ -2059,6 +2059,19 @@ static void process_player(void)
 
 			/* Process the command */
 			process_command();
+
+			/* Count this execution */
+			if (p_ptr->command_rep)
+			{
+				/* Count this execution */
+				p_ptr->command_rep--;
+
+				/* Redraw the state */
+				p_ptr->redraw |= (PR_STATE);
+
+				/* Redraw stuff */
+				/* redraw_stuff(); */
+			}
 		}
 
 		/* Normal command */
@@ -2103,13 +2116,13 @@ static void process_player(void)
 					monster_type *m_ptr;
 					monster_race *r_ptr;
 
-					/* Access monster */
+					/* Get the monster */
 					m_ptr = &m_list[i];
 
 					/* Skip dead monsters */
 					if (!m_ptr->r_idx) continue;
 
-					/* Access the monster race */
+					/* Get the monster race */
 					r_ptr = &r_info[m_ptr->r_idx];
 
 					/* Skip non-multi-hued monsters */
@@ -2134,7 +2147,7 @@ static void process_player(void)
 				{
 					monster_type *m_ptr;
 
-					/* Access monster */
+					/* Get the monster */
 					m_ptr = &m_list[i];
 
 					/* Skip dead monsters */
@@ -2156,7 +2169,7 @@ static void process_player(void)
 				{
 					monster_type *m_ptr;
 
-					/* Access monster */
+					/* Get the monster */
 					m_ptr = &m_list[i];
 
 					/* Skip dead monsters */
@@ -2196,7 +2209,7 @@ static void process_player(void)
 			{
 				monster_type *m_ptr;
 
-				/* Access monster */
+				/* Get the monster */
 				m_ptr = &m_list[i];
 
 				/* Skip dead monsters */
@@ -2514,33 +2527,74 @@ static void dungeon(void)
 
 /*
  * Process some user pref files
+ *
+ * Hack -- Allow players on UNIX systems to keep a ".angband.prf" user
+ * pref file in their home directory.  Perhaps it should be loaded with
+ * the "basic" user pref files instead of here.  This may allow bypassing
+ * of some of the "security" compilation options.  XXX XXX XXX XXX XXX
  */
 static void process_some_user_pref_files(void)
 {
-	char buf[128];
+	char buf[1024];
+
+#ifdef SET_UID
+
+	char *homedir;
+
+#endif
 
 	/* Process the "user.prf" file */
 	(void)process_pref_file("user.prf");
 
-	/* Process the "PLAYER.prf" file */
+	/* Get the "PLAYER.prf" filename */
 	sprintf(buf, "%s.prf", op_ptr->base_name);
 
 	/* Process the "PLAYER.prf" file */
 	(void)process_pref_file(buf);
+
+#ifdef SET_UID
+
+	/* Process the "~/.angband.prf" file */
+	if ((homedir = getenv("HOME")))
+	{
+		/* Get the ".angband.prf" filename */
+		path_build(buf, 1024, homedir, ".angband.prf");
+
+		/* Process the ".angband.prf" file */
+		(void)process_pref_file(buf);
+	}
+
+#endif /* SET_UID */
+
 }
 
 
 /*
- * Actually play a game
+ * Actually play a game.
  *
- * If the "new_game" parameter is true, then, after loading the
- * savefile, we will commit suicide, if necessary, to allow the
- * player to start a new game.
+ * This function is called from a variety of entry points, since both
+ * the standard "main.c" file, as well as several platform-specific
+ * "main-xxx.c" files, call this function to start a new game with a
+ * new savefile, start a new game with an existing savefile, or resume
+ * a saved game with an existing savefile.
  *
- * Note that we load the RNG state from savefiles (2.8.0 or later)
- * and so we only initialize it if we were unable to load it, and
- * we mark successful loading using the "Rand_quick" flag.  This
- * is a hack but it optimizes loading of savefiles.  XXX XXX
+ * If the "new_game" parameter is true, and the savefile contains a
+ * living character, then that character will be killed, so that the
+ * player may start a new game with that savefile.  This is only used
+ * by the "-n" option in "main.c".
+ *
+ * If the savefile does not exist, cannot be loaded, or contains a dead
+ * (non-wizard-mode) character, then a new game will be started.
+ *
+ * Several platforms (Windows, Macintosh, Amiga) start brand new games
+ * with "savefile" and "op_ptr->base_name" both empty, and initialize
+ * them later based on the player name.  To prevent weirdness, we must
+ * initialize "op_ptr->base_name" to "PLAYER" if it is empty.
+ *
+ * Note that we load the RNG state from savefiles (2.8.0 or later) and
+ * so we only initialize it if we were unable to load it.  The loading
+ * code marks successful loading of the RNG state using the "Rand_quick"
+ * flag, which is a hack, but which optimizes loading of savefiles.
  */
 void play_game(bool new_game)
 {
@@ -2567,7 +2621,7 @@ void play_game(bool new_game)
 	Term->fixed_shape = TRUE;
 
 
-	/* Hack -- turn off the cursor */
+	/* Hack -- Turn off the cursor */
 	(void)Term_set_cursor(0);
 
 
@@ -2588,9 +2642,10 @@ void play_game(bool new_game)
 		character_dungeon = FALSE;
 	}
 
-	/* Process old character */
-	if (!new_game)
+	/* Hack -- Default base_name */
+	if (!op_ptr->base_name[0])
 	{
+		strcpy(op_ptr->base_name, "PLAYER");
 	}
 
 	/* Init RNG */
@@ -2630,8 +2685,25 @@ void play_game(bool new_game)
 		/* Hack -- seed for town layout */
 		seed_town = rand_int(0x10000000);
 
+#ifdef GJW_RANDART
+
+		/* Hack -- seed for random artifacts */
+		seed_randart = rand_int(0x10000000);
+
+#endif
+
 		/* Roll up a new character */
 		player_birth();
+
+#ifdef GJW_RANDART
+
+		/* Randomize the artifacts */
+		if (adult_rand_artifacts)
+		{
+			do_randart(seed_randart);
+		}
+
+#endif
 
 		/* Hack -- enter the world */
 		turn = 1;

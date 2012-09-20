@@ -349,8 +349,8 @@ static cptr r_info_flags6[] =
 	"TRAPS",
 	"FORGET",
 	"XXX6X6",
-	"XXX7X6",
-	"XXX8X6",
+	"S_KIN",
+	"S_HI_DEMON",
 	"S_MONSTER",
 	"S_MONSTERS",
 	"S_ANT",
@@ -639,7 +639,7 @@ errr init_v_info_txt(FILE *fp, char *buf)
 		/* Process 'D' for "Description" */
 		if (buf[0] == 'D')
 		{
-			/* Acquire the text */
+			/* Get the text */
 			s = buf+2;
 
 			/* Hack -- Verify space */
@@ -822,7 +822,7 @@ errr init_f_info_txt(FILE *fp, char *buf)
 		/* Process 'D' for "Description" */
 		if (buf[0] == 'D')
 		{
-			/* Acquire the text */
+			/* Get the text */
 			s = buf+2;
 
 			/* Hack -- Verify space */
@@ -1072,7 +1072,7 @@ errr init_k_info_txt(FILE *fp, char *buf)
 		/* Process 'D' for "Description" */
 		if (buf[0] == 'D')
 		{
-			/* Acquire the text */
+			/* Get the text */
 			s = buf+2;
 
 			/* Hack -- Verify space */
@@ -1428,7 +1428,7 @@ errr init_a_info_txt(FILE *fp, char *buf)
 		/* Process 'D' for "Description" */
 		if (buf[0] == 'D')
 		{
-			/* Acquire the text */
+			/* Get the text */
 			s = buf+2;
 
 			/* Hack -- Verify space */
@@ -1717,7 +1717,7 @@ errr init_e_info_txt(FILE *fp, char *buf)
 		/* Process 'D' for "Description" */
 		if (buf[0] == 'D')
 		{
-			/* Acquire the text */
+			/* Get the text */
 			s = buf+2;
 
 			/* Hack -- Verify space */
@@ -2049,7 +2049,7 @@ errr init_r_info_txt(FILE *fp, char *buf)
 		/* Process 'D' for "Description" */
 		if (buf[0] == 'D')
 		{
-			/* Acquire the text */
+			/* Get the text */
 			s = buf+2;
 
 			/* Hack -- Verify space */
@@ -2280,7 +2280,7 @@ errr init_r_info_txt(FILE *fp, char *buf)
 	/* Mega-Hack -- acquire "ghost" */
 	r_ptr = &r_info[MAX_R_IDX-1];
 
-	/* Acquire the next index */
+	/* Get the next index */
 	r_ptr->name = r_head->name_size;
 	r_ptr->text = r_head->text_size;
 

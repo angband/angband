@@ -227,7 +227,7 @@ static errr wr_savefile(void)
 
 	/*** Hack -- extract some data ***/
 
-	/* Hack -- Acquire the current time */
+	/* Hack -- Get the current time */
 	now = time((time_t*)(NULL));
 
 	/* Note the operating system */
@@ -698,11 +698,13 @@ static void wr_item(object_type *o_ptr)
 	wr_s16b(o_ptr->pval);
 
 	wr_byte(o_ptr->discount);
+
 	wr_byte(o_ptr->number);
 	wr_s16b(o_ptr->weight);
 
 	wr_byte(o_ptr->name1);
 	wr_byte(o_ptr->name2);
+
 	wr_s16b(o_ptr->timeout);
 
 	wr_s16b(o_ptr->to_h);
@@ -893,8 +895,6 @@ static void wr_options(void)
 {
 	int i, k;
 
-	u16b c;
-
 	u32b flag[8];
 	u32b mask[8];
 
@@ -913,20 +913,7 @@ static void wr_options(void)
 	/* Write "hitpoint_warn" */
 	wr_byte(op_ptr->hitpoint_warn);
 
-
-	/*** Cheating options ***/
-
-	c = 0;
-
-	if (p_ptr->wizard) c |= 0x0002;
-
-	/* Save the cheating flags */
-	for (i = 0; i < CHEAT_MAX; i++)
-	{
-		if (p_ptr->cheat[i]) c |= (0x0100 << i);
-	}
-
-	wr_u16b(c);
+	wr_u16b(0);	/* oops */
 
 
 	/*** Normal options ***/
@@ -1041,8 +1028,8 @@ static void wr_extra(void)
 	wr_s16b(p_ptr->wt);
 
 	/* Dump the stats (maximum and current) */
-	for (i = 0; i < 6; ++i) wr_s16b(p_ptr->stat_max[i]);
-	for (i = 0; i < 6; ++i) wr_s16b(p_ptr->stat_cur[i]);
+	for (i = 0; i < A_MAX; ++i) wr_s16b(p_ptr->stat_max[i]);
+	for (i = 0; i < A_MAX; ++i) wr_s16b(p_ptr->stat_cur[i]);
 
 	/* Ignore the transient stats */
 	for (i = 0; i < 12; ++i) wr_s16b(0);
@@ -1110,12 +1097,20 @@ static void wr_extra(void)
 	wr_byte(0);	/* oops */
 	wr_byte(0);	/* oops */
 	wr_byte(p_ptr->searching);
-	wr_byte(p_ptr->maximize);
-	wr_byte(p_ptr->preserve);
+	wr_byte(0);	/* oops */
+	wr_byte(0);	/* oops */
 	wr_byte(0);
 
 	/* Future use */
-	for (i = 0; i < 12; i++) wr_u32b(0L);
+	for (i = 0; i < 10; i++) wr_u32b(0L);
+
+
+	/* Random artifact version */
+	wr_u32b(RANDART_VERSION);
+
+	/* Random artifact seed */
+	wr_u32b(seed_randart);
+
 
 	/* Ignore some flags */
 	wr_u32b(0L);	/* oops */
@@ -1309,7 +1304,6 @@ static bool wr_savefile_new(void)
 
 	u32b now;
 
-	byte tmp8u;
 	u16b tmp16u;
 
 
@@ -1337,8 +1331,7 @@ static bool wr_savefile_new(void)
 	xor_byte = 0;
 	wr_byte(VERSION_PATCH);
 	xor_byte = 0;
-	tmp8u = rand_int(256);
-	wr_byte(tmp8u);
+	wr_byte(VERSION_EXTRA);
 
 
 	/* Reset the checksum */

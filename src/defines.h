@@ -41,19 +41,21 @@
 /*
  * Current version string
  */
-#define VERSION_STRING	"2.8.3"
+#define VERSION_STRING	"2.8.5"
 
 /*
  * Current version numbers
  */
 #define VERSION_MAJOR	2
 #define VERSION_MINOR	8
-#define VERSION_PATCH	3
+#define VERSION_PATCH	5
+#define VERSION_EXTRA	0
+
 
 /*
- * This value is not currently used
+ * Version of random artifact code.
  */
-#define VERSION_EXTRA	0
+#define RANDART_VERSION	62
 
 
 /*
@@ -121,6 +123,18 @@
 #define MAX_OWNERS	4
 
 /*
+ * Store index definitions (see "store.c", etc)
+ */
+#define STORE_GENERAL	0
+#define STORE_ARMOR		1
+#define STORE_WEAPON	2
+#define STORE_TEMPLE	3
+#define STORE_ALCHEMY	4
+#define STORE_MAGIC		5
+#define STORE_B_MARKET	6
+#define STORE_HOME		7
+
+/*
  * Maximum number of player "sex" types (see "table.c", etc)
  */
 #define MAX_SEXES            2
@@ -144,7 +158,7 @@
 #define MAX_A_IDX	128	/* Max size for "a_info[]" */
 #define MAX_E_IDX	128	/* Max size for "e_info[]" */
 #define MAX_R_IDX	549	/* Max size for "r_info[]" */
-#define MAX_V_IDX	16	/* Max size for "v_info[]" */
+#define MAX_V_IDX	64	/* Max size for "v_info[]" */
 
 
 /*
@@ -392,6 +406,12 @@
 #define A_CHR	5
 
 /*
+ * Total number of stats.
+ */
+#define A_MAX	6
+
+
+/*
  * Player sex constants (hard-coded by save-files, arrays, etc)
  */
 #define SEX_FEMALE		0
@@ -521,10 +541,14 @@
 #define SUMMON_DEMON		16
 #define SUMMON_UNDEAD		17
 #define SUMMON_DRAGON		18
-#define SUMMON_HI_UNDEAD	21
-#define SUMMON_HI_DRAGON	22
+/* xxx */
+#define SUMMON_HI_DEMON		26
+#define SUMMON_HI_UNDEAD	27
+#define SUMMON_HI_DRAGON	28
+/* xxx */
 #define SUMMON_WRAITH		31
 #define SUMMON_UNIQUE		32
+#define SUMMON_KIN			33
 
 
 /*
@@ -596,8 +620,8 @@
  *
  * Most of these come from the "SM_xxx" flags
  */
-#define DRS_FREE	14
-#define DRS_MANA	15
+#define DRS_FREE		14
+#define DRS_MANA		15
 #define DRS_RES_ACID	16
 #define DRS_RES_ELEC	17
 #define DRS_RES_FIRE	18
@@ -1626,22 +1650,22 @@
 /*
  * Bit flags for the "monster_desc" function
  */
-#define MDESC_OBJE	0x01	/* Objective (or Reflexive) */
-#define MDESC_POSS	0x02	/* Possessive (or Reflexive) */
-#define MDESC_IND1	0x04	/* Indefinites for hidden monsters */
-#define MDESC_IND2	0x08	/* Indefinites for visible monsters */
-#define MDESC_PRO1	0x10	/* Pronominalize hidden monsters */
-#define MDESC_PRO2	0x20	/* Pronominalize visible monsters */
-#define MDESC_HIDE	0x40	/* Assume the monster is hidden */
-#define MDESC_SHOW	0x80	/* Assume the monster is visible */
+#define MDESC_OBJE		0x01	/* Objective (or Reflexive) */
+#define MDESC_POSS		0x02	/* Possessive (or Reflexive) */
+#define MDESC_IND1		0x04	/* Indefinites for hidden monsters */
+#define MDESC_IND2		0x08	/* Indefinites for visible monsters */
+#define MDESC_PRO1		0x10	/* Pronominalize hidden monsters */
+#define MDESC_PRO2		0x20	/* Pronominalize visible monsters */
+#define MDESC_HIDE		0x40	/* Assume the monster is hidden */
+#define MDESC_SHOW		0x80	/* Assume the monster is visible */
 
 
 /*
  * Bit flags for the "get_item" function
  */
-#define USE_EQUIP	0x01	/* Allow equip items */
-#define USE_INVEN	0x02	/* Allow inven items */
-#define USE_FLOOR	0x04	/* Allow floor items */
+#define USE_EQUIP		0x01	/* Allow equip items */
+#define USE_INVEN		0x02	/* Allow inven items */
+#define USE_FLOOR		0x04	/* Allow floor items */
 
 
 
@@ -1651,20 +1675,20 @@
 /*
  * Bit flags for the "p_ptr->notice" variable
  */
-#define PN_COMBINE	0x00000001L	/* Combine the pack */
-#define PN_REORDER	0x00000002L	/* Reorder the pack */
+#define PN_COMBINE		0x00000001L	/* Combine the pack */
+#define PN_REORDER		0x00000002L	/* Reorder the pack */
 /* xxx (many) */
 
 
 /*
  * Bit flags for the "p_ptr->update" variable
  */
-#define PU_BONUS	0x00000001L	/* Calculate bonuses */
-#define PU_TORCH	0x00000002L	/* Calculate torch radius */
+#define PU_BONUS		0x00000001L	/* Calculate bonuses */
+#define PU_TORCH		0x00000002L	/* Calculate torch radius */
 /* xxx (many) */
-#define PU_HP		0x00000010L	/* Calculate chp and mhp */
-#define PU_MANA		0x00000020L	/* Calculate csp and msp */
-#define PU_SPELLS	0x00000040L	/* Calculate spells */
+#define PU_HP			0x00000010L	/* Calculate chp and mhp */
+#define PU_MANA			0x00000020L	/* Calculate csp and msp */
+#define PU_SPELLS		0x00000040L	/* Calculate spells */
 /* xxx (many) */
 #define PU_FORGET_VIEW	0x00010000L	/* Forget field of view */
 #define PU_UPDATE_VIEW	0x00020000L	/* Update field of view */
@@ -1672,65 +1696,64 @@
 #define PU_FORGET_FLOW	0x00100000L	/* Forget flow data */
 #define PU_UPDATE_FLOW	0x00200000L	/* Update flow data */
 /* xxx (many) */
-#define PU_MONSTERS	0x10000000L	/* Update monsters */
-#define PU_DISTANCE	0x20000000L	/* Update distances */
+#define PU_MONSTERS		0x10000000L	/* Update monsters */
+#define PU_DISTANCE		0x20000000L	/* Update distances */
 /* xxx */
-#define PU_PANEL	0x80000000L	/* Update panel */
+#define PU_PANEL		0x80000000L	/* Update panel */
 
 
 /*
  * Bit flags for the "p_ptr->redraw" variable
  */
-#define PR_MISC		0x00000001L	/* Display Race/Class */
-#define PR_TITLE	0x00000002L	/* Display Title */
-#define PR_LEV		0x00000004L	/* Display Level */
-#define PR_EXP		0x00000008L	/* Display Experience */
-#define PR_STATS	0x00000010L	/* Display Stats */
-#define PR_ARMOR	0x00000020L	/* Display Armor */
-#define PR_HP		0x00000040L	/* Display Hitpoints */
-#define PR_MANA		0x00000080L	/* Display Mana */
-#define PR_GOLD		0x00000100L	/* Display Gold */
-#define PR_DEPTH	0x00000200L	/* Display Depth */
+#define PR_MISC			0x00000001L	/* Display Race/Class */
+#define PR_TITLE		0x00000002L	/* Display Title */
+#define PR_LEV			0x00000004L	/* Display Level */
+#define PR_EXP			0x00000008L	/* Display Experience */
+#define PR_STATS		0x00000010L	/* Display Stats */
+#define PR_ARMOR		0x00000020L	/* Display Armor */
+#define PR_HP			0x00000040L	/* Display Hitpoints */
+#define PR_MANA			0x00000080L	/* Display Mana */
+#define PR_GOLD			0x00000100L	/* Display Gold */
+#define PR_DEPTH		0x00000200L	/* Display Depth */
 /* xxx */
-#define PR_HEALTH	0x00000800L	/* Display Health Bar */
-#define PR_CUT		0x00001000L	/* Display Extra (Cut) */
-#define PR_STUN		0x00002000L	/* Display Extra (Stun) */
-#define PR_HUNGER	0x00004000L	/* Display Extra (Hunger) */
+#define PR_HEALTH		0x00000800L	/* Display Health Bar */
+#define PR_CUT			0x00001000L	/* Display Extra (Cut) */
+#define PR_STUN			0x00002000L	/* Display Extra (Stun) */
+#define PR_HUNGER		0x00004000L	/* Display Extra (Hunger) */
 /* xxx */
-#define PR_BLIND	0x00010000L	/* Display Extra (Blind) */
-#define PR_CONFUSED	0x00020000L	/* Display Extra (Confused) */
-#define PR_AFRAID	0x00040000L	/* Display Extra (Afraid) */
-#define PR_POISONED	0x00080000L	/* Display Extra (Poisoned) */
-#define PR_STATE	0x00100000L	/* Display Extra (State) */
-#define PR_SPEED	0x00200000L	/* Display Extra (Speed) */
-#define PR_STUDY	0x00400000L	/* Display Extra (Study) */
+#define PR_BLIND		0x00010000L	/* Display Extra (Blind) */
+#define PR_CONFUSED		0x00020000L	/* Display Extra (Confused) */
+#define PR_AFRAID		0x00040000L	/* Display Extra (Afraid) */
+#define PR_POISONED		0x00080000L	/* Display Extra (Poisoned) */
+#define PR_STATE		0x00100000L	/* Display Extra (State) */
+#define PR_SPEED		0x00200000L	/* Display Extra (Speed) */
+#define PR_STUDY		0x00400000L	/* Display Extra (Study) */
 /* xxx */
-#define PR_EXTRA	0x01000000L	/* Display Extra Info */
-#define PR_BASIC	0x02000000L	/* Display Basic Info */
+#define PR_EXTRA		0x01000000L	/* Display Extra Info */
+#define PR_BASIC		0x02000000L	/* Display Basic Info */
 /* xxx */
-#define PR_MAP		0x08000000L	/* Display Map */
+#define PR_MAP			0x08000000L	/* Display Map */
 /* xxx (many) */
 
 /*
  * Bit flags for the "p_ptr->window" variable (etc)
  */
-#define PW_INVEN	0x00000001L	/* Display inven/equip */
-#define PW_EQUIP	0x00000002L	/* Display equip/inven */
-#define PW_PLAYER_0	0x00000004L	/* Display player (basic) */
-#define PW_PLAYER_1	0x00000008L	/* Display player (extra) */
+#define PW_INVEN		0x00000001L	/* Display inven/equip */
+#define PW_EQUIP		0x00000002L	/* Display equip/inven */
+#define PW_PLAYER_0		0x00000004L	/* Display player (basic) */
+#define PW_PLAYER_1		0x00000008L	/* Display player (extra) */
 /* xxx */
 /* xxx */
-#define PW_MESSAGE	0x00000040L	/* Display messages */
-#define PW_OVERHEAD	0x00000080L	/* Display overhead view */
-#define PW_MONSTER	0x00000100L	/* Display monster recall */
-#define PW_OBJECT	0x00000200L	/* Display object recall */
+#define PW_MESSAGE		0x00000040L	/* Display messages */
+#define PW_OVERHEAD		0x00000080L	/* Display overhead view */
+#define PW_MONSTER		0x00000100L	/* Display monster recall */
+#define PW_OBJECT		0x00000200L	/* Display object recall */
 /* xxx */
-#define PW_SNAPSHOT	0x00000800L	/* Display snap-shot */
+#define PW_SNAPSHOT		0x00000800L	/* Display snap-shot */
 /* xxx */
 /* xxx */
-#define PW_BORG_1	0x00004000L	/* Display borg messages */
-#define PW_BORG_2	0x00008000L	/* Display borg status */
-
+#define PW_BORG_1		0x00004000L	/* Display borg messages */
+#define PW_BORG_2		0x00008000L	/* Display borg status */
 
 
 /*** Cave flags ***/
@@ -1739,14 +1762,14 @@
 /*
  * Special cave grid flags
  */
-#define CAVE_MARK	0x01 	/* memorized feature */
-#define CAVE_GLOW	0x02 	/* self-illuminating */
-#define CAVE_ICKY	0x04 	/* part of a vault */
-#define CAVE_ROOM	0x08 	/* part of a room */
-#define CAVE_SEEN	0x10 	/* seen flag */
-#define CAVE_VIEW	0x20 	/* view flag */
-#define CAVE_TEMP	0x40 	/* temp flag */
-#define CAVE_WALL	0x80 	/* wall flag */
+#define CAVE_MARK		0x01 	/* memorized feature */
+#define CAVE_GLOW		0x02 	/* self-illuminating */
+#define CAVE_ICKY		0x04 	/* part of a vault */
+#define CAVE_ROOM		0x08 	/* part of a room */
+#define CAVE_SEEN		0x10 	/* seen flag */
+#define CAVE_VIEW		0x20 	/* view flag */
+#define CAVE_TEMP		0x40 	/* temp flag */
+#define CAVE_WALL		0x80 	/* wall flag */
 
 
 
@@ -1756,12 +1779,12 @@
 /*
  * Chest trap flags (see "tables.c")
  */
-#define CHEST_LOSE_STR		0x01
-#define CHEST_LOSE_CON		0x02
-#define CHEST_POISON		0x04
-#define CHEST_PARALYZE		0x08
-#define CHEST_EXPLODE		0x10
-#define CHEST_SUMMON		0x20
+#define CHEST_LOSE_STR	0x01
+#define CHEST_LOSE_CON	0x02
+#define CHEST_POISON	0x04
+#define CHEST_PARALYZE	0x08
+#define CHEST_EXPLODE	0x10
+#define CHEST_SUMMON	0x20
 
 
 /*
@@ -1778,9 +1801,29 @@
 
 
 /*
- * Some bit-flags for the "smart" field
+ * The special inscriptions.
+ */
+#define INSCRIP_NULL		100
+#define INSCRIP_TERRIBLE	100+1
+#define INSCRIP_WORTHLESS	100+2
+#define INSCRIP_CURSED		100+3
+#define INSCRIP_BROKEN		100+4
+#define INSCRIP_AVERAGE		100+5
+#define INSCRIP_GOOD		100+6
+#define INSCRIP_EXCELLENT	100+7
+#define INSCRIP_SPECIAL		100+8
+#define INSCRIP_UNCURSED	100+9
+
+/*
+ * Number of special inscriptions, plus one.
+ */
+#define MAX_INSCRIP			10
+
+
+/*
+ * Some bit-flags for the "smart" field of "monster_type".
  *
- * Most of these map to the "TR2_xxx" flags
+ * Most of these map to the "TR2_xxx" flags.
  */
 #define SM_OPP_ACID		0x00000001
 #define SM_OPP_ELEC		0x00000002
@@ -1938,11 +1981,11 @@
  * Hack -- flag set 1 -- mask for "pval-dependant" flags.
  * Note that all "pval" dependant flags must be in "flags1".
  */
-#define TR1_PVAL_MASK	\
-        (TR1_STR | TR1_INT | TR1_WIS | TR1_DEX | \
-         TR1_CON | TR1_CHR | TR1_XXX1 | TR1_XXX2 | \
-         TR1_STEALTH | TR1_SEARCH | TR1_INFRA | TR1_TUNNEL | \
-         TR1_SPEED | TR1_BLOWS | TR1_SHOTS | TR1_MIGHT)
+#define TR1_PVAL_MASK \
+	(TR1_STR | TR1_INT | TR1_WIS | TR1_DEX | \
+	 TR1_CON | TR1_CHR | TR1_XXX1 | TR1_XXX2 | \
+	 TR1_STEALTH | TR1_SEARCH | TR1_INFRA | TR1_TUNNEL | \
+	 TR1_SPEED | TR1_BLOWS | TR1_SHOTS | TR1_MIGHT)
 
 
 /*
@@ -2188,8 +2231,8 @@
 #define RF6_TRAPS			0x00002000	/* Create Traps */
 #define RF6_FORGET			0x00004000	/* Cause amnesia */
 #define RF6_XXX6			0x00008000	/* ??? */
-#define RF6_XXX7			0x00010000	/* Summon (?) */
-#define RF6_XXX8			0x00020000	/* Summon (?) */
+#define RF6_S_KIN			0x00010000	/* Summon Kin */
+#define RF6_S_HI_DEMON		0x00020000	/* Summon Greater Demons */
 #define RF6_S_MONSTER		0x00040000	/* Summon Monster */
 #define RF6_S_MONSTERS		0x00080000	/* Summon Monsters */
 #define RF6_S_ANT			0x00100000	/* Summon Ants */
@@ -2208,55 +2251,183 @@
 
 
 /*
- * Hack -- choose "intelligent" spells when desperate
+ * Hack -- Bit masks to control what spells are considered
+ */
+
+/*
+ * Choose "intelligent" spells when desperate
  */
 
 #define RF4_INT_MASK \
-   0L
+	(0L)
 
 #define RF5_INT_MASK \
-  (RF5_HOLD | RF5_SLOW | RF5_CONF | RF5_BLIND | RF5_SCARE)
+	(RF5_HOLD | RF5_SLOW | RF5_CONF | RF5_BLIND | RF5_SCARE)
 
 #define RF6_INT_MASK \
-   (RF6_BLINK |  RF6_TPORT | RF6_TELE_LEVEL | RF6_TELE_AWAY | \
-    RF6_HEAL | RF6_HASTE | RF6_TRAPS | \
-    RF6_S_MONSTER | RF6_S_MONSTERS | \
-    RF6_S_ANT | RF6_S_SPIDER | RF6_S_HOUND | RF6_S_HYDRA | \
-    RF6_S_ANGEL | RF6_S_DRAGON | RF6_S_UNDEAD | RF6_S_DEMON | \
-    RF6_S_HI_DRAGON | RF6_S_HI_UNDEAD | RF6_S_WRAITH | RF6_S_UNIQUE)
-
-
-
-/*** Cheating option Definitions ***/
-
-/*
- * Indexes
- */
-#define CHEAT_cheat_peek	0
-#define CHEAT_cheat_hear	1
-#define CHEAT_cheat_room	2
-#define CHEAT_cheat_xtra	3
-#define CHEAT_cheat_know	4
-#define CHEAT_cheat_live	5
-#define CHEAT_MAX			6
+	(RF6_BLINK |  RF6_TPORT | RF6_TELE_LEVEL | RF6_TELE_AWAY | \
+	 RF6_HEAL | RF6_HASTE | RF6_TRAPS | \
+	 RF6_S_KIN | RF6_S_MONSTER | RF6_S_MONSTERS | \
+	 RF6_S_ANT | RF6_S_SPIDER | RF6_S_HOUND | RF6_S_HYDRA | \
+	 RF6_S_ANGEL | RF6_S_DRAGON | RF6_S_UNDEAD | RF6_S_DEMON | \
+	 RF6_S_HI_DRAGON | RF6_S_HI_UNDEAD | RF6_S_HI_DEMON | \
+	 RF6_S_WRAITH | RF6_S_UNIQUE)
 
 
 /*
- * Hack -- Option symbols
+ * "Bolt" spells that may hurt fellow monsters
  */
-#define cheat_peek				p_ptr->cheat[CHEAT_cheat_peek]
-#define cheat_hear				p_ptr->cheat[CHEAT_cheat_hear]		
-#define cheat_room				p_ptr->cheat[CHEAT_cheat_room]	
-#define cheat_xtra				p_ptr->cheat[CHEAT_cheat_xtra]	
-#define cheat_know				p_ptr->cheat[CHEAT_cheat_know]	
-#define cheat_live				p_ptr->cheat[CHEAT_cheat_live]	
+#define RF4_BOLT_MASK \
+	(RF4_ARROW_1 | RF4_ARROW_2 | RF4_ARROW_3 | RF4_ARROW_4)
+
+#define RF5_BOLT_MASK \
+	(RF5_BO_ACID | RF5_BO_ELEC | RF5_BO_FIRE | RF5_BO_COLD | \
+	 RF5_BO_POIS | RF5_BO_NETH | RF5_BO_WATE | RF5_BO_MANA | \
+	 RF5_BO_PLAS | RF5_BO_ICEE | RF5_MISSILE)
+
+#define RF6_BOLT_MASK \
+	(0L)
+
+/*
+ * Spells that allow the caster to escape
+ */
+#define RF4_ESCAPE_MASK \
+	(0L)
+
+#define RF5_ESCAPE_MASK \
+	(0L)
+
+#define RF6_ESCAPE_MASK \
+	(RF6_BLINK | RF6_TPORT | RF6_TELE_AWAY | RF6_TELE_LEVEL)
+
+
+/*
+ * Spells that hurt the player directly
+ */
+#define RF4_ATTACK_MASK \
+	(RF4_ARROW_1 | RF4_ARROW_2 | RF4_ARROW_3 | RF4_ARROW_4 | \
+	 RF4_BR_ACID | RF4_BR_ELEC | RF4_BR_FIRE | RF4_BR_COLD | RF4_BR_POIS | \
+	 RF4_BR_NETH | RF4_BR_LITE | RF4_BR_DARK | RF4_BR_CONF | RF4_BR_SOUN | \
+	 RF4_BR_CHAO | RF4_BR_DISE | RF4_BR_NEXU | RF4_BR_TIME | RF4_BR_INER | \
+	 RF4_BR_GRAV | RF4_BR_SHAR | RF4_BR_PLAS | RF4_BR_WALL | RF4_BR_MANA)
+
+#define RF5_ATTACK_MASK \
+	(RF5_BA_ACID | RF5_BA_ELEC | RF5_BA_FIRE | RF5_BA_COLD | RF5_BA_POIS | \
+	 RF5_BA_NETH | RF5_BA_WATE | RF5_BA_MANA | RF5_BA_DARK | \
+	 RF5_MIND_BLAST | RF5_BRAIN_SMASH | RF5_CAUSE_1 | RF5_CAUSE_2 | \
+	 RF5_CAUSE_3 | RF5_CAUSE_4 | RF5_BO_ACID | RF5_BO_ELEC | RF5_BO_FIRE | \
+	 RF5_BO_COLD | RF5_BO_POIS | RF5_BO_NETH | RF5_BO_WATE | RF5_BO_MANA | \
+	 RF5_BO_PLAS | RF5_BO_ICEE | RF5_MISSILE)
+
+#define RF6_ATTACK_MASK \
+	(0L)
+
+
+/*
+ * Summoning spells
+ */
+#define RF4_SUMMON_MASK \
+	(0L)
+
+#define RF5_SUMMON_MASK \
+	(0L)
+
+#define RF6_SUMMON_MASK \
+	(RF6_S_KIN | RF6_S_MONSTER | RF6_S_MONSTERS | RF6_S_ANT | \
+	 RF6_S_SPIDER | RF6_S_HOUND | RF6_S_HYDRA | RF6_S_ANGEL | \
+	 RF6_S_DEMON | RF6_S_UNDEAD | RF6_S_DRAGON | RF6_S_HI_UNDEAD | \
+	 RF6_S_HI_DEMON | RF6_S_HI_DRAGON | RF6_S_WRAITH | RF6_S_UNIQUE)
+
+
+/*
+ * Spells that improve the caster's tactical position
+ */
+#define RF4_TACTIC_MASK \
+	(0L)
+
+#define RF5_TACTIC_MASK \
+	(0L)
+
+#define RF6_TACTIC_MASK \
+	(RF6_BLINK)
+
+
+/*
+ * Annoying spells
+ */
+#define RF4_ANNOY_MASK \
+	(RF4_SHRIEK)
+
+#define RF5_ANNOY_MASK \
+	(RF5_DRAIN_MANA | RF5_MIND_BLAST | RF5_BRAIN_SMASH | RF5_SCARE | \
+	 RF5_BLIND | RF5_CONF | RF5_SLOW | RF5_HOLD)
+
+#define RF6_ANNOY_MASK \
+	(RF6_TELE_TO | RF6_DARKNESS | RF6_TRAPS | RF6_FORGET)
+
+
+/*
+ * Spells that increase the caster's relative speed
+ */
+#define RF4_HASTE_MASK \
+	(0L)
+
+#define RF5_HASTE_MASK \
+	(RF5_SLOW | RF5_HOLD)
+
+#define RF6_HASTE_MASK \
+	(RF6_HASTE)
+
+
+/*
+ * Healing spells
+ */
+#define RF4_HEAL_MASK \
+	(0L)
+
+#define RF5_HEAL_MASK \
+	(0L)
+
+#define RF6_HEAL_MASK \
+	(RF6_HEAL)
+
+
+/*
+ * Innate spell-like effects
+ */
+#define RF4_INNATE_MASK \
+	(RF4_SHRIEK | RF4_ARROW_1 | RF4_ARROW_2 | RF4_ARROW_3 | RF4_ARROW_4 | \
+	 RF4_BR_ACID | RF4_BR_ELEC | RF4_BR_FIRE | RF4_BR_COLD | RF4_BR_POIS | \
+	 RF4_BR_NETH | RF4_BR_LITE | RF4_BR_DARK | RF4_BR_CONF | RF4_BR_SOUN | \
+	 RF4_BR_CHAO | RF4_BR_DISE | RF4_BR_NEXU | RF4_BR_TIME | RF4_BR_INER | \
+	 RF4_BR_GRAV | RF4_BR_SHAR | RF4_BR_PLAS | RF4_BR_WALL | RF4_BR_MANA)
+
+#define RF5_INNATE_MASK \
+	(0L)
+
+#define RF6_INNATE_MASK \
+	(0L)
 
 
 
 /*** Option Definitions ***/
 
 /*
- * Indexes
+ * Option indexes (offsets)
+ *
+ * These values are hard-coded by savefiles (and various pieces of code).
+ */
+#define OPT_BIRTH					128
+#define OPT_CHEAT					160
+#define OPT_ADULT					192
+#define OPT_SCORE					224
+#define OPT_MAX						256
+
+
+/*
+ * Option indexes (normal)
+ *
+ * These values are hard-coded by savefiles.
  */
 #define OPT_rogue_like_commands		0
 #define OPT_quick_messages			1
@@ -2292,8 +2463,8 @@
 /* xxx */
 #define OPT_auto_haggle				32
 #define OPT_auto_scum				33
-#define OPT_testing_stack			34
-#define OPT_testing_carry			35
+/* xxx testing_stack */
+/* xxx testing_carry */
 #define OPT_expand_look				36
 #define OPT_expand_list				37
 #define OPT_view_perma_grids		38
@@ -2302,8 +2473,8 @@
 #define OPT_dungeon_stair			41
 #define OPT_flow_by_sound			42
 #define OPT_flow_by_smell			43
-/* xxx */
-/* xxx */
+/* xxx track_follow */
+/* xxx track_target */
 #define OPT_smart_learn				46
 #define OPT_smart_cheat				47
 #define OPT_view_reduce_lite		48
@@ -2322,7 +2493,55 @@
 #define OPT_view_bright_lite		61
 #define OPT_view_granite_lite		62
 #define OPT_view_special_lite		63
-#define OPT_MAX						64
+#define OPT_easy_open 				64
+#define OPT_easy_alter 				65
+#define OPT_easy_floor 				66
+#define OPT_show_piles				67
+#define OPT_center_player			68
+#define OPT_run_avoid_center		69
+#define OPT_scroll_target			70
+#define OPT_auto_more				71
+#define OPT_smart_monsters			72
+#define OPT_smart_packs				73
+/* xxx */
+/* xxx */
+/* xxx */
+/* xxx */
+/* xxx */
+/* xxx */
+/* xxx xxx */
+#define OPT_birth_point_based		(OPT_BIRTH+0)
+#define OPT_birth_auto_roller		(OPT_BIRTH+1)
+#define OPT_birth_maximize			(OPT_BIRTH+2)
+#define OPT_birth_preserve			(OPT_BIRTH+3)
+#define OPT_birth_ironman			(OPT_BIRTH+4)
+#define OPT_birth_no_stores			(OPT_BIRTH+5)
+#define OPT_birth_no_artifacts		(OPT_BIRTH+6)
+#define OPT_birth_rand_artifacts	(OPT_BIRTH+7)
+/* xxx xxx */
+#define OPT_cheat_peek				(OPT_CHEAT+0)
+#define OPT_cheat_hear				(OPT_CHEAT+1)
+#define OPT_cheat_room				(OPT_CHEAT+2)
+#define OPT_cheat_xtra				(OPT_CHEAT+3)
+#define OPT_cheat_know				(OPT_CHEAT+4)
+#define OPT_cheat_live				(OPT_CHEAT+5)
+/* xxx xxx */
+#define OPT_adult_point_based		(OPT_ADULT+0)
+#define OPT_adult_auto_roller		(OPT_ADULT+1)
+#define OPT_adult_maximize			(OPT_ADULT+2)
+#define OPT_adult_preserve			(OPT_ADULT+3)
+#define OPT_adult_ironman			(OPT_ADULT+4)
+#define OPT_adult_no_stores			(OPT_ADULT+5)
+#define OPT_adult_no_artifacts		(OPT_ADULT+6)
+#define OPT_adult_rand_artifacts	(OPT_ADULT+7)
+/* xxx xxx */
+#define OPT_score_peek				(OPT_SCORE+0)
+#define OPT_score_hear				(OPT_SCORE+1)
+#define OPT_score_room				(OPT_SCORE+2)
+#define OPT_score_xtra				(OPT_SCORE+3)
+#define OPT_score_know				(OPT_SCORE+4)
+#define OPT_score_live				(OPT_SCORE+5)
+/* xxx xxx */
 
 
 /*
@@ -2362,8 +2581,8 @@
 /* xxx */
 #define auto_haggle				op_ptr->opt[OPT_auto_haggle]
 #define auto_scum				op_ptr->opt[OPT_auto_scum]
-#define testing_stack			op_ptr->opt[OPT_testing_stack]
-#define testing_carry			op_ptr->opt[OPT_testing_carry]
+/* xxx testing_stack */
+/* xxx testing_carry */
 #define expand_look				op_ptr->opt[OPT_expand_look]
 #define expand_list				op_ptr->opt[OPT_expand_list]
 #define view_perma_grids		op_ptr->opt[OPT_view_perma_grids]
@@ -2372,8 +2591,8 @@
 #define dungeon_stair			op_ptr->opt[OPT_dungeon_stair]
 #define flow_by_sound			op_ptr->opt[OPT_flow_by_sound]
 #define flow_by_smell			op_ptr->opt[OPT_flow_by_smell]
-/* xxx */
-/* xxx */
+/* xxx track_follow */
+/* xxx track_target */
 #define smart_learn				op_ptr->opt[OPT_smart_learn]
 #define smart_cheat				op_ptr->opt[OPT_smart_cheat]
 #define view_reduce_lite		op_ptr->opt[OPT_view_reduce_lite]
@@ -2392,6 +2611,62 @@
 #define view_bright_lite		op_ptr->opt[OPT_view_bright_lite]
 #define view_granite_lite		op_ptr->opt[OPT_view_granite_lite]
 #define view_special_lite		op_ptr->opt[OPT_view_special_lite]
+#define easy_open				op_ptr->opt[OPT_easy_open]
+#define easy_alter				op_ptr->opt[OPT_easy_alter]
+#define easy_floor				op_ptr->opt[OPT_easy_floor]
+#define show_piles				op_ptr->opt[OPT_show_piles]
+#define center_player			op_ptr->opt[OPT_center_player]
+#define run_avoid_center		op_ptr->opt[OPT_run_avoid_center]
+#define scroll_target			op_ptr->opt[OPT_scroll_target]
+#define auto_more				op_ptr->opt[OPT_auto_more]
+#define smart_monsters			op_ptr->opt[OPT_smart_monsters]
+#define smart_packs				op_ptr->opt[OPT_smart_packs]
+/* xxx */
+/* xxx */
+/* xxx */
+/* xxx */
+/* xxx */
+/* xxx */
+/* xxx xxx */
+#define birth_point_based		op_ptr->opt[OPT_birth_point_based]
+#define birth_auto_roller		op_ptr->opt[OPT_birth_auto_roller]
+#define birth_maximize			op_ptr->opt[OPT_birth_maximize]
+#define birth_preserve			op_ptr->opt[OPT_birth_preserve]
+#define birth_ironman			op_ptr->opt[OPT_birth_ironman]
+#define birth_no_stores			op_ptr->opt[OPT_birth_no_stores]
+#define birth_no_artifacts		op_ptr->opt[OPT_birth_no_artifacts]
+#define birth_rand_artifacts	op_ptr->opt[OPT_birth_rand_artifacts]
+/* xxx xxx */
+#define cheat_peek				op_ptr->opt[OPT_cheat_peek]
+#define cheat_hear				op_ptr->opt[OPT_cheat_hear]
+#define cheat_room				op_ptr->opt[OPT_cheat_room]
+#define cheat_xtra				op_ptr->opt[OPT_cheat_xtra]
+#define cheat_know				op_ptr->opt[OPT_cheat_know]
+#define cheat_live				op_ptr->opt[OPT_cheat_live]
+/* xxx xxx */
+#define adult_point_based		op_ptr->opt[OPT_adult_point_based]
+#define adult_auto_roller		op_ptr->opt[OPT_adult_auto_roller]
+#define adult_maximize			op_ptr->opt[OPT_adult_maximize]
+#define adult_preserve			op_ptr->opt[OPT_adult_preserve]
+#define adult_ironman			op_ptr->opt[OPT_adult_ironman]
+#define adult_no_stores			op_ptr->opt[OPT_adult_no_stores]
+#define adult_no_artifacts		op_ptr->opt[OPT_adult_no_artifacts]
+#define adult_rand_artifacts	op_ptr->opt[OPT_adult_rand_artifacts]
+/* xxx xxx */
+#define score_peek				op_ptr->opt[OPT_score_peek]
+#define score_hear				op_ptr->opt[OPT_score_hear]
+#define score_room				op_ptr->opt[OPT_score_room]
+#define score_xtra				op_ptr->opt[OPT_score_xtra]
+#define score_know				op_ptr->opt[OPT_score_know]
+#define score_live				op_ptr->opt[OPT_score_live]
+/* xxx xxx */
+
+
+/*
+ * Information for "do_cmd_options()".
+ */
+#define OPT_PAGE_MAX				6
+#define OPT_PAGE_PER				20
 
 
 
